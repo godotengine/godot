@@ -4917,6 +4917,7 @@ EditorNode::EditorNode() {
 	main_vbox = memnew(VBoxContainer);
 	gui_base->add_child(main_vbox);
 	main_vbox->set_area_as_parent_rect(8);
+	main_vbox->set("custom_constants/separation", 15 * EDSCALE);
 
 #if 0
 	PanelContainer *top_dark_panel = memnew( PanelContainer );
@@ -5055,7 +5056,7 @@ EditorNode::EditorNode() {
 		dock_slot[i]->set_popup(dock_select_popoup);
 		dock_slot[i]->connect("pre_popup_pressed", this, "_dock_pre_popup", varray(i));
 
-		//dock_slot[i]->set_tab_align(TabContainer::ALIGN_LEFT);
+		dock_slot[i]->set_tab_align(TabContainer::ALIGN_LEFT);
 	}
 
 	dock_drag_timer = memnew(Timer);
@@ -5080,7 +5081,7 @@ EditorNode::EditorNode() {
 */
 	scene_tabs = memnew(Tabs);
 	scene_tabs->add_tab("unsaved");
-	scene_tabs->set_tab_align(Tabs::ALIGN_CENTER);
+	scene_tabs->set_tab_align(Tabs::ALIGN_LEFT);
 	scene_tabs->set_tab_close_display_policy((bool(EDITOR_DEF("interface/always_show_close_button_in_scene_tabs", false)) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY));
 	scene_tabs->connect("tab_changed", this, "_scene_tab_changed");
 	scene_tabs->connect("right_button_pressed", this, "_scene_tab_script_edited");
@@ -5121,7 +5122,7 @@ EditorNode::EditorNode() {
 	scene_root_parent->add_child(viewport);
 
 	PanelContainer *top_region = memnew(PanelContainer);
-	top_region->add_style_override("panel", gui_base->get_stylebox("hover", "Button"));
+	top_region->add_style_override("panel", gui_base->get_stylebox("panel", "Panel"));
 	HBoxContainer *left_menu_hb = memnew(HBoxContainer);
 	top_region->add_child(left_menu_hb);
 	menu_hb->add_child(top_region);
@@ -5204,7 +5205,7 @@ EditorNode::EditorNode() {
 	}
 
 	PanelContainer *editor_region = memnew(PanelContainer);
-	editor_region->add_style_override("panel", gui_base->get_stylebox("hover", "Button"));
+	editor_region->add_style_override("panel", gui_base->get_stylebox("panel", "Panel"));
 	main_editor_button_vb = memnew(HBoxContainer);
 	editor_region->add_child(main_editor_button_vb);
 	menu_hb->add_child(editor_region);
@@ -5278,7 +5279,7 @@ EditorNode::EditorNode() {
 	play_cc->set_margin(MARGIN_TOP, 5);
 
 	top_region = memnew(PanelContainer);
-	top_region->add_style_override("panel", gui_base->get_stylebox("hover", "Button"));
+	top_region->add_style_override("panel", gui_base->get_stylebox("normal", "LineEdit"));
 	play_cc->add_child(top_region);
 
 	HBoxContainer *play_hb = memnew(HBoxContainer);
@@ -5398,7 +5399,7 @@ EditorNode::EditorNode() {
 	}
 
 	PanelContainer *vu_cont = memnew(PanelContainer);
-	vu_cont->add_style_override("panel", gui_base->get_stylebox("hover", "Button"));
+	vu_cont->add_style_override("panel", gui_base->get_stylebox("panel", "Panel"));
 	menu_hb->add_child(vu_cont);
 
 	audio_vu = memnew(TextureProgress);

@@ -240,10 +240,14 @@ void Tabs::_notification(int p_what) {
 			Ref<StyleBox> tab_bg = get_stylebox("tab_bg");
 			Ref<StyleBox> tab_fg = get_stylebox("tab_fg");
 			Ref<StyleBox> tab_disabled = get_stylebox("tab_disabled");
-			Ref<Font> font = get_font("font");
+
+			Ref<Font> normal_font = get_font("font");
+			Ref<Font> bold_font = get_font("bold_font");
+
 			Color color_fg = get_color("font_color_fg");
 			Color color_bg = get_color("font_color_bg");
 			Color color_disabled = get_color("font_color_disabled");
+
 			Ref<Texture> close = get_icon("close");
 
 			int h = get_size().height;
@@ -285,7 +289,7 @@ void Tabs::_notification(int p_what) {
 				int lsize = get_tab_width(i);
 
 				String text = tabs[i].text;
-				int slen = font->get_string_size(text).width;
+				int slen = normal_font->get_string_size(text).width;
 
 				if (w + lsize > limit) {
 					max_drawn_tab = i - 1;
@@ -296,6 +300,7 @@ void Tabs::_notification(int p_what) {
 				}
 
 				Ref<StyleBox> sb;
+				Ref<Font> fo;
 				Color col;
 
 				if (tabs[i].disabled) {
@@ -304,9 +309,11 @@ void Tabs::_notification(int p_what) {
 				} else if (i == current) {
 					sb = tab_fg;
 					col = color_fg;
+					fo = bold_font;
 				} else {
 					sb = tab_bg;
 					col = color_bg;
+					fo = normal_font;
 				}
 
 				Rect2 sb_rect = Rect2(w, 0, lsize, h);
@@ -323,7 +330,7 @@ void Tabs::_notification(int p_what) {
 						w += icon->get_width() + get_constant("hseparation");
 				}
 
-				font->draw(ci, Point2i(w, sb->get_margin(MARGIN_TOP) + ((sb_rect.size.y - sb_ms.y) - font->get_height()) / 2 + font->get_ascent()), text, col);
+				fo->draw(ci, Point2i(w, sb->get_margin(MARGIN_TOP) + ((sb_rect.size.y - sb_ms.y) - fo->get_height()) / 2 + fo->get_ascent()), text, col);
 
 				w += slen;
 
