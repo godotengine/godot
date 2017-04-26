@@ -510,8 +510,6 @@ void SceneTree::input_event(const InputEvent &p_event) {
 void SceneTree::init() {
 
 	//_quit=false;
-	accept_quit = true;
-	quit_on_go_back = true;
 	initialized = true;
 	input_handled = false;
 
@@ -2266,6 +2264,8 @@ SceneTree::SceneTree() {
 
 	singleton = this;
 	_quit = false;
+	accept_quit = true;
+	quit_on_go_back = true;
 	initialized = false;
 #ifdef TOOLS_ENABLED
 	editor_hint = false;
