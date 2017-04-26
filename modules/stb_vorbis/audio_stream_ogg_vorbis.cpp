@@ -42,6 +42,7 @@ void AudioStreamPlaybackOGGVorbis::_mix_internal(AudioFrame *p_buffer, int p_fra
 
 		int mixed = stb_vorbis_get_samples_float_interleaved(ogg_stream, 2, (float *)p_buffer, todo * 2);
 		todo -= mixed;
+		frames_mixed += mixed;
 
 		if (todo) {
 			//end of file!
@@ -66,8 +67,8 @@ float AudioStreamPlaybackOGGVorbis::get_stream_sampling_rate() {
 
 void AudioStreamPlaybackOGGVorbis::start(float p_from_pos) {
 
-	seek_pos(p_from_pos);
 	active = true;
+	seek_pos(p_from_pos);
 	loops = 0;
 	_begin_resample();
 }
@@ -95,7 +96,12 @@ void AudioStreamPlaybackOGGVorbis::seek_pos(float p_time) {
 	if (!active)
 		return;
 
-	stb_vorbis_seek(ogg_stream, uint32_t(p_time * vorbis_stream->sample_rate));
+	if (p_time >= get_length()) {
+		p_time = 0;
+	}
+	frames_mixed = uint32_t(vorbis_stream->sample_rate * p_time);
+
+	stb_vorbis_seek(ogg_stream, frames_mixed);
 }
 
 float AudioStreamPlaybackOGGVorbis::get_length() const {
