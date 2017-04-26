@@ -117,12 +117,12 @@ public:
 	static void (*_image_compress_bc_func)(Image *, bool p_srgb);
 	static void (*_image_compress_pvrtc2_func)(Image *);
 	static void (*_image_compress_pvrtc4_func)(Image *);
-	static void (*_image_compress_etc_func)(Image *);
-	static void (*_image_compress_etc2_func)(Image *);
+	static void (*_image_compress_etc1_func)(Image *, float);
+	static void (*_image_compress_etc2_func)(Image *, float);
 
 	static void (*_image_decompress_pvrtc)(Image *);
 	static void (*_image_decompress_bc)(Image *);
-	static void (*_image_decompress_etc)(Image *);
+	static void (*_image_decompress_etc1)(Image *);
 	static void (*_image_decompress_etc2)(Image *);
 
 	static PoolVector<uint8_t> (*lossy_packer)(const Ref<Image> &p_image, float p_quality);
@@ -267,7 +267,7 @@ public:
 		COMPRESS_ETC2,
 	};
 
-	Error compress(CompressMode p_mode = COMPRESS_S3TC, bool p_for_srgb = false);
+	Error compress(CompressMode p_mode = COMPRESS_S3TC, bool p_for_srgb = false, float p_lossy_quality = 0.7);
 	Error decompress();
 	bool is_compressed() const;
 

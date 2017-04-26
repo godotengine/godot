@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  image_etc.h                                                          */
+/*  register_types.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,9 +27,5 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef IMAGE_ETC1_H
-#define IMAGE_ETC1_H
-
-void _register_etc1_compress_func();
-
-#endif // IMAGE_ETC_H
+void register_etc_types();
+void unregister_etc_types();

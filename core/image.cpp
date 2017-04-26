@@ -1483,16 +1483,16 @@ Error Image::decompress() {
 		_image_decompress_bc(this);
 	else if (format >= FORMAT_PVRTC2 && format <= FORMAT_PVRTC4A && _image_decompress_pvrtc)
 		_image_decompress_pvrtc(this);
-	else if (format == FORMAT_ETC && _image_decompress_etc)
-		_image_decompress_etc(this);
-	else if (format >= FORMAT_ETC2_R11 && format <= FORMAT_ETC2_RGB8A1 && _image_decompress_etc)
+	else if (format == FORMAT_ETC && _image_decompress_etc1)
+		_image_decompress_etc1(this);
+	else if (format >= FORMAT_ETC2_R11 && format <= FORMAT_ETC2_RGB8A1 && _image_decompress_etc1)
 		_image_decompress_etc2(this);
 	else
 		return ERR_UNAVAILABLE;
 	return OK;
 }
 
-Error Image::compress(CompressMode p_mode, bool p_for_srgb) {
+Error Image::compress(CompressMode p_mode, bool p_for_srgb, float p_lossy_quality) {
 
 	switch (p_mode) {
 
@@ -1513,13 +1513,13 @@ Error Image::compress(CompressMode p_mode, bool p_for_srgb) {
 		} break;
 		case COMPRESS_ETC: {
 
-			ERR_FAIL_COND_V(!_image_compress_etc_func, ERR_UNAVAILABLE);
-			_image_compress_etc_func(this);
+			ERR_FAIL_COND_V(!_image_compress_etc1_func, ERR_UNAVAILABLE);
+			_image_compress_etc1_func(this, p_lossy_quality);
 		} break;
 		case COMPRESS_ETC2: {
 
-			ERR_FAIL_COND_V(!_image_compress_etc_func, ERR_UNAVAILABLE);
-			_image_compress_etc_func(this);
+			ERR_FAIL_COND_V(!_image_compress_etc2_func, ERR_UNAVAILABLE);
+			_image_compress_etc2_func(this, p_lossy_quality);
 		} break;
 	}
 
@@ -1652,11 +1652,11 @@ Ref<Image> (*Image::_jpg_mem_loader_func)(const uint8_t *, int) = NULL;
 void (*Image::_image_compress_bc_func)(Image *, bool) = NULL;
 void (*Image::_image_compress_pvrtc2_func)(Image *) = NULL;
 void (*Image::_image_compress_pvrtc4_func)(Image *) = NULL;
-void (*Image::_image_compress_etc_func)(Image *) = NULL;
-void (*Image::_image_compress_etc2_func)(Image *) = NULL;
+void (*Image::_image_compress_etc1_func)(Image *, float) = NULL;
+void (*Image::_image_compress_etc2_func)(Image *, float) = NULL;
 void (*Image::_image_decompress_pvrtc)(Image *) = NULL;
 void (*Image::_image_decompress_bc)(Image *) = NULL;
-void (*Image::_image_decompress_etc)(Image *) = NULL;
+void (*Image::_image_decompress_etc1)(Image *) = NULL;
 void (*Image::_image_decompress_etc2)(Image *) = NULL;
 
 PoolVector<uint8_t> (*Image::lossy_packer)(const Ref<Image> &, float) = NULL;

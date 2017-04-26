@@ -144,8 +144,12 @@ String ResourceImporterTexture::get_resource_type() const {
 
 bool ResourceImporterTexture::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
 
-	if (p_option == "compress/lossy_quality" && int(p_options["compress/mode"]) != COMPRESS_LOSSY)
-		return false;
+	if (p_option == "compress/lossy_quality") {
+		int compress_mode = int(p_options["compress/mode"]);
+		if (compress_mode != COMPRESS_LOSSY && compress_mode != COMPRESS_VIDEO_RAM) {
+			return false;
+		}
+	}
 
 	return true;
 }
@@ -277,7 +281,7 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 			if (p_force_rgbe && image->get_format() >= Image::FORMAT_R8 && image->get_format() <= Image::FORMAT_RGBE9995) {
 				image->convert(Image::FORMAT_RGBE9995);
 			} else {
-				image->compress(p_vram_compression, p_texture_flags & VS::TEXTURE_FLAG_CONVERT_TO_LINEAR);
+				image->compress(p_vram_compression, p_texture_flags & VS::TEXTURE_FLAG_CONVERT_TO_LINEAR, p_lossy_quality);
 			}
 
 			format |= image->get_format();
@@ -382,8 +386,8 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 		//Android, GLES 2.x
 		_save_stex(image, p_save_path + ".etc.stex", compress_mode, lossy, Image::COMPRESS_ETC, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe);
 		r_platform_variants->push_back("etc");
-		//_save_stex(image,p_save_path+".etc2.stex",compress_mode,lossy,Image::COMPRESS_ETC2,mipmaps,tex_flags,stream);
-		//r_platform_variants->push_back("etc2");
+		_save_stex(image, p_save_path + ".etc2.stex", compress_mode, lossy, Image::COMPRESS_ETC2, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe);
+		r_platform_variants->push_back("etc2");
 		_save_stex(image, p_save_path + ".s3tc.stex", compress_mode, lossy, Image::COMPRESS_S3TC, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe);
 		r_platform_variants->push_back("s3tc");
 
