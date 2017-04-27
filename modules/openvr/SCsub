@@ -1,0 +1,47 @@
+#!/usr/bin/env python
+
+import os
+import methods
+
+Import('env')
+Import('env_modules')
+
+env_openvr = env_modules.Clone()
+
+# Link in openVR
+
+platform_dir = 'win'
+if ("platform" in env):
+    p = env['platform']
+    if p == 'windows':
+        platform_dir = 'win'
+    elif p == 'x11':
+        platform_dir = 'linux'
+
+        # Don't know if this works, suggested by Lamberto Tedaldi while tested on Linux. He added it in the main files but
+        # I'm assuming this must be something in the openhmd source as we're not using any newer style C++ syntax.
+        # Hopefully this'll do the trick..
+        env_base.Append(CXXFLAGS='-std=c++0x')
+    elif p == 'osx':
+        platform_dir = 'osx'
+
+if 'bits' in env:
+    platform_dir += env['bits']
+else:
+    platform_dir += '64'
+
+env.Append(LIBPATH=['#thirdparty/openvr/lib/' + platform_dir])
+
+if (os.name == "nt" and os.getenv("VCINSTALLDIR")):
+    env.Append(LINKFLAGS=['openvr_api.lib'])
+else:
+    env.Append(LIBS=['openvr_api'])
+
+# have to figure out how to copy openvr_api.dll next to godot :(
+
+# add location of openvr headers
+openvr_headers = "#thirdparty/openvr/headers/"
+env_openvr.Append(CPPPATH=[openvr_headers])
+
+# Godot source files
+env_openvr.add_source_files(env.modules_sources, "*.cpp")
