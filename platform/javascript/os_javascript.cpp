@@ -390,14 +390,18 @@ void OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, i
 
 	print_line("Init OS");
 
-	if (gfx_init_func)
-		gfx_init_func(gfx_init_ud, use_gl2, p_desired.width, p_desired.height, p_desired.fullscreen);
+	EmscriptenWebGLContextAttributes attributes;
+	emscripten_webgl_init_context_attributes(&attributes);
+	attributes.alpha = false;
+	attributes.antialias = false;
+	attributes.majorVersion = 2;
+	EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_create_context(NULL, &attributes);
+	ERR_FAIL_COND(emscripten_webgl_make_context_current(ctx) != EMSCRIPTEN_RESULT_SUCCESS);
 
-	// nothing to do here, can't fulfil fullscreen request due to
-	// browser security, window size is already set from HTML
 	video_mode = p_desired;
+	// can't fulfil fullscreen request due to browser security
 	video_mode.fullscreen = false;
-	_windowed_size = get_window_size();
+	set_window_size(Size2(p_desired.width, p_desired.height));
 
 	// find locale, emscripten only sets "C"
 	char locale_ptr[16];
@@ -835,10 +839,8 @@ int OS_JavaScript::get_power_percent_left() {
 	return power_manager->get_power_percent_left();
 }
 
-OS_JavaScript::OS_JavaScript(const char *p_execpath, GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, GetDataDirFunc p_get_data_dir_func) {
+OS_JavaScript::OS_JavaScript(const char *p_execpath, GetDataDirFunc p_get_data_dir_func) {
 	set_cmdline(p_execpath, get_cmdline_args());
-	gfx_init_func = p_gfx_init_func;
-	gfx_init_ud = p_gfx_init_ud;
 	main_loop = NULL;
 	gl_extensions = NULL;
 	window_maximized = false;
