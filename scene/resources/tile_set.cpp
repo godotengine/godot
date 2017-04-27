@@ -59,6 +59,10 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 		tile_set_shape(id, p_value);
 	else if (what == "shapes")
 		_tile_set_shapes(id, p_value);
+	else if (what == "one_way_collision_direction")
+		tile_set_one_way_collision_direction(id, p_value);
+	else if (what == "one_way_collision_max_depth")
+		tile_set_one_way_collision_max_depth(id, p_value);
 	else if (what == "occluder")
 		tile_set_light_occluder(id, p_value);
 	else if (what == "occluder_offset")
@@ -103,6 +107,10 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 		r_ret = tile_get_shape(id);
 	else if (what == "shapes")
 		r_ret = _tile_get_shapes(id);
+	else if (what == "one_way_collision_direction")
+		r_ret = tile_get_one_way_collision_direction(id);
+	else if (what == "one_way_collision_max_depth")
+		r_ret = tile_get_one_way_collision_max_depth(id);
 	else if (what == "occluder")
 		r_ret = tile_get_light_occluder(id);
 	else if (what == "occluder_offset")
@@ -136,6 +144,8 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::VECTOR2, pre + "shape_offset"));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, pre + "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape2D", PROPERTY_USAGE_EDITOR));
 		p_list->push_back(PropertyInfo(Variant::ARRAY, pre + "shapes", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+		p_list->push_back(PropertyInfo(Variant::VECTOR2, pre + "one_way_collision_direction"));
+		p_list->push_back(PropertyInfo(Variant::REAL, pre + "one_way_collision_max_depth"));
 	}
 }
 
@@ -338,6 +348,30 @@ Array TileSet::_tile_get_shapes(int p_id) const {
 		arr.push_back(shp[i]);
 
 	return arr;
+}
+
+void TileSet::tile_set_one_way_collision_direction(int p_id, Vector2 p_direction) {
+
+	ERR_FAIL_COND(!tile_map.has(p_id));
+	tile_map[p_id].one_way_collision_direction = p_direction;
+}
+
+Vector2 TileSet::tile_get_one_way_collision_direction(int p_id) const {
+
+	ERR_FAIL_COND_V(!tile_map.has(p_id), Vector2());
+	return tile_map[p_id].one_way_collision_direction;
+}
+
+void TileSet::tile_set_one_way_collision_max_depth(int p_id, float p_max_depth) {
+
+	ERR_FAIL_COND(!tile_map.has(p_id));
+	tile_map[p_id].one_way_collision_max_depth = p_max_depth;
+}
+
+float TileSet::tile_get_one_way_collision_max_depth(int p_id) const {
+
+	ERR_FAIL_COND_V(!tile_map.has(p_id), 0.0f);
+	return tile_map[p_id].one_way_collision_max_depth;
 }
 
 Array TileSet::_get_tiles_ids() const {
