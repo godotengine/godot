@@ -192,7 +192,7 @@ void SpinBox::_notification(int p_what) {
 		RID ci = get_canvas_item();
 		Size2i size = get_size();
 
-		Color color = line_edit->get_color("font_color");
+		Color color = has_focus()? line_edit->get_color("font_color_active") : line_edit->get_color("font_color");
 		if (!is_editable())
 			color = line_edit->get_color("font_color_read_only");
 		updown->draw(ci,Point2i(size.width-updown->get_width(),(size.height-updown->get_height())/2), color);

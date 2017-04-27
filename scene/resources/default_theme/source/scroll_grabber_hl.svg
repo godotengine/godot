@@ -29,8 +29,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="45.254836"
-     inkscape:cx="0.53524307"
-     inkscape:cy="6.5519136"
+     inkscape:cx="1.4412236"
+     inkscape:cy="5.623836"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -70,10 +70,10 @@
      id="layer1"
      transform="translate(0,-1040.3623)">
     <circle
-       style="opacity:1;fill:#7eff8a;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="opacity:1;fill:#7eff8a;fill-opacity:1;stroke:none;stroke-width:2.24999642;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="path4239"
        cx="6"
        cy="1046.3623"
-       r="4" />
+       r="2.9999952" />
   </g>
 </svg>

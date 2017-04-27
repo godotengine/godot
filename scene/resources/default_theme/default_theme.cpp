@@ -218,11 +218,11 @@ void fill_default_theme(Ref<Theme> &t, const Ref<Font> &default_font, const Ref<
 
 	// Font Colors
 
-	Color control_font_color = Color::html("adbac7");
-	Color control_font_color_lower = Color::html("a0a0a0");
-	Color control_font_color_low = Color::html("b0b0b0");
+	Color control_font_color = Color(1,1,1,0.8);
+	Color control_font_color_lower = Color(1,1,1,0.32);
+	Color control_font_color_low = Color(1,1,1,0.58);
 	Color control_font_color_hover = Color::html("f0f0f0");
-	Color control_font_color_disabled = Color(0.9, 0.9, 0.9, 0.2);
+	Color control_font_color_disabled = Color::html("425468");
 	Color control_font_color_pressed = Color::html("ffffff");
 	Color font_color_selection = Color::html("7d7d7d");
 
@@ -242,7 +242,7 @@ void fill_default_theme(Ref<Theme> &t, const Ref<Font> &default_font, const Ref<
 
 	// Button
 
-	Color button_font_color = Color::html("56a2ff");
+	Color button_font_color = Color::html("9fb4ca");
 	Color button_font_color_hover = Color::html("70b1ff");
 	Color button_font_color_disabled = Color::html("425468");
 
@@ -431,7 +431,7 @@ void fill_default_theme(Ref<Theme> &t, const Ref<Font> &default_font, const Ref<
 
 	t->set_font("font", "Label", default_font);
 
-	t->set_color("font_color", "Label", Color(1, 1, 1));
+	t->set_color("font_color", "Label", control_font_color_low);
 	t->set_color("font_color_shadow", "Label", Color(0, 0, 0, 0));
 
 	t->set_constant("shadow_offset_x", "Label", 1 * scale);
@@ -443,6 +443,8 @@ void fill_default_theme(Ref<Theme> &t, const Ref<Font> &default_font, const Ref<
 
 	Ref<StyleBoxTexture> sb_line_edit = sb_expand_default(make_stylebox( line_edit_png, 6,6,6,6, 6,4,6,4 ));
 	t->set_stylebox("normal","LineEdit", sb_line_edit );
+	Ref<StyleBoxTexture> sb_line_edit_active = sb_expand_default(make_stylebox( line_edit_active_png, 6,6,6,6, 6,4,6,4 ));
+	t->set_stylebox("active","LineEdit", sb_line_edit_active );
 	t->set_stylebox("focus","LineEdit", focus );
 	Ref<StyleBoxTexture> sb_line_edit_disabled = sb_expand_default(make_stylebox( line_edit_disabled_png, 6,6,6,6, 6,4,6,4 ));
 	t->set_stylebox("read_only","LineEdit", sb_line_edit_disabled );
@@ -451,8 +453,9 @@ void fill_default_theme(Ref<Theme> &t, const Ref<Font> &default_font, const Ref<
 
 	t->set_color("font_color","LineEdit", button_font_color );
 	t->set_color("font_color_selected","LineEdit", button_font_color );
+	t->set_color("font_color_active","LineEdit", accent_color );
 	t->set_color("font_color_read_only","LineEdit", button_font_color_disabled );
-	t->set_color("cursor_color","LineEdit", button_font_color_hover );
+	t->set_color("cursor_color","LineEdit", button_font_color );
 	t->set_color("selection_color","LineEdit", font_color_selection );
 
 	t->set_constant("minimum_spaces", "LineEdit", 12 * scale);
@@ -728,7 +731,7 @@ void fill_default_theme(Ref<Theme> &t, const Ref<Font> &default_font, const Ref<
 
 	t->set_font("font", "TabContainer", default_font);
 
-	t->set_color("font_color_fg", "TabContainer", control_font_color_hover);
+	t->set_color("font_color_fg", "TabContainer", control_font_color);
 	t->set_color("font_color_bg", "TabContainer", control_font_color_low);
 	t->set_color("font_color_disabled", "TabContainer", control_font_color_disabled);
 
@@ -763,7 +766,7 @@ void fill_default_theme(Ref<Theme> &t, const Ref<Font> &default_font, const Ref<
 
 	t->set_font("font", "Tabs", default_font);
 
-	t->set_color("font_color_fg", "Tabs", control_font_color_hover);
+	t->set_color("font_color_fg", "Tabs", control_font_color);
 	t->set_color("font_color_bg", "Tabs", control_font_color_low);
 	t->set_color("font_color_disabled", "Tabs", control_font_color_disabled);
 
@@ -781,11 +784,8 @@ void fill_default_theme(Ref<Theme> &t, const Ref<Font> &default_font, const Ref<
 	t->set_font("normal","Fonts", default_font );
 	t->set_font("large","Fonts", large_font );
 
-	t->set_constant("separation","HSeparator", 8 *scale);
-	t->set_constant("separation","VSeparator", 8 *scale);
-
-	t->set_constant("separation", "HSeparator", 4 * scale);
-	t->set_constant("separation", "VSeparator", 4 * scale);
+	t->set_constant("separation","HSeparator", 16 *scale);
+	t->set_constant("separation","VSeparator", 16 *scale);
 
 	// Dialogs
 

@@ -14,7 +14,7 @@
    viewBox="0 0 16 16"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.1 r"
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_add_track.png"
    inkscape:export-xdpi="45"
    inkscape:export-ydpi="45"
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="22.627418"
-     inkscape:cx="-2.1714822"
-     inkscape:cy="7.7891679"
+     inkscape:zoom="45.254836"
+     inkscape:cx="7.6258883"
+     inkscape:cy="7.576455"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -42,8 +42,8 @@
      inkscape:snap-bbox-midpoints="false"
      inkscape:snap-object-midpoints="true"
      inkscape:snap-center="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1016"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1">
@@ -70,9 +70,14 @@
      id="layer1"
      transform="translate(0,-1036.3622)">
     <path
-       style="fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 3.7578125 2.34375 L 2.34375 3.7578125 L 6.5859375 8 L 2.34375 12.242188 L 3.7578125 13.65625 L 8 9.4140625 L 12.242188 13.65625 L 13.65625 12.242188 L 9.4140625 8 L 13.65625 3.7578125 L 12.242188 2.34375 L 8 6.5859375 L 3.7578125 2.34375 z "
-       transform="translate(0,1036.3622)"
-       id="rect4137" />
+       style="fill:none;stroke:#ffffff;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-opacity:0.39215687;stroke-miterlimit:4;stroke-dasharray:none"
+       d="m 4,1040.3622 8,8"
+       id="path814"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#ffffff;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-opacity:0.39215687;stroke-miterlimit:4;stroke-dasharray:none"
+       d="m 4,1048.3622 8,-8"
+       id="path816"
+       inkscape:connector-curvature="0" />
   </g>
 </svg>
