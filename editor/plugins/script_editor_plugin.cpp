@@ -411,6 +411,80 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 	_update_selected_editor_menu();
 }
 
+void ScriptEditor::_add_recent_script(String p_path) {
+
+	if (p_path.empty()) {
+		return;
+	}
+
+	// remove if already stored
+	int already_recent = previous_scripts.find(p_path);
+	if (already_recent >= 0) {
+		previous_scripts.remove(already_recent);
+	}
+
+	// add to list
+	previous_scripts.insert(0, p_path);
+
+	_update_recent_scripts();
+}
+
+void ScriptEditor::_update_recent_scripts() {
+
+	// make sure we don't exceed max size
+	const int max_history = EDITOR_DEF("text_editor/files/maximum_recent_files", 20);
+	if (previous_scripts.size() > max_history) {
+		previous_scripts.resize(max_history);
+	}
+
+	recent_scripts->clear();
+
+	recent_scripts->add_shortcut(ED_SHORTCUT("script_editor/open_recent", TTR("Open Recent"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_T));
+	recent_scripts->add_separator();
+
+	const int max_shown = 8;
+	for (int i = 0; i < previous_scripts.size() && i <= max_shown; i++) {
+		String path = previous_scripts.get(i);
+		// just show script name and last dir
+		recent_scripts->add_item(path.get_slice("/", path.get_slice_count("/") - 2) + "/" + path.get_file());
+	}
+
+	recent_scripts->add_separator();
+	recent_scripts->add_shortcut(ED_SHORTCUT("script_editor/clear_recent", TTR("Clear Recent Files")));
+}
+
+void ScriptEditor::_open_recent_script(int p_idx) {
+
+	// clear button
+	if (p_idx == recent_scripts->get_item_count() - 1) {
+		previous_scripts.clear();
+		_update_recent_scripts();
+		return;
+	}
+
+	// take two for the open recent button
+	if (p_idx > 0) {
+		p_idx -= 2;
+	}
+
+	if (p_idx < previous_scripts.size() && p_idx >= 0) {
+
+		String path = previous_scripts.get(p_idx);
+		// if its not on disk its a help file or deleted
+		if (FileAccess::exists(path)) {
+			Ref<Script> script = ResourceLoader::load(path);
+			if (script.is_valid()) {
+				edit(script, true);
+			}
+			// if it's a path then its most likely a delted file not help
+		} else if (!path.is_resource_file()) {
+			_help_class_open(path);
+		}
+		previous_scripts.remove(p_idx);
+		_update_recent_scripts();
+	}
+}
+
 void ScriptEditor::_close_tab(int p_idx, bool p_save) {
 
 	int selected = p_idx;
@@ -420,12 +494,16 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save) {
 	Node *tselected = tab_container->get_child(selected);
 	ScriptEditorBase *current = tab_container->get_child(selected)->cast_to<ScriptEditorBase>();
 	if (current) {
+		_add_recent_script(current->get_edited_script()->get_path());
 		if (p_save) {
 			apply_scripts();
 		}
 		if (current->get_edit_menu()) {
 			memdelete(current->get_edit_menu());
 		}
+	} else {
+		EditorHelp *help = tab_container->get_child(selected)->cast_to<EditorHelp>();
+		_add_recent_script(help->get_class());
 	}
 
 	//remove from history
@@ -1978,6 +2056,7 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_close_discard_current_tab", &ScriptEditor::_close_discard_current_tab);
 	ClassDB::bind_method("_close_docs_tab", &ScriptEditor::_close_docs_tab);
 	ClassDB::bind_method("_close_all_tabs", &ScriptEditor::_close_all_tabs);
+	ClassDB::bind_method("_open_recent_script", &ScriptEditor::_open_recent_script);
 	ClassDB::bind_method("_editor_play", &ScriptEditor::_editor_play);
 	ClassDB::bind_method("_editor_pause", &ScriptEditor::_editor_pause);
 	ClassDB::bind_method("_editor_stop", &ScriptEditor::_editor_stop);
@@ -2047,6 +2126,14 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	file_menu->set_text(TTR("File"));
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/new", TTR("New")), FILE_NEW);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/open", TTR("Open")), FILE_OPEN);
+	file_menu->get_popup()->add_submenu_item(TTR("Open Recent"), "RecentScripts", FILE_OPEN_RECENT);
+
+	recent_scripts = memnew(PopupMenu);
+	recent_scripts->set_name("RecentScripts");
+	file_menu->get_popup()->add_child(recent_scripts);
+	recent_scripts->connect("id_pressed", this, "_open_recent_script");
+	_update_recent_scripts();
+
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save", TTR("Save"), KEY_MASK_ALT | KEY_MASK_CMD | KEY_S), FILE_SAVE);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_as", TTR("Save As..")), FILE_SAVE_AS);
@@ -2353,6 +2440,9 @@ ScriptEditorPlugin::ScriptEditorPlugin(EditorNode *p_node) {
 	EDITOR_DEF("text_editor/open_scripts/list_script_names_as", 0);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "text_editor/external/exec_path", PROPERTY_HINT_GLOBAL_FILE));
 	EDITOR_DEF("text_editor/external/exec_flags", "");
+
+	ED_SHORTCUT("script_editor/open_recent", TTR("Open Recent"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_T);
+	ED_SHORTCUT("script_editor/clear_recent", TTR("Clear Recent Files"));
 }
 
 ScriptEditorPlugin::~ScriptEditorPlugin() {

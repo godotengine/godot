@@ -558,6 +558,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set("text_editor/completion/auto_brace_complete", false);
 	set("text_editor/files/restore_scripts_on_load", true);
 	set("text_editor/completion/complete_file_paths", true);
+	set("text_editor/files/maximum_recent_files", 20);
+	hints["text_editor/files/maximum_recent_files"] = PropertyInfo(Variant::INT, "text_editor/files/maximum_recent_files", PROPERTY_HINT_RANGE, "1, 200, 0");
 
 	//set("docks/scene_tree/display_old_action_buttons",false);
 	set("docks/scene_tree/start_create_dialog_fully_expanded", false);

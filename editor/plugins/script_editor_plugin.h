@@ -120,6 +120,7 @@ class ScriptEditor : public VBoxContainer {
 	enum {
 		FILE_NEW,
 		FILE_OPEN,
+		FILE_OPEN_RECENT,
 		FILE_SAVE,
 		FILE_SAVE_AS,
 		FILE_SAVE_ALL,
@@ -169,6 +170,8 @@ class ScriptEditor : public VBoxContainer {
 	Timer *autosave_timer;
 	uint64_t idle;
 
+	PopupMenu *recent_scripts;
+
 	Button *help_search;
 	Button *site_search;
 	Button *class_search;
@@ -207,6 +210,8 @@ class ScriptEditor : public VBoxContainer {
 	Vector<ScriptHistory> history;
 	int history_pos;
 
+	Vector<String> previous_scripts;
+
 	EditorHelpIndex *help_index;
 
 	void _tab_changed(int p_which);
@@ -223,6 +228,10 @@ class ScriptEditor : public VBoxContainer {
 	void _reload_scripts();
 
 	bool _test_script_times_on_disk(Ref<Script> p_for_script = Ref<Script>());
+
+	void _add_recent_script(String p_path);
+	void _update_recent_scripts();
+	void _open_recent_script(int p_idx);
 
 	void _close_tab(int p_idx, bool p_save = true);
 
