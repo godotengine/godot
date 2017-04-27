@@ -481,9 +481,9 @@ void ProjectSettings::_update_actions() {
 		TreeItem *item = input_editor->create_item(root);
 		//item->set_cell_mode(0,TreeItem::CELL_MODE_CHECK);
 		item->set_text(0, name);
-		item->add_button(0, get_icon("Add", "EditorIcons"), 1);
+		item->add_button(0, get_icon("Add", "EditorIcons"), 1, false, TTR("Add Event"));
 		if (!GlobalConfig::get_singleton()->get_input_presets().find(pi.name)) {
-			item->add_button(0, get_icon("Remove", "EditorIcons"), 2);
+			item->add_button(0, get_icon("Remove", "EditorIcons"), 2, false, TTR("Remove"));
 			item->set_editable(0, true);
 		}
 		item->set_custom_bg_color(0, get_color("prop_subsection", "Editor"));
@@ -553,7 +553,7 @@ void ProjectSettings::_update_actions() {
 					action->set_icon(0, get_icon("JoyAxis", "EditorIcons"));
 				} break;
 			}
-			action->add_button(0, get_icon("Remove", "EditorIcons"), 2);
+			action->add_button(0, get_icon("Remove", "EditorIcons"), 2, false, TTR("Remove"));
 			action->set_metadata(0, i);
 			action->set_meta("__input", ie);
 		}
@@ -1012,7 +1012,7 @@ void ProjectSettings::_update_translations() {
 			t->set_text(0, translations[i].replace_first("res://", ""));
 			t->set_tooltip(0, translations[i]);
 			t->set_metadata(0, i);
-			t->add_button(0, get_icon("Del", "EditorIcons"), 0);
+			t->add_button(0, get_icon("Del", "EditorIcons"), 0, false, TTR("Remove"));
 		}
 	}
 
@@ -1058,7 +1058,7 @@ void ProjectSettings::_update_translations() {
 			t->set_text(0, keys[i].replace_first("res://", ""));
 			t->set_tooltip(0, keys[i]);
 			t->set_metadata(0, keys[i]);
-			t->add_button(0, get_icon("Del", "EditorIcons"), 0);
+			t->add_button(0, get_icon("Del", "EditorIcons"), 0, false, TTR("Remove"));
 			if (keys[i] == remap_selected) {
 				t->select(0);
 				translation_res_option_add_button->set_disabled(false);
@@ -1076,7 +1076,7 @@ void ProjectSettings::_update_translations() {
 					t2->set_text(0, path.replace_first("res://", ""));
 					t2->set_tooltip(0, path);
 					t2->set_metadata(0, j);
-					t2->add_button(0, get_icon("Del", "EditorIcons"), 0);
+					t2->add_button(0, get_icon("Del", "EditorIcons"), 0, false, TTR("Remove"));
 					t2->set_cell_mode(1, TreeItem::CELL_MODE_RANGE);
 					t2->set_text(1, langnames);
 					t2->set_editable(1, true);

@@ -93,10 +93,12 @@ private:
 			bool disabled;
 			Ref<Texture> texture;
 			Color color;
+			String tooltip;
 			Button() {
 				id = 0;
 				disabled = false;
 				color = Color(1, 1, 1, 1);
+				tooltip = "";
 			}
 		};
 
@@ -180,7 +182,7 @@ public:
 	void set_icon_max_width(int p_column, int p_max);
 	int get_icon_max_width(int p_column) const;
 
-	void add_button(int p_column, const Ref<Texture> &p_button, int p_id = -1, bool p_disabled = false);
+	void add_button(int p_column, const Ref<Texture> &p_button, int p_id = -1, bool p_disabled = false, const String &p_tooltip = "");
 	int get_button_count(int p_column) const;
 	Ref<Texture> get_button(int p_column, int p_idx) const;
 	int get_button_id(int p_column, int p_idx) const;
