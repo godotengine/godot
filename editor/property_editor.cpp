@@ -116,7 +116,6 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 
 					Set<String> valid_extensions;
 					for (List<String>::Element *E = extensions.front(); E; E = E->next()) {
-						print_line("found: " + E->get());
 						valid_extensions.insert(E->get());
 					}
 
