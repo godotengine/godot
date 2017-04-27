@@ -14,7 +14,7 @@
    viewBox="0 0 8 8"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.1 r"
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_dependency_changed_hl.png"
    inkscape:export-xdpi="45"
    inkscape:export-ydpi="45"
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="43.417341"
-     inkscape:cx="0.40602789"
-     inkscape:cy="4.9542089"
+     inkscape:zoom="61.401392"
+     inkscape:cx="1.5457638"
+     inkscape:cy="2.7778126"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -42,8 +42,8 @@
      inkscape:snap-bbox-midpoints="false"
      inkscape:snap-object-midpoints="true"
      inkscape:snap-center="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1016"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1">
@@ -59,7 +59,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -68,10 +68,14 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-1044.3622)">
-    <path
-       style="opacity:1;fill:#8fdeef;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       d="M 4 0 A 4 3.9999914 0 0 0 0 4 A 4 3.9999914 0 0 0 4 8 A 4 3.9999914 0 0 0 8 4 A 4 3.9999914 0 0 0 4 0 z "
-       transform="translate(0,1044.3622)"
-       id="path4137" />
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.76284212;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect814"
+       width="6.1027369"
+       height="6.1027369"
+       x="-741.52698"
+       y="741.08105"
+       ry="0.76285541"
+       transform="rotate(-45)" />
   </g>
 </svg>

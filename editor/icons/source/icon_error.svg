@@ -14,7 +14,7 @@
    viewBox="0 0 8 8"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.1 r"
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_node.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90"
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="22.627416"
-     inkscape:cx="5.542036"
-     inkscape:cy="14.568715"
+     inkscape:zoom="45.254832"
+     inkscape:cx="0.9455546"
+     inkscape:cy="4.9546755"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -42,8 +42,8 @@
      inkscape:snap-bbox-midpoints="true"
      inkscape:snap-object-midpoints="true"
      inkscape:snap-center="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1016"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1">
@@ -76,6 +76,6 @@
        height="8"
        x="2.220446e-16"
        y="1044.3622"
-       ry="1.0000174" />
+       ry="4" />
   </g>
 </svg>

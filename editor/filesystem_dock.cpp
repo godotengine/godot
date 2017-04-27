@@ -150,18 +150,20 @@ void FileSystemDock::_notification(int p_what) {
 			}
 			button_display_mode->connect("pressed", this, "_change_file_display");
 			//file_options->set_icon( get_icon("Tools","EditorIcons"));
-			files->connect("item_activated", this, "_select_file");
-			button_hist_next->connect("pressed", this, "_fw_history");
-			button_hist_prev->connect("pressed", this, "_bw_history");
-			search_icon->set_texture(get_icon("Zoom", "EditorIcons"));
 
-			button_hist_next->set_icon(get_icon("Forward", "EditorIcons"));
-			button_hist_prev->set_icon(get_icon("Back", "EditorIcons"));
-			file_options->connect("id_pressed", this, "_file_option");
-			folder_options->connect("id_pressed", this, "_folder_option");
+			files->connect("item_activated",this,"_select_file");
+			button_hist_next->connect("pressed",this,"_fw_history");
+			button_hist_prev->connect("pressed",this,"_bw_history");
+			search_icon->set_texture( get_icon("Search","EditorIcons"));
 
-			button_back->connect("pressed", this, "_go_to_tree", varray(), CONNECT_DEFERRED);
-			current_path->connect("text_entered", this, "_go_to_dir");
+			button_hist_next->set_icon( get_icon("Forward","EditorIcons"));
+			button_hist_prev->set_icon( get_icon("Back","EditorIcons"));
+			file_options->connect("id_pressed",this,"_file_option");
+			folder_options->connect("id_pressed",this,"_folder_option");
+
+
+			button_back->connect("pressed",this,"_go_to_tree",varray(),CONNECT_DEFERRED);
+			current_path->connect("text_entered",this,"_go_to_dir");
 			_update_tree(); //maybe it finished already
 
 			if (EditorFileSystem::get_singleton()->is_scanning()) {
@@ -1659,9 +1661,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	button_reload->set_tooltip(TTR("Re-Scan Filesystem"));
 	button_reload->hide();
 
-	//toolbar_hbc->add_spacer();
-
-	button_favorite = memnew(Button);
+	button_favorite = memnew( Button );
 	button_favorite->set_flat(true);
 	button_favorite->set_toggle_mode(true);
 	button_favorite->connect("pressed", this, "_favorites_pressed");

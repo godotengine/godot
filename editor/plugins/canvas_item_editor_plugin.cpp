@@ -3122,8 +3122,9 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	editor_selection->add_editor_plugin(this);
 	editor_selection->connect("selection_changed", this, "update");
 
-	hb = memnew(HBoxContainer);
-	add_child(hb);
+	hb = memnew( HBoxContainer );
+	hb->add_style_override("bg", editor->get_gui_base()->get_stylebox("panel","PanelContainer"));
+	add_child( hb );
 	hb->set_area_as_parent_rect();
 
 	bottom_split = memnew(VSplitContainer);
@@ -3299,6 +3300,8 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	animation_hb->hide();
 
 	key_loc_button = memnew(Button("loc"));
+	key_loc_button = memnew( Button("loc"));
+	key_loc_button->set_flat(true);
 	key_loc_button->set_toggle_mode(true);
 	key_loc_button->set_pressed(true);
 	key_loc_button->set_focus_mode(FOCUS_NONE);
@@ -3306,7 +3309,8 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	key_loc_button->add_color_override("font_color_pressed", Color(0.6, 1, 0.6));
 	key_loc_button->connect("pressed", this, "_popup_callback", varray(ANIM_INSERT_POS));
 	animation_hb->add_child(key_loc_button);
-	key_rot_button = memnew(Button("rot"));
+	key_rot_button = memnew( Button("rot"));
+	key_rot_button->set_flat(true);
 	key_rot_button->set_toggle_mode(true);
 	key_rot_button->set_pressed(true);
 	key_rot_button->set_focus_mode(FOCUS_NONE);
@@ -3314,14 +3318,15 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	key_rot_button->add_color_override("font_color_pressed", Color(0.6, 1, 0.6));
 	key_rot_button->connect("pressed", this, "_popup_callback", varray(ANIM_INSERT_ROT));
 	animation_hb->add_child(key_rot_button);
-	key_scale_button = memnew(Button("scl"));
+	key_scale_button = memnew( Button("scl"));
+	key_scale_button->set_flat(true);
 	key_scale_button->set_toggle_mode(true);
 	key_scale_button->set_focus_mode(FOCUS_NONE);
 	key_scale_button->add_color_override("font_color", Color(1, 0.6, 0.6));
 	key_scale_button->add_color_override("font_color_pressed", Color(0.6, 1, 0.6));
 	key_scale_button->connect("pressed", this, "_popup_callback", varray(ANIM_INSERT_SCALE));
 	animation_hb->add_child(key_scale_button);
-	key_insert_button = memnew(Button);
+	key_insert_button = memnew( ToolButton );
 	key_insert_button->set_focus_mode(FOCUS_NONE);
 	key_insert_button->connect("pressed", this, "_popup_callback", varray(ANIM_INSERT_KEY));
 	key_insert_button->set_tooltip(TTR("Insert Keys"));

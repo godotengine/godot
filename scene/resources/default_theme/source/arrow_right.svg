@@ -14,7 +14,7 @@
    viewBox="0 0 12 12"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.1 r"
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_collapse.png"
    inkscape:export-xdpi="45"
    inkscape:export-ydpi="45"
@@ -29,8 +29,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="45.254836"
-     inkscape:cx="3.0018179"
-     inkscape:cy="6.0349408"
+     inkscape:cx="4.0845752"
+     inkscape:cy="5.8802612"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -42,8 +42,8 @@
      inkscape:snap-bbox-midpoints="false"
      inkscape:snap-object-midpoints="true"
      inkscape:snap-center="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1016"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
@@ -71,10 +71,10 @@
      id="layer1"
      transform="translate(0,-1040.3622)">
     <path
-       style="fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:6;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="m 3,1050.3622 3,0 3,-4 -3,-4 -3,0 z"
-       id="rect4174"
+       style="fill:none;stroke:#ffffff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.39215687"
+       d="m 4,1049.3622 3.0000202,-3 -3.0000202,-3"
+       id="path814"
        inkscape:connector-curvature="0"
-       sodipodi:nodetypes="cccccc" />
+       sodipodi:nodetypes="ccc" />
   </g>
 </svg>
