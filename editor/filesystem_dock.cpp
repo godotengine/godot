@@ -1065,6 +1065,11 @@ void FileSystemDock::_folder_option(int p_option) {
 				child = child->get_next();
 			}
 			break;
+		case FOLDER_SHOW_IN_EXPLORER:
+			String path = item->get_metadata(tree->get_selected_column());
+			String dir = GlobalConfig::get_singleton()->globalize_path(path);
+			OS::get_singleton()->shell_open(String("file://") + dir);
+			return;
 	}
 }
 
@@ -1102,6 +1107,9 @@ void FileSystemDock::_dir_rmb_pressed(const Vector2 &p_pos) {
 
 	folder_options->add_item(TTR("Expand all"), FOLDER_EXPAND_ALL);
 	folder_options->add_item(TTR("Collapse all"), FOLDER_COLLAPSE_ALL);
+
+	folder_options->add_separator();
+	folder_options->add_item(TTR("Show In File Manager"), FOLDER_SHOW_IN_EXPLORER);
 
 	folder_options->set_position(tree->get_global_position() + p_pos);
 	folder_options->popup();
