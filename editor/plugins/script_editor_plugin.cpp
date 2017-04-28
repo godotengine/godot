@@ -2024,7 +2024,6 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	add_child(menu_hb);
 
 	script_split = memnew(HSplitContainer);
-	script_split->add_constant_override("separation", 8 * EDSCALE);
 	add_child(script_split);
 	script_split->set_v_size_flags(SIZE_EXPAND_FILL);
 

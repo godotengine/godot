@@ -4942,13 +4942,11 @@ EditorNode::EditorNode() {
 	//top_dark_vb->add_child(scene_tabs);
 	//left
 	left_l_hsplit = memnew(HSplitContainer);
-	left_l_hsplit->add_constant_override("separation", 8 * EDSCALE);
 	main_vbox->add_child(left_l_hsplit);
 
 	left_l_hsplit->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	left_l_vsplit = memnew(VSplitContainer);
-	left_l_vsplit->add_constant_override("separation", 8 * EDSCALE);
 	left_l_hsplit->add_child(left_l_vsplit);
 	dock_slot[DOCK_SLOT_LEFT_UL] = memnew(TabContainer);
 	left_l_vsplit->add_child(dock_slot[DOCK_SLOT_LEFT_UL]);
@@ -4959,10 +4957,8 @@ EditorNode::EditorNode() {
 	dock_slot[DOCK_SLOT_LEFT_BL]->hide();
 
 	left_r_hsplit = memnew(HSplitContainer);
-	left_r_hsplit->add_constant_override("separation", 8 * EDSCALE);
 	left_l_hsplit->add_child(left_r_hsplit);
 	left_r_vsplit = memnew(VSplitContainer);
-	left_r_hsplit->add_constant_override("separation", 8 * EDSCALE);
 	left_r_hsplit->add_child(left_r_vsplit);
 	dock_slot[DOCK_SLOT_LEFT_UR] = memnew(TabContainer);
 	left_r_vsplit->add_child(dock_slot[DOCK_SLOT_LEFT_UR]);
@@ -4973,7 +4969,6 @@ EditorNode::EditorNode() {
 	//dock_slot[DOCK_SLOT_LEFT_BR]->hide();
 
 	main_hsplit = memnew(HSplitContainer);
-	main_hsplit->add_constant_override("separation", 8 * EDSCALE);
 	left_r_hsplit->add_child(main_hsplit);
 	//main_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	VBoxContainer *center_vb = memnew(VBoxContainer);
@@ -4981,18 +4976,15 @@ EditorNode::EditorNode() {
 	center_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	center_split = memnew(VSplitContainer);
-	center_split->add_constant_override("separation", 8 * EDSCALE);
 	//main_hsplit->add_child(center_split);
 	center_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	center_split->set_collapsed(false);
 	center_vb->add_child(center_split);
 
 	right_hsplit = memnew(HSplitContainer);
-	right_hsplit->add_constant_override("separation", 8 * EDSCALE);
 	main_hsplit->add_child(right_hsplit);
 
 	right_l_vsplit = memnew(VSplitContainer);
-	right_l_vsplit->add_constant_override("separation", 8 * EDSCALE);
 	right_hsplit->add_child(right_l_vsplit);
 	dock_slot[DOCK_SLOT_RIGHT_UL] = memnew(TabContainer);
 	right_l_vsplit->add_child(dock_slot[DOCK_SLOT_RIGHT_UL]);
@@ -5003,7 +4995,6 @@ EditorNode::EditorNode() {
 	//dock_slot[DOCK_SLOT_RIGHT_BL]->hide();
 
 	right_r_vsplit = memnew(VSplitContainer);
-	right_r_vsplit->add_constant_override("separation", 8 * EDSCALE);
 	right_hsplit->add_child(right_r_vsplit);
 	dock_slot[DOCK_SLOT_RIGHT_UR] = memnew(TabContainer);
 	right_r_vsplit->add_child(dock_slot[DOCK_SLOT_RIGHT_UR]);
@@ -5062,7 +5053,6 @@ EditorNode::EditorNode() {
 		dock_slot[i]->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		dock_slot[i]->set_popup(dock_select_popoup);
 		dock_slot[i]->connect("pre_popup_pressed", this, "_dock_pre_popup", varray(i));
-		dock_slot[i]->add_constant_override("side_margin", 0);
 		//dock_slot[i]->set_tab_align(TabContainer::ALIGN_LEFT);
 	}
 
@@ -5073,7 +5063,6 @@ EditorNode::EditorNode() {
 	dock_drag_timer->connect("timeout", this, "_save_docks");
 
 	top_split = memnew(VSplitContainer);
-	top_split->add_constant_override("separation", 8 * EDSCALE);
 	center_split->add_child(top_split);
 	top_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	top_split->set_collapsed(true);
