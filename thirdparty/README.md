@@ -188,6 +188,11 @@ Collection of single-file libraries used in Godot.
   * Upstream: https://github.com/ilvn/SHA256
   * Version: git (35ff823, 2015)
   * License: ISC
+- `smaz.{c,h}`
+  * Upstream: https://github.com/antirez/smaz
+  * Version: git (150e125, 2009)
+  * License: BSD 3-clause
+  * Modifications: use `const char*` instead of `char*` for input string
 - `triangulator.{cpp,h}`
   * Upstream: https://github.com/ivanfratric/polypartition (`src/polypartition.cpp`)
   * Version: TBD, class was renamed
