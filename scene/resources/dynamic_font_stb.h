@@ -34,7 +34,8 @@
 
 #include "font.h"
 #include "io/resource_loader.h"
-#include "stb_truetype.h"
+
+#include "thirdparty/misc/stb_truetype.h"
 
 class DynamicFontAtSize;
 class DynamicFont;

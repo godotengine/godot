@@ -84,7 +84,7 @@ thirdparty_minizip_sources = [thirdparty_minizip_dir + file for file in thirdpar
 env.add_source_files(env.core_sources, thirdparty_minizip_sources)
 
 
-# Godot's own source
+# Godot's own sources
 env.add_source_files(env.core_sources, "*.cpp")
 
 

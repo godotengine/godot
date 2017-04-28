@@ -32,11 +32,12 @@
 #include "OpusVorbisDecoder.hpp"
 #include "VPXDecoder.hpp"
 
-#include "../theora/yuv2rgb.h"
 #include "mkvparser/mkvparser.h"
 
 #include "global_config.h"
 #include "os/file_access.h"
+
+#include "thirdparty/misc/yuv2rgb.h"
 
 #include <string.h>
 

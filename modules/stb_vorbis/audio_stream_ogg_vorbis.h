@@ -34,7 +34,7 @@
 #include "servers/audio/audio_stream.h"
 
 #define STB_VORBIS_HEADER_ONLY
-#include "thirdparty/stb_vorbis/stb_vorbis.c"
+#include "thirdparty/misc/stb_vorbis.c"
 #undef STB_VORBIS_HEADER_ONLY
 
 class AudioStreamOGGVorbis;

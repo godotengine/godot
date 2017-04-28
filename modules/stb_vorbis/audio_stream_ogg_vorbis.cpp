@@ -30,7 +30,8 @@
 #include "audio_stream_ogg_vorbis.h"
 
 #include "os/file_access.h"
-#include "thirdparty/stb_vorbis/stb_vorbis.c"
+
+#include "thirdparty/misc/stb_vorbis.c"
 
 void AudioStreamPlaybackOGGVorbis::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 

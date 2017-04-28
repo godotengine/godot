@@ -1,6 +1,13 @@
 # Third party libraries
 
 
+## b2d_convexdecomp
+
+- Upstream: https://github.com/erincatto/Box2D (Contributions/Utilities/ConvexDecomposition)
+- Version: TBD
+- License: zlib
+
+
 ## certs
 
 - Upstream: ?
@@ -158,7 +165,9 @@ TODO: Properly sync with version 1.2.4 and document changes.
 
 ## misc
 
-Collection of single-file libraries used in Godot.
+Collection of single-file libraries used in Godot components.
+
+### core
 
 - `aes256.{cpp,h}`
   * Upstream: http://www.literatecode.com/aes256
@@ -197,6 +206,32 @@ Collection of single-file libraries used in Godot.
   * Upstream: https://github.com/ivanfratric/polypartition (`src/polypartition.cpp`)
   * Version: TBD, class was renamed
   * License: MIT
+
+### modules
+
+- `curl_hostcheck.{c,h}`
+  * Upstream: https://curl.haxx.se/
+  * Version: ? (2013)
+  * License: MIT
+- `yuv2rgb.h`
+  * Upstream: http://wss.co.uk/pinknoise/yuv2rgb/ (to check)
+  * Version: ?
+  * License: BSD
+
+### scene
+
+- `mikktspace.{c,h}`
+  * Upstream: https://wiki.blender.org/index.php/Dev:Shading/Tangent_Space_Normal_Maps
+  * Version: 1.0
+  * License: zlib
+- `stb_truetype.h`
+  * Upstream: https://github.com/nothings/stb
+  * Version: 1.11
+  * License: Public Domain (Unlicense) or MIT
+- `stb_vorbis.c`
+  * Upstream: https://github.com/nothings/stb
+  * Version: 1.09
+  * License: Public Domain (Unlicense) or MIT
 
 
 ## openssl
