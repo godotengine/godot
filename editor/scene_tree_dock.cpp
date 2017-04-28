@@ -1793,6 +1793,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	VBoxContainer *vbc = this;
 
 	HBoxContainer *filter_hbc = memnew(HBoxContainer);
+	filter_hbc->add_constant_override("separate", 0);
 	ToolButton *tb;
 
 	ED_SHORTCUT("scene_tree/add_child_node", TTR("Add Child Node"), KEY_MASK_CMD | KEY_A);

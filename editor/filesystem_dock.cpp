@@ -1722,6 +1722,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	tree->connect("item_rmb_selected", this, "_dir_rmb_pressed");
 
 	files = memnew(ItemList);
+	files->add_style_override("bg", editor->get_gui_base()->get_stylebox("EditorBG", "EditorStyles"));
 	files->set_v_size_flags(SIZE_EXPAND_FILL);
 	files->set_select_mode(ItemList::SELECT_MULTI);
 	files->set_drag_forwarding(this);
@@ -1735,6 +1736,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	file_list_vb->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	path_hb = memnew(HBoxContainer);
+	path_hb->add_child(memnew(Control));
 	file_list_vb->add_child(path_hb);
 
 	button_back = memnew(ToolButton);

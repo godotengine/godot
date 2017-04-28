@@ -2024,6 +2024,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	add_child(menu_hb);
 
 	script_split = memnew(HSplitContainer);
+	script_split->add_constant_override("separation", 8 * EDSCALE);
 	add_child(script_split);
 	script_split->set_v_size_flags(SIZE_EXPAND_FILL);
 
@@ -2033,6 +2034,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	script_split->set_split_offset(140);
 
 	tab_container = memnew(TabContainer);
+	tab_container->add_style_override("panel", p_editor->get_gui_base()->get_stylebox("EditorBG", "EditorStyles"));
 	tab_container->set_tabs_visible(false);
 	script_split->add_child(tab_container);
 
