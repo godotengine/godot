@@ -49,6 +49,71 @@ Ref<Theme> create_editor_theme() {
 	}
 	focus_sbt->set_draw_center(false);
 	theme->set_stylebox("EditorFocus", "EditorStyles", focus_sbt);
+
+	Ref<StyleBoxFlat> style_panel(memnew(StyleBoxFlat));
+	style_panel->set_bg_color(Color::html("#36424e"));
+	style_panel->set_default_margin(MARGIN_LEFT, 1);
+	style_panel->set_default_margin(MARGIN_RIGHT, 1);
+	style_panel->set_default_margin(MARGIN_BOTTOM, 1);
+	style_panel->set_default_margin(MARGIN_TOP, 4 * EDSCALE);
+	theme->set_stylebox("panel", "TabContainer", style_panel);
+	theme->set_stylebox("EditorPanel", "EditorStyles", style_panel);
+
+	Ref<StyleBoxFlat> style_bg(memnew(StyleBoxFlat));
+	style_bg->set_bg_color(Color::html("#2b353f"));
+	style_bg->set_default_margin(MARGIN_LEFT, 0);
+	style_bg->set_default_margin(MARGIN_RIGHT, 0);
+	style_bg->set_default_margin(MARGIN_BOTTOM, 0);
+	style_bg->set_default_margin(MARGIN_TOP, 0);
+	theme->set_stylebox("bg", "Tree", style_bg);
+	theme->set_stylebox("bg", "ItemList", style_bg);
+	theme->set_stylebox("EditorBG", "EditorStyles", style_bg);
+
+	Ref<StyleBoxFlat> style_tab(memnew(StyleBoxFlat));
+	style_tab->set_default_margin(MARGIN_LEFT, 15 * EDSCALE);
+	style_tab->set_default_margin(MARGIN_RIGHT, 15 * EDSCALE);
+	style_tab->set_default_margin(MARGIN_BOTTOM, 5 * EDSCALE);
+	style_tab->set_default_margin(MARGIN_TOP, 5 * EDSCALE);
+
+	Ref<StyleBoxFlat> style_tab_fg = style_tab->duplicate();
+	style_tab_fg->set_bg_color(Color::html("#36424e"));
+
+	Ref<StyleBoxFlat> style_tab_bg = style_tab->duplicate();
+	style_tab_bg->set_draw_center(false);
+
+	theme->set_stylebox("tab_fg", "TabContainer", style_tab_fg);
+	theme->set_stylebox("tab_bg", "TabContainer", style_tab_bg);
+	theme->set_stylebox("tab_fg", "Tabs", style_tab_fg);
+	theme->set_stylebox("tab_bg", "Tabs", style_tab_bg);
+
+	Ref<StyleBoxFlat> style_panel_debugger(memnew(StyleBoxFlat));
+	style_panel_debugger->set_bg_color(Color::html("#3e4c5a"));
+	style_panel_debugger->set_default_margin(MARGIN_LEFT, 0);
+	style_panel_debugger->set_default_margin(MARGIN_RIGHT, 0);
+	style_panel_debugger->set_default_margin(MARGIN_BOTTOM, 0);
+	style_panel_debugger->set_default_margin(MARGIN_TOP, 4 * EDSCALE);
+	theme->set_stylebox("EditorPanelDebugger", "EditorStyles", style_panel_debugger);
+
+	Ref<StyleBoxFlat> style_tab_fg_debugger = style_tab->duplicate();
+	style_tab_fg_debugger->set_bg_color(Color::html("#3e4c5a"));
+	style_tab_fg_debugger->set_default_margin(MARGIN_LEFT, 10 * EDSCALE);
+	style_tab_fg_debugger->set_default_margin(MARGIN_RIGHT, 10 * EDSCALE);
+	Ref<StyleBoxFlat> style_tab_bg_debugger = style_tab->duplicate();
+	style_tab_bg_debugger->set_draw_center(false);
+	style_tab_bg_debugger->set_default_margin(MARGIN_LEFT, 10 * EDSCALE);
+	style_tab_bg_debugger->set_default_margin(MARGIN_RIGHT, 10 * EDSCALE);
+
+	theme->set_stylebox("EditorTabFGDebugger", "EditorStyles", style_tab_fg_debugger);
+	theme->set_stylebox("EditorTabBGDebugger", "EditorStyles", style_tab_bg_debugger);
+
+	Ref<StyleBoxFlat> style_textedit_normal(memnew(StyleBoxFlat));
+	style_textedit_normal->set_bg_color(Color::html("#29343d"));
+	style_textedit_normal->set_default_margin(MARGIN_LEFT, 0);
+	style_textedit_normal->set_default_margin(MARGIN_RIGHT, 0);
+	style_textedit_normal->set_default_margin(MARGIN_BOTTOM, 0);
+	style_textedit_normal->set_default_margin(MARGIN_TOP, 0);
+	theme->set_stylebox("normal", "TextEdit", style_textedit_normal);
+
 	// theme->set_color("prop_category","Editor",Color::hex(0x3f3a44ff));
 	// theme->set_color("prop_section","Editor",Color::hex(0x35313aff));
 	// theme->set_color("prop_subsection","Editor",Color::hex(0x312e37ff));

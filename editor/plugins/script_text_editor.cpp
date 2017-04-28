@@ -1322,6 +1322,7 @@ ScriptTextEditor::ScriptTextEditor() {
 
 	code_editor = memnew(CodeTextEditor);
 	add_child(code_editor);
+	code_editor->add_constant_override("separation", 0);
 	code_editor->set_area_as_parent_rect();
 	code_editor->connect("validate_script", this, "_validate_script");
 	code_editor->connect("load_theme_settings", this, "_load_theme_settings");
