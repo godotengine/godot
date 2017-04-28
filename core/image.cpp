@@ -32,8 +32,9 @@
 #include "core/io/image_loader.h"
 #include "core/os/copymem.h"
 #include "hash_map.h"
-#include "hq2x.h"
 #include "print_string.h"
+
+#include "thirdparty/misc/hq2x.h"
 
 #include <stdio.h>
 

@@ -142,6 +142,58 @@ changes to ensure they build for Javascript/HTML5. Those
 changes are marked with `// -- GODOT --` comments.
 
 
+## minizip
+
+- Upstream: http://www.zlib.net
+- Version: 1.2.4 (zlib contrib)
+- License: zlib
+
+Files extracted from the upstream source:
+
+- contrib/minizip/{crypt.h,ioapi.{c,h},zip.{c,h},unzip.{c,h}}
+
+Important: Some files have Godot-made changes for use in core/io.
+TODO: Properly sync with version 1.2.4 and document changes.
+
+
+## misc
+
+Collection of single-file libraries used in Godot.
+
+- `aes256.{cpp,h}`
+  * Upstream: http://www.literatecode.com/aes256
+  * Version: latest, as of April 2017
+  * License: ISC
+- `base64.{c,h}`
+  * Upstream: http://episec.com/people/edelkind/c.html
+  * Version: latest, as of April 2017
+  * License: Public Domain
+- `fastlz.{c,h}`
+  * Upstream: https://code.google.com/archive/p/fastlz
+  * Version: svn (r12)
+  * License: MIT
+- `hq2x.{cpp,h}`
+  * Upstream: https://github.com/brunexgeek/hqx
+  * Version: TBD, file structure differs
+  * License: Apache 2.0
+- `md5.{cpp,h}`
+  * Upstream: http://www.efgh.com/software/md5.htm
+  * Version: TBD, might not be latest from above URL
+  * License: RSA Message-Digest License
+- `pcg.{cpp,h}`
+  * Upstream: http://www.pcg-random.org
+  * Version: minimal C implemention, http://www.pcg-random.org/download.html
+  * License: Apache 2.0
+- `sha256.{c,h}`
+  * Upstream: https://github.com/ilvn/SHA256
+  * Version: git (35ff823, 2015)
+  * License: ISC
+- `triangulator.{cpp,h}`
+  * Upstream: https://github.com/ivanfratric/polypartition (`src/polypartition.cpp`)
+  * Version: TBD, class was renamed
+  * License: MIT
+
+
 ## openssl
 
 - Upstream: https://www.openssl.org

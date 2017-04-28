@@ -31,8 +31,9 @@
 #define MATH_FUNCS_H
 
 #include "math_defs.h"
-#include "pcg.h"
 #include "typedefs.h"
+
+#include "thirdparty/misc/pcg.h"
 
 #include <float.h>
 #include <math.h>

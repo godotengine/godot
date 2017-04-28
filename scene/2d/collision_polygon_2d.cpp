@@ -28,10 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "collision_polygon_2d.h"
+
 #include "collision_object_2d.h"
 #include "scene/resources/concave_polygon_shape_2d.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
-#include "triangulator.h"
+
+#include "thirdparty/misc/triangulator.h"
+
 void CollisionPolygon2D::_add_to_collision_object(Object *p_obj) {
 
 	if (unparenting || !can_update_body)
