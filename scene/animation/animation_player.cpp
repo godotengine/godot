@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -610,7 +611,7 @@ void AnimationPlayer::_animation_update_transforms() {
 
 
 			case SP_NONE: pa->object->set(pa->prop,pa->value_accum); break; //you are not speshul
-			case SP_NODE2D_POS: static_cast<Node2D*>(pa->object)->set_pos(pa->value_accum); break;
+			case SP_NODE2D_POS: static_cast<Node2D*>(pa->object)->set_position(pa->value_accum); break;
 			case SP_NODE2D_ROT: static_cast<Node2D*>(pa->object)->set_rot(Math::deg2rad(pa->value_accum)); break;
 			case SP_NODE2D_SCALE: static_cast<Node2D*>(pa->object)->set_scale(pa->value_accum); break;
 		}*/

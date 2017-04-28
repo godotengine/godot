@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -58,7 +59,7 @@ void TileSetEditor::_import_scene(Node *scene, Ref<TileSet> p_library, bool p_me
 
 		Sprite *mi = child->cast_to<Sprite>();
 		Ref<Texture> texture = mi->get_texture();
-		Ref<CanvasItemMaterial> material = mi->get_material();
+		Ref<ShaderMaterial> material = mi->get_material();
 
 		if (texture.is_null())
 			continue;
@@ -224,7 +225,7 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	add_child(panel);
 	MenuButton *options = memnew(MenuButton);
 	panel->add_child(options);
-	options->set_pos(Point2(1, 1));
+	options->set_position(Point2(1, 1));
 	options->set_text("Theme");
 	options->get_popup()->add_item(TTR("Add Item"), MENU_OPTION_ADD_ITEM);
 	options->get_popup()->add_item(TTR("Remove Item"), MENU_OPTION_REMOVE_ITEM);

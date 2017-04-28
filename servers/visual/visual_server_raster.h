@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,7 +57,7 @@ class VisualServerRaster : public VisualServer {
 
 	};
 
-	int changes;
+	static int changes;
 	bool draw_extra_frame;
 	RID test_cube;
 
@@ -376,7 +377,7 @@ class VisualServerRaster : public VisualServer {
 
 
 
-	mutable RID_Owner<Rasterizer::CanvasItemMaterial> canvas_item_material_owner;
+	mutable RID_Owner<Rasterizer::ShaderMaterial> canvas_item_material_owner;
 
 
 
@@ -575,6 +576,8 @@ class VisualServerRaster : public VisualServer {
 #endif
 
 public:
+	_FORCE_INLINE_ static void redraw_request() { changes++; }
+
 #define DISPLAY_CHANGED changes++;
 
 #define BIND0R(m_r, m_name) \
@@ -647,10 +650,7 @@ public:
 
 	/* SHADER API */
 
-	BIND1R(RID, shader_create, ShaderMode)
-
-	BIND2(shader_set_mode, RID, ShaderMode)
-	BIND1RC(ShaderMode, shader_get_mode, RID)
+	BIND0R(RID, shader_create)
 
 	BIND2(shader_set_code, RID, const String &)
 	BIND1RC(String, shader_get_code, RID)
@@ -852,19 +852,15 @@ public:
 	BIND2(particles_set_explosiveness_ratio, RID, float)
 	BIND2(particles_set_randomness_ratio, RID, float)
 	BIND2(particles_set_custom_aabb, RID, const Rect3 &)
-	BIND2(particles_set_gravity, RID, const Vector3 &)
+	BIND2(particles_set_speed_scale, RID, float)
 	BIND2(particles_set_use_local_coordinates, RID, bool)
 	BIND2(particles_set_process_material, RID, RID)
-
-	BIND2(particles_set_emission_shape, RID, VS::ParticlesEmissionShape)
-	BIND2(particles_set_emission_sphere_radius, RID, float)
-	BIND2(particles_set_emission_box_extents, RID, const Vector3 &)
-	BIND2(particles_set_emission_points, RID, const PoolVector<Vector3> &)
+	BIND2(particles_set_fixed_fps, RID, int)
+	BIND2(particles_set_fractional_delta, RID, bool)
 
 	BIND2(particles_set_draw_order, RID, VS::ParticlesDrawOrder)
 
 	BIND2(particles_set_draw_passes, RID, int)
-	BIND3(particles_set_draw_pass_material, RID, int, RID)
 	BIND3(particles_set_draw_pass_mesh, RID, int, RID)
 
 	BIND1R(Rect3, particles_get_current_aabb, RID);

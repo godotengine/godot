@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1224,7 +1225,7 @@ class RasterizerGLES2 : public Rasterizer {
 	bool uses_texpixel_size;
 	bool rebind_texpixel_size;
 	Transform canvas_transform;
-	CanvasItemMaterial *canvas_last_material;
+	ShaderMaterial *canvas_last_material;
 	bool canvas_texscreen_used;
 	Vector2 normal_flip;
 	_FORCE_INLINE_ void _canvas_normal_set_flip(const Vector2 &p_flip);
@@ -1288,8 +1289,8 @@ class RasterizerGLES2 : public Rasterizer {
 
 	template <bool use_normalmap>
 	_FORCE_INLINE_ void _canvas_item_render_commands(CanvasItem *p_item, CanvasItem *current_clip, bool &reclip);
-	_FORCE_INLINE_ void _canvas_item_setup_shader_params(CanvasItemMaterial *material, Shader *p_shader);
-	_FORCE_INLINE_ void _canvas_item_setup_shader_uniforms(CanvasItemMaterial *material, Shader *p_shader);
+	_FORCE_INLINE_ void _canvas_item_setup_shader_params(ShaderMaterial *material, Shader *p_shader);
+	_FORCE_INLINE_ void _canvas_item_setup_shader_uniforms(ShaderMaterial *material, Shader *p_shader);
 
 public:
 	/* TEXTURE API */

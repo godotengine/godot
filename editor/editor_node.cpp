@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -73,7 +74,9 @@
 #include "plugins/collision_shape_2d_editor_plugin.h"
 #include "plugins/color_ramp_editor_plugin.h"
 #include "plugins/cube_grid_theme_editor_plugin.h"
+#include "plugins/curve_editor_plugin.h"
 #include "plugins/gi_probe_editor_plugin.h"
+#include "plugins/gradient_texture_editor_plugin.h"
 #include "plugins/item_list_editor_plugin.h"
 #include "plugins/light_occluder_2d_editor_plugin.h"
 #include "plugins/line_2d_editor_plugin.h"
@@ -233,7 +236,7 @@ void EditorNode::_notification(int p_what) {
 			Rect2 grect = scene_root_base->get_global_rect();
 			Rect2 grectsrp = scene_root_parent->get_global_rect();
 			if (grect!=grectsrp) {
-				scene_root_parent->set_pos(grect.pos);
+				scene_root_parent->set_position(grect.pos);
 				scene_root_parent->set_size(grect.size);
 			}
 		}
@@ -432,7 +435,7 @@ void EditorNode::_sources_changed(bool p_exist) {
 
 		if (defer_load_scene != "") {
 
-			print_line("loading scene DEFERED");
+			print_line("loading scene DEFERRED");
 			load_scene(defer_load_scene);
 			defer_load_scene = "";
 		}
@@ -442,18 +445,6 @@ void EditorNode::_sources_changed(bool p_exist) {
 }
 
 void EditorNode::_vp_resized() {
-}
-
-void EditorNode::_rebuild_import_menu() {
-	PopupMenu *p = import_menu->get_popup();
-	p->clear();
-//p->add_item(TTR("Node From Scene"), FILE_IMPORT_SUBSCENE);
-//p->add_separator();
-#if 0
-	for (int i = 0; i < editor_import_export->get_import_plugin_count(); i++) {
-		p->add_item(editor_import_export->get_import_plugin(i)->get_visible_name(), IMPORT_PLUGIN_BASE + i);
-	}
-#endif
 }
 
 void EditorNode::_node_renamed() {
@@ -1088,7 +1079,7 @@ void EditorNode::_dialog_action(String p_file) {
 
 			GlobalConfig::get_singleton()->set("application/main_scene", p_file);
 			GlobalConfig::get_singleton()->save();
-			//would be nice to show the project manager opened with the hilighted field..
+			//would be nice to show the project manager opened with the highlighted field..
 		} break;
 		case FILE_SAVE_OPTIMIZED: {
 
@@ -2706,7 +2697,7 @@ void EditorNode::add_editor_plugin(EditorPlugin *p_editor) {
 		ToolButton *tb = memnew(ToolButton);
 		tb->set_toggle_mode(true);
 		tb->connect("pressed", singleton, "_editor_select", varray(singleton->main_editor_buttons.size()));
-		tb->set_text(p_editor->get_name());
+		tb->set_icon(singleton->gui_base->get_icon(p_editor->get_name(), "EditorIcons"));
 		singleton->main_editor_buttons.push_back(tb);
 		singleton->main_editor_button_vb->add_child(tb);
 		singleton->editor_table.push_back(p_editor);
@@ -2812,7 +2803,7 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled)
 	}
 
 	if (!script->is_tool()) {
-		show_warning("Unable to load addon script from path: '" + path + "' Script is does not support tool mode.");
+		show_warning("Unable to load addon script from path: '" + path + "' Script is not in tool mode.");
 		return;
 	}
 
@@ -4466,7 +4457,7 @@ Variant EditorNode::drag_resource(const Ref<Resource> &p_res, Control *p_from) {
 
 	p_from->set_drag_preview(drag_control); //wait until it enters scene
 
-	label->set_pos(Point2((preview->get_width() - label->get_minimum_size().width) / 2, preview->get_height()));
+	label->set_position(Point2((preview->get_width() - label->get_minimum_size().width) / 2, preview->get_height()));
 
 	Dictionary drag_data;
 	drag_data["type"] = "resource";
@@ -5089,19 +5080,21 @@ EditorNode::EditorNode() {
 */
 	scene_tabs = memnew(Tabs);
 	scene_tabs->add_tab("unsaved");
-	scene_tabs->set_tab_align(Tabs::ALIGN_CENTER);
+	scene_tabs->set_tab_align(Tabs::ALIGN_LEFT);
 	scene_tabs->set_tab_close_display_policy((bool(EDITOR_DEF("interface/always_show_close_button_in_scene_tabs", false)) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY));
 	scene_tabs->connect("tab_changed", this, "_scene_tab_changed");
 	scene_tabs->connect("right_button_pressed", this, "_scene_tab_script_edited");
 	scene_tabs->connect("tab_close", this, "_scene_tab_closed");
 
+	// MarginContainer *st_mc = memnew( MarginContainer );
+	// st_mc->add_child(scene_tabs);
 	srt->add_child(scene_tabs);
 
 	scene_root_parent = memnew(PanelContainer);
 	scene_root_parent->set_custom_minimum_size(Size2(0, 80) * EDSCALE);
 
-	//Ref<StyleBox> sp = scene_root_parent->get_stylebox("panel","TabContainer");
-	//scene_root_parent->add_style_override("panel",sp);
+	// Ref<StyleBox> sp = scene_root_parent->get_stylebox("panel_full","PanelContainer");
+	// scene_root_parent->add_style_override("panel",sp);
 
 	/*scene_root_parent->set_anchor( MARGIN_RIGHT, Control::ANCHOR_END );
 	scene_root_parent->set_anchor( MARGIN_BOTTOM, Control::ANCHOR_END );
@@ -5130,7 +5123,7 @@ EditorNode::EditorNode() {
 	scene_root_parent->add_child(viewport);
 
 	PanelContainer *top_region = memnew(PanelContainer);
-	top_region->add_style_override("panel", gui_base->get_stylebox("hover", "Button"));
+	top_region->add_style_override("panel", memnew(StyleBoxEmpty));
 	HBoxContainer *left_menu_hb = memnew(HBoxContainer);
 	top_region->add_child(left_menu_hb);
 	menu_hb->add_child(top_region);
@@ -5149,7 +5142,7 @@ EditorNode::EditorNode() {
 	//left_menu_hb->add_child( prev_scene );
 	prev_scene->connect("pressed", this, "_menu_option", make_binds(FILE_OPEN_PREV));
 	gui_base->add_child(prev_scene);
-	prev_scene->set_pos(Point2(3, 24));
+	prev_scene->set_position(Point2(3, 24));
 	prev_scene->hide();
 
 	ED_SHORTCUT("editor/next_tab", TTR("Next tab"), KEY_MASK_CMD + KEY_TAB);
@@ -5213,7 +5206,7 @@ EditorNode::EditorNode() {
 	}
 
 	PanelContainer *editor_region = memnew(PanelContainer);
-	editor_region->add_style_override("panel", gui_base->get_stylebox("hover", "Button"));
+	editor_region->add_style_override("panel", memnew(StyleBoxEmpty));
 	main_editor_button_vb = memnew(HBoxContainer);
 	editor_region->add_child(main_editor_button_vb);
 	menu_hb->add_child(editor_region);
@@ -5229,7 +5222,7 @@ EditorNode::EditorNode() {
 #if 0
 	node_menu = memnew( MenuButton );
 	node_menu->set_text("Node");
-	node_menu->set_pos( Point2( 50,0) );
+	node_menu->set_position( Point2( 50,0) );
 	menu_panel->add_child( node_menu );
 
 	p=node_menu->get_popup();
@@ -5250,18 +5243,9 @@ EditorNode::EditorNode() {
 
 	resource_menu = memnew( MenuButton );
 	resource_menu->set_text("Resource");
-	resource_menu->set_pos( Point2( 90,0) );
+	resource_menu->set_position( Point2( 90,0) );
 	menu_panel->add_child( resource_menu );
 #endif
-
-	import_menu = memnew(MenuButton);
-	import_menu->set_tooltip(TTR("Import assets to the project."));
-	import_menu->set_text(TTR("Import"));
-	//import_menu->set_icon(gui_base->get_icon("Save","EditorIcons"));
-	left_menu_hb->add_child(import_menu);
-
-	p = import_menu->get_popup();
-	p->connect("id_pressed", this, "_menu_option");
 
 	tool_menu = memnew(MenuButton);
 	tool_menu->set_tooltip(TTR("Miscellaneous project or scene-wide tools."));
@@ -5285,10 +5269,12 @@ EditorNode::EditorNode() {
 
 	//Separator *s1 = memnew( VSeparator );
 	//menu_panel->add_child(s1);
-	//s1->set_pos(Point2(210,4));
+	//s1->set_position(Point2(210,4));
 	//s1->set_size(Point2(10,15));
 
 	play_cc = memnew(CenterContainer);
+	// play_cc->add_style_override("bg",gui_base->get_stylebox("panel","PanelContainer"));
+
 	play_cc->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	gui_base->add_child(play_cc);
 	play_cc->set_area_as_parent_rect();
@@ -5296,7 +5282,7 @@ EditorNode::EditorNode() {
 	play_cc->set_margin(MARGIN_TOP, 5);
 
 	top_region = memnew(PanelContainer);
-	top_region->add_style_override("panel", gui_base->get_stylebox("hover", "Button"));
+	top_region->add_style_override("panel", gui_base->get_stylebox("panel", "ButtonGroup"));
 	play_cc->add_child(top_region);
 
 	HBoxContainer *play_hb = memnew(HBoxContainer);
@@ -5400,7 +5386,7 @@ EditorNode::EditorNode() {
 	/*
 	run_settings_button = memnew( ToolButton );
 	menu_panel->add_child(run_settings_button);
-	run_settings_button->set_pos(Point2(305,0));
+	run_settings_button->set_position(Point2(305,0));
 	run_settings_button->set_focus_mode(Control::FOCUS_NONE);
 	run_settings_button->set_icon(gui_base->get_icon("Run","EditorIcons"));
 	run_settings_button->connect("pressed", this,"_menu_option",make_binds(RUN_SETTINGS));
@@ -5416,7 +5402,9 @@ EditorNode::EditorNode() {
 	}
 
 	PanelContainer *vu_cont = memnew(PanelContainer);
-	vu_cont->add_style_override("panel", gui_base->get_stylebox("hover", "Button"));
+	vu_cont->add_style_override("panel", memnew(StyleBoxEmpty));
+
+	// CenterContainer *vu_cont = memnew( CenterContainer );
 	menu_hb->add_child(vu_cont);
 
 	audio_vu = memnew(TextureProgress);
@@ -5437,7 +5425,7 @@ EditorNode::EditorNode() {
 	}
 
 	top_region = memnew(PanelContainer);
-	top_region->add_style_override("panel", gui_base->get_stylebox("hover", "Button"));
+	top_region->add_style_override("panel", memnew(StyleBoxEmpty));
 	HBoxContainer *right_menu_hb = memnew(HBoxContainer);
 	top_region->add_child(right_menu_hb);
 	menu_hb->add_child(top_region);
@@ -5493,7 +5481,7 @@ EditorNode::EditorNode() {
 	/*
 	Separator *s2 = memnew( VSeparator );
 	menu_panel->add_child(s2);
-	s2->set_pos(Point2(338,4));
+	s2->set_position(Point2(338,4));
 	s2->set_size(Point2(10,15));
 */
 
@@ -5603,7 +5591,7 @@ EditorNode::EditorNode() {
 	search_button = memnew(ToolButton);
 	search_button->set_toggle_mode(true);
 	search_button->set_pressed(false);
-	search_button->set_icon(gui_base->get_icon("Zoom", "EditorIcons"));
+	search_button->set_icon(gui_base->get_icon("Search", "EditorIcons"));
 	prop_editor_hb->add_child(search_button);
 	search_button->connect("toggled", this, "_toggle_search_bar");
 
@@ -5681,7 +5669,7 @@ EditorNode::EditorNode() {
 	overridden_default_layout = -1;
 	default_layout.instance();
 	default_layout->set_value(docks_section, "dock_3", TTR("FileSystem"));
-	default_layout->set_value(docks_section, "dock_5", TTR("Scene"));
+	default_layout->set_value(docks_section, "dock_5", TTR("Scene") + "," + TTR("Import"));
 	default_layout->set_value(docks_section, "dock_6", TTR("Inspector") + "," + TTR("Node"));
 
 	for (int i = 0; i < DOCK_SLOT_MAX / 2; i++)
@@ -5725,7 +5713,7 @@ EditorNode::EditorNode() {
 
 	/*
 	animation_menu = memnew( ToolButton );
-	animation_menu->set_pos(Point2(500,0));
+	animation_menu->set_position(Point2(500,0));
 	animation_menu->set_size(Size2(20,20));
 	animation_menu->set_toggle_mode(true);
 	animation_menu->set_focus_mode(Control::FOCUS_NONE);
@@ -5909,7 +5897,7 @@ EditorNode::EditorNode() {
 	//add_editor_plugin( memnew( MeshLibraryEditorPlugin(this) ) );
 	//add_editor_plugin( memnew( StreamEditorPlugin(this) ) );
 	add_editor_plugin(memnew(StyleBoxEditorPlugin(this)));
-	//add_editor_plugin( memnew( ParticlesEditorPlugin(this) ) );
+	add_editor_plugin(memnew(ParticlesEditorPlugin(this)));
 	add_editor_plugin(memnew(ResourcePreloaderEditorPlugin(this)));
 	add_editor_plugin(memnew(ItemListEditorPlugin(this)));
 	//add_editor_plugin( memnew( RichTextEditorPlugin(this) ) );
@@ -5929,7 +5917,9 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(LightOccluder2DEditorPlugin(this)));
 	add_editor_plugin(memnew(NavigationPolygonEditorPlugin(this)));
 	add_editor_plugin(memnew(ColorRampEditorPlugin(this)));
+	add_editor_plugin(memnew(GradientTextureEditorPlugin(this)));
 	add_editor_plugin(memnew(CollisionShape2DEditorPlugin(this)));
+	add_editor_plugin(memnew(CurveTextureEditorPlugin(this)));
 	add_editor_plugin(memnew(TextureEditorPlugin(this)));
 	add_editor_plugin(memnew(AudioBusesEditorPlugin(audio_bus_editor)));
 	//add_editor_plugin( memnew( MaterialEditorPlugin(this) ) );
@@ -5954,8 +5944,6 @@ EditorNode::EditorNode() {
 	circle_step_msec = OS::get_singleton()->get_ticks_msec();
 	circle_step_frame = Engine::get_singleton()->get_frames_drawn();
 	circle_step = 0;
-
-	_rebuild_import_menu();
 
 	editor_plugin_screen = NULL;
 	editor_plugins_over = memnew(EditorPluginList);
@@ -6069,7 +6057,10 @@ EditorNode::EditorNode() {
 	{
 
 		_initializing_addons = true;
-		Vector<String> addons = GlobalConfig::get_singleton()->get("editor_plugins/enabled");
+		Vector<String> addons;
+		if (GlobalConfig::get_singleton()->has("editor_plugins/enabled")) {
+			addons = GlobalConfig::get_singleton()->get("editor_plugins/enabled");
+		}
 
 		for (int i = 0; i < addons.size(); i++) {
 			set_addon_plugin_enabled(addons[i], true);

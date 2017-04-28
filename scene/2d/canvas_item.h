@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,38 +41,6 @@ class Viewport;
 class Font;
 
 class StyleBox;
-
-class CanvasItemMaterial : public Material {
-
-	GDCLASS(CanvasItemMaterial, Material);
-	Ref<Shader> shader;
-
-public:
-	/*enum ShadingMode {
-		SHADING_NORMAL,
-		SHADING_UNSHADED,
-		SHADING_ONLY_LIGHT,
-	};*/
-
-protected:
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
-
-	static void _bind_methods();
-
-	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
-
-public:
-	void set_shader(const Ref<Shader> &p_shader);
-	Ref<Shader> get_shader() const;
-
-	void set_shader_param(const StringName &p_param, const Variant &p_value);
-	Variant get_shader_param(const StringName &p_param) const;
-
-	CanvasItemMaterial();
-	~CanvasItemMaterial();
-};
 
 class CanvasItem : public Node {
 
@@ -114,7 +83,7 @@ private:
 	bool notify_local_transform;
 	bool notify_transform;
 
-	Ref<CanvasItemMaterial> material;
+	Ref<ShaderMaterial> material;
 
 	mutable Transform2D global_transform;
 	mutable bool global_invalid;
@@ -234,8 +203,8 @@ public:
 	RID get_canvas() const;
 	Ref<World2D> get_world_2d() const;
 
-	void set_material(const Ref<CanvasItemMaterial> &p_material);
-	Ref<CanvasItemMaterial> get_material() const;
+	void set_material(const Ref<ShaderMaterial> &p_material);
+	Ref<ShaderMaterial> get_material() const;
 
 	void set_use_parent_material(bool p_use_parent_material);
 	bool get_use_parent_material() const;
@@ -243,7 +212,7 @@ public:
 	InputEvent make_input_local(const InputEvent &pevent) const;
 	Vector2 make_canvas_pos_local(const Vector2 &screen_point) const;
 
-	Vector2 get_global_mouse_pos() const;
+	Vector2 get_global_mouse_position() const;
 	Vector2 get_local_mouse_pos() const;
 
 	void set_notify_local_transform(bool p_enable);

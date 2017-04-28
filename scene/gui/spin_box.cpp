@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -193,7 +194,12 @@ void SpinBox::_notification(int p_what) {
 		RID ci = get_canvas_item();
 		Size2i size = get_size();
 
-		updown->draw(ci, Point2i(size.width - updown->get_width(), (size.height - updown->get_height()) / 2));
+		Color color = has_focus() ? line_edit->get_color("font_color_active") : line_edit->get_color("font_color");
+		if (!is_editable())
+			color = line_edit->get_color("font_color_read_only");
+		updown->draw(ci, Point2i(size.width - updown->get_width(), (size.height - updown->get_height()) / 2), color);
+
+	} else if (p_what == NOTIFICATION_FOCUS_EXIT) {
 
 	} else if (p_what == NOTIFICATION_FOCUS_EXIT) {
 

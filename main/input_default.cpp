@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -339,7 +340,7 @@ void InputDefault::parse_input_event(const InputEvent &p_event) {
 
 			Point2 pos = Point2(p_event.mouse_button.global_x, p_event.mouse_button.global_y);
 			if (mouse_pos != pos) {
-				set_mouse_pos(pos);
+				set_mouse_position(pos);
 			}
 		} break;
 		case InputEvent::MOUSE_MOTION: {
@@ -455,16 +456,16 @@ void InputDefault::set_main_loop(MainLoop *p_main_loop) {
 	main_loop = p_main_loop;
 }
 
-void InputDefault::set_mouse_pos(const Point2 &p_posf) {
+void InputDefault::set_mouse_position(const Point2 &p_posf) {
 
 	mouse_speed_track.update(p_posf - mouse_pos);
 	mouse_pos = p_posf;
 	if (custom_cursor.is_valid()) {
-		VisualServer::get_singleton()->cursor_set_pos(get_mouse_pos());
+		VisualServer::get_singleton()->cursor_set_pos(get_mouse_position());
 	}
 }
 
-Point2 InputDefault::get_mouse_pos() const {
+Point2 InputDefault::get_mouse_position() const {
 
 	return mouse_pos;
 }
@@ -559,7 +560,7 @@ void InputDefault::set_custom_mouse_cursor(const RES &p_cursor, const Vector2 &p
 		set_mouse_mode(MOUSE_MODE_HIDDEN);
 		VisualServer::get_singleton()->cursor_set_visible(true);
 		VisualServer::get_singleton()->cursor_set_texture(custom_cursor->get_rid(), p_hotspot, 0, region);
-		VisualServer::get_singleton()->cursor_set_pos(get_mouse_pos());
+		VisualServer::get_singleton()->cursor_set_pos(get_mouse_position());
 	}
 }
 
@@ -686,6 +687,7 @@ static const char *s_ControllerMappings[] = {
 	"030000004c0500006802000011010000,PS3 Controller,a:b14,b:b13,back:b0,dpdown:b6,dpleft:b7,dpright:b5,dpup:b4,guide:b16,leftshoulder:b10,leftstick:b1,lefttrigger:b8,leftx:a0,lefty:a1,rightshoulder:b11,rightstick:b2,righttrigger:b9,rightx:a2,righty:a3,start:b3,x:b15,y:b12,",
 	"030000004c050000a00b000011010000,Sony DualShock 4 Wireless Adaptor,a:b1,b:b2,y:b3,x:b0,start:b9,guide:b12,back:b13,leftstick:b10,rightstick:b11,leftshoulder:b4,rightshoulder:b5,dpup:h0.1,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,leftx:a0,lefty:a1,rightx:a2,righty:a5,lefttrigger:a3,righttrigger:a4,",
 	"030000004c050000c405000011010000,Sony DualShock 4,a:b1,b:b2,y:b3,x:b0,start:b9,guide:b12,back:b8,leftstick:b10,rightstick:b11,leftshoulder:b4,rightshoulder:b5,dpup:h0.1,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,leftx:a0,lefty:a1,rightx:a2,righty:a5,lefttrigger:a3,righttrigger:a4,",
+	"030000004c050000c405000011810000,Sony Computer Entertainment Wireless Controller,leftx:a0,lefty:a1,dpdown:h0.4,rightstick:h0.1,rightshoulder:b5,rightx:a3,start:b9,righty:a4,dpleft:h0.8,lefttrigger:a2,x:b3,dpup:h0.1,back:b8,leftstick:b11,leftshoulder:b4,y:b2,a:b0,dpright:h0.2,righttrigger:a5,b:b1,",
 	"030000004c050000cc09000011010000,Sony DualShock 4 V2,a:b1,b:b2,y:b3,x:b0,start:b9,guide:b12,back:b13,leftstick:b10,rightstick:b11,leftshoulder:b4,rightshoulder:b5,dpup:h0.1,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,leftx:a0,lefty:a1,rightx:a2,righty:a5,lefttrigger:a3,righttrigger:a4,",
 	"030000004f04000000b3000010010000,Thrustmaster Firestorm Dual Power,a:b0,b:b2,y:b3,x:b1,start:b10,guide:b8,back:b9,leftstick:b11,rightstick:b12,leftshoulder:b4,rightshoulder:b6,dpup:h0.1,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:b5,righttrigger:b7,",
 	"030000004f04000008d0000000010000,Thrustmaster Run N Drive  Wireless,a:b1,b:b2,x:b0,y:b3,start:b9,back:b8,leftstick:b10,rightstick:b11,leftshoulder:b4,rightshoulder:b5,dpup:h0.1,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,leftx:a0,lefty:a1,rightx:a2,righty:a5,lefttrigger:b6,righttrigger:b7,",
@@ -755,6 +757,7 @@ static const char *s_ControllerMappings[] = {
 	"05000000102800000900000000010000,8Bitdo SFC30 GamePad,x:b4,a:b1,b:b0,y:b3,back:b10,start:b11,leftshoulder:b6,rightshoulder:b7,leftx:a0,lefty:a1,",
 	"05000000362800000100000002010000,OUYA Game Controller,a:b0,b:b3,dpdown:b9,dpleft:b10,dpright:b11,dpup:b8,guide:b14,leftshoulder:b4,leftstick:b6,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b7,righttrigger:a5,rightx:a3,righty:a4,x:b1,y:b2,",
 	"05000000362800000100000003010000,OUYA Game Controller,a:b0,b:b3,dpdown:b9,dpleft:b10,dpright:b11,dpup:b8,guide:b14,leftshoulder:b4,leftstick:b6,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b7,righttrigger:a5,rightx:a3,righty:a4,x:b1,y:b2,",
+	"05000000362800000100000004010000,OUYA Game Controller,leftx:a0,lefty:a1,dpdown:b9,rightstick:b7,rightshoulder:b5,rightx:a3,start:b16,righty:a4,dpleft:b10,lefttrigger:b12,x:b1,dpup:b8,back:b14,leftstick:b6,leftshoulder:b4,y:b2,a:b0,dpright:b11,righttrigger:b13,b:b3,",
 	"05000000380700006652000025010000,Mad Catz C.T.R.L.R ,x:b0,a:b1,b:b2,y:b3,back:b8,guide:b12,start:b9,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,dpup:h0.1,leftshoulder:b4,lefttrigger:b6,rightshoulder:b5,righttrigger:b7,leftstick:b10,rightstick:b11,leftx:a0,lefty:a1,rightx:a2,righty:a3,",
 	"0500000047532047616d657061640000,GameStop Gamepad,a:b0,b:b1,back:b8,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:,leftshoulder:b4,leftstick:b10,lefttrigger:b6,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b11,righttrigger:b7,rightx:a2,righty:a3,start:b9,x:b2,y:b3,",
 	"050000004c0500006802000000010000,PS3 Controller (Bluetooth),a:b14,b:b13,y:b12,x:b15,start:b3,guide:b16,back:b0,leftstick:b1,rightstick:b2,leftshoulder:b10,rightshoulder:b11,dpup:b4,dpleft:b7,dpdown:b6,dpright:b5,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:b8,righttrigger:b9,",
@@ -909,6 +912,7 @@ void InputDefault::joy_axis(int p_device, int p_axis, const JoyAxis &p_value) {
 
 	if (joy.mapping == -1) {
 		_axis_event(p_device, p_axis, val);
+		return;
 	};
 
 	Map<int, JoyEvent>::Element *el = map_db[joy.mapping].axis.find(p_axis);

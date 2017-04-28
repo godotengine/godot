@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,10 +50,10 @@ void MenuButton::pressed() {
 	emit_signal("about_to_show");
 	Size2 size = get_size();
 
-	Point2 gp = get_global_pos();
-	popup->set_global_pos(gp + Size2(0, size.height));
+	Point2 gp = get_global_position();
+	popup->set_global_position(gp + Size2(0, size.height));
 	popup->set_size(Size2(size.width, 0));
-	popup->set_parent_rect(Rect2(Point2(gp - popup->get_global_pos()), get_size()));
+	popup->set_parent_rect(Rect2(Point2(gp - popup->get_global_position()), get_size()));
 	popup->popup();
 	popup->call_deferred("grab_click_focus");
 	popup->set_invalidate_click_until_motion();

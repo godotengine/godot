@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -149,8 +150,7 @@ unzFile ZipArchive::get_file_handle(String p_file) const {
 	unzFile pkg = unzOpen2(packages[file.package].filename.utf8().get_data(), &io);
 	ERR_FAIL_COND_V(!pkg, NULL);
 	int unz_err = unzGoToFilePos(pkg, &file.file_pos);
-	ERR_FAIL_COND_V(unz_err != UNZ_OK, NULL);
-	if (unzOpenCurrentFile(pkg) != UNZ_OK) {
+	if (unz_err != UNZ_OK || unzOpenCurrentFile(pkg) != UNZ_OK) {
 
 		unzClose(pkg);
 		ERR_FAIL_V(NULL);

@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,17 +41,6 @@
 #define _STR(m_x) #m_x
 #define _MKSTR(m_x) _STR(m_x)
 #endif
-
-/**
- * Version macros - it is necessary to include "version.h" for those to work.
- * Include it in the .cpp file, not the header.
- */
-#ifdef VERSION_PATCH
-#define VERSION_MKSTRING "" _MKSTR(VERSION_MAJOR) "." _MKSTR(VERSION_MINOR) "." _MKSTR(VERSION_PATCH) "." _MKSTR(VERSION_STATUS) "." _MKSTR(VERSION_REVISION)
-#else
-#define VERSION_MKSTRING "" _MKSTR(VERSION_MAJOR) "." _MKSTR(VERSION_MINOR) "." _MKSTR(VERSION_STATUS) "." _MKSTR(VERSION_REVISION)
-#endif // VERSION_PATCH
-#define VERSION_FULL_NAME "" _MKSTR(VERSION_NAME) " v" VERSION_MKSTRING
 
 #ifndef _ALWAYS_INLINE_
 

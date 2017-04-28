@@ -6,6 +6,7 @@
 /*                    http:/www.godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -406,7 +407,7 @@ void EditorSettings::setup_network() {
 	IP::get_singleton()->get_local_addresses(&local_ip);
 	String lip;
 	String hint;
-	String current = get("network/debug_host");
+	String current = has("network/debug_host") ? get("network/debug_host") : "";
 
 	for (List<IP_Address>::Element *E = local_ip.front(); E; E = E->next()) {
 
@@ -505,7 +506,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set("interface/dim_editor_on_dialog_popup", true);
 	set("interface/dim_amount", 0.6f);
 	hints["interface/dim_amount"] = PropertyInfo(Variant::REAL, "interface/dim_amount", PROPERTY_HINT_RANGE, "0,1,0.01", PROPERTY_USAGE_DEFAULT);
-	set("interface/dim_transition_time", 0.11f);
+	set("interface/dim_transition_time", 0.08f);
 	hints["interface/dim_transition_time"] = PropertyInfo(Variant::REAL, "interface/dim_transition_time", PROPERTY_HINT_RANGE, "0,1,0.001", PROPERTY_USAGE_DEFAULT);
 
 	set("filesystem/directories/autoscan_project_path", "");
@@ -528,8 +529,11 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set("text_editor/highlighting/highlight_all_occurrences", true);
 	set("text_editor/cursor/scroll_past_end_of_file", false);
 
-	set("text_editor/indent/tab_size", 4);
-	hints["text_editor/indent/tab_size"] = PropertyInfo(Variant::INT, "text_editor/indent/tab_size", PROPERTY_HINT_RANGE, "1, 64, 1"); // size of 0 crashes.
+	set("text_editor/indent/type", 0);
+	hints["text_editor/indent/type"] = PropertyInfo(Variant::INT, "text_editor/indent/type", PROPERTY_HINT_ENUM, "Tabs,Spaces");
+	set("text_editor/indent/size", 4);
+	hints["text_editor/indent/size"] = PropertyInfo(Variant::INT, "text_editor/indent/size", PROPERTY_HINT_RANGE, "1, 64, 1"); // size of 0 crashes.
+	set("text_editor/indent/convert_indent_on_save", false);
 	set("text_editor/indent/draw_tabs", true);
 
 	set("text_editor/line_numbers/show_line_numbers", true);
@@ -553,6 +557,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["text_editor/theme/font"] = PropertyInfo(Variant::STRING, "text_editor/theme/font", PROPERTY_HINT_GLOBAL_FILE, "*.fnt");
 	set("text_editor/completion/auto_brace_complete", false);
 	set("text_editor/files/restore_scripts_on_load", true);
+	set("text_editor/completion/complete_file_paths", true);
 
 	//set("docks/scene_tree/display_old_action_buttons",false);
 	set("docks/scene_tree/start_create_dialog_fully_expanded", false);
@@ -561,7 +566,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	set("editors/grid_map/pick_distance", 5000.0);
 
-	set("editors/3d/grid_color", Color(0, 1, 0, 0.2));
+	set("editors/3d/grid_color", Color(1, 1, 1, 0.2));
 	hints["editors/3d/grid_color"] = PropertyInfo(Variant::COLOR, "editors/3d/grid_color", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 
 	set("editors/3d/default_fov", 45.0);
@@ -587,10 +592,10 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set("editors/2d/bone_color2", Color(0.75, 0.75, 0.75, 0.9));
 	set("editors/2d/bone_selected_color", Color(0.9, 0.45, 0.45, 0.9));
 	set("editors/2d/bone_ik_color", Color(0.9, 0.9, 0.45, 0.9));
-
 	set("editors/2d/keep_margins_when_changing_anchors", false);
-
 	set("editors/2d/warped_mouse_panning", true);
+
+	set("editors/poly_editor/point_grab_radius", 8);
 
 	set("run/window_placement/rect", 0);
 	hints["run/window_placement/rect"] = PropertyInfo(Variant::INT, "run/window_placement/rect", PROPERTY_HINT_ENUM, "Default,Centered,Custom Position,Force Maximized,Force Full Screen");

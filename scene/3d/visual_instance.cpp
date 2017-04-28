@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -318,9 +319,6 @@ void GeometryInstance::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material_override", PROPERTY_HINT_RESOURCE_TYPE, "Material"), "set_material_override", "get_material_override");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cast_shadow", PROPERTY_HINT_ENUM, "Off,On,Double-Sided,Shadows Only"), "set_cast_shadows_setting", "get_cast_shadows_setting");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "extra_cull_margin", PROPERTY_HINT_RANGE, "0,16384,0"), "set_extra_cull_margin", "get_extra_cull_margin");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "use_as_billboard"), "set_flag", "get_flag", FLAG_BILLBOARD);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "use_as_y_billboard"), "set_flag", "get_flag", FLAG_BILLBOARD_FIX_Y);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "use_depth_scale"), "set_flag", "get_flag", FLAG_DEPH_SCALE);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "visible_in_all_rooms"), "set_flag", "get_flag", FLAG_VISIBLE_IN_ALL_ROOMS);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "use_in_baked_light"), "set_flag", "get_flag", FLAG_USE_BAKED_LIGHT);
 
@@ -333,9 +331,6 @@ void GeometryInstance::_bind_methods() {
 	//ADD_SIGNAL( MethodInfo("visibility_changed"));
 
 	BIND_CONSTANT(FLAG_CAST_SHADOW);
-	BIND_CONSTANT(FLAG_BILLBOARD);
-	BIND_CONSTANT(FLAG_BILLBOARD_FIX_Y);
-	BIND_CONSTANT(FLAG_DEPH_SCALE);
 	BIND_CONSTANT(FLAG_VISIBLE_IN_ALL_ROOMS);
 	BIND_CONSTANT(FLAG_MAX);
 

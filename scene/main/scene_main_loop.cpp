@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -374,6 +375,10 @@ void SceneTree::input_text(const String &p_text) {
 	root_lock--;
 }
 
+bool SceneTree::is_input_handled() {
+	return input_handled;
+}
+
 void SceneTree::input_event(const InputEvent &p_event) {
 
 	if (is_editor_hint() && (p_event.type == InputEvent::JOYPAD_MOTION || p_event.type == InputEvent::JOYPAD_BUTTON))
@@ -505,8 +510,6 @@ void SceneTree::input_event(const InputEvent &p_event) {
 void SceneTree::init() {
 
 	//_quit=false;
-	accept_quit = true;
-	quit_on_go_back = true;
 	initialized = true;
 	input_handled = false;
 
@@ -678,24 +681,24 @@ void SceneTree::set_quit_on_go_back(bool p_enable) {
 	quit_on_go_back = p_enable;
 }
 
+#ifdef TOOLS_ENABLED
 void SceneTree::set_editor_hint(bool p_enabled) {
 
 	editor_hint = p_enabled;
 }
 
 bool SceneTree::is_node_being_edited(const Node *p_node) const {
-#ifdef TOOLS_ENABLED
+
 	return editor_hint && edited_scene_root && edited_scene_root->is_a_parent_of(p_node);
-#else
-	return false;
-#endif
 }
 
 bool SceneTree::is_editor_hint() const {
 
 	return editor_hint;
 }
+#endif
 
+#ifdef DEBUG_ENABLED
 void SceneTree::set_debug_collisions_hint(bool p_enabled) {
 
 	debug_collisions_hint = p_enabled;
@@ -715,6 +718,7 @@ bool SceneTree::is_debugging_navigation_hint() const {
 
 	return debug_navigation_hint;
 }
+#endif
 
 void SceneTree::set_debug_collisions_color(const Color &p_color) {
 
@@ -761,12 +765,12 @@ Ref<Material> SceneTree::get_debug_navigation_material() {
 	if (navigation_material.is_valid())
 		return navigation_material;
 
-	Ref<FixedSpatialMaterial> line_material = Ref<FixedSpatialMaterial>(memnew(FixedSpatialMaterial));
+	Ref<SpatialMaterial> line_material = Ref<SpatialMaterial>(memnew(SpatialMaterial));
 	/*	line_material->set_flag(Material::FLAG_UNSHADED, true);
 	line_material->set_line_width(3.0);
-	line_material->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_ALPHA, true);
-	line_material->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_COLOR_ARRAY, true);
-	line_material->set_parameter(FixedSpatialMaterial::PARAM_DIFFUSE,get_debug_navigation_color());*/
+	line_material->set_fixed_flag(SpatialMaterial::FLAG_USE_ALPHA, true);
+	line_material->set_fixed_flag(SpatialMaterial::FLAG_USE_COLOR_ARRAY, true);
+	line_material->set_parameter(SpatialMaterial::PARAM_DIFFUSE,get_debug_navigation_color());*/
 
 	navigation_material = line_material;
 
@@ -778,12 +782,12 @@ Ref<Material> SceneTree::get_debug_navigation_disabled_material() {
 	if (navigation_disabled_material.is_valid())
 		return navigation_disabled_material;
 
-	Ref<FixedSpatialMaterial> line_material = Ref<FixedSpatialMaterial>(memnew(FixedSpatialMaterial));
+	Ref<SpatialMaterial> line_material = Ref<SpatialMaterial>(memnew(SpatialMaterial));
 	/*	line_material->set_flag(Material::FLAG_UNSHADED, true);
 	line_material->set_line_width(3.0);
-	line_material->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_ALPHA, true);
-	line_material->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_COLOR_ARRAY, true);
-	line_material->set_parameter(FixedSpatialMaterial::PARAM_DIFFUSE,get_debug_navigation_disabled_color());*/
+	line_material->set_fixed_flag(SpatialMaterial::FLAG_USE_ALPHA, true);
+	line_material->set_fixed_flag(SpatialMaterial::FLAG_USE_COLOR_ARRAY, true);
+	line_material->set_parameter(SpatialMaterial::PARAM_DIFFUSE,get_debug_navigation_disabled_color());*/
 
 	navigation_disabled_material = line_material;
 
@@ -794,12 +798,12 @@ Ref<Material> SceneTree::get_debug_collision_material() {
 	if (collision_material.is_valid())
 		return collision_material;
 
-	Ref<FixedSpatialMaterial> line_material = Ref<FixedSpatialMaterial>(memnew(FixedSpatialMaterial));
+	Ref<SpatialMaterial> line_material = Ref<SpatialMaterial>(memnew(SpatialMaterial));
 	/*line_material->set_flag(Material::FLAG_UNSHADED, true);
 	line_material->set_line_width(3.0);
-	line_material->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_ALPHA, true);
-	line_material->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_COLOR_ARRAY, true);
-	line_material->set_parameter(FixedSpatialMaterial::PARAM_DIFFUSE,get_debug_collisions_color());*/
+	line_material->set_fixed_flag(SpatialMaterial::FLAG_USE_ALPHA, true);
+	line_material->set_fixed_flag(SpatialMaterial::FLAG_USE_COLOR_ARRAY, true);
+	line_material->set_parameter(SpatialMaterial::PARAM_DIFFUSE,get_debug_collisions_color());*/
 
 	collision_material = line_material;
 
@@ -813,11 +817,11 @@ Ref<Mesh> SceneTree::get_debug_contact_mesh() {
 
 	debug_contact_mesh = Ref<Mesh>(memnew(Mesh));
 
-	Ref<FixedSpatialMaterial> mat = memnew(FixedSpatialMaterial);
+	Ref<SpatialMaterial> mat = memnew(SpatialMaterial);
 	/*mat->set_flag(Material::FLAG_UNSHADED,true);
 	mat->set_flag(Material::FLAG_DOUBLE_SIDED,true);
-	mat->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_ALPHA,true);
-	mat->set_parameter(FixedSpatialMaterial::PARAM_DIFFUSE,get_debug_collision_contact_color());*/
+	mat->set_fixed_flag(SpatialMaterial::FLAG_USE_ALPHA,true);
+	mat->set_parameter(SpatialMaterial::PARAM_DIFFUSE,get_debug_collision_contact_color());*/
 
 	Vector3 diamond[6] = {
 		Vector3(-1, 0, 0),
@@ -2153,6 +2157,7 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pause", "enable"), &SceneTree::set_pause);
 	ClassDB::bind_method(D_METHOD("is_paused"), &SceneTree::is_paused);
 	ClassDB::bind_method(D_METHOD("set_input_as_handled"), &SceneTree::set_input_as_handled);
+	ClassDB::bind_method(D_METHOD("is_input_handled"), &SceneTree::is_input_handled);
 
 	ClassDB::bind_method(D_METHOD("create_timer:SceneTreeTimer", "time_sec", "pause_mode_process"), &SceneTree::create_timer, DEFVAL(true));
 
@@ -2259,10 +2264,16 @@ SceneTree::SceneTree() {
 
 	singleton = this;
 	_quit = false;
+	accept_quit = true;
+	quit_on_go_back = true;
 	initialized = false;
+#ifdef TOOLS_ENABLED
 	editor_hint = false;
+#endif
+#ifdef DEBUG_ENABLED
 	debug_collisions_hint = false;
 	debug_navigation_hint = false;
+#endif
 	debug_collisions_color = GLOBAL_DEF("debug/collision/shape_color", Color(0.0, 0.6, 0.7, 0.5));
 	debug_collision_contact_color = GLOBAL_DEF("debug/collision/contact_color", Color(1.0, 0.2, 0.1, 0.8));
 	debug_navigation_color = GLOBAL_DEF("debug/navigation/geometry_color", Color(0.1, 1.0, 0.7, 0.4));
@@ -2306,7 +2317,7 @@ SceneTree::SceneTree() {
 	stretch_aspect = STRETCH_ASPECT_IGNORE;
 
 	last_screen_size = Size2(OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height);
-	root->set_size(last_screen_size);
+	_update_root_rect();
 
 	if (ScriptDebugger::get_singleton()) {
 		ScriptDebugger::get_singleton()->set_request_scene_tree_message_func(_debugger_request_tree, this);

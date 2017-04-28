@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -79,7 +80,7 @@ void EditorPath::_gui_input(const InputEvent &p_event) {
 		objects.clear();
 		popup->clear();
 		_add_children_to_popup(obj);
-		popup->set_pos(get_global_pos() + Vector2(0, get_size().height));
+		popup->set_position(get_global_position() + Vector2(0, get_size().height));
 		popup->set_size(Size2(get_size().width, 1));
 		popup->popup();
 	}

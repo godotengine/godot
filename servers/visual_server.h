@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -153,10 +154,7 @@ public:
 		SHADER_MAX
 	};
 
-	virtual RID shader_create(ShaderMode p_mode = SHADER_SPATIAL) = 0;
-
-	virtual void shader_set_mode(RID p_shader, ShaderMode p_mode) = 0;
-	virtual ShaderMode shader_get_mode(RID p_shader) const = 0;
+	virtual RID shader_create() = 0;
 
 	virtual void shader_set_code(RID p_shader, const String &p_code) = 0;
 	virtual String shader_get_code(RID p_shader) const = 0;
@@ -482,22 +480,11 @@ public:
 	virtual void particles_set_explosiveness_ratio(RID p_particles, float p_ratio) = 0;
 	virtual void particles_set_randomness_ratio(RID p_particles, float p_ratio) = 0;
 	virtual void particles_set_custom_aabb(RID p_particles, const Rect3 &p_aabb) = 0;
-	virtual void particles_set_gravity(RID p_particles, const Vector3 &p_gravity) = 0;
+	virtual void particles_set_speed_scale(RID p_particles, float p_scale) = 0;
 	virtual void particles_set_use_local_coordinates(RID p_particles, bool p_enable) = 0;
 	virtual void particles_set_process_material(RID p_particles, RID p_material) = 0;
-
-	enum ParticlesEmissionShape {
-		PARTICLES_EMSSION_POINT,
-		PARTICLES_EMSSION_SPHERE,
-		PARTICLES_EMSSION_BOX,
-		PARTICLES_EMSSION_POINTS,
-		PARTICLES_EMSSION_SEGMENTS,
-	};
-
-	virtual void particles_set_emission_shape(RID p_particles, ParticlesEmissionShape) = 0;
-	virtual void particles_set_emission_sphere_radius(RID p_particles, float p_radius) = 0;
-	virtual void particles_set_emission_box_extents(RID p_particles, const Vector3 &p_extents) = 0;
-	virtual void particles_set_emission_points(RID p_particles, const PoolVector<Vector3> &p_points) = 0;
+	virtual void particles_set_fixed_fps(RID p_particles, int p_fps) = 0;
+	virtual void particles_set_fractional_delta(RID p_particles, bool p_enable) = 0;
 
 	enum ParticlesDrawOrder {
 		PARTICLES_DRAW_ORDER_INDEX,
@@ -507,13 +494,7 @@ public:
 
 	virtual void particles_set_draw_order(RID p_particles, ParticlesDrawOrder p_order) = 0;
 
-	enum ParticlesDrawPassMode {
-		PARTICLES_DRAW_PASS_MODE_QUAD,
-		PARTICLES_DRAW_PASS_MODE_MESH
-	};
-
 	virtual void particles_set_draw_passes(RID p_particles, int p_count) = 0;
-	virtual void particles_set_draw_pass_material(RID p_particles, int p_pass, RID p_material) = 0;
 	virtual void particles_set_draw_pass_mesh(RID p_particles, int p_pass, RID p_mesh) = 0;
 
 	virtual Rect3 particles_get_current_aabb(RID p_particles) = 0;
@@ -689,7 +670,7 @@ public:
 		INSTANCE_MAX,
 		/*INSTANCE_BAKED_LIGHT_SAMPLER,*/
 
-		INSTANCE_GEOMETRY_MASK = (1 << INSTANCE_MESH) | (1 << INSTANCE_MULTIMESH) | (1 << INSTANCE_IMMEDIATE)
+		INSTANCE_GEOMETRY_MASK = (1 << INSTANCE_MESH) | (1 << INSTANCE_MULTIMESH) | (1 << INSTANCE_IMMEDIATE) | (1 << INSTANCE_PARTICLES)
 	};
 
 	virtual RID instance_create2(RID p_base, RID p_scenario);
@@ -718,10 +699,7 @@ public:
 	virtual Vector<ObjectID> instances_cull_convex(const Vector<Plane> &p_convex, RID p_scenario = RID()) const = 0;
 
 	enum InstanceFlags {
-		INSTANCE_FLAG_BILLBOARD,
-		INSTANCE_FLAG_BILLBOARD_FIX_Y,
 		INSTANCE_FLAG_CAST_SHADOW,
-		INSTANCE_FLAG_DEPH_SCALE,
 		INSTANCE_FLAG_VISIBLE_IN_ALL_ROOMS,
 		INSTANCE_FLAG_USE_BAKED_LIGHT,
 		INSTANCE_FLAG_MAX

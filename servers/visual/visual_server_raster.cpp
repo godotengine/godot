@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,6 +38,8 @@
 #include "visual_server_scene.h"
 
 // careful, these may run in different threads than the visual server
+
+int VisualServerRaster::changes = 0;
 
 /* CURSOR */
 void VisualServerRaster::cursor_set_rotation(float p_rotation, int p_cursor) {
@@ -119,6 +122,9 @@ int VisualServerRaster::get_render_info(RenderInfo p_info) {
 /* TESTING */
 
 void VisualServerRaster::set_boot_image(const Image &p_image, const Color &p_color, bool p_scale) {
+
+	redraw_request();
+	VSG::rasterizer->set_boot_image(p_image, p_color, p_scale);
 }
 void VisualServerRaster::set_default_clear_color(const Color &p_color) {
 }
@@ -391,33 +397,33 @@ RID VisualServerRaster::fixed_material_create() {
 	return rasterizer->fixed_material_create();
 }
 
-void VisualServerRaster::fixed_material_set_flag(RID p_material, FixedSpatialMaterialFlags p_flag, bool p_enabled) {
+void VisualServerRaster::fixed_material_set_flag(RID p_material, SpatialMaterialFlags p_flag, bool p_enabled) {
 
 	rasterizer->fixed_material_set_flag(p_material,p_flag,p_enabled);
 }
 
-bool VisualServerRaster::fixed_material_get_flag(RID p_material, FixedSpatialMaterialFlags p_flag) const {
+bool VisualServerRaster::fixed_material_get_flag(RID p_material, SpatialMaterialFlags p_flag) const {
 
 	return rasterizer->fixed_material_get_flag(p_material,p_flag);
 }
 
-void VisualServerRaster::fixed_material_set_param(RID p_material, FixedSpatialMaterialParam p_parameter, const Variant& p_value) {
+void VisualServerRaster::fixed_material_set_param(RID p_material, SpatialMaterialParam p_parameter, const Variant& p_value) {
 	VS_CHANGED;
 	rasterizer->fixed_material_set_parameter(p_material,p_parameter,p_value);
 }
 
-Variant VisualServerRaster::fixed_material_get_param(RID p_material,FixedSpatialMaterialParam p_parameter) const {
+Variant VisualServerRaster::fixed_material_get_param(RID p_material,SpatialMaterialParam p_parameter) const {
 
 	return rasterizer->fixed_material_get_parameter(p_material,p_parameter);
 }
 
 
-void VisualServerRaster::fixed_material_set_texture(RID p_material,FixedSpatialMaterialParam p_parameter, RID p_texture) {
+void VisualServerRaster::fixed_material_set_texture(RID p_material,SpatialMaterialParam p_parameter, RID p_texture) {
 	VS_CHANGED;
 	rasterizer->fixed_material_set_texture(p_material,p_parameter,p_texture);
 }
 
-RID VisualServerRaster::fixed_material_get_texture(RID p_material,FixedSpatialMaterialParam p_parameter) const {
+RID VisualServerRaster::fixed_material_get_texture(RID p_material,SpatialMaterialParam p_parameter) const {
 
 	return rasterizer->fixed_material_get_texture(p_material,p_parameter);
 }
@@ -425,12 +431,12 @@ RID VisualServerRaster::fixed_material_get_texture(RID p_material,FixedSpatialMa
 
 
 
-void VisualServerRaster::fixed_material_set_texcoord_mode(RID p_material,FixedSpatialMaterialParam p_parameter, FixedSpatialMaterialTexCoordMode p_mode) {
+void VisualServerRaster::fixed_material_set_texcoord_mode(RID p_material,SpatialMaterialParam p_parameter, SpatialMaterialTexCoordMode p_mode) {
 	VS_CHANGED;
 	rasterizer->fixed_material_set_texcoord_mode(p_material,p_parameter,p_mode);
 }
 
-VS::FixedSpatialMaterialTexCoordMode VisualServerRaster::fixed_material_get_texcoord_mode(RID p_material,FixedSpatialMaterialParam p_parameter) const {
+VS::SpatialMaterialTexCoordMode VisualServerRaster::fixed_material_get_texcoord_mode(RID p_material,SpatialMaterialParam p_parameter) const {
 
 	return rasterizer->fixed_material_get_texcoord_mode(p_material,p_parameter);
 }
@@ -457,14 +463,14 @@ Transform VisualServerRaster::fixed_material_get_uv_transform(RID p_material) co
 	return rasterizer->fixed_material_get_uv_transform(p_material);
 }
 
-void VisualServerRaster::fixed_material_set_light_shader(RID p_material,FixedSpatialMaterialLightShader p_shader) {
+void VisualServerRaster::fixed_material_set_light_shader(RID p_material,SpatialMaterialLightShader p_shader) {
 
 	VS_CHANGED;
 	rasterizer->fixed_material_set_light_shader(p_material,p_shader);
 
 }
 
-VisualServerRaster::FixedSpatialMaterialLightShader VisualServerRaster::fixed_material_get_light_shader(RID p_material) const{
+VisualServerRaster::SpatialMaterialLightShader VisualServerRaster::fixed_material_get_light_shader(RID p_material) const{
 
 	return rasterizer->fixed_material_get_light_shader(p_material);
 }
@@ -4521,7 +4527,7 @@ void VisualServerRaster::canvas_occluder_polygon_set_cull_mode(RID p_occluder_po
 
 RID VisualServerRaster::canvas_item_material_create() {
 
-	Rasterizer::CanvasItemMaterial *material = memnew( Rasterizer::CanvasItemMaterial );
+	Rasterizer::ShaderMaterial *material = memnew( Rasterizer::ShaderMaterial );
 	return canvas_item_material_owner.make_rid(material);
 
 }
@@ -4529,7 +4535,7 @@ RID VisualServerRaster::canvas_item_material_create() {
 void VisualServerRaster::canvas_item_material_set_shader(RID p_material, RID p_shader){
 
 	VS_CHANGED;
-	Rasterizer::CanvasItemMaterial *material = canvas_item_material_owner.get( p_material );
+	Rasterizer::ShaderMaterial *material = canvas_item_material_owner.get( p_material );
 	ERR_FAIL_COND(!material);
 	material->shader=p_shader;
 
@@ -4537,7 +4543,7 @@ void VisualServerRaster::canvas_item_material_set_shader(RID p_material, RID p_s
 void VisualServerRaster::canvas_item_material_set_shader_param(RID p_material, const StringName& p_param, const Variant& p_value){
 
 	VS_CHANGED;
-	Rasterizer::CanvasItemMaterial *material = canvas_item_material_owner.get( p_material );
+	Rasterizer::ShaderMaterial *material = canvas_item_material_owner.get( p_material );
 	ERR_FAIL_COND(!material);
 	if (p_value.get_type()==Variant::NIL)
 		material->shader_param.erase(p_param);
@@ -4547,7 +4553,7 @@ void VisualServerRaster::canvas_item_material_set_shader_param(RID p_material, c
 
 }
 Variant VisualServerRaster::canvas_item_material_get_shader_param(RID p_material, const StringName& p_param) const{
-	Rasterizer::CanvasItemMaterial *material = canvas_item_material_owner.get( p_material );
+	Rasterizer::ShaderMaterial *material = canvas_item_material_owner.get( p_material );
 	ERR_FAIL_COND_V(!material,Variant());
 	if (!material->shader_param.has(p_param)) {
 		ERR_FAIL_COND_V(!material->shader.is_valid(),Variant());
@@ -4560,7 +4566,7 @@ Variant VisualServerRaster::canvas_item_material_get_shader_param(RID p_material
 void VisualServerRaster::canvas_item_material_set_shading_mode(RID p_material, CanvasItemShadingMode p_mode) {
 
 	VS_CHANGED;
-	Rasterizer::CanvasItemMaterial *material = canvas_item_material_owner.get( p_material );
+	Rasterizer::ShaderMaterial *material = canvas_item_material_owner.get( p_material );
 	ERR_FAIL_COND(!material);
 	material->shading_mode=p_mode;
 
@@ -4869,7 +4875,7 @@ void VisualServerRaster::free( RID p_rid ) {
 
 	} else if (canvas_item_material_owner.owns(p_rid)) {
 
-		Rasterizer::CanvasItemMaterial *material = canvas_item_material_owner.get(p_rid);
+		Rasterizer::ShaderMaterial *material = canvas_item_material_owner.get(p_rid);
 		ERR_FAIL_COND(!material);
 		for(Set<Rasterizer::CanvasItem*>::Element *E=material->owners.front();E;E=E->next()) {
 

@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,16 +49,7 @@ typedef void (*GFXInitFunc)(void *ud, bool gl2, int w, int h, bool fs);
 typedef String (*GetDataDirFunc)();
 
 class OS_JavaScript : public OS_Unix {
-public:
-	struct TouchPos {
-		int id;
-		Point2 pos;
-	};
 
-private:
-	Vector<TouchPos> touch;
-	Point2 last_mouse;
-	int last_button_mask;
 	GFXInitFunc gfx_init_func;
 	void *gfx_init_ud;
 
@@ -121,7 +113,7 @@ public:
 	virtual void set_mouse_show(bool p_show);
 	virtual void set_mouse_grab(bool p_grab);
 	virtual bool is_mouse_grab_enabled() const;
-	virtual Point2 get_mouse_pos() const;
+	virtual Point2 get_mouse_position() const;
 	virtual int get_mouse_button_state() const;
 	virtual void set_window_title(const String &p_title);
 
@@ -165,7 +157,6 @@ public:
 	virtual String get_resource_dir() const;
 
 	void process_accelerometer(const Vector3 &p_accelerometer);
-	void process_touch(int p_what, int p_pointer, const Vector<TouchPos> &p_points);
 	void push_input(const InputEvent &p_ev);
 
 	virtual bool is_joy_known(int p_device);

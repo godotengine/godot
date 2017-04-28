@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "main.h"
+#include "app_icon.h"
 #include "core/register_core_types.h"
 #include "drivers/register_driver_types.h"
 #include "global_config.h"
@@ -94,8 +96,10 @@ static bool init_maximized = false;
 static bool init_windowed = false;
 static bool init_fullscreen = false;
 static bool init_use_custom_pos = false;
+#ifdef DEBUG_ENABLED
 static bool debug_collisions = false;
 static bool debug_navigation = false;
+#endif
 static int frame_delay = 0;
 static Vector2 init_custom_pos;
 static int video_driver_idx = -1;
@@ -125,7 +129,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print(VERSION_FULL_NAME " (c) 2008-2017 Juan Linietsky, Ariel Manzur.\n");
 	OS::get_singleton()->print("Usage: %s [options] [scene]\n", p_binary);
 	OS::get_singleton()->print("Options:\n");
-	OS::get_singleton()->print("\t-path [dir] : Path to a game, containing godot.cfg\n");
+	OS::get_singleton()->print("\t-path [dir] : Path to a game, containing *.godot\n");
 #ifdef TOOLS_ENABLED
 	OS::get_singleton()->print("\t-e,-editor : Bring up the editor instead of running the scene.\n");
 #endif
@@ -443,6 +447,23 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			} else {
 				goto error;
 			}
+		} else if (I->get().ends_with(".godot")) {
+			String path;
+			String file = I->get();
+			int sep = MAX(file.find_last("/"), file.find_last("\\"));
+			if (sep == -1)
+				path = ".";
+			else {
+				path = file.substr(0, sep);
+			}
+			if (OS::get_singleton()->set_cwd(path) == OK) {
+
+			} else {
+				game_path = path;
+			}
+#ifdef TOOLS_ENABLED
+			editor = true;
+#endif
 		} else if (I->get() == "-bp") { // /breakpoints
 
 			if (I->next()) {
@@ -498,10 +519,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 		} else if (I->get() == "-debug" || I->get() == "-d") {
 			debug_mode = "local";
+#ifdef DEBUG_ENABLED
 		} else if (I->get() == "-debugcol" || I->get() == "-dc") {
 			debug_collisions = true;
 		} else if (I->get() == "-debugnav" || I->get() == "-dn") {
 			debug_navigation = true;
+#endif
 		} else if (I->get() == "-editor_scene") {
 
 			if (I->next()) {
@@ -667,14 +690,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	else
 		input_map->load_from_globals(); //keys for game
 
-	if (video_driver == "") // specified in godot.cfg
+	if (video_driver == "") // specified in *.godot
 		video_driver = GLOBAL_DEF("display/driver/name", Variant((const char *)OS::get_singleton()->get_video_driver_name(0)));
 
 	if (!force_res && use_custom_res && globals->has("display/window/width"))
 		video_mode.width = globals->get("display/window/width");
 	if (!force_res && use_custom_res && globals->has("display/window/height"))
 		video_mode.height = globals->get("display/window/height");
-	if (!editor && (!bool(globals->get("display/window/allow_hidpi")) || force_lowdpi)) {
+	if (!editor && ((globals->has("display/window/allow_hidpi") && !globals->get("display/window/allow_hidpi")) || force_lowdpi)) {
 		OS::get_singleton()->_allow_hidpi = false;
 	}
 	if (use_custom_res && globals->has("display/window/fullscreen"))
@@ -719,7 +742,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	/* Determine Video Driver */
 
-	if (audio_driver == "") { // specified in godot.cfg
+	if (audio_driver == "") { // specified in *.godot
 		audio_driver = GLOBAL_DEF("audio/driver", OS::get_singleton()->get_audio_driver_name(0));
 	}
 
@@ -880,6 +903,9 @@ Error Main::setup2() {
 	} else if (init_fullscreen) {
 		OS::get_singleton()->set_window_fullscreen(true);
 	}
+
+	register_server_types();
+
 	MAIN_PRINT("Main: Load Remaps");
 
 	Color clear = GLOBAL_DEF("rendering/viewport/default_clear_color", Color(0.3, 0.3, 0.3));
@@ -948,7 +974,6 @@ Error Main::setup2() {
 	MAIN_PRINT("Main: Load Scene Types");
 
 	register_scene_types();
-	register_server_types();
 
 	GLOBAL_DEF("display/mouse_cursor/custom_image", String());
 	GLOBAL_DEF("display/mouse_cursor/custom_image_hotspot", Vector2());
@@ -1194,12 +1219,15 @@ bool Main::start() {
 
 		SceneTree *sml = main_loop->cast_to<SceneTree>();
 
+#ifdef DEBUG_ENABLED
 		if (debug_collisions) {
 			sml->set_debug_collisions_hint(true);
 		}
 		if (debug_navigation) {
 			sml->set_debug_navigation_hint(true);
 		}
+#endif
+
 #ifdef TOOLS_ENABLED
 
 		EditorNode *editor_node = NULL;
@@ -1224,7 +1252,7 @@ bool Main::start() {
 
 			String stretch_mode = GLOBAL_DEF("display/stretch/mode", "disabled");
 			String stretch_aspect = GLOBAL_DEF("display/stretch/aspect", "ignore");
-			Size2i stretch_size = Size2(GLOBAL_DEF("display/screen/width", 0), GLOBAL_DEF("display/screen/height", 0));
+			Size2i stretch_size = Size2(GLOBAL_DEF("display/window/width", 0), GLOBAL_DEF("display/window/height", 0));
 
 			SceneTree::StretchMode sml_sm = SceneTree::STRETCH_MODE_DISABLED;
 			if (stretch_mode == "2d")

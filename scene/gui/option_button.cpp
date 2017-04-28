@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,7 +56,24 @@ void OptionButton::_notification(int p_what) {
 			Size2 size = get_size();
 
 			Point2 ofs(size.width - arrow->get_width() - get_constant("arrow_margin"), int(Math::abs((size.height - arrow->get_height()) / 2)));
-			arrow->draw(ci, ofs);
+
+			Color arrow_color = get_color("font_color");
+			switch (get_draw_mode()) {
+				case DRAW_NORMAL: {
+					arrow_color = get_color("font_color");
+				} break;
+				case DRAW_PRESSED: {
+					arrow_color = get_color("font_color_pressed");
+				} break;
+				case DRAW_HOVER: {
+					arrow_color = get_color("font_color_hover");
+				} break;
+				case DRAW_DISABLED: {
+					arrow_color = get_color("font_color_disabled");
+				} break;
+			}
+
+			arrow->draw(ci, ofs, arrow_color);
 
 		} break;
 	}
@@ -86,7 +104,7 @@ void OptionButton::_selected(int p_which) {
 void OptionButton::pressed() {
 
 	Size2 size = get_size();
-	popup->set_global_pos(get_global_pos() + Size2(0, size.height));
+	popup->set_global_position(get_global_position() + Size2(0, size.height));
 	popup->set_size(Size2(size.width, 0));
 
 	popup->popup();

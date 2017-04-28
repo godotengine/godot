@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -447,7 +448,7 @@ RID RasterizerIPhone::material_create() {
 	return material_owner.make_rid(memnew(Material));
 }
 
-void RasterizerIPhone::fixed_material_set_parameter(RID p_material, VS::FixedSpatialMaterialParam p_parameter, const Variant &p_value) {
+void RasterizerIPhone::fixed_material_set_parameter(RID p_material, VS::SpatialMaterialParam p_parameter, const Variant &p_value) {
 
 	Material *m = material_owner.get(p_material);
 	ERR_FAIL_COND(!m);
@@ -455,7 +456,7 @@ void RasterizerIPhone::fixed_material_set_parameter(RID p_material, VS::FixedSpa
 
 	m->parameters[p_parameter] = p_value;
 }
-Variant RasterizerIPhone::fixed_material_get_parameter(RID p_material, VS::FixedSpatialMaterialParam p_parameter) const {
+Variant RasterizerIPhone::fixed_material_get_parameter(RID p_material, VS::SpatialMaterialParam p_parameter) const {
 
 	Material *m = material_owner.get(p_material);
 	ERR_FAIL_COND_V(!m, Variant());
@@ -464,7 +465,7 @@ Variant RasterizerIPhone::fixed_material_get_parameter(RID p_material, VS::Fixed
 	return m->parameters[p_parameter];
 }
 
-void RasterizerIPhone::fixed_material_set_texture(RID p_material, VS::FixedSpatialMaterialParam p_parameter, RID p_texture) {
+void RasterizerIPhone::fixed_material_set_texture(RID p_material, VS::SpatialMaterialParam p_parameter, RID p_texture) {
 
 	Material *m = material_owner.get(p_material);
 	ERR_FAIL_COND(!m);
@@ -472,7 +473,7 @@ void RasterizerIPhone::fixed_material_set_texture(RID p_material, VS::FixedSpati
 
 	m->textures[p_parameter] = p_texture;
 }
-RID RasterizerIPhone::fixed_material_get_texture(RID p_material, VS::FixedSpatialMaterialParam p_parameter) const {
+RID RasterizerIPhone::fixed_material_get_texture(RID p_material, VS::SpatialMaterialParam p_parameter) const {
 
 	Material *m = material_owner.get(p_material);
 	ERR_FAIL_COND_V(!m, RID());
@@ -496,7 +497,7 @@ VS::MaterialBlendMode RasterizerIPhone::fixed_material_get_detail_blend_mode(RID
 	return m->detail_blend_mode;
 }
 
-void RasterizerIPhone::fixed_material_set_texcoord_mode(RID p_material, VS::FixedSpatialMaterialParam p_parameter, VS::FixedSpatialMaterialTexCoordMode p_mode) {
+void RasterizerIPhone::fixed_material_set_texcoord_mode(RID p_material, VS::SpatialMaterialParam p_parameter, VS::SpatialMaterialTexCoordMode p_mode) {
 
 	Material *m = material_owner.get(p_material);
 	ERR_FAIL_COND(!m);
@@ -504,7 +505,7 @@ void RasterizerIPhone::fixed_material_set_texcoord_mode(RID p_material, VS::Fixe
 
 	m->texcoord_mode[p_parameter] = p_mode;
 }
-VS::FixedSpatialMaterialTexCoordMode RasterizerIPhone::fixed_material_get_texcoord_mode(RID p_material, VS::FixedSpatialMaterialParam p_parameter) const {
+VS::SpatialMaterialTexCoordMode RasterizerIPhone::fixed_material_get_texcoord_mode(RID p_material, VS::SpatialMaterialParam p_parameter) const {
 
 	Material *m = material_owner.get(p_material);
 	ERR_FAIL_COND_V(!m, VS::FIXED_MATERIAL_TEXCOORD_TEXGEN);
@@ -513,7 +514,7 @@ VS::FixedSpatialMaterialTexCoordMode RasterizerIPhone::fixed_material_get_texcoo
 	return m->texcoord_mode[p_parameter]; // for now
 }
 
-void RasterizerIPhone::fixed_material_set_texgen_mode(RID p_material, VS::FixedSpatialMaterialTexGenMode p_mode) {
+void RasterizerIPhone::fixed_material_set_texgen_mode(RID p_material, VS::SpatialMaterialTexGenMode p_mode) {
 
 	Material *m = material_owner.get(p_material);
 	ERR_FAIL_COND(!m);
@@ -521,7 +522,7 @@ void RasterizerIPhone::fixed_material_set_texgen_mode(RID p_material, VS::FixedS
 	m->texgen_mode = p_mode;
 };
 
-VS::FixedSpatialMaterialTexGenMode RasterizerIPhone::fixed_material_get_texgen_mode(RID p_material) const {
+VS::SpatialMaterialTexGenMode RasterizerIPhone::fixed_material_get_texgen_mode(RID p_material) const {
 
 	Material *m = material_owner.get(p_material);
 	ERR_FAIL_COND_V(!m, VS::FIXED_MATERIAL_TEXGEN_SPHERE);

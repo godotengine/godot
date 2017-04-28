@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -380,14 +381,14 @@ SampleEditor::SampleEditor() {
 
 	play = memnew( Button );
 
-	play->set_pos(Point2( 5, 5 ));
+	play->set_position(Point2( 5, 5 ));
 	play->set_size( Size2(1,1 ) );
 	play->set_toggle_mode(true);
 	add_child(play);
 
 	stop = memnew( Button );
 
-	stop->set_pos(Point2( 35, 5 ));
+	stop->set_position(Point2( 35, 5 ));
 	stop->set_size( Size2(1,1 ) );
 	stop->set_toggle_mode(true);
 	add_child(stop);

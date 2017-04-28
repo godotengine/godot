@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -834,9 +835,9 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 
 		//update grids
 		indicator_mat.instance();
-		indicator_mat->set_flag(FixedSpatialMaterial::FLAG_UNSHADED, true);
-		indicator_mat->set_flag(FixedSpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
-		indicator_mat->set_flag(FixedSpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+		indicator_mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
+		indicator_mat->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
+		indicator_mat->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 		indicator_mat->set_albedo(Color(0.8, 0.5, 0.1));
 
 		Vector<Vector3> grid_points[3];
@@ -1309,9 +1310,9 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 
 		inner_mat.instance();
 		inner_mat->set_albedo(Color(0.7, 0.7, 1.0, 0.3));
-		inner_mat->set_flag(FixedSpatialMaterial::FLAG_ONTOP, true);
-		inner_mat->set_flag(FixedSpatialMaterial::FLAG_UNSHADED, true);
-		inner_mat->set_feature(FixedSpatialMaterial::FEATURE_TRANSPARENT, true);
+		inner_mat->set_flag(SpatialMaterial::FLAG_ONTOP, true);
+		inner_mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
+		inner_mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
 
 		d[VS::ARRAY_VERTEX] = triangles;
 		VisualServer::get_singleton()->mesh_add_surface_from_arrays(selection_mesh, VS::PRIMITIVE_TRIANGLES, d);
@@ -1319,10 +1320,10 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 
 		outer_mat.instance();
 		outer_mat->set_albedo(Color(0.7, 0.7, 1.0, 0.3));
-		outer_mat->set_flag(FixedSpatialMaterial::FLAG_ONTOP, true);
-		outer_mat->set_flag(FixedSpatialMaterial::FLAG_UNSHADED, true);
+		outer_mat->set_flag(SpatialMaterial::FLAG_ONTOP, true);
+		outer_mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
 		outer_mat->set_line_width(3.0);
-		outer_mat->set_feature(FixedSpatialMaterial::FEATURE_TRANSPARENT, true);
+		outer_mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
 
 		d[VS::ARRAY_VERTEX] = lines;
 		VisualServer::get_singleton()->mesh_add_surface_from_arrays(selection_mesh, VS::PRIMITIVE_LINES, d);

@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,22 +33,22 @@
 #include "editor/plugins/spatial_editor_plugin.h"
 #include "scene/3d/body_shape.h"
 #include "scene/3d/camera.h"
+#include "scene/3d/collision_polygon.h"
 #include "scene/3d/gi_probe.h"
 #include "scene/3d/light.h"
 #include "scene/3d/listener.h"
 #include "scene/3d/mesh_instance.h"
 #include "scene/3d/navigation_mesh.h"
+#include "scene/3d/particles.h"
+#include "scene/3d/physics_joint.h"
 #include "scene/3d/portal.h"
 #include "scene/3d/position_3d.h"
 #include "scene/3d/ray_cast.h"
 #include "scene/3d/reflection_probe.h"
 #include "scene/3d/room_instance.h"
 #include "scene/3d/test_cube.h"
-#include "scene/3d/visibility_notifier.h"
-
-#include "scene/3d/collision_polygon.h"
-#include "scene/3d/physics_joint.h"
 #include "scene/3d/vehicle_body.h"
+#include "scene/3d/visibility_notifier.h"
 
 class Camera;
 
@@ -243,6 +244,22 @@ public:
 	VisibilityNotifierGizmo(VisibilityNotifier *p_notifier = NULL);
 };
 
+class ParticlesGizmo : public EditorSpatialGizmo {
+
+	GDCLASS(ParticlesGizmo, EditorSpatialGizmo);
+
+	Particles *particles;
+
+public:
+	virtual String get_handle_name(int p_idx) const;
+	virtual Variant get_handle_value(int p_idx) const;
+	virtual void set_handle(int p_idx, Camera *p_camera, const Point2 &p_point);
+	virtual void commit_handle(int p_idx, const Variant &p_restore, bool p_cancel = false);
+
+	void redraw();
+	ParticlesGizmo(Particles *p_particles = NULL);
+};
+
 class ReflectionProbeGizmo : public EditorSpatialGizmo {
 
 	GDCLASS(ReflectionProbeGizmo, EditorSpatialGizmo);
@@ -399,38 +416,42 @@ public:
 
 class SpatialEditorGizmos {
 public:
-	Ref<FixedSpatialMaterial> create_line_material(const Color &p_base_color);
-	Ref<FixedSpatialMaterial> create_solid_material(const Color &p_base_color);
-	Ref<FixedSpatialMaterial> handle2_material;
-	Ref<FixedSpatialMaterial> handle_material;
-	Ref<FixedSpatialMaterial> light_material;
-	Ref<FixedSpatialMaterial> light_material_omni_icon;
-	Ref<FixedSpatialMaterial> light_material_directional_icon;
-	Ref<FixedSpatialMaterial> camera_material;
-	Ref<FixedSpatialMaterial> skeleton_material;
-	Ref<FixedSpatialMaterial> reflection_probe_material;
-	Ref<FixedSpatialMaterial> reflection_probe_material_internal;
-	Ref<FixedSpatialMaterial> gi_probe_material;
-	Ref<FixedSpatialMaterial> gi_probe_material_internal;
-	Ref<FixedSpatialMaterial> room_material;
-	Ref<FixedSpatialMaterial> portal_material;
-	Ref<FixedSpatialMaterial> raycast_material;
-	Ref<FixedSpatialMaterial> visibility_notifier_material;
-	Ref<FixedSpatialMaterial> car_wheel_material;
-	Ref<FixedSpatialMaterial> joint_material;
+	Ref<SpatialMaterial> create_line_material(const Color &p_base_color);
+	Ref<SpatialMaterial> create_solid_material(const Color &p_base_color);
+	Ref<SpatialMaterial> handle2_material;
+	Ref<SpatialMaterial> handle2_material_billboard;
+	Ref<SpatialMaterial> handle_material;
+	Ref<SpatialMaterial> handle_material_billboard;
+	Ref<SpatialMaterial> light_material;
+	Ref<SpatialMaterial> light_material_omni;
+	Ref<SpatialMaterial> light_material_omni_icon;
+	Ref<SpatialMaterial> light_material_directional_icon;
+	Ref<SpatialMaterial> camera_material;
+	Ref<SpatialMaterial> skeleton_material;
+	Ref<SpatialMaterial> reflection_probe_material;
+	Ref<SpatialMaterial> reflection_probe_material_internal;
+	Ref<SpatialMaterial> gi_probe_material;
+	Ref<SpatialMaterial> gi_probe_material_internal;
+	Ref<SpatialMaterial> room_material;
+	Ref<SpatialMaterial> portal_material;
+	Ref<SpatialMaterial> raycast_material;
+	Ref<SpatialMaterial> visibility_notifier_material;
+	Ref<SpatialMaterial> particles_material;
+	Ref<SpatialMaterial> car_wheel_material;
+	Ref<SpatialMaterial> joint_material;
 
-	Ref<FixedSpatialMaterial> navmesh_edge_material;
-	Ref<FixedSpatialMaterial> navmesh_solid_material;
-	Ref<FixedSpatialMaterial> navmesh_edge_material_disabled;
-	Ref<FixedSpatialMaterial> navmesh_solid_material_disabled;
+	Ref<SpatialMaterial> navmesh_edge_material;
+	Ref<SpatialMaterial> navmesh_solid_material;
+	Ref<SpatialMaterial> navmesh_edge_material_disabled;
+	Ref<SpatialMaterial> navmesh_solid_material_disabled;
 
-	Ref<FixedSpatialMaterial> listener_icon;
+	Ref<SpatialMaterial> listener_icon;
 
-	Ref<FixedSpatialMaterial> sample_player_icon;
-	Ref<FixedSpatialMaterial> stream_player_icon;
-	Ref<FixedSpatialMaterial> visibility_notifier_icon;
+	Ref<SpatialMaterial> sample_player_icon;
+	Ref<SpatialMaterial> stream_player_icon;
+	Ref<SpatialMaterial> visibility_notifier_icon;
 
-	Ref<FixedSpatialMaterial> shape_material;
+	Ref<SpatialMaterial> shape_material;
 	Ref<Texture> handle_t;
 
 	Ref<Mesh> pos3d_mesh;

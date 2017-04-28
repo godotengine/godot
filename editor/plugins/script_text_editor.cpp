@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -66,26 +67,6 @@ void ScriptTextEditor::apply_code() {
 Ref<Script> ScriptTextEditor::get_edited_script() const {
 
 	return script;
-}
-
-bool ScriptTextEditor::goto_method(const String &p_method) {
-
-	Vector<String> functions = get_functions();
-
-	String method_search = p_method + ":";
-
-	for (int i = 0; i < functions.size(); i++) {
-		String function = functions[i];
-
-		if (function.begins_with(method_search)) {
-
-			int line = function.get_slice(":", 1).to_int();
-			goto_line(line - 1);
-			return true;
-		}
-	}
-
-	return false;
 }
 
 void ScriptTextEditor::_load_theme_settings() {
@@ -259,6 +240,48 @@ Variant ScriptTextEditor::get_edit_state() {
 	return state;
 }
 
+void ScriptTextEditor::_convert_case(CaseStyle p_case) {
+	TextEdit *te = code_editor->get_text_edit();
+	Ref<Script> scr = get_edited_script();
+	if (scr.is_null()) {
+		return;
+	}
+
+	if (te->is_selection_active()) {
+		te->begin_complex_operation();
+
+		int begin = te->get_selection_from_line();
+		int end = te->get_selection_to_line();
+		int begin_col = te->get_selection_from_column();
+		int end_col = te->get_selection_to_column();
+
+		for (int i = begin; i <= end; i++) {
+			String new_line = te->get_line(i);
+
+			switch (p_case) {
+				case UPPER: {
+					new_line = new_line.to_upper();
+				} break;
+				case LOWER: {
+					new_line = new_line.to_lower();
+				} break;
+				case CAPITALIZE: {
+					new_line = new_line.capitalize();
+				} break;
+			}
+
+			if (i == begin) {
+				new_line = te->get_line(i).left(begin_col) + new_line.right(begin_col);
+			}
+			if (i == end) {
+				new_line = new_line.left(end_col) + te->get_line(i).right(end_col);
+			}
+			te->set_line(i, new_line);
+		}
+		te->end_complex_operation();
+	}
+}
+
 void ScriptTextEditor::trim_trailing_whitespace() {
 
 	TextEdit *tx = code_editor->get_text_edit();
@@ -289,13 +312,116 @@ void ScriptTextEditor::trim_trailing_whitespace() {
 	}
 }
 
+void ScriptTextEditor::convert_indent_to_spaces() {
+	TextEdit *tx = code_editor->get_text_edit();
+	Ref<Script> scr = get_edited_script();
+
+	if (scr.is_null()) {
+		return;
+	}
+
+	int indent_size = EditorSettings::get_singleton()->get("text_editor/indent/size");
+	String indent = "";
+
+	for (int i = 0; i < indent_size; i++) {
+		indent += " ";
+	}
+
+	int cursor_line = tx->cursor_get_line();
+	int cursor_column = tx->cursor_get_column();
+
+	bool changed_indentation = false;
+	for (int i = 0; i < tx->get_line_count(); i++) {
+		String line = tx->get_line(i);
+
+		if (line.length() <= 0) {
+			continue;
+		}
+
+		int j = 0;
+		while (j < line.length() && (line[j] == ' ' || line[j] == '\t')) {
+			if (line[j] == '\t') {
+				if (!changed_indentation) {
+					tx->begin_complex_operation();
+					changed_indentation = true;
+				}
+				if (cursor_line == i && cursor_column > j) {
+					cursor_column += indent_size - 1;
+				}
+				line = line.left(j) + indent + line.right(j + 1);
+			}
+			j++;
+		}
+		tx->set_line(i, line);
+	}
+	if (changed_indentation) {
+		tx->cursor_set_column(cursor_column);
+		tx->end_complex_operation();
+		tx->update();
+	}
+}
+
+void ScriptTextEditor::convert_indent_to_tabs() {
+	TextEdit *tx = code_editor->get_text_edit();
+	Ref<Script> scr = get_edited_script();
+
+	if (scr.is_null()) {
+		return;
+	}
+
+	int indent_size = EditorSettings::get_singleton()->get("text_editor/indent/size");
+	indent_size -= 1;
+
+	int cursor_line = tx->cursor_get_line();
+	int cursor_column = tx->cursor_get_column();
+
+	bool changed_indentation = false;
+	for (int i = 0; i < tx->get_line_count(); i++) {
+		String line = tx->get_line(i);
+
+		if (line.length() <= 0) {
+			continue;
+		}
+
+		int j = 0;
+		int space_count = -1;
+		while (j < line.length() && (line[j] == ' ' || line[j] == '\t')) {
+			if (line[j] != '\t') {
+				space_count++;
+
+				if (space_count == indent_size) {
+					if (!changed_indentation) {
+						tx->begin_complex_operation();
+						changed_indentation = true;
+					}
+					if (cursor_line == i && cursor_column > j) {
+						cursor_column -= indent_size;
+					}
+					line = line.left(j - indent_size) + "\t" + line.right(j + 1);
+					j = 0;
+					space_count = -1;
+				}
+			} else {
+				space_count = -1;
+			}
+			j++;
+		}
+		tx->set_line(i, line);
+	}
+	if (changed_indentation) {
+		tx->cursor_set_column(cursor_column);
+		tx->end_complex_operation();
+		tx->update();
+	}
+}
+
 void ScriptTextEditor::tag_saved_version() {
 
 	code_editor->get_text_edit()->tag_saved_version();
 }
 
 void ScriptTextEditor::goto_line(int p_line, bool p_with_error) {
-	code_editor->get_text_edit()->cursor_set_line(p_line);
+	code_editor->get_text_edit()->call_deferred("cursor_set_line", p_line);
 }
 
 void ScriptTextEditor::ensure_focus() {
@@ -826,10 +952,24 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		case EDIT_TRIM_TRAILING_WHITESAPCE: {
 			trim_trailing_whitespace();
 		} break;
+		case EDIT_CONVERT_INDENT_TO_SPACES: {
+			convert_indent_to_spaces();
+		} break;
+		case EDIT_CONVERT_INDENT_TO_TABS: {
+			convert_indent_to_tabs();
+		} break;
 		case EDIT_PICK_COLOR: {
 			color_panel->popup();
 		} break;
-
+		case EDIT_TO_UPPERCASE: {
+			_convert_case(UPPER);
+		} break;
+		case EDIT_TO_LOWERCASE: {
+			_convert_case(LOWER);
+		} break;
+		case EDIT_CAPITALIZE: {
+			_convert_case(CAPITALIZE);
+		} break;
 		case SEARCH_FIND: {
 
 			code_editor->get_find_replace_bar()->popup_search();
@@ -1094,8 +1234,8 @@ void ScriptTextEditor::_text_edit_gui_input(const InputEvent &ev) {
 
 			int col, row;
 			TextEdit *tx = code_editor->get_text_edit();
-			tx->_get_mouse_pos(Point2i(mb.global_x, mb.global_y) - tx->get_global_pos(), row, col);
-			Vector2 mpos = Vector2(mb.global_x, mb.global_y) - tx->get_global_pos();
+			tx->_get_mouse_pos(Point2i(mb.global_x, mb.global_y) - tx->get_global_position(), row, col);
+			Vector2 mpos = Vector2(mb.global_x, mb.global_y) - tx->get_global_position();
 			bool have_selection = (tx->get_selection_text().length() > 0);
 			bool have_color = (tx->get_word_at_pos(mpos) == "Color");
 			if (have_color) {
@@ -1123,7 +1263,7 @@ void ScriptTextEditor::_text_edit_gui_input(const InputEvent &ev) {
 						float alpha = color.size() > 3 ? color[3] : 1.0f;
 						color_picker->set_pick_color(Color(color[0], color[1], color[2], alpha));
 					}
-					color_panel->set_pos(get_global_transform().xform(get_local_mouse_pos()));
+					color_panel->set_position(get_global_transform().xform(get_local_mouse_pos()));
 					Size2 ms = Size2(300, color_picker->get_combined_minimum_size().height + 10);
 					color_panel->set_size(ms);
 				} else {
@@ -1173,7 +1313,7 @@ void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color) {
 		context_menu->add_separator();
 		context_menu->add_item(TTR("Pick Color"), EDIT_PICK_COLOR);
 	}
-	context_menu->set_pos(get_global_transform().xform(get_local_mouse_pos()));
+	context_menu->set_position(get_global_transform().xform(get_local_mouse_pos()));
 	context_menu->set_size(Vector2(1, 1));
 	context_menu->popup();
 }
@@ -1236,6 +1376,8 @@ ScriptTextEditor::ScriptTextEditor() {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/complete_symbol"), EDIT_COMPLETE);
 #endif
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/trim_trailing_whitespace"), EDIT_TRIM_TRAILING_WHITESAPCE);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_indent_to_spaces"), EDIT_CONVERT_INDENT_TO_SPACES);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_indent_to_tabs"), EDIT_CONVERT_INDENT_TO_TABS);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/auto_indent"), EDIT_AUTO_INDENT);
 	edit_menu->get_popup()->connect("id_pressed", this, "_edit_option");
 	edit_menu->get_popup()->add_separator();
@@ -1243,6 +1385,15 @@ ScriptTextEditor::ScriptTextEditor() {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/remove_all_breakpoints"), DEBUG_REMOVE_ALL_BREAKPOINTS);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_next_breakpoint"), DEBUG_GOTO_NEXT_BREAKPOINT);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_previous_breakpoint"), DEBUG_GOTO_PREV_BREAKPOINT);
+	edit_menu->get_popup()->add_separator();
+	PopupMenu *convert_case = memnew(PopupMenu);
+	convert_case->set_name("convert_case");
+	edit_menu->get_popup()->add_child(convert_case);
+	edit_menu->get_popup()->add_submenu_item(TTR("Convert Case"), "convert_case");
+	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/convert_to_uppercase", TTR("Uppercase")), EDIT_TO_UPPERCASE);
+	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/convert_to_lowercase", TTR("Lowercase")), EDIT_TO_LOWERCASE);
+	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/capitalize", TTR("Capitalize")), EDIT_CAPITALIZE);
+	convert_case->connect("id_pressed", this, "_edit_option");
 
 	search_menu = memnew(MenuButton);
 	edit_hb->add_child(search_menu);
@@ -1304,12 +1455,18 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/complete_symbol", TTR("Complete Symbol"), KEY_MASK_CMD | KEY_SPACE);
 #endif
 	ED_SHORTCUT("script_text_editor/trim_trailing_whitespace", TTR("Trim Trailing Whitespace"), KEY_MASK_CTRL | KEY_MASK_ALT | KEY_T);
+	ED_SHORTCUT("script_text_editor/convert_indent_to_spaces", TTR("Convert Indent To Spaces"), KEY_MASK_CTRL | KEY_MASK_SHIFT | KEY_Y);
+	ED_SHORTCUT("script_text_editor/convert_indent_to_tabs", TTR("Convert Indent To Tabs"), KEY_MASK_CTRL | KEY_MASK_SHIFT | KEY_X);
 	ED_SHORTCUT("script_text_editor/auto_indent", TTR("Auto Indent"), KEY_MASK_CMD | KEY_I);
 
 	ED_SHORTCUT("script_text_editor/toggle_breakpoint", TTR("Toggle Breakpoint"), KEY_F9);
 	ED_SHORTCUT("script_text_editor/remove_all_breakpoints", TTR("Remove All Breakpoints"), KEY_MASK_CTRL | KEY_MASK_SHIFT | KEY_F9);
 	ED_SHORTCUT("script_text_editor/goto_next_breakpoint", TTR("Goto Next Breakpoint"), KEY_MASK_CTRL | KEY_PERIOD);
 	ED_SHORTCUT("script_text_editor/goto_previous_breakpoint", TTR("Goto Previous Breakpoint"), KEY_MASK_CTRL | KEY_COMMA);
+
+	ED_SHORTCUT("script_text_editor/convert_to_uppercase", TTR("Convert To Uppercase"), KEY_MASK_SHIFT | KEY_F4);
+	ED_SHORTCUT("script_text_editor/convert_to_lowercase", TTR("Convert To Lowercase"), KEY_MASK_SHIFT | KEY_F3);
+	ED_SHORTCUT("script_text_editor/capitalize", TTR("Capitalize"), KEY_MASK_SHIFT | KEY_F2);
 
 	ED_SHORTCUT("script_text_editor/find", TTR("Find.."), KEY_MASK_CMD | KEY_F);
 	ED_SHORTCUT("script_text_editor/find_next", TTR("Find Next"), KEY_F3);

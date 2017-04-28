@@ -4,19 +4,20 @@
 #
 # akirakido <achts.y@gmail.com>, 2016.
 # hopping tappy (たっぴさん) <hopping.tappy@gmail.com>, 2016.
+# Lexi Grafen <shfeedly@gmail.com>, 2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2016-11-12 15:11+0000\n"
-"Last-Translator: akirakido <achts.y@gmail.com>\n"
+"PO-Revision-Date: 2017-01-25 08:56+0000\n"
+"Last-Translator: Lexi Grafen <shfeedly@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2.9\n"
+"X-Generator: Weblate 2.11-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -357,12 +358,210 @@ msgstr "配列の値の種類の変更"
 msgid "Change Array Value"
 msgstr "配列の値を変更"
 
+#: editor/asset_library_editor_plugin.cpp
+msgid "Free"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp editor/editor_plugin_settings.cpp
+msgid "Version:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Contents:"
+msgstr "継続的"
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "View Files"
+msgstr "ファイル:"
+
+#: editor/asset_library_editor_plugin.cpp editor/create_dialog.cpp
+#: editor/editor_help.cpp editor/property_selector.cpp
+#: editor/script_editor_debugger.cpp
+msgid "Description:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp editor/project_manager.cpp
+msgid "Install"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp editor/call_dialog.cpp
+#: editor/connections_dialog.cpp editor/export_template_manager.cpp
+#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/sample_library_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_settings.cpp
+#: editor/property_editor.cpp editor/run_settings_dialog.cpp
+#: editor/settings_config_dialog.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Close"
+msgstr "閉じる"
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Can't resolve hostname:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Can't resolve."
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Connection error, please try again."
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Can't connect."
+msgstr "接続"
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Can't connect to host:"
+msgstr "ノードに接続します。"
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "No response from host:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "No response."
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Request failed, return code:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Req. Failed."
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Request failed, too many redirects"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Redirect Loop."
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Failed:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Bad download hash, assuming file has been tampered with."
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Expected:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Got:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Failed sha256 hash check"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Asset Download Error:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Success!"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Fetching:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Resolving.."
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Connecting.."
+msgstr "接続"
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Requesting.."
+msgstr "テスト中"
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Error making request"
+msgstr "フォント読み込みエラー。"
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Idle"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Retry"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Download Error"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Download for this asset is already in progress!"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "first"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "prev"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "next"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "last"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "All"
+msgstr "すべて"
+
 #: editor/asset_library_editor_plugin.cpp editor/create_dialog.cpp
 #: editor/editor_help.cpp editor/editor_node.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: editor/quick_open.cpp editor/settings_config_dialog.cpp
 msgid "Search:"
 msgstr "検索:"
+
+#: editor/asset_library_editor_plugin.cpp editor/code_editor.cpp
+#: editor/editor_help.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/project_settings.cpp
+msgid "Search"
+msgstr "検索"
+
+#: editor/asset_library_editor_plugin.cpp editor/editor_node.cpp
+#: editor/io_plugins/editor_bitmask_import_plugin.cpp
+#: editor/io_plugins/editor_font_import_plugin.cpp
+#: editor/io_plugins/editor_mesh_import_plugin.cpp
+#: editor/io_plugins/editor_sample_import_plugin.cpp
+#: editor/io_plugins/editor_scene_import_plugin.cpp
+#: editor/io_plugins/editor_texture_import_plugin.cpp
+#: editor/io_plugins/editor_translation_import_plugin.cpp
+#: editor/project_manager.cpp
+msgid "Import"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp editor/project_settings.cpp
+msgid "Plugins"
+msgstr ""
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Sort:"
@@ -375,10 +574,6 @@ msgstr "逆"
 #: editor/asset_library_editor_plugin.cpp editor/project_settings.cpp
 msgid "Category:"
 msgstr "カテゴリー:"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "All"
-msgstr "すべて"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Site:"
@@ -411,20 +606,6 @@ msgstr "'%s' のメソッド一覧："
 #: editor/call_dialog.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Call"
 msgstr "呼び出し"
-
-#: editor/call_dialog.cpp editor/connections_dialog.cpp
-#: editor/export_template_manager.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/sample_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_settings.cpp
-#: editor/property_editor.cpp editor/run_settings_dialog.cpp
-#: editor/settings_config_dialog.cpp
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Close"
-msgstr "閉じる"
 
 #: editor/call_dialog.cpp
 msgid "Method List:"
@@ -474,13 +655,6 @@ msgstr "単語全体"
 #: editor/code_editor.cpp
 msgid "Selection Only"
 msgstr "選択範囲のみ"
-
-#: editor/code_editor.cpp editor/editor_help.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/project_settings.cpp
-msgid "Search"
-msgstr "検索"
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "Find"
@@ -631,11 +805,6 @@ msgstr ""
 #: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: editor/quick_open.cpp
 msgid "Matches:"
-msgstr ""
-
-#: editor/create_dialog.cpp editor/editor_help.cpp editor/property_selector.cpp
-#: editor/script_editor_debugger.cpp
-msgid "Description:"
 msgstr ""
 
 #: editor/dependency_editor.cpp
@@ -916,7 +1085,7 @@ msgstr ""
 msgid "Packing"
 msgstr ""
 
-#: editor/editor_export.cpp
+#: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:\n"
 msgstr ""
 
@@ -1112,11 +1281,6 @@ msgstr ""
 #: scene/gui/text_edit.cpp
 msgid "Clear"
 msgstr "削除"
-
-#: editor/editor_node.cpp
-#, fuzzy
-msgid "Node From Scene"
-msgstr "シーンからのノード"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/resources_dock.cpp
@@ -1493,21 +1657,6 @@ msgid "Distraction Free Mode"
 msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Import assets to the project."
-msgstr ""
-
-#: editor/editor_node.cpp editor/io_plugins/editor_bitmask_import_plugin.cpp
-#: editor/io_plugins/editor_font_import_plugin.cpp
-#: editor/io_plugins/editor_mesh_import_plugin.cpp
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-#: editor/project_manager.cpp
-msgid "Import"
-msgstr ""
-
-#: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
 msgstr ""
 
@@ -1773,10 +1922,6 @@ msgstr ""
 
 #: editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
-msgstr ""
-
-#: editor/editor_plugin_settings.cpp
-msgid "Version:"
 msgstr ""
 
 #: editor/editor_plugin_settings.cpp
@@ -3407,10 +3552,12 @@ msgid "Set Handle"
 msgstr ""
 
 #: editor/plugins/color_ramp_editor_plugin.cpp
+#: editor/plugins/gradient_texture_editor_plugin.cpp
 msgid "Add/Remove Color Ramp Point"
 msgstr ""
 
 #: editor/plugins/color_ramp_editor_plugin.cpp
+#: editor/plugins/gradient_texture_editor_plugin.cpp
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Modify Color Ramp"
 msgstr ""
@@ -3443,6 +3590,10 @@ msgstr ""
 
 #: editor/plugins/cube_grid_theme_editor_plugin.cpp
 msgid "Update from Scene"
+msgstr ""
+
+#: editor/plugins/curve_editor_plugin.cpp
+msgid "Modify Curve"
 msgstr ""
 
 #: editor/plugins/item_list_editor_plugin.cpp
@@ -3747,6 +3898,14 @@ msgid "Node does not contain geometry (faces)."
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
+msgid "A processor material of type 'ParticlesMaterial' is required."
+msgstr ""
+
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Generating AABB"
+msgstr ""
+
+#: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
 msgstr ""
 
@@ -3759,11 +3918,11 @@ msgid "Generate AABB"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Create Emitter From Mesh"
+msgid "Create Emission Points From Mesh"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Create Emitter From Node"
+msgid "Create Emission Points From Node"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
@@ -3775,19 +3934,31 @@ msgid "Create Emitter"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Positions:"
+msgid "Emission Points:"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Fill:"
+msgid "Surface Points"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Surface"
+msgid "Surface Points+Normal (Directed)"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Volume"
+msgstr ""
+
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Emission Source: "
+msgstr ""
+
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Generate Visibility AABB"
+msgstr ""
+
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Generation Time (sec):"
 msgstr ""
 
 #: editor/plugins/path_2d_editor_plugin.cpp
@@ -4239,6 +4410,14 @@ msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Trim Trailing Whitespace"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Convert Indent To Spaces"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Convert Indent To Tabs"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
@@ -5099,11 +5278,11 @@ msgid "Invalid project path, the path must exist!"
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "Invalid project path, godot.cfg must not exist."
+msgid "Invalid project path, *.godot must not exist."
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "Invalid project path, godot.cfg must exist."
+msgid "Invalid project path, *.godot must exist."
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -5115,7 +5294,7 @@ msgid "Invalid project path (changed anything?)."
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "Couldn't create godot.cfg in project path."
+msgid "Couldn't create *.godot project file in project path."
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -5148,10 +5327,6 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Install Project:"
-msgstr ""
-
-#: editor/project_manager.cpp
-msgid "Install"
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -5211,6 +5386,11 @@ msgstr ""
 #: editor/project_manager.cpp
 msgid "New Project"
 msgstr ""
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Templates"
+msgstr "選択しているものを削除"
 
 #: editor/project_manager.cpp
 msgid "Exit"
@@ -5396,7 +5576,7 @@ msgid "Remove Resource Remap Option"
 msgstr ""
 
 #: editor/project_settings.cpp
-msgid "Project Settings (godot.cfg)"
+msgid "Project Settings "
 msgstr ""
 
 #: editor/project_settings.cpp editor/settings_config_dialog.cpp
@@ -5461,10 +5641,6 @@ msgstr ""
 
 #: editor/project_settings.cpp
 msgid "AutoLoad"
-msgstr ""
-
-#: editor/project_settings.cpp
-msgid "Plugins"
 msgstr ""
 
 #: editor/property_editor.cpp
@@ -6072,6 +6248,10 @@ msgid "Change Notifier Extents"
 msgstr ""
 
 #: editor/spatial_editor_gizmos.cpp
+msgid "Change Particles AABB"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp
 msgid "Change Probe Extents"
 msgstr ""
 
@@ -6128,6 +6308,8 @@ msgid ""
 "A node yielded without working memory, please read the docs on how to yield "
 "properly!"
 msgstr ""
+"使用メモリ外でノードが発生しました。正しく発生させるためにドキュメントをお読"
+"みください。"
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
@@ -6184,9 +6366,8 @@ msgid "Rename Signal"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Function"
-msgstr "関数を作成"
+msgstr "関数を追加"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Variable"
@@ -6407,6 +6588,29 @@ msgstr ""
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "just released"
 msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "Run in Browser"
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "Run exported HTML in the system's default browser."
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Could not write file:\n"
+msgstr "フォルダを作成できませんでした。"
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Could not read file:\n"
+msgstr "フォルダを作成できませんでした。"
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Could not open template for export:\n"
+msgstr "フォルダを作成できませんでした。"
 
 #: platform/uwp/export/export.cpp
 msgid ""
@@ -6659,6 +6863,17 @@ msgstr ""
 "NavigationMeshInstance は、ナビゲーションノードの子や孫である必要があります。"
 "これはナビゲーションデータのみ提供します。"
 
+#: scene/3d/particles.cpp
+msgid ""
+"Nothing is visible because meshes have not been assigned to draw passes."
+msgstr ""
+
+#: scene/3d/particles.cpp
+msgid ""
+"A material to process the particles is not assigned, so no behavior is "
+"imprinted."
+msgstr ""
+
 #: scene/3d/remote_transform.cpp
 #, fuzzy
 msgid "Path property must point to a valid Spatial node to work."
@@ -6738,6 +6953,10 @@ msgstr ""
 "面に直接表示する場合は、サイズを得ることができるように、コントロールの子をつ"
 "くります。それ以外の場合、レンダー ターゲットし、その内部のテクスチャ表示のい"
 "くつかのノードに割り当てます。"
+
+#, fuzzy
+#~ msgid "Node From Scene"
+#~ msgstr "シーンからのノード"
 
 #~ msgid ""
 #~ "A SampleLibrary resource must be created or set in the 'samples' property "

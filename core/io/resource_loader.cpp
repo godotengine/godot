@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -178,10 +179,10 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p
 		print_line("load resource: " + local_path);
 	bool found = false;
 
+	// Try all loaders and pick the first match for the type hint
 	for (int i = 0; i < loader_count; i++) {
 
 		if (!loader[i]->recognize_path(local_path, p_type_hint)) {
-			print_line("path not recognized");
 			continue;
 		}
 		found = true;

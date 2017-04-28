@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -755,7 +756,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			Image::Format format = Image::FORMAT_MAX;
 
 			for (int i = 0; i < Image::FORMAT_MAX; i++) {
-				if (Image::get_format_name(format) == sformat) {
+				if (Image::get_format_name(Image::Format(i)) == sformat) {
 					format = Image::Format(i);
 				}
 			}

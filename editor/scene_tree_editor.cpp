@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -161,16 +162,16 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		//open scene request
 		Rect2 item_rect = tree->get_item_rect(item, 0);
 		item_rect.pos.y -= tree->get_scroll().y;
-		item_rect.pos += tree->get_global_pos();
+		item_rect.pos += tree->get_global_position();
 
 		if (n == get_scene_node()) {
-			inheritance_menu->set_pos(item_rect.pos + Vector2(0, item_rect.size.y));
+			inheritance_menu->set_position(item_rect.pos + Vector2(0, item_rect.size.y));
 			inheritance_menu->set_size(Vector2(item_rect.size.x, 0));
 			inheritance_menu->popup();
 			instance_node = n->get_instance_ID();
 
 		} else {
-			instance_menu->set_pos(item_rect.pos + Vector2(0, item_rect.size.y));
+			instance_menu->set_position(item_rect.pos + Vector2(0, item_rect.size.y));
 			instance_menu->set_size(Vector2(item_rect.size.x, 0));
 			if (EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(n))
 				instance_menu->set_item_checked(0, true);
@@ -336,27 +337,27 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 
 		String warning = p_node->get_configuration_warning();
 		if (warning != String()) {
-			item->add_button(0, get_icon("NodeWarning", "EditorIcons"), BUTTON_WARNING);
+			item->add_button(0, get_icon("NodeWarning", "EditorIcons"), BUTTON_WARNING, false, TTR("Node configuration warning:") + "\n" + p_node->get_configuration_warning());
 		}
 
 		bool has_connections = p_node->has_persistent_signal_connections();
 		bool has_groups = p_node->has_persistent_groups();
 
 		if (has_connections && has_groups) {
-			item->add_button(0, get_icon("ConnectionAndGroups", "EditorIcons"), BUTTON_SIGNALS);
+			item->add_button(0, get_icon("ConnectionAndGroups", "EditorIcons"), BUTTON_SIGNALS, false, TTR("Node has connection(s) and group(s)\nClick to show signals dock."));
 		} else if (has_connections) {
-			item->add_button(0, get_icon("Connect", "EditorIcons"), BUTTON_SIGNALS);
+			item->add_button(0, get_icon("Connect", "EditorIcons"), BUTTON_SIGNALS, false, TTR("Node has connections.\nClick to show signals dock."));
 		} else if (has_groups) {
-			item->add_button(0, get_icon("Groups", "EditorIcons"), BUTTON_GROUPS);
+			item->add_button(0, get_icon("Groups", "EditorIcons"), BUTTON_GROUPS, false, TTR("Node is in group(s).\nClick to show groups dock."));
 		}
 	}
 
 	if (p_node == get_scene_node() && p_node->get_scene_inherited_state().is_valid()) {
-		item->add_button(0, get_icon("InstanceOptions", "EditorIcons"), BUTTON_SUBSCENE);
+		item->add_button(0, get_icon("InstanceOptions", "EditorIcons"), BUTTON_SUBSCENE, false, TTR("Subscene options"));
 		item->set_tooltip(0, TTR("Inherits:") + " " + p_node->get_scene_inherited_state()->get_path() + "\n" + TTR("Type:") + " " + p_node->get_class());
 	} else if (p_node != get_scene_node() && p_node->get_filename() != "" && can_open_instance) {
 
-		item->add_button(0, get_icon("InstanceOptions", "EditorIcons"), BUTTON_SUBSCENE);
+		item->add_button(0, get_icon("InstanceOptions", "EditorIcons"), BUTTON_SUBSCENE, false, TTR("Subscene options"));
 		item->set_tooltip(0, TTR("Instance:") + " " + p_node->get_filename() + "\n" + TTR("Type:") + " " + p_node->get_class());
 	} else {
 		item->set_tooltip(0, String(p_node->get_name()) + "\n" + TTR("Type:") + " " + p_node->get_class());
@@ -369,24 +370,24 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 
 		if (!p_node->get_script().is_null()) {
 
-			item->add_button(0, get_icon("Script", "EditorIcons"), BUTTON_SCRIPT);
+			item->add_button(0, get_icon("Script", "EditorIcons"), BUTTON_SCRIPT, false, TTR("Open script"));
 		}
 
 		if (p_node->is_class("CanvasItem")) {
 
 			bool is_locked = p_node->has_meta("_edit_lock_"); //_edit_group_
 			if (is_locked)
-				item->add_button(0, get_icon("Lock", "EditorIcons"), BUTTON_LOCK);
+				item->add_button(0, get_icon("Lock", "EditorIcons"), BUTTON_LOCK, false, TTR("Node is locked.\nClick to unlock"));
 
 			bool is_grouped = p_node->has_meta("_edit_group_");
 			if (is_grouped)
-				item->add_button(0, get_icon("Group", "EditorIcons"), BUTTON_GROUP);
+				item->add_button(0, get_icon("Group", "EditorIcons"), BUTTON_GROUP, false, TTR("Children are not selectable.\nClick to make selectable"));
 
 			bool v = p_node->call("is_visible");
 			if (v)
-				item->add_button(0, get_icon("Visible", "EditorIcons"), BUTTON_VISIBILITY);
+				item->add_button(0, get_icon("Visible", "EditorIcons"), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
 			else
-				item->add_button(0, get_icon("Hidden", "EditorIcons"), BUTTON_VISIBILITY);
+				item->add_button(0, get_icon("Hidden", "EditorIcons"), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
 
 			if (!p_node->is_connected("visibility_changed", this, "_node_visibility_changed"))
 				p_node->connect("visibility_changed", this, "_node_visibility_changed", varray(p_node));
@@ -396,9 +397,9 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 
 			bool v = p_node->call("is_visible");
 			if (v)
-				item->add_button(0, get_icon("Visible", "EditorIcons"), BUTTON_VISIBILITY);
+				item->add_button(0, get_icon("Visible", "EditorIcons"), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
 			else
-				item->add_button(0, get_icon("Hidden", "EditorIcons"), BUTTON_VISIBILITY);
+				item->add_button(0, get_icon("Hidden", "EditorIcons"), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
 
 			if (!p_node->is_connected("visibility_changed", this, "_node_visibility_changed"))
 				p_node->connect("visibility_changed", this, "_node_visibility_changed", varray(p_node));
@@ -1102,7 +1103,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 
 	if (p_label) {
 		Label *label = memnew(Label);
-		label->set_pos(Point2(10, 0));
+		label->set_position(Point2(10, 0));
 		label->set_text(TTR("Scene Tree (Nodes):"));
 
 		add_child(label);

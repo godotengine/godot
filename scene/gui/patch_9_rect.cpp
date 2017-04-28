@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,27 +38,13 @@ void NinePatchRect::_notification(int p_what) {
 		if (texture.is_null())
 			return;
 
-		Size2 s = get_size();
+		Rect2 rect = Rect2(Point2(), get_size());
+		Rect2 src_rect = region_rect;
+
+		texture->get_rect_region(rect, src_rect, rect, src_rect);
+
 		RID ci = get_canvas_item();
-		VS::get_singleton()->canvas_item_add_nine_patch(ci, Rect2(Point2(), s), region_rect, texture->get_rid(), Vector2(margin[MARGIN_LEFT], margin[MARGIN_TOP]), Vector2(margin[MARGIN_RIGHT], margin[MARGIN_BOTTOM]), VS::NINE_PATCH_STRETCH, VS::NINE_PATCH_STRETCH, draw_center);
-		//draw_texture_rect(texture,Rect2(Point2(),s),false,modulate);
-
-		/*
-		Vector<Point2> points;
-		points.resize(4);
-		points[0]=Point2(0,0);
-		points[1]=Point2(s.x,0);
-		points[2]=Point2(s.x,s.y);
-		points[3]=Point2(0,s.y);
-		Vector<Point2> uvs;
-		uvs.resize(4);
-		uvs[0]=Point2(0,0);
-		uvs[1]=Point2(1,0);
-		uvs[2]=Point2(1,1);
-		uvs[3]=Point2(0,1);
-
-		VisualServer::get_singleton()->canvas_item_add_primitive(ci,points,Vector<Color>(),uvs,texture->get_rid());
-*/
+		VS::get_singleton()->canvas_item_add_nine_patch(ci, rect, src_rect, texture->get_rid(), Vector2(margin[MARGIN_LEFT], margin[MARGIN_TOP]), Vector2(margin[MARGIN_RIGHT], margin[MARGIN_BOTTOM]), VS::NINE_PATCH_STRETCH, VS::NINE_PATCH_STRETCH, draw_center);
 	}
 }
 
@@ -116,16 +103,16 @@ void NinePatchRect::set_patch_margin(Margin p_margin, int p_size) {
 	minimum_size_changed();
 	switch (p_margin) {
 		case MARGIN_LEFT:
-			_change_notify("patch_margin/left");
+			_change_notify("patch_margin_left");
 			break;
 		case MARGIN_TOP:
-			_change_notify("patch_margin/top");
+			_change_notify("patch_margin_top");
 			break;
 		case MARGIN_RIGHT:
-			_change_notify("patch_margin/right");
+			_change_notify("patch_margin_right");
 			break;
 		case MARGIN_BOTTOM:
-			_change_notify("patch_margin/bottom");
+			_change_notify("patch_margin_bottom");
 			break;
 	}
 }

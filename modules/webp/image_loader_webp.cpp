@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -86,9 +87,11 @@ static Image _webp_lossy_unpack(const PoolVector<uint8_t> &p_buffer) {
 		ERR_FAIL_V(Image());
 	}
 
-	//print_line("width: "+itos(features.width));
-	//print_line("height: "+itos(features.height));
-	//print_line("alpha: "+itos(features.has_alpha));
+	/*
+	print_line("width: "+itos(features.width));
+	print_line("height: "+itos(features.height));
+	print_line("alpha: "+itos(features.has_alpha));
+	*/
 
 	PoolVector<uint8_t> dst_image;
 	int datasize = features.width * features.height * (features.has_alpha ? 4 : 3);
@@ -129,9 +132,11 @@ Error ImageLoaderWEBP::load_image(Image *p_image, FileAccess *f) {
 		ERR_FAIL_V(ERR_FILE_CORRUPT);
 	}
 
+	/*
 	print_line("width: " + itos(features.width));
 	print_line("height: " + itos(features.height));
 	print_line("alpha: " + itos(features.has_alpha));
+	*/
 
 	src_w = PoolVector<uint8_t>::Write();
 

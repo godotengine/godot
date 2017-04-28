@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -232,7 +233,7 @@ void OSIPhone::mouse_button(int p_idx, int p_x, int p_y, bool p_pressed, bool p_
 
 		//mouse_list.pressed[p_idx] = p_pressed;
 
-		input->set_mouse_pos(Point2(ev.mouse_motion.x, ev.mouse_motion.y));
+		input->set_mouse_position(Point2(ev.mouse_motion.x, ev.mouse_motion.y));
 		ev.mouse_button.button_index = BUTTON_LEFT;
 		ev.mouse_button.doubleclick = p_doubleclick;
 		ev.mouse_button.pressed = p_pressed;
@@ -275,7 +276,7 @@ void OSIPhone::mouse_move(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_
 			ev.mouse_motion.relative_y = ev.mouse_motion.y - p_prev_x;
 		};
 
-		input->set_mouse_pos(Point2(ev.mouse_motion.x, ev.mouse_motion.y));
+		input->set_mouse_position(Point2(ev.mouse_motion.x, ev.mouse_motion.y));
 		ev.mouse_motion.speed_x = input->get_last_mouse_speed().x;
 		ev.mouse_motion.speed_y = input->get_last_mouse_speed().y;
 		ev.mouse_motion.button_mask = 1; // pressed
@@ -392,7 +393,7 @@ bool OSIPhone::is_mouse_grab_enabled() const {
 	return true;
 };
 
-Point2 OSIPhone::get_mouse_pos() const {
+Point2 OSIPhone::get_mouse_position() const {
 
 	return Point2();
 };

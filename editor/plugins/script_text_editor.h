@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -66,6 +67,8 @@ class ScriptTextEditor : public ScriptEditorBase {
 		EDIT_COMPLETE,
 		EDIT_AUTO_INDENT,
 		EDIT_TRIM_TRAILING_WHITESAPCE,
+		EDIT_CONVERT_INDENT_TO_SPACES,
+		EDIT_CONVERT_INDENT_TO_TABS,
 		EDIT_TOGGLE_COMMENT,
 		EDIT_MOVE_LINE_UP,
 		EDIT_MOVE_LINE_DOWN,
@@ -73,6 +76,9 @@ class ScriptTextEditor : public ScriptEditorBase {
 		EDIT_INDENT_LEFT,
 		EDIT_CLONE_DOWN,
 		EDIT_PICK_COLOR,
+		EDIT_TO_UPPERCASE,
+		EDIT_TO_LOWERCASE,
+		EDIT_CAPITALIZE,
 		SEARCH_FIND,
 		SEARCH_FIND_NEXT,
 		SEARCH_FIND_PREV,
@@ -106,6 +112,13 @@ protected:
 	void _goto_line(int p_line) { goto_line(p_line); }
 	void _lookup_symbol(const String &p_symbol, int p_row, int p_column);
 
+	enum CaseStyle {
+		UPPER,
+		LOWER,
+		CAPITALIZE,
+	};
+	void _convert_case(CaseStyle p_case);
+
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
@@ -124,6 +137,8 @@ public:
 	virtual void set_edit_state(const Variant &p_state);
 	virtual void ensure_focus();
 	virtual void trim_trailing_whitespace();
+	virtual void convert_indent_to_spaces();
+	virtual void convert_indent_to_tabs();
 	virtual void tag_saved_version();
 
 	virtual void goto_line(int p_line, bool p_with_error = false);
@@ -133,7 +148,6 @@ public:
 
 	virtual void add_callback(const String &p_function, PoolStringArray p_args);
 	virtual void update_settings();
-	virtual bool goto_method(const String &p_method);
 
 	virtual void set_tooltip_request_func(String p_method, Object *p_obj);
 

@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -394,6 +395,44 @@ VARIANT_ENUM_CAST(CubeMap::Flags);
 VARIANT_ENUM_CAST(CubeMap::Side);
 VARIANT_ENUM_CAST(CubeMap::Storage);
 
+class CurveTexture : public Texture {
+
+	GDCLASS(CurveTexture, Texture);
+	RES_BASE_EXTENSION("cvtex");
+
+private:
+	RID texture;
+	PoolVector<Vector2> points;
+	float min, max;
+	int width;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_max(float p_max);
+	float get_max() const;
+
+	void set_min(float p_min);
+	float get_min() const;
+
+	void set_width(int p_width);
+	int get_width() const;
+
+	void set_points(const PoolVector<Vector2> &p_points);
+	PoolVector<Vector2> get_points() const;
+
+	virtual RID get_rid() const;
+
+	virtual int get_height() const { return 1; }
+	virtual bool has_alpha() const { return false; }
+
+	virtual void set_flags(uint32_t p_flags) {}
+	virtual uint32_t get_flags() const { return FLAG_FILTER; }
+
+	CurveTexture();
+	~CurveTexture();
+};
 /*
 	enum CubeMapSide {
 
@@ -407,5 +446,108 @@ VARIANT_ENUM_CAST(CubeMap::Storage);
 
 */
 //VARIANT_ENUM_CAST( Texture::CubeMapSide );
+
+class GradientTexture : public Texture {
+	GDCLASS(GradientTexture, Texture);
+
+public:
+	struct Point {
+
+		float offset;
+		Color color;
+		bool operator<(const Point &p_ponit) const {
+			return offset < p_ponit.offset;
+		}
+	};
+
+private:
+	Vector<Point> points;
+	bool is_sorted;
+	bool update_pending;
+	RID texture;
+	int width;
+
+	void _queue_update();
+	void _update();
+
+protected:
+	static void _bind_methods();
+
+public:
+	void add_point(float p_offset, const Color &p_color);
+	void remove_point(int p_index);
+
+	void set_points(Vector<Point> &points);
+	Vector<Point> &get_points();
+
+	void set_offset(int pos, const float offset);
+	float get_offset(int pos) const;
+
+	void set_color(int pos, const Color &color);
+	Color get_color(int pos) const;
+
+	void set_offsets(const Vector<float> &offsets);
+	Vector<float> get_offsets() const;
+
+	void set_colors(const Vector<Color> &colors);
+	Vector<Color> get_colors() const;
+
+	void set_width(int p_width);
+	int get_width() const;
+
+	virtual RID get_rid() const { return texture; }
+	virtual int get_height() const { return 1; }
+	virtual bool has_alpha() const { return true; }
+
+	virtual void set_flags(uint32_t p_flags) {}
+	virtual uint32_t get_flags() const { return FLAG_FILTER; }
+
+	_FORCE_INLINE_ Color get_color_at_offset(float p_offset) {
+
+		if (points.empty())
+			return Color(0, 0, 0, 1);
+
+		if (!is_sorted) {
+			points.sort();
+			is_sorted = true;
+		}
+
+		//binary search
+		int low = 0;
+		int high = points.size() - 1;
+		int middle;
+
+		while (low <= high) {
+			middle = (low + high) / 2;
+			Point &point = points[middle];
+			if (point.offset > p_offset) {
+				high = middle - 1; //search low end of array
+			} else if (point.offset < p_offset) {
+				low = middle + 1; //search high end of array
+			} else {
+				return point.color;
+			}
+		}
+
+		//return interpolated value
+		if (points[middle].offset > p_offset) {
+			middle--;
+		}
+		int first = middle;
+		int second = middle + 1;
+		if (second >= points.size())
+			return points[points.size() - 1].color;
+		if (first < 0)
+			return points[0].color;
+		Point &pointFirst = points[first];
+		Point &pointSecond = points[second];
+		return pointFirst.color.linear_interpolate(pointSecond.color, (p_offset - pointFirst.offset) / (pointSecond.offset - pointFirst.offset));
+	}
+
+	int get_points_count() const;
+
+	GradientTexture();
+	virtual ~GradientTexture();
+};
 
 #endif

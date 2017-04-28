@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1774,7 +1775,7 @@ void PackedScene::set_path(const String &p_path, bool p_take_over) {
 void PackedScene::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("pack", "path:Node"), &PackedScene::pack);
-	ClassDB::bind_method(D_METHOD("instance:Node", "edit_state"), &PackedScene::instance, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("instance:Node", "edit_state"), &PackedScene::instance, DEFVAL(GEN_EDIT_STATE_DISABLED));
 	ClassDB::bind_method(D_METHOD("can_instance"), &PackedScene::can_instance);
 	ClassDB::bind_method(D_METHOD("_set_bundled_scene"), &PackedScene::_set_bundled_scene);
 	ClassDB::bind_method(D_METHOD("_get_bundled_scene"), &PackedScene::_get_bundled_scene);

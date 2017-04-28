@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,11 +44,14 @@ class ShaderTypes {
 
 	static ShaderTypes *singleton;
 
+	Set<String> shader_types;
+
 public:
 	static ShaderTypes *get_singleton() { return singleton; }
 
 	const Map<StringName, Map<StringName, ShaderLanguage::DataType> > &get_functions(VS::ShaderMode p_mode);
 	const Set<String> &get_modes(VS::ShaderMode p_mode);
+	const Set<String> &get_types();
 
 	ShaderTypes();
 };

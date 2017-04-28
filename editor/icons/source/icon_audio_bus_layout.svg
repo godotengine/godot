@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="16"
+   height="16"
+   viewBox="0 0 16 16"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.92.1 r"
+   inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_add_track.png"
+   inkscape:export-xdpi="45"
+   inkscape:export-ydpi="45"
+   sodipodi:docname="icon_audio_bus_layout.svg">
+  <defs
+     id="defs4">
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient959-5">
+      <stop
+         id="stop957-3"
+         offset="0"
+         style="stop-color:#ff8484;stop-opacity:1" />
+      <stop
+         style="stop-color:#e1dc7a;stop-opacity:1"
+         offset="0.5"
+         id="stop955-5" />
+      <stop
+         id="stop953-6"
+         offset="1"
+         style="stop-color:#84ffb1;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient959-5"
+       id="linearGradient4542"
+       gradientUnits="userSpaceOnUse"
+       x1="8"
+       y1="1"
+       x2="8"
+       y2="15" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="32.000001"
+     inkscape:cx="4.4869184"
+     inkscape:cy="8.3575292"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="true"
+     units="px"
+     inkscape:snap-bbox="true"
+     inkscape:bbox-paths="true"
+     inkscape:bbox-nodes="true"
+     inkscape:snap-bbox-edge-midpoints="true"
+     inkscape:snap-bbox-midpoints="false"
+     inkscape:snap-object-midpoints="true"
+     inkscape:snap-center="true"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
+     inkscape:window-x="0"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     inkscape:snap-midpoints="true"
+     inkscape:snap-smooth-nodes="true"
+     inkscape:object-nodes="true">
+    <inkscape:grid
+       type="xygrid"
+       id="grid3336" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-1036.3622)">
+    <path
+       style="fill:url(#linearGradient4542);fill-opacity:1.0;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.99607843"
+       d="M 3 1 C 1.8919904 1 1 1.8919904 1 3 L 1 13 C 1 14.10801 1.8919904 15 3 15 L 5 15 C 6.1080096 15 7 14.10801 7 13 L 7 3 C 7 1.8919904 6.1080096 1 5 1 L 3 1 z M 11 1 C 9.8919889 1 9 1.8919889 9 3 L 9 13 C 9 14.108011 9.8919889 15 11 15 L 13 15 C 14.108011 15 15 14.108011 15 13 L 15 3 C 15 1.8919889 14.108011 1 13 1 L 11 1 z M 3 2 L 5 2 C 5.5540096 2 6 2.4459904 6 3 L 6 13 C 6 13.55401 5.5540096 14 5 14 L 3 14 C 2.4459904 14 2 13.55401 2 13 L 2 3 C 2 2.4459904 2.4459904 2 3 2 z "
+       transform="translate(0,1036.3622)"
+       id="rect4505" />
+  </g>
+</svg>

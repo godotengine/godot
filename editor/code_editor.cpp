@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -63,7 +64,7 @@ GotoLineDialog::GotoLineDialog() {
 	set_title(TTR("Go to Line"));
 	Label *l = memnew(Label);
 	l->set_text(TTR("Line Number:"));
-	l->set_pos(Point2(5, 5));
+	l->set_position(Point2(5, 5));
 	add_child(l);
 
 	line = memnew(LineEdit);
@@ -1070,7 +1071,8 @@ void CodeTextEditor::update_editor_settings() {
 
 	text_editor->set_auto_brace_completion(EditorSettings::get_singleton()->get("text_editor/completion/auto_brace_complete"));
 	text_editor->set_scroll_pass_end_of_file(EditorSettings::get_singleton()->get("text_editor/cursor/scroll_past_end_of_file"));
-	text_editor->set_tab_size(EditorSettings::get_singleton()->get("text_editor/indent/tab_size"));
+	text_editor->set_indent_using_spaces(EditorSettings::get_singleton()->get("text_editor/indent/type"));
+	text_editor->set_indent_size(EditorSettings::get_singleton()->get("text_editor/indent/size"));
 	text_editor->set_draw_tabs(EditorSettings::get_singleton()->get("text_editor/indent/draw_tabs"));
 	text_editor->set_show_line_numbers(EditorSettings::get_singleton()->get("text_editor/line_numbers/show_line_numbers"));
 	text_editor->set_line_numbers_zero_padded(EditorSettings::get_singleton()->get("text_editor/line_numbers/line_numbers_zero_padded"));

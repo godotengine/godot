@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -228,28 +229,5 @@ _FORCE_INLINE_ Rect3 Transform::xform_inv(const Rect3 &p_aabb) const {
 
 	return ret;
 }
-
-#ifdef OPTIMIZED_TRANSFORM_IMPL_OVERRIDE
-
-#else
-
-struct OptimizedTransform {
-
-	Transform transform;
-
-	_FORCE_INLINE_ void invert() { transform.invert(); }
-	_FORCE_INLINE_ void affine_invert() { transform.affine_invert(); }
-	_FORCE_INLINE_ Vector3 xform(const Vector3 &p_vec) const { return transform.xform(p_vec); };
-	_FORCE_INLINE_ Vector3 xform_inv(const Vector3 &p_vec) const { return transform.xform_inv(p_vec); };
-	_FORCE_INLINE_ OptimizedTransform operator*(const OptimizedTransform &p_ot) const { return OptimizedTransform(transform * p_ot.transform); }
-	_FORCE_INLINE_ Transform get_transform() const { return transform; }
-	_FORCE_INLINE_ void set_transform(const Transform &p_transform) { transform = p_transform; }
-
-	OptimizedTransform(const Transform &p_transform) {
-		transform = p_transform;
-	}
-};
-
-#endif
 
 #endif

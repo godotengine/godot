@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,6 +44,10 @@ void EditorAudioBus::_notification(int p_what) {
 		vu_r->set_under_texture(get_icon("BusVuEmpty", "EditorIcons"));
 		vu_r->set_progress_texture(get_icon("BusVuFull", "EditorIcons"));
 		scale->set_texture(get_icon("BusVuDb", "EditorIcons"));
+
+		solo->set_icon(get_icon("AudioBusSolo", "EditorIcons"));
+		mute->set_icon(get_icon("AudioBusMute", "EditorIcons"));
+		bypass->set_icon(get_icon("AudioBusBypass", "EditorIcons"));
 
 		disabled_vu = get_icon("BusVuFrozen", "EditorIcons");
 
@@ -341,7 +346,7 @@ void EditorAudioBus::_effect_edited() {
 	if (effect->get_metadata(0) == Variant()) {
 		Rect2 area = effects->get_item_rect(effect);
 
-		effect_options->set_pos(effects->get_global_pos() + area.pos + Vector2(0, area.size.y));
+		effect_options->set_position(effects->get_global_position() + area.pos + Vector2(0, area.size.y));
 		effect_options->popup();
 		//add effect
 	} else {
@@ -393,7 +398,7 @@ void EditorAudioBus::_gui_input(const InputEvent &p_event) {
 	if (p_event.type == InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index == 2 && p_event.mouse_button.pressed) {
 
 		Vector2 pos = Vector2(p_event.mouse_button.x, p_event.mouse_button.y);
-		delete_popup->set_pos(get_global_pos() + pos);
+		delete_popup->set_position(get_global_position() + pos);
 		delete_popup->popup();
 	}
 }
@@ -419,7 +424,7 @@ Variant EditorAudioBus::get_drag_data(const Point2 &p_point) {
 	c->add_child(p);
 	p->add_style_override("panel", get_stylebox("focus", "Button"));
 	p->set_size(get_size());
-	p->set_pos(-p_point);
+	p->set_position(-p_point);
 	set_drag_preview(c);
 	Dictionary d;
 	d["type"] = "move_audio_bus";
@@ -575,7 +580,7 @@ void EditorAudioBus::_effect_rmb(const Vector2 &p_pos) {
 	if (item->get_metadata(0).get_type() != Variant::INT)
 		return;
 
-	delete_effect_popup->set_pos(get_global_mouse_pos());
+	delete_effect_popup->set_position(get_global_mouse_position());
 	delete_effect_popup->popup();
 }
 
@@ -626,23 +631,23 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses) {
 	vb->add_child(hbc);
 	hbc->add_spacer();
 	solo = memnew(ToolButton);
-	solo->set_text("S");
+	solo->set_tooltip(TTR("Toggle Solo"));
 	solo->set_toggle_mode(true);
-	solo->set_modulate(Color(0.8, 1.2, 0.8));
+	// solo->set_modulate(Color(0.8, 1.2, 0.8));
 	solo->set_focus_mode(FOCUS_NONE);
 	solo->connect("pressed", this, "_solo_toggled");
 	hbc->add_child(solo);
 	mute = memnew(ToolButton);
-	mute->set_text("M");
-	mute->set_toggle_mode(true);
-	mute->set_modulate(Color(1.2, 0.8, 0.8));
-	mute->set_focus_mode(FOCUS_NONE);
 	mute->connect("pressed", this, "_mute_toggled");
+	mute->set_toggle_mode(true);
+	// mute->set_modulate(Color(1.2, 0.8, 0.8));
+	mute->set_focus_mode(FOCUS_NONE);
+	mute->set_tooltip(TTR("Toggle Mute"));
 	hbc->add_child(mute);
 	bypass = memnew(ToolButton);
-	bypass->set_text("B");
+	bypass->set_tooltip(TTR("Toggle Bypass"));
 	bypass->set_toggle_mode(true);
-	bypass->set_modulate(Color(1.1, 1.1, 0.8));
+	// bypass->set_modulate(Color(1.1, 1.1, 0.8));
 	bypass->set_focus_mode(FOCUS_NONE);
 	bypass->connect("pressed", this, "_bypass_toggled");
 	hbc->add_child(bypass);
@@ -762,7 +767,7 @@ void EditorAudioBuses::_update_buses() {
 
 		EditorAudioBus *audio_bus = memnew(EditorAudioBus(this));
 		if (i == 0) {
-			audio_bus->set_self_modulate(Color(1, 0.9, 0.9));
+			audio_bus->set_self_modulate(Color(0.7, 0.7, 0.7));
 		}
 		bus_hb->add_child(audio_bus);
 		audio_bus->connect("delete_request", this, "_delete_bus", varray(audio_bus), CONNECT_DEFERRED);

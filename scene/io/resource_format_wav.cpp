@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -97,7 +98,7 @@ RES ResourceFormatLoaderWAV::load(const String &p_path, const String& p_original
 
 		/* chunk size */
 		uint32_t chunksize=file->get_32();
-		uint32_t file_pos=file->get_pos(); //save file pos, so we can skip to next chunk safely
+		uint32_t file_pos=file->get_position(); //save file pos, so we can skip to next chunk safely
 
 		if (file->eof_reached()) {
 

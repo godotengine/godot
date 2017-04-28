@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -250,7 +251,7 @@ Vector<Color> BakedLight::_get_bake_texture(Image &p_image, const Color &p_color
 BakedLight::MaterialCache BakedLight::_get_material_cache(Ref<Material> p_material) {
 
 	//this way of obtaining materials is inaccurate and also does not support some compressed formats very well
-	Ref<FixedSpatialMaterial> mat = p_material;
+	Ref<SpatialMaterial> mat = p_material;
 
 	Ref<Material> material = mat; //hack for now
 
@@ -262,7 +263,7 @@ BakedLight::MaterialCache BakedLight::_get_material_cache(Ref<Material> p_materi
 
 	if (mat.is_valid()) {
 
-		Ref<ImageTexture> albedo_tex = mat->get_texture(FixedSpatialMaterial::TEXTURE_ALBEDO);
+		Ref<ImageTexture> albedo_tex = mat->get_texture(SpatialMaterial::TEXTURE_ALBEDO);
 
 		Image img_albedo;
 		if (albedo_tex.is_valid()) {
@@ -272,7 +273,7 @@ BakedLight::MaterialCache BakedLight::_get_material_cache(Ref<Material> p_materi
 
 		mc.albedo = _get_bake_texture(img_albedo, mat->get_albedo());
 
-		Ref<ImageTexture> emission_tex = mat->get_texture(FixedSpatialMaterial::TEXTURE_EMISSION);
+		Ref<ImageTexture> emission_tex = mat->get_texture(SpatialMaterial::TEXTURE_EMISSION);
 
 		Color emission_col = mat->get_emission();
 		emission_col.r *= mat->get_emission_energy();
@@ -1591,11 +1592,11 @@ void BakedLight::create_debug_mesh(DebugMode p_mode) {
 	}
 
 	{
-		Ref<FixedSpatialMaterial> fsm;
+		Ref<SpatialMaterial> fsm;
 		fsm.instance();
-		fsm->set_flag(FixedSpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
-		fsm->set_flag(FixedSpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-		fsm->set_flag(FixedSpatialMaterial::FLAG_UNSHADED, true);
+		fsm->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
+		fsm->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+		fsm->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
 		fsm->set_albedo(Color(1, 1, 1, 1));
 
 		mesh->surface_set_material(0, fsm);

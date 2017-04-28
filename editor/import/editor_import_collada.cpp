@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -364,7 +365,7 @@ Error ColladaImport::_create_material(const String &p_target) {
 	ERR_FAIL_COND_V(!collada.state.effect_map.has(src_mat.instance_effect), ERR_INVALID_PARAMETER);
 	Collada::Effect &effect = collada.state.effect_map[src_mat.instance_effect];
 
-	Ref<FixedSpatialMaterial> material = memnew(FixedSpatialMaterial);
+	Ref<SpatialMaterial> material = memnew(SpatialMaterial);
 
 	if (src_mat.name != "")
 		material->set_name(src_mat.name);
@@ -381,15 +382,15 @@ Error ColladaImport::_create_material(const String &p_target) {
 			Ref<Texture> texture = ResourceLoader::load(texfile, "Texture");
 			if (texture.is_valid()) {
 
-				material->set_texture(FixedSpatialMaterial::TEXTURE_ALBEDO, texture);
+				material->set_texture(SpatialMaterial::TEXTURE_ALBEDO, texture);
 				material->set_albedo(Color(1, 1, 1, 1));
-				//material->set_parameter(FixedSpatialMaterial::PARAM_DIFFUSE,Color(1,1,1,1));
+				//material->set_parameter(SpatialMaterial::PARAM_DIFFUSE,Color(1,1,1,1));
 			} else {
 				missing_textures.push_back(texfile.get_file());
 			}
 		}
 	} else {
-		//material->set_parameter(FixedSpatialMaterial::PARAM_DIFFUSE,effect.diffuse.color);
+		//material->set_parameter(SpatialMaterial::PARAM_DIFFUSE,effect.diffuse.color);
 	}
 
 	// SPECULAR
@@ -401,11 +402,11 @@ Error ColladaImport::_create_material(const String &p_target) {
 
 			Ref<Texture> texture = ResourceLoader::load(texfile, "Texture");
 			if (texture.is_valid()) {
-				material->set_texture(FixedSpatialMaterial::TEXTURE_SPECULAR, texture);
+				material->set_texture(SpatialMaterial::TEXTURE_SPECULAR, texture);
 				material->set_specular(Color(1, 1, 1, 1));
 
-				//material->set_texture(FixedSpatialMaterial::PARAM_SPECULAR,texture);
-				//material->set_parameter(FixedSpatialMaterial::PARAM_SPECULAR,Color(1,1,1,1));
+				//material->set_texture(SpatialMaterial::PARAM_SPECULAR,texture);
+				//material->set_parameter(SpatialMaterial::PARAM_SPECULAR,Color(1,1,1,1));
 			} else {
 				missing_textures.push_back(texfile.get_file());
 			}
@@ -424,18 +425,18 @@ Error ColladaImport::_create_material(const String &p_target) {
 			Ref<Texture> texture = ResourceLoader::load(texfile, "Texture");
 			if (texture.is_valid()) {
 
-				material->set_feature(FixedSpatialMaterial::FEATURE_EMISSION, true);
-				material->set_texture(FixedSpatialMaterial::TEXTURE_EMISSION, texture);
+				material->set_feature(SpatialMaterial::FEATURE_EMISSION, true);
+				material->set_texture(SpatialMaterial::TEXTURE_EMISSION, texture);
 				material->set_emission(Color(1, 1, 1, 1));
 
-				//material->set_parameter(FixedSpatialMaterial::PARAM_EMISSION,Color(1,1,1,1));
+				//material->set_parameter(SpatialMaterial::PARAM_EMISSION,Color(1,1,1,1));
 			} else {
 				missing_textures.push_back(texfile.get_file());
 			}
 		}
 	} else {
 		if (effect.emission.color != Color()) {
-			material->set_feature(FixedSpatialMaterial::FEATURE_EMISSION, true);
+			material->set_feature(SpatialMaterial::FEATURE_EMISSION, true);
 			material->set_emission(effect.emission.color);
 		}
 	}
@@ -449,11 +450,11 @@ Error ColladaImport::_create_material(const String &p_target) {
 
 			Ref<Texture> texture = ResourceLoader::load(texfile, "Texture");
 			if (texture.is_valid()) {
-				material->set_feature(FixedSpatialMaterial::FEATURE_NORMAL_MAPPING, true);
-				material->set_texture(FixedSpatialMaterial::TEXTURE_NORMAL, texture);
+				material->set_feature(SpatialMaterial::FEATURE_NORMAL_MAPPING, true);
+				material->set_texture(SpatialMaterial::TEXTURE_NORMAL, texture);
 				//material->set_emission(Color(1,1,1,1));
 
-				//material->set_texture(FixedSpatialMaterial::PARAM_NORMAL,texture);
+				//material->set_texture(SpatialMaterial::PARAM_NORMAL,texture);
 			} else {
 				//missing_textures.push_back(texfile.get_file());
 			}
@@ -464,9 +465,9 @@ Error ColladaImport::_create_material(const String &p_target) {
 	material->set_roughness(roughness);
 
 	if (effect.double_sided) {
-		material->set_cull_mode(FixedSpatialMaterial::CULL_DISABLED);
+		material->set_cull_mode(SpatialMaterial::CULL_DISABLED);
 	}
-	material->set_flag(FixedSpatialMaterial::FLAG_UNSHADED, effect.unshaded);
+	material->set_flag(SpatialMaterial::FLAG_UNSHADED, effect.unshaded);
 
 	material_cache[p_target] = material;
 	return OK;
@@ -1000,7 +1001,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<Mesh> &p_mesh, c
 
 		{
 
-			Ref<FixedSpatialMaterial> material;
+			Ref<SpatialMaterial> material;
 
 			//find material
 			Mesh::PrimitiveType primitive = Mesh::PRIMITIVE_TRIANGLES;

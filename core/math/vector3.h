@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -107,6 +108,7 @@ struct Vector3 {
 	_FORCE_INLINE_ real_t angle_to(const Vector3 &p_b) const;
 
 	_FORCE_INLINE_ Vector3 slide(const Vector3 &p_vec) const;
+	_FORCE_INLINE_ Vector3 bounce(const Vector3 &p_vec) const;
 	_FORCE_INLINE_ Vector3 reflect(const Vector3 &p_vec) const;
 
 	/* Operators */
@@ -387,7 +389,8 @@ Vector3 Vector3::normalized() const {
 }
 
 bool Vector3::is_normalized() const {
-	return Math::isequal_approx(length(), (real_t)1.0);
+	// use length_squared() instead of length() to avoid sqrt(), makes it more stringent.
+	return Math::is_equal_approx(length_squared(), 1.0);
 }
 
 Vector3 Vector3::inverse() const {
@@ -400,14 +403,23 @@ void Vector3::zero() {
 	x = y = z = 0;
 }
 
-Vector3 Vector3::slide(const Vector3 &p_vec) const {
-
-	return p_vec - *this * this->dot(p_vec);
+// slide returns the component of the vector along the given plane, specified by its normal vector.
+Vector3 Vector3::slide(const Vector3 &p_n) const {
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_V(p_n.is_normalized() == false, Vector3());
+#endif
+	return *this - p_n * this->dot(p_n);
 }
 
-Vector3 Vector3::reflect(const Vector3 &p_vec) const {
+Vector3 Vector3::bounce(const Vector3 &p_n) const {
+	return -reflect(p_n);
+}
 
-	return p_vec - *this * this->dot(p_vec) * 2.0;
+Vector3 Vector3::reflect(const Vector3 &p_n) const {
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_V(p_n.is_normalized() == false, Vector3());
+#endif
+	return 2.0 * p_n * this->dot(p_n) - *this;
 }
 
 #endif

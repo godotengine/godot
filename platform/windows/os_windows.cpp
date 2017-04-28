@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -401,7 +402,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				SetCursorPos(pos.x, pos.y);
 			}
 
-			input->set_mouse_pos(Point2(mm.x, mm.y));
+			input->set_mouse_position(Point2(mm.x, mm.y));
 			mm.speed_x = input->get_last_mouse_speed().x;
 			mm.speed_y = input->get_last_mouse_speed().y;
 
@@ -1320,7 +1321,7 @@ void OS_Windows::warp_mouse_pos(const Point2 &p_to) {
 	}
 }
 
-Point2 OS_Windows::get_mouse_pos() const {
+Point2 OS_Windows::get_mouse_position() const {
 
 	return Point2(old_x, old_y);
 }
@@ -1583,6 +1584,32 @@ void OS_Windows::set_borderless_window(int p_borderless) {
 
 bool OS_Windows::get_borderless_window() {
 	return video_mode.borderless_window;
+}
+
+Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_handle) {
+	p_library_handle = (void *)LoadLibrary(p_path.utf8().get_data());
+	if (!p_library_handle) {
+		ERR_EXPLAIN("Can't open dynamic library: " + p_path + ". Error: " + String::num(GetLastError()));
+		ERR_FAIL_V(ERR_CANT_OPEN);
+	}
+	return OK;
+}
+
+Error OS_Windows::close_dynamic_library(void *p_library_handle) {
+	if (!FreeLibrary((HMODULE)p_library_handle)) {
+		return FAILED;
+	}
+	return OK;
+}
+
+Error OS_Windows::get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle) {
+	char *error;
+	p_symbol_handle = (void *)GetProcAddress((HMODULE)p_library_handle, p_name.utf8().get_data());
+	if (!p_symbol_handle) {
+		ERR_EXPLAIN("Can't resolve symbol " + p_name + ". Error: " + String::num(GetLastError()));
+		ERR_FAIL_V(ERR_CANT_RESOLVE);
+	}
+	return OK;
 }
 
 void OS_Windows::request_attention() {
@@ -1966,7 +1993,6 @@ String OS_Windows::get_executable_path() const {
 	wchar_t bufname[4096];
 	GetModuleFileNameW(NULL, bufname, 4096);
 	String s = bufname;
-	print_line("EXEC PATHP??: " + s);
 	return s;
 }
 
@@ -2169,9 +2195,6 @@ void OS_Windows::run() {
 
 	if (!main_loop)
 		return;
-
-	// Process all events before the main initialization so the cursor will get initialized properly
-	process_events(); // get rid of pending events
 
 	main_loop->init();
 

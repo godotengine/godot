@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -323,8 +324,8 @@ private:
 	bool grid_enabled;
 
 	Ref<Mesh> move_gizmo[3], rotate_gizmo[3];
-	Ref<FixedSpatialMaterial> gizmo_color[3];
-	Ref<FixedSpatialMaterial> gizmo_hl;
+	Ref<SpatialMaterial> gizmo_color[3];
+	Ref<SpatialMaterial> gizmo_hl;
 
 	int over_gizmo_handle;
 
@@ -333,8 +334,8 @@ private:
 	RID indicators_instance;
 	RID cursor_mesh;
 	RID cursor_instance;
-	Ref<FixedSpatialMaterial> indicator_mat;
-	Ref<FixedSpatialMaterial> cursor_material;
+	Ref<SpatialMaterial> indicator_mat;
+	Ref<SpatialMaterial> cursor_material;
 
 	/*
 	struct Selected {
@@ -484,7 +485,7 @@ public:
 
 	void update_transform_gizmo();
 
-	void select_gizmo_hilight_axis(int p_axis);
+	void select_gizmo_highlight_axis(int p_axis);
 	void set_custom_camera(Node *p_camera) { custom_camera = p_camera; }
 
 	void set_undo_redo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; }

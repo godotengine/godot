@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -93,7 +94,7 @@ void Image::_get_pixelb(int p_x, int p_y, uint32_t p_pixelsize, const uint8_t *p
 	uint32_t ofs = (p_y * width + p_x) * p_pixelsize;
 
 	for (uint32_t i = 0; i < p_pixelsize; i++) {
-		p_dst[ofs] = p_src[ofs + i];
+		p_dst[i] = p_src[ofs + i];
 	}
 }
 

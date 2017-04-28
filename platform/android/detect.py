@@ -175,6 +175,8 @@ def configure(env):
     if env['android_arch'] == 'x86':
         can_vectorize = True
         target_opts = ['-target', 'i686-none-linux-android']
+        # The NDK adds this if targeting API < 21, so we can drop it when Godot targets it at least
+        env.Append(CPPFLAGS=['-mstackrealign'])
     elif env["android_arch"] == "armv6":
         can_vectorize = False
         target_opts = ['-target', 'armv6-none-linux-androideabi']

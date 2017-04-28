@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -463,7 +464,7 @@ void TreeItem::deselect(int p_column) {
 	_cell_deselected(p_column);
 }
 
-void TreeItem::add_button(int p_column, const Ref<Texture> &p_button, int p_id, bool p_disabled) {
+void TreeItem::add_button(int p_column, const Ref<Texture> &p_button, int p_id, bool p_disabled, const String &p_tooltip) {
 
 	ERR_FAIL_INDEX(p_column, cells.size());
 	ERR_FAIL_COND(!p_button.is_valid());
@@ -473,6 +474,7 @@ void TreeItem::add_button(int p_column, const Ref<Texture> &p_button, int p_id, 
 		p_id = cells[p_column].buttons.size();
 	button.id = p_id;
 	button.disabled = p_disabled;
+	button.tooltip = p_tooltip;
 	cells[p_column].buttons.push_back(button);
 	_changed_notify(p_column);
 }
@@ -668,7 +670,7 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_custom_bg_color", "column"), &TreeItem::clear_custom_bg_color);
 	ClassDB::bind_method(D_METHOD("get_custom_bg_color", "column"), &TreeItem::get_custom_bg_color);
 
-	ClassDB::bind_method(D_METHOD("add_button", "column", "button:Texture", "button_idx", "disabled"), &TreeItem::add_button, DEFVAL(-1), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("add_button", "column", "button:Texture", "button_idx", "disabled", "tooltip"), &TreeItem::add_button, DEFVAL(-1), DEFVAL(false), DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_button_count", "column"), &TreeItem::get_button_count);
 	ClassDB::bind_method(D_METHOD("get_button:Texture", "column", "button_idx"), &TreeItem::get_button);
 	ClassDB::bind_method(D_METHOD("set_button", "column", "button_idx", "button:Texture"), &TreeItem::set_button);
@@ -1040,7 +1042,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 					cache.selected->draw(ci, r);
 				}
 				if (text_editor->is_visible_in_tree()) {
-					text_editor->set_pos(get_global_pos() + r.pos);
+					text_editor->set_position(get_global_position() + r.pos);
 				}
 			}
 
@@ -1502,7 +1504,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 				cache.click_id = c.buttons[j].id;
 				cache.click_item = p_item;
 				cache.click_column = col;
-				cache.click_pos = get_global_mouse_pos() - get_global_pos();
+				cache.click_pos = get_global_mouse_position() - get_global_position();
 				update();
 				//emit_signal("button_pressed");
 				return -1;
@@ -1626,7 +1628,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 					}
 
 					popup_menu->set_size(Size2(col_width, 0));
-					popup_menu->set_pos(get_global_pos() + Point2i(col_ofs, _get_title_button_height() + y_ofs + item_h) - cache.offset);
+					popup_menu->set_position(get_global_position() + Point2i(col_ofs, _get_title_button_height() + y_ofs + item_h) - cache.offset);
 					popup_menu->popup();
 					popup_edited_item = p_item;
 					popup_edited_item_col = col;
@@ -1692,7 +1694,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 			case TreeItem::CELL_MODE_CUSTOM: {
 				edited_item = p_item;
 				edited_col = col;
-				custom_popup_rect = Rect2i(get_global_pos() + Point2i(col_ofs, _get_title_button_height() + y_ofs + item_h - cache.offset.y), Size2(get_column_width(col), item_h));
+				custom_popup_rect = Rect2i(get_global_position() + Point2i(col_ofs, _get_title_button_height() + y_ofs + item_h - cache.offset.y), Size2(get_column_width(col), item_h));
 				emit_signal("custom_popup_edited", ((bool)(x >= (col_width - item_h / 2))));
 
 				bring_up_editor = false;
@@ -1709,7 +1711,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 		popup_edited_item = p_item;
 		popup_edited_item_col = col;
 
-		pressing_item_rect = Rect2(get_global_pos() + Point2i(col_ofs, _get_title_button_height() + y_ofs) - cache.offset, Size2(col_width, item_h));
+		pressing_item_rect = Rect2(get_global_position() + Point2i(col_ofs, _get_title_button_height() + y_ofs) - cache.offset, Size2(col_width, item_h));
 		pressing_for_editor_text = editor_text;
 		pressing_for_editor = true;
 
@@ -2378,7 +2380,7 @@ bool Tree::edit_selected() {
 
 		edited_item = s;
 		edited_col = col;
-		custom_popup_rect = Rect2i(get_global_pos() + rect.pos, rect.size);
+		custom_popup_rect = Rect2i(get_global_position() + rect.pos, rect.size);
 		emit_signal("custom_popup_edited", false);
 		item_edited(col, s);
 
@@ -2393,7 +2395,7 @@ bool Tree::edit_selected() {
 		}
 
 		popup_menu->set_size(Size2(rect.size.width, 0));
-		popup_menu->set_pos(get_global_pos() + rect.pos + Point2i(0, rect.size.height));
+		popup_menu->set_position(get_global_position() + rect.pos + Point2i(0, rect.size.height));
 		popup_menu->popup();
 		popup_edited_item = s;
 		popup_edited_item_col = col;
@@ -2401,8 +2403,8 @@ bool Tree::edit_selected() {
 
 	} else if (c.mode == TreeItem::CELL_MODE_STRING || c.mode == TreeItem::CELL_MODE_RANGE || c.mode == TreeItem::CELL_MODE_RANGE_EXPRESSION) {
 
-		Point2i textedpos = get_global_pos() + rect.pos;
-		text_editor->set_pos(textedpos);
+		Point2i textedpos = get_global_position() + rect.pos;
+		text_editor->set_position(textedpos);
 		text_editor->set_size(rect.size);
 		text_editor->clear();
 		text_editor->set_text(c.mode == TreeItem::CELL_MODE_STRING ? c.text : String::num(c.val, Math::step_decimals(c.step)));
@@ -2410,7 +2412,7 @@ bool Tree::edit_selected() {
 
 		if (c.mode == TreeItem::CELL_MODE_RANGE || c.mode == TreeItem::CELL_MODE_RANGE_EXPRESSION) {
 
-			value_editor->set_pos(textedpos + Point2i(0, text_editor->get_size().height));
+			value_editor->set_position(textedpos + Point2i(0, text_editor->get_size().height));
 			value_editor->set_size(Size2(rect.size.width, 1));
 			value_editor->show_modal();
 			updating_value_editor = true;
@@ -2528,7 +2530,7 @@ void Tree::_notification(int p_what) {
 	if (p_what == NOTIFICATION_DRAG_BEGIN) {
 
 		single_select_defer = NULL;
-		if (cache.scroll_speed > 0 && get_rect().has_point(get_viewport()->get_mouse_pos() - get_global_pos())) {
+		if (cache.scroll_speed > 0 && get_rect().has_point(get_viewport()->get_mouse_position() - get_global_position())) {
 			scrolling = true;
 			set_fixed_process(true);
 		}
@@ -2576,7 +2578,7 @@ void Tree::_notification(int p_what) {
 		}
 
 		if (scrolling) {
-			Point2 point = get_viewport()->get_mouse_pos() - get_global_pos();
+			Point2 point = get_viewport()->get_mouse_position() - get_global_position();
 			if (point.x < cache.scroll_border) {
 				point.x -= cache.scroll_border;
 			} else if (point.x > get_size().width - cache.scroll_border) {
@@ -3289,6 +3291,19 @@ String Tree::get_tooltip(const Point2 &p_pos) const {
 
 		if (it) {
 
+			TreeItem::Cell &c = it->cells[col];
+			int col_width = get_column_width(col);
+			for (int j = c.buttons.size() - 1; j >= 0; j--) {
+				Ref<Texture> b = c.buttons[j].texture;
+				Size2 size = b->get_size() + cache.button_pressed->get_minimum_size();
+				if (pos.x > col_width - size.width) {
+					String tooltip = c.buttons[j].tooltip;
+					if (tooltip != "") {
+						return tooltip;
+					}
+				}
+				col_width -= size.width;
+			}
 			String ret;
 			if (it->get_tooltip(col) == "")
 				ret = it->get_text(col);

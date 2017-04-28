@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,7 +51,7 @@ void LineEdit::_gui_input(InputEvent p_event) {
 			const InputEventMouseButton &b = p_event.mouse_button;
 
 			if (b.pressed && b.button_index == BUTTON_RIGHT) {
-				menu->set_pos(get_global_transform().xform(get_local_mouse_pos()));
+				menu->set_position(get_global_transform().xform(get_local_mouse_pos()));
 				menu->set_size(Vector2(1, 1));
 				menu->popup();
 				grab_focus();
@@ -575,7 +576,7 @@ void LineEdit::_notification(int p_what) {
 
 			RID ci = get_canvas_item();
 
-			Ref<StyleBox> style = get_stylebox("normal");
+			Ref<StyleBox> style = has_focus() ? get_stylebox("active") : get_stylebox("normal");
 			if (!is_editable())
 				style = get_stylebox("read_only");
 
@@ -616,7 +617,7 @@ void LineEdit::_notification(int p_what) {
 			int font_ascent = font->get_ascent();
 
 			Color selection_color = get_color("selection_color");
-			Color font_color = get_color("font_color");
+			Color font_color = is_editable() ? has_focus() ? get_color("font_color_active") : get_color("font_color") : get_color("font_color_read_only");
 			Color font_color_selected = get_color("font_color_selected");
 			Color cursor_color = get_color("cursor_color");
 

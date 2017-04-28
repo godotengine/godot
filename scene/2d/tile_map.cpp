@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -304,7 +305,7 @@ void TileMap::_update_dirty_quadrants() {
 			VS::get_singleton()->free(E->get().id);
 		}
 		q.occluder_instances.clear();
-		Ref<CanvasItemMaterial> prev_material;
+		Ref<ShaderMaterial> prev_material;
 		RID prev_canvas_item;
 		RID prev_debug_canvas_item;
 
@@ -324,7 +325,7 @@ void TileMap::_update_dirty_quadrants() {
 			if (!tex.is_valid())
 				continue;
 
-			Ref<CanvasItemMaterial> mat = tile_set->tile_get_material(c.id);
+			Ref<ShaderMaterial> mat = tile_set->tile_get_material(c.id);
 
 			RID canvas_item;
 			RID debug_canvas_item;
@@ -876,6 +877,26 @@ void TileMap::set_collision_mask(uint32_t p_mask) {
 	}
 }
 
+void TileMap::set_collision_layer_bit(int p_bit, bool p_value) {
+
+	uint32_t layer = get_collision_layer();
+	if (p_value)
+		layer |= 1 << p_bit;
+	else
+		layer &= ~(1 << p_bit);
+	set_collision_layer(layer);
+}
+
+void TileMap::set_collision_mask_bit(int p_bit, bool p_value) {
+
+	uint32_t mask = get_collision_mask();
+	if (p_value)
+		mask |= 1 << p_bit;
+	else
+		mask &= ~(1 << p_bit);
+	set_collision_mask(mask);
+}
+
 bool TileMap::get_collision_use_kinematic() const {
 
 	return use_kinematic;
@@ -925,6 +946,16 @@ uint32_t TileMap::get_collision_layer() const {
 uint32_t TileMap::get_collision_mask() const {
 
 	return collision_mask;
+}
+
+bool TileMap::get_collision_layer_bit(int p_bit) const {
+
+	return get_collision_layer() & (1 << p_bit);
+}
+
+bool TileMap::get_collision_mask_bit(int p_bit) const {
+
+	return get_collision_mask() & (1 << p_bit);
 }
 
 void TileMap::set_mode(Mode p_mode) {
@@ -1196,11 +1227,17 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_use_kinematic", "use_kinematic"), &TileMap::set_collision_use_kinematic);
 	ClassDB::bind_method(D_METHOD("get_collision_use_kinematic"), &TileMap::get_collision_use_kinematic);
 
-	ClassDB::bind_method(D_METHOD("set_collision_layer", "mask"), &TileMap::set_collision_layer);
+	ClassDB::bind_method(D_METHOD("set_collision_layer", "layer"), &TileMap::set_collision_layer);
 	ClassDB::bind_method(D_METHOD("get_collision_layer"), &TileMap::get_collision_layer);
 
 	ClassDB::bind_method(D_METHOD("set_collision_mask", "mask"), &TileMap::set_collision_mask);
 	ClassDB::bind_method(D_METHOD("get_collision_mask"), &TileMap::get_collision_mask);
+
+	ClassDB::bind_method(D_METHOD("set_collision_layer_bit", "bit", "value"), &TileMap::set_collision_layer_bit);
+	ClassDB::bind_method(D_METHOD("get_collision_layer_bit", "bit"), &TileMap::get_collision_layer_bit);
+
+	ClassDB::bind_method(D_METHOD("set_collision_mask_bit", "bit", "value"), &TileMap::set_collision_mask_bit);
+	ClassDB::bind_method(D_METHOD("get_collision_mask_bit", "bit"), &TileMap::get_collision_mask_bit);
 
 	ClassDB::bind_method(D_METHOD("set_collision_friction", "value"), &TileMap::set_collision_friction);
 	ClassDB::bind_method(D_METHOD("get_collision_friction"), &TileMap::get_collision_friction);

@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -144,18 +145,18 @@ void BakedLightBaker::_add_mesh(const Ref<Mesh>& p_mesh,const Ref<Material>& p_m
 
 				MeshMaterial mm;
 
-				Ref<FixedSpatialMaterial> fm = mat;
+				Ref<SpatialMaterial> fm = mat;
 				if (fm.is_valid()) {
 					//fixed route
-					mm.diffuse.color=fm->get_parameter(FixedSpatialMaterial::PARAM_DIFFUSE);
+					mm.diffuse.color=fm->get_parameter(SpatialMaterial::PARAM_DIFFUSE);
 					if (linear_color)
 						mm.diffuse.color=mm.diffuse.color.to_linear();
-					mm.diffuse.tex=_get_mat_tex(fm->get_texture(FixedSpatialMaterial::PARAM_DIFFUSE));
-					mm.specular.color=fm->get_parameter(FixedSpatialMaterial::PARAM_SPECULAR);
+					mm.diffuse.tex=_get_mat_tex(fm->get_texture(SpatialMaterial::PARAM_DIFFUSE));
+					mm.specular.color=fm->get_parameter(SpatialMaterial::PARAM_SPECULAR);
 					if (linear_color)
 						mm.specular.color=mm.specular.color.to_linear();
 
-					mm.specular.tex=_get_mat_tex(fm->get_texture(FixedSpatialMaterial::PARAM_SPECULAR));
+					mm.specular.tex=_get_mat_tex(fm->get_texture(SpatialMaterial::PARAM_SPECULAR));
 				} else {
 
 					mm.diffuse.color=Color(1,1,1,1);

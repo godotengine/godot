@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -90,11 +91,12 @@ public:
 	virtual void set_edit_state(const Variant &p_state) = 0;
 	virtual void goto_line(int p_line, bool p_with_error = false) = 0;
 	virtual void trim_trailing_whitespace() = 0;
+	virtual void convert_indent_to_spaces() = 0;
+	virtual void convert_indent_to_tabs() = 0;
 	virtual void ensure_focus() = 0;
 	virtual void tag_saved_version() = 0;
 	virtual void reload(bool p_soft) = 0;
 	virtual void get_breakpoints(List<int> *p_breakpoints) = 0;
-	virtual bool goto_method(const String &p_method) = 0;
 	virtual void add_callback(const String &p_function, PoolStringArray p_args) = 0;
 	virtual void update_settings() = 0;
 	virtual void set_debugger_active(bool p_active) = 0;
@@ -251,6 +253,8 @@ class ScriptEditor : public VBoxContainer {
 	void _res_saved_callback(const Ref<Resource> &p_res);
 
 	bool trim_trailing_whitespace_on_save;
+	bool use_space_indentation;
+	bool convert_indent_on_save;
 
 	void _trim_trailing_whitespace(TextEdit *tx);
 
@@ -311,7 +315,9 @@ public:
 	void apply_scripts() const;
 
 	void ensure_select_current();
-	void edit(const Ref<Script> &p_script, bool p_grab_focus = true);
+
+	_FORCE_INLINE_ bool edit(const Ref<Script> &p_script, bool p_grab_focus = true) { return edit(p_script, -1, 0, p_grab_focus); }
+	bool edit(const Ref<Script> &p_script, int p_line, int p_col, bool p_grab_focus = true);
 
 	Dictionary get_state() const;
 	void set_state(const Dictionary &p_state);
@@ -328,7 +334,7 @@ public:
 
 	void set_scene_root_script(Ref<Script> p_script);
 
-	bool script_go_to_method(Ref<Script> p_script, const String &p_method);
+	bool script_goto_method(Ref<Script> p_script, const String &p_method);
 
 	virtual void edited_scene_changed();
 

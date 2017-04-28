@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -2838,7 +2839,7 @@ uint32_t Variant::hash() const {
 }
 
 #define hash_compare_scalar(p_lhs, p_rhs) \
-	((p_lhs) == (p_rhs)) || (Math::is_nan(p_lhs) == Math::is_nan(p_rhs))
+	((p_lhs) == (p_rhs)) || (Math::is_nan(p_lhs) && Math::is_nan(p_rhs))
 
 #define hash_compare_vector2(p_lhs, p_rhs)         \
 	(hash_compare_scalar((p_lhs).x, (p_rhs).x)) && \

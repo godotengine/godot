@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -268,6 +269,62 @@ void RasterizerGLES3::clear_render_target(const Color &p_color) {
 
 	storage->frame.clear_request = true;
 	storage->frame.clear_request_color = p_color;
+}
+
+void RasterizerGLES3::set_boot_image(const Image &p_image, const Color &p_color, bool p_scale) {
+
+	if (p_image.empty())
+		return;
+
+	begin_frame();
+
+	int window_w = OS::get_singleton()->get_video_mode(0).width;
+	int window_h = OS::get_singleton()->get_video_mode(0).height;
+
+	glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
+	glViewport(0, 0, window_w, window_h);
+	glDisable(GL_BLEND);
+	glDepthMask(GL_FALSE);
+	glClearColor(p_color.r, p_color.g, p_color.b, 1.0);
+	glClear(GL_COLOR_BUFFER_BIT);
+	canvas->canvas_begin();
+
+	RID texture = storage->texture_create();
+	storage->texture_allocate(texture, p_image.get_width(), p_image.get_height(), p_image.get_format(), VS::TEXTURE_FLAG_FILTER);
+	storage->texture_set_data(texture, p_image);
+
+	Rect2 imgrect(0, 0, p_image.get_width(), p_image.get_height());
+	Rect2 screenrect;
+	if (p_scale) {
+
+		if (window_w > window_h) {
+			//scale horizontally
+			screenrect.size.y = window_h;
+			screenrect.size.x = imgrect.size.x * window_h / imgrect.size.y;
+			screenrect.pos.x = (window_w - screenrect.size.x) / 2;
+
+		} else {
+			//scale vertically
+			screenrect.size.x = window_w;
+			screenrect.size.y = imgrect.size.y * window_w / imgrect.size.x;
+			screenrect.pos.y = (window_h - screenrect.size.y) / 2;
+		}
+	} else {
+
+		screenrect = imgrect;
+		screenrect.pos += ((Size2(window_w, window_h) - screenrect.size) / 2.0).floor();
+	}
+
+	RasterizerStorageGLES3::Texture *t = storage->texture_owner.get(texture);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, t->tex_id);
+	canvas->draw_generic_textured_rect(screenrect, Rect2(0, 0, 1, 1));
+	glBindTexture(GL_TEXTURE_2D, 0);
+	canvas->canvas_end();
+
+	storage->free(texture); // free since it's only one frame that stays there
+
+	OS::get_singleton()->swap_buffers();
 }
 
 void RasterizerGLES3::blit_render_target_to_screen(RID p_render_target, const Rect2 &p_screen_rect, int p_screen) {

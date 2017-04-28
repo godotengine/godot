@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,6 +39,10 @@ const Set<String> &ShaderTypes::get_modes(VS::ShaderMode p_mode) {
 	return shader_modes[p_mode].modes;
 }
 
+const Set<String> &ShaderTypes::get_types() {
+	return shader_types;
+}
+
 ShaderTypes *ShaderTypes::singleton = NULL;
 
 ShaderTypes::ShaderTypes() {
@@ -61,11 +66,14 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[VS::SHADER_SPATIAL].functions["vertex"]["COLOR"] = ShaderLanguage::TYPE_VEC4;
 	shader_modes[VS::SHADER_SPATIAL].functions["vertex"]["POINT_SIZE"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[VS::SHADER_SPATIAL].functions["vertex"]["INSTANCE_ID"] = ShaderLanguage::TYPE_INT;
+	shader_modes[VS::SHADER_SPATIAL].functions["vertex"]["INSTANCE_CUSTOM"] = ShaderLanguage::TYPE_VEC4;
 
 	//builtins
 	shader_modes[VS::SHADER_SPATIAL].functions["vertex"]["WORLD_MATRIX"] = ShaderLanguage::TYPE_MAT4;
 	shader_modes[VS::SHADER_SPATIAL].functions["vertex"]["INV_CAMERA_MATRIX"] = ShaderLanguage::TYPE_MAT4;
+	shader_modes[VS::SHADER_SPATIAL].functions["vertex"]["CAMERA_MATRIX"] = ShaderLanguage::TYPE_MAT4;
 	shader_modes[VS::SHADER_SPATIAL].functions["vertex"]["PROJECTION_MATRIX"] = ShaderLanguage::TYPE_MAT4;
+	shader_modes[VS::SHADER_SPATIAL].functions["vertex"]["MODELVIEW_MATRIX"] = ShaderLanguage::TYPE_MAT4;
 	shader_modes[VS::SHADER_SPATIAL].functions["vertex"]["TIME"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[VS::SHADER_SPATIAL].functions["vertex"]["VIEWPORT_SIZE"] = ShaderLanguage::TYPE_VEC2;
 
@@ -122,7 +130,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("unshaded");
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("ontop");
 
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("skip_transform");
+	shader_modes[VS::SHADER_SPATIAL].modes.insert("skip_default_transform");
 
 	/************ CANVAS ITEM **************************/
 
@@ -136,6 +144,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[VS::SHADER_CANVAS_ITEM].functions["vertex"]["PROJECTION_MATRIX"] = ShaderLanguage::TYPE_MAT4;
 	shader_modes[VS::SHADER_CANVAS_ITEM].functions["vertex"]["EXTRA_MATRIX"] = ShaderLanguage::TYPE_MAT4;
 	shader_modes[VS::SHADER_CANVAS_ITEM].functions["vertex"]["TIME"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[VS::SHADER_CANVAS_ITEM].functions["vertex"]["PARTICLE_CUSTOM"] = ShaderLanguage::TYPE_VEC4;
 
 	shader_modes[VS::SHADER_CANVAS_ITEM].functions["fragment"]["SRC_COLOR"] = ShaderLanguage::TYPE_VEC4;
 	shader_modes[VS::SHADER_CANVAS_ITEM].functions["fragment"]["POSITION"] = ShaderLanguage::TYPE_VEC2;
@@ -189,14 +198,19 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["RESTART"] = ShaderLanguage::TYPE_BOOL;
 	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["CUSTOM"] = ShaderLanguage::TYPE_VEC4;
 	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["TRANSFORM"] = ShaderLanguage::TYPE_MAT4;
-	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["TIME"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["TIME"] = ShaderLanguage::TYPE_VEC4;
 	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["LIFETIME"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["DELTA"] = ShaderLanguage::TYPE_FLOAT;
-	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["SEED"] = ShaderLanguage::TYPE_BOOL;
-	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["ORIGIN"] = ShaderLanguage::TYPE_MAT4;
+	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["NUMBER"] = ShaderLanguage::TYPE_UINT;
 	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["INDEX"] = ShaderLanguage::TYPE_INT;
+	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["EMISSION_TRANSFORM"] = ShaderLanguage::TYPE_MAT4;
 
 	shader_modes[VS::SHADER_PARTICLES].modes.insert("billboard");
 	shader_modes[VS::SHADER_PARTICLES].modes.insert("disable_force");
 	shader_modes[VS::SHADER_PARTICLES].modes.insert("disable_velocity");
+	shader_modes[VS::SHADER_PARTICLES].modes.insert("keep_data");
+
+	shader_types.insert("spatial");
+	shader_types.insert("canvas_item");
+	shader_types.insert("particles");
 }

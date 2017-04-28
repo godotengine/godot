@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,7 +52,7 @@ class TileSet : public Resource {
 		Ref<OccluderPolygon2D> occluder;
 		Vector2 navigation_polygon_offset;
 		Ref<NavigationPolygon> navigation_polygon;
-		Ref<CanvasItemMaterial> material;
+		Ref<ShaderMaterial> material;
 		Color modulate;
 
 		// Default modulate for back-compat
@@ -92,8 +93,8 @@ public:
 	void tile_set_shape(int p_id, const Ref<Shape2D> &p_shape);
 	Ref<Shape2D> tile_get_shape(int p_id) const;
 
-	void tile_set_material(int p_id, const Ref<CanvasItemMaterial> &p_material);
-	Ref<CanvasItemMaterial> tile_get_material(int p_id) const;
+	void tile_set_material(int p_id, const Ref<ShaderMaterial> &p_material);
+	Ref<ShaderMaterial> tile_get_material(int p_id) const;
 
 	void tile_set_modulate(int p_id, const Color &p_color);
 	Color tile_get_modulate(int p_id) const;

@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -239,11 +240,12 @@ public:
 	virtual void set_edit_state(const Variant &p_state);
 	virtual void goto_line(int p_line, bool p_with_error = false);
 	virtual void trim_trailing_whitespace();
+	virtual void convert_indent_to_spaces();
+	virtual void convert_indent_to_tabs();
 	virtual void ensure_focus();
 	virtual void tag_saved_version();
 	virtual void reload(bool p_soft);
 	virtual void get_breakpoints(List<int> *p_breakpoints);
-	virtual bool goto_method(const String &p_method);
 	virtual void add_callback(const String &p_function, PoolStringArray p_args);
 	virtual void update_settings();
 	virtual void set_debugger_active(bool p_active);

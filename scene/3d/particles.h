@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,130 +38,346 @@
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
-#if 0
-class Particles : public GeometryInstance {
-public:
 
-	enum Variable {
-		VAR_LIFETIME=VS::PARTICLE_LIFETIME,
-		VAR_SPREAD=VS::PARTICLE_SPREAD,
-		VAR_GRAVITY=VS::PARTICLE_GRAVITY,
-		VAR_LINEAR_VELOCITY=VS::PARTICLE_LINEAR_VELOCITY,
-		VAR_ANGULAR_VELOCITY=VS::PARTICLE_ANGULAR_VELOCITY,
-		VAR_LINEAR_ACCELERATION=VS::PARTICLE_LINEAR_ACCELERATION,
-		VAR_DRAG=VS::PARTICLE_RADIAL_ACCELERATION,
-		VAR_TANGENTIAL_ACCELERATION=VS::PARTICLE_TANGENTIAL_ACCELERATION,
-		VAR_DAMPING=VS::PARTICLE_DAMPING,
-		VAR_INITIAL_SIZE=VS::PARTICLE_INITIAL_SIZE,
-		VAR_FINAL_SIZE=VS::PARTICLE_FINAL_SIZE,
-		VAR_INITIAL_ANGLE=VS::PARTICLE_INITIAL_ANGLE,
-		VAR_HEIGHT=VS::PARTICLE_HEIGHT,
-		VAR_HEIGHT_SPEED_SCALE=VS::PARTICLE_HEIGHT_SPEED_SCALE,
-		VAR_MAX=VS::PARTICLE_VAR_MAX
+class Particles : public GeometryInstance {
+private:
+	GDCLASS(Particles, GeometryInstance);
+
+public:
+	enum DrawOrder {
+		DRAW_ORDER_INDEX,
+		DRAW_ORDER_LIFETIME,
+		DRAW_ORDER_VIEW_DEPTH,
+	};
+
+	enum {
+		MAX_DRAW_PASSES = 4
 	};
 
 private:
-	GDCLASS( Particles, GeometryInstance );
-
 	RID particles;
 
-	int amount;
 	bool emitting;
-	float emit_timeout;
-	AABB visibility_aabb;
-	Vector3 gravity_normal;
-	Vector3 emission_half_extents;
-	bool using_points;
-	float var[VAR_MAX];
-	float var_random[VAR_MAX];
-	bool height_from_velocity;
-	Vector3 emission_base_velocity;
-	bool local_coordinates;
+	int amount;
+	float lifetime;
+	float pre_process_time;
+	float explosiveness_ratio;
+	float randomness_ratio;
+	float speed_scale;
+	Rect3 visibility_aabb;
+	bool local_coords;
+	int fixed_fps;
+	bool fractional_delta;
 
-	struct ColorPhase {
+	Ref<Material> process_material;
 
-		Color color;
-		float pos;
-	};
+	DrawOrder draw_order;
 
-	virtual bool _can_gizmo_scale() const;
-	virtual RES _get_gizmo_geometry() const;
-
-	int color_phase_count;
-
-	ColorPhase color_phase[4];
-
-	Ref<Material> material;
-
-	Timer* timer;
-	void setup_timer();
+	Vector<Ref<Mesh> > draw_passes;
 
 protected:
-
 	static void _bind_methods();
+	virtual void _validate_property(PropertyInfo &property) const;
 
 public:
-
-
-	AABB get_aabb() const;
+	Rect3 get_aabb() const;
 	PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
 
-	void set_amount(int p_amount);
-	int get_amount() const;
-
 	void set_emitting(bool p_emitting);
+	void set_amount(int p_amount);
+	void set_lifetime(float p_lifetime);
+	void set_pre_process_time(float p_time);
+	void set_explosiveness_ratio(float p_ratio);
+	void set_randomness_ratio(float p_ratio);
+	void set_visibility_aabb(const Rect3 &p_aabb);
+	void set_use_local_coordinates(bool p_enable);
+	void set_process_material(const Ref<Material> &p_material);
+	void set_speed_scale(float p_scale);
+
 	bool is_emitting() const;
+	int get_amount() const;
+	float get_lifetime() const;
+	float get_pre_process_time() const;
+	float get_explosiveness_ratio() const;
+	float get_randomness_ratio() const;
+	Rect3 get_visibility_aabb() const;
+	bool get_use_local_coordinates() const;
+	Ref<Material> get_process_material() const;
+	float get_speed_scale() const;
 
-	void set_visibility_aabb(const AABB& p_aabb);
-	AABB get_visibility_aabb() const;
+	void set_fixed_fps(int p_count);
+	int get_fixed_fps() const;
 
-	void set_emission_half_extents(const Vector3& p_half_extents);
-	Vector3 get_emission_half_extents() const;
+	void set_fractional_delta(bool p_enable);
+	bool get_fractional_delta() const;
 
-	void set_emission_base_velocity(const Vector3& p_base_velocity);
-	Vector3 get_emission_base_velocity() const;
+	void set_draw_order(DrawOrder p_order);
+	DrawOrder get_draw_order() const;
 
-	void set_emission_points(const PoolVector<Vector3>& p_points);
-	PoolVector<Vector3> get_emission_points() const;
+	void set_draw_passes(int p_count);
+	int get_draw_passes() const;
 
-	void set_gravity_normal(const Vector3& p_normal);
-	Vector3 get_gravity_normal() const;
+	void set_draw_pass_mesh(int p_pass, const Ref<Mesh> &p_mesh);
+	Ref<Mesh> get_draw_pass_mesh(int p_pass) const;
 
-	void set_variable(Variable p_variable,float p_value);
-	float get_variable(Variable p_variable) const;
+	virtual String get_configuration_warning() const;
 
-	void set_randomness(Variable p_variable,float p_randomness);
-	float get_randomness(Variable p_variable) const;
-
-	void set_color_phases(int p_phases);
-	int get_color_phases() const;
-
-	void set_color_phase_pos(int p_phase, float p_pos);
-	float get_color_phase_pos(int p_phase) const;
-
-	void set_color_phase_color(int p_phase, const Color& p_color);
-	Color get_color_phase_color(int p_phase) const;
-
-	void set_height_from_velocity(bool p_enable);
-	bool has_height_from_velocity() const;
-
-	void set_material(const Ref<Material>& p_material);
-	Ref<Material> get_material() const;
-
-	void set_emit_timeout(float p_timeout);
-	float get_emit_timeout() const;
-
-	void set_use_local_coordinates(bool p_use);
-	bool is_using_local_coordinates() const;
-
-	void start_emitting(float p_time);
-
-
+	Rect3 capture_aabb() const;
 	Particles();
 	~Particles();
-
 };
 
-VARIANT_ENUM_CAST( Particles::Variable );
-#endif
+VARIANT_ENUM_CAST(Particles::DrawOrder)
+
+class ParticlesMaterial : public Material {
+
+	GDCLASS(ParticlesMaterial, Material)
+
+public:
+	enum Parameter {
+
+		PARAM_INITIAL_LINEAR_VELOCITY,
+		PARAM_ANGULAR_VELOCITY,
+		PARAM_ORBIT_VELOCITY,
+		PARAM_LINEAR_ACCEL,
+		PARAM_RADIAL_ACCEL,
+		PARAM_TANGENTIAL_ACCEL,
+		PARAM_DAMPING,
+		PARAM_ANGLE,
+		PARAM_SCALE,
+		PARAM_HUE_VARIATION,
+		PARAM_ANIM_SPEED,
+		PARAM_ANIM_OFFSET,
+		PARAM_MAX
+	};
+
+	enum Flags {
+		FLAG_ALIGN_Y_TO_VELOCITY,
+		FLAG_ROTATE_Y,
+		FLAG_MAX
+	};
+
+	enum EmissionShape {
+		EMISSION_SHAPE_POINT,
+		EMISSION_SHAPE_SPHERE,
+		EMISSION_SHAPE_BOX,
+		EMISSION_SHAPE_POINTS,
+		EMISSION_SHAPE_DIRECTED_POINTS,
+	};
+
+private:
+	union MaterialKey {
+
+		struct {
+			uint32_t texture_mask : 16;
+			uint32_t texture_color : 1;
+			uint32_t flags : 2;
+			uint32_t emission_shape : 2;
+			uint32_t trail_size_texture : 1;
+			uint32_t trail_color_texture : 1;
+			uint32_t invalid_key : 1;
+		};
+
+		uint32_t key;
+
+		bool operator<(const MaterialKey &p_key) const {
+			return key < p_key.key;
+		}
+	};
+
+	struct ShaderData {
+		RID shader;
+		int users;
+	};
+
+	static Map<MaterialKey, ShaderData> shader_map;
+
+	MaterialKey current_key;
+
+	_FORCE_INLINE_ MaterialKey _compute_key() const {
+
+		MaterialKey mk;
+		mk.key = 0;
+		for (int i = 0; i < PARAM_MAX; i++) {
+			if (tex_parameters[i].is_valid()) {
+				mk.texture_mask |= (1 << i);
+			}
+		}
+		for (int i = 0; i < FLAG_MAX; i++) {
+			if (flags[i]) {
+				mk.flags |= (1 << i);
+			}
+		}
+
+		mk.texture_color = color_ramp.is_valid() ? 1 : 0;
+		mk.emission_shape = emission_shape;
+		mk.trail_color_texture = trail_color_modifier.is_valid() ? 1 : 0;
+		mk.trail_size_texture = trail_size_modifier.is_valid() ? 1 : 0;
+
+		return mk;
+	}
+
+	static Mutex *material_mutex;
+	static SelfList<ParticlesMaterial>::List dirty_materials;
+
+	struct ShaderNames {
+		StringName spread;
+		StringName flatness;
+		StringName initial_linear_velocity;
+		StringName initial_angle;
+		StringName angular_velocity;
+		StringName orbit_velocity;
+		StringName linear_accel;
+		StringName radial_accel;
+		StringName tangent_accel;
+		StringName damping;
+		StringName scale;
+		StringName hue_variation;
+		StringName anim_speed;
+		StringName anim_offset;
+
+		StringName initial_linear_velocity_random;
+		StringName initial_angle_random;
+		StringName angular_velocity_random;
+		StringName orbit_velocity_random;
+		StringName linear_accel_random;
+		StringName radial_accel_random;
+		StringName tangent_accel_random;
+		StringName damping_random;
+		StringName scale_random;
+		StringName hue_variation_random;
+		StringName anim_speed_random;
+		StringName anim_offset_random;
+
+		StringName angle_texture;
+		StringName angular_velocity_texture;
+		StringName orbit_velocity_texture;
+		StringName linear_accel_texture;
+		StringName radial_accel_texture;
+		StringName tangent_accel_texture;
+		StringName damping_texture;
+		StringName scale_texture;
+		StringName hue_variation_texture;
+		StringName anim_speed_texture;
+		StringName anim_offset_texture;
+
+		StringName color;
+		StringName color_ramp;
+
+		StringName emission_sphere_radius;
+		StringName emission_box_extents;
+		StringName emission_texture_point_count;
+		StringName emission_texture_points;
+		StringName emission_texture_normal;
+
+		StringName trail_divisor;
+		StringName trail_size_modifier;
+		StringName trail_color_modifier;
+
+		StringName gravity;
+	};
+
+	static ShaderNames *shader_names;
+
+	SelfList<ParticlesMaterial> element;
+
+	void _update_shader();
+	_FORCE_INLINE_ void _queue_shader_change();
+	_FORCE_INLINE_ bool _is_shader_dirty() const;
+
+	float spread;
+	float flatness;
+
+	float parameters[PARAM_MAX];
+	float randomness[PARAM_MAX];
+
+	Ref<Texture> tex_parameters[PARAM_MAX];
+	Color color;
+	Ref<Texture> color_ramp;
+
+	bool flags[FLAG_MAX];
+
+	EmissionShape emission_shape;
+	float emission_sphere_radius;
+	Vector3 emission_box_extents;
+	Ref<Texture> emission_point_texture;
+	Ref<Texture> emission_normal_texture;
+	int emission_point_count;
+
+	int trail_divisor;
+
+	Ref<CurveTexture> trail_size_modifier;
+	Ref<GradientTexture> trail_color_modifier;
+
+	Vector3 gravity;
+
+	//do not save emission points here
+
+protected:
+	static void _bind_methods();
+	virtual void _validate_property(PropertyInfo &property) const;
+
+public:
+	void set_spread(float p_spread);
+	float get_spread() const;
+
+	void set_flatness(float p_flatness);
+	float get_flatness() const;
+
+	void set_param(Parameter p_param, float p_value);
+	float get_param(Parameter p_param) const;
+
+	void set_param_randomness(Parameter p_param, float p_value);
+	float get_param_randomness(Parameter p_param) const;
+
+	void set_param_texture(Parameter p_param, const Ref<Texture> &p_texture);
+	Ref<Texture> get_param_texture(Parameter p_param) const;
+
+	void set_color(const Color &p_color);
+	Color get_color() const;
+
+	void set_color_ramp(const Ref<Texture> &p_texture);
+	Ref<Texture> get_color_ramp() const;
+
+	void set_flag(Flags p_flag, bool p_enable);
+	bool get_flag(Flags p_flag) const;
+
+	void set_emission_shape(EmissionShape p_shape);
+	void set_emission_sphere_radius(float p_radius);
+	void set_emission_box_extents(Vector3 p_extents);
+	void set_emission_point_texture(const Ref<Texture> &p_points);
+	void set_emission_normal_texture(const Ref<Texture> &p_normals);
+	void set_emission_point_count(int p_count);
+
+	EmissionShape get_emission_shape() const;
+	float get_emission_sphere_radius() const;
+	Vector3 get_emission_box_extents() const;
+	Ref<Texture> get_emission_point_texture() const;
+	Ref<Texture> get_emission_normal_texture() const;
+	int get_emission_point_count() const;
+
+	void set_trail_divisor(int p_divisor);
+	int get_trail_divisor() const;
+
+	void set_trail_size_modifier(const Ref<CurveTexture> &p_trail_size_modifier);
+	Ref<CurveTexture> get_trail_size_modifier() const;
+
+	void set_trail_color_modifier(const Ref<GradientTexture> &p_trail_color_modifier);
+	Ref<GradientTexture> get_trail_color_modifier() const;
+
+	void set_gravity(const Vector3 &p_gravity);
+	Vector3 get_gravity() const;
+
+	static void init_shaders();
+	static void finish_shaders();
+	static void flush_changes();
+
+	ParticlesMaterial();
+	~ParticlesMaterial();
+};
+
+VARIANT_ENUM_CAST(ParticlesMaterial::Parameter)
+VARIANT_ENUM_CAST(ParticlesMaterial::Flags)
+VARIANT_ENUM_CAST(ParticlesMaterial::EmissionShape)
+
 #endif

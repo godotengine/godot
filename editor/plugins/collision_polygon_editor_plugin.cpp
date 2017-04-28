@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -571,25 +572,25 @@ CollisionPolygonEditor::CollisionPolygonEditor(EditorNode *p_editor) {
 	imgeom->set_transform(Transform(Matrix3(),Vector3(0,0,0.00001)));
 
 
-	line_material = Ref<FixedSpatialMaterial>( memnew( FixedSpatialMaterial ));
+	line_material = Ref<SpatialMaterial>( memnew( SpatialMaterial ));
 	line_material->set_flag(Material::FLAG_UNSHADED, true);
 	line_material->set_line_width(3.0);
-	line_material->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_ALPHA, true);
-	line_material->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_COLOR_ARRAY, true);
-	line_material->set_parameter(FixedSpatialMaterial::PARAM_DIFFUSE,Color(1,1,1));
+	line_material->set_fixed_flag(SpatialMaterial::FLAG_USE_ALPHA, true);
+	line_material->set_fixed_flag(SpatialMaterial::FLAG_USE_COLOR_ARRAY, true);
+	line_material->set_parameter(SpatialMaterial::PARAM_DIFFUSE,Color(1,1,1));
 
 
 
 
-	handle_material = Ref<FixedSpatialMaterial>( memnew( FixedSpatialMaterial ));
+	handle_material = Ref<SpatialMaterial>( memnew( SpatialMaterial ));
 	handle_material->set_flag(Material::FLAG_UNSHADED, true);
-	handle_material->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_POINT_SIZE, true);
-	handle_material->set_parameter(FixedSpatialMaterial::PARAM_DIFFUSE,Color(1,1,1));
-	handle_material->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_ALPHA, true);
-	handle_material->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_COLOR_ARRAY, false);
+	handle_material->set_fixed_flag(SpatialMaterial::FLAG_USE_POINT_SIZE, true);
+	handle_material->set_parameter(SpatialMaterial::PARAM_DIFFUSE,Color(1,1,1));
+	handle_material->set_fixed_flag(SpatialMaterial::FLAG_USE_ALPHA, true);
+	handle_material->set_fixed_flag(SpatialMaterial::FLAG_USE_COLOR_ARRAY, false);
 	Ref<Texture> handle=editor->get_gui_base()->get_icon("Editor3DHandle","EditorIcons");
 	handle_material->set_point_size(handle->get_width());
-	handle_material->set_texture(FixedSpatialMaterial::PARAM_DIFFUSE,handle);
+	handle_material->set_texture(SpatialMaterial::PARAM_DIFFUSE,handle);
 
 	pointsm = memnew( MeshInstance );
 	imgeom->add_child(pointsm);

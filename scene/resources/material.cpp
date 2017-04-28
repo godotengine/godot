@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,14 +45,132 @@ Material::~Material() {
 	VisualServer::get_singleton()->free(material);
 }
 
+///////////////////////////////////
+
+bool ShaderMaterial::_set(const StringName &p_name, const Variant &p_value) {
+
+	if (p_name == SceneStringNames::get_singleton()->shader_shader) {
+		set_shader(p_value);
+		return true;
+	} else {
+
+		if (shader.is_valid()) {
+
+			StringName pr = shader->remap_param(p_name);
+			if (!pr) {
+				String n = p_name;
+				if (n.find("param/") == 0) { //backwards compatibility
+					pr = n.substr(6, n.length());
+				}
+			}
+			if (pr) {
+				VisualServer::get_singleton()->material_set_param(_get_material(), pr, p_value);
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+bool ShaderMaterial::_get(const StringName &p_name, Variant &r_ret) const {
+
+	if (p_name == SceneStringNames::get_singleton()->shader_shader) {
+
+		r_ret = get_shader();
+		return true;
+
+	} else {
+
+		if (shader.is_valid()) {
+
+			StringName pr = shader->remap_param(p_name);
+			if (pr) {
+				r_ret = VisualServer::get_singleton()->material_get_param(_get_material(), pr);
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
+
+	p_list->push_back(PropertyInfo(Variant::OBJECT, "shader/shader", PROPERTY_HINT_RESOURCE_TYPE, "Shader,ShaderGraph"));
+
+	if (!shader.is_null()) {
+
+		shader->get_param_list(p_list);
+	}
+}
+
+void ShaderMaterial::set_shader(const Ref<Shader> &p_shader) {
+
+	shader = p_shader;
+
+	RID rid;
+	if (shader.is_valid())
+		rid = shader->get_rid();
+
+	VS::get_singleton()->material_set_shader(_get_material(), rid);
+	_change_notify(); //properties for shader exposed
+	emit_changed();
+}
+
+Ref<Shader> ShaderMaterial::get_shader() const {
+
+	return shader;
+}
+
+void ShaderMaterial::set_shader_param(const StringName &p_param, const Variant &p_value) {
+
+	VS::get_singleton()->material_set_param(_get_material(), p_param, p_value);
+}
+
+Variant ShaderMaterial::get_shader_param(const StringName &p_param) const {
+
+	return VS::get_singleton()->material_get_param(_get_material(), p_param);
+}
+
+void ShaderMaterial::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_shader", "shader:Shader"), &ShaderMaterial::set_shader);
+	ClassDB::bind_method(D_METHOD("get_shader:Shader"), &ShaderMaterial::get_shader);
+	ClassDB::bind_method(D_METHOD("set_shader_param", "param", "value"), &ShaderMaterial::set_shader_param);
+	ClassDB::bind_method(D_METHOD("get_shader_param", "param"), &ShaderMaterial::get_shader_param);
+}
+
+void ShaderMaterial::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+
+	String f = p_function.operator String();
+	if ((f == "get_shader_param" || f == "set_shader_param") && p_idx == 0) {
+
+		if (shader.is_valid()) {
+			List<PropertyInfo> pl;
+			shader->get_param_list(&pl);
+			for (List<PropertyInfo>::Element *E = pl.front(); E; E = E->next()) {
+				r_options->push_back("\"" + E->get().name.replace_first("shader_param/", "") + "\"");
+			}
+		}
+	}
+	Resource::get_argument_options(p_function, p_idx, r_options);
+}
+
+ShaderMaterial::ShaderMaterial() {
+}
+
+ShaderMaterial::~ShaderMaterial() {
+}
+
 /////////////////////////////////
 
-Mutex *FixedSpatialMaterial::material_mutex = NULL;
-SelfList<FixedSpatialMaterial>::List FixedSpatialMaterial::dirty_materials;
-Map<FixedSpatialMaterial::MaterialKey, FixedSpatialMaterial::ShaderData> FixedSpatialMaterial::shader_map;
-FixedSpatialMaterial::ShaderNames *FixedSpatialMaterial::shader_names = NULL;
+Mutex *SpatialMaterial::material_mutex = NULL;
+SelfList<SpatialMaterial>::List SpatialMaterial::dirty_materials;
+Map<SpatialMaterial::MaterialKey, SpatialMaterial::ShaderData> SpatialMaterial::shader_map;
+SpatialMaterial::ShaderNames *SpatialMaterial::shader_names = NULL;
 
-void FixedSpatialMaterial::init_shaders() {
+void SpatialMaterial::init_shaders() {
 
 #ifndef NO_THREADS
 	material_mutex = Mutex::create();
@@ -81,6 +200,10 @@ void FixedSpatialMaterial::init_shaders() {
 	shader_names->uv2_scale = "uv2_scale";
 	shader_names->uv2_offset = "uv2_offset";
 
+	shader_names->particle_h_frames = "particle_h_frames";
+	shader_names->particle_v_frames = "particle_v_frames";
+	shader_names->particles_anim_loop = "particles_anim_loop";
+
 	shader_names->texture_names[TEXTURE_ALBEDO] = "texture_albedo";
 	shader_names->texture_names[TEXTURE_SPECULAR] = "texture_specular";
 	shader_names->texture_names[TEXTURE_EMISSION] = "texture_emission";
@@ -98,7 +221,7 @@ void FixedSpatialMaterial::init_shaders() {
 	shader_names->texture_names[TEXTURE_DETAIL_NORMAL] = "texture_detail_normal";
 }
 
-void FixedSpatialMaterial::finish_shaders() {
+void SpatialMaterial::finish_shaders() {
 
 #ifndef NO_THREADS
 	memdelete(material_mutex);
@@ -107,7 +230,7 @@ void FixedSpatialMaterial::finish_shaders() {
 	memdelete(shader_names);
 }
 
-void FixedSpatialMaterial::_update_shader() {
+void SpatialMaterial::_update_shader() {
 
 	dirty_materials.remove(&element);
 
@@ -135,7 +258,7 @@ void FixedSpatialMaterial::_update_shader() {
 
 	//must create a shader!
 
-	String code = "render_mode ";
+	String code = "shader_type spatial;\nrender_mode ";
 	switch (blend_mode) {
 		case BLEND_MODE_MIX: code += "blend_mix"; break;
 		case BLEND_MODE_ADD: code += "blend_add"; break;
@@ -180,6 +303,11 @@ void FixedSpatialMaterial::_update_shader() {
 	code += "uniform vec2 uv1_offset;\n";
 	code += "uniform vec2 uv2_scale;\n";
 	code += "uniform vec2 uv2_offset;\n";
+	if (billboard_mode == BILLBOARD_PARTICLES) {
+		code += "uniform int particles_anim_h_frames;\n";
+		code += "uniform int particles_anim_v_frames;\n";
+		code += "uniform bool particles_anim_loop;\n";
+	}
 
 	if (features[FEATURE_EMISSION]) {
 
@@ -235,6 +363,58 @@ void FixedSpatialMaterial::_update_shader() {
 		code += "\tPOINT_SIZE=point_size;\n";
 	}
 	code += "\tUV=UV*uv1_scale+uv1_offset;\n";
+
+	switch (billboard_mode) {
+		case BILLBOARD_DISABLED: {
+
+		} break;
+		case BILLBOARD_ENABLED: {
+
+			code += "\tMODELVIEW_MATRIX = INV_CAMERA_MATRIX * mat4(CAMERA_MATRIX[0],CAMERA_MATRIX[1],CAMERA_MATRIX[2],WORLD_MATRIX[3]);\n";
+		} break;
+		case BILLBOARD_FIXED_Y: {
+			code += "\tMODELVIEW_MATRIX = INV_CAMERA_MATRIX * mat4(CAMERA_MATRIX[0],WORLD_MATRIX[1],vec4(normalize(cross(CAMERA_MATRIX[0].xyz,WORLD_MATRIX[1].xyz)),0.0),WORLD_MATRIX[3]);\n";
+		} break;
+		case BILLBOARD_PARTICLES: {
+
+			//make billboard
+			code += "\tmat4 mat_world = mat4(normalize(CAMERA_MATRIX[0])*length(WORLD_MATRIX[0]),normalize(CAMERA_MATRIX[1])*length(WORLD_MATRIX[0]),normalize(CAMERA_MATRIX[2])*length(WORLD_MATRIX[2]),WORLD_MATRIX[3]);\n";
+			//rotate by rotation
+			code += "\tmat_world = mat_world * mat4( vec4(cos(INSTANCE_CUSTOM.x),-sin(INSTANCE_CUSTOM.x),0.0,0.0), vec4(sin(INSTANCE_CUSTOM.x),cos(INSTANCE_CUSTOM.x),0.0,0.0),vec4(0.0,0.0,1.0,0.0),vec4(0.0,0.0,0.0,1.0));\n";
+			//set modelview
+			code += "\tMODELVIEW_MATRIX = INV_CAMERA_MATRIX * mat_world;\n";
+
+			//handle animation
+			code += "\tint particle_total_frames = particles_anim_h_frames * particles_anim_v_frames;\n";
+			code += "\tint particle_frame = int(INSTANCE_CUSTOM.y * float(particle_total_frames));\n";
+			code += "\tif (particles_anim_loop) particle_frame=clamp(particle_frame,0,particle_total_frames-1); else particle_frame=abs(particle_frame)%particle_total_frames;\n";
+			//code += "\tUV /= vec2(float(particles_anim_h_frames),float(particles_anim_v_frames));\n";
+			//code += "\tUV+= UV * vec2(float(particle_frame % particles_anim_h_frames),float(particle_frame / particles_anim_v_frames));\n";
+			//handle rotation
+			//	code += "\tmat4 rotation = mat4("
+
+		} break;
+	}
+
+	if (flags[FLAG_FIXED_SIZE]) {
+
+		code += "\tif (PROJECTION_MATRIX[3][3] != 0.0) {\n";
+		//orthogonal matrix, try to do about the same
+		//with viewport size
+		code += "\t\tfloat h = abs(1.0 / (2.0 * PROJECTION_MATRIX[1][1]));\n";
+		code += "\t\tfloat sc = (h * 2.0); //consistent with Y-fov\n";
+		code += "\t\tMODELVIEW_MATRIX[0]*=sc;\n";
+		code += "\t\tMODELVIEW_MATRIX[1]*=sc;\n";
+		code += "\t\tMODELVIEW_MATRIX[2]*=sc;\n";
+		code += "\t} else {\n";
+		//just scale by depth
+		code += "\t\tfloat sc = -(MODELVIEW_MATRIX)[3].z;\n";
+		code += "\t\tMODELVIEW_MATRIX[0]*=sc;\n";
+		code += "\t\tMODELVIEW_MATRIX[1]*=sc;\n";
+		code += "\t\tMODELVIEW_MATRIX[2]*=sc;\n";
+		code += "\t}\n";
+	}
+
 	if (detail_uv == DETAIL_UV_2) {
 		code += "\tUV2=UV2*uv2_scale+uv2_offset;\n";
 	}
@@ -336,7 +516,7 @@ void FixedSpatialMaterial::_update_shader() {
 	code += "}\n";
 
 	ShaderData shader_data;
-	shader_data.shader = VS::get_singleton()->shader_create(VS::SHADER_SPATIAL);
+	shader_data.shader = VS::get_singleton()->shader_create();
 	shader_data.users = 1;
 
 	VS::get_singleton()->shader_set_code(shader_data.shader, code);
@@ -346,7 +526,7 @@ void FixedSpatialMaterial::_update_shader() {
 	VS::get_singleton()->material_set_shader(_get_material(), shader_data.shader);
 }
 
-void FixedSpatialMaterial::flush_changes() {
+void SpatialMaterial::flush_changes() {
 
 	if (material_mutex)
 		material_mutex->lock();
@@ -360,7 +540,7 @@ void FixedSpatialMaterial::flush_changes() {
 		material_mutex->unlock();
 }
 
-void FixedSpatialMaterial::_queue_shader_change() {
+void SpatialMaterial::_queue_shader_change() {
 
 	if (material_mutex)
 		material_mutex->lock();
@@ -373,7 +553,7 @@ void FixedSpatialMaterial::_queue_shader_change() {
 		material_mutex->unlock();
 }
 
-bool FixedSpatialMaterial::_is_shader_dirty() const {
+bool SpatialMaterial::_is_shader_dirty() const {
 
 	bool dirty = false;
 
@@ -387,187 +567,187 @@ bool FixedSpatialMaterial::_is_shader_dirty() const {
 
 	return dirty;
 }
-void FixedSpatialMaterial::set_albedo(const Color &p_albedo) {
+void SpatialMaterial::set_albedo(const Color &p_albedo) {
 
 	albedo = p_albedo;
 
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->albedo, p_albedo);
 }
 
-Color FixedSpatialMaterial::get_albedo() const {
+Color SpatialMaterial::get_albedo() const {
 
 	return albedo;
 }
 
-void FixedSpatialMaterial::set_specular_mode(SpecularMode p_mode) {
+void SpatialMaterial::set_specular_mode(SpecularMode p_mode) {
 	specular_mode = p_mode;
 	_change_notify();
 	_queue_shader_change();
 }
 
-FixedSpatialMaterial::SpecularMode FixedSpatialMaterial::get_specular_mode() const {
+SpatialMaterial::SpecularMode SpatialMaterial::get_specular_mode() const {
 
 	return specular_mode;
 }
 
-void FixedSpatialMaterial::set_specular(const Color &p_specular) {
+void SpatialMaterial::set_specular(const Color &p_specular) {
 
 	specular = p_specular;
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->specular, p_specular);
 }
-Color FixedSpatialMaterial::get_specular() const {
+Color SpatialMaterial::get_specular() const {
 
 	return specular;
 }
 
-void FixedSpatialMaterial::set_roughness(float p_roughness) {
+void SpatialMaterial::set_roughness(float p_roughness) {
 
 	roughness = p_roughness;
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->roughness, p_roughness);
 }
 
-float FixedSpatialMaterial::get_roughness() const {
+float SpatialMaterial::get_roughness() const {
 
 	return roughness;
 }
 
-void FixedSpatialMaterial::set_metalness(float p_metalness) {
+void SpatialMaterial::set_metalness(float p_metalness) {
 
 	metalness = p_metalness;
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->metalness, p_metalness);
 }
 
-float FixedSpatialMaterial::get_metalness() const {
+float SpatialMaterial::get_metalness() const {
 
 	return metalness;
 }
 
-void FixedSpatialMaterial::set_emission(const Color &p_emission) {
+void SpatialMaterial::set_emission(const Color &p_emission) {
 
 	emission = p_emission;
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->emission, p_emission);
 }
-Color FixedSpatialMaterial::get_emission() const {
+Color SpatialMaterial::get_emission() const {
 
 	return emission;
 }
 
-void FixedSpatialMaterial::set_emission_energy(float p_emission_energy) {
+void SpatialMaterial::set_emission_energy(float p_emission_energy) {
 
 	emission_energy = p_emission_energy;
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->emission_energy, p_emission_energy);
 }
-float FixedSpatialMaterial::get_emission_energy() const {
+float SpatialMaterial::get_emission_energy() const {
 
 	return emission_energy;
 }
 
-void FixedSpatialMaterial::set_normal_scale(float p_normal_scale) {
+void SpatialMaterial::set_normal_scale(float p_normal_scale) {
 
 	normal_scale = p_normal_scale;
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->normal_scale, p_normal_scale);
 }
-float FixedSpatialMaterial::get_normal_scale() const {
+float SpatialMaterial::get_normal_scale() const {
 
 	return normal_scale;
 }
 
-void FixedSpatialMaterial::set_rim(float p_rim) {
+void SpatialMaterial::set_rim(float p_rim) {
 
 	rim = p_rim;
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->rim, p_rim);
 }
-float FixedSpatialMaterial::get_rim() const {
+float SpatialMaterial::get_rim() const {
 
 	return rim;
 }
 
-void FixedSpatialMaterial::set_rim_tint(float p_rim_tint) {
+void SpatialMaterial::set_rim_tint(float p_rim_tint) {
 
 	rim_tint = p_rim_tint;
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->rim_tint, p_rim_tint);
 }
-float FixedSpatialMaterial::get_rim_tint() const {
+float SpatialMaterial::get_rim_tint() const {
 
 	return rim_tint;
 }
 
-void FixedSpatialMaterial::set_clearcoat(float p_clearcoat) {
+void SpatialMaterial::set_clearcoat(float p_clearcoat) {
 
 	clearcoat = p_clearcoat;
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->clearcoat, p_clearcoat);
 }
 
-float FixedSpatialMaterial::get_clearcoat() const {
+float SpatialMaterial::get_clearcoat() const {
 
 	return clearcoat;
 }
 
-void FixedSpatialMaterial::set_clearcoat_gloss(float p_clearcoat_gloss) {
+void SpatialMaterial::set_clearcoat_gloss(float p_clearcoat_gloss) {
 
 	clearcoat_gloss = p_clearcoat_gloss;
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->clearcoat_gloss, p_clearcoat_gloss);
 }
 
-float FixedSpatialMaterial::get_clearcoat_gloss() const {
+float SpatialMaterial::get_clearcoat_gloss() const {
 
 	return clearcoat_gloss;
 }
 
-void FixedSpatialMaterial::set_anisotropy(float p_anisotropy) {
+void SpatialMaterial::set_anisotropy(float p_anisotropy) {
 
 	anisotropy = p_anisotropy;
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->anisotropy, p_anisotropy);
 }
-float FixedSpatialMaterial::get_anisotropy() const {
+float SpatialMaterial::get_anisotropy() const {
 
 	return anisotropy;
 }
 
-void FixedSpatialMaterial::set_height_scale(float p_height_scale) {
+void SpatialMaterial::set_height_scale(float p_height_scale) {
 
 	height_scale = p_height_scale;
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->height_scale, p_height_scale);
 }
 
-float FixedSpatialMaterial::get_height_scale() const {
+float SpatialMaterial::get_height_scale() const {
 
 	return height_scale;
 }
 
-void FixedSpatialMaterial::set_subsurface_scattering_strength(float p_subsurface_scattering_strength) {
+void SpatialMaterial::set_subsurface_scattering_strength(float p_subsurface_scattering_strength) {
 
 	subsurface_scattering_strength = p_subsurface_scattering_strength;
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->subsurface_scattering_strength, subsurface_scattering_strength);
 }
 
-float FixedSpatialMaterial::get_subsurface_scattering_strength() const {
+float SpatialMaterial::get_subsurface_scattering_strength() const {
 
 	return subsurface_scattering_strength;
 }
 
-void FixedSpatialMaterial::set_refraction(float p_refraction) {
+void SpatialMaterial::set_refraction(float p_refraction) {
 
 	refraction = p_refraction;
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->refraction, refraction);
 }
 
-float FixedSpatialMaterial::get_refraction() const {
+float SpatialMaterial::get_refraction() const {
 
 	return refraction;
 }
 
-void FixedSpatialMaterial::set_refraction_roughness(float p_refraction_roughness) {
+void SpatialMaterial::set_refraction_roughness(float p_refraction_roughness) {
 
 	refraction_roughness = p_refraction_roughness;
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->refraction_roughness, refraction_roughness);
 }
-float FixedSpatialMaterial::get_refraction_roughness() const {
+float SpatialMaterial::get_refraction_roughness() const {
 
 	return refraction_roughness;
 }
 
-void FixedSpatialMaterial::set_detail_uv(DetailUV p_detail_uv) {
+void SpatialMaterial::set_detail_uv(DetailUV p_detail_uv) {
 
 	if (detail_uv == p_detail_uv)
 		return;
@@ -575,12 +755,12 @@ void FixedSpatialMaterial::set_detail_uv(DetailUV p_detail_uv) {
 	detail_uv = p_detail_uv;
 	_queue_shader_change();
 }
-FixedSpatialMaterial::DetailUV FixedSpatialMaterial::get_detail_uv() const {
+SpatialMaterial::DetailUV SpatialMaterial::get_detail_uv() const {
 
 	return detail_uv;
 }
 
-void FixedSpatialMaterial::set_blend_mode(BlendMode p_mode) {
+void SpatialMaterial::set_blend_mode(BlendMode p_mode) {
 
 	if (blend_mode == p_mode)
 		return;
@@ -588,22 +768,22 @@ void FixedSpatialMaterial::set_blend_mode(BlendMode p_mode) {
 	blend_mode = p_mode;
 	_queue_shader_change();
 }
-FixedSpatialMaterial::BlendMode FixedSpatialMaterial::get_blend_mode() const {
+SpatialMaterial::BlendMode SpatialMaterial::get_blend_mode() const {
 
 	return blend_mode;
 }
 
-void FixedSpatialMaterial::set_detail_blend_mode(BlendMode p_mode) {
+void SpatialMaterial::set_detail_blend_mode(BlendMode p_mode) {
 
 	detail_blend_mode = p_mode;
 	_queue_shader_change();
 }
-FixedSpatialMaterial::BlendMode FixedSpatialMaterial::get_detail_blend_mode() const {
+SpatialMaterial::BlendMode SpatialMaterial::get_detail_blend_mode() const {
 
 	return detail_blend_mode;
 }
 
-void FixedSpatialMaterial::set_depth_draw_mode(DepthDrawMode p_mode) {
+void SpatialMaterial::set_depth_draw_mode(DepthDrawMode p_mode) {
 
 	if (depth_draw_mode == p_mode)
 		return;
@@ -611,12 +791,12 @@ void FixedSpatialMaterial::set_depth_draw_mode(DepthDrawMode p_mode) {
 	depth_draw_mode = p_mode;
 	_queue_shader_change();
 }
-FixedSpatialMaterial::DepthDrawMode FixedSpatialMaterial::get_depth_draw_mode() const {
+SpatialMaterial::DepthDrawMode SpatialMaterial::get_depth_draw_mode() const {
 
 	return depth_draw_mode;
 }
 
-void FixedSpatialMaterial::set_cull_mode(CullMode p_mode) {
+void SpatialMaterial::set_cull_mode(CullMode p_mode) {
 
 	if (cull_mode == p_mode)
 		return;
@@ -624,12 +804,12 @@ void FixedSpatialMaterial::set_cull_mode(CullMode p_mode) {
 	cull_mode = p_mode;
 	_queue_shader_change();
 }
-FixedSpatialMaterial::CullMode FixedSpatialMaterial::get_cull_mode() const {
+SpatialMaterial::CullMode SpatialMaterial::get_cull_mode() const {
 
 	return cull_mode;
 }
 
-void FixedSpatialMaterial::set_diffuse_mode(DiffuseMode p_mode) {
+void SpatialMaterial::set_diffuse_mode(DiffuseMode p_mode) {
 
 	if (diffuse_mode == p_mode)
 		return;
@@ -637,12 +817,12 @@ void FixedSpatialMaterial::set_diffuse_mode(DiffuseMode p_mode) {
 	diffuse_mode = p_mode;
 	_queue_shader_change();
 }
-FixedSpatialMaterial::DiffuseMode FixedSpatialMaterial::get_diffuse_mode() const {
+SpatialMaterial::DiffuseMode SpatialMaterial::get_diffuse_mode() const {
 
 	return diffuse_mode;
 }
 
-void FixedSpatialMaterial::set_flag(Flags p_flag, bool p_enabled) {
+void SpatialMaterial::set_flag(Flags p_flag, bool p_enabled) {
 
 	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
 
@@ -653,13 +833,13 @@ void FixedSpatialMaterial::set_flag(Flags p_flag, bool p_enabled) {
 	_queue_shader_change();
 }
 
-bool FixedSpatialMaterial::get_flag(Flags p_flag) const {
+bool SpatialMaterial::get_flag(Flags p_flag) const {
 
 	ERR_FAIL_INDEX_V(p_flag, FLAG_MAX, false);
 	return flags[p_flag];
 }
 
-void FixedSpatialMaterial::set_feature(Feature p_feature, bool p_enabled) {
+void SpatialMaterial::set_feature(Feature p_feature, bool p_enabled) {
 
 	ERR_FAIL_INDEX(p_feature, FEATURE_MAX);
 	if (features[p_feature] == p_enabled)
@@ -670,13 +850,13 @@ void FixedSpatialMaterial::set_feature(Feature p_feature, bool p_enabled) {
 	_queue_shader_change();
 }
 
-bool FixedSpatialMaterial::get_feature(Feature p_feature) const {
+bool SpatialMaterial::get_feature(Feature p_feature) const {
 
 	ERR_FAIL_INDEX_V(p_feature, FEATURE_MAX, false);
 	return features[p_feature];
 }
 
-void FixedSpatialMaterial::set_texture(TextureParam p_param, const Ref<Texture> &p_texture) {
+void SpatialMaterial::set_texture(TextureParam p_param, const Ref<Texture> &p_texture) {
 
 	ERR_FAIL_INDEX(p_param, TEXTURE_MAX);
 	textures[p_param] = p_texture;
@@ -684,19 +864,19 @@ void FixedSpatialMaterial::set_texture(TextureParam p_param, const Ref<Texture> 
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->texture_names[p_param], rid);
 }
 
-Ref<Texture> FixedSpatialMaterial::get_texture(TextureParam p_param) const {
+Ref<Texture> SpatialMaterial::get_texture(TextureParam p_param) const {
 
 	ERR_FAIL_INDEX_V(p_param, TEXTURE_MAX, Ref<Texture>());
 	return textures[p_param];
 }
 
-void FixedSpatialMaterial::_validate_feature(const String &text, Feature feature, PropertyInfo &property) const {
+void SpatialMaterial::_validate_feature(const String &text, Feature feature, PropertyInfo &property) const {
 	if (property.name.begins_with(text) && property.name != text + "_enabled" && !features[feature]) {
 		property.usage = 0;
 	}
 }
 
-void FixedSpatialMaterial::_validate_property(PropertyInfo &property) const {
+void SpatialMaterial::_validate_property(PropertyInfo &property) const {
 	_validate_feature("normal", FEATURE_NORMAL_MAPPING, property);
 	_validate_feature("emission", FEATURE_EMISSION, property);
 	_validate_feature("rim", FEATURE_RIM, property);
@@ -714,187 +894,253 @@ void FixedSpatialMaterial::_validate_property(PropertyInfo &property) const {
 	if (property.name == "specular/metalness" && specular_mode == SPECULAR_MODE_SPECULAR) {
 		property.usage = 0;
 	}
+
+	if (property.name.begins_with("particles_anim_") && billboard_mode != BILLBOARD_PARTICLES) {
+		property.usage = 0;
+	}
 }
 
-void FixedSpatialMaterial::set_line_width(float p_line_width) {
+void SpatialMaterial::set_line_width(float p_line_width) {
 
 	line_width = p_line_width;
 	VS::get_singleton()->material_set_line_width(_get_material(), line_width);
 }
 
-float FixedSpatialMaterial::get_line_width() const {
+float SpatialMaterial::get_line_width() const {
 
 	return line_width;
 }
 
-void FixedSpatialMaterial::set_point_size(float p_point_size) {
+void SpatialMaterial::set_point_size(float p_point_size) {
 
 	point_size = p_point_size;
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->point_size, p_point_size);
 }
 
-float FixedSpatialMaterial::get_point_size() const {
+float SpatialMaterial::get_point_size() const {
 
 	return point_size;
 }
 
-void FixedSpatialMaterial::set_uv1_scale(const Vector2 &p_scale) {
+void SpatialMaterial::set_uv1_scale(const Vector2 &p_scale) {
 
 	uv1_scale = p_scale;
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->uv1_scale, p_scale);
 }
 
-Vector2 FixedSpatialMaterial::get_uv1_scale() const {
+Vector2 SpatialMaterial::get_uv1_scale() const {
 
 	return uv1_scale;
 }
 
-void FixedSpatialMaterial::set_uv1_offset(const Vector2 &p_offset) {
+void SpatialMaterial::set_uv1_offset(const Vector2 &p_offset) {
 
 	uv1_offset = p_offset;
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->uv1_offset, p_offset);
 }
-Vector2 FixedSpatialMaterial::get_uv1_offset() const {
+Vector2 SpatialMaterial::get_uv1_offset() const {
 
 	return uv1_offset;
 }
 
-void FixedSpatialMaterial::set_uv2_scale(const Vector2 &p_scale) {
+void SpatialMaterial::set_uv2_scale(const Vector2 &p_scale) {
 
 	uv2_scale = p_scale;
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->uv2_scale, p_scale);
 }
 
-Vector2 FixedSpatialMaterial::get_uv2_scale() const {
+Vector2 SpatialMaterial::get_uv2_scale() const {
 
 	return uv2_scale;
 }
 
-void FixedSpatialMaterial::set_uv2_offset(const Vector2 &p_offset) {
+void SpatialMaterial::set_uv2_offset(const Vector2 &p_offset) {
 
 	uv2_offset = p_offset;
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->uv2_offset, p_offset);
 }
 
-Vector2 FixedSpatialMaterial::get_uv2_offset() const {
+Vector2 SpatialMaterial::get_uv2_offset() const {
 
 	return uv2_offset;
 }
 
-void FixedSpatialMaterial::_bind_methods() {
+void SpatialMaterial::set_billboard_mode(BillboardMode p_mode) {
 
-	ClassDB::bind_method(D_METHOD("set_albedo", "albedo"), &FixedSpatialMaterial::set_albedo);
-	ClassDB::bind_method(D_METHOD("get_albedo"), &FixedSpatialMaterial::get_albedo);
+	billboard_mode = p_mode;
+	_queue_shader_change();
+	_change_notify();
+}
 
-	ClassDB::bind_method(D_METHOD("set_specular_mode", "specular_mode"), &FixedSpatialMaterial::set_specular_mode);
-	ClassDB::bind_method(D_METHOD("get_specular_mode"), &FixedSpatialMaterial::get_specular_mode);
+SpatialMaterial::BillboardMode SpatialMaterial::get_billboard_mode() const {
 
-	ClassDB::bind_method(D_METHOD("set_specular", "specular"), &FixedSpatialMaterial::set_specular);
-	ClassDB::bind_method(D_METHOD("get_specular"), &FixedSpatialMaterial::get_specular);
+	return billboard_mode;
+}
 
-	ClassDB::bind_method(D_METHOD("set_metalness", "metalness"), &FixedSpatialMaterial::set_metalness);
-	ClassDB::bind_method(D_METHOD("get_metalness"), &FixedSpatialMaterial::get_metalness);
+void SpatialMaterial::set_particles_anim_h_frames(int p_frames) {
 
-	ClassDB::bind_method(D_METHOD("set_roughness", "roughness"), &FixedSpatialMaterial::set_roughness);
-	ClassDB::bind_method(D_METHOD("get_roughness"), &FixedSpatialMaterial::get_roughness);
+	particles_anim_h_frames = p_frames;
+	VS::get_singleton()->material_set_param(_get_material(), shader_names->particle_h_frames, p_frames);
+}
 
-	ClassDB::bind_method(D_METHOD("set_emission", "emission"), &FixedSpatialMaterial::set_emission);
-	ClassDB::bind_method(D_METHOD("get_emission"), &FixedSpatialMaterial::get_emission);
+int SpatialMaterial::get_particles_anim_h_frames() const {
 
-	ClassDB::bind_method(D_METHOD("set_emission_energy", "emission_energy"), &FixedSpatialMaterial::set_emission_energy);
-	ClassDB::bind_method(D_METHOD("get_emission_energy"), &FixedSpatialMaterial::get_emission_energy);
+	return particles_anim_h_frames;
+}
+void SpatialMaterial::set_particles_anim_v_frames(int p_frames) {
 
-	ClassDB::bind_method(D_METHOD("set_normal_scale", "normal_scale"), &FixedSpatialMaterial::set_normal_scale);
-	ClassDB::bind_method(D_METHOD("get_normal_scale"), &FixedSpatialMaterial::get_normal_scale);
+	particles_anim_v_frames = p_frames;
+	VS::get_singleton()->material_set_param(_get_material(), shader_names->particle_v_frames, p_frames);
+}
 
-	ClassDB::bind_method(D_METHOD("set_rim", "rim"), &FixedSpatialMaterial::set_rim);
-	ClassDB::bind_method(D_METHOD("get_rim"), &FixedSpatialMaterial::get_rim);
+int SpatialMaterial::get_particles_anim_v_frames() const {
 
-	ClassDB::bind_method(D_METHOD("set_rim_tint", "rim_tint"), &FixedSpatialMaterial::set_rim_tint);
-	ClassDB::bind_method(D_METHOD("get_rim_tint"), &FixedSpatialMaterial::get_rim_tint);
+	return particles_anim_v_frames;
+}
 
-	ClassDB::bind_method(D_METHOD("set_clearcoat", "clearcoat"), &FixedSpatialMaterial::set_clearcoat);
-	ClassDB::bind_method(D_METHOD("get_clearcoat"), &FixedSpatialMaterial::get_clearcoat);
+void SpatialMaterial::set_particles_anim_loop(int p_frames) {
 
-	ClassDB::bind_method(D_METHOD("set_clearcoat_gloss", "clearcoat_gloss"), &FixedSpatialMaterial::set_clearcoat_gloss);
-	ClassDB::bind_method(D_METHOD("get_clearcoat_gloss"), &FixedSpatialMaterial::get_clearcoat_gloss);
+	particles_anim_loop = p_frames;
+	VS::get_singleton()->material_set_param(_get_material(), shader_names->particles_anim_loop, p_frames);
+}
 
-	ClassDB::bind_method(D_METHOD("set_anisotropy", "anisotropy"), &FixedSpatialMaterial::set_anisotropy);
-	ClassDB::bind_method(D_METHOD("get_anisotropy"), &FixedSpatialMaterial::get_anisotropy);
+int SpatialMaterial::get_particles_anim_loop() const {
 
-	ClassDB::bind_method(D_METHOD("set_height_scale", "height_scale"), &FixedSpatialMaterial::set_height_scale);
-	ClassDB::bind_method(D_METHOD("get_height_scale"), &FixedSpatialMaterial::get_height_scale);
+	return particles_anim_loop;
+}
 
-	ClassDB::bind_method(D_METHOD("set_subsurface_scattering_strength", "strength"), &FixedSpatialMaterial::set_subsurface_scattering_strength);
-	ClassDB::bind_method(D_METHOD("get_subsurface_scattering_strength"), &FixedSpatialMaterial::get_subsurface_scattering_strength);
+void SpatialMaterial::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_refraction", "refraction"), &FixedSpatialMaterial::set_refraction);
-	ClassDB::bind_method(D_METHOD("get_refraction"), &FixedSpatialMaterial::get_refraction);
+	ClassDB::bind_method(D_METHOD("set_albedo", "albedo"), &SpatialMaterial::set_albedo);
+	ClassDB::bind_method(D_METHOD("get_albedo"), &SpatialMaterial::get_albedo);
 
-	ClassDB::bind_method(D_METHOD("set_refraction_roughness", "refraction_roughness"), &FixedSpatialMaterial::set_refraction_roughness);
-	ClassDB::bind_method(D_METHOD("get_refraction_roughness"), &FixedSpatialMaterial::get_refraction_roughness);
+	ClassDB::bind_method(D_METHOD("set_specular_mode", "specular_mode"), &SpatialMaterial::set_specular_mode);
+	ClassDB::bind_method(D_METHOD("get_specular_mode"), &SpatialMaterial::get_specular_mode);
 
-	ClassDB::bind_method(D_METHOD("set_line_width", "line_width"), &FixedSpatialMaterial::set_line_width);
-	ClassDB::bind_method(D_METHOD("get_line_width"), &FixedSpatialMaterial::get_line_width);
+	ClassDB::bind_method(D_METHOD("set_specular", "specular"), &SpatialMaterial::set_specular);
+	ClassDB::bind_method(D_METHOD("get_specular"), &SpatialMaterial::get_specular);
 
-	ClassDB::bind_method(D_METHOD("set_point_size", "point_size"), &FixedSpatialMaterial::set_point_size);
-	ClassDB::bind_method(D_METHOD("get_point_size"), &FixedSpatialMaterial::get_point_size);
+	ClassDB::bind_method(D_METHOD("set_metalness", "metalness"), &SpatialMaterial::set_metalness);
+	ClassDB::bind_method(D_METHOD("get_metalness"), &SpatialMaterial::get_metalness);
 
-	ClassDB::bind_method(D_METHOD("set_detail_uv", "detail_uv"), &FixedSpatialMaterial::set_detail_uv);
-	ClassDB::bind_method(D_METHOD("get_detail_uv"), &FixedSpatialMaterial::get_detail_uv);
+	ClassDB::bind_method(D_METHOD("set_roughness", "roughness"), &SpatialMaterial::set_roughness);
+	ClassDB::bind_method(D_METHOD("get_roughness"), &SpatialMaterial::get_roughness);
 
-	ClassDB::bind_method(D_METHOD("set_blend_mode", "blend_mode"), &FixedSpatialMaterial::set_blend_mode);
-	ClassDB::bind_method(D_METHOD("get_blend_mode"), &FixedSpatialMaterial::get_blend_mode);
+	ClassDB::bind_method(D_METHOD("set_emission", "emission"), &SpatialMaterial::set_emission);
+	ClassDB::bind_method(D_METHOD("get_emission"), &SpatialMaterial::get_emission);
 
-	ClassDB::bind_method(D_METHOD("set_depth_draw_mode", "depth_draw_mode"), &FixedSpatialMaterial::set_depth_draw_mode);
-	ClassDB::bind_method(D_METHOD("get_depth_draw_mode"), &FixedSpatialMaterial::get_depth_draw_mode);
+	ClassDB::bind_method(D_METHOD("set_emission_energy", "emission_energy"), &SpatialMaterial::set_emission_energy);
+	ClassDB::bind_method(D_METHOD("get_emission_energy"), &SpatialMaterial::get_emission_energy);
 
-	ClassDB::bind_method(D_METHOD("set_cull_mode", "cull_mode"), &FixedSpatialMaterial::set_cull_mode);
-	ClassDB::bind_method(D_METHOD("get_cull_mode"), &FixedSpatialMaterial::get_cull_mode);
+	ClassDB::bind_method(D_METHOD("set_normal_scale", "normal_scale"), &SpatialMaterial::set_normal_scale);
+	ClassDB::bind_method(D_METHOD("get_normal_scale"), &SpatialMaterial::get_normal_scale);
 
-	ClassDB::bind_method(D_METHOD("set_diffuse_mode", "diffuse_mode"), &FixedSpatialMaterial::set_diffuse_mode);
-	ClassDB::bind_method(D_METHOD("get_diffuse_mode"), &FixedSpatialMaterial::get_diffuse_mode);
+	ClassDB::bind_method(D_METHOD("set_rim", "rim"), &SpatialMaterial::set_rim);
+	ClassDB::bind_method(D_METHOD("get_rim"), &SpatialMaterial::get_rim);
 
-	ClassDB::bind_method(D_METHOD("set_flag", "flag", "enable"), &FixedSpatialMaterial::set_flag);
-	ClassDB::bind_method(D_METHOD("get_flag"), &FixedSpatialMaterial::get_flag);
+	ClassDB::bind_method(D_METHOD("set_rim_tint", "rim_tint"), &SpatialMaterial::set_rim_tint);
+	ClassDB::bind_method(D_METHOD("get_rim_tint"), &SpatialMaterial::get_rim_tint);
 
-	ClassDB::bind_method(D_METHOD("set_feature", "feature", "enable"), &FixedSpatialMaterial::set_feature);
-	ClassDB::bind_method(D_METHOD("get_feature", "feature"), &FixedSpatialMaterial::get_feature);
+	ClassDB::bind_method(D_METHOD("set_clearcoat", "clearcoat"), &SpatialMaterial::set_clearcoat);
+	ClassDB::bind_method(D_METHOD("get_clearcoat"), &SpatialMaterial::get_clearcoat);
 
-	ClassDB::bind_method(D_METHOD("set_texture", "param:Texture", "texture"), &FixedSpatialMaterial::set_texture);
-	ClassDB::bind_method(D_METHOD("get_texture:Texture", "param:Texture"), &FixedSpatialMaterial::get_texture);
+	ClassDB::bind_method(D_METHOD("set_clearcoat_gloss", "clearcoat_gloss"), &SpatialMaterial::set_clearcoat_gloss);
+	ClassDB::bind_method(D_METHOD("get_clearcoat_gloss"), &SpatialMaterial::get_clearcoat_gloss);
 
-	ClassDB::bind_method(D_METHOD("set_detail_blend_mode", "detail_blend_mode"), &FixedSpatialMaterial::set_detail_blend_mode);
-	ClassDB::bind_method(D_METHOD("get_detail_blend_mode"), &FixedSpatialMaterial::get_detail_blend_mode);
+	ClassDB::bind_method(D_METHOD("set_anisotropy", "anisotropy"), &SpatialMaterial::set_anisotropy);
+	ClassDB::bind_method(D_METHOD("get_anisotropy"), &SpatialMaterial::get_anisotropy);
 
-	ClassDB::bind_method(D_METHOD("set_uv1_scale", "scale"), &FixedSpatialMaterial::set_uv1_scale);
-	ClassDB::bind_method(D_METHOD("get_uv1_scale"), &FixedSpatialMaterial::get_uv1_scale);
+	ClassDB::bind_method(D_METHOD("set_height_scale", "height_scale"), &SpatialMaterial::set_height_scale);
+	ClassDB::bind_method(D_METHOD("get_height_scale"), &SpatialMaterial::get_height_scale);
 
-	ClassDB::bind_method(D_METHOD("set_uv1_offset", "offset"), &FixedSpatialMaterial::set_uv1_offset);
-	ClassDB::bind_method(D_METHOD("get_uv1_offset"), &FixedSpatialMaterial::get_uv1_offset);
+	ClassDB::bind_method(D_METHOD("set_subsurface_scattering_strength", "strength"), &SpatialMaterial::set_subsurface_scattering_strength);
+	ClassDB::bind_method(D_METHOD("get_subsurface_scattering_strength"), &SpatialMaterial::get_subsurface_scattering_strength);
 
-	ClassDB::bind_method(D_METHOD("set_uv2_scale", "scale"), &FixedSpatialMaterial::set_uv2_scale);
-	ClassDB::bind_method(D_METHOD("get_uv2_scale"), &FixedSpatialMaterial::get_uv2_scale);
+	ClassDB::bind_method(D_METHOD("set_refraction", "refraction"), &SpatialMaterial::set_refraction);
+	ClassDB::bind_method(D_METHOD("get_refraction"), &SpatialMaterial::get_refraction);
 
-	ClassDB::bind_method(D_METHOD("set_uv2_offset", "offset"), &FixedSpatialMaterial::set_uv2_offset);
-	ClassDB::bind_method(D_METHOD("get_uv2_offset"), &FixedSpatialMaterial::get_uv2_offset);
+	ClassDB::bind_method(D_METHOD("set_refraction_roughness", "refraction_roughness"), &SpatialMaterial::set_refraction_roughness);
+	ClassDB::bind_method(D_METHOD("get_refraction_roughness"), &SpatialMaterial::get_refraction_roughness);
+
+	ClassDB::bind_method(D_METHOD("set_line_width", "line_width"), &SpatialMaterial::set_line_width);
+	ClassDB::bind_method(D_METHOD("get_line_width"), &SpatialMaterial::get_line_width);
+
+	ClassDB::bind_method(D_METHOD("set_point_size", "point_size"), &SpatialMaterial::set_point_size);
+	ClassDB::bind_method(D_METHOD("get_point_size"), &SpatialMaterial::get_point_size);
+
+	ClassDB::bind_method(D_METHOD("set_detail_uv", "detail_uv"), &SpatialMaterial::set_detail_uv);
+	ClassDB::bind_method(D_METHOD("get_detail_uv"), &SpatialMaterial::get_detail_uv);
+
+	ClassDB::bind_method(D_METHOD("set_blend_mode", "blend_mode"), &SpatialMaterial::set_blend_mode);
+	ClassDB::bind_method(D_METHOD("get_blend_mode"), &SpatialMaterial::get_blend_mode);
+
+	ClassDB::bind_method(D_METHOD("set_depth_draw_mode", "depth_draw_mode"), &SpatialMaterial::set_depth_draw_mode);
+	ClassDB::bind_method(D_METHOD("get_depth_draw_mode"), &SpatialMaterial::get_depth_draw_mode);
+
+	ClassDB::bind_method(D_METHOD("set_cull_mode", "cull_mode"), &SpatialMaterial::set_cull_mode);
+	ClassDB::bind_method(D_METHOD("get_cull_mode"), &SpatialMaterial::get_cull_mode);
+
+	ClassDB::bind_method(D_METHOD("set_diffuse_mode", "diffuse_mode"), &SpatialMaterial::set_diffuse_mode);
+	ClassDB::bind_method(D_METHOD("get_diffuse_mode"), &SpatialMaterial::get_diffuse_mode);
+
+	ClassDB::bind_method(D_METHOD("set_flag", "flag", "enable"), &SpatialMaterial::set_flag);
+	ClassDB::bind_method(D_METHOD("get_flag"), &SpatialMaterial::get_flag);
+
+	ClassDB::bind_method(D_METHOD("set_feature", "feature", "enable"), &SpatialMaterial::set_feature);
+	ClassDB::bind_method(D_METHOD("get_feature", "feature"), &SpatialMaterial::get_feature);
+
+	ClassDB::bind_method(D_METHOD("set_texture", "param:Texture", "texture"), &SpatialMaterial::set_texture);
+	ClassDB::bind_method(D_METHOD("get_texture:Texture", "param:Texture"), &SpatialMaterial::get_texture);
+
+	ClassDB::bind_method(D_METHOD("set_detail_blend_mode", "detail_blend_mode"), &SpatialMaterial::set_detail_blend_mode);
+	ClassDB::bind_method(D_METHOD("get_detail_blend_mode"), &SpatialMaterial::get_detail_blend_mode);
+
+	ClassDB::bind_method(D_METHOD("set_uv1_scale", "scale"), &SpatialMaterial::set_uv1_scale);
+	ClassDB::bind_method(D_METHOD("get_uv1_scale"), &SpatialMaterial::get_uv1_scale);
+
+	ClassDB::bind_method(D_METHOD("set_uv1_offset", "offset"), &SpatialMaterial::set_uv1_offset);
+	ClassDB::bind_method(D_METHOD("get_uv1_offset"), &SpatialMaterial::get_uv1_offset);
+
+	ClassDB::bind_method(D_METHOD("set_uv2_scale", "scale"), &SpatialMaterial::set_uv2_scale);
+	ClassDB::bind_method(D_METHOD("get_uv2_scale"), &SpatialMaterial::get_uv2_scale);
+
+	ClassDB::bind_method(D_METHOD("set_uv2_offset", "offset"), &SpatialMaterial::set_uv2_offset);
+	ClassDB::bind_method(D_METHOD("get_uv2_offset"), &SpatialMaterial::get_uv2_offset);
+
+	ClassDB::bind_method(D_METHOD("set_billboard_mode", "mode"), &SpatialMaterial::set_billboard_mode);
+	ClassDB::bind_method(D_METHOD("get_billboard_mode"), &SpatialMaterial::get_billboard_mode);
+
+	ClassDB::bind_method(D_METHOD("set_particles_anim_h_frames", "frames"), &SpatialMaterial::set_particles_anim_h_frames);
+	ClassDB::bind_method(D_METHOD("get_particles_anim_h_frames"), &SpatialMaterial::get_particles_anim_h_frames);
+
+	ClassDB::bind_method(D_METHOD("set_particles_anim_v_frames", "frames"), &SpatialMaterial::set_particles_anim_v_frames);
+	ClassDB::bind_method(D_METHOD("get_particles_anim_v_frames"), &SpatialMaterial::get_particles_anim_v_frames);
+
+	ClassDB::bind_method(D_METHOD("set_particles_anim_loop", "frames"), &SpatialMaterial::set_particles_anim_loop);
+	ClassDB::bind_method(D_METHOD("get_particles_anim_loop"), &SpatialMaterial::get_particles_anim_loop);
 
 	ADD_GROUP("Flags", "flags_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_transparent"), "set_feature", "get_feature", FEATURE_TRANSPARENT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_unshaded"), "set_flag", "get_flag", FLAG_UNSHADED);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_on_top"), "set_flag", "get_flag", FLAG_ONTOP);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_use_point_size"), "set_flag", "get_flag", FLAG_USE_POINT_SIZE);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_fixed_size"), "set_flag", "get_flag", FLAG_FIXED_SIZE);
 	ADD_GROUP("Vertex Color", "vertex_color");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "vertex_color_use_as_albedo"), "set_flag", "get_flag", FLAG_ALBEDO_FROM_VERTEX_COLOR);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "vertex_color_is_srgb"), "set_flag", "get_flag", FLAG_SRGB_VERTEX_COLOR);
 
 	ADD_GROUP("Parameters", "params_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_diffuse_mode", PROPERTY_HINT_ENUM, "Labert,Lambert Wrap,Oren Nayar,Burley"), "set_diffuse_mode", "get_diffuse_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_diffuse_mode", PROPERTY_HINT_ENUM, "Lambert,Lambert Wrap,Oren Nayar,Burley"), "set_diffuse_mode", "get_diffuse_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_blend_mode", PROPERTY_HINT_ENUM, "Mix,Add,Sub,Mul"), "set_blend_mode", "get_blend_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_cull_mode", PROPERTY_HINT_ENUM, "Back,Front,Disabled"), "set_cull_mode", "get_cull_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_depth_draw_mode", PROPERTY_HINT_ENUM, "Opaque Only,Always,Never,Opaque Pre-Pass"), "set_depth_draw_mode", "get_depth_draw_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "params_line_width", PROPERTY_HINT_RANGE, "0.1,128,0.1"), "set_line_width", "get_line_width");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "params_point_size", PROPERTY_HINT_RANGE, "0.1,128,0.1"), "set_point_size", "get_point_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_billboard_mode", PROPERTY_HINT_ENUM, "Disabled,Enabled,Y-Billboard,Particle Billboard"), "set_billboard_mode", "get_billboard_mode");
+	ADD_GROUP("Particles Anim", "particles_anim_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "particles_anim_h_frames", PROPERTY_HINT_RANGE, "1,128,1"), "set_particles_anim_h_frames", "get_particles_anim_h_frames");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "particles_anim_v_frames", PROPERTY_HINT_RANGE, "1,128,1"), "set_particles_anim_v_frames", "get_particles_anim_v_frames");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "particles_anim_loop"), "set_particles_anim_loop", "get_particles_anim_loop");
 
 	ADD_GROUP("Albedo", "albedo_");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "albedo_color"), "set_albedo", "get_albedo");
@@ -913,7 +1159,7 @@ void FixedSpatialMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "emission_energy", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_emission_energy", "get_emission_energy");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "emission_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture", TEXTURE_EMISSION);
 
-	ADD_GROUP("NormapMap", "normal_");
+	ADD_GROUP("NormalMap", "normal_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "normal_enabled"), "set_feature", "get_feature", FEATURE_NORMAL_MAPPING);
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "normal_scale", PROPERTY_HINT_RANGE, "-16,16,0.01"), "set_normal_scale", "get_normal_scale");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "normal_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture", TEXTURE_NORMAL);
@@ -1023,6 +1269,7 @@ void FixedSpatialMaterial::_bind_methods() {
 	BIND_CONSTANT(FLAG_ALBEDO_FROM_VERTEX_COLOR);
 	BIND_CONSTANT(FLAG_SRGB_VERTEX_COLOR)
 	BIND_CONSTANT(FLAG_USE_POINT_SIZE)
+	BIND_CONSTANT(FLAG_FIXED_SIZE)
 	BIND_CONSTANT(FLAG_MAX);
 
 	BIND_CONSTANT(DIFFUSE_LAMBERT);
@@ -1032,9 +1279,14 @@ void FixedSpatialMaterial::_bind_methods() {
 
 	BIND_CONSTANT(SPECULAR_MODE_METALLIC);
 	BIND_CONSTANT(SPECULAR_MODE_SPECULAR);
+
+	BIND_CONSTANT(BILLBOARD_DISABLED);
+	BIND_CONSTANT(BILLBOARD_ENABLED);
+	BIND_CONSTANT(BILLBOARD_FIXED_Y);
+	BIND_CONSTANT(BILLBOARD_PARTICLES);
 }
 
-FixedSpatialMaterial::FixedSpatialMaterial()
+SpatialMaterial::SpatialMaterial()
 	: element(this) {
 
 	//initialize to right values
@@ -1061,6 +1313,10 @@ FixedSpatialMaterial::FixedSpatialMaterial()
 	set_uv1_scale(Vector2(1, 1));
 	set_uv2_offset(Vector2(0, 0));
 	set_uv2_scale(Vector2(1, 1));
+	set_billboard_mode(BILLBOARD_DISABLED);
+	set_particles_anim_h_frames(1);
+	set_particles_anim_v_frames(1);
+	set_particles_anim_loop(false);
 
 	detail_uv = DETAIL_UV_1;
 	blend_mode = BLEND_MODE_MIX;
@@ -1081,7 +1337,7 @@ FixedSpatialMaterial::FixedSpatialMaterial()
 	_queue_shader_change();
 }
 
-FixedSpatialMaterial::~FixedSpatialMaterial() {
+SpatialMaterial::~SpatialMaterial() {
 
 	if (material_mutex)
 		material_mutex->lock();

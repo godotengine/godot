@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -78,8 +79,8 @@ public:
 	Path *get_edited_path() { return path; }
 
 	static PathEditorPlugin* singleton;
-	Ref<FixedSpatialMaterial> path_material;
-	Ref<FixedSpatialMaterial> path_thin_material;
+	Ref<SpatialMaterial> path_material;
+	Ref<SpatialMaterial> path_thin_material;
 	virtual bool forward_spatial_gui_input(Camera* p_camera,const InputEvent& p_event);
 
 	//virtual bool forward_gui_input(const InputEvent& p_event) { return collision_polygon_editor->forward_gui_input(p_event); }

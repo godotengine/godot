@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -386,6 +387,13 @@ GDParser::Node *GDParser::_parse_expression(Node *p_parent, bool p_static, bool 
 				_set_error("Expected '(' after 'preload'");
 				return NULL;
 			}
+			completion_cursor = StringName();
+			completion_type = COMPLETION_PRELOAD;
+			completion_class = current_class;
+			completion_function = current_function;
+			completion_line = tokenizer->get_token_line();
+			completion_block = current_block;
+			completion_found = true;
 			tokenizer->advance();
 
 			String path;
@@ -2264,6 +2272,7 @@ void GDParser::_parse_block(BlockNode *p_block, bool p_static) {
 		if (!is_first_line && tab_level.back()->prev() && tab_level.back()->prev()->get() == indent_level) {
 			// pythonic single-line expression, don't parse future lines
 			tab_level.pop_back();
+			p_block->end_line = tokenizer->get_token_line();
 			return;
 		}
 		is_first_line = false;
@@ -2420,7 +2429,7 @@ void GDParser::_parse_block(BlockNode *p_block, bool p_static) {
 				p_block->sub_blocks.push_back(cf_if->body);
 
 				if (!_enter_indent_block(cf_if->body)) {
-					_set_error("Expected intended block after 'if'");
+					_set_error("Expected indented block after 'if'");
 					p_block->end_line = tokenizer->get_token_line();
 					return;
 				}
@@ -2435,9 +2444,8 @@ void GDParser::_parse_block(BlockNode *p_block, bool p_static) {
 
 				while (true) {
 
-					while (tokenizer->get_token() == GDTokenizer::TK_NEWLINE) {
-						tokenizer->advance();
-					}
+					while (tokenizer->get_token() == GDTokenizer::TK_NEWLINE && _parse_newline())
+						;
 
 					if (tab_level.back()->get() < indent_level) { //not at current indent level
 						p_block->end_line = tokenizer->get_token_line();

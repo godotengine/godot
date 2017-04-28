@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -149,10 +150,11 @@ void FileSystemDock::_notification(int p_what) {
 			}
 			button_display_mode->connect("pressed", this, "_change_file_display");
 			//file_options->set_icon( get_icon("Tools","EditorIcons"));
+
 			files->connect("item_activated", this, "_select_file");
 			button_hist_next->connect("pressed", this, "_fw_history");
 			button_hist_prev->connect("pressed", this, "_bw_history");
-			search_icon->set_texture(get_icon("Zoom", "EditorIcons"));
+			search_icon->set_texture(get_icon("Search", "EditorIcons"));
 
 			button_hist_next->set_icon(get_icon("Forward", "EditorIcons"));
 			button_hist_prev->set_icon(get_icon("Back", "EditorIcons"));
@@ -1063,6 +1065,11 @@ void FileSystemDock::_folder_option(int p_option) {
 				child = child->get_next();
 			}
 			break;
+		case FOLDER_SHOW_IN_EXPLORER:
+			String path = item->get_metadata(tree->get_selected_column());
+			String dir = GlobalConfig::get_singleton()->globalize_path(path);
+			OS::get_singleton()->shell_open(String("file://") + dir);
+			return;
 	}
 }
 
@@ -1101,7 +1108,10 @@ void FileSystemDock::_dir_rmb_pressed(const Vector2 &p_pos) {
 	folder_options->add_item(TTR("Expand all"), FOLDER_EXPAND_ALL);
 	folder_options->add_item(TTR("Collapse all"), FOLDER_COLLAPSE_ALL);
 
-	folder_options->set_pos(files->get_global_pos() + p_pos);
+	folder_options->add_separator();
+	folder_options->add_item(TTR("Show In File Manager"), FOLDER_SHOW_IN_EXPLORER);
+
+	folder_options->set_position(tree->get_global_position() + p_pos);
 	folder_options->popup();
 }
 
@@ -1525,7 +1535,7 @@ void FileSystemDock::_files_list_rmb_select(int p_item, const Vector2 &p_pos) {
 		*/
 	}
 
-	file_options->set_pos(files->get_global_pos() + p_pos);
+	file_options->set_position(files->get_global_position() + p_pos);
 	file_options->popup();
 }
 
@@ -1657,8 +1667,6 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	button_reload->set_focus_mode(FOCUS_NONE);
 	button_reload->set_tooltip(TTR("Re-Scan Filesystem"));
 	button_reload->hide();
-
-	//toolbar_hbc->add_spacer();
 
 	button_favorite = memnew(Button);
 	button_favorite->set_flat(true);

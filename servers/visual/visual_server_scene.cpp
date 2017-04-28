@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +30,7 @@
 #include "visual_server_scene.h"
 #include "os/os.h"
 #include "visual_server_global.h"
+#include "visual_server_raster.h"
 /* CAMERA API */
 
 RID VisualServerScene::camera_create() {
@@ -609,7 +611,8 @@ void VisualServerScene::instance_set_base(RID p_instance, RID p_base) {
 			} break;
 			case VS::INSTANCE_MESH:
 			case VS::INSTANCE_MULTIMESH:
-			case VS::INSTANCE_IMMEDIATE: {
+			case VS::INSTANCE_IMMEDIATE:
+			case VS::INSTANCE_PARTICLES: {
 
 				InstanceGeometryData *geom = memnew(InstanceGeometryData);
 				instance->base_data = geom;
@@ -975,16 +978,6 @@ void VisualServerScene::instance_geometry_set_flag(RID p_instance, VS::InstanceF
 
 	switch (p_flags) {
 
-		case VS::INSTANCE_FLAG_BILLBOARD: {
-
-			instance->billboard = p_enabled;
-
-		} break;
-		case VS::INSTANCE_FLAG_BILLBOARD_FIX_Y: {
-
-			instance->billboard_y = p_enabled;
-
-		} break;
 		case VS::INSTANCE_FLAG_CAST_SHADOW: {
 			if (p_enabled == true) {
 				instance->cast_shadows = VS::SHADOW_CASTING_SETTING_ON;
@@ -993,11 +986,6 @@ void VisualServerScene::instance_geometry_set_flag(RID p_instance, VS::InstanceF
 			}
 
 			instance->base_material_changed(); // to actually compute if shadows are visible or not
-
-		} break;
-		case VS::INSTANCE_FLAG_DEPH_SCALE: {
-
-			instance->depth_scale = p_enabled;
 
 		} break;
 		case VS::INSTANCE_FLAG_VISIBLE_IN_ALL_ROOMS: {
@@ -1048,6 +1036,11 @@ void VisualServerScene::_update_instance(Instance *p_instance) {
 
 		VSG::scene_render->reflection_probe_instance_set_transform(reflection_probe->instance, p_instance->transform);
 		reflection_probe->reflection_dirty = true;
+	}
+
+	if (p_instance->base_type == VS::INSTANCE_PARTICLES) {
+
+		VSG::storage->particles_set_emission_transform(p_instance->base, p_instance->transform);
 	}
 
 	if (p_instance->aabb.has_no_surface())
@@ -1233,6 +1226,11 @@ void VisualServerScene::_update_instance_aabb(Instance *p_instance) {
 		case VisualServer::INSTANCE_IMMEDIATE: {
 
 			new_aabb = VSG::storage->immediate_get_aabb(p_instance->base);
+
+		} break;
+		case VisualServer::INSTANCE_PARTICLES: {
+
+			new_aabb = VSG::storage->particles_get_aabb(p_instance->base);
 
 		} break;
 #if 0
@@ -1913,6 +1911,13 @@ void VisualServerScene::_render_scene(const Transform p_cam_transform, const Cam
 #endif
 
 			InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(ins->base_data);
+
+			if (ins->base_type == VS::INSTANCE_PARTICLES) {
+				//particles visible? process them
+				VSG::storage->particles_request_process(ins->base);
+				//particles visible? request redraw
+				VisualServerRaster::redraw_request();
+			}
 
 			if (geom->lighting_dirty) {
 				int l = 0;

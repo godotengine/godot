@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -104,23 +105,23 @@ public:
 	}
 
 	static void get_closest_points_between_segments(const Vector3 &p1, const Vector3 &p2, const Vector3 &q1, const Vector3 &q2, Vector3 &c1, Vector3 &c2) {
-#if 0
-		//do the function 'd' as defined by pb. I think is is dot product of some sort
+#if 1
+//do the function 'd' as defined by pb. I think is is dot product of some sort
 #define d_of(m, n, o, p) ((m.x - n.x) * (o.x - p.x) + (m.y - n.y) * (o.y - p.y) + (m.z - n.z) * (o.z - p.z))
 
 		//calculate the parametric position on the 2 curves, mua and mub
-		real_t mua = ( d_of(p1,q1,q2,q1) * d_of(q2,q1,p2,p1)  - d_of(p1,q1,p2,p1) * d_of(q2,q1,q2,q1) ) / ( d_of(p2,p1,p2,p1) * d_of(q2,q1,q2,q1)  - d_of(q2,q1,p2,p1) * d_of(q2,q1,p2,p1) );
-		real_t mub = ( d_of(p1,q1,q2,q1) + mua * d_of(q2,q1,p2,p1)  ) / d_of(q2,q1,q2,q1);
+		real_t mua = (d_of(p1, q1, q2, q1) * d_of(q2, q1, p2, p1) - d_of(p1, q1, p2, p1) * d_of(q2, q1, q2, q1)) / (d_of(p2, p1, p2, p1) * d_of(q2, q1, q2, q1) - d_of(q2, q1, p2, p1) * d_of(q2, q1, p2, p1));
+		real_t mub = (d_of(p1, q1, q2, q1) + mua * d_of(q2, q1, p2, p1)) / d_of(q2, q1, q2, q1);
 
 		//clip the value between [0..1] constraining the solution to lie on the original curves
 		if (mua < 0) mua = 0;
 		if (mub < 0) mub = 0;
 		if (mua > 1) mua = 1;
 		if (mub > 1) mub = 1;
-		c1 = p1.linear_interpolate(p2,mua);
-		c2 = q1.linear_interpolate(q2,mub);
-#endif
-
+		c1 = p1.linear_interpolate(p2, mua);
+		c2 = q1.linear_interpolate(q2, mub);
+#else
+		//this is broken do not use
 		Vector3 u = p2 - p1;
 		Vector3 v = q2 - q1;
 		Vector3 w = p1 - q1;
@@ -143,8 +144,9 @@ public:
 
 		c1 = w + sc * u;
 		c2 = w + tc * v;
-		// get the difference of the two closest points
-		//Vector   dP = w + (sc * u) - (tc * v);  // =  L1(sc) - L2(tc)
+// get the difference of the two closest points
+//Vector   dP = w + (sc * u) - (tc * v);  // =  L1(sc) - L2(tc)
+#endif
 	}
 
 	static real_t get_closest_distance_between_segments(const Vector3 &p_from_a, const Vector3 &p_to_a, const Vector3 &p_from_b, const Vector3 &p_to_b) {

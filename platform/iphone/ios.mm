@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +33,7 @@
 
 void iOS::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("get_rate_url","app_id"),&iOS::get_rate_url);
+	ClassDB::bind_method(D_METHOD("get_rate_url", "app_id"), &iOS::get_rate_url);
 };
 
 String iOS::get_rate_url(int p_app_id) const {
@@ -43,14 +44,11 @@ String iOS::get_rate_url(int p_app_id) const {
 	//ios7 before
 	String ret = templ;
 
-	// iOS 7 needs a different templateReviewURL @see https://github.com/arashpayan/appirater/issues/131
-	if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0 && [[[UIDevice currentDevice] systemVersion] floatValue] < 7.1)
-	{
+	if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0 && [[[UIDevice currentDevice] systemVersion] floatValue] < 7.1) {
+		// iOS 7 needs a different templateReviewURL @see https://github.com/arashpayan/appirater/issues/131
 		ret = templ_iOS7;
-	}
-	// iOS 8 needs a different templateReviewURL also @see https://github.com/arashpayan/appirater/issues/182
-	else if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.0)
-	{
+	} else if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.0) {
+		// iOS 8 needs a different templateReviewURL also @see https://github.com/arashpayan/appirater/issues/182
 		ret = templ_iOS8;
 	}
 
@@ -61,4 +59,4 @@ String iOS::get_rate_url(int p_app_id) const {
 	return ret;
 };
 
-iOS::iOS() {};
+iOS::iOS(){};

@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -399,7 +400,7 @@ public:
 	void set_attach_to_screen_rect(const Rect2 &p_rect);
 	Rect2 get_attach_to_screen_rect() const;
 
-	Vector2 get_mouse_pos() const;
+	Vector2 get_mouse_position() const;
 	void warp_mouse(const Vector2 &p_pos);
 
 	void set_physics_object_picking(bool p_enable);

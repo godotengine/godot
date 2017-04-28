@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -192,6 +193,9 @@ bool Mesh::_set(const StringName &p_name, const Variant &p_value) {
 
 bool Mesh::_get(const StringName &p_name, Variant &r_ret) const {
 
+	if (_is_generated())
+		return false;
+
 	String sname = p_name;
 
 	if (p_name == "blend_shape/names") {
@@ -267,6 +271,9 @@ bool Mesh::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void Mesh::_get_property_list(List<PropertyInfo> *p_list) const {
+
+	if (_is_generated())
+		return;
 
 	if (blend_shapes.size()) {
 		p_list->push_back(PropertyInfo(Variant::POOL_STRING_ARRAY, "blend_shape/names", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
@@ -1024,4 +1031,72 @@ Mesh::Mesh() {
 Mesh::~Mesh() {
 
 	VisualServer::get_singleton()->free(mesh);
+}
+
+////////////////////////
+
+void QuadMesh::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_material", "material:Material"), &QuadMesh::set_material);
+	ClassDB::bind_method(D_METHOD("get_material:Material"), &QuadMesh::get_material);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "Material"), "set_material", "get_material");
+}
+
+void QuadMesh::set_material(const Ref<Material> &p_material) {
+
+	surface_set_material(0, p_material);
+}
+
+Ref<Material> QuadMesh::get_material() const {
+
+	return surface_get_material(0);
+}
+
+QuadMesh::QuadMesh() {
+
+	PoolVector<Vector3> faces;
+	PoolVector<Vector3> normals;
+	PoolVector<float> tangents;
+	PoolVector<Vector2> uvs;
+
+	faces.resize(4);
+	normals.resize(4);
+	tangents.resize(4 * 4);
+	uvs.resize(4);
+
+	for (int i = 0; i < 4; i++) {
+
+		static const Vector3 quad_faces[4] = {
+			Vector3(-1, -1, 0),
+			Vector3(-1, 1, 0),
+			Vector3(1, 1, 0),
+			Vector3(1, -1, 0),
+		};
+
+		faces.set(i, quad_faces[i]);
+		normals.set(i, Vector3(0, 0, 1));
+		tangents.set(i * 4 + 0, 1.0);
+		tangents.set(i * 4 + 1, 0.0);
+		tangents.set(i * 4 + 2, 0.0);
+		tangents.set(i * 4 + 3, 1.0);
+
+		static const Vector2 quad_uv[4] = {
+			Vector2(0, 1),
+			Vector2(0, 0),
+			Vector2(1, 0),
+			Vector2(1, 1),
+		};
+
+		uvs.set(i, quad_uv[i]);
+	}
+
+	Array arr;
+	arr.resize(ARRAY_MAX);
+	arr[ARRAY_VERTEX] = faces;
+	arr[ARRAY_NORMAL] = normals;
+	arr[ARRAY_TANGENT] = tangents;
+	arr[ARRAY_TEX_UV] = uvs;
+
+	add_surface_from_arrays(PRIMITIVE_TRIANGLE_FAN, arr);
 }

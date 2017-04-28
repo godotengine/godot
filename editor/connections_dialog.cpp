@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -766,7 +767,7 @@ void ConnectionsDock::_something_activated() {
 
 		Ref<Script> script = c.target->get_script();
 
-		if (script.is_valid() && ScriptEditor::get_singleton()->script_go_to_method(script, c.method)) {
+		if (script.is_valid() && ScriptEditor::get_singleton()->script_goto_method(script, c.method)) {
 			editor->call("_editor_select", EditorNode::EDITOR_SCRIPT);
 		}
 	}

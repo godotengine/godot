@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,6 +49,13 @@ class RayCast : public Spatial {
 
 	uint32_t layer_mask;
 	uint32_t type_mask;
+
+	Node *debug_shape;
+	Ref<Material> debug_material;
+
+	void _create_debug_shape();
+	void _update_debug_shape();
+	void _clear_debug_shape();
 
 protected:
 	void _notification(int p_what);

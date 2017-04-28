@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -185,17 +186,17 @@ void CanvasItemEditor::_edit_set_pivot(const Vector2 &mouse_pos) {
 
 			Vector2 motion_ofs = gpos - local_mouse_pos;
 
-			undo_redo->add_do_method(n2d, "set_global_pos", local_mouse_pos);
+			undo_redo->add_do_method(n2d, "set_global_position", local_mouse_pos);
 			undo_redo->add_do_method(n2d, "edit_set_pivot", offset + n2d->get_global_transform().affine_inverse().basis_xform(motion_ofs));
-			undo_redo->add_undo_method(n2d, "set_global_pos", gpos);
+			undo_redo->add_undo_method(n2d, "set_global_position", gpos);
 			undo_redo->add_undo_method(n2d, "edit_set_pivot", offset);
 			for (int i = 0; i < n2d->get_child_count(); i++) {
 				Node2D *n2dc = n2d->get_child(i)->cast_to<Node2D>();
 				if (!n2dc)
 					continue;
 
-				undo_redo->add_do_method(n2dc, "set_global_pos", n2dc->get_global_position());
-				undo_redo->add_undo_method(n2dc, "set_global_pos", n2dc->get_global_position());
+				undo_redo->add_do_method(n2dc, "set_global_position", n2dc->get_global_position());
+				undo_redo->add_undo_method(n2dc, "set_global_position", n2dc->get_global_position());
 			}
 		}
 	}
@@ -665,7 +666,7 @@ void CanvasItemEditor::_key_move(const Vector2 &p_dir, bool p_snap, KeyMoveMODE 
 
 			} else if (Control *control = canvas_item->cast_to<Control>()) {
 
-				control->set_pos(control->get_pos() + drag);
+				control->set_position(control->get_position() + drag);
 			}
 		}
 	}
@@ -1013,7 +1014,7 @@ void CanvasItemEditor::_list_select(const InputEventMouseButton &b) {
 
 		additive_selection = b.mod.shift;
 
-		selection_menu->set_global_pos(Vector2(b.global_x, b.global_y));
+		selection_menu->set_global_position(Vector2(b.global_x, b.global_y));
 		selection_menu->popup();
 		selection_menu->call_deferred("grab_click_focus");
 		selection_menu->set_invalidate_click_until_motion();
@@ -1134,7 +1135,7 @@ void CanvasItemEditor::_viewport_gui_input(const InputEvent &p_event) {
 				Node* scene = get_scene()->get_root_node()->cast_to<EditorNode>()->get_edited_scene();
 				if ( scene ) ref_item =_select_canvas_item_at_pos( Point2( b.x, b.y ), scene, transform );
 #endif
-				//popup->set_pos(Point2(b.x,b.y));
+				//popup->set_position(Point2(b.x,b.y));
 				//popup->popup();
 			}
 			return;
@@ -2702,7 +2703,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 					Control *ctrl = canvas_item->cast_to<Control>();
 
 					if (key_pos)
-						AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(ctrl, "rect/pos", ctrl->get_pos(), existing);
+						AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(ctrl, "rect/pos", ctrl->get_position(), existing);
 					if (key_scale)
 						AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(ctrl, "rect/size", ctrl->get_size(), existing);
 				}
@@ -2788,10 +2789,10 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				Node2D *n2d = o->cast_to<Node2D>();
 				if (!n2d)
 					continue;
-				undo_redo->add_do_method(n2d, "set_pos", E->get().pos);
+				undo_redo->add_do_method(n2d, "set_position", E->get().pos);
 				undo_redo->add_do_method(n2d, "set_rot", E->get().rot);
 				undo_redo->add_do_method(n2d, "set_scale", E->get().scale);
-				undo_redo->add_undo_method(n2d, "set_pos", n2d->get_position());
+				undo_redo->add_undo_method(n2d, "set_position", n2d->get_position());
 				undo_redo->add_undo_method(n2d, "set_rot", n2d->get_rotation());
 				undo_redo->add_undo_method(n2d, "set_scale", n2d->get_scale());
 			}
@@ -2825,7 +2826,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 					Control *ctrl = canvas_item->cast_to<Control>();
 
 					if (key_pos)
-						ctrl->set_pos(Point2());
+						ctrl->set_position(Point2());
 					/*
 					if (key_scale)
 						AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(ctrl,"rect/size",ctrl->get_size());
@@ -3122,6 +3123,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	editor_selection->connect("selection_changed", this, "update");
 
 	hb = memnew(HBoxContainer);
+	hb->add_style_override("bg", editor->get_gui_base()->get_stylebox("panel", "PanelContainer"));
 	add_child(hb);
 	hb->set_area_as_parent_rect();
 
@@ -3298,6 +3300,8 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	animation_hb->hide();
 
 	key_loc_button = memnew(Button("loc"));
+	key_loc_button = memnew(Button("loc"));
+	key_loc_button->set_flat(true);
 	key_loc_button->set_toggle_mode(true);
 	key_loc_button->set_pressed(true);
 	key_loc_button->set_focus_mode(FOCUS_NONE);
@@ -3306,6 +3310,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	key_loc_button->connect("pressed", this, "_popup_callback", varray(ANIM_INSERT_POS));
 	animation_hb->add_child(key_loc_button);
 	key_rot_button = memnew(Button("rot"));
+	key_rot_button->set_flat(true);
 	key_rot_button->set_toggle_mode(true);
 	key_rot_button->set_pressed(true);
 	key_rot_button->set_focus_mode(FOCUS_NONE);
@@ -3314,13 +3319,14 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	key_rot_button->connect("pressed", this, "_popup_callback", varray(ANIM_INSERT_ROT));
 	animation_hb->add_child(key_rot_button);
 	key_scale_button = memnew(Button("scl"));
+	key_scale_button->set_flat(true);
 	key_scale_button->set_toggle_mode(true);
 	key_scale_button->set_focus_mode(FOCUS_NONE);
 	key_scale_button->add_color_override("font_color", Color(1, 0.6, 0.6));
 	key_scale_button->add_color_override("font_color_pressed", Color(0.6, 1, 0.6));
 	key_scale_button->connect("pressed", this, "_popup_callback", varray(ANIM_INSERT_SCALE));
 	animation_hb->add_child(key_scale_button);
-	key_insert_button = memnew(Button);
+	key_insert_button = memnew(ToolButton);
 	key_insert_button->set_focus_mode(FOCUS_NONE);
 	key_insert_button->connect("pressed", this, "_popup_callback", varray(ANIM_INSERT_KEY));
 	key_insert_button->set_tooltip(TTR("Insert Keys"));
@@ -3353,7 +3359,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 
 	Label *l = memnew(Label);
 	l->set_text(TTR("Snap (Pixels):"));
-	l->set_pos(Point2(5, 5));
+	l->set_position(Point2(5, 5));
 	value_dialog->add_child(l);
 	dialog_label = l;
 
@@ -3473,8 +3479,8 @@ void CanvasItemEditorViewport::_on_change_type() {
 }
 
 void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) const {
-	label->set_pos(get_global_pos() + Point2(14, 14));
-	label_desc->set_pos(label->get_pos() + Point2(0, label->get_size().height));
+	label->set_position(get_global_position() + Point2(14, 14));
+	label_desc->set_position(label->get_position() + Point2(0, label->get_size().height));
 	for (int i = 0; i < files.size(); i++) {
 		String path = files[i];
 		RES res = ResourceLoader::load(path);
@@ -3575,8 +3581,8 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 
 	// locate at preview position
 	Point2 pos;
-	if (parent->has_method("get_global_pos")) {
-		pos = parent->call("get_global_pos");
+	if (parent->has_method("get_global_position")) {
+		pos = parent->call("get_global_position");
 	}
 	Transform2D trans = canvas->get_canvas_transform();
 	Point2 target_pos = (p_point - trans.get_origin()) / trans.get_scale().x - pos;
@@ -3625,7 +3631,7 @@ bool CanvasItemEditorViewport::_create_instance(Node *parent, String &path, cons
 	} else {
 		Control *parent_control = parent->cast_to<Control>();
 		if (parent_control) {
-			pos = parent_control->get_global_pos();
+			pos = parent_control->get_global_position();
 		}
 	}
 	Transform2D trans = canvas->get_canvas_transform();
@@ -3833,7 +3839,7 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasIte
 	for (int i = 0; i < types.size(); i++) {
 		CheckBox *check = memnew(CheckBox);
 		check->set_text(types[i]);
-		check->connect("button_selected", this, "_on_select_type", varray(check));
+		check->connect("button_down", this, "_on_select_type", varray(check));
 		btn_group->add_child(check);
 		check->set_button_group(button_group);
 	}

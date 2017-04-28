@@ -206,7 +206,7 @@ class ClassStatus:
         output['overall'] = (description_progress + items_progress).to_colored_string('{percent}%', '{pad_percent}{s}')
 
         if self.name.startswith('Total'):
-            output['url'] = color('url', 'http://docs.godotengine.org/en/latest/classes/_classes.html')
+            output['url'] = color('url', 'http://docs.godotengine.org/en/latest/classes/')
             if flags['s']:
                 output['comment'] = color('part_good', 'ALL OK')
         else:

@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -524,7 +525,7 @@ bool SpatialEditorViewport::_gizmo_select(const Vector2 &p_screenpos, bool p_hil
 		return false;
 	if (get_selected_count() == 0) {
 		if (p_hilite_only)
-			spatial_editor->select_gizmo_hilight_axis(-1);
+			spatial_editor->select_gizmo_highlight_axis(-1);
 		return false;
 	}
 
@@ -558,7 +559,7 @@ bool SpatialEditorViewport::_gizmo_select(const Vector2 &p_screenpos, bool p_hil
 
 			if (p_hilite_only) {
 
-				spatial_editor->select_gizmo_hilight_axis(col_axis);
+				spatial_editor->select_gizmo_highlight_axis(col_axis);
 
 			} else {
 				//handle rotate
@@ -598,7 +599,7 @@ bool SpatialEditorViewport::_gizmo_select(const Vector2 &p_screenpos, bool p_hil
 
 			if (p_hilite_only) {
 
-				spatial_editor->select_gizmo_hilight_axis(col_axis + 3);
+				spatial_editor->select_gizmo_highlight_axis(col_axis + 3);
 			} else {
 				//handle rotate
 				_edit.mode = TRANSFORM_ROTATE;
@@ -610,7 +611,7 @@ bool SpatialEditorViewport::_gizmo_select(const Vector2 &p_screenpos, bool p_hil
 	}
 
 	if (p_hilite_only)
-		spatial_editor->select_gizmo_hilight_axis(-1);
+		spatial_editor->select_gizmo_highlight_axis(-1);
 
 	return false;
 }
@@ -672,7 +673,7 @@ void SpatialEditorViewport::_list_select(InputEventMouseButton b) {
 														"\nType: " + spat->get_class() + "\nPath: " + node_path);
 		}
 
-		selection_menu->set_global_pos(Vector2(b.global_x, b.global_y));
+		selection_menu->set_global_position(Vector2(b.global_x, b.global_y));
 		selection_menu->popup();
 		selection_menu->call_deferred("grab_click_focus");
 		selection_menu->set_invalidate_click_until_motion();
@@ -1069,7 +1070,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 						spatial_editor->set_over_gizmo_handle(selected_handle);
 						spatial_editor->get_selected()->update_gizmo();
 						if (selected_handle != -1)
-							spatial_editor->select_gizmo_hilight_axis(-1);
+							spatial_editor->select_gizmo_highlight_axis(-1);
 					}
 				}
 			}
@@ -2165,7 +2166,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 
 	view_menu = memnew(MenuButton);
 	surface->add_child(view_menu);
-	view_menu->set_pos(Point2(4, 4));
+	view_menu->set_position(Point2(4, 4));
 	view_menu->set_self_modulate(Color(1, 1, 1, 0.5));
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/top_view"), VIEW_TOP);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/bottom_view"), VIEW_BOTTOM);
@@ -2229,7 +2230,7 @@ SpatialEditorSelectedItem::~SpatialEditorSelectedItem() {
 		VisualServer::get_singleton()->free(sbox_instance);
 }
 
-void SpatialEditor::select_gizmo_hilight_axis(int p_axis) {
+void SpatialEditor::select_gizmo_highlight_axis(int p_axis) {
 
 	for (int i = 0; i < 3; i++) {
 
@@ -2329,12 +2330,12 @@ void SpatialEditor::_generate_selection_box() {
 		st->add_vertex(b);
 	}
 
-	Ref<FixedSpatialMaterial> mat = memnew(FixedSpatialMaterial);
-	mat->set_flag(FixedSpatialMaterial::FLAG_UNSHADED, true);
+	Ref<SpatialMaterial> mat = memnew(SpatialMaterial);
+	mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
 	mat->set_albedo(Color(1, 1, 1));
-	mat->set_feature(FixedSpatialMaterial::FEATURE_TRANSPARENT, true);
-	mat->set_flag(FixedSpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-	mat->set_flag(FixedSpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
+	mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
+	mat->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	mat->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
 	st->set_material(mat);
 	selection_box = st->commit();
 }
@@ -2888,12 +2889,12 @@ void SpatialEditor::_init_indicators() {
 	{
 
 		indicator_mat.instance();
-		indicator_mat->set_flag(FixedSpatialMaterial::FLAG_UNSHADED, true);
-		//indicator_mat->set_flag(FixedSpatialMaterial::FLAG_ONTOP,true);
-		indicator_mat->set_flag(FixedSpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-		indicator_mat->set_flag(FixedSpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
+		indicator_mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
+		//indicator_mat->set_flag(SpatialMaterial::FLAG_ONTOP,true);
+		indicator_mat->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+		indicator_mat->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
 
-		indicator_mat->set_feature(FixedSpatialMaterial::FEATURE_TRANSPARENT, true);
+		indicator_mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
 
 		PoolVector<Color> grid_colors[3];
 		PoolVector<Vector3> grid_points[3];
@@ -2980,7 +2981,7 @@ void SpatialEditor::_init_indicators() {
 		cursor_points.push_back(Vector3(0, 0, -cs));
 		cursor_material.instance();
 		cursor_material->set_albedo(Color(0, 1, 1));
-		cursor_material->set_flag(FixedSpatialMaterial::FLAG_UNSHADED, true);
+		cursor_material->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
 
 		Array d;
 		d.resize(VS::ARRAY_MAX);
@@ -3000,10 +3001,10 @@ void SpatialEditor::_init_indicators() {
 
 		float gizmo_alph = EditorSettings::get_singleton()->get("editors/3d/manipulator_gizmo_opacity");
 
-		gizmo_hl = Ref<FixedSpatialMaterial>(memnew(FixedSpatialMaterial));
-		gizmo_hl->set_flag(FixedSpatialMaterial::FLAG_UNSHADED, true);
-		gizmo_hl->set_flag(FixedSpatialMaterial::FLAG_ONTOP, true);
-		gizmo_hl->set_feature(FixedSpatialMaterial::FEATURE_TRANSPARENT, true);
+		gizmo_hl = Ref<SpatialMaterial>(memnew(SpatialMaterial));
+		gizmo_hl->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
+		gizmo_hl->set_flag(SpatialMaterial::FLAG_ONTOP, true);
+		gizmo_hl->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
 		gizmo_hl->set_albedo(Color(1, 1, 1, gizmo_alph + 0.2f));
 
 		for (int i = 0; i < 3; i++) {
@@ -3011,10 +3012,10 @@ void SpatialEditor::_init_indicators() {
 			move_gizmo[i] = Ref<Mesh>(memnew(Mesh));
 			rotate_gizmo[i] = Ref<Mesh>(memnew(Mesh));
 
-			Ref<FixedSpatialMaterial> mat = memnew(FixedSpatialMaterial);
-			mat->set_flag(FixedSpatialMaterial::FLAG_UNSHADED, true);
-			mat->set_flag(FixedSpatialMaterial::FLAG_ONTOP, true);
-			mat->set_feature(FixedSpatialMaterial::FEATURE_TRANSPARENT, true);
+			Ref<SpatialMaterial> mat = memnew(SpatialMaterial);
+			mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
+			mat->set_flag(SpatialMaterial::FLAG_ONTOP, true);
+			mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
 			Color col;
 			col[i] = 1.0;
 			col.a = gizmo_alph;
@@ -3571,7 +3572,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 
 	view_menu = memnew(MenuButton);
 	view_menu->set_text(TTR("View"));
-	view_menu->set_pos(Point2(212, 0));
+	view_menu->set_position(Point2(212, 0));
 	hbc_menu->add_child(view_menu);
 
 	p = view_menu->get_popup();
@@ -3716,44 +3717,44 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	add_child(xform_dialog);
 	Label *l = memnew(Label);
 	l->set_text(TTR("Translate:"));
-	l->set_pos(Point2(5, 5));
+	l->set_position(Point2(5, 5));
 	xform_dialog->add_child(l);
 
 	for (int i = 0; i < 3; i++) {
 
 		xform_translate[i] = memnew(LineEdit);
-		xform_translate[i]->set_pos(Point2(15 + i * 60, 22));
+		xform_translate[i]->set_position(Point2(15 + i * 60, 22));
 		xform_translate[i]->set_size(Size2(50, 12));
 		xform_dialog->add_child(xform_translate[i]);
 	}
 
 	l = memnew(Label);
 	l->set_text(TTR("Rotate (deg.):"));
-	l->set_pos(Point2(5, 45));
+	l->set_position(Point2(5, 45));
 	xform_dialog->add_child(l);
 
 	for (int i = 0; i < 3; i++) {
 		xform_rotate[i] = memnew(LineEdit);
-		xform_rotate[i]->set_pos(Point2(15 + i * 60, 62));
+		xform_rotate[i]->set_position(Point2(15 + i * 60, 62));
 		xform_rotate[i]->set_size(Size2(50, 22));
 		xform_dialog->add_child(xform_rotate[i]);
 	}
 
 	l = memnew(Label);
 	l->set_text(TTR("Scale (ratio):"));
-	l->set_pos(Point2(5, 85));
+	l->set_position(Point2(5, 85));
 	xform_dialog->add_child(l);
 
 	for (int i = 0; i < 3; i++) {
 		xform_scale[i] = memnew(LineEdit);
-		xform_scale[i]->set_pos(Point2(15 + i * 60, 102));
+		xform_scale[i]->set_position(Point2(15 + i * 60, 102));
 		xform_scale[i]->set_size(Size2(50, 22));
 		xform_dialog->add_child(xform_scale[i]);
 	}
 
 	l = memnew(Label);
 	l->set_text(TTR("Transform Type"));
-	l->set_pos(Point2(5, 125));
+	l->set_position(Point2(5, 125));
 	xform_dialog->add_child(l);
 
 	xform_type = memnew(OptionButton);

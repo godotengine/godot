@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,25 +27,24 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#import <UIKit/UIKit.h>
 #import "app_delegate.h"
+
+#import <UIKit/UIKit.h>
 #include <stdio.h>
 
 int gargc;
-char** gargv;
+char **gargv;
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
 	printf("*********** main.m\n");
 	gargc = argc;
 	gargv = argv;
 
 	NSAutoreleasePool *pool = [NSAutoreleasePool new];
-	AppDelegate* app = [AppDelegate alloc];
+	AppDelegate *app = [AppDelegate alloc];
 	printf("running app main\n");
 	UIApplicationMain(argc, argv, nil, @"AppDelegate");
 	printf("main done, pool release\n");
 	[pool release];
 	return 0;
 }
-

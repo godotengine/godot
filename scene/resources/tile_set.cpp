@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -125,7 +126,7 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::STRING, pre + "name"));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, pre + "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"));
 		p_list->push_back(PropertyInfo(Variant::VECTOR2, pre + "tex_offset"));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, pre + "material", PROPERTY_HINT_RESOURCE_TYPE, "CanvasItemMaterial"));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, pre + "material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial"));
 		p_list->push_back(PropertyInfo(Variant::COLOR, pre + "modulate"));
 		p_list->push_back(PropertyInfo(Variant::RECT2, pre + "region"));
 		p_list->push_back(PropertyInfo(Variant::VECTOR2, pre + "occluder_offset"));
@@ -159,16 +160,16 @@ Ref<Texture> TileSet::tile_get_texture(int p_id) const {
 	return tile_map[p_id].texture;
 }
 
-void TileSet::tile_set_material(int p_id, const Ref<CanvasItemMaterial> &p_material) {
+void TileSet::tile_set_material(int p_id, const Ref<ShaderMaterial> &p_material) {
 
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	tile_map[p_id].material = p_material;
 	emit_changed();
 }
 
-Ref<CanvasItemMaterial> TileSet::tile_get_material(int p_id) const {
+Ref<ShaderMaterial> TileSet::tile_get_material(int p_id) const {
 
-	ERR_FAIL_COND_V(!tile_map.has(p_id), Ref<CanvasItemMaterial>());
+	ERR_FAIL_COND_V(!tile_map.has(p_id), Ref<ShaderMaterial>());
 	return tile_map[p_id].material;
 }
 
@@ -403,8 +404,8 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("tile_get_name", "id"), &TileSet::tile_get_name);
 	ClassDB::bind_method(D_METHOD("tile_set_texture", "id", "texture:Texture"), &TileSet::tile_set_texture);
 	ClassDB::bind_method(D_METHOD("tile_get_texture:Texture", "id"), &TileSet::tile_get_texture);
-	ClassDB::bind_method(D_METHOD("tile_set_material", "id", "material:CanvasItemMaterial"), &TileSet::tile_set_material);
-	ClassDB::bind_method(D_METHOD("tile_get_material:CanvasItemMaterial", "id"), &TileSet::tile_get_material);
+	ClassDB::bind_method(D_METHOD("tile_set_material", "id", "material:ShaderMaterial"), &TileSet::tile_set_material);
+	ClassDB::bind_method(D_METHOD("tile_get_material:ShaderMaterial", "id"), &TileSet::tile_get_material);
 	ClassDB::bind_method(D_METHOD("tile_set_texture_offset", "id", "texture_offset"), &TileSet::tile_set_texture_offset);
 	ClassDB::bind_method(D_METHOD("tile_get_texture_offset", "id"), &TileSet::tile_get_texture_offset);
 	ClassDB::bind_method(D_METHOD("tile_set_shape_offset", "id", "shape_offset"), &TileSet::tile_set_shape_offset);

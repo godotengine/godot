@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +30,7 @@
 #include "class_db.h"
 
 #include "os/mutex.h"
+#include "version.h"
 
 #ifdef NO_THREADS
 
@@ -1194,7 +1196,7 @@ void ClassDB::get_extensions_for_type(const StringName &p_class, List<String> *p
 
 	while ((K = resource_base_extensions.next(K))) {
 		StringName cmp = resource_base_extensions[*K];
-		if (is_parent_class(p_class, cmp))
+		if (is_parent_class(p_class, cmp) || is_parent_class(cmp, p_class))
 			p_extensions->push_back(*K);
 	}
 }

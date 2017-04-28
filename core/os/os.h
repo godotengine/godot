@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -143,7 +144,7 @@ public:
 	virtual MouseMode get_mouse_mode() const;
 
 	virtual void warp_mouse_pos(const Point2 &p_to) {}
-	virtual Point2 get_mouse_pos() const = 0;
+	virtual Point2 get_mouse_position() const = 0;
 	virtual int get_mouse_button_state() const = 0;
 	virtual void set_window_title(const String &p_title) = 0;
 
@@ -176,6 +177,10 @@ public:
 
 	virtual void set_borderless_window(int p_borderless) {}
 	virtual bool get_borderless_window() { return 0; }
+
+	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle) { return ERR_UNAVAILABLE; };
+	virtual Error close_dynamic_library(void *p_library_handle) { return ERR_UNAVAILABLE; };
+	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle) { return ERR_UNAVAILABLE; };
 
 	virtual void set_keep_screen_on(bool p_enabled);
 	virtual bool is_keep_screen_on() const;

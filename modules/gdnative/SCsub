@@ -1,0 +1,14 @@
+#!/usr/bin/env python
+
+Import('env')
+
+env.add_source_files(env.modules_sources, "*.cpp")
+env.add_source_files(env.modules_sources, "godot/*.cpp")
+
+env.Append(CPPFLAGS=['-DGDAPI_BUILT_IN'])
+
+if "platform" in env and env["platform"] == "x11": # there has to be a better solution?
+    env.Append(LINKFLAGS=["-rdynamic"])
+env.use_ptrcall = True
+
+Export('env')

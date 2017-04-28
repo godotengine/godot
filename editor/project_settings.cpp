@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -77,7 +78,7 @@ void ProjectSettings::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			globals_editor->edit(GlobalConfig::get_singleton());
 
-			search_button->set_icon(get_icon("Zoom", "EditorIcons"));
+			search_button->set_icon(get_icon("Search", "EditorIcons"));
 			clear_button->set_icon(get_icon("Close", "EditorIcons"));
 
 			translation_list->connect("button_pressed", this, "_translation_delete");
@@ -396,12 +397,12 @@ void ProjectSettings::_action_button_pressed(Object *p_obj, int p_column, int p_
 	ERR_FAIL_COND(!ti);
 
 	if (p_id == 1) {
-		Point2 ofs = input_editor->get_global_pos();
+		Point2 ofs = input_editor->get_global_position();
 		Rect2 ir = input_editor->get_item_rect(ti);
 		ir.pos.y -= input_editor->get_scroll().y;
 		ofs += ir.pos + ir.size;
 		ofs.x -= 100;
-		popup_add->set_pos(ofs);
+		popup_add->set_position(ofs);
 		popup_add->popup();
 		add_at = "input/" + ti->get_text(0);
 
@@ -480,9 +481,9 @@ void ProjectSettings::_update_actions() {
 		TreeItem *item = input_editor->create_item(root);
 		//item->set_cell_mode(0,TreeItem::CELL_MODE_CHECK);
 		item->set_text(0, name);
-		item->add_button(0, get_icon("Add", "EditorIcons"), 1);
+		item->add_button(0, get_icon("Add", "EditorIcons"), 1, false, TTR("Add Event"));
 		if (!GlobalConfig::get_singleton()->get_input_presets().find(pi.name)) {
-			item->add_button(0, get_icon("Remove", "EditorIcons"), 2);
+			item->add_button(0, get_icon("Remove", "EditorIcons"), 2, false, TTR("Remove"));
 			item->set_editable(0, true);
 		}
 		item->set_custom_bg_color(0, get_color("prop_subsection", "Editor"));
@@ -552,7 +553,7 @@ void ProjectSettings::_update_actions() {
 					action->set_icon(0, get_icon("JoyAxis", "EditorIcons"));
 				} break;
 			}
-			action->add_button(0, get_icon("Remove", "EditorIcons"), 2);
+			action->add_button(0, get_icon("Remove", "EditorIcons"), 2, false, TTR("Remove"));
 			action->set_metadata(0, i);
 			action->set_meta("__input", ie);
 		}
@@ -1011,7 +1012,7 @@ void ProjectSettings::_update_translations() {
 			t->set_text(0, translations[i].replace_first("res://", ""));
 			t->set_tooltip(0, translations[i]);
 			t->set_metadata(0, i);
-			t->add_button(0, get_icon("Del", "EditorIcons"), 0);
+			t->add_button(0, get_icon("Del", "EditorIcons"), 0, false, TTR("Remove"));
 		}
 	}
 
@@ -1057,7 +1058,7 @@ void ProjectSettings::_update_translations() {
 			t->set_text(0, keys[i].replace_first("res://", ""));
 			t->set_tooltip(0, keys[i]);
 			t->set_metadata(0, keys[i]);
-			t->add_button(0, get_icon("Del", "EditorIcons"), 0);
+			t->add_button(0, get_icon("Del", "EditorIcons"), 0, false, TTR("Remove"));
 			if (keys[i] == remap_selected) {
 				t->select(0);
 				translation_res_option_add_button->set_disabled(false);
@@ -1075,7 +1076,7 @@ void ProjectSettings::_update_translations() {
 					t2->set_text(0, path.replace_first("res://", ""));
 					t2->set_tooltip(0, path);
 					t2->set_metadata(0, j);
-					t2->add_button(0, get_icon("Del", "EditorIcons"), 0);
+					t2->add_button(0, get_icon("Del", "EditorIcons"), 0, false, TTR("Remove"));
 					t2->set_cell_mode(1, TreeItem::CELL_MODE_RANGE);
 					t2->set_text(1, langnames);
 					t2->set_editable(1, true);
@@ -1167,7 +1168,8 @@ void ProjectSettings::_bind_methods() {
 ProjectSettings::ProjectSettings(EditorData *p_data) {
 
 	singleton = this;
-	set_title(TTR("Project Settings (godot.cfg)"));
+	String project_file = "(" + GlobalConfig::get_singleton()->get_project_file_name() + ")";
+	set_title(TTR("Project Settings " + project_file));
 	set_resizable(true);
 	undo_redo = &p_data->get_undo_redo();
 	data = p_data;
@@ -1325,7 +1327,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 
 	l = memnew(Label);
 	vbc->add_child(l);
-	l->set_pos(Point2(6, 5));
+	l->set_position(Point2(6, 5));
 	l->set_text(TTR("Action:"));
 
 	hbc = memnew(HBoxContainer);

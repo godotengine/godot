@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -156,7 +157,7 @@ public:
 
 	static uint32_t larger_prime(uint32_t p_val);
 
-	static void seed(uint64_t x = 0);
+	static void seed(uint64_t x);
 	static void randomize();
 	static uint32_t rand_from_seed(uint64_t *seed);
 	static uint32_t rand();
@@ -167,7 +168,7 @@ public:
 	static float random(float from, float to);
 	static real_t random(int from, int to) { return (real_t)random((real_t)from, (real_t)to); }
 
-	static _ALWAYS_INLINE_ bool isequal_approx(real_t a, real_t b) {
+	static _ALWAYS_INLINE_ bool is_equal_approx(real_t a, real_t b) {
 		// TODO: Comparing floats for approximate-equality is non-trivial.
 		// Using epsilon should cover the typical cases in Godot (where a == b is used to compare two reals), such as matrix and vector comparison operators.
 		// A proper implementation in terms of ULPs should eventually replace the contents of this function.

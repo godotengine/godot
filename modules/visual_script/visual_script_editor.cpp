@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -489,7 +490,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 		}
 
 		if (EditorSettings::get_singleton()->has("editors/visual_script/color_" + node->get_category())) {
-			gnode->set_modulate(EditorSettings::get_singleton()->get("editors/visual_script/color_" + node->get_category()));
+			gnode->set_self_modulate(EditorSettings::get_singleton()->get("editors/visual_script/color_" + node->get_category()));
 		}
 
 		gnode->set_meta("__vnode", node);
@@ -1016,7 +1017,7 @@ void VisualScriptEditor::_member_button(Object *p_item, int p_column, int p_butt
 				}
 
 				Rect2 pos = members->get_item_rect(ti);
-				new_function_menu->set_pos(members->get_global_pos() + pos.pos + Vector2(0, pos.size.y));
+				new_function_menu->set_position(members->get_global_position() + pos.pos + Vector2(0, pos.size.y));
 				new_function_menu->popup();
 				return;
 			} else if (p_button == 0) {
@@ -2152,7 +2153,7 @@ void VisualScriptEditor::goto_line(int p_line, bool p_with_error) {
 			_update_graph();
 			_update_members();
 
-			call_deferred("_center_on_node", p_line); //editor might be just created and size might not exist yet
+			call_deferred("call_deferred", "_center_on_node", p_line); //editor might be just created and size might not exist yet
 
 			return;
 		}
@@ -2160,6 +2161,12 @@ void VisualScriptEditor::goto_line(int p_line, bool p_with_error) {
 }
 
 void VisualScriptEditor::trim_trailing_whitespace() {
+}
+
+void VisualScriptEditor::convert_indent_to_spaces() {
+}
+
+void VisualScriptEditor::convert_indent_to_tabs() {
 }
 
 void VisualScriptEditor::ensure_focus() {
@@ -2189,18 +2196,6 @@ void VisualScriptEditor::get_breakpoints(List<int> *p_breakpoints) {
 			}
 		}
 	}
-}
-
-bool VisualScriptEditor::goto_method(const String &p_method) {
-
-	if (!script->has_function(p_method))
-		return false;
-
-	edited_func = p_method;
-	selected = edited_func;
-	_update_members();
-	_update_graph();
-	return true;
 }
 
 void VisualScriptEditor::add_callback(const String &p_function, PoolStringArray p_args) {
@@ -2516,7 +2511,7 @@ void VisualScriptEditor::_graph_connect_to_empty(const String &p_from, int p_fro
 
 	port_action_pos = p_release_pos;
 	port_action_popup->set_size(Size2(1, 1));
-	port_action_popup->set_pos(graph->get_global_pos() + p_release_pos);
+	port_action_popup->set_position(graph->get_global_position() + p_release_pos);
 	port_action_popup->popup();
 }
 
@@ -2805,7 +2800,7 @@ void VisualScriptEditor::_default_value_edited(Node *p_button, int p_id, int p_i
 		existing = Variant::construct(pinfo.type, &existingp, 1, ce, false);
 	}
 
-	default_value_edit->set_pos(p_button->cast_to<Control>()->get_global_pos() + Vector2(0, p_button->cast_to<Control>()->get_size().y));
+	default_value_edit->set_position(p_button->cast_to<Control>()->get_global_position() + Vector2(0, p_button->cast_to<Control>()->get_size().y));
 	default_value_edit->set_size(Size2(1, 1));
 	if (default_value_edit->edit(NULL, pinfo.name, pinfo.type, existing, pinfo.hint, pinfo.hint_string)) {
 		if (pinfo.hint == PROPERTY_HINT_MULTILINE_TEXT)
@@ -2838,7 +2833,7 @@ void VisualScriptEditor::_node_filter_changed(const String &p_text) {
 void VisualScriptEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_READY) {
-		node_filter_icon->set_texture(Control::get_icon("Zoom", "EditorIcons"));
+		node_filter_icon->set_texture(Control::get_icon("Search", "EditorIcons"));
 	}
 }
 

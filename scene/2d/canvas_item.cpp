@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,124 +37,6 @@
 #include "scene/resources/texture.h"
 #include "scene/scene_string_names.h"
 #include "servers/visual_server.h"
-
-bool CanvasItemMaterial::_set(const StringName &p_name, const Variant &p_value) {
-
-	if (p_name == SceneStringNames::get_singleton()->shader_shader) {
-		set_shader(p_value);
-		return true;
-	} else {
-
-		if (shader.is_valid()) {
-
-			StringName pr = shader->remap_param(p_name);
-			if (!pr) {
-				String n = p_name;
-				if (n.find("param/") == 0) { //backwards compatibility
-					pr = n.substr(6, n.length());
-				}
-			}
-			if (pr) {
-				VisualServer::get_singleton()->material_set_param(_get_material(), pr, p_value);
-				return true;
-			}
-		}
-	}
-
-	return false;
-}
-
-bool CanvasItemMaterial::_get(const StringName &p_name, Variant &r_ret) const {
-
-	if (p_name == SceneStringNames::get_singleton()->shader_shader) {
-
-		r_ret = get_shader();
-		return true;
-
-	} else {
-
-		if (shader.is_valid()) {
-
-			StringName pr = shader->remap_param(p_name);
-			if (pr) {
-				r_ret = VisualServer::get_singleton()->material_get_param(_get_material(), pr);
-				return true;
-			}
-		}
-	}
-
-	return false;
-}
-
-void CanvasItemMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
-
-	p_list->push_back(PropertyInfo(Variant::OBJECT, "shader/shader", PROPERTY_HINT_RESOURCE_TYPE, "CanvasItemShader,CanvasItemShaderGraph"));
-
-	if (!shader.is_null()) {
-
-		shader->get_param_list(p_list);
-	}
-}
-
-void CanvasItemMaterial::set_shader(const Ref<Shader> &p_shader) {
-
-	ERR_FAIL_COND(p_shader.is_valid() && p_shader->get_mode() != Shader::MODE_CANVAS_ITEM);
-
-	shader = p_shader;
-
-	RID rid;
-	if (shader.is_valid())
-		rid = shader->get_rid();
-
-	VS::get_singleton()->material_set_shader(_get_material(), rid);
-	_change_notify(); //properties for shader exposed
-	emit_changed();
-}
-
-Ref<Shader> CanvasItemMaterial::get_shader() const {
-
-	return shader;
-}
-
-void CanvasItemMaterial::set_shader_param(const StringName &p_param, const Variant &p_value) {
-
-	VS::get_singleton()->material_set_param(_get_material(), p_param, p_value);
-}
-
-Variant CanvasItemMaterial::get_shader_param(const StringName &p_param) const {
-
-	return VS::get_singleton()->material_get_param(_get_material(), p_param);
-}
-
-void CanvasItemMaterial::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("set_shader", "shader:Shader"), &CanvasItemMaterial::set_shader);
-	ClassDB::bind_method(D_METHOD("get_shader:Shader"), &CanvasItemMaterial::get_shader);
-	ClassDB::bind_method(D_METHOD("set_shader_param", "param", "value"), &CanvasItemMaterial::set_shader_param);
-	ClassDB::bind_method(D_METHOD("get_shader_param", "param"), &CanvasItemMaterial::get_shader_param);
-}
-
-void CanvasItemMaterial::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-
-	String f = p_function.operator String();
-	if ((f == "get_shader_param" || f == "set_shader_param") && p_idx == 0) {
-
-		if (shader.is_valid()) {
-			List<PropertyInfo> pl;
-			shader->get_param_list(&pl);
-			for (List<PropertyInfo>::Element *E = pl.front(); E; E = E->next()) {
-				r_options->push_back("\"" + E->get().name.replace_first("shader_param/", "") + "\"");
-			}
-		}
-	}
-	Resource::get_argument_options(p_function, p_idx, r_options);
-}
-
-CanvasItemMaterial::CanvasItemMaterial() {
-}
-
-CanvasItemMaterial::~CanvasItemMaterial() {
-}
 
 ///////////////////////////////////////////////////////////////////
 
@@ -206,7 +89,7 @@ void CanvasItem::show() {
 		return;
 
 	_propagate_visibility_changed(true);
-	_change_notify("visibility/visible");
+	_change_notify("visible");
 }
 
 void CanvasItem::hide() {
@@ -221,7 +104,7 @@ void CanvasItem::hide() {
 		return;
 
 	_propagate_visibility_changed(false);
-	_change_notify("visibility/visible");
+	_change_notify("visible");
 }
 
 Variant CanvasItem::edit_get_state() const {
@@ -770,7 +653,7 @@ bool CanvasItem::is_draw_behind_parent_enabled() const {
 	return behind;
 }
 
-void CanvasItem::set_material(const Ref<CanvasItemMaterial> &p_material) {
+void CanvasItem::set_material(const Ref<ShaderMaterial> &p_material) {
 
 	material = p_material;
 	RID rid;
@@ -791,7 +674,7 @@ bool CanvasItem::get_use_parent_material() const {
 	return use_parent_material;
 }
 
-Ref<CanvasItemMaterial> CanvasItem::get_material() const {
+Ref<ShaderMaterial> CanvasItem::get_material() const {
 
 	return material;
 }
@@ -800,9 +683,7 @@ Vector2 CanvasItem::make_canvas_pos_local(const Vector2 &screen_point) const {
 
 	ERR_FAIL_COND_V(!is_inside_tree(), screen_point);
 
-	Transform2D local_matrix = (get_canvas_transform() *
-								get_global_transform())
-									   .affine_inverse();
+	Transform2D local_matrix = (get_canvas_transform() * get_global_transform()).affine_inverse();
 
 	return local_matrix.xform(screen_point);
 }
@@ -814,16 +695,16 @@ InputEvent CanvasItem::make_input_local(const InputEvent &p_event) const {
 	return p_event.xform_by((get_canvas_transform() * get_global_transform()).affine_inverse());
 }
 
-Vector2 CanvasItem::get_global_mouse_pos() const {
+Vector2 CanvasItem::get_global_mouse_position() const {
 
 	ERR_FAIL_COND_V(!get_viewport(), Vector2());
-	return get_canvas_transform().affine_inverse().xform(get_viewport()->get_mouse_pos());
+	return get_canvas_transform().affine_inverse().xform(get_viewport()->get_mouse_position());
 }
 Vector2 CanvasItem::get_local_mouse_pos() const {
 
 	ERR_FAIL_COND_V(!get_viewport(), Vector2());
 
-	return get_global_transform().affine_inverse().xform(get_global_mouse_pos());
+	return get_global_transform().affine_inverse().xform(get_global_mouse_position());
 }
 
 void CanvasItem::_bind_methods() {
@@ -890,13 +771,13 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_viewport_rect"), &CanvasItem::get_viewport_rect);
 	ClassDB::bind_method(D_METHOD("get_canvas_transform"), &CanvasItem::get_canvas_transform);
 	ClassDB::bind_method(D_METHOD("get_local_mouse_pos"), &CanvasItem::get_local_mouse_pos);
-	ClassDB::bind_method(D_METHOD("get_global_mouse_pos"), &CanvasItem::get_global_mouse_pos);
+	ClassDB::bind_method(D_METHOD("get_global_mouse_position"), &CanvasItem::get_global_mouse_position);
 	ClassDB::bind_method(D_METHOD("get_canvas"), &CanvasItem::get_canvas);
 	ClassDB::bind_method(D_METHOD("get_world_2d"), &CanvasItem::get_world_2d);
 	//ClassDB::bind_method(D_METHOD("get_viewport"),&CanvasItem::get_viewport);
 
-	ClassDB::bind_method(D_METHOD("set_material", "material:CanvasItemMaterial"), &CanvasItem::set_material);
-	ClassDB::bind_method(D_METHOD("get_material:CanvasItemMaterial"), &CanvasItem::get_material);
+	ClassDB::bind_method(D_METHOD("set_material", "material:ShaderMaterial"), &CanvasItem::set_material);
+	ClassDB::bind_method(D_METHOD("get_material:ShaderMaterial"), &CanvasItem::get_material);
 
 	ClassDB::bind_method(D_METHOD("set_use_parent_material", "enable"), &CanvasItem::set_use_parent_material);
 	ClassDB::bind_method(D_METHOD("get_use_parent_material"), &CanvasItem::get_use_parent_material);
@@ -922,7 +803,7 @@ void CanvasItem::_bind_methods() {
 	ADD_PROPERTYNO(PropertyInfo(Variant::INT, "light_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_light_mask", "get_light_mask");
 
 	ADD_GROUP("Material", "");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "CanvasItemMaterial"), "set_material", "get_material");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial"), "set_material", "get_material");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "use_parent_material"), "set_use_parent_material", "get_use_parent_material");
 	//exporting these two things doesn't really make much sense i think
 	//ADD_PROPERTY( PropertyInfo(Variant::BOOL,"transform/toplevel"), "set_as_toplevel","is_set_as_toplevel") ;

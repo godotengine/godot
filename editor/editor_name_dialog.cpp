@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -78,9 +79,11 @@ void EditorNameDialog::_bind_methods() {
 }
 
 EditorNameDialog::EditorNameDialog() {
+	makevb = memnew(VBoxContainer);
+	add_child(makevb);
 	name = memnew(LineEdit);
-	add_child(name);
-	move_child(name, get_label()->get_index() + 1);
+	makevb->add_child(name);
+	makevb->move_child(name, get_label()->get_index() + 1);
 	name->set_margin(MARGIN_TOP, 5);
 	name->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 5);
 	name->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 5);

@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,11 +49,11 @@ Ref<Theme> create_editor_theme() {
 	}
 	focus_sbt->set_draw_center(false);
 	theme->set_stylebox("EditorFocus", "EditorStyles", focus_sbt);
-	theme->set_color("prop_category", "Editor", Color::hex(0x3f3a44ff));
-	theme->set_color("prop_section", "Editor", Color::hex(0x35313aff));
-	theme->set_color("prop_subsection", "Editor", Color::hex(0x312e37ff));
-	theme->set_color("fg_selected", "Editor", Color::html("ffbd8e8e"));
-	theme->set_color("fg_error", "Editor", Color::html("ffbd8e8e"));
+	// theme->set_color("prop_category","Editor",Color::hex(0x3f3a44ff));
+	// theme->set_color("prop_section","Editor",Color::hex(0x35313aff));
+	// theme->set_color("prop_subsection","Editor",Color::hex(0x312e37ff));
+	// theme->set_color("fg_selected","Editor",Color::html("ffbd8e8e"));
+	// theme->set_color("fg_error","Editor",Color::html("ffbd8e8e"));
 
 	return theme;
 }

@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -423,7 +424,7 @@ void register_scene_types() {
 	ClassDB::register_class<GIProbeData>();
 	ClassDB::register_class<AnimationTreePlayer>();
 	ClassDB::register_class<Portal>();
-	//ClassDB::register_type<Particles>();
+	ClassDB::register_class<Particles>();
 	ClassDB::register_class<Position3D>();
 	ClassDB::register_class<Quad>();
 	ClassDB::register_class<NavigationMeshInstance>();
@@ -471,7 +472,8 @@ void register_scene_types() {
 	ClassDB::register_class<MeshLibrary>();
 	AcceptDialog::set_swap_ok_cancel(GLOBAL_DEF("gui/common/swap_ok_cancel", bool(OS::get_singleton()->get_swap_ok_cancel())));
 
-	ClassDB::register_class<CanvasItemMaterial>();
+	ClassDB::register_class<Shader>();
+	ClassDB::register_class<ShaderMaterial>();
 	ClassDB::register_virtual_class<CanvasItem>();
 	ClassDB::register_class<Node2D>();
 	ClassDB::register_class<Particles2D>();
@@ -519,21 +521,22 @@ void register_scene_types() {
 	/* REGISTER RESOURCES */
 
 	ClassDB::register_virtual_class<Shader>();
-	//ClassDB::register_virtual_type<ShaderGraph>();
-	ClassDB::register_class<CanvasItemShader>();
-//ClassDB::register_type<CanvasItemShaderGraph>();
 
 #ifndef _3D_DISABLED
 	ClassDB::register_class<Mesh>();
+	ClassDB::register_class<QuadMesh>();
 	ClassDB::register_virtual_class<Material>();
-	ClassDB::register_class<FixedSpatialMaterial>();
-	SceneTree::add_idle_callback(FixedSpatialMaterial::flush_changes);
-	FixedSpatialMaterial::init_shaders();
+	ClassDB::register_class<SpatialMaterial>();
+	ClassDB::add_compatibility_class("FixedSpatialMaterial", "SpatialMaterial");
+	SceneTree::add_idle_callback(SpatialMaterial::flush_changes);
+	SpatialMaterial::init_shaders();
+
+	ClassDB::register_class<ParticlesMaterial>();
+	SceneTree::add_idle_callback(ParticlesMaterial::flush_changes);
+	ParticlesMaterial::init_shaders();
+
 	//ClassDB::register_type<ShaderMaterial>();
 	ClassDB::register_class<RoomBounds>();
-	//ClassDB::register_type<MaterialShaderGraph>();
-	ClassDB::register_class<SpatialShader>();
-	ClassDB::register_class<ParticlesShader>();
 	ClassDB::register_class<MultiMesh>();
 	ClassDB::register_class<MeshLibrary>();
 
@@ -564,6 +567,8 @@ void register_scene_types() {
 	ClassDB::register_class<ImageTexture>();
 	ClassDB::register_class<AtlasTexture>();
 	ClassDB::register_class<LargeTexture>();
+	ClassDB::register_class<CurveTexture>();
+	ClassDB::register_class<GradientTexture>();
 	ClassDB::register_class<CubeMap>();
 	ClassDB::register_class<Animation>();
 	ClassDB::register_virtual_class<Font>();
@@ -651,6 +656,7 @@ void unregister_scene_types() {
 		memdelete(resource_loader_text);
 	}
 
-	FixedSpatialMaterial::finish_shaders();
+	SpatialMaterial::finish_shaders();
+	ParticlesMaterial::finish_shaders();
 	SceneStringNames::free();
 }

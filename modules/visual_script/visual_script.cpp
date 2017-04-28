@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1070,6 +1071,18 @@ void VisualScript::get_script_property_list(List<PropertyInfo> *p_list) const {
 			continue;
 		p_list->push_back(variables[E->get()].info);
 	}
+}
+
+int VisualScript::get_member_line(const StringName &p_member) const {
+#ifdef TOOLS_ENABLED
+	if (has_function(p_member)) {
+		for (Map<int, Function::NodeData>::Element *E = functions[p_member].nodes.front(); E; E = E->next()) {
+			if (E->get().node->cast_to<VisualScriptFunction>())
+				return E->key();
+		}
+	}
+#endif
+	return -1;
 }
 
 #ifdef TOOLS_ENABLED

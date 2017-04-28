@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -78,11 +79,11 @@ void TabContainer::_gui_input(const InputEvent &p_event) {
 		if (popup && pos.x > size.width - menu->get_width()) {
 			emit_signal("pre_popup_pressed");
 
-			Vector2 popup_pos = get_global_pos();
+			Vector2 popup_pos = get_global_position();
 			popup_pos.x += size.width - popup->get_size().width;
 			popup_pos.y += menu->get_height();
 
-			popup->set_global_pos(popup_pos);
+			popup->set_global_position(popup_pos);
 			popup->popup();
 			return;
 		}
@@ -205,6 +206,9 @@ void TabContainer::_notification(int p_what) {
 					break;
 			}
 
+			// Draw the tab area.
+			panel->draw(canvas, Rect2(0, header_height, size.width, size.height - header_height));
+
 			// Draw all visible tabs.
 			int x = 0;
 			for (int i = 0; i < tab_widths.size(); i++) {
@@ -223,7 +227,7 @@ void TabContainer::_notification(int p_what) {
 
 				// Draw the tab background.
 				int tab_width = tab_widths[i];
-				Rect2 tab_rect(tabs_ofs_cache + x, 0, tab_width, header_height);
+				Rect2 tab_rect(tabs_ofs_cache + x, 2, tab_width, header_height);
 				tab_style->draw(canvas, tab_rect);
 
 				// Draw the tab contents.
@@ -278,8 +282,6 @@ void TabContainer::_notification(int p_what) {
 						Color(1, 1, 1, first_tab_cache > 0 ? 1.0 : 0.5));
 			}
 
-			// Draw the tab area.
-			panel->draw(canvas, Rect2(0, header_height, size.width, size.height - header_height));
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			if (get_tab_count() > 0) {
@@ -658,7 +660,7 @@ TabContainer::TabContainer() {
 	current = 0;
 	previous = 0;
 	mouse_x_cache = 0;
-	align = ALIGN_CENTER;
+	align = ALIGN_LEFT;
 	tabs_visible = true;
 	popup = NULL;
 }
