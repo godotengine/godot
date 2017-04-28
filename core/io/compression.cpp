@@ -28,11 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "compression.h"
-#include "os/copymem.h"
-#include "zlib.h"
 
-#include "fastlz.h"
+#include "os/copymem.h"
 #include "zip_io.h"
+
+#include "thirdparty/misc/fastlz.h"
+
+#include <zlib.h>
 
 int Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int p_src_size, Mode p_mode) {
 

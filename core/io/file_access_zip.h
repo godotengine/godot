@@ -34,7 +34,9 @@
 
 #include "core/io/file_access_pack.h"
 #include "map.h"
-#include "unzip.h"
+
+#include "thirdparty/minizip/unzip.h"
+
 #include <stdlib.h>
 
 class ZipArchive : public PackSource {

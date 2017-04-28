@@ -1,5 +1,3 @@
-#include "md5.h"
-
 /*
  **********************************************************************
  ** md5.c                                                            **
@@ -34,7 +32,7 @@
  */
 
 /* -- include the following line if the md5.h header file is separate -- */
-/* #include "md5.h" */
+#include "md5.h"
 
 /* forward declaration */
 static void Transform (uint32_t *buf, uint32_t *in);
