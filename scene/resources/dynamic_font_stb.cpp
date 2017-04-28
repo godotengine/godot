@@ -4,7 +4,6 @@
 
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "os/file_access.h"
-#include "stb_truetype.h"
 
 void DynamicFontData::lock() {
 

@@ -3,10 +3,23 @@
 Import('env')
 
 env.scene_sources = []
+
+
+# Thirdparty code
+thirdparty_dir = "#thirdparty/misc/"
+thirdparty_sources = [
+	# C sources
+	"mikktspace.c",
+]
+thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+env.add_source_files(env.scene_sources, thirdparty_sources)
+
+
+# Godot's own sources
 env.add_source_files(env.scene_sources, "*.cpp")
 
-Export('env')
 
+# Chain load SCsubs
 SConscript('main/SCsub')
 SConscript('gui/SCsub')
 SConscript('3d/SCsub')
@@ -17,6 +30,8 @@ SConscript('resources/SCsub')
 SConscript('io/SCsub')
 
 
+# Build it all as a library
 lib = env.Library("scene", env.scene_sources)
-
 env.Prepend(LIBS=[lib])
+
+Export('env')

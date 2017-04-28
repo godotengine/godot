@@ -28,7 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "b2d_decompose.h"
-#include "b2Polygon.h"
+
+#include "thirdparty/b2d_convexdecomp/b2Polygon.h"
 
 namespace b2ConvexDecomp {
 
