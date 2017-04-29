@@ -38,7 +38,7 @@
 #include "main/input_default.h"
 #include "os/input.h"
 #include "os/os.h"
-#include "power_winrt.h"
+#include "power_uwp.h"
 #include "servers/audio_server.h"
 #include "servers/physics/physics_server_sw.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
@@ -94,7 +94,6 @@ private:
 	int old_x, old_y;
 	Point2i center;
 	VisualServer *visual_server;
-	Rasterizer *rasterizer;
 	PhysicsServer *physics_server;
 	Physics2DServer *physics_2d_server;
 	int pressrc;
@@ -107,7 +106,7 @@ private:
 
 	AudioDriverXAudio2 audio_driver;
 
-	PowerWinRT *power_manager;
+	PowerUWP *power_manager;
 
 	MouseMode mouse_mode;
 	bool alt_mem;
@@ -236,6 +235,8 @@ public:
 
 	virtual void move_window_to_foreground();
 	virtual String get_data_dir() const;
+
+	virtual bool check_feature_support(const String &p_feature);
 
 	void set_gl_context(ContextEGL *p_context);
 	void screen_size_changed();

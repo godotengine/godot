@@ -72,7 +72,7 @@ RasterizerScene *RasterizerGLES3::get_scene() {
 #define _EXT_DEBUG_SEVERITY_LOW_ARB 0x9148
 #define _EXT_DEBUG_OUTPUT 0x92E0
 
-#ifdef WINDOWS_ENABLED
+#if (defined WINDOWS_ENABLED) && !(defined UWP_ENABLED)
 #define GLAPIENTRY APIENTRY
 #else
 #define GLAPIENTRY

@@ -9,6 +9,7 @@ files = [
     '#platform/windows/stream_peer_winsock.cpp',
     '#platform/windows/key_mapping_win.cpp',
     'joypad_uwp.cpp',
+    'power_uwp.cpp',
     'gl_context_egl.cpp',
     'app.cpp',
     'os_uwp.cpp',
