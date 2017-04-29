@@ -31,7 +31,8 @@
 
 #include "global_config.h"
 #include "os/os.h"
-#include "yuv2rgb.h"
+
+#include "thirdparty/misc/yuv2rgb.h"
 
 int VideoStreamPlaybackTheora::buffer_data() {
 

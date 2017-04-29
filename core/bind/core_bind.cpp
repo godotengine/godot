@@ -28,13 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "core_bind.h"
+
 #include "core/global_config.h"
 #include "geometry.h"
-#include "io/base64.h"
 #include "io/file_access_encrypted.h"
 #include "io/marshalls.h"
 #include "os/keyboard.h"
 #include "os/os.h"
+
+#include "thirdparty/misc/base64.h"
 
 /**
  *  Time constants borrowed from loc_time.h

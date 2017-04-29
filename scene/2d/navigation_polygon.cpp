@@ -28,9 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "navigation_polygon.h"
+
 #include "core_string_names.h"
 #include "navigation2d.h"
-#include "triangulator.h"
+
+#include "thirdparty/misc/triangulator.h"
 
 void NavigationPolygon::set_vertices(const PoolVector<Vector2> &p_vertices) {
 

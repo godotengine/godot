@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_export.h"
+
 #include "editor/editor_file_system.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor_node.h"
 #include "editor_settings.h"
 #include "global_config.h"
 #include "io/config_file.h"
-#include "io/md5.h"
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
 #include "io/zip_io.h"
@@ -42,6 +42,8 @@
 #include "os/file_access.h"
 #include "script_language.h"
 #include "version.h"
+
+#include "thirdparty/misc/md5.h"
 
 static int _get_pad(int p_alignment, int p_n) {
 

@@ -30,13 +30,14 @@
 #include "ustring.h"
 
 #include "color.h"
-#include "io/md5.h"
-#include "io/sha256.h"
 #include "math_funcs.h"
 #include "os/memory.h"
 #include "print_string.h"
 #include "ucaps.h"
 #include "variant.h"
+
+#include "thirdparty/misc/md5.h"
+#include "thirdparty/misc/sha256.h"
 
 #include <wchar.h>
 

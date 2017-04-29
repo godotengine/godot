@@ -5,6 +5,7 @@ Import('env')
 env.core_sources = []
 
 
+# Generate global defaults
 gd_call = ""
 gd_inc = ""
 
@@ -21,6 +22,8 @@ f = open("global_defaults.cpp", "wb")
 f.write(gd_cpp)
 f.close()
 
+
+# Generate AES256 script encryption key
 import os
 txt = "0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0"
 if ("SCRIPT_AES256_ENCRYPTION_KEY" in os.environ):
@@ -49,20 +52,57 @@ f.write("#include \"global_config.h\"\nuint8_t script_encryption_key[32]={" + tx
 f.close()
 
 
+# Add required thirdparty code. Header paths are hardcoded, we don't need to append
+# to the include path (saves a few chars on the compiler invocation for touchy MSVC...)
+thirdparty_dir = "#thirdparty/misc/"
+thirdparty_sources = [
+	# C sources
+	"base64.c",
+	"fastlz.c",
+	"sha256.c",
+	"smaz.c",
+
+	# C++ sources
+	"aes256.cpp",
+	"hq2x.cpp",
+	"md5.cpp",
+	"pcg.cpp",
+	"triangulator.cpp",
+]
+thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+env.add_source_files(env.core_sources, thirdparty_sources)
+
+# Minizip library, can be unbundled in theory
+# However, our version has some custom modifications, so it won't compile with the system one
+thirdparty_minizip_dir = "#thirdparty/minizip/"
+thirdparty_minizip_sources = [
+	"ioapi.c",
+	"unzip.c",
+	"zip.c",
+]
+thirdparty_minizip_sources = [thirdparty_minizip_dir + file for file in thirdparty_minizip_sources]
+env.add_source_files(env.core_sources, thirdparty_minizip_sources)
+
+
+# Godot's own sources
 env.add_source_files(env.core_sources, "*.cpp")
 
 
-Export('env')
-
+# Make binders
 import make_binders
 env.Command(['method_bind.inc', 'method_bind_ext.inc'], 'make_binders.py', make_binders.run)
 
+
+# Chain load SCsubs
 SConscript('os/SCsub')
 SConscript('math/SCsub')
 SConscript('io/SCsub')
 SConscript('bind/SCsub')
 SConscript('helper/SCsub')
 
-lib = env.Library("core", env.core_sources)
 
+# Build it all as a library
+lib = env.Library("core", env.core_sources)
 env.Prepend(LIBS=[lib])
+
+Export('env')

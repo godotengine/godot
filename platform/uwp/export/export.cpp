@@ -72,16 +72,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "editor/editor_import_export.h"
 #include "editor/editor_node.h"
 #include "global_config.h"
-#include "io/base64.h"
 #include "io/marshalls.h"
-#include "io/sha256.h"
-#include "io/unzip.h"
-#include "io/zip.h"
 #include "io/zip_io.h"
 #include "object.h"
 #include "os/file_access.h"
 #include "platform/uwp/logo.h"
 #include "version.h"
+
+#include "thirdparty/minizip/unzip.h"
+#include "thirdparty/minizip/zip.h"
+#include "thirdparty/misc/base64.h"
+#include "thirdparty/misc/sha256.h"
 
 #include <zlib.h>
 

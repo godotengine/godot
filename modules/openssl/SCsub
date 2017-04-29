@@ -677,7 +677,16 @@ if (env['builtin_openssl'] != 'no'):
 
 # Module sources
 env_openssl.add_source_files(env.modules_sources, "*.cpp")
-env_openssl.add_source_files(env.modules_sources, "*.c")
+
+
+# Other thirdparty dependencies
+thirdparty_misc_dir = "#thirdparty/misc/"
+thirdparty_misc_sources = [
+	"curl_hostcheck.c",
+]
+thirdparty_misc_sources = [thirdparty_misc_dir + file for file in thirdparty_misc_sources]
+env_openssl.add_source_files(env.modules_sources, thirdparty_misc_sources)
+
 
 # platform/uwp need to know openssl is available, pass to main env
 if "platform" in env and env["platform"] == "uwp":

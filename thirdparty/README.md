@@ -1,6 +1,13 @@
 # Third party libraries
 
 
+## b2d_convexdecomp
+
+- Upstream: https://github.com/erincatto/Box2D (Contributions/Utilities/ConvexDecomposition)
+- Version: TBD
+- License: zlib
+
+
 ## certs
 
 - Upstream: ?
@@ -140,6 +147,91 @@ Files extracted from upstream source:
 Important: The files `utils/bit_reader_utils.{c,h}` have Godot-made
 changes to ensure they build for Javascript/HTML5. Those
 changes are marked with `// -- GODOT --` comments.
+
+
+## minizip
+
+- Upstream: http://www.zlib.net
+- Version: 1.2.4 (zlib contrib)
+- License: zlib
+
+Files extracted from the upstream source:
+
+- contrib/minizip/{crypt.h,ioapi.{c,h},zip.{c,h},unzip.{c,h}}
+
+Important: Some files have Godot-made changes for use in core/io.
+TODO: Properly sync with version 1.2.4 and document changes.
+
+
+## misc
+
+Collection of single-file libraries used in Godot components.
+
+### core
+
+- `aes256.{cpp,h}`
+  * Upstream: http://www.literatecode.com/aes256
+  * Version: latest, as of April 2017
+  * License: ISC
+- `base64.{c,h}`
+  * Upstream: http://episec.com/people/edelkind/c.html
+  * Version: latest, as of April 2017
+  * License: Public Domain
+- `fastlz.{c,h}`
+  * Upstream: https://code.google.com/archive/p/fastlz
+  * Version: svn (r12)
+  * License: MIT
+- `hq2x.{cpp,h}`
+  * Upstream: https://github.com/brunexgeek/hqx
+  * Version: TBD, file structure differs
+  * License: Apache 2.0
+- `md5.{cpp,h}`
+  * Upstream: http://www.efgh.com/software/md5.htm
+  * Version: TBD, might not be latest from above URL
+  * License: RSA Message-Digest License
+- `pcg.{cpp,h}`
+  * Upstream: http://www.pcg-random.org
+  * Version: minimal C implemention, http://www.pcg-random.org/download.html
+  * License: Apache 2.0
+- `sha256.{c,h}`
+  * Upstream: https://github.com/ilvn/SHA256
+  * Version: git (35ff823, 2015)
+  * License: ISC
+- `smaz.{c,h}`
+  * Upstream: https://github.com/antirez/smaz
+  * Version: git (150e125, 2009)
+  * License: BSD 3-clause
+  * Modifications: use `const char*` instead of `char*` for input string
+- `triangulator.{cpp,h}`
+  * Upstream: https://github.com/ivanfratric/polypartition (`src/polypartition.cpp`)
+  * Version: TBD, class was renamed
+  * License: MIT
+
+### modules
+
+- `curl_hostcheck.{c,h}`
+  * Upstream: https://curl.haxx.se/
+  * Version: ? (2013)
+  * License: MIT
+- `yuv2rgb.h`
+  * Upstream: http://wss.co.uk/pinknoise/yuv2rgb/ (to check)
+  * Version: ?
+  * License: BSD
+
+### scene
+
+- `mikktspace.{c,h}`
+  * Upstream: https://wiki.blender.org/index.php/Dev:Shading/Tangent_Space_Normal_Maps
+  * Version: 1.0
+  * License: zlib
+- `stb_truetype.h`
+  * Upstream: https://github.com/nothings/stb
+  * Version: 1.11
+  * License: Public Domain (Unlicense) or MIT
+- `stb_vorbis.c`
+  * Upstream: https://github.com/nothings/stb
+  * Version: 1.09
+  * License: Public Domain (Unlicense) or MIT
 
 
 ## openssl
