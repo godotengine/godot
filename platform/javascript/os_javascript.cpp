@@ -513,20 +513,62 @@ void OS_JavaScript::alert(const String &p_alert, const String &p_title) {
 	/* clang-format on */
 }
 
-void OS_JavaScript::set_mouse_show(bool p_show) {
+void OS_JavaScript::set_css_cursor(const char *p_cursor) {
 
-	//javascript has no mouse...
+	/* clang-format off */
+	EM_ASM_({
+		Module.canvas.style.cursor = Module.UTF8ToString($0);
+	}, p_cursor);
+	/* clang-format on */
 }
 
-void OS_JavaScript::set_mouse_grab(bool p_grab) {
+const char *OS_JavaScript::get_css_cursor() const {
 
-	//it really has no mouse...!
+	char cursor[16];
+	/* clang-format off */
+	EM_ASM_INT({
+		Module.stringToUTF8(Module.canvas.style.cursor ? Module.canvas.style.cursor : 'auto', $0, 16);
+	}, cursor);
+	/* clang-format on */
+	return cursor;
 }
 
-bool OS_JavaScript::is_mouse_grab_enabled() const {
+void OS_JavaScript::set_mouse_mode(OS::MouseMode p_mode) {
 
-	//*sigh* technology has evolved so much since i was a kid..
-	return false;
+	ERR_FAIL_INDEX(p_mode, MOUSE_MODE_CONFINED + 1);
+	ERR_EXPLAIN("MOUSE_MODE_CONFINED is not supported for the HTML5 platform");
+	ERR_FAIL_COND(p_mode == MOUSE_MODE_CONFINED);
+	if (p_mode == get_mouse_mode())
+		return;
+
+	if (p_mode == MOUSE_MODE_VISIBLE) {
+
+		set_css_cursor("auto");
+		emscripten_exit_pointerlock();
+
+	} else if (p_mode == MOUSE_MODE_HIDDEN) {
+
+		set_css_cursor("none");
+		emscripten_exit_pointerlock();
+
+	} else if (p_mode == MOUSE_MODE_CAPTURED) {
+
+		EMSCRIPTEN_RESULT result = emscripten_request_pointerlock("canvas", false);
+		ERR_EXPLAIN("MOUSE_MODE_CAPTURED can only be entered from within an appropriate input callback");
+		ERR_FAIL_COND(result == EMSCRIPTEN_RESULT_FAILED_NOT_DEFERRED);
+		ERR_FAIL_COND(result != EMSCRIPTEN_RESULT_SUCCESS);
+		set_css_cursor("auto");
+	}
+}
+
+OS::MouseMode OS_JavaScript::get_mouse_mode() const {
+
+	if (!strcmp(get_css_cursor(), "none"))
+		return MOUSE_MODE_HIDDEN;
+
+	EmscriptenPointerlockChangeEvent ev;
+	emscripten_get_pointerlock_status(&ev);
+	return ev.isActive && (strcmp(ev.id, "canvas") == 0) ? MOUSE_MODE_CAPTURED : MOUSE_MODE_VISIBLE;
 }
 
 Point2 OS_JavaScript::get_mouse_position() const {
