@@ -111,8 +111,6 @@ protected:
 
 	void _add_property_info_bind(const Dictionary &p_info);
 
-	String project_file_name;
-
 protected:
 	static void _bind_methods();
 
@@ -126,7 +124,6 @@ public:
 	Variant property_get_revert(const String &p_name);
 
 	String get_resource_path() const;
-	String get_project_file_name() const;
 
 	static GlobalConfig *get_singleton();
 

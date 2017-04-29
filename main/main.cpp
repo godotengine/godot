@@ -129,7 +129,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print(VERSION_FULL_NAME " (c) 2008-2017 Juan Linietsky, Ariel Manzur.\n");
 	OS::get_singleton()->print("Usage: %s [options] [scene]\n", p_binary);
 	OS::get_singleton()->print("Options:\n");
-	OS::get_singleton()->print("\t-path [dir] : Path to a game, containing *.godot\n");
+	OS::get_singleton()->print("\t-path [dir] : Path to a game, containing godot.cfg\n");
 #ifdef TOOLS_ENABLED
 	OS::get_singleton()->print("\t-e,-editor : Bring up the editor instead of running the scene.\n");
 #endif
@@ -447,23 +447,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			} else {
 				goto error;
 			}
-		} else if (I->get().ends_with(".godot")) {
-			String path;
-			String file = I->get();
-			int sep = MAX(file.find_last("/"), file.find_last("\\"));
-			if (sep == -1)
-				path = ".";
-			else {
-				path = file.substr(0, sep);
-			}
-			if (OS::get_singleton()->set_cwd(path) == OK) {
-
-			} else {
-				game_path = path;
-			}
-#ifdef TOOLS_ENABLED
-			editor = true;
-#endif
 		} else if (I->get() == "-bp") { // /breakpoints
 
 			if (I->next()) {
@@ -690,7 +673,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	else
 		input_map->load_from_globals(); //keys for game
 
-	if (video_driver == "") // specified in *.godot
+	if (video_driver == "") // specified in godot.cfg
 		video_driver = GLOBAL_DEF("display/driver/name", Variant((const char *)OS::get_singleton()->get_video_driver_name(0)));
 
 	if (!force_res && use_custom_res && globals->has("display/window/width"))
@@ -742,7 +725,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	/* Determine Video Driver */
 
-	if (audio_driver == "") { // specified in *.godot
+	if (audio_driver == "") { // specified in godot.cfg
 		audio_driver = GLOBAL_DEF("audio/driver", OS::get_singleton()->get_audio_driver_name(0));
 	}
 
