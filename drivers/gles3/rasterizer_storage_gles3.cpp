@@ -245,7 +245,7 @@ Image RasterizerStorageGLES3::_get_gl_image_and_format(const Image &p_image, Ima
 
 			if (config.s3tc_supported) {
 
-				r_gl_internal_format = (config.srgb_decode_supported || p_flags & VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) ? _EXT_COMPRESSED_SRGB_S3TC_DXT1_NV : _EXT_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+				r_gl_internal_format = (config.srgb_decode_supported || p_flags & VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) ? _EXT_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_NV : _EXT_COMPRESSED_RGBA_S3TC_DXT1_EXT;
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
