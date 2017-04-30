@@ -1082,16 +1082,9 @@ void ParticlesMaterial::set_param_texture(Parameter p_param, const Ref<Texture> 
 		case PARAM_SCALE: {
 			VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->scale_texture, p_texture);
 
-			Ref<CurveTexture> curve = p_texture;
-			if (curve.is_valid()) {
-				if (curve->get_min() == 0 && curve->get_max() == 1) {
-
-					curve->set_max(32);
-					PoolVector<Vector2> points;
-					points.push_back(Vector2(0, 1));
-					points.push_back(Vector2(1, 1));
-					curve->set_points(points);
-				}
+			Ref<CurveTexture> curve_tex = p_texture;
+			if (curve_tex.is_valid()) {
+				curve_tex->ensure_default_setup();
 			}
 
 		} break;
@@ -1257,14 +1250,7 @@ void ParticlesMaterial::set_trail_size_modifier(const Ref<CurveTexture> &p_trail
 
 	Ref<CurveTexture> curve = trail_size_modifier;
 	if (curve.is_valid()) {
-		if (curve->get_min() == 0 && curve->get_max() == 1) {
-
-			curve->set_max(32);
-			PoolVector<Vector2> points;
-			points.push_back(Vector2(0, 1));
-			points.push_back(Vector2(1, 1));
-			curve->set_points(points);
-		}
+		curve->ensure_default_setup();
 	}
 
 	RID texture;

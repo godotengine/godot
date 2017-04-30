@@ -30,7 +30,9 @@
 #include "texture.h"
 #include "core/method_bind_ext.inc"
 #include "core/os/os.h"
+#include "core_string_names.h"
 #include "io/image_loader.h"
+
 Size2 Texture::get_size() const {
 
 	return Size2(get_width(), get_height());
@@ -1376,254 +1378,126 @@ void CurveTexture::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_width", "width"), &CurveTexture::set_width);
 
-	ClassDB::bind_method(D_METHOD("set_points", "points"), &CurveTexture::set_points);
-	ClassDB::bind_method(D_METHOD("get_points"), &CurveTexture::get_points);
+	ClassDB::bind_method(D_METHOD("set_curve", "curve:Curve"), &CurveTexture::set_curve);
+	ClassDB::bind_method(D_METHOD("get_curve:Curve"), &CurveTexture::get_curve);
+
+	ClassDB::bind_method(D_METHOD("_update"), &CurveTexture::_update);
 
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "min", PROPERTY_HINT_RANGE, "-1024,1024"), "set_min", "get_min");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "max", PROPERTY_HINT_RANGE, "-1024,1024"), "set_max", "get_max");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "32,4096"), "set_width", "get_width");
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "points"), "set_points", "get_points");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_curve", "get_curve");
 }
 void CurveTexture::set_max(float p_max) {
 
-	max = p_max;
+	_max = p_max;
 	emit_changed();
 }
 float CurveTexture::get_max() const {
 
-	return max;
+	return _max;
 }
 
 void CurveTexture::set_min(float p_min) {
 
-	min = p_min;
+	_min = p_min;
 	emit_changed();
 }
 float CurveTexture::get_min() const {
 
-	return min;
+	return _min;
 }
 void CurveTexture::set_width(int p_width) {
 
 	ERR_FAIL_COND(p_width < 32 || p_width > 4096);
-	width = p_width;
-	if (points.size())
-		set_points(points);
+	_width = p_width;
+	_update();
 }
 int CurveTexture::get_width() const {
 
-	return width;
+	return _width;
 }
 
-static void _plot_curve(const Vector2 &p_a, const Vector2 &p_b, const Vector2 &p_c, const Vector2 &p_d, float *p_heights, bool *p_useds, int p_width, float p_min, float p_max) {
+void CurveTexture::ensure_default_setup() {
 
-	float geometry[4][4];
-	float tmp1[4][4];
-	float tmp2[4][4];
-	float deltas[4][4];
-	double x, dx, dx2, dx3;
-	double y, dy, dy2, dy3;
-	double d, d2, d3;
-	int lastx;
-	int newx;
-	float lasty;
-	float newy;
-	int ntimes;
-	int i, j;
-
-	int xmax = p_width;
-
-	/* construct the geometry matrix from the segment */
-	for (i = 0; i < 4; i++) {
-		geometry[i][2] = 0;
-		geometry[i][3] = 0;
+	if (_curve.is_null()) {
+		Ref<Curve> curve = Ref<Curve>(memnew(Curve));
+		curve->add_point(Vector2(0, 1));
+		curve->add_point(Vector2(1, 1));
+		set_curve(curve);
 	}
 
-	geometry[0][0] = (p_a[0] * xmax);
-	geometry[1][0] = (p_b[0] * xmax);
-	geometry[2][0] = (p_c[0] * xmax);
-	geometry[3][0] = (p_d[0] * xmax);
-
-	geometry[0][1] = (p_a[1]);
-	geometry[1][1] = (p_b[1]);
-	geometry[2][1] = (p_c[1]);
-	geometry[3][1] = (p_d[1]);
-
-	/* subdivide the curve ntimes (1000) times */
-	ntimes = 4 * xmax;
-	/* ntimes can be adjusted to give a finer or coarser curve */
-	d = 1.0 / ntimes;
-	d2 = d * d;
-	d3 = d * d * d;
-
-	/* construct a temporary matrix for determining the forward differencing deltas */
-	tmp2[0][0] = 0;
-	tmp2[0][1] = 0;
-	tmp2[0][2] = 0;
-	tmp2[0][3] = 1;
-	tmp2[1][0] = d3;
-	tmp2[1][1] = d2;
-	tmp2[1][2] = d;
-	tmp2[1][3] = 0;
-	tmp2[2][0] = 6 * d3;
-	tmp2[2][1] = 2 * d2;
-	tmp2[2][2] = 0;
-	tmp2[2][3] = 0;
-	tmp2[3][0] = 6 * d3;
-	tmp2[3][1] = 0;
-	tmp2[3][2] = 0;
-	tmp2[3][3] = 0;
-
-	/* compose the basis and geometry matrices */
-
-	static const float CR_basis[4][4] = {
-		{ -0.5, 1.5, -1.5, 0.5 },
-		{ 1.0, -2.5, 2.0, -0.5 },
-		{ -0.5, 0.0, 0.5, 0.0 },
-		{ 0.0, 1.0, 0.0, 0.0 },
-	};
-
-	for (i = 0; i < 4; i++) {
-		for (j = 0; j < 4; j++) {
-			tmp1[i][j] = (CR_basis[i][0] * geometry[0][j] +
-						  CR_basis[i][1] * geometry[1][j] +
-						  CR_basis[i][2] * geometry[2][j] +
-						  CR_basis[i][3] * geometry[3][j]);
-		}
-	}
-	/* compose the above results to get the deltas matrix */
-
-	for (i = 0; i < 4; i++) {
-		for (j = 0; j < 4; j++) {
-			deltas[i][j] = (tmp2[i][0] * tmp1[0][j] +
-							tmp2[i][1] * tmp1[1][j] +
-							tmp2[i][2] * tmp1[2][j] +
-							tmp2[i][3] * tmp1[3][j]);
-		}
-	}
-
-	/* extract the x deltas */
-	x = deltas[0][0];
-	dx = deltas[1][0];
-	dx2 = deltas[2][0];
-	dx3 = deltas[3][0];
-
-	/* extract the y deltas */
-	y = deltas[0][1];
-	dy = deltas[1][1];
-	dy2 = deltas[2][1];
-	dy3 = deltas[3][1];
-
-	lastx = CLAMP(x, 0, xmax);
-	lasty = y;
-
-	p_heights[lastx] = lasty;
-	p_useds[lastx] = true;
-
-	/* loop over the curve */
-	for (i = 0; i < ntimes; i++) {
-		/* increment the x values */
-		x += dx;
-		dx += dx2;
-		dx2 += dx3;
-
-		/* increment the y values */
-		y += dy;
-		dy += dy2;
-		dy2 += dy3;
-
-		newx = CLAMP((Math::round(x)), 0, xmax);
-		newy = CLAMP(y, p_min, p_max);
-
-		/* if this point is different than the last one...then draw it */
-		if ((lastx != newx) || (lasty != newy)) {
-			p_useds[newx] = true;
-			p_heights[newx] = newy;
-		}
-
-		lastx = newx;
-		lasty = newy;
+	if (get_min() == 0 && get_max() == 1) {
+		set_max(32);
 	}
 }
 
-void CurveTexture::set_points(const PoolVector<Vector2> &p_points) {
+void CurveTexture::set_curve(Ref<Curve> p_curve) {
+	if (_curve != p_curve) {
+		if (_curve.is_valid()) {
+			_curve->disconnect(CoreStringNames::get_singleton()->changed, this, "_update");
+		}
+		_curve = p_curve;
+		if (_curve.is_valid()) {
+			_curve->connect(CoreStringNames::get_singleton()->changed, this, "_update");
+		}
+		_update();
+	}
+}
 
-	points = p_points;
+void CurveTexture::_update() {
 
 	PoolVector<uint8_t> data;
-	PoolVector<bool> used;
-	data.resize(width * sizeof(float));
-	used.resize(width);
+	data.resize(_width * sizeof(float));
+
+	// The array is locked in that scope
 	{
 		PoolVector<uint8_t>::Write wd8 = data.write();
 		float *wd = (float *)wd8.ptr();
-		PoolVector<bool>::Write wu = used.write();
-		int pc = p_points.size();
-		PoolVector<Vector2>::Read pr = p_points.read();
 
-		for (int i = 0; i < width; i++) {
-			wd[i] = 0.0;
-			wu[i] = false;
-		}
-
-		Vector2 prev = Vector2(0, 0);
-		Vector2 prev2 = Vector2(0, 0);
-
-		for (int i = -1; i < pc; i++) {
-
-			Vector2 next;
-			Vector2 next2;
-			if (i + 1 >= pc) {
-				next = Vector2(1, 0);
-			} else {
-				next = Vector2(pr[i + 1].x, pr[i + 1].y);
+		if (_curve.is_valid()) {
+			Curve &curve = **_curve;
+			float height = _max - _min;
+			for (int i = 0; i < _width; ++i) {
+				float t = i / static_cast<float>(_width);
+				float v = curve.interpolate_baked(t);
+				wd[i] = CLAMP(_min + v * height, _min, _max);
 			}
 
-			if (i + 2 >= pc) {
-				next2 = Vector2(1, 0);
-			} else {
-				next2 = Vector2(pr[i + 2].x, pr[i + 2].y);
+		} else {
+			for (int i = 0; i < _width; ++i) {
+				wd[i] = 0;
 			}
-
-			/*if (i==-1 && prev.offset==next.offset) {
-				prev=next;
-				continue;
-			}*/
-
-			_plot_curve(prev2, prev, next, next2, wd, wu.ptr(), width, min, max);
-
-			prev2 = prev;
-			prev = next;
 		}
 	}
 
-	Ref<Image> image = memnew(Image(width, 1, false, Image::FORMAT_RF, data));
+	Ref<Image> image = memnew(Image(_width, 1, false, Image::FORMAT_RF, data));
 
-	VS::get_singleton()->texture_allocate(texture, width, 1, Image::FORMAT_RF, VS::TEXTURE_FLAG_FILTER);
-	VS::get_singleton()->texture_set_data(texture, image);
+	VS::get_singleton()->texture_allocate(_texture, _width, 1, Image::FORMAT_RF, VS::TEXTURE_FLAG_FILTER);
+	VS::get_singleton()->texture_set_data(_texture, image);
 
 	emit_changed();
 }
 
-PoolVector<Vector2> CurveTexture::get_points() const {
+Ref<Curve> CurveTexture::get_curve() const {
 
-	return points;
+	return _curve;
 }
 
 RID CurveTexture::get_rid() const {
 
-	return texture;
+	return _texture;
 }
 
 CurveTexture::CurveTexture() {
 
-	max = 1;
-	min = 0;
-	width = 2048;
-	texture = VS::get_singleton()->texture_create();
+	_max = 1;
+	_min = 0;
+	_width = 2048;
+	_texture = VS::get_singleton()->texture_create();
 }
 CurveTexture::~CurveTexture() {
-	VS::get_singleton()->free(texture);
+	VS::get_singleton()->free(_texture);
 }
 //////////////////
 
