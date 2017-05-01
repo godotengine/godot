@@ -107,7 +107,7 @@ namespace GodotUWP
 		int last_touch_y[32];
 		int number_of_contacts;
 		Windows::Foundation::Point last_mouse_pos;
-	}
+	};
 }
 
 /* clang-format on */

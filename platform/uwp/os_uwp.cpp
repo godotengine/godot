@@ -28,24 +28,22 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "os_uwp.h"
-#include "drivers/gles2/rasterizer_gles2.h"
+#include "drivers/gles3/rasterizer_gles3.h"
+#include "drivers/unix/ip_unix.h"
 #include "drivers/windows/dir_access_windows.h"
 #include "drivers/windows/file_access_windows.h"
 #include "drivers/windows/mutex_windows.h"
+#include "drivers/windows/rw_lock_windows.h"
 #include "drivers/windows/semaphore_windows.h"
-#include "main/main.h"
-#include "os/memory_pool_dynamic_static.h"
-#include "servers/audio_server.h"
-#include "servers/visual/visual_server_raster.h"
-#include "thread_uwp.h"
-//#include "servers/visual/visual_server_wrap_mt.h"
-#include "drivers/unix/ip_unix.h"
 #include "global_config.h"
 #include "io/marshalls.h"
-#include "os/memory_pool_dynamic_prealloc.h"
+#include "main/main.h"
 #include "platform/windows/packet_peer_udp_winsock.h"
 #include "platform/windows/stream_peer_winsock.h"
 #include "platform/windows/tcp_server_winsock.h"
+#include "servers/audio_server.h"
+#include "servers/visual/visual_server_raster.h"
+#include "thread_uwp.h"
 
 #include <ppltasks.h>
 #include <wrl.h>
@@ -149,9 +147,6 @@ const char *OSUWP::get_audio_driver_name(int p_driver) const {
 	return AudioDriverManager::get_driver(p_driver)->get_name();
 }
 
-static MemoryPoolStatic *mempool_static = NULL;
-static MemoryPoolDynamic *mempool_dynamic = NULL;
-
 void OSUWP::initialize_core() {
 
 	last_button_state = 0;
@@ -161,31 +156,18 @@ void OSUWP::initialize_core() {
 	ThreadUWP::make_default();
 	SemaphoreWindows::make_default();
 	MutexWindows::make_default();
+	RWLockWindows::make_default();
 
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_USERDATA);
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_FILESYSTEM);
-	//FileAccessBufferedFA<FileAccessWindows>::make_default();
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_RESOURCES);
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_FILESYSTEM);
 
-	//TCPServerWinsock::make_default();
-	//StreamPeerWinsock::make_default();
-
 	TCPServerWinsock::make_default();
 	StreamPeerWinsock::make_default();
 	PacketPeerUDPWinsock::make_default();
-
-	mempool_static = new MemoryPoolStaticMalloc;
-#if 1
-	mempool_dynamic = memnew(MemoryPoolDynamicStatic);
-#else
-#define DYNPOOL_SIZE 4 * 1024 * 1024
-	void *buffer = malloc(DYNPOOL_SIZE);
-	mempool_dynamic = memnew(MemoryPoolDynamicPrealloc(buffer, DYNPOOL_SIZE));
-
-#endif
 
 	// We need to know how often the clock is updated
 	if (!QueryPerformanceFrequency((LARGE_INTEGER *)&ticks_per_second))
@@ -259,13 +241,18 @@ void OSUWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_aud
 	set_video_mode(vm);
 
 	gl_context->make_current();
-	rasterizer = memnew(RasterizerGLES2);
 
-	visual_server = memnew(VisualServerRaster(rasterizer));
+	RasterizerGLES3::register_config();
+	RasterizerGLES3::make_current();
+
+	visual_server = memnew(VisualServerRaster);
+	// FIXME: Reimplement threaded rendering? Or remove?
+	/*
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
 
 		visual_server = memnew(VisualServerWrapMT(visual_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
 	}
+	*/
 
 	//
 	physics_server = memnew(PhysicsServerSW);
@@ -288,7 +275,7 @@ void OSUWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_aud
 		ERR_PRINT("Initializing audio failed.");
 	}
 
-	power_manager = memnew(PowerWinRT);
+	power_manager = memnew(PowerUWP);
 
 	managed_object->update_clipboard();
 
@@ -381,14 +368,6 @@ void OSUWP::finalize() {
 	if (gl_context)
 		memdelete(gl_context);
 #endif
-	if (rasterizer)
-		memdelete(rasterizer);
-
-	/*
-	if (debugger_connection_console) {
-		memdelete(debugger_connection_console);
-	}
-	*/
 
 	memdelete(input);
 
@@ -400,11 +379,8 @@ void OSUWP::finalize() {
 
 	joypad = nullptr;
 }
-void OSUWP::finalize_core() {
 
-	if (mempool_dynamic)
-		memdelete(mempool_dynamic);
-	delete mempool_static;
+void OSUWP::finalize_core() {
 }
 
 void OSUWP::vprint(const char *p_format, va_list p_list, bool p_stderr) {
@@ -880,15 +856,20 @@ String OSUWP::get_data_dir() const {
 	return String(data_folder->Path->Data()).replace("\\", "/");
 }
 
-PowerState OSWinrt::get_power_state() {
+bool OSUWP::check_feature_support(const String &p_feature) {
+
+	return VisualServer::get_singleton()->has_os_feature(p_feature);
+}
+
+PowerState OSUWP::get_power_state() {
 	return power_manager->get_power_state();
 }
 
-int OSWinrt::get_power_seconds_left() {
+int OSUWP::get_power_seconds_left() {
 	return power_manager->get_power_seconds_left();
 }
 
-int OSWinrt::get_power_percent_left() {
+int OSUWP::get_power_percent_left() {
 	return power_manager->get_power_percent_left();
 }
 

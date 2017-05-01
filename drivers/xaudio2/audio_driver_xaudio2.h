@@ -34,7 +34,6 @@
 #include "core/os/thread.h"
 #include "servers/audio_server.h"
 
-#include <mmreg.h>
 #include <mmsystem.h>
 #include <windows.h>
 #include <wrl/client.h>
