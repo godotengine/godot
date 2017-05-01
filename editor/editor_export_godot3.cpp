@@ -234,7 +234,7 @@ static const char *prop_renames[][2] = {
 	{ "shadow/filter", "shadow_filter" },
 	{ "shadow/item_cull_mask", "shadow_item_cull_mask" },
 	{ "transform/pos", "position" },
-	{ "transform/rot", "rotation" },
+	{ "transform/rot", "rotation_deg" },
 	{ "transform/scale", "scale" },
 	{ "z/z", "z" },
 	{ "z/relative", "z_as_relative" },
@@ -319,8 +319,8 @@ static const char *prop_renames[][2] = {
 	{ "quad/offset", "offset" },
 	{ "quad/centered", "centered" },
 	{ "transform/local", "transform" },
-	{ "transform/transiation", "translation" },
-	{ "transform/rotation", "rotation" },
+	{ "transform/translation", "translation" },
+	{ "transform/rotation", "rotation_deg" },
 	{ "transform/scale", "scale" },
 	{ "visibility/visible", "visible" },
 	{ "params/volume_db", "volume_db" },
@@ -531,6 +531,14 @@ void EditorExportGodot3::_rename_properties(const String &p_type, List<ExportDat
 
 		if (prop_rename_map.has(E->get().name)) {
 			E->get().name = prop_rename_map[E->get().name];
+		}
+
+		/* Hardcoded fixups for properties that changed definition in 3.0 */
+
+		// 2D rotations are now clockwise to match the downward Y base
+		// TODO: Make sure this doesn't break 3D rotations
+		if (E->get().name == "rotation_deg") {
+			E->get().value = E->get().value.operator real_t() * -1.0;
 		}
 	}
 }
@@ -868,9 +876,9 @@ Error EditorExportGodot3::_get_property_as_text(const Variant &p_variant, String
 
 			String str = p_variant;
 			if (str.begins_with("@RESLOCAL:")) {
-				p_string += "SubResource(" + str.get_slice(":", 1) + ")";
+				p_string += "SubResource( " + str.get_slice(":", 1) + " )";
 			} else if (str.begins_with("@RESEXTERNAL:")) {
-				p_string += "ExtResource(" + str.get_slice(":", 1) + ")";
+				p_string += "ExtResource( " + str.get_slice(":", 1) + " )";
 			} else {
 
 				// Call _replace_resource in case it's a path to a scene/resource
@@ -1009,6 +1017,16 @@ Error EditorExportGodot3::_get_property_as_text(const Variant &p_variant, String
 		case Variant::NODE_PATH: {
 
 			String str = p_variant;
+			// In animation tracks, NodePaths can refer to properties that need to be renamed
+			int sep = str.find(":");
+			if (sep != -1) {
+				String path = str.substr(0, sep);
+				String prop = str.substr(sep + 1, str.length());
+				if (prop_rename_map.has(prop)) {
+					prop = prop_rename_map[prop];
+				}
+				str = path + ":" + prop;
+			}
 
 			str = "NodePath(\"" + str.c_escape() + "\")";
 			p_string += (str);
@@ -1254,7 +1272,7 @@ void EditorExportGodot3::_save_text(const String &p_path, ExportData &resource) 
 
 	for (Map<int, ExportData::Dependency>::Element *E = resource.dependencies.front(); E; E = E->next()) {
 
-		f->store_line("[ext_resource type=\"" + E->get().type + "\" path=\"" + E->get().path + "\" id=" + itos(E->key()) + "]\n");
+		f->store_line("[ext_resource path=\"" + E->get().path + "\" type=\"" + E->get().type + "\" id=" + itos(E->key()) + "]");
 	}
 
 	for (int i = 0; i < resource.resources.size(); i++) {
@@ -1270,20 +1288,16 @@ void EditorExportGodot3::_save_text(const String &p_path, ExportData &resource) 
 
 			String prop;
 			_get_property_as_text(E->get().value, prop);
-			f->store_line(E->get().name + "=" + prop);
+			f->store_line(E->get().name + " = " + prop);
 		}
 	}
 
 	for (int i = 0; i < resource.nodes.size(); i++) {
 
-		String node_txt = "\n[node ";
+		String node_txt = "\n[node";
 
 		if (resource.nodes[i].name != String()) {
 			node_txt += " name=\"" + String(resource.nodes[i].name).c_escape() + "\"";
-		}
-
-		if (resource.nodes[i].parent != NodePath()) {
-			node_txt += " parent=\"" + String(resource.nodes[i].parent).c_escape() + "\"";
 		}
 
 		if (resource.nodes[i].owner != NodePath()) {
@@ -1292,6 +1306,10 @@ void EditorExportGodot3::_save_text(const String &p_path, ExportData &resource) 
 
 		if (resource.nodes[i].type != String()) {
 			node_txt += " type=\"" + resource.nodes[i].type + "\"";
+		}
+
+		if (resource.nodes[i].parent != NodePath()) {
+			node_txt += " parent=\"" + String(resource.nodes[i].parent).c_escape() + "\"";
 		}
 
 		if (resource.nodes[i].instance != String()) {
@@ -1307,7 +1325,7 @@ void EditorExportGodot3::_save_text(const String &p_path, ExportData &resource) 
 
 			String prop;
 			_get_property_as_text(E->get().value, prop);
-			f->store_line(E->get().name + "=" + prop);
+			f->store_line(E->get().name + " = " + prop);
 		}
 	}
 
@@ -1934,7 +1952,7 @@ void EditorExportGodot3::_save_config(const String &p_path) {
 
 		for (List<String>::Element *F = keys.front(); F; F = F->next()) {
 
-			f->store_line(F->get() + "=" + new_cfg.get_value(E->get(), F->get()));
+			f->store_line(F->get() + " = " + new_cfg.get_value(E->get(), F->get()));
 		}
 		f->store_line("");
 	}
