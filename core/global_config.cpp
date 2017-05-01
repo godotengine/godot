@@ -242,7 +242,7 @@ Error GlobalConfig::setup(const String &p_path, const String &p_main_pack) {
 
 	if (FileAccessNetworkClient::get_singleton()) {
 
-		if (_load_settings("res://godot.cfg") == OK || _load_settings_binary("res://godot.cfb") == OK) {
+		if (_load_settings("res://project.godot") == OK || _load_settings_binary("res://godot.cfb") == OK) {
 
 			_load_settings("res://override.cfg");
 		}
@@ -259,7 +259,7 @@ Error GlobalConfig::setup(const String &p_path, const String &p_main_pack) {
 		bool ok = _load_resource_pack(p_main_pack);
 		ERR_FAIL_COND_V(!ok, ERR_CANT_OPEN);
 
-		if (_load_settings("res://godot.cfg") == OK || _load_settings_binary("res://godot.cfb") == OK) {
+		if (_load_settings("res://project.godot") == OK || _load_settings_binary("res://godot.cfb") == OK) {
 			//load override from location of the main pack
 			_load_settings(p_main_pack.get_base_dir().plus_file("override.cfg"));
 		}
@@ -272,7 +272,7 @@ Error GlobalConfig::setup(const String &p_path, const String &p_main_pack) {
 
 		if (_load_resource_pack(exec_path.get_basename() + ".pck")) {
 
-			if (_load_settings("res://godot.cfg") == OK || _load_settings_binary("res://godot.cfb") == OK) {
+			if (_load_settings("res://project.godot") == OK || _load_settings_binary("res://godot.cfb") == OK) {
 				//load override from location of executable
 				_load_settings(exec_path.get_base_dir().plus_file("override.cfg"));
 			}
@@ -293,14 +293,14 @@ Error GlobalConfig::setup(const String &p_path, const String &p_main_pack) {
 		// data.pck and data.zip are deprecated and no longer supported, apologies.
 		// make sure this is loaded from the resource path
 
-		if (_load_settings("res://godot.cfg") == OK || _load_settings_binary("res://godot.cfb") == OK) {
+		if (_load_settings("res://project.godot") == OK || _load_settings_binary("res://godot.cfb") == OK) {
 			_load_settings("res://override.cfg");
 		}
 
 		return OK;
 	}
 
-	//Nothing was found, try to find a godot.cfg somewhere!
+	//Nothing was found, try to find a project.godot somewhere!
 
 	DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	ERR_FAIL_COND_V(!d, ERR_CANT_CREATE);
@@ -314,7 +314,7 @@ Error GlobalConfig::setup(const String &p_path, const String &p_main_pack) {
 	while (true) {
 		//try to load settings in ascending through dirs shape!
 
-		if (_load_settings(current_dir + "/godot.cfg") == OK || _load_settings_binary(current_dir + "/godot.cfb") == OK) {
+		if (_load_settings(current_dir + "/project.godot") == OK || _load_settings_binary(current_dir + "/godot.cfb") == OK) {
 
 			_load_settings(current_dir + "/override.cfg");
 			candidate = current_dir;
@@ -474,7 +474,7 @@ void GlobalConfig::clear(const String &p_name) {
 
 Error GlobalConfig::save() {
 
-	return save_custom(get_resource_path() + "/godot.cfg");
+	return save_custom(get_resource_path() + "/project.godot");
 }
 
 Error GlobalConfig::_save_settings_binary(const String &p_file, const Map<String, List<String> > &props, const CustomMap &p_custom) {
@@ -483,7 +483,7 @@ Error GlobalConfig::_save_settings_binary(const String &p_file, const Map<String
 	FileAccess *file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 	if (err != OK) {
 
-		ERR_EXPLAIN("Coudln't save godot.cfb at " + p_file);
+		ERR_EXPLAIN("Couldn't save godot.cfb at " + p_file);
 		ERR_FAIL_COND_V(err, err)
 	}
 
@@ -548,7 +548,7 @@ Error GlobalConfig::_save_settings_text(const String &p_file, const Map<String, 
 	FileAccess *file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 
 	if (err) {
-		ERR_EXPLAIN("Coudln't save godot.cfg - " + p_file);
+		ERR_EXPLAIN("Couldn't save project.godot - " + p_file);
 		ERR_FAIL_COND_V(err, err)
 	}
 
@@ -674,7 +674,7 @@ Error GlobalConfig::save_custom(const String &p_path, const CustomMap &p_custom,
 	Error err = file->open(dst_file,FileAccess::WRITE);
 	if (err) {
 		memdelete(file);
-		ERR_EXPLAIN("Coudln't save godot.cfg");
+		ERR_EXPLAIN("Couldn't save project.godot");
 		ERR_FAIL_COND_V(err,err)
 	}
 

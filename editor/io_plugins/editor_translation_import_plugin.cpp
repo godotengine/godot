@@ -347,7 +347,7 @@ public:
 
 		add_to_project = memnew( CheckButton);
 		add_to_project->set_pressed(true);
-		add_to_project->set_text(TTR("Add to Project (godot.cfg)"));
+		add_to_project->set_text(TTR("Add to Project (project.godot)"));
 		tcomp->add_child(add_to_project);
 
 		file_select = memnew(EditorFileDialog);

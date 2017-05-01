@@ -92,18 +92,18 @@ private:
 
 		if (mode != MODE_IMPORT) {
 
-			if (d->file_exists("godot.cfg")) {
+			if (d->file_exists("project.godot")) {
 
-				error->set_text(TTR("Invalid project path, godot.cfg must not exist."));
+				error->set_text(TTR("Invalid project path, project.godot must not exist."));
 				memdelete(d);
 				return "";
 			}
 
 		} else {
 
-			if (valid_path != "" && !d->file_exists("godot.cfg")) {
+			if (valid_path != "" && !d->file_exists("project.godot")) {
 
-				error->set_text(TTR("Invalid project path, godot.cfg must exist."));
+				error->set_text(TTR("Invalid project path, project.godot must exist."));
 				memdelete(d);
 				return "";
 			}
@@ -136,7 +136,7 @@ private:
 
 		String p = p_path;
 		if (mode == MODE_IMPORT) {
-			if (p.ends_with("godot.cfg")) {
+			if (p.ends_with("project.godot")) {
 
 				p = p.get_base_dir();
 			}
@@ -162,7 +162,7 @@ private:
 
 			fdialog->set_mode(FileDialog::MODE_OPEN_FILE);
 			fdialog->clear_filters();
-			fdialog->add_filter("godot.cfg ; " _MKSTR(VERSION_NAME) " Project");
+			fdialog->add_filter("project.godot ; " _MKSTR(VERSION_NAME) " Project");
 		} else {
 			fdialog->set_mode(FileDialog::MODE_OPEN_DIR);
 		}
@@ -186,9 +186,9 @@ private:
 		} else {
 			if (mode == MODE_NEW) {
 
-				FileAccess *f = FileAccess::open(dir.plus_file("/godot.cfg"), FileAccess::WRITE);
+				FileAccess *f = FileAccess::open(dir.plus_file("/project.godot"), FileAccess::WRITE);
 				if (!f) {
-					error->set_text(TTR("Couldn't create godot.cfg in project path."));
+					error->set_text(TTR("Couldn't create project.godot in project path."));
 				} else {
 
 					f->store_line("; Engine configuration file.");
@@ -741,7 +741,7 @@ void ProjectManager::_load_recent_projects() {
 			continue;
 
 		String project = _name.get_slice("/", 1);
-		String conf = path.plus_file("godot.cfg");
+		String conf = path.plus_file("project.godot");
 		bool favorite = (_name.begins_with("favorite_projects/")) ? true : false;
 
 		uint64_t last_modified = 0;
@@ -1006,7 +1006,7 @@ void ProjectManager::_scan_dir(DirAccess *da, float pos, float total, List<Strin
 	while (n != String()) {
 		if (da->current_is_dir() && !n.begins_with(".")) {
 			subdirs.push_front(n);
-		} else if (n == "godot.cfg") {
+		} else if (n == "project.godot") {
 			r_projects->push_back(da->get_current_dir());
 		}
 		n = da->get_next();
@@ -1117,7 +1117,7 @@ void ProjectManager::_files_dropped(PoolStringArray p_files, int p_screen) {
 				dir->list_dir_begin();
 				String file = dir->get_next();
 				while (confirm && file != String()) {
-					if (!dir->current_is_dir() && file.ends_with("godot.cfg")) {
+					if (!dir->current_is_dir() && file.ends_with("project.godot")) {
 						confirm = false;
 					}
 					file = dir->get_next();

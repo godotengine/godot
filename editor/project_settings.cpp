@@ -1168,7 +1168,7 @@ void ProjectSettings::_bind_methods() {
 ProjectSettings::ProjectSettings(EditorData *p_data) {
 
 	singleton = this;
-	set_title(TTR("Project Settings (godot.cfg)"));
+	set_title(TTR("Project Settings (project.godot)"));
 	set_resizable(true);
 	undo_redo = &p_data->get_undo_redo();
 	data = p_data;
