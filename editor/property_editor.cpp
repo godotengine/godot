@@ -3406,6 +3406,13 @@ void PropertyEditor::update_tree() {
 					item->set_icon(0, get_icon("ArrayData", "EditorIcons"));
 
 			} break;
+			case Variant::DICTIONARY: {
+
+				item->set_cell_mode(1, TreeItem::CELL_MODE_STRING);
+				item->set_editable(1, false);
+				item->set_text(1, obj->get(p.name).operator String());
+
+			} break;
 
 			case Variant::POOL_INT_ARRAY: {
 
