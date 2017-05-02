@@ -14,11 +14,11 @@
    viewBox="0 0 16 16"
    id="svg2"
    version="1.1"
-   inkscape:version="0.92.1 r"
+   inkscape:version="0.91 r13725"
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_add_track.png"
    inkscape:export-xdpi="45"
    inkscape:export-ydpi="45"
-   sodipodi:docname="tab_close.svg">
+   sodipodi:docname="icon_close.svg">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="45.254836"
-     inkscape:cx="9.2858482"
-     inkscape:cy="8.0181058"
+     inkscape:zoom="22.627418"
+     inkscape:cx="3.3969834"
+     inkscape:cy="11.678255"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -42,8 +42,8 @@
      inkscape:snap-bbox-midpoints="false"
      inkscape:snap-object-midpoints="true"
      inkscape:snap-center="true"
-     inkscape:window-width="1600"
-     inkscape:window-height="836"
+     inkscape:window-width="1920"
+     inkscape:window-height="1016"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1">
@@ -60,7 +60,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -69,15 +69,25 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-1036.3622)">
-    <path
-       style="fill:none;stroke:#ffffff;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-opacity:0.39215687;stroke-miterlimit:4;stroke-dasharray:none"
-       d="m 4,1048.3622 8,-8"
-       id="path819"
-       inkscape:connector-curvature="0" />
-    <path
-       style="fill:none;stroke:#ffffff;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-opacity:0.39215687;stroke-miterlimit:4;stroke-dasharray:none"
-       d="m 4,1040.3622 8,8"
-       id="path821"
-       inkscape:connector-curvature="0" />
+    <g
+       id="layer1-4"
+       inkscape:label="Layer 1"
+       transform="matrix(0.70710678,-0.70710678,0.70710678,0.70710678,-736.13242,311.54347)">
+      <rect
+         y="1043.3622"
+         x="1"
+         height="1.9999478"
+         width="14"
+         id="rect4137"
+         style="fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <rect
+         transform="matrix(0,1,-1,0,0,0)"
+         style="fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         id="rect4158"
+         width="13.999966"
+         height="2.0000017"
+         x="1037.3622"
+         y="-9" />
+    </g>
   </g>
 </svg>

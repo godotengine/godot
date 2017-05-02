@@ -85,8 +85,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	Button *remove_anim;
 	MenuButton *tool_anim;
 	ToolButton *pin;
-	Label *nodename;
-	TextureRect *nodename_icon;
+	Button *nodename;
 	SpinBox *frame;
 	LineEdit *scale;
 	LineEdit *name;
