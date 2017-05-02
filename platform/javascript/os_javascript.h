@@ -45,15 +45,9 @@
 
 #include <emscripten/html5.h>
 
-typedef void (*GFXInitFunc)(void *ud, bool gl2, int w, int h, bool fs);
 typedef String (*GetDataDirFunc)();
 
 class OS_JavaScript : public OS_Unix {
-
-	GFXInitFunc gfx_init_func;
-	void *gfx_init_ud;
-
-	bool use_gl2;
 
 	int64_t time_to_save_sync;
 	int64_t last_sync_time;
@@ -169,7 +163,7 @@ public:
 	virtual int get_power_seconds_left();
 	virtual int get_power_percent_left();
 
-	OS_JavaScript(const char *p_execpath, GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, GetDataDirFunc p_get_data_dir_func);
+	OS_JavaScript(const char *p_execpath, GetDataDirFunc p_get_data_dir_func);
 	~OS_JavaScript();
 };
 
