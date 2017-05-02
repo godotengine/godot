@@ -3751,7 +3751,7 @@ String ShaderLanguage::get_shader_type(const String &p_code) {
 
 	String cur_identifier;
 
-	for (int i = 0; i < p_code.length() + 1; i++) {
+	for (int i = 0; i < p_code.length(); i++) {
 
 		if (p_code[i] == ';') {
 			break;
