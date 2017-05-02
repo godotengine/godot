@@ -1381,8 +1381,8 @@ Vector<StringName> EditorExportPlatform::get_dependencies(bool p_bundles) const 
 
 	Set<StringName> exported;
 
-	if (FileAccess::exists("res://godot.cfg"))
-		exported.insert("res://godot.cfg");
+	if (FileAccess::exists("res://project.godot"))
+		exported.insert("res://project.godot");
 
 	if (EditorImportExport::get_singleton()->get_export_filter()!=EditorImportExport::EXPORT_SELECTED) {
 
@@ -1978,7 +1978,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 	}
 
 
-	StringName engine_cfg="res://godot.cfg";
+	StringName engine_cfg="res://project.godot";
 	StringName boot_splash;
 	{
 		String splash=GlobalConfig::get_singleton()->get("application/boot_splash"); //avoid splash from being converted
@@ -2032,7 +2032,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 
 	{
 
-		//make binary godot.cfg config
+		//make binary project.godot config
 		Map<String,Variant> custom;
 
 

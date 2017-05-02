@@ -1,7 +1,7 @@
 #!/bin/bash
 # When scanning for demos, the project manager sorts them based on their
 # timestamp, i.e. last modification date. This can make for a pretty
-# messy output, so this script 'touches' each godot.cfg file in reverse
+# messy output, so this script 'touches' each project.godot file in reverse
 # alphabetical order to ensure a nice listing.
 #
 # It's good practice to run it once before packaging demos on the build
@@ -17,7 +17,7 @@ if [ -e demos.list ]; then
 fi
 
 for dir in 2d 3d gui misc viewport; do
-  find "demos/$dir" -name "godot.cfg" |sort >> demos.list
+  find "demos/$dir" -name "project.godot" |sort >> demos.list
 done
 cat demos.list |sort -r > demos_r.list
 

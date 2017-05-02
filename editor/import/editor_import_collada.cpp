@@ -1863,7 +1863,7 @@ void ColladaImport::create_animations(bool p_make_tracks_in_all_bones, bool p_im
 
 				node = node_name_map[at.target];
 			} else {
-				print_line("Coudlnt find node: " + at.target);
+				print_line("Couldnt find node: " + at.target);
 				continue;
 			}
 		} else {
