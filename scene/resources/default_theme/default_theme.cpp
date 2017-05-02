@@ -487,43 +487,43 @@ void fill_default_theme(Ref<Theme> &t, const Ref<Font> &default_font, const Ref<
 	t->set_stylebox("scroll", "HScrollBar", make_stylebox(scroll_bg_png, 5, 5, 5, 5, 0, 0, 0, 0));
 	t->set_stylebox("scroll_focus", "HScrollBar", make_stylebox(scroll_bg_png, 5, 5, 5, 5, 0, 0, 0, 0));
 	t->set_stylebox("grabber", "HScrollBar", make_stylebox(scroll_grabber_png, 5, 5, 5, 5, 2, 2, 2, 2));
-	t->set_stylebox("grabber_hilite", "HScrollBar", make_stylebox(scroll_grabber_hl_png, 5, 5, 5, 5, 2, 2, 2, 2));
+	t->set_stylebox("grabber_highlight", "HScrollBar", make_stylebox(scroll_grabber_hl_png, 5, 5, 5, 5, 2, 2, 2, 2));
 
 	t->set_icon("increment", "HScrollBar", empty_icon);
-	t->set_icon("increment_hilite", "HScrollBar", empty_icon);
+	t->set_icon("increment_highlight", "HScrollBar", empty_icon);
 	t->set_icon("decrement", "HScrollBar", empty_icon);
-	t->set_icon("decrement_hilite", "HScrollBar", empty_icon);
+	t->set_icon("decrement_highlight", "HScrollBar", empty_icon);
 
 	// VScrollBar
 
 	t->set_stylebox("scroll", "VScrollBar", make_stylebox(scroll_bg_png, 5, 5, 5, 5, 0, 0, 0, 0));
 	t->set_stylebox("scroll_focus", "VScrollBar", make_stylebox(scroll_bg_png, 5, 5, 5, 5, 0, 0, 0, 0));
 	t->set_stylebox("grabber", "VScrollBar", make_stylebox(scroll_grabber_png, 5, 5, 5, 5, 2, 2, 2, 2));
-	t->set_stylebox("grabber_hilite", "VScrollBar", make_stylebox(scroll_grabber_hl_png, 5, 5, 5, 5, 2, 2, 2, 2));
+	t->set_stylebox("grabber_highlight", "VScrollBar", make_stylebox(scroll_grabber_hl_png, 5, 5, 5, 5, 2, 2, 2, 2));
 
 	t->set_icon("increment", "VScrollBar", empty_icon);
-	t->set_icon("increment_hilite", "VScrollBar", empty_icon);
+	t->set_icon("increment_highlight", "VScrollBar", empty_icon);
 	t->set_icon("decrement", "VScrollBar", empty_icon);
-	t->set_icon("decrement_hilite", "VScrollBar", empty_icon);
+	t->set_icon("decrement_highlight", "VScrollBar", empty_icon);
 
 	// HSlider
 
 	t->set_stylebox("slider", "HSlider", make_stylebox(hslider_bg_png, 4, 4, 4, 4));
-	t->set_stylebox("grabber_hilite", "HSlider", make_stylebox(hslider_grabber_hl_png, 6, 6, 6, 6));
+	t->set_stylebox("grabber_highlight", "HSlider", make_stylebox(hslider_grabber_hl_png, 6, 6, 6, 6));
 	t->set_stylebox("focus", "HSlider", focus);
 
 	t->set_icon("grabber", "HSlider", make_icon(hslider_grabber_png));
-	t->set_icon("grabber_hilite", "HSlider", make_icon(hslider_grabber_hl_png));
+	t->set_icon("grabber_highlight", "HSlider", make_icon(hslider_grabber_hl_png));
 	t->set_icon("tick", "HSlider", make_icon(hslider_tick_png));
 
 	// VSlider
 
 	t->set_stylebox("slider", "VSlider", make_stylebox(vslider_bg_png, 4, 4, 4, 4));
-	t->set_stylebox("grabber_hilite", "VSlider", make_stylebox(vslider_grabber_hl_png, 6, 6, 6, 6));
+	t->set_stylebox("grabber_highlight", "VSlider", make_stylebox(vslider_grabber_hl_png, 6, 6, 6, 6));
 	t->set_stylebox("focus", "HSlider", focus);
 
 	t->set_icon("grabber", "VSlider", make_icon(vslider_grabber_png));
-	t->set_icon("grabber_hilite", "VSlider", make_icon(vslider_grabber_hl_png));
+	t->set_icon("grabber_highlight", "VSlider", make_icon(vslider_grabber_hl_png));
 	t->set_icon("tick", "VSlider", make_icon(vslider_tick_png));
 
 	// SpinBox
@@ -540,7 +540,7 @@ void fill_default_theme(Ref<Theme> &t, const Ref<Font> &default_font, const Ref<
 	t->set_constant("title_height", "WindowDialog", 20 * scale);
 
 	t->set_icon("close", "WindowDialog", make_icon(close_png));
-	t->set_icon("close_hilite", "WindowDialog", make_icon(close_hl_png));
+	t->set_icon("close_highlight", "WindowDialog", make_icon(close_hl_png));
 	t->set_constant("close_h_ofs", "WindowDialog", 18 * scale);
 	t->set_constant("close_v_ofs", "WindowDialog", 18 * scale);
 
@@ -683,15 +683,14 @@ void fill_default_theme(Ref<Theme> &t, const Ref<Font> &default_font, const Ref<
 
 	t->set_stylebox("tab_fg", "TabContainer", sb_expand(make_stylebox(tab_current_png, 4, 4, 4, 1, 16, 4, 16, 4), 2, 2, 2, 2));
 	t->set_stylebox("tab_bg", "TabContainer", sb_expand(make_stylebox(tab_behind_png, 5, 5, 5, 1, 16, 6, 16, 4), 3, 0, 3, 3));
-	t->set_stylebox("tab_disabled", "TabContainer", sb_expand(make_stylebox(tab_disabled_png, 5, 5, 5, 1, 16, 6, 16, 4), 3, 0, 3, 3));
 	t->set_stylebox("panel", "TabContainer", tc_sb);
 
 	t->set_icon("increment", "TabContainer", make_icon(scroll_button_right_png));
-	t->set_icon("increment_hilite", "TabContainer", make_icon(scroll_button_right_hl_png));
+	t->set_icon("increment_highlight", "TabContainer", make_icon(scroll_button_right_hl_png));
 	t->set_icon("decrement", "TabContainer", make_icon(scroll_button_left_png));
-	t->set_icon("decrement_hilite", "TabContainer", make_icon(scroll_button_left_hl_png));
+	t->set_icon("decrement_highlight", "TabContainer", make_icon(scroll_button_left_hl_png));
 	t->set_icon("menu", "TabContainer", make_icon(tab_menu_png));
-	t->set_icon("menu_hilite", "TabContainer", make_icon(tab_menu_hl_png));
+	t->set_icon("menu_highlight", "TabContainer", make_icon(tab_menu_hl_png));
 
 	t->set_font("font", "TabContainer", default_font);
 
@@ -709,15 +708,14 @@ void fill_default_theme(Ref<Theme> &t, const Ref<Font> &default_font, const Ref<
 
 	t->set_stylebox("tab_fg", "Tabs", sb_expand(make_stylebox(tab_current_png, 4, 3, 4, 1, 16, 3, 16, 2), 2, 2, 2, 2));
 	t->set_stylebox("tab_bg", "Tabs", sb_expand(make_stylebox(tab_behind_png, 5, 4, 5, 1, 16, 5, 16, 2), 3, 3, 3, 3));
-	t->set_stylebox("tab_disabled", "Tabs", sb_expand(make_stylebox(tab_disabled_png, 5, 4, 5, 1, 16, 5, 16, 2), 3, 3, 3, 3));
 	t->set_stylebox("panel", "Tabs", tc_sb);
 	t->set_stylebox("button_pressed", "Tabs", make_stylebox(button_pressed_png, 4, 4, 4, 4));
 	t->set_stylebox("button", "Tabs", make_stylebox(button_normal_png, 4, 4, 4, 4));
 
 	t->set_icon("increment", "Tabs", make_icon(scroll_button_right_png));
-	t->set_icon("increment_hilite", "Tabs", make_icon(scroll_button_right_hl_png));
+	t->set_icon("increment_highlight", "Tabs", make_icon(scroll_button_right_hl_png));
 	t->set_icon("decrement", "Tabs", make_icon(scroll_button_left_png));
-	t->set_icon("decrement_hilite", "Tabs", make_icon(scroll_button_left_hl_png));
+	t->set_icon("decrement_highlight", "Tabs", make_icon(scroll_button_left_hl_png));
 	t->set_icon("close", "Tabs", make_icon(tab_close_png));
 
 	t->set_font("font", "Tabs", default_font);

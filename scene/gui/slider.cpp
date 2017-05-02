@@ -45,7 +45,7 @@ void Slider::_gui_input(InputEvent p_event) {
 		if (mb.button_index == BUTTON_LEFT) {
 
 			if (mb.pressed) {
-				Ref<Texture> grabber = get_icon(mouse_inside || has_focus() ? "grabber_hilite" : "grabber");
+				Ref<Texture> grabber = get_icon(mouse_inside || has_focus() ? "grabber_highlight" : "grabber");
 				grab.pos = orientation == VERTICAL ? mb.y : mb.x;
 				double grab_width = (double)grabber->get_size().width;
 				double grab_height = (double)grabber->get_size().height;
@@ -153,7 +153,7 @@ void Slider::_notification(int p_what) {
 			Size2i size = get_size();
 			Ref<StyleBox> style = get_stylebox("slider");
 			Ref<StyleBox> focus = get_stylebox("focus");
-			Ref<Texture> grabber = get_icon(mouse_inside || has_focus() ? "grabber_hilite" : "grabber");
+			Ref<Texture> grabber = get_icon(mouse_inside || has_focus() ? "grabber_highlight" : "grabber");
 			Ref<Texture> tick = get_icon("tick");
 
 			if (orientation == VERTICAL) {

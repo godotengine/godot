@@ -1837,7 +1837,7 @@ void CanvasItemEditor::_viewport_draw() {
 		if (h_scroll->is_visible_in_tree())
 			size.height -= h_scroll->get_size().height;
 
-		get_stylebox("EditorFocus", "EditorStyles")->draw(ci, Rect2(Point2(), size));
+		get_stylebox("Focus", "EditorStyles")->draw(ci, Rect2(Point2(), size));
 	}
 
 	Ref<Texture> lock = get_icon("Lock", "EditorIcons");

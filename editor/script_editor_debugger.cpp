@@ -999,6 +999,11 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			}
 
 		} break;
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			tabs->add_style_override("panel", editor->get_gui_base()->get_stylebox("DebuggerPanel", "EditorStyles"));
+			tabs->add_style_override("tab_fg", editor->get_gui_base()->get_stylebox("DebuggerTabFG", "EditorStyles"));
+			tabs->add_style_override("tab_bg", editor->get_gui_base()->get_stylebox("DebuggerTabBG", "EditorStyles"));
+		} break;
 	}
 }
 
@@ -1551,9 +1556,10 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 	editor = p_editor;
 
 	tabs = memnew(TabContainer);
-	tabs->add_style_override("panel", editor->get_gui_base()->get_stylebox("EditorPanelDebugger", "EditorStyles"));
-	tabs->add_style_override("tab_fg", editor->get_gui_base()->get_stylebox("EditorTabFGDebugger", "EditorStyles"));
-	tabs->add_style_override("tab_bg", editor->get_gui_base()->get_stylebox("EditorTabBGDebugger", "EditorStyles"));
+	tabs->set_tab_align(TabContainer::ALIGN_LEFT);
+	tabs->add_style_override("panel", editor->get_gui_base()->get_stylebox("DebuggerPanel", "EditorStyles"));
+	tabs->add_style_override("tab_fg", editor->get_gui_base()->get_stylebox("DebuggerTabFG", "EditorStyles"));
+	tabs->add_style_override("tab_bg", editor->get_gui_base()->get_stylebox("DebuggerTabBG", "EditorStyles"));
 	tabs->set_v_size_flags(SIZE_EXPAND_FILL);
 	tabs->set_area_as_parent_rect();
 	add_child(tabs);

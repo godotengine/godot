@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="16"
+   height="12"
+   viewBox="0 0 16 12"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.92.1 r"
+   inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_add_track.png"
+   inkscape:export-xdpi="45"
+   inkscape:export-ydpi="45"
+   sodipodi:docname="icon_mini_transform2D.svg">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="22.627418"
+     inkscape:cx="6.4108823"
+     inkscape:cy="5.363647"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="true"
+     units="px"
+     inkscape:snap-bbox="true"
+     inkscape:bbox-paths="true"
+     inkscape:bbox-nodes="true"
+     inkscape:snap-bbox-edge-midpoints="true"
+     inkscape:snap-bbox-midpoints="false"
+     inkscape:snap-object-midpoints="true"
+     inkscape:snap-center="true"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
+     inkscape:window-x="0"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     inkscape:object-nodes="true"
+     inkscape:snap-smooth-nodes="true">
+    <inkscape:grid
+       type="xygrid"
+       id="grid3336" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-1040.3622)">
+    <rect
+       y="1048.3622"
+       x="5"
+       height="2"
+       width="5"
+       id="rect4763"
+       style="fill:#ddf4aa;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    <path
+       sodipodi:open="true"
+       d="m 7.0000001,1050.3622 a 2,2 0 0 1 -1.7320509,-1 2,2 0 0 1 0,-2 2,2 0 0 1 1.7320508,-1"
+       sodipodi:end="4.712389"
+       sodipodi:start="1.5707963"
+       sodipodi:ry="2"
+       sodipodi:rx="2"
+       sodipodi:cy="1048.3622"
+       sodipodi:cx="7"
+       sodipodi:type="arc"
+       id="path4765"
+       style="fill:#ddf4aa;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    <path
+       inkscape:connector-curvature="0"
+       id="path4767"
+       d="m 7,1042.3622 v 2 a 1,1 0 0 1 1,1 1,1 0 0 1 -1,1 v 2 a 3,3 0 0 0 2.597656,-1.5 3,3 0 0 0 0,-3 A 3,3 0 0 0 7,1042.3622 Z"
+       style="fill:#ddf4aa;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    <rect
+       style="fill:#c4ec69;fill-opacity:1;stroke:none;stroke-width:1.85164022;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect823"
+       width="6"
+       height="2"
+       x="0"
+       y="1042.3622" />
+    <rect
+       y="1043.3622"
+       x="2"
+       height="7.0000172"
+       width="2"
+       id="rect825"
+       style="fill:#c4ec69;fill-opacity:1;stroke:none;stroke-width:2.00000238;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    <path
+       style="fill:#c4ec69;fill-opacity:1;stroke:none;stroke-width:2.1380899;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 10 2 L 10 10 L 12 10 A 4 4 0 0 0 15.464844 8 A 4 4 0 0 0 15.464844 4 A 4 4 0 0 0 12 2 L 10 2 z M 12 4 A 2.0000174 2.0000174 0 0 1 13.732422 5 A 2.0000174 2.0000174 0 0 1 13.732422 7 A 2.0000174 2.0000174 0 0 1 12 8 L 12 4 z "
+       transform="translate(0,1040.3622)"
+       id="rect827" />
+  </g>
+</svg>

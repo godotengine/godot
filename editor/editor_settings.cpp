@@ -599,6 +599,11 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	set("editors/poly_editor/point_grab_radius", 8);
 
+	set("editors/theme/base_color", Color(0.3, 0.3, 0.3, 1));
+	hints["editors/theme/base_color"] = PropertyInfo(Variant::COLOR, "editors/theme/base_color", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+	set("editors/theme/contrast", 0.2);
+	hints["editors/theme/contrast"] = PropertyInfo(Variant::REAL, "editors/theme/contrast", PROPERTY_HINT_RANGE, "0.01, 1, 0.01");
+
 	set("run/window_placement/rect", 0);
 	hints["run/window_placement/rect"] = PropertyInfo(Variant::INT, "run/window_placement/rect", PROPERTY_HINT_ENUM, "Default,Centered,Custom Position,Force Maximized,Force Full Screen");
 	String screen_hints = TTR("Default (Same as Editor)");

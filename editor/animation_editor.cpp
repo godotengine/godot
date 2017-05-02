@@ -1035,7 +1035,7 @@ void AnimationKeyEditor::_track_pos_draw() {
 		//draw position
 		int pixel = (timeline_pos - h_scroll->get_value()) * zoom_scale;
 		pixel += name_limit;
-		track_pos->draw_line(ofs + Point2(pixel, 0), ofs + Point2(pixel, size.height), Color(1, 0.3, 0.3, 0.8));
+		track_pos->draw_line(ofs + Point2(pixel, 0), ofs + Point2(pixel, size.height), get_color("highlight_color", "Editor"));
 	}
 }
 
@@ -1089,13 +1089,12 @@ void AnimationKeyEditor::_track_editor_draw() {
 	int sep = get_constant("vseparation", "Tree");
 	int hsep = get_constant("hseparation", "Tree");
 	Color color = get_color("font_color", "Tree");
-	Color sepcolor = get_color("guide_color", "Tree");
-	Color timecolor = get_color("prop_subsection", "Editor");
-	timecolor = Color::html("ff4a414f");
+	Color sepcolor = get_color("light_color_1", "Editor");
+	Color timecolor = get_color("dark_color_2", "Editor");
 	Color hover_color = Color(1, 1, 1, 0.05);
 	Color select_color = Color(1, 1, 1, 0.1);
 	Color invalid_path_color = Color(1, 0.6, 0.4, 0.5);
-	Color track_select_color = Color::html("ffbd8e8e");
+	Color track_select_color = get_color("highlight_color", "Editor");
 
 	Ref<Texture> remove_icon = get_icon("Remove", "EditorIcons");
 	Ref<Texture> move_up_icon = get_icon("MoveUp", "EditorIcons");
@@ -1179,11 +1178,7 @@ void AnimationKeyEditor::_track_editor_draw() {
 
 		int end_px = (l - h_scroll->get_value()) * scale;
 		int begin_px = -h_scroll->get_value() * scale;
-		Color notimecol;
-		notimecol.r = timecolor.gray();
-		notimecol.g = notimecol.r;
-		notimecol.b = notimecol.r;
-		notimecol.a = timecolor.a;
+		Color notimecol = get_color("light_color_1", "Editor");
 
 		{
 
@@ -1483,7 +1478,9 @@ void AnimationKeyEditor::_track_editor_draw() {
 	switch (click.click) {
 		case ClickOver::CLICK_SELECT_KEYS: {
 
-			te->draw_rect(Rect2(click.at, click.to - click.at), Color(0.7, 0.7, 1.0, 0.5));
+			Color box_color = get_color("highlight_color", "Editor");
+			box_color.a = 0.35;
+			te->draw_rect(Rect2(click.at, click.to - click.at), box_color);
 
 		} break;
 		case ClickOver::CLICK_MOVE_KEYS: {
@@ -2891,6 +2888,8 @@ void AnimationKeyEditor::_notification(int p_what) {
 			key_editor->edit(key_edit);
 
 			zoomicon->set_texture(get_icon("Zoom", "EditorIcons"));
+			zoomicon->set_custom_minimum_size(Size2(24 * EDSCALE, 0));
+			zoomicon->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
 
 			menu_add_track->set_icon(get_icon("AddTrack", "EditorIcons"));
 			menu_add_track->get_popup()->add_icon_item(get_icon("KeyValue", "EditorIcons"), "Add Normal Track", ADD_TRACK_MENU_ADD_VALUE_TRACK);
@@ -3928,6 +3927,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	v_scroll->set_value(0);
 
 	key_editor_tab = memnew(TabContainer);
+	key_editor_tab->set_tab_align(TabContainer::ALIGN_LEFT);
 	hb->add_child(key_editor_tab);
 	key_editor_tab->set_custom_minimum_size(Size2(200, 0));
 

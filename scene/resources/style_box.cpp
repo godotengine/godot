@@ -297,6 +297,15 @@ int StyleBoxFlat::get_border_size() const {
 	return border_size;
 }
 
+void StyleBoxFlat::_set_additional_border_size(Margin p_margin, int p_size) {
+	additional_border_size[p_margin] = p_size;
+	emit_changed();
+}
+
+int StyleBoxFlat::_get_additional_border_size(Margin p_margin) const {
+	return additional_border_size[p_margin];
+}
+
 void StyleBoxFlat::set_border_blend(bool p_blend) {
 
 	blend = p_blend;
@@ -357,6 +366,12 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 
 	if (draw_center)
 		vs->canvas_item_add_rect(p_canvas_item, Rect2(r.pos, r.size), bg_color);
+
+	Rect2i r_add = p_rect;
+	vs->canvas_item_add_rect(p_canvas_item, Rect2(Point2i(r_add.pos.x - additional_border_size[MARGIN_LEFT], r_add.pos.y - additional_border_size[MARGIN_TOP]), Size2(r_add.size.width + additional_border_size[MARGIN_LEFT] + additional_border_size[MARGIN_RIGHT], additional_border_size[MARGIN_TOP])), light_color);
+	vs->canvas_item_add_rect(p_canvas_item, Rect2(Point2i(r_add.pos.x - additional_border_size[MARGIN_LEFT], r_add.pos.y), Size2(additional_border_size[MARGIN_LEFT], r_add.size.height)), light_color);
+	vs->canvas_item_add_rect(p_canvas_item, Rect2(Point2i(r_add.pos.x + r_add.size.width, r_add.pos.y), Size2(additional_border_size[MARGIN_RIGHT], r_add.size.height)), dark_color);
+	vs->canvas_item_add_rect(p_canvas_item, Rect2(Point2i(r_add.pos.x - additional_border_size[MARGIN_LEFT], r_add.pos.y + r_add.size.height), Size2(r_add.size.width + additional_border_size[MARGIN_LEFT] + additional_border_size[MARGIN_RIGHT], additional_border_size[MARGIN_BOTTOM])), dark_color);
 }
 
 float StyleBoxFlat::get_style_margin(Margin p_margin) const {
@@ -394,6 +409,10 @@ StyleBoxFlat::StyleBoxFlat() {
 	draw_center = true;
 	blend = true;
 	border_size = 0;
+	additional_border_size[0] = 0;
+	additional_border_size[1] = 0;
+	additional_border_size[2] = 0;
+	additional_border_size[3] = 0;
 }
 StyleBoxFlat::~StyleBoxFlat() {
 }

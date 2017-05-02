@@ -106,6 +106,9 @@ void ProjectSettings::_notification(int p_what) {
 		case NOTIFICATION_POPUP_HIDE: {
 			EditorSettings::get_singleton()->set("interface/dialogs/project_settings_bounds", get_rect());
 		} break;
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			_update_actions();
+		} break;
 	}
 }
 
@@ -1174,6 +1177,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 	data = p_data;
 
 	tab_container = memnew(TabContainer);
+	tab_container->set_tab_align(TabContainer::ALIGN_LEFT);
 	add_child(tab_container);
 	//set_child_rect(tab_container);
 
@@ -1416,6 +1420,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 
 	//translations
 	TabContainer *translations = memnew(TabContainer);
+	translations->set_tab_align(TabContainer::ALIGN_LEFT);
 	translations->set_name(TTR("Localization"));
 	tab_container->add_child(translations);
 

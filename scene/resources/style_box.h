@@ -123,6 +123,7 @@ class StyleBoxFlat : public StyleBox {
 	Color dark_color;
 
 	int border_size;
+	int additional_border_size[4];
 
 	bool draw_center;
 	bool blend;
@@ -142,6 +143,9 @@ public:
 
 	void set_border_size(int p_size);
 	int get_border_size() const;
+
+	void _set_additional_border_size(Margin p_margin, int p_size);
+	int _get_additional_border_size(Margin p_margin) const;
 
 	void set_border_blend(bool p_blend);
 	bool get_border_blend() const;

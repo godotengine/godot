@@ -53,25 +53,34 @@ void WindowDialog::_fix_size() {
 	Size2i viewport_size = get_viewport_rect().size;
 
 	// Windows require additional padding to keep the window chrome visible.
-	Ref<StyleBoxTexture> panel = get_stylebox("panel", "WindowDialog");
-
+	Ref<StyleBox> panel = get_stylebox("panel", "WindowDialog");
+	float top = 0;
+	float left = 0;
+	float bottom = 0;
+	float right = 0;
 	// Check validity, because the theme could contain a different type of StyleBox
-	if (panel.is_valid()) {
-		float top = panel->get_expand_margin_size(MARGIN_TOP);
-		float left = panel->get_expand_margin_size(MARGIN_LEFT);
-		float bottom = panel->get_expand_margin_size(MARGIN_BOTTOM);
-		float right = panel->get_expand_margin_size(MARGIN_RIGHT);
+	if (panel->get_class() == "StyleBoxTexture") {
+		Ref<StyleBoxTexture> panel_texture = panel->cast_to<StyleBoxTexture>();
+		top = panel_texture->get_expand_margin_size(MARGIN_TOP);
+		left = panel_texture->get_expand_margin_size(MARGIN_LEFT);
+		bottom = panel_texture->get_expand_margin_size(MARGIN_BOTTOM);
+		right = panel_texture->get_expand_margin_size(MARGIN_RIGHT);
+	} else if (panel->get_class() == "StyleBoxFlat") {
+		Ref<StyleBoxFlat> panel_flat = panel->cast_to<StyleBoxFlat>();
+		top = panel_flat->_get_additional_border_size(MARGIN_TOP);
+		left = panel_flat->_get_additional_border_size(MARGIN_LEFT);
+		bottom = panel_flat->_get_additional_border_size(MARGIN_BOTTOM);
+		right = panel_flat->_get_additional_border_size(MARGIN_RIGHT);
+	}
 
-		pos.x = MAX(left, MIN(pos.x, viewport_size.x - size.x - right));
-		pos.y = MAX(top, MIN(pos.y, viewport_size.y - size.y - bottom));
-		set_global_position(pos);
+	pos.x = MAX(left, MIN(pos.x, viewport_size.x - size.x - right));
+	pos.y = MAX(top, MIN(pos.y, viewport_size.y - size.y - bottom));
+	set_global_position(pos);
 
-		// Also resize the window to fit if a resize should be possible at all.
-		if (resizable) {
-			size.x = MIN(size.x, viewport_size.x - left - right);
-			size.y = MIN(size.y, viewport_size.y - top - bottom);
-			set_size(size);
-		}
+	if (resizable) {
+		size.x = MIN(size.x, viewport_size.x - left - right);
+		size.y = MIN(size.y, viewport_size.y - top - bottom);
+		set_size(size);
 	}
 }
 
@@ -200,7 +209,7 @@ void WindowDialog::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			close_button->set_normal_texture(get_icon("close", "WindowDialog"));
 			close_button->set_pressed_texture(get_icon("close", "WindowDialog"));
-			close_button->set_hover_texture(get_icon("close_hilite", "WindowDialog"));
+			close_button->set_hover_texture(get_icon("close_highlight", "WindowDialog"));
 			close_button->set_anchor(MARGIN_LEFT, ANCHOR_END);
 			close_button->set_begin(Point2(get_constant("close_h_ofs", "WindowDialog"), -get_constant("close_v_ofs", "WindowDialog")));
 		} break;

@@ -118,8 +118,6 @@ void AnimationPlayerEditor::_notification(int p_what) {
 
 		blend_editor.next->connect("item_selected", this, "_blend_editor_next_changed");
 
-		nodename->set_icon(get_icon("AnimationPlayer", "EditorIcons"));
-
 		/*
 		anim_editor_load->set_normal_texture( get_icon("AnimGet","EditorIcons"));
 		anim_editor_store->set_normal_texture( get_icon("AnimSet","EditorIcons"));
@@ -790,10 +788,6 @@ void AnimationPlayerEditor::_update_player() {
 		player->get_animation_list(&animlist);
 
 	animation->clear();
-	if (player)
-		nodename->set_text(player->get_name());
-	else
-		nodename->set_text("<empty>");
 
 	add_anim->set_disabled(player == NULL);
 	load_anim->set_disabled(player == NULL);
@@ -1367,8 +1361,6 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 	//tool_anim->get_popup()->add_item("Edit Anim Resource",TOOL_PASTE_ANIM);
 	hb->add_child(tool_anim);
 
-	nodename = memnew(Button);
-	hb->add_child(nodename);
 	pin = memnew(ToolButton);
 	pin->set_toggle_mode(true);
 	hb->add_child(pin);

@@ -14,7 +14,7 @@
    viewBox="0 0 16 16"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.1 r"
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_new.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90"
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="16"
-     inkscape:cx="0.22745062"
-     inkscape:cy="11.330333"
+     inkscape:zoom="22.627417"
+     inkscape:cx="20.922744"
+     inkscape:cy="2.4022924"
      inkscape:document-units="px"
      inkscape:current-layer="layer1-8"
      showgrid="true"
@@ -42,8 +42,8 @@
      inkscape:snap-bbox-midpoints="false"
      inkscape:snap-object-midpoints="true"
      inkscape:snap-center="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1016"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
@@ -76,11 +76,17 @@
        inkscape:label="Layer 1"
        transform="translate(0,-1.6949463e-5)">
       <path
-         sodipodi:nodetypes="ccccccccccc"
-         inkscape:connector-curvature="0"
+         style="opacity:1;fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+         d="m 2,1 v 14 h 8 V 14 H 8 v -4 h 2 V 8 h 4 V 6 H 9 V 1 Z m 8,0 v 4 h 4 z"
+         transform="translate(0,1036.3622)"
          id="rect4158"
-         d="m 2,1037.3622 0,14 12,0 0,-9 -5,0 0,-5 z m 8,0 0,4 4,0 z"
-         style="opacity:1;fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+         inkscape:connector-curvature="0"
+         sodipodi:nodetypes="ccccccccccccccccc" />
+      <path
+         style="fill:#84ffb1;fill-opacity:1;stroke:none;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         d="m 11,1045.3622 v 2 H 9 v 2 h 2 v 2 h 2 v -2 h 2 v -2 h -2 v -2 z"
+         id="rect4485"
+         inkscape:connector-curvature="0" />
     </g>
   </g>
 </svg>
