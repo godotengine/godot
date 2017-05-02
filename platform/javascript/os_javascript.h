@@ -81,6 +81,9 @@ class OS_JavaScript : public OS_Unix {
 
 	void process_joypads();
 
+	void set_css_cursor(const char *);
+	const char *get_css_cursor() const;
+
 public:
 	// functions used by main to initialize/deintialize the OS
 	virtual int get_video_driver_count() const;
@@ -110,9 +113,8 @@ public:
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
 
-	virtual void set_mouse_show(bool p_show);
-	virtual void set_mouse_grab(bool p_grab);
-	virtual bool is_mouse_grab_enabled() const;
+	virtual void set_mouse_mode(MouseMode p_mode);
+	virtual MouseMode get_mouse_mode() const;
 	virtual Point2 get_mouse_position() const;
 	virtual int get_mouse_button_state() const;
 	virtual void set_window_title(const String &p_title);
