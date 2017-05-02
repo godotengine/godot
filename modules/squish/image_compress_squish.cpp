@@ -31,6 +31,12 @@
 
 #include "print_string.h"
 
+#if defined(__SSE2__)
+#define SQUISH_USE_SSE 2
+#elif defined(__SSE__)
+#define SQUISH_USE_SSE 1
+#endif
+
 #include <squish.h>
 
 void image_compress_squish(Image *p_image) {
