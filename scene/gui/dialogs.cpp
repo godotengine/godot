@@ -54,20 +54,24 @@ void WindowDialog::_fix_size() {
 
 	// Windows require additional padding to keep the window chrome visible.
 	Ref<StyleBoxTexture> panel = get_stylebox("panel", "WindowDialog");
-	float top = panel->get_expand_margin_size(MARGIN_TOP);
-	float left = panel->get_expand_margin_size(MARGIN_LEFT);
-	float bottom = panel->get_expand_margin_size(MARGIN_BOTTOM);
-	float right = panel->get_expand_margin_size(MARGIN_RIGHT);
 
-	pos.x = MAX(left, MIN(pos.x, viewport_size.x - size.x - right));
-	pos.y = MAX(top, MIN(pos.y, viewport_size.y - size.y - bottom));
-	set_global_position(pos);
+	// Check validity, because the theme could contain a different type of StyleBox
+	if (panel.is_valid()) {
+		float top = panel->get_expand_margin_size(MARGIN_TOP);
+		float left = panel->get_expand_margin_size(MARGIN_LEFT);
+		float bottom = panel->get_expand_margin_size(MARGIN_BOTTOM);
+		float right = panel->get_expand_margin_size(MARGIN_RIGHT);
 
-	// Also resize the window to fit if a resize should be possible at all.
-	if (resizable) {
-		size.x = MIN(size.x, viewport_size.x - left - right);
-		size.y = MIN(size.y, viewport_size.y - top - bottom);
-		set_size(size);
+		pos.x = MAX(left, MIN(pos.x, viewport_size.x - size.x - right));
+		pos.y = MAX(top, MIN(pos.y, viewport_size.y - size.y - bottom));
+		set_global_position(pos);
+
+		// Also resize the window to fit if a resize should be possible at all.
+		if (resizable) {
+			size.x = MIN(size.x, viewport_size.x - left - right);
+			size.y = MIN(size.y, viewport_size.y - top - bottom);
+			set_size(size);
+		}
 	}
 }
 
