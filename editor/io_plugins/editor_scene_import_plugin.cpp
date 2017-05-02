@@ -1093,7 +1093,7 @@ const EditorSceneImportDialog::FlagInfo EditorSceneImportDialog::scene_flag_name
 	{EditorSceneImportPlugin::SCENE_FLAG_MERGE_KEEP_EXTRA_ANIM_TRACKS,("Merge"),"Keep user-added Animation tracks.",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_DETECT_ALPHA,("Materials"),"Set Alpha in Materials (-alpha)",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_DETECT_VCOLOR,("Materials"),"Set Vert. Color in Materials (-vcol)",true},
-	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_COLLISIONS,("Create"),"Create Collisions and/or Rigid Bodies (-col,-colonly,-rigid)",true},
+	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_COLLISIONS,("Create"),"Create Collisions and/or Rigid Bodies (-col,-colonly,-rigid,-rigidonly)",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_PORTALS,("Create"),"Create Portals (-portal)",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_ROOMS,("Create"),"Create Rooms (-room)",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_SIMPLIFY_ROOMS,("Create"),"Simplify Rooms",false},
@@ -1714,12 +1714,14 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 		//mi->set_baked_light_texture_id(layer);
 	}
 
-	if (p_flags&SCENE_FLAG_CREATE_COLLISIONS && _teststr(name,"colonly")) {
+	bool is_rigid = _teststr(name, "rigidonly");
+
+	if (p_flags & SCENE_FLAG_CREATE_COLLISIONS && (_teststr(name, "colonly") || is_rigid)) {
 
 		if (isroot)
 			return p_node;
-		
-		if (p_node->cast_to<MeshInstance>()) {
+
+		if (p_node->cast_to<MeshInstance>() && !is_rigid) {
 			MeshInstance *mi = p_node->cast_to<MeshInstance>();
 			Node * col = mi->create_trimesh_collision_node();
 			ERR_FAIL_COND_V(!col,NULL);
@@ -1739,10 +1741,16 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 		} else if (p_node->has_meta("empty_draw_type")) {
 			String empty_draw_type = String(p_node->get_meta("empty_draw_type"));
 			print_line(empty_draw_type);
-			StaticBody *sb = memnew( StaticBody);
-			sb->set_name(_fixstr(name,"colonly"));
-			sb->cast_to<Spatial>()->set_transform(p_node->cast_to<Spatial>()->get_transform());
-			p_node->replace_by(sb);
+			PhysicsBody *pb;
+			if (is_rigid) {
+				pb = memnew(RigidBody);
+				pb->set_name(_fixstr(name, "rigidonly"));
+			} else {
+				pb = memnew(StaticBody);
+				pb->set_name(_fixstr(name, "colonly"));
+			}
+			pb->cast_to<Spatial>()->set_transform(p_node->cast_to<Spatial>()->get_transform());
+			p_node->replace_by(pb);
 			memdelete(p_node);
 			CollisionShape *colshape = memnew( CollisionShape);
 			if (empty_draw_type == "CUBE") {
@@ -1755,7 +1763,7 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 				rayShape->set_length(1);
 				colshape->set_shape(rayShape);
 				colshape->set_name("RayShape");
-				sb->cast_to<Spatial>()->rotate_x(Math_PI / 2);
+				pb->cast_to<Spatial>()->rotate_x(Math_PI / 2);
 			} else if (empty_draw_type == "IMAGE") {
 				PlaneShape *planeShape = memnew( PlaneShape);
 				colshape->set_shape(planeShape);
@@ -1766,8 +1774,8 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 				colshape->set_shape(sphereShape);
 				colshape->set_name("SphereShape");
 			}
-			sb->add_child(colshape);
-			colshape->set_owner(sb->get_owner());
+			pb->add_child(colshape);
+			colshape->set_owner(pb->get_owner());
 		}
 
 	} else if (p_flags&SCENE_FLAG_CREATE_COLLISIONS && _teststr(name,"rigid") && p_node->cast_to<MeshInstance>()) {
