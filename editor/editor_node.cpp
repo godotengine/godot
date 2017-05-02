@@ -360,6 +360,7 @@ void EditorNode::_notification(int p_what) {
 
 	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
 		scene_tabs->set_tab_close_display_policy((bool(EDITOR_DEF("interface/always_show_close_button_in_scene_tabs", false)) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY));
+		property_editor->set_enable_capitalize_paths(bool(EDITOR_DEF("interface/capitalize_properties", true)));
 	}
 }
 
@@ -5638,6 +5639,7 @@ EditorNode::EditorNode() {
 	property_editor->set_show_categories(true);
 	property_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	property_editor->set_use_doc_hints(true);
+	property_editor->set_enable_capitalize_paths(bool(EDITOR_DEF("interface/capitalize_properties", true)));
 
 	property_editor->hide_top_label();
 	property_editor->register_text_enter(search_box);
