@@ -1174,7 +1174,6 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 	data = p_data;
 
 	tab_container = memnew(TabContainer);
-	tab_container->add_constant_override("side_margin", 0);
 	add_child(tab_container);
 	//set_child_rect(tab_container);
 

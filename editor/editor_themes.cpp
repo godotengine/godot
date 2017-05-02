@@ -69,6 +69,11 @@ Ref<Theme> create_editor_theme() {
 	theme->set_stylebox("bg", "ItemList", style_bg);
 	theme->set_stylebox("EditorBG", "EditorStyles", style_bg);
 
+	Ref<StyleBox> style_tree_btn = theme->get_stylebox("button_pressed", "Tree");
+	style_tree_btn->set_default_margin(MARGIN_LEFT, 3 * EDSCALE);
+	style_tree_btn->set_default_margin(MARGIN_RIGHT, 3 * EDSCALE);
+	theme->set_stylebox("button_pressed", "Tree", style_tree_btn);
+
 	Ref<StyleBoxFlat> style_tab(memnew(StyleBoxFlat));
 	style_tab->set_default_margin(MARGIN_LEFT, 15 * EDSCALE);
 	style_tab->set_default_margin(MARGIN_RIGHT, 15 * EDSCALE);
@@ -113,6 +118,10 @@ Ref<Theme> create_editor_theme() {
 	style_textedit_normal->set_default_margin(MARGIN_BOTTOM, 0);
 	style_textedit_normal->set_default_margin(MARGIN_TOP, 0);
 	theme->set_stylebox("normal", "TextEdit", style_textedit_normal);
+
+	theme->set_constant("separation", "HSplitContainer", 8 * EDSCALE);
+	theme->set_constant("separation", "VSplitContainer", 8 * EDSCALE);
+	theme->set_constant("side_margin", "TabContainer", 0);
 
 	// theme->set_color("prop_category","Editor",Color::hex(0x3f3a44ff));
 	// theme->set_color("prop_section","Editor",Color::hex(0x35313aff));

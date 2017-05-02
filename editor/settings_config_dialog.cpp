@@ -300,7 +300,6 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	set_resizable(true);
 
 	tabs = memnew(TabContainer);
-	tabs->add_constant_override("side_margin", 0);
 	add_child(tabs);
 	//set_child_rect(tabs);
 
