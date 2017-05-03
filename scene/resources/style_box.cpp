@@ -52,6 +52,19 @@ float StyleBox::get_margin(Margin p_margin) const {
 		return margin[p_margin];
 }
 
+void StyleBox::set_expand_margin_size(Margin p_expand_margin, float p_size) {
+
+	ERR_FAIL_INDEX(p_expand_margin, 4);
+	expand_margin[p_expand_margin] = p_size;
+	emit_changed();
+}
+
+float StyleBox::get_expand_margin_size(Margin p_expand_margin) const {
+
+	ERR_FAIL_INDEX_V(p_expand_margin, 4, 0);
+	return expand_margin[p_expand_margin];
+}
+
 Size2 StyleBox::get_minimum_size() const {
 
 	return Size2(get_margin(MARGIN_LEFT) + get_margin(MARGIN_RIGHT), get_margin(MARGIN_TOP) + get_margin(MARGIN_BOTTOM));
@@ -74,6 +87,9 @@ void StyleBox::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_default_margin", "margin", "offset"), &StyleBox::set_default_margin);
 	ClassDB::bind_method(D_METHOD("get_default_margin", "margin"), &StyleBox::get_default_margin);
 
+	ClassDB::bind_method(D_METHOD("set_expand_margin_size", "margin", "size"), &StyleBox::set_expand_margin_size);
+	ClassDB::bind_method(D_METHOD("get_expand_margin_size", "margin"), &StyleBox::get_expand_margin_size);
+
 	//ClassDB::bind_method(D_METHOD("set_default_margin"),&StyleBox::set_default_margin);
 	//ClassDB::bind_method(D_METHOD("get_default_margin"),&StyleBox::get_default_margin);
 
@@ -89,6 +105,11 @@ void StyleBox::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "content_margin_right", PROPERTY_HINT_RANGE, "-1,2048,1"), "set_default_margin", "get_default_margin", MARGIN_RIGHT);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "content_margin_top", PROPERTY_HINT_RANGE, "-1,2048,1"), "set_default_margin", "get_default_margin", MARGIN_TOP);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "content_margin_bottom", PROPERTY_HINT_RANGE, "-1,2048,1"), "set_default_margin", "get_default_margin", MARGIN_BOTTOM);
+	ADD_GROUP("Expand Margin", "expand_margin_");
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "expand_margin_left", PROPERTY_HINT_RANGE, "0,2048,1"), "set_expand_margin_size", "get_expand_margin_size", MARGIN_LEFT);
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "expand_margin_right", PROPERTY_HINT_RANGE, "0,2048,1"), "set_expand_margin_size", "get_expand_margin_size", MARGIN_RIGHT);
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "expand_margin_top", PROPERTY_HINT_RANGE, "0,2048,1"), "set_expand_margin_size", "get_expand_margin_size", MARGIN_TOP);
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "expand_margin_bottom", PROPERTY_HINT_RANGE, "0,2048,1"), "set_expand_margin_size", "get_expand_margin_size", MARGIN_BOTTOM);
 }
 
 StyleBox::StyleBox() {
@@ -96,6 +117,7 @@ StyleBox::StyleBox() {
 	for (int i = 0; i < 4; i++) {
 
 		margin[i] = -1;
+		expand_margin[i] = 0;
 	}
 }
 
@@ -165,19 +187,6 @@ Size2 StyleBoxTexture::get_center_size() const {
 	return texture->get_size() - get_minimum_size();
 }
 
-void StyleBoxTexture::set_expand_margin_size(Margin p_expand_margin, float p_size) {
-
-	ERR_FAIL_INDEX(p_expand_margin, 4);
-	expand_margin[p_expand_margin] = p_size;
-	emit_changed();
-}
-
-float StyleBoxTexture::get_expand_margin_size(Margin p_expand_margin) const {
-
-	ERR_FAIL_INDEX_V(p_expand_margin, 4, 0);
-	return expand_margin[p_expand_margin];
-}
-
 void StyleBoxTexture::set_region_rect(const Rect2 &p_region_rect) {
 
 	if (region_rect == p_region_rect)
@@ -212,9 +221,6 @@ void StyleBoxTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_margin_size", "margin", "size"), &StyleBoxTexture::set_margin_size);
 	ClassDB::bind_method(D_METHOD("get_margin_size", "margin"), &StyleBoxTexture::get_margin_size);
 
-	ClassDB::bind_method(D_METHOD("set_expand_margin_size", "margin", "size"), &StyleBoxTexture::set_expand_margin_size);
-	ClassDB::bind_method(D_METHOD("get_expand_margin_size", "margin"), &StyleBoxTexture::get_expand_margin_size);
-
 	ClassDB::bind_method(D_METHOD("set_region_rect", "region"), &StyleBoxTexture::set_region_rect);
 	ClassDB::bind_method(D_METHOD("get_region_rect"), &StyleBoxTexture::get_region_rect);
 
@@ -233,11 +239,6 @@ void StyleBoxTexture::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "margin_right", PROPERTY_HINT_RANGE, "0,2048,1"), "set_margin_size", "get_margin_size", MARGIN_RIGHT);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "margin_top", PROPERTY_HINT_RANGE, "0,2048,1"), "set_margin_size", "get_margin_size", MARGIN_TOP);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "margin_bottom", PROPERTY_HINT_RANGE, "0,2048,1"), "set_margin_size", "get_margin_size", MARGIN_BOTTOM);
-	ADD_GROUP("Expand Margin", "expand_margin_");
-	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "expand_margin_left", PROPERTY_HINT_RANGE, "0,2048,1"), "set_expand_margin_size", "get_expand_margin_size", MARGIN_LEFT);
-	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "expand_margin_right", PROPERTY_HINT_RANGE, "0,2048,1"), "set_expand_margin_size", "get_expand_margin_size", MARGIN_RIGHT);
-	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "expand_margin_top", PROPERTY_HINT_RANGE, "0,2048,1"), "set_expand_margin_size", "get_expand_margin_size", MARGIN_TOP);
-	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "expand_margin_bottom", PROPERTY_HINT_RANGE, "0,2048,1"), "set_expand_margin_size", "get_expand_margin_size", MARGIN_BOTTOM);
 	ADD_GROUP("Modulate", "modulate_");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate_color"), "set_modulate", "get_modulate");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_center"), "set_draw_center", "get_draw_center");
@@ -246,8 +247,8 @@ void StyleBoxTexture::_bind_methods() {
 StyleBoxTexture::StyleBoxTexture() {
 
 	for (int i = 0; i < 4; i++) {
+
 		margin[i] = 0;
-		expand_margin[i] = 0;
 	}
 	draw_center = true;
 	modulate = Color(1, 1, 1, 1);
@@ -326,6 +327,11 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 
 	VisualServer *vs = VisualServer::get_singleton();
 	Rect2i r = p_rect;
+
+	r.pos.x -= expand_margin[MARGIN_LEFT];
+	r.pos.y -= expand_margin[MARGIN_TOP];
+	r.size.x += expand_margin[MARGIN_LEFT] + expand_margin[MARGIN_RIGHT];
+	r.size.y += expand_margin[MARGIN_TOP] + expand_margin[MARGIN_BOTTOM];
 
 	for (int i = 0; i < border_size; i++) {
 

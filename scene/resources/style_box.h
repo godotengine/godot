@@ -44,6 +44,8 @@ class StyleBox : public Resource {
 	float margin[4];
 
 protected:
+	float expand_margin[4];
+
 	virtual float get_style_margin(Margin p_margin) const = 0;
 	static void _bind_methods();
 
@@ -53,6 +55,8 @@ public:
 	void set_default_margin(Margin p_margin, float p_value);
 	float get_default_margin(Margin p_margin) const;
 	float get_margin(Margin p_margin) const;
+	void set_expand_margin_size(Margin p_expand_margin, float p_size);
+	float get_expand_margin_size(Margin p_expand_margin) const;
 	virtual Size2 get_center_size() const;
 
 	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const = 0;
@@ -77,7 +81,6 @@ class StyleBoxTexture : public StyleBox {
 
 	GDCLASS(StyleBoxTexture, StyleBox);
 
-	float expand_margin[4];
 	float margin[4];
 	Rect2 region_rect;
 	Ref<Texture> texture;
@@ -89,9 +92,6 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_expand_margin_size(Margin p_expand_margin, float p_size);
-	float get_expand_margin_size(Margin p_expand_margin) const;
-
 	void set_margin_size(Margin p_margin, float p_size);
 	float get_margin_size(Margin p_margin) const;
 

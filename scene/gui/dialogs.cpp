@@ -53,7 +53,7 @@ void WindowDialog::_fix_size() {
 	Size2i viewport_size = get_viewport_rect().size;
 
 	// Windows require additional padding to keep the window chrome visible.
-	Ref<StyleBoxTexture> panel = get_stylebox("panel", "WindowDialog");
+	Ref<StyleBox> panel = get_stylebox("panel", "WindowDialog");
 
 	// Check validity, because the theme could contain a different type of StyleBox
 	if (panel.is_valid()) {
