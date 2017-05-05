@@ -101,6 +101,32 @@ public:
 		return p_size;
 	};
 
+	int find(const T &t, int p_offset, int p_max_size) {
+
+		int left = data_left();
+		if ((p_offset + p_max_size) > left) {
+			p_max_size -= left - p_offset;
+			if (p_max_size <= 0)
+				return 0;
+		}
+		p_max_size = MIN(left, p_max_size);
+		int pos = read_pos;
+		inc(pos, p_offset);
+		int to_read = p_max_size;
+		while (to_read) {
+			int end = pos + to_read;
+			end = MIN(end, size());
+			int total = end - pos;
+			for (int i = 0; i < total; i++) {
+				if (data[pos + i] == t)
+					return i + (p_max_size - to_read);
+			};
+			to_read -= total;
+			pos = 0;
+		}
+		return -1;
+	}
+
 	inline int advance_read(int p_n) {
 		p_n = MIN(p_n, data_left());
 		inc(read_pos, p_n);
