@@ -832,10 +832,7 @@ void SpatialSound2DServerSW::update(float p_delta) {
 		float total_distance = 0;
 		for (Set<RID>::Element *L = space->listeners.front(); L; L = L->next()) {
 			Listener *listener = listener_owner.get(L->get());
-			float d = listener->transform.get_origin().distance_to(source->transform.get_origin());
-			if (d == 0)
-				d = 0.1;
-			total_distance += d;
+			total_distance += MAX(0.1, listener->transform.get_origin().distance_to(source->transform.get_origin()));
 		}
 
 		//compute spatialization variables, weighted according to distance
@@ -852,7 +849,7 @@ void SpatialSound2DServerSW::update(float p_delta) {
 			Vector2 rel_vector = -listener->transform.xform_inv(source->transform.get_origin());
 			//Vector2 source_rel_vector = source->transform.xform_inv(listener->transform.get_origin()).normalized();
 			float distance = rel_vector.length();
-			float weight = distance / total_distance;
+			float weight = MAX(0.1, distance) / total_distance;
 			float pscale = 1.0;
 
 			float distance_scale = listener->params[LISTENER_PARAM_ATTENUATION_SCALE] * room->params[ROOM_PARAM_ATTENUATION_SCALE];
