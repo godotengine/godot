@@ -697,7 +697,7 @@ void Viewport::_update_listener() {
 
 void Viewport::_update_listener_2d() {
 
-	if (is_inside_tree() && audio_listener && (!get_parent() || (get_parent()->cast_to<Control>() && get_parent()->cast_to<Control>()->is_visible())))
+	if (is_inside_tree() && audio_listener_2d && (!get_parent() || (get_parent()->cast_to<Control>() && get_parent()->cast_to<Control>()->is_visible())))
 		SpatialSound2DServer::get_singleton()->listener_set_space(internal_listener_2d, find_world_2d()->get_sound_space());
 	else
 		SpatialSound2DServer::get_singleton()->listener_set_space(internal_listener_2d, RID());
