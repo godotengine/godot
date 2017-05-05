@@ -812,7 +812,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 				flags |= EditorTextureImportPlugin::IMAGE_FLAG_FILTER;
 			if (!Globals::get_singleton()->get("image_loader/gen_mipmaps"))
 				flags |= EditorTextureImportPlugin::IMAGE_FLAG_NO_MIPMAPS;
-			if (!Globals::get_singleton()->get("image_loader/repeat"))
+			if (Globals::get_singleton()->get("image_loader/repeat"))
 				flags |= EditorTextureImportPlugin::IMAGE_FLAG_REPEAT;
 
 			flags |= EditorTextureImportPlugin::IMAGE_FLAG_FIX_BORDER_ALPHA;
