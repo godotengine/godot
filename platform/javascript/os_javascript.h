@@ -61,6 +61,7 @@ class OS_JavaScript : public OS_Unix {
 	InputDefault *input;
 	bool window_maximized;
 	VideoMode video_mode;
+	CursorShape cursor_shape;
 	MainLoop *main_loop;
 
 	GetDataDirFunc get_data_dir_func;

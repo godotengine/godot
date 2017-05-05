@@ -517,6 +517,31 @@ void OS_JavaScript::alert(const String &p_alert, const String &p_title) {
 	/* clang-format on */
 }
 
+static const char *godot2dom_cursor(OS::CursorShape p_shape) {
+
+	switch (p_shape) {
+		case OS::CURSOR_ARROW:
+		default:
+			return "auto";
+		case OS::CURSOR_IBEAM: return "text";
+		case OS::CURSOR_POINTING_HAND: return "pointer";
+		case OS::CURSOR_CROSS: return "crosshair";
+		case OS::CURSOR_WAIT: return "progress";
+		case OS::CURSOR_BUSY: return "wait";
+		case OS::CURSOR_DRAG: return "grab";
+		case OS::CURSOR_CAN_DROP: return "grabbing";
+		case OS::CURSOR_FORBIDDEN: return "no-drop";
+		case OS::CURSOR_VSIZE: return "ns-resize";
+		case OS::CURSOR_HSIZE: return "ew-resize";
+		case OS::CURSOR_BDIAGSIZE: return "nesw-resize";
+		case OS::CURSOR_FDIAGSIZE: return "nwse-resize";
+		case OS::CURSOR_MOVE: return "move";
+		case OS::CURSOR_VSPLIT: return "row-resize";
+		case OS::CURSOR_HSPLIT: return "col-resize";
+		case OS::CURSOR_HELP: return "help";
+	}
+}
+
 void OS_JavaScript::set_css_cursor(const char *p_cursor) {
 
 	/* clang-format off */
@@ -547,7 +572,7 @@ void OS_JavaScript::set_mouse_mode(OS::MouseMode p_mode) {
 
 	if (p_mode == MOUSE_MODE_VISIBLE) {
 
-		set_css_cursor("auto");
+		set_css_cursor(godot2dom_cursor(cursor_shape));
 		emscripten_exit_pointerlock();
 
 	} else if (p_mode == MOUSE_MODE_HIDDEN) {
@@ -561,7 +586,7 @@ void OS_JavaScript::set_mouse_mode(OS::MouseMode p_mode) {
 		ERR_EXPLAIN("MOUSE_MODE_CAPTURED can only be entered from within an appropriate input callback");
 		ERR_FAIL_COND(result == EMSCRIPTEN_RESULT_FAILED_NOT_DEFERRED);
 		ERR_FAIL_COND(result != EMSCRIPTEN_RESULT_SUCCESS);
-		set_css_cursor("auto");
+		set_css_cursor(godot2dom_cursor(cursor_shape));
 	}
 }
 
@@ -706,7 +731,11 @@ bool OS_JavaScript::can_draw() const {
 
 void OS_JavaScript::set_cursor_shape(CursorShape p_shape) {
 
-	//javascript really really really has no mouse.. how amazing..
+	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
+
+	cursor_shape = p_shape;
+	if (get_mouse_mode() != MOUSE_MODE_HIDDEN)
+		set_css_cursor(godot2dom_cursor(cursor_shape));
 }
 
 void OS_JavaScript::main_loop_begin() {
