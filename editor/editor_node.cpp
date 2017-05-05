@@ -2689,6 +2689,14 @@ void EditorNode::_editor_select(int p_which) {
 	editor_plugin_screen = new_editor;
 	editor_plugin_screen->make_visible(true);
 	editor_plugin_screen->selected_notify();
+
+	if (EditorSettings::get_singleton()->get("interface/separate_distraction_mode")) {
+		if (p_which == EDITOR_SCRIPT) {
+			set_distraction_free_mode(script_distraction);
+		} else {
+			set_distraction_free_mode(scene_distraction);
+		}
+	}
 }
 
 void EditorNode::add_editor_plugin(EditorPlugin *p_editor) {
@@ -4382,7 +4390,25 @@ bool EditorNode::get_docks_visible() const {
 
 void EditorNode::_toggle_distraction_free_mode() {
 
-	set_distraction_free_mode(distraction_free->is_pressed());
+	if (EditorSettings::get_singleton()->get("interface/separate_distraction_mode")) {
+		int screen = -1;
+		for (int i = 0; i < editor_table.size(); i++) {
+			if (editor_plugin_screen == editor_table[i]) {
+				screen = i;
+				break;
+			}
+		}
+
+		if (screen == EDITOR_SCRIPT) {
+			script_distraction = not script_distraction;
+			set_distraction_free_mode(script_distraction);
+		} else {
+			scene_distraction = not scene_distraction;
+			set_distraction_free_mode(scene_distraction);
+		}
+	} else {
+		set_distraction_free_mode(distraction_free->is_pressed());
+	}
 }
 
 void EditorNode::set_distraction_free_mode(bool p_enter) {
@@ -4805,6 +4831,9 @@ EditorNode::EditorNode() {
 	changing_scene = false;
 	_initializing_addons = false;
 	docks_visible = true;
+
+	scene_distraction = false;
+	script_distraction = false;
 
 	FileAccess::set_backup_save(true);
 
