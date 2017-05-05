@@ -49,9 +49,10 @@ Error MessageQueue::push_call(ObjectID p_id, const StringName &p_method, const V
 			type = ObjectDB::get_instance(p_id)->get_type();
 		print_line("failed method: " + type + ":" + p_method + " target ID: " + itos(p_id));
 		statistics();
+		ERR_EXPLAIN("Message queue out of memory. Try increasing 'message_queue_size_kb' in project settings");
+		ERR_FAIL_V(ERR_OUT_OF_MEMORY);
 	}
 
-	ERR_FAIL_COND_V((buffer_end + room_needed) >= buffer_size, ERR_OUT_OF_MEMORY);
 	Message *msg = memnew_placement(&buffer[buffer_end], Message);
 	msg->args = p_argcount;
 	msg->instance_ID = p_id;
@@ -99,9 +100,9 @@ Error MessageQueue::push_set(ObjectID p_id, const StringName &p_prop, const Vari
 			type = ObjectDB::get_instance(p_id)->get_type();
 		print_line("failed set: " + type + ":" + p_prop + " target ID: " + itos(p_id));
 		statistics();
+		ERR_EXPLAIN("Message queue out of memory. Try increasing 'message_queue_size_kb' in project settings");
+		ERR_FAIL_V(ERR_OUT_OF_MEMORY);
 	}
-
-	ERR_FAIL_COND_V((buffer_end + room_needed) >= buffer_size, ERR_OUT_OF_MEMORY);
 
 	Message *msg = memnew_placement(&buffer[buffer_end], Message);
 	msg->args = 1;
@@ -132,9 +133,10 @@ Error MessageQueue::push_notification(ObjectID p_id, int p_notification) {
 			type = ObjectDB::get_instance(p_id)->get_type();
 		print_line("failed notification: " + itos(p_notification) + " target ID: " + itos(p_id));
 		statistics();
+		ERR_EXPLAIN("Message queue out of memory. Try increasing 'message_queue_size_kb' in project settings");
+		ERR_FAIL_V(ERR_OUT_OF_MEMORY);
 	}
 
-	ERR_FAIL_COND_V((buffer_end + room_needed) >= buffer_size, ERR_OUT_OF_MEMORY);
 	Message *msg = memnew_placement(&buffer[buffer_end], Message);
 
 	msg->type = TYPE_NOTIFICATION;
