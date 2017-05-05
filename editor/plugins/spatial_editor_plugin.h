@@ -245,6 +245,7 @@ private:
 	void _selection_result_pressed(int);
 	void _selection_menu_hide();
 	void _list_select(InputEventMouseButton b);
+	Point2i _get_warped_mouse_motion(const InputEventMouseMotion &p_ev_mouse_motion) const;
 
 protected:
 	void _notification(int p_what);
