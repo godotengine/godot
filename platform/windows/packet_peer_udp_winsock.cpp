@@ -203,6 +203,8 @@ Error PacketPeerUDPWinsock::_poll(bool p_wait) {
 
 		len = sizeof(struct sockaddr_storage);
 		++queue_count;
+		if (p_wait)
+			break;
 	};
 
 	if (ret == SOCKET_ERROR) {
