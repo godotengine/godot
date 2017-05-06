@@ -1651,7 +1651,7 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 
 			current_option = -1;
 			//accept->get_cancel()->hide();
-			pick_main_scene->set_text(TTR("No main scene has ever been defined, select one?\nYou can change it later in later in \"Project Settings\" under the 'application' category."));
+			pick_main_scene->set_text(TTR("No main scene has ever been defined, select one?\nYou can change it later in \"Project Settings\" under the 'application' category."));
 			pick_main_scene->popup_centered_minsize();
 			return;
 		}
@@ -4400,10 +4400,10 @@ void EditorNode::_toggle_distraction_free_mode() {
 		}
 
 		if (screen == EDITOR_SCRIPT) {
-			script_distraction = not script_distraction;
+			script_distraction = !script_distraction;
 			set_distraction_free_mode(script_distraction);
 		} else {
-			scene_distraction = not scene_distraction;
+			scene_distraction = !scene_distraction;
 			set_distraction_free_mode(scene_distraction);
 		}
 	} else {
