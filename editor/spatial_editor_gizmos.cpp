@@ -1439,20 +1439,6 @@ VehicleWheelSpatialGizmo::VehicleWheelSpatialGizmo(VehicleWheel *p_car_wheel) {
 	car_wheel = p_car_wheel;
 }
 
-///
-
-void TestCubeSpatialGizmo::redraw() {
-
-	clear();
-	add_collision_triangles(SpatialEditorGizmos::singleton->test_cube_tm);
-}
-
-TestCubeSpatialGizmo::TestCubeSpatialGizmo(TestCube *p_tc) {
-
-	tc = p_tc;
-	set_spatial_node(p_tc);
-}
-
 ///////////
 
 String CollisionShapeSpatialGizmo::get_handle_name(int p_idx) const {
@@ -3042,12 +3028,6 @@ Ref<SpatialEditorGizmo> SpatialEditorGizmos::get_gizmo(Spatial *p_spatial) {
 	if (p_spatial->cast_to<Portal>()) {
 
 		Ref<PortalSpatialGizmo> misg = memnew(PortalSpatialGizmo(p_spatial->cast_to<Portal>()));
-		return misg;
-	}
-
-	if (p_spatial->cast_to<TestCube>()) {
-
-		Ref<TestCubeSpatialGizmo> misg = memnew(TestCubeSpatialGizmo(p_spatial->cast_to<TestCube>()));
 		return misg;
 	}
 
