@@ -1,5 +1,6 @@
 # German translation of the Godot Engine editor
-# Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
+# Copyright (C) 2007-2017 Juan Linietsky, Ariel Manzur
+# Copyright (C) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
 #
 # Alexander Mahr <alex.mahr@gmail.com>, 2016.
