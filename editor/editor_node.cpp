@@ -4400,10 +4400,10 @@ void EditorNode::_toggle_distraction_free_mode() {
 		}
 
 		if (screen == EDITOR_SCRIPT) {
-			script_distraction = not script_distraction;
+			script_distraction = !script_distraction;
 			set_distraction_free_mode(script_distraction);
 		} else {
-			scene_distraction = not scene_distraction;
+			scene_distraction = !scene_distraction;
 			set_distraction_free_mode(scene_distraction);
 		}
 	} else {
