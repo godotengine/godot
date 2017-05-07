@@ -591,10 +591,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set("editors/3d/emulate_3_button_mouse", false);
 	set("editors/3d/warped_mouse_panning", true);
 
-	set("editors/3d/freelook_base_speed", 5);
-	set("editors/3d/freelook_acceleration", 10);
-	set("editors/3d/freelook_max_speed", 100);
-	set("editors/3d/freelook_modifier_speed_factor", 1.0 / 5.0);
+	set("editors/3d/freelook_base_speed", 1);
+	set("editors/3d/freelook_modifier_speed_factor", 5.0);
 
 	set("editors/2d/bone_width", 5);
 	set("editors/2d/bone_color1", Color(1.0, 1.0, 1.0, 0.9));
