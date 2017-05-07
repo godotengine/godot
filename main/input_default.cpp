@@ -784,6 +784,14 @@ InputDefault::InputDefault() {
 
 		parse_mapping(s_ControllerMappings[i++]);
 	};
+
+	mag_count = 0;
+	has_gyro = false;
+	sensor_first = true;
+	mag_next_min = Vector3(10000, 10000, 10000);
+	mag_next_max = Vector3 (-10000, -10000, -10000);
+	mag_current_min = Vector3(0, 0, 0);
+	mag_current_max = Vector3(0, 0, 0);
 }
 
 uint32_t InputDefault::joy_button(uint32_t p_last_id, int p_device, int p_button, bool p_pressed) {
@@ -1224,3 +1232,247 @@ int InputDefault::get_joy_axis_index_from_string(String p_axis) {
 	}
 	ERR_FAIL_V(-1);
 }
+
+/////////////////v///////////////////////////////////////////////////////////////////////////////////////////////
+///@TODO thinking about moving everything to do with trackers into its own singleton, suggestions are welcome:)
+
+Array InputDefault::get_connected_trackers(TrackerType p_types) {
+	Array ret;
+	Map<int, Tracker>::Element *elem = trackers.front();
+	while (elem) {
+		if (elem->get().type & p_types) {
+			ret.push_back(elem->key());
+		}
+		elem = elem->next();
+	}
+	return ret;
+};
+
+Input::TrackerType InputDefault::get_tracker_type(int p_idx) const {
+	_THREAD_SAFE_METHOD_
+	return trackers[p_idx].type;
+};
+
+String InputDefault::get_tracker_name(int p_idx) const {
+	_THREAD_SAFE_METHOD_
+	return trackers[p_idx].name;
+};
+
+Transform InputDefault::get_tracker_transform(int p_idx) const {
+	_THREAD_SAFE_METHOD_
+	return trackers[p_idx].transform;
+};
+
+bool InputDefault::tracker_tracks_orientation(int p_idx) const {
+	_THREAD_SAFE_METHOD_
+	return trackers[p_idx].tracks_orientation;
+};
+
+bool InputDefault::tracker_tracks_position(int p_idx) const {
+	_THREAD_SAFE_METHOD_
+	return trackers[p_idx].tracks_position;
+};
+
+int InputDefault::add_tracker(TrackerType p_type, String p_name, bool p_tracks_orientation, bool p_tracks_position) {
+	int new_tracker_id = 1;
+	Tracker new_tracker;
+
+	new_tracker.type = p_type;
+	new_tracker.name = p_name;
+	new_tracker.tracks_orientation = p_tracks_orientation;
+	new_tracker.tracks_position = p_tracks_position;
+
+	while (trackers.find(new_tracker_id) != NULL) {
+		new_tracker_id++;
+	};
+
+	trackers.insert(new_tracker_id, new_tracker);
+
+	// send out the id and type of our new tracker, this is especially handy for controllers as turning a controller on will add it, off will remove it and we'll want to react to that
+	emit_signal("tracker_added", new_tracker_id, p_type);
+
+	return new_tracker_id;
+};
+
+bool InputDefault::remove_tracker(int p_idx) {
+	if (trackers.find(p_idx) != NULL) {
+		int was_tracker_type = get_tracker_type(p_idx);
+		bool success = trackers.erase(p_idx);
+
+		// and again, let GD know a tracker was remove, again especially handy when controllers are turned off so we can react to that.
+		emit_signal("tracker_removed", p_idx, was_tracker_type);
+
+		return success;
+	} else {
+		return false;
+	};
+};
+
+void InputDefault::set_tracker_transform(int p_idx, Transform & p_transform) {
+	if (trackers.find(p_idx) != NULL) {
+		trackers[p_idx].transform = p_transform;
+	};
+};
+
+//	Vector3 mag_current_min;
+//	Vector3 mag_current_max;
+//	Vector3 mag_next_min;
+//	Vector3 mag_next_max;
+//	Vector3 mag_count;
+
+Vector3 InputDefault::scale_magneto(const Vector3 p_magnetometer) {
+	// Our magnetometer doesn't give us nice clean data.
+	// Well it may on Mac OS X because we're getting a calibrated value in the current implementation but Android we're getting raw data. 
+	// This is a fairly simple adjustment we can do to correct for the magnetometer data being elliptical 
+
+	Vector3 mag_raw = p_magnetometer;
+	Vector3 mag_scaled = p_magnetometer;
+
+	// update our variables every x frames
+	if (mag_count > 20) {
+		mag_current_min = mag_next_min;
+		mag_current_max = mag_next_max;
+		mag_count = 0;
+	} else {
+		mag_count++;
+	};
+
+	// adjust our min and max
+	if (mag_raw.x > mag_next_max.x) mag_next_max.x = mag_raw.x;
+	if (mag_raw.y > mag_next_max.y) mag_next_max.y = mag_raw.y;
+	if (mag_raw.z > mag_next_max.z) mag_next_max.z = mag_raw.z;
+	
+	if (mag_raw.x < mag_next_min.x) mag_next_min.x = mag_raw.x;
+	if (mag_raw.y < mag_next_min.y) mag_next_min.y = mag_raw.y;
+	if (mag_raw.z < mag_next_min.z) mag_next_min.z = mag_raw.z;
+	
+	// scale our x, y and z	
+	if (!(mag_current_max.x - mag_current_min.x)) {
+		mag_raw.x -= (mag_current_min.x + mag_current_max.x) / 2.0;
+		mag_scaled.x = (mag_raw.x - mag_current_min.x) / ((mag_current_max.x - mag_current_min.x) * 2.0 - 1.0);
+	};
+	
+	if (!(mag_current_max.y - mag_current_min.y)) {
+		mag_raw.y -= (mag_current_min.y + mag_current_max.y) / 2.0;
+		mag_scaled.y = (mag_raw.y - mag_current_min.y) / ((mag_current_max.y - mag_current_min.y) * 2.0 - 1.0);
+	};
+
+	if (!(mag_current_max.z - mag_current_min.z)) {
+		mag_raw.z -= (mag_current_min.z + mag_current_max.z) / 2.0;
+		mag_scaled.z = (mag_raw.z - mag_current_min.z) / ((mag_current_max.z - mag_current_min.z) * 2.0 - 1.0);
+	};
+
+	return mag_scaled;
+};
+
+Matrix3 InputDefault::combine_acc_mag(const Vector3& p_grav,const Vector3& p_magneto) {
+	// yup, stock standard cross product solution...
+	Vector3 up = -p_grav.normalized();
+
+	Vector3 magneto_east = up.cross(p_magneto.normalized()); // or is this west?, but should be horizon aligned now
+	magneto_east.normalize();
+
+	Vector3 magneto = up.cross(magneto_east); // and now we have a horizon aligned north
+	magneto.normalize();
+
+	// We use our gravity and magnetometer vectors to construct our matrix
+	Matrix3 acc_mag_m3;
+	acc_mag_m3.elements[0] = -magneto_east;
+	acc_mag_m3.elements[1] = up;
+	acc_mag_m3.elements[2] = magneto;
+	
+	return acc_mag_m3;
+};
+
+void InputDefault::set_tracker_transform_from_sensors(int p_idx, float p_delta_time) {
+	// this is a helper function that attempts to adjust our transform using our 9dof sensors
+	// 9dof is a misleading marketing term coming from 3 accelerometer axis + 3 gyro axis + 3 magnetometer axis = 9 axis
+	// but in reality this only offers 3 dof (yaw, pitch, roll)
+
+	if (trackers.find(p_idx) != NULL) {
+		// start with our current transform
+		Transform transform = trackers[p_idx].transform;
+
+		// few things we need
+		Vector3 down(0.0, -1.0, 0.0); // Down is Y negative
+		Vector3 north(0.0, 0.0, 1.0); // North is Z positive
+
+		// make copies of our inputs
+		Vector3 acc = accelerometer; 
+		Vector3 magneto = scale_magneto(magnetometer);	// this may be overkill on iOS because we're already getting a calibrated magnetometer reading
+		Vector3 gyro = gyroscope;	// do not scrub our gyroscope, they are momentum values
+		Vector3 grav = gravity; // gravity, when available, is already 
+
+		if (sensor_first) {
+			sensor_first = false;
+		} else {
+			acc = scrub(acc, last_accerometer_data, 2, 0.2);
+			magneto = scrub(magneto, last_magnetometer_data, 3, 0.3);
+		};
+
+		last_accerometer_data = acc;
+		last_magnetometer_data = magneto;
+
+		if (grav.length() < 0.1) {
+			// not ideal but use our accelerometer, this will contain shakey shakey user behaviour
+			// maybe look into some math but I'm guessing that if this isn't available, its because we lack the gyro sensor to actually work out
+			// what a stable gravity vector is
+			grav = acc;
+			if (grav.length() > 0.1) {
+				has_gyro = true;
+			};
+		} else {
+			has_gyro = true;
+		};
+
+		bool has_magneto = magneto.length() > 0.1;
+		bool has_grav = grav.length() > 0.1;
+
+#ifdef ANDROID_ENABLED
+		///@TODO needs testing, i don't have a gyro, potentially can be removed depending on what comes out of issue #8101
+		// On Android x and z axis seem inverted
+		gyro.x = -gyro.x; gyro.z = -gyro.z;
+		grav.x = -grav.x; grav.z = -grav.z;
+		magneto.x = -magneto.x; magneto.z =-magneto.z;
+#endif
+
+		if (has_gyro) {
+			// start with applying our gyro (do NOT smooth our gyro!)
+			Matrix3 rotate;
+			rotate.rotate(transform.basis.get_axis(0), -gyro.x * p_delta_time);
+			rotate.rotate(transform.basis.get_axis(1), -gyro.y * p_delta_time);
+			rotate.rotate(transform.basis.get_axis(2), -gyro.z * p_delta_time);
+			transform.basis = rotate * transform.basis;
+		};
+
+		///@TODO improve this, the magnetometer is very fidgity sometimes flipping the axis for no apparent reason (probably a bug on my part)
+		// if you have a gyro + accelerometer that combo tends to be better then combining all three but without a gyro you need the magnetometer..
+		bool use_magneto = !has_gyro; 
+		if (has_magneto && has_grav && use_magneto) {
+			// convert to quaternions, easier to smooth those out
+			Quat transform_quat(transform.basis);
+			Quat acc_mag_quat(combine_acc_mag(grav, magneto));
+			transform_quat = transform_quat.slerp(acc_mag_quat, 0.1);
+			transform.basis = Matrix3(transform_quat);
+		} else if (has_grav) {
+			// use gravity vector to make sure down is down...
+			// transform gravity into our world space
+			// note that our positioning matrix will be inversed to create our view matrix, so the inverse of that is our positioning matrix, duh
+			// hence we can do:
+			grav.normalize();
+			Vector3 grav_adj = transform.basis.xform(grav);
+			float dot = grav_adj.dot(down);
+			if ((dot > -1.0) && (dot < 1.0)) {
+				// axis around which we have this rotation
+				Vector3 axis = grav_adj.cross(down);
+				axis.normalize();
+
+				Matrix3 drift_compensation(axis, -acos(dot));
+				transform.basis = drift_compensation * transform.basis;
+			};
+		};
+
+		// and update with our new transform
+		trackers[p_idx].transform = transform;
+	};
+};
