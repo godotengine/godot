@@ -1339,12 +1339,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 					if (nav_scheme == NAVIGATION_MAYA && m.mod.shift)
 						pan_speed *= pan_speed_modifier;
 
-					Point2i relative;
-					if (bool(EditorSettings::get_singleton()->get("editors/3d/warped_mouse_panning"))) {
-						relative = Input::get_singleton()->warp_mouse_motion(m, surface->get_global_rect());
-					} else {
-						relative = Point2i(m.relative_x, m.relative_y);
-					}
+					Point2i relative = _get_warped_mouse_motion(m);
 
 					Transform camera_transform;
 
@@ -1380,8 +1375,9 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 				} break;
 
 				case NAVIGATION_ORBIT: {
-					cursor.x_rot += m.relative_y / 80.0;
-					cursor.y_rot += m.relative_x / 80.0;
+					Point2i relative = _get_warped_mouse_motion(m);
+					cursor.x_rot += relative.y / 80.0;
+					cursor.y_rot += relative.x / 80.0;
 					if (cursor.x_rot > Math_PI / 2.0)
 						cursor.x_rot = Math_PI / 2.0;
 					if (cursor.x_rot < -Math_PI / 2.0)
@@ -1394,8 +1390,9 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 					// Freelook only works properly in perspective.
 					// It technically works too in ortho, but it's awful for a user due to fov being near zero
 					if (!orthogonal) {
-						cursor.x_rot += m.relative_y / 120.0;
-						cursor.y_rot += m.relative_x / 120.0;
+						Point2i relative = _get_warped_mouse_motion(m);
+						cursor.x_rot += relative.y / 120.0;
+						cursor.y_rot += relative.x / 120.0;
 						if (cursor.x_rot > Math_PI / 2.0)
 							cursor.x_rot = Math_PI / 2.0;
 						if (cursor.x_rot < -Math_PI / 2.0)
@@ -1501,6 +1498,16 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 		} break;
 	}
+}
+
+Point2i SpatialEditorViewport::_get_warped_mouse_motion(const InputEventMouseMotion &p_ev_mouse_motion) const {
+	Point2i relative;
+	if (bool(EditorSettings::get_singleton()->get("editors/3d/warped_mouse_panning"))) {
+		relative = Input::get_singleton()->warp_mouse_motion(p_ev_mouse_motion, surface->get_global_rect());
+	} else {
+		relative = Point2i(p_ev_mouse_motion.relative_x, p_ev_mouse_motion.relative_y);
+	}
+	return relative;
 }
 
 void SpatialEditorViewport::_update_freelook(real_t delta) {
