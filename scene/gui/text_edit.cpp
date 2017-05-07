@@ -334,7 +334,10 @@ void TextEdit::_update_scrollbars() {
 		v_scroll->show();
 		v_scroll->set_max(total_rows);
 		v_scroll->set_page(visible_rows);
-		v_scroll->set_value(cursor.line_ofs);
+
+		if (fabs(v_scroll->get_value() - (double)cursor.line_ofs) >= 1) {
+			v_scroll->set_value(cursor.line_ofs);
+		}
 
 	} else {
 		cursor.line_ofs = 0;
@@ -346,7 +349,9 @@ void TextEdit::_update_scrollbars() {
 		h_scroll->show();
 		h_scroll->set_max(total_width);
 		h_scroll->set_page(visible_width);
-		h_scroll->set_value(cursor.x_ofs);
+		if (fabs(h_scroll->get_value() - (double)cursor.x_ofs) >= 1) {
+			h_scroll->set_value(cursor.x_ofs);
+		}
 
 	} else {
 
@@ -1480,17 +1485,18 @@ void TextEdit::_gui_input(const InputEvent &p_gui_input) {
 			}
 
 			if (mb.pressed) {
+
 				if (mb.button_index == BUTTON_WHEEL_UP && !mb.mod.command) {
-					v_scroll->set_value(v_scroll->get_value() - 3);
+					v_scroll->set_value(v_scroll->get_value() - (3 * mb.factor));
 				}
 				if (mb.button_index == BUTTON_WHEEL_DOWN && !mb.mod.command) {
-					v_scroll->set_value(v_scroll->get_value() + 3);
+					v_scroll->set_value(v_scroll->get_value() + (3 * mb.factor));
 				}
 				if (mb.button_index == BUTTON_WHEEL_LEFT) {
-					h_scroll->set_value(h_scroll->get_value() - 3);
+					h_scroll->set_value(h_scroll->get_value() - (100 * mb.factor));
 				}
 				if (mb.button_index == BUTTON_WHEEL_RIGHT) {
-					h_scroll->set_value(h_scroll->get_value() + 3);
+					h_scroll->set_value(h_scroll->get_value() + (100 * mb.factor));
 				}
 				if (mb.button_index == BUTTON_LEFT) {
 

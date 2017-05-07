@@ -1049,7 +1049,7 @@ void CanvasItemEditor::_viewport_gui_input(const InputEvent &p_event) {
 				return;
 
 			float prev_zoom = zoom;
-			zoom = zoom * 0.95;
+			zoom = zoom * (1 - (0.05 * b.factor));
 			{
 				Point2 ofs(b.x, b.y);
 				ofs = ofs / prev_zoom - ofs / zoom;
@@ -1067,7 +1067,7 @@ void CanvasItemEditor::_viewport_gui_input(const InputEvent &p_event) {
 				return;
 
 			float prev_zoom = zoom;
-			zoom = zoom * (1.0 / 0.95);
+			zoom = zoom * ((0.95 + (0.05 * b.factor)) / 0.95);
 			{
 				Point2 ofs(b.x, b.y);
 				ofs = ofs / prev_zoom - ofs / zoom;

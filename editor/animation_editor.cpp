@@ -1871,19 +1871,33 @@ void AnimationKeyEditor::_track_editor_gui_input(const InputEvent &p_input) {
 			if (mb.button_index == BUTTON_WHEEL_UP && mb.pressed) {
 
 				if (mb.mod.command) {
+
 					zoom->set_value(zoom->get_value() + zoom->get_step());
 				} else {
-					v_scroll->set_value(v_scroll->get_value() - v_scroll->get_page() / 8);
+
+					v_scroll->set_value(v_scroll->get_value() - v_scroll->get_page() * mb.factor / 8);
 				}
 			}
 
 			if (mb.button_index == BUTTON_WHEEL_DOWN && mb.pressed) {
 
 				if (mb.mod.command) {
+
 					zoom->set_value(zoom->get_value() - zoom->get_step());
 				} else {
-					v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() / 8);
+
+					v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() * mb.factor / 8);
 				}
+			}
+
+			if (mb.button_index == BUTTON_WHEEL_RIGHT && mb.pressed) {
+
+				h_scroll->set_value(h_scroll->get_value() - h_scroll->get_page() * mb.factor / 8);
+			}
+
+			if (mb.button_index == BUTTON_WHEEL_LEFT && mb.pressed) {
+
+				v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() * mb.factor / 8);
 			}
 
 			if (mb.button_index == BUTTON_RIGHT && mb.pressed) {
