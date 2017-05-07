@@ -164,7 +164,11 @@ IP::ResolverStatus IP::get_resolve_item_status(ResolverID p_id) const {
 	ERR_FAIL_INDEX_V(p_id, IP::RESOLVER_MAX_QUERIES, IP::RESOLVER_STATUS_NONE);
 
 	resolver->mutex->lock();
-	ERR_FAIL_COND_V(resolver->queue[p_id].status == IP::RESOLVER_STATUS_NONE, IP::RESOLVER_STATUS_NONE);
+	if (resolver->queue[p_id].status == IP::RESOLVER_STATUS_NONE) {
+		ERR_PRINT("Condition status == IP::RESOLVER_STATUS_NONE");
+		resolver->mutex->unlock();
+		return IP::RESOLVER_STATUS_NONE;
+	}
 	IP::ResolverStatus res = resolver->queue[p_id].status;
 
 	resolver->mutex->unlock();
@@ -179,7 +183,8 @@ IP_Address IP::get_resolve_item_address(ResolverID p_id) const {
 
 	if (resolver->queue[p_id].status != IP::RESOLVER_STATUS_DONE) {
 		ERR_EXPLAIN("Resolve of '" + resolver->queue[p_id].hostname + "'' didn't complete yet.");
-		ERR_FAIL_COND_V(resolver->queue[p_id].status != IP::RESOLVER_STATUS_DONE, IP_Address());
+		resolver->mutex->unlock();
+		return IP_Address();
 	}
 
 	IP_Address res = resolver->queue[p_id].response;
@@ -192,9 +197,11 @@ void IP::erase_resolve_item(ResolverID p_id) {
 
 	ERR_FAIL_INDEX(p_id, IP::RESOLVER_MAX_QUERIES);
 
-	GLOBAL_LOCK_FUNCTION;
+	resolver->mutex->lock();
 
 	resolver->queue[p_id].status = IP::RESOLVER_STATUS_NONE;
+
+	resolver->mutex->unlock();
 }
 
 void IP::clear_cache(const String &p_hostname) {
