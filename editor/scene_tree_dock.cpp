@@ -362,8 +362,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			else {
 				String path = selected->get_filename();
 				script_create_dialog->config(selected->get_class(), path);
-				script_create_dialog->popup_centered(Size2(300, 290));
-				//script_create_dialog->popup_centered_minsize();
+				script_create_dialog->popup_centered();
 			}
 
 		} break;
