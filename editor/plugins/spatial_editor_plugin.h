@@ -113,7 +113,8 @@ private:
 	bool transforming;
 	bool orthogonal;
 	float gizmo_scale;
-	real_t freelook_speed;
+
+	bool freelook_active;
 
 	struct _RayResult {
 
@@ -217,6 +218,10 @@ private:
 		}
 	} cursor;
 
+	void scale_cursor_distance(real_t scale);
+
+	real_t zoom_indicator_delay;
+
 	RID move_gizmo_instance[3], rotate_gizmo_instance[3];
 
 	String last_message;
@@ -258,6 +263,7 @@ public:
 	void set_state(const Dictionary &p_state);
 	Dictionary get_state() const;
 	void reset();
+	bool is_freelook_active() const { return freelook_active; }
 
 	void focus_selection();
 
@@ -298,11 +304,13 @@ public:
 	};
 
 private:
+	static const unsigned int VIEWPORTS_COUNT = 4;
+
 	EditorNode *editor;
 	EditorSelection *editor_selection;
 
 	Control *viewport_base;
-	SpatialEditorViewport *viewports[4];
+	SpatialEditorViewport *viewports[VIEWPORTS_COUNT];
 	VSplitContainer *shader_split;
 	HSplitContainer *palette_split;
 
@@ -457,6 +465,8 @@ private:
 	void _update_ambient_light_color(const Color &p_color);
 	void _update_default_light_angle();
 	void _default_light_angle_input(const InputEvent &p_event);
+
+	bool is_any_freelook_active() const;
 
 protected:
 	void _notification(int p_what);
