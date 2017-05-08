@@ -157,16 +157,16 @@ void RayCast2D::_notification(int p_what) {
 				break;
 			Transform2D xf;
 			xf.rotate(cast_to.angle());
-			xf.translate(Vector2(0, cast_to.length()));
+			xf.translate(Vector2(cast_to.length(), 0));
 
 			//Vector2 tip = Vector2(0,s->get_length());
 			Color dcol = get_tree()->get_debug_collisions_color(); //0.9,0.2,0.2,0.4);
 			draw_line(Vector2(), cast_to, dcol, 3);
 			Vector<Vector2> pts;
 			float tsize = 4;
-			pts.push_back(xf.xform(Vector2(0, tsize)));
-			pts.push_back(xf.xform(Vector2(0.707 * tsize, 0)));
-			pts.push_back(xf.xform(Vector2(-0.707 * tsize, 0)));
+			pts.push_back(xf.xform(Vector2(tsize, 0)));
+			pts.push_back(xf.xform(Vector2(0, 0.707 * tsize)));
+			pts.push_back(xf.xform(Vector2(0, -0.707 * tsize)));
 			Vector<Color> cols;
 			for (int i = 0; i < 3; i++)
 				cols.push_back(dcol);
