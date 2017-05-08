@@ -412,8 +412,6 @@ void EditorSettings::setup_network() {
 	for (List<IP_Address>::Element *E = local_ip.front(); E; E = E->next()) {
 
 		String ip = E->get();
-		if (ip == "127.0.0.1")
-			continue;
 
 		if (lip == "")
 			lip = ip;
