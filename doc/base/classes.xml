@@ -26264,7 +26264,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Return the name of the host OS. Possible values are: "Android", "BlackBerry 10", "Flash", "Haiku", "iOS", "HTML5", "OSX", "Server", "Windows", "UWP", "X11"
+				Return the name of the host OS. Possible values are: "Android", "Haiku", "iOS", "HTML5", "OSX", "Server", "Windows", "UWP", "X11".
 			</description>
 		</method>
 		<method name="get_power_percent_left">

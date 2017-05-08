@@ -515,7 +515,6 @@ static const char *_dl_platforms_info[] = {
 	"unix|x11|so|X11",
 	"unix|server|so|Server",
 	"unix|android|so|Android",
-	"unix|blackberry|so|Blackberry 10",
 	"unix|haiku|so|Haiku", // Right?
 	"|mac|dynlib|Mac",
 	"mac|ios|dynlib|iOS",
