@@ -338,6 +338,24 @@ void OSIPhone::update_gyroscope(float p_x, float p_y, float p_z) {
 	input->set_gyroscope(Vector3(p_x, p_y, p_z));
 };
 
+int OSIPhone::get_unused_joy_id() {
+	return input->get_unused_joy_id();
+};
+
+void OSIPhone::joy_connection_changed(int p_idx, bool p_connected, String p_name) {
+	input->joy_connection_changed(p_idx, p_connected, p_name);
+};
+
+void OSIPhone::joy_button(int p_device, int p_button, bool p_pressed) {
+	// p_last_id is being retired..
+	uint32_t last_id = input->joy_button(0, p_device, p_button, p_pressed);
+};
+
+void OSIPhone::joy_axis(int p_device, int p_axis, const InputDefault::JoyAxis &p_value) {
+	// p_last_id is being retired..
+	uint32_t last_id = input->joy_axis(0, p_device, p_axis, p_value);
+};
+
 void OSIPhone::delete_main_loop() {
 
 	if (main_loop) {
