@@ -3935,6 +3935,7 @@ String String::sprintf(const Array &values, bool *error) const {
 					break;
 				}
 				case 'd': // Integer (signed)
+				case 'i': // Integer (signed)
 				case 'o': // Octal
 				case 'x': // Hexadecimal (lowercase)
 				case 'X': { // Hexadecimal (uppercase)
@@ -3951,6 +3952,7 @@ String String::sprintf(const Array &values, bool *error) const {
 					bool capitalize = false;
 					switch (c) {
 						case 'd': base = 10; break;
+						case 'i': base = 10; break;
 						case 'o': base = 8; break;
 						case 'x': base = 16; break;
 						case 'X':
