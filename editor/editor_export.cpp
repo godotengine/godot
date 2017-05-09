@@ -210,7 +210,7 @@ EditorExportPreset::EditorExportPreset() {
 
 void EditorExportPlatform::gen_debug_flags(Vector<String> &r_flags, int p_flags) {
 
-	String host = EditorSettings::get_singleton()->get("network/debug_host");
+	String host = EditorSettings::get_singleton()->get("network/debug/remote_host");
 
 	if (p_flags & DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST)
 		host = "localhost";
@@ -620,7 +620,7 @@ Error EditorExportPlatform::save_zip(const Ref<EditorExportPreset> &p_preset, co
 
 void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags) {
 
-	String host = EditorSettings::get_singleton()->get("network/debug_host");
+	String host = EditorSettings::get_singleton()->get("network/debug/remote_host");
 
 	if (p_flags & DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST)
 		host = "localhost";
@@ -2108,7 +2108,7 @@ static int _get_pad(int p_alignment, int p_n) {
 
 void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags) {
 
-	String host = EditorSettings::get_singleton()->get("network/debug_host");
+	String host = EditorSettings::get_singleton()->get("network/debug/remote_host");
 
 	if (p_flags&EXPORT_REMOTE_DEBUG_LOCALHOST)
 		host="localhost";

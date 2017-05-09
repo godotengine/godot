@@ -41,7 +41,7 @@ Error EditorRun::run(const String &p_scene, const String p_custom_args, const Li
 	List<String> args;
 
 	String resource_path = GlobalConfig::get_singleton()->get_resource_path();
-	String remote_host = EditorSettings::get_singleton()->get("network/debug_host");
+	String remote_host = EditorSettings::get_singleton()->get("network/debug/remote_host");
 
 	if (resource_path != "") {
 		args.push_back("-path");
