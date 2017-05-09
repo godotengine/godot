@@ -30,6 +30,7 @@
 #include "godot.h"
 
 #include "class_db.h"
+#include "error_macros.h"
 #include "gdnative.h"
 #include "global_config.h"
 #include "global_constants.h"
@@ -213,6 +214,14 @@ void GDAPI *godot_realloc(void *p_ptr, int p_bytes) {
 
 void GDAPI godot_free(void *p_ptr) {
 	memfree(p_ptr);
+}
+
+void GDAPI godot_print_error(const char *p_description, const char *p_function, const char *p_file, int p_line) {
+	_err_print_error(p_function, p_file, p_line, p_description, ERR_HANDLER_ERROR);
+}
+
+void GDAPI godot_print_warning(const char *p_description, const char *p_function, const char *p_file, int p_line) {
+	_err_print_error(p_function, p_file, p_line, p_description, ERR_HANDLER_WARNING);
 }
 
 #ifdef __cplusplus

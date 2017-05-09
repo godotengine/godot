@@ -404,6 +404,10 @@ void GDAPI *godot_alloc(int p_bytes);
 void GDAPI *godot_realloc(void *p_ptr, int p_bytes);
 void GDAPI godot_free(void *p_ptr);
 
+//print using Godot's error handler list
+void GDAPI godot_print_error(const char *p_description, const char *p_function, const char *p_file, int p_line);
+void GDAPI godot_print_warning(const char *p_description, const char *p_function, const char *p_file, int p_line);
+
 #ifdef __cplusplus
 }
 #endif
