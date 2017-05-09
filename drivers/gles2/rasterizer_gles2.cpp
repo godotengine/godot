@@ -10115,9 +10115,7 @@ bool RasterizerGLES2::_test_depth_shadow_buffer() {
 
 void RasterizerGLES2::init() {
 
-	if (OS::get_singleton()->is_stdout_verbose()) {
-		print_line("Using GLES2 video driver");
-	}
+	Rasterizer::init();
 
 #ifdef GLEW_ENABLED
 	GLuint res = glewInit();

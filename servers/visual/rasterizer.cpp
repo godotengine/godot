@@ -47,6 +47,14 @@ RasterizerStorage::RasterizerStorage() {
 
 #if 0
 
+
+void Rasterizer::init() {
+	if (OS::get_singleton()->is_stdout_verbose()) {
+		print_line("Using " + get_name() + " video driver");
+	}
+}
+
+
 RID Rasterizer::create_default_material() {
 
 	return material_create();

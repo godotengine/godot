@@ -65,6 +65,11 @@
 */
 class RasterizerGLES2 : public Rasterizer {
 
+	virtual String get_name() const {
+		return "GLES2";
+	}
+
+
 	enum {
 
 		MAX_SCENE_LIGHTS = 2048,

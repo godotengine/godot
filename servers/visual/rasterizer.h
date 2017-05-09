@@ -1090,7 +1090,11 @@ public:
 		SHADOW_FILTER_VSM,
 	};
 
+	/* Introspection API */
 
+	virtual String get_name() const {
+		return "???";
+	}
 
 	/* TEXTURE API */
 
@@ -1947,7 +1951,7 @@ public:
 
 	virtual void free(const RID& p_rid)=0;
 
-	virtual void init()=0;
+	virtual void init();
 	virtual void finish()=0;
 
 	virtual bool needs_to_draw_next_frame() const=0;
