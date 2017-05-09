@@ -304,6 +304,8 @@ void PopupMenu::_gui_input(const InputEvent &p_event) {
 						_gui_input(ie);
 					}
 				} break;
+				case BUTTON_MIDDLE:
+				case BUTTON_RIGHT:
 				case BUTTON_LEFT: {
 
 					int over = _get_mouse_over(Point2(b.x, b.y));
