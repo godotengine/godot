@@ -228,7 +228,7 @@ typedef struct godot_method_bind {
 
 godot_method_bind GDAPI *godot_method_bind_get_method(const char *p_classname, const char *p_methodname);
 void GDAPI godot_method_bind_ptrcall(godot_method_bind *p_method_bind, godot_object *p_instance, const void **p_args, void *p_ret);
-
+godot_variant GDAPI godot_method_bind_call(godot_method_bind *p_method_bind, godot_object *p_instance, const godot_variant **p_args, const int p_arg_count, godot_variant_call_error *p_call_error);
 ////// Script API
 
 typedef struct godot_native_init_options {
@@ -407,6 +407,7 @@ void GDAPI godot_free(void *p_ptr);
 //print using Godot's error handler list
 void GDAPI godot_print_error(const char *p_description, const char *p_function, const char *p_file, int p_line);
 void GDAPI godot_print_warning(const char *p_description, const char *p_function, const char *p_file, int p_line);
+void GDAPI godot_print(const godot_string *p_message);
 
 #ifdef __cplusplus
 }

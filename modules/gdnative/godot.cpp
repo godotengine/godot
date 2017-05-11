@@ -116,6 +116,28 @@ void GDAPI godot_method_bind_ptrcall(godot_method_bind *p_method_bind, godot_obj
 	mb->ptrcall(o, p_args, p_ret);
 }
 
+godot_variant GDAPI godot_method_bind_call(godot_method_bind *p_method_bind, godot_object *p_instance, const godot_variant **p_args, const int p_arg_count, godot_variant_call_error *p_call_error) {
+	MethodBind *mb = (MethodBind *)p_method_bind;
+	Object *o = (Object *)p_instance;
+	const Variant **args = (const Variant **)p_args;
+
+	godot_variant ret;
+	godot_variant_new_nil(&ret);
+
+	Variant *ret_val = (Variant *)&ret;
+
+	Variant::CallError r_error;
+	*ret_val = mb->call(o, args, p_arg_count, r_error);
+
+	if (p_call_error) {
+		p_call_error->error = (godot_variant_call_error_error)r_error.error;
+		p_call_error->argument = r_error.argument;
+		p_call_error->expected = (godot_variant_type)r_error.expected;
+	}
+
+	return ret;
+}
+
 // @Todo
 /*
 void GDAPI godot_method_bind_varcall(godot_method_bind *p_method_bind)
@@ -222,6 +244,10 @@ void GDAPI godot_print_error(const char *p_description, const char *p_function, 
 
 void GDAPI godot_print_warning(const char *p_description, const char *p_function, const char *p_file, int p_line) {
 	_err_print_error(p_function, p_file, p_line, p_description, ERR_HANDLER_WARNING);
+}
+
+void GDAPI godot_print(const godot_string *p_message) {
+	print_line(*(String *)p_message);
 }
 
 #ifdef __cplusplus
