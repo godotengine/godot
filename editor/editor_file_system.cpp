@@ -522,8 +522,8 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 
 	da->list_dir_end();
 
-	dirs.sort();
-	files.sort();
+	dirs.sort_custom<NaturalNoCaseComparator>();
+	files.sort_custom<NaturalNoCaseComparator>();
 
 	int total = dirs.size() + files.size();
 	int idx = 0;
