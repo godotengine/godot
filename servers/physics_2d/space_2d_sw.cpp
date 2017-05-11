@@ -405,13 +405,10 @@ static void _rest_cbk_result(const Vector2 &p_point_A, const Vector2 &p_point_B,
 	_RestCallbackData2D *rd = (_RestCallbackData2D *)p_userdata;
 
 	if (rd->valid_dir != Vector2()) {
-
-		if (rd->valid_dir != Vector2()) {
-			if (p_point_A.distance_squared_to(p_point_B) > rd->valid_depth * rd->valid_depth)
-				return;
-			if (rd->valid_dir.dot((p_point_A - p_point_B).normalized()) < Math_PI * 0.25)
-				return;
-		}
+		if (p_point_A.distance_squared_to(p_point_B) > rd->valid_depth * rd->valid_depth)
+			return;
+		if (rd->valid_dir.dot((p_point_A - p_point_B).normalized()) < Math_PI * 0.25)
+			return;
 	}
 
 	Vector2 contact_rel = p_point_B - p_point_A;
@@ -744,7 +741,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Matrix32 &p_from, const
 						cbk.amount = 0;
 						cbk.ptr = cd;
 						cbk.valid_dir = body->get_one_way_collision_direction();
-						cbk.valid_depth = body->get_one_way_collision_max_depth();
+						cbk.valid_depth = 10e20; //body is already unstuck; no need for depth testing at this stage
 
 						Vector2 sep = mnormal; //important optimization for this to work fast enough
 						bool collided = CollisionSolver2DSW::solve(body_shape, body_shape_xform, p_motion * (hi + contact_max_allowed_penetration), col_obj->get_shape(shape_idx), col_obj_xform, Vector2(), Physics2DServerSW::_shape_col_cbk, &cbk, &sep, 0);

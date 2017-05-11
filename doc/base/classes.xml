@@ -27203,7 +27203,7 @@
 			<argument index="1" name="normal" type="Vector2">
 			</argument>
 			<description>
-				Set a direction in which bodies can go through the given one. If this value is different from (0,0), any movement within 90 degrees of this vector is considered a valid movement. Set this direction to (0,0) to disable one-way collisions.
+				Set a direction from which bodies can go through the given one; that is, the passed vector is the normal of the pass-through side of the surface. If this value is different from (0,0), any movement within 90 degrees of the opposite of this vector is considered an valid movement. Set this direction to (0,0) to disable one-way collisions.
 			</description>
 		</method>
 		<method name="body_set_one_way_collision_max_depth">
@@ -27212,7 +27212,7 @@
 			<argument index="1" name="depth" type="float">
 			</argument>
 			<description>
-				Set how far a body can go through the given one, if it allows one-way collisions (see [method body_set_one_way_collision_direction]).
+				Set how deep at most a body can be with respect to the given one for the physics server to force it to a non-overlapping position, if it allows one-way collisions (see [method body_set_one_way_collision_direction]).
 			</description>
 		</method>
 		<method name="body_set_param">
@@ -28140,14 +28140,14 @@
 			<argument index="0" name="dir" type="Vector2">
 			</argument>
 			<description>
-				Set a direction in which bodies can go through this one. If this value is different from (0,0), any movement within 90 degrees of this vector is considered a valid movement. Set this direction to (0,0) to disable one-way collisions.
+				Set a direction from which bodies can go through this one; that is, the passed vector is the normal of the pass-through side of the surface. If this value is different from (0,0), any movement within 90 degrees of the opposite of this vector is considered an valid movement. Set this direction to (0,0) to disable one-way collisions.
 			</description>
 		</method>
 		<method name="set_one_way_collision_max_depth">
 			<argument index="0" name="depth" type="float">
 			</argument>
 			<description>
-				Set how far a body can go through this one, when it allows one-way collisions (see [method set_one_way_collision_direction]).
+				Set how deep at most a body can be with respect to this one for the physics server to force it to a non-overlapping position, if it allows one-way collisions (see [method body_set_one_way_collision_direction]).
 			</description>
 		</method>
 	</methods>
