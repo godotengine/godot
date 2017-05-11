@@ -457,12 +457,22 @@ godot_pool_color_array GDAPI godot_variant_as_pool_color_array(const godot_varia
 	return pba;
 }
 
-godot_variant GDAPI godot_variant_call(godot_variant *p_v, const godot_string *p_method, const godot_variant **p_args, const godot_int p_argcount /*, godot_variant_call_error *r_error */) {
+godot_variant GDAPI godot_variant_call(godot_variant *p_v, const godot_string *p_method, const godot_variant **p_args, const godot_int p_argcount, godot_variant_call_error *p_error) {
 	Variant *v = (Variant *)p_v;
 	String *method = (String *)p_method;
-	Variant **args = (Variant **)p_args;
+	const Variant **args = (const Variant **)p_args;
 	godot_variant res;
-	memnew_placement_custom((Variant *)&res, Variant, Variant(v->call(*method, args, p_argcount)));
+	godot_variant_new_nil(&res);
+
+	Variant *ret_val = (Variant *)&res;
+
+	Variant::CallError r_error;
+	*ret_val = v->call(StringName(*method), args, p_argcount, r_error);
+	if (p_error) {
+		p_error->error = (godot_variant_call_error_error)r_error.error;
+		p_error->argument = r_error.argument;
+		p_error->expected = (godot_variant_type)r_error.expected;
+	}
 	return res;
 }
 

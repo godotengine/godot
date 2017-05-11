@@ -45,13 +45,6 @@ typedef struct godot_variant {
 struct godot_transform2d;
 typedef struct godot_transform2d godot_transform2d;
 
-#include "godot_array.h"
-#include "godot_dictionary.h"
-#include "godot_input_event.h"
-#include "godot_node_path.h"
-#include "godot_rid.h"
-#include "godot_transform2d.h"
-
 typedef enum godot_variant_type {
 	GODOT_VARIANT_TYPE_NIL,
 
@@ -92,6 +85,28 @@ typedef enum godot_variant_type {
 	GODOT_VARIANT_TYPE_POOL_VECTOR3_ARRAY,
 	GODOT_VARIANT_TYPE_POOL_COLOR_ARRAY,
 } godot_variant_type;
+
+typedef enum godot_variant_call_error_error {
+	GODOT_CALL_ERROR_CALL_OK,
+	GODOT_CALL_ERROR_CALL_ERROR_INVALID_METHOD,
+	GODOT_CALL_ERROR_CALL_ERROR_INVALID_ARGUMENT,
+	GODOT_CALL_ERROR_CALL_ERROR_TOO_MANY_ARGUMENTS,
+	GODOT_CALL_ERROR_CALL_ERROR_TOO_FEW_ARGUMENTS,
+	GODOT_CALL_ERROR_CALL_ERROR_INSTANCE_IS_NULL,
+} godot_variant_call_error_error;
+
+typedef struct godot_variant_call_error {
+	godot_variant_call_error_error error;
+	int argument;
+	godot_variant_type expected;
+} godot_variant_call_error;
+
+#include "godot_array.h"
+#include "godot_dictionary.h"
+#include "godot_input_event.h"
+#include "godot_node_path.h"
+#include "godot_rid.h"
+#include "godot_transform2d.h"
 
 godot_variant_type GDAPI godot_variant_get_type(const godot_variant *p_v);
 
@@ -159,7 +174,7 @@ godot_pool_vector2_array GDAPI godot_variant_as_pool_vector2_array(const godot_v
 godot_pool_vector3_array GDAPI godot_variant_as_pool_vector3_array(const godot_variant *p_v);
 godot_pool_color_array GDAPI godot_variant_as_pool_color_array(const godot_variant *p_v);
 
-godot_variant GDAPI godot_variant_call(godot_variant *p_v, const godot_string *p_method, const godot_variant **p_args, const godot_int p_argcount /*, godot_variant_call_error *r_error */);
+godot_variant GDAPI godot_variant_call(godot_variant *p_v, const godot_string *p_method, const godot_variant **p_args, const godot_int p_argcount, godot_variant_call_error *p_error);
 
 godot_bool GDAPI godot_variant_has_method(godot_variant *p_v, const godot_string *p_method);
 
