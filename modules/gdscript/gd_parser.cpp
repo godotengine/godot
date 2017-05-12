@@ -387,14 +387,20 @@ GDParser::Node *GDParser::_parse_expression(Node *p_parent, bool p_static, bool 
 				_set_error("Expected '(' after 'preload'");
 				return NULL;
 			}
-			completion_cursor = StringName();
-			completion_type = COMPLETION_PRELOAD;
-			completion_class = current_class;
-			completion_function = current_function;
-			completion_line = tokenizer->get_token_line();
-			completion_block = current_block;
-			completion_found = true;
 			tokenizer->advance();
+
+			if (tokenizer->get_token() == GDTokenizer::TK_CURSOR) {
+				completion_cursor = StringName();
+				completion_node = p_parent;
+				completion_type = COMPLETION_RESOURCE_PATH;
+				completion_class = current_class;
+				completion_function = current_function;
+				completion_line = tokenizer->get_token_line();
+				completion_block = current_block;
+				completion_argument = 0;
+				completion_found = true;
+				tokenizer->advance();
+			}
 
 			String path;
 			bool found_constant = false;
@@ -467,10 +473,10 @@ GDParser::Node *GDParser::_parse_expression(Node *p_parent, bool p_static, bool 
 				_set_error("Expected ')' after 'preload' path");
 				return NULL;
 			}
+			tokenizer->advance();
 
 			ConstantNode *constant = alloc_node<ConstantNode>();
 			constant->value = res;
-			tokenizer->advance();
 
 			expr = constant;
 		} else if (tokenizer->get_token() == GDTokenizer::TK_PR_YIELD) {

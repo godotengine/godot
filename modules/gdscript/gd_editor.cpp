@@ -2395,7 +2395,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 			}
 
 		} break;
-		case GDParser::COMPLETION_PRELOAD: {
+		case GDParser::COMPLETION_RESOURCE_PATH: {
 
 			if (EditorSettings::get_singleton()->get("text_editor/completion/complete_file_paths"))
 				get_directory_contents(EditorFileSystem::get_singleton()->get_filesystem(), options);
