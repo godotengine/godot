@@ -588,8 +588,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		ScriptDebuggerRemote *sdr = memnew(ScriptDebuggerRemote);
 		uint16_t debug_port = GLOBAL_GET("network/debug/remote_port");
 		if (debug_host.find(":") != -1) {
-			debug_port = debug_host.get_slicec(':', 1).to_int();
-			debug_host = debug_host.get_slicec(':', 0);
+			int sep_pos = debug_host.find_last(":");
+			debug_port = debug_host.substr(sep_pos + 1, debug_host.length()).to_int();
+			debug_host = debug_host.substr(0, sep_pos);
 		}
 		Error derr = sdr->connect_to_host(debug_host, debug_port);
 
