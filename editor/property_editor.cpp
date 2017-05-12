@@ -323,7 +323,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			c->show();
 
 			checks20gc->set_size(checks20gc->get_minimum_size());
-			set_size(checks20gc->get_position() + checks20gc->get_size() + Vector2(4, 4) * EDSCALE);
+			set_size(checks20gc->get_position() + checks20gc->get_size() + c->get_size() + Vector2(4, 4) * EDSCALE);
 
 		} break;
 		case Variant::INT:
