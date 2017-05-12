@@ -569,10 +569,10 @@ public abstract class DownloaderService extends CustomIntentService implements I
      */
     void pollNetworkState() {
         if (null == mConnectivityManager) {
-            mConnectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+            mConnectivityManager = (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
         }
         if (null == mWifiManager) {
-            mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+            mWifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         }
         if (mConnectivityManager == null) {
             Log.w(Constants.TAG,
