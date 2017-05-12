@@ -157,6 +157,18 @@ changes to ensure they build for Javascript/HTML5. Those
 changes are marked with `// -- GODOT --` comments.
 
 
+## lz4
+
+- Upstream: https://github.com/lz4/lz4
+- Version: 1.7.5
+- License: BSD-2-Clause
+
+Files extracted from upstream source:
+
+- lib/*.{c,h}
+- lib/README.md, lib/LICENSE
+
+
 ## minizip
 
 - Upstream: http://www.zlib.net

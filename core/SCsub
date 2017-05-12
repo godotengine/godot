@@ -83,6 +83,16 @@ thirdparty_minizip_sources = [
 thirdparty_minizip_sources = [thirdparty_minizip_dir + file for file in thirdparty_minizip_sources]
 env.add_source_files(env.core_sources, thirdparty_minizip_sources)
 
+thirdparty_lz4_dir = "#thirdparty/lz4/"
+thirdparty_lz4_sources = [
+	"lz4.c",
+	"lz4frame.c",
+	"lz4hc.c",
+	"xxhash.c",
+]
+thirdparty_lz4_sources = [thirdparty_lz4_dir + file for file in thirdparty_lz4_sources]
+env.add_source_files(env.core_sources, thirdparty_lz4_sources)
+
 
 # Godot's own sources
 env.add_source_files(env.core_sources, "*.cpp")
