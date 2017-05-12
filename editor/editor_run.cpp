@@ -49,7 +49,7 @@ Error EditorRun::run(const String &p_scene, const String p_custom_args, const Li
 
 	if (true) {
 		args.push_back("-rdebug");
-		args.push_back(remote_host + ":" + String::num(GLOBAL_DEF("debug/debug_port", 6007)));
+		args.push_back(remote_host + ":" + String::num(GLOBAL_DEF("network/debug_port", 6007)));
 	}
 
 	args.push_back("-epid");

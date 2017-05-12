@@ -37,7 +37,6 @@
 #include "os/file_access.h"
 #include "os/input.h"
 #include "os/keyboard.h"
-#include "os/keyboard.h"
 #include "os/os.h"
 #include "scene/main/viewport.h"
 
@@ -2158,8 +2157,6 @@ void ScriptEditor::_editor_play() {
 	debug_menu->get_popup()->set_item_disabled(debug_menu->get_popup()->get_item_index(DEBUG_STEP), true);
 	debug_menu->get_popup()->set_item_disabled(debug_menu->get_popup()->get_item_index(DEBUG_BREAK), false);
 	debug_menu->get_popup()->set_item_disabled(debug_menu->get_popup()->get_item_index(DEBUG_CONTINUE), true);
-
-	//debugger_gui->start_listening(Globals::get_singleton()->get("debug/debug_port"));
 }
 
 void ScriptEditor::_editor_pause() {

@@ -413,6 +413,7 @@ void EditorSettings::setup_network() {
 	String lip;
 	String hint;
 	String current = get("network/debug_host");
+	int port = has("network/debug_port") ? (int)get("network/debug_port") : 6007;
 
 	for (List<IP_Address>::Element *E = local_ip.front(); E; E = E->next()) {
 
@@ -429,6 +430,9 @@ void EditorSettings::setup_network() {
 
 	set("network/debug_host", lip);
 	add_property_hint(PropertyInfo(Variant::STRING, "network/debug_host", PROPERTY_HINT_ENUM, hint));
+
+	set("network/debug_port", port);
+	add_property_hint(PropertyInfo(Variant::INT, "network/debug_port", PROPERTY_HINT_RANGE, "1,65535,1"));
 }
 
 void EditorSettings::save() {
