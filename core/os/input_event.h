@@ -203,6 +203,7 @@ struct InputEventMouse {
 
 struct InputEventMouseButton : public InputEventMouse {
 
+	double factor;
 	int button_index;
 	bool pressed; //otherwise released
 	bool doubleclick; //last even less than doubleclick time
@@ -287,7 +288,10 @@ struct InputEvent {
 	InputEvent xform_by(const Matrix32 &p_xform) const;
 	bool operator==(const InputEvent &p_event) const;
 	operator String() const;
-	InputEvent() { zeromem(this, sizeof(InputEvent)); }
+	InputEvent() {
+		zeromem(this, sizeof(InputEvent));
+		mouse_button.factor = 1;
+	}
 };
 
 #endif
