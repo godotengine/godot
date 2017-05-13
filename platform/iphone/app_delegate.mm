@@ -604,7 +604,12 @@ static int frame_count = 0;
 	glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES,
 			GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
 
-	iphone_main(backingWidth, backingHeight, gargc, gargv);
+	int err = iphone_main(backingWidth, backingHeight, gargc, gargv);
+	if (err != 0) {
+		// bail, things did not go very well for us, should probably output a message on screen with our error code...
+		exit(0);
+		return;
+	};
 
 	view_controller = [[ViewController alloc] init];
 	view_controller.view = glView;
@@ -668,6 +673,7 @@ static int frame_count = 0;
 												  isAdvertisingTrackingEnabled]];
 
 #endif
+
 };
 
 - (void)applicationWillTerminate:(UIApplication *)application {
