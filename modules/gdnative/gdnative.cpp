@@ -99,15 +99,15 @@ Error NativeLibrary::terminate(NativeLibrary *&p_native_lib) {
 	Error error = OK;
 	void *library_terminate;
 	error = OS::get_singleton()->get_dynamic_library_symbol_handle(p_native_lib->handle, GDNativeScriptLanguage::get_terminate_symbol_name(), library_terminate);
-	if (error)
-		return OK; // no terminate? okay, not that important lol
+	if (!error) {
 
-	void (*library_terminate_pointer)(godot_native_terminate_options *) = (void (*)(godot_native_terminate_options *))library_terminate;
+		void (*library_terminate_pointer)(godot_native_terminate_options *) = (void (*)(godot_native_terminate_options *))library_terminate;
 
-	godot_native_terminate_options options;
-	options.in_editor = SceneTree::get_singleton()->is_editor_hint();
+		godot_native_terminate_options options;
+		options.in_editor = SceneTree::get_singleton()->is_editor_hint();
 
-	library_terminate_pointer(&options);
+		library_terminate_pointer(&options);
+	}
 
 	GDNativeScriptLanguage::get_singleton()->initialized_libraries.erase(p_native_lib->path);
 
@@ -614,7 +614,6 @@ Error GDNativeLibrary::_terminate() {
 	}
 
 	Error ret = NativeLibrary::terminate(native_library);
-
 	native_library->scripts.clear();
 
 	return ret;
@@ -1217,6 +1216,7 @@ void GDNativeReloadNode::_notification(int p_what) {
 				Set<GDNativeScript *> scripts;
 
 				for (Set<GDNativeScript *>::Element *S = GDNativeScriptLanguage::get_singleton()->script_list.front(); S; S = S->next()) {
+
 					if (lib->native_library->scripts.has(S->get()->get_script_name())) {
 						GDNativeScript *script = S->get();
 						script->script_data = lib->get_script_data(script->get_script_name());
