@@ -36778,7 +36778,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Poll the load. If OK is returned, this means poll will have to be called again. If ERR_EOF is returned, them the load has finished and the resource can be obtained by calling [method get_resource].
+				Poll the load. If OK is returned, this means poll will have to be called again. If ERR_FILE_EOF is returned, them the load has finished and the resource can be obtained by calling [method get_resource].
 			</description>
 		</method>
 		<method name="wait">
