@@ -44,6 +44,8 @@
 #include "map.h"
 #include "variant.h"
 
+#include "gl_error_handler.h"
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
