@@ -27184,7 +27184,7 @@
 			Persisting connections are saved when the object is serialized to file.
 		</constant>
 		<constant name="CONNECT_ONESHOT" value="4">
-			One short connections disconnect themselves after emission.
+			One shot connections disconnect themselves after emission.
 		</constant>
 	</constants>
 </class>
