@@ -85,20 +85,32 @@ void ScrollContainer::_input_event(const InputEvent &p_input_event) {
 			const InputEventMouseButton &mb = p_input_event.mouse_button;
 
 			if (mb.button_index == BUTTON_WHEEL_UP && mb.pressed) {
+				// only horizontal is enabled, scroll horizontally
 				if (h_scroll->is_visible() && !v_scroll->is_visible()) {
-					// only horizontal is enabled, scroll horizontally
-					h_scroll->set_val(h_scroll->get_val() - h_scroll->get_page() / 8);
+					h_scroll->set_val(h_scroll->get_val() - h_scroll->get_page() / 8 * mb.factor);
 				} else if (v_scroll->is_visible()) {
-					v_scroll->set_val(v_scroll->get_val() - v_scroll->get_page() / 8);
+					v_scroll->set_val(v_scroll->get_val() - v_scroll->get_page() / 8 * mb.factor);
 				}
 			}
 
 			if (mb.button_index == BUTTON_WHEEL_DOWN && mb.pressed) {
+				// only horizontal is enabled, scroll horizontally
 				if (h_scroll->is_visible() && !v_scroll->is_visible()) {
-					// only horizontal is enabled, scroll horizontally
-					h_scroll->set_val(h_scroll->get_val() + h_scroll->get_page() / 8);
+					h_scroll->set_val(h_scroll->get_val() + h_scroll->get_page() / 8 * mb.factor);
 				} else if (v_scroll->is_visible()) {
-					v_scroll->set_val(v_scroll->get_val() + v_scroll->get_page() / 8);
+					v_scroll->set_val(v_scroll->get_val() + v_scroll->get_page() / 8 * mb.factor);
+				}
+			}
+
+			if (mb.button_index == BUTTON_WHEEL_LEFT && mb.pressed) {
+				if (h_scroll->is_visible()) {
+					h_scroll->set_val(h_scroll->get_val() - h_scroll->get_page() * mb.factor / 8);
+				}
+			}
+
+			if (mb.button_index == BUTTON_WHEEL_RIGHT && mb.pressed) {
+				if (h_scroll->is_visible()) {
+					h_scroll->set_val(h_scroll->get_val() + h_scroll->get_page() * mb.factor / 8);
 				}
 			}
 
