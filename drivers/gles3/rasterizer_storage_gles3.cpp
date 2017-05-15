@@ -4859,7 +4859,6 @@ void RasterizerStorageGLES3::particles_set_amount(RID p_particles, int p_amount)
 
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
-	ERR_FAIL_COND(p_amount < 1);
 
 	particles->amount = p_amount;
 
@@ -4913,7 +4912,6 @@ void RasterizerStorageGLES3::particles_set_lifetime(RID p_particles, float p_lif
 
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
-	ERR_FAIL_COND(p_lifetime <= 0);
 	particles->lifetime = p_lifetime;
 }
 void RasterizerStorageGLES3::particles_set_pre_process_time(RID p_particles, float p_time) {
