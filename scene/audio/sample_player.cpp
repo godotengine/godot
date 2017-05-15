@@ -221,18 +221,30 @@ SamplePlayer::VoiceID SamplePlayer::play(const String &p_name, bool unique) {
 	last_check++;
 
 	const int num_voices = voices.size();
-	bool found = false;
+	bool free_found = false;
+	int lowest_priority_voice = -1;
+	int lowest_priority = 0x7FFFFFFF;
 	for (int i = 0; i < num_voices; i++) {
 		const int candidate = (last_id + 1 + i) % num_voices;
-		if (voices[candidate].priority <= priority) {
-			found = true;
+		const Voice &v = voices[candidate];
+		if (!(v.active && AudioServer::get_singleton()->voice_is_active(v.voice))) {
+			free_found = true;
 			last_id = candidate;
 			break;
 		}
+		if (v.priority <= lowest_priority) {
+			lowest_priority = v.priority;
+			lowest_priority_voice = candidate;
+		}
 	}
 
-	if (!found)
-		return INVALID_VOICE_ID;
+	if (!free_found) {
+		if (lowest_priority > priority) {
+			return INVALID_VOICE_ID;
+		} else {
+			last_id = lowest_priority_voice;
+		}
+	}
 
 	Voice &v = voices[last_id];
 	v.clear();
