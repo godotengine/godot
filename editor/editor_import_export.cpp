@@ -1047,7 +1047,7 @@ void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags
 
 		r_flags.push_back("-rdebug");
 
-		r_flags.push_back(host + ":" + String::num(GLOBAL_DEF("debug/debug_port", 6007)));
+		r_flags.push_back(host + ":" + String::num(GLOBAL_DEF("network/debug_port", 6007)));
 
 		List<String> breakpoints;
 		ScriptEditor::get_singleton()->get_breakpoints(&breakpoints);

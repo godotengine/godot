@@ -40,6 +40,7 @@ Error EditorRun::run(const String &p_scene, const String p_custom_args, const Li
 	List<String> args;
 
 	String resource_path = Globals::get_singleton()->get_resource_path();
+	String remote_host = EditorSettings::get_singleton()->get("network/debug_host");
 
 	if (resource_path != "") {
 		args.push_back("-path");
@@ -48,13 +49,7 @@ Error EditorRun::run(const String &p_scene, const String p_custom_args, const Li
 
 	if (true) {
 		args.push_back("-rdebug");
-#ifdef WINDOWS_ENABLED
-		// Avoid failing DNS lookup on disconnected Windows machines.
-		const char *debug_host = "127.0.0.1:";
-#else
-		const char *debug_host = "localhost:";
-#endif
-		args.push_back(debug_host + String::num(GLOBAL_DEF("debug/debug_port", 6007)));
+		args.push_back(remote_host + ":" + String::num(GLOBAL_DEF("network/debug_port", 6007)));
 	}
 
 	args.push_back("-epid");
