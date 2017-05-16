@@ -48,11 +48,13 @@ void Particles::set_emitting(bool p_emitting) {
 
 void Particles::set_amount(int p_amount) {
 
+	ERR_FAIL_COND(p_amount < 1);
 	amount = p_amount;
 	VS::get_singleton()->particles_set_amount(particles, amount);
 }
 void Particles::set_lifetime(float p_lifetime) {
 
+	ERR_FAIL_COND(p_lifetime <= 0);
 	lifetime = p_lifetime;
 	VS::get_singleton()->particles_set_lifetime(particles, lifetime);
 }
