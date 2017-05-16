@@ -440,6 +440,8 @@ private:
 	void _imported(Node *p_node);
 
 	void _node_renamed();
+	void _editor_select_next();
+	void _editor_select_prev();
 	void _editor_select(int p_which);
 	void _set_scene_metadata(const String &p_file, int p_idx = -1);
 	void _get_scene_metadata(const String &p_file);
@@ -618,7 +620,8 @@ public:
 	enum EditorTable {
 		EDITOR_2D = 0,
 		EDITOR_3D,
-		EDITOR_SCRIPT
+		EDITOR_SCRIPT,
+		EDITOR_ASSETLIB
 	};
 
 	void set_visible_editor(EditorTable p_table) { _editor_select(p_table); }
