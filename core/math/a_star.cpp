@@ -190,8 +190,7 @@ bool AStar::_solve(Point *begin_point, Point *end_point) {
 
 		Point *n = begin_point->neighbours[i];
 		n->prev_point = begin_point;
-		n->distance = _compute_cost(n->id, begin_point->id);
-		n->distance *= n->weight_scale;
+		n->distance = _compute_cost(begin_point->id, n->id) * n->weight_scale;
 		n->last_pass = pass;
 		open_list.add(&n->list);
 
@@ -219,7 +218,6 @@ bool AStar::_solve(Point *begin_point, Point *end_point) {
 
 			real_t cost = p->distance;
 			cost += _estimate_cost(p->id, end_point->id);
-			cost *= p->weight_scale;
 
 			if (cost < least_cost) {
 
@@ -236,8 +234,7 @@ bool AStar::_solve(Point *begin_point, Point *end_point) {
 
 			Point *e = p->neighbours[i];
 
-			real_t distance = _compute_cost(p->id, e->id) + p->distance;
-			distance *= e->weight_scale;
+			real_t distance = _compute_cost(p->id, e->id) * e->weight_scale + p->distance;
 
 			if (e->last_pass == pass) {
 				//oh this was visited already, can we win the cost?
