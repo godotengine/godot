@@ -2626,7 +2626,7 @@ void GDParser::_parse_block(BlockNode *p_block, bool p_static) {
 
 								ConstantNode *cn = alloc_node<ConstantNode>();
 								switch (args.size()) {
-									case 1: cn->value = constants[0]; break;
+									case 1: cn->value = (int)constants[0]; break;
 									case 2: cn->value = Vector2(constants[0], constants[1]); break;
 									case 3: cn->value = Vector3(constants[0], constants[1], constants[2]); break;
 								}
@@ -2639,7 +2639,7 @@ void GDParser::_parse_block(BlockNode *p_block, bool p_static) {
 								on->arguments.push_back(tn);
 
 								switch (args.size()) {
-									case 1: tn->vtype = Variant::REAL; break;
+									case 1: tn->vtype = Variant::INT; break;
 									case 2: tn->vtype = Variant::VECTOR2; break;
 									case 3: tn->vtype = Variant::VECTOR3; break;
 								}
