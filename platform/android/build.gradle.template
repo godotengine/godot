@@ -31,7 +31,7 @@ android {
 	}
 
 	compileSdkVersion 23
-	buildToolsVersion "23.0.3"
+	buildToolsVersion "25.0.3"
 	useLibrary 'org.apache.http.legacy'
 
 	packagingOptions {
