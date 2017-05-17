@@ -237,7 +237,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	bool is_valid() const;
+	bool is_valid(bool p_extended_check = false) const;
 	Variant resume(const Variant &p_arg = Variant());
 	GDFunctionState();
 	~GDFunctionState();
