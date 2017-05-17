@@ -91,13 +91,13 @@ public:
 		TRANSFORM2D,
 		PLANE,
 		QUAT, // 10
-		RECT3, //sorry naming convention fail :( not like it's used often
+		RECT3,
 		BASIS,
 		TRANSFORM,
 
 		// misc types
 		COLOR,
-		NODE_PATH,
+		NODE_PATH, // 15
 		_RID,
 		OBJECT,
 		INPUT_EVENT,

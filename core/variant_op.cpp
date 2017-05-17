@@ -1303,7 +1303,7 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 				}
 			}
 
-		} break;
+		} break; // 10
 		case RECT3: {
 
 			if (p_value.type != Variant::VECTOR3)
@@ -1328,7 +1328,7 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 					return;
 				}
 			}
-		} break; //sorry naming convention fail :( not like it's used often // 10
+		} break;
 		case BASIS: {
 
 			if (p_value.type != Variant::VECTOR3)
@@ -1896,13 +1896,13 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 			dic->operator[](p_index) = p_value;
 			valid = true; //always valid, i guess? should this really be ok?
 			return;
-		} break; // 20
-			DEFAULT_OP_ARRAY_CMD(ARRAY, Array, ;, (*arr)[index] = p_value; return )
+		} break;
+			DEFAULT_OP_ARRAY_CMD(ARRAY, Array, ;, (*arr)[index] = p_value; return ) // 20
 			DEFAULT_OP_DVECTOR_SET(POOL_BYTE_ARRAY, uint8_t, p_value.type != Variant::REAL && p_value.type != Variant::INT)
 			DEFAULT_OP_DVECTOR_SET(POOL_INT_ARRAY, int, p_value.type != Variant::REAL && p_value.type != Variant::INT)
 			DEFAULT_OP_DVECTOR_SET(POOL_REAL_ARRAY, real_t, p_value.type != Variant::REAL && p_value.type != Variant::INT)
-			DEFAULT_OP_DVECTOR_SET(POOL_STRING_ARRAY, String, p_value.type != Variant::STRING) // 25
-			DEFAULT_OP_DVECTOR_SET(POOL_VECTOR2_ARRAY, Vector2, p_value.type != Variant::VECTOR2)
+			DEFAULT_OP_DVECTOR_SET(POOL_STRING_ARRAY, String, p_value.type != Variant::STRING)
+			DEFAULT_OP_DVECTOR_SET(POOL_VECTOR2_ARRAY, Vector2, p_value.type != Variant::VECTOR2) // 25
 			DEFAULT_OP_DVECTOR_SET(POOL_VECTOR3_ARRAY, Vector3, p_value.type != Variant::VECTOR3)
 			DEFAULT_OP_DVECTOR_SET(POOL_COLOR_ARRAY, Color, p_value.type != Variant::COLOR)
 		default: return;
@@ -2103,7 +2103,7 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 				}
 			}
 
-		} break;
+		} break; // 10
 		case RECT3: {
 
 			if (p_index.get_type() == Variant::STRING) {
@@ -2122,7 +2122,7 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 					return v->size + v->pos;
 				}
 			}
-		} break; //sorry naming convention fail :( not like it's used often // 10
+		} break;
 		case BASIS: {
 
 			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::REAL) {
@@ -2498,13 +2498,13 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 				valid = true;
 				return *res;
 			}
-		} break; // 20
-			DEFAULT_OP_ARRAY_CMD(ARRAY, const Array, ;, return (*arr)[index])
+		} break;
+			DEFAULT_OP_ARRAY_CMD(ARRAY, const Array, ;, return (*arr)[index]) // 20
 			DEFAULT_OP_DVECTOR_GET(POOL_BYTE_ARRAY, uint8_t)
 			DEFAULT_OP_DVECTOR_GET(POOL_INT_ARRAY, int)
 			DEFAULT_OP_DVECTOR_GET(POOL_REAL_ARRAY, real_t)
 			DEFAULT_OP_DVECTOR_GET(POOL_STRING_ARRAY, String)
-			DEFAULT_OP_DVECTOR_GET(POOL_VECTOR2_ARRAY, Vector2)
+			DEFAULT_OP_DVECTOR_GET(POOL_VECTOR2_ARRAY, Vector2) // 25
 			DEFAULT_OP_DVECTOR_GET(POOL_VECTOR3_ARRAY, Vector3)
 			DEFAULT_OP_DVECTOR_GET(POOL_COLOR_ARRAY, Color)
 		default: return Variant();
@@ -2768,12 +2768,12 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 			p_list->push_back(PropertyInfo(Variant::REAL, "z"));
 			p_list->push_back(PropertyInfo(Variant::REAL, "w"));
 
-		} break;
+		} break; // 10
 		case RECT3: {
 			p_list->push_back(PropertyInfo(Variant::VECTOR3, "pos"));
 			p_list->push_back(PropertyInfo(Variant::VECTOR3, "size"));
 			p_list->push_back(PropertyInfo(Variant::VECTOR3, "end"));
-		} break; //sorry naming convention fail :( not like it's used often // 10
+		} break;
 		case BASIS: {
 
 			p_list->push_back(PropertyInfo(Variant::VECTOR3, "x"));
@@ -2921,12 +2921,13 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 					p_list->push_back(PropertyInfo(Variant::STRING, E->get()));
 				}
 			}
-		} break; // 20
-		case ARRAY:
+		} break;
+		case ARRAY: // 20
 		case POOL_BYTE_ARRAY:
 		case POOL_INT_ARRAY:
 		case POOL_REAL_ARRAY:
 		case POOL_STRING_ARRAY:
+		case POOL_VECTOR2_ARRAY: // 25
 		case POOL_VECTOR3_ARRAY:
 		case POOL_COLOR_ARRAY: {
 

@@ -504,39 +504,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 		return OK;
 
 	} else if (token.type == TK_IDENTIFIER) {
-		/*
-		VECTOR2,		// 5
-		RECT2,
-		VECTOR3,
-		MATRIX32,
-		PLANE,
-		QUAT,			// 10
-		_AABB, //sorry naming convention fail :( not like it's used often
-		MATRIX3,
-		TRANSFORM,
 
-		// misc types
-		COLOR,
-		IMAGE,			// 15
-		NODE_PATH,
-		_RID,
-		OBJECT,
-		INPUT_EVENT,
-		DICTIONARY,		// 20
-		ARRAY,
-
-		// arrays
-		RAW_ARRAY,
-		INT_ARRAY,
-		REAL_ARRAY,
-		STRING_ARRAY,	// 25
-		VECTOR2_ARRAY,
-		VECTOR3_ARRAY,
-		COLOR_ARRAY,
-
-		VARIANT_MAX
-
-*/
 		String id = token.value;
 		if (id == "true")
 			value = true;
@@ -1242,40 +1210,6 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			r_err_str = "Unexpected identifier: '" + id + "'.";
 			return ERR_PARSE_ERROR;
 		}
-
-		/*
-				VECTOR2,		// 5
-				RECT2,
-				VECTOR3,
-				MATRIX32,
-				PLANE,
-				QUAT,			// 10
-				_AABB, //sorry naming convention fail :( not like it's used often
-				MATRIX3,
-				TRANSFORM,
-
-				// misc types
-				COLOR,
-				IMAGE,			// 15
-				NODE_PATH,
-				_RID,
-				OBJECT,
-				INPUT_EVENT,
-				DICTIONARY,		// 20
-				ARRAY,
-
-				// arrays
-				RAW_ARRAY,
-				INT_ARRAY,
-				REAL_ARRAY,
-				STRING_ARRAY,	// 25
-				VECTOR2_ARRAY,
-				VECTOR3_ARRAY,
-				COLOR_ARRAY,
-
-				VARIANT_MAX
-
-		*/
 
 		return OK;
 

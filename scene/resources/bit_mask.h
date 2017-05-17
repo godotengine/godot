@@ -30,7 +30,7 @@
 #ifndef BIT_MASK_H
 #define BIT_MASK_H
 
-#include "image.h" 0
+#include "image.h"
 #include "io/resource_loader.h"
 #include "resource.h"
 

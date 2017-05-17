@@ -165,8 +165,8 @@ void DocDump::dump(const String &p_file) {
 							case Variant::REAL:
 								//keep it
 								break;
-							case Variant::STRING: // 15
-							case Variant::NODE_PATH: // 15
+							case Variant::STRING:
+							case Variant::NODE_PATH:
 								default_arg_text = "\"" + default_arg_text + "\"";
 								break;
 							case Variant::TRANSFORM:
@@ -177,25 +177,25 @@ void DocDump::dump(const String &p_file) {
 								default_arg_text = Variant::get_type_name(default_arg.get_type()) + "(" + default_arg_text + ")";
 								break;
 
-							case Variant::VECTOR2: // 5
+							case Variant::VECTOR2:
 							case Variant::RECT2:
 							case Variant::VECTOR3:
 							case Variant::PLANE:
 							case Variant::QUAT:
-							case Variant::RECT3: //sorry naming convention fail :( not like it's used often // 10
+							case Variant::RECT3:
 							case Variant::BASIS:
 							case Variant::COLOR:
 							case Variant::POOL_BYTE_ARRAY:
 							case Variant::POOL_INT_ARRAY:
 							case Variant::POOL_REAL_ARRAY:
-							case Variant::POOL_STRING_ARRAY: //25
+							case Variant::POOL_STRING_ARRAY:
 							case Variant::POOL_VECTOR3_ARRAY:
 							case Variant::POOL_COLOR_ARRAY:
 								default_arg_text = Variant::get_type_name(default_arg.get_type()) + "(" + default_arg_text + ")";
 								break;
 							case Variant::OBJECT:
 							case Variant::INPUT_EVENT:
-							case Variant::DICTIONARY: // 20
+							case Variant::DICTIONARY:
 							case Variant::ARRAY:
 							case Variant::_RID:
 

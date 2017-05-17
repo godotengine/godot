@@ -506,21 +506,21 @@ static _GlobalConstant _global_constants[] = {
 	{ "TYPE_TRANSFORM2D", Variant::TRANSFORM2D },
 	{ "TYPE_PLANE", Variant::PLANE },
 	{ "TYPE_QUAT", Variant::QUAT }, // 10
-	{ "TYPE_RECT3", Variant::RECT3 }, //sorry naming convention fail :( not like it's used often
+	{ "TYPE_RECT3", Variant::RECT3 },
 	{ "TYPE_BASIS", Variant::BASIS },
 	{ "TYPE_TRANSFORM", Variant::TRANSFORM },
 	{ "TYPE_COLOR", Variant::COLOR },
-	{ "TYPE_NODE_PATH", Variant::NODE_PATH },
+	{ "TYPE_NODE_PATH", Variant::NODE_PATH }, // 15
 	{ "TYPE_RID", Variant::_RID },
 	{ "TYPE_OBJECT", Variant::OBJECT },
 	{ "TYPE_INPUT_EVENT", Variant::INPUT_EVENT },
-	{ "TYPE_DICTIONARY", Variant::DICTIONARY }, // 20
-	{ "TYPE_ARRAY", Variant::ARRAY },
+	{ "TYPE_DICTIONARY", Variant::DICTIONARY },
+	{ "TYPE_ARRAY", Variant::ARRAY }, // 20
 	{ "TYPE_RAW_ARRAY", Variant::POOL_BYTE_ARRAY },
 	{ "TYPE_INT_ARRAY", Variant::POOL_INT_ARRAY },
 	{ "TYPE_REAL_ARRAY", Variant::POOL_REAL_ARRAY },
-	{ "TYPE_STRING_ARRAY", Variant::POOL_STRING_ARRAY }, // 25
-	{ "TYPE_VECTOR2_ARRAY", Variant::POOL_VECTOR2_ARRAY },
+	{ "TYPE_STRING_ARRAY", Variant::POOL_STRING_ARRAY },
+	{ "TYPE_VECTOR2_ARRAY", Variant::POOL_VECTOR2_ARRAY }, // 25
 	{ "TYPE_VECTOR3_ARRAY", Variant::POOL_VECTOR3_ARRAY },
 	{ "TYPE_COLOR_ARRAY", Variant::POOL_COLOR_ARRAY },
 	{ "TYPE_MAX", Variant::VARIANT_MAX },
