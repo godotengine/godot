@@ -68,10 +68,11 @@ VisualServer *VisualServer::create() {
 	return NULL;
 }
 
-RID VisualServer::texture_create_from_image(const Image &p_image, uint32_t p_flags) {
+RID VisualServer::texture_create_from_image(const Ref<Image> &p_image, uint32_t p_flags) {
 
+	ERR_FAIL_COND_V(!p_image.is_valid(), RID());
 	RID texture = texture_create();
-	texture_allocate(texture, p_image.get_width(), p_image.get_height(), p_image.get_format(), p_flags); //if it has mipmaps, use, else generate
+	texture_allocate(texture, p_image->get_width(), p_image->get_height(), p_image->get_format(), p_flags); //if it has mipmaps, use, else generate
 	ERR_FAIL_COND_V(!texture.is_valid(), texture);
 
 	texture_set_data(texture, p_image);
@@ -120,12 +121,12 @@ RID VisualServer::get_test_texture() {
 		}
 	}
 
-	Image data(TEST_TEXTURE_SIZE, TEST_TEXTURE_SIZE, false, Image::FORMAT_RGB8, test_data);
+	Ref<Image> data = memnew(Image(TEST_TEXTURE_SIZE, TEST_TEXTURE_SIZE, false, Image::FORMAT_RGB8, test_data));
 
 	test_texture = texture_create_from_image(data);
 
 	return test_texture;
-};
+}
 
 void VisualServer::_free_internal_rids() {
 
@@ -324,7 +325,7 @@ RID VisualServer::get_white_texture() {
 		for (int i = 0; i < 16 * 3; i++)
 			w[i] = 255;
 	}
-	Image white(4, 4, 0, Image::FORMAT_RGB8, wt);
+	Ref<Image> white = memnew(Image(4, 4, 0, Image::FORMAT_RGB8, wt));
 	white_texture = texture_create();
 	texture_allocate(white_texture, 4, 4, Image::FORMAT_RGB8);
 	texture_set_data(white_texture, white);

@@ -271,9 +271,9 @@ void RasterizerGLES3::clear_render_target(const Color &p_color) {
 	storage->frame.clear_request_color = p_color;
 }
 
-void RasterizerGLES3::set_boot_image(const Image &p_image, const Color &p_color, bool p_scale) {
+void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale) {
 
-	if (p_image.empty())
+	if (p_image.is_null() || p_image->empty())
 		return;
 
 	begin_frame();
@@ -290,10 +290,10 @@ void RasterizerGLES3::set_boot_image(const Image &p_image, const Color &p_color,
 	canvas->canvas_begin();
 
 	RID texture = storage->texture_create();
-	storage->texture_allocate(texture, p_image.get_width(), p_image.get_height(), p_image.get_format(), VS::TEXTURE_FLAG_FILTER);
+	storage->texture_allocate(texture, p_image->get_width(), p_image->get_height(), p_image->get_format(), VS::TEXTURE_FLAG_FILTER);
 	storage->texture_set_data(texture, p_image);
 
-	Rect2 imgrect(0, 0, p_image.get_width(), p_image.get_height());
+	Rect2 imgrect(0, 0, p_image->get_width(), p_image->get_height());
 	Rect2 screenrect;
 	if (p_scale) {
 

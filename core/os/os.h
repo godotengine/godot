@@ -31,6 +31,7 @@
 #define OS_H
 
 #include "engine.h"
+#include "image.h"
 #include "list.h"
 #include "os/main_loop.h"
 #include "power.h"
@@ -357,7 +358,7 @@ public:
 	virtual void make_rendering_thread();
 	virtual void swap_buffers();
 
-	virtual void set_icon(const Image &p_icon);
+	virtual void set_icon(const Ref<Image> &p_icon);
 
 	virtual int get_exit_code() const;
 	virtual void set_exit_code(int p_code);

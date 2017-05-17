@@ -212,7 +212,7 @@
 #include "scene/resources/environment.h"
 
 #include "scene/3d/area.h"
-#include "scene/3d/baked_light_instance.h"
+
 #include "scene/3d/body_shape.h"
 #include "scene/3d/immediate_geometry.h"
 #include "scene/3d/multimesh_instance.h"
@@ -452,7 +452,7 @@ void register_scene_types() {
 	ClassDB::register_class<PathFollow>();
 	ClassDB::register_class<VisibilityNotifier>();
 	ClassDB::register_class<VisibilityEnabler>();
-	ClassDB::register_class<BakedLight>();
+	//	ClassDB::register_class<BakedLight>();
 	//ClassDB::register_type<BakedLightSampler>();
 	ClassDB::register_class<WorldEnvironment>();
 	ClassDB::register_class<RemoteTransform>();

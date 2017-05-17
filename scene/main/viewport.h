@@ -383,7 +383,7 @@ public:
 	Vector2 get_camera_rect_size() const;
 
 	void queue_screen_capture();
-	Image get_screen_capture() const;
+	Ref<Image> get_screen_capture() const;
 
 	void set_use_own_world(bool p_world);
 	bool is_using_own_world() const;

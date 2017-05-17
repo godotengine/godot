@@ -683,17 +683,18 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PoolByt
 
 		int len = image_data.size();
 		PoolByteArray::Read r = image_data.read();
-		Image image(r.ptr(), len);
-		if (!image.empty()) {
+		Ref<Image> image = Ref<Image>(memnew(Image(r.ptr(), len)));
+
+		if (!image->empty()) {
 			float max_height = 10000;
 			switch (image_queue[p_queue_id].image_type) {
 				case IMAGE_QUEUE_ICON: max_height = 80; break;
 				case IMAGE_QUEUE_THUMBNAIL: max_height = 80; break;
 				case IMAGE_QUEUE_SCREENSHOT: max_height = 345; break;
 			}
-			float scale_ratio = max_height / image.get_height();
+			float scale_ratio = max_height / image->get_height();
 			if (scale_ratio < 1) {
-				image.resize(image.get_width() * scale_ratio, image.get_height() * scale_ratio, Image::INTERPOLATE_CUBIC);
+				image->resize(image->get_width() * scale_ratio, image->get_height() * scale_ratio, Image::INTERPOLATE_CUBIC);
 			}
 
 			Ref<ImageTexture> tex;

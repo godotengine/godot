@@ -151,7 +151,7 @@ public:
 
 	virtual Size2 get_window_size() const;
 
-	virtual void set_icon(const Image &p_icon);
+	virtual void set_icon(const Ref<Image> &p_icon);
 
 	virtual MainLoop *get_main_loop() const;
 

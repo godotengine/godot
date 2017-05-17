@@ -146,7 +146,7 @@ struct VariantCaster<const T &> {
 // some helpers
 
 VARIANT_ENUM_CAST(Vector3::Axis);
-VARIANT_ENUM_CAST(Image::Format);
+
 VARIANT_ENUM_CAST(Error);
 VARIANT_ENUM_CAST(wchar_t);
 VARIANT_ENUM_CAST(Margin);

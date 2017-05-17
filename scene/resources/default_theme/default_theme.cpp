@@ -53,20 +53,20 @@ static Ref<StyleBoxTexture> make_stylebox(T p_src, float p_left, float p_top, fl
 	} else {
 
 		texture = Ref<ImageTexture>(memnew(ImageTexture));
-		Image img(p_src);
+		Ref<Image> img = memnew(Image(p_src));
 
 		if (scale > 1) {
-			Size2 orig_size = Size2(img.get_width(), img.get_height());
+			Size2 orig_size = Size2(img->get_width(), img->get_height());
 
-			img.convert(Image::FORMAT_RGBA8);
-			img.expand_x2_hq2x();
+			img->convert(Image::FORMAT_RGBA8);
+			img->expand_x2_hq2x();
 			if (scale != 2.0) {
-				img.resize(orig_size.x * scale, orig_size.y * scale);
+				img->resize(orig_size.x * scale, orig_size.y * scale);
 			}
 		} else if (scale < 1) {
-			Size2 orig_size = Size2(img.get_width(), img.get_height());
-			img.convert(Image::FORMAT_RGBA8);
-			img.resize(orig_size.x * scale, orig_size.y * scale);
+			Size2 orig_size = Size2(img->get_width(), img->get_height());
+			img->convert(Image::FORMAT_RGBA8);
+			img->resize(orig_size.x * scale, orig_size.y * scale);
 		}
 
 		texture->create_from_image(img, ImageTexture::FLAG_FILTER);
@@ -105,19 +105,19 @@ template <class T>
 static Ref<Texture> make_icon(T p_src) {
 
 	Ref<ImageTexture> texture(memnew(ImageTexture));
-	Image img = Image(p_src);
+	Ref<Image> img = memnew(Image(p_src));
 	if (scale > 1) {
-		Size2 orig_size = Size2(img.get_width(), img.get_height());
+		Size2 orig_size = Size2(img->get_width(), img->get_height());
 
-		img.convert(Image::FORMAT_RGBA8);
-		img.expand_x2_hq2x();
+		img->convert(Image::FORMAT_RGBA8);
+		img->expand_x2_hq2x();
 		if (scale != 2.0) {
-			img.resize(orig_size.x * scale, orig_size.y * scale);
+			img->resize(orig_size.x * scale, orig_size.y * scale);
 		}
 	} else if (scale < 1) {
-		Size2 orig_size = Size2(img.get_width(), img.get_height());
-		img.convert(Image::FORMAT_RGBA8);
-		img.resize(orig_size.x * scale, orig_size.y * scale);
+		Size2 orig_size = Size2(img->get_width(), img->get_height());
+		img->convert(Image::FORMAT_RGBA8);
+		img->resize(orig_size.x * scale, orig_size.y * scale);
 	}
 	texture->create_from_image(img, ImageTexture::FLAG_FILTER);
 
@@ -162,7 +162,7 @@ static Ref<BitmapFont> make_font2(int p_height, int p_ascent, int p_charcount, c
 
 	Ref<BitmapFont> font(memnew(BitmapFont));
 
-	Image image(p_img);
+	Ref<Image> image = memnew(Image(p_img));
 	Ref<ImageTexture> tex = memnew(ImageTexture);
 	tex->create_from_image(image);
 

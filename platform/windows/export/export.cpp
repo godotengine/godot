@@ -35,7 +35,7 @@ void register_windows_exporter() {
 	Ref<EditorExportPlatformPC> platform;
 	platform.instance();
 
-	Image img(_windows_logo);
+	Ref<Image> img = memnew(Image(_windows_logo));
 	Ref<ImageTexture> logo;
 	logo.instance();
 	logo->create_from_image(img);

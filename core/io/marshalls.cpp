@@ -276,38 +276,6 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				(*r_len) += 4 * 4;
 
 		} break;
-		case Variant::IMAGE: {
-
-			ERR_FAIL_COND_V(len < (int)5 * 4, ERR_INVALID_DATA);
-			Image::Format fmt = (Image::Format)decode_uint32(&buf[0]);
-			ERR_FAIL_INDEX_V(fmt, Image::FORMAT_MAX, ERR_INVALID_DATA);
-			uint32_t mipmaps = decode_uint32(&buf[4]);
-			uint32_t w = decode_uint32(&buf[8]);
-			uint32_t h = decode_uint32(&buf[12]);
-			uint32_t datalen = decode_uint32(&buf[16]);
-
-			Image img;
-			if (datalen > 0) {
-				len -= 5 * 4;
-				ERR_FAIL_COND_V(len < datalen, ERR_INVALID_DATA);
-				PoolVector<uint8_t> data;
-				data.resize(datalen);
-				PoolVector<uint8_t>::Write wr = data.write();
-				copymem(&wr[0], &buf[20], datalen);
-				wr = PoolVector<uint8_t>::Write();
-
-				img = Image(w, h, mipmaps, fmt, data);
-			}
-
-			r_variant = img;
-			if (r_len) {
-				if (datalen % 4)
-					(*r_len) += 4 - datalen % 4;
-
-				(*r_len) += 4 * 5 + datalen;
-			}
-
-		} break;
 		case Variant::NODE_PATH: {
 
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
@@ -1076,30 +1044,6 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len) {
 			}
 
 			r_len += 4 * 4;
-
-		} break;
-		case Variant::IMAGE: {
-
-			Image image = p_variant;
-			PoolVector<uint8_t> data = image.get_data();
-
-			if (buf) {
-
-				encode_uint32(image.get_format(), &buf[0]);
-				encode_uint32(image.has_mipmaps(), &buf[4]);
-				encode_uint32(image.get_width(), &buf[8]);
-				encode_uint32(image.get_height(), &buf[12]);
-				int ds = data.size();
-				encode_uint32(ds, &buf[16]);
-				PoolVector<uint8_t>::Read r = data.read();
-				copymem(&buf[20], &r[0], ds);
-			}
-
-			int pad = 0;
-			if (data.size() % 4)
-				pad = 4 - data.size() % 4;
-
-			r_len += data.size() + 5 * 4 + pad;
 
 		} break;
 		/*case Variant::RESOURCE: {

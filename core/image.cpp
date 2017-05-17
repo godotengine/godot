@@ -415,7 +415,7 @@ void Image::convert(Format p_new_format) {
 
 	//mipmaps=false;
 
-	*this = new_img;
+	_copy_internals_from(new_img);
 
 	if (gen_mipmaps)
 		generate_mipmaps();
@@ -611,14 +611,6 @@ void Image::resize_to_po2(bool p_square) {
 	resize(w, h);
 }
 
-Image Image::resized(int p_width, int p_height, int p_interpolation) {
-
-	Image ret = *this;
-	ret.resize(p_width, p_height, (Interpolation)p_interpolation);
-
-	return ret;
-};
-
 void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 
 	if (!_can_modify(format)) {
@@ -681,7 +673,7 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 	if (mipmaps > 0)
 		dst.generate_mipmaps();
 
-	*this = dst;
+	_copy_internals_from(dst);
 }
 void Image::crop(int p_width, int p_height) {
 
@@ -728,7 +720,7 @@ void Image::crop(int p_width, int p_height) {
 
 	if (mipmaps > 0)
 		dst.generate_mipmaps();
-	*this = dst;
+	_copy_internals_from(dst);
 }
 
 void Image::flip_y() {
@@ -1383,17 +1375,7 @@ Error Image::save_png(const String &p_path) {
 	if (save_png_func == NULL)
 		return ERR_UNAVAILABLE;
 
-	return save_png_func(p_path, *this);
-}
-
-bool Image::operator==(const Image &p_image) const {
-
-	if (data.size() == 0 && p_image.data.size() == 0)
-		return true;
-	PoolVector<uint8_t>::Read r = data.read();
-	PoolVector<uint8_t>::Read pr = p_image.data.read();
-
-	return r.ptr() == pr.ptr();
+	return save_png_func(p_path, Ref<Image>(this));
 }
 
 int Image::get_image_data_size(int p_width, int p_height, Format p_format, int p_mipmaps) {
@@ -1736,13 +1718,6 @@ bool Image::is_compressed() const {
 	return format >= FORMAT_RGB565;
 }
 
-Image Image::decompressed() const {
-
-	Image img = *this;
-	img.decompress();
-	return img;
-}
-
 Error Image::decompress() {
 
 	if (format >= FORMAT_DXT1 && format <= FORMAT_ATI2)
@@ -1795,14 +1770,6 @@ Error Image::compress(CompressMode p_mode) {
 	}
 
 	return OK;
-}
-
-Image Image::compressed(int p_mode) {
-
-	Image ret = *this;
-	ret.compress((Image::CompressMode)p_mode);
-
-	return ret;
 }
 
 Image::Image(const char **p_xpm) {
@@ -1875,21 +1842,21 @@ Rect2 Image::get_used_rect() const {
 		return Rect2(minx, miny, maxx - minx + 1, maxy - miny + 1);
 }
 
-Image Image::get_rect(const Rect2 &p_area) const {
+Ref<Image> Image::get_rect(const Rect2 &p_area) const {
 
-	Image img(p_area.size.x, p_area.size.y, mipmaps, format);
-	img.blit_rect(*this, p_area, Point2(0, 0));
-
+	Ref<Image> img = memnew(Image(p_area.size.x, p_area.size.y, mipmaps, format));
+	img->blit_rect(Ref<Image>(this), p_area, Point2(0, 0));
 	return img;
 }
 
-void Image::blit_rect(const Image &p_src, const Rect2 &p_src_rect, const Point2 &p_dest) {
+void Image::blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Point2 &p_dest) {
 
+	ERR_FAIL_COND(p_src.is_null());
 	int dsize = data.size();
-	int srcdsize = p_src.data.size();
+	int srcdsize = p_src->data.size();
 	ERR_FAIL_COND(dsize == 0);
 	ERR_FAIL_COND(srcdsize == 0);
-	ERR_FAIL_COND(format != p_src.format);
+	ERR_FAIL_COND(format != p_src->format);
 
 	Rect2i local_src_rect = Rect2i(0, 0, width, height).clip(Rect2i(p_dest + p_src_rect.pos, p_src_rect.size));
 
@@ -1900,7 +1867,7 @@ void Image::blit_rect(const Image &p_src, const Rect2 &p_src_rect, const Point2 
 	PoolVector<uint8_t>::Write wp = data.write();
 	uint8_t *dst_data_ptr = wp.ptr();
 
-	PoolVector<uint8_t>::Read rp = p_src.data.read();
+	PoolVector<uint8_t>::Read rp = p_src->data.read();
 	const uint8_t *src_data_ptr = rp.ptr();
 
 	int pixel_size = get_format_pixel_size(format);
@@ -1915,7 +1882,7 @@ void Image::blit_rect(const Image &p_src, const Rect2 &p_src_rect, const Point2 
 			int dst_x = local_src_rect.pos.x + j;
 			int dst_y = local_src_rect.pos.y + i;
 
-			const uint8_t *src = &src_data_ptr[(src_y * p_src.width + src_x) * pixel_size];
+			const uint8_t *src = &src_data_ptr[(src_y * p_src->width + src_x) * pixel_size];
 			uint8_t *dst = &dst_data_ptr[(dst_y * width + dst_x) * pixel_size];
 
 			for (int k = 0; k < pixel_size; k++) {
@@ -1925,8 +1892,8 @@ void Image::blit_rect(const Image &p_src, const Rect2 &p_src_rect, const Point2 
 	}
 }
 
-Image (*Image::_png_mem_loader_func)(const uint8_t *, int) = NULL;
-Image (*Image::_jpg_mem_loader_func)(const uint8_t *, int) = NULL;
+Ref<Image> (*Image::_png_mem_loader_func)(const uint8_t *, int) = NULL;
+Ref<Image> (*Image::_jpg_mem_loader_func)(const uint8_t *, int) = NULL;
 
 void (*Image::_image_compress_bc_func)(Image *) = NULL;
 void (*Image::_image_compress_pvrtc2_func)(Image *) = NULL;
@@ -1938,10 +1905,157 @@ void (*Image::_image_decompress_bc)(Image *) = NULL;
 void (*Image::_image_decompress_etc)(Image *) = NULL;
 void (*Image::_image_decompress_etc2)(Image *) = NULL;
 
-PoolVector<uint8_t> (*Image::lossy_packer)(const Image &, float) = NULL;
-Image (*Image::lossy_unpacker)(const PoolVector<uint8_t> &) = NULL;
-PoolVector<uint8_t> (*Image::lossless_packer)(const Image &) = NULL;
-Image (*Image::lossless_unpacker)(const PoolVector<uint8_t> &) = NULL;
+PoolVector<uint8_t> (*Image::lossy_packer)(const Ref<Image> &, float) = NULL;
+Ref<Image> (*Image::lossy_unpacker)(const PoolVector<uint8_t> &) = NULL;
+PoolVector<uint8_t> (*Image::lossless_packer)(const Ref<Image> &) = NULL;
+Ref<Image> (*Image::lossless_unpacker)(const PoolVector<uint8_t> &) = NULL;
+
+void Image::_set_data(const Dictionary &p_data) {
+
+	ERR_FAIL_COND(!p_data.has("width"));
+	ERR_FAIL_COND(!p_data.has("height"));
+	ERR_FAIL_COND(!p_data.has("format"));
+	ERR_FAIL_COND(!p_data.has("mipmaps"));
+	ERR_FAIL_COND(!p_data.has("data"));
+
+	int dwidth = p_data["width"];
+	int dheight = p_data["height"];
+	String dformat = p_data["format"];
+	bool dmipmaps = p_data["mipmaps"];
+	PoolVector<uint8_t> ddata = p_data["data"];
+	Format ddformat = FORMAT_MAX;
+	for (int i = 0; i < FORMAT_MAX; i++) {
+		if (dformat == get_format_name(Format(i))) {
+			ddformat = Format(i);
+			break;
+		}
+	}
+
+	ERR_FAIL_COND(ddformat == FORMAT_MAX);
+
+	create(dwidth, dheight, dmipmaps, ddformat, ddata);
+}
+
+Dictionary Image::_get_data() const {
+
+	Dictionary d;
+	d["width"] = width;
+	d["height"] = height;
+	d["format"] = get_format_name(format);
+	d["mipmaps"] = mipmaps;
+	d["data"] = data;
+	return d;
+}
+
+void Image::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("get_width"), &Image::get_width);
+	ClassDB::bind_method(D_METHOD("get_height"), &Image::get_height);
+	ClassDB::bind_method(D_METHOD("has_mipmaps"), &Image::has_mipmaps);
+	ClassDB::bind_method(D_METHOD("get_format"), &Image::get_format);
+	ClassDB::bind_method(D_METHOD("get_data"), &Image::get_data);
+
+	ClassDB::bind_method(D_METHOD("convert", "format"), &Image::convert);
+
+	ClassDB::bind_method(D_METHOD("get_mipmap_offset", "mipmap"), &Image::get_mipmap_offset);
+
+	ClassDB::bind_method(D_METHOD("resize_to_po2", "square"), &Image::resize_to_po2, DEFVAL("false"));
+	ClassDB::bind_method(D_METHOD("resize", "width", "height", "interpolation"), &Image::resize_to_po2, DEFVAL(INTERPOLATE_BILINEAR));
+	ClassDB::bind_method(D_METHOD("shrink_x2"), &Image::shrink_x2);
+	ClassDB::bind_method(D_METHOD("expand_x2_hq2x"), &Image::expand_x2_hq2x);
+
+	ClassDB::bind_method(D_METHOD("crop", "width", "height"), &Image::crop);
+	ClassDB::bind_method(D_METHOD("flip_x"), &Image::flip_x);
+	ClassDB::bind_method(D_METHOD("flip_y"), &Image::flip_y);
+	ClassDB::bind_method(D_METHOD("generate_mipmaps"), &Image::generate_mipmaps);
+	ClassDB::bind_method(D_METHOD("clear_mipmaps"), &Image::clear_mipmaps);
+
+	ClassDB::bind_method(D_METHOD("create", "width", "height", "use_mipmaps", "format"), &Image::_create_empty);
+	ClassDB::bind_method(D_METHOD("create_from_data", "width", "height", "use_mipmaps", "format", "data"), &Image::_create_from_data);
+
+	ClassDB::bind_method(D_METHOD("is_empty"), &Image::empty);
+
+	ClassDB::bind_method(D_METHOD("load", "path"), &Image::load);
+	ClassDB::bind_method(D_METHOD("save_png", "path"), &Image::save_png);
+
+	ClassDB::bind_method(D_METHOD("detect_alpha"), &Image::detect_alpha);
+	ClassDB::bind_method(D_METHOD("is_invisible"), &Image::is_invisible);
+
+	ClassDB::bind_method(D_METHOD("compress", "mode"), &Image::compress);
+	ClassDB::bind_method(D_METHOD("decompress"), &Image::decompress);
+	ClassDB::bind_method(D_METHOD("is_compressed"), &Image::is_compressed);
+
+	ClassDB::bind_method(D_METHOD("fix_alpha_edges"), &Image::fix_alpha_edges);
+	ClassDB::bind_method(D_METHOD("premultiply_alpha"), &Image::premultiply_alpha);
+	ClassDB::bind_method(D_METHOD("srgb_to_linear"), &Image::srgb_to_linear);
+	ClassDB::bind_method(D_METHOD("normalmap_to_xy"), &Image::normalmap_to_xy);
+
+	ClassDB::bind_method(D_METHOD("blit_rect", "src:Image", "src_rect", "dst"), &Image::blit_rect);
+
+	ClassDB::bind_method(D_METHOD("get_used_rect"), &Image::get_used_rect);
+	ClassDB::bind_method(D_METHOD("get_rect:Image", "rect"), &Image::get_rect);
+
+	ClassDB::bind_method(D_METHOD("copy_from", "src:Image"), &Image::copy_internals_from);
+
+	ClassDB::bind_method(D_METHOD("_set_data", "data"), &Image::_set_data);
+	ClassDB::bind_method(D_METHOD("_get_data"), &Image::_get_data);
+
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "_set_data", "_get_data");
+
+	BIND_CONSTANT(FORMAT_L8); //luminance
+	BIND_CONSTANT(FORMAT_LA8); //luminance-alpha
+	BIND_CONSTANT(FORMAT_R8);
+	BIND_CONSTANT(FORMAT_RG8);
+	BIND_CONSTANT(FORMAT_RGB8);
+	BIND_CONSTANT(FORMAT_RGBA8);
+	BIND_CONSTANT(FORMAT_RGB565); //16 bit
+	BIND_CONSTANT(FORMAT_RGBA4444);
+	BIND_CONSTANT(FORMAT_RGBA5551);
+	BIND_CONSTANT(FORMAT_RF); //float
+	BIND_CONSTANT(FORMAT_RGF);
+	BIND_CONSTANT(FORMAT_RGBF);
+	BIND_CONSTANT(FORMAT_RGBAF);
+	BIND_CONSTANT(FORMAT_RH); //half float
+	BIND_CONSTANT(FORMAT_RGH);
+	BIND_CONSTANT(FORMAT_RGBH);
+	BIND_CONSTANT(FORMAT_RGBAH);
+	BIND_CONSTANT(FORMAT_DXT1); //s3tc bc1
+	BIND_CONSTANT(FORMAT_DXT3); //bc2
+	BIND_CONSTANT(FORMAT_DXT5); //bc3
+	BIND_CONSTANT(FORMAT_ATI1); //bc4
+	BIND_CONSTANT(FORMAT_ATI2); //bc5
+	BIND_CONSTANT(FORMAT_BPTC_RGBA); //btpc bc6h
+	BIND_CONSTANT(FORMAT_BPTC_RGBF); //float /
+	BIND_CONSTANT(FORMAT_BPTC_RGBFU); //unsigned float
+	BIND_CONSTANT(FORMAT_PVRTC2); //pvrtc
+	BIND_CONSTANT(FORMAT_PVRTC2A);
+	BIND_CONSTANT(FORMAT_PVRTC4);
+	BIND_CONSTANT(FORMAT_PVRTC4A);
+	BIND_CONSTANT(FORMAT_ETC); //etc1
+	BIND_CONSTANT(FORMAT_ETC2_R11); //etc2
+	BIND_CONSTANT(FORMAT_ETC2_R11S); //signed ); NOT srgb.
+	BIND_CONSTANT(FORMAT_ETC2_RG11);
+	BIND_CONSTANT(FORMAT_ETC2_RG11S);
+	BIND_CONSTANT(FORMAT_ETC2_RGB8);
+	BIND_CONSTANT(FORMAT_ETC2_RGBA8);
+	BIND_CONSTANT(FORMAT_ETC2_RGB8A1);
+	BIND_CONSTANT(FORMAT_MAX);
+
+	BIND_CONSTANT(INTERPOLATE_NEAREST);
+	BIND_CONSTANT(INTERPOLATE_BILINEAR);
+	BIND_CONSTANT(INTERPOLATE_CUBIC);
+
+	BIND_CONSTANT(ALPHA_NONE);
+	BIND_CONSTANT(ALPHA_BIT);
+	BIND_CONSTANT(ALPHA_BLEND);
+
+	BIND_CONSTANT(COMPRESS_16BIT);
+	BIND_CONSTANT(COMPRESS_S3TC);
+	BIND_CONSTANT(COMPRESS_PVRTC2);
+	BIND_CONSTANT(COMPRESS_PVRTC4);
+	BIND_CONSTANT(COMPRESS_ETC);
+	BIND_CONSTANT(COMPRESS_ETC2);
+}
 
 void Image::set_compress_bc_func(void (*p_compress_func)(Image *)) {
 
@@ -2108,12 +2222,20 @@ Image::Image(const uint8_t *p_mem_png_jpg, int p_len) {
 	format = FORMAT_L8;
 
 	if (_png_mem_loader_func) {
-		*this = _png_mem_loader_func(p_mem_png_jpg, p_len);
+		copy_internals_from(_png_mem_loader_func(p_mem_png_jpg, p_len));
 	}
 
 	if (empty() && _jpg_mem_loader_func) {
-		*this = _jpg_mem_loader_func(p_mem_png_jpg, p_len);
+		copy_internals_from(_jpg_mem_loader_func(p_mem_png_jpg, p_len));
 	}
+}
+
+Ref<Resource> Image::duplicate(bool p_subresources) const {
+
+	Ref<Image> copy;
+	copy.instance();
+	copy->_copy_internals_from(*this);
+	return copy;
 }
 
 Image::Image() {

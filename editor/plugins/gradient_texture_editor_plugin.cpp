@@ -48,7 +48,8 @@ GradientTextureEdit::GradientTextureEdit() {
 	add_child(popup);
 
 	checker = Ref<ImageTexture>(memnew(ImageTexture));
-	checker->create_from_image(Image(checker_bg_png), ImageTexture::FLAG_REPEAT);
+	Ref<Image> checker_bg = memnew(Image(checker_bg_png));
+	checker->create_from_image(checker_bg, ImageTexture::FLAG_REPEAT);
 }
 
 int GradientTextureEdit::_get_point_from_pos(int x) {

@@ -89,7 +89,7 @@ Error jpeg_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p
 	return OK;
 }
 
-Error ImageLoaderJPG::load_image(Image *p_image, FileAccess *f) {
+Error ImageLoaderJPG::load_image(Ref<Image> p_image, FileAccess *f) {
 
 	PoolVector<uint8_t> src_image;
 	int src_image_len = f->get_len();
@@ -102,7 +102,7 @@ Error ImageLoaderJPG::load_image(Image *p_image, FileAccess *f) {
 
 	f->close();
 
-	Error err = jpeg_load_image_from_buffer(p_image, w.ptr(), src_image_len);
+	Error err = jpeg_load_image_from_buffer(p_image.ptr(), w.ptr(), src_image_len);
 
 	w = PoolVector<uint8_t>::Write();
 
@@ -115,10 +115,11 @@ void ImageLoaderJPG::get_recognized_extensions(List<String> *p_extensions) const
 	p_extensions->push_back("jpeg");
 }
 
-static Image _jpegd_mem_loader_func(const uint8_t *p_png, int p_size) {
+static Ref<Image> _jpegd_mem_loader_func(const uint8_t *p_png, int p_size) {
 
-	Image img;
-	Error err = jpeg_load_image_from_buffer(&img, p_png, p_size);
+	Ref<Image> img;
+	img.instance();
+	Error err = jpeg_load_image_from_buffer(img.ptr(), p_png, p_size);
 	if (err)
 		ERR_PRINT("Couldn't initialize ImageLoaderJPG with the given resource.");
 

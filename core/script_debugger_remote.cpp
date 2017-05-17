@@ -586,9 +586,7 @@ void ScriptDebuggerRemote::_send_object_id(ObjectID p_id) {
 				packet_peer_stream->put_var(E->get().hint);
 				packet_peer_stream->put_var(E->get().hint_string);
 				//only send information that can be sent..
-				if (var.get_type() == Variant::IMAGE) {
-					var = Image();
-				}
+
 				if (var.get_type() >= Variant::DICTIONARY) {
 					var = Array(); //send none for now, may be to big
 				}

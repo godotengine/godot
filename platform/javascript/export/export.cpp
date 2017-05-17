@@ -316,7 +316,7 @@ Error EditorExportPlatformJavaScript::run(const Ref<EditorExportPreset> &p_prese
 
 EditorExportPlatformJavaScript::EditorExportPlatformJavaScript() {
 
-	Image img(_javascript_logo);
+	Ref<Image> img = memnew(Image(_javascript_logo));
 	logo.instance();
 	logo->create_from_image(img);
 }

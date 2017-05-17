@@ -185,7 +185,7 @@ Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Res
 	return Ref<Resource>(r);
 }
 
-Ref<Resource> Resource::duplicate(bool p_subresources) {
+Ref<Resource> Resource::duplicate(bool p_subresources) const {
 
 	List<PropertyInfo> plist;
 	get_property_list(&plist);

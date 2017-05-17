@@ -64,17 +64,18 @@ void Particles2DEditorPlugin::_file_selected(const String &p_file) {
 
 	int epc = epoints->get_value();
 
-	Image img;
-	Error err = ImageLoader::load_image(p_file, &img);
+	Ref<Image> img;
+	img.instance();
+	Error err = ImageLoader::load_image(p_file, img);
 	ERR_EXPLAIN(TTR("Error loading image:") + " " + p_file);
 	ERR_FAIL_COND(err != OK);
 
-	img.convert(Image::FORMAT_LA8);
-	ERR_FAIL_COND(img.get_format() != Image::FORMAT_LA8);
-	Size2i s = Size2(img.get_width(), img.get_height());
+	img->convert(Image::FORMAT_LA8);
+	ERR_FAIL_COND(img->get_format() != Image::FORMAT_LA8);
+	Size2i s = Size2(img->get_width(), img->get_height());
 	ERR_FAIL_COND(s.width == 0 || s.height == 0);
 
-	PoolVector<uint8_t> data = img.get_data();
+	PoolVector<uint8_t> data = img->get_data();
 	PoolVector<uint8_t>::Read r = data.read();
 
 	Vector<Point2i> valid_positions;
@@ -98,7 +99,7 @@ void Particles2DEditorPlugin::_file_selected(const String &p_file) {
 	epoints.resize(epc);
 	PoolVector<Point2>::Write w = epoints.write();
 
-	Size2 extents = Size2(img.get_width() * 0.5, img.get_height() * 0.5);
+	Size2 extents = Size2(img->get_width() * 0.5, img->get_height() * 0.5);
 
 	for (int i = 0; i < epc; i++) {
 

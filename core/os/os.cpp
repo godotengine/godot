@@ -389,7 +389,7 @@ void OS::_ensure_data_dir() {
 	memdelete(da);
 }
 
-void OS::set_icon(const Image &p_icon) {
+void OS::set_icon(const Ref<Image> &p_icon) {
 }
 
 String OS::get_model_name() const {

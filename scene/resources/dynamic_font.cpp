@@ -569,7 +569,7 @@ void DynamicFontAtSize::_update_char(CharType p_char) {
 	//blit to image and texture
 	{
 
-		Image img(tex.texture_size, tex.texture_size, 0, Image::FORMAT_LA8, tex.imgdata);
+		Ref<Image> img = memnew(Image(tex.texture_size, tex.texture_size, 0, Image::FORMAT_LA8, tex.imgdata));
 
 		if (tex.texture.is_null()) {
 			tex.texture.instance();

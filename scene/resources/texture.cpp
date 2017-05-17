@@ -91,9 +91,10 @@ void ImageTexture::reload_from_file() {
 		return;
 
 	uint32_t flags = get_flags();
-	Image img;
+	Ref<Image> img;
+	img.instance();
 
-	Error err = ImageLoader::load_image(path, &img);
+	Error err = ImageLoader::load_image(path, img);
 	ERR_FAIL_COND(err != OK);
 
 	create_from_image(img, flags);
@@ -101,7 +102,7 @@ void ImageTexture::reload_from_file() {
 
 bool ImageTexture::_set(const StringName &p_name, const Variant &p_value) {
 
-	if (p_name == "image" && p_value.get_type() == Variant::IMAGE)
+	if (p_name == "image")
 		create_from_image(p_value, flags);
 	else if (p_name == "flags")
 		if (w * h == 0)
@@ -155,7 +156,7 @@ void ImageTexture::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 
 	p_list->push_back(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Mipmaps,Repeat,Filter,Anisotropic,sRGB,Mirrored Repeat"));
-	p_list->push_back(PropertyInfo(Variant::IMAGE, "image", img_hint, String::num(lossy_storage_quality)));
+	p_list->push_back(PropertyInfo(Variant::OBJECT, "image", PROPERTY_HINT_RESOURCE_TYPE, "Image"));
 	p_list->push_back(PropertyInfo(Variant::VECTOR2, "size", PROPERTY_HINT_NONE, ""));
 	p_list->push_back(PropertyInfo(Variant::INT, "storage", PROPERTY_HINT_ENUM, "Uncompressed,Compress Lossy,Compress Lossless"));
 	p_list->push_back(PropertyInfo(Variant::REAL, "lossy_quality", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"));
@@ -167,8 +168,9 @@ void ImageTexture::_reload_hook(const RID &p_hook) {
 	if (!path.is_resource_file())
 		return;
 
-	Image img;
-	Error err = ImageLoader::load_image(path, &img);
+	Ref<Image> img;
+	img.instance();
+	Error err = ImageLoader::load_image(path, img);
 
 	ERR_FAIL_COND(err != OK);
 
@@ -185,14 +187,14 @@ void ImageTexture::create(int p_width, int p_height, Image::Format p_format, uin
 	w = p_width;
 	h = p_height;
 }
-void ImageTexture::create_from_image(const Image &p_image, uint32_t p_flags) {
+void ImageTexture::create_from_image(const Ref<Image> &p_image, uint32_t p_flags) {
 
 	flags = p_flags;
-	w = p_image.get_width();
-	h = p_image.get_height();
-	format = p_image.get_format();
+	w = p_image->get_width();
+	h = p_image->get_height();
+	format = p_image->get_format();
 
-	VisualServer::get_singleton()->texture_allocate(texture, p_image.get_width(), p_image.get_height(), p_image.get_format(), p_flags);
+	VisualServer::get_singleton()->texture_allocate(texture, p_image->get_width(), p_image->get_height(), p_image->get_format(), p_flags);
 	VisualServer::get_singleton()->texture_set_data(texture, p_image);
 	_change_notify();
 }
@@ -220,12 +222,13 @@ Image::Format ImageTexture::get_format() const {
 
 void ImageTexture::load(const String &p_path) {
 
-	Image img;
-	img.load(p_path);
+	Ref<Image> img;
+	img.instance();
+	img->load(p_path);
 	create_from_image(img);
 }
 
-void ImageTexture::set_data(const Image &p_image) {
+void ImageTexture::set_data(const Ref<Image> &p_image) {
 
 	VisualServer::get_singleton()->texture_set_data(texture, p_image);
 
@@ -237,7 +240,7 @@ void ImageTexture::_resource_path_changed() {
 	String path = get_path();
 }
 
-Image ImageTexture::get_data() const {
+Ref<Image> ImageTexture::get_data() const {
 
 	return VisualServer::get_singleton()->texture_get_data(texture);
 }
@@ -255,42 +258,6 @@ int ImageTexture::get_height() const {
 RID ImageTexture::get_rid() const {
 
 	return texture;
-}
-
-void ImageTexture::fix_alpha_edges() {
-
-	if (format == Image::FORMAT_RGBA8 /*&& !(flags&FLAG_CUBEMAP)*/) {
-
-		Image img = get_data();
-		img.fix_alpha_edges();
-		set_data(img);
-	}
-}
-
-void ImageTexture::premultiply_alpha() {
-
-	if (format == Image::FORMAT_RGBA8 /*&& !(flags&FLAG_CUBEMAP)*/) {
-
-		Image img = get_data();
-		img.premultiply_alpha();
-		set_data(img);
-	}
-}
-
-void ImageTexture::normal_to_xy() {
-
-	Image img = get_data();
-	img.normalmap_to_xy();
-	create_from_image(img, flags);
-}
-
-void ImageTexture::shrink_x2_and_keep_size() {
-
-	Size2 sizeov = get_size();
-	Image img = get_data();
-	img.resize(img.get_width() / 2, img.get_height() / 2, Image::INTERPOLATE_BILINEAR);
-	create_from_image(img, flags);
-	set_size_override(sizeov);
 }
 
 bool ImageTexture::has_alpha() const {
@@ -358,7 +325,8 @@ float ImageTexture::get_lossy_storage_quality() const {
 
 void ImageTexture::_set_data(Dictionary p_data) {
 
-	Image img = p_data["image"];
+	Ref<Image> img = p_data["image"];
+	ERR_FAIL_COND(!img.is_valid());
 	uint32_t flags = p_data["flags"];
 
 	create_from_image(img, flags);
@@ -372,19 +340,15 @@ void ImageTexture::_set_data(Dictionary p_data) {
 void ImageTexture::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("create", "width", "height", "format", "flags"), &ImageTexture::create, DEFVAL(FLAGS_DEFAULT));
-	ClassDB::bind_method(D_METHOD("create_from_image", "image", "flags"), &ImageTexture::create_from_image, DEFVAL(FLAGS_DEFAULT));
+	ClassDB::bind_method(D_METHOD("create_from_image", "image:Image", "flags"), &ImageTexture::create_from_image, DEFVAL(FLAGS_DEFAULT));
 	ClassDB::bind_method(D_METHOD("get_format"), &ImageTexture::get_format);
 	ClassDB::bind_method(D_METHOD("load", "path"), &ImageTexture::load);
-	ClassDB::bind_method(D_METHOD("set_data", "image"), &ImageTexture::set_data);
-	ClassDB::bind_method(D_METHOD("get_data", "cube_side"), &ImageTexture::get_data);
+	ClassDB::bind_method(D_METHOD("set_data", "image:Image"), &ImageTexture::set_data);
+	ClassDB::bind_method(D_METHOD("get_data:Image", "cube_side"), &ImageTexture::get_data);
 	ClassDB::bind_method(D_METHOD("set_storage", "mode"), &ImageTexture::set_storage);
 	ClassDB::bind_method(D_METHOD("get_storage"), &ImageTexture::get_storage);
 	ClassDB::bind_method(D_METHOD("set_lossy_storage_quality", "quality"), &ImageTexture::set_lossy_storage_quality);
 	ClassDB::bind_method(D_METHOD("get_lossy_storage_quality"), &ImageTexture::get_lossy_storage_quality);
-	ClassDB::bind_method(D_METHOD("fix_alpha_edges"), &ImageTexture::fix_alpha_edges);
-	ClassDB::bind_method(D_METHOD("premultiply_alpha"), &ImageTexture::premultiply_alpha);
-	ClassDB::bind_method(D_METHOD("normal_to_xy"), &ImageTexture::normal_to_xy);
-	ClassDB::bind_method(D_METHOD("shrink_x2_and_keep_size"), &ImageTexture::shrink_x2_and_keep_size);
 
 	ClassDB::bind_method(D_METHOD("set_size_override", "size"), &ImageTexture::set_size_override);
 	ClassDB::set_method_flags(get_class_static(), _scs_create("fix_alpha_edges"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
@@ -442,7 +406,9 @@ Image::Format StreamTexture::get_format() const {
 	return format;
 }
 
-Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &flags, Image &image, int p_size_limit) {
+Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &flags, Ref<Image> image, int p_size_limit) {
+
+	ERR_FAIL_COND_V(image.is_null(), ERR_INVALID_PARAMETER);
 
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
@@ -509,7 +475,7 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &fla
 		}
 
 		//mipmaps need to be read independently, they will be later combined
-		Vector<Image> mipmap_images;
+		Vector<Ref<Image> > mipmap_images;
 		int total_size = 0;
 
 		for (int i = 0; i < mipmaps; i++) {
@@ -525,18 +491,18 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &fla
 				f->get_buffer(w.ptr(), size);
 			}
 
-			Image img;
+			Ref<Image> img;
 			if (df & FORMAT_BIT_LOSSLESS) {
 				img = Image::lossless_unpacker(pv);
 			} else {
 				img = Image::lossy_unpacker(pv);
 			}
 
-			if (img.empty()) {
+			if (img.is_null()) {
 				memdelete(f);
-				ERR_FAIL_COND_V(img.empty(), ERR_FILE_CORRUPT);
+				ERR_FAIL_COND_V(img->empty(), ERR_FILE_CORRUPT);
 			}
-			total_size += img.get_data().size();
+			total_size += img->get_data().size();
 
 			mipmap_images.push_back(img);
 		}
@@ -560,7 +526,7 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &fla
 				int ofs = 0;
 				for (int i = 0; i < mipmap_images.size(); i++) {
 
-					PoolVector<uint8_t> id = mipmap_images[i].get_data();
+					PoolVector<uint8_t> id = mipmap_images[i]->get_data();
 					int len = id.size();
 					PoolVector<uint8_t>::Read r = id.read();
 					copymem(&w[ofs], r.ptr(), len);
@@ -568,7 +534,7 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &fla
 				}
 			}
 
-			image = Image(sw, sh, true, mipmap_images[0].get_format(), img_data);
+			image->create(sw, sh, true, mipmap_images[0]->get_format(), img_data);
 			return OK;
 		}
 
@@ -591,7 +557,7 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &fla
 
 			memdelete(f);
 
-			image = Image(tw, th, false, format, img_data);
+			image->create(tw, th, false, format, img_data);
 			return OK;
 		} else {
 
@@ -637,7 +603,7 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &fla
 				}
 			}
 
-			image = Image(sw, sh, true, format, img_data);
+			image->create(sw, sh, true, format, img_data);
 
 			return OK;
 		}
@@ -649,19 +615,20 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &fla
 Error StreamTexture::load(const String &p_path) {
 
 	int lw, lh, lflags;
-	Image image;
+	Ref<Image> image;
+	image.instance();
 	Error err = _load_data(p_path, lw, lh, lflags, image);
 	if (err)
 		return err;
 
-	VS::get_singleton()->texture_allocate(texture, image.get_width(), image.get_height(), image.get_format(), lflags);
+	VS::get_singleton()->texture_allocate(texture, image->get_width(), image->get_height(), image->get_format(), lflags);
 	VS::get_singleton()->texture_set_data(texture, image);
 
 	w = lw;
 	h = lh;
 	flags = lflags;
 	path_to_file = p_path;
-	format = image.get_format();
+	format = image->get_format();
 
 	return OK;
 }
@@ -707,7 +674,7 @@ bool StreamTexture::has_alpha() const {
 	return false;
 }
 
-Image StreamTexture::get_data() const {
+Ref<Image> StreamTexture::get_data() const {
 
 	return VS::get_singleton()->texture_get_data(texture);
 }
@@ -1175,25 +1142,25 @@ uint32_t CubeMap::get_flags() const {
 	return flags;
 }
 
-void CubeMap::set_side(Side p_side, const Image &p_image) {
+void CubeMap::set_side(Side p_side, const Ref<Image> &p_image) {
 
-	ERR_FAIL_COND(p_image.empty());
+	ERR_FAIL_COND(p_image->empty());
 	ERR_FAIL_INDEX(p_side, 6);
 	if (!_is_valid()) {
-		format = p_image.get_format();
-		w = p_image.get_width();
-		h = p_image.get_height();
-		VS::get_singleton()->texture_allocate(cubemap, w, h, p_image.get_format(), flags | VS::TEXTURE_FLAG_CUBEMAP);
+		format = p_image->get_format();
+		w = p_image->get_width();
+		h = p_image->get_height();
+		VS::get_singleton()->texture_allocate(cubemap, w, h, p_image->get_format(), flags | VS::TEXTURE_FLAG_CUBEMAP);
 	}
 
 	VS::get_singleton()->texture_set_data(cubemap, p_image, VS::CubeMapSide(p_side));
 	valid[p_side] = true;
 }
 
-Image CubeMap::get_side(Side p_side) const {
+Ref<Image> CubeMap::get_side(Side p_side) const {
 
 	if (!valid[p_side])
-		return Image();
+		return Ref<Image>();
 	return VS::get_singleton()->texture_get_data(cubemap, VS::CubeMapSide(p_side));
 }
 
@@ -1306,14 +1273,12 @@ void CubeMap::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 
 	p_list->push_back(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Mipmaps,Repeat,Filter"));
-	p_list->push_back(PropertyInfo(Variant::IMAGE, "side/left", img_hint, String::num(lossy_storage_quality)));
-	p_list->push_back(PropertyInfo(Variant::IMAGE, "side/right", img_hint, String::num(lossy_storage_quality)));
-	p_list->push_back(PropertyInfo(Variant::IMAGE, "side/bottom", img_hint, String::num(lossy_storage_quality)));
-	p_list->push_back(PropertyInfo(Variant::IMAGE, "side/top", img_hint, String::num(lossy_storage_quality)));
-	p_list->push_back(PropertyInfo(Variant::IMAGE, "side/front", img_hint, String::num(lossy_storage_quality)));
-	p_list->push_back(PropertyInfo(Variant::IMAGE, "side/back", img_hint, String::num(lossy_storage_quality)));
-	p_list->push_back(PropertyInfo(Variant::INT, "storage", PROPERTY_HINT_ENUM, "Uncompressed,Compress Lossy,Compress Lossless", PROPERTY_USAGE_EDITOR));
-	p_list->push_back(PropertyInfo(Variant::REAL, "lossy_quality", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"));
+	p_list->push_back(PropertyInfo(Variant::OBJECT, "side/left", PROPERTY_HINT_RESOURCE_TYPE, "Image"));
+	p_list->push_back(PropertyInfo(Variant::OBJECT, "side/right", PROPERTY_HINT_RESOURCE_TYPE, "Image"));
+	p_list->push_back(PropertyInfo(Variant::OBJECT, "side/bottom", PROPERTY_HINT_RESOURCE_TYPE, "Image"));
+	p_list->push_back(PropertyInfo(Variant::OBJECT, "side/top", PROPERTY_HINT_RESOURCE_TYPE, "Image"));
+	p_list->push_back(PropertyInfo(Variant::OBJECT, "side/front", PROPERTY_HINT_RESOURCE_TYPE, "Image"));
+	p_list->push_back(PropertyInfo(Variant::OBJECT, "side/back", PROPERTY_HINT_RESOURCE_TYPE, "Image"));
 }
 
 void CubeMap::_bind_methods() {
@@ -1603,7 +1568,7 @@ void CurveTexture::set_points(const PoolVector<Vector2> &p_points) {
 		}
 	}
 
-	Image image(width, 1, false, Image::FORMAT_RF, data);
+	Ref<Image> image = memnew(Image(width, 1, false, Image::FORMAT_RF, data));
 
 	VS::get_singleton()->texture_allocate(texture, width, 1, Image::FORMAT_RF, VS::TEXTURE_FLAG_FILTER);
 	VS::get_singleton()->texture_set_data(texture, image);
@@ -1715,7 +1680,7 @@ void GradientTexture::_update() {
 		}
 	}
 
-	Image image(width, 1, false, Image::FORMAT_RGBA8, data);
+	Ref<Image> image = memnew(Image(width, 1, false, Image::FORMAT_RGBA8, data));
 
 	VS::get_singleton()->texture_allocate(texture, width, 1, Image::FORMAT_RGBA8, VS::TEXTURE_FLAG_FILTER);
 	VS::get_singleton()->texture_set_data(texture, image);

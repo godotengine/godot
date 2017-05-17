@@ -1227,26 +1227,27 @@ void OS_OSX::set_window_title(const String &p_title) {
 	[window_object setTitle:[NSString stringWithUTF8String:p_title.utf8().get_data()]];
 }
 
-void OS_OSX::set_icon(const Image &p_icon) {
+void OS_OSX::set_icon(const Ref<Image> &p_icon) {
 
-	Image img = p_icon;
-	img.convert(Image::FORMAT_RGBA8);
+	Ref<Image> img = p_icon;
+	img = img->duplicate();
+	img->convert(Image::FORMAT_RGBA8);
 	NSBitmapImageRep *imgrep = [[[NSBitmapImageRep alloc]
 			initWithBitmapDataPlanes:NULL
-						  pixelsWide:p_icon.get_width()
-						  pixelsHigh:p_icon.get_height()
+						  pixelsWide:img->get_width()
+						  pixelsHigh:img->get_height()
 					   bitsPerSample:8
 					 samplesPerPixel:4
 							hasAlpha:YES
 							isPlanar:NO
 					  colorSpaceName:NSDeviceRGBColorSpace
-						 bytesPerRow:p_icon.get_width() * 4
+						 bytesPerRow:img->get_width() * 4
 						bitsPerPixel:32] autorelease];
 	ERR_FAIL_COND(imgrep == nil);
 	uint8_t *pixels = [imgrep bitmapData];
 
-	int len = img.get_width() * img.get_height();
-	PoolVector<uint8_t> data = img.get_data();
+	int len = img->get_width() * img->get_height();
+	PoolVector<uint8_t> data = img->get_data();
 	PoolVector<uint8_t>::Read r = data.read();
 
 	/* Premultiply the alpha channel */
@@ -1258,7 +1259,7 @@ void OS_OSX::set_icon(const Image &p_icon) {
 		pixels[i * 4 + 3] = alpha;
 	}
 
-	NSImage *nsimg = [[[NSImage alloc] initWithSize:NSMakeSize(img.get_width(), img.get_height())] autorelease];
+	NSImage *nsimg = [[[NSImage alloc] initWithSize:NSMakeSize(img->get_width(), img->get_height())] autorelease];
 	ERR_FAIL_COND(nsimg == nil);
 	[nsimg addRepresentation:imgrep];
 

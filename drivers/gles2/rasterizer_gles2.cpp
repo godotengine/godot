@@ -342,12 +342,12 @@ void RasterizerGLES2::_draw_primitive(int p_points, const Vector3 *p_vertices, c
 
 /* TEXTURE API */
 
-Image RasterizerGLES2::_get_gl_image_and_format(const Image &p_image, Image::Format p_format, uint32_t p_flags, GLenum &r_gl_format, GLenum &r_gl_internal_format, int &r_gl_components, bool &r_has_alpha_cache, bool &r_compressed) {
+Ref<Image> RasterizerGLES2::_get_gl_image_and_format(const Ref<Image> &p_image, Image::Format p_format, uint32_t p_flags, GLenum &r_gl_format, GLenum &r_gl_internal_format, int &r_gl_components, bool &r_has_alpha_cache, bool &r_compressed) {
 
 	r_has_alpha_cache = false;
 	r_compressed = false;
 	r_gl_format = 0;
-	Image image = p_image;
+	Ref<Image> image = p_image;
 
 	switch (p_format) {
 

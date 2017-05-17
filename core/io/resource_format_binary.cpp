@@ -54,7 +54,7 @@ enum {
 	VARIANT_TRANSFORM = 17,
 	VARIANT_MATRIX32 = 18,
 	VARIANT_COLOR = 20,
-	VARIANT_IMAGE = 21,
+	//VARIANT_IMAGE = 21, - no longer variant type
 	VARIANT_NODE_PATH = 22,
 	VARIANT_RID = 23,
 	VARIANT_OBJECT = 24,
@@ -70,11 +70,6 @@ enum {
 	VARIANT_VECTOR2_ARRAY = 37,
 	VARIANT_INT64 = 40,
 	VARIANT_DOUBLE = 41,
-
-	IMAGE_ENCODING_EMPTY = 0,
-	IMAGE_ENCODING_RAW = 1,
-	IMAGE_ENCODING_LOSSLESS = 2,
-	IMAGE_ENCODING_LOSSY = 3,
 
 	OBJECT_EMPTY = 0,
 	OBJECT_EXTERNAL_RESOURCE = 1,
@@ -259,74 +254,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 			r_v = v;
 
 		} break;
-		case VARIANT_IMAGE: {
 
-			uint32_t encoding = f->get_32();
-			if (encoding == IMAGE_ENCODING_EMPTY) {
-				r_v = Variant();
-				break;
-			} else if (encoding == IMAGE_ENCODING_RAW) {
-				uint32_t width = f->get_32();
-				uint32_t height = f->get_32();
-				uint32_t mipmaps = f->get_32();
-				uint32_t format = f->get_32();
-				const uint32_t format_version_shift = 24;
-				const uint32_t format_version_mask = format_version_shift - 1;
-
-				uint32_t format_version = format >> format_version_shift;
-
-				const uint32_t current_version = 0;
-				if (format_version > current_version) {
-
-					ERR_PRINT("Format version for encoded binary image is too new");
-					return ERR_PARSE_ERROR;
-				}
-
-				Image::Format fmt = Image::Format(format & format_version_mask); //if format changes, we can add a compatibility bit on top
-
-				uint32_t datalen = f->get_32();
-				print_line("image format: " + String(Image::get_format_name(fmt)) + " datalen " + itos(datalen));
-
-				PoolVector<uint8_t> imgdata;
-				imgdata.resize(datalen);
-				PoolVector<uint8_t>::Write w = imgdata.write();
-				f->get_buffer(w.ptr(), datalen);
-				_advance_padding(datalen);
-				w = PoolVector<uint8_t>::Write();
-
-#ifdef TOOLS_ENABLED
-				//compatibility
-				int correct_size = Image::get_image_data_size(width, height, fmt, mipmaps ? -1 : 0);
-				if (correct_size < datalen) {
-					WARN_PRINT("Image data was too large, shrinking for compatibility")
-					imgdata.resize(correct_size);
-				}
-#endif
-				r_v = Image(width, height, mipmaps, fmt, imgdata);
-
-			} else {
-				//compressed
-				PoolVector<uint8_t> data;
-				data.resize(f->get_32());
-				PoolVector<uint8_t>::Write w = data.write();
-				f->get_buffer(w.ptr(), data.size());
-				w = PoolVector<uint8_t>::Write();
-
-				Image img;
-
-				if (encoding == IMAGE_ENCODING_LOSSY && Image::lossy_unpacker) {
-
-					img = Image::lossy_unpacker(data);
-				} else if (encoding == IMAGE_ENCODING_LOSSLESS && Image::lossless_unpacker) {
-
-					img = Image::lossless_unpacker(data);
-				}
-				_advance_padding(data.size());
-
-				r_v = img;
-			}
-
-		} break;
 		case VARIANT_NODE_PATH: {
 
 			Vector<StringName> names;
@@ -1469,67 +1397,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(const Variant &p_property,
 			f->store_real(val.a);
 
 		} break;
-		case Variant::IMAGE: {
 
-			f->store_32(VARIANT_IMAGE);
-			Image val = p_property;
-			if (val.empty()) {
-				f->store_32(IMAGE_ENCODING_EMPTY);
-				break;
-			}
-
-			int encoding = IMAGE_ENCODING_RAW;
-			float quality = 0.7;
-
-			if (!val.is_compressed()) {
-				//can only compress uncompressed stuff
-
-				if (p_hint.hint == PROPERTY_HINT_IMAGE_COMPRESS_LOSSY && Image::lossy_packer) {
-					encoding = IMAGE_ENCODING_LOSSY;
-					float qs = p_hint.hint_string.to_double();
-					if (qs != 0.0)
-						quality = qs;
-
-				} else if (p_hint.hint == PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS && Image::lossless_packer) {
-					encoding = IMAGE_ENCODING_LOSSLESS;
-				}
-			}
-
-			f->store_32(encoding); //raw encoding
-
-			if (encoding == IMAGE_ENCODING_RAW) {
-
-				f->store_32(val.get_width());
-				f->store_32(val.get_height());
-				f->store_32(val.has_mipmaps());
-				f->store_32(val.get_format()); //if format changes we can add a compatibility version bit
-
-				int dlen = val.get_data().size();
-				f->store_32(dlen);
-				PoolVector<uint8_t>::Read r = val.get_data().read();
-				f->store_buffer(r.ptr(), dlen);
-				_pad_buffer(dlen);
-			} else {
-
-				PoolVector<uint8_t> data;
-				if (encoding == IMAGE_ENCODING_LOSSY) {
-					data = Image::lossy_packer(val, quality);
-
-				} else if (encoding == IMAGE_ENCODING_LOSSLESS) {
-					data = Image::lossless_packer(val);
-				}
-
-				int ds = data.size();
-				f->store_32(ds);
-				if (ds > 0) {
-					PoolVector<uint8_t>::Read r = data.read();
-					f->store_buffer(r.ptr(), ds);
-
-					_pad_buffer(ds);
-				}
-			}
-
-		} break;
 		case Variant::NODE_PATH: {
 			f->store_32(VARIANT_NODE_PATH);
 			NodePath np = p_property;

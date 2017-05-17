@@ -120,11 +120,6 @@ String Variant::get_type_name(Variant::Type p_type) {
 			return "Color";
 
 		} break;
-		case IMAGE: {
-
-			return "Image";
-
-		} break;
 		case _RID: {
 
 			return "RID";
@@ -249,7 +244,6 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 
 			static const Type invalid[] = {
 				OBJECT,
-				IMAGE,
 				NIL
 			};
 
@@ -791,11 +785,6 @@ bool Variant::is_zero() const {
 			return *reinterpret_cast<const Color *>(_data._mem) == Color();
 
 		} break;
-		case IMAGE: {
-
-			return _data._image->empty();
-
-		} break;
 		case _RID: {
 
 			return *reinterpret_cast<const RID *>(_data._mem) == RID();
@@ -1016,11 +1005,6 @@ void Variant::reference(const Variant &p_variant) {
 			memnew_placement(_data._mem, Color(*reinterpret_cast<const Color *>(p_variant._data._mem)));
 
 		} break;
-		case IMAGE: {
-
-			_data._image = memnew(Image(*p_variant._data._image));
-
-		} break;
 		case _RID: {
 
 			memnew_placement(_data._mem, RID(*reinterpret_cast<const RID *>(p_variant._data._mem)));
@@ -1141,11 +1125,6 @@ void Variant::clear() {
 		} break;
 
 		// misc types
-		case IMAGE: {
-
-			memdelete(_data._image);
-
-		} break;
 		case NODE_PATH: {
 
 			reinterpret_cast<NodePath *>(_data._mem)->~NodePath();
@@ -1760,13 +1739,6 @@ Variant::operator Color() const {
 	else
 		return Color();
 }
-Variant::operator Image() const {
-
-	if (type == IMAGE)
-		return *_data._image;
-	else
-		return Image();
-}
 
 Variant::operator NodePath() const {
 
@@ -2306,11 +2278,6 @@ Variant::Variant(const Color &p_color) {
 	type = COLOR;
 	memnew_placement(_data._mem, Color(p_color));
 }
-Variant::Variant(const Image &p_image) {
-
-	type = IMAGE;
-	_data._image = memnew(Image(p_image));
-}
 
 Variant::Variant(const NodePath &p_node_path) {
 
@@ -2709,11 +2676,6 @@ uint32_t Variant::hash() const {
 			hash = hash_djb2_one_float(reinterpret_cast<const Color *>(_data._mem)->g, hash);
 			hash = hash_djb2_one_float(reinterpret_cast<const Color *>(_data._mem)->b, hash);
 			return hash_djb2_one_float(reinterpret_cast<const Color *>(_data._mem)->a, hash);
-
-		} break;
-		case IMAGE: {
-
-			return 0;
 
 		} break;
 		case _RID: {

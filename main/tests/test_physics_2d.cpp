@@ -82,7 +82,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 				}
 			}
 
-			Image image(32, 2, 0, Image::FORMAT_LA8, pixels);
+			Ref<Image> image = memnew(Image(32, 2, 0, Image::FORMAT_LA8, pixels));
 
 			body_shape_data[Physics2DServer::SHAPE_SEGMENT].image = vs->texture_create_from_image(image);
 
@@ -109,7 +109,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 				}
 			}
 
-			Image image(32, 32, 0, Image::FORMAT_LA8, pixels);
+			Ref<Image> image = memnew(Image(32, 32, 0, Image::FORMAT_LA8, pixels));
 
 			body_shape_data[Physics2DServer::SHAPE_CIRCLE].image = vs->texture_create_from_image(image);
 
@@ -136,7 +136,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 				}
 			}
 
-			Image image(32, 32, 0, Image::FORMAT_LA8, pixels);
+			Ref<Image> image = memnew(Image(32, 32, 0, Image::FORMAT_LA8, pixels));
 
 			body_shape_data[Physics2DServer::SHAPE_RECTANGLE].image = vs->texture_create_from_image(image);
 
@@ -164,7 +164,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 				}
 			}
 
-			Image image(32, 64, 0, Image::FORMAT_LA8, pixels);
+			Ref<Image> image = memnew(Image(32, 64, 0, Image::FORMAT_LA8, pixels));
 
 			body_shape_data[Physics2DServer::SHAPE_CAPSULE].image = vs->texture_create_from_image(image);
 
@@ -178,7 +178,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 
 		{
 
-			Image image(convex_png);
+			Ref<Image> image = memnew(Image(convex_png));
 
 			body_shape_data[Physics2DServer::SHAPE_CONVEX_POLYGON].image = vs->texture_create_from_image(image);
 

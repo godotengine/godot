@@ -103,7 +103,7 @@ public:
 	void set_subindex(int p_sub_index);
 	int get_subindex() const;
 
-	Ref<Resource> duplicate(bool p_subresources = false);
+	virtual Ref<Resource> duplicate(bool p_subresources = false) const;
 	Ref<Resource> duplicate_for_local_scene(Node *p_scene, Map<Ref<Resource>, Ref<Resource> > &remap_cache);
 
 	void set_local_to_scene(bool p_enable);

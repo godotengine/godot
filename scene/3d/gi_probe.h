@@ -134,7 +134,7 @@ private:
 			Vector<Color> emission;
 		};
 
-		Vector<Color> _get_bake_texture(Image &p_image, const Color &p_color);
+		Vector<Color> _get_bake_texture(Ref<Image> p_image, const Color &p_color);
 		Map<Ref<Material>, MaterialCache> material_cache;
 		MaterialCache _get_material_cache(Ref<Material> p_material);
 		int leaf_voxel_count;
@@ -170,7 +170,7 @@ private:
 	int color_scan_cell_width;
 	int bake_texture_size;
 
-	Vector<Color> _get_bake_texture(Image &p_image, const Color &p_color);
+	Vector<Color> _get_bake_texture(Ref<Image> p_image, const Color &p_color);
 	Baker::MaterialCache _get_material_cache(Ref<Material> p_material, Baker *p_baker);
 	void _plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, const Vector3 *p_vtx, const Vector2 *p_uv, const Baker::MaterialCache &p_material, const Rect3 &p_aabb, Baker *p_baker);
 	void _plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, Baker *p_baker, const Vector<Ref<Material> > &p_materials, const Ref<Material> &p_override_material);

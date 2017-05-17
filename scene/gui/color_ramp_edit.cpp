@@ -42,7 +42,8 @@ ColorRampEdit::ColorRampEdit() {
 	add_child(popup);
 
 	checker = Ref<ImageTexture>(memnew(ImageTexture));
-	checker->create_from_image(Image(checker_bg_png), ImageTexture::FLAG_REPEAT);
+	Ref<Image> img = memnew(Image(checker_bg_png));
+	checker->create_from_image(img, ImageTexture::FLAG_REPEAT);
 }
 
 int ColorRampEdit::_get_point_from_pos(int x) {

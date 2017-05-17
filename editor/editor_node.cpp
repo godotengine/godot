@@ -4463,8 +4463,9 @@ Variant EditorNode::drag_resource(const Ref<Resource> &p_res, Control *p_from) {
 	{
 		//todo make proper previews
 		Ref<ImageTexture> pic = gui_base->get_icon("FileBig", "EditorIcons");
-		Image img = pic->get_data();
-		img.resize(48, 48); //meh
+		Ref<Image> img = pic->get_data();
+		img = img->duplicate();
+		img->resize(48, 48); //meh
 		Ref<ImageTexture> resized_pic = Ref<ImageTexture>(memnew(ImageTexture));
 		resized_pic->create_from_image(img);
 		preview = resized_pic;

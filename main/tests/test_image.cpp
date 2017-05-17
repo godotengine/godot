@@ -63,11 +63,6 @@ public:
 
 MainLoop *test() {
 
-	Image img;
-	ImageLoader::load_image("as1.png", &img);
-
-	img.resize(512, 512);
-
 	return memnew(TestMainLoop);
 }
 }

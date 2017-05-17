@@ -335,11 +335,7 @@ void DocData::generate(bool p_basic_types) {
 							case Variant::DICTIONARY: // 20
 							case Variant::ARRAY:
 							case Variant::_RID:
-							case Variant::IMAGE:
-								//case Variant::RESOURCE:
 
-								default_arg_text = Variant::get_type_name(default_arg.get_type()) + "()";
-								break;
 							default: {}
 						}
 

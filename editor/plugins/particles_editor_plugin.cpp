@@ -329,7 +329,7 @@ void ParticlesEditor::_generate_emission_points() {
 		copymem(iw.ptr(), r.ptr(), point_count * sizeof(float) * 3);
 	}
 
-	Image image(w, h, false, Image::FORMAT_RGBF, point_img);
+	Ref<Image> image = memnew(Image(w, h, false, Image::FORMAT_RGBF, point_img));
 
 	Ref<ImageTexture> tex;
 	tex.instance();
@@ -354,7 +354,7 @@ void ParticlesEditor::_generate_emission_points() {
 			copymem(iw.ptr(), r.ptr(), point_count * sizeof(float) * 3);
 		}
 
-		Image image2(w, h, false, Image::FORMAT_RGBF, point_img2);
+		Ref<Image> image2 = memnew(Image(w, h, false, Image::FORMAT_RGBF, point_img2));
 
 		Ref<ImageTexture> tex2;
 		tex2.instance();

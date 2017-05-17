@@ -344,14 +344,16 @@ void EditorProfiler::_update_plot() {
 
 	wr = PoolVector<uint8_t>::Write();
 
-	Image img(w, h, 0, Image::FORMAT_RGBA8, graph_image);
+	Ref<Image> img;
+	img.instance();
+	img->create(w, h, 0, Image::FORMAT_RGBA8, graph_image);
 
 	if (reset_texture) {
 
 		if (graph_texture.is_null()) {
 			graph_texture.instance();
 		}
-		graph_texture->create(img.get_width(), img.get_height(), img.get_format(), Texture::FLAG_VIDEO_SURFACE);
+		graph_texture->create(img->get_width(), img->get_height(), img->get_format(), Texture::FLAG_VIDEO_SURFACE);
 	}
 
 	graph_texture->set_data(img);

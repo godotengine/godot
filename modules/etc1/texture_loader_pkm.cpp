@@ -85,7 +85,7 @@ RES ResourceFormatPKM::load(const String &p_path, const String &p_original_path,
 	int width = h.origWidth;
 	int height = h.origHeight;
 
-	Image img(width, height, mipmaps, Image::FORMAT_ETC, src_data);
+	Ref<Image> img = memnew(Image(width, height, mipmaps, Image::FORMAT_ETC, src_data));
 
 	Ref<ImageTexture> texture = memnew(ImageTexture);
 	texture->create_from_image(img);

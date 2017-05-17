@@ -441,7 +441,7 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 		wb = PoolVector<uint8_t>::Write();
 	}
 
-	Image img(width, height, mipmaps - 1, info.format, src_data);
+	Ref<Image> img = memnew(Image(width, height, mipmaps - 1, info.format, src_data));
 
 	Ref<ImageTexture> texture = memnew(ImageTexture);
 	texture->create_from_image(img);

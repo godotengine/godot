@@ -917,18 +917,19 @@ Error Main::setup2() {
 		bool boot_logo_scale = GLOBAL_DEF("application/boot_splash_fullsize", true);
 		GlobalConfig::get_singleton()->set_custom_property_info("application/boot_splash", PropertyInfo(Variant::STRING, "application/boot_splash", PROPERTY_HINT_FILE, "*.png"));
 
-		Image boot_logo;
+		Ref<Image> boot_logo;
 
 		boot_logo_path = boot_logo_path.strip_edges();
 
 		if (boot_logo_path != String() /*&& FileAccess::exists(boot_logo_path)*/) {
 			print_line("Boot splash path: " + boot_logo_path);
-			Error err = boot_logo.load(boot_logo_path);
+			boot_logo.instance();
+			Error err = boot_logo->load(boot_logo_path);
 			if (err)
 				ERR_PRINTS("Non-existing or invalid boot splash at: " + boot_logo_path + ". Loading default splash.");
 		}
 
-		if (!boot_logo.empty()) {
+		if (boot_logo.is_valid()) {
 			OS::get_singleton()->_msec_splash = OS::get_singleton()->get_ticks_msec();
 			Color boot_bg = GLOBAL_DEF("application/boot_bg_color", clear);
 			VisualServer::get_singleton()->set_boot_image(boot_logo, boot_bg, boot_logo_scale);
@@ -941,7 +942,7 @@ Error Main::setup2() {
 #ifndef NO_DEFAULT_BOOT_LOGO
 
 			MAIN_PRINT("Main: Create bootsplash");
-			Image splash(boot_splash_png);
+			Ref<Image> splash = memnew(Image(boot_splash_png));
 
 			MAIN_PRINT("Main: ClearColor");
 			VisualServer::get_singleton()->set_default_clear_color(boot_splash_bg_color);
@@ -950,7 +951,7 @@ Error Main::setup2() {
 #endif
 		}
 
-		Image icon(app_icon_png);
+		Ref<Image> icon = memnew(Image(app_icon_png));
 		OS::get_singleton()->set_icon(icon);
 	}
 
@@ -1464,8 +1465,8 @@ bool Main::start() {
 
 				String iconpath = GLOBAL_DEF("application/icon", "Variant()");
 				if (iconpath != "") {
-					Image icon;
-					if (icon.load(iconpath) == OK)
+					Ref<Image> icon;
+					if (icon->load(iconpath) == OK)
 						OS::get_singleton()->set_icon(icon);
 				}
 			}

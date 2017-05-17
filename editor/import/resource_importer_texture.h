@@ -30,7 +30,9 @@
 #ifndef RESOURCEIMPORTTEXTURE_H
 #define RESOURCEIMPORTTEXTURE_H
 
+#include "image.h"
 #include "io/resource_import.h"
+
 class StreamTexture;
 
 class ResourceImporterTexture : public ResourceImporter {
@@ -78,7 +80,7 @@ public:
 	virtual void get_import_options(List<ImportOption> *r_options, int p_preset = 0) const;
 	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const;
 
-	void _save_stex(const Image &p_image, const String &p_to_path, int p_compress_mode, float p_lossy_quality, Image::CompressMode p_vram_compression, bool p_mipmaps, int p_texture_flags, bool p_streamable, bool p_detect_3d, bool p_detect_srgb);
+	void _save_stex(const Ref<Image> &p_image, const String &p_to_path, int p_compress_mode, float p_lossy_quality, Image::CompressMode p_vram_compression, bool p_mipmaps, int p_texture_flags, bool p_streamable, bool p_detect_3d, bool p_detect_srgb);
 
 	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = NULL);
 

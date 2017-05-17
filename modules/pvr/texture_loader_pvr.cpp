@@ -164,8 +164,8 @@ RES ResourceFormatPVR::load(const String &p_path, const String &p_original_path,
 
 	print_line("flip: " + itos(flags & PVR_VFLIP));
 
-	Image image(width, height, mipmaps, format, data);
-	ERR_FAIL_COND_V(image.empty(), RES());
+	Ref<Image> image = memnew(Image(width, height, mipmaps, format, data));
+	ERR_FAIL_COND_V(image->empty(), RES());
 
 	Ref<ImageTexture> texture = memnew(ImageTexture);
 	texture->create_from_image(image, tex_flags);
@@ -193,30 +193,32 @@ String ResourceFormatPVR::get_resource_type(const String &p_path) const {
 
 static void _compress_pvrtc4(Image *p_img) {
 
-	Image img = *p_img;
+	Ref<Image> img = p_img->duplicate();
 
 	bool make_mipmaps = false;
-	if (img.get_width() % 8 || img.get_height() % 8) {
-		make_mipmaps = img.has_mipmaps();
-		img.resize(img.get_width() + (8 - (img.get_width() % 8)), img.get_height() + (8 - (img.get_height() % 8)));
+	if (img->get_width() % 8 || img->get_height() % 8) {
+		make_mipmaps = img->has_mipmaps();
+		img->resize(img->get_width() + (8 - (img->get_width() % 8)), img->get_height() + (8 - (img->get_height() % 8)));
 	}
-	img.convert(Image::FORMAT_RGBA8);
-	if (!img.has_mipmaps() && make_mipmaps)
-		img.generate_mipmaps();
+	img->convert(Image::FORMAT_RGBA8);
+	if (!img->has_mipmaps() && make_mipmaps)
+		img->generate_mipmaps();
 
-	bool use_alpha = img.detect_alpha();
+	bool use_alpha = img->detect_alpha();
 
-	Image new_img;
-	new_img.create(img.get_width(), img.get_height(), true, use_alpha ? Image::FORMAT_PVRTC4A : Image::FORMAT_PVRTC4);
-	PoolVector<uint8_t> data = new_img.get_data();
+	Ref<Image> new_img;
+	new_img.instance();
+	new_img->create(img->get_width(), img->get_height(), true, use_alpha ? Image::FORMAT_PVRTC4A : Image::FORMAT_PVRTC4);
+
+	PoolVector<uint8_t> data = new_img->get_data();
 	{
 		PoolVector<uint8_t>::Write wr = data.write();
-		PoolVector<uint8_t>::Read r = img.get_data().read();
+		PoolVector<uint8_t>::Read r = img->get_data().read();
 
-		for (int i = 0; i <= new_img.get_mipmap_count(); i++) {
+		for (int i = 0; i <= new_img->get_mipmap_count(); i++) {
 
 			int ofs, size, w, h;
-			img.get_mipmap_offset_size_and_dimensions(i, ofs, size, w, h);
+			img->get_mipmap_offset_size_and_dimensions(i, ofs, size, w, h);
 			Javelin::RgbaBitmap bm(w, h);
 			copymem(bm.GetData(), &r[ofs], size);
 			{
@@ -226,12 +228,12 @@ static void _compress_pvrtc4(Image *p_img) {
 				}
 			}
 
-			new_img.get_mipmap_offset_size_and_dimensions(i, ofs, size, w, h);
+			new_img->get_mipmap_offset_size_and_dimensions(i, ofs, size, w, h);
 			Javelin::PvrTcEncoder::EncodeRgba4Bpp(&wr[ofs], bm);
 		}
 	}
 
-	*p_img = Image(new_img.get_width(), new_img.get_height(), new_img.has_mipmaps(), new_img.get_format(), data);
+	p_img->create(new_img->get_width(), new_img->get_height(), new_img->has_mipmaps(), new_img->get_format(), data);
 }
 
 ResourceFormatPVR::ResourceFormatPVR() {
@@ -676,8 +678,7 @@ static void _pvrtc_decompress(Image *p_img) {
 	r = PoolVector<uint8_t>::Read();
 
 	bool make_mipmaps = p_img->has_mipmaps();
-	Image newimg(p_img->get_width(), p_img->get_height(), false, Image::FORMAT_RGBA8, newdata);
+	p_img->create(p_img->get_width(), p_img->get_height(), false, Image::FORMAT_RGBA8, newdata);
 	if (make_mipmaps)
-		newimg.generate_mipmaps();
-	*p_img = newimg;
+		p_img->generate_mipmaps();
 }

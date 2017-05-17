@@ -88,24 +88,25 @@ void ImageSkyBox::set_image_path(ImagePath p_image, const String &p_path) {
 
 	if (all_ok) {
 
-		Image images[IMAGE_PATH_MAX];
+		Ref<Image> images[IMAGE_PATH_MAX];
 		int w = 0, h = 0;
 		Image::Format format;
 
 		for (int i = 0; i < IMAGE_PATH_MAX; i++) {
-			Error err = ImageLoader::load_image(image_path[i], &images[i]);
+			images[i].instance();
+			Error err = ImageLoader::load_image(image_path[i], images[i]);
 			if (err) {
 				ERR_PRINTS("Error loading image for skybox: " + image_path[i]);
 				return;
 			}
 
 			if (i == 0) {
-				w = images[0].get_width();
-				h = images[0].get_height();
-				format = images[0].get_format();
+				w = images[0]->get_width();
+				h = images[0]->get_height();
+				format = images[0]->get_format();
 			} else {
-				if (images[i].get_width() != w || images[i].get_height() != h || images[i].get_format() != format) {
-					ERR_PRINTS("Image size mismatch (" + itos(images[i].get_width()) + "," + itos(images[i].get_height()) + ":" + Image::get_format_name(images[i].get_format()) + " when it should be " + itos(w) + "," + itos(h) + ":" + Image::get_format_name(format) + "): " + image_path[i]);
+				if (images[i]->get_width() != w || images[i]->get_height() != h || images[i]->get_format() != format) {
+					ERR_PRINTS("Image size mismatch (" + itos(images[i]->get_width()) + "," + itos(images[i]->get_height()) + ":" + Image::get_format_name(images[i]->get_format()) + " when it should be " + itos(w) + "," + itos(h) + ":" + Image::get_format_name(format) + "): " + image_path[i]);
 					return;
 				}
 			}

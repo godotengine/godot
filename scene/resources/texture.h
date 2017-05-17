@@ -73,7 +73,7 @@ public:
 	virtual void draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false) const;
 	virtual bool get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const;
 
-	virtual Image get_data() const { return Image(); }
+	virtual Ref<Image> get_data() const { return Ref<Image>(); }
 
 	Texture();
 };
@@ -116,14 +116,14 @@ protected:
 
 public:
 	void create(int p_width, int p_height, Image::Format p_format, uint32_t p_flags = FLAGS_DEFAULT);
-	void create_from_image(const Image &p_image, uint32_t p_flags = FLAGS_DEFAULT);
+	void create_from_image(const Ref<Image> &p_image, uint32_t p_flags = FLAGS_DEFAULT);
 
 	void set_flags(uint32_t p_flags);
 	uint32_t get_flags() const;
 	Image::Format get_format() const;
 	void load(const String &p_path);
-	void set_data(const Image &p_image);
-	Image get_data() const;
+	void set_data(const Ref<Image> &p_image);
+	Ref<Image> get_data() const;
 
 	int get_width() const;
 	int get_height() const;
@@ -139,11 +139,6 @@ public:
 
 	void set_lossy_storage_quality(float p_lossy_storage_quality);
 	float get_lossy_storage_quality() const;
-
-	void fix_alpha_edges();
-	void premultiply_alpha();
-	void normal_to_xy();
-	void shrink_x2_and_keep_size();
 
 	void set_size_override(const Size2 &p_size);
 
@@ -175,7 +170,7 @@ public:
 	};
 
 private:
-	Error _load_data(const String &p_path, int &tw, int &th, int &flags, Image &image, int p_size_limit = 0);
+	Error _load_data(const String &p_path, int &tw, int &th, int &flags, Ref<Image> image, int p_size_limit = 0);
 	String path_to_file;
 	RID texture;
 	Image::Format format;
@@ -212,7 +207,7 @@ public:
 	virtual bool has_alpha() const;
 	virtual void set_flags(uint32_t p_flags);
 
-	virtual Image get_data() const;
+	virtual Ref<Image> get_data() const;
 
 	StreamTexture();
 	~StreamTexture();
@@ -370,8 +365,8 @@ protected:
 public:
 	void set_flags(uint32_t p_flags);
 	uint32_t get_flags() const;
-	void set_side(Side p_side, const Image &p_image);
-	Image get_side(Side p_side) const;
+	void set_side(Side p_side, const Ref<Image> &p_image);
+	Ref<Image> get_side(Side p_side) const;
 
 	Image::Format get_format() const;
 	int get_width() const;

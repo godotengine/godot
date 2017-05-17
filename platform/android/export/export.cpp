@@ -3523,7 +3523,7 @@ public:
 
 	EditorExportAndroid() {
 
-		Image img(_android_logo);
+		Ref<Image> img = memnew(Image(_android_logo));
 		logo = Ref<ImageTexture>(memnew(ImageTexture));
 		logo->create_from_image(img);
 

@@ -30,6 +30,7 @@
 #ifndef BIT_MASK_H
 #define BIT_MASK_H
 
+#include "image.h" 0
 #include "io/resource_loader.h"
 #include "resource.h"
 
@@ -51,7 +52,7 @@ protected:
 
 public:
 	void create(const Size2 &p_size);
-	void create_from_image_alpha(const Image &p_image);
+	void create_from_image_alpha(const Ref<Image> &p_image);
 
 	void set_bit(const Point2 &p_pos, bool p_value);
 	bool get_bit(const Point2 &p_pos) const;

@@ -50,7 +50,7 @@ Error ResourceSaverPNG::save(const String &p_path, const RES &p_resource, uint32
 	ERR_EXPLAIN("Can't save empty texture as PNG");
 	ERR_FAIL_COND_V(!texture->get_width() || !texture->get_height(), ERR_INVALID_PARAMETER);
 
-	Image img = texture->get_data();
+	Ref<Image> img = texture->get_data();
 
 	Error err = save_image(p_path, img);
 
@@ -95,12 +95,14 @@ Error ResourceSaverPNG::save(const String &p_path, const RES &p_resource, uint32
 	return err;
 };
 
-Error ResourceSaverPNG::save_image(const String &p_path, Image &p_img) {
+Error ResourceSaverPNG::save_image(const String &p_path, const Ref<Image> &p_img) {
 
-	if (p_img.is_compressed())
-		p_img.decompress();
+	Ref<Image> img = p_img->duplicate();
 
-	ERR_FAIL_COND_V(p_img.is_compressed(), ERR_INVALID_PARAMETER);
+	if (img->is_compressed())
+		img->decompress();
+
+	ERR_FAIL_COND_V(img->is_compressed(), ERR_INVALID_PARAMETER);
 
 	png_structp png_ptr;
 	png_infop info_ptr;
@@ -135,7 +137,7 @@ Error ResourceSaverPNG::save_image(const String &p_path, Image &p_img) {
 	int pngf = 0;
 	int cs = 0;
 
-	switch (p_img.get_format()) {
+	switch (img->get_format()) {
 
 		case Image::FORMAT_L8: {
 
@@ -159,22 +161,22 @@ Error ResourceSaverPNG::save_image(const String &p_path, Image &p_img) {
 		} break;
 		default: {
 
-			if (p_img.detect_alpha()) {
+			if (img->detect_alpha()) {
 
-				p_img.convert(Image::FORMAT_RGBA8);
+				img->convert(Image::FORMAT_RGBA8);
 				pngf = PNG_COLOR_TYPE_RGB_ALPHA;
 				cs = 4;
 			} else {
 
-				p_img.convert(Image::FORMAT_RGB8);
+				img->convert(Image::FORMAT_RGB8);
 				pngf = PNG_COLOR_TYPE_RGB;
 				cs = 3;
 			}
 		}
 	}
 
-	int w = p_img.get_width();
-	int h = p_img.get_height();
+	int w = img->get_width();
+	int h = img->get_height();
 	png_set_IHDR(png_ptr, info_ptr, w, h,
 			8, pngf, PNG_INTERLACE_NONE,
 			PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
@@ -187,7 +189,7 @@ Error ResourceSaverPNG::save_image(const String &p_path, Image &p_img) {
 		ERR_FAIL_V(ERR_CANT_OPEN);
 	}
 
-	PoolVector<uint8_t>::Read r = p_img.get_data().read();
+	PoolVector<uint8_t>::Read r = img->get_data().read();
 
 	row_pointers = (png_bytep *)memalloc(sizeof(png_bytep) * h);
 	for (int i = 0; i < h; i++) {

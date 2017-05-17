@@ -42,8 +42,8 @@ class ImageLoaderPNG : public ImageFormatLoader {
 	static void _read_png_data(png_structp png_ptr, png_bytep data, png_size_t p_length);
 
 public:
-	static Error _load_image(void *rf_up, png_rw_ptr p_func, Image *p_image);
-	virtual Error load_image(Image *p_image, FileAccess *f);
+	static Error _load_image(void *rf_up, png_rw_ptr p_func, Ref<Image> p_image);
+	virtual Error load_image(Ref<Image> p_image, FileAccess *f);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	ImageLoaderPNG();
 };

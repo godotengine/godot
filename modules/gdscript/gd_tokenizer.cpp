@@ -800,7 +800,6 @@ void GDTokenizerText::_advance() {
 							{ Variant::BASIS, "Basis" },
 							{ Variant::TRANSFORM, "Transform" },
 							{ Variant::COLOR, "Color" },
-							{ Variant::IMAGE, "Image" },
 							{ Variant::_RID, "RID" },
 							{ Variant::OBJECT, "Object" },
 							{ Variant::INPUT_EVENT, "InputEvent" },

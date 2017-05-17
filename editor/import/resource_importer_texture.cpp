@@ -181,7 +181,7 @@ void ResourceImporterTexture::get_import_options(List<ImportOption> *r_options, 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "detect_3d"), p_preset == PRESET_DETECT));
 }
 
-void ResourceImporterTexture::_save_stex(const Image &p_image, const String &p_to_path, int p_compress_mode, float p_lossy_quality, Image::CompressMode p_vram_compression, bool p_mipmaps, int p_texture_flags, bool p_streamable, bool p_detect_3d, bool p_detect_srgb) {
+void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String &p_to_path, int p_compress_mode, float p_lossy_quality, Image::CompressMode p_vram_compression, bool p_mipmaps, int p_texture_flags, bool p_streamable, bool p_detect_3d, bool p_detect_srgb) {
 
 	FileAccess *f = FileAccess::open(p_to_path, FileAccess::WRITE);
 	f->store_8('G');
@@ -189,8 +189,8 @@ void ResourceImporterTexture::_save_stex(const Image &p_image, const String &p_t
 	f->store_8('S');
 	f->store_8('T'); //godot streamable texture
 
-	f->store_32(p_image.get_width());
-	f->store_32(p_image.get_height());
+	f->store_32(p_image->get_width());
+	f->store_32(p_image->get_height());
 	f->store_32(p_texture_flags);
 
 	uint32_t format = 0;
@@ -207,14 +207,14 @@ void ResourceImporterTexture::_save_stex(const Image &p_image, const String &p_t
 	switch (p_compress_mode) {
 		case COMPRESS_LOSSLESS: {
 
-			Image image = p_image;
+			Ref<Image> image = p_image->duplicate();
 			if (p_mipmaps) {
-				image.generate_mipmaps();
+				image->generate_mipmaps();
 			} else {
-				image.clear_mipmaps();
+				image->clear_mipmaps();
 			}
 
-			int mmc = image.get_mipmap_count() + 1;
+			int mmc = image->get_mipmap_count() + 1;
 
 			format |= StreamTexture::FORMAT_BIT_LOSSLESS;
 			f->store_32(format);
@@ -223,7 +223,7 @@ void ResourceImporterTexture::_save_stex(const Image &p_image, const String &p_t
 			for (int i = 0; i < mmc; i++) {
 
 				if (i > 0) {
-					image.shrink_x2();
+					image->shrink_x2();
 				}
 
 				PoolVector<uint8_t> data = Image::lossless_packer(image);
@@ -236,14 +236,14 @@ void ResourceImporterTexture::_save_stex(const Image &p_image, const String &p_t
 
 		} break;
 		case COMPRESS_LOSSY: {
-			Image image = p_image;
+			Ref<Image> image = p_image->duplicate();
 			if (p_mipmaps) {
-				image.generate_mipmaps();
+				image->generate_mipmaps();
 			} else {
-				image.clear_mipmaps();
+				image->clear_mipmaps();
 			}
 
-			int mmc = image.get_mipmap_count() + 1;
+			int mmc = image->get_mipmap_count() + 1;
 
 			format |= StreamTexture::FORMAT_BIT_LOSSY;
 			f->store_32(format);
@@ -252,7 +252,7 @@ void ResourceImporterTexture::_save_stex(const Image &p_image, const String &p_t
 			for (int i = 0; i < mmc; i++) {
 
 				if (i > 0) {
-					image.shrink_x2();
+					image->shrink_x2();
 				}
 
 				PoolVector<uint8_t> data = Image::lossy_packer(image, p_lossy_quality);
@@ -265,15 +265,15 @@ void ResourceImporterTexture::_save_stex(const Image &p_image, const String &p_t
 		} break;
 		case COMPRESS_VIDEO_RAM: {
 
-			Image image = p_image;
-			image.generate_mipmaps();
-			image.compress(p_vram_compression);
+			Ref<Image> image = p_image->duplicate();
+			image->generate_mipmaps();
+			image->compress(p_vram_compression);
 
-			format |= image.get_format();
+			format |= image->get_format();
 
 			f->store_32(format);
 
-			PoolVector<uint8_t> data = image.get_data();
+			PoolVector<uint8_t> data = image->get_data();
 			int dl = data.size();
 			PoolVector<uint8_t>::Read r = data.read();
 			f->store_buffer(r.ptr(), dl);
@@ -281,17 +281,17 @@ void ResourceImporterTexture::_save_stex(const Image &p_image, const String &p_t
 		} break;
 		case COMPRESS_UNCOMPRESSED: {
 
-			Image image = p_image;
+			Ref<Image> image = p_image->duplicate();
 			if (p_mipmaps) {
-				image.generate_mipmaps();
+				image->generate_mipmaps();
 			} else {
-				image.clear_mipmaps();
+				image->clear_mipmaps();
 			}
 
-			format |= image.get_format();
+			format |= image->get_format();
 			f->store_32(format);
 
-			PoolVector<uint8_t> data = image.get_data();
+			PoolVector<uint8_t> data = image->get_data();
 			int dl = data.size();
 			PoolVector<uint8_t>::Read r = data.read();
 
@@ -317,8 +317,9 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 	bool stream = p_options["stream"];
 	int size_limit = p_options["size_limit"];
 
-	Image image;
-	Error err = ImageLoader::load_image(p_source_file, &image);
+	Ref<Image> image;
+	image.instance();
+	Error err = ImageLoader::load_image(p_source_file, image);
 	if (err != OK)
 		return err;
 
@@ -336,28 +337,28 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 	if (srgb == 1)
 		tex_flags |= Texture::FLAG_CONVERT_TO_LINEAR;
 
-	if (size_limit > 0 && (image.get_width() > size_limit || image.get_height() > size_limit)) {
+	if (size_limit > 0 && (image->get_width() > size_limit || image->get_height() > size_limit)) {
 		//limit size
-		if (image.get_width() >= image.get_height()) {
+		if (image->get_width() >= image->get_height()) {
 			int new_width = size_limit;
-			int new_height = image.get_height() * new_width / image.get_width();
+			int new_height = image->get_height() * new_width / image->get_width();
 
-			image.resize(new_width, new_height, Image::INTERPOLATE_CUBIC);
+			image->resize(new_width, new_height, Image::INTERPOLATE_CUBIC);
 		} else {
 
 			int new_height = size_limit;
-			int new_width = image.get_width() * new_height / image.get_height();
+			int new_width = image->get_width() * new_height / image->get_height();
 
-			image.resize(new_width, new_height, Image::INTERPOLATE_CUBIC);
+			image->resize(new_width, new_height, Image::INTERPOLATE_CUBIC);
 		}
 	}
 
 	if (fix_alpha_border) {
-		image.fix_alpha_edges();
+		image->fix_alpha_edges();
 	}
 
 	if (premult_alpha) {
-		image.premultiply_alpha();
+		image->premultiply_alpha();
 	}
 
 	bool detect_3d = p_options["detect_3d"];

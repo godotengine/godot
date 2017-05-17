@@ -1857,15 +1857,15 @@ void OS_X11::alert(const String &p_alert, const String &p_title) {
 	execute("/usr/bin/xmessage", args, true);
 }
 
-void OS_X11::set_icon(const Image &p_icon) {
+void OS_X11::set_icon(const Ref<Image> &p_icon) {
 	Atom net_wm_icon = XInternAtom(x11_display, "_NET_WM_ICON", False);
 
-	if (!p_icon.empty()) {
-		Image img = p_icon;
-		img.convert(Image::FORMAT_RGBA8);
+	if (p_icon.is_valid()) {
+		Ref<Image> img = p_icon->duplicate();
+		img->convert(Image::FORMAT_RGBA8);
 
-		int w = img.get_width();
-		int h = img.get_height();
+		int w = img->get_width();
+		int h = img->get_height();
 
 		// We're using long to have wordsize (32Bit build -> 32 Bits, 64 Bit build -> 64 Bits
 		Vector<long> pd;
@@ -1875,7 +1875,7 @@ void OS_X11::set_icon(const Image &p_icon) {
 		pd[0] = w;
 		pd[1] = h;
 
-		PoolVector<uint8_t>::Read r = img.get_data().read();
+		PoolVector<uint8_t>::Read r = img->get_data().read();
 
 		long *wr = &pd[2];
 		uint8_t const *pr = r.ptr();

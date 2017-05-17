@@ -43,7 +43,8 @@ bool ImageFormatLoader::recognize(const String &p_extension) const {
 	return false;
 }
 
-Error ImageLoader::load_image(String p_file, Image *p_image, FileAccess *p_custom) {
+Error ImageLoader::load_image(String p_file, Ref<Image> p_image, FileAccess *p_custom) {
+	ERR_FAIL_COND_V(p_image.is_null(), ERR_INVALID_PARAMETER);
 
 	FileAccess *f = p_custom;
 	if (!f) {

@@ -30,6 +30,7 @@
 #ifndef CORE_BIND_H
 #define CORE_BIND_H
 
+#include "image.h"
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
 #include "os/dir_access.h"
@@ -226,7 +227,7 @@ public:
 
 	void set_use_file_access_save_and_swap(bool p_enable);
 
-	void set_icon(const Image &p_icon);
+	void set_icon(const Ref<Image> &p_icon);
 
 	int get_exit_code() const;
 	void set_exit_code(int p_code);

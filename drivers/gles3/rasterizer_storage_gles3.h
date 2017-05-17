@@ -240,7 +240,7 @@ public:
 
 		RenderTarget *render_target;
 
-		Image images[6];
+		Ref<Image> images[6];
 
 		VisualServer::TextureDetectCallback detect_3d;
 		void *detect_3d_ud;
@@ -280,12 +280,12 @@ public:
 
 	mutable RID_Owner<Texture> texture_owner;
 
-	Image _get_gl_image_and_format(const Image &p_image, Image::Format p_format, uint32_t p_flags, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_type, bool &r_compressed, bool &srgb);
+	Ref<Image> _get_gl_image_and_format(const Ref<Image> &p_image, Image::Format p_format, uint32_t p_flags, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_type, bool &r_compressed, bool &srgb);
 
 	virtual RID texture_create();
 	virtual void texture_allocate(RID p_texture, int p_width, int p_height, Image::Format p_format, uint32_t p_flags = VS::TEXTURE_FLAGS_DEFAULT);
-	virtual void texture_set_data(RID p_texture, const Image &p_image, VS::CubeMapSide p_cube_side = VS::CUBEMAP_LEFT);
-	virtual Image texture_get_data(RID p_texture, VS::CubeMapSide p_cube_side = VS::CUBEMAP_LEFT) const;
+	virtual void texture_set_data(RID p_texture, const Ref<Image> &p_image, VS::CubeMapSide p_cube_side = VS::CUBEMAP_LEFT);
+	virtual Ref<Image> texture_get_data(RID p_texture, VS::CubeMapSide p_cube_side = VS::CUBEMAP_LEFT) const;
 	virtual void texture_set_flags(RID p_texture, uint32_t p_flags);
 	virtual uint32_t texture_get_flags(RID p_texture) const;
 	virtual Image::Format texture_get_format(RID p_texture) const;

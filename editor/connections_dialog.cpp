@@ -239,7 +239,6 @@ void ConnectDialog::_add_bind() {
 		case Variant::BASIS: value = Basis(); break;
 		case Variant::TRANSFORM: value = Transform(); break;
 		case Variant::COLOR: value = Color(); break;
-		case Variant::IMAGE: value = Image(); break;
 
 		default: { ERR_FAIL(); } break;
 	}
@@ -327,7 +326,6 @@ ConnectDialog::ConnectDialog() {
 	type_list->add_item("Transform", Variant::TRANSFORM);
 	//type_list->add_separator();
 	type_list->add_item("Color", Variant::COLOR);
-	type_list->add_item("Image", Variant::IMAGE);
 	type_list->select(0);
 
 	Button *add_bind = memnew(Button);

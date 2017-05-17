@@ -58,7 +58,6 @@ bool Variant::booleanize(bool &r_valid) const {
 		case BASIS:
 		case TRANSFORM:
 		case COLOR:
-		case IMAGE: r_valid = false; return false;
 		case _RID: return (*reinterpret_cast<const RID *>(_data._mem)).is_valid();
 		case OBJECT: return _get_obj().obj;
 		case NODE_PATH: return (*reinterpret_cast<const NodePath *>(_data._mem)) != NodePath();
@@ -283,7 +282,6 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a, const Variant &
 					DEFAULT_OP_PTRREF(==, TRANSFORM, _transform);
 
 					DEFAULT_OP_LOCALMEM(==, COLOR, Color);
-					DEFAULT_OP_PTRREF(==, IMAGE, _image);
 					DEFAULT_OP_STR(==, NODE_PATH, NodePath);
 					DEFAULT_OP_LOCALMEM(==, _RID, RID);
 				case OBJECT: {
@@ -372,7 +370,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a, const Variant &
 				DEFAULT_OP_FAIL(TRANSFORM);
 
 				DEFAULT_OP_FAIL(COLOR);
-				DEFAULT_OP_FAIL(IMAGE);
+
 				DEFAULT_OP_FAIL(NODE_PATH);
 				DEFAULT_OP_LOCALMEM(<, _RID, RID);
 				case OBJECT: {
@@ -437,7 +435,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a, const Variant &
 				DEFAULT_OP_FAIL(TRANSFORM);
 
 				DEFAULT_OP_FAIL(COLOR);
-				DEFAULT_OP_FAIL(IMAGE);
+
 				DEFAULT_OP_FAIL(NODE_PATH);
 				DEFAULT_OP_LOCALMEM(<=, _RID, RID);
 				case OBJECT: {
@@ -500,7 +498,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a, const Variant &
 				DEFAULT_OP_FAIL(TRANSFORM);
 
 				DEFAULT_OP_FAIL(COLOR);
-				DEFAULT_OP_FAIL(IMAGE);
+
 				DEFAULT_OP_FAIL(NODE_PATH);
 				DEFAULT_OP_FAIL(_RID);
 				DEFAULT_OP_FAIL(OBJECT);
@@ -557,7 +555,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a, const Variant &
 				DEFAULT_OP_FAIL(TRANSFORM);
 
 				DEFAULT_OP_FAIL(COLOR);
-				DEFAULT_OP_FAIL(IMAGE);
+
 				DEFAULT_OP_FAIL(NODE_PATH);
 				DEFAULT_OP_FAIL(_RID);
 				DEFAULT_OP_FAIL(OBJECT);
@@ -654,7 +652,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a, const Variant &
 					return;
 				} break;
 					DEFAULT_OP_FAIL(COLOR);
-					DEFAULT_OP_FAIL(IMAGE);
+
 					DEFAULT_OP_FAIL(NODE_PATH);
 					DEFAULT_OP_FAIL(_RID);
 					DEFAULT_OP_FAIL(OBJECT);
@@ -727,7 +725,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a, const Variant &
 					DEFAULT_OP_FAIL(TRANSFORM);
 
 					DEFAULT_OP_FAIL(COLOR);
-					DEFAULT_OP_FAIL(IMAGE);
+
 					DEFAULT_OP_FAIL(NODE_PATH);
 					DEFAULT_OP_FAIL(_RID);
 					DEFAULT_OP_FAIL(OBJECT);
@@ -769,7 +767,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a, const Variant &
 				DEFAULT_OP_LOCALMEM_POS(VECTOR2, Vector2);
 
 				DEFAULT_OP_FAIL(COLOR);
-				DEFAULT_OP_FAIL(IMAGE);
+
 				DEFAULT_OP_FAIL(NODE_PATH);
 				DEFAULT_OP_FAIL(_RID);
 				DEFAULT_OP_FAIL(OBJECT);
@@ -809,7 +807,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a, const Variant &
 				DEFAULT_OP_FAIL(TRANSFORM);
 
 				DEFAULT_OP_FAIL(COLOR);
-				DEFAULT_OP_FAIL(IMAGE);
+
 				DEFAULT_OP_FAIL(NODE_PATH);
 				DEFAULT_OP_FAIL(_RID);
 				DEFAULT_OP_FAIL(OBJECT);
@@ -1479,8 +1477,6 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 				}
 			}
 
-		} break;
-		case IMAGE: {
 		} break;
 		case NODE_PATH: {
 		} break; // 15
@@ -2239,8 +2235,6 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 			}
 
 		} break;
-		case IMAGE: {
-		} break;
 		case NODE_PATH: {
 		} break; // 15
 		case _RID: {
@@ -2806,8 +2800,6 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 			p_list->push_back(PropertyInfo(Variant::INT, "b8"));
 			p_list->push_back(PropertyInfo(Variant::INT, "a8"));
 
-		} break;
-		case IMAGE: {
 		} break;
 		case NODE_PATH: {
 		} break; // 15
@@ -3629,10 +3621,6 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 			return;
 		case COLOR: {
 			r_dst = reinterpret_cast<const Color *>(a._data._mem)->linear_interpolate(*reinterpret_cast<const Color *>(b._data._mem), c);
-		}
-			return;
-		case IMAGE: {
-			r_dst = a;
 		}
 			return;
 		case NODE_PATH: {

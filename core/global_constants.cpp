@@ -510,7 +510,6 @@ static _GlobalConstant _global_constants[] = {
 	{ "TYPE_BASIS", Variant::BASIS },
 	{ "TYPE_TRANSFORM", Variant::TRANSFORM },
 	{ "TYPE_COLOR", Variant::COLOR },
-	{ "TYPE_IMAGE", Variant::IMAGE }, // 15
 	{ "TYPE_NODE_PATH", Variant::NODE_PATH },
 	{ "TYPE_RID", Variant::_RID },
 	{ "TYPE_OBJECT", Variant::OBJECT },

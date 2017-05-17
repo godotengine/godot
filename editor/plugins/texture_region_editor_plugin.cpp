@@ -678,12 +678,13 @@ void TextureRegionEditor::_edit_region() {
 	}
 
 	autoslice_cache.clear();
-	Image i;
-	if (i.load(texture->get_path()) == OK) {
+	Ref<Image> i;
+	i.instance();
+	if (i->load(texture->get_path()) == OK) {
 		BitMap bm;
 		bm.create_from_image_alpha(i);
-		for (int y = 0; y < i.get_height(); y++) {
-			for (int x = 0; x < i.get_width(); x++) {
+		for (int y = 0; y < i->get_height(); y++) {
+			for (int x = 0; x < i->get_width(); x++) {
 				if (bm.get_bit(Point2(x, y))) {
 					bool found = false;
 					for (List<Rect2>::Element *E = autoslice_cache.front(); E; E = E->next()) {

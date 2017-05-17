@@ -39,7 +39,6 @@
 #include "dictionary.h"
 #include "dvector.h"
 #include "face3.h"
-#include "image.h"
 #include "io/ip_address.h"
 #include "math_2d.h"
 #include "matrix3.h"
@@ -98,20 +97,19 @@ public:
 
 		// misc types
 		COLOR,
-		IMAGE, // 15
 		NODE_PATH,
 		_RID,
 		OBJECT,
 		INPUT_EVENT,
-		DICTIONARY, // 20
-		ARRAY,
+		DICTIONARY,
+		ARRAY, // 20
 
 		// arrays
 		POOL_BYTE_ARRAY,
 		POOL_INT_ARRAY,
 		POOL_REAL_ARRAY,
-		POOL_STRING_ARRAY, // 25
-		POOL_VECTOR2_ARRAY,
+		POOL_STRING_ARRAY,
+		POOL_VECTOR2_ARRAY, // 25
 		POOL_VECTOR3_ARRAY,
 		POOL_COLOR_ARRAY,
 
@@ -146,7 +144,6 @@ private:
 		Transform *_transform;
 		RefPtr *_resource;
 		InputEvent *_input_event;
-		Image *_image;
 		void *_ptr; //generic pointer
 		uint8_t _mem[sizeof(ObjData) > (sizeof(real_t) * 4) ? sizeof(ObjData) : (sizeof(real_t) * 4)];
 	} _data;
@@ -207,7 +204,6 @@ public:
 	operator Transform2D() const;
 
 	operator Color() const;
-	operator Image() const;
 	operator NodePath() const;
 	operator RefPtr() const;
 	operator RID() const;
@@ -276,7 +272,6 @@ public:
 	Variant(const Transform2D &p_transform);
 	Variant(const Transform &p_transform);
 	Variant(const Color &p_color);
-	Variant(const Image &p_image);
 	Variant(const NodePath &p_path);
 	Variant(const RefPtr &p_resource);
 	Variant(const RID &p_rid);

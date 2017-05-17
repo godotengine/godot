@@ -746,7 +746,7 @@ String OSUWP::get_executable_path() const {
 	return "";
 }
 
-void OSUWP::set_icon(const Image &p_icon) {
+void OSUWP::set_icon(const Ref<Image> &p_icon) {
 }
 
 bool OSUWP::has_environment(const String &p_var) const {

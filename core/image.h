@@ -33,6 +33,8 @@
 #include "color.h"
 #include "dvector.h"
 #include "math_2d.h"
+#include "resource.h"
+
 /**
  *	@author Juan Linietsky <reduzio@gmail.com>
  *
@@ -43,9 +45,10 @@
 
 class Image;
 
-typedef Error (*SavePNGFunc)(const String &p_path, Image &p_img);
+typedef Error (*SavePNGFunc)(const String &p_path, const Ref<Image> &p_img);
 
-class Image {
+class Image : public Resource {
+	GDCLASS(Image, Resource);
 
 	enum {
 		MAX_WIDTH = 16384, // force a limit somehow
@@ -108,8 +111,8 @@ public:
 
 	//some functions provided by something else
 
-	static Image (*_png_mem_loader_func)(const uint8_t *p_png, int p_size);
-	static Image (*_jpg_mem_loader_func)(const uint8_t *p_png, int p_size);
+	static Ref<Image> (*_png_mem_loader_func)(const uint8_t *p_png, int p_size);
+	static Ref<Image> (*_jpg_mem_loader_func)(const uint8_t *p_png, int p_size);
 
 	static void (*_image_compress_bc_func)(Image *);
 	static void (*_image_compress_pvrtc2_func)(Image *);
@@ -124,16 +127,35 @@ public:
 
 	Error _decompress_bc();
 
-	static PoolVector<uint8_t> (*lossy_packer)(const Image &p_image, float p_quality);
-	static Image (*lossy_unpacker)(const PoolVector<uint8_t> &p_buffer);
-	static PoolVector<uint8_t> (*lossless_packer)(const Image &p_image);
-	static Image (*lossless_unpacker)(const PoolVector<uint8_t> &p_buffer);
+	static PoolVector<uint8_t> (*lossy_packer)(const Ref<Image> &p_image, float p_quality);
+	static Ref<Image> (*lossy_unpacker)(const PoolVector<uint8_t> &p_buffer);
+	static PoolVector<uint8_t> (*lossless_packer)(const Ref<Image> &p_image);
+	static Ref<Image> (*lossless_unpacker)(const PoolVector<uint8_t> &p_buffer);
+
+protected:
+	static void _bind_methods();
 
 private:
+	void _create_empty(int p_width, int p_height, bool p_use_mipmaps, Format p_format) {
+		create(p_width, p_height, p_use_mipmaps, p_format);
+	}
+
+	void _create_from_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const PoolVector<uint8_t> &p_data) {
+		create(p_width, p_height, p_use_mipmaps, p_format, p_data);
+	}
+
 	Format format;
 	PoolVector<uint8_t> data;
 	int width, height;
 	bool mipmaps;
+
+	void _copy_internals_from(const Image &p_image) {
+		format = p_image.format;
+		width = p_image.width;
+		height = p_image.height;
+		mipmaps = p_image.mipmaps;
+		data = p_image.data;
+	}
 
 	_FORCE_INLINE_ void _get_mipmap_offset_and_size(int p_mipmap, int &r_offset, int &r_width, int &r_height) const; //get where the mipmap begins in data
 
@@ -142,6 +164,9 @@ private:
 
 	_FORCE_INLINE_ void _put_pixelb(int p_x, int p_y, uint32_t p_pixelsize, uint8_t *p_dst, const uint8_t *p_src);
 	_FORCE_INLINE_ void _get_pixelb(int p_x, int p_y, uint32_t p_pixelsize, const uint8_t *p_src, uint8_t *p_dst);
+
+	void _set_data(const Dictionary &p_data);
+	Dictionary _get_data() const;
 
 public:
 	int get_width() const; ///< Get image width
@@ -153,14 +178,6 @@ public:
 	 * Convert the image to another format, conversion only to raw byte format
 	 */
 	void convert(Format p_new_format);
-
-	Image converted(int p_new_format) {
-		ERR_FAIL_INDEX_V(p_new_format, FORMAT_MAX, Image());
-
-		Image ret = *this;
-		ret.convert((Format)p_new_format);
-		return ret;
-	};
 
 	/**
 	 * Get the current image format.
@@ -178,7 +195,6 @@ public:
 
 	void resize_to_po2(bool p_square = false);
 	void resize(int p_width, int p_height, Interpolation p_interpolation = INTERPOLATE_BILINEAR);
-	Image resized(int p_width, int p_height, int p_interpolation = INTERPOLATE_BILINEAR);
 	void shrink_x2();
 	void expand_x2_hq2x();
 	/**
@@ -242,8 +258,6 @@ public:
 	static int get_image_data_size(int p_width, int p_height, Format p_format, int p_mipmaps = 0);
 	static int get_image_required_mipmaps(int p_width, int p_height, Format p_format);
 
-	bool operator==(const Image &p_image) const;
-
 	enum CompressMode {
 		COMPRESS_16BIT,
 		COMPRESS_S3TC,
@@ -254,9 +268,7 @@ public:
 	};
 
 	Error compress(CompressMode p_mode = COMPRESS_S3TC);
-	Image compressed(int p_mode); /* from the Image::CompressMode enum */
 	Error decompress();
-	Image decompressed() const;
 	bool is_compressed() const;
 
 	void fix_alpha_edges();
@@ -264,17 +276,34 @@ public:
 	void srgb_to_linear();
 	void normalmap_to_xy();
 
-	void blit_rect(const Image &p_src, const Rect2 &p_src_rect, const Point2 &p_dest);
+	void blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Point2 &p_dest);
 
 	Rect2 get_used_rect() const;
-	Image get_rect(const Rect2 &p_area) const;
+	Ref<Image> get_rect(const Rect2 &p_area) const;
 
 	static void set_compress_bc_func(void (*p_compress_func)(Image *));
 	static String get_format_name(Format p_format);
 
 	Image(const uint8_t *p_mem_png_jpg, int p_len = -1);
 	Image(const char **p_xpm);
+
+	virtual Ref<Resource> duplicate(bool p_subresources = false) const;
+
+	void copy_internals_from(const Ref<Image> &p_image) {
+		ERR_FAIL_COND(p_image.is_null());
+		format = p_image->format;
+		width = p_image->width;
+		height = p_image->height;
+		mipmaps = p_image->mipmaps;
+		data = p_image->data;
+	}
+
 	~Image();
 };
+
+VARIANT_ENUM_CAST(Image::Format)
+VARIANT_ENUM_CAST(Image::Interpolation)
+VARIANT_ENUM_CAST(Image::CompressMode)
+VARIANT_ENUM_CAST(Image::AlphaMode)
 
 #endif

@@ -121,7 +121,7 @@ int VisualServerRaster::get_render_info(RenderInfo p_info) {
 
 /* TESTING */
 
-void VisualServerRaster::set_boot_image(const Image &p_image, const Color &p_color, bool p_scale) {
+void VisualServerRaster::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale) {
 
 	redraw_request();
 	VSG::rasterizer->set_boot_image(p_image, p_color, p_scale);

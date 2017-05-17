@@ -37,7 +37,7 @@ void register_x11_exporter() {
 	Ref<EditorExportPlatformPC> platform;
 	platform.instance();
 
-	Image img(_x11_logo);
+	Ref<Image> img = memnew(Image(_x11_logo));
 	Ref<ImageTexture> logo;
 	logo.instance();
 	logo->create_from_image(img);

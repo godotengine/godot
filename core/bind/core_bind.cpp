@@ -505,7 +505,7 @@ int _OS::get_dynamic_memory_usage() const {
 	return OS::get_singleton()->get_dynamic_memory_usage();
 }
 
-void _OS::set_icon(const Image &p_icon) {
+void _OS::set_icon(const Ref<Image> &p_icon) {
 
 	OS::get_singleton()->set_icon(p_icon);
 }

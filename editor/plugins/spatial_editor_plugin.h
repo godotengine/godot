@@ -428,7 +428,7 @@ private:
 	ViewportContainer *settings_light_base;
 	Viewport *settings_light_vp;
 	ColorPickerButton *settings_ambient_color;
-	Image settings_light_dir_image;
+	Ref<Image> settings_light_dir_image;
 
 	void _xform_dialog_action();
 	void _menu_item_pressed(int p_option);

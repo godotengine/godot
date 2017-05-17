@@ -32,6 +32,7 @@
 
 #include "bsp_tree.h"
 #include "geometry.h"
+#include "image.h"
 #include "math_2d.h"
 #include "object.h"
 #include "rid.h"
@@ -106,10 +107,10 @@ public:
 	};
 
 	virtual RID texture_create() = 0;
-	RID texture_create_from_image(const Image &p_image, uint32_t p_flags = TEXTURE_FLAGS_DEFAULT); // helper
+	RID texture_create_from_image(const Ref<Image> &p_image, uint32_t p_flags = TEXTURE_FLAGS_DEFAULT); // helper
 	virtual void texture_allocate(RID p_texture, int p_width, int p_height, Image::Format p_format, uint32_t p_flags = TEXTURE_FLAGS_DEFAULT) = 0;
-	virtual void texture_set_data(RID p_texture, const Image &p_image, CubeMapSide p_cube_side = CUBEMAP_LEFT) = 0;
-	virtual Image texture_get_data(RID p_texture, CubeMapSide p_cube_side = CUBEMAP_LEFT) const = 0;
+	virtual void texture_set_data(RID p_texture, const Ref<Image> &p_image, CubeMapSide p_cube_side = CUBEMAP_LEFT) = 0;
+	virtual Ref<Image> texture_get_data(RID p_texture, CubeMapSide p_cube_side = CUBEMAP_LEFT) const = 0;
 	virtual void texture_set_flags(RID p_texture, uint32_t p_flags) = 0;
 	virtual uint32_t texture_get_flags(RID p_texture) const = 0;
 	virtual Image::Format texture_get_format(RID p_texture) const = 0;
@@ -884,7 +885,7 @@ public:
 	virtual void mesh_add_surface_from_mesh_data(RID p_mesh, const Geometry::MeshData &p_mesh_data);
 	virtual void mesh_add_surface_from_planes(RID p_mesh, const PoolVector<Plane> &p_planes);
 
-	virtual void set_boot_image(const Image &p_image, const Color &p_color, bool p_scale) = 0;
+	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale) = 0;
 	virtual void set_default_clear_color(const Color &p_color) = 0;
 
 	enum Features {

@@ -623,8 +623,8 @@ public:
 
 	BIND0R(RID, texture_create)
 	BIND5(texture_allocate, RID, int, int, Image::Format, uint32_t)
-	BIND3(texture_set_data, RID, const Image &, CubeMapSide)
-	BIND2RC(Image, texture_get_data, RID, CubeMapSide)
+	BIND3(texture_set_data, RID, const Ref<Image> &, CubeMapSide)
+	BIND2RC(Ref<Image>, texture_get_data, RID, CubeMapSide)
 	BIND2(texture_set_flags, RID, uint32_t)
 	BIND1RC(uint32_t, texture_get_flags, RID)
 	BIND1RC(Image::Format, texture_get_format, RID)
@@ -1109,7 +1109,7 @@ public:
 
 	/* TESTING */
 
-	virtual void set_boot_image(const Image &p_image, const Color &p_color, bool p_scale);
+	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale);
 	virtual void set_default_clear_color(const Color &p_color);
 
 	virtual bool has_feature(Features p_feature) const;

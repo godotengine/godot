@@ -88,25 +88,26 @@ static void _decompress_etc(Image *p_img) {
 
 	r = PoolVector<uint8_t>::Read();
 	//print_line("Re Creating ETC into regular image: w "+itos(p_img->get_width())+" h "+itos(p_img->get_height())+" mm "+itos(p_img->get_mipmaps()));
-	*p_img = Image(p_img->get_width(), p_img->get_height(), p_img->has_mipmaps(), Image::FORMAT_RGB8, dst);
-	if (p_img->has_mipmaps())
+	bool needs_mipmaps = p_img->has_mipmaps();
+	p_img->create(p_img->get_width(), p_img->get_height(), p_img->has_mipmaps(), Image::FORMAT_RGB8, dst);
+	if (needs_mipmaps)
 		p_img->generate_mipmaps();
 }
 
 static void _compress_etc(Image *p_img) {
 
-	Image img = *p_img;
+	Ref<Image> img = p_img->duplicate();
 
-	int imgw = img.get_width(), imgh = img.get_height();
+	int imgw = img->get_width(), imgh = img->get_height();
 
 	ERR_FAIL_COND(nearest_power_of_2(imgw) != imgw || nearest_power_of_2(imgh) != imgh);
 
-	if (img.get_format() != Image::FORMAT_RGB8)
-		img.convert(Image::FORMAT_RGB8);
+	if (img->get_format() != Image::FORMAT_RGB8)
+		img->convert(Image::FORMAT_RGB8);
 
 	PoolVector<uint8_t> res_data;
 	PoolVector<uint8_t> dst_data;
-	PoolVector<uint8_t>::Read r = img.get_data().read();
+	PoolVector<uint8_t>::Read r = img->get_data().read();
 
 	int target_size = Image::get_image_data_size(p_img->get_width(), p_img->get_height(), Image::FORMAT_ETC, p_img->has_mipmaps() ? -1 : 0);
 	int mmc = p_img->has_mipmaps() ? Image::get_image_required_mipmaps(p_img->get_width(), p_img->get_height(), Image::FORMAT_ETC) : 0;
@@ -122,7 +123,7 @@ static void _compress_etc(Image *p_img) {
 
 		int bw = MAX(imgw / 4, 1);
 		int bh = MAX(imgh / 4, 1);
-		const uint8_t *src = &r[img.get_mipmap_offset(i)];
+		const uint8_t *src = &r[img->get_mipmap_offset(i)];
 		int mmsize = MAX(bw, 1) * MAX(bh, 1) * 8;
 
 		uint8_t *dst = &w[ofs];
@@ -171,7 +172,7 @@ static void _compress_etc(Image *p_img) {
 		mc++;
 	}
 
-	*p_img = Image(p_img->get_width(), p_img->get_height(), (mc - 1) ? true : false, Image::FORMAT_ETC, dst_data);
+	p_img->create(p_img->get_width(), p_img->get_height(), (mc - 1) ? true : false, Image::FORMAT_ETC, dst_data);
 }
 
 void _register_etc1_compress_func() {
