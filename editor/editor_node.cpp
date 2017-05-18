@@ -194,28 +194,20 @@ void EditorNode::_unhandled_input(const InputEvent &p_event) {
 			filesystem_dock->focus_on_filter();
 		}
 
-		switch (p_event.key.scancode) {
-
-			/*case KEY_F1:
-				if (!p_event.key.mod.shift && !p_event.key.mod.command)
-					_editor_select(EDITOR_SCRIPT);
-			break;*/
-			case KEY_F1:
-				if (!p_event.key.mod.shift && !p_event.key.mod.command)
-					_editor_select(EDITOR_2D);
-				break;
-			case KEY_F2:
-				if (!p_event.key.mod.shift && !p_event.key.mod.command)
-					_editor_select(EDITOR_3D);
-				break;
-			case KEY_F3:
-				if (!p_event.key.mod.shift && !p_event.key.mod.command)
-					_editor_select(EDITOR_SCRIPT);
-				break;
-				/*	case KEY_F5: _menu_option_confirm((p_event.key.mod.control&&p_event.key.mod.shift)?RUN_PLAY_CUSTOM_SCENE:RUN_PLAY,true); break;
-			case KEY_F6: _menu_option_confirm(RUN_PLAY_SCENE,true); break;
-			//case KEY_F7: _menu_option_confirm(RUN_PAUSE,true); break;
-			case KEY_F8: _menu_option_confirm(RUN_STOP,true); break;*/
+		if (ED_IS_SHORTCUT("editor/editor_2d", p_event)) {
+			_editor_select(EDITOR_2D);
+		} else if (ED_IS_SHORTCUT("editor/editor_3d", p_event)) {
+			_editor_select(EDITOR_3D);
+		} else if (ED_IS_SHORTCUT("editor/editor_script", p_event)) {
+			_editor_select(EDITOR_SCRIPT);
+		} else if (ED_IS_SHORTCUT("editor/editor_help", p_event)) {
+			emit_signal("request_help_search", "");
+		} else if (ED_IS_SHORTCUT("editor/editor_assetlib", p_event)) {
+			_editor_select(EDITOR_ASSETLIB);
+		} else if (ED_IS_SHORTCUT("editor/editor_next", p_event)) {
+			_editor_select_next();
+		} else if (ED_IS_SHORTCUT("editor/editor_prev", p_event)) {
+			_editor_select_prev();
 		}
 	}
 }
@@ -452,6 +444,30 @@ void EditorNode::_node_renamed() {
 
 	if (property_editor)
 		property_editor->update_tree();
+}
+
+void EditorNode::_editor_select_next() {
+
+	int editor = _get_current_main_editor();
+
+	if (editor == editor_table.size() - 1) {
+		editor = 0;
+	} else {
+		editor++;
+	}
+	_editor_select(editor);
+}
+
+void EditorNode::_editor_select_prev() {
+
+	int editor = _get_current_main_editor();
+
+	if (editor == 0) {
+		editor = editor_table.size() - 1;
+	} else {
+		editor--;
+	}
+	_editor_select(editor);
 }
 
 Error EditorNode::load_resource(const String &p_scene) {
@@ -4796,6 +4812,7 @@ void EditorNode::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("pause_pressed"));
 	ADD_SIGNAL(MethodInfo("stop_pressed"));
 	ADD_SIGNAL(MethodInfo("request_help"));
+	ADD_SIGNAL(MethodInfo("request_help_search"));
 	ADD_SIGNAL(MethodInfo("script_add_function_request", PropertyInfo(Variant::OBJECT, "obj"), PropertyInfo(Variant::STRING, "function"), PropertyInfo(Variant::POOL_STRING_ARRAY, "args")));
 	ADD_SIGNAL(MethodInfo("resource_saved", PropertyInfo(Variant::OBJECT, "obj")));
 }
@@ -6112,6 +6129,14 @@ EditorNode::EditorNode() {
 	_dim_timer->set_wait_time(0.01666f);
 	_dim_timer->connect("timeout", this, "_dim_timeout");
 	add_child(_dim_timer);
+
+	ED_SHORTCUT("editor/editor_2d", TTR("Open 2D Editor"), KEY_F2);
+	ED_SHORTCUT("editor/editor_3d", TTR("Open 3D Editor"), KEY_F3);
+	ED_SHORTCUT("editor/editor_script", TTR("Open Script Editor"), KEY_F4);
+	ED_SHORTCUT("editor/editor_help", TTR("Search Help"), KEY_F1);
+	ED_SHORTCUT("editor/editor_assetlib", TTR("Open Asset Library"));
+	ED_SHORTCUT("editor/editor_next", TTR("Open the next Editor"));
+	ED_SHORTCUT("editor/editor_prev", TTR("Open the previous Editor"));
 }
 
 EditorNode::~EditorNode() {
