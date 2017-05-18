@@ -982,10 +982,15 @@ void Mesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("surface_get_material:Material", "surf_idx"), &Mesh::surface_get_material);
 	ClassDB::bind_method(D_METHOD("surface_set_name", "surf_idx", "name"), &Mesh::surface_set_name);
 	ClassDB::bind_method(D_METHOD("surface_get_name", "surf_idx"), &Mesh::surface_get_name);
+	ClassDB::bind_method(D_METHOD("create_trimesh_shape:Shape"), &Mesh::create_trimesh_shape);
+	ClassDB::bind_method(D_METHOD("create_convex_shape:Shape"), &Mesh::create_convex_shape);
+	ClassDB::bind_method(D_METHOD("create_outline:Mesh", "margin"), &Mesh::create_outline);
 	ClassDB::bind_method(D_METHOD("center_geometry"), &Mesh::center_geometry);
 	ClassDB::set_method_flags(get_class_static(), _scs_create("center_geometry"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 	ClassDB::bind_method(D_METHOD("regen_normalmaps"), &Mesh::regen_normalmaps);
 	ClassDB::set_method_flags(get_class_static(), _scs_create("regen_normalmaps"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
+	ClassDB::bind_method(D_METHOD("get_faces"), &Mesh::get_faces);
+	ClassDB::bind_method(D_METHOD("generate_triangle_mesh:TriangleMesh"), &Mesh::generate_triangle_mesh);
 
 	ClassDB::bind_method(D_METHOD("set_custom_aabb", "aabb"), &Mesh::set_custom_aabb);
 	ClassDB::bind_method(D_METHOD("get_custom_aabb"), &Mesh::get_custom_aabb);
