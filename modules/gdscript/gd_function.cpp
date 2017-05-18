@@ -1362,9 +1362,21 @@ Variant GDFunctionState::_signal_callback(const Variant **p_args, int p_argcount
 	return ret;
 }
 
-bool GDFunctionState::is_valid() const {
+bool GDFunctionState::is_valid(bool p_extended_check) const {
 
-	return function != NULL;
+	if (function == NULL)
+		return false;
+
+	if (p_extended_check) {
+		//class instance gone?
+		if (state.instance_id && !ObjectDB::get_instance(state.instance_id))
+			return false;
+		//script gone?
+		if (state.script_id && !ObjectDB::get_instance(state.script_id))
+			return false;
+	}
+
+	return true;
 }
 
 Variant GDFunctionState::resume(const Variant &p_arg) {
@@ -1393,7 +1405,7 @@ Variant GDFunctionState::resume(const Variant &p_arg) {
 void GDFunctionState::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("resume:Variant", "arg"), &GDFunctionState::resume, DEFVAL(Variant()));
-	ObjectTypeDB::bind_method(_MD("is_valid"), &GDFunctionState::is_valid);
+	ObjectTypeDB::bind_method(_MD("is_valid", "extended_check"), &GDFunctionState::is_valid, DEFVAL(false));
 	ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT, "_signal_callback", &GDFunctionState::_signal_callback, MethodInfo("_signal_callback"));
 }
 
