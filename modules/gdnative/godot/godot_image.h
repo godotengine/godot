@@ -43,6 +43,7 @@ typedef struct godot_image {
 #endif
 
 #include "godot_pool_arrays.h"
+#include "godot_rect2.h"
 
 #include "../godot.h"
 
@@ -110,6 +111,13 @@ int GDAPI godot_image_get_width(const godot_image *p_img);
 int GDAPI godot_image_get_height(const godot_image *p_img);
 godot_bool GDAPI godot_image_has_mipmaps(const godot_image *p_img);
 int GDAPI godot_image_get_mipmap_count(const godot_image *p_img);
+
+void GDAPI godot_image_blit_rect(godot_image *p_img, const godot_image *src, const godot_rect2 *p_src_rect, const godot_vector2 *dest);
+godot_image GDAPI godot_image_compressed(godot_image *p_img, int p_mode);
+godot_image GDAPI godot_image_decompressed(const godot_image *p_img);
+void GDAPI godot_image_fix_alpha_edges(const godot_image *p_img);
+void GDAPI godot_image_get_rect(const godot_image *p_img, godot_rect2 *p_rect);
+godot_rect2 GDAPI godot_image_get_used_rect(const godot_image *p_img);
 
 // @Incomplete
 // I think it's too complex for the binding authors to implement the image class anew, so we should definitely

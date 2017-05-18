@@ -105,6 +105,52 @@ int GDAPI godot_image_get_mipmap_count(const godot_image *p_img) {
 	return img->get_mipmap_count();
 }
 
+void GDAPI godot_image_blit_rect(godot_image *p_img, const godot_image *src, const godot_rect2 *src_rect, const godot_vector2 *dest) {
+	Image *img = (Image *)p_img;
+	Image *src_img = (Image *)src;
+	Rect2 *cpp_src_rect = (Rect2 *)src_rect;
+	Vector2 *cpp_dest = (Vector2 *)dest;
+	img->blit_rect(*src_img, *cpp_src_rect, *cpp_dest);
+}
+
+godot_image GDAPI godot_image_compressed(godot_image *p_img, int p_mode) {
+	Image *img = (Image *)p_img;
+	godot_image compressed_img;
+	Image *cpp_img = (Image *)&compressed_img;
+	memnew_placement(cpp_img, Image);
+	*cpp_img = img->compressed(p_mode);
+	return compressed_img;
+}
+
+godot_image GDAPI godot_image_decompressed(const godot_image *p_img) {
+	Image *img = (Image *)p_img;
+	godot_image decompressed_img;
+	Image *cpp_img = (Image *)&decompressed_img;
+	memnew_placement(cpp_img, Image);
+	*cpp_img = img->decompressed();
+	return decompressed_img;
+}
+
+void GDAPI godot_image_fix_alpha_edges(const godot_image *p_img) {
+	Image *img = (Image *)p_img;
+	img->fix_alpha_edges();
+}
+
+void GDAPI godot_image_get_rect(const godot_image *p_img, godot_rect2 *p_rect) {
+	Image *img = (Image *)p_img;
+	Rect2 *cpp_rect2 = (Rect2 *)p_rect;
+	img->get_rect(*cpp_rect2);
+}
+
+godot_rect2 GDAPI godot_image_get_used_rect(const godot_image *p_img) {
+	Image *img = (Image *)p_img;
+	godot_rect2 rect;
+	Rect2 *cpp_rect2 = (Rect2 *)&rect;
+	memnew_placement(cpp_rect2, Rect2);
+	*cpp_rect2 = img->get_used_rect();
+	return rect;
+}
+
 void GDAPI godot_image_destroy(godot_image *p_img) {
 	((Image *)p_img)->~Image();
 }
