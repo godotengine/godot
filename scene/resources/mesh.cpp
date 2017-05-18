@@ -919,10 +919,15 @@ void Mesh::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("surface_get_material:Material", "surf_idx"), &Mesh::surface_get_material);
 	ObjectTypeDB::bind_method(_MD("surface_set_name", "surf_idx", "name"), &Mesh::surface_set_name);
 	ObjectTypeDB::bind_method(_MD("surface_get_name", "surf_idx"), &Mesh::surface_get_name);
+	ObjectTypeDB::bind_method(_MD("create_trimesh_shape:Shape"), &Mesh::create_trimesh_shape);
+	ObjectTypeDB::bind_method(_MD("create_convex_shape:Shape"), &Mesh::create_convex_shape);
+	ObjectTypeDB::bind_method(_MD("create_outline:Mesh", "margin"), &Mesh::create_outline);
 	ObjectTypeDB::bind_method(_MD("center_geometry"), &Mesh::center_geometry);
 	ObjectTypeDB::set_method_flags(get_type_static(), _SCS("center_geometry"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 	ObjectTypeDB::bind_method(_MD("regen_normalmaps"), &Mesh::regen_normalmaps);
 	ObjectTypeDB::set_method_flags(get_type_static(), _SCS("regen_normalmaps"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
+	ObjectTypeDB::bind_method(_MD("get_faces"), &Mesh::get_faces);
+	ObjectTypeDB::bind_method(_MD("generate_triangle_mesh:TriangleMesh"), &Mesh::generate_triangle_mesh);
 
 	ObjectTypeDB::bind_method(_MD("set_custom_aabb", "aabb"), &Mesh::set_custom_aabb);
 	ObjectTypeDB::bind_method(_MD("get_custom_aabb"), &Mesh::get_custom_aabb);
