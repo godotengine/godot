@@ -383,7 +383,7 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				String vcode;
 				vcode += _prestr(E->get().precission);
 				vcode += _typestr(E->get().type);
-				vcode += " " + String(E->key());
+				vcode += " " + _mkid(E->key());
 				vcode += ";\n";
 				r_gen_code.vertex_global += "out " + vcode;
 				r_gen_code.fragment_global += "in " + vcode;
