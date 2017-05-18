@@ -15433,6 +15433,10 @@
 		<method name="is_valid" qualifiers="const">
 			<return type="bool">
 			</return>
+			<argument index="0" name="extended_check" type="bool" default="false">
+				If true, also check if the associated script and object still exists.
+				The extended check is done in debug mode as part of [method GDFunctionState.resume], but you can use this if you know you may be trying to resume without knowing for sure the object and/or script have survived up to that point.
+			</argument>
 			<description>
 				Check whether the function call may be resumed. This is not the case if the function state was already resumed.
 			</description>
