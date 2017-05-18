@@ -14,4 +14,7 @@ f.close()
 
 env.add_source_files(env.drivers_sources, "*.cpp")
 
+# Dependency for ProcessUnix and OS_Unix::execute()
+env.add_source_files(env.drivers_sources, ["#thirdparty/forkfd/forkfd_godot.cpp"])
+
 Export('env')

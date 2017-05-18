@@ -43,8 +43,10 @@
 #include "dir_access_unix.h"
 #include "file_access_unix.h"
 #include "packet_peer_udp_posix.h"
+#include "process_unix.h"
 #include "stream_peer_tcp_posix.h"
 #include "tcp_server_posix.h"
+#include "thirdparty/forkfd/forkfd.h"
 
 #ifdef __APPLE__
 #include <mach-o/dyld.h>
@@ -117,15 +119,6 @@ int OS_Unix::unix_initialize_audio(int p_audio_driver) {
 	return 0;
 }
 
-// Very simple signal handler to reap processes where ::execute was called with
-// !p_blocking
-void handle_sigchld(int sig) {
-	int saved_errno = errno;
-	while (waitpid((pid_t)(-1), 0, WNOHANG) > 0) {
-	}
-	errno = saved_errno;
-}
-
 void OS_Unix::initialize_core() {
 
 #ifdef NO_PTHREADS
@@ -152,17 +145,10 @@ void OS_Unix::initialize_core() {
 	PacketPeerUDPPosix::make_default();
 	IP_Unix::make_default();
 #endif
+	ProcessUnix::make_default();
 
 	ticks_start = 0;
 	ticks_start = get_ticks_usec();
-
-	struct sigaction sa;
-	sa.sa_handler = &handle_sigchld;
-	sigemptyset(&sa.sa_mask);
-	sa.sa_flags = SA_RESTART | SA_NOCLDSTOP;
-	if (sigaction(SIGCHLD, &sa, 0) == -1) {
-		perror("ERROR sigaction() failed:");
-	}
 }
 
 void OS_Unix::finalize_core() {
@@ -358,10 +344,22 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 		return OK;
 	}
 
-	pid_t pid = fork();
-	ERR_FAIL_COND_V(pid < 0, ERR_CANT_FORK);
+	pid_t pid;
+	bool in_child;
 
-	if (pid == 0) {
+	if (p_blocking) {
+		pid = fork();
+		ERR_FAIL_COND_V(pid < 0, ERR_CANT_FORK);
+		in_child = (pid == 0);
+	} else {
+		int forkfd = ::forkfd_nofd(FFD_CLOEXEC, &pid);
+		ERR_FAIL_COND_V(forkfd == -1, ERR_CANT_FORK);
+		in_child = (forkfd == FFD_CHILD_PROCESS);
+	}
+
+	if (in_child) {
+		if (!p_blocking)
+			::signal(SIGPIPE, SIG_DFL); // if the parent was ignoring SIGPIPE
 		// is child
 		Vector<CharString> cs;
 		cs.push_back(p_path.utf8());
@@ -406,13 +404,7 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 
 Error OS_Unix::kill(const ProcessID &p_pid) {
 
-	int ret = ::kill(p_pid, SIGKILL);
-	if (!ret) {
-		//avoid zombie process
-		int st;
-		::waitpid(p_pid, &st, 0);
-	}
-	return ret ? ERR_INVALID_PARAMETER : OK;
+	return ::kill(p_pid, SIGKILL) ? ERR_INVALID_PARAMETER : OK;
 }
 
 int OS_Unix::get_process_ID() const {

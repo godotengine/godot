@@ -34904,6 +34904,292 @@
 	<constants>
 	</constants>
 </class>
+<class name="Process" inherits="Reference" category="Core">
+	<brief_description>
+		Class for executing programs and communicating with them.
+	</brief_description>
+	<description>
+		Class for executing programs as child processes and communicating with them.
+	</description>
+	<methods>
+		<method name="can_read_line" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return whether a complete line can be read from the current read channel.
+			</description>
+		</method>
+		<method name="can_write" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="bytes" type="int">
+			</argument>
+			<description>
+				Return whether the specified number of bytes can be written.
+				If the channel represented by CHANNEL_STDIN is closed, false is returned.
+				Additionally, on Windows, this method returns false if the write buffer is full.
+				The returned value does not guarantee that the next call to write will fail or succeed, or that all the bytes will be written.
+			</description>
+		</method>
+		<method name="close_channel">
+			<argument index="0" name="channel" type="int">
+			</argument>
+			<description>
+				Close the specified channel. The value of the argument channel can be any of the CHANNEL_* constants.
+				On Windows, this method may block until the current asynchronous operation in progress has finished.
+			</description>
+		</method>
+		<method name="get_arguments" qualifiers="const">
+			<return type="PoolStringArray">
+			</return>
+			<description>
+				Return the arguments that will be passed to the process on start.
+			</description>
+		</method>
+		<method name="get_available_bytes" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the number of bytes available in the current read channel.
+			</description>
+		</method>
+		<method name="get_cwd" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Return the working directory that the child process will enter on start.
+			</description>
+		</method>
+		<method name="get_environment" qualifiers="const">
+			<return type="Dictionary">
+			</return>
+			<description>
+				Return a Dictionary containing the environment that will be passed to the child process on start.
+				If this Dictionary is empty, the environment of the parent process will be passed to the child process on start.
+			</description>
+		</method>
+		<method name="get_exit_code" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the exit code of the last process that finished.
+				This value is not valid if the process crashed.
+			</description>
+		</method>
+		<method name="get_exit_status" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the exit status of the last process that finished.
+				This value can be any of the EXIT_STATUS_* constants.
+			</description>
+		</method>
+		<method name="get_pid" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the process ID of the running process, or 0 if the process is not running.
+			</description>
+		</method>
+		<method name="get_program" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Return the program the process is started with.
+			</description>
+		</method>
+		<method name="get_read_channel" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the current read channel. All read related calls are applied to the current read channel.
+				The value can only be CHANNEL_STDOUT or CHANNEL_STDERR.
+			</description>
+		</method>
+		<method name="get_redirect_flags" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the redirection flags of the process. Check the REDIRECT_* constants for more details.
+			</description>
+		</method>
+		<method name="get_state" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the state of the process. Check the STATE_* constants.
+			</description>
+		</method>
+		<method name="kill">
+			<description>
+				Kill the current running process, causing it to exit immediately.
+				On Windows, it uses TerminateProcess with the exit code 1.
+				On Unix, it sends a SIGKILL signal.
+			</description>
+		</method>
+		<method name="poll">
+			<return type="int">
+			</return>
+			<description>
+				This method needs to be called when communicating to the child process in a non-blocking way.
+				If the process has exited and the process state has not yet been set to STATE_NOT_RUNNING, poll() retrieves the exit code and exit status, reads any remaining data available in the read channels and does clean up.
+				On Windows, if the process is running and there is data waiting to be read/written, poll() will start the read/write asynchronous operations, if there is not one in progress.
+				On Unix, if the process is running and there is data available, poll() will read all the data possible to the read buffer of the open read channels.
+			</description>
+		</method>
+		<method name="read_all">
+			<return type="PoolByteArray">
+			</return>
+			<description>
+				Return an array of bytes containing all the data that could be read from the current read channel.
+			</description>
+		</method>
+		<method name="read_line">
+			<return type="PoolByteArray">
+			</return>
+			<description>
+				Return an array of bytes containing the next complete line that could be read, or an empty array if no complete line could be read.
+			</description>
+		</method>
+		<method name="set_cwd">
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+				Set the working directory that the child process will enter on start.
+			</description>
+		</method>
+		<method name="set_environment">
+			<argument index="0" name="env" type="Dictionary">
+			</argument>
+			<argument index="1" name="override" type="bool" default="false">
+			</argument>
+			<description>
+				Set the environment that will be passed to the child process.
+				The override parameter determines wheter env overrides the environment of the parent process, or is appended to it.
+				If this method is not called or env is empty, the environment of the parent process will be used.
+			</description>
+		</method>
+		<method name="set_read_channel">
+			<argument index="0" name="channel" type="int">
+			</argument>
+			<description>
+				Set the current read channel. All read related calls are applied to the current read channel.
+				The value can only be CHANNEL_STDOUT or CHANNEL_STDERR.
+			</description>
+		</method>
+		<method name="set_redirect_flags">
+			<argument index="0" name="flags" type="int">
+			</argument>
+			<description>
+				Set the redirection flags of the process. Check the REDIRECT_* constants for more details.
+			</description>
+		</method>
+		<method name="start">
+			<return type="bool">
+			</return>
+			<argument index="0" name="arg0" type="String">
+			</argument>
+			<argument index="1" name="arg1" type="PoolStringArray">
+			</argument>
+			<description>
+				Starts the program as a child process with the specified arguments.
+				Return true on success, otherwise false. If a process is already running on this object, false is returned.
+			</description>
+		</method>
+		<method name="terminate">
+			<description>
+				Attempts to terminate the running process.
+				On Windows, it posts a WM_CLOSE message.
+				On Unix, it sends a SIGTERM signal.
+			</description>
+		</method>
+		<method name="wait_for_finished">
+			<return type="bool">
+			</return>
+			<argument index="0" name="msecs" type="int" default="20000">
+			</argument>
+			<description>
+				Blocks until the process has finished or until timeout.
+				Return whether the process has finished.
+				If msecs is -1, this method will not time out. It may still return false if an error occurs.
+			</description>
+		</method>
+		<method name="wait_for_started">
+			<return type="bool">
+			</return>
+			<argument index="0" name="msecs" type="int" default="20000">
+			</argument>
+			<description>
+				Blocks until the process has started or until timeout.
+				Return whether the process has started.
+				If msecs is -1, this method will not time out. It may still return false if an error occurs.
+				On Windows, this method returns immediately and is the equivalent to [code]get_state() == STATE_RUNNING[/code].
+			</description>
+		</method>
+		<method name="write">
+			<return type="int">
+			</return>
+			<argument index="0" name="data" type="PoolByteArray">
+			</argument>
+			<description>
+				Writes data to CHANNEL_STDIN. Return the number of bytes that were successfully written, or -1 if an error ocurred or CHANNEL_STDIN is closed.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="cwd" type="String" setter="set_cwd" getter="get_cwd" brief="">
+			The working directory that the child process will enter on start.
+		</member>
+		<member name="read_channel" type="int" setter="set_read_channel" getter="get_read_channel" brief="">
+			The current read channel. All read related calls are applied to the current read channel.
+			The value can only be CHANNEL_STDOUT or CHANNEL_STDERR.
+		</member>
+		<member name="redirect_flags" type="int" setter="set_redirect_flags" getter="get_redirect_flags" brief="">
+			The redirection flags of the process. Check the REDIRECT_* constants for more details.
+		</member>
+	</members>
+	<constants>
+		<constant name="EXIT_STATUS_NORMAL" value="0">
+			The process exited normally.
+		</constant>
+		<constant name="EXIT_STATUS_CRASH" value="1">
+			The process crashed.
+		</constant>
+		<constant name="STATE_NOT_RUNNING" value="0">
+			The process is not running.
+		</constant>
+		<constant name="STATE_STARTING" value="1">
+			The process is starting, but the program has not yet been executed.
+		</constant>
+		<constant name="STATE_RUNNING" value="2">
+			The process is running and is ready for read/write operations.
+		</constant>
+		<constant name="CHANNEL_STDOUT" value="0">
+			The channel used to read from the standard output of the child process.
+		</constant>
+		<constant name="CHANNEL_STDERR" value="1">
+			The channel used to read from the standard error of the child process.
+		</constant>
+		<constant name="CHANNEL_STDIN" value="2">
+			The channel used to write to the standard input of the child process.
+		</constant>
+		<constant name="REDIRECT_STDIN" value="1">
+			Redirects the data written to CHANNEL_STDIN to the standard input of the child process. If not set, the data is redirected from the standard input of the parent process.
+		</constant>
+		<constant name="REDIRECT_STDOUT" value="2">
+			Redirects the data written to the standard output of the child process to CHANNEL_STDOUT. If not set, the data is redirected to the standard output of the parent process.
+		</constant>
+		<constant name="REDIRECT_STDERR" value="4">
+			Redirects the data written to the standard error of the child process to CHANNEL_STDERR. If not set, the data is redirected to the standard error of the parent process. This flag is ignored if REDIRECT_STDERR_TO_STDOUT is set.
+		</constant>
+		<constant name="REDIRECT_ALL" value="7">
+			Shorthand for [code]REDIRECT_STDIN | REDIRECT_STDOUT | REDIRECT_STDERR[/code].
+		</constant>
+		<constant name="REDIRECT_STDERR_TO_STDOUT" value="8">
+			Redirects the data written to the standard error of the child process to CHANNEL_STDOUT or standard output of the parent process if REDIRECT_STDOUT is not set. This flag has priority over REDIRECT_STDERR.
+		</constant>
+	</constants>
+</class>
 <class name="ProgressBar" inherits="Range" category="Core">
 	<brief_description>
 		General purpose progress bar.

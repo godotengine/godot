@@ -52,6 +52,7 @@
 #include "math/triangle_mesh.h"
 #include "os/input.h"
 #include "os/main_loop.h"
+#include "os/process.h"
 #include "packed_data_container.h"
 #include "path_remap.h"
 #include "translation.h"
@@ -117,6 +118,7 @@ void register_core_types() {
 	ClassDB::register_custom_instance_class<TCP_Server>();
 	ClassDB::register_custom_instance_class<PacketPeerUDP>();
 	ClassDB::register_custom_instance_class<StreamPeerSSL>();
+	ClassDB::register_custom_instance_class<Process>();
 	ClassDB::register_virtual_class<IP>();
 	ClassDB::register_virtual_class<PacketPeer>();
 	ClassDB::register_class<PacketPeerStream>();
@@ -161,6 +163,8 @@ void register_core_types() {
 void register_core_settings() {
 	//since in register core types, globals may not e present
 	GLOBAL_DEF("network/packets/packet_stream_peer_max_buffer_po2", (16));
+	GLOBAL_DEF("os/process_max_read_buffer_po2", (16));
+	GLOBAL_DEF("os/process_max_write_buffer_po2", (16));
 }
 
 void register_core_singletons() {

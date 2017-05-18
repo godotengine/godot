@@ -1,0 +1,242 @@
+diff -u old/forkfd.c new/forkfd.c
+--- old/forkfd.c
++++ new/forkfd.c
+@@ -103,6 +103,21 @@
+         ret = call;           \
+     } while (ret == -1 && errno == EINTR)
+ 
++#ifndef NO_FCNTL
++#define SET_CLOEXEC(m_fd) fcntl(m_fd, F_SETFD, FD_CLOEXEC)
++#define SET_NOCLOEXEC(m_fd) fcntl(m_fd, F_SETFD, 0)
++#define SET_NONBLOCK(m_fd) {                                     \
++        fcntl(m_fd, F_SETFL, fcntl(m_fd, F_GETFL) | O_NONBLOCK); \
++    }
++#else
++#define SET_CLOEXEC(m_fd) ioctl(m_fd, FIOCLEX)
++#define SET_NOCLOEXEC(m_fd) ioctl(m_fd, FIONCLEX)
++#define SET_NONBLOCK(m_fd) {         \
++        int flag = 1;                \
++        ioctl(m_fd, FIONBIO, &flag); \
++    }
++#endif
++
+ struct pipe_payload
+ {
+     struct forkfd_info info;
+@@ -275,8 +290,10 @@
+                               const struct pipe_payload *payload)
+ {
+     ssize_t ret;
+-    EINTR_LOOP(ret, write(entry->deathPipe, payload, sizeof(*payload)));
+-    EINTR_LOOP(ret, close(entry->deathPipe));
++    if (entry->deathPipe != FFD_UNINITIALIZED_FD) {
++        EINTR_LOOP(ret, write(entry->deathPipe, payload, sizeof(*payload)));
++        EINTR_LOOP(ret, close(entry->deathPipe));
++    }
+ 
+     freeInfo(header, entry);
+ }
+@@ -457,7 +474,7 @@
+     struct sigaction action;
+     memset(&action, 0, sizeof action);
+     sigemptyset(&action.sa_mask);
+-    action.sa_flags = SA_NOCLDSTOP;
++    action.sa_flags = SA_NOCLDSTOP | SA_RESTART;
+     action.sa_handler = sigchld_handler;
+ 
+     /* ### RACE CONDITION
+@@ -536,19 +553,19 @@
+     if (ret == -1)
+         return ret;
+ 
+-    if ((flags & FFD_CLOEXEC) == 0)
+-        fcntl(filedes[0], F_SETFD, 0);
++	if ((flags & FFD_CLOEXEC) == 0)
++        SET_NOCLOEXEC(filedes[0]);
+ #else
+     ret = pipe(filedes);
+     if (ret == -1)
+         return ret;
+ 
+-    fcntl(filedes[1], F_SETFD, FD_CLOEXEC);
++    SET_CLOEXEC(filedes[1]);
+     if (flags & FFD_CLOEXEC)
+-        fcntl(filedes[0], F_SETFD, FD_CLOEXEC);
++        SET_CLOEXEC(filedes[0]);
+ #endif
+     if (flags & FFD_NONBLOCK)
+-        fcntl(filedes[0], F_SETFL, fcntl(filedes[0], F_GETFL) | O_NONBLOCK);
++        SET_NONBLOCK(filedes[0]);
+     return ret;
+ }
+ 
+@@ -584,9 +601,9 @@
+ 
+     /* parent process */
+     if (flags & FFD_CLOEXEC)
+-        fcntl(ret, F_SETFD, FD_CLOEXEC);
++        SET_CLOEXEC(ret);
+     if (flags & FFD_NONBLOCK)
+-        fcntl(ret, F_SETFL, fcntl(ret, F_GETFL) | O_NONBLOCK);
++        SET_NONBLOCK(ret);
+     if (ppid)
+         *ppid = pid;
+     return ret;
+@@ -602,6 +619,9 @@
+ #endif
+ 
+ #ifndef FORKFD_NO_FORKFD
++
++static int _forkfd(int flags, pid_t *ppid, int create_fd);
++
+ /**
+  * @brief forkfd returns a file descriptor representing a child process
+  * @return a file descriptor, or -1 in case of failure
+@@ -637,6 +657,25 @@
+  */
+ int forkfd(int flags, pid_t *ppid)
+ {
++    return _forkfd(flags, ppid, 1);
++}
++
++/**
++* @brief unlike forkfd, forkfd_nofd does not return any file descriptor representing the child process
++* @return a FFD_UNINITIALIZED_FD, or -1 in case of failure
++* 
++* forkfd_nofd() does not create any file descriptor to notify when a child
++* process exits. Use it if all you need is for the SIGCHLD handler to call waitpid.
++* 
++* @sa forkfd()
++* */
++int forkfd_nofd(int flags, pid_t *ppid)
++{
++    return _forkfd(flags, ppid, 0);
++}
++
++static int _forkfd(int flags, pid_t *ppid, int create_fd)
++{
+     Header *header;
+     ProcessInfo *info;
+     pid_t pid;
+@@ -663,7 +702,7 @@
+     }
+ 
+     /* create the pipes before we fork */
+-    if (create_pipe(death_pipe, flags) == -1)
++    if (create_fd && create_pipe(death_pipe, flags) == -1)
+         goto err_free; /* failed to create the pipes, pass errno */
+ 
+ #ifdef HAVE_EVENTFD
+@@ -713,13 +752,20 @@
+         }
+ 
+         /* now close the pipes and return to the caller */
+-        EINTR_LOOP(ret, close(death_pipe[0]));
+-        EINTR_LOOP(ret, close(death_pipe[1]));
++        if (create_fd) {
++            EINTR_LOOP(ret, close(death_pipe[0]));
++            EINTR_LOOP(ret, close(death_pipe[1]));
++        }
+         fd = FFD_CHILD_PROCESS;
+     } else {
+         /* parent process */
+-        info->deathPipe = death_pipe[1];
+-        fd = death_pipe[0];
++        if (create_fd) {
++            info->deathPipe = death_pipe[1];
++            fd = death_pipe[0];
++        } else {
++            info->deathPipe = FFD_UNINITIALIZED_FD;
++            fd = FFD_UNINITIALIZED_FD;
++        }
+         ffd_atomic_store(&info->pid, pid, FFD_ATOMIC_RELEASE);
+ 
+         /* release the child */
+@@ -755,8 +801,10 @@
+         EINTR_LOOP(ret, close(sync_pipe[1]));
+     }
+ err_close:
+-    EINTR_LOOP(ret, close(death_pipe[0]));
+-    EINTR_LOOP(ret, close(death_pipe[1]));
++    if (create_fd) {
++        EINTR_LOOP(ret, close(death_pipe[0]));
++        EINTR_LOOP(ret, close(death_pipe[1]));
++    }
+ err_free:
+     /* free the info pointer */
+     freeInfo(header, info);
+diff -u old/forkfd_gcc.h new/forkfd_gcc.h
+--- old/forkfd_gcc.h
++++ new/forkfd_gcc.h
+@@ -34,24 +34,30 @@
+ #define ffd_atomic_pointer(type)    type*
+ 
+ #define FFD_ATOMIC_INIT(val)    (val)
+-
+-#define FFD_ATOMIC_RELAXED  __ATOMIC_RELAXED
+-#define FFD_ATOMIC_ACQUIRE  __ATOMIC_ACQUIRE
+-#define FFD_ATOMIC_RELEASE  __ATOMIC_RELEASE
+ // acq_rel & cst not necessary
+ 
+ #if !defined(__GNUC__) || \
+     ((__GNUC__ - 0) * 100 + (__GNUC_MINOR__ - 0)) < 407 || \
+     (defined(__INTEL_COMPILER) && __INTEL_COMPILER-0 < 1310) || \
+     (defined(__clang__) && ((__clang_major__-0) * 100 + (__clang_minor-0)) < 303)
+-#define ffd_atomic_load_n(ptr,order) *(ptr)
+-#define ffd_atomic_store_n(ptr,val,order) (*(ptr) = (val), (void)0)
+-#define ffd_atomic_exchange_n(ptr,val,order) __sync_lock_test_and_set(ptr, val)
+-#define ffd_atomic_compare_exchange_n(ptr,expected,desired,weak,order1,order2) \
++
++#define FFD_ATOMIC_RELAXED  ((void)0)
++#define FFD_ATOMIC_ACQUIRE  ((void)0)
++#define FFD_ATOMIC_RELEASE  ((void)0)
++
++#define ffd_atomic_load(ptr,order) *(ptr)
++#define ffd_atomic_store(ptr,val,order) (*(ptr) = (val), (void)0)
++#define ffd_atomic_exchange(ptr,val,order) __sync_lock_test_and_set(ptr, val)
++#define ffd_atomic_compare_exchange(ptr,expected,desired,order1,order2) \
+     __sync_bool_compare_and_swap(ptr, *(expected), desired) ? 1 : \
+     (*(expected) = *(ptr), 0)
+ #define ffd_atomic_add_fetch(ptr,val,order) __sync_add_and_fetch(ptr, val)
+ #else
++
++#define FFD_ATOMIC_RELAXED  __ATOMIC_RELAXED
++#define FFD_ATOMIC_ACQUIRE  __ATOMIC_ACQUIRE
++#define FFD_ATOMIC_RELEASE  __ATOMIC_RELEASE
++
+ #define ffd_atomic_load(ptr,order) __atomic_load_n(ptr, order)
+ #define ffd_atomic_store(ptr,val,order) __atomic_store_n(ptr, val, order)
+ #define ffd_atomic_exchange(ptr,val,order) __atomic_exchange_n(ptr, val, order)
+diff -u old/forkfd.h new/forkfd.h
+--- old/forkfd.h
++++ new/forkfd.h
+@@ -25,7 +25,11 @@
+ #ifndef FORKFD_H
+ #define FORKFD_H
+ 
++#ifndef NO_FCNTL
+ #include <fcntl.h>
++#else
++#include "sys/ioctl.h"
++#endif
+ #include <stdint.h>
+ #include <unistd.h> // to get the POSIX flags
+ 
+@@ -40,7 +44,8 @@
+ #define FFD_CLOEXEC  1
+ #define FFD_NONBLOCK 2
+ 
+-#define FFD_CHILD_PROCESS (-2)
++#define FFD_CHILD_PROCESS    (-2)
++#define FFD_UNINITIALIZED_FD (-3)
+ 
+ struct forkfd_info {
+     int32_t code;
+@@ -48,6 +53,7 @@
+ };
+ 
+ int forkfd(int flags, pid_t *ppid);
++int forkfd_nofd(int flags, pid_t *ppid);
+ int forkfd_wait(int ffd, forkfd_info *info, struct rusage *rusage);
+ int forkfd_close(int ffd);
+ 
