@@ -37,6 +37,7 @@ extern "C" {
 #include <stdint.h>
 
 #ifndef GODOT_CORE_API_GODOT_RID_TYPE_DEFINED
+#define GODOT_CORE_API_GODOT_RID_TYPE_DEFINED
 typedef struct godot_rid {
 	uint8_t _dont_touch_that[8];
 } godot_rid;
@@ -44,11 +45,15 @@ typedef struct godot_rid {
 
 #include "../godot.h"
 
-void GDAPI godot_rid_new(godot_rid *p_rid, godot_object *p_from);
+void GDAPI godot_rid_new(godot_rid *r_dest);
 
-uint32_t GDAPI godot_rid_get_rid(const godot_rid *p_rid);
+godot_int GDAPI godot_rid_get_id(const godot_rid *p_self);
 
-void GDAPI godot_rid_destroy(godot_rid *p_rid);
+void GDAPI godot_rid_new_with_resource(godot_rid *r_dest, const godot_object *p_from);
+
+godot_bool GDAPI godot_rid_operator_equal(const godot_rid *p_self, const godot_rid *p_b);
+
+godot_bool GDAPI godot_rid_operator_less(const godot_rid *p_self, const godot_rid *p_b);
 
 #ifdef __cplusplus
 }

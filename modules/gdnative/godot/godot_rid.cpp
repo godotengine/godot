@@ -28,36 +28,46 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "godot_rid.h"
+#include "core/variant.h"
 
-#include "object.h"
-#include "resource.h"
+#include "core/resource.h"
+#include "core/rid.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void _rid_api_anchor() {
+void _rid_api_anchor() {}
+
+void GDAPI godot_rid_new(godot_rid *r_dest) {
+	RID *dest = (RID *)r_dest;
+	memnew_placement(dest, RID);
 }
 
-void GDAPI godot_rid_new(godot_rid *p_rid, godot_object *p_from) {
+godot_int GDAPI godot_rid_get_id(const godot_rid *p_self) {
+	const RID *self = (const RID *)p_self;
+	return self->get_id();
+}
 
-	Resource *res_from = ((Object *)p_from)->cast_to<Resource>();
-
-	RID *rid = (RID *)p_rid;
-	memnew_placement(rid, RID);
-
+void GDAPI godot_rid_new_with_resource(godot_rid *r_dest, const godot_object *p_from) {
+	const Resource *res_from = ((const Object *)p_from)->cast_to<Resource>();
+	godot_rid_new(r_dest);
 	if (res_from) {
-		*rid = RID(res_from->get_rid());
+		RID *dest = (RID *)r_dest;
+		*dest = RID(res_from->get_rid());
 	}
 }
 
-uint32_t GDAPI godot_rid_get_rid(const godot_rid *p_rid) {
-	RID *rid = (RID *)p_rid;
-	return rid->get_id();
+godot_bool GDAPI godot_rid_operator_equal(const godot_rid *p_self, const godot_rid *p_b) {
+	const RID *self = (const RID *)p_self;
+	const RID *b = (const RID *)p_b;
+	return *self == *b;
 }
 
-void GDAPI godot_rid_destroy(godot_rid *p_rid) {
-	((RID *)p_rid)->~RID();
+godot_bool GDAPI godot_rid_operator_less(const godot_rid *p_self, const godot_rid *p_b) {
+	const RID *self = (const RID *)p_self;
+	const RID *b = (const RID *)p_b;
+	return *self < *b;
 }
 
 #ifdef __cplusplus

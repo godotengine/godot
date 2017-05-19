@@ -101,13 +101,13 @@ void GDAPI godot_pool_byte_array_set(godot_pool_byte_array *p_pba, const godot_i
 	pba->set(p_idx, p_data);
 }
 
-uint8_t GDAPI godot_pool_byte_array_get(godot_pool_byte_array *p_pba, const godot_int p_idx) {
-	PoolVector<uint8_t> *pba = (PoolVector<uint8_t> *)p_pba;
+uint8_t GDAPI godot_pool_byte_array_get(const godot_pool_byte_array *p_pba, const godot_int p_idx) {
+	const PoolVector<uint8_t> *pba = (const PoolVector<uint8_t> *)p_pba;
 	return pba->get(p_idx);
 }
 
-godot_int GDAPI godot_pool_byte_array_size(godot_pool_byte_array *p_pba) {
-	PoolVector<uint8_t> *pba = (PoolVector<uint8_t> *)p_pba;
+godot_int GDAPI godot_pool_byte_array_size(const godot_pool_byte_array *p_pba) {
+	const PoolVector<uint8_t> *pba = (const PoolVector<uint8_t> *)p_pba;
 	return pba->size();
 }
 
@@ -174,13 +174,13 @@ void GDAPI godot_pool_int_array_set(godot_pool_int_array *p_pba, const godot_int
 	pba->set(p_idx, p_data);
 }
 
-godot_int GDAPI godot_pool_int_array_get(godot_pool_int_array *p_pba, const godot_int p_idx) {
-	PoolVector<godot_int> *pba = (PoolVector<godot_int> *)p_pba;
+godot_int GDAPI godot_pool_int_array_get(const godot_pool_int_array *p_pba, const godot_int p_idx) {
+	const PoolVector<godot_int> *pba = (const PoolVector<godot_int> *)p_pba;
 	return pba->get(p_idx);
 }
 
-godot_int GDAPI godot_pool_int_array_size(godot_pool_int_array *p_pba) {
-	PoolVector<godot_int> *pba = (PoolVector<godot_int> *)p_pba;
+godot_int GDAPI godot_pool_int_array_size(const godot_pool_int_array *p_pba) {
+	const PoolVector<godot_int> *pba = (const PoolVector<godot_int> *)p_pba;
 	return pba->size();
 }
 
@@ -247,13 +247,13 @@ void GDAPI godot_pool_real_array_set(godot_pool_real_array *p_pba, const godot_i
 	pba->set(p_idx, p_data);
 }
 
-godot_real GDAPI godot_pool_real_array_get(godot_pool_real_array *p_pba, const godot_int p_idx) {
-	PoolVector<godot_real> *pba = (PoolVector<godot_real> *)p_pba;
+godot_real GDAPI godot_pool_real_array_get(const godot_pool_real_array *p_pba, const godot_int p_idx) {
+	const PoolVector<godot_real> *pba = (const PoolVector<godot_real> *)p_pba;
 	return pba->get(p_idx);
 }
 
-godot_int GDAPI godot_pool_real_array_size(godot_pool_real_array *p_pba) {
-	PoolVector<godot_real> *pba = (PoolVector<godot_real> *)p_pba;
+godot_int GDAPI godot_pool_real_array_size(const godot_pool_real_array *p_pba) {
+	const PoolVector<godot_real> *pba = (const PoolVector<godot_real> *)p_pba;
 	return pba->size();
 }
 
@@ -324,8 +324,8 @@ void GDAPI godot_pool_string_array_set(godot_pool_string_array *p_pba, const god
 	pba->set(p_idx, s);
 }
 
-godot_string GDAPI godot_pool_string_array_get(godot_pool_string_array *p_pba, const godot_int p_idx) {
-	PoolVector<String> *pba = (PoolVector<String> *)p_pba;
+godot_string GDAPI godot_pool_string_array_get(const godot_pool_string_array *p_pba, const godot_int p_idx) {
+	const PoolVector<String> *pba = (const PoolVector<String> *)p_pba;
 	godot_string str;
 	String *s = (String *)&str;
 	memnew_placement(s, String);
@@ -333,8 +333,8 @@ godot_string GDAPI godot_pool_string_array_get(godot_pool_string_array *p_pba, c
 	return str;
 }
 
-godot_int GDAPI godot_pool_string_array_size(godot_pool_string_array *p_pba) {
-	PoolVector<String> *pba = (PoolVector<String> *)p_pba;
+godot_int GDAPI godot_pool_string_array_size(const godot_pool_string_array *p_pba) {
+	const PoolVector<String> *pba = (const PoolVector<String> *)p_pba;
 	return pba->size();
 }
 
@@ -405,16 +405,16 @@ void GDAPI godot_pool_vector2_array_set(godot_pool_vector2_array *p_pba, const g
 	pba->set(p_idx, s);
 }
 
-godot_vector2 GDAPI godot_pool_vector2_array_get(godot_pool_vector2_array *p_pba, const godot_int p_idx) {
-	PoolVector<Vector2> *pba = (PoolVector<Vector2> *)p_pba;
+godot_vector2 GDAPI godot_pool_vector2_array_get(const godot_pool_vector2_array *p_pba, const godot_int p_idx) {
+	const PoolVector<Vector2> *pba = (const PoolVector<Vector2> *)p_pba;
 	godot_vector2 v;
 	Vector2 *s = (Vector2 *)&v;
 	*s = pba->get(p_idx);
 	return v;
 }
 
-godot_int GDAPI godot_pool_vector2_array_size(godot_pool_vector2_array *p_pba) {
-	PoolVector<Vector2> *pba = (PoolVector<Vector2> *)p_pba;
+godot_int GDAPI godot_pool_vector2_array_size(const godot_pool_vector2_array *p_pba) {
+	const PoolVector<Vector2> *pba = (const PoolVector<Vector2> *)p_pba;
 	return pba->size();
 }
 
@@ -485,16 +485,16 @@ void GDAPI godot_pool_vector3_array_set(godot_pool_vector3_array *p_pba, const g
 	pba->set(p_idx, s);
 }
 
-godot_vector3 GDAPI godot_pool_vector3_array_get(godot_pool_vector3_array *p_pba, const godot_int p_idx) {
-	PoolVector<Vector3> *pba = (PoolVector<Vector3> *)p_pba;
+godot_vector3 GDAPI godot_pool_vector3_array_get(const godot_pool_vector3_array *p_pba, const godot_int p_idx) {
+	const PoolVector<Vector3> *pba = (const PoolVector<Vector3> *)p_pba;
 	godot_vector3 v;
 	Vector3 *s = (Vector3 *)&v;
 	*s = pba->get(p_idx);
 	return v;
 }
 
-godot_int GDAPI godot_pool_vector3_array_size(godot_pool_vector3_array *p_pba) {
-	PoolVector<Vector3> *pba = (PoolVector<Vector3> *)p_pba;
+godot_int GDAPI godot_pool_vector3_array_size(const godot_pool_vector3_array *p_pba) {
+	const PoolVector<Vector3> *pba = (const PoolVector<Vector3> *)p_pba;
 	return pba->size();
 }
 
@@ -565,16 +565,16 @@ void GDAPI godot_pool_color_array_set(godot_pool_color_array *p_pba, const godot
 	pba->set(p_idx, s);
 }
 
-godot_color GDAPI godot_pool_color_array_get(godot_pool_color_array *p_pba, const godot_int p_idx) {
-	PoolVector<Color> *pba = (PoolVector<Color> *)p_pba;
+godot_color GDAPI godot_pool_color_array_get(const godot_pool_color_array *p_pba, const godot_int p_idx) {
+	const PoolVector<Color> *pba = (const PoolVector<Color> *)p_pba;
 	godot_color v;
 	Color *s = (Color *)&v;
 	*s = pba->get(p_idx);
 	return v;
 }
 
-godot_int GDAPI godot_pool_color_array_size(godot_pool_color_array *p_pba) {
-	PoolVector<Color> *pba = (PoolVector<Color> *)p_pba;
+godot_int GDAPI godot_pool_color_array_size(const godot_pool_color_array *p_pba) {
+	const PoolVector<Color> *pba = (const PoolVector<Color> *)p_pba;
 	return pba->size();
 }
 

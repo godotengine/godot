@@ -37,45 +37,79 @@ extern "C" {
 #include <stdint.h>
 
 #ifndef GODOT_CORE_API_GODOT_BASIS_TYPE_DEFINED
+#define GODOT_CORE_API_GODOT_BASIS_TYPE_DEFINED
 typedef struct godot_basis {
 	uint8_t _dont_touch_that[36];
 } godot_basis;
 #endif
 
 #include "../godot.h"
-#include "godot_quat.h"
+#include "godot_vector3.h"
 
-void GDAPI godot_basis_new(godot_basis *p_v);
-void GDAPI godot_basis_new_with_euler_quat(godot_basis *p_v, const godot_quat *p_euler);
-void GDAPI godot_basis_new_with_euler(godot_basis *p_v, const godot_vector3 p_euler);
-void GDAPI godot_basis_new_with_axis_and_angle(godot_basis *p_v, const godot_vector3 p_axis, const godot_real p_phi);
-void GDAPI godot_basis_new_with_rows(godot_basis *p_v, const godot_vector3 p_row0, const godot_vector3 p_row1, const godot_vector3 p_row2);
+void GDAPI godot_basis_new_with_rows(godot_basis *r_dest, const godot_vector3 *p_x_axis, const godot_vector3 *p_y_axis, const godot_vector3 *p_z_axis);
+void GDAPI godot_basis_new_with_axis_and_angle(godot_basis *r_dest, const godot_vector3 *p_axis, const godot_real p_phi);
+void GDAPI godot_basis_new_with_euler(godot_basis *r_dest, const godot_vector3 *p_euler);
 
-godot_quat GDAPI godot_basis_as_quat(const godot_basis *p_v);
+godot_string GDAPI godot_basis_as_string(const godot_basis *p_self);
 
-/*
- * p_elements is a pointer to an array of 3 (!!) vector3
- */
-void GDAPI godot_basis_get_elements(godot_basis *p_v, godot_vector3 *p_elements);
-godot_vector3 GDAPI godot_basis_get_axis(const godot_basis *p_v, const godot_int p_axis);
-void GDAPI godot_basis_set_axis(godot_basis *p_v, const godot_int p_axis, const godot_vector3 p_value);
-godot_vector3 GDAPI godot_basis_get_row(const godot_basis *p_v, const godot_int p_row);
-void GDAPI godot_basis_set_row(godot_basis *p_v, const godot_int p_row, const godot_vector3 p_value);
+godot_basis GDAPI godot_basis_inverse(const godot_basis *p_self);
 
-godot_real godot_basis_determinant(const godot_basis *p_v);
-godot_vector3 godot_basis_get_euler(const godot_basis *p_v);
-godot_int godot_basis_get_orthogonal_index(const godot_basis *p_v);
-godot_vector3 godot_basis_get_scale(const godot_basis *p_v);
-void godot_basis_inverse(godot_basis *p_dest, const godot_basis *p_v);
-void godot_basis_orthonormalized(godot_basis *p_dest, const godot_basis *p_v);
-void godot_basis_rotated(godot_basis *p_dest, const godot_basis *p_v, const godot_vector3 p_axis, const godot_real p_phi);
-void godot_basis_scaled(godot_basis *p_dest, const godot_basis *p_v, const godot_vector3 p_scale);
-godot_real godot_basis_tdotx(const godot_basis *p_v, const godot_vector3 p_with);
-godot_real godot_basis_tdoty(const godot_basis *p_v, const godot_vector3 p_with);
-godot_real godot_basis_tdotz(const godot_basis *p_v, const godot_vector3 p_with);
-void godot_basis_transposed(godot_basis *p_dest, const godot_basis *p_v);
-godot_vector3 godot_basis_xform(const godot_basis *p_v, const godot_vector3 p_vect);
-godot_vector3 godot_basis_xform_inv(const godot_basis *p_v, const godot_vector3 p_vect);
+godot_basis GDAPI godot_basis_transposed(const godot_basis *p_self);
+
+godot_basis GDAPI godot_basis_orthonormalized(const godot_basis *p_self);
+
+godot_real GDAPI godot_basis_determinant(const godot_basis *p_self);
+
+godot_basis GDAPI godot_basis_rotated(const godot_basis *p_self, const godot_vector3 *p_axis, const godot_real p_phi);
+
+godot_basis GDAPI godot_basis_scaled(const godot_basis *p_self, const godot_vector3 *p_scale);
+
+void GDAPI godot_basis_set_scale(godot_basis *p_self, const godot_vector3 *p_scale);
+
+void GDAPI godot_basis_set_rotation_euler(godot_basis *p_self, const godot_vector3 *p_euler);
+
+void GDAPI godot_basis_set_rotation_axis_angle(godot_basis *p_self, const godot_vector3 *p_axis, const godot_real p_angle);
+
+godot_vector3 GDAPI godot_basis_get_scale(const godot_basis *p_self);
+
+godot_vector3 GDAPI godot_basis_get_euler(const godot_basis *p_self);
+
+godot_real GDAPI godot_basis_tdotx(const godot_basis *p_self, const godot_vector3 *p_with);
+
+godot_real GDAPI godot_basis_tdoty(const godot_basis *p_self, const godot_vector3 *p_with);
+
+godot_real GDAPI godot_basis_tdotz(const godot_basis *p_self, const godot_vector3 *p_with);
+
+godot_vector3 GDAPI godot_basis_xform(const godot_basis *p_self, const godot_vector3 *p_v);
+
+godot_vector3 GDAPI godot_basis_xform_inv(const godot_basis *p_self, const godot_vector3 *p_v);
+
+godot_int GDAPI godot_basis_get_orthogonal_index(const godot_basis *p_self);
+
+void GDAPI godot_basis_new(godot_basis *r_dest);
+
+void GDAPI godot_basis_new_with_euler_quat(godot_basis *r_dest, const godot_quat *p_euler);
+
+// p_elements is a pointer to an array of 3 (!!) vector3
+void GDAPI godot_basis_get_elements(godot_basis *p_self, godot_vector3 *p_elements);
+
+godot_vector3 GDAPI godot_basis_get_axis(const godot_basis *p_self, const godot_int p_axis);
+
+void GDAPI godot_basis_set_axis(godot_basis *p_self, const godot_int p_axis, const godot_vector3 *p_value);
+
+godot_vector3 GDAPI godot_basis_get_row(const godot_basis *p_self, const godot_int p_row);
+
+void GDAPI godot_basis_set_row(godot_basis *p_self, const godot_int p_row, const godot_vector3 *p_value);
+
+godot_bool GDAPI godot_basis_operator_equal(const godot_basis *p_self, const godot_basis *p_b);
+
+godot_basis GDAPI godot_basis_operator_add(const godot_basis *p_self, const godot_basis *p_b);
+
+godot_basis GDAPI godot_basis_operator_substract(const godot_basis *p_self, const godot_basis *p_b);
+
+godot_basis GDAPI godot_basis_operator_multiply_vector(const godot_basis *p_self, const godot_basis *p_b);
+
+godot_basis GDAPI godot_basis_operator_multiply_scalar(const godot_basis *p_self, const godot_real p_b);
 
 #ifdef __cplusplus
 }

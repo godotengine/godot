@@ -1460,7 +1460,6 @@ void register_variant_methods() {
 	ADDFUNC1(VECTOR3, BASIS, Vector3, outer, VECTOR3, "b", varray());
 	ADDFUNC0(VECTOR3, BASIS, Vector3, to_diagonal_matrix, varray());
 	ADDFUNC0(VECTOR3, VECTOR3, Vector3, abs, varray());
-	ADDFUNC0(VECTOR3, VECTOR3, Vector3, abs, varray());
 	ADDFUNC0(VECTOR3, VECTOR3, Vector3, floor, varray());
 	ADDFUNC0(VECTOR3, VECTOR3, Vector3, ceil, varray());
 	ADDFUNC1(VECTOR3, REAL, Vector3, distance_to, VECTOR3, "b", varray());

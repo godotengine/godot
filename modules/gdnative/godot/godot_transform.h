@@ -37,19 +37,53 @@ extern "C" {
 #include <stdint.h>
 
 #ifndef GODOT_CORE_API_GODOT_TRANSFORM_TYPE_DEFINED
+#define GODOT_CORE_API_GODOT_TRANSFORM_TYPE_DEFINED
 typedef struct godot_transform {
 	uint8_t _dont_touch_that[48];
 } godot_transform;
 #endif
 
 #include "../godot.h"
+#include "godot_basis.h"
+#include "godot_variant.h"
+#include "godot_vector3.h"
 
-void GDAPI godot_transform_new(godot_transform *p_trans);
-void GDAPI godot_transform_new_with_basis(godot_transform *p_trans, const godot_basis *p_basis);
-void GDAPI godot_transform_new_with_basis_origin(godot_transform *p_trans, const godot_basis *p_basis, const godot_vector3 *p_origin);
+void GDAPI godot_transform_new_with_axis_origin(godot_transform *r_dest, const godot_vector3 *p_x_axis, const godot_vector3 *p_y_axis, const godot_vector3 *p_z_axis, const godot_vector3 *p_origin);
+void GDAPI godot_transform_new(godot_transform *r_dest, const godot_basis *p_basis, const godot_vector3 *p_origin);
 
-godot_basis GDAPI *godot_transform_get_basis(godot_transform *p_trans);
-godot_vector3 GDAPI *godot_transform_get_origin(godot_transform *p_trans);
+godot_string GDAPI godot_transform_as_string(const godot_transform *p_self);
+
+godot_transform GDAPI godot_transform_inverse(const godot_transform *p_self);
+
+godot_transform GDAPI godot_transform_affine_inverse(const godot_transform *p_self);
+
+godot_transform GDAPI godot_transform_orthonormalized(const godot_transform *p_self);
+
+godot_transform GDAPI godot_transform_rotated(const godot_transform *p_self, const godot_vector3 *p_axis, const godot_real p_phi);
+
+godot_transform GDAPI godot_transform_scaled(const godot_transform *p_self, const godot_vector3 *p_scale);
+
+godot_transform GDAPI godot_transform_translated(const godot_transform *p_self, const godot_vector3 *p_ofs);
+
+godot_transform GDAPI godot_transform_looking_at(const godot_transform *p_self, const godot_vector3 *p_target, const godot_vector3 *p_up);
+
+godot_plane GDAPI godot_transform_xform_plane(const godot_transform *p_self, const godot_plane *p_v);
+
+godot_plane GDAPI godot_transform_xform_inv_plane(const godot_transform *p_self, const godot_plane *p_v);
+
+void GDAPI godot_transform_new_identity(godot_transform *r_dest);
+
+godot_bool GDAPI godot_transform_operator_equal(const godot_transform *p_self, const godot_transform *p_b);
+
+godot_transform GDAPI godot_transform_operator_multiply(const godot_transform *p_self, const godot_transform *p_b);
+
+godot_vector3 GDAPI godot_transform_xform_vector3(const godot_transform *p_self, const godot_vector3 *p_v);
+
+godot_vector3 GDAPI godot_transform_xform_inv_vector3(const godot_transform *p_self, const godot_vector3 *p_v);
+
+godot_rect3 GDAPI godot_transform_xform_rect3(const godot_transform *p_self, const godot_rect3 *p_v);
+
+godot_rect3 GDAPI godot_transform_xform_inv_rect3(const godot_transform *p_self, const godot_rect3 *p_v);
 
 #ifdef __cplusplus
 }

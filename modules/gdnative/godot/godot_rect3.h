@@ -37,21 +37,61 @@ extern "C" {
 #include <stdint.h>
 
 #ifndef GODOT_CORE_API_GODOT_RECT3_TYPE_DEFINED
+#define GODOT_CORE_API_GODOT_RECT3_TYPE_DEFINED
 typedef struct godot_rect3 {
 	uint8_t _dont_touch_that[24];
 } godot_rect3;
 #endif
 
 #include "../godot.h"
+#include "godot_plane.h"
+#include "godot_vector3.h"
 
-void GDAPI godot_rect3_new(godot_rect3 *p_rect);
-void GDAPI godot_rect3_new_with_pos_and_size(godot_rect3 *p_rect, const godot_vector3 *p_pos, const godot_vector3 *p_size);
+void GDAPI godot_rect3_new(godot_rect3 *r_dest, const godot_vector3 *p_pos, const godot_vector3 *p_size);
 
-godot_vector3 GDAPI *godot_rect3_get_pos(godot_rect3 *p_rect);
-void GDAPI godot_rect3_set_pos(godot_rect3 *p_rect, const godot_vector3 *p_pos);
+godot_string GDAPI godot_rect3_as_string(const godot_rect3 *p_self);
 
-godot_vector3 GDAPI *godot_rect3_get_size(godot_rect3 *p_rect);
-void GDAPI godot_rect3_set_size(godot_rect3 *p_rect, const godot_vector3 *p_size);
+godot_real GDAPI godot_rect3_get_area(const godot_rect3 *p_self);
+
+godot_bool GDAPI godot_rect3_has_no_area(const godot_rect3 *p_self);
+
+godot_bool GDAPI godot_rect3_has_no_surface(const godot_rect3 *p_self);
+
+godot_bool GDAPI godot_rect3_intersects(const godot_rect3 *p_self, const godot_rect3 *p_with);
+
+godot_bool GDAPI godot_rect3_encloses(const godot_rect3 *p_self, const godot_rect3 *p_with);
+
+godot_rect3 GDAPI godot_rect3_merge(const godot_rect3 *p_self, const godot_rect3 *p_with);
+
+godot_rect3 GDAPI godot_rect3_intersection(const godot_rect3 *p_self, const godot_rect3 *p_with);
+
+godot_bool GDAPI godot_rect3_intersects_plane(const godot_rect3 *p_self, const godot_plane *p_plane);
+
+godot_bool GDAPI godot_rect3_intersects_segment(const godot_rect3 *p_self, const godot_vector3 *p_from, const godot_vector3 *p_to);
+
+godot_bool GDAPI godot_rect3_has_point(const godot_rect3 *p_self, const godot_vector3 *p_point);
+
+godot_vector3 GDAPI godot_rect3_get_support(const godot_rect3 *p_self, const godot_vector3 *p_dir);
+
+godot_vector3 GDAPI godot_rect3_get_longest_axis(const godot_rect3 *p_self);
+
+godot_int GDAPI godot_rect3_get_longest_axis_index(const godot_rect3 *p_self);
+
+godot_real GDAPI godot_rect3_get_longest_axis_size(const godot_rect3 *p_self);
+
+godot_vector3 GDAPI godot_rect3_get_shortest_axis(const godot_rect3 *p_self);
+
+godot_int GDAPI godot_rect3_get_shortest_axis_index(const godot_rect3 *p_self);
+
+godot_real GDAPI godot_rect3_get_shortest_axis_size(const godot_rect3 *p_self);
+
+godot_rect3 GDAPI godot_rect3_expand(const godot_rect3 *p_self, const godot_vector3 *p_to_point);
+
+godot_rect3 GDAPI godot_rect3_grow(const godot_rect3 *p_self, const godot_real p_by);
+
+godot_vector3 GDAPI godot_rect3_get_endpoint(const godot_rect3 *p_self, const godot_int p_idx);
+
+godot_bool GDAPI godot_rect3_operator_equal(const godot_rect3 *p_self, const godot_rect3 *p_b);
 
 #ifdef __cplusplus
 }
