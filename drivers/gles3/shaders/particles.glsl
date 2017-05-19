@@ -132,6 +132,7 @@ void main() {
 	}
 
 	uint particle_number = current_cycle * uint(total_particles) + uint(gl_VertexID);
+	int index = int(gl_VertexID);
 
 	if (restart) {
 		shader_active=emitting;
