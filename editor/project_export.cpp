@@ -754,6 +754,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	settings_vb->add_child(runnable);
 
 	sections = memnew(TabContainer);
+	sections->set_tab_align(TabContainer::ALIGN_LEFT);
 	settings_vb->add_child(sections);
 	sections->set_v_size_flags(SIZE_EXPAND_FILL);
 

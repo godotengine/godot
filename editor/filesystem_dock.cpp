@@ -150,11 +150,10 @@ void FileSystemDock::_notification(int p_what) {
 			}
 			button_display_mode->connect("pressed", this, "_change_file_display");
 			//file_options->set_icon( get_icon("Tools","EditorIcons"));
-
 			files->connect("item_activated", this, "_select_file");
 			button_hist_next->connect("pressed", this, "_fw_history");
 			button_hist_prev->connect("pressed", this, "_bw_history");
-			search_icon->set_texture(get_icon("Search", "EditorIcons"));
+			search_icon->set_texture(get_icon("Zoom", "EditorIcons"));
 
 			button_hist_next->set_icon(get_icon("Forward", "EditorIcons"));
 			button_hist_prev->set_icon(get_icon("Back", "EditorIcons"));
@@ -1669,6 +1668,8 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	button_reload->set_tooltip(TTR("Re-Scan Filesystem"));
 	button_reload->hide();
 
+	//toolbar_hbc->add_spacer();
+
 	button_favorite = memnew(Button);
 	button_favorite->set_flat(true);
 	button_favorite->set_toggle_mode(true);
@@ -1723,7 +1724,6 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	tree->connect("item_rmb_selected", this, "_dir_rmb_pressed");
 
 	files = memnew(ItemList);
-	files->add_style_override("bg", editor->get_gui_base()->get_stylebox("EditorBG", "EditorStyles"));
 	files->set_v_size_flags(SIZE_EXPAND_FILL);
 	files->set_select_mode(ItemList::SELECT_MULTI);
 	files->set_drag_forwarding(this);

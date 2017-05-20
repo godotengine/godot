@@ -69,7 +69,7 @@ private:
 
 	int offset;
 	int max_drawn_tab;
-	int hilite_arrow;
+	int highlight_arrow;
 	bool buttons_visible;
 	bool missing_right;
 	Vector<Tab> tabs;

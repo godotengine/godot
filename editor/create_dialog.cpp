@@ -622,7 +622,6 @@ CreateDialog::CreateDialog() {
 	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
 	search_hb->add_child(search_box);
 	favorite = memnew(Button);
-	favorite->set_flat(true);
 	favorite->set_toggle_mode(true);
 	search_hb->add_child(favorite);
 	favorite->connect("pressed", this, "_favorite_toggled");

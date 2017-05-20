@@ -151,24 +151,24 @@ void ScrollBar::_gui_input(InputEvent p_event) {
 				double incr_size = orientation == VERTICAL ? incr->get_height() : incr->get_width();
 				double total = orientation == VERTICAL ? get_size().height : get_size().width;
 
-				HiliteStatus new_hilite;
+				HighlightStatus new_highlight;
 
 				if (ofs < decr_size) {
 
-					new_hilite = HILITE_DECR;
+					new_highlight = HIGHLIGHT_DECR;
 
 				} else if (ofs > total - incr_size) {
 
-					new_hilite = HILITE_INCR;
+					new_highlight = HIGHLIGHT_INCR;
 
 				} else {
 
-					new_hilite = HILITE_RANGE;
+					new_highlight = HIGHLIGHT_RANGE;
 				}
 
-				if (new_hilite != hilite) {
+				if (new_highlight != highlight) {
 
-					hilite = new_hilite;
+					highlight = new_highlight;
 					update();
 				}
 			}
@@ -233,10 +233,10 @@ void ScrollBar::_notification(int p_what) {
 
 		RID ci = get_canvas_item();
 
-		Ref<Texture> decr = hilite == HILITE_DECR ? get_icon("decrement_hilite") : get_icon("decrement");
-		Ref<Texture> incr = hilite == HILITE_INCR ? get_icon("increment_hilite") : get_icon("increment");
+		Ref<Texture> decr = highlight == HIGHLIGHT_DECR ? get_icon("decrement_highlight") : get_icon("decrement");
+		Ref<Texture> incr = highlight == HIGHLIGHT_INCR ? get_icon("increment_highlight") : get_icon("increment");
 		Ref<StyleBox> bg = has_focus() ? get_stylebox("scroll_focus") : get_stylebox("scroll");
-		Ref<StyleBox> grabber = (drag.active || hilite == HILITE_RANGE) ? get_stylebox("grabber_hilite") : get_stylebox("grabber");
+		Ref<StyleBox> grabber = (drag.active || highlight == HIGHLIGHT_RANGE) ? get_stylebox("grabber_highlight") : get_stylebox("grabber");
 
 		Point2 ofs;
 
@@ -386,7 +386,7 @@ void ScrollBar::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_MOUSE_EXIT) {
 
-		hilite = HILITE_NONE;
+		highlight = HIGHLIGHT_NONE;
 		update();
 	}
 }
@@ -784,7 +784,7 @@ void ScrollBar::_bind_methods() {
 ScrollBar::ScrollBar(Orientation p_orientation) {
 
 	orientation = p_orientation;
-	hilite = HILITE_NONE;
+	highlight = HIGHLIGHT_NONE;
 	custom_step = -1;
 	drag_slave = NULL;
 

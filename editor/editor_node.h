@@ -205,8 +205,10 @@ private:
 	//Ref<ResourceImportMetadata> scene_import_metadata;
 
 	PanelContainer *scene_root_parent;
+	Control *theme_base;
 	Control *gui_base;
 	VBoxContainer *main_vbox;
+	PanelContainer *play_button_panel;
 
 	//split
 
@@ -609,6 +611,7 @@ private:
 
 	void _start_dimming(bool p_dimming);
 	void _dim_timeout();
+	void _check_gui_base_size();
 
 protected:
 	void _notification(int p_what);

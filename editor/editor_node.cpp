@@ -348,11 +348,17 @@ void EditorNode::_notification(int p_what) {
 	if (p_what == MainLoop::NOTIFICATION_WM_QUIT_REQUEST) {
 
 		_menu_option_confirm(FILE_QUIT, false);
-	};
+	}
 
 	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
 		scene_tabs->set_tab_close_display_policy((bool(EDITOR_DEF("interface/always_show_close_button_in_scene_tabs", false)) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY));
 		property_editor->set_enable_capitalize_paths(bool(EDITOR_DEF("interface/capitalize_properties", true)));
+		Ref<Theme> theme = create_editor_theme();
+		theme_base->set_theme(theme);
+		gui_base->add_style_override("panel", gui_base->get_stylebox("Background", "EditorStyles"));
+		play_button_panel->add_style_override("panel", gui_base->get_stylebox("PlayButtonPanel", "EditorStyles"));
+		scene_root_parent->add_style_override("panel", gui_base->get_stylebox("Content", "EditorStyles"));
+		bottom_panel->add_style_override("panel", gui_base->get_stylebox("Content", "EditorStyles"));
 	}
 }
 
@@ -2722,7 +2728,9 @@ void EditorNode::add_editor_plugin(EditorPlugin *p_editor) {
 		ToolButton *tb = memnew(ToolButton);
 		tb->set_toggle_mode(true);
 		tb->connect("pressed", singleton, "_editor_select", varray(singleton->main_editor_buttons.size()));
-		tb->set_icon(singleton->gui_base->get_icon(p_editor->get_name(), "EditorIcons"));
+		tb->set_text(p_editor->get_name());
+		tb->set_icon(p_editor->get_base_control()->get_icon(p_editor->get_name(), "EditorIcons"));
+		tb->set_name(p_editor->get_name());
 		singleton->main_editor_buttons.push_back(tb);
 		singleton->main_editor_button_vb->add_child(tb);
 		singleton->editor_table.push_back(p_editor);
@@ -4725,6 +4733,23 @@ void EditorNode::_dim_timeout() {
 	}
 }
 
+void EditorNode::_check_gui_base_size() {
+	print_line(itos(int(gui_base->get_size().width)));
+	if (gui_base->get_size().width > 1200 * EDSCALE) {
+		for (int i = 0; i < singleton->main_editor_button_vb->get_child_count(); i++) {
+			ToolButton *btn = singleton->main_editor_button_vb->get_child(i)->cast_to<ToolButton>();
+			if (btn == singleton->distraction_free) continue;
+			btn->set_text(btn->get_name());
+		}
+	} else {
+		for (int i = 0; i < singleton->main_editor_button_vb->get_child_count(); i++) {
+			ToolButton *btn = singleton->main_editor_button_vb->get_child(i)->cast_to<ToolButton>();
+			if (btn == singleton->distraction_free) continue;
+			btn->set_text("");
+		}
+	}
+}
+
 void EditorNode::open_export_template_manager() {
 
 	export_template_manager->popup_manager();
@@ -4807,6 +4832,7 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_open_imported"), &EditorNode::_open_imported);
 	ClassDB::bind_method(D_METHOD("_inherit_imported"), &EditorNode::_inherit_imported);
 	ClassDB::bind_method(D_METHOD("_dim_timeout"), &EditorNode::_dim_timeout);
+	ClassDB::bind_method(D_METHOD("_check_gui_base_size"), &EditorNode::_check_gui_base_size);
 
 	ADD_SIGNAL(MethodInfo("play_pressed"));
 	ADD_SIGNAL(MethodInfo("pause_pressed"));
@@ -4940,17 +4966,19 @@ EditorNode::EditorNode() {
 	ClassDB::set_class_enabled("CollisionShape2D", true);
 	ClassDB::set_class_enabled("CollisionPolygon2D", true);
 
-	Control *theme_base = memnew(Control);
+	theme_base = memnew(Control);
 	add_child(theme_base);
 	theme_base->set_area_as_parent_rect();
 
 	gui_base = memnew(Panel);
 	theme_base->add_child(gui_base);
 	gui_base->set_area_as_parent_rect();
+	gui_base->connect("item_rect_changed", this, "_check_gui_base_size");
 
 	Ref<Theme> theme = create_editor_theme();
 	theme_base->set_theme(theme);
 	gui_base->set_theme(create_custom_theme());
+	gui_base->add_style_override("panel", gui_base->get_stylebox("Background", "EditorStyles"));
 
 	resource_preview = memnew(EditorResourcePreview);
 	add_child(resource_preview);
@@ -4965,6 +4993,7 @@ EditorNode::EditorNode() {
 	main_vbox = memnew(VBoxContainer);
 	gui_base->add_child(main_vbox);
 	main_vbox->set_area_as_parent_rect(8);
+	main_vbox->set_margin(MARGIN_TOP, 5);
 
 #if 0
 	PanelContainer *top_dark_panel = memnew( PanelContainer );
@@ -5101,7 +5130,7 @@ EditorNode::EditorNode() {
 		dock_slot[i]->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		dock_slot[i]->set_popup(dock_select_popoup);
 		dock_slot[i]->connect("pre_popup_pressed", this, "_dock_pre_popup", varray(i));
-		//dock_slot[i]->set_tab_align(TabContainer::ALIGN_LEFT);
+		dock_slot[i]->set_tab_align(TabContainer::ALIGN_LEFT);
 	}
 
 	dock_drag_timer = memnew(Timer);
@@ -5132,16 +5161,14 @@ EditorNode::EditorNode() {
 	scene_tabs->connect("right_button_pressed", this, "_scene_tab_script_edited");
 	scene_tabs->connect("tab_close", this, "_scene_tab_closed");
 
-	// MarginContainer *st_mc = memnew( MarginContainer );
-	// st_mc->add_child(scene_tabs);
 	srt->add_child(scene_tabs);
 
 	scene_root_parent = memnew(PanelContainer);
 	scene_root_parent->set_custom_minimum_size(Size2(0, 80) * EDSCALE);
-	scene_root_parent->add_style_override("panel", gui_base->get_stylebox("EditorPanel", "EditorStyles"));
+	scene_root_parent->add_style_override("panel", gui_base->get_stylebox("Content", "EditorStyles"));
 
-	// Ref<StyleBox> sp = scene_root_parent->get_stylebox("panel_full","PanelContainer");
-	// scene_root_parent->add_style_override("panel",sp);
+	//Ref<StyleBox> sp = scene_root_parent->get_stylebox("panel","TabContainer");
+	//scene_root_parent->add_style_override("panel",sp);
 
 	/*scene_root_parent->set_anchor( MARGIN_RIGHT, Control::ANCHOR_END );
 	scene_root_parent->set_anchor( MARGIN_BOTTOM, Control::ANCHOR_END );
@@ -5171,7 +5198,7 @@ EditorNode::EditorNode() {
 	scene_root_parent->add_child(viewport);
 
 	PanelContainer *top_region = memnew(PanelContainer);
-	top_region->add_style_override("panel", memnew(StyleBoxEmpty));
+	top_region->add_style_override("panel", gui_base->get_stylebox("MenuPanel", "EditorStyles"));
 	HBoxContainer *left_menu_hb = memnew(HBoxContainer);
 	top_region->add_child(left_menu_hb);
 	menu_hb->add_child(top_region);
@@ -5182,6 +5209,7 @@ EditorNode::EditorNode() {
 	file_menu->set_text(TTR("Scene"));
 	//file_menu->set_icon(gui_base->get_icon("Save","EditorIcons"));
 	left_menu_hb->add_child(file_menu);
+	file_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
 
 	prev_scene = memnew(ToolButton);
 	prev_scene->set_icon(gui_base->get_icon("PrevScene", "EditorIcons"));
@@ -5254,7 +5282,6 @@ EditorNode::EditorNode() {
 	}
 
 	PanelContainer *editor_region = memnew(PanelContainer);
-	editor_region->add_style_override("panel", memnew(StyleBoxEmpty));
 	main_editor_button_vb = memnew(HBoxContainer);
 	editor_region->add_child(main_editor_button_vb);
 	menu_hb->add_child(editor_region);
@@ -5298,6 +5325,7 @@ EditorNode::EditorNode() {
 	tool_menu = memnew(MenuButton);
 	tool_menu->set_tooltip(TTR("Miscellaneous project or scene-wide tools."));
 	tool_menu->set_text(TTR("Tools"));
+	tool_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
 
 	//tool_menu->set_icon(gui_base->get_icon("Save","EditorIcons"));
 	left_menu_hb->add_child(tool_menu);
@@ -5311,6 +5339,7 @@ EditorNode::EditorNode() {
 	export_button->set_text(TTR("Export"));
 	export_button->connect("pressed", this, "_menu_option", varray(FILE_EXPORT_PROJECT));
 	export_button->set_focus_mode(Control::FOCUS_NONE);
+	export_button->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
 	left_menu_hb->add_child(export_button);
 
 	menu_hb->add_spacer();
@@ -5321,20 +5350,18 @@ EditorNode::EditorNode() {
 	//s1->set_size(Point2(10,15));
 
 	play_cc = memnew(CenterContainer);
-	// play_cc->add_style_override("bg",gui_base->get_stylebox("panel","PanelContainer"));
-
 	play_cc->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	gui_base->add_child(play_cc);
 	play_cc->set_area_as_parent_rect();
 	play_cc->set_anchor_and_margin(MARGIN_BOTTOM, Control::ANCHOR_BEGIN, 10);
 	play_cc->set_margin(MARGIN_TOP, 5);
 
-	top_region = memnew(PanelContainer);
-	top_region->add_style_override("panel", gui_base->get_stylebox("panel", "ButtonGroup"));
-	play_cc->add_child(top_region);
+	play_button_panel = memnew(PanelContainer);
+	play_button_panel->add_style_override("panel", gui_base->get_stylebox("PlayButtonPanel", "EditorStyles"));
+	play_cc->add_child(play_button_panel);
 
 	HBoxContainer *play_hb = memnew(HBoxContainer);
-	top_region->add_child(play_hb);
+	play_button_panel->add_child(play_hb);
 
 	play_button = memnew(ToolButton);
 	play_hb->add_child(play_button);
@@ -5450,9 +5477,6 @@ EditorNode::EditorNode() {
 	}
 
 	PanelContainer *vu_cont = memnew(PanelContainer);
-	vu_cont->add_style_override("panel", memnew(StyleBoxEmpty));
-
-	// CenterContainer *vu_cont = memnew( CenterContainer );
 	menu_hb->add_child(vu_cont);
 
 	audio_vu = memnew(TextureProgress);
@@ -5473,13 +5497,13 @@ EditorNode::EditorNode() {
 	}
 
 	top_region = memnew(PanelContainer);
-	top_region->add_style_override("panel", memnew(StyleBoxEmpty));
 	HBoxContainer *right_menu_hb = memnew(HBoxContainer);
 	top_region->add_child(right_menu_hb);
 	menu_hb->add_child(top_region);
 
 	settings_menu = memnew(MenuButton);
 	settings_menu->set_text(TTR("Settings"));
+	settings_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
 	//settings_menu->set_anchor(MARGIN_RIGHT,ANCHOR_END);
 	right_menu_hb->add_child(settings_menu);
 	p = settings_menu->get_popup();
@@ -5639,7 +5663,7 @@ EditorNode::EditorNode() {
 	search_button = memnew(ToolButton);
 	search_button->set_toggle_mode(true);
 	search_button->set_pressed(false);
-	search_button->set_icon(gui_base->get_icon("Search", "EditorIcons"));
+	search_button->set_icon(gui_base->get_icon("Zoom", "EditorIcons"));
 	prop_editor_hb->add_child(search_button);
 	search_button->connect("toggled", this, "_toggle_search_bar");
 
@@ -5729,7 +5753,7 @@ EditorNode::EditorNode() {
 	_update_layouts_menu();
 
 	bottom_panel = memnew(PanelContainer);
-	bottom_panel->add_style_override("panel", gui_base->get_stylebox("EditorPanel", "EditorStyles"));
+	bottom_panel->add_style_override("panel", gui_base->get_stylebox("Content", "EditorStyles"));
 	center_split->add_child(bottom_panel);
 	center_split->set_dragger_visibility(SplitContainer::DRAGGER_HIDDEN);
 

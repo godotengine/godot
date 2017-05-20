@@ -531,12 +531,12 @@ static int _get_key_modifier(const String &p_property) {
 	return 0;
 }
 
-bool SpatialEditorViewport::_gizmo_select(const Vector2 &p_screenpos, bool p_hilite_only) {
+bool SpatialEditorViewport::_gizmo_select(const Vector2 &p_screenpos, bool p_highlight_only) {
 
 	if (!spatial_editor->is_gizmo_visible())
 		return false;
 	if (get_selected_count() == 0) {
-		if (p_hilite_only)
+		if (p_highlight_only)
 			spatial_editor->select_gizmo_highlight_axis(-1);
 		return false;
 	}
@@ -569,7 +569,7 @@ bool SpatialEditorViewport::_gizmo_select(const Vector2 &p_screenpos, bool p_hil
 
 		if (col_axis != -1) {
 
-			if (p_hilite_only) {
+			if (p_highlight_only) {
 
 				spatial_editor->select_gizmo_highlight_axis(col_axis);
 
@@ -609,7 +609,7 @@ bool SpatialEditorViewport::_gizmo_select(const Vector2 &p_screenpos, bool p_hil
 
 		if (col_axis != -1) {
 
-			if (p_hilite_only) {
+			if (p_highlight_only) {
 
 				spatial_editor->select_gizmo_highlight_axis(col_axis + 3);
 			} else {
@@ -622,7 +622,7 @@ bool SpatialEditorViewport::_gizmo_select(const Vector2 &p_screenpos, bool p_hil
 		}
 	}
 
-	if (p_hilite_only)
+	if (p_highlight_only)
 		spatial_editor->select_gizmo_highlight_axis(-1);
 
 	return false;
@@ -1766,7 +1766,7 @@ void SpatialEditorViewport::_draw() {
 	if (surface->has_focus()) {
 		Size2 size = surface->get_size();
 		Rect2 r = Rect2(Point2(), size);
-		get_stylebox("EditorFocus", "EditorStyles")->draw(surface->get_canvas_item(), r);
+		get_stylebox("Focus", "EditorStyles")->draw(surface->get_canvas_item(), r);
 	}
 
 	RID ci = surface->get_canvas_item();

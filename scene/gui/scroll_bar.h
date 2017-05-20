@@ -39,11 +39,11 @@ class ScrollBar : public Range {
 
 	GDCLASS(ScrollBar, Range);
 
-	enum HiliteStatus {
-		HILITE_NONE,
-		HILITE_DECR,
-		HILITE_RANGE,
-		HILITE_INCR,
+	enum HighlightStatus {
+		HIGHLIGHT_NONE,
+		HIGHLIGHT_DECR,
+		HIGHLIGHT_RANGE,
+		HIGHLIGHT_INCR,
 	};
 
 	static bool focus_by_default;
@@ -52,7 +52,7 @@ class ScrollBar : public Range {
 	Size2 size;
 	float custom_step;
 
-	HiliteStatus hilite;
+	HighlightStatus highlight;
 
 	struct Drag {
 

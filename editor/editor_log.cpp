@@ -87,6 +87,9 @@ void EditorLog::_notification(int p_what) {
 		log->add_color_override("default_color", get_color("font_color", "Tree"));
 		//button->set_icon(get_icon("Console","EditorIcons"));
 	}
+	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
+		_override_logger_styles();
+	}
 
 	/*if (p_what==NOTIFICATION_DRAW) {
 

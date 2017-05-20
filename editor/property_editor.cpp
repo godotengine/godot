@@ -2692,6 +2692,10 @@ void PropertyEditor::_notification(int p_what) {
 
 		changing = false;
 	}
+
+	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
+		update_tree();
+	}
 }
 
 TreeItem *PropertyEditor::get_parent_node(String p_path, HashMap<String, TreeItem *> &item_paths, TreeItem *root) {

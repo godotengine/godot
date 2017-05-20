@@ -118,7 +118,14 @@ void AnimationPlayerEditor::_notification(int p_what) {
 
 		blend_editor.next->connect("item_selected", this, "_blend_editor_next_changed");
 
-		// nodename->set_icon(get_icon("AnimationPlayer", "EditorIcons"));
+		/*
+		anim_editor_load->set_normal_texture( get_icon("AnimGet","EditorIcons"));
+		anim_editor_store->set_normal_texture( get_icon("AnimSet","EditorIcons"));
+		anim_editor_load->set_pressed_texture( get_icon("AnimGet","EditorIcons"));
+		anim_editor_store->set_pressed_texture( get_icon("AnimSet","EditorIcons"));
+		anim_editor_load->set_hover_texture( get_icon("AnimGetHl","EditorIcons"));
+		anim_editor_store->set_hover_texture( get_icon("AnimSetHl","EditorIcons"));
+*/
 
 		get_tree()->connect("node_removed", this, "_node_removed");
 	}
@@ -781,10 +788,6 @@ void AnimationPlayerEditor::_update_player() {
 		player->get_animation_list(&animlist);
 
 	animation->clear();
-	if (player)
-		nodename->set_text(player->get_name());
-	else
-		nodename->set_text(TTR("No player selected"));
 
 	add_anim->set_disabled(player == NULL);
 	load_anim->set_disabled(player == NULL);
@@ -1358,14 +1361,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 	//tool_anim->get_popup()->add_item("Edit Anim Resource",TOOL_PASTE_ANIM);
 	hb->add_child(tool_anim);
 
-	hb->add_child(memnew(VSeparator));
-	nodename_icon = memnew(TextureRect);
-	nodename_icon->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
-	hb->add_child(nodename_icon);
-	nodename = memnew(Label);
-	hb->add_child(nodename);
 	pin = memnew(ToolButton);
-	pin->set_tooltip(TTR("Keep this animation selected?"));
 	pin->set_toggle_mode(true);
 	hb->add_child(pin);
 

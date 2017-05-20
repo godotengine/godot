@@ -62,7 +62,6 @@ private:
 		Variant metadata;
 		String tooltip;
 		Color custom_bg;
-		Color custom_font_color;
 
 		Rect2 rect_cache;
 		Rect2 min_rect_cache;
@@ -144,9 +143,6 @@ public:
 
 	void set_item_custom_bg_color(int p_idx, const Color &p_custom_bg_color);
 	Color get_item_custom_bg_color(int p_idx) const;
-
-	void set_item_custom_font_color(int p_idx, const Color &p_custom_font_color);
-	Color get_item_custom_font_color(int p_idx) const;
 
 	void select(int p_idx, bool p_single = true);
 	void unselect(int p_idx);

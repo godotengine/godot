@@ -488,7 +488,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 		}
 
 		if (EditorSettings::get_singleton()->has("editors/visual_script/color_" + node->get_category())) {
-			gnode->set_self_modulate(EditorSettings::get_singleton()->get("editors/visual_script/color_" + node->get_category()));
+			gnode->set_modulate(EditorSettings::get_singleton()->get("editors/visual_script/color_" + node->get_category()));
 		}
 
 		gnode->set_meta("__vnode", node);
@@ -2830,7 +2830,7 @@ void VisualScriptEditor::_node_filter_changed(const String &p_text) {
 void VisualScriptEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_READY) {
-		node_filter_icon->set_texture(Control::get_icon("Search", "EditorIcons"));
+		node_filter_icon->set_texture(Control::get_icon("Zoom", "EditorIcons"));
 	}
 }
 

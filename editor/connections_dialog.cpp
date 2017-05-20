@@ -417,6 +417,10 @@ void ConnectionsDock::_notification(int p_what) {
 		//RID ci = get_canvas_item();
 		//get_stylebox("panel","PopupMenu")->draw(ci,Rect2(Point2(),get_size()));
 	}
+
+	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
+		update_tree();
+	}
 }
 
 void ConnectionsDock::_close() {

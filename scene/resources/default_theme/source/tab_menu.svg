@@ -14,7 +14,7 @@
    viewBox="0 0 16 16"
    id="svg2"
    version="1.1"
-   inkscape:version="0.92.1 r"
+   inkscape:version="0.91 r13725"
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_collapse.png"
    inkscape:export-xdpi="45"
    inkscape:export-ydpi="45"
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="32.000001"
-     inkscape:cx="4.0814179"
-     inkscape:cy="8.4695645"
+     inkscape:zoom="45.254836"
+     inkscape:cx="6.2944765"
+     inkscape:cy="7.7343939"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -42,8 +42,8 @@
      inkscape:snap-bbox-midpoints="false"
      inkscape:snap-object-midpoints="true"
      inkscape:snap-center="true"
-     inkscape:window-width="1600"
-     inkscape:window-height="836"
+     inkscape:window-width="1920"
+     inkscape:window-height="1016"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
@@ -70,23 +70,11 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-1036.3622)">
-    <circle
-       style="fill:#ffffff;fill-opacity:0.39215687;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.35294118"
-       id="path819"
-       cx="8"
-       cy="1038.3622"
-       r="2" />
-    <circle
-       r="2"
-       cy="1044.3622"
-       cx="8"
-       id="circle821"
-       style="fill:#ffffff;fill-opacity:0.39215687;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.35294118" />
-    <circle
-       style="fill:#ffffff;fill-opacity:0.39215687;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.35294118"
-       id="circle823"
-       cx="8"
-       cy="1050.3622"
-       r="2" />
+    <path
+       style="fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:6;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 4,1044.3622 0,3 4,3 4,-3 0,-3 z"
+       id="rect4174"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cccccc" />
   </g>
 </svg>

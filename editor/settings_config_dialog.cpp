@@ -300,6 +300,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	set_resizable(true);
 
 	tabs = memnew(TabContainer);
+	tabs->set_tab_align(TabContainer::ALIGN_LEFT);
 	add_child(tabs);
 	//set_child_rect(tabs);
 
