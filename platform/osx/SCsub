@@ -7,7 +7,6 @@ files = [
     'godot_main_osx.mm',
     'audio_driver_osx.cpp',
     'sem_osx.cpp',
-    #	'context_gl_osx.cpp',
     'dir_access_osx.mm',
     'joypad_osx.cpp',
     'power_osx.cpp',

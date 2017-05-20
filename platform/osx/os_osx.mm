@@ -53,35 +53,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-//uses portions of glfw
-
-//========================================================================
-// GLFW 3.0 - www.glfw.org
-//------------------------------------------------------------------------
-// Copyright (c) 2002-2006 Marcus Geelnard
-// Copyright (c) 2006-2010 Camilla Berglund <elmindreda@elmindreda.org>
-//
-// This software is provided 'as-is', without any express or implied
-// warranty. In no event will the authors be held liable for any damages
-// arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it
-// freely, subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented; you must not
-//    claim that you wrote the original software. If you use this software
-//    in a product, an acknowledgment in the product documentation would
-//    be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such, and must not
-//    be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source
-//    distribution.
-//
-//========================================================================
-
 static NSRect convertRectToBacking(NSRect contentRect) {
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
@@ -249,14 +220,7 @@ static int button_mask = 0;
 
 + (void)initialize {
 	if (self == [GodotContentView class]) {
-		/*
-		if (_glfw.ns.cursor == nil) {
-			NSImage* data = [[NSImage alloc] initWithSize:NSMakeSize(1, 1)];
-			_glfw.ns.cursor = [[NSCursor alloc] initWithImage:data
-			hotSpot:NSZeroPoint];
-			[data release];
-		}
-*/
+		// nothing left to do here at the moment..
 	}
 }
 
@@ -336,13 +300,6 @@ static int button_mask = 0;
 	ev.mouse_button.doubleclick = [event clickCount] == 2;
 	ev.mouse_button.mod = translateFlags([event modifierFlags]);
 	OS_OSX::singleton->push_input(ev);
-
-	/*
-	_glfwInputMouseClick(window,
-		GLFW_MOUSE_BUTTON_LEFT,
-		GLFW_PRESS,
-		translateFlags([event modifierFlags]));
-*/
 }
 
 - (void)mouseDragged:(NSEvent *)event {
@@ -363,13 +320,6 @@ static int button_mask = 0;
 	ev.mouse_button.button_mask = button_mask;
 	ev.mouse_button.mod = translateFlags([event modifierFlags]);
 	OS_OSX::singleton->push_input(ev);
-
-	/*
-	_glfwInputMouseClick(window,
-		GLFW_MOUSE_BUTTON_LEFT,
-		GLFW_RELEASE,
-		translateFlags([event modifierFlags]));
-*/
 }
 
 - (void)mouseMoved:(NSEvent *)event {
@@ -393,17 +343,6 @@ static int button_mask = 0;
 
 	OS_OSX::singleton->input->set_mouse_position(Point2(mouse_x, mouse_y));
 	OS_OSX::singleton->push_input(ev);
-
-	/*
-	if (window->cursorMode == GLFW_CURSOR_DISABLED)
-		_glfwInputCursorMotion(window, [event deltaX], [event deltaY]);
-	else {
-		const NSRect contentRect = [window->ns.view frame];
-		const NSPoint p = [event locationInWindow];
-
-		_glfwInputCursorMotion(window, p.x, contentRect.size.height - p.y);
-	}
-*/
 }
 
 - (void)rightMouseDown:(NSEvent *)event {
@@ -420,13 +359,6 @@ static int button_mask = 0;
 	ev.mouse_button.button_mask = button_mask;
 	ev.mouse_button.mod = translateFlags([event modifierFlags]);
 	OS_OSX::singleton->push_input(ev);
-
-	/*
-	_glfwInputMouseClick(window,
-		GLFW_MOUSE_BUTTON_RIGHT,
-		GLFW_PRESS,
-		translateFlags([event modifierFlags]));
-*/
 }
 
 - (void)rightMouseDragged:(NSEvent *)event {
@@ -447,13 +379,6 @@ static int button_mask = 0;
 	ev.mouse_button.button_mask = button_mask;
 	ev.mouse_button.mod = translateFlags([event modifierFlags]);
 	OS_OSX::singleton->push_input(ev);
-
-	/*
-	_glfwInputMouseClick(window,
-		GLFW_MOUSE_BUTTON_RIGHT,
-		GLFW_RELEASE,
-		translateFlags([event modifierFlags]));
-*/
 }
 
 - (void)otherMouseDown:(NSEvent *)event {
@@ -473,13 +398,6 @@ static int button_mask = 0;
 	ev.mouse_button.button_mask = button_mask;
 	ev.mouse_button.mod = translateFlags([event modifierFlags]);
 	OS_OSX::singleton->push_input(ev);
-
-	/*
-	_glfwInputMouseClick(window,
-		(int) [event buttonNumber],
-		GLFW_PRESS,
-		translateFlags([event modifierFlags]));
-*/
 }
 
 - (void)otherMouseDragged:(NSEvent *)event {
@@ -503,13 +421,6 @@ static int button_mask = 0;
 	ev.mouse_button.button_mask = button_mask;
 	ev.mouse_button.mod = translateFlags([event modifierFlags]);
 	OS_OSX::singleton->push_input(ev);
-
-	/*
-	_glfwInputMouseClick(window,
-		(int) [event buttonNumber],
-		GLFW_RELEASE,
-		translateFlags([event modifierFlags]));
-*/
 }
 
 - (void)mouseExited:(NSEvent *)event {
@@ -520,11 +431,9 @@ static int button_mask = 0;
 		OS_OSX::singleton->main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_EXIT);
 	if (OS_OSX::singleton->input)
 		OS_OSX::singleton->input->set_mouse_in_window(false);
-	//_glfwInputCursorEnter(window, GL_FALSE);
 }
 
 - (void)mouseEntered:(NSEvent *)event {
-	//_glfwInputCursorEnter(window, GL_TRUE);
 	if (!OS_OSX::singleton)
 		return;
 	if (OS_OSX::singleton->main_loop && OS_OSX::singleton->mouse_mode != OS::MOUSE_MODE_CAPTURED)
@@ -534,12 +443,7 @@ static int button_mask = 0;
 }
 
 - (void)viewDidChangeBackingProperties {
-	/*
-	const NSRect contentRect = [window->ns.view frame];
-	const NSRect fbRect = convertRectToBacking(window, contentRect);
-
-	_glfwInputFramebufferSize(window, fbRect.size.width, fbRect.size.height);
-*/
+	// nothing left to do here
 }
 
 - (void)updateTrackingAreas {
@@ -780,12 +684,6 @@ static int translateKey(unsigned int key) {
 	ev.key.mod = translateFlags([event modifierFlags]);
 	ev.key.scancode = latin_keyboard_keycode_convert(translateKey([event keyCode]));
 	OS_OSX::singleton->push_input(ev);
-
-	/*
- 	const int key = translateKey([event keyCode]);
-	const int mods = translateFlags([event modifierFlags]);
-	_glfwInputKey(window, key, [event keyCode], GLFW_RELEASE, mods);
-*/
 }
 
 inline void sendScrollEvent(int button, double factor) {
