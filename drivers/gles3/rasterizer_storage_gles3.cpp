@@ -970,6 +970,14 @@ Image::Format RasterizerStorageGLES3::texture_get_format(RID p_texture) const {
 
 	return texture->format;
 }
+uint32_t RasterizerStorageGLES3::texture_get_texid(RID p_texture) const {
+
+	Texture *texture = texture_owner.get(p_texture);
+
+	ERR_FAIL_COND_V(!texture, 0);
+
+	return texture->tex_id;
+}
 uint32_t RasterizerStorageGLES3::texture_get_width(RID p_texture) const {
 
 	Texture *texture = texture_owner.get(p_texture);

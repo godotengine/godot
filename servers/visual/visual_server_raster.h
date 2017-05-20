@@ -628,6 +628,7 @@ public:
 	BIND2(texture_set_flags, RID, uint32_t)
 	BIND1RC(uint32_t, texture_get_flags, RID)
 	BIND1RC(Image::Format, texture_get_format, RID)
+	BIND1RC(uint32_t, texture_get_texid, RID)
 	BIND1RC(uint32_t, texture_get_width, RID)
 	BIND1RC(uint32_t, texture_get_height, RID)
 	BIND3(texture_set_size_override, RID, int, int)
