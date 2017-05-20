@@ -289,6 +289,7 @@ public:
 	virtual void texture_set_flags(RID p_texture, uint32_t p_flags);
 	virtual uint32_t texture_get_flags(RID p_texture) const;
 	virtual Image::Format texture_get_format(RID p_texture) const;
+	virtual uint32_t texture_get_texid(RID p_texture) const;
 	virtual uint32_t texture_get_width(RID p_texture) const;
 	virtual uint32_t texture_get_height(RID p_texture) const;
 	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height);
