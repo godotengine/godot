@@ -37,24 +37,18 @@ void TileSetEditor::edit(const Ref<TileSet> &p_tileset) {
 	tileset = p_tileset;
 }
 
-void TileSetEditor::_import_scene(Node *scene, Ref<TileSet> p_library, bool p_merge) {
+void TileSetEditor::_import_node(Node *p_node, Ref<TileSet> p_library) {
 
-	if (!p_merge)
-		p_library->clear();
+	for (int i = 0; i < p_node->get_child_count(); i++) {
 
-	for (int i = 0; i < scene->get_child_count(); i++) {
-
-		Node *child = scene->get_child(i);
+		Node *child = p_node->get_child(i);
 
 		if (!child->cast_to<Sprite>()) {
 			if (child->get_child_count() > 0) {
-				child = child->get_child(0);
-				if (!child->cast_to<Sprite>()) {
-					continue;
-				}
+				_import_node(child, p_library);
+			}
 
-			} else
-				continue;
+			continue;
 		}
 
 		Sprite *mi = child->cast_to<Sprite>();
@@ -136,6 +130,14 @@ void TileSetEditor::_import_scene(Node *scene, Ref<TileSet> p_library, bool p_me
 		p_library->tile_set_occluder_offset(id, -phys_offset);
 		p_library->tile_set_navigation_polygon_offset(id, -phys_offset);
 	}
+}
+
+void TileSetEditor::_import_scene(Node *scene, Ref<TileSet> p_library, bool p_merge) {
+
+	if (!p_merge)
+		p_library->clear();
+
+	_import_node(scene, p_library);
 }
 
 void TileSetEditor::_menu_confirm() {
