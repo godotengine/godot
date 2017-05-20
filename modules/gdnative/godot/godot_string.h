@@ -45,27 +45,26 @@ typedef struct godot_string {
 
 #include "../godot.h"
 
-void GDAPI godot_string_new(godot_string *p_str);
-void GDAPI godot_string_new_data(godot_string *p_str, const char *p_contents, const int p_size);
-void GDAPI godot_string_new_unicode_data(godot_string *p_str, const wchar_t *p_contents, const int p_size);
+void GDAPI godot_string_new(godot_string *r_dest);
+void GDAPI godot_string_new_copy(godot_string *r_dest, const godot_string *p_src);
+void GDAPI godot_string_new_data(godot_string *r_dest, const char *p_contents, const int p_size);
+void GDAPI godot_string_new_unicode_data(godot_string *r_dest, const wchar_t *p_contents, const int p_size);
 
-void GDAPI godot_string_get_data(const godot_string *p_str, char *p_dest, int *p_size);
+void GDAPI godot_string_get_data(const godot_string *p_self, char *p_dest, int *p_size);
 
-void GDAPI godot_string_copy_string(const godot_string *p_dest, const godot_string *p_src);
+wchar_t GDAPI *godot_string_operator_index(godot_string *p_self, const godot_int p_idx);
+const char GDAPI *godot_string_c_str(const godot_string *p_self);
+const wchar_t GDAPI *godot_string_unicode_str(const godot_string *p_self);
 
-wchar_t GDAPI *godot_string_operator_index(godot_string *p_str, const godot_int p_idx);
-const char GDAPI *godot_string_c_str(const godot_string *p_str);
-const wchar_t GDAPI *godot_string_unicode_str(const godot_string *p_str);
-
-godot_bool GDAPI godot_string_operator_equal(const godot_string *p_a, const godot_string *p_b);
-godot_bool GDAPI godot_string_operator_less(const godot_string *p_a, const godot_string *p_b);
-void GDAPI godot_string_operator_plus(godot_string *p_dest, const godot_string *p_a, const godot_string *p_b);
+godot_bool GDAPI godot_string_operator_equal(const godot_string *p_self, const godot_string *p_b);
+godot_bool GDAPI godot_string_operator_less(const godot_string *p_self, const godot_string *p_b);
+godot_string GDAPI godot_string_operator_plus(const godot_string *p_self, const godot_string *p_b);
 
 // @Incomplete
 // hmm, I guess exposing the whole API doesn't make much sense
 // since the language used in the library has its own string funcs
 
-void GDAPI godot_string_destroy(godot_string *p_str);
+void GDAPI godot_string_destroy(godot_string *p_self);
 
 #ifdef __cplusplus
 }

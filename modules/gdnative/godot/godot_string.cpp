@@ -41,81 +41,75 @@ extern "C" {
 void _string_api_anchor() {
 }
 
-void GDAPI godot_string_new(godot_string *p_str) {
-	String *p = (String *)p_str;
-	memnew_placement(p, String);
-	// *p = String(); // useless here
+void GDAPI godot_string_new(godot_string *r_dest) {
+	String *dest = (String *)r_dest;
+	memnew_placement(dest, String);
 }
 
-void GDAPI godot_string_new_data(godot_string *p_str, const char *p_contents, const int p_size) {
-	String *p = (String *)p_str;
-	memnew_placement(p, String);
-	*p = String::utf8(p_contents, p_size);
+void GDAPI godot_string_new_copy(godot_string *r_dest, const godot_string *p_src) {
+	String *dest = (String *)r_dest;
+	const String *src = (const String *)p_src;
+	memnew_placement(dest, String(*src));
 }
 
-void GDAPI godot_string_new_unicode_data(godot_string *p_str, const wchar_t *p_contents, const int p_size) {
-	String *p = (String *)p_str;
-	memnew_placement(p, String);
-	*p = String(p_contents, p_size);
+void GDAPI godot_string_new_data(godot_string *r_dest, const char *p_contents, const int p_size) {
+	String *dest = (String *)r_dest;
+	memnew_placement(dest, String(String::utf8(p_contents, p_size)));
 }
 
-void GDAPI godot_string_get_data(const godot_string *p_str, char *p_dest, int *p_size) {
-	String *p = (String *)p_str;
+void GDAPI godot_string_new_unicode_data(godot_string *r_dest, const wchar_t *p_contents, const int p_size) {
+	String *dest = (String *)r_dest;
+	memnew_placement(dest, String(p_contents, p_size));
+}
+
+void GDAPI godot_string_get_data(const godot_string *p_self, char *r_dest, int *p_size) {
+	String *self = (String *)p_self;
 	if (p_size != NULL) {
-		*p_size = p->utf8().length();
+		*p_size = self->utf8().length();
 	}
-	if (p_dest != NULL) {
-		memcpy(p_dest, p->utf8().get_data(), *p_size);
+	if (r_dest != NULL) {
+		memcpy(r_dest, self->utf8().get_data(), *p_size);
 	}
 }
 
-void GDAPI godot_string_copy_string(const godot_string *p_dest, const godot_string *p_src) {
-	String *dest = (String *)p_dest;
-	String *src = (String *)p_src;
-
-	*dest = *src;
+wchar_t GDAPI *godot_string_operator_index(godot_string *p_self, const godot_int p_idx) {
+	String *self = (String *)p_self;
+	return &(self->operator[](p_idx));
 }
 
-wchar_t GDAPI *godot_string_operator_index(godot_string *p_str, const godot_int p_idx) {
-	String *s = (String *)p_str;
-	return &(s->operator[](p_idx));
+const char GDAPI *godot_string_c_str(const godot_string *p_self) {
+	const String *self = (const String *)p_self;
+	return self->utf8().get_data();
 }
 
-const char GDAPI *godot_string_c_str(const godot_string *p_str) {
-	const String *s = (const String *)p_str;
-	return s->utf8().get_data();
+const wchar_t GDAPI *godot_string_unicode_str(const godot_string *p_self) {
+	const String *self = (const String *)p_self;
+	return self->c_str();
 }
 
-const wchar_t GDAPI *godot_string_unicode_str(const godot_string *p_str) {
-	const String *s = (const String *)p_str;
-	return s->c_str();
+godot_bool GDAPI godot_string_operator_equal(const godot_string *p_self, const godot_string *p_b) {
+	const String *self = (const String *)p_self;
+	const String *b = (const String *)p_b;
+	return *self == *b;
 }
 
-godot_bool GDAPI godot_string_operator_equal(const godot_string *p_a, const godot_string *p_b) {
-	String *a = (String *)p_a;
-	String *b = (String *)p_b;
-	return *a == *b;
+godot_bool GDAPI godot_string_operator_less(const godot_string *p_self, const godot_string *p_b) {
+	const String *self = (const String *)p_self;
+	const String *b = (const String *)p_b;
+	return *self < *b;
 }
 
-godot_bool GDAPI godot_string_operator_less(const godot_string *p_a, const godot_string *p_b) {
-	String *a = (String *)p_a;
-	String *b = (String *)p_b;
-	return *a < *b;
+godot_string GDAPI godot_string_operator_plus(const godot_string *p_self, const godot_string *p_b) {
+	godot_string ret;
+	const String *self = (const String *)p_self;
+	const String *b = (const String *)p_b;
+	memnew_placement(&ret, String(*self + *b));
+	return ret;
 }
 
-void GDAPI godot_string_operator_plus(godot_string *p_dest, const godot_string *p_a, const godot_string *p_b) {
-	String *dest = (String *)p_dest;
-	const String *a = (String *)p_a;
-	const String *b = (String *)p_b;
-
-	String tmp = *a + *b;
-	godot_string_new(p_dest);
-	*dest = tmp;
-}
-
-void GDAPI godot_string_destroy(godot_string *p_str) {
-	String *p = (String *)p_str;
-	p->~String();
+void GDAPI godot_string_destroy(godot_string *p_self) {
+	String *self = (String *)p_self;
+	self->~String();
 }
 
 #ifdef __cplusplus

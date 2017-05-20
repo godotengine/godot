@@ -51,6 +51,12 @@ typedef struct godot_transform {
 void GDAPI godot_transform_new_with_axis_origin(godot_transform *r_dest, const godot_vector3 *p_x_axis, const godot_vector3 *p_y_axis, const godot_vector3 *p_z_axis, const godot_vector3 *p_origin);
 void GDAPI godot_transform_new(godot_transform *r_dest, const godot_basis *p_basis, const godot_vector3 *p_origin);
 
+godot_basis GDAPI godot_transform_get_basis(const godot_transform *p_self);
+void GDAPI godot_transform_set_basis(godot_transform *p_self, godot_basis *p_v);
+
+godot_vector3 GDAPI godot_transform_get_origin(const godot_transform *p_self);
+void GDAPI godot_transform_set_origin(godot_transform *p_self, godot_vector3 *p_v);
+
 godot_string GDAPI godot_transform_as_string(const godot_transform *p_self);
 
 godot_transform GDAPI godot_transform_inverse(const godot_transform *p_self);
