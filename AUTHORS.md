@@ -31,6 +31,7 @@ name is available.
     Carl Olsson (not-surt)
     Dana Olson (adolson)
     Daniel J. Ramirez (djrm)
+    Emmanuel Leblond (touilleMan)
     Fabio Alessandrelli (Faless)
     Ferenc Arn (tagcup)
     Franklin Sobrinho (TheHX)
@@ -48,6 +49,7 @@ name is available.
     Julian Murgia (StraToN)
     Kostadin Damyanov (Max-Might)
     L. Krause (eska014)
+    Marc Gilleron (Zylann)
     Marcelo Fernandez (marcelofg55)
     Mariano Javier Suligoy (MarianoGnu)
     Mario Schlack (hurikhan)
@@ -59,7 +61,8 @@ name is available.
     Pawel Kowal (pkowal1982)
     Pedro J. Estébanez (RandomShaper)
     Ralf Hölzemer (rollenrolm)
-    RayKoopa
+    Ramesh Ravone (RameshRavone)
+    Ray Koopa (RayKoopa)
     Rémi Verschelde (akien-mga)
     SaracenOne
     Thomas Herzog (karroffel)
