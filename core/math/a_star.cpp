@@ -86,7 +86,7 @@ void AStar::remove_point(int p_id) {
 	points.erase(p_id);
 }
 
-void AStar::connect_points(int p_id, int p_with_id) {
+void AStar::connect_points(int p_id, int p_with_id, bool bidirectional) {
 
 	ERR_FAIL_COND(!points.has(p_id));
 	ERR_FAIL_COND(!points.has(p_with_id));
@@ -95,7 +95,9 @@ void AStar::connect_points(int p_id, int p_with_id) {
 	Point *a = points[p_id];
 	Point *b = points[p_with_id];
 	a->neighbours.push_back(b);
-	b->neighbours.push_back(a);
+
+	if (bidirectional)
+		b->neighbours.push_back(a);
 
 	Segment s(p_id, p_with_id);
 	if (s.from == p_id) {
@@ -401,7 +403,7 @@ void AStar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_point_weight_scale", "id"), &AStar::get_point_weight_scale);
 	ClassDB::bind_method(D_METHOD("remove_point", "id"), &AStar::remove_point);
 
-	ClassDB::bind_method(D_METHOD("connect_points", "id", "to_id"), &AStar::connect_points);
+	ClassDB::bind_method(D_METHOD("connect_points", "id", "to_id"), &AStar::connect_points, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("disconnect_points", "id", "to_id"), &AStar::disconnect_points);
 	ClassDB::bind_method(D_METHOD("are_points_connected", "id", "to_id"), &AStar::are_points_connected);
 
