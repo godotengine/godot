@@ -59,6 +59,7 @@ class TileSetEditor : public Control {
 	void _menu_confirm();
 	void _name_dialog_confirm(const String &name);
 
+	static void _import_node(Node *p_node, Ref<TileSet> p_library);
 	static void _import_scene(Node *p_scene, Ref<TileSet> p_library, bool p_merge);
 
 protected:
