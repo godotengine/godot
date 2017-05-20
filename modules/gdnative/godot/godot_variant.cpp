@@ -45,10 +45,10 @@ godot_variant_type GDAPI godot_variant_get_type(const godot_variant *p_self) {
 	return (godot_variant_type)self->get_type();
 }
 
-void GDAPI godot_variant_copy(godot_variant *p_dest, const godot_variant *p_src) {
+void GDAPI godot_variant_new_copy(godot_variant *p_dest, const godot_variant *p_src) {
 	Variant *dest = (Variant *)p_dest;
 	Variant *src = (Variant *)p_src;
-	*dest = *src;
+	memnew_placement(dest, Variant(*src));
 }
 
 void GDAPI godot_variant_new_nil(godot_variant *r_dest) {
