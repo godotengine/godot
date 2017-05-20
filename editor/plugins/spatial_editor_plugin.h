@@ -236,7 +236,7 @@ private:
 	void _draw();
 
 	void _smouseenter();
-	void _sinput(const InputEvent &p_ie);
+	void _sinput(const Ref<InputEvent> &p_ie);
 	void _update_freelook(real_t delta);
 	SpatialEditor *spatial_editor;
 
@@ -249,8 +249,8 @@ private:
 	void _finish_gizmo_instances();
 	void _selection_result_pressed(int);
 	void _selection_menu_hide();
-	void _list_select(InputEventMouseButton b);
-	Point2i _get_warped_mouse_motion(const InputEventMouseMotion &p_ev_mouse_motion) const;
+	void _list_select(Ref<InputEventMouseButton> b);
+	Point2i _get_warped_mouse_motion(const Ref<InputEventMouseMotion> &p_ev_mouse_motion) const;
 
 protected:
 	void _notification(int p_what);
@@ -464,14 +464,14 @@ private:
 
 	void _update_ambient_light_color(const Color &p_color);
 	void _update_default_light_angle();
-	void _default_light_angle_input(const InputEvent &p_event);
+	void _default_light_angle_input(const Ref<InputEvent> &p_event);
 
 	bool is_any_freelook_active() const;
 
 protected:
 	void _notification(int p_what);
 	//void _gui_input(InputEvent p_event);
-	void _unhandled_key_input(InputEvent p_event);
+	void _unhandled_key_input(Ref<InputEvent> p_event);
 
 	static void _bind_methods();
 

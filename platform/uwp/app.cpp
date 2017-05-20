@@ -259,10 +259,10 @@ void App::pointer_event(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Cor
 	int but = _get_button(point);
 	if (_is_touch(point)) {
 
-		InputEvent event;
+		Ref<InputEvent> event;
 		event.type = InputEvent::SCREEN_TOUCH;
 		event.device = 0;
-		event.screen_touch.pressed = p_pressed;
+		event.screen_touch->is_pressed() = p_pressed;
 		event.screen_touch.x = pos.X;
 		event.screen_touch.y = pos.Y;
 		event.screen_touch.index = _get_finger(point->PointerId);
@@ -276,21 +276,21 @@ void App::pointer_event(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Cor
 
 	}; // fallthrought of sorts
 
-	InputEvent event;
+	Ref<InputEvent> event;
 	event.type = InputEvent::MOUSE_BUTTON;
 	event.device = 0;
-	event.mouse_button.pressed = p_pressed;
-	event.mouse_button.button_index = but;
-	event.mouse_button.x = pos.X;
-	event.mouse_button.y = pos.Y;
+	event->is_pressed() = p_pressed;
+	event->get_button_index() = but;
+	event->get_pos().x = pos.X;
+	event->get_pos().y = pos.Y;
 	event.mouse_button.global_x = pos.X;
 	event.mouse_button.global_y = pos.Y;
 
 	if (p_is_wheel) {
 		if (point->Properties->MouseWheelDelta > 0) {
-			event.mouse_button.button_index = point->Properties->IsHorizontalMouseWheel ? BUTTON_WHEEL_RIGHT : BUTTON_WHEEL_UP;
+			event->get_button_index() = point->Properties->IsHorizontalMouseWheel ? BUTTON_WHEEL_RIGHT : BUTTON_WHEEL_UP;
 		} else if (point->Properties->MouseWheelDelta < 0) {
-			event.mouse_button.button_index = point->Properties->IsHorizontalMouseWheel ? BUTTON_WHEEL_LEFT : BUTTON_WHEEL_DOWN;
+			event->get_button_index() = point->Properties->IsHorizontalMouseWheel ? BUTTON_WHEEL_LEFT : BUTTON_WHEEL_DOWN;
 		}
 	}
 
@@ -350,7 +350,7 @@ void App::OnPointerMoved(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Co
 	if (point->IsInContact && _is_touch(point)) {
 
 		InputEvent event;
-		event.type = InputEvent::SCREEN_DRAG;
+		event.type = Ref<InputEvent>::SCREEN_DRAG;
 		event.device = 0;
 		event.screen_drag.x = pos.X;
 		event.screen_drag.y = pos.Y;
@@ -369,14 +369,14 @@ void App::OnPointerMoved(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Co
 		return;
 
 	InputEvent event;
-	event.type = InputEvent::MOUSE_MOTION;
+	event.type = Ref<InputEvent>::MOUSE_MOTION;
 	event.device = 0;
 	event.mouse_motion.x = pos.X;
 	event.mouse_motion.y = pos.Y;
 	event.mouse_motion.global_x = pos.X;
 	event.mouse_motion.global_y = pos.Y;
-	event.mouse_motion.relative_x = pos.X - last_touch_x[31];
-	event.mouse_motion.relative_y = pos.Y - last_touch_y[31];
+	event->get_relative().x = pos.X - last_touch_x[31];
+	event->get_relative().y = pos.Y - last_touch_y[31];
 
 	last_mouse_pos = pos;
 
@@ -394,14 +394,14 @@ void App::OnMouseMoved(MouseDevice ^ mouse_device, MouseEventArgs ^ args) {
 	pos.Y = last_mouse_pos.Y + args->MouseDelta.Y;
 
 	InputEvent event;
-	event.type = InputEvent::MOUSE_MOTION;
+	event.type = Ref<InputEvent>::MOUSE_MOTION;
 	event.device = 0;
 	event.mouse_motion.x = pos.X;
 	event.mouse_motion.y = pos.Y;
 	event.mouse_motion.global_x = pos.X;
 	event.mouse_motion.global_y = pos.Y;
-	event.mouse_motion.relative_x = args->MouseDelta.X;
-	event.mouse_motion.relative_y = args->MouseDelta.Y;
+	event->get_relative().x = args->MouseDelta.X;
+	event->get_relative().y = args->MouseDelta.Y;
 
 	last_mouse_pos = pos;
 
@@ -420,20 +420,20 @@ void App::key_event(Windows::UI::Core::CoreWindow ^ sender, bool p_pressed, Wind
 	mod.shift = sender->GetAsyncKeyState(VirtualKey::Shift) == CoreVirtualKeyStates::Down;
 	ke.mod_state = mod;
 
-	ke.pressed = p_pressed;
+	ke->is_pressed() = p_pressed;
 
 	if (key_args != nullptr) {
 
 		ke.type = OSUWP::KeyEvent::MessageType::KEY_EVENT_MESSAGE;
 		ke.unicode = 0;
-		ke.scancode = KeyMappingWindows::get_keysym((unsigned int)key_args->VirtualKey);
+		ke->get_scancode() = KeyMappingWindows::get_keysym((unsigned int)key_args->VirtualKey);
 		ke.echo = (!p_pressed && !key_args->KeyStatus.IsKeyReleased) || (p_pressed && key_args->KeyStatus.WasKeyDown);
 
 	} else {
 
 		ke.type = OSUWP::KeyEvent::MessageType::CHAR_EVENT_MESSAGE;
 		ke.unicode = char_args->KeyCode;
-		ke.scancode = 0;
+		ke->get_scancode() = 0;
 		ke.echo = (!p_pressed && !char_args->KeyStatus.IsKeyReleased) || (p_pressed && char_args->KeyStatus.WasKeyDown);
 	}
 

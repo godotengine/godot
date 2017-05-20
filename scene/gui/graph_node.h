@@ -102,7 +102,7 @@ private:
 	bool has_point(const Point2 &p_point) const;
 
 protected:
-	void _gui_input(const InputEvent &p_ev);
+	void _gui_input(const Ref<InputEvent> &p_ev);
 	void _notification(int p_what);
 	static void _bind_methods();
 

@@ -209,7 +209,7 @@ public:
 	void set_use_parent_material(bool p_use_parent_material);
 	bool get_use_parent_material() const;
 
-	InputEvent make_input_local(const InputEvent &pevent) const;
+	Ref<InputEvent> make_input_local(const Ref<InputEvent> &pevent) const;
 	Vector2 make_canvas_pos_local(const Vector2 &screen_point) const;
 
 	Vector2 get_global_mouse_position() const;

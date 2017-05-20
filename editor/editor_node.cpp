@@ -173,12 +173,13 @@ void EditorNode::_update_title() {
 	OS::get_singleton()->set_window_title(title);
 }
 
-void EditorNode::_unhandled_input(const InputEvent &p_event) {
+void EditorNode::_unhandled_input(const Ref<InputEvent> &p_event) {
 
 	if (Node::get_viewport()->get_modal_stack_top())
 		return; //ignore because of modal window
 
-	if (p_event.type == InputEvent::KEY && p_event.key.pressed && !p_event.key.echo && !gui_base->get_viewport()->gui_has_modal_stack()) {
+	Ref<InputEventKey> k = p_event;
+	if (k.is_valid() && k->is_pressed() && !k->is_echo() && !gui_base->get_viewport()->gui_has_modal_stack()) {
 
 		if (ED_IS_SHORTCUT("editor/next_tab", p_event)) {
 			int next_tab = editor_data.get_edited_scene() + 1;
@@ -3710,11 +3711,13 @@ void EditorNode::show_warning(const String &p_text, const String &p_title) {
 	warning->popup_centered_minsize();
 }
 
-void EditorNode::_dock_select_input(const InputEvent &p_input) {
+void EditorNode::_dock_select_input(const Ref<InputEvent> &p_input) {
 
-	if (p_input.type == InputEvent::MOUSE_BUTTON || p_input.type == InputEvent::MOUSE_MOTION) {
+	Ref<InputEventMouse> me = p_input;
 
-		Vector2 point(p_input.mouse_motion.x, p_input.mouse_motion.y);
+	if (me.is_valid()) {
+
+		Vector2 point = me->get_pos();
 
 		int nrect = -1;
 		for (int i = 0; i < DOCK_SLOT_MAX; i++) {
@@ -3732,7 +3735,9 @@ void EditorNode::_dock_select_input(const InputEvent &p_input) {
 		if (nrect == -1)
 			return;
 
-		if (p_input.type == InputEvent::MOUSE_BUTTON && p_input.mouse_button.button_index == 1 && p_input.mouse_button.pressed && dock_popup_selected != nrect) {
+		Ref<InputEventMouseButton> mb = me;
+
+		if (mb.is_valid() && mb->get_button_index() == 1 && mb->is_pressed() && dock_popup_selected != nrect) {
 			Control *dock = dock_slot[dock_popup_selected]->get_current_tab_control();
 			if (dock) {
 				dock_slot[dock_popup_selected]->remove_child(dock);
@@ -6190,7 +6195,7 @@ void EditorPluginList::edit(Object *p_object) {
 	}
 }
 
-bool EditorPluginList::forward_gui_input(const Transform2D &p_canvas_xform, const InputEvent &p_event) {
+bool EditorPluginList::forward_gui_input(const Transform2D &p_canvas_xform, const Ref<InputEvent> &p_event) {
 
 	bool discard = false;
 
@@ -6203,7 +6208,7 @@ bool EditorPluginList::forward_gui_input(const Transform2D &p_canvas_xform, cons
 	return discard;
 }
 
-bool EditorPluginList::forward_spatial_gui_input(Camera *p_camera, const InputEvent &p_event) {
+bool EditorPluginList::forward_spatial_gui_input(Camera *p_camera, const Ref<InputEvent> &p_event) {
 	bool discard = false;
 
 	for (int i = 0; i < plugins_list.size(); i++) {

@@ -124,7 +124,6 @@ void ScriptTextEditor::_load_theme_settings() {
 	text_edit->add_keyword_color("Transform", basetype_color);
 	text_edit->add_keyword_color("Color", basetype_color);
 	text_edit->add_keyword_color("Image", basetype_color);
-	text_edit->add_keyword_color("InputEvent", basetype_color);
 	text_edit->add_keyword_color("Rect2", basetype_color);
 	text_edit->add_keyword_color("NodePath", basetype_color);
 
@@ -1227,15 +1226,18 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	}
 }
 
-void ScriptTextEditor::_text_edit_gui_input(const InputEvent &ev) {
-	if (ev.type == InputEvent::MOUSE_BUTTON) {
-		InputEventMouseButton mb = ev.mouse_button;
-		if (mb.button_index == BUTTON_RIGHT && !mb.pressed) {
+void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
+
+	Ref<InputEventMouseButton> mb = ev;
+
+	if (mb.is_valid()) {
+
+		if (mb->get_button_index() == BUTTON_RIGHT && !mb->is_pressed()) {
 
 			int col, row;
 			TextEdit *tx = code_editor->get_text_edit();
-			tx->_get_mouse_pos(Point2i(mb.global_x, mb.global_y) - tx->get_global_position(), row, col);
-			Vector2 mpos = Vector2(mb.global_x, mb.global_y) - tx->get_global_position();
+			tx->_get_mouse_pos(mb->get_global_pos() - tx->get_global_position(), row, col);
+			Vector2 mpos = mb->get_global_pos() - tx->get_global_position();
 			bool have_selection = (tx->get_selection_text().length() > 0);
 			bool have_color = (tx->get_word_at_pos(mpos) == "Color");
 			if (have_color) {

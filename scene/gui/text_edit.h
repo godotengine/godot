@@ -337,7 +337,7 @@ protected:
 	void _insert_text(int p_line, int p_column, const String &p_text, int *r_end_line = NULL, int *r_end_char = NULL);
 	void _remove_text(int p_from_line, int p_from_column, int p_to_line, int p_to_column);
 	void _insert_text_at_cursor(const String &p_text);
-	void _gui_input(const InputEvent &p_input);
+	void _gui_input(const Ref<InputEvent> &p_input);
 	void _notification(int p_what);
 
 	void _consume_pair_symbol(CharType ch);

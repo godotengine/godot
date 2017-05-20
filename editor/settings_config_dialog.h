@@ -54,7 +54,7 @@ class EditorSettingsDialog : public AcceptDialog {
 
 	ConfirmationDialog *press_a_key;
 	Label *press_a_key_label;
-	InputEvent last_wait_for_key;
+	Ref<InputEventKey> last_wait_for_key;
 	String shortcut_configured;
 	String shortcut_filter;
 
@@ -68,7 +68,7 @@ class EditorSettingsDialog : public AcceptDialog {
 	void _notification(int p_what);
 
 	void _press_a_key_confirm();
-	void _wait_for_key(const InputEvent &p_event);
+	void _wait_for_key(const Ref<InputEvent> &p_event);
 
 	void _clear_shortcut_search_box();
 	void _clear_search_box();

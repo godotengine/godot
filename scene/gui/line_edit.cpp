@@ -42,445 +42,442 @@ static bool _is_text_char(CharType c) {
 	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_';
 }
 
-void LineEdit::_gui_input(InputEvent p_event) {
+void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
-	switch (p_event.type) {
+	Ref<InputEventMouseButton> b = p_event;
 
-		case InputEvent::MOUSE_BUTTON: {
+	if (b.is_valid()) {
 
-			const InputEventMouseButton &b = p_event.mouse_button;
+		if (b->is_pressed() && b->get_button_index() == BUTTON_RIGHT) {
+			menu->set_position(get_global_transform().xform(get_local_mouse_pos()));
+			menu->set_size(Vector2(1, 1));
+			menu->popup();
+			grab_focus();
+			return;
+		}
 
-			if (b.pressed && b.button_index == BUTTON_RIGHT) {
-				menu->set_position(get_global_transform().xform(get_local_mouse_pos()));
-				menu->set_size(Vector2(1, 1));
-				menu->popup();
-				grab_focus();
-				return;
-			}
+		if (b->get_button_index() != BUTTON_LEFT)
+			return;
 
-			if (b.button_index != BUTTON_LEFT)
-				break;
+		_reset_caret_blink_timer();
+		if (b->is_pressed()) {
 
-			_reset_caret_blink_timer();
-			if (b.pressed) {
+			shift_selection_check_pre(b->get_shift());
 
-				shift_selection_check_pre(b.mod.shift);
+			set_cursor_at_pixel_pos(b->get_pos().x);
 
-				set_cursor_at_pixel_pos(b.x);
+			if (b->get_shift()) {
 
-				if (b.mod.shift) {
-
-					selection_fill_at_cursor();
-					selection.creating = true;
-
-				} else {
-
-					if (b.doubleclick) {
-
-						selection.enabled = true;
-						selection.begin = 0;
-						selection.end = text.length();
-						selection.doubleclick = true;
-					}
-
-					selection.drag_attempt = false;
-
-					if ((cursor_pos < selection.begin) || (cursor_pos > selection.end) || !selection.enabled) {
-
-						selection_clear();
-						selection.cursor_start = cursor_pos;
-						selection.creating = true;
-					} else if (selection.enabled) {
-
-						selection.drag_attempt = true;
-					}
-				}
-
-				update();
+				selection_fill_at_cursor();
+				selection.creating = true;
 
 			} else {
 
-				if ((!selection.creating) && (!selection.doubleclick)) {
-					selection_clear();
-				}
-				selection.creating = false;
-				selection.doubleclick = false;
+				if (b->is_doubleclick()) {
 
-				if (OS::get_singleton()->has_virtual_keyboard())
-					OS::get_singleton()->show_virtual_keyboard(text, get_global_rect());
+					selection.enabled = true;
+					selection.begin = 0;
+					selection.end = text.length();
+					selection.doubleclick = true;
+				}
+
+				selection.drag_attempt = false;
+
+				if ((cursor_pos < selection.begin) || (cursor_pos > selection.end) || !selection.enabled) {
+
+					selection_clear();
+					selection.cursor_start = cursor_pos;
+					selection.creating = true;
+				} else if (selection.enabled) {
+
+					selection.drag_attempt = true;
+				}
 			}
 
 			update();
-		} break;
-		case InputEvent::MOUSE_MOTION: {
 
-			const InputEventMouseMotion &m = p_event.mouse_motion;
+		} else {
 
-			if (m.button_mask & BUTTON_LEFT) {
+			if ((!selection.creating) && (!selection.doubleclick)) {
+				selection_clear();
+			}
+			selection.creating = false;
+			selection.doubleclick = false;
 
-				if (selection.creating) {
-					set_cursor_at_pixel_pos(m.x);
-					selection_fill_at_cursor();
-				}
+			if (OS::get_singleton()->has_virtual_keyboard())
+				OS::get_singleton()->show_virtual_keyboard(text, get_global_rect());
+		}
+
+		update();
+	}
+
+	Ref<InputEventMouseMotion> m = p_event;
+
+	if (m.is_valid()) {
+
+		if (m->get_button_mask() & BUTTON_LEFT) {
+
+			if (selection.creating) {
+				set_cursor_at_pixel_pos(m->get_pos().x);
+				selection_fill_at_cursor();
+			}
+		}
+	}
+
+	Ref<InputEventKey> k = p_event;
+
+	if (k.is_valid()) {
+
+		if (!k->is_pressed())
+			return;
+		unsigned int code = k->get_scancode();
+
+		if (k->get_command()) {
+
+			bool handled = true;
+
+			switch (code) {
+
+				case (KEY_X): { // CUT
+
+					if (editable) {
+						cut_text();
+					}
+
+				} break;
+
+				case (KEY_C): { // COPY
+
+					copy_text();
+
+				} break;
+
+				case (KEY_V): { // PASTE
+
+					if (editable) {
+
+						paste_text();
+					}
+
+				} break;
+
+				case (KEY_Z): { // Simple One level undo
+
+					if (editable) {
+
+						undo();
+					}
+
+				} break;
+
+				case (KEY_U): { // Delete from start to cursor
+
+					if (editable) {
+
+						selection_clear();
+						undo_text = text;
+						text = text.substr(cursor_pos, text.length() - cursor_pos);
+
+						Ref<Font> font = get_font("font");
+
+						cached_width = 0;
+						if (font != NULL) {
+							for (int i = 0; i < text.length(); i++)
+								cached_width += font->get_char_size(text[i]).width;
+						}
+
+						set_cursor_pos(0);
+						_text_changed();
+					}
+
+				} break;
+
+				case (KEY_Y): { // PASTE (Yank for unix users)
+
+					if (editable) {
+
+						paste_text();
+					}
+
+				} break;
+				case (KEY_K): { // Delete from cursor_pos to end
+
+					if (editable) {
+
+						selection_clear();
+						undo_text = text;
+						text = text.substr(0, cursor_pos);
+						_text_changed();
+					}
+
+				} break;
+				case (KEY_A): { //Select All
+					select();
+				} break;
+				default: { handled = false; }
 			}
 
-		} break;
-		case InputEvent::KEY: {
-
-			const InputEventKey &k = p_event.key;
-
-			if (!k.pressed)
+			if (handled) {
+				accept_event();
 				return;
-			unsigned int code = k.scancode;
+			}
+		}
 
-			if (k.mod.command) {
+		_reset_caret_blink_timer();
+		if (!k->get_metakey()) {
 
-				bool handled = true;
+			bool handled = true;
+			switch (code) {
 
-				switch (code) {
+				case KEY_ENTER:
+				case KEY_RETURN: {
 
-					case (KEY_X): { // CUT
+					emit_signal("text_entered", text);
+					if (OS::get_singleton()->has_virtual_keyboard())
+						OS::get_singleton()->hide_virtual_keyboard();
 
-						if (editable) {
-							cut_text();
+					return;
+				} break;
+
+				case KEY_BACKSPACE: {
+
+					if (!editable)
+						break;
+
+					if (selection.enabled) {
+						undo_text = text;
+						selection_delete();
+						break;
+					}
+
+#ifdef APPLE_STYLE_KEYS
+					if (k->get_alt()) {
+#else
+					if (k->get_alt()) {
+						handled = false;
+						break;
+					} else if (k->get_command()) {
+#endif
+						int cc = cursor_pos;
+						bool prev_char = false;
+
+						while (cc > 0) {
+							bool ischar = _is_text_char(text[cc - 1]);
+
+							if (prev_char && !ischar)
+								break;
+
+							prev_char = ischar;
+							cc--;
 						}
 
-					} break;
+						delete_text(cc, cursor_pos);
 
-					case (KEY_C): { // COPY
+						set_cursor_pos(cc);
 
-						copy_text();
+					} else {
+						undo_text = text;
+						delete_char();
+					}
 
-					} break;
-
-					case (KEY_V): { // PASTE
-
-						if (editable) {
-
-							paste_text();
-						}
-
-					} break;
-
-					case (KEY_Z): { // Simple One level undo
-
-						if (editable) {
-
-							undo();
-						}
-
-					} break;
-
-					case (KEY_U): { // Delete from start to cursor
-
-						if (editable) {
-
-							selection_clear();
-							undo_text = text;
-							text = text.substr(cursor_pos, text.length() - cursor_pos);
-
-							Ref<Font> font = get_font("font");
-
-							cached_width = 0;
-							if (font != NULL) {
-								for (int i = 0; i < text.length(); i++)
-									cached_width += font->get_char_size(text[i]).width;
-							}
-
-							set_cursor_pos(0);
-							_text_changed();
-						}
-
-					} break;
-
-					case (KEY_Y): { // PASTE (Yank for unix users)
-
-						if (editable) {
-
-							paste_text();
-						}
-
-					} break;
-					case (KEY_K): { // Delete from cursor_pos to end
-
-						if (editable) {
-
-							selection_clear();
-							undo_text = text;
-							text = text.substr(0, cursor_pos);
-							_text_changed();
-						}
-
-					} break;
-					case (KEY_A): { //Select All
-						select();
-					} break;
-					default: { handled = false; }
+				} break;
+				case KEY_KP_4: {
+					if (k->get_unicode() != 0) {
+						handled = false;
+						break;
+					}
+					// numlock disabled. fallthrough to key_left
 				}
+				case KEY_LEFT: {
 
-				if (handled) {
-					accept_event();
+#ifndef APPLE_STYLE_KEYS
+					if (!k->get_alt())
+#endif
+						shift_selection_check_pre(k->get_shift());
+
+#ifdef APPLE_STYLE_KEYS
+					if (k->get_command()) {
+						set_cursor_pos(0);
+					} else if (k->get_alt()) {
+
+#else
+					if (k->get_alt()) {
+						handled = false;
+						break;
+					} else if (k->get_command()) {
+#endif
+						bool prev_char = false;
+						int cc = cursor_pos;
+
+						while (cc > 0) {
+							bool ischar = _is_text_char(text[cc - 1]);
+
+							if (prev_char && !ischar)
+								break;
+
+							prev_char = ischar;
+							cc--;
+						}
+
+						set_cursor_pos(cc);
+
+					} else {
+						set_cursor_pos(get_cursor_pos() - 1);
+					}
+
+					shift_selection_check_post(k->get_shift());
+
+				} break;
+				case KEY_KP_6: {
+					if (k->get_unicode() != 0) {
+						handled = false;
+						break;
+					}
+					// numlock disabled. fallthrough to key_right
+				}
+				case KEY_RIGHT: {
+
+					shift_selection_check_pre(k->get_shift());
+
+#ifdef APPLE_STYLE_KEYS
+					if (k->get_command()) {
+						set_cursor_pos(text.length());
+					} else if (k->get_alt()) {
+#else
+					if (k->get_alt()) {
+						handled = false;
+						break;
+					} else if (k->get_command()) {
+#endif
+						bool prev_char = false;
+						int cc = cursor_pos;
+
+						while (cc < text.length()) {
+							bool ischar = _is_text_char(text[cc]);
+
+							if (prev_char && !ischar)
+								break;
+
+							prev_char = ischar;
+							cc++;
+						}
+
+						set_cursor_pos(cc);
+
+					} else {
+						set_cursor_pos(get_cursor_pos() + 1);
+					}
+
+					shift_selection_check_post(k->get_shift());
+
+				} break;
+				case KEY_DELETE: {
+
+					if (!editable)
+						break;
+
+					if (k->get_shift() && !k->get_command() && !k->get_alt()) {
+						cut_text();
+						break;
+					}
+
+					if (selection.enabled) {
+						undo_text = text;
+						selection_delete();
+						break;
+					}
+
+					int text_len = text.length();
+
+					if (cursor_pos == text_len)
+						break; // nothing to do
+
+#ifdef APPLE_STYLE_KEYS
+					if (k->get_alt()) {
+#else
+					if (k->get_alt()) {
+						handled = false;
+						break;
+					} else if (k->get_command()) {
+#endif
+						int cc = cursor_pos;
+
+						bool prev_char = false;
+
+						while (cc < text.length()) {
+
+							bool ischar = _is_text_char(text[cc]);
+
+							if (prev_char && !ischar)
+								break;
+							prev_char = ischar;
+							cc++;
+						}
+
+						delete_text(cursor_pos, cc);
+
+					} else {
+						undo_text = text;
+						set_cursor_pos(cursor_pos + 1);
+						delete_char();
+					}
+
+				} break;
+				case KEY_KP_7: {
+					if (k->get_unicode() != 0) {
+						handled = false;
+						break;
+					}
+					// numlock disabled. fallthrough to key_home
+				}
+				case KEY_HOME: {
+
+					shift_selection_check_pre(k->get_shift());
+					set_cursor_pos(0);
+					shift_selection_check_post(k->get_shift());
+				} break;
+				case KEY_KP_1: {
+					if (k->get_unicode() != 0) {
+						handled = false;
+						break;
+					}
+					// numlock disabled. fallthrough to key_end
+				}
+				case KEY_END: {
+
+					shift_selection_check_pre(k->get_shift());
+					set_cursor_pos(text.length());
+					shift_selection_check_post(k->get_shift());
+				} break;
+
+				default: {
+
+					handled = false;
+				} break;
+			}
+
+			if (handled) {
+				accept_event();
+			} else if (!k->get_alt() && !k->get_command()) {
+				if (k->get_unicode() >= 32 && k->get_scancode() != KEY_DELETE) {
+
+					if (editable) {
+						selection_delete();
+						CharType ucodestr[2] = { (CharType)k->get_unicode(), 0 };
+						append_at_cursor(ucodestr);
+						_text_changed();
+						accept_event();
+					}
+
+				} else {
 					return;
 				}
 			}
 
-			_reset_caret_blink_timer();
-			if (!k.mod.meta) {
+			update();
+		}
 
-				bool handled = true;
-				switch (code) {
-
-					case KEY_ENTER:
-					case KEY_RETURN: {
-
-						emit_signal("text_entered", text);
-						if (OS::get_singleton()->has_virtual_keyboard())
-							OS::get_singleton()->hide_virtual_keyboard();
-
-						return;
-					} break;
-
-					case KEY_BACKSPACE: {
-
-						if (!editable)
-							break;
-
-						if (selection.enabled) {
-							undo_text = text;
-							selection_delete();
-							break;
-						}
-
-#ifdef APPLE_STYLE_KEYS
-						if (k.mod.alt) {
-#else
-						if (k.mod.alt) {
-							handled = false;
-							break;
-						} else if (k.mod.command) {
-#endif
-							int cc = cursor_pos;
-							bool prev_char = false;
-
-							while (cc > 0) {
-								bool ischar = _is_text_char(text[cc - 1]);
-
-								if (prev_char && !ischar)
-									break;
-
-								prev_char = ischar;
-								cc--;
-							}
-
-							delete_text(cc, cursor_pos);
-
-							set_cursor_pos(cc);
-
-						} else {
-							undo_text = text;
-							delete_char();
-						}
-
-					} break;
-					case KEY_KP_4: {
-						if (k.unicode != 0) {
-							handled = false;
-							break;
-						}
-						// numlock disabled. fallthrough to key_left
-					}
-					case KEY_LEFT: {
-
-#ifndef APPLE_STYLE_KEYS
-						if (!k.mod.alt)
-#endif
-							shift_selection_check_pre(k.mod.shift);
-
-#ifdef APPLE_STYLE_KEYS
-						if (k.mod.command) {
-							set_cursor_pos(0);
-						} else if (k.mod.alt) {
-
-#else
-						if (k.mod.alt) {
-							handled = false;
-							break;
-						} else if (k.mod.command) {
-#endif
-							bool prev_char = false;
-							int cc = cursor_pos;
-
-							while (cc > 0) {
-								bool ischar = _is_text_char(text[cc - 1]);
-
-								if (prev_char && !ischar)
-									break;
-
-								prev_char = ischar;
-								cc--;
-							}
-
-							set_cursor_pos(cc);
-
-						} else {
-							set_cursor_pos(get_cursor_pos() - 1);
-						}
-
-						shift_selection_check_post(k.mod.shift);
-
-					} break;
-					case KEY_KP_6: {
-						if (k.unicode != 0) {
-							handled = false;
-							break;
-						}
-						// numlock disabled. fallthrough to key_right
-					}
-					case KEY_RIGHT: {
-
-						shift_selection_check_pre(k.mod.shift);
-
-#ifdef APPLE_STYLE_KEYS
-						if (k.mod.command) {
-							set_cursor_pos(text.length());
-						} else if (k.mod.alt) {
-#else
-						if (k.mod.alt) {
-							handled = false;
-							break;
-						} else if (k.mod.command) {
-#endif
-							bool prev_char = false;
-							int cc = cursor_pos;
-
-							while (cc < text.length()) {
-								bool ischar = _is_text_char(text[cc]);
-
-								if (prev_char && !ischar)
-									break;
-
-								prev_char = ischar;
-								cc++;
-							}
-
-							set_cursor_pos(cc);
-
-						} else {
-							set_cursor_pos(get_cursor_pos() + 1);
-						}
-
-						shift_selection_check_post(k.mod.shift);
-
-					} break;
-					case KEY_DELETE: {
-
-						if (!editable)
-							break;
-
-						if (k.mod.shift && !k.mod.command && !k.mod.alt) {
-							cut_text();
-							break;
-						}
-
-						if (selection.enabled) {
-							undo_text = text;
-							selection_delete();
-							break;
-						}
-
-						int text_len = text.length();
-
-						if (cursor_pos == text_len)
-							break; // nothing to do
-
-#ifdef APPLE_STYLE_KEYS
-						if (k.mod.alt) {
-#else
-						if (k.mod.alt) {
-							handled = false;
-							break;
-						} else if (k.mod.command) {
-#endif
-							int cc = cursor_pos;
-
-							bool prev_char = false;
-
-							while (cc < text.length()) {
-
-								bool ischar = _is_text_char(text[cc]);
-
-								if (prev_char && !ischar)
-									break;
-								prev_char = ischar;
-								cc++;
-							}
-
-							delete_text(cursor_pos, cc);
-
-						} else {
-							undo_text = text;
-							set_cursor_pos(cursor_pos + 1);
-							delete_char();
-						}
-
-					} break;
-					case KEY_KP_7: {
-						if (k.unicode != 0) {
-							handled = false;
-							break;
-						}
-						// numlock disabled. fallthrough to key_home
-					}
-					case KEY_HOME: {
-
-						shift_selection_check_pre(k.mod.shift);
-						set_cursor_pos(0);
-						shift_selection_check_post(k.mod.shift);
-					} break;
-					case KEY_KP_1: {
-						if (k.unicode != 0) {
-							handled = false;
-							break;
-						}
-						// numlock disabled. fallthrough to key_end
-					}
-					case KEY_END: {
-
-						shift_selection_check_pre(k.mod.shift);
-						set_cursor_pos(text.length());
-						shift_selection_check_post(k.mod.shift);
-					} break;
-
-					default: {
-
-						handled = false;
-					} break;
-				}
-
-				if (handled) {
-					accept_event();
-				} else if (!k.mod.alt && !k.mod.command) {
-					if (k.unicode >= 32 && k.scancode != KEY_DELETE) {
-
-						if (editable) {
-							selection_delete();
-							CharType ucodestr[2] = { (CharType)k.unicode, 0 };
-							append_at_cursor(ucodestr);
-							_text_changed();
-							accept_event();
-						}
-
-					} else {
-						return;
-					}
-				}
-
-				update();
-			}
-
-			return;
-
-		} break;
+		return;
 	}
 }
 

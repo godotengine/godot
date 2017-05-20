@@ -42,7 +42,7 @@ class PropertySelector : public ConfirmationDialog {
 
 	void _update_search();
 
-	void _sbox_input(const InputEvent &p_ie);
+	void _sbox_input(const Ref<InputEvent> &p_ie);
 
 	void _confirmed();
 	void _text_changed(const String &p_newtext);
@@ -52,7 +52,6 @@ class PropertySelector : public ConfirmationDialog {
 	bool properties;
 	String selected;
 	Variant::Type type;
-	InputEvent::Type event_type;
 	String base_type;
 	ObjectID script;
 	Object *instance;
@@ -71,7 +70,7 @@ public:
 
 	void select_property_from_base_type(const String &p_base, const String &p_current = "");
 	void select_property_from_script(const Ref<Script> &p_script, const String &p_current = "");
-	void select_property_from_basic_type(Variant::Type p_type, InputEvent::Type p_event_type, const String &p_current = "");
+	void select_property_from_basic_type(Variant::Type p_type, const String &p_current = "");
 	void select_property_from_instance(Object *p_instance, const String &p_current = "");
 
 	PropertySelector();

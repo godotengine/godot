@@ -64,7 +64,7 @@ class ScrollContainer : public Container {
 protected:
 	Size2 get_minimum_size() const;
 
-	void _gui_input(const InputEvent &p_gui_input);
+	void _gui_input(const Ref<InputEvent> &p_gui_input);
 	void _notification(int p_what);
 
 	void _scroll_moved(float);

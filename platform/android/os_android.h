@@ -231,7 +231,7 @@ public:
 	void process_gyroscope(const Vector3 &p_gyroscope);
 	void process_touch(int p_what, int p_pointer, const Vector<TouchPos> &p_points);
 	void process_joy_event(JoypadEvent p_event);
-	void process_event(InputEvent p_event);
+	void process_event(Ref<InputEvent> p_event);
 	void init_video_mode(int p_video_width, int p_video_height);
 
 	virtual Error native_video_play(String p_path, float p_volume);

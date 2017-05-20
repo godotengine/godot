@@ -2938,9 +2938,9 @@ void Node::_bind_methods() {
 	BIND_VMETHOD(MethodInfo("_enter_tree"));
 	BIND_VMETHOD(MethodInfo("_exit_tree"));
 	BIND_VMETHOD(MethodInfo("_ready"));
-	BIND_VMETHOD(MethodInfo("_input", PropertyInfo(Variant::INPUT_EVENT, "event")));
-	BIND_VMETHOD(MethodInfo("_unhandled_input", PropertyInfo(Variant::INPUT_EVENT, "event")));
-	BIND_VMETHOD(MethodInfo("_unhandled_key_input", PropertyInfo(Variant::INPUT_EVENT, "key_event")));
+	BIND_VMETHOD(MethodInfo("_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
+	BIND_VMETHOD(MethodInfo("_unhandled_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
+	BIND_VMETHOD(MethodInfo("_unhandled_key_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEventKey")));
 
 	//ClassDB::bind_method(D_METHOD("get_child",&Node::get_child,PH("index")));
 	//ClassDB::bind_method(D_METHOD("get_node",&Node::get_node,PH("path")));

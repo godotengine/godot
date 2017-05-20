@@ -63,7 +63,7 @@ private:
 
 protected:
 	void _child_renamed_callback();
-	void _gui_input(const InputEvent &p_event);
+	void _gui_input(const Ref<InputEvent> &p_event);
 	void _notification(int p_what);
 	virtual void add_child_notify(Node *p_child);
 	virtual void remove_child_notify(Node *p_child);

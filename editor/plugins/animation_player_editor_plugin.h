@@ -158,7 +158,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _animation_key_editor_anim_len_changed(float p_new);
 	void _animation_key_editor_anim_step_changed(float p_len);
 
-	void _unhandled_key_input(const InputEvent &p_ev);
+	void _unhandled_key_input(const Ref<InputEvent> &p_ev);
 	void _animation_tool_menu(int p_option);
 	void _animation_save_menu(int p_option);
 
@@ -166,7 +166,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 
 protected:
 	void _notification(int p_what);
-	void _gui_input(InputEvent p_event);
+	void _gui_input(Ref<InputEvent> p_event);
 	void _node_removed(Node *p_node);
 	static void _bind_methods();
 

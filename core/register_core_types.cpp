@@ -110,6 +110,18 @@ void register_core_types() {
 	ClassDB::register_class<Resource>();
 	ClassDB::register_class<Image>();
 
+	ClassDB::register_virtual_class<InputEvent>();
+	ClassDB::register_virtual_class<InputEventWithModifiers>();
+	ClassDB::register_class<InputEventKey>();
+	ClassDB::register_virtual_class<InputEventMouse>();
+	ClassDB::register_class<InputEventMouseButton>();
+	ClassDB::register_class<InputEventMouseMotion>();
+	ClassDB::register_class<InputEventJoypadButton>();
+	ClassDB::register_class<InputEventJoypadMotion>();
+	ClassDB::register_class<InputEventScreenDrag>();
+	ClassDB::register_class<InputEventScreenTouch>();
+	ClassDB::register_class<InputEventAction>();
+
 	ClassDB::register_class<FuncRef>();
 	ClassDB::register_virtual_class<StreamPeer>();
 	ClassDB::register_class<StreamPeerBuffer>();

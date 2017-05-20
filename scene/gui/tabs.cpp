@@ -79,11 +79,13 @@ Size2 Tabs::get_minimum_size() const {
 	return ms;
 }
 
-void Tabs::_gui_input(const InputEvent &p_event) {
+void Tabs::_gui_input(const Ref<InputEvent> &p_event) {
 
-	if (p_event.type == InputEvent::MOUSE_MOTION) {
+	Ref<InputEventMouseMotion> mm = p_event;
 
-		Point2 pos(p_event.mouse_motion.x, p_event.mouse_motion.y);
+	if (mm.is_valid()) {
+
+		Point2 pos = mm->get_pos();
 
 		highlight_arrow = -1;
 		if (buttons_visible) {
@@ -130,9 +132,11 @@ void Tabs::_gui_input(const InputEvent &p_event) {
 		return;
 	}
 
-	if (rb_pressing && p_event.type == InputEvent::MOUSE_BUTTON &&
-			!p_event.mouse_button.pressed &&
-			p_event.mouse_button.button_index == BUTTON_LEFT) {
+	Ref<InputEventMouseButton> mb = p_event;
+
+	if (rb_pressing && mb.is_valid() &&
+			!mb->is_pressed() &&
+			mb->get_button_index() == BUTTON_LEFT) {
 
 		if (rb_hover != -1) {
 			//pressed
@@ -143,9 +147,9 @@ void Tabs::_gui_input(const InputEvent &p_event) {
 		update();
 	}
 
-	if (cb_pressing && p_event.type == InputEvent::MOUSE_BUTTON &&
-			!p_event.mouse_button.pressed &&
-			p_event.mouse_button.button_index == BUTTON_LEFT) {
+	if (cb_pressing && mb.is_valid() &&
+			!mb->is_pressed() &&
+			mb->get_button_index() == BUTTON_LEFT) {
 
 		if (cb_hover != -1) {
 			//pressed
@@ -156,12 +160,12 @@ void Tabs::_gui_input(const InputEvent &p_event) {
 		update();
 	}
 
-	if (p_event.type == InputEvent::MOUSE_BUTTON &&
-			p_event.mouse_button.pressed &&
-			p_event.mouse_button.button_index == BUTTON_LEFT) {
+	if (mb.is_valid() &&
+			mb->is_pressed() &&
+			mb->get_button_index() == BUTTON_LEFT) {
 
 		// clicks
-		Point2 pos(p_event.mouse_button.x, p_event.mouse_button.y);
+		Point2 pos(mb->get_pos().x, mb->get_pos().y);
 
 		if (buttons_visible) {
 

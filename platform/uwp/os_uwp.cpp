@@ -330,14 +330,14 @@ String OSUWP::get_clipboard() const {
 		return "";
 };
 
-void OSUWP::input_event(InputEvent &p_event) {
+void OSUWP::input_event(Ref<InputEvent> &p_event) {
 
 	input->parse_input_event(p_event);
 
-	if (p_event.type == InputEvent::MOUSE_BUTTON && p_event.mouse_button.pressed && p_event.mouse_button.button_index > 3) {
+	if (p_event.type == Ref<InputEvent>::MOUSE_BUTTON && p_event->is_pressed() && p_event->get_button_index() > 3) {
 
 		//send release for mouse wheel
-		p_event.mouse_button.pressed = false;
+		p_event->is_pressed() = false;
 		input->parse_input_event(p_event);
 	}
 };
@@ -663,14 +663,14 @@ void OSUWP::process_key_events() {
 	for (int i = 0; i < key_event_pos; i++) {
 
 		KeyEvent &kev = key_event_buffer[i];
-		InputEvent iev;
+		Ref<InputEvent> iev;
 
-		iev.type = InputEvent::KEY;
+		iev.type = Ref<InputEvent>::KEY;
 		iev.key.mod = kev.mod_state;
-		iev.key.echo = kev.echo;
-		iev.key.scancode = kev.scancode;
+		iev->is_echo() = kev.echo;
+		iev->get_scancode() = kev->get_scancode();
 		iev.key.unicode = kev.unicode;
-		iev.key.pressed = kev.pressed;
+		iev->is_pressed() = kev->is_pressed();
 
 		input_event(iev);
 	}

@@ -65,7 +65,7 @@ bool EditorSettings::_set(const StringName &p_name, const Variant &p_value) {
 		for (int i = 0; i < arr.size(); i += 2) {
 
 			String name = arr[i];
-			InputEvent shortcut = arr[i + 1];
+			Ref<InputEvent> shortcut = arr[i + 1];
 
 			Ref<ShortCut> sc;
 			sc.instance();
@@ -109,8 +109,8 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 					continue; //this came from settings but is not any longer used
 				}
 
-				InputEvent original = sc->get_meta("original");
-				if (sc->is_shortcut(original) || (original.type == InputEvent::NONE && sc->get_shortcut().type == InputEvent::NONE))
+				Ref<InputEvent> original = sc->get_meta("original");
+				if (sc->is_shortcut(original) || (original.is_null() && sc->get_shortcut().is_null()))
 					continue; //not changed from default, don't save
 			}
 
@@ -984,7 +984,7 @@ void EditorSettings::add_shortcut(const String &p_name, Ref<ShortCut> &p_shortcu
 	shortcuts[p_name] = p_shortcut;
 }
 
-bool EditorSettings::is_shortcut(const String &p_name, const InputEvent &p_event) const {
+bool EditorSettings::is_shortcut(const String &p_name, const Ref<InputEvent> &p_event) const {
 
 	const Map<String, Ref<ShortCut> >::Element *E = shortcuts.find(p_name);
 	if (!E) {
@@ -1101,15 +1101,16 @@ Ref<ShortCut> ED_GET_SHORTCUT(const String &p_path) {
 
 Ref<ShortCut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p_keycode) {
 
-	InputEvent ie;
+	Ref<InputEventKey> ie;
 	if (p_keycode) {
-		ie.type = InputEvent::KEY;
-		ie.key.unicode = p_keycode & KEY_CODE_MASK;
-		ie.key.scancode = p_keycode & KEY_CODE_MASK;
-		ie.key.mod.shift = bool(p_keycode & KEY_MASK_SHIFT);
-		ie.key.mod.alt = bool(p_keycode & KEY_MASK_ALT);
-		ie.key.mod.control = bool(p_keycode & KEY_MASK_CTRL);
-		ie.key.mod.meta = bool(p_keycode & KEY_MASK_META);
+		ie.instance();
+
+		ie->set_unicode(p_keycode & KEY_CODE_MASK);
+		ie->set_scancode(p_keycode & KEY_CODE_MASK);
+		ie->set_shift(bool(p_keycode & KEY_MASK_SHIFT));
+		ie->set_alt(bool(p_keycode & KEY_MASK_ALT));
+		ie->set_control(bool(p_keycode & KEY_MASK_CTRL));
+		ie->set_metakey(bool(p_keycode & KEY_MASK_META));
 	}
 
 	Ref<ShortCut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);

@@ -52,19 +52,21 @@ void SceneTreeDock::_nodes_drag_begin() {
 	}
 }
 
-void SceneTreeDock::_input(InputEvent p_event) {
+void SceneTreeDock::_input(Ref<InputEvent> p_event) {
 
-	if (p_event.type == InputEvent::MOUSE_BUTTON && !p_event.mouse_button.pressed && p_event.mouse_button.button_index == BUTTON_LEFT) {
+	Ref<InputEventMouseButton> mb = p_event;
+
+	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 		restore_script_editor_on_drag = false; //lost chance
 	}
 }
 
-void SceneTreeDock::_unhandled_key_input(InputEvent p_event) {
+void SceneTreeDock::_unhandled_key_input(Ref<InputEvent> p_event) {
 
 	if (get_viewport()->get_modal_stack_top())
 		return; //ignore because of modal window
 
-	if (!p_event.key.pressed || p_event.key.echo)
+	if (!p_event->is_pressed() || p_event->is_echo())
 		return;
 
 	if (ED_IS_SHORTCUT("scene_tree/add_child_node", p_event)) {

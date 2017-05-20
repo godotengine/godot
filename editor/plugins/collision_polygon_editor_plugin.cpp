@@ -131,7 +131,7 @@ bool CollisionPolygonEditor::forward_spatial_gui_input(Camera* p_camera,const In
 
 
 
-			Vector2 gpoint=Point2(mb.x,mb.y);
+			Vector2 gpoint=Point2(mb->get_pos().x,mb->get_pos().y);
 			Vector3 ray_from = p_camera->project_ray_origin(gpoint);
 			Vector3 ray_dir = p_camera->project_ray_normal(gpoint);
 
@@ -156,7 +156,7 @@ bool CollisionPolygonEditor::forward_spatial_gui_input(Camera* p_camera,const In
 
 				case MODE_CREATE: {
 
-					if (mb.button_index==BUTTON_LEFT && mb.pressed) {
+					if (mb->get_button_index()==BUTTON_LEFT && mb->is_pressed()) {
 
 
 						if (!wip_active) {
@@ -186,7 +186,7 @@ bool CollisionPolygonEditor::forward_spatial_gui_input(Camera* p_camera,const In
 								//add wip point
 							}
 						}
-					} else if (mb.button_index==BUTTON_RIGHT && mb.pressed && wip_active) {
+					} else if (mb->get_button_index()==BUTTON_RIGHT && mb->is_pressed() && wip_active) {
 						_wip_close();
 					}
 
@@ -196,10 +196,10 @@ bool CollisionPolygonEditor::forward_spatial_gui_input(Camera* p_camera,const In
 
 				case MODE_EDIT: {
 
-					if (mb.button_index==BUTTON_LEFT) {
-						if (mb.pressed) {
+					if (mb->get_button_index()==BUTTON_LEFT) {
+						if (mb->is_pressed()) {
 
-							if (mb.mod.control) {
+							if (mb->get_control()) {
 
 
 								if (poly.size() < 3) {
@@ -297,7 +297,7 @@ bool CollisionPolygonEditor::forward_spatial_gui_input(Camera* p_camera,const In
 								return true;
 							}
 						}
-					} if (mb.button_index==BUTTON_RIGHT && mb.pressed && edited_point==-1) {
+					} if (mb->get_button_index()==BUTTON_RIGHT && mb->is_pressed() && edited_point==-1) {
 
 
 
@@ -344,7 +344,7 @@ bool CollisionPolygonEditor::forward_spatial_gui_input(Camera* p_camera,const In
 
 			const InputEventMouseMotion &mm=p_event.mouse_motion;
 
-			if (edited_point!=-1 && (wip_active || mm.button_mask&BUTTON_MASK_LEFT)) {
+			if (edited_point!=-1 && (wip_active || mm->get_button_mask()&BUTTON_MASK_LEFT)) {
 
 				Vector2 gpoint = Point2(mm.x,mm.y);
 

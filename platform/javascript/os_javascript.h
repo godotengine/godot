@@ -154,7 +154,7 @@ public:
 	virtual String get_resource_dir() const;
 
 	void process_accelerometer(const Vector3 &p_accelerometer);
-	void push_input(const InputEvent &p_ev);
+	void push_input(const Ref<InputEvent> &p_ev);
 
 	virtual bool is_joy_known(int p_device);
 	virtual String get_joy_guid(int p_device) const;

@@ -148,7 +148,7 @@ void EditorSettingsDialog::_update_shortcuts() {
 		if (!sc->has_meta("original"))
 			continue;
 
-		InputEvent original = sc->get_meta("original");
+		Ref<InputEvent> original = sc->get_meta("original");
 
 		String section_name = E->get().get_slice("/", 0);
 
@@ -170,7 +170,7 @@ void EditorSettingsDialog::_update_shortcuts() {
 
 			item->set_text(0, sc->get_name());
 			item->set_text(1, sc->get_as_text());
-			if (!sc->is_shortcut(original) && !(sc->get_shortcut().type == InputEvent::NONE && original.type == InputEvent::NONE)) {
+			if (!sc->is_shortcut(original) && !(sc->get_shortcut().is_null() && original.is_null())) {
 				item->add_button(1, get_icon("Reload", "EditorIcons"), 2);
 			}
 			item->add_button(1, get_icon("Edit", "EditorIcons"), 0);
@@ -199,7 +199,7 @@ void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column
 
 	if (p_idx == 0) {
 		press_a_key_label->set_text(TTR("Press a Key.."));
-		last_wait_for_key = InputEvent();
+		last_wait_for_key = Ref<InputEventKey>();
 		press_a_key->popup_centered(Size2(250, 80) * EDSCALE);
 		press_a_key->grab_focus();
 		press_a_key->get_ok()->set_focus_mode(FOCUS_NONE);
@@ -212,7 +212,7 @@ void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column
 
 		UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 		ur->create_action("Erase Shortcut");
-		ur->add_do_method(sc.ptr(), "set_shortcut", InputEvent());
+		ur->add_do_method(sc.ptr(), "set_shortcut", Ref<InputEvent>());
 		ur->add_undo_method(sc.ptr(), "set_shortcut", sc->get_shortcut());
 		ur->add_do_method(this, "_update_shortcuts");
 		ur->add_undo_method(this, "_update_shortcuts");
@@ -223,7 +223,7 @@ void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column
 		if (!sc.is_valid())
 			return; //pointless, there is nothing
 
-		InputEvent original = sc->get_meta("original");
+		Ref<InputEvent> original = sc->get_meta("original");
 
 		UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 		ur->create_action("Restore Shortcut");
@@ -237,19 +237,21 @@ void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column
 	}
 }
 
-void EditorSettingsDialog::_wait_for_key(const InputEvent &p_event) {
+void EditorSettingsDialog::_wait_for_key(const Ref<InputEvent> &p_event) {
 
-	if (p_event.type == InputEvent::KEY && p_event.key.pressed && p_event.key.scancode != 0) {
+	Ref<InputEventKey> k = p_event;
 
-		last_wait_for_key = p_event;
-		String str = keycode_get_string(p_event.key.scancode).capitalize();
-		if (p_event.key.mod.meta)
+	if (k.is_valid() && k->is_pressed() && k->get_scancode() != 0) {
+
+		last_wait_for_key = k;
+		String str = keycode_get_string(k->get_scancode()).capitalize();
+		if (k->get_metakey())
 			str = TTR("Meta+") + str;
-		if (p_event.key.mod.shift)
+		if (k->get_shift())
 			str = TTR("Shift+") + str;
-		if (p_event.key.mod.alt)
+		if (k->get_alt())
 			str = TTR("Alt+") + str;
-		if (p_event.key.mod.control)
+		if (k->get_control())
 			str = TTR("Control+") + str;
 
 		press_a_key_label->set_text(str);
@@ -259,13 +261,16 @@ void EditorSettingsDialog::_wait_for_key(const InputEvent &p_event) {
 
 void EditorSettingsDialog::_press_a_key_confirm() {
 
-	if (last_wait_for_key.type != InputEvent::KEY)
+	if (last_wait_for_key.is_null())
 		return;
 
-	InputEvent ie;
-	ie.type = InputEvent::KEY;
-	ie.key.scancode = last_wait_for_key.key.scancode;
-	ie.key.mod = last_wait_for_key.key.mod;
+	Ref<InputEventKey> ie;
+	ie.instance();
+	ie->set_scancode(last_wait_for_key->get_scancode());
+	ie->set_shift(last_wait_for_key->get_shift());
+	ie->set_control(last_wait_for_key->get_control());
+	ie->set_alt(last_wait_for_key->get_alt());
+	ie->set_metakey(last_wait_for_key->get_metakey());
 
 	Ref<ShortCut> sc = EditorSettings::get_singleton()->get_shortcut(shortcut_configured);
 

@@ -288,15 +288,15 @@ static int button_mask = 0;
 
 	//print_line("mouse down:");
 	button_mask |= BUTTON_MASK_LEFT;
-	InputEvent ev;
+	Ref<InputEvent> ev;
 	ev.type = InputEvent::MOUSE_BUTTON;
-	ev.mouse_button.button_index = BUTTON_LEFT;
-	ev.mouse_button.pressed = true;
-	ev.mouse_button.x = mouse_x;
-	ev.mouse_button.y = mouse_y;
+	ev->get_button_index() = BUTTON_LEFT;
+	ev->is_pressed() = true;
+	ev->get_pos().x = mouse_x;
+	ev->get_pos().y = mouse_y;
 	ev.mouse_button.global_x = mouse_x;
 	ev.mouse_button.global_y = mouse_y;
-	ev.mouse_button.button_mask = button_mask;
+	ev->get_button_mask() = button_mask;
 	ev.mouse_button.doubleclick = [event clickCount] == 2;
 	ev.mouse_button.mod = translateFlags([event modifierFlags]);
 	OS_OSX::singleton->push_input(ev);
@@ -309,24 +309,24 @@ static int button_mask = 0;
 - (void)mouseUp:(NSEvent *)event {
 
 	button_mask &= ~BUTTON_MASK_LEFT;
-	InputEvent ev;
+	Ref<InputEvent> ev;
 	ev.type = InputEvent::MOUSE_BUTTON;
-	ev.mouse_button.button_index = BUTTON_LEFT;
-	ev.mouse_button.pressed = false;
-	ev.mouse_button.x = mouse_x;
-	ev.mouse_button.y = mouse_y;
+	ev->get_button_index() = BUTTON_LEFT;
+	ev->is_pressed() = false;
+	ev->get_pos().x = mouse_x;
+	ev->get_pos().y = mouse_y;
 	ev.mouse_button.global_x = mouse_x;
 	ev.mouse_button.global_y = mouse_y;
-	ev.mouse_button.button_mask = button_mask;
+	ev->get_button_mask() = button_mask;
 	ev.mouse_button.mod = translateFlags([event modifierFlags]);
 	OS_OSX::singleton->push_input(ev);
 }
 
 - (void)mouseMoved:(NSEvent *)event {
 
-	InputEvent ev;
+	Ref<InputEvent> ev;
 	ev.type = InputEvent::MOUSE_MOTION;
-	ev.mouse_motion.button_mask = button_mask;
+	ev->get_button_mask() = button_mask;
 	prev_mouse_x = mouse_x;
 	prev_mouse_y = mouse_y;
 	const NSRect contentRect = [OS_OSX::singleton->window_view frame];
@@ -337,8 +337,8 @@ static int button_mask = 0;
 	ev.mouse_motion.y = mouse_y;
 	ev.mouse_motion.global_x = mouse_x;
 	ev.mouse_motion.global_y = mouse_y;
-	ev.mouse_motion.relative_x = [event deltaX] * OS_OSX::singleton->_mouse_scale([[event window] backingScaleFactor]);
-	ev.mouse_motion.relative_y = [event deltaY] * OS_OSX::singleton->_mouse_scale([[event window] backingScaleFactor]);
+	ev->get_relative().x = [event deltaX] * OS_OSX::singleton->_mouse_scale([[event window] backingScaleFactor]);
+	ev->get_relative().y = [event deltaY] * OS_OSX::singleton->_mouse_scale([[event window] backingScaleFactor]);
 	ev.mouse_motion.mod = translateFlags([event modifierFlags]);
 
 	OS_OSX::singleton->input->set_mouse_position(Point2(mouse_x, mouse_y));
@@ -348,15 +348,15 @@ static int button_mask = 0;
 - (void)rightMouseDown:(NSEvent *)event {
 
 	button_mask |= BUTTON_MASK_RIGHT;
-	InputEvent ev;
+	Ref<InputEvent> ev;
 	ev.type = InputEvent::MOUSE_BUTTON;
-	ev.mouse_button.button_index = BUTTON_RIGHT;
-	ev.mouse_button.pressed = true;
-	ev.mouse_button.x = mouse_x;
-	ev.mouse_button.y = mouse_y;
+	ev->get_button_index() = BUTTON_RIGHT;
+	ev->is_pressed() = true;
+	ev->get_pos().x = mouse_x;
+	ev->get_pos().y = mouse_y;
 	ev.mouse_button.global_x = mouse_x;
 	ev.mouse_button.global_y = mouse_y;
-	ev.mouse_button.button_mask = button_mask;
+	ev->get_button_mask() = button_mask;
 	ev.mouse_button.mod = translateFlags([event modifierFlags]);
 	OS_OSX::singleton->push_input(ev);
 }
@@ -368,15 +368,15 @@ static int button_mask = 0;
 - (void)rightMouseUp:(NSEvent *)event {
 
 	button_mask &= ~BUTTON_MASK_RIGHT;
-	InputEvent ev;
+	Ref<InputEvent> ev;
 	ev.type = InputEvent::MOUSE_BUTTON;
-	ev.mouse_button.button_index = BUTTON_RIGHT;
-	ev.mouse_button.pressed = false;
-	ev.mouse_button.x = mouse_x;
-	ev.mouse_button.y = mouse_y;
+	ev->get_button_index() = BUTTON_RIGHT;
+	ev->is_pressed() = false;
+	ev->get_pos().x = mouse_x;
+	ev->get_pos().y = mouse_y;
 	ev.mouse_button.global_x = mouse_x;
 	ev.mouse_button.global_y = mouse_y;
-	ev.mouse_button.button_mask = button_mask;
+	ev->get_button_mask() = button_mask;
 	ev.mouse_button.mod = translateFlags([event modifierFlags]);
 	OS_OSX::singleton->push_input(ev);
 }
@@ -387,15 +387,15 @@ static int button_mask = 0;
 		return;
 
 	button_mask |= BUTTON_MASK_MIDDLE;
-	InputEvent ev;
+	Ref<InputEvent> ev;
 	ev.type = InputEvent::MOUSE_BUTTON;
-	ev.mouse_button.button_index = BUTTON_MIDDLE;
-	ev.mouse_button.pressed = true;
-	ev.mouse_button.x = mouse_x;
-	ev.mouse_button.y = mouse_y;
+	ev->get_button_index() = BUTTON_MIDDLE;
+	ev->is_pressed() = true;
+	ev->get_pos().x = mouse_x;
+	ev->get_pos().y = mouse_y;
 	ev.mouse_button.global_x = mouse_x;
 	ev.mouse_button.global_y = mouse_y;
-	ev.mouse_button.button_mask = button_mask;
+	ev->get_button_mask() = button_mask;
 	ev.mouse_button.mod = translateFlags([event modifierFlags]);
 	OS_OSX::singleton->push_input(ev);
 }
@@ -410,15 +410,15 @@ static int button_mask = 0;
 		return;
 
 	button_mask &= ~BUTTON_MASK_MIDDLE;
-	InputEvent ev;
+	Ref<InputEvent> ev;
 	ev.type = InputEvent::MOUSE_BUTTON;
-	ev.mouse_button.button_index = BUTTON_MIDDLE;
-	ev.mouse_button.pressed = false;
-	ev.mouse_button.x = mouse_x;
-	ev.mouse_button.y = mouse_y;
+	ev->get_button_index() = BUTTON_MIDDLE;
+	ev->is_pressed() = false;
+	ev->get_pos().x = mouse_x;
+	ev->get_pos().y = mouse_y;
 	ev.mouse_button.global_x = mouse_x;
 	ev.mouse_button.global_y = mouse_y;
-	ev.mouse_button.button_mask = button_mask;
+	ev->get_button_mask() = button_mask;
 	ev.mouse_button.mod = translateFlags([event modifierFlags]);
 	OS_OSX::singleton->push_input(ev);
 }
@@ -610,21 +610,21 @@ static int translateKey(unsigned int key) {
 }
 
 - (void)keyDown:(NSEvent *)event {
-	InputEvent ev;
+	Ref<InputEvent> ev;
 	ev.type = InputEvent::KEY;
-	ev.key.pressed = true;
+	ev->is_pressed() = true;
 	ev.key.mod = translateFlags([event modifierFlags]);
-	ev.key.scancode = latin_keyboard_keycode_convert(translateKey([event keyCode]));
-	ev.key.echo = [event isARepeat];
+	ev->get_scancode() = latin_keyboard_keycode_convert(translateKey([event keyCode]));
+	ev->is_echo() = [event isARepeat];
 
 	NSString *characters = [event characters];
 	NSUInteger i, length = [characters length];
 
-	if (length > 0 && keycode_has_unicode(ev.key.scancode)) {
+	if (length > 0 && keycode_has_unicode(ev->get_scancode())) {
 		for (i = 0; i < length; i++) {
 			ev.key.unicode = [characters characterAtIndex:i];
 			OS_OSX::singleton->push_input(ev);
-			ev.key.scancode = 0;
+			ev->get_scancode() = 0;
 		}
 	} else {
 		OS_OSX::singleton->push_input(ev);
@@ -632,7 +632,7 @@ static int translateKey(unsigned int key) {
 }
 
 - (void)flagsChanged:(NSEvent *)event {
-	InputEvent ev;
+	Ref<InputEvent> ev;
 	int key = [event keyCode];
 	int mod = [event modifierFlags];
 
@@ -641,64 +641,64 @@ static int translateKey(unsigned int key) {
 	if (key == 0x36 || key == 0x37) {
 		if (mod & NSCommandKeyMask) {
 			mod &= ~NSCommandKeyMask;
-			ev.key.pressed = true;
+			ev->is_pressed() = true;
 		} else {
-			ev.key.pressed = false;
+			ev->is_pressed() = false;
 		}
 	} else if (key == 0x38 || key == 0x3c) {
 		if (mod & NSShiftKeyMask) {
 			mod &= ~NSShiftKeyMask;
-			ev.key.pressed = true;
+			ev->is_pressed() = true;
 		} else {
-			ev.key.pressed = false;
+			ev->is_pressed() = false;
 		}
 	} else if (key == 0x3a || key == 0x3d) {
 		if (mod & NSAlternateKeyMask) {
 			mod &= ~NSAlternateKeyMask;
-			ev.key.pressed = true;
+			ev->is_pressed() = true;
 		} else {
-			ev.key.pressed = false;
+			ev->is_pressed() = false;
 		}
 	} else if (key == 0x3b || key == 0x3e) {
 		if (mod & NSControlKeyMask) {
 			mod &= ~NSControlKeyMask;
-			ev.key.pressed = true;
+			ev->is_pressed() = true;
 		} else {
-			ev.key.pressed = false;
+			ev->is_pressed() = false;
 		}
 	} else {
 		return;
 	}
 
 	ev.key.mod = translateFlags(mod);
-	ev.key.scancode = latin_keyboard_keycode_convert(translateKey(key));
+	ev->get_scancode() = latin_keyboard_keycode_convert(translateKey(key));
 
 	OS_OSX::singleton->push_input(ev);
 }
 
 - (void)keyUp:(NSEvent *)event {
 
-	InputEvent ev;
+	Ref<InputEvent> ev;
 	ev.type = InputEvent::KEY;
-	ev.key.pressed = false;
+	ev->is_pressed() = false;
 	ev.key.mod = translateFlags([event modifierFlags]);
-	ev.key.scancode = latin_keyboard_keycode_convert(translateKey([event keyCode]));
+	ev->get_scancode() = latin_keyboard_keycode_convert(translateKey([event keyCode]));
 	OS_OSX::singleton->push_input(ev);
 }
 
 inline void sendScrollEvent(int button, double factor) {
-	InputEvent ev;
-	ev.type = InputEvent::MOUSE_BUTTON;
-	ev.mouse_button.button_index = button;
-	ev.mouse_button.factor = factor;
-	ev.mouse_button.pressed = true;
-	ev.mouse_button.x = mouse_x;
-	ev.mouse_button.y = mouse_y;
+	Ref<InputEvent> ev;
+	ev.type = Ref<InputEvent>::MOUSE_BUTTON;
+	ev->get_button_index() = button;
+	ev.mouse_button->get_factor() = factor;
+	ev->is_pressed() = true;
+	ev->get_pos().x = mouse_x;
+	ev->get_pos().y = mouse_y;
 	ev.mouse_button.global_x = mouse_x;
 	ev.mouse_button.global_y = mouse_y;
-	ev.mouse_button.button_mask = button_mask;
+	ev->get_button_mask() = button_mask;
 	OS_OSX::singleton->push_input(ev);
-	ev.mouse_button.pressed = false;
+	ev->is_pressed() = false;
 	OS_OSX::singleton->push_input(ev);
 }
 
@@ -1515,9 +1515,9 @@ void OS_OSX::process_events() {
 	autoreleasePool = [[NSAutoreleasePool alloc] init];
 }
 
-void OS_OSX::push_input(const InputEvent &p_event) {
+void OS_OSX::push_input(const Ref<InputEvent> &p_event) {
 
-	InputEvent ev = p_event;
+	Ref<InputEvent> ev = p_event;
 	input->parse_input_event(ev);
 }
 

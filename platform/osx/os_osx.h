@@ -165,7 +165,7 @@ public:
 	virtual void swap_buffers();
 
 	Error shell_open(String p_uri);
-	void push_input(const InputEvent &p_event);
+	void push_input(const Ref<InputEvent> &p_event);
 
 	String get_locale() const;
 

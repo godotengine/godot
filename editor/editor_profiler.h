@@ -143,7 +143,7 @@ private:
 	void _graph_tex_mouse_exit();
 
 	void _graph_tex_draw();
-	void _graph_tex_input(const InputEvent &p_ev);
+	void _graph_tex_input(const Ref<InputEvent> &p_ev);
 
 	int _get_cursor_index() const;
 

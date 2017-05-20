@@ -257,7 +257,7 @@ public:
 
 	virtual bool get_swap_ok_cancel() { return true; }
 
-	void input_event(InputEvent &p_event);
+	void input_event(Ref<InputEvent> &p_event);
 
 	virtual PowerState get_power_state();
 	virtual int get_power_seconds_left();

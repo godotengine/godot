@@ -115,7 +115,7 @@ private:
 
 	void _update_drives();
 
-	void _unhandled_input(const InputEvent &p_event);
+	void _unhandled_input(const Ref<InputEvent> &p_event);
 
 	virtual void _post_popup();
 

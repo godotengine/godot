@@ -89,13 +89,11 @@ public:
 	struct TypeGuess {
 
 		Variant::Type type;
-		InputEvent::Type ev_type;
 		StringName GDCLASS;
 		Ref<Script> script;
 
 		TypeGuess() {
 			type = Variant::NIL;
-			ev_type = InputEvent::NONE;
 		}
 	};
 

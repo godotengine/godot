@@ -503,14 +503,16 @@ void ProjectManager::_update_project_buttons() {
 	run_btn->set_disabled(!has_runnable_scene);
 }
 
-void ProjectManager::_panel_input(const InputEvent &p_ev, Node *p_hb) {
+void ProjectManager::_panel_input(const Ref<InputEvent> &p_ev, Node *p_hb) {
 
-	if (p_ev.type == InputEvent::MOUSE_BUTTON && p_ev.mouse_button.pressed && p_ev.mouse_button.button_index == BUTTON_LEFT) {
+	Ref<InputEventMouseButton> mb = p_ev;
+
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 
 		String clicked = p_hb->get_meta("name");
 		String clicked_main_scene = p_hb->get_meta("main_scene");
 
-		if (p_ev.key.mod.shift && selected_list.size() > 0 && last_clicked != "" && clicked != last_clicked) {
+		if (mb->get_shift() && selected_list.size() > 0 && last_clicked != "" && clicked != last_clicked) {
 
 			int clicked_id = -1;
 			int last_clicked_id = -1;
@@ -527,7 +529,7 @@ void ProjectManager::_panel_input(const InputEvent &p_ev, Node *p_hb) {
 				for (int i = 0; i < scroll_childs->get_child_count(); ++i) {
 					HBoxContainer *hb = scroll_childs->get_child(i)->cast_to<HBoxContainer>();
 					if (!hb) continue;
-					if (i != clicked_id && (i < min || i > max) && !p_ev.key.mod.control) {
+					if (i != clicked_id && (i < min || i > max) && !mb->get_control()) {
 						selected_list.erase(hb->get_meta("name"));
 					} else if (i >= min && i <= max) {
 						selected_list.insert(hb->get_meta("name"), hb->get_meta("main_scene"));
@@ -535,14 +537,14 @@ void ProjectManager::_panel_input(const InputEvent &p_ev, Node *p_hb) {
 				}
 			}
 
-		} else if (selected_list.has(clicked) && p_ev.key.mod.control) {
+		} else if (selected_list.has(clicked) && mb->get_control()) {
 
 			selected_list.erase(clicked);
 
 		} else {
 
 			last_clicked = clicked;
-			if (p_ev.key.mod.control || selected_list.size() == 0) {
+			if (mb->get_control() || selected_list.size() == 0) {
 				selected_list.insert(clicked, clicked_main_scene);
 			} else {
 				selected_list.clear();
@@ -552,23 +554,23 @@ void ProjectManager::_panel_input(const InputEvent &p_ev, Node *p_hb) {
 
 		_update_project_buttons();
 
-		if (p_ev.mouse_button.doubleclick)
+		if (mb->is_doubleclick())
 			_open_project(); //open if doubleclicked
 	}
 }
 
-void ProjectManager::_unhandled_input(const InputEvent &p_ev) {
+void ProjectManager::_unhandled_input(const Ref<InputEvent> &p_ev) {
 
-	if (p_ev.type == InputEvent::KEY) {
+	Ref<InputEventKey> k = p_ev;
 
-		const InputEventKey &k = p_ev.key;
+	if (k.is_valid()) {
 
-		if (!k.pressed)
+		if (!k->is_pressed())
 			return;
 
 		bool scancode_handled = true;
 
-		switch (k.scancode) {
+		switch (k->get_scancode()) {
 
 			case KEY_RETURN: {
 
@@ -606,7 +608,7 @@ void ProjectManager::_unhandled_input(const InputEvent &p_ev) {
 			} break;
 			case KEY_UP: {
 
-				if (k.mod.shift)
+				if (k->get_shift())
 					break;
 
 				if (selected_list.size()) {
@@ -645,7 +647,7 @@ void ProjectManager::_unhandled_input(const InputEvent &p_ev) {
 			}
 			case KEY_DOWN: {
 
-				if (k.mod.shift)
+				if (k->get_shift())
 					break;
 
 				bool found = selected_list.empty();
@@ -679,7 +681,7 @@ void ProjectManager::_unhandled_input(const InputEvent &p_ev) {
 
 			} break;
 			case KEY_F: {
-				if (k.mod.command)
+				if (k->get_command())
 					this->project_filter->search_box->grab_focus();
 				else
 					scancode_handled = false;

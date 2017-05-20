@@ -958,16 +958,12 @@ void OS_X11::request_attention() {
 	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
 }
 
-InputModifierState OS_X11::get_key_modifier_state(unsigned int p_x11_state) {
+void OS_X11::get_key_modifier_state(unsigned int p_x11_state, Ref<InputEventWithModifiers> state) {
 
-	InputModifierState state;
-
-	state.shift = (p_x11_state & ShiftMask);
-	state.control = (p_x11_state & ControlMask);
-	state.alt = (p_x11_state & Mod1Mask /*|| p_x11_state&Mod5Mask*/); //altgr should not count as alt
-	state.meta = (p_x11_state & Mod4Mask);
-
-	return state;
+	state->set_shift((p_x11_state & ShiftMask));
+	state->set_control((p_x11_state & ControlMask));
+	state->set_alt((p_x11_state & Mod1Mask /*|| p_x11_state&Mod5Mask*/)); //altgr should not count as alt
+	state->set_metakey((p_x11_state & Mod4Mask));
 }
 
 unsigned int OS_X11::get_mouse_button_state(unsigned int p_x11_state) {
@@ -1099,7 +1095,10 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 
 	//print_line("mod1: "+itos(xkeyevent->state&Mod1Mask)+" mod 5: "+itos(xkeyevent->state&Mod5Mask));
 
-	InputModifierState state = get_key_modifier_state(xkeyevent->state);
+	Ref<InputEventKey> k;
+	k.instance();
+
+	get_key_modifier_state(xkeyevent->state, k);
 
 	/* Phase 6, determine echo character */
 
@@ -1142,40 +1141,36 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 
 	/* Phase 7, send event to Window */
 
-	InputEvent event;
-	event.type = InputEvent::KEY;
-	event.device = 0;
-	event.key.mod = state;
-	event.key.pressed = keypress;
+	k->set_pressed(keypress);
 
 	if (keycode >= 'a' && keycode <= 'z')
 		keycode -= 'a' - 'A';
 
-	event.key.scancode = keycode;
-	event.key.unicode = unicode;
-	event.key.echo = p_echo;
+	k->set_scancode(keycode);
+	k->set_unicode(unicode);
+	k->set_echo(p_echo);
 
-	if (event.key.scancode == KEY_BACKTAB) {
+	if (k->get_scancode() == KEY_BACKTAB) {
 		//make it consistent across platforms.
-		event.key.scancode = KEY_TAB;
-		event.key.mod.shift = true;
+		k->set_scancode(KEY_TAB);
+		k->set_shift(true);
 	}
 
 	//don't set mod state if modifier keys are released by themselves
 	//else event.is_action() will not work correctly here
-	if (!event.key.pressed) {
-		if (event.key.scancode == KEY_SHIFT)
-			event.key.mod.shift = false;
-		else if (event.key.scancode == KEY_CONTROL)
-			event.key.mod.control = false;
-		else if (event.key.scancode == KEY_ALT)
-			event.key.mod.alt = false;
-		else if (event.key.scancode == KEY_META)
-			event.key.mod.meta = false;
+	if (!k->is_pressed()) {
+		if (k->get_scancode() == KEY_SHIFT)
+			k->set_shift(false);
+		else if (k->get_scancode() == KEY_CONTROL)
+			k->set_control(false);
+		else if (k->get_scancode() == KEY_ALT)
+			k->set_alt(false);
+		else if (k->get_scancode() == KEY_META)
+			k->set_metakey(false);
 	}
 
-	//printf("key: %x\n",event.key.scancode);
-	input->parse_input_event(event);
+	//printf("key: %x\n",k->get_scancode());
+	input->parse_input_event(k);
 }
 
 struct Property {
@@ -1332,22 +1327,20 @@ void OS_X11::process_xevents() {
 					event.xbutton.y = last_mouse_pos.y;
 				}
 
-				InputEvent mouse_event;
-				mouse_event.type = InputEvent::MOUSE_BUTTON;
-				mouse_event.device = 0;
-				mouse_event.mouse_button.mod = get_key_modifier_state(event.xbutton.state);
-				mouse_event.mouse_button.button_mask = get_mouse_button_state(event.xbutton.state);
-				mouse_event.mouse_button.x = event.xbutton.x;
-				mouse_event.mouse_button.y = event.xbutton.y;
-				mouse_event.mouse_button.global_x = event.xbutton.x;
-				mouse_event.mouse_button.global_y = event.xbutton.y;
-				mouse_event.mouse_button.button_index = event.xbutton.button;
-				if (mouse_event.mouse_button.button_index == 2)
-					mouse_event.mouse_button.button_index = 3;
-				else if (mouse_event.mouse_button.button_index == 3)
-					mouse_event.mouse_button.button_index = 2;
+				Ref<InputEventMouseButton> mb;
+				mb.instance();
 
-				mouse_event.mouse_button.pressed = (event.type == ButtonPress);
+				get_key_modifier_state(event.xbutton.state, mb);
+				mb->set_button_mask(get_mouse_button_state(event.xbutton.state));
+				mb->set_pos(Vector2(event.xbutton.x, event.xbutton.y));
+				mb->set_global_pos(mb->get_pos());
+				mb->set_button_index(event.xbutton.button);
+				if (mb->get_button_index() == 2)
+					mb->set_button_index(3);
+				else if (mb->get_button_index() == 3)
+					mb->set_button_index(2);
+
+				mb->set_pressed((event.type == ButtonPress));
 
 				if (event.type == ButtonPress && event.xbutton.button == 1) {
 
@@ -1357,7 +1350,7 @@ void OS_X11::process_xevents() {
 
 						last_click_ms = 0;
 						last_click_pos = Point2(-100, -100);
-						mouse_event.mouse_button.doubleclick = true;
+						mb->set_doubleclick(true);
 
 					} else {
 						last_click_ms += diff;
@@ -1365,7 +1358,7 @@ void OS_X11::process_xevents() {
 					}
 				}
 
-				input->parse_input_event(mouse_event);
+				input->parse_input_event(mb);
 
 			} break;
 			case MotionNotify: {
@@ -1443,22 +1436,16 @@ void OS_X11::process_xevents() {
 
 				Point2i rel = pos - last_mouse_pos;
 
-				InputEvent motion_event;
-				motion_event.type = InputEvent::MOUSE_MOTION;
-				motion_event.device = 0;
+				Ref<InputEventMouseMotion> mm;
+				mm.instance();
 
-				motion_event.mouse_motion.mod = get_key_modifier_state(event.xmotion.state);
-				motion_event.mouse_motion.button_mask = get_mouse_button_state(event.xmotion.state);
-				motion_event.mouse_motion.x = pos.x;
-				motion_event.mouse_motion.y = pos.y;
+				get_key_modifier_state(event.xmotion.state, mm);
+				mm->set_button_mask(get_mouse_button_state(event.xmotion.state));
+				mm->set_pos(pos);
+				mm->set_global_pos(pos);
 				input->set_mouse_position(pos);
-				motion_event.mouse_motion.global_x = pos.x;
-				motion_event.mouse_motion.global_y = pos.y;
-				motion_event.mouse_motion.speed_x = input->get_last_mouse_speed().x;
-				motion_event.mouse_motion.speed_y = input->get_last_mouse_speed().y;
-
-				motion_event.mouse_motion.relative_x = rel.x;
-				motion_event.mouse_motion.relative_y = rel.y;
+				mm->set_speed(input->get_last_mouse_speed());
+				mm->set_relative(rel);
 
 				last_mouse_pos = pos;
 
@@ -1467,7 +1454,7 @@ void OS_X11::process_xevents() {
 				// this is so that the relative motion doesn't get messed up
 				// after we regain focus.
 				if (window_has_focus || !mouse_mode_grab)
-					input->parse_input_event(motion_event);
+					input->parse_input_event(mm);
 
 			} break;
 			case KeyPress:

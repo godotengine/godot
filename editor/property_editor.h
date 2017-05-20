@@ -134,7 +134,7 @@ class CustomPropertyEditor : public Popup {
 	void _draw_easing();
 	void _menu_option(int p_which);
 
-	void _drag_easing(const InputEvent &p_ev);
+	void _drag_easing(const Ref<InputEvent> &p_ev);
 
 	void _node_path_selected(NodePath p_path);
 	void show_value_editors(int p_amount);

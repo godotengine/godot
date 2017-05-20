@@ -160,7 +160,7 @@ public:
 	bool save_text_editor_theme_as(String p_file);
 
 	void add_shortcut(const String &p_name, Ref<ShortCut> &p_shortcut);
-	bool is_shortcut(const String &p_name, const InputEvent &p_event) const;
+	bool is_shortcut(const String &p_name, const Ref<InputEvent> &p_event) const;
 	Ref<ShortCut> get_shortcut(const String &p_name) const;
 	void get_shortcut_list(List<String> *r_shortcuts);
 

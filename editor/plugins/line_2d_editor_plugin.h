@@ -43,7 +43,7 @@ class Line2DEditor : public HBoxContainer {
 	GDCLASS(Line2DEditor, HBoxContainer)
 
 public:
-	bool forward_gui_input(const InputEvent &p_event);
+	bool forward_gui_input(const Ref<InputEvent> &p_event);
 	void edit(Node *p_line2d);
 	Line2DEditor(EditorNode *p_editor);
 
@@ -95,7 +95,7 @@ class Line2DEditorPlugin : public EditorPlugin {
 public:
 	virtual bool forward_canvas_gui_input(
 			const Transform2D &p_canvas_xform,
-			const InputEvent &p_event) {
+			const Ref<InputEvent> &p_event) {
 		return line2d_editor->forward_gui_input(p_event);
 	}
 

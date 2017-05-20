@@ -71,9 +71,11 @@ void ColorRampEdit::_show_color_picker() {
 ColorRampEdit::~ColorRampEdit() {
 }
 
-void ColorRampEdit::_gui_input(const InputEvent &p_event) {
+void ColorRampEdit::_gui_input(const Ref<InputEvent> &p_event) {
 
-	if (p_event.type == InputEvent::KEY && p_event.key.pressed && p_event.key.scancode == KEY_DELETE && grabbed != -1) {
+	Ref<InputEventKey> k = p_event;
+
+	if (k.is_valid() && k->is_pressed() && k->get_scancode() == KEY_DELETE && grabbed != -1) {
 
 		points.remove(grabbed);
 		grabbed = -1;
@@ -83,16 +85,17 @@ void ColorRampEdit::_gui_input(const InputEvent &p_event) {
 		accept_event();
 	}
 
+	Ref<InputEventMouseButton> mb = p_event;
 	//Show color picker on double click.
-	if (p_event.type == InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index == 1 && p_event.mouse_button.doubleclick && p_event.mouse_button.pressed) {
-		grabbed = _get_point_from_pos(p_event.mouse_button.x);
+	if (mb.is_valid() && mb->get_button_index() == 1 && mb->is_doubleclick() && mb->is_pressed()) {
+		grabbed = _get_point_from_pos(mb->get_pos().x);
 		_show_color_picker();
 		accept_event();
 	}
 
 	//Delete point on right click
-	if (p_event.type == InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index == 2 && p_event.mouse_button.pressed) {
-		grabbed = _get_point_from_pos(p_event.mouse_button.x);
+	if (mb.is_valid() && mb->get_button_index() == 2 && mb->is_pressed()) {
+		grabbed = _get_point_from_pos(mb->get_pos().x);
 		if (grabbed != -1) {
 			points.remove(grabbed);
 			grabbed = -1;
@@ -104,9 +107,9 @@ void ColorRampEdit::_gui_input(const InputEvent &p_event) {
 	}
 
 	//Hold alt key to duplicate selected color
-	if (p_event.type == InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index == 1 && p_event.mouse_button.pressed && p_event.key.mod.alt) {
+	if (mb.is_valid() && mb->get_button_index() == 1 && mb->is_pressed() && mb->get_alt()) {
 
-		int x = p_event.mouse_button.x;
+		int x = mb->get_pos().x;
 		grabbed = _get_point_from_pos(x);
 
 		if (grabbed != -1) {
@@ -128,10 +131,10 @@ void ColorRampEdit::_gui_input(const InputEvent &p_event) {
 		}
 	}
 
-	if (p_event.type == InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index == 1 && p_event.mouse_button.pressed) {
+	if (mb.is_valid() && mb->get_button_index() == 1 && mb->is_pressed()) {
 
 		update();
-		int x = p_event.mouse_button.x;
+		int x = mb->get_pos().x;
 		int total_w = get_size().width - get_size().height - 3;
 
 		//Check if color selector was clicked.
@@ -196,7 +199,7 @@ void ColorRampEdit::_gui_input(const InputEvent &p_event) {
 		emit_signal("ramp_changed");
 	}
 
-	if (p_event.type == InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index == 1 && !p_event.mouse_button.pressed) {
+	if (mb.is_valid() && mb->get_button_index() == 1 && !mb->is_pressed()) {
 
 		if (grabbing) {
 			grabbing = false;
@@ -205,15 +208,18 @@ void ColorRampEdit::_gui_input(const InputEvent &p_event) {
 		update();
 	}
 
-	if (p_event.type == InputEvent::MOUSE_MOTION && grabbing) {
+	Ref<InputEventMouseMotion> mm = p_event;
+
+	if (mm.is_valid() && grabbing) {
 
 		int total_w = get_size().width - get_size().height - 3;
 
-		int x = p_event.mouse_motion.x;
+		int x = mm->get_pos().x;
+
 		float newofs = CLAMP(x / float(total_w), 0, 1);
 
 		//Snap to nearest point if holding shift
-		if (p_event.key.mod.shift) {
+		if (mm->get_shift()) {
 			float snap_treshhold = 0.03;
 			float smallest_ofs = snap_treshhold;
 			bool founded = false;

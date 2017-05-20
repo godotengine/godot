@@ -82,7 +82,7 @@ public:
 	virtual int get_mouse_button_mask() const = 0;
 
 	virtual void warp_mouse_pos(const Vector2 &p_to) = 0;
-	virtual Point2i warp_mouse_motion(const InputEventMouseMotion &p_motion, const Rect2 &p_rect) = 0;
+	virtual Point2i warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, const Rect2 &p_rect) = 0;
 
 	virtual Vector3 get_gravity() const = 0;
 	virtual Vector3 get_accelerometer() const = 0;
@@ -104,7 +104,7 @@ public:
 	virtual int get_joy_button_index_from_string(String p_button) = 0;
 	virtual int get_joy_axis_index_from_string(String p_axis) = 0;
 
-	virtual void parse_input_event(const InputEvent &p_event) = 0;
+	virtual void parse_input_event(const Ref<InputEvent> &p_event) = 0;
 
 	Input();
 };

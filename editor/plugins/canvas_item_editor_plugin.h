@@ -322,7 +322,7 @@ class CanvasItemEditor : public VBoxContainer {
 	void _clear_canvas_items();
 	void _visibility_changed(ObjectID p_canvas_item);
 	void _key_move(const Vector2 &p_dir, bool p_snap, KeyMoveMODE p_move_mode);
-	void _list_select(const InputEventMouseButton &b);
+	void _list_select(const Ref<InputEventMouseButton> &b);
 
 	DragType _find_drag_type(const Transform2D &p_xform, const Rect2 &p_local_rect, const Point2 &p_click, Vector2 &r_point);
 	void _prepare_drag(const Point2 &p_click_pos);
@@ -352,9 +352,9 @@ class CanvasItemEditor : public VBoxContainer {
 	int get_item_count();
 	void _keying_changed();
 
-	void _unhandled_key_input(const InputEvent &p_ev);
+	void _unhandled_key_input(const Ref<InputEvent> &p_ev);
 
-	void _viewport_gui_input(const InputEvent &p_event);
+	void _viewport_gui_input(const Ref<InputEvent> &p_event);
 	void _viewport_draw();
 
 	void _focus_selection(int p_op);

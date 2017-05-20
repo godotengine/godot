@@ -344,7 +344,7 @@ void OS_Android::process_joy_event(OS_Android::JoypadEvent p_event) {
 
 	switch (p_event.type) {
 		case JOY_EVENT_BUTTON:
-			input->joy_button(p_event.device, p_event.index, p_event.pressed);
+			input->joy_button(p_event.device, p_event.index, p_event->is_pressed());
 			break;
 		case JOY_EVENT_AXIS:
 			InputDefault::JoyAxis value;
@@ -360,7 +360,7 @@ void OS_Android::process_joy_event(OS_Android::JoypadEvent p_event) {
 	}
 }
 
-void OS_Android::process_event(InputEvent p_event) {
+void OS_Android::process_event(Ref<InputEvent> p_event) {
 
 	input->parse_input_event(p_event);
 }
@@ -374,25 +374,24 @@ void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos>
 
 			if (touch.size()) {
 				//end all if exist
-				InputEvent ev;
-				ev.type = InputEvent::MOUSE_BUTTON;
-				ev.mouse_button.button_index = BUTTON_LEFT;
-				ev.mouse_button.button_mask = BUTTON_MASK_LEFT;
-				ev.mouse_button.pressed = false;
-				ev.mouse_button.x = touch[0].pos.x;
-				ev.mouse_button.y = touch[0].pos.y;
-				ev.mouse_button.global_x = touch[0].pos.x;
-				ev.mouse_button.global_y = touch[0].pos.y;
-				input->parse_input_event(ev);
+				{
+					Ref<InputEventMouseButton> ev;
+					ev.instance();
+					ev->set_button_index(BUTTON_LEFT);
+					ev->set_button_mask(BUTTON_MASK_LEFT);
+					ev->set_pressed(false);
+					ev->set_pos(touch[0].pos);
+					ev->set_global_pos(touch[0].pos);
+					input->parse_input_event(ev);
+				}
 
 				for (int i = 0; i < touch.size(); i++) {
 
-					InputEvent ev;
-					ev.type = InputEvent::SCREEN_TOUCH;
-					ev.screen_touch.index = touch[i].id;
-					ev.screen_touch.pressed = false;
-					ev.screen_touch.x = touch[i].pos.x;
-					ev.screen_touch.y = touch[i].pos.y;
+					Ref<InputEventScreenTouch> ev;
+					ev.instance();
+					ev->set_index(touch[i].id);
+					ev->set_pressed(false);
+					ev->set_pos(touch[i].pos);
 					input->parse_input_event(ev);
 				}
 			}
@@ -405,15 +404,14 @@ void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos>
 
 			{
 				//send mouse
-				InputEvent ev;
-				ev.type = InputEvent::MOUSE_BUTTON;
-				ev.mouse_button.button_index = BUTTON_LEFT;
-				ev.mouse_button.button_mask = BUTTON_MASK_LEFT;
-				ev.mouse_button.pressed = true;
-				ev.mouse_button.x = touch[0].pos.x;
-				ev.mouse_button.y = touch[0].pos.y;
-				ev.mouse_button.global_x = touch[0].pos.x;
-				ev.mouse_button.global_y = touch[0].pos.y;
+				Ref<InputEventMouseButton> ev;
+				ev.instance();
+				ev.type = Ref<InputEvent>::MOUSE_BUTTON;
+				ev->set_button_index(BUTTON_LEFT);
+				ev->set_button_mask(BUTTON_MASK_LEFT);
+				ev->set_pressed(true);
+				ev->set_pos(touch[0].pos);
+				ev->set_global_pos(touch[0].pos);
 				input->set_mouse_position(Point2(touch[0].pos.x, touch[0].pos.y));
 				last_mouse = touch[0].pos;
 				input->parse_input_event(ev);
@@ -422,12 +420,11 @@ void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos>
 			//send touch
 			for (int i = 0; i < touch.size(); i++) {
 
-				InputEvent ev;
-				ev.type = InputEvent::SCREEN_TOUCH;
-				ev.screen_touch.index = touch[i].id;
-				ev.screen_touch.pressed = true;
-				ev.screen_touch.x = touch[i].pos.x;
-				ev.screen_touch.y = touch[i].pos.y;
+				Ref<InputEventScreenTouch> ev;
+				ev.instance();
+				ev->set_index(touch[i].id);
+				ev->set_pressed(true);
+				ev->set_pos(touch[i].pos.x);
 				input->parse_input_event(ev);
 			}
 
@@ -436,16 +433,13 @@ void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos>
 
 			if (p_points.size()) {
 				//send mouse, should look for point 0?
-				InputEvent ev;
-				ev.type = InputEvent::MOUSE_MOTION;
-				ev.mouse_motion.button_mask = BUTTON_MASK_LEFT;
-				ev.mouse_motion.x = p_points[0].pos.x;
-				ev.mouse_motion.y = p_points[0].pos.y;
+				Ref<InputEventMouseMotion> ev;
+				ev.instance();
+				ev->set_button_mask(BUTTON_MASK_LEFT);
+				ev->set_pos(p_points[0].pos.x);
 				input->set_mouse_position(Point2(ev.mouse_motion.x, ev.mouse_motion.y));
-				ev.mouse_motion.speed_x = input->get_last_mouse_speed().x;
-				ev.mouse_motion.speed_y = input->get_last_mouse_speed().y;
-				ev.mouse_motion.relative_x = p_points[0].pos.x - last_mouse.x;
-				ev.mouse_motion.relative_y = p_points[0].pos.y - last_mouse.y;
+				ev->set_speed(input->get_last_mouse_speed());
+				ev->set_relative(p_points[0].pos - last_mouse);
 				last_mouse = p_points[0].pos;
 				input->parse_input_event(ev);
 			}
@@ -468,13 +462,11 @@ void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos>
 				if (touch[i].pos == p_points[idx].pos)
 					continue; //no move unncesearily
 
-				InputEvent ev;
-				ev.type = InputEvent::SCREEN_DRAG;
-				ev.screen_drag.index = touch[i].id;
-				ev.screen_drag.x = p_points[idx].pos.x;
-				ev.screen_drag.y = p_points[idx].pos.y;
-				ev.screen_drag.relative_x = p_points[idx].pos.x - touch[i].pos.x;
-				ev.screen_drag.relative_y = p_points[idx].pos.y - touch[i].pos.y;
+				Ref<InputEventScreenDrag> ev;
+				ev.instance();
+				ev->set_index(touch[i].id);
+				ev->set_pos(p_points[idx].pos.x);
+				ev->set_relative(p_points[idx].pos - touch[i].pos);
 				input->parse_input_event(ev);
 				touch[i].pos = p_points[idx].pos;
 			}
@@ -484,26 +476,23 @@ void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos>
 
 			if (touch.size()) {
 				//end all if exist
-				InputEvent ev;
-				ev.type = InputEvent::MOUSE_BUTTON;
-				ev.mouse_button.button_index = BUTTON_LEFT;
-				ev.mouse_button.button_mask = BUTTON_MASK_LEFT;
-				ev.mouse_button.pressed = false;
-				ev.mouse_button.x = touch[0].pos.x;
-				ev.mouse_button.y = touch[0].pos.y;
-				ev.mouse_button.global_x = touch[0].pos.x;
-				ev.mouse_button.global_y = touch[0].pos.y;
+				Ref<InputEventMouseButton> ev;
+				ev.instance();
+				ev->set_button_index(BUTTON_LEFT);
+				ev->set_button_mask(BUTTON_MASK_LEFT);
+				ev->set_pressed(false);
+				ev->set_pos(touch[0].pos.x);
+				ev->set_global_pos(touch[0].pos.x);
 				input->set_mouse_position(Point2(touch[0].pos.x, touch[0].pos.y));
 				input->parse_input_event(ev);
 
 				for (int i = 0; i < touch.size(); i++) {
 
-					InputEvent ev;
-					ev.type = InputEvent::SCREEN_TOUCH;
-					ev.screen_touch.index = touch[i].id;
-					ev.screen_touch.pressed = false;
-					ev.screen_touch.x = touch[i].pos.x;
-					ev.screen_touch.y = touch[i].pos.y;
+					Ref<InputEventScreenTouch> ev;
+					ev.instance();
+					ev->set_index(touch[i].id);
+					ev->set_pressed(false);
+					ev->set_pos(touch[i].pos);
 					input->parse_input_event(ev);
 				}
 				touch.clear();
@@ -517,12 +506,12 @@ void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos>
 			TouchPos tp = p_points[p_pointer];
 			touch.push_back(tp);
 
-			InputEvent ev;
-			ev.type = InputEvent::SCREEN_TOUCH;
-			ev.screen_touch.index = tp.id;
-			ev.screen_touch.pressed = true;
-			ev.screen_touch.x = tp.pos.x;
-			ev.screen_touch.y = tp.pos.y;
+			Ref<InputEventScreenTouch> ev;
+			ev.instance();
+
+			ev->set_index(tp.id);
+			ev->set_pressed(true);
+			ev->set_pos(tp.pos);
 			input->parse_input_event(ev);
 
 		} break;
@@ -531,12 +520,11 @@ void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos>
 			for (int i = 0; i < touch.size(); i++) {
 				if (touch[i].id == p_pointer) {
 
-					InputEvent ev;
-					ev.type = InputEvent::SCREEN_TOUCH;
-					ev.screen_touch.index = touch[i].id;
-					ev.screen_touch.pressed = false;
-					ev.screen_touch.x = touch[i].pos.x;
-					ev.screen_touch.y = touch[i].pos.y;
+					Ref<InputEventScreenTouch> ev;
+					ev.instance();
+					ev->set_index(touch[i].id);
+					ev->set_pressed(false);
+					ev->set_pos(touch[i].pos);
 					input->parse_input_event(ev);
 					touch.remove(i);
 					i--;

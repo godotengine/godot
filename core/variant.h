@@ -42,7 +42,6 @@
 #include "io/ip_address.h"
 #include "math_2d.h"
 #include "matrix3.h"
-#include "os/input_event.h"
 #include "os/power.h"
 #include "path_db.h"
 #include "plane.h"
@@ -100,7 +99,6 @@ public:
 		NODE_PATH, // 15
 		_RID,
 		OBJECT,
-		INPUT_EVENT,
 		DICTIONARY,
 		ARRAY, // 20
 
@@ -143,7 +141,6 @@ private:
 		Basis *_basis;
 		Transform *_transform;
 		RefPtr *_resource;
-		InputEvent *_input_event;
 		void *_ptr; //generic pointer
 		uint8_t _mem[sizeof(ObjData) > (sizeof(real_t) * 4) ? sizeof(ObjData) : (sizeof(real_t) * 4)];
 	} _data;
@@ -207,7 +204,7 @@ public:
 	operator NodePath() const;
 	operator RefPtr() const;
 	operator RID() const;
-	operator InputEvent() const;
+
 	operator Object *() const;
 	operator Node *() const;
 	operator Control *() const;
@@ -276,7 +273,6 @@ public:
 	Variant(const RefPtr &p_resource);
 	Variant(const RID &p_rid);
 	Variant(const Object *p_object);
-	Variant(const InputEvent &p_input_event);
 	Variant(const Dictionary &p_dictionary);
 
 	Variant(const Array &p_array);

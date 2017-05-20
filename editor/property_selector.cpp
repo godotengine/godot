@@ -37,17 +37,19 @@ void PropertySelector::_text_changed(const String &p_newtext) {
 	_update_search();
 }
 
-void PropertySelector::_sbox_input(const InputEvent &p_ie) {
+void PropertySelector::_sbox_input(const Ref<InputEvent> &p_ie) {
 
-	if (p_ie.type == InputEvent::KEY) {
+	Ref<InputEventKey> k = p_ie;
 
-		switch (p_ie.key.scancode) {
+	if (k.is_valid()) {
+
+		switch (k->get_scancode()) {
 			case KEY_UP:
 			case KEY_DOWN:
 			case KEY_PAGEUP:
 			case KEY_PAGEDOWN: {
 
-				search_options->call("_gui_input", p_ie);
+				search_options->call("_gui_input", k);
 				search_box->accept_event();
 
 				TreeItem *root = search_options->get_root();
@@ -89,14 +91,8 @@ void PropertySelector::_update_search() {
 			instance->get_property_list(&props, true);
 		} else if (type != Variant::NIL) {
 			Variant v;
-			if (type == Variant::INPUT_EVENT) {
-				InputEvent ie;
-				ie.type = event_type;
-				v = ie;
-			} else {
-				Variant::CallError ce;
-				v = Variant::construct(type, NULL, 0, ce);
-			}
+			Variant::CallError ce;
+			v = Variant::construct(type, NULL, 0, ce);
 
 			v.get_property_list(&props);
 		} else {
@@ -139,7 +135,6 @@ void PropertySelector::_update_search() {
 			Control::get_icon("MiniPath", "EditorIcons"),
 			Control::get_icon("MiniRid", "EditorIcons"),
 			Control::get_icon("MiniObject", "EditorIcons"),
-			Control::get_icon("MiniInput", "EditorIcons"),
 			Control::get_icon("MiniDictionary", "EditorIcons"),
 			Control::get_icon("MiniArray", "EditorIcons"),
 			Control::get_icon("MiniRawArray", "EditorIcons"),
@@ -325,22 +320,7 @@ void PropertySelector::_item_selected() {
 	String name = item->get_metadata(0);
 
 	String class_type;
-	if (properties && type == Variant::INPUT_EVENT) {
-
-		switch (event_type) {
-			case InputEvent::NONE: class_type = "InputEvent"; break;
-			case InputEvent::KEY: class_type = "InputEventKey"; break;
-			case InputEvent::MOUSE_MOTION: class_type = "InputEventMouseMotion"; break;
-			case InputEvent::MOUSE_BUTTON: class_type = "InputEventMouseButton"; break;
-			case InputEvent::JOYPAD_MOTION: class_type = "InputEventJoypadMotion"; break;
-			case InputEvent::JOYPAD_BUTTON: class_type = "InputEventJoypadButton"; break;
-			case InputEvent::SCREEN_TOUCH: class_type = "InputEventScreenTouch"; break;
-			case InputEvent::SCREEN_DRAG: class_type = "InputEventScreenDrag"; break;
-			case InputEvent::ACTION: class_type = "InputEventAction"; break;
-			default: {}
-		}
-
-	} else if (type) {
+	if (type) {
 		class_type = Variant::get_type_name(type);
 
 	} else {
@@ -514,13 +494,12 @@ void PropertySelector::select_property_from_script(const Ref<Script> &p_script, 
 	search_box->grab_focus();
 	_update_search();
 }
-void PropertySelector::select_property_from_basic_type(Variant::Type p_type, InputEvent::Type p_event_type, const String &p_current) {
+void PropertySelector::select_property_from_basic_type(Variant::Type p_type, const String &p_current) {
 
 	ERR_FAIL_COND(p_type == Variant::NIL);
 	base_type = "";
 	selected = p_current;
 	type = p_type;
-	event_type = p_event_type;
 	script = 0;
 	properties = true;
 	instance = NULL;

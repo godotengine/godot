@@ -69,9 +69,10 @@ void EditorPath::_add_children_to_popup(Object *p_obj, int p_depth) {
 	}
 }
 
-void EditorPath::_gui_input(const InputEvent &p_event) {
+void EditorPath::_gui_input(const Ref<InputEvent> &p_event) {
 
-	if (p_event.type == InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index == BUTTON_LEFT && p_event.mouse_button.pressed) {
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && mb->get_button_index() == BUTTON_LEFT && mb->is_pressed()) {
 
 		Object *obj = ObjectDB::get_instance(history->get_path_object(history->get_path_size() - 1));
 		if (!obj)

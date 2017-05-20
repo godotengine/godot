@@ -734,6 +734,7 @@ VisualScriptSwitch::VisualScriptSwitch() {
 ////////////////EVENT ACTION FILTER///////////
 //////////////////////////////////////////
 
+#if 0
 int VisualScriptInputFilter::get_output_sequence_port_count() const {
 
 	return filters.size();
@@ -758,86 +759,86 @@ String VisualScriptInputFilter::get_output_sequence_port_text(int p_port) const 
 	String text;
 
 	switch (filters[p_port].type) {
-		case InputEvent::NONE: {
+		case Ref<InputEvent>::NONE: {
 			text = "None";
 		} break;
-		case InputEvent::KEY: {
+		case Ref<InputEvent>::KEY: {
 
 			InputEventKey k = filters[p_port].key;
 
-			if (k.scancode == 0 && k.unicode == 0) {
+			if (k->get_scancode() == 0 && k.unicode == 0) {
 				text = "No Key";
 			} else {
-				if (k.scancode != 0) {
-					text = "KeyCode: " + keycode_get_string(k.scancode);
+				if (k->get_scancode() != 0) {
+					text = "KeyCode: " + keycode_get_string(k->get_scancode());
 				} else if (k.unicode != 0) {
 					text = "Uniode: " + String::chr(k.unicode);
 				}
 
-				if (k.pressed)
+				if (k->is_pressed())
 					text += ", Pressed";
 				else
 					text += ", Released";
 
 				if (k.echo)
 					text += ", Echo";
-				if (k.mod.alt)
+				if (k->get_alt())
 					text = "Alt+" + text;
-				if (k.mod.shift)
+				if (k->get_shift())
 					text = "Shift+" + text;
-				if (k.mod.control)
+				if (k->get_control())
 					text = "Ctrl+" + text;
-				if (k.mod.meta)
+				if (k->get_metakey())
 					text = "Meta+" + text;
 			}
 
 		} break;
-		case InputEvent::MOUSE_MOTION: {
+		case Ref<InputEvent>::MOUSE_MOTION: {
 			InputEventMouseMotion mm = filters[p_port].mouse_motion;
 			text = "Mouse Motion";
 
 			String b = "Left,Right,Middle,WheelUp,WheelDown,WheelLeft,WheelRight";
 
 			for (int i = 0; i < 7; i++) {
-				if (mm.button_mask & (1 << i)) {
+				if (mm->get_button_mask() & (1 << i)) {
 					text = b.get_slice(",", i) + "+" + text;
 				}
 			}
-			if (mm.mod.alt)
+			if (mm->get_alt())
 				text = "Alt+" + text;
-			if (mm.mod.shift)
+			if (mm->get_shift())
 				text = "Shift+" + text;
-			if (mm.mod.control)
+			if (mm->get_control())
 				text = "Ctrl+" + text;
-			if (mm.mod.meta)
+			if (mm->get_metakey())
 				text = "Meta+" + text;
 		} break;
-		case InputEvent::MOUSE_BUTTON: {
+		case Ref<InputEvent>::MOUSE_BUTTON: {
 
 			InputEventMouseButton mb = filters[p_port].mouse_button;
 
 			String b = "Any,Left,Right,Middle,WheelUp,WheelDown,WheelLeft,WheelRight";
 
-			text = b.get_slice(",", mb.button_index) + " Mouse Button";
+			text = b.get_slice(",", mb->get_button_index()) + " Mouse Button";
 
-			if (mb.pressed)
+			if (mb->is_pressed())
 				text += ", Pressed";
 			else
 				text += ", Released";
 
 			if (mb.doubleclick)
 				text += ", DblClick";
-			if (mb.mod.alt)
+			if (mb->get_alt())
 				text = "Alt+" + text;
-			if (mb.mod.shift)
+			if (mb->get_shift())
 				text = "Shift+" + text;
-			if (mb.mod.control)
+			if (mb->get_control())
 				text = "Ctrl+" + text;
-			if (mb.mod.meta)
+			if (mb->get_metakey())
 				text = "Meta+" + text;
 
 		} break;
-		case InputEvent::JOYPAD_MOTION: {
+		case Ref<InputEvent>::JOYPAD_MOTION: {
 
 			InputEventJoypadMotion jm = filters[p_port].joy_motion;
 
@@ -848,29 +849,29 @@ String VisualScriptInputFilter::get_output_sequence_port_text(int p_port) const 
 				text += " < " + rtos(-jm.axis_value);
 
 		} break;
-		case InputEvent::JOYPAD_BUTTON: {
+		case Ref<InputEvent>::JOYPAD_BUTTON: {
 			InputEventJoypadButton jb = filters[p_port].joy_button;
 
-			text = "JoyButton " + itos(jb.button_index);
-			if (jb.pressed)
+			text = "JoyButton " + itos(jb->get_button_index());
+			if (jb->is_pressed())
 				text += ", Pressed";
 			else
 				text += ", Released";
 		} break;
-		case InputEvent::SCREEN_TOUCH: {
+		case Ref<InputEvent>::SCREEN_TOUCH: {
 			InputEventScreenTouch sd = filters[p_port].screen_touch;
 
 			text = "Touch Finger " + itos(sd.index);
-			if (sd.pressed)
+			if (sd->is_pressed())
 				text += ", Pressed";
 			else
 				text += ", Released";
 		} break;
-		case InputEvent::SCREEN_DRAG: {
+		case Ref<InputEvent>::SCREEN_DRAG: {
 			InputEventScreenDrag sd = filters[p_port].screen_drag;
 			text = "Drag Finger " + itos(sd.index);
 		} break;
-		case InputEvent::ACTION: {
+		case Ref<InputEvent>::ACTION: {
 
 			List<PropertyInfo> pinfo;
 			GlobalConfig::get_singleton()->get_property_list(&pinfo);
@@ -890,7 +891,7 @@ String VisualScriptInputFilter::get_output_sequence_port_text(int p_port) const 
 				index++;
 			}
 
-			if (filters[p_port].action.pressed)
+			if (filters[p_port].action->is_pressed())
 				text += ", Pressed";
 			else
 				text += ", Released";
@@ -939,20 +940,20 @@ bool VisualScriptInputFilter::_set(const StringName &p_name, const Variant &p_va
 		String what = String(p_name).get_slice("/", 1);
 
 		if (what == "type") {
-			filters[idx] = InputEvent();
-			filters[idx].type = InputEvent::Type(int(p_value));
-			if (filters[idx].type == InputEvent::JOYPAD_MOTION) {
+			filters[idx] = Ref<InputEvent>();
+			filters[idx].type = Ref<InputEvent>::Type(int(p_value));
+			if (filters[idx].type == Ref<InputEvent>::JOYPAD_MOTION) {
 				filters[idx].joy_motion.axis_value = 0.5; //for treshold
-			} else if (filters[idx].type == InputEvent::KEY) {
-				filters[idx].key.pressed = true; //put these as true to make it more user friendly
-			} else if (filters[idx].type == InputEvent::MOUSE_BUTTON) {
-				filters[idx].mouse_button.pressed = true;
-			} else if (filters[idx].type == InputEvent::JOYPAD_BUTTON) {
-				filters[idx].joy_button.pressed = true;
-			} else if (filters[idx].type == InputEvent::SCREEN_TOUCH) {
-				filters[idx].screen_touch.pressed = true;
-			} else if (filters[idx].type == InputEvent::ACTION) {
-				filters[idx].action.pressed = true;
+			} else if (filters[idx].type == Ref<InputEvent>::KEY) {
+				filters[idx]->is_pressed() = true; //put these as true to make it more user friendly
+			} else if (filters[idx].type == Ref<InputEvent>::MOUSE_BUTTON) {
+				filters[idx]->is_pressed() = true;
+			} else if (filters[idx].type == Ref<InputEvent>::JOYPAD_BUTTON) {
+				filters[idx].joy_button->is_pressed() = true;
+			} else if (filters[idx].type == Ref<InputEvent>::SCREEN_TOUCH) {
+				filters[idx].screen_touch->is_pressed() = true;
+			} else if (filters[idx].type == Ref<InputEvent>::ACTION) {
+				filters[idx].action->is_pressed() = true;
 			}
 			_change_notify();
 			ports_changed_notify();
@@ -967,14 +968,14 @@ bool VisualScriptInputFilter::_set(const StringName &p_name, const Variant &p_va
 
 		switch (filters[idx].type) {
 
-			case InputEvent::KEY: {
+			case Ref<InputEvent>::KEY: {
 
 				if (what == "scancode") {
 					String sc = p_value;
 					if (sc == String()) {
-						filters[idx].key.scancode = 0;
+						filters[idx]->get_scancode() = 0;
 					} else {
-						filters[idx].key.scancode = find_keycode(p_value);
+						filters[idx]->get_scancode() = find_keycode(p_value);
 					}
 
 				} else if (what == "unicode") {
@@ -989,22 +990,22 @@ bool VisualScriptInputFilter::_set(const StringName &p_name, const Variant &p_va
 
 				} else if (what == "pressed") {
 
-					filters[idx].key.pressed = p_value;
+					filters[idx]->is_pressed() = p_value;
 				} else if (what == "echo") {
 
-					filters[idx].key.echo = p_value;
+					filters[idx]->is_echo() = p_value;
 
 				} else if (what == "mod_alt") {
-					filters[idx].key.mod.alt = p_value;
+					filters[idx]->get_alt() = p_value;
 
 				} else if (what == "mod_shift") {
-					filters[idx].key.mod.shift = p_value;
+					filters[idx]->get_shift() = p_value;
 
 				} else if (what == "mod_ctrl") {
-					filters[idx].key.mod.control = p_value;
+					filters[idx]->get_control() = p_value;
 
 				} else if (what == "mod_meta") {
-					filters[idx].key.mod.meta = p_value;
+					filters[idx]->get_metakey() = p_value;
 				} else {
 					return false;
 				}
@@ -1012,22 +1013,22 @@ bool VisualScriptInputFilter::_set(const StringName &p_name, const Variant &p_va
 
 				return true;
 			} break;
-			case InputEvent::MOUSE_MOTION: {
+			case Ref<InputEvent>::MOUSE_MOTION: {
 
 				if (what == "button_mask") {
-					filters[idx].mouse_motion.button_mask = p_value;
+					filters[idx]->get_button_mask() = p_value;
 
 				} else if (what == "mod_alt") {
-					filters[idx].mouse_motion.mod.alt = p_value;
+					filters[idx].mouse_motion->get_alt() = p_value;
 
 				} else if (what == "mod_shift") {
-					filters[idx].mouse_motion.mod.shift = p_value;
+					filters[idx].mouse_motion->get_shift() = p_value;
 
 				} else if (what == "mod_ctrl") {
-					filters[idx].mouse_motion.mod.control = p_value;
+					filters[idx].mouse_motion->get_control() = p_value;
 
 				} else if (what == "mod_meta") {
-					filters[idx].mouse_motion.mod.meta = p_value;
+					filters[idx].mouse_motion->get_metakey() = p_value;
 				} else {
 					return false;
 				}
@@ -1036,26 +1037,26 @@ bool VisualScriptInputFilter::_set(const StringName &p_name, const Variant &p_va
 				return true;
 
 			} break;
-			case InputEvent::MOUSE_BUTTON: {
+			case Ref<InputEvent>::MOUSE_BUTTON: {
 
 				if (what == "button_index") {
-					filters[idx].mouse_button.button_index = p_value;
+					filters[idx]->get_button_index() = p_value;
 				} else if (what == "pressed") {
-					filters[idx].mouse_button.pressed = p_value;
+					filters[idx]->is_pressed() = p_value;
 				} else if (what == "doubleclicked") {
 					filters[idx].mouse_button.doubleclick = p_value;
 
 				} else if (what == "mod_alt") {
-					filters[idx].mouse_button.mod.alt = p_value;
+					filters[idx].mouse_button->get_alt() = p_value;
 
 				} else if (what == "mod_shift") {
-					filters[idx].mouse_button.mod.shift = p_value;
+					filters[idx].mouse_button->get_shift() = p_value;
 
 				} else if (what == "mod_ctrl") {
-					filters[idx].mouse_button.mod.control = p_value;
+					filters[idx].mouse_button->get_control() = p_value;
 
 				} else if (what == "mod_meta") {
-					filters[idx].mouse_button.mod.meta = p_value;
+					filters[idx].mouse_button->get_metakey() = p_value;
 				} else {
 					return false;
 				}
@@ -1063,7 +1064,7 @@ bool VisualScriptInputFilter::_set(const StringName &p_name, const Variant &p_va
 				return true;
 
 			} break;
-			case InputEvent::JOYPAD_MOTION: {
+			case Ref<InputEvent>::JOYPAD_MOTION: {
 
 				if (what == "axis") {
 					filters[idx].joy_motion.axis = int(p_value) << 1 | filters[idx].joy_motion.axis;
@@ -1078,12 +1079,12 @@ bool VisualScriptInputFilter::_set(const StringName &p_name, const Variant &p_va
 				return true;
 
 			} break;
-			case InputEvent::JOYPAD_BUTTON: {
+			case Ref<InputEvent>::JOYPAD_BUTTON: {
 
 				if (what == "button_index") {
-					filters[idx].joy_button.button_index = p_value;
+					filters[idx].joy_button->get_button_index() = p_value;
 				} else if (what == "pressed") {
-					filters[idx].joy_button.pressed = p_value;
+					filters[idx].joy_button->is_pressed() = p_value;
 				} else {
 					return false;
 				}
@@ -1091,19 +1092,19 @@ bool VisualScriptInputFilter::_set(const StringName &p_name, const Variant &p_va
 				return true;
 
 			} break;
-			case InputEvent::SCREEN_TOUCH: {
+			case Ref<InputEvent>::SCREEN_TOUCH: {
 
 				if (what == "finger_index") {
 					filters[idx].screen_touch.index = p_value;
 				} else if (what == "pressed") {
-					filters[idx].screen_touch.pressed = p_value;
+					filters[idx].screen_touch->is_pressed() = p_value;
 				} else {
 					return false;
 				}
 				ports_changed_notify();
 				return true;
 			} break;
-			case InputEvent::SCREEN_DRAG: {
+			case Ref<InputEvent>::SCREEN_DRAG: {
 				if (what == "finger_index") {
 					filters[idx].screen_drag.index = p_value;
 				} else {
@@ -1112,7 +1113,7 @@ bool VisualScriptInputFilter::_set(const StringName &p_name, const Variant &p_va
 				ports_changed_notify();
 				return true;
 			} break;
-			case InputEvent::ACTION: {
+			case Ref<InputEvent>::ACTION: {
 
 				if (what == "action_name") {
 
@@ -1144,7 +1145,7 @@ bool VisualScriptInputFilter::_set(const StringName &p_name, const Variant &p_va
 
 				} else if (what == "pressed") {
 
-					filters[idx].action.pressed = p_value;
+					filters[idx].action->is_pressed() = p_value;
 					ports_changed_notify();
 					return true;
 				}
@@ -1181,14 +1182,14 @@ bool VisualScriptInputFilter::_get(const StringName &p_name, Variant &r_ret) con
 
 		switch (filters[idx].type) {
 
-			case InputEvent::KEY: {
+			case Ref<InputEvent>::KEY: {
 
 				if (what == "scancode") {
-					if (filters[idx].key.scancode == 0)
+					if (filters[idx]->get_scancode() == 0)
 						r_ret = String();
 					else {
 
-						r_ret = keycode_get_string(filters[idx].key.scancode);
+						r_ret = keycode_get_string(filters[idx]->get_scancode());
 					}
 
 				} else if (what == "unicode") {
@@ -1202,44 +1203,44 @@ bool VisualScriptInputFilter::_get(const StringName &p_name, Variant &r_ret) con
 
 				} else if (what == "pressed") {
 
-					r_ret = filters[idx].key.pressed;
+					r_ret = filters[idx]->is_pressed();
 				} else if (what == "echo") {
 
-					r_ret = filters[idx].key.echo;
+					r_ret = filters[idx]->is_echo();
 
 				} else if (what == "mod_alt") {
-					r_ret = filters[idx].key.mod.alt;
+					r_ret = filters[idx]->get_alt();
 
 				} else if (what == "mod_shift") {
-					r_ret = filters[idx].key.mod.shift;
+					r_ret = filters[idx]->get_shift();
 
 				} else if (what == "mod_ctrl") {
-					r_ret = filters[idx].key.mod.control;
+					r_ret = filters[idx]->get_control();
 
 				} else if (what == "mod_meta") {
-					r_ret = filters[idx].key.mod.meta;
+					r_ret = filters[idx]->get_metakey();
 				} else {
 					return false;
 				}
 
 				return true;
 			} break;
-			case InputEvent::MOUSE_MOTION: {
+			case Ref<InputEvent>::MOUSE_MOTION: {
 
 				if (what == "button_mask") {
-					r_ret = filters[idx].mouse_motion.button_mask;
+					r_ret = filters[idx]->get_button_mask();
 
 				} else if (what == "mod_alt") {
-					r_ret = filters[idx].mouse_motion.mod.alt;
+					r_ret = filters[idx].mouse_motion->get_alt();
 
 				} else if (what == "mod_shift") {
-					r_ret = filters[idx].mouse_motion.mod.shift;
+					r_ret = filters[idx].mouse_motion->get_shift();
 
 				} else if (what == "mod_ctrl") {
-					r_ret = filters[idx].mouse_motion.mod.control;
+					r_ret = filters[idx].mouse_motion->get_control();
 
 				} else if (what == "mod_meta") {
-					r_ret = filters[idx].mouse_motion.mod.meta;
+					r_ret = filters[idx].mouse_motion->get_metakey();
 				} else {
 					return false;
 				}
@@ -1247,33 +1248,33 @@ bool VisualScriptInputFilter::_get(const StringName &p_name, Variant &r_ret) con
 				return true;
 
 			} break;
-			case InputEvent::MOUSE_BUTTON: {
+			case Ref<InputEvent>::MOUSE_BUTTON: {
 
 				if (what == "button_index") {
-					r_ret = filters[idx].mouse_button.button_index;
+					r_ret = filters[idx]->get_button_index();
 				} else if (what == "pressed") {
-					r_ret = filters[idx].mouse_button.pressed;
+					r_ret = filters[idx]->is_pressed();
 				} else if (what == "doubleclicked") {
 					r_ret = filters[idx].mouse_button.doubleclick;
 
 				} else if (what == "mod_alt") {
-					r_ret = filters[idx].mouse_button.mod.alt;
+					r_ret = filters[idx].mouse_button->get_alt();
 
 				} else if (what == "mod_shift") {
-					r_ret = filters[idx].mouse_button.mod.shift;
+					r_ret = filters[idx].mouse_button->get_shift();
 
 				} else if (what == "mod_ctrl") {
-					r_ret = filters[idx].mouse_button.mod.control;
+					r_ret = filters[idx].mouse_button->get_control();
 
 				} else if (what == "mod_meta") {
-					r_ret = filters[idx].mouse_button.mod.meta;
+					r_ret = filters[idx].mouse_button->get_metakey();
 				} else {
 					return false;
 				}
 				return true;
 
 			} break;
-			case InputEvent::JOYPAD_MOTION: {
+			case Ref<InputEvent>::JOYPAD_MOTION: {
 
 				if (what == "axis_index") {
 					r_ret = filters[idx].joy_motion.axis >> 1;
@@ -1287,30 +1288,30 @@ bool VisualScriptInputFilter::_get(const StringName &p_name, Variant &r_ret) con
 				return true;
 
 			} break;
-			case InputEvent::JOYPAD_BUTTON: {
+			case Ref<InputEvent>::JOYPAD_BUTTON: {
 
 				if (what == "button_index") {
-					r_ret = filters[idx].joy_button.button_index;
+					r_ret = filters[idx].joy_button->get_button_index();
 				} else if (what == "pressed") {
-					r_ret = filters[idx].joy_button.pressed;
+					r_ret = filters[idx].joy_button->is_pressed();
 				} else {
 					return false;
 				}
 				return true;
 
 			} break;
-			case InputEvent::SCREEN_TOUCH: {
+			case Ref<InputEvent>::SCREEN_TOUCH: {
 
 				if (what == "finger_index") {
 					r_ret = filters[idx].screen_touch.index;
 				} else if (what == "pressed") {
-					r_ret = filters[idx].screen_touch.pressed;
+					r_ret = filters[idx].screen_touch->is_pressed();
 				} else {
 					return false;
 				}
 				return true;
 			} break;
-			case InputEvent::SCREEN_DRAG: {
+			case Ref<InputEvent>::SCREEN_DRAG: {
 				if (what == "finger_index") {
 					r_ret = filters[idx].screen_drag.index;
 				} else {
@@ -1318,7 +1319,7 @@ bool VisualScriptInputFilter::_get(const StringName &p_name, Variant &r_ret) con
 				}
 				return true;
 			} break;
-			case InputEvent::ACTION: {
+			case Ref<InputEvent>::ACTION: {
 
 				if (what == "action_name") {
 
@@ -1344,7 +1345,7 @@ bool VisualScriptInputFilter::_get(const StringName &p_name, Variant &r_ret) con
 
 				} else if (what == "pressed") {
 
-					r_ret = filters[idx].action.pressed;
+					r_ret = filters[idx].action->is_pressed();
 					return true;
 				}
 
@@ -1354,7 +1355,7 @@ bool VisualScriptInputFilter::_get(const StringName &p_name, Variant &r_ret) con
 	return false;
 }
 
-static const char *event_type_names[InputEvent::TYPE_MAX] = {
+static const char *event_type_names[Ref<InputEvent>::TYPE_MAX] = {
 	"None",
 	"Key",
 	"MouseMotion",
@@ -1371,7 +1372,7 @@ void VisualScriptInputFilter::_get_property_list(List<PropertyInfo> *p_list) con
 	p_list->push_back(PropertyInfo(Variant::INT, "filter_count", PROPERTY_HINT_RANGE, "0,64"));
 
 	String et;
-	for (int i = 0; i < InputEvent::TYPE_MAX; i++) {
+	for (int i = 0; i < Ref<InputEvent>::TYPE_MAX; i++) {
 		if (i > 0)
 			et += ",";
 
@@ -1388,10 +1389,10 @@ void VisualScriptInputFilter::_get_property_list(List<PropertyInfo> *p_list) con
 		p_list->push_back(PropertyInfo(Variant::INT, base + "device"));
 		switch (filters[i].type) {
 
-			case InputEvent::NONE: {
+			case Ref<InputEvent>::NONE: {
 
 			} break;
-			case InputEvent::KEY: {
+			case Ref<InputEvent>::KEY: {
 				if (kc == String()) {
 					int kcc = keycode_get_count();
 					kc = "None";
@@ -1410,7 +1411,7 @@ void VisualScriptInputFilter::_get_property_list(List<PropertyInfo> *p_list) con
 				p_list->push_back(PropertyInfo(Variant::BOOL, base + "mod_meta"));
 
 			} break;
-			case InputEvent::MOUSE_MOTION: {
+			case Ref<InputEvent>::MOUSE_MOTION: {
 				p_list->push_back(PropertyInfo(Variant::INT, base + "button_mask", PROPERTY_HINT_FLAGS, "Left,Right,Middle,WheelUp,WheelDown,WheelLeft,WheelRight"));
 				p_list->push_back(PropertyInfo(Variant::BOOL, base + "mod_alt"));
 				p_list->push_back(PropertyInfo(Variant::BOOL, base + "mod_shift"));
@@ -1418,7 +1419,7 @@ void VisualScriptInputFilter::_get_property_list(List<PropertyInfo> *p_list) con
 				p_list->push_back(PropertyInfo(Variant::BOOL, base + "mod_meta"));
 
 			} break;
-			case InputEvent::MOUSE_BUTTON: {
+			case Ref<InputEvent>::MOUSE_BUTTON: {
 				p_list->push_back(PropertyInfo(Variant::INT, base + "button_index", PROPERTY_HINT_ENUM, "Any,Left,Right,Middle,WheelUp,WheelDown,WheelLeft,WheelRight"));
 				p_list->push_back(PropertyInfo(Variant::BOOL, base + "pressed"));
 				p_list->push_back(PropertyInfo(Variant::BOOL, base + "doubleclicked"));
@@ -1428,26 +1429,26 @@ void VisualScriptInputFilter::_get_property_list(List<PropertyInfo> *p_list) con
 				p_list->push_back(PropertyInfo(Variant::BOOL, base + "mod_meta"));
 
 			} break;
-			case InputEvent::JOYPAD_MOTION: {
+			case Ref<InputEvent>::JOYPAD_MOTION: {
 
 				p_list->push_back(PropertyInfo(Variant::INT, base + "axis_index"));
 				p_list->push_back(PropertyInfo(Variant::INT, base + "mode", PROPERTY_HINT_ENUM, "Min,Max"));
 				p_list->push_back(PropertyInfo(Variant::REAL, base + "treshold", PROPERTY_HINT_RANGE, "0,1,0.01"));
 			} break;
-			case InputEvent::JOYPAD_BUTTON: {
+			case Ref<InputEvent>::JOYPAD_BUTTON: {
 				p_list->push_back(PropertyInfo(Variant::INT, base + "button_index"));
 				p_list->push_back(PropertyInfo(Variant::BOOL, base + "pressed"));
 
 			} break;
-			case InputEvent::SCREEN_TOUCH: {
+			case Ref<InputEvent>::SCREEN_TOUCH: {
 				p_list->push_back(PropertyInfo(Variant::INT, base + "finger_index"));
 				p_list->push_back(PropertyInfo(Variant::BOOL, base + "pressed"));
 
 			} break;
-			case InputEvent::SCREEN_DRAG: {
+			case Ref<InputEvent>::SCREEN_DRAG: {
 				p_list->push_back(PropertyInfo(Variant::INT, base + "finger_index"));
 			} break;
-			case InputEvent::ACTION: {
+			case Ref<InputEvent>::ACTION: {
 
 				if (actions == String()) {
 
@@ -1485,7 +1486,7 @@ void VisualScriptInputFilter::_get_property_list(List<PropertyInfo> *p_list) con
 class VisualScriptNodeInstanceInputFilter : public VisualScriptNodeInstance {
 public:
 	VisualScriptInstance *instance;
-	Vector<InputEvent> filters;
+	Vector<Ref<InputEvent>> filters;
 
 	//virtual int get_working_memory_size() const { return 0; }
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
@@ -1499,11 +1500,11 @@ public:
 			return 0;
 		}
 
-		InputEvent event = *p_inputs[0];
+		Ref<InputEvent> event = *p_inputs[0];
 
 		for (int i = 0; i < filters.size(); i++) {
 
-			const InputEvent &ie = filters[i];
+			const Ref<InputEvent> &ie = filters[i];
 			if (ie.type != event.type)
 				continue;
 
@@ -1511,25 +1512,25 @@ public:
 
 			switch (ie.type) {
 
-				case InputEvent::NONE: {
+				case Ref<InputEvent>::NONE: {
 
 					match = true;
 				} break;
-				case InputEvent::KEY: {
+				case Ref<InputEvent>::KEY: {
 
 					InputEventKey k = ie.key;
 					InputEventKey k2 = event.key;
 
-					if (k.scancode == 0 && k.unicode == 0 && k2.scancode == 0 && k2.unicode == 0) {
+					if (k->get_scancode() == 0 && k.unicode == 0 && k2->get_scancode() == 0 && k2.unicode == 0) {
 						match = true;
 
 					} else {
 
-						if ((k.scancode != 0 && k.scancode == k2.scancode) || (k.unicode != 0 && k.unicode == k2.unicode)) {
+						if ((k->get_scancode() != 0 && k->get_scancode() == k2->get_scancode()) || (k.unicode != 0 && k.unicode == k2.unicode)) {
 							//key valid
 
 							if (
-									k.pressed == k2.pressed &&
+									k->is_pressed() == k2->is_pressed() &&
 									k.echo == k2.echo &&
 									k.mod == k2.mod) {
 								match = true;
@@ -1538,30 +1539,30 @@ public:
 					}
 
 				} break;
-				case InputEvent::MOUSE_MOTION: {
+				case Ref<InputEvent>::MOUSE_MOTION: {
 					InputEventMouseMotion mm = ie.mouse_motion;
 					InputEventMouseMotion mm2 = event.mouse_motion;
 
-					if (mm.button_mask == mm2.button_mask &&
+					if (mm->get_button_mask() == mm2->get_button_mask() &&
 							mm.mod == mm2.mod) {
 						match = true;
 					}
 
 				} break;
-				case InputEvent::MOUSE_BUTTON: {
+				case Ref<InputEvent>::MOUSE_BUTTON: {
 
 					InputEventMouseButton mb = ie.mouse_button;
 					InputEventMouseButton mb2 = event.mouse_button;
 
-					if (mb.button_index == mb2.button_index &&
-							mb.pressed == mb2.pressed &&
+					if (mb->get_button_index() == mb2->get_button_index() &&
+							mb->is_pressed() == mb2->is_pressed() &&
 							mb.doubleclick == mb2.doubleclick &&
 							mb.mod == mb2.mod) {
 						match = true;
 					}
 
 				} break;
-				case InputEvent::JOYPAD_MOTION: {
+				case Ref<InputEvent>::JOYPAD_MOTION: {
 
 					InputEventJoypadMotion jm = ie.joy_motion;
 					InputEventJoypadMotion jm2 = event.joy_motion;
@@ -1584,26 +1585,26 @@ public:
 					}
 
 				} break;
-				case InputEvent::JOYPAD_BUTTON: {
+				case Ref<InputEvent>::JOYPAD_BUTTON: {
 					InputEventJoypadButton jb = ie.joy_button;
 					InputEventJoypadButton jb2 = event.joy_button;
 
-					if (jb.button_index == jb2.button_index &&
-							jb.pressed == jb2.pressed) {
+					if (jb->get_button_index() == jb2->get_button_index() &&
+							jb->is_pressed() == jb2->is_pressed()) {
 						match = true;
 					}
 				} break;
-				case InputEvent::SCREEN_TOUCH: {
+				case Ref<InputEvent>::SCREEN_TOUCH: {
 					InputEventScreenTouch st = ie.screen_touch;
 					InputEventScreenTouch st2 = event.screen_touch;
 
 					if (st.index == st2.index &&
-							st.pressed == st2.pressed) {
+							st->is_pressed() == st2->is_pressed()) {
 						match = true;
 					}
 
 				} break;
-				case InputEvent::SCREEN_DRAG: {
+				case Ref<InputEvent>::SCREEN_DRAG: {
 					InputEventScreenDrag sd = ie.screen_drag;
 					InputEventScreenDrag sd2 = event.screen_drag;
 
@@ -1611,13 +1612,13 @@ public:
 						match = true;
 					}
 				} break;
-				case InputEvent::ACTION: {
+				case Ref<InputEvent>::ACTION: {
 
 					InputEventAction ia = ie.action;
 					InputEventAction ia2 = event.action;
 
 					if (ia.action == ia2.action &&
-							ia.pressed == ia2.pressed) {
+							ia->is_pressed() == ia2->is_pressed()) {
 						match = true;
 					}
 				} break;
@@ -1643,7 +1644,7 @@ VisualScriptNodeInstance *VisualScriptInputFilter::instance(VisualScriptInstance
 
 VisualScriptInputFilter::VisualScriptInputFilter() {
 }
-
+#endif
 //////////////////////////////////////////
 ////////////////TYPE CAST///////////
 //////////////////////////////////////////
@@ -1832,6 +1833,6 @@ void register_visual_script_flow_control_nodes() {
 	VisualScriptLanguage::singleton->add_register_func("flow_control/iterator", create_node_generic<VisualScriptIterator>);
 	VisualScriptLanguage::singleton->add_register_func("flow_control/sequence", create_node_generic<VisualScriptSequence>);
 	VisualScriptLanguage::singleton->add_register_func("flow_control/switch", create_node_generic<VisualScriptSwitch>);
-	VisualScriptLanguage::singleton->add_register_func("flow_control/input_filter", create_node_generic<VisualScriptInputFilter>);
+	//VisualScriptLanguage::singleton->add_register_func("flow_control/input_filter", create_node_generic<VisualScriptInputFilter>);
 	VisualScriptLanguage::singleton->add_register_func("flow_control/type_cast", create_node_generic<VisualScriptTypeCast>);
 }

@@ -359,13 +359,6 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 			}
 
 		} break;
-		case VARIANT_INPUT_EVENT: {
-
-			InputEvent ev;
-			ev.type = f->get_32(); //will only work for null though.
-			r_v = ev;
-
-		} break;
 		case VARIANT_DICTIONARY: {
 
 			uint32_t len = f->get_32();
@@ -1444,13 +1437,6 @@ void ResourceFormatSaverBinaryInstance::write_variant(const Variant &p_property,
 				f->store_32(res->get_subindex());
 				//internal resource
 			}
-
-		} break;
-		case Variant::INPUT_EVENT: {
-
-			f->store_32(VARIANT_INPUT_EVENT);
-			InputEvent event = p_property;
-			f->store_32(0); //event type none, nothing else suported for now.
 
 		} break;
 		case Variant::DICTIONARY: {

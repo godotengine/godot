@@ -609,12 +609,9 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 						type = Variant::Type(Variant::Type(i));
 					}
 				}
-				InputEvent::Type iet = InputEvent::NONE;
-				if (hint_text.find(".") != -1) {
-					iet = InputEvent::Type(int(hint_text.get_slice(".", 1).to_int()));
-				}
+
 				if (type)
-					property_select->select_property_from_basic_type(type, iet, v);
+					property_select->select_property_from_basic_type(type, v);
 
 				updating = false;
 				return false;
@@ -977,9 +974,6 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			hide();
 			updating = false;
 			return false;
-
-		} break;
-		case Variant::INPUT_EVENT: {
 
 		} break;
 		case Variant::DICTIONARY: {
@@ -1401,11 +1395,13 @@ void CustomPropertyEditor::_scroll_modified(double p_value) {
 	*/
 }
 
-void CustomPropertyEditor::_drag_easing(const InputEvent &p_ev) {
+void CustomPropertyEditor::_drag_easing(const Ref<InputEvent> &p_ev) {
 
-	if (p_ev.type == InputEvent::MOUSE_MOTION && p_ev.mouse_motion.button_mask & BUTTON_MASK_LEFT) {
+	Ref<InputEventMouseMotion> mm = p_ev;
 
-		float rel = p_ev.mouse_motion.relative_x;
+	if (mm.is_valid() && mm->get_button_mask() & BUTTON_MASK_LEFT) {
+
+		float rel = mm->get_relative().x;
 		if (rel == 0)
 			return;
 
@@ -1434,8 +1430,8 @@ void CustomPropertyEditor::_drag_easing(const InputEvent &p_ev) {
 		//emit_signal("variant_changed");
 		emit_signal("variant_changed");
 	}
-	if (p_ev.type == InputEvent::MOUSE_BUTTON && p_ev.mouse_button.button_index == BUTTON_LEFT) {
-	}
+	//	if (p_ev.type == Ref<InputEvent>::MOUSE_BUTTON && p_ev->get_button_index() == BUTTON_LEFT) {
+	//	}
 }
 
 void CustomPropertyEditor::_draw_easing() {
@@ -1714,9 +1710,6 @@ void CustomPropertyEditor::_modified(String p_string) {
 
 			v = NodePath(value_editor[0]->get_text());
 			emit_signal("variant_changed");
-		} break;
-		case Variant::INPUT_EVENT: {
-
 		} break;
 		case Variant::DICTIONARY: {
 
@@ -3862,9 +3855,6 @@ void PropertyEditor::_item_edited() {
 
 		} break;
 
-		case Variant::INPUT_EVENT: {
-
-		} break;
 		case Variant::DICTIONARY: {
 
 		} break;

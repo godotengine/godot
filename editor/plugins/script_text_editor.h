@@ -106,7 +106,7 @@ protected:
 
 	void _edit_option(int p_op);
 	void _make_context_menu(bool p_selection, bool p_color);
-	void _text_edit_gui_input(const InputEvent &ev);
+	void _text_edit_gui_input(const Ref<InputEvent> &ev);
 	void _color_changed(const Color &p_color);
 
 	void _goto_line(int p_line) { goto_line(p_line); }

@@ -33,9 +33,10 @@
 #include "os/keyboard.h"
 #include "spatial_editor_plugin.h"
 
-void CurveTextureEdit::_gui_input(const InputEvent &p_event) {
+void CurveTextureEdit::_gui_input(const Ref<InputEvent> &p_event) {
 
-	if (p_event.type == InputEvent::KEY && p_event.key.pressed && p_event.key.scancode == KEY_DELETE && grabbed != -1) {
+	Ref<InputEventKey> k = p_event;
+	if (k.is_valid() && k->is_pressed() && k->get_scancode() == KEY_DELETE && grabbed != -1) {
 
 		points.remove(grabbed);
 		grabbed = -1;
@@ -44,7 +45,9 @@ void CurveTextureEdit::_gui_input(const InputEvent &p_event) {
 		accept_event();
 	}
 
-	if (p_event.type == InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index == 1 && p_event.mouse_button.pressed) {
+	Ref<InputEventMouseButton> mb = p_event;
+
+	if (mb.is_valid() && mb->get_button_index() == 1 && mb->is_pressed()) {
 
 		update();
 		Ref<Font> font = get_font("font", "Label");
@@ -54,7 +57,7 @@ void CurveTextureEdit::_gui_input(const InputEvent &p_event) {
 		Vector2 size = get_size();
 		size.y -= font_h;
 
-		Point2 p = Vector2(p_event.mouse_button.x, p_event.mouse_button.y) / size;
+		Point2 p = Vector2(mb->get_pos().x, mb->get_pos().y) / size;
 		p.y = CLAMP(1.0 - p.y, 0, 1) * (max - min) + min;
 		grabbed = -1;
 		grabbing = true;
@@ -90,7 +93,7 @@ void CurveTextureEdit::_gui_input(const InputEvent &p_event) {
 		emit_signal("curve_changed");
 	}
 
-	if (p_event.type == InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index == 1 && !p_event.mouse_button.pressed) {
+	if (mb.is_valid() && mb->get_button_index() == 1 && !mb->is_pressed()) {
 
 		if (grabbing) {
 			grabbing = false;
@@ -99,14 +102,16 @@ void CurveTextureEdit::_gui_input(const InputEvent &p_event) {
 		update();
 	}
 
-	if (p_event.type == InputEvent::MOUSE_MOTION && grabbing && grabbed != -1) {
+	Ref<InputEventMouseMotion> mm = p_event;
+
+	if (mm.is_valid() && grabbing && grabbed != -1) {
 
 		Ref<Font> font = get_font("font", "Label");
 		int font_h = font->get_height();
 		Vector2 size = get_size();
 		size.y -= font_h;
 
-		Point2 p = Vector2(p_event.mouse_motion.x, p_event.mouse_motion.y) / size;
+		Point2 p = mm->get_pos() / size;
 		p.y = CLAMP(1.0 - p.y, 0, 1) * (max - min) + min;
 		p.x = CLAMP(p.x, 0.0, 1.0);
 

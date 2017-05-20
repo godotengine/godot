@@ -58,11 +58,10 @@ private:
 	StringName action;
 	bool passby_press;
 	int finger_pressed;
-	int action_id;
 
 	VisibilityMode visibility;
 
-	void _input(const InputEvent &p_Event);
+	void _input(const Ref<InputEvent> &p_Event);
 
 	void _press(int p_finger_pressed);
 	void _release(bool p_exiting_tree = false);

@@ -40,7 +40,7 @@
 
 void GraphColorRampEdit::_gui_input(const InputEvent& p_event) {
 
-	if (p_event.type==InputEvent::KEY && p_event.key.pressed && p_event.key.scancode==KEY_DELETE && grabbed!=-1) {
+	if (p_event.type==InputEvent::KEY && p_event->is_pressed() && p_event->get_scancode()==KEY_DELETE && grabbed!=-1) {
 
 		points.remove(grabbed);
 		grabbed=-1;
@@ -49,10 +49,10 @@ void GraphColorRampEdit::_gui_input(const InputEvent& p_event) {
 		accept_event();
 	}
 
-	if (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==1 && p_event.mouse_button.pressed) {
+	if (p_event.type==InputEvent::MOUSE_BUTTON && p_event->get_button_index()==1 && p_event->is_pressed()) {
 
 		update();
-		int x = p_event.mouse_button.x;
+		int x = p_event->get_pos().x;
 		int total_w = get_size().width-get_size().height-3;
 		if (x>total_w+3) {
 
@@ -132,7 +132,7 @@ void GraphColorRampEdit::_gui_input(const InputEvent& p_event) {
 
 	}
 
-	if (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==1 && !p_event.mouse_button.pressed) {
+	if (p_event.type==InputEvent::MOUSE_BUTTON && p_event->get_button_index()==1 && !p_event->is_pressed()) {
 
 		if (grabbing) {
 			grabbing=false;
@@ -319,7 +319,7 @@ GraphColorRampEdit::GraphColorRampEdit(){
 
 void GraphCurveMapEdit::_gui_input(const InputEvent& p_event) {
 
-	if (p_event.type==InputEvent::KEY && p_event.key.pressed && p_event.key.scancode==KEY_DELETE && grabbed!=-1) {
+	if (p_event.type==InputEvent::KEY && p_event->is_pressed() && p_event->get_scancode()==KEY_DELETE && grabbed!=-1) {
 
 		points.remove(grabbed);
 		grabbed=-1;
@@ -328,10 +328,10 @@ void GraphCurveMapEdit::_gui_input(const InputEvent& p_event) {
 		accept_event();
 	}
 
-	if (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==1 && p_event.mouse_button.pressed) {
+	if (p_event.type==InputEvent::MOUSE_BUTTON && p_event->get_button_index()==1 && p_event->is_pressed()) {
 
 		update();
-		Point2 p = Vector2(p_event.mouse_button.x,p_event.mouse_button.y)/get_size();
+		Point2 p = Vector2(p_event->get_pos().x,p_event->get_pos().y)/get_size();
 		p.y=1.0-p.y;
 		grabbed=-1;
 		grabbing=true;
@@ -371,7 +371,7 @@ void GraphCurveMapEdit::_gui_input(const InputEvent& p_event) {
 
 	}
 
-	if (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==1 && !p_event.mouse_button.pressed) {
+	if (p_event.type==InputEvent::MOUSE_BUTTON && p_event->get_button_index()==1 && !p_event->is_pressed()) {
 
 		if (grabbing) {
 			grabbing=false;
@@ -382,7 +382,7 @@ void GraphCurveMapEdit::_gui_input(const InputEvent& p_event) {
 
 	if (p_event.type==InputEvent::MOUSE_MOTION && grabbing  && grabbed != -1) {
 
-		Point2 p = Vector2(p_event.mouse_button.x,p_event.mouse_button.y)/get_size();
+		Point2 p = Vector2(p_event->get_pos().x,p_event->get_pos().y)/get_size();
 		p.y=1.0-p.y;
 
 		p.x = CLAMP(p.x,0.0,1.0);

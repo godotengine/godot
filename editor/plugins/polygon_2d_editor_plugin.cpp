@@ -201,213 +201,209 @@ void Polygon2DEditor::_wip_close() {
 	edited_point = -1;
 }
 
-bool Polygon2DEditor::forward_gui_input(const InputEvent &p_event) {
+bool Polygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (node == NULL)
 		return false;
 
-	switch (p_event.type) {
+	Ref<InputEventMouseButton> mb = p_event;
 
-		case InputEvent::MOUSE_BUTTON: {
+	if (mb.is_valid()) {
 
-			const InputEventMouseButton &mb = p_event.mouse_button;
+		Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
-			Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
+		Vector2 gpoint = mb->get_pos();
+		Vector2 cpoint = canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint);
+		cpoint = canvas_item_editor->snap_point(cpoint);
+		cpoint = node->get_global_transform().affine_inverse().xform(cpoint);
 
-			Vector2 gpoint = Point2(mb.x, mb.y);
-			Vector2 cpoint = canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint);
-			cpoint = canvas_item_editor->snap_point(cpoint);
-			cpoint = node->get_global_transform().affine_inverse().xform(cpoint);
+		Vector<Vector2> poly = Variant(node->get_polygon());
 
-			Vector<Vector2> poly = Variant(node->get_polygon());
+		//first check if a point is to be added (segment split)
+		real_t grab_treshold = EDITOR_DEF("editors/poly_editor/point_grab_radius", 8);
 
-			//first check if a point is to be added (segment split)
-			real_t grab_treshold = EDITOR_DEF("editors/poly_editor/point_grab_radius", 8);
+		switch (mode) {
 
-			switch (mode) {
+			case MODE_CREATE: {
 
-				case MODE_CREATE: {
+				if (mb->get_button_index() == BUTTON_LEFT && mb->is_pressed()) {
 
-					if (mb.button_index == BUTTON_LEFT && mb.pressed) {
+					if (!wip_active) {
 
-						if (!wip_active) {
+						wip.clear();
+						wip.push_back(cpoint - node->get_offset());
+						wip_active = true;
+						edited_point_pos = cpoint;
+						canvas_item_editor->get_viewport_control()->update();
+						edited_point = 1;
+						return true;
+					} else {
 
-							wip.clear();
-							wip.push_back(cpoint - node->get_offset());
-							wip_active = true;
-							edited_point_pos = cpoint;
-							canvas_item_editor->get_viewport_control()->update();
-							edited_point = 1;
+						if (wip.size() > 1 && xform.xform(wip[0] + node->get_offset()).distance_to(gpoint) < grab_treshold) {
+							//wip closed
+							_wip_close();
+
 							return true;
 						} else {
 
-							if (wip.size() > 1 && xform.xform(wip[0] + node->get_offset()).distance_to(gpoint) < grab_treshold) {
-								//wip closed
-								_wip_close();
+							wip.push_back(cpoint - node->get_offset());
+							edited_point = wip.size();
+							canvas_item_editor->get_viewport_control()->update();
+							return true;
 
-								return true;
-							} else {
-
-								wip.push_back(cpoint - node->get_offset());
-								edited_point = wip.size();
-								canvas_item_editor->get_viewport_control()->update();
-								return true;
-
-								//add wip point
-							}
+							//add wip point
 						}
-					} else if (mb.button_index == BUTTON_RIGHT && mb.pressed && wip_active) {
-						_wip_close();
 					}
+				} else if (mb->get_button_index() == BUTTON_RIGHT && mb->is_pressed() && wip_active) {
+					_wip_close();
+				}
 
-				} break;
+			} break;
 
-				case MODE_EDIT: {
+			case MODE_EDIT: {
 
-					if (mb.button_index == BUTTON_LEFT) {
-						if (mb.pressed) {
+				if (mb->get_button_index() == BUTTON_LEFT) {
+					if (mb->is_pressed()) {
 
-							if (mb.mod.control) {
+						if (mb->get_control()) {
 
-								if (poly.size() < 3) {
+							if (poly.size() < 3) {
 
-									undo_redo->create_action(TTR("Edit Poly"));
-									undo_redo->add_undo_method(node, "set_polygon", poly);
-									poly.push_back(cpoint);
-									undo_redo->add_do_method(node, "set_polygon", poly);
-									undo_redo->add_do_method(canvas_item_editor->get_viewport_control(), "update");
-									undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(), "update");
-									undo_redo->commit_action();
-									return true;
-								}
-
-								//search edges
-								int closest_idx = -1;
-								Vector2 closest_pos;
-								real_t closest_dist = 1e10;
-								for (int i = 0; i < poly.size(); i++) {
-
-									Vector2 points[2] = { xform.xform(poly[i] + node->get_offset()),
-										xform.xform(poly[(i + 1) % poly.size()] + node->get_offset()) };
-
-									Vector2 cp = Geometry::get_closest_point_to_segment_2d(gpoint, points);
-									if (cp.distance_squared_to(points[0]) < CMP_EPSILON2 || cp.distance_squared_to(points[1]) < CMP_EPSILON2)
-										continue; //not valid to reuse point
-
-									real_t d = cp.distance_to(gpoint);
-									if (d < closest_dist && d < grab_treshold) {
-										closest_dist = d;
-										closest_pos = cp;
-										closest_idx = i;
-									}
-								}
-
-								if (closest_idx >= 0) {
-
-									pre_move_edit = poly;
-									poly.insert(closest_idx + 1, xform.affine_inverse().xform(closest_pos) - node->get_offset());
-									edited_point = closest_idx + 1;
-									edited_point_pos = xform.affine_inverse().xform(closest_pos);
-									node->set_polygon(Variant(poly));
-									canvas_item_editor->get_viewport_control()->update();
-									return true;
-								}
-							} else {
-
-								//look for points to move
-
-								int closest_idx = -1;
-								Vector2 closest_pos;
-								real_t closest_dist = 1e10;
-								for (int i = 0; i < poly.size(); i++) {
-
-									Vector2 cp = xform.xform(poly[i] + node->get_offset());
-
-									real_t d = cp.distance_to(gpoint);
-									if (d < closest_dist && d < grab_treshold) {
-										closest_dist = d;
-										closest_pos = cp;
-										closest_idx = i;
-									}
-								}
-
-								if (closest_idx >= 0) {
-
-									pre_move_edit = poly;
-									edited_point = closest_idx;
-									edited_point_pos = xform.affine_inverse().xform(closest_pos);
-									canvas_item_editor->get_viewport_control()->update();
-									return true;
-								}
-							}
-						} else {
-
-							if (edited_point != -1) {
-
-								//apply
-
-								ERR_FAIL_INDEX_V(edited_point, poly.size(), false);
-								poly[edited_point] = edited_point_pos - node->get_offset();
 								undo_redo->create_action(TTR("Edit Poly"));
+								undo_redo->add_undo_method(node, "set_polygon", poly);
+								poly.push_back(cpoint);
 								undo_redo->add_do_method(node, "set_polygon", poly);
-								undo_redo->add_undo_method(node, "set_polygon", pre_move_edit);
 								undo_redo->add_do_method(canvas_item_editor->get_viewport_control(), "update");
 								undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(), "update");
 								undo_redo->commit_action();
+								return true;
+							}
 
-								edited_point = -1;
+							//search edges
+							int closest_idx = -1;
+							Vector2 closest_pos;
+							real_t closest_dist = 1e10;
+							for (int i = 0; i < poly.size(); i++) {
+
+								Vector2 points[2] = { xform.xform(poly[i] + node->get_offset()),
+									xform.xform(poly[(i + 1) % poly.size()] + node->get_offset()) };
+
+								Vector2 cp = Geometry::get_closest_point_to_segment_2d(gpoint, points);
+								if (cp.distance_squared_to(points[0]) < CMP_EPSILON2 || cp.distance_squared_to(points[1]) < CMP_EPSILON2)
+									continue; //not valid to reuse point
+
+								real_t d = cp.distance_to(gpoint);
+								if (d < closest_dist && d < grab_treshold) {
+									closest_dist = d;
+									closest_pos = cp;
+									closest_idx = i;
+								}
+							}
+
+							if (closest_idx >= 0) {
+
+								pre_move_edit = poly;
+								poly.insert(closest_idx + 1, xform.affine_inverse().xform(closest_pos) - node->get_offset());
+								edited_point = closest_idx + 1;
+								edited_point_pos = xform.affine_inverse().xform(closest_pos);
+								node->set_polygon(Variant(poly));
+								canvas_item_editor->get_viewport_control()->update();
+								return true;
+							}
+						} else {
+
+							//look for points to move
+
+							int closest_idx = -1;
+							Vector2 closest_pos;
+							real_t closest_dist = 1e10;
+							for (int i = 0; i < poly.size(); i++) {
+
+								Vector2 cp = xform.xform(poly[i] + node->get_offset());
+
+								real_t d = cp.distance_to(gpoint);
+								if (d < closest_dist && d < grab_treshold) {
+									closest_dist = d;
+									closest_pos = cp;
+									closest_idx = i;
+								}
+							}
+
+							if (closest_idx >= 0) {
+
+								pre_move_edit = poly;
+								edited_point = closest_idx;
+								edited_point_pos = xform.affine_inverse().xform(closest_pos);
+								canvas_item_editor->get_viewport_control()->update();
 								return true;
 							}
 						}
-					} else if (mb.button_index == BUTTON_RIGHT && mb.pressed && edited_point == -1) {
+					} else {
 
-						int closest_idx = -1;
-						Vector2 closest_pos;
-						real_t closest_dist = 1e10;
-						for (int i = 0; i < poly.size(); i++) {
+						if (edited_point != -1) {
 
-							Vector2 cp = xform.xform(poly[i] + node->get_offset());
+							//apply
 
-							real_t d = cp.distance_to(gpoint);
-							if (d < closest_dist && d < grab_treshold) {
-								closest_dist = d;
-								closest_pos = cp;
-								closest_idx = i;
-							}
-						}
-
-						if (closest_idx >= 0) {
-
-							undo_redo->create_action(TTR("Edit Poly (Remove Point)"));
-							undo_redo->add_undo_method(node, "set_polygon", poly);
-							poly.remove(closest_idx);
+							ERR_FAIL_INDEX_V(edited_point, poly.size(), false);
+							poly[edited_point] = edited_point_pos - node->get_offset();
+							undo_redo->create_action(TTR("Edit Poly"));
 							undo_redo->add_do_method(node, "set_polygon", poly);
+							undo_redo->add_undo_method(node, "set_polygon", pre_move_edit);
 							undo_redo->add_do_method(canvas_item_editor->get_viewport_control(), "update");
 							undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(), "update");
 							undo_redo->commit_action();
+
+							edited_point = -1;
 							return true;
 						}
 					}
+				} else if (mb->get_button_index() == BUTTON_RIGHT && mb->is_pressed() && edited_point == -1) {
 
-				} break;
-			}
+					int closest_idx = -1;
+					Vector2 closest_pos;
+					real_t closest_dist = 1e10;
+					for (int i = 0; i < poly.size(); i++) {
 
-		} break;
-		case InputEvent::MOUSE_MOTION: {
+						Vector2 cp = xform.xform(poly[i] + node->get_offset());
 
-			const InputEventMouseMotion &mm = p_event.mouse_motion;
+						real_t d = cp.distance_to(gpoint);
+						if (d < closest_dist && d < grab_treshold) {
+							closest_dist = d;
+							closest_pos = cp;
+							closest_idx = i;
+						}
+					}
 
-			if (edited_point != -1 && (wip_active || mm.button_mask & BUTTON_MASK_LEFT)) {
+					if (closest_idx >= 0) {
 
-				Vector2 gpoint = Point2(mm.x, mm.y);
-				Vector2 cpoint = canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint);
-				cpoint = canvas_item_editor->snap_point(cpoint);
-				edited_point_pos = node->get_global_transform().affine_inverse().xform(cpoint);
+						undo_redo->create_action(TTR("Edit Poly (Remove Point)"));
+						undo_redo->add_undo_method(node, "set_polygon", poly);
+						poly.remove(closest_idx);
+						undo_redo->add_do_method(node, "set_polygon", poly);
+						undo_redo->add_do_method(canvas_item_editor->get_viewport_control(), "update");
+						undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(), "update");
+						undo_redo->commit_action();
+						return true;
+					}
+				}
 
-				canvas_item_editor->get_viewport_control()->update();
-			}
+			} break;
+		}
+	}
 
-		} break;
+	Ref<InputEventMouseMotion> mm = p_event;
+
+	if (mm.is_valid()) {
+
+		if (edited_point != -1 && (wip_active || mm->get_button_mask() & BUTTON_MASK_LEFT)) {
+
+			Vector2 gpoint = mm->get_pos();
+			Vector2 cpoint = canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint);
+			cpoint = canvas_item_editor->snap_point(cpoint);
+			edited_point_pos = node->get_global_transform().affine_inverse().xform(cpoint);
+
+			canvas_item_editor->get_viewport_control()->update();
+		}
 	}
 
 	return false;
@@ -455,31 +451,31 @@ void Polygon2DEditor::_uv_mode(int p_mode) {
 	}
 }
 
-void Polygon2DEditor::_uv_input(const InputEvent &p_input) {
+void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 	Transform2D mtx;
 	mtx.elements[2] = -uv_draw_ofs;
 	mtx.scale_basis(Vector2(uv_draw_zoom, uv_draw_zoom));
 
-	if (p_input.type == InputEvent::MOUSE_BUTTON) {
+	Ref<InputEventMouseButton> mb = p_input;
 
-		const InputEventMouseButton &mb = p_input.mouse_button;
+	if (mb.is_valid()) {
 
-		if (mb.button_index == BUTTON_LEFT) {
+		if (mb->get_button_index() == BUTTON_LEFT) {
 
-			if (mb.pressed) {
+			if (mb->is_pressed()) {
 
-				uv_drag_from = Vector2(mb.x, mb.y);
+				uv_drag_from = Vector2(mb->get_pos().x, mb->get_pos().y);
 				uv_drag = true;
 				uv_prev = node->get_uv();
 				uv_move_current = uv_mode;
 				if (uv_move_current == UV_MODE_EDIT_POINT) {
 
-					if (mb.mod.shift && mb.mod.command)
+					if (mb->get_shift() && mb->get_command())
 						uv_move_current = UV_MODE_SCALE;
-					else if (mb.mod.shift)
+					else if (mb->get_shift())
 						uv_move_current = UV_MODE_MOVE;
-					else if (mb.mod.command)
+					else if (mb->get_command())
 						uv_move_current = UV_MODE_ROTATE;
 				}
 
@@ -489,7 +485,7 @@ void Polygon2DEditor::_uv_input(const InputEvent &p_input) {
 					for (int i = 0; i < uv_prev.size(); i++) {
 
 						Vector2 tuv = mtx.xform(uv_prev[i]);
-						if (tuv.distance_to(Vector2(mb.x, mb.y)) < 8) {
+						if (tuv.distance_to(Vector2(mb->get_pos().x, mb->get_pos().y)) < 8) {
 							uv_drag_from = tuv;
 							uv_drag_index = i;
 						}
@@ -511,7 +507,7 @@ void Polygon2DEditor::_uv_input(const InputEvent &p_input) {
 				uv_drag = false;
 			}
 
-		} else if (mb.button_index == BUTTON_RIGHT && mb.pressed) {
+		} else if (mb->get_button_index() == BUTTON_RIGHT && mb->is_pressed()) {
 
 			if (uv_drag) {
 
@@ -520,27 +516,28 @@ void Polygon2DEditor::_uv_input(const InputEvent &p_input) {
 				uv_edit_draw->update();
 			}
 
-		} else if (mb.button_index == BUTTON_WHEEL_UP && mb.pressed) {
+		} else if (mb->get_button_index() == BUTTON_WHEEL_UP && mb->is_pressed()) {
 
-			uv_zoom->set_value(uv_zoom->get_value() / (1 - (0.1 * mb.factor)));
-		} else if (mb.button_index == BUTTON_WHEEL_DOWN && mb.pressed) {
+			uv_zoom->set_value(uv_zoom->get_value() / (1 - (0.1 * mb->get_factor())));
+		} else if (mb->get_button_index() == BUTTON_WHEEL_DOWN && mb->is_pressed()) {
 
-			uv_zoom->set_value(uv_zoom->get_value() * (1 - (0.1 * mb.factor)));
+			uv_zoom->set_value(uv_zoom->get_value() * (1 - (0.1 * mb->get_factor())));
 		}
+	}
 
-	} else if (p_input.type == InputEvent::MOUSE_MOTION) {
+	Ref<InputEventMouseMotion> mm = p_input;
 
-		const InputEventMouseMotion &mm = p_input.mouse_motion;
+	if (mm.is_valid()) {
 
-		if (mm.button_mask & BUTTON_MASK_MIDDLE || Input::get_singleton()->is_key_pressed(KEY_SPACE)) {
+		if (mm->get_button_mask() & BUTTON_MASK_MIDDLE || Input::get_singleton()->is_key_pressed(KEY_SPACE)) {
 
-			Vector2 drag(mm.relative_x, mm.relative_y);
+			Vector2 drag(mm->get_relative().x, mm->get_relative().y);
 			uv_hscroll->set_value(uv_hscroll->get_value() - drag.x);
 			uv_vscroll->set_value(uv_vscroll->get_value() - drag.y);
 
 		} else if (uv_drag) {
 
-			Vector2 uv_drag_to = snap_point(Vector2(mm.x, mm.y));
+			Vector2 uv_drag_to = mm->get_pos();
 			Vector2 drag = mtx.affine_inverse().xform(uv_drag_to) - mtx.affine_inverse().xform(uv_drag_from);
 
 			switch (uv_move_current) {

@@ -94,17 +94,16 @@ void FindReplaceBar::_notification(int p_what) {
 	}
 }
 
-void FindReplaceBar::_unhandled_input(const InputEvent &p_event) {
+void FindReplaceBar::_unhandled_input(const Ref<InputEvent> &p_event) {
 
-	if (p_event.type == InputEvent::KEY) {
+	Ref<InputEventKey> k = p_event;
+	if (k.is_valid()) {
 
-		const InputEventKey &k = p_event.key;
-
-		if (k.pressed && (text_edit->has_focus() || text_vbc->is_a_parent_of(get_focus_owner()))) {
+		if (k->is_pressed() && (text_edit->has_focus() || text_vbc->is_a_parent_of(get_focus_owner()))) {
 
 			bool accepted = true;
 
-			switch (k.scancode) {
+			switch (k->get_scancode()) {
 
 				case KEY_ESCAPE: {
 
@@ -957,23 +956,27 @@ FindReplaceDialog::FindReplaceDialog() {
 
 /*** CODE EDITOR ****/
 
-void CodeTextEditor::_text_editor_gui_input(const InputEvent &p_event) {
+void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 
-	if (p_event.type == InputEvent::MOUSE_BUTTON) {
+	Ref<InputEventMouseButton> mb = p_event;
 
-		const InputEventMouseButton &mb = p_event.mouse_button;
+	if (mb.is_valid()) {
 
-		if (mb.pressed && mb.mod.command) {
+		if (mb->is_pressed() && mb->get_command()) {
 
-			if (mb.button_index == BUTTON_WHEEL_UP) {
+			if (mb->get_button_index() == BUTTON_WHEEL_UP) {
 				_zoom_in();
-			} else if (mb.button_index == BUTTON_WHEEL_DOWN) {
+			} else if (mb->get_button_index() == BUTTON_WHEEL_DOWN) {
 				_zoom_out();
 			}
 		}
-	} else if (p_event.type == InputEvent::KEY) {
+	}
 
-		if (p_event.key.pressed) {
+	Ref<InputEventKey> k = p_event;
+
+	if (k.is_valid()) {
+
+		if (k->is_pressed()) {
 			if (ED_IS_SHORTCUT("script_editor/zoom_in", p_event)) {
 				_zoom_in();
 			}

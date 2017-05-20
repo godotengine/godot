@@ -3460,14 +3460,8 @@ void VisualScriptDeconstruct::_update_elements() {
 
 	elements.clear();
 	Variant v;
-	if (type == Variant::INPUT_EVENT) {
-		InputEvent ie;
-		ie.type = input_type;
-		v = ie;
-	} else {
-		Variant::CallError ce;
-		v = Variant::construct(type, NULL, 0, ce);
-	}
+	Variant::CallError ce;
+	v = Variant::construct(type, NULL, 0, ce);
 
 	List<PropertyInfo> pinfo;
 	v.get_property_list(&pinfo);
@@ -3495,21 +3489,6 @@ void VisualScriptDeconstruct::set_deconstruct_type(Variant::Type p_type) {
 Variant::Type VisualScriptDeconstruct::get_deconstruct_type() const {
 
 	return type;
-}
-
-void VisualScriptDeconstruct::set_deconstruct_input_type(InputEvent::Type p_input_type) {
-
-	if (input_type == p_input_type)
-		return;
-
-	input_type = p_input_type;
-	_update_elements();
-	ports_changed_notify();
-}
-
-InputEvent::Type VisualScriptDeconstruct::get_deconstruct_input_type() const {
-
-	return input_type;
 }
 
 void VisualScriptDeconstruct::_set_elem_cache(const Array &p_elements) {
@@ -3570,21 +3549,12 @@ VisualScriptNodeInstance *VisualScriptDeconstruct::instance(VisualScriptInstance
 }
 
 void VisualScriptDeconstruct::_validate_property(PropertyInfo &property) const {
-
-	if (property.name == "input_type") {
-		if (type != Variant::INPUT_EVENT) {
-			property.usage = 0;
-		}
-	}
 }
 
 void VisualScriptDeconstruct::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_deconstruct_type", "type"), &VisualScriptDeconstruct::set_deconstruct_type);
 	ClassDB::bind_method(D_METHOD("get_deconstruct_type"), &VisualScriptDeconstruct::get_deconstruct_type);
-
-	ClassDB::bind_method(D_METHOD("set_deconstruct_input_type", "input_type"), &VisualScriptDeconstruct::set_deconstruct_input_type);
-	ClassDB::bind_method(D_METHOD("get_deconstruct_input_type"), &VisualScriptDeconstruct::get_deconstruct_input_type);
 
 	ClassDB::bind_method(D_METHOD("_set_elem_cache", "_cache"), &VisualScriptDeconstruct::_set_elem_cache);
 	ClassDB::bind_method(D_METHOD("_get_elem_cache"), &VisualScriptDeconstruct::_get_elem_cache);
@@ -3594,17 +3564,13 @@ void VisualScriptDeconstruct::_bind_methods() {
 		argt += "," + Variant::get_type_name(Variant::Type(i));
 	}
 
-	String iet = "None,Key,MouseMotion,MouseButton,JoypadMotion,JoypadButton,ScreenTouch,ScreenDrag,Action";
-
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "type", PROPERTY_HINT_ENUM, argt), "set_deconstruct_type", "get_deconstruct_type");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "input_type", PROPERTY_HINT_ENUM, iet), "set_deconstruct_input_type", "get_deconstruct_input_type");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "elem_cache", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "_set_elem_cache", "_get_elem_cache");
 }
 
 VisualScriptDeconstruct::VisualScriptDeconstruct() {
 
 	type = Variant::NIL;
-	input_type = InputEvent::NONE;
 }
 
 void register_visual_script_nodes() {

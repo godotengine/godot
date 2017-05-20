@@ -31,9 +31,9 @@
 #include "os/keyboard.h"
 #include "scene/main/viewport.h"
 
-void MenuButton::_unhandled_key_input(InputEvent p_event) {
+void MenuButton::_unhandled_key_input(Ref<InputEvent> p_event) {
 
-	if (p_event.is_pressed() && !p_event.is_echo() && (p_event.type == InputEvent::KEY || p_event.type == InputEvent::ACTION || p_event.type == InputEvent::JOYPAD_BUTTON)) {
+	if (p_event->is_pressed() && !p_event->is_echo() && (p_event->cast_to<InputEventKey>() || p_event->cast_to<InputEventJoypadButton>() || p_event->cast_to<InputEventAction>())) {
 
 		if (!get_parent() || !is_visible_in_tree() || is_disabled())
 			return;
@@ -59,10 +59,10 @@ void MenuButton::pressed() {
 	popup->set_invalidate_click_until_motion();
 }
 
-void MenuButton::_gui_input(InputEvent p_event) {
+void MenuButton::_gui_input(Ref<InputEvent> p_event) {
 
-	/*if (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==BUTTON_LEFT) {
-		clicked=p_event.mouse_button.pressed;
+	/*if (p_event.type==InputEvent::MOUSE_BUTTON && p_event->get_button_index()==BUTTON_LEFT) {
+		clicked=p_event->is_pressed();
 	}
 	if (clicked && p_event.type==InputEvent::MOUSE_MOTION && popup->is_visible_in_tree()) {
 

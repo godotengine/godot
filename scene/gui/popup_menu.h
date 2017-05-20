@@ -79,7 +79,7 @@ class PopupMenu : public Popup {
 	String _get_accel_text(int p_item) const;
 	int _get_mouse_over(const Point2 &p_over) const;
 	virtual Size2 get_minimum_size() const;
-	void _gui_input(const InputEvent &p_event);
+	void _gui_input(const Ref<InputEvent> &p_event);
 	void _activate_submenu(int over);
 	void _submenu_timeout();
 
@@ -146,7 +146,7 @@ public:
 
 	int get_item_count() const;
 
-	bool activate_item_by_event(const InputEvent &p_event, bool p_for_global_only = false);
+	bool activate_item_by_event(const Ref<InputEvent> &p_event, bool p_for_global_only = false);
 	void activate_item(int p_item);
 
 	void remove_item(int p_idx);

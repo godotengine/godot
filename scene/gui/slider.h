@@ -48,7 +48,7 @@ class Slider : public Range {
 	float custom_step;
 
 protected:
-	void _gui_input(InputEvent p_event);
+	void _gui_input(Ref<InputEvent> p_event);
 	void _notification(int p_what);
 	static void _bind_methods();
 	bool ticks_on_borders;

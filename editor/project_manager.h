@@ -91,8 +91,8 @@ class ProjectManager : public Control {
 	void _install_project(const String &p_zip_path, const String &p_title);
 
 	void _panel_draw(Node *p_hb);
-	void _panel_input(const InputEvent &p_ev, Node *p_hb);
-	void _unhandled_input(const InputEvent &p_ev);
+	void _panel_input(const Ref<InputEvent> &p_ev, Node *p_hb);
+	void _unhandled_input(const Ref<InputEvent> &p_ev);
 	void _favorite_pressed(Node *p_hb);
 	void _files_dropped(PoolStringArray p_files, int p_screen);
 	void _scan_multiple_folders(PoolStringArray p_files);

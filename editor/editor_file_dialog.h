@@ -169,7 +169,7 @@ private:
 	void _thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Variant &p_udata);
 	void _request_single_thumbnail(const String &p_path);
 
-	void _unhandled_input(const InputEvent &p_event);
+	void _unhandled_input(const Ref<InputEvent> &p_event);
 
 protected:
 	void _notification(int p_what);

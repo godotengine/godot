@@ -105,7 +105,6 @@ MAKE_PTRARG(Transform);
 MAKE_PTRARG(Color);
 MAKE_PTRARG(NodePath);
 MAKE_PTRARG(RID);
-MAKE_PTRARG(InputEvent);
 MAKE_PTRARG(Dictionary);
 MAKE_PTRARG(Array);
 MAKE_PTRARG(PoolByteArray);

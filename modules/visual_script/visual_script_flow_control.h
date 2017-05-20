@@ -228,11 +228,12 @@ public:
 	VisualScriptSwitch();
 };
 
+#if 0
 class VisualScriptInputFilter : public VisualScriptNode {
 
 	GDCLASS(VisualScriptInputFilter, VisualScriptNode)
 
-	Vector<InputEvent> filters;
+	Vector<Ref<InputEvent>> filters;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -259,7 +260,7 @@ public:
 
 	VisualScriptInputFilter();
 };
-
+#endif
 class VisualScriptTypeCast : public VisualScriptNode {
 
 	GDCLASS(VisualScriptTypeCast, VisualScriptNode)

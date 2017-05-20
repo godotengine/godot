@@ -70,7 +70,7 @@ protected:
 
 	void _update_pickable();
 	friend class Viewport;
-	void _input_event(Node *p_viewport, const InputEvent &p_input_event, int p_shape);
+	void _input_event(Node *p_viewport, const Ref<InputEvent> &p_input_event, int p_shape);
 	void _mouse_enter();
 	void _mouse_exit();
 

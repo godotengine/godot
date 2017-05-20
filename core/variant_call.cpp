@@ -737,13 +737,6 @@ struct _VariantCall {
 	VCALL_PTR1( Transform, translate );
 	VCALL_PTR0( Transform, orthonormalize ); */
 
-	VCALL_PTR0R(InputEvent, is_pressed);
-	VCALL_PTR1R(InputEvent, is_action);
-	VCALL_PTR1R(InputEvent, is_action_pressed);
-	VCALL_PTR1R(InputEvent, is_action_released);
-	VCALL_PTR0R(InputEvent, is_echo);
-	VCALL_PTR2(InputEvent, set_as_action);
-
 	struct ConstructData {
 
 		int arg_count;
@@ -1036,7 +1029,6 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 				return NodePath(); // 15
 			case _RID: return RID();
 			case OBJECT: return (Object *)NULL;
-			case INPUT_EVENT: return InputEvent();
 			case DICTIONARY: return Dictionary();
 			case ARRAY:
 				return Array(); // 20
@@ -1117,7 +1109,6 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 				return (NodePath(p_args[0]->operator NodePath())); // 15
 			case _RID: return (RID(*p_args[0]));
 			case OBJECT: return ((Object *)(p_args[0]->operator Object *()));
-			case INPUT_EVENT: return (InputEvent(*p_args[0]));
 			case DICTIONARY: return p_args[0]->operator Dictionary();
 			case ARRAY:
 				return p_args[0]->operator Array(); // 20
@@ -1690,13 +1681,6 @@ void register_variant_methods() {
 	_VariantCall::type_funcs[Variant::TRANSFORM].functions["xform_inv"].returns = true;
 #endif
 
-	ADDFUNC0(INPUT_EVENT, BOOL, InputEvent, is_pressed, varray());
-	ADDFUNC1(INPUT_EVENT, BOOL, InputEvent, is_action, STRING, "action", varray());
-	ADDFUNC1(INPUT_EVENT, BOOL, InputEvent, is_action_pressed, STRING, "action", varray());
-	ADDFUNC1(INPUT_EVENT, BOOL, InputEvent, is_action_released, STRING, "action", varray());
-	ADDFUNC0(INPUT_EVENT, BOOL, InputEvent, is_echo, varray());
-	ADDFUNC2(INPUT_EVENT, NIL, InputEvent, set_as_action, STRING, "action", BOOL, "pressed", varray());
-
 	/* REGISTER CONSTRUCTORS */
 
 	_VariantCall::add_constructor(_VariantCall::Vector2_init1, Variant::VECTOR2, "x", Variant::REAL, "y", Variant::REAL);
@@ -1733,16 +1717,6 @@ void register_variant_methods() {
 	_VariantCall::add_constant(Variant::VECTOR3, "AXIS_X", Vector3::AXIS_X);
 	_VariantCall::add_constant(Variant::VECTOR3, "AXIS_Y", Vector3::AXIS_Y);
 	_VariantCall::add_constant(Variant::VECTOR3, "AXIS_Z", Vector3::AXIS_Z);
-
-	_VariantCall::add_constant(Variant::INPUT_EVENT, "NONE", InputEvent::NONE);
-	_VariantCall::add_constant(Variant::INPUT_EVENT, "KEY", InputEvent::KEY);
-	_VariantCall::add_constant(Variant::INPUT_EVENT, "MOUSE_MOTION", InputEvent::MOUSE_MOTION);
-	_VariantCall::add_constant(Variant::INPUT_EVENT, "MOUSE_BUTTON", InputEvent::MOUSE_BUTTON);
-	_VariantCall::add_constant(Variant::INPUT_EVENT, "JOYPAD_MOTION", InputEvent::JOYPAD_MOTION);
-	_VariantCall::add_constant(Variant::INPUT_EVENT, "JOYPAD_BUTTON", InputEvent::JOYPAD_BUTTON);
-	_VariantCall::add_constant(Variant::INPUT_EVENT, "SCREEN_TOUCH", InputEvent::SCREEN_TOUCH);
-	_VariantCall::add_constant(Variant::INPUT_EVENT, "SCREEN_DRAG", InputEvent::SCREEN_DRAG);
-	_VariantCall::add_constant(Variant::INPUT_EVENT, "ACTION", InputEvent::ACTION);
 }
 
 void unregister_variant_methods() {

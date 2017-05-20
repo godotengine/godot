@@ -172,7 +172,7 @@ void CollisionObject::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
-void CollisionObject::_input_event(Node *p_camera, const InputEvent &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape) {
+void CollisionObject::_input_event(Node *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape) {
 
 	if (get_script_instance()) {
 		get_script_instance()->call(SceneStringNames::get_singleton()->_input_event, p_camera, p_input_event, p_pos, p_normal, p_shape);
@@ -235,9 +235,9 @@ void CollisionObject::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_capture_input_on_drag", "enable"), &CollisionObject::set_capture_input_on_drag);
 	ClassDB::bind_method(D_METHOD("get_capture_input_on_drag"), &CollisionObject::get_capture_input_on_drag);
 	ClassDB::bind_method(D_METHOD("get_rid"), &CollisionObject::get_rid);
-	BIND_VMETHOD(MethodInfo("_input_event", PropertyInfo(Variant::OBJECT, "camera"), PropertyInfo(Variant::INPUT_EVENT, "event"), PropertyInfo(Variant::VECTOR3, "click_pos"), PropertyInfo(Variant::VECTOR3, "click_normal"), PropertyInfo(Variant::INT, "shape_idx")));
+	BIND_VMETHOD(MethodInfo("_input_event", PropertyInfo(Variant::OBJECT, "camera"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::VECTOR3, "click_pos"), PropertyInfo(Variant::VECTOR3, "click_normal"), PropertyInfo(Variant::INT, "shape_idx")));
 
-	ADD_SIGNAL(MethodInfo("input_event", PropertyInfo(Variant::OBJECT, "camera"), PropertyInfo(Variant::INPUT_EVENT, "event"), PropertyInfo(Variant::VECTOR3, "click_pos"), PropertyInfo(Variant::VECTOR3, "click_normal"), PropertyInfo(Variant::INT, "shape_idx")));
+	ADD_SIGNAL(MethodInfo("input_event", PropertyInfo(Variant::OBJECT, "camera"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::VECTOR3, "click_pos"), PropertyInfo(Variant::VECTOR3, "click_normal"), PropertyInfo(Variant::INT, "shape_idx")));
 	ADD_SIGNAL(MethodInfo("mouse_entered"));
 	ADD_SIGNAL(MethodInfo("mouse_exited"));
 

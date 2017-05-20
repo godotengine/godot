@@ -331,8 +331,7 @@ void DocData::generate(bool p_basic_types) {
 									default_arg_text = "NULL";
 									break;
 								}
-							case Variant::INPUT_EVENT:
-							case Variant::DICTIONARY:
+							case Variant::DICTIONARY: // 20
 							case Variant::ARRAY:
 							case Variant::_RID:
 
@@ -477,97 +476,78 @@ void DocData::generate(bool p_basic_types) {
 		if (i == Variant::OBJECT)
 			continue; //use the core type instead
 
-		int loops = 1;
+		String cname = Variant::get_type_name(Variant::Type(i));
 
-		if (i == Variant::INPUT_EVENT)
-			loops = InputEvent::TYPE_MAX;
+		class_list[cname] = ClassDoc();
+		ClassDoc &c = class_list[cname];
+		c.name = cname;
+		c.category = "Built-In Types";
 
-		for (int j = 0; j < loops; j++) {
+		Variant::CallError cerror;
+		Variant v = Variant::construct(Variant::Type(i), NULL, 0, cerror);
 
-			String cname = Variant::get_type_name(Variant::Type(i));
+		List<MethodInfo> method_list;
+		v.get_method_list(&method_list);
+		method_list.sort();
+		Variant::get_constructor_list(Variant::Type(i), &method_list);
 
-			if (i == Variant::INPUT_EVENT) {
-				static const char *ie_type[InputEvent::TYPE_MAX] = {
-					"", "Key", "MouseMotion", "MouseButton", "JoypadMotion", "JoypadButton", "ScreenTouch", "ScreenDrag", "Action"
-				};
-				cname += ie_type[j];
+		for (List<MethodInfo>::Element *E = method_list.front(); E; E = E->next()) {
+
+			MethodInfo &mi = E->get();
+			MethodDoc method;
+
+			method.name = mi.name;
+
+			for (int i = 0; i < mi.arguments.size(); i++) {
+
+				ArgumentDoc arg;
+				PropertyInfo pi = mi.arguments[i];
+
+				arg.name = pi.name;
+				//print_line("arg name: "+arg.name);
+				if (pi.type == Variant::NIL)
+					arg.type = "var";
+				else
+					arg.type = Variant::get_type_name(pi.type);
+				int defarg = mi.default_arguments.size() - mi.arguments.size() + i;
+				if (defarg >= 0)
+					arg.default_value = mi.default_arguments[defarg];
+
+				method.arguments.push_back(arg);
 			}
 
-			class_list[cname] = ClassDoc();
-			ClassDoc &c = class_list[cname];
-			c.name = cname;
-			c.category = "Built-In Types";
+			if (mi.return_val.type == Variant::NIL) {
+				if (mi.return_val.name != "")
+					method.return_type = "var";
 
-			Variant::CallError cerror;
-			Variant v = Variant::construct(Variant::Type(i), NULL, 0, cerror);
-
-			if (i == Variant::INPUT_EVENT) {
-				v.set("type", j);
+			} else {
+				method.return_type = Variant::get_type_name(mi.return_val.type);
 			}
 
-			List<MethodInfo> method_list;
-			v.get_method_list(&method_list);
-			method_list.sort();
-			Variant::get_constructor_list(Variant::Type(i), &method_list);
+			c.methods.push_back(method);
+		}
 
-			for (List<MethodInfo>::Element *E = method_list.front(); E; E = E->next()) {
+		List<PropertyInfo> properties;
+		v.get_property_list(&properties);
+		for (List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
 
-				MethodInfo &mi = E->get();
-				MethodDoc method;
+			PropertyInfo pi = E->get();
+			PropertyDoc property;
+			property.name = pi.name;
+			property.type = Variant::get_type_name(pi.type);
 
-				method.name = mi.name;
+			c.properties.push_back(property);
+		}
 
-				for (int i = 0; i < mi.arguments.size(); i++) {
+		List<StringName> constants;
+		Variant::get_numeric_constants_for_type(Variant::Type(i), &constants);
 
-					ArgumentDoc arg;
-					PropertyInfo pi = mi.arguments[i];
+		for (List<StringName>::Element *E = constants.front(); E; E = E->next()) {
 
-					arg.name = pi.name;
-					//print_line("arg name: "+arg.name);
-					if (pi.type == Variant::NIL)
-						arg.type = "var";
-					else
-						arg.type = Variant::get_type_name(pi.type);
-					int defarg = mi.default_arguments.size() - mi.arguments.size() + i;
-					if (defarg >= 0)
-						arg.default_value = mi.default_arguments[defarg];
-
-					method.arguments.push_back(arg);
-				}
-
-				if (mi.return_val.type == Variant::NIL) {
-					if (mi.return_val.name != "")
-						method.return_type = "var";
-
-				} else {
-					method.return_type = Variant::get_type_name(mi.return_val.type);
-				}
-
-				c.methods.push_back(method);
-			}
-
-			List<PropertyInfo> properties;
-			v.get_property_list(&properties);
-			for (List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
-
-				PropertyInfo pi = E->get();
-				PropertyDoc property;
-				property.name = pi.name;
-				property.type = Variant::get_type_name(pi.type);
-
-				c.properties.push_back(property);
-			}
-
-			List<StringName> constants;
-			Variant::get_numeric_constants_for_type(Variant::Type(i), &constants);
-
-			for (List<StringName>::Element *E = constants.front(); E; E = E->next()) {
-
-				ConstantDoc constant;
-				constant.name = E->get();
-				constant.value = itos(Variant::get_numeric_constant_value(Variant::Type(i), E->get()));
-				c.constants.push_back(constant);
-			}
+			ConstantDoc constant;
+			constant.name = E->get();
+			constant.value = itos(Variant::get_numeric_constant_value(Variant::Type(i), E->get()));
+			c.constants.push_back(constant);
 		}
 	}
 

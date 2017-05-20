@@ -39,7 +39,7 @@ void MainLoop::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("idle", "delta"), &MainLoop::idle);
 	ClassDB::bind_method(D_METHOD("finish"), &MainLoop::finish);
 
-	BIND_VMETHOD(MethodInfo("_input_event", PropertyInfo(Variant::INPUT_EVENT, "ev")));
+	BIND_VMETHOD(MethodInfo("_input_event", PropertyInfo(Variant::OBJECT, "ev", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	BIND_VMETHOD(MethodInfo("_input_text", PropertyInfo(Variant::STRING, "text")));
 	BIND_VMETHOD(MethodInfo("_initialize"));
 	BIND_VMETHOD(MethodInfo("_iteration", PropertyInfo(Variant::REAL, "delta")));
@@ -73,7 +73,7 @@ void MainLoop::input_text(const String &p_text) {
 		get_script_instance()->call("_input_text", p_text);
 }
 
-void MainLoop::input_event(const InputEvent &p_event) {
+void MainLoop::input_event(const Ref<InputEvent> &p_event) {
 
 	if (get_script_instance())
 		get_script_instance()->call("_input_event", p_event);

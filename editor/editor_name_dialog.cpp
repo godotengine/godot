@@ -32,14 +32,16 @@
 #include "class_db.h"
 #include "os/keyboard.h"
 
-void EditorNameDialog::_line_gui_input(const InputEvent &p_event) {
+void EditorNameDialog::_line_gui_input(const Ref<InputEvent> &p_event) {
 
-	if (p_event.type == InputEvent::KEY) {
+	Ref<InputEventKey> k = p_event;
 
-		if (!p_event.key.pressed)
+	if (k.is_valid()) {
+
+		if (!k->is_pressed())
 			return;
 
-		switch (p_event.key.scancode) {
+		switch (k->get_scancode()) {
 			case KEY_ENTER:
 			case KEY_RETURN: {
 

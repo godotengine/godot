@@ -69,7 +69,7 @@ class CreateDialog : public ConfirmationDialog {
 	void _history_activated();
 	void _favorite_activated();
 
-	void _sbox_input(const InputEvent &p_ie);
+	void _sbox_input(const Ref<InputEvent> &p_ie);
 
 	void _confirmed();
 	void _text_changed(const String &p_newtext);

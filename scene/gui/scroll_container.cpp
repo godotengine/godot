@@ -76,113 +76,109 @@ void ScrollContainer::_cancel_drag() {
 	drag_from = Vector2();
 }
 
-void ScrollContainer::_gui_input(const InputEvent &p_gui_input) {
+void ScrollContainer::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
-	switch (p_gui_input.type) {
+	Ref<InputEventMouseButton> mb = p_gui_input;
 
-		case InputEvent::MOUSE_BUTTON: {
+	if (mb.is_valid()) {
 
-			const InputEventMouseButton &mb = p_gui_input.mouse_button;
+		if (mb->get_button_index() == BUTTON_WHEEL_UP && mb->is_pressed()) {
+			// only horizontal is enabled, scroll horizontally
+			if (h_scroll->is_visible() && !v_scroll->is_visible()) {
+				h_scroll->set_value(h_scroll->get_value() - h_scroll->get_page() / 8 * mb->get_factor());
+			} else if (v_scroll->is_visible_in_tree()) {
+				v_scroll->set_value(v_scroll->get_value() - v_scroll->get_page() / 8 * mb->get_factor());
+			}
+		}
 
-			if (mb.button_index == BUTTON_WHEEL_UP && mb.pressed) {
-				// only horizontal is enabled, scroll horizontally
-				if (h_scroll->is_visible() && !v_scroll->is_visible()) {
-					h_scroll->set_value(h_scroll->get_value() - h_scroll->get_page() / 8 * mb.factor);
-				} else if (v_scroll->is_visible_in_tree()) {
-					v_scroll->set_value(v_scroll->get_value() - v_scroll->get_page() / 8 * mb.factor);
-				}
+		if (mb->get_button_index() == BUTTON_WHEEL_DOWN && mb->is_pressed()) {
+			// only horizontal is enabled, scroll horizontally
+			if (h_scroll->is_visible() && !v_scroll->is_visible()) {
+				h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() / 8 * mb->get_factor());
+			} else if (v_scroll->is_visible()) {
+				v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() / 8 * mb->get_factor());
+			}
+		}
+
+		if (mb->get_button_index() == BUTTON_WHEEL_LEFT && mb->is_pressed()) {
+			if (h_scroll->is_visible_in_tree()) {
+				h_scroll->set_value(h_scroll->get_value() - h_scroll->get_page() * mb->get_factor() / 8);
+			}
+		}
+
+		if (mb->get_button_index() == BUTTON_WHEEL_RIGHT && mb->is_pressed()) {
+			if (h_scroll->is_visible_in_tree()) {
+				h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() * mb->get_factor() / 8);
+			}
+		}
+
+		if (!OS::get_singleton()->has_touchscreen_ui_hint())
+			return;
+
+		if (mb->get_button_index() != BUTTON_LEFT)
+			return;
+
+		if (mb->is_pressed()) {
+
+			if (drag_touching) {
+				set_fixed_process(false);
+				drag_touching_deaccel = false;
+				drag_touching = false;
+				drag_speed = Vector2();
+				drag_accum = Vector2();
+				last_drag_accum = Vector2();
+				drag_from = Vector2();
 			}
 
-			if (mb.button_index == BUTTON_WHEEL_DOWN && mb.pressed) {
-				// only horizontal is enabled, scroll horizontally
-				if (h_scroll->is_visible() && !v_scroll->is_visible()) {
-					h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() / 8 * mb.factor);
-				} else if (v_scroll->is_visible()) {
-					v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() / 8 * mb.factor);
-				}
-			}
-
-			if (mb.button_index == BUTTON_WHEEL_LEFT && mb.pressed) {
-				if (h_scroll->is_visible_in_tree()) {
-					h_scroll->set_value(h_scroll->get_value() - h_scroll->get_page() * mb.factor / 8);
-				}
-			}
-
-			if (mb.button_index == BUTTON_WHEEL_RIGHT && mb.pressed) {
-				if (h_scroll->is_visible_in_tree()) {
-					h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() * mb.factor / 8);
-				}
-			}
-
-			if (!OS::get_singleton()->has_touchscreen_ui_hint())
-				return;
-
-			if (mb.button_index != BUTTON_LEFT)
-				break;
-
-			if (mb.pressed) {
-
+			if (true) {
+				drag_speed = Vector2();
+				drag_accum = Vector2();
+				last_drag_accum = Vector2();
+				drag_from = Vector2(h_scroll->get_value(), v_scroll->get_value());
+				drag_touching = OS::get_singleton()->has_touchscreen_ui_hint();
+				drag_touching_deaccel = false;
+				time_since_motion = 0;
 				if (drag_touching) {
-					set_fixed_process(false);
+					set_fixed_process(true);
+					time_since_motion = 0;
+				}
+			}
+
+		} else {
+			if (drag_touching) {
+
+				if (drag_speed == Vector2()) {
 					drag_touching_deaccel = false;
 					drag_touching = false;
-					drag_speed = Vector2();
-					drag_accum = Vector2();
-					last_drag_accum = Vector2();
-					drag_from = Vector2();
-				}
+					set_fixed_process(false);
+				} else {
 
-				if (true) {
-					drag_speed = Vector2();
-					drag_accum = Vector2();
-					last_drag_accum = Vector2();
-					drag_from = Vector2(h_scroll->get_value(), v_scroll->get_value());
-					drag_touching = OS::get_singleton()->has_touchscreen_ui_hint();
-					drag_touching_deaccel = false;
-					time_since_motion = 0;
-					if (drag_touching) {
-						set_fixed_process(true);
-						time_since_motion = 0;
-					}
-				}
-
-			} else {
-				if (drag_touching) {
-
-					if (drag_speed == Vector2()) {
-						drag_touching_deaccel = false;
-						drag_touching = false;
-						set_fixed_process(false);
-					} else {
-
-						drag_touching_deaccel = true;
-					}
+					drag_touching_deaccel = true;
 				}
 			}
+		}
+	}
 
-		} break;
-		case InputEvent::MOUSE_MOTION: {
+	Ref<InputEventMouseMotion> mm = p_gui_input;
 
-			const InputEventMouseMotion &mm = p_gui_input.mouse_motion;
+	if (mm.is_valid()) {
 
-			if (drag_touching && !drag_touching_deaccel) {
+		if (drag_touching && !drag_touching_deaccel) {
 
-				Vector2 motion = Vector2(mm.relative_x, mm.relative_y);
-				drag_accum -= motion;
-				Vector2 diff = drag_from + drag_accum;
+			Vector2 motion = Vector2(mm->get_relative().x, mm->get_relative().y);
+			drag_accum -= motion;
+			Vector2 diff = drag_from + drag_accum;
 
-				if (scroll_h)
-					h_scroll->set_value(diff.x);
-				else
-					drag_accum.x = 0;
-				if (scroll_v)
-					v_scroll->set_value(diff.y);
-				else
-					drag_accum.y = 0;
-				time_since_motion = 0;
-			}
-
-		} break;
+			if (scroll_h)
+				h_scroll->set_value(diff.x);
+			else
+				drag_accum.x = 0;
+			if (scroll_v)
+				v_scroll->set_value(diff.y);
+			else
+				drag_accum.y = 0;
+			time_since_motion = 0;
+		}
 	}
 }
 

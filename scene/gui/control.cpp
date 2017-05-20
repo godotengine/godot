@@ -2419,7 +2419,7 @@ void Control::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_font_changed"), &Control::_font_changed);
 
-	BIND_VMETHOD(MethodInfo("_gui_input", PropertyInfo(Variant::INPUT_EVENT, "event")));
+	BIND_VMETHOD(MethodInfo("_gui_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	BIND_VMETHOD(MethodInfo(Variant::VECTOR2, "_get_minimum_size"));
 	BIND_VMETHOD(MethodInfo(Variant::OBJECT, "get_drag_data", PropertyInfo(Variant::VECTOR2, "pos")));
 	BIND_VMETHOD(MethodInfo(Variant::BOOL, "can_drop_data", PropertyInfo(Variant::VECTOR2, "pos"), PropertyInfo(Variant::NIL, "data")));
@@ -2507,7 +2507,7 @@ void Control::_bind_methods() {
 	BIND_CONSTANT(MOUSE_FILTER_IGNORE);
 
 	ADD_SIGNAL(MethodInfo("resized"));
-	ADD_SIGNAL(MethodInfo("gui_input", PropertyInfo(Variant::INPUT_EVENT, "ev")));
+	ADD_SIGNAL(MethodInfo("gui_input", PropertyInfo(Variant::OBJECT, "ev", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	ADD_SIGNAL(MethodInfo("mouse_entered"));
 	ADD_SIGNAL(MethodInfo("mouse_exited"));
 	ADD_SIGNAL(MethodInfo("focus_entered"));

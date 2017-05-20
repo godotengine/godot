@@ -90,7 +90,7 @@ private:
 	void _ensure_no_over_offset();
 
 protected:
-	void _gui_input(const InputEvent &p_event);
+	void _gui_input(const Ref<InputEvent> &p_event);
 	void _notification(int p_what);
 	static void _bind_methods();
 

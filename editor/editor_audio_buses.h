@@ -75,7 +75,7 @@ class EditorAudioBus : public PanelContainer {
 
 	bool updating_bus;
 
-	void _gui_input(const InputEvent &p_event);
+	void _gui_input(const Ref<InputEvent> &p_event);
 	void _delete_pressed(int p_option);
 
 	void _name_changed(const String &p_new_name);

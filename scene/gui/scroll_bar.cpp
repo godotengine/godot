@@ -38,191 +38,188 @@ void ScrollBar::set_can_focus_by_default(bool p_can_focus) {
 	focus_by_default = p_can_focus;
 }
 
-void ScrollBar::_gui_input(InputEvent p_event) {
+void ScrollBar::_gui_input(Ref<InputEvent> p_event) {
 
-	switch (p_event.type) {
+	Ref<InputEventMouseButton> b = p_event;
 
-		case InputEvent::MOUSE_BUTTON: {
+	if (b.is_valid()) {
+		accept_event();
 
-			const InputEventMouseButton &b = p_event.mouse_button;
+		if (b->get_button_index() == 5 && b->is_pressed()) {
+
+			/*
+			if (orientation==VERTICAL)
+				set_val( get_val() + get_page() / 4.0 );
+			else
+			*/
+			set_value(get_value() + get_page() / 4.0);
 			accept_event();
+		}
 
-			if (b.button_index == 5 && b.pressed) {
+		if (b->get_button_index() == 4 && b->is_pressed()) {
 
-				/*
-				if (orientation==VERTICAL)
-					set_val( get_val() + get_page() / 4.0 );
-				else
-				*/
-				set_value(get_value() + get_page() / 4.0);
-				accept_event();
-			}
+			/*
+			if (orientation==HORIZONTAL)
+				set_val( get_val() - get_page() / 4.0 );
+			else
+			*/
+			set_value(get_value() - get_page() / 4.0);
+			accept_event();
+		}
 
-			if (b.button_index == 4 && b.pressed) {
+		if (b->get_button_index() != 1)
+			return;
 
-				/*
-				if (orientation==HORIZONTAL)
-					set_val( get_val() - get_page() / 4.0 );
-				else
-				*/
-				set_value(get_value() - get_page() / 4.0);
-				accept_event();
-			}
+		if (b->is_pressed()) {
 
-			if (b.button_index != 1)
+			double ofs = orientation == VERTICAL ? b->get_pos().y : b->get_pos().x;
+			Ref<Texture> decr = get_icon("decrement");
+			Ref<Texture> incr = get_icon("increment");
+
+			double decr_size = orientation == VERTICAL ? decr->get_height() : decr->get_width();
+			double incr_size = orientation == VERTICAL ? incr->get_height() : incr->get_width();
+			double grabber_ofs = get_grabber_offset();
+			double grabber_size = get_grabber_size();
+			double total = orientation == VERTICAL ? get_size().height : get_size().width;
+
+			if (ofs < decr_size) {
+
+				set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
 				return;
+			}
 
-			if (b.pressed) {
+			if (ofs > total - incr_size) {
 
-				double ofs = orientation == VERTICAL ? b.y : b.x;
-				Ref<Texture> decr = get_icon("decrement");
-				Ref<Texture> incr = get_icon("increment");
+				set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+				return;
+			}
 
-				double decr_size = orientation == VERTICAL ? decr->get_height() : decr->get_width();
-				double incr_size = orientation == VERTICAL ? incr->get_height() : incr->get_width();
-				double grabber_ofs = get_grabber_offset();
-				double grabber_size = get_grabber_size();
-				double total = orientation == VERTICAL ? get_size().height : get_size().width;
+			ofs -= decr_size;
 
-				if (ofs < decr_size) {
+			if (ofs < grabber_ofs) {
 
-					set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
-					break;
-				}
+				set_value(get_value() - get_page());
+				return;
+			}
 
-				if (ofs > total - incr_size) {
+			ofs -= grabber_ofs;
 
-					set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
-					break;
-				}
+			if (ofs < grabber_size) {
 
-				ofs -= decr_size;
+				drag.active = true;
+				drag.pos_at_click = grabber_ofs + ofs;
+				drag.value_at_click = get_as_ratio();
+				update();
+			} else {
 
-				if (ofs < grabber_ofs) {
+				set_value(get_value() + get_page());
+			}
 
-					set_value(get_value() - get_page());
-					break;
-				}
+		} else {
 
-				ofs -= grabber_ofs;
+			drag.active = false;
+			update();
+		}
+	}
 
-				if (ofs < grabber_size) {
+	Ref<InputEventMouseMotion> m = p_event;
 
-					drag.active = true;
-					drag.pos_at_click = grabber_ofs + ofs;
-					drag.value_at_click = get_as_ratio();
-					update();
-				} else {
+	if (m.is_valid()) {
 
-					set_value(get_value() + get_page());
-				}
+		accept_event();
+
+		if (drag.active) {
+
+			double ofs = orientation == VERTICAL ? m->get_pos().y : m->get_pos().x;
+			Ref<Texture> decr = get_icon("decrement");
+
+			double decr_size = orientation == VERTICAL ? decr->get_height() : decr->get_width();
+			ofs -= decr_size;
+
+			double diff = (ofs - drag.pos_at_click) / get_area_size();
+
+			set_as_ratio(drag.value_at_click + diff);
+		} else {
+
+			double ofs = orientation == VERTICAL ? m->get_pos().y : m->get_pos().x;
+			Ref<Texture> decr = get_icon("decrement");
+			Ref<Texture> incr = get_icon("increment");
+
+			double decr_size = orientation == VERTICAL ? decr->get_height() : decr->get_width();
+			double incr_size = orientation == VERTICAL ? incr->get_height() : incr->get_width();
+			double total = orientation == VERTICAL ? get_size().height : get_size().width;
+
+			HighlightStatus new_hilite;
+
+			if (ofs < decr_size) {
+
+				new_hilite = HIGHLIGHT_DECR;
+
+			} else if (ofs > total - incr_size) {
+
+				new_hilite = HIGHLIGHT_INCR;
 
 			} else {
 
-				drag.active = false;
+				new_hilite = HIGHLIGHT_RANGE;
+			}
+
+			if (new_hilite != highlight) {
+
+				highlight = new_hilite;
 				update();
 			}
+		}
+	}
 
-		} break;
-		case InputEvent::MOUSE_MOTION: {
+	Ref<InputEventKey> k = p_event;
 
-			const InputEventMouseMotion &m = p_event.mouse_motion;
+	if (k.is_valid()) {
 
-			accept_event();
+		if (!k->is_pressed())
+			return;
 
-			if (drag.active) {
+		switch (k->get_scancode()) {
 
-				double ofs = orientation == VERTICAL ? m.y : m.x;
-				Ref<Texture> decr = get_icon("decrement");
+			case KEY_LEFT: {
 
-				double decr_size = orientation == VERTICAL ? decr->get_height() : decr->get_width();
-				ofs -= decr_size;
+				if (orientation != HORIZONTAL)
+					return;
+				set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
 
-				double diff = (ofs - drag.pos_at_click) / get_area_size();
+			} break;
+			case KEY_RIGHT: {
 
-				set_as_ratio(drag.value_at_click + diff);
-			} else {
+				if (orientation != HORIZONTAL)
+					return;
+				set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
 
-				double ofs = orientation == VERTICAL ? m.y : m.x;
-				Ref<Texture> decr = get_icon("decrement");
-				Ref<Texture> incr = get_icon("increment");
+			} break;
+			case KEY_UP: {
 
-				double decr_size = orientation == VERTICAL ? decr->get_height() : decr->get_width();
-				double incr_size = orientation == VERTICAL ? incr->get_height() : incr->get_width();
-				double total = orientation == VERTICAL ? get_size().height : get_size().width;
+				if (orientation != VERTICAL)
+					return;
 
-				HighlightStatus new_highlight;
+				set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
 
-				if (ofs < decr_size) {
+			} break;
+			case KEY_DOWN: {
 
-					new_highlight = HIGHLIGHT_DECR;
+				if (orientation != VERTICAL)
+					return;
+				set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
 
-				} else if (ofs > total - incr_size) {
+			} break;
+			case KEY_HOME: {
 
-					new_highlight = HIGHLIGHT_INCR;
+				set_value(get_min());
 
-				} else {
+			} break;
+			case KEY_END: {
 
-					new_highlight = HIGHLIGHT_RANGE;
-				}
+				set_value(get_max());
 
-				if (new_highlight != highlight) {
-
-					highlight = new_highlight;
-					update();
-				}
-			}
-		} break;
-		case InputEvent::KEY: {
-
-			const InputEventKey &k = p_event.key;
-
-			if (!k.pressed)
-				return;
-
-			switch (k.scancode) {
-
-				case KEY_LEFT: {
-
-					if (orientation != HORIZONTAL)
-						return;
-					set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
-
-				} break;
-				case KEY_RIGHT: {
-
-					if (orientation != HORIZONTAL)
-						return;
-					set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
-
-				} break;
-				case KEY_UP: {
-
-					if (orientation != VERTICAL)
-						return;
-
-					set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
-
-				} break;
-				case KEY_DOWN: {
-
-					if (orientation != VERTICAL)
-						return;
-					set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
-
-				} break;
-				case KEY_HOME: {
-
-					set_value(get_min());
-
-				} break;
-				case KEY_END: {
-
-					set_value(get_max());
-
-				} break;
-			}
-			break;
+			} break;
 		}
 	}
 }
@@ -522,87 +519,84 @@ void ScrollBar::_drag_slave_exit() {
 	drag_slave = NULL;
 }
 
-void ScrollBar::_drag_slave_input(const InputEvent &p_input) {
+void ScrollBar::_drag_slave_input(const Ref<InputEvent> &p_input) {
 
-	switch (p_input.type) {
+	Ref<InputEventMouseButton> mb = p_input;
 
-		case InputEvent::MOUSE_BUTTON: {
+	if (mb.is_valid()) {
 
-			const InputEventMouseButton &mb = p_input.mouse_button;
+		if (mb->get_button_index() != 1)
+			return;
 
-			if (mb.button_index != 1)
-				break;
+		if (mb->is_pressed()) {
 
-			if (mb.pressed) {
+			if (drag_slave_touching) {
+				set_fixed_process(false);
+				drag_slave_touching_deaccel = false;
+				drag_slave_touching = false;
+				drag_slave_speed = Vector2();
+				drag_slave_accum = Vector2();
+				last_drag_slave_accum = Vector2();
+				drag_slave_from = Vector2();
+			}
 
+			if (true) {
+				drag_slave_speed = Vector2();
+				drag_slave_accum = Vector2();
+				last_drag_slave_accum = Vector2();
+				//drag_slave_from=Vector2(h_scroll->get_val(),v_scroll->get_val());
+				drag_slave_from = Vector2(orientation == HORIZONTAL ? get_value() : 0, orientation == VERTICAL ? get_value() : 0);
+
+				drag_slave_touching = OS::get_singleton()->has_touchscreen_ui_hint();
+				drag_slave_touching_deaccel = false;
+				time_since_motion = 0;
 				if (drag_slave_touching) {
-					set_fixed_process(false);
+					set_fixed_process(true);
+					time_since_motion = 0;
+				}
+			}
+
+		} else {
+
+			if (drag_slave_touching) {
+
+				if (drag_slave_speed == Vector2()) {
 					drag_slave_touching_deaccel = false;
 					drag_slave_touching = false;
-					drag_slave_speed = Vector2();
-					drag_slave_accum = Vector2();
-					last_drag_slave_accum = Vector2();
-					drag_slave_from = Vector2();
-				}
+					set_fixed_process(false);
+				} else {
 
-				if (true) {
-					drag_slave_speed = Vector2();
-					drag_slave_accum = Vector2();
-					last_drag_slave_accum = Vector2();
-					//drag_slave_from=Vector2(h_scroll->get_val(),v_scroll->get_val());
-					drag_slave_from = Vector2(orientation == HORIZONTAL ? get_value() : 0, orientation == VERTICAL ? get_value() : 0);
-
-					drag_slave_touching = OS::get_singleton()->has_touchscreen_ui_hint();
-					drag_slave_touching_deaccel = false;
-					time_since_motion = 0;
-					if (drag_slave_touching) {
-						set_fixed_process(true);
-						time_since_motion = 0;
-					}
-				}
-
-			} else {
-
-				if (drag_slave_touching) {
-
-					if (drag_slave_speed == Vector2()) {
-						drag_slave_touching_deaccel = false;
-						drag_slave_touching = false;
-						set_fixed_process(false);
-					} else {
-
-						drag_slave_touching_deaccel = true;
-					}
+					drag_slave_touching_deaccel = true;
 				}
 			}
-		} break;
-		case InputEvent::MOUSE_MOTION: {
+		}
+	}
 
-			const InputEventMouseMotion &mm = p_input.mouse_motion;
+	Ref<InputEventMouseMotion> mm = p_input;
 
-			if (drag_slave_touching && !drag_slave_touching_deaccel) {
+	if (mm.is_valid()) {
 
-				Vector2 motion = Vector2(mm.relative_x, mm.relative_y);
+		if (drag_slave_touching && !drag_slave_touching_deaccel) {
 
-				drag_slave_accum -= motion;
-				Vector2 diff = drag_slave_from + drag_slave_accum;
+			Vector2 motion = Vector2(mm->get_relative().x, mm->get_relative().y);
 
-				if (orientation == HORIZONTAL)
-					set_value(diff.x);
-				/*
-				else
-					drag_slave_accum.x=0;
-				*/
-				if (orientation == VERTICAL)
-					set_value(diff.y);
-				/*
-				else
-					drag_slave_accum.y=0;
-				*/
-				time_since_motion = 0;
-			}
+			drag_slave_accum -= motion;
+			Vector2 diff = drag_slave_from + drag_slave_accum;
 
-		} break;
+			if (orientation == HORIZONTAL)
+				set_value(diff.x);
+			/*
+			else
+				drag_slave_accum.x=0;
+			*/
+			if (orientation == VERTICAL)
+				set_value(diff.y);
+			/*
+			else
+				drag_slave_accum.y=0;
+			*/
+			time_since_motion = 0;
+		}
 	}
 }
 
@@ -640,11 +634,11 @@ NodePath ScrollBar::get_drag_slave() const {
 
 #if 0
 
-void ScrollBar::mouse_button(const Point2& p_pos, int b.button_index,bool b.pressed,int p_modifier_mask) {
+void ScrollBar::mouse_button(const Point2& p_pos, int b->get_button_index(),bool b->is_pressed(),int p_modifier_mask) {
 
 	// wheel!
 
-	if (b.button_index==BUTTON_WHEEL_UP && b.pressed) {
+	if (b->get_button_index()==BUTTON_WHEEL_UP && b->is_pressed()) {
 
 		if (orientation==VERTICAL)
 			set_val( get_val() - get_page() / 4.0 );
@@ -652,7 +646,7 @@ void ScrollBar::mouse_button(const Point2& p_pos, int b.button_index,bool b.pres
 			set_val( get_val() + get_page() / 4.0 );
 
 	}
-	if (b.button_index==BUTTON_WHEEL_DOWN && b.pressed) {
+	if (b->get_button_index()==BUTTON_WHEEL_DOWN && b->is_pressed()) {
 
 		if (orientation==HORIZONTAL)
 			set_val( get_val() - get_page() / 4.0 );
@@ -660,10 +654,10 @@ void ScrollBar::mouse_button(const Point2& p_pos, int b.button_index,bool b.pres
 			set_val( get_val() + get_page() / 4.0  );
 	}
 
-	if (b.button_index!=BUTTON_LEFT)
+	if (b->get_button_index()!=BUTTON_LEFT)
 		return;
 
-	if (b.pressed) {
+	if (b->is_pressed()) {
 
 		int ofs = orientation==VERTICAL ? p_pos.y : p_pos.x ;
 		int grabber_ofs = get_grabber_offset();
@@ -692,7 +686,7 @@ void ScrollBar::mouse_button(const Point2& p_pos, int b.button_index,bool b.pres
 	}
 
 }
-void ScrollBar::mouse_motion(const Point2& p_pos, const Point2& p_rel, int b.button_index_mask) {
+void ScrollBar::mouse_motion(const Point2& p_pos, const Point2& p_rel, int b->get_button_index()_mask) {
 
 	if (!drag.active)
 		return;
@@ -712,9 +706,9 @@ void ScrollBar::mouse_motion(const Point2& p_pos, const Point2& p_rel, int b.but
 
 }
 
-bool ScrollBar::key(unsigned long p_unicode, unsigned long p_scan_code,bool b.pressed,bool p_repeat,int p_modifier_mask) {
+bool ScrollBar::key(unsigned long p_unicode, unsigned long p_scan_code,bool b->is_pressed(),bool p_repeat,int p_modifier_mask) {
 
-	if (!b.pressed)
+	if (!b->is_pressed())
 		return false;
 
 	switch (p_scan_code) {

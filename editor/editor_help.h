@@ -56,7 +56,7 @@ class EditorHelpSearch : public ConfirmationDialog {
 
 	void _update_search();
 
-	void _sbox_input(const InputEvent &p_ie);
+	void _sbox_input(const Ref<InputEvent> &p_ie);
 
 	void _confirmed();
 	void _text_changed(const String &p_newtext);
@@ -81,7 +81,7 @@ class EditorHelpIndex : public ConfirmationDialog {
 
 	void _tree_item_selected();
 	void _text_changed(const String &p_text);
-	void _sbox_input(const InputEvent &p_ie);
+	void _sbox_input(const Ref<InputEvent> &p_ie);
 
 	void _update_class_list();
 
@@ -147,7 +147,7 @@ class EditorHelp : public VBoxContainer {
 	void _scroll_changed(double p_scroll);
 	void _class_list_select(const String &p_select);
 	void _class_desc_select(const String &p_select);
-	void _class_desc_input(const InputEvent &p_input);
+	void _class_desc_input(const Ref<InputEvent> &p_input);
 
 	Error _goto_desc(const String &p_class, int p_vscr = -1);
 	//void _update_history_buttons();
@@ -157,7 +157,7 @@ class EditorHelp : public VBoxContainer {
 	void _search(const String &p_str);
 	void _search_cbk();
 
-	void _unhandled_key_input(const InputEvent &p_ev);
+	void _unhandled_key_input(const Ref<InputEvent> &p_ev);
 
 protected:
 	void _notification(int p_what);

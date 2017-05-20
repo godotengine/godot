@@ -1321,7 +1321,7 @@ static void _find_identifiers(GDCompletionContext &context, int p_line, bool p_o
 
 	static const char *_type_names[Variant::VARIANT_MAX] = {
 		"null", "bool", "int", "float", "String", "Vector2", "Rect2", "Vector3", "Transform2D", "Plane", "Quat", "AABB", "Basis", "Transform",
-		"Color", "NodePath", "RID", "Object", "InputEvent", "Dictionary", "Array", "RawArray", "IntArray", "FloatArray", "StringArray",
+		"Color", "NodePath", "RID", "Object", "Dictionary", "Array", "RawArray", "IntArray", "FloatArray", "StringArray",
 		"Vector2Array", "Vector3Array", "ColorArray"
 	};
 
@@ -1425,22 +1425,7 @@ void get_directory_contents(EditorFileSystemDirectory *p_dir, Set<String> &r_lis
 static void _find_type_arguments(GDCompletionContext &context, const GDParser::Node *p_node, int p_line, const StringName &p_method, const GDCompletionIdentifier &id, int p_argidx, Set<String> &result, String &arghint) {
 
 	//print_line("find type arguments?");
-	if (id.type == Variant::INPUT_EVENT && String(p_method) == "is_action" && p_argidx == 0) {
-
-		List<PropertyInfo> pinfo;
-		GlobalConfig::get_singleton()->get_property_list(&pinfo);
-
-		for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-			const PropertyInfo &pi = E->get();
-
-			if (!pi.name.begins_with("input/"))
-				continue;
-
-			String name = pi.name.substr(pi.name.find("/") + 1, pi.name.length());
-			result.insert("\"" + name + "\"");
-		}
-
-	} else if (id.type == Variant::OBJECT && id.obj_type != StringName()) {
+	if (id.type == Variant::OBJECT && id.obj_type != StringName()) {
 
 		MethodBind *m = ClassDB::get_method(id.obj_type, p_method);
 		if (!m) {
@@ -2266,54 +2251,8 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 					}
 				} else {
 
-					if (t.type == Variant::INPUT_EVENT) {
-
-						//this is hardcoded otherwise it's not obvious
-						Set<String> exclude;
-
-						for (int i = 0; i < InputEvent::TYPE_MAX; i++) {
-
-							InputEvent ie;
-							ie.type = InputEvent::Type(i);
-							static const char *evnames[] = {
-								"# Common",
-								"# Key",
-								"# MouseMotion",
-								"# MouseButton",
-								"# JoypadMotion",
-								"# JoypadButton",
-								"# ScreenTouch",
-								"# ScreenDrag",
-								"# Action"
-							};
-
-							r_options->push_back(evnames[i]);
-
-							Variant v = ie;
-
-							if (i == 0) {
-								List<MethodInfo> mi;
-								v.get_method_list(&mi);
-								for (List<MethodInfo>::Element *E = mi.front(); E; E = E->next()) {
-									r_options->push_back(E->get().name + "(");
-								}
-							}
-
-							List<PropertyInfo> pi;
-							v.get_property_list(&pi);
-
-							for (List<PropertyInfo>::Element *E = pi.front(); E; E = E->next()) {
-
-								if (i == 0)
-									exclude.insert(E->get().name);
-								else if (exclude.has(E->get().name))
-									continue;
-
-								r_options->push_back(E->get().name);
-							}
-						}
-						return OK;
-					} else {
+					//check InputEvent hint
+					{
 						if (t.value.get_type() == Variant::NIL) {
 							Variant::CallError ce;
 							t.value = Variant::construct(t.type, NULL, 0, ce);

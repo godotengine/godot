@@ -54,7 +54,7 @@ class ScriptEditorQuickOpen : public ConfirmationDialog {
 
 	void _update_search();
 
-	void _sbox_input(const InputEvent &p_ie);
+	void _sbox_input(const Ref<InputEvent> &p_ie);
 	Vector<String> functions;
 
 	void _confirmed();
@@ -288,7 +288,7 @@ class ScriptEditor : public VBoxContainer {
 
 	void _script_split_dragged(float);
 
-	void _unhandled_input(const InputEvent &p_event);
+	void _unhandled_input(const Ref<InputEvent> &p_event);
 
 	void _help_search(String p_text);
 

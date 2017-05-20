@@ -30,7 +30,7 @@
 #include "popup.h"
 #include "os/keyboard.h"
 
-void Popup::_gui_input(InputEvent p_event) {
+void Popup::_gui_input(Ref<InputEvent> p_event) {
 }
 
 void Popup::_notification(int p_what) {

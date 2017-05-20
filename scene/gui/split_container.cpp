@@ -270,32 +270,32 @@ void SplitContainer::_notification(int p_what) {
 	}
 }
 
-void SplitContainer::_gui_input(const InputEvent &p_event) {
+void SplitContainer::_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (collapsed || !_getch(0) || !_getch(1) || dragger_visibility != DRAGGER_VISIBLE)
 		return;
 
-	if (p_event.type == InputEvent::MOUSE_BUTTON) {
+	Ref<InputEventMouseButton> mb = p_event;
 
-		const InputEventMouseButton &mb = p_event.mouse_button;
+	if (mb.is_valid()) {
 
-		if (mb.button_index == BUTTON_LEFT) {
+		if (mb->get_button_index() == BUTTON_LEFT) {
 
-			if (mb.pressed) {
+			if (mb->is_pressed()) {
 				int sep = get_constant("separation");
 
 				if (vertical) {
 
-					if (mb.y > middle_sep && mb.y < middle_sep + sep) {
+					if (mb->get_pos().y > middle_sep && mb->get_pos().y < middle_sep + sep) {
 						dragging = true;
-						drag_from = mb.y;
+						drag_from = mb->get_pos().y;
 						drag_ofs = expand_ofs;
 					}
 				} else {
 
-					if (mb.x > middle_sep && mb.x < middle_sep + sep) {
+					if (mb->get_pos().x > middle_sep && mb->get_pos().x < middle_sep + sep) {
 						dragging = true;
-						drag_from = mb.x;
+						drag_from = mb->get_pos().x;
 						drag_ofs = expand_ofs;
 					}
 				}
@@ -306,13 +306,13 @@ void SplitContainer::_gui_input(const InputEvent &p_event) {
 		}
 	}
 
-	if (p_event.type == InputEvent::MOUSE_MOTION) {
+	Ref<InputEventMouseMotion> mm = p_event;
 
-		const InputEventMouseMotion &mm = p_event.mouse_motion;
+	if (mm.is_valid()) {
 
 		if (dragging) {
 
-			expand_ofs = drag_ofs + ((vertical ? mm.y : mm.x) - drag_from);
+			expand_ofs = drag_ofs + ((vertical ? mm->get_pos().y : mm->get_pos().x) - drag_from);
 			queue_sort();
 			emit_signal("dragged", get_split_offset());
 		}

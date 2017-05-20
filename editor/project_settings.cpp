@@ -83,10 +83,10 @@ void ProjectSettings::_notification(int p_what) {
 
 			translation_list->connect("button_pressed", this, "_translation_delete");
 			_update_actions();
-			popup_add->add_icon_item(get_icon("Keyboard", "EditorIcons"), TTR("Key "), InputEvent::KEY); //"Key " - because the word 'key' has already been used as a key animation
-			popup_add->add_icon_item(get_icon("JoyButton", "EditorIcons"), TTR("Joy Button"), InputEvent::JOYPAD_BUTTON);
-			popup_add->add_icon_item(get_icon("JoyAxis", "EditorIcons"), TTR("Joy Axis"), InputEvent::JOYPAD_MOTION);
-			popup_add->add_icon_item(get_icon("Mouse", "EditorIcons"), TTR("Mouse Button"), InputEvent::MOUSE_BUTTON);
+			popup_add->add_icon_item(get_icon("Keyboard", "EditorIcons"), TTR("Key "), INPUT_KEY); //"Key " - because the word 'key' has already been used as a key animation
+			popup_add->add_icon_item(get_icon("JoyButton", "EditorIcons"), TTR("Joy Button"), INPUT_JOY_BUTTON);
+			popup_add->add_icon_item(get_icon("JoyAxis", "EditorIcons"), TTR("Joy Axis"), INPUT_JOY_MOTION);
+			popup_add->add_icon_item(get_icon("Mouse", "EditorIcons"), TTR("Mouse Button"), INPUT_MOUSE_BUTTON);
 
 			List<String> tfn;
 			ResourceLoader::get_recognized_extensions_for_type("Translation", &tfn);
@@ -178,54 +178,74 @@ void ProjectSettings::_action_edited() {
 
 void ProjectSettings::_device_input_add() {
 
-	InputEvent ie;
+	Ref<InputEvent> ie;
 	String name = add_at;
 	Variant old_val = GlobalConfig::get_singleton()->get(name);
 	Array arr = old_val;
-	ie.device = device_id->get_value();
-
-	ie.type = add_type;
+	//	ie.device = device_id->get_value();
+	//	ie.type = add_type;
 
 	switch (add_type) {
 
-		case InputEvent::MOUSE_BUTTON: {
+		case INPUT_MOUSE_BUTTON: {
 
-			ie.mouse_button.button_index = device_index->get_selected() + 1;
+			Ref<InputEventMouseButton> mb;
+			mb.instance();
+			mb->set_button_index(device_index->get_selected() + 1);
+			mb->set_device(device_id->get_value());
 
 			for (int i = 0; i < arr.size(); i++) {
 
-				InputEvent aie = arr[i];
-				if (aie.device == ie.device && aie.type == InputEvent::MOUSE_BUTTON && aie.mouse_button.button_index == ie.mouse_button.button_index) {
+				Ref<InputEventMouseButton> aie = arr[i];
+				if (aie.is_null())
+					continue;
+				if (aie->get_device() == mb->get_device() && aie->get_button_index() == mb->get_button_index()) {
 					return;
 				}
 			}
+
+			ie = mb;
 
 		} break;
-		case InputEvent::JOYPAD_MOTION: {
+		case INPUT_JOY_MOTION: {
 
-			ie.joy_motion.axis = device_index->get_selected() >> 1;
-			ie.joy_motion.axis_value = device_index->get_selected() & 1 ? 1 : -1;
+			Ref<InputEventJoypadMotion> jm;
+			jm.instance();
+			jm->set_axis(device_index->get_selected() >> 1);
+			jm->set_axis_value(device_index->get_selected() & 1 ? 1 : -1);
+			jm->set_device(device_id->get_value());
 
 			for (int i = 0; i < arr.size(); i++) {
 
-				InputEvent aie = arr[i];
-				if (aie.device == ie.device && aie.type == InputEvent::JOYPAD_MOTION && aie.joy_motion.axis == ie.joy_motion.axis && aie.joy_motion.axis_value == ie.joy_motion.axis_value) {
+				Ref<InputEventJoypadMotion> aie = arr[i];
+				if (aie.is_null())
+					continue;
+				if (aie->get_device() == jm->get_device() && aie->get_axis() == jm->get_axis() && aie->get_axis_value() == jm->get_axis_value()) {
 					return;
 				}
 			}
+
+			ie = jm;
 
 		} break;
-		case InputEvent::JOYPAD_BUTTON: {
+		case INPUT_JOY_BUTTON: {
 
-			ie.joy_button.button_index = device_index->get_selected();
+			Ref<InputEventJoypadButton> jb;
+			jb.instance();
+
+			jb->set_button_index(device_index->get_selected());
+			jb->set_device(device_id->get_value());
 
 			for (int i = 0; i < arr.size(); i++) {
 
-				InputEvent aie = arr[i];
-				if (aie.device == ie.device && aie.type == InputEvent::JOYPAD_BUTTON && aie.joy_button.button_index == ie.joy_button.button_index) {
+				Ref<InputEventJoypadButton> aie = arr[i];
+				if (aie.is_null())
+					continue;
+				if (aie->get_device() == jb->get_device() && aie->get_button_index() == jb->get_button_index()) {
 					return;
 				}
 			}
+			ie = jb;
 
 		} break;
 		default: {}
@@ -247,13 +267,17 @@ void ProjectSettings::_device_input_add() {
 
 void ProjectSettings::_press_a_key_confirm() {
 
-	if (last_wait_for_key.type != InputEvent::KEY)
+	if (last_wait_for_key.is_null())
 		return;
 
-	InputEvent ie;
-	ie.type = InputEvent::KEY;
-	ie.key.scancode = last_wait_for_key.key.scancode;
-	ie.key.mod = last_wait_for_key.key.mod;
+	Ref<InputEventKey> ie;
+	ie.instance();
+	ie->set_scancode(last_wait_for_key->get_scancode());
+	ie->set_shift(last_wait_for_key->get_shift());
+	ie->set_alt(last_wait_for_key->get_alt());
+	ie->set_control(last_wait_for_key->get_control());
+	ie->set_metakey(last_wait_for_key->get_metakey());
+
 	String name = add_at;
 
 	Variant old_val = GlobalConfig::get_singleton()->get(name);
@@ -261,8 +285,10 @@ void ProjectSettings::_press_a_key_confirm() {
 
 	for (int i = 0; i < arr.size(); i++) {
 
-		InputEvent aie = arr[i];
-		if (aie.type == InputEvent::KEY && aie.key.scancode == ie.key.scancode && aie.key.mod == ie.key.mod) {
+		Ref<InputEventKey> aie = arr[i];
+		if (aie.is_null())
+			continue;
+		if (aie->get_scancode_with_modifiers() == ie->get_scancode_with_modifiers()) {
 			return;
 		}
 	}
@@ -281,7 +307,7 @@ void ProjectSettings::_press_a_key_confirm() {
 	_show_last_added(ie, name);
 }
 
-void ProjectSettings::_show_last_added(const InputEvent &p_event, const String &p_name) {
+void ProjectSettings::_show_last_added(const Ref<InputEvent> &p_event, const String &p_name) {
 	TreeItem *r = input_editor->get_root();
 
 	String name = p_name;
@@ -314,19 +340,21 @@ void ProjectSettings::_show_last_added(const InputEvent &p_event, const String &
 	if (found) input_editor->ensure_cursor_is_visible();
 }
 
-void ProjectSettings::_wait_for_key(const InputEvent &p_event) {
+void ProjectSettings::_wait_for_key(const Ref<InputEvent> &p_event) {
 
-	if (p_event.type == InputEvent::KEY && p_event.key.pressed && p_event.key.scancode != 0) {
+	Ref<InputEventKey> k = p_event;
+
+	if (k.is_valid() && k->is_pressed() && k->get_scancode() != 0) {
 
 		last_wait_for_key = p_event;
-		String str = keycode_get_string(p_event.key.scancode).capitalize();
-		if (p_event.key.mod.meta)
+		String str = keycode_get_string(k->get_scancode()).capitalize();
+		if (k->get_metakey())
 			str = TTR("Meta+") + str;
-		if (p_event.key.mod.shift)
+		if (k->get_shift())
 			str = TTR("Shift+") + str;
-		if (p_event.key.mod.alt)
+		if (k->get_alt())
 			str = TTR("Alt+") + str;
-		if (p_event.key.mod.control)
+		if (k->get_control())
 			str = TTR("Control+") + str;
 
 		press_a_key_label->set_text(str);
@@ -336,18 +364,18 @@ void ProjectSettings::_wait_for_key(const InputEvent &p_event) {
 
 void ProjectSettings::_add_item(int p_item) {
 
-	add_type = InputEvent::Type(p_item);
+	add_type = InputType(p_item);
 
 	switch (add_type) {
 
-		case InputEvent::KEY: {
+		case INPUT_KEY: {
 
 			press_a_key_label->set_text(TTR("Press a Key.."));
-			last_wait_for_key = InputEvent();
+			last_wait_for_key = Ref<InputEvent>();
 			press_a_key->popup_centered(Size2(250, 80) * EDSCALE);
 			press_a_key->grab_focus();
 		} break;
-		case InputEvent::MOUSE_BUTTON: {
+		case INPUT_MOUSE_BUTTON: {
 
 			device_id->set_value(0);
 			device_index_label->set_text(TTR("Mouse Button Index:"));
@@ -363,7 +391,7 @@ void ProjectSettings::_add_item(int p_item) {
 			device_index->add_item(TTR("Button 9"));
 			device_input->popup_centered_minsize(Size2(350, 95));
 		} break;
-		case InputEvent::JOYPAD_MOTION: {
+		case INPUT_JOY_MOTION: {
 
 			device_id->set_value(0);
 			device_index_label->set_text(TTR("Joypad Axis Index:"));
@@ -376,7 +404,7 @@ void ProjectSettings::_add_item(int p_item) {
 			device_input->popup_centered_minsize(Size2(350, 95));
 
 		} break;
-		case InputEvent::JOYPAD_BUTTON: {
+		case INPUT_JOY_BUTTON: {
 
 			device_id->set_value(0);
 			device_index_label->set_text(TTR("Joypad Button Index:"));
@@ -496,65 +524,70 @@ void ProjectSettings::_update_actions() {
 
 		for (int i = 0; i < actions.size(); i++) {
 
-			if (actions[i].get_type() != Variant::INPUT_EVENT)
+			Ref<InputEvent> ie = actions[i];
+			if (ie.is_null())
 				continue;
-			InputEvent ie = actions[i];
 
 			TreeItem *action = input_editor->create_item(item);
 
-			switch (ie.type) {
+			Ref<InputEventKey> k = ie;
+			if (k.is_valid()) {
 
-				case InputEvent::KEY: {
+				String str = keycode_get_string(k->get_scancode()).capitalize();
+				if (k->get_metakey())
+					str = TTR("Meta+") + str;
+				if (k->get_shift())
+					str = TTR("Shift+") + str;
+				if (k->get_alt())
+					str = TTR("Alt+") + str;
+				if (k->get_control())
+					str = TTR("Control+") + str;
 
-					String str = keycode_get_string(ie.key.scancode).capitalize();
-					if (ie.key.mod.meta)
-						str = TTR("Meta+") + str;
-					if (ie.key.mod.shift)
-						str = TTR("Shift+") + str;
-					if (ie.key.mod.alt)
-						str = TTR("Alt+") + str;
-					if (ie.key.mod.control)
-						str = TTR("Control+") + str;
+				action->set_text(0, str);
+				action->set_icon(0, get_icon("Keyboard", "EditorIcons"));
+			}
 
-					action->set_text(0, str);
-					action->set_icon(0, get_icon("Keyboard", "EditorIcons"));
+			Ref<InputEventJoypadButton> jb = ie;
 
-				} break;
-				case InputEvent::JOYPAD_BUTTON: {
+			if (jb.is_valid()) {
 
-					String str = TTR("Device") + " " + itos(ie.device) + ", " + TTR("Button") + " " + itos(ie.joy_button.button_index);
-					if (ie.joy_button.button_index >= 0 && ie.joy_button.button_index < JOY_BUTTON_MAX)
-						str += String() + " (" + _button_names[ie.joy_button.button_index] + ").";
-					else
-						str += ".";
+				String str = TTR("Device") + " " + itos(jb->get_device()) + ", " + TTR("Button") + " " + itos(jb->get_button_index());
+				if (jb->get_button_index() >= 0 && jb->get_button_index() < JOY_BUTTON_MAX)
+					str += String() + " (" + _button_names[jb->get_button_index()] + ").";
+				else
+					str += ".";
 
-					action->set_text(0, str);
-					action->set_icon(0, get_icon("JoyButton", "EditorIcons"));
-				} break;
-				case InputEvent::MOUSE_BUTTON: {
+				action->set_text(0, str);
+				action->set_icon(0, get_icon("JoyButton", "EditorIcons"));
+			}
 
-					String str = TTR("Device") + " " + itos(ie.device) + ", ";
-					switch (ie.mouse_button.button_index) {
-						case BUTTON_LEFT: str += TTR("Left Button."); break;
-						case BUTTON_RIGHT: str += TTR("Right Button."); break;
-						case BUTTON_MIDDLE: str += TTR("Middle Button."); break;
-						case BUTTON_WHEEL_UP: str += TTR("Wheel Up."); break;
-						case BUTTON_WHEEL_DOWN: str += TTR("Wheel Down."); break;
-						default: str += TTR("Button") + " " + itos(ie.mouse_button.button_index) + ".";
-					}
+			Ref<InputEventMouseButton> mb = ie;
 
-					action->set_text(0, str);
-					action->set_icon(0, get_icon("Mouse", "EditorIcons"));
-				} break;
-				case InputEvent::JOYPAD_MOTION: {
+			if (mb.is_valid()) {
+				String str = TTR("Device") + " " + itos(mb->get_device()) + ", ";
+				switch (mb->get_button_index()) {
+					case BUTTON_LEFT: str += TTR("Left Button."); break;
+					case BUTTON_RIGHT: str += TTR("Right Button."); break;
+					case BUTTON_MIDDLE: str += TTR("Middle Button."); break;
+					case BUTTON_WHEEL_UP: str += TTR("Wheel Up."); break;
+					case BUTTON_WHEEL_DOWN: str += TTR("Wheel Down."); break;
+					default: str += TTR("Button") + " " + itos(mb->get_button_index()) + ".";
+				}
 
-					int ax = ie.joy_motion.axis;
-					int n = 2 * ax + (ie.joy_motion.axis_value < 0 ? 0 : 1);
-					String desc = _axis_names[n];
-					String str = TTR("Device") + " " + itos(ie.device) + ", " + TTR("Axis") + " " + itos(ax) + " " + (ie.joy_motion.axis_value < 0 ? "-" : "+") + desc + ".";
-					action->set_text(0, str);
-					action->set_icon(0, get_icon("JoyAxis", "EditorIcons"));
-				} break;
+				action->set_text(0, str);
+				action->set_icon(0, get_icon("Mouse", "EditorIcons"));
+			}
+
+			Ref<InputEventJoypadMotion> jm = ie;
+
+			if (jm.is_valid()) {
+
+				int ax = jm->get_axis();
+				int n = 2 * ax + (jm->get_axis_value() < 0 ? 0 : 1);
+				String desc = _axis_names[n];
+				String str = TTR("Device") + " " + itos(jm->get_device()) + ", " + TTR("Axis") + " " + itos(ax) + " " + (jm->get_axis_value() < 0 ? "-" : "+") + desc + ".";
+				action->set_text(0, str);
+				action->set_icon(0, get_icon("JoyAxis", "EditorIcons"));
 			}
 			action->add_button(0, get_icon("Remove", "EditorIcons"), 2, false, TTR("Remove"));
 			action->set_metadata(0, i);

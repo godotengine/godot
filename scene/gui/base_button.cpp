@@ -48,188 +48,185 @@ void BaseButton::_unpress_group() {
 	}
 }
 
-void BaseButton::_gui_input(InputEvent p_event) {
+void BaseButton::_gui_input(Ref<InputEvent> p_event) {
 
 	if (status.disabled) // no interaction with disabled button
 		return;
 
-	switch (p_event.type) {
+	Ref<InputEventMouseButton> b = p_event;
 
-		case InputEvent::MOUSE_BUTTON: {
+	if (b.is_valid()) {
+		if (status.disabled || b->get_button_index() != 1)
+			return;
 
-			const InputEventMouseButton &b = p_event.mouse_button;
+		if (status.pressing_button)
+			return;
 
-			if (status.disabled || b.button_index != 1)
-				return;
+		if (action_mode == ACTION_MODE_BUTTON_PRESS) {
 
-			if (status.pressing_button)
-				break;
+			if (b->is_pressed()) {
 
-			if (action_mode == ACTION_MODE_BUTTON_PRESS) {
+				emit_signal("button_down");
 
-				if (b.pressed) {
+				if (!toggle_mode) { //mouse press attempt
 
-					emit_signal("button_down");
+					status.press_attempt = true;
+					status.pressing_inside = true;
 
-					if (!toggle_mode) { //mouse press attempt
-
-						status.press_attempt = true;
-						status.pressing_inside = true;
-
-						pressed();
-						if (get_script_instance()) {
-							Variant::CallError ce;
-							get_script_instance()->call(SceneStringNames::get_singleton()->_pressed, NULL, 0, ce);
-						}
-
-						emit_signal("pressed");
-						_unpress_group();
-
-					} else {
-
-						status.pressed = !status.pressed;
-						pressed();
-						if (get_script_instance()) {
-							Variant::CallError ce;
-							get_script_instance()->call(SceneStringNames::get_singleton()->_pressed, NULL, 0, ce);
-						}
-						emit_signal("pressed");
-						_unpress_group();
-
-						toggled(status.pressed);
-						emit_signal("toggled", status.pressed);
+					pressed();
+					if (get_script_instance()) {
+						Variant::CallError ce;
+						get_script_instance()->call(SceneStringNames::get_singleton()->_pressed, NULL, 0, ce);
 					}
+
+					emit_signal("pressed");
+					_unpress_group();
 
 				} else {
 
-					emit_signal("button_up");
-
-					/* this is pointless		if (status.press_attempt && status.pressing_inside) {
-						//released();
-						emit_signal("released");
+					status.pressed = !status.pressed;
+					pressed();
+					if (get_script_instance()) {
+						Variant::CallError ce;
+						get_script_instance()->call(SceneStringNames::get_singleton()->_pressed, NULL, 0, ce);
 					}
-*/
-					status.press_attempt = false;
+					emit_signal("pressed");
+					_unpress_group();
+
+					toggled(status.pressed);
+					emit_signal("toggled", status.pressed);
 				}
-				update();
-				break;
-			}
-
-			if (b.pressed) {
-
-				status.press_attempt = true;
-				status.pressing_inside = true;
-				emit_signal("button_down");
 
 			} else {
 
 				emit_signal("button_up");
 
-				if (status.press_attempt && status.pressing_inside) {
-
-					if (!toggle_mode) { //mouse press attempt
-
-						pressed();
-						if (get_script_instance()) {
-							Variant::CallError ce;
-							get_script_instance()->call(SceneStringNames::get_singleton()->_pressed, NULL, 0, ce);
-						}
-
-						emit_signal("pressed");
-
-					} else {
-
-						status.pressed = !status.pressed;
-
-						pressed();
-						emit_signal("pressed");
-
-						toggled(status.pressed);
-						emit_signal("toggled", status.pressed);
-						if (get_script_instance()) {
-							get_script_instance()->call(SceneStringNames::get_singleton()->_toggled, status.pressed);
-						}
-					}
-
-					_unpress_group();
+				/* this is pointless		if (status.press_attempt && status.pressing_inside) {
+					//released();
+					emit_signal("released");
 				}
-
+*/
 				status.press_attempt = false;
 			}
-
 			update();
-		} break;
-		case InputEvent::MOUSE_MOTION: {
+			return;
+		}
 
-			if (status.press_attempt && status.pressing_button == 0) {
-				bool last_press_inside = status.pressing_inside;
-				status.pressing_inside = has_point(Point2(p_event.mouse_motion.x, p_event.mouse_motion.y));
-				if (last_press_inside != status.pressing_inside)
-					update();
-			}
-		} break;
-		case InputEvent::ACTION:
-		case InputEvent::JOYPAD_BUTTON:
-		case InputEvent::KEY: {
+		if (b->is_pressed()) {
 
-			if (p_event.is_echo()) {
-				break;
-			}
+			status.press_attempt = true;
+			status.pressing_inside = true;
+			emit_signal("button_down");
 
-			if (status.disabled) {
-				break;
-			}
+		} else {
 
-			if (status.press_attempt && status.pressing_button == 0) {
-				break;
-			}
+			emit_signal("button_up");
 
-			if (p_event.is_action("ui_accept")) {
+			if (status.press_attempt && status.pressing_inside) {
 
-				if (p_event.is_pressed()) {
+				if (!toggle_mode) { //mouse press attempt
 
-					status.pressing_button++;
-					status.press_attempt = true;
-					status.pressing_inside = true;
-					emit_signal("button_down");
-
-				} else if (status.press_attempt) {
-
-					if (status.pressing_button)
-						status.pressing_button--;
-
-					if (status.pressing_button)
-						break;
-
-					status.press_attempt = false;
-					status.pressing_inside = false;
-
-					emit_signal("button_up");
-
-					if (!toggle_mode) { //mouse press attempt
-
-						pressed();
-						emit_signal("pressed");
-					} else {
-
-						status.pressed = !status.pressed;
-
-						pressed();
-						emit_signal("pressed");
-
-						toggled(status.pressed);
-						if (get_script_instance()) {
-							get_script_instance()->call(SceneStringNames::get_singleton()->_toggled, status.pressed);
-						}
-						emit_signal("toggled", status.pressed);
+					pressed();
+					if (get_script_instance()) {
+						Variant::CallError ce;
+						get_script_instance()->call(SceneStringNames::get_singleton()->_pressed, NULL, 0, ce);
 					}
 
-					_unpress_group();
+					emit_signal("pressed");
+
+				} else {
+
+					status.pressed = !status.pressed;
+
+					pressed();
+					emit_signal("pressed");
+
+					toggled(status.pressed);
+					emit_signal("toggled", status.pressed);
+					if (get_script_instance()) {
+						get_script_instance()->call(SceneStringNames::get_singleton()->_toggled, status.pressed);
+					}
 				}
 
-				accept_event();
-				update();
+				_unpress_group();
 			}
+
+			status.press_attempt = false;
+		}
+
+		update();
+	}
+
+	Ref<InputEventMouseMotion> mm = p_event;
+
+	if (mm.is_valid()) {
+		if (status.press_attempt && status.pressing_button == 0) {
+			bool last_press_inside = status.pressing_inside;
+			status.pressing_inside = has_point(mm->get_pos());
+			if (last_press_inside != status.pressing_inside)
+				update();
+		}
+	}
+
+	if (!mm.is_valid() && !b.is_valid()) {
+
+		if (p_event->is_echo()) {
+			return;
+		}
+
+		if (status.disabled) {
+			return;
+		}
+
+		if (status.press_attempt && status.pressing_button == 0) {
+			return;
+		}
+
+		if (p_event->is_action("ui_accept")) {
+
+			if (p_event->is_pressed()) {
+
+				status.pressing_button++;
+				status.press_attempt = true;
+				status.pressing_inside = true;
+				emit_signal("button_down");
+
+			} else if (status.press_attempt) {
+
+				if (status.pressing_button)
+					status.pressing_button--;
+
+				if (status.pressing_button)
+					return;
+
+				status.press_attempt = false;
+				status.pressing_inside = false;
+
+				emit_signal("button_up");
+
+				if (!toggle_mode) { //mouse press attempt
+
+					pressed();
+					emit_signal("pressed");
+				} else {
+
+					status.pressed = !status.pressed;
+
+					pressed();
+					emit_signal("pressed");
+
+					toggled(status.pressed);
+					if (get_script_instance()) {
+						get_script_instance()->call(SceneStringNames::get_singleton()->_toggled, status.pressed);
+					}
+					emit_signal("toggled", status.pressed);
+				}
+
+				_unpress_group();
+			}
+
+			accept_event();
+			update();
 		}
 	}
 }
@@ -430,9 +427,9 @@ Ref<ShortCut> BaseButton::get_shortcut() const {
 	return shortcut;
 }
 
-void BaseButton::_unhandled_input(InputEvent p_event) {
+void BaseButton::_unhandled_input(Ref<InputEvent> p_event) {
 
-	if (!is_disabled() && is_visible_in_tree() && p_event.is_pressed() && !p_event.is_echo() && shortcut.is_valid() && shortcut->is_shortcut(p_event)) {
+	if (!is_disabled() && is_visible_in_tree() && p_event->is_pressed() && !p_event->is_echo() && shortcut.is_valid() && shortcut->is_shortcut(p_event)) {
 
 		if (get_viewport()->get_modal_stack_top() && !get_viewport()->get_modal_stack_top()->is_a_parent_of(this))
 			return; //ignore because of modal window

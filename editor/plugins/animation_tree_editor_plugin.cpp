@@ -735,139 +735,139 @@ void AnimationTreeEditor::_node_edit_property(const StringName& p_node) {
 }
 #endif
 
-void AnimationTreeEditor::_gui_input(InputEvent p_event) {
+void AnimationTreeEditor::_gui_input(Ref<InputEvent> p_event) {
 
-	switch (p_event.type) {
+	Ref<InputEventMouseButton> mb = p_event;
 
-		case InputEvent::MOUSE_BUTTON: {
+	if (mb.is_valid()) {
 
-			if (p_event.mouse_button.pressed) {
+		if (mb->is_pressed()) {
 
-				if (p_event.mouse_button.button_index == 1) {
-					click_pos = Point2(p_event.mouse_button.x, p_event.mouse_button.y);
-					click_motion = click_pos;
-					click_type = _locate_click(click_pos, &click_node, &click_slot);
-					if (click_type != CLICK_NONE) {
+			if (mb->get_button_index() == 1) {
+				click_pos = Point2(mb->get_pos().x, mb->get_pos().y);
+				click_motion = click_pos;
+				click_type = _locate_click(click_pos, &click_node, &click_slot);
+				if (click_type != CLICK_NONE) {
 
-						order.erase(click_node);
-						order.push_back(click_node);
-						update();
-					}
-
-					switch (click_type) {
-						case CLICK_INPUT_SLOT: {
-							click_pos = _get_slot_pos(click_node, true, click_slot);
-						} break;
-						case CLICK_OUTPUT_SLOT: {
-							click_pos = _get_slot_pos(click_node, false, click_slot);
-						} break;
-						case CLICK_PARAMETER: {
-
-							edited_node = click_node;
-							renaming_edit = false;
-							_popup_edit_dialog();
-							//open editor
-							//_node_edit_property(click_node);
-						} break;
-						default: {}
-					}
-				}
-				if (p_event.mouse_button.button_index == 2) {
-
-					if (click_type != CLICK_NONE) {
-						click_type = CLICK_NONE;
-						update();
-					} else {
-						// try to disconnect/remove
-
-						Point2 rclick_pos = Point2(p_event.mouse_button.x, p_event.mouse_button.y);
-						rclick_type = _locate_click(rclick_pos, &rclick_node, &rclick_slot);
-						if (rclick_type == CLICK_INPUT_SLOT || rclick_type == CLICK_OUTPUT_SLOT) {
-
-							node_popup->clear();
-							node_popup->add_item(TTR("Disconnect"), NODE_DISCONNECT);
-							if (anim_tree->node_get_type(rclick_node) == AnimationTreePlayer::NODE_TRANSITION) {
-								node_popup->add_item(TTR("Add Input"), NODE_ADD_INPUT);
-								if (rclick_type == CLICK_INPUT_SLOT) {
-									if (anim_tree->transition_node_has_input_auto_advance(rclick_node, rclick_slot))
-										node_popup->add_item(TTR("Clear Auto-Advance"), NODE_CLEAR_AUTOADVANCE);
-									else
-										node_popup->add_item(TTR("Set Auto-Advance"), NODE_SET_AUTOADVANCE);
-									node_popup->add_item(TTR("Delete Input"), NODE_DELETE_INPUT);
-								}
-							}
-
-							node_popup->set_position(rclick_pos + get_global_position());
-							node_popup->popup();
-						}
-
-						if (rclick_type == CLICK_NODE) {
-							node_popup->clear();
-							node_popup->add_item(TTR("Rename"), NODE_RENAME);
-							node_popup->add_item(TTR("Remove"), NODE_ERASE);
-							if (anim_tree->node_get_type(rclick_node) == AnimationTreePlayer::NODE_TRANSITION)
-								node_popup->add_item(TTR("Add Input"), NODE_ADD_INPUT);
-							node_popup->set_position(rclick_pos + get_global_position());
-							node_popup->popup();
-						}
-					}
-				}
-			} else {
-
-				if (p_event.mouse_button.button_index == 1 && click_type != CLICK_NONE) {
-
-					switch (click_type) {
-						case CLICK_INPUT_SLOT:
-						case CLICK_OUTPUT_SLOT: {
-
-							Point2 dst_click_pos = Point2(p_event.mouse_button.x, p_event.mouse_button.y);
-							StringName id;
-							int slot;
-							ClickType dst_click_type = _locate_click(dst_click_pos, &id, &slot);
-
-							if (dst_click_type == CLICK_INPUT_SLOT && click_type == CLICK_OUTPUT_SLOT) {
-
-								anim_tree->connect_nodes(click_node, id, slot);
-							}
-							if (click_type == CLICK_INPUT_SLOT && dst_click_type == CLICK_OUTPUT_SLOT) {
-
-								anim_tree->connect_nodes(id, click_node, click_slot);
-							}
-
-						} break;
-						case CLICK_NODE: {
-							Point2 new_pos = anim_tree->node_get_pos(click_node) + (click_motion - click_pos);
-							if (new_pos.x < 5)
-								new_pos.x = 5;
-							if (new_pos.y < 5)
-								new_pos.y = 5;
-							anim_tree->node_set_pos(click_node, new_pos);
-
-						} break;
-						default: {}
-					}
-
-					click_type = CLICK_NONE;
+					order.erase(click_node);
+					order.push_back(click_node);
 					update();
 				}
+
+				switch (click_type) {
+					case CLICK_INPUT_SLOT: {
+						click_pos = _get_slot_pos(click_node, true, click_slot);
+					} break;
+					case CLICK_OUTPUT_SLOT: {
+						click_pos = _get_slot_pos(click_node, false, click_slot);
+					} break;
+					case CLICK_PARAMETER: {
+
+						edited_node = click_node;
+						renaming_edit = false;
+						_popup_edit_dialog();
+						//open editor
+						//_node_edit_property(click_node);
+					} break;
+					default: {}
+				}
+			}
+			if (mb->get_button_index() == 2) {
+
+				if (click_type != CLICK_NONE) {
+					click_type = CLICK_NONE;
+					update();
+				} else {
+					// try to disconnect/remove
+
+					Point2 rclick_pos = Point2(mb->get_pos().x, mb->get_pos().y);
+					rclick_type = _locate_click(rclick_pos, &rclick_node, &rclick_slot);
+					if (rclick_type == CLICK_INPUT_SLOT || rclick_type == CLICK_OUTPUT_SLOT) {
+
+						node_popup->clear();
+						node_popup->add_item(TTR("Disconnect"), NODE_DISCONNECT);
+						if (anim_tree->node_get_type(rclick_node) == AnimationTreePlayer::NODE_TRANSITION) {
+							node_popup->add_item(TTR("Add Input"), NODE_ADD_INPUT);
+							if (rclick_type == CLICK_INPUT_SLOT) {
+								if (anim_tree->transition_node_has_input_auto_advance(rclick_node, rclick_slot))
+									node_popup->add_item(TTR("Clear Auto-Advance"), NODE_CLEAR_AUTOADVANCE);
+								else
+									node_popup->add_item(TTR("Set Auto-Advance"), NODE_SET_AUTOADVANCE);
+								node_popup->add_item(TTR("Delete Input"), NODE_DELETE_INPUT);
+							}
+						}
+
+						node_popup->set_position(rclick_pos + get_global_position());
+						node_popup->popup();
+					}
+
+					if (rclick_type == CLICK_NODE) {
+						node_popup->clear();
+						node_popup->add_item(TTR("Rename"), NODE_RENAME);
+						node_popup->add_item(TTR("Remove"), NODE_ERASE);
+						if (anim_tree->node_get_type(rclick_node) == AnimationTreePlayer::NODE_TRANSITION)
+							node_popup->add_item(TTR("Add Input"), NODE_ADD_INPUT);
+						node_popup->set_position(rclick_pos + get_global_position());
+						node_popup->popup();
+					}
+				}
+			}
+		} else {
+
+			if (mb->get_button_index() == 1 && click_type != CLICK_NONE) {
+
+				switch (click_type) {
+					case CLICK_INPUT_SLOT:
+					case CLICK_OUTPUT_SLOT: {
+
+						Point2 dst_click_pos = Point2(mb->get_pos().x, mb->get_pos().y);
+						StringName id;
+						int slot;
+						ClickType dst_click_type = _locate_click(dst_click_pos, &id, &slot);
+
+						if (dst_click_type == CLICK_INPUT_SLOT && click_type == CLICK_OUTPUT_SLOT) {
+
+							anim_tree->connect_nodes(click_node, id, slot);
+						}
+						if (click_type == CLICK_INPUT_SLOT && dst_click_type == CLICK_OUTPUT_SLOT) {
+
+							anim_tree->connect_nodes(id, click_node, click_slot);
+						}
+
+					} break;
+					case CLICK_NODE: {
+						Point2 new_pos = anim_tree->node_get_pos(click_node) + (click_motion - click_pos);
+						if (new_pos.x < 5)
+							new_pos.x = 5;
+						if (new_pos.y < 5)
+							new_pos.y = 5;
+						anim_tree->node_set_pos(click_node, new_pos);
+
+					} break;
+					default: {}
+				}
+
+				click_type = CLICK_NONE;
+				update();
 			}
 		}
+	}
 
-		case InputEvent::MOUSE_MOTION: {
+	Ref<InputEventMouseMotion> mm = p_event;
 
-			if (p_event.mouse_motion.button_mask & 1 && click_type != CLICK_NONE) {
+	if (mm.is_valid()) {
 
-				click_motion = Point2(p_event.mouse_button.x, p_event.mouse_button.y);
-				update();
-			}
-			if ((p_event.mouse_motion.button_mask & 4 || Input::get_singleton()->is_key_pressed(KEY_SPACE))) {
+		if (mm->get_button_mask() & 1 && click_type != CLICK_NONE) {
 
-				h_scroll->set_value(h_scroll->get_value() - p_event.mouse_motion.relative_x);
-				v_scroll->set_value(v_scroll->get_value() - p_event.mouse_motion.relative_y);
-				update();
-			}
+			click_motion = Point2(mm->get_pos().x, mm->get_pos().y);
+			update();
+		}
+		if ((mm->get_button_mask() & 4 || Input::get_singleton()->is_key_pressed(KEY_SPACE))) {
 
-		} break;
+			h_scroll->set_value(h_scroll->get_value() - mm->get_relative().x);
+			v_scroll->set_value(v_scroll->get_value() - mm->get_relative().y);
+			update();
+		}
 	}
 }
 

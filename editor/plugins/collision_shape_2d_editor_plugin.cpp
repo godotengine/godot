@@ -302,7 +302,7 @@ void CollisionShape2DEditor::commit_handle(int idx, Variant &p_org) {
 	undo_redo->commit_action();
 }
 
-bool CollisionShape2DEditor::forward_gui_input(const InputEvent &p_event) {
+bool CollisionShape2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (!node) {
 		return false;
@@ -316,68 +316,66 @@ bool CollisionShape2DEditor::forward_gui_input(const InputEvent &p_event) {
 		return false;
 	}
 
-	switch (p_event.type) {
-		case InputEvent::MOUSE_BUTTON: {
-			const InputEventMouseButton &mb = p_event.mouse_button;
+	Ref<InputEventMouseButton> mb = p_event;
 
-			Transform2D gt = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
+	if (mb.is_valid()) {
 
-			Point2 gpoint(mb.x, mb.y);
+		Transform2D gt = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
-			if (mb.button_index == BUTTON_LEFT) {
-				if (mb.pressed) {
-					for (int i = 0; i < handles.size(); i++) {
-						if (gt.xform(handles[i]).distance_to(gpoint) < 8) {
-							edit_handle = i;
+		Point2 gpoint(mb->get_pos().x, mb->get_pos().y);
 
-							break;
-						}
-					}
+		if (mb->get_button_index() == BUTTON_LEFT) {
+			if (mb->is_pressed()) {
+				for (int i = 0; i < handles.size(); i++) {
+					if (gt.xform(handles[i]).distance_to(gpoint) < 8) {
+						edit_handle = i;
 
-					if (edit_handle == -1) {
-						pressed = false;
-
-						return false;
-					}
-
-					original = get_handle_value(edit_handle);
-					pressed = true;
-
-					return true;
-
-				} else {
-					if (pressed) {
-						commit_handle(edit_handle, original);
-
-						edit_handle = -1;
-						pressed = false;
-
-						return true;
+						break;
 					}
 				}
-			}
 
+				if (edit_handle == -1) {
+					pressed = false;
+
+					return false;
+				}
+
+				original = get_handle_value(edit_handle);
+				pressed = true;
+
+				return true;
+
+			} else {
+				if (pressed) {
+					commit_handle(edit_handle, original);
+
+					edit_handle = -1;
+					pressed = false;
+
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	Ref<InputEventMouseMotion> mm = p_event;
+
+	if (mm.is_valid()) {
+
+		if (edit_handle == -1 || !pressed) {
 			return false;
+		}
 
-		} break;
+		Point2 gpoint = mm->get_pos();
+		Point2 cpoint = canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint);
+		cpoint = canvas_item_editor->snap_point(cpoint);
+		cpoint = node->get_global_transform().affine_inverse().xform(cpoint);
 
-		case InputEvent::MOUSE_MOTION: {
-			const InputEventMouseMotion &mm = p_event.mouse_motion;
+		set_handle(edit_handle, cpoint);
 
-			if (edit_handle == -1 || !pressed) {
-				return false;
-			}
-
-			Point2 gpoint = Point2(mm.x, mm.y);
-			Point2 cpoint = canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint);
-			cpoint = canvas_item_editor->snap_point(cpoint);
-			cpoint = node->get_global_transform().affine_inverse().xform(cpoint);
-
-			set_handle(edit_handle, cpoint);
-
-			return true;
-
-		} break;
+		return true;
 	}
 
 	return false;

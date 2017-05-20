@@ -196,7 +196,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	String revert_on_drag;
 
-	void _input(const InputEvent &p_event);
+	void _input(const Ref<InputEvent> &p_event);
 	void _on_nodes_delete();
 	void _on_nodes_duplicate();
 

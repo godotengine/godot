@@ -201,9 +201,9 @@ public:
 	virtual int get_mouse_button_mask() const;
 
 	virtual void warp_mouse_pos(const Vector2 &p_to);
-	virtual Point2i warp_mouse_motion(const InputEventMouseMotion &p_motion, const Rect2 &p_rect);
+	virtual Point2i warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, const Rect2 &p_rect);
 
-	virtual void parse_input_event(const InputEvent &p_event);
+	virtual void parse_input_event(const Ref<InputEvent> &p_event);
 
 	void set_gravity(const Vector3 &p_gravity);
 	void set_accelerometer(const Vector3 &p_accel);

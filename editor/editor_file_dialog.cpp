@@ -95,11 +95,13 @@ void EditorFileDialog::_notification(int p_what) {
 	}
 }
 
-void EditorFileDialog::_unhandled_input(const InputEvent &p_event) {
+void EditorFileDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
 
-	if (p_event.type == InputEvent::KEY && is_window_modal_on_top()) {
+	Ref<InputEventKey> k = p_event;
 
-		if (p_event.key.pressed) {
+	if (k.is_valid() && is_window_modal_on_top()) {
+
+		if (k->is_pressed()) {
 
 			bool handled = false;
 

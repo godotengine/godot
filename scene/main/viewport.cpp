@@ -503,30 +503,36 @@ void Viewport::_notification(int p_what) {
 
 				while (physics_picking_events.size()) {
 
-					InputEvent ev = physics_picking_events.front()->get();
+					Ref<InputEvent> ev = physics_picking_events.front()->get();
 					physics_picking_events.pop_front();
 
 					Vector2 pos;
-					switch (ev.type) {
-						case InputEvent::MOUSE_MOTION: {
-							pos.x = ev.mouse_motion.x;
-							pos.y = ev.mouse_motion.y;
-							motion_tested = true;
-							physics_last_mousepos = pos;
-						} break;
-						case InputEvent::MOUSE_BUTTON: {
-							pos.x = ev.mouse_button.x;
-							pos.y = ev.mouse_button.y;
 
-						} break;
-						case InputEvent::SCREEN_DRAG: {
-							pos.x = ev.screen_drag.x;
-							pos.y = ev.screen_drag.y;
-						} break;
-						case InputEvent::SCREEN_TOUCH: {
-							pos.x = ev.screen_touch.x;
-							pos.y = ev.screen_touch.y;
-						} break;
+					Ref<InputEventMouseMotion> mm = ev;
+
+					if (mm.is_valid()) {
+
+						pos = mm->get_pos();
+						motion_tested = true;
+						physics_last_mousepos = pos;
+					}
+
+					Ref<InputEventMouseButton> mb = ev;
+
+					if (mb.is_valid()) {
+						pos = mb->get_pos();
+					}
+
+					Ref<InputEventScreenDrag> sd = ev;
+
+					if (sd.is_valid()) {
+						pos = sd->get_pos();
+					}
+
+					Ref<InputEventScreenTouch> st = ev;
+
+					if (st.is_valid()) {
+						pos = st->get_pos();
 					}
 
 					if (ss2d) {
@@ -589,7 +595,7 @@ void Viewport::_notification(int p_what) {
 							if (co) {
 								co->_input_event(camera, ev, Vector3(), Vector3(), 0);
 								captured = true;
-								if (ev.type == InputEvent::MOUSE_BUTTON && ev.mouse_button.button_index == 1 && !ev.mouse_button.pressed) {
+								if (mb.is_valid() && mb->get_button_index() == 1 && !mb->is_pressed()) {
 									physics_object_capture = 0;
 								}
 
@@ -609,7 +615,7 @@ void Viewport::_notification(int p_what) {
 							if (ObjectDB::get_instance(last_id)) {
 								//good, exists
 								last_object->_input_event(camera, ev, result.position, result.normal, result.shape);
-								if (last_object->get_capture_input_on_drag() && ev.type == InputEvent::MOUSE_BUTTON && ev.mouse_button.button_index == 1 && ev.mouse_button.pressed) {
+								if (last_object->get_capture_input_on_drag() && mb.is_valid() && mb->get_button_index() == 1 && mb->is_pressed()) {
 									physics_object_capture = last_id;
 								}
 							}
@@ -637,14 +643,14 @@ void Viewport::_notification(int p_what) {
 											last_object = co;
 											last_id = result.collider_id;
 											new_collider = last_id;
-											if (co->get_capture_input_on_drag() && ev.type == InputEvent::MOUSE_BUTTON && ev.mouse_button.button_index == 1 && ev.mouse_button.pressed) {
+											if (co->get_capture_input_on_drag() && mb.is_valid() && mb->get_button_index() == 1 && mb->is_pressed()) {
 												physics_object_capture = last_id;
 											}
 										}
 									}
 								}
 
-								if (ev.type == InputEvent::MOUSE_MOTION) {
+								if (mm.is_valid()) {
 									_test_new_mouseover(new_collider);
 								}
 							}
@@ -1322,71 +1328,12 @@ Vector2 Viewport::_get_window_offset() const {
 	return Vector2();
 }
 
-void Viewport::_make_input_local(InputEvent &ev) {
+Ref<InputEvent> Viewport::_make_input_local(const Ref<InputEvent> &ev) {
 
-	switch (ev.type) {
+	Vector2 vp_ofs = _get_window_offset();
+	Transform2D ai = get_final_transform().affine_inverse() * _get_input_pre_xform();
 
-		case InputEvent::MOUSE_BUTTON: {
-
-			Vector2 vp_ofs = _get_window_offset();
-
-			Transform2D ai = get_final_transform().affine_inverse() * _get_input_pre_xform();
-			Vector2 g = ai.xform(Vector2(ev.mouse_button.global_x, ev.mouse_button.global_y));
-			Vector2 l = ai.xform(Vector2(ev.mouse_button.x, ev.mouse_button.y) - vp_ofs);
-
-			ev.mouse_button.x = l.x;
-			ev.mouse_button.y = l.y;
-			ev.mouse_button.global_x = g.x;
-			ev.mouse_button.global_y = g.y;
-
-		} break;
-		case InputEvent::MOUSE_MOTION: {
-
-			Vector2 vp_ofs = _get_window_offset();
-
-			Transform2D ai = get_final_transform().affine_inverse() * _get_input_pre_xform();
-			Vector2 g = ai.xform(Vector2(ev.mouse_motion.global_x, ev.mouse_motion.global_y));
-			Vector2 l = ai.xform(Vector2(ev.mouse_motion.x, ev.mouse_motion.y) - vp_ofs);
-			Vector2 r = ai.basis_xform(Vector2(ev.mouse_motion.relative_x, ev.mouse_motion.relative_y));
-			Vector2 s = ai.basis_xform(Vector2(ev.mouse_motion.speed_x, ev.mouse_motion.speed_y));
-
-			ev.mouse_motion.x = l.x;
-			ev.mouse_motion.y = l.y;
-			ev.mouse_motion.global_x = g.x;
-			ev.mouse_motion.global_y = g.y;
-			ev.mouse_motion.relative_x = r.x;
-			ev.mouse_motion.relative_y = r.y;
-			ev.mouse_motion.speed_x = s.x;
-			ev.mouse_motion.speed_y = s.y;
-
-		} break;
-		case InputEvent::SCREEN_TOUCH: {
-
-			Vector2 vp_ofs = _get_window_offset();
-
-			Transform2D ai = get_final_transform().affine_inverse() * _get_input_pre_xform();
-			Vector2 t = ai.xform(Vector2(ev.screen_touch.x, ev.screen_touch.y) - vp_ofs);
-
-			ev.screen_touch.x = t.x;
-			ev.screen_touch.y = t.y;
-
-		} break;
-		case InputEvent::SCREEN_DRAG: {
-
-			Vector2 vp_ofs = _get_window_offset();
-
-			Transform2D ai = get_final_transform().affine_inverse() * _get_input_pre_xform();
-			Vector2 t = ai.xform(Vector2(ev.screen_drag.x, ev.screen_drag.y) - vp_ofs);
-			Vector2 r = ai.basis_xform(Vector2(ev.screen_drag.relative_x, ev.screen_drag.relative_y));
-			Vector2 s = ai.basis_xform(Vector2(ev.screen_drag.speed_x, ev.screen_drag.speed_y));
-			ev.screen_drag.x = t.x;
-			ev.screen_drag.y = t.y;
-			ev.screen_drag.relative_x = r.x;
-			ev.screen_drag.relative_y = r.y;
-			ev.screen_drag.speed_x = s.x;
-			ev.screen_drag.speed_y = s.y;
-		} break;
-	}
+	return ev->xformed_by(ai, -vp_ofs);
 }
 
 void Viewport::_vp_input_text(const String &p_text) {
@@ -1396,7 +1343,7 @@ void Viewport::_vp_input_text(const String &p_text) {
 	}
 }
 
-void Viewport::_vp_input(const InputEvent &p_ev) {
+void Viewport::_vp_input(const Ref<InputEvent> &p_ev) {
 
 	if (disable_input)
 		return;
@@ -1413,12 +1360,11 @@ void Viewport::_vp_input(const InputEvent &p_ev) {
 	//this one handles system input, p_ev are in system coordinates
 	//they are converted to viewport coordinates
 
-	InputEvent ev = p_ev;
-	_make_input_local(ev);
+	Ref<InputEvent> ev = _make_input_local(p_ev);
 	input(ev);
 }
 
-void Viewport::_vp_unhandled_input(const InputEvent &p_ev) {
+void Viewport::_vp_unhandled_input(const Ref<InputEvent> &p_ev) {
 
 	if (disable_input)
 		return;
@@ -1439,8 +1385,7 @@ void Viewport::_vp_unhandled_input(const InputEvent &p_ev) {
 	//this one handles system input, p_ev are in system coordinates
 	//they are converted to viewport coordinates
 
-	InputEvent ev = p_ev;
-	_make_input_local(ev);
+	Ref<InputEvent> ev = _make_input_local(p_ev);
 	unhandled_input(ev);
 }
 
@@ -1545,18 +1490,22 @@ void Viewport::_gui_show_tooltip() {
 	gui.tooltip_popup->show();
 }
 
-void Viewport::_gui_call_input(Control *p_control, const InputEvent &p_input) {
+void Viewport::_gui_call_input(Control *p_control, const Ref<InputEvent> &p_input) {
 
 	//_block();
 
-	InputEvent ev = p_input;
+	Ref<InputEvent> ev = p_input;
 
 	//mouse wheel events can't be stopped
-	bool cant_stop_me_now = (ev.type == InputEvent::MOUSE_BUTTON &&
-							 (ev.mouse_button.button_index == BUTTON_WHEEL_DOWN ||
-									 ev.mouse_button.button_index == BUTTON_WHEEL_UP ||
-									 ev.mouse_button.button_index == BUTTON_WHEEL_LEFT ||
-									 ev.mouse_button.button_index == BUTTON_WHEEL_RIGHT));
+	Ref<InputEventMouseButton> mb = p_input;
+
+	bool cant_stop_me_now = (mb.is_valid() &&
+							 (mb->get_button_index() == BUTTON_WHEEL_DOWN ||
+									 mb->get_button_index() == BUTTON_WHEEL_UP ||
+									 mb->get_button_index() == BUTTON_WHEEL_LEFT ||
+									 mb->get_button_index() == BUTTON_WHEEL_RIGHT));
+
+	bool ismouse = ev.is_valid() || p_input->cast_to<InputEventMouseMotion>() != NULL;
 
 	CanvasItem *ci = p_control;
 	while (ci) {
@@ -1573,14 +1522,14 @@ void Viewport::_gui_call_input(Control *p_control, const InputEvent &p_input) {
 				break;
 			if (gui.key_event_accepted)
 				break;
-			if (!cant_stop_me_now && control->data.mouse_filter == Control::MOUSE_FILTER_STOP && (ev.type == InputEvent::MOUSE_BUTTON || ev.type == InputEvent::MOUSE_MOTION))
+			if (!cant_stop_me_now && control->data.mouse_filter == Control::MOUSE_FILTER_STOP && ismouse)
 				break;
 		}
 
 		if (ci->is_set_as_toplevel())
 			break;
 
-		ev = ev.xform_by(ci->get_transform()); //transform event upwards
+		ev = ev->xformed_by(ci->get_transform()); //transform event upwards
 		ci = ci->get_parent_item();
 	}
 
@@ -1718,9 +1667,9 @@ bool Viewport::_gui_drop(Control *p_at_control, Point2 p_at_pos, bool p_just_che
 	return false;
 }
 
-void Viewport::_gui_input_event(InputEvent p_event) {
+void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
-	if (p_event.ID == gui.cancelled_input_ID) {
+	if (p_event->get_id() == gui.cancelled_input_ID) {
 		return;
 	}
 	//?
@@ -1730,98 +1679,220 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 	}
 	*/
 
-	switch (p_event.type) {
+	Ref<InputEventMouseButton> mb = p_event;
 
-		case InputEvent::MOUSE_BUTTON: {
+	if (mb.is_valid()) {
 
-			gui.key_event_accepted = false;
+		gui.key_event_accepted = false;
 
-			Point2 mpos = Point2(p_event.mouse_button.x, p_event.mouse_button.y);
-			if (p_event.mouse_button.pressed) {
+		Point2 mpos = mb->get_pos();
+		if (mb->is_pressed()) {
 
-				Size2 pos = mpos;
-				if (gui.mouse_focus && p_event.mouse_button.button_index != gui.mouse_focus_button) {
+			Size2 pos = mpos;
+			if (gui.mouse_focus && mb->get_button_index() != gui.mouse_focus_button) {
 
-					//do not steal mouse focus and stuff
+				//do not steal mouse focus and stuff
 
-				} else {
+			} else {
 
-					_gui_sort_modal_stack();
-					while (!gui.modal_stack.empty()) {
+				_gui_sort_modal_stack();
+				while (!gui.modal_stack.empty()) {
 
-						Control *top = gui.modal_stack.back()->get();
-						Vector2 pos = top->get_global_transform_with_canvas().affine_inverse().xform(mpos);
-						if (!top->has_point(pos)) {
+					Control *top = gui.modal_stack.back()->get();
+					Vector2 pos = top->get_global_transform_with_canvas().affine_inverse().xform(mpos);
+					if (!top->has_point(pos)) {
 
-							if (top->data.modal_exclusive || top->data.modal_frame == Engine::get_singleton()->get_frames_drawn()) {
-								//cancel event, sorry, modal exclusive EATS UP ALL
-								//alternative, you can't pop out a window the same frame it was made modal (fixes many issues)
-								get_tree()->set_input_as_handled();
-								return; // no one gets the event if exclusive NO ONE
-							}
-
-							top->notification(Control::NOTIFICATION_MODAL_CLOSE);
-							top->_modal_stack_remove();
-							top->hide();
-						} else {
-							break;
+						if (top->data.modal_exclusive || top->data.modal_frame == Engine::get_singleton()->get_frames_drawn()) {
+							//cancel event, sorry, modal exclusive EATS UP ALL
+							//alternative, you can't pop out a window the same frame it was made modal (fixes many issues)
+							get_tree()->set_input_as_handled();
+							return; // no one gets the event if exclusive NO ONE
 						}
-					}
 
-					//Matrix32 parent_xform;
-
-					/*
-					if (data.parent_canvas_item)
-						parent_xform=data.parent_canvas_item->get_global_transform();
-					*/
-
-					gui.mouse_focus = _gui_find_control(pos);
-					//print_line("has mf "+itos(gui.mouse_focus!=NULL));
-					gui.mouse_focus_button = p_event.mouse_button.button_index;
-
-					if (!gui.mouse_focus) {
+						top->notification(Control::NOTIFICATION_MODAL_CLOSE);
+						top->_modal_stack_remove();
+						top->hide();
+					} else {
 						break;
 					}
-
-					if (p_event.mouse_button.button_index == BUTTON_LEFT) {
-						gui.drag_accum = Vector2();
-						gui.drag_attempted = false;
-					}
 				}
 
-				p_event.mouse_button.global_x = pos.x;
-				p_event.mouse_button.global_y = pos.y;
+				//Matrix32 parent_xform;
 
-				pos = gui.focus_inv_xform.xform(pos);
-				p_event.mouse_button.x = pos.x;
-				p_event.mouse_button.y = pos.y;
+				/*
+				if (data.parent_canvas_item)
+					parent_xform=data.parent_canvas_item->get_global_transform();
+				*/
+
+				gui.mouse_focus = _gui_find_control(pos);
+				//print_line("has mf "+itos(gui.mouse_focus!=NULL));
+				gui.mouse_focus_button = mb->get_button_index();
+
+				if (!gui.mouse_focus) {
+					return;
+				}
+
+				if (mb->get_button_index() == BUTTON_LEFT) {
+					gui.drag_accum = Vector2();
+					gui.drag_attempted = false;
+				}
+			}
+
+			mb = mb->xformed_by(Transform2D()); // make a copy of the event
+
+			mb->set_global_pos(pos);
+
+			pos = gui.focus_inv_xform.xform(pos);
+
+			mb->set_pos(pos);
 
 #ifdef DEBUG_ENABLED
-				if (ScriptDebugger::get_singleton()) {
+			if (ScriptDebugger::get_singleton()) {
 
-					Array arr;
-					arr.push_back(gui.mouse_focus->get_path());
-					arr.push_back(gui.mouse_focus->get_class());
-					ScriptDebugger::get_singleton()->send_message("click_ctrl", arr);
-				}
+				Array arr;
+				arr.push_back(gui.mouse_focus->get_path());
+				arr.push_back(gui.mouse_focus->get_class());
+				ScriptDebugger::get_singleton()->send_message("click_ctrl", arr);
+			}
 
 /*if (bool(GLOBAL_DEF("debug/print_clicked_control",false))) {
 
-						print_line(String(gui.mouse_focus->get_path())+" - "+pos);
-					}*/
+					print_line(String(gui.mouse_focus->get_path())+" - "+pos);
+				}*/
 #endif
 
-				if (p_event.mouse_button.button_index == BUTTON_LEFT) { //assign focus
+			if (mb->get_button_index() == BUTTON_LEFT) { //assign focus
+				CanvasItem *ci = gui.mouse_focus;
+				while (ci) {
+
+					Control *control = ci->cast_to<Control>();
+					if (control) {
+						if (control->get_focus_mode() != Control::FOCUS_NONE) {
+							if (control != gui.key_focus) {
+								control->grab_focus();
+							}
+							break;
+						}
+
+						if (control->data.mouse_filter == Control::MOUSE_FILTER_STOP)
+							break;
+					}
+
+					if (ci->is_set_as_toplevel())
+						break;
+
+					ci = ci->get_parent_item();
+				}
+			}
+
+			if (gui.mouse_focus->can_process()) {
+				_gui_call_input(gui.mouse_focus, mb);
+			}
+
+			get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME, "windows", "_cancel_input_ID", mb->get_id());
+			get_tree()->set_input_as_handled();
+
+			if (gui.drag_data.get_type() != Variant::NIL && mb->get_button_index() == BUTTON_LEFT) {
+
+				//alternate drop use (when using force_drag(), as proposed by #5342
+				if (gui.mouse_focus) {
+					_gui_drop(gui.mouse_focus, pos, false);
+				}
+
+				gui.drag_data = Variant();
+
+				if (gui.drag_preview) {
+					memdelete(gui.drag_preview);
+					gui.drag_preview = NULL;
+				}
+				_propagate_viewport_notification(this, NOTIFICATION_DRAG_END);
+				//change mouse accordingly
+			}
+
+			_gui_cancel_tooltip();
+			//gui.tooltip_popup->hide();
+
+		} else {
+
+			if (gui.drag_data.get_type() != Variant::NIL && mb->get_button_index() == BUTTON_LEFT) {
+
+				if (gui.mouse_over) {
+					Size2 pos = mpos;
+					pos = gui.focus_inv_xform.xform(pos);
+
+					_gui_drop(gui.mouse_over, pos, false);
+				}
+
+				if (gui.drag_preview && mb->get_button_index() == BUTTON_LEFT) {
+					memdelete(gui.drag_preview);
+					gui.drag_preview = NULL;
+				}
+
+				gui.drag_data = Variant();
+				_propagate_viewport_notification(this, NOTIFICATION_DRAG_END);
+				//change mouse accordingly
+			}
+
+			if (!gui.mouse_focus) {
+				//release event is only sent if a mouse focus (previously pressed button) exists
+				return;
+			}
+
+			Size2 pos = mpos;
+
+			mb = mb->xformed_by(Transform2D()); //make a copy
+			mb->set_global_pos(pos);
+			pos = gui.focus_inv_xform.xform(pos);
+			mb->set_pos(pos);
+
+			if (gui.mouse_focus->can_process()) {
+				_gui_call_input(gui.mouse_focus, mb);
+			}
+
+			if (mb->get_button_index() == gui.mouse_focus_button) {
+				gui.mouse_focus = NULL;
+				gui.mouse_focus_button = -1;
+			}
+
+			/*if (gui.drag_data.get_type()!=Variant::NIL && mb->get_button_index()==BUTTON_LEFT) {
+				_propagate_viewport_notification(this,NOTIFICATION_DRAG_END);
+				gui.drag_data=Variant(); //always clear
+			}*/
+
+			get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME, "windows", "_cancel_input_ID", mb->get_id());
+			get_tree()->set_input_as_handled();
+		}
+	}
+
+	Ref<InputEventMouseMotion> mm = p_event;
+
+	if (mm.is_valid()) {
+
+		gui.key_event_accepted = false;
+		Point2 mpos = mm->get_pos();
+
+		gui.last_mouse_pos = mpos;
+
+		Control *over = NULL;
+
+		// D&D
+		if (!gui.drag_attempted && gui.mouse_focus && mm->get_button_mask() & BUTTON_MASK_LEFT) {
+
+			gui.drag_accum += mm->get_relative();
+			float len = gui.drag_accum.length();
+			if (len > 10) {
+
+				{ //attempt grab, try parent controls too
 					CanvasItem *ci = gui.mouse_focus;
 					while (ci) {
 
 						Control *control = ci->cast_to<Control>();
 						if (control) {
-							if (control->get_focus_mode() != Control::FOCUS_NONE) {
-								if (control != gui.key_focus) {
-									control->grab_focus();
-								}
-								break;
+
+							gui.drag_data = control->get_drag_data(control->get_global_transform_with_canvas().affine_inverse().xform(mpos) - gui.drag_accum);
+							if (gui.drag_data.get_type() != Variant::NIL) {
+
+								gui.mouse_focus = NULL;
 							}
 
 							if (control->data.mouse_filter == Control::MOUSE_FILTER_STOP)
@@ -1835,325 +1906,200 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 					}
 				}
 
-				if (gui.mouse_focus->can_process()) {
-					_gui_call_input(gui.mouse_focus, p_event);
+				gui.drag_attempted = true;
+				if (gui.drag_data.get_type() != Variant::NIL) {
+
+					_propagate_viewport_notification(this, NOTIFICATION_DRAG_BEGIN);
 				}
-
-				get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME, "windows", "_cancel_input_ID", p_event.ID);
-				get_tree()->set_input_as_handled();
-
-				if (gui.drag_data.get_type() != Variant::NIL && p_event.mouse_button.button_index == BUTTON_LEFT) {
-
-					//alternate drop use (when using force_drag(), as proposed by #5342
-					if (gui.mouse_focus) {
-						_gui_drop(gui.mouse_focus, pos, false);
-					}
-
-					gui.drag_data = Variant();
-
-					if (gui.drag_preview) {
-						memdelete(gui.drag_preview);
-						gui.drag_preview = NULL;
-					}
-					_propagate_viewport_notification(this, NOTIFICATION_DRAG_END);
-					//change mouse accordingly
-				}
-
-				_gui_cancel_tooltip();
-				//gui.tooltip_popup->hide();
-
-			} else {
-
-				if (gui.drag_data.get_type() != Variant::NIL && p_event.mouse_button.button_index == BUTTON_LEFT) {
-
-					if (gui.mouse_over) {
-						Size2 pos = mpos;
-						pos = gui.focus_inv_xform.xform(pos);
-
-						_gui_drop(gui.mouse_over, pos, false);
-					}
-
-					if (gui.drag_preview && p_event.mouse_button.button_index == BUTTON_LEFT) {
-						memdelete(gui.drag_preview);
-						gui.drag_preview = NULL;
-					}
-
-					gui.drag_data = Variant();
-					_propagate_viewport_notification(this, NOTIFICATION_DRAG_END);
-					//change mouse accordingly
-				}
-
-				if (!gui.mouse_focus) {
-					//release event is only sent if a mouse focus (previously pressed button) exists
-					break;
-				}
-
-				Size2 pos = mpos;
-				p_event.mouse_button.global_x = pos.x;
-				p_event.mouse_button.global_y = pos.y;
-				pos = gui.focus_inv_xform.xform(pos);
-				p_event.mouse_button.x = pos.x;
-				p_event.mouse_button.y = pos.y;
-
-				if (gui.mouse_focus->can_process()) {
-					_gui_call_input(gui.mouse_focus, p_event);
-				}
-
-				if (p_event.mouse_button.button_index == gui.mouse_focus_button) {
-					gui.mouse_focus = NULL;
-					gui.mouse_focus_button = -1;
-				}
-
-				/*if (gui.drag_data.get_type()!=Variant::NIL && p_event.mouse_button.button_index==BUTTON_LEFT) {
-					_propagate_viewport_notification(this,NOTIFICATION_DRAG_END);
-					gui.drag_data=Variant(); //always clear
-				}*/
-
-				get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME, "windows", "_cancel_input_ID", p_event.ID);
-				get_tree()->set_input_as_handled();
 			}
-		} break;
-		case InputEvent::MOUSE_MOTION: {
+		}
+
+		if (gui.mouse_focus) {
+			over = gui.mouse_focus;
+			//recompute focus_inv_xform again here
+
+		} else {
+
+			over = _gui_find_control(mpos);
+		}
+
+		if (gui.drag_data.get_type() == Variant::NIL && over && !gui.modal_stack.empty()) {
+
+			Control *top = gui.modal_stack.back()->get();
+			if (over != top && !top->is_a_parent_of(over)) {
+
+				return; // don't send motion event to anything below modal stack top
+			}
+		}
+
+		if (over != gui.mouse_over) {
+
+			if (gui.mouse_over)
+				gui.mouse_over->notification(Control::NOTIFICATION_MOUSE_EXIT);
+
+			_gui_cancel_tooltip();
+
+			if (over)
+				over->notification(Control::NOTIFICATION_MOUSE_ENTER);
+		}
+
+		gui.mouse_over = over;
+
+		if (gui.drag_preview) {
+			gui.drag_preview->set_position(mpos);
+		}
+
+		if (!over) {
+			OS::get_singleton()->set_cursor_shape(OS::CURSOR_ARROW);
+			return;
+		}
+
+		Transform2D localizer = over->get_global_transform_with_canvas().affine_inverse();
+		Size2 pos = localizer.xform(mpos);
+		Vector2 speed = localizer.basis_xform(mm->get_speed());
+		Vector2 rel = localizer.basis_xform(mm->get_relative());
+
+		mm = mm->xformed_by(Transform2D()); //make a copy
+
+		mm->set_global_pos(mpos);
+		mm->set_speed(speed);
+		mm->set_relative(rel);
+
+		if (mm->get_button_mask() == 0) {
+			//nothing pressed
+
+			bool can_tooltip = true;
+
+			if (!gui.modal_stack.empty()) {
+				if (gui.modal_stack.back()->get() != over && !gui.modal_stack.back()->get()->is_a_parent_of(over))
+					can_tooltip = false;
+			}
+
+			bool is_tooltip_shown = false;
+
+			if (gui.tooltip_popup) {
+				if (can_tooltip) {
+					String tooltip = over->get_tooltip(gui.tooltip->get_global_transform().xform_inv(mpos));
+
+					if (tooltip.length() == 0)
+						_gui_cancel_tooltip();
+					else if (tooltip == gui.tooltip_label->get_text())
+						is_tooltip_shown = true;
+				} else
+					_gui_cancel_tooltip();
+			}
+
+			if (can_tooltip && !is_tooltip_shown) {
+
+				gui.tooltip = over;
+				gui.tooltip_pos = mpos; //(parent_xform * get_transform()).affine_inverse().xform(pos);
+				gui.tooltip_timer = gui.tooltip_delay;
+			}
+		}
+
+		//pos = gui.focus_inv_xform.xform(pos);
+
+		mm->set_pos(pos);
+
+		Control::CursorShape cursor_shape = over->get_cursor_shape(pos);
+		OS::get_singleton()->set_cursor_shape((OS::CursorShape)cursor_shape);
+
+		if (over->can_process()) {
+			_gui_call_input(over, mm);
+		}
+
+		get_tree()->set_input_as_handled();
+
+		if (gui.drag_data.get_type() != Variant::NIL && mm->get_button_mask() & BUTTON_MASK_LEFT) {
+
+			bool can_drop = _gui_drop(over, pos, true);
+
+			if (!can_drop) {
+				OS::get_singleton()->set_cursor_shape(OS::CURSOR_FORBIDDEN);
+			} else {
+				OS::get_singleton()->set_cursor_shape(OS::CURSOR_CAN_DROP);
+			}
+			//change mouse accordingly i guess
+		}
+	}
+
+	if (mm.is_null() && mb.is_null() && p_event->is_action_type()) {
+
+		if (gui.key_focus && !gui.key_focus->is_visible_in_tree()) {
+			gui.key_focus->release_focus();
+		}
+
+		if (gui.key_focus) {
 
 			gui.key_event_accepted = false;
-			Point2 mpos = Point2(p_event.mouse_motion.x, p_event.mouse_motion.y);
-
-			gui.last_mouse_pos = mpos;
-
-			Control *over = NULL;
-
-			// D&D
-			if (!gui.drag_attempted && gui.mouse_focus && p_event.mouse_motion.button_mask & BUTTON_MASK_LEFT) {
-
-				gui.drag_accum += Point2(p_event.mouse_motion.relative_x, p_event.mouse_motion.relative_y);
-				float len = gui.drag_accum.length();
-				if (len > 10) {
-
-					{ //attempt grab, try parent controls too
-						CanvasItem *ci = gui.mouse_focus;
-						while (ci) {
-
-							Control *control = ci->cast_to<Control>();
-							if (control) {
-
-								gui.drag_data = control->get_drag_data(control->get_global_transform_with_canvas().affine_inverse().xform(mpos) - gui.drag_accum);
-								if (gui.drag_data.get_type() != Variant::NIL) {
-
-									gui.mouse_focus = NULL;
-								}
-
-								if (control->data.mouse_filter == Control::MOUSE_FILTER_STOP)
-									break;
-							}
-
-							if (ci->is_set_as_toplevel())
-								break;
-
-							ci = ci->get_parent_item();
-						}
-					}
-
-					gui.drag_attempted = true;
-					if (gui.drag_data.get_type() != Variant::NIL) {
-
-						_propagate_viewport_notification(this, NOTIFICATION_DRAG_BEGIN);
-					}
-				}
+			if (gui.key_focus->can_process()) {
+				gui.key_focus->call_multilevel(SceneStringNames::get_singleton()->_gui_input, p_event);
+				if (gui.key_focus) //maybe lost it
+					gui.key_focus->emit_signal(SceneStringNames::get_singleton()->gui_input, p_event);
 			}
 
-			if (gui.mouse_focus) {
-				over = gui.mouse_focus;
-				//recompute focus_inv_xform again here
+			if (gui.key_event_accepted) {
 
-			} else {
+				get_tree()->set_input_as_handled();
+				return;
+			}
+		}
 
-				over = _gui_find_control(mpos);
+		if (p_event->is_pressed() && p_event->is_action("ui_cancel") && !gui.modal_stack.empty()) {
+
+			_gui_sort_modal_stack();
+			Control *top = gui.modal_stack.back()->get();
+			if (!top->data.modal_exclusive) {
+
+				top->notification(Control::NOTIFICATION_MODAL_CLOSE);
+				top->_modal_stack_remove();
+				top->hide();
+			}
+		}
+
+		Control *from = gui.key_focus ? gui.key_focus : NULL; //hmm
+
+		//keyboard focus
+		//if (from && p_event->is_pressed() && !p_event->get_alt() && !p_event->get_metakey() && !p_event->key->get_command()) {
+
+		if (from && p_event->is_pressed()) {
+			Control *next = NULL;
+
+			if (p_event->is_action("ui_focus_next")) {
+
+				next = from->find_next_valid_focus();
 			}
 
-			if (gui.drag_data.get_type() == Variant::NIL && over && !gui.modal_stack.empty()) {
+			if (p_event->is_action("ui_focus_prev")) {
 
-				Control *top = gui.modal_stack.back()->get();
-				if (over != top && !top->is_a_parent_of(over)) {
-
-					break; // don't send motion event to anything below modal stack top
-				}
+				next = from->find_prev_valid_focus();
 			}
 
-			if (over != gui.mouse_over) {
+			if (p_event->is_action("ui_up")) {
 
-				if (gui.mouse_over)
-					gui.mouse_over->notification(Control::NOTIFICATION_MOUSE_EXIT);
-
-				_gui_cancel_tooltip();
-
-				if (over)
-					over->notification(Control::NOTIFICATION_MOUSE_ENTER);
+				next = from->_get_focus_neighbour(MARGIN_TOP);
 			}
 
-			gui.mouse_over = over;
+			if (p_event->is_action("ui_left")) {
 
-			if (gui.drag_preview) {
-				gui.drag_preview->set_position(mpos);
+				next = from->_get_focus_neighbour(MARGIN_LEFT);
 			}
 
-			if (!over) {
-				OS::get_singleton()->set_cursor_shape(OS::CURSOR_ARROW);
-				break;
+			if (p_event->is_action("ui_right")) {
+
+				next = from->_get_focus_neighbour(MARGIN_RIGHT);
 			}
 
-			Transform2D localizer = over->get_global_transform_with_canvas().affine_inverse();
-			Size2 pos = localizer.xform(mpos);
-			Vector2 speed = localizer.basis_xform(Point2(p_event.mouse_motion.speed_x, p_event.mouse_motion.speed_y));
-			Vector2 rel = localizer.basis_xform(Point2(p_event.mouse_motion.relative_x, p_event.mouse_motion.relative_y));
+			if (p_event->is_action("ui_down")) {
 
-			p_event.mouse_motion.global_x = mpos.x;
-			p_event.mouse_motion.global_y = mpos.y;
-			p_event.mouse_motion.speed_x = speed.x;
-			p_event.mouse_motion.speed_y = speed.y;
-			p_event.mouse_motion.relative_x = rel.x;
-			p_event.mouse_motion.relative_y = rel.y;
-
-			if (p_event.mouse_motion.button_mask == 0) {
-				//nothing pressed
-
-				bool can_tooltip = true;
-
-				if (!gui.modal_stack.empty()) {
-					if (gui.modal_stack.back()->get() != over && !gui.modal_stack.back()->get()->is_a_parent_of(over))
-						can_tooltip = false;
-				}
-
-				bool is_tooltip_shown = false;
-
-				if (gui.tooltip_popup) {
-					if (can_tooltip) {
-						String tooltip = over->get_tooltip(gui.tooltip->get_global_transform().xform_inv(mpos));
-
-						if (tooltip.length() == 0)
-							_gui_cancel_tooltip();
-						else if (tooltip == gui.tooltip_label->get_text())
-							is_tooltip_shown = true;
-					} else
-						_gui_cancel_tooltip();
-				}
-
-				if (can_tooltip && !is_tooltip_shown) {
-
-					gui.tooltip = over;
-					gui.tooltip_pos = mpos; //(parent_xform * get_transform()).affine_inverse().xform(pos);
-					gui.tooltip_timer = gui.tooltip_delay;
-				}
+				next = from->_get_focus_neighbour(MARGIN_BOTTOM);
 			}
 
-			//pos = gui.focus_inv_xform.xform(pos);
-
-			p_event.mouse_motion.x = pos.x;
-			p_event.mouse_motion.y = pos.y;
-
-			Control::CursorShape cursor_shape = over->get_cursor_shape(pos);
-			OS::get_singleton()->set_cursor_shape((OS::CursorShape)cursor_shape);
-
-			if (over->can_process()) {
-				_gui_call_input(over, p_event);
+			if (next) {
+				next->grab_focus();
+				get_tree()->set_input_as_handled();
 			}
-
-			get_tree()->set_input_as_handled();
-
-			if (gui.drag_data.get_type() != Variant::NIL && p_event.mouse_motion.button_mask & BUTTON_MASK_LEFT) {
-
-				bool can_drop = _gui_drop(over, pos, true);
-
-				if (!can_drop) {
-					OS::get_singleton()->set_cursor_shape(OS::CURSOR_FORBIDDEN);
-				} else {
-					OS::get_singleton()->set_cursor_shape(OS::CURSOR_CAN_DROP);
-				}
-				//change mouse accordingly i guess
-			}
-
-		} break;
-		case InputEvent::ACTION:
-		case InputEvent::JOYPAD_BUTTON:
-		case InputEvent::JOYPAD_MOTION:
-		case InputEvent::KEY: {
-
-			if (gui.key_focus && !gui.key_focus->is_visible_in_tree()) {
-				gui.key_focus->release_focus();
-			}
-
-			if (gui.key_focus) {
-
-				gui.key_event_accepted = false;
-				if (gui.key_focus->can_process()) {
-					gui.key_focus->call_multilevel(SceneStringNames::get_singleton()->_gui_input, p_event);
-					if (gui.key_focus) //maybe lost it
-						gui.key_focus->emit_signal(SceneStringNames::get_singleton()->gui_input, p_event);
-				}
-
-				if (gui.key_event_accepted) {
-
-					get_tree()->set_input_as_handled();
-					break;
-				}
-			}
-
-			if (p_event.is_pressed() && p_event.is_action("ui_cancel") && !gui.modal_stack.empty()) {
-
-				_gui_sort_modal_stack();
-				Control *top = gui.modal_stack.back()->get();
-				if (!top->data.modal_exclusive) {
-
-					top->notification(Control::NOTIFICATION_MODAL_CLOSE);
-					top->_modal_stack_remove();
-					top->hide();
-				}
-			}
-
-			Control *from = gui.key_focus ? gui.key_focus : NULL; //hmm
-
-			//keyboard focus
-			//if (from && p_event.key.pressed && !p_event.key.mod.alt && !p_event.key.mod.meta && !p_event.key.mod.command) {
-
-			if (from && p_event.is_pressed()) {
-				Control *next = NULL;
-
-				if (p_event.is_action("ui_focus_next")) {
-
-					next = from->find_next_valid_focus();
-				}
-
-				if (p_event.is_action("ui_focus_prev")) {
-
-					next = from->find_prev_valid_focus();
-				}
-
-				if (p_event.is_action("ui_up")) {
-
-					next = from->_get_focus_neighbour(MARGIN_TOP);
-				}
-
-				if (p_event.is_action("ui_left")) {
-
-					next = from->_get_focus_neighbour(MARGIN_LEFT);
-				}
-
-				if (p_event.is_action("ui_right")) {
-
-					next = from->_get_focus_neighbour(MARGIN_RIGHT);
-				}
-
-				if (p_event.is_action("ui_down")) {
-
-					next = from->_get_focus_neighbour(MARGIN_BOTTOM);
-				}
-
-				if (next) {
-					next->grab_focus();
-					get_tree()->set_input_as_handled();
-				}
-			}
-
-		} break;
+		}
 	}
 }
 
@@ -2366,33 +2312,30 @@ void Viewport::_gui_grab_click_focus(Control *p_control) {
 
 		if (gui.mouse_focus == p_control)
 			return;
-		InputEvent ie;
-		ie.type = InputEvent::MOUSE_BUTTON;
-		InputEventMouseButton &mb = ie.mouse_button;
+		Ref<InputEventMouseButton> mb;
+		mb.instance();
 
 		//send unclic
 
 		Point2 click = gui.mouse_focus->get_global_transform_with_canvas().affine_inverse().xform(gui.last_mouse_pos);
-		mb.x = click.x;
-		mb.y = click.y;
-		mb.button_index = gui.mouse_focus_button;
-		mb.pressed = false;
-		gui.mouse_focus->call_deferred(SceneStringNames::get_singleton()->_gui_input, ie);
+		mb->set_pos(click);
+		mb->set_button_index(gui.mouse_focus_button);
+		mb->set_pressed(false);
+		gui.mouse_focus->call_deferred(SceneStringNames::get_singleton()->_gui_input, mb);
 
 		gui.mouse_focus = p_control;
 		gui.focus_inv_xform = gui.mouse_focus->get_global_transform_with_canvas().affine_inverse();
 		click = gui.mouse_focus->get_global_transform_with_canvas().affine_inverse().xform(gui.last_mouse_pos);
-		mb.x = click.x;
-		mb.y = click.y;
-		mb.button_index = gui.mouse_focus_button;
-		mb.pressed = true;
-		gui.mouse_focus->call_deferred(SceneStringNames::get_singleton()->_gui_input, ie);
+		mb->set_pos(click);
+		mb->set_button_index(gui.mouse_focus_button);
+		mb->set_pressed(true);
+		gui.mouse_focus->call_deferred(SceneStringNames::get_singleton()->_gui_input, mb);
 	}
 }
 
 ///////////////////////////////
 
-void Viewport::input(const InputEvent &p_event) {
+void Viewport::input(const Ref<InputEvent> &p_event) {
 
 	ERR_FAIL_COND(!is_inside_tree());
 
@@ -2401,20 +2344,20 @@ void Viewport::input(const InputEvent &p_event) {
 	//get_tree()->call_group(SceneTree::GROUP_CALL_REVERSE|SceneTree::GROUP_CALL_REALTIME|SceneTree::GROUP_CALL_MULIILEVEL,gui_input_group,"_gui_input",p_event); //special one for GUI, as controls use their own process check
 }
 
-void Viewport::unhandled_input(const InputEvent &p_event) {
+void Viewport::unhandled_input(const Ref<InputEvent> &p_event) {
 
 	ERR_FAIL_COND(!is_inside_tree());
 
 	get_tree()->_call_input_pause(unhandled_input_group, "_unhandled_input", p_event);
 	//call_group(GROUP_CALL_REVERSE|GROUP_CALL_REALTIME|GROUP_CALL_MULIILEVEL,"unhandled_input","_unhandled_input",ev);
-	if (!get_tree()->input_handled && p_event.type == InputEvent::KEY) {
+	if (!get_tree()->input_handled && p_event->cast_to<InputEventKey>() != NULL) {
 		get_tree()->_call_input_pause(unhandled_key_input_group, "_unhandled_key_input", p_event);
 		//call_group(GROUP_CALL_REVERSE|GROUP_CALL_REALTIME|GROUP_CALL_MULIILEVEL,"unhandled_key_input","_unhandled_key_input",ev);
 	}
 
 	if (physics_object_picking && !get_tree()->input_handled) {
 
-		if (p_event.type == InputEvent::MOUSE_BUTTON || p_event.type == InputEvent::MOUSE_MOTION || p_event.type == InputEvent::SCREEN_DRAG || p_event.type == InputEvent::SCREEN_TOUCH) {
+		if (p_event->cast_to<InputEventMouseButton>() || p_event->cast_to<InputEventMouseMotion>() || p_event->cast_to<InputEventScreenDrag>() || p_event->cast_to<InputEventScreenTouch>()) {
 			physics_picking_events.push_back(p_event);
 		}
 	}

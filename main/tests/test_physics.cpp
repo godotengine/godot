@@ -263,18 +263,19 @@ protected:
 	}
 
 public:
-	virtual void input_event(const InputEvent &p_event) {
+	virtual void input_event(const Ref<InputEvent> &p_event) {
 
-		if (p_event.type == InputEvent::MOUSE_MOTION && p_event.mouse_motion.button_mask & 4) {
+		Ref<InputEventMouseMotion> mm = p_event;
+		if (mm.is_valid() && mm->get_button_mask() & 4) {
 
-			ofs_y -= p_event.mouse_motion.relative_y / 200.0;
-			ofs_x += p_event.mouse_motion.relative_x / 200.0;
+			ofs_y -= mm->get_relative().y / 200.0;
+			ofs_x += mm->get_relative().x / 200.0;
 		}
 
-		if (p_event.type == InputEvent::MOUSE_MOTION && p_event.mouse_motion.button_mask & 1) {
+		if (mm.is_valid() && mm->get_button_mask() & 1) {
 
-			float y = -p_event.mouse_motion.relative_y / 20.0;
-			float x = p_event.mouse_motion.relative_x / 20.0;
+			float y = -mm->get_relative().y / 20.0;
+			float x = mm->get_relative().x / 20.0;
 
 			if (mover.is_valid()) {
 
@@ -285,19 +286,6 @@ public:
 				ps->body_set_state(mover, PhysicsServer::BODY_STATE_TRANSFORM, t);
 			}
 		}
-
-		if (p_event.type == InputEvent::JOYPAD_MOTION) {
-
-			if (p_event.joy_motion.axis == 0) {
-
-				joy_direction.x = p_event.joy_motion.axis_value;
-			};
-
-			if (p_event.joy_motion.axis == 1) {
-
-				joy_direction.y = p_event.joy_motion.axis_value;
-			};
-		};
 	}
 
 	virtual void request_quit() {

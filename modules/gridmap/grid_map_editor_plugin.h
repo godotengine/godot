@@ -220,7 +220,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	bool forward_spatial_input_event(Camera *p_camera, const InputEvent &p_event);
+	bool forward_spatial_input_event(Camera *p_camera, const Ref<InputEvent> &p_event);
 
 	void edit(GridMap *p_gridmap);
 	GridMapEditor() {}
@@ -236,7 +236,7 @@ class GridMapEditorPlugin : public EditorPlugin {
 	EditorNode *editor;
 
 public:
-	virtual bool forward_spatial_input_event(Camera *p_camera, const InputEvent &p_event) { return gridmap_editor->forward_spatial_input_event(p_camera, p_event); }
+	virtual bool forward_spatial_input_event(Camera *p_camera, const Ref<InputEvent> &p_event) { return gridmap_editor->forward_spatial_input_event(p_camera, p_event); }
 	virtual String get_name() const { return "GridMap"; }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_node);

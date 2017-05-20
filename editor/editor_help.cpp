@@ -61,14 +61,16 @@ void EditorHelpSearch::_text_changed(const String &p_newtext) {
 	_update_search();
 }
 
-void EditorHelpSearch::_sbox_input(const InputEvent &p_ie) {
+void EditorHelpSearch::_sbox_input(const Ref<InputEvent> &p_ie) {
 
-	if (p_ie.type == InputEvent::KEY && (p_ie.key.scancode == KEY_UP ||
-												p_ie.key.scancode == KEY_DOWN ||
-												p_ie.key.scancode == KEY_PAGEUP ||
-												p_ie.key.scancode == KEY_PAGEDOWN)) {
+	Ref<InputEventKey> k = p_ie;
 
-		search_options->call("_gui_input", p_ie);
+	if (k.is_valid() && (k->get_scancode() == KEY_UP ||
+								k->get_scancode() == KEY_DOWN ||
+								k->get_scancode() == KEY_PAGEUP ||
+								k->get_scancode() == KEY_PAGEDOWN)) {
+
+		search_options->call("_gui_input", k);
 		search_box->accept_event();
 	}
 }
@@ -448,14 +450,16 @@ void EditorHelpIndex::_update_class_list() {
 	}
 }
 
-void EditorHelpIndex::_sbox_input(const InputEvent &p_ie) {
+void EditorHelpIndex::_sbox_input(const Ref<InputEvent> &p_ie) {
 
-	if (p_ie.type == InputEvent::KEY && (p_ie.key.scancode == KEY_UP ||
-												p_ie.key.scancode == KEY_DOWN ||
-												p_ie.key.scancode == KEY_PAGEUP ||
-												p_ie.key.scancode == KEY_PAGEDOWN)) {
+	Ref<InputEventKey> k = p_ie;
 
-		class_list->call("_gui_input", p_ie);
+	if (k.is_valid() && (k->get_scancode() == KEY_UP ||
+								k->get_scancode() == KEY_DOWN ||
+								k->get_scancode() == KEY_PAGEUP ||
+								k->get_scancode() == KEY_PAGEDOWN)) {
+
+		class_list->call("_gui_input", k);
 		search_box->accept_event();
 	}
 }
@@ -499,11 +503,14 @@ EditorHelpIndex::EditorHelpIndex() {
 /// /////////////////////////////////
 DocData *EditorHelp::doc = NULL;
 
-void EditorHelp::_unhandled_key_input(const InputEvent &p_ev) {
+void EditorHelp::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
 
 	if (!is_visible_in_tree())
 		return;
-	if (p_ev.key.mod.control && p_ev.key.scancode == KEY_F) {
+
+	Ref<InputEventKey> k = p_ev;
+
+	if (k.is_valid() && k->get_control() && k->get_scancode() == KEY_F) {
 
 		search->grab_focus();
 		search->select_all();
@@ -598,8 +605,11 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 	}
 }
 
-void EditorHelp::_class_desc_input(const InputEvent &p_input) {
-	if (p_input.type == InputEvent::MOUSE_BUTTON && p_input.mouse_button.pressed && p_input.mouse_button.button_index == 1) {
+void EditorHelp::_class_desc_input(const Ref<InputEvent> &p_input) {
+
+	Ref<InputEventMouseButton> mb = p_input;
+
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == 1) {
 		class_desc->set_selection_enabled(false);
 		class_desc->set_selection_enabled(true);
 	}

@@ -76,7 +76,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void _gui_input(const InputEvent &p_event);
+	void _gui_input(const Ref<InputEvent> &p_event);
 
 	void set_align(Align p_align);
 	Align get_align() const;

@@ -164,14 +164,16 @@ void ScriptEditorQuickOpen::_text_changed(const String &p_newtext) {
 	_update_search();
 }
 
-void ScriptEditorQuickOpen::_sbox_input(const InputEvent &p_ie) {
+void ScriptEditorQuickOpen::_sbox_input(const Ref<InputEvent> &p_ie) {
 
-	if (p_ie.type == InputEvent::KEY && (p_ie.key.scancode == KEY_UP ||
-												p_ie.key.scancode == KEY_DOWN ||
-												p_ie.key.scancode == KEY_PAGEUP ||
-												p_ie.key.scancode == KEY_PAGEDOWN)) {
+	Ref<InputEventKey> k = p_ie;
 
-		search_options->call("_gui_input", p_ie);
+	if (k.is_valid() && (k->get_scancode() == KEY_UP ||
+								k->get_scancode() == KEY_DOWN ||
+								k->get_scancode() == KEY_PAGEUP ||
+								k->get_scancode() == KEY_PAGEDOWN)) {
+
+		search_options->call("_gui_input", k);
 		search_box->accept_event();
 	}
 }
@@ -1778,8 +1780,8 @@ void ScriptEditor::_script_split_dragged(float) {
 	_save_layout();
 }
 
-void ScriptEditor::_unhandled_input(const InputEvent &p_event) {
-	if (p_event.key.pressed || !is_visible_in_tree()) return;
+void ScriptEditor::_unhandled_input(const Ref<InputEvent> &p_event) {
+	if (p_event->is_pressed() || !is_visible_in_tree()) return;
 	if (ED_IS_SHORTCUT("script_editor/next_script", p_event)) {
 		int next_tab = script_list->get_current() + 1;
 		next_tab %= script_list->get_item_count();

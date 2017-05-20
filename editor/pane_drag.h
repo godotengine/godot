@@ -39,7 +39,7 @@ class PaneDrag : public Control {
 	bool mouse_over;
 
 protected:
-	void _gui_input(const InputEvent &p_input);
+	void _gui_input(const Ref<InputEvent> &p_input);
 	void _notification(int p_what);
 	virtual Size2 get_minimum_size() const;
 	static void _bind_methods();

@@ -349,7 +349,6 @@ static Color _color_from_type(Variant::Type p_type) {
 		case Variant::NODE_PATH: color = Color::html("6993ec"); break;
 		case Variant::_RID: color = Color::html("69ec9a"); break;
 		case Variant::OBJECT: color = Color::html("79f3e8"); break;
-		case Variant::INPUT_EVENT: color = Color::html("adf18f"); break;
 		case Variant::DICTIONARY: color = Color::html("77edb1"); break;
 
 		case Variant::ARRAY: color = Color::html("e0e0e0"); break;
@@ -453,7 +452,6 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 		Control::get_icon("MiniPath", "EditorIcons"),
 		Control::get_icon("MiniRid", "EditorIcons"),
 		Control::get_icon("MiniObject", "EditorIcons"),
-		Control::get_icon("MiniInput", "EditorIcons"),
 		Control::get_icon("MiniDictionary", "EditorIcons"),
 		Control::get_icon("MiniArray", "EditorIcons"),
 		Control::get_icon("MiniRawArray", "EditorIcons"),
@@ -736,7 +734,6 @@ void VisualScriptEditor::_update_members() {
 		Control::get_icon("MiniPath", "EditorIcons"),
 		Control::get_icon("MiniRid", "EditorIcons"),
 		Control::get_icon("MiniObject", "EditorIcons"),
-		Control::get_icon("MiniInput", "EditorIcons"),
 		Control::get_icon("MiniDictionary", "EditorIcons"),
 		Control::get_icon("MiniArray", "EditorIcons"),
 		Control::get_icon("MiniRawArray", "EditorIcons"),
@@ -1419,9 +1416,11 @@ void VisualScriptEditor::_on_nodes_duplicate() {
 	}
 }
 
-void VisualScriptEditor::_input(const InputEvent &p_event) {
+void VisualScriptEditor::_input(const Ref<InputEvent> &p_event) {
 
-	if (p_event.type == InputEvent::MOUSE_BUTTON && !p_event.mouse_button.pressed && p_event.mouse_button.button_index == BUTTON_LEFT) {
+	Ref<InputEventMouseButton> mb = p_event;
+
+	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 		revert_on_drag = String(); //so we can still drag functions
 	}
 }
@@ -2640,7 +2639,7 @@ void VisualScriptEditor::_port_action_menu(int p_option) {
 			} else {
 				n->set_call_mode(VisualScriptPropertySet::CALL_MODE_BASIC_TYPE);
 				n->set_basic_type(tg.type);
-				new_connect_node_select->select_property_from_basic_type(tg.type, tg.ev_type);
+				new_connect_node_select->select_property_from_basic_type(tg.type);
 			}
 		} break;
 		case CREATE_GET: {
@@ -2670,7 +2669,7 @@ void VisualScriptEditor::_port_action_menu(int p_option) {
 			} else {
 				n->set_call_mode(VisualScriptPropertyGet::CALL_MODE_BASIC_TYPE);
 				n->set_basic_type(tg.type);
-				new_connect_node_select->select_property_from_basic_type(tg.type, tg.ev_type);
+				new_connect_node_select->select_property_from_basic_type(tg.type);
 			}
 
 		} break;

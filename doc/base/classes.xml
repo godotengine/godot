@@ -20360,7 +20360,7 @@
 		Singleton that manages actions.
 	</brief_description>
 	<description>
-		Singleton that manages actions. InputMap has a list of the actions used in InputEvent, which can be modified.
+		Singleton that manages actions. InputMap has a list of the actions used in Ref<InputEvent>, which can be modified.
 	</description>
 	<methods>
 		<method name="action_add_event">

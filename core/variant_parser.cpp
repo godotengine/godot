@@ -30,6 +30,7 @@
 #include "variant_parser.h"
 
 #include "io/resource_loader.h"
+#include "os/input_event.h"
 #include "os/keyboard.h"
 
 CharType VariantParser::StreamFile::get_char() {
@@ -760,7 +761,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			}
 
 			return OK;
-
+#ifndef DISABLE_DEPRECATED
 		} else if (id == "InputEvent") {
 
 			get_token(p_stream, token, line, r_err_str);
@@ -778,11 +779,9 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			String id = token.value;
 
-			InputEvent ie;
+			Ref<InputEvent> ie;
 
 			if (id == "NONE") {
-
-				ie.type = InputEvent::NONE;
 
 				get_token(p_stream, token, line, r_err_str);
 
@@ -793,21 +792,23 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			} else if (id == "KEY") {
 
+				Ref<InputEventKey> key;
+				key.instance();
+				ie = key;
+
 				get_token(p_stream, token, line, r_err_str);
 				if (token.type != TK_COMMA) {
 					r_err_str = "Expected ','";
 					return ERR_PARSE_ERROR;
 				}
 
-				ie.type = InputEvent::KEY;
-
 				get_token(p_stream, token, line, r_err_str);
 				if (token.type == TK_IDENTIFIER) {
 					String name = token.value;
-					ie.key.scancode = find_keycode(name);
+					key->set_scancode(find_keycode(name));
 				} else if (token.type == TK_NUMBER) {
 
-					ie.key.scancode = token.value;
+					key->set_scancode(token.value);
 				} else {
 
 					r_err_str = "Expected string or integer for keycode";
@@ -828,13 +829,13 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					String mods = token.value;
 
 					if (mods.findn("C") != -1)
-						ie.key.mod.control = true;
+						key->set_control(true);
 					if (mods.findn("A") != -1)
-						ie.key.mod.alt = true;
+						key->set_alt(true);
 					if (mods.findn("S") != -1)
-						ie.key.mod.shift = true;
+						key->set_shift(true);
 					if (mods.findn("M") != -1)
-						ie.key.mod.meta = true;
+						key->set_metakey(true);
 
 					get_token(p_stream, token, line, r_err_str);
 					if (token.type != TK_PARENTHESIS_CLOSE) {
@@ -850,13 +851,15 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			} else if (id == "MBUTTON") {
 
+				Ref<InputEventMouseButton> mb;
+				mb.instance();
+				ie = mb;
+
 				get_token(p_stream, token, line, r_err_str);
 				if (token.type != TK_COMMA) {
 					r_err_str = "Expected ','";
 					return ERR_PARSE_ERROR;
 				}
-
-				ie.type = InputEvent::MOUSE_BUTTON;
 
 				get_token(p_stream, token, line, r_err_str);
 				if (token.type != TK_NUMBER) {
@@ -864,7 +867,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					return ERR_PARSE_ERROR;
 				}
 
-				ie.mouse_button.button_index = token.value;
+				mb->set_button_index(token.value);
 
 				get_token(p_stream, token, line, r_err_str);
 				if (token.type != TK_PARENTHESIS_CLOSE) {
@@ -874,13 +877,15 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			} else if (id == "JBUTTON") {
 
+				Ref<InputEventJoypadButton> jb;
+				jb.instance();
+				ie = jb;
+
 				get_token(p_stream, token, line, r_err_str);
 				if (token.type != TK_COMMA) {
 					r_err_str = "Expected ','";
 					return ERR_PARSE_ERROR;
 				}
-
-				ie.type = InputEvent::JOYPAD_BUTTON;
 
 				get_token(p_stream, token, line, r_err_str);
 				if (token.type != TK_NUMBER) {
@@ -888,7 +893,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					return ERR_PARSE_ERROR;
 				}
 
-				ie.joy_button.button_index = token.value;
+				jb->set_button_index(token.value);
 
 				get_token(p_stream, token, line, r_err_str);
 				if (token.type != TK_PARENTHESIS_CLOSE) {
@@ -898,13 +903,15 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			} else if (id == "JAXIS") {
 
+				Ref<InputEventJoypadMotion> jm;
+				jm.instance();
+				ie = jm;
+
 				get_token(p_stream, token, line, r_err_str);
 				if (token.type != TK_COMMA) {
 					r_err_str = "Expected ','";
 					return ERR_PARSE_ERROR;
 				}
-
-				ie.type = InputEvent::JOYPAD_MOTION;
 
 				get_token(p_stream, token, line, r_err_str);
 				if (token.type != TK_NUMBER) {
@@ -912,7 +919,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					return ERR_PARSE_ERROR;
 				}
 
-				ie.joy_motion.axis = token.value;
+				jm->set_axis(token.value);
 
 				get_token(p_stream, token, line, r_err_str);
 
@@ -927,7 +934,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					return ERR_PARSE_ERROR;
 				}
 
-				ie.joy_motion.axis_value = token.value;
+				jm->set_axis_value(token.value);
 
 				get_token(p_stream, token, line, r_err_str);
 
@@ -945,7 +952,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			value = ie;
 
 			return OK;
-
+#endif
 		} else if (id == "PoolByteArray" || id == "ByteArray") {
 
 			Vector<uint8_t> args;
@@ -1121,91 +1128,6 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			value = arr;
 
 			return OK;
-		} else if (id == "key") { // compatibility with project.godot
-
-			Vector<String> params;
-			Error err = _parse_enginecfg(p_stream, params, line, r_err_str);
-			if (err)
-				return err;
-			ERR_FAIL_COND_V(params.size() != 1 && params.size() != 2, ERR_PARSE_ERROR);
-
-			int scode = 0;
-
-			if (params[0].is_numeric()) {
-				scode = params[0].to_int();
-				if (scode < 10) {
-					scode = KEY_0 + scode;
-				}
-			} else
-				scode = find_keycode(params[0]);
-
-			InputEvent ie;
-			ie.type = InputEvent::KEY;
-			ie.key.scancode = scode;
-
-			if (params.size() == 2) {
-				String mods = params[1];
-				if (mods.findn("C") != -1)
-					ie.key.mod.control = true;
-				if (mods.findn("A") != -1)
-					ie.key.mod.alt = true;
-				if (mods.findn("S") != -1)
-					ie.key.mod.shift = true;
-				if (mods.findn("M") != -1)
-					ie.key.mod.meta = true;
-			}
-			value = ie;
-			return OK;
-
-		} else if (id == "mbutton") { // compatibility with project.godot
-
-			Vector<String> params;
-			Error err = _parse_enginecfg(p_stream, params, line, r_err_str);
-			if (err)
-				return err;
-			ERR_FAIL_COND_V(params.size() != 2, ERR_PARSE_ERROR);
-
-			InputEvent ie;
-			ie.type = InputEvent::MOUSE_BUTTON;
-			ie.device = params[0].to_int();
-			ie.mouse_button.button_index = params[1].to_int();
-
-			value = ie;
-			return OK;
-		} else if (id == "jbutton") { // compatibility with project.godot
-
-			Vector<String> params;
-			Error err = _parse_enginecfg(p_stream, params, line, r_err_str);
-			if (err)
-				return err;
-			ERR_FAIL_COND_V(params.size() != 2, ERR_PARSE_ERROR);
-			InputEvent ie;
-			ie.type = InputEvent::JOYPAD_BUTTON;
-			ie.device = params[0].to_int();
-			ie.joy_button.button_index = params[1].to_int();
-
-			value = ie;
-
-			return OK;
-		} else if (id == "jaxis") { // compatibility with project.godot
-
-			Vector<String> params;
-			Error err = _parse_enginecfg(p_stream, params, line, r_err_str);
-			if (err)
-				return err;
-			ERR_FAIL_COND_V(params.size() != 2, ERR_PARSE_ERROR);
-
-			InputEvent ie;
-			ie.type = InputEvent::JOYPAD_MOTION;
-			ie.device = params[0].to_int();
-			int axis = params[1].to_int();
-			ie.joy_motion.axis = axis >> 1;
-			ie.joy_motion.axis_value = axis & 1 ? 1 : -1;
-
-			value = ie;
-
-			return OK;
-
 		} else {
 			r_err_str = "Unexpected identifier: '" + id + "'.";
 			return ERR_PARSE_ERROR;
@@ -1715,50 +1637,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 			p_store_string_func(p_store_string_ud, res_text);
 
 		} break;
-		case Variant::INPUT_EVENT: {
 
-			String str = "InputEvent(";
-
-			InputEvent ev = p_variant;
-			switch (ev.type) {
-				case InputEvent::KEY: {
-
-					str += "KEY," + itos(ev.key.scancode);
-					String mod;
-					if (ev.key.mod.alt)
-						mod += "A";
-					if (ev.key.mod.shift)
-						mod += "S";
-					if (ev.key.mod.control)
-						mod += "C";
-					if (ev.key.mod.meta)
-						mod += "M";
-
-					if (mod != String())
-						str += "," + mod;
-				} break;
-				case InputEvent::MOUSE_BUTTON: {
-
-					str += "MBUTTON," + itos(ev.mouse_button.button_index);
-				} break;
-				case InputEvent::JOYPAD_BUTTON: {
-					str += "JBUTTON," + itos(ev.joy_button.button_index);
-
-				} break;
-				case InputEvent::JOYPAD_MOTION: {
-					str += "JAXIS," + itos(ev.joy_motion.axis) + "," + itos(ev.joy_motion.axis_value);
-				} break;
-				case InputEvent::NONE: {
-					str += "NONE";
-				} break;
-				default: {}
-			}
-
-			str += ")";
-
-			p_store_string_func(p_store_string_ud, str); //will be added later
-
-		} break;
 		case Variant::DICTIONARY: {
 
 			Dictionary dict = p_variant;

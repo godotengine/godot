@@ -37,16 +37,17 @@ Size2 Slider::get_minimum_size() const {
 	return ms;
 }
 
-void Slider::_gui_input(InputEvent p_event) {
+void Slider::_gui_input(Ref<InputEvent> p_event) {
 
-	if (p_event.type == InputEvent::MOUSE_BUTTON) {
+	Ref<InputEventMouseButton> mb = p_event;
 
-		InputEventMouseButton &mb = p_event.mouse_button;
-		if (mb.button_index == BUTTON_LEFT) {
+	if (mb.is_valid()) {
+		if (mb->get_button_index() == BUTTON_LEFT) {
 
-			if (mb.pressed) {
+			if (mb->is_pressed()) {
 				Ref<Texture> grabber = get_icon(mouse_inside || has_focus() ? "grabber_highlight" : "grabber");
-				grab.pos = orientation == VERTICAL ? mb.y : mb.x;
+				grab.pos = orientation == VERTICAL ? mb->get_pos().y : mb->get_pos().x;
+
 				double grab_width = (double)grabber->get_size().width;
 				double grab_height = (double)grabber->get_size().height;
 				double max = orientation == VERTICAL ? get_size().height - grab_height : get_size().width - grab_width;
@@ -59,20 +60,22 @@ void Slider::_gui_input(InputEvent p_event) {
 			} else {
 				grab.active = false;
 			}
-		} else if (mb.pressed && mb.button_index == BUTTON_WHEEL_UP) {
+		} else if (mb->is_pressed() && mb->get_button_index() == BUTTON_WHEEL_UP) {
 
 			set_value(get_value() + get_step());
-		} else if (mb.pressed && mb.button_index == BUTTON_WHEEL_DOWN) {
+		} else if (mb->is_pressed() && mb->get_button_index() == BUTTON_WHEEL_DOWN) {
 			set_value(get_value() - get_step());
 		}
+	}
 
-	} else if (p_event.type == InputEvent::MOUSE_MOTION) {
+	Ref<InputEventMouseMotion> mm = p_event;
 
+	if (mm.is_valid()) {
 		if (grab.active) {
 
 			Size2i size = get_size();
 			Ref<Texture> grabber = get_icon("grabber");
-			float motion = (orientation == VERTICAL ? p_event.mouse_motion.y : p_event.mouse_motion.x) - grab.pos;
+			float motion = (orientation == VERTICAL ? mm->get_pos().y : mm->get_pos().x) - grab.pos;
 			if (orientation == VERTICAL)
 				motion = -motion;
 			float areasize = orientation == VERTICAL ? size.height - grabber->get_size().height : size.width - grabber->get_size().width;
@@ -81,42 +84,44 @@ void Slider::_gui_input(InputEvent p_event) {
 			float umotion = motion / float(areasize);
 			set_as_ratio(grab.uvalue + umotion);
 		}
-	} else {
+	}
 
-		if (p_event.is_action("ui_left") && p_event.is_pressed()) {
+	if (!mm.is_valid() && !mb.is_valid()) {
+
+		if (p_event->is_action("ui_left") && p_event->is_pressed()) {
 
 			if (orientation != HORIZONTAL)
 				return;
 			set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
 			accept_event();
-		} else if (p_event.is_action("ui_right") && p_event.is_pressed()) {
+		} else if (p_event->is_action("ui_right") && p_event->is_pressed()) {
 
 			if (orientation != HORIZONTAL)
 				return;
 			set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
 			accept_event();
-		} else if (p_event.is_action("ui_up") && p_event.is_pressed()) {
+		} else if (p_event->is_action("ui_up") && p_event->is_pressed()) {
 
 			if (orientation != VERTICAL)
 				return;
 
 			set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
 			accept_event();
-		} else if (p_event.is_action("ui_down") && p_event.is_pressed()) {
+		} else if (p_event->is_action("ui_down") && p_event->is_pressed()) {
 
 			if (orientation != VERTICAL)
 				return;
 			set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
 			accept_event();
 
-		} else if (p_event.type == InputEvent::KEY) {
+		} else {
 
-			const InputEventKey &k = p_event.key;
+			Ref<InputEventKey> k = p_event;
 
-			if (!k.pressed)
+			if (!k.is_valid() || !k->is_pressed())
 				return;
 
-			switch (k.scancode) {
+			switch (k->get_scancode()) {
 
 				case KEY_HOME: {
 
@@ -129,7 +134,7 @@ void Slider::_gui_input(InputEvent p_event) {
 					accept_event();
 
 				} break;
-			};
+			}
 		}
 	}
 }

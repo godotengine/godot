@@ -34,7 +34,7 @@
 #include "io/resource_loader.h"
 #include "scene/3d/sprite_3d.h"
 
-void SpriteFramesEditor::_gui_input(InputEvent p_event) {
+void SpriteFramesEditor::_gui_input(Ref<InputEvent> p_event) {
 }
 
 void SpriteFramesEditor::_notification(int p_what) {

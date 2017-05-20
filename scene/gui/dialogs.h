@@ -60,7 +60,7 @@ class WindowDialog : public Popup {
 	Point2 drag_offset_far;
 	bool resizable;
 
-	void _gui_input(const InputEvent &p_event);
+	void _gui_input(const Ref<InputEvent> &p_event);
 	void _closed();
 	int _drag_hit_test(const Point2 &pos) const;
 

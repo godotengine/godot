@@ -508,146 +508,150 @@ void GridMapEditor::_duplicate_paste() {
 	}
 }
 
-bool GridMapEditor::forward_spatial_input_event(Camera *p_camera, const InputEvent &p_event) {
+bool GridMapEditor::forward_spatial_input_event(Camera *p_camera, const Ref<InputEvent> &p_event) {
 	if (!node) {
 		return false;
 	}
 
 	if (edit_mode->get_selected() == 0) { // regular click
-		switch (p_event.type) {
-			case InputEvent::MOUSE_BUTTON: {
 
-				if (p_event.mouse_button.button_index == BUTTON_WHEEL_UP && (p_event.mouse_button.mod.command || p_event.mouse_button.mod.shift)) {
-					if (p_event.mouse_button.pressed)
-						floor->set_value(floor->get_value() + p_event.mouse_button.factor);
+		Ref<InputEventMouseButton> mb = p_event;
 
-					return true; //eaten
-				} else if (p_event.mouse_button.button_index == BUTTON_WHEEL_DOWN && (p_event.mouse_button.mod.command || p_event.mouse_button.mod.shift)) {
-					if (p_event.mouse_button.pressed)
-						floor->set_value(floor->get_value() - p_event.mouse_button.factor);
+		if (mb.is_valid()) {
+
+			if (mb->get_button_index() == BUTTON_WHEEL_UP && (mb->get_command() || mb->get_shift())) {
+				if (mb->is_pressed())
+					floor->set_value(floor->get_value() + mb->get_factor());
+
+				return true; //eaten
+			} else if (mb->get_button_index() == BUTTON_WHEEL_DOWN && (mb->get_command() || mb->get_shift())) {
+				if (mb->is_pressed())
+					floor->set_value(floor->get_value() - mb->get_factor());
+				return true;
+			}
+
+			if (mb->is_pressed()) {
+
+				if (mb->get_button_index() == BUTTON_LEFT) {
+
+					if (input_action == INPUT_DUPLICATE) {
+
+						//paste
+						_duplicate_paste();
+						input_action = INPUT_NONE;
+						_update_duplicate_indicator();
+					} else if (mb->get_shift()) {
+						input_action = INPUT_SELECT;
+					} else if (mb->get_command())
+						input_action = INPUT_COPY;
+					else {
+						input_action = INPUT_PAINT;
+						set_items.clear();
+					}
+				} else if (mb->get_button_index() == BUTTON_RIGHT)
+					if (input_action == INPUT_DUPLICATE) {
+
+						input_action = INPUT_NONE;
+						_update_duplicate_indicator();
+					} else {
+						input_action = INPUT_ERASE;
+						set_items.clear();
+					}
+				else
+					return false;
+
+				return do_input_action(p_camera, Point2(mb->get_pos().x, mb->get_pos().y), true);
+			} else {
+
+				if (
+						(mb->get_button_index() == BUTTON_RIGHT && input_action == INPUT_ERASE) ||
+						(mb->get_button_index() == BUTTON_LEFT && input_action == INPUT_PAINT)) {
+
+					if (set_items.size()) {
+						undo_redo->create_action("GridMap Paint");
+						for (List<SetItem>::Element *E = set_items.front(); E; E = E->next()) {
+
+							const SetItem &si = E->get();
+							undo_redo->add_do_method(node, "set_cell_item", si.pos.x, si.pos.y, si.pos.z, si.new_value, si.new_orientation);
+						}
+						for (List<SetItem>::Element *E = set_items.back(); E; E = E->prev()) {
+
+							const SetItem &si = E->get();
+							undo_redo->add_undo_method(node, "set_cell_item", si.pos.x, si.pos.y, si.pos.z, si.old_value, si.old_orientation);
+						}
+
+						undo_redo->commit_action();
+					}
+					set_items.clear();
+					input_action = INPUT_NONE;
 					return true;
 				}
 
-				if (p_event.mouse_button.pressed) {
+				if (mb->get_button_index() == BUTTON_LEFT && input_action != INPUT_NONE) {
 
-					if (p_event.mouse_button.button_index == BUTTON_LEFT) {
-
-						if (input_action == INPUT_DUPLICATE) {
-
-							//paste
-							_duplicate_paste();
-							input_action = INPUT_NONE;
-							_update_duplicate_indicator();
-						} else if (p_event.mouse_button.mod.shift) {
-							input_action = INPUT_SELECT;
-						} else if (p_event.mouse_button.mod.command)
-							input_action = INPUT_COPY;
-						else {
-							input_action = INPUT_PAINT;
-							set_items.clear();
-						}
-					} else if (p_event.mouse_button.button_index == BUTTON_RIGHT)
-						if (input_action == INPUT_DUPLICATE) {
-
-							input_action = INPUT_NONE;
-							_update_duplicate_indicator();
-						} else {
-							input_action = INPUT_ERASE;
-							set_items.clear();
-						}
-					else
-						return false;
-
-					return do_input_action(p_camera, Point2(p_event.mouse_button.x, p_event.mouse_button.y), true);
-				} else {
-
-					if (
-							(p_event.mouse_button.button_index == BUTTON_RIGHT && input_action == INPUT_ERASE) ||
-							(p_event.mouse_button.button_index == BUTTON_LEFT && input_action == INPUT_PAINT)) {
-
-						if (set_items.size()) {
-							undo_redo->create_action("GridMap Paint");
-							for (List<SetItem>::Element *E = set_items.front(); E; E = E->next()) {
-
-								const SetItem &si = E->get();
-								undo_redo->add_do_method(node, "set_cell_item", si.pos.x, si.pos.y, si.pos.z, si.new_value, si.new_orientation);
-							}
-							for (List<SetItem>::Element *E = set_items.back(); E; E = E->prev()) {
-
-								const SetItem &si = E->get();
-								undo_redo->add_undo_method(node, "set_cell_item", si.pos.x, si.pos.y, si.pos.z, si.old_value, si.old_orientation);
-							}
-
-							undo_redo->commit_action();
-						}
-						set_items.clear();
-						input_action = INPUT_NONE;
-						return true;
-					}
-
-					if (p_event.mouse_button.button_index == BUTTON_LEFT && input_action != INPUT_NONE) {
-
-						set_items.clear();
-						input_action = INPUT_NONE;
-						return true;
-					}
-					if (p_event.mouse_button.button_index == BUTTON_RIGHT && (input_action == INPUT_ERASE || input_action == INPUT_DUPLICATE)) {
-						input_action = INPUT_NONE;
-						return true;
-					}
+					set_items.clear();
+					input_action = INPUT_NONE;
+					return true;
 				}
-			} break;
-			case InputEvent::MOUSE_MOTION: {
+				if (mb->get_button_index() == BUTTON_RIGHT && (input_action == INPUT_ERASE || input_action == INPUT_DUPLICATE)) {
+					input_action = INPUT_NONE;
+					return true;
+				}
+			}
+		}
 
-				return do_input_action(p_camera, Point2(p_event.mouse_motion.x, p_event.mouse_motion.y), false);
-			} break;
+		Ref<InputEventMouseMotion> mm = p_event;
+
+		if (mm.is_valid()) {
+
+			return do_input_action(p_camera, mm->get_pos(), false);
 		}
 
 	} else if (edit_mode->get_selected() == 1) {
 		//area mode, select an area
 
-		switch (p_event.type) {
-			case InputEvent::MOUSE_BUTTON: {
+		Ref<InputEventMouseButton> mb = p_event;
 
-				if (p_event.mouse_button.button_index == BUTTON_LEFT && p_event.mouse_button.pressed) {
+		if (mb.is_valid()) {
 
-					Point2 point = Point2(p_event.mouse_motion.x, p_event.mouse_motion.y);
+			if (mb->get_button_index() == BUTTON_LEFT && mb->is_pressed()) {
 
-					Camera *camera = p_camera;
-					Vector3 from = camera->project_ray_origin(point);
-					Vector3 normal = camera->project_ray_normal(point);
-					Transform local_xform = node->get_global_transform().affine_inverse();
-					from = local_xform.xform(from);
-					normal = local_xform.basis.xform(normal).normalized();
+				Point2 point = mb->get_pos();
 
-					List<int> areas;
-					node->get_area_list(&areas);
+				Camera *camera = p_camera;
+				Vector3 from = camera->project_ray_origin(point);
+				Vector3 normal = camera->project_ray_normal(point);
+				Transform local_xform = node->get_global_transform().affine_inverse();
+				from = local_xform.xform(from);
+				normal = local_xform.basis.xform(normal).normalized();
 
-					float min_d = 1e10;
-					int min_area = -1;
+				List<int> areas;
+				node->get_area_list(&areas);
 
-					for (List<int>::Element *E = areas.front(); E; E = E->next()) {
+				float min_d = 1e10;
+				int min_area = -1;
 
-						int area = E->get();
-						Rect3 aabb = node->area_get_bounds(area);
-						aabb.pos *= node->get_cell_size();
-						aabb.size *= node->get_cell_size();
+				for (List<int>::Element *E = areas.front(); E; E = E->next()) {
 
-						Vector3 rclip, rnormal;
-						if (!aabb.intersects_segment(from, from + normal * 10000, &rclip, &rnormal))
-							continue;
+					int area = E->get();
+					Rect3 aabb = node->area_get_bounds(area);
+					aabb.pos *= node->get_cell_size();
+					aabb.size *= node->get_cell_size();
 
-						float d = normal.dot(rclip);
-						if (d < min_d) {
-							min_d = d;
-							min_area = area;
-						}
+					Vector3 rclip, rnormal;
+					if (!aabb.intersects_segment(from, from + normal * 10000, &rclip, &rnormal))
+						continue;
+
+					float d = normal.dot(rclip);
+					if (d < min_d) {
+						min_d = d;
+						min_area = area;
 					}
-
-					selected_area = min_area;
-					update_areas();
 				}
-			} break;
+
+				selected_area = min_area;
+				update_areas();
+			}
 		}
 	}
 

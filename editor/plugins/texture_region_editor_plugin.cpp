@@ -202,7 +202,7 @@ void TextureRegionEditor::_region_draw() {
 	}
 }
 
-void TextureRegionEditor::_region_input(const InputEvent &p_input) {
+void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 	Transform2D mtx;
 	mtx.elements[2] = -draw_ofs;
 	mtx.scale_basis(Vector2(draw_zoom, draw_zoom));
@@ -218,13 +218,12 @@ void TextureRegionEditor::_region_input(const InputEvent &p_input) {
 		mtx.xform(rect.pos + Vector2(0, rect.size.y / 2)) + Vector2(-4, 0)
 	};
 
-	if (p_input.type == InputEvent::MOUSE_BUTTON) {
+	Ref<InputEventMouseButton> mb;
+	if (mb.is_valid()) {
 
-		const InputEventMouseButton &mb = p_input.mouse_button;
+		if (mb->get_button_index() == BUTTON_LEFT) {
 
-		if (mb.button_index == BUTTON_LEFT) {
-
-			if (mb.pressed) {
+			if (mb->is_pressed()) {
 				if (node_patch9 || obj_styleBox.is_valid()) {
 					edited_margin = -1;
 					float margins[4];
@@ -245,26 +244,26 @@ void TextureRegionEditor::_region_input(const InputEvent &p_input) {
 						mtx.basis_xform(rect.pos + Vector2(margins[2], 0)) - draw_ofs,
 						mtx.basis_xform(rect.pos + rect.size - Vector2(margins[3], 0)) - draw_ofs
 					};
-					if (Math::abs(mb.y - pos[0].y) < 8) {
+					if (Math::abs(mb->get_pos().y - pos[0].y) < 8) {
 						edited_margin = 0;
 						prev_margin = margins[0];
-					} else if (Math::abs(mb.y - pos[1].y) < 8) {
+					} else if (Math::abs(mb->get_pos().y - pos[1].y) < 8) {
 						edited_margin = 1;
 						prev_margin = margins[1];
-					} else if (Math::abs(mb.x - pos[2].x) < 8) {
+					} else if (Math::abs(mb->get_pos().x - pos[2].x) < 8) {
 						edited_margin = 2;
 						prev_margin = margins[2];
-					} else if (Math::abs(mb.x - pos[3].x) < 8) {
+					} else if (Math::abs(mb->get_pos().x - pos[3].x) < 8) {
 						edited_margin = 3;
 						prev_margin = margins[3];
 					}
 					if (edited_margin >= 0) {
-						drag_from = Vector2(mb.x, mb.y);
+						drag_from = Vector2(mb->get_pos().x, mb->get_pos().y);
 						drag = true;
 					}
 				}
 				if (edited_margin < 0 && snap_mode == SNAP_AUTOSLICE) {
-					Vector2 point = mtx.affine_inverse().xform(Vector2(mb.x, mb.y));
+					Vector2 point = mtx.affine_inverse().xform(Vector2(mb->get_pos().x, mb->get_pos().y));
 					for (List<Rect2>::Element *E = autoslice_cache.front(); E; E = E->next()) {
 						if (E->get().has_point(point)) {
 							rect = E->get();
@@ -302,7 +301,7 @@ void TextureRegionEditor::_region_input(const InputEvent &p_input) {
 						}
 					}
 				} else if (edited_margin < 0) {
-					drag_from = mtx.affine_inverse().xform(Vector2(mb.x, mb.y));
+					drag_from = mtx.affine_inverse().xform(Vector2(mb->get_pos().x, mb->get_pos().y));
 					if (snap_mode == SNAP_PIXEL)
 						drag_from = drag_from.snapped(Vector2(1, 1));
 					else if (snap_mode == SNAP_GRID)
@@ -319,7 +318,7 @@ void TextureRegionEditor::_region_input(const InputEvent &p_input) {
 
 					for (int i = 0; i < 8; i++) {
 						Vector2 tuv = endpoints[i];
-						if (tuv.distance_to(Vector2(mb.x, mb.y)) < 8) {
+						if (tuv.distance_to(Vector2(mb->get_pos().x, mb->get_pos().y)) < 8) {
 							drag_index = i;
 						}
 					}
@@ -369,7 +368,7 @@ void TextureRegionEditor::_region_input(const InputEvent &p_input) {
 				creating = false;
 			}
 
-		} else if (mb.button_index == BUTTON_RIGHT && mb.pressed) {
+		} else if (mb->get_button_index() == BUTTON_RIGHT && mb->is_pressed()) {
 
 			if (drag) {
 				drag = false;
@@ -387,18 +386,20 @@ void TextureRegionEditor::_region_input(const InputEvent &p_input) {
 					drag_index = -1;
 				}
 			}
-		} else if (mb.button_index == BUTTON_WHEEL_UP && mb.pressed) {
+		} else if (mb->get_button_index() == BUTTON_WHEEL_UP && mb->is_pressed()) {
 			_zoom_in();
-		} else if (mb.button_index == BUTTON_WHEEL_DOWN && mb.pressed) {
+		} else if (mb->get_button_index() == BUTTON_WHEEL_DOWN && mb->is_pressed()) {
 			_zoom_out();
 		}
-	} else if (p_input.type == InputEvent::MOUSE_MOTION) {
+	}
 
-		const InputEventMouseMotion &mm = p_input.mouse_motion;
+	Ref<InputEventMouseMotion> mm = p_input;
 
-		if (mm.button_mask & BUTTON_MASK_MIDDLE || Input::get_singleton()->is_key_pressed(KEY_SPACE)) {
+	if (mm.is_valid()) {
 
-			Vector2 draged(mm.relative_x, mm.relative_y);
+		if (mm->get_button_mask() & BUTTON_MASK_MIDDLE || Input::get_singleton()->is_key_pressed(KEY_SPACE)) {
+
+			Vector2 draged(mm->get_relative().x, mm->get_relative().y);
 			hscroll->set_value(hscroll->get_value() - draged.x);
 			vscroll->set_value(vscroll->get_value() - draged.y);
 
@@ -407,13 +408,13 @@ void TextureRegionEditor::_region_input(const InputEvent &p_input) {
 			if (edited_margin >= 0) {
 				float new_margin;
 				if (edited_margin == 0)
-					new_margin = prev_margin + (mm.y - drag_from.y) / draw_zoom;
+					new_margin = prev_margin + (mm->get_pos().y - drag_from.y) / draw_zoom;
 				else if (edited_margin == 1)
-					new_margin = prev_margin - (mm.y - drag_from.y) / draw_zoom;
+					new_margin = prev_margin - (mm->get_pos().y - drag_from.y) / draw_zoom;
 				else if (edited_margin == 2)
-					new_margin = prev_margin + (mm.x - drag_from.x) / draw_zoom;
+					new_margin = prev_margin + (mm->get_pos().x - drag_from.x) / draw_zoom;
 				else if (edited_margin == 3)
-					new_margin = prev_margin - (mm.x - drag_from.x) / draw_zoom;
+					new_margin = prev_margin - (mm->get_pos().x - drag_from.x) / draw_zoom;
 				if (new_margin < 0)
 					new_margin = 0;
 				static Margin m[4] = { MARGIN_TOP, MARGIN_BOTTOM, MARGIN_LEFT, MARGIN_RIGHT };
@@ -422,7 +423,7 @@ void TextureRegionEditor::_region_input(const InputEvent &p_input) {
 				if (obj_styleBox.is_valid())
 					obj_styleBox->set_margin_size(m[edited_margin], new_margin);
 			} else {
-				Vector2 new_pos = mtx.affine_inverse().xform(Vector2(mm.x, mm.y));
+				Vector2 new_pos = mtx.affine_inverse().xform(mm->get_pos());
 				if (snap_mode == SNAP_PIXEL)
 					new_pos = new_pos.snapped(Vector2(1, 1));
 				else if (snap_mode == SNAP_GRID)

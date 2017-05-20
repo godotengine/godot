@@ -574,18 +574,19 @@ Color GraphNode::get_connection_output_color(int p_idx) {
 	return conn_output_cache[p_idx].color;
 }
 
-void GraphNode::_gui_input(const InputEvent &p_ev) {
+void GraphNode::_gui_input(const Ref<InputEvent> &p_ev) {
 
-	if (p_ev.type == InputEvent::MOUSE_BUTTON) {
+	Ref<InputEventMouseButton> mb = p_ev;
+	if (mb.is_valid()) {
 
 		ERR_EXPLAIN("GraphNode must be the child of a GraphEdit node.");
 		ERR_FAIL_COND(get_parent_control() == NULL);
 
 		print_line("INPUT EVENT BUTTON");
 
-		if (p_ev.mouse_button.pressed && p_ev.mouse_button.button_index == BUTTON_LEFT) {
+		if (mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 
-			Vector2 mpos = Vector2(p_ev.mouse_button.x, p_ev.mouse_button.y);
+			Vector2 mpos = Vector2(mb->get_pos().x, mb->get_pos().y);
 			if (close_rect.size != Size2() && close_rect.has_point(mpos)) {
 				emit_signal("close_request");
 				accept_event();
@@ -608,13 +609,14 @@ void GraphNode::_gui_input(const InputEvent &p_ev) {
 			get_parent_control()->grab_focus();
 		}
 
-		if (!p_ev.mouse_button.pressed && p_ev.mouse_button.button_index == BUTTON_LEFT) {
+		if (!mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 			resizing = false;
 		}
 	}
 
-	if (resizing && p_ev.type == InputEvent::MOUSE_MOTION) {
-		Vector2 mpos = Vector2(p_ev.mouse_motion.x, p_ev.mouse_motion.y);
+	Ref<InputEventMouseMotion> mm = p_ev;
+	if (resizing && mm.is_valid()) {
+		Vector2 mpos = mm->get_pos();
 
 		Vector2 diff = mpos - resizing_from;
 

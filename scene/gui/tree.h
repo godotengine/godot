@@ -337,14 +337,14 @@ private:
 	void draw_item_rect(const TreeItem::Cell &p_cell, const Rect2i &p_rect, const Color &p_color);
 	int draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 &p_draw_size, TreeItem *p_item);
 	void select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_col, TreeItem *p_prev = NULL, bool *r_in_range = NULL, bool p_force_deselect = false);
-	int propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool p_doubleclick, TreeItem *p_item, int p_button, const InputModifierState &p_mod);
+	int propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool p_doubleclick, TreeItem *p_item, int p_button, const Ref<InputEventWithModifiers> &p_mod);
 	void text_editor_enter(String p_text);
 	void _text_editor_modal_close();
 	void value_editor_changed(double p_value);
 
 	void popup_select(int p_option);
 
-	void _gui_input(InputEvent p_event);
+	void _gui_input(Ref<InputEvent> p_event);
 	void _notification(int p_what);
 
 	Size2 get_minimum_size() const;

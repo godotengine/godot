@@ -155,7 +155,6 @@ private:
 	String base_script;
 	NodePath base_path;
 	StringName property;
-	InputEvent::Type event_type;
 
 	Node *_get_base_node() const;
 	StringName _get_base_type() const;
@@ -197,9 +196,6 @@ public:
 	void set_basic_type(Variant::Type p_type);
 	Variant::Type get_basic_type() const;
 
-	void set_event_type(InputEvent::Type p_type);
-	InputEvent::Type get_event_type() const;
-
 	void set_property(const StringName &p_type);
 	StringName get_property() const;
 
@@ -238,7 +234,6 @@ private:
 	String base_script;
 	NodePath base_path;
 	StringName property;
-	InputEvent::Type event_type;
 
 	void _update_base_type();
 	Node *_get_base_node() const;
@@ -278,9 +273,6 @@ public:
 
 	void set_basic_type(Variant::Type p_type);
 	Variant::Type get_basic_type() const;
-
-	void set_event_type(InputEvent::Type p_type);
-	InputEvent::Type get_event_type() const;
 
 	void set_property(const StringName &p_type);
 	StringName get_property() const;

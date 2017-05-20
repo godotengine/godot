@@ -194,8 +194,7 @@ void DocDump::dump(const String &p_file) {
 								default_arg_text = Variant::get_type_name(default_arg.get_type()) + "(" + default_arg_text + ")";
 								break;
 							case Variant::OBJECT:
-							case Variant::INPUT_EVENT:
-							case Variant::DICTIONARY:
+							case Variant::DICTIONARY: // 20
 							case Variant::ARRAY:
 							case Variant::_RID:
 

@@ -59,7 +59,7 @@ public:
 		NOTIFICATION_TRANSLATION_CHANGED = 10,
 	};
 
-	virtual void input_event(const InputEvent &p_event);
+	virtual void input_event(const Ref<InputEvent> &p_event);
 	virtual void input_text(const String &p_text);
 
 	virtual void init();

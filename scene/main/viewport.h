@@ -158,7 +158,7 @@ private:
 	bool gen_mipmaps;
 
 	bool physics_object_picking;
-	List<InputEvent> physics_picking_events;
+	List<Ref<InputEvent> > physics_picking_events;
 	ObjectID physics_object_capture;
 	ObjectID physics_object_over;
 	Vector2 physics_last_mousepos;
@@ -237,14 +237,14 @@ private:
 
 	bool disable_input;
 
-	void _gui_call_input(Control *p_control, const InputEvent &p_input);
+	void _gui_call_input(Control *p_control, const Ref<InputEvent> &p_input);
 	void _gui_sort_subwindows();
 	void _gui_sort_roots();
 	void _gui_sort_modal_stack();
 	Control *_gui_find_control(const Point2 &p_global);
 	Control *_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_global, const Transform2D &p_xform, Transform2D &r_inv_xform);
 
-	void _gui_input_event(InputEvent p_event);
+	void _gui_input_event(Ref<InputEvent> p_event);
 
 	void update_worlds();
 
@@ -253,10 +253,10 @@ private:
 	void _vp_enter_tree();
 	void _vp_exit_tree();
 
-	void _vp_input(const InputEvent &p_ev);
+	void _vp_input(const Ref<InputEvent> &p_ev);
 	void _vp_input_text(const String &p_text);
-	void _vp_unhandled_input(const InputEvent &p_ev);
-	void _make_input_local(InputEvent &ev);
+	void _vp_unhandled_input(const Ref<InputEvent> &p_ev);
+	Ref<InputEvent> _make_input_local(const Ref<InputEvent> &ev);
 
 	friend class Control;
 
@@ -388,8 +388,8 @@ public:
 	void set_use_own_world(bool p_world);
 	bool is_using_own_world() const;
 
-	void input(const InputEvent &p_event);
-	void unhandled_input(const InputEvent &p_event);
+	void input(const Ref<InputEvent> &p_event);
+	void unhandled_input(const Ref<InputEvent> &p_event);
 
 	void set_disable_input(bool p_disable);
 	bool is_input_disabled() const;

@@ -122,7 +122,7 @@ protected:
 public:
 	void _edit_region();
 	void _region_draw();
-	void _region_input(const InputEvent &p_input);
+	void _region_input(const Ref<InputEvent> &p_input);
 	void _scroll_changed(float);
 
 	void edit(Object *p_obj);

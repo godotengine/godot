@@ -32,6 +32,7 @@
 
 #include "math_2d.h"
 #include "os/copymem.h"
+#include "resource.h"
 #include "typedefs.h"
 #include "ustring.h"
 /**
@@ -137,7 +138,40 @@ enum {
  * Input Modifier Status
  * for keyboard/mouse events.
  */
-struct InputModifierState {
+
+class InputEvent : public Resource {
+	GDCLASS(InputEvent, Resource)
+
+	uint32_t id;
+	int device;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_id(uint32_t p_id);
+	uint32_t get_id() const;
+
+	void set_device(int p_device);
+	int get_device() const;
+
+	virtual bool is_pressed() const;
+	virtual bool is_action(const StringName &p_action) const;
+	virtual bool is_action_pressed(const StringName &p_action) const;
+	virtual bool is_action_released(const StringName &p_action) const;
+	virtual bool is_echo() const;
+	virtual String as_text() const;
+
+	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
+
+	virtual bool action_match(const Ref<InputEvent> &p_event) const;
+	virtual bool is_action_type() const;
+
+	InputEvent();
+};
+
+class InputEventWithModifiers : public InputEvent {
+	GDCLASS(InputEventWithModifiers, InputEvent)
 
 	bool shift;
 	bool alt;
@@ -157,126 +191,267 @@ struct InputModifierState {
 
 #endif
 
-	bool operator==(const InputModifierState &rvalue) const {
+protected:
+	static void _bind_methods();
 
-		return ((shift == rvalue.shift) && (alt == rvalue.alt) && (control == rvalue.control) && (meta == rvalue.meta));
-	}
+public:
+	void set_shift(bool p_enabled);
+	bool get_shift() const;
+
+	void set_alt(bool p_enabled);
+	bool get_alt() const;
+
+	void set_control(bool p_enabled);
+	bool get_control() const;
+
+	void set_metakey(bool p_enabled);
+	bool get_metakey() const;
+
+	void set_command(bool p_enabled);
+	bool get_command() const;
+
+	InputEventWithModifiers();
 };
 
-struct InputEventKey {
+class InputEventKey : public InputEventWithModifiers {
 
-	InputModifierState mod;
+	GDCLASS(InputEventKey, InputEventWithModifiers)
 
 	bool pressed; /// otherwise release
 
 	uint32_t scancode; ///< check keyboard.h , KeyCode enum, without modifier masks
 	uint32_t unicode; ///unicode
 
+	bool echo; /// true if this is an echo key
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_pressed(bool p_pressed);
+	bool is_pressed();
+
+	void set_scancode(uint32_t p_scancode);
+	uint32_t get_scancode() const;
+
+	void set_unicode(uint32_t p_unicode);
+	uint32_t get_unicode() const;
+
+	void set_echo(bool p_enable);
+	bool is_echo() const;
+
 	uint32_t get_scancode_with_modifiers() const;
 
-	bool echo; /// true if this is an echo key
+	virtual bool action_match(const Ref<InputEvent> &p_event) const;
+
+	virtual bool is_action_type() const { return true; }
+
+	InputEventKey();
 };
 
-struct InputEventMouse {
+class InputEventMouse : public InputEventWithModifiers {
 
-	InputModifierState mod;
+	GDCLASS(InputEventMouse, InputEventWithModifiers)
+
 	int button_mask;
-	float x, y;
-	float global_x, global_y;
-	int pointer_index;
+
+	Vector2 pos;
+	Vector2 global_pos;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_button_mask(int p_mask);
+	int get_button_mask() const;
+
+	void set_pos(const Vector2 &p_pos);
+	Vector2 get_pos() const;
+
+	void set_global_pos(const Vector2 &p_global_pos);
+	Vector2 get_global_pos() const;
+
+	InputEventMouse();
 };
 
-struct InputEventMouseButton : public InputEventMouse {
+class InputEventMouseButton : public InputEventMouse {
 
-	double factor;
+	GDCLASS(InputEventMouseButton, InputEventMouse)
+
+	float factor;
 	int button_index;
 	bool pressed; //otherwise released
 	bool doubleclick; //last even less than doubleclick time
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_factor(float p_factor);
+	float get_factor();
+
+	void set_button_index(int p_index);
+	int get_button_index() const;
+
+	void set_pressed(bool p_pressed);
+	virtual bool is_pressed() const;
+
+	void set_doubleclick(bool p_doubleclick);
+	bool is_doubleclick() const;
+
+	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
+	virtual bool action_match(const Ref<InputEvent> &p_event) const;
+
+	virtual bool is_action_type() const { return true; }
+
+	InputEventMouseButton();
 };
 
-struct InputEventMouseMotion : public InputEventMouse {
+class InputEventMouseMotion : public InputEventMouse {
 
-	float relative_x, relative_y;
-	float speed_x, speed_y;
+	GDCLASS(InputEventMouseMotion, InputEventMouse)
+	Vector2 relative;
+	Vector2 speed;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_relative(const Vector2 &p_relative);
+	Vector2 get_relative() const;
+
+	void set_speed(const Vector2 &p_speed);
+	Vector2 get_speed() const;
+
+	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
+
+	InputEventMouseMotion();
 };
 
-struct InputEventJoypadMotion {
+class InputEventJoypadMotion : public InputEvent {
 
+	GDCLASS(InputEventJoypadMotion, InputEvent)
 	int axis; ///< Joypad axis
 	float axis_value; ///< -1 to 1
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_axis(int p_axis);
+	int get_axis() const;
+
+	void set_axis_value(float p_value);
+	float get_axis_value() const;
+
+	virtual bool action_match(const Ref<InputEvent> &p_event) const;
+
+	virtual bool is_action_type() const { return true; }
+
+	InputEventJoypadMotion();
 };
 
-struct InputEventJoypadButton {
+class InputEventJoypadButton : public InputEvent {
+	GDCLASS(InputEventJoypadButton, InputEvent)
 
 	int button_index;
 	bool pressed;
 	float pressure; //0 to 1
+protected:
+	static void _bind_methods();
+
+public:
+	void set_button_index(int p_index);
+	int get_button_index() const;
+
+	void set_pressed(bool p_pressed);
+	virtual bool is_pressed() const;
+
+	void set_pressure(float p_pressure);
+	float get_pressure() const;
+
+	virtual bool action_match(const Ref<InputEvent> &p_event) const;
+
+	virtual bool is_action_type() const { return true; }
+
+	InputEventJoypadButton();
 };
 
-struct InputEventScreenTouch {
-
+struct InputEventScreenTouch : public InputEvent {
+	GDCLASS(InputEventScreenTouch, InputEvent)
 	int index;
-	float x, y;
+	Vector2 pos;
 	bool pressed;
-};
-struct InputEventScreenDrag {
 
+protected:
+	static void _bind_methods();
+
+public:
+	void set_index(int p_index);
+	int get_index() const;
+
+	void set_pos(const Vector2 &p_pos);
+	Vector2 get_pos() const;
+
+	void set_pressed(bool p_pressed);
+	virtual bool is_pressed() const;
+
+	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
+
+	InputEventScreenTouch();
+};
+
+class InputEventScreenDrag : public InputEvent {
+
+	GDCLASS(InputEventScreenDrag, InputEvent)
 	int index;
-	float x, y;
-	float relative_x, relative_y;
-	float speed_x, speed_y;
+	Vector2 pos;
+	Vector2 relative;
+	Vector2 speed;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_index(int p_index);
+	int get_index() const;
+
+	void set_pos(const Vector2 &p_pos);
+	Vector2 get_pos() const;
+
+	void set_relative(const Vector2 &p_relative);
+	Vector2 get_relative() const;
+
+	void set_speed(const Vector2 &p_speed);
+	Vector2 get_speed() const;
+
+	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
+
+	InputEventScreenDrag();
 };
 
-struct InputEventAction {
+class InputEventAction : public InputEvent {
 
-	int action;
+	GDCLASS(InputEventAction, InputEvent)
+
+	StringName action;
 	bool pressed;
-};
 
-struct InputEvent {
+protected:
+	static void _bind_methods();
 
-	enum Type {
-		NONE,
-		KEY,
-		MOUSE_MOTION,
-		MOUSE_BUTTON,
-		JOYPAD_MOTION,
-		JOYPAD_BUTTON,
-		SCREEN_TOUCH,
-		SCREEN_DRAG,
-		ACTION,
-		TYPE_MAX
-	};
+public:
+	void set_action(const StringName &p_action);
+	StringName get_action() const;
 
-	uint32_t ID;
-	int type;
-	int device;
+	void set_pressed(bool p_pressed);
+	virtual bool is_pressed() const;
 
-	union {
-		InputEventMouseMotion mouse_motion;
-		InputEventMouseButton mouse_button;
-		InputEventJoypadMotion joy_motion;
-		InputEventJoypadButton joy_button;
-		InputEventKey key;
-		InputEventScreenTouch screen_touch;
-		InputEventScreenDrag screen_drag;
-		InputEventAction action;
-	};
+	virtual bool is_action(const StringName &p_action) const;
 
-	bool is_pressed() const;
-	bool is_action(const String &p_action) const;
-	bool is_action_pressed(const String &p_action) const;
-	bool is_action_released(const String &p_action) const;
-	bool is_echo() const;
-	void set_as_action(const String &p_action, bool p_pressed);
+	virtual bool is_action_type() const { return true; }
 
-	InputEvent xform_by(const Transform2D &p_xform) const;
-	bool operator==(const InputEvent &p_event) const;
-	operator String() const;
-	InputEvent() {
-		zeromem(this, sizeof(InputEvent));
-		mouse_button.factor = 1;
-	}
+	InputEventAction();
 };
 
 #endif

@@ -483,16 +483,20 @@ void EditorProfiler::_cursor_metric_changed(double) {
 	_update_frame();
 }
 
-void EditorProfiler::_graph_tex_input(const InputEvent &p_ev) {
+void EditorProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 
 	if (last_metric < 0)
 		return;
 
-	if (
-			(p_ev.type == InputEvent::MOUSE_BUTTON && p_ev.mouse_button.button_index == BUTTON_LEFT && p_ev.mouse_button.pressed) ||
-			(p_ev.type == InputEvent::MOUSE_MOTION)) {
+	Ref<InputEventMouse> me = p_ev;
+	Ref<InputEventMouseButton> mb = p_ev;
+	Ref<InputEventMouseMotion> mm = p_ev;
 
-		int x = p_ev.mouse_button.x;
+	if (
+			(mb.is_valid() && mb->get_button_index() == BUTTON_LEFT && mb->is_pressed()) ||
+			(mm.is_valid())) {
+
+		int x = me->get_pos().x;
 		x = x * frame_metrics.size() / graph->get_size().width;
 
 		bool show_hover = x >= 0 && x < frame_metrics.size();
@@ -519,7 +523,7 @@ void EditorProfiler::_graph_tex_input(const InputEvent &p_ev) {
 			hover_metric = -1;
 		}
 
-		if (p_ev.type == InputEvent::MOUSE_BUTTON || p_ev.mouse_motion.button_mask & BUTTON_MASK_LEFT) {
+		if (mb.is_valid() || mb->get_button_mask() & BUTTON_MASK_LEFT) {
 			//cursor_metric=x;
 			updating_frame = true;
 

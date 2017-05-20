@@ -46,7 +46,7 @@ class EditorPath : public Control {
 	EditorPath();
 
 	void _popup_select(int p_idx);
-	void _gui_input(const InputEvent &p_event);
+	void _gui_input(const Ref<InputEvent> &p_event);
 	void _add_children_to_popup(Object *p_obj, int p_depth = 0);
 
 protected:

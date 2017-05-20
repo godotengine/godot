@@ -63,11 +63,13 @@ int TabContainer::_get_top_margin() const {
 	return tab_height + content_height;
 }
 
-void TabContainer::_gui_input(const InputEvent &p_event) {
+void TabContainer::_gui_input(const Ref<InputEvent> &p_event) {
 
-	if (p_event.type == InputEvent::MOUSE_BUTTON && p_event.mouse_button.pressed && p_event.mouse_button.button_index == BUTTON_LEFT) {
+	Ref<InputEventMouseButton> mb = p_event;
 
-		Point2 pos(p_event.mouse_button.x, p_event.mouse_button.y);
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
+
+		Point2 pos(mb->get_pos().x, mb->get_pos().y);
 		Size2 size = get_size();
 
 		// Click must be on tabs in the tab header area.

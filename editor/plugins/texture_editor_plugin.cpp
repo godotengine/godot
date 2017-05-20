@@ -33,7 +33,7 @@
 #include "global_config.h"
 #include "io/resource_loader.h"
 
-void TextureEditor::_gui_input(InputEvent p_event) {
+void TextureEditor::_gui_input(Ref<InputEvent> p_event) {
 }
 
 void TextureEditor::_notification(int p_what) {

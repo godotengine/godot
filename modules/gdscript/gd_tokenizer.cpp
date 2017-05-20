@@ -802,7 +802,6 @@ void GDTokenizerText::_advance() {
 							{ Variant::COLOR, "Color" },
 							{ Variant::_RID, "RID" },
 							{ Variant::OBJECT, "Object" },
-							{ Variant::INPUT_EVENT, "InputEvent" },
 							{ Variant::NODE_PATH, "NodePath" },
 							{ Variant::DICTIONARY, "Dictionary" },
 							{ Variant::ARRAY, "Array" },

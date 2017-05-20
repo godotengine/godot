@@ -610,7 +610,7 @@ struct JAndroidPointerEvent {
 };
 
 static List<JAndroidPointerEvent> pointer_events;
-static List<InputEvent> key_events;
+static List<Ref<InputEvent> > key_events;
 static List<OS_Android::JoypadEvent> joy_events;
 static bool initialized = false;
 static Mutex *input_mutex = NULL;
@@ -1036,7 +1036,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, job
 
 	while (key_events.size()) {
 
-		InputEvent event = key_events.front()->get();
+		Ref<InputEvent> event = key_events.front()->get();
 		os_android->process_event(event);
 
 		key_events.pop_front();
@@ -1367,7 +1367,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joybutton(JNIEnv *env
 	jevent.device = p_device;
 	jevent.type = OS_Android::JOY_EVENT_BUTTON;
 	jevent.index = p_button;
-	jevent.pressed = p_pressed;
+	jevent->is_pressed() = p_pressed;
 
 	input_mutex->lock();
 	joy_events.push_back(jevent);
@@ -1419,30 +1419,23 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyconnectionchanged(
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_key(JNIEnv *env, jobject obj, jint p_scancode, jint p_unicode_char, jboolean p_pressed) {
 
-	InputEvent ievent;
-	ievent.type = InputEvent::KEY;
-	ievent.device = 0;
+	Ref<InputEventKey> ievent;
 	int val = p_unicode_char;
 	int scancode = android_get_keysym(p_scancode);
-	ievent.key.scancode = scancode;
-	ievent.key.unicode = val;
-	ievent.key.pressed = p_pressed;
+	ievent->set_scancode(scancode);
+	ievent->set_unicode(val);
+	ievent->set_pressed(p_pressed);
 
-	print_line("Scancode: " + String::num(p_scancode) + ":" + String::num(ievent.key.scancode) + " Unicode: " + String::num(val));
-
-	ievent.key.mod.shift = false;
-	ievent.key.mod.alt = false;
-	ievent.key.mod.control = false;
-	ievent.key.echo = false;
+	print_line("Scancode: " + String::num(p_scancode) + ":" + String::num(ievent->get_scancode()) + " Unicode: " + String::num(val));
 
 	if (val == '\n') {
-		ievent.key.scancode = KEY_ENTER;
+		ievent->set_scancode(KEY_ENTER);
 	} else if (val == 61448) {
-		ievent.key.scancode = KEY_BACKSPACE;
-		ievent.key.unicode = KEY_BACKSPACE;
+		ievent->set_scancode(KEY_BACKSPACE);
+		ievent->set_unicode(KEY_BACKSPACE);
 	} else if (val == 61453) {
-		ievent.key.scancode = KEY_ENTER;
-		ievent.key.unicode = KEY_ENTER;
+		ievent->set_scancode(KEY_ENTER);
+		ievent->set_unicode(KEY_ENTER);
 	} else if (p_scancode == 4) {
 
 		go_back_request = true;

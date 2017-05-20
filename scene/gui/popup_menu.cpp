@@ -208,171 +208,170 @@ void PopupMenu::_submenu_timeout() {
 	}
 }
 
-void PopupMenu::_gui_input(const InputEvent &p_event) {
+void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 
-	switch (p_event.type) {
+	Ref<InputEventKey> k = p_event;
 
-		case InputEvent::KEY: {
+	if (k.is_valid()) {
 
-			if (!p_event.key.pressed)
-				break;
+		if (!k->is_pressed())
+			return;
 
-			switch (p_event.key.scancode) {
+		switch (k->get_scancode()) {
 
-				case KEY_DOWN: {
+			case KEY_DOWN: {
 
-					for (int i = mouse_over + 1; i < items.size(); i++) {
+				for (int i = mouse_over + 1; i < items.size(); i++) {
 
-						if (i < 0 || i >= items.size())
-							continue;
+					if (i < 0 || i >= items.size())
+						continue;
 
-						if (!items[i].separator && !items[i].disabled) {
+					if (!items[i].separator && !items[i].disabled) {
 
-							mouse_over = i;
-							update();
-							break;
-						}
-					}
-				} break;
-				case KEY_UP: {
-
-					for (int i = mouse_over - 1; i >= 0; i--) {
-
-						if (i < 0 || i >= items.size())
-							continue;
-
-						if (!items[i].separator && !items[i].disabled) {
-
-							mouse_over = i;
-							update();
-							break;
-						}
-					}
-				} break;
-				case KEY_RETURN:
-				case KEY_ENTER: {
-
-					if (mouse_over >= 0 && mouse_over < items.size() && !items[mouse_over].separator) {
-
-						activate_item(mouse_over);
-					}
-				} break;
-			}
-
-		} break;
-
-		case InputEvent::MOUSE_BUTTON: {
-
-			const InputEventMouseButton &b = p_event.mouse_button;
-			if (b.pressed)
-				break;
-
-			switch (b.button_index) {
-
-				case BUTTON_WHEEL_DOWN: {
-
-					if (get_global_position().y + get_size().y > get_viewport_rect().size.y) {
-
-						int vseparation = get_constant("vseparation");
-						Ref<Font> font = get_font("font");
-
-						Point2 pos = get_position();
-						int s = (vseparation + font->get_height()) * 3;
-						pos.y -= (s * b.factor);
-						set_position(pos);
-
-						//update hover
-						InputEvent ie;
-						ie.type = InputEvent::MOUSE_MOTION;
-						ie.mouse_motion.x = b.x;
-						ie.mouse_motion.y = b.y + s;
-						_gui_input(ie);
-					}
-				} break;
-				case BUTTON_WHEEL_UP: {
-
-					if (get_global_position().y < 0) {
-
-						int vseparation = get_constant("vseparation");
-						Ref<Font> font = get_font("font");
-
-						Point2 pos = get_position();
-						int s = (vseparation + font->get_height()) * 3;
-						pos.y += (s * b.factor);
-						set_position(pos);
-
-						//update hover
-						InputEvent ie;
-						ie.type = InputEvent::MOUSE_MOTION;
-						ie.mouse_motion.x = b.x;
-						ie.mouse_motion.y = b.y - s;
-						_gui_input(ie);
-					}
-				} break;
-				case BUTTON_LEFT: {
-
-					int over = _get_mouse_over(Point2(b.x, b.y));
-
-					if (invalidated_click) {
-						invalidated_click = false;
+						mouse_over = i;
+						update();
 						break;
 					}
-					if (over < 0) {
-						hide();
-						break; //non-activable
-					}
+				}
+			} break;
+			case KEY_UP: {
 
-					if (items[over].separator || items[over].disabled)
+				for (int i = mouse_over - 1; i >= 0; i--) {
+
+					if (i < 0 || i >= items.size())
+						continue;
+
+					if (!items[i].separator && !items[i].disabled) {
+
+						mouse_over = i;
+						update();
 						break;
-
-					if (items[over].submenu != "") {
-
-						_activate_submenu(over);
-						return;
 					}
-					activate_item(over);
+				}
+			} break;
+			case KEY_RETURN:
+			case KEY_ENTER: {
 
-				} break;
-			}
+				if (mouse_over >= 0 && mouse_over < items.size() && !items[mouse_over].separator) {
 
-			//update();
-		} break;
-		case InputEvent::MOUSE_MOTION: {
+					activate_item(mouse_over);
+				}
+			} break;
+		}
+	}
 
-			if (invalidated_click) {
-				moved += Vector2(p_event.mouse_motion.relative_x, p_event.mouse_motion.relative_y);
-				if (moved.length() > 4)
+	Ref<InputEventMouseButton> b = p_event;
+
+	if (b.is_valid()) {
+
+		if (b->is_pressed())
+			return;
+
+		switch (b->get_button_index()) {
+
+			case BUTTON_WHEEL_DOWN: {
+
+				if (get_global_position().y + get_size().y > get_viewport_rect().size.y) {
+
+					int vseparation = get_constant("vseparation");
+					Ref<Font> font = get_font("font");
+
+					Point2 pos = get_position();
+					int s = (vseparation + font->get_height()) * 3;
+					pos.y -= (s * b->get_factor());
+					set_position(pos);
+
+					//update hover
+					Ref<InputEventMouseMotion> ie;
+					ie.instance();
+					ie->set_pos(b->get_pos() + Vector2(0, s));
+					_gui_input(ie);
+				}
+			} break;
+			case BUTTON_WHEEL_UP: {
+
+				if (get_global_position().y < 0) {
+
+					int vseparation = get_constant("vseparation");
+					Ref<Font> font = get_font("font");
+
+					Point2 pos = get_position();
+					int s = (vseparation + font->get_height()) * 3;
+					pos.y += (s * b->get_factor());
+					set_position(pos);
+
+					//update hover
+					Ref<InputEventMouseMotion> ie;
+					ie.instance();
+					ie->set_pos(b->get_pos() - Vector2(0, s));
+					_gui_input(ie);
+				}
+			} break;
+			case BUTTON_LEFT: {
+
+				int over = _get_mouse_over(b->get_pos());
+
+				if (invalidated_click) {
 					invalidated_click = false;
-			}
+					break;
+				}
+				if (over < 0) {
+					hide();
+					break; //non-activable
+				}
 
-			const InputEventMouseMotion &m = p_event.mouse_motion;
-			for (List<Rect2>::Element *E = autohide_areas.front(); E; E = E->next()) {
+				if (items[over].separator || items[over].disabled)
+					break;
 
-				if (!Rect2(Point2(), get_size()).has_point(Point2(m.x, m.y)) && E->get().has_point(Point2(m.x, m.y))) {
-					call_deferred("hide");
+				if (items[over].submenu != "") {
+
+					_activate_submenu(over);
 					return;
 				}
-			}
+				activate_item(over);
 
-			int over = _get_mouse_over(Point2(m.x, m.y));
-			int id = (over < 0 || items[over].separator || items[over].disabled) ? -1 : (items[over].ID >= 0 ? items[over].ID : over);
+			} break;
+		}
 
-			if (id < 0) {
-				mouse_over = -1;
-				update();
-				break;
-			}
+		//update();
+	}
 
-			if (items[over].submenu != "" && submenu_over != over) {
-				submenu_over = over;
-				submenu_timer->start();
-			}
+	Ref<InputEventMouseMotion> m = p_event;
 
-			if (over != mouse_over) {
-				mouse_over = over;
-				update();
+	if (m.is_valid()) {
+
+		if (invalidated_click) {
+			moved += m->get_relative();
+			if (moved.length() > 4)
+				invalidated_click = false;
+		}
+
+		for (List<Rect2>::Element *E = autohide_areas.front(); E; E = E->next()) {
+
+			if (!Rect2(Point2(), get_size()).has_point(m->get_pos()) && E->get().has_point(m->get_pos())) {
+				call_deferred("hide");
+				return;
 			}
-		} break;
+		}
+
+		int over = _get_mouse_over(m->get_pos());
+		int id = (over < 0 || items[over].separator || items[over].disabled) ? -1 : (items[over].ID >= 0 ? items[over].ID : over);
+
+		if (id < 0) {
+			mouse_over = -1;
+			update();
+			return;
+		}
+
+		if (items[over].submenu != "" && submenu_over != over) {
+			submenu_over = over;
+			submenu_timer->start();
+		}
+
+		if (over != mouse_over) {
+			mouse_over = over;
+			update();
+		}
 	}
 }
 
@@ -820,20 +819,22 @@ int PopupMenu::get_item_count() const {
 	return items.size();
 }
 
-bool PopupMenu::activate_item_by_event(const InputEvent &p_event, bool p_for_global_only) {
+bool PopupMenu::activate_item_by_event(const Ref<InputEvent> &p_event, bool p_for_global_only) {
 
 	uint32_t code = 0;
-	if (p_event.type == InputEvent::KEY) {
-		code = p_event.key.scancode;
+	Ref<InputEventKey> k = p_event;
+
+	if (k.is_valid()) {
+		code = k->get_scancode();
 		if (code == 0)
-			code = p_event.key.unicode;
-		if (p_event.key.mod.control)
+			code = k->get_unicode();
+		if (k->get_control())
 			code |= KEY_MASK_CTRL;
-		if (p_event.key.mod.alt)
+		if (k->get_alt())
 			code |= KEY_MASK_ALT;
-		if (p_event.key.mod.meta)
+		if (k->get_metakey())
 			code |= KEY_MASK_META;
-		if (p_event.key.mod.shift)
+		if (k->get_shift())
 			code |= KEY_MASK_SHIFT;
 	}
 

@@ -30,6 +30,7 @@
 #include "global_constants.h"
 
 #include "object.h"
+#include "os/input_event.h"
 #include "os/keyboard.h"
 #include "variant.h"
 
@@ -513,9 +514,8 @@ static _GlobalConstant _global_constants[] = {
 	{ "TYPE_NODE_PATH", Variant::NODE_PATH }, // 15
 	{ "TYPE_RID", Variant::_RID },
 	{ "TYPE_OBJECT", Variant::OBJECT },
-	{ "TYPE_INPUT_EVENT", Variant::INPUT_EVENT },
-	{ "TYPE_DICTIONARY", Variant::DICTIONARY },
-	{ "TYPE_ARRAY", Variant::ARRAY }, // 20
+	{ "TYPE_DICTIONARY", Variant::DICTIONARY }, // 20
+	{ "TYPE_ARRAY", Variant::ARRAY },
 	{ "TYPE_RAW_ARRAY", Variant::POOL_BYTE_ARRAY },
 	{ "TYPE_INT_ARRAY", Variant::POOL_INT_ARRAY },
 	{ "TYPE_REAL_ARRAY", Variant::POOL_REAL_ARRAY },

@@ -215,14 +215,11 @@ bool OS_Windows::can_draw() const {
 
 void OS_Windows::_touch_event(bool p_pressed, int p_x, int p_y, int idx) {
 
-	InputEvent event;
-	event.type = InputEvent::SCREEN_TOUCH;
-	event.screen_touch.index = idx;
-
-	event.screen_touch.pressed = p_pressed;
-
-	event.screen_touch.x = p_x;
-	event.screen_touch.y = p_y;
+	Ref<InputEventScreenTouch> event;
+	event.instance();
+	event->set_index(idx);
+	event->set_pressed(p_pressed);
+	event->set_pos(Vector2(p_x, p_y));
 
 	if (main_loop) {
 		input->parse_input_event(event);
@@ -231,12 +228,10 @@ void OS_Windows::_touch_event(bool p_pressed, int p_x, int p_y, int idx) {
 
 void OS_Windows::_drag_event(int p_x, int p_y, int idx) {
 
-	InputEvent event;
-	event.type = InputEvent::SCREEN_DRAG;
-	event.screen_drag.index = idx;
-
-	event.screen_drag.x = p_x;
-	event.screen_drag.y = p_y;
+	Ref<InputEventScreenDrag> event;
+	event.instance();
+	event->set_index(idx);
+	event->set_pos(Vector2(p_x, p_y));
 
 	if (main_loop)
 		input->parse_input_event(event);
@@ -367,22 +362,23 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			};
 			*/
 
-			InputEvent event;
-			event.type = InputEvent::MOUSE_MOTION;
-			InputEventMouseMotion &mm = event.mouse_motion;
+			Ref<InputEventMouseMotion> mm;
+			mm.instance();
 
-			mm.mod.control = (wParam & MK_CONTROL) != 0;
-			mm.mod.shift = (wParam & MK_SHIFT) != 0;
-			mm.mod.alt = alt_mem;
+			mm->set_control((wParam & MK_CONTROL) != 0);
+			mm->set_shift((wParam & MK_SHIFT) != 0);
+			mm->set_alt(alt_mem);
 
-			mm.button_mask |= (wParam & MK_LBUTTON) ? (1 << 0) : 0;
-			mm.button_mask |= (wParam & MK_RBUTTON) ? (1 << 1) : 0;
-			mm.button_mask |= (wParam & MK_MBUTTON) ? (1 << 2) : 0;
-			last_button_state = mm.button_mask;
-			/*mm.button_mask|=(wParam&MK_XBUTTON1)?(1<<5):0;
-			mm.button_mask|=(wParam&MK_XBUTTON2)?(1<<6):0;*/
-			mm.x = GET_X_LPARAM(lParam);
-			mm.y = GET_Y_LPARAM(lParam);
+			int bmask = 0;
+			bmask |= (wParam & MK_LBUTTON) ? (1 << 0) : 0;
+			bmask |= (wParam & MK_RBUTTON) ? (1 << 1) : 0;
+			bmask |= (wParam & MK_MBUTTON) ? (1 << 2) : 0;
+			mm->set_button_mask(bmask);
+
+			last_button_state = mm->get_button_mask();
+			/*mm->get_button_mask()|=(wParam&MK_XBUTTON1)?(1<<5):0;
+			mm->get_button_mask()|=(wParam&MK_XBUTTON2)?(1<<6):0;*/
+			mm->set_pos(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
 
 			if (mouse_mode == MOUSE_MODE_CAPTURED) {
 
@@ -390,35 +386,33 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				old_x = c.x;
 				old_y = c.y;
 
-				if (Point2i(mm.x, mm.y) == c) {
+				if (mm->get_pos() == c) {
 					center = c;
 					return 0;
 				}
 
-				Point2i ncenter(mm.x, mm.y);
+				Point2i ncenter = mm->get_pos();
 				center = ncenter;
 				POINT pos = { (int)c.x, (int)c.y };
 				ClientToScreen(hWnd, &pos);
 				SetCursorPos(pos.x, pos.y);
 			}
 
-			input->set_mouse_position(Point2(mm.x, mm.y));
-			mm.speed_x = input->get_last_mouse_speed().x;
-			mm.speed_y = input->get_last_mouse_speed().y;
+			input->set_mouse_position(mm->get_pos());
+			mm->set_speed(input->get_last_mouse_speed());
 
 			if (old_invalid) {
 
-				old_x = mm.x;
-				old_y = mm.y;
+				old_x = mm->get_pos().x;
+				old_y = mm->get_pos().y;
 				old_invalid = false;
 			}
 
-			mm.relative_x = mm.x - old_x;
-			mm.relative_y = mm.y - old_y;
-			old_x = mm.x;
-			old_y = mm.y;
+			mm->set_relative(Vector2(mm->get_pos() - Vector2(old_x, old_y)));
+			old_x = mm->get_pos().x;
+			old_y = mm->get_pos().y;
 			if (window_has_focus && main_loop)
-				input->parse_input_event(event);
+				input->parse_input_event(mm);
 
 		} break;
 		case WM_LBUTTONDOWN:
@@ -447,114 +441,112 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			};
 			*/
 
-				InputEvent event;
-				event.type = InputEvent::MOUSE_BUTTON;
-				InputEventMouseButton &mb = event.mouse_button;
+				Ref<InputEventMouseButton> mb;
+				mb.instance();
 
 				switch (uMsg) {
 					case WM_LBUTTONDOWN: {
-						mb.pressed = true;
-						mb.button_index = 1;
+						mb->set_pressed(true);
+						mb->set_button_index(1);
 					} break;
 					case WM_LBUTTONUP: {
-						mb.pressed = false;
-						mb.button_index = 1;
+						mb->set_pressed(false);
+						mb->set_button_index(1);
 					} break;
 					case WM_MBUTTONDOWN: {
-						mb.pressed = true;
-						mb.button_index = 3;
+						mb->set_pressed(true);
+						mb->set_button_index(3);
 
 					} break;
 					case WM_MBUTTONUP: {
-						mb.pressed = false;
-						mb.button_index = 3;
+						mb->set_pressed(false);
+						mb->set_button_index(3);
 					} break;
 					case WM_RBUTTONDOWN: {
-						mb.pressed = true;
-						mb.button_index = 2;
+						mb->set_pressed(true);
+						mb->set_button_index(2);
 					} break;
 					case WM_RBUTTONUP: {
-						mb.pressed = false;
-						mb.button_index = 2;
+						mb->set_pressed(false);
+						mb->set_button_index(2);
 					} break;
 					case WM_LBUTTONDBLCLK: {
 
-						mb.pressed = true;
-						mb.button_index = 1;
-						mb.doubleclick = true;
+						mb->set_pressed(true);
+						mb->set_button_index(1);
+						mb->set_doubleclick(true);
 					} break;
 					case WM_RBUTTONDBLCLK: {
 
-						mb.pressed = true;
-						mb.button_index = 2;
-						mb.doubleclick = true;
+						mb->set_pressed(true);
+						mb->set_button_index(2);
+						mb->set_doubleclick(true);
 					} break;
 					case WM_MOUSEWHEEL: {
 
-						mb.pressed = true;
+						mb->set_pressed(true);
 						int motion = (short)HIWORD(wParam);
 						if (!motion)
 							return 0;
 
 						if (motion > 0)
-							mb.button_index = BUTTON_WHEEL_UP;
+							mb->set_button_index(BUTTON_WHEEL_UP);
 						else
-							mb.button_index = BUTTON_WHEEL_DOWN;
+							mb->set_button_index(BUTTON_WHEEL_DOWN);
 
 					} break;
 					case WM_MOUSEHWHEEL: {
 
-						mb.pressed = true;
+						mb->set_pressed(true);
 						int motion = (short)HIWORD(wParam);
 						if (!motion)
 							return 0;
 
 						if (motion < 0) {
-							mb.button_index = BUTTON_WHEEL_LEFT;
-							mb.factor = fabs((double)motion / (double)WHEEL_DELTA);
+							mb->set_button_index(BUTTON_WHEEL_LEFT);
+							mb->set_factor(fabs((double)motion / (double)WHEEL_DELTA));
 						} else {
-							mb.button_index = BUTTON_WHEEL_RIGHT;
-							mb.factor = fabs((double)motion / (double)WHEEL_DELTA);
+							mb->set_button_index(BUTTON_WHEEL_RIGHT);
+							mb->set_factor(fabs((double)motion / (double)WHEEL_DELTA));
 						}
 					} break;
 					/*
 				case WM_XBUTTONDOWN: {
-					mb.pressed=true;
-					mb.button_index=(HIWORD(wParam)==XBUTTON1)?6:7;
+					mb->is_pressed()=true;
+					mb->get_button_index()=(HIWORD(wParam)==XBUTTON1)?6:7;
 				} break;
 				case WM_XBUTTONUP:
-					mb.pressed=true;
-					mb.button_index=(HIWORD(wParam)==XBUTTON1)?6:7;
+					mb->is_pressed()=true;
+					mb->get_button_index()=(HIWORD(wParam)==XBUTTON1)?6:7;
 				} break;*/
 					default: { return 0; }
 				}
 
-				mb.mod.control = (wParam & MK_CONTROL) != 0;
-				mb.mod.shift = (wParam & MK_SHIFT) != 0;
-				mb.mod.alt = alt_mem;
-				//mb.mod.alt=(wParam&MK_MENU)!=0;
-				mb.button_mask |= (wParam & MK_LBUTTON) ? (1 << 0) : 0;
-				mb.button_mask |= (wParam & MK_RBUTTON) ? (1 << 1) : 0;
-				mb.button_mask |= (wParam & MK_MBUTTON) ? (1 << 2) : 0;
+				mb->set_control((wParam & MK_CONTROL) != 0);
+				mb->set_shift((wParam & MK_SHIFT) != 0);
+				mb->set_alt(alt_mem);
+				//mb->get_alt()=(wParam&MK_MENU)!=0;
+				int bmask = 0;
+				bmask |= (wParam & MK_LBUTTON) ? (1 << 0) : 0;
+				bmask |= (wParam & MK_RBUTTON) ? (1 << 1) : 0;
+				bmask |= (wParam & MK_MBUTTON) ? (1 << 2) : 0;
+				mb->set_button_mask(bmask);
 
-				last_button_state = mb.button_mask;
+				last_button_state = mb->get_button_mask();
 				/*
-			mb.button_mask|=(wParam&MK_XBUTTON1)?(1<<5):0;
-			mb.button_mask|=(wParam&MK_XBUTTON2)?(1<<6):0;*/
-				mb.x = GET_X_LPARAM(lParam);
-				mb.y = GET_Y_LPARAM(lParam);
+			mb->get_button_mask()|=(wParam&MK_XBUTTON1)?(1<<5):0;
+			mb->get_button_mask()|=(wParam&MK_XBUTTON2)?(1<<6):0;*/
+				mb->set_pos(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
 
 				if (mouse_mode == MOUSE_MODE_CAPTURED) {
 
-					mb.x = old_x;
-					mb.y = old_y;
+					mb->set_pos(Vector2(old_x, old_y));
 				}
 
-				mb.global_x = mb.x;
-				mb.global_y = mb.y;
+				mb->set_global_pos(mb->get_pos());
 
 				if (uMsg != WM_MOUSEWHEEL) {
-					if (mb.pressed) {
+					if (mb->is_pressed()) {
 
 						if (++pressrc > 0)
 							SetCapture(hWnd);
@@ -568,21 +560,21 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				} else if (mouse_mode != MOUSE_MODE_CAPTURED) {
 					// for reasons unknown to mankind, wheel comes in screen cordinates
 					POINT coords;
-					coords.x = mb.x;
-					coords.y = mb.y;
+					coords.x = mb->get_pos().x;
+					coords.y = mb->get_pos().y;
 
 					ScreenToClient(hWnd, &coords);
 
-					mb.x = coords.x;
-					mb.y = coords.y;
+					mb->set_pos(coords);
 				}
 
 				if (main_loop) {
-					input->parse_input_event(event);
-					if (mb.pressed && mb.button_index > 3) {
+					input->parse_input_event(mb);
+					if (mb->is_pressed() && mb->get_button_index() > 3) {
 						//send release for mouse wheel
-						mb.pressed = false;
-						input->parse_input_event(event);
+						Ref<InputEventMouseButton> mbd = mb->duplicate();
+						mbd->set_pressed(false);
+						input->parse_input_event(mbd);
 					}
 				}
 			}
@@ -638,10 +630,10 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
 			// Make sure we don't include modifiers for the modifier key itself.
 			KeyEvent ke;
-			ke.mod_state.shift = (wParam != VK_SHIFT) ? shift_mem : false;
-			ke.mod_state.alt = (!(wParam == VK_MENU && (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN))) ? alt_mem : false;
-			ke.mod_state.control = (wParam != VK_CONTROL) ? control_mem : false;
-			ke.mod_state.meta = meta_mem;
+			ke.shift = (wParam != VK_SHIFT) ? shift_mem : false;
+			ke.alt = (!(wParam == VK_MENU && (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN))) ? alt_mem : false;
+			ke.control = (wParam != VK_CONTROL) ? control_mem : false;
+			ke.meta = meta_mem;
 			ke.uMsg = uMsg;
 
 			if (ke.uMsg == WM_SYSKEYDOWN)
@@ -777,23 +769,25 @@ void OS_Windows::process_key_events() {
 
 			case WM_CHAR: {
 				if ((i == 0 && ke.uMsg == WM_CHAR) || (i > 0 && key_event_buffer[i - 1].uMsg == WM_CHAR)) {
-					InputEvent event;
-					event.type = InputEvent::KEY;
-					InputEventKey &k = event.key;
+					Ref<InputEventKey> k;
+					k.instance();
 
-					k.mod = ke.mod_state;
-					k.pressed = true;
-					k.scancode = KeyMappingWindows::get_keysym(ke.wParam);
-					k.unicode = ke.wParam;
-					if (k.unicode && gr_mem) {
-						k.mod.alt = false;
-						k.mod.control = false;
+					k->set_shift(ke.shift);
+					k->set_alt(ke.alt);
+					k->set_control(ke.control);
+					k->set_metakey(ke.meta);
+					k->set_pressed(true);
+					k->set_scancode(KeyMappingWindows::get_keysym(ke.wParam));
+					k->set_unicode(ke.wParam);
+					if (k->get_unicode() && gr_mem) {
+						k->set_alt(false);
+						k->set_control(false);
 					}
 
-					if (k.unicode < 32)
-						k.unicode = 0;
+					if (k->get_unicode() < 32)
+						k->set_unicode(0);
 
-					input->parse_input_event(event);
+					input->parse_input_event(k);
 				}
 
 				//do nothing
@@ -801,27 +795,32 @@ void OS_Windows::process_key_events() {
 			case WM_KEYUP:
 			case WM_KEYDOWN: {
 
-				InputEvent event;
-				event.type = InputEvent::KEY;
-				InputEventKey &k = event.key;
+				Ref<InputEventKey> k;
+				k.instance();
 
-				k.mod = ke.mod_state;
-				k.pressed = (ke.uMsg == WM_KEYDOWN);
+				k->set_shift(ke.shift);
+				k->set_alt(ke.alt);
+				k->set_control(ke.control);
+				k->set_metakey(ke.meta);
 
-				k.scancode = KeyMappingWindows::get_keysym(ke.wParam);
-				if (i + 1 < key_event_pos && key_event_buffer[i + 1].uMsg == WM_CHAR)
-					k.unicode = key_event_buffer[i + 1].wParam;
-				if (k.unicode && gr_mem) {
-					k.mod.alt = false;
-					k.mod.control = false;
+				k->set_pressed(ke.uMsg == WM_KEYDOWN);
+
+				k->set_scancode(KeyMappingWindows::get_keysym(ke.wParam));
+
+				if (i + 1 < key_event_pos && key_event_buffer[i + 1].uMsg == WM_CHAR) {
+					k->set_unicode(key_event_buffer[i + 1].wParam);
+				}
+				if (k->get_unicode() && gr_mem) {
+					k->set_alt(false);
+					k->set_control(false);
 				}
 
-				if (k.unicode < 32)
-					k.unicode = 0;
+				if (k->get_unicode() < 32)
+					k->set_unicode(0);
 
-				k.echo = (ke.uMsg == WM_KEYDOWN && (ke.lParam & (1 << 30)));
+				k->set_echo((ke.uMsg == WM_KEYDOWN && (ke.lParam & (1 << 30))));
 
-				input->parse_input_event(event);
+				input->parse_input_event(k);
 
 			} break;
 		}

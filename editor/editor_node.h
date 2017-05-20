@@ -482,7 +482,7 @@ private:
 
 	bool convert_old;
 
-	void _unhandled_input(const InputEvent &p_event);
+	void _unhandled_input(const Ref<InputEvent> &p_event);
 
 	static void _load_error_notify(void *p_ud, const String &p_text);
 
@@ -539,7 +539,7 @@ private:
 
 	bool _find_scene_in_use(Node *p_node, const String &p_path) const;
 
-	void _dock_select_input(const InputEvent &p_input);
+	void _dock_select_input(const Ref<InputEvent> &p_input);
 	void _dock_move_left();
 	void _dock_move_right();
 	void _dock_select_draw();
@@ -807,8 +807,8 @@ public:
 
 	void make_visible(bool p_visible);
 	void edit(Object *p_object);
-	bool forward_gui_input(const Transform2D &p_canvas_xform, const InputEvent &p_event);
-	bool forward_spatial_gui_input(Camera *p_camera, const InputEvent &p_event);
+	bool forward_gui_input(const Transform2D &p_canvas_xform, const Ref<InputEvent> &p_event);
+	bool forward_spatial_gui_input(Camera *p_camera, const Ref<InputEvent> &p_event);
 	void forward_draw_over_canvas(const Transform2D &p_canvas_xform, Control *p_canvas);
 	void clear();
 	bool empty();

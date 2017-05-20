@@ -107,9 +107,9 @@ public:
 	void remove_tool_menu_item(const String &p_name);
 
 	virtual Ref<SpatialEditorGizmo> create_spatial_gizmo(Spatial *p_spatial);
-	virtual bool forward_canvas_gui_input(const Transform2D &p_canvas_xform, const InputEvent &p_event);
+	virtual bool forward_canvas_gui_input(const Transform2D &p_canvas_xform, const Ref<InputEvent> &p_event);
 	virtual void forward_draw_over_canvas(const Transform2D &p_canvas_xform, Control *p_canvas);
-	virtual bool forward_spatial_gui_input(Camera *p_camera, const InputEvent &p_event);
+	virtual bool forward_spatial_gui_input(Camera *p_camera, const Ref<InputEvent> &p_event);
 	virtual String get_name() const;
 	virtual bool has_main_screen() const;
 	virtual void make_visible(bool p_visible);

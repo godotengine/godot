@@ -195,48 +195,45 @@ bool OSIPhone::iterate() {
 
 void OSIPhone::key(uint32_t p_key, bool p_pressed) {
 
-	InputEvent ev;
-	ev.type = InputEvent::KEY;
-	ev.key.echo = false;
-	ev.key.pressed = p_pressed;
-	ev.key.scancode = p_key;
-	ev.key.unicode = p_key;
+	Ref<InputEventKey> ev;
+	ev.instance()
+			ev->set_echo(false);
+	ev->set_pressed(p_pressed);
+	ev->set_scancode(p_key);
+	ev->set_unicode(p_key);
 	queue_event(ev);
 };
 
 void OSIPhone::mouse_button(int p_idx, int p_x, int p_y, bool p_pressed, bool p_doubleclick, bool p_use_as_mouse) {
 
 	if (!GLOBAL_DEF("debug/disable_touch", false)) {
-		InputEvent ev;
-		ev.type = InputEvent::SCREEN_TOUCH;
-		ev.screen_touch.index = p_idx;
-		ev.screen_touch.pressed = p_pressed;
-		ev.screen_touch.x = p_x;
-		ev.screen_touch.y = p_y;
+		Ref<InputEventSreenTouch> ev;
+		ev.instance();
+
+		ev->set_index(p_idx);
+		ev->set_pressed(p_pressed);
+		ev->set_pos(Vector2(p_x, p_y));
 		queue_event(ev);
 	};
 
-	mouse_list.pressed[p_idx] = p_pressed;
+	mouse_list->is_pressed()[p_idx] = p_pressed;
 
 	if (p_use_as_mouse) {
 
-		InputEvent ev;
-		ev.type = InputEvent::MOUSE_BUTTON;
-		ev.device = 0;
-		ev.mouse_button.pointer_index = p_idx;
-
+		Ref<InputEventMouseButton> ev;
+		ev.instance();
 		// swaped it for tilted screen
-		//ev.mouse_button.x = ev.mouse_button.global_x = video_mode.height - p_y;
-		//ev.mouse_button.y = ev.mouse_button.global_y = p_x;
-		ev.mouse_button.x = ev.mouse_button.global_x = p_x;
-		ev.mouse_button.y = ev.mouse_button.global_y = p_y;
+		//ev->get_pos().x = ev.mouse_button.global_x = video_mode.height - p_y;
+		//ev->get_pos().y = ev.mouse_button.global_y = p_x;
+		ev->set_pos(Vector2(ev.mouse_button.global_x, ev.mouse_button.global_y));
+		ev->set_global_pos(Vector2(ev.mouse_button.global_x, ev.mouse_button.global_y));
 
-		//mouse_list.pressed[p_idx] = p_pressed;
+		//mouse_list->is_pressed()[p_idx] = p_pressed;
 
-		input->set_mouse_position(Point2(ev.mouse_motion.x, ev.mouse_motion.y));
-		ev.mouse_button.button_index = BUTTON_LEFT;
-		ev.mouse_button.doubleclick = p_doubleclick;
-		ev.mouse_button.pressed = p_pressed;
+		input->set_mouse_position(ev->get_pos());
+		ev->set_button_index(BUTTON_LEFT);
+		ev->set_doubleclick(p_doubleclick);
+		ev->set_pressed(p_pressed);
 
 		queue_event(ev);
 	};
@@ -246,46 +243,31 @@ void OSIPhone::mouse_move(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_
 
 	if (!GLOBAL_DEF("debug/disable_touch", false)) {
 
-		InputEvent ev;
-		ev.type = InputEvent::SCREEN_DRAG;
-		ev.screen_drag.index = p_idx;
-		ev.screen_drag.x = p_x;
-		ev.screen_drag.y = p_y;
-		ev.screen_drag.relative_x = p_x - p_prev_x;
-		ev.screen_drag.relative_y = p_y - p_prev_y;
+		Ref<InputEventScreenDrag> ev;
+		ev.instance();
+		ev->set_index(p_idx);
+		ev->set_pos(Vector2(p_x, p_y));
+		ev->set_relative(Vector2(p_x - p_prev_x, p_y - p_prev_y));
 		queue_event(ev);
 	};
 
 	if (p_use_as_mouse) {
-		InputEvent ev;
-		ev.type = InputEvent::MOUSE_MOTION;
-		ev.device = 0;
-		ev.mouse_motion.pointer_index = p_idx;
+		Ref<InputEventMouseMotion> ev;
+		ev.instance();
 
-		if (true) { // vertical
+		ev->set_pos(Vector2(p_x, p_y));
+		ev->set_global_pos(Vector2(p_x, p_y));
+		ev->set_relative(Vector2(p_x - p_prev_x, p_y - p_prev_y));
 
-			ev.mouse_motion.x = ev.mouse_button.global_x = p_x;
-			ev.mouse_motion.y = ev.mouse_button.global_y = p_y;
-			ev.mouse_motion.relative_x = ev.mouse_motion.x - p_prev_x;
-			ev.mouse_motion.relative_y = ev.mouse_motion.y - p_prev_y;
-
-		} else { // horizontal?
-			ev.mouse_motion.x = ev.mouse_button.global_x = video_mode.height - p_y;
-			ev.mouse_motion.y = ev.mouse_button.global_y = p_x;
-			ev.mouse_motion.relative_x = ev.mouse_motion.x - (video_mode.height - p_prev_x);
-			ev.mouse_motion.relative_y = ev.mouse_motion.y - p_prev_x;
-		};
-
-		input->set_mouse_position(Point2(ev.mouse_motion.x, ev.mouse_motion.y));
-		ev.mouse_motion.speed_x = input->get_last_mouse_speed().x;
-		ev.mouse_motion.speed_y = input->get_last_mouse_speed().y;
-		ev.mouse_motion.button_mask = 1; // pressed
+		input->set_mouse_position(ev->get_pos());
+		ev->set_speed(input->get_last_mouse_speed());
+		ev->set_button_mask(BUTTON_LEFT); // pressed
 
 		queue_event(ev);
 	};
 };
 
-void OSIPhone::queue_event(const InputEvent &p_event) {
+void OSIPhone::queue_event(const Ref<InputEvent> &p_event) {
 
 	ERR_FAIL_INDEX(event_count, MAX_EVENTS);
 
@@ -296,7 +278,7 @@ void OSIPhone::touches_cancelled() {
 
 	for (int i = 0; i < MAX_MOUSE_COUNT; i++) {
 
-		if (mouse_list.pressed[i]) {
+		if (mouse_list->is_pressed()[i]) {
 
 			// send a mouse_up outside the screen
 			mouse_button(i, -1, -1, false, false, false);
@@ -416,7 +398,7 @@ Point2 OSIPhone::get_mouse_position() const {
 
 int OSIPhone::get_mouse_button_state() const {
 
-	return mouse_list.pressed[0];
+	return mouse_list->is_pressed()[0];
 };
 
 void OSIPhone::set_window_title(const String &p_title){};

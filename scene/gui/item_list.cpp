@@ -409,14 +409,17 @@ Size2 ItemList::Item::get_icon_size() const {
 	return icon_region.size;
 }
 
-void ItemList::_gui_input(const InputEvent &p_event) {
+void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 
-	if (defer_select_single >= 0 && p_event.type == InputEvent::MOUSE_MOTION) {
+	Ref<InputEventMouseMotion> mm = p_event;
+	if (defer_select_single >= 0 && mm.is_valid()) {
 		defer_select_single = -1;
 		return;
 	}
 
-	if (defer_select_single >= 0 && p_event.type == InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index == BUTTON_LEFT && !p_event.mouse_button.pressed) {
+	Ref<InputEventMouseButton> mb = p_event;
+
+	if (defer_select_single >= 0 && mb.is_valid() && mb->get_button_index() == BUTTON_LEFT && !mb->is_pressed()) {
 
 		select(defer_select_single, true);
 
@@ -425,12 +428,10 @@ void ItemList::_gui_input(const InputEvent &p_event) {
 		return;
 	}
 
-	if (p_event.type == InputEvent::MOUSE_BUTTON && (p_event.mouse_button.button_index == BUTTON_LEFT || (allow_rmb_select && p_event.mouse_button.button_index == BUTTON_RIGHT)) && p_event.mouse_button.pressed) {
-
-		const InputEventMouseButton &mb = p_event.mouse_button;
+	if (mb.is_valid() && (mb->get_button_index() == BUTTON_LEFT || (allow_rmb_select && mb->get_button_index() == BUTTON_RIGHT)) && mb->is_pressed()) {
 
 		search_string = ""; //any mousepress cancels
-		Vector2 pos(mb.x, mb.y);
+		Vector2 pos(mb->get_pos().x, mb->get_pos().y);
 		Ref<StyleBox> bg = get_stylebox("bg");
 		pos -= bg->get_offset();
 		pos.y += scroll_bar->get_value();
@@ -454,11 +455,11 @@ void ItemList::_gui_input(const InputEvent &p_event) {
 
 			int i = closest;
 
-			if (select_mode == SELECT_MULTI && items[i].selected && mb.mod.command) {
+			if (select_mode == SELECT_MULTI && items[i].selected && mb->get_command()) {
 				unselect(i);
 				emit_signal("multi_selected", i, false);
 
-			} else if (select_mode == SELECT_MULTI && mb.mod.shift && current >= 0 && current < items.size() && current != i) {
+			} else if (select_mode == SELECT_MULTI && mb->get_shift() && current >= 0 && current < items.size() && current != i) {
 
 				int from = current;
 				int to = i;
@@ -472,24 +473,24 @@ void ItemList::_gui_input(const InputEvent &p_event) {
 						emit_signal("multi_selected", i, true);
 				}
 
-				if (p_event.mouse_button.button_index == BUTTON_RIGHT) {
+				if (mb->get_button_index() == BUTTON_RIGHT) {
 
-					emit_signal("item_rmb_selected", i, Vector2(mb.x, mb.y));
+					emit_signal("item_rmb_selected", i, Vector2(mb->get_pos().x, mb->get_pos().y));
 				}
 			} else {
 
-				if (!mb.doubleclick && !mb.mod.command && select_mode == SELECT_MULTI && items[i].selectable && !items[i].disabled && items[i].selected && p_event.mouse_button.button_index == BUTTON_LEFT) {
+				if (!mb->is_doubleclick() && !mb->get_command() && select_mode == SELECT_MULTI && items[i].selectable && !items[i].disabled && items[i].selected && mb->get_button_index() == BUTTON_LEFT) {
 					defer_select_single = i;
 					return;
 				}
 
-				if (items[i].selected && p_event.mouse_button.button_index == BUTTON_RIGHT) {
+				if (items[i].selected && mb->get_button_index() == BUTTON_RIGHT) {
 
-					emit_signal("item_rmb_selected", i, Vector2(mb.x, mb.y));
+					emit_signal("item_rmb_selected", i, Vector2(mb->get_pos().x, mb->get_pos().y));
 				} else {
 					bool selected = !items[i].selected;
 
-					select(i, select_mode == SELECT_SINGLE || !mb.mod.command);
+					select(i, select_mode == SELECT_SINGLE || !mb->get_command());
 
 					if (selected) {
 						if (select_mode == SELECT_SINGLE) {
@@ -498,10 +499,10 @@ void ItemList::_gui_input(const InputEvent &p_event) {
 							emit_signal("multi_selected", i, true);
 					}
 
-					if (p_event.mouse_button.button_index == BUTTON_RIGHT) {
+					if (mb->get_button_index() == BUTTON_RIGHT) {
 
-						emit_signal("item_rmb_selected", i, Vector2(mb.x, mb.y));
-					} else if (/*select_mode==SELECT_SINGLE &&*/ mb.doubleclick) {
+						emit_signal("item_rmb_selected", i, Vector2(mb->get_pos().x, mb->get_pos().y));
+					} else if (/*select_mode==SELECT_SINGLE &&*/ mb->is_doubleclick()) {
 
 						emit_signal("item_activated", i);
 					}
@@ -516,21 +517,21 @@ void ItemList::_gui_input(const InputEvent &p_event) {
 			}
 		}
 	}
-	if (p_event.type == InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index == BUTTON_WHEEL_UP && p_event.mouse_button.pressed) {
+	if (mb.is_valid() && mb->get_button_index() == BUTTON_WHEEL_UP && mb->is_pressed()) {
 
-		scroll_bar->set_value(scroll_bar->get_value() - scroll_bar->get_page() * p_event.mouse_button.factor / 8);
+		scroll_bar->set_value(scroll_bar->get_value() - scroll_bar->get_page() * mb->get_factor() / 8);
 
 		scroll_bar->set_value(scroll_bar->get_value() - scroll_bar->get_page() / 8);
 	}
-	if (p_event.type == InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index == BUTTON_WHEEL_DOWN && p_event.mouse_button.pressed) {
+	if (mb.is_valid() && mb->get_button_index() == BUTTON_WHEEL_DOWN && mb->is_pressed()) {
 
-		scroll_bar->set_value(scroll_bar->get_value() + scroll_bar->get_page() * p_event.mouse_button.factor / 8);
+		scroll_bar->set_value(scroll_bar->get_value() + scroll_bar->get_page() * mb->get_factor() / 8);
 
 		scroll_bar->set_value(scroll_bar->get_value() + scroll_bar->get_page() / 8);
 	}
 
-	if (p_event.is_pressed() && items.size() > 0) {
-		if (p_event.is_action("ui_up")) {
+	if (p_event->is_pressed() && items.size() > 0) {
+		if (p_event->is_action("ui_up")) {
 
 			if (search_string != "") {
 
@@ -565,7 +566,7 @@ void ItemList::_gui_input(const InputEvent &p_event) {
 				}
 				accept_event();
 			}
-		} else if (p_event.is_action("ui_down")) {
+		} else if (p_event->is_action("ui_down")) {
 
 			if (search_string != "") {
 
@@ -599,7 +600,7 @@ void ItemList::_gui_input(const InputEvent &p_event) {
 				}
 				accept_event();
 			}
-		} else if (p_event.is_action("ui_page_up")) {
+		} else if (p_event->is_action("ui_page_up")) {
 
 			search_string = ""; //any mousepress cancels
 
@@ -614,7 +615,7 @@ void ItemList::_gui_input(const InputEvent &p_event) {
 					break;
 				}
 			}
-		} else if (p_event.is_action("ui_page_down")) {
+		} else if (p_event->is_action("ui_page_down")) {
 
 			search_string = ""; //any mousepress cancels
 
@@ -630,7 +631,7 @@ void ItemList::_gui_input(const InputEvent &p_event) {
 					break;
 				}
 			}
-		} else if (p_event.is_action("ui_left")) {
+		} else if (p_event->is_action("ui_left")) {
 
 			search_string = ""; //any mousepress cancels
 
@@ -642,7 +643,7 @@ void ItemList::_gui_input(const InputEvent &p_event) {
 				}
 				accept_event();
 			}
-		} else if (p_event.is_action("ui_right")) {
+		} else if (p_event->is_action("ui_right")) {
 
 			search_string = ""; //any mousepress cancels
 
@@ -654,9 +655,9 @@ void ItemList::_gui_input(const InputEvent &p_event) {
 				}
 				accept_event();
 			}
-		} else if (p_event.is_action("ui_cancel")) {
+		} else if (p_event->is_action("ui_cancel")) {
 			search_string = "";
-		} else if (p_event.is_action("ui_select")) {
+		} else if (p_event->is_action("ui_select")) {
 
 			if (select_mode == SELECT_MULTI && current >= 0 && current < items.size()) {
 				if (items[current].selectable && !items[current].disabled && !items[current].selected) {
@@ -667,15 +668,17 @@ void ItemList::_gui_input(const InputEvent &p_event) {
 					emit_signal("multi_selected", current, false);
 				}
 			}
-		} else if (p_event.is_action("ui_accept")) {
+		} else if (p_event->is_action("ui_accept")) {
 			search_string = ""; //any mousepress cance
 
 			if (current >= 0 && current < items.size()) {
 				emit_signal("item_activated", current);
 			}
-		} else if (p_event.type == InputEvent::KEY) {
+		} else {
 
-			if (p_event.key.unicode) {
+			Ref<InputEventKey> k = p_event;
+
+			if (k.is_valid() && k->get_unicode()) {
 
 				uint64_t now = OS::get_singleton()->get_ticks_msec();
 				uint64_t diff = now - search_time_msec;
@@ -686,7 +689,7 @@ void ItemList::_gui_input(const InputEvent &p_event) {
 					search_string = "";
 				}
 
-				search_string += String::chr(p_event.key.unicode);
+				search_string += String::chr(k->get_unicode());
 				for (int i = 0; i < items.size(); i++) {
 					if (items[i].text.begins_with(search_string)) {
 						set_current(i);

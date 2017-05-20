@@ -105,29 +105,33 @@ bool WindowDialog::has_point(const Point2 &p_point) const {
 	return r.has_point(p_point);
 }
 
-void WindowDialog::_gui_input(const InputEvent &p_event) {
+void WindowDialog::_gui_input(const Ref<InputEvent> &p_event) {
 
-	if (p_event.type == InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index == BUTTON_LEFT) {
+	Ref<InputEventMouseButton> mb = p_event;
 
-		if (p_event.mouse_button.pressed) {
+	if (mb.is_valid() && mb->get_button_index() == BUTTON_LEFT) {
+
+		if (mb->is_pressed()) {
 			// Begin a possible dragging operation.
-			drag_type = _drag_hit_test(Point2(p_event.mouse_button.x, p_event.mouse_button.y));
+			drag_type = _drag_hit_test(Point2(mb->get_pos().x, mb->get_pos().y));
 			if (drag_type != DRAG_NONE)
 				drag_offset = get_global_mouse_position() - get_position();
 			drag_offset_far = get_position() + get_size() - get_global_mouse_position();
-		} else if (drag_type != DRAG_NONE && !p_event.mouse_button.pressed) {
+		} else if (drag_type != DRAG_NONE && !mb->is_pressed()) {
 			// End a dragging operation.
 			drag_type = DRAG_NONE;
 		}
 	}
 
-	if (p_event.type == InputEvent::MOUSE_MOTION) {
+	Ref<InputEventMouseMotion> mm = p_event;
+
+	if (mm.is_valid()) {
 
 		if (drag_type == DRAG_NONE) {
 			// Update the cursor while moving along the borders.
 			CursorShape cursor = CURSOR_ARROW;
 			if (resizable) {
-				int preview_drag_type = _drag_hit_test(Point2(p_event.mouse_button.x, p_event.mouse_button.y));
+				int preview_drag_type = _drag_hit_test(Point2(mm->get_pos().x, mm->get_pos().y));
 				switch (preview_drag_type) {
 					case DRAG_RESIZE_TOP:
 					case DRAG_RESIZE_BOTTOM:

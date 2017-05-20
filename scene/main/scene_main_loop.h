@@ -237,7 +237,7 @@ private:
 	void remove_from_group(const StringName &p_group, Node *p_node);
 
 	void _notify_group_pause(const StringName &p_group, int p_notification);
-	void _call_input_pause(const StringName &p_group, const StringName &p_method, const InputEvent &p_input);
+	void _call_input_pause(const StringName &p_group, const StringName &p_method, const Ref<InputEvent> &p_input);
 	Variant _call_group_flags(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
 	Variant _call_group(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
 
@@ -341,7 +341,7 @@ public:
 	void set_group(const StringName &p_group, const String &p_name, const Variant &p_value);
 
 	virtual void input_text(const String &p_text);
-	virtual void input_event(const InputEvent &p_event);
+	virtual void input_event(const Ref<InputEvent> &p_event);
 	virtual void init();
 
 	virtual bool iteration(float p_time);

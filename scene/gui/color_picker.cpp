@@ -297,13 +297,15 @@ void ColorPicker::_hsv_draw(int p_wich, Control *c) {
 	}
 }
 
-void ColorPicker::_uv_input(const InputEvent &ev) {
-	if (ev.type == InputEvent::MOUSE_BUTTON) {
-		const InputEventMouseButton &bev = ev.mouse_button;
-		if (bev.pressed && bev.button_index == BUTTON_LEFT) {
+void ColorPicker::_uv_input(const Ref<InputEvent> &ev) {
+
+	Ref<InputEventMouseButton> bev = ev;
+
+	if (bev.is_valid()) {
+		if (bev->is_pressed() && bev->get_button_index() == BUTTON_LEFT) {
 			changing_color = true;
-			float x = CLAMP((float)bev.x, 0, 256);
-			float y = CLAMP((float)bev.y, 0, 256);
+			float x = CLAMP((float)bev->get_pos().x, 0, 256);
+			float y = CLAMP((float)bev->get_pos().y, 0, 256);
 			s = x / 256;
 			v = 1.0 - y / 256.0;
 			color.set_hsv(h, s, v, color.a);
@@ -314,12 +316,15 @@ void ColorPicker::_uv_input(const InputEvent &ev) {
 		} else {
 			changing_color = false;
 		}
-	} else if (ev.type == InputEvent::MOUSE_MOTION) {
-		const InputEventMouse &bev = ev.mouse_motion;
+	}
+
+	Ref<InputEventMouseMotion> mev = ev;
+
+	if (mev.is_valid()) {
 		if (!changing_color)
 			return;
-		float x = CLAMP((float)bev.x, 0, 256);
-		float y = CLAMP((float)bev.y, 0, 256);
+		float x = CLAMP((float)mev->get_pos().x, 0, 256);
+		float y = CLAMP((float)mev->get_pos().y, 0, 256);
 		s = x / 256;
 		v = 1.0 - y / 256.0;
 		color.set_hsv(h, s, v, color.a);
@@ -330,12 +335,15 @@ void ColorPicker::_uv_input(const InputEvent &ev) {
 	}
 }
 
-void ColorPicker::_w_input(const InputEvent &ev) {
-	if (ev.type == InputEvent::MOUSE_BUTTON) {
-		const InputEventMouseButton &bev = ev.mouse_button;
-		if (bev.pressed && bev.button_index == BUTTON_LEFT) {
+void ColorPicker::_w_input(const Ref<InputEvent> &ev) {
+
+	Ref<InputEventMouseButton> bev = ev;
+
+	if (bev.is_valid()) {
+
+		if (bev->is_pressed() && bev->get_button_index() == BUTTON_LEFT) {
 			changing_color = true;
-			h = 1 - ((float)bev.y) / 256.0;
+			h = 1 - ((float)bev->get_pos().y) / 256.0;
 
 		} else {
 			changing_color = false;
@@ -345,11 +353,15 @@ void ColorPicker::_w_input(const InputEvent &ev) {
 		set_pick_color(color);
 		_update_color();
 		emit_signal("color_changed", color);
-	} else if (ev.type == InputEvent::MOUSE_MOTION) {
-		const InputEventMouse &bev = ev.mouse_motion;
+	}
+
+	Ref<InputEventMouseMotion> mev = ev;
+
+	if (mev.is_valid()) {
+
 		if (!changing_color)
 			return;
-		float y = CLAMP((float)bev.y, 0, 256);
+		float y = CLAMP((float)bev->get_pos().y, 0, 256);
 		h = 1.0 - y / 256.0;
 		color.set_hsv(h, s, v, color.a);
 		last_hsv = color;
@@ -359,23 +371,30 @@ void ColorPicker::_w_input(const InputEvent &ev) {
 	}
 }
 
-void ColorPicker::_preset_input(const InputEvent &ev) {
-	if (ev.type == InputEvent::MOUSE_BUTTON) {
-		const InputEventMouseButton &bev = ev.mouse_button;
-		if (bev.pressed && bev.button_index == BUTTON_LEFT) {
-			int index = bev.x / (preset->get_size().x / presets.size());
+void ColorPicker::_preset_input(const Ref<InputEvent> &ev) {
+
+	Ref<InputEventMouseButton> bev = ev;
+
+	if (bev.is_valid()) {
+
+		if (bev->is_pressed() && bev->get_button_index() == BUTTON_LEFT) {
+			int index = bev->get_pos().x / (preset->get_size().x / presets.size());
 			set_pick_color(presets[index]);
-		} else if (bev.pressed && bev.button_index == BUTTON_RIGHT) {
-			int index = bev.x / (preset->get_size().x / presets.size());
+		} else if (bev->is_pressed() && bev->get_button_index() == BUTTON_RIGHT) {
+			int index = bev->get_pos().x / (preset->get_size().x / presets.size());
 			presets.erase(presets[index]);
 			_update_presets();
 			bt_add_preset->show();
 		}
 		_update_color();
 		emit_signal("color_changed", color);
-	} else if (ev.type == InputEvent::MOUSE_MOTION) {
-		const InputEventMouse &mev = ev.mouse_motion;
-		int index = mev.x * presets.size();
+	}
+
+	Ref<InputEventMouseMotion> mev = ev;
+
+	if (mev.is_valid()) {
+
+		int index = mev->get_pos().x * presets.size();
 		if (preset->get_size().x != 0) {
 			index /= preset->get_size().x;
 		}
@@ -387,17 +406,23 @@ void ColorPicker::_preset_input(const InputEvent &ev) {
 	}
 }
 
-void ColorPicker::_screen_input(const InputEvent &ev) {
-	if (ev.type == InputEvent::MOUSE_BUTTON) {
-		const InputEventMouseButton &bev = ev.mouse_button;
-		if (bev.button_index == BUTTON_LEFT && !bev.pressed) {
+void ColorPicker::_screen_input(const Ref<InputEvent> &ev) {
+
+	Ref<InputEventMouseButton> bev = ev;
+
+	if (bev.is_valid()) {
+
+		if (bev->get_button_index() == BUTTON_LEFT && !bev->is_pressed()) {
 			emit_signal("color_changed", color);
 			screen->hide();
 		}
-	} else if (ev.type == InputEvent::MOUSE_MOTION) {
-		const InputEventMouse &mev = ev.mouse_motion;
+	}
+
+	Ref<InputEventMouseMotion> mev = ev;
+
+	if (mev.is_valid()) {
 		Viewport *r = get_tree()->get_root();
-		if (!r->get_visible_rect().has_point(Point2(mev.global_x, mev.global_y)))
+		if (!r->get_visible_rect().has_point(Point2(mev->get_global_pos().x, mev->get_global_pos().y)))
 			return;
 		Ref<Image> img = r->get_screen_capture();
 		if (!img.is_null()) {
@@ -406,7 +431,7 @@ void ColorPicker::_screen_input(const InputEvent &ev) {
 		}
 		if (last_capture.is_valid() && !last_capture->empty()) {
 			int pw = last_capture->get_format() == Image::FORMAT_RGBA8 ? 4 : 3;
-			int ofs = (mev.global_y * last_capture->get_width() + mev.global_x) * pw;
+			int ofs = (mev->get_global_pos().y * last_capture->get_width() + mev->get_global_pos().x) * pw;
 
 			PoolVector<uint8_t>::Read r = last_capture->get_data().read();
 

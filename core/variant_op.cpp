@@ -61,7 +61,6 @@ bool Variant::booleanize(bool &r_valid) const {
 		case _RID: return (*reinterpret_cast<const RID *>(_data._mem)).is_valid();
 		case OBJECT: return _get_obj().obj;
 		case NODE_PATH: return (*reinterpret_cast<const NodePath *>(_data._mem)) != NodePath();
-		case INPUT_EVENT:
 		case DICTIONARY:
 		case ARRAY:
 		case POOL_BYTE_ARRAY:
@@ -291,7 +290,6 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a, const Variant &
 					if (p_b.type == NIL)
 						_RETURN(!p_a._get_obj().obj);
 				} break;
-					DEFAULT_OP_PTRREF(==, INPUT_EVENT, _input_event);
 
 				case DICTIONARY: {
 
@@ -378,7 +376,6 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a, const Variant &
 					if (p_b.type == OBJECT)
 						_RETURN((p_a._get_obj().obj < p_b._get_obj().obj));
 				} break;
-					DEFAULT_OP_FAIL(INPUT_EVENT);
 					DEFAULT_OP_FAIL(DICTIONARY);
 				case ARRAY: {
 
@@ -443,7 +440,6 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a, const Variant &
 					if (p_b.type == OBJECT)
 						_RETURN((p_a._get_obj().obj <= p_b._get_obj().obj));
 				} break;
-					DEFAULT_OP_FAIL(INPUT_EVENT);
 					DEFAULT_OP_FAIL(DICTIONARY);
 					DEFAULT_OP_FAIL(ARRAY);
 					DEFAULT_OP_FAIL(POOL_BYTE_ARRAY);
@@ -502,7 +498,6 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a, const Variant &
 				DEFAULT_OP_FAIL(NODE_PATH);
 				DEFAULT_OP_FAIL(_RID);
 				DEFAULT_OP_FAIL(OBJECT);
-				DEFAULT_OP_FAIL(INPUT_EVENT);
 				DEFAULT_OP_FAIL(DICTIONARY);
 
 				case ARRAY: {
@@ -559,7 +554,6 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a, const Variant &
 				DEFAULT_OP_FAIL(NODE_PATH);
 				DEFAULT_OP_FAIL(_RID);
 				DEFAULT_OP_FAIL(OBJECT);
-				DEFAULT_OP_FAIL(INPUT_EVENT);
 				DEFAULT_OP_FAIL(DICTIONARY);
 				DEFAULT_OP_FAIL(ARRAY);
 				DEFAULT_OP_FAIL(POOL_BYTE_ARRAY);
@@ -656,7 +650,6 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a, const Variant &
 					DEFAULT_OP_FAIL(NODE_PATH);
 					DEFAULT_OP_FAIL(_RID);
 					DEFAULT_OP_FAIL(OBJECT);
-					DEFAULT_OP_FAIL(INPUT_EVENT);
 					DEFAULT_OP_FAIL(DICTIONARY);
 					DEFAULT_OP_FAIL(ARRAY);
 					DEFAULT_OP_FAIL(POOL_BYTE_ARRAY);
@@ -729,7 +722,6 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a, const Variant &
 					DEFAULT_OP_FAIL(NODE_PATH);
 					DEFAULT_OP_FAIL(_RID);
 					DEFAULT_OP_FAIL(OBJECT);
-					DEFAULT_OP_FAIL(INPUT_EVENT);
 					DEFAULT_OP_FAIL(DICTIONARY);
 					DEFAULT_OP_FAIL(ARRAY);
 					DEFAULT_OP_FAIL(POOL_BYTE_ARRAY);
@@ -771,7 +763,6 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a, const Variant &
 				DEFAULT_OP_FAIL(NODE_PATH);
 				DEFAULT_OP_FAIL(_RID);
 				DEFAULT_OP_FAIL(OBJECT);
-				DEFAULT_OP_FAIL(INPUT_EVENT);
 				DEFAULT_OP_FAIL(DICTIONARY);
 				DEFAULT_OP_FAIL(ARRAY);
 				DEFAULT_OP_FAIL(POOL_BYTE_ARRAY);
@@ -811,7 +802,6 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a, const Variant &
 				DEFAULT_OP_FAIL(NODE_PATH);
 				DEFAULT_OP_FAIL(_RID);
 				DEFAULT_OP_FAIL(OBJECT);
-				DEFAULT_OP_FAIL(INPUT_EVENT);
 				DEFAULT_OP_FAIL(DICTIONARY);
 				DEFAULT_OP_FAIL(ARRAY);
 				DEFAULT_OP_FAIL(POOL_BYTE_ARRAY);
@@ -1507,389 +1497,6 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 				return obj->set(p_index, p_value, r_valid);
 			}
 		} break;
-		case INPUT_EVENT: {
-
-			InputEvent &ie = *_data._input_event;
-
-			if (p_index.get_type() != Variant::STRING)
-				return;
-
-			const String &str = *reinterpret_cast<const String *>(p_index._data._mem);
-
-			if (str == "type") {
-
-				if (p_value.type != Variant::INT && p_value.type != Variant::REAL)
-					return;
-
-				int type = p_value;
-				if (type < 0 || type >= InputEvent::TYPE_MAX)
-					return; //fail
-				valid = true;
-				ie.type = InputEvent::Type(type);
-				return;
-			} else if (str == "device") {
-
-				if (p_value.type != Variant::INT && p_value.type != Variant::REAL)
-					return;
-
-				valid = true;
-				ie.device = p_value;
-				return;
-			} else if (str == "ID") {
-
-				if (p_value.type != Variant::INT && p_value.type != Variant::REAL)
-					return;
-
-				valid = true;
-				ie.ID = p_value;
-				return;
-			}
-
-			if (ie.type == InputEvent::KEY || ie.type == InputEvent::MOUSE_BUTTON || ie.type == InputEvent::MOUSE_MOTION) {
-
-				if (str == "shift") {
-
-					if (p_value.type != Variant::INT && p_value.type != Variant::REAL && p_value.type != Variant::BOOL)
-						return;
-
-					valid = true;
-					ie.key.mod.shift = p_value;
-					return;
-				}
-				if (str == "alt") {
-
-					if (p_value.type != Variant::INT && p_value.type != Variant::REAL && p_value.type != Variant::BOOL)
-						return;
-
-					valid = true;
-					ie.key.mod.alt = p_value;
-					return;
-				}
-				if (str == "control") {
-
-					if (p_value.type != Variant::INT && p_value.type != Variant::REAL && p_value.type != Variant::BOOL)
-						return;
-
-					valid = true;
-					ie.key.mod.control = p_value;
-					return;
-				}
-				if (str == "meta") {
-
-					if (p_value.type != Variant::INT && p_value.type != Variant::REAL && p_value.type != Variant::BOOL)
-						return;
-
-					valid = true;
-					ie.key.mod.meta = p_value;
-					return;
-				}
-			}
-
-			if (ie.type == InputEvent::KEY) {
-
-				if (str == "pressed") {
-
-					if (p_value.type != Variant::INT && p_value.type != Variant::REAL && p_value.type != Variant::BOOL)
-						return;
-
-					valid = true;
-					ie.key.pressed = p_value;
-					return;
-				} else if (str == "scancode") {
-
-					if (p_value.type != Variant::INT && p_value.type != Variant::REAL)
-						return;
-
-					valid = true;
-					ie.key.scancode = p_value;
-					return;
-				} else if (str == "unicode") {
-					if (p_value.type != Variant::INT && p_value.type != Variant::REAL)
-						return;
-					valid = true;
-					ie.key.unicode = p_value;
-					return;
-				} else if (str == "echo") {
-					if (p_value.type != Variant::INT && p_value.type != Variant::REAL && p_value.type != Variant::BOOL)
-						return;
-
-					valid = true;
-					ie.key.echo = p_value;
-					return;
-				}
-			}
-
-			if (ie.type == InputEvent::MOUSE_MOTION || ie.type == InputEvent::MOUSE_BUTTON) {
-
-				if (str == "button_mask") {
-					if (p_value.type != Variant::INT && p_value.type != Variant::REAL)
-						return;
-					valid = true;
-					ie.mouse_button.button_mask = p_value;
-					return;
-				} else if (str == "x") {
-					if (p_value.type != Variant::INT && p_value.type != Variant::REAL)
-						return;
-					valid = true;
-					ie.mouse_button.x = p_value;
-					return;
-				} else if (str == "y") {
-					if (p_value.type != Variant::INT && p_value.type != Variant::REAL)
-						return;
-					valid = true;
-					ie.mouse_button.y = p_value;
-					return;
-				} else if (str == "pos") {
-					if (p_value.type != Variant::VECTOR2)
-						return;
-					valid = true;
-					Point2 value = p_value;
-					ie.mouse_button.x = value.x;
-					ie.mouse_button.y = value.y;
-					return;
-				} else if (str == "global_x") {
-					if (p_value.type != Variant::INT && p_value.type != Variant::REAL)
-						return;
-					valid = true;
-					ie.mouse_button.global_x = p_value;
-					return;
-				} else if (str == "global_y") {
-					if (p_value.type != Variant::INT && p_value.type != Variant::REAL)
-						return;
-					valid = true;
-					ie.mouse_button.global_y = p_value;
-					return;
-				} else if (str == "global_pos") {
-					if (p_value.type != Variant::VECTOR2)
-						return;
-					valid = true;
-					Point2 value = p_value;
-					ie.mouse_button.global_x = value.x;
-					ie.mouse_button.global_y = value.y;
-					return;
-				} /*else if (str=="pointer_index") {
-					valid=true;
-					return ie.mouse_button.pointer_index;
-				}*/
-
-				if (ie.type == InputEvent::MOUSE_MOTION) {
-
-					if (str == "relative_x") {
-						if (p_value.type != Variant::INT && p_value.type != Variant::REAL)
-							return;
-						valid = true;
-						ie.mouse_motion.relative_x = p_value;
-						return;
-					} else if (str == "relative_y") {
-						if (p_value.type != Variant::INT && p_value.type != Variant::REAL)
-							return;
-						valid = true;
-						ie.mouse_motion.relative_y = p_value;
-						return;
-					} else if (str == "relative_pos") {
-						if (p_value.type != Variant::VECTOR2)
-							return;
-						valid = true;
-						Point2 value = p_value;
-						ie.mouse_motion.relative_x = value.x;
-						ie.mouse_motion.relative_y = value.y;
-						return;
-					}
-
-					if (str == "speed_x") {
-						if (p_value.type != Variant::INT && p_value.type != Variant::REAL)
-							return;
-						valid = true;
-						ie.mouse_motion.speed_x = p_value;
-						return;
-					} else if (str == "speed_y") {
-						if (p_value.type != Variant::INT && p_value.type != Variant::REAL)
-							return;
-						valid = true;
-						ie.mouse_motion.speed_y = p_value;
-						return;
-					} else if (str == "speed") {
-						if (p_value.type != Variant::VECTOR2)
-							return;
-						valid = true;
-						Point2 value = p_value;
-						ie.mouse_motion.speed_x = value.x;
-						ie.mouse_motion.speed_y = value.y;
-						return;
-					}
-
-				} else if (ie.type == InputEvent::MOUSE_BUTTON) {
-
-					if (str == "button_index") {
-						if (p_value.type != Variant::INT && p_value.type != Variant::REAL)
-							return;
-						valid = true;
-						ie.mouse_button.button_index = p_value;
-						return;
-					} else if (str == "pressed") {
-						if (p_value.type != Variant::INT && p_value.type != Variant::REAL && p_value.type != Variant::BOOL)
-							return;
-						valid = true;
-						ie.mouse_button.pressed = p_value;
-						return;
-					} else if (str == "doubleclick") {
-						if (p_value.type != Variant::INT && p_value.type != Variant::REAL && p_value.type != Variant::BOOL)
-							return;
-						valid = true;
-						ie.mouse_button.doubleclick = p_value;
-						return;
-					}
-				}
-			}
-
-			if (ie.type == InputEvent::JOYPAD_BUTTON) {
-
-				if (str == "button_index") {
-					if (p_value.type != Variant::REAL && p_value.type != Variant::INT)
-						return;
-					valid = true;
-					ie.joy_button.button_index = p_value;
-					return;
-				}
-				if (str == "pressed") {
-					if (p_value.type != Variant::INT && p_value.type != Variant::REAL && p_value.type != Variant::BOOL)
-						return;
-
-					valid = true;
-					ie.joy_button.pressed = p_value;
-					return;
-				}
-				if (str == "pressure") {
-					if (p_value.type != Variant::REAL && p_value.type != Variant::INT)
-						return;
-					valid = true;
-					ie.joy_button.pressure = p_value;
-					return;
-				}
-			}
-
-			if (ie.type == InputEvent::JOYPAD_MOTION) {
-
-				if (str == "axis") {
-					if (p_value.type != Variant::REAL && p_value.type != Variant::INT)
-						return;
-					valid = true;
-					ie.joy_motion.axis = p_value;
-					return;
-				}
-				if (str == "value") {
-					if (p_value.type != Variant::REAL && p_value.type != Variant::INT)
-						return;
-					valid = true;
-					ie.joy_motion.axis_value = p_value;
-					return;
-				}
-			}
-
-			if (ie.type == InputEvent::SCREEN_TOUCH) {
-
-				if (str == "index") {
-					valid = true;
-					ie.screen_touch.index = p_value;
-					return;
-				}
-				if (str == "x") {
-					valid = true;
-					ie.screen_touch.x = p_value;
-					return;
-				}
-				if (str == "y") {
-					valid = true;
-					ie.screen_touch.y = p_value;
-					return;
-				}
-				if (str == "pos") {
-					valid = true;
-					Vector2 v = p_value;
-					ie.screen_touch.x = v.x;
-					ie.screen_touch.y = v.y;
-					return;
-				}
-				if (str == "pressed") {
-					valid = true;
-					ie.screen_touch.pressed = p_value;
-					return;
-				}
-			}
-
-			if (ie.type == InputEvent::SCREEN_DRAG) {
-
-				if (str == "index") {
-					valid = true;
-					ie.screen_drag.index = p_value;
-					return;
-				}
-				if (str == "x") {
-					valid = true;
-					ie.screen_drag.x = p_value;
-					return;
-				}
-				if (str == "y") {
-					valid = true;
-					ie.screen_drag.y = p_value;
-					return;
-				}
-				if (str == "pos") {
-					valid = true;
-					Vector2 v = p_value;
-					ie.screen_drag.x = v.x;
-					ie.screen_drag.y = v.y;
-					return;
-				}
-				if (str == "relative_x") {
-					valid = true;
-					ie.screen_drag.relative_x = p_value;
-					return;
-				}
-				if (str == "relative_y") {
-					valid = true;
-					ie.screen_drag.relative_y = p_value;
-					return;
-				}
-				if (str == "relative_pos") {
-					valid = true;
-					Vector2 v = p_value;
-					ie.screen_drag.relative_x = v.x;
-					ie.screen_drag.relative_y = v.y;
-					return;
-				}
-				if (str == "speed_x") {
-					valid = true;
-					ie.screen_drag.speed_x = p_value;
-					return;
-				}
-				if (str == "speed_y") {
-					valid = true;
-					ie.screen_drag.speed_y = p_value;
-					return;
-				}
-				if (str == "speed") {
-					valid = true;
-					Vector2 v = p_value;
-					ie.screen_drag.speed_x = v.x;
-					ie.screen_drag.speed_y = v.y;
-					return;
-				}
-			}
-			if (ie.type == InputEvent::ACTION) {
-
-				if (str == "action") {
-					valid = true;
-					ie.action.action = p_value;
-					return;
-				} else if (str == "pressed") {
-					valid = true;
-					ie.action.pressed = p_value;
-					return;
-				}
-			}
-
-		} break;
 		case DICTIONARY: {
 
 			Dictionary *dic = reinterpret_cast<Dictionary *>(_data._mem);
@@ -2261,235 +1868,6 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 			}
 
 		} break;
-		case INPUT_EVENT: {
-
-			InputEvent ie = operator InputEvent();
-
-			if (p_index.get_type() != Variant::STRING)
-				break;
-
-			const String &str = *reinterpret_cast<const String *>(p_index._data._mem);
-
-			if (str == "type") {
-				valid = true;
-				return ie.type;
-			} else if (str == "device") {
-				valid = true;
-				return ie.device;
-			} else if (str == "ID") {
-				valid = true;
-				return ie.ID;
-			}
-
-			if (ie.type == InputEvent::KEY || ie.type == InputEvent::MOUSE_BUTTON || ie.type == InputEvent::MOUSE_MOTION) {
-
-				if (str == "shift") {
-					valid = true;
-					return ie.key.mod.shift;
-				}
-				if (str == "alt") {
-					valid = true;
-					return ie.key.mod.alt;
-				}
-				if (str == "control") {
-					valid = true;
-					return ie.key.mod.control;
-				}
-				if (str == "meta") {
-					valid = true;
-					return ie.key.mod.meta;
-				}
-			}
-
-			if (ie.type == InputEvent::KEY) {
-
-				if (str == "pressed") {
-					valid = true;
-					return ie.key.pressed;
-				} else if (str == "scancode") {
-					valid = true;
-					return ie.key.scancode;
-				} else if (str == "unicode") {
-					valid = true;
-					return ie.key.unicode;
-				} else if (str == "echo") {
-					valid = true;
-					return ie.key.echo;
-				}
-			}
-
-			if (ie.type == InputEvent::MOUSE_MOTION || ie.type == InputEvent::MOUSE_BUTTON) {
-
-				if (str == "button_mask") {
-					valid = true;
-					return ie.mouse_button.button_mask;
-				} else if (str == "x") {
-					valid = true;
-					return ie.mouse_button.x;
-				} else if (str == "y") {
-					valid = true;
-					return ie.mouse_button.y;
-				} else if (str == "pos") {
-					valid = true;
-					return Point2(ie.mouse_button.x, ie.mouse_button.y);
-				} else if (str == "global_x") {
-					valid = true;
-					return ie.mouse_button.global_x;
-				} else if (str == "global_y") {
-					valid = true;
-					return ie.mouse_button.global_y;
-				} else if (str == "global_pos") {
-					valid = true;
-					return Point2(ie.mouse_button.global_x, ie.mouse_button.global_y);
-				} /*else if (str=="pointer_index") {
-					valid=true;
-					return ie.mouse_button.pointer_index;
-				}*/
-
-				if (ie.type == InputEvent::MOUSE_MOTION) {
-
-					if (str == "relative_x") {
-						valid = true;
-						return ie.mouse_motion.relative_x;
-					} else if (str == "relative_y") {
-						valid = true;
-						return ie.mouse_motion.relative_y;
-					} else if (str == "relative_pos") {
-						valid = true;
-						return Point2(ie.mouse_motion.relative_x, ie.mouse_motion.relative_y);
-					} else if (str == "speed_x") {
-						valid = true;
-						return ie.mouse_motion.speed_x;
-					} else if (str == "speed_y") {
-						valid = true;
-						return ie.mouse_motion.speed_y;
-					} else if (str == "speed") {
-						valid = true;
-						return Point2(ie.mouse_motion.speed_x, ie.mouse_motion.speed_y);
-					}
-
-				} else if (ie.type == InputEvent::MOUSE_BUTTON) {
-
-					if (str == "button_index") {
-						valid = true;
-						return ie.mouse_button.button_index;
-					} else if (str == "pressed") {
-						valid = true;
-						return ie.mouse_button.pressed;
-					} else if (str == "doubleclick") {
-						valid = true;
-						return ie.mouse_button.doubleclick;
-					}
-				}
-			}
-
-			if (ie.type == InputEvent::JOYPAD_BUTTON) {
-
-				if (str == "button_index") {
-					valid = true;
-					return ie.joy_button.button_index;
-				}
-				if (str == "pressed") {
-					valid = true;
-					return ie.joy_button.pressed;
-				}
-				if (str == "pressure") {
-					valid = true;
-					return ie.joy_button.pressure;
-				}
-			}
-
-			if (ie.type == InputEvent::JOYPAD_MOTION) {
-
-				if (str == "axis") {
-					valid = true;
-					return ie.joy_motion.axis;
-				}
-				if (str == "value") {
-					valid = true;
-					return ie.joy_motion.axis_value;
-				}
-			}
-
-			if (ie.type == InputEvent::SCREEN_TOUCH) {
-
-				if (str == "index") {
-					valid = true;
-					return ie.screen_touch.index;
-				}
-				if (str == "x") {
-					valid = true;
-					return ie.screen_touch.x;
-				}
-				if (str == "y") {
-					valid = true;
-					return ie.screen_touch.y;
-				}
-				if (str == "pos") {
-					valid = true;
-					return Vector2(ie.screen_touch.x, ie.screen_touch.y);
-				}
-				if (str == "pressed") {
-					valid = true;
-					return ie.screen_touch.pressed;
-				}
-			}
-
-			if (ie.type == InputEvent::SCREEN_DRAG) {
-
-				if (str == "index") {
-					valid = true;
-					return ie.screen_drag.index;
-				}
-				if (str == "x") {
-					valid = true;
-					return ie.screen_drag.x;
-				}
-				if (str == "y") {
-					valid = true;
-					return ie.screen_drag.y;
-				}
-				if (str == "pos") {
-					valid = true;
-					return Vector2(ie.screen_drag.x, ie.screen_drag.y);
-				}
-				if (str == "relative_x") {
-					valid = true;
-					return ie.screen_drag.relative_x;
-				}
-				if (str == "relative_y") {
-					valid = true;
-					return ie.screen_drag.relative_y;
-				}
-				if (str == "relative_pos") {
-					valid = true;
-					return Vector2(ie.screen_drag.relative_x, ie.screen_drag.relative_y);
-				}
-				if (str == "speed_x") {
-					valid = true;
-					return ie.screen_drag.speed_x;
-				}
-				if (str == "speed_y") {
-					valid = true;
-					return ie.screen_drag.speed_y;
-				}
-				if (str == "speed") {
-					valid = true;
-					return Vector2(ie.screen_drag.speed_x, ie.screen_drag.speed_y);
-				}
-			}
-			if (ie.type == InputEvent::ACTION) {
-
-				if (str == "action") {
-					valid = true;
-					return ie.action.action;
-				} else if (str == "pressed") {
-					valid = true;
-					return ie.action.pressed;
-				}
-			}
-
-		} break;
 		case DICTIONARY: {
 
 			const Dictionary *dic = reinterpret_cast<const Dictionary *>(_data._mem);
@@ -2820,94 +2198,6 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 #endif
 
 				obj->get_property_list(p_list);
-			}
-
-		} break;
-		case INPUT_EVENT: {
-
-			InputEvent ie = operator InputEvent();
-
-			p_list->push_back(PropertyInfo(Variant::INT, "type"));
-			p_list->push_back(PropertyInfo(Variant::INT, "device"));
-			p_list->push_back(PropertyInfo(Variant::INT, "ID"));
-
-			if (ie.type == InputEvent::KEY || ie.type == InputEvent::MOUSE_BUTTON || ie.type == InputEvent::MOUSE_MOTION) {
-
-				p_list->push_back(PropertyInfo(Variant::BOOL, "shift"));
-				p_list->push_back(PropertyInfo(Variant::BOOL, "alt"));
-				p_list->push_back(PropertyInfo(Variant::BOOL, "control"));
-				p_list->push_back(PropertyInfo(Variant::BOOL, "meta"));
-			}
-
-			if (ie.type == InputEvent::KEY) {
-
-				p_list->push_back(PropertyInfo(Variant::BOOL, "pressed"));
-				p_list->push_back(PropertyInfo(Variant::BOOL, "echo"));
-				p_list->push_back(PropertyInfo(Variant::INT, "scancode"));
-				p_list->push_back(PropertyInfo(Variant::INT, "unicode"));
-			}
-
-			if (ie.type == InputEvent::MOUSE_MOTION || ie.type == InputEvent::MOUSE_BUTTON) {
-
-				p_list->push_back(PropertyInfo(Variant::INT, "button_mask"));
-				p_list->push_back(PropertyInfo(Variant::REAL, "x"));
-				p_list->push_back(PropertyInfo(Variant::REAL, "y"));
-				p_list->push_back(PropertyInfo(Variant::VECTOR2, "pos"));
-				p_list->push_back(PropertyInfo(Variant::REAL, "global_x"));
-				p_list->push_back(PropertyInfo(Variant::REAL, "global_y"));
-				p_list->push_back(PropertyInfo(Variant::VECTOR2, "global_pos"));
-
-				if (ie.type == InputEvent::MOUSE_MOTION) {
-
-					p_list->push_back(PropertyInfo(Variant::REAL, "relative_x"));
-					p_list->push_back(PropertyInfo(Variant::REAL, "relative_y"));
-					p_list->push_back(PropertyInfo(Variant::VECTOR2, "relative_pos"));
-					p_list->push_back(PropertyInfo(Variant::REAL, "speed_x"));
-					p_list->push_back(PropertyInfo(Variant::REAL, "speed_y"));
-					p_list->push_back(PropertyInfo(Variant::VECTOR2, "speed"));
-
-				} else if (ie.type == InputEvent::MOUSE_BUTTON) {
-
-					p_list->push_back(PropertyInfo(Variant::INT, "button_index"));
-					p_list->push_back(PropertyInfo(Variant::BOOL, "pressed"));
-					p_list->push_back(PropertyInfo(Variant::BOOL, "doubleclick"));
-				}
-			}
-
-			if (ie.type == InputEvent::JOYPAD_BUTTON) {
-
-				p_list->push_back(PropertyInfo(Variant::INT, "button_index"));
-				p_list->push_back(PropertyInfo(Variant::BOOL, "pressed"));
-				p_list->push_back(PropertyInfo(Variant::REAL, "pressure"));
-			}
-
-			if (ie.type == InputEvent::JOYPAD_MOTION) {
-
-				p_list->push_back(PropertyInfo(Variant::INT, "axis"));
-				p_list->push_back(PropertyInfo(Variant::REAL, "value"));
-			}
-
-			if (ie.type == InputEvent::SCREEN_TOUCH) {
-
-				p_list->push_back(PropertyInfo(Variant::INT, "index"));
-				p_list->push_back(PropertyInfo(Variant::REAL, "x"));
-				p_list->push_back(PropertyInfo(Variant::REAL, "y"));
-				p_list->push_back(PropertyInfo(Variant::VECTOR2, "pos"));
-				p_list->push_back(PropertyInfo(Variant::BOOL, "pressed"));
-			}
-
-			if (ie.type == InputEvent::SCREEN_DRAG) {
-
-				p_list->push_back(PropertyInfo(Variant::INT, "index"));
-				p_list->push_back(PropertyInfo(Variant::REAL, "x"));
-				p_list->push_back(PropertyInfo(Variant::REAL, "y"));
-				p_list->push_back(PropertyInfo(Variant::VECTOR2, "pos"));
-				p_list->push_back(PropertyInfo(Variant::REAL, "relative_x"));
-				p_list->push_back(PropertyInfo(Variant::REAL, "relative_y"));
-				p_list->push_back(PropertyInfo(Variant::VECTOR2, "relative_pos"));
-				p_list->push_back(PropertyInfo(Variant::REAL, "speed_x"));
-				p_list->push_back(PropertyInfo(Variant::REAL, "speed_y"));
-				p_list->push_back(PropertyInfo(Variant::VECTOR2, "speed"));
 			}
 
 		} break;
@@ -3633,10 +2923,6 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 		}
 			return;
 		case OBJECT: {
-			r_dst = a;
-		}
-			return;
-		case INPUT_EVENT: {
 			r_dst = a;
 		}
 			return;

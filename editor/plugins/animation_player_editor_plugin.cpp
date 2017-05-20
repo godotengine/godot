@@ -51,7 +51,7 @@ void AnimationPlayerEditor::_node_removed(Node *p_node) {
 	}
 }
 
-void AnimationPlayerEditor::_gui_input(InputEvent p_event) {
+void AnimationPlayerEditor::_gui_input(Ref<InputEvent> p_event) {
 }
 
 void AnimationPlayerEditor::_notification(int p_what) {
@@ -1160,14 +1160,15 @@ void AnimationPlayerEditor::_animation_save_menu(int p_option) {
 	}
 }
 
-void AnimationPlayerEditor::_unhandled_key_input(const InputEvent &p_ev) {
+void AnimationPlayerEditor::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
 
-	if (is_visible_in_tree() && p_ev.type == InputEvent::KEY && p_ev.key.pressed && !p_ev.key.echo && !p_ev.key.mod.alt && !p_ev.key.mod.control && !p_ev.key.mod.meta) {
+	Ref<InputEventKey> k = p_ev;
+	if (is_visible_in_tree() && k.is_valid() && k->is_pressed() && !k->is_echo() && !k->get_alt() && !k->get_control() && !k->get_metakey()) {
 
-		switch (p_ev.key.scancode) {
+		switch (k->get_scancode()) {
 
 			case KEY_A: {
-				if (!p_ev.key.mod.shift)
+				if (!k->get_shift())
 					_play_bw_from_pressed();
 				else
 					_play_bw_pressed();
@@ -1176,7 +1177,7 @@ void AnimationPlayerEditor::_unhandled_key_input(const InputEvent &p_ev) {
 				_stop_pressed();
 			} break;
 			case KEY_D: {
-				if (!p_ev.key.mod.shift)
+				if (!k->get_shift())
 					_play_from_pressed();
 				else
 					_play_pressed();

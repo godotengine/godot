@@ -151,26 +151,26 @@ static EM_BOOL _mousebutton_callback(int event_type, const EmscriptenMouseEvent 
 
 	ERR_FAIL_COND_V(event_type != EMSCRIPTEN_EVENT_MOUSEDOWN && event_type != EMSCRIPTEN_EVENT_MOUSEUP, false);
 
-	InputEvent ev;
-	ev.type = InputEvent::MOUSE_BUTTON;
-	ev.mouse_button.pressed = event_type == EMSCRIPTEN_EVENT_MOUSEDOWN;
-	ev.mouse_button.global_x = ev.mouse_button.x = mouse_event->canvasX;
-	ev.mouse_button.global_y = ev.mouse_button.y = mouse_event->canvasY;
+	Ref<InputEvent> ev;
+	ev.type = Ref<InputEvent>::MOUSE_BUTTON;
+	ev->is_pressed() = event_type == EMSCRIPTEN_EVENT_MOUSEDOWN;
+	ev.mouse_button.global_x = ev->get_pos().x = mouse_event->canvasX;
+	ev.mouse_button.global_y = ev->get_pos().y = mouse_event->canvasY;
 	ev.mouse_button.mod = dom2godot_mod(mouse_event);
 
 	switch (mouse_event->button) {
-		case DOM_BUTTON_LEFT: ev.mouse_button.button_index = BUTTON_LEFT; break;
-		case DOM_BUTTON_MIDDLE: ev.mouse_button.button_index = BUTTON_MIDDLE; break;
-		case DOM_BUTTON_RIGHT: ev.mouse_button.button_index = BUTTON_RIGHT; break;
+		case DOM_BUTTON_LEFT: ev->get_button_index() = BUTTON_LEFT; break;
+		case DOM_BUTTON_MIDDLE: ev->get_button_index() = BUTTON_MIDDLE; break;
+		case DOM_BUTTON_RIGHT: ev->get_button_index() = BUTTON_RIGHT; break;
 		default: return false;
 	}
 
-	ev.mouse_button.button_mask = _input->get_mouse_button_mask();
-	if (ev.mouse_button.pressed)
-		ev.mouse_button.button_mask |= 1 << ev.mouse_button.button_index;
+	ev->get_button_mask() = _input->get_mouse_button_mask();
+	if (ev->is_pressed())
+		ev->get_button_mask() |= 1 << ev->get_button_index();
 	else
-		ev.mouse_button.button_mask &= ~(1 << ev.mouse_button.button_index);
-	ev.mouse_button.button_mask >>= 1;
+		ev->get_button_mask() &= ~(1 << ev->get_button_index());
+	ev->get_button_mask() >>= 1;
 
 	_input->parse_input_event(ev);
 	return true;
@@ -180,16 +180,16 @@ static EM_BOOL _mousemove_callback(int event_type, const EmscriptenMouseEvent *m
 
 	ERR_FAIL_COND_V(event_type != EMSCRIPTEN_EVENT_MOUSEMOVE, false);
 
-	InputEvent ev;
-	ev.type = InputEvent::MOUSE_MOTION;
+	Ref<InputEvent> ev;
+	ev.type = Ref<InputEvent>::MOUSE_MOTION;
 	ev.mouse_motion.mod = dom2godot_mod(mouse_event);
-	ev.mouse_motion.button_mask = _input->get_mouse_button_mask() >> 1;
+	ev->get_button_mask() = _input->get_mouse_button_mask() >> 1;
 
 	ev.mouse_motion.global_x = ev.mouse_motion.x = mouse_event->canvasX;
 	ev.mouse_motion.global_y = ev.mouse_motion.y = mouse_event->canvasY;
 
-	ev.mouse_motion.relative_x = _input->get_mouse_position().x - ev.mouse_motion.x;
-	ev.mouse_motion.relative_y = _input->get_mouse_position().y - ev.mouse_motion.y;
+	ev->get_relative().x = _input->get_mouse_position().x - ev.mouse_motion.x;
+	ev->get_relative().y = _input->get_mouse_position().y - ev.mouse_motion.y;
 
 	_input->set_mouse_position(Point2(ev.mouse_motion.x, ev.mouse_motion.y));
 	ev.mouse_motion.speed_x = _input->get_last_mouse_speed().x;
@@ -203,31 +203,31 @@ static EM_BOOL _wheel_callback(int event_type, const EmscriptenWheelEvent *wheel
 
 	ERR_FAIL_COND_V(event_type != EMSCRIPTEN_EVENT_WHEEL, false);
 
-	InputEvent ev;
-	ev.type = InputEvent::MOUSE_BUTTON;
-	ev.mouse_button.button_mask = _input->get_mouse_button_mask() >> 1;
-	ev.mouse_button.global_x = ev.mouse_button.x = _input->get_mouse_position().x;
-	ev.mouse_button.global_y = ev.mouse_button.y = _input->get_mouse_position().y;
-	ev.mouse_button.mod.shift = _input->is_key_pressed(KEY_SHIFT);
-	ev.mouse_button.mod.alt = _input->is_key_pressed(KEY_ALT);
-	ev.mouse_button.mod.control = _input->is_key_pressed(KEY_CONTROL);
-	ev.mouse_button.mod.meta = _input->is_key_pressed(KEY_META);
+	Ref<InputEvent> ev;
+	ev.type = Ref<InputEvent>::MOUSE_BUTTON;
+	ev->get_button_mask() = _input->get_mouse_button_mask() >> 1;
+	ev.mouse_button.global_x = ev->get_pos().x = _input->get_mouse_position().x;
+	ev.mouse_button.global_y = ev->get_pos().y = _input->get_mouse_position().y;
+	ev.mouse_button->get_shift() = _input->is_key_pressed(KEY_SHIFT);
+	ev.mouse_button->get_alt() = _input->is_key_pressed(KEY_ALT);
+	ev.mouse_button->get_control() = _input->is_key_pressed(KEY_CONTROL);
+	ev.mouse_button->get_metakey() = _input->is_key_pressed(KEY_META);
 
 	if (wheel_event->deltaY < 0)
-		ev.mouse_button.button_index = BUTTON_WHEEL_UP;
+		ev->get_button_index() = BUTTON_WHEEL_UP;
 	else if (wheel_event->deltaY > 0)
-		ev.mouse_button.button_index = BUTTON_WHEEL_DOWN;
+		ev->get_button_index() = BUTTON_WHEEL_DOWN;
 	else if (wheel_event->deltaX > 0)
-		ev.mouse_button.button_index = BUTTON_WHEEL_LEFT;
+		ev->get_button_index() = BUTTON_WHEEL_LEFT;
 	else if (wheel_event->deltaX < 0)
-		ev.mouse_button.button_index = BUTTON_WHEEL_RIGHT;
+		ev->get_button_index() = BUTTON_WHEEL_RIGHT;
 	else
 		return false;
 
-	ev.mouse_button.pressed = true;
+	ev->is_pressed() = true;
 	_input->parse_input_event(ev);
 
-	ev.mouse_button.pressed = false;
+	ev->is_pressed() = false;
 	_input->parse_input_event(ev);
 
 	return true;
@@ -243,8 +243,8 @@ static EM_BOOL _touchpress_callback(int event_type, const EmscriptenTouchEvent *
 					event_type != EMSCRIPTEN_EVENT_TOUCHCANCEL,
 			false);
 
-	InputEvent ev;
-	ev.type = InputEvent::SCREEN_TOUCH;
+	Ref<InputEvent> ev;
+	ev.type = Ref<InputEvent>::SCREEN_TOUCH;
 	int lowest_id_index = -1;
 	for (int i = 0; i < touch_event->numTouches; ++i) {
 
@@ -256,20 +256,20 @@ static EM_BOOL _touchpress_callback(int event_type, const EmscriptenTouchEvent *
 		ev.screen_touch.index = touch.identifier;
 		_prev_touches[i].x = ev.screen_touch.x = touch.canvasX;
 		_prev_touches[i].y = ev.screen_touch.y = touch.canvasY;
-		ev.screen_touch.pressed = event_type == EMSCRIPTEN_EVENT_TOUCHSTART;
+		ev.screen_touch->is_pressed() = event_type == EMSCRIPTEN_EVENT_TOUCHSTART;
 
 		_input->parse_input_event(ev);
 	}
 
 	if (touch_event->touches[lowest_id_index].isChanged) {
 
-		ev.type = InputEvent::MOUSE_BUTTON;
+		ev.type = Ref<InputEvent>::MOUSE_BUTTON;
 		ev.mouse_button.mod = dom2godot_mod(touch_event);
-		ev.mouse_button.button_mask = _input->get_mouse_button_mask() >> 1;
-		ev.mouse_button.global_x = ev.mouse_button.x = touch_event->touches[lowest_id_index].canvasX;
-		ev.mouse_button.global_y = ev.mouse_button.y = touch_event->touches[lowest_id_index].canvasY;
-		ev.mouse_button.button_index = BUTTON_LEFT;
-		ev.mouse_button.pressed = event_type == EMSCRIPTEN_EVENT_TOUCHSTART;
+		ev->get_button_mask() = _input->get_mouse_button_mask() >> 1;
+		ev.mouse_button.global_x = ev->get_pos().x = touch_event->touches[lowest_id_index].canvasX;
+		ev.mouse_button.global_y = ev->get_pos().y = touch_event->touches[lowest_id_index].canvasY;
+		ev->get_button_index() = BUTTON_LEFT;
+		ev->is_pressed() = event_type == EMSCRIPTEN_EVENT_TOUCHSTART;
 
 		_input->parse_input_event(ev);
 	}
@@ -280,8 +280,8 @@ static EM_BOOL _touchmove_callback(int event_type, const EmscriptenTouchEvent *t
 
 	ERR_FAIL_COND_V(event_type != EMSCRIPTEN_EVENT_TOUCHMOVE, false);
 
-	InputEvent ev;
-	ev.type = InputEvent::SCREEN_DRAG;
+	Ref<InputEvent> ev;
+	ev.type = Ref<InputEvent>::SCREEN_DRAG;
 	int lowest_id_index = -1;
 	for (int i = 0; i < touch_event->numTouches; ++i) {
 
@@ -304,13 +304,13 @@ static EM_BOOL _touchmove_callback(int event_type, const EmscriptenTouchEvent *t
 
 	if (touch_event->touches[lowest_id_index].isChanged) {
 
-		ev.type = InputEvent::MOUSE_MOTION;
+		ev.type = Ref<InputEvent>::MOUSE_MOTION;
 		ev.mouse_motion.mod = dom2godot_mod(touch_event);
-		ev.mouse_motion.button_mask = _input->get_mouse_button_mask() >> 1;
+		ev->get_button_mask() = _input->get_mouse_button_mask() >> 1;
 		ev.mouse_motion.global_x = ev.mouse_motion.x = touch_event->touches[lowest_id_index].canvasX;
 		ev.mouse_motion.global_y = ev.mouse_motion.y = touch_event->touches[lowest_id_index].canvasY;
-		ev.mouse_motion.relative_x = _input->get_mouse_position().x - ev.mouse_motion.x;
-		ev.mouse_motion.relative_y = _input->get_mouse_position().y - ev.mouse_motion.y;
+		ev->get_relative().x = _input->get_mouse_position().x - ev.mouse_motion.x;
+		ev->get_relative().y = _input->get_mouse_position().y - ev.mouse_motion.y;
 
 		_input->set_mouse_position(Point2(ev.mouse_motion.x, ev.mouse_motion.y));
 		ev.mouse_motion.speed_x = _input->get_last_mouse_speed().x;
@@ -321,13 +321,13 @@ static EM_BOOL _touchmove_callback(int event_type, const EmscriptenTouchEvent *t
 	return true;
 }
 
-static InputEvent _setup_key_event(const EmscriptenKeyboardEvent *emscripten_event) {
+static Ref<InputEvent> _setup_key_event(const EmscriptenKeyboardEvent *emscripten_event) {
 
-	InputEvent ev;
-	ev.type = InputEvent::KEY;
-	ev.key.echo = emscripten_event->repeat;
+	Ref<InputEvent> ev;
+	ev.type = Ref<InputEvent>::KEY;
+	ev->is_echo() = emscripten_event->repeat;
 	ev.key.mod = dom2godot_mod(emscripten_event);
-	ev.key.scancode = dom2godot_scancode(emscripten_event->keyCode);
+	ev->get_scancode() = dom2godot_scancode(emscripten_event->keyCode);
 
 	String unicode = String::utf8(emscripten_event->key);
 	// check if empty or multi-character (e.g. `CapsLock`)
@@ -342,15 +342,15 @@ static InputEvent _setup_key_event(const EmscriptenKeyboardEvent *emscripten_eve
 	return ev;
 }
 
-static InputEvent deferred_key_event;
+static Ref<InputEvent> deferred_key_event;
 
 static EM_BOOL _keydown_callback(int event_type, const EmscriptenKeyboardEvent *key_event, void *user_data) {
 
 	ERR_FAIL_COND_V(event_type != EMSCRIPTEN_EVENT_KEYDOWN, false);
 
-	InputEvent ev = _setup_key_event(key_event);
-	ev.key.pressed = true;
-	if (ev.key.unicode == 0 && keycode_has_unicode(ev.key.scancode)) {
+	Ref<InputEvent> ev = _setup_key_event(key_event);
+	ev->is_pressed() = true;
+	if (ev.key.unicode == 0 && keycode_has_unicode(ev->get_scancode())) {
 		// defer to keypress event for legacy unicode retrieval
 		deferred_key_event = ev;
 		return false; // do not suppress keypress event
@@ -372,10 +372,10 @@ static EM_BOOL _keyup_callback(int event_type, const EmscriptenKeyboardEvent *ke
 
 	ERR_FAIL_COND_V(event_type != EMSCRIPTEN_EVENT_KEYUP, false);
 
-	InputEvent ev = _setup_key_event(key_event);
-	ev.key.pressed = false;
+	Ref<InputEvent> ev = _setup_key_event(key_event);
+	ev->is_pressed() = false;
 	_input->parse_input_event(ev);
-	return ev.key.scancode != KEY_UNKNOWN && ev.key.scancode != 0;
+	return ev->get_scancode() != KEY_UNKNOWN && ev->get_scancode() != 0;
 }
 
 static EM_BOOL joy_callback_func(int p_type, const EmscriptenGamepadEvent *p_event, void *p_user) {

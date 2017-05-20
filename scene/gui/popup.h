@@ -45,7 +45,7 @@ class Popup : public Control {
 protected:
 	virtual void _post_popup() {}
 
-	void _gui_input(InputEvent p_event);
+	void _gui_input(Ref<InputEvent> p_event);
 	void _notification(int p_what);
 	virtual void _fix_size();
 	static void _bind_methods();

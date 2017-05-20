@@ -115,19 +115,19 @@ bool InputDefault::is_action_pressed(const StringName &p_action) const {
 			case InputEvent::KEY: {
 
 				const InputEventKey &iek=E->get().key;
-				if ((keys_pressed.has(iek.scancode)))
+				if ((keys_pressed.has(iek->get_scancode())))
 					return true;
 			} break;
 			case InputEvent::MOUSE_BUTTON: {
 
 				const InputEventMouseButton &iemb=E->get().mouse_button;
-				 if(mouse_button_mask&(1<<iemb.button_index))
+				 if(mouse_button_mask&(1<<iemb->get_button_index()))
 					 return true;
 			} break;
 			case InputEvent::JOYPAD_BUTTON: {
 
 				const InputEventJoypadButton &iejb=E->get().joy_button;
-				int c = _combine_device(iejb.button_index,device);
+				int c = _combine_device(iejb->get_button_index(),device);
 				if (joy_buttons_pressed.has(c))
 					return true;
 			} break;
@@ -297,94 +297,86 @@ Vector3 InputDefault::get_gyroscope() const {
 	return gyroscope;
 }
 
-void InputDefault::parse_input_event(const InputEvent &p_event) {
+void InputDefault::parse_input_event(const Ref<InputEvent> &p_event) {
 
 	_THREAD_SAFE_METHOD_
-	switch (p_event.type) {
 
-		case InputEvent::KEY: {
+	Ref<InputEventKey> k = p_event;
+	if (k.is_valid() && k->is_echo() && k->get_scancode() != 0) {
 
-			if (p_event.key.echo)
-				break;
-			if (p_event.key.scancode == 0)
-				break;
+		//print_line(p_event);
 
-			//print_line(p_event);
-
-			if (p_event.key.pressed)
-				keys_pressed.insert(p_event.key.scancode);
-			else
-				keys_pressed.erase(p_event.key.scancode);
-		} break;
-		case InputEvent::MOUSE_BUTTON: {
-
-			if (p_event.mouse_button.doubleclick)
-				break;
-
-			if (p_event.mouse_button.pressed)
-				mouse_button_mask |= (1 << p_event.mouse_button.button_index);
-			else
-				mouse_button_mask &= ~(1 << p_event.mouse_button.button_index);
-
-			if (main_loop && emulate_touch && p_event.mouse_button.button_index == 1) {
-				InputEventScreenTouch touch_event;
-				touch_event.index = 0;
-				touch_event.pressed = p_event.mouse_button.pressed;
-				touch_event.x = p_event.mouse_button.x;
-				touch_event.y = p_event.mouse_button.y;
-				InputEvent ev;
-				ev.type = InputEvent::SCREEN_TOUCH;
-				ev.screen_touch = touch_event;
-				main_loop->input_event(ev);
-			}
-
-			Point2 pos = Point2(p_event.mouse_button.global_x, p_event.mouse_button.global_y);
-			if (mouse_pos != pos) {
-				set_mouse_position(pos);
-			}
-		} break;
-		case InputEvent::MOUSE_MOTION: {
-
-			if (main_loop && emulate_touch && p_event.mouse_motion.button_mask & 1) {
-				InputEventScreenDrag drag_event;
-				drag_event.index = 0;
-				drag_event.x = p_event.mouse_motion.x;
-				drag_event.y = p_event.mouse_motion.y;
-				drag_event.relative_x = p_event.mouse_motion.relative_x;
-				drag_event.relative_y = p_event.mouse_motion.relative_y;
-				drag_event.speed_x = p_event.mouse_motion.speed_x;
-				drag_event.speed_y = p_event.mouse_motion.speed_y;
-
-				InputEvent ev;
-				ev.type = InputEvent::SCREEN_DRAG;
-				ev.screen_drag = drag_event;
-
-				main_loop->input_event(ev);
-			}
-
-		} break;
-		case InputEvent::JOYPAD_BUTTON: {
-
-			int c = _combine_device(p_event.joy_button.button_index, p_event.device);
-
-			if (p_event.joy_button.pressed)
-				joy_buttons_pressed.insert(c);
-			else
-				joy_buttons_pressed.erase(c);
-		} break;
-		case InputEvent::JOYPAD_MOTION: {
-			set_joy_axis(p_event.device, p_event.joy_motion.axis, p_event.joy_motion.axis_value);
-		} break;
+		if (k->is_pressed())
+			keys_pressed.insert(k->get_scancode());
+		else
+			keys_pressed.erase(k->get_scancode());
 	}
 
-	if (!p_event.is_echo()) {
+	Ref<InputEventMouseButton> mb = p_event;
+
+	if (mb.is_valid() && !mb->is_doubleclick()) {
+
+		if (mb->is_pressed())
+			mouse_button_mask |= (1 << mb->get_button_index());
+		else
+			mouse_button_mask &= ~(1 << mb->get_button_index());
+
+		if (main_loop && emulate_touch && mb->get_button_index() == 1) {
+			Ref<InputEventScreenTouch> touch_event;
+			touch_event.instance();
+			touch_event->set_pressed(mb->is_pressed());
+			touch_event->set_pos(mb->get_pos());
+			main_loop->input_event(touch_event);
+		}
+
+		Point2 pos = mb->get_global_pos();
+		if (mouse_pos != pos) {
+			set_mouse_position(pos);
+		}
+	}
+
+	Ref<InputEventMouseMotion> mm = p_event;
+
+	if (mm.is_valid()) {
+
+		if (main_loop && emulate_touch && mm->get_button_mask() & 1) {
+			Ref<InputEventScreenDrag> drag_event;
+			drag_event.instance();
+
+			drag_event->set_pos(mm->get_pos());
+			drag_event->set_relative(mm->get_relative());
+			drag_event->set_speed(mm->get_speed());
+
+			main_loop->input_event(drag_event);
+		}
+	}
+
+	Ref<InputEventJoypadButton> jb = p_event;
+
+	if (jb.is_valid()) {
+
+		int c = _combine_device(jb->get_button_index(), jb->get_device());
+
+		if (jb->is_pressed())
+			joy_buttons_pressed.insert(c);
+		else
+			joy_buttons_pressed.erase(c);
+	}
+
+	Ref<InputEventJoypadMotion> jm = p_event;
+
+	if (jm.is_valid()) {
+		set_joy_axis(jm->get_device(), jm->get_axis(), jm->get_axis_value());
+	}
+
+	if (p_event->is_echo()) {
 		for (const Map<StringName, InputMap::Action>::Element *E = InputMap::get_singleton()->get_action_map().front(); E; E = E->next()) {
 
-			if (InputMap::get_singleton()->event_is_action(p_event, E->key()) && is_action_pressed(E->key()) != p_event.is_pressed()) {
+			if (InputMap::get_singleton()->event_is_action(p_event, E->key()) && is_action_pressed(E->key()) != p_event->is_pressed()) {
 				Action action;
 				action.fixed_frame = Engine::get_singleton()->get_fixed_frames();
 				action.idle_frame = Engine::get_singleton()->get_idle_frames();
-				action.pressed = p_event.is_pressed();
+				action.pressed = p_event->is_pressed();
 				action_state[E->key()] = action;
 			}
 		}
@@ -484,7 +476,7 @@ void InputDefault::warp_mouse_pos(const Vector2 &p_to) {
 	OS::get_singleton()->warp_mouse_pos(p_to);
 }
 
-Point2i InputDefault::warp_mouse_motion(const InputEventMouseMotion &p_motion, const Rect2 &p_rect) {
+Point2i InputDefault::warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, const Rect2 &p_rect) {
 
 	// The relative distance reported for the next event after a warp is in the boundaries of the
 	// size of the rect on that axis, but it may be greater, in which case there's not problem as fmod()
@@ -495,13 +487,13 @@ Point2i InputDefault::warp_mouse_motion(const InputEventMouseMotion &p_motion, c
 	// detect the warp: if the relative distance is greater than the half of the size of the relevant rect
 	// (checked per each axis), it will be considered as the consequence of a former pointer warp.
 
-	const Point2i rel_sgn(p_motion.relative_x >= 0.0f ? 1 : -1, p_motion.relative_y >= 0.0 ? 1 : -1);
+	const Point2i rel_sgn(p_motion->get_relative().x >= 0.0f ? 1 : -1, p_motion->get_relative().y >= 0.0 ? 1 : -1);
 	const Size2i warp_margin = p_rect.size * 0.5f;
 	const Point2i rel_warped(
-			Math::fmod(p_motion.relative_x + rel_sgn.x * warp_margin.x, p_rect.size.x) - rel_sgn.x * warp_margin.x,
-			Math::fmod(p_motion.relative_y + rel_sgn.y * warp_margin.y, p_rect.size.y) - rel_sgn.y * warp_margin.y);
+			Math::fmod(p_motion->get_relative().x + rel_sgn.x * warp_margin.x, p_rect.size.x) - rel_sgn.x * warp_margin.x,
+			Math::fmod(p_motion->get_relative().y + rel_sgn.y * warp_margin.y, p_rect.size.y) - rel_sgn.y * warp_margin.y);
 
-	const Point2i pos_local = Point2i(p_motion.global_x, p_motion.global_y) - p_rect.pos;
+	const Point2i pos_local = p_motion->get_global_pos() - p_rect.pos;
 	const Point2i pos_warped(Math::fposmod(pos_local.x, p_rect.size.x), Math::fposmod(pos_local.y, p_rect.size.y));
 	if (pos_warped != pos_local) {
 		OS::get_singleton()->warp_mouse_pos(pos_warped + p_rect.pos);
@@ -1020,22 +1012,22 @@ void InputDefault::joy_hat(int p_device, int p_val) {
 
 void InputDefault::_button_event(int p_device, int p_index, bool p_pressed) {
 
-	InputEvent ievent;
-	ievent.type = InputEvent::JOYPAD_BUTTON;
-	ievent.device = p_device;
-	ievent.joy_button.button_index = p_index;
-	ievent.joy_button.pressed = p_pressed;
+	Ref<InputEventJoypadButton> ievent;
+	ievent.instance();
+	ievent->set_device(p_device);
+	ievent->set_button_index(p_index);
+	ievent->set_pressed(p_pressed);
 
 	parse_input_event(ievent);
 };
 
 void InputDefault::_axis_event(int p_device, int p_axis, float p_value) {
 
-	InputEvent ievent;
-	ievent.type = InputEvent::JOYPAD_MOTION;
-	ievent.device = p_device;
-	ievent.joy_motion.axis = p_axis;
-	ievent.joy_motion.axis_value = p_value;
+	Ref<InputEventJoypadMotion> ievent;
+	ievent.instance();
+	ievent->set_device(p_device);
+	ievent->set_axis(p_axis);
+	ievent->set_axis_value(p_value);
 
 	parse_input_event(ievent);
 };

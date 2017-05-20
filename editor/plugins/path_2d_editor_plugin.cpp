@@ -58,7 +58,7 @@ void Path2DEditor::_node_removed(Node *p_node) {
 	}
 }
 
-bool Path2DEditor::forward_gui_input(const InputEvent &p_event) {
+bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (!node)
 		return false;
@@ -69,327 +69,352 @@ bool Path2DEditor::forward_gui_input(const InputEvent &p_event) {
 	if (!node->get_curve().is_valid())
 		return false;
 
-	switch (p_event.type) {
+	Ref<InputEventMouseButton> mb = p_event;
 
-		case InputEvent::MOUSE_BUTTON: {
+	if (mb.is_valid()) {
 
-			const InputEventMouseButton &mb = p_event.mouse_button;
+		Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
-			Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
+		Vector2 gpoint = mb->get_pos();
+		Vector2 cpoint = !mb->get_alt() ? canvas_item_editor->snap_point(xform.affine_inverse().xform(gpoint)) : node->get_global_transform().affine_inverse().xform(canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint)));
+		//first check if a point is to be added (segment split)
+		real_t grab_threshold = EDITOR_DEF("editors/poly_editor/point_grab_radius", 8);
 
-			Vector2 gpoint = Point2(mb.x, mb.y);
-			Vector2 cpoint = !mb.mod.alt ? canvas_item_editor->snap_point(xform.affine_inverse().xform(gpoint)) : node->get_global_transform().affine_inverse().xform(canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint)));
+		// Test move point!!
 
-			//first check if a point is to be added (segment split)
-			real_t grab_threshold = EDITOR_DEF("editors/poly_editor/point_grab_radius", 8);
+		if (mb->is_pressed() && action == ACTION_NONE) {
 
-			// Test move point!!
+			Ref<Curve2D> curve = node->get_curve();
 
-			if (mb.pressed && action == ACTION_NONE) {
+			for (int i = 0; i < curve->get_point_count(); i++) {
 
-				Ref<Curve2D> curve = node->get_curve();
+				bool pointunder = false;
 
-				for (int i = 0; i < curve->get_point_count(); i++) {
+				real_t dist_to_p = gpoint.distance_to(xform.xform(curve->get_point_pos(i)));
+				real_t dist_to_p_out = gpoint.distance_to(xform.xform(curve->get_point_pos(i) + curve->get_point_out(i)));
+				real_t dist_to_p_in = gpoint.distance_to(xform.xform(curve->get_point_pos(i) + curve->get_point_in(i)));
 
-					bool pointunder = false;
+				if (mb->get_button_index() == BUTTON_LEFT && !mb->get_shift() && mode == MODE_EDIT) {
+					if (dist_to_p < grab_threshold) {
 
-					real_t dist_to_p = gpoint.distance_to(xform.xform(curve->get_point_pos(i)));
-					real_t dist_to_p_out = gpoint.distance_to(xform.xform(curve->get_point_pos(i) + curve->get_point_out(i)));
-					real_t dist_to_p_in = gpoint.distance_to(xform.xform(curve->get_point_pos(i) + curve->get_point_in(i)));
-
-					if (mb.button_index == BUTTON_LEFT && !mb.mod.shift && mode == MODE_EDIT) {
-						if (dist_to_p < grab_threshold) {
-
-							action = ACTION_MOVING_POINT;
-							action_point = i;
-							moving_from = curve->get_point_pos(i);
-							moving_screen_from = gpoint;
-							return true;
-						}
-					}
-
-					if ((mb.button_index == BUTTON_RIGHT && mode == MODE_EDIT) || (mb.button_index == BUTTON_LEFT && mode == MODE_DELETE)) {
-						if (dist_to_p < grab_threshold) {
-
-							undo_redo->create_action(TTR("Remove Point from Curve"));
-							undo_redo->add_do_method(curve.ptr(), "remove_point", i);
-							undo_redo->add_undo_method(curve.ptr(), "add_point", curve->get_point_pos(i), curve->get_point_in(i), curve->get_point_out(i), i);
-							undo_redo->add_do_method(canvas_item_editor->get_viewport_control(), "update");
-							undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(), "update");
-							undo_redo->commit_action();
-							return true;
-						} else if (dist_to_p_out < grab_threshold) {
-
-							undo_redo->create_action(TTR("Remove Out-Control from Curve"));
-							undo_redo->add_do_method(curve.ptr(), "set_point_out", i, Vector2());
-							undo_redo->add_undo_method(curve.ptr(), "set_point_out", i, curve->get_point_out(i));
-							undo_redo->add_do_method(canvas_item_editor->get_viewport_control(), "update");
-							undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(), "update");
-							undo_redo->commit_action();
-							return true;
-						} else if (dist_to_p_in < grab_threshold) {
-
-							undo_redo->create_action(TTR("Remove In-Control from Curve"));
-							undo_redo->add_do_method(curve.ptr(), "set_point_in", i, Vector2());
-							undo_redo->add_undo_method(curve.ptr(), "set_point_in", i, curve->get_point_in(i));
-							undo_redo->add_do_method(canvas_item_editor->get_viewport_control(), "update");
-							undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(), "update");
-							undo_redo->commit_action();
-							return true;
-						}
-					}
-
-					if (dist_to_p < grab_threshold)
-						pointunder = true;
-
-					if (mb.button_index == BUTTON_LEFT && i < (curve->get_point_count() - 1)) {
-						if (dist_to_p_out < grab_threshold && (mode == MODE_EDIT || mode == MODE_EDIT_CURVE)) {
-
-							action = ACTION_MOVING_OUT;
-							action_point = i;
-							moving_from = curve->get_point_out(i);
-							moving_screen_from = gpoint;
-							return true;
-						}
-					}
-
-					if (mb.button_index == BUTTON_LEFT && i > 0) {
-						if (dist_to_p_in < grab_threshold && (mode == MODE_EDIT || mode == MODE_EDIT_CURVE)) {
-
-							action = ACTION_MOVING_IN;
-							action_point = i;
-							moving_from = curve->get_point_in(i);
-							moving_screen_from = gpoint;
-							return true;
-						}
-					}
-
-					if (pointunder)
+						action = ACTION_MOVING_POINT;
+						action_point = i;
+						moving_from = curve->get_point_pos(i);
+						moving_screen_from = gpoint;
 						return true;
+					}
+				}
+
+				if ((mb->get_button_index() == BUTTON_RIGHT && mode == MODE_EDIT) || (mb->get_button_index() == BUTTON_LEFT && mode == MODE_DELETE)) {
+					if (dist_to_p < grab_threshold) {
+
+						undo_redo->create_action(TTR("Remove Point from Curve"));
+						undo_redo->add_do_method(curve.ptr(), "remove_point", i);
+						undo_redo->add_undo_method(curve.ptr(), "add_point", curve->get_point_pos(i), curve->get_point_in(i), curve->get_point_out(i), i);
+						undo_redo->add_do_method(canvas_item_editor->get_viewport_control(), "update");
+						undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(), "update");
+						undo_redo->commit_action();
+						return true;
+					} else if (dist_to_p_out < grab_threshold) {
+
+						undo_redo->create_action(TTR("Remove Out-Control from Curve"));
+						undo_redo->add_do_method(curve.ptr(), "set_point_out", i, Vector2());
+						undo_redo->add_undo_method(curve.ptr(), "set_point_out", i, curve->get_point_out(i));
+						undo_redo->add_do_method(canvas_item_editor->get_viewport_control(), "update");
+						undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(), "update");
+						undo_redo->commit_action();
+						return true;
+					} else if (dist_to_p_in < grab_threshold) {
+
+						undo_redo->create_action(TTR("Remove In-Control from Curve"));
+						undo_redo->add_do_method(curve.ptr(), "set_point_in", i, Vector2());
+						undo_redo->add_undo_method(curve.ptr(), "set_point_in", i, curve->get_point_in(i));
+						undo_redo->add_do_method(canvas_item_editor->get_viewport_control(), "update");
+						undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(), "update");
+						undo_redo->commit_action();
+						return true;
+					}
+				}
+
+				if (dist_to_p < grab_threshold)
+					pointunder = true;
+
+				if (mb->get_button_index() == BUTTON_LEFT && i < (curve->get_point_count() - 1)) {
+					if (dist_to_p_out < grab_threshold && (mode == MODE_EDIT || mode == MODE_EDIT_CURVE)) {
+
+						action_point = i;
+						moving_from = curve->get_point_pos(i);
+						moving_screen_from = gpoint;
+						return true;
+					} else if ((mb->get_button_index() == BUTTON_RIGHT && mode == MODE_EDIT) || (mb->get_button_index() == BUTTON_LEFT && mode == MODE_DELETE)) {
+
+						undo_redo->create_action(TTR("Remove Point from Curve"));
+						undo_redo->add_do_method(curve.ptr(), "remove_point", i);
+						undo_redo->add_undo_method(curve.ptr(), "add_point", curve->get_point_pos(i), curve->get_point_in(i), curve->get_point_out(i), i);
+						undo_redo->add_do_method(canvas_item_editor->get_viewport_control(), "update");
+						undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(), "update");
+						undo_redo->commit_action();
+						return true;
+					} else
+						pointunder = true;
+				}
+
+				if (pointunder)
+					return true;
+			}
+#if 0
+I think i broke this, was this not suposed to go somewhere?
+			if (mb->get_button_index() == BUTTON_LEFT && i < (curve->get_point_count() - 1)) {
+				Point2 p = xform.xform(curve->get_point_pos(i) + curve->get_point_out(i));
+				if (gpoint.distance_to(p) < grab_treshold && (mode == MODE_EDIT || mode == MODE_EDIT_CURVE)) {
+					action = ACTION_MOVING_OUT;
+					action_point = i;
+					moving_from = curve->get_point_out(i);
+					moving_screen_from = gpoint;
+					return true;
 				}
 			}
 
-			// Test add point in empty space!
+			if (mb->get_button_index() == BUTTON_LEFT && i > 0) {
+				Point2 p = xform.xform(curve->get_point_pos(i) + curve->get_point_in(i));
+				if (gpoint.distance_to(p) < grab_treshold && (mode == MODE_EDIT || mode == MODE_EDIT_CURVE)) {
 
-			if (mb.pressed && mb.button_index == BUTTON_LEFT && ((mb.mod.command && mode == MODE_EDIT) || mode == MODE_CREATE)) {
-
-				Ref<Curve2D> curve = node->get_curve();
-
-				undo_redo->create_action(TTR("Add Point to Curve"));
-				undo_redo->add_do_method(curve.ptr(), "add_point", cpoint);
-				undo_redo->add_undo_method(curve.ptr(), "remove_point", curve->get_point_count());
-				undo_redo->add_do_method(canvas_item_editor->get_viewport_control(), "update");
-				undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(), "update");
-				undo_redo->commit_action();
-
-				action = ACTION_MOVING_POINT;
-				action_point = curve->get_point_count() - 1;
-				moving_from = curve->get_point_pos(action_point);
-				moving_screen_from = gpoint;
-
-				canvas_item_editor->get_viewport_control()->update();
-
-				return true;
-			}
-
-			if (!mb.pressed && mb.button_index == BUTTON_LEFT && action != ACTION_NONE) {
-
-				Ref<Curve2D> curve = node->get_curve();
-
-				Vector2 new_pos = moving_from + xform.affine_inverse().basis_xform(gpoint - moving_screen_from);
-				switch (action) {
-
-					case ACTION_MOVING_POINT: {
-
-						undo_redo->create_action(TTR("Move Point in Curve"));
-						undo_redo->add_do_method(curve.ptr(), "set_point_pos", action_point, cpoint);
-						undo_redo->add_undo_method(curve.ptr(), "set_point_pos", action_point, moving_from);
-						undo_redo->add_do_method(canvas_item_editor->get_viewport_control(), "update");
-						undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(), "update");
-						undo_redo->commit_action();
-
-					} break;
-					case ACTION_MOVING_IN: {
-
-						undo_redo->create_action(TTR("Move In-Control in Curve"));
-						undo_redo->add_do_method(curve.ptr(), "set_point_in", action_point, new_pos);
-						undo_redo->add_undo_method(curve.ptr(), "set_point_in", action_point, moving_from);
-						undo_redo->add_do_method(canvas_item_editor->get_viewport_control(), "update");
-						undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(), "update");
-						undo_redo->commit_action();
-
-					} break;
-					case ACTION_MOVING_OUT: {
-
-						undo_redo->create_action(TTR("Move Out-Control in Curve"));
-						undo_redo->add_do_method(curve.ptr(), "set_point_out", action_point, new_pos);
-						undo_redo->add_undo_method(curve.ptr(), "set_point_out", action_point, moving_from);
-						undo_redo->add_do_method(canvas_item_editor->get_viewport_control(), "update");
-						undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(), "update");
-						undo_redo->commit_action();
-
-					} break;
+					action = ACTION_MOVING_IN;
+					action_point = i;
+					moving_from = curve->get_point_in(i);
+					moving_screen_from = gpoint;
+					return true;
 				}
-
-				action = ACTION_NONE;
-
-				return true;
 			}
+
+			if (pointunder)
+				return true;
+#endif
+		}
+
+		// Test add point in empty space!
+
+		if (mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT && ((mb->get_command() && mode == MODE_EDIT) || mode == MODE_CREATE)) {
+
+			Ref<Curve2D> curve = node->get_curve();
+
+			undo_redo->create_action(TTR("Add Point to Curve"));
+			undo_redo->add_do_method(curve.ptr(), "add_point", cpoint);
+			undo_redo->add_undo_method(curve.ptr(), "remove_point", curve->get_point_count());
+			undo_redo->add_do_method(canvas_item_editor->get_viewport_control(), "update");
+			undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(), "update");
+			undo_redo->commit_action();
+
+			action = ACTION_MOVING_POINT;
+			action_point = curve->get_point_count() - 1;
+			moving_from = curve->get_point_pos(action_point);
+			moving_screen_from = gpoint;
+
+			canvas_item_editor->get_viewport_control()->update();
+
+			return true;
+		}
+
+		if (!mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT && action != ACTION_NONE) {
+
+			Ref<Curve2D> curve = node->get_curve();
+
+			Vector2 new_pos = moving_from + xform.affine_inverse().basis_xform(gpoint - moving_screen_from);
+			switch (action) {
+
+				case ACTION_MOVING_POINT: {
+
+					undo_redo->create_action(TTR("Move Point in Curve"));
+					undo_redo->add_do_method(curve.ptr(), "set_point_pos", action_point, cpoint);
+					undo_redo->add_undo_method(curve.ptr(), "set_point_pos", action_point, moving_from);
+					undo_redo->add_do_method(canvas_item_editor->get_viewport_control(), "update");
+					undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(), "update");
+					undo_redo->commit_action();
+
+				} break;
+				case ACTION_MOVING_IN: {
+
+					undo_redo->create_action(TTR("Move In-Control in Curve"));
+					undo_redo->add_do_method(curve.ptr(), "set_point_in", action_point, new_pos);
+					undo_redo->add_undo_method(curve.ptr(), "set_point_in", action_point, moving_from);
+					undo_redo->add_do_method(canvas_item_editor->get_viewport_control(), "update");
+					undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(), "update");
+					undo_redo->commit_action();
+
+				} break;
+				case ACTION_MOVING_OUT: {
+
+					undo_redo->create_action(TTR("Move Out-Control in Curve"));
+					undo_redo->add_do_method(curve.ptr(), "set_point_out", action_point, new_pos);
+					undo_redo->add_undo_method(curve.ptr(), "set_point_out", action_point, moving_from);
+					undo_redo->add_do_method(canvas_item_editor->get_viewport_control(), "update");
+					undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(), "update");
+					undo_redo->commit_action();
+
+				} break;
+			}
+
+			action = ACTION_NONE;
+
+			return true;
+		}
 
 #if 0
-			switch(mode) {
+		switch(mode) {
 
 
-				case MODE_CREATE: {
+			case MODE_CREATE: {
 
-					if (mb.button_index==BUTTON_LEFT && mb.pressed) {
+				if (mb->get_button_index()==BUTTON_LEFT && mb->is_pressed()) {
 
 
-						if (!wip_active) {
+					if (!wip_active) {
 
-							wip.clear();
-							wip.push_back( canvas_item_editor->snap_point(cpoint) );
-							wip_active=true;
-							edited_point_pos=canvas_item_editor->snap_point(cpoint);
-							canvas_item_editor->update();
-							edited_point=1;
-							return true;
-						} else {
-
+						wip.clear();
+						wip.push_back( canvas_item_editor->snap_point(cpoint) );
+						wip_active=true;
+						edited_point_pos=canvas_item_editor->snap_point(cpoint);
+						canvas_item_editor->update();
+						edited_point=1;
+						return true;
+					} else {
 							if (wip.size()>1 && xform.xform(wip[0]).distance_to(gpoint)<grab_threshold) {
 								//wip closed
 								_wip_close();
-
-								return true;
-							} else {
-
-								wip.push_back( canvas_item_editor->snap_point(cpoint) );
-								edited_point=wip.size();
-								canvas_item_editor->update();
-								return true;
-
-								//add wip point
-							}
-						}
-					} else if (mb.button_index==BUTTON_RIGHT && mb.pressed && wip_active) {
-						_wip_close();
-					}
+						if (wip.size()>1 && xform.xform(wip[0]).distance_to(gpoint)<grab_treshold) {
+							//wip closed
+							_wip_close();
 
 
-
-				} break;
-
-				case MODE_EDIT: {
-
-					if (mb.button_index==BUTTON_LEFT) {
-						if (mb.pressed) {
-
-							if (mb.mod.control) {
-
-
-								if (poly.size() < 3) {
-
-									undo_redo->create_action(TTR("Edit Poly"));
-									undo_redo->add_undo_method(node,"set_polygon",poly);
-									poly.push_back(cpoint);
-									undo_redo->add_do_method(node,"set_polygon",poly);
-									undo_redo->add_do_method(canvas_item_editor->get_viewport_control(),"update");
-									undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(),"update");
-									undo_redo->commit_action();
-									return true;
-								}
-
-								//search edges
-								int closest_idx=-1;
-								Vector2 closest_pos;
-								real_t closest_dist=1e10;
-								for(int i=0;i<poly.size();i++) {
-
-									Vector2 points[2] ={ xform.xform(poly[i]),
-										xform.xform(poly[(i+1)%poly.size()]) };
-
-									Vector2 cp = Geometry::get_closest_point_to_segment_2d(gpoint,points);
-									if (cp.distance_squared_to(points[0])<CMP_EPSILON2 || cp.distance_squared_to(points[1])<CMP_EPSILON2)
-										continue; //not valid to reuse point
-
-									real_t d = cp.distance_to(gpoint);
-									if (d<closest_dist && d<grab_threshold) {
-										closest_dist=d;
-										closest_pos=cp;
-										closest_idx=i;
-									}
-
-
-								}
-
-								if (closest_idx>=0) {
-
-									pre_move_edit=poly;
-									poly.insert(closest_idx+1,canvas_item_editor->snap_point(xform.affine_inverse().xform(closest_pos)));
-									edited_point=closest_idx+1;
-									edited_point_pos=canvas_item_editor->snap_point(xform.affine_inverse().xform(closest_pos));
-									node->set_polygon(poly);
-									canvas_item_editor->update();
-									return true;
-								}
-							} else {
-
-								//look for points to move
-
-								int closest_idx=-1;
-								Vector2 closest_pos;
-								real_t closest_dist=1e10;
-								for(int i=0;i<poly.size();i++) {
-
-									Vector2 cp =xform.xform(poly[i]);
-
-									real_t d = cp.distance_to(gpoint);
-									if (d<closest_dist && d<grab_threshold) {
-										closest_dist=d;
-										closest_pos=cp;
-										closest_idx=i;
-									}
-
-								}
-
-								if (closest_idx>=0) {
-
-									pre_move_edit=poly;
-									edited_point=closest_idx;
-									edited_point_pos=xform.affine_inverse().xform(closest_pos);
-									canvas_item_editor->update();
-									return true;
-								}
-							}
+							return true;
 						} else {
 
-							if (edited_point!=-1) {
+							wip.push_back( canvas_item_editor->snap_point(cpoint) );
+							edited_point=wip.size();
+							canvas_item_editor->update();
+							return true;
 
-								//apply
+							//add wip point
+						}
+					}
+				} else if (mb->get_button_index()==BUTTON_RIGHT && mb->is_pressed() && wip_active) {
+					_wip_close();
+				}
 
-								ERR_FAIL_INDEX_V(edited_point,poly.size(),false);
-								poly[edited_point]=edited_point_pos;
+
+
+			} break;
+
+			case MODE_EDIT: {
+
+				if (mb->get_button_index()==BUTTON_LEFT) {
+					if (mb->is_pressed()) {
+
+						if (mb->get_control()) {
+
+
+							if (poly.size() < 3) {
+
 								undo_redo->create_action(TTR("Edit Poly"));
+								undo_redo->add_undo_method(node,"set_polygon",poly);
+								poly.push_back(cpoint);
 								undo_redo->add_do_method(node,"set_polygon",poly);
-								undo_redo->add_undo_method(node,"set_polygon",pre_move_edit);
 								undo_redo->add_do_method(canvas_item_editor->get_viewport_control(),"update");
 								undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(),"update");
 								undo_redo->commit_action();
+								return true;
+							}
 
-								edited_point=-1;
+							//search edges
+							int closest_idx=-1;
+							Vector2 closest_pos;
+							real_t closest_dist=1e10;
+							for(int i=0;i<poly.size();i++) {
+
+									if (d<closest_dist && d<grab_threshold) {
+										closest_dist=d;
+										closest_pos=cp;
+										closest_idx=i;
+									}
+
+								Vector2 cp = Geometry::get_closest_point_to_segment_2d(gpoint,points);
+								if (cp.distance_squared_to(points[0])<CMP_EPSILON2 || cp.distance_squared_to(points[1])<CMP_EPSILON2)
+									continue; //not valid to reuse point
+
+								real_t d = cp.distance_to(gpoint);
+								if (d<closest_dist && d<grab_treshold) {
+									closest_dist=d;
+									closest_pos=cp;
+									closest_idx=i;
+								}
+
+
+							}
+
+							if (closest_idx>=0) {
+
+								pre_move_edit=poly;
+								poly.insert(closest_idx+1,canvas_item_editor->snap_point(xform.affine_inverse().xform(closest_pos)));
+								edited_point=closest_idx+1;
+								edited_point_pos=canvas_item_editor->snap_point(xform.affine_inverse().xform(closest_pos));
+								node->set_polygon(poly);
+								canvas_item_editor->update();
+								return true;
+							}
+						} else {
+
+									real_t d = cp.distance_to(gpoint);
+									if (d<closest_dist && d<grab_threshold) {
+										closest_dist=d;
+										closest_pos=cp;
+										closest_idx=i;
+									}
+
+							int closest_idx=-1;
+							Vector2 closest_pos;
+							real_t closest_dist=1e10;
+							for(int i=0;i<poly.size();i++) {
+
+								Vector2 cp =xform.xform(poly[i]);
+
+								real_t d = cp.distance_to(gpoint);
+								if (d<closest_dist && d<grab_treshold) {
+									closest_dist=d;
+									closest_pos=cp;
+									closest_idx=i;
+								}
+
+							}
+
+							if (closest_idx>=0) {
+
+								pre_move_edit=poly;
+								edited_point=closest_idx;
+								edited_point_pos=xform.affine_inverse().xform(closest_pos);
+								canvas_item_editor->update();
 								return true;
 							}
 						}
-					} if (mb.button_index==BUTTON_RIGHT && mb.pressed && edited_point==-1) {
+					} else {
 
+						if (edited_point!=-1) {
 
+							//apply
 
-						int closest_idx=-1;
-						Vector2 closest_pos;
-						real_t closest_dist=1e10;
-						for(int i=0;i<poly.size();i++) {
+							ERR_FAIL_INDEX_V(edited_point,poly.size(),false);
+							poly[edited_point]=edited_point_pos;
+							undo_redo->create_action(TTR("Edit Poly"));
+							undo_redo->add_do_method(node,"set_polygon",poly);
+							undo_redo->add_undo_method(node,"set_polygon",pre_move_edit);
+							undo_redo->add_do_method(canvas_item_editor->get_viewport_control(),"update");
+							undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(),"update");
+							undo_redo->commit_action();
 
-							Vector2 cp =xform.xform(poly[i]);
+							edited_point=-1;
+							return true;
+						}
+					}
+				} if (mb->get_button_index()==BUTTON_RIGHT && mb->is_pressed() && edited_point==-1) {
 
 							real_t d = cp.distance_to(gpoint);
 							if (d<closest_dist && d<grab_threshold) {
@@ -398,79 +423,93 @@ bool Path2DEditor::forward_gui_input(const InputEvent &p_event) {
 								closest_idx=i;
 							}
 
-						}
+					int closest_idx=-1;
+					Vector2 closest_pos;
+					real_t closest_dist=1e10;
+					for(int i=0;i<poly.size();i++) {
 
-						if (closest_idx>=0) {
+						Vector2 cp =xform.xform(poly[i]);
 
-
-							undo_redo->create_action(TTR("Edit Poly (Remove Point)"));
-							undo_redo->add_undo_method(node,"set_polygon",poly);
-							poly.remove(closest_idx);
-							undo_redo->add_do_method(node,"set_polygon",poly);
-							undo_redo->add_do_method(canvas_item_editor->get_viewport_control(),"update");
-							undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(),"update");
-							undo_redo->commit_action();
-							return true;
+						real_t d = cp.distance_to(gpoint);
+						if (d<closest_dist && d<grab_treshold) {
+							closest_dist=d;
+							closest_pos=cp;
+							closest_idx=i;
 						}
 
 					}
 
+					if (closest_idx>=0) {
 
+
+						undo_redo->create_action(TTR("Edit Poly (Remove Point)"));
+						undo_redo->add_undo_method(node,"set_polygon",poly);
+						poly.remove(closest_idx);
+						undo_redo->add_do_method(node,"set_polygon",poly);
+						undo_redo->add_do_method(canvas_item_editor->get_viewport_control(),"update");
+						undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(),"update");
+						undo_redo->commit_action();
+						return true;
+					}
+
+				}
+
+
+
+			} break;
+		}
+
+#endif
+	}
+
+	Ref<InputEventMouseMotion> mm = p_event;
+
+	if (mm.is_valid()) {
+
+		if (action != ACTION_NONE) {
+
+			Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
+			Vector2 gpoint = mm->get_pos();
+			Vector2 cpoint = !mm->get_alt() ? canvas_item_editor->snap_point(xform.affine_inverse().xform(gpoint)) : node->get_global_transform().affine_inverse().xform(canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint)));
+
+			Ref<Curve2D> curve = node->get_curve();
+
+			Vector2 new_pos = moving_from + xform.affine_inverse().basis_xform(gpoint - moving_screen_from);
+
+			switch (action) {
+
+				case ACTION_MOVING_POINT: {
+
+					curve->set_point_pos(action_point, cpoint);
+				} break;
+				case ACTION_MOVING_IN: {
+
+					curve->set_point_in(action_point, new_pos);
+
+				} break;
+				case ACTION_MOVING_OUT: {
+
+					curve->set_point_out(action_point, new_pos);
 
 				} break;
 			}
 
-#endif
-		} break;
-		case InputEvent::MOUSE_MOTION: {
-
-			const InputEventMouseMotion &mm = p_event.mouse_motion;
-
-			if (action != ACTION_NONE) {
-
-				Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
-				Vector2 gpoint = Point2(mm.x, mm.y);
-				Vector2 cpoint = !mm.mod.alt ? canvas_item_editor->snap_point(xform.affine_inverse().xform(gpoint)) : node->get_global_transform().affine_inverse().xform(canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint)));
-
-				Ref<Curve2D> curve = node->get_curve();
-
-				Vector2 new_pos = moving_from + xform.affine_inverse().basis_xform(gpoint - moving_screen_from);
-
-				switch (action) {
-
-					case ACTION_MOVING_POINT: {
-
-						curve->set_point_pos(action_point, cpoint);
-					} break;
-					case ACTION_MOVING_IN: {
-
-						curve->set_point_in(action_point, new_pos);
-
-					} break;
-					case ACTION_MOVING_OUT: {
-
-						curve->set_point_out(action_point, new_pos);
-
-					} break;
-				}
-
-				canvas_item_editor->get_viewport_control()->update();
-				return true;
-			}
+			canvas_item_editor->get_viewport_control()->update();
+			return true;
+		}
 
 #if 0
-			if (edited_point!=-1 && (wip_active || mm.button_mask&BUTTON_MASK_LEFT)) {
+		if (edited_point!=-1 && (wip_active || mm->get_button_mask()&BUTTON_MASK_LEFT)) {
 
 
-				Matrix32 xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
+			Matrix32 xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
-				Vector2 gpoint = Point2(mm.x,mm.y);
-				edited_point_pos = canvas_item_editor->snap_point(xform.affine_inverse().xform(gpoint));
-				canvas_item_editor->update();
+			Vector2 gpoint = Point2(mm.x,mm.y);
+			edited_point_pos = canvas_item_editor->snap_point(xform.affine_inverse().xform(gpoint));
+			canvas_item_editor->update();
 
-			}
+		}
 #endif
-		} break;
 	}
 
 	return false;

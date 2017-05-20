@@ -204,17 +204,19 @@ void CanvasItemEditor::_edit_set_pivot(const Vector2 &mouse_pos) {
 	undo_redo->commit_action();
 }
 
-void CanvasItemEditor::_unhandled_key_input(const InputEvent &p_ev) {
+void CanvasItemEditor::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
+
+	Ref<InputEventKey> k = p_ev;
 
 	if (!is_visible_in_tree() || get_viewport()->gui_has_modal_stack())
 		return;
 
-	if (p_ev.key.mod.control)
+	if (k->get_control())
 		return;
 
-	if (p_ev.key.pressed && !p_ev.key.echo && p_ev.key.scancode == KEY_V && drag == DRAG_NONE && can_move_pivot) {
+	if (k->is_pressed() && !k->is_echo() && k->get_scancode() == KEY_V && drag == DRAG_NONE && can_move_pivot) {
 
-		if (p_ev.key.mod.shift) {
+		if (k->get_shift()) {
 			//move drag pivot
 			drag = DRAG_PIVOT;
 		} else if (!Input::get_singleton()->is_mouse_button_pressed(0)) {
@@ -958,9 +960,9 @@ bool CanvasItemEditor::get_remove_list(List<Node *> *p_list) {
 	return false; //!p_list->empty();
 }
 
-void CanvasItemEditor::_list_select(const InputEventMouseButton &b) {
+void CanvasItemEditor::_list_select(const Ref<InputEventMouseButton> &b) {
 
-	Point2 click = Point2(b.x, b.y);
+	Point2 click = b->get_pos();
 
 	Node *scene = editor->get_edited_scene();
 	if (!scene)
@@ -982,7 +984,7 @@ void CanvasItemEditor::_list_select(const InputEventMouseButton &b) {
 		CanvasItem *item = selection_results[0].item;
 		selection_results.clear();
 
-		additive_selection = b.mod.shift;
+		additive_selection = b->get_shift();
 		if (!_select(item, click, additive_selection, false))
 			return;
 
@@ -1012,9 +1014,9 @@ void CanvasItemEditor::_list_select(const InputEventMouseButton &b) {
 														"\nType: " + item->get_class() + "\nPath: " + node_path);
 		}
 
-		additive_selection = b.mod.shift;
+		additive_selection = b->get_shift();
 
-		selection_menu->set_global_position(Vector2(b.global_x, b.global_y));
+		selection_menu->set_global_position(b->get_global_pos());
 		selection_menu->popup();
 		selection_menu->call_deferred("grab_click_focus");
 		selection_menu->set_invalidate_click_until_motion();
@@ -1023,7 +1025,7 @@ void CanvasItemEditor::_list_select(const InputEventMouseButton &b) {
 	}
 }
 
-void CanvasItemEditor::_viewport_gui_input(const InputEvent &p_event) {
+void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 
 	{
 
@@ -1039,19 +1041,19 @@ void CanvasItemEditor::_viewport_gui_input(const InputEvent &p_event) {
 		}
 	}
 
-	if (p_event.type == InputEvent::MOUSE_BUTTON) {
+	Ref<InputEventMouseButton> b = p_event;
 
-		const InputEventMouseButton &b = p_event.mouse_button;
+	if (b.is_valid()) {
 
-		if (b.button_index == BUTTON_WHEEL_DOWN) {
+		if (b->get_button_index() == BUTTON_WHEEL_DOWN) {
 
 			if (zoom < MIN_ZOOM)
 				return;
 
 			float prev_zoom = zoom;
-			zoom = zoom * (1 - (0.05 * b.factor));
+			zoom = zoom * (1 - (0.05 * b->get_factor()));
 			{
-				Point2 ofs(b.x, b.y);
+				Point2 ofs = b->get_pos();
 				ofs = ofs / prev_zoom - ofs / zoom;
 				h_scroll->set_value(h_scroll->get_value() + ofs.x);
 				v_scroll->set_value(v_scroll->get_value() + ofs.y);
@@ -1061,15 +1063,15 @@ void CanvasItemEditor::_viewport_gui_input(const InputEvent &p_event) {
 			return;
 		}
 
-		if (b.button_index == BUTTON_WHEEL_UP) {
+		if (b->get_button_index() == BUTTON_WHEEL_UP) {
 
 			if (zoom > MAX_ZOOM)
 				return;
 
 			float prev_zoom = zoom;
-			zoom = zoom * ((0.95 + (0.05 * b.factor)) / 0.95);
+			zoom = zoom * ((0.95 + (0.05 * b->get_factor())) / 0.95);
 			{
-				Point2 ofs(b.x, b.y);
+				Point2 ofs = b->get_pos();
 				ofs = ofs / prev_zoom - ofs / zoom;
 				h_scroll->set_value(h_scroll->get_value() + ofs.x);
 				v_scroll->set_value(v_scroll->get_value() + ofs.y);
@@ -1080,9 +1082,9 @@ void CanvasItemEditor::_viewport_gui_input(const InputEvent &p_event) {
 			return;
 		}
 
-		if (b.button_index == BUTTON_RIGHT) {
+		if (b->get_button_index() == BUTTON_RIGHT) {
 
-			if (b.pressed && (tool == TOOL_SELECT && b.mod.alt)) {
+			if (b->is_pressed() && (tool == TOOL_SELECT && b->get_alt())) {
 
 				_list_select(b);
 				return;
@@ -1129,7 +1131,7 @@ void CanvasItemEditor::_viewport_gui_input(const InputEvent &p_event) {
 			} else if (box_selecting) {
 				box_selecting = false;
 				viewport->update();
-			} else if (b.pressed) {
+			} else if (b->is_pressed()) {
 #if 0
 				ref_item = NULL;
 				Node* scene = get_scene()->get_root_node()->cast_to<EditorNode>()->get_edited_scene();
@@ -1145,16 +1147,16 @@ void CanvasItemEditor::_viewport_gui_input(const InputEvent &p_event) {
 			return;
 		*/
 
-		if (b.button_index == BUTTON_LEFT && tool == TOOL_LIST_SELECT) {
-			if (b.pressed)
+		if (b->get_button_index() == BUTTON_LEFT && tool == TOOL_LIST_SELECT) {
+			if (b->is_pressed())
 				_list_select(b);
 			return;
 		}
 
-		if (b.button_index == BUTTON_LEFT && tool == TOOL_EDIT_PIVOT) {
-			if (b.pressed) {
+		if (b->get_button_index() == BUTTON_LEFT && tool == TOOL_EDIT_PIVOT) {
+			if (b->is_pressed()) {
 
-				Point2 mouse_pos(b.x, b.y);
+				Point2 mouse_pos = b->get_pos();
 				mouse_pos = transform.affine_inverse().xform(mouse_pos);
 				mouse_pos = snap_point(mouse_pos);
 				_edit_set_pivot(mouse_pos);
@@ -1162,10 +1164,10 @@ void CanvasItemEditor::_viewport_gui_input(const InputEvent &p_event) {
 			return;
 		}
 
-		if (tool == TOOL_PAN || b.button_index != BUTTON_LEFT || Input::get_singleton()->is_key_pressed(KEY_SPACE))
+		if (tool == TOOL_PAN || b->get_button_index() != BUTTON_LEFT || Input::get_singleton()->is_key_pressed(KEY_SPACE))
 			return;
 
-		if (!b.pressed) {
+		if (!b->is_pressed()) {
 
 			if (drag != DRAG_NONE) {
 
@@ -1227,7 +1229,7 @@ void CanvasItemEditor::_viewport_gui_input(const InputEvent &p_event) {
 
 			if (box_selecting) {
 #if 0
-				if ( ! b.mod.shift ) _clear_canvas_items();
+				if ( ! b->get_shift() ) _clear_canvas_items();
 				if ( box_selection_end() ) return;
 #endif
 
@@ -1272,8 +1274,8 @@ void CanvasItemEditor::_viewport_gui_input(const InputEvent &p_event) {
 					E->get().to
 				};
 
-				Vector2 p = Geometry::get_closest_point_to_segment_2d(Vector2(b.x, b.y), s);
-				float d = p.distance_to(Vector2(b.x, b.y));
+				Vector2 p = Geometry::get_closest_point_to_segment_2d(b->get_pos(), s);
+				float d = p.distance_to(b->get_pos());
 				if (d < bone_width && d < closest_dist) {
 					Cbone = E;
 					closest_dist = d;
@@ -1340,9 +1342,9 @@ void CanvasItemEditor::_viewport_gui_input(const InputEvent &p_event) {
 			CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
 			ERR_FAIL_COND(!se);
 
-			Point2 click(b.x, b.y);
+			Point2 click = b->get_pos();
 
-			if ((b.mod.control && tool == TOOL_SELECT) || tool == TOOL_ROTATE) {
+			if ((b->get_control() && tool == TOOL_SELECT) || tool == TOOL_ROTATE) {
 
 				drag = DRAG_ROTATE;
 				drag_from = transform.affine_inverse().xform(click);
@@ -1361,7 +1363,7 @@ void CanvasItemEditor::_viewport_gui_input(const InputEvent &p_event) {
 			if (tool == TOOL_SELECT) {
 				drag = _find_drag_type(xform, rect, click, drag_point_from);
 
-				if (b.doubleclick) {
+				if (b->is_doubleclick()) {
 
 					if (canvas_item->get_filename() != "" && canvas_item != editor->get_edited_scene()) {
 
@@ -1386,9 +1388,9 @@ void CanvasItemEditor::_viewport_gui_input(const InputEvent &p_event) {
 
 		//multi canvas_item edit
 
-		Point2 click = Point2(b.x, b.y);
+		Point2 click = b->get_pos();
 
-		if ((b.mod.alt || tool == TOOL_MOVE) && get_item_count()) {
+		if ((b->get_alt() || tool == TOOL_MOVE) && get_item_count()) {
 			_prepare_drag(click);
 			viewport->update();
 			return;
@@ -1433,37 +1435,36 @@ void CanvasItemEditor::_viewport_gui_input(const InputEvent &p_event) {
 		};
 		c = n->cast_to<CanvasItem>();
 #if 0
-		if ( b.pressed ) box_selection_start( click );
+		if ( b->is_pressed() ) box_selection_start( click );
 #endif
 
-		additive_selection = b.mod.shift;
+		additive_selection = b->get_shift();
 		if (!_select(c, click, additive_selection))
 			return;
 	}
 
-	if (p_event.type == InputEvent::MOUSE_MOTION) {
+	Ref<InputEventMouseMotion> m = p_event;
+	if (m.is_valid()) {
 
 		if (!viewport->has_focus() && (!get_focus_owner() || !get_focus_owner()->is_text_field()))
 			viewport->call_deferred("grab_focus");
 
-		const InputEventMouseMotion &m = p_event.mouse_motion;
-
 		if (box_selecting) {
 
-			box_selecting_to = transform.affine_inverse().xform(Point2(m.x, m.y));
+			box_selecting_to = transform.affine_inverse().xform(m->get_pos());
 			viewport->update();
 			return;
 		}
 
 		if (drag == DRAG_NONE) {
 
-			if ((m.button_mask & BUTTON_MASK_LEFT && tool == TOOL_PAN) || m.button_mask & BUTTON_MASK_MIDDLE || (m.button_mask & BUTTON_MASK_LEFT && Input::get_singleton()->is_key_pressed(KEY_SPACE))) {
+			if ((m->get_button_mask() & BUTTON_MASK_LEFT && tool == TOOL_PAN) || m->get_button_mask() & BUTTON_MASK_MIDDLE || (m->get_button_mask() & BUTTON_MASK_LEFT && Input::get_singleton()->is_key_pressed(KEY_SPACE))) {
 
 				Point2i relative;
 				if (bool(EditorSettings::get_singleton()->get("editors/2d/warped_mouse_panning"))) {
 					relative = Input::get_singleton()->warp_mouse_motion(m, viewport->get_global_rect());
 				} else {
-					relative = Point2i(m.relative_x, m.relative_y);
+					relative = m->get_relative();
 				}
 
 				h_scroll->set_value(h_scroll->get_value() - relative.x / zoom);
@@ -1496,7 +1497,7 @@ void CanvasItemEditor::_viewport_gui_input(const InputEvent &p_event) {
 			}
 
 			Vector2 dfrom = drag_from;
-			Vector2 dto = transform.affine_inverse().xform(Point2(m.x, m.y));
+			Vector2 dto = transform.affine_inverse().xform(m->get_pos());
 			if (canvas_item->has_meta("_edit_lock_"))
 				continue;
 
@@ -1530,8 +1531,8 @@ void CanvasItemEditor::_viewport_gui_input(const InputEvent &p_event) {
 				continue;
 			}
 
-			bool uniform = m.mod.shift;
-			bool symmetric = m.mod.alt;
+			bool uniform = b->get_shift();
+			bool symmetric = b->get_alt();
 
 			dto = dto - (drag == DRAG_ALL || drag == DRAG_NODE_2D ? drag_from - drag_point_from : Vector2(0, 0));
 
@@ -1765,25 +1766,25 @@ void CanvasItemEditor::_viewport_gui_input(const InputEvent &p_event) {
 		}
 	}
 
-	if (p_event.type == InputEvent::KEY) {
+	Ref<InputEventKey> k = p_event;
 
-		const InputEventKey &k = p_event.key;
+	if (k.is_valid()) {
 
-		if (k.pressed && drag == DRAG_NONE) {
+		if (k->is_pressed() && drag == DRAG_NONE) {
 
 			KeyMoveMODE move_mode = MOVE_VIEW_BASE;
-			if (k.mod.alt) move_mode = MOVE_LOCAL_BASE;
-			if (k.mod.control || k.mod.meta) move_mode = MOVE_LOCAL_WITH_ROT;
+			if (k->get_alt()) move_mode = MOVE_LOCAL_BASE;
+			if (k->get_control() || k->get_metakey()) move_mode = MOVE_LOCAL_WITH_ROT;
 
-			if (k.scancode == KEY_UP)
-				_key_move(Vector2(0, -1), k.mod.shift, move_mode);
-			else if (k.scancode == KEY_DOWN)
-				_key_move(Vector2(0, 1), k.mod.shift, move_mode);
-			else if (k.scancode == KEY_LEFT)
-				_key_move(Vector2(-1, 0), k.mod.shift, move_mode);
-			else if (k.scancode == KEY_RIGHT)
-				_key_move(Vector2(1, 0), k.mod.shift, move_mode);
-			else if (k.scancode == KEY_ESCAPE) {
+			if (k->get_scancode() == KEY_UP)
+				_key_move(Vector2(0, -1), k->get_shift(), move_mode);
+			else if (k->get_scancode() == KEY_DOWN)
+				_key_move(Vector2(0, 1), k->get_shift(), move_mode);
+			else if (k->get_scancode() == KEY_LEFT)
+				_key_move(Vector2(-1, 0), k->get_shift(), move_mode);
+			else if (k->get_scancode() == KEY_RIGHT)
+				_key_move(Vector2(1, 0), k->get_shift(), move_mode);
+			else if (k->get_scancode() == KEY_ESCAPE) {
 				editor_selection->clear();
 				viewport->update();
 			} else
