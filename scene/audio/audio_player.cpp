@@ -113,6 +113,7 @@ void AudioPlayer::_notification(int p_what) {
 
 void AudioPlayer::set_stream(Ref<AudioStream> p_stream) {
 
+	ERR_FAIL_COND(!p_stream.is_valid());
 	AudioServer::get_singleton()->lock();
 
 	mix_buffer.resize(AudioServer::get_singleton()->thread_get_mix_buffer_size());
