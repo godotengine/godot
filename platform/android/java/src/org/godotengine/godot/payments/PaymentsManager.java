@@ -355,36 +355,35 @@ public class PaymentsManager {
 						tempList.add(s);
 					}
 					packs.add(tempList);
-
-					for (ArrayList<String> skuPartList : packs) {
-						Bundle querySkus = new Bundle();
-						querySkus.putStringArrayList("ITEM_ID_LIST", skuPartList);
-						Bundle skuDetails = null;
-						try {
-							skuDetails = mService.getSkuDetails(3, activity.getPackageName(), "inapp", querySkus);
-							if (!skuDetails.containsKey("DETAILS_LIST")) {
-								int response = getResponseCodeFromBundle(skuDetails);
-								if (response != BILLING_RESPONSE_RESULT_OK) {
-									godotPaymentV3.errorSkuDetail(getResponseDesc(response));
-								} else {
-									godotPaymentV3.errorSkuDetail("No error but no detail list.");
-								}
-								return;
-							}
-
-							ArrayList<String> responseList = skuDetails.getStringArrayList("DETAILS_LIST");
-
-							for (String thisResponse : responseList) {
-								Log.d("godot", "response = "+thisResponse);
-								godotPaymentV3.addSkuDetail(thisResponse);
-							}
-						} catch (RemoteException e) {
-							e.printStackTrace();
-							godotPaymentV3.errorSkuDetail("RemoteException error!");
-						}
-					}
-					godotPaymentV3.completeSkuDetail();
 				}
+				for (ArrayList<String> skuPartList : packs) {
+					Bundle querySkus = new Bundle();
+					querySkus.putStringArrayList("ITEM_ID_LIST", skuPartList);
+					Bundle skuDetails = null;
+					try {
+						skuDetails = mService.getSkuDetails(3, activity.getPackageName(), "inapp", querySkus);
+						if (!skuDetails.containsKey("DETAILS_LIST")) {
+							int response = getResponseCodeFromBundle(skuDetails);
+							if (response != BILLING_RESPONSE_RESULT_OK) {
+								godotPaymentV3.errorSkuDetail(getResponseDesc(response));
+							} else {
+								godotPaymentV3.errorSkuDetail("No error but no detail list.");
+							}
+							return;
+						}
+
+						ArrayList<String> responseList = skuDetails.getStringArrayList("DETAILS_LIST");
+
+						for (String thisResponse : responseList) {
+							Log.d("godot", "response = "+thisResponse);
+							godotPaymentV3.addSkuDetail(thisResponse);
+						}
+					} catch (RemoteException e) {
+						e.printStackTrace();
+						godotPaymentV3.errorSkuDetail("RemoteException error!");
+					}
+				}
+				godotPaymentV3.completeSkuDetail();
 			}
 		})).start();
 	}
