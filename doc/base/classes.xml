@@ -1991,6 +1991,7 @@
 			<argument index="1" name="pos" type="Vector3">
 			</argument>
 			<argument index="2" name="weight_scale" type="float" default="1">
+				Weight scale has to be 1 or larger.
 			</argument>
 			<description>
 			</description>
