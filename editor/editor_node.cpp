@@ -107,6 +107,7 @@
 #include "editor/io_plugins/editor_mesh_import_plugin.h"
 #include "editor/io_plugins/editor_sample_import_plugin.h"
 #include "editor/io_plugins/editor_scene_import_plugin.h"
+#include "editor/io_plugins/editor_shader_export_plugin.h"
 #include "editor/io_plugins/editor_texture_import_plugin.h"
 #include "editor/io_plugins/editor_translation_import_plugin.h"
 
@@ -6132,6 +6133,7 @@ EditorNode::EditorNode() {
 	editor_import_export->add_export_plugin(Ref<EditorTextureExportPlugin>(memnew(EditorTextureExportPlugin)));
 	editor_import_export->add_export_plugin(Ref<EditorSampleExportPlugin>(memnew(EditorSampleExportPlugin)));
 	editor_import_export->add_export_plugin(Ref<EditorSceneExportPlugin>(memnew(EditorSceneExportPlugin)));
+	editor_import_export->add_export_plugin(Ref<EditorShaderExportPlugin>(memnew(EditorShaderExportPlugin)));
 
 	add_editor_plugin(memnew(AnimationPlayerEditorPlugin(this)));
 	add_editor_plugin(memnew(CanvasItemEditorPlugin(this)));
