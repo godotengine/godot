@@ -63,12 +63,12 @@ static NSRect convertRectToBacking(NSRect contentRect) {
 		return contentRect;
 }
 
-static void get_osx_key_modifier_state(unsigned int flags, Ref<InputEventWithModifiers> state) {
-	
-	state->set_shift((flags & NSShiftKeyMask));
-	state->set_control((flags & NSControlKeyMask));
-	state->set_alt((flags & NSAlternateKeyMask));
-	state->set_metakey((flags & NSCommandKeyMask));
+static void get_key_modifier_state(unsigned int p_osx_state, Ref<InputEventWithModifiers> state) {
+
+	state->set_shift((p_osx_state & NSShiftKeyMask));
+	state->set_control((p_osx_state & NSControlKeyMask));
+	state->set_alt((p_osx_state & NSAlternateKeyMask));
+	state->set_metakey((p_osx_state & NSCommandKeyMask));
 }
 
 static int mouse_x = 0;
@@ -288,7 +288,7 @@ static int button_mask = 0;
 	Ref<InputEventMouseButton> mb;
 	mb.instance();
 
-	get_osx_key_modifier_state([event modifierFlags], mb);
+	get_key_modifier_state([event modifierFlags], mb);
 	mb->set_button_index(BUTTON_LEFT);
 	mb->set_pressed(true);
 	mb->set_pos(Vector2(mouse_x, mouse_y));
@@ -307,8 +307,8 @@ static int button_mask = 0;
 	button_mask &= ~BUTTON_MASK_LEFT;
 	Ref<InputEventMouseButton> mb;
 	mb.instance();
-	
-	get_osx_key_modifier_state([event modifierFlags], mb);
+
+	get_key_modifier_state([event modifierFlags], mb);
 	mb->set_button_index(BUTTON_LEFT);
 	mb->set_pressed(false);
 	mb->set_pos(Vector2(mouse_x, mouse_y));
@@ -322,7 +322,7 @@ static int button_mask = 0;
 
 	Ref<InputEventMouseMotion> mm;
 	mm.instance();
-	
+
 	mm->set_button_mask(button_mask);
 	prev_mouse_x = mouse_x;
 	prev_mouse_y = mouse_y;
@@ -336,7 +336,7 @@ static int button_mask = 0;
 	relativeMotion.x = [event deltaX] * OS_OSX::singleton->_mouse_scale([[event window] backingScaleFactor]);
 	relativeMotion.y = [event deltaY] * OS_OSX::singleton->_mouse_scale([[event window] backingScaleFactor]);
 	mm->set_relative(relativeMotion);
-	get_osx_key_modifier_state([event modifierFlags], mm);
+	get_key_modifier_state([event modifierFlags], mm);
 
 	OS_OSX::singleton->input->set_mouse_position(Point2(mouse_x, mouse_y));
 	OS_OSX::singleton->push_input(mm);
@@ -345,11 +345,11 @@ static int button_mask = 0;
 - (void)rightMouseDown:(NSEvent *)event {
 
 	button_mask |= BUTTON_MASK_RIGHT;
-	
+
 	Ref<InputEventMouseButton> mb;
 	mb.instance();
-	
-	get_osx_key_modifier_state([event modifierFlags], mb);
+
+	get_key_modifier_state([event modifierFlags], mb);
 	mb->set_button_index(BUTTON_RIGHT);
 	mb->set_pressed(true);
 	mb->set_pos(Vector2(mouse_x, mouse_y));
@@ -366,11 +366,11 @@ static int button_mask = 0;
 - (void)rightMouseUp:(NSEvent *)event {
 
 	button_mask |= BUTTON_MASK_RIGHT;
-	
+
 	Ref<InputEventMouseButton> mb;
 	mb.instance();
-	
-	get_osx_key_modifier_state([event modifierFlags], mb);
+
+	get_key_modifier_state([event modifierFlags], mb);
 	mb->set_button_index(BUTTON_RIGHT);
 	mb->set_pressed(false);
 	mb->set_pos(Vector2(mouse_x, mouse_y));
@@ -386,11 +386,11 @@ static int button_mask = 0;
 		return;
 
 	button_mask |= BUTTON_MASK_MIDDLE;
-	
+
 	Ref<InputEventMouseButton> mb;
 	mb.instance();
-	
-	get_osx_key_modifier_state([event modifierFlags], mb);
+
+	get_key_modifier_state([event modifierFlags], mb);
 	mb->set_button_index(BUTTON_MIDDLE);
 	mb->set_pressed(true);
 	mb->set_pos(Vector2(mouse_x, mouse_y));
@@ -410,11 +410,11 @@ static int button_mask = 0;
 		return;
 
 	button_mask |= BUTTON_MASK_MIDDLE;
-	
+
 	Ref<InputEventMouseButton> mb;
 	mb.instance();
-	
-	get_osx_key_modifier_state([event modifierFlags], mb);
+
+	get_key_modifier_state([event modifierFlags], mb);
 	mb->set_button_index(BUTTON_MIDDLE);
 	mb->set_pressed(true);
 	mb->set_pos(Vector2(mouse_x, mouse_y));
@@ -615,7 +615,7 @@ static int translateKey(unsigned int key) {
 	Ref<InputEventKey> k;
 	k.instance();
 
-	get_osx_key_modifier_state([event modifierFlags], k);
+	get_key_modifier_state([event modifierFlags], k);
 	k->set_pressed(true);
 	k->set_scancode(latin_keyboard_keycode_convert(translateKey([event keyCode])));
 	k->set_echo([event isARepeat]);
@@ -637,7 +637,7 @@ static int translateKey(unsigned int key) {
 - (void)flagsChanged:(NSEvent *)event {
 	Ref<InputEventKey> k;
 	k.instance();
-	
+
 	int key = [event keyCode];
 	int mod = [event modifierFlags];
 
@@ -673,7 +673,7 @@ static int translateKey(unsigned int key) {
 		return;
 	}
 
-	get_osx_key_modifier_state(mod, k);
+	get_key_modifier_state(mod, k);
 	k->set_scancode(latin_keyboard_keycode_convert(translateKey(key)));
 
 	OS_OSX::singleton->push_input(k);
@@ -684,18 +684,19 @@ static int translateKey(unsigned int key) {
 	Ref<InputEventKey> k;
 	k.instance();
 
-	get_osx_key_modifier_state([event modifierFlags], k);
+	get_key_modifier_state([event modifierFlags], k);
 	k->set_pressed(false);
 	k->set_scancode(latin_keyboard_keycode_convert(translateKey([event keyCode])));
 
 	OS_OSX::singleton->push_input(k);
 }
 
-inline void sendScrollEvent(int button, double factor) {
-	//toger scroll event has not modifier keys or are they added somewhere else
+inline void sendScrollEvent(int button, double factor, int modifierFlags) {
+
 	Ref<InputEventMouseButton> sc;
 	sc.instance();
-	
+
+	get_key_modifier_state(modifierFlags, sc);
 	sc->set_button_index(button);
 	sc->set_factor(factor);
 	sc->set_pressed(true);
@@ -726,12 +727,11 @@ inline void sendScrollEvent(int button, double factor) {
 		deltaX = [event deltaX];
 		deltaY = [event deltaY];
 	}
-
 	if (fabs(deltaX)) {
-		sendScrollEvent(0 > deltaX ? BUTTON_WHEEL_RIGHT : BUTTON_WHEEL_LEFT, fabs(deltaX * 0.3));
+		sendScrollEvent(0 > deltaX ? BUTTON_WHEEL_RIGHT : BUTTON_WHEEL_LEFT, fabs(deltaX * 0.3), [event modifierFlags]);
 	}
 	if (fabs(deltaY)) {
-		sendScrollEvent(0 < deltaY ? BUTTON_WHEEL_UP : BUTTON_WHEEL_DOWN, fabs(deltaY * 0.3));
+		sendScrollEvent(0 < deltaY ? BUTTON_WHEEL_UP : BUTTON_WHEEL_DOWN, fabs(deltaY * 0.3), [event modifierFlags]);
 	}
 }
 
@@ -1522,7 +1522,7 @@ void OS_OSX::process_events() {
 }
 
 void OS_OSX::push_input(const Ref<InputEvent> &p_event) {
-	//toger why is ther another function alternative would be to just use input->input->parse_input_event(ev);
+
 	Ref<InputEvent> ev = p_event;
 	input->parse_input_event(ev);
 }
