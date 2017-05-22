@@ -43,6 +43,7 @@ int AStar::get_available_point_id() const {
 
 void AStar::add_point(int p_id, const Vector3 &p_pos, real_t p_weight_scale) {
 	ERR_FAIL_COND(p_id < 0);
+	ERR_FAIL_COND(p_weight_scale < 1);
 	if (!points.has(p_id)) {
 		Point *pt = memnew(Point);
 		pt->id = p_id;
@@ -221,7 +222,6 @@ bool AStar::_solve(Point *begin_point, Point *end_point) {
 
 			real_t cost = p->distance;
 			cost += _estimate_cost(p->id, end_point->id);
-			cost *= p->weight_scale;
 
 			if (cost < least_cost) {
 
