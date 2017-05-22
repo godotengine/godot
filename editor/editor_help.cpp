@@ -1786,7 +1786,7 @@ void EditorHelpBit::_bind_methods() {
 void EditorHelpBit::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-		add_style_override("panel", get_stylebox("normal", "TextEdit"));
+		add_style_override("panel", get_stylebox("ScriptPanel", "EditorStyles"));
 	}
 }
 
