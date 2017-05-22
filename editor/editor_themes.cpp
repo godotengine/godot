@@ -413,6 +413,11 @@ Ref<Theme> create_editor_theme() {
 	theme->set_stylebox("comment", "GraphNode", graphsbcomment);
 	theme->set_stylebox("commentfocus", "GraphNode", graphsbcommentselected);
 
+	// FileDialog
+	Color disable_color = light_color_2;
+	disable_color.a = 0.7;
+	theme->set_color("files_disabled", "FileDialog", disable_color);
+
 	return theme;
 }
 
