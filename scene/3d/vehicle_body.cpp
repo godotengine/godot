@@ -214,6 +214,18 @@ float VehicleWheel::get_friction_slip() const {
 	return m_frictionSlip;
 }
 
+void VehicleWheel::set_roll_influence(float p_value) {
+	m_rollInfluence = p_value;
+}
+
+float VehicleWheel::get_roll_influence() const {
+	return m_rollInfluence;
+}
+
+bool VehicleWheel::is_in_contact() const {
+	return m_raycastInfo.m_isInContact;
+}
+
 void VehicleWheel::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_radius", "length"), &VehicleWheel::set_radius);
@@ -246,8 +258,14 @@ void VehicleWheel::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_friction_slip", "length"), &VehicleWheel::set_friction_slip);
 	ObjectTypeDB::bind_method(_MD("get_friction_slip"), &VehicleWheel::get_friction_slip);
 
+	ObjectTypeDB::bind_method(_MD("is_in_contact"), &VehicleWheel::is_in_contact);
+
+	ObjectTypeDB::bind_method(_MD("set_roll_influence", "roll_influence"), &VehicleWheel::set_roll_influence);
+	ObjectTypeDB::bind_method(_MD("get_roll_influence"), &VehicleWheel::get_roll_influence);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "type/traction"), _SCS("set_use_as_traction"), _SCS("is_used_as_traction"));
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "type/steering"), _SCS("set_use_as_steering"), _SCS("is_used_as_steering"));
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "wheel/roll_influence"), _SCS("set_roll_influence"), _SCS("get_roll_influence"));
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "wheel/radius"), _SCS("set_radius"), _SCS("get_radius"));
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "wheel/rest_length"), _SCS("set_suspension_rest_length"), _SCS("get_suspension_rest_length"));
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "wheel/friction_slip"), _SCS("set_friction_slip"), _SCS("get_friction_slip"));
