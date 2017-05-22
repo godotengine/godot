@@ -59,7 +59,6 @@ void Path2DEditor::_node_removed(Node *p_node) {
 }
 
 bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
-
 	if (!node)
 		return false;
 
@@ -76,11 +75,12 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 		Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
 		Vector2 gpoint = mb->get_pos();
-		Vector2 cpoint = !mb->get_alt() ? canvas_item_editor->snap_point(xform.affine_inverse().xform(gpoint)) : node->get_global_transform().affine_inverse().xform(canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint)));
-		//first check if a point is to be added (segment split)
-		real_t grab_threshold = EDITOR_DEF("editors/poly_editor/point_grab_radius", 8);
+		Vector2 cpoint =
+				!mb->get_alt() ?
+						canvas_item_editor->snap_point(xform.affine_inverse().xform(gpoint)) :
+						node->get_global_transform().affine_inverse().xform(canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint)));
 
-		// Test move point!!
+		real_t grab_threshold = EDITOR_DEF("editors/poly_editor/point_grab_radius", 8);
 
 		if (mb->is_pressed() && action == ACTION_NONE) {
 
@@ -88,23 +88,43 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 			for (int i = 0; i < curve->get_point_count(); i++) {
 
-				bool pointunder = false;
-
 				real_t dist_to_p = gpoint.distance_to(xform.xform(curve->get_point_pos(i)));
 				real_t dist_to_p_out = gpoint.distance_to(xform.xform(curve->get_point_pos(i) + curve->get_point_out(i)));
 				real_t dist_to_p_in = gpoint.distance_to(xform.xform(curve->get_point_pos(i) + curve->get_point_in(i)));
 
-				if (mb->get_button_index() == BUTTON_LEFT && !mb->get_shift() && mode == MODE_EDIT) {
-					if (dist_to_p < grab_threshold) {
+				// Check for point movement start (for point + in/out controls).
+				if (mb->get_button_index() == BUTTON_LEFT) {
+					if (!mb->get_shift() && mode == MODE_EDIT) {
+						// Point can only be moved in edit mode.
+						if (dist_to_p < grab_threshold) {
 
-						action = ACTION_MOVING_POINT;
-						action_point = i;
-						moving_from = curve->get_point_pos(i);
-						moving_screen_from = gpoint;
-						return true;
+							action = ACTION_MOVING_POINT;
+							action_point = i;
+							moving_from = curve->get_point_pos(i);
+							moving_screen_from = gpoint;
+							return true;
+						}
+					} else if (mode == MODE_EDIT || mode == MODE_EDIT_CURVE) {
+						// In/out controls can be moved in multiple modes.
+						if (dist_to_p_out < grab_threshold && i < (curve->get_point_count() - 1)) {
+
+							action = ACTION_MOVING_OUT;
+							action_point = i;
+							moving_from = curve->get_point_out(i);
+							moving_screen_from = gpoint;
+							return true;
+						} else if (dist_to_p_in < grab_threshold && i > 0) {
+
+							action = ACTION_MOVING_IN;
+							action_point = i;
+							moving_from = curve->get_point_in(i);
+							moving_screen_from = gpoint;
+							return true;
+						}
 					}
 				}
 
+				// Check for point deletion.
 				if ((mb->get_button_index() == BUTTON_RIGHT && mode == MODE_EDIT) || (mb->get_button_index() == BUTTON_LEFT && mode == MODE_DELETE)) {
 					if (dist_to_p < grab_threshold) {
 
@@ -135,65 +155,10 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 						return true;
 					}
 				}
-
-				if (dist_to_p < grab_threshold)
-					pointunder = true;
-
-				if (mb->get_button_index() == BUTTON_LEFT && i < (curve->get_point_count() - 1)) {
-					if (dist_to_p_out < grab_threshold && (mode == MODE_EDIT || mode == MODE_EDIT_CURVE)) {
-
-						action_point = i;
-						moving_from = curve->get_point_pos(i);
-						moving_screen_from = gpoint;
-						return true;
-					} else if ((mb->get_button_index() == BUTTON_RIGHT && mode == MODE_EDIT) || (mb->get_button_index() == BUTTON_LEFT && mode == MODE_DELETE)) {
-
-						undo_redo->create_action(TTR("Remove Point from Curve"));
-						undo_redo->add_do_method(curve.ptr(), "remove_point", i);
-						undo_redo->add_undo_method(curve.ptr(), "add_point", curve->get_point_pos(i), curve->get_point_in(i), curve->get_point_out(i), i);
-						undo_redo->add_do_method(canvas_item_editor->get_viewport_control(), "update");
-						undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(), "update");
-						undo_redo->commit_action();
-						return true;
-					} else
-						pointunder = true;
-				}
-
-				if (pointunder)
-					return true;
 			}
-#if 0
-I think i broke this, was this not suposed to go somewhere?
-			if (mb->get_button_index() == BUTTON_LEFT && i < (curve->get_point_count() - 1)) {
-				Point2 p = xform.xform(curve->get_point_pos(i) + curve->get_point_out(i));
-				if (gpoint.distance_to(p) < grab_treshold && (mode == MODE_EDIT || mode == MODE_EDIT_CURVE)) {
-					action = ACTION_MOVING_OUT;
-					action_point = i;
-					moving_from = curve->get_point_out(i);
-					moving_screen_from = gpoint;
-					return true;
-				}
-			}
-
-			if (mb->get_button_index() == BUTTON_LEFT && i > 0) {
-				Point2 p = xform.xform(curve->get_point_pos(i) + curve->get_point_in(i));
-				if (gpoint.distance_to(p) < grab_treshold && (mode == MODE_EDIT || mode == MODE_EDIT_CURVE)) {
-
-					action = ACTION_MOVING_IN;
-					action_point = i;
-					moving_from = curve->get_point_in(i);
-					moving_screen_from = gpoint;
-					return true;
-				}
-			}
-
-			if (pointunder)
-				return true;
-#endif
 		}
 
-		// Test add point in empty space!
-
+		// Check for point creation.
 		if (mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT && ((mb->get_command() && mode == MODE_EDIT) || mode == MODE_CREATE)) {
 
 			Ref<Curve2D> curve = node->get_curve();
@@ -215,12 +180,17 @@ I think i broke this, was this not suposed to go somewhere?
 			return true;
 		}
 
+		// Check for point movement completion.
 		if (!mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT && action != ACTION_NONE) {
 
 			Ref<Curve2D> curve = node->get_curve();
 
 			Vector2 new_pos = moving_from + xform.affine_inverse().basis_xform(gpoint - moving_screen_from);
 			switch (action) {
+
+				case ACTION_NONE:
+					// N/A, handled in above condition.
+					break;
 
 				case ACTION_MOVING_POINT: {
 
@@ -232,6 +202,7 @@ I think i broke this, was this not suposed to go somewhere?
 					undo_redo->commit_action();
 
 				} break;
+
 				case ACTION_MOVING_IN: {
 
 					undo_redo->create_action(TTR("Move In-Control in Curve"));
@@ -242,6 +213,7 @@ I think i broke this, was this not suposed to go somewhere?
 					undo_redo->commit_action();
 
 				} break;
+
 				case ACTION_MOVING_OUT: {
 
 					undo_redo->create_action(TTR("Move Out-Control in Curve"));
@@ -278,9 +250,6 @@ I think i broke this, was this not suposed to go somewhere?
 						edited_point=1;
 						return true;
 					} else {
-							if (wip.size()>1 && xform.xform(wip[0]).distance_to(gpoint)<grab_threshold) {
-								//wip closed
-								_wip_close();
 						if (wip.size()>1 && xform.xform(wip[0]).distance_to(gpoint)<grab_treshold) {
 							//wip closed
 							_wip_close();
@@ -300,8 +269,6 @@ I think i broke this, was this not suposed to go somewhere?
 				} else if (mb->get_button_index()==BUTTON_RIGHT && mb->is_pressed() && wip_active) {
 					_wip_close();
 				}
-
-
 
 			} break;
 
@@ -454,11 +421,8 @@ I think i broke this, was this not suposed to go somewhere?
 
 				}
 
-
-
 			} break;
 		}
-
 #endif
 	}
 
@@ -467,10 +431,13 @@ I think i broke this, was this not suposed to go somewhere?
 	if (mm.is_valid()) {
 
 		if (action != ACTION_NONE) {
-
+			// Handle point/control movement.
 			Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 			Vector2 gpoint = mm->get_pos();
-			Vector2 cpoint = !mm->get_alt() ? canvas_item_editor->snap_point(xform.affine_inverse().xform(gpoint)) : node->get_global_transform().affine_inverse().xform(canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint)));
+			Vector2 cpoint =
+					!mm->get_alt() ?
+							canvas_item_editor->snap_point(xform.affine_inverse().xform(gpoint)) :
+							node->get_global_transform().affine_inverse().xform(canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint)));
 
 			Ref<Curve2D> curve = node->get_curve();
 
@@ -478,19 +445,20 @@ I think i broke this, was this not suposed to go somewhere?
 
 			switch (action) {
 
-				case ACTION_MOVING_POINT: {
+				case ACTION_NONE:
+					// N/A, handled in above condition.
+					break;
 
+				case ACTION_MOVING_POINT: {
 					curve->set_point_pos(action_point, cpoint);
 				} break;
+
 				case ACTION_MOVING_IN: {
-
 					curve->set_point_in(action_point, new_pos);
-
 				} break;
+
 				case ACTION_MOVING_OUT: {
-
 					curve->set_point_out(action_point, new_pos);
-
 				} break;
 			}
 
