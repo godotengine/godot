@@ -361,7 +361,7 @@ void ColorPicker::_w_input(const Ref<InputEvent> &ev) {
 
 		if (!changing_color)
 			return;
-		float y = CLAMP((float)bev->get_pos().y, 0, 256);
+		float y = CLAMP((float)mev->get_pos().y, 0, 256);
 		h = 1.0 - y / 256.0;
 		color.set_hsv(h, s, v, color.a);
 		last_hsv = color;
