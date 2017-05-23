@@ -816,7 +816,7 @@ void InputEventAction::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &InputEventAction::set_pressed);
 	//ClassDB::bind_method(D_METHOD("is_pressed"), &InputEventAction::is_pressed);
 
-	ClassDB::bind_method(D_METHOD("is_action", "name"), &InputEventAction::is_action);
+	//	ClassDB::bind_method(D_METHOD("is_action", "name"), &InputEventAction::is_action);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "action"), "set_action", "get_action");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
