@@ -59,7 +59,7 @@ void GDAPI godot_array_new_pool_byte_array(godot_array *p_arr, const godot_pool_
 
 void GDAPI godot_array_set(godot_array *p_arr, const godot_int p_idx, const godot_variant *p_value);
 
-godot_variant GDAPI godot_array_get(const godot_array *p_arr, const godot_int p_idx);
+godot_variant GDAPI *godot_array_get(const godot_array *p_arr, const godot_int p_idx);
 
 void GDAPI godot_array_append(godot_array *p_arr, const godot_variant *p_value);
 
