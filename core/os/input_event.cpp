@@ -57,7 +57,7 @@ bool InputEvent::is_pressed() const {
 
 bool InputEvent::is_action(const StringName &p_action) const {
 
-	return InputMap::get_singleton()->event_is_action(Ref<InputEvent>(this), p_action);
+	return InputMap::get_singleton()->event_is_action(Ref<InputEvent>((InputEvent *)this), p_action);
 }
 
 bool InputEvent::is_action_pressed(const StringName &p_action) const {
