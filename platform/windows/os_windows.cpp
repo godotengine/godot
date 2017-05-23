@@ -565,7 +565,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
 					ScreenToClient(hWnd, &coords);
 
-					mb->set_pos(coords);
+					mb->set_pos(Vector2(coords.x, coords.y));
 				}
 
 				if (main_loop) {
