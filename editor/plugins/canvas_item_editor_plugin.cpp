@@ -1531,8 +1531,8 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 				continue;
 			}
 
-			bool uniform = b->get_shift();
-			bool symmetric = b->get_alt();
+			bool uniform = m->get_shift();
+			bool symmetric = m->get_alt();
 
 			dto = dto - (drag == DRAG_ALL || drag == DRAG_NODE_2D ? drag_from - drag_point_from : Vector2(0, 0));
 
