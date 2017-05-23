@@ -259,45 +259,48 @@ void App::pointer_event(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Cor
 	int but = _get_button(point);
 	if (_is_touch(point)) {
 
-		Ref<InputEvent> event;
-		event.type = InputEvent::SCREEN_TOUCH;
-		event.device = 0;
-		event.screen_touch->is_pressed() = p_pressed;
-		event.screen_touch.x = pos.X;
-		event.screen_touch.y = pos.Y;
-		event.screen_touch.index = _get_finger(point->PointerId);
+		Ref<InputEventScreenTouch> screen_touch;
+		screen_touch.instance();
+		screen_touch->set_device(0);
+		screen_touch->set_pressed(p_pressed);
+		screen_touch->set_pos(Vector2(pos.X, pos.Y));
+		screen_touch->set_index(_get_finger(point->PointerId));
 
-		last_touch_x[event.screen_touch.index] = pos.X;
-		last_touch_y[event.screen_touch.index] = pos.Y;
+		last_touch_x[screen_touch->get_index()] = pos.X;
+		last_touch_y[screen_touch->get_index()] = pos.Y;
 
-		os->input_event(event);
+		os->input_event(screen_touch);
 		if (number_of_contacts > 1)
 			return;
 
 	}; // fallthrought of sorts
 
-	Ref<InputEvent> event;
-	event.type = InputEvent::MOUSE_BUTTON;
-	event.device = 0;
-	event->is_pressed() = p_pressed;
-	event->get_button_index() = but;
-	event->get_pos().x = pos.X;
-	event->get_pos().y = pos.Y;
-	event.mouse_button.global_x = pos.X;
-	event.mouse_button.global_y = pos.Y;
+	Ref<InputEventMouseButton> mouse_button;
+	mouse_button.instance();
+	mouse_button->set_device(0);
+	mouse_button->set_pressed(p_pressed);
+	mouse_button->set_button_index(but);
+	mouse_button->set_pos(Vector2(pos.X, pos.Y));
+	mouse_button->set_global_pos(Vector2(pos.X, pos.Y));
 
 	if (p_is_wheel) {
 		if (point->Properties->MouseWheelDelta > 0) {
-			event->get_button_index() = point->Properties->IsHorizontalMouseWheel ? BUTTON_WHEEL_RIGHT : BUTTON_WHEEL_UP;
+			mouse_button->set_button_index(point->Properties->IsHorizontalMouseWheel ? BUTTON_WHEEL_RIGHT : BUTTON_WHEEL_UP);
 		} else if (point->Properties->MouseWheelDelta < 0) {
-			event->get_button_index() = point->Properties->IsHorizontalMouseWheel ? BUTTON_WHEEL_LEFT : BUTTON_WHEEL_DOWN;
+			mouse_button->set_button_index(point->Properties->IsHorizontalMouseWheel ? BUTTON_WHEEL_LEFT : BUTTON_WHEEL_DOWN);
 		}
 	}
 
 	last_touch_x[31] = pos.X;
 	last_touch_y[31] = pos.Y;
 
-	os->input_event(event);
+	os->input_event(mouse_button);
+
+	if (p_is_wheel) {
+		// Send release for mouse wheel
+		mouse_button->set_pressed(false);
+		os->input_event(mouse_button);
+	}
 };
 
 void App::OnPointerPressed(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::PointerEventArgs ^ args) {
@@ -349,16 +352,14 @@ void App::OnPointerMoved(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Co
 
 	if (point->IsInContact && _is_touch(point)) {
 
-		InputEvent event;
-		event.type = Ref<InputEvent>::SCREEN_DRAG;
-		event.device = 0;
-		event.screen_drag.x = pos.X;
-		event.screen_drag.y = pos.Y;
-		event.screen_drag.index = _get_finger(point->PointerId);
-		event.screen_drag.relative_x = event.screen_drag.x - last_touch_x[event.screen_drag.index];
-		event.screen_drag.relative_y = event.screen_drag.y - last_touch_y[event.screen_drag.index];
+		Ref<InputEventScreenDrag> screen_drag;
+		screen_drag.instance();
+		screen_drag->set_device(0);
+		screen_drag->set_pos(Vector2(pos.X, pos.Y));
+		screen_drag->set_index(_get_finger(point->PointerId));
+		screen_drag->set_relative(Vector2(screen_drag->get_pos().x - last_touch_x[screen_drag->get_index()], screen_drag->get_pos().y - last_touch_y[screen_drag->get_index()]));
 
-		os->input_event(event);
+		os->input_event(screen_drag);
 		if (number_of_contacts > 1)
 			return;
 
@@ -368,19 +369,16 @@ void App::OnPointerMoved(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Co
 	if (os->get_mouse_mode() == OS::MouseMode::MOUSE_MODE_CAPTURED)
 		return;
 
-	InputEvent event;
-	event.type = Ref<InputEvent>::MOUSE_MOTION;
-	event.device = 0;
-	event.mouse_motion.x = pos.X;
-	event.mouse_motion.y = pos.Y;
-	event.mouse_motion.global_x = pos.X;
-	event.mouse_motion.global_y = pos.Y;
-	event->get_relative().x = pos.X - last_touch_x[31];
-	event->get_relative().y = pos.Y - last_touch_y[31];
+	Ref<InputEventMouseMotion> mouse_motion;
+	mouse_motion.instance();
+	mouse_motion->set_device(0);
+	mouse_motion->set_pos(Vector2(pos.X, pos.Y));
+	mouse_motion->set_global_pos(Vector2(pos.X, pos.Y));
+	mouse_motion->set_relative(Vector2(pos.X - last_touch_x[31], pos.Y - last_touch_y[31]));
 
 	last_mouse_pos = pos;
 
-	os->input_event(event);
+	os->input_event(mouse_motion);
 }
 
 void App::OnMouseMoved(MouseDevice ^ mouse_device, MouseEventArgs ^ args) {
@@ -393,47 +391,40 @@ void App::OnMouseMoved(MouseDevice ^ mouse_device, MouseEventArgs ^ args) {
 	pos.X = last_mouse_pos.X + args->MouseDelta.X;
 	pos.Y = last_mouse_pos.Y + args->MouseDelta.Y;
 
-	InputEvent event;
-	event.type = Ref<InputEvent>::MOUSE_MOTION;
-	event.device = 0;
-	event.mouse_motion.x = pos.X;
-	event.mouse_motion.y = pos.Y;
-	event.mouse_motion.global_x = pos.X;
-	event.mouse_motion.global_y = pos.Y;
-	event->get_relative().x = args->MouseDelta.X;
-	event->get_relative().y = args->MouseDelta.Y;
+	Ref<InputEventMouseMotion> mouse_motion;
+	mouse_motion.instance();
+	mouse_motion->set_device(0);
+	mouse_motion->set_pos(Vector2(pos.X, pos.Y));
+	mouse_motion->set_global_pos(Vector2(pos.X, pos.Y));
+	mouse_motion->set_relative(Vector2(args->MouseDelta.X, args->MouseDelta.Y));
 
 	last_mouse_pos = pos;
 
-	os->input_event(event);
+	os->input_event(mouse_motion);
 }
 
 void App::key_event(Windows::UI::Core::CoreWindow ^ sender, bool p_pressed, Windows::UI::Core::KeyEventArgs ^ key_args, Windows::UI::Core::CharacterReceivedEventArgs ^ char_args) {
 
 	OSUWP::KeyEvent ke;
 
-	InputModifierState mod;
-	mod.meta = false;
-	mod.command = false;
-	mod.control = sender->GetAsyncKeyState(VirtualKey::Control) == CoreVirtualKeyStates::Down;
-	mod.alt = sender->GetAsyncKeyState(VirtualKey::Menu) == CoreVirtualKeyStates::Down;
-	mod.shift = sender->GetAsyncKeyState(VirtualKey::Shift) == CoreVirtualKeyStates::Down;
-	ke.mod_state = mod;
+	ke.control = sender->GetAsyncKeyState(VirtualKey::Control) == CoreVirtualKeyStates::Down;
+	ke.alt = sender->GetAsyncKeyState(VirtualKey::Menu) == CoreVirtualKeyStates::Down;
+	ke.shift = sender->GetAsyncKeyState(VirtualKey::Shift) == CoreVirtualKeyStates::Down;
 
-	ke->is_pressed() = p_pressed;
+	ke.pressed = p_pressed;
 
 	if (key_args != nullptr) {
 
 		ke.type = OSUWP::KeyEvent::MessageType::KEY_EVENT_MESSAGE;
 		ke.unicode = 0;
-		ke->get_scancode() = KeyMappingWindows::get_keysym((unsigned int)key_args->VirtualKey);
+		ke.scancode = KeyMappingWindows::get_keysym((unsigned int)key_args->VirtualKey);
 		ke.echo = (!p_pressed && !key_args->KeyStatus.IsKeyReleased) || (p_pressed && key_args->KeyStatus.WasKeyDown);
 
 	} else {
 
 		ke.type = OSUWP::KeyEvent::MessageType::CHAR_EVENT_MESSAGE;
 		ke.unicode = char_args->KeyCode;
-		ke->get_scancode() = 0;
+		ke.scancode = 0;
 		ke.echo = (!p_pressed && !char_args->KeyStatus.IsKeyReleased) || (p_pressed && char_args->KeyStatus.WasKeyDown);
 	}
 
