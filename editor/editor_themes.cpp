@@ -293,12 +293,13 @@ Ref<Theme> create_editor_theme() {
 	// LineEdit
 	Ref<StyleBoxFlat> style_lineedit = make_flat_stylebox(dark_color_1, 4, 4, 4, 4);
 	style_lineedit->set_border_size(1 * EDSCALE);
-	style_lineedit->set_light_color(light_color_1);
-	style_lineedit->set_dark_color(light_color_1);
+	style_lineedit = change_border_color(style_lineedit, light_color_1);
 	Ref<StyleBoxFlat> style_lineedit_disabled = style_lineedit->duplicate();
-	style_lineedit_disabled->set_bg_color(light_color_2);
+	style_lineedit_disabled->set_bg_color(light_color_1);
+	Ref<StyleBoxFlat> style_lineedit_focus = change_border_color(style_lineedit, highlight_color);
+	style_lineedit_focus->set_draw_center(false);
 	theme->set_stylebox("normal", "LineEdit", style_lineedit);
-	theme->set_stylebox("focus", "LineEdit", change_border_color(style_lineedit, highlight_color));
+	theme->set_stylebox("focus", "LineEdit", style_lineedit_focus);
 	theme->set_stylebox("read_only", "LineEdit", style_lineedit_disabled);
 
 	// TextEdit
