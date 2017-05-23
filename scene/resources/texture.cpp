@@ -406,7 +406,7 @@ Image::Format StreamTexture::get_format() const {
 	return format;
 }
 
-Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &flags, Ref<Image> image, int p_size_limit) {
+Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &flags, Ref<Image> &image, int p_size_limit) {
 
 	ERR_FAIL_COND_V(image.is_null(), ERR_INVALID_PARAMETER);
 
@@ -502,6 +502,7 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &fla
 				memdelete(f);
 				ERR_FAIL_COND_V(img->empty(), ERR_FILE_CORRUPT);
 			}
+
 			total_size += img->get_data().size();
 
 			mipmap_images.push_back(img);
