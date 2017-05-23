@@ -139,13 +139,9 @@ void GDAPI godot_array_set(godot_array *p_arr, const godot_int p_idx, const godo
 	a->operator[](p_idx) = *val;
 }
 
-godot_variant GDAPI godot_array_get(const godot_array *p_arr, const godot_int p_idx) {
-	godot_variant raw_dest;
-	Variant *dest = (Variant *)&raw_dest;
-	memnew_placement(dest, Variant);
-	const Array *a = (const Array *)p_arr;
-	*dest = a->operator[](p_idx);
-	return raw_dest;
+godot_variant GDAPI *godot_array_get(const godot_array *p_arr, const godot_int p_idx) {
+	Array *a = (Array *)p_arr;
+	return (godot_variant *)&a->operator[](p_idx);
 }
 
 void GDAPI godot_array_append(godot_array *p_arr, const godot_variant *p_value) {

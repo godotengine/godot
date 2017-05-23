@@ -101,13 +101,10 @@ godot_array GDAPI godot_dictionary_values(const godot_dictionary *p_self) {
 	return dest;
 }
 
-godot_variant GDAPI godot_dictionary_operator_index(godot_dictionary *p_dict, const godot_variant *p_key) {
-	godot_variant raw_dest;
-	Variant *dest = (Variant *)&raw_dest;
-	const Dictionary *dict = (const Dictionary *)p_dict;
+godot_variant GDAPI *godot_dictionary_operator_index(godot_dictionary *p_dict, const godot_variant *p_key) {
+	Dictionary *dict = (Dictionary *)p_dict;
 	const Variant *key = (const Variant *)p_key;
-	*dest = dict->operator[](*key);
-	return raw_dest;
+	return (godot_variant *)&dict->operator[](*key);
 }
 
 godot_bool GDAPI godot_dictionary_operator_equal(const godot_dictionary *p_self, const godot_dictionary *p_b) {

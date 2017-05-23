@@ -68,7 +68,7 @@ godot_array GDAPI godot_dictionary_keys(const godot_dictionary *p_self);
 
 godot_array GDAPI godot_dictionary_values(const godot_dictionary *p_self);
 
-godot_variant GDAPI godot_dictionary_operator_index(godot_dictionary *p_dict, const godot_variant *p_key);
+godot_variant GDAPI *godot_dictionary_operator_index(godot_dictionary *p_dict, const godot_variant *p_key);
 
 godot_bool GDAPI godot_dictionary_operator_equal(const godot_dictionary *p_self, const godot_dictionary *p_b);
 
