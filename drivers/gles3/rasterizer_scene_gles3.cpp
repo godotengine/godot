@@ -1,4 +1,4 @@
-/*************************************************************************/
+    /*************************************************************************/
 /*  rasterizer_storage_gles3.cpp                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
@@ -4640,7 +4640,7 @@ void RasterizerSceneGLES3::initialize() {
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _cube_side_enum[i], cube.cubemap, 0);
 
 			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-			ERR_CONTINUE(status != GL_FRAMEBUFFER_COMPLETE);
+			GL_ERR_FRAMEBUFFER(status, "Cube shadowmap");
 		}
 
 		shadow_cubemaps.push_back(cube);
@@ -4664,9 +4664,7 @@ void RasterizerSceneGLES3::initialize() {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, directional_shadow.depth, 0);
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-		if (status != GL_FRAMEBUFFER_COMPLETE) {
-			ERR_PRINT("Directional shadow framebuffer status invalid");
-		}
+		GL_ERR_FRAMEBUFFER(status, "Directional shadow framebuffer");
 	}
 
 	{
@@ -4772,7 +4770,7 @@ void RasterizerSceneGLES3::initialize() {
 				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, cube.depth, 0);
 
 				GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-				ERR_CONTINUE(status != GL_FRAMEBUFFER_COMPLETE);
+				GL_ERR_FRAMEBUFFER(status, "Reflection cube map");
 			}
 
 			reflection_cubemaps.push_back(cube);
@@ -4831,8 +4829,8 @@ void RasterizerSceneGLES3::initialize() {
 
 		glGenTextures(1, &e.color);
 		glBindTexture(GL_TEXTURE_2D, e.color);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, max_exposure_shrink_size, max_exposure_shrink_size, 0, GL_RED, GL_FLOAT, NULL);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, e.color, 0);
+		GL_ERR_WITH_CLEAR(glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, max_exposure_shrink_size, max_exposure_shrink_size, 0, GL_RED, GL_FLOAT, NULL));
+		GL_ERR(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, e.color, 0));
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -4842,7 +4840,7 @@ void RasterizerSceneGLES3::initialize() {
 		max_exposure_shrink_size /= 3;
 
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-		ERR_CONTINUE(status != GL_FRAMEBUFFER_COMPLETE);
+		GL_ERR_FRAMEBUFFER(status, "Exposure");
 	}
 }
 
