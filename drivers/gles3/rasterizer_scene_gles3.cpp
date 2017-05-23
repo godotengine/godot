@@ -4831,7 +4831,12 @@ void RasterizerSceneGLES3::initialize() {
 
 		glGenTextures(1, &e.color);
 		glBindTexture(GL_TEXTURE_2D, e.color);
+#ifdef IPHONE_ENABLED
+		///@TODO ugly hack to get around iOS not supporting 32bit single channel floating point textures...  
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_R16F, max_exposure_shrink_size, max_exposure_shrink_size, 0, GL_RED, GL_FLOAT, NULL);
+#else
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, max_exposure_shrink_size, max_exposure_shrink_size, 0, GL_RED, GL_FLOAT, NULL);
+#endif
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, e.color, 0);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
