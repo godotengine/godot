@@ -95,16 +95,16 @@ Ref<Theme> create_editor_theme() {
 	editor_register_icons(theme);
 
 	// Define colors
-	Color highlight_color = EDITOR_DEF("editors/theme/highlight_color", Color::html("#6ca9f3"));
-	Color base_color = EDITOR_DEF("editors/theme/base_color", Color::html("#2e3742"));
-	float contrast = EDITOR_DEF("editors/theme/contrast", 0.2);
+	Color highlight_color = EDITOR_DEF("interface/theme/highlight_color", Color::html("#b79047"));
+	Color base_color = EDITOR_DEF("interface/theme/base_color", Color::html("#213d4c"));
+	float contrast = EDITOR_DEF("interface/theme/contrast", 0.25);
 
 	Color dark_color_1 = base_color.linear_interpolate(Color(0, 0, 0, 1), contrast);
-	Color dark_color_2 = base_color.linear_interpolate(Color(0, 0, 0, 1), contrast * 2);
-	Color dark_color_3 = base_color.linear_interpolate(Color(0, 0, 0, 1), contrast * 3);
+	Color dark_color_2 = base_color.linear_interpolate(Color(0, 0, 0, 1), contrast * 1.5);
+	Color dark_color_3 = base_color.linear_interpolate(Color(0, 0, 0, 1), contrast * 2);
 
 	Color light_color_1 = base_color.linear_interpolate(Color(1, 1, 1, 1), contrast);
-	Color light_color_2 = base_color.linear_interpolate(Color(1, 1, 1, 1), contrast * 2);
+	Color light_color_2 = base_color.linear_interpolate(Color(1, 1, 1, 1), contrast * 1.5);
 
 	theme->set_color("highlight_color", "Editor", highlight_color);
 	theme->set_color("base_color", "Editor", base_color);
@@ -425,7 +425,7 @@ Ref<Theme> create_editor_theme() {
 Ref<Theme> create_custom_theme() {
 	Ref<Theme> theme;
 
-	String custom_theme = EditorSettings::get_singleton()->get("interface/custom_theme");
+	String custom_theme = EditorSettings::get_singleton()->get("interface/theme/custom_theme");
 	if (custom_theme != "") {
 		theme = ResourceLoader::load(custom_theme);
 	}
