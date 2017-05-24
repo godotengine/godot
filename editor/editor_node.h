@@ -244,7 +244,9 @@ private:
 	HBoxContainer *menu_hb;
 	Control *viewport;
 	MenuButton *file_menu;
-	MenuButton *tool_menu;
+	MenuButton *project_menu;
+	MenuButton *debug_menu;
+	PopupMenu *tool_menu;
 	ToolButton *export_button;
 	ToolButton *prev_scene;
 	MenuButton *object_menu;
@@ -256,7 +258,6 @@ private:
 	ToolButton *run_settings_button;
 	ToolButton *play_scene_button;
 	ToolButton *play_custom_scene_button;
-	MenuButton *debug_button;
 	ToolButton *search_button;
 	TextureProgress *audio_vu;
 	//MenuButton *fileserver_menu;
@@ -312,7 +313,7 @@ private:
 	LineEdit *file_export_password;
 	String current_path;
 	MenuButton *update_menu;
-	ToolButton *sources_button;
+
 	//TabContainer *prop_pallete;
 	//TabContainer *top_pallete;
 	String defer_load_scene;
