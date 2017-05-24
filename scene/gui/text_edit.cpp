@@ -1683,6 +1683,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 	if (k.is_valid()) {
 
+		bool pressed = k->is_pressed();
 		k = k->duplicate(); //it will be modified later on
 
 #ifdef OSX_ENABLED
@@ -1693,7 +1694,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 #endif
 			if (select_identifiers_enabled) {
 
-				if (k->is_pressed()) {
+				if (pressed) {
 
 					highlighted_word = get_word_at_pos(get_local_mouse_pos());
 					update();
@@ -1705,7 +1706,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			}
 		}
 
-		if (!k->is_pressed())
+		if (!pressed)
 			return;
 
 		if (completion_active) {
