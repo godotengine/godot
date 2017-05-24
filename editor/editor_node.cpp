@@ -5988,7 +5988,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(Particles2DEditorPlugin(this)));
 	add_editor_plugin(memnew(GIProbeEditorPlugin(this)));
 	add_editor_plugin(memnew(Path2DEditorPlugin(this)));
-	//add_editor_plugin( memnew( PathEditorPlugin(this) ) );
+	add_editor_plugin( memnew( PathEditorPlugin(this) ) );
 	//add_editor_plugin( memnew( BakedLightEditorPlugin(this) ) );
 	add_editor_plugin(memnew(Line2DEditorPlugin(this)));
 	add_editor_plugin(memnew(Polygon2DEditorPlugin(this)));

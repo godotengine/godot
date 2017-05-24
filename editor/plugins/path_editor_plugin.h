@@ -32,7 +32,7 @@
 
 #include "editor/spatial_editor_gizmos.h"
 #include "scene/3d/path.h"
-#if 0
+
 class PathSpatialGizmo  : public EditorSpatialGizmo {
 
 	GDCLASS(PathSpatialGizmo,EditorSpatialGizmo);
@@ -81,7 +81,7 @@ public:
 	static PathEditorPlugin* singleton;
 	Ref<SpatialMaterial> path_material;
 	Ref<SpatialMaterial> path_thin_material;
-	virtual bool forward_spatial_gui_input(Camera* p_camera,const InputEvent& p_event);
+	virtual bool forward_spatial_gui_input(Camera* p_camera, const Ref<InputEvent> &p_event);
 
 	//virtual bool forward_gui_input(const InputEvent& p_event) { return collision_polygon_editor->forward_gui_input(p_event); }
 	virtual Ref<SpatialEditorGizmo> create_spatial_gizmo(Spatial* p_spatial);
@@ -96,5 +96,4 @@ public:
 
 };
 
-#endif
 #endif // PATH_EDITOR_PLUGIN_H

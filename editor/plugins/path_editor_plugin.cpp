@@ -33,7 +33,6 @@
 #include "scene/resources/curve.h"
 #include "spatial_editor_plugin.h"
 
-#if 0
 String PathSpatialGizmo::get_handle_name(int p_idx) const {
 
 	Ref<Curve3D> c = path->get_curve();
@@ -111,7 +110,7 @@ void PathSpatialGizmo::set_handle(int p_idx,Camera *p_camera, const Point2& p_po
 				float snap = SpatialEditor::get_singleton()->get_translate_snap();
 				inters.snap(snap);
 			}
-			
+
 			Vector3 local = gi.xform(inters);
 			c->set_point_pos(p_idx,local);
 		}
@@ -218,15 +217,16 @@ void PathSpatialGizmo::redraw(){
 	if (c.is_null())
 		return;
 
-	Vector3Array v3a=c->tesselate();
-	//Vector3Array v3a=c->get_baked_points();
+	PoolVector<Vector3> v3a=c->tesselate();
+	//PoolVector<Vector3> v3a=c->get_baked_points();
 
 	int v3s = v3a.size();
 	if (v3s==0)
 		return;
 	Vector<Vector3> v3p;
-	Vector3Array::Read r = v3a.read();
+	PoolVector<Vector3>::Read r = v3a.read();
 
+	// BUG: the following won't work when v3s, avoid drawing as a temporary workaround.
 	for(int i=0;i<v3s-1;i++) {
 
 		v3p.push_back(r[i]);
@@ -287,7 +287,7 @@ Ref<SpatialEditorGizmo> PathEditorPlugin::create_spatial_gizmo(Spatial* p_spatia
 	return Ref<SpatialEditorGizmo>();
 }
 
-bool PathEditorPlugin::forward_spatial_gui_input(Camera* p_camera,const InputEvent& p_event) {
+bool PathEditorPlugin::forward_spatial_gui_input(Camera* p_camera, const Ref<InputEvent> &p_event) {
 
 	if (!path)
 		return false;
@@ -299,15 +299,16 @@ bool PathEditorPlugin::forward_spatial_gui_input(Camera* p_camera,const InputEve
 
 	static const int click_dist = 10; //should make global
 
+	Ref<InputEventMouseButton> mb = p_event;
 
-	if (p_event.type==InputEvent::MOUSE_BUTTON) {
 
-		const InputEventMouseButton &mb=p_event.mouse_button;
+	if (mb.is_valid()) {
+
 		Point2 mbpos(mb->get_pos().x,mb->get_pos().y);
 
 		if (mb->is_pressed() && mb->get_button_index()==BUTTON_LEFT && (curve_create->is_pressed() || (curve_edit->is_pressed() && mb->get_control()))) {
 			//click into curve, break it down
-			Vector3Array v3a = c->tesselate();
+			PoolVector<Vector3> v3a = c->tesselate();
 			int idx=0;
 			int rc=v3a.size();
 			int closest_seg=-1;
@@ -315,7 +316,7 @@ bool PathEditorPlugin::forward_spatial_gui_input(Camera* p_camera,const InputEve
 			float closest_d=1e20;
 
 			if (rc>=2) {
-				Vector3Array::Read r = v3a.read();
+				PoolVector<Vector3>::Read r = v3a.read();
 
 				if (p_camera->unproject_position(gt.xform(c->get_point_pos(0))).distance_to(mbpos)<click_dist)
 					return false; //nope, existing
@@ -387,7 +388,7 @@ bool PathEditorPlugin::forward_spatial_gui_input(Camera* p_camera,const InputEve
 				if (c->get_point_count()==0)
 					org=path->get_transform().get_origin();
 				else
-					org=gt.xform(c->get_point_pos(c->get_point_count()));
+					org=gt.xform(c->get_point_pos(c->get_point_count()-1));
 				Plane p(org,p_camera->get_transform().basis.get_axis(2));
 				Vector3 ray_from=p_camera->project_ray_origin(mbpos);
 				Vector3 ray_dir=p_camera->project_ray_normal(mbpos);
@@ -470,7 +471,7 @@ void PathEditorPlugin::edit(Object *p_object) {
 
 bool PathEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("Path");
+	return p_object->is_class("Path");
 }
 
 void PathEditorPlugin::make_visible(bool p_visible) {
@@ -546,18 +547,18 @@ PathEditorPlugin::PathEditorPlugin(EditorNode *p_node) {
 	singleton=this;
 
 	path_material = Ref<SpatialMaterial>( memnew( SpatialMaterial ));
-	path_material->set_parameter( SpatialMaterial::PARAM_DIFFUSE,Color(0.5,0.5,1.0,0.8) );
-	path_material->set_fixed_flag(SpatialMaterial::FLAG_USE_ALPHA, true);
+	path_material->set_albedo( Color(0.5,0.5,1.0,0.8) );
+	path_material->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
 	path_material->set_line_width(3);
-	path_material->set_flag(Material::FLAG_DOUBLE_SIDED,true);
-	path_material->set_flag(Material::FLAG_UNSHADED,true);
+	path_material->set_cull_mode(SpatialMaterial::CULL_DISABLED);
+	path_material->set_flag(SpatialMaterial::FLAG_UNSHADED,true);
 
 	path_thin_material = Ref<SpatialMaterial>( memnew( SpatialMaterial ));
-	path_thin_material->set_parameter( SpatialMaterial::PARAM_DIFFUSE,Color(0.5,0.5,1.0,0.4) );
-	path_thin_material->set_fixed_flag(SpatialMaterial::FLAG_USE_ALPHA, true);
+	path_thin_material->set_albedo( Color(0.5,0.5,1.0,0.4) );
+	path_thin_material->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
 	path_thin_material->set_line_width(1);
-	path_thin_material->set_flag(Material::FLAG_DOUBLE_SIDED,true);
-	path_thin_material->set_flag(Material::FLAG_UNSHADED,true);
+	path_thin_material->set_cull_mode(SpatialMaterial::CULL_DISABLED);
+	path_thin_material->set_flag(SpatialMaterial::FLAG_UNSHADED,true);
 
 	//SpatialEditor::get_singleton()->add_gizmo_plugin(this);
 
@@ -616,4 +617,3 @@ PathEditorPlugin::~PathEditorPlugin()
 {
 }
 
-#endif
