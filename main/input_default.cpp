@@ -302,7 +302,7 @@ void InputDefault::parse_input_event(const Ref<InputEvent> &p_event) {
 	_THREAD_SAFE_METHOD_
 
 	Ref<InputEventKey> k = p_event;
-	if (k.is_valid() && k->is_echo() && k->get_scancode() != 0) {
+	if (k.is_valid() && !k->is_echo() && k->get_scancode() != 0) {
 
 		//print_line(p_event);
 
