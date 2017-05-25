@@ -41,7 +41,7 @@ void EditorRunNative::_notification(int p_what) {
 			Ref<EditorExportPlatform> eep = EditorExport::get_singleton()->get_export_platform(i);
 			if (eep.is_null())
 				continue;
-			Ref<ImageTexture> icon = eep->get_logo();
+			Ref<ImageTexture> icon = eep->get_run_icon();
 			if (!icon.is_null()) {
 				Ref<Image> im = icon->get_data();
 				im = im->duplicate();

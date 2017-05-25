@@ -197,6 +197,7 @@ public:
 	};
 
 	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags) { return OK; }
+	virtual Ref<Texture> get_run_icon() const { return get_logo(); }
 
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const = 0;
 

@@ -37,6 +37,7 @@
 #include "os/file_access.h"
 #include "os/os.h"
 #include "platform/android/logo.gen.h"
+#include "platform/android/run_icon.gen.h"
 #include "version.h"
 #include <string.h>
 #if 0
@@ -2042,6 +2043,7 @@ class EditorExportAndroid : public EditorExportPlatform {
 	GDCLASS(EditorExportAndroid, EditorExportPlatform)
 
 	Ref<ImageTexture> logo;
+	Ref<ImageTexture> run_icon;
 
 	struct Device {
 
@@ -3036,6 +3038,10 @@ public:
 		return OK;
 	}
 
+	virtual Ref<Texture> get_run_icon() const {
+		return run_icon;
+	}
+
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
 
 		r_missing_templates = find_export_template("android_debug.apk") == String() || find_export_template("android_release.apk") == String();
@@ -3524,8 +3530,12 @@ public:
 	EditorExportAndroid() {
 
 		Ref<Image> img = memnew(Image(_android_logo));
-		logo = Ref<ImageTexture>(memnew(ImageTexture));
+		logo.instance();
 		logo->create_from_image(img);
+
+		img = Ref<Image>(memnew(Image(_android_run_icon)));
+		run_icon.instance();
+		run_icon->create_from_image(img);
 
 		device_lock = Mutex::create();
 		device_thread = Thread::create(_device_poll_thread, this);
