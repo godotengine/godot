@@ -957,12 +957,12 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 
 		if (b->get_button_index() == BUTTON_WHEEL_UP && b->is_pressed()) {
 			//too difficult to get right
-			//set_zoom(zoom*ZOOM_SCALE);
+			_zoom_plus();
 		}
 
 		if (b->get_button_index() == BUTTON_WHEEL_DOWN && b->is_pressed()) {
 			//too difficult to get right
-			//set_zoom(zoom/ZOOM_SCALE);
+			_zoom_minus();
 		}
 		if (b->get_button_index() == BUTTON_WHEEL_UP) {
 			h_scroll->set_value(h_scroll->get_value() - h_scroll->get_page() * b->get_factor() / 8);
