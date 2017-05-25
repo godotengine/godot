@@ -229,7 +229,7 @@ protected:
 
 public:
 	void set_pressed(bool p_pressed);
-	bool is_pressed();
+	virtual bool is_pressed() const;
 
 	void set_scancode(uint32_t p_scancode);
 	uint32_t get_scancode() const;
@@ -238,7 +238,7 @@ public:
 	uint32_t get_unicode() const;
 
 	void set_echo(bool p_enable);
-	bool is_echo() const;
+	virtual bool is_echo() const;
 
 	uint32_t get_scancode_with_modifiers() const;
 

@@ -229,7 +229,7 @@ void InputEventKey::set_pressed(bool p_pressed) {
 	pressed = p_pressed;
 }
 
-bool InputEventKey::is_pressed() {
+bool InputEventKey::is_pressed() const {
 
 	return pressed;
 }
