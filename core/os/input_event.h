@@ -377,7 +377,7 @@ public:
 	InputEventJoypadButton();
 };
 
-struct InputEventScreenTouch : public InputEvent {
+class InputEventScreenTouch : public InputEvent {
 	GDCLASS(InputEventScreenTouch, InputEvent)
 	int index;
 	Vector2 pos;
