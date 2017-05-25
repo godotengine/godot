@@ -1433,13 +1433,16 @@ Error Image::_decompress_bc() {
 
 	//print_line("width: "+itos(wd)+" height: "+itos(ht));
 
+	int mm_w = wd;
+	int mm_h = ht;
+
 	for (int i = 0; i <= mm; i++) {
 
 		switch (format) {
 
 			case FORMAT_DXT1: {
 
-				int len = (wd * ht) / 16;
+				int len = (mm_w * mm_h) / 16;
 				uint8_t *dst = &w[wofs];
 
 				uint32_t ofs_table[16];
@@ -1447,7 +1450,7 @@ Error Image::_decompress_bc() {
 
 					for (int y = 0; y < 4; y++) {
 
-						ofs_table[15 - (y * 4 + (3 - x))] = (x + y * wd) * 4;
+						ofs_table[15 - (y * 4 + (3 - x))] = (x + y * mm_w) * 4;
 					}
 				}
 
@@ -1492,9 +1495,9 @@ Error Image::_decompress_bc() {
 					block <<= 8;
 					block |= src[7];
 
-					int y = (j / (wd / 4)) * 4;
-					int x = (j % (wd / 4)) * 4;
-					int pixofs = (y * wd + x) * 4;
+					int y = (j / (mm_w / 4)) * 4;
+					int x = (j % (mm_w / 4)) * 4;
+					int pixofs = (y * mm_w + x) * 4;
 
 					for (int k = 0; k < 16; k++) {
 						int idx = pixofs + ofs_table[k];
@@ -1507,15 +1510,15 @@ Error Image::_decompress_bc() {
 				}
 
 				rofs += len * 8;
-				wofs += wd * ht * 4;
+				wofs += mm_w * mm_h * 4;
 
-				wd /= 2;
-				ht /= 2;
+				mm_w /= 2;
+				mm_h /= 2;
 
 			} break;
 			case FORMAT_DXT3: {
 
-				int len = (wd * ht) / 16;
+				int len = (mm_w * mm_h) / 16;
 				uint8_t *dst = &w[wofs];
 
 				uint32_t ofs_table[16];
@@ -1523,7 +1526,7 @@ Error Image::_decompress_bc() {
 
 					for (int y = 0; y < 4; y++) {
 
-						ofs_table[15 - (y * 4 + (3 - x))] = (x + y * wd) * 4;
+						ofs_table[15 - (y * 4 + (3 - x))] = (x + y * mm_w) * 4;
 					}
 				}
 
@@ -1578,9 +1581,9 @@ Error Image::_decompress_bc() {
 					block <<= 8;
 					block |= src[7 + 8];
 
-					int y = (j / (wd / 4)) * 4;
-					int x = (j % (wd / 4)) * 4;
-					int pixofs = (y * wd + x) * 4;
+					int y = (j / (mm_w / 4)) * 4;
+					int x = (j % (mm_w / 4)) * 4;
+					int pixofs = (y * mm_w + x) * 4;
 
 					for (int k = 0; k < 16; k++) {
 						uint8_t alpha = ablock & 0xf;
@@ -1596,15 +1599,15 @@ Error Image::_decompress_bc() {
 				}
 
 				rofs += len * 16;
-				wofs += wd * ht * 4;
+				wofs += mm_w * mm_h * 4;
 
-				wd /= 2;
-				ht /= 2;
+				mm_w /= 2;
+				mm_h /= 2;
 
 			} break;
 			case FORMAT_DXT5: {
 
-				int len = (wd * ht) / 16;
+				int len = (mm_w * mm_h) / 16;
 				uint8_t *dst = &w[wofs];
 
 				uint32_t ofs_table[16];
@@ -1612,7 +1615,7 @@ Error Image::_decompress_bc() {
 
 					for (int y = 0; y < 4; y++) {
 
-						ofs_table[15 - (y * 4 + (3 - x))] = (x + y * wd) * 4;
+						ofs_table[15 - (y * 4 + (3 - x))] = (x + y * mm_w) * 4;
 					}
 				}
 
@@ -1690,9 +1693,9 @@ Error Image::_decompress_bc() {
 					block <<= 8;
 					block |= src[7 + 8];
 
-					int y = (j / (wd / 4)) * 4;
-					int x = (j % (wd / 4)) * 4;
-					int pixofs = (y * wd + x) * 4;
+					int y = (j / (mm_w / 4)) * 4;
+					int x = (j % (mm_w / 4)) * 4;
+					int pixofs = (y * mm_w + x) * 4;
 
 					for (int k = 0; k < 16; k++) {
 						uint8_t alpha = ablock & 0x7;
@@ -1707,10 +1710,10 @@ Error Image::_decompress_bc() {
 				}
 
 				rofs += len * 16;
-				wofs += wd * ht * 4;
+				wofs += mm_w * mm_h * 4;
 
-				wd /= 2;
-				ht /= 2;
+				mm_w /= 2;
+				mm_h /= 2;
 
 			} break;
 			default: {}
