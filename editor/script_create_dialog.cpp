@@ -539,10 +539,12 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	/* Margins */
 
 	empty_h = memnew(Control);
+	empty_h->set_name("empty_h"); //duplicate() doesn't like nodes without a name
 	empty_h->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	empty_h->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	empty_h->set_custom_minimum_size(Size2(0, 10 * EDSCALE));
 	empty_v = memnew(Control);
+	empty_v->set_name("empty_v");
 	empty_v->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	empty_v->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	empty_v->set_custom_minimum_size(Size2(10, 0 * EDSCALE));

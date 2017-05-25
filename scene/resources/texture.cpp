@@ -351,10 +351,6 @@ void ImageTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_lossy_storage_quality"), &ImageTexture::get_lossy_storage_quality);
 
 	ClassDB::bind_method(D_METHOD("set_size_override", "size"), &ImageTexture::set_size_override);
-	ClassDB::set_method_flags(get_class_static(), _scs_create("fix_alpha_edges"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
-	ClassDB::set_method_flags(get_class_static(), _scs_create("premultiply_alpha"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
-	ClassDB::set_method_flags(get_class_static(), _scs_create("normal_to_xy"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
-	ClassDB::set_method_flags(get_class_static(), _scs_create("shrink_x2_and_keep_size"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 	ClassDB::bind_method(D_METHOD("_reload_hook", "rid"), &ImageTexture::_reload_hook);
 
 	BIND_CONSTANT(STORAGE_RAW);
