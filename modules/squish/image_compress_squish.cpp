@@ -39,6 +39,46 @@
 
 #include <squish.h>
 
+void image_decompress_squish(Image *p_image) {
+	int w = p_image->get_width();
+	int h = p_image->get_height();
+
+	Image::Format target_format = Image::FORMAT_RGBA8;
+	PoolVector<uint8_t> data;
+	int target_size = Image::get_image_data_size(w, h, target_format, p_image->has_mipmaps() ? -1 : 0);
+	int mm_count = p_image->get_mipmap_count();
+	data.resize(target_size);
+
+	PoolVector<uint8_t>::Read rb = p_image->get_data().read();
+	PoolVector<uint8_t>::Write wb = data.write();
+
+	int squish_flags = Image::FORMAT_MAX;
+	if (p_image->get_format() == Image::FORMAT_DXT1) {
+		squish_flags = squish::kDxt1;
+	} else if (p_image->get_format() == Image::FORMAT_DXT3) {
+		squish_flags = squish::kDxt3;
+	} else if (p_image->get_format() == Image::FORMAT_DXT5) {
+		squish_flags = squish::kDxt5;
+	} else if (p_image->get_format() == Image::FORMAT_ATI1) {
+		squish_flags = squish::kBc4;
+	} else if (p_image->get_format() == Image::FORMAT_ATI2) {
+		squish_flags = squish::kBc5;
+	} else {
+		ERR_FAIL_COND(true);
+		return;
+	}
+
+	int dst_ofs = 0;
+
+	for (int i = 0; i <= mm_count; i++) {
+		int src_ofs = 0, mipmap_size = 0, mipmap_w = 0, mipmap_h = 0;
+		p_image->get_mipmap_offset_size_and_dimensions(i, src_ofs, mipmap_size, mipmap_w, mipmap_h);
+		squish::DecompressImage(&wb[dst_ofs], mipmap_w, mipmap_h, &rb[src_ofs], squish_flags);
+	}
+
+	p_image->create(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
+}
+
 void image_compress_squish(Image *p_image) {
 
 	int w = p_image->get_width();
@@ -56,7 +96,7 @@ void image_compress_squish(Image *p_image) {
 		return; //do not compress, already compressed
 
 	int shift = 0;
-	int squish_comp = squish::kColourRangeFit;
+	int squish_comp = squish::kColourRangeFit; // TODO: use lossy quality setting to determine the quality
 	Image::Format target_format;
 
 	if (p_image->get_format() == Image::FORMAT_LA8) {
