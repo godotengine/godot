@@ -461,7 +461,7 @@ void InputEventMouseButton::_bind_methods() {
 
 InputEventMouseButton::InputEventMouseButton() {
 
-	factor = 0;
+	factor = 1;
 	button_index = 0;
 	pressed = false;
 	doubleclick = false;
