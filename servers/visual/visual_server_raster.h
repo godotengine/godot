@@ -644,10 +644,10 @@ public:
 
 	BIND1(textures_keep_original, bool)
 
-	/* SKYBOX API */
+	/* SKY API */
 
-	BIND0R(RID, skybox_create)
-	BIND3(skybox_set_texture, RID, RID, int)
+	BIND0R(RID, sky_create)
+	BIND3(sky_set_texture, RID, RID, int)
 
 	/* SHADER API */
 
@@ -932,8 +932,8 @@ public:
 	BIND0R(RID, environment_create)
 
 	BIND2(environment_set_background, RID, EnvironmentBG)
-	BIND2(environment_set_skybox, RID, RID)
-	BIND2(environment_set_skybox_scale, RID, float)
+	BIND2(environment_set_sky, RID, RID)
+	BIND2(environment_set_sky_scale, RID, float)
 	BIND2(environment_set_bg_color, RID, const Color &)
 	BIND2(environment_set_bg_energy, RID, float)
 	BIND2(environment_set_canvas_max_layer, RID, int)

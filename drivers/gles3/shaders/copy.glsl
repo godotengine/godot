@@ -2,14 +2,14 @@
 
 
 layout(location=0) in highp vec4 vertex_attrib;
-#ifdef USE_CUBEMAP
+#if defined(USE_CUBEMAP) || defined(USE_PANORAMA)
 layout(location=4) in vec3 cube_in;
 #else
 layout(location=4) in vec2 uv_in;
 #endif
 layout(location=5) in vec2 uv2_in;
 
-#ifdef USE_CUBEMAP
+#if defined(USE_CUBEMAP) || defined(USE_PANORAMA)
 out vec3 cube_interp;
 #else
 out vec2 uv_interp;
@@ -19,7 +19,7 @@ out vec2 uv2_interp;
 
 void main() {
 
-#ifdef USE_CUBEMAP
+#if defined(USE_CUBEMAP) || defined(USE_PANORAMA)
 	cube_interp = cube_in;
 #else
 	uv_interp = uv_in;
@@ -30,15 +30,40 @@ void main() {
 
 [fragment]
 
+#define M_PI 3.14159265359
 
-#ifdef USE_CUBEMAP
+
+#if defined(USE_CUBEMAP) || defined(USE_PANORAMA)
 in vec3 cube_interp;
-uniform samplerCube source_cube; //texunit:0
 #else
 in vec2 uv_interp;
+#endif
+
+#ifdef USE_CUBEMAP
+uniform samplerCube source_cube; //texunit:0
+#else
 uniform sampler2D source; //texunit:0
 #endif
 
+#ifdef USE_PANORAMA
+
+vec4 texturePanorama(vec3 normal,sampler2D pano ) {
+
+	vec2 st = vec2(
+		atan(normal.x, normal.z),
+		acos(normal.y)
+	);
+
+	if(st.x < 0.0)
+		st.x += M_PI*2.0;
+
+	st/=vec2(M_PI*2.0,M_PI);
+
+	return textureLod(pano,st,0.0);
+
+}
+
+#endif
 
 float sRGB_gamma_correct(float c){
     float a = 0.055;
@@ -60,12 +85,18 @@ void main() {
 
 	//vec4 color = color_interp;
 
-#ifdef USE_CUBEMAP
+#ifdef USE_PANORAMA
+
+	vec4 color = texturePanorama(  normalize(cube_interp), source );
+
+#elif defined(USE_CUBEMAP)
 	vec4 color = texture( source_cube,  normalize(cube_interp) );
 
 #else
 	vec4 color = texture( source,  uv_interp );
 #endif
+
+
 
 #ifdef LINEAR_TO_SRGB
 	//regular Linear -> SRGB conversion

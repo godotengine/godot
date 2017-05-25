@@ -44,7 +44,7 @@ public:
 
 		BG_CLEAR_COLOR,
 		BG_COLOR,
-		BG_SKYBOX,
+		BG_SKY,
 		BG_CANVAS,
 		BG_KEEP,
 		BG_MAX
@@ -74,14 +74,14 @@ private:
 	RID environment;
 
 	BGMode bg_mode;
-	Ref<SkyBox> bg_skybox;
-	float bg_skybox_scale;
+	Ref<Sky> bg_sky;
+	float bg_sky_scale;
 	Color bg_color;
 	float bg_energy;
 	int bg_canvas_max_layer;
 	Color ambient_color;
 	float ambient_energy;
-	float ambient_skybox_contribution;
+	float ambient_sky_contribution;
 
 	ToneMapper tone_mapper;
 	float tonemap_exposure;
@@ -144,24 +144,24 @@ protected:
 
 public:
 	void set_background(BGMode p_bg);
-	void set_skybox(const Ref<SkyBox> &p_skybox);
-	void set_skybox_scale(float p_scale);
+	void set_sky(const Ref<Sky> &p_sky);
+	void set_sky_scale(float p_scale);
 	void set_bg_color(const Color &p_color);
 	void set_bg_energy(float p_energy);
 	void set_canvas_max_layer(int p_max_layer);
 	void set_ambient_light_color(const Color &p_color);
 	void set_ambient_light_energy(float p_energy);
-	void set_ambient_light_skybox_contribution(float p_energy);
+	void set_ambient_light_sky_contribution(float p_energy);
 
 	BGMode get_background() const;
-	Ref<SkyBox> get_skybox() const;
-	float get_skybox_scale() const;
+	Ref<Sky> get_sky() const;
+	float get_sky_scale() const;
 	Color get_bg_color() const;
 	float get_bg_energy() const;
 	int get_canvas_max_layer() const;
 	Color get_ambient_light_color() const;
 	float get_ambient_light_energy() const;
-	float get_ambient_light_skybox_contribution() const;
+	float get_ambient_light_sky_contribution() const;
 
 	void set_tonemapper(ToneMapper p_tone_mapper);
 	ToneMapper get_tonemapper() const;

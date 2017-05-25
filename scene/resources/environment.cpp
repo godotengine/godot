@@ -44,21 +44,21 @@ void Environment::set_background(BGMode p_bg) {
 	_change_notify();
 }
 
-void Environment::set_skybox(const Ref<SkyBox> &p_skybox) {
+void Environment::set_sky(const Ref<Sky> &p_sky) {
 
-	bg_skybox = p_skybox;
+	bg_sky = p_sky;
 
 	RID sb_rid;
-	if (bg_skybox.is_valid())
-		sb_rid = bg_skybox->get_rid();
+	if (bg_sky.is_valid())
+		sb_rid = bg_sky->get_rid();
 
-	VS::get_singleton()->environment_set_skybox(environment, sb_rid);
+	VS::get_singleton()->environment_set_sky(environment, sb_rid);
 }
 
-void Environment::set_skybox_scale(float p_scale) {
+void Environment::set_sky_scale(float p_scale) {
 
-	bg_skybox_scale = p_scale;
-	VS::get_singleton()->environment_set_skybox_scale(environment, p_scale);
+	bg_sky_scale = p_scale;
+	VS::get_singleton()->environment_set_sky_scale(environment, p_scale);
 }
 
 void Environment::set_bg_color(const Color &p_color) {
@@ -79,31 +79,31 @@ void Environment::set_canvas_max_layer(int p_max_layer) {
 void Environment::set_ambient_light_color(const Color &p_color) {
 
 	ambient_color = p_color;
-	VS::get_singleton()->environment_set_ambient_light(environment, ambient_color, ambient_energy, ambient_skybox_contribution);
+	VS::get_singleton()->environment_set_ambient_light(environment, ambient_color, ambient_energy, ambient_sky_contribution);
 }
 void Environment::set_ambient_light_energy(float p_energy) {
 
 	ambient_energy = p_energy;
-	VS::get_singleton()->environment_set_ambient_light(environment, ambient_color, ambient_energy, ambient_skybox_contribution);
+	VS::get_singleton()->environment_set_ambient_light(environment, ambient_color, ambient_energy, ambient_sky_contribution);
 }
-void Environment::set_ambient_light_skybox_contribution(float p_energy) {
+void Environment::set_ambient_light_sky_contribution(float p_energy) {
 
-	ambient_skybox_contribution = p_energy;
-	VS::get_singleton()->environment_set_ambient_light(environment, ambient_color, ambient_energy, ambient_skybox_contribution);
+	ambient_sky_contribution = p_energy;
+	VS::get_singleton()->environment_set_ambient_light(environment, ambient_color, ambient_energy, ambient_sky_contribution);
 }
 
 Environment::BGMode Environment::get_background() const {
 
 	return bg_mode;
 }
-Ref<SkyBox> Environment::get_skybox() const {
+Ref<Sky> Environment::get_sky() const {
 
-	return bg_skybox;
+	return bg_sky;
 }
 
-float Environment::get_skybox_scale() const {
+float Environment::get_sky_scale() const {
 
-	return bg_skybox_scale;
+	return bg_sky_scale;
 }
 
 Color Environment::get_bg_color() const {
@@ -126,9 +126,9 @@ float Environment::get_ambient_light_energy() const {
 
 	return ambient_energy;
 }
-float Environment::get_ambient_light_skybox_contribution() const {
+float Environment::get_ambient_light_sky_contribution() const {
 
-	return ambient_skybox_contribution;
+	return ambient_sky_contribution;
 }
 
 void Environment::set_tonemapper(ToneMapper p_tone_mapper) {
@@ -266,8 +266,8 @@ Ref<Texture> Environment::get_adjustment_color_correction() const {
 
 void Environment::_validate_property(PropertyInfo &property) const {
 
-	if (property.name == "background/skybox" || property.name == "background/skybox_scale" || property.name == "ambient_light/skybox_contribution") {
-		if (bg_mode != BG_SKYBOX) {
+	if (property.name == "background/sky" || property.name == "background/sky_scale" || property.name == "ambient_light/sky_contribution") {
+		if (bg_mode != BG_SKY) {
 			property.usage = PROPERTY_USAGE_NOEDITOR;
 		}
 	}
@@ -664,36 +664,36 @@ Environment::DOFBlurQuality Environment::get_dof_blur_near_quality() const {
 void Environment::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_background", "mode"), &Environment::set_background);
-	ClassDB::bind_method(D_METHOD("set_skybox", "skybox:CubeMap"), &Environment::set_skybox);
-	ClassDB::bind_method(D_METHOD("set_skybox_scale", "scale"), &Environment::set_skybox_scale);
+	ClassDB::bind_method(D_METHOD("set_sky", "sky:CubeMap"), &Environment::set_sky);
+	ClassDB::bind_method(D_METHOD("set_sky_scale", "scale"), &Environment::set_sky_scale);
 	ClassDB::bind_method(D_METHOD("set_bg_color", "color"), &Environment::set_bg_color);
 	ClassDB::bind_method(D_METHOD("set_bg_energy", "energy"), &Environment::set_bg_energy);
 	ClassDB::bind_method(D_METHOD("set_canvas_max_layer", "layer"), &Environment::set_canvas_max_layer);
 	ClassDB::bind_method(D_METHOD("set_ambient_light_color", "color"), &Environment::set_ambient_light_color);
 	ClassDB::bind_method(D_METHOD("set_ambient_light_energy", "energy"), &Environment::set_ambient_light_energy);
-	ClassDB::bind_method(D_METHOD("set_ambient_light_skybox_contribution", "energy"), &Environment::set_ambient_light_skybox_contribution);
+	ClassDB::bind_method(D_METHOD("set_ambient_light_sky_contribution", "energy"), &Environment::set_ambient_light_sky_contribution);
 
 	ClassDB::bind_method(D_METHOD("get_background"), &Environment::get_background);
-	ClassDB::bind_method(D_METHOD("get_skybox:CubeMap"), &Environment::get_skybox);
-	ClassDB::bind_method(D_METHOD("get_skybox_scale"), &Environment::get_skybox_scale);
+	ClassDB::bind_method(D_METHOD("get_sky:CubeMap"), &Environment::get_sky);
+	ClassDB::bind_method(D_METHOD("get_sky_scale"), &Environment::get_sky_scale);
 	ClassDB::bind_method(D_METHOD("get_bg_color"), &Environment::get_bg_color);
 	ClassDB::bind_method(D_METHOD("get_bg_energy"), &Environment::get_bg_energy);
 	ClassDB::bind_method(D_METHOD("get_canvas_max_layer"), &Environment::get_canvas_max_layer);
 	ClassDB::bind_method(D_METHOD("get_ambient_light_color"), &Environment::get_ambient_light_color);
 	ClassDB::bind_method(D_METHOD("get_ambient_light_energy"), &Environment::get_ambient_light_energy);
-	ClassDB::bind_method(D_METHOD("get_ambient_light_skybox_contribution"), &Environment::get_ambient_light_skybox_contribution);
+	ClassDB::bind_method(D_METHOD("get_ambient_light_sky_contribution"), &Environment::get_ambient_light_sky_contribution);
 
 	ADD_GROUP("Background", "background_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "background_mode", PROPERTY_HINT_ENUM, "Clear Color,Custom Color,Skybox,Canvas,Keep"), "set_background", "get_background");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "background_skybox", PROPERTY_HINT_RESOURCE_TYPE, "SkyBox"), "set_skybox", "get_skybox");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "background_skybox_scale", PROPERTY_HINT_RANGE, "0,32,0.01"), "set_skybox_scale", "get_skybox_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "background_mode", PROPERTY_HINT_ENUM, "Clear Color,Custom Color,Sky,Canvas,Keep"), "set_background", "get_background");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "background_sky", PROPERTY_HINT_RESOURCE_TYPE, "Sky"), "set_sky", "get_sky");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "background_sky_scale", PROPERTY_HINT_RANGE, "0,32,0.01"), "set_sky_scale", "get_sky_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "background_color"), "set_bg_color", "get_bg_color");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "background_energy", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_bg_energy", "get_bg_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "background_canvas_max_layer", PROPERTY_HINT_RANGE, "-1000,1000,1"), "set_canvas_max_layer", "get_canvas_max_layer");
 	ADD_GROUP("Ambient Light", "ambient_light_");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "ambient_light_color"), "set_ambient_light_color", "get_ambient_light_color");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ambient_light_energy", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_ambient_light_energy", "get_ambient_light_energy");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ambient_light_skybox_contribution", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ambient_light_skybox_contribution", "get_ambient_light_skybox_contribution");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ambient_light_sky_contribution", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ambient_light_sky_contribution", "get_ambient_light_sky_contribution");
 
 	ClassDB::bind_method(D_METHOD("set_ssr_enabled", "enabled"), &Environment::set_ssr_enabled);
 	ClassDB::bind_method(D_METHOD("is_ssr_enabled"), &Environment::is_ssr_enabled);
@@ -909,12 +909,12 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "adjustment_saturation", PROPERTY_HINT_RANGE, "0.01,8,0.01"), "set_adjustment_saturation", "get_adjustment_saturation");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "adjustment_color_correction", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_adjustment_color_correction", "get_adjustment_color_correction");
 
-	GLOBAL_DEF("rendering/skybox/irradiance_cube_resolution", 256);
+	GLOBAL_DEF("rendering/sky/irradiance_cube_resolution", 256);
 
 	BIND_CONSTANT(BG_KEEP);
 	BIND_CONSTANT(BG_CLEAR_COLOR);
 	BIND_CONSTANT(BG_COLOR);
-	BIND_CONSTANT(BG_SKYBOX);
+	BIND_CONSTANT(BG_SKY);
 	BIND_CONSTANT(BG_CANVAS);
 	BIND_CONSTANT(BG_MAX);
 	BIND_CONSTANT(GLOW_BLEND_MODE_ADDITIVE);
@@ -933,11 +933,11 @@ void Environment::_bind_methods() {
 Environment::Environment() {
 
 	bg_mode = BG_CLEAR_COLOR;
-	bg_skybox_scale = 1.0;
+	bg_sky_scale = 1.0;
 	bg_energy = 1.0;
 	bg_canvas_max_layer = 0;
 	ambient_energy = 1.0;
-	ambient_skybox_contribution = 0;
+	ambient_sky_contribution = 0;
 
 	tone_mapper = TONE_MAPPER_LINEAR;
 	tonemap_exposure = 1.0;

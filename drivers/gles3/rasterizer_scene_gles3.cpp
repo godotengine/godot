@@ -798,20 +798,20 @@ void RasterizerSceneGLES3::environment_set_background(RID p_env, VS::Environment
 	env->bg_mode = p_bg;
 }
 
-void RasterizerSceneGLES3::environment_set_skybox(RID p_env, RID p_skybox) {
+void RasterizerSceneGLES3::environment_set_sky(RID p_env, RID p_sky) {
 
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
 
-	env->skybox = p_skybox;
+	env->sky = p_sky;
 }
 
-void RasterizerSceneGLES3::environment_set_skybox_scale(RID p_env, float p_scale) {
+void RasterizerSceneGLES3::environment_set_sky_scale(RID p_env, float p_scale) {
 
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
 
-	env->skybox_scale = p_scale;
+	env->sky_scale = p_scale;
 }
 
 void RasterizerSceneGLES3::environment_set_bg_color(RID p_env, const Color &p_color) {
@@ -836,14 +836,14 @@ void RasterizerSceneGLES3::environment_set_canvas_max_layer(RID p_env, int p_max
 
 	env->canvas_max_layer = p_max_layer;
 }
-void RasterizerSceneGLES3::environment_set_ambient_light(RID p_env, const Color &p_color, float p_energy, float p_skybox_contribution) {
+void RasterizerSceneGLES3::environment_set_ambient_light(RID p_env, const Color &p_color, float p_energy, float p_sky_contribution) {
 
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
 
 	env->ambient_color = p_color;
 	env->ambient_energy = p_energy;
-	env->ambient_skybox_contribution = p_skybox_contribution;
+	env->ambient_sky_contribution = p_sky_contribution;
 }
 
 void RasterizerSceneGLES3::environment_set_dof_blur_far(RID p_env, bool p_enable, float p_distance, float p_transition, float p_amount, VS::EnvironmentDOFBlurQuality p_quality) {
@@ -2120,12 +2120,12 @@ void RasterizerSceneGLES3::_add_geometry(RasterizerStorageGLES3::Geometry *p_geo
 	}
 }
 
-void RasterizerSceneGLES3::_draw_skybox(RasterizerStorageGLES3::SkyBox *p_skybox, const CameraMatrix &p_projection, const Transform &p_transform, bool p_vflip, float p_scale) {
+void RasterizerSceneGLES3::_draw_sky(RasterizerStorageGLES3::Sky *p_sky, const CameraMatrix &p_projection, const Transform &p_transform, bool p_vflip, float p_scale) {
 
-	if (!p_skybox)
+	if (!p_sky)
 		return;
 
-	RasterizerStorageGLES3::Texture *tex = storage->texture_owner.getornull(p_skybox->cubemap);
+	RasterizerStorageGLES3::Texture *tex = storage->texture_owner.getornull(p_sky->panorama);
 
 	ERR_FAIL_COND(!tex);
 	glActiveTexture(GL_TEXTURE0);
@@ -2164,7 +2164,7 @@ void RasterizerSceneGLES3::_draw_skybox(RasterizerStorageGLES3::SkyBox *p_skybox
 
 	};
 
-	//skybox uv vectors
+	//sky uv vectors
 	float vw, vh, zn;
 	p_projection.get_viewport_size(vw, vh);
 	zn = p_projection.get_z_near();
@@ -2181,13 +2181,13 @@ void RasterizerSceneGLES3::_draw_skybox(RasterizerStorageGLES3::SkyBox *p_skybox
 		vertices[i * 2 + 1].z = -vertices[i * 2 + 1].z;
 	}
 
-	glBindBuffer(GL_ARRAY_BUFFER, state.skybox_verts);
+	glBindBuffer(GL_ARRAY_BUFFER, state.sky_verts);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vector3) * 8, vertices);
 	glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
 
-	glBindVertexArray(state.skybox_array);
+	glBindVertexArray(state.sky_array);
 
-	storage->shaders.copy.set_conditional(CopyShaderGLES3::USE_CUBEMAP, true);
+	storage->shaders.copy.set_conditional(CopyShaderGLES3::USE_PANORAMA, true);
 	storage->shaders.copy.bind();
 
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
@@ -2195,7 +2195,7 @@ void RasterizerSceneGLES3::_draw_skybox(RasterizerStorageGLES3::SkyBox *p_skybox
 	glBindVertexArray(0);
 	glColorMask(1, 1, 1, 1);
 
-	storage->shaders.copy.set_conditional(CopyShaderGLES3::USE_CUBEMAP, false);
+	storage->shaders.copy.set_conditional(CopyShaderGLES3::USE_PANORAMA, false);
 }
 
 void RasterizerSceneGLES3::_setup_environment(Environment *env, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform) {
@@ -2239,7 +2239,7 @@ void RasterizerSceneGLES3::_setup_environment(Environment *env, const CameraMatr
 		state.ubo_data.bg_color[2] = bg_color.b;
 		state.ubo_data.bg_color[3] = bg_color.a;
 
-		state.env_radiance_data.ambient_contribution = env->ambient_skybox_contribution;
+		state.env_radiance_data.ambient_contribution = env->ambient_sky_contribution;
 		state.ubo_data.ambient_occlusion_affect_light = env->ssao_light_affect;
 	} else {
 		state.ubo_data.bg_energy = 1.0;
@@ -2683,7 +2683,7 @@ void RasterizerSceneGLES3::_setup_reflections(RID *p_reflection_probe_cull_resul
 				ambient_linear.r *= p_env->ambient_energy;
 				ambient_linear.g *= p_env->ambient_energy;
 				ambient_linear.b *= p_env->ambient_energy;
-				contrib = p_env->ambient_skybox_contribution;
+				contrib = p_env->ambient_sky_contribution;
 			}
 
 			reflection_ubo.ambient[0] = ambient_linear.r;
@@ -3807,7 +3807,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 
 	Color clear_color(0, 0, 0, 0);
 
-	RasterizerStorageGLES3::SkyBox *skybox = NULL;
+	RasterizerStorageGLES3::Sky *sky = NULL;
 	GLuint env_radiance_tex = 0;
 
 	if (!env || env->bg_mode == VS::ENV_BG_CLEAR_COLOR) {
@@ -3822,12 +3822,12 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 
 		clear_color = env->bg_color.to_linear();
 		storage->frame.clear_request = false;
-	} else if (env->bg_mode == VS::ENV_BG_SKYBOX) {
+	} else if (env->bg_mode == VS::ENV_BG_SKY) {
 
-		skybox = storage->skybox_owner.getornull(env->skybox);
+		sky = storage->sky_owner.getornull(env->sky);
 
-		if (skybox) {
-			env_radiance_tex = skybox->radiance;
+		if (sky) {
+			env_radiance_tex = sky->radiance;
 		}
 		storage->frame.clear_request = false;
 
@@ -3878,14 +3878,14 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 		glDrawBuffers(1, &gldb);
 	}
 
-	if (env && env->bg_mode == VS::ENV_BG_SKYBOX) {
+	if (env && env->bg_mode == VS::ENV_BG_SKY) {
 
 		/*
 		if (use_mrt) {
-			glBindFramebuffer(GL_FRAMEBUFFER,storage->frame.current_rt->buffers.fbo); //switch to alpha fbo for skybox, only diffuse/ambient matters
+			glBindFramebuffer(GL_FRAMEBUFFER,storage->frame.current_rt->buffers.fbo); //switch to alpha fbo for sky, only diffuse/ambient matters
 		*/
 
-		_draw_skybox(skybox, p_cam_projection, p_cam_transform, storage->frame.current_rt && storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_VFLIP], env->skybox_scale);
+		_draw_sky(sky, p_cam_projection, p_cam_transform, storage->frame.current_rt && storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_VFLIP], env->sky_scale);
 	}
 
 	//_render_list_forward(&alpha_render_list,camera_transform,camera_transform_inverse,camera_projection,false,fragment_lighting,true);
@@ -4585,14 +4585,14 @@ void RasterizerSceneGLES3::initialize() {
 	{
 		//quad buffers
 
-		glGenBuffers(1, &state.skybox_verts);
-		glBindBuffer(GL_ARRAY_BUFFER, state.skybox_verts);
+		glGenBuffers(1, &state.sky_verts);
+		glBindBuffer(GL_ARRAY_BUFFER, state.sky_verts);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * 8, NULL, GL_DYNAMIC_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
 
-		glGenVertexArrays(1, &state.skybox_array);
-		glBindVertexArray(state.skybox_array);
-		glBindBuffer(GL_ARRAY_BUFFER, state.skybox_verts);
+		glGenVertexArrays(1, &state.sky_array);
+		glBindVertexArray(state.sky_array);
+		glBindBuffer(GL_ARRAY_BUFFER, state.sky_verts);
 		glVertexAttribPointer(VS::ARRAY_VERTEX, 3, GL_FLOAT, GL_FALSE, sizeof(Vector3) * 2, 0);
 		glEnableVertexAttribArray(VS::ARRAY_VERTEX);
 		glVertexAttribPointer(VS::ARRAY_TEX_UV, 3, GL_FLOAT, GL_FALSE, sizeof(Vector3) * 2, ((uint8_t *)NULL) + sizeof(Vector3));

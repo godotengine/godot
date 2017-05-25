@@ -27,13 +27,13 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef SKYBOX_H
-#define SKYBOX_H
+#ifndef Sky_H
+#define Sky_H
 
 #include "scene/resources/texture.h"
 
-class SkyBox : public Resource {
-	GDCLASS(SkyBox, Resource);
+class Sky : public Resource {
+	GDCLASS(Sky, Resource);
 
 public:
 	enum RadianceSize {
@@ -54,13 +54,13 @@ protected:
 public:
 	void set_radiance_size(RadianceSize p_size);
 	RadianceSize get_radiance_size() const;
-	SkyBox();
+	Sky();
 };
 
-VARIANT_ENUM_CAST(SkyBox::RadianceSize)
+VARIANT_ENUM_CAST(Sky::RadianceSize)
 
-class ImageSkyBox : public SkyBox {
-	GDCLASS(ImageSkyBox, SkyBox);
+class PanoramaSky : public Sky {
+	GDCLASS(PanoramaSky, Sky);
 
 public:
 	enum ImagePath {
@@ -74,26 +74,23 @@ public:
 	};
 
 private:
-	RID cube_map;
-	RID sky_box;
-	bool cube_map_valid;
-
-	String image_path[IMAGE_PATH_MAX];
+	RID sky;
+	Ref<Texture> panorama;
 
 protected:
 	static void _bind_methods();
 	virtual void _radiance_changed();
 
 public:
-	void set_image_path(ImagePath p_image, const String &p_path);
-	String get_image_path(ImagePath p_image) const;
+	void set_panorama(const Ref<Texture> &p_panorama);
+	Ref<Texture> get_panorama() const;
 
 	virtual RID get_rid() const;
 
-	ImageSkyBox();
-	~ImageSkyBox();
+	PanoramaSky();
+	~PanoramaSky();
 };
 
-VARIANT_ENUM_CAST(ImageSkyBox::ImagePath)
+VARIANT_ENUM_CAST(PanoramaSky::ImagePath)
 
-#endif // SKYBOX_H
+#endif // Sky_H

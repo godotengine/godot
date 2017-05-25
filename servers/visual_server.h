@@ -141,10 +141,10 @@ public:
 
 	virtual void textures_keep_original(bool p_enable) = 0;
 
-	/* SKYBOX API */
+	/* SKY API */
 
-	virtual RID skybox_create() = 0;
-	virtual void skybox_set_texture(RID p_skybox, RID p_cube_map, int p_radiance_size) = 0;
+	virtual RID sky_create() = 0;
+	virtual void sky_set_texture(RID p_sky, RID p_cube_map, int p_radiance_size) = 0;
 
 	/* SHADER API */
 
@@ -589,19 +589,19 @@ public:
 
 		ENV_BG_CLEAR_COLOR,
 		ENV_BG_COLOR,
-		ENV_BG_SKYBOX,
+		ENV_BG_SKY,
 		ENV_BG_CANVAS,
 		ENV_BG_KEEP,
 		ENV_BG_MAX
 	};
 
 	virtual void environment_set_background(RID p_env, EnvironmentBG p_bg) = 0;
-	virtual void environment_set_skybox(RID p_env, RID p_skybox) = 0;
-	virtual void environment_set_skybox_scale(RID p_env, float p_scale) = 0;
+	virtual void environment_set_sky(RID p_env, RID p_sky) = 0;
+	virtual void environment_set_sky_scale(RID p_env, float p_scale) = 0;
 	virtual void environment_set_bg_color(RID p_env, const Color &p_color) = 0;
 	virtual void environment_set_bg_energy(RID p_env, float p_energy) = 0;
 	virtual void environment_set_canvas_max_layer(RID p_env, int p_max_layer) = 0;
-	virtual void environment_set_ambient_light(RID p_env, const Color &p_color, float p_energy = 1.0, float p_skybox_contribution = 0.0) = 0;
+	virtual void environment_set_ambient_light(RID p_env, const Color &p_color, float p_energy = 1.0, float p_sky_contribution = 0.0) = 0;
 
 	//set default SSAO options
 	//set default SSR options
