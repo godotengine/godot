@@ -291,6 +291,7 @@ class ScriptEditor : public VBoxContainer {
 	void _unhandled_input(const Ref<InputEvent> &p_event);
 
 	void _help_search(String p_text);
+	void _help_index(String p_text);
 
 	void _history_forward();
 	void _history_back();

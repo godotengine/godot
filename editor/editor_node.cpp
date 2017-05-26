@@ -2561,8 +2561,25 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			file->popup_centered_ratio();
 
 		} break;
-		case SETTINGS_ABOUT: {
-
+		case HELP_CLASSES: {
+			emit_signal("request_help_index", "");
+		} break;
+		case HELP_SEARCH: {
+			emit_signal("request_help_search", "");
+		} break;
+		case HELP_DOCS: {
+			OS::get_singleton()->shell_open("http://docs.godotengine.org/");
+		} break;
+		case HELP_QA: {
+			OS::get_singleton()->shell_open("https://godotengine.org/qa/");
+		} break;
+		case HELP_ISSUES: {
+			OS::get_singleton()->shell_open("https://github.com/godotengine/godot/issues");
+		} break;
+		case HELP_COMMUNITY: {
+			OS::get_singleton()->shell_open("https://godotengine.org/community");
+		} break;
+		case HELP_ABOUT: {
 			about->popup_centered_minsize(Size2(500, 130) * EDSCALE);
 		} break;
 		case SOURCES_REIMPORT: {
@@ -4823,6 +4840,7 @@ void EditorNode::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("stop_pressed"));
 	ADD_SIGNAL(MethodInfo("request_help"));
 	ADD_SIGNAL(MethodInfo("request_help_search"));
+	ADD_SIGNAL(MethodInfo("request_help_index"));
 	ADD_SIGNAL(MethodInfo("script_add_function_request", PropertyInfo(Variant::OBJECT, "obj"), PropertyInfo(Variant::STRING, "function"), PropertyInfo(Variant::POOL_STRING_ARRAY, "args")));
 	ADD_SIGNAL(MethodInfo("resource_saved", PropertyInfo(Variant::OBJECT, "obj")));
 }
@@ -5355,7 +5373,6 @@ EditorNode::EditorNode() {
 	left_menu_hb->add_child(settings_menu);
 	settings_menu->set_text(TTR("Editor"));
 	settings_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
-	settings_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
 	//settings_menu->set_anchor(MARGIN_RIGHT,ANCHOR_END);
 	p = settings_menu->get_popup();
 
@@ -5368,13 +5385,26 @@ EditorNode::EditorNode() {
 	p->add_child(editor_layouts);
 	editor_layouts->connect("id_pressed", this, "_layout_menu_option");
 	p->add_submenu_item(TTR("Editor Layout"), "Layouts");
-
 	p->add_shortcut(ED_SHORTCUT("editor/fullscreen_mode", TTR("Toggle Fullscreen"), KEY_MASK_SHIFT | KEY_F11), SETTINGS_TOGGLE_FULLSCREN);
-
 	p->add_separator();
 	p->add_item(TTR("Manage Export Templates"), SETTINGS_MANAGE_EXPORT_TEMPLATES);
+
+	// Help Menu
+	MenuButton *help_menu = memnew(MenuButton);
+	left_menu_hb->add_child(help_menu);
+	help_menu->set_text(TTR("Help"));
+	help_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
+	p = help_menu->get_popup();
+	p->connect("id_pressed", this, "_menu_option");
+	p->add_icon_item(gui_base->get_icon("ClassList", "EditorIcons"), TTR("Classes"), HELP_CLASSES);
+	p->add_icon_item(gui_base->get_icon("Help", "EditorIcons"), TTR("Search"), HELP_SEARCH);
 	p->add_separator();
-	p->add_item(TTR("About"), SETTINGS_ABOUT);
+	p->add_icon_item(gui_base->get_icon("Instance", "EditorIcons"), TTR("Online Docs"), HELP_DOCS);
+	p->add_icon_item(gui_base->get_icon("Instance", "EditorIcons"), TTR("Q&A"), HELP_QA);
+	p->add_icon_item(gui_base->get_icon("Instance", "EditorIcons"), TTR("Issue Tracker"), HELP_ISSUES);
+	p->add_icon_item(gui_base->get_icon("Instance", "EditorIcons"), TTR("Community"), HELP_COMMUNITY);
+	p->add_separator();
+	p->add_icon_item(gui_base->get_icon("GodotDocs", "EditorIcons"), TTR("About"), HELP_ABOUT);
 
 	//Separator *s1 = memnew( VSeparator );
 	//menu_panel->add_child(s1);
