@@ -114,6 +114,8 @@ extern bool _err_error_exists;
 #define FUNCTION_STR __FUNCTION__
 #endif
 
+// (*): See https://stackoverflow.com/questions/257418/do-while-0-what-is-it-good-for
+
 #define ERR_FAIL_INDEX(m_index, m_size)                                                                                    \
 	do {                                                                                                                   \
 		if ((m_index) < 0 || (m_index) >= (m_size)) {                                                                      \
@@ -121,7 +123,7 @@ extern bool _err_error_exists;
 			return;                                                                                                        \
 		} else                                                                                                             \
 			_err_error_exists = false;                                                                                     \
-	} while (0);
+	} while (0); // (*)
 
 /** An index has failed if m_index<0 or m_index >=m_size, the function exists.
   * This function returns an error value, if returning Error, please select the most
@@ -135,7 +137,20 @@ extern bool _err_error_exists;
 			return m_retval;                                                                                               \
 		} else                                                                                                             \
 			_err_error_exists = false;                                                                                     \
-	} while (0);
+	} while (0); // (*)
+
+/** Use this one if there is no sensible fallback, that is, the error is unrecoverable.
+	* We'll do UB by returning a null reference and pray that we wont't crash.
+	*/
+#define PRAY_BAD_INDEX(m_index, m_size, m_type)                                                                                    \
+	do {                                                                                                                           \
+		if ((m_index) < 0 || (m_index) >= (m_size)) {                                                                              \
+			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "SEVERE: Index " _STR(m_index) " out of size (" _STR(m_size) ")."); \
+			m_type *n = (m_type *)0; /* two-step to avoid warning */                                                               \
+			return *n;                                                                                                             \
+		} else                                                                                                                     \
+			_err_error_exists = false;                                                                                             \
+	} while (0); // (*)
 
 /** An error condition happened (m_cond tested true) (WARNING this is the opposite as assert().
   * the function will exit.
@@ -187,6 +202,20 @@ extern bool _err_error_exists;
 			_err_error_exists = false;                                                                                               \
 	}
 
+/** Use this one if there is no sensible fallback, that is, the error is unrecoverable.
+  *  We'll do UB by returning a null reference and pray that we wont't crash.
+  */
+
+#define PRAY_COND(m_cond, m_type)                                                                                  \
+	{                                                                                                              \
+		if (m_cond) {                                                                                              \
+			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "SEVERE: Condition ' " _STR(m_cond) " ' is true."); \
+			m_type *n = (m_type *)0; /* two-step to avoid warning */                                               \
+			return *n;                                                                                             \
+		} else                                                                                                     \
+			_err_error_exists = false;                                                                             \
+	}
+
 /** An error condition happened (m_cond tested true) (WARNING this is the opposite as assert().
  * the loop will skip to the next iteration.
  */
@@ -231,6 +260,17 @@ extern bool _err_error_exists;
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Method/Function Failed, returning: " __STR(m_value)); \
 		_err_error_exists = false;                                                                                \
 		return m_value;                                                                                           \
+	}
+
+/** Use this one if there is no sensible fallback, that is, the error is unrecoverable.
+  *  We'll do UB by returning a null reference and pray that we wont't crash.
+  */
+
+#define PRAY(m_type)                                                                           \
+	{                                                                                          \
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "SEVERE: Method/Function Failed."); \
+		m_type *n = (m_type *)0; /* two-step to avoid warning */                               \
+		return *n;                                                                             \
 	}
 
 /** Print an error string.
