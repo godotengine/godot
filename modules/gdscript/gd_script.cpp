@@ -1812,6 +1812,7 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		"breakpoint",
 		"class",
 		"extends",
+		"is",
 		"func",
 		"preload",
 		"setget",
