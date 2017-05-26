@@ -180,10 +180,8 @@ public:
 	inline const V &operator[](const T &p_key) const {
 
 		int pos = _find_exact(p_key);
-		if (pos < 0) {
-			const T &aux = *((T *)0); //nullreturn
-			ERR_FAIL_COND_V(pos < 1, aux);
-		}
+
+		CRASH_COND(pos < 0);
 
 		return _data[pos].value;
 	}
