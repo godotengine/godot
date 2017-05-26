@@ -39,6 +39,47 @@
 
 #include <squish.h>
 
+void image_decompress_squish(Image *p_image) {
+	int w = p_image->get_width();
+	int h = p_image->get_height();
+
+	Image::Format target_format = Image::FORMAT_RGBA;
+	DVector<uint8_t> data;
+	int mm_count = p_image->get_mipmaps();
+	int target_size = Image::get_image_data_size(w, h, target_format, mm_count);
+
+	data.resize(target_size);
+
+	DVector<uint8_t>::Read rb = p_image->get_data().read();
+	DVector<uint8_t>::Write wb = data.write();
+
+	int squish_flags = Image::FORMAT_MAX;
+	if (p_image->get_format() == Image::FORMAT_BC1) {
+		squish_flags = squish::kDxt1;
+	} else if (p_image->get_format() == Image::FORMAT_BC2) {
+		squish_flags = squish::kDxt3;
+	} else if (p_image->get_format() == Image::FORMAT_BC3) {
+		squish_flags = squish::kDxt5;
+	} else if (p_image->get_format() == Image::FORMAT_BC4) {
+		squish_flags = squish::kBc4;
+	} else if (p_image->get_format() == Image::FORMAT_BC5) {
+		squish_flags = squish::kBc5;
+	} else {
+		ERR_FAIL_COND(true);
+		return;
+	}
+
+	int dst_ofs = 0;
+
+	for (int i = 0; i <= mm_count; i++) {
+		int src_ofs = 0, mipmap_size = 0, mipmap_w = 0, mipmap_h = 0;
+		p_image->get_mipmap_offset_size_and_dimensions(i, src_ofs, mipmap_size, mipmap_w, mipmap_h);
+		squish::DecompressImage(&wb[dst_ofs], mipmap_w, mipmap_h, &rb[src_ofs], squish_flags);
+	}
+
+	*p_image = Image(p_image->get_width(), p_image->get_height(), p_image->get_mipmaps(), target_format, data);
+}
+
 void image_compress_squish(Image *p_image) {
 
 	int w = p_image->get_width();
