@@ -672,7 +672,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		video_mode.width = globals->get("display/width");
 	if (!force_res && use_custom_res && globals->has("display/height"))
 		video_mode.height = globals->get("display/height");
-	if (!editor && (!bool(globals->get("display/allow_hidpi")) || force_lowdpi)) {
+	if (!editor && ((globals->has("display/allow_hidpi") && !globals->get("display/allow_hidpi")) || force_lowdpi)) {
 		OS::get_singleton()->_allow_hidpi = false;
 	}
 	if (use_custom_res && globals->has("display/fullscreen"))

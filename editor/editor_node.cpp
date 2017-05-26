@@ -6313,7 +6313,10 @@ EditorNode::EditorNode() {
 	{
 
 		_initializing_addons = true;
-		Vector<String> addons = Globals::get_singleton()->get("editor_plugins/enabled");
+		Vector<String> addons;
+		if (Globals::get_singleton()->has("editor_plugins/enabled")) {
+			addons = Globals::get_singleton()->get("editor_plugins/enabled");
+		}
 
 		for (int i = 0; i < addons.size(); i++) {
 			set_addon_plugin_enabled(addons[i], true);

@@ -412,7 +412,7 @@ void EditorSettings::setup_network() {
 	IP::get_singleton()->get_local_addresses(&local_ip);
 	String lip;
 	String hint;
-	String current = get("network/debug_host");
+	String current = has("network/debug_host") ? get("network/debug_host") : "";
 	int port = has("network/debug_port") ? (int)get("network/debug_port") : 6007;
 
 	for (List<IP_Address>::Element *E = local_ip.front(); E; E = E->next()) {
