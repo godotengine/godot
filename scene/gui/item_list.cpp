@@ -520,14 +520,10 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid() && mb->get_button_index() == BUTTON_WHEEL_UP && mb->is_pressed()) {
 
 		scroll_bar->set_value(scroll_bar->get_value() - scroll_bar->get_page() * mb->get_factor() / 8);
-
-		scroll_bar->set_value(scroll_bar->get_value() - scroll_bar->get_page() / 8);
 	}
 	if (mb.is_valid() && mb->get_button_index() == BUTTON_WHEEL_DOWN && mb->is_pressed()) {
 
 		scroll_bar->set_value(scroll_bar->get_value() + scroll_bar->get_page() * mb->get_factor() / 8);
-
-		scroll_bar->set_value(scroll_bar->get_value() + scroll_bar->get_page() / 8);
 	}
 
 	if (p_event->is_pressed() && items.size() > 0) {
