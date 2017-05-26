@@ -511,9 +511,11 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	set("interface/separate_distraction_mode", false);
 
-	set("interface/theme/base_color", Color(0.3, 0.3, 0.3, 1));
+	set("interface/theme/preset", 0);
+	hints["interface/theme/preset"] = PropertyInfo(Variant::INT, "interface/theme/preset", PROPERTY_HINT_ENUM, "Default,Grey,Godot 2,Arc,Custom", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+	set("interface/theme/base_color", Color::html("#273241"));
 	hints["interface/theme/highlight_color"] = PropertyInfo(Variant::COLOR, "interface/theme/highlight_color", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
-	set("interface/theme/highlight_color", Color(0.5, 0.5, 0.6, 1));
+	set("interface/theme/highlight_color", Color::html("#b79047"));
 	hints["interface/theme/base_color"] = PropertyInfo(Variant::COLOR, "interface/theme/base_color", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 	set("interface/theme/contrast", 0.2);
 	hints["interface/theme/contrast"] = PropertyInfo(Variant::REAL, "interface/theme/contrast", PROPERTY_HINT_RANGE, "0.01, 1, 0.01");
