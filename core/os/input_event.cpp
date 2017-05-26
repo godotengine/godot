@@ -62,11 +62,11 @@ bool InputEvent::is_action(const StringName &p_action) const {
 
 bool InputEvent::is_action_pressed(const StringName &p_action) const {
 
-	return false; // InputMap::get_singleton()->event_is_action(Ref<InputEvent>(this),p_action);
+	return (is_pressed() && !is_echo() && is_action(p_action));
 }
 bool InputEvent::is_action_released(const StringName &p_action) const {
 
-	return false;
+	return (!is_pressed() && is_action(p_action));
 }
 
 bool InputEvent::is_echo() const {
