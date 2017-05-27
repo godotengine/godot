@@ -69,9 +69,6 @@
 # ifdef OPENSSL_SYS_WIN32
 /* Needed for struct timeval */
 #  include <winsock.h>
-#ifdef X509_NAME
-#undef X509_NAME
-#endif
 # elif defined(OPENSSL_SYS_NETWARE) && !defined(_WINSOCK2API_)
 #  include <sys/timeval.h>
 # else
@@ -81,9 +78,6 @@
 #   include <sys/time.h>
 #  endif
 # endif
-#ifdef UWP_ENABLED
-#include <winsock2.h>
-#endif
 
 #ifdef  __cplusplus
 extern "C" {

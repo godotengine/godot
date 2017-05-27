@@ -64,23 +64,7 @@
 # include <openssl/e_os2.h>
 
 # if defined(OPENSSL_SYS_WINDOWS)
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#ifdef OCSP_RESPONSE
-#undef OCSP_RESPONSE
-#endif
-#ifdef OCSP_REQUEST
-#undef OCSP_REQUEST
-#endif
-#ifdef X509_NAME
-#undef X509_NAME
-#undef X509_NAME
-#undef X509_EXTENSIONS
-#undef X509_CERT_PAIR
-#undef PKCS7_ISSUER_AND_SERIAL
-#endif
-
-
+#  include <windows.h>
 # endif
 
 #ifdef  __cplusplus
