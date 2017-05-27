@@ -1228,8 +1228,8 @@ Error OS_OSX::shell_open(String p_uri) {
 }
 
 String OS_OSX::get_locale() const {
-	NSString *preferredLang = [[NSLocale preferredLanguages] objectAtIndex:0];
-	return [preferredLang UTF8String];
+	NSString *locale_code = [[NSLocale currentLocale] localeIdentifier];
+	return [locale_code UTF8String];
 }
 
 void OS_OSX::swap_buffers() {
