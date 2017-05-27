@@ -369,7 +369,7 @@ void InputDefault::parse_input_event(const Ref<InputEvent> &p_event) {
 		set_joy_axis(jm->get_device(), jm->get_axis(), jm->get_axis_value());
 	}
 
-	if (p_event->is_echo()) {
+	if (!p_event->is_echo()) {
 		for (const Map<StringName, InputMap::Action>::Element *E = InputMap::get_singleton()->get_action_map().front(); E; E = E->next()) {
 
 			if (InputMap::get_singleton()->event_is_action(p_event, E->key()) && is_action_pressed(E->key()) != p_event->is_pressed()) {
