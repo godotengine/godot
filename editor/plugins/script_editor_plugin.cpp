@@ -38,7 +38,6 @@
 #include "os/file_access.h"
 #include "os/input.h"
 #include "os/keyboard.h"
-#include "os/keyboard.h"
 #include "os/os.h"
 #include "scene/main/viewport.h"
 
@@ -48,6 +47,7 @@ void ScriptEditorBase::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("name_changed"));
 	ADD_SIGNAL(MethodInfo("request_help_search", PropertyInfo(Variant::STRING, "topic")));
+	ADD_SIGNAL(MethodInfo("request_help_index"));
 	ADD_SIGNAL(MethodInfo("request_open_script_at_line", PropertyInfo(Variant::OBJECT, "script"), PropertyInfo(Variant::INT, "line")));
 	ADD_SIGNAL(MethodInfo("request_save_history"));
 	ADD_SIGNAL(MethodInfo("go_to_help", PropertyInfo(Variant::STRING, "what")));
@@ -1039,7 +1039,7 @@ void ScriptEditor::_notification(int p_what) {
 
 		EditorSettings::get_singleton()->connect("settings_changed", this, "_editor_settings_changed");
 		help_search->set_icon(get_icon("Help", "EditorIcons"));
-		site_search->set_icon(get_icon("GodotDocs", "EditorIcons"));
+		site_search->set_icon(get_icon("Instance", "EditorIcons"));
 		class_search->set_icon(get_icon("ClassList", "EditorIcons"));
 
 		script_forward->set_icon(get_icon("Forward", "EditorIcons"));
@@ -1051,6 +1051,7 @@ void ScriptEditor::_notification(int p_what) {
 		get_tree()->connect("tree_changed", this, "_tree_changed");
 		editor->connect("request_help", this, "_request_help");
 		editor->connect("request_help_search", this, "_help_search");
+		editor->connect("request_help_index", this, "_help_index");
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
@@ -2028,6 +2029,10 @@ void ScriptEditor::set_live_auto_reload_running_scripts(bool p_enabled) {
 	auto_reload_running_scripts = p_enabled;
 }
 
+void ScriptEditor::_help_index(String p_text) {
+	help_index->popup();
+}
+
 void ScriptEditor::_help_search(String p_text) {
 	help_search_dialog->popup(p_text);
 }
@@ -2069,6 +2074,7 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_goto_script_line", &ScriptEditor::_goto_script_line);
 	ClassDB::bind_method("_goto_script_line2", &ScriptEditor::_goto_script_line2);
 	ClassDB::bind_method("_help_search", &ScriptEditor::_help_search);
+	ClassDB::bind_method("_help_index", &ScriptEditor::_help_index);
 	ClassDB::bind_method("_save_history", &ScriptEditor::_save_history);
 
 	ClassDB::bind_method("_breaked", &ScriptEditor::_breaked);
@@ -2211,10 +2217,10 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	menu_hb->add_spacer();
 
 	site_search = memnew(ToolButton);
-	site_search->set_text(TTR("Tutorials"));
+	site_search->set_text(TTR("Online Docs"));
 	site_search->connect("pressed", this, "_menu_option", varray(SEARCH_WEBSITE));
 	menu_hb->add_child(site_search);
-	site_search->set_tooltip(TTR("Open https://godotengine.org at tutorials section."));
+	site_search->set_tooltip(TTR("Open Godot online documentation"));
 
 	class_search = memnew(ToolButton);
 	class_search->set_text(TTR("Classes"));

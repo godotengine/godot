@@ -371,10 +371,12 @@ void EditorHelpIndex::_tree_item_selected() {
 
 void EditorHelpIndex::select_class(const String &p_class) {
 
+	EditorNode *editor = EditorNode::get_singleton();
 	if (!tree_item_map.has(p_class))
 		return;
 	tree_item_map[p_class]->select(0);
 	class_list->ensure_cursor_is_visible();
+	editor->call("_editor_select", EditorNode::EDITOR_SCRIPT); // in case EditorHelpIndex beeen invoked on top of other editor window
 }
 
 void EditorHelpIndex::popup() {
