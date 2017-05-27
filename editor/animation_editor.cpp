@@ -2601,7 +2601,7 @@ void AnimationKeyEditor::_track_editor_gui_input(const Ref<InputEvent> &p_input)
 					float clickp = click.at.x - ofs.x;
 					float dif = base - clickp;
 
-					float target = mb->get_pos().x + dif - ofs.x;
+					float target = mm->get_pos().x + dif - ofs.x;
 
 					float ratio = target / settings_limit;
 
@@ -2615,7 +2615,7 @@ void AnimationKeyEditor::_track_editor_gui_input(const Ref<InputEvent> &p_input)
 				} break;
 				case ClickOver::CLICK_DRAG_TIMELINE: {
 
-					Point2 mpos = mb->get_pos() - ofs;
+					Point2 mpos = mm->get_pos() - ofs;
 					/*
 					if (mpos.x<name_limit)
 						mpos.x=name_limit;
@@ -2646,7 +2646,7 @@ void AnimationKeyEditor::_track_editor_gui_input(const Ref<InputEvent> &p_input)
 				} break;
 				case ClickOver::CLICK_SELECT_KEYS: {
 
-					click.to = mb->get_pos();
+					click.to = mm->get_pos();
 					if (click.to.y < h && click.at.y > h && mm->get_relative().y < 0) {
 
 						float prev = v_scroll->get_value();
@@ -2665,22 +2665,22 @@ void AnimationKeyEditor::_track_editor_gui_input(const Ref<InputEvent> &p_input)
 				} break;
 				case ClickOver::CLICK_MOVE_KEYS: {
 
-					click.to = mb->get_pos();
+					click.to = mm->get_pos();
 				} break;
 				default: {}
 			}
 
 			return;
-		} else if (mb->get_button_mask() & BUTTON_MASK_MIDDLE) {
+		} else if (mm->get_button_mask() & BUTTON_MASK_MIDDLE) {
 
 			int rel = mm->get_relative().x;
 			float relf = rel / _get_zoom_scale();
 			h_scroll->set_value(h_scroll->get_value() - relf);
 		}
 
-		if (mb->get_button_mask() == 0) {
+		if (mm->get_button_mask() == 0) {
 
-			Point2 mpos = mb->get_pos() - ofs;
+			Point2 mpos = mm->get_pos() - ofs;
 
 			if (mpos.y < h) {
 #if 0
