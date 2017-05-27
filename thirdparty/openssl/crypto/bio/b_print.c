@@ -423,9 +423,15 @@ _dopr(char **sbuffer,
             break;
         }
     }
-    *truncated = (currlen > *maxlen - 1);
-    if (*truncated)
-        currlen = *maxlen - 1;
+    /*
+     * We have to truncate if there is no dynamic buffer and we have filled the
+     * static buffer.
+     */
+    if (buffer == NULL) {
+        *truncated = (currlen > *maxlen - 1);
+        if (*truncated)
+            currlen = *maxlen - 1;
+    }
     if(!doapr_outch(sbuffer, buffer, &currlen, maxlen, '\0'))
         return 0;
     *retlen = currlen - 1;
@@ -496,7 +502,7 @@ fmtint(char **sbuffer,
     if (!(flags & DP_F_UNSIGNED)) {
         if (value < 0) {
             signvalue = '-';
-            uvalue = -value;
+            uvalue = -(unsigned LLONG)value;
         } else if (flags & DP_F_PLUS)
             signvalue = '+';
         else if (flags & DP_F_SPACE)
