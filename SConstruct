@@ -145,7 +145,7 @@ opts.Add('extra_suffix', "Custom extra suffix added to the base filename of all 
 opts.Add('unix_global_settings_path', "UNIX-specific path to system-wide settings. Currently only used for templates", '')
 opts.Add('verbose', "Enable verbose output for the compilation (yes/no)", 'yes')
 opts.Add('vsproj', "Generate Visual Studio Project. (yes/no)", 'no')
-opts.Add('warnings', "Enable showing warnings during the compilation (yes/no)", 'yes')
+opts.Add('warnings', "Set the level of warnings emitted during compilation (extra/all/moderate/no)", 'all')
 
 # Thirdparty libraries
 opts.Add('builtin_enet', "Use the builtin enet library (yes/no)", 'yes')
@@ -272,16 +272,28 @@ if selected_platform in platform_list:
     # must happen after the flags, so when flags are used by configure, stuff happens (ie, ssl on x11)
     detect.configure(env)
 
-    # TODO: Add support to specify different levels of warning, e.g. only critical/significant, instead of on/off
-    if (env["warnings"] == "yes"):
-        if (os.name == "nt" and os.getenv("VSINSTALLDIR")): # MSVC, needs to stand out of course
-	   pass# env.Append(CCFLAGS=['/W2'])
-        else: # Rest of the world
-            env.Append(CCFLAGS=['-Wall'])
-    else:
-        if (os.name == "nt" and os.getenv("VSINSTALLDIR")): # MSVC
+    if (env["warnings"] == 'yes'):
+        print("WARNING: warnings=yes is deprecated; assuming warnings=all")
+
+    if (os.name == "nt" and os.getenv("VSINSTALLDIR")): # MSVC, needs to stand out of course
+        disable_nonessential_warnings = ['/wd4267', '/wd4244', '/wd4305', '/wd4800'] # Truncations, narrowing conversions...
+        if (env["warnings"] == 'extra'):
+            env.Append(CCFLAGS=['/Wall']) # Implies /W4
+        elif (env["warnings"] == 'all' or env["warnings"] == 'yes'):
+            env.Append(CCFLAGS=['/W3'] + disable_nonessential_warnings)
+        elif (env["warnings"] == 'moderate'):
+            # C4244 shouldn't be needed here being a level-3 warning, but it is
+            env.Append(CCFLAGS=['/W2'] + disable_nonessential_warnings)
+        else: # 'no'
             env.Append(CCFLAGS=['/w'])
-        else: # Rest of the world
+    else: # Rest of the world
+        if (env["warnings"] == 'extra'):
+            env.Append(CCFLAGS=['-Wall', '-Wextra'])
+        elif (env["warnings"] == 'all' or env["warnings"] == 'yes'):
+            env.Append(CCFLAGS=['-Wall'])
+        elif (env["warnings"] == 'moderate'):
+            env.Append(CCFLAGS=['-Wall', '-Wno-unused'])
+        else: # 'no'
             env.Append(CCFLAGS=['-w'])
 
     #env['platform_libsuffix'] = env['LIBSUFFIX']
