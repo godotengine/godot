@@ -294,7 +294,7 @@ public:
 	DVector<uint8_t> get_data() const;
 
 	Error load(const String &p_path);
-	Error save_png(const String &p_path);
+	Error save_png(const String &p_path) const;
 
 	/**
 	 * create an empty image
