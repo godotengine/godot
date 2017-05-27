@@ -59,6 +59,9 @@
 
 #include <ctype.h>
 #include <e_os.h>
+// -- GODOT start --
+#include <openssl/opensslconf.h>
+// -- GODOT end --
 #include "o_str.h"
 
 #if !defined(OPENSSL_IMPLEMENTS_strncasecmp) && \
