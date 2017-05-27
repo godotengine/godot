@@ -217,6 +217,9 @@ void TextureButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "params/stretch_mode", PROPERTY_HINT_ENUM, "Scale On Expand (Compat),Scale,Tile,Keep,Keep Centered,Keep Aspect,Keep Aspect Centered,Keep Aspect Covered"), _SCS("set_stretch_mode"), _SCS("get_stretch_mode"));
 	ADD_PROPERTYNO(PropertyInfo(Variant::COLOR, "params/modulate"), _SCS("set_modulate"), _SCS("get_modulate"));
 
+	BIND_CONSTANT(RESIZE_SCALE);
+	BIND_CONSTANT(RESIZE_STRETCH);
+
 	BIND_CONSTANT(STRETCH_SCALE_ON_EXPAND);
 	BIND_CONSTANT(STRETCH_SCALE);
 	BIND_CONSTANT(STRETCH_TILE);
