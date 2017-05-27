@@ -318,6 +318,21 @@ Files extracted from upstream source:
 - COPYING and LICENSE
 
 
+## tinyexr
+
+- Upstream: https://github.com/syoyo/tinyexr
+- Version: 0.9.5+ (git a145d69)
+- License: BSD-3-Clause
+
+Files extracted from upstream source:
+
+- `tinyexr.{cc,h}`
+
+Important: Some changes were made to get TinyEXR to build on the ancient
+MinGW-w64 toolchain of Travis CI.
+https://github.com/godotengine/godot/commit/37f5e1dcd94611dd5b670f013abf0323e8b47def
+
+
 ## zlib
 
 - Upstream: http://www.zlib.net/
