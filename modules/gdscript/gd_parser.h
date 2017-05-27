@@ -216,7 +216,7 @@ public:
 			OP_CALL,
 			OP_PARENT_CALL,
 			OP_YIELD,
-			OP_EXTENDS,
+			OP_IS,
 			//indexing operator
 			OP_INDEX,
 			OP_INDEX_NAMED,
