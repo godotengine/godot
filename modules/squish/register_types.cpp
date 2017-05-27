@@ -28,9 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "register_types.h"
-
-#ifdef TOOLS_ENABLED
-
 #include "image_compress_squish.h"
 
 void register_squish_types() {
@@ -40,5 +37,3 @@ void register_squish_types() {
 }
 
 void unregister_squish_types() {}
-
-#endif
