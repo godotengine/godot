@@ -523,7 +523,7 @@ void EditorProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 			hover_metric = -1;
 		}
 
-		if (mb.is_valid() || mb->get_button_mask() & BUTTON_MASK_LEFT) {
+		if (mb.is_valid() || mm->get_button_mask() & BUTTON_MASK_LEFT) {
 			//cursor_metric=x;
 			updating_frame = true;
 
