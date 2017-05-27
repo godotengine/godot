@@ -1,15 +1,15 @@
-diff --git a/drivers/builtin_openssl2/crypto/rand/rand_win.c b/drivers/builtin_openssl2/crypto/rand/rand_win.c
-index 06670ae..70fd52a 100644
---- a/drivers/builtin_openssl2/crypto/rand/rand_win.c
-+++ b/drivers/builtin_openssl2/crypto/rand/rand_win.c
+diff --git a/thirdparty/openssl/crypto/rand/rand_win.c b/thirdparty/openssl/crypto/rand/rand_win.c
+index 06670ae01..cb4093128 100644
+--- a/thirdparty/openssl/crypto/rand/rand_win.c
++++ b/thirdparty/openssl/crypto/rand/rand_win.c
 @@ -118,8 +118,10 @@
  # ifndef _WIN32_WINNT
  #  define _WIN32_WINNT 0x0400
  # endif
-+#ifndef UWP_ENABLED
++#ifndef UWP_ENABLED // -- GODOT --
  # include <wincrypt.h>
  # include <tlhelp32.h>
-+#endif
++#endif // -- GODOT --
  
  /*
   * Limit the time spent walking through the heap, processes, threads and
@@ -18,7 +18,7 @@ index 06670ae..70fd52a 100644
  # endif                         /* CURSOR_SHOWING */
  
 -# if !defined(OPENSSL_SYS_WINCE)
-+# if !defined(OPENSSL_SYS_WINCE) && !defined(UWP_ENABLED)
++# if !defined(OPENSSL_SYS_WINCE) && !defined(UWP_ENABLED) // -- GODOT --
  typedef BOOL(WINAPI *CRYPTACQUIRECONTEXTW) (HCRYPTPROV *, LPCWSTR, LPCWSTR,
                                              DWORD, DWORD);
  typedef BOOL(WINAPI *CRYPTGENRANDOM) (HCRYPTPROV, DWORD, BYTE *);
@@ -26,7 +26,7 @@ index 06670ae..70fd52a 100644
  #  endif                        /* 1 */
  # endif                         /* !OPENSSL_SYS_WINCE */
  
-+#if !defined(UWP_ENABLED)
++#if !defined(UWP_ENABLED) // -- GODOT --
  int RAND_poll(void)
  {
      MEMORYSTATUS m;
@@ -34,7 +34,7 @@ index 06670ae..70fd52a 100644
      return (1);
  }
  
-+#endif // UWP_ENABLED
++#endif // UWP_ENABLED // -- GODOT --
 +
  int RAND_event(UINT iMsg, WPARAM wParam, LPARAM lParam)
  {
@@ -44,21 +44,21 @@ index 06670ae..70fd52a 100644
  static void readscreen(void)
  {
 -# if !defined(OPENSSL_SYS_WINCE) && !defined(OPENSSL_SYS_WIN32_CYGWIN)
-+# if !defined(OPENSSL_SYS_WINCE) && !defined(OPENSSL_SYS_WIN32_CYGWIN) && !defined(UWP_ENABLED)
++# if !defined(OPENSSL_SYS_WINCE) && !defined(OPENSSL_SYS_WIN32_CYGWIN) && !defined(UWP_ENABLED) // -- GODOT --
      HDC hScrDC;                 /* screen DC */
      HBITMAP hBitmap;            /* handle for our bitmap */
      BITMAP bm;                  /* bitmap properties */
-diff --git a/drivers/builtin_openssl2/openssl/dtls1.h b/drivers/builtin_openssl2/openssl/dtls1.h
-index 64ad3c8..a58aca2 100644
---- a/drivers/builtin_openssl2/openssl/dtls1.h
-+++ b/drivers/builtin_openssl2/openssl/dtls1.h
-@@ -81,6 +81,9 @@
+diff --git a/thirdparty/openssl/openssl/dtls1.h b/thirdparty/openssl/openssl/dtls1.h
+index 30bbcf278..81d28c29c 100644
+--- a/thirdparty/openssl/openssl/dtls1.h
++++ b/thirdparty/openssl/openssl/dtls1.h
+@@ -78,6 +78,9 @@
  #   include <sys/time.h>
  #  endif
  # endif
-+#ifdef UWP_ENABLED
++#ifdef UWP_ENABLED // -- GODOT start --
 +#include <winsock2.h>
-+#endif
++#endif // -- GODOT end --
  
  #ifdef  __cplusplus
  extern "C" {

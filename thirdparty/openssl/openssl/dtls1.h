@@ -78,6 +78,9 @@
 #   include <sys/time.h>
 #  endif
 # endif
+#ifdef UWP_ENABLED // -- GODOT start --
+#include <winsock2.h>
+#endif // -- GODOT end --
 
 #ifdef  __cplusplus
 extern "C" {

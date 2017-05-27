@@ -266,6 +266,7 @@ Files extracted from the upstream source:
   ```
   For the rest check the `git status` and decide.
 - e_os.h
+- Apply the Godot-specific patches in the `patches/` folder.
 
 ## opus
 
