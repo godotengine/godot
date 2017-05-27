@@ -96,8 +96,32 @@ Ref<Theme> create_editor_theme() {
 
 	// Define colors
 	Color highlight_color = EDITOR_DEF("interface/theme/highlight_color", Color::html("#b79047"));
-	Color base_color = EDITOR_DEF("interface/theme/base_color", Color::html("#213d4c"));
+	Color base_color = EDITOR_DEF("interface/theme/base_color", Color::html("#273241"));
 	float contrast = EDITOR_DEF("interface/theme/contrast", 0.25);
+	int preset = EDITOR_DEF("interface/theme/preset", 0);
+
+	switch (preset) {
+		case 0: { // Default
+			highlight_color = Color::html("#b79047");
+			base_color = Color::html("#273241");
+			contrast = 0.25;
+		} break;
+		case 1: { // Grey
+			highlight_color = Color::html("#3e3e3e");
+			base_color = Color::html("#3d3d3d");
+			contrast = 0.2;
+		} break;
+		case 2: { // Godot 2
+			highlight_color = Color::html("#86ace2");
+			base_color = Color::html("#3C3A44");
+			contrast = 0.25;
+		} break;
+		case 3: { // Arc
+			highlight_color = Color::html("#68a7f2");
+			base_color = Color::html("#434a59");
+			contrast = 0.2;
+		} break;
+	}
 
 	Color dark_color_1 = base_color.linear_interpolate(Color(0, 0, 0, 1), contrast);
 	Color dark_color_2 = base_color.linear_interpolate(Color(0, 0, 0, 1), contrast * 1.5);
