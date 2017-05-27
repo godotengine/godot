@@ -169,6 +169,7 @@ void ResourceImporterTexture::get_import_options(List<ImportOption> *r_options, 
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/mode", PROPERTY_HINT_ENUM, "Lossless,Lossy,Video RAM,Uncompressed", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), p_preset == PRESET_3D ? 2 : 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "compress/lossy_quality", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.7));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/hdr_mode", PROPERTY_HINT_ENUM, "Compress,Force RGBE"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "flags/repeat", PROPERTY_HINT_ENUM, "Disabled,Enabled,Mirrored"), p_preset == PRESET_3D ? 1 : 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "flags/filter"), p_preset == PRESET_2D_PIXEL ? false : true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "flags/mipmaps"), p_preset == PRESET_3D ? true : false));
@@ -181,7 +182,7 @@ void ResourceImporterTexture::get_import_options(List<ImportOption> *r_options, 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "detect_3d"), p_preset == PRESET_DETECT));
 }
 
-void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String &p_to_path, int p_compress_mode, float p_lossy_quality, Image::CompressMode p_vram_compression, bool p_mipmaps, int p_texture_flags, bool p_streamable, bool p_detect_3d, bool p_detect_srgb) {
+void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String &p_to_path, int p_compress_mode, float p_lossy_quality, Image::CompressMode p_vram_compression, bool p_mipmaps, int p_texture_flags, bool p_streamable, bool p_detect_3d, bool p_detect_srgb, bool p_force_rgbe) {
 
 	FileAccess *f = FileAccess::open(p_to_path, FileAccess::WRITE);
 	f->store_8('G');
@@ -203,6 +204,10 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 		format |= StreamTexture::FORMAT_BIT_DETECT_3D;
 	if (p_detect_srgb)
 		format |= StreamTexture::FORMAT_BIT_DETECT_SRGB;
+
+	if ((p_compress_mode == COMPRESS_LOSSLESS || p_compress_mode == COMPRESS_LOSSY) && p_image->get_format() > Image::FORMAT_RGBA8) {
+		p_compress_mode == COMPRESS_UNCOMPRESSED; //these can't go as lossy
+	}
 
 	switch (p_compress_mode) {
 		case COMPRESS_LOSSLESS: {
@@ -267,7 +272,12 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 
 			Ref<Image> image = p_image->duplicate();
 			image->generate_mipmaps();
-			image->compress(p_vram_compression);
+
+			if (p_force_rgbe && image->get_format() >= Image::FORMAT_R8 && image->get_format() <= Image::FORMAT_RGBE9995) {
+				image->convert(Image::FORMAT_RGBE9995);
+			} else {
+				image->compress(p_vram_compression);
+			}
 
 			format |= image->get_format();
 
@@ -316,6 +326,7 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 	bool premult_alpha = p_options["process/premult_alpha"];
 	bool stream = p_options["stream"];
 	int size_limit = p_options["size_limit"];
+	bool force_rgbe = int(p_options["compress/hdr_mode"]) == 1;
 
 	Ref<Image> image;
 	image.instance();
@@ -367,16 +378,16 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 	if (compress_mode == COMPRESS_VIDEO_RAM) {
 		//must import in all formats
 		//Android, GLES 2.x
-		_save_stex(image, p_save_path + ".etc.stex", compress_mode, lossy, Image::COMPRESS_ETC, mipmaps, tex_flags, stream, detect_3d, detect_srgb);
+		_save_stex(image, p_save_path + ".etc.stex", compress_mode, lossy, Image::COMPRESS_ETC, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe);
 		r_platform_variants->push_back("etc");
 		//_save_stex(image,p_save_path+".etc2.stex",compress_mode,lossy,Image::COMPRESS_ETC2,mipmaps,tex_flags,stream);
 		//r_platform_variants->push_back("etc2");
-		_save_stex(image, p_save_path + ".s3tc.stex", compress_mode, lossy, Image::COMPRESS_S3TC, mipmaps, tex_flags, stream, detect_3d, detect_srgb);
+		_save_stex(image, p_save_path + ".s3tc.stex", compress_mode, lossy, Image::COMPRESS_S3TC, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe);
 		r_platform_variants->push_back("s3tc");
 
 	} else {
 		//import normally
-		_save_stex(image, p_save_path + ".stex", compress_mode, lossy, Image::COMPRESS_16BIT /*this is ignored */, mipmaps, tex_flags, stream, detect_3d, detect_srgb);
+		_save_stex(image, p_save_path + ".stex", compress_mode, lossy, Image::COMPRESS_S3TC /*this is ignored */, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe);
 	}
 
 	return OK;

@@ -69,6 +69,7 @@ public:
 
 		bool s3tc_supported;
 		bool latc_supported;
+		bool rgtc_supported;
 		bool bptc_supported;
 		bool etc_supported;
 		bool etc2_supported;

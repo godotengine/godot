@@ -66,7 +66,6 @@ public:
 		FORMAT_RG8,
 		FORMAT_RGB8,
 		FORMAT_RGBA8,
-		FORMAT_RGB565, //16 bit
 		FORMAT_RGBA4444,
 		FORMAT_RGBA5551,
 		FORMAT_RF, //float
@@ -77,14 +76,17 @@ public:
 		FORMAT_RGH,
 		FORMAT_RGBH,
 		FORMAT_RGBAH,
+		FORMAT_RGBE9995,
 		FORMAT_DXT1, //s3tc bc1
 		FORMAT_DXT3, //bc2
 		FORMAT_DXT5, //bc3
-		FORMAT_ATI1, //bc4
-		FORMAT_ATI2, //bc5
-		FORMAT_BPTC_RGBA, //btpc bc6h
-		FORMAT_BPTC_RGBF, //float /
-		FORMAT_BPTC_RGBFU, //unsigned float
+		FORMAT_LATC_L,
+		FORMAT_LATC_LA,
+		FORMAT_RGTC_R,
+		FORMAT_RGTC_RG,
+		FORMAT_BPTC_RGBA, //btpc bc7
+		FORMAT_BPTC_RGBF, //float bc6h
+		FORMAT_BPTC_RGBFU, //unsigned float bc6hu
 		FORMAT_PVRTC2, //pvrtc
 		FORMAT_PVRTC2A,
 		FORMAT_PVRTC4,
@@ -125,12 +127,12 @@ public:
 	static void (*_image_decompress_etc)(Image *);
 	static void (*_image_decompress_etc2)(Image *);
 
-	Error _decompress_bc();
-
 	static PoolVector<uint8_t> (*lossy_packer)(const Ref<Image> &p_image, float p_quality);
 	static Ref<Image> (*lossy_unpacker)(const PoolVector<uint8_t> &p_buffer);
 	static PoolVector<uint8_t> (*lossless_packer)(const Ref<Image> &p_image);
 	static Ref<Image> (*lossless_unpacker)(const PoolVector<uint8_t> &p_buffer);
+
+	PoolVector<uint8_t>::Write write_lock;
 
 protected:
 	static void _bind_methods();
@@ -253,18 +255,18 @@ public:
 
 	static int get_format_pixel_size(Format p_format);
 	static int get_format_pixel_rshift(Format p_format);
+	static int get_format_block_size(Format p_format);
 	static void get_format_min_pixel_size(Format p_format, int &r_w, int &r_h);
 
 	static int get_image_data_size(int p_width, int p_height, Format p_format, int p_mipmaps = 0);
 	static int get_image_required_mipmaps(int p_width, int p_height, Format p_format);
 
 	enum CompressMode {
-		COMPRESS_16BIT,
 		COMPRESS_S3TC,
 		COMPRESS_PVRTC2,
 		COMPRESS_PVRTC4,
 		COMPRESS_ETC,
-		COMPRESS_ETC2
+		COMPRESS_ETC2,
 	};
 
 	Error compress(CompressMode p_mode = COMPRESS_S3TC);
@@ -288,6 +290,24 @@ public:
 	Image(const char **p_xpm);
 
 	virtual Ref<Resource> duplicate(bool p_subresources = false) const;
+
+	void lock();
+	void unlock();
+
+	//this is used for compression
+	enum DetectChannels {
+		DETECTED_L,
+		DETECTED_LA,
+		DETECTED_R,
+		DETECTED_RG,
+		DETECTED_RGB,
+		DETECTED_RGBA,
+	};
+
+	DetectChannels get_detected_channels();
+
+	Color get_pixel(int p_x, int p_y);
+	void put_pixel(int p_x, int p_y, const Color &p_color);
 
 	void copy_internals_from(const Ref<Image> &p_image) {
 		ERR_FAIL_COND(p_image.is_null());

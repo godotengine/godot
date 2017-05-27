@@ -164,18 +164,6 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 			srgb = true;
 
 		} break;
-		case Image::FORMAT_RGB565: {
-#ifndef GLES_OVER_GL
-			r_gl_internal_format = GL_RGB565;
-#else
-			//#warning TODO: Convert tod 555 if 565 is not supported (GLES3.3-)
-			r_gl_internal_format = GL_RGB5;
-#endif
-			//r_gl_internal_format=GL_RGB565;
-			r_gl_format = GL_RGB;
-			r_gl_type = GL_UNSIGNED_SHORT_5_6_5;
-
-		} break;
 		case Image::FORMAT_RGBA4444: {
 
 			r_gl_internal_format = GL_RGBA4;
@@ -241,6 +229,12 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 			r_gl_type = GL_HALF_FLOAT;
 
 		} break;
+		case Image::FORMAT_RGBE9995: {
+			r_gl_internal_format = GL_RGB9_E5;
+			r_gl_format = GL_RGB;
+			r_gl_type = GL_UNSIGNED_INT_5_9_9_9_REV;
+
+		} break;
 		case Image::FORMAT_DXT1: {
 
 			if (config.s3tc_supported) {
@@ -289,7 +283,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 			}
 
 		} break;
-		case Image::FORMAT_ATI1: {
+		case Image::FORMAT_LATC_L: {
 
 			if (config.latc_supported) {
 
@@ -305,11 +299,41 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 			}
 
 		} break;
-		case Image::FORMAT_ATI2: {
+		case Image::FORMAT_LATC_LA: {
 
 			if (config.latc_supported) {
 
 				r_gl_internal_format = _EXT_COMPRESSED_LUMINANCE_ALPHA_LATC2_EXT;
+				r_gl_format = GL_RGBA;
+				r_gl_type = GL_UNSIGNED_BYTE;
+				r_compressed = true;
+			} else {
+
+				need_decompress = true;
+			}
+
+		} break;
+		case Image::FORMAT_RGTC_R: {
+
+			if (config.rgtc_supported) {
+
+				r_gl_internal_format = _EXT_COMPRESSED_RED_RGTC1_EXT;
+				r_gl_format = GL_RGBA;
+				r_gl_type = GL_UNSIGNED_BYTE;
+				r_compressed = true;
+				srgb = true;
+
+			} else {
+
+				need_decompress = true;
+			}
+
+		} break;
+		case Image::FORMAT_RGTC_RG: {
+
+			if (config.rgtc_supported) {
+
+				r_gl_internal_format = _EXT_COMPRESSED_RED_GREEN_RGTC2_EXT;
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
@@ -662,7 +686,7 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture, const Ref<Image> &p
 		if (texture->alloc_width == img->get_width() / 2 && texture->alloc_height == img->get_height() / 2) {
 
 			img->shrink_x2();
-		} else if (img->get_format() <= Image::FORMAT_RGB565) {
+		} else if (img->get_format() <= Image::FORMAT_RGBA8) {
 
 			img->resize(texture->alloc_width, texture->alloc_height, Image::INTERPOLATE_BILINEAR);
 		}
@@ -768,6 +792,9 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture, const Ref<Image> &p
 	int h = img->get_height();
 
 	int tsize = 0;
+
+	int block = Image::get_format_block_size(img->get_format());
+
 	for (int i = 0; i < mipmaps; i++) {
 
 		int size, ofs;
@@ -777,7 +804,16 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture, const Ref<Image> &p
 
 		if (texture->compressed) {
 			glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-			glCompressedTexImage2D(blit_target, i, internal_format, w, h, 0, size, &read[ofs]);
+
+			//this is not needed, as compressed takes the regular size, even if blocks extend it
+			//int bw = (w % block != 0) ? w + (block - w % block) : w;
+			//int bh = (h % block != 0) ? h + (block - h % block) : h;
+
+			int bw = w;
+			int bh = h;
+
+			glCompressedTexImage2D(blit_target, i, internal_format, bw, bh, 0, size, &read[ofs]);
+			print_line("format: " + Image::get_format_name(texture->format) + " size: " + Vector2(bw, bh) + " block: " + itos(block));
 
 		} else {
 			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -6358,6 +6394,7 @@ void RasterizerStorageGLES3::initialize() {
 	config.s3tc_supported = config.extensions.has("GL_EXT_texture_compression_dxt1") || config.extensions.has("GL_EXT_texture_compression_s3tc") || config.extensions.has("WEBGL_compressed_texture_s3tc");
 	config.etc_supported = config.extensions.has("GL_OES_compressed_ETC1_RGB8_texture");
 	config.latc_supported = config.extensions.has("GL_EXT_texture_compression_latc");
+	config.rgtc_supported = config.extensions.has("GL_EXT_texture_compression_rgtc");
 	config.bptc_supported = config.extensions.has("GL_ARB_texture_compression_bptc");
 #ifdef GLES_OVER_GL
 	config.hdr_supported = true;

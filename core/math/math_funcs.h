@@ -278,6 +278,10 @@ public:
 		return u.f32;
 	}
 
+	static _ALWAYS_INLINE_ float half_to_float(const uint16_t h) {
+		return halfptr_to_float(&h);
+	}
+
 	static _ALWAYS_INLINE_ uint16_t make_half_float(float f) {
 
 		union {
