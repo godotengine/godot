@@ -1,0 +1,49 @@
+commit 4c8ab8b4415d129d0283d7d0d9a5789163ec8d5e
+Author: Rémi Verschelde <rverschelde@gmail.com>
+Date:   Sat May 27 16:38:46 2017 +0200
+
+    openssl: Define WIN32_LEAN_AND_MEAN on Windows
+    
+    This avoids namespace collisions with things such as X509_NAME.
+    Also force include of necessary definitions in `crypto/o_str.c`
+    which seem missing on MSVC (but work on MinGW).
+
+diff --git a/thirdparty/openssl/crypto/o_str.c b/thirdparty/openssl/crypto/o_str.c
+index 7e61cde85..1854798e2 100644
+--- a/thirdparty/openssl/crypto/o_str.c
++++ b/thirdparty/openssl/crypto/o_str.c
+@@ -59,6 +59,9 @@
+ 
+ #include <ctype.h>
+ #include <e_os.h>
++// -- GODOT start --
++#include <openssl/opensslconf.h>
++// -- GODOT end --
+ #include "o_str.h"
+ 
+ #if !defined(OPENSSL_IMPLEMENTS_strncasecmp) && \
+diff --git a/thirdparty/openssl/openssl/opensslconf.h b/thirdparty/openssl/openssl/opensslconf.h
+index f533508b1..19fad2342 100644
+--- a/thirdparty/openssl/openssl/opensslconf.h
++++ b/thirdparty/openssl/openssl/opensslconf.h
+@@ -7,6 +7,20 @@ extern "C" {
+ /* OpenSSL was configured with the following options: */
+ #ifndef OPENSSL_DOING_MAKEDEPEND
+ 
++// -- GODOT start --
++#if defined(OPENSSL_SYS_WINDOWS)
++# define WIN32_LEAN_AND_MEAN
++// Seems like we have troubles properly using the logic in e_os2.h
++# if defined(_WIN32)
++#  define OPENSSL_SYS_WIN32
++#  define OPENSSL_SYSNAME_WIN32
++# endif
++# if defined(_WIN64)
++#  define OPENSSL_SYS_WIN64
++#  define OPENSSL_SYSNAME_WIN64
++# endif
++#endif
++// -- GODOT end --
+ 
+ #ifndef OPENSSL_NO_EC_NISTP_64_GCC_128
+ # define OPENSSL_NO_EC_NISTP_64_GCC_128

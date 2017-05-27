@@ -7,6 +7,20 @@ extern "C" {
 /* OpenSSL was configured with the following options: */
 #ifndef OPENSSL_DOING_MAKEDEPEND
 
+// -- GODOT start --
+#if defined(OPENSSL_SYS_WINDOWS)
+# define WIN32_LEAN_AND_MEAN
+// Seems like we have troubles properly using the logic in e_os2.h
+# if defined(_WIN32)
+#  define OPENSSL_SYS_WIN32
+#  define OPENSSL_SYSNAME_WIN32
+# endif
+# if defined(_WIN64)
+#  define OPENSSL_SYS_WIN64
+#  define OPENSSL_SYSNAME_WIN64
+# endif
+#endif
+// -- GODOT end --
 
 #ifndef OPENSSL_NO_EC_NISTP_64_GCC_128
 # define OPENSSL_NO_EC_NISTP_64_GCC_128
