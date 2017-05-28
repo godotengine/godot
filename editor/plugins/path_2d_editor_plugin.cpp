@@ -94,16 +94,14 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 				// Check for point movement start (for point + in/out controls).
 				if (mb->get_button_index() == BUTTON_LEFT) {
-					if (!mb->get_shift() && mode == MODE_EDIT) {
-						// Point can only be moved in edit mode.
-						if (dist_to_p < grab_threshold) {
+					if (mode == MODE_EDIT && !mb->get_shift() && dist_to_p < grab_threshold) {
+						// Points can only be moved in edit mode.
 
-							action = ACTION_MOVING_POINT;
-							action_point = i;
-							moving_from = curve->get_point_pos(i);
-							moving_screen_from = gpoint;
-							return true;
-						}
+						action = ACTION_MOVING_POINT;
+						action_point = i;
+						moving_from = curve->get_point_pos(i);
+						moving_screen_from = gpoint;
+						return true;
 					} else if (mode == MODE_EDIT || mode == MODE_EDIT_CURVE) {
 						// In/out controls can be moved in multiple modes.
 						if (dist_to_p_out < grab_threshold && i < (curve->get_point_count() - 1)) {
