@@ -253,7 +253,7 @@ void EditorHelpSearch::_confirmed() {
 
 	String mdata = ti->get_metadata(0);
 	emit_signal("go_to_help", mdata);
-	editor->call("_editor_select", EditorNode::EDITOR_SCRIPT); // in case EditorHelpSearch beeen invoked on top of other editor window
+	EditorNode::get_singleton()->call("_editor_select", EditorNode::EDITOR_SCRIPT); // in case EditorHelpSearch beeen invoked on top of other editor window
 	// go to that
 	hide();
 }
@@ -288,7 +288,6 @@ void EditorHelpSearch::_bind_methods() {
 
 EditorHelpSearch::EditorHelpSearch() {
 
-	editor = EditorNode::get_singleton();
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
 
@@ -363,7 +362,7 @@ void EditorHelpIndex::_tree_item_selected() {
 		return;
 
 	emit_signal("open_class", s->get_text(0));
-
+	EditorNode::get_singleton()->call("_editor_select", EditorNode::EDITOR_SCRIPT);
 	hide();
 
 	//_goto_desc(s->get_text(0));
@@ -371,12 +370,11 @@ void EditorHelpIndex::_tree_item_selected() {
 
 void EditorHelpIndex::select_class(const String &p_class) {
 
-	EditorNode *editor = EditorNode::get_singleton();
 	if (!tree_item_map.has(p_class))
 		return;
 	tree_item_map[p_class]->select(0);
 	class_list->ensure_cursor_is_visible();
-	editor->call("_editor_select", EditorNode::EDITOR_SCRIPT); // in case EditorHelpIndex beeen invoked on top of other editor window
+	EditorNode::get_singleton()->call("_editor_select", EditorNode::EDITOR_SCRIPT); // in case EditorHelpIndex beeen invoked on top of other editor window
 }
 
 void EditorHelpIndex::popup() {
@@ -1281,7 +1279,7 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 void EditorHelp::_request_help(const String &p_string) {
 	Error err = _goto_desc(p_string);
 	if (err == OK) {
-		editor->call("_editor_select", EditorNode::EDITOR_SCRIPT);
+		EditorNode::get_singleton()->call("_editor_select", EditorNode::EDITOR_SCRIPT);
 	}
 	//100 palabras
 }
@@ -1690,8 +1688,6 @@ void EditorHelp::_bind_methods() {
 }
 
 EditorHelp::EditorHelp() {
-
-	editor = EditorNode::get_singleton();
 
 	VBoxContainer *vbc = this;
 
