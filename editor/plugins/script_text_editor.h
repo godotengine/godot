@@ -149,6 +149,8 @@ public:
 	virtual void add_callback(const String &p_function, PoolStringArray p_args);
 	virtual void update_settings();
 
+	virtual bool show_members_overview();
+
 	virtual void set_tooltip_request_func(String p_method, Object *p_obj);
 
 	virtual void set_debugger_active(bool p_active);

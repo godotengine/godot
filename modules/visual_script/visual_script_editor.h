@@ -248,6 +248,7 @@ public:
 	virtual void get_breakpoints(List<int> *p_breakpoints);
 	virtual void add_callback(const String &p_function, PoolStringArray p_args);
 	virtual void update_settings();
+	virtual bool show_members_overview();
 	virtual void set_debugger_active(bool p_active);
 	virtual void set_tooltip_request_func(String p_method, Object *p_obj);
 	virtual Control *get_edit_menu();

@@ -218,6 +218,10 @@ void ScriptTextEditor::add_callback(const String &p_function, PoolStringArray p_
 	code_editor->get_text_edit()->cursor_set_column(1);
 }
 
+bool ScriptTextEditor::show_members_overview() {
+	return true;
+}
+
 void ScriptTextEditor::update_settings() {
 
 	code_editor->update_editor_settings();
