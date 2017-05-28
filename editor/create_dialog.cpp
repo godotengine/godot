@@ -489,11 +489,13 @@ void CreateDialog::_favorite_selected() {
 
 void CreateDialog::_history_activated() {
 
+	_history_selected();
 	_confirmed();
 }
 
 void CreateDialog::_favorite_activated() {
 
+	_favorite_selected();
 	_confirmed();
 }
 
