@@ -271,7 +271,7 @@ unsigned alg_quant(celt_norm *X, int N, int K, int spread, int B, ec_enc *enc
       best_id = 0;
       /* The squared magnitude term gets added anyway, so we might as well
          add it outside the loop */
-      yy = ADD32(yy, 1);
+      yy = ADD16(yy, 1);
       j=0;
       do {
          opus_val16 Rxy, Ryy;

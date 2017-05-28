@@ -41,7 +41,7 @@ void silk_process_NLSFs(
 {
     opus_int     i, doInterpolate;
     opus_int     NLSF_mu_Q20;
-    opus_int32   i_sqr_Q15;
+    opus_int16   i_sqr_Q15;
     opus_int16   pNLSF0_temp_Q15[ MAX_LPC_ORDER ];
     opus_int16   pNLSFW_QW[ MAX_LPC_ORDER ];
     opus_int16   pNLSFW0_temp_QW[ MAX_LPC_ORDER ];
@@ -79,7 +79,8 @@ void silk_process_NLSFs(
         /* Update NLSF weights with contribution from first half */
         i_sqr_Q15 = silk_LSHIFT( silk_SMULBB( psEncC->indices.NLSFInterpCoef_Q2, psEncC->indices.NLSFInterpCoef_Q2 ), 11 );
         for( i = 0; i < psEncC->predictLPCOrder; i++ ) {
-            pNLSFW_QW[ i ] = silk_SMLAWB( silk_RSHIFT( pNLSFW_QW[ i ], 1 ), (opus_int32)pNLSFW0_temp_QW[ i ], i_sqr_Q15 );
+            pNLSFW_QW[ i ] = silk_ADD16( silk_RSHIFT( pNLSFW_QW[ i ], 1 ), silk_RSHIFT(
+                  silk_SMULBB( pNLSFW0_temp_QW[ i ], i_sqr_Q15 ), 16) );
             silk_assert( pNLSFW_QW[ i ] >= 1 );
         }
     }
@@ -100,6 +101,7 @@ void silk_process_NLSFs(
 
     } else {
         /* Copy LPC coefficients for first half from second half */
+        silk_assert( psEncC->predictLPCOrder <= MAX_LPC_ORDER );
         silk_memcpy( PredCoef_Q12[ 0 ], PredCoef_Q12[ 1 ], psEncC->predictLPCOrder * sizeof( opus_int16 ) );
     }
 }
