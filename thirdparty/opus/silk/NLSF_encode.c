@@ -46,7 +46,7 @@ opus_int32 silk_NLSF_encode(                                    /* O    Returns 
 )
 {
     opus_int         i, s, ind1, bestIndex, prob_Q8, bits_q7;
-    opus_int32       W_tmp_Q9;
+    opus_int32       W_tmp_Q9, ret;
     VARDECL( opus_int32, err_Q26 );
     VARDECL( opus_int32, RD_Q25 );
     VARDECL( opus_int, tempIndices1 );
@@ -131,6 +131,7 @@ opus_int32 silk_NLSF_encode(                                    /* O    Returns 
     /* Decode */
     silk_NLSF_decode( pNLSF_Q15, NLSFIndices, psNLSF_CB );
 
+    ret = RD_Q25[ 0 ];
     RESTORE_STACK;
-    return RD_Q25[ 0 ];
+    return ret;
 }

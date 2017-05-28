@@ -164,7 +164,7 @@ opus_val16 celt_cos_norm(opus_val32 x)
       {
          return _celt_cos_pi_2(EXTRACT16(x));
       } else {
-         return NEG32(_celt_cos_pi_2(EXTRACT16(65536-x)));
+         return NEG16(_celt_cos_pi_2(EXTRACT16(65536-x)));
       }
    } else {
       if (x&0x0000ffff)

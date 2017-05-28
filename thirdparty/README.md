@@ -272,7 +272,7 @@ Files extracted from the upstream source:
 ## opus
 
 - Upstream: https://opus-codec.org
-- Version: 1.1.4 (opus) and 0.8 (opusfile)
+- Version: 1.1.5 (opus) and 0.8 (opusfile)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:

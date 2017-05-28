@@ -74,7 +74,7 @@ int log2_frac(opus_uint32 val, int frac)
 /*Although derived separately, the pulse vector coding scheme is equivalent to
    a Pyramid Vector Quantizer \cite{Fis86}.
   Some additional notes about an early version appear at
-   http://people.xiph.org/~tterribe/notes/cwrs.html, but the codebook ordering
+   https://people.xiph.org/~tterribe/notes/cwrs.html, but the codebook ordering
    and the definitions of some terms have evolved since that was written.
 
   The conversion from a pulse vector to an integer index (encoding) and back

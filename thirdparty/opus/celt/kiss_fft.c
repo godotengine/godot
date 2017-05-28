@@ -191,7 +191,7 @@ static void kf_bfly3(
 
    kiss_fft_cpx * Fout_beg = Fout;
 #ifdef FIXED_POINT
-   epi3.r = -16384;
+   /*epi3.r = -16384;*/ /* Unused */
    epi3.i = -28378;
 #else
    epi3 = st->twiddles[fstride*m];
