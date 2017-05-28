@@ -1352,7 +1352,7 @@ void Control::_change_notify_margins() {
 	_change_notify("margin_top");
 	_change_notify("margin_right");
 	_change_notify("margin_bottom");
-	_change_notify("rect_pos");
+	_change_notify("rect_position");
 	_change_notify("rect_size");
 }
 
