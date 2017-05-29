@@ -1379,8 +1379,13 @@ void EditorNode::_property_editor_back() {
 }
 
 void EditorNode::_save_default_environment() {
+	Ref<World> world = get_scene_root()->get_world();
+	if (world == NULL) {
+		// This is not a 3d World
+		return;
+	}
 
-	Ref<Environment> fallback = get_tree()->get_root()->get_world()->get_fallback_environment();
+	Ref<Environment> fallback = world->get_fallback_environment();
 
 	if (fallback.is_valid() && fallback->get_path().is_resource_file()) {
 		Map<RES, bool> processed;
