@@ -28,10 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "script_debugger_remote.h"
+#include "core/io/marshalls.h"
 #include "globals.h"
 #include "io/ip.h"
 #include "os/input.h"
 #include "os/os.h"
+
 void ScriptDebuggerRemote::_send_video_memory() {
 
 	List<ResourceUsage> usage;
@@ -183,6 +185,8 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue) 
 				ERR_CONTINUE(cmd.size() != 1);
 				int lv = cmd[0];
 
+				ScriptInstance *self_instance = p_script->debug_get_stack_level_instance(lv);
+
 				List<String> members;
 				List<Variant> member_vals;
 
@@ -197,47 +201,74 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue) 
 
 				ERR_CONTINUE(locals.size() != local_vals.size());
 
+				List<String> globals;
+				List<Variant> global_vals;
+
+				p_script->debug_get_globals(&globals, &global_vals);
+
+				ERR_CONTINUE(globals.size() != global_vals.size());
+
 				packet_peer_stream->put_var("stack_frame_vars");
-				packet_peer_stream->put_var(2 + locals.size() * 2 + members.size() * 2);
+				packet_peer_stream->put_var(locals.size() + members.size() + globals.size());
 
-				{ //members
-					packet_peer_stream->put_var(members.size());
-
-					List<String>::Element *E = members.front();
-					List<Variant>::Element *F = member_vals.front();
+				{ //locals
+					List<String>::Element *E = locals.front();
+					List<Variant>::Element *F = local_vals.front();
 
 					while (E) {
 
-						if (F->get().get_type() == Variant::OBJECT) {
-							packet_peer_stream->put_var("*" + E->get());
-							String pretty_print = F->get().operator String();
-							packet_peer_stream->put_var(pretty_print.ascii().get_data());
-						} else {
-							packet_peer_stream->put_var(E->get());
-							packet_peer_stream->put_var(F->get());
-						}
+						PropertyInfo pi(var.get_type(), String("locals/") + E->get());
+						packet_peer_stream->put_var(_serialize(F->get(), pi));
 
 						E = E->next();
 						F = F->next();
 					}
 				}
 
-				{ //locals
-					packet_peer_stream->put_var(locals.size());
+				{ //members
 
-					List<String>::Element *E = locals.front();
-					List<Variant>::Element *F = local_vals.front();
+					if (self_instance) { // self
+
+						members.push_front("self");
+						member_vals.push_front(self_instance->get_owner());
+					}
+
+					List<String>::Element *E = members.front();
+					List<Variant>::Element *F = member_vals.front();
 
 					while (E) {
 
-						if (F->get().get_type() == Variant::OBJECT) {
-							packet_peer_stream->put_var("*" + E->get());
-							String pretty_print = F->get().operator String();
-							packet_peer_stream->put_var(pretty_print.ascii().get_data());
-						} else {
-							packet_peer_stream->put_var(E->get());
-							packet_peer_stream->put_var(F->get());
+						PropertyInfo pi(var.get_type(), String("members/") + E->get());
+						packet_peer_stream->put_var(_serialize(F->get(), pi));
+
+						E = E->next();
+						F = F->next();
+					}
+				}
+
+				if (self_instance) { // constants
+
+					Ref<Script> script = self_instance->get_script();
+					if (!script.is_null()) {
+
+						const Map<StringName, Variant> &constants = script->get_constants();
+
+						for (Map<StringName, Variant>::Element *E = constants.front(); E; E = E->next()) {
+
+							PropertyInfo pi(var.get_type(), String("constants/") + E->key());
+							packet_peer_stream->put_var(_serialize(E->value(), pi));
 						}
+					}
+				}
+
+				{ //globals
+					List<String>::Element *E = globals.front();
+					List<Variant>::Element *F = global_vals.front();
+
+					while (E) {
+
+						PropertyInfo pi(var.get_type(), String("globals/") + E->get());
+						packet_peer_stream->put_var(_serialize(F->get(), pi));
 
 						E = E->next();
 						F = F->next();
@@ -531,69 +562,81 @@ void ScriptDebuggerRemote::_send_object_id(ObjectID p_id) {
 	if (!obj)
 		return;
 
+	Array props;
+	const uint32_t SEND_PROPERTIES = 0xFFFFFFFF; // All kind of properties are allowed
 	List<PropertyInfo> pinfo;
+	Set<StringName> ignored_properties;
 	obj->get_property_list(&pinfo, true);
+	bool query_props = true;
 
-	int props_to_send = 0;
-	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
+	if (ScriptInstance *si = obj->get_script_instance()) {
+		if (!si->get_script().is_null()) {
 
-		if (E->get().usage & (PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CATEGORY)) {
-			props_to_send++;
+			const Map<StringName, Variant> &constants = si->get_script()->get_constants();
+			for (Map<StringName, Variant>::Element *E = constants.front(); E; E = E->next()) {
+
+				PropertyInfo pi(E->value().get_type(), String("constants/") + E->key());
+				props.push_back(_serialize(E->value(), pi));
+			}
+
+			const Set<StringName> &members = si->get_script()->get_members();
+			for (Set<StringName>::Element *E = members.front(); E; E = E->next()) {
+
+				Variant m;
+				if (si->get(E->get(), m)) {
+
+					PropertyInfo pi(m.get_type(), String("members/") + E->get());
+					props.push_back(_serialize(m, pi));
+
+					ignored_properties.insert(E->get());
+				}
+			}
+
+			PropertyInfo pi(Variant::OBJECT, String("Resource/script"));
+			props.push_back(_serialize(si->get_script(), pi));
+		}
+	} else if (Resource *res = obj->cast_to<Resource>()) {
+
+		if (res->cast_to<Script>()) {
+
+			const Map<StringName, Variant> &constants = res->cast_to<Script>()->get_constants();
+			for (Map<StringName, Variant>::Element *E = constants.front(); E; E = E->next()) {
+
+				PropertyInfo pi(E->value().get_type(), String("constants/") + E->key());
+				props.push_back(_serialize(E->value(), pi));
+			}
+		}
+
+		PropertyInfo pi(Variant::OBJECT, res->get_type_name(), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_CATEGORY);
+		props.push_front(_serialize(res, pi));
+
+		PropertyInfo pathpi(Variant::STRING, "Resource/Resource");
+		pathpi.hint_string = "REMOTE:RES";
+		props.push_back(_serialize(res->get_path(), pathpi));
+
+		query_props = false;
+	} else if (obj->is_type("Node")) {
+
+		String path = obj->call("get_path");
+		PropertyInfo pi(Variant::OBJECT, String("Node/path"));
+		props.push_back(_serialize(path, pi));
+	}
+
+	if (query_props) {
+		for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
+
+			if (E->get().usage & SEND_PROPERTIES && !ignored_properties.has(E->get().name)) {
+
+				Variant var = obj->get(E->get().name);
+				props.push_back(_serialize(var, E->get()));
+			}
 		}
 	}
 
 	packet_peer_stream->put_var("message:inspect_object");
-	packet_peer_stream->put_var(props_to_send * 5 + 4);
+	packet_peer_stream->put_var(2);
 	packet_peer_stream->put_var(p_id);
-	packet_peer_stream->put_var(obj->get_type());
-	if (obj->is_type("Resource") || obj->is_type("Node"))
-		packet_peer_stream->put_var(obj->call("get_path"));
-	else
-		packet_peer_stream->put_var("");
-
-	packet_peer_stream->put_var(props_to_send);
-
-	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-
-		if (E->get().usage & (PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CATEGORY)) {
-
-			if (E->get().usage & PROPERTY_USAGE_CATEGORY) {
-				packet_peer_stream->put_var("*" + E->get().name);
-			} else {
-				packet_peer_stream->put_var(E->get().name);
-			}
-
-			Variant var = obj->get(E->get().name);
-
-			if (E->get().type == Variant::OBJECT || var.get_type() == Variant::OBJECT) {
-
-				ObjectID id2;
-				Object *obj = var;
-				if (obj) {
-					id2 = obj->get_instance_ID();
-				} else {
-					id2 = 0;
-				}
-
-				packet_peer_stream->put_var(Variant::INT); //hint string
-				packet_peer_stream->put_var(PROPERTY_HINT_OBJECT_ID); //hint
-				packet_peer_stream->put_var(E->get().hint_string); //hint string
-				packet_peer_stream->put_var(id2); //value
-			} else {
-				packet_peer_stream->put_var(E->get().type);
-				packet_peer_stream->put_var(E->get().hint);
-				packet_peer_stream->put_var(E->get().hint_string);
-				//only send information that can be sent..
-				if (var.get_type() == Variant::IMAGE) {
-					var = Image();
-				}
-				if (var.get_type() >= Variant::DICTIONARY) {
-					var = Array(); //send none for now, may be to big
-				}
-				packet_peer_stream->put_var(var);
-			}
-		}
-	}
+	packet_peer_stream->put_var(props);
 }
 
 void ScriptDebuggerRemote::_set_object_property(ObjectID p_id, const String &p_property, const Variant &p_value) {
@@ -602,7 +645,164 @@ void ScriptDebuggerRemote::_set_object_property(ObjectID p_id, const String &p_p
 	if (!obj)
 		return;
 
-	obj->set(p_property, p_value);
+	String name = p_property;
+	const String member_prefix = String("members/");
+	if (name.begins_with(member_prefix) && p_property.length() > member_prefix.length()) {
+		name = p_property.substr(member_prefix.length(), p_property.length());
+	}
+
+	obj->set(name, p_value);
+}
+
+int __put_value_to_buff_at_pos(const Variant &value, DVector<uint8_t> &buff, int pos) {
+
+	int size_required = 0;
+
+	DVector<uint8_t> valuebuf;
+	if (value.get_type() == Variant::RAW_ARRAY)
+		valuebuf = value;
+
+	String sub_contetn;
+
+	switch (value.get_type()) {
+		case Variant::NIL:
+		case Variant::INT:
+		case Variant::BOOL:
+			size_required = sizeof(uint32_t);
+			break;
+		case Variant::REAL:
+			size_required = sizeof(uint32_t);
+			break;
+		case Variant::STRING: {
+			sub_contetn = value;
+			const int MAX_STR_LEN = 80; // More than 80 will not be send to the debugger
+			if (sub_contetn.length() > MAX_STR_LEN)
+				sub_contetn = sub_contetn.substr(0, MAX_STR_LEN) + "...";
+			encode_variant(sub_contetn, NULL, size_required);
+		} break;
+		default:
+			encode_variant(value, NULL, size_required);
+			break;
+	}
+	if (buff.size() < pos + size_required)
+		buff.resize((pos + size_required) * 2);
+
+	switch (value.get_type()) {
+		case Variant::INT:
+		case Variant::BOOL:
+			encode_uint32(value, &buff.write()[pos]);
+			break;
+		case Variant::REAL:
+			encode_float(value, &buff.write()[pos]);
+			break;
+		case Variant::STRING:
+			encode_variant(sub_contetn, &buff.write()[pos], size_required);
+			break;
+		default:
+			encode_variant(value, &buff.write()[pos], size_required);
+			break;
+	}
+
+	return size_required;
+}
+
+int ScriptDebuggerRemote::_serialize_variant(const Variant &var, const PropertyInfo &p_info, DVector<uint8_t> &buff) {
+
+	int used_size = 0;
+
+	used_size += __put_value_to_buff_at_pos(p_info.name, buff, used_size);
+	const int type_index = used_size;
+	used_size += __put_value_to_buff_at_pos(var.get_type(), buff, type_index);
+	const int hint_index = used_size;
+	used_size += __put_value_to_buff_at_pos(p_info.hint, buff, hint_index);
+	used_size += __put_value_to_buff_at_pos(p_info.usage, buff, used_size);
+
+	StringName hint_string = p_info.hint_string;
+
+	int value_len = 0;
+	switch (var.get_type()) {
+		case Variant::OBJECT: {
+			__put_value_to_buff_at_pos(Variant::INT, buff, type_index);
+			__put_value_to_buff_at_pos(PROPERTY_HINT_OBJECT_ID, buff, hint_index);
+			Object *obj = var;
+			uint32_t id = obj ? obj->get_instance_ID() : 0;
+			hint_string = obj ? obj->get_type_name() : hint_string;
+			value_len += __put_value_to_buff_at_pos(id, buff, used_size + value_len);
+		} break;
+		case Variant::IMAGE:
+			value_len += __put_value_to_buff_at_pos(Image(), buff, used_size + value_len);
+			break;
+		case Variant::ARRAY: {
+			Array arr = var;
+			value_len += __put_value_to_buff_at_pos(arr.size(), buff, used_size + value_len);
+
+			for (int i = 0; i < arr.size(); i++) {
+
+				const Variant &e = arr[i];
+				PropertyInfo pi(e.get_type(), "");
+				DVector<uint8_t> ebuff;
+				ebuff.resize(256);
+				ebuff.resize(_serialize_variant(e, pi, ebuff));
+
+				value_len += __put_value_to_buff_at_pos(ebuff, buff, used_size + value_len);
+			}
+		} break;
+		case Variant::STRING_ARRAY: {
+
+			DVector<String> strarr = var;
+			Array arr;
+			arr.resize(strarr.size());
+
+			for (int i = 0; i < strarr.size(); i++)
+				arr[i] = strarr[i];
+
+			PropertyInfo pi(Variant::ARRAY, "");
+			DVector<uint8_t> ebuff;
+			ebuff.resize(256);
+			ebuff.resize(_serialize_variant(arr, pi, ebuff));
+
+			value_len += __put_value_to_buff_at_pos(ebuff, buff, used_size + value_len);
+		} break;
+		case Variant::DICTIONARY: {
+			Dictionary dict = var;
+			value_len += __put_value_to_buff_at_pos(dict.size(), buff, used_size + value_len);
+
+			const Array &keys = dict.keys();
+			for (int i = 0; i < keys.size(); i++) {
+
+				PropertyInfo pi;
+				const Variant &key = keys[i];
+
+				DVector<uint8_t> tmpbuff;
+				tmpbuff.resize(256);
+				pi.type = key.get_type();
+				tmpbuff.resize(_serialize_variant(key, pi, tmpbuff));
+				value_len += __put_value_to_buff_at_pos(tmpbuff, buff, used_size + value_len);
+
+				const Variant &value = dict[key];
+				pi.type = value.get_type();
+				tmpbuff.resize(_serialize_variant(value, pi, tmpbuff));
+				value_len += __put_value_to_buff_at_pos(tmpbuff, buff, used_size + value_len);
+			}
+		} break;
+		default:
+			value_len += __put_value_to_buff_at_pos(var, buff, used_size + value_len);
+			break;
+	}
+	used_size += value_len;
+
+	used_size += __put_value_to_buff_at_pos(hint_string, buff, used_size);
+
+	return used_size;
+}
+
+DVector<uint8_t> ScriptDebuggerRemote::_serialize(const Variant &var, const PropertyInfo &p_info) {
+
+	DVector<uint8_t> buff;
+	buff.resize(256);
+	buff.resize(_serialize_variant(var, p_info, buff));
+
+	return buff;
 }
 
 void ScriptDebuggerRemote::_poll_events() {
@@ -648,6 +848,9 @@ void ScriptDebuggerRemote::_poll_events() {
 		} else if (command == "set_object_property") {
 
 			_set_object_property(cmd[1], cmd[2], cmd[3]);
+		} else if (command == "set_variable_value") {
+
+			// TODO: Implement set the value stack variale
 
 		} else if (command == "start_profiling") {
 
@@ -945,6 +1148,7 @@ ScriptDebuggerRemote::ScriptDebuggerRemote() {
 	tcp_client = StreamPeerTCP::create_ref();
 	packet_peer_stream = Ref<PacketPeerStream>(memnew(PacketPeerStream));
 	packet_peer_stream->set_stream_peer(tcp_client);
+	packet_peer_stream->set_input_buffer_max_size(pow(2, 20));
 	mutex = Mutex::create();
 	locking = false;
 

@@ -29,6 +29,7 @@
 /*************************************************************************/
 #include "gd_compiler.h"
 #include "gd_script.h"
+#include "global_constants.h"
 #include "globals.h"
 #include "os/file_access.h"
 
@@ -242,9 +243,47 @@ void GDScriptLanguage::debug_get_stack_level_members(int p_level, List<String> *
 		p_values->push_back(instance->debug_get_member_by_index(E->get().index));
 	}
 }
-void GDScriptLanguage::debug_get_globals(List<String> *p_locals, List<Variant> *p_values, int p_max_subitems, int p_max_depth) {
 
-	//no globals are really reachable in gdscript
+ScriptInstance *GDScriptLanguage::debug_get_stack_level_instance(int p_level) {
+
+	ERR_FAIL_COND_V(_debug_parse_err_line >= 0, NULL);
+	ERR_FAIL_INDEX_V(p_level, _debug_call_stack_pos, NULL);
+
+	int l = _debug_call_stack_pos - p_level - 1;
+	GDInstance *instance = _call_stack[l].instance;
+
+	return instance;
+}
+
+void GDScriptLanguage::debug_get_globals(List<String> *p_globals, List<Variant> *p_values, int p_max_subitems, int p_max_depth) {
+
+	const Map<StringName, int> &name_idx = GDScriptLanguage::get_singleton()->get_global_map();
+	const Variant *globals = GDScriptLanguage::get_singleton()->get_global_array();
+
+	for (const Map<StringName, int>::Element *E = name_idx.front(); E; E = E->next()) {
+
+		if (ObjectTypeDB::type_exists(E->key()) || Globals::get_singleton()->has_singleton(E->key()) || E->key() == "PI")
+			continue;
+
+		const Variant &var = globals[E->value()];
+		if (Object *obj = var) {
+			if (obj->cast_to<GDNativeClass>())
+				continue;
+		}
+
+		bool skip = false;
+		for (int i = 0; i < GlobalConstants::get_global_constant_count(); i++) {
+			if (E->key() == GlobalConstants::get_global_constant_name(i)) {
+				skip = true;
+				break;
+			}
+		}
+		if (skip)
+			continue;
+
+		p_globals->push_back(E->key());
+		p_values->push_back(var);
+	}
 }
 String GDScriptLanguage::debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems, int p_max_depth) {
 

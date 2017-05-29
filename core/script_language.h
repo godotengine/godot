@@ -90,6 +90,9 @@ public:
 	virtual ScriptInstance *instance_create(Object *p_this) = 0;
 	virtual bool instance_has(const Object *p_this) const = 0;
 
+	virtual const Map<StringName, Variant> &get_constants() const = 0;
+	virtual const Set<StringName> &get_members() const = 0;
+
 	virtual bool has_source_code() const = 0;
 	virtual String get_source_code() const = 0;
 	virtual void set_source_code(const String &p_code) = 0;
@@ -128,6 +131,7 @@ public:
 	virtual void call_multilevel(const StringName &p_method, const Variant **p_args, int p_argcount);
 	virtual void call_multilevel_reversed(const StringName &p_method, const Variant **p_args, int p_argcount);
 	virtual void notification(int p_notification) = 0;
+	virtual Object *get_owner() { return NULL; }
 
 	//this is used by script languages that keep a reference counter of their own
 	//you can make make Ref<> not die when it reaches zero, so deleting the reference
@@ -196,6 +200,7 @@ public:
 	virtual String debug_get_stack_level_source(int p_level) const = 0;
 	virtual void debug_get_stack_level_locals(int p_level, List<String> *p_locals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) = 0;
 	virtual void debug_get_stack_level_members(int p_level, List<String> *p_members, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) = 0;
+	virtual ScriptInstance *debug_get_stack_level_instance(int p_level) = 0;
 	virtual void debug_get_globals(List<String> *p_locals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) = 0;
 	virtual String debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems = -1, int p_max_depth = -1) = 0;
 

@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "script_editor_debugger.h"
+#include "core/io/marshalls.h"
 #include "editor_node.h"
 #include "editor_profiler.h"
 #include "editor_settings.h"
@@ -55,9 +56,17 @@ class ScriptEditorDebuggerVariables : public Object {
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value) {
 
+#if 0 // Modify stack atomic variables is not supported yet
+		if(values.has(p_name)) {
+
+			emit_signal("value_edited", p_name, p_value);
+			values[p_name] = p_value;
+
+			return true;
+		}
+#endif
 		return false;
 	}
-
 	bool _get(const StringName &p_name, Variant &r_ret) const {
 
 		if (!values.has(p_name))
@@ -67,8 +76,17 @@ protected:
 	}
 	void _get_property_list(List<PropertyInfo> *p_list) const {
 
+		p_list->clear();
 		for (const List<PropertyInfo>::Element *E = props.front(); E; E = E->next())
 			p_list->push_back(E->get());
+	}
+
+	static void _bind_methods() {
+
+		ObjectTypeDB::bind_method(_MD("clear"), &ScriptEditorDebuggerVariables::clear);
+		ObjectTypeDB::bind_method(_MD("get_var_value"), &ScriptEditorDebuggerVariables::get_var_value);
+
+		ADD_SIGNAL(MethodInfo("value_edited"));
 	}
 
 public:
@@ -78,34 +96,30 @@ public:
 		values.clear();
 	}
 
-	String get_var_value(const String &p_var) const {
+	Variant get_var_value(const String &p_var) const {
 
-		for (Map<StringName, Variant>::Element *E = values.front(); E; E = E->next()) {
-			String v = E->key().operator String().get_slice("/", 1);
-			if (v == p_var)
-				return E->get();
-		}
+		Variant var;
+		if (values.has(p_var))
+			var = values[p_var];
 
-		return "";
+		return var;
 	}
 
-	void add_property(const String &p_name, const Variant &p_value, const PropertyHint &p_hint, const String p_hint_string) {
+	void add_property(const PropertyInfo &p_info, const Variant &p_value) {
 
-		PropertyInfo pinfo;
-		pinfo.name = p_name;
-		pinfo.type = p_value.get_type();
-		pinfo.hint = p_hint;
-		pinfo.hint_string = p_hint_string;
-		props.push_back(pinfo);
-		values[p_name] = p_value;
+		props.push_back(p_info);
+		values[p_info.name] = p_value;
 	}
 
 	void update() {
 		_change_notify();
 	}
 
-	ScriptEditorDebuggerVariables() {
+	void update_single(const char *p_prop) {
+		_change_notify(p_prop);
 	}
+
+	ScriptEditorDebuggerVariables() {}
 };
 
 class ScriptEditorDebuggerInspectedObject : public Object {
@@ -115,14 +129,13 @@ class ScriptEditorDebuggerInspectedObject : public Object {
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value) {
 
-		if (!prop_values.has(p_name))
+		if (!prop_values.has(p_name) || String(p_name).begins_with("constants/"))
 			return false;
 
 		emit_signal("value_edited", p_name, p_value);
 		prop_values[p_name] = p_value;
 		return true;
 	}
-
 	bool _get(const StringName &p_name, Variant &r_ret) const {
 
 		if (!prop_values.has(p_name))
@@ -141,23 +154,52 @@ protected:
 
 	static void _bind_methods() {
 
+		ObjectTypeDB::bind_method(_MD("get_title"), &ScriptEditorDebuggerInspectedObject::get_title);
+		ObjectTypeDB::bind_method(_MD("get_variant"), &ScriptEditorDebuggerInspectedObject::get_variant);
+		ObjectTypeDB::bind_method(_MD("clear"), &ScriptEditorDebuggerInspectedObject::clear);
+		ObjectTypeDB::bind_method(_MD("get_remote_object_id"), &ScriptEditorDebuggerInspectedObject::get_remote_object_id);
+
 		ADD_SIGNAL(MethodInfo("value_edited"));
 	}
 
 public:
-	ObjectID last_edited_id;
+	ObjectID remote_object_id;
 	List<PropertyInfo> prop_list;
 	Map<StringName, Variant> prop_values;
+	StringName type_name;
 
+	ObjectID get_remote_object_id() {
+		return remote_object_id;
+	}
+
+	String get_title() {
+		if (remote_object_id)
+			return String(type_name) + " ID: " + itos(remote_object_id);
+		else
+			return "<null>";
+	}
+	Variant get_variant(const StringName &p_name) {
+
+		Variant var;
+		_get(p_name, var);
+		return var;
+	}
+
+	void clear() {
+
+		prop_list.clear();
+		prop_values.clear();
+	}
 	void update() {
 		_change_notify();
 	}
-
 	void update_single(const char *p_prop) {
 		_change_notify(p_prop);
 	}
 
-	ScriptEditorDebuggerInspectedObject() { last_edited_id = 0; }
+	ScriptEditorDebuggerInspectedObject() {
+		remote_object_id = 0;
+	}
 };
 
 void ScriptEditorDebugger::debug_next() {
@@ -258,6 +300,16 @@ void ScriptEditorDebugger::_scene_tree_property_value_edited(const String &p_pro
 	inspect_edited_object_timeout = 0.7; //avoid annoyance, don't request soon after editing
 }
 
+void ScriptEditorDebugger::_scene_tree_variable_value_edited(const String &p_prop, const Variant &p_value) {
+
+	Array msg;
+	msg.push_back("set_variable_value");
+	msg.push_back(p_prop);
+	msg.push_back(p_value);
+	ppeer->put_var(msg);
+	inspect_edited_object_timeout = 0.7; //avoid annoyance, don't request soon after editing
+}
+
 void ScriptEditorDebugger::_scene_tree_property_select_object(ObjectID p_object) {
 
 	inspected_object_id = p_object;
@@ -293,9 +345,14 @@ Size2 ScriptEditorDebugger::get_minimum_size() const {
 	ms.y = MAX(ms.y, 250);
 	return ms;
 }
+
+Variant _unserial_variant(const DVector<uint8_t> &data, PropertyInfo &r_info);
+
 void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_data) {
 
 	if (p_msg == "debug_enter") {
+
+		_clear_remote_objects();
 
 		Array msg;
 		msg.push_back("get_stack_dump");
@@ -323,6 +380,8 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
 
 	} else if (p_msg == "debug_exit") {
+
+		_clear_remote_objects();
 
 		breaked = false;
 		step->set_disabled(true);
@@ -392,57 +451,46 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		le_set->set_disabled(false);
 	} else if (p_msg == "message:inspect_object") {
 
+		ScriptEditorDebuggerInspectedObject *debugObj = NULL;
+
 		ObjectID id = p_data[0];
-		String type = p_data[1];
-		Variant path = p_data[2]; //what to do yet, i don't  know
-		int prop_count = p_data[3];
-
-		int idx = 4;
-
-		if (inspected_object->last_edited_id != id) {
-			inspected_object->prop_list.clear();
-			inspected_object->prop_values.clear();
+		if (remote_objects.has(id)) {
+			debugObj = remote_objects[id];
+		} else {
+			debugObj = memnew(ScriptEditorDebuggerInspectedObject);
+			debugObj->remote_object_id = id;
+			debugObj->connect("value_edited", this, "_scene_tree_property_value_edited");
 		}
+		debugObj->clear();
 
-		for (int i = 0; i < prop_count; i++) {
+		String title = String("Object ID: ") + itos(id);
+		debugObj->prop_list.push_back(PropertyInfo(Variant::STRING, title, PROPERTY_HINT_NONE, title, PROPERTY_USAGE_CATEGORY));
+
+		Array props = p_data[1];
+		for (int i = 0; i < props.size(); i++) {
 
 			PropertyInfo pinfo;
-			pinfo.name = p_data[idx++];
-			pinfo.type = Variant::Type(int(p_data[idx++]));
-			pinfo.hint = PropertyHint(int(p_data[idx++]));
-			pinfo.hint_string = p_data[idx++];
-			if (pinfo.name.begins_with("*")) {
-				pinfo.name = pinfo.name.substr(1, pinfo.name.length());
-				pinfo.usage = PROPERTY_USAGE_CATEGORY;
+			int len = 0;
+			Variant value = _unserialize_variant(props[i], pinfo, len);
+
+			if (value.get_type() == Variant::STRING && pinfo.hint_string == "REMOTE:RES") {
+
+				pinfo.type = Variant::OBJECT;
+				pinfo.hint_string = "";
+				RES res = ResourceLoader::load(value);
+				debugObj->prop_list.push_back(pinfo);
+				debugObj->prop_values[pinfo.name] = ResourceLoader::load(value);
 			} else {
-				pinfo.usage = PROPERTY_USAGE_EDITOR;
+
+				debugObj->prop_list.push_back(pinfo);
+				debugObj->prop_values[pinfo.name] = value;
 			}
 
-			if (inspected_object->last_edited_id != id) {
-				//don't update.. it's the same, instead refresh
-				inspected_object->prop_list.push_back(pinfo);
-			}
-
-			inspected_object->prop_values[pinfo.name] = p_data[idx++];
-
-			if (inspected_object->last_edited_id == id) {
-				//same, just update value, don't rebuild
-				inspected_object->update_single(pinfo.name.ascii().get_data());
-			}
+			debugObj->update_single(pinfo.name.ascii().get_data());
 		}
 
-		if (inspected_object->last_edited_id != id) {
-			//only if different
-			inspected_object->update();
-		}
-
-		inspected_object->last_edited_id = id;
-
-		if (tabs->get_current_tab() == 2) {
-			inspect_properties->edit(inspected_object);
-		} else {
-			editor->push_item(inspected_object);
-		}
+		debugObj->update();
+		editor->push_item(debugObj, "");
 
 	} else if (p_msg == "message:video_mem") {
 
@@ -472,6 +520,8 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 	} else if (p_msg == "stack_dump") {
 
 		stack_dump->clear();
+		_clear_remote_objects();
+
 		TreeItem *r = stack_dump->create_item();
 
 		for (int i = 0; i < p_data.size(); i++) {
@@ -495,53 +545,14 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 	} else if (p_msg == "stack_frame_vars") {
 
 		variables->clear();
+		_clear_remote_objects();
 
-		int ofs = 0;
-		int mcount = p_data[ofs];
+		for (int i = 0; i < p_data.size(); i++) {
 
-		ofs++;
-		for (int i = 0; i < mcount; i++) {
-
-			String n = p_data[ofs + i * 2 + 0];
-			Variant v = p_data[ofs + i * 2 + 1];
-			PropertyHint h = PROPERTY_HINT_NONE;
-			String hs = String();
-
-			if (n.begins_with("*")) {
-
-				n = n.substr(1, n.length());
-				h = PROPERTY_HINT_OBJECT_ID;
-				String s = v;
-				s = s.replace("[", "");
-				hs = s.get_slice(":", 0);
-				v = s.get_slice(":", 1).to_int();
-			}
-
-			variables->add_property("members/" + n, v, h, hs);
-		}
-		ofs += mcount * 2;
-
-		mcount = p_data[ofs];
-
-		ofs++;
-		for (int i = 0; i < mcount; i++) {
-
-			String n = p_data[ofs + i * 2 + 0];
-			Variant v = p_data[ofs + i * 2 + 1];
-			PropertyHint h = PROPERTY_HINT_NONE;
-			String hs = String();
-
-			if (n.begins_with("*")) {
-
-				n = n.substr(1, n.length());
-				h = PROPERTY_HINT_OBJECT_ID;
-				String s = v;
-				s = s.replace("[", "");
-				hs = s.get_slice(":", 0);
-				v = s.get_slice(":", 1).to_int();
-			}
-
-			variables->add_property("locals/" + n, v, h, hs);
+			PropertyInfo pinfo;
+			int len = 0;
+			Variant value = _unserialize_variant(p_data[i], pinfo, len);
+			variables->add_property(pinfo, value);
 		}
 
 		variables->update();
@@ -755,6 +766,129 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 		editor->call_deferred("stop_child_process");
 	}
+}
+
+Variant __get_value_from_buff_at_pos(Variant::Type type, const DVector<uint8_t> &buff, int pos, int &r_len) {
+
+	Variant v;
+	ERR_FAIL_COND_V(pos >= buff.size(), v);
+
+	int size = 0;
+	switch (type) {
+		case Variant::INT:
+			v = decode_uint32(&buff.read()[pos]);
+			size += sizeof(uint32_t);
+			break;
+		case Variant::BOOL:
+			v = bool(decode_uint32(&buff.read()[pos]));
+			size += sizeof(uint32_t);
+			break;
+		case Variant::REAL:
+			v = decode_float(&buff.read()[pos]);
+			size += sizeof(uint32_t);
+			break;
+		default:
+			decode_variant(v, &buff.read()[pos], buff.size() - pos, &size);
+			break;
+	}
+
+	r_len += size;
+
+	return v;
+}
+
+Variant ScriptEditorDebugger::_unserialize_variant(const DVector<uint8_t> &data, PropertyInfo &r_info, int &r_len) {
+
+	Variant v;
+	int read_len = 0;
+
+	if (const int len_max = data.size()) {
+
+		r_info.name = __get_value_from_buff_at_pos(Variant::STRING, data, read_len, read_len);
+		r_info.type = Variant::Type((int)__get_value_from_buff_at_pos(Variant::INT, data, read_len, read_len));
+		r_info.hint = PropertyHint((int)__get_value_from_buff_at_pos(Variant::INT, data, read_len, read_len));
+		r_info.usage = __get_value_from_buff_at_pos(Variant::INT, data, read_len, read_len);
+
+		ScriptEditorDebuggerInspectedObject *eobj = NULL;
+
+		switch (r_info.type) {
+			case Variant::INT: {
+				v = __get_value_from_buff_at_pos(Variant::INT, data, read_len, read_len);
+
+				if (r_info.hint == PROPERTY_HINT_OBJECT_ID) {
+
+					ObjectID eid = v;
+
+					if (remote_objects.has(eid))
+						eobj = remote_objects[eid];
+					else {
+						eobj = memnew(ScriptEditorDebuggerInspectedObject);
+						eobj->connect("value_edited", this, "_scene_tree_property_value_edited");
+						eobj->remote_object_id = eid;
+						remote_objects[eid] = eobj;
+					}
+
+					v = eobj;
+				}
+			} break;
+			case Variant::ARRAY: {
+				int size = __get_value_from_buff_at_pos(Variant::INT, data, read_len, read_len);
+
+				ERR_BREAK(size < 0);
+
+				Array arr;
+				arr.resize(size);
+
+				for (int i = 0; i < size; i++) {
+					int len = data.size() - read_len;
+					ERR_BREAK(len < 0);
+					DVector<uint8_t> ebuff = __get_value_from_buff_at_pos(Variant::RAW_ARRAY, data, read_len, read_len);
+					PropertyInfo pi;
+					arr[i] = _unserialize_variant(ebuff, pi, len);
+				}
+
+				v = arr;
+			} break;
+			case Variant::DICTIONARY: {
+				int size = __get_value_from_buff_at_pos(Variant::INT, data, read_len, read_len);
+
+				ERR_BREAK(size < 0);
+
+				Dictionary dict;
+				for (int i = 0; i < size; i++) {
+
+					int len = data.size() - read_len;
+					ERR_BREAK(len < 0);
+
+					PropertyInfo pi;
+					DVector<uint8_t> tmpbuff = __get_value_from_buff_at_pos(Variant::RAW_ARRAY, data, read_len, read_len);
+					Variant key = _unserialize_variant(tmpbuff, pi, len);
+
+					len = data.size() - read_len;
+					ERR_BREAK(len < 0);
+
+					tmpbuff = __get_value_from_buff_at_pos(Variant::RAW_ARRAY, data, read_len, read_len);
+					Variant value = _unserialize_variant(tmpbuff, pi, len);
+
+					dict[key] = value;
+				}
+				v = dict;
+			} break;
+			default:
+				v = __get_value_from_buff_at_pos(r_info.type, data, read_len, read_len);
+				break;
+		}
+
+		r_info.hint_string = __get_value_from_buff_at_pos(Variant::STRING, data, read_len, read_len);
+
+		if (eobj) {
+			eobj->type_name = r_info.hint_string;
+		}
+	}
+
+	r_len = read_len;
+
+	return v;
 }
 
 void ScriptEditorDebugger::_performance_select(Object *, int, bool) {
@@ -986,7 +1120,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 							ERR_FAIL_COND(ret != OK);
 						}
 						if (cmd.get_type() != Variant::STRING) {
-							stop();
+							//stop();
 							ERR_FAIL_COND(cmd.get_type() != Variant::STRING);
 						}
 
@@ -995,11 +1129,11 @@ void ScriptEditorDebugger::_notification(int p_what) {
 
 						ret = ppeer->get_var(cmd);
 						if (ret != OK) {
-							stop();
+							//stop();
 							ERR_FAIL_COND(ret != OK);
 						}
 						if (cmd.get_type() != Variant::INT) {
-							stop();
+							//stop();
 							ERR_FAIL_COND(cmd.get_type() != Variant::INT);
 						}
 
@@ -1052,6 +1186,8 @@ void ScriptEditorDebugger::unpause() {
 void ScriptEditorDebugger::stop() {
 
 	set_process(false);
+
+	_clear_remote_objects();
 
 	server->stop();
 
@@ -1530,6 +1666,24 @@ void ScriptEditorDebugger::_paused() {
 	}
 }
 
+void ScriptEditorDebugger::_set_remote_object(ObjectID p_id, ScriptEditorDebuggerInspectedObject *p_obj) {
+
+	if (remote_objects.has(p_id))
+		memdelete(remote_objects[p_id]);
+	remote_objects[p_id] = p_obj;
+}
+
+void ScriptEditorDebugger::_clear_remote_objects() {
+
+	inspector->edit(NULL);
+	inspect_properties->edit(NULL);
+
+	for (Map<ObjectID, ScriptEditorDebuggerInspectedObject *>::Element *E = remote_objects.front(); E; E = E->next()) {
+		memdelete(E->value());
+	}
+	remote_objects.clear();
+}
+
 void ScriptEditorDebugger::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_stack_dump_frame_selected"), &ScriptEditorDebugger::_stack_dump_frame_selected);
@@ -1564,6 +1718,7 @@ void ScriptEditorDebugger::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("live_debug_reparent_node"), &ScriptEditorDebugger::live_debug_reparent_node);
 	ObjectTypeDB::bind_method(_MD("_scene_tree_property_select_object"), &ScriptEditorDebugger::_scene_tree_property_select_object);
 	ObjectTypeDB::bind_method(_MD("_scene_tree_property_value_edited"), &ScriptEditorDebugger::_scene_tree_property_value_edited);
+	ObjectTypeDB::bind_method(_MD("_scene_tree_variable_value_edited"), &ScriptEditorDebugger::_scene_tree_variable_value_edited);
 
 	ADD_SIGNAL(MethodInfo("goto_script_line"));
 	ADD_SIGNAL(MethodInfo("breaked", PropertyInfo(Variant::BOOL, "reallydid"), PropertyInfo(Variant::BOOL, "can_debug")));
@@ -1573,7 +1728,10 @@ void ScriptEditorDebugger::_bind_methods() {
 ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 
 	ppeer = Ref<PacketPeerStream>(memnew(PacketPeerStream));
+	ppeer->set_input_buffer_max_size(pow(2, 20));
+
 	editor = p_editor;
+	editor->get_property_editor()->connect("object_id_selected", this, "_scene_tree_property_select_object");
 
 	tabs = memnew(TabContainer);
 	tabs->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -1660,6 +1818,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		pending_in_queue = 0;
 
 		variables = memnew(ScriptEditorDebuggerVariables);
+		variables->connect("value_edited", this, "_scene_tree_variable_value_edited");
 
 		breaked = false;
 
@@ -1704,14 +1863,12 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		inspect_scene_tree->connect("cell_selected", this, "_scene_tree_selected");
 		inspect_scene_tree->connect("item_collapsed", this, "_scene_tree_folded");
 
-		//
-
 		VBoxContainer *info_right = memnew(VBoxContainer);
 		info_right->set_h_size_flags(SIZE_EXPAND_FILL);
 		inspect_info->add_child(info_right);
 
 		inspect_properties = memnew(PropertyEditor);
-		inspect_properties->hide_top_label();
+		//inspect_properties->hide_top_label();
 		inspect_properties->set_show_categories(true);
 		inspect_properties->connect("object_id_selected", this, "_scene_tree_property_select_object");
 
@@ -1721,9 +1878,6 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		inspect_edited_object_timeout = EDITOR_DEF("debugger/remote_inspect_refresh_interval", 0.2);
 		inspected_object_id = 0;
 		updating_scene_tree = false;
-
-		inspected_object = memnew(ScriptEditorDebuggerInspectedObject);
-		inspected_object->connect("value_edited", this, "_scene_tree_property_value_edited");
 	}
 
 	{ //profiler
@@ -1874,5 +2028,5 @@ ScriptEditorDebugger::~ScriptEditorDebugger() {
 	ppeer->set_stream_peer(Ref<StreamPeer>());
 
 	server->stop();
-	memdelete(inspected_object);
+	_clear_remote_objects();
 }
