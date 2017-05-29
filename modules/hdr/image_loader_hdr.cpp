@@ -131,7 +131,7 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 		//convert
 		for (int i = 0; i < width * height; i++) {
 
-			float exp = pow(2, ptr[3] - 128);
+			float exp = pow(2.0f, ptr[3] - 128.0f);
 
 			Color c(
 					ptr[0] * exp / 255.0,
