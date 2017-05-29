@@ -57,8 +57,11 @@ String Variant::get_type_name(Variant::Type p_type) {
 
 		} break;
 		case REAL: {
-
+#ifdef REAL_T_IS_DOUBLE
+			return "double";
+#else
 			return "float";
+#endif
 
 		} break;
 		case STRING: {
