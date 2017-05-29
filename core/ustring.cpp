@@ -489,6 +489,18 @@ signed char String::naturalnocasecmp_to(const String &p_str) const {
 	const CharType *that_str = p_str.c_str();
 
 	if (this_str && that_str) {
+
+		while (*this_str == '.' || *that_str == '.') {
+			if (*this_str++ != '.')
+				return 1;
+			if (*that_str++ != '.')
+				return -1;
+			if (!*that_str)
+				return 1;
+			if (!*this_str)
+				return -1;
+		}
+
 		while (*this_str) {
 
 			if (!*that_str)
