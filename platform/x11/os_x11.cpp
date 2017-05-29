@@ -343,7 +343,9 @@ void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 	cursor_theme = XcursorGetTheme(x11_display);
 
 	if (!cursor_theme) {
-		WARN_PRINT("Could not find cursor theme");
+		if (is_stdout_verbose()) {
+			print_line("XcursorGetTheme could not get cursor theme");
+		}
 		cursor_theme = "default";
 	}
 
