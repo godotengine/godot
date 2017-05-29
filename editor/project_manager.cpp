@@ -203,10 +203,23 @@ private:
 					f->store_line("\n");
 					f->store_line("name=\"" + project_name->get_text() + "\"");
 					f->store_line("icon=\"res://icon.png\"");
-
+					f->store_line("[rendering]");
+					f->store_line("viewport/default_environment=\"res://default_env.tres\"");
 					memdelete(f);
 
 					ResourceSaver::save(dir.plus_file("/icon.png"), get_icon("DefaultProjectIcon", "EditorIcons"));
+
+					f = FileAccess::open(dir.plus_file("/default_env.tres"), FileAccess::WRITE);
+					if (!f) {
+						error->set_text(TTR("Couldn't create project.godot in project path."));
+					} else {
+						f->store_line("[gd_resource type=\"Environment\" load_steps=2 format=2]");
+						f->store_line("[sub_resource type=\"ProceduralSky\" id=1]");
+						f->store_line("[resource]");
+						f->store_line("background_mode = 2");
+						f->store_line("background_sky = SubResource( 1 )");
+						memdelete(f);
+					}
 				}
 
 			} else if (mode == MODE_INSTALL) {

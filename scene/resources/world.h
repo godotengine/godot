@@ -48,6 +48,7 @@ private:
 	RID scenario;
 	SpatialIndexer *indexer;
 	Ref<Environment> environment;
+	Ref<Environment> fallback_environment;
 
 protected:
 	static void _bind_methods();
@@ -68,8 +69,12 @@ protected:
 public:
 	RID get_space() const;
 	RID get_scenario() const;
+
 	void set_environment(const Ref<Environment> &p_environment);
 	Ref<Environment> get_environment() const;
+
+	void set_fallback_environment(const Ref<Environment> &p_environment);
+	Ref<Environment> get_fallback_environment() const;
 
 	PhysicsDirectSpaceState *get_direct_space_state();
 

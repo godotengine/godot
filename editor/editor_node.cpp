@@ -889,6 +889,7 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	}
 
 	editor_data.apply_changes_in_editors();
+	_save_default_environment();
 
 	_set_scene_metadata(p_file, idx);
 
@@ -950,7 +951,7 @@ void EditorNode::_save_scene(String p_file, int idx) {
 
 		_dialog_display_file_error(p_file, err);
 	}
-};
+}
 
 void EditorNode::_import_action(const String &p_action) {
 #if 0
@@ -1113,6 +1114,7 @@ void EditorNode::_dialog_action(String p_file) {
 			if (file->get_mode() == EditorFileDialog::MODE_SAVE_FILE) {
 
 				//_save_scene(p_file);
+				_save_default_environment();
 				_save_scene_with_preview(p_file);
 			}
 
@@ -1122,6 +1124,7 @@ void EditorNode::_dialog_action(String p_file) {
 			if (file->get_mode() == EditorFileDialog::MODE_SAVE_FILE) {
 
 				//_save_scene(p_file);
+				_save_default_environment();
 				_save_scene_with_preview(p_file);
 				_call_build();
 				_run(true);
@@ -1375,6 +1378,17 @@ void EditorNode::_property_editor_back() {
 		_edit_current();
 }
 
+void EditorNode::_save_default_environment() {
+
+	Ref<Environment> fallback = get_scene_root()->get_world()->get_fallback_environment();
+
+	if (fallback.is_valid() && fallback->get_path().is_resource_file()) {
+		Map<RES, bool> processed;
+		_find_and_save_edited_subresources(fallback.ptr(), processed, 0);
+		save_resource_in_path(fallback, fallback->get_path());
+	}
+}
+
 void EditorNode::_imported(Node *p_node) {
 
 	/*
@@ -1453,11 +1467,16 @@ void EditorNode::_edit_current() {
 
 		Node *current_node = current_obj->cast_to<Node>();
 		ERR_FAIL_COND(!current_node);
-		ERR_FAIL_COND(!current_node->is_inside_tree());
+		//		ERR_FAIL_COND(!current_node->is_inside_tree());
 
 		property_editor->edit(current_node);
-		node_dock->set_node(current_node);
-		scene_tree_dock->set_selected(current_node);
+		if (current_node->is_inside_tree()) {
+			node_dock->set_node(current_node);
+			scene_tree_dock->set_selected(current_node);
+		} else {
+			node_dock->set_node(NULL);
+			scene_tree_dock->set_selected(NULL);
+		}
 		object_menu->get_popup()->clear();
 
 		//top_pallete->set_current_tab(0);
@@ -1951,6 +1970,8 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 					}
 				} // else: ignore new scenes
 			}
+
+			_save_default_environment();
 		} break;
 		case FILE_SAVE_BEFORE_RUN: {
 			if (!p_confirmed) {
@@ -2384,6 +2405,8 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 		} break;
 		case RUN_PLAY_SCENE: {
+
+			_save_default_environment();
 			_menu_option_confirm(RUN_STOP, true);
 			_call_build();
 			_run(true);
@@ -5237,6 +5260,7 @@ EditorNode::EditorNode() {
 	p->add_separator();
 	p->add_item(TTR("Project Settings"), RUN_SETTINGS);
 	p->add_separator();
+
 #ifdef OSX_ENABLED
 	p->add_item(TTR("Quit to Project List"), RUN_PROJECT_MANAGER, KEY_MASK_SHIFT + KEY_MASK_ALT + KEY_Q);
 #else

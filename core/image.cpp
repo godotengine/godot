@@ -1981,35 +1981,7 @@ void Image::put_pixel(int p_x, int p_y, const Color &p_color) {
 		} break;
 		case FORMAT_RGBE9995: {
 
-			const float pow2to9 = 512.0f;
-			const float B = 7.0f;
-			//const float Emax = 31.0f;
-			const float N = 9.0f;
-
-			float sharedexp = 65408.000f; //(( pow2to9  - 1.0f)/ pow2to9)*powf( 2.0f, 31.0f - 15.0f);
-
-			float cRed = MAX(0.0f, MIN(sharedexp, p_color.r));
-			float cGreen = MAX(0.0f, MIN(sharedexp, p_color.g));
-			float cBlue = MAX(0.0f, MIN(sharedexp, p_color.b));
-
-			float cMax = MAX(cRed, MAX(cGreen, cBlue));
-
-			// expp = MAX(-B - 1, log2(maxc)) + 1 + B
-			float expp = MAX(-B - 1.0f, floor(Math::log(cMax) / Math::log(2.0))) + 1.0f + B;
-
-			float sMax = (float)floor((cMax / Math::pow(2.0f, expp - B - N)) + 0.5f);
-
-			float exps = expp + 1.0f;
-
-			if (0.0 <= sMax && sMax < pow2to9) {
-				exps = expp;
-			}
-
-			float sRed = (cRed / pow(2.0f, exps - B - N)) + 0.5f;
-			float sGreen = (cGreen / pow(2.0f, exps - B - N)) + 0.5f;
-			float sBlue = (cBlue / pow(2.0f, exps - B - N)) + 0.5f;
-
-			((uint32_t *)ptr)[ofs] = ((uint32_t)(sRed)&0x1FF) | (((uint32_t)(sGreen)&0x1FF) << 9) | (((uint32_t)(sBlue)&0x1FF) << 18) | (((uint32_t)(exps)&0x1F) << 27);
+			((uint32_t *)ptr)[ofs] = p_color.to_rgbe9995();
 
 		} break;
 		default: {

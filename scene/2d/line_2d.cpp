@@ -99,7 +99,7 @@ Color Line2D::get_default_color() const {
 	return _default_color;
 }
 
-void Line2D::set_gradient(const Ref<ColorRamp> &gradient) {
+void Line2D::set_gradient(const Ref<Gradient> &gradient) {
 
 	// Cleanup previous connection if any
 	if (_gradient.is_valid()) {
@@ -116,7 +116,7 @@ void Line2D::set_gradient(const Ref<ColorRamp> &gradient) {
 	update();
 }
 
-Ref<ColorRamp> Line2D::get_gradient() const {
+Ref<Gradient> Line2D::get_gradient() const {
 	return _gradient;
 }
 

@@ -32,9 +32,9 @@
 
 #include "resource.h"
 
-class ColorRamp : public Resource {
-	GDCLASS(ColorRamp, Resource);
-	OBJ_SAVE_TYPE(ColorRamp);
+class Gradient : public Resource {
+	GDCLASS(Gradient, Resource);
+	OBJ_SAVE_TYPE(Gradient);
 
 public:
 	struct Point {
@@ -54,8 +54,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	ColorRamp();
-	virtual ~ColorRamp();
+	Gradient();
+	virtual ~Gradient();
 
 	void add_point(float p_offset, const Color &p_color);
 	void remove_point(int p_index);

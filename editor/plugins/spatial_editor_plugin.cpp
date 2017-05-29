@@ -2493,17 +2493,11 @@ Dictionary SpatialEditor::get_state() const {
 
 	d["viewports"] = vpdata;
 
-	d["default_light"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_DEFAULT_LIGHT));
-	d["ambient_light_color"] = settings_ambient_color->get_pick_color();
-
-	d["default_srgb"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_DEFAULT_SRGB));
 	d["show_grid"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_GRID));
 	d["show_origin"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_ORIGIN));
 	d["fov"] = get_fov();
 	d["znear"] = get_znear();
 	d["zfar"] = get_zfar();
-	d["deflight_rot_x"] = settings_default_light_rot_x;
-	d["deflight_rot_y"] = settings_default_light_rot_y;
 
 	return d;
 }
@@ -2565,26 +2559,6 @@ void SpatialEditor::set_state(const Dictionary &p_state) {
 	if (d.has("fov"))
 		settings_fov->set_value(float(d["fov"]));
 
-	if (d.has("default_light")) {
-		bool use = d["default_light"];
-
-		bool existing = light_instance.is_valid();
-		if (use != existing) {
-			if (existing) {
-				VisualServer::get_singleton()->free(light_instance);
-				light_instance = RID();
-			} else {
-				light_instance = VisualServer::get_singleton()->instance_create2(light, get_tree()->get_root()->get_world()->get_scenario());
-				VisualServer::get_singleton()->instance_set_transform(light_instance, light_transform);
-			}
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_DEFAULT_LIGHT), light_instance.is_valid());
-		}
-	}
-	if (d.has("ambient_light_color")) {
-		settings_ambient_color->set_pick_color(d["ambient_light_color"]);
-		//viewport_environment->fx_set_param(Environment::FX_PARAM_AMBIENT_LIGHT_COLOR,d["ambient_light_color"]);
-	}
-
 	if (d.has("default_srgb")) {
 		bool use = d["default_srgb"];
 
@@ -2607,13 +2581,6 @@ void SpatialEditor::set_state(const Dictionary &p_state) {
 			VisualServer::get_singleton()->instance_set_visible(origin_instance, use);
 		}
 	}
-
-	if (d.has("deflight_rot_x"))
-		settings_default_light_rot_x = d["deflight_rot_x"];
-	if (d.has("deflight_rot_y"))
-		settings_default_light_rot_y = d["deflight_rot_y"];
-
-	_update_default_light_angle();
 }
 
 void SpatialEditor::edit(Spatial *p_spatial) {
@@ -2748,38 +2715,6 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 			}
 
 			xform_dialog->popup_centered(Size2(200, 200));
-
-		} break;
-		case MENU_VIEW_USE_DEFAULT_LIGHT: {
-
-			bool is_checked = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(p_option));
-
-			if (is_checked) {
-				VisualServer::get_singleton()->free(light_instance);
-				light_instance = RID();
-			} else {
-				light_instance = VisualServer::get_singleton()->instance_create2(light, get_tree()->get_root()->get_world()->get_scenario());
-				VisualServer::get_singleton()->instance_set_transform(light_instance, light_transform);
-
-				_update_default_light_angle();
-			}
-
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(p_option), light_instance.is_valid());
-
-		} break;
-		case MENU_VIEW_USE_DEFAULT_SRGB: {
-
-			bool is_checked = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(p_option));
-
-			if (is_checked) {
-				//viewport_environment->set_enable_fx(Environment::FX_SRGB,false);
-			} else {
-				//viewport_environment->set_enable_fx(Environment::FX_SRGB,true);
-			}
-
-			is_checked = !is_checked;
-
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(p_option), is_checked);
 
 		} break;
 		case MENU_VIEW_USE_1_VIEWPORT: {
@@ -2992,14 +2927,6 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 }
 
 void SpatialEditor::_init_indicators() {
-
-	//make sure that the camera indicator is not selectable
-	light = VisualServer::get_singleton()->light_create(VisualServer::LIGHT_DIRECTIONAL);
-	//VisualServer::get_singleton()->light_set_shadow( light, true );
-	light_instance = VisualServer::get_singleton()->instance_create2(light, get_tree()->get_root()->get_world()->get_scenario());
-
-	light_transform.rotate(Vector3(1, 0, 0), -Math_PI / 5.0);
-	VisualServer::get_singleton()->instance_set_transform(light_instance, light_transform);
 
 	//RID mat = VisualServer::get_singleton()->fixed_material_create();
 	///VisualServer::get_singleton()->fixed_material_set_flag(mat, VisualServer::FIXED_MATERIAL_FLAG_USE_ALPHA,true);
@@ -3258,8 +3185,6 @@ void SpatialEditor::_finish_indicators() {
 		VisualServer::get_singleton()->free(grid_instance[i]);
 		VisualServer::get_singleton()->free(grid[i]);
 	}
-	VisualServer::get_singleton()->free(light_instance);
-	VisualServer::get_singleton()->free(light);
 	//VisualServer::get_singleton()->free(poly);
 	//VisualServer::get_singleton()->free(indicators_instance);
 	//VisualServer::get_singleton()->free(indicators);
@@ -3351,14 +3276,12 @@ void SpatialEditor::_notification(int p_what) {
 		_menu_item_pressed(MENU_VIEW_USE_1_VIEWPORT);
 
 		get_tree()->connect("node_removed", this, "_node_removed");
-		VS::get_singleton()->scenario_set_fallback_environment(get_viewport()->find_world()->get_scenario(), viewport_environment->get_rid());
 	}
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
 		gizmos = memnew(SpatialEditorGizmos);
 		_init_indicators();
-		_update_default_light_angle();
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
@@ -3481,8 +3404,6 @@ void SpatialEditor::_bind_methods() {
 	ClassDB::bind_method("_xform_dialog_action", &SpatialEditor::_xform_dialog_action);
 	ClassDB::bind_method("_get_editor_data", &SpatialEditor::_get_editor_data);
 	ClassDB::bind_method("_request_gizmo", &SpatialEditor::_request_gizmo);
-	ClassDB::bind_method("_default_light_angle_input", &SpatialEditor::_default_light_angle_input);
-	ClassDB::bind_method("_update_ambient_light_color", &SpatialEditor::_update_ambient_light_color);
 	ClassDB::bind_method("_toggle_maximize_view", &SpatialEditor::_toggle_maximize_view);
 
 	ADD_SIGNAL(MethodInfo("transform_key_request"));
@@ -3517,43 +3438,6 @@ void SpatialEditor::clear() {
 	}
 
 	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_GRID), true);
-
-	settings_default_light_rot_x = Math_PI * 0.3;
-	settings_default_light_rot_y = Math_PI * 0.2;
-
-	//viewport_environment->fx_set_param(Environment::FX_PARAM_AMBIENT_LIGHT_COLOR,Color(0.15,0.15,0.15));
-	settings_ambient_color->set_pick_color(Color(0.15, 0.15, 0.15));
-	if (!light_instance.is_valid())
-		_menu_item_pressed(MENU_VIEW_USE_DEFAULT_LIGHT);
-
-	_update_default_light_angle();
-}
-
-void SpatialEditor::_update_ambient_light_color(const Color &p_color) {
-
-	//viewport_environment->fx_set_param(Environment::FX_PARAM_AMBIENT_LIGHT_COLOR,settings_ambient_color->get_color());
-}
-
-void SpatialEditor::_update_default_light_angle() {
-
-	Transform t;
-	t.basis.rotate(Vector3(1, 0, 0), -settings_default_light_rot_x);
-	t.basis.rotate(Vector3(0, 1, 0), -settings_default_light_rot_y);
-	settings_dlight->set_transform(t);
-	if (light_instance.is_valid()) {
-		VS::get_singleton()->instance_set_transform(light_instance, t);
-	}
-}
-
-void SpatialEditor::_default_light_angle_input(const Ref<InputEvent> &p_event) {
-
-	Ref<InputEventMouseMotion> mm = p_event;
-	if (mm.is_valid() && mm->get_button_mask() & (0x1 | 0x2 | 0x4)) {
-
-		settings_default_light_rot_y = Math::fposmod(settings_default_light_rot_y - mm->get_relative().x * 0.01, Math_PI * 2.0);
-		settings_default_light_rot_x = Math::fposmod(settings_default_light_rot_x - mm->get_relative().y * 0.01, Math_PI * 2.0);
-		_update_default_light_angle();
-	}
 }
 
 SpatialEditor::SpatialEditor(EditorNode *p_editor) {
@@ -3674,10 +3558,6 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 
 	p = view_menu->get_popup();
 
-	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/use_default_light", TTR("Use Default Light")), MENU_VIEW_USE_DEFAULT_LIGHT);
-	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/use_default_srgb", TTR("Use Default sRGB")), MENU_VIEW_USE_DEFAULT_SRGB);
-	p->add_separator();
-
 	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/1_viewport", TTR("1 Viewport"), KEY_MASK_CMD + KEY_1), MENU_VIEW_USE_1_VIEWPORT);
 	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/2_viewports", TTR("2 Viewports"), KEY_MASK_CMD + KEY_2), MENU_VIEW_USE_2_VIEWPORTS);
 	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/2_viewports_alt", TTR("2 Viewports (Alt)"), KEY_MASK_ALT + KEY_MASK_CMD + KEY_2), MENU_VIEW_USE_2_VIEWPORTS_ALT);
@@ -3696,7 +3576,6 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("spatial_editor/settings", TTR("Settings")), MENU_VIEW_CAMERA_SETTINGS);
 
-	p->set_item_checked(p->get_item_index(MENU_VIEW_USE_DEFAULT_LIGHT), true);
 	p->set_item_checked(p->get_item_index(MENU_VIEW_DISPLAY_NORMAL), true);
 	p->set_item_checked(p->get_item_index(MENU_VIEW_ORIGIN), true);
 	p->set_item_checked(p->get_item_index(MENU_VIEW_GRID), true);
@@ -3754,36 +3633,6 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	settings_vbc->set_custom_minimum_size(Size2(200, 0));
 	settings_dialog->add_child(settings_vbc);
 	//settings_dialog->set_child_rect(settings_vbc);
-
-	settings_light_base = memnew(ViewportContainer);
-	settings_light_base->set_custom_minimum_size(Size2(128, 128));
-	settings_light_base->connect("gui_input", this, "_default_light_angle_input");
-	settings_vbc->add_margin_child(TTR("Default Light Normal:"), settings_light_base);
-	settings_light_vp = memnew(Viewport);
-	settings_light_vp->set_disable_input(true);
-	settings_light_vp->set_use_own_world(true);
-	settings_light_base->add_child(settings_light_vp);
-
-	settings_dlight = memnew(DirectionalLight);
-	settings_light_vp->add_child(settings_dlight);
-	settings_sphere = memnew(ImmediateGeometry);
-	settings_sphere->begin(Mesh::PRIMITIVE_TRIANGLES, Ref<Texture>());
-	settings_sphere->set_color(Color(1, 1, 1));
-	settings_sphere->add_sphere(32, 16, 1);
-	settings_sphere->end();
-	settings_light_vp->add_child(settings_sphere);
-	settings_camera = memnew(Camera);
-	settings_light_vp->add_child(settings_camera);
-	settings_camera->set_translation(Vector3(0, 0, 2));
-	settings_camera->set_orthogonal(2.1, 0.1, 5);
-
-	settings_default_light_rot_x = Math_PI * 0.3;
-	settings_default_light_rot_y = Math_PI * 0.2;
-
-	settings_ambient_color = memnew(ColorPickerButton);
-	settings_vbc->add_margin_child(TTR("Ambient Light Color:"), settings_ambient_color);
-	settings_ambient_color->connect("color_changed", this, "_update_ambient_light_color");
-	settings_ambient_color->set_pick_color(Color(0.15, 0.15, 0.15));
 
 	settings_fov = memnew(SpinBox);
 	settings_fov->set_max(179);

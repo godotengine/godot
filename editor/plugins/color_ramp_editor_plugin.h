@@ -39,7 +39,7 @@ class ColorRampEditorPlugin : public EditorPlugin {
 	GDCLASS(ColorRampEditorPlugin, EditorPlugin);
 
 	bool _2d;
-	Ref<ColorRamp> color_ramp_ref;
+	Ref<Gradient> color_ramp_ref;
 	ColorRampEdit *ramp_editor;
 	EditorNode *editor;
 

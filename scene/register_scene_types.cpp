@@ -563,6 +563,7 @@ void register_scene_types() {
 	ClassDB::register_virtual_class<Texture>();
 	ClassDB::register_virtual_class<Sky>();
 	ClassDB::register_class<PanoramaSky>();
+	ClassDB::register_class<ProceduralSky>();
 	ClassDB::register_class<StreamTexture>();
 	ClassDB::register_class<ImageTexture>();
 	ClassDB::register_class<AtlasTexture>();
@@ -584,7 +585,7 @@ void register_scene_types() {
 
 	ClassDB::register_class<PolygonPathFinder>();
 	ClassDB::register_class<BitMap>();
-	ClassDB::register_class<ColorRamp>();
+	ClassDB::register_class<Gradient>();
 
 	OS::get_singleton()->yield(); //may take time to init
 

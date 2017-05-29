@@ -321,10 +321,6 @@ private:
 
 	VisualServer::ScenarioDebugMode scenario_debug;
 
-	RID light;
-	RID light_instance;
-	Transform light_transform;
-
 	RID origin;
 	RID origin_instance;
 	RID grid[3];
@@ -383,8 +379,6 @@ private:
 		MENU_VIEW_USE_3_VIEWPORTS,
 		MENU_VIEW_USE_3_VIEWPORTS_ALT,
 		MENU_VIEW_USE_4_VIEWPORTS,
-		MENU_VIEW_USE_DEFAULT_LIGHT,
-		MENU_VIEW_USE_DEFAULT_SRGB,
 		MENU_VIEW_DISPLAY_NORMAL,
 		MENU_VIEW_DISPLAY_WIREFRAME,
 		MENU_VIEW_DISPLAY_OVERDRAW,
@@ -419,16 +413,6 @@ private:
 	SpinBox *settings_fov;
 	SpinBox *settings_znear;
 	SpinBox *settings_zfar;
-	DirectionalLight *settings_dlight;
-	ImmediateGeometry *settings_sphere;
-	Camera *settings_camera;
-	float settings_default_light_rot_x;
-	float settings_default_light_rot_y;
-
-	ViewportContainer *settings_light_base;
-	Viewport *settings_light_vp;
-	ColorPickerButton *settings_ambient_color;
-	Ref<Image> settings_light_dir_image;
 
 	void _xform_dialog_action();
 	void _menu_item_pressed(int p_option);
@@ -461,10 +445,6 @@ private:
 	void _node_removed(Node *p_node);
 	SpatialEditorGizmos *gizmos;
 	SpatialEditor();
-
-	void _update_ambient_light_color(const Color &p_color);
-	void _update_default_light_angle();
-	void _default_light_angle_input(const Ref<InputEvent> &p_event);
 
 	bool is_any_freelook_active() const;
 

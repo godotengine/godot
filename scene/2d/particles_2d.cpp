@@ -774,12 +774,12 @@ Color Particles2D::get_color() const {
 	return default_color;
 }
 
-void Particles2D::set_color_ramp(const Ref<ColorRamp> &p_color_ramp) {
+void Particles2D::set_color_ramp(const Ref<Gradient> &p_color_ramp) {
 
 	color_ramp = p_color_ramp;
 }
 
-Ref<ColorRamp> Particles2D::get_color_ramp() const {
+Ref<Gradient> Particles2D::get_color_ramp() const {
 
 	return color_ramp;
 }
@@ -810,7 +810,7 @@ void Particles2D::set_color_phases(int p_phases) {
 	//Create color ramp if we have 2 or more phases.
 	//Otherwise first phase phase will be assigned to default color.
 	if (p_phases > 1 && color_ramp.is_null()) {
-		color_ramp = Ref<ColorRamp>(memnew(ColorRamp()));
+		color_ramp = Ref<Gradient>(memnew(Gradient()));
 	}
 	if (color_ramp.is_valid()) {
 		color_ramp->get_points().resize(p_phases);

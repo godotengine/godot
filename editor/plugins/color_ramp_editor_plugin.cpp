@@ -46,10 +46,10 @@ ColorRampEditorPlugin::ColorRampEditorPlugin(EditorNode *p_node) {
 
 void ColorRampEditorPlugin::edit(Object *p_object) {
 
-	ColorRamp *color_ramp = p_object->cast_to<ColorRamp>();
+	Gradient *color_ramp = p_object->cast_to<Gradient>();
 	if (!color_ramp)
 		return;
-	color_ramp_ref = Ref<ColorRamp>(color_ramp);
+	color_ramp_ref = Ref<Gradient>(color_ramp);
 	ramp_editor->set_points(color_ramp_ref->get_points());
 }
 

@@ -37,6 +37,7 @@
 #include "print_string.h"
 #include <stdio.h>
 //#include "servers/spatial_sound_2d_server.h"
+
 #include "io/marshalls.h"
 #include "io/resource_loader.h"
 #include "scene/resources/material.h"
@@ -608,6 +609,30 @@ bool SceneTree::idle(float p_time) {
 	}
 
 	_call_idle_callbacks();
+
+#ifdef TOOLS_ENABLED
+
+	if (is_editor_hint()) {
+		//simple hack to reload fallback environment if it changed from editor
+		String env_path = GlobalConfig::get_singleton()->get("rendering/viewport/default_environment");
+		env_path = env_path.strip_edges(); //user may have added a space or two
+		String cpath;
+		Ref<Environment> fallback = get_root()->get_world()->get_fallback_environment();
+		if (fallback.is_valid()) {
+			cpath = fallback->get_path();
+		}
+		if (cpath != env_path) {
+
+			if (env_path != String()) {
+				fallback = ResourceLoader::load(env_path);
+			} else {
+				fallback.unref();
+			}
+			get_root()->get_world()->set_fallback_environment(fallback);
+		}
+	}
+
+#endif
 
 	return _quit;
 }
@@ -2301,7 +2326,9 @@ SceneTree::SceneTree() {
 
 	root = memnew(Viewport);
 	root->set_name("root");
-	root->set_world(Ref<World>(memnew(World)));
+	if (!root->get_world().is_valid())
+		root->set_world(Ref<World>(memnew(World)));
+
 	//root->set_world_2d( Ref<World2D>( memnew( World2D )));
 	root->set_as_audio_listener(true);
 	root->set_as_audio_listener_2d(true);
@@ -2316,6 +2343,37 @@ SceneTree::SceneTree() {
 	root->set_hdr(hdr);
 
 	VS::get_singleton()->scenario_set_reflection_atlas_size(root->get_world()->get_scenario(), ref_atlas_size, ref_atlas_subdiv);
+
+	{ //load default fallback environment
+		//get possible extensions
+		List<String> exts;
+		ResourceLoader::get_recognized_extensions_for_type("Environment", &exts);
+		String ext_hint;
+		for (List<String>::Element *E = exts.front(); E; E = E->next()) {
+			if (ext_hint != String())
+				ext_hint += ",";
+			ext_hint += "*." + E->get();
+		}
+		//get path
+		String env_path = GLOBAL_DEF("rendering/viewport/default_environment", "");
+		//setup property
+		GlobalConfig::get_singleton()->set_custom_property_info("rendering/viewport/default_environment", PropertyInfo(Variant::STRING, "rendering/viewport/default_environment", PROPERTY_HINT_FILE, ext_hint));
+		env_path = env_path.strip_edges();
+		if (env_path != String()) {
+			Ref<Environment> env = ResourceLoader::load(env_path);
+			if (env.is_valid()) {
+				root->get_world()->set_fallback_environment(env);
+			} else {
+				if (is_editor_hint()) {
+					//file was erased, clear the field.
+					GlobalConfig::get_singleton()->set("rendering/viewport/default_environment", "");
+				} else {
+					//file was erased, notify user.
+					ERR_PRINTS(RTR("Default Environment as specified in Project Setings (Rendering -> Viewport -> Default Environment) could not be loaded."));
+				}
+			}
+		}
+	}
 
 	stretch_mode = STRETCH_MODE_DISABLED;
 	stretch_aspect = STRETCH_ASPECT_IGNORE;

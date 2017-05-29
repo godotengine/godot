@@ -169,7 +169,7 @@ private:
 
 	//If no color ramp is set then default color is used. Created as simple alternative to color_ramp.
 	Color default_color;
-	Ref<ColorRamp> color_ramp;
+	Ref<Gradient> color_ramp;
 
 	void _process_particles(float p_delta);
 	friend class ParticleAttractor2D;
@@ -241,8 +241,8 @@ public:
 	void set_color(const Color &p_color);
 	Color get_color() const;
 
-	void set_color_ramp(const Ref<ColorRamp> &p_texture);
-	Ref<ColorRamp> get_color_ramp() const;
+	void set_color_ramp(const Ref<Gradient> &p_texture);
+	Ref<Gradient> get_color_ramp() const;
 
 	void set_emissor_offset(const Point2 &p_offset);
 	Point2 get_emissor_offset() const;

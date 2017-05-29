@@ -114,7 +114,7 @@ void ColorRampEdit::_gui_input(const Ref<InputEvent> &p_event) {
 
 		if (grabbed != -1) {
 			int total_w = get_size().width - get_size().height - 3;
-			ColorRamp::Point newPoint = points[grabbed];
+			Gradient::Point newPoint = points[grabbed];
 			newPoint.offset = CLAMP(x / float(total_w), 0, 1);
 
 			points.push_back(newPoint);
@@ -152,11 +152,11 @@ void ColorRampEdit::_gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		//insert
-		ColorRamp::Point newPoint;
+		Gradient::Point newPoint;
 		newPoint.offset = CLAMP(x / float(total_w), 0, 1);
 
-		ColorRamp::Point prev;
-		ColorRamp::Point next;
+		Gradient::Point prev;
+		Gradient::Point next;
 
 		int pos = -1;
 		for (int i = 0; i < points.size(); i++) {
@@ -293,7 +293,7 @@ void ColorRampEdit::_notification(int p_what) {
 		_draw_checker(0, 0, total_w, h);
 
 		//Draw color ramp
-		ColorRamp::Point prev;
+		Gradient::Point prev;
 		prev.offset = 0;
 		if (points.size() == 0)
 			prev.color = Color(0, 0, 0); //Draw black rectangle if we have no points
@@ -302,7 +302,7 @@ void ColorRampEdit::_notification(int p_what) {
 
 		for (int i = -1; i < points.size(); i++) {
 
-			ColorRamp::Point next;
+			Gradient::Point next;
 			//If there is no next point
 			if (i + 1 == points.size()) {
 				if (points.size() == 0)
@@ -410,7 +410,7 @@ void ColorRampEdit::set_ramp(const Vector<float> &p_offsets, const Vector<Color>
 	ERR_FAIL_COND(p_offsets.size() != p_colors.size());
 	points.clear();
 	for (int i = 0; i < p_offsets.size(); i++) {
-		ColorRamp::Point p;
+		Gradient::Point p;
 		p.offset = p_offsets[i];
 		p.color = p_colors[i];
 		points.push_back(p);
@@ -434,14 +434,14 @@ Vector<Color> ColorRampEdit::get_colors() const {
 	return ret;
 }
 
-void ColorRampEdit::set_points(Vector<ColorRamp::Point> &p_points) {
+void ColorRampEdit::set_points(Vector<Gradient::Point> &p_points) {
 	if (points.size() != p_points.size())
 		grabbed = -1;
 	points.clear();
 	points = p_points;
 }
 
-Vector<ColorRamp::Point> &ColorRampEdit::get_points() {
+Vector<Gradient::Point> &ColorRampEdit::get_points() {
 	return points;
 }
 

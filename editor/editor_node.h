@@ -593,6 +593,7 @@ private:
 
 	static int plugin_init_callback_count;
 	static EditorPluginInitializeCallback plugin_init_callbacks[MAX_INIT_CALLBACKS];
+	void _save_default_environment();
 
 	void _call_build();
 	static int build_callback_count;

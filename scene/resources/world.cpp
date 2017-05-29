@@ -280,6 +280,20 @@ Ref<Environment> World::get_environment() const {
 	return environment;
 }
 
+void World::set_fallback_environment(const Ref<Environment> &p_environment) {
+
+	fallback_environment = p_environment;
+	if (fallback_environment.is_valid())
+		VS::get_singleton()->scenario_set_fallback_environment(scenario, p_environment->get_rid());
+	else
+		VS::get_singleton()->scenario_set_fallback_environment(scenario, RID());
+}
+
+Ref<Environment> World::get_fallback_environment() const {
+
+	return fallback_environment;
+}
+
 PhysicsDirectSpaceState *World::get_direct_space_state() {
 
 	return PhysicsServer::get_singleton()->space_get_direct_state(space);
@@ -291,8 +305,11 @@ void World::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_scenario"), &World::get_scenario);
 	ClassDB::bind_method(D_METHOD("set_environment", "env:Environment"), &World::set_environment);
 	ClassDB::bind_method(D_METHOD("get_environment:Environment"), &World::get_environment);
+	ClassDB::bind_method(D_METHOD("set_fallback_environment", "env:Environment"), &World::set_fallback_environment);
+	ClassDB::bind_method(D_METHOD("get_fallback_environment:Environment"), &World::get_fallback_environment);
 	ClassDB::bind_method(D_METHOD("get_direct_space_state:PhysicsDirectSpaceState"), &World::get_direct_space_state);
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "environment", PROPERTY_HINT_RESOURCE_TYPE, "Environment"), "set_environment", "get_environment");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "fallback_environment", PROPERTY_HINT_RESOURCE_TYPE, "Environment"), "set_fallback_environment", "get_fallback_environment");
 }
 
 World::World() {

@@ -252,6 +252,27 @@ double FileAccess::get_double() const {
 	return m.d;
 };
 
+String FileAccess::get_token() const {
+
+	CharString token;
+
+	CharType c = get_8();
+
+	while (!eof_reached()) {
+
+		if (c <= ' ') {
+			if (!token.empty())
+				break;
+		} else {
+			token.push_back(c);
+		}
+		c = get_8();
+	}
+
+	token.push_back(0);
+	return String::utf8(token.get_data());
+}
+
 String FileAccess::get_line() const {
 
 	CharString line;
