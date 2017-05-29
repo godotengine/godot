@@ -493,7 +493,7 @@ public:
 
 	virtual void update_dirty_resources() = 0;
 
-	static RasterizerStorage *base_signleton;
+	static RasterizerStorage *base_singleton;
 	RasterizerStorage();
 	virtual ~RasterizerStorage() {}
 };
@@ -806,7 +806,7 @@ public:
 					case Item::Command::TYPE_MESH: {
 
 						const Item::CommandMesh *mesh = static_cast<const Item::CommandMesh *>(c);
-						Rect3 aabb = RasterizerStorage::base_signleton->mesh_get_aabb(mesh->mesh, mesh->skeleton);
+						Rect3 aabb = RasterizerStorage::base_singleton->mesh_get_aabb(mesh->mesh, mesh->skeleton);
 
 						r = Rect2(aabb.pos.x, aabb.pos.y, aabb.size.x, aabb.size.y);
 
@@ -814,7 +814,7 @@ public:
 					case Item::Command::TYPE_MULTIMESH: {
 
 						const Item::CommandMultiMesh *multimesh = static_cast<const Item::CommandMultiMesh *>(c);
-						Rect3 aabb = RasterizerStorage::base_signleton->multimesh_get_aabb(multimesh->multimesh);
+						Rect3 aabb = RasterizerStorage::base_singleton->multimesh_get_aabb(multimesh->multimesh);
 
 						r = Rect2(aabb.pos.x, aabb.pos.y, aabb.size.x, aabb.size.y);
 
