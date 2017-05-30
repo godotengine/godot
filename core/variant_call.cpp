@@ -446,7 +446,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM1R(NodePath, get_name);
 	VCALL_LOCALMEM0R(NodePath, get_subname_count);
 	VCALL_LOCALMEM1R(NodePath, get_subname);
-	VCALL_LOCALMEM0R(NodePath, get_property);
+	VCALL_LOCALMEM0R(NodePath, get_concatenated_subnames);
 	VCALL_LOCALMEM0R(NodePath, is_empty);
 
 	VCALL_LOCALMEM0R(Dictionary, size);
@@ -1590,7 +1590,7 @@ void register_variant_methods() {
 	ADDFUNC1R(NODE_PATH, STRING, NodePath, get_name, INT, "idx", varray());
 	ADDFUNC0R(NODE_PATH, INT, NodePath, get_subname_count, varray());
 	ADDFUNC1R(NODE_PATH, STRING, NodePath, get_subname, INT, "idx", varray());
-	ADDFUNC0R(NODE_PATH, STRING, NodePath, get_property, varray());
+	ADDFUNC0R(NODE_PATH, STRING, NodePath, get_concatenated_subnames, varray());
 	ADDFUNC0R(NODE_PATH, BOOL, NodePath, is_empty, varray());
 
 	ADDFUNC0R(DICTIONARY, INT, Dictionary, size, varray());

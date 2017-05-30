@@ -811,7 +811,7 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 		t.scale.y = 0;
 		t.scale.z = 0;
 
-		t.value = t.object->get(t.property);
+		t.value = t.object->get_indexed(t.subpath);
 		t.value.zero();
 
 		t.skip = false;
@@ -890,8 +890,8 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 		if (t.skip || !t.object)
 			continue;
 
-		if (t.property) { // value track
-			t.object->set(t.property, t.value);
+		if (t.subpath.size()) { // value track
+			t.object->set_indexed(t.subpath, t.value);
 			continue;
 		}
 
@@ -1475,7 +1475,8 @@ AnimationTreePlayer::Track *AnimationTreePlayer::_find_track(const NodePath &p_p
 	ERR_FAIL_COND_V(!parent, NULL);
 
 	RES resource;
-	Node *child = parent->get_node_and_resource(p_path, resource);
+	Vector<StringName> leftover_path;
+	Node *child = parent->get_node_and_resource(p_path, resource, leftover_path);
 	if (!child) {
 		String err = "Animation track references unknown Node: '" + String(p_path) + "'.";
 		WARN_PRINT(err.ascii().get_data());
@@ -1483,21 +1484,18 @@ AnimationTreePlayer::Track *AnimationTreePlayer::_find_track(const NodePath &p_p
 	}
 
 	ObjectID id = child->get_instance_id();
-	StringName property;
 	int bone_idx = -1;
 
-	if (p_path.get_property()) {
+	if (p_path.get_subname_count()) {
 
 		if (Object::cast_to<Skeleton>(child))
-			bone_idx = Object::cast_to<Skeleton>(child)->find_bone(p_path.get_property());
-		if (bone_idx == -1)
-			property = p_path.get_property();
+			bone_idx = Object::cast_to<Skeleton>(child)->find_bone(p_path.get_subname(0));
 	}
 
 	TrackKey key;
 	key.id = id;
 	key.bone_idx = bone_idx;
-	key.property = property;
+	key.subpath_concatenated = p_path.get_concatenated_subnames();
 
 	if (!track_map.has(key)) {
 
@@ -1507,7 +1505,7 @@ AnimationTreePlayer::Track *AnimationTreePlayer::_find_track(const NodePath &p_p
 		tr.skeleton = Object::cast_to<Skeleton>(child);
 		tr.spatial = Object::cast_to<Spatial>(child);
 		tr.bone_idx = bone_idx;
-		tr.property = property;
+		if (bone_idx == -1) tr.subpath = leftover_path;
 
 		track_map[key] = tr;
 	}

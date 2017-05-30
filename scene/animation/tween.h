@@ -86,12 +86,13 @@ private:
 		bool call_deferred;
 		real_t elapsed;
 		ObjectID id;
-		StringName key;
+		Vector<StringName> key;
+		StringName concatenated_key;
 		Variant initial_val;
 		Variant delta_val;
 		Variant final_val;
 		ObjectID target_id;
-		StringName target_key;
+		Vector<StringName> target_key;
 		real_t duration;
 		TransitionType trans_type;
 		EaseType ease_type;
@@ -132,7 +133,7 @@ private:
 
 	void _tween_process(float p_delta);
 	void _set_process(bool p_process, bool p_force = false);
-	void _remove(Object *p_object, String p_key, bool first_only);
+	void _remove(Object *p_object, StringName p_key, bool first_only);
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -156,34 +157,34 @@ public:
 	float get_speed_scale() const;
 
 	bool start();
-	bool reset(Object *p_object, String p_key);
+	bool reset(Object *p_object, StringName p_key);
 	bool reset_all();
-	bool stop(Object *p_object, String p_key);
+	bool stop(Object *p_object, StringName p_key);
 	bool stop_all();
-	bool resume(Object *p_object, String p_key);
+	bool resume(Object *p_object, StringName p_key);
 	bool resume_all();
-	bool remove(Object *p_object, String p_key);
+	bool remove(Object *p_object, StringName p_key);
 	bool remove_all();
 
 	bool seek(real_t p_time);
 	real_t tell() const;
 	real_t get_runtime() const;
 
-	bool interpolate_property(Object *p_object, String p_property, Variant p_initial_val, Variant p_final_val, real_t p_duration, TransitionType p_trans_type, EaseType p_ease_type, real_t p_delay = 0);
+	bool interpolate_property(Object *p_object, NodePath p_property, Variant p_initial_val, Variant p_final_val, real_t p_duration, TransitionType p_trans_type, EaseType p_ease_type, real_t p_delay = 0);
 
-	bool interpolate_method(Object *p_object, String p_method, Variant p_initial_val, Variant p_final_val, real_t p_duration, TransitionType p_trans_type, EaseType p_ease_type, real_t p_delay = 0);
+	bool interpolate_method(Object *p_object, StringName p_method, Variant p_initial_val, Variant p_final_val, real_t p_duration, TransitionType p_trans_type, EaseType p_ease_type, real_t p_delay = 0);
 
 	bool interpolate_callback(Object *p_object, real_t p_duration, String p_callback, VARIANT_ARG_DECLARE);
 
 	bool interpolate_deferred_callback(Object *p_object, real_t p_duration, String p_callback, VARIANT_ARG_DECLARE);
 
-	bool follow_property(Object *p_object, String p_property, Variant p_initial_val, Object *p_target, String p_target_property, real_t p_duration, TransitionType p_trans_type, EaseType p_ease_type, real_t p_delay = 0);
+	bool follow_property(Object *p_object, NodePath p_property, Variant p_initial_val, Object *p_target, NodePath p_target_property, real_t p_duration, TransitionType p_trans_type, EaseType p_ease_type, real_t p_delay = 0);
 
-	bool follow_method(Object *p_object, String p_method, Variant p_initial_val, Object *p_target, String p_target_method, real_t p_duration, TransitionType p_trans_type, EaseType p_ease_type, real_t p_delay = 0);
+	bool follow_method(Object *p_object, StringName p_method, Variant p_initial_val, Object *p_target, StringName p_target_method, real_t p_duration, TransitionType p_trans_type, EaseType p_ease_type, real_t p_delay = 0);
 
-	bool targeting_property(Object *p_object, String p_property, Object *p_initial, String p_initial_property, Variant p_final_val, real_t p_duration, TransitionType p_trans_type, EaseType p_ease_type, real_t p_delay = 0);
+	bool targeting_property(Object *p_object, NodePath p_property, Object *p_initial, NodePath p_initial_property, Variant p_final_val, real_t p_duration, TransitionType p_trans_type, EaseType p_ease_type, real_t p_delay = 0);
 
-	bool targeting_method(Object *p_object, String p_method, Object *p_initial, String p_initial_method, Variant p_final_val, real_t p_duration, TransitionType p_trans_type, EaseType p_ease_type, real_t p_delay = 0);
+	bool targeting_method(Object *p_object, StringName p_method, Object *p_initial, StringName p_initial_method, Variant p_final_val, real_t p_duration, TransitionType p_trans_type, EaseType p_ease_type, real_t p_delay = 0);
 
 	Tween();
 	~Tween();

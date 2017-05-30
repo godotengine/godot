@@ -267,7 +267,6 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 
 			Vector<StringName> names;
 			Vector<StringName> subnames;
-			StringName property;
 			bool absolute;
 
 			int name_count = f->get_16();
@@ -279,9 +278,8 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 				names.push_back(_get_string());
 			for (uint32_t i = 0; i < subname_count; i++)
 				subnames.push_back(_get_string());
-			property = _get_string();
 
-			NodePath np = NodePath(names, subnames, absolute, property);
+			NodePath np = NodePath(names, subnames, absolute);
 
 			r_v = np;
 
@@ -1454,7 +1452,6 @@ void ResourceFormatSaverBinaryInstance::write_variant(const Variant &p_property,
 				f->store_32(get_string_index(np.get_name(i)));
 			for (int i = 0; i < np.get_subname_count(); i++)
 				f->store_32(get_string_index(np.get_subname(i)));
-			f->store_32(get_string_index(np.get_property()));
 
 		} break;
 		case Variant::_RID: {
@@ -1685,7 +1682,6 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 				get_string_index(np.get_name(i));
 			for (int i = 0; i < np.get_subname_count(); i++)
 				get_string_index(np.get_subname(i));
-			get_string_index(np.get_property());
 
 		} break;
 		default: {}

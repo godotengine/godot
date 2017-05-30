@@ -83,7 +83,7 @@ private:
 
 			TrackNodeCache *owner;
 			SpecialProperty special; //small optimization
-			StringName prop;
+			Vector<StringName> subpath;
 			Object *object;
 			Variant value_accum;
 			uint64_t accum_pass;

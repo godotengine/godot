@@ -78,14 +78,14 @@ private:
 	struct TrackKey {
 
 		uint32_t id;
-		StringName property;
+		StringName subpath_concatenated;
 		int bone_idx;
 
 		inline bool operator<(const TrackKey &p_right) const {
 
 			if (id == p_right.id) {
 				if (bone_idx == p_right.bone_idx) {
-					return property < p_right.property;
+					return subpath_concatenated < p_right.subpath_concatenated;
 				} else
 					return bone_idx < p_right.bone_idx;
 			} else
@@ -99,7 +99,7 @@ private:
 		Spatial *spatial;
 		Skeleton *skeleton;
 		int bone_idx;
-		StringName property;
+		Vector<StringName> subpath;
 
 		Vector3 loc;
 		Quat rot;
