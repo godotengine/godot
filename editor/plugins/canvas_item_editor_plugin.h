@@ -364,6 +364,14 @@ class CanvasItemEditor : public VBoxContainer {
 	HSplitContainer *palette_split;
 	VSplitContainer *bottom_split;
 
+	HBoxContainer *toolbar;
+	Label *mouse_pos_label_x;
+	Label *mouse_pos_label_y;
+	Vector2 cached_mouse_pos;
+	bool mouse_pos_changed;
+
+	void _cache_mouse_pos(const Vector2 &p_mouse_pos);
+
 	friend class CanvasItemEditorPlugin;
 
 protected:
