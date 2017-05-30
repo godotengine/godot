@@ -387,6 +387,22 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 	_edited = true;
 #endif
 
+	// Check for dotted properties, and attempt to recursively get/set them
+	{
+		String name_str = p_name;
+		int dot_pos = name_str.rfind(".");
+		if (dot_pos > -1) {
+			StringName property = name_str.left(dot_pos);
+			bool success = false;
+			Variant current_value = get(property, &success);
+			if (success) {
+				current_value.set(name_str.right(dot_pos + 1), p_value);
+				set(property, current_value, r_valid);
+				return;
+			}
+		}
+	}
+
 	if (script_instance) {
 
 		if (script_instance->set(p_name, p_value)) {
@@ -434,6 +450,20 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 Variant Object::get(const StringName &p_name, bool *r_valid) const {
 
 	Variant ret;
+
+	// Check for dotted properties, and attempt to recursively get them
+	{
+		String name_str = p_name;
+		int dot_pos = name_str.rfind(".");
+		if (dot_pos > -1) {
+			StringName property = name_str.left(dot_pos);
+			bool success = false;
+			Variant current_value = get(property, &success);
+			if (success) {
+				return current_value.get(name_str.right(dot_pos + 1), r_valid);
+			}
+		}
+	}
 
 	if (script_instance) {
 
