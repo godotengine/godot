@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resource_file type="PackedScene" subresource_count="8" version="1.0" version_name="Godot Engine v1.0.stable.custom_build">
+	<ext_resource path="res://spine/goblins/goblins-ffd.json" type="SpineResource"></ext_resource>
+	<ext_resource path="res://spine/goblins/goblins.json" type="SpineResource"></ext_resource>
+	<ext_resource path="res://spine/hero/hero-mesh.json" type="SpineResource"></ext_resource>
+	<ext_resource path="res://spine/hero/hero.json" type="SpineResource"></ext_resource>
+	<ext_resource path="res://spine/powerup/powerup.json" type="SpineResource"></ext_resource>
+	<ext_resource path="res://spine/raptor/raptor.json" type="SpineResource"></ext_resource>
+	<ext_resource path="res://spine/spineboy/spineboy.json" type="SpineResource"></ext_resource>
+	<main_resource>
+		<dictionary name="_bundled" shared="false">
+			<string> "names" </string>
+			<string_array  len="37">
+				<string> "spine" </string>
+				<string> "Node2D" </string>
+				<string> "_import_path" </string>
+				<string> "visibility/visible" </string>
+				<string> "visibility/opacity" </string>
+				<string> "visibility/self_opacity" </string>
+				<string> "visibility/light_mask" </string>
+				<string> "transform/pos" </string>
+				<string> "transform/rot" </string>
+				<string> "transform/scale" </string>
+				<string> "z/z" </string>
+				<string> "z/relative" </string>
+				<string> "__meta__" </string>
+				<string> "hero" </string>
+				<string> "Spine" </string>
+				<string> "playback/process_mode" </string>
+				<string> "playback/speed" </string>
+				<string> "playback/active" </string>
+				<string> "debug/bones" </string>
+				<string> "modulate" </string>
+				<string> "flip_x" </string>
+				<string> "flip_y" </string>
+				<string> "fx_prefix" </string>
+				<string> "resource" </string>
+				<string> "playback/play" </string>
+				<string> "playback/loop" </string>
+				<string> "playback/skin" </string>
+				<string> "debug/region" </string>
+				<string> "debug/mesh" </string>
+				<string> "debug/skinned_mesh" </string>
+				<string> "debug/bounding_box" </string>
+				<string> "here-mesh" </string>
+				<string> "raptor" </string>
+				<string> "spineboy" </string>
+				<string> "goblin" </string>
+				<string> "gobline-girl" </string>
+				<string> "powerup" </string>
+			</string_array>
+			<string> "version" </string>
+			<int> 1 </int>
+			<string> "conn_count" </string>
+			<int> 0 </int>
+			<string> "node_count" </string>
+			<int> 8 </int>
+			<string> "variants" </string>
+			<array  len="39" shared="false">
+				<node_path> "" </node_path>
+				<bool> True </bool>
+				<real> 1 </real>
+				<int> 1 </int>
+				<vector2> 0, 0 </vector2>
+				<real> 0 </real>
+				<vector2> 1, 1 </vector2>
+				<int> 0 </int>
+				<dictionary  shared="false">
+					<string> "__editor_plugin_states__" </string>
+					<dictionary  shared="false">
+						<string> "2D" </string>
+						<dictionary  shared="false">
+							<string> "pixel_snap" </string>
+							<bool> False </bool>
+							<string> "zoom" </string>
+							<real> 0.9025 </real>
+							<string> "use_snap" </string>
+							<bool> False </bool>
+							<string> "snap_vec" </string>
+							<vector2> 10, 10 </vector2>
+							<string> "ofs" </string>
+							<vector2> -259.536, -104.432 </vector2>
+						</dictionary>
+						<string> "3D" </string>
+						<dictionary  shared="false">
+							<string> "deflight_rot_y" </string>
+							<real> 0.628319 </real>
+							<string> "zfar" </string>
+							<real> 500 </real>
+							<string> "fov" </string>
+							<real> 45 </real>
+							<string> "viewports" </string>
+							<array  len="4" shared="false">
+								<dictionary  shared="false">
+									<string> "distance" </string>
+									<real> 4 </real>
+									<string> "x_rot" </string>
+									<real> 0 </real>
+									<string> "y_rot" </string>
+									<real> 0 </real>
+									<string> "listener" </string>
+									<bool> True </bool>
+									<string> "use_environment" </string>
+									<bool> False </bool>
+									<string> "use_orthogonal" </string>
+									<bool> False </bool>
+									<string> "pos" </string>
+									<vector3> 0, 0, 0 </vector3>
+								</dictionary>
+								<dictionary  shared="false">
+									<string> "distance" </string>
+									<real> 4 </real>
+									<string> "x_rot" </string>
+									<real> 0 </real>
+									<string> "y_rot" </string>
+									<real> 0 </real>
+									<string> "listener" </string>
+									<bool> False </bool>
+									<string> "use_environment" </string>
+									<bool> False </bool>
+									<string> "use_orthogonal" </string>
+									<bool> False </bool>
+									<string> "pos" </string>
+									<vector3> 0, 0, 0 </vector3>
+								</dictionary>
+								<dictionary  shared="false">
+									<string> "distance" </string>
+									<real> 4 </real>
+									<string> "x_rot" </string>
+									<real> 0 </real>
+									<string> "y_rot" </string>
+									<real> 0 </real>
+									<string> "listener" </string>
+									<bool> False </bool>
+									<string> "use_environment" </string>
+									<bool> False </bool>
+									<string> "use_orthogonal" </string>
+									<bool> False </bool>
+									<string> "pos" </string>
+									<vector3> 0, 0, 0 </vector3>
+								</dictionary>
+								<dictionary  shared="false">
+									<string> "distance" </string>
+									<real> 4 </real>
+									<string> "x_rot" </string>
+									<real> 0 </real>
+									<string> "y_rot" </string>
+									<real> 0 </real>
+									<string> "listener" </string>
+									<bool> False </bool>
+									<string> "use_environment" </string>
+									<bool> False </bool>
+									<string> "use_orthogonal" </string>
+									<bool> False </bool>
+									<string> "pos" </string>
+									<vector3> 0, 0, 0 </vector3>
+								</dictionary>
+							</array>
+							<string> "viewport_mode" </string>
+							<int> 1 </int>
+							<string> "default_light" </string>
+							<bool> True </bool>
+							<string> "ambient_light_color" </string>
+							<color> 0.15, 0.15, 0.15, 1 </color>
+							<string> "show_grid" </string>
+							<bool> True </bool>
+							<string> "show_origin" </string>
+							<bool> True </bool>
+							<string> "znear" </string>
+							<real> 0.1 </real>
+							<string> "default_srgb" </string>
+							<bool> False </bool>
+							<string> "deflight_rot_x" </string>
+							<real> 0.942478 </real>
+						</dictionary>
+					</dictionary>
+					<string> "__editor_run_settings__" </string>
+					<dictionary  shared="false">
+						<string> "custom_args" </string>
+						<string> "-l $scene" </string>
+						<string> "run_mode" </string>
+						<int> 0 </int>
+					</dictionary>
+					<string> "__editor_plugin_screen__" </string>
+					<string> "2D" </string>
+				</dictionary>
+				<vector2> 120, 349 </vector2>
+				<bool> False </bool>
+				<color> 1, 1, 1, 1 </color>
+				<string> "fx/" </string>
+				<resource  resource_type="SpineResource" path="res://spine/hero/hero.json">  </resource>
+				<string> "Walk" </string>
+				<string> "White" </string>
+				<vector2> 657.139, 365.267 </vector2>
+				<vector2> -1, 1 </vector2>
+				<resource  resource_type="SpineResource" path="res://spine/hero/hero-mesh.json">  </resource>
+				<string> "Run" </string>
+				<vector2> 359.523, 544.818 </vector2>
+				<vector2> 0.3, 0.3 </vector2>
+				<resource  resource_type="SpineResource" path="res://spine/raptor/raptor.json">  </resource>
+				<string> "walk" </string>
+				<string> "" </string>
+				<vector2> 672.833, 579.012 </vector2>
+				<resource  resource_type="SpineResource" path="res://spine/spineboy/spineboy.json">  </resource>
+				<string> "run" </string>
+				<vector2> 169, 573 </vector2>
+				<vector2> 0.5, 0.6 </vector2>
+				<resource  resource_type="SpineResource" path="res://spine/goblins/goblins.json">  </resource>
+				<string> "goblin" </string>
+				<vector2> 67.7961, 569.584 </vector2>
+				<vector2> 0.5, 0.5 </vector2>
+				<resource  resource_type="SpineResource" path="res://spine/goblins/goblins-ffd.json">  </resource>
+				<string> "goblingirl" </string>
+				<vector2> 333.518, 238.227 </vector2>
+				<resource  resource_type="SpineResource" path="res://spine/powerup/powerup.json">  </resource>
+				<string> "animation" </string>
+			</array>
+			<string> "nodes" </string>
+			<int_array  len="442"> 				-1, -1, 1, 0, -1, 11, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 4, 8, 5, 9, 6, 10, 7, 11, 1, 12, 8, 0, 0, 0, 14, 13, -1, 26, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 9, 8, 5, 9, 6, 10, 7, 11, 1, 15, 3, 16, 2, 17, 1, 18, 10, 19, 11, 20, 10, 21, 10, 22, 12, 23, 13, 24, 14, 25, 1, 26, 15, 27, 10, 28, 10, 29, 10, 30, 10, 0, 0, 0, 14, 31, -1, 26, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 16, 8, 5, 9, 17, 10, 7, 11, 1, 15, 3, 16, 2, 17, 1, 18, 10, 19, 11, 20, 10, 21, 10, 22, 12, 23, 18, 24, 19, 25, 1, 26, 15, 27, 10, 28, 10, 29, 10, 30, 10, 0, 0, 0, 14, 32, -1, 26, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 20, 8, 5, 9, 21, 10, 7, 11, 1, 15, 3, 16, 2, 17, 1, 18, 10, 19, 11, 20, 10, 21, 10, 22, 12, 23, 22, 24, 23, 25, 1, 26, 24, 27, 10, 28, 10, 29, 10, 30, 10, 0, 0, 0, 14, 33, -1, 26, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 25, 8, 5, 9, 21, 10, 7, 11, 1, 15, 3, 16, 2, 17, 1, 18, 10, 19, 11, 20, 10, 21, 10, 22, 12, 23, 26, 24, 27, 25, 1, 26, 24, 27, 10, 28, 10, 29, 10, 30, 10, 0, 0, 0, 14, 34, -1, 26, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 28, 8, 5, 9, 29, 10, 7, 11, 1, 15, 3, 16, 2, 17, 1, 18, 10, 19, 11, 20, 10, 21, 10, 22, 12, 23, 30, 24, 23, 25, 1, 26, 31, 27, 10, 28, 10, 29, 10, 30, 10, 0, 0, 0, 14, 35, -1, 26, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 32, 8, 5, 9, 33, 10, 7, 11, 1, 15, 3, 16, 2, 17, 1, 18, 10, 19, 11, 20, 10, 21, 10, 22, 12, 23, 34, 24, 23, 25, 1, 26, 35, 27, 10, 28, 10, 29, 10, 30, 10, 0, 0, 0, 14, 36, -1, 26, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 36, 8, 5, 9, 33, 10, 7, 11, 1, 15, 3, 16, 2, 17, 1, 18, 10, 19, 11, 20, 10, 21, 10, 22, 12, 23, 37, 24, 38, 25, 1, 26, 24, 27, 10, 28, 10, 29, 10, 30, 10, 0 </int_array>
+			<string> "conns" </string>
+			<int_array  len="0"> 				 </int_array>
+		</dictionary>
+
+	</main_resource>
+</resource_file>
