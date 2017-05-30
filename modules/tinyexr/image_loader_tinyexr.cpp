@@ -34,7 +34,7 @@
 
 #include "thirdparty/tinyexr/tinyexr.h"
 
-Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, FileAccess *f) {
+Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear) {
 
 	PoolVector<uint8_t> src_image;
 	int src_image_len = f->get_len();
@@ -133,9 +133,17 @@ Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, FileAccess *f) {
 		// Assume `out_rgba` have enough memory allocated.
 		for (int i = 0; i < exr_image.width * exr_image.height; i++) {
 
-			*iw++ = Math::make_half_float(reinterpret_cast<float **>(exr_image.images)[idxR][i]);
-			*iw++ = Math::make_half_float(reinterpret_cast<float **>(exr_image.images)[idxG][i]);
-			*iw++ = Math::make_half_float(reinterpret_cast<float **>(exr_image.images)[idxB][i]);
+			Color color(
+					reinterpret_cast<float **>(exr_image.images)[idxR][i],
+					reinterpret_cast<float **>(exr_image.images)[idxG][i],
+					reinterpret_cast<float **>(exr_image.images)[idxB][i]);
+
+			if (p_force_linear)
+				color = color.to_linear();
+
+			*iw++ = Math::make_half_float(color.r);
+			*iw++ = Math::make_half_float(color.g);
+			*iw++ = Math::make_half_float(color.b);
 
 			if (idxA > 0) {
 				*iw++ = Math::make_half_float(reinterpret_cast<float **>(exr_image.images)[idxA][i]);

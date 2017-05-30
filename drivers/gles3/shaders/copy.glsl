@@ -45,6 +45,11 @@ uniform samplerCube source_cube; //texunit:0
 uniform sampler2D source; //texunit:0
 #endif
 
+
+#ifdef USE_MULTIPLIER
+uniform float multiplier;
+#endif
+
 #ifdef USE_PANORAMA
 
 vec4 texturePanorama(vec3 normal,sampler2D pano ) {
@@ -130,7 +135,9 @@ void main() {
 	color+=texture( source,  uv_interp+vec2( 0.0,-2.0)*pixel_size )*0.06136;
 #endif
 
-
+#ifdef USE_MULTIPLIER
+	color.rgb*=multiplier;
+#endif
 	frag_color = color;
 }
 

@@ -177,6 +177,7 @@ void ResourceImporterTexture::get_import_options(List<ImportOption> *r_options, 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "flags/srgb", PROPERTY_HINT_ENUM, "Disable,Enable,Detect"), 2));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/fix_alpha_border"), p_preset != PRESET_3D ? true : false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/premult_alpha"), true));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/HDR_as_SRGB"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "stream"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "size_limit", PROPERTY_HINT_RANGE, "0,4096,1"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "detect_3d"), p_preset == PRESET_DETECT));
@@ -327,10 +328,11 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 	bool stream = p_options["stream"];
 	int size_limit = p_options["size_limit"];
 	bool force_rgbe = int(p_options["compress/hdr_mode"]) == 1;
+	bool hdr_as_srgb = p_options["process/HDR_as_SRGB"];
 
 	Ref<Image> image;
 	image.instance();
-	Error err = ImageLoader::load_image(p_source_file, image);
+	Error err = ImageLoader::load_image(p_source_file, image, NULL, hdr_as_srgb);
 	if (err != OK)
 		return err;
 

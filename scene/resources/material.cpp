@@ -510,7 +510,7 @@ void SpatialMaterial::_update_shader() {
 	} else {
 		code += "\tvec4 specular_tex = texture(texture_specular,UV);\n";
 		code += "\tSPECULAR = vec3(ALBEDO.rgb * metalness * specular_tex.r);\n";
-		code += "\tROUGHNESS = specular_tex.a * roughness;\n";
+		code += "\tROUGHNESS = specular_tex.g * roughness;\n";
 	}
 
 	code += "}\n";
@@ -888,10 +888,10 @@ void SpatialMaterial::_validate_property(PropertyInfo &property) const {
 	_validate_feature("refraction", FEATURE_REFRACTION, property);
 	_validate_feature("detail", FEATURE_DETAIL, property);
 
-	if (property.name == "specular/color" && specular_mode == SPECULAR_MODE_METALLIC) {
+	if (property.name == "specular_color" && specular_mode == SPECULAR_MODE_METALLIC) {
 		property.usage = 0;
 	}
-	if (property.name == "specular/metalness" && specular_mode == SPECULAR_MODE_SPECULAR) {
+	if (property.name == "specular_metalness" && specular_mode == SPECULAR_MODE_SPECULAR) {
 		property.usage = 0;
 	}
 

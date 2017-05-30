@@ -5553,7 +5553,7 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 	Image::Format image_format;
 
 	bool hdr = rt->flags[RENDER_TARGET_HDR] && config.hdr_supported;
-	hdr = false;
+	//hdr = false;
 
 	if (!hdr || rt->flags[RENDER_TARGET_NO_3D]) {
 
@@ -6403,6 +6403,8 @@ void RasterizerStorageGLES3::initialize() {
 	config.etc2_supported = true;
 	config.hdr_supported = false;
 #endif
+
+	print_line("hdr supported: " + itos(config.hdr_supported));
 	config.pvrtc_supported = config.extensions.has("GL_IMG_texture_compression_pvrtc");
 	config.srgb_decode_supported = config.extensions.has("GL_EXT_texture_sRGB_decode");
 

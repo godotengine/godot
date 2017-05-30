@@ -380,8 +380,6 @@ uniform sampler2D radiance_map; //texunit:-2
 layout(std140) uniform Radiance { //ubo:2
 
 	mat4 radiance_inverse_xform;
-	vec3 radiance_box_min;
-	vec3 radiance_box_max;
 	float radiance_ambient_contribution;
 
 };
@@ -1133,6 +1131,23 @@ void gi_probes_compute(vec3 pos, vec3 normal, float roughness, vec3 specular, in
 
 #endif
 
+vec3 textureDualParabolod(sampler2D p_tex, vec3 p_vec,float p_lod) {
+
+	vec3 norm = normalize(p_vec);
+	float y_ofs=0.0;
+	if (norm.z>=0.0) {
+
+		norm.z+=1.0;
+		y_ofs+=0.5;
+	} else {
+		norm.z=1.0 - norm.z;
+		norm.y=-norm.y;
+	}
+
+	norm.xy/=norm.z;
+	norm.xy=norm.xy * vec2(0.5,0.25) + vec2(0.5,0.25+y_ofs);
+	return textureLod(p_tex, norm.xy, p_lod).xyz;
+}
 
 void main() {
 
@@ -1264,6 +1279,8 @@ FRAGMENT_SHADER_CODE
 	float ndotv = clamp(dot(normal,eye_vec),0.0,1.0);
 
 	vec2 brdf = texture(brdf_texture, vec2(roughness, ndotv)).xy;
+	brdf.x=1.0;
+	brdf.y=0.0;
 #endif
 
 #ifdef USE_RADIANCE_MAP
@@ -1274,28 +1291,15 @@ FRAGMENT_SHADER_CODE
 		{
 
 
-
-			float lod = roughness * 5.0;
+#define RADIANCE_MAX_LOD 5.0
+			float lod = roughness * RADIANCE_MAX_LOD;
 
 			{ //read radiance from dual paraboloid
 
 				vec3 ref_vec = reflect(-eye_vec,normal); //2.0 * ndotv * normal - view; // reflect(v, n);
-				ref_vec=normalize((radiance_inverse_xform * vec4(ref_vec,0.0)).xyz);
-
-				vec3 norm = normalize(ref_vec);
-				float y_ofs=0.0;
-				if (norm.z>=0.0) {
-
-					norm.z+=1.0;
-					y_ofs+=0.5;
-				} else {
-					norm.z=1.0 - norm.z;
-					norm.y=-norm.y;
-				}
-
-				norm.xy/=norm.z;
-				norm.xy=norm.xy * vec2(0.5,0.25) + vec2(0.5,0.25+y_ofs);
-				specular_light = textureLod(radiance_map, norm.xy, lod).xyz * brdf.x + brdf.y;
+				ref_vec=normalize((radiance_inverse_xform * vec4(ref_vec,0.0)).xyz);				
+				vec3 radiance = textureDualParabolod(radiance_map,ref_vec,lod) * bg_energy;
+				specular_light = radiance * brdf.x + brdf.y;
 
 			}
 			//no longer a cubemap
@@ -1305,11 +1309,11 @@ FRAGMENT_SHADER_CODE
 
 		{
 
-			/*vec3 ambient_dir=normalize((radiance_inverse_xform * vec4(normal,0.0)).xyz);
-			vec3 env_ambient=textureLod(radiance_cube, ambient_dir, 5.0).xyz;
+			vec3 ambient_dir=normalize((radiance_inverse_xform * vec4(normal,0.0)).xyz);
+			vec3 env_ambient=textureDualParabolod(radiance_map,ambient_dir,RADIANCE_MAX_LOD) * bg_energy;
 
-			ambient_light=mix(ambient_light_color.rgb,env_ambient,radiance_ambient_contribution);*/
-			ambient_light=vec3(0.0,0.0,0.0);
+			ambient_light=mix(ambient_light_color.rgb,env_ambient,radiance_ambient_contribution);
+			//ambient_light=vec3(0.0,0.0,0.0);
 		}
 	}
 
@@ -1322,6 +1326,7 @@ FRAGMENT_SHADER_CODE
 	}
 #endif
 
+	ambient_light*=ambient_energy;
 
 #ifdef USE_LIGHT_DIRECTIONAL
 

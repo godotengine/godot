@@ -34,17 +34,23 @@
 
 #include "thirdparty/tinyexr/tinyexr.h"
 
-Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f) {
+Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear) {
 
 	String header = f->get_token();
 
 	print_line("HEADER: " + header);
-	ERR_FAIL_COND_V(header != "#?RADIANCE", ERR_FILE_UNRECOGNIZED);
+	ERR_FAIL_COND_V(header != "#?RADIANCE" && header != "#?RGBE", ERR_FILE_UNRECOGNIZED);
 
-	String format = f->get_token();
-	print_line("FORMAT: " + format);
-
-	ERR_FAIL_COND_V(format != "FORMAT=32-bit_rle_rgbe", ERR_FILE_UNRECOGNIZED);
+	while (true) {
+		String format = f->get_token();
+		ERR_FAIL_COND_V(f->eof_reached(), ERR_FILE_UNRECOGNIZED);
+		if (format.begins_with("FORMAT=") && format != "FORMAT=32-bit_rle_rgbe") {
+			ERR_EXPLAIN("Only 32-bit_rle_rgbe is supported for .hdr files.");
+			return ERR_FILE_UNRECOGNIZED;
+		}
+		if (format == "FORMAT=32-bit_rle_rgbe")
+			break;
+	}
 
 	String token = f->get_token();
 
@@ -131,6 +137,10 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f) {
 					ptr[0] * exp / 255.0,
 					ptr[1] * exp / 255.0,
 					ptr[2] * exp / 255.0);
+
+			if (p_force_linear) {
+				c = c.to_linear();
+			}
 
 			*(uint32_t *)ptr = c.to_rgbe9995();
 			ptr += 4;

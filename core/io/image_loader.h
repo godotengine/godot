@@ -56,7 +56,7 @@ class ImageFormatLoader {
 	friend class ImageLoader;
 
 protected:
-	virtual Error load_image(Ref<Image> p_image, FileAccess *p_fileaccess) = 0;
+	virtual Error load_image(Ref<Image> p_image, FileAccess *p_fileaccess, bool p_force_linear) = 0;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const = 0;
 	bool recognize(const String &p_extension) const;
 
@@ -75,7 +75,7 @@ class ImageLoader {
 
 protected:
 public:
-	static Error load_image(String p_file, Ref<Image> p_image, FileAccess *p_custom = NULL);
+	static Error load_image(String p_file, Ref<Image> p_image, FileAccess *p_custom = NULL, bool p_force_linear = false);
 	static void get_recognized_extensions(List<String> *p_extensions);
 	static bool recognize(const String &p_extension);
 
