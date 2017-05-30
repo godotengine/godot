@@ -282,7 +282,10 @@ bool InputEventKey::action_match(const Ref<InputEvent> &p_event) const {
 	if (key.is_null())
 		return false;
 
-	return get_scancode_with_modifiers() == key->get_scancode_with_modifiers();
+	uint32_t code = get_scancode_with_modifiers();
+	uint32_t event_code = key->get_scancode_with_modifiers();
+
+	return get_scancode() == key->get_scancode() && (!key->is_pressed() || (code & event_code) == code);
 }
 
 void InputEventKey::_bind_methods() {
