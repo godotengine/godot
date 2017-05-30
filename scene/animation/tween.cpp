@@ -998,6 +998,8 @@ bool Tween::interpolate_property(Object *p_object, String p_property, Variant p_
 		_add_pending_command("interpolate_property", p_object, p_property, p_initial_val, p_final_val, p_duration, p_trans_type, p_ease_type, p_delay);
 		return true;
 	}
+	if (p_initial_val.get_type() == Variant::NIL) p_initial_val = p_object->get(p_property);
+
 	// convert INT to REAL is better for interpolaters
 	if (p_initial_val.get_type() == Variant::INT) p_initial_val = p_initial_val.operator real_t();
 	if (p_final_val.get_type() == Variant::INT) p_final_val = p_final_val.operator real_t();
@@ -1188,6 +1190,8 @@ bool Tween::follow_property(Object *p_object, String p_property, Variant p_initi
 		_add_pending_command("follow_property", p_object, p_property, p_initial_val, p_target, p_target_property, p_duration, p_trans_type, p_ease_type, p_delay);
 		return true;
 	}
+	if (p_initial_val.get_type() == Variant::NIL) p_initial_val = p_object->get(p_initial_val);
+
 	// convert INT to REAL is better for interpolaters
 	if (p_initial_val.get_type() == Variant::INT) p_initial_val = p_initial_val.operator real_t();
 
