@@ -104,6 +104,9 @@ class Area2DSW : public CollisionObject2DSW {
 	virtual void _shapes_changed();
 	void _queue_monitor_update();
 
+protected:
+	virtual void _shape_index_removed(int p_index);
+
 public:
 	//_FORCE_INLINE_ const Matrix32& get_inverse_transform() const { return inverse_transform; }
 	//_FORCE_INLINE_ SpaceSW* get_owner() { return owner; }
@@ -153,6 +156,7 @@ public:
 	_FORCE_INLINE_ void add_constraint(Constraint2DSW *p_constraint) { constraints.insert(p_constraint); }
 	_FORCE_INLINE_ void remove_constraint(Constraint2DSW *p_constraint) { constraints.erase(p_constraint); }
 	_FORCE_INLINE_ const Set<Constraint2DSW *> &get_constraints() const { return constraints; }
+	_FORCE_INLINE_ void clear_constraints() { constraints.clear(); }
 
 	void set_monitorable(bool p_monitorable);
 	_FORCE_INLINE_ bool is_monitorable() const { return monitorable; }

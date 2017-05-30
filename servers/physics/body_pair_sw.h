@@ -89,6 +89,8 @@ public:
 	bool setup(float p_step);
 	void solve(float p_step);
 
+	virtual void shift_shape_indices(const CollisionObjectSW *p_object, int p_removed_index);
+
 	BodyPairSW(BodySW *p_A, int p_shape_A, BodySW *p_B, int p_shape_B);
 	~BodyPairSW();
 };

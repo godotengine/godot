@@ -219,6 +219,12 @@ bool BodyPair2DSW::_test_ccd(float p_step, Body2DSW *p_A, int p_shape_A, const M
 
 bool BodyPair2DSW::setup(float p_step) {
 
+	//one or both shapes have been removed
+	if (shape_A == -1 || shape_B == -1) {
+		collided = false;
+		return false;
+	}
+
 	//cannot collide
 	if (!A->test_collision_mask(B) || A->has_exception(B->get_self()) || B->has_exception(A->get_self()) || (A->get_mode() <= Physics2DServer::BODY_MODE_KINEMATIC && B->get_mode() <= Physics2DServer::BODY_MODE_KINEMATIC && A->get_max_contacts_reported() == 0 && B->get_max_contacts_reported() == 0)) {
 		collided = false;
@@ -492,6 +498,21 @@ void BodyPair2DSW::solve(float p_step) {
 
 		A->apply_impulse(c.rA, -j);
 		B->apply_impulse(c.rB, j);
+	}
+}
+
+void BodyPair2DSW::shift_shape_indices(const CollisionObject2DSW *p_object, int p_removed_index) {
+
+	if (p_object == A) {
+		if (shape_A == p_removed_index)
+			shape_A = -1;
+		else if (shape_A > p_removed_index)
+			shape_A--;
+	} else if (p_object == B) {
+		if (shape_B == p_removed_index)
+			shape_B = -1;
+		else if (shape_B > p_removed_index)
+			shape_B--;
 	}
 }
 

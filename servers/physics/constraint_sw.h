@@ -73,6 +73,8 @@ public:
 	virtual bool setup(float p_step) = 0;
 	virtual void solve(float p_step) = 0;
 
+	virtual void shift_shape_indices(const CollisionObjectSW *p_object, int p_removed_index) {}
+
 	virtual ~ConstraintSW() {}
 };
 

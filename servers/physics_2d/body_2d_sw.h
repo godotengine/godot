@@ -136,6 +136,9 @@ class Body2DSW : public CollisionObject2DSW {
 
 	friend class Physics2DDirectBodyStateSW; // i give up, too many functions to expose
 
+protected:
+	virtual void _shape_index_removed(int p_index);
+
 public:
 	void set_force_integration_callback(ObjectID p_id, const StringName &p_method, const Variant &p_udata = Variant());
 
@@ -185,6 +188,7 @@ public:
 	_FORCE_INLINE_ void add_constraint(Constraint2DSW *p_constraint, int p_pos) { constraint_map[p_constraint] = p_pos; }
 	_FORCE_INLINE_ void remove_constraint(Constraint2DSW *p_constraint) { constraint_map.erase(p_constraint); }
 	const Map<Constraint2DSW *, int> &get_constraint_map() const { return constraint_map; }
+	_FORCE_INLINE_ void clear_constraint_map() { constraint_map.clear(); }
 
 	_FORCE_INLINE_ void set_omit_force_integration(bool p_omit_force_integration) { omit_force_integration = p_omit_force_integration; }
 	_FORCE_INLINE_ bool get_omit_force_integration() const { return omit_force_integration; }

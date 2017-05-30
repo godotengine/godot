@@ -275,13 +275,13 @@ void Area::_notification(int p_what) {
 
 	switch (p_what) {
 
-		case NOTIFICATION_EXIT_TREE: {
+		case NOTIFICATION_EXIT_WORLD: {
 
 			monitoring_stored = monitoring;
 			set_enable_monitoring(false);
 			_clear_monitoring();
 		} break;
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_ENTER_WORLD: {
 
 			if (monitoring_stored) {
 				set_enable_monitoring(true);
@@ -646,6 +646,7 @@ Area::Area()
 	angular_damp = 1;
 	priority = 0;
 	monitoring = false;
+	monitorable = false;
 	collision_mask = 1;
 	layer_mask = 1;
 	monitoring_stored = false;

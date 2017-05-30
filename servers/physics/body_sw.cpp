@@ -246,6 +246,13 @@ void BodySW::_shapes_changed() {
 	_update_inertia();
 }
 
+void BodySW::_shape_index_removed(int p_index) {
+
+	for (Map<ConstraintSW *, int>::Element *E = constraint_map.front(); E; E = E->next()) {
+		E->key()->shift_shape_indices(this, p_index);
+	}
+}
+
 void BodySW::set_state(PhysicsServer::BodyState p_state, const Variant &p_variant) {
 
 	switch (p_state) {
@@ -715,6 +722,8 @@ BodySW::BodySW()
 	contact_count = 0;
 	gravity_scale = 1.0;
 
+	linear_damp = -1;
+	angular_damp = -1;
 	area_angular_damp = 0;
 	area_linear_damp = 0;
 
