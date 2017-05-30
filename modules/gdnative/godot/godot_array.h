@@ -49,6 +49,7 @@ typedef struct godot_array {
 #include "../godot.h"
 
 void GDAPI godot_array_new(godot_array *p_arr);
+void GDAPI godot_array_new_copy(godot_array *p_dest, const godot_array *p_src);
 void GDAPI godot_array_new_pool_color_array(godot_array *p_arr, const godot_pool_color_array *p_pca);
 void GDAPI godot_array_new_pool_vector3_array(godot_array *p_arr, const godot_pool_vector3_array *p_pv3a);
 void GDAPI godot_array_new_pool_vector2_array(godot_array *p_arr, const godot_pool_vector2_array *p_pv2a);

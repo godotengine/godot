@@ -49,6 +49,12 @@ void GDAPI godot_array_new(godot_array *p_arr) {
 	memnew_placement(a, Array);
 }
 
+void GDAPI godot_array_new_copy(godot_array *p_dest, const godot_array *p_src) {
+	Array *dest = (Array *)p_dest;
+	const Array *src = (const Array *)p_src;
+	memnew_placement(dest, Array(*src));
+}
+
 void GDAPI godot_array_new_pool_color_array(godot_array *p_arr, const godot_pool_color_array *p_pca) {
 	Array *a = (Array *)p_arr;
 	PoolVector<Color> *pca = (PoolVector<Color> *)p_pca;

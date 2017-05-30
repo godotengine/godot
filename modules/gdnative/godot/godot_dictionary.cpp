@@ -44,6 +44,12 @@ void GDAPI godot_dictionary_new(godot_dictionary *r_dest) {
 	memnew_placement(dest, Dictionary);
 }
 
+void GDAPI godot_dictionary_new_copy(godot_dictionary *r_dest, const godot_dictionary *r_src) {
+	Dictionary *dest = (Dictionary *)r_dest;
+	const Dictionary *src = (const Dictionary *)r_src;
+	memnew_placement(dest, Dictionary(*src));
+}
+
 void GDAPI godot_dictionary_destroy(godot_dictionary *p_self) {
 	Dictionary *self = (Dictionary *)p_self;
 	self->~Dictionary();
