@@ -48,6 +48,7 @@ typedef struct godot_dictionary {
 #include "godot_variant.h"
 
 void GDAPI godot_dictionary_new(godot_dictionary *r_dest);
+void GDAPI godot_dictionary_new_copy(godot_dictionary *r_dest, const godot_dictionary *r_src);
 void GDAPI godot_dictionary_destroy(godot_dictionary *p_self);
 
 godot_int GDAPI godot_dictionary_size(const godot_dictionary *p_self);
