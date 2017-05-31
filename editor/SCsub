@@ -129,6 +129,30 @@ def make_translations_header(target, source, env):
 
     g.write("#endif")
 
+def make_authors_header(target, source, env):
+
+    src = source[0].srcnode().abspath
+    dst = target[0].srcnode().abspath
+    f = open(src, "rb")
+    g = open(dst, "wb")
+
+    g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
+    g.write("#ifndef _EDITOR_AUTHORS_H\n")
+    g.write("#define _EDITOR_AUTHORS_H\n")
+    g.write("static const char *dev_names[] = {\n")
+
+    name_count = -1
+    for line in f:
+        if name_count >= 0:
+            if line.startswith("    "):
+                g.write("\t\"" + line.strip() + "\",\n")
+                name_count += 1
+        elif line.strip() == "## Developers":
+            name_count = 0
+    g.write("\t0\n")
+    g.write("};\n")
+    g.write("#define AUTHORS_COUNT " + str(name_count) + "\n")
+    g.write("#endif\n")
 
 if (env["tools"] == "yes"):
 
@@ -168,6 +192,10 @@ if (env["tools"] == "yes"):
     print("fonts: ", flist)
     env.Depends('#editor/builtin_fonts.h', flist)
     env.Command('#editor/builtin_fonts.h', flist, make_fonts_header)
+
+    # Authors
+    env.Depends('#editor/authors.h', "../AUTHORS.md")
+    env.Command('#editor/authors.h', "../AUTHORS.md", make_authors_header)
 
 
     env.add_source_files(env.editor_sources, "*.cpp")
