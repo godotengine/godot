@@ -1088,7 +1088,7 @@ void gi_probe_compute(sampler3D probe, mat4 probe_xform, vec3 bounds,vec3 cell_s
 }
 
 
-void gi_probes_compute(vec3 pos, vec3 normal, float roughness, vec3 specular, inout vec3 out_specular, inout vec3 out_ambient) {
+void gi_probes_compute(vec3 pos, vec3 normal, float roughness, inout vec3 out_specular, inout vec3 out_ambient) {
 
 	roughness = roughness * roughness;
 
@@ -1469,7 +1469,8 @@ FRAGMENT_SHADER_CODE
 #endif //#USE_LIGHT_DIRECTIONAL
 
 #ifdef USE_GI_PROBES
-	gi_probes_compute(vertex,normal,roughness,specular,specular_light,ambient_light);
+	gi_probes_compute(vertex,normal,roughness,specular_light,ambient_light);
+
 #endif
 
 
