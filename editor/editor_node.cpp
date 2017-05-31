@@ -30,6 +30,7 @@
 #include "editor_node.h"
 
 #include "animation_editor.h"
+#include "authors.h"
 #include "bind/core_bind.h"
 #include "class_db.h"
 #include "core/io/resource_loader.h"
@@ -5874,14 +5875,49 @@ EditorNode::EditorNode() {
 	about->get_ok()->set_text(TTR("Thanks!"));
 	about->set_hide_on_ok(true);
 	gui_base->add_child(about);
+	VBoxContainer *vbc = memnew(VBoxContainer);
 	HBoxContainer *hbc = memnew(HBoxContainer);
-	about->add_child(hbc);
+	hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	hbc->set_alignment(BoxContainer::ALIGN_CENTER);
+	about->add_child(vbc);
+	vbc->add_child(hbc);
 	Label *about_text = memnew(Label);
-	about_text->set_text(VERSION_FULL_NAME "\n(c) 2008-2017 Juan Linietsky, Ariel Manzur.\n");
+	about_text->set_text(VERSION_FULL_NAME + String::utf8("\n\u00A9 2007-2017 Juan Linietsky, Ariel Manzur.\n\u00A9 2014-2017 ") + TTR("Godot Engine contributors") + "\n");
 	TextureRect *logo = memnew(TextureRect);
 	logo->set_texture(gui_base->get_icon("Logo", "EditorIcons"));
 	hbc->add_child(logo);
 	hbc->add_child(about_text);
+	TabContainer *tc = memnew(TabContainer);
+	tc->set_custom_minimum_size(Vector2(740, 300));
+	vbc->add_child(tc);
+	ScrollContainer *dev_base = memnew(ScrollContainer);
+	dev_base->set_name(TTR("Developers"));
+	tc->add_child(dev_base);
+	HBoxContainer *dev_hbc = memnew(HBoxContainer);
+	dev_hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	dev_base->add_child(dev_hbc);
+	for (int i = 0; i < 3; i++) {
+		Label *dev_label = memnew(Label);
+		dev_label->set_h_size_flags(Control::SIZE_EXPAND);
+		dev_label->set_v_size_flags(Control::SIZE_FILL);
+		dev_hbc->add_child(dev_label);
+	}
+	int dev_name_index = 0;
+	int dev_name_column = 0;
+	const int dev_index_max = AUTHORS_COUNT / 3 + (AUTHORS_COUNT % 3 == 0 ? 0 : 1);
+	String dev_name = "";
+	const char **dev_names_ptr = dev_names;
+	while (*dev_names_ptr) {
+		dev_name += String::utf8(*dev_names_ptr++);
+		if (++dev_name_index == dev_index_max || !*dev_names_ptr) {
+			dev_hbc->get_child(dev_name_column)->cast_to<Label>()->set_text(dev_name);
+			dev_name_column++;
+			dev_name = "";
+			dev_name_index = 0;
+		} else {
+			dev_name += "\n";
+		}
+	}
 
 	warning = memnew(AcceptDialog);
 	gui_base->add_child(warning);
