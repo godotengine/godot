@@ -89,7 +89,8 @@ class SpatialMaterial : public Material {
 public:
 	enum TextureParam {
 		TEXTURE_ALBEDO,
-		TEXTURE_SPECULAR,
+		TEXTURE_METALLIC,
+		TEXTURE_ROUGHNESS,
 		TEXTURE_EMISSION,
 		TEXTURE_NORMAL,
 		TEXTURE_RIM,
@@ -99,7 +100,6 @@ public:
 		TEXTURE_HEIGHT,
 		TEXTURE_SUBSURFACE_SCATTERING,
 		TEXTURE_REFRACTION,
-		TEXTURE_REFRACTION_ROUGHNESS,
 		TEXTURE_DETAIL_MASK,
 		TEXTURE_DETAIL_ALBEDO,
 		TEXTURE_DETAIL_NORMAL,
@@ -165,11 +165,6 @@ public:
 		DIFFUSE_BURLEY,
 	};
 
-	enum SpecularMode {
-		SPECULAR_MODE_METALLIC,
-		SPECULAR_MODE_SPECULAR,
-	};
-
 	enum BillboardMode {
 		BILLBOARD_DISABLED,
 		BILLBOARD_ENABLED,
@@ -230,7 +225,6 @@ private:
 		}
 		mk.detail_blend_mode = detail_blend_mode;
 		mk.diffuse_mode = diffuse_mode;
-		mk.specular_mode = specular_mode;
 		mk.billboard_mode = billboard_mode;
 
 		return mk;
@@ -239,7 +233,7 @@ private:
 	struct ShaderNames {
 		StringName albedo;
 		StringName specular;
-		StringName metalness;
+		StringName metallic;
 		StringName roughness;
 		StringName emission;
 		StringName emission_energy;
@@ -275,8 +269,8 @@ private:
 	_FORCE_INLINE_ bool _is_shader_dirty() const;
 
 	Color albedo;
-	Color specular;
-	float metalness;
+	float specular;
+	float metallic;
 	float roughness;
 	Color emission;
 	float emission_energy;
@@ -310,7 +304,6 @@ private:
 	CullMode cull_mode;
 	bool flags[FLAG_MAX];
 	DiffuseMode diffuse_mode;
-	SpecularMode specular_mode;
 	BillboardMode billboard_mode;
 
 	bool features[FEATURE_MAX];
@@ -327,14 +320,11 @@ public:
 	void set_albedo(const Color &p_albedo);
 	Color get_albedo() const;
 
-	void set_specular_mode(SpecularMode p_mode);
-	SpecularMode get_specular_mode() const;
+	void set_specular(float p_specular);
+	float get_specular() const;
 
-	void set_specular(const Color &p_specular);
-	Color get_specular() const;
-
-	void set_metalness(float p_metalness);
-	float get_metalness() const;
+	void set_metallic(float p_metallic);
+	float get_metallic() const;
 
 	void set_roughness(float p_roughness);
 	float get_roughness() const;
@@ -447,7 +437,6 @@ VARIANT_ENUM_CAST(SpatialMaterial::DepthDrawMode)
 VARIANT_ENUM_CAST(SpatialMaterial::CullMode)
 VARIANT_ENUM_CAST(SpatialMaterial::Flags)
 VARIANT_ENUM_CAST(SpatialMaterial::DiffuseMode)
-VARIANT_ENUM_CAST(SpatialMaterial::SpecularMode)
 VARIANT_ENUM_CAST(SpatialMaterial::BillboardMode)
 
 //////////////////////

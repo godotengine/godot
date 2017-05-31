@@ -596,7 +596,6 @@ float contact_shadow_compute(vec3 pos, vec3 dir, float max_distance) {
 	return 1.0;
 }
 
-
 // GGX Specular
 // Source: http://www.filmicworlds.com/images/ggx-opt/optimized-ggx.hlsl
 float G1V(float dotNV, float k)
@@ -622,7 +621,7 @@ float GTR1(float NdotH, float a)
 
 
 
-void light_compute(vec3 N, vec3 L,vec3 V,vec3 B, vec3 T,vec3 light_color,vec3 diffuse_color, vec3 specular_color, float specular_blob_intensity, float roughness, float rim,float rim_tint, float clearcoat, float clearcoat_gloss,float anisotropy,inout vec3 diffuse, inout vec3 specular) {
+void light_compute(vec3 N, vec3 L,vec3 V,vec3 B, vec3 T,vec3 light_color,vec3 diffuse_color,  float specular_blob_intensity, float roughness, float rim,float rim_tint, float clearcoat, float clearcoat_gloss,float anisotropy,inout vec3 diffuse, inout vec3 specular) {
 
 	float dotNL = max(dot(N,L), 0.0 );
 	float dotNV = max(dot(N,V), 0.0 );
@@ -674,7 +673,7 @@ void light_compute(vec3 N, vec3 L,vec3 V,vec3 B, vec3 T,vec3 light_color,vec3 di
 
 		float speci = dotNL * D * F * vis;
 
-		specular += speci * light_color /* specular_color*/ * specular_blob_intensity;
+		specular += speci * light_color * specular_blob_intensity;
 
 #if defined(LIGHT_USE_CLEARCOAT)
 		float Dr = GTR1(dotNH, mix(.1,.001,clearcoat_gloss));
@@ -733,6 +732,8 @@ in highp float dp_clip;
 
 #endif
 
+
+
 #if 0
 //need to save texture depth for this
 
@@ -762,7 +763,7 @@ vec3 light_transmittance(float translucency,vec3 light_vec, vec3 normal, vec3 po
 }
 #endif
 
-void light_process_omni(int idx, vec3 vertex, vec3 eye_vec,vec3 normal,vec3 binormal, vec3 tangent, vec3 albedo, vec3 specular, float roughness, float rim, float rim_tint, float clearcoat, float clearcoat_gloss,float anisotropy,inout vec3 diffuse_light, inout vec3 specular_light) {
+void light_process_omni(int idx, vec3 vertex, vec3 eye_vec,vec3 normal,vec3 binormal, vec3 tangent, vec3 albedo, float roughness, float rim, float rim_tint, float clearcoat, float clearcoat_gloss,float anisotropy,inout vec3 diffuse_light, inout vec3 specular_light) {
 
 	vec3 light_rel_vec = omni_lights[idx].light_pos_inv_radius.xyz-vertex;
 	float light_length = length( light_rel_vec );
@@ -813,11 +814,11 @@ void light_process_omni(int idx, vec3 vertex, vec3 eye_vec,vec3 normal,vec3 bino
 		light_attenuation*=mix(omni_lights[idx].shadow_color_contact.rgb,vec3(1.0),shadow);
 	}
 
-	light_compute(normal,normalize(light_rel_vec),eye_vec,binormal,tangent,omni_lights[idx].light_color_energy.rgb*light_attenuation,albedo,specular,omni_lights[idx].light_params.z,roughness,rim,rim_tint,clearcoat,clearcoat_gloss,anisotropy,diffuse_light,specular_light);
+	light_compute(normal,normalize(light_rel_vec),eye_vec,binormal,tangent,omni_lights[idx].light_color_energy.rgb*light_attenuation,albedo,omni_lights[idx].light_params.z,roughness,rim,rim_tint,clearcoat,clearcoat_gloss,anisotropy,diffuse_light,specular_light);
 
 }
 
-void light_process_spot(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 binormal, vec3 tangent,vec3 albedo, vec3 specular, float roughness, float rim,float rim_tint, float clearcoat, float clearcoat_gloss,float anisotropy, inout vec3 diffuse_light, inout vec3 specular_light) {
+void light_process_spot(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 binormal, vec3 tangent,vec3 albedo, float roughness, float rim,float rim_tint, float clearcoat, float clearcoat_gloss,float anisotropy, inout vec3 diffuse_light, inout vec3 specular_light) {
 
 	vec3 light_rel_vec = spot_lights[idx].light_pos_inv_radius.xyz-vertex;
 	float light_length = length( light_rel_vec );
@@ -846,11 +847,11 @@ void light_process_spot(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 bi
 		light_attenuation*=mix(spot_lights[idx].shadow_color_contact.rgb,vec3(1.0),shadow);
 	}
 
-	light_compute(normal,normalize(light_rel_vec),eye_vec,binormal,tangent,spot_lights[idx].light_color_energy.rgb*light_attenuation,albedo,specular,spot_lights[idx].light_params.z,roughness,rim,rim_tint,clearcoat,clearcoat_gloss,anisotropy,diffuse_light,specular_light);
+	light_compute(normal,normalize(light_rel_vec),eye_vec,binormal,tangent,spot_lights[idx].light_color_energy.rgb*light_attenuation,albedo,spot_lights[idx].light_params.z,roughness,rim,rim_tint,clearcoat,clearcoat_gloss,anisotropy,diffuse_light,specular_light);
 
 }
 
-void reflection_process(int idx, vec3 vertex, vec3 normal,vec3 binormal, vec3 tangent,float roughness,float anisotropy,vec3 ambient,vec3 skybox,vec2 brdf, inout highp vec4 reflection_accum,inout highp vec4 ambient_accum) {
+void reflection_process(int idx, vec3 vertex, vec3 normal,vec3 binormal, vec3 tangent,float roughness,float anisotropy,vec3 ambient,vec3 skybox, inout highp vec4 reflection_accum,inout highp vec4 ambient_accum) {
 
 	vec3 ref_vec = normalize(reflect(vertex,normal));
 	vec3 local_pos = (reflections[idx].local_matrix * vec4(vertex,1.0)).xyz;
@@ -906,7 +907,7 @@ void reflection_process(int idx, vec3 vertex, vec3 normal,vec3 binormal, vec3 ta
 		splane.xy = clamp(splane.xy,clamp_rect.xy,clamp_rect.xy+clamp_rect.zw);
 
 		highp vec4 reflection;
-		reflection.rgb = textureLod(reflection_atlas,splane.xy,roughness*5.0).rgb *  brdf.x + brdf.y;
+		reflection.rgb = textureLod(reflection_atlas,splane.xy,roughness*5.0).rgb;
 
 		if (reflections[idx].params.z < 0.5) {
 			reflection.rgb = mix(skybox,reflection.rgb,blend);
@@ -1160,7 +1161,8 @@ void main() {
 	//lay out everything, whathever is unused is optimized away anyway
 	highp vec3 vertex = vertex_interp;
 	vec3 albedo = vec3(0.8,0.8,0.8);
-	vec3 specular = vec3(0.2,0.2,0.2);
+	float metallic = 0.0;
+	float specular = 0.5;
 	vec3 emission = vec3(0.0,0.0,0.0);
 	float roughness = 1.0;
 	float rim = 0.0;
@@ -1275,13 +1277,7 @@ FRAGMENT_SHADER_CODE
 
 	vec3 eye_vec = -normalize( vertex_interp );
 
-#ifndef RENDER_DEPTH
-	float ndotv = clamp(dot(normal,eye_vec),0.0,1.0);
 
-	vec2 brdf = texture(brdf_texture, vec2(roughness, ndotv)).xy;
-	brdf.x=1.0;
-	brdf.y=0.0;
-#endif
 
 #ifdef USE_RADIANCE_MAP
 
@@ -1299,7 +1295,7 @@ FRAGMENT_SHADER_CODE
 				vec3 ref_vec = reflect(-eye_vec,normal); //2.0 * ndotv * normal - view; // reflect(v, n);
 				ref_vec=normalize((radiance_inverse_xform * vec4(ref_vec,0.0)).xyz);				
 				vec3 radiance = textureDualParabolod(radiance_map,ref_vec,lod) * bg_energy;
-				specular_light = radiance * brdf.x + brdf.y;
+				specular_light = radiance;
 
 			}
 			//no longer a cubemap
@@ -1467,7 +1463,7 @@ FRAGMENT_SHADER_CODE
 
 #endif //LIGHT_DIRECTIONAL_SHADOW
 
-	light_compute(normal,-light_direction_attenuation.xyz,eye_vec,binormal,tangent,light_color_energy.rgb*light_attenuation,albedo,specular,light_params.z,roughness,rim,rim_tint,clearcoat,clearcoat_gloss,anisotropy,diffuse_light,specular_light);
+	light_compute(normal,-light_direction_attenuation.xyz,eye_vec,binormal,tangent,light_color_energy.rgb*light_attenuation,albedo,light_params.z,roughness,rim,rim_tint,clearcoat,clearcoat_gloss,anisotropy,diffuse_light,specular_light);
 
 
 #endif //#USE_LIGHT_DIRECTIONAL
@@ -1485,7 +1481,7 @@ FRAGMENT_SHADER_CODE
 
 
 	for(int i=0;i<reflection_count;i++) {
-		reflection_process(reflection_indices[i],vertex,normal,binormal,tangent,roughness,anisotropy,ambient_light,specular_light,brdf,reflection_accum,ambient_accum);
+		reflection_process(reflection_indices[i],vertex,normal,binormal,tangent,roughness,anisotropy,ambient_light,specular_light,reflection_accum,ambient_accum);
 	}
 
 	if (reflection_accum.a>0.0) {
@@ -1496,11 +1492,11 @@ FRAGMENT_SHADER_CODE
 	}
 
 	for(int i=0;i<omni_light_count;i++) {
-		light_process_omni(omni_light_indices[i],vertex,eye_vec,normal,binormal,tangent,albedo,specular,roughness,rim,rim_tint,clearcoat,clearcoat_gloss,anisotropy,diffuse_light,specular_light);
+		light_process_omni(omni_light_indices[i],vertex,eye_vec,normal,binormal,tangent,albedo,roughness,rim,rim_tint,clearcoat,clearcoat_gloss,anisotropy,diffuse_light,specular_light);
 	}
 
 	for(int i=0;i<spot_light_count;i++) {
-		light_process_spot(spot_light_indices[i],vertex,eye_vec,normal,binormal,tangent,albedo,specular,roughness,rim,rim_tint,clearcoat,clearcoat_gloss,anisotropy,diffuse_light,specular_light);
+		light_process_spot(spot_light_indices[i],vertex,eye_vec,normal,binormal,tangent,albedo,roughness,rim,rim_tint,clearcoat,clearcoat_gloss,anisotropy,diffuse_light,specular_light);
 	}
 
 
@@ -1530,10 +1526,29 @@ LIGHT_SHADER_CODE
 	ambient_light*=ao;
 #endif
 
-	//energy conservation
-	diffuse_light=mix(diffuse_light,vec3(0.0),specular);
-	ambient_light=mix(ambient_light,vec3(0.0),specular);
-	specular_light *= max(vec3(0.04),specular);
+
+
+
+
+
+	//energu conservation
+	diffuse_light=mix(diffuse_light,vec3(0.0),metallic);
+	ambient_light=mix(ambient_light,vec3(0.0),metallic);
+	{
+		//brdf approximation (Lazarov 2013)
+		float ndotv = clamp(dot(normal,eye_vec),0.0,1.0);
+
+		//energy conservation
+		vec3 dielectric = vec3(0.034) * 0.5 * 2.0;
+		vec3 f0 = mix(dielectric, albedo, metallic);
+		const vec4 c0 = vec4(-1.0, -0.0275, -0.572, 0.022);
+		const vec4 c1 = vec4( 1.0, 0.0425, 1.04, -0.04);
+		vec4 r = roughness * c0 + c1;
+		float a004 = min( r.x * r.x, exp2( -9.28 * ndotv ) ) * r.x + r.y;
+		vec2 brdf = vec2( -1.04, 1.04 ) * a004 + r.zw;
+
+		specular_light *= min(1.0,50.0 * f0.g) * brdf.y + brdf.x * f0;
+	}
 
 #ifdef USE_MULTIPLE_RENDER_TARGETS
 

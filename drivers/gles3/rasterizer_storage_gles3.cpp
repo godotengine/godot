@@ -283,36 +283,6 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 			}
 
 		} break;
-		case Image::FORMAT_LATC_L: {
-
-			if (config.latc_supported) {
-
-				r_gl_internal_format = _EXT_COMPRESSED_LUMINANCE_LATC1_EXT;
-				r_gl_format = GL_RGBA;
-				r_gl_type = GL_UNSIGNED_BYTE;
-				r_compressed = true;
-				srgb = true;
-
-			} else {
-
-				need_decompress = true;
-			}
-
-		} break;
-		case Image::FORMAT_LATC_LA: {
-
-			if (config.latc_supported) {
-
-				r_gl_internal_format = _EXT_COMPRESSED_LUMINANCE_ALPHA_LATC2_EXT;
-				r_gl_format = GL_RGBA;
-				r_gl_type = GL_UNSIGNED_BYTE;
-				r_compressed = true;
-			} else {
-
-				need_decompress = true;
-			}
-
-		} break;
 		case Image::FORMAT_RGTC_R: {
 
 			if (config.rgtc_supported) {
@@ -321,7 +291,6 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-				srgb = true;
 
 			} else {
 

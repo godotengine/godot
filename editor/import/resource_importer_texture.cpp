@@ -277,7 +277,7 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 			if (p_force_rgbe && image->get_format() >= Image::FORMAT_R8 && image->get_format() <= Image::FORMAT_RGBE9995) {
 				image->convert(Image::FORMAT_RGBE9995);
 			} else {
-				image->compress(p_vram_compression);
+				image->compress(p_vram_compression, p_texture_flags & VS::TEXTURE_FLAG_CONVERT_TO_LINEAR);
 			}
 
 			format |= image->get_format();

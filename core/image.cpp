@@ -59,8 +59,6 @@ const char *Image::format_names[Image::FORMAT_MAX] = {
 	"DXT1 RGB8", //s3tc
 	"DXT3 RGBA8",
 	"DXT5 RGBA8",
-	"LATC Lum8",
-	"LATC LumAlpha8",
 	"RGTC Red8",
 	"RGTC RedGreen8",
 	"BPTC_RGBA",
@@ -131,10 +129,8 @@ int Image::get_format_pixel_size(Format p_format) {
 			return 1; //bc2
 		case FORMAT_DXT5:
 			return 1; //bc3
-		case FORMAT_LATC_L:
 		case FORMAT_RGTC_R:
 			return 1; //bc4
-		case FORMAT_LATC_LA:
 		case FORMAT_RGTC_RG:
 			return 1; //bc5
 		case FORMAT_BPTC_RGBA:
@@ -171,8 +167,6 @@ void Image::get_format_min_pixel_size(Format p_format, int &r_w, int &r_h) {
 		case FORMAT_DXT1: //s3tc bc1
 		case FORMAT_DXT3: //bc2
 		case FORMAT_DXT5: //bc3
-		case FORMAT_LATC_L: //bc4
-		case FORMAT_LATC_LA: //bc4
 		case FORMAT_RGTC_R: //bc4
 		case FORMAT_RGTC_RG: { //bc5		case case FORMAT_DXT1:
 
@@ -225,7 +219,7 @@ void Image::get_format_min_pixel_size(Format p_format, int &r_w, int &r_h) {
 
 int Image::get_format_pixel_rshift(Format p_format) {
 
-	if (p_format == FORMAT_DXT1 || p_format == FORMAT_LATC_L || p_format == FORMAT_RGTC_R || p_format == FORMAT_PVRTC4 || p_format == FORMAT_PVRTC4A || p_format == FORMAT_ETC || p_format == FORMAT_ETC2_R11 || p_format == FORMAT_ETC2_R11S || p_format == FORMAT_ETC2_RGB8 || p_format == FORMAT_ETC2_RGB8A1)
+	if (p_format == FORMAT_DXT1 || p_format == FORMAT_RGTC_R || p_format == FORMAT_PVRTC4 || p_format == FORMAT_PVRTC4A || p_format == FORMAT_ETC || p_format == FORMAT_ETC2_R11 || p_format == FORMAT_ETC2_R11S || p_format == FORMAT_ETC2_RGB8 || p_format == FORMAT_ETC2_RGB8A1)
 		return 1;
 	else if (p_format == FORMAT_PVRTC2 || p_format == FORMAT_PVRTC2A)
 		return 2;
@@ -239,8 +233,6 @@ int Image::get_format_block_size(Format p_format) {
 		case FORMAT_DXT1: //s3tc bc1
 		case FORMAT_DXT3: //bc2
 		case FORMAT_DXT5: //bc3
-		case FORMAT_LATC_L: //bc4
-		case FORMAT_LATC_LA: //bc4
 		case FORMAT_RGTC_R: //bc4
 		case FORMAT_RGTC_RG: { //bc5		case case FORMAT_DXT1:
 
@@ -1500,14 +1492,14 @@ Error Image::decompress() {
 	return OK;
 }
 
-Error Image::compress(CompressMode p_mode) {
+Error Image::compress(CompressMode p_mode, bool p_for_srgb) {
 
 	switch (p_mode) {
 
 		case COMPRESS_S3TC: {
 
 			ERR_FAIL_COND_V(!_image_compress_bc_func, ERR_UNAVAILABLE);
-			_image_compress_bc_func(this);
+			_image_compress_bc_func(this, p_for_srgb);
 		} break;
 		case COMPRESS_PVRTC2: {
 
@@ -1657,7 +1649,7 @@ void Image::blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Po
 Ref<Image> (*Image::_png_mem_loader_func)(const uint8_t *, int) = NULL;
 Ref<Image> (*Image::_jpg_mem_loader_func)(const uint8_t *, int) = NULL;
 
-void (*Image::_image_compress_bc_func)(Image *) = NULL;
+void (*Image::_image_compress_bc_func)(Image *, bool) = NULL;
 void (*Image::_image_compress_pvrtc2_func)(Image *) = NULL;
 void (*Image::_image_compress_pvrtc4_func)(Image *) = NULL;
 void (*Image::_image_compress_etc_func)(Image *) = NULL;
@@ -2116,8 +2108,6 @@ void Image::_bind_methods() {
 	BIND_CONSTANT(FORMAT_DXT1); //s3tc bc1
 	BIND_CONSTANT(FORMAT_DXT3); //bc2
 	BIND_CONSTANT(FORMAT_DXT5); //bc3
-	BIND_CONSTANT(FORMAT_LATC_L);
-	BIND_CONSTANT(FORMAT_LATC_LA);
 	BIND_CONSTANT(FORMAT_RGTC_R);
 	BIND_CONSTANT(FORMAT_RGTC_RG);
 	BIND_CONSTANT(FORMAT_BPTC_RGBA); //btpc bc6h
@@ -2152,7 +2142,7 @@ void Image::_bind_methods() {
 	BIND_CONSTANT(COMPRESS_ETC2);
 }
 
-void Image::set_compress_bc_func(void (*p_compress_func)(Image *)) {
+void Image::set_compress_bc_func(void (*p_compress_func)(Image *, bool)) {
 
 	_image_compress_bc_func = p_compress_func;
 }

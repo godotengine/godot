@@ -80,8 +80,6 @@ public:
 		FORMAT_DXT1, //s3tc bc1
 		FORMAT_DXT3, //bc2
 		FORMAT_DXT5, //bc3
-		FORMAT_LATC_L,
-		FORMAT_LATC_LA,
 		FORMAT_RGTC_R,
 		FORMAT_RGTC_RG,
 		FORMAT_BPTC_RGBA, //btpc bc7
@@ -116,7 +114,7 @@ public:
 	static Ref<Image> (*_png_mem_loader_func)(const uint8_t *p_png, int p_size);
 	static Ref<Image> (*_jpg_mem_loader_func)(const uint8_t *p_png, int p_size);
 
-	static void (*_image_compress_bc_func)(Image *);
+	static void (*_image_compress_bc_func)(Image *, bool p_srgb);
 	static void (*_image_compress_pvrtc2_func)(Image *);
 	static void (*_image_compress_pvrtc4_func)(Image *);
 	static void (*_image_compress_etc_func)(Image *);
@@ -269,7 +267,7 @@ public:
 		COMPRESS_ETC2,
 	};
 
-	Error compress(CompressMode p_mode = COMPRESS_S3TC);
+	Error compress(CompressMode p_mode = COMPRESS_S3TC, bool p_for_srgb = false);
 	Error decompress();
 	bool is_compressed() const;
 
@@ -283,7 +281,7 @@ public:
 	Rect2 get_used_rect() const;
 	Ref<Image> get_rect(const Rect2 &p_area) const;
 
-	static void set_compress_bc_func(void (*p_compress_func)(Image *));
+	static void set_compress_bc_func(void (*p_compress_func)(Image *, bool));
 	static String get_format_name(Format p_format);
 
 	Image(const uint8_t *p_mem_png_jpg, int p_len = -1);

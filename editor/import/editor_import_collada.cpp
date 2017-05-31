@@ -402,8 +402,8 @@ Error ColladaImport::_create_material(const String &p_target) {
 
 			Ref<Texture> texture = ResourceLoader::load(texfile, "Texture");
 			if (texture.is_valid()) {
-				material->set_texture(SpatialMaterial::TEXTURE_SPECULAR, texture);
-				material->set_specular(Color(1, 1, 1, 1));
+				material->set_texture(SpatialMaterial::TEXTURE_METALLIC, texture);
+				material->set_specular(1.0);
 
 				//material->set_texture(SpatialMaterial::PARAM_SPECULAR,texture);
 				//material->set_parameter(SpatialMaterial::PARAM_SPECULAR,Color(1,1,1,1));
@@ -411,8 +411,9 @@ Error ColladaImport::_create_material(const String &p_target) {
 				missing_textures.push_back(texfile.get_file());
 			}
 		}
+
 	} else {
-		material->set_metalness(effect.specular.color.get_v());
+		material->set_metallic(effect.specular.color.get_v());
 	}
 
 	// EMISSION
@@ -553,10 +554,10 @@ static void _generate_tangents_and_binormals(const PoolVector<int> &p_indices, c
 			tangent = Vector3();
 		} else {
 			tangent = Vector3((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r,
-					(t2 * z1 - t1 * z2) * r)
+							  (t2 * z1 - t1 * z2) * r)
 							  .normalized();
 			binormal = Vector3((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r,
-					(s1 * z2 - s2 * z1) * r)
+							   (s1 * z2 - s2 * z1) * r)
 							   .normalized();
 		}
 

@@ -723,6 +723,7 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_SPATIAL].renames["NORMALMAP_DEPTH"] = "normaldepth";
 	actions[VS::SHADER_SPATIAL].renames["ALBEDO"] = "albedo";
 	actions[VS::SHADER_SPATIAL].renames["ALPHA"] = "alpha";
+	actions[VS::SHADER_SPATIAL].renames["METALLIC"] = "metallic";
 	actions[VS::SHADER_SPATIAL].renames["SPECULAR"] = "specular";
 	actions[VS::SHADER_SPATIAL].renames["ROUGHNESS"] = "roughness";
 	actions[VS::SHADER_SPATIAL].renames["RIM"] = "rim";

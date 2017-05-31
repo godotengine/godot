@@ -181,7 +181,7 @@ void SpatialMaterial::init_shaders() {
 	shader_names->albedo = "albedo";
 	shader_names->specular = "specular";
 	shader_names->roughness = "roughness";
-	shader_names->metalness = "metalness";
+	shader_names->metallic = "metallic";
 	shader_names->emission = "emission";
 	shader_names->emission_energy = "emission_energy";
 	shader_names->normal_scale = "normal_scale";
@@ -205,7 +205,8 @@ void SpatialMaterial::init_shaders() {
 	shader_names->particles_anim_loop = "particles_anim_loop";
 
 	shader_names->texture_names[TEXTURE_ALBEDO] = "texture_albedo";
-	shader_names->texture_names[TEXTURE_SPECULAR] = "texture_specular";
+	shader_names->texture_names[TEXTURE_METALLIC] = "texture_metallic";
+	shader_names->texture_names[TEXTURE_ROUGHNESS] = "texture_roughness";
 	shader_names->texture_names[TEXTURE_EMISSION] = "texture_emission";
 	shader_names->texture_names[TEXTURE_NORMAL] = "texture_normal";
 	shader_names->texture_names[TEXTURE_RIM] = "texture_rim";
@@ -215,7 +216,6 @@ void SpatialMaterial::init_shaders() {
 	shader_names->texture_names[TEXTURE_HEIGHT] = "texture_height";
 	shader_names->texture_names[TEXTURE_SUBSURFACE_SCATTERING] = "texture_subsurface_scattering";
 	shader_names->texture_names[TEXTURE_REFRACTION] = "texture_refraction";
-	shader_names->texture_names[TEXTURE_REFRACTION_ROUGHNESS] = "texture_refraction_roughness";
 	shader_names->texture_names[TEXTURE_DETAIL_MASK] = "texture_detail_mask";
 	shader_names->texture_names[TEXTURE_DETAIL_ALBEDO] = "texture_detail_albedo";
 	shader_names->texture_names[TEXTURE_DETAIL_NORMAL] = "texture_detail_normal";
@@ -290,15 +290,13 @@ void SpatialMaterial::_update_shader() {
 
 	code += "uniform vec4 albedo : hint_color;\n";
 	code += "uniform sampler2D texture_albedo : hint_albedo;\n";
-	if (specular_mode == SPECULAR_MODE_SPECULAR) {
-		code += "uniform vec4 specular : hint_color;\n";
-	} else {
-		code += "uniform float metalness;\n";
-	}
+	code += "uniform float specular;\n";
+	code += "uniform float metallic;\n";
 
 	code += "uniform float roughness : hint_range(0,1);\n";
 	code += "uniform float point_size : hint_range(0,128);\n";
-	code += "uniform sampler2D texture_specular : hint_white;\n";
+	code += "uniform sampler2D texture_metallic : hint_white;\n";
+	code += "uniform sampler2D texture_roughness : hint_white;\n";
 	code += "uniform vec2 uv1_scale;\n";
 	code += "uniform vec2 uv1_offset;\n";
 	code += "uniform vec2 uv2_scale;\n";
@@ -502,16 +500,11 @@ void SpatialMaterial::_update_shader() {
 		code += "\tALBEDO.rgb = mix(ALBEDO.rgb,detail,detail_mask_tex.r);\n";
 	}
 
-	if (specular_mode == SPECULAR_MODE_SPECULAR) {
-
-		code += "\tvec4 specular_tex = texture(texture_specular,UV);\n";
-		code += "\tSPECULAR = specular.rgb * specular_tex.rgb;\n";
-		code += "\tROUGHNESS = specular_tex.a * roughness;\n";
-	} else {
-		code += "\tvec4 specular_tex = texture(texture_specular,UV);\n";
-		code += "\tSPECULAR = vec3(ALBEDO.rgb * metalness * specular_tex.r);\n";
-		code += "\tROUGHNESS = specular_tex.g * roughness;\n";
-	}
+	code += "\tfloat metallic_tex = texture(texture_metallic,UV).r;\n";
+	code += "\tMETALLIC = metallic_tex * metallic;\n";
+	code += "\tfloat roughness_tex = texture(texture_roughness,UV).r;\n";
+	code += "\tROUGHNESS = roughness_tex * roughness;\n";
+	code += "\tSPECULAR = specular;\n";
 
 	code += "}\n";
 
@@ -579,23 +572,13 @@ Color SpatialMaterial::get_albedo() const {
 	return albedo;
 }
 
-void SpatialMaterial::set_specular_mode(SpecularMode p_mode) {
-	specular_mode = p_mode;
-	_change_notify();
-	_queue_shader_change();
-}
-
-SpatialMaterial::SpecularMode SpatialMaterial::get_specular_mode() const {
-
-	return specular_mode;
-}
-
-void SpatialMaterial::set_specular(const Color &p_specular) {
+void SpatialMaterial::set_specular(float p_specular) {
 
 	specular = p_specular;
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->specular, p_specular);
 }
-Color SpatialMaterial::get_specular() const {
+
+float SpatialMaterial::get_specular() const {
 
 	return specular;
 }
@@ -611,15 +594,15 @@ float SpatialMaterial::get_roughness() const {
 	return roughness;
 }
 
-void SpatialMaterial::set_metalness(float p_metalness) {
+void SpatialMaterial::set_metallic(float p_metallic) {
 
-	metalness = p_metalness;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->metalness, p_metalness);
+	metallic = p_metallic;
+	VS::get_singleton()->material_set_param(_get_material(), shader_names->metallic, p_metallic);
 }
 
-float SpatialMaterial::get_metalness() const {
+float SpatialMaterial::get_metallic() const {
 
-	return metalness;
+	return metallic;
 }
 
 void SpatialMaterial::set_emission(const Color &p_emission) {
@@ -888,13 +871,6 @@ void SpatialMaterial::_validate_property(PropertyInfo &property) const {
 	_validate_feature("refraction", FEATURE_REFRACTION, property);
 	_validate_feature("detail", FEATURE_DETAIL, property);
 
-	if (property.name == "specular_color" && specular_mode == SPECULAR_MODE_METALLIC) {
-		property.usage = 0;
-	}
-	if (property.name == "specular_metalness" && specular_mode == SPECULAR_MODE_SPECULAR) {
-		property.usage = 0;
-	}
-
 	if (property.name.begins_with("particles_anim_") && billboard_mode != BILLBOARD_PARTICLES) {
 		property.usage = 0;
 	}
@@ -1014,14 +990,11 @@ void SpatialMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_albedo", "albedo"), &SpatialMaterial::set_albedo);
 	ClassDB::bind_method(D_METHOD("get_albedo"), &SpatialMaterial::get_albedo);
 
-	ClassDB::bind_method(D_METHOD("set_specular_mode", "specular_mode"), &SpatialMaterial::set_specular_mode);
-	ClassDB::bind_method(D_METHOD("get_specular_mode"), &SpatialMaterial::get_specular_mode);
-
 	ClassDB::bind_method(D_METHOD("set_specular", "specular"), &SpatialMaterial::set_specular);
 	ClassDB::bind_method(D_METHOD("get_specular"), &SpatialMaterial::get_specular);
 
-	ClassDB::bind_method(D_METHOD("set_metalness", "metalness"), &SpatialMaterial::set_metalness);
-	ClassDB::bind_method(D_METHOD("get_metalness"), &SpatialMaterial::get_metalness);
+	ClassDB::bind_method(D_METHOD("set_metallic", "metallic"), &SpatialMaterial::set_metallic);
+	ClassDB::bind_method(D_METHOD("get_metallic"), &SpatialMaterial::get_metallic);
 
 	ClassDB::bind_method(D_METHOD("set_roughness", "roughness"), &SpatialMaterial::set_roughness);
 	ClassDB::bind_method(D_METHOD("get_roughness"), &SpatialMaterial::get_roughness);
@@ -1146,12 +1119,14 @@ void SpatialMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "albedo_color"), "set_albedo", "get_albedo");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "albedo_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture", TEXTURE_ALBEDO);
 
-	ADD_GROUP("Specular", "specular_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "specular_mode", PROPERTY_HINT_ENUM, "Metallic,Specular"), "set_specular_mode", "get_specular_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "specular_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_specular", "get_specular");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "specular_metalness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_metalness", "get_metalness");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "specular_roughness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_roughness", "get_roughness");
-	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "specular_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture", TEXTURE_SPECULAR);
+	ADD_GROUP("Metallic", "metallic_");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "metallic_amount", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_metallic", "get_metallic");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "metallic_specular", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_specular", "get_specular");
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "metallic_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture", TEXTURE_METALLIC);
+
+	ADD_GROUP("Roughness", "roughness_");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "roughness_amount", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_roughness", "get_roughness");
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "roughness_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture", TEXTURE_ROUGHNESS);
 
 	ADD_GROUP("Emission", "emission_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "emission_enabled"), "set_feature", "get_feature", FEATURE_EMISSION);
@@ -1218,7 +1193,8 @@ void SpatialMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "uv2_offset"), "set_uv2_offset", "get_uv2_offset");
 
 	BIND_CONSTANT(TEXTURE_ALBEDO);
-	BIND_CONSTANT(TEXTURE_SPECULAR);
+	BIND_CONSTANT(TEXTURE_METALLIC);
+	BIND_CONSTANT(TEXTURE_ROUGHNESS);
 	BIND_CONSTANT(TEXTURE_EMISSION);
 	BIND_CONSTANT(TEXTURE_NORMAL);
 	BIND_CONSTANT(TEXTURE_RIM);
@@ -1228,7 +1204,6 @@ void SpatialMaterial::_bind_methods() {
 	BIND_CONSTANT(TEXTURE_HEIGHT);
 	BIND_CONSTANT(TEXTURE_SUBSURFACE_SCATTERING);
 	BIND_CONSTANT(TEXTURE_REFRACTION);
-	BIND_CONSTANT(TEXTURE_REFRACTION_ROUGHNESS);
 	BIND_CONSTANT(TEXTURE_DETAIL_MASK);
 	BIND_CONSTANT(TEXTURE_DETAIL_ALBEDO);
 	BIND_CONSTANT(TEXTURE_DETAIL_NORMAL);
@@ -1277,9 +1252,6 @@ void SpatialMaterial::_bind_methods() {
 	BIND_CONSTANT(DIFFUSE_OREN_NAYAR);
 	BIND_CONSTANT(DIFFUSE_BURLEY);
 
-	BIND_CONSTANT(SPECULAR_MODE_METALLIC);
-	BIND_CONSTANT(SPECULAR_MODE_SPECULAR);
-
 	BIND_CONSTANT(BILLBOARD_DISABLED);
 	BIND_CONSTANT(BILLBOARD_ENABLED);
 	BIND_CONSTANT(BILLBOARD_FIXED_Y);
@@ -1290,11 +1262,10 @@ SpatialMaterial::SpatialMaterial()
 	: element(this) {
 
 	//initialize to right values
-	specular_mode = SPECULAR_MODE_METALLIC;
 	set_albedo(Color(0.7, 0.7, 0.7, 1.0));
-	set_specular(Color(0.1, 0.1, 0.1));
+	set_specular(0.5);
 	set_roughness(0.0);
-	set_metalness(0.1);
+	set_metallic(0.1);
 	set_emission(Color(0, 0, 0));
 	set_emission_energy(1.0);
 	set_normal_scale(1);

@@ -59,9 +59,9 @@ void image_decompress_squish(Image *p_image) {
 		squish_flags = squish::kDxt3;
 	} else if (p_image->get_format() == Image::FORMAT_DXT5) {
 		squish_flags = squish::kDxt5;
-	} else if (p_image->get_format() == Image::FORMAT_LATC_L || p_image->get_format() == Image::FORMAT_RGTC_R) {
+	} else if (p_image->get_format() == Image::FORMAT_RGTC_R) {
 		squish_flags = squish::kBc4;
-	} else if (p_image->get_format() == Image::FORMAT_LATC_LA || p_image->get_format() == Image::FORMAT_RGTC_RG) {
+	} else if (p_image->get_format() == Image::FORMAT_RGTC_RG) {
 		squish_flags = squish::kBc5;
 	} else {
 		ERR_FAIL_COND(true);
@@ -79,7 +79,7 @@ void image_decompress_squish(Image *p_image) {
 	p_image->create(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
 }
 
-void image_compress_squish(Image *p_image) {
+void image_compress_squish(Image *p_image, bool p_srgb) {
 
 	if (p_image->get_format() >= Image::FORMAT_DXT1)
 		return; //do not compress, already compressed
@@ -96,16 +96,21 @@ void image_compress_squish(Image *p_image) {
 
 		p_image->convert(Image::FORMAT_RGBA8); //still uses RGBA to convert
 
+		if (p_srgb && (dc == Image::DETECTED_R || dc == Image::DETECTED_RG)) {
+			//R and RG do not support SRGB
+			dc = Image::DETECTED_RGB;
+		}
+
 		switch (dc) {
 			case Image::DETECTED_L: {
 
-				target_format = Image::FORMAT_LATC_L;
-				squish_comp |= squish::kBc4;
+				target_format = Image::FORMAT_DXT1;
+				squish_comp |= squish::kDxt1;
 			} break;
 			case Image::DETECTED_LA: {
 
-				target_format = Image::FORMAT_LATC_LA;
-				squish_comp |= squish::kBc5;
+				target_format = Image::FORMAT_DXT5;
+				squish_comp |= squish::kDxt5;
 			} break;
 			case Image::DETECTED_R: {
 
