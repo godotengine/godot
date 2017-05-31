@@ -124,8 +124,8 @@ void GDAPI godot_pool_byte_array_destroy(godot_pool_byte_array *p_pba) {
 // int
 
 void GDAPI godot_pool_int_array_new(godot_pool_int_array *p_pba) {
-	PoolVector<uint8_t> *pba = (PoolVector<uint8_t> *)p_pba;
-	memnew_placement(pba, PoolVector<uint8_t>);
+	PoolVector<godot_int> *pba = (PoolVector<godot_int> *)p_pba;
+	memnew_placement(pba, PoolVector<godot_int>);
 }
 
 void GDAPI godot_pool_int_array_new_copy(godot_pool_int_array *p_dest, const godot_pool_int_array *p_src) {
@@ -135,9 +135,9 @@ void GDAPI godot_pool_int_array_new_copy(godot_pool_int_array *p_dest, const god
 }
 
 void GDAPI godot_pool_int_array_new_with_array(godot_pool_int_array *p_pba, const godot_array *p_a) {
-	PoolVector<uint8_t> *pba = (PoolVector<uint8_t> *)p_pba;
+	PoolVector<godot_int> *pba = (PoolVector<godot_int> *)p_pba;
 	Array *a = (Array *)p_a;
-	memnew_placement(pba, PoolVector<uint8_t>);
+	memnew_placement(pba, PoolVector<godot_int>);
 
 	pba->resize(a->size());
 	for (size_t i = 0; i < a->size(); i++) {
@@ -203,8 +203,8 @@ void GDAPI godot_pool_int_array_destroy(godot_pool_int_array *p_pba) {
 // real
 
 void GDAPI godot_pool_real_array_new(godot_pool_real_array *p_pba) {
-	PoolVector<uint8_t> *pba = (PoolVector<uint8_t> *)p_pba;
-	memnew_placement(pba, PoolVector<uint8_t>);
+	PoolVector<godot_real> *pba = (PoolVector<godot_real> *)p_pba;
+	memnew_placement(pba, PoolVector<godot_real>);
 }
 
 void GDAPI godot_pool_real_array_new_copy(godot_pool_real_array *p_dest, const godot_pool_real_array *p_src) {
@@ -214,9 +214,9 @@ void GDAPI godot_pool_real_array_new_copy(godot_pool_real_array *p_dest, const g
 }
 
 void GDAPI godot_pool_real_array_new_with_array(godot_pool_real_array *p_pba, const godot_array *p_a) {
-	PoolVector<uint8_t> *pba = (PoolVector<uint8_t> *)p_pba;
+	PoolVector<godot_real> *pba = (PoolVector<godot_real> *)p_pba;
 	Array *a = (Array *)p_a;
-	memnew_placement(pba, PoolVector<uint8_t>);
+	memnew_placement(pba, PoolVector<godot_real>);
 
 	pba->resize(a->size());
 	for (size_t i = 0; i < a->size(); i++) {
