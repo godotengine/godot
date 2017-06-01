@@ -763,6 +763,10 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 
 	actions[VS::SHADER_SPATIAL].render_mode_defines["skip_default_transform"] = "#define SKIP_TRANSFORM_USED\n";
 
+	actions[VS::SHADER_SPATIAL].render_mode_defines["diffuse_burley"] = "#define DIFFUSE_BURLEY\n";
+	actions[VS::SHADER_SPATIAL].render_mode_defines["diffuse_oren_nayar"] = "#define DIFFUSE_OREN_NAYAR\n";
+	actions[VS::SHADER_SPATIAL].render_mode_defines["diffuse_half_lambert"] = "#define DIFFUSE_HALF_LAMBERT\n";
+
 	/* PARTICLES SHADER */
 
 	actions[VS::SHADER_PARTICLES].renames["COLOR"] = "out_color";

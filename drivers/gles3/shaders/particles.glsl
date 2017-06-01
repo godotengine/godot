@@ -244,6 +244,10 @@ MATERIAL_UNIFORMS
 void main() {
 
 	{
+LIGHT_SHADER_CODE
+	}
+
+	{
 FRAGMENT_SHADER_CODE
 	}
 }

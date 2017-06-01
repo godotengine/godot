@@ -623,15 +623,66 @@ float GTR1(float NdotH, float a)
 
 void light_compute(vec3 N, vec3 L,vec3 V,vec3 B, vec3 T,vec3 light_color,vec3 diffuse_color,  float specular_blob_intensity, float roughness, float rim,float rim_tint, float clearcoat, float clearcoat_gloss,float anisotropy,inout vec3 diffuse, inout vec3 specular) {
 
-	float dotNL = max(dot(N,L), 0.0 );
-	float dotNV = max(dot(N,V), 0.0 );
+#if defined(USE_LIGHT_SHADER_CODE)
+//light is written by the light shader
 
+
+LIGHT_SHADER_CODE
+
+
+#else
+
+	float dotNL = max(dot(N,L), 0.0 );
+
+#if defined(DIFFUSE_HALF_LAMBERT)
+
+	float hl = dot(N,L) * 0.5 + 0.5;
+	diffuse += hl * light_color * diffuse_color;
+
+#elif defined(DIFFUSE_OREN_NAYAR)
+
+	{
+		float LdotV = dot(L, V);
+		float NdotL = dot(L, N);
+		float NdotV = dot(N, V);
+
+		float s = LdotV - NdotL * NdotV;
+		float t = mix(1.0, max(NdotL, NdotV), step(0.0, s));
+
+		float sigma2 = roughness * roughness;
+		vec3 A = 1.0 + sigma2 * (diffuse_color / (sigma2 + 0.13) + 0.5 / (sigma2 + 0.33));
+		float B = 0.45 * sigma2 / (sigma2 + 0.09);
+
+		diffuse += diffuse_color * max(0.0, NdotL) * (A + vec3(B) * s / t) / M_PI;
+	}
+
+#elif defined(DIFFUSE_BURLEY)
+
+	{
+		float NdotL = dot(L, N);
+		float NdotV = dot(N, V);
+		float VdotH = dot(N, normalize(L+V));
+		float energyBias = mix(roughness, 0.0, 0.5);
+		float energyFactor = mix(roughness, 1.0, 1.0 / 1.51);
+		float fd90 = energyBias + 2.0 * VdotH * VdotH * roughness;
+		float f0 = 1.0;
+		float lightScatter = f0 + (fd90 - f0) * pow(1.0 - NdotL, 5.0);
+		float viewScatter = f0 + (fd90 - f0) * pow(1.0 - NdotV, 5.0);
+
+		diffuse+= light_color * diffuse_color * lightScatter * viewScatter * energyFactor;
+	}
+#else
+
+	diffuse += dotNL * light_color * diffuse_color;
+#endif
+
+
+	float dotNV = max(dot(N,V), 0.0 );
 #if defined(LIGHT_USE_RIM)
 	float rim_light = pow(1.0-dotNV,(1.0-roughness)*16.0);
 	diffuse += rim_light * rim * mix(vec3(1.0),diffuse_color,rim_tint) * light_color;
 #endif
 
-	diffuse += dotNL * light_color * diffuse_color;
 
 	if (roughness > 0.0) {
 
@@ -685,6 +736,7 @@ void light_compute(vec3 N, vec3 L,vec3 V,vec3 B, vec3 T,vec3 light_color,vec3 di
 	}
 
 
+#endif //defined(USE_LIGHT_SHADER_CODE)
 }
 
 
@@ -1507,14 +1559,7 @@ FRAGMENT_SHADER_CODE
 
 
 
-#if defined(USE_LIGHT_SHADER_CODE)
-//light is written by the light shader
-{
 
-LIGHT_SHADER_CODE
-
-}
-#endif
 
 #ifdef RENDER_DEPTH
 //nothing happens, so a tree-ssa optimizer will result in no fragment shader :)
@@ -1566,7 +1611,7 @@ LIGHT_SHADER_CODE
 #endif //ENABLE_AO
 
 	diffuse_buffer=vec4(emission+diffuse_light+ambient_light,ambient_scale);
-	specular_buffer=vec4(specular_light,max(specular.r,max(specular.g,specular.b)));
+	specular_buffer=vec4(specular_light,metallic);
 
 
 	normal_mr_buffer=vec4(normalize(normal)*0.5+0.5,roughness);

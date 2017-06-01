@@ -131,6 +131,11 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("unshaded");
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("ontop");
 
+	shader_modes[VS::SHADER_SPATIAL].modes.insert("diffuse_lambert");
+	shader_modes[VS::SHADER_SPATIAL].modes.insert("diffuse_half_lambert");
+	shader_modes[VS::SHADER_SPATIAL].modes.insert("diffuse_oren_nayar");
+	shader_modes[VS::SHADER_SPATIAL].modes.insert("diffuse_burley");
+
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("skip_default_transform");
 
 	/************ CANVAS ITEM **************************/
@@ -166,8 +171,6 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[VS::SHADER_CANVAS_ITEM].functions["light"]["COLOR"] = ShaderLanguage::TYPE_VEC4;
 	shader_modes[VS::SHADER_CANVAS_ITEM].functions["light"]["TEXTURE"] = ShaderLanguage::TYPE_SAMPLER2D;
 	shader_modes[VS::SHADER_CANVAS_ITEM].functions["light"]["TEXTURE_PIXEL_SIZE"] = ShaderLanguage::TYPE_VEC2;
-	shader_modes[VS::SHADER_CANVAS_ITEM].functions["light"]["VAR1"] = ShaderLanguage::TYPE_VEC4;
-	shader_modes[VS::SHADER_CANVAS_ITEM].functions["light"]["VAR2"] = ShaderLanguage::TYPE_VEC4;
 	shader_modes[VS::SHADER_CANVAS_ITEM].functions["light"]["SCREEN_UV"] = ShaderLanguage::TYPE_VEC2;
 	shader_modes[VS::SHADER_CANVAS_ITEM].functions["light"]["LIGHT_VEC"] = ShaderLanguage::TYPE_VEC2;
 	shader_modes[VS::SHADER_CANVAS_ITEM].functions["light"]["LIGHT_HEIGHT"] = ShaderLanguage::TYPE_FLOAT;

@@ -3151,6 +3151,8 @@ void RasterizerSceneGLES3::_render_mrts(Environment *env, const CameraMatrix &p_
 	//copy reflection over diffuse, resolving SSR if needed
 	state.resolve_shader.set_conditional(ResolveShaderGLES3::USE_SSR, env->ssr_enabled);
 	state.resolve_shader.bind();
+	state.resolve_shader.set_uniform(ResolveShaderGLES3::PIXEL_SIZE, Vector2(1.0 / storage->frame.current_rt->width, 1.0 / storage->frame.current_rt->height));
+
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->color);
 	if (env->ssr_enabled) {

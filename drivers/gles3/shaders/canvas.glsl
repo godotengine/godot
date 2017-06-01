@@ -211,6 +211,18 @@ MATERIAL_UNIFORMS
 
 #endif
 
+
+void light_compute(inout vec3 light,vec3 light_vec,float light_height,vec4 light_color,vec2 light_uv,vec4 shadow,vec3 normal,vec2 uv,vec2 screen_uv,vec4 color) {
+
+#if defined(USE_LIGHT_SHADER_CODE)
+
+LIGHT_SHADER_CODE
+
+#endif
+
+}
+
+
 void main() {
 
 	vec4 color = color_interp;
@@ -285,11 +297,7 @@ FRAGMENT_SHADER_CODE
 
 #if defined(USE_LIGHT_SHADER_CODE)
 //light is written by the light shader
-		{
-			vec4 light_out=light*color;
-LIGHT_SHADER_CODE
-			color=light_out;
-		}
+		light_compute(light,light_vec,light_height,light_color,light_uv,shadow,normal,uv,screen_uv,color);
 
 #else
 

@@ -278,6 +278,12 @@ void SpatialMaterial::_update_shader() {
 		case CULL_FRONT: code += ",cull_front"; break;
 		case CULL_DISABLED: code += ",cull_disabled"; break;
 	}
+	switch (diffuse_mode) {
+		case DIFFUSE_LAMBERT: code += ",diffuse_lambert"; break;
+		case DIFFUSE_HALF_LAMBERT: code += ",diffuse_half_lambert"; break;
+		case DIFFUSE_OREN_NAYAR: code += ",diffuse_oren_nayar"; break;
+		case DIFFUSE_BURLEY: code += ",diffuse_burley"; break;
+	}
 
 	if (flags[FLAG_UNSHADED]) {
 		code += ",unshaded";
@@ -1248,7 +1254,7 @@ void SpatialMaterial::_bind_methods() {
 	BIND_CONSTANT(FLAG_MAX);
 
 	BIND_CONSTANT(DIFFUSE_LAMBERT);
-	BIND_CONSTANT(DIFFUSE_LAMBERT_WRAP);
+	BIND_CONSTANT(DIFFUSE_HALF_LAMBERT);
 	BIND_CONSTANT(DIFFUSE_OREN_NAYAR);
 	BIND_CONSTANT(DIFFUSE_BURLEY);
 
