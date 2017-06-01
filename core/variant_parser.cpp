@@ -744,7 +744,12 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 						return err;
 
 					if (token.type == TK_PARENTHESIS_CLOSE) {
-
+						Reference *reference = obj->cast_to<Reference>();
+						if (reference) {
+							value = REF(reference);
+						} else {
+							value = obj;
+						}
 						return OK;
 					}
 
@@ -760,7 +765,6 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 						}
 					}
 
-					get_token(p_stream, token, line, r_err_str);
 					if (token.type != TK_STRING) {
 						r_err_str = "Expected property name as string";
 						return ERR_PARSE_ERROR;
