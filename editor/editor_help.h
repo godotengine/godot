@@ -49,7 +49,6 @@ class EditorHelpSearch : public ConfirmationDialog {
 
 	GDCLASS(EditorHelpSearch, ConfirmationDialog)
 
-	EditorNode *editor;
 	LineEdit *search_box;
 	Tree *search_options;
 	String base_type;
@@ -119,7 +118,6 @@ class EditorHelp : public VBoxContainer {
 
 	String edited_class;
 
-	EditorNode *editor;
 	Map<String, int> method_line;
 	Map<String, int> signal_line;
 	Map<String, int> property_line;
