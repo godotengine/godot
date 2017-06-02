@@ -885,7 +885,7 @@ Vector<Color> GIProbe::_get_bake_texture(Ref<Image> p_image, const Color &p_colo
 
 	Vector<Color> ret;
 
-	if (p_image.is_null()) {
+	if (p_image.is_null() || p_image->empty()) {
 
 		ret.resize(bake_texture_size * bake_texture_size);
 		for (int i = 0; i < bake_texture_size * bake_texture_size; i++) {
@@ -894,9 +894,11 @@ Vector<Color> GIProbe::_get_bake_texture(Ref<Image> p_image, const Color &p_colo
 
 		return ret;
 	}
+	p_image = p_image->duplicate();
 
 	if (p_image->is_compressed()) {
 		print_line("DECOMPRESSING!!!!");
+
 		p_image->decompress();
 	}
 	p_image->convert(Image::FORMAT_RGBA8);
@@ -1277,6 +1279,7 @@ void GIProbe::_debug_mesh(int p_idx, int p_level, const Rect3 &p_aabb, Ref<Multi
 		xform.basis.scale(p_aabb.size * 0.5);
 		p_multimesh->set_instance_transform(idx, xform);
 		Color col = Color(p_baker->bake_cells[p_idx].albedo[0], p_baker->bake_cells[p_idx].albedo[1], p_baker->bake_cells[p_idx].albedo[2]);
+		//Color col = Color(p_baker->bake_cells[p_idx].emission[0], p_baker->bake_cells[p_idx].emission[1], p_baker->bake_cells[p_idx].emission[2]);
 		p_multimesh->set_instance_color(idx, col);
 
 		idx++;
@@ -1464,7 +1467,7 @@ GIProbe::GIProbe() {
 	subdiv = SUBDIV_128;
 	dynamic_range = 4;
 	energy = 1.0;
-	bias = 0.4;
+	bias = 1.8;
 	propagation = 1.0;
 	extents = Vector3(10, 10, 10);
 	color_scan_cell_width = 4;

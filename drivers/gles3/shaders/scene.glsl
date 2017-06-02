@@ -672,7 +672,7 @@ LIGHT_SHADER_CODE
 		diffuse+= light_color * diffuse_color * lightScatter * viewScatter * energyFactor;
 	}
 #else
-
+	//lambert
 	diffuse += dotNL * light_color * diffuse_color;
 #endif
 
@@ -1020,7 +1020,7 @@ void reflection_process(int idx, vec3 vertex, vec3 normal,vec3 binormal, vec3 ta
 
 #ifdef USE_GI_PROBES
 
-uniform mediump sampler3D gi_probe1; //texunit:-11
+uniform mediump sampler3D gi_probe1; //texunit:-10
 uniform highp mat4 gi_probe_xform1;
 uniform highp vec3 gi_probe_bounds1;
 uniform highp vec3 gi_probe_cell_size1;
@@ -1028,7 +1028,7 @@ uniform highp float gi_probe_multiplier1;
 uniform highp float gi_probe_bias1;
 uniform bool gi_probe_blend_ambient1;
 
-uniform mediump sampler3D gi_probe2; //texunit:-10
+uniform mediump sampler3D gi_probe2; //texunit:-11
 uniform highp mat4 gi_probe_xform2;
 uniform highp vec3 gi_probe_bounds2;
 uniform highp vec3 gi_probe_cell_size2;
@@ -1345,7 +1345,7 @@ FRAGMENT_SHADER_CODE
 			{ //read radiance from dual paraboloid
 
 				vec3 ref_vec = reflect(-eye_vec,normal); //2.0 * ndotv * normal - view; // reflect(v, n);
-				ref_vec=normalize((radiance_inverse_xform * vec4(ref_vec,0.0)).xyz);				
+				ref_vec=normalize((radiance_inverse_xform * vec4(ref_vec,0.0)).xyz);
 				vec3 radiance = textureDualParabolod(radiance_map,ref_vec,lod) * bg_energy;
 				specular_light = radiance;
 
