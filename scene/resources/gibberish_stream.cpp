@@ -5,7 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,6 +29,11 @@
 /*************************************************************************/
 #include "gibberish_stream.h"
 #include "servers/audio_server.h"
+
+//TODO: This class needs to be adapted to the new AudioStream API,
+// or dropped if nobody cares about fixing it :) (GH-3307)
+
+#if 0
 
 int AudioStreamGibberish::get_channel_count() const {
 
@@ -300,22 +306,22 @@ float AudioStreamGibberish::get_pitch_random_scale() const {
 
 void AudioStreamGibberish::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_phonemes","phonemes"),&AudioStreamGibberish::set_phonemes);
-	ObjectTypeDB::bind_method(_MD("get_phonemes"),&AudioStreamGibberish::get_phonemes);
+	ClassDB::bind_method(D_METHOD("set_phonemes","phonemes"),&AudioStreamGibberish::set_phonemes);
+	ClassDB::bind_method(D_METHOD("get_phonemes"),&AudioStreamGibberish::get_phonemes);
 
-	ObjectTypeDB::bind_method(_MD("set_pitch_scale","pitch_scale"),&AudioStreamGibberish::set_pitch_scale);
-	ObjectTypeDB::bind_method(_MD("get_pitch_scale"),&AudioStreamGibberish::get_pitch_scale);
+	ClassDB::bind_method(D_METHOD("set_pitch_scale","pitch_scale"),&AudioStreamGibberish::set_pitch_scale);
+	ClassDB::bind_method(D_METHOD("get_pitch_scale"),&AudioStreamGibberish::get_pitch_scale);
 
-	ObjectTypeDB::bind_method(_MD("set_pitch_random_scale","pitch_random_scale"),&AudioStreamGibberish::set_pitch_random_scale);
-	ObjectTypeDB::bind_method(_MD("get_pitch_random_scale"),&AudioStreamGibberish::get_pitch_random_scale);
+	ClassDB::bind_method(D_METHOD("set_pitch_random_scale","pitch_random_scale"),&AudioStreamGibberish::set_pitch_random_scale);
+	ClassDB::bind_method(D_METHOD("get_pitch_random_scale"),&AudioStreamGibberish::get_pitch_random_scale);
 
-	ObjectTypeDB::bind_method(_MD("set_xfade_time","sec"),&AudioStreamGibberish::set_xfade_time);
-	ObjectTypeDB::bind_method(_MD("get_xfade_time"),&AudioStreamGibberish::get_xfade_time);
+	ClassDB::bind_method(D_METHOD("set_xfade_time","sec"),&AudioStreamGibberish::set_xfade_time);
+	ClassDB::bind_method(D_METHOD("get_xfade_time"),&AudioStreamGibberish::get_xfade_time);
 
-	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"phonemes",PROPERTY_HINT_RESOURCE_TYPE,"SampleLibrary"),_SCS("set_phonemes"),_SCS("get_phonemes"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"pitch_scale",PROPERTY_HINT_RANGE,"0.01,64,0.01"),_SCS("set_pitch_scale"),_SCS("get_pitch_scale"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"pitch_random_scale",PROPERTY_HINT_RANGE,"0,64,0.01"),_SCS("set_pitch_random_scale"),_SCS("get_pitch_random_scale"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"xfade_sec",PROPERTY_HINT_RANGE,"0.001,0.5,0.001"),_SCS("set_xfade_time"),_SCS("get_xfade_time"));
+	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"phonemes",PROPERTY_HINT_RESOURCE_TYPE,"SampleLibrary"),"set_phonemes","get_phonemes");
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"pitch_scale",PROPERTY_HINT_RANGE,"0.01,64,0.01"),"set_pitch_scale","get_pitch_scale");
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"pitch_random_scale",PROPERTY_HINT_RANGE,"0,64,0.01"),"set_pitch_random_scale","get_pitch_random_scale");
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"xfade_sec",PROPERTY_HINT_RANGE,"0.001,0.5,0.001"),"set_xfade_time","get_xfade_time");
 
 }
 
@@ -328,3 +334,4 @@ AudioStreamGibberish::AudioStreamGibberish() {
 	paused=false;
 	active_voices=0;
 }
+#endif

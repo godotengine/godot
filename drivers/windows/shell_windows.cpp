@@ -5,7 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,7 +29,7 @@
 /*************************************************************************/
 #ifdef WINDOWS_ENABLED
 
-#ifdef WINRT_ENABLED
+#ifdef UWP_ENABLED
 
 // Use Launcher class on windows 8
 
@@ -52,17 +53,12 @@
 void ShellWindows::execute(String p_path) {
 
 	ShellExecuteW(NULL, L"open", p_path.c_str(), NULL, NULL, SW_SHOWNORMAL);
-
 }
 
-
-ShellWindows::ShellWindows()
-{
+ShellWindows::ShellWindows() {
 }
 
-
-ShellWindows::~ShellWindows()
-{
+ShellWindows::~ShellWindows() {
 }
 
 #endif

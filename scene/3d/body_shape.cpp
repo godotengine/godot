@@ -5,7 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,27 +28,27 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "body_shape.h"
-#include "servers/visual_server.h"
-#include "scene/resources/sphere_shape.h"
-#include "scene/resources/ray_shape.h"
 #include "scene/resources/box_shape.h"
 #include "scene/resources/capsule_shape.h"
-//#include "scene/resources/cylinder_shape.h"
-#include "scene/resources/convex_polygon_shape.h"
 #include "scene/resources/concave_polygon_shape.h"
-#include "scene/resources/height_map_shape.h"
+#include "scene/resources/convex_polygon_shape.h"
 #include "scene/resources/plane_shape.h"
+#include "scene/resources/ray_shape.h"
+#include "scene/resources/sphere_shape.h"
+#include "servers/visual_server.h"
+//TODO: Implement CylinderShape and HeightMapShape?
 #include "mesh_instance.h"
 #include "physics_body.h"
 #include "quick_hull.h"
 
 void CollisionShape::_update_body() {
 
-
-
+	if (!is_inside_tree() || !can_update_body)
+		return;
+	if (!get_tree()->is_editor_hint())
+		return;
 	if (get_parent() && get_parent()->cast_to<CollisionObject>())
 		get_parent()->cast_to<CollisionObject>()->_update_shapes_from_children();
-
 }
 
 void CollisionShape::make_convex_from_brothers() {
@@ -56,12 +57,12 @@ void CollisionShape::make_convex_from_brothers() {
 	if (!p)
 		return;
 
-	for(int i=0;i<p->get_child_count();i++) {
+	for (int i = 0; i < p->get_child_count(); i++) {
 
 		Node *n = p->get_child(i);
 		if (n->cast_to<MeshInstance>()) {
 
-			MeshInstance *mi=n->cast_to<MeshInstance>();
+			MeshInstance *mi = n->cast_to<MeshInstance>();
 			Ref<Mesh> m = mi->get_mesh();
 			if (m.is_valid()) {
 
@@ -70,9 +71,8 @@ void CollisionShape::make_convex_from_brothers() {
 			}
 		}
 	}
-
 }
-
+/*
 
 void CollisionShape::_update_indicator() {
 
@@ -82,8 +82,8 @@ void CollisionShape::_update_indicator() {
 	if (shape.is_null())
 		return;
 
-	DVector<Vector3> points;
-	DVector<Vector3> normals;
+	PoolVector<Vector3> points;
+	PoolVector<Vector3> normals;
 
 	VS::PrimitiveType pt = VS::PRIMITIVE_TRIANGLES;
 
@@ -95,7 +95,7 @@ void CollisionShape::_update_indicator() {
 		pt = VS::PRIMITIVE_LINES;
 	} else if (shape->cast_to<SphereShape>()) {
 
-//		VisualServer *vs=VisualServer::get_singleton();
+		//VisualServer *vs=VisualServer::get_singleton();
 		SphereShape *shapeptr=shape->cast_to<SphereShape>();
 
 
@@ -234,7 +234,7 @@ void CollisionShape::_update_indicator() {
 
 		CapsuleShape *shapeptr=shape->cast_to<CapsuleShape>();
 
-		DVector<Plane> planes = Geometry::build_capsule_planes(shapeptr->get_radius(), shapeptr->get_height()/2.0, 12, Vector3::AXIS_Z);
+		PoolVector<Plane> planes = Geometry::build_capsule_planes(shapeptr->get_radius(), shapeptr->get_height()/2.0, 12, Vector3::AXIS_Z);
 		Geometry::MeshData md = Geometry::build_convex_mesh(planes);
 
 		for(int i=0;i<md.faces.size();i++) {
@@ -300,86 +300,147 @@ void CollisionShape::_update_indicator() {
 
 }
 
+*/
+void CollisionShape::_add_to_collision_object(Object *p_cshape) {
 
-void CollisionShape::_add_to_collision_object(Object* p_cshape) {
+	if (unparenting)
+		return;
 
-	CollisionObject *co=p_cshape->cast_to<CollisionObject>();
+	CollisionObject *co = p_cshape->cast_to<CollisionObject>();
 	ERR_FAIL_COND(!co);
 
 	if (shape.is_valid()) {
 
-		co->add_shape(shape,get_transform());
-        if (trigger)
-            co->set_shape_as_trigger( co->get_shape_count() -1, true );
-    }
+		update_shape_index = co->get_shape_count();
+		co->add_shape(shape, get_transform());
+		if (trigger)
+			co->set_shape_as_trigger(co->get_shape_count() - 1, true);
+	} else {
+		update_shape_index = -1;
+	}
 }
 
 void CollisionShape::_notification(int p_what) {
 
-	switch(p_what) {
+	switch (p_what) {
 
-		case NOTIFICATION_ENTER_WORLD: {
-			indicator_instance = VisualServer::get_singleton()->instance_create2(indicator,get_world()->get_scenario());
+		case NOTIFICATION_ENTER_TREE: {
+			unparenting = false;
+			can_update_body = get_tree()->is_editor_hint();
+			set_notify_local_transform(!can_update_body);
+
+			if (get_tree()->is_debugging_collisions_hint()) {
+				_create_debug_shape();
+			}
+
+			//indicator_instance = VisualServer::get_singleton()->instance_create2(indicator,get_world()->get_scenario());
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			VisualServer::get_singleton()->instance_set_transform(indicator_instance,get_global_transform());
-			if (updating_body) {
+			//VisualServer::get_singleton()->instance_set_transform(indicator_instance,get_global_transform());
+			if (can_update_body && updating_body) {
 				_update_body();
 			}
 		} break;
-		case NOTIFICATION_EXIT_WORLD: {
-			if (indicator_instance.is_valid()) {
+		case NOTIFICATION_EXIT_TREE: {
+			/*	if (indicator_instance.is_valid()) {
 				VisualServer::get_singleton()->free(indicator_instance);
 				indicator_instance=RID();
+			}*/
+			can_update_body = false;
+			set_notify_local_transform(false);
+			if (debug_shape) {
+				debug_shape->queue_delete();
+				debug_shape = NULL;
 			}
 		} break;
 		case NOTIFICATION_UNPARENTED: {
-			if (updating_body)
+			unparenting = true;
+			if (can_update_body && updating_body)
 				_update_body();
 		} break;
 		case NOTIFICATION_PARENTED: {
-			if (updating_body)
+			if (can_update_body && updating_body)
 				_update_body();
+		} break;
+		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
+
+			if (!can_update_body && update_shape_index >= 0) {
+
+				CollisionObject *co = get_parent()->cast_to<CollisionObject>();
+				if (co) {
+					co->set_shape_transform(update_shape_index, get_transform());
+				}
+			}
+
 		} break;
 	}
 }
 
-
 void CollisionShape::resource_changed(RES res) {
 
 	update_gizmo();
+}
 
+void CollisionShape::_set_update_shape_index(int p_index) {
 
+	update_shape_index = p_index;
+}
+
+int CollisionShape::_get_update_shape_index() const {
+
+	return update_shape_index;
+}
+
+String CollisionShape::get_configuration_warning() const {
+
+	if (!get_parent()->cast_to<CollisionObject>()) {
+		return TTR("CollisionShape only serves to provide a collision shape to a CollisionObject derived node. Please only use it as a child of Area, StaticBody, RigidBody, KinematicBody, etc. to give them a shape.");
+	}
+
+	if (!shape.is_valid()) {
+		return TTR("A shape must be provided for CollisionShape to function. Please create a shape resource for it!");
+	}
+
+	return String();
 }
 
 void CollisionShape::_bind_methods() {
 
 	//not sure if this should do anything
-	ObjectTypeDB::bind_method(_MD("resource_changed"),&CollisionShape::resource_changed);
-	ObjectTypeDB::bind_method(_MD("set_shape","shape"),&CollisionShape::set_shape);
-	ObjectTypeDB::bind_method(_MD("get_shape"),&CollisionShape::get_shape);
-	ObjectTypeDB::bind_method(_MD("_add_to_collision_object"),&CollisionShape::_add_to_collision_object);
-	ObjectTypeDB::bind_method(_MD("set_trigger","enable"),&CollisionShape::set_trigger);
-	ObjectTypeDB::bind_method(_MD("is_trigger"),&CollisionShape::is_trigger);
-	ObjectTypeDB::bind_method(_MD("make_convex_from_brothers"),&CollisionShape::make_convex_from_brothers);
-	ObjectTypeDB::set_method_flags("CollisionShape","make_convex_from_brothers",METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
+	ClassDB::bind_method(D_METHOD("resource_changed", "resource"), &CollisionShape::resource_changed);
+	ClassDB::bind_method(D_METHOD("set_shape", "shape"), &CollisionShape::set_shape);
+	ClassDB::bind_method(D_METHOD("get_shape"), &CollisionShape::get_shape);
+	ClassDB::bind_method(D_METHOD("_add_to_collision_object"), &CollisionShape::_add_to_collision_object);
+	ClassDB::bind_method(D_METHOD("set_trigger", "enable"), &CollisionShape::set_trigger);
+	ClassDB::bind_method(D_METHOD("is_trigger"), &CollisionShape::is_trigger);
+	ClassDB::bind_method(D_METHOD("make_convex_from_brothers"), &CollisionShape::make_convex_from_brothers);
+	ClassDB::set_method_flags("CollisionShape", "make_convex_from_brothers", METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
+	ClassDB::bind_method(D_METHOD("_set_update_shape_index", "index"), &CollisionShape::_set_update_shape_index);
+	ClassDB::bind_method(D_METHOD("_get_update_shape_index"), &CollisionShape::_get_update_shape_index);
 
+	ClassDB::bind_method(D_METHOD("get_collision_object_shape_index"), &CollisionShape::get_collision_object_shape_index);
 
-	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape"), _SCS("set_shape"), _SCS("get_shape"));
-    ADD_PROPERTY(PropertyInfo(Variant::BOOL,"trigger"),_SCS("set_trigger"),_SCS("is_trigger"));
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape"), "set_shape", "get_shape");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "trigger"), "set_trigger", "is_trigger");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "_update_shape_index", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "_set_update_shape_index", "_get_update_shape_index");
 }
-
 
 void CollisionShape::set_shape(const Ref<Shape> &p_shape) {
 
 	if (!shape.is_null())
 		shape->unregister_owner(this);
-	shape=p_shape;
+	shape = p_shape;
 	if (!shape.is_null())
 		shape->register_owner(this);
 	update_gizmo();
-	if (updating_body)
+	if (updating_body) {
 		_update_body();
+	} else if (can_update_body && update_shape_index >= 0 && is_inside_tree()) {
+		CollisionObject *co = get_parent()->cast_to<CollisionObject>();
+		if (co) {
+			co->set_shape(update_shape_index, p_shape);
+		}
+	}
 }
 
 Ref<Shape> CollisionShape::get_shape() const {
@@ -387,9 +448,8 @@ Ref<Shape> CollisionShape::get_shape() const {
 	return shape;
 }
 
-
 void CollisionShape::set_updating_body(bool p_update) {
-	updating_body=p_update;
+	updating_body = p_update;
 }
 
 bool CollisionShape::is_updating_body() const {
@@ -399,49 +459,80 @@ bool CollisionShape::is_updating_body() const {
 
 void CollisionShape::set_trigger(bool p_trigger) {
 
-    trigger=p_trigger;
-    if (updating_body)
-        _update_body();
+	trigger = p_trigger;
+	if (updating_body) {
+		_update_body();
+	} else if (can_update_body && update_shape_index >= 0 && is_inside_tree()) {
+		CollisionObject *co = get_parent()->cast_to<CollisionObject>();
+		if (co) {
+			co->set_shape_as_trigger(update_shape_index, p_trigger);
+		}
+	}
 }
 
-bool CollisionShape::is_trigger() const{
+bool CollisionShape::is_trigger() const {
 
-    return trigger;
+	return trigger;
 }
 
 CollisionShape::CollisionShape() {
 
-	indicator = VisualServer::get_singleton()->mesh_create();
-	updating_body=true;
-    trigger=false;
+	//indicator = VisualServer::get_singleton()->mesh_create();
+	updating_body = true;
+	unparenting = false;
+	update_shape_index = -1;
+	trigger = false;
+	can_update_body = false;
+	debug_shape = NULL;
 }
 
 CollisionShape::~CollisionShape() {
 	if (!shape.is_null())
 		shape->unregister_owner(this);
-	VisualServer::get_singleton()->free(indicator);
+	//VisualServer::get_singleton()->free(indicator);
+}
+
+void CollisionShape::_create_debug_shape() {
+
+	if (debug_shape) {
+		debug_shape->queue_delete();
+		debug_shape = NULL;
+	}
+
+	Ref<Shape> s = get_shape();
+
+	if (s.is_null())
+		return;
+
+	Ref<Mesh> mesh = s->get_debug_mesh();
+
+	MeshInstance *mi = memnew(MeshInstance);
+	mi->set_mesh(mesh);
+
+	add_child(mi);
+	debug_shape = mi;
 }
 
 #if 0
 #include "body_volume.h"
 
-#include "scene/3d/physics_body.h"
 #include "geometry.h"
+#include "scene/3d/physics_body.h"
 
-#define ADD_TRIANGLE( m_a, m_b, m_c, m_color)\
-{\
-	Vector<Vector3> points;\
-	points.resize(3);\
-	points[0]=m_a;\
-	points[1]=m_b;\
-	points[2]=m_c;\
-	Vector<Color> colors;\
-	colors.resize(3);\
-	colors[0]=m_color;\
-	colors[1]=m_color;\
-	colors[2]=m_color;\
-	vs->poly_add_primitive(p_indicator,points,Vector<Vector3>(),colors,Vector<Vector3>());\
-}
+#define ADD_TRIANGLE(m_a, m_b, m_c, m_color)                                                       \
+	{                                                                                              \
+		Vector<Vector3> points;                                                                    \
+		points.resize(3);                                                                          \
+		points[0] = m_a;                                                                           \
+		points[1] = m_b;                                                                           \
+		points[2] = m_c;                                                                           \
+		Vector<Color> colors;                                                                      \
+		colors.resize(3);                                                                          \
+		colors[0] = m_color;                                                                       \
+		colors[1] = m_color;                                                                       \
+		colors[2] = m_color;                                                                       \
+		vs->poly_add_primitive(p_indicator, points, Vector<Vector3>(), colors, Vector<Vector3>()); \
+	}
 
 
 void CollisionShape::_notification(int p_what) {
@@ -516,7 +607,7 @@ RID CollisionShape::_get_visual_instance_rid() const {
 
 void CollisionShape::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_get_visual_instance_rid",&CollisionShape::_get_visual_instance_rid);
+	ClassDB::bind_method("_get_visual_instance_rid",&CollisionShape::_get_visual_instance_rid);
 }
 
 CollisionShape::CollisionShape() {
@@ -736,7 +827,7 @@ void CollisionShapeCylinder::update_indicator(RID p_indicator) {
 	vs->poly_clear(p_indicator);
 	Color col(0.4,1.0,1.0,0.5);
 
-	DVector<Plane> planes = Geometry::build_cylinder_planes(radius, height, 12, Vector3::AXIS_Z);
+	PoolVector<Plane> planes = Geometry::build_cylinder_planes(radius, height, 12, Vector3::AXIS_Z);
 	Geometry::MeshData md = Geometry::build_convex_mesh(planes);
 
 	for(int i=0;i<md.faces.size();i++) {
@@ -802,7 +893,7 @@ void CollisionShapeCapsule::update_indicator(RID p_indicator) {
 	vs->poly_clear(p_indicator);
 	Color col(0.4,1.0,1.0,0.5);
 
-	DVector<Plane> planes = Geometry::build_capsule_planes(radius, height, 12, 3, Vector3::AXIS_Z);
+	PoolVector<Plane> planes = Geometry::build_capsule_planes(radius, height, 12, 3, Vector3::AXIS_Z);
 	Geometry::MeshData md = Geometry::build_convex_mesh(planes);
 
 	for(int i=0;i<md.faces.size();i++) {

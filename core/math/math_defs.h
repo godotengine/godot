@@ -5,7 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,10 +31,15 @@
 #define MATH_DEFS_H
 
 #define CMP_EPSILON 0.00001
-#define CMP_EPSILON2 (CMP_EPSILON*CMP_EPSILON)
+#define CMP_EPSILON2 (CMP_EPSILON * CMP_EPSILON)
 #define CMP_NORMALIZE_TOLERANCE 0.000001
 #define CMP_POINT_IN_PLANE_EPSILON 0.00001
 
+#ifdef DEBUG_ENABLED
+#define MATH_CHECKS
+#endif
+
+#define USEC_TO_SEC(m_usec) ((m_usec) / 1000000.0)
 /**
   * "Real" is a type that will be translated to either floats or fixed depending
   * on the compilation setting
@@ -41,10 +47,9 @@
 
 enum ClockDirection {
 
-        CLOCKWISE,
+	CLOCKWISE,
 	COUNTERCLOCKWISE
 };
-
 
 #ifdef REAL_T_IS_DOUBLE
 
@@ -55,6 +60,5 @@ typedef double real_t;
 typedef float real_t;
 
 #endif
-
 
 #endif // MATH_DEFS_H

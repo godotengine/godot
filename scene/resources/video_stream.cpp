@@ -5,7 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,15 +29,10 @@
 /*************************************************************************/
 #include "video_stream.h"
 
-void VideoStream::_bind_methods() {
-
-	ObjectTypeDB::bind_method(_MD("get_pending_frame_count"),&VideoStream::get_pending_frame_count);
-	ObjectTypeDB::bind_method(_MD("pop_frame"),&VideoStream::pop_frame);
-	ObjectTypeDB::bind_method(_MD("peek_frame"),&VideoStream::peek_frame);
-};
-
-
-VideoStream::VideoStream() {
+void VideoStreamPlayback::_bind_methods(){
 
 };
 
+VideoStreamPlayback::VideoStreamPlayback(){
+
+};

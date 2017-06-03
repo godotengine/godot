@@ -5,7 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,21 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "register_types.h"
-#include "object_type_db.h"
+#ifndef _3D_DISABLED
+#include "class_db.h"
 #include "grid_map.h"
 #include "grid_map_editor_plugin.h"
+#endif
 
 void register_gridmap_types() {
 
-	ObjectTypeDB::register_type<GridMap>();
+#ifndef _3D_DISABLED
+	ClassDB::register_class<GridMap>();
 #ifdef TOOLS_ENABLED
 	EditorPlugins::add_by_type<GridMapEditorPlugin>();
 #endif
+#endif
 }
 
-
-
 void unregister_gridmap_types() {
-
-
 }

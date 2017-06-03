@@ -5,7 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,31 +34,42 @@
 #include "scene/resources/bit_mask.h"
 class TextureButton : public BaseButton {
 
-	OBJ_TYPE( TextureButton, BaseButton );
+	GDCLASS(TextureButton, BaseButton);
 
+public:
+	enum StretchMode {
+		STRETCH_SCALE,
+		STRETCH_TILE,
+		STRETCH_KEEP,
+		STRETCH_KEEP_CENTERED,
+		STRETCH_KEEP_ASPECT,
+		STRETCH_KEEP_ASPECT_CENTERED,
+		STRETCH_KEEP_ASPECT_COVERED,
+	};
+
+private:
 	Ref<Texture> normal;
 	Ref<Texture> pressed;
 	Ref<Texture> hover;
 	Ref<Texture> disabled;
 	Ref<Texture> focused;
 	Ref<BitMap> click_mask;
-
+	bool expand;
+	StretchMode stretch_mode;
 
 protected:
-
-	virtual bool has_point(const Point2& p_point) const;
 	virtual Size2 get_minimum_size() const;
+	virtual bool has_point(const Point2 &p_point) const;
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-
-	void set_normal_texture(const Ref<Texture>& p_normal);
-	void set_pressed_texture(const Ref<Texture>& p_pressed);
-	void set_hover_texture(const Ref<Texture>& p_hover);
-	void set_disabled_texture(const Ref<Texture>& p_disabled);
-	void set_focused_texture(const Ref<Texture>& p_focused);
-	void set_click_mask(const Ref<BitMap>& p_image);
+	void set_normal_texture(const Ref<Texture> &p_normal);
+	void set_pressed_texture(const Ref<Texture> &p_pressed);
+	void set_hover_texture(const Ref<Texture> &p_hover);
+	void set_disabled_texture(const Ref<Texture> &p_disabled);
+	void set_focused_texture(const Ref<Texture> &p_focused);
+	void set_click_mask(const Ref<BitMap> &p_image);
 
 	Ref<Texture> get_normal_texture() const;
 	Ref<Texture> get_pressed_texture() const;
@@ -66,8 +78,14 @@ public:
 	Ref<Texture> get_focused_texture() const;
 	Ref<BitMap> get_click_mask() const;
 
+	bool get_expand() const;
+	void set_expand(bool p_expand);
+
+	void set_stretch_mode(StretchMode stretch_mode);
+	StretchMode get_stretch_mode() const;
 
 	TextureButton();
 };
 
+VARIANT_ENUM_CAST(TextureButton::StretchMode);
 #endif // TEXTURE_BUTTON_H

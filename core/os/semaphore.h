@@ -5,7 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,19 +36,17 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 class Semaphore {
-protected:	
-	static Semaphore* (*create_func)();
-	
-public:
+protected:
+	static Semaphore *(*create_func)();
 
-	virtual Error wait()=0; ///< wait until semaphore has positive value, then decrement and pass
-	virtual Error post()=0; ///< unlock the semaphore, incrementing the    value
-	virtual int get() const=0; ///< get semaphore value
-	
-	static Semaphore * create(); ///< Create a mutex
-	
+public:
+	virtual Error wait() = 0; ///< wait until semaphore has positive value, then decrement and pass
+	virtual Error post() = 0; ///< unlock the semaphore, incrementing the    value
+	virtual int get() const = 0; ///< get semaphore value
+
+	static Semaphore *create(); ///< Create a mutex
+
 	virtual ~Semaphore();
 };
-
 
 #endif

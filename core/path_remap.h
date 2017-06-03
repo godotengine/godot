@@ -5,7 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,40 +29,5 @@
 /*************************************************************************/
 #ifndef PATH_REMAP_H
 #define PATH_REMAP_H
-
-#include "hash_map.h"
-#include "ustring.h"
-#include "object.h"
-
-
-class PathRemap : public Object {
-
-	OBJ_TYPE(PathRemap,Object);
-
-	static PathRemap* singleton;
-	struct RemapData {
-		String always;
-		Map<String,String> locale;
-	};
-
-	HashMap<String,RemapData> remap;
-protected:
-
-	static void _bind_methods();
-public:
-
-	void add_remap(const String& p_from, const String& p_to,const String& p_locale=String());
-	bool has_remap(const String& p_from) const;
-	//_FORCE_INLINE_ String get_remap(const String& p_from) const { const String *ptr=remap.getptr(p_from); if (!ptr) return p_from; else return *ptr; }
-	String get_remap(const String& p_from) const;
-	void erase_remap(const String& p_from);
-	void clear_remaps();
-
-	void load_remaps();
-
-	static PathRemap* get_singleton();
-
-	PathRemap();
-};
 
 #endif // PATH_REMAP_H

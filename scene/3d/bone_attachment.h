@@ -5,7 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,23 +34,24 @@
 
 class BoneAttachment : public Spatial {
 
-	OBJ_TYPE(BoneAttachment,Spatial);
+	GDCLASS(BoneAttachment, Spatial);
 
 	bool bound;
 	String bone_name;
 
 	void _check_bind();
 	void _check_unbind();
-protected:
 
-	bool _get(const StringName& p_name,Variant &r_ret) const;
-	bool _set(const StringName& p_name, const Variant& p_value);
-	void _get_property_list( List<PropertyInfo>* p_list ) const;
+protected:
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	bool _set(const StringName &p_name, const Variant &p_value);
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _notification(int p_what);
 
-public:
+	static void _bind_methods();
 
-	void set_bone_name(const String& p_name);
+public:
+	void set_bone_name(const String &p_name);
 	String get_bone_name() const;
 
 	BoneAttachment();

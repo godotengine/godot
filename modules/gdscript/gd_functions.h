@@ -5,7 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +34,6 @@
 
 class GDFunctions {
 public:
-
 	enum Function {
 		MATH_SIN,
 		MATH_COS,
@@ -67,6 +67,7 @@ public:
 		MATH_RAND,
 		MATH_RANDF,
 		MATH_RANDOM,
+		MATH_SEED,
 		MATH_RANDSEED,
 		MATH_DEG2RAD,
 		MATH_RAD2DEG,
@@ -80,26 +81,38 @@ public:
 		FUNC_FUNCREF,
 		TYPE_CONVERT,
 		TYPE_OF,
+		TYPE_EXISTS,
+		TEXT_CHAR,
 		TEXT_STR,
 		TEXT_PRINT,
 		TEXT_PRINT_TABBED,
+		TEXT_PRINT_SPACED,
 		TEXT_PRINTERR,
 		TEXT_PRINTRAW,
+		VAR_TO_STR,
+		STR_TO_VAR,
+		VAR_TO_BYTES,
+		BYTES_TO_VAR,
 		GEN_RANGE,
 		RESOURCE_LOAD,
 		INST2DICT,
 		DICT2INST,
+		VALIDATE_JSON,
+		PARSE_JSON,
+		TO_JSON,
 		HASH,
+		COLOR8,
+		COLORN,
 		PRINT_STACK,
+		INSTANCE_FROM_ID,
 		FUNC_MAX
 
 	};
 
 	static const char *get_func_name(Function p_func);
-	static void call(Function p_func,const Variant **p_args,int p_arg_count,Variant &r_ret,Variant::CallError &r_error);
+	static void call(Function p_func, const Variant **p_args, int p_arg_count, Variant &r_ret, Variant::CallError &r_error);
 	static bool is_deterministic(Function p_func);
 	static MethodInfo get_info(Function p_func);
-
 };
 
 #endif // GD_FUNCTIONS_H

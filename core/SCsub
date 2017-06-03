@@ -1,67 +1,108 @@
+#!/usr/bin/env python
+
 Import('env')
 
-env.core_sources=[]
+env.core_sources = []
 
 
-gd_call=""
-gd_inc=""
+# Generate global defaults
+gd_call = ""
+gd_inc = ""
 
 for x in env.global_defaults:
-	env.core_sources.append("#platform/"+x+"/globals/global_defaults.cpp")
-	gd_inc+='#include "platform/'+x+'/globals/global_defaults.h"\n'
-	gd_call+="\tregister_"+x+"_global_defaults();\n"
+    env.core_sources.append("#platform/" + x + "/globals/global_defaults.cpp")
+    gd_inc += '#include "platform/' + x + '/globals/global_defaults.h"\n'
+    gd_call += "\tregister_" + x + "_global_defaults();\n"
 
-gd_cpp='#include "globals.h"\n'
-gd_cpp+=gd_inc
-gd_cpp+="void Globals::register_global_defaults() {\n"+gd_call+"\n}\n"
+gd_cpp = '#include "global_config.h"\n'
+gd_cpp += gd_inc
+gd_cpp += "void GlobalConfig::register_global_defaults() {\n" + gd_call + "\n}\n"
 
-f = open("global_defaults.cpp","wb")
+f = open("global_defaults.cpp", "wb")
 f.write(gd_cpp)
 f.close()
 
+
+# Generate AES256 script encryption key
 import os
 txt = "0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0"
 if ("SCRIPT_AES256_ENCRYPTION_KEY" in os.environ):
-	e=os.environ["SCRIPT_AES256_ENCRYPTION_KEY"]
-	txt = ""
-	ec_valid=True
-	if (len(e)!=64):
-		ec_valid=False
-	else:
+    e = os.environ["SCRIPT_AES256_ENCRYPTION_KEY"]
+    txt = ""
+    ec_valid = True
+    if (len(e) != 64):
+        ec_valid = False
+    else:
 
-		for i in range(len(e)>>1):
-			if (i>0):
-				txt+=","
-			txts="0x"+e[i*2:i*2+2]
-			try:
-				int(txts,16)
-			except:
-				ec_valid=False
-			txt+=txts
-	if (not ec_valid):
-		txt = "0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0"
-		print("Invalid AES256 encryption key, not 64 bits hex: "+e)
+        for i in range(len(e) >> 1):
+            if (i > 0):
+                txt += ","
+            txts = "0x" + e[i * 2:i * 2 + 2]
+            try:
+                int(txts, 16)
+            except:
+                ec_valid = False
+            txt += txts
+    if (not ec_valid):
+        txt = "0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0"
+        print("Invalid AES256 encryption key, not 64 bits hex: " + e)
 
 f = open("script_encryption_key.cpp", "wb")
-f.write("#include \"globals.h\"\nuint8_t script_encryption_key[32]={" + txt + "};\n")
+f.write("#include \"global_config.h\"\nuint8_t script_encryption_key[32]={" + txt + "};\n")
 f.close()
 
 
-env.add_source_files(env.core_sources,"*.cpp")
+# Add required thirdparty code. Header paths are hardcoded, we don't need to append
+# to the include path (saves a few chars on the compiler invocation for touchy MSVC...)
+thirdparty_dir = "#thirdparty/misc/"
+thirdparty_sources = [
+	# C sources
+	"base64.c",
+	"fastlz.c",
+	"sha256.c",
+	"smaz.c",
+
+	# C++ sources
+	"aes256.cpp",
+	"hq2x.cpp",
+	"md5.cpp",
+	"pcg.cpp",
+	"triangulator.cpp",
+]
+thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+env.add_source_files(env.core_sources, thirdparty_sources)
+
+# Minizip library, can be unbundled in theory
+# However, our version has some custom modifications, so it won't compile with the system one
+thirdparty_minizip_dir = "#thirdparty/minizip/"
+thirdparty_minizip_sources = [
+	"ioapi.c",
+	"unzip.c",
+	"zip.c",
+]
+thirdparty_minizip_sources = [thirdparty_minizip_dir + file for file in thirdparty_minizip_sources]
+env.add_source_files(env.core_sources, thirdparty_minizip_sources)
 
 
-Export('env')
+# Godot's own sources
+env.add_source_files(env.core_sources, "*.cpp")
 
+
+# Make binders
 import make_binders
-env.Command(['method_bind.inc','method_bind_ext.inc'], 'make_binders.py', make_binders.run)
+env.Command(['method_bind.inc', 'method_bind_ext.inc'], 'make_binders.py', make_binders.run)
 
-SConscript('os/SCsub');
-SConscript('math/SCsub');
-SConscript('io/SCsub');
-SConscript('bind/SCsub');
 
-lib = env.Library("core",env.core_sources, LIBSUFFIX=env['platform_libsuffix'])
+# Chain load SCsubs
+SConscript('os/SCsub')
+SConscript('math/SCsub')
+SConscript('io/SCsub')
+SConscript('bind/SCsub')
+SConscript('helper/SCsub')
 
+
+# Build it all as a library
+lib = env.Library("core", env.core_sources)
 env.Prepend(LIBS=[lib])
 
-
+Export('env')

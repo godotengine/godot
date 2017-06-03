@@ -5,7 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,17 +31,24 @@
 
 #include "servers/physics_server.h"
 
+Vector<Vector3> RayShape::_gen_debug_mesh_lines() {
 
+	Vector<Vector3> points;
+	points.push_back(Vector3());
+	points.push_back(Vector3(0, 0, get_length()));
+
+	return points;
+}
 
 void RayShape::_update_shape() {
 
-	PhysicsServer::get_singleton()->shape_set_data(get_shape(),length);
+	PhysicsServer::get_singleton()->shape_set_data(get_shape(), length);
 	emit_changed();
 }
 
 void RayShape::set_length(float p_length) {
 
-	length=p_length;
+	length = p_length;
 	_update_shape();
 	notify_change_to_owners();
 }
@@ -50,17 +58,16 @@ float RayShape::get_length() const {
 	return length;
 }
 
-
 void RayShape::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_length","length"),&RayShape::set_length);
-	ObjectTypeDB::bind_method(_MD("get_length"),&RayShape::get_length);
+	ClassDB::bind_method(D_METHOD("set_length", "length"), &RayShape::set_length);
+	ClassDB::bind_method(D_METHOD("get_length"), &RayShape::get_length);
 
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"length",PROPERTY_HINT_RANGE,"0,4096,0.01"), _SCS("set_length"), _SCS("get_length") );
-
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "length", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_length", "get_length");
 }
 
-RayShape::RayShape() : Shape( PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_RAY)) {
+RayShape::RayShape()
+	: Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_RAY)) {
 
 	set_length(1.0);
 }

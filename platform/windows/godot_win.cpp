@@ -5,7 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,127 +27,123 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "os_windows.h"
 #include "main/main.h"
-#include <stdio.h>
+#include "os_windows.h"
 #include <locale.h>
+#include <stdio.h>
 
-PCHAR*
-    CommandLineToArgvA(
-        PCHAR CmdLine,
-        int* _argc
-        )
-    {
-        PCHAR* argv;
-        PCHAR  _argv;
-        ULONG   len;
-        ULONG   argc;
-        CHAR   a;
-        ULONG   i, j;
+PCHAR *
+CommandLineToArgvA(
+		PCHAR CmdLine,
+		int *_argc) {
+	PCHAR *argv;
+	PCHAR _argv;
+	ULONG len;
+	ULONG argc;
+	CHAR a;
+	ULONG i, j;
 
-        BOOLEAN  in_QM;
-        BOOLEAN  in_TEXT;
-        BOOLEAN  in_SPACE;
+	BOOLEAN in_QM;
+	BOOLEAN in_TEXT;
+	BOOLEAN in_SPACE;
 
-        len = strlen(CmdLine);
-        i = ((len+2)/2)*sizeof(PVOID) + sizeof(PVOID);
+	len = strlen(CmdLine);
+	i = ((len + 2) / 2) * sizeof(PVOID) + sizeof(PVOID);
 
-        argv = (PCHAR*)GlobalAlloc(GMEM_FIXED,
-            i + (len+2)*sizeof(CHAR));
+	argv = (PCHAR *)GlobalAlloc(GMEM_FIXED,
+			i + (len + 2) * sizeof(CHAR));
 
-        _argv = (PCHAR)(((PUCHAR)argv)+i);
+	_argv = (PCHAR)(((PUCHAR)argv) + i);
 
-        argc = 0;
-        argv[argc] = _argv;
-        in_QM = FALSE;
-        in_TEXT = FALSE;
-        in_SPACE = TRUE;
-        i = 0;
-        j = 0;
+	argc = 0;
+	argv[argc] = _argv;
+	in_QM = FALSE;
+	in_TEXT = FALSE;
+	in_SPACE = TRUE;
+	i = 0;
+	j = 0;
 
-        while( (a = CmdLine[i]) ) {
-            if(in_QM) {
-                if(a == '\"') {
-                    in_QM = FALSE;
-                } else {
-                    _argv[j] = a;
-                    j++;
-                }
-            } else {
-                switch(a) {
-                case '\"':
-                    in_QM = TRUE;
-                    in_TEXT = TRUE;
-                    if(in_SPACE) {
-                        argv[argc] = _argv+j;
-                        argc++;
-                    }
-                    in_SPACE = FALSE;
-                    break;
-                case ' ':
-                case '\t':
-                case '\n':
-                case '\r':
-                    if(in_TEXT) {
-                        _argv[j] = '\0';
-                        j++;
-                    }
-                    in_TEXT = FALSE;
-                    in_SPACE = TRUE;
-                    break;
-                default:
-                    in_TEXT = TRUE;
-                    if(in_SPACE) {
-                        argv[argc] = _argv+j;
-                        argc++;
-                    }
-                    _argv[j] = a;
-                    j++;
-                    in_SPACE = FALSE;
-                    break;
-                }
-            }
-            i++;
-        }
-        _argv[j] = '\0';
-        argv[argc] = NULL;
+	while ((a = CmdLine[i])) {
+		if (in_QM) {
+			if (a == '\"') {
+				in_QM = FALSE;
+			} else {
+				_argv[j] = a;
+				j++;
+			}
+		} else {
+			switch (a) {
+				case '\"':
+					in_QM = TRUE;
+					in_TEXT = TRUE;
+					if (in_SPACE) {
+						argv[argc] = _argv + j;
+						argc++;
+					}
+					in_SPACE = FALSE;
+					break;
+				case ' ':
+				case '\t':
+				case '\n':
+				case '\r':
+					if (in_TEXT) {
+						_argv[j] = '\0';
+						j++;
+					}
+					in_TEXT = FALSE;
+					in_SPACE = TRUE;
+					break;
+				default:
+					in_TEXT = TRUE;
+					if (in_SPACE) {
+						argv[argc] = _argv + j;
+						argc++;
+					}
+					_argv[j] = a;
+					j++;
+					in_SPACE = FALSE;
+					break;
+			}
+		}
+		i++;
+	}
+	_argv[j] = '\0';
+	argv[argc] = NULL;
 
-        (*_argc) = argc;
-        return argv;
-    }
+	(*_argc) = argc;
+	return argv;
+}
 
-char* mb_to_utf8(const char* mbs) {
-
-	int wlen = MultiByteToWideChar(CP_ACP,0,mbs,-1,NULL,0); // returns 0 if failed
-	wchar_t *wbuf = new wchar_t[wlen + 1];
-	MultiByteToWideChar(CP_ACP,0,mbs,-1,wbuf,wlen);
-	wbuf[wlen]=0;
-
-	int ulen = WideCharToMultiByte(CP_UTF8,0,wbuf,-1,NULL,0,NULL,NULL);
-	char * ubuf = new char[ulen + 1];
-	WideCharToMultiByte(CP_UTF8,0,wbuf,-1,ubuf,ulen,NULL,NULL);
+char *wc_to_utf8(const wchar_t *wc) {
+	int ulen = WideCharToMultiByte(CP_UTF8, 0, wc, -1, NULL, 0, NULL, NULL);
+	char *ubuf = new char[ulen + 1];
+	WideCharToMultiByte(CP_UTF8, 0, wc, -1, ubuf, ulen, NULL, NULL);
 	ubuf[ulen] = 0;
 	return ubuf;
 }
 
-int main(int argc, char** argv) {
+int widechar_main(int argc, wchar_t **argv) {
 
 	OS_Windows os(NULL);
 
 	setlocale(LC_CTYPE, "");
 
-	char ** argv_utf8 = new char*[argc];
-	for(int i=0; i<argc; ++i) {
-		argv_utf8[i] = mb_to_utf8(argv[i]);
+	char **argv_utf8 = new char *[argc];
+
+	for (int i = 0; i < argc; ++i) {
+		argv_utf8[i] = wc_to_utf8(argv[i]);
 	}
 
-	Main::setup(argv_utf8[0], argc - 1, &argv_utf8[1]);
+	Error err = Main::setup(argv_utf8[0], argc - 1, &argv_utf8[1]);
+
+	if (err != OK)
+		return 255;
+
 	if (Main::start())
 		os.run();
 	Main::cleanup();
 
-
-	for (int i=0; i<argc; ++i) {
+	for (int i = 0; i < argc; ++i) {
 		delete[] argv_utf8[i];
 	}
 	delete[] argv_utf8;
@@ -154,82 +151,30 @@ int main(int argc, char** argv) {
 	return os.get_exit_code();
 };
 
+int main(int _argc, char **_argv) {
+	// _argc and _argv are ignored
+	// we are going to use the WideChar version of them instead
+
+	LPWSTR *wc_argv;
+	int argc;
+	int result;
+
+	wc_argv = CommandLineToArgvW(GetCommandLineW(), &argc);
+
+	if (NULL == wc_argv) {
+		wprintf(L"CommandLineToArgvW failed\n");
+		return 0;
+	}
+
+	result = widechar_main(argc, wc_argv);
+
+	LocalFree(wc_argv);
+	return result;
+}
+
 HINSTANCE godot_hinstance = NULL;
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)	{
-
-    int    argc;
-    char** argv;
-
-    char*  arg;
-    int    index;
-    int    result;
-
-    // count the arguments
-
-    argc = 1;
-    arg  = lpCmdLine;
-
-    while (arg[0] != 0) {
-
-        while (arg[0] != 0 && arg[0] == ' ') {
-            arg++;
-        }
-
-        if (arg[0] != 0) {
-
-            argc++;
-
-            while (arg[0] != 0 && arg[0] != ' ') {
-                arg++;
-            }
-
-        }
-
-    }
-
-    // tokenize the arguments
-
-    argv = (char**)malloc(argc * sizeof(char*));
-
-    arg = lpCmdLine;
-    index = 1;
-
-    while (arg[0] != 0) {
-
-        while (arg[0] != 0 && arg[0] == ' ') {
-            arg++;
-        }
-
-        if (arg[0] != 0) {
-
-            argv[index] = arg;
-            index++;
-
-            while (arg[0] != 0 && arg[0] != ' ') {
-                arg++;
-            }
-
-            if (arg[0] != 0) {
-                arg[0] = 0;
-                arg++;
-            }
-
-        }
-
-    }
-
-    // put the program name into argv[0]
-
-    char filename[_MAX_PATH];
-
-    GetModuleFileName(NULL, filename, _MAX_PATH);
-    argv[0] = filename;
-
-    // call the user specified main function
-
-    result = main(argc, argv);
-
-    free(argv);
-    return result;
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+	godot_hinstance = hInstance;
+	return main(0, NULL);
 }

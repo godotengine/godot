@@ -5,7 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,9 +44,9 @@ Error AudioDriverOSX::init() {
 	strdesc.mFramesPerPacket = 1;
 	strdesc.mBitsPerChannel = 16;
 	strdesc.mBytesPerFrame =
-		strdesc.mBitsPerChannel * strdesc.mChannelsPerFrame / 8;
+			strdesc.mBitsPerChannel * strdesc.mChannelsPerFrame / 8;
 	strdesc.mBytesPerPacket =
-		strdesc.mBytesPerFrame * strdesc.mFramesPerPacket;
+			strdesc.mBytesPerFrame * strdesc.mFramesPerPacket;
 
 	OSStatus result = noErr;
 	AURenderCallbackStruct callback;
@@ -57,7 +58,7 @@ Error AudioDriverOSX::init() {
 
 	zeromem(&desc, sizeof(desc));
 	desc.componentType = kAudioUnitType_Output;
-	desc.componentSubType = 0;  /* !!! FIXME: ? */
+	desc.componentSubType = 0; /* !!! FIXME: ? */
 	comp = AudioComponentFindNext(NULL, &desc);
 	desc.componentManufacturer = kAudioUnitManufacturer_Apple;
 
@@ -66,16 +67,16 @@ Error AudioDriverOSX::init() {
 	ERR_FAIL_COND_V(comp == NULL, FAILED);
 
 	result = AudioUnitSetProperty(audio_unit,
-								  kAudioUnitProperty_StreamFormat,
-								  scope, bus, &strdesc, sizeof(strdesc));
+			kAudioUnitProperty_StreamFormat,
+			scope, bus, &strdesc, sizeof(strdesc));
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
 	zeromem(&callback, sizeof(AURenderCallbackStruct));
 	callback.inputProc = &AudioDriverOSX::output_callback;
 	callback.inputProcRefCon = this;
 	result = AudioUnitSetProperty(audio_unit,
-								  kAudioUnitProperty_SetRenderCallback,
-								  scope, bus, &callback, sizeof(callback));
+			kAudioUnitProperty_SetRenderCallback,
+			scope, bus, &callback, sizeof(callback));
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
 	result = AudioUnitInitialize(audio_unit);
@@ -92,16 +93,23 @@ Error AudioDriverOSX::init() {
 };
 
 OSStatus AudioDriverOSX::output_callback(void *inRefCon,
-			   AudioUnitRenderActionFlags * ioActionFlags,
-			   const AudioTimeStamp * inTimeStamp,
-			   UInt32 inBusNumber, UInt32 inNumberFrames,
-			   AudioBufferList * ioData) {
-
+		AudioUnitRenderActionFlags *ioActionFlags,
+		const AudioTimeStamp *inTimeStamp,
+		UInt32 inBusNumber, UInt32 inNumberFrames,
+		AudioBufferList *ioData) {
 
 	AudioBuffer *abuf;
-	AudioDriverOSX* ad = (AudioDriverOSX*)inRefCon;
+	AudioDriverOSX *ad = (AudioDriverOSX *)inRefCon;
 
-	if (!ad->active) {
+	bool mix = true;
+
+	if (!ad->active)
+		mix = false;
+	else if (ad->mutex) {
+		mix = ad->mutex->try_lock() == OK;
+	};
+
+	if (!mix) {
 		for (unsigned int i = 0; i < ioData->mNumberBuffers; i++) {
 			abuf = &ioData->mBuffers[i];
 			zeromem(abuf->mData, abuf->mDataByteSize);
@@ -115,24 +123,27 @@ OSStatus AudioDriverOSX::output_callback(void *inRefCon,
 
 		abuf = &ioData->mBuffers[i];
 		frames_left = inNumberFrames;
-		int16_t* out = (int16_t*)abuf->mData;
+		int16_t *out = (int16_t *)abuf->mData;
 
 		while (frames_left) {
 
 			int frames = MIN(frames_left, ad->buffer_frames);
-			ad->lock();
+			//ad->lock();
 			ad->audio_server_process(frames, ad->samples_in);
-			ad->unlock();
+			//ad->unlock();
 
-			for(int i = 0; i < frames * ad->channels; i++) {
+			for (int i = 0; i < frames * ad->channels; i++) {
 
-				out[i] = ad->samples_in[i]>>16;
+				out[i] = ad->samples_in[i] >> 16;
 			}
 
 			frames_left -= frames;
 			out += frames * ad->channels;
 		};
 	};
+
+	if (ad->mutex)
+		ad->mutex->unlock();
 
 	return 0;
 };
@@ -145,16 +156,34 @@ int AudioDriverOSX::get_mix_rate() const {
 	return 44100;
 };
 
-AudioDriverSW::OutputFormat AudioDriverOSX::get_output_format() const {
-	return OUTPUT_STEREO;
+AudioDriver::SpeakerMode AudioDriverOSX::get_speaker_mode() const {
+	return SPEAKER_MODE_STEREO;
 };
 
-void AudioDriverOSX::lock() {};
-void AudioDriverOSX::unlock() {};
+void AudioDriverOSX::lock() {
+	if (active && mutex)
+		mutex->lock();
+};
+void AudioDriverOSX::unlock() {
+	if (active && mutex)
+		mutex->unlock();
+};
 
 void AudioDriverOSX::finish() {
 
+	if (active)
+		AudioOutputUnitStop(audio_unit);
+
 	memdelete_arr(samples_in);
+};
+
+AudioDriverOSX::AudioDriverOSX() {
+
+	mutex = Mutex::create(); //NULL;
+};
+
+AudioDriverOSX::~AudioDriverOSX(){
+
 };
 
 #endif

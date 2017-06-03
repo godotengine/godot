@@ -5,7 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,8 +28,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "rasterizer.h"
-#include "print_string.h"
 #include "os/os.h"
+#include "print_string.h"
+
+Rasterizer *(*Rasterizer::_create_func)() = NULL;
+
+Rasterizer *Rasterizer::create() {
+
+	return _create_func();
+}
+
+RasterizerStorage *RasterizerStorage::base_singleton = NULL;
+
+RasterizerStorage::RasterizerStorage() {
+
+	base_singleton = this;
+}
+
+#if 0
 
 RID Rasterizer::create_default_material() {
 
@@ -38,10 +55,10 @@ RID Rasterizer::create_default_material() {
 
 /* Fixed MAterial SHADER API */
 
-RID Rasterizer::_create_shader(const FixedMaterialShaderKey& p_key) {
+RID Rasterizer::_create_shader(const SpatialMaterialShaderKey& p_key) {
 
 	ERR_FAIL_COND_V(!p_key.valid,RID());
-	Map<FixedMaterialShaderKey,FixedMaterialShader>::Element *E=fixed_material_shaders.find(p_key);
+	Map<SpatialMaterialShaderKey,SpatialMaterialShader>::Element *E=fixed_material_shaders.find(p_key);
 
 	if (E) {
 		E->get().refcount++;
@@ -50,7 +67,7 @@ RID Rasterizer::_create_shader(const FixedMaterialShaderKey& p_key) {
 
 	uint64_t t = OS::get_singleton()->get_ticks_usec();
 
-	FixedMaterialShader fms;
+	SpatialMaterialShader fms;
 	fms.refcount=1;
 	fms.shader=shader_create();
 
@@ -61,7 +78,7 @@ RID Rasterizer::_create_shader(const FixedMaterialShaderKey& p_key) {
 	String code;
 
 	static const char* _uv_str[4]={"UV","uv_xform","UV2","uv_sphere"};
-#define _TEXUVSTR(m_idx) String( _uv_str[(p_key.texcoord_mask>>(m_idx*2))&0x3] )
+#define _TEXUVSTR(m_idx) String(_uv_str[(p_key.texcoord_mask >> (m_idx * 2)) & 0x3])
 
 
 	if (p_key.use_pointsize) {
@@ -79,7 +96,7 @@ RID Rasterizer::_create_shader(const FixedMaterialShaderKey& p_key) {
 	if (texcoords_used&(1<<VS::FIXED_MATERIAL_TEXCOORD_UV_TRANSFORM)) {
 
 		code+="uniform mat4 fmp_uv_xform;\n";
-		code+="vec2 uv_xform = fmp_uv_xform * UV;\n";
+		code+="vec2 uv_xform = (fmp_uv_xform * vec4(UV,0,1)).xy;\n";
 	}
 
 	/* HANDLE NORMAL MAPPING */
@@ -91,13 +108,19 @@ RID Rasterizer::_create_shader(const FixedMaterialShaderKey& p_key) {
 		scode+="uniform float fmp_normal;\n";
 		scode+="uniform texture fmp_normal_tex;\n";
 		String uv_str;
-		if ((p_key.texcoord_mask>>(VS::FIXED_MATERIAL_PARAM_NORMAL*2))&0x3==VS::FIXED_MATERIAL_TEXCOORD_SPHERE) {
+		if (((p_key.texcoord_mask>>(VS::FIXED_MATERIAL_PARAM_NORMAL*2))&0x3)==VS::FIXED_MATERIAL_TEXCOORD_SPHERE) {
 			uv_str="uv"; //sorry not supported
 		} else {
 			uv_str=_TEXUVSTR(VS::FIXED_MATERIAL_PARAM_NORMAL);
 		}
-		scode+="vec3 normal=tex( fmp_normal_tex,"+uv_str+").xyz * vec3(2.0,2.0,1.0) - vec3(1.0,1.0,0.0);\n";
-		scode+="NORMAL = mix( NORMAL,mat3(TANGENT,BINORMAL,NORMAL) * normal,  fmp_normal);\n";
+		if (p_key.use_xy_normalmap) {
+			scode+="vec2 ywnormal=tex( fmp_normal_tex,"+uv_str+").wy * vec2(2.0,2.0) - vec2(1.0,1.0);\n";
+			scode+="NORMALMAP=vec3(ywnormal,sqrt(1 - (ywnormal.x * ywnormal.x) - (ywnormal.y * ywnormal.y) ));\n";
+		} else {
+			scode+="NORMALMAP=tex( fmp_normal_tex,"+uv_str+").xyz * vec3(2.0,2.0,1.0) - vec3(1.0,1.0,0.0);\n";
+		}
+		scode+="NORMALMAP_DEPTH=fmp_normal;\n";
+
 		code+=scode;
 	}
 
@@ -233,7 +256,7 @@ RID Rasterizer::_create_shader(const FixedMaterialShaderKey& p_key) {
 
 		vcode+="uniform float "+_fixed_material_point_size_name+";\n";
 		vcode+="POINT_SIZE="+_fixed_material_point_size_name+";\n";
-//		vcode+="POINT_SIZE=10.0;\n";
+		//vcode+="POINT_SIZE=10.0;\n";
 	}
 
 	String lcode;
@@ -284,21 +307,18 @@ RID Rasterizer::_create_shader(const FixedMaterialShaderKey& p_key) {
 
 	//print_line("**VERTEX SHADER GENERATED code: \n"+vcode);
 
-	double tf = (OS::get_singleton()->get_ticks_usec()-t)/1000.0;
-//	print_line("generate: "+rtos(tf));
-
 	shader_set_code(fms.shader,vcode,code,lcode,0,0);
 
 	fixed_material_shaders[p_key]=fms;
 	return fms.shader;
 }
 
-void Rasterizer::_free_shader(const FixedMaterialShaderKey& p_key) {
+void Rasterizer::_free_shader(const SpatialMaterialShaderKey& p_key) {
 
 	if (p_key.valid==0)
 		return; //not a valid key
 
-	Map<FixedMaterialShaderKey,FixedMaterialShader>::Element *E=fixed_material_shaders.find(p_key);
+	Map<SpatialMaterialShaderKey,SpatialMaterialShader>::Element *E=fixed_material_shaders.find(p_key);
 
 	ERR_FAIL_COND(!E);
 	E->get().refcount--;
@@ -310,12 +330,12 @@ void Rasterizer::_free_shader(const FixedMaterialShaderKey& p_key) {
 }
 
 
-void Rasterizer::fixed_material_set_flag(RID p_material, VS::FixedMaterialFlags p_flag, bool p_enabled) {
+void Rasterizer::fixed_material_set_flag(RID p_material, VS::SpatialMaterialFlags p_flag, bool p_enabled) {
 
 
-	Map<RID,FixedMaterial*>::Element *E = fixed_materials.find(p_material);
+	Map<RID,SpatialMaterial*>::Element *E = fixed_materials.find(p_material);
 	ERR_FAIL_COND(!E);
-	FixedMaterial &fm=*E->get();
+	SpatialMaterial &fm=*E->get();
 
 	switch(p_flag) {
 
@@ -323,6 +343,7 @@ void Rasterizer::fixed_material_set_flag(RID p_material, VS::FixedMaterialFlags 
 		case VS::FIXED_MATERIAL_FLAG_USE_COLOR_ARRAY: fm.use_color_array=p_enabled; break;
 		case VS::FIXED_MATERIAL_FLAG_USE_POINT_SIZE: fm.use_pointsize=p_enabled; break;
 		case VS::FIXED_MATERIAL_FLAG_DISCARD_ALPHA: fm.discard_alpha=p_enabled; break;
+		case VS::FIXED_MATERIAL_FLAG_USE_XY_NORMALMAP: fm.use_xy_normalmap=p_enabled; break;
 	}
 
 	if (!fm.dirty_list.in_list())
@@ -330,17 +351,19 @@ void Rasterizer::fixed_material_set_flag(RID p_material, VS::FixedMaterialFlags 
 
 }
 
-bool Rasterizer::fixed_material_get_flag(RID p_material, VS::FixedMaterialFlags p_flag) const{
+bool Rasterizer::fixed_material_get_flag(RID p_material, VS::SpatialMaterialFlags p_flag) const{
 
-	const Map<RID,FixedMaterial*>::Element *E = fixed_materials.find(p_material);
+	const Map<RID,SpatialMaterial*>::Element *E = fixed_materials.find(p_material);
 	ERR_FAIL_COND_V(!E,false);
-	const FixedMaterial &fm=*E->get();
+	const SpatialMaterial &fm=*E->get();
 	switch(p_flag) {
 
 		case VS::FIXED_MATERIAL_FLAG_USE_ALPHA: return fm.use_alpha;; break;
 		case VS::FIXED_MATERIAL_FLAG_USE_COLOR_ARRAY: return fm.use_color_array;; break;
 		case VS::FIXED_MATERIAL_FLAG_USE_POINT_SIZE: return fm.use_pointsize;; break;
 		case VS::FIXED_MATERIAL_FLAG_DISCARD_ALPHA: return fm.discard_alpha;; break;
+		case VS::FIXED_MATERIAL_FLAG_USE_XY_NORMALMAP: return fm.use_xy_normalmap;; break;
+
 	}
 
 
@@ -351,10 +374,11 @@ bool Rasterizer::fixed_material_get_flag(RID p_material, VS::FixedMaterialFlags 
 RID Rasterizer::fixed_material_create() {
 
 	RID mat = material_create();
-	fixed_materials[mat]=memnew( FixedMaterial() );
-	FixedMaterial &fm=*fixed_materials[mat];
+	fixed_materials[mat]=memnew( SpatialMaterial() );
+	SpatialMaterial &fm=*fixed_materials[mat];
 	fm.self=mat;
 	fm.get_key();
+	material_set_flag(mat,VS::MATERIAL_FLAG_COLOR_ARRAY_SRGB,true);
 	for(int i=0;i<VS::FIXED_MATERIAL_PARAM_MAX;i++) {
 
 		material_set_param(mat,_fixed_material_param_names[i],fm.param[i]); //must be there
@@ -367,11 +391,11 @@ RID Rasterizer::fixed_material_create() {
 
 
 
-void Rasterizer::fixed_material_set_parameter(RID p_material, VS::FixedMaterialParam p_parameter, const Variant& p_value){
+void Rasterizer::fixed_material_set_parameter(RID p_material, VS::SpatialMaterialParam p_parameter, const Variant& p_value){
 
-	Map<RID,FixedMaterial*>::Element *E = fixed_materials.find(p_material);
+	Map<RID,SpatialMaterial*>::Element *E = fixed_materials.find(p_material);
 	ERR_FAIL_COND(!E);
-	FixedMaterial &fm=*E->get();
+	SpatialMaterial &fm=*E->get();
 	RID material=E->key();
 	ERR_FAIL_INDEX(p_parameter,VS::FIXED_MATERIAL_PARAM_MAX);
 
@@ -394,24 +418,24 @@ void Rasterizer::fixed_material_set_parameter(RID p_material, VS::FixedMaterialP
 
 
 }
-Variant Rasterizer::fixed_material_get_parameter(RID p_material,VS::FixedMaterialParam p_parameter) const{
+Variant Rasterizer::fixed_material_get_parameter(RID p_material,VS::SpatialMaterialParam p_parameter) const{
 
-	const Map<RID,FixedMaterial*>::Element *E = fixed_materials.find(p_material);
+	const Map<RID,SpatialMaterial*>::Element *E = fixed_materials.find(p_material);
 	ERR_FAIL_COND_V(!E,Variant());
-	const FixedMaterial &fm=*E->get();
+	const SpatialMaterial &fm=*E->get();
 	ERR_FAIL_INDEX_V(p_parameter,VS::FIXED_MATERIAL_PARAM_MAX,Variant());
 	return fm.param[p_parameter];
 }
 
-void Rasterizer::fixed_material_set_texture(RID p_material,VS::FixedMaterialParam p_parameter, RID p_texture){
+void Rasterizer::fixed_material_set_texture(RID p_material,VS::SpatialMaterialParam p_parameter, RID p_texture){
 
-	Map<RID,FixedMaterial*>::Element *E = fixed_materials.find(p_material);
+	Map<RID,SpatialMaterial*>::Element *E = fixed_materials.find(p_material);
 	if (!E) {
 
 		print_line("Not found: "+itos(p_material.get_id()));
 	}
 	ERR_FAIL_COND(!E);
-	FixedMaterial &fm=*E->get();
+	SpatialMaterial &fm=*E->get();
 
 
 	ERR_FAIL_INDEX(p_parameter,VS::FIXED_MATERIAL_PARAM_MAX);
@@ -426,22 +450,22 @@ void Rasterizer::fixed_material_set_texture(RID p_material,VS::FixedMaterialPara
 
 
 }
-RID Rasterizer::fixed_material_get_texture(RID p_material,VS::FixedMaterialParam p_parameter) const{
+RID Rasterizer::fixed_material_get_texture(RID p_material,VS::SpatialMaterialParam p_parameter) const{
 
-	const Map<RID,FixedMaterial*>::Element *E = fixed_materials.find(p_material);
+	const Map<RID,SpatialMaterial*>::Element *E = fixed_materials.find(p_material);
 	ERR_FAIL_COND_V(!E,RID());
-	const FixedMaterial &fm=*E->get();
+	const SpatialMaterial &fm=*E->get();
 	ERR_FAIL_INDEX_V(p_parameter,VS::FIXED_MATERIAL_PARAM_MAX,RID());
 
 	return fm.texture[p_parameter];
 }
 
 
-void Rasterizer::fixed_material_set_texcoord_mode(RID p_material,VS::FixedMaterialParam p_parameter, VS::FixedMaterialTexCoordMode p_mode) {
+void Rasterizer::fixed_material_set_texcoord_mode(RID p_material,VS::SpatialMaterialParam p_parameter, VS::SpatialMaterialTexCoordMode p_mode) {
 
-	Map<RID,FixedMaterial*>::Element *E = fixed_materials.find(p_material);
+	Map<RID,SpatialMaterial*>::Element *E = fixed_materials.find(p_material);
 	ERR_FAIL_COND(!E);
-	FixedMaterial &fm=*E->get();
+	SpatialMaterial &fm=*E->get();
 	ERR_FAIL_INDEX(p_parameter,VS::FIXED_MATERIAL_PARAM_MAX);
 
 	fm.get_key();
@@ -453,11 +477,11 @@ void Rasterizer::fixed_material_set_texcoord_mode(RID p_material,VS::FixedMateri
 
 }
 
-VS::FixedMaterialTexCoordMode Rasterizer::fixed_material_get_texcoord_mode(RID p_material,VS::FixedMaterialParam p_parameter) const {
+VS::SpatialMaterialTexCoordMode Rasterizer::fixed_material_get_texcoord_mode(RID p_material,VS::SpatialMaterialParam p_parameter) const {
 
-	const Map<RID,FixedMaterial*>::Element *E = fixed_materials.find(p_material);
+	const Map<RID,SpatialMaterial*>::Element *E = fixed_materials.find(p_material);
 	ERR_FAIL_COND_V(!E,VS::FIXED_MATERIAL_TEXCOORD_UV);
-	const FixedMaterial &fm=*E->get();
+	const SpatialMaterial &fm=*E->get();
 	ERR_FAIL_INDEX_V(p_parameter,VS::FIXED_MATERIAL_PARAM_MAX,VS::FIXED_MATERIAL_TEXCOORD_UV);
 
 	return fm.texture_tc[p_parameter];
@@ -465,9 +489,9 @@ VS::FixedMaterialTexCoordMode Rasterizer::fixed_material_get_texcoord_mode(RID p
 
 void Rasterizer::fixed_material_set_uv_transform(RID p_material,const Transform& p_transform) {
 
-	Map<RID,FixedMaterial*>::Element *E = fixed_materials.find(p_material);
+	Map<RID,SpatialMaterial*>::Element *E = fixed_materials.find(p_material);
 	ERR_FAIL_COND(!E);
-	FixedMaterial &fm=*E->get();
+	SpatialMaterial &fm=*E->get();
 	RID material=E->key();
 
 	VS::get_singleton()->material_set_param(material,_fixed_material_uv_xform_name,p_transform);
@@ -480,18 +504,18 @@ void Rasterizer::fixed_material_set_uv_transform(RID p_material,const Transform&
 
 Transform Rasterizer::fixed_material_get_uv_transform(RID p_material) const {
 
-	const Map<RID,FixedMaterial*>::Element *E = fixed_materials.find(p_material);
+	const Map<RID,SpatialMaterial*>::Element *E = fixed_materials.find(p_material);
 	ERR_FAIL_COND_V(!E,Transform());
-	const FixedMaterial &fm=*E->get();
+	const SpatialMaterial &fm=*E->get();
 
 	return fm.uv_xform;
 }
 
-void Rasterizer::fixed_material_set_light_shader(RID p_material,VS::FixedMaterialLightShader p_shader) {
+void Rasterizer::fixed_material_set_light_shader(RID p_material,VS::SpatialMaterialLightShader p_shader) {
 
-	Map<RID,FixedMaterial*>::Element *E = fixed_materials.find(p_material);
+	Map<RID,SpatialMaterial*>::Element *E = fixed_materials.find(p_material);
 	ERR_FAIL_COND(!E);
-	FixedMaterial &fm=*E->get();
+	SpatialMaterial &fm=*E->get();
 
 	fm.light_shader=p_shader;
 
@@ -500,20 +524,20 @@ void Rasterizer::fixed_material_set_light_shader(RID p_material,VS::FixedMateria
 
 }
 
-VS::FixedMaterialLightShader Rasterizer::fixed_material_get_light_shader(RID p_material) const {
+VS::SpatialMaterialLightShader Rasterizer::fixed_material_get_light_shader(RID p_material) const {
 
-	const Map<RID,FixedMaterial*>::Element *E = fixed_materials.find(p_material);
+	const Map<RID,SpatialMaterial*>::Element *E = fixed_materials.find(p_material);
 	ERR_FAIL_COND_V(!E,VS::FIXED_MATERIAL_LIGHT_SHADER_LAMBERT);
-	const FixedMaterial &fm=*E->get();
+	const SpatialMaterial &fm=*E->get();
 
 	return fm.light_shader;
 }
 
 void Rasterizer::fixed_material_set_point_size(RID p_material,float p_size) {
 
-	Map<RID,FixedMaterial*>::Element *E = fixed_materials.find(p_material);
+	Map<RID,SpatialMaterial*>::Element *E = fixed_materials.find(p_material);
 	ERR_FAIL_COND(!E);
-	FixedMaterial &fm=*E->get();
+	SpatialMaterial &fm=*E->get();
 	RID material=E->key();
 
 	VS::get_singleton()->material_set_param(material,_fixed_material_point_size_name,p_size);
@@ -525,9 +549,9 @@ void Rasterizer::fixed_material_set_point_size(RID p_material,float p_size) {
 
 float Rasterizer::fixed_material_get_point_size(RID p_material) const{
 
-	const Map<RID,FixedMaterial*>::Element *E = fixed_materials.find(p_material);
+	const Map<RID,SpatialMaterial*>::Element *E = fixed_materials.find(p_material);
 	ERR_FAIL_COND_V(!E,1.0);
-	const FixedMaterial &fm=*E->get();
+	const SpatialMaterial &fm=*E->get();
 
 	return fm.point_size;
 
@@ -538,9 +562,9 @@ void Rasterizer::_update_fixed_materials() {
 
 	while(fixed_material_dirty_list.first()) {
 
-		FixedMaterial &fm=*fixed_material_dirty_list.first()->self();
+		SpatialMaterial &fm=*fixed_material_dirty_list.first()->self();
 
-		FixedMaterialShaderKey new_key = fm.get_key();
+		SpatialMaterialShaderKey new_key = fm.get_key();
 		if (new_key.key!=fm.current_key.key) {
 
 			_free_shader(fm.current_key);
@@ -558,8 +582,9 @@ void Rasterizer::_update_fixed_materials() {
 			}
 
 			material_set_param(fm.self,_fixed_material_uv_xform_name,fm.uv_xform);
-			if (fm.use_pointsize)
+			if (fm.use_pointsize) {
 				material_set_param(fm.self,_fixed_material_point_size_name,fm.point_size);
+			}
 		}
 
 		fixed_material_dirty_list.remove(fixed_material_dirty_list.first());
@@ -569,7 +594,7 @@ void Rasterizer::_update_fixed_materials() {
 
 void Rasterizer::_free_fixed_material(const RID& p_material) {
 
-	Map<RID,FixedMaterial*>::Element *E = fixed_materials.find(p_material);
+	Map<RID,SpatialMaterial*>::Element *E = fixed_materials.find(p_material);
 
 	if (E) {
 
@@ -586,7 +611,7 @@ void Rasterizer::_free_fixed_material(const RID& p_material) {
 
 void Rasterizer::flush_frame() {
 
-	//not really necesary to implement
+	//not really necessary to implement
 }
 
 Rasterizer::Rasterizer() {
@@ -610,6 +635,10 @@ Rasterizer::Rasterizer() {
 	_fixed_material_uv_xform_name="fmp_uv_xform";
 	_fixed_material_point_size_name="fmp_point_size";
 
+	draw_viewport_func=NULL;
+
+	ERR_FAIL_COND( sizeof(SpatialMaterialShaderKey)!=4);
+
 }
 
 RID Rasterizer::create_overdraw_debug_material() {
@@ -624,3 +653,5 @@ RID Rasterizer::create_overdraw_debug_material() {
 
 	return mat;
 }
+
+#endif

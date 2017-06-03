@@ -5,7 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,16 +33,23 @@
 #include "scene/2d/node_2d.h"
 #include "scene/main/viewport.h"
 
-
 class Camera2D : public Node2D {
 
-	OBJ_TYPE( Camera2D, Node2D );
+	GDCLASS(Camera2D, Node2D);
+
+public:
+	enum AnchorMode {
+		ANCHOR_MODE_FIXED_TOP_LEFT,
+		ANCHOR_MODE_DRAG_CENTER
+	};
 
 protected:
 	Point2 camera_pos;
 	Point2 smoothed_camera_pos;
 	bool first;
 
+	ObjectID custom_viewport_id; // to check validity
+	Viewport *custom_viewport;
 	Viewport *viewport;
 
 	StringName group_name;
@@ -49,11 +57,13 @@ protected:
 	RID canvas;
 	Vector2 offset;
 	Vector2 zoom;
-	bool centered;
+	AnchorMode anchor_mode;
 	bool rotating;
 	bool current;
 	float smoothing;
+	bool smoothing_enabled;
 	int limit[4];
+	bool limit_smoothing_enabled;
 	float drag_margin[4];
 
 	bool h_drag_enabled;
@@ -61,31 +71,34 @@ protected:
 	float h_ofs;
 	float v_ofs;
 
-
 	Point2 camera_screen_center;
 	void _update_scroll();
 
 	void _make_current(Object *p_which);
 	void _set_current(bool p_current);
-protected:
 
-	virtual Matrix32 get_camera_transform();
+	void _set_old_smoothing(float p_enable);
+
+protected:
+	virtual Transform2D get_camera_transform();
 	void _notification(int p_what);
 	static void _bind_methods();
-public:
 
-	void set_offset(const Vector2& p_offset);
+public:
+	void set_offset(const Vector2 &p_offset);
 	Vector2 get_offset() const;
 
-	void set_centered(bool p_centered);
-	bool is_centered() const;
+	void set_anchor_mode(AnchorMode p_anchor_mode);
+	AnchorMode get_anchor_mode() const;
 
 	void set_rotating(bool p_rotating);
 	bool is_rotating() const;
 
-	void set_limit(Margin p_margin,int p_limit);
+	void set_limit(Margin p_margin, int p_limit);
 	int get_limit(Margin p_margin) const;
 
+	void set_limit_smoothing_enabled(bool enable);
+	bool is_limit_smoothing_enabled() const;
 
 	void set_h_drag_enabled(bool p_enabled);
 	bool is_h_drag_enabled() const;
@@ -93,8 +106,8 @@ public:
 	void set_v_drag_enabled(bool p_enabled);
 	bool is_v_drag_enabled() const;
 
-	void set_drag_margin(Margin p_margin,float p_drag_margin);
-	float get_drag_margin(Margin p_margin) const;  
+	void set_drag_margin(Margin p_margin, float p_drag_margin);
+	float get_drag_margin(Margin p_margin) const;
 
 	void set_v_offset(float p_offset);
 	float get_v_offset() const;
@@ -102,21 +115,32 @@ public:
 	void set_h_offset(float p_offset);
 	float get_h_offset() const;
 
+	void set_enable_follow_smoothing(bool p_enabled);
+	bool is_follow_smoothing_enabled() const;
+
 	void set_follow_smoothing(float p_speed);
 	float get_follow_smoothing() const;
 
 	void make_current();
+	void clear_current();
 	bool is_current() const;
 
-	void set_zoom(const Vector2& p_zoom);
+	void set_zoom(const Vector2 &p_zoom);
 	Vector2 get_zoom() const;
 
 	Point2 get_camera_screen_center() const;
 
+	void set_custom_viewport(Node *p_viewport);
+	Node *get_custom_viewport() const;
+
 	Vector2 get_camera_pos() const;
 	void force_update_scroll();
+	void reset_smoothing();
+	void align();
 
 	Camera2D();
 };
+
+VARIANT_ENUM_CAST(Camera2D::AnchorMode);
 
 #endif // CAMERA_2D_H

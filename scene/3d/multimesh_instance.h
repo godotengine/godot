@@ -5,7 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,28 +38,24 @@
 */
 
 class MultiMeshInstance : public GeometryInstance {
-	OBJ_TYPE( MultiMeshInstance, GeometryInstance );
-
+	GDCLASS(MultiMeshInstance, GeometryInstance);
 
 	Ref<MultiMesh> multimesh;
+
 protected:
-
-
 	static void _bind_methods();
 	// bind helpers
 
 public:
+	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
 
-	virtual DVector<Face3> get_faces(uint32_t p_usage_flags) const;
-
-	void set_multimesh(const Ref<MultiMesh>& p_multimesh);
+	void set_multimesh(const Ref<MultiMesh> &p_multimesh);
 	Ref<MultiMesh> get_multimesh() const;
 
-	virtual AABB get_aabb() const;
+	virtual Rect3 get_aabb() const;
 
 	MultiMeshInstance();
 	~MultiMeshInstance();
 };
 
 #endif // MULTIMESH_INSTANCE_H
-

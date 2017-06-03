@@ -5,7 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,9 +32,8 @@
 
 #include "error_list.h"
 
-
 /**
- * @class Mutex 
+ * @class Mutex
  * @author Juan Linietsky
  * Portable Mutex (thread-safe locking) implementation.
  * Mutexes are always recursive ( they don't self-lock in a single thread ).
@@ -41,30 +41,32 @@
  * Lockp( mutex );
  */
 
-
 class Mutex {
-protected:	
-	static Mutex* (*create_func)(bool);
-	
+protected:
+	static Mutex *(*create_func)(bool);
+
 public:
+	virtual void lock() = 0; ///< Lock the mutex, block if locked by someone else
+	virtual void unlock() = 0; ///< Unlock the mutex, let other threads continue
+	virtual Error try_lock() = 0; ///< Attempt to lock the mutex, OK on success, ERROR means it can't lock.
 
-	virtual void lock()=0; ///< Lock the mutex, block if locked by someone else
-	virtual void unlock()=0; ///< Unlock the mutex, let other threads continue
-	virtual Error try_lock()=0; ///< Attempt to lock the mutex, OK on success, ERROR means it can't lock.
+	static Mutex *create(bool p_recursive = true); ///< Create a mutex
 
-	static Mutex * create(bool p_recursive=true); ///< Create a mutex
-	
 	virtual ~Mutex();
 };
 
 class MutexLock {
 
 	Mutex *mutex;
+
 public:
-
-	MutexLock(Mutex* p_mutex) { mutex=p_mutex; if (mutex) mutex->lock(); }
-	~MutexLock() { if (mutex) mutex->unlock(); }
-
+	MutexLock(Mutex *p_mutex) {
+		mutex = p_mutex;
+		if (mutex) mutex->lock();
+	}
+	~MutexLock() {
+		if (mutex) mutex->unlock();
+	}
 };
 
 #endif

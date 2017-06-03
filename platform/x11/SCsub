@@ -1,12 +1,14 @@
+#!/usr/bin/env python
+
 Import('env')
 
 
-common_x11=[\
-	"context_gl_x11.cpp",\
-	"os_x11.cpp",\
-	"key_mapping_x11.cpp",\
+common_x11 = [\
+    "context_gl_x11.cpp",\
+    "os_x11.cpp",\
+    "key_mapping_x11.cpp",\
+    "joypad_linux.cpp",\
+	"power_x11.cpp",\
 ]
 
-env.Program('#bin/godot',['godot_x11.cpp']+common_x11)
-if env['target'] == "release":
-	env.Command('#bin/godot_rel', '#bin/godot', Copy('bin/godot_rel', 'bin/godot'))
+env.Program('#bin/godot', ['godot_x11.cpp'] + common_x11)

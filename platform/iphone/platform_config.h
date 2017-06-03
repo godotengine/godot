@@ -5,7 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include <alloca.h>
-#define GLES2_INCLUDE_H <ES2/gl.h>
-#define GLES1_INCLUDE_H <ES1/gl.h>
+// #define GLES2_INCLUDE_H <ES2/gl.h>
+#define GLES3_INCLUDE_H <ES3/gl.h>
 
+#define PLATFORM_REFCOUNT
+
+#define PTHREAD_RENAME_SELF

@@ -1,25 +1,59 @@
-#include "version.h"
+/*************************************************************************/
+/*  export.cpp                                                           */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                    http://www.godotengine.org                         */
+/*************************************************************************/
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 #include "export.h"
-#include "tools/editor/editor_settings.h"
-#include "tools/editor/editor_import_export.h"
-#include "tools/editor/editor_node.h"
-#include "io/zip_io.h"
+#include "editor/editor_export.h"
+#include "editor/editor_node.h"
+#include "editor/editor_settings.h"
+#include "global_config.h"
 #include "io/marshalls.h"
 #include "io/resource_saver.h"
-#include "globals.h"
+#include "io/zip_io.h"
 #include "os/file_access.h"
 #include "os/os.h"
 #include "platform/osx/logo.h"
 #include "string.h"
-
+#include "version.h"
+#if 0
 
 class EditorExportPlatformOSX : public EditorExportPlatform {
 
-	OBJ_TYPE( EditorExportPlatformOSX,EditorExportPlatform );
+	GDCLASS( EditorExportPlatformOSX,EditorExportPlatform );
 
 	String custom_release_package;
 	String custom_debug_package;
 
+	enum BitsMode {
+		BITS_FAT,
+		BITS_64,
+		BITS_32
+	};
 
 	int version_code;
 
@@ -31,7 +65,7 @@ class EditorExportPlatformOSX : public EditorExportPlatform {
 	String version;
 	String signature;
 	String copyright;
-	bool use64;
+	BitsMode bits_mode;
 	bool high_resolution;
 
 	Ref<ImageTexture> logo;
@@ -54,14 +88,14 @@ public:
 
 
 	virtual bool poll_devices() { return false;}
-	virtual int get_device_count() const { return 0; };
+	virtual int get_device_count() const { return 0; }
 	virtual String get_device_name(int p_device) const  { return String(); }
 	virtual String get_device_info(int p_device) const { return String(); }
-	virtual Error run(int p_device,bool p_dumb=false);
+	virtual Error run(int p_device,int p_flags=0);
 
-	virtual bool requieres_password(bool p_debug) const { return false; }
+	virtual bool requires_password(bool p_debug) const { return false; }
 	virtual String get_binary_extension() const { return "zip"; }
-	virtual Error export_project(const String& p_path,bool p_debug,bool p_dumb=false);
+	virtual Error export_project(const String& p_path,bool p_debug,int p_flags=0);
 
 	virtual bool can_export(String *r_error=NULL) const;
 
@@ -93,8 +127,8 @@ bool EditorExportPlatformOSX::_set(const StringName& p_name, const Variant& p_va
 		version=p_value;
 	else if (n=="application/copyright")
 		copyright=p_value;
-	else if (n=="application/64_bits")
-		use64=p_value;
+	else if (n=="application/bits_mode")
+		bits_mode=BitsMode(int(p_value));
 	else if (n=="display/high_res")
 		high_resolution=p_value;
 	else
@@ -127,8 +161,8 @@ bool EditorExportPlatformOSX::_get(const StringName& p_name,Variant &r_ret) cons
 		r_ret=version;
 	else if (n=="application/copyright")
 		r_ret=copyright;
-	else if (n=="application/64_bits")
-		r_ret=use64;
+	else if (n=="application/bits_mode")
+		r_ret=bits_mode;
 	else if (n=="display/high_res")
 		r_ret=high_resolution;
 	else
@@ -149,11 +183,8 @@ void EditorExportPlatformOSX::_get_property_list( List<PropertyInfo> *p_list) co
 	p_list->push_back( PropertyInfo( Variant::STRING, "application/short_version") );
 	p_list->push_back( PropertyInfo( Variant::STRING, "application/version") );
 	p_list->push_back( PropertyInfo( Variant::STRING, "application/copyright") );
-	p_list->push_back( PropertyInfo( Variant::BOOL, "application/64_bits") );
+	p_list->push_back( PropertyInfo( Variant::INT, "application/bits_mode", PROPERTY_HINT_ENUM, "Fat (32 & 64 bits),64 bits,32 bits") );
 	p_list->push_back( PropertyInfo( Variant::BOOL, "display/high_res") );
-
-
-	//p_list->push_back( PropertyInfo( Variant::INT, "resources/pack_mode", PROPERTY_HINT_ENUM,"Copy,Single Exec.,Pack (.pck),Bundles (Optical)"));
 
 }
 
@@ -177,7 +208,7 @@ void EditorExportPlatformOSX::_make_icon(const Image& p_icon,Vector<uint8_t>& ic
 	while(size>=16) {
 
 		Image copy = p_icon;
-		copy.convert(Image::FORMAT_RGBA);
+		copy.convert(Image::FORMAT_RGBA8);
 		copy.resize(size,size);
 		it->create_from_image(copy);
 		String path = EditorSettings::get_singleton()->get_settings_path()+"/tmp/icon.png";
@@ -245,21 +276,25 @@ void EditorExportPlatformOSX::_fix_plist(Vector<uint8_t>& plist,const String& p_
 	}
 }
 
-Error EditorExportPlatformOSX::export_project(const String& p_path, bool p_debug, bool p_dumb) {
+Error EditorExportPlatformOSX::export_project(const String& p_path, bool p_debug, int p_flags) {
 
 	String src_pkg;
 
 	EditorProgress ep("export","Exporting for OSX",104);
 
-	String pkg_path = EditorSettings::get_singleton()->get_settings_path()+"/templates/osx.zip";
 
-	if (p_debug) {
+	if (p_debug)
+		src_pkg=custom_debug_package;
+	else
+		src_pkg=custom_release_package;
 
-		src_pkg=custom_debug_package!=""?custom_debug_package:pkg_path;
-	} else {
-
-		src_pkg=custom_release_package!=""?custom_release_package:pkg_path;
-
+	if (src_pkg=="") {
+		String err;
+		src_pkg=find_export_template("osx.zip", &err);
+		if (src_pkg=="") {
+			EditorNode::add_io_error(err);
+			return ERR_FILE_NOT_FOUND;
+		}
 	}
 
 
@@ -283,17 +318,20 @@ Error EditorExportPlatformOSX::export_project(const String& p_path, bool p_debug
 	io2.opaque=&dst_f;
 	zipFile	dpkg=zipOpen2(p_path.utf8().get_data(),APPEND_STATUS_CREATE,NULL,&io2);
 
-	String binary_to_use="godot_osx_"+String(p_debug?"debug":"release")+"."+String(use64?"64":"32");
+	String binary_to_use = "godot_osx_" + String(p_debug ? "debug" : "release") + ".";
+	binary_to_use += String(bits_mode==BITS_FAT ? "fat" : bits_mode==BITS_64 ? "64" : "32");
 
 	print_line("binary: "+binary_to_use);
 	String pkg_name;
 	if (app_name!="")
 		pkg_name=app_name;
-	else if (String(Globals::get_singleton()->get("application/name"))!="")
-		pkg_name=String(Globals::get_singleton()->get("application/name"));
+	else if (String(GlobalConfig::get_singleton()->get("application/name"))!="")
+		pkg_name=String(GlobalConfig::get_singleton()->get("application/name"));
 	else
 		pkg_name="Unnamed";
 
+
+	bool found_binary = false;
 
 	while(ret==UNZ_OK) {
 
@@ -328,12 +366,13 @@ Error EditorExportPlatformOSX::export_project(const String& p_path, bool p_debug
 				ret = unzGoToNextFile(pkg);
 				continue; //ignore!
 			}
+			found_binary = true;
 			file="Contents/MacOS/"+pkg_name;
 		}
 
 		if (file=="Contents/Resources/icon.icns") {
 			//see if there is an icon
-			String iconpath = Globals::get_singleton()->get("application/icon");
+			String iconpath = GlobalConfig::get_singleton()->get("application/icon");
 			print_line("icon? "+iconpath);
 			if (iconpath!="") {
 				Image icon;
@@ -382,6 +421,13 @@ Error EditorExportPlatformOSX::export_project(const String& p_path, bool p_debug
 		ret = unzGoToNextFile(pkg);
 	}
 
+	if (!found_binary) {
+		ERR_PRINTS("Requested template binary '"+binary_to_use+"' not found. It might be missing from your template archive.");
+		zipClose(dpkg,NULL);
+		unzClose(pkg);
+		return ERR_FILE_NOT_FOUND;
+	}
+
 
 	ep.step("Making PKG",1);
 
@@ -400,7 +446,7 @@ Error EditorExportPlatformOSX::export_project(const String& p_path, bool p_debug
 	{
 		//write datapack
 
-		int err = zipOpenNewFileInZip(dpkg,
+		zipOpenNewFileInZip(dpkg,
 			(pkg_name+".app/Contents/Resources/data.pck").utf8().get_data(),
 			NULL,
 			NULL,
@@ -437,7 +483,7 @@ Error EditorExportPlatformOSX::export_project(const String& p_path, bool p_debug
 }
 
 
-Error EditorExportPlatformOSX::run(int p_device, bool p_dumb) {
+Error EditorExportPlatformOSX::run(int p_device, int p_flags) {
 
 	return OK;
 }
@@ -449,12 +495,12 @@ EditorExportPlatformOSX::EditorExportPlatformOSX() {
 	logo = Ref<ImageTexture>( memnew( ImageTexture ));
 	logo->create_from_image(img);
 
-	info="This Game is Nice";
-	identifier="com.godot.macgame";
+	info="Made with Godot Engine";
+	identifier="org.godotengine.macgame";
 	signature="godotmacgame";
 	short_version="1.0";
 	version="1.0";
-	use64=false;
+	bits_mode=BITS_FAT;
 	high_resolution=false;
 
 }
@@ -464,9 +510,8 @@ bool EditorExportPlatformOSX::can_export(String *r_error) const {
 
 	bool valid=true;
 	String err;
-	String exe_path = EditorSettings::get_singleton()->get_settings_path()+"/templates/";
 
-	if (!FileAccess::exists(exe_path+"osx.zip")) {
+	if (!exists_export_template("osx.zip")) {
 		valid=false;
 		err+="No export templates found.\nDownload and install export templates.\n";
 	}
@@ -492,13 +537,11 @@ EditorExportPlatformOSX::~EditorExportPlatformOSX() {
 
 }
 
-
+#endif
 void register_osx_exporter() {
 
-
+#if 0
 	Ref<EditorExportPlatformOSX> exporter = Ref<EditorExportPlatformOSX>( memnew(EditorExportPlatformOSX) );
 	EditorImportExport::get_singleton()->add_export_platform(exporter);
-
-
+#endif
 }
-

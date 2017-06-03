@@ -5,7 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,41 +35,35 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-
 /* Portal Logic:
    If a portal is placed next (very close to) a similar, opposing portal, they automatically connect,
    otherwise, a portal connects to the parent room
 */
 
-
-
 class Portal : public VisualInstance {
 
-	OBJ_TYPE(Portal, VisualInstance);
-	
+	GDCLASS(Portal, VisualInstance);
+
 	RID portal;
-	
+	Vector<Point2> shape;
+
 	bool enabled;
 	float disable_distance;
 	Color disabled_color;
 	float connect_range;
-	
-	AABB aabb;
 
-	virtual RES _get_gizmo_geometry() const;
+	Rect3 aabb;
 
 protected:
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 
-	bool _set(const StringName& p_name, const Variant& p_value);
-	bool _get(const StringName& p_name,Variant &r_ret) const;
-	void _get_property_list( List<PropertyInfo> *p_list) const;
-	
 	static void _bind_methods();
-	
-public:
 
-	virtual AABB get_aabb() const;
-	virtual DVector<Face3> get_faces(uint32_t p_usage_flags) const;
+public:
+	virtual Rect3 get_aabb() const;
+	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
 
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
@@ -76,10 +71,10 @@ public:
 	void set_disable_distance(float p_distance);
 	float get_disable_distance() const;
 
-	void set_disabled_color(const Color& p_disabled_color);
+	void set_disabled_color(const Color &p_disabled_color);
 	Color get_disabled_color() const;
 
-	void set_shape(const Vector<Point2>& p_shape);
+	void set_shape(const Vector<Point2> &p_shape);
 	Vector<Point2> get_shape() const;
 
 	void set_connect_range(float p_range);
@@ -87,7 +82,6 @@ public:
 
 	Portal();
 	~Portal();
-
 };
 
 #endif

@@ -5,7 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,23 +31,21 @@
 #define IMAGE_LOADER_PNG_H
 
 #include "io/image_loader.h"
-#include "drivers/png/png.h"
+
+#include <png.h>
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 class ImageLoaderPNG : public ImageFormatLoader {
 
-	static void _read_png_data(png_structp png_ptr,png_bytep data, png_size_t p_length);
-
+	static void _read_png_data(png_structp png_ptr, png_bytep data, png_size_t p_length);
 
 public:
-	static Error _load_image(void *rf_up,png_rw_ptr p_func,Image *p_image);
-	virtual Error load_image(Image *p_image,FileAccess *f);
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;	
+	static Error _load_image(void *rf_up, png_rw_ptr p_func, Ref<Image> p_image);
+	virtual Error load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear);
+	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	ImageLoaderPNG();
 };
-
-
 
 #endif

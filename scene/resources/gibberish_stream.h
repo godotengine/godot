@@ -5,7 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,12 +30,15 @@
 #ifndef GIBBERISH_STREAM_H
 #define GIBBERISH_STREAM_H
 
+//TODO: This class needs to be adapted to the new AudioStream API,
+// or dropped if nobody cares about fixing it :) (GH-3307)
 
+#if 0
 #include "scene/resources/audio_stream.h"
 #include "scene/resources/sample_library.h"
 class AudioStreamGibberish : public AudioStream {
 
-	OBJ_TYPE( AudioStreamGibberish, AudioStream );
+	GDCLASS( AudioStreamGibberish, AudioStream );
 
 	enum {
 
@@ -108,5 +112,7 @@ public:
 
 	AudioStreamGibberish();
 };
+
+#endif
 
 #endif // GIBBERISH_STREAM_H

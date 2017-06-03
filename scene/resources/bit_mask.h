@@ -5,7 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,49 +30,38 @@
 #ifndef BIT_MASK_H
 #define BIT_MASK_H
 
-#include "resource.h"
+#include "image.h"
 #include "io/resource_loader.h"
-
+#include "resource.h"
 
 class BitMap : public Resource {
 
-	OBJ_TYPE(BitMap,Resource);
+	GDCLASS(BitMap, Resource);
+	OBJ_SAVE_TYPE(BitMap);
+	RES_BASE_EXTENSION("pbm");
 
 	Vector<uint8_t> bitmask;
 	int width;
 	int height;
 
 protected:
-	void _set_data(const Dictionary& p_d);
+	void _set_data(const Dictionary &p_d);
 	Dictionary _get_data() const;
 
 	static void _bind_methods();
+
 public:
+	void create(const Size2 &p_size);
+	void create_from_image_alpha(const Ref<Image> &p_image);
 
-
-	void create(const Size2& p_size);
-	void create_from_image_alpha(const Image& p_image);
-
-	void set_bit(const Point2& p_pos,bool p_value);
-	bool get_bit(const Point2& p_pos) const;
-	void set_bit_rect(const Rect2& p_rect,bool p_value);
+	void set_bit(const Point2 &p_pos, bool p_value);
+	bool get_bit(const Point2 &p_pos) const;
+	void set_bit_rect(const Rect2 &p_rect, bool p_value);
 	int get_true_bit_count() const;
 
 	Size2 get_size() const;
 
 	BitMap();
-};
-
-class ResourceFormatLoaderBitMap : public ResourceFormatLoader {
-
-public:
-
-	virtual RES load(const String &p_path,const String& p_original_path="");
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual bool handles_type(const String& p_type) const;
-	virtual String get_resource_type(const String &p_path) const;
-
-	ResourceFormatLoaderBitMap();
 };
 
 #endif // BIT_MASK_H

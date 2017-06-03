@@ -5,7 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,7 +39,7 @@ class MessageQueue {
 
 	enum {
 
-        DEFAULT_QUEUE_SIZE_KB=1024
+		DEFAULT_QUEUE_SIZE_KB = 1024
 	};
 
 	Mutex *mutex;
@@ -46,7 +47,10 @@ class MessageQueue {
 	enum {
 		TYPE_CALL,
 		TYPE_NOTIFICATION,
-		TYPE_SET
+		TYPE_SET,
+		FLAG_SHOW_ERROR = 1 << 14,
+		FLAG_MASK = FLAG_SHOW_ERROR - 1
+
 	};
 
 	struct Message {
@@ -65,19 +69,21 @@ class MessageQueue {
 	uint32_t buffer_max_used;
 	uint32_t buffer_size;
 
+	void _call_function(Object *p_target, const StringName &p_func, const Variant *p_args, int p_argcount, bool p_show_error);
 
 	static MessageQueue *singleton;
-public:
 
+public:
 	static MessageQueue *get_singleton();
 
-	Error push_call(ObjectID p_id, const StringName& p_method, VARIANT_ARG_LIST);
+	Error push_call(ObjectID p_id, const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error = false);
+	Error push_call(ObjectID p_id, const StringName &p_method, VARIANT_ARG_LIST);
 	Error push_notification(ObjectID p_id, int p_notification);
-	Error push_set(ObjectID p_id, const StringName& p_prop, const Variant& p_value);
+	Error push_set(ObjectID p_id, const StringName &p_prop, const Variant &p_value);
 
-	Error push_call(Object *p_object, const StringName& p_method, VARIANT_ARG_LIST);
+	Error push_call(Object *p_object, const StringName &p_method, VARIANT_ARG_LIST);
 	Error push_notification(Object *p_object, int p_notification);
-	Error push_set(Object *p_object, const StringName& p_prop, const Variant& p_value);
+	Error push_set(Object *p_object, const StringName &p_prop, const Variant &p_value);
 
 	bool print();
 	void statistics();

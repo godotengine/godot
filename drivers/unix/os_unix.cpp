@@ -5,7 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,44 +31,72 @@
 
 #ifdef UNIX_ENABLED
 
-#include "memory_pool_static_malloc.h"
-#include "os/memory_pool_dynamic_static.h"
-#include "thread_posix.h"
-#include "semaphore_posix.h"
-#include "mutex_posix.h"
+#include "servers/visual_server.h"
+
 #include "core/os/thread_dummy.h"
+#include "mutex_posix.h"
+#include "rw_lock_posix.h"
+#include "semaphore_posix.h"
+#include "thread_posix.h"
 
 //#include "core/io/file_access_buffered_fa.h"
-#include "file_access_unix.h"
 #include "dir_access_unix.h"
-#include "tcp_server_posix.h"
+#include "file_access_unix.h"
+#include "packet_peer_udp_posix.h"
 #include "stream_peer_tcp_posix.h"
+#include "tcp_server_posix.h"
 
+#ifdef __APPLE__
+#include <mach-o/dyld.h>
+#endif
 
+#ifdef __FreeBSD__
+#include <sys/param.h>
+#endif
+#include "global_config.h"
+#include <assert.h>
+#include <dlfcn.h>
+#include <errno.h>
+#include <poll.h>
+#include <signal.h>
 #include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/time.h>
 #include <sys/wait.h>
-#include <stdlib.h>
-#include <signal.h>
-#include <string.h>
-#include <poll.h>
-#include <errno.h>
-#include <assert.h>
-#include "globals.h"
-void OS_Unix::print_error(const char* p_function,const char* p_file,int p_line,const char *p_code,const char*p_rationale,ErrorType p_type) {
 
-	if (p_rationale && p_rationale[0]) {
+extern bool _print_error_enabled;
 
-		print("\E[1;31;40mERROR: %s: \E[1;37;40m%s\n",p_function,p_rationale);
-		print("\E[0;31;40m   At: %s:%i.\E[0;0;37m\n",p_file,p_line);
+void OS_Unix::print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type) {
 
-	} else {
-		print("\E[1;31;40mERROR: %s: \E[1;37;40m%s\n",p_function,p_code);
-		print("\E[0;31;40m   At: %s:%i.\E[0;0;37m\n",p_file,p_line);
+	if (!_print_error_enabled)
+		return;
 
+	const char *err_details;
+	if (p_rationale && p_rationale[0])
+		err_details = p_rationale;
+	else
+		err_details = p_code;
+
+	switch (p_type) {
+		case ERR_ERROR:
+			print("\E[1;31mERROR: %s: \E[0m\E[1m%s\n", p_function, err_details);
+			print("\E[0;31m   At: %s:%i.\E[0m\n", p_file, p_line);
+			break;
+		case ERR_WARNING:
+			print("\E[1;33mWARNING: %s: \E[0m\E[1m%s\n", p_function, err_details);
+			print("\E[0;33m   At: %s:%i.\E[0m\n", p_file, p_line);
+			break;
+		case ERR_SCRIPT:
+			print("\E[1;35mSCRIPT ERROR: %s: \E[0m\E[1m%s\n", p_function, err_details);
+			print("\E[0;35m   At: %s:%i.\E[0m\n", p_file, p_line);
+			break;
+		case ERR_SHADER:
+			print("\E[1;36mSHADER ERROR: %s: \E[0m\E[1m%s\n", p_function, err_details);
+			print("\E[0;36m   At: %s:%i.\E[0m\n", p_file, p_line);
+			break;
 	}
 }
-
 
 void OS_Unix::debug_break() {
 
@@ -77,22 +106,26 @@ void OS_Unix::debug_break() {
 int OS_Unix::get_audio_driver_count() const {
 
 	return 1;
-
 }
-const char * OS_Unix::get_audio_driver_name(int p_driver) const {
+const char *OS_Unix::get_audio_driver_name(int p_driver) const {
 
 	return "dummy";
 }
-	
+
 int OS_Unix::unix_initialize_audio(int p_audio_driver) {
 
 	return 0;
 }
-	
-static MemoryPoolStaticMalloc *mempool_static=NULL;
-static MemoryPoolDynamicStatic *mempool_dynamic=NULL;
-	
-	
+
+// Very simple signal handler to reap processes where ::execute was called with
+// !p_blocking
+void handle_sigchld(int sig) {
+	int saved_errno = errno;
+	while (waitpid((pid_t)(-1), 0, WNOHANG) > 0) {
+	}
+	errno = saved_errno;
+}
+
 void OS_Unix::initialize_core() {
 
 #ifdef NO_PTHREADS
@@ -100,9 +133,10 @@ void OS_Unix::initialize_core() {
 	SemaphoreDummy::make_default();
 	MutexDummy::make_default();
 #else
-	ThreadPosix::make_default();	
+	ThreadPosix::make_default();
 	SemaphorePosix::make_default();
-	MutexPosix::make_default();	
+	MutexPosix::make_default();
+	RWLockPosix::make_default();
 #endif
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_USERDATA);
@@ -115,53 +149,51 @@ void OS_Unix::initialize_core() {
 #ifndef NO_NETWORK
 	TCPServerPosix::make_default();
 	StreamPeerTCPPosix::make_default();
+	PacketPeerUDPPosix::make_default();
 	IP_Unix::make_default();
 #endif
-	mempool_static = new MemoryPoolStaticMalloc;
-	mempool_dynamic = memnew( MemoryPoolDynamicStatic );
 
-	ticks_start=0;
-	ticks_start=get_ticks_usec();
+	ticks_start = 0;
+	ticks_start = get_ticks_usec();
+
+	struct sigaction sa;
+	sa.sa_handler = &handle_sigchld;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_RESTART | SA_NOCLDSTOP;
+	if (sigaction(SIGCHLD, &sa, 0) == -1) {
+		perror("ERROR sigaction() failed:");
+	}
 }
 
 void OS_Unix::finalize_core() {
-
-
-	if (mempool_dynamic)
-		memdelete( mempool_dynamic );
-	if (mempool_static)
-		delete mempool_static;
-
 }
 
-
-void OS_Unix::vprint(const char* p_format, va_list p_list,bool p_stder) {
+void OS_Unix::vprint(const char *p_format, va_list p_list, bool p_stder) {
 
 	if (p_stder) {
 
-		vfprintf(stderr,p_format,p_list);
+		vfprintf(stderr, p_format, p_list);
 		fflush(stderr);
 	} else {
 
-		vprintf(p_format,p_list);
+		vprintf(p_format, p_list);
 		fflush(stdout);
 	}
 }
 
-void OS_Unix::print(const char *p_format, ... ) {
+void OS_Unix::print(const char *p_format, ...) {
 
 	va_list argp;
 	va_start(argp, p_format);
-	vprintf(p_format, argp );
+	vprintf(p_format, argp);
 	va_end(argp);
-
 }
-void OS_Unix::alert(const String& p_alert,const String& p_title) {
+void OS_Unix::alert(const String &p_alert, const String &p_title) {
 
-	fprintf(stderr,"ERROR: %s\n",p_alert.utf8().get_data());
+	fprintf(stderr, "ERROR: %s\n", p_alert.utf8().get_data());
 }
 
-static int has_data(FILE* p_fd, int timeout_usec = 0) {
+static int has_data(FILE *p_fd, int timeout_usec = 0) {
 
 	fd_set readset;
 	int fd = fileno(p_fd);
@@ -170,17 +202,16 @@ static int has_data(FILE* p_fd, int timeout_usec = 0) {
 	timeval time;
 	time.tv_sec = 0;
 	time.tv_usec = timeout_usec;
-	int res = 0;//select(fd + 1, &readset, NULL, NULL, &time);
+	int res = 0; //select(fd + 1, &readset, NULL, NULL, &time);
 	return res > 0;
 };
-
 
 String OS_Unix::get_stdin_string(bool p_block) {
 
 	String ret;
 	if (p_block) {
 		char buff[1024];
-		ret = stdin_buf + fgets(buff,1024,stdin);
+		ret = stdin_buf + fgets(buff, 1024, stdin);
 		stdin_buf = "";
 		return ret;
 	};
@@ -207,37 +238,81 @@ String OS_Unix::get_name() {
 	return "Unix";
 }
 
-
 uint64_t OS_Unix::get_unix_time() const {
 
 	return time(NULL);
 };
 
+uint64_t OS_Unix::get_system_time_secs() const {
+	struct timeval tv_now;
+	gettimeofday(&tv_now, NULL);
+	//localtime(&tv_now.tv_usec);
+	//localtime((const long *)&tv_now.tv_usec);
+	return uint64_t(tv_now.tv_sec);
+}
 
-OS::Date OS_Unix::get_date() const {
+OS::Date OS_Unix::get_date(bool utc) const {
 
-	time_t t=time(NULL);
-	struct tm *lt=localtime(&t);
+	time_t t = time(NULL);
+	struct tm *lt;
+	if (utc)
+		lt = gmtime(&t);
+	else
+		lt = localtime(&t);
 	Date ret;
-	ret.year=1900+lt->tm_year;
-	ret.month=(Month)lt->tm_mon;
-	ret.day=lt->tm_mday;
-	ret.weekday=(Weekday)lt->tm_wday;
-	ret.dst=lt->tm_isdst;
-	
-	return ret;
-}
-OS::Time OS_Unix::get_time() const {
+	ret.year = 1900 + lt->tm_year;
+	// Index starting at 1 to match OS_Unix::get_date
+	//   and Windows SYSTEMTIME and tm_mon follows the typical structure
+	//   of 0-11, noted here: http://www.cplusplus.com/reference/ctime/tm/
+	ret.month = (Month)(lt->tm_mon + 1);
+	ret.day = lt->tm_mday;
+	ret.weekday = (Weekday)lt->tm_wday;
+	ret.dst = lt->tm_isdst;
 
-	time_t t=time(NULL);
-	struct tm *lt=localtime(&t);
-	Time ret;
-	ret.hour=lt->tm_hour;
-	ret.min=lt->tm_min;
-	ret.sec=lt->tm_sec;
 	return ret;
 }
-	
+
+OS::Time OS_Unix::get_time(bool utc) const {
+	time_t t = time(NULL);
+	struct tm *lt;
+	if (utc)
+		lt = gmtime(&t);
+	else
+		lt = localtime(&t);
+	Time ret;
+	ret.hour = lt->tm_hour;
+	ret.min = lt->tm_min;
+	ret.sec = lt->tm_sec;
+	get_time_zone_info();
+	return ret;
+}
+
+OS::TimeZoneInfo OS_Unix::get_time_zone_info() const {
+	time_t t = time(NULL);
+	struct tm *lt = localtime(&t);
+	char name[16];
+	strftime(name, 16, "%Z", lt);
+	name[15] = 0;
+	TimeZoneInfo ret;
+	ret.name = name;
+
+	char bias_buf[16];
+	strftime(bias_buf, 16, "%z", lt);
+	int bias;
+	bias_buf[15] = 0;
+	sscanf(bias_buf, "%d", &bias);
+
+	// convert from ISO 8601 (1 minute=1, 1 hour=100) to minutes
+	int hour = (int)bias / 100;
+	int minutes = bias % 100;
+	if (bias < 0)
+		ret.bias = hour * 60 - minutes;
+	else
+		ret.bias = hour * 60 + minutes;
+
+	return ret;
+}
+
 void OS_Unix::delay_usec(uint32_t p_usec) const {
 
 	usleep(p_usec);
@@ -245,92 +320,99 @@ void OS_Unix::delay_usec(uint32_t p_usec) const {
 uint64_t OS_Unix::get_ticks_usec() const {
 
 	struct timeval tv_now;
-	gettimeofday(&tv_now,NULL);
-	
-	uint64_t longtime = (uint64_t)tv_now.tv_usec + (uint64_t)tv_now.tv_sec*1000000L;
-	longtime-=ticks_start;
-	
+	gettimeofday(&tv_now, NULL);
+
+	uint64_t longtime = (uint64_t)tv_now.tv_usec + (uint64_t)tv_now.tv_sec * 1000000L;
+	longtime -= ticks_start;
+
 	return longtime;
 }
 
-Error OS_Unix::execute(const String& p_path, const List<String>& p_arguments,bool p_blocking,ProcessID *r_child_id,String* r_pipe,int *r_exitcode) {
-
+Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode) {
 
 	if (p_blocking && r_pipe) {
 
-
 		String argss;
-		argss="\""+p_path+"\"";
+		argss = "\"" + p_path + "\"";
 
-		for(int i=0;i<p_arguments.size();i++) {
+		for (int i = 0; i < p_arguments.size(); i++) {
 
-			argss+=String(" \"")+p_arguments[i]+"\"";
+			argss += String(" \"") + p_arguments[i] + "\"";
 		}
 
-		argss+=" 2>/dev/null"; //silence stderr
-		FILE* f=popen(argss.utf8().get_data(),"r");
+		argss += " 2>/dev/null"; //silence stderr
+		FILE *f = popen(argss.utf8().get_data(), "r");
 
-		ERR_FAIL_COND_V(!f,ERR_CANT_OPEN);
+		ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
 
 		char buf[65535];
-		while(fgets(buf,65535,f)) {
+		while (fgets(buf, 65535, f)) {
 
-			(*r_pipe)+=buf;
+			(*r_pipe) += buf;
 		}
 
 		int rv = pclose(f);
 		if (r_exitcode)
-			*r_exitcode=rv;
+			*r_exitcode = rv;
 
 		return OK;
 	}
 
-
 	pid_t pid = fork();
-	ERR_FAIL_COND_V(pid<0,ERR_CANT_FORK);
-	//print("execute: %s\n",p_path.utf8().get_data());
+	ERR_FAIL_COND_V(pid < 0, ERR_CANT_FORK);
 
-
-	if (pid==0) {
+	if (pid == 0) {
 		// is child
 		Vector<CharString> cs;
 		cs.push_back(p_path.utf8());
-		for(int i=0;i<p_arguments.size();i++)
+		for (int i = 0; i < p_arguments.size(); i++)
 			cs.push_back(p_arguments[i].utf8());
 
-		Vector<char*> args;
-		for(int i=0;i<cs.size();i++)
-			args.push_back((char*)cs[i].get_data());// shitty C cast
+		Vector<char *> args;
+		for (int i = 0; i < cs.size(); i++)
+			args.push_back((char *)cs[i].get_data()); // shitty C cast
 		args.push_back(0);
 
-		execv(p_path.utf8().get_data(),&args[0]);
+#ifdef __FreeBSD__
+		if (p_path.find("/")) {
+			// exec name contains path so use it
+			execv(p_path.utf8().get_data(), &args[0]);
+		} else {
+			// use program name and search through PATH to find it
+			execvp(getprogname(), &args[0]);
+		}
+#else
+		execv(p_path.utf8().get_data(), &args[0]);
+#endif
 		// still alive? something failed..
-		fprintf(stderr,"**ERROR** OS_Unix::execute - Could not create child process while executing: %s\n",p_path.utf8().get_data());
+		fprintf(stderr, "**ERROR** OS_Unix::execute - Could not create child process while executing: %s\n", p_path.utf8().get_data());
 		abort();
 	}
 
 	if (p_blocking) {
 
 		int status;
-		pid_t rpid = waitpid(pid,&status,0);
+		waitpid(pid, &status, 0);
 		if (r_exitcode)
-			*r_exitcode=WEXITSTATUS(status);
-
-		print("returned: %i, waiting for: %i\n",rpid,pid);
+			*r_exitcode = WEXITSTATUS(status);
 	} else {
 
 		if (r_child_id)
-			*r_child_id=pid;
+			*r_child_id = pid;
 	}
 
 	return OK;
-
 }
 
-Error OS_Unix::kill(const ProcessID& p_pid) {
+Error OS_Unix::kill(const ProcessID &p_pid) {
 
-	int ret = ::kill(p_pid,SIGKILL);
-	return ret?ERR_INVALID_PARAMETER:OK;
+	int ret = ::kill(p_pid, SIGKILL);
+	if (!ret) {
+		//avoid zombie process
+		int st;
+		::waitpid(p_pid, &st, 0);
+	}
+	return ret ? ERR_INVALID_PARAMETER : OK;
 }
 
 int OS_Unix::get_process_ID() const {
@@ -338,10 +420,9 @@ int OS_Unix::get_process_ID() const {
 	return getpid();
 };
 
+bool OS_Unix::has_environment(const String &p_var) const {
 
-bool OS_Unix::has_environment(const String& p_var) const {
-
-	return getenv(p_var.utf8().get_data())!=NULL;
+	return getenv(p_var.utf8().get_data()) != NULL;
 }
 
 String OS_Unix::get_locale() const {
@@ -351,21 +432,50 @@ String OS_Unix::get_locale() const {
 
 	String locale = get_environment("LANG");
 	int tp = locale.find(".");
-	if (tp!=-1)
-		locale=locale.substr(0,tp);
+	if (tp != -1)
+		locale = locale.substr(0, tp);
 	return locale;
 }
 
-Error OS_Unix::set_cwd(const String& p_cwd) {
+Error OS_Unix::open_dynamic_library(const String p_path, void *&p_library_handle) {
+	p_library_handle = dlopen(p_path.utf8().get_data(), RTLD_NOW);
+	if (!p_library_handle) {
+		ERR_EXPLAIN("Can't open dynamic library: " + p_path + ". Error: " + dlerror());
+		ERR_FAIL_V(ERR_CANT_OPEN);
+	}
+	return OK;
+}
 
-	if (chdir(p_cwd.utf8().get_data())!=0)
+Error OS_Unix::close_dynamic_library(void *p_library_handle) {
+	if (dlclose(p_library_handle)) {
+		return FAILED;
+	}
+	return OK;
+}
+
+Error OS_Unix::get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle) {
+	const char *error;
+	dlerror(); // Clear existing errors
+
+	p_symbol_handle = dlsym(p_library_handle, p_name.utf8().get_data());
+
+	error = dlerror();
+	if (error != NULL) {
+		ERR_EXPLAIN("Can't resolve symbol " + p_name + ". Error: " + error);
+		ERR_FAIL_V(ERR_CANT_RESOLVE);
+	}
+	return OK;
+}
+
+Error OS_Unix::set_cwd(const String &p_cwd) {
+
+	if (chdir(p_cwd.utf8().get_data()) != 0)
 		return ERR_CANT_OPEN;
 
 	return OK;
 }
 
-
-String OS_Unix::get_environment(const String& p_var) const {
+String OS_Unix::get_environment(const String &p_var) const {
 
 	if (getenv(p_var.utf8().get_data()))
 		return getenv(p_var.utf8().get_data());
@@ -379,23 +489,33 @@ int OS_Unix::get_processor_count() const {
 
 String OS_Unix::get_data_dir() const {
 
-	String an = Globals::get_singleton()->get("application/name");
-	if (an!="") {
-
-
+	String an = get_safe_application_name();
+	if (an != "") {
 
 		if (has_environment("HOME")) {
 
-			bool use_godot = Globals::get_singleton()->get("application/use_shared_user_dir");
+			bool use_godot = GlobalConfig::get_singleton()->get("application/use_shared_user_dir");
 			if (use_godot)
-				return get_environment("HOME")+"/.godot/app_userdata/"+an;
+				return get_environment("HOME") + "/.godot/app_userdata/" + an;
 			else
-				return get_environment("HOME")+"/."+an;
+				return get_environment("HOME") + "/." + an;
 		}
 	}
 
-	return Globals::get_singleton()->get_resource_path();
+	return GlobalConfig::get_singleton()->get_resource_path();
+}
 
+bool OS_Unix::check_feature_support(const String &p_feature) {
+
+	return VisualServer::get_singleton()->has_os_feature(p_feature);
+}
+
+String OS_Unix::get_installed_templates_path() const {
+	String p = get_global_settings_path();
+	if (p != "")
+		return p + "/templates/";
+	else
+		return "";
 }
 
 String OS_Unix::get_executable_path() const {
@@ -403,21 +523,39 @@ String OS_Unix::get_executable_path() const {
 #ifdef __linux__
 	//fix for running from a symlink
 	char buf[256];
-	memset(buf,0,256);
+	memset(buf, 0, 256);
 	readlink("/proc/self/exe", buf, sizeof(buf));
-	//print_line("Exec path is:"+String(buf));
 	String b;
 	b.parse_utf8(buf);
-	if (b=="") {
+	if (b == "") {
 		WARN_PRINT("Couldn't get executable path from /proc/self/exe, using argv[0]");
 		return OS::get_executable_path();
 	}
 	return b;
+#elif defined(__FreeBSD__)
+	char resolved_path[MAXPATHLEN];
+
+	realpath(OS::get_executable_path().utf8().get_data(), resolved_path);
+
+	return String(resolved_path);
+#elif defined(__APPLE__)
+	char temp_path[1];
+	uint32_t buff_size = 1;
+	_NSGetExecutablePath(temp_path, &buff_size);
+
+	char *resolved_path = new char[buff_size + 1];
+
+	if (_NSGetExecutablePath(resolved_path, &buff_size) == 1)
+		WARN_PRINT("MAXPATHLEN is too small");
+
+	String path(resolved_path);
+	delete[] resolved_path;
+
+	return path;
 #else
 	ERR_PRINT("Warning, don't know how to obtain executable path on this OS! Please override this function properly.");
 	return OS::get_executable_path();
 #endif
 }
-
 
 #endif

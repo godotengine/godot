@@ -5,7 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,29 +34,32 @@
 
 class ParallaxLayer : public Node2D {
 
-	OBJ_TYPE( ParallaxLayer, Node2D );
+	GDCLASS(ParallaxLayer, Node2D);
 
 	Point2 orig_offset;
 	Point2 orig_scale;
 	Size2 motion_scale;
+	Vector2 motion_offset;
 	Vector2 mirroring;
 	void _update_mirroring();
 
 protected:
-
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
+	void set_motion_offset(const Size2 &p_scale);
+	Size2 get_motion_offset() const;
 
-	void set_motion_scale(const Size2& p_scale);
+	void set_motion_scale(const Size2 &p_scale);
 	Size2 get_motion_scale() const;
 
-	void set_mirroring(const Size2& p_mirroring);
+	void set_mirroring(const Size2 &p_mirroring);
 	Size2 get_mirroring() const;
 
-	void set_base_offset_and_scale(const Point2& p_offsetf,float p_scale);
+	void set_base_offset_and_scale(const Point2 &p_offsetf, float p_scale);
 
+	virtual String get_configuration_warning() const;
 	ParallaxLayer();
 };
 

@@ -5,7 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,200 +30,263 @@
 #include "base_button.h"
 #include "os/keyboard.h"
 #include "print_string.h"
-#include "button_group.h"
+#include "scene/main/viewport.h"
+#include "scene/scene_string_names.h"
 
+void BaseButton::_unpress_group() {
 
-void BaseButton::_input_event(InputEvent p_event) {
+	if (!button_group.is_valid())
+		return;
 
+	status.pressed = true;
+
+	for (Set<BaseButton *>::Element *E = button_group->buttons.front(); E; E = E->next()) {
+		if (E->get() == this)
+			continue;
+
+		E->get()->set_pressed(false);
+	}
+}
+
+void BaseButton::_gui_input(Ref<InputEvent> p_event) {
 
 	if (status.disabled) // no interaction with disabled button
 		return;
-		
-	switch(p_event.type) {
-	
-		case InputEvent::MOUSE_BUTTON: {
-	
-			const InputEventMouseButton &b=p_event.mouse_button;
-	
-			if ( status.disabled || b.button_index!=1 )
-				return;
 
-			if (status.pressing_button)
-				break;
-			
-			if (status.click_on_press) {
+	Ref<InputEventMouseButton> b = p_event;
 
-				if (b.pressed) {
+	if (b.is_valid()) {
+		if (status.disabled || b->get_button_index() != 1)
+			return;
 
-					if (!toggle_mode) { //mouse press attempt
+		if (status.pressing_button)
+			return;
 
-						pressed();
-						emit_signal("pressed");
+		if (action_mode == ACTION_MODE_BUTTON_PRESS) {
 
-					} else {
+			if (b->is_pressed()) {
 
-						status.pressed=!status.pressed;
-						pressed();
-						emit_signal("pressed");
+				emit_signal("button_down");
 
-						toggled(status.pressed);
-						emit_signal("toggled",status.pressed);
+				if (!toggle_mode) { //mouse press attempt
 
+					status.press_attempt = true;
+					status.pressing_inside = true;
+
+					pressed();
+					if (get_script_instance()) {
+						Variant::CallError ce;
+						get_script_instance()->call(SceneStringNames::get_singleton()->_pressed, NULL, 0, ce);
 					}
 
+					emit_signal("pressed");
+					_unpress_group();
 
+				} else {
+
+					status.pressed = !status.pressed;
+					pressed();
+					if (get_script_instance()) {
+						Variant::CallError ce;
+						get_script_instance()->call(SceneStringNames::get_singleton()->_pressed, NULL, 0, ce);
+					}
+					emit_signal("pressed");
+					_unpress_group();
+
+					toggled(status.pressed);
+					emit_signal("toggled", status.pressed);
 				}
 
-				break;
-			}
-
-			if (b.pressed) {
-				
-				status.press_attempt=true;
-				status.pressing_inside=true;
-				
 			} else {
-				
-				
-				if (status.press_attempt &&status.pressing_inside) {
-						
-					if (!toggle_mode) { //mouse press attempt
-					
-						pressed();
-						emit_signal("pressed");										
-						
-					} else {
-					
-						status.pressed=!status.pressed;
-						
-						pressed();
-						emit_signal("pressed");
-						
-						toggled(status.pressed);
-						emit_signal("toggled",status.pressed);
-					
-					}
-		
+
+				emit_signal("button_up");
+
+				/* this is pointless		if (status.press_attempt && status.pressing_inside) {
+					//released();
+					emit_signal("released");
 				}
-			
-				status.press_attempt=false;
-				
+*/
+				status.press_attempt = false;
 			}
-			
-			update();				
-		} break;
-		case InputEvent::MOUSE_MOTION: {
+			update();
+			return;
+		}
 
-			if (status.press_attempt && status.pressing_button==0) {
-				bool last_press_inside=status.pressing_inside;
-				status.pressing_inside=has_point(Point2(p_event.mouse_motion.x,p_event.mouse_motion.y));
-				if (last_press_inside!=status.pressing_inside)
-					update();
-			}
-		} break;
-		case InputEvent::JOYSTICK_BUTTON:
-		case InputEvent::KEY: {
-		
+		if (b->is_pressed()) {
 
-			if (p_event.is_echo()) {
-				break;
-			}
+			status.press_attempt = true;
+			status.pressing_inside = true;
+			emit_signal("button_down");
 
-			if (status.disabled) {
-				break;
-			}
+		} else {
 
-			if (status.press_attempt && status.pressing_button==0) {
-				break;
-			}
+			emit_signal("button_up");
 
-			if (p_event.is_action("ui_accept")) {
-		
-				if (p_event.is_pressed()) {
+			if (status.press_attempt && status.pressing_inside) {
 
-					status.pressing_button++;
-					status.press_attempt=true;
-					status.pressing_inside=true;
+				if (!toggle_mode) { //mouse press attempt
 
-				} else if (status.press_attempt) {
+					pressed();
+					if (get_script_instance()) {
+						Variant::CallError ce;
+						get_script_instance()->call(SceneStringNames::get_singleton()->_pressed, NULL, 0, ce);
+					}
 
-					if (status.pressing_button)
-						status.pressing_button--;
+					emit_signal("pressed");
 
-					if (status.pressing_button)
-						break;
+				} else {
 
-					status.press_attempt=false;
-					status.pressing_inside=false;
-				
-					if (!toggle_mode) { //mouse press attempt
-					
-						pressed();
-						emit_signal("pressed");				
-					} else {
-					
-						status.pressed=!status.pressed;
-						
-						pressed();
-						emit_signal("pressed");
-						
-						toggled(status.pressed);
-						emit_signal("toggled",status.pressed);
+					status.pressed = !status.pressed;
+
+					pressed();
+					emit_signal("pressed");
+
+					toggled(status.pressed);
+					emit_signal("toggled", status.pressed);
+					if (get_script_instance()) {
+						get_script_instance()->call(SceneStringNames::get_singleton()->_toggled, status.pressed);
 					}
 				}
-				
-				accept_event();
-				update();		
 
+				_unpress_group();
 			}
-		}	
-			
+
+			status.press_attempt = false;
+		}
+
+		update();
+	}
+
+	Ref<InputEventMouseMotion> mm = p_event;
+
+	if (mm.is_valid()) {
+		if (status.press_attempt && status.pressing_button == 0) {
+			bool last_press_inside = status.pressing_inside;
+			status.pressing_inside = has_point(mm->get_position());
+			if (last_press_inside != status.pressing_inside)
+				update();
+		}
+	}
+
+	if (!mm.is_valid() && !b.is_valid()) {
+
+		if (p_event->is_echo()) {
+			return;
+		}
+
+		if (status.disabled) {
+			return;
+		}
+
+		if (status.press_attempt && status.pressing_button == 0) {
+			return;
+		}
+
+		if (p_event->is_action("ui_accept")) {
+
+			if (p_event->is_pressed()) {
+
+				status.pressing_button++;
+				status.press_attempt = true;
+				status.pressing_inside = true;
+				emit_signal("button_down");
+
+			} else if (status.press_attempt) {
+
+				if (status.pressing_button)
+					status.pressing_button--;
+
+				if (status.pressing_button)
+					return;
+
+				status.press_attempt = false;
+				status.pressing_inside = false;
+
+				emit_signal("button_up");
+
+				if (!toggle_mode) { //mouse press attempt
+
+					pressed();
+					emit_signal("pressed");
+				} else {
+
+					status.pressed = !status.pressed;
+
+					pressed();
+					emit_signal("pressed");
+
+					toggled(status.pressed);
+					if (get_script_instance()) {
+						get_script_instance()->call(SceneStringNames::get_singleton()->_toggled, status.pressed);
+					}
+					emit_signal("toggled", status.pressed);
+				}
+
+				_unpress_group();
+			}
+
+			accept_event();
+			update();
+		}
 	}
 }
 
 void BaseButton::_notification(int p_what) {
-	
 
-	if (p_what==NOTIFICATION_MOUSE_ENTER) {
-	
-		status.hovering=true;
+	if (p_what == NOTIFICATION_MOUSE_ENTER) {
+
+		status.hovering = true;
 		update();
 	}
-	
-	if (p_what==NOTIFICATION_MOUSE_EXIT) {
-		status.hovering=false;
+
+	if (p_what == NOTIFICATION_MOUSE_EXIT) {
+		status.hovering = false;
 		update();
-	}	
-	if (p_what==NOTIFICATION_FOCUS_EXIT) {
+	}
+	if (p_what == NOTIFICATION_DRAG_BEGIN) {
+
+		if (status.press_attempt) {
+			status.press_attempt = false;
+			status.pressing_button = 0;
+			update();
+		}
+	}
+
+	if (p_what == NOTIFICATION_FOCUS_ENTER) {
+
+		status.hovering = true;
+		update();
+	}
+
+	if (p_what == NOTIFICATION_FOCUS_EXIT) {
 
 		if (status.pressing_button && status.press_attempt) {
-			status.press_attempt=false;
-			status.pressing_button=0;
+			status.press_attempt = false;
+			status.pressing_button = 0;
+			status.hovering = false;
+			update();
+		} else if (status.hovering) {
+			status.hovering = false;
+			update();
 		}
 	}
 
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what == NOTIFICATION_ENTER_TREE) {
+	}
 
-		CanvasItem *ci=this;
-		while(ci) {
+	if (p_what == NOTIFICATION_EXIT_TREE) {
+	}
 
-			ButtonGroup *bg = ci->cast_to<ButtonGroup>();
-			if (bg) {
+	if (p_what == NOTIFICATION_VISIBILITY_CHANGED && !is_visible_in_tree()) {
 
-				group=bg;
-				group->_add_button(this);
-			}
-
-			ci=ci->get_parent_item();
+		if (!toggle_mode) {
+			status.pressed = false;
 		}
+		status.hovering = false;
+		status.press_attempt = false;
+		status.pressing_inside = false;
+		status.pressing_button = 0;
 	}
-
-	if (p_what==NOTIFICATION_EXIT_SCENE) {
-
-		if (group)
-			group->_remove_button(this);
-	}
-
 }
 
 void BaseButton::pressed() {
@@ -233,47 +297,50 @@ void BaseButton::pressed() {
 
 void BaseButton::toggled(bool p_pressed) {
 
-	if (get_script_instance())
-		get_script_instance()->call("toggled",p_pressed);
-
+	if (get_script_instance()) {
+		get_script_instance()->call("toggled", p_pressed);
+	}
 }
 
-
 void BaseButton::set_disabled(bool p_disabled) {
-	
+
 	status.disabled = p_disabled;
 	update();
 	_change_notify("disabled");
 	if (p_disabled)
 		set_focus_mode(FOCUS_NONE);
 	else
-		set_focus_mode(FOCUS_ALL);
-};
+		set_focus_mode(enabled_focus_mode);
+}
 
 bool BaseButton::is_disabled() const {
 
 	return status.disabled;
-};
+}
 
 void BaseButton::set_pressed(bool p_pressed) {
-	
+
 	if (!toggle_mode)
 		return;
-	if (status.pressed==p_pressed)
+	if (status.pressed == p_pressed)
 		return;
 	_change_notify("pressed");
-	status.pressed=p_pressed;
+	status.pressed = p_pressed;
+
+	if (p_pressed) {
+		_unpress_group();
+	}
 	update();
 }
 
-bool BaseButton::is_pressing() const{
-	
+bool BaseButton::is_pressing() const {
+
 	return status.press_attempt;
 }
 
 bool BaseButton::is_pressed() const {
-	
-	return toggle_mode?status.pressed:status.press_attempt;
+
+	return toggle_mode ? status.pressed : status.press_attempt;
 }
 
 bool BaseButton::is_hovered() const {
@@ -282,99 +349,224 @@ bool BaseButton::is_hovered() const {
 }
 
 BaseButton::DrawMode BaseButton::get_draw_mode() const {
-	
+
 	if (status.disabled) {
 		return DRAW_DISABLED;
 	};
-	
-	//print_line("press attempt: "+itos(status.press_attempt)+" hover: "+itos(status.hovering)+" pressed: "+itos(status.pressed));
-	if (status.press_attempt==false && status.hovering && !status.pressed) {
 
+	//print_line("press attempt: "+itos(status.press_attempt)+" hover: "+itos(status.hovering)+" pressed: "+itos(status.pressed));
+	if (status.press_attempt == false && status.hovering && !status.pressed) {
 
 		return DRAW_HOVER;
 	} else {
 		/* determine if pressed or not */
-				
+
 		bool pressing;
 		if (status.press_attempt) {
-			
-			pressing=status.pressing_inside;
+
+			pressing = status.pressing_inside;
 			if (status.pressed)
-				pressing=!pressing;
+				pressing = !pressing;
 		} else {
-			
-			pressing=status.pressed;
+
+			pressing = status.pressed;
 		}
-		
-		if (pressing) 
+
+		if (pressing)
 			return DRAW_PRESSED;
-		else			
+		else
 			return DRAW_NORMAL;
-	}	
+	}
 
 	return DRAW_NORMAL;
 }
 
 void BaseButton::set_toggle_mode(bool p_on) {
-	
-	toggle_mode=p_on;
+
+	toggle_mode = p_on;
 }
 
 bool BaseButton::is_toggle_mode() const {
-	
+
 	return toggle_mode;
 }
 
-void BaseButton::set_click_on_press(bool p_click_on_press) {
+void BaseButton::set_action_mode(ActionMode p_mode) {
 
-	status.click_on_press=p_click_on_press;
+	action_mode = p_mode;
 }
 
-bool BaseButton::get_click_on_press() const {
+BaseButton::ActionMode BaseButton::get_action_mode() const {
 
-	return status.click_on_press;
+	return action_mode;
 }
 
+void BaseButton::set_enabled_focus_mode(FocusMode p_mode) {
+
+	enabled_focus_mode = p_mode;
+	if (!status.disabled) {
+		set_focus_mode(p_mode);
+	}
+}
+
+Control::FocusMode BaseButton::get_enabled_focus_mode() const {
+
+	return enabled_focus_mode;
+}
+
+void BaseButton::set_shortcut(const Ref<ShortCut> &p_shortcut) {
+
+	if (shortcut.is_null() == p_shortcut.is_null())
+		return;
+
+	shortcut = p_shortcut;
+	set_process_unhandled_input(shortcut.is_valid());
+}
+
+Ref<ShortCut> BaseButton::get_shortcut() const {
+	return shortcut;
+}
+
+void BaseButton::_unhandled_input(Ref<InputEvent> p_event) {
+
+	if (!is_disabled() && is_visible_in_tree() && p_event->is_pressed() && !p_event->is_echo() && shortcut.is_valid() && shortcut->is_shortcut(p_event)) {
+
+		if (get_viewport()->get_modal_stack_top() && !get_viewport()->get_modal_stack_top()->is_a_parent_of(this))
+			return; //ignore because of modal window
+
+		if (is_toggle_mode()) {
+			set_pressed(!is_pressed());
+			emit_signal("toggled", is_pressed());
+		}
+
+		emit_signal("pressed");
+	}
+}
+
+String BaseButton::get_tooltip(const Point2 &p_pos) const {
+
+	String tooltip = Control::get_tooltip(p_pos);
+	if (shortcut.is_valid() && shortcut->is_valid()) {
+		if (tooltip.find("$sc") != -1) {
+			tooltip = tooltip.replace_first("$sc", "(" + shortcut->get_as_text() + ")");
+		} else {
+			tooltip += " (" + shortcut->get_as_text() + ")";
+		}
+	}
+	return tooltip;
+}
+
+void BaseButton::set_button_group(const Ref<ButtonGroup> &p_group) {
+
+	if (button_group.is_valid()) {
+		button_group->buttons.erase(this);
+	}
+
+	button_group = p_group;
+
+	if (button_group.is_valid()) {
+		button_group->buttons.insert(this);
+	}
+
+	update(); //checkbox changes to radio if set a buttongroup
+}
+
+Ref<ButtonGroup> BaseButton::get_button_group() const {
+
+	return button_group;
+}
 
 void BaseButton::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_input_event"),&BaseButton::_input_event);
-	ObjectTypeDB::bind_method(_MD("set_pressed","pressed"),&BaseButton::set_pressed);
-	ObjectTypeDB::bind_method(_MD("is_pressed"),&BaseButton::is_pressed);
-	ObjectTypeDB::bind_method(_MD("is_hovered"),&BaseButton::is_hovered);
-	ObjectTypeDB::bind_method(_MD("set_toggle_mode","enabled"),&BaseButton::set_toggle_mode);
-	ObjectTypeDB::bind_method(_MD("is_toggle_mode"),&BaseButton::is_toggle_mode);
-	ObjectTypeDB::bind_method(_MD("set_disabled","disabled"),&BaseButton::set_disabled);
-	ObjectTypeDB::bind_method(_MD("is_disabled"),&BaseButton::is_disabled);
-	ObjectTypeDB::bind_method(_MD("set_click_on_press","enable"),&BaseButton::set_click_on_press);
-	ObjectTypeDB::bind_method(_MD("get_click_on_press"),&BaseButton::get_click_on_press);
+	ClassDB::bind_method(D_METHOD("_gui_input"), &BaseButton::_gui_input);
+	ClassDB::bind_method(D_METHOD("_unhandled_input"), &BaseButton::_unhandled_input);
+	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &BaseButton::set_pressed);
+	ClassDB::bind_method(D_METHOD("is_pressed"), &BaseButton::is_pressed);
+	ClassDB::bind_method(D_METHOD("is_hovered"), &BaseButton::is_hovered);
+	ClassDB::bind_method(D_METHOD("set_toggle_mode", "enabled"), &BaseButton::set_toggle_mode);
+	ClassDB::bind_method(D_METHOD("is_toggle_mode"), &BaseButton::is_toggle_mode);
+	ClassDB::bind_method(D_METHOD("set_disabled", "disabled"), &BaseButton::set_disabled);
+	ClassDB::bind_method(D_METHOD("is_disabled"), &BaseButton::is_disabled);
+	ClassDB::bind_method(D_METHOD("set_action_mode", "mode"), &BaseButton::set_action_mode);
+	ClassDB::bind_method(D_METHOD("get_action_mode"), &BaseButton::get_action_mode);
+	ClassDB::bind_method(D_METHOD("get_draw_mode"), &BaseButton::get_draw_mode);
+	ClassDB::bind_method(D_METHOD("set_enabled_focus_mode", "mode"), &BaseButton::set_enabled_focus_mode);
+	ClassDB::bind_method(D_METHOD("get_enabled_focus_mode"), &BaseButton::get_enabled_focus_mode);
 
-	ADD_SIGNAL( MethodInfo("pressed" ) );
-	ADD_SIGNAL( MethodInfo("toggled", PropertyInfo( Variant::BOOL,"pressed") ) );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "disabled"), _SCS("set_disabled"), _SCS("is_disabled"));
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "toggle_mode"), _SCS("set_toggle_mode"), _SCS("is_toggle_mode"));
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "click_on_press"), _SCS("set_click_on_press"), _SCS("get_click_on_press"));
+	ClassDB::bind_method(D_METHOD("set_shortcut", "shortcut"), &BaseButton::set_shortcut);
+	ClassDB::bind_method(D_METHOD("get_shortcut"), &BaseButton::get_shortcut);
 
+	ClassDB::bind_method(D_METHOD("set_button_group", "button_group"), &BaseButton::set_button_group);
+	ClassDB::bind_method(D_METHOD("get_button_group"), &BaseButton::get_button_group);
+
+	BIND_VMETHOD(MethodInfo("_pressed"));
+	BIND_VMETHOD(MethodInfo("_toggled", PropertyInfo(Variant::BOOL, "pressed")));
+
+	ADD_SIGNAL(MethodInfo("pressed"));
+	ADD_SIGNAL(MethodInfo("button_up"));
+	ADD_SIGNAL(MethodInfo("button_down"));
+	ADD_SIGNAL(MethodInfo("toggled", PropertyInfo(Variant::BOOL, "pressed")));
+	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "toggle_mode"), "set_toggle_mode", "is_toggle_mode");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "is_pressed"), "set_pressed", "is_pressed");
+	ADD_PROPERTYNO(PropertyInfo(Variant::INT, "action_mode", PROPERTY_HINT_ENUM, "Button Press,Button Release"), "set_action_mode", "get_action_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "enabled_focus_mode", PROPERTY_HINT_ENUM, "None,Click,All"), "set_enabled_focus_mode", "get_enabled_focus_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, "ShortCut"), "set_shortcut", "get_shortcut");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "group", PROPERTY_HINT_RESOURCE_TYPE, "ButtonGroup"), "set_button_group", "get_button_group");
+
+	BIND_CONSTANT(DRAW_NORMAL);
+	BIND_CONSTANT(DRAW_PRESSED);
+	BIND_CONSTANT(DRAW_HOVER);
+	BIND_CONSTANT(DRAW_DISABLED);
+
+	BIND_CONSTANT(ACTION_MODE_BUTTON_PRESS);
+	BIND_CONSTANT(ACTION_MODE_BUTTON_RELEASE);
 }
 
 BaseButton::BaseButton() {
-	
-	toggle_mode=false;
-	status.pressed=false;
-	status.press_attempt=false;
-	status.hovering=false;
-	status.pressing_inside=false;
+
+	toggle_mode = false;
+	status.pressed = false;
+	status.press_attempt = false;
+	status.hovering = false;
+	status.pressing_inside = false;
 	status.disabled = false;
-	status.click_on_press=false;
-	status.pressing_button=0;
-	set_focus_mode( FOCUS_ALL );
-	group=NULL;
+	status.pressing_button = 0;
+	set_focus_mode(FOCUS_ALL);
+	enabled_focus_mode = FOCUS_ALL;
+	action_mode = ACTION_MODE_BUTTON_RELEASE;
 
-		
+	if (button_group.is_valid()) {
+		button_group->buttons.erase(this);
+	}
 }
 
-BaseButton::~BaseButton()
-{
+BaseButton::~BaseButton() {
 }
 
+void ButtonGroup::get_buttons(List<BaseButton *> *r_buttons) {
 
+	for (Set<BaseButton *>::Element *E = buttons.front(); E; E = E->next()) {
+		r_buttons->push_back(E->get());
+	}
+}
+
+BaseButton *ButtonGroup::get_pressed_button() {
+
+	for (Set<BaseButton *>::Element *E = buttons.front(); E; E = E->next()) {
+		if (E->get()->is_pressed())
+			return E->get();
+	}
+
+	return NULL;
+}
+
+void ButtonGroup::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("get_pressed_button:BaseButton"), &ButtonGroup::get_pressed_button);
+}
+
+ButtonGroup::ButtonGroup() {
+
+	set_local_to_scene(true);
+}

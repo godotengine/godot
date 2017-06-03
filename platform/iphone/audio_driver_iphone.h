@@ -5,7 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,37 +27,36 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "servers/audio/audio_server_sw.h"
+
+#include "servers/audio_server.h"
 
 #include <AudioUnit/AudioUnit.h>
 
-class AudioDriverIphone : public AudioDriverSW {
+class AudioDriverIphone : public AudioDriver {
 
 	AudioComponentInstance audio_unit;
 	bool active;
 	Mutex *mutex;
 
 	int channels;
-	int32_t* samples_in;
-	int	buffer_frames;
+	int32_t *samples_in;
+	int buffer_frames;
 
 	static OSStatus output_callback(void *inRefCon,
-				   AudioUnitRenderActionFlags * ioActionFlags,
-				   const AudioTimeStamp * inTimeStamp,
-				   UInt32 inBusNumber, UInt32 inNumberFrames,
-				   AudioBufferList * ioData);
-
+			AudioUnitRenderActionFlags *ioActionFlags,
+			const AudioTimeStamp *inTimeStamp,
+			UInt32 inBusNumber, UInt32 inNumberFrames,
+			AudioBufferList *ioData);
 
 public:
-
-	const char* get_name() const {
+	const char *get_name() const {
 		return "IPhone";
 	};
 
 	virtual Error init();
 	virtual void start();
 	virtual int get_mix_rate() const;
-	virtual OutputFormat get_output_format() const;
+	virtual SpeakerMode get_speaker_mode() const;
 	virtual void lock();
 	virtual void unlock();
 	virtual void finish();
@@ -64,4 +64,3 @@ public:
 	AudioDriverIphone();
 	~AudioDriverIphone();
 };
-

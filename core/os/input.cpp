@@ -5,7 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,9 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "input.h"
+#include "global_config.h"
 #include "input_map.h"
 #include "os/os.h"
-Input *Input::singleton=NULL;
+Input *Input::singleton = NULL;
 
 Input *Input::get_singleton() {
 
@@ -37,7 +39,7 @@ Input *Input::get_singleton() {
 }
 
 void Input::set_mouse_mode(MouseMode p_mode) {
-	ERR_FAIL_INDEX(p_mode,3);
+	ERR_FAIL_INDEX(p_mode, 4);
 	OS::get_singleton()->set_mouse_mode((OS::MouseMode)p_mode);
 }
 
@@ -48,295 +50,75 @@ Input::MouseMode Input::get_mouse_mode() const {
 
 void Input::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("is_key_pressed","scancode"),&Input::is_key_pressed);
-	ObjectTypeDB::bind_method(_MD("is_mouse_button_pressed","button"),&Input::is_mouse_button_pressed);
-	ObjectTypeDB::bind_method(_MD("is_joy_button_pressed","device","button"),&Input::is_joy_button_pressed);
-	ObjectTypeDB::bind_method(_MD("is_action_pressed","action"),&Input::is_action_pressed);
-	ObjectTypeDB::bind_method(_MD("get_joy_axis","device","axis"),&Input::get_joy_axis);
-	ObjectTypeDB::bind_method(_MD("get_joy_name","device"),&Input::get_joy_name);
-	ObjectTypeDB::bind_method(_MD("get_accelerometer"),&Input::get_accelerometer);
-	ObjectTypeDB::bind_method(_MD("get_mouse_pos"),&Input::get_mouse_pos);
-	ObjectTypeDB::bind_method(_MD("get_mouse_speed"),&Input::get_mouse_speed);
-	ObjectTypeDB::bind_method(_MD("get_mouse_button_mask"),&Input::get_mouse_button_mask);
-	ObjectTypeDB::bind_method(_MD("set_mouse_mode","mode"),&Input::set_mouse_mode);
-	ObjectTypeDB::bind_method(_MD("get_mouse_mode"),&Input::get_mouse_mode);
-	ObjectTypeDB::bind_method(_MD("warp_mouse_pos","to"),&Input::warp_mouse_pos);
+	ClassDB::bind_method(D_METHOD("is_key_pressed", "scancode"), &Input::is_key_pressed);
+	ClassDB::bind_method(D_METHOD("is_mouse_button_pressed", "button"), &Input::is_mouse_button_pressed);
+	ClassDB::bind_method(D_METHOD("is_joy_button_pressed", "device", "button"), &Input::is_joy_button_pressed);
+	ClassDB::bind_method(D_METHOD("is_action_pressed", "action"), &Input::is_action_pressed);
+	ClassDB::bind_method(D_METHOD("is_action_just_pressed", "action"), &Input::is_action_just_pressed);
+	ClassDB::bind_method(D_METHOD("is_action_just_released", "action"), &Input::is_action_just_released);
+	ClassDB::bind_method(D_METHOD("add_joy_mapping", "mapping", "update_existing"), &Input::add_joy_mapping, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("remove_joy_mapping", "guid"), &Input::remove_joy_mapping);
+	ClassDB::bind_method(D_METHOD("is_joy_known", "device"), &Input::is_joy_known);
+	ClassDB::bind_method(D_METHOD("get_joy_axis", "device", "axis"), &Input::get_joy_axis);
+	ClassDB::bind_method(D_METHOD("get_joy_name", "device"), &Input::get_joy_name);
+	ClassDB::bind_method(D_METHOD("get_joy_guid", "device"), &Input::get_joy_guid);
+	ClassDB::bind_method(D_METHOD("get_connected_joypads"), &Input::get_connected_joypads);
+	ClassDB::bind_method(D_METHOD("get_joy_vibration_strength", "device"), &Input::get_joy_vibration_strength);
+	ClassDB::bind_method(D_METHOD("get_joy_vibration_duration", "device"), &Input::get_joy_vibration_duration);
+	ClassDB::bind_method(D_METHOD("get_joy_button_string", "button_index"), &Input::get_joy_button_string);
+	ClassDB::bind_method(D_METHOD("get_joy_button_index_from_string", "button"), &Input::get_joy_button_index_from_string);
+	ClassDB::bind_method(D_METHOD("get_joy_axis_string", "axis_index"), &Input::get_joy_axis_string);
+	ClassDB::bind_method(D_METHOD("get_joy_axis_index_from_string", "axis"), &Input::get_joy_axis_index_from_string);
+	ClassDB::bind_method(D_METHOD("start_joy_vibration", "device", "weak_magnitude", "strong_magnitude", "duration"), &Input::start_joy_vibration, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("stop_joy_vibration", "device"), &Input::stop_joy_vibration);
+	ClassDB::bind_method(D_METHOD("get_gravity"), &Input::get_gravity);
+	ClassDB::bind_method(D_METHOD("get_accelerometer"), &Input::get_accelerometer);
+	ClassDB::bind_method(D_METHOD("get_magnetometer"), &Input::get_magnetometer);
+	ClassDB::bind_method(D_METHOD("get_gyroscope"), &Input::get_gyroscope);
+	//ClassDB::bind_method(D_METHOD("get_mouse_position"),&Input::get_mouse_position); - this is not the function you want
+	ClassDB::bind_method(D_METHOD("get_last_mouse_speed"), &Input::get_last_mouse_speed);
+	ClassDB::bind_method(D_METHOD("get_mouse_button_mask"), &Input::get_mouse_button_mask);
+	ClassDB::bind_method(D_METHOD("set_mouse_mode", "mode"), &Input::set_mouse_mode);
+	ClassDB::bind_method(D_METHOD("get_mouse_mode"), &Input::get_mouse_mode);
+	ClassDB::bind_method(D_METHOD("warp_mouse_pos", "to"), &Input::warp_mouse_pos);
+	ClassDB::bind_method(D_METHOD("action_press", "action"), &Input::action_press);
+	ClassDB::bind_method(D_METHOD("action_release", "action"), &Input::action_release);
+	ClassDB::bind_method(D_METHOD("set_custom_mouse_cursor", "image:Texture", "hotspot"), &Input::set_custom_mouse_cursor, DEFVAL(Vector2()));
+	ClassDB::bind_method(D_METHOD("parse_input_event", "event"), &Input::parse_input_event);
 
-	BIND_CONSTANT( MOUSE_MODE_VISIBLE );
-	BIND_CONSTANT( MOUSE_MODE_HIDDEN );
-	BIND_CONSTANT( MOUSE_MODE_CAPTURED );
+	BIND_CONSTANT(MOUSE_MODE_VISIBLE);
+	BIND_CONSTANT(MOUSE_MODE_HIDDEN);
+	BIND_CONSTANT(MOUSE_MODE_CAPTURED);
+	BIND_CONSTANT(MOUSE_MODE_CONFINED);
 
-	ADD_SIGNAL( MethodInfo("joy_connection_changed", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::BOOL, "connected")) );
+	ADD_SIGNAL(MethodInfo("joy_connection_changed", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::BOOL, "connected")));
+}
+
+void Input::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+#ifdef TOOLS_ENABLED
+
+	String pf = p_function;
+	if (p_idx == 0 && (pf == "is_action_pressed" || pf == "action_press" || pf == "action_release" || pf == "is_action_just_pressed" || pf == "is_action_just_released")) {
+
+		List<PropertyInfo> pinfo;
+		GlobalConfig::get_singleton()->get_property_list(&pinfo);
+
+		for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
+			const PropertyInfo &pi = E->get();
+
+			if (!pi.name.begins_with("input/"))
+				continue;
+
+			String name = pi.name.substr(pi.name.find("/") + 1, pi.name.length());
+			r_options->push_back("\"" + name + "\"");
+		}
+	}
+#endif
 }
 
 Input::Input() {
 
-	singleton=this;
+	singleton = this;
 }
-
 
 //////////////////////////////////////////////////////////
-
-
-void InputDefault::SpeedTrack::update(const Vector2& p_delta_p) {
-
-	uint64_t tick = OS::get_singleton()->get_ticks_usec();
-	uint32_t tdiff = tick-last_tick;
-	float delta_t = tdiff / 1000000.0;
-	last_tick=tick;
-
-
-	accum+=p_delta_p;
-	accum_t+=delta_t;
-
-	if (accum_t>max_ref_frame*10)
-		accum_t=max_ref_frame*10;
-
-	while( accum_t>=min_ref_frame ) {
-
-		float slice_t = min_ref_frame / accum_t;
-		Vector2 slice = accum*slice_t;
-		accum=accum-slice;
-		accum_t-=min_ref_frame;
-
-		speed=(slice/min_ref_frame).linear_interpolate(speed,min_ref_frame/max_ref_frame);
-	}
-
-
-
-}
-
-void InputDefault::SpeedTrack::reset() {
-	last_tick = OS::get_singleton()->get_ticks_usec();
-	speed=Vector2();
-	accum_t=0;
-}
-
-InputDefault::SpeedTrack::SpeedTrack() {
-
-	 min_ref_frame=0.1;
-	 max_ref_frame=0.3;
-	 reset();
-}
-
-bool InputDefault::is_key_pressed(int p_scancode) {
-
-	_THREAD_SAFE_METHOD_
-	return keys_pressed.has(p_scancode);
-}
-
-bool InputDefault::is_mouse_button_pressed(int p_button) {
-
-	_THREAD_SAFE_METHOD_
-	return (mouse_button_mask&(1<<p_button))!=0;
-}
-
-
-static int _combine_device(int p_value,int p_device) {
-
-	return p_value|(p_device<<20);
-}
-
-bool InputDefault::is_joy_button_pressed(int p_device, int p_button) {
-
-	_THREAD_SAFE_METHOD_
-	return joy_buttons_pressed.has(_combine_device(p_button,p_device));
-}
-
-bool InputDefault::is_action_pressed(const StringName& p_action) {
-
-	if (custom_action_press.has(p_action))
-		return true; //simpler
-
-	const List<InputEvent> *alist = InputMap::get_singleton()->get_action_list(p_action);
-	if (!alist)
-		return NULL;
-
-
-	for (const List<InputEvent>::Element *E=alist->front();E;E=E->next()) {
-
-
-		int device=E->get().device;
-
-		switch(E->get().type) {
-
-			case InputEvent::KEY: {
-
-				const InputEventKey &iek=E->get().key;
-				if ((keys_pressed.has(iek.scancode)))
-					return true;
-			} break;
-			case InputEvent::MOUSE_BUTTON: {
-
-				const InputEventMouseButton &iemb=E->get().mouse_button;
-				 if(mouse_button_mask&(1<<iemb.button_index))
-					 return true;
-			} break;
-			case InputEvent::JOYSTICK_BUTTON: {
-
-				const InputEventJoystickButton &iejb=E->get().joy_button;
-				int c = _combine_device(iejb.button_index,device);
-				if (joy_buttons_pressed.has(c))
-					return true;
-			} break;
-		}
-	}
-
-	return false;
-}
-
-float InputDefault::get_joy_axis(int p_device,int p_axis) {
-
-	_THREAD_SAFE_METHOD_
-	int c = _combine_device(p_axis,p_device);
-	if (joy_axis.has(c)) {
-		return joy_axis[c];
-	} else {
-		return 0;
-	}
-}
-
-String InputDefault::get_joy_name(int p_idx) {
-
-	_THREAD_SAFE_METHOD_
-	return joy_names[p_idx];
-};
-
-void InputDefault::joy_connection_changed(int p_idx, bool p_connected, String p_name) {
-
-	_THREAD_SAFE_METHOD_
-	joy_names[p_idx] = p_connected ? p_name : "";
-
-	emit_signal("joy_connection_changed", p_idx, p_connected);
-};
-
-Vector3 InputDefault::get_accelerometer() {
-
-	_THREAD_SAFE_METHOD_
-	return accelerometer;
-}
-
-void InputDefault::parse_input_event(const InputEvent& p_event) {
-
-	_THREAD_SAFE_METHOD_
-	switch(p_event.type) {
-
-		case InputEvent::KEY: {
-
-			if (p_event.key.echo)
-				break;
-			if (p_event.key.scancode==0)
-				break;
-
-		//	print_line(p_event);
-
-			if (p_event.key.pressed)
-				keys_pressed.insert(p_event.key.scancode);
-			else
-				keys_pressed.erase(p_event.key.scancode);
-		} break;
-		case InputEvent::MOUSE_BUTTON: {
-
-			if (p_event.mouse_button.doubleclick)
-				break;
-
-			if (p_event.mouse_button.pressed)
-				mouse_button_mask|=(1<<p_event.mouse_button.button_index);
-			else
-				mouse_button_mask&=~(1<<p_event.mouse_button.button_index);
-		} break;
-		case InputEvent::JOYSTICK_BUTTON: {
-
-			int c = _combine_device(p_event.joy_button.button_index,p_event.device);
-
-			if (p_event.joy_button.pressed)
-				joy_buttons_pressed.insert(c);
-			else
-				joy_buttons_pressed.erase(c);
-		} break;
-		case InputEvent::JOYSTICK_MOTION: {
-			set_joy_axis(p_event.device, p_event.joy_motion.axis, p_event.joy_motion.axis_value);
-		} break;
-
-	}
-
-	if (main_loop)
-		main_loop->input_event(p_event);
-
-}
-
-void InputDefault::set_joy_axis(int p_device,int p_axis,float p_value) {
-
-	_THREAD_SAFE_METHOD_
-	int c = _combine_device(p_axis,p_device);
-	joy_axis[c]=p_value;
-}
-
-void InputDefault::set_accelerometer(const Vector3& p_accel) {
-
-	_THREAD_SAFE_METHOD_
-
-	accelerometer=p_accel;
-
-}
-
-void InputDefault::set_main_loop(MainLoop *p_main_loop) {
-	main_loop=p_main_loop;
-
-}
-
-void InputDefault::set_mouse_pos(const Point2& p_posf) {
-
-	mouse_speed_track.update(p_posf-mouse_pos);
-	mouse_pos=p_posf;
-}
-
-Point2 InputDefault::get_mouse_pos() const {
-
-	return mouse_pos;
-}
-Point2 InputDefault::get_mouse_speed() const {
-
-	return mouse_speed_track.speed;
-}
-
-int InputDefault::get_mouse_button_mask() const {
-
-	return OS::get_singleton()->get_mouse_button_state();
-}
-
-void InputDefault::warp_mouse_pos(const Vector2& p_to) {
-
-	OS::get_singleton()->warp_mouse_pos(p_to);
-}
-
-
-void InputDefault::iteration(float p_step) {
-
-
-}
-
-void InputDefault::action_press(const StringName& p_action) {
-
-	if (custom_action_press.has(p_action)) {
-
-		custom_action_press[p_action]++;
-	} else {
-		custom_action_press[p_action]=1;
-	}
-}
-
-void InputDefault::action_release(const StringName& p_action){
-
-	ERR_FAIL_COND(!custom_action_press.has(p_action));
-	custom_action_press[p_action]--;
-	if (custom_action_press[p_action]==0) {
-		custom_action_press.erase(p_action);
-	}
-}
-
-InputDefault::InputDefault() {
-
-	mouse_button_mask=0;
-	main_loop=NULL;
-}

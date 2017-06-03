@@ -5,7 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +32,13 @@
 #include "stream_peer_winsock.h"
 
 #include <winsock2.h>
+#include <ws2tcpip.h>
+
+#include "drivers/unix/socket_helpers.h"
 
 extern int winsock_refcount;
 
-TCP_Server* TCPServerWinsock::_create() {
+TCP_Server *TCPServerWinsock::_create() {
 
 	return memnew(TCPServerWinsock);
 };
@@ -45,7 +49,7 @@ void TCPServerWinsock::make_default() {
 
 	if (winsock_refcount == 0) {
 		WSADATA data;
-		WSAStartup(MAKEWORD(2,2), &data);
+		WSAStartup(MAKEWORD(2, 2), &data);
 	};
 	++winsock_refcount;
 };
@@ -59,11 +63,19 @@ void TCPServerWinsock::cleanup() {
 	};
 };
 
+Error TCPServerWinsock::listen(uint16_t p_port, const IP_Address p_bind_address) {
 
-Error TCPServerWinsock::listen(uint16_t p_port,const List<String> *p_accepted_hosts) {
+	ERR_FAIL_COND_V(listen_sockfd != -1, ERR_ALREADY_IN_USE);
+	ERR_FAIL_COND_V(!p_bind_address.is_valid() && !p_bind_address.is_wildcard(), ERR_INVALID_PARAMETER);
 
 	int sockfd;
-	sockfd = socket(AF_INET, SOCK_STREAM, 0);
+	sock_type = IP::TYPE_ANY;
+
+	// If the bind address is valid use its type as the socket type
+	if (p_bind_address.is_valid())
+		sock_type = p_bind_address.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
+
+	sockfd = _socket_create(sock_type, SOCK_STREAM, IPPROTO_TCP);
 	ERR_FAIL_COND_V(sockfd == INVALID_SOCKET, FAILED);
 
 	unsigned long par = 1;
@@ -73,21 +85,23 @@ Error TCPServerWinsock::listen(uint16_t p_port,const List<String> *p_accepted_ho
 		return FAILED;
 	};
 
-	struct sockaddr_in my_addr;
-	my_addr.sin_family = AF_INET;         // host byte order
-	my_addr.sin_port = htons(p_port);     // short, network byte order
-	my_addr.sin_addr.s_addr = INADDR_ANY; // automatically fill with my IP TODO: use p_accepted_hosts
-	memset(my_addr.sin_zero, '\0', sizeof my_addr.sin_zero);
+	struct sockaddr_storage my_addr;
+	size_t addr_size = _set_listen_sockaddr(&my_addr, p_port, sock_type, p_bind_address);
 
-	if (bind(sockfd, (struct sockaddr *)&my_addr, sizeof my_addr) != SOCKET_ERROR) {
+	int reuse = 1;
+	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse)) < 0) {
+
+		printf("REUSEADDR failed!");
+	}
+
+	if (bind(sockfd, (struct sockaddr *)&my_addr, addr_size) != SOCKET_ERROR) {
 
 		if (::listen(sockfd, SOMAXCONN) == SOCKET_ERROR) {
 
 			closesocket(sockfd);
 			ERR_FAIL_V(FAILED);
 		};
-	}
-	else {
+	} else {
 		return ERR_ALREADY_IN_USE;
 	};
 
@@ -126,23 +140,23 @@ bool TCPServerWinsock::is_connection_available() const {
 	return false;
 };
 
-
 Ref<StreamPeerTCP> TCPServerWinsock::take_connection() {
 
 	if (!is_connection_available()) {
 		return NULL;
 	};
 
-	struct sockaddr_in their_addr;
+	struct sockaddr_storage their_addr;
 	int sin_size = sizeof(their_addr);
 	int fd = accept(listen_sockfd, (struct sockaddr *)&their_addr, &sin_size);
 	ERR_FAIL_COND_V(fd == INVALID_SOCKET, NULL);
 
 	Ref<StreamPeerWinsock> conn = memnew(StreamPeerWinsock);
 	IP_Address ip;
-	ip.host = (uint32_t)their_addr.sin_addr.s_addr;
+	int port;
+	_set_ip_addr_port(ip, port, &their_addr);
 
-	conn->set_socket(fd, ip, ntohs(their_addr.sin_port));
+	conn->set_socket(fd, ip, port, sock_type);
 
 	return conn;
 };
@@ -154,16 +168,16 @@ void TCPServerWinsock::stop() {
 	};
 
 	listen_sockfd = -1;
+	sock_type = IP::TYPE_NONE;
 };
-
 
 TCPServerWinsock::TCPServerWinsock() {
 
 	listen_sockfd = INVALID_SOCKET;
+	sock_type = IP::TYPE_NONE;
 };
 
 TCPServerWinsock::~TCPServerWinsock() {
 
 	stop();
 };
-

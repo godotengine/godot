@@ -5,7 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,9 +36,9 @@
 
 class GameCenter : public Object {
 
-	OBJ_TYPE(GameCenter, Object);
+	GDCLASS(GameCenter, Object);
 
-	static GameCenter* instance;
+	static GameCenter *instance;
 	static void _bind_methods();
 
 	List<Variant> pending_events;
@@ -45,22 +46,26 @@ class GameCenter : public Object {
 	bool connected;
 
 public:
-
 	Error connect();
 	bool is_connected();
 
 	Error post_score(Variant p_score);
 	Error award_achievement(Variant p_params);
+	void reset_achievements();
+	void request_achievements();
+	void request_achievement_descriptions();
+	Error show_game_center(Variant p_params);
+
+	void game_center_closed();
 
 	int get_pending_event_count();
 	Variant pop_pending_event();
 
-	static GameCenter* get_singleton();
+	static GameCenter *get_singleton();
 
 	GameCenter();
 	~GameCenter();
 };
-
 
 #endif
 

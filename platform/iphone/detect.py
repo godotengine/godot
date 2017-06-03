@@ -3,136 +3,190 @@ import sys
 
 
 def is_active():
-	return True
+    return True
+
 
 def get_name():
-	return "iOS"
+    return "iOS"
+
 
 def can_build():
 
-	import sys
-	if sys.platform == 'darwin':
-		return True
+    import sys
+    import os
+    if sys.platform == 'darwin' or os.environ.has_key("OSXCROSS_IOS"):
+        return True
 
-	return False
+    return False
+
 
 def get_opts():
 
-	return [
-		('IPHONEPLATFORM', 'name of the iphone platform', 'iPhoneOS'),
-		('IPHONEPATH', 'the path to iphone toolchain', '/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain'),
-		('IOS_SDK_VERSION', 'The SDK version', 'iPhoneOS7.0'),
-		('IPHONESDK', 'path to the iphone SDK', '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/${IOS_SDK_VERSION}.sdk/'),
-		('game_center', 'Support for game center', 'yes'),
-		('store_kit', 'Support for in-app store', 'yes'),
-		('ios_gles22_override', 'Force GLES2.0 on iOS', 'yes'),
-		('ios_GLES1_override', 'Force legacy GLES (1.1) on iOS', 'no'),
-		('ios_appirater', 'Enable Appirater', 'no'),
-		('ios_exceptions', 'Use exceptions when compiling on playbook', 'yes'),
-	]
+    return [
+        ('IPHONEPLATFORM', 'name of the iphone platform', 'iPhoneOS'),
+        ('IPHONEPATH', 'the path to iphone toolchain', '/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain'),
+        ('IPHONESDK', 'path to the iphone SDK', '/Applications/Xcode.app/Contents/Developer/Platforms/${IPHONEPLATFORM}.platform/Developer/SDKs/${IPHONEPLATFORM}.sdk/'),
+        ('game_center', 'Support for game center', 'yes'),
+        ('store_kit', 'Support for in-app store', 'yes'),
+        ('icloud', 'Support for iCloud', 'yes'),
+        ('ios_gles22_override', 'Force GLES2.0 on iOS', 'yes'),
+        ('ios_exceptions', 'Enable exceptions', 'no'),
+        ('ios_triple', 'Triple for ios toolchain', ''),
+        ('ios_sim', 'Build simulator binary', 'no'),
+    ]
+
 
 def get_flags():
 
-	return [
-		('lua', 'no'),
-		('tools', 'no'),
-		('nedmalloc', 'no'),
-		('webp', 'yes'),
-		('openssl','builtin'), #use builtin openssl
-	]
-
+    return [
+        ('tools', 'no'),
+    ]
 
 
 def configure(env):
 
-	env.Append(CPPPATH=['#platform/iphone', '#platform/iphone/include'])
+    env.Append(CPPPATH=['#platform/iphone'])
 
-	env['OBJSUFFIX'] = ".iphone.o"
-	env['LIBSUFFIX'] = ".iphone.a"
-	env['PROGSUFFIX'] = ".iphone"
+    env['ENV']['PATH'] = env['IPHONEPATH'] + "/Developer/usr/bin/:" + env['ENV']['PATH']
 
-	env['ENV']['PATH'] = env['IPHONEPATH']+"/Developer/usr/bin/:"+env['ENV']['PATH']
+    env['CC'] = '$IPHONEPATH/usr/bin/${ios_triple}clang'
+    env['CXX'] = '$IPHONEPATH/usr/bin/${ios_triple}clang++'
+    env['AR'] = '$IPHONEPATH/usr/bin/${ios_triple}ar'
+    env['RANLIB'] = '$IPHONEPATH/usr/bin/${ios_triple}ranlib'
 
-#	env['CC'] = '$IPHONEPATH/Developer/usr/bin/gcc'
-#	env['CXX'] = '$IPHONEPATH/Developer/usr/bin/g++'
-	env['CC'] = '$IPHONEPATH/usr/bin/clang'
-	env['CXX'] = '$IPHONEPATH/usr/bin/clang++'
-	env['AR'] = 'ar'
+    import string
+    if (env["ios_sim"] == "yes" or env["arch"] == "x86"):  # i386, simulator
+        env["arch"] = "x86"
+        env["bits"] = "32"
+        env.Append(CCFLAGS=string.split('-arch i386 -fobjc-abi-version=2 -fobjc-legacy-dispatch -fmessage-length=0 -fpascal-strings -fasm-blocks -D__IPHONE_OS_VERSION_MIN_REQUIRED=40100 -isysroot $IPHONESDK -mios-simulator-version-min=4.3 -DCUSTOM_MATRIX_TRANSFORM_H=\\\"build/iphone/matrix4_iphone.h\\\" -DCUSTOM_VECTOR3_TRANSFORM_H=\\\"build/iphone/vector3_iphone.h\\\"'))
+    elif (env["arch"] == "arm" or env["arch"] == "arm32" or env["arch"] == "armv7" or env["bits"] == "32"):  # arm
+        env["arch"] = "arm"
+        env["bits"] = "32"
+        env.Append(CCFLAGS=string.split('-fno-objc-arc -arch armv7 -fmessage-length=0 -fno-strict-aliasing -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits -fpascal-strings -isysroot $IPHONESDK -fvisibility=hidden -mthumb "-DIBOutlet=__attribute__((iboutlet))" "-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))" "-DIBAction=void)__attribute__((ibaction)" -miphoneos-version-min=9.0 -MMD -MT dependencies -isysroot $IPHONESDK'))
+    else:  # armv64
+        env["arch"] = "arm64"
+        env["bits"] = "64"
+        env.Append(CCFLAGS=string.split('-fno-objc-arc -arch arm64 -fmessage-length=0 -fno-strict-aliasing -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits -fpascal-strings -fvisibility=hidden -MMD -MT dependencies -miphoneos-version-min=9.0 -isysroot $IPHONESDK'))
+        env.Append(CPPFLAGS=['-DNEED_LONG_INT'])
+        env.Append(CPPFLAGS=['-DLIBYUV_DISABLE_NEON'])
 
-	import string
-	#env['CCFLAGS'] = string.split('-arch armv7 -Wall  -fno-strict-aliasing -fno-common -D__IPHONE_OS_VERSION_MIN_REQUIRED=20000 -isysroot $IPHONESDK -fvisibility=hidden -mmacosx-version-min=10.5 -DCUSTOM_MATRIX_TRANSFORM_H=\\\"build/iphone/matrix4_iphone.h\\\" -DCUSTOM_VECTOR3_TRANSFORM_H=\\\"build/iphone/vector3_iphone.h\\\" -DNO_THUMB')
-	env['CCFLAGS'] = string.split('-fno-objc-arc -arch armv7 -fmessage-length=0 -fno-strict-aliasing -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits -Wno-trigraphs -fpascal-strings -Wmissing-prototypes -Wreturn-type -Wparentheses -Wswitch -Wno-unused-parameter -Wunused-variable -Wunused-value -Wno-shorten-64-to-32 -isysroot /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk -gdwarf-2 -fvisibility=hidden -Wno-sign-conversion -mthumb "-DIBOutlet=__attribute__((iboutlet))" "-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))" "-DIBAction=void)__attribute__((ibaction)" -miphoneos-version-min=4.3 -MMD -MT dependencies -isysroot $IPHONESDK')
+    if (env["arch"] == "x86"):
+        env['IPHONEPLATFORM'] = 'iPhoneSimulator'
+        env.Append(LINKFLAGS=['-arch', 'i386', '-mios-simulator-version-min=4.3',
+                              '-isysroot', '$IPHONESDK',
+                              #'-mmacosx-version-min=10.6',
+                              '-Xlinker',
+                              '-objc_abi_version',
+                              '-Xlinker', '2',
+                              '-framework', 'AudioToolbox',
+                              '-framework', 'AVFoundation',
+                              '-framework', 'CoreAudio',
+                              '-framework', 'CoreGraphics',
+                              '-framework', 'CoreMedia',
+                              '-framework', 'CoreMotion',
+                              '-framework', 'Foundation',
+                              '-framework', 'Security',
+                              '-framework', 'UIKit',
+                              '-framework', 'MediaPlayer',
+                              '-framework', 'OpenGLES',
+                              '-framework', 'QuartzCore',
+                              '-framework', 'SystemConfiguration',
+                              '-F$IPHONESDK',
+                              ])
+    elif (env["arch"] == "arm64"):
+        env.Append(LINKFLAGS=['-arch', 'arm64', '-Wl,-dead_strip', '-miphoneos-version-min=9.0',
+                                                '-isysroot', '$IPHONESDK',
+                                                #'-stdlib=libc++',
+                                                '-framework', 'Foundation',
+                                                '-framework', 'UIKit',
+                                                '-framework', 'CoreGraphics',
+                                                '-framework', 'OpenGLES',
+                                                '-framework', 'QuartzCore',
+                                                '-framework', 'CoreAudio',
+                                                '-framework', 'AudioToolbox',
+                                                '-framework', 'SystemConfiguration',
+                                                '-framework', 'Security',
+                                                #'-framework', 'AdSupport',
+                                                '-framework', 'MediaPlayer',
+                                                '-framework', 'AVFoundation',
+                                                '-framework', 'CoreMedia',
+                                                '-framework', 'CoreMotion',
+                              ])
+    else:
+        env.Append(LINKFLAGS=['-arch', 'armv7', '-Wl,-dead_strip', '-miphoneos-version-min=9.0',
+                                                '-isysroot', '$IPHONESDK',
+                                                '-framework', 'Foundation',
+                                                '-framework', 'UIKit',
+                                                '-framework', 'CoreGraphics',
+                                                '-framework', 'OpenGLES',
+                                                '-framework', 'QuartzCore',
+                                                '-framework', 'CoreAudio',
+                                                '-framework', 'AudioToolbox',
+                                                '-framework', 'SystemConfiguration',
+                                                '-framework', 'Security',
+                                                #'-framework', 'AdSupport',
+                                                '-framework', 'MediaPlayer',
+                                                '-framework', 'AVFoundation',
+                                                '-framework', 'CoreMedia',
+                                                '-framework', 'CoreMotion',
+                              ])
 
+    if env['game_center'] == 'yes':
+        env.Append(CPPFLAGS=['-fblocks', '-DGAME_CENTER_ENABLED'])
+        env.Append(LINKFLAGS=['-framework', 'GameKit'])
 
-#/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/clang++ fno-objc-arc -arch armv7 -fmessage-length=0 -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits                       -Wno-trigraphs -fpascal-strings     -Wmissing-prototypes -Wreturn-type -Wparentheses -Wswitch -Wno-unused-parameter -Wunused-variable -Wunused-value -Wno-shorten-64-to-32 -isysroot /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk -gdwarf-2 -fvisibility=hidden -Wno-sign-conversion -mthumb "-DIBOutlet=__attribute__((iboutlet))" "-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))" "-DIBAction=void)__attribute__((ibaction)" -miphoneos-version-min=4.3                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         -MMD -MT dependencies -v -Os -ffast-math -DSTOREKIT_ENABLED -DIPHONE_ENABLED -DUNIX_ENABLED -DGLES2_ENABLED -DNO_THREADS -DMODULE_GRIDMAP_ENABLED -DMUSEPACK_ENABLED -DOLD_SCENE_FORMAT_ENABLED -DSQUIRREL_ENABLED -DVORBIS_ENABLED -DTHEORA_ENABLED -DPNG_ENABLED -DDDS_ENABLED -DPVR_ENABLED -DJPG_ENABLED -DSPEEX_ENABLED -DTOOLS_ENABLED -DGDSCRIPT_ENABLED -DMINIZIP_ENABLED -DXML_ENABLED -Icore -Icore/math -Itools -Idrivers -I. -Iplatform/iphone -Iplatform/iphone/include -Iplatform/iphone/scoreloop/SDKs -I/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk/System/Library/Frameworks/OpenGLES.framework/Headers -Iscript/squirrel/src -Iscript/vorbis script/gdscript/gd_script.cpp
-#/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/clang -x objective-c -arch armv7 -fmessage-length=0 -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits -std=gnu99 -fobjc-arc -Wno-trigraphs -fpascal-strings -Os -Wmissing-prototypes -Wreturn-type -Wparentheses -Wswitch -Wno-unused-parameter -Wunused-variable -Wunused-value -Wno-shorten-64-to-32 -isysroot /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk -gdwarf-2 -fvisibility=hidden -Wno-sign-conversion -mthumb "-DIBOutlet=__attribute__((iboutlet))" "-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))" "-DIBAction=void)__attribute__((ibaction)" -miphoneos-version-min=4.3 -iquote /Users/red/test2/build/test2.build/Release-iphoneos/test2.build/test2-generated-files.hmap -I/Users/red/test2/build/test2.build/Release-iphoneos/test2.build/test2-own-target-headers.hmap -I/Users/red/test2/build/test2.build/Release-iphoneos/test2.build/test2-all-target-headers.hmap -iquote /Users/red/test2/build/test2.build/Release-iphoneos/test2.build/test2-project-headers.hmap -I/Users/red/test2/build/Release-iphoneos/include -I/Users/red/test2/build/test2.build/Release-iphoneos/test2.build/DerivedSources/armv7 -I/Users/red/test2/build/test2.build/Release-iphoneos/test2.build/DerivedSources -F/Users/red/test2/build/Release-iphoneos -DNS_BLOCK_ASSERTIONS=1 -include /var/folders/LX/LXYXHTeSHSqbkhuPJRIsuE+++TI/-Caches-/com.apple.Xcode.501/SharedPrecompiledHeaders/test2-Prefix-dvdhnltoisfpmyalexovdrmfyeky/test2-Prefix.pch -MMD -MT dependencies -MF /Users/red/test2/build/test2.build/Release-iphoneos/test2.build/Objects-normal/armv7/main.d -c /Users/red/test2/test2/main.m -o /Users/red/test2/build/test2.build/Release-iphoneos/test2.build/Objects-normal/armv7/main.o
+    if env['store_kit'] == 'yes':
+        env.Append(CPPFLAGS=['-DSTOREKIT_ENABLED'])
+        env.Append(LINKFLAGS=['-framework', 'StoreKit'])
 
+    if env['icloud'] == 'yes':
+        env.Append(CPPFLAGS=['-DICLOUD_ENABLED'])
 
+    env.Append(CPPPATH=['$IPHONESDK/usr/include', '$IPHONESDK/System/Library/Frameworks/OpenGLES.framework/Headers', '$IPHONESDK/System/Library/Frameworks/AudioUnit.framework/Headers'])
 
+    if (env["target"] == "release"):
 
+        env.Append(CCFLAGS=['-O3', '-DNS_BLOCK_ASSERTIONS=1', '-gdwarf-2'])  # removed -ffast-math
+        env.Append(LINKFLAGS=['-O3'])
 
-	env.Append(LINKFLAGS=['-arch', 'armv7', '-Wl,-dead_strip', '-miphoneos-version-min=4.3',
-							'-isysroot', '$IPHONESDK',
-							#'-mmacosx-version-min=10.5',
-							'-framework', 'Foundation',
-							'-framework', 'UIKit',
-							'-framework', 'CoreGraphics',
-							'-framework', 'OpenGLES',
-							'-framework', 'QuartzCore',
-							'-framework', 'CoreAudio',
-							'-framework', 'AudioToolbox',
-							'-framework', 'SystemConfiguration',
-							'-framework', 'Security',
-							#'-framework', 'AdSupport',
-							'-framework', 'MediaPlayer',
-							])
+    elif env["target"] == "release_debug":
+        env.Append(CCFLAGS=['-Os', '-DNS_BLOCK_ASSERTIONS=1', '-DDEBUG_ENABLED'])
+        env.Append(LINKFLAGS=['-Os'])
+        env.Append(CPPFLAGS=['-DDEBUG_MEMORY_ENABLED'])
 
-	if env['game_center'] == 'yes':
-		env.Append(CPPFLAGS=['-fblocks', '-DGAME_CENTER_ENABLED'])
-		env.Append(LINKFLAGS=['-framework', 'GameKit'])
+    elif (env["target"] == "debug"):
 
-	if env['store_kit'] == 'yes':
-		env.Append(CPPFLAGS=['-DSTOREKIT_ENABLED'])
-		env.Append(LINKFLAGS=['-framework', 'StoreKit'])
+        env.Append(CCFLAGS=['-D_DEBUG', '-DDEBUG=1', '-gdwarf-2', '-O0', '-DDEBUG_ENABLED'])
+        env.Append(CPPFLAGS=['-DDEBUG_MEMORY_ENABLED'])
 
-	env.Append(CPPPATH = ['$IPHONESDK/usr/include', '$IPHONESDK/System/Library/Frameworks/OpenGLES.framework/Headers', '$IPHONESDK/System/Library/Frameworks/AudioUnit.framework/Headers'])
+    elif (env["target"] == "profile"):
 
-	if (env["target"]=="release"):
+        env.Append(CCFLAGS=['-g', '-pg', '-Os'])
+        env.Append(LINKFLAGS=['-pg'])
 
-		env.Append(CCFLAGS=['-Os', '-ffast-math', '-DNS_BLOCK_ASSERTIONS=1','-Wall'])
-		env.Append(LINKFLAGS=['-Os', '-ffast-math'])
-		env['OBJSUFFIX'] = "_opt"+env['OBJSUFFIX']
-		env['LIBSUFFIX'] = "_opt"+env['LIBSUFFIX']
+    if (env["ios_sim"] == "yes"):  # TODO: Check if needed?
+        env['ENV']['MACOSX_DEPLOYMENT_TARGET'] = '10.6'
+    env['ENV']['CODESIGN_ALLOCATE'] = '/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/codesign_allocate'
+    env.Append(CPPFLAGS=['-DIPHONE_ENABLED', '-DUNIX_ENABLED', '-DGLES2_ENABLED', '-DMPC_FIXED_POINT'])
 
-	elif env["target"] == "release_debug":
-		env.Append(CCFLAGS=['-Os', '-ffast-math', '-DNS_BLOCK_ASSERTIONS=1','-Wall','-DDEBUG_ENABLED'])
-		env.Append(LINKFLAGS=['-Os', '-ffast-math'])
-		env.Append(CPPFLAGS=['-DDEBUG_MEMORY_ENABLED'])
-		env['OBJSUFFIX'] = "_opt"+env['OBJSUFFIX']
-		env['LIBSUFFIX'] = "_opt"+env['LIBSUFFIX']
+    # TODO: Move that to opus module's config
+    if("module_opus_enabled" in env and env["module_opus_enabled"] != "no"):
+        env.opus_fixed_point = "yes"
+        if env["arch"] == "x86":
+            pass
+        elif(env["arch"] == "arm64"):
+            env.Append(CFLAGS=["-DOPUS_ARM64_OPT"])
+        else:
+            env.Append(CFLAGS=["-DOPUS_ARM_OPT"])
 
-	elif (env["target"]=="debug"):
+    if env['ios_exceptions'] == 'yes':
+        env.Append(CPPFLAGS=['-fexceptions'])
+    else:
+        env.Append(CPPFLAGS=['-fno-exceptions'])
+    # env['neon_enabled']=True
+    env['S_compiler'] = '$IPHONEPATH/Developer/usr/bin/gcc'
 
-		env.Append(CCFLAGS=['-D_DEBUG', '-DDEBUG=1', '-gdwarf-2', '-Wall', '-O0', '-DDEBUG_ENABLED'])
-		env.Append(CPPFLAGS=['-DDEBUG_MEMORY_ENABLED'])
-
-	elif (env["target"]=="profile"):
-
-		env.Append(CCFLAGS=['-g','-pg', '-Os', '-ffast-math'])
-		env.Append(LINKFLAGS=['-pg'])
-
-
-	env['ENV']['CODESIGN_ALLOCATE'] = '/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/codesign_allocate'
-	env.Append(CPPFLAGS=['-DIPHONE_ENABLED', '-DUNIX_ENABLED', '-DGLES2_ENABLED', '-DGLES1_ENABLED', '-DMPC_FIXED_POINT'])
-	if env['ios_exceptions'] == 'yes':
-		env.Append(CPPFLAGS=['-fexceptions'])
-	else:
-		env.Append(CPPFLAGS=['-fno-exceptions'])
-	#env['neon_enabled']=True
-	env['S_compiler'] = '$IPHONEPATH/Developer/usr/bin/gcc'
-
-	if env['lua'] == "yes":
-		env.Append(CCFLAGS=['-DLUA_USE_FLOAT'])
-
-
-# /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x objective-c-header -arch armv7s -fmessage-length=0 -std=gnu99 -fobjc-arc -Wno-trigraphs -fpascal-strings -Os -Wno-missing-field-initializers -Wno-missing-prototypes -Wreturn-type -Wno-implicit-atomic-properties -Wno-receiver-is-weak -Wduplicate-method-match -Wformat -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wunused-variable -Wunused-value -Wempty-body -Wuninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-shorten-64-to-32 -Wpointer-sign -Wno-newline-eof -Wno-selector -Wno-strict-selector-match -Wno-undeclared-selector -Wno-deprecated-implementations -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS6.0.sdk -Wprotocol -Wdeprecated-declarations -g -fvisibility=hidden -Wno-sign-conversion "-DIBOutlet=__attribute__((iboutlet))" "-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))" "-DIBAction=void)__attribute__((ibaction)" -miphoneos-version-min=4.3 -iquote /Users/lucasgondolo/test/build/test.build/Release-iphoneos/test.build/test-generated-files.hmap -I/Users/lucasgondolo/test/build/test.build/Release-iphoneos/test.build/test-own-target-headers.hmap -I/Users/lucasgondolo/test/build/test.build/Release-iphoneos/test.build/test-all-target-headers.hmap -iquote /Users/lucasgondolo/test/build/test.build/Release-iphoneos/test.build/test-project-headers.hmap -I/Users/lucasgondolo/test/build/Release-iphoneos/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -I/Users/lucasgondolo/test/build/test.build/Release-iphoneos/test.build/DerivedSources/armv7s -I/Users/lucasgondolo/test/build/test.build/Release-iphoneos/test.build/DerivedSources -F/Users/lucasgondolo/test/build/Release-iphoneos -DNS_BLOCK_ASSERTIONS=1 --serialize-diagnostics /var/folders/9r/_65jj9457bgb4n4nxcsm0xl80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/test-Prefix-esrzoamhgruxcxbhemvvlrjmmvoh/test-Prefix.pch.dia -c /Users/lucasgondolo/test/test/test-Prefix.pch -o /var/folders/9r/_65jj9457bgb4n4nxcsm0xl80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/test-Prefix-esrzoamhgruxcxbhemvvlrjmmvoh/test-Prefix.pch.pth -MMD -MT dependencies -MF /var/folders/9r/_65jj9457bgb4n4nxcsm0xl80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/test-Prefix-esrzoamhgruxcxbhemvvlrjmmvoh/test-Prefix.pch.d
+    import methods
+    env.Append(BUILDERS={'GLSL120': env.Builder(action=methods.build_legacygl_headers, suffix='glsl.h', src_suffix='.glsl')})
+    env.Append(BUILDERS={'GLSL': env.Builder(action=methods.build_glsl_headers, suffix='glsl.h', src_suffix='.glsl')})
+    env.Append(BUILDERS={'GLSL120GLES': env.Builder(action=methods.build_gles2_headers, suffix='glsl.h', src_suffix='.glsl')})

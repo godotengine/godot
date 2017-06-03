@@ -5,7 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +31,8 @@
 
 #if 0
 
-#include "proximity_area.h"
 #include "camera.h"
+#include "proximity_area.h"
 #include "scene/scene_string_names.h"
 
 void SpatialIndexer::add_camera(Camera* p_camera) {
@@ -112,7 +113,7 @@ void SpatialIndexer::_update_pairs() {
 void SpatialIndexer::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method(_MD("_update_pairs"),&SpatialIndexer::_update_pairs);
+	ClassDB::bind_method(D_METHOD("_update_pairs"),&SpatialIndexer::_update_pairs);
 }
 
 

@@ -1,31 +1,66 @@
-![GODOT](/logo.png)
+[![Godot Engine logo](/logo.png)](https://godotengine.org)
 
-### The Engine
+## Godot Engine
 
-Godot is a fully featured, open source, MIT licensed, game engine. It focuses on having great tools, and a visual oriented workflow that can export to PC, Mobile and Web platforms with no hassle.
-The editor, language and APIs are feature rich, yet simple to learn, allowing you to become productive in a matter of hours.
+Homepage: https://godotengine.org
 
-### About
+#### 2D and 3D cross-platform game engine
 
-Godot has been developed by Juan Linietsky and Ariel Manzur for several years, and was born as an in-house engine, used to publish several work-for-hire titles.
-Development is sponsored by OKAM Studio (http://www.okamstudio.com).
+Godot Engine is a feature-packed, cross-platform game engine to create 2D and
+3D games from a unified interface. It provides a comprehensive set of common
+tools, so that users can focus on making games without having to reinvent the
+wheel. Games can be exported in one click to a number of platforms, including
+the major desktop platforms (Linux, Mac OSX, Windows) as well as mobile
+(Android, iOS) and web-based (HTML5) platforms.
 
-### Godot is BETA. Collaborate!!
+#### Free, open source and community-driven
 
-Having been developed as in-house means that the user experience may still not be ideal for everyone. The features needed to make a great game are there, but we really need your help to fix all the rough edges and improve usability (via feedback and/or code contributions).
-We know we are close to having an awesome, open source, game engine with nothing to envy from the best commercial offerings, but we can't do this alone. This is why Godot is now open source, so everyone can help us reach this goal.
+Godot is completely free and open source under the very permissive MIT license.
+No strings attached, no royalties, nothing. The users' games are theirs, down
+to the last line of engine code. Godot's development is fully independent and
+community-driven, empowering users to help shape their engine to match their
+expectations. It is supported by the Software Freedom Conservancy
+not-for-profit.
 
-### Documentation
+Before being open sourced in February 2014, Godot had been developed by Juan
+Linietsky and Ariel Manzur (both still maintaining the project) for several
+years as an in-house engine, used to publish several work-for-hire titles.
 
-Documentation has been moved to the [GitHub Wiki](https://github.com/okamstudio/godot/wiki).
+### Getting the engine
 
-### Binary Downloads, Community, etc.
+#### Binary downloads
 
-Binary downloads, community, etc. can be found in Godot homepage:
+Official binaries for the Godot editor and the export templates can be found
+[on the homepage](https://godotengine.org/download).
 
-http://www.godotengine.org
+#### Compiling from source
 
-### Compiling from Source
+[See the official docs](http://docs.godotengine.org/en/latest/development/compiling/)
+for compilation instructions for every supported platform.
 
-Compilation instructions for every platform can be found in the Wiki:
-https://github.com/okamstudio/godot/wiki/advanced
+### Community
+
+Godot is not only an engine but an ever-growing community of users and engine
+developers. The main community channels are listed [on the homepage](https://godotengine.org/community).
+
+To get in touch with the developers, the best way is to join the
+[#godotengine IRC channel](https://webchat.freenode.net/?channels=godotengine)
+on Freenode.
+
+### Documentation and demos
+
+The official documentation is hosted on [ReadTheDocs](http://docs.godotengine.org).
+It is maintained by the Godot community in its own [GitHub repository](https://github.com/godotengine/godot-docs).
+
+The [class reference](http://docs.godotengine.org/en/latest/classes/)
+is also accessible from within the engine.
+
+The official demos are maintained in their own [GitHub repository](https://github.com/godotengine/godot-demo-projects)
+as well.
+
+There are also a number of other learning resources provided by the community,
+such as text and video tutorials, demos, etc. Consult the [community channels](https://godotengine.org/community)
+for more info.
+
+[![Build Status](https://travis-ci.org/godotengine/godot.svg?branch=master)](https://travis-ci.org/godotengine/godot)
+[![Code Triagers Badge](http://www.codetriage.com/godotengine/godot/badges/users.svg)](http://www.codetriage.com/godotengine/godot)
