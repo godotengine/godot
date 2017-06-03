@@ -286,16 +286,16 @@ void SplitContainer::_gui_input(const Ref<InputEvent> &p_event) {
 
 				if (vertical) {
 
-					if (mb->get_pos().y > middle_sep && mb->get_pos().y < middle_sep + sep) {
+					if (mb->get_position().y > middle_sep && mb->get_position().y < middle_sep + sep) {
 						dragging = true;
-						drag_from = mb->get_pos().y;
+						drag_from = mb->get_position().y;
 						drag_ofs = expand_ofs;
 					}
 				} else {
 
-					if (mb->get_pos().x > middle_sep && mb->get_pos().x < middle_sep + sep) {
+					if (mb->get_position().x > middle_sep && mb->get_position().x < middle_sep + sep) {
 						dragging = true;
-						drag_from = mb->get_pos().x;
+						drag_from = mb->get_position().x;
 						drag_ofs = expand_ofs;
 					}
 				}
@@ -312,7 +312,7 @@ void SplitContainer::_gui_input(const Ref<InputEvent> &p_event) {
 
 		if (dragging) {
 
-			expand_ofs = drag_ofs + ((vertical ? mm->get_pos().y : mm->get_pos().x) - drag_from);
+			expand_ofs = drag_ofs + ((vertical ? mm->get_position().y : mm->get_position().x) - drag_from);
 			queue_sort();
 			emit_signal("dragged", get_split_offset());
 		}

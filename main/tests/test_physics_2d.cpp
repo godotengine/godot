@@ -216,7 +216,7 @@ protected:
 
 			if (mb->is_pressed()) {
 
-				Point2 p(mb->get_pos().x, mb->get_pos().y);
+				Point2 p(mb->get_position().x, mb->get_position().y);
 
 				if (mb->get_button_index() == 1) {
 					ray_to = p;
@@ -232,7 +232,7 @@ protected:
 
 		if (mm.is_valid()) {
 
-			Point2 p = mm->get_pos();
+			Point2 p = mm->get_position();
 
 			if (mm->get_button_mask() & BUTTON_MASK_LEFT) {
 				ray_to = p;

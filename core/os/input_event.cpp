@@ -324,20 +324,20 @@ int InputEventMouse::get_button_mask() const {
 	return button_mask;
 }
 
-void InputEventMouse::set_pos(const Vector2 &p_pos) {
+void InputEventMouse::set_position(const Vector2 &p_pos) {
 
 	pos = p_pos;
 }
-Vector2 InputEventMouse::get_pos() const {
+Vector2 InputEventMouse::get_position() const {
 
 	return pos;
 }
 
-void InputEventMouse::set_global_pos(const Vector2 &p_global_pos) {
+void InputEventMouse::set_global_position(const Vector2 &p_global_pos) {
 
 	global_pos = p_global_pos;
 }
-Vector2 InputEventMouse::get_global_pos() const {
+Vector2 InputEventMouse::get_global_position() const {
 
 	return global_pos;
 }
@@ -347,15 +347,15 @@ void InputEventMouse::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_button_mask", "button_mask"), &InputEventMouse::set_button_mask);
 	ClassDB::bind_method(D_METHOD("get_button_mask"), &InputEventMouse::get_button_mask);
 
-	ClassDB::bind_method(D_METHOD("set_pos", "pos"), &InputEventMouse::set_pos);
-	ClassDB::bind_method(D_METHOD("get_pos"), &InputEventMouse::get_pos);
+	ClassDB::bind_method(D_METHOD("set_position", "position"), &InputEventMouse::set_position);
+	ClassDB::bind_method(D_METHOD("get_position"), &InputEventMouse::get_position);
 
-	ClassDB::bind_method(D_METHOD("set_global_pos", "global_pos"), &InputEventMouse::set_global_pos);
-	ClassDB::bind_method(D_METHOD("get_global_pos"), &InputEventMouse::get_global_pos);
+	ClassDB::bind_method(D_METHOD("set_global_position", "global_position"), &InputEventMouse::set_global_position);
+	ClassDB::bind_method(D_METHOD("get_global_position"), &InputEventMouse::get_global_position);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_mask"), "set_button_mask", "get_button_mask");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "pos"), "set_pos", "get_pos");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "global_pos"), "set_global_pos", "get_global_pos");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position"), "set_position", "get_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "global_position"), "set_global_position", "get_global_position");
 }
 
 InputEventMouse::InputEventMouse() {
@@ -404,8 +404,8 @@ bool InputEventMouseButton::is_doubleclick() const {
 
 Ref<InputEvent> InputEventMouseButton::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
 
-	Vector2 g = p_xform.xform(get_global_pos());
-	Vector2 l = p_xform.xform(get_pos() + p_local_ofs);
+	Vector2 g = p_xform.xform(get_global_position());
+	Vector2 l = p_xform.xform(get_position() + p_local_ofs);
 
 	Ref<InputEventMouseButton> mb;
 	mb.instance();
@@ -418,8 +418,8 @@ Ref<InputEvent> InputEventMouseButton::xformed_by(const Transform2D &p_xform, co
 	mb->set_control(get_control());
 	mb->set_metakey(get_metakey());
 
-	mb->set_pos(l);
-	mb->set_global_pos(g);
+	mb->set_position(l);
+	mb->set_global_position(g);
 
 	mb->set_button_mask(get_button_mask());
 	mb->set_pressed(pressed);
@@ -489,8 +489,8 @@ Vector2 InputEventMouseMotion::get_speed() const {
 
 Ref<InputEvent> InputEventMouseMotion::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
 
-	Vector2 g = p_xform.xform(get_global_pos());
-	Vector2 l = p_xform.xform(get_pos() + p_local_ofs);
+	Vector2 g = p_xform.xform(get_global_position());
+	Vector2 l = p_xform.xform(get_position() + p_local_ofs);
 	Vector2 r = p_xform.basis_xform(get_relative());
 	Vector2 s = p_xform.basis_xform(get_speed());
 
@@ -505,8 +505,8 @@ Ref<InputEvent> InputEventMouseMotion::xformed_by(const Transform2D &p_xform, co
 	mm->set_control(get_control());
 	mm->set_metakey(get_metakey());
 
-	mm->set_pos(l);
-	mm->set_global_pos(g);
+	mm->set_position(l);
+	mm->set_global_position(g);
 
 	mm->set_button_mask(get_button_mask());
 	mm->set_relative(r);
@@ -650,11 +650,11 @@ int InputEventScreenTouch::get_index() const {
 	return index;
 }
 
-void InputEventScreenTouch::set_pos(const Vector2 &p_pos) {
+void InputEventScreenTouch::set_position(const Vector2 &p_pos) {
 
 	pos = p_pos;
 }
-Vector2 InputEventScreenTouch::get_pos() const {
+Vector2 InputEventScreenTouch::get_position() const {
 
 	return pos;
 }
@@ -675,7 +675,7 @@ Ref<InputEvent> InputEventScreenTouch::xformed_by(const Transform2D &p_xform, co
 	st->set_id(get_id());
 	st->set_device(get_device());
 	st->set_index(index);
-	st->set_pos(p_xform.xform(pos + p_local_ofs));
+	st->set_position(p_xform.xform(pos + p_local_ofs));
 	st->set_pressed(pressed);
 
 	return st;
@@ -686,14 +686,14 @@ void InputEventScreenTouch::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_index", "index"), &InputEventScreenTouch::set_index);
 	ClassDB::bind_method(D_METHOD("get_index"), &InputEventScreenTouch::get_index);
 
-	ClassDB::bind_method(D_METHOD("set_pos", "pos"), &InputEventScreenTouch::set_pos);
-	ClassDB::bind_method(D_METHOD("get_pos"), &InputEventScreenTouch::get_pos);
+	ClassDB::bind_method(D_METHOD("set_position", "pos"), &InputEventScreenTouch::set_position);
+	ClassDB::bind_method(D_METHOD("get_position"), &InputEventScreenTouch::get_position);
 
 	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &InputEventScreenTouch::set_pressed);
 	//ClassDB::bind_method(D_METHOD("is_pressed"),&InputEventScreenTouch::is_pressed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "index"), "set_index", "get_index");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "pos"), "set_pos", "get_pos");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position"), "set_position", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
 }
 
@@ -715,11 +715,11 @@ int InputEventScreenDrag::get_index() const {
 	return index;
 }
 
-void InputEventScreenDrag::set_pos(const Vector2 &p_pos) {
+void InputEventScreenDrag::set_position(const Vector2 &p_pos) {
 
 	pos = p_pos;
 }
-Vector2 InputEventScreenDrag::get_pos() const {
+Vector2 InputEventScreenDrag::get_position() const {
 
 	return pos;
 }
@@ -752,7 +752,7 @@ Ref<InputEvent> InputEventScreenDrag::xformed_by(const Transform2D &p_xform, con
 	sd->set_device(get_device());
 
 	sd->set_index(index);
-	sd->set_pos(p_xform.xform(pos + p_local_ofs));
+	sd->set_position(p_xform.xform(pos + p_local_ofs));
 	sd->set_relative(p_xform.basis_xform(relative));
 	sd->set_speed(p_xform.basis_xform(speed));
 
@@ -764,8 +764,8 @@ void InputEventScreenDrag::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_index", "index"), &InputEventScreenDrag::set_index);
 	ClassDB::bind_method(D_METHOD("get_index"), &InputEventScreenDrag::get_index);
 
-	ClassDB::bind_method(D_METHOD("set_pos", "pos"), &InputEventScreenDrag::set_pos);
-	ClassDB::bind_method(D_METHOD("get_pos"), &InputEventScreenDrag::get_pos);
+	ClassDB::bind_method(D_METHOD("set_position", "position"), &InputEventScreenDrag::set_position);
+	ClassDB::bind_method(D_METHOD("get_position"), &InputEventScreenDrag::get_position);
 
 	ClassDB::bind_method(D_METHOD("set_relative", "relative"), &InputEventScreenDrag::set_relative);
 	ClassDB::bind_method(D_METHOD("get_relative"), &InputEventScreenDrag::get_relative);
@@ -774,7 +774,7 @@ void InputEventScreenDrag::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_speed"), &InputEventScreenDrag::get_speed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "index"), "set_index", "get_index");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "pos"), "set_pos", "get_pos");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position"), "set_position", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "relative"), "set_relative", "get_relative");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "speed"), "set_speed", "get_speed");
 }

@@ -322,7 +322,7 @@ bool CollisionShape2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 		Transform2D gt = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
-		Point2 gpoint(mb->get_pos().x, mb->get_pos().y);
+		Point2 gpoint(mb->get_position().x, mb->get_position().y);
 
 		if (mb->get_button_index() == BUTTON_LEFT) {
 			if (mb->is_pressed()) {
@@ -368,7 +368,7 @@ bool CollisionShape2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 			return false;
 		}
 
-		Point2 gpoint = mm->get_pos();
+		Point2 gpoint = mm->get_position();
 		Point2 cpoint = canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint);
 		cpoint = canvas_item_editor->snap_point(cpoint);
 		cpoint = node->get_global_transform().affine_inverse().xform(cpoint);

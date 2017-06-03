@@ -962,7 +962,7 @@ bool CanvasItemEditor::get_remove_list(List<Node *> *p_list) {
 
 void CanvasItemEditor::_list_select(const Ref<InputEventMouseButton> &b) {
 
-	Point2 click = b->get_pos();
+	Point2 click = b->get_position();
 
 	Node *scene = editor->get_edited_scene();
 	if (!scene)
@@ -1016,7 +1016,7 @@ void CanvasItemEditor::_list_select(const Ref<InputEventMouseButton> &b) {
 
 		additive_selection = b->get_shift();
 
-		selection_menu->set_global_position(b->get_global_pos());
+		selection_menu->set_global_position(b->get_global_position());
 		selection_menu->popup();
 		selection_menu->call_deferred("grab_click_focus");
 		selection_menu->set_invalidate_click_until_motion();
@@ -1053,7 +1053,7 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 			float prev_zoom = zoom;
 			zoom = zoom * (1 - (0.05 * b->get_factor()));
 			{
-				Point2 ofs = b->get_pos();
+				Point2 ofs = b->get_position();
 				ofs = ofs / prev_zoom - ofs / zoom;
 				h_scroll->set_value(h_scroll->get_value() + ofs.x);
 				v_scroll->set_value(v_scroll->get_value() + ofs.y);
@@ -1071,7 +1071,7 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 			float prev_zoom = zoom;
 			zoom = zoom * ((0.95 + (0.05 * b->get_factor())) / 0.95);
 			{
-				Point2 ofs = b->get_pos();
+				Point2 ofs = b->get_position();
 				ofs = ofs / prev_zoom - ofs / zoom;
 				h_scroll->set_value(h_scroll->get_value() + ofs.x);
 				v_scroll->set_value(v_scroll->get_value() + ofs.y);
@@ -1156,7 +1156,7 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 		if (b->get_button_index() == BUTTON_LEFT && tool == TOOL_EDIT_PIVOT) {
 			if (b->is_pressed()) {
 
-				Point2 mouse_pos = b->get_pos();
+				Point2 mouse_pos = b->get_position();
 				mouse_pos = transform.affine_inverse().xform(mouse_pos);
 				mouse_pos = snap_point(mouse_pos);
 				_edit_set_pivot(mouse_pos);
@@ -1274,8 +1274,8 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 					E->get().to
 				};
 
-				Vector2 p = Geometry::get_closest_point_to_segment_2d(b->get_pos(), s);
-				float d = p.distance_to(b->get_pos());
+				Vector2 p = Geometry::get_closest_point_to_segment_2d(b->get_position(), s);
+				float d = p.distance_to(b->get_position());
 				if (d < bone_width && d < closest_dist) {
 					Cbone = E;
 					closest_dist = d;
@@ -1342,7 +1342,7 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 			CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
 			ERR_FAIL_COND(!se);
 
-			Point2 click = b->get_pos();
+			Point2 click = b->get_position();
 
 			if ((b->get_control() && tool == TOOL_SELECT) || tool == TOOL_ROTATE) {
 
@@ -1388,7 +1388,7 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 
 		//multi canvas_item edit
 
-		Point2 click = b->get_pos();
+		Point2 click = b->get_position();
 
 		if ((b->get_alt() || tool == TOOL_MOVE) && get_item_count()) {
 			_prepare_drag(click);
@@ -1451,7 +1451,7 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 
 		if (box_selecting) {
 
-			box_selecting_to = transform.affine_inverse().xform(m->get_pos());
+			box_selecting_to = transform.affine_inverse().xform(m->get_position());
 			viewport->update();
 			return;
 		}
@@ -1497,7 +1497,7 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			Vector2 dfrom = drag_from;
-			Vector2 dto = transform.affine_inverse().xform(m->get_pos());
+			Vector2 dto = transform.affine_inverse().xform(m->get_position());
 			if (canvas_item->has_meta("_edit_lock_"))
 				continue;
 

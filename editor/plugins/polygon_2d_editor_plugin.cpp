@@ -212,7 +212,7 @@ bool Polygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 		Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
-		Vector2 gpoint = mb->get_pos();
+		Vector2 gpoint = mb->get_position();
 		Vector2 cpoint = canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint);
 		cpoint = canvas_item_editor->snap_point(cpoint);
 		cpoint = node->get_global_transform().affine_inverse().xform(cpoint);
@@ -397,7 +397,7 @@ bool Polygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 		if (edited_point != -1 && (wip_active || mm->get_button_mask() & BUTTON_MASK_LEFT)) {
 
-			Vector2 gpoint = mm->get_pos();
+			Vector2 gpoint = mm->get_position();
 			Vector2 cpoint = canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint);
 			cpoint = canvas_item_editor->snap_point(cpoint);
 			edited_point_pos = node->get_global_transform().affine_inverse().xform(cpoint);
@@ -465,7 +465,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 			if (mb->is_pressed()) {
 
-				uv_drag_from = Vector2(mb->get_pos().x, mb->get_pos().y);
+				uv_drag_from = Vector2(mb->get_position().x, mb->get_position().y);
 				uv_drag = true;
 				uv_prev = node->get_uv();
 				uv_move_current = uv_mode;
@@ -485,7 +485,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 					for (int i = 0; i < uv_prev.size(); i++) {
 
 						Vector2 tuv = mtx.xform(uv_prev[i]);
-						if (tuv.distance_to(Vector2(mb->get_pos().x, mb->get_pos().y)) < 8) {
+						if (tuv.distance_to(Vector2(mb->get_position().x, mb->get_position().y)) < 8) {
 							uv_drag_from = tuv;
 							uv_drag_index = i;
 						}
@@ -537,7 +537,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 		} else if (uv_drag) {
 
-			Vector2 uv_drag_to = mm->get_pos();
+			Vector2 uv_drag_to = mm->get_position();
 			Vector2 drag = mtx.affine_inverse().xform(uv_drag_to) - mtx.affine_inverse().xform(uv_drag_from);
 
 			switch (uv_move_current) {

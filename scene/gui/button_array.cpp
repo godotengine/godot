@@ -313,7 +313,7 @@ void ButtonArray::_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 
-		int ofs = orientation == HORIZONTAL ? mb->get_pos().x : mb->get_pos().y;
+		int ofs = orientation == HORIZONTAL ? mb->get_position().x : mb->get_position().y;
 
 		for (int i = 0; i < buttons.size(); i++) {
 
@@ -330,7 +330,7 @@ void ButtonArray::_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (mm.is_valid()) {
 
-		int ofs = orientation == HORIZONTAL ? mm->get_pos().x : mm->get_pos().y;
+		int ofs = orientation == HORIZONTAL ? mm->get_position().x : mm->get_position().y;
 		int new_hover = -1;
 		for (int i = 0; i < buttons.size(); i++) {
 

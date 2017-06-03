@@ -1900,13 +1900,13 @@ void AnimationKeyEditor::_track_editor_gui_input(const Ref<InputEvent> &p_input)
 
 		if (mb->get_button_index() == BUTTON_RIGHT && mb->is_pressed()) {
 
-			Point2 mpos = mb->get_pos() - ofs;
+			Point2 mpos = mb->get_position() - ofs;
 
 			if (selection.size() == 0) {
 				// Auto-select on right-click if nothing is selected
 				// Note: This code is pretty much duplicated from the left click code,
 				// both codes could be moved into a function to avoid the duplicated code.
-				Point2 mpos = mb->get_pos() - ofs;
+				Point2 mpos = mb->get_position() - ofs;
 
 				if (mpos.y < h) {
 					return;
@@ -1951,7 +1951,7 @@ void AnimationKeyEditor::_track_editor_gui_input(const Ref<InputEvent> &p_input)
 					if (key == -1) {
 
 						click.click = ClickOver::CLICK_SELECT_KEYS;
-						click.at = mb->get_pos();
+						click.at = mb->get_position();
 						click.to = click.at;
 						click.shift = mb->get_shift();
 						selected_track = idx;
@@ -1974,7 +1974,7 @@ void AnimationKeyEditor::_track_editor_gui_input(const Ref<InputEvent> &p_input)
 					selection.insert(sk, ki);
 
 					click.click = ClickOver::CLICK_MOVE_KEYS;
-					click.at = mb->get_pos();
+					click.at = mb->get_position();
 					click.to = click.at;
 					update();
 					selected_track = idx;
@@ -2009,14 +2009,14 @@ void AnimationKeyEditor::_track_editor_gui_input(const Ref<InputEvent> &p_input)
 
 			if (mb->is_pressed()) {
 
-				Point2 mpos = mb->get_pos() - ofs;
+				Point2 mpos = mb->get_position() - ofs;
 
 				if (mpos.y < h) {
 
 					if (mpos.x < name_limit && mpos.x > (name_limit - hsep - hsize_icon->get_width())) {
 
 						click.click = ClickOver::CLICK_RESIZE_NAMES;
-						click.at = mb->get_pos();
+						click.at = mb->get_position();
 						click.to = click.at;
 						click.at.y = name_limit;
 					}
@@ -2035,7 +2035,7 @@ void AnimationKeyEditor::_track_editor_gui_input(const Ref<InputEvent> &p_input)
 							pos = animation->get_length();
 						timeline_pos = pos;
 						click.click = ClickOver::CLICK_DRAG_TIMELINE;
-						click.at = mb->get_pos();
+						click.at = mb->get_position();
 						click.to = click.at;
 						emit_signal("timeline_changed", pos, false);
 					}
@@ -2055,7 +2055,7 @@ void AnimationKeyEditor::_track_editor_gui_input(const Ref<InputEvent> &p_input)
 					if (mpos.x >= name_limit && mpos.x < settings_limit) {
 
 						click.click = ClickOver::CLICK_SELECT_KEYS;
-						click.at = mb->get_pos();
+						click.at = mb->get_position();
 						click.to = click.at;
 						//drag select region
 					}
@@ -2115,7 +2115,7 @@ void AnimationKeyEditor::_track_editor_gui_input(const Ref<InputEvent> &p_input)
 					if (key == -1) {
 
 						click.click = ClickOver::CLICK_SELECT_KEYS;
-						click.at = mb->get_pos();
+						click.at = mb->get_position();
 						click.to = click.at;
 						click.shift = mb->get_shift();
 						selected_track = idx;
@@ -2138,7 +2138,7 @@ void AnimationKeyEditor::_track_editor_gui_input(const Ref<InputEvent> &p_input)
 					selection.insert(sk, ki);
 
 					click.click = ClickOver::CLICK_MOVE_KEYS;
-					click.at = mb->get_pos();
+					click.at = mb->get_position();
 					click.to = click.at;
 					update();
 					selected_track = idx;
@@ -2601,7 +2601,7 @@ void AnimationKeyEditor::_track_editor_gui_input(const Ref<InputEvent> &p_input)
 					float clickp = click.at.x - ofs.x;
 					float dif = base - clickp;
 
-					float target = mm->get_pos().x + dif - ofs.x;
+					float target = mm->get_position().x + dif - ofs.x;
 
 					float ratio = target / settings_limit;
 
@@ -2615,7 +2615,7 @@ void AnimationKeyEditor::_track_editor_gui_input(const Ref<InputEvent> &p_input)
 				} break;
 				case ClickOver::CLICK_DRAG_TIMELINE: {
 
-					Point2 mpos = mm->get_pos() - ofs;
+					Point2 mpos = mm->get_position() - ofs;
 					/*
 					if (mpos.x<name_limit)
 						mpos.x=name_limit;
@@ -2646,7 +2646,7 @@ void AnimationKeyEditor::_track_editor_gui_input(const Ref<InputEvent> &p_input)
 				} break;
 				case ClickOver::CLICK_SELECT_KEYS: {
 
-					click.to = mm->get_pos();
+					click.to = mm->get_position();
 					if (click.to.y < h && click.at.y > h && mm->get_relative().y < 0) {
 
 						float prev = v_scroll->get_value();
@@ -2665,7 +2665,7 @@ void AnimationKeyEditor::_track_editor_gui_input(const Ref<InputEvent> &p_input)
 				} break;
 				case ClickOver::CLICK_MOVE_KEYS: {
 
-					click.to = mm->get_pos();
+					click.to = mm->get_position();
 				} break;
 				default: {}
 			}
@@ -2680,7 +2680,7 @@ void AnimationKeyEditor::_track_editor_gui_input(const Ref<InputEvent> &p_input)
 
 		if (mm->get_button_mask() == 0) {
 
-			Point2 mpos = mm->get_pos() - ofs;
+			Point2 mpos = mm->get_position() - ofs;
 
 			if (mpos.y < h) {
 #if 0

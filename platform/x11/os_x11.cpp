@@ -1334,8 +1334,8 @@ void OS_X11::process_xevents() {
 
 				get_key_modifier_state(event.xbutton.state, mb);
 				mb->set_button_mask(get_mouse_button_state(event.xbutton.state));
-				mb->set_pos(Vector2(event.xbutton.x, event.xbutton.y));
-				mb->set_global_pos(mb->get_pos());
+				mb->set_position(Vector2(event.xbutton.x, event.xbutton.y));
+				mb->set_global_position(mb->get_position());
 				mb->set_button_index(event.xbutton.button);
 				if (mb->get_button_index() == 2)
 					mb->set_button_index(3);
@@ -1443,8 +1443,8 @@ void OS_X11::process_xevents() {
 
 				get_key_modifier_state(event.xmotion.state, mm);
 				mm->set_button_mask(get_mouse_button_state(event.xmotion.state));
-				mm->set_pos(pos);
-				mm->set_global_pos(pos);
+				mm->set_position(pos);
+				mm->set_global_position(pos);
 				input->set_mouse_position(pos);
 				mm->set_speed(input->get_last_mouse_speed());
 				mm->set_relative(rel);

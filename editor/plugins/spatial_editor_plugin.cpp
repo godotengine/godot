@@ -636,7 +636,7 @@ void SpatialEditorViewport::_smouseenter() {
 
 void SpatialEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 
-	_find_items_at_pos(b->get_pos(), clicked_includes_current, selection_results, b->get_shift());
+	_find_items_at_pos(b->get_position(), clicked_includes_current, selection_results, b->get_shift());
 
 	Node *scene = editor->get_edited_scene();
 
@@ -684,7 +684,7 @@ void SpatialEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 			selection_menu->set_item_tooltip(i, String(spat->get_name()) + "\nType: " + spat->get_class() + "\nPath: " + node_path);
 		}
 
-		selection_menu->set_global_position(b->get_global_pos());
+		selection_menu->set_global_position(b->get_global_position());
 		selection_menu->popup();
 		selection_menu->call_deferred("grab_click_focus");
 		selection_menu->set_invalidate_click_until_motion();
@@ -818,7 +818,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						break;
 					}
 
-					_edit.mouse_pos = b->get_pos();
+					_edit.mouse_pos = b->get_position();
 					_edit.snap = false;
 					_edit.mode = TRANSFORM_NONE;
 
@@ -863,7 +863,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							break; //bye
 						//handle rotate
 						_edit.mode = TRANSFORM_ROTATE;
-						_compute_edit(b->get_pos());
+						_compute_edit(b->get_position());
 						break;
 					}
 
@@ -873,7 +873,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							break; //bye
 						//handle rotate
 						_edit.mode = TRANSFORM_TRANSLATE;
-						_compute_edit(b->get_pos());
+						_compute_edit(b->get_position());
 						break;
 					}
 
@@ -883,7 +883,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							break; //bye
 						//handle rotate
 						_edit.mode = TRANSFORM_SCALE;
-						_compute_edit(b->get_pos());
+						_compute_edit(b->get_position());
 						break;
 					}
 
@@ -891,7 +891,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 					int gizmo_handle = -1;
 
-					clicked = _select_ray(b->get_pos(), b->get_shift(), clicked_includes_current, &gizmo_handle, b->get_shift());
+					clicked = _select_ray(b->get_position(), b->get_shift(), clicked_includes_current, &gizmo_handle, b->get_shift());
 
 					//clicking is always deferred to either move or release
 
@@ -904,8 +904,8 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 						//default to regionselect
 						cursor.region_select = true;
-						cursor.region_begin = b->get_pos();
-						cursor.region_end = b->get_pos();
+						cursor.region_begin = b->get_position();
+						cursor.region_end = b->get_position();
 					}
 
 					if (clicked && gizmo_handle >= 0) {
@@ -989,7 +989,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 	if (m.is_valid()) {
 
-		_edit.mouse_pos = m->get_pos();
+		_edit.mouse_pos = m->get_position();
 
 		if (spatial_editor->get_selected()) {
 
@@ -1026,7 +1026,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 		if (_edit.gizmo.is_valid()) {
 
-			_edit.gizmo->set_handle(_edit.gizmo_handle, camera, m->get_pos());
+			_edit.gizmo->set_handle(_edit.gizmo_handle, camera, m->get_position());
 			Variant v = _edit.gizmo->get_handle_value(_edit.gizmo_handle);
 			String n = _edit.gizmo->get_handle_name(_edit.gizmo_handle);
 			set_message(n + ": " + String(v));
@@ -1058,7 +1058,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 				if (cursor.region_select && nav_mode == NAVIGATION_NONE) {
 
-					cursor.region_end = m->get_pos();
+					cursor.region_end = m->get_position();
 					surface->update();
 					return;
 				}
@@ -1066,8 +1066,8 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				if (_edit.mode == TRANSFORM_NONE && nav_mode == NAVIGATION_NONE)
 					return;
 
-				Vector3 ray_pos = _get_ray_pos(m->get_pos());
-				Vector3 ray = _get_ray(m->get_pos());
+				Vector3 ray_pos = _get_ray_pos(m->get_position());
+				Vector3 ray = _get_ray(m->get_position());
 
 				switch (_edit.mode) {
 

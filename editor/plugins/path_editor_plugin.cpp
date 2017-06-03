@@ -285,7 +285,7 @@ bool PathEditorPlugin::forward_spatial_gui_input(Camera *p_camera, const Ref<Inp
 
 	if (mb.is_valid()) {
 
-		Point2 mbpos(mb->get_pos().x, mb->get_pos().y);
+		Point2 mbpos(mb->get_position().x, mb->get_position().y);
 
 		if (mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT && (curve_create->is_pressed() || (curve_edit->is_pressed() && mb->get_control()))) {
 			//click into curve, break it down

@@ -325,11 +325,11 @@ void InputDefault::parse_input_event(const Ref<InputEvent> &p_event) {
 			Ref<InputEventScreenTouch> touch_event;
 			touch_event.instance();
 			touch_event->set_pressed(mb->is_pressed());
-			touch_event->set_pos(mb->get_pos());
+			touch_event->set_position(mb->get_position());
 			main_loop->input_event(touch_event);
 		}
 
-		Point2 pos = mb->get_global_pos();
+		Point2 pos = mb->get_global_position();
 		if (mouse_pos != pos) {
 			set_mouse_position(pos);
 		}
@@ -343,7 +343,7 @@ void InputDefault::parse_input_event(const Ref<InputEvent> &p_event) {
 			Ref<InputEventScreenDrag> drag_event;
 			drag_event.instance();
 
-			drag_event->set_pos(mm->get_pos());
+			drag_event->set_position(mm->get_position());
 			drag_event->set_relative(mm->get_relative());
 			drag_event->set_speed(mm->get_speed());
 
@@ -493,7 +493,7 @@ Point2i InputDefault::warp_mouse_motion(const Ref<InputEventMouseMotion> &p_moti
 			Math::fmod(p_motion->get_relative().x + rel_sgn.x * warp_margin.x, p_rect.size.x) - rel_sgn.x * warp_margin.x,
 			Math::fmod(p_motion->get_relative().y + rel_sgn.y * warp_margin.y, p_rect.size.y) - rel_sgn.y * warp_margin.y);
 
-	const Point2i pos_local = p_motion->get_global_pos() - p_rect.pos;
+	const Point2i pos_local = p_motion->get_global_position() - p_rect.pos;
 	const Point2i pos_warped(Math::fposmod(pos_local.x, p_rect.size.x), Math::fposmod(pos_local.y, p_rect.size.y));
 	if (pos_warped != pos_local) {
 		OS::get_singleton()->warp_mouse_pos(pos_warped + p_rect.pos);
