@@ -64,3 +64,4 @@ for more info.
 
 [![Build Status](https://travis-ci.org/godotengine/godot.svg?branch=master)](https://travis-ci.org/godotengine/godot)
 [![Code Triagers Badge](http://www.codetriage.com/godotengine/godot/badges/users.svg)](http://www.codetriage.com/godotengine/godot)
+[![Visit our IRC channel](https://kiwiirc.com/buttons/irc.kiwiirc.com/godotengine.png)](https://kiwiirc.com/client/irc.kiwiirc.com/?nick=test|?#godotengine)
