@@ -239,7 +239,7 @@ void GraphNode::_notification(int p_what) {
 		if (show_close) {
 			Vector2 cpos = Point2(w + sb->get_margin(MARGIN_LEFT), -close->get_height() + close_offset);
 			draw_texture(close, cpos);
-			close_rect.pos = cpos;
+			close_rect.position = cpos;
 			close_rect.size = close->get_size();
 		} else {
 			close_rect = Rect2();

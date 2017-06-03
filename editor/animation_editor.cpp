@@ -76,7 +76,7 @@ private:
 			Ref<StyleBox> sb = get_stylebox("normal", "LineEdit");
 			sb->draw(ci, r);
 			r.size -= sb->get_minimum_size();
-			r.pos += sb->get_offset();
+			r.position += sb->get_offset();
 			//VisualServer::get_singleton()->canvas_item_add
 
 			Ref<Font> f = get_font("font", "Label");
@@ -111,7 +111,7 @@ private:
 							iflp = 1.0 - iflp;
 						}
 
-						VisualServer::get_singleton()->canvas_item_add_line(ci, r.pos + Point2(iflp * r.size.width, prev * r.size.height), r.pos + Point2(ifl * r.size.width, h * r.size.height), mcolor);
+						VisualServer::get_singleton()->canvas_item_add_line(ci, r.position + Point2(iflp * r.size.width, prev * r.size.height), r.position + Point2(ifl * r.size.width, h * r.size.height), mcolor);
 						prev = h;
 					}
 
@@ -138,7 +138,7 @@ private:
 						iflp = 1.0 - iflp;
 					}
 
-					VisualServer::get_singleton()->canvas_item_add_line(ci, r.pos + Point2(iflp * r.size.width, prev * r.size.height), r.pos + Point2(ifl * r.size.width, h * r.size.height), color);
+					VisualServer::get_singleton()->canvas_item_add_line(ci, r.position + Point2(iflp * r.size.width, prev * r.size.height), r.position + Point2(ifl * r.size.width, h * r.size.height), color);
 					prev = h;
 				}
 			}
@@ -2076,7 +2076,7 @@ void AnimationKeyEditor::_track_editor_gui_input(const Ref<InputEvent> &p_input)
 
 					Rect2 area(ofs.x, ofs.y + ((int(mpos.y) / h) + 1) * h, name_limit, h);
 					track_name->set_text(animation->track_get_path(idx));
-					track_name->set_position(te->get_global_position() + area.pos);
+					track_name->set_position(te->get_global_position() + area.position);
 					track_name->set_size(area.size);
 					track_name->show_modal();
 					track_name->grab_focus();

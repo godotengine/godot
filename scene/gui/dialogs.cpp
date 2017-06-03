@@ -90,15 +90,15 @@ bool WindowDialog::has_point(const Point2 &p_point) const {
 
 	// Enlarge upwards for title bar.
 	int title_height = get_constant("title_height", "WindowDialog");
-	r.pos.y -= title_height;
+	r.position.y -= title_height;
 	r.size.y += title_height;
 
 	// Inflate by the resizable border thickness.
 	if (resizable) {
 		int scaleborder_size = get_constant("scaleborder_size", "WindowDialog");
-		r.pos.x -= scaleborder_size;
+		r.position.x -= scaleborder_size;
 		r.size.width += scaleborder_size * 2;
-		r.pos.y -= scaleborder_size;
+		r.position.y -= scaleborder_size;
 		r.size.height += scaleborder_size * 2;
 	}
 
@@ -162,28 +162,28 @@ void WindowDialog::_gui_input(const Ref<InputEvent> &p_event) {
 			Size2 min_size = get_minimum_size();
 
 			if (drag_type == DRAG_MOVE) {
-				rect.pos = global_pos - drag_offset;
+				rect.position = global_pos - drag_offset;
 			} else {
 				if (drag_type & DRAG_RESIZE_TOP) {
-					int bottom = rect.pos.y + rect.size.height;
+					int bottom = rect.position.y + rect.size.height;
 					int max_y = bottom - min_size.height;
-					rect.pos.y = MIN(global_pos.y - drag_offset.y, max_y);
-					rect.size.height = bottom - rect.pos.y;
+					rect.position.y = MIN(global_pos.y - drag_offset.y, max_y);
+					rect.size.height = bottom - rect.position.y;
 				} else if (drag_type & DRAG_RESIZE_BOTTOM) {
-					rect.size.height = global_pos.y - rect.pos.y + drag_offset_far.y;
+					rect.size.height = global_pos.y - rect.position.y + drag_offset_far.y;
 				}
 				if (drag_type & DRAG_RESIZE_LEFT) {
-					int right = rect.pos.x + rect.size.width;
+					int right = rect.position.x + rect.size.width;
 					int max_x = right - min_size.width;
-					rect.pos.x = MIN(global_pos.x - drag_offset.x, max_x);
-					rect.size.width = right - rect.pos.x;
+					rect.position.x = MIN(global_pos.x - drag_offset.x, max_x);
+					rect.size.width = right - rect.position.x;
 				} else if (drag_type & DRAG_RESIZE_RIGHT) {
-					rect.size.width = global_pos.x - rect.pos.x + drag_offset_far.x;
+					rect.size.width = global_pos.x - rect.position.x + drag_offset_far.x;
 				}
 			}
 
 			set_size(rect.size);
-			set_position(rect.pos);
+			set_position(rect.position);
 		}
 	}
 }

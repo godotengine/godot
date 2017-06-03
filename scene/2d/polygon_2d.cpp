@@ -38,7 +38,7 @@ Rect2 Polygon2D::get_item_rect() const {
 		for (int i = 0; i < l; i++) {
 			Vector2 pos = r[i] + offset;
 			if (i == 0)
-				item_rect.pos = pos;
+				item_rect.position = pos;
 			else
 				item_rect.expand_to(pos);
 		}
@@ -95,7 +95,7 @@ void Polygon2D::_notification(int p_what) {
 
 				for (int i = 0; i < len; i++) {
 					if (i == 0)
-						bounds.pos = points[i];
+						bounds.position = points[i];
 					else
 						bounds.expand_to(points[i]);
 					if (points[i].y > highest_y) {
@@ -110,10 +110,10 @@ void Polygon2D::_notification(int p_what) {
 
 				Vector2 ep[7] = {
 					Vector2(points[highest_idx].x, points[highest_idx].y + invert_border),
-					Vector2(bounds.pos + bounds.size),
-					Vector2(bounds.pos + Vector2(bounds.size.x, 0)),
-					Vector2(bounds.pos),
-					Vector2(bounds.pos + Vector2(0, bounds.size.y)),
+					Vector2(bounds.position + bounds.size),
+					Vector2(bounds.position + Vector2(bounds.size.x, 0)),
+					Vector2(bounds.position),
+					Vector2(bounds.position + Vector2(0, bounds.size.y)),
 					Vector2(points[highest_idx].x - CMP_EPSILON, points[highest_idx].y + invert_border),
 					Vector2(points[highest_idx].x - CMP_EPSILON, points[highest_idx].y),
 				};

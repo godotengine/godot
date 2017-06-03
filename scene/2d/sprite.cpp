@@ -75,8 +75,8 @@ void Sprite::_notification(int p_what) {
 				s = s / Size2(hframes, vframes);
 
 				src_rect.size = s;
-				src_rect.pos.x += float(frame % hframes) * s.x;
-				src_rect.pos.y += float(frame / hframes) * s.y;
+				src_rect.position.x += float(frame % hframes) * s.x;
+				src_rect.position.y += float(frame / hframes) * s.y;
 			}
 
 			Point2 ofs = offset;

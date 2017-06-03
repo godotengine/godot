@@ -308,7 +308,7 @@ bool Rect2::intersects_segment(const Point2 &p_from, const Point2 &p_to, Point2 
 	for (int i = 0; i < 2; i++) {
 		real_t seg_from = p_from[i];
 		real_t seg_to = p_to[i];
-		real_t box_begin = pos[i];
+		real_t box_begin = position[i];
 		real_t box_end = box_begin + size[i];
 		real_t cmin, cmax;
 		real_t csign;

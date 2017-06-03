@@ -233,7 +233,7 @@ void TabContainer::_notification(int p_what) {
 				Control *control = tabs[i + first_tab_cache]->cast_to<Control>();
 				String text = control->has_meta("_tab_name") ? String(XL_MESSAGE(String(control->get_meta("_tab_name")))) : String(control->get_name());
 
-				int x_content = tab_rect.pos.x + tab_style->get_margin(MARGIN_LEFT);
+				int x_content = tab_rect.position.x + tab_style->get_margin(MARGIN_LEFT);
 				int top_margin = tab_style->get_margin(MARGIN_TOP);
 				int y_center = top_margin + (tab_rect.size.y - tab_style->get_minimum_size().y) / 2;
 

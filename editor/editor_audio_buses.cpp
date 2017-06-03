@@ -342,7 +342,7 @@ void EditorAudioBus::_effect_edited() {
 	if (effect->get_metadata(0) == Variant()) {
 		Rect2 area = effects->get_item_rect(effect);
 
-		effect_options->set_position(effects->get_global_position() + area.pos + Vector2(0, area.size.y));
+		effect_options->set_position(effects->get_global_position() + area.position + Vector2(0, area.size.y));
 		effect_options->popup();
 		//add effect
 	} else {

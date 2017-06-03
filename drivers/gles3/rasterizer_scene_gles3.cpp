@@ -2343,8 +2343,8 @@ void RasterizerSceneGLES3::_setup_directional_light(int p_index, const Transform
 
 		for (int j = 0; j < shadow_count; j++) {
 
-			uint32_t x = li->directional_rect.pos.x;
-			uint32_t y = li->directional_rect.pos.y;
+			uint32_t x = li->directional_rect.position.x;
+			uint32_t y = li->directional_rect.position.y;
 			uint32_t width = li->directional_rect.size.x;
 			uint32_t height = li->directional_rect.size.y;
 
@@ -2389,8 +2389,8 @@ void RasterizerSceneGLES3::_setup_directional_light(int p_index, const Transform
 
 			store_camera(shadow_mtx, &ubo_data.shadow_matrix1[16 * j]);
 
-			ubo_data.light_clamp[0] = atlas_rect.pos.x;
-			ubo_data.light_clamp[1] = atlas_rect.pos.y;
+			ubo_data.light_clamp[0] = atlas_rect.position.x;
+			ubo_data.light_clamp[1] = atlas_rect.position.y;
 			ubo_data.light_clamp[2] = atlas_rect.size.x;
 			ubo_data.light_clamp[3] = atlas_rect.size.y;
 		}
@@ -2579,8 +2579,8 @@ void RasterizerSceneGLES3::_setup_lights(RID *p_light_cull_result, int p_light_c
 					Rect2 rect(float(x) / atlas_size, float(y) / atlas_size, float(width) / atlas_size, float(height) / atlas_size);
 
 					ubo_data.light_params[3] = 1.0; //means it has shadow
-					ubo_data.light_clamp[0] = rect.pos.x;
-					ubo_data.light_clamp[1] = rect.pos.y;
+					ubo_data.light_clamp[0] = rect.position.x;
+					ubo_data.light_clamp[1] = rect.position.y;
 					ubo_data.light_clamp[2] = rect.size.x;
 					ubo_data.light_clamp[3] = rect.size.y;
 
@@ -4167,15 +4167,15 @@ void RasterizerSceneGLES3::render_shadow(RID p_light, RID p_shadow_atlas, int p_
 			} else if (directional_shadow.light_count == 2) {
 				light_instance->directional_rect = Rect2(0, 0, directional_shadow.size, directional_shadow.size / 2);
 				if (light_instance->light_directional_index == 1) {
-					light_instance->directional_rect.pos.x += light_instance->directional_rect.size.x;
+					light_instance->directional_rect.position.x += light_instance->directional_rect.size.x;
 				}
 			} else { //3 and 4
 				light_instance->directional_rect = Rect2(0, 0, directional_shadow.size / 2, directional_shadow.size / 2);
 				if (light_instance->light_directional_index & 1) {
-					light_instance->directional_rect.pos.x += light_instance->directional_rect.size.x;
+					light_instance->directional_rect.position.x += light_instance->directional_rect.size.x;
 				}
 				if (light_instance->light_directional_index / 2) {
-					light_instance->directional_rect.pos.y += light_instance->directional_rect.size.y;
+					light_instance->directional_rect.position.y += light_instance->directional_rect.size.y;
 				}
 			}
 		}
@@ -4183,8 +4183,8 @@ void RasterizerSceneGLES3::render_shadow(RID p_light, RID p_shadow_atlas, int p_
 		light_projection = light_instance->shadow_transform[p_pass].camera;
 		light_transform = light_instance->shadow_transform[p_pass].transform;
 
-		x = light_instance->directional_rect.pos.x;
-		y = light_instance->directional_rect.pos.y;
+		x = light_instance->directional_rect.position.x;
+		y = light_instance->directional_rect.position.y;
 		width = light_instance->directional_rect.size.x;
 		height = light_instance->directional_rect.size.y;
 

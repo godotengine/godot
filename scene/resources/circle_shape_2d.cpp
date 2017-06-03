@@ -58,7 +58,7 @@ void CircleShape2D::_bind_methods() {
 
 Rect2 CircleShape2D::get_rect() const {
 	Rect2 rect;
-	rect.pos = -Point2(get_radius(), get_radius());
+	rect.position = -Point2(get_radius(), get_radius());
 	rect.size = Point2(get_radius(), get_radius()) * 2.0;
 	return rect;
 }

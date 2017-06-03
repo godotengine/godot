@@ -675,14 +675,14 @@ void Polygon2DEditor::_uv_draw() {
 
 	rect = rect.grow(200);
 	updating_uv_scroll = true;
-	uv_hscroll->set_min(rect.pos.x);
-	uv_hscroll->set_max(rect.pos.x + rect.size.x);
+	uv_hscroll->set_min(rect.position.x);
+	uv_hscroll->set_max(rect.position.x + rect.size.x);
 	uv_hscroll->set_page(uv_edit_draw->get_size().x);
 	uv_hscroll->set_value(uv_draw_ofs.x);
 	uv_hscroll->set_step(0.001);
 
-	uv_vscroll->set_min(rect.pos.y);
-	uv_vscroll->set_max(rect.pos.y + rect.size.y);
+	uv_vscroll->set_min(rect.position.y);
+	uv_vscroll->set_max(rect.position.y + rect.size.y);
 	uv_vscroll->set_page(uv_edit_draw->get_size().y);
 	uv_vscroll->set_value(uv_draw_ofs.y);
 	uv_vscroll->set_step(0.001);

@@ -1310,7 +1310,7 @@ Transform2D Viewport::_get_input_pre_xform() const {
 
 	if (to_screen_rect != Rect2()) {
 
-		pre_xf.elements[2] = -to_screen_rect.pos;
+		pre_xf.elements[2] = -to_screen_rect.position;
 		pre_xf.scale(size / to_screen_rect.size);
 	}
 
@@ -1473,17 +1473,17 @@ void Viewport::_gui_show_tooltip() {
 	gui.tooltip_label->set_text(tooltip);
 	Rect2 r(gui.tooltip_pos + Point2(10, 10), gui.tooltip_label->get_combined_minimum_size() + ttp->get_minimum_size());
 	Rect2 vr = gui.tooltip_label->get_viewport_rect();
-	if (r.size.x + r.pos.x > vr.size.x)
-		r.pos.x = vr.size.x - r.size.x;
-	else if (r.pos.x < 0)
-		r.pos.x = 0;
+	if (r.size.x + r.position.x > vr.size.x)
+		r.position.x = vr.size.x - r.size.x;
+	else if (r.position.x < 0)
+		r.position.x = 0;
 
-	if (r.size.y + r.pos.y > vr.size.y)
-		r.pos.y = vr.size.y - r.size.y;
-	else if (r.pos.y < 0)
-		r.pos.y = 0;
+	if (r.size.y + r.position.y > vr.size.y)
+		r.position.y = vr.size.y - r.size.y;
+	else if (r.position.y < 0)
+		r.position.y = 0;
 
-	gui.tooltip_popup->set_global_position(r.pos);
+	gui.tooltip_popup->set_global_position(r.position);
 	gui.tooltip_popup->set_size(r.size);
 
 	gui.tooltip_popup->raise();

@@ -769,7 +769,7 @@ public:
 					case Item::Command::TYPE_LINE: {
 
 						const Item::CommandLine *line = static_cast<const Item::CommandLine *>(c);
-						r.pos = line->from;
+						r.position = line->from;
 						r.expand_to(line->to);
 					} break;
 					case Item::Command::TYPE_RECT: {
@@ -786,7 +786,7 @@ public:
 					case Item::Command::TYPE_PRIMITIVE: {
 
 						const Item::CommandPrimitive *primitive = static_cast<const Item::CommandPrimitive *>(c);
-						r.pos = primitive->points[0];
+						r.position = primitive->points[0];
 						for (int i = 1; i < primitive->points.size(); i++) {
 
 							r.expand_to(primitive->points[i]);
@@ -797,7 +797,7 @@ public:
 						const Item::CommandPolygon *polygon = static_cast<const Item::CommandPolygon *>(c);
 						int l = polygon->points.size();
 						const Point2 *pp = &polygon->points[0];
-						r.pos = pp[0];
+						r.position = pp[0];
 						for (int i = 1; i < l; i++) {
 
 							r.expand_to(pp[i]);
@@ -822,7 +822,7 @@ public:
 					case Item::Command::TYPE_CIRCLE: {
 
 						const Item::CommandCircle *circle = static_cast<const Item::CommandCircle *>(c);
-						r.pos = Point2(-circle->radius, -circle->radius) + circle->pos;
+						r.position = Point2(-circle->radius, -circle->radius) + circle->pos;
 						r.size = Point2(circle->radius * 2.0, circle->radius * 2.0);
 					} break;
 					case Item::Command::TYPE_TRANSFORM: {

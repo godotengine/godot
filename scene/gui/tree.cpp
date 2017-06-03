@@ -904,8 +904,8 @@ void Tree::draw_item_rect(const TreeItem::Cell &p_cell, const Rect2i &p_rect, co
 			bmsize.width = p_cell.icon_max_w;
 		}
 
-		p_cell.draw_icon(ci, rect.pos + Size2i(0, Math::floor((real_t)(rect.size.y - bmsize.y) / 2)), bmsize);
-		rect.pos.x += bmsize.x + cache.hseparation;
+		p_cell.draw_icon(ci, rect.position + Size2i(0, Math::floor((real_t)(rect.size.y - bmsize.y) / 2)), bmsize);
+		rect.position.x += bmsize.x + cache.hseparation;
 		rect.size.x -= bmsize.x + cache.hseparation;
 	}
 
@@ -920,8 +920,8 @@ void Tree::draw_item_rect(const TreeItem::Cell &p_cell, const Rect2i &p_rect, co
 	if (p_cell.suffix != String())
 		text += " " + p_cell.suffix;
 
-	rect.pos.y += Math::floor((rect.size.y - font->get_height()) / 2.0) + font->get_ascent();
-	font->draw(ci, rect.pos, text, p_color, rect.size.x);
+	rect.position.y += Math::floor((rect.size.y - font->get_height()) / 2.0) + font->get_ascent();
+	font->draw(ci, rect.position, text, p_color, rect.size.x);
 }
 
 #if 0
@@ -1034,16 +1034,16 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			Rect2i item_rect = Rect2i(Point2i(ofs, p_pos.y) - cache.offset + p_draw_ofs, Size2i(w, label_h));
 			Rect2i cell_rect = item_rect;
 			if (i != 0) {
-				cell_rect.pos.x -= cache.hseparation;
+				cell_rect.position.x -= cache.hseparation;
 				cell_rect.size.x += cache.hseparation;
 			}
 
-			VisualServer::get_singleton()->canvas_item_add_line(ci, Point2i(cell_rect.pos.x, cell_rect.pos.y + cell_rect.size.height), cell_rect.pos + cell_rect.size, cache.guide_color, 1);
+			VisualServer::get_singleton()->canvas_item_add_line(ci, Point2i(cell_rect.position.x, cell_rect.position.y + cell_rect.size.height), cell_rect.position + cell_rect.size, cache.guide_color, 1);
 
 			if (i == 0) {
 
 				if (p_item->cells[0].selected && select_mode == SELECT_ROW) {
-					Rect2i row_rect = Rect2i(Point2i(cache.bg->get_margin(MARGIN_LEFT), item_rect.pos.y), Size2i(get_size().width - cache.bg->get_minimum_size().width, item_rect.size.y));
+					Rect2i row_rect = Rect2i(Point2i(cache.bg->get_margin(MARGIN_LEFT), item_rect.position.y), Size2i(get_size().width - cache.bg->get_minimum_size().width, item_rect.size.y));
 					//Rect2 r = Rect2i(row_rect.pos,row_rect.size);
 					//r.grow(cache.selected->get_margin(MARGIN_LEFT));
 					if (has_focus())
@@ -1055,34 +1055,34 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 			if (p_item->cells[i].selected && select_mode != SELECT_ROW) {
 
-				Rect2i r(item_rect.pos, item_rect.size);
+				Rect2i r(item_rect.position, item_rect.size);
 				if (p_item->cells[i].text.size() > 0) {
 					float icon_width = p_item->cells[i].get_icon_size().width;
-					r.pos.x += icon_width;
+					r.position.x += icon_width;
 					r.size.x -= icon_width;
 				}
 				//r.grow(cache.selected->get_margin(MARGIN_LEFT));
 				if (has_focus()) {
 					cache.selected_focus->draw(ci, r);
-					p_item->set_meta("__focus_rect", Rect2(r.pos, r.size));
+					p_item->set_meta("__focus_rect", Rect2(r.position, r.size));
 				} else {
 					cache.selected->draw(ci, r);
 				}
 				if (text_editor->is_visible_in_tree()) {
-					text_editor->set_position(get_global_position() + r.pos);
+					text_editor->set_position(get_global_position() + r.position);
 				}
 			}
 
 			if (p_item->cells[i].custom_bg_color) {
 
 				Rect2 r = cell_rect;
-				r.pos.x -= cache.hseparation;
+				r.position.x -= cache.hseparation;
 				r.size.x += cache.hseparation;
 				if (p_item->cells[i].custom_bg_outline) {
-					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.pos.x, r.pos.y, r.size.x, 1), p_item->cells[i].bg_color);
-					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.pos.x, r.pos.y + r.size.y - 1, r.size.x, 1), p_item->cells[i].bg_color);
-					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.pos.x, r.pos.y, 1, r.size.y), p_item->cells[i].bg_color);
-					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.pos.x + r.size.x - 1, r.pos.y, 1, r.size.y), p_item->cells[i].bg_color);
+					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y, r.size.x, 1), p_item->cells[i].bg_color);
+					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y + r.size.y - 1, r.size.x, 1), p_item->cells[i].bg_color);
+					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y, 1, r.size.y), p_item->cells[i].bg_color);
+					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x + r.size.x - 1, r.position.y, 1, r.size.y), p_item->cells[i].bg_color);
 				} else {
 					VisualServer::get_singleton()->canvas_item_add_rect(ci, r, p_item->cells[i].bg_color);
 				}
@@ -1093,22 +1093,22 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				Rect2 r = cell_rect;
 
 				if (drop_mode_section == -1 || drop_mode_section == 0) {
-					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.pos.x, r.pos.y, r.size.x, 1), cache.drop_position_color);
+					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y, r.size.x, 1), cache.drop_position_color);
 				}
 
 				if (drop_mode_section == 0) {
-					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.pos.x, r.pos.y, 1, r.size.y), cache.drop_position_color);
-					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.pos.x + r.size.x - 1, r.pos.y, 1, r.size.y), cache.drop_position_color);
+					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y, 1, r.size.y), cache.drop_position_color);
+					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x + r.size.x - 1, r.position.y, 1, r.size.y), cache.drop_position_color);
 				}
 
 				if (drop_mode_section == 1 || drop_mode_section == 0) {
-					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.pos.x, r.pos.y + r.size.y, r.size.x, 1), cache.drop_position_color);
+					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y + r.size.y, r.size.x, 1), cache.drop_position_color);
 				}
 			}
 
 			Color col = p_item->cells[i].custom_color ? p_item->cells[i].color : get_color(p_item->cells[i].selected ? "font_color_selected" : "font_color");
 
-			Point2i text_pos = item_rect.pos;
+			Point2i text_pos = item_rect.position;
 			text_pos.y += Math::floor((item_rect.size.y - font->get_height()) / 2) + font_ascent;
 
 			switch (p_item->cells[i].mode) {
@@ -1121,7 +1121,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 					Ref<Texture> checked = cache.checked;
 					Ref<Texture> unchecked = cache.unchecked;
-					Point2i check_ofs = item_rect.pos;
+					Point2i check_ofs = item_rect.position;
 					check_ofs.y += Math::floor((real_t)(item_rect.size.y - checked->get_height()) / 2);
 
 					if (p_item->cells[i].checked) {
@@ -1136,7 +1136,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 					text_pos.x += check_w;
 
 					item_rect.size.x -= check_w;
-					item_rect.pos.x += check_w;
+					item_rect.position.x += check_w;
 
 					draw_item_rect(p_item->cells[i], item_rect, col);
 
@@ -1164,7 +1164,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 						font->draw(ci, text_pos, s, col, item_rect.size.x - downarrow->get_width());
 
 						//?
-						Point2i arrow_pos = item_rect.pos;
+						Point2i arrow_pos = item_rect.position;
 						arrow_pos.x += item_rect.size.x - downarrow->get_width();
 						arrow_pos.y += Math::floor(((item_rect.size.y - downarrow->get_height())) / 2.0);
 
@@ -1184,7 +1184,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 						if (!p_item->cells[i].editable)
 							break;
 
-						Point2i updown_pos = item_rect.pos;
+						Point2i updown_pos = item_rect.position;
 						updown_pos.x += item_rect.size.x - updown->get_width();
 						updown_pos.y += Math::floor(((item_rect.size.y - updown->get_height())) / 2.0);
 
@@ -1203,7 +1203,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 					}
 
 					Point2i icon_ofs = (item_rect.size - icon_size) / 2;
-					icon_ofs += item_rect.pos;
+					icon_ofs += item_rect.position;
 
 					draw_texture_rect(p_item->cells[i].icon, Rect2(icon_ofs, icon_size));
 					//p_item->cells[i].icon->draw(ci, icon_ofs);
@@ -1230,7 +1230,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 					Rect2i ir = item_rect;
 
-					Point2i arrow_pos = item_rect.pos;
+					Point2i arrow_pos = item_rect.position;
 					arrow_pos.x += item_rect.size.x - downarrow->get_width();
 					arrow_pos.y += Math::floor(((item_rect.size.y - downarrow->get_height())) / 2.0);
 					ir.size.width -= downarrow->get_width();
@@ -2457,7 +2457,7 @@ bool Tree::edit_selected() {
 
 		edited_item = s;
 		edited_col = col;
-		custom_popup_rect = Rect2i(get_global_position() + rect.pos, rect.size);
+		custom_popup_rect = Rect2i(get_global_position() + rect.position, rect.size);
 		emit_signal("custom_popup_edited", false);
 		item_edited(col, s);
 
@@ -2472,7 +2472,7 @@ bool Tree::edit_selected() {
 		}
 
 		popup_menu->set_size(Size2(rect.size.width, 0));
-		popup_menu->set_position(get_global_position() + rect.pos + Point2i(0, rect.size.height));
+		popup_menu->set_position(get_global_position() + rect.position + Point2i(0, rect.size.height));
 		popup_menu->popup();
 		popup_edited_item = s;
 		popup_edited_item_col = col;
@@ -2480,7 +2480,7 @@ bool Tree::edit_selected() {
 
 	} else if (c.mode == TreeItem::CELL_MODE_STRING || c.mode == TreeItem::CELL_MODE_RANGE || c.mode == TreeItem::CELL_MODE_RANGE_EXPRESSION) {
 
-		Point2i textedpos = get_global_position() + rect.pos;
+		Point2i textedpos = get_global_position() + rect.position;
 		text_editor->set_position(textedpos);
 		text_editor->set_size(rect.size);
 		text_editor->clear();
@@ -2727,7 +2727,7 @@ void Tree::_notification(int p_what) {
 				ofs += tbrect.size.width;
 				//text
 				int clip_w = tbrect.size.width - sb->get_minimum_size().width;
-				f->draw_halign(ci, tbrect.pos + Point2i(sb->get_offset().x, (tbrect.size.height - f->get_height()) / 2 + f->get_ascent()), HALIGN_CENTER, clip_w, columns[i].title, cache.title_button_color);
+				f->draw_halign(ci, tbrect.position + Point2i(sb->get_offset().x, (tbrect.size.height - f->get_height()) / 2 + f->get_ascent()), HALIGN_CENTER, clip_w, columns[i].title, cache.title_button_color);
 			}
 		}
 	}
@@ -3109,11 +3109,11 @@ Rect2 Tree::get_item_rect(TreeItem *p_item, int p_column) const {
 	int ofs = get_item_offset(p_item);
 	int height = compute_item_height(p_item);
 	Rect2 r;
-	r.pos.y = ofs;
+	r.position.y = ofs;
 	r.size.height = height;
 
 	if (p_column == -1) {
-		r.pos.x = 0;
+		r.position.x = 0;
 		r.size.x = get_size().width;
 	} else {
 
@@ -3121,7 +3121,7 @@ Rect2 Tree::get_item_rect(TreeItem *p_item, int p_column) const {
 		for (int i = 0; i < p_column; i++) {
 			accum += get_column_width(i);
 		}
-		r.pos.x = accum;
+		r.position.x = accum;
 		r.size.x = get_column_width(p_column);
 	}
 

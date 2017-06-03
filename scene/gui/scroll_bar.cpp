@@ -267,14 +267,14 @@ void ScrollBar::_notification(int p_what) {
 
 			grabber_rect.size.width = get_grabber_size();
 			grabber_rect.size.height = get_size().height;
-			grabber_rect.pos.y = 0;
-			grabber_rect.pos.x = get_grabber_offset() + decr->get_width() + bg->get_margin(MARGIN_LEFT);
+			grabber_rect.position.y = 0;
+			grabber_rect.position.x = get_grabber_offset() + decr->get_width() + bg->get_margin(MARGIN_LEFT);
 		} else {
 
 			grabber_rect.size.width = get_size().width;
 			grabber_rect.size.height = get_grabber_size();
-			grabber_rect.pos.y = get_grabber_offset() + decr->get_height() + bg->get_margin(MARGIN_TOP);
-			grabber_rect.pos.x = 0;
+			grabber_rect.position.y = get_grabber_offset() + decr->get_height() + bg->get_margin(MARGIN_TOP);
+			grabber_rect.position.x = 0;
 		}
 
 		grabber->draw(ci, grabber_rect);

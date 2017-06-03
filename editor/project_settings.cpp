@@ -430,8 +430,8 @@ void ProjectSettings::_action_button_pressed(Object *p_obj, int p_column, int p_
 	if (p_id == 1) {
 		Point2 ofs = input_editor->get_global_position();
 		Rect2 ir = input_editor->get_item_rect(ti);
-		ir.pos.y -= input_editor->get_scroll().y;
-		ofs += ir.pos + ir.size;
+		ir.position.y -= input_editor->get_scroll().y;
+		ofs += ir.position + ir.size;
 		ofs.x -= 100;
 		popup_add->set_position(ofs);
 		popup_add->popup();
