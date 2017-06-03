@@ -256,6 +256,7 @@ static Ref<Image> _load_mem_png(const uint8_t *p_png, int p_size) {
 static Ref<Image> _lossless_unpack_png(const PoolVector<uint8_t> &p_data) {
 
 	int len = p_data.size();
+	ERR_FAIL_COND_V(len < 4, Ref<Image>());
 	PoolVector<uint8_t>::Read r = p_data.read();
 	ERR_FAIL_COND_V(r[0] != 'P' || r[1] != 'N' || r[2] != 'G' || r[3] != ' ', Ref<Image>());
 	return _load_mem_png(&r[4], len - 4);

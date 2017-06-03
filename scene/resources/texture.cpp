@@ -494,9 +494,9 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &fla
 				img = Image::lossy_unpacker(pv);
 			}
 
-			if (img.is_null()) {
+			if (img.is_null() || img->empty()) {
 				memdelete(f);
-				ERR_FAIL_COND_V(img->empty(), ERR_FILE_CORRUPT);
+				ERR_FAIL_COND_V(img.is_null() || img->empty(), ERR_FILE_CORRUPT);
 			}
 
 			total_size += img->get_data().size();

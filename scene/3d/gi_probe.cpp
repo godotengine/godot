@@ -909,10 +909,11 @@ Vector<Color> GIProbe::_get_bake_texture(Ref<Image> p_image, const Color &p_colo
 
 	for (int i = 0; i < bake_texture_size * bake_texture_size; i++) {
 		Color c;
-		c.r = r[i * 4 + 0] / 255.0;
-		c.g = r[i * 4 + 1] / 255.0;
-		c.b = r[i * 4 + 2] / 255.0;
+		c.r = (r[i * 4 + 0] / 255.0) * p_color.r;
+		c.g = (r[i * 4 + 1] / 255.0) * p_color.g;
+		c.b = (r[i * 4 + 2] / 255.0) * p_color.b;
 		c.a = r[i * 4 + 3] / 255.0;
+
 		ret[i] = c;
 	}
 
