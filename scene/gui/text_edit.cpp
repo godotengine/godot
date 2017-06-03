@@ -1445,7 +1445,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 	Ref<InputEventMouseButton> mb = p_gui_input;
 
 	if (mb.is_valid()) {
-		if (completion_active && completion_rect.has_point(mb->get_pos())) {
+		if (completion_active && completion_rect.has_point(mb->get_position())) {
 
 			if (!mb->is_pressed())
 				return;
@@ -1468,7 +1468,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 			if (mb->get_button_index() == BUTTON_LEFT) {
 
-				completion_index = CLAMP(completion_line_ofs + (mb->get_pos().y - completion_rect.pos.y) / get_row_height(), 0, completion_options.size() - 1);
+				completion_index = CLAMP(completion_line_ofs + (mb->get_position().y - completion_rect.pos.y) / get_row_height(), 0, completion_options.size() - 1);
 
 				completion_current = completion_options[completion_index];
 				update();
@@ -1500,7 +1500,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				_reset_caret_blink_timer();
 
 				int row, col;
-				_get_mouse_pos(Point2i(mb->get_pos().x, mb->get_pos().y), row, col);
+				_get_mouse_pos(Point2i(mb->get_position().x, mb->get_position().y), row, col);
 
 				if (mb->get_command() && highlighted_word != String()) {
 
@@ -1511,7 +1511,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				// toggle breakpoint on gutter click
 				if (draw_breakpoint_gutter) {
 					int gutter = cache.style_normal->get_margin(MARGIN_LEFT);
-					if (mb->get_pos().x > gutter && mb->get_pos().x <= gutter + cache.breakpoint_gutter_width + 3) {
+					if (mb->get_position().x > gutter && mb->get_position().x <= gutter + cache.breakpoint_gutter_width + 3) {
 						set_line_as_breakpoint(row, !is_line_set_as_breakpoint(row));
 						emit_signal("breakpoint_toggled", row);
 						return;
@@ -1646,7 +1646,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 		if (select_identifiers_enabled) {
 			if (mm->get_command() && mm->get_button_mask() == 0) {
 
-				String new_word = get_word_at_pos(mm->get_pos());
+				String new_word = get_word_at_pos(mm->get_position());
 				if (new_word != highlighted_word) {
 					highlighted_word = new_word;
 					update();
@@ -1666,7 +1666,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				_reset_caret_blink_timer();
 
 				int row, col;
-				_get_mouse_pos(mm->get_pos(), row, col);
+				_get_mouse_pos(mm->get_position(), row, col);
 
 				select(selection.selecting_line, selection.selecting_column, row, col);
 

@@ -57,7 +57,7 @@ void CurveTextureEdit::_gui_input(const Ref<InputEvent> &p_event) {
 		Vector2 size = get_size();
 		size.y -= font_h;
 
-		Point2 p = Vector2(mb->get_pos().x, mb->get_pos().y) / size;
+		Point2 p = Vector2(mb->get_position().x, mb->get_position().y) / size;
 		p.y = CLAMP(1.0 - p.y, 0, 1) * (max - min) + min;
 		grabbed = -1;
 		grabbing = true;
@@ -111,7 +111,7 @@ void CurveTextureEdit::_gui_input(const Ref<InputEvent> &p_event) {
 		Vector2 size = get_size();
 		size.y -= font_h;
 
-		Point2 p = mm->get_pos() / size;
+		Point2 p = mm->get_position() / size;
 		p.y = CLAMP(1.0 - p.y, 0, 1) * (max - min) + min;
 		p.x = CLAMP(p.x, 0.0, 1.0);
 

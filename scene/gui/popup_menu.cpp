@@ -284,7 +284,7 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 					//update hover
 					Ref<InputEventMouseMotion> ie;
 					ie.instance();
-					ie->set_pos(b->get_pos() + Vector2(0, s));
+					ie->set_position(b->get_position() + Vector2(0, s));
 					_gui_input(ie);
 				}
 			} break;
@@ -303,13 +303,13 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 					//update hover
 					Ref<InputEventMouseMotion> ie;
 					ie.instance();
-					ie->set_pos(b->get_pos() - Vector2(0, s));
+					ie->set_position(b->get_position() - Vector2(0, s));
 					_gui_input(ie);
 				}
 			} break;
 			case BUTTON_LEFT: {
 
-				int over = _get_mouse_over(b->get_pos());
+				int over = _get_mouse_over(b->get_position());
 
 				if (invalidated_click) {
 					invalidated_click = false;
@@ -348,13 +348,13 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 
 		for (List<Rect2>::Element *E = autohide_areas.front(); E; E = E->next()) {
 
-			if (!Rect2(Point2(), get_size()).has_point(m->get_pos()) && E->get().has_point(m->get_pos())) {
+			if (!Rect2(Point2(), get_size()).has_point(m->get_position()) && E->get().has_point(m->get_position())) {
 				call_deferred("hide");
 				return;
 			}
 		}
 
-		int over = _get_mouse_over(m->get_pos());
+		int over = _get_mouse_over(m->get_position());
 		int id = (over < 0 || items[over].separator || items[over].disabled) ? -1 : (items[over].ID >= 0 ? items[over].ID : over);
 
 		if (id < 0) {

@@ -162,7 +162,7 @@ void BaseButton::_gui_input(Ref<InputEvent> p_event) {
 	if (mm.is_valid()) {
 		if (status.press_attempt && status.pressing_button == 0) {
 			bool last_press_inside = status.pressing_inside;
-			status.pressing_inside = has_point(mm->get_pos());
+			status.pressing_inside = has_point(mm->get_position());
 			if (last_press_inside != status.pressing_inside)
 				update();
 		}

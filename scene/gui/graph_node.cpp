@@ -586,7 +586,7 @@ void GraphNode::_gui_input(const Ref<InputEvent> &p_ev) {
 
 		if (mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 
-			Vector2 mpos = Vector2(mb->get_pos().x, mb->get_pos().y);
+			Vector2 mpos = Vector2(mb->get_position().x, mb->get_position().y);
 			if (close_rect.size != Size2() && close_rect.has_point(mpos)) {
 				emit_signal("close_request");
 				accept_event();
@@ -616,7 +616,7 @@ void GraphNode::_gui_input(const Ref<InputEvent> &p_ev) {
 
 	Ref<InputEventMouseMotion> mm = p_ev;
 	if (resizing && mm.is_valid()) {
-		Vector2 mpos = mm->get_pos();
+		Vector2 mpos = mm->get_position();
 
 		Vector2 diff = mpos - resizing_from;
 

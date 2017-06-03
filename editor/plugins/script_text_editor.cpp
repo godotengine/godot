@@ -1236,8 +1236,8 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 
 			int col, row;
 			TextEdit *tx = code_editor->get_text_edit();
-			tx->_get_mouse_pos(mb->get_global_pos() - tx->get_global_position(), row, col);
-			Vector2 mpos = mb->get_global_pos() - tx->get_global_position();
+			tx->_get_mouse_pos(mb->get_global_position() - tx->get_global_position(), row, col);
+			Vector2 mpos = mb->get_global_position() - tx->get_global_position();
 			bool have_selection = (tx->get_selection_text().length() > 0);
 			bool have_color = (tx->get_word_at_pos(mpos) == "Color");
 			if (have_color) {

@@ -113,7 +113,7 @@ void WindowDialog::_gui_input(const Ref<InputEvent> &p_event) {
 
 		if (mb->is_pressed()) {
 			// Begin a possible dragging operation.
-			drag_type = _drag_hit_test(Point2(mb->get_pos().x, mb->get_pos().y));
+			drag_type = _drag_hit_test(Point2(mb->get_position().x, mb->get_position().y));
 			if (drag_type != DRAG_NONE)
 				drag_offset = get_global_mouse_position() - get_position();
 			drag_offset_far = get_position() + get_size() - get_global_mouse_position();
@@ -131,7 +131,7 @@ void WindowDialog::_gui_input(const Ref<InputEvent> &p_event) {
 			// Update the cursor while moving along the borders.
 			CursorShape cursor = CURSOR_ARROW;
 			if (resizable) {
-				int preview_drag_type = _drag_hit_test(Point2(mm->get_pos().x, mm->get_pos().y));
+				int preview_drag_type = _drag_hit_test(Point2(mm->get_position().x, mm->get_position().y));
 				switch (preview_drag_type) {
 					case DRAG_RESIZE_TOP:
 					case DRAG_RESIZE_BOTTOM:

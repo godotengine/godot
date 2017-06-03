@@ -72,7 +72,7 @@ void ScrollBar::_gui_input(Ref<InputEvent> p_event) {
 
 		if (b->is_pressed()) {
 
-			double ofs = orientation == VERTICAL ? b->get_pos().y : b->get_pos().x;
+			double ofs = orientation == VERTICAL ? b->get_position().y : b->get_position().x;
 			Ref<Texture> decr = get_icon("decrement");
 			Ref<Texture> incr = get_icon("increment");
 
@@ -130,7 +130,7 @@ void ScrollBar::_gui_input(Ref<InputEvent> p_event) {
 
 		if (drag.active) {
 
-			double ofs = orientation == VERTICAL ? m->get_pos().y : m->get_pos().x;
+			double ofs = orientation == VERTICAL ? m->get_position().y : m->get_position().x;
 			Ref<Texture> decr = get_icon("decrement");
 
 			double decr_size = orientation == VERTICAL ? decr->get_height() : decr->get_width();
@@ -141,7 +141,7 @@ void ScrollBar::_gui_input(Ref<InputEvent> p_event) {
 			set_as_ratio(drag.value_at_click + diff);
 		} else {
 
-			double ofs = orientation == VERTICAL ? m->get_pos().y : m->get_pos().x;
+			double ofs = orientation == VERTICAL ? m->get_position().y : m->get_position().x;
 			Ref<Texture> decr = get_icon("decrement");
 			Ref<Texture> incr = get_icon("increment");
 

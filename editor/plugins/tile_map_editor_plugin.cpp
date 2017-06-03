@@ -826,7 +826,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 					paint_undo.clear();
 
-					Point2 local = node->world_to_map(xform_inv.xform(mb->get_pos()));
+					Point2 local = node->world_to_map(xform_inv.xform(mb->get_position()));
 
 					if (mb->get_shift()) {
 
@@ -900,7 +900,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (mm.is_valid()) {
 
-		Point2i new_over_tile = node->world_to_map(xform_inv.xform(mm->get_pos()));
+		Point2i new_over_tile = node->world_to_map(xform_inv.xform(mm->get_position()));
 
 		if (new_over_tile != over_tile) {
 

@@ -751,7 +751,7 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 					Item *item = NULL;
 
 					bool outside;
-					_find_click(main, b->get_pos(), &item, &line, &outside);
+					_find_click(main, b->get_position(), &item, &line, &outside);
 
 					if (item) {
 
@@ -852,7 +852,7 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 
 			int line = 0;
 			Item *item = NULL;
-			_find_click(main, m->get_pos(), &item, &line);
+			_find_click(main, m->get_position(), &item, &line);
 			if (!item)
 				return; // do not update
 

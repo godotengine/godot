@@ -74,7 +74,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 		Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
-		Vector2 gpoint = mb->get_pos();
+		Vector2 gpoint = mb->get_position();
 		Vector2 cpoint =
 				!mb->get_alt() ?
 						canvas_item_editor->snap_point(xform.affine_inverse().xform(gpoint)) :
@@ -431,7 +431,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 		if (action != ACTION_NONE) {
 			// Handle point/control movement.
 			Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
-			Vector2 gpoint = mm->get_pos();
+			Vector2 gpoint = mm->get_position();
 			Vector2 cpoint =
 					!mm->get_alt() ?
 							canvas_item_editor->snap_point(xform.affine_inverse().xform(gpoint)) :

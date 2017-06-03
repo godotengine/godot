@@ -85,7 +85,7 @@ void Tabs::_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (mm.is_valid()) {
 
-		Point2 pos = mm->get_pos();
+		Point2 pos = mm->get_position();
 
 		highlight_arrow = -1;
 		if (buttons_visible) {
@@ -165,7 +165,7 @@ void Tabs::_gui_input(const Ref<InputEvent> &p_event) {
 			mb->get_button_index() == BUTTON_LEFT) {
 
 		// clicks
-		Point2 pos(mb->get_pos().x, mb->get_pos().y);
+		Point2 pos(mb->get_position().x, mb->get_position().y);
 
 		if (buttons_visible) {
 

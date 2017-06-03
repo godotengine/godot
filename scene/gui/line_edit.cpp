@@ -64,7 +64,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 			shift_selection_check_pre(b->get_shift());
 
-			set_cursor_at_pixel_pos(b->get_pos().x);
+			set_cursor_at_pixel_pos(b->get_position().x);
 
 			if (b->get_shift()) {
 
@@ -118,7 +118,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 		if (m->get_button_mask() & BUTTON_LEFT) {
 
 			if (selection.creating) {
-				set_cursor_at_pixel_pos(m->get_pos().x);
+				set_cursor_at_pixel_pos(m->get_position().x);
 				selection_fill_at_cursor();
 			}
 		}

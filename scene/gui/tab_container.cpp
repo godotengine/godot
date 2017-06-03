@@ -69,7 +69,7 @@ void TabContainer::_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 
-		Point2 pos(mb->get_pos().x, mb->get_pos().y);
+		Point2 pos(mb->get_position().x, mb->get_position().y);
 		Size2 size = get_size();
 
 		// Click must be on tabs in the tab header area.

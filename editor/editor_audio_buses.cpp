@@ -396,7 +396,7 @@ void EditorAudioBus::_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->get_button_index() == 2 && mb->is_pressed()) {
 
-		Vector2 pos = Vector2(mb->get_pos().x, mb->get_pos().y);
+		Vector2 pos = Vector2(mb->get_position().x, mb->get_position().y);
 		delete_popup->set_position(get_global_position() + pos);
 		delete_popup->popup();
 	}

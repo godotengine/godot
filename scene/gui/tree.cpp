@@ -2122,7 +2122,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 
 		Ref<StyleBox> bg = cache.bg;
 
-		Point2 pos = mm->get_pos() - bg->get_offset();
+		Point2 pos = mm->get_position() - bg->get_offset();
 
 		Cache::ClickType old_hover = cache.hover_type;
 		int old_index = cache.hover_index;
@@ -2150,7 +2150,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 
 		if (drop_mode_flags && root) {
 
-			Point2 mpos = mm->get_pos();
+			Point2 mpos = mm->get_position();
 			mpos -= cache.bg->get_offset();
 			mpos.y -= _get_title_button_height();
 			if (mpos.y >= 0) {
@@ -2180,7 +2180,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 
 			if (!range_drag_enabled) {
 
-				Vector2 cpos = mm->get_pos();
+				Vector2 cpos = mm->get_position();
 				if (cpos.distance_to(pressing_pos) > 2) {
 					range_drag_enabled = true;
 					range_drag_capture_pos = cpos;
@@ -2217,7 +2217,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 
 			if (b->get_button_index() == BUTTON_LEFT) {
 
-				Point2 pos = b->get_pos() - cache.bg->get_offset();
+				Point2 pos = b->get_position() - cache.bg->get_offset();
 				if (show_column_titles) {
 					pos.y -= _get_title_button_height();
 
@@ -2251,7 +2251,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 						warp_mouse(range_drag_capture_pos);
 					} else {
 						Rect2 rect = get_selected()->get_meta("__focus_rect");
-						if (rect.has_point(Point2(b->get_pos().x, b->get_pos().y))) {
+						if (rect.has_point(Point2(b->get_position().x, b->get_position().y))) {
 							edit_selected();
 						} else {
 							emit_signal("item_double_clicked");
@@ -2295,7 +2295,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 			case BUTTON_LEFT: {
 				Ref<StyleBox> bg = cache.bg;
 
-				Point2 pos = b->get_pos() - bg->get_offset();
+				Point2 pos = b->get_position() - bg->get_offset();
 				cache.click_type = Cache::CLICK_NONE;
 				if (show_column_titles && b->get_button_index() == BUTTON_LEFT) {
 					pos.y -= _get_title_button_height();
@@ -2333,7 +2333,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 				blocked--;
 
 				if (pressing_for_editor) {
-					pressing_pos = b->get_pos();
+					pressing_pos = b->get_position();
 				}
 
 				if (b->get_button_index() == BUTTON_RIGHT)
