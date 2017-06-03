@@ -1961,8 +1961,8 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			} else if (value.get_type() == Variant::RECT2) {
 				Rect2 v = value;
 
-				gui[0] = v.pos.x;
-				gui[1] = v.pos.y;
+				gui[0] = v.position.x;
+				gui[1] = v.position.y;
 				gui[2] = v.size.x;
 				gui[3] = v.size.y;
 			} else if (value.get_type() == Variant::QUAT) {

@@ -83,8 +83,8 @@ static inline Vector2 rotate90(const Vector2 &v) {
 
 static inline Vector2 interpolate(const Rect2 &r, const Vector2 &v) {
 	return Vector2(
-			Math::lerp(r.get_pos().x, r.get_pos().x + r.get_size().x, v.x),
-			Math::lerp(r.get_pos().y, r.get_pos().y + r.get_size().y, v.y));
+			Math::lerp(r.position.x, r.position.x + r.get_size().x, v.x),
+			Math::lerp(r.position.y, r.position.y + r.get_size().y, v.y));
 }
 
 //----------------------------------------------------------------------------

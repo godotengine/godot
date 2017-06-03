@@ -568,8 +568,8 @@ void Particles2D::_notification(int p_what) {
 
 					if (total_frames > 1) {
 						int frame = Math::fast_ftoi(Math::floor(p.frame * total_frames)) % total_frames;
-						src_rect.pos.x = size.x * (frame % h_frames);
-						src_rect.pos.y = size.y * (frame / h_frames);
+						src_rect.position.x = size.x * (frame % h_frames);
+						src_rect.position.y = size.y * (frame / h_frames);
 					}
 					Rect2 dst_rect(Point2(), size);
 					if (flip_h)

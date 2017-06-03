@@ -1752,10 +1752,10 @@ static void stroke_rect(CanvasItem *ci, Rect2 rect, Color color, real_t width = 
 	// a---b
 	// |   |
 	// c---d
-	Vector2 a(rect.pos);
-	Vector2 b(rect.pos.x + rect.size.x, rect.pos.y);
-	Vector2 c(rect.pos.x, rect.pos.y + rect.size.y);
-	Vector2 d(rect.pos + rect.size);
+	Vector2 a(rect.position);
+	Vector2 b(rect.position.x + rect.size.x, rect.position.y);
+	Vector2 c(rect.position.x, rect.position.y + rect.size.y);
+	Vector2 d(rect.position + rect.size);
 
 	ci->draw_line(a, b, color, width);
 	ci->draw_line(b, d, color, width);
@@ -1804,15 +1804,15 @@ void SpatialEditorViewport::_draw() {
 			case Camera::KEEP_WIDTH: {
 
 				draw_rect.size = Size2(s.width, s.width / aspect);
-				draw_rect.pos.x = 0;
-				draw_rect.pos.y = (s.height - draw_rect.size.y) * 0.5;
+				draw_rect.position.x = 0;
+				draw_rect.position.y = (s.height - draw_rect.size.y) * 0.5;
 
 			} break;
 			case Camera::KEEP_HEIGHT: {
 
 				draw_rect.size = Size2(s.height * aspect, s.height);
-				draw_rect.pos.y = 0;
-				draw_rect.pos.x = (s.width - draw_rect.size.x) * 0.5;
+				draw_rect.position.y = 0;
+				draw_rect.position.x = (s.width - draw_rect.size.x) * 0.5;
 
 			} break;
 		}
@@ -1846,7 +1846,7 @@ void SpatialEditorViewport::_draw() {
 				real_t sy = r.size.y * logscale_t;
 
 				surface->draw_rect(r, Color(1, 1, 1, 0.2));
-				surface->draw_rect(Rect2(r.pos.x, r.pos.y + r.size.y - sy, r.size.x, sy), Color(1, 1, 1, 0.6));
+				surface->draw_rect(Rect2(r.position.x, r.position.y + r.size.y - sy, r.size.x, sy), Color(1, 1, 1, 0.6));
 				stroke_rect(surface, r.grow(1), Color(0, 0, 0, 0.7));
 			}
 		}

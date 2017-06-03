@@ -35,7 +35,7 @@
 void SegmentShape2D::_update_shape() {
 
 	Rect2 r;
-	r.pos = a;
+	r.position = a;
 	r.size = b;
 	Physics2DServer::get_singleton()->shape_set_data(get_rid(), r);
 	emit_changed();
@@ -69,7 +69,7 @@ void SegmentShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 Rect2 SegmentShape2D::get_rect() const {
 
 	Rect2 rect;
-	rect.pos = a;
+	rect.position = a;
 	rect.expand_to(b);
 	return rect;
 }
@@ -121,7 +121,7 @@ void RayShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 Rect2 RayShape2D::get_rect() const {
 
 	Rect2 rect;
-	rect.pos = Vector2();
+	rect.position = Vector2();
 	rect.expand_to(Vector2(0, length));
 	rect = rect.grow(0.707 * 4);
 	return rect;

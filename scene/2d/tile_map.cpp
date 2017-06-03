@@ -370,14 +370,14 @@ void TileMap::_update_dirty_quadrants() {
 				s = tex->get_size();
 			else {
 				s = r.size;
-				r.pos.x += fp_adjust;
-				r.pos.y += fp_adjust;
+				r.position.x += fp_adjust;
+				r.position.y += fp_adjust;
 				r.size.x -= fp_adjust * 2.0;
 				r.size.y -= fp_adjust * 2.0;
 			}
 
 			Rect2 rect;
-			rect.pos = offset.floor();
+			rect.position = offset.floor();
 			rect.size = s;
 
 			if (rect.size.y > rect.size.x) {
@@ -406,39 +406,39 @@ void TileMap::_update_dirty_quadrants() {
 			Vector2 center_ofs;
 
 			if (tile_origin == TILE_ORIGIN_TOP_LEFT) {
-				rect.pos += tile_ofs;
+				rect.position += tile_ofs;
 
 			} else if (tile_origin == TILE_ORIGIN_BOTTOM_LEFT) {
 
-				rect.pos += tile_ofs;
+				rect.position += tile_ofs;
 
 				if (c.transpose) {
 					if (c.flip_h)
-						rect.pos.x -= cell_size.x;
+						rect.position.x -= cell_size.x;
 					else
-						rect.pos.x += cell_size.x;
+						rect.position.x += cell_size.x;
 				} else {
 					if (c.flip_v)
-						rect.pos.y -= cell_size.y;
+						rect.position.y -= cell_size.y;
 					else
-						rect.pos.y += cell_size.y;
+						rect.position.y += cell_size.y;
 				}
 
 			} else if (tile_origin == TILE_ORIGIN_CENTER) {
-				rect.pos += tcenter;
+				rect.position += tcenter;
 
 				Vector2 center = (s / 2) - tile_ofs;
 				center_ofs = tcenter - (s / 2);
 
 				if (c.flip_h)
-					rect.pos.x -= s.x - center.x;
+					rect.position.x -= s.x - center.x;
 				else
-					rect.pos.x -= center.x;
+					rect.position.x -= center.x;
 
 				if (c.flip_v)
-					rect.pos.y -= s.y - center.y;
+					rect.position.y -= s.y - center.y;
 				else
-					rect.pos.y -= center.y;
+					rect.position.y -= center.y;
 			}
 
 			Color modulate = tile_set->tile_get_modulate(c.id);
@@ -549,7 +549,7 @@ void TileMap::_recompute_rect_cache() {
 	for (Map<PosKey, Quadrant>::Element *E = quadrant_map.front(); E; E = E->next()) {
 
 		Rect2 r;
-		r.pos = _map_to_world(E->key().x * _get_quadrant_size(), E->key().y * _get_quadrant_size());
+		r.position = _map_to_world(E->key().x * _get_quadrant_size(), E->key().y * _get_quadrant_size());
 		r.expand_to(_map_to_world(E->key().x * _get_quadrant_size() + _get_quadrant_size(), E->key().y * _get_quadrant_size()));
 		r.expand_to(_map_to_world(E->key().x * _get_quadrant_size() + _get_quadrant_size(), E->key().y * _get_quadrant_size() + _get_quadrant_size()));
 		r.expand_to(_map_to_world(E->key().x * _get_quadrant_size(), E->key().y * _get_quadrant_size() + _get_quadrant_size()));

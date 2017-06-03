@@ -473,7 +473,7 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 					}
 
 					Size2 texpixel_size(1.0 / texture->width, 1.0 / texture->height);
-					Rect2 src_rect = (rect->flags & CANVAS_RECT_REGION) ? Rect2(rect->source.pos * texpixel_size, rect->source.size * texpixel_size) : Rect2(0, 0, 1, 1);
+					Rect2 src_rect = (rect->flags & CANVAS_RECT_REGION) ? Rect2(rect->source.position * texpixel_size, rect->source.size * texpixel_size) : Rect2(0, 0, 1, 1);
 
 					if (rect->flags & CANVAS_RECT_FLIP_H) {
 						src_rect.size.x *= -1;
@@ -489,8 +489,8 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 
 					state.canvas_shader.set_uniform(CanvasShaderGLES3::COLOR_TEXPIXEL_SIZE, texpixel_size);
 
-					glVertexAttrib4f(1, rect->rect.pos.x, rect->rect.pos.y, rect->rect.size.x, rect->rect.size.y);
-					glVertexAttrib4f(2, src_rect.pos.x, src_rect.pos.y, src_rect.size.x, src_rect.size.y);
+					glVertexAttrib4f(1, rect->rect.position.x, rect->rect.position.y, rect->rect.size.x, rect->rect.size.y);
+					glVertexAttrib4f(2, src_rect.position.x, src_rect.position.y, src_rect.size.x, src_rect.size.y);
 					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 					if (untile) {
@@ -500,7 +500,7 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 
 				} else {
 
-					glVertexAttrib4f(1, rect->rect.pos.x, rect->rect.pos.y, rect->rect.size.x, rect->rect.size.y);
+					glVertexAttrib4f(1, rect->rect.position.x, rect->rect.position.y, rect->rect.size.x, rect->rect.size.y);
 					glVertexAttrib4f(2, 0, 0, 1, 1);
 					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 				}
@@ -521,7 +521,7 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 
 				if (!texture) {
 
-					glVertexAttrib4f(1, np->rect.pos.x, np->rect.pos.y, np->rect.size.x, np->rect.size.y);
+					glVertexAttrib4f(1, np->rect.position.x, np->rect.position.y, np->rect.size.x, np->rect.size.y);
 					glVertexAttrib4f(2, 0, 0, 1, 1);
 					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 					continue;
@@ -535,50 +535,50 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 #define SRCRECT(m_x, m_y, m_w, m_h) glVertexAttrib4f(2, (m_x)*texpixel_size.x, (m_y)*texpixel_size.y, (m_w)*texpixel_size.x, (m_h)*texpixel_size.y)
 
 				//top left
-				DSTRECT(np->rect.pos.x, np->rect.pos.y, np->margin[MARGIN_LEFT], np->margin[MARGIN_TOP]);
-				SRCRECT(np->source.pos.x, np->source.pos.y, np->margin[MARGIN_LEFT], np->margin[MARGIN_TOP]);
+				DSTRECT(np->rect.position.x, np->rect.position.y, np->margin[MARGIN_LEFT], np->margin[MARGIN_TOP]);
+				SRCRECT(np->source.position.x, np->source.position.y, np->margin[MARGIN_LEFT], np->margin[MARGIN_TOP]);
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 				//top right
-				DSTRECT(np->rect.pos.x + np->rect.size.width - np->margin[MARGIN_RIGHT], np->rect.pos.y, np->margin[MARGIN_RIGHT], np->margin[MARGIN_TOP]);
-				SRCRECT(np->source.pos.x + np->source.size.width - np->margin[MARGIN_RIGHT], np->source.pos.y, np->margin[MARGIN_RIGHT], np->margin[MARGIN_TOP]);
+				DSTRECT(np->rect.position.x + np->rect.size.width - np->margin[MARGIN_RIGHT], np->rect.position.y, np->margin[MARGIN_RIGHT], np->margin[MARGIN_TOP]);
+				SRCRECT(np->source.position.x + np->source.size.width - np->margin[MARGIN_RIGHT], np->source.position.y, np->margin[MARGIN_RIGHT], np->margin[MARGIN_TOP]);
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 				//bottom right
-				DSTRECT(np->rect.pos.x + np->rect.size.width - np->margin[MARGIN_RIGHT], np->rect.pos.y + np->rect.size.height - np->margin[MARGIN_BOTTOM], np->margin[MARGIN_RIGHT], np->margin[MARGIN_BOTTOM]);
-				SRCRECT(np->source.pos.x + np->source.size.width - np->margin[MARGIN_RIGHT], np->source.pos.y + np->source.size.height - np->margin[MARGIN_BOTTOM], np->margin[MARGIN_RIGHT], np->margin[MARGIN_BOTTOM]);
+				DSTRECT(np->rect.position.x + np->rect.size.width - np->margin[MARGIN_RIGHT], np->rect.position.y + np->rect.size.height - np->margin[MARGIN_BOTTOM], np->margin[MARGIN_RIGHT], np->margin[MARGIN_BOTTOM]);
+				SRCRECT(np->source.position.x + np->source.size.width - np->margin[MARGIN_RIGHT], np->source.position.y + np->source.size.height - np->margin[MARGIN_BOTTOM], np->margin[MARGIN_RIGHT], np->margin[MARGIN_BOTTOM]);
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 				//bottom left
-				DSTRECT(np->rect.pos.x, np->rect.pos.y + np->rect.size.height - np->margin[MARGIN_BOTTOM], np->margin[MARGIN_LEFT], np->margin[MARGIN_BOTTOM]);
-				SRCRECT(np->source.pos.x, np->source.pos.y + np->source.size.height - np->margin[MARGIN_BOTTOM], np->margin[MARGIN_LEFT], np->margin[MARGIN_BOTTOM]);
+				DSTRECT(np->rect.position.x, np->rect.position.y + np->rect.size.height - np->margin[MARGIN_BOTTOM], np->margin[MARGIN_LEFT], np->margin[MARGIN_BOTTOM]);
+				SRCRECT(np->source.position.x, np->source.position.y + np->source.size.height - np->margin[MARGIN_BOTTOM], np->margin[MARGIN_LEFT], np->margin[MARGIN_BOTTOM]);
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 				//top
-				DSTRECT(np->rect.pos.x + np->margin[MARGIN_LEFT], np->rect.pos.y, np->rect.size.width - np->margin[MARGIN_LEFT] - np->margin[MARGIN_RIGHT], np->margin[MARGIN_TOP]);
-				SRCRECT(np->source.pos.x + np->margin[MARGIN_LEFT], np->source.pos.y, np->source.size.width - np->margin[MARGIN_LEFT] - np->margin[MARGIN_RIGHT], np->margin[MARGIN_TOP]);
+				DSTRECT(np->rect.position.x + np->margin[MARGIN_LEFT], np->rect.position.y, np->rect.size.width - np->margin[MARGIN_LEFT] - np->margin[MARGIN_RIGHT], np->margin[MARGIN_TOP]);
+				SRCRECT(np->source.position.x + np->margin[MARGIN_LEFT], np->source.position.y, np->source.size.width - np->margin[MARGIN_LEFT] - np->margin[MARGIN_RIGHT], np->margin[MARGIN_TOP]);
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 				//bottom
-				DSTRECT(np->rect.pos.x + np->margin[MARGIN_LEFT], np->rect.pos.y + np->rect.size.height - np->margin[MARGIN_BOTTOM], np->rect.size.width - np->margin[MARGIN_LEFT] - np->margin[MARGIN_RIGHT], np->margin[MARGIN_TOP]);
-				SRCRECT(np->source.pos.x + np->margin[MARGIN_LEFT], np->source.pos.y + np->source.size.height - np->margin[MARGIN_BOTTOM], np->source.size.width - np->margin[MARGIN_LEFT] - np->margin[MARGIN_LEFT], np->margin[MARGIN_TOP]);
+				DSTRECT(np->rect.position.x + np->margin[MARGIN_LEFT], np->rect.position.y + np->rect.size.height - np->margin[MARGIN_BOTTOM], np->rect.size.width - np->margin[MARGIN_LEFT] - np->margin[MARGIN_RIGHT], np->margin[MARGIN_TOP]);
+				SRCRECT(np->source.position.x + np->margin[MARGIN_LEFT], np->source.position.y + np->source.size.height - np->margin[MARGIN_BOTTOM], np->source.size.width - np->margin[MARGIN_LEFT] - np->margin[MARGIN_LEFT], np->margin[MARGIN_TOP]);
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 				//left
-				DSTRECT(np->rect.pos.x, np->rect.pos.y + np->margin[MARGIN_TOP], np->margin[MARGIN_LEFT], np->rect.size.height - np->margin[MARGIN_TOP] - np->margin[MARGIN_BOTTOM]);
-				SRCRECT(np->source.pos.x, np->source.pos.y + np->margin[MARGIN_TOP], np->margin[MARGIN_LEFT], np->source.size.height - np->margin[MARGIN_TOP] - np->margin[MARGIN_BOTTOM]);
+				DSTRECT(np->rect.position.x, np->rect.position.y + np->margin[MARGIN_TOP], np->margin[MARGIN_LEFT], np->rect.size.height - np->margin[MARGIN_TOP] - np->margin[MARGIN_BOTTOM]);
+				SRCRECT(np->source.position.x, np->source.position.y + np->margin[MARGIN_TOP], np->margin[MARGIN_LEFT], np->source.size.height - np->margin[MARGIN_TOP] - np->margin[MARGIN_BOTTOM]);
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 				//right
-				DSTRECT(np->rect.pos.x + np->rect.size.width - np->margin[MARGIN_RIGHT], np->rect.pos.y + np->margin[MARGIN_TOP], np->margin[MARGIN_RIGHT], np->rect.size.height - np->margin[MARGIN_TOP] - np->margin[MARGIN_BOTTOM]);
-				SRCRECT(np->source.pos.x + np->source.size.width - np->margin[MARGIN_RIGHT], np->source.pos.y + np->margin[MARGIN_TOP], np->margin[MARGIN_RIGHT], np->source.size.height - np->margin[MARGIN_TOP] - np->margin[MARGIN_BOTTOM]);
+				DSTRECT(np->rect.position.x + np->rect.size.width - np->margin[MARGIN_RIGHT], np->rect.position.y + np->margin[MARGIN_TOP], np->margin[MARGIN_RIGHT], np->rect.size.height - np->margin[MARGIN_TOP] - np->margin[MARGIN_BOTTOM]);
+				SRCRECT(np->source.position.x + np->source.size.width - np->margin[MARGIN_RIGHT], np->source.position.y + np->margin[MARGIN_TOP], np->margin[MARGIN_RIGHT], np->source.size.height - np->margin[MARGIN_TOP] - np->margin[MARGIN_BOTTOM]);
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 				if (np->draw_center) {
 
 					//center
-					DSTRECT(np->rect.pos.x + np->margin[MARGIN_LEFT], np->rect.pos.y + np->margin[MARGIN_TOP], np->rect.size.x - np->margin[MARGIN_LEFT] - np->margin[MARGIN_RIGHT], np->rect.size.height - np->margin[MARGIN_TOP] - np->margin[MARGIN_BOTTOM]);
-					SRCRECT(np->source.pos.x + np->margin[MARGIN_LEFT], np->source.pos.y + np->margin[MARGIN_TOP], np->source.size.x - np->margin[MARGIN_LEFT] - np->margin[MARGIN_RIGHT], np->source.size.height - np->margin[MARGIN_TOP] - np->margin[MARGIN_BOTTOM]);
+					DSTRECT(np->rect.position.x + np->margin[MARGIN_LEFT], np->rect.position.y + np->margin[MARGIN_TOP], np->rect.size.x - np->margin[MARGIN_LEFT] - np->margin[MARGIN_RIGHT], np->rect.size.height - np->margin[MARGIN_TOP] - np->margin[MARGIN_BOTTOM]);
+					SRCRECT(np->source.position.x + np->margin[MARGIN_LEFT], np->source.position.y + np->margin[MARGIN_TOP], np->source.size.x - np->margin[MARGIN_LEFT] - np->margin[MARGIN_RIGHT], np->source.size.height - np->margin[MARGIN_TOP] - np->margin[MARGIN_BOTTOM]);
 					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 				}
 
@@ -670,8 +670,8 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 							//glScissor(viewport.x+current_clip->final_clip_rect.pos.x,viewport.y+ (viewport.height-(current_clip->final_clip_rect.pos.y+current_clip->final_clip_rect.size.height)),
 							//current_clip->final_clip_rect.size.width,current_clip->final_clip_rect.size.height);
 
-							int x = current_clip->final_clip_rect.pos.x;
-							int y = storage->frame.current_rt->height - (current_clip->final_clip_rect.pos.y + current_clip->final_clip_rect.size.y);
+							int x = current_clip->final_clip_rect.position.x;
+							int y = storage->frame.current_rt->height - (current_clip->final_clip_rect.position.y + current_clip->final_clip_rect.size.y);
 							int w = current_clip->final_clip_rect.size.x;
 							int h = current_clip->final_clip_rect.size.y;
 
@@ -787,7 +787,7 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 			if (current_clip) {
 
 				glEnable(GL_SCISSOR_TEST);
-				glScissor(current_clip->final_clip_rect.pos.x, (rt_size.height - (current_clip->final_clip_rect.pos.y + current_clip->final_clip_rect.size.height)), current_clip->final_clip_rect.size.width, current_clip->final_clip_rect.size.height);
+				glScissor(current_clip->final_clip_rect.position.x, (rt_size.height - (current_clip->final_clip_rect.position.y + current_clip->final_clip_rect.size.height)), current_clip->final_clip_rect.size.width, current_clip->final_clip_rect.size.height);
 
 			} else {
 
@@ -1108,7 +1108,7 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 		if (reclip) {
 
 			glEnable(GL_SCISSOR_TEST);
-			glScissor(current_clip->final_clip_rect.pos.x, (rt_size.height - (current_clip->final_clip_rect.pos.y + current_clip->final_clip_rect.size.height)), current_clip->final_clip_rect.size.width, current_clip->final_clip_rect.size.height);
+			glScissor(current_clip->final_clip_rect.position.x, (rt_size.height - (current_clip->final_clip_rect.position.y + current_clip->final_clip_rect.size.height)), current_clip->final_clip_rect.size.width, current_clip->final_clip_rect.size.height);
 		}
 
 		p_item_list = p_item_list->next;
@@ -1340,8 +1340,8 @@ void RasterizerCanvasGLES3::reset_canvas() {
 
 void RasterizerCanvasGLES3::draw_generic_textured_rect(const Rect2 &p_rect, const Rect2 &p_src) {
 
-	glVertexAttrib4f(1, p_rect.pos.x, p_rect.pos.y, p_rect.size.x, p_rect.size.y);
-	glVertexAttrib4f(2, p_src.pos.x, p_src.pos.y, p_src.size.x, p_src.size.y);
+	glVertexAttrib4f(1, p_rect.position.x, p_rect.position.y, p_rect.size.x, p_rect.size.y);
+	glVertexAttrib4f(2, p_src.position.x, p_src.position.y, p_src.size.x, p_src.size.y);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 

@@ -76,7 +76,7 @@ Rect2 LineShape2D::get_rect() const {
 	Vector2 l1[2] = { point - get_normal().tangent() * 100, point + get_normal().tangent() * 100 };
 	Vector2 l2[2] = { point, point + get_normal() * 30 };
 	Rect2 rect;
-	rect.pos = l1[0];
+	rect.position = l1[0];
 	rect.expand_to(l1[1]);
 	rect.expand_to(l2[0]);
 	rect.expand_to(l2[1]);

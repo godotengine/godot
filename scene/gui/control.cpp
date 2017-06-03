@@ -58,7 +58,7 @@ void Control::edit_set_state(const Variant &p_state) {
 	Dictionary s = p_state;
 
 	Rect2 state = s["rect"];
-	set_position(state.pos);
+	set_position(state.position);
 	set_size(state.size);
 	set_rotation(s["rot"]);
 	set_scale(s["scale"]);
@@ -94,15 +94,15 @@ void Control::edit_set_rect(const Rect2 &p_edit_rect) {
 
 	Transform2D postxf;
 	postxf.set_rotation_and_scale(data.rotation, data.scale);
-	Vector2 new_pos = postxf.xform(p_edit_rect.pos);
+	Vector2 new_pos = postxf.xform(p_edit_rect.position);
 
 	Vector2 pos = get_position() + new_pos;
 
 	Rect2 new_rect = get_rect();
-	new_rect.pos = pos.snapped(Vector2(1, 1));
+	new_rect.position = pos.snapped(Vector2(1, 1));
 	new_rect.size = p_edit_rect.size.snapped(Vector2(1, 1));
 
-	set_position(new_rect.pos);
+	set_position(new_rect.position);
 	set_size(new_rect.size);
 }
 
@@ -1477,7 +1477,7 @@ Rect2 Control::get_global_rect() const {
 Rect2 Control::get_window_rect() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), Rect2());
 	Rect2 gr = get_global_rect();
-	gr.pos += get_viewport()->get_visible_rect().pos;
+	gr.position += get_viewport()->get_visible_rect().position;
 	return gr;
 }
 
@@ -1949,10 +1949,10 @@ Control *Control::_get_focus_neighbour(Margin p_margin, int p_count) {
 	Transform2D xform = get_global_transform();
 	Rect2 rect = get_item_rect();
 
-	points[0] = xform.xform(rect.pos);
-	points[1] = xform.xform(rect.pos + Point2(rect.size.x, 0));
-	points[2] = xform.xform(rect.pos + rect.size);
-	points[3] = xform.xform(rect.pos + Point2(0, rect.size.y));
+	points[0] = xform.xform(rect.position);
+	points[1] = xform.xform(rect.position + Point2(rect.size.x, 0));
+	points[2] = xform.xform(rect.position + rect.size);
+	points[3] = xform.xform(rect.position + Point2(0, rect.size.y));
 
 	const Vector2 dir[4] = {
 		Vector2(-1, 0),
@@ -2008,10 +2008,10 @@ void Control::_window_find_focus_neighbour(const Vector2 &p_dir, Node *p_at, con
 		Transform2D xform = c->get_global_transform();
 		Rect2 rect = c->get_item_rect();
 
-		points[0] = xform.xform(rect.pos);
-		points[1] = xform.xform(rect.pos + Point2(rect.size.x, 0));
-		points[2] = xform.xform(rect.pos + rect.size);
-		points[3] = xform.xform(rect.pos + Point2(0, rect.size.y));
+		points[0] = xform.xform(rect.position);
+		points[1] = xform.xform(rect.position + Point2(rect.size.x, 0));
+		points[2] = xform.xform(rect.position + rect.size);
+		points[3] = xform.xform(rect.position + Point2(0, rect.size.y));
 
 		float min = 1e7;
 

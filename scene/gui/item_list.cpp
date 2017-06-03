@@ -857,7 +857,7 @@ void ItemList::_notification(int p_what) {
 					items[i].rect_cache = items[i].min_rect_cache;
 					if (same_column_width)
 						items[i].rect_cache.size.x = max_column_width;
-					items[i].rect_cache.pos = ofs;
+					items[i].rect_cache.position = ofs;
 					max_h = MAX(max_h, items[i].rect_cache.size.y);
 					ofs.x += items[i].rect_cache.size.x + hseparation;
 					//print_line("item "+itos(i)+" ofs "+rtos(items[i].rect_cache.size.x));
@@ -906,10 +906,10 @@ void ItemList::_notification(int p_what) {
 			int from = scroll_bar->get_value();
 			int to = from + scroll_bar->get_page();
 
-			if (r.pos.y < from) {
-				scroll_bar->set_value(r.pos.y);
-			} else if (r.pos.y + r.size.y > to) {
-				scroll_bar->set_value(r.pos.y + r.size.y - (to - from));
+			if (r.position.y < from) {
+				scroll_bar->set_value(r.position.y);
+			} else if (r.position.y + r.size.y > to) {
+				scroll_bar->set_value(r.position.y + r.size.y - (to - from));
 			}
 		}
 
@@ -928,25 +928,25 @@ void ItemList::_notification(int p_what) {
 				continue;
 
 			if (current_columns == 1) {
-				rcache.size.width = width - rcache.pos.x;
+				rcache.size.width = width - rcache.position.x;
 			}
 
 			Rect2 r = rcache;
-			r.pos += base_ofs;
+			r.position += base_ofs;
 
 			// Use stylebox to dimension potential bg color, even if not selected
-			r.pos.x -= sbsel->get_margin(MARGIN_LEFT);
+			r.position.x -= sbsel->get_margin(MARGIN_LEFT);
 			r.size.x += sbsel->get_margin(MARGIN_LEFT) + sbsel->get_margin(MARGIN_RIGHT);
-			r.pos.y -= sbsel->get_margin(MARGIN_TOP);
+			r.position.y -= sbsel->get_margin(MARGIN_TOP);
 			r.size.y += sbsel->get_margin(MARGIN_TOP) + sbsel->get_margin(MARGIN_BOTTOM);
 
 			if (items[i].selected) {
 				draw_style_box(sbsel, r);
 			}
 			if (items[i].custom_bg.a > 0.001) {
-				r.pos.x += 2;
+				r.position.x += 2;
 				r.size.x -= 4;
-				r.pos.y += 2;
+				r.position.y += 2;
 				r.size.y -= 4;
 				draw_rect(r, items[i].custom_bg);
 			}
@@ -965,7 +965,7 @@ void ItemList::_notification(int p_what) {
 
 				Vector2 icon_ofs;
 
-				Point2 pos = items[i].rect_cache.pos + icon_ofs + base_ofs;
+				Point2 pos = items[i].rect_cache.position + icon_ofs + base_ofs;
 
 				if (icon_mode == ICON_MODE_TOP) {
 
@@ -985,7 +985,7 @@ void ItemList::_notification(int p_what) {
 
 				if (fixed_icon_size.x > 0 && fixed_icon_size.y > 0) {
 					Rect2 adj = _adjust_to_max_size(items[i].get_icon_size() * icon_scale, icon_size);
-					draw_rect.pos += adj.pos;
+					draw_rect.position += adj.position;
 					draw_rect.size = adj.size;
 				}
 
@@ -1001,7 +1001,7 @@ void ItemList::_notification(int p_what) {
 
 			if (items[i].tag_icon.is_valid()) {
 
-				draw_texture(items[i].tag_icon, items[i].rect_cache.pos + base_ofs);
+				draw_texture(items[i].tag_icon, items[i].rect_cache.position + base_ofs);
 			}
 
 			if (items[i].text != "") {
@@ -1046,7 +1046,7 @@ void ItemList::_notification(int p_what) {
 					text_ofs.y += font->get_ascent();
 					text_ofs = text_ofs.floor();
 					text_ofs += base_ofs;
-					text_ofs += items[i].rect_cache.pos;
+					text_ofs += items[i].rect_cache.position;
 
 					for (int j = 0; j < ss; j++) {
 
@@ -1074,7 +1074,7 @@ void ItemList::_notification(int p_what) {
 					text_ofs.y += font->get_ascent();
 					text_ofs = text_ofs.floor();
 					text_ofs += base_ofs;
-					text_ofs += items[i].rect_cache.pos;
+					text_ofs += items[i].rect_cache.position;
 
 					draw_string(font, text_ofs, items[i].text, modulate, max_len + 1);
 				}
@@ -1083,7 +1083,7 @@ void ItemList::_notification(int p_what) {
 			if (select_mode == SELECT_MULTI && i == current) {
 
 				Rect2 r = rcache;
-				r.pos += base_ofs;
+				r.position += base_ofs;
 				draw_style_box(cursor, r);
 			}
 		}
@@ -1141,7 +1141,7 @@ bool ItemList::is_pos_at_end_of_items(const Point2 &p_pos) const {
 	pos.y += scroll_bar->get_value();
 
 	Rect2 endrect = items[items.size() - 1].rect_cache;
-	return (pos.y > endrect.pos.y + endrect.size.y);
+	return (pos.y > endrect.position.y + endrect.size.y);
 }
 
 String ItemList::get_tooltip(const Point2 &p_pos) const {

@@ -61,7 +61,7 @@ void VisualServerCanvas::_render_canvas_item(Item *p_canvas_item, const Transfor
 	Rect2 rect = ci->get_rect();
 	Transform2D xform = p_transform * ci->xform;
 	Rect2 global_rect = xform.xform(rect);
-	global_rect.pos += p_clip_rect.pos;
+	global_rect.position += p_clip_rect.position;
 
 	if (ci->use_parent_material && p_material_owner)
 		ci->material_owner = p_material_owner;
@@ -119,7 +119,7 @@ void VisualServerCanvas::_render_canvas_item(Item *p_canvas_item, const Transfor
 		ci->final_transform = xform;
 		ci->final_modulate = Color(modulate.r * ci->self_modulate.r, modulate.g * ci->self_modulate.g, modulate.b * ci->self_modulate.b, modulate.a * ci->self_modulate.a);
 		ci->global_rect_cache = global_rect;
-		ci->global_rect_cache.pos -= p_clip_rect.pos;
+		ci->global_rect_cache.position -= p_clip_rect.position;
 		ci->light_masked = false;
 
 		int zidx = p_z - VS::CANVAS_ITEM_Z_MIN;
@@ -1041,7 +1041,7 @@ void VisualServerCanvas::canvas_occluder_polygon_set_shape_as_lines(RID p_occlud
 		PoolVector<Vector2>::Read r = p_shape.read();
 		for (int i = 0; i < lc; i++) {
 			if (i == 0)
-				occluder_poly->aabb.pos = r[i];
+				occluder_poly->aabb.position = r[i];
 			else
 				occluder_poly->aabb.expand_to(r[i]);
 		}

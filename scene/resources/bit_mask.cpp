@@ -67,9 +67,9 @@ void BitMap::set_bit_rect(const Rect2 &p_rect, bool p_value) {
 	Rect2i current = Rect2i(0, 0, width, height).clip(p_rect);
 	uint8_t *data = bitmask.ptr();
 
-	for (int i = current.pos.x; i < current.pos.x + current.size.x; i++) {
+	for (int i = current.position.x; i < current.position.x + current.size.x; i++) {
 
-		for (int j = current.pos.y; j < current.pos.y + current.size.y; j++) {
+		for (int j = current.position.y; j < current.position.y + current.size.y; j++) {
 
 			int ofs = width * j + i;
 			int bbyte = ofs / 8;

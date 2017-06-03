@@ -860,7 +860,7 @@ void AtlasTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_m
 		rc.size.height = atlas->get_height();
 	}
 
-	VS::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(p_pos + margin.pos, rc.size), atlas->get_rid(), rc, p_modulate, p_transpose);
+	VS::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(p_pos + margin.position, rc.size), atlas->get_rid(), rc, p_modulate, p_transpose);
 }
 
 void AtlasTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose) const {
@@ -879,7 +879,7 @@ void AtlasTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile
 	}
 
 	Vector2 scale = p_rect.size / (region.size + margin.size);
-	Rect2 dr(p_rect.pos + margin.pos * scale, rc.size * scale);
+	Rect2 dr(p_rect.position + margin.position * scale, rc.size * scale);
 
 	VS::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, dr, atlas->get_rid(), rc, p_modulate, p_transpose);
 }
@@ -892,24 +892,24 @@ void AtlasTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, cons
 		return;
 
 	Rect2 src = p_src_rect;
-	src.pos += (rc.pos - margin.pos);
+	src.position += (rc.position - margin.position);
 	Rect2 src_c = rc.clip(src);
 	if (src_c.size == Size2())
 		return;
-	Vector2 ofs = (src_c.pos - src.pos);
+	Vector2 ofs = (src_c.position - src.position);
 
 	Vector2 scale = p_rect.size / p_src_rect.size;
 	if (scale.x < 0) {
-		float mx = (margin.size.width - margin.pos.x);
-		mx -= margin.pos.x;
+		float mx = (margin.size.width - margin.position.x);
+		mx -= margin.position.x;
 		ofs.x = -(ofs.x + mx);
 	}
 	if (scale.y < 0) {
-		float my = margin.size.height - margin.pos.y;
-		my -= margin.pos.y;
+		float my = margin.size.height - margin.position.y;
+		my -= margin.position.y;
 		ofs.y = -(ofs.y + my);
 	}
-	Rect2 dr(p_rect.pos + ofs * scale, src_c.size * scale);
+	Rect2 dr(p_rect.position + ofs * scale, src_c.size * scale);
 
 	VS::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, dr, atlas->get_rid(), src_c, p_modulate, p_transpose);
 }
@@ -922,24 +922,24 @@ bool AtlasTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect,
 		return false;
 
 	Rect2 src = p_src_rect;
-	src.pos += (rc.pos - margin.pos);
+	src.position += (rc.position - margin.position);
 	Rect2 src_c = rc.clip(src);
 	if (src_c.size == Size2())
 		return false;
-	Vector2 ofs = (src_c.pos - src.pos);
+	Vector2 ofs = (src_c.position - src.position);
 
 	Vector2 scale = p_rect.size / p_src_rect.size;
 	if (scale.x < 0) {
-		float mx = (margin.size.width - margin.pos.x);
-		mx -= margin.pos.x;
+		float mx = (margin.size.width - margin.position.x);
+		mx -= margin.position.x;
 		ofs.x = -(ofs.x + mx);
 	}
 	if (scale.y < 0) {
-		float my = margin.size.height - margin.pos.y;
-		my -= margin.pos.y;
+		float my = margin.size.height - margin.position.y;
+		my -= margin.position.y;
 		ofs.y = -(ofs.y + my);
 	}
-	Rect2 dr(p_rect.pos + ofs * scale, src_c.size * scale);
+	Rect2 dr(p_rect.position + ofs * scale, src_c.size * scale);
 
 	r_rect = dr;
 	r_src_rect = src_c;
@@ -1096,7 +1096,7 @@ void LargeTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile
 	for (int i = 0; i < pieces.size(); i++) {
 
 		// TODO
-		pieces[i].texture->draw_rect(p_canvas_item, Rect2(pieces[i].offset * scale + p_rect.pos, pieces[i].texture->get_size() * scale), false, p_modulate, p_transpose);
+		pieces[i].texture->draw_rect(p_canvas_item, Rect2(pieces[i].offset * scale + p_rect.position, pieces[i].texture->get_size() * scale), false, p_modulate, p_transpose);
 	}
 }
 void LargeTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose) const {
@@ -1116,8 +1116,8 @@ void LargeTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, cons
 		Rect2 local = p_src_rect.clip(rect);
 		Rect2 target = local;
 		target.size *= scale;
-		target.pos = p_rect.pos + (p_src_rect.pos + rect.pos) * scale;
-		local.pos -= rect.pos;
+		target.position = p_rect.position + (p_src_rect.position + rect.position) * scale;
+		local.position -= rect.position;
 		pieces[i].texture->draw_rect_region(p_canvas_item, target, local, p_modulate, p_transpose);
 	}
 }

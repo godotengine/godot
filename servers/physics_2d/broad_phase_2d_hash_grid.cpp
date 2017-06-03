@@ -116,8 +116,8 @@ void BroadPhase2DHashGrid::_enter_grid(Element *p_elem, const Rect2 &p_rect, boo
 		return;
 	}
 
-	Point2i from = (p_rect.pos / cell_size).floor();
-	Point2i to = ((p_rect.pos + p_rect.size) / cell_size).floor();
+	Point2i from = (p_rect.position / cell_size).floor();
+	Point2i to = ((p_rect.position + p_rect.size) / cell_size).floor();
 
 	for (int i = from.x; i <= to.x; i++) {
 
@@ -214,8 +214,8 @@ void BroadPhase2DHashGrid::_exit_grid(Element *p_elem, const Rect2 &p_rect, bool
 		return;
 	}
 
-	Point2i from = (p_rect.pos / cell_size).floor();
-	Point2i to = ((p_rect.pos + p_rect.size) / cell_size).floor();
+	Point2i from = (p_rect.position / cell_size).floor();
+	Point2i to = ((p_rect.position + p_rect.size) / cell_size).floor();
 
 	for (int i = from.x; i <= to.x; i++) {
 
@@ -574,8 +574,8 @@ int BroadPhase2DHashGrid::cull_aabb(const Rect2 &p_aabb, CollisionObject2DSW **p
 
 	pass++;
 
-	Point2i from = (p_aabb.pos / cell_size).floor();
-	Point2i to = ((p_aabb.pos + p_aabb.size) / cell_size).floor();
+	Point2i from = (p_aabb.position / cell_size).floor();
+	Point2i to = ((p_aabb.position + p_aabb.size) / cell_size).floor();
 	int cullcount = 0;
 
 	for (int i = from.x; i <= to.x; i++) {
