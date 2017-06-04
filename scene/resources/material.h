@@ -173,26 +173,29 @@ public:
 	};
 
 private:
-	union MaterialKey {
+	struct MaterialKey {
+		union {
+			struct {
+				uint32_t feature_mask : 11;
+				uint32_t detail_uv : 1;
+				uint32_t blend_mode : 2;
+				uint32_t depth_draw_mode : 2;
+				uint32_t cull_mode : 2;
+				uint32_t flags : 6;
+				uint32_t detail_blend_mode : 2;
+				uint32_t diffuse_mode : 2;
+				uint32_t invalid_key : 1;
+				uint32_t specular_mode : 1;
+				uint32_t billboard_mode : 2;
+			};
 
-		struct {
-			uint32_t feature_mask : 11;
-			uint32_t detail_uv : 1;
-			uint32_t blend_mode : 2;
-			uint32_t depth_draw_mode : 2;
-			uint32_t cull_mode : 2;
-			uint32_t flags : 6;
-			uint32_t detail_blend_mode : 2;
-			uint32_t diffuse_mode : 2;
-			uint32_t invalid_key : 1;
-			uint32_t specular_mode : 1;
-			uint32_t billboard_mode : 2;
+			uint32_t key;
 		};
 
-		uint32_t key;
+		ClassDB::ClassInfo *class_info;
 
 		bool operator<(const MaterialKey &p_key) const {
-			return key < p_key.key;
+			return key < p_key.key || class_info < p_key.class_info;
 		}
 	};
 
@@ -208,6 +211,7 @@ private:
 	_FORCE_INLINE_ MaterialKey _compute_key() const {
 
 		MaterialKey mk;
+		mk.class_info = ClassDB::classes.getptr(StringName(get_class()));
 		mk.key = 0;
 		for (int i = 0; i < FEATURE_MAX; i++) {
 			if (features[i]) {
@@ -264,8 +268,6 @@ private:
 
 	SelfList<SpatialMaterial> element;
 
-	void _update_shader();
-	_FORCE_INLINE_ void _queue_shader_change();
 	_FORCE_INLINE_ bool _is_shader_dirty() const;
 
 	Color albedo;
@@ -315,6 +317,14 @@ private:
 protected:
 	static void _bind_methods();
 	void _validate_property(PropertyInfo &property) const;
+
+	virtual String _get_shader_string();
+	virtual String _get_shader_parameters_string();
+	virtual String _get_shader_vertex_string();
+	virtual String _get_shader_fragment_string();
+
+	virtual void _update_shader();
+	void _queue_shader_change();
 
 public:
 	void set_albedo(const Color &p_albedo);

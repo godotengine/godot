@@ -257,7 +257,35 @@ void SpatialMaterial::_update_shader() {
 	}
 
 	//must create a shader!
+	String code = _get_shader_string();
 
+	ShaderData shader_data;
+	shader_data.shader = VS::get_singleton()->shader_create();
+	shader_data.users = 1;
+
+	print_line(code);
+
+	VS::get_singleton()->shader_set_code(shader_data.shader, code);
+
+	shader_map[mk] = shader_data;
+
+	VS::get_singleton()->material_set_shader(_get_material(), shader_data.shader);
+}
+
+String SpatialMaterial::_get_shader_string() {
+	String code = _get_shader_parameters_string();
+	code += "\n\n";
+	code += "void vertex() {\n";
+	code += _get_shader_vertex_string();
+	code += "}\n";
+	code += "\n\n";
+	code += "void fragment() {\n";
+	code += _get_shader_fragment_string();
+	code += "}\n";
+	return code;
+}
+
+String SpatialMaterial::_get_shader_parameters_string() {
 	String code = "shader_type spatial;\nrender_mode ";
 	switch (blend_mode) {
 		case BLEND_MODE_MIX: code += "blend_mix"; break;
@@ -354,10 +382,11 @@ void SpatialMaterial::_update_shader() {
 		code += "uniform sampler2D texture_subsurface_scattering : hint_white;\n";
 	}
 
-	code += "\n\n";
+	return code;
+}
 
-	code += "void vertex() {\n";
-
+String SpatialMaterial::_get_shader_vertex_string() {
+	String code = "";
 	if (flags[FLAG_SRGB_VERTEX_COLOR]) {
 
 		code += "\tCOLOR.rgb = mix( pow((COLOR.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), COLOR.rgb* (1.0 / 12.92), lessThan(COLOR.rgb,vec3(0.04045)) );\n";
@@ -422,10 +451,11 @@ void SpatialMaterial::_update_shader() {
 	if (detail_uv == DETAIL_UV_2) {
 		code += "\tUV2=UV2*uv2_scale+uv2_offset;\n";
 	}
+	return code;
+}
 
-	code += "}\n";
-	code += "\n\n";
-	code += "void fragment() {\n";
+String SpatialMaterial::_get_shader_fragment_string() {
+	String code = "";
 
 	if (flags[FLAG_USE_POINT_SIZE]) {
 		code += "\tvec4 albedo_tex = texture(texture_albedo,POINT_COORD);\n";
@@ -512,17 +542,7 @@ void SpatialMaterial::_update_shader() {
 	code += "\tROUGHNESS = roughness_tex * roughness;\n";
 	code += "\tSPECULAR = specular;\n";
 
-	code += "}\n";
-
-	ShaderData shader_data;
-	shader_data.shader = VS::get_singleton()->shader_create();
-	shader_data.users = 1;
-
-	VS::get_singleton()->shader_set_code(shader_data.shader, code);
-
-	shader_map[mk] = shader_data;
-
-	VS::get_singleton()->material_set_shader(_get_material(), shader_data.shader);
+	return code;
 }
 
 void SpatialMaterial::flush_changes() {
