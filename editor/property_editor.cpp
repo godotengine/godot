@@ -2310,6 +2310,7 @@ void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String &p
 			if (obj->get(p_name).get_type() == Variant::NIL || obj->get(p_name).operator RefPtr().is_null()) {
 				p_item->set_text(1, "<null>");
 				p_item->set_icon(1, Ref<Texture>());
+				p_item->set_custom_as_button(1, false);
 
 				Dictionary d = p_item->get_metadata(0);
 				int hint = d.has("hint") ? d["hint"].operator int() : -1;
@@ -2319,6 +2320,7 @@ void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String &p
 				}
 
 			} else {
+				p_item->set_custom_as_button(1, true);
 				RES res = obj->get(p_name).operator RefPtr();
 				if (res->is_class("Texture")) {
 					int tw = EditorSettings::get_singleton()->get("docks/property_editor/texture_preview_width");
@@ -3540,17 +3542,21 @@ void PropertyEditor::update_tree() {
 
 				item->set_cell_mode(1, TreeItem::CELL_MODE_CUSTOM);
 				item->set_editable(1, !read_only);
-				item->add_button(1, get_icon("EditResource", "EditorIcons"));
+				//item->add_button(1, get_icon("EditResource", "EditorIcons"));
 				String type;
 				if (p.hint == PROPERTY_HINT_RESOURCE_TYPE)
 					type = p.hint_string;
 
-				if (obj->get(p.name).get_type() == Variant::NIL || obj->get(p.name).operator RefPtr().is_null()) {
+				RES res = obj->get(p.name).operator RefPtr();
+
+				if (obj->get(p.name).get_type() == Variant::NIL || res.is_null()) {
 					item->set_text(1, "<null>");
 					item->set_icon(1, Ref<Texture>());
+					item->set_custom_as_button(1, false);
 
-				} else {
-					RES res = obj->get(p.name).operator RefPtr();
+				} else if (res.is_valid()) {
+
+					item->set_custom_as_button(1, true);
 
 					if (res->is_class("Texture")) {
 						int tw = EditorSettings::get_singleton()->get("docks/property_editor/texture_preview_width");
@@ -3852,6 +3858,16 @@ void PropertyEditor::_item_edited() {
 
 		case Variant::NODE_PATH: {
 			_edit_set(name, NodePath(item->get_text(1)), refresh_all);
+
+		} break;
+		case Variant::OBJECT: {
+			if (!item->is_custom_set_as_button(1))
+				break;
+
+			RES res = obj->get(name);
+			if (res.is_valid()) {
+				emit_signal("resource_selected", res.get_ref_ptr(), name);
+			}
 
 		} break;
 

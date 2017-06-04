@@ -610,6 +610,18 @@ Color TreeItem::get_custom_bg_color(int p_column) const {
 	return cells[p_column].bg_color;
 }
 
+void TreeItem::set_custom_as_button(int p_column, bool p_button) {
+
+	ERR_FAIL_INDEX(p_column, cells.size());
+	cells[p_column].custom_button = p_button;
+}
+
+bool TreeItem::is_custom_set_as_button(int p_column) const {
+
+	ERR_FAIL_INDEX_V(p_column, cells.size(), false);
+	return cells[p_column].custom_button;
+}
+
 void TreeItem::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_cell_mode", "column", "mode"), &TreeItem::set_cell_mode);
@@ -669,6 +681,9 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_custom_bg_color", "column", "color", "just_outline"), &TreeItem::set_custom_bg_color, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("clear_custom_bg_color", "column"), &TreeItem::clear_custom_bg_color);
 	ClassDB::bind_method(D_METHOD("get_custom_bg_color", "column"), &TreeItem::get_custom_bg_color);
+
+	ClassDB::bind_method(D_METHOD("set_custom_as_button", "column", "enable"), &TreeItem::set_custom_as_button);
+	ClassDB::bind_method(D_METHOD("is_custom_set_as_button", "column"), &TreeItem::is_custom_set_as_button);
 
 	ClassDB::bind_method(D_METHOD("add_button", "column", "button:Texture", "button_idx", "disabled", "tooltip"), &TreeItem::add_button, DEFVAL(-1), DEFVAL(false), DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_button_count", "column"), &TreeItem::get_button_count);
@@ -732,6 +747,10 @@ TreeItem::~TreeItem() {
 		tree->pressing_for_editor = false;
 	}
 
+	if (tree && tree->cache.hover_item == this) {
+		tree->cache.hover_item = NULL;
+	}
+
 	if (tree && tree->selected_item == this)
 		tree->selected_item = NULL;
 
@@ -771,6 +790,11 @@ void Tree::update_cache() {
 	cache.arrow = get_icon("arrow");
 	cache.select_arrow = get_icon("select_arrow");
 	cache.updown = get_icon("updown");
+
+	cache.custom_button = get_stylebox("custom_button");
+	cache.custom_button_hover = get_stylebox("custom_button_hover");
+	cache.custom_button_pressed = get_stylebox("custom_button_pressed");
+	cache.custom_button_font_highlight = get_color("custom_button_font_highlight");
 
 	cache.font_color = get_color("font_color");
 	cache.font_color_selected = get_color("font_color_selected");
@@ -832,6 +856,9 @@ int Tree::compute_item_height(TreeItem *p_item) const {
 					}
 					if (s.height > height)
 						height = s.height;
+				}
+				if (p_item->cells[i].mode == TreeItem::CELL_MODE_CUSTOM && p_item->cells[i].custom_button) {
+					height += cache.custom_button->get_minimum_size().height;
 				}
 
 			} break;
@@ -1202,12 +1229,28 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 					Ref<Texture> downarrow = cache.select_arrow;
 
 					Rect2i ir = item_rect;
-					ir.size.width -= downarrow->get_width();
-					draw_item_rect(p_item->cells[i], ir, col);
 
 					Point2i arrow_pos = item_rect.pos;
 					arrow_pos.x += item_rect.size.x - downarrow->get_width();
 					arrow_pos.y += Math::floor(((item_rect.size.y - downarrow->get_height())) / 2.0);
+					ir.size.width -= downarrow->get_width();
+
+					if (p_item->cells[i].custom_button) {
+						if (cache.hover_item == p_item && cache.hover_cell == i) {
+							if (Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT)) {
+								draw_style_box(cache.custom_button_pressed, ir);
+							} else {
+								draw_style_box(cache.custom_button_hover, ir);
+								col = cache.custom_button_font_highlight;
+							}
+						} else {
+							draw_style_box(cache.custom_button, ir);
+						}
+						ir.size -= cache.custom_button->get_minimum_size();
+						ir.pos += cache.custom_button->get_offset();
+					}
+
+					draw_item_rect(p_item->cells[i], ir, col);
 
 					downarrow->draw(ci, arrow_pos);
 
@@ -1697,11 +1740,18 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 			case TreeItem::CELL_MODE_CUSTOM: {
 				edited_item = p_item;
 				edited_col = col;
-				custom_popup_rect = Rect2i(get_global_position() + Point2i(col_ofs, _get_title_button_height() + y_ofs + item_h - cache.offset.y), Size2(get_column_width(col), item_h));
-				emit_signal("custom_popup_edited", ((bool)(x >= (col_width - item_h / 2))));
+				bool on_arrow = x > col_width - cache.select_arrow->get_width();
 
 				bring_up_editor = false;
-				item_edited(col, p_item);
+
+				if (on_arrow || !p_item->cells[col].custom_button) {
+					custom_popup_rect = Rect2i(get_global_position() + Point2i(col_ofs, _get_title_button_height() + y_ofs + item_h - cache.offset.y), Size2(get_column_width(col), item_h));
+					emit_signal("custom_popup_edited", ((bool)(x >= (col_width - item_h / 2))));
+				}
+
+				if (!p_item->cells[col].custom_button || !on_arrow) {
+					item_edited(col, p_item);
+				}
 				click_handled = true;
 				return -1;
 			} break;
@@ -2148,7 +2198,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 			}
 		}
 
-		if (drop_mode_flags && root) {
+		if (root) {
 
 			Point2 mpos = mm->get_position();
 			mpos -= cache.bg->get_offset();
@@ -2163,9 +2213,15 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 				int col, h, section;
 				TreeItem *it = _find_item_at_pos(root, mpos, col, h, section);
 
-				if (it != drop_mode_over || section != drop_mode_section) {
+				if (drop_mode_flags && it != drop_mode_over || section != drop_mode_section) {
 					drop_mode_over = it;
 					drop_mode_section = section;
+					update();
+				}
+
+				if (it != cache.hover_item || col != cache.hover_cell) {
+					cache.hover_item = it;
+					cache.hover_cell = col;
 					update();
 				}
 			}
@@ -3469,6 +3525,7 @@ void Tree::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("item_rmb_selected", PropertyInfo(Variant::VECTOR2, "pos")));
 	ADD_SIGNAL(MethodInfo("empty_tree_rmb_selected", PropertyInfo(Variant::VECTOR2, "pos")));
 	ADD_SIGNAL(MethodInfo("item_edited"));
+	ADD_SIGNAL(MethodInfo("item_custom_button_pressed"));
 	ADD_SIGNAL(MethodInfo("item_double_clicked"));
 	ADD_SIGNAL(MethodInfo("item_collapsed", PropertyInfo(Variant::OBJECT, "item")));
 	//ADD_SIGNAL( MethodInfo("item_doubleclicked" ) );
@@ -3575,6 +3632,9 @@ Tree::Tree() {
 	force_edit_checkbox_only_on_checkbox = false;
 
 	set_clip_contents(true);
+
+	cache.hover_item = NULL;
+	cache.hover_cell = -1;
 }
 
 Tree::~Tree() {

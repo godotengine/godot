@@ -626,6 +626,9 @@ void fill_default_theme(Ref<Theme> &t, const Ref<Font> &default_font, const Ref<
 	t->set_stylebox("title_button_normal", "Tree", make_stylebox(tree_title_png, 4, 4, 4, 4));
 	t->set_stylebox("title_button_pressed", "Tree", make_stylebox(tree_title_pressed_png, 4, 4, 4, 4));
 	t->set_stylebox("title_button_hover", "Tree", make_stylebox(tree_title_png, 4, 4, 4, 4));
+	t->set_stylebox("custom_button", "Tree", sb_button_normal);
+	t->set_stylebox("custom_button_pressed", "Tree", sb_button_pressed);
+	t->set_stylebox("custom_button_hover", "Tree", sb_button_hover);
 
 	t->set_icon("checked", "Tree", make_icon(checked_png));
 	t->set_icon("unchecked", "Tree", make_icon(unchecked_png));
@@ -645,6 +648,7 @@ void fill_default_theme(Ref<Theme> &t, const Ref<Font> &default_font, const Ref<
 	t->set_color("guide_color", "Tree", Color(0, 0, 0, 0.1));
 	t->set_color("drop_position_color", "Tree", Color(1, 0.3, 0.2));
 	t->set_color("relationship_line_color", "Tree", Color::html("464646"));
+	t->set_color("custom_button_font_highlight", "Tree", control_font_color_hover);
 
 	t->set_constant("hseparation", "Tree", 4 * scale);
 	t->set_constant("vseparation", "Tree", 4 * scale);

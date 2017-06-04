@@ -247,6 +247,10 @@ Ref<Theme> create_editor_theme() {
 	theme->set_icon("arrow_collapsed", "Tree", theme->get_icon("TreeArrowRight", "EditorIcons"));
 	theme->set_icon("select_arrow", "Tree", theme->get_icon("Dropdown", "EditorIcons"));
 	theme->set_stylebox("bg_focus", "Tree", focus_sbt);
+	theme->set_stylebox("custom_button", "Tree", style_button);
+	theme->set_stylebox("custom_button_pressed", "Tree", style_button);
+	theme->set_stylebox("custom_button_hover", "Tree", style_button);
+	theme->set_color("custom_button_font_highlight", "Tree", HIGHLIGHT_COLOR_LIGHT);
 
 	Ref<StyleBox> style_tree_btn = make_flat_stylebox(light_color_1, 2, 4, 2, 4);
 	theme->set_stylebox("button_pressed", "Tree", style_tree_btn);
