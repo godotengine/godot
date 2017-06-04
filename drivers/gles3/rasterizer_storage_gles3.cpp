@@ -5452,7 +5452,7 @@ void RasterizerStorageGLES3::_render_target_clear(RenderTarget *rt) {
 		glDeleteRenderbuffers(1, &rt->buffers.diffuse);
 		glDeleteRenderbuffers(1, &rt->buffers.specular);
 		glDeleteRenderbuffers(1, &rt->buffers.normal_rough);
-		glDeleteRenderbuffers(1, &rt->buffers.motion_sss);
+		glDeleteRenderbuffers(1, &rt->buffers.sss);
 		glDeleteFramebuffers(1, &rt->buffers.effect_fbo);
 		glDeleteTextures(1, &rt->buffers.effect);
 
@@ -5641,15 +5641,15 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_RENDERBUFFER, rt->buffers.normal_rough);
 
-		glGenRenderbuffers(1, &rt->buffers.motion_sss);
-		glBindRenderbuffer(GL_RENDERBUFFER, rt->buffers.motion_sss);
+		glGenRenderbuffers(1, &rt->buffers.sss);
+		glBindRenderbuffer(GL_RENDERBUFFER, rt->buffers.sss);
 
 		if (msaa == 0)
-			glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, rt->width, rt->height);
+			glRenderbufferStorage(GL_RENDERBUFFER, GL_R8, rt->width, rt->height);
 		else
-			glRenderbufferStorageMultisample(GL_RENDERBUFFER, msaa, GL_RGBA8, rt->width, rt->height);
+			glRenderbufferStorageMultisample(GL_RENDERBUFFER, msaa, GL_R8, rt->width, rt->height);
 
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_RENDERBUFFER, rt->buffers.motion_sss);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_RENDERBUFFER, rt->buffers.sss);
 
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 		glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);

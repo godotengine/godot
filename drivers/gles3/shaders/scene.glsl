@@ -523,8 +523,8 @@ uniform int reflection_count;
 layout(location=0) out vec4 diffuse_buffer;
 layout(location=1) out vec4 specular_buffer;
 layout(location=2) out vec4 normal_mr_buffer;
-#if defined (ENABLE_SSS_MOTION)
-layout(location=3) out vec4 motion_ssr_buffer;
+#if defined(ENABLE_SSS)
+layout(location=3) out float sss_buffer;
 #endif
 
 #else
@@ -1271,7 +1271,7 @@ void main() {
 	bool discard_=false;
 #endif
 
-#if defined (ENABLE_SSS_MOTION)
+#if defined (ENABLE_SSS)
 	float sss_strength=0.0;
 #endif
 
@@ -1616,8 +1616,8 @@ FRAGMENT_SHADER_CODE
 
 	normal_mr_buffer=vec4(normalize(normal)*0.5+0.5,roughness);
 
-#if defined (ENABLE_SSS_MOTION)
-	motion_ssr_buffer = vec4(vec3(0.0),sss_strength);
+#if defined (ENABLE_SSS)
+	sss_buffer = sss_strength;
 #endif
 
 #else
