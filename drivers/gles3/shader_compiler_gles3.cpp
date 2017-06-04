@@ -574,6 +574,7 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 					code += _dump_node_code(onode->arguments[2], p_level, r_gen_code, p_actions, p_default_actions);
 
 				} break;
+
 				default: {
 
 					code = "(" + _dump_node_code(onode->arguments[0], p_level, r_gen_code, p_actions, p_default_actions) + _opstr(onode->op) + _dump_node_code(onode->arguments[1], p_level, r_gen_code, p_actions, p_default_actions) + ")";
@@ -593,6 +594,10 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 					code += _mktab(p_level) + "else\n";
 					code += _dump_node_code(cfnode->blocks[1], p_level + 1, r_gen_code, p_actions, p_default_actions);
 				}
+			} else if (cfnode->flow_op == SL::FLOW_OP_WHILE) {
+
+				code += _mktab(p_level) + "while (" + _dump_node_code(cfnode->expressions[0], p_level, r_gen_code, p_actions, p_default_actions) + ")\n";
+				code += _dump_node_code(cfnode->blocks[0], p_level + 1, r_gen_code, p_actions, p_default_actions);
 
 			} else if (cfnode->flow_op == SL::FLOW_OP_RETURN) {
 

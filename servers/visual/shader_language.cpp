@@ -3185,7 +3185,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Dat
 
 			tk = _get_token();
 			if (tk.type != TK_PARENTHESIS_CLOSE) {
-				_set_error("Expected '(' after expression");
+				_set_error("Expected ')' after expression");
 				return ERR_PARSE_ERROR;
 			}
 
@@ -3196,6 +3196,8 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Dat
 			p_block->statements.push_back(cf);
 
 			Error err = _parse_block(block, p_builtin_types, true, p_can_break, p_can_continue);
+			if (err)
+				return err;
 
 			pos = _get_tkpos();
 			tk = _get_token();
@@ -3209,6 +3211,35 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Dat
 			} else {
 				_set_tkpos(pos); //rollback
 			}
+		} else if (tk.type == TK_CF_WHILE) {
+			//if () {}
+			tk = _get_token();
+			if (tk.type != TK_PARENTHESIS_OPEN) {
+				_set_error("Expected '(' after if");
+				return ERR_PARSE_ERROR;
+			}
+
+			ControlFlowNode *cf = alloc_node<ControlFlowNode>();
+			cf->flow_op = FLOW_OP_WHILE;
+			Node *n = _parse_and_reduce_expression(p_block, p_builtin_types);
+			if (!n)
+				return ERR_PARSE_ERROR;
+
+			tk = _get_token();
+			if (tk.type != TK_PARENTHESIS_CLOSE) {
+				_set_error("Expected ')' after expression");
+				return ERR_PARSE_ERROR;
+			}
+
+			BlockNode *block = alloc_node<BlockNode>();
+			block->parent_block = p_block;
+			cf->expressions.push_back(n);
+			cf->blocks.push_back(block);
+			p_block->statements.push_back(cf);
+
+			Error err = _parse_block(block, p_builtin_types, true, p_can_break, p_can_continue);
+			if (err)
+				return err;
 
 		} else if (tk.type == TK_CF_RETURN) {
 

@@ -97,7 +97,7 @@ public:
 		TEXTURE_CLEARCOAT,
 		TEXTURE_FLOWMAP,
 		TEXTURE_AMBIENT_OCCLUSION,
-		TEXTURE_HEIGHT,
+		TEXTURE_DEPTH,
 		TEXTURE_SUBSURFACE_SCATTERING,
 		TEXTURE_REFRACTION,
 		TEXTURE_DETAIL_MASK,
@@ -120,7 +120,7 @@ public:
 		FEATURE_CLEARCOAT,
 		FEATURE_ANISOTROPY,
 		FEATURE_AMBIENT_OCCLUSION,
-		FEATURE_HEIGHT_MAPPING,
+		FEATURE_DEPTH_MAPPING,
 		FEATURE_SUBSURACE_SCATTERING,
 		FEATURE_REFRACTION,
 		FEATURE_DETAIL,
@@ -185,7 +185,7 @@ private:
 			uint32_t detail_blend_mode : 2;
 			uint32_t diffuse_mode : 2;
 			uint32_t invalid_key : 1;
-			uint32_t specular_mode : 1;
+			uint32_t deep_parallax : 1;
 			uint32_t billboard_mode : 2;
 		};
 
@@ -226,6 +226,8 @@ private:
 		mk.detail_blend_mode = detail_blend_mode;
 		mk.diffuse_mode = diffuse_mode;
 		mk.billboard_mode = billboard_mode;
+		mk.deep_parallax = deep_parallax ? 1 : 0;
+		;
 
 		return mk;
 	}
@@ -243,7 +245,7 @@ private:
 		StringName clearcoat;
 		StringName clearcoat_gloss;
 		StringName anisotropy;
-		StringName height_scale;
+		StringName depth_scale;
 		StringName subsurface_scattering_strength;
 		StringName refraction;
 		StringName refraction_roughness;
@@ -255,6 +257,9 @@ private:
 		StringName particle_h_frames;
 		StringName particle_v_frames;
 		StringName particles_anim_loop;
+		StringName depth_min_layers;
+		StringName depth_max_layers;
+
 		StringName texture_names[TEXTURE_MAX];
 	};
 
@@ -280,7 +285,7 @@ private:
 	float clearcoat;
 	float clearcoat_gloss;
 	float anisotropy;
-	float height_scale;
+	float depth_scale;
 	float subsurface_scattering_strength;
 	float refraction;
 	float refraction_roughness;
@@ -297,6 +302,10 @@ private:
 	Vector2 uv2_offset;
 
 	DetailUV detail_uv;
+
+	bool deep_parallax;
+	int deep_parallax_min_layers;
+	int deep_parallax_max_layers;
 
 	BlendMode blend_mode;
 	BlendMode detail_blend_mode;
@@ -353,8 +362,17 @@ public:
 	void set_anisotropy(float p_anisotropy);
 	float get_anisotropy() const;
 
-	void set_height_scale(float p_height_scale);
-	float get_height_scale() const;
+	void set_depth_scale(float p_depth_scale);
+	float get_depth_scale() const;
+
+	void set_depth_deep_parallax(bool p_enable);
+	bool is_depth_deep_parallax_enabled() const;
+
+	void set_depth_deep_parallax_min_layers(int p_layer);
+	int get_depth_deep_parallax_min_layers() const;
+
+	void set_depth_deep_parallax_max_layers(int p_layer);
+	int get_depth_deep_parallax_max_layers() const;
 
 	void set_subsurface_scattering_strength(float p_strength);
 	float get_subsurface_scattering_strength() const;
