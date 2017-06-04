@@ -163,6 +163,10 @@ String FileAccess::fix_path(const String &p_path) const {
 		} break;
 		case ACCESS_FILESYSTEM: {
 
+			if (r_path.begins_with("local://")) {
+
+				return r_path.replace_first("local:/","");
+			}
 			return r_path;
 		} break;
 	}
