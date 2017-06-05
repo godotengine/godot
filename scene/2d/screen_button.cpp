@@ -207,7 +207,7 @@ void TouchScreenButton::_input(const Ref<InputEvent> &p_event) {
 		if ((st.is_valid() && st->is_pressed()) || sd.is_valid()) {
 
 			int index = st.is_valid() ? st->get_index() : sd->get_index();
-			Vector2 coord = st.is_valid() ? st->get_pos() : sd->get_pos();
+			Vector2 coord = st.is_valid() ? st->get_position() : sd->get_position();
 
 			if (finger_pressed == -1 || index == finger_pressed) {
 
@@ -254,7 +254,7 @@ void TouchScreenButton::_input(const Ref<InputEvent> &p_event) {
 				if (!can_press)
 					return; //already fingering
 
-				Point2 coord = (get_global_transform_with_canvas()).affine_inverse().xform(st->get_pos());
+				Point2 coord = (get_global_transform_with_canvas()).affine_inverse().xform(st->get_position());
 				Rect2 item_rect = get_item_rect();
 
 				bool touched = false;

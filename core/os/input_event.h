@@ -265,11 +265,11 @@ public:
 	void set_button_mask(int p_mask);
 	int get_button_mask() const;
 
-	void set_pos(const Vector2 &p_pos);
-	Vector2 get_pos() const;
+	void set_position(const Vector2 &p_pos);
+	Vector2 get_position() const;
 
-	void set_global_pos(const Vector2 &p_global_pos);
-	Vector2 get_global_pos() const;
+	void set_global_position(const Vector2 &p_global_pos);
+	Vector2 get_global_position() const;
 
 	InputEventMouse();
 };
@@ -390,8 +390,8 @@ public:
 	void set_index(int p_index);
 	int get_index() const;
 
-	void set_pos(const Vector2 &p_pos);
-	Vector2 get_pos() const;
+	void set_position(const Vector2 &p_pos);
+	Vector2 get_position() const;
 
 	void set_pressed(bool p_pressed);
 	virtual bool is_pressed() const;
@@ -416,8 +416,8 @@ public:
 	void set_index(int p_index);
 	int get_index() const;
 
-	void set_pos(const Vector2 &p_pos);
-	Vector2 get_pos() const;
+	void set_position(const Vector2 &p_pos);
+	Vector2 get_position() const;
 
 	void set_relative(const Vector2 &p_relative);
 	Vector2 get_relative() const;

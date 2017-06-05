@@ -1128,7 +1128,7 @@ public:
 			GLuint specular;
 			GLuint diffuse;
 			GLuint normal_rough;
-			GLuint motion_sss;
+			GLuint sss;
 
 			GLuint effect_fbo;
 			GLuint effect;

@@ -658,6 +658,21 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				}
 			}
 		} break;
+
+		default: {
+
+			if (p_tool >= EDIT_SUBRESOURCE_BASE) {
+
+				int idx = p_tool - EDIT_SUBRESOURCE_BASE;
+
+				ERR_FAIL_INDEX(idx, subresources.size());
+
+				Object *obj = ObjectDB::get_instance(subresources[idx]);
+				ERR_FAIL_COND(!obj);
+
+				editor->push_item(obj);
+			}
+		}
 	}
 }
 
@@ -1662,6 +1677,47 @@ void SceneTreeDock::_nodes_dragged(Array p_nodes, NodePath p_to, int p_type) {
 	_do_reparent(to_node, to_pos, nodes, true);
 }
 
+void SceneTreeDock::_add_children_to_popup(Object *p_obj, int p_depth) {
+
+	if (p_depth > 8)
+		return;
+
+	List<PropertyInfo> pinfo;
+	p_obj->get_property_list(&pinfo);
+	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
+
+		if (!(E->get().usage & PROPERTY_USAGE_EDITOR))
+			continue;
+		if (E->get().hint != PROPERTY_HINT_RESOURCE_TYPE)
+			continue;
+
+		Variant value = p_obj->get(E->get().name);
+		if (value.get_type() != Variant::OBJECT)
+			continue;
+		Object *obj = value;
+		if (!obj)
+			continue;
+
+		Ref<Texture> icon;
+
+		if (has_icon(obj->get_class(), "EditorIcons"))
+			icon = get_icon(obj->get_class(), "EditorIcons");
+		else
+			icon = get_icon("Object", "EditorIcons");
+
+		if (menu->get_item_count() == 0) {
+			menu->add_item(TTR("Sub-Resources:"));
+			menu->set_item_disabled(0, true);
+		}
+		int index = menu->get_item_count();
+		menu->add_icon_item(icon, E->get().name.capitalize(), EDIT_SUBRESOURCE_BASE + subresources.size());
+		menu->set_item_h_offset(index, p_depth * 10 * EDSCALE);
+		subresources.push_back(obj->get_instance_ID());
+
+		_add_children_to_popup(obj, p_depth + 1);
+	}
+}
+
 void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 	if (!EditorNode::get_singleton()->get_edited_scene()) {
 
@@ -1683,6 +1739,12 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 	menu->clear();
 
 	if (selection.size() == 1) {
+
+		subresources.clear();
+		_add_children_to_popup(selection.front()->get(), 0);
+		if (menu->get_item_count() > 0)
+			menu->add_separator();
+
 		menu->add_icon_shortcut(get_icon("Add", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/add_child_node"), TOOL_NEW);
 		menu->add_icon_shortcut(get_icon("Instance", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/instance_scene"), TOOL_INSTANCE);
 		menu->add_separator();

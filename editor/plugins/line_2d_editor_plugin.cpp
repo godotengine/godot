@@ -87,7 +87,7 @@ bool Line2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (mb.is_valid()) {
 
-		Vector2 gpoint = mb->get_pos();
+		Vector2 gpoint = mb->get_position();
 		Vector2 cpoint = mouse_to_local_pos(gpoint, mb->get_alt());
 
 		if (mb->is_pressed() && _dragging == false) {
@@ -146,7 +146,7 @@ bool Line2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 	if (mm.is_valid()) {
 
 		if (_dragging) {
-			Vector2 cpoint = mouse_to_local_pos(mm->get_pos(), mm->get_alt());
+			Vector2 cpoint = mouse_to_local_pos(mm->get_position(), mm->get_alt());
 			node->set_point_pos(action_point, cpoint);
 			canvas_item_editor->get_viewport_control()->update();
 			return true;

@@ -138,8 +138,8 @@ static Ref<BitmapFont> make_font(int p_height, int p_ascent, int p_valign, int p
 
 		int chr = c[0];
 		Rect2 frect;
-		frect.pos.x = c[1];
-		frect.pos.y = c[2];
+		frect.position.x = c[1];
+		frect.position.y = c[2];
 		frect.size.x = c[3];
 		frect.size.y = c[4];
 		Point2 align(c[5], c[6] + p_valign);
@@ -170,8 +170,8 @@ static Ref<BitmapFont> make_font2(int p_height, int p_ascent, int p_charcount, c
 
 		int chr = c[0];
 		Rect2 frect;
-		frect.pos.x = c[1];
-		frect.pos.y = c[2];
+		frect.position.x = c[1];
+		frect.position.y = c[2];
 		frect.size.x = c[3];
 		frect.size.y = c[4];
 		Point2 align(c[6], c[5]);
@@ -626,6 +626,9 @@ void fill_default_theme(Ref<Theme> &t, const Ref<Font> &default_font, const Ref<
 	t->set_stylebox("title_button_normal", "Tree", make_stylebox(tree_title_png, 4, 4, 4, 4));
 	t->set_stylebox("title_button_pressed", "Tree", make_stylebox(tree_title_pressed_png, 4, 4, 4, 4));
 	t->set_stylebox("title_button_hover", "Tree", make_stylebox(tree_title_png, 4, 4, 4, 4));
+	t->set_stylebox("custom_button", "Tree", sb_button_normal);
+	t->set_stylebox("custom_button_pressed", "Tree", sb_button_pressed);
+	t->set_stylebox("custom_button_hover", "Tree", sb_button_hover);
 
 	t->set_icon("checked", "Tree", make_icon(checked_png));
 	t->set_icon("unchecked", "Tree", make_icon(unchecked_png));
@@ -645,6 +648,7 @@ void fill_default_theme(Ref<Theme> &t, const Ref<Font> &default_font, const Ref<
 	t->set_color("guide_color", "Tree", Color(0, 0, 0, 0.1));
 	t->set_color("drop_position_color", "Tree", Color(1, 0.3, 0.2));
 	t->set_color("relationship_line_color", "Tree", Color::html("464646"));
+	t->set_color("custom_button_font_highlight", "Tree", control_font_color_hover);
 
 	t->set_constant("hseparation", "Tree", 4 * scale);
 	t->set_constant("vseparation", "Tree", 4 * scale);

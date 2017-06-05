@@ -120,20 +120,20 @@ Transform2D Camera2D::get_camera_transform() {
 		Rect2 screen_rect(-screen_offset + camera_pos, screen_size * zoom);
 
 		if (offset != Vector2())
-			screen_rect.pos += offset;
+			screen_rect.position += offset;
 
 		if (limit_smoothing_enabled) {
-			if (screen_rect.pos.x < limit[MARGIN_LEFT])
-				camera_pos.x -= screen_rect.pos.x - limit[MARGIN_LEFT];
+			if (screen_rect.position.x < limit[MARGIN_LEFT])
+				camera_pos.x -= screen_rect.position.x - limit[MARGIN_LEFT];
 
-			if (screen_rect.pos.x + screen_rect.size.x > limit[MARGIN_RIGHT])
-				camera_pos.x -= screen_rect.pos.x + screen_rect.size.x - limit[MARGIN_RIGHT];
+			if (screen_rect.position.x + screen_rect.size.x > limit[MARGIN_RIGHT])
+				camera_pos.x -= screen_rect.position.x + screen_rect.size.x - limit[MARGIN_RIGHT];
 
-			if (screen_rect.pos.y + screen_rect.size.y > limit[MARGIN_BOTTOM])
-				camera_pos.y -= screen_rect.pos.y + screen_rect.size.y - limit[MARGIN_BOTTOM];
+			if (screen_rect.position.y + screen_rect.size.y > limit[MARGIN_BOTTOM])
+				camera_pos.y -= screen_rect.position.y + screen_rect.size.y - limit[MARGIN_BOTTOM];
 
-			if (screen_rect.pos.y < limit[MARGIN_TOP])
-				camera_pos.y -= screen_rect.pos.y - limit[MARGIN_TOP];
+			if (screen_rect.position.y < limit[MARGIN_TOP])
+				camera_pos.y -= screen_rect.position.y - limit[MARGIN_TOP];
 		}
 
 		if (smoothing_enabled && !get_tree()->is_editor_hint()) {
@@ -160,42 +160,42 @@ Transform2D Camera2D::get_camera_transform() {
 	}
 
 	Rect2 screen_rect(-screen_offset + ret_camera_pos, screen_size * zoom);
-	if (screen_rect.pos.x < limit[MARGIN_LEFT])
-		screen_rect.pos.x = limit[MARGIN_LEFT];
+	if (screen_rect.position.x < limit[MARGIN_LEFT])
+		screen_rect.position.x = limit[MARGIN_LEFT];
 
-	if (screen_rect.pos.x + screen_rect.size.x > limit[MARGIN_RIGHT])
-		screen_rect.pos.x = limit[MARGIN_RIGHT] - screen_rect.size.x;
+	if (screen_rect.position.x + screen_rect.size.x > limit[MARGIN_RIGHT])
+		screen_rect.position.x = limit[MARGIN_RIGHT] - screen_rect.size.x;
 
-	if (screen_rect.pos.y + screen_rect.size.y > limit[MARGIN_BOTTOM])
-		screen_rect.pos.y = limit[MARGIN_BOTTOM] - screen_rect.size.y;
+	if (screen_rect.position.y + screen_rect.size.y > limit[MARGIN_BOTTOM])
+		screen_rect.position.y = limit[MARGIN_BOTTOM] - screen_rect.size.y;
 
-	if (screen_rect.pos.y < limit[MARGIN_TOP])
-		screen_rect.pos.y = limit[MARGIN_TOP];
+	if (screen_rect.position.y < limit[MARGIN_TOP])
+		screen_rect.position.y = limit[MARGIN_TOP];
 
 	if (offset != Vector2()) {
 
-		screen_rect.pos += offset;
-		if (screen_rect.pos.x + screen_rect.size.x > limit[MARGIN_RIGHT])
-			screen_rect.pos.x = limit[MARGIN_RIGHT] - screen_rect.size.x;
+		screen_rect.position += offset;
+		if (screen_rect.position.x + screen_rect.size.x > limit[MARGIN_RIGHT])
+			screen_rect.position.x = limit[MARGIN_RIGHT] - screen_rect.size.x;
 
-		if (screen_rect.pos.y + screen_rect.size.y > limit[MARGIN_BOTTOM])
-			screen_rect.pos.y = limit[MARGIN_BOTTOM] - screen_rect.size.y;
+		if (screen_rect.position.y + screen_rect.size.y > limit[MARGIN_BOTTOM])
+			screen_rect.position.y = limit[MARGIN_BOTTOM] - screen_rect.size.y;
 
-		if (screen_rect.pos.x < limit[MARGIN_LEFT])
-			screen_rect.pos.x = limit[MARGIN_LEFT];
+		if (screen_rect.position.x < limit[MARGIN_LEFT])
+			screen_rect.position.x = limit[MARGIN_LEFT];
 
-		if (screen_rect.pos.y < limit[MARGIN_TOP])
-			screen_rect.pos.y = limit[MARGIN_TOP];
+		if (screen_rect.position.y < limit[MARGIN_TOP])
+			screen_rect.position.y = limit[MARGIN_TOP];
 	}
 
-	camera_screen_center = screen_rect.pos + screen_rect.size * 0.5;
+	camera_screen_center = screen_rect.position + screen_rect.size * 0.5;
 
 	Transform2D xform;
 	if (rotating) {
 		xform.set_rotation(angle);
 	}
 	xform.scale_basis(zoom);
-	xform.set_origin(screen_rect.pos /*.floor()*/);
+	xform.set_origin(screen_rect.position /*.floor()*/);
 
 	/*
 	if (0) {

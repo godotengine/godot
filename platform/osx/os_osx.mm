@@ -291,8 +291,8 @@ static int button_mask = 0;
 	get_key_modifier_state([event modifierFlags], mb);
 	mb->set_button_index(BUTTON_LEFT);
 	mb->set_pressed(true);
-	mb->set_pos(Vector2(mouse_x, mouse_y));
-	mb->set_global_pos(Vector2(mouse_x, mouse_y));
+	mb->set_position(Vector2(mouse_x, mouse_y));
+	mb->set_global_position(Vector2(mouse_x, mouse_y));
 	mb->set_button_mask(button_mask);
 	mb->set_doubleclick([event clickCount] == 2);
 	OS_OSX::singleton->push_input(mb);
@@ -311,8 +311,8 @@ static int button_mask = 0;
 	get_key_modifier_state([event modifierFlags], mb);
 	mb->set_button_index(BUTTON_LEFT);
 	mb->set_pressed(false);
-	mb->set_pos(Vector2(mouse_x, mouse_y));
-	mb->set_global_pos(Vector2(mouse_x, mouse_y));
+	mb->set_position(Vector2(mouse_x, mouse_y));
+	mb->set_global_position(Vector2(mouse_x, mouse_y));
 	mb->set_button_mask(button_mask);
 	mb->set_doubleclick([event clickCount] == 2);
 	OS_OSX::singleton->push_input(mb);
@@ -330,8 +330,8 @@ static int button_mask = 0;
 	const NSPoint p = [event locationInWindow];
 	mouse_x = p.x * OS_OSX::singleton->_mouse_scale([[event window] backingScaleFactor]);
 	mouse_y = (contentRect.size.height - p.y) * OS_OSX::singleton->_mouse_scale([[event window] backingScaleFactor]);
-	mm->set_pos(Vector2(mouse_x, mouse_y));
-	mm->set_global_pos(Vector2(mouse_x, mouse_y));
+	mm->set_position(Vector2(mouse_x, mouse_y));
+	mm->set_global_position(Vector2(mouse_x, mouse_y));
 	Vector2 relativeMotion = Vector2();
 	relativeMotion.x = [event deltaX] * OS_OSX::singleton->_mouse_scale([[event window] backingScaleFactor]);
 	relativeMotion.y = [event deltaY] * OS_OSX::singleton->_mouse_scale([[event window] backingScaleFactor]);
@@ -352,8 +352,8 @@ static int button_mask = 0;
 	get_key_modifier_state([event modifierFlags], mb);
 	mb->set_button_index(BUTTON_RIGHT);
 	mb->set_pressed(true);
-	mb->set_pos(Vector2(mouse_x, mouse_y));
-	mb->set_global_pos(Vector2(mouse_x, mouse_y));
+	mb->set_position(Vector2(mouse_x, mouse_y));
+	mb->set_global_position(Vector2(mouse_x, mouse_y));
 	mb->set_button_mask(button_mask);
 	mb->set_doubleclick([event clickCount] == 2);
 	OS_OSX::singleton->push_input(mb);
@@ -373,8 +373,8 @@ static int button_mask = 0;
 	get_key_modifier_state([event modifierFlags], mb);
 	mb->set_button_index(BUTTON_RIGHT);
 	mb->set_pressed(false);
-	mb->set_pos(Vector2(mouse_x, mouse_y));
-	mb->set_global_pos(Vector2(mouse_x, mouse_y));
+	mb->set_position(Vector2(mouse_x, mouse_y));
+	mb->set_global_position(Vector2(mouse_x, mouse_y));
 	mb->set_button_mask(button_mask);
 	mb->set_doubleclick([event clickCount] == 2);
 	OS_OSX::singleton->push_input(mb);
@@ -393,8 +393,8 @@ static int button_mask = 0;
 	get_key_modifier_state([event modifierFlags], mb);
 	mb->set_button_index(BUTTON_MIDDLE);
 	mb->set_pressed(true);
-	mb->set_pos(Vector2(mouse_x, mouse_y));
-	mb->set_global_pos(Vector2(mouse_x, mouse_y));
+	mb->set_position(Vector2(mouse_x, mouse_y));
+	mb->set_global_position(Vector2(mouse_x, mouse_y));
 	mb->set_button_mask(button_mask);
 	mb->set_doubleclick([event clickCount] == 2);
 	OS_OSX::singleton->push_input(mb);
@@ -417,8 +417,8 @@ static int button_mask = 0;
 	get_key_modifier_state([event modifierFlags], mb);
 	mb->set_button_index(BUTTON_MIDDLE);
 	mb->set_pressed(true);
-	mb->set_pos(Vector2(mouse_x, mouse_y));
-	mb->set_global_pos(Vector2(mouse_x, mouse_y));
+	mb->set_position(Vector2(mouse_x, mouse_y));
+	mb->set_global_position(Vector2(mouse_x, mouse_y));
 	mb->set_button_mask(button_mask);
 	mb->set_doubleclick([event clickCount] == 2);
 	OS_OSX::singleton->push_input(mb);
@@ -701,8 +701,8 @@ inline void sendScrollEvent(int button, double factor, int modifierFlags) {
 	sc->set_factor(factor);
 	sc->set_pressed(true);
 	Vector2 mouse_pos = Vector2(mouse_x, mouse_y);
-	sc->set_pos(mouse_pos);
-	sc->set_global_pos(mouse_pos);
+	sc->set_position(mouse_pos);
+	sc->set_global_position(mouse_pos);
 	sc->set_button_mask(button_mask);
 	OS_OSX::singleton->push_input(sc);
 	sc->set_pressed(false);
@@ -974,7 +974,7 @@ void OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 
 		NSRect nsrect = [[screenArray objectAtIndex:i] visibleFrame];
 		Rect2 rect = Rect2(nsrect.origin.x, nsrect.origin.y, nsrect.size.width, nsrect.size.height);
-		rect.pos *= displayScale;
+		rect.position *= displayScale;
 		rect.size *= displayScale;
 		screens.push_back(rect);
 
@@ -1275,7 +1275,7 @@ void OS_OSX::set_current_screen(int p_screen) {
 Point2 OS_OSX::get_screen_position(int p_screen) const {
 
 	ERR_FAIL_INDEX_V(p_screen, screens.size(), Point2());
-	return screens[p_screen].pos;
+	return screens[p_screen].position;
 };
 
 int OS_OSX::get_screen_dpi(int p_screen) const {
@@ -1384,7 +1384,7 @@ void OS_OSX::set_window_maximized(bool p_enabled) {
 		[window_object setFrame:[[[NSScreen screens] objectAtIndex:current_screen] visibleFrame] display:YES];
 	} else {
 		set_window_size(restore_rect.size);
-		set_window_position(restore_rect.pos);
+		set_window_position(restore_rect.position);
 	};
 	maximized = p_enabled;
 };

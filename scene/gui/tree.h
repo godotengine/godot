@@ -81,6 +81,7 @@ private:
 		bool custom_bg_color;
 		bool custom_bg_outline;
 		Color bg_color;
+		bool custom_button;
 
 		Variant meta;
 		String tooltip;
@@ -107,6 +108,7 @@ private:
 		Cell() {
 
 			custom_draw_obj = 0;
+			custom_button = false;
 			mode = TreeItem::CELL_MODE_STRING;
 			min = 0;
 			max = 100;
@@ -237,6 +239,9 @@ public:
 	void set_custom_bg_color(int p_column, const Color &p_color, bool p_bg_outline = false);
 	void clear_custom_bg_color(int p_column);
 	Color get_custom_bg_color(int p_column) const;
+
+	void set_custom_as_button(int p_column, bool p_button);
+	bool is_custom_set_as_button(int p_column) const;
 
 	void set_tooltip(int p_column, const String &p_tooltip);
 	String get_tooltip(int p_column) const;
@@ -369,6 +374,10 @@ private:
 		Ref<StyleBox> title_button;
 		Ref<StyleBox> title_button_hover;
 		Ref<StyleBox> title_button_pressed;
+		Ref<StyleBox> custom_button;
+		Ref<StyleBox> custom_button_hover;
+		Ref<StyleBox> custom_button_pressed;
+
 		Color title_button_color;
 
 		Ref<Texture> checked;
@@ -383,6 +392,7 @@ private:
 		Color guide_color;
 		Color drop_position_color;
 		Color relationship_line_color;
+		Color custom_button_font_highlight;
 
 		int hseparation;
 		int vseparation;
@@ -409,6 +419,9 @@ private:
 		int click_column;
 		int hover_index;
 		Point2 click_pos;
+
+		TreeItem *hover_item;
+		int hover_cell;
 
 	} cache;
 

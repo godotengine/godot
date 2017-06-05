@@ -102,6 +102,8 @@ public:
 	virtual void set_debugger_active(bool p_active) = 0;
 	virtual bool can_lose_focus_on_node_selection() { return true; }
 
+	virtual bool show_members_overview() = 0;
+
 	virtual void set_tooltip_request_func(String p_method, Object *p_obj) = 0;
 	virtual Control *get_edit_menu() = 0;
 
@@ -179,6 +181,9 @@ class ScriptEditor : public VBoxContainer {
 
 	ItemList *script_list;
 	HSplitContainer *script_split;
+	ItemList *members_overview;
+	bool members_overview_enabled;
+	VSplitContainer *list_split;
 	TabContainer *tab_container;
 	EditorFileDialog *file_dialog;
 	ConfirmationDialog *erase_tab_confirm;
@@ -278,8 +283,11 @@ class ScriptEditor : public VBoxContainer {
 	void _editor_settings_changed();
 	void _autosave_scripts();
 
+	void _update_members_overview_visibility();
+	void _update_members_overview();
 	void _update_script_names();
 
+	void _members_overview_selected(int p_idx);
 	void _script_selected(int p_idx);
 
 	void _find_scripts(Node *p_base, Node *p_current, Set<Ref<Script> > &used);

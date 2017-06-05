@@ -73,17 +73,17 @@ Error EditorRun::run(const String &p_scene, const String p_custom_args, const Li
 	}
 
 	Rect2 screen_rect;
-	screen_rect.pos = OS::get_singleton()->get_screen_position(screen);
+	screen_rect.position = OS::get_singleton()->get_screen_position(screen);
 	screen_rect.size = OS::get_singleton()->get_screen_size(screen);
 
 	Size2 desired_size;
 
-	desired_size.x = GlobalConfig::get_singleton()->get("display/width");
-	desired_size.y = GlobalConfig::get_singleton()->get("display/height");
+	desired_size.x = GlobalConfig::get_singleton()->get("display/window/width");
+	desired_size.y = GlobalConfig::get_singleton()->get("display/window/height");
 
 	Size2 test_size;
-	test_size.x = GlobalConfig::get_singleton()->get("display/test_width");
-	test_size.y = GlobalConfig::get_singleton()->get("display/test_height");
+	test_size.x = GlobalConfig::get_singleton()->get("display/window/test_width");
+	test_size.y = GlobalConfig::get_singleton()->get("display/window/test_height");
 	if (test_size.x > 0 && test_size.y > 0) {
 
 		desired_size = test_size;
@@ -95,21 +95,21 @@ Error EditorRun::run(const String &p_scene, const String p_custom_args, const Li
 		case 0: { // default
 
 			args.push_back("-p");
-			args.push_back(itos(screen_rect.pos.x) + "x" + itos(screen_rect.pos.y));
+			args.push_back(itos(screen_rect.position.x) + "x" + itos(screen_rect.position.y));
 		} break;
 		case 1: { // centered
-			Vector2 pos = screen_rect.pos + ((screen_rect.size - desired_size) / 2).floor();
+			Vector2 pos = screen_rect.position + ((screen_rect.size - desired_size) / 2).floor();
 			args.push_back("-p");
 			args.push_back(itos(pos.x) + "x" + itos(pos.y));
 		} break;
 		case 2: { // custom pos
 			Vector2 pos = EditorSettings::get_singleton()->get("run/window_placement/rect_custom_position");
-			pos += screen_rect.pos;
+			pos += screen_rect.position;
 			args.push_back("-p");
 			args.push_back(itos(pos.x) + "x" + itos(pos.y));
 		} break;
 		case 3: { // force maximized
-			Vector2 pos = screen_rect.pos;
+			Vector2 pos = screen_rect.position;
 			args.push_back("-p");
 			args.push_back(itos(pos.x) + "x" + itos(pos.y));
 			args.push_back("-mx");
@@ -117,7 +117,7 @@ Error EditorRun::run(const String &p_scene, const String p_custom_args, const Li
 		} break;
 		case 4: { // force fullscreen
 
-			Vector2 pos = screen_rect.pos;
+			Vector2 pos = screen_rect.position;
 			args.push_back("-p");
 			args.push_back(itos(pos.x) + "x" + itos(pos.y));
 			args.push_back("-f");

@@ -49,8 +49,8 @@ static Ref<BitmapFont> make_font(int p_height, int p_ascent, int p_valign, int p
 
 		int chr = c[0];
 		Rect2 frect;
-		frect.pos.x = c[1];
-		frect.pos.y = c[2];
+		frect.position.x = c[1];
+		frect.position.y = c[2];
 		frect.size.x = c[3];
 		frect.size.y = c[4];
 		Point2 align(c[5], c[6] + p_valign);

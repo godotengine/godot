@@ -138,8 +138,8 @@ void StyleBoxTexture::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 
 	texture->get_rect_region(rect, src_rect, rect, src_rect);
 
-	rect.pos.x -= expand_margin[MARGIN_LEFT];
-	rect.pos.y -= expand_margin[MARGIN_TOP];
+	rect.position.x -= expand_margin[MARGIN_LEFT];
+	rect.position.y -= expand_margin[MARGIN_TOP];
 	rect.size.x += expand_margin[MARGIN_LEFT] + expand_margin[MARGIN_RIGHT];
 	rect.size.y += expand_margin[MARGIN_TOP] + expand_margin[MARGIN_BOTTOM];
 
@@ -352,26 +352,26 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 			color_downright.b = (border_size - i) * color_downright.b / border_size + i * bg_color.b / border_size;
 		}
 
-		vs->canvas_item_add_rect(p_canvas_item, Rect2(Point2i(r.pos.x, r.pos.y + r.size.y - 1), Size2(r.size.x, 1)), color_downright);
-		vs->canvas_item_add_rect(p_canvas_item, Rect2(Point2i(r.pos.x + r.size.x - 1, r.pos.y), Size2(1, r.size.y)), color_downright);
+		vs->canvas_item_add_rect(p_canvas_item, Rect2(Point2i(r.position.x, r.position.y + r.size.y - 1), Size2(r.size.x, 1)), color_downright);
+		vs->canvas_item_add_rect(p_canvas_item, Rect2(Point2i(r.position.x + r.size.x - 1, r.position.y), Size2(1, r.size.y)), color_downright);
 
-		vs->canvas_item_add_rect(p_canvas_item, Rect2(r.pos, Size2(r.size.x, 1)), color_upleft);
-		vs->canvas_item_add_rect(p_canvas_item, Rect2(r.pos, Size2(1, r.size.y)), color_upleft);
+		vs->canvas_item_add_rect(p_canvas_item, Rect2(r.position, Size2(r.size.x, 1)), color_upleft);
+		vs->canvas_item_add_rect(p_canvas_item, Rect2(r.position, Size2(1, r.size.y)), color_upleft);
 
-		r.pos.x++;
-		r.pos.y++;
+		r.position.x++;
+		r.position.y++;
 		r.size.x -= 2;
 		r.size.y -= 2;
 	}
 
 	if (draw_center)
-		vs->canvas_item_add_rect(p_canvas_item, Rect2(r.pos, r.size), bg_color);
+		vs->canvas_item_add_rect(p_canvas_item, Rect2(r.position, r.size), bg_color);
 
 	Rect2i r_add = p_rect;
-	vs->canvas_item_add_rect(p_canvas_item, Rect2(Point2i(r_add.pos.x - additional_border_size[MARGIN_LEFT], r_add.pos.y - additional_border_size[MARGIN_TOP]), Size2(r_add.size.width + additional_border_size[MARGIN_LEFT] + additional_border_size[MARGIN_RIGHT], additional_border_size[MARGIN_TOP])), light_color);
-	vs->canvas_item_add_rect(p_canvas_item, Rect2(Point2i(r_add.pos.x - additional_border_size[MARGIN_LEFT], r_add.pos.y), Size2(additional_border_size[MARGIN_LEFT], r_add.size.height)), light_color);
-	vs->canvas_item_add_rect(p_canvas_item, Rect2(Point2i(r_add.pos.x + r_add.size.width, r_add.pos.y), Size2(additional_border_size[MARGIN_RIGHT], r_add.size.height)), dark_color);
-	vs->canvas_item_add_rect(p_canvas_item, Rect2(Point2i(r_add.pos.x - additional_border_size[MARGIN_LEFT], r_add.pos.y + r_add.size.height), Size2(r_add.size.width + additional_border_size[MARGIN_LEFT] + additional_border_size[MARGIN_RIGHT], additional_border_size[MARGIN_BOTTOM])), dark_color);
+	vs->canvas_item_add_rect(p_canvas_item, Rect2(Point2i(r_add.position.x - additional_border_size[MARGIN_LEFT], r_add.position.y - additional_border_size[MARGIN_TOP]), Size2(r_add.size.width + additional_border_size[MARGIN_LEFT] + additional_border_size[MARGIN_RIGHT], additional_border_size[MARGIN_TOP])), light_color);
+	vs->canvas_item_add_rect(p_canvas_item, Rect2(Point2i(r_add.position.x - additional_border_size[MARGIN_LEFT], r_add.position.y), Size2(additional_border_size[MARGIN_LEFT], r_add.size.height)), light_color);
+	vs->canvas_item_add_rect(p_canvas_item, Rect2(Point2i(r_add.position.x + r_add.size.width, r_add.position.y), Size2(additional_border_size[MARGIN_RIGHT], r_add.size.height)), dark_color);
+	vs->canvas_item_add_rect(p_canvas_item, Rect2(Point2i(r_add.position.x - additional_border_size[MARGIN_LEFT], r_add.position.y + r_add.size.height), Size2(r_add.size.width + additional_border_size[MARGIN_LEFT] + additional_border_size[MARGIN_RIGHT], additional_border_size[MARGIN_BOTTOM])), dark_color);
 }
 
 float StyleBoxFlat::get_style_margin(Margin p_margin) const {

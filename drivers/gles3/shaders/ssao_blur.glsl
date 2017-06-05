@@ -24,7 +24,7 @@ layout(location = 0) out float visibility;
 // Tunable Parameters:
 
 /** Increase to make depth edges crisper. Decrease to reduce flicker. */
-#define EDGE_SHARPNESS     (1.0)
+#define EDGE_SHARPNESS     (4.0)
 
 /** Step in 2-pixel intervals since we already blurred against neighbors in the
     first AO pass.  This constant can be increased while R decreases to improve

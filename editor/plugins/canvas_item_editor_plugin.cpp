@@ -536,10 +536,10 @@ void CanvasItemEditor::_find_canvas_items_at_rect(const Rect2 &p_rect, Node *p_n
 		Rect2 rect = c->get_item_rect();
 		Transform2D xform = p_parent_xform * p_canvas_xform * c->get_transform();
 
-		if (p_rect.has_point(xform.xform(rect.pos)) &&
-				p_rect.has_point(xform.xform(rect.pos + Vector2(rect.size.x, 0))) &&
-				p_rect.has_point(xform.xform(rect.pos + Vector2(rect.size.x, rect.size.y))) &&
-				p_rect.has_point(xform.xform(rect.pos + Vector2(0, rect.size.y)))) {
+		if (p_rect.has_point(xform.xform(rect.position)) &&
+				p_rect.has_point(xform.xform(rect.position + Vector2(rect.size.x, 0))) &&
+				p_rect.has_point(xform.xform(rect.position + Vector2(rect.size.x, rect.size.y))) &&
+				p_rect.has_point(xform.xform(rect.position + Vector2(0, rect.size.y)))) {
 
 			r_items->push_back(c);
 		}
@@ -652,7 +652,7 @@ void CanvasItemEditor::_key_move(const Vector2 &p_dir, bool p_snap, KeyMoveMODE 
 			// drag =  transform.affine_inverse().basis_xform(p_dir); // zoom sensitive
 			drag = canvas_item->get_global_transform_with_canvas().affine_inverse().basis_xform(drag);
 			Rect2 local_rect = canvas_item->get_item_rect();
-			local_rect.pos += drag;
+			local_rect.position += drag;
 			undo_redo->add_do_method(canvas_item, "edit_set_rect", local_rect);
 
 		} else { // p_move_mode==MOVE_LOCAL_BASE || p_move_mode==MOVE_LOCAL_WITH_ROT
@@ -680,7 +680,7 @@ Point2 CanvasItemEditor::_find_topleftmost_point() {
 
 	Vector2 tl = Point2(1e10, 1e10);
 	Rect2 r2;
-	r2.pos = tl;
+	r2.position = tl;
 
 	List<Node *> &selection = editor_selection->get_selected_node_list();
 
@@ -695,13 +695,13 @@ Point2 CanvasItemEditor::_find_topleftmost_point() {
 		Rect2 rect = canvas_item->get_item_rect();
 		Transform2D xform = canvas_item->get_global_transform_with_canvas();
 
-		r2.expand_to(xform.xform(rect.pos));
-		r2.expand_to(xform.xform(rect.pos + Vector2(rect.size.x, 0)));
-		r2.expand_to(xform.xform(rect.pos + rect.size));
-		r2.expand_to(xform.xform(rect.pos + Vector2(0, rect.size.y)));
+		r2.expand_to(xform.xform(rect.position));
+		r2.expand_to(xform.xform(rect.position + Vector2(rect.size.x, 0)));
+		r2.expand_to(xform.xform(rect.position + rect.size));
+		r2.expand_to(xform.xform(rect.position + Vector2(0, rect.size.y)));
 	}
 
-	return r2.pos;
+	return r2.position;
 }
 
 int CanvasItemEditor::get_item_count() {
@@ -759,18 +759,18 @@ CanvasItemEditor::DragType CanvasItemEditor::_find_drag_type(const Transform2D &
 
 	Vector2 endpoints[4] = {
 
-		xform.xform(rect.pos),
-		xform.xform(rect.pos + Vector2(rect.size.x, 0)),
-		xform.xform(rect.pos + rect.size),
-		xform.xform(rect.pos + Vector2(0, rect.size.y))
+		xform.xform(rect.position),
+		xform.xform(rect.position + Vector2(rect.size.x, 0)),
+		xform.xform(rect.position + rect.size),
+		xform.xform(rect.position + Vector2(0, rect.size.y))
 	};
 
 	Vector2 endpointsl[4] = {
 
-		xforml.xform(rect.pos),
-		xforml.xform(rect.pos + Vector2(rect.size.x, 0)),
-		xforml.xform(rect.pos + rect.size),
-		xforml.xform(rect.pos + Vector2(0, rect.size.y))
+		xforml.xform(rect.position),
+		xforml.xform(rect.position + Vector2(rect.size.x, 0)),
+		xforml.xform(rect.position + rect.size),
+		xforml.xform(rect.position + Vector2(0, rect.size.y))
 	};
 
 	DragType dragger[] = {
@@ -962,7 +962,7 @@ bool CanvasItemEditor::get_remove_list(List<Node *> *p_list) {
 
 void CanvasItemEditor::_list_select(const Ref<InputEventMouseButton> &b) {
 
-	Point2 click = b->get_pos();
+	Point2 click = b->get_position();
 
 	Node *scene = editor->get_edited_scene();
 	if (!scene)
@@ -1016,7 +1016,7 @@ void CanvasItemEditor::_list_select(const Ref<InputEventMouseButton> &b) {
 
 		additive_selection = b->get_shift();
 
-		selection_menu->set_global_position(b->get_global_pos());
+		selection_menu->set_global_position(b->get_global_position());
 		selection_menu->popup();
 		selection_menu->call_deferred("grab_click_focus");
 		selection_menu->set_invalidate_click_until_motion();
@@ -1053,7 +1053,7 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 			float prev_zoom = zoom;
 			zoom = zoom * (1 - (0.05 * b->get_factor()));
 			{
-				Point2 ofs = b->get_pos();
+				Point2 ofs = b->get_position();
 				ofs = ofs / prev_zoom - ofs / zoom;
 				h_scroll->set_value(h_scroll->get_value() + ofs.x);
 				v_scroll->set_value(v_scroll->get_value() + ofs.y);
@@ -1071,7 +1071,7 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 			float prev_zoom = zoom;
 			zoom = zoom * ((0.95 + (0.05 * b->get_factor())) / 0.95);
 			{
-				Point2 ofs = b->get_pos();
+				Point2 ofs = b->get_position();
 				ofs = ofs / prev_zoom - ofs / zoom;
 				h_scroll->set_value(h_scroll->get_value() + ofs.x);
 				v_scroll->set_value(v_scroll->get_value() + ofs.y);
@@ -1156,7 +1156,7 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 		if (b->get_button_index() == BUTTON_LEFT && tool == TOOL_EDIT_PIVOT) {
 			if (b->is_pressed()) {
 
-				Point2 mouse_pos = b->get_pos();
+				Point2 mouse_pos = b->get_position();
 				mouse_pos = transform.affine_inverse().xform(mouse_pos);
 				mouse_pos = snap_point(mouse_pos);
 				_edit_set_pivot(mouse_pos);
@@ -1274,8 +1274,8 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 					E->get().to
 				};
 
-				Vector2 p = Geometry::get_closest_point_to_segment_2d(b->get_pos(), s);
-				float d = p.distance_to(b->get_pos());
+				Vector2 p = Geometry::get_closest_point_to_segment_2d(b->get_position(), s);
+				float d = p.distance_to(b->get_position());
 				if (d < bone_width && d < closest_dist) {
 					Cbone = E;
 					closest_dist = d;
@@ -1342,7 +1342,7 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 			CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
 			ERR_FAIL_COND(!se);
 
-			Point2 click = b->get_pos();
+			Point2 click = b->get_position();
 
 			if ((b->get_control() && tool == TOOL_SELECT) || tool == TOOL_ROTATE) {
 
@@ -1388,7 +1388,7 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 
 		//multi canvas_item edit
 
-		Point2 click = b->get_pos();
+		Point2 click = b->get_position();
 
 		if ((b->get_alt() || tool == TOOL_MOVE) && get_item_count()) {
 			_prepare_drag(click);
@@ -1451,7 +1451,7 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 
 		if (box_selecting) {
 
-			box_selecting_to = transform.affine_inverse().xform(m->get_pos());
+			box_selecting_to = transform.affine_inverse().xform(m->get_position());
 			viewport->update();
 			return;
 		}
@@ -1497,7 +1497,7 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			Vector2 dfrom = drag_from;
-			Vector2 dto = transform.affine_inverse().xform(m->get_pos());
+			Vector2 dto = transform.affine_inverse().xform(m->get_position());
 			if (canvas_item->has_meta("_edit_lock_"))
 				continue;
 
@@ -1552,8 +1552,8 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 					canvas_item->get_global_transform_with_canvas().affine_inverse().xform(dfrom);
 
 			Rect2 local_rect = canvas_item->get_item_rect();
-			Vector2 begin = local_rect.pos;
-			Vector2 end = local_rect.pos + local_rect.size;
+			Vector2 begin = local_rect.position;
+			Vector2 end = local_rect.position + local_rect.size;
 			Vector2 minsize = canvas_item->edit_get_minimum_size();
 
 			if (uniform) {
@@ -1645,7 +1645,7 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 
 			if (!dragging_bone) {
 
-				local_rect.pos = begin;
+				local_rect.position = begin;
 				local_rect.size = end - begin;
 				canvas_item->edit_set_rect(local_rect);
 
@@ -1868,10 +1868,10 @@ void CanvasItemEditor::_viewport_draw() {
 
 		Vector2 endpoints[4] = {
 
-			xform.xform(rect.pos),
-			xform.xform(rect.pos + Vector2(rect.size.x, 0)),
-			xform.xform(rect.pos + rect.size),
-			xform.xform(rect.pos + Vector2(0, rect.size.y))
+			xform.xform(rect.position),
+			xform.xform(rect.position + Vector2(rect.size.x, 0)),
+			xform.xform(rect.position + rect.size),
+			xform.xform(rect.position + Vector2(0, rect.size.y))
 		};
 
 		Color c = Color(1, 0.6, 0.4, 0.7);
@@ -2212,7 +2212,7 @@ void CanvasItemEditor::_find_canvas_items_span(Node *p_node, Rect2 &r_rect, cons
 		lock.group = c->has_meta("_edit_group_");
 
 		if (lock.group || lock.lock) {
-			lock.pos = xform.xform(rect.pos);
+			lock.pos = xform.xform(rect.position);
 			lock_list.push_back(lock);
 		}
 
@@ -2228,10 +2228,10 @@ void CanvasItemEditor::_find_canvas_items_span(Node *p_node, Rect2 &r_rect, cons
 			bone_list[id].last_pass = bone_last_frame;
 		}
 
-		r_rect.expand_to(xform.xform(rect.pos));
-		r_rect.expand_to(xform.xform(rect.pos + Point2(rect.size.x, 0)));
-		r_rect.expand_to(xform.xform(rect.pos + Point2(0, rect.size.y)));
-		r_rect.expand_to(xform.xform(rect.pos + rect.size));
+		r_rect.expand_to(xform.xform(rect.position));
+		r_rect.expand_to(xform.xform(rect.position + Point2(rect.size.x, 0)));
+		r_rect.expand_to(xform.xform(rect.position + Point2(0, rect.size.y)));
+		r_rect.expand_to(xform.xform(rect.position + rect.size));
 	}
 }
 
@@ -2277,19 +2277,19 @@ void CanvasItemEditor::_update_scrollbars() {
 
 	//expand area so it's easier to do animations and stuff at 0,0
 	canvas_item_rect.size += screen_rect * 2;
-	canvas_item_rect.pos -= screen_rect;
+	canvas_item_rect.position -= screen_rect;
 
 	Point2 ofs;
 
 	if (canvas_item_rect.size.height <= (local_rect.size.y / zoom)) {
 
 		v_scroll->hide();
-		ofs.y = canvas_item_rect.pos.y;
+		ofs.y = canvas_item_rect.position.y;
 	} else {
 
 		v_scroll->show();
-		v_scroll->set_min(canvas_item_rect.pos.y);
-		v_scroll->set_max(canvas_item_rect.pos.y + canvas_item_rect.size.y);
+		v_scroll->set_min(canvas_item_rect.position.y);
+		v_scroll->set_max(canvas_item_rect.position.y + canvas_item_rect.size.y);
 		v_scroll->set_page(local_rect.size.y / zoom);
 		if (first_update) {
 			//so 0,0 is visible
@@ -2304,12 +2304,12 @@ void CanvasItemEditor::_update_scrollbars() {
 	if (canvas_item_rect.size.width <= (local_rect.size.x / zoom)) {
 
 		h_scroll->hide();
-		ofs.x = canvas_item_rect.pos.x;
+		ofs.x = canvas_item_rect.position.x;
 	} else {
 
 		h_scroll->show();
-		h_scroll->set_min(canvas_item_rect.pos.x);
-		h_scroll->set_max(canvas_item_rect.pos.x + canvas_item_rect.size.x);
+		h_scroll->set_min(canvas_item_rect.position.x);
+		h_scroll->set_max(canvas_item_rect.position.x + canvas_item_rect.size.x);
 		h_scroll->set_page(local_rect.size.x / zoom);
 		ofs.x = h_scroll->get_value();
 	}
@@ -2977,7 +2977,7 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 
 		Transform2D t(angle, Vector2(0.f, 0.f));
 		item_rect = t.xform(item_rect);
-		Rect2 canvas_item_rect(pos + scale * item_rect.pos, scale * item_rect.size);
+		Rect2 canvas_item_rect(pos + scale * item_rect.position, scale * item_rect.size);
 		if (count == 1) {
 			rect = canvas_item_rect;
 		} else {
@@ -2988,7 +2988,7 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 
 	if (p_op == VIEW_CENTER_TO_SELECTION) {
 
-		center = rect.pos + rect.size / 2;
+		center = rect.position + rect.size / 2;
 		Vector2 offset = viewport->get_size() / 2 - editor->get_scene_root()->get_global_canvas_transform().xform(center);
 		h_scroll->set_value(h_scroll->get_value() - offset.x / zoom);
 		v_scroll->set_value(v_scroll->get_value() - offset.y / zoom);

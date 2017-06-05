@@ -73,6 +73,12 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_BUTTON_MAX
 	};
 
+	enum {
+		EDIT_SUBRESOURCE_BASE = 100
+	};
+
+	Vector<ObjectID> subresources;
+
 	bool restore_script_editor_on_drag;
 
 	int current_option;
@@ -113,6 +119,8 @@ class SceneTreeDock : public VBoxContainer {
 	Node *scene_root;
 	Node *edited_scene;
 	EditorNode *editor;
+
+	void _add_children_to_popup(Object *p_obj, int p_depth);
 
 	Node *_duplicate(Node *p_node, Map<Node *, Node *> &duplimap);
 	void _node_reparent(NodePath p_path, bool p_keep_global_xform);

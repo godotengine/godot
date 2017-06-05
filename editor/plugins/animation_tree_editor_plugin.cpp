@@ -744,7 +744,7 @@ void AnimationTreeEditor::_gui_input(Ref<InputEvent> p_event) {
 		if (mb->is_pressed()) {
 
 			if (mb->get_button_index() == 1) {
-				click_pos = Point2(mb->get_pos().x, mb->get_pos().y);
+				click_pos = Point2(mb->get_position().x, mb->get_position().y);
 				click_motion = click_pos;
 				click_type = _locate_click(click_pos, &click_node, &click_slot);
 				if (click_type != CLICK_NONE) {
@@ -780,7 +780,7 @@ void AnimationTreeEditor::_gui_input(Ref<InputEvent> p_event) {
 				} else {
 					// try to disconnect/remove
 
-					Point2 rclick_pos = Point2(mb->get_pos().x, mb->get_pos().y);
+					Point2 rclick_pos = Point2(mb->get_position().x, mb->get_position().y);
 					rclick_type = _locate_click(rclick_pos, &rclick_node, &rclick_slot);
 					if (rclick_type == CLICK_INPUT_SLOT || rclick_type == CLICK_OUTPUT_SLOT) {
 
@@ -820,7 +820,7 @@ void AnimationTreeEditor::_gui_input(Ref<InputEvent> p_event) {
 					case CLICK_INPUT_SLOT:
 					case CLICK_OUTPUT_SLOT: {
 
-						Point2 dst_click_pos = Point2(mb->get_pos().x, mb->get_pos().y);
+						Point2 dst_click_pos = Point2(mb->get_position().x, mb->get_position().y);
 						StringName id;
 						int slot;
 						ClickType dst_click_type = _locate_click(dst_click_pos, &id, &slot);
@@ -859,7 +859,7 @@ void AnimationTreeEditor::_gui_input(Ref<InputEvent> p_event) {
 
 		if (mm->get_button_mask() & 1 && click_type != CLICK_NONE) {
 
-			click_motion = Point2(mm->get_pos().x, mm->get_pos().y);
+			click_motion = Point2(mm->get_position().x, mm->get_position().y);
 			update();
 		}
 		if ((mm->get_button_mask() & 4 || Input::get_singleton()->is_key_pressed(KEY_SPACE))) {
@@ -876,7 +876,7 @@ void AnimationTreeEditor::_draw_cos_line(const Vector2 &p_from, const Vector2 &p
 	static const int steps = 20;
 
 	Rect2 r;
-	r.pos = p_from;
+	r.position = p_from;
 	r.expand_to(p_to);
 	Vector2 sign = Vector2((p_from.x < p_to.x) ? 1 : -1, (p_from.y < p_to.y) ? 1 : -1);
 	bool flip = sign.x * sign.y < 0;
@@ -888,7 +888,7 @@ void AnimationTreeEditor::_draw_cos_line(const Vector2 &p_from, const Vector2 &p
 		float c = -Math::cos(d * Math_PI) * 0.5 + 0.5;
 		if (flip)
 			c = 1.0 - c;
-		Vector2 p = r.pos + Vector2(d * r.size.width, c * r.size.height);
+		Vector2 p = r.position + Vector2(d * r.size.width, c * r.size.height);
 
 		if (i > 0) {
 

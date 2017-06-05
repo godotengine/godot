@@ -556,6 +556,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set("text_editor/line_numbers/line_length_guideline_column", 80);
 	hints["text_editor/line_numbers/line_length_guideline_column"] = PropertyInfo(Variant::INT, "text_editor/line_numbers/line_length_guideline_column", PROPERTY_HINT_RANGE, "20, 160, 10");
 
+	set("text_editor/open_scripts/show_members_overview", true);
+
 	set("text_editor/files/trim_trailing_whitespace_on_save", false);
 	set("text_editor/completion/idle_parse_delay", 2);
 	set("text_editor/tools/create_signal_callbacks", true);

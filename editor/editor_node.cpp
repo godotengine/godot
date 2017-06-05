@@ -3736,7 +3736,7 @@ void EditorNode::_dock_select_input(const Ref<InputEvent> &p_input) {
 
 	if (me.is_valid()) {
 
-		Vector2 point = me->get_pos();
+		Vector2 point = me->get_position();
 
 		int nrect = -1;
 		for (int i = 0; i < DOCK_SLOT_MAX; i++) {
@@ -3846,7 +3846,7 @@ void EditorNode::_dock_select_draw() {
 	unusable.a = 0.1;
 
 	Rect2 unr(s.x * 2, 0, s.x * 2, s.y * 2);
-	unr.pos += Vector2(2, 5);
+	unr.position += Vector2(2, 5);
 	unr.size -= Vector2(4, 7);
 
 	dock_select->draw_rect(unr, unusable);
@@ -3899,7 +3899,7 @@ void EditorNode::_dock_select_draw() {
 
 		Rect2 r(ofs, s);
 		dock_select_rect[i] = r;
-		r.pos += Vector2(2, 5);
+		r.position += Vector2(2, 5);
 		r.size -= Vector2(4, 7);
 
 		if (i == dock_select_rect_over) {

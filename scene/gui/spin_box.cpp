@@ -96,7 +96,7 @@ void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (mb.is_valid() && mb->is_pressed()) {
 
-		bool up = mb->get_pos().y < (get_size().height / 2);
+		bool up = mb->get_position().y < (get_size().height / 2);
 
 		switch (mb->get_button_index()) {
 
@@ -135,7 +135,7 @@ void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == 1) {
 
 		//set_default_cursor_shape(CURSOR_VSIZE);
-		Vector2 cpos = Vector2(mb->get_pos().x, mb->get_pos().y);
+		Vector2 cpos = Vector2(mb->get_position().x, mb->get_position().y);
 		drag.mouse_pos = cpos;
 	}
 
@@ -155,7 +155,7 @@ void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (mm.is_valid() && mm->get_button_mask() & 1) {
 
-		Vector2 cpos = mm->get_pos();
+		Vector2 cpos = mm->get_position();
 
 		if (drag.enabled) {
 
