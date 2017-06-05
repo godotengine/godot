@@ -78,7 +78,7 @@ Rect2 ConvexPolygonShape2D::get_rect() const {
 	Rect2 rect;
 	for (int i = 0; i < points.size(); i++) {
 		if (i == 0)
-			rect.pos = points[i];
+			rect.position = points[i];
 		else
 			rect.expand_to(points[i]);
 	}

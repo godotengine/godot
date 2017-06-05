@@ -120,8 +120,8 @@ PoolVector<int> BitmapFont::_get_chars() const {
 		const Character *c = char_map.getptr(*key);
 		chars.push_back(*key);
 		chars.push_back(c->texture_idx);
-		chars.push_back(c->rect.pos.x);
-		chars.push_back(c->rect.pos.y);
+		chars.push_back(c->rect.position.x);
+		chars.push_back(c->rect.position.y);
 
 		chars.push_back(c->rect.size.x);
 		chars.push_back(c->rect.size.y);
@@ -272,9 +272,9 @@ Error BitmapFont::create_from_fnt(const String &p_string) {
 			Rect2 rect;
 
 			if (keys.has("x"))
-				rect.pos.x = keys["x"].to_int();
+				rect.position.x = keys["x"].to_int();
 			if (keys.has("y"))
-				rect.pos.y = keys["y"].to_int();
+				rect.position.y = keys["y"].to_int();
 			if (keys.has("width"))
 				rect.size.width = keys["width"].to_int();
 			if (keys.has("height"))

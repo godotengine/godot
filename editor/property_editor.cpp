@@ -678,8 +678,8 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			field_names.push_back("h");
 			config_value_editors(4, 4, 10, field_names);
 			Rect2 r = v;
-			value_editor[0]->set_text(String::num(r.pos.x));
-			value_editor[1]->set_text(String::num(r.pos.y));
+			value_editor[0]->set_text(String::num(r.position.x));
+			value_editor[1]->set_text(String::num(r.position.y));
 			value_editor[2]->set_text(String::num(r.size.x));
 			value_editor[3]->set_text(String::num(r.size.y));
 		} break;
@@ -1539,13 +1539,13 @@ void CustomPropertyEditor::_modified(String p_string) {
 
 			Rect2 r2;
 			if (evaluator) {
-				r2.pos.x = evaluator->eval(value_editor[0]->get_text());
-				r2.pos.y = evaluator->eval(value_editor[1]->get_text());
+				r2.position.x = evaluator->eval(value_editor[0]->get_text());
+				r2.position.y = evaluator->eval(value_editor[1]->get_text());
 				r2.size.x = evaluator->eval(value_editor[2]->get_text());
 				r2.size.y = evaluator->eval(value_editor[3]->get_text());
 			} else {
-				r2.pos.x = value_editor[0]->get_text().to_double();
-				r2.pos.y = value_editor[1]->get_text().to_double();
+				r2.position.x = value_editor[0]->get_text().to_double();
+				r2.position.y = value_editor[1]->get_text().to_double();
 				r2.size.x = value_editor[2]->get_text().to_double();
 				r2.size.y = value_editor[3]->get_text().to_double();
 			}
@@ -3674,7 +3674,7 @@ void PropertyEditor::_draw_transparency(Object *t, const Rect2 &p_rect) {
 
 	// make a little space between consecutive color fields
 	Rect2 area = p_rect;
-	area.pos.y += 1;
+	area.position.y += 1;
 	area.size.height -= 2;
 	area.size.width -= arrow->get_size().width + 5;
 	tree->draw_texture_rect(get_icon("Transparent", "EditorIcons"), area, true);
@@ -3942,7 +3942,7 @@ void PropertyEditor::_custom_editor_request(bool p_arrow) {
 	int hint = d.has("hint") ? d["hint"].operator int() : -1;
 	String hint_text = d.has("hint_text") ? d["hint_text"] : "";
 	Rect2 where = tree->get_custom_popup_rect();
-	custom_editor->set_position(where.pos);
+	custom_editor->set_position(where.position);
 
 	if (custom_editor->edit(obj, name, type, v, hint, hint_text)) {
 		custom_editor->popup();
@@ -4049,9 +4049,9 @@ void PropertyEditor::_edit_button(Object *p_item, int p_column, int p_button) {
 			Variant v = obj->get(n);
 			custom_editor->edit(obj, n, (Variant::Type)t, v, h, ht);
 			Rect2 where = tree->get_item_rect(ti, 1);
-			where.pos -= tree->get_scroll();
-			where.pos += tree->get_global_position();
-			custom_editor->set_position(where.pos);
+			where.position -= tree->get_scroll();
+			where.position += tree->get_global_position();
+			custom_editor->set_position(where.position);
 			custom_editor->popup();
 
 		} else if (t == Variant::STRING) {
@@ -4062,9 +4062,9 @@ void PropertyEditor::_edit_button(Object *p_item, int p_column, int p_button) {
 			if (h == PROPERTY_HINT_FILE || h == PROPERTY_HINT_DIR || h == PROPERTY_HINT_GLOBAL_DIR || h == PROPERTY_HINT_GLOBAL_FILE) {
 
 				Rect2 where = tree->get_item_rect(ti, 1);
-				where.pos -= tree->get_scroll();
-				where.pos += tree->get_global_position();
-				custom_editor->set_position(where.pos);
+				where.position -= tree->get_scroll();
+				where.position += tree->get_global_position();
+				custom_editor->set_position(where.position);
 				custom_editor->popup();
 			} else {
 				custom_editor->popup_centered_ratio();
@@ -4140,7 +4140,7 @@ void PropertyEditor::_draw_flags(Object *t, const Rect2 &p_rect) {
 		if (i == 1)
 			ofs.y += bsize + 1;
 
-		ofs += p_rect.pos;
+		ofs += p_rect.position;
 		for (int j = 0; j < 10; j++) {
 
 			Point2 o = ofs + Point2(j * (bsize + 1), 0);

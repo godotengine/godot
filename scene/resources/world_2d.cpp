@@ -97,9 +97,9 @@ struct SpatialIndexer2D {
 
 	void _notifier_update_cells(VisibilityNotifier2D *p_notifier, const Rect2 &p_rect, bool p_add) {
 
-		Point2i begin = p_rect.pos;
+		Point2i begin = p_rect.position;
 		begin /= cell_size;
-		Point2i end = p_rect.pos + p_rect.size;
+		Point2i end = p_rect.position + p_rect.size;
 		end /= cell_size;
 		for (int i = begin.x; i <= end.x; i++) {
 
@@ -220,9 +220,9 @@ struct SpatialIndexer2D {
 
 		for (Map<Viewport *, ViewportData>::Element *E = viewports.front(); E; E = E->next()) {
 
-			Point2i begin = E->get().rect.pos;
+			Point2i begin = E->get().rect.position;
 			begin /= cell_size;
-			Point2i end = E->get().rect.pos + E->get().rect.size;
+			Point2i end = E->get().rect.position + E->get().rect.size;
 			end /= cell_size;
 			pass++;
 			List<VisibilityNotifier2D *> added;

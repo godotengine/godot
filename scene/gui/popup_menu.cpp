@@ -190,12 +190,12 @@ void PopupMenu::_activate_submenu(int over) {
 	PopupMenu *pum = pm->cast_to<PopupMenu>();
 	if (pum) {
 
-		pr.pos -= pum->get_global_position();
+		pr.position -= pum->get_global_position();
 		pum->clear_autohide_areas();
-		pum->add_autohide_area(Rect2(pr.pos.x, pr.pos.y, pr.size.x, items[over]._ofs_cache));
+		pum->add_autohide_area(Rect2(pr.position.x, pr.position.y, pr.size.x, items[over]._ofs_cache));
 		if (over < items.size() - 1) {
 			int from = items[over + 1]._ofs_cache;
-			pum->add_autohide_area(Rect2(pr.pos.x, pr.pos.y + from, pr.size.x, pr.size.y - from));
+			pum->add_autohide_area(Rect2(pr.position.x, pr.position.y + from, pr.size.x, pr.size.y - from));
 		}
 	}
 }

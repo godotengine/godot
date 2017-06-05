@@ -399,7 +399,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 						}
 					}
 
-					r_aabb = Rect3(Vector3(aabb.pos.x, aabb.pos.y, 0), Vector3(aabb.size.x, aabb.size.y, 0));
+					r_aabb = Rect3(Vector3(aabb.position.x, aabb.position.y, 0), Vector3(aabb.size.x, aabb.size.y, 0));
 
 				} else {
 					PoolVector<Vector3> array = p_arrays[ai];

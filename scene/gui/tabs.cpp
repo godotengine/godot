@@ -340,8 +340,8 @@ void Tabs::_notification(int p_what) {
 
 					Rect2 rb_rect;
 					rb_rect.size = style->get_minimum_size() + rb->get_size();
-					rb_rect.pos.x = w;
-					rb_rect.pos.y = sb->get_margin(MARGIN_TOP) + ((sb_rect.size.y - sb_ms.y) - (rb_rect.size.y)) / 2;
+					rb_rect.position.x = w;
+					rb_rect.position.y = sb->get_margin(MARGIN_TOP) + ((sb_rect.size.y - sb_ms.y) - (rb_rect.size.y)) / 2;
 
 					if (rb_hover == i) {
 						if (rb_pressing)
@@ -350,7 +350,7 @@ void Tabs::_notification(int p_what) {
 							style->draw(ci, rb_rect);
 					}
 
-					rb->draw(ci, Point2i(w + style->get_margin(MARGIN_LEFT), rb_rect.pos.y + style->get_margin(MARGIN_TOP)));
+					rb->draw(ci, Point2i(w + style->get_margin(MARGIN_LEFT), rb_rect.position.y + style->get_margin(MARGIN_TOP)));
 					w += rb->get_width();
 					tabs[i].rb_rect = rb_rect;
 				}
@@ -364,8 +364,8 @@ void Tabs::_notification(int p_what) {
 
 					Rect2 cb_rect;
 					cb_rect.size = style->get_minimum_size() + cb->get_size();
-					cb_rect.pos.x = w;
-					cb_rect.pos.y = sb->get_margin(MARGIN_TOP) + ((sb_rect.size.y - sb_ms.y) - (cb_rect.size.y)) / 2;
+					cb_rect.position.x = w;
+					cb_rect.position.y = sb->get_margin(MARGIN_TOP) + ((sb_rect.size.y - sb_ms.y) - (cb_rect.size.y)) / 2;
 
 					if (!tabs[i].disabled && cb_hover == i) {
 						if (cb_pressing)
@@ -374,7 +374,7 @@ void Tabs::_notification(int p_what) {
 							style->draw(ci, cb_rect);
 					}
 
-					cb->draw(ci, Point2i(w + style->get_margin(MARGIN_LEFT), cb_rect.pos.y + style->get_margin(MARGIN_TOP)));
+					cb->draw(ci, Point2i(w + style->get_margin(MARGIN_LEFT), cb_rect.position.y + style->get_margin(MARGIN_TOP)));
 					w += cb->get_width();
 					tabs[i].cb_rect = cb_rect;
 				}

@@ -1069,16 +1069,16 @@ void TextEdit::_notification(int p_what) {
 				int th = h + csb->get_minimum_size().y;
 
 				if (cursor_pos.y + get_row_height() + th > get_size().height) {
-					completion_rect.pos.y = cursor_pos.y - th;
+					completion_rect.position.y = cursor_pos.y - th;
 				} else {
-					completion_rect.pos.y = cursor_pos.y + get_row_height() + csb->get_offset().y;
+					completion_rect.position.y = cursor_pos.y + get_row_height() + csb->get_offset().y;
 					completion_below = true;
 				}
 
 				if (cursor_pos.x - nofs + w + scrollw > get_size().width) {
-					completion_rect.pos.x = get_size().width - w - scrollw;
+					completion_rect.position.x = get_size().width - w - scrollw;
 				} else {
-					completion_rect.pos.x = cursor_pos.x - nofs;
+					completion_rect.position.x = cursor_pos.x - nofs;
 				}
 
 				completion_rect.size.width = w + 2;
@@ -1086,14 +1086,14 @@ void TextEdit::_notification(int p_what) {
 				if (completion_options.size() <= maxlines)
 					scrollw = 0;
 
-				draw_style_box(csb, Rect2(completion_rect.pos - csb->get_offset(), completion_rect.size + csb->get_minimum_size() + Size2(scrollw, 0)));
+				draw_style_box(csb, Rect2(completion_rect.position - csb->get_offset(), completion_rect.size + csb->get_minimum_size() + Size2(scrollw, 0)));
 
 				if (cache.completion_background_color.a > 0.01) {
-					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(completion_rect.pos, completion_rect.size + Size2(scrollw, 0)), cache.completion_background_color);
+					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(completion_rect.position, completion_rect.size + Size2(scrollw, 0)), cache.completion_background_color);
 				}
 				int line_from = CLAMP(completion_index - lines / 2, 0, completion_options.size() - lines);
-				VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(completion_rect.pos.x, completion_rect.pos.y + (completion_index - line_from) * get_row_height()), Size2(completion_rect.size.width, get_row_height())), cache.completion_selected_color);
-				draw_rect(Rect2(completion_rect.pos, Size2(nofs, completion_rect.size.height)), cache.completion_existing_color);
+				VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(completion_rect.position.x, completion_rect.position.y + (completion_index - line_from) * get_row_height()), Size2(completion_rect.size.width, get_row_height())), cache.completion_selected_color);
+				draw_rect(Rect2(completion_rect.position, Size2(nofs, completion_rect.size.height)), cache.completion_existing_color);
 
 				for (int i = 0; i < lines; i++) {
 
@@ -1105,14 +1105,14 @@ void TextEdit::_notification(int p_what) {
 							text_color = color_regions[j].color;
 						}
 					}
-					draw_string(cache.font, Point2(completion_rect.pos.x, completion_rect.pos.y + i * get_row_height() + cache.font->get_ascent()), completion_options[l], text_color, completion_rect.size.width);
+					draw_string(cache.font, Point2(completion_rect.position.x, completion_rect.position.y + i * get_row_height() + cache.font->get_ascent()), completion_options[l], text_color, completion_rect.size.width);
 				}
 
 				if (scrollw) {
 					//draw a small scroll rectangle to show a position in the options
 					float r = maxlines / (float)completion_options.size();
 					float o = line_from / (float)completion_options.size();
-					draw_rect(Rect2(completion_rect.pos.x + completion_rect.size.width, completion_rect.pos.y + o * completion_rect.size.y, scrollw, completion_rect.size.y * r), scrollc);
+					draw_rect(Rect2(completion_rect.position.x + completion_rect.size.width, completion_rect.position.y + o * completion_rect.size.y, scrollw, completion_rect.size.y * r), scrollc);
 				}
 
 				completion_line_ofs = line_from;
@@ -1468,7 +1468,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 			if (mb->get_button_index() == BUTTON_LEFT) {
 
-				completion_index = CLAMP(completion_line_ofs + (mb->get_position().y - completion_rect.pos.y) / get_row_height(), 0, completion_options.size() - 1);
+				completion_index = CLAMP(completion_line_ofs + (mb->get_position().y - completion_rect.position.y) / get_row_height(), 0, completion_options.size() - 1);
 
 				completion_current = completion_options[completion_index];
 				update();

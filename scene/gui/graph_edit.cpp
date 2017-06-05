@@ -168,24 +168,24 @@ void GraphEdit::_update_scroll() {
 			continue;
 
 		Rect2 r;
-		r.pos = gn->get_offset() * zoom;
+		r.position = gn->get_offset() * zoom;
 		r.size = gn->get_size() * zoom;
 		screen = screen.merge(r);
 	}
 
-	screen.pos -= get_size();
+	screen.position -= get_size();
 	screen.size += get_size() * 2.0;
 
-	h_scroll->set_min(screen.pos.x);
-	h_scroll->set_max(screen.pos.x + screen.size.x);
+	h_scroll->set_min(screen.position.x);
+	h_scroll->set_max(screen.position.x + screen.size.x);
 	h_scroll->set_page(get_size().x);
 	if (h_scroll->get_max() - h_scroll->get_min() <= h_scroll->get_page())
 		h_scroll->hide();
 	else
 		h_scroll->show();
 
-	v_scroll->set_min(screen.pos.y);
-	v_scroll->set_max(screen.pos.y + screen.size.y);
+	v_scroll->set_min(screen.position.y);
+	v_scroll->set_max(screen.position.y + screen.size.y);
 	v_scroll->set_page(get_size().y);
 
 	if (v_scroll->get_max() - v_scroll->get_min() <= v_scroll->get_page())

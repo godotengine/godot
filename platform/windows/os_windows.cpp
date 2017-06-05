@@ -889,8 +889,8 @@ BOOL CALLBACK OS_Windows::MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPR
 	MonitorInfo minfo;
 	minfo.hMonitor = hMonitor;
 	minfo.hdcMonitor = hdcMonitor;
-	minfo.rect.pos.x = lprcMonitor->left;
-	minfo.rect.pos.y = lprcMonitor->top;
+	minfo.rect.position.x = lprcMonitor->left;
+	minfo.rect.position.y = lprcMonitor->top;
 	minfo.rect.size.x = lprcMonitor->right - lprcMonitor->left;
 	minfo.rect.size.y = lprcMonitor->bottom - lprcMonitor->top;
 
@@ -1370,7 +1370,7 @@ void OS_Windows::set_current_screen(int p_screen) {
 Point2 OS_Windows::get_screen_position(int p_screen) const {
 
 	ERR_FAIL_INDEX_V(p_screen, monitor_info.size(), Point2());
-	return Vector2(monitor_info[p_screen].rect.pos);
+	return Vector2(monitor_info[p_screen].rect.position);
 }
 Size2 OS_Windows::get_screen_size(int p_screen) const {
 

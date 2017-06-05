@@ -876,7 +876,7 @@ void AnimationTreeEditor::_draw_cos_line(const Vector2 &p_from, const Vector2 &p
 	static const int steps = 20;
 
 	Rect2 r;
-	r.pos = p_from;
+	r.position = p_from;
 	r.expand_to(p_to);
 	Vector2 sign = Vector2((p_from.x < p_to.x) ? 1 : -1, (p_from.y < p_to.y) ? 1 : -1);
 	bool flip = sign.x * sign.y < 0;
@@ -888,7 +888,7 @@ void AnimationTreeEditor::_draw_cos_line(const Vector2 &p_from, const Vector2 &p
 		float c = -Math::cos(d * Math_PI) * 0.5 + 0.5;
 		if (flip)
 			c = 1.0 - c;
-		Vector2 p = r.pos + Vector2(d * r.size.width, c * r.size.height);
+		Vector2 p = r.position + Vector2(d * r.size.width, c * r.size.height);
 
 		if (i > 0) {
 

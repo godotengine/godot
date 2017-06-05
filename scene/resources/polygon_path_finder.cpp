@@ -71,7 +71,7 @@ void PolygonPathFinder::setup(const Vector<Vector2> &p_points, const Vector<int>
 		outside_point.y = i == 0 ? p_points[0].y : (MAX(p_points[i].y, outside_point.y));
 
 		if (i == 0) {
-			bounds.pos = points[i].pos;
+			bounds.position = points[i].pos;
 		} else {
 			bounds.expand_to(points[i].pos);
 		}

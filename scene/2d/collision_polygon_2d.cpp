@@ -233,7 +233,7 @@ void CollisionPolygon2D::set_polygon(const Vector<Point2> &p_polygon) {
 
 			aabb = Rect2(-10, -10, 20, 20);
 		} else {
-			aabb.pos -= aabb.size * 0.3;
+			aabb.position -= aabb.size * 0.3;
 			aabb.size += aabb.size * 0.6;
 		}
 		_update_parent();

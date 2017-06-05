@@ -335,8 +335,8 @@ void Sprite3D::_draw() {
 		s = s / Size2i(hframes, vframes);
 
 		src_rect.size = s;
-		src_rect.pos.x += (frame % hframes) * s.x;
-		src_rect.pos.y += (frame / hframes) * s.y;
+		src_rect.position.x += (frame % hframes) * s.x;
+		src_rect.position.y += (frame / hframes) * s.y;
 	}
 
 	Point2i ofs = get_offset();
@@ -360,17 +360,17 @@ void Sprite3D::_draw() {
 
 	Vector2 vertices[4] = {
 
-		(final_rect.pos + Vector2(0, final_rect.size.y)) * pixel_size,
-		(final_rect.pos + final_rect.size) * pixel_size,
-		(final_rect.pos + Vector2(final_rect.size.x, 0)) * pixel_size,
-		final_rect.pos * pixel_size,
+		(final_rect.position + Vector2(0, final_rect.size.y)) * pixel_size,
+		(final_rect.position + final_rect.size) * pixel_size,
+		(final_rect.position + Vector2(final_rect.size.x, 0)) * pixel_size,
+		final_rect.position * pixel_size,
 
 	};
 	Vector2 uvs[4] = {
-		final_src_rect.pos / tsize,
-		(final_src_rect.pos + Vector2(final_src_rect.size.x, 0)) / tsize,
-		(final_src_rect.pos + final_src_rect.size) / tsize,
-		(final_src_rect.pos + Vector2(0, final_src_rect.size.y)) / tsize,
+		final_src_rect.position / tsize,
+		(final_src_rect.position + Vector2(final_src_rect.size.x, 0)) / tsize,
+		(final_src_rect.position + final_src_rect.size) / tsize,
+		(final_src_rect.position + Vector2(0, final_src_rect.size.y)) / tsize,
 	};
 
 	if (is_flipped_h()) {
@@ -861,17 +861,17 @@ void AnimatedSprite3D::_draw() {
 
 	Vector2 vertices[4] = {
 
-		(final_rect.pos + Vector2(0, final_rect.size.y)) * pixel_size,
-		(final_rect.pos + final_rect.size) * pixel_size,
-		(final_rect.pos + Vector2(final_rect.size.x, 0)) * pixel_size,
-		final_rect.pos * pixel_size,
+		(final_rect.position + Vector2(0, final_rect.size.y)) * pixel_size,
+		(final_rect.position + final_rect.size) * pixel_size,
+		(final_rect.position + Vector2(final_rect.size.x, 0)) * pixel_size,
+		final_rect.position * pixel_size,
 
 	};
 	Vector2 uvs[4] = {
-		final_src_rect.pos / tsize,
-		(final_src_rect.pos + Vector2(final_src_rect.size.x, 0)) / tsize,
-		(final_src_rect.pos + final_src_rect.size) / tsize,
-		(final_src_rect.pos + Vector2(0, final_src_rect.size.y)) / tsize,
+		final_src_rect.position / tsize,
+		(final_src_rect.position + Vector2(final_src_rect.size.x, 0)) / tsize,
+		(final_src_rect.position + final_src_rect.size) / tsize,
+		(final_src_rect.position + Vector2(0, final_src_rect.size.y)) / tsize,
 	};
 
 	if (is_flipped_h()) {

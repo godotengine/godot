@@ -203,7 +203,7 @@ bool CollisionSolver2DSW::solve_concave(const Shape2DSW *p_shape_A, const Transf
 		smin *= axis_scale;
 		smax *= axis_scale;
 
-		local_aabb.pos[i] = smin;
+		local_aabb.position[i] = smin;
 		local_aabb.size[i] = smax - smin;
 	}
 

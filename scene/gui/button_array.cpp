@@ -236,8 +236,8 @@ void ButtonArray::_notification(int p_what) {
 				}
 
 				Rect2 r;
-				r.pos[orientation] = ofs;
-				r.pos[!orientation] = 0;
+				r.position[orientation] = ofs;
+				r.position[!orientation] = 0;
 				r.size[orientation] = s;
 				r.size[!orientation] = op_size;
 
@@ -272,10 +272,10 @@ void ButtonArray::_notification(int p_what) {
 				Point2 text_ofs = ((r.size - ssize - sbsize) / 2.0 + Point2(0, f->get_ascent())).floor() + sbofs;
 				if (buttons[i].icon.is_valid()) {
 
-					draw_texture(buttons[i].icon, r.pos + Point2(text_ofs.x, Math::floor((r.size.height - buttons[i].icon->get_height()) / 2.0)));
+					draw_texture(buttons[i].icon, r.position + Point2(text_ofs.x, Math::floor((r.size.height - buttons[i].icon->get_height()) / 2.0)));
 					text_ofs.x += buttons[i].icon->get_width() + icon_sep;
 				}
-				draw_string(f, text_ofs + r.pos, buttons[i].xl_text, c);
+				draw_string(f, text_ofs + r.position, buttons[i].xl_text, c);
 				buttons[i]._pos_cache = ofs;
 				buttons[i]._size_cache = s;
 
