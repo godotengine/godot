@@ -1247,7 +1247,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 							draw_style_box(cache.custom_button, ir);
 						}
 						ir.size -= cache.custom_button->get_minimum_size();
-						ir.pos += cache.custom_button->get_offset();
+						ir.position += cache.custom_button->get_offset();
 					}
 
 					draw_item_rect(p_item->cells[i], ir, col);
