@@ -1010,8 +1010,7 @@ void CanvasItemEditor::_list_select(const Ref<InputEventMouseButton> &b) {
 			selection_menu->add_item(item->get_name());
 			selection_menu->set_item_icon(i, icon);
 			selection_menu->set_item_metadata(i, node_path);
-			selection_menu->set_item_tooltip(i, String(item->get_name()) +
-														"\nType: " + item->get_class() + "\nPath: " + node_path);
+			selection_menu->set_item_tooltip(i, String(item->get_name()) + "\nType: " + item->get_class() + "\nPath: " + node_path);
 		}
 
 		additive_selection = b->get_shift();
@@ -1047,17 +1046,25 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 
 		if (b->get_button_index() == BUTTON_WHEEL_DOWN) {
 
-			if (zoom < MIN_ZOOM)
-				return;
+			if (bool(EditorSettings::get_singleton()->get("editors/2d/scroll_to_pan"))) {
 
-			float prev_zoom = zoom;
-			zoom = zoom * (1 - (0.05 * b->get_factor()));
-			{
-				Point2 ofs = b->get_position();
-				ofs = ofs / prev_zoom - ofs / zoom;
-				h_scroll->set_value(h_scroll->get_value() + ofs.x);
-				v_scroll->set_value(v_scroll->get_value() + ofs.y);
+				v_scroll->set_value(v_scroll->get_value() + int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor());
+
+			} else {
+
+				if (zoom < MIN_ZOOM)
+					return;
+
+				float prev_zoom = zoom;
+				zoom = zoom * (1 - (0.05 * b->get_factor()));
+				{
+					Point2 ofs = b->get_position();
+					ofs = ofs / prev_zoom - ofs / zoom;
+					h_scroll->set_value(h_scroll->get_value() + ofs.x);
+					v_scroll->set_value(v_scroll->get_value() + ofs.y);
+				}
 			}
+
 			_update_scroll(0);
 			viewport->update();
 			return;
@@ -1065,21 +1072,42 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 
 		if (b->get_button_index() == BUTTON_WHEEL_UP) {
 
-			if (zoom > MAX_ZOOM)
-				return;
+			if (bool(EditorSettings::get_singleton()->get("editors/2d/scroll_to_pan"))) {
 
-			float prev_zoom = zoom;
-			zoom = zoom * ((0.95 + (0.05 * b->get_factor())) / 0.95);
-			{
-				Point2 ofs = b->get_position();
-				ofs = ofs / prev_zoom - ofs / zoom;
-				h_scroll->set_value(h_scroll->get_value() + ofs.x);
-				v_scroll->set_value(v_scroll->get_value() + ofs.y);
+				v_scroll->set_value(v_scroll->get_value() - int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor());
+
+			} else {
+				if (zoom > MAX_ZOOM) return;
+
+				float prev_zoom = zoom;
+				zoom = zoom * ((0.95 + (0.05 * b->get_factor())) / 0.95);
+				{
+					Point2 ofs = b->get_position();
+					ofs = ofs / prev_zoom - ofs / zoom;
+					h_scroll->set_value(h_scroll->get_value() + ofs.x);
+					v_scroll->set_value(v_scroll->get_value() + ofs.y);
+				}
 			}
 
 			_update_scroll(0);
 			viewport->update();
 			return;
+		}
+
+		if (b->get_button_index() == BUTTON_WHEEL_LEFT) {
+
+			if (bool(EditorSettings::get_singleton()->get("editors/2d/scroll_to_pan"))) {
+
+				h_scroll->set_value(h_scroll->get_value() - int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor());
+			}
+		}
+
+		if (b->get_button_index() == BUTTON_WHEEL_RIGHT) {
+
+			if (bool(EditorSettings::get_singleton()->get("editors/2d/scroll_to_pan"))) {
+
+				h_scroll->set_value(h_scroll->get_value() + int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor());
+			}
 		}
 
 		if (b->get_button_index() == BUTTON_RIGHT) {
