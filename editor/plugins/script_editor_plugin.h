@@ -43,6 +43,7 @@
 #include "scene/gui/tree.h"
 #include "scene/main/timer.h"
 #include "script_language.h"
+#include "script_tree_list.h"
 
 class ScriptEditorQuickOpen : public ConfirmationDialog {
 
@@ -177,7 +178,7 @@ class ScriptEditor : public VBoxContainer {
 	Button *class_search;
 	EditorHelpSearch *help_search_dialog;
 
-	ItemList *script_list;
+	ScriptTreeList *script_list;
 	HSplitContainer *script_split;
 	TabContainer *tab_container;
 	EditorFileDialog *file_dialog;
@@ -280,6 +281,7 @@ class ScriptEditor : public VBoxContainer {
 
 	void _update_script_names();
 
+	void _function_selected(int p_idx, String function);
 	void _script_selected(int p_idx);
 
 	void _find_scripts(Node *p_base, Node *p_current, Set<Ref<Script> > &used);
