@@ -2240,6 +2240,10 @@ void VisualScriptEditor::add_callback(const String &p_function, PoolStringArray 
 	//undo_redo->clear_history();
 }
 
+bool VisualScriptEditor::show_members_overview() {
+	return false;
+}
+
 void VisualScriptEditor::update_settings() {
 
 	_update_graph();
