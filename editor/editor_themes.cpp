@@ -281,7 +281,7 @@ Ref<Theme> create_editor_theme() {
 	theme->set_color("drop_position_color", "Tree", highlight_color);
 
 	// ItemList
-	Ref<StyleBoxFlat> style_itemlist_cursor = make_flat_stylebox(highlight_color, 8, 8, 8, 8);
+	Ref<StyleBoxFlat> style_itemlist_cursor = make_flat_stylebox(highlight_color, 4, 4, 4, 4);
 	style_itemlist_cursor->set_draw_center(false);
 	style_itemlist_cursor->set_border_size(1 * EDSCALE);
 	style_itemlist_cursor->set_light_color(light_color_1);
@@ -292,6 +292,7 @@ Ref<Theme> create_editor_theme() {
 	theme->set_stylebox("selected", "ItemList", style_tree_selected);
 	theme->set_stylebox("bg_focus", "ItemList", focus_sbt);
 	theme->set_stylebox("bg", "ItemList", style_bg);
+	theme->set_constant("vseparation", "ItemList", 5 * EDSCALE);
 
 	Ref<StyleBoxFlat> style_tab_fg = make_flat_stylebox(base_color, 15, 5, 15, 5);
 	Ref<StyleBoxFlat> style_tab_bg = make_flat_stylebox(base_color, 15, 5, 15, 5);
