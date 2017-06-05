@@ -7,6 +7,7 @@ core/version_generated.h
 drivers/gles2/shaders/*.h
 drivers/gles3/shaders/*.h
 drivers/unix/os_unix_global_settings_path.cpp
+editor/authors.h
 editor/builtin_fonts.h
 editor/certs_compressed.h
 editor/doc_data_compressed.h
