@@ -39,8 +39,8 @@ void BSP_Tree::from_aabb(const Rect3 &p_aabb) {
 
 		Vector3 n;
 		n[i] = 1;
-		planes.push_back(Plane(n, p_aabb.pos[i] + p_aabb.size[i]));
-		planes.push_back(Plane(-n, -p_aabb.pos[i]));
+		planes.push_back(Plane(n, p_aabb.position[i] + p_aabb.size[i]));
+		planes.push_back(Plane(-n, -p_aabb.position[i]));
 	}
 
 	nodes.clear();
@@ -552,7 +552,7 @@ BSP_Tree::BSP_Tree(const PoolVector<Face3> &p_faces, real_t p_error_radius) {
 
 			if (first) {
 
-				aabb.pos = f.vertex[0];
+				aabb.position = f.vertex[0];
 				first = false;
 			} else {
 

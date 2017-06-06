@@ -211,9 +211,9 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 			ERR_FAIL_COND_V(len < (int)4 * 6, ERR_INVALID_DATA);
 			Rect3 val;
-			val.pos.x = decode_float(&buf[0]);
-			val.pos.y = decode_float(&buf[4]);
-			val.pos.z = decode_float(&buf[8]);
+			val.position.x = decode_float(&buf[0]);
+			val.position.y = decode_float(&buf[4]);
+			val.position.z = decode_float(&buf[8]);
 			val.size.x = decode_float(&buf[12]);
 			val.size.y = decode_float(&buf[16]);
 			val.size.z = decode_float(&buf[20]);
@@ -926,9 +926,9 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len) {
 
 			if (buf) {
 				Rect3 aabb = p_variant;
-				encode_float(aabb.pos.x, &buf[0]);
-				encode_float(aabb.pos.y, &buf[4]);
-				encode_float(aabb.pos.z, &buf[8]);
+				encode_float(aabb.position.x, &buf[0]);
+				encode_float(aabb.position.y, &buf[4]);
+				encode_float(aabb.position.z, &buf[8]);
 				encode_float(aabb.size.x, &buf[12]);
 				encode_float(aabb.size.y, &buf[16]);
 				encode_float(aabb.size.z, &buf[20]);

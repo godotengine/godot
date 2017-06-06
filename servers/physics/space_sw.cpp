@@ -180,7 +180,7 @@ bool PhysicsDirectSpaceStateSW::cast_motion(const RID &p_shape, const Transform 
 	ERR_FAIL_COND_V(!shape, false);
 
 	Rect3 aabb = p_xform.xform(shape->get_aabb());
-	aabb = aabb.merge(Rect3(aabb.pos + p_motion, aabb.size)); //motion
+	aabb = aabb.merge(Rect3(aabb.position + p_motion, aabb.size)); //motion
 	aabb = aabb.grow(p_margin);
 
 	/*

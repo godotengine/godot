@@ -757,7 +757,7 @@ void ConvexPolygonShapeSW::_setup(const Vector<Vector3> &p_vertices) {
 	for (int i = 0; i < mesh.vertices.size(); i++) {
 
 		if (i == 0)
-			_aabb.pos = mesh.vertices[i];
+			_aabb.position = mesh.vertices[i];
 		else
 			_aabb.expand_to(mesh.vertices[i]);
 	}
@@ -1388,7 +1388,7 @@ void ConcavePolygonShapeSW::_setup(PoolVector<Vector3> p_faces) {
 		Face3 face(facesr[i * 3 + 0], facesr[i * 3 + 1], facesr[i * 3 + 2]);
 
 		bvh_arrayw[i].aabb = face.get_aabb();
-		bvh_arrayw[i].center = bvh_arrayw[i].aabb.pos + bvh_arrayw[i].aabb.size * 0.5;
+		bvh_arrayw[i].center = bvh_arrayw[i].aabb.position + bvh_arrayw[i].aabb.size * 0.5;
 		bvh_arrayw[i].face_index = i;
 		facesw[i].indices[0] = i * 3 + 0;
 		facesw[i].indices[1] = i * 3 + 1;
@@ -1504,7 +1504,7 @@ void HeightMapShapeSW::_setup(PoolVector<real_t> p_heights, int p_width, int p_d
 
 			Vector3 pos(j * cell_size, h, i * cell_size);
 			if (i == 0 || j == 0)
-				aabb.pos = pos;
+				aabb.position = pos;
 			else
 				aabb.expand_to(pos);
 		}

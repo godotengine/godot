@@ -164,7 +164,7 @@ void CollisionObjectSW::_update_shapes_with_motion(const Vector3 &p_motion) {
 		Rect3 shape_aabb = s.shape->get_aabb();
 		Transform xform = transform * s.xform;
 		shape_aabb = xform.xform(shape_aabb);
-		shape_aabb = shape_aabb.merge(Rect3(shape_aabb.pos + p_motion, shape_aabb.size)); //use motion
+		shape_aabb = shape_aabb.merge(Rect3(shape_aabb.position + p_motion, shape_aabb.size)); //use motion
 		s.aabb_cache = shape_aabb;
 
 		space->get_broadphase()->move(s.bpid, shape_aabb);

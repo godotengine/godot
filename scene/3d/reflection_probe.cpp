@@ -181,7 +181,7 @@ ReflectionProbe::UpdateMode ReflectionProbe::get_update_mode() const {
 Rect3 ReflectionProbe::get_aabb() const {
 
 	Rect3 aabb;
-	aabb.pos = -origin_offset;
+	aabb.position = -origin_offset;
 	aabb.size = origin_offset + extents;
 	return aabb;
 }
