@@ -795,8 +795,8 @@ Ref<Texture> EditorMeshPreviewPlugin::generate(const RES &p_from) {
 
 	Rect3 aabb = mesh->get_aabb();
 	print_line("mesh aabb: " + aabb);
-	Vector3 ofs = aabb.pos + aabb.size * 0.5;
-	aabb.pos -= ofs;
+	Vector3 ofs = aabb.position + aabb.size * 0.5;
+	aabb.position -= ofs;
 	Transform xform;
 	xform.basis = Basis().rotated(Vector3(0, 1, 0), -Math_PI * 0.125);
 	xform.basis = Basis().rotated(Vector3(1, 0, 0), Math_PI * 0.125) * xform.basis;

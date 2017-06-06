@@ -3830,7 +3830,7 @@ void RasterizerStorageGLES3::immediate_vertex(RID p_immediate, const Vector3 &p_
 
 	if (c->vertices.empty() && im->chunks.size() == 1) {
 
-		im->aabb.pos = p_vertex;
+		im->aabb.position = p_vertex;
 		im->aabb.size = Vector3();
 	} else {
 		im->aabb.expand_to(p_vertex);
@@ -4497,7 +4497,7 @@ Rect3 RasterizerStorageGLES3::reflection_probe_get_aabb(RID p_probe) const {
 	ERR_FAIL_COND_V(!reflection_probe, Rect3());
 
 	Rect3 aabb;
-	aabb.pos = -reflection_probe->extents;
+	aabb.position = -reflection_probe->extents;
 	aabb.size = reflection_probe->extents * 2.0;
 
 	return aabb;
@@ -5090,7 +5090,7 @@ Rect3 RasterizerStorageGLES3::particles_get_current_aabb(RID p_particles) {
 			pos = inv.xform(pos);
 		}
 		if (i == 0)
-			aabb.pos = pos;
+			aabb.position = pos;
 		else
 			aabb.expand_to(pos);
 	}
