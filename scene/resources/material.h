@@ -248,7 +248,6 @@ private:
 		StringName depth_scale;
 		StringName subsurface_scattering_strength;
 		StringName refraction;
-		StringName refraction_roughness;
 		StringName point_size;
 		StringName uv1_scale;
 		StringName uv1_offset;
@@ -288,7 +287,6 @@ private:
 	float depth_scale;
 	float subsurface_scattering_strength;
 	float refraction;
-	float refraction_roughness;
 	float line_width;
 	float point_size;
 	int particles_anim_h_frames;
@@ -379,9 +377,6 @@ public:
 
 	void set_refraction(float p_refraction);
 	float get_refraction() const;
-
-	void set_refraction_roughness(float p_refraction_roughness);
-	float get_refraction_roughness() const;
 
 	void set_line_width(float p_line_width);
 	float get_line_width() const;

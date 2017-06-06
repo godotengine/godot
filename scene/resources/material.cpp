@@ -193,7 +193,6 @@ void SpatialMaterial::init_shaders() {
 	shader_names->depth_scale = "depth_scale";
 	shader_names->subsurface_scattering_strength = "subsurface_scattering_strength";
 	shader_names->refraction = "refraction";
-	shader_names->refraction_roughness = "refraction_roughness";
 	shader_names->point_size = "point_size";
 	shader_names->uv1_scale = "uv1_scale";
 	shader_names->uv1_offset = "uv1_offset";
@@ -268,7 +267,12 @@ void SpatialMaterial::_update_shader() {
 		case BLEND_MODE_MUL: code += "blend_mul"; break;
 	}
 
-	switch (depth_draw_mode) {
+	DepthDrawMode ddm = depth_draw_mode;
+	if (features[FEATURE_REFRACTION]) {
+		ddm = DEPTH_DRAW_ALWAYS;
+	}
+
+	switch (ddm) {
 		case DEPTH_DRAW_OPAQUE_ONLY: code += ",depth_draw_opaque"; break;
 		case DEPTH_DRAW_ALWAYS: code += ",depth_draw_always"; break;
 		case DEPTH_DRAW_DISABLED: code += ",depth_draw_never"; break;
@@ -320,6 +324,11 @@ void SpatialMaterial::_update_shader() {
 		code += "uniform sampler2D texture_emission : hint_black_albedo;\n";
 		code += "uniform vec4 emission : hint_color;\n";
 		code += "uniform float emission_energy;\n";
+	}
+
+	if (features[FEATURE_REFRACTION]) {
+		code += "uniform sampler2D texture_refraction;\n";
+		code += "uniform float refraction : hint_range(-16,16);\n";
 	}
 
 	if (features[FEATURE_NORMAL_MAPPING]) {
@@ -489,17 +498,37 @@ void SpatialMaterial::_update_shader() {
 	}
 
 	code += "\tALBEDO = albedo.rgb * albedo_tex.rgb;\n";
-	if (features[FEATURE_TRANSPARENT]) {
-		code += "\tALPHA = albedo.a * albedo_tex.a;\n";
+	code += "\tfloat metallic_tex = texture(texture_metallic,base_uv).r;\n";
+	code += "\tMETALLIC = metallic_tex * metallic;\n";
+	code += "\tfloat roughness_tex = texture(texture_roughness,base_uv).r;\n";
+	code += "\tROUGHNESS = roughness_tex * roughness;\n";
+	code += "\tSPECULAR = specular;\n";
+
+	if (features[FEATURE_NORMAL_MAPPING]) {
+		code += "\tNORMALMAP = texture(texture_normal,base_uv).rgb;\n";
+		code += "\tNORMALMAP_DEPTH = normal_scale;\n";
 	}
 
 	if (features[FEATURE_EMISSION]) {
 		code += "\tEMISSION = (emission.rgb+texture(texture_emission,base_uv).rgb)*emission_energy;\n";
 	}
 
-	if (features[FEATURE_NORMAL_MAPPING]) {
-		code += "\tNORMALMAP = texture(texture_normal,base_uv).rgb;\n";
-		code += "\tNORMALMAP_DEPTH = normal_scale;\n";
+	if (features[FEATURE_REFRACTION]) {
+
+		if (features[FEATURE_NORMAL_MAPPING]) {
+			code += "\tvec3 ref_normal = normalize( mix(NORMAL,TANGENT * NORMALMAP.x + BINORMAL * NORMALMAP.y + NORMAL * NORMALMAP.z,NORMALMAP_DEPTH) ) * SIDE;\n";
+		} else {
+			code += "\tvec3 ref_normal = NORMAL;\n";
+		}
+
+		code += "\tvec2 ref_ofs = SCREEN_UV - ref_normal.xy * texture(texture_refraction,base_uv).r * refraction;\n";
+		code += "\tfloat ref_amount = 1.0 - albedo.a * albedo_tex.a;\n";
+		code += "\tEMISSION += textureLod(SCREEN_TEXTURE,ref_ofs,ROUGHNESS * 8.0).rgb * ref_amount;\n";
+		code += "\tALBEDO *= 1.0 - ref_amount;\n";
+		code += "\tALPHA = 1.0;\n";
+
+	} else if (features[FEATURE_TRANSPARENT]) {
+		code += "\tALPHA = albedo.a * albedo_tex.a;\n";
 	}
 
 	if (features[FEATURE_RIM]) {
@@ -556,12 +585,6 @@ void SpatialMaterial::_update_shader() {
 		code += "\tNORMALMAP = mix(NORMALMAP,detail_norm,detail_mask_tex.r);\n";
 		code += "\tALBEDO.rgb = mix(ALBEDO.rgb,detail,detail_mask_tex.r);\n";
 	}
-
-	code += "\tfloat metallic_tex = texture(texture_metallic,base_uv).r;\n";
-	code += "\tMETALLIC = metallic_tex * metallic;\n";
-	code += "\tfloat roughness_tex = texture(texture_roughness,base_uv).r;\n";
-	code += "\tROUGHNESS = roughness_tex * roughness;\n";
-	code += "\tSPECULAR = specular;\n";
 
 	code += "}\n";
 
@@ -775,16 +798,6 @@ void SpatialMaterial::set_refraction(float p_refraction) {
 float SpatialMaterial::get_refraction() const {
 
 	return refraction;
-}
-
-void SpatialMaterial::set_refraction_roughness(float p_refraction_roughness) {
-
-	refraction_roughness = p_refraction_roughness;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->refraction_roughness, refraction_roughness);
-}
-float SpatialMaterial::get_refraction_roughness() const {
-
-	return refraction_roughness;
 }
 
 void SpatialMaterial::set_detail_uv(DetailUV p_detail_uv) {
@@ -1125,9 +1138,6 @@ void SpatialMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_refraction", "refraction"), &SpatialMaterial::set_refraction);
 	ClassDB::bind_method(D_METHOD("get_refraction"), &SpatialMaterial::get_refraction);
 
-	ClassDB::bind_method(D_METHOD("set_refraction_roughness", "refraction_roughness"), &SpatialMaterial::set_refraction_roughness);
-	ClassDB::bind_method(D_METHOD("get_refraction_roughness"), &SpatialMaterial::get_refraction_roughness);
-
 	ClassDB::bind_method(D_METHOD("set_line_width", "line_width"), &SpatialMaterial::set_line_width);
 	ClassDB::bind_method(D_METHOD("get_line_width"), &SpatialMaterial::get_line_width);
 
@@ -1277,8 +1287,7 @@ void SpatialMaterial::_bind_methods() {
 
 	ADD_GROUP("Refraction", "refraction_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "refraction_enabled"), "set_feature", "get_feature", FEATURE_REFRACTION);
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "refraction_displacement", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_refraction", "get_refraction");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "refraction_roughness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_refraction_roughness", "get_refraction_roughness");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "refraction_scale", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_refraction", "get_refraction");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "refraction_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture", TEXTURE_REFRACTION);
 
 	ADD_GROUP("Detail", "detail_");
@@ -1381,8 +1390,7 @@ SpatialMaterial::SpatialMaterial()
 	set_anisotropy(0);
 	set_depth_scale(0.05);
 	set_subsurface_scattering_strength(0);
-	set_refraction(0);
-	set_refraction_roughness(0);
+	set_refraction(0.05);
 	set_line_width(1);
 	set_point_size(1);
 	set_uv1_offset(Vector2(0, 0));
