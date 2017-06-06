@@ -1304,9 +1304,9 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 
 				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
 				Rect3 *v = _data._rect3;
-				if (*str == "pos") {
+				if (*str == "position") {
 					valid = true;
-					v->pos = p_value;
+					v->position = p_value;
 					return;
 				} else if (*str == "size") {
 					valid = true;
@@ -1314,7 +1314,7 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 					return;
 				} else if (*str == "end") {
 					valid = true;
-					v->size = Vector3(p_value) - v->pos;
+					v->size = Vector3(p_value) - v->position;
 					return;
 				}
 			}
@@ -1718,15 +1718,15 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 
 				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
 				const Rect3 *v = _data._rect3;
-				if (*str == "pos") {
+				if (*str == "position") {
 					valid = true;
-					return v->pos;
+					return v->position;
 				} else if (*str == "size") {
 					valid = true;
 					return v->size;
 				} else if (*str == "end") {
 					valid = true;
-					return v->size + v->pos;
+					return v->size + v->position;
 				}
 			}
 		} break;
@@ -2769,7 +2769,7 @@ void Variant::blend(const Variant &a, const Variant &b, float c, Variant &r_dst)
 		case RECT3: {
 			const Rect3 *ra = reinterpret_cast<const Rect3 *>(a._data._mem);
 			const Rect3 *rb = reinterpret_cast<const Rect3 *>(b._data._mem);
-			r_dst = Rect3(ra->pos + rb->pos * c, ra->size + rb->size * c);
+			r_dst = Rect3(ra->position + rb->position * c, ra->size + rb->size * c);
 		}
 			return;
 		case QUAT: {
@@ -2899,7 +2899,7 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 		}
 			return;
 		case RECT3: {
-			r_dst = Rect3(a._data._rect3->pos.linear_interpolate(b._data._rect3->pos, c), a._data._rect3->size.linear_interpolate(b._data._rect3->size, c));
+			r_dst = Rect3(a._data._rect3->position.linear_interpolate(b._data._rect3->position, c), a._data._rect3->size.linear_interpolate(b._data._rect3->size, c));
 		}
 			return;
 		case BASIS: {

@@ -166,7 +166,7 @@ bool CollisionSolverSW::solve_concave(const ShapeSW *p_shape_A, const Transform 
 		smin *= axis_scale;
 		smax *= axis_scale;
 
-		local_aabb.pos[i] = smin;
+		local_aabb.position[i] = smin;
 		local_aabb.size[i] = smax - smin;
 	}
 
@@ -332,7 +332,7 @@ bool CollisionSolverSW::solve_distance(const ShapeSW *p_shape_A, const Transform
 		Rect3 cc_hint_aabb;
 		if (use_cc_hint) {
 			cc_hint_aabb = p_concave_hint;
-			cc_hint_aabb.pos -= p_transform_B.origin;
+			cc_hint_aabb.position -= p_transform_B.origin;
 		}
 
 		Rect3 local_aabb;
@@ -353,7 +353,7 @@ bool CollisionSolverSW::solve_distance(const ShapeSW *p_shape_A, const Transform
 			smin *= axis_scale;
 			smax *= axis_scale;
 
-			local_aabb.pos[i] = smin;
+			local_aabb.position[i] = smin;
 			local_aabb.size[i] = smax - smin;
 		}
 

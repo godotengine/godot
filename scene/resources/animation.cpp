@@ -1165,7 +1165,7 @@ Variant Animation::_cubic_interpolate(const Variant &p_pre_a, const Variant &p_a
 			Rect3 pb = p_post_b;
 
 			return Rect3(
-					a.pos.cubic_interpolate(b.pos, pa.pos, pb.pos, p_c),
+					a.position.cubic_interpolate(b.position, pa.position, pb.position, p_c),
 					a.size.cubic_interpolate(b.size, pa.size, pb.size, p_c));
 		} break;
 		default: {

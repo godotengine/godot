@@ -191,9 +191,9 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 		case VARIANT_RECT3: {
 
 			Rect3 v;
-			v.pos.x = f->get_real();
-			v.pos.y = f->get_real();
-			v.pos.z = f->get_real();
+			v.position.x = f->get_real();
+			v.position.y = f->get_real();
+			v.position.z = f->get_real();
 			v.size.x = f->get_real();
 			v.size.y = f->get_real();
 			v.size.z = f->get_real();
@@ -1327,9 +1327,9 @@ void ResourceFormatSaverBinaryInstance::write_variant(const Variant &p_property,
 
 			f->store_32(VARIANT_RECT3);
 			Rect3 val = p_property;
-			f->store_real(val.pos.x);
-			f->store_real(val.pos.y);
-			f->store_real(val.pos.z);
+			f->store_real(val.position.x);
+			f->store_real(val.position.y);
+			f->store_real(val.position.z);
 			f->store_real(val.size.x);
 			f->store_real(val.size.y);
 			f->store_real(val.size.z);

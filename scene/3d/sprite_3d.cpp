@@ -421,7 +421,7 @@ void Sprite3D::_draw() {
 		vtx[y_axis] = vertices[i][1];
 		VS::get_singleton()->immediate_vertex(immediate, vtx);
 		if (i == 0) {
-			aabb.pos = vtx;
+			aabb.position = vtx;
 			aabb.size = Vector3();
 		} else {
 			aabb.expand_to(vtx);
@@ -922,7 +922,7 @@ void AnimatedSprite3D::_draw() {
 		vtx[y_axis] = vertices[i][1];
 		VS::get_singleton()->immediate_vertex(immediate, vtx);
 		if (i == 0) {
-			aabb.pos = vtx;
+			aabb.position = vtx;
 			aabb.size = Vector3();
 		} else {
 			aabb.expand_to(vtx);

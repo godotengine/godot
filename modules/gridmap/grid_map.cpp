@@ -1057,12 +1057,12 @@ Error GridMap::create_area(int p_id, const Rect3 &p_bounds) {
 
 	// FIRST VALIDATE AREA
 	IndexKey from, to;
-	from.x = p_bounds.pos.x;
-	from.y = p_bounds.pos.y;
-	from.z = p_bounds.pos.z;
-	to.x = p_bounds.pos.x + p_bounds.size.x;
-	to.y = p_bounds.pos.y + p_bounds.size.y;
-	to.z = p_bounds.pos.z + p_bounds.size.z;
+	from.x = p_bounds.position.x;
+	from.y = p_bounds.position.y;
+	from.z = p_bounds.position.z;
+	to.x = p_bounds.position.x + p_bounds.size.x;
+	to.y = p_bounds.position.y + p_bounds.size.y;
+	to.z = p_bounds.position.z + p_bounds.size.z;
 
 	for (Map<int, Area *>::Element *E = area_map.front(); E; E = E->next()) {
 		//this should somehow be faster...
@@ -1101,8 +1101,8 @@ Rect3 GridMap::area_get_bounds(int p_area) const {
 
 	const Area *a = area_map[p_area];
 	Rect3 aabb;
-	aabb.pos = Vector3(a->from.x, a->from.y, a->from.z);
-	aabb.size = Vector3(a->to.x, a->to.y, a->to.z) - aabb.pos;
+	aabb.position = Vector3(a->from.x, a->from.y, a->from.z);
+	aabb.size = Vector3(a->to.x, a->to.y, a->to.z) - aabb.position;
 
 	return aabb;
 }
