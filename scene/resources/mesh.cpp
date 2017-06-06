@@ -335,7 +335,7 @@ void Mesh::add_surface_from_arrays(PrimitiveType p_primitive, const Array &p_arr
 		for (int i = 0; i < len; i++) {
 
 			if (i == 0)
-				aabb.pos = vtx[i];
+				aabb.position = vtx[i];
 			else
 				aabb.expand_to(vtx[i]);
 		}
@@ -498,7 +498,7 @@ void Mesh::add_surface_from_mesh_data(const Geometry::MeshData &p_mesh_data) {
 	for (int i = 0; i < p_mesh_data.vertices.size(); i++) {
 
 		if (i == 0)
-			aabb.pos = p_mesh_data.vertices[i];
+			aabb.position = p_mesh_data.vertices[i];
 		else
 			aabb.expand_to(p_mesh_data.vertices[i]);
 	}

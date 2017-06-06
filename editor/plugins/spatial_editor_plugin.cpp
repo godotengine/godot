@@ -1676,7 +1676,7 @@ void SpatialEditorViewport::_notification(int p_what) {
 			}
 
 			Transform t = sp->get_global_transform();
-			t.translate(se->aabb.pos);
+			t.translate(se->aabb.position);
 			t.basis.scale(se->aabb.size);
 
 			exist = true;
@@ -2379,7 +2379,7 @@ void SpatialEditor::update_transform_gizmo() {
 
 		Transform xf = se->sp->get_global_transform();
 		if (first) {
-			center.pos = xf.origin;
+			center.position = xf.origin;
 			first = false;
 			if (local_gizmo_coords) {
 				gizmo_basis = xf.basis;
@@ -2392,7 +2392,7 @@ void SpatialEditor::update_transform_gizmo() {
 		//count++;
 	}
 
-	Vector3 pcenter = center.pos + center.size * 0.5;
+	Vector3 pcenter = center.position + center.size * 0.5;
 	gizmo.visible = !first;
 	gizmo.transform.origin = pcenter;
 	gizmo.transform.basis = gizmo_basis;

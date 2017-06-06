@@ -2590,7 +2590,7 @@ uint32_t Variant::hash() const {
 			uint32_t hash = 5831;
 			for (int i = 0; i < 3; i++) {
 
-				hash = hash_djb2_one_float(_data._rect3->pos[i], hash);
+				hash = hash_djb2_one_float(_data._rect3->position[i], hash);
 				hash = hash_djb2_one_float(_data._rect3->size[i], hash);
 			}
 
@@ -2855,7 +2855,7 @@ bool Variant::hash_compare(const Variant &p_variant) const {
 			const Rect3 *l = _data._rect3;
 			const Rect3 *r = p_variant._data._rect3;
 
-			return (hash_compare_vector3(l->pos, r->pos) &&
+			return (hash_compare_vector3(l->position, r->position) &&
 					(hash_compare_vector3(l->size, r->size)));
 
 		} break;

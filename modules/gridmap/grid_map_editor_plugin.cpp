@@ -635,7 +635,7 @@ bool GridMapEditor::forward_spatial_input_event(Camera *p_camera, const Ref<Inpu
 
 					int area = E->get();
 					Rect3 aabb = node->area_get_bounds(area);
-					aabb.pos *= node->get_cell_size();
+					aabb.position *= node->get_cell_size();
 					aabb.size *= node->get_cell_size();
 
 					Vector3 rclip, rnormal;

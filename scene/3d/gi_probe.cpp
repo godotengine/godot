@@ -564,7 +564,7 @@ void GIProbe::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, cons
 
 				Vector3 ofs_j = float(j) * t2;
 
-				Vector3 from = p_aabb.pos + ofs_i + ofs_j;
+				Vector3 from = p_aabb.position + ofs_i + ofs_j;
 				Vector3 to = from + t1 + t2 + axis * p_aabb.size[closest_axis];
 				Vector3 half = (to - from) * 0.5;
 
@@ -619,7 +619,7 @@ void GIProbe::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, cons
 			//could not in any way get texture information.. so use closest point to center
 
 			Face3 f(p_vtx[0], p_vtx[1], p_vtx[2]);
-			Vector3 inters = f.get_closest_point_to(p_aabb.pos + p_aabb.size * 0.5);
+			Vector3 inters = f.get_closest_point_to(p_aabb.position + p_aabb.size * 0.5);
 
 			Vector2 uv = get_uv(inters, p_vtx, p_uv);
 
@@ -700,15 +700,15 @@ void GIProbe::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, cons
 			int nz = p_z;
 
 			if (i & 1) {
-				aabb.pos.x += aabb.size.x;
+				aabb.position.x += aabb.size.x;
 				nx += half;
 			}
 			if (i & 2) {
-				aabb.pos.y += aabb.size.y;
+				aabb.position.y += aabb.size.y;
 				ny += half;
 			}
 			if (i & 4) {
-				aabb.pos.z += aabb.size.z;
+				aabb.position.z += aabb.size.z;
 				nz += half;
 			}
 			//make sure to not plot beyond limits
@@ -720,7 +720,7 @@ void GIProbe::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, cons
 				//test_aabb.grow_by(test_aabb.get_longest_axis_size()*0.05); //grow a bit to avoid numerical error in real-time
 				Vector3 qsize = test_aabb.size * 0.5; //quarter size, for fast aabb test
 
-				if (!fast_tri_box_overlap(test_aabb.pos + qsize, qsize, p_vtx)) {
+				if (!fast_tri_box_overlap(test_aabb.position + qsize, qsize, p_vtx)) {
 					//if (!Face3(p_vtx[0],p_vtx[1],p_vtx[2]).intersects_aabb2(aabb)) {
 					//does not fit in child, go on
 					continue;
@@ -1155,7 +1155,7 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
 
 	Transform to_bounds;
 	to_bounds.basis.scale(Vector3(baker.po2_bounds.size[longest_axis], baker.po2_bounds.size[longest_axis], baker.po2_bounds.size[longest_axis]));
-	to_bounds.origin = baker.po2_bounds.pos;
+	to_bounds.origin = baker.po2_bounds.position;
 
 	Transform to_grid;
 	to_grid.basis.scale(Vector3(baker.axis_cell_size[longest_axis], baker.axis_cell_size[longest_axis], baker.axis_cell_size[longest_axis]));
@@ -1274,7 +1274,7 @@ void GIProbe::_debug_mesh(int p_idx, int p_level, const Rect3 &p_aabb, Ref<Multi
 
 	if (p_level == p_baker->cell_subdiv - 1) {
 
-		Vector3 center = p_aabb.pos + p_aabb.size * 0.5;
+		Vector3 center = p_aabb.position + p_aabb.size * 0.5;
 		Transform xform;
 		xform.origin = center;
 		xform.basis.scale(p_aabb.size * 0.5);
@@ -1296,11 +1296,11 @@ void GIProbe::_debug_mesh(int p_idx, int p_level, const Rect3 &p_aabb, Ref<Multi
 			aabb.size *= 0.5;
 
 			if (i & 1)
-				aabb.pos.x += aabb.size.x;
+				aabb.position.x += aabb.size.x;
 			if (i & 2)
-				aabb.pos.y += aabb.size.y;
+				aabb.position.y += aabb.size.y;
 			if (i & 4)
-				aabb.pos.z += aabb.size.z;
+				aabb.position.z += aabb.size.z;
 
 			_debug_mesh(p_baker->bake_cells[p_idx].childs[i], p_level + 1, aabb, p_multimesh, idx, p_baker);
 		}
