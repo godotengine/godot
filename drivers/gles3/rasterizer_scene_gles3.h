@@ -170,6 +170,7 @@ public:
 
 		bool cull_front;
 		bool used_sss;
+		bool used_screen_texture;
 
 	} state;
 
@@ -389,6 +390,12 @@ public:
 		float dof_blur_near_amount;
 		VS::EnvironmentDOFBlurQuality dof_blur_near_quality;
 
+		bool adjustments_enabled;
+		float adjustments_brightness;
+		float adjustments_contrast;
+		float adjustments_saturation;
+		RID color_correction;
+
 		Environment() {
 			bg_mode = VS::ENV_BG_CLEAR_COLOR;
 			sky_scale = 1.0;
@@ -445,6 +452,11 @@ public:
 			dof_blur_near_transition = 1;
 			dof_blur_near_amount = 0.1;
 			dof_blur_near_quality = VS::ENV_DOF_BLUR_QUALITY_MEDIUM;
+
+			adjustments_enabled = false;
+			adjustments_brightness = 1.0;
+			adjustments_contrast = 1.0;
+			adjustments_saturation = 1.0;
 		}
 	};
 
@@ -711,6 +723,7 @@ public:
 
 	void _fill_render_list(InstanceBase **p_cull_result, int p_cull_count, bool p_shadow);
 
+	void _blur_effect_buffer();
 	void _render_mrts(Environment *env, const CameraMatrix &p_cam_projection);
 	void _post_process(Environment *env, const CameraMatrix &p_cam_projection);
 

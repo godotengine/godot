@@ -153,7 +153,7 @@ out highp float dp_clip;
 #define SKELETON_TEXTURE_WIDTH 256
 
 #ifdef USE_SKELETON
-uniform highp sampler2D skeleton_texture; //texunit:-6
+uniform highp sampler2D skeleton_texture; //texunit:-1
 #endif
 
 out highp vec4 position_interp;
@@ -338,7 +338,20 @@ VERTEX_SHADER_CODE
 
 [fragment]
 
+/* texture unit usage, N is max_texture_unity-N
 
+1-skeleton
+2-radiance
+3-reflection_atlas
+4-directional_shadow
+5-shadow_atlas
+6-decal_atlas
+7-screen
+8-depth
+9-probe1
+10-probe2
+
+*/
 
 #define M_PI 3.14159265359
 
@@ -370,7 +383,6 @@ in vec3 normal_interp;
 //used on forward mainly
 uniform bool no_ambient_light;
 
-uniform sampler2D brdf_texture; //texunit:-1
 
 #ifdef USE_RADIANCE_MAP
 
@@ -482,7 +494,7 @@ layout(std140) uniform SpotLightData { //ubo:5
 };
 
 
-uniform highp sampler2DShadow shadow_atlas; //texunit:-3
+uniform highp sampler2DShadow shadow_atlas; //texunit:-5
 
 
 struct ReflectionData {
@@ -500,7 +512,7 @@ layout(std140) uniform ReflectionProbeData { //ubo:6
 
 	ReflectionData reflections[MAX_REFLECTION_DATA_STRUCTS];
 };
-uniform mediump sampler2D reflection_atlas; //texunit:-5
+uniform mediump sampler2D reflection_atlas; //texunit:-3
 
 
 #ifdef USE_FORWARD_LIGHTING
@@ -517,6 +529,11 @@ uniform int reflection_count;
 #endif
 
 
+#if defined(SCREEN_TEXTURE_USED)
+
+uniform highp sampler2D screen_texture; //texunit:-7
+
+#endif
 
 #ifdef USE_MULTIPLE_RENDER_TARGETS
 
@@ -534,7 +551,7 @@ layout(location=0) out vec4 frag_color;
 #endif
 
 in highp vec4 position_interp;
-uniform highp sampler2D depth_buffer; //texunit:-9
+uniform highp sampler2D depth_buffer; //texunit:-8
 
 float contact_shadow_compute(vec3 pos, vec3 dir, float max_distance) {
 
@@ -1020,7 +1037,7 @@ void reflection_process(int idx, vec3 vertex, vec3 normal,vec3 binormal, vec3 ta
 
 #ifdef USE_GI_PROBES
 
-uniform mediump sampler3D gi_probe1; //texunit:-10
+uniform mediump sampler3D gi_probe1; //texunit:-9
 uniform highp mat4 gi_probe_xform1;
 uniform highp vec3 gi_probe_bounds1;
 uniform highp vec3 gi_probe_cell_size1;
@@ -1028,7 +1045,7 @@ uniform highp float gi_probe_multiplier1;
 uniform highp float gi_probe_bias1;
 uniform bool gi_probe_blend_ambient1;
 
-uniform mediump sampler3D gi_probe2; //texunit:-11
+uniform mediump sampler3D gi_probe2; //texunit:-10
 uniform highp mat4 gi_probe_xform2;
 uniform highp vec3 gi_probe_bounds2;
 uniform highp vec3 gi_probe_cell_size2;
@@ -1265,7 +1282,9 @@ void main() {
 
 	float normaldepth=1.0;
 
-
+#if defined(SCREEN_UV_USED)
+	vec2 screen_uv = gl_FragCoord.xy*screen_pixel_size;
+#endif
 
 #if defined(ENABLE_DISCARD)
 	bool discard_=false;

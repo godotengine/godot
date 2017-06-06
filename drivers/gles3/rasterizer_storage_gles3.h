@@ -411,6 +411,7 @@ public:
 			bool uses_vertex;
 			bool uses_discard;
 			bool uses_sss;
+			bool uses_screen_texture;
 			bool writes_modelview_or_projection;
 
 		} spatial;
