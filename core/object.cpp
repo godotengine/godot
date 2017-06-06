@@ -1035,7 +1035,7 @@ Variant Object::get_meta(const String &p_name) const {
 Array Object::_get_property_list_bind() const {
 
 	List<PropertyInfo> lpi;
-	get_property_list(&lpi);
+	get_property_list(&lpi, true);
 	return convert_property_list(&lpi);
 }
 
