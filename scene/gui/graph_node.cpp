@@ -582,8 +582,6 @@ void GraphNode::_gui_input(const Ref<InputEvent> &p_ev) {
 		ERR_EXPLAIN("GraphNode must be the child of a GraphEdit node.");
 		ERR_FAIL_COND(get_parent_control() == NULL);
 
-		print_line("INPUT EVENT BUTTON");
-
 		if (mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 
 			Vector2 mpos = Vector2(mb->get_position().x, mb->get_position().y);
