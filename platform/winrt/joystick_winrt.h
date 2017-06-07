@@ -1,12 +1,11 @@
 /*************************************************************************/
-/*  thread_winrt.cpp                                                     */
+/*  joystick.h                                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,46 +26,56 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "thread_winrt.h"
+#ifndef JOYSTICK_WINRT_H
+#define JOYSTICK_WINRT_H
 
-#include "os/memory.h"
+#include "main/input_default.h"
 
-Thread *ThreadWinrt::create_func_winrt(ThreadCreateCallback p_callback, void *p_user, const Settings &) {
+ref class JoystickWinrt sealed {
 
-	ThreadWinrt *thread = memnew(ThreadWinrt);
+internal:
 
-	std::thread new_thread(p_callback, p_user);
-	std::swap(thread->thread, new_thread);
+	void register_events();
+	uint32_t process_controllers(uint32_t p_last_id);
 
-	return thread;
+	JoystickWinrt();
+	JoystickWinrt(InputDefault* p_input);
+
+private:
+
+	enum {
+		MAX_CONTROLLERS = 4,
+	};
+
+	enum ControllerType {
+		GAMEPAD_CONTROLLER,
+		ARCADE_STICK_CONTROLLER,
+		RACING_WHEEL_CONTROLLER,
+	};
+
+	struct ControllerDevice {
+
+		Windows::Gaming::Input::IGameController^ controller_reference;
+
+		int id;
+		bool connected;
+		ControllerType type;
+
+		ControllerDevice() {
+			id = -1;
+			connected = false;
+			type = ControllerType::GAMEPAD_CONTROLLER;
+		}
+	};
+
+	ControllerDevice controllers[MAX_CONTROLLERS];
+
+	InputDefault* input;
+
+	void OnGamepadAdded(Platform::Object^ sender, Windows::Gaming::Input::Gamepad^ value);
+	void OnGamepadRemoved(Platform::Object^ sender, Windows::Gaming::Input::Gamepad^ value);
+
+	InputDefault::JoyAxis axis_correct(double p_val, bool p_negate = false, bool p_trigger = false) const;
 };
 
-Thread::ID ThreadWinrt::get_thread_ID_func_winrt() {
-
-	return std::hash<std::thread::id>()(std::this_thread::get_id());
-};
-
-void ThreadWinrt::wait_to_finish_func_winrt(Thread *p_thread) {
-
-	ThreadWinrt *tp = static_cast<ThreadWinrt *>(p_thread);
-	tp->thread.join();
-};
-
-Thread::ID ThreadWinrt::get_ID() const {
-
-	return std::hash<std::thread::id>()(thread.get_id());
-};
-
-void ThreadWinrt::make_default() {
-	create_func = create_func_winrt;
-	get_thread_ID_func = get_thread_ID_func_winrt;
-	wait_to_finish_func = wait_to_finish_func_winrt;
-};
-
-ThreadWinrt::ThreadWinrt(){
-
-};
-
-ThreadWinrt::~ThreadWinrt(){
-
-};
+#endif

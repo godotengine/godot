@@ -10193,6 +10193,11 @@ void RasterizerGLES2::init() {
 	shadow = NULL;
 	shadow_pass = 0;
 
+#ifdef ANGLE_ENABLED
+	// Fix for ANGLE
+	material_shader.set_conditional(MaterialShaderGLES2::DISABLE_FRONT_FACING, true);
+#endif
+
 	framebuffer.fbo = 0;
 	framebuffer.width = 0;
 	framebuffer.height = 0;
@@ -10271,9 +10276,12 @@ void RasterizerGLES2::init() {
 	s3tc_supported = extensions.has("GL_EXT_texture_compression_dxt1") || extensions.has("GL_EXT_texture_compression_s3tc") || extensions.has("WEBGL_compressed_texture_s3tc");
 	use_half_float = extensions.has("GL_OES_vertex_half_float");
 	atitc_supported = extensions.has("GL_AMD_compressed_ATC_texture");
-
 	srgb_supported = extensions.has("GL_EXT_sRGB");
+#ifndef ANGLE_ENABLED
 	s3tc_srgb_supported = s3tc_supported && extensions.has("GL_EXT_texture_compression_s3tc");
+#else
+	s3tc_srgb_supported = s3tc_supported;
+#endif
 	latc_supported = extensions.has("GL_EXT_texture_compression_latc");
 	anisotropic_level = 1.0;
 	use_anisotropic_filter = extensions.has("GL_EXT_texture_filter_anisotropic");

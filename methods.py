@@ -200,7 +200,7 @@ def build_glsl_header(filename):
     out_file_base = out_file
     out_file_base = out_file_base[out_file_base.rfind("/") + 1:]
     out_file_base = out_file_base[out_file_base.rfind("\\") + 1:]
-#	print("out file "+out_file+" base " +out_file_base)
+#   print("out file "+out_file+" base " +out_file_base)
     out_file_ifdef = out_file_base.replace(".", "_").upper()
     fd.write("#ifndef " + out_file_ifdef + "\n")
     fd.write("#define " + out_file_ifdef + "\n")
@@ -249,79 +249,79 @@ def build_glsl_header(filename):
 
     fd.write("""\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Transform& p_transform) {  _FU
 
-		const Transform &tr = p_transform;
+        const Transform &tr = p_transform;
 
-		GLfloat matrix[16]={ /* build a 16x16 matrix */
-			tr.basis.elements[0][0],
-			tr.basis.elements[1][0],
-			tr.basis.elements[2][0],
-			0,
-			tr.basis.elements[0][1],
-			tr.basis.elements[1][1],
-			tr.basis.elements[2][1],
-			0,
-			tr.basis.elements[0][2],
-			tr.basis.elements[1][2],
-			tr.basis.elements[2][2],
-			0,
-			tr.origin.x,
-			tr.origin.y,
-			tr.origin.z,
-			1
-		};
-
-
-	glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
+        GLfloat matrix[16]={ /* build a 16x16 matrix */
+            tr.basis.elements[0][0],
+            tr.basis.elements[1][0],
+            tr.basis.elements[2][0],
+            0,
+            tr.basis.elements[0][1],
+            tr.basis.elements[1][1],
+            tr.basis.elements[2][1],
+            0,
+            tr.basis.elements[0][2],
+            tr.basis.elements[1][2],
+            tr.basis.elements[2][2],
+            0,
+            tr.origin.x,
+            tr.origin.y,
+            tr.origin.z,
+            1
+        };
 
 
-	}
+    glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
 
-	""")
+
+    }
+
+    """)
 
     fd.write("""\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Matrix32& p_transform) {  _FU
 
-		const Matrix32 &tr = p_transform;
+        const Matrix32 &tr = p_transform;
 
-		GLfloat matrix[16]={ /* build a 16x16 matrix */
-			tr.elements[0][0],
-			tr.elements[0][1],
-			0,
-			0,
-			tr.elements[1][0],
-			tr.elements[1][1],
-			0,
-			0,
-			0,
-			0,
-			1,
-			0,
-			tr.elements[2][0],
-			tr.elements[2][1],
-			0,
-			1
-		};
-
-
-	glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
+        GLfloat matrix[16]={ /* build a 16x16 matrix */
+            tr.elements[0][0],
+            tr.elements[0][1],
+            0,
+            0,
+            tr.elements[1][0],
+            tr.elements[1][1],
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            tr.elements[2][0],
+            tr.elements[2][1],
+            0,
+            1
+        };
 
 
-	}
+    glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
 
-	""")
+
+    }
+
+    """)
 
     fd.write("""\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const CameraMatrix& p_matrix) {  _FU
 
-		GLfloat matrix[16];
+        GLfloat matrix[16];
 
-		for (int i=0;i<4;i++) {
-			for (int j=0;j<4;j++) {
+        for (int i=0;i<4;i++) {
+            for (int j=0;j<4;j++) {
 
-				matrix[i*4+j]=p_matrix.matrix[i][j];
-			}
-		}
+                matrix[i*4+j]=p_matrix.matrix[i][j];
+            }
+        }
 
-		glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
-	}; """)
+        glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
+    }; """)
 
     fd.write("\n\n#undef _FU\n\n\n")
 
@@ -493,7 +493,7 @@ def build_hlsl_dx9_header(filename):
     out_file_base = out_file
     out_file_base = out_file_base[out_file_base.rfind("/") + 1:]
     out_file_base = out_file_base[out_file_base.rfind("\\") + 1:]
-#	print("out file "+out_file+" base " +out_file_base)
+#   print("out file "+out_file+" base " +out_file_base)
     out_file_ifdef = out_file_base.replace(".", "_").upper()
     fd.write("#ifndef " + out_file_ifdef + "\n")
     fd.write("#define " + out_file_ifdef + "\n")
@@ -542,46 +542,46 @@ def build_hlsl_dx9_header(filename):
 
     fd.write("""\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Transform& p_transform) {  _FU
 
-		const Transform &tr = p_transform;
+        const Transform &tr = p_transform;
 
-		float matrix[16]={ /* build a 16x16 matrix */
-			tr.basis.elements[0][0],
-			tr.basis.elements[0][1],
-			tr.basis.elements[0][2],
-			tr.origin.x,
-			tr.basis.elements[1][0],
-			tr.basis.elements[1][1],
-			tr.basis.elements[1][2],
-			tr.origin.y,
-			tr.basis.elements[2][0],
-			tr.basis.elements[2][1],
-			tr.basis.elements[2][2],
-			tr.origin.z,
-			0,
-			0,
-			0,
-			1
-		};
+        float matrix[16]={ /* build a 16x16 matrix */
+            tr.basis.elements[0][0],
+            tr.basis.elements[0][1],
+            tr.basis.elements[0][2],
+            tr.origin.x,
+            tr.basis.elements[1][0],
+            tr.basis.elements[1][1],
+            tr.basis.elements[1][2],
+            tr.origin.y,
+            tr.basis.elements[2][0],
+            tr.basis.elements[2][1],
+            tr.basis.elements[2][2],
+            tr.origin.z,
+            0,
+            0,
+            0,
+            1
+        };
 
-		set_uniformfv(p_uniform,&matrix[0],4);
+        set_uniformfv(p_uniform,&matrix[0],4);
 
-	}
+    }
 
-	""")
+    """)
 
     fd.write("""\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const CameraMatrix& p_matrix) {  _FU
 
-		float matrix[16];
+        float matrix[16];
 
-		for (int i=0;i<4;i++) {
-			for (int j=0;j<4;j++) {
+        for (int i=0;i<4;i++) {
+            for (int j=0;j<4;j++) {
 
-				matrix[i*4+j]=p_matrix.matrix[j][i];
-			}
-		}
+                matrix[i*4+j]=p_matrix.matrix[j][i];
+            }
+        }
 
-		set_uniformfv(p_uniform,&matrix[0],4);
-	}; """)
+        set_uniformfv(p_uniform,&matrix[0],4);
+    }; """)
 
     fd.write("\n\n#undef _FU\n\n\n")
 
@@ -720,7 +720,7 @@ def include_file_in_legacygl_header(filename, header_data, depth):
                 enumbase = ifdefline[:ifdefline.find("_EN_")]
                 ifdefline = ifdefline.replace("_EN_", "_")
                 line = line.replace("_EN_", "_")
-#				print(enumbase+":"+ifdefline);
+#               print(enumbase+":"+ifdefline);
                 if (enumbase not in header_data.enums):
                     header_data.enums[enumbase] = []
                 if (ifdefline not in header_data.enums[enumbase]):
@@ -816,7 +816,7 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs):
     out_file_base = out_file
     out_file_base = out_file_base[out_file_base.rfind("/") + 1:]
     out_file_base = out_file_base[out_file_base.rfind("\\") + 1:]
-#	print("out file "+out_file+" base " +out_file_base)
+#   print("out file "+out_file+" base " +out_file_base)
     out_file_ifdef = out_file_base.replace(".", "_").upper()
     fd.write("#ifndef " + out_file_ifdef + class_suffix + "_120\n")
     fd.write("#define " + out_file_ifdef + class_suffix + "_120\n")
@@ -867,79 +867,79 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs):
 
     fd.write("""\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Transform& p_transform) {  _FU
 
-		const Transform &tr = p_transform;
+        const Transform &tr = p_transform;
 
-		GLfloat matrix[16]={ /* build a 16x16 matrix */
-			tr.basis.elements[0][0],
-			tr.basis.elements[1][0],
-			tr.basis.elements[2][0],
-			0,
-			tr.basis.elements[0][1],
-			tr.basis.elements[1][1],
-			tr.basis.elements[2][1],
-			0,
-			tr.basis.elements[0][2],
-			tr.basis.elements[1][2],
-			tr.basis.elements[2][2],
-			0,
-			tr.origin.x,
-			tr.origin.y,
-			tr.origin.z,
-			1
-		};
-
-
-	glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
+        GLfloat matrix[16]={ /* build a 16x16 matrix */
+            tr.basis.elements[0][0],
+            tr.basis.elements[1][0],
+            tr.basis.elements[2][0],
+            0,
+            tr.basis.elements[0][1],
+            tr.basis.elements[1][1],
+            tr.basis.elements[2][1],
+            0,
+            tr.basis.elements[0][2],
+            tr.basis.elements[1][2],
+            tr.basis.elements[2][2],
+            0,
+            tr.origin.x,
+            tr.origin.y,
+            tr.origin.z,
+            1
+        };
 
 
-	}
+    glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
 
-	""")
+
+    }
+
+    """)
 
     fd.write("""\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Matrix32& p_transform) {  _FU
 
-		const Matrix32 &tr = p_transform;
+        const Matrix32 &tr = p_transform;
 
-		GLfloat matrix[16]={ /* build a 16x16 matrix */
-			tr.elements[0][0],
-			tr.elements[0][1],
-			0,
-			0,
-			tr.elements[1][0],
-			tr.elements[1][1],
-			0,
-			0,
-			0,
-			0,
-			1,
-			0,
-			tr.elements[2][0],
-			tr.elements[2][1],
-			0,
-			1
-		};
-
-
-	glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
+        GLfloat matrix[16]={ /* build a 16x16 matrix */
+            tr.elements[0][0],
+            tr.elements[0][1],
+            0,
+            0,
+            tr.elements[1][0],
+            tr.elements[1][1],
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            tr.elements[2][0],
+            tr.elements[2][1],
+            0,
+            1
+        };
 
 
-	}
+    glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
 
-	""")
+
+    }
+
+    """)
 
     fd.write("""\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const CameraMatrix& p_matrix) {  _FU
 
-		GLfloat matrix[16];
+        GLfloat matrix[16];
 
-		for (int i=0;i<4;i++) {
-			for (int j=0;j<4;j++) {
+        for (int i=0;i<4;i++) {
+            for (int j=0;j<4;j++) {
 
-				matrix[i*4+j]=p_matrix.matrix[i][j];
-			}
-		}
+                matrix[i*4+j]=p_matrix.matrix[i][j];
+            }
+        }
 
-		glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
-	}; """)
+        glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
+    }; """)
 
     fd.write("\n\n#undef _FU\n\n\n")
 
@@ -959,10 +959,10 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs):
             x = header_data.enums[xv]
             bits = 1
             amt = len(x)
-#			print(x)
+#           print(x)
             while(2**bits < amt):
                 bits += 1
-#			print("amount: "+str(amt)+" bits "+str(bits));
+#           print("amount: "+str(amt)+" bits "+str(bits));
             strs = "{"
             for i in range(amt):
                 strs += "\"#define " + x[i] + "\\n\","
@@ -1252,31 +1252,31 @@ def win32_spawn(sh, escape, cmd, args, env):
 
 """
 def win32_spawn(sh, escape, cmd, args, spawnenv):
-	import win32file
-	import win32event
-	import win32process
-	import win32security
-	for var in spawnenv:
-		spawnenv[var] = spawnenv[var].encode('ascii', 'replace')
+    import win32file
+    import win32event
+    import win32process
+    import win32security
+    for var in spawnenv:
+        spawnenv[var] = spawnenv[var].encode('ascii', 'replace')
 
-	sAttrs = win32security.SECURITY_ATTRIBUTES()
-	StartupInfo = win32process.STARTUPINFO()
-	newargs = ' '.join(map(escape, args[1:]))
-	cmdline = cmd + " " + newargs
+    sAttrs = win32security.SECURITY_ATTRIBUTES()
+    StartupInfo = win32process.STARTUPINFO()
+    newargs = ' '.join(map(escape, args[1:]))
+    cmdline = cmd + " " + newargs
 
-	# check for any special operating system commands
-	if cmd == 'del':
-		for arg in args[1:]:
-			win32file.DeleteFile(arg)
-		exit_code = 0
-	else:
-		# otherwise execute the command.
-		hProcess, hThread, dwPid, dwTid = win32process.CreateProcess(None, cmdline, None, None, 1, 0, spawnenv, None, StartupInfo)
-		win32event.WaitForSingleObject(hProcess, win32event.INFINITE)
-		exit_code = win32process.GetExitCodeProcess(hProcess)
-		win32file.CloseHandle(hProcess);
-		win32file.CloseHandle(hThread);
-	return exit_code
+    # check for any special operating system commands
+    if cmd == 'del':
+        for arg in args[1:]:
+            win32file.DeleteFile(arg)
+        exit_code = 0
+    else:
+        # otherwise execute the command.
+        hProcess, hThread, dwPid, dwTid = win32process.CreateProcess(None, cmdline, None, None, 1, 0, spawnenv, None, StartupInfo)
+        win32event.WaitForSingleObject(hProcess, win32event.INFINITE)
+        exit_code = win32process.GetExitCodeProcess(hProcess)
+        win32file.CloseHandle(hProcess);
+        win32file.CloseHandle(hThread);
+    return exit_code
 """
 
 def android_add_maven_repository(self, url):
@@ -1440,7 +1440,7 @@ def save_active_platforms(apnames, ap):
 
     for x in ap:
         pth = x + "/logo.png"
-#		print("open path: "+pth)
+#       print("open path: "+pth)
         pngf = open(pth, "rb")
         b = pngf.read(1)
         str = " /* AUTOGENERATED FILE, DO NOT EDIT */ \n"
@@ -1492,3 +1492,73 @@ def no_verbose(sys, env):
     env.Append(LINKCOMSTR=[link_program_message])
     env.Append(JARCOMSTR=[java_library_message])
     env.Append(JAVACCOMSTR=[java_compile_source_message])
+
+def detect_visual_c_compiler_version(tools_env):
+    # tools_env is the variable scons uses to call tools that execute tasks, SCons's env['ENV'] that executes tasks...
+    # (see the SCons documentation for more information on what it does)...
+    # in order for this function to be well encapsulated i choose to force it to recieve SCons's TOOLS env (env['ENV']
+    # and not scons setup environment (env)... so make sure you call the right environment on it or it will fail to detect
+    # the propper vc version that will be called
+
+    # These is no flag to give to visual c compilers to set the architecture, ie scons bits argument (32,64,ARM etc)
+    # There are many different cl.exe files that are run, and each one compiles & links to a different architecture
+    # As far as I know, the only way to figure out what compiler will be run when Scons calls cl.exe via Program()
+    # is to check the PATH varaible and figure out which one will be called first. Code bellow does that and returns:
+    # the following string values:
+
+    # ""              Compiler not detected
+    # "amd64"         Native 64 bit compiler
+    # "amd64_x86"     64 bit Cross Compiler for 32 bit
+    # "x86"           Native 32 bit compiler
+    # "x86_amd64"     32 bit Cross Compiler for 64 bit
+
+    # There are other architectures, but Godot does not support them currently, so this function does not detect arm/amd64_arm
+    # and similar architectures/compilers
+
+    # Set chosen compiler to "not detected"
+    vc_chosen_compiler_index = -1
+    vc_chosen_compiler_str = ""
+
+    # find() works with -1 so big ifs bellow are needed... the simplest solution, in fact
+    # First test if amd64 and amd64_x86 compilers are present in the path
+    vc_amd64_compiler_detection_index =  tools_env["PATH"].find(tools_env["VCINSTALLDIR"]+"BIN\\amd64;")
+    if(vc_amd64_compiler_detection_index > -1):
+            vc_chosen_compiler_index = vc_amd64_compiler_detection_index
+            vc_chosen_compiler_str = "amd64"
+
+    vc_amd64_x86_compiler_detection_index = tools_env["PATH"].find(tools_env["VCINSTALLDIR"]+"BIN\\amd64_x86;")
+    if(vc_amd64_x86_compiler_detection_index > -1
+       and (vc_chosen_compiler_index == -1
+            or vc_chosen_compiler_index > vc_amd64_x86_compiler_detection_index)):
+            vc_chosen_compiler_index = vc_amd64_x86_compiler_detection_index
+            vc_chosen_compiler_str = "amd64_x86"
+
+
+    # Now check the 32 bit compilers
+    vc_x86_compiler_detection_index =  tools_env["PATH"].find(tools_env["VCINSTALLDIR"]+"BIN;")
+    if(vc_x86_compiler_detection_index > -1
+       and (vc_chosen_compiler_index == -1
+            or vc_chosen_compiler_index > vc_x86_compiler_detection_index)):
+            vc_chosen_compiler_index = vc_x86_compiler_detection_index
+            vc_chosen_compiler_str = "x86"
+
+    vc_x86_amd64_compiler_detection_index = tools_env["PATH"].find(tools_env['VCINSTALLDIR']+"BIN\\x86_amd64;")
+    if(vc_x86_amd64_compiler_detection_index > -1
+       and (vc_chosen_compiler_index == -1
+            or vc_chosen_compiler_index > vc_x86_amd64_compiler_detection_index)):
+            vc_chosen_compiler_index = vc_x86_amd64_compiler_detection_index
+            vc_chosen_compiler_str = "x86_amd64"
+
+    # debug help
+    #print vc_amd64_compiler_detection_index
+    #print vc_amd64_x86_compiler_detection_index
+    #print vc_x86_compiler_detection_index
+    #print vc_x86_amd64_compiler_detection_index
+    #print "chosen "+str(vc_chosen_compiler_index)+ " | "+str(vc_chosen_compiler_str)
+
+    return vc_chosen_compiler_str
+
+def precious_program(env, program, sources, **args):
+    program = env.ProgramOriginal(program, sources, **args)
+    env.Precious(program)
+    return program

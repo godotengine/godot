@@ -1,95 +1,96 @@
 #
-# 	tested on               | Windows native    | Linux cross-compilation
-#	------------------------+-------------------+---------------------------
-#	MSVS C++ 2010 Express   | WORKS             | n/a
-#	Mingw-w64               | WORKS             | WORKS
-#	Mingw-w32               | WORKS             | WORKS
-#	MinGW                   | WORKS             | untested
+#   tested on               | Windows native    | Linux cross-compilation
+#   ------------------------+-------------------+---------------------------
+#   MSVS C++ 2010 Express   | WORKS             | n/a
+#   Mingw-w64               | WORKS             | WORKS
+#   Mingw-w32               | WORKS             | WORKS
+#   MinGW                   | WORKS             | untested
 #
 #####
 # Notes about MSVS C++ :
 #
-# 	- MSVC2010-Express compiles to 32bits only.
+#   - MSVC2010-Express compiles to 32bits only.
 #
 #####
 # Notes about Mingw-w64 and Mingw-w32 under Windows :
 #
-#	- both can be installed using the official installer :
-#		http://mingw-w64.sourceforge.net/download.php#mingw-builds
+#   - both can be installed using the official installer :
+#       http://mingw-w64.sourceforge.net/download.php#mingw-builds
 #
-#	- if you want to compile both 32bits and 64bits, don't forget to
-#	run the installer twice to install them both.
+#   - if you want to compile both 32bits and 64bits, don't forget to
+#   run the installer twice to install them both.
 #
-#	- install them into a path that does not contain spaces
-#		( example : "C:/Mingw-w32", "C:/Mingw-w64" )
+#   - install them into a path that does not contain spaces
+#       ( example : "C:/Mingw-w32", "C:/Mingw-w64" )
 #
-#	- if you want to compile faster using the "-j" option, don't forget
-#	to install the appropriate version of the Pywin32 python extension
-#	available from : http://sourceforge.net/projects/pywin32/files/
+#   - if you want to compile faster using the "-j" option, don't forget
+#   to install the appropriate version of the Pywin32 python extension
+#   available from : http://sourceforge.net/projects/pywin32/files/
 #
-#	- before running scons, you must add into the environment path
-#	the path to the "/bin" directory of the Mingw version you want
-#	to use :
+#   - before running scons, you must add into the environment path
+#   the path to the "/bin" directory of the Mingw version you want
+#   to use :
 #
-#		set PATH=C:/Mingw-w32/bin;%PATH%
+#       set PATH=C:/Mingw-w32/bin;%PATH%
 #
-#	- then, scons should be able to detect gcc.
-#	- Mingw-w32 only compiles 32bits.
-#	- Mingw-w64 only compiles 64bits.
+#   - then, scons should be able to detect gcc.
+#   - Mingw-w32 only compiles 32bits.
+#   - Mingw-w64 only compiles 64bits.
 #
-#	- it is possible to add them both at the same time into the PATH env,
-#	if you also define the MINGW32_PREFIX and MINGW64_PREFIX environment
-#	variables.
-#	For instance, you could store that set of commands into a .bat script
-#	that you would run just before scons :
+#   - it is possible to add them both at the same time into the PATH env,
+#   if you also define the MINGW32_PREFIX and MINGW64_PREFIX environment
+#   variables.
+#   For instance, you could store that set of commands into a .bat script
+#   that you would run just before scons :
 #
-#			set PATH=C:\mingw-w32\bin;%PATH%
-#			set PATH=C:\mingw-w64\bin;%PATH%
-#			set MINGW32_PREFIX=C:\mingw-w32\bin\
-#			set MINGW64_PREFIX=C:\mingw-w64\bin\
+#           set PATH=C:\mingw-w32\bin;%PATH%
+#           set PATH=C:\mingw-w64\bin;%PATH%
+#           set MINGW32_PREFIX=C:\mingw-w32\bin\
+#           set MINGW64_PREFIX=C:\mingw-w64\bin\
 #
 #####
 # Notes about Mingw, Mingw-w64 and Mingw-w32 under Linux :
 #
-#	- default toolchain prefixes are :
-#		"i586-mingw32msvc-" for MinGW
-#		"i686-w64-mingw32-"	for Mingw-w32
-#		"x86_64-w64-mingw32-" for Mingw-w64
+#   - default toolchain prefixes are :
+#       "i586-mingw32msvc-" for MinGW
+#       "i686-w64-mingw32-" for Mingw-w32
+#       "x86_64-w64-mingw32-" for Mingw-w64
 #
-#	- if both MinGW and Mingw-w32 are installed on your system
-#	Mingw-w32 should take the priority over MinGW.
+#   - if both MinGW and Mingw-w32 are installed on your system
+#   Mingw-w32 should take the priority over MinGW.
 #
-#	- it is possible to manually override prefixes by defining
-#	the MINGW32_PREFIX and MINGW64_PREFIX environment variables.
+#   - it is possible to manually override prefixes by defining
+#   the MINGW32_PREFIX and MINGW64_PREFIX environment variables.
 #
 #####
 # Notes about Mingw under Windows :
 #
-#	- this is the MinGW version from http://mingw.org/
-#	- install it into a path that does not contain spaces
-#		( example : "C:/MinGW" )
-#	- several DirectX headers might be missing. You can copy them into
-#	the C:/MinGW/include" directory from this page :
-#	 https://code.google.com/p/mingw-lib/source/browse/trunk/working/avcodec_to_widget_5/directx_include/
-#	- before running scons, add the path to the "/bin" directory :
-#		set PATH=C:/MinGW/bin;%PATH%
-#	- scons should be able to detect gcc.
+#   - this is the MinGW version from http://mingw.org/
+#   - install it into a path that does not contain spaces
+#       ( example : "C:/MinGW" )
+#   - several DirectX headers might be missing. You can copy them into
+#   the C:/MinGW/include" directory from this page :
+#    https://code.google.com/p/mingw-lib/source/browse/trunk/working/avcodec_to_widget_5/directx_include/
+#   - before running scons, add the path to the "/bin" directory :
+#       set PATH=C:/MinGW/bin;%PATH%
+#   - scons should be able to detect gcc.
 #
 
 #####
 # TODO :
 #
-#	- finish to cleanup this script to remove all the remains of previous hacks and workarounds
-#	- make it work with the Windows7 SDK that is supposed to enable 64bits compilation for MSVC2010-Express
-#	- confirm it works well with other Visual Studio versions.
-#	- update the wiki about the pywin32 extension required for the "-j" option under Windows.
-#	- update the wiki to document MINGW32_PREFIX and MINGW64_PREFIX
+#   - finish to cleanup this script to remove all the remains of previous hacks and workarounds
+#   - make it work with the Windows7 SDK that is supposed to enable 64bits compilation for MSVC2010-Express
+#   - confirm it works well with other Visual Studio versions.
+#   - update the wiki about the pywin32 extension required for the "-j" option under Windows.
+#   - update the wiki to document MINGW32_PREFIX and MINGW64_PREFIX
 #
 
 import os
 
 import sys
 
+import methods
 
 def is_active():
     return True
@@ -97,7 +98,17 @@ def is_active():
 
 def get_name():
     return "Windows"
+    if (os.getenv("MINGW32_PREFIX")):
+        mingw32=os.getenv("MINGW32_PREFIX")
+        mingw = mingw32
+    if (os.getenv("MINGW64_PREFIX")):
+        mingw64=os.getenv("MINGW64_PREFIX")
 
+
+    return [
+        ('mingw_prefix','Mingw Prefix',mingw32),
+        ('mingw_prefix_64','Mingw Prefix 64 bits',mingw64),
+    ]
 
 def can_build():
 
@@ -265,7 +276,7 @@ def configure(env):
         env['ENV'] = os.environ
 
         # This detection function needs the tools env (that is env['ENV'], not SCons's env), and that is why it's this far bellow in the code
-        compiler_version_str = detect_visual_c_compiler_version(env['ENV'])
+        compiler_version_str = methods.detect_visual_c_compiler_version(env['ENV'])
 
         # Note: this detection/override code from here onward should be here instead of in SConstruct because it's platform and compiler specific (MSVC/Windows)
         if(env["bits"] != "default"):
@@ -380,73 +391,7 @@ def configure(env):
         env['is_mingw'] = True
         env.Append(BUILDERS={'RES': env.Builder(action=build_res_file, suffix='.o', src_suffix='.rc')})
 
-    import methods
     env.Append(BUILDERS={'GLSL120': env.Builder(action=methods.build_legacygl_headers, suffix='glsl.h', src_suffix='.glsl')})
     env.Append(BUILDERS={'GLSL': env.Builder(action=methods.build_glsl_headers, suffix='glsl.h', src_suffix='.glsl')})
     env.Append(BUILDERS={'HLSL9': env.Builder(action=methods.build_hlsl_dx9_headers, suffix='hlsl.h', src_suffix='.hlsl')})
     env.Append(BUILDERS={'GLSL120GLES': env.Builder(action=methods.build_gles2_headers, suffix='glsl.h', src_suffix='.glsl')})
-
-
-def detect_visual_c_compiler_version(tools_env):
-    # tools_env is the variable scons uses to call tools that execute tasks, SCons's env['ENV'] that executes tasks...
-    # (see the SCons documentation for more information on what it does)...
-    # in order for this function to be well encapsulated i choose to force it to recieve SCons's TOOLS env (env['ENV']
-    # and not scons setup environment (env)... so make sure you call the right environment on it or it will fail to detect
-    # the propper vc version that will be called
-
-    # These is no flag to give to visual c compilers to set the architecture, ie scons bits argument (32,64,ARM etc)
-    # There are many different cl.exe files that are run, and each one compiles & links to a different architecture
-    # As far as I know, the only way to figure out what compiler will be run when Scons calls cl.exe via Program()
-    # is to check the PATH varaible and figure out which one will be called first. Code bellow does that and returns:
-    # the following string values:
-
-    # ""              Compiler not detected
-    # "amd64"         Native 64 bit compiler
-    # "amd64_x86"     64 bit Cross Compiler for 32 bit
-    # "x86"           Native 32 bit compiler
-    # "x86_amd64"     32 bit Cross Compiler for 64 bit
-
-    # There are other architectures, but Godot does not support them currently, so this function does not detect arm/amd64_arm
-    # and similar architectures/compilers
-
-    # Set chosen compiler to "not detected"
-    vc_chosen_compiler_index = -1
-    vc_chosen_compiler_str = ""
-
-    # find() works with -1 so big ifs bellow are needed... the simplest solution, in fact
-    # First test if amd64 and amd64_x86 compilers are present in the path
-    vc_amd64_compiler_detection_index = tools_env["PATH"].find(tools_env["VCINSTALLDIR"] + "BIN\\amd64;")
-    if(vc_amd64_compiler_detection_index > -1):
-        vc_chosen_compiler_index = vc_amd64_compiler_detection_index
-        vc_chosen_compiler_str = "amd64"
-
-    vc_amd64_x86_compiler_detection_index = tools_env["PATH"].find(tools_env["VCINSTALLDIR"] + "BIN\\amd64_x86;")
-    if(vc_amd64_x86_compiler_detection_index > -1
-       and (vc_chosen_compiler_index == -1
-            or vc_chosen_compiler_index > vc_amd64_x86_compiler_detection_index)):
-        vc_chosen_compiler_index = vc_amd64_x86_compiler_detection_index
-        vc_chosen_compiler_str = "amd64_x86"
-
-    # Now check the 32 bit compilers
-    vc_x86_compiler_detection_index = tools_env["PATH"].find(tools_env["VCINSTALLDIR"] + "BIN;")
-    if(vc_x86_compiler_detection_index > -1
-       and (vc_chosen_compiler_index == -1
-            or vc_chosen_compiler_index > vc_x86_compiler_detection_index)):
-        vc_chosen_compiler_index = vc_x86_compiler_detection_index
-        vc_chosen_compiler_str = "x86"
-
-    vc_x86_amd64_compiler_detection_index = tools_env["PATH"].find(tools_env['VCINSTALLDIR'] + "BIN\\x86_amd64;")
-    if(vc_x86_amd64_compiler_detection_index > -1
-       and (vc_chosen_compiler_index == -1
-            or vc_chosen_compiler_index > vc_x86_amd64_compiler_detection_index)):
-        vc_chosen_compiler_index = vc_x86_amd64_compiler_detection_index
-        vc_chosen_compiler_str = "x86_amd64"
-
-    # debug help
-    # print vc_amd64_compiler_detection_index
-    # print vc_amd64_x86_compiler_detection_index
-    # print vc_x86_compiler_detection_index
-    # print vc_x86_amd64_compiler_detection_index
-    # print "chosen "+str(vc_chosen_compiler_index)+ " | "+str(vc_chosen_compiler_str)
-
-    return vc_chosen_compiler_str

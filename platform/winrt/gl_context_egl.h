@@ -50,6 +50,8 @@ class ContextEGL : public ContextGL {
 	EGLint width;
 	EGLint height;
 
+	bool vsync;
+
 public:
 	virtual void release_current();
 
@@ -58,6 +60,9 @@ public:
 	virtual int get_window_width();
 	virtual int get_window_height();
 	virtual void swap_buffers();
+
+	void set_use_vsync(bool use) { vsync = use; }
+	bool is_using_vsync() const { return vsync; }
 
 	virtual Error initialize();
 	void reset();

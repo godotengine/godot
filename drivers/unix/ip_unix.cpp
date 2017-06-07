@@ -127,8 +127,15 @@ void IP_Unix::get_local_addresses(List<IP_Address> *r_addresses) const {
 
 	using namespace Windows::Networking;
 	using namespace Windows::Networking::Connectivity;
-
 	auto hostnames = NetworkInformation::GetHostNames();
+
+	for (int i = 0; i < hostnames->Size; i++) {
+
+		if (hostnames->GetAt(i)->Type == HostNameType::Ipv4 && hostnames->GetAt(i)->IPInformation != nullptr) {
+
+			r_addresses->push_back(IP_Address(String(hostnames->GetAt(i)->CanonicalName->Data())));
+		}
+	}
 
 	for (int i = 0; i < hostnames->Size; i++) {
 
@@ -148,10 +155,7 @@ void IP_Unix::get_local_addresses(List<IP_Address> *r_addresses) const {
 	while (true) {
 
 		addrs = (IP_ADAPTER_ADDRESSES *)memalloc(buf_size);
-		int err = GetAdaptersAddresses(AF_UNSPEC, GAA_FLAG_SKIP_ANYCAST |
-														  GAA_FLAG_SKIP_MULTICAST |
-														  GAA_FLAG_SKIP_DNS_SERVER |
-														  GAA_FLAG_SKIP_FRIENDLY_NAME,
+		int err = GetAdaptersAddresses(AF_UNSPEC, GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_DNS_SERVER | GAA_FLAG_SKIP_FRIENDLY_NAME,
 				NULL, addrs, &buf_size);
 		if (err == NO_ERROR) {
 			break;

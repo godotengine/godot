@@ -45,7 +45,8 @@
 
 #include "gl_context_egl.h"
 
-#include <windows.h>
+#include "core/math/math_2d.h"
+#include "core/ustring.h"
 
 #include <io.h>
 
@@ -53,11 +54,34 @@
 #include <fcntl.h>
 #include <stdio.h>
 
+#include "audio_driver_winrt.h"
+#include "joystick_winrt.h"
+
+#include <windows.h>
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 class OSWinrt : public OS {
 
+public:
+	struct KeyEvent {
+
+		enum MessageType {
+			KEY_EVENT_MESSAGE,
+			CHAR_EVENT_MESSAGE
+		};
+
+		InputModifierState mod_state;
+		MessageType type;
+		bool pressed;
+		unsigned int scancode;
+		unsigned int unicode;
+		bool echo;
+		CorePhysicalKeyStatus status;
+	};
+
+private:
 	enum {
 		JOYSTICKS_MAX = 8,
 		JOY_AXIS_COUNT = 6,
@@ -66,14 +90,6 @@ class OSWinrt : public OS {
 	};
 
 	FILE *stdo;
-
-	struct KeyEvent {
-
-		InputModifierState mod_state;
-		UINT uMsg;
-		WPARAM wParam;
-		LPARAM lParam;
-	};
 
 	KeyEvent key_event_buffer[KEY_EVENT_BUFFER_SIZE];
 	int key_event_pos;
@@ -95,37 +111,11 @@ class OSWinrt : public OS {
 
 	ContextEGL *gl_context;
 
-	struct Joystick {
-
-		int id;
-		bool attached;
-
-		DWORD last_axis[JOY_AXIS_COUNT];
-		DWORD last_buttons;
-		DWORD last_pov;
-		String name;
-
-		Joystick() {
-			id = -1;
-			attached = false;
-			for (int i = 0; i < JOY_AXIS_COUNT; i++) {
-
-				last_axis[i] = 0;
-			};
-			last_buttons = 0;
-			last_pov = 0;
-		};
-	};
-
-	List<Joystick> joystick_change_queue;
-	int joystick_count;
-	Joystick joysticks[JOYSTICKS_MAX];
-
 	VideoMode video_mode;
 
 	MainLoop *main_loop;
 
-	AudioDriverDummy audio_driver;
+	AudioDriverWinRT audio_driver;
 	AudioServerSW *audio_server;
 	SampleManagerMallocSW *sample_manager;
 	SpatialSoundServerSW *spatial_sound_server;
@@ -144,10 +134,33 @@ class OSWinrt : public OS {
 
 	InputDefault *input;
 
+	JoystickWinrt ^ joystick;
+
+	Windows::System::Display::DisplayRequest ^ display_request;
+
 	void _post_dpad(DWORD p_dpad, int p_device, bool p_pressed);
 
 	void _drag_event(int idx, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	void _touch_event(int idx, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+	ref class ManagedType {
+	public:
+		property bool alert_close_handle;
+		property Platform::String ^ clipboard;
+		void alert_close(Windows::UI::Popups::IUICommand ^ command);
+		void on_clipboard_changed(Platform::Object ^ sender, Platform::Object ^ ev);
+		void update_clipboard();
+		void on_accelerometer_reading_changed(Windows::Devices::Sensors::Accelerometer ^ sender, Windows::Devices::Sensors::AccelerometerReadingChangedEventArgs ^ args);
+		void on_magnetometer_reading_changed(Windows::Devices::Sensors::Magnetometer ^ sender, Windows::Devices::Sensors::MagnetometerReadingChangedEventArgs ^ args);
+		void on_gyroscope_reading_changed(Windows::Devices::Sensors::Gyrometer ^ sender, Windows::Devices::Sensors::GyrometerReadingChangedEventArgs ^ args);
+
+		internal : ManagedType() { alert_close_handle = false; }
+		property OSWinrt *os;
+	};
+	ManagedType ^ managed_object;
+	Windows::Devices::Sensors::Accelerometer ^ accelerometer;
+	Windows::Devices::Sensors::Magnetometer ^ magnetometer;
+	Windows::Devices::Sensors::Gyrometer ^ gyrometer;
 
 	// functions used by main to initialize/deintialize the OS
 protected:
@@ -170,12 +183,13 @@ protected:
 
 	void process_events();
 
-	void probe_joysticks();
-	void process_joysticks();
 	void process_key_events();
 
 public:
 	void print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type);
+
+	// Event to send to the app wrapper
+	HANDLE mouse_mode_changed;
 
 	virtual void vprint(const char *p_format, va_list p_list, bool p_stderr = false);
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
@@ -191,6 +205,11 @@ public:
 	virtual void set_video_mode(const VideoMode &p_video_mode, int p_screen = 0);
 	virtual VideoMode get_video_mode(int p_screen = 0) const;
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen = 0) const;
+	virtual Size2 get_window_size() const;
+	virtual void set_window_size(const Size2 p_size);
+	virtual void set_window_fullscreen(bool p_enabled);
+	virtual bool is_window_fullscreen() const;
+	virtual void set_keep_screen_on(bool p_enabled);
 
 	virtual MainLoop *get_main_loop() const;
 
@@ -233,7 +252,11 @@ public:
 	virtual void make_rendering_thread();
 	virtual void swap_buffers();
 
-	virtual bool has_touchscreen_ui_hint() const { return true; };
+	virtual bool has_touchscreen_ui_hint() const;
+
+	virtual bool has_virtual_keyboard() const;
+	virtual void show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2());
+	virtual void hide_virtual_keyboard();
 
 	virtual Error shell_open(String p_uri);
 
@@ -242,6 +265,8 @@ public:
 	virtual bool get_swap_ok_cancel() { return true; }
 
 	void input_event(InputEvent &p_event);
+
+	void queue_key_event(KeyEvent &p_event);
 
 	OSWinrt();
 	~OSWinrt();
