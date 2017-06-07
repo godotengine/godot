@@ -264,7 +264,7 @@ void RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int 
 							cw = tab_size * font->get_char_size(' ').width;
 						}
 
-						if (end > 0 && w + cw + wofs > p_width) {
+						if (end > 0 && w + cw + begin > p_width) {
 							break; //don't allow lines longer than assigned width
 						}
 
