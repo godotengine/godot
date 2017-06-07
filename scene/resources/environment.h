@@ -138,6 +138,23 @@ private:
 	float dof_blur_near_amount;
 	DOFBlurQuality dof_blur_near_quality;
 
+	bool fog_enabled;
+	Color fog_color;
+	Color fog_sun_color;
+	float fog_sun_amount;
+
+	bool fog_depth_enabled;
+	float fog_depth_begin;
+	float fog_depth_curve;
+
+	bool fog_transmit_enabled;
+	float fog_transmit_curve;
+
+	bool fog_height_enabled;
+	float fog_height_min;
+	float fog_height_max;
+	float fog_height_curve;
+
 protected:
 	static void _bind_methods();
 	virtual void _validate_property(PropertyInfo &property) const;
@@ -306,6 +323,45 @@ public:
 
 	void set_dof_blur_near_quality(DOFBlurQuality p_quality);
 	DOFBlurQuality get_dof_blur_near_quality() const;
+
+	void set_fog_enabled(bool p_enabled);
+	bool is_fog_enabled() const;
+
+	void set_fog_color(const Color &p_color);
+	Color get_fog_color() const;
+
+	void set_fog_sun_color(const Color &p_color);
+	Color get_fog_sun_color() const;
+
+	void set_fog_sun_amount(float p_amount);
+	float get_fog_sun_amount() const;
+
+	void set_fog_depth_enabled(bool p_enabled);
+	bool is_fog_depth_enabled() const;
+
+	void set_fog_depth_begin(float p_distance);
+	float get_fog_depth_begin() const;
+
+	void set_fog_depth_curve(float p_curve);
+	float get_fog_depth_curve() const;
+
+	void set_fog_transmit_enabled(bool p_enabled);
+	bool is_fog_transmit_enabled() const;
+
+	void set_fog_transmit_curve(float p_curve);
+	float get_fog_transmit_curve() const;
+
+	void set_fog_height_enabled(bool p_enabled);
+	bool is_fog_height_enabled() const;
+
+	void set_fog_height_min(float p_distance);
+	float get_fog_height_min() const;
+
+	void set_fog_height_max(float p_distance);
+	float get_fog_height_max() const;
+
+	void set_fog_height_curve(float p_distance);
+	float get_fog_height_curve() const;
 
 	virtual RID get_rid() const;
 
