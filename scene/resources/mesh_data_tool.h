@@ -78,8 +78,8 @@ protected:
 
 public:
 	void clear();
-	Error create_from_surface(const Ref<Mesh> &p_mesh, int p_surface);
-	Error commit_to_surface(const Ref<Mesh> &p_mesh);
+	Error create_from_surface(const Ref<ArrayMesh> &p_mesh, int p_surface);
+	Error commit_to_surface(const Ref<ArrayMesh> &p_mesh);
 
 	int get_format() const;
 

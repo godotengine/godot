@@ -125,7 +125,7 @@ public:
 
 	void create_from(const Ref<Mesh> &p_existing, int p_surface);
 	void append_from(const Ref<Mesh> &p_existing, int p_surface, const Transform &p_xform);
-	Ref<Mesh> commit(const Ref<Mesh> &p_existing = Ref<Mesh>());
+	Ref<ArrayMesh> commit(const Ref<ArrayMesh> &p_existing = Ref<ArrayMesh>());
 
 	SurfaceTool();
 };

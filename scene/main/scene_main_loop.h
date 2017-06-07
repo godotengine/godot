@@ -33,6 +33,7 @@
 #include "io/networked_multiplayer_peer.h"
 #include "os/main_loop.h"
 #include "os/thread_safe.h"
+#include "scene/resources/mesh.h"
 #include "scene/resources/world.h"
 #include "scene/resources/world_2d.h"
 #include "self_list.h"
@@ -169,7 +170,7 @@ private:
 	Color debug_collision_contact_color;
 	Color debug_navigation_color;
 	Color debug_navigation_disabled_color;
-	Ref<Mesh> debug_contact_mesh;
+	Ref<ArrayMesh> debug_contact_mesh;
 	Ref<Material> navigation_material;
 	Ref<Material> navigation_disabled_material;
 	Ref<Material> collision_material;
@@ -406,7 +407,7 @@ public:
 	Ref<Material> get_debug_navigation_material();
 	Ref<Material> get_debug_navigation_disabled_material();
 	Ref<Material> get_debug_collision_material();
-	Ref<Mesh> get_debug_contact_mesh();
+	Ref<ArrayMesh> get_debug_contact_mesh();
 
 	int get_collision_debug_contact_count() { return collision_debug_contacts; }
 

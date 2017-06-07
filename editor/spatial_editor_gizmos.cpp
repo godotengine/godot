@@ -79,7 +79,7 @@ void EditorSpatialGizmo::Instance::create_instance(Spatial *p_base) {
 	VS::get_singleton()->instance_set_layer_mask(instance, 1 << SpatialEditorViewport::GIZMO_EDIT_LAYER); //gizmos are 26
 }
 
-void EditorSpatialGizmo::add_mesh(const Ref<Mesh> &p_mesh, bool p_billboard, const RID &p_skeleton) {
+void EditorSpatialGizmo::add_mesh(const Ref<ArrayMesh> &p_mesh, bool p_billboard, const RID &p_skeleton) {
 
 	ERR_FAIL_COND(!spatial_node);
 	Instance ins;
@@ -100,7 +100,7 @@ void EditorSpatialGizmo::add_lines(const Vector<Vector3> &p_lines, const Ref<Mat
 	ERR_FAIL_COND(!spatial_node);
 	Instance ins;
 
-	Ref<Mesh> mesh = memnew(Mesh);
+	Ref<ArrayMesh> mesh = memnew(ArrayMesh);
 	Array a;
 	a.resize(Mesh::ARRAY_MAX);
 
@@ -162,7 +162,7 @@ void EditorSpatialGizmo::add_unscaled_billboard(const Ref<Material> &p_material,
 	uv.push_back(Vector2(0, 1));
 	uv.push_back(Vector2(1, 1));
 
-	Ref<Mesh> mesh = memnew(Mesh);
+	Ref<ArrayMesh> mesh = memnew(ArrayMesh);
 	Array a;
 	a.resize(Mesh::ARRAY_MAX);
 	a[Mesh::ARRAY_VERTEX] = vs;
@@ -219,7 +219,7 @@ void EditorSpatialGizmo::add_handles(const Vector<Vector3> &p_handles, bool p_bi
 	ERR_FAIL_COND(!spatial_node);
 	Instance ins;
 
-	Ref<Mesh> mesh = memnew(Mesh);
+	Ref<ArrayMesh> mesh = memnew(ArrayMesh);
 #if 1
 
 	Array a;
@@ -1029,7 +1029,7 @@ CameraSpatialGizmo::CameraSpatialGizmo(Camera *p_camera) {
 
 void MeshInstanceSpatialGizmo::redraw() {
 
-	Ref<Mesh> m = mesh->get_mesh();
+	Ref<ArrayMesh> m = mesh->get_mesh();
 	if (!m.is_valid())
 		return; //none
 
@@ -1248,7 +1248,7 @@ void SkeletonSpatialGizmo::redraw() {
 		*/
 	}
 
-	Ref<Mesh> m = surface_tool->commit();
+	Ref<ArrayMesh> m = surface_tool->commit();
 	add_mesh(m, false, skel->get_skeleton());
 }
 
@@ -2511,7 +2511,7 @@ void NavigationMeshSpatialGizmo::redraw() {
 	if (lines.size())
 		add_lines(lines, navmesh->is_enabled() ? SpatialEditorGizmos::singleton->navmesh_edge_material : SpatialEditorGizmos::singleton->navmesh_edge_material_disabled);
 	add_collision_triangles(tmesh);
-	Ref<Mesh> m = memnew(Mesh);
+	Ref<ArrayMesh> m = memnew(ArrayMesh);
 	Array a;
 	a.resize(Mesh::ARRAY_MAX);
 	a[0] = tmeshfaces;
@@ -3213,7 +3213,7 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 
 	//position 3D Shared mesh
 
-	pos3d_mesh = Ref<Mesh>(memnew(Mesh));
+	pos3d_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
 	{
 
 		PoolVector<Vector3> cursor_points;
@@ -3246,7 +3246,7 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 		pos3d_mesh->surface_set_material(0, mat);
 	}
 
-	listener_line_mesh = Ref<Mesh>(memnew(Mesh));
+	listener_line_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
 	{
 
 		PoolVector<Vector3> cursor_points;
