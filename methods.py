@@ -200,7 +200,7 @@ def build_glsl_header(filename):
     out_file_base = out_file
     out_file_base = out_file_base[out_file_base.rfind("/") + 1:]
     out_file_base = out_file_base[out_file_base.rfind("\\") + 1:]
-#	print("out file "+out_file+" base " +out_file_base)
+#   print("out file "+out_file+" base " +out_file_base)
     out_file_ifdef = out_file_base.replace(".", "_").upper()
     fd.write("#ifndef " + out_file_ifdef + "\n")
     fd.write("#define " + out_file_ifdef + "\n")
@@ -249,79 +249,79 @@ def build_glsl_header(filename):
 
     fd.write("""\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Transform& p_transform) {  _FU
 
-		const Transform &tr = p_transform;
+        const Transform &tr = p_transform;
 
-		GLfloat matrix[16]={ /* build a 16x16 matrix */
-			tr.basis.elements[0][0],
-			tr.basis.elements[1][0],
-			tr.basis.elements[2][0],
-			0,
-			tr.basis.elements[0][1],
-			tr.basis.elements[1][1],
-			tr.basis.elements[2][1],
-			0,
-			tr.basis.elements[0][2],
-			tr.basis.elements[1][2],
-			tr.basis.elements[2][2],
-			0,
-			tr.origin.x,
-			tr.origin.y,
-			tr.origin.z,
-			1
-		};
-
-
-	glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
+        GLfloat matrix[16]={ /* build a 16x16 matrix */
+            tr.basis.elements[0][0],
+            tr.basis.elements[1][0],
+            tr.basis.elements[2][0],
+            0,
+            tr.basis.elements[0][1],
+            tr.basis.elements[1][1],
+            tr.basis.elements[2][1],
+            0,
+            tr.basis.elements[0][2],
+            tr.basis.elements[1][2],
+            tr.basis.elements[2][2],
+            0,
+            tr.origin.x,
+            tr.origin.y,
+            tr.origin.z,
+            1
+        };
 
 
-	}
+    glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
 
-	""")
+
+    }
+
+    """)
 
     fd.write("""\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Matrix32& p_transform) {  _FU
 
-		const Matrix32 &tr = p_transform;
+        const Matrix32 &tr = p_transform;
 
-		GLfloat matrix[16]={ /* build a 16x16 matrix */
-			tr.elements[0][0],
-			tr.elements[0][1],
-			0,
-			0,
-			tr.elements[1][0],
-			tr.elements[1][1],
-			0,
-			0,
-			0,
-			0,
-			1,
-			0,
-			tr.elements[2][0],
-			tr.elements[2][1],
-			0,
-			1
-		};
-
-
-	glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
+        GLfloat matrix[16]={ /* build a 16x16 matrix */
+            tr.elements[0][0],
+            tr.elements[0][1],
+            0,
+            0,
+            tr.elements[1][0],
+            tr.elements[1][1],
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            tr.elements[2][0],
+            tr.elements[2][1],
+            0,
+            1
+        };
 
 
-	}
+    glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
 
-	""")
+
+    }
+
+    """)
 
     fd.write("""\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const CameraMatrix& p_matrix) {  _FU
 
-		GLfloat matrix[16];
+        GLfloat matrix[16];
 
-		for (int i=0;i<4;i++) {
-			for (int j=0;j<4;j++) {
+        for (int i=0;i<4;i++) {
+            for (int j=0;j<4;j++) {
 
-				matrix[i*4+j]=p_matrix.matrix[i][j];
-			}
-		}
+                matrix[i*4+j]=p_matrix.matrix[i][j];
+            }
+        }
 
-		glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
-	}; """)
+        glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
+    }; """)
 
     fd.write("\n\n#undef _FU\n\n\n")
 
@@ -493,7 +493,7 @@ def build_hlsl_dx9_header(filename):
     out_file_base = out_file
     out_file_base = out_file_base[out_file_base.rfind("/") + 1:]
     out_file_base = out_file_base[out_file_base.rfind("\\") + 1:]
-#	print("out file "+out_file+" base " +out_file_base)
+#   print("out file "+out_file+" base " +out_file_base)
     out_file_ifdef = out_file_base.replace(".", "_").upper()
     fd.write("#ifndef " + out_file_ifdef + "\n")
     fd.write("#define " + out_file_ifdef + "\n")
@@ -542,46 +542,46 @@ def build_hlsl_dx9_header(filename):
 
     fd.write("""\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Transform& p_transform) {  _FU
 
-		const Transform &tr = p_transform;
+        const Transform &tr = p_transform;
 
-		float matrix[16]={ /* build a 16x16 matrix */
-			tr.basis.elements[0][0],
-			tr.basis.elements[0][1],
-			tr.basis.elements[0][2],
-			tr.origin.x,
-			tr.basis.elements[1][0],
-			tr.basis.elements[1][1],
-			tr.basis.elements[1][2],
-			tr.origin.y,
-			tr.basis.elements[2][0],
-			tr.basis.elements[2][1],
-			tr.basis.elements[2][2],
-			tr.origin.z,
-			0,
-			0,
-			0,
-			1
-		};
+        float matrix[16]={ /* build a 16x16 matrix */
+            tr.basis.elements[0][0],
+            tr.basis.elements[0][1],
+            tr.basis.elements[0][2],
+            tr.origin.x,
+            tr.basis.elements[1][0],
+            tr.basis.elements[1][1],
+            tr.basis.elements[1][2],
+            tr.origin.y,
+            tr.basis.elements[2][0],
+            tr.basis.elements[2][1],
+            tr.basis.elements[2][2],
+            tr.origin.z,
+            0,
+            0,
+            0,
+            1
+        };
 
-		set_uniformfv(p_uniform,&matrix[0],4);
+        set_uniformfv(p_uniform,&matrix[0],4);
 
-	}
+    }
 
-	""")
+    """)
 
     fd.write("""\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const CameraMatrix& p_matrix) {  _FU
 
-		float matrix[16];
+        float matrix[16];
 
-		for (int i=0;i<4;i++) {
-			for (int j=0;j<4;j++) {
+        for (int i=0;i<4;i++) {
+            for (int j=0;j<4;j++) {
 
-				matrix[i*4+j]=p_matrix.matrix[j][i];
-			}
-		}
+                matrix[i*4+j]=p_matrix.matrix[j][i];
+            }
+        }
 
-		set_uniformfv(p_uniform,&matrix[0],4);
-	}; """)
+        set_uniformfv(p_uniform,&matrix[0],4);
+    }; """)
 
     fd.write("\n\n#undef _FU\n\n\n")
 
@@ -720,7 +720,7 @@ def include_file_in_legacygl_header(filename, header_data, depth):
                 enumbase = ifdefline[:ifdefline.find("_EN_")]
                 ifdefline = ifdefline.replace("_EN_", "_")
                 line = line.replace("_EN_", "_")
-#				print(enumbase+":"+ifdefline);
+#               print(enumbase+":"+ifdefline);
                 if (enumbase not in header_data.enums):
                     header_data.enums[enumbase] = []
                 if (ifdefline not in header_data.enums[enumbase]):
@@ -816,7 +816,7 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs):
     out_file_base = out_file
     out_file_base = out_file_base[out_file_base.rfind("/") + 1:]
     out_file_base = out_file_base[out_file_base.rfind("\\") + 1:]
-#	print("out file "+out_file+" base " +out_file_base)
+#   print("out file "+out_file+" base " +out_file_base)
     out_file_ifdef = out_file_base.replace(".", "_").upper()
     fd.write("#ifndef " + out_file_ifdef + class_suffix + "_120\n")
     fd.write("#define " + out_file_ifdef + class_suffix + "_120\n")
@@ -867,79 +867,79 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs):
 
     fd.write("""\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Transform& p_transform) {  _FU
 
-		const Transform &tr = p_transform;
+        const Transform &tr = p_transform;
 
-		GLfloat matrix[16]={ /* build a 16x16 matrix */
-			tr.basis.elements[0][0],
-			tr.basis.elements[1][0],
-			tr.basis.elements[2][0],
-			0,
-			tr.basis.elements[0][1],
-			tr.basis.elements[1][1],
-			tr.basis.elements[2][1],
-			0,
-			tr.basis.elements[0][2],
-			tr.basis.elements[1][2],
-			tr.basis.elements[2][2],
-			0,
-			tr.origin.x,
-			tr.origin.y,
-			tr.origin.z,
-			1
-		};
-
-
-	glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
+        GLfloat matrix[16]={ /* build a 16x16 matrix */
+            tr.basis.elements[0][0],
+            tr.basis.elements[1][0],
+            tr.basis.elements[2][0],
+            0,
+            tr.basis.elements[0][1],
+            tr.basis.elements[1][1],
+            tr.basis.elements[2][1],
+            0,
+            tr.basis.elements[0][2],
+            tr.basis.elements[1][2],
+            tr.basis.elements[2][2],
+            0,
+            tr.origin.x,
+            tr.origin.y,
+            tr.origin.z,
+            1
+        };
 
 
-	}
+    glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
 
-	""")
+
+    }
+
+    """)
 
     fd.write("""\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Matrix32& p_transform) {  _FU
 
-		const Matrix32 &tr = p_transform;
+        const Matrix32 &tr = p_transform;
 
-		GLfloat matrix[16]={ /* build a 16x16 matrix */
-			tr.elements[0][0],
-			tr.elements[0][1],
-			0,
-			0,
-			tr.elements[1][0],
-			tr.elements[1][1],
-			0,
-			0,
-			0,
-			0,
-			1,
-			0,
-			tr.elements[2][0],
-			tr.elements[2][1],
-			0,
-			1
-		};
-
-
-	glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
+        GLfloat matrix[16]={ /* build a 16x16 matrix */
+            tr.elements[0][0],
+            tr.elements[0][1],
+            0,
+            0,
+            tr.elements[1][0],
+            tr.elements[1][1],
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            tr.elements[2][0],
+            tr.elements[2][1],
+            0,
+            1
+        };
 
 
-	}
+    glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
 
-	""")
+
+    }
+
+    """)
 
     fd.write("""\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const CameraMatrix& p_matrix) {  _FU
 
-		GLfloat matrix[16];
+        GLfloat matrix[16];
 
-		for (int i=0;i<4;i++) {
-			for (int j=0;j<4;j++) {
+        for (int i=0;i<4;i++) {
+            for (int j=0;j<4;j++) {
 
-				matrix[i*4+j]=p_matrix.matrix[i][j];
-			}
-		}
+                matrix[i*4+j]=p_matrix.matrix[i][j];
+            }
+        }
 
-		glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
-	}; """)
+        glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
+    }; """)
 
     fd.write("\n\n#undef _FU\n\n\n")
 
@@ -959,10 +959,10 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs):
             x = header_data.enums[xv]
             bits = 1
             amt = len(x)
-#			print(x)
+#           print(x)
             while(2**bits < amt):
                 bits += 1
-#			print("amount: "+str(amt)+" bits "+str(bits));
+#           print("amount: "+str(amt)+" bits "+str(bits));
             strs = "{"
             for i in range(amt):
                 strs += "\"#define " + x[i] + "\\n\","
@@ -1252,31 +1252,31 @@ def win32_spawn(sh, escape, cmd, args, env):
 
 """
 def win32_spawn(sh, escape, cmd, args, spawnenv):
-	import win32file
-	import win32event
-	import win32process
-	import win32security
-	for var in spawnenv:
-		spawnenv[var] = spawnenv[var].encode('ascii', 'replace')
+    import win32file
+    import win32event
+    import win32process
+    import win32security
+    for var in spawnenv:
+        spawnenv[var] = spawnenv[var].encode('ascii', 'replace')
 
-	sAttrs = win32security.SECURITY_ATTRIBUTES()
-	StartupInfo = win32process.STARTUPINFO()
-	newargs = ' '.join(map(escape, args[1:]))
-	cmdline = cmd + " " + newargs
+    sAttrs = win32security.SECURITY_ATTRIBUTES()
+    StartupInfo = win32process.STARTUPINFO()
+    newargs = ' '.join(map(escape, args[1:]))
+    cmdline = cmd + " " + newargs
 
-	# check for any special operating system commands
-	if cmd == 'del':
-		for arg in args[1:]:
-			win32file.DeleteFile(arg)
-		exit_code = 0
-	else:
-		# otherwise execute the command.
-		hProcess, hThread, dwPid, dwTid = win32process.CreateProcess(None, cmdline, None, None, 1, 0, spawnenv, None, StartupInfo)
-		win32event.WaitForSingleObject(hProcess, win32event.INFINITE)
-		exit_code = win32process.GetExitCodeProcess(hProcess)
-		win32file.CloseHandle(hProcess);
-		win32file.CloseHandle(hThread);
-	return exit_code
+    # check for any special operating system commands
+    if cmd == 'del':
+        for arg in args[1:]:
+            win32file.DeleteFile(arg)
+        exit_code = 0
+    else:
+        # otherwise execute the command.
+        hProcess, hThread, dwPid, dwTid = win32process.CreateProcess(None, cmdline, None, None, 1, 0, spawnenv, None, StartupInfo)
+        win32event.WaitForSingleObject(hProcess, win32event.INFINITE)
+        exit_code = win32process.GetExitCodeProcess(hProcess)
+        win32file.CloseHandle(hProcess);
+        win32file.CloseHandle(hThread);
+    return exit_code
 """
 
 def android_add_maven_repository(self, url):
@@ -1440,8 +1440,7 @@ def save_active_platforms(apnames, ap):
 
     for x in ap:
         pth = x + "/logo.png"
-#		print("open path: "+pth)
-<<<<<<< HEAD
+#       print("open path: "+pth)
         pngf = open(pth, "rb")
         b = pngf.read(1)
         str = " /* AUTOGENERATED FILE, DO NOT EDIT */ \n"
@@ -1560,6 +1559,6 @@ def detect_visual_c_compiler_version(tools_env):
     return vc_chosen_compiler_str
 
 def precious_program(env, program, sources, **args):
-	program = env.ProgramOriginal(program, sources, **args)
-	env.Precious(program)
-	return program
+    program = env.ProgramOriginal(program, sources, **args)
+    env.Precious(program)
+    return program

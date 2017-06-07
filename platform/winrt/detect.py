@@ -150,6 +150,7 @@ def configure(env):
         'xaudio2',
         'WindowsApp',
         'mincore',
+        'ws2_32',
         'libANGLE',
         'libEGL',
         'libGLESv2',

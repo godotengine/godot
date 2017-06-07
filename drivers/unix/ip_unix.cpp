@@ -137,8 +137,6 @@ void IP_Unix::get_local_addresses(List<IP_Address> *r_addresses) const {
 		}
 	}
 
-	auto hostnames = NetworkInformation::GetHostNames();
-
 	for (int i = 0; i < hostnames->Size; i++) {
 
 		if (hostnames->GetAt(i)->Type == HostNameType::Ipv4 || hostnames->GetAt(i)->Type == HostNameType::Ipv6 && hostnames->GetAt(i)->IPInformation != nullptr) {

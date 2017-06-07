@@ -67,18 +67,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "export.h"
 #include "bind/core_bind.h"
+#include "editor/editor_import_export.h"
+#include "editor/editor_node.h"
 #include "globals.h"
-#include "io/base64.h"
 #include "io/marshalls.h"
-#include "io/sha256.h"
-#include "io/unzip.h"
-#include "io/zip.h"
 #include "io/zip_io.h"
 #include "object.h"
 #include "os/file_access.h"
 #include "platform/winrt/logo.h"
-#include "tools/editor/editor_import_export.h"
-#include "tools/editor/editor_node.h"
+#include "thirdparty/minizip/unzip.h"
+#include "thirdparty/minizip/zip.h"
+#include "thirdparty/misc/base64.h"
+#include "thirdparty/misc/sha256.h"
 #include "version.h"
 
 #include <zlib.h>
@@ -92,6 +92,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <openssl/pkcs12.h>
 #include <openssl/pkcs7.h>
 #include <openssl/x509.h>
+#endif // OPENSSL_ENABLED
 
 // Capabilities
 static const char *uwp_capabilities[] = {
@@ -128,6 +129,7 @@ static const char *uwp_device_capabilites[] = {
 	NULL
 };
 
+#ifdef OPENSSL_ENABLED
 namespace asn1 {
 // https://msdn.microsoft.com/en-us/gg463180.aspx
 

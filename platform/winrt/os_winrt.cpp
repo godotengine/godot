@@ -26,14 +26,17 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "os_winrt.h"
 #include "drivers/gles2/rasterizer_gles2.h"
+
 #include "drivers/unix/memory_pool_static_malloc.h"
-#include "os/memory_pool_dynamic_static.h"
-#include "thread_winrt.h"
-#include "drivers/windows/semaphore_windows.h"
+#include "drivers/windows/dir_access_windows.h"
+#include "drivers/windows/file_access_windows.h"
 #include "drivers/windows/mutex_windows.h"
+#include "drivers/windows/semaphore_windows.h"
 #include "main/main.h"
+#include "os/memory_pool_dynamic_static.h"
+#include "os_winrt.h"
+#include "thread_winrt.h"
 
 #include "servers/audio/audio_server_sw.h"
 #include "servers/visual/visual_server_raster.h"
@@ -43,13 +46,13 @@
 #include "io/marshalls.h"
 #include "os/memory_pool_dynamic_prealloc.h"
 
+#include "drivers/unix/ip_unix.h"
 #include "platform/windows/packet_peer_udp_winsock.h"
 #include "platform/windows/stream_peer_winsock.h"
 #include "platform/windows/tcp_server_winsock.h"
-#include "drivers/unix/ip_unix.h"
 
-#include <wrl.h>
 #include <ppltasks.h>
+#include <wrl.h>
 
 using namespace Windows::ApplicationModel::Core;
 using namespace Windows::ApplicationModel::Activation;
@@ -92,7 +95,7 @@ void OSWinrt::set_window_size(const Size2 p_size) {
 	new_size.Width = p_size.width;
 	new_size.Height = p_size.height;
 
-	ApplicationView^ view = ApplicationView::GetForCurrentView();
+	ApplicationView ^ view = ApplicationView::GetForCurrentView();
 
 	if (view->TryResizeView(new_size)) {
 
@@ -103,7 +106,7 @@ void OSWinrt::set_window_size(const Size2 p_size) {
 
 void OSWinrt::set_window_fullscreen(bool p_enabled) {
 
-	ApplicationView^ view = ApplicationView::GetForCurrentView();
+	ApplicationView ^ view = ApplicationView::GetForCurrentView();
 
 	video_mode.fullscreen = view->IsFullScreenMode;
 
@@ -118,7 +121,6 @@ void OSWinrt::set_window_fullscreen(bool p_enabled) {
 
 		view->ExitFullScreenMode();
 		video_mode.fullscreen = false;
-
 	}
 }
 
@@ -198,7 +200,7 @@ void OSWinrt::initialize_core() {
 
 	IP_Unix::make_default();
 
-	cursor_shape=CURSOR_ARROW;
+	cursor_shape = CURSOR_ARROW;
 }
 
 bool OSWinrt::can_draw() const {
@@ -227,7 +229,7 @@ void OSWinrt::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	vm.height = gl_context->get_window_height();
 	vm.resizable = false;
 
-	ApplicationView^ view = ApplicationView::GetForCurrentView();
+	ApplicationView ^ view = ApplicationView::GetForCurrentView();
 	vm.fullscreen = view->IsFullScreenMode;
 
 	view->SetDesiredBoundsMode(ApplicationViewBoundsMode::UseVisible);
@@ -301,15 +303,14 @@ void OSWinrt::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	managed_object->update_clipboard();
 
-	Clipboard::ContentChanged += ref new EventHandler<Platform::Object^>(managed_object, &ManagedType::on_clipboard_changed);
+	Clipboard::ContentChanged += ref new EventHandler<Platform::Object ^>(managed_object, &ManagedType::on_clipboard_changed);
 
 	accelerometer = Accelerometer::GetDefault();
 	if (accelerometer != nullptr) {
 		// 60 FPS
 		accelerometer->ReportInterval = (1.0f / 60.0f) * 1000;
 		accelerometer->ReadingChanged +=
-			ref new TypedEventHandler<Accelerometer^, AccelerometerReadingChangedEventArgs^>
-			(managed_object, &ManagedType::on_accelerometer_reading_changed);
+				ref new TypedEventHandler<Accelerometer ^, AccelerometerReadingChangedEventArgs ^>(managed_object, &ManagedType::on_accelerometer_reading_changed);
 	}
 
 	magnetometer = Magnetometer::GetDefault();
@@ -317,8 +318,7 @@ void OSWinrt::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		// 60 FPS
 		magnetometer->ReportInterval = (1.0f / 60.0f) * 1000;
 		magnetometer->ReadingChanged +=
-			ref new TypedEventHandler<Magnetometer^, MagnetometerReadingChangedEventArgs^>
-			(managed_object, &ManagedType::on_magnetometer_reading_changed);
+				ref new TypedEventHandler<Magnetometer ^, MagnetometerReadingChangedEventArgs ^>(managed_object, &ManagedType::on_magnetometer_reading_changed);
 	}
 
 	gyrometer = Gyrometer::GetDefault();
@@ -326,8 +326,7 @@ void OSWinrt::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		// 60 FPS
 		gyrometer->ReportInterval = (1.0f / 60.0f) * 1000;
 		gyrometer->ReadingChanged +=
-			ref new TypedEventHandler<Gyrometer^, GyrometerReadingChangedEventArgs^>
-			(managed_object, &ManagedType::on_gyroscope_reading_changed);
+				ref new TypedEventHandler<Gyrometer ^, GyrometerReadingChangedEventArgs ^>(managed_object, &ManagedType::on_gyroscope_reading_changed);
 	}
 
 	_ensure_data_dir();
@@ -336,14 +335,13 @@ void OSWinrt::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		display_request->RequestActive();
 
 	set_keep_screen_on(GLOBAL_DEF("display/keep_screen_on", true));
-
 }
 
-void OSWinrt::set_clipboard(const String& p_text) {
+void OSWinrt::set_clipboard(const String &p_text) {
 
-	DataPackage^ clip = ref new DataPackage();
+	DataPackage ^ clip = ref new DataPackage();
 	clip->RequestedOperation = DataPackageOperation::Copy;
-	clip->SetText(ref new Platform::String((const wchar_t*)p_text.c_str()));
+	clip->SetText(ref new Platform::String((const wchar_t *)p_text.c_str()));
 
 	Clipboard::SetContent(clip);
 };
@@ -362,7 +360,7 @@ void OSWinrt::input_event(InputEvent &p_event) {
 
 	input->parse_input_event(p_event);
 
-	if (p_event.type == InputEvent::MOUSE_BUTTON && p_event.mouse_button.pressed && p_event.mouse_button.button_index>3) {
+	if (p_event.type == InputEvent::MOUSE_BUTTON && p_event.mouse_button.pressed && p_event.mouse_button.button_index > 3) {
 
 		//send release for mouse wheel
 		p_event.mouse_button.pressed = false;
@@ -423,7 +421,6 @@ void OSWinrt::finalize() {
 	memdelete(physics_2d_server);
 
 	joystick = nullptr;
-
 }
 void OSWinrt::finalize_core() {
 
@@ -460,21 +457,21 @@ void OSWinrt::vprint(const char *p_format, va_list p_list, bool p_stderr) {
 
 void OSWinrt::alert(const String &p_alert, const String &p_title) {
 
-	Platform::String^ alert = ref new Platform::String(p_alert.c_str());
-	Platform::String^ title = ref new Platform::String(p_title.c_str());
+	Platform::String ^ alert = ref new Platform::String(p_alert.c_str());
+	Platform::String ^ title = ref new Platform::String(p_title.c_str());
 
-	MessageDialog^ msg = ref new MessageDialog(alert, title);
+	MessageDialog ^ msg = ref new MessageDialog(alert, title);
 
-	UICommand^ close = ref new UICommand("Close", ref new UICommandInvokedHandler(managed_object, &OSWinrt::ManagedType::alert_close));
+	UICommand ^ close = ref new UICommand("Close", ref new UICommandInvokedHandler(managed_object, &OSWinrt::ManagedType::alert_close));
 	msg->Commands->Append(close);
 	msg->DefaultCommandIndex = 0;
-	
+
 	managed_object->alert_close_handle = true;
 
 	msg->ShowAsync();
 }
 
-void OSWinrt::ManagedType::alert_close(IUICommand^ command) {
+void OSWinrt::ManagedType::alert_close(IUICommand ^ command) {
 
 	alert_close_handle = false;
 }
@@ -486,12 +483,11 @@ void OSWinrt::ManagedType::on_clipboard_changed(Platform::Object ^ sender, Platf
 
 void OSWinrt::ManagedType::update_clipboard() {
 
-	DataPackageView^ data = Clipboard::GetContent();
+	DataPackageView ^ data = Clipboard::GetContent();
 
 	if (data->Contains(StandardDataFormats::Text)) {
 
-		create_task(data->GetTextAsync()).then(
-			[this](Platform::String^ clipboard_content) {
+		create_task(data->GetTextAsync()).then([this](Platform::String ^ clipboard_content) {
 
 			this->clipboard = clipboard_content;
 		});
@@ -499,36 +495,33 @@ void OSWinrt::ManagedType::update_clipboard() {
 }
 
 void OSWinrt::ManagedType::on_accelerometer_reading_changed(Accelerometer ^ sender, AccelerometerReadingChangedEventArgs ^ args) {
-	
-	AccelerometerReading^ reading = args->Reading;
+
+	AccelerometerReading ^ reading = args->Reading;
 
 	os->input->set_accelerometer(Vector3(
-		reading->AccelerationX,
-		reading->AccelerationY,
-		reading->AccelerationZ
-	));
+			reading->AccelerationX,
+			reading->AccelerationY,
+			reading->AccelerationZ));
 }
 
 void OSWinrt::ManagedType::on_magnetometer_reading_changed(Magnetometer ^ sender, MagnetometerReadingChangedEventArgs ^ args) {
 
-	MagnetometerReading^ reading = args->Reading;
+	MagnetometerReading ^ reading = args->Reading;
 
 	os->input->set_magnetometer(Vector3(
-		reading->MagneticFieldX,
-		reading->MagneticFieldY,
-		reading->MagneticFieldZ
-	));
+			reading->MagneticFieldX,
+			reading->MagneticFieldY,
+			reading->MagneticFieldZ));
 }
 
 void OSWinrt::ManagedType::on_gyroscope_reading_changed(Gyrometer ^ sender, GyrometerReadingChangedEventArgs ^ args) {
 
-	GyrometerReading^ reading = args->Reading;
+	GyrometerReading ^ reading = args->Reading;
 
 	os->input->set_magnetometer(Vector3(
-		reading->AngularVelocityX,
-		reading->AngularVelocityY,
-		reading->AngularVelocityZ
-	));
+			reading->AngularVelocityX,
+			reading->AngularVelocityY,
+			reading->AngularVelocityZ));
 }
 
 void OSWinrt::set_mouse_mode(MouseMode p_mode) {
@@ -540,7 +533,6 @@ void OSWinrt::set_mouse_mode(MouseMode p_mode) {
 	} else {
 
 		CoreWindow::GetForCurrentThread()->ReleasePointerCapture();
-
 	}
 
 	if (p_mode == MouseMode::MOUSE_MODE_CAPTURED || p_mode == MouseMode::MOUSE_MODE_HIDDEN) {
@@ -711,8 +703,7 @@ void OSWinrt::process_events() {
 	process_key_events();
 }
 
-void OSWinrt::process_key_events()
-{
+void OSWinrt::process_key_events() {
 
 	for (int i = 0; i < key_event_pos; i++) {
 
@@ -727,13 +718,11 @@ void OSWinrt::process_key_events()
 		iev.key.pressed = kev.pressed;
 
 		input_event(iev);
-
 	}
 	key_event_pos = 0;
 }
 
-void OSWinrt::queue_key_event(KeyEvent & p_event)
-{
+void OSWinrt::queue_key_event(KeyEvent &p_event) {
 	// This merges Char events with the previous Key event, so
 	// the unicode can be retrieved without sending duplicate events.
 	if (p_event.type == KeyEvent::MessageType::CHAR_EVENT_MESSAGE && key_event_pos > 0) {
@@ -833,7 +822,7 @@ String OSWinrt::get_locale() const {
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP // this should work on phone 8.1, but it doesn't
 	return "en";
 #else
-	Platform::String ^language = Windows::Globalization::Language::CurrentInputMethodLanguageTag;
+	Platform::String ^ language = Windows::Globalization::Language::CurrentInputMethodLanguageTag;
 	return String(language->Data()).replace("-", "_");
 #endif
 }
@@ -855,7 +844,7 @@ void OSWinrt::swap_buffers() {
 
 bool OSWinrt::has_touchscreen_ui_hint() const {
 
-	TouchCapabilities^ tc = ref new TouchCapabilities();
+	TouchCapabilities ^ tc = ref new TouchCapabilities();
 	return tc->TouchPresent != 0 || UIViewSettings::GetForCurrentView()->UserInteractionMode == UserInteractionMode::Touch;
 }
 
@@ -864,15 +853,15 @@ bool OSWinrt::has_virtual_keyboard() const {
 	return UIViewSettings::GetForCurrentView()->UserInteractionMode == UserInteractionMode::Touch;
 }
 
-void OSWinrt::show_virtual_keyboard(const String & p_existing_text, const Rect2 & p_screen_rect) {
+void OSWinrt::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect) {
 
-	InputPane^ pane = InputPane::GetForCurrentView();
+	InputPane ^ pane = InputPane::GetForCurrentView();
 	pane->TryShow();
 }
 
 void OSWinrt::hide_virtual_keyboard() {
 
-	InputPane^ pane = InputPane::GetForCurrentView();
+	InputPane ^ pane = InputPane::GetForCurrentView();
 	pane->TryHide();
 }
 

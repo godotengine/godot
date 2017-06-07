@@ -110,146 +110,6 @@ def get_name():
         ('mingw_prefix_64','Mingw Prefix 64 bits',mingw64),
     ]
 
-def get_flags():
-
-    return [
-        ('glew','yes'),
-        ('openssl','builtin'), #use builtin openssl
-    ]
-
-def build_res_file( target, source, env ):
-
-    cmdbase = ""
-    if (env["bits"] == "32"):
-        cmdbase = env['mingw_prefix']
-    else:
-        cmdbase = env['mingw_prefix_64']
-    CPPPATH = env['CPPPATH']
-    cmdbase = cmdbase + 'windres --include-dir . '
-    import subprocess
-    for x in range(len(source)):
-        cmd = cmdbase + '-i ' + str(source[x]) + ' -o ' + str(target[x])
-        try:
-            out = subprocess.Popen(cmd,shell = True,stderr = subprocess.PIPE).communicate()
-            if len(out[1]):
-                return 1
-        except:
-            return 1
-    return 0
-
-def configure(env):
-
-    env.Append(CPPPATH=['#platform/windows'])
-    env['is_mingw']=False
-    if (os.name=="nt" and os.getenv("VSINSTALLDIR")!=None):
-        #build using visual studio
-        env['ENV']['TMP'] = os.environ['TMP']
-        env.Append(CPPPATH=['#platform/windows/include'])
-        env.Append(LIBPATH=['#platform/windows/lib'])
-
-
-        if (env["target"]=="release"):
-
-            env.Append(CCFLAGS=['/O2'])
-            env.Append(LINKFLAGS=['/SUBSYSTEM:WINDOWS'])
-            env.Append(LINKFLAGS=['/ENTRY:mainCRTStartup'])
-
-        elif (env["target"]=="release_debug"):
-
-            env.Append(CCFLAGS=['/O2','/DDEBUG_ENABLED'])
-            env.Append(LINKFLAGS=['/SUBSYSTEM:CONSOLE'])
-        elif (env["target"]=="debug_release"):
-
-            env.Append(CCFLAGS=['/Z7','/Od'])
-            env.Append(LINKFLAGS=['/DEBUG'])
-            env.Append(LINKFLAGS=['/SUBSYSTEM:WINDOWS'])
-            env.Append(LINKFLAGS=['/ENTRY:mainCRTStartup'])
-
-        elif (env["target"]=="debug"):
-
-            env.Append(CCFLAGS=['/Z7','/DDEBUG_ENABLED','/DDEBUG_MEMORY_ENABLED','/DD3D_DEBUG_INFO','/Od'])
-            env.Append(LINKFLAGS=['/SUBSYSTEM:CONSOLE'])
-            env.Append(LINKFLAGS=['/DEBUG'])
-
-
-        env.Append(CCFLAGS=['/MT','/Gd','/GR','/nologo'])
-        env.Append(CXXFLAGS=['/TP'])
-        env.Append(CPPFLAGS=['/DMSVC', '/GR', ])
-        env.Append(CCFLAGS=['/I'+os.getenv("WindowsSdkDir")+"/Include"])
-        env.Append(CCFLAGS=['/DWINDOWS_ENABLED'])
-        env.Append(CCFLAGS=['/DRTAUDIO_ENABLED'])
-        env.Append(CCFLAGS=['/DWIN32'])
-        env.Append(CCFLAGS=['/DTYPED_METHOD_BIND'])
-
-        env.Append(CCFLAGS=['/DGLES2_ENABLED'])
-        LIBS=['winmm','opengl32','dsound','kernel32','ole32','oleaut32','user32','gdi32', 'IPHLPAPI','Shlwapi', 'wsock32','Ws2_32', 'shell32','advapi32','dinput8','dxguid']
-        env.Append(LINKFLAGS=[p+env["LIBSUFFIX"] for p in LIBS])
-
-        env.Append(LIBPATH=[os.getenv("WindowsSdkDir")+"/Lib"])
-                if (os.getenv("DXSDK_DIR")):
-                        DIRECTX_PATH=os.getenv("DXSDK_DIR")
-                else:
-                        DIRECTX_PATH="C:/Program Files/Microsoft DirectX SDK (March 2009)"
-
-                if (os.getenv("VCINSTALLDIR")):
-                        VC_PATH=os.getenv("VCINSTALLDIR")
-                else:
-                        VC_PATH=""
-
-        env.Append(CCFLAGS=["/I" + p for p in os.getenv("INCLUDE").split(";")])
-        env.Append(LIBPATH=[p for p in os.getenv("LIB").split(";")])
-        env.Append(CCFLAGS=["/I"+DIRECTX_PATH+"/Include"])
-        env.Append(LIBPATH=[DIRECTX_PATH+"/Lib/x86"])
-        env['ENV'] = os.environ;
-
-        # This detection function needs the tools env (that is env['ENV'], not SCons's env), and that is why it's this far bellow in the code
-        compiler_version_str = methods.detect_visual_c_compiler_version(env['ENV'])
-
-        # Note: this detection/override code from here onward should be here instead of in SConstruct because it's platform and compiler specific (MSVC/Windows)
-        if(env["bits"] != "default"):
-                        print "Error: bits argument is disabled for MSVC"
-                        print ("Bits argument is not supported for MSVC compilation. Architecture depends on the Native/Cross Compile Tools Prompt/Developer Console (or Visual Studio settings)"
-                               +" that is being used to run SCons. As a consequence, bits argument is disabled. Run scons again without bits argument (example: scons p=windows) and SCons will attempt to detect what MSVC compiler"
-                               +" will be executed and inform you.")
-                        sys.exit()
-
-        # Forcing bits argument because MSVC does not have a flag to set this through SCons... it's different compilers (cl.exe's) called from the propper command prompt
-                # that decide the architecture that is build for. Scons can only detect the os.getenviron (because vsvarsall.bat sets a lot of stuff for cl.exe to work with)
-                env["bits"]="32"
-        env["x86_opt_vc"]=True
-
-        print "Detected MSVC compiler: "+compiler_version_str
-        # If building for 64bit architecture, disable assembly optimisations for 32 bit builds (theora as of writting)... vc compiler for 64bit can not compile _asm
-        if(compiler_version_str == "amd64" or compiler_version_str == "x86_amd64"):
-                        env["bits"]="64"
-                        env["x86_opt_vc"]=False
-                        print "Compiled program architecture will be a 64 bit executable (forcing bits=64)."
-                elif (compiler_version_str=="x86" or compiler_version_str == "amd64_x86"):
-                        print "Compiled program architecture will be a 32 bit executable. (forcing bits=32)."
-                else:
-                        print "Failed to detect MSVC compiler architecture version... Defaulting to 32bit executable settings (forcing bits=32). Compilation attempt will continue, but SCons can not detect for what architecture this build is compiled for. You should check your settings/compilation setup."
-        if env["bits"]=="64":
-            env.Append(CCFLAGS=['/D_WIN64'])
-
-        # Incremental linking fix
-        env['BUILDERS']['ProgramOriginal'] = env['BUILDERS']['Program']
-        env['BUILDERS']['Program'] = methods.precious_program
-
-    else:
-
-        # Workaround for MinGW. See:
-        # http://www.scons.org/wiki/LongCmdLinesOnWin32
-        env.use_windows_spawn_fix()
-
-        #build using mingw
-        if (os.name=="nt"):
-            env['ENV']['TMP'] = os.environ['TMP'] #way to go scons, you can be so stupid sometimes
-        else:
-            env["PROGSUFFIX"]=env["PROGSUFFIX"]+".exe" # for linux cross-compilation
-
-        mingw_prefix=""
-
-
 def can_build():
 
     if (os.name == "nt"):
@@ -416,7 +276,7 @@ def configure(env):
         env['ENV'] = os.environ
 
         # This detection function needs the tools env (that is env['ENV'], not SCons's env), and that is why it's this far bellow in the code
-        compiler_version_str = detect_visual_c_compiler_version(env['ENV'])
+        compiler_version_str = methods.detect_visual_c_compiler_version(env['ENV'])
 
         # Note: this detection/override code from here onward should be here instead of in SConstruct because it's platform and compiler specific (MSVC/Windows)
         if(env["bits"] != "default"):
@@ -531,7 +391,6 @@ def configure(env):
         env['is_mingw'] = True
         env.Append(BUILDERS={'RES': env.Builder(action=build_res_file, suffix='.o', src_suffix='.rc')})
 
-    import methods
     env.Append(BUILDERS={'GLSL120': env.Builder(action=methods.build_legacygl_headers, suffix='glsl.h', src_suffix='.glsl')})
     env.Append(BUILDERS={'GLSL': env.Builder(action=methods.build_glsl_headers, suffix='glsl.h', src_suffix='.glsl')})
     env.Append(BUILDERS={'HLSL9': env.Builder(action=methods.build_hlsl_dx9_headers, suffix='hlsl.h', src_suffix='.hlsl')})

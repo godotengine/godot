@@ -648,6 +648,9 @@ if (env['builtin_openssl'] != 'no'):
         "crypto/bn/bn_asm.c",
     ]
 
+    if "platform" in env and env["platform"] == "winrt":
+        thirdparty_sources += ['winrt.cpp']
+
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
     env_openssl.add_source_files(env.modules_sources, thirdparty_sources)
