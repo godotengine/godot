@@ -365,7 +365,7 @@ static int button_mask = 0;
 
 - (void)rightMouseUp:(NSEvent *)event {
 
-	button_mask |= BUTTON_MASK_RIGHT;
+	button_mask &= ~BUTTON_MASK_RIGHT;
 
 	Ref<InputEventMouseButton> mb;
 	mb.instance();
