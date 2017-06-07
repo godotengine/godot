@@ -67,6 +67,10 @@ layout(std140) uniform SceneData { //ubo:0
 
 	highp vec4 ambient_light_color;
 	highp vec4 bg_color;
+
+	vec4 fog_color_enabled;
+	vec4 fog_sun_color_amount;
+
 	float ambient_energy;
 	float bg_energy;
 
@@ -79,9 +83,20 @@ layout(std140) uniform SceneData { //ubo:0
 	vec2 shadow_atlas_pixel_size;
 	vec2 directional_shadow_pixel_size;
 
+	float z_far;
 	float reflection_multiplier;
 	float subsurface_scatter_width;
 	float ambient_occlusion_affect_light;
+
+	bool fog_depth_enabled;
+	float fog_depth_begin;
+	float fog_depth_curve;
+	bool fog_transmit_enabled;
+	float fog_transmit_curve;
+	bool fog_height_enabled;
+	float fog_height_min;
+	float fog_height_max;
+	float fog_height_curve;
 
 };
 
@@ -425,6 +440,8 @@ layout(std140) uniform SceneData {
 	highp vec4 ambient_light_color;
 	highp vec4 bg_color;
 
+	vec4 fog_color_enabled;
+	vec4 fog_sun_color_amount;
 
 	float ambient_energy;
 	float bg_energy;
@@ -438,10 +455,20 @@ layout(std140) uniform SceneData {
 	vec2 shadow_atlas_pixel_size;
 	vec2 directional_shadow_pixel_size;
 
+	float z_far;
 	float reflection_multiplier;
 	float subsurface_scatter_width;
 	float ambient_occlusion_affect_light;
 
+	bool fog_depth_enabled;
+	float fog_depth_begin;
+	float fog_depth_curve;
+	bool fog_transmit_enabled;
+	float fog_transmit_curve;
+	bool fog_height_enabled;
+	float fog_height_min;
+	float fog_height_max;
+	float fog_height_curve;
 };
 
 //directional light data
@@ -1613,6 +1640,49 @@ FRAGMENT_SHADER_CODE
 		vec2 brdf = vec2( -1.04, 1.04 ) * a004 + r.zw;
 
 		specular_light *= min(1.0,50.0 * f0.g) * brdf.y + brdf.x * f0;
+	}
+
+	if (fog_color_enabled.a > 0.5) {
+
+		float fog_amount=0;
+
+
+
+#ifdef USE_LIGHT_DIRECTIONAL
+
+		vec3 fog_color = mix( fog_color_enabled.rgb, fog_sun_color_amount.rgb,fog_sun_color_amount.a * pow(max( dot(normalize(vertex),-light_direction_attenuation.xyz), 0.0),8.0) );
+#else
+
+		vec3 fog_color = fog_color_enabled.rgb;
+#endif
+
+		//apply fog
+
+		if (fog_depth_enabled) {
+
+			float fog_z = smoothstep(fog_depth_begin,z_far,-vertex.z);
+
+			fog_amount = pow(fog_z,fog_depth_curve);
+			if (fog_transmit_enabled) {
+				vec3 total_light = emission + ambient_light + specular_light + diffuse_light;
+				float transmit = pow(fog_z,fog_transmit_curve);
+				fog_color = mix(max(total_light,fog_color),fog_color,transmit);
+			}
+		}
+
+		if (fog_height_enabled) {
+			float y = (camera_matrix * vec4(vertex,1.0)).y;
+			fog_amount = max(fog_amount,pow(1.0-smoothstep(fog_height_min,fog_height_max,y),fog_height_curve));
+		}
+
+		float rev_amount = 1.0 - fog_amount;
+
+
+		emission = emission * rev_amount + fog_color * fog_amount;
+		ambient_light*=rev_amount;
+		specular_light*rev_amount;
+		diffuse_light*=rev_amount;
+
 	}
 
 #ifdef USE_MULTIPLE_RENDER_TARGETS
