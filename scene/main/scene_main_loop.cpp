@@ -839,12 +839,12 @@ Ref<Material> SceneTree::get_debug_collision_material() {
 	return collision_material;
 }
 
-Ref<Mesh> SceneTree::get_debug_contact_mesh() {
+Ref<ArrayMesh> SceneTree::get_debug_contact_mesh() {
 
 	if (debug_contact_mesh.is_valid())
 		return debug_contact_mesh;
 
-	debug_contact_mesh = Ref<Mesh>(memnew(Mesh));
+	debug_contact_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
 
 	Ref<SpatialMaterial> mat = memnew(SpatialMaterial);
 	/*mat->set_flag(Material::FLAG_UNSHADED,true);

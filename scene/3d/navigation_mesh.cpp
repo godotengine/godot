@@ -187,7 +187,7 @@ Ref<Mesh> NavigationMesh::get_debug_mesh() {
 		}
 	}
 
-	debug_mesh = Ref<Mesh>(memnew(Mesh));
+	debug_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
 
 	Array arr;
 	arr.resize(Mesh::ARRAY_MAX);

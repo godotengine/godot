@@ -44,7 +44,7 @@ class NavigationMesh : public Resource {
 		Vector<int> indices;
 	};
 	Vector<Polygon> polygons;
-	Ref<Mesh> debug_mesh;
+	Ref<ArrayMesh> debug_mesh;
 
 	struct _EdgeKey {
 
