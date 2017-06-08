@@ -1035,14 +1035,17 @@ void ScriptEditorDebugger::start() {
 		EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
 	}
 
-	uint16_t port = GLOBAL_GET("network/debug/remote_port");
 	perf_history.clear();
 	for (int i = 0; i < Performance::MONITOR_MAX; i++) {
 
 		perf_max[i] = 0;
 	}
 
-	server->listen(port);
+	int remote_port = (int)EditorSettings::get_singleton()->get("network/debug/remote_port");
+	if (server->listen(remote_port) != OK) {
+		EditorNode::get_log()->add_message(String("** Error listening on port ") + itos(remote_port) + String(" **"));
+		return;
+	}
 	set_process(true);
 }
 
