@@ -1786,6 +1786,11 @@ void postinitialize_handler(Object *p_object) {
 	p_object->_postinitialize();
 }
 
+void destruct(Object *p_object) {
+
+	p_object->_destruct();
+}
+
 HashMap<uint32_t, Object *> ObjectDB::instances;
 uint32_t ObjectDB::instance_counter = 1;
 HashMap<Object *, ObjectID, ObjectDB::ObjectPtrHash> ObjectDB::instance_checks;

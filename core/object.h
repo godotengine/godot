@@ -312,6 +312,11 @@ protected:                                                                      
 			m_inherits::_notificationv(p_notification, p_reversed);                                                                  \
 	}                                                                                                                                \
                                                                                                                                      \
+protected:                                                                                                                           \
+	virtual void _destruct() {                                                                                                       \
+		this->~m_type();                                                                                                             \
+	}                                                                                                                                \
+                                                                                                                                     \
 private:
 
 #define OBJ_CATEGORY(m_category)                                        \
@@ -363,6 +368,7 @@ private:
 #endif
 	friend bool predelete_handler(Object *);
 	friend void postinitialize_handler(Object *);
+	friend void destruct(Object *);
 
 	struct Signal {
 
@@ -481,6 +487,10 @@ protected:
 
 	friend class ObjectTypeDB;
 	virtual void _validate_property(PropertyInfo &property) const;
+
+	virtual void _destruct() {
+		this->~Object();
+	}
 
 public: //should be protected, but bug in clang++
 	static void initialize_type();
@@ -652,6 +662,7 @@ public:
 
 bool predelete_handler(Object *p_object);
 void postinitialize_handler(Object *p_object);
+void destruct(Object *p_object);
 
 class ObjectDB {
 

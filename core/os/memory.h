@@ -272,11 +272,16 @@ _ALWAYS_INLINE_ bool predelete_handler(void *) {
 }
 
 template <class T>
+_ALWAYS_INLINE_ void destruct(T *p_obj) {
+	p_obj->~T();
+}
+
+template <class T>
 void memdelete(T *p_class) {
 
 	if (!predelete_handler(p_class))
 		return; // doesn't want to be deleted
-	p_class->~T();
+	destruct(p_class);
 	Memory::free_static(p_class);
 }
 
@@ -285,7 +290,7 @@ void memdelete_allocator(T *p_class) {
 
 	if (!predelete_handler(p_class))
 		return; // doesn't want to be deleted
-	p_class->~T();
+	destruct(p_class);
 	A::free(p_class);
 }
 
