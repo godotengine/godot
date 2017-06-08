@@ -229,6 +229,8 @@ public:
 	Error load(const String &p_path);
 	Error save_png(const String &p_path) const;
 
+	Error _decompress_bc();
+
 	/**
 	 * create an empty image
 	 */

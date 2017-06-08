@@ -1460,6 +1460,332 @@ Error Image::save_png(const String &p_path) const {
 	return save_png_func(p_path, Ref<Image>(this));
 }
 
+Error Image::_decompress_bc() {
+
+	int wd = width, ht = height;
+	if (wd % 4 != 0) {
+		wd += 4 - (wd % 4);
+	}
+	if (ht % 4 != 0) {
+		ht += 4 - (ht % 4);
+	}
+
+	int mm;
+	int size = _get_dst_image_size(wd, ht, FORMAT_RGBA8, mm);
+
+	PoolVector<uint8_t> newdata;
+	newdata.resize(size);
+
+	PoolVector<uint8_t>::Write w = newdata.write();
+	PoolVector<uint8_t>::Read r = data.read();
+
+	int rofs = 0;
+	int wofs = 0;
+
+	//print_line("width: "+itos(wd)+" height: "+itos(ht));
+
+	int mm_w = wd;
+	int mm_h = ht;
+
+	for (int i = 0; i <= mm; i++) {
+
+		switch (format) {
+
+			case FORMAT_DXT1: {
+
+				int len = (mm_w * mm_h) / 16;
+				uint8_t *dst = &w[wofs];
+
+				uint32_t ofs_table[16];
+				for (int x = 0; x < 4; x++) {
+
+					for (int y = 0; y < 4; y++) {
+
+						ofs_table[15 - (y * 4 + (3 - x))] = (x + y * mm_w) * 4;
+					}
+				}
+
+				for (int j = 0; j < len; j++) {
+
+					const uint8_t *src = &r[rofs + j * 8];
+					uint16_t col_a = src[1];
+					col_a <<= 8;
+					col_a |= src[0];
+					uint16_t col_b = src[3];
+					col_b <<= 8;
+					col_b |= src[2];
+
+					uint8_t table[4][4] = {
+						{ uint8_t((col_a >> 11) << 3), uint8_t(((col_a >> 5) & 0x3f) << 2), uint8_t(((col_a)&0x1f) << 3), 255 },
+						{ uint8_t((col_b >> 11) << 3), uint8_t(((col_b >> 5) & 0x3f) << 2), uint8_t(((col_b)&0x1f) << 3), 255 },
+						{ 0, 0, 0, 255 },
+						{ 0, 0, 0, 255 }
+					};
+
+					if (col_a < col_b) {
+						//punchrough
+						table[2][0] = (int(table[0][0]) + int(table[1][0])) >> 1;
+						table[2][1] = (int(table[0][1]) + int(table[1][1])) >> 1;
+						table[2][2] = (int(table[0][2]) + int(table[1][2])) >> 1;
+						table[3][3] = 0; //premul alpha black
+					} else {
+						//gradient
+						table[2][0] = (int(table[0][0]) * 2 + int(table[1][0])) / 3;
+						table[2][1] = (int(table[0][1]) * 2 + int(table[1][1])) / 3;
+						table[2][2] = (int(table[0][2]) * 2 + int(table[1][2])) / 3;
+						table[3][0] = (int(table[0][0]) + int(table[1][0]) * 2) / 3;
+						table[3][1] = (int(table[0][1]) + int(table[1][1]) * 2) / 3;
+						table[3][2] = (int(table[0][2]) + int(table[1][2]) * 2) / 3;
+					}
+
+					uint32_t block = src[4];
+					block <<= 8;
+					block |= src[5];
+					block <<= 8;
+					block |= src[6];
+					block <<= 8;
+					block |= src[7];
+
+					int y = (j / (mm_w / 4)) * 4;
+					int x = (j % (mm_w / 4)) * 4;
+					int pixofs = (y * mm_w + x) * 4;
+
+					for (int k = 0; k < 16; k++) {
+						int idx = pixofs + ofs_table[k];
+						dst[idx + 0] = table[block & 0x3][0];
+						dst[idx + 1] = table[block & 0x3][1];
+						dst[idx + 2] = table[block & 0x3][2];
+						dst[idx + 3] = table[block & 0x3][3];
+						block >>= 2;
+					}
+				}
+
+				rofs += len * 8;
+				wofs += mm_w * mm_h * 4;
+
+				mm_w /= 2;
+				mm_h /= 2;
+
+			} break;
+			case FORMAT_DXT3: {
+
+				int len = (mm_w * mm_h) / 16;
+				uint8_t *dst = &w[wofs];
+
+				uint32_t ofs_table[16];
+				for (int x = 0; x < 4; x++) {
+
+					for (int y = 0; y < 4; y++) {
+
+						ofs_table[15 - (y * 4 + (3 - x))] = (x + y * mm_w) * 4;
+					}
+				}
+
+				for (int j = 0; j < len; j++) {
+
+					const uint8_t *src = &r[rofs + j * 16];
+
+					uint64_t ablock = src[1];
+					ablock <<= 8;
+					ablock |= src[0];
+					ablock <<= 8;
+					ablock |= src[3];
+					ablock <<= 8;
+					ablock |= src[2];
+					ablock <<= 8;
+					ablock |= src[5];
+					ablock <<= 8;
+					ablock |= src[4];
+					ablock <<= 8;
+					ablock |= src[7];
+					ablock <<= 8;
+					ablock |= src[6];
+
+					uint16_t col_a = src[8 + 1];
+					col_a <<= 8;
+					col_a |= src[8 + 0];
+					uint16_t col_b = src[8 + 3];
+					col_b <<= 8;
+					col_b |= src[8 + 2];
+
+					uint8_t table[4][4] = {
+						{ uint8_t((col_a >> 11) << 3), uint8_t(((col_a >> 5) & 0x3f) << 2), uint8_t(((col_a)&0x1f) << 3), 255 },
+						{ uint8_t((col_b >> 11) << 3), uint8_t(((col_b >> 5) & 0x3f) << 2), uint8_t(((col_b)&0x1f) << 3), 255 },
+
+						{ 0, 0, 0, 255 },
+						{ 0, 0, 0, 255 }
+					};
+
+					//always gradient
+					table[2][0] = (int(table[0][0]) * 2 + int(table[1][0])) / 3;
+					table[2][1] = (int(table[0][1]) * 2 + int(table[1][1])) / 3;
+					table[2][2] = (int(table[0][2]) * 2 + int(table[1][2])) / 3;
+					table[3][0] = (int(table[0][0]) + int(table[1][0]) * 2) / 3;
+					table[3][1] = (int(table[0][1]) + int(table[1][1]) * 2) / 3;
+					table[3][2] = (int(table[0][2]) + int(table[1][2]) * 2) / 3;
+
+					uint32_t block = src[4 + 8];
+					block <<= 8;
+					block |= src[5 + 8];
+					block <<= 8;
+					block |= src[6 + 8];
+					block <<= 8;
+					block |= src[7 + 8];
+
+					int y = (j / (mm_w / 4)) * 4;
+					int x = (j % (mm_w / 4)) * 4;
+					int pixofs = (y * mm_w + x) * 4;
+
+					for (int k = 0; k < 16; k++) {
+						uint8_t alpha = ablock & 0xf;
+						alpha = int(alpha) * 255 / 15; //right way for alpha
+						int idx = pixofs + ofs_table[k];
+						dst[idx + 0] = table[block & 0x3][0];
+						dst[idx + 1] = table[block & 0x3][1];
+						dst[idx + 2] = table[block & 0x3][2];
+						dst[idx + 3] = alpha;
+						block >>= 2;
+						ablock >>= 4;
+					}
+				}
+
+				rofs += len * 16;
+				wofs += mm_w * mm_h * 4;
+
+				mm_w /= 2;
+				mm_h /= 2;
+
+			} break;
+			case FORMAT_DXT5: {
+
+				int len = (mm_w * mm_h) / 16;
+				uint8_t *dst = &w[wofs];
+
+				uint32_t ofs_table[16];
+				for (int x = 0; x < 4; x++) {
+
+					for (int y = 0; y < 4; y++) {
+
+						ofs_table[15 - (y * 4 + (3 - x))] = (x + y * mm_w) * 4;
+					}
+				}
+
+				for (int j = 0; j < len; j++) {
+
+					const uint8_t *src = &r[rofs + j * 16];
+
+					uint8_t a_start = src[1];
+					uint8_t a_end = src[0];
+
+					uint64_t ablock = src[3];
+					ablock <<= 8;
+					ablock |= src[2];
+					ablock <<= 8;
+					ablock |= src[5];
+					ablock <<= 8;
+					ablock |= src[4];
+					ablock <<= 8;
+					ablock |= src[7];
+					ablock <<= 8;
+					ablock |= src[6];
+
+					uint8_t atable[8];
+
+					if (a_start > a_end) {
+
+						atable[0] = (int(a_start) * 7 + int(a_end) * 0) / 7;
+						atable[1] = (int(a_start) * 6 + int(a_end) * 1) / 7;
+						atable[2] = (int(a_start) * 5 + int(a_end) * 2) / 7;
+						atable[3] = (int(a_start) * 4 + int(a_end) * 3) / 7;
+						atable[4] = (int(a_start) * 3 + int(a_end) * 4) / 7;
+						atable[5] = (int(a_start) * 2 + int(a_end) * 5) / 7;
+						atable[6] = (int(a_start) * 1 + int(a_end) * 6) / 7;
+						atable[7] = (int(a_start) * 0 + int(a_end) * 7) / 7;
+					} else {
+
+						atable[0] = (int(a_start) * 5 + int(a_end) * 0) / 5;
+						atable[1] = (int(a_start) * 4 + int(a_end) * 1) / 5;
+						atable[2] = (int(a_start) * 3 + int(a_end) * 2) / 5;
+						atable[3] = (int(a_start) * 2 + int(a_end) * 3) / 5;
+						atable[4] = (int(a_start) * 1 + int(a_end) * 4) / 5;
+						atable[5] = (int(a_start) * 0 + int(a_end) * 5) / 5;
+						atable[6] = 0;
+						atable[7] = 255;
+					}
+
+					uint16_t col_a = src[8 + 1];
+					col_a <<= 8;
+					col_a |= src[8 + 0];
+					uint16_t col_b = src[8 + 3];
+					col_b <<= 8;
+					col_b |= src[8 + 2];
+
+					uint8_t table[4][4] = {
+						{ uint8_t((col_a >> 11) << 3), uint8_t(((col_a >> 5) & 0x3f) << 2), uint8_t(((col_a)&0x1f) << 3), 255 },
+						{ uint8_t((col_b >> 11) << 3), uint8_t(((col_b >> 5) & 0x3f) << 2), uint8_t(((col_b)&0x1f) << 3), 255 },
+
+						{ 0, 0, 0, 255 },
+						{ 0, 0, 0, 255 }
+					};
+
+					//always gradient
+					table[2][0] = (int(table[0][0]) * 2 + int(table[1][0])) / 3;
+					table[2][1] = (int(table[0][1]) * 2 + int(table[1][1])) / 3;
+					table[2][2] = (int(table[0][2]) * 2 + int(table[1][2])) / 3;
+					table[3][0] = (int(table[0][0]) + int(table[1][0]) * 2) / 3;
+					table[3][1] = (int(table[0][1]) + int(table[1][1]) * 2) / 3;
+					table[3][2] = (int(table[0][2]) + int(table[1][2]) * 2) / 3;
+
+					uint32_t block = src[4 + 8];
+					block <<= 8;
+					block |= src[5 + 8];
+					block <<= 8;
+					block |= src[6 + 8];
+					block <<= 8;
+					block |= src[7 + 8];
+
+					int y = (j / (mm_w / 4)) * 4;
+					int x = (j % (mm_w / 4)) * 4;
+					int pixofs = (y * mm_w + x) * 4;
+
+					for (int k = 0; k < 16; k++) {
+						uint8_t alpha = ablock & 0x7;
+						int idx = pixofs + ofs_table[k];
+						dst[idx + 0] = table[block & 0x3][0];
+						dst[idx + 1] = table[block & 0x3][1];
+						dst[idx + 2] = table[block & 0x3][2];
+						dst[idx + 3] = atable[alpha];
+						block >>= 2;
+						ablock >>= 3;
+					}
+				}
+
+				rofs += len * 16;
+				wofs += mm_w * mm_h * 4;
+
+				mm_w /= 2;
+				mm_h /= 2;
+
+			} break;
+			default: {}
+		}
+	}
+
+	w = PoolVector<uint8_t>::Write();
+	r = PoolVector<uint8_t>::Read();
+
+	data = newdata;
+	format = FORMAT_RGBA8;
+	if (wd != width || ht != height) {
+
+		SWAP(width, wd);
+		SWAP(height, ht);
+		crop(wd, ht);
+	}
+
+	return OK;
+}
+
 int Image::get_image_data_size(int p_width, int p_height, Format p_format, int p_mipmaps) {
 
 	int mm;
@@ -1480,7 +1806,9 @@ bool Image::is_compressed() const {
 Error Image::decompress() {
 
 	if (format >= FORMAT_DXT1 && format <= FORMAT_BPTC_RGBFU && _image_decompress_bc)
-		_image_decompress_bc(this);
+		_image_decompress_bc(this); // libsquish
+	else if (format >= FORMAT_DXT1 && format <= FORMAT_DXT5)
+		_decompress_bc(); // builtin
 	else if (format >= FORMAT_PVRTC2 && format <= FORMAT_PVRTC4A && _image_decompress_pvrtc)
 		_image_decompress_pvrtc(this);
 	else if (format == FORMAT_ETC && _image_decompress_etc)
