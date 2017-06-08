@@ -38,10 +38,13 @@
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
-class Mesh : public Resource {
 
+class Mesh : public Resource {
 	GDCLASS(Mesh, Resource);
-	RES_BASE_EXTENSION("msh");
+
+	mutable Ref<TriangleMesh> triangle_mesh; //cached
+protected:
+	void _clear_triangle_mesh();
 
 public:
 	enum {
@@ -111,6 +114,34 @@ public:
 		BLEND_SHAPE_MODE_RELATIVE = VS::BLEND_SHAPE_MODE_RELATIVE,
 	};
 
+	virtual int get_surface_count() const = 0;
+	virtual int surface_get_array_len(int p_idx) const = 0;
+	virtual int surface_get_array_index_len(int p_idx) const = 0;
+	virtual Array surface_get_arrays(int p_surface) const = 0;
+	virtual uint32_t surface_get_format(int p_idx) const = 0;
+	virtual PrimitiveType surface_get_primitive_type(int p_idx) const = 0;
+	virtual Ref<Material> surface_get_material(int p_idx) const = 0;
+	virtual int get_blend_shape_count() const = 0;
+	virtual StringName get_blend_shape_name(int p_index) const = 0;
+
+	PoolVector<Face3> get_faces() const;
+	Ref<TriangleMesh> generate_triangle_mesh() const;
+
+	Ref<Shape> create_trimesh_shape() const;
+	Ref<Shape> create_convex_shape() const;
+
+	Ref<Mesh> create_outline(float p_margin) const;
+
+	virtual Rect3 get_aabb() const = 0;
+
+	Mesh();
+};
+
+class ArrayMesh : public Mesh {
+
+	GDCLASS(ArrayMesh, Mesh);
+	RES_BASE_EXTENSION("msh");
+
 private:
 	struct Surface {
 		String name;
@@ -123,8 +154,6 @@ private:
 	BlendShapeMode blend_shape_mode;
 	Vector<StringName> blend_shapes;
 	Rect3 custom_aabb;
-
-	mutable Ref<TriangleMesh> triangle_mesh;
 
 	void _recompute_aabb();
 
@@ -177,21 +206,15 @@ public:
 	Rect3 get_aabb() const;
 	virtual RID get_rid() const;
 
-	Ref<Shape> create_trimesh_shape() const;
-	Ref<Shape> create_convex_shape() const;
-
-	Ref<Mesh> create_outline(float p_margin) const;
-
 	void center_geometry();
 	void regen_normalmaps();
 
-	PoolVector<Face3> get_faces() const;
-	Ref<TriangleMesh> generate_triangle_mesh() const;
-	Mesh();
+	ArrayMesh();
 
-	~Mesh();
+	~ArrayMesh();
 };
 
+#if 0
 class QuadMesh : public Mesh {
 
 	GDCLASS(QuadMesh, Mesh)
@@ -205,6 +228,8 @@ public:
 	Ref<Material> get_material() const;
 	QuadMesh();
 };
+
+#endif
 
 VARIANT_ENUM_CAST(Mesh::ArrayType);
 VARIANT_ENUM_CAST(Mesh::PrimitiveType);

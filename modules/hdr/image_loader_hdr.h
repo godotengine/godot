@@ -27,8 +27,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef IMAGE_LOADER_TINYEXR_H
-#define IMAGE_LOADER_TINYEXR_H
+#ifndef IMAGE_LOADER_HDR_H
+#define IMAGE_LOADER_HDR_H
 
 #include "io/image_loader.h"
 

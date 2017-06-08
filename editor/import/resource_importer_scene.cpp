@@ -137,7 +137,7 @@ static String _fixstr(const String &p_what, const String &p_str) {
 	return p_what;
 }
 
-Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>, Ref<Shape> > &collision_map) {
+Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<ArrayMesh>, Ref<Shape> > &collision_map) {
 
 	// children first..
 	for (int i = 0; i < p_node->get_child_count(); i++) {
@@ -175,7 +175,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 			mi->set_flag(GeometryInstance::FLAG_BILLBOARD, true);
 			if (mi->get_mesh().is_valid()) {
 
-				Ref<Mesh> m = mi->get_mesh();
+				Ref<ArrayMesh> m = mi->get_mesh();
 				for (int i = 0; i < m->get_surface_count(); i++) {
 
 					Ref<SpatialMaterial> fm = m->surface_get_material(i);
@@ -194,7 +194,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 
 		MeshInstance *mi = p_node->cast_to<MeshInstance>();
 
-		Ref<Mesh> m = mi->get_mesh();
+		Ref<ArrayMesh> m = mi->get_mesh();
 
 		if (m.is_valid()) {
 
@@ -275,7 +275,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 
 					if (mi->get_mesh().is_valid()) {
 
-						Ref<Mesh> m = mi->get_mesh();
+						Ref<ArrayMesh> m = mi->get_mesh();
 						for (int i = 0; i < m->get_surface_count(); i++) {
 
 							Ref<SpatialMaterial> fm = m->surface_get_material(i);
@@ -325,7 +325,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 
 		    /*if (mi->get_mesh().is_valid()) {
 
-			Ref<Mesh> m = mi->get_mesh();
+			Ref<ArrayMesh> m = mi->get_mesh();
 			for(int i=0;i<m->get_surface_count();i++) {
 
 			    Ref<SpatialMaterial> fm = m->surface_get_material(i);
@@ -477,7 +477,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 
 		MeshInstance *mi = p_node->cast_to<MeshInstance>();
 
-		Ref<Mesh> mesh = mi->get_mesh();
+		Ref<ArrayMesh> mesh = mi->get_mesh();
 		ERR_FAIL_COND_V(mesh.is_null(), NULL);
 		NavigationMeshInstance *nmi = memnew(NavigationMeshInstance);
 
@@ -655,7 +655,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 
 		MeshInstance *mi = p_node->cast_to<MeshInstance>();
 
-		Ref<Mesh> mesh = mi->get_mesh();
+		Ref<ArrayMesh> mesh = mi->get_mesh();
 		if (!mesh.is_null()) {
 
 			if (_teststr(mesh->get_name(), "col")) {
@@ -972,7 +972,7 @@ static String _make_extname(const String &p_str) {
 	return ext_name;
 }
 
-void ResourceImporterScene::_make_external_resources(Node *p_node, const String &p_base_path, bool p_make_materials, bool p_make_meshes, Map<Ref<Material>, Ref<Material> > &p_materials, Map<Ref<Mesh>, Ref<Mesh> > &p_meshes) {
+void ResourceImporterScene::_make_external_resources(Node *p_node, const String &p_base_path, bool p_make_materials, bool p_make_meshes, Map<Ref<Material>, Ref<Material> > &p_materials, Map<Ref<ArrayMesh>, Ref<ArrayMesh> > &p_meshes) {
 
 	List<PropertyInfo> pi;
 
@@ -1005,7 +1005,7 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 				}
 			} else {
 
-				Ref<Mesh> mesh = p_node->get(E->get().name);
+				Ref<ArrayMesh> mesh = p_node->get(E->get().name);
 
 				if (mesh.is_valid()) {
 
@@ -1018,7 +1018,7 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 							String ext_name = p_base_path + "." + _make_extname(mesh->get_name()) + ".msh";
 							if (FileAccess::exists(ext_name)) {
 								//if exists, use it
-								Ref<Mesh> existing = ResourceLoader::load(ext_name);
+								Ref<ArrayMesh> existing = ResourceLoader::load(ext_name);
 								p_meshes[mesh] = existing;
 							} else {
 
@@ -1059,7 +1059,7 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 							}
 
 							if (!p_make_meshes) {
-								p_meshes[mesh] = Ref<Mesh>(); //save it anyway, so it won't be checked again
+								p_meshes[mesh] = Ref<ArrayMesh>(); //save it anyway, so it won't be checked again
 							}
 						}
 					}
@@ -1192,7 +1192,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	float anim_optimizer_angerr = p_options["animation/optimizer/max_angular_error"];
 	float anim_optimizer_maxang = p_options["animation/optimizer/max_angle"];
 
-	Map<Ref<Mesh>, Ref<Shape> > collision_map;
+	Map<Ref<ArrayMesh>, Ref<Shape> > collision_map;
 
 	scene = _fix_node(scene, scene, collision_map);
 
@@ -1230,7 +1230,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 
 	if (external_materials || external_meshes) {
 		Map<Ref<Material>, Ref<Material> > mat_map;
-		Map<Ref<Mesh>, Ref<Mesh> > mesh_map;
+		Map<Ref<ArrayMesh>, Ref<ArrayMesh> > mesh_map;
 		_make_external_resources(scene, p_source_file.get_basename(), external_materials, external_meshes, mat_map, mesh_map);
 	}
 

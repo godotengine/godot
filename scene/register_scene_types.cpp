@@ -523,11 +523,12 @@ void register_scene_types() {
 	ClassDB::register_virtual_class<Shader>();
 
 #ifndef _3D_DISABLED
-	ClassDB::register_class<Mesh>();
-	ClassDB::register_class<QuadMesh>();
+	ClassDB::register_virtual_class<Mesh>();
+	ClassDB::register_class<ArrayMesh>();
 	ClassDB::register_virtual_class<Material>();
 	ClassDB::register_class<SpatialMaterial>();
 	ClassDB::add_compatibility_class("FixedSpatialMaterial", "SpatialMaterial");
+	ClassDB::add_compatibility_class("Mesh", "ArrayMesh");
 	SceneTree::add_idle_callback(SpatialMaterial::flush_changes);
 	SpatialMaterial::init_shaders();
 

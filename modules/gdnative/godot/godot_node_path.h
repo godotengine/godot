@@ -47,6 +47,7 @@ typedef struct godot_node_path {
 #include "godot_string.h"
 
 void GDAPI godot_node_path_new(godot_node_path *r_dest, const godot_string *p_from);
+void GDAPI godot_node_path_new_copy(godot_node_path *r_dest, const godot_node_path *p_src);
 void GDAPI godot_node_path_destroy(godot_node_path *p_self);
 
 godot_string GDAPI godot_node_path_as_string(const godot_node_path *p_self);

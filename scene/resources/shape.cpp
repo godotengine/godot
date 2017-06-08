@@ -49,14 +49,14 @@ void Shape::add_vertices_to_array(PoolVector<Vector3> &array, const Transform &p
 	}
 }
 
-Ref<Mesh> Shape::get_debug_mesh() {
+Ref<ArrayMesh> Shape::get_debug_mesh() {
 
 	if (debug_mesh_cache.is_valid())
 		return debug_mesh_cache;
 
 	Vector<Vector3> lines = _gen_debug_mesh_lines();
 
-	debug_mesh_cache = Ref<Mesh>(memnew(Mesh));
+	debug_mesh_cache = Ref<ArrayMesh>(memnew(ArrayMesh));
 
 	if (!lines.empty()) {
 		//make mesh

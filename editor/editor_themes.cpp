@@ -145,8 +145,8 @@ Ref<Theme> create_editor_theme() {
 	theme->set_icon("unchecked", "PopupMenu", theme->get_icon("Unchecked", "EditorIcons"));
 
 	// Editor background
-	Ref<StyleBoxFlat> style_background = make_flat_stylebox(dark_color_2, 4, 4, 4, 4);
-	theme->set_stylebox("Background", "EditorStyles", style_background);
+	Ref<StyleBoxFlat> style_panel = make_flat_stylebox(dark_color_2, 4, 4, 4, 4);
+	theme->set_stylebox("Background", "EditorStyles", style_panel);
 
 	// Focus
 	Ref<StyleBoxFlat> focus_sbt = make_flat_stylebox(light_color_1, 4, 4, 4, 4);
@@ -193,9 +193,9 @@ Ref<Theme> create_editor_theme() {
 	theme->set_stylebox("MenuHover", "EditorStyles", style_menu_hover_border);
 
 	// Content of each tab
-	Ref<StyleBoxFlat> style_panel = make_flat_stylebox(base_color, 1, 4, 1, 1);
-	theme->set_stylebox("panel", "TabContainer", style_panel);
-	theme->set_stylebox("Content", "EditorStyles", style_panel);
+	Ref<StyleBoxFlat> style_content_panel = make_flat_stylebox(base_color, 1, 4, 1, 1);
+	theme->set_stylebox("panel", "TabContainer", style_content_panel);
+	theme->set_stylebox("Content", "EditorStyles", style_content_panel);
 
 	// Button
 	Ref<StyleBoxFlat> style_button = make_flat_stylebox(dark_color_1, 4, 4, 4, 4);
@@ -281,7 +281,7 @@ Ref<Theme> create_editor_theme() {
 	theme->set_color("drop_position_color", "Tree", highlight_color);
 
 	// ItemList
-	Ref<StyleBoxFlat> style_itemlist_cursor = make_flat_stylebox(highlight_color, 8, 8, 8, 8);
+	Ref<StyleBoxFlat> style_itemlist_cursor = make_flat_stylebox(highlight_color, 4, 4, 4, 4);
 	style_itemlist_cursor->set_draw_center(false);
 	style_itemlist_cursor->set_border_size(1 * EDSCALE);
 	style_itemlist_cursor->set_light_color(light_color_1);
@@ -292,6 +292,7 @@ Ref<Theme> create_editor_theme() {
 	theme->set_stylebox("selected", "ItemList", style_tree_selected);
 	theme->set_stylebox("bg_focus", "ItemList", focus_sbt);
 	theme->set_stylebox("bg", "ItemList", style_bg);
+	theme->set_constant("vseparation", "ItemList", 5 * EDSCALE);
 
 	Ref<StyleBoxFlat> style_tab_fg = make_flat_stylebox(base_color, 15, 5, 15, 5);
 	Ref<StyleBoxFlat> style_tab_bg = make_flat_stylebox(base_color, 15, 5, 15, 5);
@@ -393,6 +394,9 @@ Ref<Theme> create_editor_theme() {
 	theme->set_stylebox("slider", "VSlider", make_stylebox(theme->get_icon("VsliderBg", "EditorIcons"), 4, 4, 4, 4));
 	theme->set_icon("grabber", "VSlider", theme->get_icon("SliderGrabber", "EditorIcons"));
 	theme->set_icon("grabber_highlight", "VSlider", theme->get_icon("SliderGrabberHl", "EditorIcons"));
+
+	// Panel
+	theme->set_stylebox("panel", "Panel", style_panel);
 
 	// TooltipPanel
 	Ref<StyleBoxFlat> style_tooltip = make_flat_stylebox(Color(1, 1, 1, 0.8), 8, 8, 8, 8);

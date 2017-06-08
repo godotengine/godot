@@ -89,7 +89,7 @@ Error ResourceImporterOBJ::import(const String &p_source_file, const String &p_s
 	FileAccessRef f = FileAccess::open(p_source_file, FileAccess::READ);
 	ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
 
-	Ref<Mesh> mesh = Ref<Mesh>(memnew(Mesh));
+	Ref<ArrayMesh> mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
 	Map<String, Ref<Material> > name_map;
 
 	bool generate_normals = p_options["generate/normals"];

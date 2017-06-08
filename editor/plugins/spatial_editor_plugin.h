@@ -330,13 +330,13 @@ private:
 	bool grid_enable[3]; //should be always visible if true
 	bool grid_enabled;
 
-	Ref<Mesh> move_gizmo[3], rotate_gizmo[3];
+	Ref<ArrayMesh> move_gizmo[3], rotate_gizmo[3];
 	Ref<SpatialMaterial> gizmo_color[3];
 	Ref<SpatialMaterial> gizmo_hl;
 
 	int over_gizmo_handle;
 
-	Ref<Mesh> selection_box;
+	Ref<ArrayMesh> selection_box;
 	RID indicators;
 	RID indicators_instance;
 	RID cursor_mesh;
@@ -472,8 +472,8 @@ public:
 	float get_rotate_snap() const { return snap_rotate->get_text().to_double(); }
 	float get_scale_snap() const { return snap_scale->get_text().to_double(); }
 
-	Ref<Mesh> get_move_gizmo(int idx) const { return move_gizmo[idx]; }
-	Ref<Mesh> get_rotate_gizmo(int idx) const { return rotate_gizmo[idx]; }
+	Ref<ArrayMesh> get_move_gizmo(int idx) const { return move_gizmo[idx]; }
+	Ref<ArrayMesh> get_rotate_gizmo(int idx) const { return rotate_gizmo[idx]; }
 
 	void update_transform_gizmo();
 

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_dictionary.h                                                   */
+/*  image_loader_jpegd.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,59 +27,57 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef GODOT_DICTIONARY_H
-#define GODOT_DICTIONARY_H
+#ifndef IMAGE_LOADER_TGA_H
+#define IMAGE_LOADER_TGA_H
 
-#ifdef __cplusplus
-extern "C" {
+#include "io/image_loader.h"
+
+/**
+	@author SaracenOne
+*/
+class ImageLoaderTGA : public ImageFormatLoader {
+	enum tga_type_e {
+		TGA_TYPE_NO_DATA = 0,
+		TGA_TYPE_INDEXED = 1,
+		TGA_TYPE_RGB = 2,
+		TGA_TYPE_MONOCHROME = 3,
+		TGA_TYPE_RLE_INDEXED = 9,
+		TGA_TYPE_RLE_RGB = 10,
+		TGA_TYPE_RLE_MONOCHROME = 11
+	};
+
+	enum tga_origin_e {
+		TGA_ORIGIN_BOTTOM_LEFT = 0x00,
+		TGA_ORIGIN_BOTTOM_RIGHT = 0x01,
+		TGA_ORIGIN_TOP_LEFT = 0x02,
+		TGA_ORIGIN_TOP_RIGHT = 0x03,
+		TGA_ORIGIN_SHIFT = 0x04,
+		TGA_ORIGIN_MASK = 0x30
+	};
+
+	struct tga_header_s {
+		uint8_t id_length;
+		uint8_t color_map_type;
+		tga_type_e image_type;
+
+		uint16_t first_color_entry;
+		uint16_t color_map_length;
+		uint8_t color_map_depth;
+
+		uint16_t x_origin;
+		uint16_t y_origin;
+		uint16_t image_width;
+		uint16_t image_height;
+		uint8_t pixel_depth;
+		uint8_t image_descriptor;
+	};
+	static Error decode_tga_rle(const uint8_t *p_compressed_buffer, size_t p_pixel_size, uint8_t *p_uncompressed_buffer, size_t p_output_size);
+	static Error convert_to_image(Ref<Image> p_image, const uint8_t *p_buffer, const tga_header_s &p_header, const uint8_t *p_palette, const bool p_is_monochrome);
+
+public:
+	virtual Error load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear);
+	virtual void get_recognized_extensions(List<String> *p_extensions) const;
+	ImageLoaderTGA();
+};
+
 #endif
-
-#include <stdint.h>
-
-#ifndef GODOT_CORE_API_GODOT_DICTIONARY_TYPE_DEFINED
-#define GODOT_CORE_API_GODOT_DICTIONARY_TYPE_DEFINED
-typedef struct godot_dictionary {
-	uint8_t _dont_touch_that[8];
-} godot_dictionary;
-#endif
-
-#include "../godot.h"
-#include "godot_array.h"
-#include "godot_variant.h"
-
-void GDAPI godot_dictionary_new(godot_dictionary *r_dest);
-void GDAPI godot_dictionary_new_copy(godot_dictionary *r_dest, const godot_dictionary *p_src);
-void GDAPI godot_dictionary_destroy(godot_dictionary *p_self);
-
-godot_int GDAPI godot_dictionary_size(const godot_dictionary *p_self);
-
-godot_bool GDAPI godot_dictionary_empty(const godot_dictionary *p_self);
-
-void GDAPI godot_dictionary_clear(godot_dictionary *p_self);
-
-godot_bool GDAPI godot_dictionary_has(const godot_dictionary *p_self, const godot_variant *p_key);
-
-godot_bool GDAPI godot_dictionary_has_all(const godot_dictionary *p_self, const godot_array *p_keys);
-
-void GDAPI godot_dictionary_erase(godot_dictionary *p_self, const godot_variant *p_key);
-
-godot_int GDAPI godot_dictionary_hash(const godot_dictionary *p_self);
-
-godot_array GDAPI godot_dictionary_keys(const godot_dictionary *p_self);
-
-godot_array GDAPI godot_dictionary_values(const godot_dictionary *p_self);
-
-godot_variant GDAPI godot_dictionary_get(const godot_dictionary *p_self, const godot_variant *p_key);
-void GDAPI godot_dictionary_set(godot_dictionary *p_self, const godot_variant *p_key, const godot_variant *p_value);
-
-godot_variant GDAPI *godot_dictionary_operator_index(godot_dictionary *p_self, const godot_variant *p_key);
-
-godot_bool GDAPI godot_dictionary_operator_equal(const godot_dictionary *p_self, const godot_dictionary *p_b);
-
-godot_string GDAPI godot_dictionary_to_json(const godot_dictionary *p_self);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif // GODOT_DICTIONARY_H

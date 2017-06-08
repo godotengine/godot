@@ -3055,8 +3055,8 @@ void SpatialEditor::_init_indicators() {
 
 		for (int i = 0; i < 3; i++) {
 
-			move_gizmo[i] = Ref<Mesh>(memnew(Mesh));
-			rotate_gizmo[i] = Ref<Mesh>(memnew(Mesh));
+			move_gizmo[i] = Ref<ArrayMesh>(memnew(ArrayMesh));
+			rotate_gizmo[i] = Ref<ArrayMesh>(memnew(ArrayMesh));
 
 			Ref<SpatialMaterial> mat = memnew(SpatialMaterial);
 			mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);

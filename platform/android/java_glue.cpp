@@ -1367,7 +1367,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joybutton(JNIEnv *env
 	jevent.device = p_device;
 	jevent.type = OS_Android::JOY_EVENT_BUTTON;
 	jevent.index = p_button;
-	jevent->is_pressed() = p_pressed;
+	jevent.pressed = p_pressed;
 
 	input_mutex->lock();
 	joy_events.push_back(jevent);

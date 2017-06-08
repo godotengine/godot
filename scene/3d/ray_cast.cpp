@@ -266,7 +266,7 @@ void RayCast::_create_debug_shape() {
 		line_material->set_albedo(Color(1.0, 0.8, 0.6));
 	}
 
-	Ref<Mesh> mesh = memnew(Mesh);
+	Ref<ArrayMesh> mesh = memnew(ArrayMesh);
 
 	MeshInstance *mi = memnew(MeshInstance);
 	mi->set_mesh(mesh);
@@ -287,7 +287,7 @@ void RayCast::_update_debug_shape() {
 	if (!mi->get_mesh().is_valid())
 		return;
 
-	Ref<Mesh> mesh = mi->get_mesh();
+	Ref<ArrayMesh> mesh = mi->get_mesh();
 	if (mesh->get_surface_count() > 0)
 		mesh->surface_remove(0);
 

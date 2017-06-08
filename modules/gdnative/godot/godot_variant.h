@@ -68,7 +68,6 @@ typedef enum godot_variant_type {
 	GODOT_VARIANT_TYPE_NODE_PATH, // 15
 	GODOT_VARIANT_TYPE_RID,
 	GODOT_VARIANT_TYPE_OBJECT,
-	GODOT_VARIANT_TYPE_INPUT_EVENT, // TODO: remove me once input_event is removed from main Godot codebase
 	GODOT_VARIANT_TYPE_DICTIONARY,
 	GODOT_VARIANT_TYPE_ARRAY, // 20
 
@@ -119,7 +118,7 @@ typedef struct godot_variant_call_error {
 
 godot_variant_type GDAPI godot_variant_get_type(const godot_variant *p_v);
 
-void GDAPI godot_variant_copy(godot_variant *r_dest, const godot_variant *p_src);
+void GDAPI godot_variant_new_copy(godot_variant *r_dest, const godot_variant *p_src);
 
 void GDAPI godot_variant_new_nil(godot_variant *r_dest);
 

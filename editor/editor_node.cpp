@@ -1085,6 +1085,7 @@ void EditorNode::_dialog_action(String p_file) {
 			GlobalConfig::get_singleton()->set("application/main_scene", p_file);
 			GlobalConfig::get_singleton()->save();
 			//would be nice to show the project manager opened with the highlighted field..
+			_run(false, ""); // automatically run the project
 		} break;
 		case FILE_SAVE_OPTIMIZED: {
 
@@ -1983,7 +1984,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			}
 
 			_menu_option(FILE_SAVE_AS_SCENE);
-			_menu_option_confirm(FILE_SAVE_AND_RUN, true);
+			_menu_option_confirm(FILE_SAVE_AND_RUN, false);
 		} break;
 
 		case FILE_SAVE_OPTIMIZED: {

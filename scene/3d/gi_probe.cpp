@@ -973,7 +973,7 @@ GIProbe::Baker::MaterialCache GIProbe::_get_material_cache(Ref<Material> p_mater
 	return mc;
 }
 
-void GIProbe::_plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, Baker *p_baker, const Vector<Ref<Material> > &p_materials, const Ref<Material> &p_override_material) {
+void GIProbe::_plot_mesh(const Transform &p_xform, Ref<ArrayMesh> &p_mesh, Baker *p_baker, const Vector<Ref<Material> > &p_materials, const Ref<Material> &p_override_material) {
 
 	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
 
@@ -1067,7 +1067,7 @@ void GIProbe::_find_meshes(Node *p_at_node, Baker *p_baker) {
 
 	MeshInstance *mi = p_at_node->cast_to<MeshInstance>();
 	if (mi && mi->get_flag(GeometryInstance::FLAG_USE_BAKED_LIGHT)) {
-		Ref<Mesh> mesh = mi->get_mesh();
+		Ref<ArrayMesh> mesh = mi->get_mesh();
 		if (mesh.is_valid()) {
 
 			Rect3 aabb = mesh->get_aabb();
@@ -1094,7 +1094,7 @@ void GIProbe::_find_meshes(Node *p_at_node, Baker *p_baker) {
 		for (int i = 0; i < meshes.size(); i += 2) {
 
 			Transform mxf = meshes[i];
-			Ref<Mesh> mesh = meshes[i + 1];
+			Ref<ArrayMesh> mesh = meshes[i + 1];
 			if (!mesh.is_valid())
 				continue;
 
@@ -1317,7 +1317,7 @@ void GIProbe::_create_debug_mesh(Baker *p_baker) {
 	print_line("leaf voxels: " + itos(p_baker->leaf_voxel_count));
 	mm->set_instance_count(p_baker->leaf_voxel_count);
 
-	Ref<Mesh> mesh;
+	Ref<ArrayMesh> mesh;
 	mesh.instance();
 
 	{
