@@ -49,6 +49,18 @@ typedef struct godot_quat {
 void GDAPI godot_quat_new(godot_quat *r_dest, const godot_real p_x, const godot_real p_y, const godot_real p_z, const godot_real p_w);
 void GDAPI godot_quat_new_with_axis_angle(godot_quat *r_dest, const godot_vector3 *p_axis, const godot_real p_angle);
 
+godot_real GDAPI godot_quat_get_x(const godot_quat *p_self);
+void GDAPI godot_quat_set_x(godot_quat *p_self, const godot_real val);
+
+godot_real GDAPI godot_quat_get_y(const godot_quat *p_self);
+void GDAPI godot_quat_set_y(godot_quat *p_self, const godot_real val);
+
+godot_real GDAPI godot_quat_get_z(const godot_quat *p_self);
+void GDAPI godot_quat_set_z(godot_quat *p_self, const godot_real val);
+
+godot_real GDAPI godot_quat_get_w(const godot_quat *p_self);
+void GDAPI godot_quat_set_w(godot_quat *p_self, const godot_real val);
+
 godot_string GDAPI godot_quat_as_string(const godot_quat *p_self);
 
 godot_real GDAPI godot_quat_length(const godot_quat *p_self);

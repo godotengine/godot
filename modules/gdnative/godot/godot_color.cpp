@@ -50,6 +50,61 @@ void GDAPI godot_color_new_rgb(godot_color *r_dest, const godot_real p_r, const 
 	*dest = Color(p_r, p_g, p_b);
 }
 
+godot_real godot_color_get_r(const godot_color *p_self) {
+	const Color *self = (const Color *)p_self;
+	return self->r;
+}
+
+void godot_color_set_r(godot_color *p_self, const godot_real val) {
+	Color *self = (Color *)p_self;
+	self->r = val;
+}
+
+godot_real godot_color_get_g(const godot_color *p_self) {
+	const Color *self = (const Color *)p_self;
+	return self->g;
+}
+
+void godot_color_set_g(godot_color *p_self, const godot_real val) {
+	Color *self = (Color *)p_self;
+	self->g = val;
+}
+
+godot_real godot_color_get_b(const godot_color *p_self) {
+	const Color *self = (const Color *)p_self;
+	return self->b;
+}
+
+void godot_color_set_b(godot_color *p_self, const godot_real val) {
+	Color *self = (Color *)p_self;
+	self->b = val;
+}
+
+godot_real godot_color_get_a(const godot_color *p_self) {
+	const Color *self = (const Color *)p_self;
+	return self->a;
+}
+
+void godot_color_set_a(godot_color *p_self, const godot_real val) {
+	Color *self = (Color *)p_self;
+	self->a = val;
+}
+
+godot_real godot_color_get_h(const godot_color *p_self) {
+	const Color *self = (const Color *)p_self;
+	return self->get_h();
+}
+
+godot_real godot_color_get_s(const godot_color *p_self) {
+	const Color *self = (const Color *)p_self;
+	return self->get_s();
+}
+
+godot_real godot_color_get_v(const godot_color *p_self) {
+	const Color *self = (const Color *)p_self;
+	return self->get_v();
+}
+
 godot_string GDAPI godot_color_as_string(const godot_color *p_self) {
 	godot_string ret;
 	const Color *self = (const Color *)p_self;
@@ -106,7 +161,7 @@ godot_string GDAPI godot_color_to_html(const godot_color *p_self, const godot_bo
 	godot_string dest;
 	const Color *self = (const Color *)p_self;
 
-	*((String *)&dest) = self->to_html(p_with_alpha);
+	memnew_placement(&dest, String(self->to_html(p_with_alpha)));
 	return dest;
 }
 
