@@ -931,23 +931,26 @@ void ItemList::_notification(int p_what) {
 				rcache.size.width = width - rcache.position.x;
 			}
 
-			Rect2 r = rcache;
-			r.position += base_ofs;
-
-			// Use stylebox to dimension potential bg color, even if not selected
-			r.position.x -= sbsel->get_margin(MARGIN_LEFT);
-			r.size.x += sbsel->get_margin(MARGIN_LEFT) + sbsel->get_margin(MARGIN_RIGHT);
-			r.position.y -= sbsel->get_margin(MARGIN_TOP);
-			r.size.y += sbsel->get_margin(MARGIN_TOP) + sbsel->get_margin(MARGIN_BOTTOM);
-
 			if (items[i].selected) {
+				Rect2 r = rcache;
+				r.position += base_ofs;
+
+				// Use stylebox to dimension potential bg color
+				r.position.x -= sbsel->get_margin(MARGIN_LEFT);
+				r.size.x += sbsel->get_margin(MARGIN_LEFT) + sbsel->get_margin(MARGIN_RIGHT);
+				r.position.y -= sbsel->get_margin(MARGIN_TOP);
+				r.size.y += sbsel->get_margin(MARGIN_TOP) + sbsel->get_margin(MARGIN_BOTTOM);
 				draw_style_box(sbsel, r);
 			}
+
 			if (items[i].custom_bg.a > 0.001) {
-				r.position.x += 2;
-				r.size.x -= 4;
-				r.position.y += 2;
-				r.size.y -= 4;
+
+				Rect2 r = rcache;
+				r.position += base_ofs;
+
+				// Size rect to make the align the temperature colors
+				r.position.y -= vseparation / 2;
+				r.size.y += vseparation;
 				draw_rect(r, items[i].custom_bg);
 			}
 
