@@ -30,6 +30,7 @@
 #ifndef VSCRIPT_H
 #define VSCRIPT_H
 
+#include "io/resource_loader.h"
 #include "os/thread.h"
 #include "script_language.h"
 
@@ -614,5 +615,13 @@ static Ref<VisualScriptNode> create_node_generic(const String &p_name) {
 	node.instance();
 	return node;
 }
+
+class ResourceFormatLoaderVisualScript : public ResourceFormatLoader {
+public:
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
+	virtual void get_recognized_extensions(List<String> *p_extensions) const;
+	virtual bool handles_type(const String &p_type) const;
+	virtual String get_resource_type(const String &p_path) const;
+};
 
 #endif // VSCRIPT_H

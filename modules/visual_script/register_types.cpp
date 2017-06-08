@@ -40,12 +40,16 @@
 #include "visual_script_yield_nodes.h"
 
 VisualScriptLanguage *visual_script_language = NULL;
+ResourceFormatLoaderVisualScript *visual_script_loader = NULL;
 
 void register_visual_script_types() {
 
 	visual_script_language = memnew(VisualScriptLanguage);
+	visual_script_loader = memnew(ResourceFormatLoaderVisualScript);
+
 	//script_language_gd->init();
 	ScriptServer::register_language(visual_script_language);
+	ResourceLoader::add_resource_format_loader(visual_script_loader);
 
 	ClassDB::register_class<VisualScript>();
 	ClassDB::register_virtual_class<VisualScriptNode>();
@@ -121,4 +125,7 @@ void unregister_visual_script_types() {
 #endif
 	if (visual_script_language)
 		memdelete(visual_script_language);
+
+	if (visual_script_loader)
+		memdelete(visual_script_loader);
 }

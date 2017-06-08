@@ -2665,3 +2665,32 @@ VisualScriptLanguage::~VisualScriptLanguage() {
 	}
 	singleton = NULL;
 }
+
+RES ResourceFormatLoaderVisualScript::load(const String &p_path, const String &p_original_path, Error *r_error) {
+	if (r_error)
+		*r_error = OK;
+
+	VisualScript *script = memnew(VisualScript);
+
+	Ref<VisualScript> scriptres(script);
+
+	script->set_path(p_path);
+	script->reload_from_file();
+
+	return scriptres;
+}
+
+void ResourceFormatLoaderVisualScript::get_recognized_extensions(List<String> *p_extensions) const {
+	p_extensions->push_back("vs");
+}
+
+bool ResourceFormatLoaderVisualScript::handles_type(const String &p_type) const {
+	return (p_type == "Script" || p_type == "VisualScript");
+}
+
+String ResourceFormatLoaderVisualScript::get_resource_type(const String &p_path) const {
+	String ext = p_path.get_extension().to_lower();
+	if (ext == "vs")
+		return "VisualScript";
+	return "";
+}
