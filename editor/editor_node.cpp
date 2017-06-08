@@ -6069,6 +6069,7 @@ EditorNode::EditorNode() {
 
 	editor_plugin_screen = NULL;
 	editor_plugins_over = memnew(EditorPluginList);
+	editor_plugins_force_input_forwarding = memnew(EditorPluginList);
 
 	//force_top_viewport(true);
 	_edit_current();
@@ -6217,6 +6218,7 @@ EditorNode::~EditorNode() {
 	memdelete(EditorHelp::get_doc_data());
 	memdelete(editor_selection);
 	memdelete(editor_plugins_over);
+	memdelete(editor_plugins_force_input_forwarding);
 	memdelete(file_server);
 	EditorSettings::destroy();
 }
@@ -6252,10 +6254,14 @@ bool EditorPluginList::forward_gui_input(const Transform2D &p_canvas_xform, cons
 	return discard;
 }
 
-bool EditorPluginList::forward_spatial_gui_input(Camera *p_camera, const Ref<InputEvent> &p_event) {
+bool EditorPluginList::forward_spatial_gui_input(Camera *p_camera, const Ref<InputEvent> &p_event, bool serve_when_force_input_enabled) {
 	bool discard = false;
 
 	for (int i = 0; i < plugins_list.size(); i++) {
+		if ((!serve_when_force_input_enabled) && plugins_list[i]->is_input_event_forwarding_always_enabled()) {
+			continue;
+		}
+
 		if (plugins_list[i]->forward_spatial_gui_input(p_camera, p_event)) {
 			discard = true;
 		}
@@ -6269,6 +6275,10 @@ void EditorPluginList::forward_draw_over_canvas(const Transform2D &p_canvas_xfor
 	for (int i = 0; i < plugins_list.size(); i++) {
 		plugins_list[i]->forward_draw_over_canvas(p_canvas_xform, p_canvas);
 	}
+}
+
+void EditorPluginList::add_plugin(EditorPlugin *p_plugin) {
+	plugins_list.push_back(p_plugin);
 }
 
 bool EditorPluginList::empty() {
