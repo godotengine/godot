@@ -341,8 +341,8 @@ struct Rect2 {
 	inline Rect2 grow_individual(real_t p_left, real_t p_top, real_t p_right, real_t p_bottom) const {
 
 		Rect2 g = *this;
-		g.pos.x -= p_left;
-		g.pos.y -= p_top;
+		g.position.x -= p_left;
+		g.position.y -= p_top;
 		g.size.width += p_left + p_right;
 		g.size.height += p_top + p_bottom;
 
