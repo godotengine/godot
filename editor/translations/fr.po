@@ -6088,7 +6088,7 @@ msgstr "Ajouter un script"
 #: editor/scene_tree_dock.cpp
 #, fuzzy
 msgid "Clear Script"
-msgstr "Créer un script"
+msgstr "Effacer le script"
 
 #: editor/scene_tree_dock.cpp
 msgid "Merge From Scene"
