@@ -301,7 +301,7 @@ enum _CellFlags {
 static inline void _plot_face(uint8_t ***p_cell_status, int x, int y, int z, int len_x, int len_y, int len_z, const Vector3 &voxelsize, const Face3 &p_face) {
 
 	Rect3 aabb(Vector3(x, y, z), Vector3(len_x, len_y, len_z));
-	aabb.pos = aabb.pos * voxelsize;
+	aabb.position = aabb.position * voxelsize;
 	aabb.size = aabb.size * voxelsize;
 
 	if (!p_face.intersects_aabb(aabb))
@@ -640,7 +640,7 @@ PoolVector<Face3> Geometry::wrap_geometry(PoolVector<Face3> p_array, real_t *p_e
 		Face3 f = faces[i];
 		for (int j = 0; j < 3; j++) {
 
-			f.vertex[j] -= global_aabb.pos;
+			f.vertex[j] -= global_aabb.position;
 		}
 		_plot_face(cell_status, 0, 0, 0, div_x, div_y, div_z, voxelsize, f);
 	}
@@ -707,7 +707,7 @@ PoolVector<Face3> Geometry::wrap_geometry(PoolVector<Face3> p_array, real_t *p_e
 
 			Vector3 &v = wrapped_faces_ptr[i].vertex[j];
 			v = v * voxelsize;
-			v += global_aabb.pos;
+			v += global_aabb.position;
 		}
 	}
 

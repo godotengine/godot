@@ -770,7 +770,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 					if (bptr->size.x < 0) {
 						//first
 						bptr[idx] = Rect3();
-						bptr[idx].pos = v;
+						bptr[idx].position = v;
 						any_valid = true;
 					} else {
 						bptr[idx].expand_to(v);

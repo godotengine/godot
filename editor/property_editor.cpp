@@ -733,9 +733,9 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			config_value_editors(6, 3, 16, field_names);
 
 			Rect3 aabb = v;
-			value_editor[0]->set_text(String::num(aabb.pos.x));
-			value_editor[1]->set_text(String::num(aabb.pos.y));
-			value_editor[2]->set_text(String::num(aabb.pos.z));
+			value_editor[0]->set_text(String::num(aabb.position.x));
+			value_editor[1]->set_text(String::num(aabb.position.y));
+			value_editor[2]->set_text(String::num(aabb.position.z));
 			value_editor[3]->set_text(String::num(aabb.size.x));
 			value_editor[4]->set_text(String::num(aabb.size.y));
 			value_editor[5]->set_text(String::num(aabb.size.z));

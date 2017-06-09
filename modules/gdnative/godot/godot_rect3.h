@@ -49,8 +49,8 @@ typedef struct godot_rect3 {
 
 void GDAPI godot_rect3_new(godot_rect3 *r_dest, const godot_vector3 *p_pos, const godot_vector3 *p_size);
 
-godot_vector3 GDAPI godot_rect3_get_pos(const godot_rect3 *p_self);
-void GDAPI godot_rect3_set_pos(const godot_rect3 *p_self, const godot_vector3 *p_v);
+godot_vector3 GDAPI godot_rect3_get_position(const godot_rect3 *p_self);
+void GDAPI godot_rect3_set_position(const godot_rect3 *p_self, const godot_vector3 *p_v);
 
 godot_vector3 GDAPI godot_rect3_get_size(const godot_rect3 *p_self);
 void GDAPI godot_rect3_set_size(const godot_rect3 *p_self, const godot_vector3 *p_v);

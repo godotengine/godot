@@ -101,7 +101,7 @@ bool Face3::intersects_aabb2(const Rect3 &p_aabb) const {
 	Vector3 perp = (vertex[0] - vertex[2]).cross(vertex[0] - vertex[1]);
 
 	Vector3 half_extents = p_aabb.size * 0.5;
-	Vector3 ofs = p_aabb.pos + half_extents;
+	Vector3 ofs = p_aabb.position + half_extents;
 
 	Vector3 sup = Vector3(
 			(perp.x > 0) ? -half_extents.x : half_extents.x,
@@ -117,8 +117,8 @@ bool Face3::intersects_aabb2(const Rect3 &p_aabb) const {
 
 #define TEST_AXIS(m_ax)                                       \
 	{                                                         \
-		real_t aabb_min = p_aabb.pos.m_ax;                    \
-		real_t aabb_max = p_aabb.pos.m_ax + p_aabb.size.m_ax; \
+		real_t aabb_min = p_aabb.position.m_ax;                    \
+		real_t aabb_max = p_aabb.position.m_ax + p_aabb.size.m_ax; \
 		real_t tri_min, tri_max;                              \
 		for (int i = 0; i < 3; i++) {                         \
 			if (i == 0 || vertex[i].m_ax > tri_max)           \
@@ -150,68 +150,68 @@ bool Face3::intersects_aabb2(const Rect3 &p_aabb) const {
 
 			case 0: {
 
-				from = Vector3(p_aabb.pos.x + p_aabb.size.x, p_aabb.pos.y, p_aabb.pos.z);
-				to = Vector3(p_aabb.pos.x, p_aabb.pos.y, p_aabb.pos.z);
+				from = Vector3(p_aabb.position.x + p_aabb.size.x, p_aabb.position.y, p_aabb.position.z);
+				to = Vector3(p_aabb.position.x, p_aabb.position.y, p_aabb.position.z);
 			} break;
 			case 1: {
 
-				from = Vector3(p_aabb.pos.x + p_aabb.size.x, p_aabb.pos.y, p_aabb.pos.z + p_aabb.size.z);
-				to = Vector3(p_aabb.pos.x + p_aabb.size.x, p_aabb.pos.y, p_aabb.pos.z);
+				from = Vector3(p_aabb.position.x + p_aabb.size.x, p_aabb.position.y, p_aabb.position.z + p_aabb.size.z);
+				to = Vector3(p_aabb.position.x + p_aabb.size.x, p_aabb.position.y, p_aabb.position.z);
 			} break;
 			case 2: {
-				from = Vector3(p_aabb.pos.x, p_aabb.pos.y, p_aabb.pos.z + p_aabb.size.z);
-				to = Vector3(p_aabb.pos.x + p_aabb.size.x, p_aabb.pos.y, p_aabb.pos.z + p_aabb.size.z);
+				from = Vector3(p_aabb.position.x, p_aabb.position.y, p_aabb.position.z + p_aabb.size.z);
+				to = Vector3(p_aabb.position.x + p_aabb.size.x, p_aabb.position.y, p_aabb.position.z + p_aabb.size.z);
 
 			} break;
 			case 3: {
 
-				from = Vector3(p_aabb.pos.x, p_aabb.pos.y, p_aabb.pos.z);
-				to = Vector3(p_aabb.pos.x, p_aabb.pos.y, p_aabb.pos.z + p_aabb.size.z);
+				from = Vector3(p_aabb.position.x, p_aabb.position.y, p_aabb.position.z);
+				to = Vector3(p_aabb.position.x, p_aabb.position.y, p_aabb.position.z + p_aabb.size.z);
 
 			} break;
 			case 4: {
 
-				from = Vector3(p_aabb.pos.x, p_aabb.pos.y + p_aabb.size.y, p_aabb.pos.z);
-				to = Vector3(p_aabb.pos.x + p_aabb.size.x, p_aabb.pos.y + p_aabb.size.y, p_aabb.pos.z);
+				from = Vector3(p_aabb.position.x, p_aabb.position.y + p_aabb.size.y, p_aabb.position.z);
+				to = Vector3(p_aabb.position.x + p_aabb.size.x, p_aabb.position.y + p_aabb.size.y, p_aabb.position.z);
 			} break;
 			case 5: {
 
-				from = Vector3(p_aabb.pos.x + p_aabb.size.x, p_aabb.pos.y + p_aabb.size.y, p_aabb.pos.z);
-				to = Vector3(p_aabb.pos.x + p_aabb.size.x, p_aabb.pos.y + p_aabb.size.y, p_aabb.pos.z + p_aabb.size.z);
+				from = Vector3(p_aabb.position.x + p_aabb.size.x, p_aabb.position.y + p_aabb.size.y, p_aabb.position.z);
+				to = Vector3(p_aabb.position.x + p_aabb.size.x, p_aabb.position.y + p_aabb.size.y, p_aabb.position.z + p_aabb.size.z);
 			} break;
 			case 6: {
-				from = Vector3(p_aabb.pos.x + p_aabb.size.x, p_aabb.pos.y + p_aabb.size.y, p_aabb.pos.z + p_aabb.size.z);
-				to = Vector3(p_aabb.pos.x, p_aabb.pos.y + p_aabb.size.y, p_aabb.pos.z + p_aabb.size.z);
+				from = Vector3(p_aabb.position.x + p_aabb.size.x, p_aabb.position.y + p_aabb.size.y, p_aabb.position.z + p_aabb.size.z);
+				to = Vector3(p_aabb.position.x, p_aabb.position.y + p_aabb.size.y, p_aabb.position.z + p_aabb.size.z);
 
 			} break;
 			case 7: {
 
-				from = Vector3(p_aabb.pos.x, p_aabb.pos.y + p_aabb.size.y, p_aabb.pos.z + p_aabb.size.z);
-				to = Vector3(p_aabb.pos.x, p_aabb.pos.y + p_aabb.size.y, p_aabb.pos.z);
+				from = Vector3(p_aabb.position.x, p_aabb.position.y + p_aabb.size.y, p_aabb.position.z + p_aabb.size.z);
+				to = Vector3(p_aabb.position.x, p_aabb.position.y + p_aabb.size.y, p_aabb.position.z);
 
 			} break;
 			case 8: {
 
-				from = Vector3(p_aabb.pos.x, p_aabb.pos.y, p_aabb.pos.z + p_aabb.size.z);
-				to = Vector3(p_aabb.pos.x, p_aabb.pos.y + p_aabb.size.y, p_aabb.pos.z + p_aabb.size.z);
+				from = Vector3(p_aabb.position.x, p_aabb.position.y, p_aabb.position.z + p_aabb.size.z);
+				to = Vector3(p_aabb.position.x, p_aabb.position.y + p_aabb.size.y, p_aabb.position.z + p_aabb.size.z);
 
 			} break;
 			case 9: {
 
-				from = Vector3(p_aabb.pos.x, p_aabb.pos.y, p_aabb.pos.z);
-				to = Vector3(p_aabb.pos.x, p_aabb.pos.y + p_aabb.size.y, p_aabb.pos.z);
+				from = Vector3(p_aabb.position.x, p_aabb.position.y, p_aabb.position.z);
+				to = Vector3(p_aabb.position.x, p_aabb.position.y + p_aabb.size.y, p_aabb.position.z);
 
 			} break;
 			case 10: {
 
-				from = Vector3(p_aabb.pos.x + p_aabb.size.x, p_aabb.pos.y, p_aabb.pos.z);
-				to = Vector3(p_aabb.pos.x + p_aabb.size.x, p_aabb.pos.y + p_aabb.size.y, p_aabb.pos.z);
+				from = Vector3(p_aabb.position.x + p_aabb.size.x, p_aabb.position.y, p_aabb.position.z);
+				to = Vector3(p_aabb.position.x + p_aabb.size.x, p_aabb.position.y + p_aabb.size.y, p_aabb.position.z);
 
 			} break;
 			case 11: {
 
-				from = Vector3(p_aabb.pos.x + p_aabb.size.x, p_aabb.pos.y, p_aabb.pos.z + p_aabb.size.z);
-				to = Vector3(p_aabb.pos.x + p_aabb.size.x, p_aabb.pos.y + p_aabb.size.y, p_aabb.pos.z + p_aabb.size.z);
+				from = Vector3(p_aabb.position.x + p_aabb.size.x, p_aabb.position.y, p_aabb.position.z + p_aabb.size.z);
+				to = Vector3(p_aabb.position.x + p_aabb.size.x, p_aabb.position.y + p_aabb.size.y, p_aabb.position.z + p_aabb.size.z);
 
 			} break;
 		}

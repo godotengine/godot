@@ -813,7 +813,7 @@ public:
 						const Item::CommandMesh *mesh = static_cast<const Item::CommandMesh *>(c);
 						Rect3 aabb = RasterizerStorage::base_singleton->mesh_get_aabb(mesh->mesh, mesh->skeleton);
 
-						r = Rect2(aabb.pos.x, aabb.pos.y, aabb.size.x, aabb.size.y);
+						r = Rect2(aabb.position.x, aabb.position.y, aabb.size.x, aabb.size.y);
 
 					} break;
 					case Item::Command::TYPE_MULTIMESH: {
@@ -821,7 +821,7 @@ public:
 						const Item::CommandMultiMesh *multimesh = static_cast<const Item::CommandMultiMesh *>(c);
 						Rect3 aabb = RasterizerStorage::base_singleton->multimesh_get_aabb(multimesh->multimesh);
 
-						r = Rect2(aabb.pos.x, aabb.pos.y, aabb.size.x, aabb.size.y);
+						r = Rect2(aabb.position.x, aabb.position.y, aabb.size.x, aabb.size.y);
 
 					} break;
 					case Item::Command::TYPE_CIRCLE: {
