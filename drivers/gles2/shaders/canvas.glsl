@@ -39,6 +39,9 @@ uniform vec2 normal_flip;
 varying highp vec2 pos;
 #endif
 
+#define at_light_pass 1
+#else
+#define at_light_pass 0
 #endif
 
 #if defined(ENABLE_VAR1_INTERP)
@@ -176,6 +179,9 @@ uniform float shadow_esm_multiplier;
 
 #endif
 
+#define at_light_pass 1
+#else
+#define at_light_pass 0
 #endif
 
 #if defined(USE_TEXPIXEL_SIZE)
