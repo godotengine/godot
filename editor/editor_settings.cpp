@@ -614,6 +614,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set("editors/2d/bone_ik_color", Color(0.9, 0.9, 0.45, 0.9));
 	set("editors/2d/keep_margins_when_changing_anchors", false);
 	set("editors/2d/warped_mouse_panning", true);
+	set("editors/2d/scroll_to_pan", false);
+	set("editors/2d/pan_speed", 20);
 
 	set("editors/poly_editor/point_grab_radius", 8);
 
