@@ -366,3 +366,14 @@ https://github.com/godotengine/godot/commit/37f5e1dcd94611dd5b670f013abf0323e8b4
 Files extracted from upstream source:
 
 - all .c and .h files
+
+## zstd
+
+- Upstream: https://github.com/facebook/zstd
+- Version: 1.2.0
+- License: BSD-3-Clause
+
+Files extracted from upstream source:
+
+- all .c and .h under lib/
+- README.md, LICENSE, PATENTS
