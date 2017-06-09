@@ -1781,6 +1781,10 @@ float GradientTexture::get_offset(int pos) const {
 	return 0; //TODO: Maybe throw some error instead?
 }
 
+Ref<Image> GradientTexture::get_data() const {
+	return VisualServer::get_singleton()->texture_get_data(texture);
+}
+
 void GradientTexture::set_color(int pos, const Color &color) {
 	if (points.size() <= pos) {
 		points.resize(pos + 1);

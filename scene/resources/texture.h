@@ -539,6 +539,8 @@ public:
 		return pointFirst.color.linear_interpolate(pointSecond.color, (p_offset - pointFirst.offset) / (pointSecond.offset - pointFirst.offset));
 	}
 
+	virtual Ref<Image> get_data() const;
+
 	int get_points_count() const;
 
 	GradientTexture();

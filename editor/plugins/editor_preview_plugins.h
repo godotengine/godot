@@ -32,55 +32,58 @@
 
 #include "editor/editor_resource_preview.h"
 
-#if 0
 class EditorTexturePreviewPlugin : public EditorResourcePreviewGenerator {
+	GDCLASS(EditorTexturePreviewPlugin, EditorResourcePreviewGenerator)
 public:
-
-	virtual bool handles(const String& p_type) const;
-	virtual Ref<Texture> generate(const RES& p_from);
+	virtual bool handles(const String &p_type) const;
+	virtual Ref<Texture> generate(const RES &p_from);
 
 	EditorTexturePreviewPlugin();
 };
 
-
 class EditorBitmapPreviewPlugin : public EditorResourcePreviewGenerator {
+	GDCLASS(EditorBitmapPreviewPlugin, EditorResourcePreviewGenerator)
 public:
-
-	virtual bool handles(const String& p_type) const;
-	virtual Ref<Texture> generate(const RES& p_from);
+	virtual bool handles(const String &p_type) const;
+	virtual Ref<Texture> generate(const RES &p_from);
 
 	EditorBitmapPreviewPlugin();
 };
 
-
-
 class EditorPackedScenePreviewPlugin : public EditorResourcePreviewGenerator {
 
-	Ref<Texture> _gen_from_imd(Ref<ResourceImportMetadata> p_imd);
 public:
-
-	virtual bool handles(const String& p_type) const;
-	virtual Ref<Texture> generate(const RES& p_from);
-	virtual Ref<Texture> generate_from_path(const String& p_path);
+	virtual bool handles(const String &p_type) const;
+	virtual Ref<Texture> generate(const RES &p_from);
+	virtual Ref<Texture> generate_from_path(const String &p_path);
 
 	EditorPackedScenePreviewPlugin();
 };
 
 class EditorMaterialPreviewPlugin : public EditorResourcePreviewGenerator {
 
+	GDCLASS(EditorMaterialPreviewPlugin, EditorResourcePreviewGenerator)
+
 	RID scenario;
 	RID sphere;
 	RID sphere_instance;
 	RID viewport;
+	RID viewport_texture;
 	RID light;
 	RID light_instance;
 	RID light2;
 	RID light_instance2;
 	RID camera;
-public:
+	volatile bool preview_done;
 
-	virtual bool handles(const String& p_type) const;
-	virtual Ref<Texture> generate(const RES& p_from);
+	void _preview_done(const Variant &p_udata);
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual bool handles(const String &p_type) const;
+	virtual Ref<Texture> generate(const RES &p_from);
 
 	EditorMaterialPreviewPlugin();
 	~EditorMaterialPreviewPlugin();
@@ -88,9 +91,8 @@ public:
 
 class EditorScriptPreviewPlugin : public EditorResourcePreviewGenerator {
 public:
-
-	virtual bool handles(const String& p_type) const;
-	virtual Ref<Texture> generate(const RES& p_from);
+	virtual bool handles(const String &p_type) const;
+	virtual Ref<Texture> generate(const RES &p_from);
 
 	EditorScriptPreviewPlugin();
 };
@@ -108,22 +110,30 @@ public:
 #endif
 class EditorMeshPreviewPlugin : public EditorResourcePreviewGenerator {
 
+	GDCLASS(EditorMeshPreviewPlugin, EditorResourcePreviewGenerator)
+
 	RID scenario;
 	RID mesh_instance;
 	RID viewport;
+	RID viewport_texture;
 	RID light;
 	RID light_instance;
 	RID light2;
 	RID light_instance2;
 	RID camera;
-public:
+	volatile bool preview_done;
 
-	virtual bool handles(const String& p_type) const;
-	virtual Ref<Texture> generate(const RES& p_from);
+	void _preview_done(const Variant &p_udata);
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual bool handles(const String &p_type) const;
+	virtual Ref<Texture> generate(const RES &p_from);
 
 	EditorMeshPreviewPlugin();
 	~EditorMeshPreviewPlugin();
 };
 
-#endif
 #endif // EDITORPREVIEWPLUGINS_H

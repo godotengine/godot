@@ -23,6 +23,10 @@ void main() {
 	cube_interp = cube_in;
 #else
 	uv_interp = uv_in;
+#ifdef V_FLIP
+	uv_interp.y = 1.0-uv_interp.y;
+#endif
+
 #endif
 	uv2_interp = uv2_in;
 	gl_Position = vertex_attrib;

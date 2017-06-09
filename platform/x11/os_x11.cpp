@@ -34,6 +34,7 @@
 #include "print_string.h"
 #include "servers/physics/physics_server_sw.h"
 #include "servers/visual/visual_server_raster.h"
+#include "servers/visual/visual_server_wrap_mt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -206,12 +207,12 @@ void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 
 #endif
 	visual_server = memnew(VisualServerRaster);
-#if 0
-	if (get_render_thread_mode()!=RENDER_THREAD_UNSAFE) {
 
-		visual_server =memnew(VisualServerWrapMT(visual_server,get_render_thread_mode()==RENDER_SEPARATE_THREAD));
+	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
+
+		visual_server = memnew(VisualServerWrapMT(visual_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
 	}
-#endif
+
 	// borderless fullscreen window mode
 	if (current_videomode.fullscreen) {
 		// needed for lxde/openbox, possibly others

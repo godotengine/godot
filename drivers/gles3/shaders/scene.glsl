@@ -1709,7 +1709,7 @@ FRAGMENT_SHADER_CODE
 	sss_buffer = sss_strength;
 #endif
 
-#else
+#else //USE_MULTIPLE_RENDER_TARGETS
 
 
 #ifdef SHADELESS

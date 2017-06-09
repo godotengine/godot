@@ -77,6 +77,8 @@ public:
 	virtual void set_flags(uint32_t p_flags);
 	virtual uint32_t get_flags() const;
 
+	virtual Ref<Image> get_data() const;
+
 	ViewportTexture();
 	~ViewportTexture();
 };
@@ -111,6 +113,13 @@ public:
 		MSAA_4X,
 		MSAA_8X,
 		MSAA_16X,
+	};
+
+	enum Usage {
+		USAGE_2D,
+		USAGE_2D_NO_SAMPLING,
+		USAGE_3D,
+		USAGE_3D_NO_EFFECTS,
 	};
 
 private:
@@ -194,6 +203,8 @@ private:
 	UpdateMode update_mode;
 	RID texture_rid;
 	uint32_t texture_flags;
+
+	Usage usage;
 
 	int shadow_atlas_size;
 	ShadowAtlasQuadrantSubdiv shadow_atlas_quadrant_subdiv[4];
@@ -416,6 +427,9 @@ public:
 
 	virtual String get_configuration_warning() const;
 
+	void set_usage(Usage p_usage);
+	Usage get_usage() const;
+
 	Viewport();
 	~Viewport();
 };
@@ -423,5 +437,6 @@ public:
 VARIANT_ENUM_CAST(Viewport::UpdateMode);
 VARIANT_ENUM_CAST(Viewport::ShadowAtlasQuadrantSubdiv);
 VARIANT_ENUM_CAST(Viewport::MSAA);
+VARIANT_ENUM_CAST(Viewport::Usage);
 
 #endif

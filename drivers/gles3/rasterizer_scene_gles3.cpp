@@ -1783,13 +1783,6 @@ void RasterizerSceneGLES3::_set_cull(bool p_front, bool p_reverse_cull) {
 
 void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_element_count, const Transform &p_view_transform, const CameraMatrix &p_projection, GLuint p_base_env, bool p_reverse_cull, bool p_alpha_pass, bool p_shadow, bool p_directional_add, bool p_directional_shadows) {
 
-	if (storage->frame.current_rt && storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_VFLIP]) {
-		//p_reverse_cull=!p_reverse_cull;
-		glFrontFace(GL_CCW);
-	} else {
-		glFrontFace(GL_CW);
-	}
-
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, state.scene_ubo); //bind globals ubo
 
 	if (!p_shadow && !p_directional_add) {
@@ -3306,19 +3299,21 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
-	if (!env) {
-		//no environment, simply return and convert to SRGB
+	if (!env || storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT]) {
+		//no environment or transparent render, simply return and convert to SRGB
 		glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->fbo);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->effects.mip_maps[0].color);
 		storage->shaders.copy.set_conditional(CopyShaderGLES3::LINEAR_TO_SRGB, true);
-		storage->shaders.copy.set_conditional(CopyShaderGLES3::DISABLE_ALPHA, true);
+		storage->shaders.copy.set_conditional(CopyShaderGLES3::V_FLIP, storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_VFLIP]);
+		storage->shaders.copy.set_conditional(CopyShaderGLES3::DISABLE_ALPHA, !storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT]);
 		storage->shaders.copy.bind();
 
 		_copy_screen();
 
 		storage->shaders.copy.set_conditional(CopyShaderGLES3::LINEAR_TO_SRGB, false);
 		storage->shaders.copy.set_conditional(CopyShaderGLES3::DISABLE_ALPHA, false); //compute luminance
+		storage->shaders.copy.set_conditional(CopyShaderGLES3::V_FLIP, false);
 
 		return;
 	}
@@ -3692,6 +3687,7 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 		}
 	}
 
+	state.tonemap_shader.set_conditional(TonemapShaderGLES3::V_FLIP, storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_VFLIP]);
 	state.tonemap_shader.bind();
 
 	state.tonemap_shader.set_uniform(TonemapShaderGLES3::EXPOSURE, env->tone_mapper_exposure);
@@ -3739,6 +3735,7 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_GLOW_FILTER_BICUBIC, false);
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_BCS, false);
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_COLOR_CORRECTION, false);
+	state.tonemap_shader.set_conditional(TonemapShaderGLES3::V_FLIP, false);
 }
 
 void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) {
@@ -3880,6 +3877,9 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 	} else {
 
 		use_mrt = env && (state.used_screen_texture || state.used_sss || env->ssao_enabled || env->ssr_enabled); //only enable MRT rendering if any of these is enabled
+		//effects disabled and transparency also prevent using MRTs
+		use_mrt = use_mrt && !storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT];
+		use_mrt = use_mrt && !storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_NO_3D_EFFECTS];
 
 		glViewport(0, 0, storage->frame.current_rt->width, storage->frame.current_rt->height);
 
@@ -3928,7 +3928,9 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 	RasterizerStorageGLES3::Sky *sky = NULL;
 	GLuint env_radiance_tex = 0;
 
-	if (!env || env->bg_mode == VS::ENV_BG_CLEAR_COLOR) {
+	if (storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT]) {
+		clear_color = Color(0, 0, 0, 0);
+	} else if (!env || env->bg_mode == VS::ENV_BG_CLEAR_COLOR) {
 
 		if (storage->frame.clear_request) {
 
@@ -3961,19 +3963,13 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 
 	if (storage->frame.current_rt && storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT]) {
 		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_BLEND);
 	} else {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glDisable(GL_BLEND);
 	}
-
-	glDisable(GL_BLEND);
 
 	render_list.sort_by_key(false);
-
-	if (storage->frame.current_rt && storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT]) {
-		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-	} else {
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	}
 
 	if (state.directional_light_count == 0) {
 		directional_light = NULL;
@@ -3996,14 +3992,14 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 		glDrawBuffers(1, &gldb);
 	}
 
-	if (env && env->bg_mode == VS::ENV_BG_SKY) {
+	if (env && env->bg_mode == VS::ENV_BG_SKY && !storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT]) {
 
 		/*
 		if (use_mrt) {
 			glBindFramebuffer(GL_FRAMEBUFFER,storage->frame.current_rt->buffers.fbo); //switch to alpha fbo for sky, only diffuse/ambient matters
 		*/
 
-		_draw_sky(sky, p_cam_projection, p_cam_transform, storage->frame.current_rt && storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_VFLIP], env->sky_scale, env->bg_energy);
+		_draw_sky(sky, p_cam_projection, p_cam_transform, false, env->sky_scale, env->bg_energy);
 	}
 
 	//_render_list_forward(&alpha_render_list,camera_transform,camera_transform_inverse,camera_projection,false,fragment_lighting,true);

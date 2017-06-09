@@ -693,6 +693,7 @@ void ArrayMesh::add_surface(uint32_t p_format, PrimitiveType p_primitive, const 
 	Surface s;
 	s.aabb = p_aabb;
 	surfaces.push_back(s);
+	_recompute_aabb();
 
 	VisualServer::get_singleton()->mesh_add_surface(mesh, p_format, (VS::PrimitiveType)p_primitive, p_array, p_vertex_count, p_index_array, p_index_count, p_aabb, p_blend_shapes, p_bone_aabbs);
 }

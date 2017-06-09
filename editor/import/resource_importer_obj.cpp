@@ -54,7 +54,7 @@ String ResourceImporterOBJ::get_save_extension() const {
 
 String ResourceImporterOBJ::get_resource_type() const {
 
-	return "Mesh";
+	return "ArrayMesh";
 }
 
 bool ResourceImporterOBJ::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {

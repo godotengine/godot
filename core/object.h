@@ -350,7 +350,7 @@ public:                                                        \
 private:
 
 class ScriptInstance;
-typedef uint32_t ObjectID;
+typedef uint64_t ObjectID;
 
 class Object {
 public:
@@ -423,7 +423,7 @@ private:
 	bool _block_signals;
 	int _predelete_ok;
 	Set<Object *> change_receptors;
-	uint32_t _instance_ID;
+	ObjectID _instance_ID;
 	bool _predelete();
 	void _postinitialize();
 	bool _can_translate;
@@ -690,16 +690,16 @@ class ObjectDB {
 		}
 	};
 
-	static HashMap<uint32_t, Object *> instances;
+	static HashMap<ObjectID, Object *> instances;
 	static HashMap<Object *, ObjectID, ObjectPtrHash> instance_checks;
 
-	static uint32_t instance_counter;
+	static ObjectID instance_counter;
 	friend class Object;
 	friend void unregister_core_types();
 
 	static RWLock *rw_lock;
 	static void cleanup();
-	static uint32_t add_instance(Object *p_object);
+	static ObjectID add_instance(Object *p_object);
 	static void remove_instance(Object *p_object);
 	friend void register_core_types();
 	static void setup();
@@ -707,7 +707,7 @@ class ObjectDB {
 public:
 	typedef void (*DebugFunc)(Object *p_obj);
 
-	static Object *get_instance(uint32_t p_instance_ID);
+	static Object *get_instance(ObjectID p_instance_ID);
 	static void debug_objects(DebugFunc p_func);
 	static int get_object_count();
 

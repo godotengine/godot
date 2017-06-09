@@ -61,6 +61,15 @@ class VisualServerRaster : public VisualServer {
 	bool draw_extra_frame;
 	RID test_cube;
 
+	struct FrameDrawnCallbacks {
+
+		ObjectID object;
+		StringName method;
+		Variant param;
+	};
+
+	List<FrameDrawnCallbacks> frame_drawn_callbacks;
+
 #if 0
 	struct Room {
 
@@ -632,7 +641,6 @@ public:
 	BIND1RC(uint32_t, texture_get_width, RID)
 	BIND1RC(uint32_t, texture_get_height, RID)
 	BIND3(texture_set_size_override, RID, int, int)
-	BIND2RC(RID, texture_create_radiance_cubemap, RID, int)
 
 	BIND3(texture_set_detect_3d_callback, RID, TextureDetectCallback, void *)
 	BIND3(texture_set_detect_srgb_callback, RID, TextureDetectCallback, void *)
@@ -922,6 +930,7 @@ public:
 	BIND3(viewport_set_shadow_atlas_quadrant_subdivision, RID, int, int)
 	BIND2(viewport_set_msaa, RID, ViewportMSAA)
 	BIND2(viewport_set_hdr, RID, bool)
+	BIND2(viewport_set_usage, RID, ViewportUsage)
 
 /* ENVIRONMENT API */
 
@@ -944,7 +953,6 @@ public:
 	BIND6(environment_set_dof_blur_near, RID, bool, float, float, float, EnvironmentDOFBlurQuality)
 	BIND6(environment_set_dof_blur_far, RID, bool, float, float, float, EnvironmentDOFBlurQuality)
 	BIND10(environment_set_glow, RID, bool, int, float, float, float, EnvironmentGlowBlendMode, float, float, bool)
-	BIND5(environment_set_fog, RID, bool, float, float, RID)
 
 	BIND9(environment_set_tonemap, RID, EnvironmentToneMapper, float, float, bool, float, float, float, float)
 
@@ -1099,6 +1107,8 @@ public:
 	virtual void free(RID p_rid); ///< free RIDs associated with the visual server
 
 	/* EVENT QUEUING */
+
+	virtual void request_frame_drawn_callback(Object *p_where, const StringName &p_method, const Variant &p_userdata);
 
 	virtual void draw();
 	virtual void sync();

@@ -579,7 +579,16 @@ public:
 	};
 
 	virtual void viewport_set_msaa(RID p_viewport, ViewportMSAA p_msaa) = 0;
+
+	enum ViewportUsage {
+		VIEWPORT_USAGE_2D,
+		VIEWPORT_USAGE_2D_NO_SAMPLING,
+		VIEWPORT_USAGE_3D,
+		VIEWPORT_USAGE_3D_NO_EFFECTS,
+	};
+
 	virtual void viewport_set_hdr(RID p_viewport, bool p_enabled) = 0;
+	virtual void viewport_set_usage(RID p_viewport, ViewportUsage p_usage) = 0;
 
 	/* ENVIRONMENT API */
 
@@ -623,7 +632,6 @@ public:
 		GLOW_BLEND_MODE_REPLACE,
 	};
 	virtual void environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_bloom_treshold, EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_treshold, float p_hdr_bleed_scale, bool p_bicubic_upscale) = 0;
-	virtual void environment_set_fog(RID p_env, bool p_enable, float p_begin, float p_end, RID p_gradient_texture) = 0;
 
 	enum EnvironmentToneMapper {
 		ENV_TONE_MAPPER_LINEAR,
@@ -847,6 +855,8 @@ public:
 	/* FREE */
 
 	virtual void free(RID p_rid) = 0; ///< free RIDs associated with the visual server
+
+	virtual void request_frame_drawn_callback(Object *p_where, const StringName &p_method, const Variant &p_userdata) = 0;
 
 	/* EVENT QUEUING */
 

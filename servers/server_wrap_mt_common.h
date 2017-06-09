@@ -41,8 +41,9 @@
 	}
 
 #define FUNCRID(m_type)                                                                    \
+	List<RID> m_type##_id_pool;                                                            \
 	int m_type##allocn() {                                                                 \
-		for (int i = 0; i < m_type##_pool_max_size; i++) {                                 \
+		for (int i = 0; i < pool_max_size; i++) {                                          \
 			m_type##_id_pool.push_back(server_name->m_type##_create());                    \
 		}                                                                                  \
 		return 0;                                                                          \
@@ -746,4 +747,22 @@
 		} else {                                                                                                        \
 			server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8);                                                        \
 		}                                                                                                               \
+	}
+
+#define FUNC9(m_type, m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7, m_arg8, m_arg9)                                \
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7, m_arg8 p8, m_arg9 p9) { \
+		if (Thread::get_caller_ID() != server_thread) {                                                                      \
+			command_queue.push(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, p7, p8, p9);                        \
+		} else {                                                                                                             \
+			server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8, p9);                                                         \
+		}                                                                                                                    \
+	}
+
+#define FUNC10(m_type, m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7, m_arg8, m_arg9, m_arg10)                                   \
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7, m_arg8 p8, m_arg9 p9, m_arg10 p10) { \
+		if (Thread::get_caller_ID() != server_thread) {                                                                                   \
+			command_queue.push(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10);                                \
+		} else {                                                                                                                          \
+			server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10);                                                                 \
+		}                                                                                                                                 \
 	}

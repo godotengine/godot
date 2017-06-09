@@ -74,6 +74,19 @@ void VisualServerRaster::free(RID p_rid) {
 
 /* EVENT QUEUING */
 
+void VisualServerRaster::request_frame_drawn_callback(Object *p_where, const StringName &p_method, const Variant &p_userdata) {
+
+	ERR_FAIL_NULL(p_where);
+	FrameDrawnCallbacks fdc;
+	fdc.object = p_where->get_instance_ID();
+	fdc.method = p_method;
+	fdc.param = p_userdata;
+
+	frame_drawn_callbacks.push_back(fdc);
+
+	print_line("added callback to draw");
+}
+
 void VisualServerRaster::draw() {
 
 	/*
@@ -92,6 +105,22 @@ void VisualServerRaster::draw() {
 	//_draw_cursors_and_margins();
 	VSG::rasterizer->end_frame();
 	//draw_extra_frame=VS:rasterizer->needs_to_draw_next_frame();
+
+	while (frame_drawn_callbacks.front()) {
+
+		Object *obj = ObjectDB::get_instance(frame_drawn_callbacks.front()->get().object);
+		if (obj) {
+			Variant::CallError ce;
+			const Variant *v = &frame_drawn_callbacks.front()->get().param;
+			obj->call(frame_drawn_callbacks.front()->get().method, &v, 1, ce);
+			if (ce.error != Variant::CallError::CALL_OK) {
+				String err = Variant::get_call_error_text(obj, frame_drawn_callbacks.front()->get().method, &v, 1, ce);
+				ERR_PRINTS("Error calling frame drawn function: " + err);
+			}
+		}
+
+		frame_drawn_callbacks.pop_front();
+	}
 }
 void VisualServerRaster::sync() {
 }

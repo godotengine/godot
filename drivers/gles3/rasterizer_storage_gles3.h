@@ -61,8 +61,6 @@ public:
 
 	struct Config {
 
-		RenderArchitecture render_arch;
-
 		bool shrink_textures_x2;
 		bool use_fast_texture_filter;
 		bool use_anisotropic_filter;
@@ -1209,9 +1207,10 @@ public:
 
 			flags[RENDER_TARGET_VFLIP] = false;
 			flags[RENDER_TARGET_TRANSPARENT] = false;
+			flags[RENDER_TARGET_NO_3D_EFFECTS] = false;
 			flags[RENDER_TARGET_NO_3D] = false;
-			flags[RENDER_TARGET_HDR] = true;
 			flags[RENDER_TARGET_NO_SAMPLING] = false;
+			flags[RENDER_TARGET_HDR] = true;
 
 			last_exposure_tick = 0;
 		}

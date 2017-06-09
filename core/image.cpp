@@ -81,21 +81,21 @@ const char *Image::format_names[Image::FORMAT_MAX] = {
 
 SavePNGFunc Image::save_png_func = NULL;
 
-void Image::_put_pixelb(int p_x, int p_y, uint32_t p_pixelsize, uint8_t *p_dst, const uint8_t *p_src) {
+void Image::_put_pixelb(int p_x, int p_y, uint32_t p_pixelsize, uint8_t *p_data, const uint8_t *p_pixel) {
 
 	uint32_t ofs = (p_y * width + p_x) * p_pixelsize;
 
 	for (uint32_t i = 0; i < p_pixelsize; i++) {
-		p_dst[ofs + i] = p_src[i];
+		p_data[ofs + i] = p_pixel[i];
 	}
 }
 
-void Image::_get_pixelb(int p_x, int p_y, uint32_t p_pixelsize, const uint8_t *p_src, uint8_t *p_dst) {
+void Image::_get_pixelb(int p_x, int p_y, uint32_t p_pixelsize, const uint8_t *p_data, uint8_t *p_pixel) {
 
 	uint32_t ofs = (p_y * width + p_x) * p_pixelsize;
 
 	for (uint32_t i = 0; i < p_pixelsize; i++) {
-		p_dst[i] = p_src[ofs + i];
+		p_pixel[i] = p_data[ofs + i];
 	}
 }
 
@@ -818,7 +818,7 @@ void Image::flip_y() {
 		uint8_t down[16];
 		uint32_t pixel_size = get_format_pixel_size(format);
 
-		for (int y = 0; y < height; y++) {
+		for (int y = 0; y < height / 2; y++) {
 
 			for (int x = 0; x < width; x++) {
 
@@ -854,7 +854,7 @@ void Image::flip_x() {
 
 		for (int y = 0; y < height; y++) {
 
-			for (int x = 0; x < width; x++) {
+			for (int x = 0; x < width / 2; x++) {
 
 				_get_pixelb(x, y, pixel_size, w.ptr(), up);
 				_get_pixelb(width - x - 1, y, pixel_size, w.ptr(), down);
@@ -1457,7 +1457,7 @@ Error Image::save_png(const String &p_path) const {
 	if (save_png_func == NULL)
 		return ERR_UNAVAILABLE;
 
-	return save_png_func(p_path, Ref<Image>(this));
+	return save_png_func(p_path, Ref<Image>((Image *)this));
 }
 
 int Image::get_image_data_size(int p_width, int p_height, Format p_format, int p_mipmaps) {
@@ -1599,7 +1599,7 @@ Rect2 Image::get_used_rect() const {
 Ref<Image> Image::get_rect(const Rect2 &p_area) const {
 
 	Ref<Image> img = memnew(Image(p_area.size.x, p_area.size.y, mipmaps, format));
-	img->blit_rect(Ref<Image>(this), p_area, Point2(0, 0));
+	img->blit_rect(Ref<Image>((Image *)this), p_area, Point2(0, 0));
 	return img;
 }
 

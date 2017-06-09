@@ -88,7 +88,7 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport) {
 		}
 	}
 
-	if (!p_viewport->disable_3d && p_viewport->camera.is_valid()) {
+	if (!p_viewport->disable_3d && !p_viewport->disable_3d_by_usage && p_viewport->camera.is_valid()) {
 
 		VSG::scene->render_camera(p_viewport->camera, p_viewport->scenario, p_viewport->size, p_viewport->shadow_atlas);
 	}
@@ -409,7 +409,8 @@ void VisualServerViewport::viewport_set_disable_3d(RID p_viewport, bool p_disabl
 	ERR_FAIL_COND(!viewport);
 
 	viewport->disable_3d = p_disable;
-	VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_3D, p_disable);
+	//VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_3D, p_disable);
+	//this should be just for disabling rendering of 3D, to actually disable it, set usage
 }
 
 void VisualServerViewport::viewport_attach_camera(RID p_viewport, RID p_camera) {
@@ -516,6 +517,44 @@ void VisualServerViewport::viewport_set_hdr(RID p_viewport, bool p_enabled) {
 	ERR_FAIL_COND(!viewport);
 
 	VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_HDR, p_enabled);
+}
+
+void VisualServerViewport::viewport_set_usage(RID p_viewport, VS::ViewportUsage p_usage) {
+
+	Viewport *viewport = viewport_owner.getornull(p_viewport);
+	ERR_FAIL_COND(!viewport);
+
+	switch (p_usage) {
+		case VS::VIEWPORT_USAGE_2D: {
+
+			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_3D, true);
+			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_3D_EFFECTS, true);
+			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_SAMPLING, false);
+
+			viewport->disable_3d_by_usage = true;
+		} break;
+		case VS::VIEWPORT_USAGE_2D_NO_SAMPLING: {
+
+			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_3D, true);
+			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_3D_EFFECTS, true);
+			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_SAMPLING, true);
+			viewport->disable_3d_by_usage = true;
+		} break;
+		case VS::VIEWPORT_USAGE_3D: {
+
+			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_3D, false);
+			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_3D_EFFECTS, false);
+			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_SAMPLING, false);
+			viewport->disable_3d_by_usage = false;
+		} break;
+		case VS::VIEWPORT_USAGE_3D_NO_EFFECTS: {
+
+			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_3D, false);
+			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_3D_EFFECTS, true);
+			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_SAMPLING, false);
+			viewport->disable_3d_by_usage = false;
+		} break;
+	}
 }
 
 bool VisualServerViewport::free(RID p_rid) {

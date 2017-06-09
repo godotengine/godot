@@ -117,7 +117,11 @@ bool ViewportTexture::has_alpha() const {
 
 	return false;
 }
+Ref<Image> ViewportTexture::get_data() const {
 
+	ERR_FAIL_COND_V(!vp, Ref<Image>());
+	return VS::get_singleton()->texture_get_data(vp->texture_rid);
+}
 void ViewportTexture::set_flags(uint32_t p_flags) {
 
 	if (!vp)
@@ -2516,6 +2520,16 @@ bool Viewport::get_hdr() const {
 	return hdr;
 }
 
+void Viewport::set_usage(Usage p_usage) {
+
+	usage = p_usage;
+	VS::get_singleton()->viewport_set_usage(viewport, VS::ViewportUsage(p_usage));
+}
+
+Viewport::Usage Viewport::get_usage() const {
+	return usage;
+}
+
 void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &Viewport::set_size);
@@ -2568,6 +2582,9 @@ void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_hdr", "enable"), &Viewport::set_hdr);
 	ClassDB::bind_method(D_METHOD("get_hdr"), &Viewport::get_hdr);
+
+	ClassDB::bind_method(D_METHOD("set_usage", "usage"), &Viewport::set_usage);
+	ClassDB::bind_method(D_METHOD("get_usage"), &Viewport::get_usage);
 
 	ClassDB::bind_method(D_METHOD("get_texture:ViewportTexture"), &Viewport::get_texture);
 
@@ -2622,6 +2639,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msaa", PROPERTY_HINT_ENUM, "Disabled,2x,4x,8x,16x"), "set_msaa", "get_msaa");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hdr"), "set_hdr", "get_hdr");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_3d"), "set_disable_3d", "is_3d_disabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "usage", PROPERTY_HINT_ENUM, "2D,2D No-Sampling,3D,3D No-Effects"), "set_usage", "get_usage");
 	ADD_GROUP("Render Target", "render_target_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "render_target_v_flip"), "set_vflip", "get_vflip");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "render_target_clear_on_new_frame"), "set_clear_on_new_frame", "get_clear_on_new_frame");
@@ -2730,6 +2748,8 @@ Viewport::Viewport() {
 
 	msaa = MSAA_DISABLED;
 	hdr = false;
+
+	usage = USAGE_3D;
 }
 
 Viewport::~Viewport() {

@@ -823,56 +823,54 @@ void EditorNode::_save_scene_with_preview(String p_file) {
 	}
 	save.step(TTR("Creating Thumbnail"), 1);
 	//current view?
-	int screen = -1;
-	for (int i = 0; i < editor_table.size(); i++) {
-		if (editor_plugin_screen == editor_table[i]) {
-			screen = i;
-			break;
+
+	Ref<Image> img;
+	if (is2d) {
+		img = scene_root->get_texture()->get_data();
+	} else {
+		img = SpatialEditor::get_singleton()->get_editor_viewport(0)->get_viewport_node()->get_texture()->get_data();
+	}
+
+	if (img.is_valid()) {
+		save.step(TTR("Creating Thumbnail"), 2);
+		save.step(TTR("Creating Thumbnail"), 3);
+
+		int preview_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
+		preview_size *= EDSCALE;
+		int width, height;
+		if (img->get_width() > preview_size && img->get_width() >= img->get_height()) {
+
+			width = preview_size;
+			height = img->get_height() * preview_size / img->get_width();
+		} else if (img->get_height() > preview_size && img->get_height() >= img->get_width()) {
+
+			height = preview_size;
+			width = img->get_width() * preview_size / img->get_height();
+		} else {
+
+			width = img->get_width();
+			height = img->get_height();
 		}
+
+		img->convert(Image::FORMAT_RGB8);
+		img->resize(width, height);
+		img->flip_y();
+
+		//save thumbnail directly, as thumbnailer may not update due to actual scene not changing md5
+		String temp_path = EditorSettings::get_singleton()->get_settings_path().plus_file("tmp");
+		String cache_base = GlobalConfig::get_singleton()->globalize_path(p_file).md5_text();
+		cache_base = temp_path.plus_file("resthumb-" + cache_base);
+
+		//does not have it, try to load a cached thumbnail
+
+		String file = cache_base + ".png";
+
+		img->save_png(file);
 	}
 
-	_editor_select(is2d ? EDITOR_2D : EDITOR_3D);
-
-	save.step(TTR("Creating Thumbnail"), 2);
-	save.step(TTR("Creating Thumbnail"), 3);
-#if 0
-	Image img = VS::get_singleton()->viewport_texture(scree_capture(viewport);
-	int preview_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
-	preview_size*=EDSCALE;
-	int width,height;
-	if (img.get_width() > preview_size && img.get_width() >= img.get_height()) {
-
-		width=preview_size;
-		height = img.get_height() * preview_size / img.get_width();
-	} else if (img.get_height() > preview_size &&  img.get_height() >= img.get_width()) {
-
-		height=preview_size;
-		width = img.get_width() * preview_size / img.get_height();
-	}  else {
-
-		width=img.get_width();
-		height=img.get_height();
-	}
-
-	img.convert(Image::FORMAT_RGB8);
-	img.resize(width,height);
-
-	String pfile = EditorSettings::get_singleton()->get_settings_path().plus_file("tmp/last_scene_preview.png");
-	img.save_png(pfile);
-	Vector<uint8_t> imgdata = FileAccess::get_file_as_array(pfile);
-
-	//print_line("img data is "+itos(imgdata.size()));
-
-	if (editor_data.get_edited_scene_import_metadata().is_null())
-		editor_data.set_edited_scene_import_metadata(Ref<ResourceImportMetadata>( memnew( ResourceImportMetadata ) ) );
-	editor_data.get_edited_scene_import_metadata()->set_option("thumbnail",imgdata);
-#endif
-	//tamanio tel thumbnail
-	if (screen != -1) {
-		_editor_select(screen);
-	}
 	save.step(TTR("Saving Scene"), 4);
 	_save_scene(p_file);
+	EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
 }
 
 void EditorNode::_save_scene(String p_file, int idx) {
@@ -6057,14 +6055,13 @@ EditorNode::EditorNode() {
 		plugin_init_callbacks[i]();
 	}
 
-	/*resource_preview->add_preview_generator( Ref<EditorTexturePreviewPlugin>( memnew(EditorTexturePreviewPlugin )));
-	resource_preview->add_preview_generator( Ref<EditorPackedScenePreviewPlugin>( memnew(EditorPackedScenePreviewPlugin )));
-	resource_preview->add_preview_generator( Ref<EditorMaterialPreviewPlugin>( memnew(EditorMaterialPreviewPlugin )));
-	resource_preview->add_preview_generator( Ref<EditorScriptPreviewPlugin>( memnew(EditorScriptPreviewPlugin )));
-	resource_preview->add_preview_generator( Ref<EditorSamplePreviewPlugin>( memnew(EditorSamplePreviewPlugin )));
-	resource_preview->add_preview_generator( Ref<EditorMeshPreviewPlugin>( memnew(EditorMeshPreviewPlugin )));
-	resource_preview->add_preview_generator( Ref<EditorBitmapPreviewPlugin>( memnew(EditorBitmapPreviewPlugin )));
-*/
+	resource_preview->add_preview_generator(Ref<EditorTexturePreviewPlugin>(memnew(EditorTexturePreviewPlugin)));
+	resource_preview->add_preview_generator(Ref<EditorPackedScenePreviewPlugin>(memnew(EditorPackedScenePreviewPlugin)));
+	resource_preview->add_preview_generator(Ref<EditorMaterialPreviewPlugin>(memnew(EditorMaterialPreviewPlugin)));
+	resource_preview->add_preview_generator(Ref<EditorScriptPreviewPlugin>(memnew(EditorScriptPreviewPlugin)));
+	//resource_preview->add_preview_generator( Ref<EditorSamplePreviewPlugin>( memnew(EditorSamplePreviewPlugin )));
+	resource_preview->add_preview_generator(Ref<EditorMeshPreviewPlugin>(memnew(EditorMeshPreviewPlugin)));
+	resource_preview->add_preview_generator(Ref<EditorBitmapPreviewPlugin>(memnew(EditorBitmapPreviewPlugin)));
 
 	circle_step_msec = OS::get_singleton()->get_ticks_msec();
 	circle_step_frame = Engine::get_singleton()->get_frames_drawn();

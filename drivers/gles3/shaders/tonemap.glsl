@@ -6,12 +6,13 @@ layout(location=4) in vec2 uv_in;
 
 out vec2 uv_interp;
 
-
-
 void main() {
 
 	gl_Position = vertex_attrib;
 	uv_interp = uv_in;
+#ifdef V_FLIP
+	uv_interp.y = 1.0-uv_interp.y;
+#endif
 
 }
 

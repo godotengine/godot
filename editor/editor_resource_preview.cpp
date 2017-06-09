@@ -190,7 +190,7 @@ void EditorResourcePreview::_thread() {
 			} else {
 				preview_mutex->unlock();
 
-				Ref<Texture> texture;
+				Ref<ImageTexture> texture;
 
 				//print_line("pop from queue "+item.path);
 
@@ -229,6 +229,7 @@ void EditorResourcePreview::_thread() {
 						bool cache_valid = true;
 
 						if (tsize != thumbnail_size) {
+
 							cache_valid = false;
 							memdelete(f);
 						} else if (last_modtime != modtime) {
@@ -240,6 +241,7 @@ void EditorResourcePreview::_thread() {
 							if (last_md5 != md5) {
 
 								cache_valid = false;
+
 							} else {
 								//update modified time
 
@@ -252,14 +254,20 @@ void EditorResourcePreview::_thread() {
 							memdelete(f);
 						}
 
-						cache_valid = false;
+						//cache_valid = false;
 
 						if (cache_valid) {
 
-							texture = ResourceLoader::load(cache_base + ".png", "ImageTexture", true);
-							if (!texture.is_valid()) {
+							Ref<Image> img;
+							img.instance();
+
+							if (img->load(cache_base + ".png") != OK) {
 								//well fuck
 								cache_valid = false;
+							} else {
+
+								texture.instance();
+								texture->create_from_image(img, Texture::FLAG_FILTER);
 							}
 						}
 

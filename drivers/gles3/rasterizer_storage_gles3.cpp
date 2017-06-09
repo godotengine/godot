@@ -782,7 +782,6 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture, const Ref<Image> &p
 			int bh = h;
 
 			glCompressedTexImage2D(blit_target, i, internal_format, bw, bh, 0, size, &read[ofs]);
-			print_line("format: " + Image::get_format_name(texture->format) + " size: " + Vector2(bw, bh) + " block: " + itos(block));
 
 		} else {
 			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -825,8 +824,7 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, VS::CubeMapSi
 
 	ERR_FAIL_COND_V(!texture, Ref<Image>());
 	ERR_FAIL_COND_V(!texture->active, Ref<Image>());
-	ERR_FAIL_COND_V(texture->data_size == 0, Ref<Image>());
-	ERR_FAIL_COND_V(texture->render_target, Ref<Image>());
+	ERR_FAIL_COND_V(texture->data_size == 0 && !texture->render_target, Ref<Image>());
 
 	if (!texture->images[p_cube_side].is_null()) {
 		return texture->images[p_cube_side];
@@ -5493,6 +5491,7 @@ void RasterizerStorageGLES3::_render_target_clear(RenderTarget *rt) {
 	tex->alloc_width = 0;
 	tex->width = 0;
 	tex->height = 0;
+	tex->active = false;
 
 	for (int i = 0; i < 2; i++) {
 		for (int j = 0; j < rt->effects.mip_maps[i].sizes.size(); j++) {
@@ -5589,13 +5588,14 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 		tex->alloc_width = rt->width;
 		tex->height = rt->height;
 		tex->alloc_height = rt->height;
+		tex->active = true;
 
 		texture_set_flags(rt->texture, tex->flags);
 	}
 
 	/* BACK FBO */
 
-	if (config.render_arch == RENDER_ARCH_DESKTOP && !rt->flags[RENDER_TARGET_NO_3D]) {
+	if (!rt->flags[RENDER_TARGET_NO_3D]) {
 
 		static const int msaa_value[] = { 0, 2, 4, 8, 16 };
 		int msaa = msaa_value[rt->msaa];
@@ -5623,75 +5623,155 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, rt->buffers.diffuse);
 
-		glGenRenderbuffers(1, &rt->buffers.specular);
-		glBindRenderbuffer(GL_RENDERBUFFER, rt->buffers.specular);
+		if (!rt->flags[RENDER_TARGET_NO_3D_EFFECTS]) {
 
-		if (msaa == 0)
-			glRenderbufferStorage(GL_RENDERBUFFER, color_internal_format, rt->width, rt->height);
-		else
-			glRenderbufferStorageMultisample(GL_RENDERBUFFER, msaa, color_internal_format, rt->width, rt->height);
+			glGenRenderbuffers(1, &rt->buffers.specular);
+			glBindRenderbuffer(GL_RENDERBUFFER, rt->buffers.specular);
 
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_RENDERBUFFER, rt->buffers.specular);
+			if (msaa == 0)
+				glRenderbufferStorage(GL_RENDERBUFFER, color_internal_format, rt->width, rt->height);
+			else
+				glRenderbufferStorageMultisample(GL_RENDERBUFFER, msaa, color_internal_format, rt->width, rt->height);
 
-		glGenRenderbuffers(1, &rt->buffers.normal_rough);
-		glBindRenderbuffer(GL_RENDERBUFFER, rt->buffers.normal_rough);
+			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_RENDERBUFFER, rt->buffers.specular);
 
-		if (msaa == 0)
-			glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, rt->width, rt->height);
-		else
-			glRenderbufferStorageMultisample(GL_RENDERBUFFER, msaa, GL_RGBA8, rt->width, rt->height);
+			glGenRenderbuffers(1, &rt->buffers.normal_rough);
+			glBindRenderbuffer(GL_RENDERBUFFER, rt->buffers.normal_rough);
 
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_RENDERBUFFER, rt->buffers.normal_rough);
+			if (msaa == 0)
+				glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, rt->width, rt->height);
+			else
+				glRenderbufferStorageMultisample(GL_RENDERBUFFER, msaa, GL_RGBA8, rt->width, rt->height);
 
-		glGenRenderbuffers(1, &rt->buffers.sss);
-		glBindRenderbuffer(GL_RENDERBUFFER, rt->buffers.sss);
+			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_RENDERBUFFER, rt->buffers.normal_rough);
 
-		if (msaa == 0)
-			glRenderbufferStorage(GL_RENDERBUFFER, GL_R8, rt->width, rt->height);
-		else
-			glRenderbufferStorageMultisample(GL_RENDERBUFFER, msaa, GL_R8, rt->width, rt->height);
+			glGenRenderbuffers(1, &rt->buffers.sss);
+			glBindRenderbuffer(GL_RENDERBUFFER, rt->buffers.sss);
 
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_RENDERBUFFER, rt->buffers.sss);
+			if (msaa == 0)
+				glRenderbufferStorage(GL_RENDERBUFFER, GL_R8, rt->width, rt->height);
+			else
+				glRenderbufferStorageMultisample(GL_RENDERBUFFER, msaa, GL_R8, rt->width, rt->height);
 
-		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-		glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
+			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_RENDERBUFFER, rt->buffers.sss);
 
-		if (status != GL_FRAMEBUFFER_COMPLETE) {
-			printf("err status: %x\n", status);
-			_render_target_clear(rt);
-			ERR_FAIL_COND(status != GL_FRAMEBUFFER_COMPLETE);
+			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+			glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
+
+			if (status != GL_FRAMEBUFFER_COMPLETE) {
+				printf("err status: %x\n", status);
+				_render_target_clear(rt);
+				ERR_FAIL_COND(status != GL_FRAMEBUFFER_COMPLETE);
+			}
+
+			glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+			// effect resolver
+
+			glGenFramebuffers(1, &rt->buffers.effect_fbo);
+			glBindFramebuffer(GL_FRAMEBUFFER, rt->buffers.effect_fbo);
+
+			glGenTextures(1, &rt->buffers.effect);
+			glBindTexture(GL_TEXTURE_2D, rt->buffers.effect);
+			glTexImage2D(GL_TEXTURE_2D, 0, color_internal_format, rt->width, rt->height, 0,
+					color_format, color_type, NULL);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+					GL_TEXTURE_2D, rt->buffers.effect, 0);
+
+			if (status != GL_FRAMEBUFFER_COMPLETE) {
+				printf("err status: %x\n", status);
+				_render_target_clear(rt);
+				ERR_FAIL_COND(status != GL_FRAMEBUFFER_COMPLETE);
+			}
+
+			glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
+
+			if (status != GL_FRAMEBUFFER_COMPLETE) {
+				_render_target_clear(rt);
+				ERR_FAIL_COND(status != GL_FRAMEBUFFER_COMPLETE);
+			}
+
+			///////////////// ssao
+
+			//AO strength textures
+			for (int i = 0; i < 2; i++) {
+
+				glGenFramebuffers(1, &rt->effects.ssao.blur_fbo[i]);
+				glBindFramebuffer(GL_FRAMEBUFFER, rt->effects.ssao.blur_fbo[i]);
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+						GL_TEXTURE_2D, rt->depth, 0);
+
+				glGenTextures(1, &rt->effects.ssao.blur_red[i]);
+				glBindTexture(GL_TEXTURE_2D, rt->effects.ssao.blur_red[i]);
+
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, rt->width, rt->height, 0, GL_RED, GL_UNSIGNED_BYTE, NULL);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->effects.ssao.blur_red[i], 0);
+
+				status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+				if (status != GL_FRAMEBUFFER_COMPLETE) {
+					_render_target_clear(rt);
+					ERR_FAIL_COND(status != GL_FRAMEBUFFER_COMPLETE);
+				}
+			}
+			//5 mip levels for depth texture, but base is read separately
+
+			glGenTextures(1, &rt->effects.ssao.linear_depth);
+			glBindTexture(GL_TEXTURE_2D, rt->effects.ssao.linear_depth);
+
+			int ssao_w = rt->width / 2;
+			int ssao_h = rt->height / 2;
+
+			for (int i = 0; i < 4; i++) { //5, but 4 mips, base is read directly to save bw
+
+				glTexImage2D(GL_TEXTURE_2D, i, GL_R16UI, ssao_w, ssao_h, 0, GL_RED_INTEGER, GL_UNSIGNED_SHORT, NULL);
+				ssao_w >>= 1;
+				ssao_h >>= 1;
+			}
+
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 3);
+
+			for (int i = 0; i < 4; i++) { //5, but 4 mips, base is read directly to save bw
+
+				GLuint fbo;
+				glGenFramebuffers(1, &fbo);
+				glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->effects.ssao.linear_depth, i);
+				rt->effects.ssao.depth_mipmap_fbos.push_back(fbo);
+			}
+
+			//////Exposure
+
+			glGenFramebuffers(1, &rt->exposure.fbo);
+			glBindFramebuffer(GL_FRAMEBUFFER, rt->exposure.fbo);
+
+			glGenTextures(1, &rt->exposure.color);
+			glBindTexture(GL_TEXTURE_2D, rt->exposure.color);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, 1, 1, 0, GL_RED, GL_FLOAT, NULL);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->exposure.color, 0);
+
+			status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+			if (status != GL_FRAMEBUFFER_COMPLETE) {
+				_render_target_clear(rt);
+				ERR_FAIL_COND(status != GL_FRAMEBUFFER_COMPLETE);
+			}
 		}
+	}
 
-		glBindRenderbuffer(GL_RENDERBUFFER, 0);
-
-		// effect resolver
-
-		glGenFramebuffers(1, &rt->buffers.effect_fbo);
-		glBindFramebuffer(GL_FRAMEBUFFER, rt->buffers.effect_fbo);
-
-		glGenTextures(1, &rt->buffers.effect);
-		glBindTexture(GL_TEXTURE_2D, rt->buffers.effect);
-		glTexImage2D(GL_TEXTURE_2D, 0, color_internal_format, rt->width, rt->height, 0,
-				color_format, color_type, NULL);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-				GL_TEXTURE_2D, rt->buffers.effect, 0);
-
-		if (status != GL_FRAMEBUFFER_COMPLETE) {
-			printf("err status: %x\n", status);
-			_render_target_clear(rt);
-			ERR_FAIL_COND(status != GL_FRAMEBUFFER_COMPLETE);
-		}
-
-		glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
-
-		if (status != GL_FRAMEBUFFER_COMPLETE) {
-			_render_target_clear(rt);
-			ERR_FAIL_COND(status != GL_FRAMEBUFFER_COMPLETE);
-		}
+	if (!rt->flags[RENDER_TARGET_NO_SAMPLING]) {
 
 		for (int i = 0; i < 2; i++) {
 
@@ -5738,7 +5818,7 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 				glBindFramebuffer(GL_FRAMEBUFFER, mm.fbo);
 				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->effects.mip_maps[i].color, j);
 
-				status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+				GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 				if (status != GL_FRAMEBUFFER_COMPLETE) {
 					_render_target_clear(rt);
 					ERR_FAIL_COND(status != GL_FRAMEBUFFER_COMPLETE);
@@ -5757,79 +5837,6 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 			//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		}
-		///////////////// ssao
-
-		//AO strength textures
-		for (int i = 0; i < 2; i++) {
-
-			glGenFramebuffers(1, &rt->effects.ssao.blur_fbo[i]);
-			glBindFramebuffer(GL_FRAMEBUFFER, rt->effects.ssao.blur_fbo[i]);
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-					GL_TEXTURE_2D, rt->depth, 0);
-
-			glGenTextures(1, &rt->effects.ssao.blur_red[i]);
-			glBindTexture(GL_TEXTURE_2D, rt->effects.ssao.blur_red[i]);
-
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, rt->width, rt->height, 0, GL_RED, GL_UNSIGNED_BYTE, NULL);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->effects.ssao.blur_red[i], 0);
-
-			status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-			if (status != GL_FRAMEBUFFER_COMPLETE) {
-				_render_target_clear(rt);
-				ERR_FAIL_COND(status != GL_FRAMEBUFFER_COMPLETE);
-			}
-		}
-		//5 mip levels for depth texture, but base is read separately
-
-		glGenTextures(1, &rt->effects.ssao.linear_depth);
-		glBindTexture(GL_TEXTURE_2D, rt->effects.ssao.linear_depth);
-
-		int ssao_w = rt->width / 2;
-		int ssao_h = rt->height / 2;
-
-		for (int i = 0; i < 4; i++) { //5, but 4 mips, base is read directly to save bw
-
-			glTexImage2D(GL_TEXTURE_2D, i, GL_R16UI, ssao_w, ssao_h, 0, GL_RED_INTEGER, GL_UNSIGNED_SHORT, NULL);
-			ssao_w >>= 1;
-			ssao_h >>= 1;
-		}
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 3);
-
-		for (int i = 0; i < 4; i++) { //5, but 4 mips, base is read directly to save bw
-
-			GLuint fbo;
-			glGenFramebuffers(1, &fbo);
-			glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->effects.ssao.linear_depth, i);
-			rt->effects.ssao.depth_mipmap_fbos.push_back(fbo);
-		}
-
-		//////Exposure
-
-		glGenFramebuffers(1, &rt->exposure.fbo);
-		glBindFramebuffer(GL_FRAMEBUFFER, rt->exposure.fbo);
-
-		glGenTextures(1, &rt->exposure.color);
-		glBindTexture(GL_TEXTURE_2D, rt->exposure.color);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, 1, 1, 0, GL_RED, GL_FLOAT, NULL);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->exposure.color, 0);
-
-		status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-		if (status != GL_FRAMEBUFFER_COMPLETE) {
-			_render_target_clear(rt);
-			ERR_FAIL_COND(status != GL_FRAMEBUFFER_COMPLETE);
 		}
 	}
 }
@@ -5855,9 +5862,10 @@ RID RasterizerStorageGLES3::render_target_create() {
 	t->srgb = false;
 	t->total_data_size = 0;
 	t->ignore_mipmaps = false;
-	t->mipmaps = 0;
+	t->mipmaps = 1;
 	t->active = true;
 	t->tex_id = 0;
+	t->render_target = rt;
 
 	rt->texture = texture_owner.make_rid(t);
 
@@ -5894,8 +5902,10 @@ void RasterizerStorageGLES3::render_target_set_flag(RID p_render_target, RenderT
 	rt->flags[p_flag] = p_value;
 
 	switch (p_flag) {
+		case RENDER_TARGET_HDR:
 		case RENDER_TARGET_NO_3D:
-		case RENDER_TARGET_TRANSPARENT: {
+		case RENDER_TARGET_NO_SAMPLING:
+		case RENDER_TARGET_NO_3D_EFFECTS: {
 			//must reset for these formats
 			_render_target_clear(rt);
 			_render_target_allocate(rt);
@@ -6336,9 +6346,6 @@ bool RasterizerStorageGLES3::has_os_feature(const String &p_feature) const {
 ////////////////////////////////////////////
 
 void RasterizerStorageGLES3::initialize() {
-
-	config.render_arch = RENDER_ARCH_DESKTOP;
-	//config.fbo_deferred=int(Globals::get_singleton()->get("rendering/gles3/lighting_technique"));
 
 	RasterizerStorageGLES3::system_fbo = 0;
 
