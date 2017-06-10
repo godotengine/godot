@@ -43,6 +43,14 @@ enum Margin {
 	MARGIN_BOTTOM
 };
 
+enum Corner {
+
+	CORNER_TOP_LEFT,
+	CORNER_TOP_RIGHT,
+	CORNER_BOTTOM_RIGHT,
+	CORNER_BOTTOM_LEFT
+};
+
 enum Orientation {
 
 	HORIZONTAL,
