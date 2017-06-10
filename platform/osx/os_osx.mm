@@ -443,6 +443,23 @@ static int button_mask = 0;
 		OS_OSX::singleton->input->set_mouse_in_window(true);
 }
 
+- (void)magnifyWithEvent:(NSEvent *)event {
+	Ref<InputEventMouseButton> sc;
+	sc.instance();
+
+	get_key_modifier_state([event modifierFlags], sc);
+	sc->set_button_index(GESTURE_MAGNIFY);
+	sc->set_factor([event magnification]);
+	sc->set_pressed(true);
+	Vector2 mouse_pos = Vector2(mouse_x, mouse_y);
+	sc->set_position(mouse_pos);
+	sc->set_global_position(mouse_pos);
+	sc->set_button_mask(button_mask);
+	OS_OSX::singleton->push_input(sc);
+	sc->set_pressed(false);
+	OS_OSX::singleton->push_input(sc);
+}
+
 - (void)viewDidChangeBackingProperties {
 	// nothing left to do here
 }
