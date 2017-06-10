@@ -24616,6 +24616,10 @@
 		</constant>
 		<constant name="COMPRESS_ZLIB" value="3">
 		</constant>
+                <constant name="COMPRESS_LZ4" value="4">
+                </constant>
+                <constant name="COMPRESS_LZ4HC" value="5">
+                </constant>
 	</constants>
 </class>
 <class name="NetworkedMultiplayerPeer" inherits="PacketPeer" category="Core">

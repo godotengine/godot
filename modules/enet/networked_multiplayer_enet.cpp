@@ -575,6 +575,12 @@ size_t NetworkedMultiplayerENet::enet_compress(void *context, const ENetBuffer *
 		case COMPRESS_ZLIB: {
 			mode = Compression::MODE_DEFLATE;
 		} break;
+		case COMPRESS_LZ4: {
+			mode = Compression::MODE_LZ4;
+		} break;
+		case COMPRESS_LZ4HC: {
+			mode = Compression::MODE_LZ4HC;
+		} break;
 		default: { ERR_FAIL_V(0); }
 	}
 
@@ -608,6 +614,14 @@ size_t NetworkedMultiplayerENet::enet_decompress(void *context, const enet_uint8
 
 			ret = Compression::decompress(outData, outLimit, inData, inLimit, Compression::MODE_DEFLATE);
 		} break;
+		case COMPRESS_LZ4: {
+
+			ret = Compression::decompress(outData, outLimit, inData, inLimit, Compression::MODE_LZ4);
+		} break;
+		case COMPRESS_LZ4HC: {
+
+			ret = Compression::decompress(outData, outLimit, inData, inLimit, Compression::MODE_LZ4HC);
+		} break;
 		default: {}
 	}
 	if (ret < 0) {
@@ -629,7 +643,9 @@ void NetworkedMultiplayerENet::_setup_compressor() {
 			enet_host_compress_with_range_coder(host);
 		} break;
 		case COMPRESS_FASTLZ:
-		case COMPRESS_ZLIB: {
+		case COMPRESS_ZLIB:
+		case COMPRESS_LZ4:
+		case COMPRESS_LZ4HC: {
 
 			enet_host_compress(host, &enet_compressor);
 		} break;
@@ -654,6 +670,8 @@ void NetworkedMultiplayerENet::_bind_methods() {
 	BIND_CONSTANT(COMPRESS_RANGE_CODER);
 	BIND_CONSTANT(COMPRESS_FASTLZ);
 	BIND_CONSTANT(COMPRESS_ZLIB);
+	BIND_CONSTANT(COMPRESS_LZ4);
+	BIND_CONSTANT(COMPRESS_LZ4HC);
 }
 
 NetworkedMultiplayerENet::NetworkedMultiplayerENet() {
