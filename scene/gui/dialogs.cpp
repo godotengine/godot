@@ -67,10 +67,10 @@ void WindowDialog::_fix_size() {
 		right = panel_texture->get_expand_margin_size(MARGIN_RIGHT);
 	} else if (panel->get_class() == "StyleBoxFlat") {
 		Ref<StyleBoxFlat> panel_flat = panel->cast_to<StyleBoxFlat>();
-		top = panel_flat->_get_additional_border_size(MARGIN_TOP);
-		left = panel_flat->_get_additional_border_size(MARGIN_LEFT);
-		bottom = panel_flat->_get_additional_border_size(MARGIN_BOTTOM);
-		right = panel_flat->_get_additional_border_size(MARGIN_RIGHT);
+		top = panel_flat->get_expand_margin_size(MARGIN_TOP);
+		left = panel_flat->get_expand_margin_size(MARGIN_LEFT);
+		bottom = panel_flat->get_expand_margin_size(MARGIN_BOTTOM);
+		right = panel_flat->get_expand_margin_size(MARGIN_RIGHT);
 	}
 
 	pos.x = MAX(left, MIN(pos.x, viewport_size.x - size.x - right));

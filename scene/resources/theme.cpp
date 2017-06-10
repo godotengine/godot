@@ -883,7 +883,7 @@ RES ResourceFormatLoaderTheme::load(const String &p_path, const String &p_origin
 					ERR_FAIL_V(RES());
 				}
 
-				sbflat->set_border_size(params[0].to_int());
+				sbflat->set_border_width_all(params[0].to_int());
 
 				if (!params[0].is_valid_integer()) {
 
