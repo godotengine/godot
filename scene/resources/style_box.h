@@ -123,6 +123,7 @@ class StyleBoxFlat : public StyleBox {
 	GDCLASS(StyleBoxFlat, StyleBox);
 
 	Color bg_color;
+	Color shadow_color;
 	PoolVector<Color> border_color;
 
 	int border_width[4];
@@ -131,7 +132,11 @@ class StyleBoxFlat : public StyleBox {
 
 	bool filled;
 	bool blend_border;
+	bool anti_aliased;
+
 	int corner_detail;
+	int shadow_size;
+	int aa_size;
 
 protected:
 	virtual float get_style_margin(Margin p_margin) const;
@@ -165,10 +170,16 @@ public:
 	void set_border_blend(bool p_blend);
 	bool get_border_blend() const;
 
-	//CORNER_RADIUS
+	//CORNER
 	void set_corner_radius_all(int radius);
 	void set_corner_radius_individual(const int radius_top_left, const int radius_top_right, const int radius_botton_right, const int radius_bottom_left);
 	int get_corner_radius_min() const;
+
+	void set_corner_radius(Corner p_corner, const int radius);
+	int get_corner_radius(Corner p_corner) const;
+
+	void set_corner_detail(const int &p_corner_detail);
+	int get_corner_detail() const;
 
 	//EXPANDS
 	void set_expand_margin_size(Margin p_expand_margin, float p_size);
@@ -177,6 +188,20 @@ public:
 	//FILLED
 	void set_filled(bool p_draw);
 	bool is_filled() const;
+
+	//SHADOW
+	void set_shadow_color(const Color &p_color);
+	Color get_shadow_color() const;
+
+	void set_shadow_size(const int &p_size);
+	int get_shadow_size() const;
+
+	//ANTI_ALIASING
+	void set_anti_aliased(const bool &p_anit_aliasing);
+	bool is_anti_aliased() const;
+	//tempAA
+	void set_aa_size(const int &p_aa_size);
+	int get_aa_size() const;
 
 	virtual Size2 get_center_size() const;
 
