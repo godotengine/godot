@@ -932,12 +932,10 @@ void OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 	//visual_server = memnew( VisualServerRaster(rasterizer) );
 
 	visual_server = memnew(VisualServerRaster);
-	// FIXME: Reimplement threaded rendering? Or remove?
-	/*
-	if (get_render_thread_mode()!=RENDER_THREAD_UNSAFE) {
-		visual_server =memnew(VisualServerWrapMT(visual_server,get_render_thread_mode()==RENDER_SEPARATE_THREAD));
+	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
+
+		visual_server = memnew(VisualServerWrapMT(visual_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
 	}
-*/
 	visual_server->init();
 	visual_server->cursor_set_visible(false, 0);
 
