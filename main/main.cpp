@@ -581,12 +581,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF("memory/multithread/thread_rid_pool_prealloc", 60);
 
 	GLOBAL_DEF("network/debug/max_remote_stdout_chars_per_second", 2048);
-	GLOBAL_DEF("network/debug/remote_port", 6007);
 
 	if (debug_mode == "remote") {
 
 		ScriptDebuggerRemote *sdr = memnew(ScriptDebuggerRemote);
-		uint16_t debug_port = GLOBAL_GET("network/debug/remote_port");
+		uint16_t debug_port = 6007;
 		if (debug_host.find(":") != -1) {
 			int sep_pos = debug_host.find_last(":");
 			debug_port = debug_host.substr(sep_pos + 1, debug_host.length()).to_int();

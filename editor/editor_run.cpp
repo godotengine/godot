@@ -42,6 +42,7 @@ Error EditorRun::run(const String &p_scene, const String p_custom_args, const Li
 
 	String resource_path = GlobalConfig::get_singleton()->get_resource_path();
 	String remote_host = EditorSettings::get_singleton()->get("network/debug/remote_host");
+	int remote_port = (int)EditorSettings::get_singleton()->get("network/debug/remote_port");
 
 	if (resource_path != "") {
 		args.push_back("-path");
@@ -50,7 +51,7 @@ Error EditorRun::run(const String &p_scene, const String p_custom_args, const Li
 
 	if (true) {
 		args.push_back("-rdebug");
-		args.push_back(remote_host + ":" + String::num(GLOBAL_GET("network/debug/remote_port")));
+		args.push_back(remote_host + ":" + String::num(remote_port));
 	}
 
 	args.push_back("-epid");
