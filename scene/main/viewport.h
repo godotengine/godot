@@ -122,6 +122,24 @@ public:
 		USAGE_3D_NO_EFFECTS,
 	};
 
+	enum RenderInfo {
+
+		RENDER_INFO_OBJECTS_IN_FRAME,
+		RENDER_INFO_VERTICES_IN_FRAME,
+		RENDER_INFO_MATERIAL_CHANGES_IN_FRAME,
+		RENDER_INFO_SHADER_CHANGES_IN_FRAME,
+		RENDER_INFO_SURFACE_CHANGES_IN_FRAME,
+		RENDER_INFO_DRAW_CALLS_IN_FRAME,
+		RENDER_INFO_MAX
+	};
+
+	enum DebugDraw {
+		DEBUG_DRAW_DISABLED,
+		DEBUG_DRAW_UNSHADED,
+		DEBUG_DRAW_OVERDRAW,
+		DEBUG_DRAW_WIREFRAME,
+	};
+
 private:
 	friend class ViewportTexture;
 
@@ -203,6 +221,8 @@ private:
 	UpdateMode update_mode;
 	RID texture_rid;
 	uint32_t texture_flags;
+
+	DebugDraw debug_draw;
 
 	Usage usage;
 
@@ -430,6 +450,11 @@ public:
 	void set_usage(Usage p_usage);
 	Usage get_usage() const;
 
+	void set_debug_draw(DebugDraw p_debug_draw);
+	DebugDraw get_debug_draw() const;
+
+	int get_render_info(RenderInfo p_info);
+
 	Viewport();
 	~Viewport();
 };
@@ -438,5 +463,7 @@ VARIANT_ENUM_CAST(Viewport::UpdateMode);
 VARIANT_ENUM_CAST(Viewport::ShadowAtlasQuadrantSubdiv);
 VARIANT_ENUM_CAST(Viewport::MSAA);
 VARIANT_ENUM_CAST(Viewport::Usage);
+VARIANT_ENUM_CAST(Viewport::DebugDraw);
+VARIANT_ENUM_CAST(Viewport::RenderInfo);
 
 #endif

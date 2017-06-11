@@ -77,6 +77,9 @@ public:
 	RID default_shader;
 	RID default_shader_twosided;
 
+	RID default_overdraw_material;
+	RID default_overdraw_shader;
+
 	RasterizerStorageGLES3 *storage;
 
 	Vector<RasterizerStorageGLES3::RenderTarget::Exposure> exposure_shrink;
@@ -152,8 +155,6 @@ public:
 
 		GLuint env_radiance_ubo;
 
-		GLuint brdf_texture;
-
 		GLuint sky_verts;
 		GLuint sky_array;
 
@@ -187,6 +188,7 @@ public:
 		bool used_sss;
 		bool used_screen_texture;
 
+		VS::ViewportDebugDraw debug_draw;
 	} state;
 
 	/* SHADOW ATLAS API */
@@ -783,9 +785,8 @@ public:
 	virtual void render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, InstanceBase **p_cull_result, int p_cull_count);
 	virtual bool free(RID p_rid);
 
-	void _generate_brdf();
-
 	virtual void set_scene_pass(uint64_t p_pass);
+	virtual void set_debug_draw_mode(VS::ViewportDebugDraw p_debug_draw);
 
 	void iteration();
 	void initialize();

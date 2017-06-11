@@ -2727,6 +2727,112 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 			glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		}
+
+#ifdef DEBUG_ENABLED
+
+		if (config.generate_wireframes && p_primitive == VS::PRIMITIVE_TRIANGLES) {
+			//generate wireframes, this is used mostly by editor
+			PoolVector<uint32_t> wf_indices;
+			int index_count;
+
+			if (p_format & VS::ARRAY_FORMAT_INDEX) {
+
+				index_count = p_index_count * 2;
+				wf_indices.resize(index_count);
+
+				PoolVector<uint8_t>::Read ir = p_index_array.read();
+				PoolVector<uint32_t>::Write wr = wf_indices.write();
+
+				if (p_vertex_count < (1 << 16)) {
+					//read 16 bit indices
+					const uint16_t *src_idx = (const uint16_t *)ir.ptr();
+					for (int i = 0; i < index_count; i += 6) {
+
+						wr[i + 0] = src_idx[i / 2];
+						wr[i + 1] = src_idx[i / 2 + 1];
+						wr[i + 2] = src_idx[i / 2 + 1];
+						wr[i + 3] = src_idx[i / 2 + 2];
+						wr[i + 4] = src_idx[i / 2 + 2];
+						wr[i + 5] = src_idx[i / 2];
+					}
+
+				} else {
+
+					//read 16 bit indices
+					const uint32_t *src_idx = (const uint32_t *)ir.ptr();
+					for (int i = 0; i < index_count; i += 6) {
+
+						wr[i + 0] = src_idx[i / 2];
+						wr[i + 1] = src_idx[i / 2 + 1];
+						wr[i + 2] = src_idx[i / 2 + 1];
+						wr[i + 3] = src_idx[i / 2 + 2];
+						wr[i + 4] = src_idx[i / 2 + 2];
+						wr[i + 5] = src_idx[i / 2];
+					}
+				}
+
+			} else {
+
+				index_count = p_vertex_count * 2;
+				wf_indices.resize(index_count);
+				PoolVector<uint32_t>::Write wr = wf_indices.write();
+				for (int i = 0; i < index_count; i += 6) {
+
+					wr[i + 0] = i / 2;
+					wr[i + 1] = i / 2 + 1;
+					wr[i + 2] = i / 2 + 1;
+					wr[i + 3] = i / 2 + 2;
+					wr[i + 4] = i / 2 + 2;
+					wr[i + 5] = i / 2;
+				}
+			}
+			{
+				PoolVector<uint32_t>::Read ir = wf_indices.read();
+
+				glGenBuffers(1, &surface->index_wireframe_id);
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, surface->index_wireframe_id);
+				glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_count * sizeof(uint32_t), ir.ptr(), GL_STATIC_DRAW);
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); //unbind
+
+				surface->index_wireframe_len = index_count;
+			}
+
+			for (int ai = 0; ai < 2; ai++) {
+
+				if (ai == 0) {
+					//for normal draw
+					glGenVertexArrays(1, &surface->array_wireframe_id);
+					glBindVertexArray(surface->array_wireframe_id);
+					glBindBuffer(GL_ARRAY_BUFFER, surface->vertex_id);
+				} else if (ai == 1) {
+					//for instancing draw (can be changed and no one cares)
+					glGenVertexArrays(1, &surface->instancing_array_wireframe_id);
+					glBindVertexArray(surface->instancing_array_wireframe_id);
+					glBindBuffer(GL_ARRAY_BUFFER, surface->vertex_id);
+				}
+
+				for (int i = 0; i < VS::ARRAY_MAX - 1; i++) {
+
+					if (!attribs[i].enabled)
+						continue;
+
+					if (attribs[i].integer) {
+						glVertexAttribIPointer(attribs[i].index, attribs[i].size, attribs[i].type, attribs[i].stride, ((uint8_t *)0) + attribs[i].offset);
+					} else {
+						glVertexAttribPointer(attribs[i].index, attribs[i].size, attribs[i].type, attribs[i].normalized, attribs[i].stride, ((uint8_t *)0) + attribs[i].offset);
+					}
+					glEnableVertexAttribArray(attribs[i].index);
+				}
+
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, surface->index_wireframe_id);
+
+				glBindVertexArray(0);
+				glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+			}
+		}
+
+#endif
 	}
 
 	{
@@ -2996,6 +3102,12 @@ void RasterizerStorageGLES3::mesh_remove_surface(RID p_mesh, int p_surface) {
 
 		glDeleteBuffers(1, &surface->blend_shapes[i].vertex_id);
 		glDeleteVertexArrays(1, &surface->blend_shapes[i].array_id);
+	}
+
+	if (surface->index_wireframe_id) {
+		glDeleteBuffers(1, &surface->index_wireframe_id);
+		glDeleteVertexArrays(1, &surface->array_wireframe_id);
+		glDeleteVertexArrays(1, &surface->instancing_array_wireframe_id);
 	}
 
 	mesh->instance_material_change_notify();
@@ -6345,6 +6457,11 @@ bool RasterizerStorageGLES3::has_os_feature(const String &p_feature) const {
 
 ////////////////////////////////////////////
 
+void RasterizerStorageGLES3::set_debug_generate_wireframes(bool p_generate) {
+
+	config.generate_wireframes = p_generate;
+}
+
 void RasterizerStorageGLES3::initialize() {
 
 	RasterizerStorageGLES3::system_fbo = 0;
@@ -6526,6 +6643,7 @@ void RasterizerStorageGLES3::initialize() {
 	frame.delta = 0;
 	frame.current_rt = NULL;
 	config.keep_original_textures = false;
+	config.generate_wireframes = false;
 }
 
 void RasterizerStorageGLES3::finalize() {

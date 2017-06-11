@@ -155,6 +155,7 @@ public:
 	virtual void render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, InstanceBase **p_cull_result, int p_cull_count) = 0;
 
 	virtual void set_scene_pass(uint64_t p_pass) = 0;
+	virtual void set_debug_draw_mode(VS::ViewportDebugDraw p_debug_draw) = 0;
 
 	virtual bool free(RID p_rid) = 0;
 
@@ -497,6 +498,8 @@ public:
 	virtual bool has_os_feature(const String &p_feature) const = 0;
 
 	virtual void update_dirty_resources() = 0;
+
+	virtual void set_debug_generate_wireframes(bool p_generate) = 0;
 
 	static RasterizerStorage *base_singleton;
 	RasterizerStorage();

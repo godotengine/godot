@@ -175,6 +175,11 @@ bool VisualServerRaster::has_os_feature(const String &p_feature) const {
 	return VSG::storage->has_os_feature(p_feature);
 }
 
+void VisualServerRaster::set_debug_generate_wireframes(bool p_generate) {
+
+	VSG::storage->set_debug_generate_wireframes(p_generate);
+}
+
 VisualServerRaster::VisualServerRaster() {
 
 	VSG::canvas = memnew(VisualServerCanvas);

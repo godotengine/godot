@@ -4878,6 +4878,7 @@ EditorNode::EditorNode() {
 	Resource::_get_local_scene_func = _resource_get_edited_scene;
 
 	VisualServer::get_singleton()->textures_keep_original(true);
+	VisualServer::get_singleton()->set_debug_generate_wireframes(true);
 
 	EditorHelp::generate_doc(); //before any editor classes are crated
 	SceneState::set_disable_placeholders(true);

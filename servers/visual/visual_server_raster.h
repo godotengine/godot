@@ -595,6 +595,8 @@ public:
 	m_r m_name(m_type1 arg1) { return BINDBASE->m_name(arg1); }
 #define BIND1RC(m_r, m_name, m_type1) \
 	m_r m_name(m_type1 arg1) const { return BINDBASE->m_name(arg1); }
+#define BIND2R(m_r, m_name, m_type1, m_type2) \
+	m_r m_name(m_type1 arg1, m_type2 arg2) { return BINDBASE->m_name(arg1, arg2); }
 #define BIND2RC(m_r, m_name, m_type1, m_type2) \
 	m_r m_name(m_type1 arg1, m_type2 arg2) const { return BINDBASE->m_name(arg1, arg2); }
 #define BIND3RC(m_r, m_name, m_type1, m_type2, m_type3) \
@@ -932,6 +934,9 @@ public:
 	BIND2(viewport_set_hdr, RID, bool)
 	BIND2(viewport_set_usage, RID, ViewportUsage)
 
+	BIND2R(int, viewport_get_render_info, RID, ViewportRenderInfo)
+	BIND2(viewport_set_debug_draw, RID, ViewportDebugDraw)
+
 /* ENVIRONMENT API */
 
 #undef BINDBASE
@@ -1130,6 +1135,7 @@ public:
 	virtual bool has_feature(Features p_feature) const;
 
 	virtual bool has_os_feature(const String &p_feature) const;
+	virtual void set_debug_generate_wireframes(bool p_generate);
 
 	VisualServerRaster();
 	~VisualServerRaster();

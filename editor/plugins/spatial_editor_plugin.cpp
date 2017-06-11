@@ -1997,6 +1997,45 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 			view_menu->get_popup()->set_item_checked(idx, current);
 
 		} break;
+		case VIEW_DISPLAY_NORMAL: {
+
+			viewport->set_debug_draw(Viewport::DEBUG_DRAW_DISABLED);
+
+			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_DISPLAY_NORMAL), true);
+			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_DISPLAY_WIREFRAME), false);
+			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_DISPLAY_OVERDRAW), false);
+			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_DISPLAY_SHADELESS), false);
+
+		} break;
+		case VIEW_DISPLAY_WIREFRAME: {
+
+			viewport->set_debug_draw(Viewport::DEBUG_DRAW_WIREFRAME);
+			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_DISPLAY_NORMAL), false);
+			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_DISPLAY_WIREFRAME), true);
+			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_DISPLAY_OVERDRAW), false);
+			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_DISPLAY_SHADELESS), false);
+
+		} break;
+		case VIEW_DISPLAY_OVERDRAW: {
+
+			viewport->set_debug_draw(Viewport::DEBUG_DRAW_OVERDRAW);
+			VisualServer::get_singleton()->scenario_set_debug(get_tree()->get_root()->get_world()->get_scenario(), VisualServer::SCENARIO_DEBUG_OVERDRAW);
+			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_DISPLAY_NORMAL), false);
+			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_DISPLAY_WIREFRAME), false);
+			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_DISPLAY_OVERDRAW), true);
+			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_DISPLAY_SHADELESS), false);
+
+		} break;
+		case VIEW_DISPLAY_SHADELESS: {
+
+			viewport->set_debug_draw(Viewport::DEBUG_DRAW_UNSHADED);
+			VisualServer::get_singleton()->scenario_set_debug(get_tree()->get_root()->get_world()->get_scenario(), VisualServer::SCENARIO_DEBUG_SHADELESS);
+			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_DISPLAY_NORMAL), false);
+			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_DISPLAY_WIREFRAME), false);
+			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_DISPLAY_OVERDRAW), false);
+			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_DISPLAY_SHADELESS), true);
+
+		} break;
 	}
 }
 
@@ -2296,12 +2335,18 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	view_menu->get_popup()->add_check_item(TTR("Orthogonal") + " (" + ED_GET_SHORTCUT("spatial_editor/switch_perspective_orthogonal")->get_as_text() + ")", VIEW_ORTHOGONAL);
 	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_PERSPECTIVE), true);
 	view_menu->get_popup()->add_separator();
-	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_environment", TTR("Environment")), VIEW_ENVIRONMENT);
+	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_display_normal", TTR("Display Normal")), VIEW_DISPLAY_NORMAL);
+	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_display_wireframe", TTR("Display Wireframe")), VIEW_DISPLAY_WIREFRAME);
+	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_display_overdraw", TTR("Display Overdraw")), VIEW_DISPLAY_OVERDRAW);
+	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_display_unshaded", TTR("Display Unshaded")), VIEW_DISPLAY_SHADELESS);
+	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_DISPLAY_NORMAL), true);
+	view_menu->get_popup()->add_separator();
+	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_environment", TTR("View Environment")), VIEW_ENVIRONMENT);
+	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_gizmos", TTR("View Gizmos")), VIEW_GIZMOS);
+	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_information", TTR("View Information")), VIEW_INFORMATION);
 	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_ENVIRONMENT), true);
 	view_menu->get_popup()->add_separator();
 	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_audio_listener", TTR("Audio Listener")), VIEW_AUDIO_LISTENER);
-	view_menu->get_popup()->add_separator();
-	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_gizmos", TTR("Gizmos")), VIEW_GIZMOS);
 	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_GIZMOS), true);
 
 	view_menu->get_popup()->add_separator();
@@ -3088,43 +3133,6 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS_ALT), false);
 
 		} break;
-		case MENU_VIEW_DISPLAY_NORMAL: {
-
-			VisualServer::get_singleton()->scenario_set_debug(get_tree()->get_root()->get_world()->get_scenario(), VisualServer::SCENARIO_DEBUG_DISABLED);
-
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_NORMAL), true);
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_WIREFRAME), false);
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_OVERDRAW), false);
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_SHADELESS), false);
-
-		} break;
-		case MENU_VIEW_DISPLAY_WIREFRAME: {
-
-			VisualServer::get_singleton()->scenario_set_debug(get_tree()->get_root()->get_world()->get_scenario(), VisualServer::SCENARIO_DEBUG_WIREFRAME);
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_NORMAL), false);
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_WIREFRAME), true);
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_OVERDRAW), false);
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_SHADELESS), false);
-
-		} break;
-		case MENU_VIEW_DISPLAY_OVERDRAW: {
-
-			VisualServer::get_singleton()->scenario_set_debug(get_tree()->get_root()->get_world()->get_scenario(), VisualServer::SCENARIO_DEBUG_OVERDRAW);
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_NORMAL), false);
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_WIREFRAME), false);
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_OVERDRAW), true);
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_SHADELESS), false);
-
-		} break;
-		case MENU_VIEW_DISPLAY_SHADELESS: {
-
-			VisualServer::get_singleton()->scenario_set_debug(get_tree()->get_root()->get_world()->get_scenario(), VisualServer::SCENARIO_DEBUG_SHADELESS);
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_NORMAL), false);
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_WIREFRAME), false);
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_OVERDRAW), false);
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_SHADELESS), true);
-
-		} break;
 		case MENU_VIEW_ORIGIN: {
 
 			bool is_checked = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(p_option));
@@ -3473,17 +3481,6 @@ void SpatialEditor::_unhandled_key_input(Ref<InputEvent> p_event) {
 
 			else if (ED_IS_SHORTCUT("spatial_editor/tool_scale", p_event))
 				_menu_item_pressed(MENU_TOOL_SCALE);
-
-			else if (ED_IS_SHORTCUT("spatial_editor/display_wireframe", p_event)) {
-				if (k->get_shift() || k->get_control() || k->get_command())
-					return;
-
-				if (view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_WIREFRAME))) {
-					_menu_item_pressed(MENU_VIEW_DISPLAY_NORMAL);
-				} else {
-					_menu_item_pressed(MENU_VIEW_DISPLAY_WIREFRAME);
-				}
-			}
 		}
 	}
 }
@@ -3650,9 +3647,6 @@ void SpatialEditor::clear() {
 		viewports[i]->reset();
 	}
 
-	_menu_item_pressed(MENU_VIEW_USE_1_VIEWPORT);
-	_menu_item_pressed(MENU_VIEW_DISPLAY_NORMAL);
-
 	VisualServer::get_singleton()->instance_set_visible(origin_instance, true);
 	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_ORIGIN), true);
 	for (int i = 0; i < 3; ++i) {
@@ -3797,17 +3791,11 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/4_viewports", TTR("4 Viewports"), KEY_MASK_CMD + KEY_4), MENU_VIEW_USE_4_VIEWPORTS);
 	p->add_separator();
 
-	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/display_normal", TTR("Display Normal")), MENU_VIEW_DISPLAY_NORMAL);
-	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/display_wireframe", TTR("Display Wireframe")), MENU_VIEW_DISPLAY_WIREFRAME);
-	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/display_overdraw", TTR("Display Overdraw")), MENU_VIEW_DISPLAY_OVERDRAW);
-	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/display_shadeless", TTR("Display Shadeless")), MENU_VIEW_DISPLAY_SHADELESS);
-	p->add_separator();
 	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_origin", TTR("View Origin")), MENU_VIEW_ORIGIN);
 	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_grid", TTR("View Grid")), MENU_VIEW_GRID);
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("spatial_editor/settings", TTR("Settings")), MENU_VIEW_CAMERA_SETTINGS);
 
-	p->set_item_checked(p->get_item_index(MENU_VIEW_DISPLAY_NORMAL), true);
 	p->set_item_checked(p->get_item_index(MENU_VIEW_ORIGIN), true);
 	p->set_item_checked(p->get_item_index(MENU_VIEW_GRID), true);
 

@@ -1290,8 +1290,11 @@ void RasterizerSceneGLES3::_setup_geometry(RenderList::Element *e, const Transfo
 				storage->mesh_render_blend_shapes(s, e->instance->blend_values.ptr());
 				//rebind shader
 				state.scene_shader.bind();
+#ifdef DEBUG_ENABLED
+			} else if (state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_WIREFRAME && s->array_wireframe_id) {
+				glBindVertexArray(s->array_wireframe_id); // everything is so easy nowadays
+#endif
 			} else {
-
 				glBindVertexArray(s->array_id); // everything is so easy nowadays
 			}
 
@@ -1301,7 +1304,16 @@ void RasterizerSceneGLES3::_setup_geometry(RenderList::Element *e, const Transfo
 
 			RasterizerStorageGLES3::MultiMesh *multi_mesh = static_cast<RasterizerStorageGLES3::MultiMesh *>(e->owner);
 			RasterizerStorageGLES3::Surface *s = static_cast<RasterizerStorageGLES3::Surface *>(e->geometry);
-			glBindVertexArray(s->instancing_array_id); // use the instancing array ID
+#ifdef DEBUG_ENABLED
+			if (state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_WIREFRAME && s->instancing_array_wireframe_id) {
+
+				glBindVertexArray(s->instancing_array_wireframe_id); // use the instancing array ID
+			} else
+#endif
+			{
+				glBindVertexArray(s->instancing_array_id); // use the instancing array ID
+			}
+
 			glBindBuffer(GL_ARRAY_BUFFER, multi_mesh->buffer); //modify the buffer
 
 			int stride = (multi_mesh->xform_floats + multi_mesh->color_floats) * 4;
@@ -1366,13 +1378,26 @@ void RasterizerSceneGLES3::_setup_geometry(RenderList::Element *e, const Transfo
 				sorter.sort(particle_array, particles->amount);
 
 				glUnmapBuffer(GL_ARRAY_BUFFER);
+#ifdef DEBUG_ENABLED
+				if (state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_WIREFRAME && s->instancing_array_wireframe_id) {
+					glBindVertexArray(s->instancing_array_wireframe_id); // use the wireframe instancing array ID
+				} else
+#endif
+				{
 
-				glBindVertexArray(s->instancing_array_id); // use the instancing array ID
+					glBindVertexArray(s->instancing_array_id); // use the instancing array ID
+				}
 				glBindBuffer(GL_ARRAY_BUFFER, particles->particle_buffer_histories[1]); //modify the buffer
 
 			} else {
-
-				glBindVertexArray(s->instancing_array_id); // use the instancing array ID
+#ifdef DEBUG_ENABLED
+				if (state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_WIREFRAME && s->instancing_array_wireframe_id) {
+					glBindVertexArray(s->instancing_array_wireframe_id); // use the wireframe instancing array ID
+				} else
+#endif
+				{
+					glBindVertexArray(s->instancing_array_id); // use the instancing array ID
+				}
 				glBindBuffer(GL_ARRAY_BUFFER, particles->particle_buffers[0]); //modify the buffer
 			}
 
@@ -1421,7 +1446,15 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 
 			RasterizerStorageGLES3::Surface *s = static_cast<RasterizerStorageGLES3::Surface *>(e->geometry);
 
-			if (s->index_array_len > 0) {
+#ifdef DEBUG_ENABLED
+
+			if (state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_WIREFRAME && s->array_wireframe_id) {
+
+				glDrawElements(GL_LINES, s->index_wireframe_len, GL_UNSIGNED_INT, 0);
+				storage->info.render_vertices_count += s->index_array_len;
+			} else
+#endif
+					if (s->index_array_len > 0) {
 
 				glDrawElements(gl_primitive[s->primitive], s->index_array_len, (s->array_len >= (1 << 16)) ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT, 0);
 
@@ -1442,7 +1475,15 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 
 			int amount = MAX(multi_mesh->size, multi_mesh->visible_instances);
 
-			if (s->index_array_len > 0) {
+#ifdef DEBUG_ENABLED
+
+			if (state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_WIREFRAME && s->array_wireframe_id) {
+
+				glDrawElementsInstanced(GL_LINES, s->index_wireframe_len, GL_UNSIGNED_INT, 0, amount);
+				storage->info.render_vertices_count += s->index_array_len * amount;
+			} else
+#endif
+					if (s->index_array_len > 0) {
 
 				glDrawElementsInstanced(gl_primitive[s->primitive], s->index_array_len, (s->array_len >= (1 << 16)) ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT, 0, amount);
 
@@ -1600,8 +1641,15 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 					glEnableVertexAttribArray(12); //custom
 					glVertexAttribPointer(12, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + stride * split + sizeof(float) * 4 * 2);
 					glVertexAttribDivisor(12, 1);
+#ifdef DEBUG_ENABLED
 
-					if (s->index_array_len > 0) {
+					if (state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_WIREFRAME && s->array_wireframe_id) {
+
+						glDrawElementsInstanced(GL_LINES, s->index_wireframe_len, GL_UNSIGNED_INT, 0, amount - split);
+						storage->info.render_vertices_count += s->index_array_len * (amount - split);
+					} else
+#endif
+							if (s->index_array_len > 0) {
 
 						glDrawElementsInstanced(gl_primitive[s->primitive], s->index_array_len, (s->array_len >= (1 << 16)) ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT, 0, amount - split);
 
@@ -1631,8 +1679,15 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 					glEnableVertexAttribArray(12); //custom
 					glVertexAttribPointer(12, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + sizeof(float) * 4 * 2);
 					glVertexAttribDivisor(12, 1);
+#ifdef DEBUG_ENABLED
 
-					if (s->index_array_len > 0) {
+					if (state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_WIREFRAME && s->array_wireframe_id) {
+
+						glDrawElementsInstanced(GL_LINES, s->index_wireframe_len, GL_UNSIGNED_INT, 0, split);
+						storage->info.render_vertices_count += s->index_array_len * split;
+					} else
+#endif
+							if (s->index_array_len > 0) {
 
 						glDrawElementsInstanced(gl_primitive[s->primitive], s->index_array_len, (s->array_len >= (1 << 16)) ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT, 0, split);
 
@@ -1648,7 +1703,15 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 
 			} else {
 
-				if (s->index_array_len > 0) {
+#ifdef DEBUG_ENABLED
+
+				if (state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_WIREFRAME && s->array_wireframe_id) {
+
+					glDrawElementsInstanced(GL_LINES, s->index_wireframe_len, GL_UNSIGNED_INT, 0, amount);
+					storage->info.render_vertices_count += s->index_array_len * amount;
+				} else
+#endif
+						if (s->index_array_len > 0) {
 
 					glDrawElementsInstanced(gl_primitive[s->primitive], s->index_array_len, (s->array_len >= (1 << 16)) ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT, 0, amount);
 
@@ -2034,6 +2097,10 @@ void RasterizerSceneGLES3::_add_geometry(RasterizerStorageGLES3::Geometry *p_geo
 	RasterizerStorageGLES3::Material *m = NULL;
 	RID m_src = p_instance->material_override.is_valid() ? p_instance->material_override : (p_material >= 0 ? p_instance->materials[p_material] : p_geometry->material);
 
+	if (state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_OVERDRAW) {
+		m_src = default_overdraw_material;
+	}
+
 	/*
 #ifdef DEBUG_ENABLED
 	if (current_debug==VS::SCENARIO_DEBUG_OVERDRAW) {
@@ -2152,7 +2219,7 @@ void RasterizerSceneGLES3::_add_geometry(RasterizerStorageGLES3::Geometry *p_geo
 
 	//e->light_type=0xFF; // no lights!
 
-	if (shadow || m->shader->spatial.unshaded /*|| current_debug==VS::SCENARIO_DEBUG_SHADELESS*/) {
+	if (shadow || m->shader->spatial.unshaded || state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_UNSHADED) {
 
 		e->sort_key |= RenderList::SORT_KEY_UNSHADED_FLAG;
 	}
@@ -3789,7 +3856,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 
 	state.used_contact_shadows = true;
 
-	if (storage->frame.current_rt && true) { //detect with state.used_contact_shadows too
+	if (storage->frame.current_rt && state.debug_draw != VS::VIEWPORT_DEBUG_DRAW_OVERDRAW) { //detect with state.used_contact_shadows too
 		//pre z pass
 
 		glDisable(GL_BLEND);
@@ -3880,6 +3947,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 		//effects disabled and transparency also prevent using MRTs
 		use_mrt = use_mrt && !storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT];
 		use_mrt = use_mrt && !storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_NO_3D_EFFECTS];
+		use_mrt = use_mrt && state.debug_draw != VS::VIEWPORT_DEBUG_DRAW_OVERDRAW;
 
 		glViewport(0, 0, storage->frame.current_rt->width, storage->frame.current_rt->height);
 
@@ -3928,7 +3996,10 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 	RasterizerStorageGLES3::Sky *sky = NULL;
 	GLuint env_radiance_tex = 0;
 
-	if (storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT]) {
+	if (state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_OVERDRAW) {
+		clear_color = Color(0, 0, 0, 0);
+		storage->frame.clear_request = false;
+	} else if (storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT]) {
 		clear_color = Color(0, 0, 0, 0);
 	} else if (!env || env->bg_mode == VS::ENV_BG_CLEAR_COLOR) {
 
@@ -3992,7 +4063,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 		glDrawBuffers(1, &gldb);
 	}
 
-	if (env && env->bg_mode == VS::ENV_BG_SKY && !storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT]) {
+	if (env && env->bg_mode == VS::ENV_BG_SKY && !storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT] && state.debug_draw != VS::VIEWPORT_DEBUG_DRAW_OVERDRAW) {
 
 		/*
 		if (use_mrt) {
@@ -4554,119 +4625,9 @@ bool RasterizerSceneGLES3::free(RID p_rid) {
 	return true;
 }
 
-// http://holger.dammertz.org/stuff/notes_HammersleyOnHemisphere.html
-static _FORCE_INLINE_ float radicalInverse_VdC(uint32_t bits) {
-	bits = (bits << 16u) | (bits >> 16u);
-	bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);
-	bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);
-	bits = ((bits & 0x0F0F0F0Fu) << 4u) | ((bits & 0xF0F0F0F0u) >> 4u);
-	bits = ((bits & 0x00FF00FFu) << 8u) | ((bits & 0xFF00FF00u) >> 8u);
-	return float(bits) * 2.3283064365386963e-10f; // / 0x100000000
-}
+void RasterizerSceneGLES3::set_debug_draw_mode(VS::ViewportDebugDraw p_debug_draw) {
 
-static _FORCE_INLINE_ Vector2 Hammersley(uint32_t i, uint32_t N) {
-	return Vector2(float(i) / float(N), radicalInverse_VdC(i));
-}
-
-static _FORCE_INLINE_ Vector3 ImportanceSampleGGX(Vector2 Xi, float Roughness, Vector3 N) {
-	float a = Roughness * Roughness; // DISNEY'S ROUGHNESS [see Burley'12 siggraph]
-
-	// Compute distribution direction
-	float Phi = 2.0f * Math_PI * Xi.x;
-	float CosTheta = Math::sqrt((float)(1.0f - Xi.y) / (1.0f + (a * a - 1.0f) * Xi.y));
-	float SinTheta = Math::sqrt((float)Math::abs(1.0f - CosTheta * CosTheta));
-
-	// Convert to spherical direction
-	Vector3 H;
-	H.x = SinTheta * Math::cos(Phi);
-	H.y = SinTheta * Math::sin(Phi);
-	H.z = CosTheta;
-
-	Vector3 UpVector = Math::abs(N.z) < 0.999 ? Vector3(0.0, 0.0, 1.0) : Vector3(1.0, 0.0, 0.0);
-	Vector3 TangentX = UpVector.cross(N);
-	TangentX.normalize();
-	Vector3 TangentY = N.cross(TangentX);
-
-	// Tangent to world space
-	return TangentX * H.x + TangentY * H.y + N * H.z;
-}
-
-static _FORCE_INLINE_ float GGX(float NdotV, float a) {
-	float k = a / 2.0;
-	return NdotV / (NdotV * (1.0 - k) + k);
-}
-
-// http://graphicrants.blogspot.com.au/2013/08/specular-brdf-reference.html
-float _FORCE_INLINE_ G_Smith(float a, float nDotV, float nDotL) {
-	return GGX(nDotL, a * a) * GGX(nDotV, a * a);
-}
-
-void RasterizerSceneGLES3::_generate_brdf() {
-
-	int brdf_size = GLOBAL_DEF("rendering/gles3/brdf_texture_size", 64);
-
-	PoolVector<uint8_t> brdf;
-	brdf.resize(brdf_size * brdf_size * 2);
-
-	PoolVector<uint8_t>::Write w = brdf.write();
-
-	for (int i = 0; i < brdf_size; i++) {
-		for (int j = 0; j < brdf_size; j++) {
-
-			float Roughness = float(j) / (brdf_size - 1);
-			float NoV = float(i + 1) / (brdf_size); //avoid storing nov0
-
-			Vector3 V;
-			V.x = Math::sqrt(1.0f - NoV * NoV);
-			V.y = 0.0;
-			V.z = NoV;
-
-			Vector3 N = Vector3(0.0, 0.0, 1.0);
-
-			float A = 0;
-			float B = 0;
-
-			for (int s = 0; s < 512; s++) {
-
-				Vector2 xi = Hammersley(s, 512);
-				Vector3 H = ImportanceSampleGGX(xi, Roughness, N);
-				Vector3 L = 2.0 * V.dot(H) * H - V;
-
-				float NoL = CLAMP(L.z, 0.0, 1.0);
-				float NoH = CLAMP(H.z, 0.0, 1.0);
-				float VoH = CLAMP(V.dot(H), 0.0, 1.0);
-
-				if (NoL > 0.0) {
-					float G = G_Smith(Roughness, NoV, NoL);
-					float G_Vis = G * VoH / (NoH * NoV);
-					float Fc = pow(1.0 - VoH, 5.0);
-
-					A += (1.0 - Fc) * G_Vis;
-					B += Fc * G_Vis;
-				}
-			}
-
-			A /= 512.0;
-			B /= 512.0;
-
-			int tofs = ((brdf_size - j - 1) * brdf_size + i) * 2;
-			w[tofs + 0] = CLAMP(A * 255, 0, 255);
-			w[tofs + 1] = CLAMP(B * 255, 0, 255);
-		}
-	}
-
-	//set up brdf texture
-
-	glGenTextures(1, &state.brdf_texture);
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, state.brdf_texture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RG8, brdf_size, brdf_size, 0, GL_RG, GL_UNSIGNED_BYTE, w.ptr());
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	state.debug_draw = p_debug_draw;
 }
 
 void RasterizerSceneGLES3::initialize() {
@@ -4675,15 +4636,28 @@ void RasterizerSceneGLES3::initialize() {
 
 	state.scene_shader.init();
 
-	default_shader = storage->shader_create();
-	storage->shader_set_code(default_shader, "shader_type spatial;\n");
-	default_material = storage->material_create();
-	storage->material_set_shader(default_material, default_shader);
+	{
+		//default material and shader
 
-	default_shader_twosided = storage->shader_create();
-	default_material_twosided = storage->material_create();
-	storage->shader_set_code(default_shader_twosided, "shader_type spatial; render_mode cull_disabled;\n");
-	storage->material_set_shader(default_material_twosided, default_shader_twosided);
+		default_shader = storage->shader_create();
+		storage->shader_set_code(default_shader, "shader_type spatial;\n");
+		default_material = storage->material_create();
+		storage->material_set_shader(default_material, default_shader);
+
+		default_shader_twosided = storage->shader_create();
+		default_material_twosided = storage->material_create();
+		storage->shader_set_code(default_shader_twosided, "shader_type spatial; render_mode cull_disabled;\n");
+		storage->material_set_shader(default_material_twosided, default_shader_twosided);
+	}
+
+	{
+		//default material and shader
+
+		default_overdraw_shader = storage->shader_create();
+		storage->shader_set_code(default_overdraw_shader, "shader_type spatial;\nrender_mode blend_add,unshaded;\n void fragment() { ALBEDO=vec3(0.4,0.8,0.8); ALPHA=0.2; }");
+		default_overdraw_material = storage->material_create();
+		storage->material_set_shader(default_overdraw_material, default_overdraw_shader);
+	}
 
 	glGenBuffers(1, &state.scene_ubo);
 	glBindBuffer(GL_UNIFORM_BUFFER, state.scene_ubo);
@@ -4721,7 +4695,6 @@ void RasterizerSceneGLES3::initialize() {
 	}
 	render_list.init();
 	state.cube_to_dp_shader.init();
-	_generate_brdf();
 
 	shadow_atlas_realloc_tolerance_msec = 500;
 
@@ -4968,6 +4941,8 @@ void RasterizerSceneGLES3::initialize() {
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 		ERR_CONTINUE(status != GL_FRAMEBUFFER_COMPLETE);
 	}
+
+	state.debug_draw = VS::VIEWPORT_DEBUG_DRAW_DISABLED;
 }
 
 void RasterizerSceneGLES3::iteration() {

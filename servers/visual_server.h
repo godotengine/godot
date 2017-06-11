@@ -590,6 +590,28 @@ public:
 	virtual void viewport_set_hdr(RID p_viewport, bool p_enabled) = 0;
 	virtual void viewport_set_usage(RID p_viewport, ViewportUsage p_usage) = 0;
 
+	enum ViewportRenderInfo {
+
+		VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME,
+		VIEWPORT_RENDER_INFO_VERTICES_IN_FRAME,
+		VIEWPORT_RENDER_INFO_MATERIAL_CHANGES_IN_FRAME,
+		VIEWPORT_RENDER_INFO_SHADER_CHANGES_IN_FRAME,
+		VIEWPORT_RENDER_INFO_SURFACE_CHANGES_IN_FRAME,
+		VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME,
+		VIEWPORT_RENDER_INFO_MAX
+	};
+
+	virtual int viewport_get_render_info(RID p_viewport, ViewportRenderInfo p_info) = 0;
+
+	enum ViewportDebugDraw {
+		VIEWPORT_DEBUG_DRAW_DISABLED,
+		VIEWPORT_DEBUG_DRAW_UNSHADED,
+		VIEWPORT_DEBUG_DRAW_OVERDRAW,
+		VIEWPORT_DEBUG_DRAW_WIREFRAME,
+	};
+
+	virtual void viewport_set_debug_draw(RID p_viewport, ViewportDebugDraw p_draw) = 0;
+
 	/* ENVIRONMENT API */
 
 	virtual RID environment_create() = 0;
@@ -911,6 +933,8 @@ public:
 	virtual bool has_feature(Features p_feature) const = 0;
 
 	virtual bool has_os_feature(const String &p_feature) const = 0;
+
+	virtual void set_debug_generate_wireframes(bool p_generate) = 0;
 
 	VisualServer();
 	virtual ~VisualServer();

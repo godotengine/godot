@@ -64,6 +64,9 @@ public:
 		RID shadow_atlas;
 		int shadow_atlas_size;
 
+		int render_info[VS::VIEWPORT_RENDER_INFO_MAX];
+		VS::ViewportDebugDraw debug_draw;
+
 		VS::ViewportClearMode clear_mode;
 
 		bool rendered_in_prev_frame;
@@ -103,6 +106,10 @@ public:
 			shadow_atlas_size = 0;
 			disable_3d = false;
 			disable_3d_by_usage = false;
+			debug_draw = VS::VIEWPORT_DEBUG_DRAW_DISABLED;
+			for (int i = 0; i < VS::VIEWPORT_RENDER_INFO_MAX; i++) {
+				render_info[i] = 0;
+			}
 		}
 	};
 
@@ -167,6 +174,9 @@ public:
 	void viewport_set_msaa(RID p_viewport, VS::ViewportMSAA p_msaa);
 	void viewport_set_hdr(RID p_viewport, bool p_enabled);
 	void viewport_set_usage(RID p_viewport, VS::ViewportUsage p_usage);
+
+	virtual int viewport_get_render_info(RID p_viewport, VS::ViewportRenderInfo p_info);
+	virtual void viewport_set_debug_draw(RID p_viewport, VS::ViewportDebugDraw p_draw);
 
 	void draw_viewports();
 

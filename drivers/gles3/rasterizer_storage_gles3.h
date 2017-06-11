@@ -84,6 +84,8 @@ public:
 		int max_texture_image_units;
 		int max_texture_size;
 
+		bool generate_wireframes;
+
 		Set<String> extensions;
 
 		bool keep_original_textures;
@@ -537,6 +539,11 @@ public:
 		GLuint vertex_id;
 		GLuint index_id;
 
+		GLuint index_wireframe_id;
+		GLuint array_wireframe_id;
+		GLuint instancing_array_wireframe_id;
+		int index_wireframe_len;
+
 		Vector<Rect3> skeleton_bone_aabb;
 		Vector<bool> skeleton_bone_used;
 
@@ -581,6 +588,11 @@ public:
 			primitive = VS::PRIMITIVE_POINTS;
 			index_array_len = 0;
 			active = false;
+
+			index_wireframe_id = 0;
+			array_wireframe_id = 0;
+			instancing_array_wireframe_id = 0;
+			index_wireframe_len = 0;
 		}
 
 		~Surface() {
@@ -1282,6 +1294,8 @@ public:
 	virtual bool has_os_feature(const String &p_feature) const;
 
 	virtual void update_dirty_resources();
+
+	virtual void set_debug_generate_wireframes(bool p_generate);
 
 	RasterizerStorageGLES3();
 };

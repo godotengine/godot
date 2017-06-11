@@ -272,6 +272,9 @@ void VisualServerViewport::draw_viewports() {
 			continue;
 
 		VSG::rasterizer->set_current_render_target(vp->render_target);
+
+		VSG::scene_render->set_debug_draw_mode(vp->debug_draw);
+
 		_draw_viewport(vp);
 
 		if (vp->viewport_to_screen_rect != Rect2()) {
@@ -283,6 +286,7 @@ void VisualServerViewport::draw_viewports() {
 		if (vp->update_mode == VS::VIEWPORT_UPDATE_ONCE) {
 			vp->update_mode = VS::VIEWPORT_UPDATE_DISABLED;
 		}
+		VSG::scene_render->set_debug_draw_mode(VS::VIEWPORT_DEBUG_DRAW_DISABLED);
 	}
 }
 
@@ -555,6 +559,23 @@ void VisualServerViewport::viewport_set_usage(RID p_viewport, VS::ViewportUsage 
 			viewport->disable_3d_by_usage = false;
 		} break;
 	}
+}
+
+int VisualServerViewport::viewport_get_render_info(RID p_viewport, VS::ViewportRenderInfo p_info) {
+
+	ERR_FAIL_INDEX_V(p_info, VS::VIEWPORT_RENDER_INFO_MAX, -1);
+	Viewport *viewport = viewport_owner.getornull(p_viewport);
+	ERR_FAIL_COND_V(!viewport, -1);
+
+	return viewport->render_info[p_info];
+}
+
+void VisualServerViewport::viewport_set_debug_draw(RID p_viewport, VS::ViewportDebugDraw p_draw) {
+
+	Viewport *viewport = viewport_owner.getornull(p_viewport);
+	ERR_FAIL_COND(!viewport);
+
+	viewport->debug_draw = p_draw;
 }
 
 bool VisualServerViewport::free(RID p_rid) {

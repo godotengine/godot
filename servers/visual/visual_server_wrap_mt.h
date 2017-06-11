@@ -372,6 +372,9 @@ public:
 	FUNC2(viewport_set_hdr, RID, bool)
 	FUNC2(viewport_set_usage, RID, ViewportUsage)
 
+	FUNC2R(int, viewport_get_render_info, RID, ViewportRenderInfo)
+	FUNC2(viewport_set_debug_draw, RID, ViewportDebugDraw)
+
 	/* ENVIRONMENT API */
 
 	FUNC0R(RID, environment_create)
@@ -551,6 +554,8 @@ public:
 	FUNC1(set_default_clear_color, const Color &)
 
 	FUNC0R(RID, get_test_cube)
+
+	FUNC1(set_debug_generate_wireframes, bool)
 
 	virtual bool has_feature(Features p_feature) const { return visual_server->has_feature(p_feature); }
 	virtual bool has_os_feature(const String &p_feature) const { return visual_server->has_os_feature(p_feature); }
