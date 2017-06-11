@@ -148,6 +148,7 @@ public:
 	virtual void save_global_state();
 
 	void add_import_plugin(const Ref<EditorImportPlugin> &p_importer);
+	void remove_import_plugin(const Ref<EditorImportPlugin> &p_importer);
 
 	EditorPlugin();
 	virtual ~EditorPlugin();
