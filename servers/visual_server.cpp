@@ -338,8 +338,6 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 	PoolVector<uint8_t>::Write iw;
 	if (r_index_array.size()) {
-		print_line("elements: " + itos(r_index_array.size()));
-
 		iw = r_index_array.write();
 	}
 
