@@ -121,6 +121,9 @@ private:
 
 	bool freelook_active;
 
+	PanelContainer *info;
+	Label *info_label;
+
 	struct _RayResult {
 
 		Spatial *item;

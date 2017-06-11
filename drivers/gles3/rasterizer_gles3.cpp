@@ -212,11 +212,8 @@ void RasterizerGLES3::begin_frame() {
 
 	storage->update_dirty_resources();
 
-	storage->info.render_object_count = 0;
-	storage->info.render_material_switch_count = 0;
-	storage->info.render_surface_switch_count = 0;
-	storage->info.render_shader_rebind_count = 0;
-	storage->info.render_vertices_count = 0;
+	storage->info.render_final = storage->info.render;
+	storage->info.render.reset();
 
 	scene->iteration();
 }

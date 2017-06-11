@@ -501,6 +501,12 @@ public:
 
 	virtual void set_debug_generate_wireframes(bool p_generate) = 0;
 
+	virtual void render_info_begin_capture() = 0;
+	virtual void render_info_end_capture() = 0;
+	virtual int get_captured_render_info(VS::RenderInfo p_info) = 0;
+
+	virtual int get_render_info(VS::RenderInfo p_info) = 0;
+
 	static RasterizerStorage *base_singleton;
 	RasterizerStorage();
 	virtual ~RasterizerStorage() {}

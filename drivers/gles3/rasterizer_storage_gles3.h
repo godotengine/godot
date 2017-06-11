@@ -126,12 +126,33 @@ public:
 	struct Info {
 
 		uint64_t texture_mem;
+		uint64_t vertex_mem;
 
-		uint32_t render_object_count;
-		uint32_t render_material_switch_count;
-		uint32_t render_surface_switch_count;
-		uint32_t render_shader_rebind_count;
-		uint32_t render_vertices_count;
+		struct Render {
+			uint32_t object_count;
+			uint32_t draw_call_count;
+			uint32_t material_switch_count;
+			uint32_t surface_switch_count;
+			uint32_t shader_rebind_count;
+			uint32_t vertices_count;
+
+			void reset() {
+				object_count = 0;
+				draw_call_count = 0;
+				material_switch_count = 0;
+				surface_switch_count = 0;
+				shader_rebind_count = 0;
+				vertices_count = 0;
+			}
+		} render, render_final, snap;
+
+		Info() {
+
+			texture_mem = 0;
+			vertex_mem = 0;
+			render.reset();
+			render_final.reset();
+		}
 
 	} info;
 
@@ -574,6 +595,8 @@ public:
 			mesh->update_multimeshes();
 		}
 
+		int total_data_size;
+
 		Surface() {
 
 			array_byte_size = 0;
@@ -588,6 +611,8 @@ public:
 			primitive = VS::PRIMITIVE_POINTS;
 			index_array_len = 0;
 			active = false;
+
+			total_data_size = 0;
 
 			index_wireframe_id = 0;
 			array_wireframe_id = 0;
@@ -1286,6 +1311,7 @@ public:
 		float delta;
 		uint64_t prev_tick;
 		uint64_t count;
+
 	} frame;
 
 	void initialize();
@@ -1296,6 +1322,12 @@ public:
 	virtual void update_dirty_resources();
 
 	virtual void set_debug_generate_wireframes(bool p_generate);
+
+	virtual void render_info_begin_capture();
+	virtual void render_info_end_capture();
+	virtual int get_captured_render_info(VS::RenderInfo p_info);
+
+	virtual int get_render_info(VS::RenderInfo p_info);
 
 	RasterizerStorageGLES3();
 };

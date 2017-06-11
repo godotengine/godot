@@ -1724,6 +1724,33 @@ void SpatialEditorViewport::_notification(int p_what) {
 
 		bool hdr = GlobalConfig::get_singleton()->get("rendering/quality/hdr");
 		viewport->set_hdr(hdr);
+
+		bool show_info = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_INFORMATION));
+		if (show_info != info->is_visible()) {
+			if (show_info)
+				info->show();
+			else
+				info->hide();
+		}
+
+		if (show_info) {
+
+			String text;
+			text += TTR("Objects Drawn") + ": " + itos(viewport->get_render_info(Viewport::RENDER_INFO_OBJECTS_IN_FRAME)) + "\n";
+			text += TTR("Material Changes") + ": " + itos(viewport->get_render_info(Viewport::RENDER_INFO_MATERIAL_CHANGES_IN_FRAME)) + "\n";
+			text += TTR("Shader Changes") + ": " + itos(viewport->get_render_info(Viewport::RENDER_INFO_SHADER_CHANGES_IN_FRAME)) + "\n";
+			text += TTR("Surface Changes") + ": " + itos(viewport->get_render_info(Viewport::RENDER_INFO_SURFACE_CHANGES_IN_FRAME)) + "\n";
+			text += TTR("Draw Calls") + ": " + itos(viewport->get_render_info(Viewport::RENDER_INFO_DRAW_CALLS_IN_FRAME)) + "\n";
+			text += TTR("Vertices") + ": " + itos(viewport->get_render_info(Viewport::RENDER_INFO_VERTICES_IN_FRAME));
+
+			if (info_label->get_text() != text || surface->get_size() != prev_size) {
+				info_label->set_text(text);
+				Size2 ms = info->get_minimum_size();
+				info->set_position(surface->get_size() - ms - Vector2(20, 20) * EDSCALE);
+			}
+		}
+
+		prev_size = surface->get_size();
 	}
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
@@ -1731,6 +1758,7 @@ void SpatialEditorViewport::_notification(int p_what) {
 		surface->connect("draw", this, "_draw");
 		surface->connect("gui_input", this, "_sinput");
 		surface->connect("mouse_entered", this, "_smouseenter");
+		info->add_style_override("panel", get_stylebox("panel", "Panel"));
 		preview_camera->set_icon(get_icon("Camera", "EditorIcons"));
 		_init_gizmo_instance(index);
 	}
@@ -1995,6 +2023,13 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 			else
 				camera->set_cull_mask(((1 << 20) - 1) | (1 << (GIZMO_BASE_LAYER + index)) | (1 << GIZMO_GRID_LAYER));
 			view_menu->get_popup()->set_item_checked(idx, current);
+
+		} break;
+		case VIEW_INFORMATION: {
+
+			int idx = view_menu->get_popup()->get_item_index(VIEW_INFORMATION);
+			bool current = view_menu->get_popup()->is_item_checked(idx);
+			view_menu->get_popup()->set_item_checked(idx, !current);
 
 		} break;
 		case VIEW_DISPLAY_NORMAL: {
@@ -2312,6 +2347,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	surface = memnew(Control);
 	add_child(surface);
 	surface->set_area_as_parent_rect();
+	surface->set_clip_contents(true);
 	camera = memnew(Camera);
 	camera->set_disable_gizmo(true);
 	camera->set_cull_mask(((1 << 20) - 1) | (1 << (GIZMO_BASE_LAYER + p_index)) | (1 << GIZMO_EDIT_LAYER) | (1 << GIZMO_GRID_LAYER));
@@ -2366,6 +2402,13 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	previewing = NULL;
 	preview = NULL;
 	gizmo_scale = 1.0;
+
+	info = memnew(PanelContainer);
+	info->set_self_modulate(Color(1, 1, 1, 0.4));
+	surface->add_child(info);
+	info_label = memnew(Label);
+	info->add_child(info_label);
+	info->hide();
 
 	freelook_active = false;
 

@@ -145,7 +145,7 @@ void VisualServerRaster::finish() {
 
 int VisualServerRaster::get_render_info(RenderInfo p_info) {
 
-	return 0;
+	return VSG::storage->get_render_info(p_info);
 }
 
 /* TESTING */

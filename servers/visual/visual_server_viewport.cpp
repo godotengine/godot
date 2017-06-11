@@ -274,8 +274,17 @@ void VisualServerViewport::draw_viewports() {
 		VSG::rasterizer->set_current_render_target(vp->render_target);
 
 		VSG::scene_render->set_debug_draw_mode(vp->debug_draw);
+		VSG::storage->render_info_begin_capture();
 
 		_draw_viewport(vp);
+
+		VSG::storage->render_info_end_capture();
+		vp->render_info[VS::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME] = VSG::storage->get_captured_render_info(VS::INFO_OBJECTS_IN_FRAME);
+		vp->render_info[VS::VIEWPORT_RENDER_INFO_VERTICES_IN_FRAME] = VSG::storage->get_captured_render_info(VS::INFO_VERTICES_IN_FRAME);
+		vp->render_info[VS::VIEWPORT_RENDER_INFO_MATERIAL_CHANGES_IN_FRAME] = VSG::storage->get_captured_render_info(VS::INFO_MATERIAL_CHANGES_IN_FRAME);
+		vp->render_info[VS::VIEWPORT_RENDER_INFO_SHADER_CHANGES_IN_FRAME] = VSG::storage->get_captured_render_info(VS::INFO_SHADER_CHANGES_IN_FRAME);
+		vp->render_info[VS::VIEWPORT_RENDER_INFO_SURFACE_CHANGES_IN_FRAME] = VSG::storage->get_captured_render_info(VS::INFO_SURFACE_CHANGES_IN_FRAME);
+		vp->render_info[VS::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME] = VSG::storage->get_captured_render_info(VS::INFO_DRAW_CALLS_IN_FRAME);
 
 		if (vp->viewport_to_screen_rect != Rect2()) {
 			//copy to screen if set as such
@@ -564,8 +573,10 @@ void VisualServerViewport::viewport_set_usage(RID p_viewport, VS::ViewportUsage 
 int VisualServerViewport::viewport_get_render_info(RID p_viewport, VS::ViewportRenderInfo p_info) {
 
 	ERR_FAIL_INDEX_V(p_info, VS::VIEWPORT_RENDER_INFO_MAX, -1);
+
 	Viewport *viewport = viewport_owner.getornull(p_viewport);
-	ERR_FAIL_COND_V(!viewport, -1);
+	if (!viewport)
+		return 0; //there should be a lock here..
 
 	return viewport->render_info[p_info];
 }
