@@ -2341,6 +2341,305 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	EditorSettings::get_singleton()->connect("settings_changed", this, "update_transform_gizmo_view");
 }
 
+//////////////////////////////////////////////////////////////
+
+void SpatialEditorViewportContainer::_gui_input(const Ref<InputEvent> &p_event) {
+
+	Ref<InputEventMouseButton> mb = p_event;
+
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
+
+		Vector2 size = get_size();
+
+		int h_sep = get_constant("separation", "HSplitContainer");
+		int v_sep = get_constant("separation", "VSplitContainer");
+
+		int mid_w = size.width * ratio_h;
+		int mid_h = size.height * ratio_v;
+
+		dragging_h = mb->get_position().x > (mid_w - h_sep / 2) && mb->get_position().x < (mid_w + h_sep / 2);
+		dragging_v = mb->get_position().y > (mid_h - v_sep / 2) && mb->get_position().y < (mid_h + v_sep / 2);
+
+		drag_begin_pos = mb->get_position();
+		drag_begin_ratio.x = ratio_h;
+		drag_begin_ratio.y = ratio_v;
+
+		switch (view) {
+			case VIEW_USE_1_VIEWPORT: {
+
+				dragging_h = false;
+				dragging_v = false;
+
+			} break;
+			case VIEW_USE_2_VIEWPORTS: {
+
+				dragging_h = false;
+
+			} break;
+			case VIEW_USE_2_VIEWPORTS_ALT: {
+
+				dragging_v = false;
+
+			} break;
+			case VIEW_USE_3_VIEWPORTS: {
+
+				if (dragging_v)
+					dragging_h = false;
+				else
+					dragging_v = false;
+
+			} break;
+			case VIEW_USE_3_VIEWPORTS_ALT: {
+
+				if (dragging_h)
+					dragging_v = false;
+				else
+					dragging_h = false;
+			} break;
+			case VIEW_USE_4_VIEWPORTS: {
+
+			} break;
+		}
+	}
+
+	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
+		dragging_h = false;
+		dragging_v = false;
+	}
+
+	Ref<InputEventMouseMotion> mm = p_event;
+
+	if (mm.is_valid() && (dragging_h || dragging_v)) {
+
+		if (dragging_h) {
+			float new_ratio = drag_begin_ratio.x + (mm->get_position().x - drag_begin_pos.x) / get_size().width;
+			new_ratio = CLAMP(new_ratio, 40 / get_size().width, (get_size().width - 40) / get_size().width);
+			ratio_h = new_ratio;
+			queue_sort();
+			update();
+		}
+		if (dragging_v) {
+			float new_ratio = drag_begin_ratio.y + (mm->get_position().y - drag_begin_pos.y) / get_size().height;
+			new_ratio = CLAMP(new_ratio, 40 / get_size().height, (get_size().height - 40) / get_size().height);
+			ratio_v = new_ratio;
+			queue_sort();
+			update();
+		}
+	}
+}
+
+void SpatialEditorViewportContainer::_notification(int p_what) {
+
+	if (p_what == NOTIFICATION_MOUSE_ENTER || p_what == NOTIFICATION_MOUSE_EXIT) {
+
+		mouseover = (p_what == NOTIFICATION_MOUSE_ENTER);
+		update();
+	}
+
+	if (p_what == NOTIFICATION_DRAW && mouseover) {
+
+		Ref<Texture> h_grabber = get_icon("grabber", "HSplitContainer");
+
+		Ref<Texture> v_grabber = get_icon("grabber", "VSplitContainer");
+
+		Vector2 size = get_size();
+
+		int h_sep = get_constant("separation", "HSplitContainer");
+
+		int v_sep = get_constant("separation", "VSplitContainer");
+
+		int mid_w = size.width * ratio_h;
+		int mid_h = size.height * ratio_v;
+
+		int size_left = mid_w - h_sep / 2;
+		int size_bottom = size.height - mid_h - v_sep / 2;
+
+		switch (view) {
+
+			case VIEW_USE_1_VIEWPORT: {
+
+				//nothing to show
+
+			} break;
+			case VIEW_USE_2_VIEWPORTS: {
+
+				draw_texture(v_grabber, Vector2((size.width - v_grabber->get_width()) / 2, mid_h - v_grabber->get_height() / 2));
+
+			} break;
+			case VIEW_USE_2_VIEWPORTS_ALT: {
+
+				draw_texture(h_grabber, Vector2(mid_w - h_grabber->get_width() / 2, (size.height - h_grabber->get_height()) / 2));
+
+			} break;
+			case VIEW_USE_3_VIEWPORTS: {
+
+				draw_texture(v_grabber, Vector2((size.width - v_grabber->get_width()) / 2, mid_h - v_grabber->get_height() / 2));
+				draw_texture(h_grabber, Vector2(mid_w - h_grabber->get_width() / 2, mid_h + v_grabber->get_height() / 2 + (size_bottom - h_grabber->get_height()) / 2));
+
+			} break;
+			case VIEW_USE_3_VIEWPORTS_ALT: {
+
+				draw_texture(v_grabber, Vector2((size_left - v_grabber->get_width()) / 2, mid_h - v_grabber->get_height() / 2));
+				draw_texture(h_grabber, Vector2(mid_w - h_grabber->get_width() / 2, (size.height - h_grabber->get_height()) / 2));
+			} break;
+			case VIEW_USE_4_VIEWPORTS: {
+
+				Vector2 half(mid_w, mid_h);
+				draw_texture(v_grabber, half - v_grabber->get_size() / 2.0);
+				draw_texture(h_grabber, half - h_grabber->get_size() / 2.0);
+
+			} break;
+		}
+	}
+
+	if (p_what == NOTIFICATION_SORT_CHILDREN) {
+
+		SpatialEditorViewport *viewports[4];
+		int vc = 0;
+		for (int i = 0; i < get_child_count(); i++) {
+			viewports[vc] = get_child(i)->cast_to<SpatialEditorViewport>();
+			if (viewports[vc]) {
+				vc++;
+			}
+		}
+
+		ERR_FAIL_COND(vc != 4);
+
+		Size2 size = get_size();
+
+		if (size.x < 10 || size.y < 10) {
+			for (int i = 0; i < 4; i++) {
+				viewports[i]->hide();
+			}
+			return;
+		}
+		int h_sep = get_constant("separation", "HSplitContainer");
+
+		int v_sep = get_constant("separation", "VSplitContainer");
+
+		int mid_w = size.width * ratio_h;
+		int mid_h = size.height * ratio_v;
+
+		int size_left = mid_w - h_sep / 2;
+		int size_right = size.width - mid_w - h_sep / 2;
+
+		int size_top = mid_h - v_sep / 2;
+		int size_bottom = size.height - mid_h - v_sep / 2;
+
+		switch (view) {
+
+			case VIEW_USE_1_VIEWPORT: {
+
+				for (int i = 1; i < 4; i++) {
+
+					viewports[i]->hide();
+				}
+
+				fit_child_in_rect(viewports[0], Rect2(Vector2(), size));
+
+			} break;
+			case VIEW_USE_2_VIEWPORTS: {
+
+				for (int i = 1; i < 4; i++) {
+
+					if (i == 1 || i == 3)
+						viewports[i]->hide();
+					else
+						viewports[i]->show();
+				}
+
+				fit_child_in_rect(viewports[0], Rect2(Vector2(), Vector2(size.width, size_top)));
+				fit_child_in_rect(viewports[2], Rect2(Vector2(0, mid_h + v_sep / 2), Vector2(size.width, size_bottom)));
+
+			} break;
+			case VIEW_USE_2_VIEWPORTS_ALT: {
+
+				for (int i = 1; i < 4; i++) {
+
+					if (i == 1 || i == 3)
+						viewports[i]->hide();
+					else
+						viewports[i]->show();
+				}
+				fit_child_in_rect(viewports[0], Rect2(Vector2(), Vector2(size_left, size.height)));
+				fit_child_in_rect(viewports[2], Rect2(Vector2(mid_w + h_sep / 2, 0), Vector2(size_right, size.height)));
+
+			} break;
+			case VIEW_USE_3_VIEWPORTS: {
+
+				for (int i = 1; i < 4; i++) {
+
+					if (i == 1)
+						viewports[i]->hide();
+					else
+						viewports[i]->show();
+				}
+
+				fit_child_in_rect(viewports[0], Rect2(Vector2(), Vector2(size.width, size_top)));
+				fit_child_in_rect(viewports[2], Rect2(Vector2(0, mid_h + v_sep / 2), Vector2(size_left, size_bottom)));
+				fit_child_in_rect(viewports[3], Rect2(Vector2(mid_w + h_sep / 2, mid_h + v_sep / 2), Vector2(size_right, size_bottom)));
+
+			} break;
+			case VIEW_USE_3_VIEWPORTS_ALT: {
+
+				for (int i = 1; i < 4; i++) {
+
+					if (i == 1)
+						viewports[i]->hide();
+					else
+						viewports[i]->show();
+				}
+
+				fit_child_in_rect(viewports[0], Rect2(Vector2(), Vector2(size_left, size_top)));
+				fit_child_in_rect(viewports[2], Rect2(Vector2(0, mid_h + v_sep / 2), Vector2(size_left, size_bottom)));
+				fit_child_in_rect(viewports[3], Rect2(Vector2(mid_w + h_sep / 2, 0), Vector2(size_right, size.height)));
+
+			} break;
+			case VIEW_USE_4_VIEWPORTS: {
+
+				for (int i = 1; i < 4; i++) {
+
+					viewports[i]->show();
+				}
+
+				fit_child_in_rect(viewports[0], Rect2(Vector2(), Vector2(size_left, size_top)));
+				fit_child_in_rect(viewports[1], Rect2(Vector2(mid_w + h_sep / 2, 0), Vector2(size_right, size_top)));
+				fit_child_in_rect(viewports[2], Rect2(Vector2(0, mid_h + v_sep / 2), Vector2(size_left, size_bottom)));
+				fit_child_in_rect(viewports[3], Rect2(Vector2(mid_w + h_sep / 2, mid_h + v_sep / 2), Vector2(size_right, size_bottom)));
+
+			} break;
+		}
+	}
+}
+
+void SpatialEditorViewportContainer::set_view(View p_view) {
+
+	view = p_view;
+	queue_sort();
+}
+
+SpatialEditorViewportContainer::View SpatialEditorViewportContainer::get_view() {
+
+	return view;
+}
+
+void SpatialEditorViewportContainer::_bind_methods() {
+
+	ClassDB::bind_method("_gui_input", &SpatialEditorViewportContainer::_gui_input);
+}
+
+SpatialEditorViewportContainer::SpatialEditorViewportContainer() {
+
+	view = VIEW_USE_1_VIEWPORT;
+	mouseover = false;
+	ratio_h = 0.5;
+	ratio_v = 0.5;
+	dragging_v = false;
+	dragging_h = false;
+}
+
+///////////////////////////////////////////////////////////////////
+
 SpatialEditor *SpatialEditor::singleton = NULL;
 
 SpatialEditorSelectedItem::~SpatialEditorSelectedItem() {
@@ -2719,12 +3018,7 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 		} break;
 		case MENU_VIEW_USE_1_VIEWPORT: {
 
-			for (int i = 1; i < 4; i++) {
-
-				viewports[i]->hide();
-			}
-
-			viewports[0]->set_area_as_parent_rect();
+			viewport_base->set_view(SpatialEditorViewportContainer::VIEW_USE_1_VIEWPORT);
 
 			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT), true);
 			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), false);
@@ -2736,17 +3030,7 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 		} break;
 		case MENU_VIEW_USE_2_VIEWPORTS: {
 
-			for (int i = 1; i < 4; i++) {
-
-				if (i == 1 || i == 3)
-					viewports[i]->hide();
-				else
-					viewports[i]->show();
-			}
-			viewports[0]->set_area_as_parent_rect();
-			//viewports[0]->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_RATIO,0.5);
-			viewports[2]->set_area_as_parent_rect();
-			//viewports[2]->set_anchor_and_margin(MARGIN_TOP,ANCHOR_RATIO,0.5);
+			viewport_base->set_view(SpatialEditorViewportContainer::VIEW_USE_2_VIEWPORTS);
 
 			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT), false);
 			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), true);
@@ -2758,17 +3042,7 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 		} break;
 		case MENU_VIEW_USE_2_VIEWPORTS_ALT: {
 
-			for (int i = 1; i < 4; i++) {
-
-				if (i == 1 || i == 3)
-					viewports[i]->hide();
-				else
-					viewports[i]->show();
-			}
-			viewports[0]->set_area_as_parent_rect();
-			//viewports[0]->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_RATIO,0.5);
-			viewports[2]->set_area_as_parent_rect();
-			//viewports[2]->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_RATIO,0.5);
+			viewport_base->set_view(SpatialEditorViewportContainer::VIEW_USE_2_VIEWPORTS_ALT);
 
 			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT), false);
 			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), false);
@@ -2780,21 +3054,7 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 		} break;
 		case MENU_VIEW_USE_3_VIEWPORTS: {
 
-			for (int i = 1; i < VIEWPORTS_COUNT; i++) {
-
-				if (i == 1)
-					viewports[i]->hide();
-				else
-					viewports[i]->show();
-			}
-			viewports[0]->set_area_as_parent_rect();
-			//viewports[0]->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_RATIO,0.5);
-			viewports[2]->set_area_as_parent_rect();
-			//viewports[2]->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_RATIO,0.5);
-			//viewports[2]->set_anchor_and_margin(MARGIN_TOP,ANCHOR_RATIO,0.5);
-			viewports[3]->set_area_as_parent_rect();
-			//viewports[3]->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_RATIO,0.5);
-			//viewports[3]->set_anchor_and_margin(MARGIN_TOP,ANCHOR_RATIO,0.5);
+			viewport_base->set_view(SpatialEditorViewportContainer::VIEW_USE_3_VIEWPORTS);
 
 			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT), false);
 			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), false);
@@ -2806,21 +3066,7 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 		} break;
 		case MENU_VIEW_USE_3_VIEWPORTS_ALT: {
 
-			for (int i = 1; i < VIEWPORTS_COUNT; i++) {
-
-				if (i == 1)
-					viewports[i]->hide();
-				else
-					viewports[i]->show();
-			}
-			viewports[0]->set_area_as_parent_rect();
-			//viewports[0]->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_RATIO,0.5);
-			//viewports[0]->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_RATIO,0.5);
-			viewports[2]->set_area_as_parent_rect();
-			//viewports[2]->set_anchor_and_margin(MARGIN_TOP,ANCHOR_RATIO,0.5);
-			//viewports[2]->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_RATIO,0.5);
-			viewports[3]->set_area_as_parent_rect();
-			//viewports[3]->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_RATIO,0.5);
+			viewport_base->set_view(SpatialEditorViewportContainer::VIEW_USE_3_VIEWPORTS_ALT);
 
 			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT), false);
 			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), false);
@@ -2832,22 +3078,7 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 		} break;
 		case MENU_VIEW_USE_4_VIEWPORTS: {
 
-			for (int i = 1; i < VIEWPORTS_COUNT; i++) {
-
-				viewports[i]->show();
-			}
-			viewports[0]->set_area_as_parent_rect();
-			//viewports[0]->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_RATIO,0.5);
-			//viewports[0]->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_RATIO,0.5);
-			viewports[1]->set_area_as_parent_rect();
-			//viewports[1]->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_RATIO,0.5);
-			//viewports[1]->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_RATIO,0.5);
-			viewports[2]->set_area_as_parent_rect();
-			//viewports[2]->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_RATIO,0.5);
-			//viewports[2]->set_anchor_and_margin(MARGIN_TOP,ANCHOR_RATIO,0.5);
-			viewports[3]->set_area_as_parent_rect();
-			//viewports[3]->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_RATIO,0.5);
-			//viewports[3]->set_anchor_and_margin(MARGIN_TOP,ANCHOR_RATIO,0.5);
+			viewport_base->set_view(SpatialEditorViewportContainer::VIEW_USE_4_VIEWPORTS);
 
 			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT), false);
 			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), false);
@@ -3591,7 +3822,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	shader_split = memnew(VSplitContainer);
 	shader_split->set_h_size_flags(SIZE_EXPAND_FILL);
 	palette_split->add_child(shader_split);
-	viewport_base = memnew(Control);
+	viewport_base = memnew(SpatialEditorViewportContainer);
 	shader_split->add_child(viewport_base);
 	viewport_base->set_v_size_flags(SIZE_EXPAND_FILL);
 	for (int i = 0; i < VIEWPORTS_COUNT; i++) {

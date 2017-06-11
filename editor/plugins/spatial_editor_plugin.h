@@ -287,6 +287,43 @@ public:
 	~SpatialEditorSelectedItem();
 };
 
+class SpatialEditorViewportContainer : public Container {
+
+	GDCLASS(SpatialEditorViewportContainer, Container)
+public:
+	enum View {
+		VIEW_USE_1_VIEWPORT,
+		VIEW_USE_2_VIEWPORTS,
+		VIEW_USE_2_VIEWPORTS_ALT,
+		VIEW_USE_3_VIEWPORTS,
+		VIEW_USE_3_VIEWPORTS_ALT,
+		VIEW_USE_4_VIEWPORTS,
+	};
+
+private:
+	View view;
+	bool mouseover;
+	float ratio_h;
+	float ratio_v;
+
+	bool dragging_v;
+	bool dragging_h;
+	Vector2 drag_begin_pos;
+	Vector2 drag_begin_ratio;
+
+	void _gui_input(const Ref<InputEvent> &p_event);
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	void set_view(View p_view);
+	View get_view();
+
+	SpatialEditorViewportContainer();
+};
+
 class SpatialEditor : public VBoxContainer {
 
 	GDCLASS(SpatialEditor, VBoxContainer);
@@ -309,7 +346,7 @@ private:
 	EditorNode *editor;
 	EditorSelection *editor_selection;
 
-	Control *viewport_base;
+	SpatialEditorViewportContainer *viewport_base;
 	SpatialEditorViewport *viewports[VIEWPORTS_COUNT];
 	VSplitContainer *shader_split;
 	HSplitContainer *palette_split;
