@@ -97,8 +97,13 @@ _ALWAYS_INLINE_ void *operator new(size_t p_size, void *p_pointer, size_t check,
 #define memnew_allocator(m_class, m_allocator) _post_initialize(new (m_allocator::alloc) m_class)
 #define memnew_placement(m_placement, m_class) _post_initialize(new (m_placement, sizeof(m_class), "") m_class)
 
-_ALWAYS_INLINE_ bool predelete_handler(void *) {
+_ALWAYS_INLINE_ bool predelete_handler(void *p_obj) {
 	return true;
+}
+
+template <class T>
+_ALWAYS_INLINE_ void destruct(T *p_obj) {
+	p_obj->~T();
 }
 
 template <class T>
@@ -106,7 +111,7 @@ void memdelete(T *p_class) {
 
 	if (!predelete_handler(p_class))
 		return; // doesn't want to be deleted
-	p_class->~T();
+	destruct(p_class);
 	Memory::free_static(p_class, false);
 }
 
@@ -115,7 +120,7 @@ void memdelete_allocator(T *p_class) {
 
 	if (!predelete_handler(p_class))
 		return; // doesn't want to be deleted
-	p_class->~T();
+	destruct(p_class);
 	A::free(p_class);
 }
 
