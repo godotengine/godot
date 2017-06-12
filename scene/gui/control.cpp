@@ -1184,6 +1184,7 @@ Size2 Control::get_parent_area_size() const {
 
 		parent_size = get_viewport()->get_visible_rect().size;
 	}
+
 	return parent_size;
 }
 
