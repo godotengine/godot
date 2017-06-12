@@ -263,7 +263,7 @@ void App::pointer_event(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Cor
 		screen_touch.instance();
 		screen_touch->set_device(0);
 		screen_touch->set_pressed(p_pressed);
-		screen_touch->set_pos(Vector2(pos.X, pos.Y));
+		screen_touch->set_position(Vector2(pos.X, pos.Y));
 		screen_touch->set_index(_get_finger(point->PointerId));
 
 		last_touch_x[screen_touch->get_index()] = pos.X;
@@ -280,8 +280,8 @@ void App::pointer_event(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Cor
 	mouse_button->set_device(0);
 	mouse_button->set_pressed(p_pressed);
 	mouse_button->set_button_index(but);
-	mouse_button->set_pos(Vector2(pos.X, pos.Y));
-	mouse_button->set_global_pos(Vector2(pos.X, pos.Y));
+	mouse_button->set_position(Vector2(pos.X, pos.Y));
+	mouse_button->set_global_position(Vector2(pos.X, pos.Y));
 
 	if (p_is_wheel) {
 		if (point->Properties->MouseWheelDelta > 0) {
@@ -355,9 +355,9 @@ void App::OnPointerMoved(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Co
 		Ref<InputEventScreenDrag> screen_drag;
 		screen_drag.instance();
 		screen_drag->set_device(0);
-		screen_drag->set_pos(Vector2(pos.X, pos.Y));
+		screen_drag->set_position(Vector2(pos.X, pos.Y));
 		screen_drag->set_index(_get_finger(point->PointerId));
-		screen_drag->set_relative(Vector2(screen_drag->get_pos().x - last_touch_x[screen_drag->get_index()], screen_drag->get_pos().y - last_touch_y[screen_drag->get_index()]));
+		screen_drag->set_relative(Vector2(screen_drag->get_position().x - last_touch_x[screen_drag->get_index()], screen_drag->get_position().y - last_touch_y[screen_drag->get_index()]));
 
 		os->input_event(screen_drag);
 		if (number_of_contacts > 1)
@@ -372,8 +372,8 @@ void App::OnPointerMoved(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Co
 	Ref<InputEventMouseMotion> mouse_motion;
 	mouse_motion.instance();
 	mouse_motion->set_device(0);
-	mouse_motion->set_pos(Vector2(pos.X, pos.Y));
-	mouse_motion->set_global_pos(Vector2(pos.X, pos.Y));
+	mouse_motion->set_position(Vector2(pos.X, pos.Y));
+	mouse_motion->set_global_position(Vector2(pos.X, pos.Y));
 	mouse_motion->set_relative(Vector2(pos.X - last_touch_x[31], pos.Y - last_touch_y[31]));
 
 	last_mouse_pos = pos;
@@ -394,8 +394,8 @@ void App::OnMouseMoved(MouseDevice ^ mouse_device, MouseEventArgs ^ args) {
 	Ref<InputEventMouseMotion> mouse_motion;
 	mouse_motion.instance();
 	mouse_motion->set_device(0);
-	mouse_motion->set_pos(Vector2(pos.X, pos.Y));
-	mouse_motion->set_global_pos(Vector2(pos.X, pos.Y));
+	mouse_motion->set_position(Vector2(pos.X, pos.Y));
+	mouse_motion->set_global_position(Vector2(pos.X, pos.Y));
 	mouse_motion->set_relative(Vector2(args->MouseDelta.X, args->MouseDelta.Y));
 
 	last_mouse_pos = pos;
