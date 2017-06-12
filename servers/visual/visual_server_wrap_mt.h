@@ -374,7 +374,7 @@ public:
 
 	//this passes directly to avoid stalling, but it's pretty dangerous, so dont call after freeing a viewport
 	virtual int viewport_get_render_info(RID p_viewport, ViewportRenderInfo p_info) {
-		visual_server->viewport_get_render_info(p_viewport, p_info);
+		return visual_server->viewport_get_render_info(p_viewport, p_info);
 	}
 
 	FUNC2(viewport_set_debug_draw, RID, ViewportDebugDraw)
@@ -554,7 +554,7 @@ public:
 
 	//this passes directly to avoid stalling
 	virtual int get_render_info(RenderInfo p_info) {
-		visual_server->get_render_info(p_info);
+		return visual_server->get_render_info(p_info);
 	}
 
 	FUNC3(set_boot_image, const Ref<Image> &, const Color &, bool)
