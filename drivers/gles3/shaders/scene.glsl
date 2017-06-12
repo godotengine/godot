@@ -245,7 +245,7 @@ void main() {
 
 		normal = vec4(normal,0.0) * m;
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
-		tangent.xyz = vec4(tangent.xyz,0.0) * mn;
+		tangent.xyz = vec4(tangent.xyz,0.0) * m;
 #endif
 	}
 #endif
