@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "compression.h"
-
+#include "global_config.h"
 #include "os/copymem.h"
 #include "zip_io.h"
 
@@ -36,8 +36,6 @@
 #include "thirdparty/zstd/zstd.h"
 
 #include <zlib.h>
-
-#define ZSTD_DEFAULT_COMPRESSION 3
 
 int Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int p_src_size, Mode p_mode) {
 
@@ -60,7 +58,8 @@ int Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int p_src_size, 
 			strm.zalloc = zipio_alloc;
 			strm.zfree = zipio_free;
 			strm.opaque = Z_NULL;
-			int err = deflateInit(&strm, Z_DEFAULT_COMPRESSION);
+			int level = GLOBAL_GET("compression/zlib_compression_level");
+			int err = deflateInit(&strm, level);
 			if (err != Z_OK)
 				return -1;
 
@@ -82,7 +81,8 @@ int Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int p_src_size, 
 		case MODE_ZSTD: {
 
 			int max_dst_size = get_max_compressed_buffer_size(p_src_size, MODE_ZSTD);
-			return ZSTD_compress(p_dst, max_dst_size, p_src, p_src_size, ZSTD_DEFAULT_COMPRESSION);
+			int level = GLOBAL_GET("compression/zstd_compression_level");
+			return ZSTD_compress(p_dst, max_dst_size, p_src, p_src_size, level);
 		} break;
 	}
 
