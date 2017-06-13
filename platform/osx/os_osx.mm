@@ -409,14 +409,14 @@ static int button_mask = 0;
 	if ((int)[event buttonNumber] != 2)
 		return;
 
-	button_mask |= BUTTON_MASK_MIDDLE;
+	button_mask &= ~BUTTON_MASK_MIDDLE;
 
 	Ref<InputEventMouseButton> mb;
 	mb.instance();
 
 	get_key_modifier_state([event modifierFlags], mb);
 	mb->set_button_index(BUTTON_MIDDLE);
-	mb->set_pressed(true);
+	mb->set_pressed(false);
 	mb->set_position(Vector2(mouse_x, mouse_y));
 	mb->set_global_position(Vector2(mouse_x, mouse_y));
 	mb->set_button_mask(button_mask);
