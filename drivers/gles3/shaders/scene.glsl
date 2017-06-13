@@ -74,8 +74,8 @@ layout(std140) uniform SceneData { //ubo:0
 	float ambient_energy;
 	float bg_energy;
 
-	float shadow_z_offset;
-	float shadow_z_slope_scale;
+	float z_offset;
+	float z_slope_scale;
 	float shadow_dual_paraboloid_render_zfar;
 	float shadow_dual_paraboloid_render_side;
 
@@ -319,7 +319,7 @@ VERTEX_SHADER_CODE
 
 	//for dual paraboloid shadow mapping, this is the fastest but least correct way, as it curves straight edges
 
-	highp vec3 vtx = vertex_interp+normalize(vertex_interp)*shadow_z_offset;
+	highp vec3 vtx = vertex_interp+normalize(vertex_interp)*z_offset;
 	highp float distance = length(vtx);
 	vtx = normalize(vtx);
 	vtx.xy/=1.0-vtx.z;
@@ -332,8 +332,8 @@ VERTEX_SHADER_CODE
 
 #else
 
-	float z_ofs = shadow_z_offset;
-	z_ofs += (1.0-abs(normal_interp.z))*shadow_z_slope_scale;
+	float z_ofs = z_offset;
+	z_ofs += (1.0-abs(normal_interp.z))*z_slope_scale;
 	vertex_interp.z-=z_ofs;
 
 #endif //RENDER_DEPTH_DUAL_PARABOLOID
@@ -446,8 +446,8 @@ layout(std140) uniform SceneData {
 	float ambient_energy;
 	float bg_energy;
 
-	float shadow_z_offset;
-	float shadow_z_slope_scale;
+	float z_offset;
+	float z_slope_scale;
 	float shadow_dual_paraboloid_render_zfar;
 	float shadow_dual_paraboloid_render_side;
 

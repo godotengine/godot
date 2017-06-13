@@ -119,8 +119,8 @@ public:
 
 			float ambient_energy;
 			float bg_energy;
-			float shadow_z_offset;
-			float shadow_slope_scale;
+			float z_offset;
+			float z_slope_scale;
 			float shadow_dual_paraboloid_render_zfar;
 			float shadow_dual_paraboloid_render_side;
 			float screen_pixel_size[2];

@@ -3840,8 +3840,8 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 
 	state.ubo_data.subsurface_scatter_width = subsurface_scatter_size;
 
-	state.ubo_data.shadow_z_offset = 0;
-	state.ubo_data.shadow_slope_scale = 0;
+	state.ubo_data.z_offset = 0;
+	state.ubo_data.z_slope_scale = 0;
 	state.ubo_data.shadow_dual_paraboloid_render_side = 0;
 	state.ubo_data.shadow_dual_paraboloid_render_zfar = 0;
 
@@ -4514,8 +4514,8 @@ void RasterizerSceneGLES3::render_shadow(RID p_light, RID p_shadow_atlas, int p_
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glDisable(GL_SCISSOR_TEST);
 
-	state.ubo_data.shadow_z_offset = bias;
-	state.ubo_data.shadow_slope_scale = normal_bias;
+	state.ubo_data.z_offset = bias;
+	state.ubo_data.z_slope_scale = normal_bias;
 	state.ubo_data.shadow_dual_paraboloid_render_side = dp_direction;
 	state.ubo_data.shadow_dual_paraboloid_render_zfar = zfar;
 

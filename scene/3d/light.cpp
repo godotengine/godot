@@ -261,8 +261,8 @@ Light::Light(VisualServer::LightType p_type) {
 	set_param(PARAM_SHADOW_SPLIT_1_OFFSET, 0.1);
 	set_param(PARAM_SHADOW_SPLIT_2_OFFSET, 0.2);
 	set_param(PARAM_SHADOW_SPLIT_3_OFFSET, 0.5);
-	set_param(PARAM_SHADOW_NORMAL_BIAS, 0.1);
-	set_param(PARAM_SHADOW_BIAS, 0.1);
+	set_param(PARAM_SHADOW_NORMAL_BIAS, 0.0);
+	set_param(PARAM_SHADOW_BIAS, 0.);
 	set_param(PARAM_SHADOW_BIAS_SPLIT_SCALE, 0.1);
 }
 
@@ -328,6 +328,7 @@ void DirectionalLight::_bind_methods() {
 DirectionalLight::DirectionalLight()
 	: Light(VisualServer::LIGHT_DIRECTIONAL) {
 
+	set_param(PARAM_SHADOW_NORMAL_BIAS, 0.1);
 	set_shadow_mode(SHADOW_PARALLEL_4_SPLITS);
 	blend_splits = false;
 }
