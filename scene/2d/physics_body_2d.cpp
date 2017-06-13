@@ -79,7 +79,7 @@ uint32_t PhysicsBody2D::_get_layers() const {
 
 void PhysicsBody2D::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_collision_layer", "mask"), &PhysicsBody2D::set_collision_layer);
+	ClassDB::bind_method(D_METHOD("set_collision_layer", "layer"), &PhysicsBody2D::set_collision_layer);
 	ClassDB::bind_method(D_METHOD("get_collision_layer"), &PhysicsBody2D::get_collision_layer);
 	ClassDB::bind_method(D_METHOD("set_collision_mask", "mask"), &PhysicsBody2D::set_collision_mask);
 	ClassDB::bind_method(D_METHOD("get_collision_mask"), &PhysicsBody2D::get_collision_mask);
@@ -108,15 +108,15 @@ void PhysicsBody2D::_bind_methods() {
 	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "one_way_collision/max_depth"), "set_one_way_collision_max_depth", "get_one_way_collision_max_depth");
 }
 
-void PhysicsBody2D::set_collision_layer(uint32_t p_mask) {
+void PhysicsBody2D::set_collision_layer(uint32_t p_layer) {
 
-	mask = p_mask;
-	Physics2DServer::get_singleton()->body_set_layer_mask(get_rid(), p_mask);
+	collision_layer = p_layer;
+	Physics2DServer::get_singleton()->body_set_collision_layer(get_rid(), p_layer);
 }
 
 uint32_t PhysicsBody2D::get_collision_layer() const {
 
-	return mask;
+	return collision_layer;
 }
 
 void PhysicsBody2D::set_collision_mask(uint32_t p_mask) {
@@ -146,12 +146,12 @@ bool PhysicsBody2D::get_collision_mask_bit(int p_bit) const {
 
 void PhysicsBody2D::set_collision_layer_bit(int p_bit, bool p_value) {
 
-	uint32_t mask = get_collision_layer();
+	uint32_t collision_layer = get_collision_layer();
 	if (p_value)
-		mask |= 1 << p_bit;
+		collision_layer |= 1 << p_bit;
 	else
-		mask &= ~(1 << p_bit);
-	set_collision_layer(mask);
+		collision_layer &= ~(1 << p_bit);
+	set_collision_layer(collision_layer);
 }
 
 bool PhysicsBody2D::get_collision_layer_bit(int p_bit) const {
@@ -162,7 +162,7 @@ bool PhysicsBody2D::get_collision_layer_bit(int p_bit) const {
 PhysicsBody2D::PhysicsBody2D(Physics2DServer::BodyMode p_mode)
 	: CollisionObject2D(Physics2DServer::get_singleton()->body_create(p_mode), false) {
 
-	mask = 1;
+	collision_layer = 1;
 	collision_mask = 1;
 	set_one_way_collision_max_depth(0);
 	set_pickable(false);

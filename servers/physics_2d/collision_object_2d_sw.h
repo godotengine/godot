@@ -67,7 +67,7 @@ private:
 	Transform2D transform;
 	Transform2D inv_transform;
 	uint32_t collision_mask;
-	uint32_t layer_mask;
+	uint32_t collision_layer;
 	bool _static;
 
 	void _update_shapes();
@@ -122,8 +122,8 @@ public:
 	void set_collision_mask(uint32_t p_mask) { collision_mask = p_mask; }
 	_FORCE_INLINE_ uint32_t get_collision_mask() const { return collision_mask; }
 
-	void set_layer_mask(uint32_t p_mask) { layer_mask = p_mask; }
-	_FORCE_INLINE_ uint32_t get_layer_mask() const { return layer_mask; }
+	void set_collision_layer(uint32_t p_layer) { collision_layer = p_layer; }
+	_FORCE_INLINE_ uint32_t get_collision_layer() const { return collision_layer; }
 
 	void remove_shape(Shape2DSW *p_shape);
 	void remove_shape(int p_index);
@@ -137,7 +137,7 @@ public:
 
 	_FORCE_INLINE_ bool test_collision_mask(CollisionObject2DSW *p_other) const {
 
-		return layer_mask & p_other->collision_mask || p_other->layer_mask & collision_mask;
+		return collision_layer & p_other->collision_mask || p_other->collision_layer & collision_mask;
 	}
 
 	virtual ~CollisionObject2DSW() {}

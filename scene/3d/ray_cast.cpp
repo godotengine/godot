@@ -46,14 +46,14 @@ Vector3 RayCast::get_cast_to() const {
 	return cast_to;
 }
 
-void RayCast::set_layer_mask(uint32_t p_mask) {
+void RayCast::set_collision_layer(uint32_t p_layer) {
 
-	layer_mask = p_mask;
+	collision_layer = p_layer;
 }
 
-uint32_t RayCast::get_layer_mask() const {
+uint32_t RayCast::get_collision_layer() const {
 
-	return layer_mask;
+	return collision_layer;
 }
 
 void RayCast::set_type_mask(uint32_t p_mask) {
@@ -170,7 +170,7 @@ void RayCast::_update_raycast_state() {
 
 	PhysicsDirectSpaceState::RayResult rr;
 
-	if (dss->intersect_ray(gt.get_origin(), gt.xform(to), rr, exclude, layer_mask, type_mask)) {
+	if (dss->intersect_ray(gt.get_origin(), gt.xform(to), rr, exclude, collision_layer, type_mask)) {
 
 		collided = true;
 		against = rr.collider_id;
@@ -243,15 +243,15 @@ void RayCast::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("clear_exceptions"), &RayCast::clear_exceptions);
 
-	ClassDB::bind_method(D_METHOD("set_layer_mask", "mask"), &RayCast::set_layer_mask);
-	ClassDB::bind_method(D_METHOD("get_layer_mask"), &RayCast::get_layer_mask);
+	ClassDB::bind_method(D_METHOD("set_collision_layer", "layer"), &RayCast::set_collision_layer);
+	ClassDB::bind_method(D_METHOD("get_collision_layer"), &RayCast::get_collision_layer);
 
 	ClassDB::bind_method(D_METHOD("set_type_mask", "mask"), &RayCast::set_type_mask);
 	ClassDB::bind_method(D_METHOD("get_type_mask"), &RayCast::get_type_mask);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "cast_to"), "set_cast_to", "get_cast_to");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "layer_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_layer_mask", "get_layer_mask");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "type_mask", PROPERTY_HINT_FLAGS, "Static,Kinematic,Rigid,Character,Area"), "set_type_mask", "get_type_mask");
 }
 
@@ -323,7 +323,7 @@ RayCast::RayCast() {
 	against = 0;
 	collided = false;
 	against_shape = 0;
-	layer_mask = 1;
+	collision_layer = 1;
 	type_mask = PhysicsDirectSpaceState::TYPE_MASK_COLLISION;
 	cast_to = Vector3(0, -1, 0);
 	debug_shape = NULL;

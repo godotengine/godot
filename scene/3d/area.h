@@ -55,7 +55,7 @@ private:
 	real_t angular_damp;
 	real_t linear_damp;
 	uint32_t collision_mask;
-	uint32_t layer_mask;
+	uint32_t collision_layer;
 	int priority;
 	bool monitoring;
 	bool monitorable;
@@ -164,14 +164,14 @@ public:
 	void set_collision_mask(uint32_t p_mask);
 	uint32_t get_collision_mask() const;
 
-	void set_layer_mask(uint32_t p_mask);
-	uint32_t get_layer_mask() const;
+	void set_collision_layer(uint32_t p_layer);
+	uint32_t get_collision_layer() const;
 
 	void set_collision_mask_bit(int p_bit, bool p_value);
 	bool get_collision_mask_bit(int p_bit) const;
 
-	void set_layer_mask_bit(int p_bit, bool p_value);
-	bool get_layer_mask_bit(int p_bit) const;
+	void set_collision_layer_bit(int p_bit, bool p_value);
+	bool get_collision_layer_bit(int p_bit) const;
 
 	Array get_overlapping_bodies() const;
 	Array get_overlapping_areas() const; //function for script

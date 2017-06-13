@@ -136,7 +136,7 @@ public:
 	virtual Transform2D area_get_transform(RID p_area) const;
 	virtual void area_set_monitorable(RID p_area, bool p_monitorable);
 	virtual void area_set_collision_mask(RID p_area, uint32_t p_mask);
-	virtual void area_set_layer_mask(RID p_area, uint32_t p_mask);
+	virtual void area_set_collision_layer(RID p_area, uint32_t p_layer);
 
 	virtual void area_set_monitor_callback(RID p_area, Object *p_receiver, const StringName &p_method);
 	virtual void area_set_area_monitor_callback(RID p_area, Object *p_receiver, const StringName &p_method);
@@ -176,8 +176,8 @@ public:
 	virtual void body_set_continuous_collision_detection_mode(RID p_body, CCDMode p_mode);
 	virtual CCDMode body_get_continuous_collision_detection_mode(RID p_body) const;
 
-	virtual void body_set_layer_mask(RID p_body, uint32_t p_mask);
-	virtual uint32_t body_get_layer_mask(RID p_body) const;
+	virtual void body_set_collision_layer(RID p_body, uint32_t p_layer);
+	virtual uint32_t body_get_collision_layer(RID p_body) const;
 
 	virtual void body_set_collision_mask(RID p_body, uint32_t p_mask);
 	virtual uint32_t body_get_collision_mask(RID p_) const;
