@@ -1375,19 +1375,19 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 
 	name_dialog = memnew(ConfirmationDialog);
 	name_dialog->set_title(TTR("Create New Animation"));
-	name_dialog->set_hide_on_ok(false);	
+	name_dialog->set_hide_on_ok(false);
 	add_child(name_dialog);
-	VBoxContainer *pContainer = memnew(VBoxContainer);
+	VBoxContainer *vb = memnew(VBoxContainer);
 	name_dialog->add_child(pContainer);
 
 	l = memnew(Label);
 	l->set_text(TTR("Animation Name:"));
 	l->set_position(Point2(10, 10));
-	pContainer->add_child(l);
+	vb->add_child(l);
 	name_title = l;
 
 	name = memnew(LineEdit);
-	pContainer->add_child(name);
+	vb->add_child(name);
 	name->set_position(Point2(18, 30));
 	name->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 10);
 	name_dialog->register_text_enter(name);
