@@ -1378,7 +1378,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 	name_dialog->set_hide_on_ok(false);
 	add_child(name_dialog);
 	VBoxContainer *vb = memnew(VBoxContainer);
-	name_dialog->add_child(pContainer);
+	name_dialog->add_child(vb);
 
 	l = memnew(Label);
 	l->set_text(TTR("Animation Name:"));
