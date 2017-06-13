@@ -1382,14 +1382,11 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 
 	l = memnew(Label);
 	l->set_text(TTR("Animation Name:"));
-	l->set_position(Point2(10, 10));
 	vb->add_child(l);
 	name_title = l;
 
 	name = memnew(LineEdit);
 	vb->add_child(name);
-	name->set_position(Point2(18, 30));
-	name->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 10);
 	name_dialog->register_text_enter(name);
 
 	error_dialog = memnew(ConfirmationDialog);
