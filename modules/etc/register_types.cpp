@@ -34,15 +34,15 @@
 
 static ResourceFormatPKM *resource_loader_pkm = NULL;
 
-void register_etc1_types() {
+void register_etc_types() {
 
 	resource_loader_pkm = memnew(ResourceFormatPKM);
 	ResourceLoader::add_resource_format_loader(resource_loader_pkm);
 
-	_register_etc1_compress_func();
+	_register_etc_compress_func();
 }
 
-void unregister_etc1_types() {
+void unregister_etc_types() {
 
 	memdelete(resource_loader_pkm);
 }

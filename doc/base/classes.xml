@@ -18490,8 +18490,10 @@
 			</return>
 			<argument index="0" name="format" type="int" default="0">
 			</argument>
+			<argument index="0" name="quality" type="float" default="0">
+			</argument>
 			<description>
-				Return a new compressed [Image] from this [Image] using one of [Image].COMPRESS_*.
+				Return a new compressed [Image] from this [Image] using one of [Image].COMPRESS_*. Quality only affects ETC1 and ETC2 encoding.
 			</description>
 		</method>
 		<method name="converted">

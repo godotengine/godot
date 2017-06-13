@@ -110,6 +110,15 @@ public:
 	static _ALWAYS_INLINE_ bool is_inf(double p_val) {
 #ifdef _MSC_VER
 		return !_finite(p_val);
+// workaround for mingw builds on travis
+#elif defined(__MINGW32__) || defined(__MINGW64__)
+		union {
+			uint64_t u;
+			double f;
+		} ieee754;
+		ieee754.f = p_val;
+		return ((unsigned)(ieee754.u >> 32) & 0x7fffffff) == 0x7ff00000 &&
+			   ((unsigned)ieee754.u == 0);
 #else
 		return isinf(p_val);
 #endif
@@ -118,6 +127,14 @@ public:
 	static _ALWAYS_INLINE_ bool is_inf(float p_val) {
 #ifdef _MSC_VER
 		return !_finite(p_val);
+// workaround for mingw builds on travis
+#elif defined(__MINGW32__) || defined(__MINGW64__)
+		union {
+			uint32_t u;
+			float f;
+		} ieee754;
+		ieee754.f = p_val;
+		return (ieee754.u & 0x7fffffff) == 0x7f800000;
 #else
 		return isinf(p_val);
 #endif
