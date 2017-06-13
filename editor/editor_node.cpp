@@ -272,6 +272,8 @@ void EditorNode::_notification(int p_what) {
 		}
 		editor_selection->update();
 
+		scene_root->set_size_override(true, Size2(GlobalConfig::get_singleton()->get("display/window/width"), GlobalConfig::get_singleton()->get("display/window/height")));
+
 		ResourceImporterTexture::get_singleton()->update_imports();
 	}
 	if (p_what == NOTIFICATION_ENTER_TREE) {

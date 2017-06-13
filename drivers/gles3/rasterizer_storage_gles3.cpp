@@ -1425,6 +1425,7 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 	_shader_dirty_list.remove(&p_shader->dirty_list);
 
 	p_shader->valid = false;
+	p_shader->ubo_size = 0;
 
 	p_shader->uniforms.clear();
 
@@ -2244,6 +2245,10 @@ void RasterizerStorageGLES3::_update_material(Material *material) {
 	if (material->shader && material->shader->dirty_list.in_list()) {
 		_update_shader(material->shader);
 	}
+
+	if (material->shader && !material->shader->valid)
+		return;
+
 	//update caches
 
 	{

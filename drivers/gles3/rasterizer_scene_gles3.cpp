@@ -2113,7 +2113,7 @@ void RasterizerSceneGLES3::_add_geometry(RasterizerStorageGLES3::Geometry *p_geo
 	if (m_src.is_valid()) {
 		m = storage->material_owner.getornull(m_src);
 
-		if (!m->shader) {
+		if (!m->shader || !m->shader->valid) {
 			m = NULL;
 		}
 	}

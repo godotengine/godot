@@ -1156,6 +1156,7 @@ void Viewport::set_size_override(bool p_enable, const Size2 &p_size, const Vecto
 	size_override_margin = p_margin;
 	_update_rect();
 	_update_stretch_transform();
+	emit_signal("size_changed");
 }
 
 Size2 Viewport::get_size_override() const {

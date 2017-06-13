@@ -47,8 +47,11 @@ public:
 		GLuint canvas_quad_vertices;
 		GLuint canvas_quad_array;
 
-		GLuint primitive_quad_buffer;
-		GLuint primitive_quad_buffer_arrays[4];
+		GLuint polygon_buffer;
+		GLuint polygon_buffer_quad_arrays[4];
+		GLuint polygon_buffer_pointer_array;
+		GLuint polygon_index_buffer;
+		uint32_t polygon_buffer_size;
 
 	} data;
 
@@ -107,7 +110,7 @@ public:
 	_FORCE_INLINE_ RasterizerStorageGLES3::Texture *_bind_canvas_texture(const RID &p_texture);
 
 	_FORCE_INLINE_ void _draw_gui_primitive(int p_points, const Vector2 *p_vertices, const Color *p_colors, const Vector2 *p_uvs);
-	_FORCE_INLINE_ void _draw_polygon(int p_vertex_count, const int *p_indices, const Vector2 *p_vertices, const Vector2 *p_uvs, const Color *p_colors, const RID &p_texture, bool p_singlecolor);
+	_FORCE_INLINE_ void _draw_polygon(const int *p_indices, int p_index_count, int p_vertex_count, const Vector2 *p_vertices, const Vector2 *p_uvs, const Color *p_colors, bool p_singlecolor);
 	_FORCE_INLINE_ void _canvas_item_render_commands(Item *p_item, Item *current_clip, bool &reclip);
 
 	virtual void canvas_render_items(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light);
