@@ -371,7 +371,7 @@ void OmniLight::_bind_methods() {
 OmniLight::OmniLight()
 	: Light(VisualServer::LIGHT_OMNI) {
 
-	set_shadow_mode(SHADOW_DUAL_PARABOLOID);
+	set_shadow_mode(SHADOW_CUBE);
 	set_shadow_detail(SHADOW_DETAIL_HORIZONTAL);
 }
 
