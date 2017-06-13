@@ -1285,6 +1285,7 @@ public:
 
 	struct CanvasOccluder : public RID_Data {
 
+		GLuint array_id; // 0 means, unconfigured
 		GLuint vertex_id; // 0 means, unconfigured
 		GLuint index_id; // 0 means, unconfigured
 		PoolVector<Vector2> lines;

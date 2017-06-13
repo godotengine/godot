@@ -381,7 +381,7 @@ FRAGMENT_SHADER_CODE
 
 #ifdef SHADOW_FILTER_NEAREST
 
-		SHADOW_TEST(su+shadowpixel_size);
+		SHADOW_TEST(su);
 
 #endif
 

@@ -1082,6 +1082,7 @@ public:
 	BIND2(canvas_light_set_shadow_gradient_length, RID, float)
 	BIND2(canvas_light_set_shadow_filter, RID, CanvasLightShadowFilter)
 	BIND2(canvas_light_set_shadow_color, RID, const Color &)
+	BIND2(canvas_light_set_shadow_smooth, RID, float)
 
 	BIND0R(RID, canvas_light_occluder_create)
 	BIND2(canvas_light_occluder_attach_to_canvas, RID, RID)

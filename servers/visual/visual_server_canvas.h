@@ -209,6 +209,7 @@ public:
 	void canvas_light_set_shadow_gradient_length(RID p_light, float p_length);
 	void canvas_light_set_shadow_filter(RID p_light, VS::CanvasLightShadowFilter p_filter);
 	void canvas_light_set_shadow_color(RID p_light, const Color &p_color);
+	void canvas_light_set_shadow_smooth(RID p_light, float p_smooth);
 
 	RID canvas_light_occluder_create();
 	void canvas_light_occluder_attach_to_canvas(RID p_occluder, RID p_canvas);

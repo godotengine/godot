@@ -546,6 +546,7 @@ public:
 		float shadow_gradient_length;
 		VS::CanvasLightShadowFilter shadow_filter;
 		Color shadow_color;
+		float shadow_smooth;
 
 		void *texture_cache; // implementation dependent
 		Rect2 rect_cache;
@@ -584,6 +585,7 @@ public:
 			shadow_buffer_size = 256;
 			shadow_gradient_length = 0;
 			shadow_filter = VS::CANVAS_LIGHT_FILTER_NONE;
+			shadow_smooth = 0.0;
 		}
 	};
 

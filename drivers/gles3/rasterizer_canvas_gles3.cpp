@@ -113,7 +113,7 @@ void RasterizerCanvasGLES3::light_internal_update(RID p_rid, Light *p_light) {
 
 	li->ubo_data.light_pos[0] = p_light->light_shader_pos.x;
 	li->ubo_data.light_pos[1] = p_light->light_shader_pos.y;
-	li->ubo_data.shadowpixel_size = 1.0 / p_light->shadow_buffer_size;
+	li->ubo_data.shadowpixel_size = (1.0 / p_light->shadow_buffer_size) * (1.0 + p_light->shadow_smooth);
 	li->ubo_data.light_outside_alpha = p_light->mode == VS::CANVAS_LIGHT_MODE_MASK ? 1.0 : 0.0;
 	li->ubo_data.light_height = p_light->height;
 	if (p_light->radius_cache == 0)
@@ -1111,7 +1111,6 @@ void RasterizerCanvasGLES3::canvas_light_shadow_buffer_update(RID p_buffer, cons
 
 	glBindFramebuffer(GL_FRAMEBUFFER, cls->fbo);
 
-	glEnableVertexAttribArray(VS::ARRAY_VERTEX);
 	state.canvas_shadow_shader.bind();
 
 	glViewport(0, 0, cls->size, cls->height);
@@ -1210,18 +1209,14 @@ void RasterizerCanvasGLES3::canvas_light_shadow_buffer_update(RID p_buffer, cons
 				}
 			}
 */
-			glBindBuffer(GL_ARRAY_BUFFER, cc->vertex_id);
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cc->index_id);
-			glVertexAttribPointer(VS::ARRAY_VERTEX, 3, GL_FLOAT, false, 0, 0);
+			glBindVertexArray(cc->array_id);
 			glDrawElements(GL_TRIANGLES, cc->len * 3, GL_UNSIGNED_SHORT, 0);
 
 			instance = instance->next;
 		}
 	}
 
-	glDisableVertexAttribArray(VS::ARRAY_VERTEX);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
 }
 void RasterizerCanvasGLES3::reset_canvas() {
 

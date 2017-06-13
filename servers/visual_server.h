@@ -844,6 +844,7 @@ public:
 	virtual void canvas_light_set_shadow_gradient_length(RID p_light, float p_length) = 0;
 	virtual void canvas_light_set_shadow_filter(RID p_light, CanvasLightShadowFilter p_filter) = 0;
 	virtual void canvas_light_set_shadow_color(RID p_light, const Color &p_color) = 0;
+	virtual void canvas_light_set_shadow_smooth(RID p_light, float p_smooth) = 0;
 
 	virtual RID canvas_light_occluder_create() = 0;
 	virtual void canvas_light_occluder_attach_to_canvas(RID p_occluder, RID p_canvas) = 0;

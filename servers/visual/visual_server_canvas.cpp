@@ -916,6 +916,13 @@ void VisualServerCanvas::canvas_light_set_shadow_color(RID p_light, const Color 
 	clight->shadow_color = p_color;
 }
 
+void VisualServerCanvas::canvas_light_set_shadow_smooth(RID p_light, float p_smooth) {
+
+	RasterizerCanvas::Light *clight = canvas_light_owner.get(p_light);
+	ERR_FAIL_COND(!clight);
+	clight->shadow_smooth = p_smooth;
+}
+
 RID VisualServerCanvas::canvas_light_occluder_create() {
 
 	RasterizerCanvas::LightOccluderInstance *occluder = memnew(RasterizerCanvas::LightOccluderInstance);

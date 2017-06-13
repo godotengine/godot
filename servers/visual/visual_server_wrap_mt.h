@@ -511,6 +511,7 @@ public:
 	FUNC2(canvas_light_set_shadow_gradient_length, RID, float)
 	FUNC2(canvas_light_set_shadow_filter, RID, CanvasLightShadowFilter)
 	FUNC2(canvas_light_set_shadow_color, RID, const Color &)
+	FUNC2(canvas_light_set_shadow_smooth, RID, float)
 
 	FUNC0R(RID, canvas_light_occluder_create)
 	FUNC2(canvas_light_occluder_attach_to_canvas, RID, RID)
