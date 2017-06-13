@@ -27,10 +27,10 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "color_ramp_edit.h"
+#include "gradient_edit.h"
 #include "os/keyboard.h"
 
-ColorRampEdit::ColorRampEdit() {
+GradientEdit::GradientEdit() {
 	grabbed = -1;
 	grabbing = false;
 	set_focus_mode(FOCUS_ALL);
@@ -46,7 +46,7 @@ ColorRampEdit::ColorRampEdit() {
 	checker->create_from_image(img, ImageTexture::FLAG_REPEAT);
 }
 
-int ColorRampEdit::_get_point_from_pos(int x) {
+int GradientEdit::_get_point_from_pos(int x) {
 	int result = -1;
 	int total_w = get_size().width - get_size().height - 3;
 	for (int i = 0; i < points.size(); i++) {
@@ -58,7 +58,7 @@ int ColorRampEdit::_get_point_from_pos(int x) {
 	return result;
 }
 
-void ColorRampEdit::_show_color_picker() {
+void GradientEdit::_show_color_picker() {
 	if (grabbed == -1)
 		return;
 	Size2 ms = Size2(350, picker->get_combined_minimum_size().height + 10);
@@ -68,10 +68,10 @@ void ColorRampEdit::_show_color_picker() {
 	popup->popup();
 }
 
-ColorRampEdit::~ColorRampEdit() {
+GradientEdit::~GradientEdit() {
 }
 
-void ColorRampEdit::_gui_input(const Ref<InputEvent> &p_event) {
+void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventKey> k = p_event;
 
@@ -272,7 +272,7 @@ void ColorRampEdit::_gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void ColorRampEdit::_notification(int p_what) {
+void GradientEdit::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		if (!picker->is_connected("color_changed", this, "_color_changed")) {
@@ -370,7 +370,7 @@ void ColorRampEdit::_notification(int p_what) {
 	}
 }
 
-void ColorRampEdit::_draw_checker(int x, int y, int w, int h) {
+void GradientEdit::_draw_checker(int x, int y, int w, int h) {
 	//Draw it with polygon to insert UVs for scale
 	Vector<Vector2> backPoints;
 	backPoints.push_back(Vector2(x, y));
@@ -391,12 +391,12 @@ void ColorRampEdit::_draw_checker(int x, int y, int w, int h) {
 	draw_polygon(backPoints, colorPoints, uvPoints, checker);
 }
 
-Size2 ColorRampEdit::get_minimum_size() const {
+Size2 GradientEdit::get_minimum_size() const {
 
 	return Vector2(0, 16);
 }
 
-void ColorRampEdit::_color_changed(const Color &p_color) {
+void GradientEdit::_color_changed(const Color &p_color) {
 
 	if (grabbed == -1)
 		return;
@@ -405,7 +405,7 @@ void ColorRampEdit::_color_changed(const Color &p_color) {
 	emit_signal("ramp_changed");
 }
 
-void ColorRampEdit::set_ramp(const Vector<float> &p_offsets, const Vector<Color> &p_colors) {
+void GradientEdit::set_ramp(const Vector<float> &p_offsets, const Vector<Color> &p_colors) {
 
 	ERR_FAIL_COND(p_offsets.size() != p_colors.size());
 	points.clear();
@@ -420,33 +420,33 @@ void ColorRampEdit::set_ramp(const Vector<float> &p_offsets, const Vector<Color>
 	update();
 }
 
-Vector<float> ColorRampEdit::get_offsets() const {
+Vector<float> GradientEdit::get_offsets() const {
 	Vector<float> ret;
 	for (int i = 0; i < points.size(); i++)
 		ret.push_back(points[i].offset);
 	return ret;
 }
 
-Vector<Color> ColorRampEdit::get_colors() const {
+Vector<Color> GradientEdit::get_colors() const {
 	Vector<Color> ret;
 	for (int i = 0; i < points.size(); i++)
 		ret.push_back(points[i].color);
 	return ret;
 }
 
-void ColorRampEdit::set_points(Vector<Gradient::Point> &p_points) {
+void GradientEdit::set_points(Vector<Gradient::Point> &p_points) {
 	if (points.size() != p_points.size())
 		grabbed = -1;
 	points.clear();
 	points = p_points;
 }
 
-Vector<Gradient::Point> &ColorRampEdit::get_points() {
+Vector<Gradient::Point> &GradientEdit::get_points() {
 	return points;
 }
 
-void ColorRampEdit::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_gui_input"), &ColorRampEdit::_gui_input);
-	ClassDB::bind_method(D_METHOD("_color_changed"), &ColorRampEdit::_color_changed);
+void GradientEdit::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_gui_input"), &GradientEdit::_gui_input);
+	ClassDB::bind_method(D_METHOD("_color_changed"), &GradientEdit::_color_changed);
 	ADD_SIGNAL(MethodInfo("ramp_changed"));
 }

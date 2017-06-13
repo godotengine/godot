@@ -505,8 +505,8 @@ void Particles2D::_notification(int p_what) {
 
 				Color color;
 
-				if (color_ramp.is_valid()) {
-					color = color_ramp->get_color_at_offset(ptime);
+				if (gradient.is_valid()) {
+					color = gradient->get_color_at_offset(ptime);
 				} else {
 					color = default_color;
 				}
@@ -774,14 +774,14 @@ Color Particles2D::get_color() const {
 	return default_color;
 }
 
-void Particles2D::set_color_ramp(const Ref<Gradient> &p_color_ramp) {
+void Particles2D::set_gradient(const Ref<Gradient> &p_gradient) {
 
-	color_ramp = p_color_ramp;
+	gradient = p_gradient;
 }
 
-Ref<Gradient> Particles2D::get_color_ramp() const {
+Ref<Gradient> Particles2D::get_gradient() const {
 
-	return color_ramp;
+	return gradient;
 }
 
 void Particles2D::set_emissor_offset(const Point2 &p_offset) {
@@ -809,19 +809,19 @@ void Particles2D::set_color_phases(int p_phases) {
 
 	//Create color ramp if we have 2 or more phases.
 	//Otherwise first phase phase will be assigned to default color.
-	if (p_phases > 1 && color_ramp.is_null()) {
-		color_ramp = Ref<Gradient>(memnew(Gradient()));
+	if (p_phases > 1 && gradient.is_null()) {
+		gradient = Ref<Gradient>(memnew(Gradient()));
 	}
-	if (color_ramp.is_valid()) {
-		color_ramp->get_points().resize(p_phases);
+	if (gradient.is_valid()) {
+		gradient->get_points().resize(p_phases);
 	}
 }
 
 //Deprecated.
 int Particles2D::get_color_phases() const {
 
-	if (color_ramp.is_valid()) {
-		return color_ramp->get_points_count();
+	if (gradient.is_valid()) {
+		return gradient->get_points_count();
 	}
 	return 0;
 }
@@ -830,9 +830,9 @@ int Particles2D::get_color_phases() const {
 void Particles2D::set_color_phase_color(int p_phase, const Color &p_color) {
 
 	ERR_FAIL_INDEX(p_phase, MAX_COLOR_PHASES);
-	if (color_ramp.is_valid()) {
-		if (color_ramp->get_points_count() > p_phase)
-			color_ramp->set_color(p_phase, p_color);
+	if (gradient.is_valid()) {
+		if (gradient->get_points_count() > p_phase)
+			gradient->set_color(p_phase, p_color);
 	} else {
 		if (p_phase == 0)
 			default_color = p_color;
@@ -843,8 +843,8 @@ void Particles2D::set_color_phase_color(int p_phase, const Color &p_color) {
 Color Particles2D::get_color_phase_color(int p_phase) const {
 
 	ERR_FAIL_INDEX_V(p_phase, MAX_COLOR_PHASES, Color());
-	if (color_ramp.is_valid()) {
-		return color_ramp->get_color(p_phase);
+	if (gradient.is_valid()) {
+		return gradient->get_color(p_phase);
 	}
 	return Color(0, 0, 0, 1);
 }
@@ -853,8 +853,8 @@ Color Particles2D::get_color_phase_color(int p_phase) const {
 void Particles2D::set_color_phase_pos(int p_phase, float p_pos) {
 	ERR_FAIL_INDEX(p_phase, MAX_COLOR_PHASES);
 	ERR_FAIL_COND(p_pos < 0.0 || p_pos > 1.0);
-	if (color_ramp.is_valid() && color_ramp->get_points_count() > p_phase) {
-		return color_ramp->set_offset(p_phase, p_pos);
+	if (gradient.is_valid() && gradient->get_points_count() > p_phase) {
+		return gradient->set_offset(p_phase, p_pos);
 	}
 }
 
@@ -862,8 +862,8 @@ void Particles2D::set_color_phase_pos(int p_phase, float p_pos) {
 float Particles2D::get_color_phase_pos(int p_phase) const {
 
 	ERR_FAIL_INDEX_V(p_phase, MAX_COLOR_PHASES, 0);
-	if (color_ramp.is_valid()) {
-		return color_ramp->get_offset(p_phase);
+	if (gradient.is_valid()) {
+		return gradient->get_offset(p_phase);
 	}
 	return 0;
 }
@@ -996,8 +996,8 @@ void Particles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_color", "color"), &Particles2D::set_color);
 	ClassDB::bind_method(D_METHOD("get_color"), &Particles2D::get_color);
 
-	ClassDB::bind_method(D_METHOD("set_color_ramp:ColorRamp", "color_ramp"), &Particles2D::set_color_ramp);
-	ClassDB::bind_method(D_METHOD("get_color_ramp:ColorRamp"), &Particles2D::get_color_ramp);
+	ClassDB::bind_method(D_METHOD("set_gradient:Gradient", "gradient"), &Particles2D::set_gradient);
+	ClassDB::bind_method(D_METHOD("get_gradient:Gradient"), &Particles2D::get_gradient);
 
 	ClassDB::bind_method(D_METHOD("set_emissor_offset", "offset"), &Particles2D::set_emissor_offset);
 	ClassDB::bind_method(D_METHOD("get_emissor_offset"), &Particles2D::get_emissor_offset);
@@ -1078,7 +1078,7 @@ void Particles2D::_bind_methods() {
 	}
 
 	ADD_PROPERTYNO(PropertyInfo(Variant::COLOR, "color/color"), "set_color", "get_color");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "color/color_ramp", PROPERTY_HINT_RESOURCE_TYPE, "ColorRamp"), "set_color_ramp", "get_color_ramp");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "color/color_ramp", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_gradient", "get_gradient");
 
 	ADD_PROPERTYNZ(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "emission_points", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_emission_points", "get_emission_points");
 

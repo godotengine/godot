@@ -27,15 +27,15 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "color_ramp_editor_plugin.h"
+#include "gradient_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
 #include "spatial_editor_plugin.h"
 
-ColorRampEditorPlugin::ColorRampEditorPlugin(EditorNode *p_node) {
+GradientEditorPlugin::GradientEditorPlugin(EditorNode *p_node) {
 
 	editor = p_node;
-	ramp_editor = memnew(ColorRampEdit);
+	ramp_editor = memnew(GradientEdit);
 
 	add_control_to_container(CONTAINER_PROPERTY_EDITOR_BOTTOM, ramp_editor);
 
@@ -44,21 +44,21 @@ ColorRampEditorPlugin::ColorRampEditorPlugin(EditorNode *p_node) {
 	ramp_editor->connect("ramp_changed", this, "ramp_changed");
 }
 
-void ColorRampEditorPlugin::edit(Object *p_object) {
+void GradientEditorPlugin::edit(Object *p_object) {
 
-	Gradient *color_ramp = p_object->cast_to<Gradient>();
-	if (!color_ramp)
+	Gradient *gradient = p_object->cast_to<Gradient>();
+	if (!gradient)
 		return;
-	color_ramp_ref = Ref<Gradient>(color_ramp);
-	ramp_editor->set_points(color_ramp_ref->get_points());
+	gradient_ref = Ref<Gradient>(gradient);
+	ramp_editor->set_points(gradient_ref->get_points());
 }
 
-bool ColorRampEditorPlugin::handles(Object *p_object) const {
+bool GradientEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_class("ColorRamp");
+	return p_object->is_class("Gradient");
 }
 
-void ColorRampEditorPlugin::make_visible(bool p_visible) {
+void GradientEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
 		ramp_editor->show();
@@ -67,43 +67,43 @@ void ColorRampEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 
-void ColorRampEditorPlugin::_ramp_changed() {
+void GradientEditorPlugin::_ramp_changed() {
 
-	if (color_ramp_ref.is_valid()) {
+	if (gradient_ref.is_valid()) {
 
 		UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 
 		//Not sure if I should convert this data to PoolVector
 		Vector<float> new_offsets = ramp_editor->get_offsets();
 		Vector<Color> new_colors = ramp_editor->get_colors();
-		Vector<float> old_offsets = color_ramp_ref->get_offsets();
-		Vector<Color> old_colors = color_ramp_ref->get_colors();
+		Vector<float> old_offsets = gradient_ref->get_offsets();
+		Vector<Color> old_colors = gradient_ref->get_colors();
 
 		if (old_offsets.size() != new_offsets.size())
 			ur->create_action(TTR("Add/Remove Color Ramp Point"));
 		else
 			ur->create_action(TTR("Modify Color Ramp"), UndoRedo::MERGE_ENDS);
-		ur->add_do_method(this, "undo_redo_color_ramp", new_offsets, new_colors);
-		ur->add_undo_method(this, "undo_redo_color_ramp", old_offsets, old_colors);
+		ur->add_do_method(this, "undo_redo_gradient", new_offsets, new_colors);
+		ur->add_undo_method(this, "undo_redo_gradient", old_offsets, old_colors);
 		ur->commit_action();
 
 		//color_ramp_ref->set_points(ramp_editor->get_points());
 	}
 }
 
-void ColorRampEditorPlugin::_undo_redo_color_ramp(const Vector<float> &offsets,
+void GradientEditorPlugin::_undo_redo_gradient(const Vector<float> &offsets,
 		const Vector<Color> &colors) {
 
-	color_ramp_ref->set_offsets(offsets);
-	color_ramp_ref->set_colors(colors);
-	ramp_editor->set_points(color_ramp_ref->get_points());
+	gradient_ref->set_offsets(offsets);
+	gradient_ref->set_colors(colors);
+	ramp_editor->set_points(gradient_ref->get_points());
 	ramp_editor->update();
 }
 
-ColorRampEditorPlugin::~ColorRampEditorPlugin() {
+GradientEditorPlugin::~GradientEditorPlugin() {
 }
 
-void ColorRampEditorPlugin::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("ramp_changed"), &ColorRampEditorPlugin::_ramp_changed);
-	ClassDB::bind_method(D_METHOD("undo_redo_color_ramp", "offsets", "colors"), &ColorRampEditorPlugin::_undo_redo_color_ramp);
+void GradientEditorPlugin::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("ramp_changed"), &GradientEditorPlugin::_ramp_changed);
+	ClassDB::bind_method(D_METHOD("undo_redo_gradient", "offsets", "colors"), &GradientEditorPlugin::_undo_redo_gradient);
 }
