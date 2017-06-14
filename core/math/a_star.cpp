@@ -401,7 +401,7 @@ void AStar::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_point_weight_scale", "id"), &AStar::get_point_weight_scale);
 	ObjectTypeDB::bind_method(_MD("remove_point", "id"), &AStar::remove_point);
 
-	ObjectTypeDB::bind_method(_MD("connect_points", "id", "to_id"), &AStar::connect_points, DEFVAL(true));
+	ObjectTypeDB::bind_method(_MD("connect_points", "id", "to_id", "bidirectional"), &AStar::connect_points, DEFVAL(true));
 	ObjectTypeDB::bind_method(_MD("disconnect_points", "id", "to_id"), &AStar::disconnect_points);
 	ObjectTypeDB::bind_method(_MD("are_points_connected", "id", "to_id"), &AStar::are_points_connected);
 

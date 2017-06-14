@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<doc version="2.1.stable.custom_build" name="Engine Types">
+<doc version="2.1.3.stable.custom_build" name="Engine Types">
 <class name="@GDScript" category="Core">
 	<brief_description>
 		Built-in GDScript functions.
@@ -2181,9 +2181,9 @@
 			<argument index="1" name="pos" type="Vector3">
 			</argument>
 			<argument index="2" name="weight_scale" type="float" default="1">
-				Weight scale has to be 1 or larger.
 			</argument>
 			<description>
+				Add a new point at the given position. The [code]weight_scale[/code] has to be 1 or larger.
 			</description>
 		</method>
 		<method name="are_points_connected" qualifiers="const">
@@ -2204,6 +2204,8 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<argument index="1" name="to_id" type="int">
+			</argument>
+			<argument index="2" name="bidirectional" type="bool" default="true">
 			</argument>
 			<description>
 			</description>
@@ -13529,11 +13531,10 @@
 			<return type="bool">
 			</return>
 			<argument index="0" name="extended_check" type="bool" default="false">
-				If true, also check if the associated script and object still exists.
-				The extended check is done in debug mode as part of [method GDFunctionState.resume], but you can use this if you know you may be trying to resume without knowing for sure the object and/or script have survived up to that point.
 			</argument>
 			<description>
 				Check whether the function call may be resumed. This is not the case if the function state was already resumed.
+				If [code]extended_check[/code] is enabled, it also checks if the associated script and object still exist. The extended check is done in debug mode as part of [method GDFunctionState.resume], but you can use this if you know you may be trying to resume without knowing for sure the object and/or script have survived up to that point.
 			</description>
 		</method>
 		<method name="resume">
@@ -20760,8 +20761,40 @@
 			<description>
 			</description>
 		</method>
+		<method name="create_convex_shape" qualifiers="const">
+			<return type="Shape">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="create_outline" qualifiers="const">
+			<return type="Mesh">
+			</return>
+			<argument index="0" name="margin" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="create_trimesh_shape" qualifiers="const">
+			<return type="Shape">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="generate_triangle_mesh" qualifiers="const">
+			<return type="TriangleMesh">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_custom_aabb" qualifiers="const">
 			<return type="AABB">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_faces" qualifiers="const">
+			<return type="Vector3Array">
 			</return>
 			<description>
 			</description>
@@ -41104,6 +41137,10 @@
 		</method>
 	</methods>
 	<constants>
+		<constant name="RESIZE_SCALE" value="0">
+		</constant>
+		<constant name="RESIZE_STRETCH" value="1">
+		</constant>
 		<constant name="STRETCH_SCALE_ON_EXPAND" value="0">
 		</constant>
 		<constant name="STRETCH_SCALE" value="1">
@@ -41710,11 +41747,27 @@
 				Return the collision layer.
 			</description>
 		</method>
+		<method name="get_collision_layer_bit" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="bit" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_collision_mask" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
 				Return the collision mask.
+			</description>
+		</method>
+		<method name="get_collision_mask_bit" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="bit" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="get_collision_use_kinematic" qualifiers="const">
@@ -41909,11 +41962,19 @@
 			</description>
 		</method>
 		<method name="set_collision_layer">
-			<argument index="0" name="mask" type="int">
+			<argument index="0" name="layer" type="int">
 			</argument>
 			<description>
 				Set the collision layer.
 				Layers are referenced by binary indexes, so allowable values to describe the 20 available layers range from 0 to 2^20-1.
+			</description>
+		</method>
+		<method name="set_collision_layer_bit">
+			<argument index="0" name="bit" type="int">
+			</argument>
+			<argument index="1" name="value" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_collision_mask">
@@ -41922,6 +41983,14 @@
 			<description>
 				Set the collision masks.
 				Masks are referenced by binary indexes, so allowable values to describe the 20 available masks range from 0 to 2^20-1.
+			</description>
+		</method>
+		<method name="set_collision_mask_bit">
+			<argument index="0" name="bit" type="int">
+			</argument>
+			<argument index="1" name="value" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_collision_use_kinematic">
@@ -43145,6 +43214,12 @@
 				Emitted when a cell is selected.
 			</description>
 		</signal>
+		<signal name="column_title_pressed">
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</signal>
 		<signal name="custom_popup_edited">
 			<argument index="0" name="arrow_clicked" type="bool">
 			</argument>
@@ -43298,6 +43373,8 @@
 			<argument index="2" name="button_idx" type="int" default="-1">
 			</argument>
 			<argument index="3" name="disabled" type="bool" default="false">
+			</argument>
+			<argument index="4" name="tooltip" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
 			</description>
@@ -45152,6 +45229,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_roll_influence" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_suspension_max_force" qualifiers="const">
 			<return type="float">
 			</return>
@@ -45172,6 +45255,12 @@
 		</method>
 		<method name="get_suspension_travel" qualifiers="const">
 			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_in_contact" qualifiers="const">
+			<return type="bool">
 			</return>
 			<description>
 			</description>
@@ -45208,6 +45297,12 @@
 		</method>
 		<method name="set_radius">
 			<argument index="0" name="length" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_roll_influence">
+			<argument index="0" name="roll_influence" type="float">
 			</argument>
 			<description>
 			</description>
@@ -47992,7 +48087,7 @@
 		Sets environment properties for the entire scene
 	</brief_description>
 	<description>
-		The [WorldEnvironment] node can be added to a scene in order to set default [Environment] variables for the scene. The [WorldEnvironment] can be overridden by an [Environment] node set on the current [Camera]. Additionally, only one [WorldEnvironment] may be instanced in a given scene at a time. The [WorldEnvironment] allows the user to specify default lighting parameters (e.g. ambient lighting), various post-processing effects (e.g. SSAO, DOF, Tonemapping), and how to draw the background (e.g. solid color, skybox). 
+		The [WorldEnvironment] node can be added to a scene in order to set default [Environment] variables for the scene. The [WorldEnvironment] can be overridden by an [Environment] node set on the current [Camera]. Additionally, only one [WorldEnvironment] may be instanced in a given scene at a time. The [WorldEnvironment] allows the user to specify default lighting parameters (e.g. ambient lighting), various post-processing effects (e.g. SSAO, DOF, Tonemapping), and how to draw the background (e.g. solid color, skybox).
 	</description>
 	<methods>
 		<method name="get_environment" qualifiers="const">
@@ -48323,4 +48418,3 @@
 	</constants>
 </class>
 </doc>
-
