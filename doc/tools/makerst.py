@@ -441,6 +441,12 @@ def make_rst_class(node):
         f.write(make_heading('Signals', '-'))
         for m in list(events):
             make_method(f, node.attrib['name'], m, True, name, True)
+            d = m.find('description')
+            if d == None or d.text.strip() == '':
+                continue
+            f.write(rstize_text(d.text.strip(), name))
+            f.write("\n\n")
+            
         f.write('\n')
 
     members = node.find('members')
