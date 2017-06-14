@@ -64,6 +64,8 @@ private:
 
 	void _input(const InputEvent &p_Event);
 
+	bool _is_touch_inside(const InputEventScreenTouch &p_touch);
+
 	void _press(int p_finger_pressed);
 	void _release(bool p_exiting_tree = false);
 
