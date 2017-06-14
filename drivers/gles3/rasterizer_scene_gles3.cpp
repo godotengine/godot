@@ -1004,7 +1004,7 @@ void RasterizerSceneGLES3::light_instance_set_transform(RID p_light_instance, co
 	light_instance->transform = p_transform;
 }
 
-void RasterizerSceneGLES3::light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform &p_transform, float p_far, float p_split, int p_pass) {
+void RasterizerSceneGLES3::light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform &p_transform, float p_far, float p_split, int p_pass, float p_bias_scale) {
 
 	LightInstance *light_instance = light_instance_owner.getornull(p_light_instance);
 	ERR_FAIL_COND(!light_instance);
@@ -1019,6 +1019,7 @@ void RasterizerSceneGLES3::light_instance_set_shadow_transform(RID p_light_insta
 	light_instance->shadow_transform[p_pass].transform = p_transform;
 	light_instance->shadow_transform[p_pass].farplane = p_far;
 	light_instance->shadow_transform[p_pass].split = p_split;
+	light_instance->shadow_transform[p_pass].bias_scale = p_bias_scale;
 }
 
 void RasterizerSceneGLES3::light_instance_mark_visible(RID p_light_instance) {
@@ -4161,151 +4162,6 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 		glBindTexture(GL_TEXTURE_2D, env_radiance_tex);
 		storage->canvas->draw_generic_textured_rect(Rect2(0, 0, storage->frame.current_rt->width / 2, storage->frame.current_rt->height / 2), Rect2(0, 0, 1, 1));
 	}
-
-#if 0
-	if (use_fb) {
-
-
-
-		for(int i=0;i<VS::ARRAY_MAX;i++) {
-			glDisableVertexAttribArray(i);
-		}
-		glBindBuffer(GL_ARRAY_BUFFER,0);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
-		glDisable(GL_BLEND);
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_CULL_FACE);
-		glDisable(GL_SCISSOR_TEST);
-		glDepthMask(false);
-
-		if (current_env && current_env->fx_enabled[VS::ENV_FX_HDR]) {
-
-			int hdr_tm = current_env->fx_param[VS::ENV_FX_PARAM_HDR_TONEMAPPER];
-			switch(hdr_tm) {
-				case VS::ENV_FX_HDR_TONE_MAPPER_LINEAR: {
-
-
-				} break;
-				case VS::ENV_FX_HDR_TONE_MAPPER_LOG: {
-					copy_shader.set_conditional(CopyShaderGLES2::USE_LOG_TONEMAPPER,true);
-
-				} break;
-				case VS::ENV_FX_HDR_TONE_MAPPER_REINHARDT: {
-					copy_shader.set_conditional(CopyShaderGLES2::USE_REINHARDT_TONEMAPPER,true);
-				} break;
-				case VS::ENV_FX_HDR_TONE_MAPPER_REINHARDT_AUTOWHITE: {
-
-					copy_shader.set_conditional(CopyShaderGLES2::USE_REINHARDT_TONEMAPPER,true);
-					copy_shader.set_conditional(CopyShaderGLES2::USE_AUTOWHITE,true);
-				} break;
-			}
-
-
-			_process_hdr();
-		}
-		if (current_env && current_env->fx_enabled[VS::ENV_FX_GLOW]) {
-			_process_glow_bloom();
-			int glow_transfer_mode=current_env->fx_param[VS::ENV_FX_PARAM_GLOW_BLUR_BLEND_MODE];
-			if (glow_transfer_mode==1)
-				copy_shader.set_conditional(CopyShaderGLES2::USE_GLOW_SCREEN,true);
-			if (glow_transfer_mode==2)
-				copy_shader.set_conditional(CopyShaderGLES2::USE_GLOW_SOFTLIGHT,true);
-		}
-
-		glBindFramebuffer(GL_FRAMEBUFFER, current_rt?current_rt->fbo:base_framebuffer);
-
-		Size2 size;
-		if (current_rt) {
-			glBindFramebuffer(GL_FRAMEBUFFER, current_rt->fbo);
-			glViewport( 0,0,viewport.width,viewport.height);
-			size=Size2(viewport.width,viewport.height);
-		} else {
-			glBindFramebuffer(GL_FRAMEBUFFER, base_framebuffer);
-			glViewport( viewport.x, window_size.height-(viewport.height+viewport.y), viewport.width,viewport.height );
-			size=Size2(viewport.width,viewport.height);
-		}
-
-		//time to copy!!!
-		copy_shader.set_conditional(CopyShaderGLES2::USE_BCS,current_env && current_env->fx_enabled[VS::ENV_FX_BCS]);
-		copy_shader.set_conditional(CopyShaderGLES2::USE_SRGB,current_env && current_env->fx_enabled[VS::ENV_FX_SRGB]);
-		copy_shader.set_conditional(CopyShaderGLES2::USE_GLOW,current_env && current_env->fx_enabled[VS::ENV_FX_GLOW]);
-		copy_shader.set_conditional(CopyShaderGLES2::USE_HDR,current_env && current_env->fx_enabled[VS::ENV_FX_HDR]);
-		copy_shader.set_conditional(CopyShaderGLES2::USE_NO_ALPHA,true);
-		copy_shader.set_conditional(CopyShaderGLES2::USE_FXAA,current_env && current_env->fx_enabled[VS::ENV_FX_FXAA]);
-
-		copy_shader.bind();
-		//copy_shader.set_uniform(CopyShaderGLES2::SOURCE,0);
-
-		if (current_env && current_env->fx_enabled[VS::ENV_FX_GLOW]) {
-
-			glActiveTexture(GL_TEXTURE1);
-			glBindTexture(GL_TEXTURE_2D, framebuffer.blur[0].color );
-			glUniform1i(copy_shader.get_uniform_location(CopyShaderGLES2::GLOW_SOURCE),1);
-
-		}
-
-		if (current_env && current_env->fx_enabled[VS::ENV_FX_HDR]) {
-
-			glActiveTexture(GL_TEXTURE2);
-			glBindTexture(GL_TEXTURE_2D, current_vd->lum_color );
-			glUniform1i(copy_shader.get_uniform_location(CopyShaderGLES2::HDR_SOURCE),2);
-			copy_shader.set_uniform(CopyShaderGLES2::TONEMAP_EXPOSURE,float(current_env->fx_param[VS::ENV_FX_PARAM_HDR_EXPOSURE]));
-			copy_shader.set_uniform(CopyShaderGLES2::TONEMAP_WHITE,float(current_env->fx_param[VS::ENV_FX_PARAM_HDR_WHITE]));
-
-		}
-
-		if (current_env && current_env->fx_enabled[VS::ENV_FX_FXAA])
-			copy_shader.set_uniform(CopyShaderGLES2::PIXEL_SIZE,Size2(1.0/size.x,1.0/size.y));
-
-
-		if (current_env && current_env->fx_enabled[VS::ENV_FX_BCS]) {
-
-			Vector3 bcs;
-			bcs.x=current_env->fx_param[VS::ENV_FX_PARAM_BCS_BRIGHTNESS];
-			bcs.y=current_env->fx_param[VS::ENV_FX_PARAM_BCS_CONTRAST];
-			bcs.z=current_env->fx_param[VS::ENV_FX_PARAM_BCS_SATURATION];
-			copy_shader.set_uniform(CopyShaderGLES2::BCS,bcs);
-		}
-
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, framebuffer.color );
-		glUniform1i(copy_shader.get_uniform_location(CopyShaderGLES2::SOURCE),0);
-
-		_copy_screen_quad();
-
-		copy_shader.set_conditional(CopyShaderGLES2::USE_BCS,false);
-		copy_shader.set_conditional(CopyShaderGLES2::USE_SRGB,false);
-		copy_shader.set_conditional(CopyShaderGLES2::USE_GLOW,false);
-		copy_shader.set_conditional(CopyShaderGLES2::USE_HDR,false);
-		copy_shader.set_conditional(CopyShaderGLES2::USE_NO_ALPHA,false);
-		copy_shader.set_conditional(CopyShaderGLES2::USE_FXAA,false);
-		copy_shader.set_conditional(CopyShaderGLES2::USE_GLOW_SCREEN,false);
-		copy_shader.set_conditional(CopyShaderGLES2::USE_GLOW_SOFTLIGHT,false);
-		copy_shader.set_conditional(CopyShaderGLES2::USE_REINHARDT_TONEMAPPER,false);
-		copy_shader.set_conditional(CopyShaderGLES2::USE_AUTOWHITE,false);
-		copy_shader.set_conditional(CopyShaderGLES2::USE_LOG_TONEMAPPER,false);
-
-		state.scene_shader.set_conditional(SceneShaderGLES3::USE_8BIT_HDR,false);
-
-
-		if (current_env && current_env->fx_enabled[VS::ENV_FX_HDR] && GLOBAL_DEF("rasterizer/debug_hdr",false)) {
-			_debug_luminances();
-		}
-	}
-
-	current_env=NULL;
-	current_debug=VS::SCENARIO_DEBUG_DISABLED;
-	if (GLOBAL_DEF("rasterizer/debug_shadow_maps",false)) {
-		_debug_shadows();
-	}
-	//_debug_luminances();
-	//_debug_samplers();
-
-	if (using_canvas_bg) {
-		using_canvas_bg=false;
-		glColorMask(1,1,1,1); //don't touch alpha
-	}
-#endif
 }
 
 void RasterizerSceneGLES3::render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, InstanceBase **p_cull_result, int p_cull_count) {
@@ -4395,8 +4251,8 @@ void RasterizerSceneGLES3::render_shadow(RID p_light, RID p_shadow_atlas, int p_
 		}
 
 		zfar = light->param[VS::LIGHT_PARAM_RANGE];
-		bias = light->param[VS::LIGHT_PARAM_SHADOW_BIAS];
-		normal_bias = light->param[VS::LIGHT_PARAM_SHADOW_NORMAL_BIAS];
+		bias = light->param[VS::LIGHT_PARAM_SHADOW_BIAS] * light_instance->shadow_transform[p_pass].bias_scale;
+		normal_bias = light->param[VS::LIGHT_PARAM_SHADOW_NORMAL_BIAS] * light_instance->shadow_transform[p_pass].bias_scale;
 		fbo = directional_shadow.fbo;
 		vp_height = directional_shadow.size;
 
@@ -4745,7 +4601,7 @@ void RasterizerSceneGLES3::initialize() {
 	{
 		//directional light shadow
 		directional_shadow.light_count = 0;
-		directional_shadow.size = nearest_power_of_2(GLOBAL_DEF("rendering/shadows/directional_shadow_size", 2048));
+		directional_shadow.size = nearest_power_of_2(GLOBAL_DEF("rendering/shadows/directional_shadow_size", 4096));
 		glGenFramebuffers(1, &directional_shadow.fbo);
 		glBindFramebuffer(GL_FRAMEBUFFER, directional_shadow.fbo);
 		glGenTextures(1, &directional_shadow.depth);
