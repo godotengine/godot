@@ -2189,11 +2189,11 @@ void Image::blit_rect(const Image &p_src, const Rect2 &p_src_rect, const Point2 
 
 		for (int i = 0; i < rrect.size.y; i++) {
 
-			if (i < 0 || i >= height)
+			if (i + desti.y < 0 || i + desti.y >= height)
 				continue;
 			for (int j = 0; j < rrect.size.x; j++) {
 
-				if (j < 0 || j >= width)
+				if (j + desti.x < 0 || j + desti.x >= width)
 					continue;
 
 				dst_data_ptr[width * (desti.y + i) + desti.x + j] = src_data_ptr[p_src.width * (srci.y + i) + srci.x + j];
@@ -2204,11 +2204,11 @@ void Image::blit_rect(const Image &p_src, const Rect2 &p_src_rect, const Point2 
 
 		for (int i = 0; i < rrect.size.y; i++) {
 
-			if (i < 0 || i >= height)
+			if (i + p_dest.y < 0 || i + p_dest.y >= height)
 				continue;
 			for (int j = 0; j < rrect.size.x; j++) {
 
-				if (j < 0 || j >= width)
+				if (j + p_dest.x < 0 || j + p_dest.x >= width)
 					continue;
 
 				_put_pixel(p_dest.x + j, p_dest.y + i, p_src._get_pixel(rrect.pos.x + j, rrect.pos.y + i, src_data_ptr, srcdsize), dst_data_ptr);
