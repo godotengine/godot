@@ -2369,6 +2369,17 @@ Ref<Script> VisualScriptLanguage::get_template(const String &p_class_name, const
 	script->set_instance_base_type(p_base_class_name);
 	return script;
 }
+
+bool VisualScriptLanguage::is_using_templates() {
+
+	return true;
+}
+
+void VisualScriptLanguage::make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script) {
+	Ref<VisualScript> script = p_script;
+	script->set_instance_base_type(p_base_class_name);
+}
+
 bool VisualScriptLanguage::validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions) const {
 
 	return false;

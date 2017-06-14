@@ -69,6 +69,19 @@ Ref<Script> GDScriptLanguage::get_template(const String &p_class_name, const Str
 	return script;
 }
 
+bool GDScriptLanguage::is_using_templates() {
+
+	return true;
+}
+
+void GDScriptLanguage::make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script) {
+
+	String src = p_script->get_source_code();
+	src = src.replace("%BASE%", p_base_class_name);
+	src = src.replace("%TS%", _get_indentation());
+	p_script->set_source_code(src);
+}
+
 bool GDScriptLanguage::validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions) const {
 
 	GDParser parser;
