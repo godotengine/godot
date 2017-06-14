@@ -389,12 +389,12 @@ Transform PhysicsServerSW::area_get_transform(RID p_area) const {
 	return area->get_transform();
 };
 
-void PhysicsServerSW::area_set_layer_mask(RID p_area, uint32_t p_mask) {
+void PhysicsServerSW::area_set_collision_layer(RID p_area, uint32_t p_layer) {
 
 	AreaSW *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
 
-	area->set_layer_mask(p_mask);
+	area->set_collision_layer(p_layer);
 }
 
 void PhysicsServerSW::area_set_collision_mask(RID p_area, uint32_t p_mask) {
@@ -609,21 +609,21 @@ bool PhysicsServerSW::body_is_continuous_collision_detection_enabled(RID p_body)
 	return body->is_continuous_collision_detection_enabled();
 }
 
-void PhysicsServerSW::body_set_layer_mask(RID p_body, uint32_t p_mask) {
+void PhysicsServerSW::body_set_collision_layer(RID p_body, uint32_t p_layer) {
 
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
-	body->set_layer_mask(p_mask);
+	body->set_collision_layer(p_layer);
 	body->wakeup();
 }
 
-uint32_t PhysicsServerSW::body_get_layer_mask(RID p_body, uint32_t p_mask) const {
+uint32_t PhysicsServerSW::body_get_collision_layer(RID p_body) const {
 
 	const BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, 0);
 
-	return body->get_layer_mask();
+	return body->get_collision_layer();
 }
 
 void PhysicsServerSW::body_set_collision_mask(RID p_body, uint32_t p_mask) {
@@ -635,7 +635,7 @@ void PhysicsServerSW::body_set_collision_mask(RID p_body, uint32_t p_mask) {
 	body->wakeup();
 }
 
-uint32_t PhysicsServerSW::body_get_collision_mask(RID p_body, uint32_t p_mask) const {
+uint32_t PhysicsServerSW::body_get_collision_mask(RID p_body) const {
 
 	const BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, 0);
@@ -665,7 +665,7 @@ void PhysicsServerSW::body_set_user_flags(RID p_body, uint32_t p_flags) {
 	ERR_FAIL_COND(!body);
 };
 
-uint32_t PhysicsServerSW::body_get_user_flags(RID p_body, uint32_t p_flags) const {
+uint32_t PhysicsServerSW::body_get_user_flags(RID p_body) const {
 
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, 0);

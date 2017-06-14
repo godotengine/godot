@@ -151,13 +151,13 @@ float PhysicsShapeQueryParameters::get_margin() const {
 	return margin;
 }
 
-void PhysicsShapeQueryParameters::set_layer_mask(int p_layer_mask) {
+void PhysicsShapeQueryParameters::set_collision_layer(int p_collision_layer) {
 
-	layer_mask = p_layer_mask;
+	collision_layer = p_collision_layer;
 }
-int PhysicsShapeQueryParameters::get_layer_mask() const {
+int PhysicsShapeQueryParameters::get_collision_layer() const {
 
-	return layer_mask;
+	return collision_layer;
 }
 
 void PhysicsShapeQueryParameters::set_object_type_mask(int p_object_type_mask) {
@@ -198,8 +198,8 @@ void PhysicsShapeQueryParameters::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_margin", "margin"), &PhysicsShapeQueryParameters::set_margin);
 	ClassDB::bind_method(D_METHOD("get_margin"), &PhysicsShapeQueryParameters::get_margin);
 
-	ClassDB::bind_method(D_METHOD("set_layer_mask", "layer_mask"), &PhysicsShapeQueryParameters::set_layer_mask);
-	ClassDB::bind_method(D_METHOD("get_layer_mask"), &PhysicsShapeQueryParameters::get_layer_mask);
+	ClassDB::bind_method(D_METHOD("set_collision_layer", "collision_layer"), &PhysicsShapeQueryParameters::set_collision_layer);
+	ClassDB::bind_method(D_METHOD("get_collision_layer"), &PhysicsShapeQueryParameters::get_collision_layer);
 
 	ClassDB::bind_method(D_METHOD("set_object_type_mask", "object_type_mask"), &PhysicsShapeQueryParameters::set_object_type_mask);
 	ClassDB::bind_method(D_METHOD("get_object_type_mask"), &PhysicsShapeQueryParameters::get_object_type_mask);
@@ -211,7 +211,7 @@ void PhysicsShapeQueryParameters::_bind_methods() {
 PhysicsShapeQueryParameters::PhysicsShapeQueryParameters() {
 
 	margin = 0;
-	layer_mask = 0x7FFFFFFF;
+	collision_layer = 0x7FFFFFFF;
 	object_type_mask = PhysicsDirectSpaceState::TYPE_MASK_COLLISION;
 }
 
@@ -274,7 +274,7 @@ Array PhysicsDirectSpaceState::_intersect_shape(const Ref<PhysicsShapeQueryParam
 
 	Vector<ShapeResult> sr;
 	sr.resize(p_max_results);
-	int rc = intersect_shape(psq->shape, psq->transform, psq->margin, sr.ptr(), sr.size(), psq->exclude, psq->layer_mask, psq->object_type_mask);
+	int rc = intersect_shape(psq->shape, psq->transform, psq->margin, sr.ptr(), sr.size(), psq->exclude, psq->collision_layer, psq->object_type_mask);
 	Array ret;
 	ret.resize(rc);
 	for (int i = 0; i < rc; i++) {
@@ -293,7 +293,7 @@ Array PhysicsDirectSpaceState::_intersect_shape(const Ref<PhysicsShapeQueryParam
 Array PhysicsDirectSpaceState::_cast_motion(const Ref<PhysicsShapeQueryParameters> &psq, const Vector3 &p_motion) {
 
 	float closest_safe, closest_unsafe;
-	bool res = cast_motion(psq->shape, psq->transform, p_motion, psq->margin, closest_safe, closest_unsafe, psq->exclude, psq->layer_mask, psq->object_type_mask);
+	bool res = cast_motion(psq->shape, psq->transform, p_motion, psq->margin, closest_safe, closest_unsafe, psq->exclude, psq->collision_layer, psq->object_type_mask);
 	if (!res)
 		return Array();
 	Array ret;
@@ -307,7 +307,7 @@ Array PhysicsDirectSpaceState::_collide_shape(const Ref<PhysicsShapeQueryParamet
 	Vector<Vector3> ret;
 	ret.resize(p_max_results * 2);
 	int rc = 0;
-	bool res = collide_shape(psq->shape, psq->transform, psq->margin, ret.ptr(), p_max_results, rc, psq->exclude, psq->layer_mask, psq->object_type_mask);
+	bool res = collide_shape(psq->shape, psq->transform, psq->margin, ret.ptr(), p_max_results, rc, psq->exclude, psq->collision_layer, psq->object_type_mask);
 	if (!res)
 		return Array();
 	Array r;
@@ -320,7 +320,7 @@ Dictionary PhysicsDirectSpaceState::_get_rest_info(const Ref<PhysicsShapeQueryPa
 
 	ShapeRestInfo sri;
 
-	bool res = rest_info(psq->shape, psq->transform, psq->margin, &sri, psq->exclude, psq->layer_mask, psq->object_type_mask);
+	bool res = rest_info(psq->shape, psq->transform, psq->margin, &sri, psq->exclude, psq->collision_layer, psq->object_type_mask);
 	Dictionary r;
 	if (!res)
 		return r;
@@ -343,7 +343,7 @@ void PhysicsDirectSpaceState::_bind_methods() {
 	//ClassDB::bind_method(D_METHOD("intersect_ray","from","to","exclude","umask"),&PhysicsDirectSpaceState::_intersect_ray,DEFVAL(Array()),DEFVAL(0));
 	//ClassDB::bind_method(D_METHOD("intersect_shape:PhysicsShapeQueryResult","shape","xform","result_max","exclude","umask"),&PhysicsDirectSpaceState::_intersect_shape,DEFVAL(Array()),DEFVAL(0));
 
-	ClassDB::bind_method(D_METHOD("intersect_ray:Dictionary", "from", "to", "exclude", "layer_mask", "type_mask"), &PhysicsDirectSpaceState::_intersect_ray, DEFVAL(Array()), DEFVAL(0x7FFFFFFF), DEFVAL(TYPE_MASK_COLLISION));
+	ClassDB::bind_method(D_METHOD("intersect_ray:Dictionary", "from", "to", "exclude", "collision_layer", "type_mask"), &PhysicsDirectSpaceState::_intersect_ray, DEFVAL(Array()), DEFVAL(0x7FFFFFFF), DEFVAL(TYPE_MASK_COLLISION));
 	ClassDB::bind_method(D_METHOD("intersect_shape", "shape:PhysicsShapeQueryParameters", "max_results"), &PhysicsDirectSpaceState::_intersect_shape, DEFVAL(32));
 	ClassDB::bind_method(D_METHOD("cast_motion", "shape:PhysicsShapeQueryParameters", "motion"), &PhysicsDirectSpaceState::_cast_motion);
 	ClassDB::bind_method(D_METHOD("collide_shape", "shape:PhysicsShapeQueryParameters", "max_results"), &PhysicsDirectSpaceState::_collide_shape, DEFVAL(32));
@@ -425,7 +425,7 @@ void PhysicsServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("area_remove_shape", "area", "shape_idx"), &PhysicsServer::area_remove_shape);
 	ClassDB::bind_method(D_METHOD("area_clear_shapes", "area"), &PhysicsServer::area_clear_shapes);
 
-	ClassDB::bind_method(D_METHOD("area_set_layer_mask", "area", "mask"), &PhysicsServer::area_set_layer_mask);
+	ClassDB::bind_method(D_METHOD("area_set_collision_layer", "area", "layer"), &PhysicsServer::area_set_collision_layer);
 	ClassDB::bind_method(D_METHOD("area_set_collision_mask", "area", "mask"), &PhysicsServer::area_set_collision_mask);
 
 	ClassDB::bind_method(D_METHOD("area_set_param", "area", "param", "value"), &PhysicsServer::area_set_param);
@@ -450,8 +450,8 @@ void PhysicsServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("body_set_mode", "body", "mode"), &PhysicsServer::body_set_mode);
 	ClassDB::bind_method(D_METHOD("body_get_mode", "body"), &PhysicsServer::body_get_mode);
 
-	ClassDB::bind_method(D_METHOD("body_set_layer_mask", "body", "mask"), &PhysicsServer::body_set_layer_mask);
-	ClassDB::bind_method(D_METHOD("body_get_layer_mask", "body"), &PhysicsServer::body_get_layer_mask);
+	ClassDB::bind_method(D_METHOD("body_set_collision_layer", "body", "layer"), &PhysicsServer::body_set_collision_layer);
+	ClassDB::bind_method(D_METHOD("body_get_collision_layer", "body"), &PhysicsServer::body_get_collision_layer);
 
 	ClassDB::bind_method(D_METHOD("body_set_collision_mask", "body", "mask"), &PhysicsServer::body_set_collision_mask);
 	ClassDB::bind_method(D_METHOD("body_get_collision_mask", "body"), &PhysicsServer::body_get_collision_mask);
