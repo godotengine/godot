@@ -309,7 +309,26 @@ void ButtonArray::_gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
+	if (p_event->is_action("ui_accept") && p_event->is_pressed() && selected < (buttons.size())) {
+		set_selected(selected);
+		accept_event();
+		emit_signal("button_pressed", selected);
+		return;
+	}
+
 	Ref<InputEventMouseButton> mb = p_event;
+
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
+
+		int ofs = orientation == HORIZONTAL ? mb->get_position().x : mb->get_position().y;
+		for (int i = 0; i < buttons.size(); i++) {
+			if (ofs >= buttons[i]._pos_cache && ofs < buttons[i]._pos_cache + buttons[i]._size_cache) {
+				set_selected(i);
+				emit_signal("button_pressed", i);
+				return;
+			}
+		}
+	}
 
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 
@@ -533,6 +552,7 @@ void ButtonArray::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
 
 	ADD_SIGNAL(MethodInfo("button_selected", PropertyInfo(Variant::INT, "button_idx")));
+	ADD_SIGNAL(MethodInfo("button_pressed", PropertyInfo(Variant::INT, "button_idx")));
 }
 
 ButtonArray::ButtonArray(Orientation p_orientation) {
