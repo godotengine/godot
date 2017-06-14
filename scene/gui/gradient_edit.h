@@ -37,9 +37,9 @@
 
 #define POINT_WIDTH 8
 
-class ColorRampEdit : public Control {
+class GradientEdit : public Control {
 
-	GDCLASS(ColorRampEdit, Control);
+	GDCLASS(GradientEdit, Control);
 
 	PopupPanel *popup;
 	ColorPicker *picker;
@@ -68,8 +68,8 @@ public:
 	Vector<Gradient::Point> &get_points();
 	virtual Size2 get_minimum_size() const;
 
-	ColorRampEdit();
-	virtual ~ColorRampEdit();
+	GradientEdit();
+	virtual ~GradientEdit();
 };
 
 /*class  ColorRampEditPanel : public Panel

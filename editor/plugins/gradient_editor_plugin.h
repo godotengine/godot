@@ -32,21 +32,21 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
-#include "scene/gui/color_ramp_edit.h"
+#include "scene/gui/gradient_edit.h"
 
-class ColorRampEditorPlugin : public EditorPlugin {
+class GradientEditorPlugin : public EditorPlugin {
 
-	GDCLASS(ColorRampEditorPlugin, EditorPlugin);
+	GDCLASS(GradientEditorPlugin, EditorPlugin);
 
 	bool _2d;
-	Ref<Gradient> color_ramp_ref;
-	ColorRampEdit *ramp_editor;
+	Ref<Gradient> gradient_ref;
+	GradientEdit *ramp_editor;
 	EditorNode *editor;
 
 protected:
 	static void _bind_methods();
 	void _ramp_changed();
-	void _undo_redo_color_ramp(const Vector<float> &offsets, const Vector<Color> &colors);
+	void _undo_redo_gradient(const Vector<float> &offsets, const Vector<Color> &colors);
 
 public:
 	virtual String get_name() const { return "ColorRamp"; }
@@ -55,8 +55,8 @@ public:
 	virtual bool handles(Object *p_node) const;
 	virtual void make_visible(bool p_visible);
 
-	ColorRampEditorPlugin(EditorNode *p_node);
-	~ColorRampEditorPlugin();
+	GradientEditorPlugin(EditorNode *p_node);
+	~GradientEditorPlugin();
 };
 
 #endif /* TOOLS_EDITOR_PLUGINS_COLOR_RAMP_EDITOR_PLUGIN_H_ */
