@@ -596,7 +596,7 @@ void EditorTextureImportDialog::_mode_changed(int p_mode) {
 		size->show();
 
 		file_select->set_mode(EditorFileDialog::MODE_OPEN_FILE);
-		save_file_select->add_filter("*.ltex;"+TTR("Large Texture"));
+		save_file_select->add_filter("*.largetex;"+TTR("Large Texture"));
 
 		texture_options->set_flags(EditorTextureImportPlugin::IMAGE_FLAG_FIX_BORDER_ALPHA|EditorTextureImportPlugin::IMAGE_FLAG_NO_MIPMAPS|EditorTextureImportPlugin::IMAGE_FLAG_FILTER);
 		texture_options->set_quality(0.7);

@@ -66,7 +66,7 @@ public:
 class BitmapFont : public Font {
 
 	GDCLASS(BitmapFont, Font);
-	RES_BASE_EXTENSION("fnt");
+	RES_BASE_EXTENSION("font");
 
 	Vector<Ref<Texture> > textures;
 

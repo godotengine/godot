@@ -37,7 +37,7 @@
 class ShaderGraph : public Shader {
 
 	GDCLASS( ShaderGraph, Shader );
-	RES_BASE_EXTENSION("sgp");
+	RES_BASE_EXTENSION("vshader");
 
 public:
 

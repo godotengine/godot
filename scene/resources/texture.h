@@ -226,7 +226,7 @@ VARIANT_ENUM_CAST(ImageTexture::Storage);
 class AtlasTexture : public Texture {
 
 	GDCLASS(AtlasTexture, Texture);
-	RES_BASE_EXTENSION("atex");
+	RES_BASE_EXTENSION("atlastex");
 
 protected:
 	Ref<Texture> atlas;
@@ -265,7 +265,7 @@ public:
 class LargeTexture : public Texture {
 
 	GDCLASS(LargeTexture, Texture);
-	RES_BASE_EXTENSION("ltex");
+	RES_BASE_EXTENSION("largetex");
 
 protected:
 	struct Piece {
@@ -312,7 +312,7 @@ public:
 class CubeMap : public Resource {
 
 	GDCLASS(CubeMap, Resource);
-	RES_BASE_EXTENSION("cbm");
+	RES_BASE_EXTENSION("cubemap");
 
 public:
 	enum Storage {
@@ -393,7 +393,7 @@ VARIANT_ENUM_CAST(CubeMap::Storage);
 class CurveTexture : public Texture {
 
 	GDCLASS(CurveTexture, Texture);
-	RES_BASE_EXTENSION("cvtex");
+	RES_BASE_EXTENSION("curvetex");
 
 private:
 	RID texture;

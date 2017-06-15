@@ -49,7 +49,7 @@ void ResourceImporterOBJ::get_recognized_extensions(List<String> *p_extensions) 
 	p_extensions->push_back("obj");
 }
 String ResourceImporterOBJ::get_save_extension() const {
-	return "msh";
+	return "mesh";
 }
 
 String ResourceImporterOBJ::get_resource_type() const {

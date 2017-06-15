@@ -48,7 +48,7 @@ void ResourceImporterWAV::get_recognized_extensions(List<String> *p_extensions) 
 	p_extensions->push_back("wav");
 }
 String ResourceImporterWAV::get_save_extension() const {
-	return "smp";
+	return "sample";
 }
 
 String ResourceImporterWAV::get_resource_type() const {

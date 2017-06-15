@@ -41,7 +41,7 @@ class VisibilityNotifier;
 
 class World : public Resource {
 	GDCLASS(World, Resource);
-	RES_BASE_EXTENSION("wrd");
+	RES_BASE_EXTENSION("world");
 
 private:
 	RID space;

@@ -39,7 +39,7 @@
 class StyleBox : public Resource {
 
 	GDCLASS(StyleBox, Resource);
-	RES_BASE_EXTENSION("sbx");
+	RES_BASE_EXTENSION("stylebox");
 	OBJ_SAVE_TYPE(StyleBox);
 	float margin[4];
 

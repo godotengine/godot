@@ -37,7 +37,7 @@
 class Animation : public Resource {
 
 	GDCLASS(Animation, Resource);
-	RES_BASE_EXTENSION("anm");
+	RES_BASE_EXTENSION("anim");
 
 public:
 	enum TrackType {
