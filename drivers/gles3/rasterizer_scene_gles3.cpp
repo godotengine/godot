@@ -1906,7 +1906,7 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 		if (!p_shadow) {
 
 			if (p_directional_add) {
-				if (e->sort_key & RenderList::SORT_KEY_UNSHADED_FLAG || !(e->instance->layer_mask & directional_light->light_ptr->cull_mask)) {
+				if (e->sort_key & SORT_KEY_UNSHADED_FLAG || !(e->instance->layer_mask & directional_light->light_ptr->cull_mask)) {
 					continue;
 				}
 
@@ -1915,7 +1915,8 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 
 			if (shading != prev_shading) {
 
-				if (e->sort_key & RenderList::SORT_KEY_UNSHADED_FLAG) {
+				if (e->sort_key & SORT_KEY_UNSHADED_FLAG) {
+
 
 					state.scene_shader.set_conditional(SceneShaderGLES3::SHADELESS, true);
 					state.scene_shader.set_conditional(SceneShaderGLES3::USE_FORWARD_LIGHTING, false);
@@ -1944,7 +1945,7 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 					state.scene_shader.set_conditional(SceneShaderGLES3::SHADOW_MODE_PCF_5, shadow_filter_mode == SHADOW_FILTER_PCF5);
 					state.scene_shader.set_conditional(SceneShaderGLES3::SHADOW_MODE_PCF_13, shadow_filter_mode == SHADOW_FILTER_PCF13);
 
-					if (p_directional_add || (directional_light && (e->sort_key & RenderList::SORT_KEY_NO_DIRECTIONAL_FLAG) == 0)) {
+					if (p_directional_add || (directional_light && (e->sort_key & SORT_KEY_NO_DIRECTIONAL_FLAG) == 0)) {
 						state.scene_shader.set_conditional(SceneShaderGLES3::USE_LIGHT_DIRECTIONAL, true);
 
 						if (p_directional_shadows && directional_light->light_ptr->shadow) {
@@ -2048,7 +2049,7 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 			}
 		}
 
-		if (!(e->sort_key & RenderList::SORT_KEY_UNSHADED_FLAG) && !p_directional_add && !p_shadow) {
+		if (!(e->sort_key & SORT_KEY_UNSHADED_FLAG) && !p_directional_add && !p_shadow) {
 			_setup_light(e, p_view_transform);
 		}
 
@@ -2177,7 +2178,7 @@ void RasterizerSceneGLES3::_add_geometry(RasterizerStorageGLES3::Geometry *p_geo
 	}
 
 	if (!p_shadow && directional_light && (directional_light->light_ptr->cull_mask & e->instance->layer_mask) == 0) {
-		e->sort_key |= RenderList::SORT_KEY_NO_DIRECTIONAL_FLAG;
+		e->sort_key |= SORT_KEY_NO_DIRECTIONAL_FLAG;
 	}
 
 	e->sort_key |= uint64_t(e->geometry->index) << RenderList::SORT_KEY_GEOMETRY_INDEX_SHIFT;
@@ -2205,7 +2206,7 @@ void RasterizerSceneGLES3::_add_geometry(RasterizerStorageGLES3::Geometry *p_geo
 		}
 
 		if (e->instance->gi_probe_instances.size()) {
-			e->sort_key |= RenderList::SORT_KEY_GI_PROBES_FLAG;
+			e->sort_key |= SORT_KEY_GI_PROBES_FLAG;
 		}
 	}
 
@@ -2222,7 +2223,8 @@ void RasterizerSceneGLES3::_add_geometry(RasterizerStorageGLES3::Geometry *p_geo
 
 	if (shadow || m->shader->spatial.unshaded || state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_UNSHADED) {
 
-		e->sort_key |= RenderList::SORT_KEY_UNSHADED_FLAG;
+		e->sort_key |= SORT_KEY_UNSHADED_FLAG;
+
 	}
 }
 
