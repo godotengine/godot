@@ -59,6 +59,9 @@ out vec4 local_rot;
 out highp vec2 pos;
 #endif
 
+const bool at_light_pass = true;
+#else
+const bool at_light_pass = false;
 #endif
 
 
@@ -191,6 +194,9 @@ in highp vec2 pos;
 
 #endif
 
+const bool at_light_pass = true;
+#else
+const bool at_light_pass = false;
 #endif
 
 uniform mediump vec4 final_modulate;

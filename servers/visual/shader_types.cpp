@@ -153,6 +153,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[VS::SHADER_CANVAS_ITEM].functions["vertex"]["EXTRA_MATRIX"] = ShaderLanguage::TYPE_MAT4;
 	shader_modes[VS::SHADER_CANVAS_ITEM].functions["vertex"]["TIME"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[VS::SHADER_CANVAS_ITEM].functions["vertex"]["PARTICLE_CUSTOM"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[VS::SHADER_CANVAS_ITEM].functions["vertex"]["AT_LIGHT_PASS"] = ShaderLanguage::TYPE_BOOL;
 
 	shader_modes[VS::SHADER_CANVAS_ITEM].functions["fragment"]["SRC_COLOR"] = ShaderLanguage::TYPE_VEC4;
 	shader_modes[VS::SHADER_CANVAS_ITEM].functions["fragment"]["POSITION"] = ShaderLanguage::TYPE_VEC2;
@@ -166,6 +167,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[VS::SHADER_CANVAS_ITEM].functions["fragment"]["SCREEN_UV"] = ShaderLanguage::TYPE_VEC2;
 	shader_modes[VS::SHADER_CANVAS_ITEM].functions["fragment"]["POINT_COORD"] = ShaderLanguage::TYPE_VEC2;
 	shader_modes[VS::SHADER_CANVAS_ITEM].functions["fragment"]["TIME"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[VS::SHADER_CANVAS_ITEM].functions["fragment"]["AT_LIGHT_PASS"] = ShaderLanguage::TYPE_BOOL;
 
 	shader_modes[VS::SHADER_CANVAS_ITEM].functions["light"]["POSITION"] = ShaderLanguage::TYPE_VEC2;
 	shader_modes[VS::SHADER_CANVAS_ITEM].functions["light"]["NORMAL"] = ShaderLanguage::TYPE_VEC3;
