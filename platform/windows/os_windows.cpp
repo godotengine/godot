@@ -543,8 +543,6 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 					mb->set_position(Vector2(old_x, old_y));
 				}
 
-				mb->set_global_position(mb->get_position());
-
 				if (uMsg != WM_MOUSEWHEEL) {
 					if (mb->is_pressed()) {
 
@@ -567,6 +565,8 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
 					mb->set_position(Vector2(coords.x, coords.y));
 				}
+
+				mb->set_global_position(mb->get_position());
 
 				if (main_loop) {
 					input->parse_input_event(mb);
