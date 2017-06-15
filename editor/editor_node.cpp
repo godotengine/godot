@@ -342,6 +342,12 @@ void EditorNode::_notification(int p_what) {
 		play_button_panel->add_style_override("panel", gui_base->get_stylebox("PlayButtonPanel", "EditorStyles"));
 		scene_root_parent->add_style_override("panel", gui_base->get_stylebox("Content", "EditorStyles"));
 		bottom_panel->add_style_override("panel", gui_base->get_stylebox("Content", "EditorStyles"));
+		if (bool(EDITOR_DEF("interface/scene_tabs/resize_if_many_tabs", true))) {
+			scene_tabs->set_min_width(int(EDITOR_DEF("interface/scene_tabs/minimum_width", 50)) * EDSCALE);
+		} else {
+			scene_tabs->set_min_width(0);
+		}
+		_update_scene_tabs();
 	}
 }
 
@@ -4269,7 +4275,47 @@ void EditorNode::_scene_tab_closed(int p_tab) {
 	}
 }
 
+void EditorNode::_scene_tab_hover(int p_tab) {
+	if (bool(EDITOR_DEF("interface/scene_tabs/show_thumbnail_on_hover", true)) == false) {
+		return;
+	}
+	int current_tab = scene_tabs->get_current_tab();
+
+	if (p_tab == current_tab || p_tab < 0) {
+		tab_preview_panel->hide();
+	} else {
+		String path = editor_data.get_scene_path(p_tab);
+		EditorResourcePreview::get_singleton()->queue_resource_preview(path, this, "_thumbnail_done", p_tab);
+	}
+}
+
+void EditorNode::_scene_tab_exit() {
+	tab_preview_panel->hide();
+}
+
+void EditorNode::_scene_tab_input(const Ref<InputEvent> &p_input) {
+	Ref<InputEventMouseButton> mb = p_input;
+
+	if (mb.is_valid()) {
+		if (mb->get_button_index() == BUTTON_MIDDLE && mb->is_pressed() && scene_tabs->get_hovered_tab() >= 0) {
+			_scene_tab_closed(scene_tabs->get_hovered_tab());
+		}
+	}
+}
+
+void EditorNode::_thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Variant &p_udata) {
+	int p_tab = p_udata.operator signed int();
+	if (p_preview.is_valid()) {
+		Rect2 rect = scene_tabs->get_tab_rect(p_tab);
+		rect.position += scene_tabs->get_global_position();
+		tab_preview->set_texture(p_preview);
+		tab_preview_panel->set_position(rect.position + Vector2(0, rect.size.height));
+		tab_preview_panel->show();
+	}
+}
+
 void EditorNode::_scene_tab_changed(int p_tab) {
+	tab_preview_panel->hide();
 
 	//print_line("set current 1 ");
 	bool unsaved = (saved_version != editor_data.get_undo_redo().get_version());
@@ -4760,7 +4806,6 @@ void EditorNode::_dim_timeout() {
 }
 
 void EditorNode::_check_gui_base_size() {
-	print_line(itos(int(gui_base->get_size().width)));
 	if (gui_base->get_size().width > 1200 * EDSCALE) {
 		for (int i = 0; i < singleton->main_editor_button_vb->get_child_count(); i++) {
 			ToolButton *btn = singleton->main_editor_button_vb->get_child(i)->cast_to<ToolButton>();
@@ -4837,6 +4882,10 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method("set_current_version", &EditorNode::set_current_version);
 	ClassDB::bind_method("_scene_tab_changed", &EditorNode::_scene_tab_changed);
 	ClassDB::bind_method("_scene_tab_closed", &EditorNode::_scene_tab_closed);
+	ClassDB::bind_method("_scene_tab_hover", &EditorNode::_scene_tab_hover);
+	ClassDB::bind_method("_scene_tab_exit", &EditorNode::_scene_tab_exit);
+	ClassDB::bind_method("_scene_tab_input", &EditorNode::_scene_tab_input);
+	ClassDB::bind_method("_thumbnail_done", &EditorNode::_thumbnail_done);
 	ClassDB::bind_method("_scene_tab_script_edited", &EditorNode::_scene_tab_script_edited);
 	ClassDB::bind_method("_set_main_scene_state", &EditorNode::_set_main_scene_state);
 	ClassDB::bind_method("_update_scene_tabs", &EditorNode::_update_scene_tabs);
@@ -5181,13 +5230,31 @@ EditorNode::EditorNode() {
 	main_editor_tabs->connect("tab_changed",this,"_editor_select");
 	main_editor_tabs->set_tab_close_display_policy(Tabs::SHOW_NEVER);
 */
+	tab_preview_panel = memnew(Panel);
+	tab_preview_panel->set_size(Size2(100, 100) * EDSCALE);
+	tab_preview_panel->hide();
+	tab_preview_panel->set_self_modulate(Color(1, 1, 1, 0.7));
+	gui_base->add_child(tab_preview_panel);
+
+	tab_preview = memnew(TextureRect);
+	tab_preview->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
+	tab_preview->set_size(Size2(96, 96) * EDSCALE);
+	tab_preview->set_position(Point2(2, 2) * EDSCALE);
+	tab_preview_panel->add_child(tab_preview);
+
 	scene_tabs = memnew(Tabs);
+	scene_tabs->add_style_override("tab_fg", gui_base->get_stylebox("SceneTabFG", "EditorStyles"));
+	scene_tabs->add_style_override("tab_bg", gui_base->get_stylebox("SceneTabBG", "EditorStyles"));
 	scene_tabs->add_tab("unsaved");
 	scene_tabs->set_tab_align(Tabs::ALIGN_LEFT);
 	scene_tabs->set_tab_close_display_policy((bool(EDITOR_DEF("interface/always_show_close_button_in_scene_tabs", false)) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY));
+	scene_tabs->set_min_width(int(EDITOR_DEF("interface/scene_tabs/minimum_width", 50)) * EDSCALE);
 	scene_tabs->connect("tab_changed", this, "_scene_tab_changed");
 	scene_tabs->connect("right_button_pressed", this, "_scene_tab_script_edited");
 	scene_tabs->connect("tab_close", this, "_scene_tab_closed");
+	scene_tabs->connect("tab_hover", this, "_scene_tab_hover");
+	scene_tabs->connect("mouse_exited", this, "_scene_tab_exit");
+	scene_tabs->connect("gui_input", this, "_scene_tab_input");
 
 	HBoxContainer *tabbar_container = memnew(HBoxContainer);
 	scene_tabs->set_h_size_flags(Control::SIZE_EXPAND_FILL);

@@ -233,6 +233,8 @@ private:
 	//main tabs
 
 	Tabs *scene_tabs;
+	Panel *tab_preview_panel;
+	TextureRect *tab_preview;
 	int tab_closing;
 
 	bool exiting;
@@ -556,6 +558,10 @@ private:
 	void _dock_popup_exit();
 	void _scene_tab_changed(int p_tab);
 	void _scene_tab_closed(int p_tab);
+	void _scene_tab_hover(int p_tab);
+	void _scene_tab_exit();
+	void _scene_tab_input(const Ref<InputEvent> &p_input);
+	void _thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Variant &p_udata);
 	void _scene_tab_script_edited(int p_tab);
 
 	Dictionary _get_main_scene_state();
