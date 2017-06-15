@@ -1240,9 +1240,6 @@ void RasterizerCanvasGLES3::reset_canvas() {
 	//glLineWidth(1.0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	for (int i = 0; i < VS::ARRAY_MAX; i++) {
-		glDisableVertexAttribArray(i);
-	}
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, storage->resources.white_tex);

@@ -5447,9 +5447,7 @@ void RasterizerStorageGLES3::update_particles() {
 
 	glDisable(GL_RASTERIZER_DISCARD);
 
-	for (int i = 0; i < 6; i++) {
-		glDisableVertexAttribArray(i);
-	}
+
 }
 
 ////////
