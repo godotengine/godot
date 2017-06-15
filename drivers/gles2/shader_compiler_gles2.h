@@ -44,6 +44,8 @@ private:
 	Error compile_node(ShaderLanguage::ProgramNode *p_program);
 	static Error create_glsl_120_code(void *p_str, ShaderLanguage::ProgramNode *p_program);
 
+	bool _is_condition_preprocessable(ShaderLanguage::Node *p_condition) const;
+
 	bool uses_light;
 	bool uses_texscreen;
 	bool uses_texpos;

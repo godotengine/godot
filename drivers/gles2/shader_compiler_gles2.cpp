@@ -502,15 +502,30 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node, int p_level, bool p
 			SL::ControlFlowNode *cfnode = (SL::ControlFlowNode *)p_node;
 			if (cfnode->flow_op == SL::FLOW_OP_IF) {
 
-				code += "if (" + dump_node_code(cfnode->statements[0], p_level) + ") {" ENDL;
-				code += dump_node_code(cfnode->statements[1], p_level + 1);
-				if (cfnode->statements.size() == 3) {
+				// Help lazy drivers
+				if (!_is_condition_preprocessable(cfnode->statements[0])) {
 
-					code += "} else {" ENDL;
-					code += dump_node_code(cfnode->statements[2], p_level + 1);
+					code += "if (" + dump_node_code(cfnode->statements[0], p_level) + ") {" ENDL;
+					code += dump_node_code(cfnode->statements[1], p_level + 1);
+					if (cfnode->statements.size() == 3) {
+
+						code += "} else {" ENDL;
+						code += dump_node_code(cfnode->statements[2], p_level + 1);
+					}
+
+					code += "}" ENDL;
+				} else {
+
+					code += "#if (" + dump_node_code(cfnode->statements[0], p_level) + ")" ENDL;
+					code += dump_node_code(cfnode->statements[1], p_level);
+					if (cfnode->statements.size() == 3) {
+
+						code += "#else" ENDL;
+						code += dump_node_code(cfnode->statements[2], p_level);
+					}
+
+					code += "#endif" ENDL;
 				}
-
-				code += "}" ENDL;
 
 			} else if (cfnode->flow_op == SL::FLOW_OP_RETURN) {
 
@@ -647,6 +662,33 @@ String ShaderCompilerGLES2::replace_string(const StringName &p_string) {
 		return E->get();
 
 	return "_" + p_string.operator String();
+}
+
+bool ShaderCompilerGLES2::_is_condition_preprocessable(ShaderLanguage::Node *p_condition) const {
+
+	// Check if this is a "(!)variable" expression
+
+	SL::Node *maybe_variable;
+	if (p_condition->type == SL::Node::TYPE_OPERATOR) {
+		SL::OperatorNode *op = (SL::OperatorNode *)p_condition;
+		if (op->op != SL::OP_NOT)
+			return false;
+		maybe_variable = op->arguments[0];
+	} else {
+		maybe_variable = p_condition;
+	}
+
+	if (maybe_variable->type != SL::Node::TYPE_VARIABLE)
+		return false;
+
+	SL::VariableNode *variable = (SL::VariableNode *)maybe_variable;
+	// Hardcoding since it's currently the only;
+	// if more were added, they would be better characterized
+	// in the various ShaderLanguage::BuiltinsDef
+	if (variable->name != String("AT_LIGHT_PASS"))
+		return false;
+
+	return true;
 }
 
 Error ShaderCompilerGLES2::compile(const String &p_code, ShaderLanguage::ShaderType p_type, String &r_code_line, String &r_globals_line, Flags &r_flags, Map<StringName, ShaderLanguage::Uniform> *r_uniforms) {
@@ -873,6 +915,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_VERTEX]["PROJECTION_MATRIX"] = "projection_matrix";
 	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_VERTEX]["EXTRA_MATRIX"] = "extra_matrix";
 	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_VERTEX]["TIME"] = "time";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_VERTEX]["AT_LIGHT_PASS"] = "at_light_pass";
 
 	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_FRAGMENT]["POSITION"] = "(gl_FragCoord.xy)";
 	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_FRAGMENT]["NORMAL"] = "normal";
@@ -888,6 +931,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_FRAGMENT]["SCREEN_UV"] = "screen_uv";
 	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_FRAGMENT]["POINT_COORD"] = "gl_PointCoord";
 	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_FRAGMENT]["TIME"] = "time";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_FRAGMENT]["AT_LIGHT_PASS"] = "at_light_pass";
 
 	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT]["POSITION"] = "(gl_FragCoord.xy)";
 	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT]["NORMAL"] = "normal";

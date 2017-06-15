@@ -1124,6 +1124,7 @@ const ShaderLanguage::BuiltinsDef ShaderLanguage::ci_vertex_builtins_defs[] = {
 	{ "PROJECTION_MATRIX", TYPE_MAT4 },
 	{ "EXTRA_MATRIX", TYPE_MAT4 },
 	{ "TIME", TYPE_FLOAT },
+	{ "AT_LIGHT_PASS", TYPE_BOOL },
 	{ NULL, TYPE_VOID },
 };
 const ShaderLanguage::BuiltinsDef ShaderLanguage::ci_fragment_builtins_defs[] = {
@@ -1145,6 +1146,7 @@ const ShaderLanguage::BuiltinsDef ShaderLanguage::ci_fragment_builtins_defs[] = 
 	//	{ "SCREEN_POS", TYPE_VEC2},
 	//	{ "SCREEN_TEXEL_SIZE", TYPE_VEC2},
 	{ "TIME", TYPE_FLOAT },
+	{ "AT_LIGHT_PASS", TYPE_BOOL },
 	{ NULL, TYPE_VOID }
 
 };
