@@ -97,7 +97,7 @@ class Physics2DShapeQueryParameters : public Reference {
 	Vector2 motion;
 	float margin;
 	Set<RID> exclude;
-	uint32_t layer_mask;
+	uint32_t collision_layer;
 	uint32_t object_type_mask;
 
 protected:
@@ -117,8 +117,8 @@ public:
 	void set_margin(float p_margin);
 	float get_margin() const;
 
-	void set_layer_mask(int p_layer_mask);
-	int get_layer_mask() const;
+	void set_collision_layer(int p_collision_layer);
+	int get_collision_layer() const;
 
 	void set_object_type_mask(int p_object_type_mask);
 	int get_object_type_mask() const;
@@ -166,7 +166,7 @@ public:
 		Variant metadata;
 	};
 
-	virtual bool intersect_ray(const Vector2 &p_from, const Vector2 &p_to, RayResult &r_result, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_layer_mask = 0xFFFFFFFF, uint32_t p_object_type_mask = TYPE_MASK_COLLISION) = 0;
+	virtual bool intersect_ray(const Vector2 &p_from, const Vector2 &p_to, RayResult &r_result, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_layer = 0xFFFFFFFF, uint32_t p_object_type_mask = TYPE_MASK_COLLISION) = 0;
 
 	struct ShapeResult {
 
@@ -177,13 +177,13 @@ public:
 		Variant metadata;
 	};
 
-	virtual int intersect_point(const Vector2 &p_point, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_layer_mask = 0xFFFFFFFF, uint32_t p_object_type_mask = TYPE_MASK_COLLISION, bool p_pick_point = false) = 0;
+	virtual int intersect_point(const Vector2 &p_point, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_layer = 0xFFFFFFFF, uint32_t p_object_type_mask = TYPE_MASK_COLLISION, bool p_pick_point = false) = 0;
 
-	virtual int intersect_shape(const RID &p_shape, const Transform2D &p_xform, const Vector2 &p_motion, float p_margin, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_layer_mask = 0xFFFFFFFF, uint32_t p_object_type_mask = TYPE_MASK_COLLISION) = 0;
+	virtual int intersect_shape(const RID &p_shape, const Transform2D &p_xform, const Vector2 &p_motion, float p_margin, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_layer = 0xFFFFFFFF, uint32_t p_object_type_mask = TYPE_MASK_COLLISION) = 0;
 
-	virtual bool cast_motion(const RID &p_shape, const Transform2D &p_xform, const Vector2 &p_motion, float p_margin, float &p_closest_safe, float &p_closest_unsafe, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_layer_mask = 0xFFFFFFFF, uint32_t p_object_type_mask = TYPE_MASK_COLLISION) = 0;
+	virtual bool cast_motion(const RID &p_shape, const Transform2D &p_xform, const Vector2 &p_motion, float p_margin, float &p_closest_safe, float &p_closest_unsafe, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_layer = 0xFFFFFFFF, uint32_t p_object_type_mask = TYPE_MASK_COLLISION) = 0;
 
-	virtual bool collide_shape(RID p_shape, const Transform2D &p_shape_xform, const Vector2 &p_motion, float p_margin, Vector2 *r_results, int p_result_max, int &r_result_count, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_layer_mask = 0xFFFFFFFF, uint32_t p_object_type_mask = TYPE_MASK_COLLISION) = 0;
+	virtual bool collide_shape(RID p_shape, const Transform2D &p_shape_xform, const Vector2 &p_motion, float p_margin, Vector2 *r_results, int p_result_max, int &r_result_count, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_layer = 0xFFFFFFFF, uint32_t p_object_type_mask = TYPE_MASK_COLLISION) = 0;
 
 	struct ShapeRestInfo {
 
@@ -196,7 +196,7 @@ public:
 		Variant metadata;
 	};
 
-	virtual bool rest_info(RID p_shape, const Transform2D &p_shape_xform, const Vector2 &p_motion, float p_margin, ShapeRestInfo *r_info, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_layer_mask = 0xFFFFFFFF, uint32_t p_object_type_mask = TYPE_MASK_COLLISION) = 0;
+	virtual bool rest_info(RID p_shape, const Transform2D &p_shape_xform, const Vector2 &p_motion, float p_margin, ShapeRestInfo *r_info, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_layer = 0xFFFFFFFF, uint32_t p_object_type_mask = TYPE_MASK_COLLISION) = 0;
 
 	Physics2DDirectSpaceState();
 };
@@ -342,7 +342,7 @@ public:
 	virtual Transform2D area_get_transform(RID p_area) const = 0;
 
 	virtual void area_set_collision_mask(RID p_area, uint32_t p_mask) = 0;
-	virtual void area_set_layer_mask(RID p_area, uint32_t p_mask) = 0;
+	virtual void area_set_collision_layer(RID p_area, uint32_t p_layer) = 0;
 
 	virtual void area_set_monitorable(RID p_area, bool p_monitorable) = 0;
 	virtual void area_set_pickable(RID p_area, bool p_pickable) = 0;
@@ -398,8 +398,8 @@ public:
 	virtual void body_set_continuous_collision_detection_mode(RID p_body, CCDMode p_mode) = 0;
 	virtual CCDMode body_get_continuous_collision_detection_mode(RID p_body) const = 0;
 
-	virtual void body_set_layer_mask(RID p_body, uint32_t p_mask) = 0;
-	virtual uint32_t body_get_layer_mask(RID p_body) const = 0;
+	virtual void body_set_collision_layer(RID p_body, uint32_t p_layer) = 0;
+	virtual uint32_t body_get_collision_layer(RID p_body) const = 0;
 
 	virtual void body_set_collision_mask(RID p_body, uint32_t p_mask) = 0;
 	virtual uint32_t body_get_collision_mask(RID p_body) const = 0;

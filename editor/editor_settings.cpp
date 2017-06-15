@@ -292,6 +292,12 @@ void EditorSettings::create() {
 			dir->change_dir("..");
 		}
 
+		if (dir->change_dir("script_templates") != OK) {
+			dir->make_dir("script_templates");
+		} else {
+			dir->change_dir("..");
+		}
+
 		if (dir->change_dir("tmp") != OK) {
 			dir->make_dir("tmp");
 		} else {
@@ -944,6 +950,25 @@ bool EditorSettings::save_text_editor_theme_as(String p_file) {
 		return true;
 	}
 	return false;
+}
+
+Vector<String> EditorSettings::get_script_templates(const String &p_extension) {
+
+	Vector<String> templates;
+	DirAccess *d = DirAccess::open(settings_path + "/script_templates");
+	if (d) {
+		d->list_dir_begin();
+		String file = d->get_next();
+		while (file != String()) {
+			if (file.get_extension() == p_extension) {
+				templates.push_back(file.get_basename());
+			}
+			file = d->get_next();
+		}
+		d->list_dir_end();
+		memdelete(d);
+	}
+	return templates;
 }
 
 bool EditorSettings::_save_text_editor_theme(String p_file) {

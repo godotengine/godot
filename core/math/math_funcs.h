@@ -110,8 +110,8 @@ public:
 	static _ALWAYS_INLINE_ bool is_inf(double p_val) {
 #ifdef _MSC_VER
 		return !_finite(p_val);
-// workaround for mingw builds on travis
-#elif defined(__MINGW32__) || defined(__MINGW64__)
+// use an inline implementation of isinf as a workaround for problematic libstdc++ versions from gcc 5.x era
+#elif defined(__GNUC__) && __GNUC__ < 6
 		union {
 			uint64_t u;
 			double f;
@@ -127,8 +127,8 @@ public:
 	static _ALWAYS_INLINE_ bool is_inf(float p_val) {
 #ifdef _MSC_VER
 		return !_finite(p_val);
-// workaround for mingw builds on travis
-#elif defined(__MINGW32__) || defined(__MINGW64__)
+// use an inline implementation of isinf as a workaround for problematic libstdc++ versions from gcc 5.x era
+#elif defined(__GNUC__) && __GNUC__ < 6
 		union {
 			uint32_t u;
 			float f;

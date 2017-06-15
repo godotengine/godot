@@ -1543,7 +1543,7 @@ FRAGMENT_SHADER_CODE
 #if defined(LIGHT_USE_PSSM_BLEND)
 
 	if (use_blend) {
-		shadow=mix(shadow, sample_shadow(directional_shadow,directional_shadow_pixel_size,pssm_coord2.xy,pssm_coord2.z,light_clamp));
+		shadow=mix(shadow, sample_shadow(directional_shadow,directional_shadow_pixel_size,pssm_coord2.xy,pssm_coord2.z,light_clamp),pssm_blend);
 	}
 #endif
 

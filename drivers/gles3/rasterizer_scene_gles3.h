@@ -563,6 +563,7 @@ public:
 			Transform transform;
 			float farplane;
 			float split;
+			float bias_scale;
 		};
 
 		ShadowTransform shadow_transform[4];
@@ -598,7 +599,7 @@ public:
 
 	virtual RID light_instance_create(RID p_light);
 	virtual void light_instance_set_transform(RID p_light_instance, const Transform &p_transform);
-	virtual void light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform &p_transform, float p_far, float p_split, int p_pass);
+	virtual void light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform &p_transform, float p_far, float p_split, int p_pass, float p_bias_scale = 1.0);
 	virtual void light_instance_mark_visible(RID p_light_instance);
 
 	/* REFLECTION INSTANCE */
@@ -637,9 +638,10 @@ public:
 			MAX_REFLECTIONS = 1024,
 
 			SORT_KEY_DEPTH_LAYER_SHIFT = 60,
-			SORT_KEY_UNSHADED_FLAG = uint64_t(1) << 59,
-			SORT_KEY_NO_DIRECTIONAL_FLAG = uint64_t(1) << 58,
-			SORT_KEY_GI_PROBES_FLAG = uint64_t(1) << 57,
+//64 bits unsupported in MSVC
+#define			SORT_KEY_UNSHADED_FLAG  (uint64_t(1) << 59)
+#define			SORT_KEY_NO_DIRECTIONAL_FLAG  (uint64_t(1) << 58)
+#define			SORT_KEY_GI_PROBES_FLAG  (uint64_t(1) << 57)
 			SORT_KEY_SHADING_SHIFT = 57,
 			SORT_KEY_SHADING_MASK = 7,
 			SORT_KEY_MATERIAL_INDEX_SHIFT = 40,

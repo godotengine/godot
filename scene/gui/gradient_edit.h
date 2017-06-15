@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  button_array.h                                                       */
+/*  color_ramp_edit.h                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,105 +27,54 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef BUTTON_ARRAY_H
-#define BUTTON_ARRAY_H
+#ifndef SCENE_GUI_COLOR_RAMP_EDIT_H_
+#define SCENE_GUI_COLOR_RAMP_EDIT_H_
 
-#include "scene/gui/control.h"
+#include "scene/gui/color_picker.h"
+#include "scene/gui/popup.h"
+#include "scene/resources/color_ramp.h"
+#include "scene/resources/default_theme/theme_data.h"
 
-class ButtonArray : public Control {
+#define POINT_WIDTH 8
 
-	GDCLASS(ButtonArray, Control);
+class GradientEdit : public Control {
 
-public:
-	enum Align {
-		ALIGN_BEGIN,
-		ALIGN_CENTER,
-		ALIGN_END,
-		ALIGN_FILL,
-		ALIGN_EXPAND_FILL
-	};
+	GDCLASS(GradientEdit, Control);
 
-private:
-	Orientation orientation;
-	Align align;
+	PopupPanel *popup;
+	ColorPicker *picker;
 
-	struct Button {
+	Ref<ImageTexture> checker;
 
-		String text;
-		String xl_text;
-		String tooltip;
-		Ref<Texture> icon;
-		mutable int _ms_cache;
-		mutable int _pos_cache;
-		mutable int _size_cache;
-	};
+	bool grabbing;
+	int grabbed;
+	Vector<Gradient::Point> points;
 
-	int selected;
-	int hover;
-	bool flat;
-	double min_button_size;
-
-	Vector<Button> buttons;
+	void _draw_checker(int x, int y, int w, int h);
+	void _color_changed(const Color &p_color);
+	int _get_point_from_pos(int x);
+	void _show_color_picker();
 
 protected:
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
-
+	void _gui_input(const Ref<InputEvent> &p_event);
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	void _gui_input(const Ref<InputEvent> &p_event);
-
-	void set_align(Align p_align);
-	Align get_align() const;
-
-	void set_flat(bool p_flat);
-	bool is_flat() const;
-
-	void add_button(const String &p_button, const String &p_tooltip = "");
-	void add_icon_button(const Ref<Texture> &p_icon, const String &p_button = "", const String &p_tooltip = "");
-
-	void set_button_text(int p_button, const String &p_text);
-	void set_button_tooltip(int p_button, const String &p_text);
-	void set_button_icon(int p_button, const Ref<Texture> &p_icon);
-
-	String get_button_text(int p_button) const;
-	String get_button_tooltip(int p_button) const;
-	Ref<Texture> get_button_icon(int p_button) const;
-
-	int get_selected() const;
-	int get_hovered() const;
-	void set_selected(int p_selected);
-
-	int get_button_count() const;
-
-	void erase_button(int p_button);
-	void clear();
-
+	void set_ramp(const Vector<float> &p_offsets, const Vector<Color> &p_colors);
+	Vector<float> get_offsets() const;
+	Vector<Color> get_colors() const;
+	void set_points(Vector<Gradient::Point> &p_points);
+	Vector<Gradient::Point> &get_points();
 	virtual Size2 get_minimum_size() const;
 
-	virtual void get_translatable_strings(List<String> *p_strings) const;
-	virtual String get_tooltip(const Point2 &p_pos) const;
-
-	ButtonArray(Orientation p_orientation = HORIZONTAL);
+	GradientEdit();
+	virtual ~GradientEdit();
 };
 
-class HButtonArray : public ButtonArray {
-	GDCLASS(HButtonArray, ButtonArray);
+/*class  ColorRampEditPanel : public Panel
+{
+	GDCLASS(ColorRampEditPanel, Panel );
+};*/
 
-public:
-	HButtonArray()
-		: ButtonArray(HORIZONTAL){};
-};
-
-class VButtonArray : public ButtonArray {
-	GDCLASS(VButtonArray, ButtonArray);
-
-public:
-	VButtonArray()
-		: ButtonArray(VERTICAL){};
-};
-
-#endif // BUTTON_ARRAY_H
+#endif /* SCENE_GUI_COLOR_RAMP_EDIT_H_ */

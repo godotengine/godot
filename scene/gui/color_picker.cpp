@@ -156,6 +156,8 @@ void ColorPicker::_update_color() {
 	_update_text_value();
 
 	sample->update();
+	uv_edit->update();
+	w_edit->update();
 	updating = false;
 }
 
@@ -263,10 +265,10 @@ void ColorPicker::_hsv_draw(int p_wich, Control *c) {
 		points.push_back(c->get_size());
 		points.push_back(Vector2(0, c->get_size().y));
 		Vector<Color> colors;
-		colors.push_back(Color(1, 1, 1));
-		colors.push_back(Color(1, 1, 1));
-		colors.push_back(Color());
-		colors.push_back(Color());
+		colors.push_back(Color(1, 1, 1, 1));
+		colors.push_back(Color(1, 1, 1, 1));
+		colors.push_back(Color(0, 0, 0, 1));
+		colors.push_back(Color(0, 0, 0, 1));
 		c->draw_polygon(points, colors);
 		Vector<Color> colors2;
 		Color col = color;
@@ -279,7 +281,7 @@ void ColorPicker::_hsv_draw(int p_wich, Control *c) {
 		colors2.push_back(col);
 		col.a = 0;
 		colors2.push_back(col);
-		c->draw_polygon(points, colors);
+		c->draw_polygon(points, colors2);
 		int x = CLAMP(c->get_size().x * s, 0, c->get_size().x);
 		int y = CLAMP(c->get_size().y - c->get_size().y * v, 0, c->get_size().y);
 		col = color;
@@ -290,7 +292,7 @@ void ColorPicker::_hsv_draw(int p_wich, Control *c) {
 	} else if (p_wich == 1) {
 		Ref<Texture> hue = get_icon("color_hue", "ColorPicker");
 		c->draw_texture_rect(hue, Rect2(Point2(), c->get_size()));
-		int y = c->get_size().y - c->get_size().y * h;
+		int y = c->get_size().y - c->get_size().y * (1.0 - h);
 		Color col = Color();
 		col.set_hsv(h, 1, 1);
 		c->draw_line(Point2(0, y), Point2(c->get_size().x, y), col.inverted());
@@ -343,7 +345,7 @@ void ColorPicker::_w_input(const Ref<InputEvent> &ev) {
 
 		if (bev->is_pressed() && bev->get_button_index() == BUTTON_LEFT) {
 			changing_color = true;
-			h = 1 - ((float)bev->get_position().y) / 256.0;
+			h = 1 - (256.0 - (float)bev->get_position().y) / 256.0;
 
 		} else {
 			changing_color = false;
@@ -362,7 +364,8 @@ void ColorPicker::_w_input(const Ref<InputEvent> &ev) {
 		if (!changing_color)
 			return;
 		float y = CLAMP((float)mev->get_position().y, 0, 256);
-		h = 1.0 - y / 256.0;
+		//h = 1.0 - y / 256.0;
+		h = y / 256.0;
 		color.set_hsv(h, s, v, color.a);
 		last_hsv = color;
 		set_pick_color(color);

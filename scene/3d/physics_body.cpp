@@ -59,15 +59,15 @@ float PhysicsBody::get_inverse_mass() const {
 	return 0;
 }
 
-void PhysicsBody::set_collision_layer(uint32_t p_mask) {
+void PhysicsBody::set_collision_layer(uint32_t p_layer) {
 
-	layer_mask = p_mask;
-	PhysicsServer::get_singleton()->body_set_layer_mask(get_rid(), p_mask);
+	collision_layer = p_layer;
+	PhysicsServer::get_singleton()->body_set_collision_layer(get_rid(), p_layer);
 }
 
 uint32_t PhysicsBody::get_collision_layer() const {
 
-	return layer_mask;
+	return collision_layer;
 }
 
 void PhysicsBody::set_collision_mask(uint32_t p_mask) {
@@ -167,7 +167,7 @@ void PhysicsBody::_bind_methods() {
 PhysicsBody::PhysicsBody(PhysicsServer::BodyMode p_mode)
 	: CollisionObject(PhysicsServer::get_singleton()->body_create(p_mode), false) {
 
-	layer_mask = 1;
+	collision_layer = 1;
 	collision_mask = 1;
 }
 

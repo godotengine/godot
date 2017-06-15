@@ -587,7 +587,7 @@ Map<TileMap::PosKey, TileMap::Quadrant>::Element *TileMap::_create_quadrant(cons
 	//q.canvas_item = VisualServer::get_singleton()->canvas_item_create();
 	q.body = Physics2DServer::get_singleton()->body_create(use_kinematic ? Physics2DServer::BODY_MODE_KINEMATIC : Physics2DServer::BODY_MODE_STATIC);
 	Physics2DServer::get_singleton()->body_attach_object_instance_ID(q.body, get_instance_ID());
-	Physics2DServer::get_singleton()->body_set_layer_mask(q.body, collision_layer);
+	Physics2DServer::get_singleton()->body_set_collision_layer(q.body, collision_layer);
 	Physics2DServer::get_singleton()->body_set_collision_mask(q.body, collision_mask);
 	Physics2DServer::get_singleton()->body_set_param(q.body, Physics2DServer::BODY_PARAM_FRICTION, friction);
 	Physics2DServer::get_singleton()->body_set_param(q.body, Physics2DServer::BODY_PARAM_BOUNCE, bounce);
@@ -863,7 +863,7 @@ void TileMap::set_collision_layer(uint32_t p_layer) {
 	for (Map<PosKey, Quadrant>::Element *E = quadrant_map.front(); E; E = E->next()) {
 
 		Quadrant &q = E->get();
-		Physics2DServer::get_singleton()->body_set_layer_mask(q.body, collision_layer);
+		Physics2DServer::get_singleton()->body_set_collision_layer(q.body, collision_layer);
 	}
 }
 
@@ -1286,7 +1286,7 @@ void TileMap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collision_use_kinematic", PROPERTY_HINT_NONE, ""), "set_collision_use_kinematic", "get_collision_use_kinematic");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "collision_friction", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_collision_friction", "get_collision_friction");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "collision_bounce", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_collision_bounce", "get_collision_bounce");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layers", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_collision_layer", "get_collision_layer");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_collision_layer", "get_collision_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_collision_mask", "get_collision_mask");
 
 	ADD_GROUP("Occluder", "occluder_");

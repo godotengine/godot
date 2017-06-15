@@ -63,6 +63,8 @@ private:
 
 	void _input(const Ref<InputEvent> &p_Event);
 
+	bool _is_point_inside(const Point2 &p_point);
+
 	void _press(int p_finger_pressed);
 	void _release(bool p_exiting_tree = false);
 

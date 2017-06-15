@@ -489,15 +489,15 @@ uint32_t Area::get_collision_mask() const {
 
 	return collision_mask;
 }
-void Area::set_layer_mask(uint32_t p_mask) {
+void Area::set_collision_layer(uint32_t p_layer) {
 
-	layer_mask = p_mask;
-	PhysicsServer::get_singleton()->area_set_layer_mask(get_rid(), p_mask);
+	collision_layer = p_layer;
+	PhysicsServer::get_singleton()->area_set_collision_layer(get_rid(), p_layer);
 }
 
-uint32_t Area::get_layer_mask() const {
+uint32_t Area::get_collision_layer() const {
 
-	return layer_mask;
+	return collision_layer;
 }
 
 void Area::set_collision_mask_bit(int p_bit, bool p_value) {
@@ -515,19 +515,19 @@ bool Area::get_collision_mask_bit(int p_bit) const {
 	return get_collision_mask() & (1 << p_bit);
 }
 
-void Area::set_layer_mask_bit(int p_bit, bool p_value) {
+void Area::set_collision_layer_bit(int p_bit, bool p_value) {
 
-	uint32_t mask = get_layer_mask();
+	uint32_t layer = get_collision_layer();
 	if (p_value)
-		mask |= 1 << p_bit;
+		layer |= 1 << p_bit;
 	else
-		mask &= ~(1 << p_bit);
-	set_layer_mask(mask);
+		layer &= ~(1 << p_bit);
+	set_collision_layer(layer);
 }
 
-bool Area::get_layer_mask_bit(int p_bit) const {
+bool Area::get_collision_layer_bit(int p_bit) const {
 
-	return get_layer_mask() & (1 << p_bit);
+	return get_collision_layer() & (1 << p_bit);
 }
 
 void Area::_bind_methods() {
@@ -565,14 +565,14 @@ void Area::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_mask", "collision_mask"), &Area::set_collision_mask);
 	ClassDB::bind_method(D_METHOD("get_collision_mask"), &Area::get_collision_mask);
 
-	ClassDB::bind_method(D_METHOD("set_layer_mask", "layer_mask"), &Area::set_layer_mask);
-	ClassDB::bind_method(D_METHOD("get_layer_mask"), &Area::get_layer_mask);
+	ClassDB::bind_method(D_METHOD("set_collision_layer", "collision_layer"), &Area::set_collision_layer);
+	ClassDB::bind_method(D_METHOD("get_collision_layer"), &Area::get_collision_layer);
 
 	ClassDB::bind_method(D_METHOD("set_collision_mask_bit", "bit", "value"), &Area::set_collision_mask_bit);
 	ClassDB::bind_method(D_METHOD("get_collision_mask_bit", "bit"), &Area::get_collision_mask_bit);
 
-	ClassDB::bind_method(D_METHOD("set_layer_mask_bit", "bit", "value"), &Area::set_layer_mask_bit);
-	ClassDB::bind_method(D_METHOD("get_layer_mask_bit", "bit"), &Area::get_layer_mask_bit);
+	ClassDB::bind_method(D_METHOD("set_collision_layer_bit", "bit", "value"), &Area::set_collision_layer_bit);
+	ClassDB::bind_method(D_METHOD("get_collision_layer_bit", "bit"), &Area::get_collision_layer_bit);
 
 	ClassDB::bind_method(D_METHOD("set_monitorable", "enable"), &Area::set_monitorable);
 	ClassDB::bind_method(D_METHOD("is_monitorable"), &Area::is_monitorable);
@@ -610,7 +610,7 @@ void Area::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "monitoring"), "set_monitoring", "is_monitoring");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "monitorable"), "set_monitorable", "is_monitorable");
 	ADD_GROUP("Collision", "collision_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layers", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_layer_mask", "get_layer_mask");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 }
 
@@ -628,7 +628,7 @@ Area::Area()
 	priority = 0;
 	monitoring = false;
 	collision_mask = 1;
-	layer_mask = 1;
+	collision_layer = 1;
 	set_ray_pickable(false);
 	set_monitoring(true);
 	set_monitorable(true);

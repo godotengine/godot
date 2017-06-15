@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  color_ramp_edit.h                                                    */
+/*  color_ramp_editor_plugin.h                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,54 +27,36 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef SCENE_GUI_COLOR_RAMP_EDIT_H_
-#define SCENE_GUI_COLOR_RAMP_EDIT_H_
+#ifndef TOOLS_EDITOR_PLUGINS_COLOR_RAMP_EDITOR_PLUGIN_H_
+#define TOOLS_EDITOR_PLUGINS_COLOR_RAMP_EDITOR_PLUGIN_H_
 
-#include "scene/gui/color_picker.h"
-#include "scene/gui/popup.h"
-#include "scene/resources/color_ramp.h"
-#include "scene/resources/default_theme/theme_data.h"
+#include "editor/editor_node.h"
+#include "editor/editor_plugin.h"
+#include "scene/gui/gradient_edit.h"
 
-#define POINT_WIDTH 8
+class GradientEditorPlugin : public EditorPlugin {
 
-class ColorRampEdit : public Control {
+	GDCLASS(GradientEditorPlugin, EditorPlugin);
 
-	GDCLASS(ColorRampEdit, Control);
-
-	PopupPanel *popup;
-	ColorPicker *picker;
-
-	Ref<ImageTexture> checker;
-
-	bool grabbing;
-	int grabbed;
-	Vector<Gradient::Point> points;
-
-	void _draw_checker(int x, int y, int w, int h);
-	void _color_changed(const Color &p_color);
-	int _get_point_from_pos(int x);
-	void _show_color_picker();
+	bool _2d;
+	Ref<Gradient> gradient_ref;
+	GradientEdit *ramp_editor;
+	EditorNode *editor;
 
 protected:
-	void _gui_input(const Ref<InputEvent> &p_event);
-	void _notification(int p_what);
 	static void _bind_methods();
+	void _ramp_changed();
+	void _undo_redo_gradient(const Vector<float> &offsets, const Vector<Color> &colors);
 
 public:
-	void set_ramp(const Vector<float> &p_offsets, const Vector<Color> &p_colors);
-	Vector<float> get_offsets() const;
-	Vector<Color> get_colors() const;
-	void set_points(Vector<Gradient::Point> &p_points);
-	Vector<Gradient::Point> &get_points();
-	virtual Size2 get_minimum_size() const;
+	virtual String get_name() const { return "ColorRamp"; }
+	bool has_main_screen() const { return false; }
+	virtual void edit(Object *p_node);
+	virtual bool handles(Object *p_node) const;
+	virtual void make_visible(bool p_visible);
 
-	ColorRampEdit();
-	virtual ~ColorRampEdit();
+	GradientEditorPlugin(EditorNode *p_node);
+	~GradientEditorPlugin();
 };
 
-/*class  ColorRampEditPanel : public Panel
-{
-	GDCLASS(ColorRampEditPanel, Panel );
-};*/
-
-#endif /* SCENE_GUI_COLOR_RAMP_EDIT_H_ */
+#endif /* TOOLS_EDITOR_PLUGINS_COLOR_RAMP_EDITOR_PLUGIN_H_ */

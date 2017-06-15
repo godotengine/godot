@@ -476,12 +476,12 @@ void Physics2DServerSW::area_set_collision_mask(RID p_area, uint32_t p_mask) {
 	area->set_collision_mask(p_mask);
 }
 
-void Physics2DServerSW::area_set_layer_mask(RID p_area, uint32_t p_mask) {
+void Physics2DServerSW::area_set_collision_layer(RID p_area, uint32_t p_layer) {
 
 	Area2DSW *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
 
-	area->set_layer_mask(p_mask);
+	area->set_collision_layer(p_layer);
 }
 
 void Physics2DServerSW::area_set_monitor_callback(RID p_area, Object *p_receiver, const StringName &p_method) {
@@ -691,19 +691,19 @@ uint32_t Physics2DServerSW::body_get_object_instance_ID(RID p_body) const {
 	return body->get_instance_id();
 };
 
-void Physics2DServerSW::body_set_layer_mask(RID p_body, uint32_t p_flags) {
+void Physics2DServerSW::body_set_collision_layer(RID p_body, uint32_t p_flags) {
 
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
-	body->set_layer_mask(p_flags);
+	body->set_collision_layer(p_flags);
 };
 
-uint32_t Physics2DServerSW::body_get_layer_mask(RID p_body) const {
+uint32_t Physics2DServerSW::body_get_collision_layer(RID p_body) const {
 
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, 0);
 
-	return body->get_layer_mask();
+	return body->get_collision_layer();
 };
 
 void Physics2DServerSW::body_set_collision_mask(RID p_body, uint32_t p_flags) {

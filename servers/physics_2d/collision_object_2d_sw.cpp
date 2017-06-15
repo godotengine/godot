@@ -214,6 +214,6 @@ CollisionObject2DSW::CollisionObject2DSW(Type p_type) {
 	space = NULL;
 	instance_id = 0;
 	collision_mask = 1;
-	layer_mask = 1;
+	collision_layer = 1;
 	pickable = true;
 }

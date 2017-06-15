@@ -448,6 +448,7 @@ public:
 			: dirty_list(this) {
 
 			shader = NULL;
+			ubo_size = 0;
 			valid = false;
 			custom_code_id = 0;
 			version = 1;

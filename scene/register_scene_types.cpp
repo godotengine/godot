@@ -42,7 +42,7 @@
 #include "scene/2d/path_2d.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
-#include "scene/gui/button_array.h"
+
 #include "scene/gui/button_group.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/check_box.h"
@@ -360,9 +360,6 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); //may take time to init
 
-	ClassDB::register_virtual_class<ButtonArray>();
-	ClassDB::register_class<HButtonArray>();
-	ClassDB::register_class<VButtonArray>();
 	ClassDB::register_class<TextureProgress>();
 	ClassDB::register_class<ItemList>();
 
