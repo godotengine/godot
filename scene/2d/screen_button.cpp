@@ -204,6 +204,8 @@ void TouchScreenButton::_input(const InputEvent &p_event) {
 	if (p_event.device != 0)
 		return;
 
+	ERR_FAIL_COND(!is_visible());
+
 	if (passby_press) {
 
 		if (p_event.type == InputEvent::SCREEN_TOUCH && !p_event.screen_touch.pressed && finger_pressed == p_event.screen_touch.index) {
@@ -215,23 +217,7 @@ void TouchScreenButton::_input(const InputEvent &p_event) {
 
 			if (finger_pressed == -1 || p_event.screen_touch.index == finger_pressed) {
 
-				Point2 coord = (get_global_transform_with_canvas()).affine_inverse().xform(Point2(p_event.screen_touch.x, p_event.screen_touch.y));
-
-				bool touched = false;
-				if (bitmask.is_valid()) {
-
-					if (Rect2(Point2(), bitmask->get_size()).has_point(coord)) {
-
-						if (bitmask->get_bit(coord))
-							touched = true;
-					}
-				} else {
-
-					if (texture.is_valid())
-						touched = Rect2(Point2(), texture->get_size()).has_point(coord);
-				}
-
-				if (touched) {
+				if (_is_touch_inside(p_event.screen_touch)) {
 					if (finger_pressed == -1) {
 						_press(p_event.screen_touch.index);
 					}
@@ -249,41 +235,11 @@ void TouchScreenButton::_input(const InputEvent &p_event) {
 
 			if (p_event.screen_touch.pressed) {
 
-				if (!is_visible())
-					return;
-
 				const bool can_press = finger_pressed == -1;
 				if (!can_press)
 					return; //already fingering
 
-				Point2 coord = (get_global_transform_with_canvas()).affine_inverse().xform(Point2(p_event.screen_touch.x, p_event.screen_touch.y));
-				Rect2 item_rect = get_item_rect();
-
-				bool touched = false;
-				bool check_rect = true;
-				if (shape.is_valid()) {
-
-					check_rect = false;
-					Matrix32 xform = shape_centered ? Matrix32().translated(get_item_rect().size * 0.5f) : Matrix32();
-					touched = shape->collide(xform, unit_rect, Matrix32(0, coord + Vector2(0.5, 0.5)));
-				}
-
-				if (bitmask.is_valid()) {
-
-					check_rect = false;
-					if (!touched && Rect2(Point2(), bitmask->get_size()).has_point(coord)) {
-
-						if (bitmask->get_bit(coord))
-							touched = true;
-					}
-				}
-
-				if (!touched && check_rect) {
-					if (!texture.is_null())
-						touched = item_rect.has_point(coord);
-				}
-
-				if (touched) {
+				if (_is_touch_inside(p_event.screen_touch)) {
 					_press(p_event.screen_touch.index);
 				}
 			} else {
@@ -293,6 +249,41 @@ void TouchScreenButton::_input(const InputEvent &p_event) {
 			}
 		}
 	}
+}
+
+bool TouchScreenButton::_is_touch_inside(const InputEventScreenTouch &p_touch) {
+
+	Point2 coord = get_global_transform_with_canvas().affine_inverse().xform(Point2(p_touch.x, p_touch.y));
+
+	bool touched = false;
+	bool check_rect = true;
+
+	Rect2 item_rect = get_item_rect();
+
+	if (shape.is_valid()) {
+
+		check_rect = false;
+		Matrix32 xform = shape_centered ? Matrix32().translated(item_rect.size * 0.5f) : Matrix32();
+		touched = shape->collide(xform, unit_rect, Matrix32(0, coord + Vector2(0.5, 0.5)));
+	}
+
+	if (bitmask.is_valid()) {
+
+		check_rect = false;
+		if (!touched && Rect2(Point2(), bitmask->get_size()).has_point(coord)) {
+
+			if (bitmask->get_bit(coord))
+				touched = true;
+		}
+	}
+
+	if (!touched && check_rect) {
+
+		if (texture.is_valid())
+			touched = item_rect.has_point(coord);
+	}
+
+	return touched;
 }
 
 void TouchScreenButton::_press(int p_finger_pressed) {
