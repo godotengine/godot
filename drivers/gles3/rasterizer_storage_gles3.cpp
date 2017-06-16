@@ -3107,6 +3107,7 @@ void RasterizerStorageGLES3::mesh_remove_surface(RID p_mesh, int p_surface) {
 	}
 
 	glDeleteVertexArrays(1, &surface->array_id);
+	glDeleteVertexArrays(1, &surface->instancing_array_id);
 
 	for (int i = 0; i < surface->blend_shapes.size(); i++) {
 
