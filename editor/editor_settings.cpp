@@ -569,7 +569,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set("3d_editor/grid_color", Color(0, 1, 0, 0.2));
 	hints["3d_editor/grid_color"] = PropertyInfo(Variant::COLOR, "3d_editor/grid_color", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 
-	set("3d_editor/default_fov", 45.0);
+	set("3d_editor/default_fov", 55.0);
 	set("3d_editor/default_z_near", 0.1);
 	set("3d_editor/default_z_far", 500.0);
 
