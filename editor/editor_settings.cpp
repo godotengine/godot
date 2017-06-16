@@ -528,6 +528,12 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set("interface/theme/custom_theme", "");
 	hints["interface/theme/custom_theme"] = PropertyInfo(Variant::STRING, "interface/theme/custom_theme", PROPERTY_HINT_GLOBAL_FILE, "*.res,*.tres,*.theme", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 
+	set("interface/scene_tabs/show_extension", false);
+	set("interface/scene_tabs/show_thumbnail_on_hover", true);
+	set("interface/scene_tabs/resize_if_many_tabs", true);
+	set("interface/scene_tabs/minimum_width", 50);
+	hints["interface/scene_tabs/minimum_width"] = PropertyInfo(Variant::INT, "interface/scene_tabs/minimum_width", PROPERTY_HINT_RANGE, "50,500,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+
 	set("filesystem/directories/autoscan_project_path", "");
 	hints["filesystem/directories/autoscan_project_path"] = PropertyInfo(Variant::STRING, "filesystem/directories/autoscan_project_path", PROPERTY_HINT_GLOBAL_DIR);
 	set("filesystem/directories/default_project_path", "");

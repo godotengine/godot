@@ -307,6 +307,8 @@ Ref<Theme> create_editor_theme() {
 	theme->set_color("font_color_bg", "TabContainer", light_color_2);
 	theme->set_icon("menu", "TabContainer", theme->get_icon("TabMenu", "EditorIcons"));
 	theme->set_icon("menu_hl", "TabContainer", theme->get_icon("TabMenu", "EditorIcons"));
+	theme->set_stylebox("SceneTabFG", "EditorStyles", make_flat_stylebox(base_color, 10, 5, 10, 5));
+	theme->set_stylebox("SceneTabBG", "EditorStyles", make_empty_stylebox(6, 5, 6, 5));
 
 	// Debugger
 	Ref<StyleBoxFlat> style_panel_debugger = make_flat_stylebox(dark_color_2, 0, 4, 0, 0);
