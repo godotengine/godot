@@ -28,7 +28,7 @@ uniform float prev_system_phase;
 uniform int total_particles;
 uniform float explosiveness;
 uniform float randomness;
-uniform vec4 time;
+uniform float time;
 uniform float delta;
 
 uniform int attractor_count;

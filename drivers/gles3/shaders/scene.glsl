@@ -63,7 +63,6 @@ layout(std140) uniform SceneData { //ubo:0
 	highp mat4 projection_matrix;
 	highp mat4 camera_inverse_matrix;
 	highp mat4 camera_matrix;
-	highp vec4 time;
 
 	highp vec4 ambient_light_color;
 	highp vec4 bg_color;
@@ -83,6 +82,7 @@ layout(std140) uniform SceneData { //ubo:0
 	vec2 shadow_atlas_pixel_size;
 	vec2 directional_shadow_pixel_size;
 
+	float time;
 	float z_far;
 	float reflection_multiplier;
 	float subsurface_scatter_width;
@@ -435,7 +435,6 @@ layout(std140) uniform SceneData {
 	highp mat4 projection_matrix;
 	highp mat4 camera_inverse_matrix;
 	highp mat4 camera_matrix;
-	highp vec4 time;
 
 	highp vec4 ambient_light_color;
 	highp vec4 bg_color;
@@ -455,6 +454,7 @@ layout(std140) uniform SceneData {
 	vec2 shadow_atlas_pixel_size;
 	vec2 directional_shadow_pixel_size;
 
+	float time;
 	float z_far;
 	float reflection_multiplier;
 	float subsurface_scatter_width;

@@ -5381,7 +5381,7 @@ void RasterizerStorageGLES3::update_particles() {
 		shaders.particles.bind();
 
 		shaders.particles.set_uniform(ParticlesShaderGLES3::TOTAL_PARTICLES, particles->amount);
-		shaders.particles.set_uniform(ParticlesShaderGLES3::TIME, Color(frame.time[0], frame.time[1], frame.time[2], frame.time[3]));
+		shaders.particles.set_uniform(ParticlesShaderGLES3::TIME, frame.time[0]);
 		shaders.particles.set_uniform(ParticlesShaderGLES3::EXPLOSIVENESS, particles->explosiveness);
 		shaders.particles.set_uniform(ParticlesShaderGLES3::LIFETIME, particles->lifetime);
 		shaders.particles.set_uniform(ParticlesShaderGLES3::ATTRACTOR_COUNT, 0);
@@ -5447,8 +5447,6 @@ void RasterizerStorageGLES3::update_particles() {
 	}
 
 	glDisable(GL_RASTERIZER_DISCARD);
-
-
 }
 
 ////////

@@ -111,7 +111,6 @@ public:
 			float projection_matrix[16];
 			float camera_inverse_matrix[16];
 			float camera_matrix[16];
-			float time[4];
 			float ambient_light_color[4];
 			float bg_color[4];
 			float fog_color_enabled[4];
@@ -127,6 +126,7 @@ public:
 			float shadow_atlas_pixel_size[2];
 			float shadow_directional_pixel_size[2];
 
+			float time;
 			float z_far;
 			float reflection_multiplier;
 			float subsurface_scatter_width;

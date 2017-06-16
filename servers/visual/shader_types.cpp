@@ -206,7 +206,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["RESTART"] = ShaderLanguage::TYPE_BOOL;
 	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["CUSTOM"] = ShaderLanguage::TYPE_VEC4;
 	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["TRANSFORM"] = ShaderLanguage::TYPE_MAT4;
-	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["TIME"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["TIME"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["LIFETIME"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["DELTA"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["NUMBER"] = ShaderLanguage::TYPE_UINT;

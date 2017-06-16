@@ -20,7 +20,7 @@ layout(location=4) in highp vec2 uv_attrib;
 layout(std140) uniform CanvasItemData { //ubo:0
 
 	highp mat4 projection_matrix;
-	highp vec4 time;
+	highp float time;
 };
 
 uniform highp mat4 modelview_matrix;
@@ -158,7 +158,7 @@ uniform sampler2D screen_texture; // texunit:-3
 layout(std140) uniform CanvasItemData {
 
 	highp mat4 projection_matrix;
-	highp vec4 time;
+	highp float time;
 };
 
 

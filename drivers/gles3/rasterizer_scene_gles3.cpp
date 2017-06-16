@@ -2314,9 +2314,7 @@ void RasterizerSceneGLES3::_setup_environment(Environment *env, const CameraMatr
 	store_transform(p_cam_transform.affine_inverse(), state.ubo_data.camera_inverse_matrix);
 
 	//time global variables
-	for (int i = 0; i < 4; i++) {
-		state.ubo_data.time[i] = storage->frame.time[i];
-	}
+	state.ubo_data.time = storage->frame.time[0];
 
 	state.ubo_data.z_far = p_cam_projection.get_z_far();
 	//bg and ambient

@@ -1265,9 +1265,7 @@ void RasterizerCanvasGLES3::reset_canvas() {
 	state.vp = canvas_transform;
 
 	store_transform(canvas_transform, state.canvas_item_ubo_data.projection_matrix);
-	for (int i = 0; i < 4; i++) {
-		state.canvas_item_ubo_data.time[i] = storage->frame.time[i];
-	}
+	state.canvas_item_ubo_data.time = storage->frame.time[0];
 
 	glBindBuffer(GL_UNIFORM_BUFFER, state.canvas_item_ubo);
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(CanvasItemUBO), &state.canvas_item_ubo_data);

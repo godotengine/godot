@@ -39,7 +39,7 @@ public:
 	struct CanvasItemUBO {
 
 		float projection_matrix[16];
-		float time[4];
+		float time;
 	};
 
 	struct Data {
