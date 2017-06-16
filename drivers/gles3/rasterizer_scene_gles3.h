@@ -438,7 +438,7 @@ public:
 
 			ssr_enabled = false;
 			ssr_max_steps = 64;
-			ssr_fade_in = 2.0;
+			ssr_fade_in = 0.15;
 			ssr_fade_out = 2.0;
 			ssr_depth_tolerance = 0.2;
 			ssr_roughness = true;
@@ -525,7 +525,7 @@ public:
 	virtual void environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_bloom_treshold, VS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_treshold, float p_hdr_bleed_scale, bool p_bicubic_upscale);
 	virtual void environment_set_fog(RID p_env, bool p_enable, float p_begin, float p_end, RID p_gradient_texture);
 
-	virtual void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_int, float p_fade_out, float p_depth_tolerance, bool p_roughness);
+	virtual void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_in, float p_fade_out, float p_depth_tolerance, bool p_roughness);
 	virtual void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_radius2, float p_intensity2, float p_intensity, float p_bias, float p_light_affect, const Color &p_color, bool p_blur);
 
 	virtual void environment_set_tonemap(RID p_env, VS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale);
@@ -637,9 +637,9 @@ public:
 
 			SORT_KEY_DEPTH_LAYER_SHIFT = 60,
 //64 bits unsupported in MSVC
-#define			SORT_KEY_UNSHADED_FLAG  (uint64_t(1) << 59)
-#define			SORT_KEY_NO_DIRECTIONAL_FLAG  (uint64_t(1) << 58)
-#define			SORT_KEY_GI_PROBES_FLAG  (uint64_t(1) << 57)
+#define SORT_KEY_UNSHADED_FLAG (uint64_t(1) << 59)
+#define SORT_KEY_NO_DIRECTIONAL_FLAG (uint64_t(1) << 58)
+#define SORT_KEY_GI_PROBES_FLAG (uint64_t(1) << 57)
 			SORT_KEY_SHADING_SHIFT = 57,
 			SORT_KEY_SHADING_MASK = 7,
 			SORT_KEY_MATERIAL_INDEX_SHIFT = 40,

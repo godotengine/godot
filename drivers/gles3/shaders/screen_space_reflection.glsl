@@ -204,11 +204,13 @@ void main() {
 		vec2 final_pos;
 		float grad;
 		grad=steps_taken/float(num_steps);
+		float initial_fade = curve_fade_in==0.0 ? 1.0 : pow(clamp(grad,0.0,1.0),curve_fade_in);
+		float fade = pow(clamp(1.0-grad,0.0,1.0),distance_fade)*initial_fade;
 		final_pos=pos;
 
 
 
-#endif
+
 
 
 
@@ -294,10 +296,10 @@ void main() {
 			final_color = textureLod(source_diffuse,final_pos*pixel_size,0.0);
 		}
 
-		frag_color = vec4(final_color.rgb,pow(clamp(1.0-grad,0.0,1.0),distance_fade)*margin_blend);
+		frag_color = vec4(final_color.rgb,fade*margin_blend);
 
 #else
-		frag_color = vec4(textureLod(source_diffuse,final_pos*pixel_size,0.0).rgb,pow(clamp(1.0-grad,0.0,1.0),distance_fade)*margin_blend);
+		frag_color = vec4(textureLod(source_diffuse,final_pos*pixel_size,0.0).rgb,fade*margin_blend);
 #endif
 
 
