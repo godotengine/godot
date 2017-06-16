@@ -77,7 +77,7 @@ class AudioStreamOGGVorbis : public AudioStream {
 
 	GDCLASS(AudioStreamOGGVorbis, AudioStream)
 	OBJ_SAVE_TYPE(AudioStream) //children are all saved as AudioStream, so they can be exchanged
-	RES_BASE_EXTENSION("asogg");
+	RES_BASE_EXTENSION("oggstr");
 
 	friend class AudioStreamPlaybackOGGVorbis;
 

@@ -140,7 +140,7 @@ public:
 class ArrayMesh : public Mesh {
 
 	GDCLASS(ArrayMesh, Mesh);
-	RES_BASE_EXTENSION("msh");
+	RES_BASE_EXTENSION("mesh");
 
 private:
 	struct Surface {

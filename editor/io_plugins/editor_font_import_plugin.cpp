@@ -533,16 +533,16 @@ class EditorFontImportDialog : public ConfirmationDialog {
 			return;
 		}
 
-		if (dest->get_line_edit()->get_text().get_file()==".fnt") {
-			dest->get_line_edit()->set_text(dest->get_line_edit()->get_text().get_base_dir() + "/" + source->get_line_edit()->get_text().get_file().get_basename() + ".fnt" );
+		if (dest->get_line_edit()->get_text().get_file()==".font") {
+			dest->get_line_edit()->set_text(dest->get_line_edit()->get_text().get_base_dir() + "/" + source->get_line_edit()->get_text().get_file().get_basename() + ".font" );
 		}
 
 		if (dest->get_line_edit()->get_text().get_extension() == dest->get_line_edit()->get_text()) {
-			dest->get_line_edit()->set_text(dest->get_line_edit()->get_text() + ".fnt");
+			dest->get_line_edit()->set_text(dest->get_line_edit()->get_text() + ".font");
 		}
 
-		if (dest->get_line_edit()->get_text().get_extension().to_lower() != "fnt") {
-			error_dialog->set_text(TTR("Invalid file extension.\nPlease use .fnt."));
+		if (dest->get_line_edit()->get_text().get_extension().to_lower() != "font") {
+			error_dialog->set_text(TTR("Invalid file extension.\nPlease use .font."));
 			error_dialog->popup_centered(Size2(200,100));
 			return;
 		}
@@ -665,7 +665,7 @@ public:
 		//
 		List<String> fl;
 		Ref<BitmapFont> font= memnew(BitmapFont);
-		dest->get_file_dialog()->add_filter("*.fnt ; Font" );
+		dest->get_file_dialog()->add_filter("*.font ; Font" );
 		/*
 		ResourceSaver::get_recognized_extensions(font,&fl);
 		for(List<String>::Element *E=fl.front();E;E=E->next()) {
@@ -1690,7 +1690,7 @@ void EditorFontImportPlugin::import_from_drop(const Vector<String>& p_drop, cons
 		if (ext=="ttf" || ext=="otf" || ext=="fnt") {
 
 			import_dialog();
-			dialog->set_source_and_dest(p_drop[i],p_dest_path.plus_file(file.get_basename()+".fnt"));
+			dialog->set_source_and_dest(p_drop[i],p_dest_path.plus_file(file.get_basename()+".font"));
 			break;
 		}
 	}

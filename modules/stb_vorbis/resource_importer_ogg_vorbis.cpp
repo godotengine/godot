@@ -48,7 +48,7 @@ void ResourceImporterOGGVorbis::get_recognized_extensions(List<String> *p_extens
 }
 
 String ResourceImporterOGGVorbis::get_save_extension() const {
-	return "asogg";
+	return "oggstr";
 }
 
 String ResourceImporterOGGVorbis::get_resource_type() const {

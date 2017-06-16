@@ -43,7 +43,7 @@
 class Material : public Resource {
 
 	GDCLASS(Material, Resource);
-	RES_BASE_EXTENSION("mtl");
+	RES_BASE_EXTENSION("material");
 	OBJ_SAVE_TYPE(Material);
 
 	RID material;

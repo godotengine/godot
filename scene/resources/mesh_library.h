@@ -39,7 +39,7 @@
 class MeshLibrary : public Resource {
 
 	GDCLASS(MeshLibrary, Resource);
-	RES_BASE_EXTENSION("gt");
+	RES_BASE_EXTENSION("meshlib");
 
 	struct Item {
 		String name;
