@@ -128,7 +128,7 @@ Error ResourceImporterCSVTranslation::import(const String &p_source_file, const 
 			xlt = cxl;
 		}
 
-		String save_path = p_source_file.get_basename() + "." + translations[i]->get_locale() + ".xl";
+		String save_path = p_source_file.get_basename() + "." + translations[i]->get_locale() + ".translation";
 
 		ResourceSaver::save(save_path, xlt);
 		if (r_gen_files) {

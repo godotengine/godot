@@ -1943,14 +1943,14 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 				atex->set_region(region);
 				atex->set_margin(margin);
 
-				String path = EditorSettings::get_singleton()->get_settings_path()+"/tmp/tmpatlas.atex";
+				String path = EditorSettings::get_singleton()->get_settings_path()+"/tmp/tmpatlas.atlastex";
 				Error err = ResourceSaver::save(path,atex);
 				if (err!=OK) {
 					EditorNode::add_io_error(TTR("Could not save atlas subtexture:")+" "+path);
 					return ERR_CANT_CREATE;
 				}
 				Vector<uint8_t> data = FileAccess::get_file_as_array(path);
-				String dst_path = F->get().operator String().get_basename()+".atex";
+				String dst_path = F->get().operator String().get_basename()+".atlastex";
 				err = p_func(p_udata,dst_path,data,counter++,files.size());
 				saved.insert(dst_path);
 				if (err)

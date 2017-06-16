@@ -99,7 +99,7 @@ Error ResourceImporterOGGVorbis::import(const String &p_source_file, const Strin
 	ogg_stream->set_data(data);
 	ogg_stream->set_loop(loop);
 
-	return ResourceSaver::save(p_save_path + ".asogg", ogg_stream);
+	return ResourceSaver::save(p_save_path + ".oggstr", ogg_stream);
 }
 
 ResourceImporterOGGVorbis::ResourceImporterOGGVorbis() {

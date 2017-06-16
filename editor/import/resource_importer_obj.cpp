@@ -33,7 +33,6 @@
 #include "os/file_access.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/surface_tool.h"
-#include "scene/resources/surface_tool.h"
 
 String ResourceImporterOBJ::get_importer_name() const {
 
@@ -244,7 +243,7 @@ Error ResourceImporterOBJ::import(const String &p_source_file, const String &p_s
 	}
 */
 
-	Error err = ResourceSaver::save(p_save_path + ".msh", mesh);
+	Error err = ResourceSaver::save(p_save_path + ".mesh", mesh);
 
 	return err;
 }

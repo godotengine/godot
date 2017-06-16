@@ -987,7 +987,7 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 
 				if (!p_materials.has(mat)) {
 
-					String ext_name = p_base_path + "." + _make_extname(mat->get_name()) + ".mtl";
+					String ext_name = p_base_path + "." + _make_extname(mat->get_name()) + ".material";
 					if (FileAccess::exists(ext_name)) {
 						//if exists, use it
 						Ref<Material> existing = ResourceLoader::load(ext_name);
@@ -1015,7 +1015,7 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 
 						if (!p_meshes.has(mesh)) {
 
-							String ext_name = p_base_path + "." + _make_extname(mesh->get_name()) + ".msh";
+							String ext_name = p_base_path + "." + _make_extname(mesh->get_name()) + ".mesh";
 							if (FileAccess::exists(ext_name)) {
 								//if exists, use it
 								Ref<ArrayMesh> existing = ResourceLoader::load(ext_name);
@@ -1040,7 +1040,7 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 
 								if (!p_materials.has(mat)) {
 
-									String ext_name = p_base_path + "." + _make_extname(mat->get_name()) + ".mtl";
+									String ext_name = p_base_path + "." + _make_extname(mat->get_name()) + ".material";
 									if (FileAccess::exists(ext_name)) {
 										//if exists, use it
 										Ref<Material> existing = ResourceLoader::load(ext_name);

@@ -485,7 +485,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 	sample->set_loop_end(loop_end);
 	sample->set_stereo(format_channels == 2);
 
-	ResourceSaver::save(p_save_path + ".smp", sample);
+	ResourceSaver::save(p_save_path + ".sample", sample);
 
 	return OK;
 }
