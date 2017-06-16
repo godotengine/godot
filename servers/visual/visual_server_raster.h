@@ -952,7 +952,7 @@ public:
 	BIND2(environment_set_bg_energy, RID, float)
 	BIND2(environment_set_canvas_max_layer, RID, int)
 	BIND4(environment_set_ambient_light, RID, const Color &, float, float)
-	BIND8(environment_set_ssr, RID, bool, int, float, float, float, bool, bool)
+	BIND7(environment_set_ssr, RID, bool, int, float, float, float, bool)
 	BIND10(environment_set_ssao, RID, bool, float, float, float, float, float, float, const Color &, bool)
 
 	BIND6(environment_set_dof_blur_near, RID, bool, float, float, float, EnvironmentDOFBlurQuality)

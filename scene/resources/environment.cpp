@@ -315,7 +315,7 @@ void Environment::_validate_property(PropertyInfo &property) const {
 void Environment::set_ssr_enabled(bool p_enable) {
 
 	ssr_enabled = p_enable;
-	VS::get_singleton()->environment_set_ssr(environment, ssr_enabled, ssr_max_steps, ssr_accel, ssr_fade, ssr_depth_tolerance, ssr_smooth, ssr_roughness);
+	VS::get_singleton()->environment_set_ssr(environment, ssr_enabled, ssr_max_steps, ssr_fade_in, ssr_fade_out, ssr_depth_tolerance, ssr_roughness);
 	_change_notify();
 }
 
@@ -327,57 +327,47 @@ bool Environment::is_ssr_enabled() const {
 void Environment::set_ssr_max_steps(int p_steps) {
 
 	ssr_max_steps = p_steps;
-	VS::get_singleton()->environment_set_ssr(environment, ssr_enabled, ssr_max_steps, ssr_accel, ssr_fade, ssr_depth_tolerance, ssr_smooth, ssr_roughness);
+	VS::get_singleton()->environment_set_ssr(environment, ssr_enabled, ssr_max_steps, ssr_fade_in, ssr_fade_out, ssr_depth_tolerance, ssr_roughness);
 }
 int Environment::get_ssr_max_steps() const {
 
 	return ssr_max_steps;
 }
 
-void Environment::set_ssr_accel(float p_accel) {
+void Environment::set_ssr_fade_in(float p_fade_in) {
 
-	ssr_accel = p_accel;
-	VS::get_singleton()->environment_set_ssr(environment, ssr_enabled, ssr_max_steps, ssr_accel, ssr_fade, ssr_depth_tolerance, ssr_smooth, ssr_roughness);
+	ssr_fade_in = p_fade_in;
+	VS::get_singleton()->environment_set_ssr(environment, ssr_enabled, ssr_max_steps, ssr_fade_in, ssr_fade_out, ssr_depth_tolerance, ssr_roughness);
 }
-float Environment::get_ssr_accel() const {
+float Environment::get_ssr_fade_in() const {
 
-	return ssr_accel;
+	return ssr_fade_in;
 }
 
-void Environment::set_ssr_fade(float p_fade) {
+void Environment::set_ssr_fade_out(float p_fade_out) {
 
-	ssr_fade = p_fade;
-	VS::get_singleton()->environment_set_ssr(environment, ssr_enabled, ssr_max_steps, ssr_accel, ssr_fade, ssr_depth_tolerance, ssr_smooth, ssr_roughness);
+	ssr_fade_out = p_fade_out;
+	VS::get_singleton()->environment_set_ssr(environment, ssr_enabled, ssr_max_steps, ssr_fade_in, ssr_fade_out, ssr_depth_tolerance, ssr_roughness);
 }
-float Environment::get_ssr_fade() const {
+float Environment::get_ssr_fade_out() const {
 
-	return ssr_fade;
+	return ssr_fade_out;
 }
 
 void Environment::set_ssr_depth_tolerance(float p_depth_tolerance) {
 
 	ssr_depth_tolerance = p_depth_tolerance;
-	VS::get_singleton()->environment_set_ssr(environment, ssr_enabled, ssr_max_steps, ssr_accel, ssr_fade, ssr_depth_tolerance, ssr_smooth, ssr_roughness);
+	VS::get_singleton()->environment_set_ssr(environment, ssr_enabled, ssr_max_steps, ssr_fade_in, ssr_fade_out, ssr_depth_tolerance, ssr_roughness);
 }
 float Environment::get_ssr_depth_tolerance() const {
 
 	return ssr_depth_tolerance;
 }
 
-void Environment::set_ssr_smooth(bool p_enable) {
-
-	ssr_smooth = p_enable;
-	VS::get_singleton()->environment_set_ssr(environment, ssr_enabled, ssr_max_steps, ssr_accel, ssr_fade, ssr_depth_tolerance, ssr_smooth, ssr_roughness);
-}
-bool Environment::is_ssr_smooth() const {
-
-	return ssr_smooth;
-}
-
 void Environment::set_ssr_rough(bool p_enable) {
 
 	ssr_roughness = p_enable;
-	VS::get_singleton()->environment_set_ssr(environment, ssr_enabled, ssr_max_steps, ssr_accel, ssr_fade, ssr_depth_tolerance, ssr_smooth, ssr_roughness);
+	VS::get_singleton()->environment_set_ssr(environment, ssr_enabled, ssr_max_steps, ssr_fade_in, ssr_fade_out, ssr_depth_tolerance, ssr_roughness);
 }
 bool Environment::is_ssr_rough() const {
 
@@ -954,11 +944,11 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_ssr_max_steps", "max_steps"), &Environment::set_ssr_max_steps);
 	ClassDB::bind_method(D_METHOD("get_ssr_max_steps"), &Environment::get_ssr_max_steps);
 
-	ClassDB::bind_method(D_METHOD("set_ssr_accel", "accel"), &Environment::set_ssr_accel);
-	ClassDB::bind_method(D_METHOD("get_ssr_accel"), &Environment::get_ssr_accel);
+	ClassDB::bind_method(D_METHOD("set_ssr_fade_in", "fade_in"), &Environment::set_ssr_fade_in);
+	ClassDB::bind_method(D_METHOD("get_ssr_fade_in"), &Environment::get_ssr_fade_in);
 
-	ClassDB::bind_method(D_METHOD("set_ssr_fade", "fade"), &Environment::set_ssr_fade);
-	ClassDB::bind_method(D_METHOD("get_ssr_fade"), &Environment::get_ssr_fade);
+	ClassDB::bind_method(D_METHOD("set_ssr_fade_out", "fade_out"), &Environment::set_ssr_fade_out);
+	ClassDB::bind_method(D_METHOD("get_ssr_fade_out"), &Environment::get_ssr_fade_out);
 
 	ClassDB::bind_method(D_METHOD("set_ssr_depth_tolerance", "depth_tolerance"), &Environment::set_ssr_depth_tolerance);
 	ClassDB::bind_method(D_METHOD("get_ssr_depth_tolerance"), &Environment::get_ssr_depth_tolerance);
@@ -973,9 +963,9 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ss_reflections_enabled"), "set_ssr_enabled", "is_ssr_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "ss_reflections_max_steps", PROPERTY_HINT_RANGE, "1,512,1"), "set_ssr_max_steps", "get_ssr_max_steps");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ss_reflections_accel", PROPERTY_HINT_RANGE, "0,4,0.01"), "set_ssr_accel", "get_ssr_accel");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ss_reflections_fade", PROPERTY_HINT_EXP_EASING), "set_ssr_fade", "get_ssr_fade");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ss_reflections_fade_in", PROPERTY_HINT_EXP_EASING), "set_ssr_fade_in", "get_ssr_fade_in");
+	v ADD_PROPERTY(PropertyInfo(Variant::REAL, "ss_reflections_fade_out", PROPERTY_HINT_EXP_EASING), "set_ssr_fade_out", "get_ssr_fade_out");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ss_reflections_depth_tolerance", PROPERTY_HINT_RANGE, "0.1,128,0.1"), "set_ssr_depth_tolerance", "get_ssr_depth_tolerance");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ss_reflections_accel_smooth"), "set_ssr_smooth", "is_ssr_smooth");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ss_reflections_roughness"), "set_ssr_rough", "is_ssr_rough");
 
 	ClassDB::bind_method(D_METHOD("set_ssao_enabled", "enabled"), &Environment::set_ssao_enabled);
@@ -1179,10 +1169,9 @@ Environment::Environment() {
 
 	ssr_enabled = false;
 	ssr_max_steps = 64;
-	ssr_accel = 0.04;
-	ssr_fade = 2.0;
+	ssr_fade_in = 2.0;
+	ssr_fade_out = 2.0;
 	ssr_depth_tolerance = 0.2;
-	ssr_smooth = true;
 	ssr_roughness = true;
 
 	ssao_enabled = false;

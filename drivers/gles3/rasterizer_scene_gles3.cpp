@@ -887,17 +887,16 @@ void RasterizerSceneGLES3::environment_set_glow(RID p_env, bool p_enable, int p_
 void RasterizerSceneGLES3::environment_set_fog(RID p_env, bool p_enable, float p_begin, float p_end, RID p_gradient_texture) {
 }
 
-void RasterizerSceneGLES3::environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_accel, float p_fade, float p_depth_tolerance, bool p_smooth, bool p_roughness) {
+void RasterizerSceneGLES3::environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_int, float p_fade_out, float p_depth_tolerance, bool p_roughness) {
 
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
 
 	env->ssr_enabled = p_enable;
 	env->ssr_max_steps = p_max_steps;
-	env->ssr_accel = p_accel;
-	env->ssr_fade = p_fade;
+	env->ssr_fade_in = p_fade_in;
+	env->ssr_fade_out = p_fade_out;
 	env->ssr_depth_tolerance = p_depth_tolerance;
-	env->ssr_smooth = p_smooth;
 	env->ssr_roughness = p_roughness;
 }
 
@@ -3253,8 +3252,7 @@ void RasterizerSceneGLES3::_render_mrts(Environment *env, const CameraMatrix &p_
 
 		//perform SSR
 
-		state.ssr_shader.set_conditional(ScreenSpaceReflectionShaderGLES3::SMOOTH_ACCEL, env->ssr_accel > 0 && env->ssr_smooth);
-		state.ssr_shader.set_conditional(ScreenSpaceReflectionShaderGLES3::REFLECT_ROUGHNESS, env->ssr_accel > 0 && env->ssr_roughness);
+		state.ssr_shader.set_conditional(ScreenSpaceReflectionShaderGLES3::REFLECT_ROUGHNESS, env->ssr_roughness);
 
 		state.ssr_shader.bind();
 
@@ -3270,9 +3268,9 @@ void RasterizerSceneGLES3::_render_mrts(Environment *env, const CameraMatrix &p_
 		//state.ssr_shader.set_uniform(ScreenSpaceReflectionShaderGLES3::FRAME_INDEX,int(render_pass));
 		state.ssr_shader.set_uniform(ScreenSpaceReflectionShaderGLES3::FILTER_MIPMAP_LEVELS, float(storage->frame.current_rt->effects.mip_maps[0].sizes.size()));
 		state.ssr_shader.set_uniform(ScreenSpaceReflectionShaderGLES3::NUM_STEPS, env->ssr_max_steps);
-		state.ssr_shader.set_uniform(ScreenSpaceReflectionShaderGLES3::ACCELERATION, env->ssr_accel);
 		state.ssr_shader.set_uniform(ScreenSpaceReflectionShaderGLES3::DEPTH_TOLERANCE, env->ssr_depth_tolerance);
-		state.ssr_shader.set_uniform(ScreenSpaceReflectionShaderGLES3::DISTANCE_FADE, env->ssr_fade);
+		state.ssr_shader.set_uniform(ScreenSpaceReflectionShaderGLES3::DISTANCE_FADE, env->ssr_fade_in);
+		state.ssr_shader.set_uniform(ScreenSpaceReflectionShaderGLES3::CURVE_FADE_IN, env->ssr_fade_out);
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->effects.mip_maps[0].color);

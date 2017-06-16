@@ -100,10 +100,9 @@ private:
 
 	bool ssr_enabled;
 	int ssr_max_steps;
-	float ssr_accel;
-	float ssr_fade;
+	float ssr_fade_in;
+	float ssr_fade_out;
 	float ssr_depth_tolerance;
-	bool ssr_smooth;
 	bool ssr_roughness;
 
 	bool ssao_enabled;
@@ -225,17 +224,14 @@ public:
 	void set_ssr_max_steps(int p_steps);
 	int get_ssr_max_steps() const;
 
-	void set_ssr_accel(float p_accel);
-	float get_ssr_accel() const;
+	void set_ssr_fade_in(float p_transition);
+	float get_ssr_fade_in() const;
 
-	void set_ssr_fade(float p_transition);
-	float get_ssr_fade() const;
+	void set_ssr_fade_out(float p_transition);
+	float get_ssr_fade_out() const;
 
 	void set_ssr_depth_tolerance(float p_depth_tolerance);
 	float get_ssr_depth_tolerance() const;
-
-	void set_ssr_smooth(bool p_enable);
-	bool is_ssr_smooth() const;
 
 	void set_ssr_rough(bool p_enable);
 	bool is_ssr_rough() const;
