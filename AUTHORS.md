@@ -10,10 +10,18 @@ source code. "Significant" is arbitrarily decided, but should be fair :)
 GitHub usernames are indicated in parentheses, or as sole entry when no other
 name is available.
 
-## Original authors
+## Project Founders
 
     Juan Linietsky (reduz)
     Ariel Manzur (punto-)
+
+## Lead Developer
+
+    Juan Linietsky (reduz)
+
+## Project Manager
+
+    Rémi Verschelde (akien-mga)
 
 ## Developers
 
@@ -21,6 +29,7 @@ name is available.
 
     Alexander Holland (AlexHolly)
     Alexey Velikiy (jonyrock)
+    Alket Rexhepi (alketii)
     Andreas Haas (Hinsbart)
     Anton Yabchinskiy (a12n)
     Aren Villanueva (kurikaesu)
@@ -41,8 +50,10 @@ name is available.
     Guilherme Felipe (guilhermefelipecgs)
     Hein-Pieter van Braam (hpvb)
     Hubert Jarosz (Marqin)
+    Hugo Locurcio (Calinou)
     Ignacio Etcheverry (neikeq)
     J08nY
+    Jakub Grzesik (kubecz3k)
     Johan Manuel (29jm)
     Joshua Grams (JoshuaGrams)
     Juan Linietsky (reduz)
@@ -55,17 +66,21 @@ name is available.
     Mario Schlack (hurikhan)
     Masoud BH (masoudbh3)
     Nathan Warden (NathanWarden)
+    Nuno Donato (nunodonato)
     Ovnuniarchos
     Patrick (firefly2442)
     Paul Batty (Paulb23)
     Pawel Kowal (pkowal1982)
     Pedro J. Estébanez (RandomShaper)
+    Poommetee Ketson (Noshyaar)
     Ralf Hölzemer (rollenrolm)
     Ramesh Ravone (RameshRavone)
     Ray Koopa (RayKoopa)
     Rémi Verschelde (akien-mga)
     SaracenOne
+    Theo Hallenius (TheoXD)
     Thomas Herzog (karroffel)
+    Timo (toger5)
     V. Vamsi Krishna (vkbsb)
     Vinzenz Feenstra (vinzenz)
     Zher Huei Lee (leezh)
