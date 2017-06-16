@@ -168,8 +168,6 @@ class EditorFileSystem : public Node {
 
 	void _scan_fs_changes(EditorFileSystemDirectory *p_dir, const ScanProgress &p_progress);
 
-	int md_count;
-
 	Set<String> valid_extensions;
 	Set<String> import_extensions;
 
