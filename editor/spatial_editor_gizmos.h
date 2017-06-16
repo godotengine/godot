@@ -46,7 +46,6 @@
 #include "scene/3d/ray_cast.h"
 #include "scene/3d/reflection_probe.h"
 #include "scene/3d/room_instance.h"
-#include "scene/3d/test_cube.h"
 #include "scene/3d/vehicle_body.h"
 #include "scene/3d/visibility_notifier.h"
 
@@ -185,17 +184,6 @@ class SkeletonSpatialGizmo : public EditorSpatialGizmo {
 public:
 	void redraw();
 	SkeletonSpatialGizmo(Skeleton *p_skel = NULL);
-};
-
-class TestCubeSpatialGizmo : public EditorSpatialGizmo {
-
-	GDCLASS(TestCubeSpatialGizmo, EditorSpatialGizmo);
-
-	TestCube *tc;
-
-public:
-	void redraw();
-	TestCubeSpatialGizmo(TestCube *p_tc = NULL);
 };
 
 class RoomSpatialGizmo : public EditorSpatialGizmo {

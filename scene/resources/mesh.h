@@ -214,23 +214,6 @@ public:
 	~ArrayMesh();
 };
 
-#if 0
-class QuadMesh : public Mesh {
-
-	GDCLASS(QuadMesh, Mesh)
-
-protected:
-	virtual bool _is_generated() const { return true; }
-	static void _bind_methods();
-
-public:
-	void set_material(const Ref<Material> &p_material);
-	Ref<Material> get_material() const;
-	QuadMesh();
-};
-
-#endif
-
 VARIANT_ENUM_CAST(Mesh::ArrayType);
 VARIANT_ENUM_CAST(Mesh::PrimitiveType);
 VARIANT_ENUM_CAST(Mesh::BlendShapeMode);

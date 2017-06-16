@@ -74,7 +74,6 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
-#include "scene/gui/spin_box.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/tabs.h"
@@ -130,7 +129,6 @@
 #include "scene/animation/tween.h"
 #include "scene/main/resource_preloader.h"
 #include "scene/main/scene_main_loop.h"
-#include "scene/main/scene_main_loop.h"
 #include "scene/resources/packed_scene.h"
 
 #include "scene/resources/mesh_data_tool.h"
@@ -172,6 +170,8 @@
 #include "scene/resources/sky_box.h"
 #include "scene/resources/texture.h"
 
+#include "scene/resources/primitive_meshes.h"
+
 #include "scene/resources/shader_graph.h"
 
 #include "scene/resources/world.h"
@@ -206,9 +206,7 @@
 #include "scene/3d/physics_body.h"
 #include "scene/3d/portal.h"
 #include "scene/3d/position_3d.h"
-#include "scene/3d/quad.h"
 #include "scene/3d/reflection_probe.h"
-#include "scene/3d/test_cube.h"
 #include "scene/resources/environment.h"
 
 #include "scene/3d/area.h"
@@ -407,7 +405,6 @@ void register_scene_types() {
 	ClassDB::register_class<Camera>();
 	ClassDB::register_class<Listener>();
 	ClassDB::register_class<InterpolatedCamera>();
-	ClassDB::register_class<TestCube>();
 	ClassDB::register_class<MeshInstance>();
 	ClassDB::register_class<ImmediateGeometry>();
 	ClassDB::register_class<Sprite3D>();
@@ -423,7 +420,6 @@ void register_scene_types() {
 	ClassDB::register_class<Portal>();
 	ClassDB::register_class<Particles>();
 	ClassDB::register_class<Position3D>();
-	ClassDB::register_class<Quad>();
 	ClassDB::register_class<NavigationMeshInstance>();
 	ClassDB::register_class<NavigationMesh>();
 	ClassDB::register_class<Navigation>();
@@ -522,6 +518,14 @@ void register_scene_types() {
 #ifndef _3D_DISABLED
 	ClassDB::register_virtual_class<Mesh>();
 	ClassDB::register_class<ArrayMesh>();
+	ClassDB::register_virtual_class<PrimitiveMesh>();
+	ClassDB::register_class<CapsuleMesh>();
+	ClassDB::register_class<CubeMesh>();
+	ClassDB::register_class<CylinderMesh>();
+	ClassDB::register_class<PlaneMesh>();
+	ClassDB::register_class<PrismMesh>();
+	ClassDB::register_class<QuadMesh>();
+	ClassDB::register_class<SphereMesh>();
 	ClassDB::register_virtual_class<Material>();
 	ClassDB::register_class<SpatialMaterial>();
 	ClassDB::add_compatibility_class("FixedSpatialMaterial", "SpatialMaterial");
