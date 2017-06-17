@@ -138,7 +138,7 @@ static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_f
 	PoolVector<uint8_t>::Write w = dst_data.write();
 
 	// prepare parameters to be passed to etc2comp
-	int num_cpus = OS::get_singleton()->get_processor_count() * 2; //generally some cpus have 2 threads
+	int num_cpus = OS::get_singleton()->get_processor_count();
 	int encoding_time = 0;
 	float effort = 0.0; //default, reasonable time
 
