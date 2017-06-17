@@ -1149,6 +1149,9 @@ public:
 	virtual void particles_set_emission_transform(RID p_particles, const Transform &p_transform);
 	void _particles_process(Particles *p_particles, float p_delta);
 
+	virtual int particles_get_draw_passes(RID p_particles) const;
+	virtual RID particles_get_draw_pass_mesh(RID p_particles, int p_pass) const;
+
 	/* INSTANCE */
 
 	virtual void instance_add_skeleton(RID p_skeleton, RasterizerScene::InstanceBase *p_instance);

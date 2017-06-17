@@ -3323,6 +3323,36 @@ void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 					} else {
 						can_cast_shadows = false;
 					}
+				} else if (p_instance->base_type == VS::INSTANCE_PARTICLES) {
+
+					bool cast_shadows = false;
+
+					int dp = VSG::storage->particles_get_draw_passes(p_instance->base);
+
+					for (int i = 0; i < dp; i++) {
+
+						RID mesh = VSG::storage->particles_get_draw_pass_mesh(p_instance->base, i);
+
+						int sc = VSG::storage->mesh_get_surface_count(mesh);
+						for (int j = 0; j < sc; j++) {
+
+							RID mat = VSG::storage->mesh_surface_get_material(mesh, j);
+
+							if (!mat.is_valid()) {
+								cast_shadows = true;
+								break;
+							}
+
+							if (VSG::storage->material_casts_shadows(mat)) {
+								cast_shadows = true;
+								break;
+							}
+						}
+					}
+
+					if (!cast_shadows) {
+						can_cast_shadows = false;
+					}
 				}
 			}
 

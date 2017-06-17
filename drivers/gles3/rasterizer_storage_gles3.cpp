@@ -5258,6 +5258,23 @@ void RasterizerStorageGLES3::particles_set_emission_transform(RID p_particles, c
 	particles->emission_transform = p_transform;
 }
 
+int RasterizerStorageGLES3::particles_get_draw_passes(RID p_particles) const {
+
+	const Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND_V(!particles, 0);
+
+	return particles->draw_passes.size();
+}
+
+RID RasterizerStorageGLES3::particles_get_draw_pass_mesh(RID p_particles, int p_pass) const {
+
+	const Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND_V(!particles, RID());
+	ERR_FAIL_INDEX_V(p_pass, particles->draw_passes.size(), RID());
+
+	return particles->draw_passes[p_pass];
+}
+
 void RasterizerStorageGLES3::_particles_process(Particles *particles, float p_delta) {
 
 	float new_phase = Math::fmod((float)particles->phase + (p_delta / particles->lifetime) * particles->speed_scale, (float)1.0);
@@ -5452,6 +5469,8 @@ void RasterizerStorageGLES3::update_particles() {
 
 			particles->particle_valid_histories[0] = true;
 		}
+
+		particles->instance_change_notify(); //make sure shadows are updated
 	}
 
 	glDisable(GL_RASTERIZER_DISCARD);
