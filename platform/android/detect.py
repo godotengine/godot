@@ -232,7 +232,7 @@ def configure(env):
     elif (env["target"] == "debug"):
         env.Append(LINKFLAGS=['-O0'])
         env.Append(CPPFLAGS=['-O0', '-D_DEBUG', '-UNDEBUG', '-DDEBUG_ENABLED',
-                             '-DDEBUG_MEMORY_ALLOC', '-g', '-fno-limit-debug-info'])
+                             '-DDEBUG_MEMORY_ENABLED', '-g', '-fno-limit-debug-info'])
 
     env.Append(CPPFLAGS=['-DANDROID_ENABLED',
                          '-DUNIX_ENABLED', '-DNO_FCNTL', '-DMPC_FIXED_POINT'])

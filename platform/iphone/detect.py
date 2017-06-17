@@ -58,16 +58,16 @@ def configure(env):
     if (env["ios_sim"] == "yes" or env["arch"] == "x86"):  # i386, simulator
         env["arch"] = "x86"
         env["bits"] = "32"
-        env.Append(CCFLAGS=string.split('-arch i386 -fobjc-abi-version=2 -fobjc-legacy-dispatch -fmessage-length=0 -fpascal-strings -fasm-blocks -D__IPHONE_OS_VERSION_MIN_REQUIRED=40100 -isysroot $IPHONESDK -mios-simulator-version-min=4.3 -DCUSTOM_MATRIX_TRANSFORM_H=\\\"build/iphone/matrix4_iphone.h\\\" -DCUSTOM_VECTOR3_TRANSFORM_H=\\\"build/iphone/vector3_iphone.h\\\"'))
+        env.Append(CCFLAGS=string.split('-arch i386 -fobjc-abi-version=2 -fobjc-legacy-dispatch -fmessage-length=0 -fpascal-strings -fblocks -fasm-blocks -D__IPHONE_OS_VERSION_MIN_REQUIRED=40100 -isysroot $IPHONESDK -mios-simulator-version-min=4.3 -DCUSTOM_MATRIX_TRANSFORM_H=\\\"build/iphone/matrix4_iphone.h\\\" -DCUSTOM_VECTOR3_TRANSFORM_H=\\\"build/iphone/vector3_iphone.h\\\"'))
     elif (env["arch"] == "arm64"):  # arm64
         env["bits"] = "64"
-        env.Append(CCFLAGS=string.split('-fno-objc-arc -arch arm64 -fmessage-length=0 -fno-strict-aliasing -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits -fpascal-strings -fvisibility=hidden -MMD -MT dependencies -miphoneos-version-min=7.0 -isysroot $IPHONESDK'))
+        env.Append(CCFLAGS=string.split('-fno-objc-arc -arch arm64 -fmessage-length=0 -fno-strict-aliasing -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits -fpascal-strings -fblocks -fvisibility=hidden -MMD -MT dependencies -miphoneos-version-min=7.0 -isysroot $IPHONESDK'))
         env.Append(CPPFLAGS=['-DNEED_LONG_INT'])
         env.Append(CPPFLAGS=['-DLIBYUV_DISABLE_NEON'])
     else:  # armv7
         env["arch"] = "arm"
         env["bits"] = "32"
-        env.Append(CCFLAGS=string.split('-fno-objc-arc -arch armv7 -fmessage-length=0 -fno-strict-aliasing -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits -fpascal-strings -isysroot /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk -fvisibility=hidden -mthumb "-DIBOutlet=__attribute__((iboutlet))" "-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))" "-DIBAction=void)__attribute__((ibaction)" -miphoneos-version-min=7.0 -MMD -MT dependencies -isysroot $IPHONESDK'))
+        env.Append(CCFLAGS=string.split('-fno-objc-arc -arch armv7 -fmessage-length=0 -fno-strict-aliasing -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits -fpascal-strings -fblocks -isysroot $IPHONESDK -fvisibility=hidden -mthumb "-DIBOutlet=__attribute__((iboutlet))" "-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))" "-DIBAction=void)__attribute__((ibaction)" -miphoneos-version-min=7.0 -MMD -MT dependencies'))
 
     if (env["arch"] == "x86"):
         env['IPHONEPLATFORM'] = 'iPhoneSimulator'
@@ -90,6 +90,7 @@ def configure(env):
                               '-framework', 'OpenGLES',
                               '-framework', 'QuartzCore',
                               '-framework', 'SystemConfiguration',
+                              '-framework', 'GameController',
                               '-F$IPHONESDK',
                               ])
     elif (env["arch"] == "arm64"):
@@ -110,6 +111,7 @@ def configure(env):
                                                 '-framework', 'AVFoundation',
                                                 '-framework', 'CoreMedia',
                                                 '-framework', 'CoreMotion',
+                                                '-framework', 'GameController',
                               ])
     else:
         env.Append(LINKFLAGS=['-arch', 'armv7', '-Wl,-dead_strip', '-miphoneos-version-min=7.0',
@@ -128,10 +130,11 @@ def configure(env):
                                                 '-framework', 'AVFoundation',
                                                 '-framework', 'CoreMedia',
                                                 '-framework', 'CoreMotion',
+                                                '-framework', 'GameController',
                               ])
 
     if env['game_center'] == 'yes':
-        env.Append(CPPFLAGS=['-fblocks', '-DGAME_CENTER_ENABLED'])
+        env.Append(CPPFLAGS=['-DGAME_CENTER_ENABLED'])
         env.Append(LINKFLAGS=['-framework', 'GameKit'])
 
     if env['store_kit'] == 'yes':
@@ -143,25 +146,19 @@ def configure(env):
 
     env.Append(CPPPATH=['$IPHONESDK/usr/include', '$IPHONESDK/System/Library/Frameworks/OpenGLES.framework/Headers', '$IPHONESDK/System/Library/Frameworks/AudioUnit.framework/Headers'])
 
-    if (env["target"] == "release"):
+    if (env["target"].startswith("release")):
 
-        env.Append(CCFLAGS=['-O3', '-DNS_BLOCK_ASSERTIONS=1', '-gdwarf-2'])  # removed -ffast-math
-        env.Append(LINKFLAGS=['-O3'])
+        env.Append(CPPFLAGS=['-DNDEBUG', '-DNS_BLOCK_ASSERTIONS=1'])
+        env.Append(CPPFLAGS=['-O2', '-flto', '-ftree-vectorize', '-fomit-frame-pointer', '-ffast-math', '-funsafe-math-optimizations'])
+        env.Append(LINKFLAGS=['-O2', '-flto'])
 
-    elif env["target"] == "release_debug":
-        env.Append(CCFLAGS=['-Os', '-DNS_BLOCK_ASSERTIONS=1', '-DDEBUG_ENABLED'])
-        env.Append(LINKFLAGS=['-Os'])
-        env.Append(CPPFLAGS=['-DDEBUG_MEMORY_ENABLED'])
+        if env["target"] == "release_debug":
+            env.Append(CPPFLAGS=['-DDEBUG_ENABLED'])
 
     elif (env["target"] == "debug"):
 
-        env.Append(CCFLAGS=['-D_DEBUG', '-DDEBUG=1', '-gdwarf-2', '-O0', '-DDEBUG_ENABLED'])
+        env.Append(CPPFLAGS=['-D_DEBUG', '-DDEBUG=1', '-gdwarf-2', '-O0', '-DDEBUG_ENABLED'])
         env.Append(CPPFLAGS=['-DDEBUG_MEMORY_ENABLED'])
-
-    elif (env["target"] == "profile"):
-
-        env.Append(CCFLAGS=['-g', '-pg', '-Os'])
-        env.Append(LINKFLAGS=['-pg'])
 
     if (env["ios_sim"] == "yes"):  # TODO: Check if needed?
         env['ENV']['MACOSX_DEPLOYMENT_TARGET'] = '10.6'
