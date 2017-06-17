@@ -6060,10 +6060,20 @@ void RasterizerStorageGLES3::render_target_set_flag(RID p_render_target, RenderT
 		default: {}
 	}
 }
+bool RasterizerStorageGLES3::render_target_was_used(RID p_render_target) {
 
-bool RasterizerStorageGLES3::render_target_renedered_in_frame(RID p_render_target) {
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND_V(!rt, false);
 
-	return false;
+	return rt->used_in_frame;
+}
+
+void RasterizerStorageGLES3::render_target_clear_used(RID p_render_target) {
+
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND(!rt);
+
+	rt->used_in_frame = false;
 }
 
 void RasterizerStorageGLES3::render_target_set_msaa(RID p_render_target, VS::ViewportMSAA p_msaa) {

@@ -1273,7 +1273,8 @@ public:
 	virtual RID render_target_get_texture(RID p_render_target) const;
 
 	virtual void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value);
-	virtual bool render_target_renedered_in_frame(RID p_render_target);
+	virtual bool render_target_was_used(RID p_render_target);
+	virtual void render_target_clear_used(RID p_render_target);
 	virtual void render_target_set_msaa(RID p_render_target, VS::ViewportMSAA p_msaa);
 
 	/* CANVAS SHADOW */
