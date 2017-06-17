@@ -1370,8 +1370,6 @@ void SpatialMaterial::_bind_methods() {
 	BIND_CONSTANT(BILLBOARD_ENABLED);
 	BIND_CONSTANT(BILLBOARD_FIXED_Y);
 	BIND_CONSTANT(BILLBOARD_PARTICLES);
-
-
 }
 
 SpatialMaterial::SpatialMaterial()

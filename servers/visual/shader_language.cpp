@@ -2549,12 +2549,14 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 					} break;
 
-					default: {}
+					default: {
+						ok = false;
+					}
 				}
 
 				if (!ok) {
 
-					_set_error("Invalid member for expression: ." + ident);
+					_set_error("Invalid member for " + get_datatype_name(dt) + " expression: ." + ident);
 					return NULL;
 				}
 

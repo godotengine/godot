@@ -368,6 +368,8 @@ VERTEX_SHADER_CODE
 
 */
 
+uniform highp mat4 world_transform;
+
 #define M_PI 3.14159265359
 
 /* Varyings */
