@@ -465,7 +465,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 					for (int i = 0; i < p_vertex_array_len; i++) {
 
-						uint8_t vector[4] = {
+						int8_t vector[4] = {
 							CLAMP(src[i].x * 127, -128, 127),
 							CLAMP(src[i].y * 127, -128, 127),
 							CLAMP(src[i].z * 127, -128, 127),
@@ -1233,11 +1233,12 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 				if (p_format & ARRAY_COMPRESS_NORMAL) {
 
 					PoolVector<Vector3>::Write w = arr.write();
+					const float multiplier = 1.f / 127.f;
 
 					for (int j = 0; j < p_vertex_len; j++) {
 
-						const uint8_t *v = (const uint8_t *)&r[j * total_elem_size + offsets[i]];
-						w[j] = Vector3(float(v[0] / 255.0) * 2.0 - 1.0, float(v[1] / 255.0) * 2.0 - 1.0, float(v[2] / 255.0) * 2.0 - 1.0);
+						const int8_t *v = (const int8_t *)&r[j * total_elem_size + offsets[i]];
+						w[j] = Vector3(float(v[0]) * multiplier, float(v[1]) * multiplier, float(v[2]) * multiplier);
 					}
 				} else {
 					PoolVector<Vector3>::Write w = arr.write();
