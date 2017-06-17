@@ -1985,9 +1985,10 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case FILE_SAVE_BEFORE_RUN: {
 			if (!p_confirmed) {
-				accept->get_ok()->set_text(TTR("Yes"));
-				accept->set_text(TTR("This scene has never been saved. Save before running?"));
-				accept->popup_centered_minsize();
+				confirmation->get_cancel()->set_text(TTR("No"));
+				confirmation->get_ok()->set_text(TTR("Yes"));
+				confirmation->set_text(TTR("This scene has never been saved. Save before running?"));
+				confirmation->popup_centered_minsize();
 				break;
 			}
 
