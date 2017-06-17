@@ -8884,6 +8884,74 @@
 	<constants>
 	</constants>
 </class>
+<class name="CapsuleMesh" inherits="PrimitiveMesh" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_mid_height" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_radial_segments" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_radius" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_rings" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_mid_height">
+			<argument index="0" name="mid_height" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_radial_segments">
+			<argument index="0" name="segments" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_radius">
+			<argument index="0" name="radius" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_rings">
+			<argument index="0" name="rings" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="mid_height" type="float" setter="set_mid_height" getter="get_mid_height" brief="">
+		</member>
+		<member name="radial_segments" type="int" setter="set_radial_segments" getter="get_radial_segments" brief="">
+		</member>
+		<member name="radius" type="float" setter="set_radius" getter="get_radius" brief="">
+		</member>
+		<member name="rings" type="int" setter="set_rings" getter="get_rings" brief="">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>
 <class name="CapsuleShape" inherits="Shape" category="Core">
 	<brief_description>
 		Capsule shape resource.
@@ -11560,6 +11628,74 @@
 		</constant>
 	</constants>
 </class>
+<class name="CubeMesh" inherits="PrimitiveMesh" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_size" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_subdivide_depth" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_subdivide_height" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_subdivide_width" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_size">
+			<argument index="0" name="size" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_subdivide_depth">
+			<argument index="0" name="divisions" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_subdivide_height">
+			<argument index="0" name="divisions" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_subdivide_width">
+			<argument index="0" name="subdivide" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="size" type="Vector2" setter="set_size" getter="get_size" brief="">
+		</member>
+		<member name="subdivide_depth" type="int" setter="set_subdivide_depth" getter="get_subdivide_depth" brief="">
+		</member>
+		<member name="subdivide_height" type="int" setter="set_subdivide_height" getter="get_subdivide_height" brief="">
+		</member>
+		<member name="subdivide_width" type="int" setter="set_subdivide_width" getter="get_subdivide_width" brief="">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>
 <class name="Curve2D" inherits="Resource" category="Core">
 	<brief_description>
 		Describes a Bezier curve in 2D space.
@@ -12005,6 +12141,88 @@
 		<member name="points" type="PoolVector2Array" setter="set_points" getter="get_points" brief="">
 		</member>
 		<member name="width" type="int" setter="set_width" getter="get_width" brief="">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>
+<class name="CylinderMesh" inherits="PrimitiveMesh" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_bottom_radius" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_height" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_radial_segments" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_rings" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_top_radius" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_bottom_radius">
+			<argument index="0" name="radius" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_height">
+			<argument index="0" name="height" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_radial_segments">
+			<argument index="0" name="segments" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_rings">
+			<argument index="0" name="rings" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_top_radius">
+			<argument index="0" name="radius" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="bottom_radius" type="float" setter="set_bottom_radius" getter="get_bottom_radius" brief="">
+		</member>
+		<member name="height" type="float" setter="set_height" getter="get_height" brief="">
+		</member>
+		<member name="radial_segments" type="int" setter="set_radial_segments" getter="get_radial_segments" brief="">
+		</member>
+		<member name="rings" type="int" setter="set_rings" getter="get_rings" brief="">
+		</member>
+		<member name="top_radius" type="float" setter="set_top_radius" getter="get_top_radius" brief="">
 		</member>
 	</members>
 	<constants>
@@ -14108,19 +14326,19 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_ssr_accel" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_ssr_depth_tolerance" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
 			</description>
 		</method>
-		<method name="get_ssr_fade" qualifiers="const">
+		<method name="get_ssr_fade_in" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_ssr_fade_out" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
@@ -14261,12 +14479,6 @@
 			</description>
 		</method>
 		<method name="is_ssr_rough" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_ssr_smooth" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
@@ -14604,12 +14816,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_ssr_accel">
-			<argument index="0" name="accel" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="set_ssr_depth_tolerance">
 			<argument index="0" name="depth_tolerance" type="float">
 			</argument>
@@ -14622,8 +14828,14 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_ssr_fade">
-			<argument index="0" name="fade" type="float">
+		<method name="set_ssr_fade_in">
+			<argument index="0" name="fade_in" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_ssr_fade_out">
+			<argument index="0" name="fade_out" type="float">
 			</argument>
 			<description>
 			</description>
@@ -14636,12 +14848,6 @@
 		</method>
 		<method name="set_ssr_rough">
 			<argument index="0" name="rough" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_ssr_smooth">
-			<argument index="0" name="smooth" type="bool">
 			</argument>
 			<description>
 			</description>
@@ -14810,15 +15016,13 @@
 		</member>
 		<member name="glow_strength" type="float" setter="set_glow_strength" getter="get_glow_strength" brief="">
 		</member>
-		<member name="ss_reflections_accel" type="float" setter="set_ssr_accel" getter="get_ssr_accel" brief="">
-		</member>
-		<member name="ss_reflections_accel_smooth" type="bool" setter="set_ssr_smooth" getter="is_ssr_smooth" brief="">
-		</member>
 		<member name="ss_reflections_depth_tolerance" type="float" setter="set_ssr_depth_tolerance" getter="get_ssr_depth_tolerance" brief="">
 		</member>
 		<member name="ss_reflections_enabled" type="bool" setter="set_ssr_enabled" getter="is_ssr_enabled" brief="">
 		</member>
-		<member name="ss_reflections_fade" type="float" setter="set_ssr_fade" getter="get_ssr_fade" brief="">
+		<member name="ss_reflections_fade_in" type="float" setter="set_ssr_fade_in" getter="get_ssr_fade_in" brief="">
+		</member>
+		<member name="ss_reflections_fade_out" type="float" setter="set_ssr_fade_out" getter="get_ssr_fade_out" brief="">
 		</member>
 		<member name="ss_reflections_max_steps" type="int" setter="set_ssr_max_steps" getter="get_ssr_max_steps" brief="">
 		</member>
@@ -18765,7 +18969,7 @@
 			</return>
 			<argument index="0" name="mode" type="int">
 			</argument>
-			<argument index="1" name="arg1" type="bool">
+			<argument index="1" name="arg1" type="int">
 			</argument>
 			<argument index="2" name="arg2" type="float">
 			</argument>
@@ -18882,7 +19086,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_pixel">
+		<method name="get_pixel" qualifiers="const">
 			<return type="Color">
 			</return>
 			<argument index="0" name="x" type="int">
@@ -19110,6 +19314,12 @@
 		<constant name="COMPRESS_ETC" value="3">
 		</constant>
 		<constant name="COMPRESS_ETC2" value="4">
+		</constant>
+		<constant name="COMPRESS_SOURCE_GENERIC" value="0">
+		</constant>
+		<constant name="COMPRESS_SOURCE_SRGB" value="1">
+		</constant>
+		<constant name="COMPRESS_SOURCE_NORMAL" value="2">
 		</constant>
 	</constants>
 </class>
@@ -33142,6 +33352,60 @@
 	<constants>
 	</constants>
 </class>
+<class name="PlaneMesh" inherits="PrimitiveMesh" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_size" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_subdivide_depth" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_subdivide_width" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_size">
+			<argument index="0" name="size" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_subdivide_depth">
+			<argument index="0" name="subdivide" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_subdivide_width">
+			<argument index="0" name="subdivide" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="size" type="Vector2" setter="set_size" getter="get_size" brief="">
+		</member>
+		<member name="subdivide_depth" type="int" setter="set_subdivide_depth" getter="get_subdivide_depth" brief="">
+		</member>
+		<member name="subdivide_width" type="int" setter="set_subdivide_width" getter="get_subdivide_width" brief="">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>
 <class name="PlaneShape" inherits="Shape" category="Core">
 	<brief_description>
 	</brief_description>
@@ -34729,6 +34993,114 @@
 	<constants>
 	</constants>
 </class>
+<class name="PrimitiveMesh" inherits="Mesh" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_material" qualifiers="const">
+			<return type="Material">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_material">
+			<argument index="0" name="material" type="Material">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="material" type="Material" setter="set_material" getter="get_material" brief="">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>
+<class name="PrismMesh" inherits="PrimitiveMesh" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_left_to_right" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_size" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_subdivide_depth" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_subdivide_height" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_subdivide_width" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_left_to_right">
+			<argument index="0" name="left_to_right" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_size">
+			<argument index="0" name="size" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_subdivide_depth">
+			<argument index="0" name="segments" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_subdivide_height">
+			<argument index="0" name="segments" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_subdivide_width">
+			<argument index="0" name="segments" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="left_to_right" type="float" setter="set_left_to_right" getter="get_left_to_right" brief="">
+		</member>
+		<member name="size" type="Vector2" setter="set_size" getter="get_size" brief="">
+		</member>
+		<member name="subdivide_depth" type="int" setter="set_subdivide_depth" getter="get_subdivide_depth" brief="">
+		</member>
+		<member name="subdivide_height" type="int" setter="set_subdivide_height" getter="get_subdivide_height" brief="">
+		</member>
+		<member name="subdivide_width" type="int" setter="set_subdivide_width" getter="get_subdivide_width" brief="">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>
 <class name="ProceduralSky" inherits="Sky" category="Core">
 	<brief_description>
 	</brief_description>
@@ -35063,71 +35435,13 @@
 	<constants>
 	</constants>
 </class>
-<class name="Quad" inherits="GeometryInstance" category="Core">
+<class name="QuadMesh" inherits="PrimitiveMesh" category="Core">
 	<brief_description>
 	</brief_description>
 	<description>
 	</description>
 	<methods>
-		<method name="get_axis" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_offset" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_size" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_centered" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_axis">
-			<argument index="0" name="axis" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_centered">
-			<argument index="0" name="centered" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_offset">
-			<argument index="0" name="offset" type="Vector2">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_size">
-			<argument index="0" name="size" type="Vector2">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
-	<members>
-		<member name="axis" type="int" setter="set_axis" getter="get_axis" brief="">
-		</member>
-		<member name="centered" type="bool" setter="set_centered" getter="is_centered" brief="">
-		</member>
-		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" brief="">
-		</member>
-		<member name="size" type="Vector2" setter="set_size" getter="get_size" brief="">
-		</member>
-	</members>
 	<constants>
 	</constants>
 </class>
@@ -40689,6 +41003,88 @@
 		</constant>
 	</constants>
 </class>
+<class name="SphereMesh" inherits="PrimitiveMesh" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_height" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_is_hemisphere" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_radial_segments" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_radius" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_rings" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_height">
+			<argument index="0" name="height" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_is_hemisphere">
+			<argument index="0" name="is_hemisphere" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_radial_segments">
+			<argument index="0" name="radial_segments" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_radius">
+			<argument index="0" name="radius" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_rings">
+			<argument index="0" name="rings" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="height" type="float" setter="set_height" getter="get_height" brief="">
+		</member>
+		<member name="is_hemisphere" type="bool" setter="set_is_hemisphere" getter="get_is_hemisphere" brief="">
+		</member>
+		<member name="radial_segments" type="int" setter="set_radial_segments" getter="get_radial_segments" brief="">
+		</member>
+		<member name="radius" type="float" setter="set_radius" getter="get_radius" brief="">
+		</member>
+		<member name="rings" type="int" setter="set_rings" getter="get_rings" brief="">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>
 <class name="SphereShape" inherits="Shape" category="Core">
 	<brief_description>
 	</brief_description>
@@ -43686,6 +44082,12 @@
 			<description>
 			</description>
 		</signal>
+		<signal name="tab_hover">
+			<argument index="0" name="tab" type="int">
+			</argument>
+			<description>
+			</description>
+		</signal>
 	</signals>
 	<constants>
 		<constant name="ALIGN_LEFT" value="0">
@@ -43739,18 +44141,6 @@
 		<theme_item name="top_margin" type="int">
 		</theme_item>
 	</theme_items>
-</class>
-<class name="TestCube" inherits="GeometryInstance" category="Core">
-	<brief_description>
-		A simple cube used for testing in 3D.
-	</brief_description>
-	<description>
-		The TestCube is a simple 2x2x2 cube with a basic texture. It can be used as a placeholder, to verify how the lighting looks, to test shaders, or any other task you may need a textured model to test with.
-	</description>
-	<methods>
-	</methods>
-	<constants>
-	</constants>
 </class>
 <class name="TextEdit" inherits="Control" category="Core">
 	<brief_description>
@@ -49092,13 +49482,6 @@ do_property].
 			<description>
 			</description>
 		</method>
-		<method name="get_screen_capture" qualifiers="const">
-			<return type="Object">
-			</return>
-			<description>
-				Return the captured screenshot after [method queue_screen_capture]. You might need to check more than one frame until the right image is returned.
-			</description>
-		</method>
 		<method name="get_shadow_atlas_quadrant_subdiv" qualifiers="const">
 			<return type="int">
 			</return>
@@ -49255,11 +49638,6 @@ do_property].
 			</return>
 			<description>
 				Return whether the viewport is using a world separate from the parent viewport's world.
-			</description>
-		</method>
-		<method name="queue_screen_capture">
-			<description>
-				Queue a multithreaded screenshot, you can retrive it at a later frame via [method get_screen_capture].
 			</description>
 		</method>
 		<method name="set_as_audio_listener">
