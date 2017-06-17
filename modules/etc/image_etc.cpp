@@ -94,9 +94,19 @@ static void _decompress_etc2(Image *p_img) {
 	// not implemented, to be removed
 }
 
-static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_format) {
+static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_format, Image::CompressSource p_source) {
 	Image::Format img_format = p_img->get_format();
 	Image::DetectChannels detected_channels = p_img->get_detected_channels();
+
+	if (p_source == Image::COMPRESS_SOURCE_SRGB && (detected_channels == Image::DETECTED_R || detected_channels == Image::DETECTED_RG)) {
+		//R and RG do not support SRGB
+		detected_channels = Image::DETECTED_RGB;
+	}
+
+	if (p_source == Image::COMPRESS_SOURCE_NORMAL) {
+		//use RG channels only for normal
+		detected_channels = Image::DETECTED_RG;
+	}
 
 	if (img_format >= Image::FORMAT_DXT1) {
 		return; //do not compress, already compressed
@@ -128,10 +138,18 @@ static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_f
 	PoolVector<uint8_t>::Write w = dst_data.write();
 
 	// prepare parameters to be passed to etc2comp
-	int num_cpus = OS::get_singleton()->get_processor_count();
+	int num_cpus = OS::get_singleton()->get_processor_count() * 2; //generally some cpus have 2 threads
 	int encoding_time = 0;
-	float effort = CLAMP(p_lossy_quality * 100, 0, 100);
-	Etc::ErrorMetric error_metric = Etc::ErrorMetric::BT709; // NOTE: we can experiment with other error metrics
+	float effort = 0.0; //default, reasonable time
+
+	if (p_lossy_quality > 0.75)
+		effort = 0.4;
+	else if (p_lossy_quality > 0.85)
+		effort = 0.6;
+	else if (p_lossy_quality > 0.95)
+		effort = 0.8;
+
+	Etc::ErrorMetric error_metric = Etc::ErrorMetric::RGBX; // NOTE: we can experiment with other error metrics
 	Etc::Image::Format etc2comp_etc_format = _image_format_to_etc2comp_format(etc_format);
 
 	int wofs = 0;
@@ -164,11 +182,11 @@ static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_f
 }
 
 static void _compress_etc1(Image *p_img, float p_lossy_quality) {
-	_compress_etc(p_img, p_lossy_quality, true);
+	_compress_etc(p_img, p_lossy_quality, true, Image::COMPRESS_SOURCE_GENERIC);
 }
 
-static void _compress_etc2(Image *p_img, float p_lossy_quality) {
-	_compress_etc(p_img, p_lossy_quality, false);
+static void _compress_etc2(Image *p_img, float p_lossy_quality, Image::CompressSource p_source) {
+	_compress_etc(p_img, p_lossy_quality, false, p_source);
 }
 
 void _register_etc_compress_func() {

@@ -427,10 +427,10 @@ void ColorPicker::_screen_input(const Ref<InputEvent> &ev) {
 		Viewport *r = get_tree()->get_root();
 		if (!r->get_visible_rect().has_point(Point2(mev->get_global_position().x, mev->get_global_position().y)))
 			return;
-		Ref<Image> img = r->get_screen_capture();
+		Ref<Image> img; //= r->get_screen_capture();
 		if (!img.is_null()) {
 			last_capture = img;
-			r->queue_screen_capture();
+			//r->queue_screen_capture();
 		}
 		if (last_capture.is_valid() && !last_capture->empty()) {
 			int pw = last_capture->get_format() == Image::FORMAT_RGBA8 ? 4 : 3;
@@ -460,7 +460,7 @@ void ColorPicker::_screen_pick_pressed() {
 	}
 	screen->raise();
 	screen->show_modal();
-	r->queue_screen_capture();
+	//	r->queue_screen_capture();
 }
 
 void ColorPicker::_bind_methods() {

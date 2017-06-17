@@ -970,10 +970,10 @@ GlobalConfig::GlobalConfig() {
 
 	GLOBAL_DEF("debug/profiler/max_functions", 16384);
 
-	GLOBAL_DEF("compression/zstd_compression_level", 3);
-	custom_prop_info["compression/zstd_compression_level"] = PropertyInfo(Variant::INT, "compression/zstd_compression_level", PROPERTY_HINT_RANGE, "1,22,1");
-	GLOBAL_DEF("compression/zlib_compression_level", Z_DEFAULT_COMPRESSION);
-	custom_prop_info["compression/zlib_compression_level"] = PropertyInfo(Variant::INT, "compression/zlib_compression_level", PROPERTY_HINT_RANGE, "-1,9,1");
+	GLOBAL_DEF("compression/zstd/compression_level", 3);
+	custom_prop_info["compression/zstd/compression_level"] = PropertyInfo(Variant::INT, "compression/zstd/compression_level", PROPERTY_HINT_RANGE, "1,22,1");
+	GLOBAL_DEF("compression/zlib/compression_level", Z_DEFAULT_COMPRESSION);
+	custom_prop_info["compression/zlib/compression_level"] = PropertyInfo(Variant::INT, "compression/zlib/compression_level", PROPERTY_HINT_RANGE, "-1,9,1");
 
 	using_datapack = false;
 }

@@ -646,6 +646,7 @@ public:
 
 	BIND3(texture_set_detect_3d_callback, RID, TextureDetectCallback, void *)
 	BIND3(texture_set_detect_srgb_callback, RID, TextureDetectCallback, void *)
+	BIND3(texture_set_detect_normal_callback, RID, TextureDetectCallback, void *)
 
 	BIND2(texture_set_path, RID, const String &)
 	BIND1RC(String, texture_get_path, RID)

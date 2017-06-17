@@ -41,7 +41,8 @@ class ResourceImporterTexture : public ResourceImporter {
 protected:
 	enum {
 		MAKE_3D_FLAG = 1,
-		MAKE_SRGB_FLAG = 2
+		MAKE_SRGB_FLAG = 2,
+		MAKE_NORMAL_FLAG = 4
 	};
 
 	Mutex *mutex;
@@ -49,6 +50,7 @@ protected:
 
 	static void _texture_reimport_srgb(const Ref<StreamTexture> &p_tex);
 	static void _texture_reimport_3d(const Ref<StreamTexture> &p_tex);
+	static void _texture_reimport_normal(const Ref<StreamTexture> &p_tex);
 
 	static ResourceImporterTexture *singleton;
 
@@ -80,7 +82,7 @@ public:
 	virtual void get_import_options(List<ImportOption> *r_options, int p_preset = 0) const;
 	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const;
 
-	void _save_stex(const Ref<Image> &p_image, const String &p_to_path, int p_compress_mode, float p_lossy_quality, Image::CompressMode p_vram_compression, bool p_mipmaps, int p_texture_flags, bool p_streamable, bool p_detect_3d, bool p_detect_srgb, bool p_force_rgbe);
+	void _save_stex(const Ref<Image> &p_image, const String &p_to_path, int p_compress_mode, float p_lossy_quality, Image::CompressMode p_vram_compression, bool p_mipmaps, int p_texture_flags, bool p_streamable, bool p_detect_3d, bool p_detect_srgb, bool p_force_rgbe, bool p_detect_normal, bool p_force_normal);
 
 	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = NULL);
 

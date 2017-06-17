@@ -1207,6 +1207,7 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material *p_m
 				} break;
 				case ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL: {
 					tex = storage->resources.normal_tex;
+
 				} break;
 				default: {
 					tex = storage->resources.white_tex;
@@ -1220,6 +1221,13 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material *p_m
 				t->detect_3d(t->detect_3d_ud);
 			}
 #endif
+
+#ifdef TOOLS_ENABLED
+			if (t->detect_normal && texture_hints[i] == ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL) {
+				t->detect_normal(t->detect_normal_ud);
+			}
+#endif
+
 			if (storage->config.srgb_decode_supported) {
 				//if SRGB decode extension is present, simply switch the texture to whathever is needed
 				bool must_srgb = false;

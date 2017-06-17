@@ -390,8 +390,17 @@ void StreamTexture::_requested_srgb(void *p_ud) {
 	request_srgb_callback(stex);
 }
 
+void StreamTexture::_requested_normal(void *p_ud) {
+
+	StreamTexture *st = (StreamTexture *)p_ud;
+	Ref<StreamTexture> stex(st);
+	ERR_FAIL_COND(!request_normal_callback);
+	request_normal_callback(stex);
+}
+
 StreamTexture::TextureFormatRequestCallback StreamTexture::request_3d_callback = NULL;
 StreamTexture::TextureFormatRequestCallback StreamTexture::request_srgb_callback = NULL;
+StreamTexture::TextureFormatRequestCallback StreamTexture::request_normal_callback = NULL;
 
 uint32_t StreamTexture::get_flags() const {
 
@@ -421,12 +430,13 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &fla
 	flags = f->get_32(); //texture flags!
 	uint32_t df = f->get_32(); //data format
 
-	/*
+/*
 	print_line("width: " + itos(tw));
 	print_line("height: " + itos(th));
 	print_line("flags: " + itos(flags));
 	print_line("df: " + itos(df));
 	*/
+#ifdef TOOLS_ENABLED
 
 	if (request_3d_callback && df & FORMAT_BIT_DETECT_3D) {
 		//print_line("request detect 3D at " + p_path);
@@ -444,6 +454,14 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &fla
 		VS::get_singleton()->texture_set_detect_srgb_callback(texture, NULL, NULL);
 	}
 
+	if (request_srgb_callback && df & FORMAT_BIT_DETECT_NORMAL) {
+		//print_line("request detect srgb at " + p_path);
+		VS::get_singleton()->texture_set_detect_normal_callback(texture, _requested_normal, this);
+	} else {
+		//print_line("not requesting detect normal at " + p_path);
+		VS::get_singleton()->texture_set_detect_normal_callback(texture, NULL, NULL);
+	}
+#endif
 	if (!(df & FORMAT_BIT_STREAM)) {
 		p_size_limit = 0;
 	}

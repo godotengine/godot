@@ -109,16 +109,22 @@ public:
 		/* INTERPOLATE GAUSS */
 	};
 
+	enum CompressSource {
+		COMPRESS_SOURCE_GENERIC,
+		COMPRESS_SOURCE_SRGB,
+		COMPRESS_SOURCE_NORMAL
+	};
+
 	//some functions provided by something else
 
 	static Ref<Image> (*_png_mem_loader_func)(const uint8_t *p_png, int p_size);
 	static Ref<Image> (*_jpg_mem_loader_func)(const uint8_t *p_png, int p_size);
 
-	static void (*_image_compress_bc_func)(Image *, bool p_srgb);
+	static void (*_image_compress_bc_func)(Image *, CompressSource p_source);
 	static void (*_image_compress_pvrtc2_func)(Image *);
 	static void (*_image_compress_pvrtc4_func)(Image *);
 	static void (*_image_compress_etc1_func)(Image *, float);
-	static void (*_image_compress_etc2_func)(Image *, float);
+	static void (*_image_compress_etc2_func)(Image *, float, CompressSource p_source);
 
 	static void (*_image_decompress_pvrtc)(Image *);
 	static void (*_image_decompress_bc)(Image *);
@@ -267,7 +273,7 @@ public:
 		COMPRESS_ETC2,
 	};
 
-	Error compress(CompressMode p_mode = COMPRESS_S3TC, bool p_for_srgb = false, float p_lossy_quality = 0.7);
+	Error compress(CompressMode p_mode = COMPRESS_S3TC, CompressSource p_source = COMPRESS_SOURCE_GENERIC, float p_lossy_quality = 0.7);
 	Error decompress();
 	bool is_compressed() const;
 
@@ -281,7 +287,7 @@ public:
 	Rect2 get_used_rect() const;
 	Ref<Image> get_rect(const Rect2 &p_area) const;
 
-	static void set_compress_bc_func(void (*p_compress_func)(Image *, bool));
+	static void set_compress_bc_func(void (*p_compress_func)(Image *, CompressSource));
 	static String get_format_name(Format p_format);
 
 	Image(const uint8_t *p_mem_png_jpg, int p_len = -1);
@@ -322,6 +328,7 @@ public:
 VARIANT_ENUM_CAST(Image::Format)
 VARIANT_ENUM_CAST(Image::Interpolation)
 VARIANT_ENUM_CAST(Image::CompressMode)
+VARIANT_ENUM_CAST(Image::CompressSource)
 VARIANT_ENUM_CAST(Image::AlphaMode)
 
 #endif

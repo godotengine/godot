@@ -1072,6 +1072,14 @@ void RasterizerStorageGLES3::texture_set_detect_srgb_callback(RID p_texture, Vis
 	texture->detect_srgb_ud = p_userdata;
 }
 
+void RasterizerStorageGLES3::texture_set_detect_normal_callback(RID p_texture, VisualServer::TextureDetectCallback p_callback, void *p_userdata) {
+	Texture *texture = texture_owner.get(p_texture);
+	ERR_FAIL_COND(!texture);
+
+	texture->detect_normal = p_callback;
+	texture->detect_normal_ud = p_userdata;
+}
+
 RID RasterizerStorageGLES3::texture_create_radiance_cubemap(RID p_source, int p_resolution) const {
 
 	Texture *texture = texture_owner.get(p_source);

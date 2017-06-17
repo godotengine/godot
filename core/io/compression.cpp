@@ -58,7 +58,7 @@ int Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int p_src_size, 
 			strm.zalloc = zipio_alloc;
 			strm.zfree = zipio_free;
 			strm.opaque = Z_NULL;
-			int level = GLOBAL_GET("compression/zlib_compression_level");
+			int level = GLOBAL_GET("compression/zlib/compression_level");
 			int err = deflateInit(&strm, level);
 			if (err != Z_OK)
 				return -1;
@@ -81,7 +81,7 @@ int Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int p_src_size, 
 		case MODE_ZSTD: {
 
 			int max_dst_size = get_max_compressed_buffer_size(p_src_size, MODE_ZSTD);
-			int level = GLOBAL_GET("compression/zstd_compression_level");
+			int level = GLOBAL_GET("compression/zstd/compression_level");
 			return ZSTD_compress(p_dst, max_dst_size, p_src, p_src_size, level);
 		} break;
 	}

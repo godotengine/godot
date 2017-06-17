@@ -1233,16 +1233,6 @@ Viewport::UpdateMode Viewport::get_update_mode() const {
 }
 //RID get_texture() const;
 
-void Viewport::queue_screen_capture() {
-
-	//VS::get_singleton()->viewport_queue_screen_capture(viewport);
-}
-Ref<Image> Viewport::get_screen_capture() const {
-
-	//return VS::get_singleton()->viewport_get_screen_capture(viewport);
-	return Ref<Image>();
-}
-
 Ref<ViewportTexture> Viewport::get_texture() const {
 
 	return default_texture;
@@ -2581,8 +2571,6 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_size_override_enabled"), &Viewport::is_size_override_enabled);
 	ClassDB::bind_method(D_METHOD("set_size_override_stretch", "enabled"), &Viewport::set_size_override_stretch);
 	ClassDB::bind_method(D_METHOD("is_size_override_stretch_enabled"), &Viewport::is_size_override_stretch_enabled);
-	ClassDB::bind_method(D_METHOD("queue_screen_capture"), &Viewport::queue_screen_capture);
-	ClassDB::bind_method(D_METHOD("get_screen_capture"), &Viewport::get_screen_capture);
 
 	ClassDB::bind_method(D_METHOD("set_vflip", "enable"), &Viewport::set_vflip);
 	ClassDB::bind_method(D_METHOD("get_vflip"), &Viewport::get_vflip);

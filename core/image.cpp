@@ -1492,14 +1492,14 @@ Error Image::decompress() {
 	return OK;
 }
 
-Error Image::compress(CompressMode p_mode, bool p_for_srgb, float p_lossy_quality) {
+Error Image::compress(CompressMode p_mode, CompressSource p_source, float p_lossy_quality) {
 
 	switch (p_mode) {
 
 		case COMPRESS_S3TC: {
 
 			ERR_FAIL_COND_V(!_image_compress_bc_func, ERR_UNAVAILABLE);
-			_image_compress_bc_func(this, p_for_srgb);
+			_image_compress_bc_func(this, p_source);
 		} break;
 		case COMPRESS_PVRTC2: {
 
@@ -1519,7 +1519,7 @@ Error Image::compress(CompressMode p_mode, bool p_for_srgb, float p_lossy_qualit
 		case COMPRESS_ETC2: {
 
 			ERR_FAIL_COND_V(!_image_compress_etc2_func, ERR_UNAVAILABLE);
-			_image_compress_etc2_func(this, p_lossy_quality);
+			_image_compress_etc2_func(this, p_lossy_quality, p_source);
 		} break;
 	}
 
@@ -1649,11 +1649,11 @@ void Image::blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Po
 Ref<Image> (*Image::_png_mem_loader_func)(const uint8_t *, int) = NULL;
 Ref<Image> (*Image::_jpg_mem_loader_func)(const uint8_t *, int) = NULL;
 
-void (*Image::_image_compress_bc_func)(Image *, bool) = NULL;
+void (*Image::_image_compress_bc_func)(Image *, Image::CompressSource) = NULL;
 void (*Image::_image_compress_pvrtc2_func)(Image *) = NULL;
 void (*Image::_image_compress_pvrtc4_func)(Image *) = NULL;
 void (*Image::_image_compress_etc1_func)(Image *, float) = NULL;
-void (*Image::_image_compress_etc2_func)(Image *, float) = NULL;
+void (*Image::_image_compress_etc2_func)(Image *, float, Image::CompressSource) = NULL;
 void (*Image::_image_decompress_pvrtc)(Image *) = NULL;
 void (*Image::_image_decompress_bc)(Image *) = NULL;
 void (*Image::_image_decompress_etc1)(Image *) = NULL;
@@ -2140,9 +2140,13 @@ void Image::_bind_methods() {
 	BIND_CONSTANT(COMPRESS_PVRTC4);
 	BIND_CONSTANT(COMPRESS_ETC);
 	BIND_CONSTANT(COMPRESS_ETC2);
+
+	BIND_CONSTANT(COMPRESS_SOURCE_GENERIC);
+	BIND_CONSTANT(COMPRESS_SOURCE_SRGB);
+	BIND_CONSTANT(COMPRESS_SOURCE_NORMAL);
 }
 
-void Image::set_compress_bc_func(void (*p_compress_func)(Image *, bool)) {
+void Image::set_compress_bc_func(void (*p_compress_func)(Image *, CompressSource)) {
 
 	_image_compress_bc_func = p_compress_func;
 }

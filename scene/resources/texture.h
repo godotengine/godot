@@ -167,6 +167,7 @@ public:
 		FORMAT_BIT_HAS_MIPMAPS = 1 << 23,
 		FORMAT_BIT_DETECT_3D = 1 << 24,
 		FORMAT_BIT_DETECT_SRGB = 1 << 25,
+		FORMAT_BIT_DETECT_NORMAL = 1 << 26,
 	};
 
 private:
@@ -181,6 +182,7 @@ private:
 
 	static void _requested_3d(void *p_ud);
 	static void _requested_srgb(void *p_ud);
+	static void _requested_normal(void *p_ud);
 
 protected:
 	static void _bind_methods();
@@ -190,6 +192,7 @@ public:
 
 	static TextureFormatRequestCallback request_3d_callback;
 	static TextureFormatRequestCallback request_srgb_callback;
+	static TextureFormatRequestCallback request_normal_callback;
 
 	uint32_t get_flags() const;
 	Image::Format get_format() const;
