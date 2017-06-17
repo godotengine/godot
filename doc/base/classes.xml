@@ -15855,6 +15855,17 @@
 				Create an empty image of a specific size and format.
 			</description>
 		</method>
+		<method name="blend_rect">
+			<argument index="0" name="src" type="Image">
+			</argument>
+			<argument index="1" name="src_rect" type="Rect2">
+			</argument>
+			<argument index="2" name="dest" type="Vector2" default="0">
+			</argument>
+			<description>
+				Alpha-blends a "src_rect" [Rect2] from "src" [Image] to this [Image] on coordinates "dest".
+			</description>
+		</method>
 		<method name="blit_rect">
 			<argument index="0" name="src" type="Image">
 			</argument>

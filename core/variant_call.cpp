@@ -621,6 +621,7 @@ struct _VariantCall {
 	VCALL_PTR3R(Image, resized);
 	VCALL_PTR0R(Image, get_data);
 	VCALL_PTR3(Image, blit_rect);
+	VCALL_PTR3(Image, blend_rect);
 	VCALL_PTR1R(Image, converted);
 	VCALL_PTR0(Image, fix_alpha_edges);
 
@@ -1471,6 +1472,7 @@ void register_variant_methods() {
 	ADDFUNC3(IMAGE, IMAGE, Image, resized, INT, "x", INT, "y", INT, "interpolation", varray(((int)Image::INTERPOLATE_BILINEAR)));
 	ADDFUNC0(IMAGE, RAW_ARRAY, Image, get_data, varray());
 	ADDFUNC3(IMAGE, NIL, Image, blit_rect, IMAGE, "src", RECT2, "src_rect", VECTOR2, "dest", varray(0));
+	ADDFUNC3(IMAGE, NIL, Image, blend_rect, IMAGE, "src", RECT2, "src_rect", VECTOR2, "dest", varray(0));
 	ADDFUNC1(IMAGE, IMAGE, Image, converted, INT, "format", varray(0));
 	ADDFUNC0(IMAGE, NIL, Image, fix_alpha_edges, varray());
 
