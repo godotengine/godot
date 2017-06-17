@@ -1294,7 +1294,7 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 					for (int j = 0; j < p_vertex_len; j++) {
 
 						const uint8_t *v = (const uint8_t *)&r[j * total_elem_size + offsets[i]];
-						w[j] = Color(float(v[0] / 255.0) * 2.0 - 1.0, float(v[1] / 255.0) * 2.0 - 1.0, float(v[2] / 255.0) * 2.0 - 1.0, float(v[3] / 255.0) * 2.0 - 1.0);
+						w[j] = Color(float(v[0] / 255.0), float(v[1] / 255.0), float(v[2] / 255.0), float(v[3] / 255.0));
 					}
 				} else {
 					PoolVector<Color>::Write w = arr.write();
