@@ -35,18 +35,17 @@ void TileSetEditor::edit(const Ref<TileSet> &p_tileset) {
 	tileset = p_tileset;
 }
 
-
 void TileSetEditor::_import_node(Node *p_node, Ref<TileSet> p_library) {
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 
 		Node *child = p_node->get_child(i);
 
-		if(!child->cast_to<Sprite>()) {
-			if(child->get_child_count() > 0) {
+		if (!child->cast_to<Sprite>()) {
+			if (child->get_child_count() > 0) {
 				_import_node(child, p_library);
 			}
-      
+
 			continue;
 		}
 
@@ -113,6 +112,8 @@ void TileSetEditor::_import_node(Node *p_node, Ref<TileSet> p_library) {
 					collisions.push_back(collision);
 				}
 			}
+
+			phys_offset -= sb->get_pos();
 		}
 
 		if (collisions.size()) {
