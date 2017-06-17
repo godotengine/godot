@@ -304,7 +304,7 @@ public:
 
 	DetectChannels get_detected_channels();
 
-	Color get_pixel(int p_x, int p_y);
+	Color get_pixel(int p_x, int p_y) const;
 	void put_pixel(int p_x, int p_y, const Color &p_color);
 
 	void copy_internals_from(const Ref<Image> &p_image) {

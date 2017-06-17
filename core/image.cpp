@@ -1712,7 +1712,7 @@ void Image::unlock() {
 	write_lock = PoolVector<uint8_t>::Write();
 }
 
-Color Image::get_pixel(int p_x, int p_y) {
+Color Image::get_pixel(int p_x, int p_y) const {
 
 	uint8_t *ptr = write_lock.ptr();
 #ifdef DEBUG_ENABLED
