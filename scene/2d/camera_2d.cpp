@@ -617,6 +617,7 @@ Node *Camera2D::get_custom_viewport() const {
 void Camera2D::set_screen_drawing_enabled(bool enable)
 {
 	screen_drawing_enabled = enable;
+	_update_scroll();
 }
 
 bool Camera2D::is_screen_drawing_enabled() const {
@@ -626,6 +627,7 @@ bool Camera2D::is_screen_drawing_enabled() const {
 void Camera2D::set_limit_drawing_enabled(bool enable)
 {
 	limit_drawing_enabled = enable;
+	_update_scroll();
 }
 
 bool Camera2D::is_limit_drawing_enabled() const {
@@ -635,6 +637,7 @@ bool Camera2D::is_limit_drawing_enabled() const {
 void Camera2D::set_margin_drawing_enabled(bool enable)
 {
 	margin_drawing_enabled = enable;
+	_update_scroll();
 }
 
 bool Camera2D::is_margin_drawing_enabled() const {
