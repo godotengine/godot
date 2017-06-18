@@ -93,7 +93,7 @@ void Sprite::_notification(int p_what) {
 			if (vflip)
 				dst_rect.size.y = -dst_rect.size.y;
 
-			texture->draw_rect_region(ci, dst_rect, src_rect);
+			texture->draw_rect_region(ci, dst_rect, src_rect, Color(1, 1, 1), false, normal_map);
 
 		} break;
 	}
@@ -109,15 +109,28 @@ void Sprite::set_texture(const Ref<Texture> &p_texture) {
 	}
 #endif
 	texture = p_texture;
+	/* this should no longer be needed in 3.0
 #ifdef DEBUG_ENABLED
 	if (texture.is_valid()) {
 		texture->set_flags(texture->get_flags()); //remove repeat from texture, it looks bad in sprites
 		texture->connect(CoreStringNames::get_singleton()->changed, this, SceneStringNames::get_singleton()->update);
 	}
 #endif
+*/
 	update();
 	emit_signal("texture_changed");
 	item_rect_changed();
+}
+
+void Sprite::set_normal_map(const Ref<Texture> &p_texture) {
+
+	normal_map = p_texture;
+	update();
+}
+
+Ref<Texture> Sprite::get_normal_map() const {
+
+	return normal_map;
 }
 
 Ref<Texture> Sprite::get_texture() const {
@@ -289,6 +302,9 @@ void Sprite::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture", "texture:Texture"), &Sprite::set_texture);
 	ClassDB::bind_method(D_METHOD("get_texture:Texture"), &Sprite::get_texture);
 
+	ClassDB::bind_method(D_METHOD("set_normal_map", "normal_map:Texture"), &Sprite::set_normal_map);
+	ClassDB::bind_method(D_METHOD("get_normal_map:Texture"), &Sprite::get_normal_map);
+
 	ClassDB::bind_method(D_METHOD("set_centered", "centered"), &Sprite::set_centered);
 	ClassDB::bind_method(D_METHOD("is_centered"), &Sprite::is_centered);
 
@@ -320,6 +336,7 @@ void Sprite::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("texture_changed"));
 
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "normal_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_normal_map", "get_normal_map");
 	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");

@@ -188,40 +188,74 @@ void RasterizerCanvasGLES3::canvas_end() {
 	state.using_texture_rect = false;
 }
 
-RasterizerStorageGLES3::Texture *RasterizerCanvasGLES3::_bind_canvas_texture(const RID &p_texture) {
+RasterizerStorageGLES3::Texture *RasterizerCanvasGLES3::_bind_canvas_texture(const RID &p_texture, const RID &p_normal_map) {
+
+	RasterizerStorageGLES3::Texture *tex_return = NULL;
 
 	if (p_texture == state.current_tex) {
-		return state.current_tex_ptr;
-	}
-
-	if (p_texture.is_valid()) {
+		tex_return = state.current_tex_ptr;
+	} else if (p_texture.is_valid()) {
 
 		RasterizerStorageGLES3::Texture *texture = storage->texture_owner.getornull(p_texture);
 
 		if (!texture) {
 			state.current_tex = RID();
 			state.current_tex_ptr = NULL;
+			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, storage->resources.white_tex);
-			return NULL;
+
+		} else {
+
+			if (texture->render_target)
+				texture->render_target->used_in_frame = true;
+
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, texture->tex_id);
+			state.current_tex = p_texture;
+			state.current_tex_ptr = texture;
+
+			tex_return = texture;
 		}
-
-		if (texture->render_target)
-			texture->render_target->used_in_frame = true;
-
-		glBindTexture(GL_TEXTURE_2D, texture->tex_id);
-		state.current_tex = p_texture;
-		state.current_tex_ptr = texture;
-
-		return texture;
 
 	} else {
 
+		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, storage->resources.white_tex);
 		state.current_tex = RID();
 		state.current_tex_ptr = NULL;
 	}
 
-	return NULL;
+	if (p_normal_map == state.current_normal) {
+		//do none
+		state.canvas_shader.set_uniform(CanvasShaderGLES3::USE_DEFAULT_NORMAL, state.current_normal.is_valid());
+
+	} else if (p_normal_map.is_valid()) {
+
+		RasterizerStorageGLES3::Texture *normal_map = storage->texture_owner.getornull(p_normal_map);
+
+		if (!normal_map) {
+			state.current_normal = RID();
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, storage->resources.normal_tex);
+			state.canvas_shader.set_uniform(CanvasShaderGLES3::USE_DEFAULT_NORMAL, false);
+
+		} else {
+
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, normal_map->tex_id);
+			state.current_normal = p_normal_map;
+			state.canvas_shader.set_uniform(CanvasShaderGLES3::USE_DEFAULT_NORMAL, true);
+		}
+
+	} else {
+
+		state.current_normal = RID();
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, storage->resources.normal_tex);
+		state.canvas_shader.set_uniform(CanvasShaderGLES3::USE_DEFAULT_NORMAL, false);
+	}
+
+	return tex_return;
 }
 
 void RasterizerCanvasGLES3::_set_texture_rect_mode(bool p_enable) {
@@ -372,7 +406,7 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 				Item::CommandLine *line = static_cast<Item::CommandLine *>(c);
 				_set_texture_rect_mode(false);
 
-				_bind_canvas_texture(RID());
+				_bind_canvas_texture(RID(), RID());
 
 				glVertexAttrib4f(VS::ARRAY_COLOR, line->color.r, line->color.g, line->color.b, line->color.a);
 
@@ -403,7 +437,7 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 				//set color
 				glVertexAttrib4f(VS::ARRAY_COLOR, rect->modulate.r, rect->modulate.g, rect->modulate.b, rect->modulate.a);
 
-				RasterizerStorageGLES3::Texture *texture = _bind_canvas_texture(rect->texture);
+				RasterizerStorageGLES3::Texture *texture = _bind_canvas_texture(rect->texture, rect->normal_map);
 
 				if (texture) {
 
@@ -460,7 +494,7 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 
 				glVertexAttrib4f(VS::ARRAY_COLOR, np->color.r, np->color.g, np->color.b, np->color.a);
 
-				RasterizerStorageGLES3::Texture *texture = _bind_canvas_texture(np->texture);
+				RasterizerStorageGLES3::Texture *texture = _bind_canvas_texture(np->texture, np->normal_map);
 
 				if (!texture) {
 
@@ -538,7 +572,7 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 
 				ERR_CONTINUE(primitive->points.size() < 1);
 
-				RasterizerStorageGLES3::Texture *texture = _bind_canvas_texture(primitive->texture);
+				RasterizerStorageGLES3::Texture *texture = _bind_canvas_texture(primitive->texture, primitive->normal_map);
 
 				if (texture) {
 					Size2 texpixel_size(1.0 / texture->width, 1.0 / texture->height);
@@ -561,7 +595,7 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 				Item::CommandPolygon *polygon = static_cast<Item::CommandPolygon *>(c);
 				_set_texture_rect_mode(false);
 
-				RasterizerStorageGLES3::Texture *texture = _bind_canvas_texture(polygon->texture);
+				RasterizerStorageGLES3::Texture *texture = _bind_canvas_texture(polygon->texture, polygon->normal_map);
 
 				if (texture) {
 					Size2 texpixel_size(1.0 / texture->width, 1.0 / texture->height);
@@ -588,6 +622,7 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 					indices[i * 3 + 2] = numpoints;
 				}
 
+				_bind_canvas_texture(RID(), RID());
 				_draw_polygon(indices, numpoints * 3, numpoints + 1, points, NULL, &circle->color, true);
 
 				//_draw_polygon(numpoints*3,indices,points,NULL,&circle->color,RID(),true);
@@ -705,6 +740,7 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 
 	state.current_tex = RID();
 	state.current_tex_ptr = NULL;
+	state.current_normal = RID();
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, storage->resources.white_tex);
 
@@ -812,7 +848,7 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 
 				for (int i = 0; i < tc; i++) {
 
-					glActiveTexture(GL_TEXTURE1 + i);
+					glActiveTexture(GL_TEXTURE2 + i);
 
 					RasterizerStorageGLES3::Texture *t = storage->texture_owner.getornull(textures[i]);
 					if (!t) {

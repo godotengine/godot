@@ -633,6 +633,7 @@ public:
 
 			Rect2 rect;
 			RID texture;
+			RID normal_map;
 			Color modulate;
 			Rect2 source;
 			uint8_t flags;
@@ -648,6 +649,7 @@ public:
 			Rect2 rect;
 			Rect2 source;
 			RID texture;
+			RID normal_map;
 			float margin[4];
 			bool draw_center;
 			Color color;
@@ -665,6 +667,7 @@ public:
 			Vector<Point2> uvs;
 			Vector<Color> colors;
 			RID texture;
+			RID normal_map;
 			float width;
 
 			CommandPrimitive() {
@@ -680,6 +683,7 @@ public:
 			Vector<Point2> uvs;
 			Vector<Color> colors;
 			RID texture;
+			RID normal_map;
 			int count;
 
 			CommandPolygon() {

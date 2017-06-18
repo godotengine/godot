@@ -51,9 +51,9 @@ layout(std140) uniform LightData { //ubo:1
 
 out vec4 light_uv_interp;
 
-#if defined(NORMAL_USED)
+
 out vec4 local_rot;
-#endif
+
 
 #ifdef USE_SHADOWS
 out highp vec2 pos;
@@ -124,7 +124,7 @@ VERTEX_SHADER_CODE
 	pos=outvec.xy;
 #endif
 
-#if defined(NORMAL_USED)
+
 	local_rot.xy=normalize( (modelview_matrix * ( extra_matrix * vec4(1.0,0.0,0.0,0.0) )).xy  );
 	local_rot.zw=normalize( (modelview_matrix * ( extra_matrix * vec4(0.0,1.0,0.0,0.0) )).xy  );
 #ifdef USE_TEXTURE_RECT
@@ -132,7 +132,7 @@ VERTEX_SHADER_CODE
 	local_rot.zw*=sign(src_rect.w);
 #endif
 
-#endif
+
 
 #endif
 
@@ -144,6 +144,7 @@ VERTEX_SHADER_CODE
 
 uniform mediump sampler2D color_texture; // texunit:0
 uniform highp vec2 color_texpixel_size;
+uniform mediump sampler2D normal_texture; // texunit:1
 
 in mediump vec2 uv_interp;
 in mediump vec4 color_interp;
@@ -183,9 +184,8 @@ uniform lowp sampler2D light_texture; // texunit:-1
 in vec4 light_uv_interp;
 
 
-#if defined(NORMAL_USED)
 in vec4 local_rot;
-#endif
+
 
 #ifdef USE_SHADOWS
 
@@ -228,20 +228,19 @@ LIGHT_SHADER_CODE
 
 }
 
+uniform bool use_default_normal;
 
 void main() {
 
 	vec4 color = color_interp;
-#if defined(NORMAL_USED)
-	vec3 normal = vec3(0.0,0.0,1.0);
-#endif
+
 
 #if !defined(COLOR_USED)
 //default behavior, texture by color
 
 #ifdef USE_DISTANCE_FIELD
 	const float smoothing = 1.0/32.0;
-	float distance = texture(color_texture, uv_interp).a;
+	float distance = textureLod(color_texture, uv_interp,0.0).a;
 	color.a = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance) * color.a;
 #else
 	color *= texture( color_texture,  uv_interp );
@@ -249,6 +248,25 @@ void main() {
 #endif
 
 #endif
+
+	vec3 normal;
+
+#if defined(NORMAL_USED)
+
+	bool normal_used = true;
+#else
+	bool normal_used = false;
+#endif
+
+	if (use_default_normal) {
+		normal.xy = textureLod(normal_texture, uv_interp,0.0).xy * 2.0 - 1.0;
+		normal.z = sqrt(1.0-dot(normal.xy,normal.xy));
+		normal_used=true;
+	} else {
+		normal = vec3(0.0,0.0,1.0);
+	}
+
+
 
 #if defined(ENABLE_SCREEN_UV)
 	vec2 screen_uv = gl_FragCoord.xy*screen_uv_mult;
@@ -284,9 +302,9 @@ FRAGMENT_SHADER_CODE
 
 	vec2 light_vec = light_uv_interp.zw;; //for shadow and normal mapping
 
-#if defined(NORMAL_USED)
-	normal.xy =  mat2(local_rot.xy,local_rot.zw) * normal.xy;
-#endif
+	if (normal_used) {
+		normal.xy =  mat2(local_rot.xy,local_rot.zw) * normal.xy;
+	}
 
 	float att=1.0;
 
@@ -307,10 +325,11 @@ FRAGMENT_SHADER_CODE
 
 #else
 
-#if defined(NORMAL_USED)
-		vec3 light_normal = normalize(vec3(light_vec,-light_height));
-		light*=max(dot(-light_normal,normal),0.0);
-#endif
+		if (normal_used) {
+
+			vec3 light_normal = normalize(vec3(light_vec,-light_height));
+			light*=max(dot(-light_normal,normal),0.0);
+		}
 
 		color*=light;
 /*
