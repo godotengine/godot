@@ -269,11 +269,11 @@ void Camera2D::_notification(int p_what) {
 
 			if (screen_drawing_enabled == true)
 			{
-				Color area_axis_color(0.5, 0.42, 0.87, 0.36);
+				Color area_axis_color(0.5, 0.42, 0.87, 0.63);
 				float area_axis_width = 1;
 				if (current == true) {
 					area_axis_width = 3;
-					area_axis_color = Color(0.5, 0.42, 0.87, 0.63);
+					area_axis_color = Color(0.5, 0.42, 0.87, 0.83);
 				}
 
 				Transform2D inv_camera_transform = get_camera_transform().affine_inverse();
@@ -296,10 +296,10 @@ void Camera2D::_notification(int p_what) {
 
 			if (limit_drawing_enabled == true)
 			{
-				Color limit_drawing_color(1, 1, 0, 0.36);
+				Color limit_drawing_color(1, 1, 0, 0.63);
 				float limit_drawing_width = 1;
 				if (current == true) {
-				  limit_drawing_color = Color(1, 1, 0, 0.63);
+				  limit_drawing_color = Color(1, 1, 0, 0.83);
 					limit_drawing_width = 3;
 				}
 
@@ -321,11 +321,11 @@ void Camera2D::_notification(int p_what) {
 
 			if (margin_drawing_enabled == true)
 			{
-				Color margin_drawing_color(0, 1, 1, 0.36);
+				Color margin_drawing_color(0, 1, 1, 0.63);
 				float margin_drawing_width = 1;
 				if (current == true) {
 					margin_drawing_width = 3;
-					margin_drawing_color = Color(0, 1, 1, 0.63);
+					margin_drawing_color = Color(0, 1, 1, 0.83);
 				}
 
 				Transform2D inv_camera_transform = get_camera_transform().affine_inverse();
@@ -399,6 +399,7 @@ void Camera2D::_set_current(bool p_current) {
 		make_current();
 
 	current = p_current;
+	_update_scroll();
 }
 
 bool Camera2D::is_current() const {
@@ -427,6 +428,7 @@ void Camera2D::set_limit(Margin p_margin, int p_limit) {
 
 	ERR_FAIL_INDEX(p_margin, 4);
 	limit[p_margin] = p_limit;
+	_update_scroll();
 }
 
 int Camera2D::get_limit(Margin p_margin) const {
@@ -450,6 +452,7 @@ void Camera2D::set_drag_margin(Margin p_margin, float p_drag_margin) {
 
 	ERR_FAIL_INDEX(p_margin, 4);
 	drag_margin[p_margin] = p_drag_margin;
+	_update_scroll();
 }
 
 float Camera2D::get_drag_margin(Margin p_margin) const {
