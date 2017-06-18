@@ -84,10 +84,11 @@ void ColorPicker::set_pick_color(const Color &p_color) {
 	if (!is_inside_tree())
 		return;
 
+	_update_color();
+
 	return; //it crashes, so returning
 	uv_edit->get_child(0)->cast_to<Control>()->update();
 	w_edit->get_child(0)->cast_to<Control>()->update();
-	_update_color();
 }
 
 void ColorPicker::set_edit_alpha(bool p_show) {
