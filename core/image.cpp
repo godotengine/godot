@@ -1646,6 +1646,133 @@ void Image::blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Po
 	}
 }
 
+void Image::blend_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Point2 &p_dest) {
+
+	ERR_FAIL_COND(p_src.is_null());
+	int dsize = data.size();
+	int srcdsize = p_src->data.size();
+	ERR_FAIL_COND(dsize == 0);
+	ERR_FAIL_COND(srcdsize == 0);
+	ERR_FAIL_COND(format != p_src->format);
+
+	Rect2i clipped_src_rect = Rect2i(0, 0, p_src->width, p_src->height).clip(p_src_rect);
+	if (clipped_src_rect.size.x <= 0 || clipped_src_rect.size.y <= 0)
+		return;
+
+	Rect2i dest_rect = Rect2i(0, 0, width, height).clip(Rect2i(p_dest, clipped_src_rect.size));
+
+	lock();
+	Ref<Image> img = p_src;
+	img->lock();
+
+	for (int i = 0; i < dest_rect.size.y; i++) {
+
+		for (int j = 0; j < dest_rect.size.x; j++) {
+
+			int src_x = clipped_src_rect.position.x + j;
+			int src_y = clipped_src_rect.position.y + i;
+
+			int dst_x = dest_rect.position.x + j;
+			int dst_y = dest_rect.position.y + i;
+
+			Color sc = img->get_pixel(src_x, src_y);
+			Color dc = get_pixel(dst_x, dst_y);
+			dc.r = (double)(sc.a * sc.r + dc.a * (1.0 - sc.a) * dc.r);
+			dc.g = (double)(sc.a * sc.g + dc.a * (1.0 - sc.a) * dc.g);
+			dc.b = (double)(sc.a * sc.b + dc.a * (1.0 - sc.a) * dc.b);
+			dc.a = (double)(sc.a + dc.a * (1.0 - sc.a));
+			put_pixel(dst_x, dst_y, dc);
+		}
+	}
+
+	img->unlock();
+	unlock();
+}
+
+void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2 &p_src_rect, const Point2 &p_dest) {
+
+	ERR_FAIL_COND(p_src.is_null());
+	ERR_FAIL_COND(p_mask.is_null());
+	int dsize = data.size();
+	int srcdsize = p_src->data.size();
+	int maskdsize = p_mask->data.size();
+	ERR_FAIL_COND(dsize == 0);
+	ERR_FAIL_COND(srcdsize == 0);
+	ERR_FAIL_COND(maskdsize == 0);
+	ERR_FAIL_COND(p_src->width != p_mask->width);
+	ERR_FAIL_COND(p_src->height != p_mask->height);
+	ERR_FAIL_COND(format != p_src->format);
+
+	Rect2i clipped_src_rect = Rect2i(0, 0, p_src->width, p_src->height).clip(p_src_rect);
+	if (clipped_src_rect.size.x <= 0 || clipped_src_rect.size.y <= 0)
+		return;
+
+	Rect2i dest_rect = Rect2i(0, 0, width, height).clip(Rect2i(p_dest, clipped_src_rect.size));
+
+	lock();
+	Ref<Image> img = p_src;
+	Ref<Image> msk = p_mask;
+	img->lock();
+	msk->lock();
+
+	for (int i = 0; i < dest_rect.size.y; i++) {
+
+		for (int j = 0; j < dest_rect.size.x; j++) {
+
+			int src_x = clipped_src_rect.position.x + j;
+			int src_y = clipped_src_rect.position.y + i;
+
+			// If the mask's pixel is transparent then we skip it
+			//Color c = msk->get_pixel(src_x, src_y);
+			//if (c.a == 0) continue;
+			if (msk->get_pixel(src_x, src_y).a != 0) {
+
+				int dst_x = dest_rect.position.x + j;
+				int dst_y = dest_rect.position.y + i;
+
+				Color sc = img->get_pixel(src_x, src_y);
+				Color dc = get_pixel(dst_x, dst_y);
+				dc.r = (double)(sc.a * sc.r + dc.a * (1.0 - sc.a) * dc.r);
+				dc.g = (double)(sc.a * sc.g + dc.a * (1.0 - sc.a) * dc.g);
+				dc.b = (double)(sc.a * sc.b + dc.a * (1.0 - sc.a) * dc.b);
+				dc.a = (double)(sc.a + dc.a * (1.0 - sc.a));
+				put_pixel(dst_x, dst_y, dc);
+			}
+		}
+	}
+
+	msk->unlock();
+	img->unlock();
+	unlock();
+}
+
+void Image::fill(const Color &c) {
+
+	lock();
+
+	PoolVector<uint8_t>::Write wp = data.write();
+	uint8_t *dst_data_ptr = wp.ptr();
+
+	int pixel_size = get_format_pixel_size(format);
+
+	// put first pixel with the format-aware API
+	put_pixel(0, 0, c);
+
+	for (int y = 0; y < height; y++) {
+
+		for (int x = 0; x < width; x++) {
+
+			uint8_t *dst = &dst_data_ptr[(y * width + x) * pixel_size];
+
+			for (int k = 0; k < pixel_size; k++) {
+				dst[k] = dst_data_ptr[k];
+			}
+		}
+	}
+
+	unlock();
+}
+
 Ref<Image> (*Image::_png_mem_loader_func)(const uint8_t *, int) = NULL;
 Ref<Image> (*Image::_jpg_mem_loader_func)(const uint8_t *, int) = NULL;
 
@@ -2072,6 +2199,9 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("normalmap_to_xy"), &Image::normalmap_to_xy);
 
 	ClassDB::bind_method(D_METHOD("blit_rect", "src:Image", "src_rect", "dst"), &Image::blit_rect);
+	ClassDB::bind_method(D_METHOD("blend_rect", "src:Image", "src_rect", "dst"), &Image::blend_rect);
+	ClassDB::bind_method(D_METHOD("blend_rect_mask", "src:Image", "mask:Image", "src_rect", "dst"), &Image::blend_rect_mask);
+	ClassDB::bind_method(D_METHOD("fill", "color"), &Image::fill);
 
 	ClassDB::bind_method(D_METHOD("get_used_rect"), &Image::get_used_rect);
 	ClassDB::bind_method(D_METHOD("get_rect:Image", "rect"), &Image::get_rect);
