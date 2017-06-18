@@ -122,9 +122,6 @@ void ColorPicker::_value_changed(double) {
 	}
 
 	set_pick_color(color);
-
-	_update_text_value();
-
 	emit_signal("color_changed", color);
 }
 
@@ -257,7 +254,7 @@ void ColorPicker::_update_text_value() {
 }
 
 void ColorPicker::_sample_draw() {
-	sample->draw_rect(Rect2(Point2(), Size2(256, 20)), color);
+	sample->draw_rect(Rect2(Point2(), Size2(uv_edit->get_size().width, 20)), color);
 }
 
 void ColorPicker::_hsv_draw(int p_wich, Control *c) {
@@ -277,12 +274,12 @@ void ColorPicker::_hsv_draw(int p_wich, Control *c) {
 		c->draw_polygon(points, colors);
 		Vector<Color> colors2;
 		Color col = color;
-		col.set_hsv(color.get_h(), 1, 1);
+		col.set_hsv(h, 1, 1);
 		col.a = 0;
 		colors2.push_back(col);
 		col.a = 1;
 		colors2.push_back(col);
-		col.set_hsv(color.get_h(), 1, 0);
+		col.set_hsv(h, 1, 0);
 		colors2.push_back(col);
 		col.a = 0;
 		colors2.push_back(col);
@@ -311,10 +308,10 @@ void ColorPicker::_uv_input(const Ref<InputEvent> &ev) {
 	if (bev.is_valid()) {
 		if (bev->is_pressed() && bev->get_button_index() == BUTTON_LEFT) {
 			changing_color = true;
-			float x = CLAMP((float)bev->get_position().x, 0, 256);
-			float y = CLAMP((float)bev->get_position().y, 0, 256);
-			s = x / 256;
-			v = 1.0 - y / 256.0;
+			float x = CLAMP((float)bev->get_position().x, 0, uv_edit->get_size().width);
+			float y = CLAMP((float)bev->get_position().y, 0, uv_edit->get_size().height);
+			s = x / uv_edit->get_size().width;
+			v = 1.0 - y / uv_edit->get_size().height;
 			color.set_hsv(h, s, v, color.a);
 			last_hsv = color;
 			set_pick_color(color);
@@ -330,10 +327,10 @@ void ColorPicker::_uv_input(const Ref<InputEvent> &ev) {
 	if (mev.is_valid()) {
 		if (!changing_color)
 			return;
-		float x = CLAMP((float)mev->get_position().x, 0, 256);
-		float y = CLAMP((float)mev->get_position().y, 0, 256);
-		s = x / 256;
-		v = 1.0 - y / 256.0;
+		float x = CLAMP((float)mev->get_position().x, 0, uv_edit->get_size().width);
+		float y = CLAMP((float)mev->get_position().y, 0, uv_edit->get_size().height);
+		s = x / uv_edit->get_size().width;
+		v = 1.0 - y / uv_edit->get_size().height;
 		color.set_hsv(h, s, v, color.a);
 		last_hsv = color;
 		set_pick_color(color);
@@ -350,8 +347,8 @@ void ColorPicker::_w_input(const Ref<InputEvent> &ev) {
 
 		if (bev->is_pressed() && bev->get_button_index() == BUTTON_LEFT) {
 			changing_color = true;
-			h = 1 - (256.0 - (float)bev->get_position().y) / 256.0;
-
+			float y = CLAMP((float)bev->get_position().y, 0, w_edit->get_size().height);
+			h = y / w_edit->get_size().height;
 		} else {
 			changing_color = false;
 		}
@@ -368,9 +365,8 @@ void ColorPicker::_w_input(const Ref<InputEvent> &ev) {
 
 		if (!changing_color)
 			return;
-		float y = CLAMP((float)mev->get_position().y, 0, 256);
-		//h = 1.0 - y / 256.0;
-		h = y / 256.0;
+		float y = CLAMP((float)mev->get_position().y, 0, w_edit->get_size().height);
+		h = y / w_edit->get_size().height;
 		color.set_hsv(h, s, v, color.a);
 		last_hsv = color;
 		set_pick_color(color);
@@ -508,12 +504,14 @@ ColorPicker::ColorPicker()
 	add_child(hb_smpl);
 
 	HBoxContainer *hb_edit = memnew(HBoxContainer);
+	hb_edit->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	uv_edit = memnew(Control);
 
 	uv_edit->connect("gui_input", this, "_uv_input");
 	uv_edit->set_mouse_filter(MOUSE_FILTER_PASS);
-	uv_edit->set_custom_minimum_size(Size2(256, 256));
+	uv_edit->set_h_size_flags(SIZE_EXPAND_FILL);
+	uv_edit->set_v_size_flags(SIZE_EXPAND_FILL);
 	Vector<Variant> args = Vector<Variant>();
 	args.push_back(0);
 	args.push_back(uv_edit);
@@ -523,7 +521,9 @@ ColorPicker::ColorPicker()
 
 	w_edit = memnew(Control);
 	//w_edit->set_ignore_mouse(false);
-	w_edit->set_custom_minimum_size(Size2(30, 256));
+	w_edit->set_custom_minimum_size(Size2(30, 0));
+	w_edit->set_h_size_flags(SIZE_FILL);
+	w_edit->set_v_size_flags(SIZE_EXPAND_FILL);
 	w_edit->connect("gui_input", this, "_w_input");
 	args.clear();
 	args.push_back(1);
@@ -549,6 +549,7 @@ ColorPicker::ColorPicker()
 		HBoxContainer *hbc = memnew(HBoxContainer);
 
 		labels[i] = memnew(Label(lt[i]));
+		labels[i]->set_custom_minimum_size(Size2(10, 0));
 		hbc->add_child(labels[i]);
 
 		scroll[i] = memnew(HSlider);
@@ -570,7 +571,7 @@ ColorPicker::ColorPicker()
 	HBoxContainer *hhb = memnew(HBoxContainer);
 
 	btn_mode = memnew(CheckButton);
-	btn_mode->set_text("RAW Mode");
+	btn_mode->set_text(TTR("RAW Mode"));
 	btn_mode->connect("toggled", this, "set_raw_mode");
 	hhb->add_child(btn_mode);
 	vbr->add_child(hhb);
@@ -601,7 +602,7 @@ ColorPicker::ColorPicker()
 
 	bt_add_preset = memnew(Button);
 	bt_add_preset->set_icon(get_icon("add_preset"));
-	bt_add_preset->set_tooltip("Add current color as a preset");
+	bt_add_preset->set_tooltip(TTR("Add current color as a preset"));
 	bt_add_preset->connect("pressed", this, "_add_preset_pressed");
 	bbc->add_child(bt_add_preset);
 }
