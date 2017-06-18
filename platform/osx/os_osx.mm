@@ -910,7 +910,7 @@ void OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 	unsigned int styleMask = NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | (p_desired.resizable ? NSResizableWindowMask : 0);
 
 	window_object = [[GodotWindow alloc]
-			initWithContentRect:NSMakeRect(0, 0, p_desired.width / display_scale, p_desired.height / display_scale)
+			initWithContentRect:NSMakeRect(0, 0, p_desired.width, p_desired.height)
 					  styleMask:styleMask
 						backing:NSBackingStoreBuffered
 						  defer:NO];
@@ -919,8 +919,8 @@ void OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 
 	window_view = [[GodotContentView alloc] init];
 
-	window_size.width = p_desired.width;
-	window_size.height = p_desired.height;
+	window_size.width = p_desired.width * display_scale;
+	window_size.height = p_desired.height * display_scale;
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
 	if (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_6 && display_scale > 1) {
