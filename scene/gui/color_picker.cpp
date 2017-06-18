@@ -48,7 +48,15 @@ void ColorPicker::_notification(int p_what) {
 			btn_pick->set_icon(get_icon("screen_picker", "ColorPicker"));
 
 			_update_color();
-		}
+		} break;
+
+		case MainLoop::NOTIFICATION_WM_QUIT_REQUEST: {
+			if (screen != NULL) {
+				if (screen->is_visible()) {
+					screen->hide();
+				}
+			}
+		} break;
 	}
 }
 
@@ -84,9 +92,6 @@ void ColorPicker::set_pick_color(const Color &p_color) {
 	if (!is_inside_tree())
 		return;
 
-	return; //it crashes, so returning
-	uv_edit->get_child(0)->cast_to<Control>()->update();
-	w_edit->get_child(0)->cast_to<Control>()->update();
 	_update_color();
 }
 
@@ -427,19 +432,12 @@ void ColorPicker::_screen_input(const Ref<InputEvent> &ev) {
 		Viewport *r = get_tree()->get_root();
 		if (!r->get_visible_rect().has_point(Point2(mev->get_global_position().x, mev->get_global_position().y)))
 			return;
-		Ref<Image> img; //= r->get_screen_capture();
-		if (!img.is_null()) {
-			last_capture = img;
-			//r->queue_screen_capture();
-		}
-		if (last_capture.is_valid() && !last_capture->empty()) {
-			int pw = last_capture->get_format() == Image::FORMAT_RGBA8 ? 4 : 3;
-			int ofs = (mev->get_global_position().y * last_capture->get_width() + mev->get_global_position().x) * pw;
-
-			PoolVector<uint8_t>::Read r = last_capture->get_data().read();
-
-			Color c(r[ofs + 0] / 255.0, r[ofs + 1] / 255.0, r[ofs + 2] / 255.0);
-
+		Ref<Image> img = r->get_texture()->get_data();
+		if (img.is_valid() && !img->empty()) {
+			img->lock();
+			Vector2 ofs = mev->get_global_position() - r->get_visible_rect().get_position();
+			Color c = img->get_pixel(ofs.x, r->get_visible_rect().size.height - ofs.y);
+			img->unlock();
 			set_pick_color(c);
 		}
 	}
@@ -456,11 +454,11 @@ void ColorPicker::_screen_pick_pressed() {
 		r->add_child(screen);
 		screen->set_as_toplevel(true);
 		screen->set_area_as_parent_rect();
+		screen->set_default_cursor_shape(CURSOR_POINTING_HAND);
 		screen->connect("gui_input", this, "_screen_input");
 	}
 	screen->raise();
 	screen->show_modal();
-	//	r->queue_screen_capture();
 }
 
 void ColorPicker::_bind_methods() {
@@ -631,6 +629,10 @@ void ColorPickerButton::_notification(int p_what) {
 
 		Ref<StyleBox> normal = get_stylebox("normal");
 		draw_rect(Rect2(normal->get_offset(), get_size() - normal->get_minimum_size()), picker->get_pick_color());
+	}
+
+	if (p_what == MainLoop::NOTIFICATION_WM_QUIT_REQUEST) {
+		popup->hide();
 	}
 }
 
