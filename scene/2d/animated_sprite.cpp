@@ -32,6 +32,8 @@
 #include "scene/scene_string_names.h"
 #include "scene/scene_string_names.h"
 
+#define NORMAL_SUFFIX "_normal"
+
 ////////////////////////////
 
 void SpriteFrames::add_frame(const StringName &p_anim, const Ref<Texture> &p_frame, int p_at_pos) {
@@ -82,6 +84,7 @@ void SpriteFrames::add_animation(const StringName &p_anim) {
 	ERR_FAIL_COND(animations.has(p_anim));
 
 	animations[p_anim] = Anim();
+	animations[p_anim].normal_name = String(p_anim) + NORMAL_SUFFIX;
 }
 
 bool SpriteFrames::has_animation(const StringName &p_anim) const {
@@ -101,6 +104,7 @@ void SpriteFrames::rename_animation(const StringName &p_prev, const StringName &
 	Anim anim = animations[p_prev];
 	animations.erase(p_prev);
 	animations[p_next] = anim;
+	animations[p_next].normal_name = String(p_next) + NORMAL_SUFFIX;
 }
 
 Vector<String> SpriteFrames::_get_animation_list() const {
@@ -374,6 +378,8 @@ void AnimatedSprite::_notification(int p_what) {
 				return;
 			}
 
+			Ref<Texture> normal = frames->get_normal_frame(animation, frame);
+
 			//print_line("DECIDED TO DRAW");
 
 			RID ci = get_canvas_item();
@@ -400,7 +406,7 @@ void AnimatedSprite::_notification(int p_what) {
 				dst_rect.size.y = -dst_rect.size.y;
 
 			//texture->draw_rect(ci,dst_rect,false,modulate);
-			texture->draw_rect_region(ci, dst_rect, Rect2(Vector2(), texture->get_size()));
+			texture->draw_rect_region(ci, dst_rect, Rect2(Vector2(), texture->get_size()), Color(1, 1, 1), false, normal);
 			//VisualServer::get_singleton()->canvas_item_add_texture_rect_region(ci,dst_rect,texture->get_rid(),src_rect,modulate);
 
 		} break;
