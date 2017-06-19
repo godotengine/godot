@@ -108,40 +108,58 @@ void PathFollow::_update_transform() {
 	Vector3 pos = c->interpolate_baked(o, cubic);
 	Transform t = get_transform();
 
+	t.origin = pos;
+	Vector3 pos_offset = Vector3(h_offset, v_offset, 0);
+
 	if (rotation_mode != ROTATION_NONE) {
+		// perform parallel transport
+		//
+		// see C. Dougan, The Parallel Transport Frame, Game Programming Gems 2 for example
+		// for a discussion about why not Frenet frame.
 
-		Vector3 n = (c->interpolate_baked(o + lookahead, cubic) - pos).normalized();
+		Vector3 t_prev = pos - c->interpolate_baked(o - lookahead, cubic);
+		Vector3 t_cur = c->interpolate_baked(o + lookahead, cubic) - pos;
 
-		if (rotation_mode == ROTATION_Y) {
+		Vector3 axis = t_prev.cross(t_cur);
+		float dot = t_prev.normalized().dot(t_cur.normalized());
+		float angle = Math::acos(CLAMP(dot, -1, 1));
 
-			n.y = 0;
-			n.normalize();
-		}
-
-		if (n.length() < CMP_EPSILON) { //nothing, use previous
-			n = -t.get_basis().get_axis(2).normalized();
-		}
-
-		Vector3 up = Vector3(0, 1, 0);
-
-		if (rotation_mode == ROTATION_XYZ) {
-
-			float tilt = c->interpolate_baked_tilt(o);
-			if (tilt != 0) {
-
-				Basis rot(-n, tilt); //remember.. lookat will be znegative.. znegative!! we abide by opengl clan.
-				up = rot.xform(up);
+		if (axis.length() > CMP_EPSILON && angle > CMP_EPSILON) {
+			if (rotation_mode == ROTATION_Y) {
+				// assuming we're referring to global Y-axis. is this correct?
+				axis.x = 0;
+				axis.z = 0;
+			} else if (rotation_mode == ROTATION_XY) {
+				axis.z = 0;
+			} else if (rotation_mode == ROTATION_XYZ) {
+				// all components are OK
 			}
+
+			t.rotate_basis(axis.normalized(), angle);
 		}
 
-		t.set_look_at(pos, pos + n, up);
+		// do the additional tilting
+		float tilt_angle = c->interpolate_baked_tilt(o);
+		Vector3 tilt_axis = t_cur; // is this correct??
 
+		if (tilt_axis.length() > CMP_EPSILON && tilt_angle > CMP_EPSILON) {
+			if (rotation_mode == ROTATION_Y) {
+				tilt_axis.x = 0;
+				tilt_axis.z = 0;
+			} else if (rotation_mode == ROTATION_XY) {
+				tilt_axis.z = 0;
+			} else if (rotation_mode == ROTATION_XYZ) {
+				// all components are OK
+			}
+
+			t.rotate_basis(tilt_axis.normalized(), tilt_angle);
+		}
+
+		t.translate(pos_offset);
 	} else {
-
-		t.origin = pos;
+		t.origin += pos_offset;
 	}
 
-	t.origin += t.basis.get_axis(0) * h_offset + t.basis.get_axis(1) * v_offset;
 	set_transform(t);
 }
 

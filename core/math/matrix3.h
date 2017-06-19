@@ -145,6 +145,12 @@ public:
 		elements[2][1] = zy;
 		elements[2][2] = zz;
 	}
+	_FORCE_INLINE_ void set(const Vector3 &p_x, const Vector3 &p_y, const Vector3 &p_z) {
+
+		set_axis(0, p_x);
+		set_axis(1, p_y);
+		set_axis(2, p_z);
+	}
 	_FORCE_INLINE_ Vector3 get_column(int i) const {
 
 		return Vector3(elements[0][i], elements[1][i], elements[2][i]);

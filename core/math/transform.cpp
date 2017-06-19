@@ -82,7 +82,10 @@ Transform Transform::looking_at(const Vector3 &p_target, const Vector3 &p_up) co
 }
 
 void Transform::set_look_at(const Vector3 &p_eye, const Vector3 &p_target, const Vector3 &p_up) {
-
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND(p_eye == p_target);
+	ERR_FAIL_COND(p_up.length() == 0);
+#endif
 	// Reference: MESA source code
 	Vector3 v_x, v_y, v_z;
 
@@ -96,6 +99,9 @@ void Transform::set_look_at(const Vector3 &p_eye, const Vector3 &p_target, const
 	v_y = p_up;
 
 	v_x = v_y.cross(v_z);
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND(v_x.length() == 0);
+#endif
 
 	/* Recompute Y = Z cross X */
 	v_y = v_z.cross(v_x);
@@ -103,9 +109,8 @@ void Transform::set_look_at(const Vector3 &p_eye, const Vector3 &p_target, const
 	v_x.normalize();
 	v_y.normalize();
 
-	basis.set_axis(0, v_x);
-	basis.set_axis(1, v_y);
-	basis.set_axis(2, v_z);
+	basis.set(v_x, v_y, v_z);
+
 	origin = p_eye;
 }
 

@@ -97,15 +97,7 @@ public:
 
 	void set(real_t xx, real_t xy, real_t xz, real_t yx, real_t yy, real_t yz, real_t zx, real_t zy, real_t zz, real_t tx, real_t ty, real_t tz) {
 
-		basis.elements[0][0] = xx;
-		basis.elements[0][1] = xy;
-		basis.elements[0][2] = xz;
-		basis.elements[1][0] = yx;
-		basis.elements[1][1] = yy;
-		basis.elements[1][2] = yz;
-		basis.elements[2][0] = zx;
-		basis.elements[2][1] = zy;
-		basis.elements[2][2] = zz;
+		basis.set(xx, xy, xz, yx, yy, yz, zx, zy, zz);
 		origin.x = tx;
 		origin.y = ty;
 		origin.z = tz;
