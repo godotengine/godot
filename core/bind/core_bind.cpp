@@ -31,6 +31,7 @@
 
 #include "core/global_config.h"
 #include "geometry.h"
+#include "io/file_access_compressed.h"
 #include "io/file_access_encrypted.h"
 #include "io/marshalls.h"
 #include "os/keyboard.h"
@@ -1395,6 +1396,24 @@ Error _File::open_encrypted_pass(const String &p_path, int p_mode_flags, const S
 	return OK;
 }
 
+Error _File::open_compressed(const String &p_path, int p_mode_flags, int p_compress_mode) {
+
+	FileAccessCompressed *fac = memnew(FileAccessCompressed);
+	Error err = OK;
+
+	fac->configure("GCPF", (Compression::Mode)p_compress_mode);
+
+	err = fac->_open(p_path, p_mode_flags);
+
+	if (err) {
+		memdelete(fac);
+		return err;
+	}
+
+	f = fac;
+	return OK;
+}
+
 Error _File::open(const String &p_path, int p_mode_flags) {
 
 	close();
@@ -1700,6 +1719,7 @@ void _File::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("open_encrypted", "path", "mode_flags", "key"), &_File::open_encrypted);
 	ClassDB::bind_method(D_METHOD("open_encrypted_with_pass", "path", "mode_flags", "pass"), &_File::open_encrypted_pass);
+	ClassDB::bind_method(D_METHOD("open_compressed", "path", "mode_flags", "compression_mode"), &_File::open_compressed, DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("open", "path", "flags"), &_File::open);
 	ClassDB::bind_method(D_METHOD("close"), &_File::close);
@@ -1749,6 +1769,10 @@ void _File::_bind_methods() {
 	BIND_CONSTANT(WRITE);
 	BIND_CONSTANT(READ_WRITE);
 	BIND_CONSTANT(WRITE_READ);
+
+	BIND_CONSTANT(COMPRESSION_FASTLZ);
+	BIND_CONSTANT(COMPRESSION_DEFLATE);
+	BIND_CONSTANT(COMPRESSION_ZSTD);
 }
 
 _File::_File() {
