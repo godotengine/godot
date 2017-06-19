@@ -99,7 +99,7 @@ public:
 
 		const Map<StringName, Anim>::Element *EN = animations.find(E->get().normal_name);
 
-		if (p_idx >= EN->get().frames.size())
+		if (!EN || p_idx >= EN->get().frames.size())
 			return Ref<Texture>();
 
 		return EN->get().frames[p_idx];
