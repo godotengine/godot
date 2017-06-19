@@ -65,6 +65,9 @@ void CustomPropertyEditor::_notification(int p_what) {
 			VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2( 10,10,60, get_size().height-20 ), v );
 		}*/
 	}
+	if (p_what == MainLoop::NOTIFICATION_WM_QUIT_REQUEST) {
+		hide();
+	}
 }
 
 void CustomPropertyEditor::_menu_option(int p_which) {
