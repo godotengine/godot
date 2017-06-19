@@ -44,7 +44,6 @@ class World2D : public Resource {
 
 	RID canvas;
 	RID space;
-	RID sound_space;
 
 	SpatialIndexer2D *indexer;
 
@@ -66,9 +65,10 @@ protected:
 public:
 	RID get_canvas();
 	RID get_space();
-	RID get_sound_space();
 
 	Physics2DDirectSpaceState *get_direct_space_state();
+
+	void get_viewport_list(List<Viewport *> *r_viewports);
 
 	World2D();
 	~World2D();

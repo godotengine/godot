@@ -29,7 +29,9 @@
 /*************************************************************************/
 #include "area_2d.h"
 #include "scene/scene_string_names.h"
+#include "servers/audio_server.h"
 #include "servers/physics_2d_server.h"
+
 void Area2D::set_space_override_mode(SpaceOverride p_mode) {
 
 	space_override = p_mode;
@@ -542,6 +544,47 @@ bool Area2D::get_collision_layer_bit(int p_bit) const {
 	return get_collision_layer() & (1 << p_bit);
 }
 
+void Area2D::set_audio_bus_override(bool p_override) {
+
+	audio_bus_override = p_override;
+}
+
+bool Area2D::is_overriding_audio_bus() const {
+
+	return audio_bus_override;
+}
+
+void Area2D::set_audio_bus(const StringName &p_audio_bus) {
+
+	audio_bus = p_audio_bus;
+}
+
+StringName Area2D::get_audio_bus() const {
+
+	for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
+		if (AudioServer::get_singleton()->get_bus_name(i) == audio_bus) {
+			return audio_bus;
+		}
+	}
+	return "Master";
+}
+
+void Area2D::_validate_property(PropertyInfo &property) const {
+
+	if (property.name == "audio_bus_name") {
+
+		String options;
+		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
+			if (i > 0)
+				options += ",";
+			String name = AudioServer::get_singleton()->get_bus_name(i);
+			options += name;
+		}
+
+		property.hint_string = options;
+	}
+}
+
 void Area2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_body_enter_tree", "id"), &Area2D::_body_enter_tree);
@@ -598,6 +641,12 @@ void Area2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("overlaps_body", "body"), &Area2D::overlaps_body);
 	ClassDB::bind_method(D_METHOD("overlaps_area", "area"), &Area2D::overlaps_area);
 
+	ClassDB::bind_method(D_METHOD("set_audio_bus", "name"), &Area2D::set_audio_bus);
+	ClassDB::bind_method(D_METHOD("get_audio_bus"), &Area2D::get_audio_bus);
+
+	ClassDB::bind_method(D_METHOD("set_audio_bus_override", "enable"), &Area2D::set_audio_bus_override);
+	ClassDB::bind_method(D_METHOD("is_overriding_audio_bus"), &Area2D::is_overriding_audio_bus);
+
 	ClassDB::bind_method(D_METHOD("_body_inout"), &Area2D::_body_inout);
 	ClassDB::bind_method(D_METHOD("_area_inout"), &Area2D::_area_inout);
 
@@ -624,6 +673,10 @@ void Area2D::_bind_methods() {
 	ADD_GROUP("Collision", "collision_");
 	ADD_PROPERTYNO(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_collision_layer", "get_collision_layer");
 	ADD_PROPERTYNO(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_collision_mask", "get_collision_mask");
+
+	ADD_GROUP("Audio Bus", "audio_bus_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "audio_bus_override"), "set_audio_bus_override", "is_overriding_audio_bus");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "audio_bus_name", PROPERTY_HINT_ENUM, ""), "set_audio_bus", "get_audio_bus");
 }
 
 Area2D::Area2D()
@@ -642,6 +695,7 @@ Area2D::Area2D()
 	monitorable = false;
 	collision_mask = 1;
 	collision_layer = 1;
+	audio_bus_override = false;
 	set_monitoring(true);
 	set_monitorable(true);
 }

@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "audio_player.h"
 
-void AudioPlayer::_mix_audio() {
+void AudioStreamPlayer::_mix_audio() {
 
 	if (!stream_playback.is_valid()) {
 		return;
@@ -95,7 +95,7 @@ void AudioPlayer::_mix_audio() {
 	}
 }
 
-void AudioPlayer::_notification(int p_what) {
+void AudioStreamPlayer::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
@@ -111,7 +111,7 @@ void AudioPlayer::_notification(int p_what) {
 	}
 }
 
-void AudioPlayer::set_stream(Ref<AudioStream> p_stream) {
+void AudioStreamPlayer::set_stream(Ref<AudioStream> p_stream) {
 
 	ERR_FAIL_COND(!p_stream.is_valid());
 	AudioServer::get_singleton()->lock();
@@ -136,21 +136,21 @@ void AudioPlayer::set_stream(Ref<AudioStream> p_stream) {
 	AudioServer::get_singleton()->unlock();
 }
 
-Ref<AudioStream> AudioPlayer::get_stream() const {
+Ref<AudioStream> AudioStreamPlayer::get_stream() const {
 
 	return stream;
 }
 
-void AudioPlayer::set_volume_db(float p_volume) {
+void AudioStreamPlayer::set_volume_db(float p_volume) {
 
 	volume_db = p_volume;
 }
-float AudioPlayer::get_volume_db() const {
+float AudioStreamPlayer::get_volume_db() const {
 
 	return volume_db;
 }
 
-void AudioPlayer::play(float p_from_pos) {
+void AudioStreamPlayer::play(float p_from_pos) {
 
 	if (stream_playback.is_valid()) {
 		mix_volume_db = volume_db; //reset volume ramp
@@ -159,21 +159,21 @@ void AudioPlayer::play(float p_from_pos) {
 	}
 }
 
-void AudioPlayer::seek(float p_seconds) {
+void AudioStreamPlayer::seek(float p_seconds) {
 
 	if (stream_playback.is_valid()) {
 		setseek = p_seconds;
 	}
 }
 
-void AudioPlayer::stop() {
+void AudioStreamPlayer::stop() {
 
 	if (stream_playback.is_valid()) {
 		active = false;
 	}
 }
 
-bool AudioPlayer::is_playing() const {
+bool AudioStreamPlayer::is_playing() const {
 
 	if (stream_playback.is_valid()) {
 		return active && stream_playback->is_playing();
@@ -182,7 +182,7 @@ bool AudioPlayer::is_playing() const {
 	return false;
 }
 
-float AudioPlayer::get_pos() {
+float AudioStreamPlayer::get_pos() {
 
 	if (stream_playback.is_valid()) {
 		return stream_playback->get_pos();
@@ -191,14 +191,14 @@ float AudioPlayer::get_pos() {
 	return 0;
 }
 
-void AudioPlayer::set_bus(const StringName &p_bus) {
+void AudioStreamPlayer::set_bus(const StringName &p_bus) {
 
 	//if audio is active, must lock this
 	AudioServer::get_singleton()->lock();
 	bus = p_bus;
 	AudioServer::get_singleton()->unlock();
 }
-StringName AudioPlayer::get_bus() const {
+StringName AudioStreamPlayer::get_bus() const {
 
 	for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
 		if (AudioServer::get_singleton()->get_bus_name(i) == bus) {
@@ -208,38 +208,38 @@ StringName AudioPlayer::get_bus() const {
 	return "Master";
 }
 
-void AudioPlayer::set_autoplay(bool p_enable) {
+void AudioStreamPlayer::set_autoplay(bool p_enable) {
 
 	autoplay = p_enable;
 }
-bool AudioPlayer::is_autoplay_enabled() {
+bool AudioStreamPlayer::is_autoplay_enabled() {
 
 	return autoplay;
 }
 
-void AudioPlayer::set_mix_target(MixTarget p_target) {
+void AudioStreamPlayer::set_mix_target(MixTarget p_target) {
 
 	mix_target = p_target;
 }
 
-AudioPlayer::MixTarget AudioPlayer::get_mix_target() const {
+AudioStreamPlayer::MixTarget AudioStreamPlayer::get_mix_target() const {
 
 	return mix_target;
 }
 
-void AudioPlayer::_set_playing(bool p_enable) {
+void AudioStreamPlayer::_set_playing(bool p_enable) {
 
 	if (p_enable)
 		play();
 	else
 		stop();
 }
-bool AudioPlayer::_is_active() const {
+bool AudioStreamPlayer::_is_active() const {
 
 	return active;
 }
 
-void AudioPlayer::_validate_property(PropertyInfo &property) const {
+void AudioStreamPlayer::_validate_property(PropertyInfo &property) const {
 
 	if (property.name == "bus") {
 
@@ -255,39 +255,39 @@ void AudioPlayer::_validate_property(PropertyInfo &property) const {
 	}
 }
 
-void AudioPlayer::_bus_layout_changed() {
+void AudioStreamPlayer::_bus_layout_changed() {
 
 	_change_notify();
 }
 
-void AudioPlayer::_bind_methods() {
+void AudioStreamPlayer::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_stream", "stream:AudioStream"), &AudioPlayer::set_stream);
-	ClassDB::bind_method(D_METHOD("get_stream"), &AudioPlayer::get_stream);
+	ClassDB::bind_method(D_METHOD("set_stream", "stream:AudioStream"), &AudioStreamPlayer::set_stream);
+	ClassDB::bind_method(D_METHOD("get_stream"), &AudioStreamPlayer::get_stream);
 
-	ClassDB::bind_method(D_METHOD("set_volume_db", "volume_db"), &AudioPlayer::set_volume_db);
-	ClassDB::bind_method(D_METHOD("get_volume_db"), &AudioPlayer::get_volume_db);
+	ClassDB::bind_method(D_METHOD("set_volume_db", "volume_db"), &AudioStreamPlayer::set_volume_db);
+	ClassDB::bind_method(D_METHOD("get_volume_db"), &AudioStreamPlayer::get_volume_db);
 
-	ClassDB::bind_method(D_METHOD("play", "from_pos"), &AudioPlayer::play, DEFVAL(0.0));
-	ClassDB::bind_method(D_METHOD("seek", "to_pos"), &AudioPlayer::seek);
-	ClassDB::bind_method(D_METHOD("stop"), &AudioPlayer::stop);
+	ClassDB::bind_method(D_METHOD("play", "from_pos"), &AudioStreamPlayer::play, DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("seek", "to_pos"), &AudioStreamPlayer::seek);
+	ClassDB::bind_method(D_METHOD("stop"), &AudioStreamPlayer::stop);
 
-	ClassDB::bind_method(D_METHOD("is_playing"), &AudioPlayer::is_playing);
-	ClassDB::bind_method(D_METHOD("get_pos"), &AudioPlayer::get_pos);
+	ClassDB::bind_method(D_METHOD("is_playing"), &AudioStreamPlayer::is_playing);
+	ClassDB::bind_method(D_METHOD("get_pos"), &AudioStreamPlayer::get_pos);
 
-	ClassDB::bind_method(D_METHOD("set_bus", "bus"), &AudioPlayer::set_bus);
-	ClassDB::bind_method(D_METHOD("get_bus"), &AudioPlayer::get_bus);
+	ClassDB::bind_method(D_METHOD("set_bus", "bus"), &AudioStreamPlayer::set_bus);
+	ClassDB::bind_method(D_METHOD("get_bus"), &AudioStreamPlayer::get_bus);
 
-	ClassDB::bind_method(D_METHOD("set_autoplay", "enable"), &AudioPlayer::set_autoplay);
-	ClassDB::bind_method(D_METHOD("is_autoplay_enabled"), &AudioPlayer::is_autoplay_enabled);
+	ClassDB::bind_method(D_METHOD("set_autoplay", "enable"), &AudioStreamPlayer::set_autoplay);
+	ClassDB::bind_method(D_METHOD("is_autoplay_enabled"), &AudioStreamPlayer::is_autoplay_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_mix_target", "mix_target"), &AudioPlayer::set_mix_target);
-	ClassDB::bind_method(D_METHOD("get_mix_target"), &AudioPlayer::get_mix_target);
+	ClassDB::bind_method(D_METHOD("set_mix_target", "mix_target"), &AudioStreamPlayer::set_mix_target);
+	ClassDB::bind_method(D_METHOD("get_mix_target"), &AudioStreamPlayer::get_mix_target);
 
-	ClassDB::bind_method(D_METHOD("_set_playing", "enable"), &AudioPlayer::_set_playing);
-	ClassDB::bind_method(D_METHOD("_is_active"), &AudioPlayer::_is_active);
+	ClassDB::bind_method(D_METHOD("_set_playing", "enable"), &AudioStreamPlayer::_set_playing);
+	ClassDB::bind_method(D_METHOD("_is_active"), &AudioStreamPlayer::_is_active);
 
-	ClassDB::bind_method(D_METHOD("_bus_layout_changed"), &AudioPlayer::_bus_layout_changed);
+	ClassDB::bind_method(D_METHOD("_bus_layout_changed"), &AudioStreamPlayer::_bus_layout_changed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_stream", "get_stream");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "volume_db", PROPERTY_HINT_RANGE, "-80,24"), "set_volume_db", "get_volume_db");
@@ -297,7 +297,7 @@ void AudioPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
 }
 
-AudioPlayer::AudioPlayer() {
+AudioStreamPlayer::AudioStreamPlayer() {
 
 	mix_volume_db = 0;
 	volume_db = 0;
@@ -309,5 +309,5 @@ AudioPlayer::AudioPlayer() {
 	AudioServer::get_singleton()->connect("bus_layout_changed", this, "_bus_layout_changed");
 }
 
-AudioPlayer::~AudioPlayer() {
+AudioStreamPlayer::~AudioStreamPlayer() {
 }

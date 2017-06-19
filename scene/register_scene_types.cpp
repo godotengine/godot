@@ -111,6 +111,7 @@
 #include "scene/2d/ray_cast_2d.h"
 //#include "scene/2d/sound_player_2d.h"
 //#include "scene/2d/sample_player_2d.h"
+#include "scene/2d/audio_stream_player_2d.h"
 #include "scene/2d/canvas_modulate.h"
 #include "scene/2d/navigation2d.h"
 #include "scene/2d/remote_transform_2d.h"
@@ -591,7 +592,8 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); //may take time to init
 
-	ClassDB::register_class<AudioPlayer>();
+	ClassDB::register_class<AudioStreamPlayer>();
+	ClassDB::register_class<AudioStreamPlayer2D>();
 	ClassDB::register_virtual_class<VideoStream>();
 	ClassDB::register_class<AudioStreamSample>();
 
