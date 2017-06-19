@@ -2263,6 +2263,81 @@ void Image::blend_rect(const Image &p_src, const Rect2 &p_src_rect, const Point2
 	}
 }
 
+void Image::blend_rect_mask(const Image &p_src, const Image &p_mask, const Rect2 &p_src_rect, const Point2 &p_dest) {
+
+	int dsize = data.size();
+	int srcdsize = p_src.data.size();
+	int maskdsize = p_mask.data.size();
+	int dst_data_size = data.size();
+	ERR_FAIL_COND(dsize == 0);
+	ERR_FAIL_COND(srcdsize == 0);
+	ERR_FAIL_COND(maskdsize == 0);
+	ERR_FAIL_COND(dst_data_size == 0);
+	ERR_FAIL_COND(p_src.width != p_mask.width);
+	ERR_FAIL_COND(p_src.height != p_mask.height);
+
+	Rect2 rrect = Rect2(0, 0, p_src.width, p_src.height).clip(p_src_rect);
+
+	DVector<uint8_t>::Write wp = data.write();
+	unsigned char *dst_data_ptr = wp.ptr();
+
+	DVector<uint8_t>::Read rp = p_src.data.read();
+	const unsigned char *src_data_ptr = rp.ptr();
+
+	DVector<uint8_t>::Read mrp = p_mask.data.read();
+	const unsigned char *mask_data_ptr = mrp.ptr();
+
+	if (format == FORMAT_INDEXED || format == FORMAT_INDEXED || p_src.format == FORMAT_INDEXED || p_src.format == FORMAT_INDEXED_ALPHA) {
+
+		return;
+
+	} else {
+
+		for (int i = 0; i < rrect.size.y; i++) {
+
+			if (i + p_dest.y < 0 || i + p_dest.y >= height)
+				continue;
+			for (int j = 0; j < rrect.size.x; j++) {
+
+				if (j + p_dest.x < 0 || j + p_dest.x >= width)
+					continue;
+
+				BColor msk = p_mask._get_pixel(rrect.pos.x + j, rrect.pos.y + i, mask_data_ptr, maskdsize);
+				if (msk.a != 0) {
+					BColor src = p_src._get_pixel(rrect.pos.x + j, rrect.pos.y + i, src_data_ptr, srcdsize);
+					BColor dst = _get_pixel(p_dest.x + j, p_dest.y + i, dst_data_ptr, dst_data_size);
+					float ba = (float) dst.a / 255.0;
+					float fa = (float) src.a / 255.0;
+					dst.r = (uint8_t) (fa*src.r + ba*(1.0 - fa) * dst.r);
+					dst.g = (uint8_t) (fa*src.g + ba*(1.0 - fa) * dst.g);
+					dst.b = (uint8_t) (fa*src.b + ba*(1.0 - fa) * dst.b);
+					dst.a = (uint8_t) (255.0 * (fa + ba * (1.0 - fa)));
+					_put_pixel(p_dest.x + j, p_dest.y + i, dst, dst_data_ptr);
+				}
+			}
+		}
+	}
+}
+
+void Image::fill(const Color &p_color) {
+	int dsize = data.size();
+	ERR_FAIL_COND(dsize == 0);
+
+	DVector<uint8_t>::Write wp = data.write();
+	unsigned char *dst_data_ptr = wp.ptr();
+	
+	BColor c = BColor(p_color.r*255, p_color.g*255, p_color.b*255, p_color.a*255);
+
+	for (int i = 0; i < height; i++) {
+
+		for (int j = 0; j < width; j++) {
+
+			_put_pixel(j, i, c, dst_data_ptr);
+		}
+	}
+	
+}
+
 Image (*Image::_png_mem_loader_func)(const uint8_t *, int) = NULL;
 Image (*Image::_jpg_mem_loader_func)(const uint8_t *, int) = NULL;
 
