@@ -46,6 +46,14 @@ uint32_t Math::rand_from_seed(uint64_t *seed) {
 	return r;
 }
 
+uint64_t Math::randomize_from_seed(uint64_t seed) {
+	return OS::get_singleton()->get_ticks_usec() * seed + PCG_DEFAULT_INC_64;
+}
+
+uint64_t Math::get_seed() {
+	return default_pcg.state;
+}
+
 void Math::seed(uint64_t x) {
 	default_pcg.state = x;
 }

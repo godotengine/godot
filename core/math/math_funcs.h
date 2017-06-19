@@ -51,7 +51,7 @@ class Math {
 public:
 	Math() {} // useless to instance
 
-	static const uint64_t RANDOM_MAX = 4294967295;
+	static const uint64_t RANDOM_MAX = 0xffffffff;
 
 	static _ALWAYS_INLINE_ double sin(double p_x) { return ::sin(p_x); }
 	static _ALWAYS_INLINE_ float sin(float p_x) { return ::sinf(p_x); }
@@ -176,6 +176,8 @@ public:
 	static void seed(uint64_t x);
 	static void randomize();
 	static uint32_t rand_from_seed(uint64_t *seed);
+	static uint64_t randomize_from_seed(uint64_t seed);
+	static uint64_t get_seed();
 	static uint32_t rand();
 	static _ALWAYS_INLINE_ double randf() { return (double)rand() / (double)Math::RANDOM_MAX; }
 	static _ALWAYS_INLINE_ float randd() { return (float)rand() / (float)Math::RANDOM_MAX; }

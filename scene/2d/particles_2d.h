@@ -117,6 +117,7 @@ public:
 private:
 	float param[PARAM_MAX];
 	float randomness[PARAM_MAX];
+	uint64_t random_seed;
 
 	struct Particle {
 		bool active;
@@ -124,10 +125,8 @@ private:
 		Vector2 velocity;
 		float rot;
 		float frame;
-		uint64_t seed;
 		Particle() {
 			active = false;
-			seed = 123465789;
 			rot = 0;
 			frame = 0;
 		}

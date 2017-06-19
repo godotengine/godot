@@ -327,10 +327,8 @@ void Particles2D::_process_particles(float p_delta) {
 						p.pos += Vector2(Math::random(-extents.x, extents.x), Math::random(-extents.y, extents.y));
 					}
 				}
-				p.seed = Math::rand() % 12345678;
-				uint64_t rand_seed = p.seed * (i + 1);
 
-				float angle = Math::deg2rad(param[PARAM_DIRECTION] + _rand_from_seed(&rand_seed) * param[PARAM_SPREAD]);
+				float angle = Math::deg2rad(param[PARAM_DIRECTION] + _rand_from_seed(&random_seed) * param[PARAM_SPREAD]);
 
 				p.velocity = Vector2(Math::sin(angle), Math::cos(angle));
 				if (!local_space) {
@@ -338,13 +336,13 @@ void Particles2D::_process_particles(float p_delta) {
 					p.velocity = xform.basis_xform(p.velocity).normalized();
 				}
 
-				p.velocity *= param[PARAM_LINEAR_VELOCITY] + param[PARAM_LINEAR_VELOCITY] * _rand_from_seed(&rand_seed) * randomness[PARAM_LINEAR_VELOCITY];
+				p.velocity *= param[PARAM_LINEAR_VELOCITY] + param[PARAM_LINEAR_VELOCITY] * _rand_from_seed(&random_seed) * randomness[PARAM_LINEAR_VELOCITY];
 				p.velocity += initial_velocity;
 				p.active = true;
-				p.rot = Math::deg2rad(param[PARAM_INITIAL_ANGLE] + param[PARAM_INITIAL_ANGLE] * randomness[PARAM_INITIAL_ANGLE] * _rand_from_seed(&rand_seed));
+				p.rot = Math::deg2rad(param[PARAM_INITIAL_ANGLE] + param[PARAM_INITIAL_ANGLE] * randomness[PARAM_INITIAL_ANGLE] * _rand_from_seed(&random_seed));
 				active_count++;
 
-				p.frame = Math::fmod(param[PARAM_ANIM_INITIAL_POS] + randomness[PARAM_ANIM_INITIAL_POS] * _rand_from_seed(&rand_seed), 1.0f);
+				p.frame = Math::fmod(param[PARAM_ANIM_INITIAL_POS] + randomness[PARAM_ANIM_INITIAL_POS] * _rand_from_seed(&random_seed), 1.0f);
 
 			} else {
 
@@ -356,18 +354,16 @@ void Particles2D::_process_particles(float p_delta) {
 			if (!p.active)
 				continue;
 
-			uint64_t rand_seed = p.seed * (i + 1);
-
 			Vector2 force;
 
 			//apply gravity
-			float gravity_dir = Math::deg2rad(param[PARAM_GRAVITY_DIRECTION] + 180 * randomness[PARAM_GRAVITY_DIRECTION] * _rand_from_seed(&rand_seed));
-			force += Vector2(Math::sin(gravity_dir), Math::cos(gravity_dir)) * (param[PARAM_GRAVITY_STRENGTH] + param[PARAM_GRAVITY_STRENGTH] * randomness[PARAM_GRAVITY_STRENGTH] * _rand_from_seed(&rand_seed));
+			float gravity_dir = Math::deg2rad(param[PARAM_GRAVITY_DIRECTION] + 180 * randomness[PARAM_GRAVITY_DIRECTION] * _rand_from_seed(&random_seed));
+			force += Vector2(Math::sin(gravity_dir), Math::cos(gravity_dir)) * (param[PARAM_GRAVITY_STRENGTH] + param[PARAM_GRAVITY_STRENGTH] * randomness[PARAM_GRAVITY_STRENGTH] * _rand_from_seed(&random_seed));
 			//apply radial
 			Vector2 rvec = (p.pos - emissor_offset).normalized();
-			force += rvec * (param[PARAM_RADIAL_ACCEL] + param[PARAM_RADIAL_ACCEL] * randomness[PARAM_RADIAL_ACCEL] * _rand_from_seed(&rand_seed));
+			force += rvec * (param[PARAM_RADIAL_ACCEL] + param[PARAM_RADIAL_ACCEL] * randomness[PARAM_RADIAL_ACCEL] * _rand_from_seed(&random_seed));
 			//apply orbit
-			float orbitvel = (param[PARAM_ORBIT_VELOCITY] + param[PARAM_ORBIT_VELOCITY] * randomness[PARAM_ORBIT_VELOCITY] * _rand_from_seed(&rand_seed));
+			float orbitvel = (param[PARAM_ORBIT_VELOCITY] + param[PARAM_ORBIT_VELOCITY] * randomness[PARAM_ORBIT_VELOCITY] * _rand_from_seed(&random_seed));
 			if (orbitvel != 0) {
 				Vector2 rel = p.pos - xform.elements[2];
 				Transform2D rot(orbitvel * frame_time, Vector2());
@@ -375,7 +371,7 @@ void Particles2D::_process_particles(float p_delta) {
 			}
 
 			Vector2 tvec = rvec.tangent();
-			force += tvec * (param[PARAM_TANGENTIAL_ACCEL] + param[PARAM_TANGENTIAL_ACCEL] * randomness[PARAM_TANGENTIAL_ACCEL] * _rand_from_seed(&rand_seed));
+			force += tvec * (param[PARAM_TANGENTIAL_ACCEL] + param[PARAM_TANGENTIAL_ACCEL] * randomness[PARAM_TANGENTIAL_ACCEL] * _rand_from_seed(&random_seed));
 
 			for (int j = 0; j < attractor_count; j++) {
 
@@ -400,7 +396,7 @@ void Particles2D::_process_particles(float p_delta) {
 			p.velocity += force * frame_time;
 
 			if (param[PARAM_DAMPING]) {
-				float dmp = param[PARAM_DAMPING] + param[PARAM_DAMPING] * randomness[PARAM_DAMPING] * _rand_from_seed(&rand_seed);
+				float dmp = param[PARAM_DAMPING] + param[PARAM_DAMPING] * randomness[PARAM_DAMPING] * _rand_from_seed(&random_seed);
 				float v = p.velocity.length();
 				v -= dmp * frame_time;
 				if (v <= 0) {
@@ -411,8 +407,8 @@ void Particles2D::_process_particles(float p_delta) {
 			}
 
 			p.pos += p.velocity * frame_time;
-			p.rot += Math::lerp(param[PARAM_SPIN_VELOCITY], param[PARAM_SPIN_VELOCITY] * randomness[PARAM_SPIN_VELOCITY] * _rand_from_seed(&rand_seed), randomness[PARAM_SPIN_VELOCITY]) * frame_time;
-			float anim_spd = param[PARAM_ANIM_SPEED_SCALE] + param[PARAM_ANIM_SPEED_SCALE] * randomness[PARAM_ANIM_SPEED_SCALE] * _rand_from_seed(&rand_seed);
+			p.rot += Math::lerp(param[PARAM_SPIN_VELOCITY], param[PARAM_SPIN_VELOCITY] * randomness[PARAM_SPIN_VELOCITY] * _rand_from_seed(&random_seed), randomness[PARAM_SPIN_VELOCITY]) * frame_time;
+			float anim_spd = param[PARAM_ANIM_SPEED_SCALE] + param[PARAM_ANIM_SPEED_SCALE] * randomness[PARAM_ANIM_SPEED_SCALE] * _rand_from_seed(&random_seed);
 			p.frame = Math::fposmod(p.frame + (frame_time / lifetime) * anim_spd, 1.0f);
 
 			active_count++;
@@ -501,8 +497,6 @@ void Particles2D::_notification(int p_what) {
 				else
 					ptime = (1.0 - ptime) + time_pos;
 
-				uint64_t rand_seed = p.seed * (i + 1);
-
 				Color color;
 
 				if (gradient.is_valid()) {
@@ -512,7 +506,7 @@ void Particles2D::_notification(int p_what) {
 				}
 
 				{
-					float huerand = _rand_from_seed(&rand_seed);
+					float huerand = _rand_from_seed(&random_seed);
 					float huerot = param[PARAM_HUE_VARIATION] + randomness[PARAM_HUE_VARIATION] * huerand;
 
 					if (Math::abs(huerot) > CMP_EPSILON) {
@@ -531,8 +525,8 @@ void Particles2D::_notification(int p_what) {
 					}
 				}
 
-				float initial_size = param[PARAM_INITIAL_SIZE] + param[PARAM_INITIAL_SIZE] * _rand_from_seed(&rand_seed) * randomness[PARAM_INITIAL_SIZE];
-				float final_size = param[PARAM_FINAL_SIZE] + param[PARAM_FINAL_SIZE] * _rand_from_seed(&rand_seed) * randomness[PARAM_FINAL_SIZE];
+				float initial_size = param[PARAM_INITIAL_SIZE] + param[PARAM_INITIAL_SIZE] * _rand_from_seed(&random_seed) * randomness[PARAM_INITIAL_SIZE];
+				float final_size = param[PARAM_FINAL_SIZE] + param[PARAM_FINAL_SIZE] * _rand_from_seed(&random_seed) * randomness[PARAM_FINAL_SIZE];
 
 				float size_mult = initial_size * (1.0 - ptime) + final_size * ptime;
 
@@ -1126,13 +1120,14 @@ Particles2D::Particles2D() {
 	time = 0;
 	lifetime = 2;
 	emitting = false;
-	particles.resize(32);
+	this->set_amount(32);
 	active_count = -1;
 	set_emitting(true);
 	process_mode = PROCESS_IDLE;
 	local_space = true;
 	preprocess = 0;
 	time_scale = 1.0;
+	random_seed = Math::randomize_from_seed(Math::get_seed());
 
 	flip_h = false;
 	flip_v = false;
