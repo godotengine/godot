@@ -1011,7 +1011,7 @@ void VisualScriptEditor::_member_button(Object *p_item, int p_column, int p_butt
 				}
 
 				Rect2 pos = members->get_item_rect(ti);
-				new_function_menu->set_position(members->get_global_position() + pos.pos + Vector2(0, pos.size.y));
+				new_function_menu->set_position(members->get_global_position() + pos.position + Vector2(0, pos.size.y));
 				new_function_menu->popup();
 				return;
 			} else if (p_button == 0) {
@@ -2238,6 +2238,10 @@ void VisualScriptEditor::add_callback(const String &p_function, PoolStringArray 
 	graph->call_deferred("set_scroll_ofs", script->get_function_scroll(edited_func)); //for first time it might need to be later
 
 	//undo_redo->clear_history();
+}
+
+bool VisualScriptEditor::show_members_overview() {
+	return false;
 }
 
 void VisualScriptEditor::update_settings() {

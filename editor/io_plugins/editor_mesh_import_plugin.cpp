@@ -262,7 +262,7 @@ public:
 
 			imd->add_source(EditorImportPlugin::validate_source_path(meshes[i]));
 
-			String file_path = dst.plus_file(meshes[i].get_file().get_basename()+".msh");
+			String file_path = dst.plus_file(meshes[i].get_file().get_basename()+".mesh");
 
 			plugin->import(file_path,imd);
 		}

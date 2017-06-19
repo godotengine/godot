@@ -790,19 +790,19 @@ void ScriptEditorDebugger::_performance_draw() {
 
 		Point2i p(i % cols, i / cols);
 		Rect2i r(p * s, s);
-		r.pos += Point2(margin, margin);
+		r.position += Point2(margin, margin);
 		r.size -= Point2(margin, margin) * 2.0;
 		perf_draw->draw_style_box(graph_sb, r);
-		r.pos += graph_sb->get_offset();
+		r.position += graph_sb->get_offset();
 		r.size -= graph_sb->get_minimum_size();
 		int pi = which[i];
 		Color c = Color(0.7, 0.9, 0.5);
 		c.set_hsv(Math::fmod(c.get_h() + pi * 0.7654, 1), c.get_s(), c.get_v());
 
 		c.a = 0.8;
-		perf_draw->draw_string(graph_font, r.pos + Point2(0, graph_font->get_ascent()), perf_items[pi]->get_text(0), c, r.size.x);
+		perf_draw->draw_string(graph_font, r.position + Point2(0, graph_font->get_ascent()), perf_items[pi]->get_text(0), c, r.size.x);
 		c.a = 0.6;
-		perf_draw->draw_string(graph_font, r.pos + Point2(graph_font->get_char_size('X').width, graph_font->get_ascent() + graph_font->get_height()), perf_items[pi]->get_text(1), c, r.size.y);
+		perf_draw->draw_string(graph_font, r.position + Point2(graph_font->get_char_size('X').width, graph_font->get_ascent() + graph_font->get_height()), perf_items[pi]->get_text(1), c, r.size.y);
 
 		float spacing = point_sep / float(cols);
 		float from = r.size.width;
@@ -819,7 +819,7 @@ void ScriptEditorDebugger::_performance_draw() {
 
 			c.a = 0.7;
 			if (E != perf_history.front())
-				perf_draw->draw_line(r.pos + Point2(from, h), r.pos + Point2(from + spacing, prev), c, 2.0);
+				perf_draw->draw_line(r.position + Point2(from, h), r.position + Point2(from + spacing, prev), c, 2.0);
 			prev = h;
 			E = E->next();
 			from -= spacing;
@@ -1035,14 +1035,17 @@ void ScriptEditorDebugger::start() {
 		EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
 	}
 
-	uint16_t port = GLOBAL_GET("network/debug/remote_port");
 	perf_history.clear();
 	for (int i = 0; i < Performance::MONITOR_MAX; i++) {
 
 		perf_max[i] = 0;
 	}
 
-	server->listen(port);
+	int remote_port = (int)EditorSettings::get_singleton()->get("network/debug/remote_port");
+	if (server->listen(remote_port) != OK) {
+		EditorNode::get_log()->add_message(String("** Error listening on port ") + itos(remote_port) + String(" **"));
+		return;
+	}
 	set_process(true);
 }
 

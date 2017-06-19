@@ -1831,10 +1831,10 @@ void postinitialize_handler(Object *p_object) {
 	p_object->_postinitialize();
 }
 
-HashMap<uint32_t, Object *> ObjectDB::instances;
-uint32_t ObjectDB::instance_counter = 1;
+HashMap<ObjectID, Object *> ObjectDB::instances;
+ObjectID ObjectDB::instance_counter = 1;
 HashMap<Object *, ObjectID, ObjectDB::ObjectPtrHash> ObjectDB::instance_checks;
-uint32_t ObjectDB::add_instance(Object *p_object) {
+ObjectID ObjectDB::add_instance(Object *p_object) {
 
 	ERR_FAIL_COND_V(p_object->get_instance_ID() != 0, 0);
 
@@ -1859,7 +1859,7 @@ void ObjectDB::remove_instance(Object *p_object) {
 
 	rw_lock->write_unlock();
 }
-Object *ObjectDB::get_instance(uint32_t p_instance_ID) {
+Object *ObjectDB::get_instance(ObjectID p_instance_ID) {
 
 	rw_lock->read_lock();
 	Object **obj = instances.getptr(p_instance_ID);
@@ -1874,7 +1874,7 @@ void ObjectDB::debug_objects(DebugFunc p_func) {
 
 	rw_lock->read_lock();
 
-	const uint32_t *K = NULL;
+	const ObjectID *K = NULL;
 	while ((K = instances.next(K))) {
 
 		p_func(instances[*K]);
@@ -1909,7 +1909,7 @@ void ObjectDB::cleanup() {
 
 		WARN_PRINT("ObjectDB Instances still exist!");
 		if (OS::get_singleton()->is_stdout_verbose()) {
-			const uint32_t *K = NULL;
+			const ObjectID *K = NULL;
 			while ((K = instances.next(K))) {
 
 				String node_name;

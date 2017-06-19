@@ -246,12 +246,12 @@ void SegmentShape2DSW::set_data(const Variant &p_data) {
 	ERR_FAIL_COND(p_data.get_type() != Variant::RECT2);
 
 	Rect2 r = p_data;
-	a = r.pos;
+	a = r.position;
 	b = r.size;
 	n = (b - a).tangent();
 
 	Rect2 aabb;
-	aabb.pos = a;
+	aabb.position = a;
 	aabb.expand_to(b);
 	if (aabb.size.x == 0)
 		aabb.size.x = 0.001;
@@ -263,7 +263,7 @@ void SegmentShape2DSW::set_data(const Variant &p_data) {
 Variant SegmentShape2DSW::get_data() const {
 
 	Rect2 r;
-	r.pos = a;
+	r.position = a;
 	r.size = b;
 	return r;
 }
@@ -621,13 +621,13 @@ bool ConvexPolygonShape2DSW::intersect_segment(const Vector2 &p_begin, const Vec
 real_t ConvexPolygonShape2DSW::get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const {
 
 	Rect2 aabb;
-	aabb.pos = points[0].pos * p_scale;
+	aabb.position = points[0].pos * p_scale;
 	for (int i = 0; i < point_count; i++) {
 
 		aabb.expand_to(points[i].pos * p_scale);
 	}
 
-	return p_mass * aabb.size.dot(aabb.size) / 12.0 + p_mass * (aabb.pos + aabb.size * 0.5).length_squared();
+	return p_mass * aabb.size.dot(aabb.size) / 12.0 + p_mass * (aabb.position + aabb.size * 0.5).length_squared();
 }
 
 void ConvexPolygonShape2DSW::set_data(const Variant &p_data) {
@@ -677,7 +677,7 @@ void ConvexPolygonShape2DSW::set_data(const Variant &p_data) {
 
 	ERR_FAIL_COND(point_count == 0);
 	Rect2 aabb;
-	aabb.pos = points[0].pos;
+	aabb.position = points[0].pos;
 	for (int i = 1; i < point_count; i++)
 		aabb.expand_to(points[i].pos);
 
@@ -942,7 +942,7 @@ void ConcavePolygonShape2DSW::set_data(const Variant &p_data) {
 		}
 
 		points.resize(pointmap.size());
-		aabb.pos = pointmap.front()->key();
+		aabb.position = pointmap.front()->key();
 		for (Map<Point2, int>::Element *E = pointmap.front(); E; E = E->next()) {
 
 			aabb.expand_to(E->key());
@@ -953,7 +953,7 @@ void ConcavePolygonShape2DSW::set_data(const Variant &p_data) {
 		main_vbh.resize(segments.size());
 		for (int i = 0; i < main_vbh.size(); i++) {
 
-			main_vbh[i].aabb.pos = points[segments[i].points[0]];
+			main_vbh[i].aabb.position = points[segments[i].points[0]];
 			main_vbh[i].aabb.expand_to(points[segments[i].points[1]]);
 			main_vbh[i].left = -1;
 			main_vbh[i].right = i;

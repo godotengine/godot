@@ -1,5 +1,7 @@
 language: cpp
 
+dist: trusty
+
 sudo: false
 
 compiler:
@@ -73,7 +75,6 @@ addons:
       # For style checks.
       - clang-format-3.9
 
-
 before_script:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update; brew install scons; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ] && [ "$GODOT_TARGET" = "android" ]; then
@@ -86,5 +87,9 @@ script:
   - if [ "$STATIC_CHECKS" = "yes" ]; then
       sh ./misc/travis/clang-format.sh;
     else
-      scons platform=$GODOT_TARGET CXX=$CXX openssl=builtin;
+      if [ "$TRAVIS_OS_NAME" = "windows" ]; then
+        scons platform=$GODOT_TARGET CXX=$CXX openssl=builtin;
+      else
+        scons platform=$GODOT_TARGET bits=64 CXX=$CXX openssl=builtin;
+      fi
     fi

@@ -252,8 +252,8 @@ void EditorHelpSearch::_confirmed() {
 		return;
 
 	String mdata = ti->get_metadata(0);
+	EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
 	emit_signal("go_to_help", mdata);
-	editor->call("_editor_select", EditorNode::EDITOR_SCRIPT); // in case EditorHelpSearch beeen invoked on top of other editor window
 	// go to that
 	hide();
 }
@@ -288,7 +288,6 @@ void EditorHelpSearch::_bind_methods() {
 
 EditorHelpSearch::EditorHelpSearch() {
 
-	editor = EditorNode::get_singleton();
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
 
@@ -362,8 +361,8 @@ void EditorHelpIndex::_tree_item_selected() {
 	if (!s)
 		return;
 
+	EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
 	emit_signal("open_class", s->get_text(0));
-
 	hide();
 
 	//_goto_desc(s->get_text(0));
@@ -1279,7 +1278,7 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 void EditorHelp::_request_help(const String &p_string) {
 	Error err = _goto_desc(p_string);
 	if (err == OK) {
-		editor->call("_editor_select", EditorNode::EDITOR_SCRIPT);
+		EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
 	}
 	//100 palabras
 }
@@ -1689,8 +1688,6 @@ void EditorHelp::_bind_methods() {
 
 EditorHelp::EditorHelp() {
 
-	editor = EditorNode::get_singleton();
-
 	VBoxContainer *vbc = this;
 
 	EDITOR_DEF("text_editor/help/sort_functions_alphabetically", true);
@@ -1786,7 +1783,7 @@ void EditorHelpBit::_bind_methods() {
 void EditorHelpBit::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-		add_style_override("panel", get_stylebox("normal", "TextEdit"));
+		add_style_override("panel", get_stylebox("ScriptPanel", "EditorStyles"));
 	}
 }
 

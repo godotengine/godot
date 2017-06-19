@@ -62,7 +62,7 @@ public:
 	LineCapMode end_cap_mode;
 	float width;
 	Color default_color;
-	ColorRamp *gradient;
+	Gradient *gradient;
 	LineTextureMode texture_mode;
 	float sharp_limit;
 	int round_precision;

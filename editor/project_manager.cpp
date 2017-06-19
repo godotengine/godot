@@ -203,10 +203,23 @@ private:
 					f->store_line("\n");
 					f->store_line("name=\"" + project_name->get_text() + "\"");
 					f->store_line("icon=\"res://icon.png\"");
-
+					f->store_line("[rendering]");
+					f->store_line("viewport/default_environment=\"res://default_env.tres\"");
 					memdelete(f);
 
 					ResourceSaver::save(dir.plus_file("/icon.png"), get_icon("DefaultProjectIcon", "EditorIcons"));
+
+					f = FileAccess::open(dir.plus_file("/default_env.tres"), FileAccess::WRITE);
+					if (!f) {
+						error->set_text(TTR("Couldn't create project.godot in project path."));
+					} else {
+						f->store_line("[gd_resource type=\"Environment\" load_steps=2 format=2]");
+						f->store_line("[sub_resource type=\"ProceduralSky\" id=1]");
+						f->store_line("[resource]");
+						f->store_line("background_mode = 2");
+						f->store_line("background_sky = SubResource( 1 )");
+						memdelete(f);
+					}
 				}
 
 			} else if (mode == MODE_INSTALL) {
@@ -901,8 +914,9 @@ void ProjectManager::_on_project_created(const String &dir) {
 		_update_scroll_pos(dir);
 	} else {
 		_load_recent_projects();
-		scroll->connect("draw", this, "_update_scroll_pos", varray(dir), CONNECT_ONESHOT);
+		_update_scroll_pos(dir);
 	}
+	_open_project();
 }
 
 void ProjectManager::_update_scroll_pos(const String &dir) {
@@ -1456,7 +1470,7 @@ ProjectListFilter::ProjectListFilter() {
 	_current_filter = FILTER_NAME;
 
 	filter_option = memnew(OptionButton);
-	filter_option->set_custom_minimum_size(Size2(80, 10));
+	filter_option->set_custom_minimum_size(Size2(80 * EDSCALE, 10 * EDSCALE));
 	filter_option->set_clip_text(true);
 	filter_option->connect("item_selected", this, "_filter_option_selected");
 	add_child(filter_option);

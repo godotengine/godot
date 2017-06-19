@@ -33,9 +33,9 @@
 #include "scene/main/node.h"
 #include "servers/audio/audio_stream.h"
 
-class AudioPlayer : public Node {
+class AudioStreamPlayer : public Node {
 
-	GDCLASS(AudioPlayer, Node)
+	GDCLASS(AudioStreamPlayer, Node)
 
 public:
 	enum MixTarget {
@@ -60,7 +60,7 @@ private:
 	MixTarget mix_target;
 
 	void _mix_audio();
-	static void _mix_audios(void *self) { reinterpret_cast<AudioPlayer *>(self)->_mix_audio(); }
+	static void _mix_audios(void *self) { reinterpret_cast<AudioStreamPlayer *>(self)->_mix_audio(); }
 
 	void _set_playing(bool p_enable);
 	bool _is_active() const;
@@ -94,9 +94,9 @@ public:
 	void set_mix_target(MixTarget p_target);
 	MixTarget get_mix_target() const;
 
-	AudioPlayer();
-	~AudioPlayer();
+	AudioStreamPlayer();
+	~AudioStreamPlayer();
 };
 
-VARIANT_ENUM_CAST(AudioPlayer::MixTarget)
+VARIANT_ENUM_CAST(AudioStreamPlayer::MixTarget)
 #endif // AUDIOPLAYER_H

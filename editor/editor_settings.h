@@ -159,6 +159,8 @@ public:
 	bool save_text_editor_theme();
 	bool save_text_editor_theme_as(String p_file);
 
+	Vector<String> get_script_templates(const String &p_extension);
+
 	void add_shortcut(const String &p_name, Ref<ShortCut> &p_shortcut);
 	bool is_shortcut(const String &p_name, const Ref<InputEvent> &p_event) const;
 	Ref<ShortCut> get_shortcut(const String &p_name) const;

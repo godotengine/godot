@@ -675,7 +675,12 @@ String EditorData::get_scene_title(int p_idx) const {
 		return "[empty]";
 	if (edited_scene[p_idx].root->get_filename() == "")
 		return "[unsaved]";
-	return edited_scene[p_idx].root->get_filename().get_file();
+	bool show_ext = EDITOR_DEF("interface/scene_tabs/show_extension", false);
+	String name = edited_scene[p_idx].root->get_filename().get_file();
+	if (!show_ext) {
+		name = name.get_basename();
+	}
+	return name;
 }
 
 String EditorData::get_scene_path(int p_idx) const {

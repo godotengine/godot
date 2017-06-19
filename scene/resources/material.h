@@ -43,7 +43,7 @@
 class Material : public Resource {
 
 	GDCLASS(Material, Resource);
-	RES_BASE_EXTENSION("mtl");
+	RES_BASE_EXTENSION("material");
 	OBJ_SAVE_TYPE(Material);
 
 	RID material;
@@ -89,17 +89,17 @@ class SpatialMaterial : public Material {
 public:
 	enum TextureParam {
 		TEXTURE_ALBEDO,
-		TEXTURE_SPECULAR,
+		TEXTURE_METALLIC,
+		TEXTURE_ROUGHNESS,
 		TEXTURE_EMISSION,
 		TEXTURE_NORMAL,
 		TEXTURE_RIM,
 		TEXTURE_CLEARCOAT,
 		TEXTURE_FLOWMAP,
 		TEXTURE_AMBIENT_OCCLUSION,
-		TEXTURE_HEIGHT,
+		TEXTURE_DEPTH,
 		TEXTURE_SUBSURFACE_SCATTERING,
 		TEXTURE_REFRACTION,
-		TEXTURE_REFRACTION_ROUGHNESS,
 		TEXTURE_DETAIL_MASK,
 		TEXTURE_DETAIL_ALBEDO,
 		TEXTURE_DETAIL_NORMAL,
@@ -120,7 +120,7 @@ public:
 		FEATURE_CLEARCOAT,
 		FEATURE_ANISOTROPY,
 		FEATURE_AMBIENT_OCCLUSION,
-		FEATURE_HEIGHT_MAPPING,
+		FEATURE_DEPTH_MAPPING,
 		FEATURE_SUBSURACE_SCATTERING,
 		FEATURE_REFRACTION,
 		FEATURE_DETAIL,
@@ -160,14 +160,9 @@ public:
 
 	enum DiffuseMode {
 		DIFFUSE_LAMBERT,
-		DIFFUSE_LAMBERT_WRAP,
+		DIFFUSE_HALF_LAMBERT,
 		DIFFUSE_OREN_NAYAR,
 		DIFFUSE_BURLEY,
-	};
-
-	enum SpecularMode {
-		SPECULAR_MODE_METALLIC,
-		SPECULAR_MODE_SPECULAR,
 	};
 
 	enum BillboardMode {
@@ -190,7 +185,7 @@ private:
 			uint32_t detail_blend_mode : 2;
 			uint32_t diffuse_mode : 2;
 			uint32_t invalid_key : 1;
-			uint32_t specular_mode : 1;
+			uint32_t deep_parallax : 1;
 			uint32_t billboard_mode : 2;
 		};
 
@@ -230,8 +225,9 @@ private:
 		}
 		mk.detail_blend_mode = detail_blend_mode;
 		mk.diffuse_mode = diffuse_mode;
-		mk.specular_mode = specular_mode;
 		mk.billboard_mode = billboard_mode;
+		mk.deep_parallax = deep_parallax ? 1 : 0;
+		;
 
 		return mk;
 	}
@@ -239,7 +235,7 @@ private:
 	struct ShaderNames {
 		StringName albedo;
 		StringName specular;
-		StringName metalness;
+		StringName metallic;
 		StringName roughness;
 		StringName emission;
 		StringName emission_energy;
@@ -249,10 +245,9 @@ private:
 		StringName clearcoat;
 		StringName clearcoat_gloss;
 		StringName anisotropy;
-		StringName height_scale;
+		StringName depth_scale;
 		StringName subsurface_scattering_strength;
 		StringName refraction;
-		StringName refraction_roughness;
 		StringName point_size;
 		StringName uv1_scale;
 		StringName uv1_offset;
@@ -261,6 +256,9 @@ private:
 		StringName particle_h_frames;
 		StringName particle_v_frames;
 		StringName particles_anim_loop;
+		StringName depth_min_layers;
+		StringName depth_max_layers;
+
 		StringName texture_names[TEXTURE_MAX];
 	};
 
@@ -275,8 +273,8 @@ private:
 	_FORCE_INLINE_ bool _is_shader_dirty() const;
 
 	Color albedo;
-	Color specular;
-	float metalness;
+	float specular;
+	float metallic;
 	float roughness;
 	Color emission;
 	float emission_energy;
@@ -286,10 +284,9 @@ private:
 	float clearcoat;
 	float clearcoat_gloss;
 	float anisotropy;
-	float height_scale;
+	float depth_scale;
 	float subsurface_scattering_strength;
 	float refraction;
-	float refraction_roughness;
 	float line_width;
 	float point_size;
 	int particles_anim_h_frames;
@@ -304,13 +301,16 @@ private:
 
 	DetailUV detail_uv;
 
+	bool deep_parallax;
+	int deep_parallax_min_layers;
+	int deep_parallax_max_layers;
+
 	BlendMode blend_mode;
 	BlendMode detail_blend_mode;
 	DepthDrawMode depth_draw_mode;
 	CullMode cull_mode;
 	bool flags[FLAG_MAX];
 	DiffuseMode diffuse_mode;
-	SpecularMode specular_mode;
 	BillboardMode billboard_mode;
 
 	bool features[FEATURE_MAX];
@@ -327,14 +327,11 @@ public:
 	void set_albedo(const Color &p_albedo);
 	Color get_albedo() const;
 
-	void set_specular_mode(SpecularMode p_mode);
-	SpecularMode get_specular_mode() const;
+	void set_specular(float p_specular);
+	float get_specular() const;
 
-	void set_specular(const Color &p_specular);
-	Color get_specular() const;
-
-	void set_metalness(float p_metalness);
-	float get_metalness() const;
+	void set_metallic(float p_metallic);
+	float get_metallic() const;
 
 	void set_roughness(float p_roughness);
 	float get_roughness() const;
@@ -363,17 +360,23 @@ public:
 	void set_anisotropy(float p_anisotropy);
 	float get_anisotropy() const;
 
-	void set_height_scale(float p_height_scale);
-	float get_height_scale() const;
+	void set_depth_scale(float p_depth_scale);
+	float get_depth_scale() const;
+
+	void set_depth_deep_parallax(bool p_enable);
+	bool is_depth_deep_parallax_enabled() const;
+
+	void set_depth_deep_parallax_min_layers(int p_layer);
+	int get_depth_deep_parallax_min_layers() const;
+
+	void set_depth_deep_parallax_max_layers(int p_layer);
+	int get_depth_deep_parallax_max_layers() const;
 
 	void set_subsurface_scattering_strength(float p_strength);
 	float get_subsurface_scattering_strength() const;
 
 	void set_refraction(float p_refraction);
 	float get_refraction() const;
-
-	void set_refraction_roughness(float p_refraction_roughness);
-	float get_refraction_roughness() const;
 
 	void set_line_width(float p_line_width);
 	float get_line_width() const;
@@ -447,7 +450,6 @@ VARIANT_ENUM_CAST(SpatialMaterial::DepthDrawMode)
 VARIANT_ENUM_CAST(SpatialMaterial::CullMode)
 VARIANT_ENUM_CAST(SpatialMaterial::Flags)
 VARIANT_ENUM_CAST(SpatialMaterial::DiffuseMode)
-VARIANT_ENUM_CAST(SpatialMaterial::SpecularMode)
 VARIANT_ENUM_CAST(SpatialMaterial::BillboardMode)
 
 //////////////////////

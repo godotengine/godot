@@ -197,20 +197,20 @@ bool Face3::intersects_aabb(const Rect3 &p_aabb) const {
 
 /** TEST FACE AXIS */
 
-#define TEST_AXIS(m_ax)                                       \
-	{                                                         \
-		real_t aabb_min = p_aabb.pos.m_ax;                    \
-		real_t aabb_max = p_aabb.pos.m_ax + p_aabb.size.m_ax; \
-		real_t tri_min, tri_max;                              \
-		for (int i = 0; i < 3; i++) {                         \
-			if (i == 0 || vertex[i].m_ax > tri_max)           \
-				tri_max = vertex[i].m_ax;                     \
-			if (i == 0 || vertex[i].m_ax < tri_min)           \
-				tri_min = vertex[i].m_ax;                     \
-		}                                                     \
-                                                              \
-		if (tri_max < aabb_min || aabb_max < tri_min)         \
-			return false;                                     \
+#define TEST_AXIS(m_ax)                                            \
+	{                                                              \
+		real_t aabb_min = p_aabb.position.m_ax;                    \
+		real_t aabb_max = p_aabb.position.m_ax + p_aabb.size.m_ax; \
+		real_t tri_min, tri_max;                                   \
+		for (int i = 0; i < 3; i++) {                              \
+			if (i == 0 || vertex[i].m_ax > tri_max)                \
+				tri_max = vertex[i].m_ax;                          \
+			if (i == 0 || vertex[i].m_ax < tri_min)                \
+				tri_min = vertex[i].m_ax;                          \
+		}                                                          \
+                                                                   \
+		if (tri_max < aabb_min || aabb_max < tri_min)              \
+			return false;                                          \
 	}
 
 	TEST_AXIS(x);

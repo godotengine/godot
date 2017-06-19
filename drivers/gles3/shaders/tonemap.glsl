@@ -6,12 +6,13 @@ layout(location=4) in vec2 uv_in;
 
 out vec2 uv_interp;
 
-
-
 void main() {
 
 	gl_Position = vertex_attrib;
 	uv_interp = uv_in;
+#ifdef V_FLIP
+	uv_interp.y = 1.0-uv_interp.y;
+#endif
 
 }
 
@@ -38,6 +39,19 @@ uniform highp sampler2D source_glow; //texunit:2
 uniform highp float glow_intensity;
 
 #endif
+
+#ifdef USE_BCS
+
+uniform vec3 bcs;
+
+#endif
+
+#ifdef USE_COLOR_CORRECTION
+
+uniform sampler2D color_correction; //texunit:3
+
+#endif
+
 
 layout(location = 0) out vec4 frag_color;
 
@@ -255,6 +269,20 @@ void main() {
 	color.rgb = mix( (vec3(1.0)+a)*pow(color.rgb,vec3(1.0/2.4))-a , 12.92*color.rgb , lessThan(color.rgb,vec3(0.0031308)));
 
 
+#ifdef USE_BCS
+
+	color.rgb = mix(vec3(0.0),color.rgb,bcs.x);
+	color.rgb = mix(vec3(0.5),color.rgb,bcs.y);
+	color.rgb = mix(vec3(dot(vec3(1.0),color.rgb)*0.33333),color.rgb,bcs.z);
+
+#endif
+
+#ifdef USE_COLOR_CORRECTION
+
+	color.r = texture(color_correction,vec2(color.r,0.0)).r;
+	color.g = texture(color_correction,vec2(color.g,0.0)).g;
+	color.b = texture(color_correction,vec2(color.b,0.0)).b;
+#endif
 
 
 	frag_color=vec4(color.rgb,1.0);

@@ -65,18 +65,20 @@ void Sprite::_notification(int p_what) {
 
 			Size2 s;
 			Rect2 src_rect;
+			bool filter_clip = false;
 
 			if (region) {
 
 				s = region_rect.size;
 				src_rect = region_rect;
+				filter_clip = region_filter_clip;
 			} else {
 				s = Size2(texture->get_size());
 				s = s / Size2(hframes, vframes);
 
 				src_rect.size = s;
-				src_rect.pos.x += float(frame % hframes) * s.x;
-				src_rect.pos.y += float(frame / hframes) * s.y;
+				src_rect.position.x += float(frame % hframes) * s.x;
+				src_rect.position.y += float(frame / hframes) * s.y;
 			}
 
 			Point2 ofs = offset;
@@ -93,7 +95,7 @@ void Sprite::_notification(int p_what) {
 			if (vflip)
 				dst_rect.size.y = -dst_rect.size.y;
 
-			texture->draw_rect_region(ci, dst_rect, src_rect);
+			texture->draw_rect_region(ci, dst_rect, src_rect, Color(1, 1, 1), false, normal_map, filter_clip);
 
 		} break;
 	}
@@ -109,15 +111,28 @@ void Sprite::set_texture(const Ref<Texture> &p_texture) {
 	}
 #endif
 	texture = p_texture;
+	/* this should no longer be needed in 3.0
 #ifdef DEBUG_ENABLED
 	if (texture.is_valid()) {
 		texture->set_flags(texture->get_flags()); //remove repeat from texture, it looks bad in sprites
 		texture->connect(CoreStringNames::get_singleton()->changed, this, SceneStringNames::get_singleton()->update);
 	}
 #endif
+*/
 	update();
 	emit_signal("texture_changed");
 	item_rect_changed();
+}
+
+void Sprite::set_normal_map(const Ref<Texture> &p_texture) {
+
+	normal_map = p_texture;
+	update();
+}
+
+Ref<Texture> Sprite::get_normal_map() const {
+
+	return normal_map;
 }
 
 Ref<Texture> Sprite::get_texture() const {
@@ -199,6 +214,15 @@ void Sprite::set_region_rect(const Rect2 &p_region_rect) {
 Rect2 Sprite::get_region_rect() const {
 
 	return region_rect;
+}
+
+void Sprite::set_region_filter_clip(bool p_enable) {
+	region_filter_clip = p_enable;
+	update();
+}
+
+bool Sprite::is_region_filter_clip_enabled() const {
+	return region_filter_clip;
 }
 
 void Sprite::set_frame(int p_frame) {
@@ -289,6 +313,9 @@ void Sprite::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture", "texture:Texture"), &Sprite::set_texture);
 	ClassDB::bind_method(D_METHOD("get_texture:Texture"), &Sprite::get_texture);
 
+	ClassDB::bind_method(D_METHOD("set_normal_map", "normal_map:Texture"), &Sprite::set_normal_map);
+	ClassDB::bind_method(D_METHOD("get_normal_map:Texture"), &Sprite::get_normal_map);
+
 	ClassDB::bind_method(D_METHOD("set_centered", "centered"), &Sprite::set_centered);
 	ClassDB::bind_method(D_METHOD("is_centered"), &Sprite::is_centered);
 
@@ -307,6 +334,9 @@ void Sprite::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_region_rect", "rect"), &Sprite::set_region_rect);
 	ClassDB::bind_method(D_METHOD("get_region_rect"), &Sprite::get_region_rect);
 
+	ClassDB::bind_method(D_METHOD("set_region_filter_clip", "enabled"), &Sprite::set_region_filter_clip);
+	ClassDB::bind_method(D_METHOD("is_region_filter_clip_enabled"), &Sprite::is_region_filter_clip_enabled);
+
 	ClassDB::bind_method(D_METHOD("set_frame", "frame"), &Sprite::set_frame);
 	ClassDB::bind_method(D_METHOD("get_frame"), &Sprite::get_frame);
 
@@ -320,6 +350,7 @@ void Sprite::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("texture_changed"));
 
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "normal_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_normal_map", "get_normal_map");
 	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");
@@ -327,8 +358,11 @@ void Sprite::_bind_methods() {
 	ADD_PROPERTYNO(PropertyInfo(Variant::INT, "vframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_vframes", "get_vframes");
 	ADD_PROPERTYNO(PropertyInfo(Variant::INT, "hframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_hframes", "get_hframes");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "frame", PROPERTY_HINT_SPRITE_FRAME), "set_frame", "get_frame");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "region"), "set_region", "is_region");
+
+	ADD_GROUP("Region", "region_");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "region_enabled"), "set_region", "is_region");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::RECT2, "region_rect"), "set_region_rect", "get_region_rect");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "region_filter_clip"), "set_region_filter_clip", "is_region_filter_clip_enabled");
 }
 
 Sprite::Sprite() {
@@ -337,6 +371,7 @@ Sprite::Sprite() {
 	hflip = false;
 	vflip = false;
 	region = false;
+	region_filter_clip = false;
 
 	frame = 0;
 

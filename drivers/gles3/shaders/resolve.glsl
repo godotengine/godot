@@ -20,7 +20,7 @@ in vec2 uv_interp;
 uniform sampler2D source_specular; //texunit:0
 uniform sampler2D source_ssr; //texunit:1
 
-uniform float stuff;
+uniform vec2 pixel_size;
 
 in vec2 uv2_interp;
 

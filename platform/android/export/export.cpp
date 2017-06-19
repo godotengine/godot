@@ -1714,7 +1714,7 @@ Error EditorExportPlatformAndroid::run(int p_device, int p_flags) {
 		args.push_back("--remove-all");
 		err = OS::get_singleton()->execute(adb,args,true,NULL,NULL,&rv);
 
-		int port = GlobalConfig::get_singleton()->get("network/debug/remote_port");
+		int port = (int)EditorSettings::get_singleton()->get("network/debug/remote_port");
 		args.clear();
 		args.push_back("reverse");
 		args.push_back("tcp:"+itos(port));
@@ -2993,7 +2993,7 @@ public:
 			args.push_back("--remove-all");
 			err = OS::get_singleton()->execute(adb, args, true, NULL, NULL, &rv);
 
-			int port = GlobalConfig::get_singleton()->get("network/debug/remote_port");
+			int port = (int)EditorSettings::get_singleton()->get("network/debug/remote_port");
 			args.clear();
 			args.push_back("reverse");
 			args.push_back("tcp:" + itos(port));

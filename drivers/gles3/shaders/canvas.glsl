@@ -6,8 +6,8 @@ layout(location=3) in vec4 color_attrib;
 
 #ifdef USE_TEXTURE_RECT
 
-layout(location=1) in highp vec4 dst_rect;
-layout(location=2) in highp vec4 src_rect;
+uniform vec4 dst_rect;
+uniform vec4 src_rect;
 
 #else
 
@@ -20,7 +20,7 @@ layout(location=4) in highp vec2 uv_attrib;
 layout(std140) uniform CanvasItemData { //ubo:0
 
 	highp mat4 projection_matrix;
-	highp vec4 time;
+	highp float time;
 };
 
 uniform highp mat4 modelview_matrix;
@@ -51,15 +51,19 @@ layout(std140) uniform LightData { //ubo:1
 
 out vec4 light_uv_interp;
 
-#if defined(NORMAL_USED)
+
 out vec4 local_rot;
-#endif
+
 
 #ifdef USE_SHADOWS
 out highp vec2 pos;
 #endif
 
+const bool at_light_pass = true;
+#else
+const bool at_light_pass = false;
 #endif
+
 
 
 VERTEX_SHADER_GLOBALS
@@ -121,7 +125,7 @@ VERTEX_SHADER_CODE
 	pos=outvec.xy;
 #endif
 
-#if defined(NORMAL_USED)
+
 	local_rot.xy=normalize( (modelview_matrix * ( extra_matrix * vec4(1.0,0.0,0.0,0.0) )).xy  );
 	local_rot.zw=normalize( (modelview_matrix * ( extra_matrix * vec4(0.0,1.0,0.0,0.0) )).xy  );
 #ifdef USE_TEXTURE_RECT
@@ -129,7 +133,7 @@ VERTEX_SHADER_CODE
 	local_rot.zw*=sign(src_rect.w);
 #endif
 
-#endif
+
 
 #endif
 
@@ -141,6 +145,7 @@ VERTEX_SHADER_CODE
 
 uniform mediump sampler2D color_texture; // texunit:0
 uniform highp vec2 color_texpixel_size;
+uniform mediump sampler2D normal_texture; // texunit:1
 
 in mediump vec2 uv_interp;
 in mediump vec4 color_interp;
@@ -155,7 +160,7 @@ uniform sampler2D screen_texture; // texunit:-3
 layout(std140) uniform CanvasItemData {
 
 	highp mat4 projection_matrix;
-	highp vec4 time;
+	highp float time;
 };
 
 
@@ -180,9 +185,8 @@ uniform lowp sampler2D light_texture; // texunit:-1
 in vec4 light_uv_interp;
 
 
-#if defined(NORMAL_USED)
 in vec4 local_rot;
-#endif
+
 
 #ifdef USE_SHADOWS
 
@@ -191,6 +195,9 @@ in highp vec2 pos;
 
 #endif
 
+const bool at_light_pass = true;
+#else
+const bool at_light_pass = false;
 #endif
 
 uniform mediump vec4 final_modulate;
@@ -211,11 +218,39 @@ MATERIAL_UNIFORMS
 
 #endif
 
+
+void light_compute(inout vec3 light,vec3 light_vec,float light_height,vec4 light_color,vec2 light_uv,vec4 shadow,vec3 normal,vec2 uv,vec2 screen_uv,vec4 color) {
+
+#if defined(USE_LIGHT_SHADER_CODE)
+
+LIGHT_SHADER_CODE
+
+#endif
+
+}
+
+#ifdef USE_TEXTURE_RECT
+
+uniform vec4 dst_rect;
+uniform vec4 src_rect;
+uniform bool clip_rect_uv;
+
+#endif
+
+uniform bool use_default_normal;
+
 void main() {
 
 	vec4 color = color_interp;
-#if defined(NORMAL_USED)
-	vec3 normal = vec3(0.0,0.0,1.0);
+	vec2 uv = uv_interp;
+
+#ifdef USE_TEXTURE_RECT
+	if (clip_rect_uv) {
+
+		vec2 half_texpixel = color_texpixel_size * 0.5;
+		uv = clamp(uv,src_rect.xy+half_texpixel,src_rect.xy+abs(src_rect.zw)-color_texpixel_size);
+	}
+
 #endif
 
 #if !defined(COLOR_USED)
@@ -223,14 +258,33 @@ void main() {
 
 #ifdef USE_DISTANCE_FIELD
 	const float smoothing = 1.0/32.0;
-	float distance = texture(color_texture, uv_interp).a;
+	float distance = textureLod(color_texture, uv,0.0).a;
 	color.a = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance) * color.a;
 #else
-	color *= texture( color_texture,  uv_interp );
+	color *= texture( color_texture,  uv );
 
 #endif
 
 #endif
+
+	vec3 normal;
+
+#if defined(NORMAL_USED)
+
+	bool normal_used = true;
+#else
+	bool normal_used = false;
+#endif
+
+	if (use_default_normal) {
+		normal.xy = textureLod(normal_texture, uv,0.0).xy * 2.0 - 1.0;
+		normal.z = sqrt(1.0-dot(normal.xy,normal.xy));
+		normal_used=true;
+	} else {
+		normal = vec3(0.0,0.0,1.0);
+	}
+
+
 
 #if defined(ENABLE_SCREEN_UV)
 	vec2 screen_uv = gl_FragCoord.xy*screen_uv_mult;
@@ -266,9 +320,9 @@ FRAGMENT_SHADER_CODE
 
 	vec2 light_vec = light_uv_interp.zw;; //for shadow and normal mapping
 
-#if defined(NORMAL_USED)
-	normal.xy =  mat2(local_rot.xy,local_rot.zw) * normal.xy;
-#endif
+	if (normal_used) {
+		normal.xy =  mat2(local_rot.xy,local_rot.zw) * normal.xy;
+	}
 
 	float att=1.0;
 
@@ -285,18 +339,15 @@ FRAGMENT_SHADER_CODE
 
 #if defined(USE_LIGHT_SHADER_CODE)
 //light is written by the light shader
-		{
-			vec4 light_out=light*color;
-LIGHT_SHADER_CODE
-			color=light_out;
-		}
+		light_compute(light,light_vec,light_height,light_color,light_uv,shadow,normal,uv,screen_uv,color);
 
 #else
 
-#if defined(NORMAL_USED)
-		vec3 light_normal = normalize(vec3(light_vec,-light_height));
-		light*=max(dot(-light_normal,normal),0.0);
-#endif
+		if (normal_used) {
+
+			vec3 light_normal = normalize(vec3(light_vec,-light_height));
+			light*=max(dot(-light_normal,normal),0.0);
+		}
 
 		color*=light;
 /*
@@ -373,7 +424,7 @@ LIGHT_SHADER_CODE
 
 #ifdef SHADOW_FILTER_NEAREST
 
-		SHADOW_TEST(su+shadowpixel_size);
+		SHADOW_TEST(su);
 
 #endif
 

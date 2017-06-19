@@ -513,7 +513,7 @@ class ConcavePolygonShape2DSW : public ConcaveShape2DSW {
 
 		_FORCE_INLINE_ bool operator()(const BVH &a, const BVH &b) const {
 
-			return (a.aabb.pos.x + a.aabb.size.x * 0.5) < (b.aabb.pos.x + b.aabb.size.x * 0.5);
+			return (a.aabb.position.x + a.aabb.size.x * 0.5) < (b.aabb.position.x + b.aabb.size.x * 0.5);
 		}
 	};
 
@@ -521,7 +521,7 @@ class ConcavePolygonShape2DSW : public ConcaveShape2DSW {
 
 		_FORCE_INLINE_ bool operator()(const BVH &a, const BVH &b) const {
 
-			return (a.aabb.pos.y + a.aabb.size.y * 0.5) < (b.aabb.pos.y + b.aabb.size.y * 0.5);
+			return (a.aabb.position.y + a.aabb.size.y * 0.5) < (b.aabb.position.y + b.aabb.size.y * 0.5);
 		}
 	};
 

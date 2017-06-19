@@ -413,4 +413,6 @@ public:
 	virtual ~OS();
 };
 
+VARIANT_ENUM_CAST(PowerState);
+
 #endif

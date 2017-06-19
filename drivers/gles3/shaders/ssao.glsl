@@ -12,7 +12,7 @@ void main() {
 [fragment]
 
 
-#define NUM_SAMPLES (11)
+#define NUM_SAMPLES (15)
 
 // If using depth mip levels, the log of the maximum pixel offset before we need to switch to a lower
 // miplevel to maintain reasonable spatial locality in the cache
@@ -25,8 +25,20 @@ void main() {
 
 // This is the number of turns around the circle that the spiral pattern makes.  This should be prime to prevent
 // taps from lining up.  This particular choice was tuned for NUM_SAMPLES == 9
-#define NUM_SPIRAL_TURNS (7)
 
+const int ROTATIONS[] = int[]( 1, 1, 2, 3, 2, 5, 2, 3, 2,
+3, 3, 5, 5, 3, 4, 7, 5, 5, 7,
+9, 8, 5, 5, 7, 7, 7, 8, 5, 8,
+11, 12, 7, 10, 13, 8, 11, 8, 7, 14,
+11, 11, 13, 12, 13, 19, 17, 13, 11, 18,
+19, 11, 11, 14, 17, 21, 15, 16, 17, 18,
+13, 17, 11, 17, 19, 18, 25, 18, 19, 19,
+29, 21, 19, 27, 31, 29, 21, 18, 17, 29,
+31, 31, 23, 18, 25, 26, 25, 23, 19, 34,
+19, 27, 21, 25, 39, 29, 17, 21, 27 );
+
+//#define NUM_SPIRAL_TURNS (7)
+const int NUM_SPIRAL_TURNS = ROTATIONS[NUM_SAMPLES-1];
 
 uniform sampler2D source_depth; //texunit:0
 uniform highp usampler2D source_depth_mipmaps; //texunit:1

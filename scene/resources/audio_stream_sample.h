@@ -84,7 +84,7 @@ public:
 
 class AudioStreamSample : public AudioStream {
 	GDCLASS(AudioStreamSample, AudioStream)
-	RES_BASE_EXTENSION("smp")
+	RES_BASE_EXTENSION("sample")
 
 public:
 	enum Format {

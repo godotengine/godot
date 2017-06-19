@@ -44,7 +44,7 @@ public:
 
 		BG_CLEAR_COLOR,
 		BG_COLOR,
-		BG_SKYBOX,
+		BG_SKY,
 		BG_CANVAS,
 		BG_KEEP,
 		BG_MAX
@@ -74,14 +74,14 @@ private:
 	RID environment;
 
 	BGMode bg_mode;
-	Ref<SkyBox> bg_skybox;
-	float bg_skybox_scale;
+	Ref<Sky> bg_sky;
+	float bg_sky_scale;
 	Color bg_color;
 	float bg_energy;
 	int bg_canvas_max_layer;
 	Color ambient_color;
 	float ambient_energy;
-	float ambient_skybox_contribution;
+	float ambient_sky_contribution;
 
 	ToneMapper tone_mapper;
 	float tonemap_exposure;
@@ -100,10 +100,9 @@ private:
 
 	bool ssr_enabled;
 	int ssr_max_steps;
-	float ssr_accel;
-	float ssr_fade;
+	float ssr_fade_in;
+	float ssr_fade_out;
 	float ssr_depth_tolerance;
-	bool ssr_smooth;
 	bool ssr_roughness;
 
 	bool ssao_enabled;
@@ -138,30 +137,47 @@ private:
 	float dof_blur_near_amount;
 	DOFBlurQuality dof_blur_near_quality;
 
+	bool fog_enabled;
+	Color fog_color;
+	Color fog_sun_color;
+	float fog_sun_amount;
+
+	bool fog_depth_enabled;
+	float fog_depth_begin;
+	float fog_depth_curve;
+
+	bool fog_transmit_enabled;
+	float fog_transmit_curve;
+
+	bool fog_height_enabled;
+	float fog_height_min;
+	float fog_height_max;
+	float fog_height_curve;
+
 protected:
 	static void _bind_methods();
 	virtual void _validate_property(PropertyInfo &property) const;
 
 public:
 	void set_background(BGMode p_bg);
-	void set_skybox(const Ref<SkyBox> &p_skybox);
-	void set_skybox_scale(float p_scale);
+	void set_sky(const Ref<Sky> &p_sky);
+	void set_sky_scale(float p_scale);
 	void set_bg_color(const Color &p_color);
 	void set_bg_energy(float p_energy);
 	void set_canvas_max_layer(int p_max_layer);
 	void set_ambient_light_color(const Color &p_color);
 	void set_ambient_light_energy(float p_energy);
-	void set_ambient_light_skybox_contribution(float p_energy);
+	void set_ambient_light_sky_contribution(float p_energy);
 
 	BGMode get_background() const;
-	Ref<SkyBox> get_skybox() const;
-	float get_skybox_scale() const;
+	Ref<Sky> get_sky() const;
+	float get_sky_scale() const;
 	Color get_bg_color() const;
 	float get_bg_energy() const;
 	int get_canvas_max_layer() const;
 	Color get_ambient_light_color() const;
 	float get_ambient_light_energy() const;
-	float get_ambient_light_skybox_contribution() const;
+	float get_ambient_light_sky_contribution() const;
 
 	void set_tonemapper(ToneMapper p_tone_mapper);
 	ToneMapper get_tonemapper() const;
@@ -208,17 +224,14 @@ public:
 	void set_ssr_max_steps(int p_steps);
 	int get_ssr_max_steps() const;
 
-	void set_ssr_accel(float p_accel);
-	float get_ssr_accel() const;
+	void set_ssr_fade_in(float p_transition);
+	float get_ssr_fade_in() const;
 
-	void set_ssr_fade(float p_transition);
-	float get_ssr_fade() const;
+	void set_ssr_fade_out(float p_transition);
+	float get_ssr_fade_out() const;
 
 	void set_ssr_depth_tolerance(float p_depth_tolerance);
 	float get_ssr_depth_tolerance() const;
-
-	void set_ssr_smooth(bool p_enable);
-	bool is_ssr_smooth() const;
 
 	void set_ssr_rough(bool p_enable);
 	bool is_ssr_rough() const;
@@ -306,6 +319,45 @@ public:
 
 	void set_dof_blur_near_quality(DOFBlurQuality p_quality);
 	DOFBlurQuality get_dof_blur_near_quality() const;
+
+	void set_fog_enabled(bool p_enabled);
+	bool is_fog_enabled() const;
+
+	void set_fog_color(const Color &p_color);
+	Color get_fog_color() const;
+
+	void set_fog_sun_color(const Color &p_color);
+	Color get_fog_sun_color() const;
+
+	void set_fog_sun_amount(float p_amount);
+	float get_fog_sun_amount() const;
+
+	void set_fog_depth_enabled(bool p_enabled);
+	bool is_fog_depth_enabled() const;
+
+	void set_fog_depth_begin(float p_distance);
+	float get_fog_depth_begin() const;
+
+	void set_fog_depth_curve(float p_curve);
+	float get_fog_depth_curve() const;
+
+	void set_fog_transmit_enabled(bool p_enabled);
+	bool is_fog_transmit_enabled() const;
+
+	void set_fog_transmit_curve(float p_curve);
+	float get_fog_transmit_curve() const;
+
+	void set_fog_height_enabled(bool p_enabled);
+	bool is_fog_height_enabled() const;
+
+	void set_fog_height_min(float p_distance);
+	float get_fog_height_min() const;
+
+	void set_fog_height_max(float p_distance);
+	float get_fog_height_max() const;
+
+	void set_fog_height_curve(float p_distance);
+	float get_fog_height_curve() const;
 
 	virtual RID get_rid() const;
 

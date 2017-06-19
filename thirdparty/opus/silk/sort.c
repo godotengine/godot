@@ -33,7 +33,7 @@ POSSIBILITY OF SUCH DAMAGE.
 /* Best case:  O(n)   for an already sorted array            */
 /* Worst case: O(n^2) for an inversely sorted array          */
 /*                                                           */
-/* Shell short:    http://en.wikipedia.org/wiki/Shell_sort   */
+/* Shell short:    https://en.wikipedia.org/wiki/Shell_sort  */
 
 #include "SigProc_FIX.h"
 

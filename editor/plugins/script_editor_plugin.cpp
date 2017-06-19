@@ -38,7 +38,6 @@
 #include "os/file_access.h"
 #include "os/input.h"
 #include "os/keyboard.h"
-#include "os/keyboard.h"
 #include "os/os.h"
 #include "scene/main/viewport.h"
 
@@ -48,6 +47,7 @@ void ScriptEditorBase::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("name_changed"));
 	ADD_SIGNAL(MethodInfo("request_help_search", PropertyInfo(Variant::STRING, "topic")));
+	ADD_SIGNAL(MethodInfo("request_help_index"));
 	ADD_SIGNAL(MethodInfo("request_open_script_at_line", PropertyInfo(Variant::OBJECT, "script"), PropertyInfo(Variant::INT, "line")));
 	ADD_SIGNAL(MethodInfo("request_save_history"));
 	ADD_SIGNAL(MethodInfo("go_to_help", PropertyInfo(Variant::STRING, "what")));
@@ -410,7 +410,9 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 	c->set_meta("__editor_pass", ++edit_pass);
 	_update_history_arrows();
 	_update_script_colors();
+	_update_members_overview();
 	_update_selected_editor_menu();
+	_update_members_overview_visibility();
 }
 
 void ScriptEditor::_add_recent_script(String p_path) {
@@ -540,6 +542,7 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save) {
 	_update_history_arrows();
 
 	_update_script_names();
+	_update_members_overview_visibility();
 	_save_layout();
 }
 
@@ -1025,6 +1028,7 @@ void ScriptEditor::_notification(int p_what) {
 		editor->connect("script_add_function_request", this, "_add_callback");
 		editor->connect("resource_saved", this, "_res_saved_callback");
 		script_list->connect("item_selected", this, "_script_selected");
+		members_overview->connect("item_selected", this, "_members_overview_selected");
 		script_split->connect("dragged", this, "_script_split_dragged");
 		autosave_timer->connect("timeout", this, "_autosave_scripts");
 		{
@@ -1039,7 +1043,7 @@ void ScriptEditor::_notification(int p_what) {
 
 		EditorSettings::get_singleton()->connect("settings_changed", this, "_editor_settings_changed");
 		help_search->set_icon(get_icon("Help", "EditorIcons"));
-		site_search->set_icon(get_icon("GodotDocs", "EditorIcons"));
+		site_search->set_icon(get_icon("Instance", "EditorIcons"));
 		class_search->set_icon(get_icon("ClassList", "EditorIcons"));
 
 		script_forward->set_icon(get_icon("Forward", "EditorIcons"));
@@ -1051,6 +1055,7 @@ void ScriptEditor::_notification(int p_what) {
 		get_tree()->connect("tree_changed", this, "_tree_changed");
 		editor->connect("request_help", this, "_request_help");
 		editor->connect("request_help_search", this, "_help_search");
+		editor->connect("request_help_index", this, "_help_index");
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
@@ -1272,6 +1277,16 @@ void ScriptEditor::ensure_focus_current() {
 	se->ensure_focus();
 }
 
+void ScriptEditor::_members_overview_selected(int p_idx) {
+	Node *current = tab_container->get_child(tab_container->get_current_tab());
+	ScriptEditorBase *se = current->cast_to<ScriptEditorBase>();
+	if (!se) {
+		return;
+	}
+	se->goto_line(members_overview->get_item_metadata(p_idx));
+	se->ensure_focus();
+}
+
 void ScriptEditor::_script_selected(int p_idx) {
 
 	grab_focus_block = !Input::get_singleton()->is_mouse_button_pressed(1); //amazing hack, simply amazing
@@ -1340,6 +1355,37 @@ struct _ScriptEditorItemData {
 		return category == id.category ? sort_key < id.sort_key : category < id.category;
 	}
 };
+
+void ScriptEditor::_update_members_overview_visibility() {
+	Node *current = tab_container->get_child(tab_container->get_current_tab());
+	ScriptEditorBase *se = current->cast_to<ScriptEditorBase>();
+	if (!se) {
+		members_overview->set_visible(false);
+		return;
+	}
+
+	if (members_overview_enabled && se->show_members_overview()) {
+		members_overview->set_visible(true);
+	} else {
+		members_overview->set_visible(false);
+	}
+}
+
+void ScriptEditor::_update_members_overview() {
+	members_overview->clear();
+
+	Node *current = tab_container->get_child(tab_container->get_current_tab());
+	ScriptEditorBase *se = current->cast_to<ScriptEditorBase>();
+	if (!se) {
+		return;
+	}
+
+	Vector<String> functions = se->get_functions();
+	for (int i = 0; i < functions.size(); i++) {
+		members_overview->add_item(functions[i].get_slice(":", 0));
+		members_overview->set_item_metadata(i, functions[i].get_slice(":", 1).to_int() - 1);
+	}
+}
 
 void ScriptEditor::_update_script_colors() {
 
@@ -1484,6 +1530,7 @@ void ScriptEditor::_update_script_names() {
 		}
 	}
 
+	_update_members_overview();
 	_update_script_colors();
 }
 
@@ -1731,6 +1778,9 @@ void ScriptEditor::_editor_settings_changed() {
 	trim_trailing_whitespace_on_save = EditorSettings::get_singleton()->get("text_editor/files/trim_trailing_whitespace_on_save");
 	convert_indent_on_save = EditorSettings::get_singleton()->get("text_editor/indent/convert_indent_on_save");
 	use_space_indentation = EditorSettings::get_singleton()->get("text_editor/indent/type");
+
+	members_overview_enabled = EditorSettings::get_singleton()->get("text_editor/open_scripts/show_members_overview");
+	_update_members_overview_visibility();
 
 	float autosave_time = EditorSettings::get_singleton()->get("text_editor/files/autosave_interval_secs");
 	if (autosave_time > 0) {
@@ -2028,6 +2078,10 @@ void ScriptEditor::set_live_auto_reload_running_scripts(bool p_enabled) {
 	auto_reload_running_scripts = p_enabled;
 }
 
+void ScriptEditor::_help_index(String p_text) {
+	help_index->popup();
+}
+
 void ScriptEditor::_help_search(String p_text) {
 	help_search_dialog->popup(p_text);
 }
@@ -2069,6 +2123,7 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_goto_script_line", &ScriptEditor::_goto_script_line);
 	ClassDB::bind_method("_goto_script_line2", &ScriptEditor::_goto_script_line2);
 	ClassDB::bind_method("_help_search", &ScriptEditor::_help_search);
+	ClassDB::bind_method("_help_index", &ScriptEditor::_help_index);
 	ClassDB::bind_method("_save_history", &ScriptEditor::_save_history);
 
 	ClassDB::bind_method("_breaked", &ScriptEditor::_breaked);
@@ -2078,6 +2133,7 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_editor_settings_changed", &ScriptEditor::_editor_settings_changed);
 	ClassDB::bind_method("_update_script_names", &ScriptEditor::_update_script_names);
 	ClassDB::bind_method("_tree_changed", &ScriptEditor::_tree_changed);
+	ClassDB::bind_method("_members_overview_selected", &ScriptEditor::_members_overview_selected);
 	ClassDB::bind_method("_script_selected", &ScriptEditor::_script_selected);
 	ClassDB::bind_method("_script_created", &ScriptEditor::_script_created);
 	ClassDB::bind_method("_script_split_dragged", &ScriptEditor::_script_split_dragged);
@@ -2099,6 +2155,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	waiting_update_names = false;
 	pending_auto_reload = false;
 	auto_reload_running_scripts = false;
+	members_overview_enabled = true;
 	editor = p_editor;
 
 	menu_hb = memnew(HBoxContainer);
@@ -2108,10 +2165,19 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	add_child(script_split);
 	script_split->set_v_size_flags(SIZE_EXPAND_FILL);
 
+	list_split = memnew(VSplitContainer);
+	script_split->add_child(list_split);
+	list_split->set_v_size_flags(SIZE_EXPAND_FILL);
+
 	script_list = memnew(ItemList);
-	script_split->add_child(script_list);
+	list_split->add_child(script_list);
 	script_list->set_custom_minimum_size(Size2(0, 0));
 	script_split->set_split_offset(140);
+	list_split->set_split_offset(500);
+
+	members_overview = memnew(ItemList);
+	list_split->add_child(members_overview);
+	members_overview->set_custom_minimum_size(Size2(0, 0));
 
 	tab_container = memnew(TabContainer);
 	tab_container->add_style_override("panel", p_editor->get_gui_base()->get_stylebox("ScriptPanel", "EditorStyles"));
@@ -2211,10 +2277,10 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	menu_hb->add_spacer();
 
 	site_search = memnew(ToolButton);
-	site_search->set_text(TTR("Tutorials"));
+	site_search->set_text(TTR("Online Docs"));
 	site_search->connect("pressed", this, "_menu_option", varray(SEARCH_WEBSITE));
 	menu_hb->add_child(site_search);
-	site_search->set_tooltip(TTR("Open https://godotengine.org at tutorials section."));
+	site_search->set_tooltip(TTR("Open Godot online documentation"));
 
 	class_search = memnew(ToolButton);
 	class_search->set_text(TTR("Classes"));

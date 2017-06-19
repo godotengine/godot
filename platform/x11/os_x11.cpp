@@ -34,6 +34,7 @@
 #include "print_string.h"
 #include "servers/physics/physics_server_sw.h"
 #include "servers/visual/visual_server_raster.h"
+#include "servers/visual/visual_server_wrap_mt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -206,12 +207,12 @@ void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 
 #endif
 	visual_server = memnew(VisualServerRaster);
-#if 0
-	if (get_render_thread_mode()!=RENDER_THREAD_UNSAFE) {
 
-		visual_server =memnew(VisualServerWrapMT(visual_server,get_render_thread_mode()==RENDER_SEPARATE_THREAD));
+	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
+
+		visual_server = memnew(VisualServerWrapMT(visual_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
 	}
-#endif
+
 	// borderless fullscreen window mode
 	if (current_videomode.fullscreen) {
 		// needed for lxde/openbox, possibly others
@@ -336,7 +337,9 @@ void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 	cursor_theme = XcursorGetTheme(x11_display);
 
 	if (!cursor_theme) {
-		WARN_PRINT("Could not find cursor theme");
+		if (is_stdout_verbose()) {
+			print_line("XcursorGetTheme could not get cursor theme");
+		}
 		cursor_theme = "default";
 	}
 
@@ -1332,8 +1335,8 @@ void OS_X11::process_xevents() {
 
 				get_key_modifier_state(event.xbutton.state, mb);
 				mb->set_button_mask(get_mouse_button_state(event.xbutton.state));
-				mb->set_pos(Vector2(event.xbutton.x, event.xbutton.y));
-				mb->set_global_pos(mb->get_pos());
+				mb->set_position(Vector2(event.xbutton.x, event.xbutton.y));
+				mb->set_global_position(mb->get_position());
 				mb->set_button_index(event.xbutton.button);
 				if (mb->get_button_index() == 2)
 					mb->set_button_index(3);
@@ -1441,8 +1444,8 @@ void OS_X11::process_xevents() {
 
 				get_key_modifier_state(event.xmotion.state, mm);
 				mm->set_button_mask(get_mouse_button_state(event.xmotion.state));
-				mm->set_pos(pos);
-				mm->set_global_pos(pos);
+				mm->set_position(pos);
+				mm->set_global_position(pos);
 				input->set_mouse_position(pos);
 				mm->set_speed(input->get_last_mouse_speed());
 				mm->set_relative(rel);

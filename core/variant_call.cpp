@@ -354,6 +354,8 @@ struct _VariantCall {
 	VCALL_LOCALMEM1R(Rect2, merge);
 	VCALL_LOCALMEM1R(Rect2, has_point);
 	VCALL_LOCALMEM1R(Rect2, grow);
+	VCALL_LOCALMEM2R(Rect2, grow_margin);
+	VCALL_LOCALMEM4R(Rect2, grow_individual);
 	VCALL_LOCALMEM1R(Rect2, expand);
 
 	VCALL_LOCALMEM0R(Vector3, min_axis);
@@ -1433,6 +1435,8 @@ void register_variant_methods() {
 	ADDFUNC1(RECT2, RECT2, Rect2, merge, RECT2, "b", varray());
 	ADDFUNC1(RECT2, BOOL, Rect2, has_point, VECTOR2, "point", varray());
 	ADDFUNC1(RECT2, RECT2, Rect2, grow, REAL, "by", varray());
+	ADDFUNC2(RECT2, RECT2, Rect2, grow_margin, INT, "margin", REAL, "by", varray());
+	ADDFUNC4(RECT2, RECT2, Rect2, grow_individual, REAL, "left", REAL, "top", REAL, "right", REAL, " bottom", varray());
 	ADDFUNC1(RECT2, RECT2, Rect2, expand, VECTOR2, "to", varray());
 
 	ADDFUNC0(VECTOR3, INT, Vector3, min_axis, varray());

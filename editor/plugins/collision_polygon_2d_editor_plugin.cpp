@@ -104,7 +104,7 @@ bool CollisionPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event)
 	if (mb.is_valid()) {
 		Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
-		Vector2 gpoint = mb->get_pos();
+		Vector2 gpoint = mb->get_position();
 		Vector2 cpoint = canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint);
 		cpoint = canvas_item_editor->snap_point(cpoint);
 		cpoint = node->get_global_transform().affine_inverse().xform(cpoint);
@@ -289,7 +289,7 @@ bool CollisionPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event)
 
 		if (edited_point != -1 && (wip_active || mm->get_button_mask() & BUTTON_MASK_LEFT)) {
 
-			Vector2 gpoint = mm->get_pos();
+			Vector2 gpoint = mm->get_position();
 			Vector2 cpoint = canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint);
 			cpoint = canvas_item_editor->snap_point(cpoint);
 			edited_point_pos = node->get_global_transform().affine_inverse().xform(cpoint);

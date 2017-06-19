@@ -596,7 +596,7 @@ void EditorTextureImportDialog::_mode_changed(int p_mode) {
 		size->show();
 
 		file_select->set_mode(EditorFileDialog::MODE_OPEN_FILE);
-		save_file_select->add_filter("*.ltex;"+TTR("Large Texture"));
+		save_file_select->add_filter("*.largetex;"+TTR("Large Texture"));
 
 		texture_options->set_flags(EditorTextureImportPlugin::IMAGE_FLAG_FIX_BORDER_ALPHA|EditorTextureImportPlugin::IMAGE_FLAG_NO_MIPMAPS|EditorTextureImportPlugin::IMAGE_FLAG_FILTER);
 		texture_options->set_quality(0.7);
@@ -1097,7 +1097,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 		int cell_size=from->get_option("large_cell_size");
 		ERR_FAIL_COND_V(cell_size<128 || cell_size>16384,ERR_CANT_OPEN);
 
-		EditorProgress pg("ltex",TTR("Import Large Texture"),3);
+		EditorProgress pg("largetex",TTR("Import Large Texture"),3);
 
 		pg.step(TTR("Load Source Image"),0);
 		Image img;
@@ -1317,9 +1317,9 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 				String spath = from->get_source_path(E->get()).get_file();
 
 				if (p_external) {
-					apath = p_path.get_base_dir().plus_file(spath.get_basename()+"."+from->get_source_path(E->get()).md5_text()+".atex");
+					apath = p_path.get_base_dir().plus_file(spath.get_basename()+"."+from->get_source_path(E->get()).md5_text()+".atlastex");
 				} else {
-					apath = p_path.get_base_dir().plus_file(spath.get_basename()+".atex");
+					apath = p_path.get_base_dir().plus_file(spath.get_basename()+".atlastex");
 				}
 
 				Ref<AtlasTexture> at;

@@ -634,6 +634,8 @@ public:
 
 	Dictionary get_version_info() const;
 
+	bool is_in_fixed_frame() const;
+
 	_Engine();
 };
 

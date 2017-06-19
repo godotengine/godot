@@ -212,11 +212,8 @@ void RasterizerGLES3::begin_frame() {
 
 	storage->update_dirty_resources();
 
-	storage->info.render_object_count = 0;
-	storage->info.render_material_switch_count = 0;
-	storage->info.render_surface_switch_count = 0;
-	storage->info.render_shader_rebind_count = 0;
-	storage->info.render_vertices_count = 0;
+	storage->info.render_final = storage->info.render;
+	storage->info.render.reset();
 
 	scene->iteration();
 }
@@ -301,18 +298,18 @@ void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 			//scale horizontally
 			screenrect.size.y = window_h;
 			screenrect.size.x = imgrect.size.x * window_h / imgrect.size.y;
-			screenrect.pos.x = (window_w - screenrect.size.x) / 2;
+			screenrect.position.x = (window_w - screenrect.size.x) / 2;
 
 		} else {
 			//scale vertically
 			screenrect.size.x = window_w;
 			screenrect.size.y = imgrect.size.y * window_w / imgrect.size.x;
-			screenrect.pos.y = (window_h - screenrect.size.y) / 2;
+			screenrect.position.y = (window_h - screenrect.size.y) / 2;
 		}
 	} else {
 
 		screenrect = imgrect;
-		screenrect.pos += ((Size2(window_w, window_h) - screenrect.size) / 2.0).floor();
+		screenrect.position += ((Size2(window_w, window_h) - screenrect.size) / 2.0).floor();
 	}
 
 	RasterizerStorageGLES3::Texture *t = storage->texture_owner.get(texture);

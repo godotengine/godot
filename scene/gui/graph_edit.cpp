@@ -168,24 +168,24 @@ void GraphEdit::_update_scroll() {
 			continue;
 
 		Rect2 r;
-		r.pos = gn->get_offset() * zoom;
+		r.position = gn->get_offset() * zoom;
 		r.size = gn->get_size() * zoom;
 		screen = screen.merge(r);
 	}
 
-	screen.pos -= get_size();
+	screen.position -= get_size();
 	screen.size += get_size() * 2.0;
 
-	h_scroll->set_min(screen.pos.x);
-	h_scroll->set_max(screen.pos.x + screen.size.x);
+	h_scroll->set_min(screen.position.x);
+	h_scroll->set_max(screen.position.x + screen.size.x);
 	h_scroll->set_page(get_size().x);
 	if (h_scroll->get_max() - h_scroll->get_min() <= h_scroll->get_page())
 		h_scroll->hide();
 	else
 		h_scroll->show();
 
-	v_scroll->set_min(screen.pos.y);
-	v_scroll->set_max(screen.pos.y + screen.size.y);
+	v_scroll->set_min(screen.position.y);
+	v_scroll->set_max(screen.position.y + screen.size.y);
 	v_scroll->set_page(get_size().y);
 
 	if (v_scroll->get_max() - v_scroll->get_min() <= v_scroll->get_page())
@@ -374,7 +374,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 	if (mb.is_valid() && mb->get_button_index() == BUTTON_LEFT && mb->is_pressed()) {
 
 		Ref<Texture> port = get_icon("port", "GraphNode");
-		Vector2 mpos(mb->get_pos().x, mb->get_pos().y);
+		Vector2 mpos(mb->get_position().x, mb->get_position().y);
 		float grab_r = port->get_width() * 0.5 * grab_r_extend;
 		for (int i = get_child_count() - 1; i >= 0; i--) {
 
@@ -483,12 +483,12 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 	Ref<InputEventMouseMotion> mm = p_ev;
 	if (mm.is_valid() && connecting) {
 
-		connecting_to = mm->get_pos();
+		connecting_to = mm->get_position();
 		connecting_target = false;
 		top_layer->update();
 
 		Ref<Texture> port = get_icon("port", "GraphNode");
-		Vector2 mpos = mm->get_pos();
+		Vector2 mpos = mm->get_position();
 		float grab_r = port->get_width() * 0.5 * grab_r_extend;
 		for (int i = get_child_count() - 1; i >= 0; i--) {
 
@@ -546,7 +546,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 		} else if (!just_disconected) {
 			String from = connecting_from;
 			int from_slot = connecting_index;
-			Vector2 ofs = Vector2(mb->get_pos().x, mb->get_pos().y);
+			Vector2 ofs = Vector2(mb->get_position().x, mb->get_position().y);
 			emit_signal("connection_to_empty", from, from_slot, ofs);
 		}
 		connecting = false;
@@ -817,7 +817,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 					connecting = false;
 					top_layer->update();
 				} else {
-					emit_signal("popup_request", b->get_global_pos());
+					emit_signal("popup_request", b->get_global_position());
 				}
 			}
 		}
@@ -880,7 +880,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 
 			if (gn) {
 
-				if (_filter_input(b->get_pos()))
+				if (_filter_input(b->get_position()))
 					return;
 
 				dragging = true;
@@ -905,7 +905,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 				}
 
 			} else {
-				if (_filter_input(b->get_pos()))
+				if (_filter_input(b->get_position()))
 					return;
 				if (Input::get_singleton()->is_key_pressed(KEY_SPACE))
 					return;

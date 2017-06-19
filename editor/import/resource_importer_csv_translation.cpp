@@ -54,7 +54,7 @@ String ResourceImporterCSVTranslation::get_save_extension() const {
 
 String ResourceImporterCSVTranslation::get_resource_type() const {
 
-	return "StreamCSVTranslation";
+	return "Translation";
 }
 
 bool ResourceImporterCSVTranslation::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
@@ -128,7 +128,7 @@ Error ResourceImporterCSVTranslation::import(const String &p_source_file, const 
 			xlt = cxl;
 		}
 
-		String save_path = p_source_file.get_basename() + "." + translations[i]->get_locale() + ".xl";
+		String save_path = p_source_file.get_basename() + "." + translations[i]->get_locale() + ".translation";
 
 		ResourceSaver::save(save_path, xlt);
 		if (r_gen_files) {

@@ -38,7 +38,7 @@ class PhysicsBody2D : public CollisionObject2D {
 
 	GDCLASS(PhysicsBody2D, CollisionObject2D);
 
-	uint32_t mask;
+	uint32_t collision_layer;
 	uint32_t collision_mask;
 	Vector2 one_way_collision_direction;
 	float one_way_collision_max_depth;
@@ -53,7 +53,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_collision_layer(uint32_t p_mask);
+	void set_collision_layer(uint32_t p_layer);
 	uint32_t get_collision_layer() const;
 
 	void set_collision_mask(uint32_t p_mask);

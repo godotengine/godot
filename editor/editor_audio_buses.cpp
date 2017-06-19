@@ -342,7 +342,7 @@ void EditorAudioBus::_effect_edited() {
 	if (effect->get_metadata(0) == Variant()) {
 		Rect2 area = effects->get_item_rect(effect);
 
-		effect_options->set_position(effects->get_global_position() + area.pos + Vector2(0, area.size.y));
+		effect_options->set_position(effects->get_global_position() + area.position + Vector2(0, area.size.y));
 		effect_options->popup();
 		//add effect
 	} else {
@@ -396,7 +396,7 @@ void EditorAudioBus::_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->get_button_index() == 2 && mb->is_pressed()) {
 
-		Vector2 pos = Vector2(mb->get_pos().x, mb->get_pos().y);
+		Vector2 pos = Vector2(mb->get_position().x, mb->get_position().y);
 		delete_popup->set_position(get_global_position() + pos);
 		delete_popup->popup();
 	}
@@ -632,21 +632,24 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses) {
 	solo = memnew(ToolButton);
 	solo->set_text("S");
 	solo->set_toggle_mode(true);
-	solo->set_modulate(Color(0.8, 1.2, 0.8));
+	solo->add_color_override("font_color_pressed", Color(0.2, 0.9, 0.2));
+	solo->add_color_override("font_color_hover", Color(0.6, 0.9, 0.6));
 	solo->set_focus_mode(FOCUS_NONE);
 	solo->connect("pressed", this, "_solo_toggled");
 	hbc->add_child(solo);
 	mute = memnew(ToolButton);
 	mute->set_text("M");
 	mute->set_toggle_mode(true);
-	mute->set_modulate(Color(1.2, 0.8, 0.8));
+	mute->add_color_override("font_color_pressed", Color(0.9, 0.2, 0.2));
+	mute->add_color_override("font_color_hover", Color(0.9, 0.6, 0.6));
 	mute->set_focus_mode(FOCUS_NONE);
 	mute->connect("pressed", this, "_mute_toggled");
 	hbc->add_child(mute);
 	bypass = memnew(ToolButton);
 	bypass->set_text("B");
 	bypass->set_toggle_mode(true);
-	bypass->set_modulate(Color(1.1, 1.1, 0.8));
+	bypass->add_color_override("font_color_pressed", Color(0.9, 0.9, 0.2));
+	bypass->add_color_override("font_color_hover", Color(0.9, 0.9, 0.6));
 	bypass->set_focus_mode(FOCUS_NONE);
 	bypass->connect("pressed", this, "_bypass_toggled");
 	hbc->add_child(bypass);
@@ -1108,9 +1111,9 @@ EditorAudioBuses::EditorAudioBuses() {
 
 	file_dialog = memnew(EditorFileDialog);
 	List<String> ext;
-	ResourceLoader::get_recognized_extensions_for_type("AudioServerState", &ext);
+	ResourceLoader::get_recognized_extensions_for_type("AudioBusLayout", &ext);
 	for (List<String>::Element *E = ext.front(); E; E = E->next()) {
-		file_dialog->add_filter("*." + E->get() + "; Audio Bus State");
+		file_dialog->add_filter("*." + E->get() + "; Audio Bus Layout");
 	}
 	add_child(file_dialog);
 	file_dialog->connect("file_selected", this, "_file_dialog_callback");

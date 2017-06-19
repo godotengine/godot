@@ -483,11 +483,11 @@ void Octree<T, use_pairs, AL>::_insert_element(Element *p_element, Octant *p_oct
 				aabb.size *= 0.5;
 
 				if (i & 1)
-					aabb.pos.x += aabb.size.x;
+					aabb.position.x += aabb.size.x;
 				if (i & 2)
-					aabb.pos.y += aabb.size.y;
+					aabb.position.y += aabb.size.y;
 				if (i & 4)
-					aabb.pos.z += aabb.size.z;
+					aabb.position.z += aabb.size.z;
 
 				if (aabb.intersects_inclusive(p_element->aabb)) {
 					/* if actually intersects, create the child */
@@ -544,11 +544,11 @@ void Octree<T, use_pairs, AL>::_ensure_valid_root(const Rect3 &p_aabb) {
 
 		while (!base.encloses(p_aabb)) {
 
-			if (ABS(base.pos.x + base.size.x) <= ABS(base.pos.x)) {
+			if (ABS(base.position.x + base.size.x) <= ABS(base.position.x)) {
 				/* grow towards positive */
 				base.size *= 2.0;
 			} else {
-				base.pos -= base.size;
+				base.position -= base.size;
 				base.size *= 2.0;
 			}
 		}
@@ -576,14 +576,14 @@ void Octree<T, use_pairs, AL>::_ensure_valid_root(const Rect3 &p_aabb) {
 			octant_count++;
 			root->parent = gp;
 
-			if (ABS(base.pos.x + base.size.x) <= ABS(base.pos.x)) {
+			if (ABS(base.position.x + base.size.x) <= ABS(base.position.x)) {
 				/* grow towards positive */
 				base.size *= 2.0;
 				gp->aabb = base;
 				gp->children[0] = root;
 				root->parent_index = 0;
 			} else {
-				base.pos -= base.size;
+				base.position -= base.size;
 				base.size *= 2.0;
 				gp->aabb = base;
 				gp->children[(1 << 0) | (1 << 1) | (1 << 2)] = root; // add at all-positive
@@ -797,9 +797,9 @@ OctreeElementID Octree<T, use_pairs, AL>::create(T *p_userdata, const Rect3 &p_a
 
 // check for AABB validity
 #ifdef DEBUG_ENABLED
-	ERR_FAIL_COND_V(p_aabb.pos.x > 1e15 || p_aabb.pos.x < -1e15, 0);
-	ERR_FAIL_COND_V(p_aabb.pos.y > 1e15 || p_aabb.pos.y < -1e15, 0);
-	ERR_FAIL_COND_V(p_aabb.pos.z > 1e15 || p_aabb.pos.z < -1e15, 0);
+	ERR_FAIL_COND_V(p_aabb.position.x > 1e15 || p_aabb.position.x < -1e15, 0);
+	ERR_FAIL_COND_V(p_aabb.position.y > 1e15 || p_aabb.position.y < -1e15, 0);
+	ERR_FAIL_COND_V(p_aabb.position.z > 1e15 || p_aabb.position.z < -1e15, 0);
 	ERR_FAIL_COND_V(p_aabb.size.x > 1e15 || p_aabb.size.x < 0.0, 0);
 	ERR_FAIL_COND_V(p_aabb.size.y > 1e15 || p_aabb.size.y < 0.0, 0);
 	ERR_FAIL_COND_V(p_aabb.size.z > 1e15 || p_aabb.size.z < 0.0, 0);
@@ -837,9 +837,9 @@ void Octree<T, use_pairs, AL>::move(OctreeElementID p_id, const Rect3 &p_aabb) {
 
 #ifdef DEBUG_ENABLED
 	// check for AABB validity
-	ERR_FAIL_COND(p_aabb.pos.x > 1e15 || p_aabb.pos.x < -1e15);
-	ERR_FAIL_COND(p_aabb.pos.y > 1e15 || p_aabb.pos.y < -1e15);
-	ERR_FAIL_COND(p_aabb.pos.z > 1e15 || p_aabb.pos.z < -1e15);
+	ERR_FAIL_COND(p_aabb.position.x > 1e15 || p_aabb.position.x < -1e15);
+	ERR_FAIL_COND(p_aabb.position.y > 1e15 || p_aabb.position.y < -1e15);
+	ERR_FAIL_COND(p_aabb.position.z > 1e15 || p_aabb.position.z < -1e15);
 	ERR_FAIL_COND(p_aabb.size.x > 1e15 || p_aabb.size.x < 0.0);
 	ERR_FAIL_COND(p_aabb.size.y > 1e15 || p_aabb.size.y < 0.0);
 	ERR_FAIL_COND(p_aabb.size.z > 1e15 || p_aabb.size.z < 0.0);

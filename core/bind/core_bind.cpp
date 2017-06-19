@@ -2532,6 +2532,10 @@ Dictionary _Engine::get_version_info() const {
 	return Engine::get_singleton()->get_version_info();
 }
 
+bool _Engine::is_in_fixed_frame() const {
+	return Engine::get_singleton()->is_in_fixed_frame();
+}
+
 void _Engine::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_iterations_per_second", "iterations_per_second"), &_Engine::set_iterations_per_second);
@@ -2550,6 +2554,8 @@ void _Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_main_loop:MainLoop"), &_Engine::get_main_loop);
 
 	ClassDB::bind_method(D_METHOD("get_version_info"), &_Engine::get_version_info);
+
+	ClassDB::bind_method(D_METHOD("is_in_fixed_frame"), &_Engine::is_in_fixed_frame);
 }
 
 _Engine *_Engine::singleton = NULL;

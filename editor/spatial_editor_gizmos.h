@@ -46,7 +46,6 @@
 #include "scene/3d/ray_cast.h"
 #include "scene/3d/reflection_probe.h"
 #include "scene/3d/room_instance.h"
-#include "scene/3d/test_cube.h"
 #include "scene/3d/vehicle_body.h"
 #include "scene/3d/visibility_notifier.h"
 
@@ -59,7 +58,7 @@ class EditorSpatialGizmo : public SpatialEditorGizmo {
 	struct Instance {
 
 		RID instance;
-		Ref<Mesh> mesh;
+		Ref<ArrayMesh> mesh;
 		RID skeleton;
 		bool billboard;
 		bool unscaled;
@@ -97,7 +96,7 @@ class EditorSpatialGizmo : public SpatialEditorGizmo {
 
 protected:
 	void add_lines(const Vector<Vector3> &p_lines, const Ref<Material> &p_material, bool p_billboard = false);
-	void add_mesh(const Ref<Mesh> &p_mesh, bool p_billboard = false, const RID &p_skeleton = RID());
+	void add_mesh(const Ref<ArrayMesh> &p_mesh, bool p_billboard = false, const RID &p_skeleton = RID());
 	void add_collision_segments(const Vector<Vector3> &p_lines);
 	void add_collision_triangles(const Ref<TriangleMesh> &p_tmesh);
 	void add_unscaled_billboard(const Ref<Material> &p_material, float p_scale = 1);
@@ -185,17 +184,6 @@ class SkeletonSpatialGizmo : public EditorSpatialGizmo {
 public:
 	void redraw();
 	SkeletonSpatialGizmo(Skeleton *p_skel = NULL);
-};
-
-class TestCubeSpatialGizmo : public EditorSpatialGizmo {
-
-	GDCLASS(TestCubeSpatialGizmo, EditorSpatialGizmo);
-
-	TestCube *tc;
-
-public:
-	void redraw();
-	TestCubeSpatialGizmo(TestCube *p_tc = NULL);
 };
 
 class RoomSpatialGizmo : public EditorSpatialGizmo {
@@ -454,8 +442,8 @@ public:
 	Ref<SpatialMaterial> shape_material;
 	Ref<Texture> handle_t;
 
-	Ref<Mesh> pos3d_mesh;
-	Ref<Mesh> listener_line_mesh;
+	Ref<ArrayMesh> pos3d_mesh;
+	Ref<ArrayMesh> listener_line_mesh;
 	static SpatialEditorGizmos *singleton;
 
 	Ref<TriangleMesh> test_cube_tm;

@@ -71,6 +71,8 @@ void TextureEditor::_notification(int p_what) {
 		String format;
 		if (texture->cast_to<ImageTexture>()) {
 			format = Image::get_format_name(texture->cast_to<ImageTexture>()->get_format());
+		} else if (texture->cast_to<StreamTexture>()) {
+			format = Image::get_format_name(texture->cast_to<StreamTexture>()->get_format());
 		} else {
 			format = texture->get_class();
 		}

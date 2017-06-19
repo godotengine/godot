@@ -46,7 +46,7 @@ void Slider::_gui_input(Ref<InputEvent> p_event) {
 
 			if (mb->is_pressed()) {
 				Ref<Texture> grabber = get_icon(mouse_inside || has_focus() ? "grabber_highlight" : "grabber");
-				grab.pos = orientation == VERTICAL ? mb->get_pos().y : mb->get_pos().x;
+				grab.pos = orientation == VERTICAL ? mb->get_position().y : mb->get_position().x;
 
 				double grab_width = (double)grabber->get_size().width;
 				double grab_height = (double)grabber->get_size().height;
@@ -75,7 +75,7 @@ void Slider::_gui_input(Ref<InputEvent> p_event) {
 
 			Size2i size = get_size();
 			Ref<Texture> grabber = get_icon("grabber");
-			float motion = (orientation == VERTICAL ? mm->get_pos().y : mm->get_pos().x) - grab.pos;
+			float motion = (orientation == VERTICAL ? mm->get_position().y : mm->get_position().x) - grab.pos;
 			if (orientation == VERTICAL)
 				motion = -motion;
 			float areasize = orientation == VERTICAL ? size.height - grabber->get_size().height : size.width - grabber->get_size().width;

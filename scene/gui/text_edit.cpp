@@ -1069,16 +1069,16 @@ void TextEdit::_notification(int p_what) {
 				int th = h + csb->get_minimum_size().y;
 
 				if (cursor_pos.y + get_row_height() + th > get_size().height) {
-					completion_rect.pos.y = cursor_pos.y - th;
+					completion_rect.position.y = cursor_pos.y - th;
 				} else {
-					completion_rect.pos.y = cursor_pos.y + get_row_height() + csb->get_offset().y;
+					completion_rect.position.y = cursor_pos.y + get_row_height() + csb->get_offset().y;
 					completion_below = true;
 				}
 
 				if (cursor_pos.x - nofs + w + scrollw > get_size().width) {
-					completion_rect.pos.x = get_size().width - w - scrollw;
+					completion_rect.position.x = get_size().width - w - scrollw;
 				} else {
-					completion_rect.pos.x = cursor_pos.x - nofs;
+					completion_rect.position.x = cursor_pos.x - nofs;
 				}
 
 				completion_rect.size.width = w + 2;
@@ -1086,14 +1086,14 @@ void TextEdit::_notification(int p_what) {
 				if (completion_options.size() <= maxlines)
 					scrollw = 0;
 
-				draw_style_box(csb, Rect2(completion_rect.pos - csb->get_offset(), completion_rect.size + csb->get_minimum_size() + Size2(scrollw, 0)));
+				draw_style_box(csb, Rect2(completion_rect.position - csb->get_offset(), completion_rect.size + csb->get_minimum_size() + Size2(scrollw, 0)));
 
 				if (cache.completion_background_color.a > 0.01) {
-					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(completion_rect.pos, completion_rect.size + Size2(scrollw, 0)), cache.completion_background_color);
+					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(completion_rect.position, completion_rect.size + Size2(scrollw, 0)), cache.completion_background_color);
 				}
 				int line_from = CLAMP(completion_index - lines / 2, 0, completion_options.size() - lines);
-				VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(completion_rect.pos.x, completion_rect.pos.y + (completion_index - line_from) * get_row_height()), Size2(completion_rect.size.width, get_row_height())), cache.completion_selected_color);
-				draw_rect(Rect2(completion_rect.pos, Size2(nofs, completion_rect.size.height)), cache.completion_existing_color);
+				VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(completion_rect.position.x, completion_rect.position.y + (completion_index - line_from) * get_row_height()), Size2(completion_rect.size.width, get_row_height())), cache.completion_selected_color);
+				draw_rect(Rect2(completion_rect.position, Size2(nofs, completion_rect.size.height)), cache.completion_existing_color);
 
 				for (int i = 0; i < lines; i++) {
 
@@ -1105,14 +1105,14 @@ void TextEdit::_notification(int p_what) {
 							text_color = color_regions[j].color;
 						}
 					}
-					draw_string(cache.font, Point2(completion_rect.pos.x, completion_rect.pos.y + i * get_row_height() + cache.font->get_ascent()), completion_options[l], text_color, completion_rect.size.width);
+					draw_string(cache.font, Point2(completion_rect.position.x, completion_rect.position.y + i * get_row_height() + cache.font->get_ascent()), completion_options[l], text_color, completion_rect.size.width);
 				}
 
 				if (scrollw) {
 					//draw a small scroll rectangle to show a position in the options
 					float r = maxlines / (float)completion_options.size();
 					float o = line_from / (float)completion_options.size();
-					draw_rect(Rect2(completion_rect.pos.x + completion_rect.size.width, completion_rect.pos.y + o * completion_rect.size.y, scrollw, completion_rect.size.y * r), scrollc);
+					draw_rect(Rect2(completion_rect.position.x + completion_rect.size.width, completion_rect.position.y + o * completion_rect.size.y, scrollw, completion_rect.size.y * r), scrollc);
 				}
 
 				completion_line_ofs = line_from;
@@ -1445,7 +1445,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 	Ref<InputEventMouseButton> mb = p_gui_input;
 
 	if (mb.is_valid()) {
-		if (completion_active && completion_rect.has_point(mb->get_pos())) {
+		if (completion_active && completion_rect.has_point(mb->get_position())) {
 
 			if (!mb->is_pressed())
 				return;
@@ -1468,7 +1468,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 			if (mb->get_button_index() == BUTTON_LEFT) {
 
-				completion_index = CLAMP(completion_line_ofs + (mb->get_pos().y - completion_rect.pos.y) / get_row_height(), 0, completion_options.size() - 1);
+				completion_index = CLAMP(completion_line_ofs + (mb->get_position().y - completion_rect.position.y) / get_row_height(), 0, completion_options.size() - 1);
 
 				completion_current = completion_options[completion_index];
 				update();
@@ -1500,7 +1500,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				_reset_caret_blink_timer();
 
 				int row, col;
-				_get_mouse_pos(Point2i(mb->get_pos().x, mb->get_pos().y), row, col);
+				_get_mouse_pos(Point2i(mb->get_position().x, mb->get_position().y), row, col);
 
 				if (mb->get_command() && highlighted_word != String()) {
 
@@ -1511,7 +1511,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				// toggle breakpoint on gutter click
 				if (draw_breakpoint_gutter) {
 					int gutter = cache.style_normal->get_margin(MARGIN_LEFT);
-					if (mb->get_pos().x > gutter && mb->get_pos().x <= gutter + cache.breakpoint_gutter_width + 3) {
+					if (mb->get_position().x > gutter && mb->get_position().x <= gutter + cache.breakpoint_gutter_width + 3) {
 						set_line_as_breakpoint(row, !is_line_set_as_breakpoint(row));
 						emit_signal("breakpoint_toggled", row);
 						return;
@@ -1646,7 +1646,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 		if (select_identifiers_enabled) {
 			if (mm->get_command() && mm->get_button_mask() == 0) {
 
-				String new_word = get_word_at_pos(mm->get_pos());
+				String new_word = get_word_at_pos(mm->get_position());
 				if (new_word != highlighted_word) {
 					highlighted_word = new_word;
 					update();
@@ -1666,7 +1666,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				_reset_caret_blink_timer();
 
 				int row, col;
-				_get_mouse_pos(mm->get_pos(), row, col);
+				_get_mouse_pos(mm->get_position(), row, col);
 
 				select(selection.selecting_line, selection.selecting_column, row, col);
 

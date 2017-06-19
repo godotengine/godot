@@ -77,6 +77,9 @@ public:
 	RID default_shader;
 	RID default_shader_twosided;
 
+	RID default_overdraw_material;
+	RID default_overdraw_shader;
+
 	RasterizerStorageGLES3 *storage;
 
 	Vector<RasterizerStorageGLES3::RenderTarget::Exposure> exposure_shrink;
@@ -108,21 +111,36 @@ public:
 			float projection_matrix[16];
 			float camera_inverse_matrix[16];
 			float camera_matrix[16];
-			float time[4];
 			float ambient_light_color[4];
 			float bg_color[4];
+			float fog_color_enabled[4];
+			float fog_sun_color_amount[4];
+
 			float ambient_energy;
 			float bg_energy;
-			float shadow_z_offset;
-			float shadow_slope_scale;
+			float z_offset;
+			float z_slope_scale;
 			float shadow_dual_paraboloid_render_zfar;
 			float shadow_dual_paraboloid_render_side;
 			float screen_pixel_size[2];
 			float shadow_atlas_pixel_size[2];
 			float shadow_directional_pixel_size[2];
+
+			float time;
+			float z_far;
 			float reflection_multiplier;
 			float subsurface_scatter_width;
 			float ambient_occlusion_affect_light;
+
+			bool fog_depth_enabled;
+			float fog_depth_begin;
+			float fog_depth_curve;
+			bool fog_transmit_enabled;
+			float fog_transmit_curve;
+			bool fog_height_enabled;
+			float fog_height_min;
+			float fog_height_max;
+			float fog_height_curve;
 
 		} ubo_data;
 
@@ -131,18 +149,14 @@ public:
 		struct EnvironmentRadianceUBO {
 
 			float transform[16];
-			float box_min[4]; //unused for now
-			float box_max[4];
 			float ambient_contribution;
 
 		} env_radiance_data;
 
 		GLuint env_radiance_ubo;
 
-		GLuint brdf_texture;
-
-		GLuint skybox_verts;
-		GLuint skybox_array;
+		GLuint sky_verts;
+		GLuint sky_array;
 
 		GLuint directional_ubo;
 
@@ -172,7 +186,9 @@ public:
 
 		bool cull_front;
 		bool used_sss;
+		bool used_screen_texture;
 
+		VS::ViewportDebugDraw debug_draw;
 	} state;
 
 	/* SHADOW ATLAS API */
@@ -329,25 +345,24 @@ public:
 
 		VS::EnvironmentBG bg_mode;
 
-		RID skybox;
-		float skybox_scale;
+		RID sky;
+		float sky_scale;
 
 		Color bg_color;
 		float bg_energy;
-		float skybox_ambient;
+		float sky_ambient;
 
 		Color ambient_color;
 		float ambient_energy;
-		float ambient_skybox_contribution;
+		float ambient_sky_contribution;
 
 		int canvas_max_layer;
 
 		bool ssr_enabled;
 		int ssr_max_steps;
-		float ssr_accel;
-		float ssr_fade;
+		float ssr_fade_in;
+		float ssr_fade_out;
 		float ssr_depth_tolerance;
-		bool ssr_smooth;
 		bool ssr_roughness;
 
 		bool ssao_enabled;
@@ -391,21 +406,41 @@ public:
 		float dof_blur_near_amount;
 		VS::EnvironmentDOFBlurQuality dof_blur_near_quality;
 
+		bool adjustments_enabled;
+		float adjustments_brightness;
+		float adjustments_contrast;
+		float adjustments_saturation;
+		RID color_correction;
+
+		bool fog_enabled;
+		Color fog_color;
+		Color fog_sun_color;
+		float fog_sun_amount;
+
+		bool fog_depth_enabled;
+		float fog_depth_begin;
+		float fog_depth_curve;
+		bool fog_transmit_enabled;
+		float fog_transmit_curve;
+		bool fog_height_enabled;
+		float fog_height_min;
+		float fog_height_max;
+		float fog_height_curve;
+
 		Environment() {
 			bg_mode = VS::ENV_BG_CLEAR_COLOR;
-			skybox_scale = 1.0;
+			sky_scale = 1.0;
 			bg_energy = 1.0;
-			skybox_ambient = 0;
+			sky_ambient = 0;
 			ambient_energy = 1.0;
-			ambient_skybox_contribution = 0.0;
+			ambient_sky_contribution = 0.0;
 			canvas_max_layer = 0;
 
 			ssr_enabled = false;
 			ssr_max_steps = 64;
-			ssr_accel = 0.04;
-			ssr_fade = 2.0;
+			ssr_fade_in = 0.15;
+			ssr_fade_out = 2.0;
 			ssr_depth_tolerance = 0.2;
-			ssr_smooth = true;
 			ssr_roughness = true;
 
 			ssao_enabled = false;
@@ -447,6 +482,29 @@ public:
 			dof_blur_near_transition = 1;
 			dof_blur_near_amount = 0.1;
 			dof_blur_near_quality = VS::ENV_DOF_BLUR_QUALITY_MEDIUM;
+
+			adjustments_enabled = false;
+			adjustments_brightness = 1.0;
+			adjustments_contrast = 1.0;
+			adjustments_saturation = 1.0;
+
+			fog_enabled = false;
+			fog_color = Color(0.5, 0.5, 0.5);
+			fog_sun_color = Color(0.8, 0.8, 0.0);
+			fog_sun_amount = 0;
+
+			fog_depth_enabled = true;
+
+			fog_depth_begin = 10;
+			fog_depth_curve = 1;
+
+			fog_transmit_enabled = true;
+			fog_transmit_curve = 1;
+
+			fog_height_enabled = false;
+			fog_height_min = 0;
+			fog_height_max = 100;
+			fog_height_curve = 1;
 		}
 	};
 
@@ -455,24 +513,28 @@ public:
 	virtual RID environment_create();
 
 	virtual void environment_set_background(RID p_env, VS::EnvironmentBG p_bg);
-	virtual void environment_set_skybox(RID p_env, RID p_skybox);
-	virtual void environment_set_skybox_scale(RID p_env, float p_scale);
+	virtual void environment_set_sky(RID p_env, RID p_sky);
+	virtual void environment_set_sky_scale(RID p_env, float p_scale);
 	virtual void environment_set_bg_color(RID p_env, const Color &p_color);
 	virtual void environment_set_bg_energy(RID p_env, float p_energy);
 	virtual void environment_set_canvas_max_layer(RID p_env, int p_max_layer);
-	virtual void environment_set_ambient_light(RID p_env, const Color &p_color, float p_energy = 1.0, float p_skybox_contribution = 0.0);
+	virtual void environment_set_ambient_light(RID p_env, const Color &p_color, float p_energy = 1.0, float p_sky_contribution = 0.0);
 
 	virtual void environment_set_dof_blur_near(RID p_env, bool p_enable, float p_distance, float p_transition, float p_far_amount, VS::EnvironmentDOFBlurQuality p_quality);
 	virtual void environment_set_dof_blur_far(RID p_env, bool p_enable, float p_distance, float p_transition, float p_far_amount, VS::EnvironmentDOFBlurQuality p_quality);
 	virtual void environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_bloom_treshold, VS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_treshold, float p_hdr_bleed_scale, bool p_bicubic_upscale);
 	virtual void environment_set_fog(RID p_env, bool p_enable, float p_begin, float p_end, RID p_gradient_texture);
 
-	virtual void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_accel, float p_fade, float p_depth_tolerance, bool p_smooth, bool p_roughness);
+	virtual void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_in, float p_fade_out, float p_depth_tolerance, bool p_roughness);
 	virtual void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_radius2, float p_intensity2, float p_intensity, float p_bias, float p_light_affect, const Color &p_color, bool p_blur);
 
 	virtual void environment_set_tonemap(RID p_env, VS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale);
 
 	virtual void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, RID p_ramp);
+
+	virtual void environment_set_fog(RID p_env, bool p_enable, const Color &p_color, const Color &p_sun_color, float p_sun_amount);
+	virtual void environment_set_fog_depth(RID p_env, bool p_enable, float p_depth_begin, float p_depth_curve, bool p_transmit, float p_transmit_curve);
+	virtual void environment_set_fog_height(RID p_env, bool p_enable, float p_min_height, float p_max_height, float p_height_curve);
 
 	/* LIGHT INSTANCE */
 
@@ -499,6 +561,7 @@ public:
 			Transform transform;
 			float farplane;
 			float split;
+			float bias_scale;
 		};
 
 		ShadowTransform shadow_transform[4];
@@ -534,7 +597,7 @@ public:
 
 	virtual RID light_instance_create(RID p_light);
 	virtual void light_instance_set_transform(RID p_light_instance, const Transform &p_transform);
-	virtual void light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform &p_transform, float p_far, float p_split, int p_pass);
+	virtual void light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform &p_transform, float p_far, float p_split, int p_pass, float p_bias_scale = 1.0);
 	virtual void light_instance_mark_visible(RID p_light_instance);
 
 	/* REFLECTION INSTANCE */
@@ -573,9 +636,10 @@ public:
 			MAX_REFLECTIONS = 1024,
 
 			SORT_KEY_DEPTH_LAYER_SHIFT = 60,
-			SORT_KEY_UNSHADED_FLAG = uint64_t(1) << 59,
-			SORT_KEY_NO_DIRECTIONAL_FLAG = uint64_t(1) << 58,
-			SORT_KEY_GI_PROBES_FLAG = uint64_t(1) << 57,
+//64 bits unsupported in MSVC
+#define SORT_KEY_UNSHADED_FLAG (uint64_t(1) << 59)
+#define SORT_KEY_NO_DIRECTIONAL_FLAG (uint64_t(1) << 58)
+#define SORT_KEY_GI_PROBES_FLAG (uint64_t(1) << 57)
 			SORT_KEY_SHADING_SHIFT = 57,
 			SORT_KEY_SHADING_MASK = 7,
 			SORT_KEY_MATERIAL_INDEX_SHIFT = 40,
@@ -700,7 +764,7 @@ public:
 
 	_FORCE_INLINE_ void _add_geometry(RasterizerStorageGLES3::Geometry *p_geometry, InstanceBase *p_instance, RasterizerStorageGLES3::GeometryOwner *p_owner, int p_material, bool p_shadow);
 
-	void _draw_skybox(RasterizerStorageGLES3::SkyBox *p_skybox, const CameraMatrix &p_projection, const Transform &p_transform, bool p_vflip, float p_scale);
+	void _draw_sky(RasterizerStorageGLES3::Sky *p_sky, const CameraMatrix &p_projection, const Transform &p_transform, bool p_vflip, float p_scale, float p_energy);
 
 	void _setup_environment(Environment *env, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform);
 	void _setup_directional_light(int p_index, const Transform &p_camera_inverse_transformm, bool p_use_shadows);
@@ -713,6 +777,7 @@ public:
 
 	void _fill_render_list(InstanceBase **p_cull_result, int p_cull_count, bool p_shadow);
 
+	void _blur_effect_buffer();
 	void _render_mrts(Environment *env, const CameraMatrix &p_cam_projection);
 	void _post_process(Environment *env, const CameraMatrix &p_cam_projection);
 
@@ -720,9 +785,8 @@ public:
 	virtual void render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, InstanceBase **p_cull_result, int p_cull_count);
 	virtual bool free(RID p_rid);
 
-	void _generate_brdf();
-
 	virtual void set_scene_pass(uint64_t p_pass);
+	virtual void set_debug_draw_mode(VS::ViewportDebugDraw p_debug_draw);
 
 	void iteration();
 	void initialize();

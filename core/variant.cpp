@@ -2549,8 +2549,8 @@ uint32_t Variant::hash() const {
 		} break;
 		case RECT2: {
 
-			uint32_t hash = hash_djb2_one_float(reinterpret_cast<const Rect2 *>(_data._mem)->pos.x);
-			hash = hash_djb2_one_float(reinterpret_cast<const Rect2 *>(_data._mem)->pos.y, hash);
+			uint32_t hash = hash_djb2_one_float(reinterpret_cast<const Rect2 *>(_data._mem)->position.x);
+			hash = hash_djb2_one_float(reinterpret_cast<const Rect2 *>(_data._mem)->position.y, hash);
 			hash = hash_djb2_one_float(reinterpret_cast<const Rect2 *>(_data._mem)->size.x, hash);
 			return hash_djb2_one_float(reinterpret_cast<const Rect2 *>(_data._mem)->size.y, hash);
 		} break;
@@ -2590,7 +2590,7 @@ uint32_t Variant::hash() const {
 			uint32_t hash = 5831;
 			for (int i = 0; i < 3; i++) {
 
-				hash = hash_djb2_one_float(_data._rect3->pos[i], hash);
+				hash = hash_djb2_one_float(_data._rect3->position[i], hash);
 				hash = hash_djb2_one_float(_data._rect3->size[i], hash);
 			}
 
@@ -2820,7 +2820,7 @@ bool Variant::hash_compare(const Variant &p_variant) const {
 			const Rect2 *l = reinterpret_cast<const Rect2 *>(_data._mem);
 			const Rect2 *r = reinterpret_cast<const Rect2 *>(p_variant._data._mem);
 
-			return (hash_compare_vector2(l->pos, r->pos)) &&
+			return (hash_compare_vector2(l->position, r->position)) &&
 				   (hash_compare_vector2(l->size, r->size));
 		} break;
 
@@ -2855,7 +2855,7 @@ bool Variant::hash_compare(const Variant &p_variant) const {
 			const Rect3 *l = _data._rect3;
 			const Rect3 *r = p_variant._data._rect3;
 
-			return (hash_compare_vector3(l->pos, r->pos) &&
+			return (hash_compare_vector3(l->position, r->position) &&
 					(hash_compare_vector3(l->size, r->size)));
 
 		} break;

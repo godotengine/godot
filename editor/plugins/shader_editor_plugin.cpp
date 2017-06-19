@@ -552,7 +552,8 @@ ShaderEditorPlugin::ShaderEditorPlugin(EditorNode *p_node) {
 	shader_editor = memnew(ShaderEditor);
 
 	shader_editor->set_custom_minimum_size(Size2(0, 300));
-	button = editor->add_bottom_panel_item("Shader", shader_editor);
+	button = editor->add_bottom_panel_item(TTR("Shader"), shader_editor);
+	button->hide();
 }
 
 ShaderEditorPlugin::~ShaderEditorPlugin() {

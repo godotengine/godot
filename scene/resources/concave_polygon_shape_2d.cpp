@@ -68,7 +68,7 @@ Rect2 ConcavePolygonShape2D::get_rect() const {
 	PoolVector<Vector2>::Read r = s.read();
 	for (int i = 0; i < len; i++) {
 		if (i == 0)
-			rect.pos = r[i];
+			rect.position = r[i];
 		else
 			rect.expand_to(r[i]);
 	}

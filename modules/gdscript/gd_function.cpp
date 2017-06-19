@@ -358,12 +358,12 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 				if (a->get_type() != Variant::OBJECT || a->operator Object *() == NULL) {
 
-					err_text = "Left operand of 'extends' is not an instance of anything.";
+					err_text = "Left operand of 'is' is not an instance of anything.";
 					break;
 				}
 				if (b->get_type() != Variant::OBJECT || b->operator Object *() == NULL) {
 
-					err_text = "Right operand of 'extends' is not a class.";
+					err_text = "Right operand of 'is' is not a class.";
 					break;
 				}
 #endif
@@ -401,7 +401,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 					if (!nc) {
 
-						err_text = "Right operand of 'extends' is not a class (type: '" + obj_B->get_class() + "').";
+						err_text = "Right operand of 'is' is not a class (type: '" + obj_B->get_class() + "').";
 						break;
 					}
 

@@ -36,7 +36,7 @@
 class MultiMesh : public Resource {
 
 	GDCLASS(MultiMesh, Resource);
-	RES_BASE_EXTENSION("mmsh");
+	RES_BASE_EXTENSION("multimesh");
 
 public:
 	enum TransformFormat {

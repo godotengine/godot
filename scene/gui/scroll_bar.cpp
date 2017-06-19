@@ -72,7 +72,7 @@ void ScrollBar::_gui_input(Ref<InputEvent> p_event) {
 
 		if (b->is_pressed()) {
 
-			double ofs = orientation == VERTICAL ? b->get_pos().y : b->get_pos().x;
+			double ofs = orientation == VERTICAL ? b->get_position().y : b->get_position().x;
 			Ref<Texture> decr = get_icon("decrement");
 			Ref<Texture> incr = get_icon("increment");
 
@@ -130,7 +130,7 @@ void ScrollBar::_gui_input(Ref<InputEvent> p_event) {
 
 		if (drag.active) {
 
-			double ofs = orientation == VERTICAL ? m->get_pos().y : m->get_pos().x;
+			double ofs = orientation == VERTICAL ? m->get_position().y : m->get_position().x;
 			Ref<Texture> decr = get_icon("decrement");
 
 			double decr_size = orientation == VERTICAL ? decr->get_height() : decr->get_width();
@@ -141,7 +141,7 @@ void ScrollBar::_gui_input(Ref<InputEvent> p_event) {
 			set_as_ratio(drag.value_at_click + diff);
 		} else {
 
-			double ofs = orientation == VERTICAL ? m->get_pos().y : m->get_pos().x;
+			double ofs = orientation == VERTICAL ? m->get_position().y : m->get_position().x;
 			Ref<Texture> decr = get_icon("decrement");
 			Ref<Texture> incr = get_icon("increment");
 
@@ -267,14 +267,14 @@ void ScrollBar::_notification(int p_what) {
 
 			grabber_rect.size.width = get_grabber_size();
 			grabber_rect.size.height = get_size().height;
-			grabber_rect.pos.y = 0;
-			grabber_rect.pos.x = get_grabber_offset() + decr->get_width() + bg->get_margin(MARGIN_LEFT);
+			grabber_rect.position.y = 0;
+			grabber_rect.position.x = get_grabber_offset() + decr->get_width() + bg->get_margin(MARGIN_LEFT);
 		} else {
 
 			grabber_rect.size.width = get_size().width;
 			grabber_rect.size.height = get_grabber_size();
-			grabber_rect.pos.y = get_grabber_offset() + decr->get_height() + bg->get_margin(MARGIN_TOP);
-			grabber_rect.pos.x = 0;
+			grabber_rect.position.y = get_grabber_offset() + decr->get_height() + bg->get_margin(MARGIN_TOP);
+			grabber_rect.position.x = 0;
 		}
 
 		grabber->draw(ci, grabber_rect);

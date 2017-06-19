@@ -37,15 +37,15 @@
 #include "drivers/windows/rw_lock_windows.h"
 #include "drivers/windows/semaphore_windows.h"
 #include "drivers/windows/thread_windows.h"
-#include "servers/audio_server.h"
-#include "servers/visual/visual_server_raster.h"
-//#include "servers/visual/visual_server_wrap_mt.h"
 #include "global_config.h"
 #include "io/marshalls.h"
 #include "joypad.h"
 #include "lang_table.h"
 #include "main/main.h"
 #include "packet_peer_udp_winsock.h"
+#include "servers/audio_server.h"
+#include "servers/visual/visual_server_raster.h"
+#include "servers/visual/visual_server_wrap_mt.h"
 #include "stream_peer_winsock.h"
 #include "tcp_server_winsock.h"
 
@@ -219,7 +219,7 @@ void OS_Windows::_touch_event(bool p_pressed, int p_x, int p_y, int idx) {
 	event.instance();
 	event->set_index(idx);
 	event->set_pressed(p_pressed);
-	event->set_pos(Vector2(p_x, p_y));
+	event->set_position(Vector2(p_x, p_y));
 
 	if (main_loop) {
 		input->parse_input_event(event);
@@ -231,7 +231,7 @@ void OS_Windows::_drag_event(int p_x, int p_y, int idx) {
 	Ref<InputEventScreenDrag> event;
 	event.instance();
 	event->set_index(idx);
-	event->set_pos(Vector2(p_x, p_y));
+	event->set_position(Vector2(p_x, p_y));
 
 	if (main_loop)
 		input->parse_input_event(event);
@@ -378,7 +378,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			last_button_state = mm->get_button_mask();
 			/*mm->get_button_mask()|=(wParam&MK_XBUTTON1)?(1<<5):0;
 			mm->get_button_mask()|=(wParam&MK_XBUTTON2)?(1<<6):0;*/
-			mm->set_pos(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
+			mm->set_position(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
 
 			if (mouse_mode == MOUSE_MODE_CAPTURED) {
 
@@ -386,31 +386,31 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				old_x = c.x;
 				old_y = c.y;
 
-				if (mm->get_pos() == c) {
+				if (mm->get_position() == c) {
 					center = c;
 					return 0;
 				}
 
-				Point2i ncenter = mm->get_pos();
+				Point2i ncenter = mm->get_position();
 				center = ncenter;
 				POINT pos = { (int)c.x, (int)c.y };
 				ClientToScreen(hWnd, &pos);
 				SetCursorPos(pos.x, pos.y);
 			}
 
-			input->set_mouse_position(mm->get_pos());
+			input->set_mouse_position(mm->get_position());
 			mm->set_speed(input->get_last_mouse_speed());
 
 			if (old_invalid) {
 
-				old_x = mm->get_pos().x;
-				old_y = mm->get_pos().y;
+				old_x = mm->get_position().x;
+				old_y = mm->get_position().y;
 				old_invalid = false;
 			}
 
-			mm->set_relative(Vector2(mm->get_pos() - Vector2(old_x, old_y)));
-			old_x = mm->get_pos().x;
-			old_y = mm->get_pos().y;
+			mm->set_relative(Vector2(mm->get_position() - Vector2(old_x, old_y)));
+			old_x = mm->get_position().x;
+			old_y = mm->get_position().y;
 			if (window_has_focus && main_loop)
 				input->parse_input_event(mm);
 
@@ -536,14 +536,12 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				/*
 			mb->get_button_mask()|=(wParam&MK_XBUTTON1)?(1<<5):0;
 			mb->get_button_mask()|=(wParam&MK_XBUTTON2)?(1<<6):0;*/
-				mb->set_pos(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
+				mb->set_position(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
 
 				if (mouse_mode == MOUSE_MODE_CAPTURED) {
 
-					mb->set_pos(Vector2(old_x, old_y));
+					mb->set_position(Vector2(old_x, old_y));
 				}
-
-				mb->set_global_pos(mb->get_pos());
 
 				if (uMsg != WM_MOUSEWHEEL) {
 					if (mb->is_pressed()) {
@@ -560,13 +558,15 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				} else if (mouse_mode != MOUSE_MODE_CAPTURED) {
 					// for reasons unknown to mankind, wheel comes in screen cordinates
 					POINT coords;
-					coords.x = mb->get_pos().x;
-					coords.y = mb->get_pos().y;
+					coords.x = mb->get_position().x;
+					coords.y = mb->get_position().y;
 
 					ScreenToClient(hWnd, &coords);
 
-					mb->set_pos(coords);
+					mb->set_position(Vector2(coords.x, coords.y));
 				}
+
+				mb->set_global_position(mb->get_position());
 
 				if (main_loop) {
 					input->parse_input_event(mb);
@@ -889,8 +889,8 @@ BOOL CALLBACK OS_Windows::MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPR
 	MonitorInfo minfo;
 	minfo.hMonitor = hMonitor;
 	minfo.hdcMonitor = hdcMonitor;
-	minfo.rect.pos.x = lprcMonitor->left;
-	minfo.rect.pos.y = lprcMonitor->top;
+	minfo.rect.position.x = lprcMonitor->left;
+	minfo.rect.position.y = lprcMonitor->top;
 	minfo.rect.size.x = lprcMonitor->right - lprcMonitor->left;
 	minfo.rect.size.y = lprcMonitor->bottom - lprcMonitor->top;
 
@@ -1029,12 +1029,10 @@ void OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int 
 #endif
 
 	visual_server = memnew(VisualServerRaster);
-	// FIXME: Reimplement threaded rendering? Or remove?
-	/*
-	if (get_render_thread_mode()!=RENDER_THREAD_UNSAFE) {
-		visual_server =memnew(VisualServerWrapMT(visual_server,get_render_thread_mode()==RENDER_SEPARATE_THREAD));
+	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
+
+		visual_server = memnew(VisualServerWrapMT(visual_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
 	}
-	*/
 
 	physics_server = memnew(PhysicsServerSW);
 	physics_server->init();
@@ -1370,7 +1368,7 @@ void OS_Windows::set_current_screen(int p_screen) {
 Point2 OS_Windows::get_screen_position(int p_screen) const {
 
 	ERR_FAIL_INDEX_V(p_screen, monitor_info.size(), Point2());
-	return Vector2(monitor_info[p_screen].rect.pos);
+	return Vector2(monitor_info[p_screen].rect.position);
 }
 Size2 OS_Windows::get_screen_size(int p_screen) const {
 

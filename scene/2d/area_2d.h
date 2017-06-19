@@ -55,7 +55,7 @@ private:
 	real_t linear_damp;
 	real_t angular_damp;
 	uint32_t collision_mask;
-	uint32_t layer_mask;
+	uint32_t collision_layer;
 	int priority;
 	bool monitoring;
 	bool monitorable;
@@ -126,9 +126,13 @@ private:
 	Map<ObjectID, AreaState> area_map;
 	void _clear_monitoring();
 
+	bool audio_bus_override;
+	StringName audio_bus;
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &property) const;
 
 public:
 	void set_space_override_mode(SpaceOverride p_mode);
@@ -164,20 +168,26 @@ public:
 	void set_collision_mask(uint32_t p_mask);
 	uint32_t get_collision_mask() const;
 
-	void set_layer_mask(uint32_t p_mask);
-	uint32_t get_layer_mask() const;
+	void set_collision_layer(uint32_t p_layer);
+	uint32_t get_collision_layer() const;
 
 	void set_collision_mask_bit(int p_bit, bool p_value);
 	bool get_collision_mask_bit(int p_bit) const;
 
-	void set_layer_mask_bit(int p_bit, bool p_value);
-	bool get_layer_mask_bit(int p_bit) const;
+	void set_collision_layer_bit(int p_bit, bool p_value);
+	bool get_collision_layer_bit(int p_bit) const;
 
 	Array get_overlapping_bodies() const; //function for script
 	Array get_overlapping_areas() const; //function for script
 
 	bool overlaps_area(Node *p_area) const;
 	bool overlaps_body(Node *p_body) const;
+
+	void set_audio_bus_override(bool p_override);
+	bool is_overriding_audio_bus() const;
+
+	void set_audio_bus(const StringName &p_audio_bus);
+	StringName get_audio_bus() const;
 
 	Area2D();
 	~Area2D();

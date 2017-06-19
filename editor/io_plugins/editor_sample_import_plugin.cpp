@@ -299,7 +299,7 @@ public:
 				error_dialog->popup_centered(Size2(200,100)*EDSCALE);
 			}
 
-			dst = dst.plus_file(samples[i].get_file().get_basename()+".smp");
+			dst = dst.plus_file(samples[i].get_file().get_basename()+".sample");
 
 			plugin->import(dst,imd);
 		}
@@ -910,13 +910,13 @@ Vector<uint8_t> EditorSampleExportPlugin::custom_export(String& p_path,const Ref
 	imd->set_option("edit/loop",false);
 	imd->set_option("compress/mode",1);
 
-	String savepath = EditorSettings::get_singleton()->get_settings_path().plus_file("tmp/smpconv.smp");
+	String savepath = EditorSettings::get_singleton()->get_settings_path().plus_file("tmp/smpconv.sample");
 	Error err = EditorSampleImportPlugin::singleton->import(savepath,imd);
 
 
 	ERR_FAIL_COND_V(err!=OK,Vector<uint8_t>());
 
-	p_path=p_path.get_basename()+".converted.smp";
+	p_path=p_path.get_basename()+".converted.sample";
 	return FileAccess::get_file_as_array(savepath);
 
 }

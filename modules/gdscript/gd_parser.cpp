@@ -1077,7 +1077,7 @@ GDParser::Node *GDParser::_parse_expression(Node *p_parent, bool p_static, bool 
 			case GDTokenizer::TK_OP_BIT_AND: op = OperatorNode::OP_BIT_AND; break;
 			case GDTokenizer::TK_OP_BIT_OR: op = OperatorNode::OP_BIT_OR; break;
 			case GDTokenizer::TK_OP_BIT_XOR: op = OperatorNode::OP_BIT_XOR; break;
-			case GDTokenizer::TK_PR_EXTENDS: op = OperatorNode::OP_EXTENDS; break;
+			case GDTokenizer::TK_PR_IS: op = OperatorNode::OP_IS; break;
 			case GDTokenizer::TK_CF_IF: op = OperatorNode::OP_TERNARY_IF; break;
 			case GDTokenizer::TK_CF_ELSE: op = OperatorNode::OP_TERNARY_ELSE; break;
 			default: valid = false; break;
@@ -1117,7 +1117,7 @@ GDParser::Node *GDParser::_parse_expression(Node *p_parent, bool p_static, bool 
 
 			switch (expression[i].op) {
 
-				case OperatorNode::OP_EXTENDS:
+				case OperatorNode::OP_IS:
 					priority = -1;
 					break; //before anything
 
@@ -1420,7 +1420,7 @@ GDParser::Node *GDParser::_reduce_expression(Node *p_node, bool p_to_const) {
 				}
 			}
 
-			if (op->op == OperatorNode::OP_EXTENDS) {
+			if (op->op == OperatorNode::OP_IS) {
 				//nothing much
 				return op;
 			}

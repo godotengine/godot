@@ -19,8 +19,12 @@ void main() {
 precision highp float;
 precision highp int;
 
-
+#ifdef USE_PANORAMA
+uniform sampler2D source_panorama; //texunit:0
+#else
 uniform samplerCube source_cube; //texunit:0
+#endif
+
 uniform int face_id;
 uniform float roughness;
 in highp vec2 uv_interp;
@@ -165,6 +169,26 @@ vec2 Hammersley(uint i, uint N) {
 
 uniform bool z_flip;
 
+#ifdef USE_PANORAMA
+
+vec4 texturePanorama(vec3 normal,sampler2D pano ) {
+
+	vec2 st = vec2(
+		atan(normal.x, normal.z),
+		acos(normal.y)
+	);
+
+	if(st.x < 0.0)
+		st.x += M_PI*2.0;
+
+	st/=vec2(M_PI*2.0,M_PI);
+
+	return textureLod(pano,st,0.0);
+
+}
+
+#endif
+
 void main() {
 
 #ifdef USE_DUAL_PARABOLOID
@@ -188,7 +212,12 @@ void main() {
 
 #ifdef USE_DIRECT_WRITE
 
+#ifdef USE_PANORAMA
+
+	frag_color=vec4(texturePanorama(N,source_panorama).rgb,1.0);
+#else
 	frag_color=vec4(texture(N,source_cube).rgb,1.0);
+#endif
 
 #else
 
@@ -204,7 +233,11 @@ void main() {
 		float ndotl = clamp(dot(N, L),0.0,1.0);
 
 		if (ndotl>0.0) {
+#ifdef USE_PANORAMA
+			sum.rgb += texturePanorama(H,source_panorama).rgb *ndotl;
+#else
 			sum.rgb += textureLod(source_cube, H, 0.0).rgb *ndotl;
+#endif
 			sum.a += ndotl;
 		}
 	}

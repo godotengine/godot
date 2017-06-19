@@ -1300,16 +1300,21 @@ EditorFileDialog::EditorFileDialog() {
 	favorite->connect("toggled", this, "_favorite_toggled");
 	pathhb->add_child(favorite);
 
+	Ref<ButtonGroup> view_mode_group;
+	view_mode_group.instance();
+
 	mode_thumbnails = memnew(ToolButton);
 	mode_thumbnails->connect("pressed", this, "set_display_mode", varray(DISPLAY_THUMBNAILS));
 	mode_thumbnails->set_toggle_mode(true);
 	mode_thumbnails->set_pressed(display_mode == DISPLAY_THUMBNAILS);
+	mode_thumbnails->set_button_group(view_mode_group);
 	pathhb->add_child(mode_thumbnails);
 
 	mode_list = memnew(ToolButton);
 	mode_list->connect("pressed", this, "set_display_mode", varray(DISPLAY_LIST));
 	mode_list->set_toggle_mode(true);
 	mode_list->set_pressed(display_mode == DISPLAY_LIST);
+	mode_list->set_button_group(view_mode_group);
 	pathhb->add_child(mode_list);
 
 	drives = memnew(OptionButton);

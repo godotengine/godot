@@ -61,6 +61,15 @@ class VisualServerRaster : public VisualServer {
 	bool draw_extra_frame;
 	RID test_cube;
 
+	struct FrameDrawnCallbacks {
+
+		ObjectID object;
+		StringName method;
+		Variant param;
+	};
+
+	List<FrameDrawnCallbacks> frame_drawn_callbacks;
+
 #if 0
 	struct Room {
 
@@ -586,6 +595,8 @@ public:
 	m_r m_name(m_type1 arg1) { return BINDBASE->m_name(arg1); }
 #define BIND1RC(m_r, m_name, m_type1) \
 	m_r m_name(m_type1 arg1) const { return BINDBASE->m_name(arg1); }
+#define BIND2R(m_r, m_name, m_type1, m_type2) \
+	m_r m_name(m_type1 arg1, m_type2 arg2) { return BINDBASE->m_name(arg1, arg2); }
 #define BIND2RC(m_r, m_name, m_type1, m_type2) \
 	m_r m_name(m_type1 arg1, m_type2 arg2) const { return BINDBASE->m_name(arg1, arg2); }
 #define BIND3RC(m_r, m_name, m_type1, m_type2, m_type3) \
@@ -615,6 +626,8 @@ public:
 	void m_name(m_type1 arg1, m_type2 arg2, m_type3 arg3, m_type4 arg4, m_type5 arg5, m_type6 arg6, m_type7 arg7, m_type8 arg8, m_type9 arg9) { DISPLAY_CHANGED BINDBASE->m_name(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9); }
 #define BIND10(m_name, m_type1, m_type2, m_type3, m_type4, m_type5, m_type6, m_type7, m_type8, m_type9, m_type10) \
 	void m_name(m_type1 arg1, m_type2 arg2, m_type3 arg3, m_type4 arg4, m_type5 arg5, m_type6 arg6, m_type7 arg7, m_type8 arg8, m_type9 arg9, m_type10 arg10) { DISPLAY_CHANGED BINDBASE->m_name(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10); }
+#define BIND11(m_name, m_type1, m_type2, m_type3, m_type4, m_type5, m_type6, m_type7, m_type8, m_type9, m_type10, m_type11) \
+	void m_name(m_type1 arg1, m_type2 arg2, m_type3 arg3, m_type4 arg4, m_type5 arg5, m_type6 arg6, m_type7 arg7, m_type8 arg8, m_type9 arg9, m_type10 arg10, m_type11 arg11) { DISPLAY_CHANGED BINDBASE->m_name(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11); }
 
 //from now on, calls forwarded to this singleton
 #define BINDBASE VSG::storage
@@ -632,10 +645,10 @@ public:
 	BIND1RC(uint32_t, texture_get_width, RID)
 	BIND1RC(uint32_t, texture_get_height, RID)
 	BIND3(texture_set_size_override, RID, int, int)
-	BIND2RC(RID, texture_create_radiance_cubemap, RID, int)
 
 	BIND3(texture_set_detect_3d_callback, RID, TextureDetectCallback, void *)
 	BIND3(texture_set_detect_srgb_callback, RID, TextureDetectCallback, void *)
+	BIND3(texture_set_detect_normal_callback, RID, TextureDetectCallback, void *)
 
 	BIND2(texture_set_path, RID, const String &)
 	BIND1RC(String, texture_get_path, RID)
@@ -644,10 +657,10 @@ public:
 
 	BIND1(textures_keep_original, bool)
 
-	/* SKYBOX API */
+	/* SKY API */
 
-	BIND0R(RID, skybox_create)
-	BIND3(skybox_set_texture, RID, RID, int)
+	BIND0R(RID, sky_create)
+	BIND3(sky_set_texture, RID, RID, int)
 
 	/* SHADER API */
 
@@ -922,6 +935,10 @@ public:
 	BIND3(viewport_set_shadow_atlas_quadrant_subdivision, RID, int, int)
 	BIND2(viewport_set_msaa, RID, ViewportMSAA)
 	BIND2(viewport_set_hdr, RID, bool)
+	BIND2(viewport_set_usage, RID, ViewportUsage)
+
+	BIND2R(int, viewport_get_render_info, RID, ViewportRenderInfo)
+	BIND2(viewport_set_debug_draw, RID, ViewportDebugDraw)
 
 /* ENVIRONMENT API */
 
@@ -932,23 +949,26 @@ public:
 	BIND0R(RID, environment_create)
 
 	BIND2(environment_set_background, RID, EnvironmentBG)
-	BIND2(environment_set_skybox, RID, RID)
-	BIND2(environment_set_skybox_scale, RID, float)
+	BIND2(environment_set_sky, RID, RID)
+	BIND2(environment_set_sky_scale, RID, float)
 	BIND2(environment_set_bg_color, RID, const Color &)
 	BIND2(environment_set_bg_energy, RID, float)
 	BIND2(environment_set_canvas_max_layer, RID, int)
 	BIND4(environment_set_ambient_light, RID, const Color &, float, float)
-	BIND8(environment_set_ssr, RID, bool, int, float, float, float, bool, bool)
+	BIND7(environment_set_ssr, RID, bool, int, float, float, float, bool)
 	BIND10(environment_set_ssao, RID, bool, float, float, float, float, float, float, const Color &, bool)
 
 	BIND6(environment_set_dof_blur_near, RID, bool, float, float, float, EnvironmentDOFBlurQuality)
 	BIND6(environment_set_dof_blur_far, RID, bool, float, float, float, EnvironmentDOFBlurQuality)
 	BIND10(environment_set_glow, RID, bool, int, float, float, float, EnvironmentGlowBlendMode, float, float, bool)
-	BIND5(environment_set_fog, RID, bool, float, float, RID)
 
 	BIND9(environment_set_tonemap, RID, EnvironmentToneMapper, float, float, bool, float, float, float, float)
 
 	BIND6(environment_set_adjustment, RID, bool, float, float, float, RID)
+
+	BIND5(environment_set_fog, RID, bool, const Color &, const Color &, float)
+	BIND6(environment_set_fog_depth, RID, bool, float, float, bool, float)
+	BIND5(environment_set_fog_height, RID, bool, float, float, float)
 
 /* SCENARIO API */
 
@@ -1021,12 +1041,12 @@ public:
 	BIND6(canvas_item_add_line, RID, const Point2 &, const Point2 &, const Color &, float, bool)
 	BIND3(canvas_item_add_rect, RID, const Rect2 &, const Color &)
 	BIND4(canvas_item_add_circle, RID, const Point2 &, float, const Color &)
-	BIND6(canvas_item_add_texture_rect, RID, const Rect2 &, RID, bool, const Color &, bool)
-	BIND6(canvas_item_add_texture_rect_region, RID, const Rect2 &, RID, const Rect2 &, const Color &, bool)
-	BIND10(canvas_item_add_nine_patch, RID, const Rect2 &, const Rect2 &, RID, const Vector2 &, const Vector2 &, NinePatchAxisMode, NinePatchAxisMode, bool, const Color &)
-	BIND6(canvas_item_add_primitive, RID, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID, float)
-	BIND5(canvas_item_add_polygon, RID, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID)
-	BIND7(canvas_item_add_triangle_array, RID, const Vector<int> &, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID, int)
+	BIND7(canvas_item_add_texture_rect, RID, const Rect2 &, RID, bool, const Color &, bool, RID)
+	BIND8(canvas_item_add_texture_rect_region, RID, const Rect2 &, RID, const Rect2 &, const Color &, bool, RID, bool)
+	BIND11(canvas_item_add_nine_patch, RID, const Rect2 &, const Rect2 &, RID, const Vector2 &, const Vector2 &, NinePatchAxisMode, NinePatchAxisMode, bool, const Color &, RID)
+	BIND7(canvas_item_add_primitive, RID, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID, float, RID)
+	BIND6(canvas_item_add_polygon, RID, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID, RID)
+	BIND8(canvas_item_add_triangle_array, RID, const Vector<int> &, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID, int, RID)
 	BIND3(canvas_item_add_mesh, RID, const RID &, RID)
 	BIND3(canvas_item_add_multimesh, RID, RID, RID)
 	BIND2(canvas_item_add_set_transform, RID, const Transform2D &)
@@ -1065,6 +1085,7 @@ public:
 	BIND2(canvas_light_set_shadow_gradient_length, RID, float)
 	BIND2(canvas_light_set_shadow_filter, RID, CanvasLightShadowFilter)
 	BIND2(canvas_light_set_shadow_color, RID, const Color &)
+	BIND2(canvas_light_set_shadow_smooth, RID, float)
 
 	BIND0R(RID, canvas_light_occluder_create)
 	BIND2(canvas_light_occluder_attach_to_canvas, RID, RID)
@@ -1096,6 +1117,8 @@ public:
 
 	/* EVENT QUEUING */
 
+	virtual void request_frame_drawn_callback(Object *p_where, const StringName &p_method, const Variant &p_userdata);
+
 	virtual void draw();
 	virtual void sync();
 	virtual bool has_changed() const;
@@ -1116,6 +1139,7 @@ public:
 	virtual bool has_feature(Features p_feature) const;
 
 	virtual bool has_os_feature(const String &p_feature) const;
+	virtual void set_debug_generate_wireframes(bool p_generate);
 
 	VisualServerRaster();
 	~VisualServerRaster();

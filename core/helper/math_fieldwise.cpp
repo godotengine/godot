@@ -63,8 +63,8 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 
 			SETUP_TYPE(Rect2)
 
-			/**/ TRY_TRANSFER_FIELD("x", pos.x)
-			else TRY_TRANSFER_FIELD("y", pos.y)
+			/**/ TRY_TRANSFER_FIELD("x", position.x)
+			else TRY_TRANSFER_FIELD("y", position.y)
 			else TRY_TRANSFER_FIELD("w", size.x)
 			else TRY_TRANSFER_FIELD("h", size.y)
 
@@ -110,9 +110,9 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 
 			SETUP_TYPE(Rect3)
 
-			/**/ TRY_TRANSFER_FIELD("px", pos.x)
-			else TRY_TRANSFER_FIELD("py", pos.y)
-			else TRY_TRANSFER_FIELD("pz", pos.z)
+			/**/ TRY_TRANSFER_FIELD("px", position.x)
+			else TRY_TRANSFER_FIELD("py", position.y)
+			else TRY_TRANSFER_FIELD("pz", position.z)
 			else TRY_TRANSFER_FIELD("sx", size.x)
 			else TRY_TRANSFER_FIELD("sy", size.y)
 			else TRY_TRANSFER_FIELD("sz", size.z)

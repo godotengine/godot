@@ -95,16 +95,40 @@ Ref<Theme> create_editor_theme() {
 	editor_register_icons(theme);
 
 	// Define colors
-	Color highlight_color = EDITOR_DEF("editors/theme/highlight_color", Color::html("#6ca9f3"));
-	Color base_color = EDITOR_DEF("editors/theme/base_color", Color::html("#2e3742"));
-	float contrast = EDITOR_DEF("editors/theme/contrast", 0.2);
+	Color highlight_color = EDITOR_DEF("interface/theme/highlight_color", Color::html("#b79047"));
+	Color base_color = EDITOR_DEF("interface/theme/base_color", Color::html("#273241"));
+	float contrast = EDITOR_DEF("interface/theme/contrast", 0.25);
+	int preset = EDITOR_DEF("interface/theme/preset", 0);
+
+	switch (preset) {
+		case 0: { // Default
+			highlight_color = Color::html("#b79047");
+			base_color = Color::html("#273241");
+			contrast = 0.25;
+		} break;
+		case 1: { // Grey
+			highlight_color = Color::html("#3e3e3e");
+			base_color = Color::html("#3d3d3d");
+			contrast = 0.2;
+		} break;
+		case 2: { // Godot 2
+			highlight_color = Color::html("#86ace2");
+			base_color = Color::html("#3C3A44");
+			contrast = 0.25;
+		} break;
+		case 3: { // Arc
+			highlight_color = Color::html("#68a7f2");
+			base_color = Color::html("#434a59");
+			contrast = 0.2;
+		} break;
+	}
 
 	Color dark_color_1 = base_color.linear_interpolate(Color(0, 0, 0, 1), contrast);
-	Color dark_color_2 = base_color.linear_interpolate(Color(0, 0, 0, 1), contrast * 2);
-	Color dark_color_3 = base_color.linear_interpolate(Color(0, 0, 0, 1), contrast * 3);
+	Color dark_color_2 = base_color.linear_interpolate(Color(0, 0, 0, 1), contrast * 1.5);
+	Color dark_color_3 = base_color.linear_interpolate(Color(0, 0, 0, 1), contrast * 2);
 
 	Color light_color_1 = base_color.linear_interpolate(Color(1, 1, 1, 1), contrast);
-	Color light_color_2 = base_color.linear_interpolate(Color(1, 1, 1, 1), contrast * 2);
+	Color light_color_2 = base_color.linear_interpolate(Color(1, 1, 1, 1), contrast * 1.5);
 
 	theme->set_color("highlight_color", "Editor", highlight_color);
 	theme->set_color("base_color", "Editor", base_color);
@@ -121,8 +145,8 @@ Ref<Theme> create_editor_theme() {
 	theme->set_icon("unchecked", "PopupMenu", theme->get_icon("Unchecked", "EditorIcons"));
 
 	// Editor background
-	Ref<StyleBoxFlat> style_background = make_flat_stylebox(dark_color_2, 4, 4, 4, 4);
-	theme->set_stylebox("Background", "EditorStyles", style_background);
+	Ref<StyleBoxFlat> style_panel = make_flat_stylebox(dark_color_2, 4, 4, 4, 4);
+	theme->set_stylebox("Background", "EditorStyles", style_panel);
 
 	// Focus
 	Ref<StyleBoxFlat> focus_sbt = make_flat_stylebox(light_color_1, 4, 4, 4, 4);
@@ -169,9 +193,9 @@ Ref<Theme> create_editor_theme() {
 	theme->set_stylebox("MenuHover", "EditorStyles", style_menu_hover_border);
 
 	// Content of each tab
-	Ref<StyleBoxFlat> style_panel = make_flat_stylebox(base_color, 1, 4, 1, 1);
-	theme->set_stylebox("panel", "TabContainer", style_panel);
-	theme->set_stylebox("Content", "EditorStyles", style_panel);
+	Ref<StyleBoxFlat> style_content_panel = make_flat_stylebox(base_color, 1, 4, 1, 1);
+	theme->set_stylebox("panel", "TabContainer", style_content_panel);
+	theme->set_stylebox("Content", "EditorStyles", style_content_panel);
 
 	// Button
 	Ref<StyleBoxFlat> style_button = make_flat_stylebox(dark_color_1, 4, 4, 4, 4);
@@ -223,6 +247,10 @@ Ref<Theme> create_editor_theme() {
 	theme->set_icon("arrow_collapsed", "Tree", theme->get_icon("TreeArrowRight", "EditorIcons"));
 	theme->set_icon("select_arrow", "Tree", theme->get_icon("Dropdown", "EditorIcons"));
 	theme->set_stylebox("bg_focus", "Tree", focus_sbt);
+	theme->set_stylebox("custom_button", "Tree", style_button);
+	theme->set_stylebox("custom_button_pressed", "Tree", style_button);
+	theme->set_stylebox("custom_button_hover", "Tree", style_button);
+	theme->set_color("custom_button_font_highlight", "Tree", HIGHLIGHT_COLOR_LIGHT);
 
 	Ref<StyleBox> style_tree_btn = make_flat_stylebox(light_color_1, 2, 4, 2, 4);
 	theme->set_stylebox("button_pressed", "Tree", style_tree_btn);
@@ -253,7 +281,7 @@ Ref<Theme> create_editor_theme() {
 	theme->set_color("drop_position_color", "Tree", highlight_color);
 
 	// ItemList
-	Ref<StyleBoxFlat> style_itemlist_cursor = make_flat_stylebox(highlight_color, 8, 8, 8, 8);
+	Ref<StyleBoxFlat> style_itemlist_cursor = make_flat_stylebox(highlight_color, 4, 4, 4, 4);
 	style_itemlist_cursor->set_draw_center(false);
 	style_itemlist_cursor->set_border_size(1 * EDSCALE);
 	style_itemlist_cursor->set_light_color(light_color_1);
@@ -264,6 +292,7 @@ Ref<Theme> create_editor_theme() {
 	theme->set_stylebox("selected", "ItemList", style_tree_selected);
 	theme->set_stylebox("bg_focus", "ItemList", focus_sbt);
 	theme->set_stylebox("bg", "ItemList", style_bg);
+	theme->set_constant("vseparation", "ItemList", 5 * EDSCALE);
 
 	Ref<StyleBoxFlat> style_tab_fg = make_flat_stylebox(base_color, 15, 5, 15, 5);
 	Ref<StyleBoxFlat> style_tab_bg = make_flat_stylebox(base_color, 15, 5, 15, 5);
@@ -278,6 +307,8 @@ Ref<Theme> create_editor_theme() {
 	theme->set_color("font_color_bg", "TabContainer", light_color_2);
 	theme->set_icon("menu", "TabContainer", theme->get_icon("TabMenu", "EditorIcons"));
 	theme->set_icon("menu_hl", "TabContainer", theme->get_icon("TabMenu", "EditorIcons"));
+	theme->set_stylebox("SceneTabFG", "EditorStyles", make_flat_stylebox(base_color, 10, 5, 10, 5));
+	theme->set_stylebox("SceneTabBG", "EditorStyles", make_empty_stylebox(6, 5, 6, 5));
 
 	// Debugger
 	Ref<StyleBoxFlat> style_panel_debugger = make_flat_stylebox(dark_color_2, 0, 4, 0, 0);
@@ -293,12 +324,13 @@ Ref<Theme> create_editor_theme() {
 	// LineEdit
 	Ref<StyleBoxFlat> style_lineedit = make_flat_stylebox(dark_color_1, 4, 4, 4, 4);
 	style_lineedit->set_border_size(1 * EDSCALE);
-	style_lineedit->set_light_color(light_color_1);
-	style_lineedit->set_dark_color(light_color_1);
+	style_lineedit = change_border_color(style_lineedit, light_color_1);
 	Ref<StyleBoxFlat> style_lineedit_disabled = style_lineedit->duplicate();
-	style_lineedit_disabled->set_bg_color(light_color_2);
+	style_lineedit_disabled->set_bg_color(light_color_1);
+	Ref<StyleBoxFlat> style_lineedit_focus = change_border_color(style_lineedit, highlight_color);
+	style_lineedit_focus->set_draw_center(false);
 	theme->set_stylebox("normal", "LineEdit", style_lineedit);
-	theme->set_stylebox("focus", "LineEdit", change_border_color(style_lineedit, highlight_color));
+	theme->set_stylebox("focus", "LineEdit", style_lineedit_focus);
 	theme->set_stylebox("read_only", "LineEdit", style_lineedit_disabled);
 
 	// TextEdit
@@ -365,6 +397,9 @@ Ref<Theme> create_editor_theme() {
 	theme->set_icon("grabber", "VSlider", theme->get_icon("SliderGrabber", "EditorIcons"));
 	theme->set_icon("grabber_highlight", "VSlider", theme->get_icon("SliderGrabberHl", "EditorIcons"));
 
+	// Panel
+	theme->set_stylebox("panel", "Panel", style_panel);
+
 	// TooltipPanel
 	Ref<StyleBoxFlat> style_tooltip = make_flat_stylebox(Color(1, 1, 1, 0.8), 8, 8, 8, 8);
 	style_tooltip->set_border_size(2 * EDSCALE);
@@ -413,13 +448,18 @@ Ref<Theme> create_editor_theme() {
 	theme->set_stylebox("comment", "GraphNode", graphsbcomment);
 	theme->set_stylebox("commentfocus", "GraphNode", graphsbcommentselected);
 
+	// FileDialog
+	Color disable_color = light_color_2;
+	disable_color.a = 0.7;
+	theme->set_color("files_disabled", "FileDialog", disable_color);
+
 	return theme;
 }
 
 Ref<Theme> create_custom_theme() {
 	Ref<Theme> theme;
 
-	String custom_theme = EditorSettings::get_singleton()->get("interface/custom_theme");
+	String custom_theme = EditorSettings::get_singleton()->get("interface/theme/custom_theme");
 	if (custom_theme != "") {
 		theme = ResourceLoader::load(custom_theme);
 	}

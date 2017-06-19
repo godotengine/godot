@@ -42,7 +42,7 @@
 #include "scene/2d/path_2d.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
-#include "scene/gui/button_array.h"
+
 #include "scene/gui/button_group.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/check_box.h"
@@ -73,7 +73,6 @@
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/slider.h"
-#include "scene/gui/spin_box.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
@@ -112,6 +111,7 @@
 #include "scene/2d/ray_cast_2d.h"
 //#include "scene/2d/sound_player_2d.h"
 //#include "scene/2d/sample_player_2d.h"
+#include "scene/2d/audio_stream_player_2d.h"
 #include "scene/2d/canvas_modulate.h"
 #include "scene/2d/navigation2d.h"
 #include "scene/2d/remote_transform_2d.h"
@@ -129,7 +129,6 @@
 #include "scene/animation/animation_tree_player.h"
 #include "scene/animation/tween.h"
 #include "scene/main/resource_preloader.h"
-#include "scene/main/scene_main_loop.h"
 #include "scene/main/scene_main_loop.h"
 #include "scene/resources/packed_scene.h"
 
@@ -172,6 +171,8 @@
 #include "scene/resources/sky_box.h"
 #include "scene/resources/texture.h"
 
+#include "scene/resources/primitive_meshes.h"
+
 #include "scene/resources/shader_graph.h"
 
 #include "scene/resources/world.h"
@@ -206,9 +207,7 @@
 #include "scene/3d/physics_body.h"
 #include "scene/3d/portal.h"
 #include "scene/3d/position_3d.h"
-#include "scene/3d/quad.h"
 #include "scene/3d/reflection_probe.h"
-#include "scene/3d/test_cube.h"
 #include "scene/resources/environment.h"
 
 #include "scene/3d/area.h"
@@ -276,7 +275,7 @@ void register_scene_types() {
 	String theme_path = GLOBAL_DEF("gui/theme/custom", "");
 	GlobalConfig::get_singleton()->set_custom_property_info("gui/theme/custom", PropertyInfo(Variant::STRING, "gui/theme/custom", PROPERTY_HINT_FILE, "*.tres,*.res", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
 	String font_path = GLOBAL_DEF("gui/theme/custom_font", "");
-	GlobalConfig::get_singleton()->set_custom_property_info("gui/theme/custom_font", PropertyInfo(Variant::STRING, "gui/theme/custom_font", PROPERTY_HINT_FILE, "*.tres,*.res,*.fnt", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
+	GlobalConfig::get_singleton()->set_custom_property_info("gui/theme/custom_font", PropertyInfo(Variant::STRING, "gui/theme/custom_font", PROPERTY_HINT_FILE, "*.tres,*.res,*.font", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
 
 	if (theme_path != String()) {
 		Ref<Theme> theme = ResourceLoader::load(theme_path);
@@ -360,9 +359,6 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); //may take time to init
 
-	ClassDB::register_virtual_class<ButtonArray>();
-	ClassDB::register_class<HButtonArray>();
-	ClassDB::register_class<VButtonArray>();
 	ClassDB::register_class<TextureProgress>();
 	ClassDB::register_class<ItemList>();
 
@@ -410,7 +406,6 @@ void register_scene_types() {
 	ClassDB::register_class<Camera>();
 	ClassDB::register_class<Listener>();
 	ClassDB::register_class<InterpolatedCamera>();
-	ClassDB::register_class<TestCube>();
 	ClassDB::register_class<MeshInstance>();
 	ClassDB::register_class<ImmediateGeometry>();
 	ClassDB::register_class<Sprite3D>();
@@ -426,7 +421,6 @@ void register_scene_types() {
 	ClassDB::register_class<Portal>();
 	ClassDB::register_class<Particles>();
 	ClassDB::register_class<Position3D>();
-	ClassDB::register_class<Quad>();
 	ClassDB::register_class<NavigationMeshInstance>();
 	ClassDB::register_class<NavigationMesh>();
 	ClassDB::register_class<Navigation>();
@@ -523,11 +517,20 @@ void register_scene_types() {
 	ClassDB::register_virtual_class<Shader>();
 
 #ifndef _3D_DISABLED
-	ClassDB::register_class<Mesh>();
+	ClassDB::register_virtual_class<Mesh>();
+	ClassDB::register_class<ArrayMesh>();
+	ClassDB::register_virtual_class<PrimitiveMesh>();
+	ClassDB::register_class<CapsuleMesh>();
+	ClassDB::register_class<CubeMesh>();
+	ClassDB::register_class<CylinderMesh>();
+	ClassDB::register_class<PlaneMesh>();
+	ClassDB::register_class<PrismMesh>();
 	ClassDB::register_class<QuadMesh>();
+	ClassDB::register_class<SphereMesh>();
 	ClassDB::register_virtual_class<Material>();
 	ClassDB::register_class<SpatialMaterial>();
 	ClassDB::add_compatibility_class("FixedSpatialMaterial", "SpatialMaterial");
+	ClassDB::add_compatibility_class("Mesh", "ArrayMesh");
 	SceneTree::add_idle_callback(SpatialMaterial::flush_changes);
 	SpatialMaterial::init_shaders();
 
@@ -561,8 +564,9 @@ void register_scene_types() {
 	ClassDB::register_class<Environment>();
 	ClassDB::register_class<World2D>();
 	ClassDB::register_virtual_class<Texture>();
-	ClassDB::register_virtual_class<SkyBox>();
-	ClassDB::register_class<ImageSkyBox>();
+	ClassDB::register_virtual_class<Sky>();
+	ClassDB::register_class<PanoramaSky>();
+	ClassDB::register_class<ProceduralSky>();
 	ClassDB::register_class<StreamTexture>();
 	ClassDB::register_class<ImageTexture>();
 	ClassDB::register_class<AtlasTexture>();
@@ -584,11 +588,12 @@ void register_scene_types() {
 
 	ClassDB::register_class<PolygonPathFinder>();
 	ClassDB::register_class<BitMap>();
-	ClassDB::register_class<ColorRamp>();
+	ClassDB::register_class<Gradient>();
 
 	OS::get_singleton()->yield(); //may take time to init
 
-	ClassDB::register_class<AudioPlayer>();
+	ClassDB::register_class<AudioStreamPlayer>();
+	ClassDB::register_class<AudioStreamPlayer2D>();
 	ClassDB::register_virtual_class<VideoStream>();
 	ClassDB::register_class<AudioStreamSample>();
 

@@ -229,7 +229,7 @@ protected:
 
 public:
 	void set_pressed(bool p_pressed);
-	bool is_pressed();
+	virtual bool is_pressed() const;
 
 	void set_scancode(uint32_t p_scancode);
 	uint32_t get_scancode() const;
@@ -238,7 +238,7 @@ public:
 	uint32_t get_unicode() const;
 
 	void set_echo(bool p_enable);
-	bool is_echo() const;
+	virtual bool is_echo() const;
 
 	uint32_t get_scancode_with_modifiers() const;
 
@@ -265,11 +265,11 @@ public:
 	void set_button_mask(int p_mask);
 	int get_button_mask() const;
 
-	void set_pos(const Vector2 &p_pos);
-	Vector2 get_pos() const;
+	void set_position(const Vector2 &p_pos);
+	Vector2 get_position() const;
 
-	void set_global_pos(const Vector2 &p_global_pos);
-	Vector2 get_global_pos() const;
+	void set_global_position(const Vector2 &p_global_pos);
+	Vector2 get_global_position() const;
 
 	InputEventMouse();
 };
@@ -377,7 +377,7 @@ public:
 	InputEventJoypadButton();
 };
 
-struct InputEventScreenTouch : public InputEvent {
+class InputEventScreenTouch : public InputEvent {
 	GDCLASS(InputEventScreenTouch, InputEvent)
 	int index;
 	Vector2 pos;
@@ -390,8 +390,8 @@ public:
 	void set_index(int p_index);
 	int get_index() const;
 
-	void set_pos(const Vector2 &p_pos);
-	Vector2 get_pos() const;
+	void set_position(const Vector2 &p_pos);
+	Vector2 get_position() const;
 
 	void set_pressed(bool p_pressed);
 	virtual bool is_pressed() const;
@@ -416,8 +416,8 @@ public:
 	void set_index(int p_index);
 	int get_index() const;
 
-	void set_pos(const Vector2 &p_pos);
-	Vector2 get_pos() const;
+	void set_position(const Vector2 &p_pos);
+	Vector2 get_position() const;
 
 	void set_relative(const Vector2 &p_relative);
 	Vector2 get_relative() const;

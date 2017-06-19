@@ -277,6 +277,11 @@ Files: ./thirdparty/squish/
 Copyright: 2006, Simon Brown
 License: Expat
 
+Files: ./thirdparty/tinyexr/
+Copyright: 2014-2017, Syoyo Fujita
+  2002, Industrial Light & Magic, a division of Lucas Digital Ltd. LLC
+License: BSD-3-Clause
+
 Files: ./thirdparty/zlib/
 Copyright: 1995-2017, Jean-loup Gailly and Mark Adler
 License: Zlib

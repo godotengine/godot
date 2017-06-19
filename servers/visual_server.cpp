@@ -338,8 +338,6 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 	PoolVector<uint8_t>::Write iw;
 	if (r_index_array.size()) {
-		print_line("elements: " + itos(r_index_array.size()));
-
 		iw = r_index_array.write();
 	}
 
@@ -399,7 +397,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 						}
 					}
 
-					r_aabb = Rect3(Vector3(aabb.pos.x, aabb.pos.y, 0), Vector3(aabb.size.x, aabb.size.y, 0));
+					r_aabb = Rect3(Vector3(aabb.position.x, aabb.position.y, 0), Vector3(aabb.size.x, aabb.size.y, 0));
 
 				} else {
 					PoolVector<Vector3> array = p_arrays[ai];
@@ -465,7 +463,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 					for (int i = 0; i < p_vertex_array_len; i++) {
 
-						uint8_t vector[4] = {
+						int8_t vector[4] = {
 							CLAMP(src[i].x * 127, -128, 127),
 							CLAMP(src[i].y * 127, -128, 127),
 							CLAMP(src[i].z * 127, -128, 127),
@@ -770,7 +768,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 					if (bptr->size.x < 0) {
 						//first
 						bptr[idx] = Rect3();
-						bptr[idx].pos = v;
+						bptr[idx].position = v;
 						any_valid = true;
 					} else {
 						bptr[idx].expand_to(v);
@@ -1233,11 +1231,12 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 				if (p_format & ARRAY_COMPRESS_NORMAL) {
 
 					PoolVector<Vector3>::Write w = arr.write();
+					const float multiplier = 1.f / 127.f;
 
 					for (int j = 0; j < p_vertex_len; j++) {
 
-						const uint8_t *v = (const uint8_t *)&r[j * total_elem_size + offsets[i]];
-						w[j] = Vector3(float(v[0] / 255.0) * 2.0 - 1.0, float(v[1] / 255.0) * 2.0 - 1.0, float(v[2] / 255.0) * 2.0 - 1.0);
+						const int8_t *v = (const int8_t *)&r[j * total_elem_size + offsets[i]];
+						w[j] = Vector3(float(v[0]) * multiplier, float(v[1]) * multiplier, float(v[2]) * multiplier);
 					}
 				} else {
 					PoolVector<Vector3>::Write w = arr.write();
@@ -1293,7 +1292,7 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 					for (int j = 0; j < p_vertex_len; j++) {
 
 						const uint8_t *v = (const uint8_t *)&r[j * total_elem_size + offsets[i]];
-						w[j] = Color(float(v[0] / 255.0) * 2.0 - 1.0, float(v[1] / 255.0) * 2.0 - 1.0, float(v[2] / 255.0) * 2.0 - 1.0, float(v[3] / 255.0) * 2.0 - 1.0);
+						w[j] = Color(float(v[0] / 255.0), float(v[1] / 255.0), float(v[2] / 255.0), float(v[3] / 255.0));
 					}
 				} else {
 					PoolVector<Color>::Write w = arr.write();
@@ -1566,6 +1565,10 @@ VisualServer::VisualServer() {
 
 	//ERR_FAIL_COND(singleton);
 	singleton = this;
+	GLOBAL_DEF("rendering/vram_formats/use_s3tc", true);
+	GLOBAL_DEF("rendering/vram_formats/use_etc", false);
+	GLOBAL_DEF("rendering/vram_formats/use_etc2", true);
+	GLOBAL_DEF("rendering/vram_formats/use_pvrtc", false);
 }
 
 VisualServer::~VisualServer() {

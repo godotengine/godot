@@ -83,8 +83,8 @@ static inline Vector2 rotate90(const Vector2 &v) {
 
 static inline Vector2 interpolate(const Rect2 &r, const Vector2 &v) {
 	return Vector2(
-			Math::lerp(r.get_pos().x, r.get_pos().x + r.get_size().x, v.x),
-			Math::lerp(r.get_pos().y, r.get_pos().y + r.get_size().y, v.y));
+			Math::lerp(r.position.x, r.position.x + r.get_size().x, v.x),
+			Math::lerp(r.position.y, r.position.y + r.get_size().y, v.y));
 }
 
 //----------------------------------------------------------------------------
@@ -337,7 +337,7 @@ void LineBuilder::build() {
 			} else if (current_joint_mode == LINE_JOINT_ROUND) {
 				Vector2 vbegin = cbegin - pos1;
 				Vector2 vend = cend - pos1;
-				strip_add_arc(pos1, vend.angle_to(vbegin), orientation);
+				strip_add_arc(pos1, vbegin.angle_to(vend), orientation);
 			}
 
 			if (intersection_result != SEGMENT_INTERSECT)
@@ -498,7 +498,7 @@ void LineBuilder::strip_add_arc(Vector2 center, float angle_delta, Orientation o
 	if (angle_delta < 0.f)
 		angle_step = -angle_step;
 
-	float t = vbegin.angle_to(Vector2(1, 0));
+	float t = Vector2(1, 0).angle_to(vbegin);
 	float end_angle = t + angle_delta;
 	Vector2 rpos(0, 0);
 
@@ -525,7 +525,7 @@ void LineBuilder::new_arc(Vector2 center, Vector2 vbegin, float angle_delta, Col
 	if (angle_delta < 0.f)
 		angle_step = -angle_step;
 
-	float t = vbegin.angle_to(Vector2(1, 0));
+	float t = Vector2(1, 0).angle_to(vbegin);
 	float end_angle = t + angle_delta;
 	Vector2 rpos(0, 0);
 	float tt_begin = -Math_PI / 2.f;

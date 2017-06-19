@@ -57,8 +57,8 @@ public:
 	void set_default_color(Color color);
 	Color get_default_color() const;
 
-	void set_gradient(const Ref<ColorRamp> &gradient);
-	Ref<ColorRamp> get_gradient() const;
+	void set_gradient(const Ref<Gradient> &gradient);
+	Ref<Gradient> get_gradient() const;
 
 	void set_texture(const Ref<Texture> &texture);
 	Ref<Texture> get_texture() const;
@@ -97,7 +97,7 @@ private:
 	LineCapMode _end_cap_mode;
 	float _width;
 	Color _default_color;
-	Ref<ColorRamp> _gradient;
+	Ref<Gradient> _gradient;
 	Ref<Texture> _texture;
 	LineTextureMode _texture_mode;
 	float _sharp_limit;

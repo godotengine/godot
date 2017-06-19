@@ -92,6 +92,7 @@ class PoolVector {
 
 		//		ERR_FAIL_COND(alloc->lock>0); should not be illegal to lock this for copy on write, as it's a copy on write after all
 
+		// Refcount should not be zero, otherwise it's a misuse of COW
 		if (alloc->refcount.get() == 1)
 			return; //nothing to do
 
@@ -216,7 +217,12 @@ class PoolVector {
 
 		{
 			int cur_elements = alloc->size / sizeof(T);
-			Write w = write();
+
+			// Don't use write() here because it could otherwise provoke COW,
+			// which is not desirable here because we are destroying the last reference anyways
+			Write w;
+			// Reference to still prevent other threads from touching the alloc
+			w._ref(alloc);
 
 			for (int i = 0; i < cur_elements; i++) {
 

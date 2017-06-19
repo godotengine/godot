@@ -187,25 +187,6 @@ celt_pitch_xcorr_c(const opus_val16 *_x, const opus_val16 *_y,
       opus_val32 *xcorr, int len, int max_pitch);
 
 #if !defined(OVERRIDE_PITCH_XCORR)
-/*Is run-time CPU detection enabled on this platform?*/
-# if defined(OPUS_HAVE_RTCD) && (defined(OPUS_ARM_ASM) \
-   || (defined(OPUS_ARM_MAY_HAVE_NEON_INTR) \
-   && !defined(OPUS_ARM_PRESUME_NEON_INTR)))
-extern
-#  if defined(FIXED_POINT)
-opus_val32
-#  else
-void
-#  endif
-(*const CELT_PITCH_XCORR_IMPL[OPUS_ARCHMASK+1])(const opus_val16 *,
-      const opus_val16 *, opus_val32 *, int, int);
-
-#  define OVERRIDE_PITCH_XCORR
-#  define celt_pitch_xcorr(_x, _y, xcorr, len, max_pitch, arch) \
-  ((*CELT_PITCH_XCORR_IMPL[(arch)&OPUS_ARCHMASK])(_x, _y, \
-        xcorr, len, max_pitch))
-# else
-
 #ifdef FIXED_POINT
 opus_val32
 #else
@@ -214,7 +195,6 @@ void
 celt_pitch_xcorr(const opus_val16 *_x, const opus_val16 *_y,
       opus_val32 *xcorr, int len, int max_pitch, int arch);
 
-# endif
 #endif
 
 #endif

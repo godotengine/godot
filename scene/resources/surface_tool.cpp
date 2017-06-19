@@ -224,13 +224,13 @@ void SurfaceTool::add_index(int p_index) {
 	index_array.push_back(p_index);
 }
 
-Ref<Mesh> SurfaceTool::commit(const Ref<Mesh> &p_existing) {
+Ref<ArrayMesh> SurfaceTool::commit(const Ref<ArrayMesh> &p_existing) {
 
-	Ref<Mesh> mesh;
+	Ref<ArrayMesh> mesh;
 	if (p_existing.is_valid())
 		mesh = p_existing;
 	else
-		mesh = Ref<Mesh>(memnew(Mesh));
+		mesh.instance();
 
 	int varr_len = vertex_array.size();
 

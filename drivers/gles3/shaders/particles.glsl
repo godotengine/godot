@@ -28,7 +28,7 @@ uniform float prev_system_phase;
 uniform int total_particles;
 uniform float explosiveness;
 uniform float randomness;
-uniform vec4 time;
+uniform float time;
 uniform float delta;
 
 uniform int attractor_count;
@@ -132,6 +132,7 @@ void main() {
 	}
 
 	uint particle_number = current_cycle * uint(total_particles) + uint(gl_VertexID);
+	int index = int(gl_VertexID);
 
 	if (restart) {
 		shader_active=emitting;
@@ -242,6 +243,10 @@ MATERIAL_UNIFORMS
 #endif
 
 void main() {
+
+	{
+LIGHT_SHADER_CODE
+	}
 
 	{
 FRAGMENT_SHADER_CODE

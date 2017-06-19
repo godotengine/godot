@@ -84,6 +84,11 @@ class SpatialEditorViewport : public Control {
 		VIEW_ORTHOGONAL,
 		VIEW_AUDIO_LISTENER,
 		VIEW_GIZMOS,
+		VIEW_INFORMATION,
+		VIEW_DISPLAY_NORMAL,
+		VIEW_DISPLAY_WIREFRAME,
+		VIEW_DISPLAY_OVERDRAW,
+		VIEW_DISPLAY_SHADELESS,
 	};
 
 public:
@@ -115,6 +120,9 @@ private:
 	float gizmo_scale;
 
 	bool freelook_active;
+
+	PanelContainer *info;
+	Label *info_label;
 
 	struct _RayResult {
 
@@ -287,6 +295,43 @@ public:
 	~SpatialEditorSelectedItem();
 };
 
+class SpatialEditorViewportContainer : public Container {
+
+	GDCLASS(SpatialEditorViewportContainer, Container)
+public:
+	enum View {
+		VIEW_USE_1_VIEWPORT,
+		VIEW_USE_2_VIEWPORTS,
+		VIEW_USE_2_VIEWPORTS_ALT,
+		VIEW_USE_3_VIEWPORTS,
+		VIEW_USE_3_VIEWPORTS_ALT,
+		VIEW_USE_4_VIEWPORTS,
+	};
+
+private:
+	View view;
+	bool mouseover;
+	float ratio_h;
+	float ratio_v;
+
+	bool dragging_v;
+	bool dragging_h;
+	Vector2 drag_begin_pos;
+	Vector2 drag_begin_ratio;
+
+	void _gui_input(const Ref<InputEvent> &p_event);
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	void set_view(View p_view);
+	View get_view();
+
+	SpatialEditorViewportContainer();
+};
+
 class SpatialEditor : public VBoxContainer {
 
 	GDCLASS(SpatialEditor, VBoxContainer);
@@ -309,7 +354,7 @@ private:
 	EditorNode *editor;
 	EditorSelection *editor_selection;
 
-	Control *viewport_base;
+	SpatialEditorViewportContainer *viewport_base;
 	SpatialEditorViewport *viewports[VIEWPORTS_COUNT];
 	VSplitContainer *shader_split;
 	HSplitContainer *palette_split;
@@ -321,10 +366,6 @@ private:
 
 	VisualServer::ScenarioDebugMode scenario_debug;
 
-	RID light;
-	RID light_instance;
-	Transform light_transform;
-
 	RID origin;
 	RID origin_instance;
 	RID grid[3];
@@ -334,13 +375,13 @@ private:
 	bool grid_enable[3]; //should be always visible if true
 	bool grid_enabled;
 
-	Ref<Mesh> move_gizmo[3], rotate_gizmo[3];
+	Ref<ArrayMesh> move_gizmo[3], rotate_gizmo[3];
 	Ref<SpatialMaterial> gizmo_color[3];
 	Ref<SpatialMaterial> gizmo_hl;
 
 	int over_gizmo_handle;
 
-	Ref<Mesh> selection_box;
+	Ref<ArrayMesh> selection_box;
 	RID indicators;
 	RID indicators_instance;
 	RID cursor_mesh;
@@ -383,12 +424,6 @@ private:
 		MENU_VIEW_USE_3_VIEWPORTS,
 		MENU_VIEW_USE_3_VIEWPORTS_ALT,
 		MENU_VIEW_USE_4_VIEWPORTS,
-		MENU_VIEW_USE_DEFAULT_LIGHT,
-		MENU_VIEW_USE_DEFAULT_SRGB,
-		MENU_VIEW_DISPLAY_NORMAL,
-		MENU_VIEW_DISPLAY_WIREFRAME,
-		MENU_VIEW_DISPLAY_OVERDRAW,
-		MENU_VIEW_DISPLAY_SHADELESS,
 		MENU_VIEW_ORIGIN,
 		MENU_VIEW_GRID,
 		MENU_VIEW_CAMERA_SETTINGS,
@@ -419,16 +454,6 @@ private:
 	SpinBox *settings_fov;
 	SpinBox *settings_znear;
 	SpinBox *settings_zfar;
-	DirectionalLight *settings_dlight;
-	ImmediateGeometry *settings_sphere;
-	Camera *settings_camera;
-	float settings_default_light_rot_x;
-	float settings_default_light_rot_y;
-
-	ViewportContainer *settings_light_base;
-	Viewport *settings_light_vp;
-	ColorPickerButton *settings_ambient_color;
-	Ref<Image> settings_light_dir_image;
 
 	void _xform_dialog_action();
 	void _menu_item_pressed(int p_option);
@@ -462,10 +487,6 @@ private:
 	SpatialEditorGizmos *gizmos;
 	SpatialEditor();
 
-	void _update_ambient_light_color(const Color &p_color);
-	void _update_default_light_angle();
-	void _default_light_angle_input(const Ref<InputEvent> &p_event);
-
 	bool is_any_freelook_active() const;
 
 protected:
@@ -492,8 +513,8 @@ public:
 	float get_rotate_snap() const { return snap_rotate->get_text().to_double(); }
 	float get_scale_snap() const { return snap_scale->get_text().to_double(); }
 
-	Ref<Mesh> get_move_gizmo(int idx) const { return move_gizmo[idx]; }
-	Ref<Mesh> get_rotate_gizmo(int idx) const { return rotate_gizmo[idx]; }
+	Ref<ArrayMesh> get_move_gizmo(int idx) const { return move_gizmo[idx]; }
+	Ref<ArrayMesh> get_rotate_gizmo(int idx) const { return rotate_gizmo[idx]; }
 
 	void update_transform_gizmo();
 

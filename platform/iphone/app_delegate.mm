@@ -33,6 +33,7 @@
 #import "gl_view.h"
 #include "main/main.h"
 #include "os_iphone.h"
+#include "audio_driver_iphone.h"
 
 #ifdef MODULE_FACEBOOKSCORER_IOS_ENABLED
 #include "modules/FacebookScorer_ios/FacebookScorer.h"
@@ -401,8 +402,7 @@ static int frame_count = 0;
 			OSIPhone::get_singleton()->set_data_dir(
 					String::utf8([documentsDirectory UTF8String]));
 
-			NSString *locale_code =
-					[[[NSLocale preferredLanguages] objectAtIndex:0] substringToIndex:2];
+			NSString *locale_code = [[NSLocale currentLocale] localeIdentifier];
 			OSIPhone::get_singleton()->set_locale(
 					String::utf8([locale_code UTF8String]));
 
@@ -604,7 +604,12 @@ static int frame_count = 0;
 	glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES,
 			GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
 
-	iphone_main(backingWidth, backingHeight, gargc, gargv);
+	int err = iphone_main(backingWidth, backingHeight, gargc, gargv);
+	if (err != 0) {
+		// bail, things did not go very well for us, should probably output a message on screen with our error code...
+		exit(0);
+		return;
+	};
 
 	view_controller = [[ViewController alloc] init];
 	view_controller.view = glView;
@@ -668,6 +673,7 @@ static int frame_count = 0;
 												  isAdvertisingTrackingEnabled]];
 
 #endif
+
 };
 
 - (void)applicationWillTerminate:(UIApplication *)application {
@@ -729,6 +735,10 @@ static int frame_count = 0;
 	if (OSIPhone::get_singleton()->native_video_is_playing()) {
 		OSIPhone::get_singleton()->native_video_unpause();
 	};
+
+	// Fixed audio can not resume if it is interrupted cause by an incoming phone call
+	if(AudioDriverIphone::get_singleton() != NULL)
+		AudioDriverIphone::get_singleton()->start();
 }
 
 - (BOOL)application:(UIApplication *)application handleOpenURL:(NSURL *)url {

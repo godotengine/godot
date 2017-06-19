@@ -64,7 +64,7 @@ class FileAccessCompressed : public FileAccess {
 	FileAccess *f;
 
 public:
-	void configure(const String &p_magic, Compression::Mode p_mode = Compression::MODE_FASTLZ, int p_block_size = 4096);
+	void configure(const String &p_magic, Compression::Mode p_mode = Compression::MODE_ZSTD, int p_block_size = 4096);
 
 	Error open_after_magic(FileAccess *p_base);
 

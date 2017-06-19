@@ -560,7 +560,7 @@ bool GridMapEditor::forward_spatial_input_event(Camera *p_camera, const Ref<Inpu
 				else
 					return false;
 
-				return do_input_action(p_camera, Point2(mb->get_pos().x, mb->get_pos().y), true);
+				return do_input_action(p_camera, Point2(mb->get_position().x, mb->get_position().y), true);
 			} else {
 
 				if (
@@ -604,7 +604,7 @@ bool GridMapEditor::forward_spatial_input_event(Camera *p_camera, const Ref<Inpu
 
 		if (mm.is_valid()) {
 
-			return do_input_action(p_camera, mm->get_pos(), false);
+			return do_input_action(p_camera, mm->get_position(), false);
 		}
 
 	} else if (edit_mode->get_selected() == 1) {
@@ -616,7 +616,7 @@ bool GridMapEditor::forward_spatial_input_event(Camera *p_camera, const Ref<Inpu
 
 			if (mb->get_button_index() == BUTTON_LEFT && mb->is_pressed()) {
 
-				Point2 point = mb->get_pos();
+				Point2 point = mb->get_position();
 
 				Camera *camera = p_camera;
 				Vector3 from = camera->project_ray_origin(point);
@@ -635,7 +635,7 @@ bool GridMapEditor::forward_spatial_input_event(Camera *p_camera, const Ref<Inpu
 
 					int area = E->get();
 					Rect3 aabb = node->area_get_bounds(area);
-					aabb.pos *= node->get_cell_size();
+					aabb.position *= node->get_cell_size();
 					aabb.size *= node->get_cell_size();
 
 					Vector3 rclip, rnormal;

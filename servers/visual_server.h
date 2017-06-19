@@ -128,6 +128,7 @@ public:
 
 	virtual void texture_set_detect_3d_callback(RID p_texture, TextureDetectCallback p_callback, void *p_userdata) = 0;
 	virtual void texture_set_detect_srgb_callback(RID p_texture, TextureDetectCallback p_callback, void *p_userdata) = 0;
+	virtual void texture_set_detect_normal_callback(RID p_texture, TextureDetectCallback p_callback, void *p_userdata) = 0;
 
 	struct TextureInfo {
 		RID texture;
@@ -141,10 +142,10 @@ public:
 
 	virtual void textures_keep_original(bool p_enable) = 0;
 
-	/* SKYBOX API */
+	/* SKY API */
 
-	virtual RID skybox_create() = 0;
-	virtual void skybox_set_texture(RID p_skybox, RID p_cube_map, int p_radiance_size) = 0;
+	virtual RID sky_create() = 0;
+	virtual void sky_set_texture(RID p_sky, RID p_cube_map, int p_radiance_size) = 0;
 
 	/* SHADER API */
 
@@ -358,7 +359,6 @@ public:
 		LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET,
 		LIGHT_PARAM_SHADOW_NORMAL_BIAS,
 		LIGHT_PARAM_SHADOW_BIAS,
-		LIGHT_PARAM_SHADOW_BIAS_SPLIT_SCALE,
 		LIGHT_PARAM_MAX
 	};
 
@@ -579,7 +579,38 @@ public:
 	};
 
 	virtual void viewport_set_msaa(RID p_viewport, ViewportMSAA p_msaa) = 0;
+
+	enum ViewportUsage {
+		VIEWPORT_USAGE_2D,
+		VIEWPORT_USAGE_2D_NO_SAMPLING,
+		VIEWPORT_USAGE_3D,
+		VIEWPORT_USAGE_3D_NO_EFFECTS,
+	};
+
 	virtual void viewport_set_hdr(RID p_viewport, bool p_enabled) = 0;
+	virtual void viewport_set_usage(RID p_viewport, ViewportUsage p_usage) = 0;
+
+	enum ViewportRenderInfo {
+
+		VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME,
+		VIEWPORT_RENDER_INFO_VERTICES_IN_FRAME,
+		VIEWPORT_RENDER_INFO_MATERIAL_CHANGES_IN_FRAME,
+		VIEWPORT_RENDER_INFO_SHADER_CHANGES_IN_FRAME,
+		VIEWPORT_RENDER_INFO_SURFACE_CHANGES_IN_FRAME,
+		VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME,
+		VIEWPORT_RENDER_INFO_MAX
+	};
+
+	virtual int viewport_get_render_info(RID p_viewport, ViewportRenderInfo p_info) = 0;
+
+	enum ViewportDebugDraw {
+		VIEWPORT_DEBUG_DRAW_DISABLED,
+		VIEWPORT_DEBUG_DRAW_UNSHADED,
+		VIEWPORT_DEBUG_DRAW_OVERDRAW,
+		VIEWPORT_DEBUG_DRAW_WIREFRAME,
+	};
+
+	virtual void viewport_set_debug_draw(RID p_viewport, ViewportDebugDraw p_draw) = 0;
 
 	/* ENVIRONMENT API */
 
@@ -589,19 +620,19 @@ public:
 
 		ENV_BG_CLEAR_COLOR,
 		ENV_BG_COLOR,
-		ENV_BG_SKYBOX,
+		ENV_BG_SKY,
 		ENV_BG_CANVAS,
 		ENV_BG_KEEP,
 		ENV_BG_MAX
 	};
 
 	virtual void environment_set_background(RID p_env, EnvironmentBG p_bg) = 0;
-	virtual void environment_set_skybox(RID p_env, RID p_skybox) = 0;
-	virtual void environment_set_skybox_scale(RID p_env, float p_scale) = 0;
+	virtual void environment_set_sky(RID p_env, RID p_sky) = 0;
+	virtual void environment_set_sky_scale(RID p_env, float p_scale) = 0;
 	virtual void environment_set_bg_color(RID p_env, const Color &p_color) = 0;
 	virtual void environment_set_bg_energy(RID p_env, float p_energy) = 0;
 	virtual void environment_set_canvas_max_layer(RID p_env, int p_max_layer) = 0;
-	virtual void environment_set_ambient_light(RID p_env, const Color &p_color, float p_energy = 1.0, float p_skybox_contribution = 0.0) = 0;
+	virtual void environment_set_ambient_light(RID p_env, const Color &p_color, float p_energy = 1.0, float p_sky_contribution = 0.0) = 0;
 
 	//set default SSAO options
 	//set default SSR options
@@ -623,7 +654,6 @@ public:
 		GLOW_BLEND_MODE_REPLACE,
 	};
 	virtual void environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_bloom_treshold, EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_treshold, float p_hdr_bleed_scale, bool p_bicubic_upscale) = 0;
-	virtual void environment_set_fog(RID p_env, bool p_enable, float p_begin, float p_end, RID p_gradient_texture) = 0;
 
 	enum EnvironmentToneMapper {
 		ENV_TONE_MAPPER_LINEAR,
@@ -635,8 +665,12 @@ public:
 	virtual void environment_set_tonemap(RID p_env, EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_grey) = 0;
 	virtual void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, RID p_ramp) = 0;
 
-	virtual void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_accel, float p_fade, float p_depth_tolerance, bool p_smooth, bool p_roughness) = 0;
+	virtual void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_in, float p_fade_out, float p_depth_tolerance, bool p_roughness) = 0;
 	virtual void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_radius2, float p_intensity2, float p_bias, float p_light_affect, const Color &p_color, bool p_blur) = 0;
+
+	virtual void environment_set_fog(RID p_env, bool p_enable, const Color &p_color, const Color &p_sun_color, float p_sun_amount) = 0;
+	virtual void environment_set_fog_depth(RID p_env, bool p_enable, float p_depth_begin, float p_depth_curve, bool p_transmit, float p_transmit_curve) = 0;
+	virtual void environment_set_fog_height(RID p_env, bool p_enable, float p_min_height, float p_max_height, float p_height_curve) = 0;
 
 	/* SCENARIO API */
 
@@ -751,12 +785,12 @@ public:
 	virtual void canvas_item_add_line(RID p_item, const Point2 &p_from, const Point2 &p_to, const Color &p_color, float p_width = 1.0, bool p_antialiased = false) = 0;
 	virtual void canvas_item_add_rect(RID p_item, const Rect2 &p_rect, const Color &p_color) = 0;
 	virtual void canvas_item_add_circle(RID p_item, const Point2 &p_pos, float p_radius, const Color &p_color) = 0;
-	virtual void canvas_item_add_texture_rect(RID p_item, const Rect2 &p_rect, RID p_texture, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false) = 0;
-	virtual void canvas_item_add_texture_rect_region(RID p_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false) = 0;
-	virtual void canvas_item_add_nine_patch(RID p_item, const Rect2 &p_rect, const Rect2 &p_source, RID p_texture, const Vector2 &p_topleft, const Vector2 &p_bottomright, NinePatchAxisMode p_x_axis_mode = NINE_PATCH_STRETCH, NinePatchAxisMode p_y_axis_mode = NINE_PATCH_STRETCH, bool p_draw_center = true, const Color &p_modulate = Color(1, 1, 1)) = 0;
-	virtual void canvas_item_add_primitive(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, RID p_texture, float p_width = 1.0) = 0;
-	virtual void canvas_item_add_polygon(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), RID p_texture = RID()) = 0;
-	virtual void canvas_item_add_triangle_array(RID p_item, const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), RID p_texture = RID(), int p_count = -1) = 0;
+	virtual void canvas_item_add_texture_rect(RID p_item, const Rect2 &p_rect, RID p_texture, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, RID p_normal_map = RID()) = 0;
+	virtual void canvas_item_add_texture_rect_region(RID p_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, RID p_normal_map = RID(), bool p_clip_uv = true) = 0;
+	virtual void canvas_item_add_nine_patch(RID p_item, const Rect2 &p_rect, const Rect2 &p_source, RID p_texture, const Vector2 &p_topleft, const Vector2 &p_bottomright, NinePatchAxisMode p_x_axis_mode = NINE_PATCH_STRETCH, NinePatchAxisMode p_y_axis_mode = NINE_PATCH_STRETCH, bool p_draw_center = true, const Color &p_modulate = Color(1, 1, 1), RID p_normal_map = RID()) = 0;
+	virtual void canvas_item_add_primitive(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, RID p_texture, float p_width = 1.0, RID p_normal_map = RID()) = 0;
+	virtual void canvas_item_add_polygon(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), RID p_texture = RID(), RID p_normal_map = RID()) = 0;
+	virtual void canvas_item_add_triangle_array(RID p_item, const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), RID p_texture = RID(), int p_count = -1, RID p_normal_map = RID()) = 0;
 	virtual void canvas_item_add_mesh(RID p_item, const RID &p_mesh, RID p_skeleton = RID()) = 0;
 	virtual void canvas_item_add_multimesh(RID p_item, RID p_mesh, RID p_skeleton = RID()) = 0;
 	virtual void canvas_item_add_set_transform(RID p_item, const Transform2D &p_transform) = 0;
@@ -810,6 +844,7 @@ public:
 	virtual void canvas_light_set_shadow_gradient_length(RID p_light, float p_length) = 0;
 	virtual void canvas_light_set_shadow_filter(RID p_light, CanvasLightShadowFilter p_filter) = 0;
 	virtual void canvas_light_set_shadow_color(RID p_light, const Color &p_color) = 0;
+	virtual void canvas_light_set_shadow_smooth(RID p_light, float p_smooth) = 0;
 
 	virtual RID canvas_light_occluder_create() = 0;
 	virtual void canvas_light_occluder_attach_to_canvas(RID p_occluder, RID p_canvas) = 0;
@@ -843,6 +878,8 @@ public:
 	/* FREE */
 
 	virtual void free(RID p_rid) = 0; ///< free RIDs associated with the visual server
+
+	virtual void request_frame_drawn_callback(Object *p_where, const StringName &p_method, const Variant &p_userdata) = 0;
 
 	/* EVENT QUEUING */
 
@@ -897,6 +934,8 @@ public:
 	virtual bool has_feature(Features p_feature) const = 0;
 
 	virtual bool has_os_feature(const String &p_feature) const = 0;
+
+	virtual void set_debug_generate_wireframes(bool p_generate) = 0;
 
 	VisualServer();
 	virtual ~VisualServer();

@@ -201,7 +201,7 @@ Error ImageLoaderPNG::_load_image(void *rf_up, png_rw_ptr p_func, Ref<Image> p_i
 	return OK;
 }
 
-Error ImageLoaderPNG::load_image(Ref<Image> p_image, FileAccess *f) {
+Error ImageLoaderPNG::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear) {
 
 	Error err = _load_image(f, _read_png_data, p_image);
 	f->close();
@@ -256,6 +256,7 @@ static Ref<Image> _load_mem_png(const uint8_t *p_png, int p_size) {
 static Ref<Image> _lossless_unpack_png(const PoolVector<uint8_t> &p_data) {
 
 	int len = p_data.size();
+	ERR_FAIL_COND_V(len < 4, Ref<Image>());
 	PoolVector<uint8_t>::Read r = p_data.read();
 	ERR_FAIL_COND_V(r[0] != 'P' || r[1] != 'N' || r[2] != 'G' || r[3] != ' ', Ref<Image>());
 	return _load_mem_png(&r[4], len - 4);

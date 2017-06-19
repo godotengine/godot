@@ -33,7 +33,6 @@
 #include "os/file_access.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/surface_tool.h"
-#include "scene/resources/surface_tool.h"
 
 String ResourceImporterOBJ::get_importer_name() const {
 
@@ -49,12 +48,12 @@ void ResourceImporterOBJ::get_recognized_extensions(List<String> *p_extensions) 
 	p_extensions->push_back("obj");
 }
 String ResourceImporterOBJ::get_save_extension() const {
-	return "msh";
+	return "mesh";
 }
 
 String ResourceImporterOBJ::get_resource_type() const {
 
-	return "Mesh";
+	return "ArrayMesh";
 }
 
 bool ResourceImporterOBJ::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
@@ -89,7 +88,7 @@ Error ResourceImporterOBJ::import(const String &p_source_file, const String &p_s
 	FileAccessRef f = FileAccess::open(p_source_file, FileAccess::READ);
 	ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
 
-	Ref<Mesh> mesh = Ref<Mesh>(memnew(Mesh));
+	Ref<ArrayMesh> mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
 	Map<String, Ref<Material> > name_map;
 
 	bool generate_normals = p_options["generate/normals"];
@@ -244,7 +243,7 @@ Error ResourceImporterOBJ::import(const String &p_source_file, const String &p_s
 	}
 */
 
-	Error err = ResourceSaver::save(p_save_path + ".msh", mesh);
+	Error err = ResourceSaver::save(p_save_path + ".mesh", mesh);
 
 	return err;
 }

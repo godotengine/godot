@@ -38,11 +38,11 @@ real_t Rect3::get_area() const {
 
 bool Rect3::operator==(const Rect3 &p_rval) const {
 
-	return ((pos == p_rval.pos) && (size == p_rval.size));
+	return ((position == p_rval.position) && (size == p_rval.size));
 }
 bool Rect3::operator!=(const Rect3 &p_rval) const {
 
-	return ((pos != p_rval.pos) || (size != p_rval.size));
+	return ((position != p_rval.position) || (size != p_rval.size));
 }
 
 void Rect3::merge_with(const Rect3 &p_aabb) {
@@ -51,8 +51,8 @@ void Rect3::merge_with(const Rect3 &p_aabb) {
 	Vector3 end_1, end_2;
 	Vector3 min, max;
 
-	beg_1 = pos;
-	beg_2 = p_aabb.pos;
+	beg_1 = position;
+	beg_2 = p_aabb.position;
 	end_1 = Vector3(size.x, size.y, size.z) + beg_1;
 	end_2 = Vector3(p_aabb.size.x, p_aabb.size.y, p_aabb.size.z) + beg_2;
 
@@ -64,16 +64,16 @@ void Rect3::merge_with(const Rect3 &p_aabb) {
 	max.y = (end_1.y > end_2.y) ? end_1.y : end_2.y;
 	max.z = (end_1.z > end_2.z) ? end_1.z : end_2.z;
 
-	pos = min;
+	position = min;
 	size = max - min;
 }
 
 Rect3 Rect3::intersection(const Rect3 &p_aabb) const {
 
-	Vector3 src_min = pos;
-	Vector3 src_max = pos + size;
-	Vector3 dst_min = p_aabb.pos;
-	Vector3 dst_max = p_aabb.pos + p_aabb.size;
+	Vector3 src_min = position;
+	Vector3 src_max = position + size;
+	Vector3 dst_min = p_aabb.position;
+	Vector3 dst_max = p_aabb.position + p_aabb.size;
 
 	Vector3 min, max;
 
@@ -107,18 +107,18 @@ Rect3 Rect3::intersection(const Rect3 &p_aabb) const {
 bool Rect3::intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 *r_clip, Vector3 *r_normal) const {
 
 	Vector3 c1, c2;
-	Vector3 end = pos + size;
+	Vector3 end = position + size;
 	real_t near = -1e20;
 	real_t far = 1e20;
 	int axis = 0;
 
 	for (int i = 0; i < 3; i++) {
 		if (p_dir[i] == 0) {
-			if ((p_from[i] < pos[i]) || (p_from[i] > end[i])) {
+			if ((p_from[i] < position[i]) || (p_from[i] > end[i])) {
 				return false;
 			}
 		} else { // ray not parallel to planes in this direction
-			c1[i] = (pos[i] - p_from[i]) / p_dir[i];
+			c1[i] = (position[i] - p_from[i]) / p_dir[i];
 			c2[i] = (end[i] - p_from[i]) / p_dir[i];
 
 			if (c1[i] > c2[i]) {
@@ -156,7 +156,7 @@ bool Rect3::intersects_segment(const Vector3 &p_from, const Vector3 &p_to, Vecto
 	for (int i = 0; i < 3; i++) {
 		real_t seg_from = p_from[i];
 		real_t seg_to = p_to[i];
-		real_t box_begin = pos[i];
+		real_t box_begin = position[i];
 		real_t box_end = box_begin + size[i];
 		real_t cmin, cmax;
 		real_t csign;
@@ -208,14 +208,14 @@ bool Rect3::intersects_segment(const Vector3 &p_from, const Vector3 &p_to, Vecto
 bool Rect3::intersects_plane(const Plane &p_plane) const {
 
 	Vector3 points[8] = {
-		Vector3(pos.x, pos.y, pos.z),
-		Vector3(pos.x, pos.y, pos.z + size.z),
-		Vector3(pos.x, pos.y + size.y, pos.z),
-		Vector3(pos.x, pos.y + size.y, pos.z + size.z),
-		Vector3(pos.x + size.x, pos.y, pos.z),
-		Vector3(pos.x + size.x, pos.y, pos.z + size.z),
-		Vector3(pos.x + size.x, pos.y + size.y, pos.z),
-		Vector3(pos.x + size.x, pos.y + size.y, pos.z + size.z),
+		Vector3(position.x, position.y, position.z),
+		Vector3(position.x, position.y, position.z + size.z),
+		Vector3(position.x, position.y + size.y, position.z),
+		Vector3(position.x, position.y + size.y, position.z + size.z),
+		Vector3(position.x + size.x, position.y, position.z),
+		Vector3(position.x + size.x, position.y, position.z + size.z),
+		Vector3(position.x + size.x, position.y + size.y, position.z),
+		Vector3(position.x + size.x, position.y + size.y, position.z + size.z),
 	};
 
 	bool over = false;
@@ -327,68 +327,68 @@ void Rect3::get_edge(int p_edge, Vector3 &r_from, Vector3 &r_to) const {
 
 		case 0: {
 
-			r_from = Vector3(pos.x + size.x, pos.y, pos.z);
-			r_to = Vector3(pos.x, pos.y, pos.z);
+			r_from = Vector3(position.x + size.x, position.y, position.z);
+			r_to = Vector3(position.x, position.y, position.z);
 		} break;
 		case 1: {
 
-			r_from = Vector3(pos.x + size.x, pos.y, pos.z + size.z);
-			r_to = Vector3(pos.x + size.x, pos.y, pos.z);
+			r_from = Vector3(position.x + size.x, position.y, position.z + size.z);
+			r_to = Vector3(position.x + size.x, position.y, position.z);
 		} break;
 		case 2: {
-			r_from = Vector3(pos.x, pos.y, pos.z + size.z);
-			r_to = Vector3(pos.x + size.x, pos.y, pos.z + size.z);
+			r_from = Vector3(position.x, position.y, position.z + size.z);
+			r_to = Vector3(position.x + size.x, position.y, position.z + size.z);
 
 		} break;
 		case 3: {
 
-			r_from = Vector3(pos.x, pos.y, pos.z);
-			r_to = Vector3(pos.x, pos.y, pos.z + size.z);
+			r_from = Vector3(position.x, position.y, position.z);
+			r_to = Vector3(position.x, position.y, position.z + size.z);
 
 		} break;
 		case 4: {
 
-			r_from = Vector3(pos.x, pos.y + size.y, pos.z);
-			r_to = Vector3(pos.x + size.x, pos.y + size.y, pos.z);
+			r_from = Vector3(position.x, position.y + size.y, position.z);
+			r_to = Vector3(position.x + size.x, position.y + size.y, position.z);
 		} break;
 		case 5: {
 
-			r_from = Vector3(pos.x + size.x, pos.y + size.y, pos.z);
-			r_to = Vector3(pos.x + size.x, pos.y + size.y, pos.z + size.z);
+			r_from = Vector3(position.x + size.x, position.y + size.y, position.z);
+			r_to = Vector3(position.x + size.x, position.y + size.y, position.z + size.z);
 		} break;
 		case 6: {
-			r_from = Vector3(pos.x + size.x, pos.y + size.y, pos.z + size.z);
-			r_to = Vector3(pos.x, pos.y + size.y, pos.z + size.z);
+			r_from = Vector3(position.x + size.x, position.y + size.y, position.z + size.z);
+			r_to = Vector3(position.x, position.y + size.y, position.z + size.z);
 
 		} break;
 		case 7: {
 
-			r_from = Vector3(pos.x, pos.y + size.y, pos.z + size.z);
-			r_to = Vector3(pos.x, pos.y + size.y, pos.z);
+			r_from = Vector3(position.x, position.y + size.y, position.z + size.z);
+			r_to = Vector3(position.x, position.y + size.y, position.z);
 
 		} break;
 		case 8: {
 
-			r_from = Vector3(pos.x, pos.y, pos.z + size.z);
-			r_to = Vector3(pos.x, pos.y + size.y, pos.z + size.z);
+			r_from = Vector3(position.x, position.y, position.z + size.z);
+			r_to = Vector3(position.x, position.y + size.y, position.z + size.z);
 
 		} break;
 		case 9: {
 
-			r_from = Vector3(pos.x, pos.y, pos.z);
-			r_to = Vector3(pos.x, pos.y + size.y, pos.z);
+			r_from = Vector3(position.x, position.y, position.z);
+			r_to = Vector3(position.x, position.y + size.y, position.z);
 
 		} break;
 		case 10: {
 
-			r_from = Vector3(pos.x + size.x, pos.y, pos.z);
-			r_to = Vector3(pos.x + size.x, pos.y + size.y, pos.z);
+			r_from = Vector3(position.x + size.x, position.y, position.z);
+			r_to = Vector3(position.x + size.x, position.y + size.y, position.z);
 
 		} break;
 		case 11: {
 
-			r_from = Vector3(pos.x + size.x, pos.y, pos.z + size.z);
-			r_to = Vector3(pos.x + size.x, pos.y + size.y, pos.z + size.z);
+			r_from = Vector3(position.x + size.x, position.y, position.z + size.z);
+			r_to = Vector3(position.x + size.x, position.y + size.y, position.z + size.z);
 
 		} break;
 	}
@@ -396,5 +396,5 @@ void Rect3::get_edge(int p_edge, Vector3 &r_from, Vector3 &r_to) const {
 
 Rect3::operator String() const {
 
-	return String() + pos + " - " + size;
+	return String() + position + " - " + size;
 }

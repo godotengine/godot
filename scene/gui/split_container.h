@@ -34,7 +34,7 @@
 
 class SplitContainer : public Container {
 
-	GDCLASS(SplitContainer, Container);
+	GDCLASS(SplitContainer, Container)
 
 public:
 	enum DraggerVisibility {

@@ -76,9 +76,9 @@ void Node2D::edit_set_rect(const Rect2 &p_edit_rect) {
 
 	Vector2 zero_offset;
 	if (r.size.x != 0)
-		zero_offset.x = -r.pos.x / r.size.x;
+		zero_offset.x = -r.position.x / r.size.x;
 	if (r.size.y != 0)
-		zero_offset.y = -r.pos.y / r.size.y;
+		zero_offset.y = -r.position.y / r.size.y;
 
 	Size2 new_scale(1, 1);
 
@@ -87,7 +87,7 @@ void Node2D::edit_set_rect(const Rect2 &p_edit_rect) {
 	if (r.size.y != 0)
 		new_scale.y = p_edit_rect.size.y / r.size.y;
 
-	Point2 new_pos = p_edit_rect.pos + p_edit_rect.size * zero_offset; //p_edit_rect.pos - r.pos;
+	Point2 new_pos = p_edit_rect.position + p_edit_rect.size * zero_offset; //p_edit_rect.pos - r.pos;
 
 	Transform2D postxf;
 	postxf.set_rotation_and_scale(angle, _scale);

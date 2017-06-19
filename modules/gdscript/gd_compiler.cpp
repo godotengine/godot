@@ -1014,7 +1014,7 @@ int GDCompiler::_parse_expression(CodeGen &codegen, const GDParser::Node *p_expr
 					}
 
 				} break;
-				case GDParser::OperatorNode::OP_EXTENDS: {
+				case GDParser::OperatorNode::OP_IS: {
 
 					ERR_FAIL_COND_V(on->arguments.size() != 2, false);
 

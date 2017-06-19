@@ -107,14 +107,14 @@ uniform vec2 dir;
 in vec2 uv_interp;
 
 uniform sampler2D source_diffuse; //texunit:0
-uniform sampler2D source_motion_ss; //texunit:1
+uniform sampler2D source_sss; //texunit:1
 uniform sampler2D source_depth; //texunit:2
 
 layout(location = 0) out vec4 frag_color;
 
 void main() {
 
-	float strength = texture(source_motion_ss,uv_interp).a;
+	float strength = texture(source_sss,uv_interp).r;
 	strength*=strength; //stored as sqrt
 
 	// Fetch color of current pixel:

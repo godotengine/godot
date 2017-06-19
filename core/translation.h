@@ -36,7 +36,7 @@ class Translation : public Resource {
 
 	GDCLASS(Translation, Resource);
 	OBJ_SAVE_TYPE(Translation);
-	RES_BASE_EXTENSION("xl");
+	RES_BASE_EXTENSION("translation");
 
 	String locale;
 	Map<StringName, StringName> translation_map;

@@ -77,7 +77,7 @@ void silk_stereo_LR_to_MS(
     ALLOC( LP_mid, frame_length, opus_int16 );
     ALLOC( HP_mid, frame_length, opus_int16 );
     for( n = 0; n < frame_length; n++ ) {
-        sum = silk_RSHIFT_ROUND( silk_ADD_LSHIFT( mid[ n ] + mid[ n + 2 ], mid[ n + 1 ], 1 ), 2 );
+        sum = silk_RSHIFT_ROUND( silk_ADD_LSHIFT( mid[ n ] + (opus_int32)mid[ n + 2 ], mid[ n + 1 ], 1 ), 2 );
         LP_mid[ n ] = sum;
         HP_mid[ n ] = mid[ n + 1 ] - sum;
     }
@@ -86,7 +86,7 @@ void silk_stereo_LR_to_MS(
     ALLOC( LP_side, frame_length, opus_int16 );
     ALLOC( HP_side, frame_length, opus_int16 );
     for( n = 0; n < frame_length; n++ ) {
-        sum = silk_RSHIFT_ROUND( silk_ADD_LSHIFT( side[ n ] + side[ n + 2 ], side[ n + 1 ], 1 ), 2 );
+        sum = silk_RSHIFT_ROUND( silk_ADD_LSHIFT( side[ n ] + (opus_int32)side[ n + 2 ], side[ n + 1 ], 1 ), 2 );
         LP_side[ n ] = sum;
         HP_side[ n ] = side[ n + 1 ] - sum;
     }
@@ -207,7 +207,7 @@ void silk_stereo_LR_to_MS(
         pred0_Q13 += delta0_Q13;
         pred1_Q13 += delta1_Q13;
         w_Q24   += deltaw_Q24;
-        sum = silk_LSHIFT( silk_ADD_LSHIFT( mid[ n ] + mid[ n + 2 ], mid[ n + 1 ], 1 ), 9 );    /* Q11 */
+        sum = silk_LSHIFT( silk_ADD_LSHIFT( mid[ n ] + (opus_int32)mid[ n + 2 ], mid[ n + 1 ], 1 ), 9 );    /* Q11 */
         sum = silk_SMLAWB( silk_SMULWB( w_Q24, side[ n + 1 ] ), sum, pred0_Q13 );               /* Q8  */
         sum = silk_SMLAWB( sum, silk_LSHIFT( (opus_int32)mid[ n + 1 ], 11 ), pred1_Q13 );       /* Q8  */
         x2[ n - 1 ] = (opus_int16)silk_SAT16( silk_RSHIFT_ROUND( sum, 8 ) );
@@ -217,7 +217,7 @@ void silk_stereo_LR_to_MS(
     pred1_Q13 = -pred_Q13[ 1 ];
     w_Q24     =  silk_LSHIFT( width_Q14, 10 );
     for( n = STEREO_INTERP_LEN_MS * fs_kHz; n < frame_length; n++ ) {
-        sum = silk_LSHIFT( silk_ADD_LSHIFT( mid[ n ] + mid[ n + 2 ], mid[ n + 1 ], 1 ), 9 );    /* Q11 */
+        sum = silk_LSHIFT( silk_ADD_LSHIFT( mid[ n ] + (opus_int32)mid[ n + 2 ], mid[ n + 1 ], 1 ), 9 );    /* Q11 */
         sum = silk_SMLAWB( silk_SMULWB( w_Q24, side[ n + 1 ] ), sum, pred0_Q13 );               /* Q8  */
         sum = silk_SMLAWB( sum, silk_LSHIFT( (opus_int32)mid[ n + 1 ], 11 ), pred1_Q13 );       /* Q8  */
         x2[ n - 1 ] = (opus_int16)silk_SAT16( silk_RSHIFT_ROUND( sum, 8 ) );

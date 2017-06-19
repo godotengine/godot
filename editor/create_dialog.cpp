@@ -203,7 +203,7 @@ void CreateDialog::_update_search() {
 	}
 
 	List<StringName>::Element *I = type_list.front();
-	TreeItem *to_select = NULL;
+	TreeItem *to_select = search_box->get_text() == base_type ? root : NULL;
 
 	for (; I; I = I->next()) {
 
@@ -489,11 +489,13 @@ void CreateDialog::_favorite_selected() {
 
 void CreateDialog::_history_activated() {
 
+	_history_selected();
 	_confirmed();
 }
 
 void CreateDialog::_favorite_activated() {
 
+	_favorite_selected();
 	_confirmed();
 }
 

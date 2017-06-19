@@ -31,6 +31,8 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "main.h"
 #include "stack_alloc.h"
+#include "NSQ.h"
+
 
 static OPUS_INLINE void silk_nsq_scale_states(
     const silk_encoder_state *psEncC,           /* I    Encoder State                   */
@@ -66,7 +68,8 @@ static OPUS_INLINE void silk_noise_shape_quantizer(
     opus_int            offset_Q10,             /* I                                    */
     opus_int            length,                 /* I    Input length                    */
     opus_int            shapingLPCOrder,        /* I    Noise shaping AR filter order   */
-    opus_int            predictLPCOrder         /* I    Prediction filter order         */
+    opus_int            predictLPCOrder,        /* I    Prediction filter order         */
+    int                 arch                    /* I    Architecture                    */
 );
 #endif
 
@@ -155,7 +158,7 @@ void silk_NSQ_c
 
         silk_noise_shape_quantizer( NSQ, psIndices->signalType, x_sc_Q10, pulses, pxq, sLTP_Q15, A_Q12, B_Q14,
             AR_shp_Q13, lag, HarmShapeFIRPacked_Q14, Tilt_Q14[ k ], LF_shp_Q14[ k ], Gains_Q16[ k ], Lambda_Q10,
-            offset_Q10, psEncC->subfr_length, psEncC->shapingLPCOrder, psEncC->predictLPCOrder );
+            offset_Q10, psEncC->subfr_length, psEncC->shapingLPCOrder, psEncC->predictLPCOrder, psEncC->arch );
 
         x_Q3   += psEncC->subfr_length;
         pulses += psEncC->subfr_length;
@@ -198,15 +201,19 @@ void silk_noise_shape_quantizer(
     opus_int            offset_Q10,             /* I                                    */
     opus_int            length,                 /* I    Input length                    */
     opus_int            shapingLPCOrder,        /* I    Noise shaping AR filter order   */
-    opus_int            predictLPCOrder         /* I    Prediction filter order         */
+    opus_int            predictLPCOrder,        /* I    Prediction filter order         */
+    int                 arch                    /* I    Architecture                    */
 )
 {
-    opus_int     i, j;
+    opus_int     i;
     opus_int32   LTP_pred_Q13, LPC_pred_Q10, n_AR_Q12, n_LTP_Q13;
     opus_int32   n_LF_Q12, r_Q10, rr_Q10, q1_Q0, q1_Q10, q2_Q10, rd1_Q20, rd2_Q20;
     opus_int32   exc_Q14, LPC_exc_Q14, xq_Q14, Gain_Q10;
     opus_int32   tmp1, tmp2, sLF_AR_shp_Q14;
     opus_int32   *psLPC_Q14, *shp_lag_ptr, *pred_lag_ptr;
+#ifdef silk_short_prediction_create_arch_coef
+    opus_int32   a_Q12_arch[MAX_LPC_ORDER];
+#endif
 
     shp_lag_ptr  = &NSQ->sLTP_shp_Q14[ NSQ->sLTP_shp_buf_idx - lag + HARM_SHAPE_FIR_TAPS / 2 ];
     pred_lag_ptr = &sLTP_Q15[ NSQ->sLTP_buf_idx - lag + LTP_ORDER / 2 ];
@@ -215,32 +222,16 @@ void silk_noise_shape_quantizer(
     /* Set up short term AR state */
     psLPC_Q14 = &NSQ->sLPC_Q14[ NSQ_LPC_BUF_LENGTH - 1 ];
 
+#ifdef silk_short_prediction_create_arch_coef
+    silk_short_prediction_create_arch_coef(a_Q12_arch, a_Q12, predictLPCOrder);
+#endif
+
     for( i = 0; i < length; i++ ) {
         /* Generate dither */
         NSQ->rand_seed = silk_RAND( NSQ->rand_seed );
 
         /* Short-term prediction */
-        silk_assert( predictLPCOrder == 10 || predictLPCOrder == 16 );
-        /* Avoids introducing a bias because silk_SMLAWB() always rounds to -inf */
-        LPC_pred_Q10 = silk_RSHIFT( predictLPCOrder, 1 );
-        LPC_pred_Q10 = silk_SMLAWB( LPC_pred_Q10, psLPC_Q14[  0 ], a_Q12[ 0 ] );
-        LPC_pred_Q10 = silk_SMLAWB( LPC_pred_Q10, psLPC_Q14[ -1 ], a_Q12[ 1 ] );
-        LPC_pred_Q10 = silk_SMLAWB( LPC_pred_Q10, psLPC_Q14[ -2 ], a_Q12[ 2 ] );
-        LPC_pred_Q10 = silk_SMLAWB( LPC_pred_Q10, psLPC_Q14[ -3 ], a_Q12[ 3 ] );
-        LPC_pred_Q10 = silk_SMLAWB( LPC_pred_Q10, psLPC_Q14[ -4 ], a_Q12[ 4 ] );
-        LPC_pred_Q10 = silk_SMLAWB( LPC_pred_Q10, psLPC_Q14[ -5 ], a_Q12[ 5 ] );
-        LPC_pred_Q10 = silk_SMLAWB( LPC_pred_Q10, psLPC_Q14[ -6 ], a_Q12[ 6 ] );
-        LPC_pred_Q10 = silk_SMLAWB( LPC_pred_Q10, psLPC_Q14[ -7 ], a_Q12[ 7 ] );
-        LPC_pred_Q10 = silk_SMLAWB( LPC_pred_Q10, psLPC_Q14[ -8 ], a_Q12[ 8 ] );
-        LPC_pred_Q10 = silk_SMLAWB( LPC_pred_Q10, psLPC_Q14[ -9 ], a_Q12[ 9 ] );
-        if( predictLPCOrder == 16 ) {
-            LPC_pred_Q10 = silk_SMLAWB( LPC_pred_Q10, psLPC_Q14[ -10 ], a_Q12[ 10 ] );
-            LPC_pred_Q10 = silk_SMLAWB( LPC_pred_Q10, psLPC_Q14[ -11 ], a_Q12[ 11 ] );
-            LPC_pred_Q10 = silk_SMLAWB( LPC_pred_Q10, psLPC_Q14[ -12 ], a_Q12[ 12 ] );
-            LPC_pred_Q10 = silk_SMLAWB( LPC_pred_Q10, psLPC_Q14[ -13 ], a_Q12[ 13 ] );
-            LPC_pred_Q10 = silk_SMLAWB( LPC_pred_Q10, psLPC_Q14[ -14 ], a_Q12[ 14 ] );
-            LPC_pred_Q10 = silk_SMLAWB( LPC_pred_Q10, psLPC_Q14[ -15 ], a_Q12[ 15 ] );
-        }
+        LPC_pred_Q10 = silk_noise_shape_quantizer_short_prediction(psLPC_Q14, a_Q12, a_Q12_arch, predictLPCOrder, arch);
 
         /* Long-term prediction */
         if( signalType == TYPE_VOICED ) {
@@ -259,23 +250,8 @@ void silk_noise_shape_quantizer(
 
         /* Noise shape feedback */
         silk_assert( ( shapingLPCOrder & 1 ) == 0 );   /* check that order is even */
-        tmp2 = psLPC_Q14[ 0 ];
-        tmp1 = NSQ->sAR2_Q14[ 0 ];
-        NSQ->sAR2_Q14[ 0 ] = tmp2;
-        n_AR_Q12 = silk_RSHIFT( shapingLPCOrder, 1 );
-        n_AR_Q12 = silk_SMLAWB( n_AR_Q12, tmp2, AR_shp_Q13[ 0 ] );
-        for( j = 2; j < shapingLPCOrder; j += 2 ) {
-            tmp2 = NSQ->sAR2_Q14[ j - 1 ];
-            NSQ->sAR2_Q14[ j - 1 ] = tmp1;
-            n_AR_Q12 = silk_SMLAWB( n_AR_Q12, tmp1, AR_shp_Q13[ j - 1 ] );
-            tmp1 = NSQ->sAR2_Q14[ j + 0 ];
-            NSQ->sAR2_Q14[ j + 0 ] = tmp2;
-            n_AR_Q12 = silk_SMLAWB( n_AR_Q12, tmp2, AR_shp_Q13[ j ] );
-        }
-        NSQ->sAR2_Q14[ shapingLPCOrder - 1 ] = tmp1;
-        n_AR_Q12 = silk_SMLAWB( n_AR_Q12, tmp1, AR_shp_Q13[ shapingLPCOrder - 1 ] );
+        n_AR_Q12 = silk_NSQ_noise_shape_feedback_loop(psLPC_Q14, NSQ->sAR2_Q14, AR_shp_Q13, shapingLPCOrder, arch);
 
-        n_AR_Q12 = silk_LSHIFT32( n_AR_Q12, 1 );                                /* Q11 -> Q12 */
         n_AR_Q12 = silk_SMLAWB( n_AR_Q12, NSQ->sLF_AR_shp_Q14, Tilt_Q14 );
 
         n_LF_Q12 = silk_SMULWB( NSQ->sLTP_shp_Q14[ NSQ->sLTP_shp_buf_idx - 1 ], LF_shp_Q14 );

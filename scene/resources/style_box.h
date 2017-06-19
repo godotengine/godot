@@ -39,7 +39,7 @@
 class StyleBox : public Resource {
 
 	GDCLASS(StyleBox, Resource);
-	RES_BASE_EXTENSION("sbx");
+	RES_BASE_EXTENSION("stylebox");
 	OBJ_SAVE_TYPE(StyleBox);
 	float margin[4];
 
@@ -81,6 +81,7 @@ class StyleBoxTexture : public StyleBox {
 	float margin[4];
 	Rect2 region_rect;
 	Ref<Texture> texture;
+	Ref<Texture> normal_map;
 	bool draw_center;
 	Color modulate;
 
@@ -100,6 +101,9 @@ public:
 
 	void set_texture(RES p_texture);
 	RES get_texture() const;
+
+	void set_normal_map(RES p_normal_map);
+	RES get_normal_map() const;
 
 	void set_draw_center(bool p_draw);
 	bool get_draw_center() const;

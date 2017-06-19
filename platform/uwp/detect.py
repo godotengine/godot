@@ -49,6 +49,8 @@ def configure(env):
     arch = ""
     env['ENV'] = os.environ
 
+    vc_base_path = os.environ['VCTOOLSINSTALLDIR'] if "VCTOOLSINSTALLDIR" in os.environ else os.environ['VCINSTALLDIR']
+
     # ANGLE
     angle_root = os.getenv("ANGLE_SRC_PATH")
     env.Append(CPPPATH=[angle_root + '/include'])
@@ -65,7 +67,7 @@ def configure(env):
         arch = "arm"
         env["bits"] = "32"
         env.Append(LINKFLAGS=['/MACHINE:ARM'])
-        env.Append(LIBPATH=[os.environ['VCINSTALLDIR'] + 'lib/store/arm'])
+        env.Append(LIBPATH=[vc_base_path + 'lib/store/arm'])
 
         angle_build_cmd += "ARM"
 
@@ -92,7 +94,7 @@ def configure(env):
 
             env.Append(CPPFLAGS=['/DPNG_ABORT=abort'])
             env.Append(LINKFLAGS=['/MACHINE:X86'])
-            env.Append(LIBPATH=[os.environ['VCINSTALLDIR'] + 'lib/store'])
+            env.Append(LIBPATH=[vc_base_path + 'lib/store'])
             env.Append(LIBPATH=[angle_root + '/winrt/10/src/Release_Win32/lib'])
 
         else:
@@ -107,10 +109,9 @@ def configure(env):
     env.Append(CPPPATH=['#platform/uwp', '#drivers/windows'])
     env.Append(LINKFLAGS=['/MANIFEST:NO', '/NXCOMPAT', '/DYNAMICBASE', '/WINMD', '/APPCONTAINER', '/ERRORREPORT:PROMPT', '/NOLOGO', '/TLBID:1', '/NODEFAULTLIB:"kernel32.lib"', '/NODEFAULTLIB:"ole32.lib"'])
     env.Append(CPPFLAGS=['/D', '__WRL_NO_DEFAULT_LIB__', '/D', 'WIN32'])
-    env.Append(CPPFLAGS=['/FU', os.environ['VCINSTALLDIR'] + 'lib/store/references/platform.winmd'])
-    env.Append(CPPFLAGS=['/AI', os.environ['VCINSTALLDIR'] + 'lib/store/references'])
-
-    env.Append(LIBPATH=[os.environ['VCINSTALLDIR'] + 'lib/store/references'])
+    
+    env.Append(CPPFLAGS=['/AI', vc_base_path + 'lib/store/references'])
+    env.Append(CPPFLAGS=['/AI', vc_base_path + 'lib/x86/store/references'])
 
     if (env["target"] == "release"):
 
@@ -133,7 +134,7 @@ def configure(env):
 
     env.Append(CCFLAGS=string.split('/FS /MP /GS /wd"4453" /wd"28204" /wd"4291" /Zc:wchar_t /Gm- /fp:precise /D "_UNICODE" /D "UNICODE" /D "WINAPI_FAMILY=WINAPI_FAMILY_APP" /errorReport:prompt /WX- /Zc:forScope /Gd /EHsc /nologo'))
     env.Append(CXXFLAGS=string.split('/ZW /FS'))
-    env.Append(CCFLAGS=['/AI', os.environ['VCINSTALLDIR'] + '\\vcpackages', '/AI', os.environ['WINDOWSSDKDIR'] + '\\References\\CommonConfiguration\\Neutral'])
+    env.Append(CCFLAGS=['/AI', vc_base_path + '\\vcpackages', '/AI', os.environ['WINDOWSSDKDIR'] + '\\References\\CommonConfiguration\\Neutral'])
 
     env["PROGSUFFIX"] = "." + arch + env["PROGSUFFIX"]
     env["OBJSUFFIX"] = "." + arch + env["OBJSUFFIX"]

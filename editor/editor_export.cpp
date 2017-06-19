@@ -211,6 +211,7 @@ EditorExportPreset::EditorExportPreset() {
 void EditorExportPlatform::gen_debug_flags(Vector<String> &r_flags, int p_flags) {
 
 	String host = EditorSettings::get_singleton()->get("network/debug/remote_host");
+	int remote_port = (int)EditorSettings::get_singleton()->get("network/debug/remote_port");
 
 	if (p_flags & DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST)
 		host = "localhost";
@@ -230,7 +231,7 @@ void EditorExportPlatform::gen_debug_flags(Vector<String> &r_flags, int p_flags)
 
 		r_flags.push_back("-rdebug");
 
-		r_flags.push_back(host + ":" + String::num(GLOBAL_DEF("network/debug/remote_port", 6007)));
+		r_flags.push_back(host + ":" + String::num(remote_port));
 
 		List<String> breakpoints;
 		ScriptEditor::get_singleton()->get_breakpoints(&breakpoints);
@@ -621,6 +622,7 @@ Error EditorExportPlatform::save_zip(const Ref<EditorExportPreset> &p_preset, co
 void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags) {
 
 	String host = EditorSettings::get_singleton()->get("network/debug/remote_host");
+	int remote_port = (int)EditorSettings::get_singleton()->get("network/debug/remote_port");
 
 	if (p_flags & DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST)
 		host = "localhost";
@@ -640,7 +642,7 @@ void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags
 
 		r_flags.push_back("-rdebug");
 
-		r_flags.push_back(host + ":" + String::num(GLOBAL_DEF("network/debug/remote_port", 6007)));
+		r_flags.push_back(host + ":" + String::num(remote_port));
 
 		List<String> breakpoints;
 		ScriptEditor::get_singleton()->get_breakpoints(&breakpoints);
@@ -1941,14 +1943,14 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 				atex->set_region(region);
 				atex->set_margin(margin);
 
-				String path = EditorSettings::get_singleton()->get_settings_path()+"/tmp/tmpatlas.atex";
+				String path = EditorSettings::get_singleton()->get_settings_path()+"/tmp/tmpatlas.atlastex";
 				Error err = ResourceSaver::save(path,atex);
 				if (err!=OK) {
 					EditorNode::add_io_error(TTR("Could not save atlas subtexture:")+" "+path);
 					return ERR_CANT_CREATE;
 				}
 				Vector<uint8_t> data = FileAccess::get_file_as_array(path);
-				String dst_path = F->get().operator String().get_basename()+".atex";
+				String dst_path = F->get().operator String().get_basename()+".atlastex";
 				err = p_func(p_udata,dst_path,data,counter++,files.size());
 				saved.insert(dst_path);
 				if (err)
@@ -2109,6 +2111,7 @@ static int _get_pad(int p_alignment, int p_n) {
 void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags) {
 
 	String host = EditorSettings::get_singleton()->get("network/debug/remote_host");
+	int remote_port = (int)EditorSettings::get_singleton()->get("network/debug/remote_port");
 
 	if (p_flags&EXPORT_REMOTE_DEBUG_LOCALHOST)
 		host="localhost";
@@ -2128,7 +2131,7 @@ void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags
 
 		r_flags.push_back("-rdebug");
 
-		r_flags.push_back(host+":"+String::num(GLOBAL_DEF("network/debug/remote_port", 6007)));
+		r_flags.push_back(host+":"+String::num(remote_port));
 
 		List<String> breakpoints;
 		ScriptEditor::get_singleton()->get_breakpoints(&breakpoints);

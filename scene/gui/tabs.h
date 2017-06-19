@@ -59,6 +59,7 @@ private:
 		int ofs_cache;
 		bool disabled;
 		int size_cache;
+		int size_text;
 		int x_cache;
 		int x_size_cache;
 
@@ -74,7 +75,6 @@ private:
 	bool missing_right;
 	Vector<Tab> tabs;
 	int current;
-	Control *_get_tab(int idx) const;
 	int _get_top_margin() const;
 	TabAlign tab_align;
 	int rb_hover;
@@ -85,9 +85,11 @@ private:
 	CloseButtonDisplayPolicy cb_displaypolicy;
 
 	int hover; // hovered tab
+	int min_width;
 
 	int get_tab_width(int p_idx) const;
 	void _ensure_no_over_offset();
+	void _update_cache();
 
 protected:
 	void _gui_input(const Ref<InputEvent> &p_event);
@@ -117,13 +119,16 @@ public:
 	int get_tab_count() const;
 	void set_current_tab(int p_current);
 	int get_current_tab() const;
+	int get_hovered_tab() const;
 
 	void remove_tab(int p_idx);
 
 	void clear_tabs();
 
 	void ensure_tab_visible(int p_idx);
+	void set_min_width(int p_width);
 
+	Rect2 get_tab_rect(int p_tab);
 	Size2 get_minimum_size() const;
 
 	Tabs();

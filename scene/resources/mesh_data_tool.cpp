@@ -38,7 +38,7 @@ void MeshDataTool::clear() {
 	format = 0;
 }
 
-Error MeshDataTool::create_from_surface(const Ref<Mesh> &p_mesh, int p_surface) {
+Error MeshDataTool::create_from_surface(const Ref<ArrayMesh> &p_mesh, int p_surface) {
 
 	ERR_FAIL_COND_V(p_mesh.is_null(), ERR_INVALID_PARAMETER);
 
@@ -179,7 +179,7 @@ Error MeshDataTool::create_from_surface(const Ref<Mesh> &p_mesh, int p_surface) 
 	return OK;
 }
 
-Error MeshDataTool::commit_to_surface(const Ref<Mesh> &p_mesh) {
+Error MeshDataTool::commit_to_surface(const Ref<ArrayMesh> &p_mesh) {
 
 	ERR_FAIL_COND_V(p_mesh.is_null(), ERR_INVALID_PARAMETER);
 	Array arr;
@@ -309,7 +309,7 @@ Error MeshDataTool::commit_to_surface(const Ref<Mesh> &p_mesh) {
 	if (w.size())
 		arr[Mesh::ARRAY_WEIGHTS] = w;
 
-	Ref<Mesh> ncmesh = p_mesh;
+	Ref<ArrayMesh> ncmesh = p_mesh;
 	int sc = ncmesh->get_surface_count();
 	ncmesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, arr);
 	ncmesh->surface_set_material(sc, material);

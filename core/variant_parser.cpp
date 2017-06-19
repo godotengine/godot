@@ -695,6 +695,110 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			}
 
 			return OK;
+		} else if (id == "Object") {
+
+			get_token(p_stream, token, line, r_err_str);
+			if (token.type != TK_PARENTHESIS_OPEN) {
+				r_err_str = "Expected '('";
+				return ERR_PARSE_ERROR;
+			}
+
+			get_token(p_stream, token, line, r_err_str);
+
+			if (token.type != TK_IDENTIFIER) {
+				r_err_str = "Expected identifier with type of object";
+				return ERR_PARSE_ERROR;
+			}
+
+			String type = token.value;
+
+			Object *obj = ClassDB::instance(type);
+
+			if (!obj) {
+				r_err_str = "Can't instance Object() of type: " + type;
+				return ERR_PARSE_ERROR;
+			}
+
+			get_token(p_stream, token, line, r_err_str);
+			if (token.type != TK_COMMA) {
+				r_err_str = "Expected ',' after object type";
+				return ERR_PARSE_ERROR;
+			}
+
+			bool at_key = true;
+			String key;
+			Token token;
+			bool need_comma = false;
+
+			while (true) {
+
+				if (p_stream->is_eof()) {
+					r_err_str = "Unexpected End of File while parsing Object()";
+					return ERR_FILE_CORRUPT;
+				}
+
+				if (at_key) {
+
+					Error err = get_token(p_stream, token, line, r_err_str);
+					if (err != OK)
+						return err;
+
+					if (token.type == TK_PARENTHESIS_CLOSE) {
+						Reference *reference = obj->cast_to<Reference>();
+						if (reference) {
+							value = REF(reference);
+						} else {
+							value = obj;
+						}
+						return OK;
+					}
+
+					if (need_comma) {
+
+						if (token.type != TK_COMMA) {
+
+							r_err_str = "Expected '}' or ','";
+							return ERR_PARSE_ERROR;
+						} else {
+							need_comma = false;
+							continue;
+						}
+					}
+
+					if (token.type != TK_STRING) {
+						r_err_str = "Expected property name as string";
+						return ERR_PARSE_ERROR;
+					}
+
+					key = token.value;
+
+					err = get_token(p_stream, token, line, r_err_str);
+
+					if (err != OK)
+						return err;
+					if (token.type != TK_COLON) {
+
+						r_err_str = "Expected ':'";
+						return ERR_PARSE_ERROR;
+					}
+					at_key = false;
+				} else {
+
+					Error err = get_token(p_stream, token, line, r_err_str);
+					if (err != OK)
+						return err;
+
+					Variant v;
+					err = parse_value(token, v, p_stream, line, r_err_str, p_res_parser);
+					if (err)
+						return err;
+					obj->set(key, v);
+					need_comma = true;
+					at_key = true;
+				}
+			}
+
+			return OK;
 
 		} else if (id == "Resource" || id == "SubResource" || id == "ExtResource") {
 
@@ -1516,7 +1620,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		case Variant::RECT2: {
 
 			Rect2 aabb = p_variant;
-			p_store_string_func(p_store_string_ud, "Rect2( " + rtosfix(aabb.pos.x) + ", " + rtosfix(aabb.pos.y) + ", " + rtosfix(aabb.size.x) + ", " + rtosfix(aabb.size.y) + " )");
+			p_store_string_func(p_store_string_ud, "Rect2( " + rtosfix(aabb.position.x) + ", " + rtosfix(aabb.position.y) + ", " + rtosfix(aabb.size.x) + ", " + rtosfix(aabb.size.y) + " )");
 
 		} break;
 		case Variant::VECTOR3: {
@@ -1533,7 +1637,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		case Variant::RECT3: {
 
 			Rect3 aabb = p_variant;
-			p_store_string_func(p_store_string_ud, "Rect3( " + rtosfix(aabb.pos.x) + ", " + rtosfix(aabb.pos.y) + ", " + rtosfix(aabb.pos.z) + ", " + rtosfix(aabb.size.x) + ", " + rtosfix(aabb.size.y) + ", " + rtosfix(aabb.size.z) + " )");
+			p_store_string_func(p_store_string_ud, "Rect3( " + rtosfix(aabb.position.x) + ", " + rtosfix(aabb.position.y) + ", " + rtosfix(aabb.position.z) + ", " + rtosfix(aabb.size.x) + ", " + rtosfix(aabb.size.y) + ", " + rtosfix(aabb.size.z) + " )");
 
 		} break;
 		case Variant::QUAT: {
@@ -1611,30 +1715,63 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 
 		case Variant::OBJECT: {
 
-			RES res = p_variant;
-			if (res.is_null()) {
+			Object *obj = p_variant;
+
+			if (!obj) {
 				p_store_string_func(p_store_string_ud, "null");
 				break; // don't save it
 			}
 
-			String res_text;
+			RES res = p_variant;
+			if (res.is_valid()) {
+				//is resource
+				String res_text;
 
-			if (p_encode_res_func) {
+				//try external function
+				if (p_encode_res_func) {
 
-				res_text = p_encode_res_func(p_encode_res_ud, res);
+					res_text = p_encode_res_func(p_encode_res_ud, res);
+				}
+
+				//try path because it's a file
+				if (res_text == String() && res->get_path().is_resource_file()) {
+
+					//external resource
+					String path = res->get_path();
+					res_text = "Resource( \"" + path + "\")";
+				}
+
+				//could come up with some sort of text
+				if (res_text != String()) {
+					p_store_string_func(p_store_string_ud, res_text);
+					break;
+				}
 			}
 
-			if (res_text == String() && res->get_path().is_resource_file()) {
+			//store as generic object
 
-				//external resource
-				String path = res->get_path();
-				res_text = "Resource( \"" + path + "\")";
+			p_store_string_func(p_store_string_ud, "Object(" + obj->get_class() + ",");
+
+			List<PropertyInfo> props;
+			obj->get_property_list(&props);
+			bool first = true;
+			for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+
+				if (E->get().usage & PROPERTY_USAGE_STORAGE || E->get().usage & PROPERTY_USAGE_SCRIPT_VARIABLE) {
+					//must be serialized
+
+					if (first) {
+						first = false;
+					} else {
+						p_store_string_func(p_store_string_ud, ",");
+					}
+
+					p_store_string_func(p_store_string_ud, "\"" + E->get().name + "\":");
+					write(obj->get(E->get().name), p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud);
+				}
 			}
 
-			if (res_text == String())
-				res_text = "null";
-
-			p_store_string_func(p_store_string_ud, res_text);
+			p_store_string_func(p_store_string_ud, ")\n");
 
 		} break;
 

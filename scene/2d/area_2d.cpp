@@ -29,7 +29,9 @@
 /*************************************************************************/
 #include "area_2d.h"
 #include "scene/scene_string_names.h"
+#include "servers/audio_server.h"
 #include "servers/physics_2d_server.h"
+
 void Area2D::set_space_override_mode(SpaceOverride p_mode) {
 
 	space_override = p_mode;
@@ -501,15 +503,15 @@ uint32_t Area2D::get_collision_mask() const {
 	return collision_mask;
 }
 
-void Area2D::set_layer_mask(uint32_t p_mask) {
+void Area2D::set_collision_layer(uint32_t p_layer) {
 
-	layer_mask = p_mask;
-	Physics2DServer::get_singleton()->area_set_layer_mask(get_rid(), p_mask);
+	collision_layer = p_layer;
+	Physics2DServer::get_singleton()->area_set_collision_layer(get_rid(), p_layer);
 }
 
-uint32_t Area2D::get_layer_mask() const {
+uint32_t Area2D::get_collision_layer() const {
 
-	return layer_mask;
+	return collision_layer;
 }
 
 void Area2D::set_collision_mask_bit(int p_bit, bool p_value) {
@@ -527,19 +529,60 @@ bool Area2D::get_collision_mask_bit(int p_bit) const {
 	return get_collision_mask() & (1 << p_bit);
 }
 
-void Area2D::set_layer_mask_bit(int p_bit, bool p_value) {
+void Area2D::set_collision_layer_bit(int p_bit, bool p_value) {
 
-	uint32_t mask = get_layer_mask();
+	uint32_t layer = get_collision_layer();
 	if (p_value)
-		mask |= 1 << p_bit;
+		layer |= 1 << p_bit;
 	else
-		mask &= ~(1 << p_bit);
-	set_layer_mask(mask);
+		layer &= ~(1 << p_bit);
+	set_collision_layer(layer);
 }
 
-bool Area2D::get_layer_mask_bit(int p_bit) const {
+bool Area2D::get_collision_layer_bit(int p_bit) const {
 
-	return get_layer_mask() & (1 << p_bit);
+	return get_collision_layer() & (1 << p_bit);
+}
+
+void Area2D::set_audio_bus_override(bool p_override) {
+
+	audio_bus_override = p_override;
+}
+
+bool Area2D::is_overriding_audio_bus() const {
+
+	return audio_bus_override;
+}
+
+void Area2D::set_audio_bus(const StringName &p_audio_bus) {
+
+	audio_bus = p_audio_bus;
+}
+
+StringName Area2D::get_audio_bus() const {
+
+	for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
+		if (AudioServer::get_singleton()->get_bus_name(i) == audio_bus) {
+			return audio_bus;
+		}
+	}
+	return "Master";
+}
+
+void Area2D::_validate_property(PropertyInfo &property) const {
+
+	if (property.name == "audio_bus_name") {
+
+		String options;
+		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
+			if (i > 0)
+				options += ",";
+			String name = AudioServer::get_singleton()->get_bus_name(i);
+			options += name;
+		}
+
+		property.hint_string = options;
+	}
 }
 
 void Area2D::_bind_methods() {
@@ -577,14 +620,14 @@ void Area2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_mask", "collision_mask"), &Area2D::set_collision_mask);
 	ClassDB::bind_method(D_METHOD("get_collision_mask"), &Area2D::get_collision_mask);
 
-	ClassDB::bind_method(D_METHOD("set_layer_mask", "layer_mask"), &Area2D::set_layer_mask);
-	ClassDB::bind_method(D_METHOD("get_layer_mask"), &Area2D::get_layer_mask);
+	ClassDB::bind_method(D_METHOD("set_collision_layer", "collision_layer"), &Area2D::set_collision_layer);
+	ClassDB::bind_method(D_METHOD("get_collision_layer"), &Area2D::get_collision_layer);
 
 	ClassDB::bind_method(D_METHOD("set_collision_mask_bit", "bit", "value"), &Area2D::set_collision_mask_bit);
 	ClassDB::bind_method(D_METHOD("get_collision_mask_bit", "bit"), &Area2D::get_collision_mask_bit);
 
-	ClassDB::bind_method(D_METHOD("set_layer_mask_bit", "bit", "value"), &Area2D::set_layer_mask_bit);
-	ClassDB::bind_method(D_METHOD("get_layer_mask_bit", "bit"), &Area2D::get_layer_mask_bit);
+	ClassDB::bind_method(D_METHOD("set_collision_layer_bit", "bit", "value"), &Area2D::set_collision_layer_bit);
+	ClassDB::bind_method(D_METHOD("get_collision_layer_bit", "bit"), &Area2D::get_collision_layer_bit);
 
 	ClassDB::bind_method(D_METHOD("set_monitoring", "enable"), &Area2D::set_monitoring);
 	ClassDB::bind_method(D_METHOD("is_monitoring"), &Area2D::is_monitoring);
@@ -597,6 +640,12 @@ void Area2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("overlaps_body", "body"), &Area2D::overlaps_body);
 	ClassDB::bind_method(D_METHOD("overlaps_area", "area"), &Area2D::overlaps_area);
+
+	ClassDB::bind_method(D_METHOD("set_audio_bus", "name"), &Area2D::set_audio_bus);
+	ClassDB::bind_method(D_METHOD("get_audio_bus"), &Area2D::get_audio_bus);
+
+	ClassDB::bind_method(D_METHOD("set_audio_bus_override", "enable"), &Area2D::set_audio_bus_override);
+	ClassDB::bind_method(D_METHOD("is_overriding_audio_bus"), &Area2D::is_overriding_audio_bus);
 
 	ClassDB::bind_method(D_METHOD("_body_inout"), &Area2D::_body_inout);
 	ClassDB::bind_method(D_METHOD("_area_inout"), &Area2D::_area_inout);
@@ -622,8 +671,12 @@ void Area2D::_bind_methods() {
 	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL, "monitoring"), "set_monitoring", "is_monitoring");
 	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL, "monitorable"), "set_monitorable", "is_monitorable");
 	ADD_GROUP("Collision", "collision_");
-	ADD_PROPERTYNO(PropertyInfo(Variant::INT, "collision_layers", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_layer_mask", "get_layer_mask");
+	ADD_PROPERTYNO(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_collision_layer", "get_collision_layer");
 	ADD_PROPERTYNO(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_collision_mask", "get_collision_mask");
+
+	ADD_GROUP("Audio Bus", "audio_bus_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "audio_bus_override"), "set_audio_bus_override", "is_overriding_audio_bus");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "audio_bus_name", PROPERTY_HINT_ENUM, ""), "set_audio_bus", "get_audio_bus");
 }
 
 Area2D::Area2D()
@@ -641,7 +694,8 @@ Area2D::Area2D()
 	monitoring = false;
 	monitorable = false;
 	collision_mask = 1;
-	layer_mask = 1;
+	collision_layer = 1;
+	audio_bus_override = false;
 	set_monitoring(true);
 	set_monitorable(true);
 }

@@ -115,7 +115,7 @@ static Ref<Image> _webp_lossy_unpack(const PoolVector<uint8_t> &p_buffer) {
 	return img;
 }
 
-Error ImageLoaderWEBP::load_image(Ref<Image> p_image, FileAccess *f) {
+Error ImageLoaderWEBP::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear) {
 
 	uint32_t size = f->get_len();
 	PoolVector<uint8_t> src_image;

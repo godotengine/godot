@@ -496,7 +496,7 @@ void EditorProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 			(mb.is_valid() && mb->get_button_index() == BUTTON_LEFT && mb->is_pressed()) ||
 			(mm.is_valid())) {
 
-		int x = me->get_pos().x;
+		int x = me->get_position().x;
 		x = x * frame_metrics.size() / graph->get_size().width;
 
 		bool show_hover = x >= 0 && x < frame_metrics.size();
@@ -523,7 +523,7 @@ void EditorProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 			hover_metric = -1;
 		}
 
-		if (mb.is_valid() || mb->get_button_mask() & BUTTON_MASK_LEFT) {
+		if (mb.is_valid() || mm->get_button_mask() & BUTTON_MASK_LEFT) {
 			//cursor_metric=x;
 			updating_frame = true;
 

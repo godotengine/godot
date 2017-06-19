@@ -100,14 +100,14 @@ void ShaderGLES3::bind_uniforms() {
 	};
 
 	uniforms_dirty = false;
-};
+}
 
 GLint ShaderGLES3::get_uniform_location(int p_idx) const {
 
 	ERR_FAIL_COND_V(!version, -1);
 
 	return version->uniform_location[p_idx];
-};
+}
 
 bool ShaderGLES3::bind() {
 
@@ -399,14 +399,14 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 	strings.push_back(fragment_code2.get_data());
 
 	if (cc) {
-		code_string = cc->fragment.ascii();
+		code_string = cc->light.ascii();
 		strings.push_back(code_string.get_data());
 	}
 
 	strings.push_back(fragment_code3.get_data());
 
 	if (cc) {
-		code_string2 = cc->light.ascii();
+		code_string2 = cc->fragment.ascii();
 		strings.push_back(code_string2.get_data());
 	}
 
@@ -666,7 +666,7 @@ void ShaderGLES3::setup(const char **p_conditional_defines, int p_conditional_co
 				//print_line("CODE1:\n"+String(fragment_code1.get_data()));
 
 				String code2 = code.substr(cpos + material_tag.length(), code.length());
-				cpos = code2.find(code_tag);
+				cpos = code2.find(light_code_tag);
 
 				if (cpos == -1) {
 					fragment_code2 = code2.ascii();
@@ -675,16 +675,16 @@ void ShaderGLES3::setup(const char **p_conditional_defines, int p_conditional_co
 					fragment_code2 = code2.substr(0, cpos).ascii();
 					//print_line("CODE2:\n"+String(fragment_code2.get_data()));
 
-					String code3 = code2.substr(cpos + code_tag.length(), code2.length());
+					String code3 = code2.substr(cpos + light_code_tag.length(), code2.length());
 
-					cpos = code3.find(light_code_tag);
+					cpos = code3.find(code_tag);
 					if (cpos == -1) {
 						fragment_code3 = code3.ascii();
 					} else {
 
 						fragment_code3 = code3.substr(0, cpos).ascii();
 						//print_line("CODE3:\n"+String(fragment_code3.get_data()));
-						fragment_code4 = code3.substr(cpos + light_code_tag.length(), code3.length()).ascii();
+						fragment_code4 = code3.substr(cpos + code_tag.length(), code3.length()).ascii();
 						//print_line("CODE4:\n"+String(fragment_code4.get_data()));
 					}
 				}

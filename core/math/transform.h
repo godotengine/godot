@@ -167,10 +167,10 @@ _FORCE_INLINE_ Rect3 Transform::xform(const Rect3 &p_aabb) const {
 	Vector3 x = basis.get_axis(0) * p_aabb.size.x;
 	Vector3 y = basis.get_axis(1) * p_aabb.size.y;
 	Vector3 z = basis.get_axis(2) * p_aabb.size.z;
-	Vector3 pos = xform(p_aabb.pos);
+	Vector3 pos = xform(p_aabb.position);
 	//could be even further optimized
 	Rect3 new_aabb;
-	new_aabb.pos = pos;
+	new_aabb.position = pos;
 	new_aabb.expand_to(pos + x);
 	new_aabb.expand_to(pos + y);
 	new_aabb.expand_to(pos + z);
@@ -182,14 +182,14 @@ _FORCE_INLINE_ Rect3 Transform::xform(const Rect3 &p_aabb) const {
 #else
 
 	Vector3 vertices[8] = {
-		Vector3(p_aabb.pos.x + p_aabb.size.x, p_aabb.pos.y + p_aabb.size.y, p_aabb.pos.z + p_aabb.size.z),
-		Vector3(p_aabb.pos.x + p_aabb.size.x, p_aabb.pos.y + p_aabb.size.y, p_aabb.pos.z),
-		Vector3(p_aabb.pos.x + p_aabb.size.x, p_aabb.pos.y, p_aabb.pos.z + p_aabb.size.z),
-		Vector3(p_aabb.pos.x + p_aabb.size.x, p_aabb.pos.y, p_aabb.pos.z),
-		Vector3(p_aabb.pos.x, p_aabb.pos.y + p_aabb.size.y, p_aabb.pos.z + p_aabb.size.z),
-		Vector3(p_aabb.pos.x, p_aabb.pos.y + p_aabb.size.y, p_aabb.pos.z),
-		Vector3(p_aabb.pos.x, p_aabb.pos.y, p_aabb.pos.z + p_aabb.size.z),
-		Vector3(p_aabb.pos.x, p_aabb.pos.y, p_aabb.pos.z)
+		Vector3(p_aabb.position.x + p_aabb.size.x, p_aabb.position.y + p_aabb.size.y, p_aabb.position.z + p_aabb.size.z),
+		Vector3(p_aabb.position.x + p_aabb.size.x, p_aabb.position.y + p_aabb.size.y, p_aabb.position.z),
+		Vector3(p_aabb.position.x + p_aabb.size.x, p_aabb.position.y, p_aabb.position.z + p_aabb.size.z),
+		Vector3(p_aabb.position.x + p_aabb.size.x, p_aabb.position.y, p_aabb.position.z),
+		Vector3(p_aabb.position.x, p_aabb.position.y + p_aabb.size.y, p_aabb.position.z + p_aabb.size.z),
+		Vector3(p_aabb.position.x, p_aabb.position.y + p_aabb.size.y, p_aabb.position.z),
+		Vector3(p_aabb.position.x, p_aabb.position.y, p_aabb.position.z + p_aabb.size.z),
+		Vector3(p_aabb.position.x, p_aabb.position.y, p_aabb.position.z)
 	};
 
 	AABB ret;
@@ -208,19 +208,19 @@ _FORCE_INLINE_ Rect3 Transform::xform_inv(const Rect3 &p_aabb) const {
 
 	/* define vertices */
 	Vector3 vertices[8] = {
-		Vector3(p_aabb.pos.x + p_aabb.size.x, p_aabb.pos.y + p_aabb.size.y, p_aabb.pos.z + p_aabb.size.z),
-		Vector3(p_aabb.pos.x + p_aabb.size.x, p_aabb.pos.y + p_aabb.size.y, p_aabb.pos.z),
-		Vector3(p_aabb.pos.x + p_aabb.size.x, p_aabb.pos.y, p_aabb.pos.z + p_aabb.size.z),
-		Vector3(p_aabb.pos.x + p_aabb.size.x, p_aabb.pos.y, p_aabb.pos.z),
-		Vector3(p_aabb.pos.x, p_aabb.pos.y + p_aabb.size.y, p_aabb.pos.z + p_aabb.size.z),
-		Vector3(p_aabb.pos.x, p_aabb.pos.y + p_aabb.size.y, p_aabb.pos.z),
-		Vector3(p_aabb.pos.x, p_aabb.pos.y, p_aabb.pos.z + p_aabb.size.z),
-		Vector3(p_aabb.pos.x, p_aabb.pos.y, p_aabb.pos.z)
+		Vector3(p_aabb.position.x + p_aabb.size.x, p_aabb.position.y + p_aabb.size.y, p_aabb.position.z + p_aabb.size.z),
+		Vector3(p_aabb.position.x + p_aabb.size.x, p_aabb.position.y + p_aabb.size.y, p_aabb.position.z),
+		Vector3(p_aabb.position.x + p_aabb.size.x, p_aabb.position.y, p_aabb.position.z + p_aabb.size.z),
+		Vector3(p_aabb.position.x + p_aabb.size.x, p_aabb.position.y, p_aabb.position.z),
+		Vector3(p_aabb.position.x, p_aabb.position.y + p_aabb.size.y, p_aabb.position.z + p_aabb.size.z),
+		Vector3(p_aabb.position.x, p_aabb.position.y + p_aabb.size.y, p_aabb.position.z),
+		Vector3(p_aabb.position.x, p_aabb.position.y, p_aabb.position.z + p_aabb.size.z),
+		Vector3(p_aabb.position.x, p_aabb.position.y, p_aabb.position.z)
 	};
 
 	Rect3 ret;
 
-	ret.pos = xform_inv(vertices[0]);
+	ret.position = xform_inv(vertices[0]);
 
 	for (int i = 1; i < 8; i++) {
 

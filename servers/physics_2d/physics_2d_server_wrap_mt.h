@@ -162,7 +162,7 @@ public:
 	FUNC1RC(Transform2D, area_get_transform, RID);
 
 	FUNC2(area_set_collision_mask, RID, uint32_t);
-	FUNC2(area_set_layer_mask, RID, uint32_t);
+	FUNC2(area_set_collision_layer, RID, uint32_t);
 
 	FUNC2(area_set_monitorable, RID, bool);
 	FUNC2(area_set_pickable, RID, bool);
@@ -203,8 +203,8 @@ public:
 	FUNC2(body_set_continuous_collision_detection_mode, RID, CCDMode);
 	FUNC1RC(CCDMode, body_get_continuous_collision_detection_mode, RID);
 
-	FUNC2(body_set_layer_mask, RID, uint32_t);
-	FUNC1RC(uint32_t, body_get_layer_mask, RID);
+	FUNC2(body_set_collision_layer, RID, uint32_t);
+	FUNC1RC(uint32_t, body_get_collision_layer, RID);
 
 	FUNC2(body_set_collision_mask, RID, uint32_t);
 	FUNC1RC(uint32_t, body_get_collision_mask, RID);

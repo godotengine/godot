@@ -59,13 +59,15 @@ public:
 		bool hide_canvas;
 		bool disable_environment;
 		bool disable_3d;
+		bool disable_3d_by_usage;
 
 		RID shadow_atlas;
 		int shadow_atlas_size;
 
-		VS::ViewportClearMode clear_mode;
+		int render_info[VS::VIEWPORT_RENDER_INFO_MAX];
+		VS::ViewportDebugDraw debug_draw;
 
-		bool rendered_in_prev_frame;
+		VS::ViewportClearMode clear_mode;
 
 		struct CanvasKey {
 
@@ -96,11 +98,15 @@ public:
 		Viewport() {
 			update_mode = VS::VIEWPORT_UPDATE_WHEN_VISIBLE;
 			clear_mode = VS::VIEWPORT_CLEAR_ALWAYS;
-			rendered_in_prev_frame = false;
 			disable_environment = false;
 			viewport_to_screen = 0;
 			shadow_atlas_size = 0;
 			disable_3d = false;
+			disable_3d_by_usage = false;
+			debug_draw = VS::VIEWPORT_DEBUG_DRAW_DISABLED;
+			for (int i = 0; i < VS::VIEWPORT_RENDER_INFO_MAX; i++) {
+				render_info[i] = 0;
+			}
 		}
 	};
 
@@ -164,6 +170,10 @@ public:
 
 	void viewport_set_msaa(RID p_viewport, VS::ViewportMSAA p_msaa);
 	void viewport_set_hdr(RID p_viewport, bool p_enabled);
+	void viewport_set_usage(RID p_viewport, VS::ViewportUsage p_usage);
+
+	virtual int viewport_get_render_info(RID p_viewport, VS::ViewportRenderInfo p_info);
+	virtual void viewport_set_debug_draw(RID p_viewport, VS::ViewportDebugDraw p_draw);
 
 	void draw_viewports();
 
