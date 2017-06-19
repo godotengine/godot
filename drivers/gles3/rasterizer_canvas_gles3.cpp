@@ -466,8 +466,10 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 
 					state.canvas_shader.set_uniform(CanvasShaderGLES3::COLOR_TEXPIXEL_SIZE, texpixel_size);
 
-					glVertexAttrib4f(1, rect->rect.position.x, rect->rect.position.y, rect->rect.size.x, rect->rect.size.y);
-					glVertexAttrib4f(2, src_rect.position.x, src_rect.position.y, src_rect.size.x, src_rect.size.y);
+					state.canvas_shader.set_uniform(CanvasShaderGLES3::DST_RECT, Color(rect->rect.position.x, rect->rect.position.y, rect->rect.size.x, rect->rect.size.y));
+					state.canvas_shader.set_uniform(CanvasShaderGLES3::SRC_RECT, Color(src_rect.position.x, src_rect.position.y, src_rect.size.x, src_rect.size.y));
+					state.canvas_shader.set_uniform(CanvasShaderGLES3::CLIP_RECT_UV, (rect->flags & CANVAS_RECT_CLIP_UV) ? true : false);
+
 					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 					if (untile) {
@@ -477,8 +479,9 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 
 				} else {
 
-					glVertexAttrib4f(1, rect->rect.position.x, rect->rect.position.y, rect->rect.size.x, rect->rect.size.y);
-					glVertexAttrib4f(2, 0, 0, 1, 1);
+					state.canvas_shader.set_uniform(CanvasShaderGLES3::DST_RECT, Color(rect->rect.position.x, rect->rect.position.y, rect->rect.size.x, rect->rect.size.y));
+					state.canvas_shader.set_uniform(CanvasShaderGLES3::SRC_RECT, Color(0, 0, 1, 1));
+					state.canvas_shader.set_uniform(CanvasShaderGLES3::CLIP_RECT_UV, false);
 					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 				}
 
@@ -507,9 +510,10 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 				Size2 texpixel_size(1.0 / texture->width, 1.0 / texture->height);
 
 				state.canvas_shader.set_uniform(CanvasShaderGLES3::COLOR_TEXPIXEL_SIZE, texpixel_size);
+				state.canvas_shader.set_uniform(CanvasShaderGLES3::CLIP_RECT_UV, false);
 
-#define DSTRECT(m_x, m_y, m_w, m_h) glVertexAttrib4f(1, m_x, m_y, m_w, m_h)
-#define SRCRECT(m_x, m_y, m_w, m_h) glVertexAttrib4f(2, (m_x)*texpixel_size.x, (m_y)*texpixel_size.y, (m_w)*texpixel_size.x, (m_h)*texpixel_size.y)
+#define DSTRECT(m_x, m_y, m_w, m_h) state.canvas_shader.set_uniform(CanvasShaderGLES3::DST_RECT, Color(m_x, m_y, m_w, m_h))
+#define SRCRECT(m_x, m_y, m_w, m_h) state.canvas_shader.set_uniform(CanvasShaderGLES3::DST_RECT, Color((m_x)*texpixel_size.x, (m_y)*texpixel_size.y, (m_w)*texpixel_size.x, (m_h)*texpixel_size.y))
 
 				//top left
 				DSTRECT(np->rect.position.x, np->rect.position.y, np->margin[MARGIN_LEFT], np->margin[MARGIN_TOP]);
@@ -1312,8 +1316,10 @@ void RasterizerCanvasGLES3::reset_canvas() {
 
 void RasterizerCanvasGLES3::draw_generic_textured_rect(const Rect2 &p_rect, const Rect2 &p_src) {
 
-	glVertexAttrib4f(1, p_rect.position.x, p_rect.position.y, p_rect.size.x, p_rect.size.y);
-	glVertexAttrib4f(2, p_src.position.x, p_src.position.y, p_src.size.x, p_src.size.y);
+	state.canvas_shader.set_uniform(CanvasShaderGLES3::DST_RECT, Color(p_rect.position.x, p_rect.position.y, p_rect.size.x, p_rect.size.y));
+	state.canvas_shader.set_uniform(CanvasShaderGLES3::SRC_RECT, Color(p_src.position.x, p_src.position.y, p_src.size.x, p_src.size.y));
+	state.canvas_shader.set_uniform(CanvasShaderGLES3::CLIP_RECT_UV, false);
+
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 

@@ -47,6 +47,7 @@ class Sprite : public Node2D {
 	bool vflip;
 	bool region;
 	Rect2 region_rect;
+	bool region_filter_clip;
 
 	int frame;
 
@@ -85,6 +86,9 @@ public:
 
 	void set_region(bool p_region);
 	bool is_region() const;
+
+	void set_region_filter_clip(bool p_enable);
+	bool is_region_filter_clip_enabled() const;
 
 	void set_region_rect(const Rect2 &p_region_rect);
 	Rect2 get_region_rect() const;

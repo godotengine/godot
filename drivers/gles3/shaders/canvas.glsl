@@ -6,8 +6,8 @@ layout(location=3) in vec4 color_attrib;
 
 #ifdef USE_TEXTURE_RECT
 
-layout(location=1) in highp vec4 dst_rect;
-layout(location=2) in highp vec4 src_rect;
+uniform vec4 dst_rect;
+uniform vec4 src_rect;
 
 #else
 
@@ -63,6 +63,7 @@ const bool at_light_pass = true;
 #else
 const bool at_light_pass = false;
 #endif
+
 
 
 VERTEX_SHADER_GLOBALS
@@ -228,22 +229,39 @@ LIGHT_SHADER_CODE
 
 }
 
+#ifdef USE_TEXTURE_RECT
+
+uniform vec4 dst_rect;
+uniform vec4 src_rect;
+uniform bool clip_rect_uv;
+
+#endif
+
 uniform bool use_default_normal;
 
 void main() {
 
 	vec4 color = color_interp;
+	vec2 uv = uv_interp;
 
+#ifdef USE_TEXTURE_RECT
+	if (clip_rect_uv) {
+
+		vec2 half_texpixel = color_texpixel_size * 0.5;
+		uv = clamp(uv,src_rect.xy+half_texpixel,src_rect.xy+abs(src_rect.zw)-color_texpixel_size);
+	}
+
+#endif
 
 #if !defined(COLOR_USED)
 //default behavior, texture by color
 
 #ifdef USE_DISTANCE_FIELD
 	const float smoothing = 1.0/32.0;
-	float distance = textureLod(color_texture, uv_interp,0.0).a;
+	float distance = textureLod(color_texture, uv,0.0).a;
 	color.a = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance) * color.a;
 #else
-	color *= texture( color_texture,  uv_interp );
+	color *= texture( color_texture,  uv );
 
 #endif
 
@@ -259,7 +277,7 @@ void main() {
 #endif
 
 	if (use_default_normal) {
-		normal.xy = textureLod(normal_texture, uv_interp,0.0).xy * 2.0 - 1.0;
+		normal.xy = textureLod(normal_texture, uv,0.0).xy * 2.0 - 1.0;
 		normal.z = sqrt(1.0-dot(normal.xy,normal.xy));
 		normal_used=true;
 	} else {
