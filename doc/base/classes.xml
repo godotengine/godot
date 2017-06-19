@@ -18949,6 +18949,30 @@
 		Native image datatype. Contains image data, which can be converted to a texture, and several functions to interact with it.
 	</description>
 	<methods>
+		<method name="blend_rect">
+			<argument index="0" name="src" type="Image">
+			</argument>
+			<argument index="1" name="src_rect" type="Rect2">
+			</argument>
+			<argument index="2" name="dst" type="Vector2">
+			</argument>
+			<description>
+				Alpha-blends a "src_rect" [Rect2] from "src" [Image] to this [Image] on coordinates "dest".
+			</description>
+		</method>
+		<method name="blend_rect_mask">
+			<argument index="0" name="src" type="Image">
+			</argument>
+			<argument index="1" name="mask" type="Image">
+			</argument>
+			<argument index="2" name="src_rect" type="Rect2">
+			</argument>
+			<argument index="3" name="dst" type="Vector2">
+			</argument>
+			<description>
+				Alpha-blends a "src_rect" [Rect2] from "src" [Image] to this [Image] using a "mask" [Image] on coordinates "dest". Alpha channels are required for both "src" and "mask", dest pixels and src pixels will blend if the corresponding mask pixel's alpha value is not 0. "src" [Image] and "mask" [Image] *must* have the same size (width and height) but they can have different formats
+			</description>
+		</method>
 		<method name="blit_rect">
 			<argument index="0" name="src" type="Image">
 			</argument>
@@ -19037,6 +19061,13 @@
 		</method>
 		<method name="expand_x2_hq2x">
 			<description>
+			</description>
+		</method>
+		<method name="fill">
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+				Fills an [Image] with a specified [Color]
 			</description>
 		</method>
 		<method name="fix_alpha_edges">
