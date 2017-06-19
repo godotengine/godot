@@ -15299,6 +15299,19 @@
 				Open the file for writing or reading, depending on the flags.
 			</description>
 		</method>
+		<method name="open_compressed">
+			<return type="int">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="mode_flags" type="int">
+			</argument>
+			<argument index="2" name="compression_mode" type="int" default="0">
+			</argument>
+			<description>
+				Open a compressed file for reading or writing. The compression_mode can be set as one of the COMPRESSION_* constants.
+			</description>
+		</method>
 		<method name="open_encrypted">
 			<return type="int">
 			</return>
@@ -15444,6 +15457,15 @@
 		</constant>
 		<constant name="WRITE_READ" value="7">
 			Open the file for reading and writing. Create it if the file not exists and truncate if it exists.
+		</constant>
+		<constant name="COMPRESSION_FASTLZ" value="0">
+			Use the FastLZ compression method.
+		</constant>
+		<constant name="COMPRESSION_DEFLATE" value="1">
+			Use the Deflate compression method.
+		</constant>
+		<constant name="COMPRESSION_ZSTD" value="2">
+			Use the Zstd compression method.
 		</constant>
 	</constants>
 </class>
@@ -33762,6 +33784,26 @@
 			</argument>
 			<description>
 				Append an [PoolByteArray] at the end of this array.
+			</description>
+		</method>
+		<method name="compress">
+			<return type="PoolByteArray">
+			</return>
+			<argument index="0" name="compression_mode" type="int" default="0">
+			</argument>
+			<description>
+			Returns a new [PoolByteArray] with the data compressed. The compression mode can be set using one of the COMPRESS_* constants of [File].
+			</description>
+		</method>
+		<method name="decompress">
+			<return type="PoolByteArray">
+			</return>
+			<argument index="0" name="buffer_size" type="int">
+			</argument>
+			<argument index="1" name="compression_mode" type="int" default="0">
+			</argument>
+			<description>
+			Returns a new [PoolByteArray] with the data decompressed. The buffer_size should be set as the size of the uncompressed data. The compression mode can be set using one of the COMPRESS_* constants of [File].
 			</description>
 		</method>
 		<method name="get_string_from_ascii">
