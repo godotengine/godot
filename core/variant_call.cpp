@@ -30,6 +30,7 @@
 #include "variant.h"
 
 #include "core_string_names.h"
+#include "io/compression.h"
 #include "object.h"
 #include "os/os.h"
 #include "script_language.h"
@@ -507,6 +508,44 @@ struct _VariantCall {
 			s.parse_utf8((const char *)r.ptr(), ba->size());
 		}
 		r_ret = s;
+	}
+
+	static void _call_PoolByteArray_compress(Variant &r_ret, Variant &p_self, const Variant **p_args) {
+
+		PoolByteArray *ba = reinterpret_cast<PoolByteArray *>(p_self._data._mem);
+		PoolByteArray compressed;
+		Compression::Mode mode = (Compression::Mode)(int)(*p_args[0]);
+
+		compressed.resize(Compression::get_max_compressed_buffer_size(ba->size()));
+		int result = Compression::compress(compressed.write().ptr(), ba->read().ptr(), ba->size(), mode);
+
+		result = result >= 0 ? result : 0;
+		compressed.resize(result);
+
+		r_ret = compressed;
+	}
+
+	static void _call_PoolByteArray_decompress(Variant &r_ret, Variant &p_self, const Variant **p_args) {
+
+		PoolByteArray *ba = reinterpret_cast<PoolByteArray *>(p_self._data._mem);
+		PoolByteArray decompressed;
+		Compression::Mode mode = (Compression::Mode)(int)(*p_args[1]);
+
+		int buffer_size = (int)(*p_args[0]);
+
+		if (buffer_size < 0) {
+			r_ret = decompressed;
+			ERR_EXPLAIN("Decompression buffer size is less than zero");
+			ERR_FAIL();
+		}
+
+		decompressed.resize(buffer_size);
+		int result = Compression::decompress(decompressed.write().ptr(), buffer_size, ba->read().ptr(), ba->size(), mode);
+
+		result = result >= 0 ? result : 0;
+		decompressed.resize(result);
+
+		r_ret = decompressed;
 	}
 
 	VCALL_LOCALMEM0R(PoolByteArray, size);
@@ -1552,6 +1591,8 @@ void register_variant_methods() {
 
 	ADDFUNC0(POOL_BYTE_ARRAY, STRING, PoolByteArray, get_string_from_ascii, varray());
 	ADDFUNC0(POOL_BYTE_ARRAY, STRING, PoolByteArray, get_string_from_utf8, varray());
+	ADDFUNC1(POOL_BYTE_ARRAY, POOL_BYTE_ARRAY, PoolByteArray, compress, INT, "compression_mode", varray(0));
+	ADDFUNC2(POOL_BYTE_ARRAY, POOL_BYTE_ARRAY, PoolByteArray, decompress, INT, "buffer_size", INT, "compression_mode", varray(0));
 
 	ADDFUNC0(POOL_INT_ARRAY, INT, PoolIntArray, size, varray());
 	ADDFUNC2(POOL_INT_ARRAY, NIL, PoolIntArray, set, INT, "idx", INT, "integer", varray());
