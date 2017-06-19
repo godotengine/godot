@@ -628,7 +628,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set("editors/2d/warped_mouse_panning", true);
 	set("editors/2d/scroll_to_pan", false);
 	set("editors/2d/pan_speed", 20);
-
+	set("editors/2d/show_mouse_position", true);
+	set("editors/2d/mouse_position_decimals", 1);
 	set("editors/poly_editor/point_grab_radius", 8);
 
 	set("run/window_placement/rect", 1);

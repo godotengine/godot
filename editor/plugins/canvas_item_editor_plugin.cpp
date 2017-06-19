@@ -1065,6 +1065,7 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 
+			_cache_mouse_pos(b->get_position());
 			_update_scroll(0);
 			viewport->update();
 			return;
@@ -1089,6 +1090,7 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 
+			_cache_mouse_pos(b->get_position());
 			_update_scroll(0);
 			viewport->update();
 			return;
@@ -1473,6 +1475,8 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseMotion> m = p_event;
 	if (m.is_valid()) {
+
+		_cache_mouse_pos(m->get_position());
 
 		if (!viewport->has_focus() && (!get_focus_owner() || !get_focus_owner()->is_text_field()))
 			viewport->call_deferred("grab_focus");
@@ -2143,6 +2147,15 @@ void CanvasItemEditor::_notification(int p_what) {
 				viewport->update();
 			}
 		}
+
+		if (mouse_pos_changed) {
+
+			mouse_pos_changed = false;
+			String mx = rtos(cached_mouse_pos.x).pad_decimals(2);
+			String my = rtos(cached_mouse_pos.y).pad_decimals(2);
+			mouse_pos_label_x->set_text(mx);
+			mouse_pos_label_y->set_text(my);
+		}
 	}
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
@@ -2392,6 +2405,14 @@ void CanvasItemEditor::_set_anchor(Control::AnchorType p_left, Control::AnchorTy
 	}
 
 	undo_redo->commit_action();
+}
+
+void CanvasItemEditor::_cache_mouse_pos(const Vector2 &p_mouse_pos) {
+
+	if (EditorSettings::get_singleton()->get("editors/2d/show_mouse_position")) {
+		mouse_pos_changed = true;
+		cached_mouse_pos = transform.affine_inverse().xform(p_mouse_pos);
+	}
 }
 
 void CanvasItemEditor::_popup_callback(int p_op) {
@@ -3426,6 +3447,41 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	drag = DRAG_NONE;
 	bone_last_frame = 0;
 	additive_selection = false;
+
+	toolbar = memnew(HBoxContainer);
+	toolbar->set_h_size_flags(SIZE_EXPAND_FILL);
+
+	toolbar->set_alignment(BoxContainer::ALIGN_END);
+	hb->add_child(toolbar);
+
+	Label *mouse_pos_txt = memnew(Label);
+	toolbar->add_child(mouse_pos_txt);
+	mouse_pos_txt->set_align(Label::ALIGN_RIGHT);
+	mouse_pos_txt->set_text(TTR("X:"));
+	mouse_pos_txt->add_font_override("font", get_font("source", "EditorFonts"));
+
+	mouse_pos_txt = memnew(Label);
+	mouse_pos_txt->set_align(Label::ALIGN_RIGHT);
+	mouse_pos_txt->set_text(TTR(" Y:"));
+	mouse_pos_txt->add_font_override("font", get_font("source", "EditorFonts"));
+
+	mouse_pos_label_x = memnew(Label);
+	mouse_pos_label_y = memnew(Label);
+	mouse_pos_label_x->set_align(Label::ALIGN_RIGHT);
+	mouse_pos_label_y->set_align(Label::ALIGN_RIGHT);
+	mouse_pos_label_x->set_custom_minimum_size(Size2(60, 1) * EDSCALE);
+	mouse_pos_label_y->set_custom_minimum_size(Size2(60, 1) * EDSCALE);
+	mouse_pos_label_x->add_font_override("font", get_font("source", "EditorFonts"));
+	mouse_pos_label_y->add_font_override("font", get_font("source", "EditorFonts"));
+	toolbar->add_child(mouse_pos_label_x);
+	toolbar->add_child(mouse_pos_txt);
+	toolbar->add_child(mouse_pos_label_y);
+
+	Control *sep = memnew(Control);
+	sep->set_custom_minimum_size(Size2(4, 1) * EDSCALE);
+	toolbar->add_child(sep);
+
+	mouse_pos_changed = false;
 }
 
 CanvasItemEditor *CanvasItemEditor::singleton = NULL;
