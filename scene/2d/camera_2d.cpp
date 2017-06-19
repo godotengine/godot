@@ -267,8 +267,7 @@ void Camera2D::_notification(int p_what) {
 			if (!is_inside_tree() || !get_tree()->is_editor_hint())
 				break;
 
-			if (screen_drawing_enabled == true)
-			{
+			if (screen_drawing_enabled == true) {
 				Color area_axis_color(0.5, 0.42, 0.87, 0.63);
 				float area_axis_width = 1;
 				if (current == true) {
@@ -293,16 +292,13 @@ void Camera2D::_notification(int p_what) {
 				}
 			}
 
-
-			if (limit_drawing_enabled == true)
-			{
+			if (limit_drawing_enabled == true) {
 				Color limit_drawing_color(1, 1, 0, 0.63);
 				float limit_drawing_width = 1;
 				if (current == true) {
-				  limit_drawing_color = Color(1, 1, 0, 0.83);
+					limit_drawing_color = Color(1, 1, 0, 0.83);
 					limit_drawing_width = 3;
 				}
-
 
 				Vector2 camera_origin = get_global_transform().get_origin();
 				Vector2 camera_scale = get_global_transform().get_scale().abs();
@@ -313,14 +309,12 @@ void Camera2D::_notification(int p_what) {
 					(Vector2(limit[MARGIN_LEFT], limit[MARGIN_BOTTOM]) - camera_origin) / camera_scale
 				};
 
-				for (int i = 0; i < 4; i++)
-				{
+				for (int i = 0; i < 4; i++) {
 					draw_line(limit_points[i], limit_points[(i + 1) % 4], limit_drawing_color, limit_drawing_width);
 				}
 			}
 
-			if (margin_drawing_enabled == true)
-			{
+			if (margin_drawing_enabled == true) {
 				Color margin_drawing_color(0, 1, 1, 0.63);
 				float margin_drawing_width = 1;
 				if (current == true) {
@@ -332,10 +326,10 @@ void Camera2D::_notification(int p_what) {
 				Size2 screen_size = get_viewport_rect().size;
 
 				Vector2 margin_endpoints[4] = {
-					inv_camera_transform.xform(Vector2((screen_size.width / 2) - ( (screen_size.width / 2) * drag_margin[MARGIN_LEFT]), (screen_size.height / 2) - ((screen_size.height / 2) * drag_margin[MARGIN_TOP]) )),
-					inv_camera_transform.xform(Vector2((screen_size.width / 2) + ( (screen_size.width/2) * drag_margin[MARGIN_RIGHT] ), (screen_size.height / 2) - ((screen_size.height / 2) * drag_margin[MARGIN_TOP]) )),
-					inv_camera_transform.xform(Vector2((screen_size.width / 2) + ( (screen_size.width/2) * drag_margin[MARGIN_RIGHT] ), (screen_size.height / 2) + ((screen_size.height / 2) * drag_margin[MARGIN_BOTTOM]) )),
-					inv_camera_transform.xform(Vector2((screen_size.width / 2) - ( (screen_size.width / 2) * drag_margin[MARGIN_LEFT]), (screen_size.height / 2) + ((screen_size.height / 2) * drag_margin[MARGIN_BOTTOM]) ))
+					inv_camera_transform.xform(Vector2((screen_size.width / 2) - ((screen_size.width / 2) * drag_margin[MARGIN_LEFT]), (screen_size.height / 2) - ((screen_size.height / 2) * drag_margin[MARGIN_TOP]))),
+					inv_camera_transform.xform(Vector2((screen_size.width / 2) + ((screen_size.width / 2) * drag_margin[MARGIN_RIGHT]), (screen_size.height / 2) - ((screen_size.height / 2) * drag_margin[MARGIN_TOP]))),
+					inv_camera_transform.xform(Vector2((screen_size.width / 2) + ((screen_size.width / 2) * drag_margin[MARGIN_RIGHT]), (screen_size.height / 2) + ((screen_size.height / 2) * drag_margin[MARGIN_BOTTOM]))),
+					inv_camera_transform.xform(Vector2((screen_size.width / 2) - ((screen_size.width / 2) * drag_margin[MARGIN_LEFT]), (screen_size.height / 2) + ((screen_size.height / 2) * drag_margin[MARGIN_BOTTOM])))
 				};
 
 				Transform2D inv_transform = get_global_transform().affine_inverse(); // undo global space
@@ -613,8 +607,7 @@ Node *Camera2D::get_custom_viewport() const {
 	return custom_viewport;
 }
 
-void Camera2D::set_screen_drawing_enabled(bool enable)
-{
+void Camera2D::set_screen_drawing_enabled(bool enable) {
 	screen_drawing_enabled = enable;
 	update();
 }
@@ -623,8 +616,7 @@ bool Camera2D::is_screen_drawing_enabled() const {
 	return screen_drawing_enabled;
 }
 
-void Camera2D::set_limit_drawing_enabled(bool enable)
-{
+void Camera2D::set_limit_drawing_enabled(bool enable) {
 	limit_drawing_enabled = enable;
 	update();
 }
@@ -633,8 +625,7 @@ bool Camera2D::is_limit_drawing_enabled() const {
 	return limit_drawing_enabled;
 }
 
-void Camera2D::set_margin_drawing_enabled(bool enable)
-{
+void Camera2D::set_margin_drawing_enabled(bool enable) {
 	margin_drawing_enabled = enable;
 	update();
 }

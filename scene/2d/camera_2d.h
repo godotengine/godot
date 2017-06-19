@@ -142,7 +142,6 @@ public:
 	void reset_smoothing();
 	void align();
 
-
 	void set_screen_drawing_enabled(bool enable);
 	bool is_screen_drawing_enabled() const;
 
@@ -151,7 +150,6 @@ public:
 
 	void set_margin_drawing_enabled(bool enable);
 	bool is_margin_drawing_enabled() const;
-
 
 	Camera2D();
 };
