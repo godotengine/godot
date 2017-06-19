@@ -427,13 +427,14 @@ Ref<Texture> EditorScriptPreviewPlugin::generate(const RES &p_from) {
 	Color text_color = EditorSettings::get_singleton()->get("text_editor/highlighting/text_color");
 	Color symbol_color = EditorSettings::get_singleton()->get("text_editor/highlighting/symbol_color");
 
+	img->lock();
+
 	for (int i = 0; i < thumbnail_size; i++) {
 		for (int j = 0; j < thumbnail_size; j++) {
 			img->put_pixel(i, j, bg_color);
 		}
 	}
 
-	img->lock();
 	bool prev_is_text = false;
 	bool in_keyword = false;
 	for (int i = 0; i < code.length(); i++) {
