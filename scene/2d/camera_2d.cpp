@@ -387,7 +387,6 @@ void Camera2D::_make_current(Object *p_which) {
 	if (p_which == this) {
 
 		current = true;
-		_update_scroll();
 	} else {
 		current = false;
 	}
@@ -399,7 +398,7 @@ void Camera2D::_set_current(bool p_current) {
 		make_current();
 
 	current = p_current;
-	_update_scroll();
+	update();
 }
 
 bool Camera2D::is_current() const {
@@ -428,7 +427,7 @@ void Camera2D::set_limit(Margin p_margin, int p_limit) {
 
 	ERR_FAIL_INDEX(p_margin, 4);
 	limit[p_margin] = p_limit;
-	_update_scroll();
+	update();
 }
 
 int Camera2D::get_limit(Margin p_margin) const {
@@ -452,7 +451,7 @@ void Camera2D::set_drag_margin(Margin p_margin, float p_drag_margin) {
 
 	ERR_FAIL_INDEX(p_margin, 4);
 	drag_margin[p_margin] = p_drag_margin;
-	_update_scroll();
+	update();
 }
 
 float Camera2D::get_drag_margin(Margin p_margin) const {
@@ -617,7 +616,7 @@ Node *Camera2D::get_custom_viewport() const {
 void Camera2D::set_screen_drawing_enabled(bool enable)
 {
 	screen_drawing_enabled = enable;
-	_update_scroll();
+	update();
 }
 
 bool Camera2D::is_screen_drawing_enabled() const {
@@ -627,7 +626,7 @@ bool Camera2D::is_screen_drawing_enabled() const {
 void Camera2D::set_limit_drawing_enabled(bool enable)
 {
 	limit_drawing_enabled = enable;
-	_update_scroll();
+	update();
 }
 
 bool Camera2D::is_limit_drawing_enabled() const {
@@ -637,7 +636,7 @@ bool Camera2D::is_limit_drawing_enabled() const {
 void Camera2D::set_margin_drawing_enabled(bool enable)
 {
 	margin_drawing_enabled = enable;
-	_update_scroll();
+	update();
 }
 
 bool Camera2D::is_margin_drawing_enabled() const {
@@ -742,10 +741,10 @@ void Camera2D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "drag_margin_right", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drag_margin", "get_drag_margin", MARGIN_RIGHT);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "drag_margin_bottom", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drag_margin", "get_drag_margin", MARGIN_BOTTOM);
 
-	ADD_GROUP("Editor helpers", "editor_helper_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_helper_draw_screen"), "set_screen_drawing_enabled", "is_screen_drawing_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_helper_draw_limits"), "set_limit_drawing_enabled", "is_limit_drawing_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_helper_draw_drag_margin"), "set_margin_drawing_enabled", "is_margin_drawing_enabled");
+	ADD_GROUP("Editor", "editor_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_draw_screen"), "set_screen_drawing_enabled", "is_screen_drawing_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_draw_limits"), "set_limit_drawing_enabled", "is_limit_drawing_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_draw_drag_margin"), "set_margin_drawing_enabled", "is_margin_drawing_enabled");
 
 	BIND_CONSTANT(ANCHOR_MODE_DRAG_CENTER);
 	BIND_CONSTANT(ANCHOR_MODE_FIXED_TOP_LEFT);
