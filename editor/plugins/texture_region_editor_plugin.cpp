@@ -792,6 +792,7 @@ TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
 	hb_tools->add_child(snap_mode_button);
 	snap_mode_button->set_text(TTR("<None>"));
 	PopupMenu *p = snap_mode_button->get_popup();
+	p->set_hide_on_checkable_item_selection(false);
 	p->add_item(TTR("<None>"), 0);
 	p->add_item(TTR("Pixel Snap"), 1);
 	p->add_item(TTR("Grid Snap"), 2);
