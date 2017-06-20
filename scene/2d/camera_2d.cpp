@@ -199,10 +199,8 @@ Transform2D Camera2D::get_camera_transform() {
 
 	/*
 	if (0) {
-
 		xform = get_global_transform() * xform;
 	} else {
-
 		xform.elements[2]+=get_global_transform().get_origin();
 	}
 */
@@ -267,19 +265,13 @@ void Camera2D::_notification(int p_what) {
 			if (!is_inside_tree() || !get_tree()->is_editor_hint())
 				break;
 
-<<<<<<< HEAD
 			if (screen_drawing_enabled == true) {
-=======
-			if (screen_drawing_enabled == true)
-			{
->>>>>>> 31d6c3a3ae60e15aac29c35b163c4313a9f5242c
 				Color area_axis_color(0.5, 0.42, 0.87, 0.63);
 				float area_axis_width = 1;
 				if (current == true) {
 					area_axis_width = 3;
 					area_axis_color = Color(0.5, 0.42, 0.87, 0.83);
 				}
-<<<<<<< HEAD
 
 				Transform2D inv_camera_transform = get_camera_transform().affine_inverse();
 				Size2 screen_size = get_viewport_rect().size;
@@ -336,77 +328,11 @@ void Camera2D::_notification(int p_what) {
 					inv_camera_transform.xform(Vector2((screen_size.width / 2) + ((screen_size.width / 2) * drag_margin[MARGIN_RIGHT]), (screen_size.height / 2) - ((screen_size.height / 2) * drag_margin[MARGIN_TOP]))),
 					inv_camera_transform.xform(Vector2((screen_size.width / 2) + ((screen_size.width / 2) * drag_margin[MARGIN_RIGHT]), (screen_size.height / 2) + ((screen_size.height / 2) * drag_margin[MARGIN_BOTTOM]))),
 					inv_camera_transform.xform(Vector2((screen_size.width / 2) - ((screen_size.width / 2) * drag_margin[MARGIN_LEFT]), (screen_size.height / 2) + ((screen_size.height / 2) * drag_margin[MARGIN_BOTTOM])))
-=======
-
-				Transform2D inv_camera_transform = get_camera_transform().affine_inverse();
-				Size2 screen_size = get_viewport_rect().size;
-
-				Vector2 screen_endpoints[4] = {
-					inv_camera_transform.xform(Vector2(0, 0)),
-					inv_camera_transform.xform(Vector2(screen_size.width, 0)),
-					inv_camera_transform.xform(Vector2(screen_size.width, screen_size.height)),
-					inv_camera_transform.xform(Vector2(0, screen_size.height))
->>>>>>> 31d6c3a3ae60e15aac29c35b163c4313a9f5242c
 				};
 
 				Transform2D inv_transform = get_global_transform().affine_inverse(); // undo global space
 
 				for (int i = 0; i < 4; i++) {
-<<<<<<< HEAD
-=======
-					draw_line(inv_transform.xform(screen_endpoints[i]), inv_transform.xform(screen_endpoints[(i + 1) % 4]), area_axis_color, area_axis_width);
-				}
-			}
-
-
-			if (limit_drawing_enabled == true)
-			{
-				Color limit_drawing_color(1, 1, 0, 0.63);
-				float limit_drawing_width = 1;
-				if (current == true) {
-				  limit_drawing_color = Color(1, 1, 0, 0.83);
-					limit_drawing_width = 3;
-				}
-
-
-				Vector2 camera_origin = get_global_transform().get_origin();
-				Vector2 camera_scale = get_global_transform().get_scale().abs();
-				Vector2 limit_points[4] = {
-					(Vector2(limit[MARGIN_LEFT], limit[MARGIN_TOP]) - camera_origin) / camera_scale,
-					(Vector2(limit[MARGIN_RIGHT], limit[MARGIN_TOP]) - camera_origin) / camera_scale,
-					(Vector2(limit[MARGIN_RIGHT], limit[MARGIN_BOTTOM]) - camera_origin) / camera_scale,
-					(Vector2(limit[MARGIN_LEFT], limit[MARGIN_BOTTOM]) - camera_origin) / camera_scale
-				};
-
-				for (int i = 0; i < 4; i++)
-				{
-					draw_line(limit_points[i], limit_points[(i + 1) % 4], limit_drawing_color, limit_drawing_width);
-				}
-			}
-
-			if (margin_drawing_enabled == true)
-			{
-				Color margin_drawing_color(0, 1, 1, 0.63);
-				float margin_drawing_width = 1;
-				if (current == true) {
-					margin_drawing_width = 3;
-					margin_drawing_color = Color(0, 1, 1, 0.83);
-				}
-
-				Transform2D inv_camera_transform = get_camera_transform().affine_inverse();
-				Size2 screen_size = get_viewport_rect().size;
-
-				Vector2 margin_endpoints[4] = {
-					inv_camera_transform.xform(Vector2((screen_size.width / 2) - ( (screen_size.width / 2) * drag_margin[MARGIN_LEFT]), (screen_size.height / 2) - ((screen_size.height / 2) * drag_margin[MARGIN_TOP]) )),
-					inv_camera_transform.xform(Vector2((screen_size.width / 2) + ( (screen_size.width/2) * drag_margin[MARGIN_RIGHT] ), (screen_size.height / 2) - ((screen_size.height / 2) * drag_margin[MARGIN_TOP]) )),
-					inv_camera_transform.xform(Vector2((screen_size.width / 2) + ( (screen_size.width/2) * drag_margin[MARGIN_RIGHT] ), (screen_size.height / 2) + ((screen_size.height / 2) * drag_margin[MARGIN_BOTTOM]) )),
-					inv_camera_transform.xform(Vector2((screen_size.width / 2) - ( (screen_size.width / 2) * drag_margin[MARGIN_LEFT]), (screen_size.height / 2) + ((screen_size.height / 2) * drag_margin[MARGIN_BOTTOM]) ))
-				};
-
-				Transform2D inv_transform = get_global_transform().affine_inverse(); // undo global space
-
-				for (int i = 0; i < 4; i++) {
->>>>>>> 31d6c3a3ae60e15aac29c35b163c4313a9f5242c
 					draw_line(inv_transform.xform(margin_endpoints[i]), inv_transform.xform(margin_endpoints[(i + 1) % 4]), margin_drawing_color, margin_drawing_width);
 				}
 			}
@@ -464,11 +390,7 @@ void Camera2D::_set_current(bool p_current) {
 		make_current();
 
 	current = p_current;
-<<<<<<< HEAD
 	update();
-=======
-	_update_scroll();
->>>>>>> 31d6c3a3ae60e15aac29c35b163c4313a9f5242c
 }
 
 bool Camera2D::is_current() const {
@@ -497,11 +419,7 @@ void Camera2D::set_limit(Margin p_margin, int p_limit) {
 
 	ERR_FAIL_INDEX(p_margin, 4);
 	limit[p_margin] = p_limit;
-<<<<<<< HEAD
 	update();
-=======
-	_update_scroll();
->>>>>>> 31d6c3a3ae60e15aac29c35b163c4313a9f5242c
 }
 
 int Camera2D::get_limit(Margin p_margin) const {
@@ -525,11 +443,7 @@ void Camera2D::set_drag_margin(Margin p_margin, float p_drag_margin) {
 
 	ERR_FAIL_INDEX(p_margin, 4);
 	drag_margin[p_margin] = p_drag_margin;
-<<<<<<< HEAD
 	update();
-=======
-	_update_scroll();
->>>>>>> 31d6c3a3ae60e15aac29c35b163c4313a9f5242c
 }
 
 float Camera2D::get_drag_margin(Margin p_margin) const {
@@ -691,48 +605,27 @@ Node *Camera2D::get_custom_viewport() const {
 	return custom_viewport;
 }
 
-<<<<<<< HEAD
 void Camera2D::set_screen_drawing_enabled(bool enable) {
 	screen_drawing_enabled = enable;
 	update();
-=======
-void Camera2D::set_screen_drawing_enabled(bool enable)
-{
-	screen_drawing_enabled = enable;
-	_update_scroll();
->>>>>>> 31d6c3a3ae60e15aac29c35b163c4313a9f5242c
 }
 
 bool Camera2D::is_screen_drawing_enabled() const {
 	return screen_drawing_enabled;
 }
 
-<<<<<<< HEAD
 void Camera2D::set_limit_drawing_enabled(bool enable) {
 	limit_drawing_enabled = enable;
 	update();
-=======
-void Camera2D::set_limit_drawing_enabled(bool enable)
-{
-	limit_drawing_enabled = enable;
-	_update_scroll();
->>>>>>> 31d6c3a3ae60e15aac29c35b163c4313a9f5242c
 }
 
 bool Camera2D::is_limit_drawing_enabled() const {
 	return limit_drawing_enabled;
 }
 
-<<<<<<< HEAD
 void Camera2D::set_margin_drawing_enabled(bool enable) {
 	margin_drawing_enabled = enable;
 	update();
-=======
-void Camera2D::set_margin_drawing_enabled(bool enable)
-{
-	margin_drawing_enabled = enable;
-	_update_scroll();
->>>>>>> 31d6c3a3ae60e15aac29c35b163c4313a9f5242c
 }
 
 bool Camera2D::is_margin_drawing_enabled() const {
@@ -837,17 +730,10 @@ void Camera2D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "drag_margin_right", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drag_margin", "get_drag_margin", MARGIN_RIGHT);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "drag_margin_bottom", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drag_margin", "get_drag_margin", MARGIN_BOTTOM);
 
-<<<<<<< HEAD
 	ADD_GROUP("Editor", "editor_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_draw_screen"), "set_screen_drawing_enabled", "is_screen_drawing_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_draw_limits"), "set_limit_drawing_enabled", "is_limit_drawing_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_draw_drag_margin"), "set_margin_drawing_enabled", "is_margin_drawing_enabled");
-=======
-	ADD_GROUP("Editor helpers", "editor_helper_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_helper_draw_screen"), "set_screen_drawing_enabled", "is_screen_drawing_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_helper_draw_limits"), "set_limit_drawing_enabled", "is_limit_drawing_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_helper_draw_drag_margin"), "set_margin_drawing_enabled", "is_margin_drawing_enabled");
->>>>>>> 31d6c3a3ae60e15aac29c35b163c4313a9f5242c
 
 	BIND_CONSTANT(ANCHOR_MODE_DRAG_CENTER);
 	BIND_CONSTANT(ANCHOR_MODE_FIXED_TOP_LEFT);
