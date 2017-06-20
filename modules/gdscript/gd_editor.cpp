@@ -1587,7 +1587,7 @@ static void _find_type_arguments(const GDParser::Node *p_node, int p_line, const
 		} else {
 			//regular method
 
-			if (p_method.operator String() == "connect") {
+			if (p_method.operator String() == "connect" || (p_method.operator String() == "emit_signal" && p_argidx == 0)) {
 
 				if (p_argidx == 0) {
 					List<MethodInfo> sigs;
