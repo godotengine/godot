@@ -775,6 +775,11 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				}
 
 				freelook_active = b->is_pressed();
+				if (freelook_active && !surface->has_focus()) {
+					// Focus usually doesn't trigger on right-click, but in case of freelook it should,
+					// otherwise using keyboard navigation would misbehave
+					surface->grab_focus();
+				}
 
 			} break;
 			case BUTTON_MIDDLE: {
