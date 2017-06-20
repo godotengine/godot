@@ -199,10 +199,8 @@ Transform2D Camera2D::get_camera_transform() {
 
 	/*
 	if (0) {
-
 		xform = get_global_transform() * xform;
 	} else {
-
 		xform.elements[2]+=get_global_transform().get_origin();
 	}
 */
@@ -267,25 +265,76 @@ void Camera2D::_notification(int p_what) {
 			if (!is_inside_tree() || !get_tree()->is_editor_hint())
 				break;
 
-			Color area_axis_color(0.5, 0.42, 0.87, 0.63);
-			float area_axis_width = 1;
-			if (current)
-				area_axis_width = 3;
+			if (screen_drawing_enabled) {
+				Color area_axis_color(0.5, 0.42, 0.87, 0.63);
+				float area_axis_width = 1;
+				if (is_current()) {
+					area_axis_width = 3;
+					area_axis_color.a = 0.83;
+				}
 
-			Transform2D inv_camera_transform = get_camera_transform().affine_inverse();
-			Size2 screen_size = get_viewport_rect().size;
+				Transform2D inv_camera_transform = get_camera_transform().affine_inverse();
+				Size2 screen_size = get_viewport_rect().size;
 
-			Vector2 screen_endpoints[4] = {
-				inv_camera_transform.xform(Vector2(0, 0)),
-				inv_camera_transform.xform(Vector2(screen_size.width, 0)),
-				inv_camera_transform.xform(Vector2(screen_size.width, screen_size.height)),
-				inv_camera_transform.xform(Vector2(0, screen_size.height))
-			};
+				Vector2 screen_endpoints[4] = {
+					inv_camera_transform.xform(Vector2(0, 0)),
+					inv_camera_transform.xform(Vector2(screen_size.width, 0)),
+					inv_camera_transform.xform(Vector2(screen_size.width, screen_size.height)),
+					inv_camera_transform.xform(Vector2(0, screen_size.height))
+				};
 
-			Transform2D inv_transform = get_global_transform().affine_inverse(); // undo global space
+				Transform2D inv_transform = get_global_transform().affine_inverse(); // undo global space
 
-			for (int i = 0; i < 4; i++) {
-				draw_line(inv_transform.xform(screen_endpoints[i]), inv_transform.xform(screen_endpoints[(i + 1) % 4]), area_axis_color, area_axis_width);
+				for (int i = 0; i < 4; i++) {
+					draw_line(inv_transform.xform(screen_endpoints[i]), inv_transform.xform(screen_endpoints[(i + 1) % 4]), area_axis_color, area_axis_width);
+				}
+			}
+
+			if (limit_drawing_enabled) {
+				Color limit_drawing_color(1, 1, 0, 0.63);
+				float limit_drawing_width = 1;
+				if (is_current()) {
+					limit_drawing_color.a = 0.83;
+					limit_drawing_width = 3;
+				}
+
+				Vector2 camera_origin = get_global_transform().get_origin();
+				Vector2 camera_scale = get_global_transform().get_scale().abs();
+				Vector2 limit_points[4] = {
+					(Vector2(limit[MARGIN_LEFT], limit[MARGIN_TOP]) - camera_origin) / camera_scale,
+					(Vector2(limit[MARGIN_RIGHT], limit[MARGIN_TOP]) - camera_origin) / camera_scale,
+					(Vector2(limit[MARGIN_RIGHT], limit[MARGIN_BOTTOM]) - camera_origin) / camera_scale,
+					(Vector2(limit[MARGIN_LEFT], limit[MARGIN_BOTTOM]) - camera_origin) / camera_scale
+				};
+
+				for (int i = 0; i < 4; i++) {
+					draw_line(limit_points[i], limit_points[(i + 1) % 4], limit_drawing_color, limit_drawing_width);
+				}
+			}
+
+			if (margin_drawing_enabled) {
+				Color margin_drawing_color(0, 1, 1, 0.63);
+				float margin_drawing_width = 1;
+				if (is_current()) {
+					margin_drawing_width = 3;
+					margin_drawing_color.a = 0.83;
+				}
+
+				Transform2D inv_camera_transform = get_camera_transform().affine_inverse();
+				Size2 screen_size = get_viewport_rect().size;
+
+				Vector2 margin_endpoints[4] = {
+					inv_camera_transform.xform(Vector2((screen_size.width / 2) - ((screen_size.width / 2) * drag_margin[MARGIN_LEFT]), (screen_size.height / 2) - ((screen_size.height / 2) * drag_margin[MARGIN_TOP]))),
+					inv_camera_transform.xform(Vector2((screen_size.width / 2) + ((screen_size.width / 2) * drag_margin[MARGIN_RIGHT]), (screen_size.height / 2) - ((screen_size.height / 2) * drag_margin[MARGIN_TOP]))),
+					inv_camera_transform.xform(Vector2((screen_size.width / 2) + ((screen_size.width / 2) * drag_margin[MARGIN_RIGHT]), (screen_size.height / 2) + ((screen_size.height / 2) * drag_margin[MARGIN_BOTTOM]))),
+					inv_camera_transform.xform(Vector2((screen_size.width / 2) - ((screen_size.width / 2) * drag_margin[MARGIN_LEFT]), (screen_size.height / 2) + ((screen_size.height / 2) * drag_margin[MARGIN_BOTTOM])))
+				};
+
+				Transform2D inv_transform = get_global_transform().affine_inverse(); // undo global space
+
+				for (int i = 0; i < 4; i++) {
+					draw_line(inv_transform.xform(margin_endpoints[i]), inv_transform.xform(margin_endpoints[(i + 1) % 4]), margin_drawing_color, margin_drawing_width);
+				}
 			}
 
 		} break;
@@ -330,7 +379,6 @@ void Camera2D::_make_current(Object *p_which) {
 	if (p_which == this) {
 
 		current = true;
-		_update_scroll();
 	} else {
 		current = false;
 	}
@@ -342,6 +390,7 @@ void Camera2D::_set_current(bool p_current) {
 		make_current();
 
 	current = p_current;
+	update();
 }
 
 bool Camera2D::is_current() const {
@@ -370,6 +419,7 @@ void Camera2D::set_limit(Margin p_margin, int p_limit) {
 
 	ERR_FAIL_INDEX(p_margin, 4);
 	limit[p_margin] = p_limit;
+	update();
 }
 
 int Camera2D::get_limit(Margin p_margin) const {
@@ -393,6 +443,7 @@ void Camera2D::set_drag_margin(Margin p_margin, float p_drag_margin) {
 
 	ERR_FAIL_INDEX(p_margin, 4);
 	drag_margin[p_margin] = p_drag_margin;
+	update();
 }
 
 float Camera2D::get_drag_margin(Margin p_margin) const {
@@ -554,6 +605,33 @@ Node *Camera2D::get_custom_viewport() const {
 	return custom_viewport;
 }
 
+void Camera2D::set_screen_drawing_enabled(bool enable) {
+	screen_drawing_enabled = enable;
+	update();
+}
+
+bool Camera2D::is_screen_drawing_enabled() const {
+	return screen_drawing_enabled;
+}
+
+void Camera2D::set_limit_drawing_enabled(bool enable) {
+	limit_drawing_enabled = enable;
+	update();
+}
+
+bool Camera2D::is_limit_drawing_enabled() const {
+	return limit_drawing_enabled;
+}
+
+void Camera2D::set_margin_drawing_enabled(bool enable) {
+	margin_drawing_enabled = enable;
+	update();
+}
+
+bool Camera2D::is_margin_drawing_enabled() const {
+	return margin_drawing_enabled;
+}
+
 void Camera2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_offset", "offset"), &Camera2D::set_offset);
@@ -616,6 +694,15 @@ void Camera2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_set_old_smoothing", "follow_smoothing"), &Camera2D::_set_old_smoothing);
 
+	ClassDB::bind_method(D_METHOD("set_screen_drawing_enabled", "screen_drawing_enabled"), &Camera2D::set_screen_drawing_enabled);
+	ClassDB::bind_method(D_METHOD("is_screen_drawing_enabled"), &Camera2D::is_screen_drawing_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_limit_drawing_enabled", "limit_drawing_enabled"), &Camera2D::set_limit_drawing_enabled);
+	ClassDB::bind_method(D_METHOD("is_limit_drawing_enabled"), &Camera2D::is_limit_drawing_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_margin_drawing_enabled", "margin_drawing_enabled"), &Camera2D::set_margin_drawing_enabled);
+	ClassDB::bind_method(D_METHOD("is_margin_drawing_enabled"), &Camera2D::is_margin_drawing_enabled);
+
 	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "anchor_mode", PROPERTY_HINT_ENUM, "Fixed TopLeft,Drag Center"), "set_anchor_mode", "get_anchor_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rotating"), "set_rotating", "is_rotating");
@@ -642,6 +729,11 @@ void Camera2D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "drag_margin_top", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drag_margin", "get_drag_margin", MARGIN_TOP);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "drag_margin_right", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drag_margin", "get_drag_margin", MARGIN_RIGHT);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "drag_margin_bottom", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drag_margin", "get_drag_margin", MARGIN_BOTTOM);
+
+	ADD_GROUP("Editor", "editor_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_draw_screen"), "set_screen_drawing_enabled", "is_screen_drawing_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_draw_limits"), "set_limit_drawing_enabled", "is_limit_drawing_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_draw_drag_margin"), "set_margin_drawing_enabled", "is_margin_drawing_enabled");
 
 	BIND_CONSTANT(ANCHOR_MODE_DRAG_CENTER);
 	BIND_CONSTANT(ANCHOR_MODE_FIXED_TOP_LEFT);
@@ -670,6 +762,10 @@ Camera2D::Camera2D() {
 
 	smoothing = 5.0;
 	zoom = Vector2(1, 1);
+
+	screen_drawing_enabled = true;
+	limit_drawing_enabled = false;
+	margin_drawing_enabled = false;
 
 	h_drag_enabled = true;
 	v_drag_enabled = true;
