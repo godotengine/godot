@@ -344,7 +344,7 @@ struct PtrToArg<const Ref<T> &> {
 
 	_FORCE_INLINE_ static Ref<T> convert(const void *p_ptr) {
 
-		return Ref<T>(reinterpret_cast<const T *>(p_ptr));
+		return Ref<T>((T *)p_ptr);
 	}
 };
 
