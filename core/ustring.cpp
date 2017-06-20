@@ -65,7 +65,7 @@ bool CharString::operator<(const CharString &p_right) const {
 	}
 
 	const char *this_str = get_data();
-	const char *that_str = get_data();
+	const char *that_str = p_right.get_data();
 	while (true) {
 
 		if (*that_str == 0 && *this_str == 0)
