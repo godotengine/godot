@@ -56,7 +56,7 @@ String EditorImportPlugin::get_preset_name(int p_idx) const {
 	return get_script_instance()->call("get_preset_name", p_idx);
 }
 
-int EditorImportPlugin::get_preset_count() {
+int EditorImportPlugin::get_preset_count() const {
 	ERR_FAIL_COND_V(!(get_script_instance() && get_script_instance()->has_method("get_preset_count")), 0);
 	return get_script_instance()->call("get_preset_count");
 }
