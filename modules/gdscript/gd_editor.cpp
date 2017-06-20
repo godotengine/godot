@@ -1643,7 +1643,7 @@ static void _find_type_arguments(GDCompletionContext &context, const GDParser::N
 		} else {
 			//regular method
 
-			if (p_method.operator String() == "connect") {
+			if (p_method.operator String() == "connect" || (p_method.operator String() == "emit_signal" && p_argidx == 0)) {
 
 				if (p_argidx == 0) {
 					List<MethodInfo> sigs;
