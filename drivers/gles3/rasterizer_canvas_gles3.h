@@ -51,6 +51,10 @@ public:
 		GLuint polygon_buffer_quad_arrays[4];
 		GLuint polygon_buffer_pointer_array;
 		GLuint polygon_index_buffer;
+
+		GLuint particle_quad_vertices;
+		GLuint particle_quad_array;
+
 		uint32_t polygon_buffer_size;
 
 	} data;

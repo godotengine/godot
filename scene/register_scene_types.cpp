@@ -471,7 +471,7 @@ void register_scene_types() {
 	ClassDB::register_virtual_class<CanvasItem>();
 	ClassDB::register_class<Node2D>();
 	ClassDB::register_class<Particles2D>();
-	ClassDB::register_class<ParticleAttractor2D>();
+	//ClassDB::register_class<ParticleAttractor2D>();
 	ClassDB::register_class<Sprite>();
 	//ClassDB::register_type<ViewportSprite>();
 	ClassDB::register_class<SpriteFrames>();

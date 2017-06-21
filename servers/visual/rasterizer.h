@@ -612,6 +612,7 @@ public:
 				TYPE_POLYGON,
 				TYPE_MESH,
 				TYPE_MULTIMESH,
+				TYPE_PARTICLES,
 				TYPE_CIRCLE,
 				TYPE_TRANSFORM,
 				TYPE_CLIP_IGNORE,
@@ -705,6 +706,16 @@ public:
 			RID multimesh;
 			RID skeleton;
 			CommandMultiMesh() { type = TYPE_MULTIMESH; }
+		};
+
+		struct CommandParticles : public Command {
+
+			RID particles;
+			RID texture;
+			RID normal_map;
+			int h_frames;
+			int v_frames;
+			CommandParticles() { type = TYPE_PARTICLES; }
 		};
 
 		struct CommandCircle : public Command {
@@ -843,6 +854,15 @@ public:
 						Rect3 aabb = RasterizerStorage::base_singleton->multimesh_get_aabb(multimesh->multimesh);
 
 						r = Rect2(aabb.position.x, aabb.position.y, aabb.size.x, aabb.size.y);
+
+					} break;
+					case Item::Command::TYPE_PARTICLES: {
+
+						const Item::CommandParticles *particles_cmd = static_cast<const Item::CommandParticles *>(c);
+						if (particles_cmd->particles.is_valid()) {
+							Rect3 aabb = RasterizerStorage::base_singleton->particles_get_aabb(particles_cmd->particles);
+							r = Rect2(aabb.position.x, aabb.position.y, aabb.size.x, aabb.size.y);
+						}
 
 					} break;
 					case Item::Command::TYPE_CIRCLE: {

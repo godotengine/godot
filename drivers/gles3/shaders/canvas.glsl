@@ -11,10 +11,25 @@ uniform vec4 src_rect;
 
 #else
 
+#ifdef USE_INSTANCING
+
+layout(location=8) in highp vec4 instance_xform0;
+layout(location=9) in highp vec4 instance_xform1;
+layout(location=10) in highp vec4 instance_xform2;
+layout(location=11) in lowp vec4 instance_color;
+
+#ifdef USE_INSTANCE_CUSTOM
+layout(location=12) in highp vec4 instance_custom_data;
+#endif
+
+#endif
+
 layout(location=4) in highp vec2 uv_attrib;
 
 //skeletn
 #endif
+
+uniform highp vec2 color_texpixel_size;
 
 
 layout(std140) uniform CanvasItemData { //ubo:0
@@ -64,7 +79,10 @@ const bool at_light_pass = true;
 const bool at_light_pass = false;
 #endif
 
-
+#ifdef USE_PARTICLES
+uniform int h_frames;
+uniform int v_frames;
+#endif
 
 VERTEX_SHADER_GLOBALS
 
@@ -82,6 +100,12 @@ void main() {
 
 	vec4 vertex_color = color_attrib;
 
+#ifdef USE_INSTANCING
+	mat4 extra_matrix2 = extra_matrix * transpose(mat4(instance_xform0,instance_xform1,instance_xform2,vec4(0.0,0.0,0.0,1.0)));
+	vertex_color*=instance_color;
+#else
+	mat4 extra_matrix2 = extra_matrix;
+#endif
 
 #ifdef USE_TEXTURE_RECT
 
@@ -95,6 +119,22 @@ void main() {
 #endif
 
 
+#ifdef USE_PARTICLES
+	//scale by texture size
+	outvec.xy/=color_texpixel_size;
+
+	//compute h and v frames and adjust UV interp for animation
+	int total_frames = h_frames * v_frames;
+	int frame = min(int(float(total_frames) *instance_custom_data.z),total_frames-1);
+	float frame_w = 1.0/float(h_frames);
+	float frame_h = 1.0/float(v_frames);
+	uv_interp.x = uv_interp.x * frame_w + frame_w * float(frame % h_frames);
+	uv_interp.y = uv_interp.y * frame_h + frame_h * float(frame / v_frames);
+
+#endif
+
+#define extra_matrix extra_matrix2
+
 {
 	vec2 src_vtx=outvec.xy;
 
@@ -106,6 +146,8 @@ VERTEX_SHADER_CODE
 	outvec = extra_matrix * outvec;
 	outvec = modelview_matrix * outvec;
 #endif
+
+#undef extra_matrix
 
 	color_interp = vertex_color;
 

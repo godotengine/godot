@@ -637,6 +637,25 @@ void VisualServerCanvas::canvas_item_add_mesh(RID p_item, const RID &p_mesh, RID
 
 	canvas_item->commands.push_back(m);
 }
+void VisualServerCanvas::canvas_item_add_particles(RID p_item, RID p_particles, RID p_texture, RID p_normal, int p_h_frames, int p_v_frames) {
+
+	Item *canvas_item = canvas_item_owner.getornull(p_item);
+	ERR_FAIL_COND(!canvas_item);
+
+	Item::CommandParticles *part = memnew(Item::CommandParticles);
+	ERR_FAIL_COND(!part);
+	part->particles = p_particles;
+	part->texture = p_texture;
+	part->normal_map = p_normal;
+	part->h_frames = p_h_frames;
+	part->v_frames = p_v_frames;
+
+	//take the chance and request processing for them, at least once until they become visible again
+	VSG::storage->particles_request_process(p_particles);
+
+	canvas_item->commands.push_back(part);
+}
+
 void VisualServerCanvas::canvas_item_add_multimesh(RID p_item, RID p_mesh, RID p_skeleton) {
 
 	Item *canvas_item = canvas_item_owner.getornull(p_item);

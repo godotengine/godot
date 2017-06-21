@@ -877,7 +877,8 @@ public:
 	BIND2(particles_set_draw_passes, RID, int)
 	BIND3(particles_set_draw_pass_mesh, RID, int, RID)
 
-	BIND1R(Rect3, particles_get_current_aabb, RID);
+	BIND1R(Rect3, particles_get_current_aabb, RID)
+	BIND2(particles_set_emission_transform, RID, const Transform &)
 
 #undef BINDBASE
 //from now on, calls forwarded to this singleton
@@ -1049,6 +1050,7 @@ public:
 	BIND8(canvas_item_add_triangle_array, RID, const Vector<int> &, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID, int, RID)
 	BIND3(canvas_item_add_mesh, RID, const RID &, RID)
 	BIND3(canvas_item_add_multimesh, RID, RID, RID)
+	BIND6(canvas_item_add_particles, RID, RID, RID, RID, int, int)
 	BIND2(canvas_item_add_set_transform, RID, const Transform2D &)
 	BIND2(canvas_item_add_clip_ignore, RID, bool)
 	BIND2(canvas_item_set_sort_children_by_y, RID, bool)

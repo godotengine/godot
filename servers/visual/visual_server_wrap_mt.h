@@ -320,6 +320,7 @@ public:
 
 	FUNC2(particles_set_draw_passes, RID, int)
 	FUNC3(particles_set_draw_pass_mesh, RID, int, RID)
+	FUNC2(particles_set_emission_transform, RID, const Transform &)
 
 	FUNC1R(Rect3, particles_get_current_aabb, RID)
 
@@ -476,6 +477,7 @@ public:
 	FUNC8(canvas_item_add_triangle_array, RID, const Vector<int> &, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID, int, RID)
 	FUNC3(canvas_item_add_mesh, RID, const RID &, RID)
 	FUNC3(canvas_item_add_multimesh, RID, RID, RID)
+	FUNC6(canvas_item_add_particles, RID, RID, RID, RID, int, int)
 	FUNC2(canvas_item_add_set_transform, RID, const Transform2D &)
 	FUNC2(canvas_item_add_clip_ignore, RID, bool)
 	FUNC2(canvas_item_set_sort_children_by_y, RID, bool)

@@ -404,6 +404,7 @@ void ParticlesMaterial::init_shaders() {
 	shader_names->emission_texture_point_count = "emission_texture_point_count";
 	shader_names->emission_texture_points = "emission_texture_points";
 	shader_names->emission_texture_normal = "emission_texture_normal";
+	shader_names->emission_texture_color = "emission_texture_color";
 
 	shader_names->trail_divisor = "trail_divisor";
 	shader_names->trail_size_modifier = "trail_size_modifier";
@@ -481,6 +482,28 @@ void ParticlesMaterial::_update_shader() {
 	code += "uniform float anim_speed_random;\n";
 	code += "uniform float anim_offset_random;\n";
 
+	switch (emission_shape) {
+		case EMISSION_SHAPE_POINT: {
+			//do none
+		} break;
+		case EMISSION_SHAPE_SPHERE: {
+			code += "uniform float emission_sphere_radius;\n";
+		} break;
+		case EMISSION_SHAPE_BOX: {
+			code += "uniform vec3 emission_box_extents;\n";
+		} break;
+		case EMISSION_SHAPE_DIRECTED_POINTS: {
+			code += "uniform sampler2D emission_texture_normal : hint_black;\n";
+		} //fallthrough
+		case EMISSION_SHAPE_POINTS: {
+			code += "uniform sampler2D emission_texture_points : hint_black;\n";
+			code += "uniform int emission_texture_point_count;\n";
+			if (emission_color_texture.is_valid()) {
+				code += "uniform sampler2D emission_texture_color : hint_white;\n";
+			}
+		} break;
+	}
+
 	code += "uniform vec4 color_value : hint_color;\n";
 
 	code += "uniform int trail_divisor;\n";
@@ -514,25 +537,6 @@ void ParticlesMaterial::_update_shader() {
 		code += "uniform sampler2D anim_speed_texture;\n";
 	if (tex_parameters[PARAM_ANIM_OFFSET].is_valid())
 		code += "uniform sampler2D anim_offset_texture;\n";
-
-	switch (emission_shape) {
-		case EMISSION_SHAPE_POINT: {
-			//do none
-		} break;
-		case EMISSION_SHAPE_SPHERE: {
-			code += "uniform float emission_sphere_radius;\n";
-		} break;
-		case EMISSION_SHAPE_BOX: {
-			code += "uniform vec3 emission_box_extents;\n";
-		} break;
-		case EMISSION_SHAPE_DIRECTED_POINTS: {
-			code += "uniform sampler2D emission_texture_normal : hint_black;\n";
-		} //fallthrough
-		case EMISSION_SHAPE_POINTS: {
-			code += "uniform sampler2D emission_texture_points : hint_black;\n";
-			code += "uniform int emission_texture_point_count;\n";
-		} break;
-	}
 
 	if (trail_size_modifier.is_valid()) {
 		code += "uniform sampler2D trail_size_modifier;\n";
@@ -576,6 +580,11 @@ void ParticlesMaterial::_update_shader() {
 	code += "\n";
 	code += "\n";
 	code += "\n";
+	if (emission_shape >= EMISSION_SHAPE_POINTS) {
+		code += " int point = min(emission_texture_point_count-1,int(rand_from_seed(alt_seed) * float(emission_texture_point_count)));\n";
+		code += " ivec2 emission_tex_size = textureSize( emission_texture_points, 0 );\n";
+		code += " ivec2 emission_tex_ofs = ivec2( point % emission_tex_size.x, point / emission_tex_size.x );\n";
+	}
 	code += " if (RESTART) {\n";
 
 	if (tex_parameters[PARAM_INITIAL_LINEAR_VELOCITY].is_valid())
@@ -593,11 +602,21 @@ void ParticlesMaterial::_update_shader() {
 	else
 		code += "    float tex_anim_offset = 0.0;\n";
 
-	code += "    float angle1 = rand_from_seed(alt_seed)*spread*3.1416;\n";
-	code += "    float angle2 = rand_from_seed(alt_seed)*20.0*3.1416; // make it more random like\n";
-	code += "    vec3 rot_xz=vec3( sin(angle1), 0.0, cos(angle1) );\n";
-	code += "    vec3 rot = vec3( cos(angle2)*rot_xz.x,sin(angle2)*rot_xz.x, rot_xz.z);\n";
-	code += "    VELOCITY=(rot*initial_linear_velocity+rot*initial_linear_velocity_random*rand_from_seed(alt_seed));\n";
+	if (flags[FLAG_DISABLE_Z]) {
+
+		code += "    float angle1 = rand_from_seed(alt_seed)*spread*3.1416;\n";
+		code += "    vec3 rot=vec3( cos(angle1), sin(angle1),0.0 );\n";
+		code += "    VELOCITY=(rot*initial_linear_velocity+rot*initial_linear_velocity_random*rand_from_seed(alt_seed));\n";
+
+	} else {
+		//initiate velocity spread in 3D
+		code += "    float angle1 = rand_from_seed(alt_seed)*spread*3.1416;\n";
+		code += "    float angle2 = rand_from_seed(alt_seed)*20.0*3.1416; // make it more random like\n";
+		code += "    vec3 rot_xz=vec3( sin(angle1), 0.0, cos(angle1) );\n";
+		code += "    vec3 rot = vec3( cos(angle2)*rot_xz.x,sin(angle2)*rot_xz.x, rot_xz.z);\n";
+		code += "    VELOCITY=(rot*initial_linear_velocity+rot*initial_linear_velocity_random*rand_from_seed(alt_seed));\n";
+	}
+
 	code += "    float base_angle=(initial_angle+tex_angle)*mix(1.0,angle_rand,initial_angle_random);\n";
 	code += "    CUSTOM.x=base_angle*3.1416/180.0;\n"; //angle
 	code += "    CUSTOM.y=0.0;\n"; //phase
@@ -614,21 +633,31 @@ void ParticlesMaterial::_update_shader() {
 		} break;
 		case EMISSION_SHAPE_POINTS:
 		case EMISSION_SHAPE_DIRECTED_POINTS: {
-			code += "    int point = min(emission_texture_point_count-1,int(rand_from_seed(alt_seed) * float(emission_texture_point_count)));\n";
-			code += "    ivec2 tex_size = textureSize( emission_texture_points, 0 );\n";
-			code += "    ivec2 tex_ofs = ivec2( point % tex_size.x, point / tex_size.x );\n";
-			code += "    TRANSFORM[3].xyz = texelFetch(emission_texture_points, tex_ofs,0).xyz;\n";
+			code += "    TRANSFORM[3].xyz = texelFetch(emission_texture_points, emission_tex_ofs,0).xyz;\n";
+
 			if (emission_shape == EMISSION_SHAPE_DIRECTED_POINTS) {
-				code += "    vec3 normal = texelFetch(emission_texture_normal, tex_ofs,0).xyz;\n";
-				code += "    vec3 v0 = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0, 1.0, 0.0);\n";
-				code += "    vec3 tangent = normalize(cross(v0, normal));\n";
-				code += "    vec3 bitangent = normalize(cross(tangent, normal));\n";
-				code += "    VELOCITY = mat3(tangent,bitangent,normal) * VELOCITY;\n";
+				if (flags[FLAG_DISABLE_Z]) {
+
+					code += "    mat2 rotm;";
+					code += "    rotm[0]=texelFetch(emission_texture_normal, emission_tex_ofs,0).xy;\n";
+					code += "    rotm[1]=rotm[0].yx * vec2(1.0,-1.0);\n";
+					code += "    VELOCITY.xy = rotm * VELOCITY.xy;\n";
+				} else {
+					code += "    vec3 normal = texelFetch(emission_texture_normal, emission_tex_ofs,0).xyz;\n";
+					code += "    vec3 v0 = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0, 1.0, 0.0);\n";
+					code += "    vec3 tangent = normalize(cross(v0, normal));\n";
+					code += "    vec3 bitangent = normalize(cross(tangent, normal));\n";
+					code += "    VELOCITY = mat3(tangent,bitangent,normal) * VELOCITY;\n";
+				}
 			}
 		} break;
 	}
 	code += "    VELOCITY = (EMISSION_TRANSFORM * vec4(VELOCITY,0.0)).xyz;\n";
 	code += "    TRANSFORM = EMISSION_TRANSFORM * TRANSFORM;\n";
+	if (flags[FLAG_DISABLE_Z]) {
+		code += "    VELOCITY.z=0.0;\n";
+		code += "    TRANSFORM[3].z=0.0;\n";
+	}
 
 	code += " } else {\n";
 
@@ -685,6 +714,9 @@ void ParticlesMaterial::_update_shader() {
 
 	code += "    vec3 force = gravity; \n";
 	code += "    vec3 pos = TRANSFORM[3].xyz; \n";
+	if (flags[FLAG_DISABLE_Z]) {
+		code += "    pos.z=0.0; \n";
+	}
 	code += "    //apply linear acceleration\n";
 	code += "    force+=normalize(VELOCITY) * (linear_accel+tex_linear_accel)*mix(1.0,rand_from_seed(alt_seed),linear_accel_random);\n";
 	code += "    //apply radial acceleration\n";
@@ -693,11 +725,17 @@ void ParticlesMaterial::_update_shader() {
 	code += "	//org=p_transform.origin;\n";
 	code += "    force+=normalize(pos-org) * (radial_accel+tex_radial_accel)*mix(1.0,rand_from_seed(alt_seed),radial_accel_random);\n";
 	code += "    //apply tangential acceleration;\n";
-	code += "    force+=normalize(cross(normalize(pos-org),normalize(gravity))) * ((tangent_accel+tex_tangent_accel)*mix(1.0,rand_from_seed(alt_seed),radial_accel_random));\n";
+	if (flags[FLAG_DISABLE_Z]) {
+		code += "    force+=vec3(normalize((pos-org).yx * vec2(-1.0,1.0)),0.0) * ((tangent_accel+tex_tangent_accel)*mix(1.0,rand_from_seed(alt_seed),radial_accel_random));\n";
+
+	} else {
+		code += "    force+=normalize(cross(normalize(pos-org),normalize(gravity))) * ((tangent_accel+tex_tangent_accel)*mix(1.0,rand_from_seed(alt_seed),radial_accel_random));\n";
+	}
 	code += "    //apply attractor forces\n";
 	code += "    VELOCITY+=force * DELTA;\n";
-	if (tex_parameters[PARAM_INITIAL_LINEAR_VELOCITY].is_valid())
+	if (tex_parameters[PARAM_INITIAL_LINEAR_VELOCITY].is_valid()) {
 		code += "    VELOCITY=normalize(VELOCITY)*tex_linear_velocity;\n";
+	}
 	code += "    if (damping+tex_damping>0.0) {\n";
 	code += "    \n";
 	code += "    	float v = length(VELOCITY);\n";
@@ -709,9 +747,16 @@ void ParticlesMaterial::_update_shader() {
 	code += "    		VELOCITY=normalize(VELOCITY) * v;\n";
 	code += "	}\n";
 	code += "    }\n";
-	code += "    float base_angle=(initial_angle+tex_angle)*mix(1.0,angle_rand,initial_angle_random)*3.1416/180.0;\n";
-	code += "    CUSTOM.x=((base_angle+tex_angle)+CUSTOM.y*LIFETIME*(angular_velocity+tex_angular_velocity)*mix(1.0,rand_from_seed(alt_seed)*2.0-1.0,angular_velocity_random))*3.1416/180.0;\n"; //angle
-	code += "    CUSTOM.z=(anim_offset+tex_anim_offset)*mix(1.0,anim_offset_rand,anim_offset_random)+CUSTOM.y*LIFETIME*(anim_speed+tex_anim_speed)*mix(1.0,rand_from_seed(alt_seed),anim_speed_random);\n"; //angle
+	code += "    float base_angle=(initial_angle+tex_angle)*mix(1.0,angle_rand,initial_angle_random);\n";
+	code += "    base_angle+=CUSTOM.y*LIFETIME*(angular_velocity+tex_angular_velocity)*mix(1.0,rand_from_seed(alt_seed)*2.0-1.0,angular_velocity_random);\n";
+	code += "    CUSTOM.x=base_angle*3.1416/180.0;\n"; //angle
+	code += "    CUSTOM.z=(anim_offset+tex_anim_offset)*mix(1.0,anim_offset_rand,anim_offset_random)+CUSTOM.y*(anim_speed+tex_anim_speed)*mix(1.0,rand_from_seed(alt_seed),anim_speed_random);\n"; //angle
+	if (flags[FLAG_ANIM_LOOP]) {
+		code += "    CUSTOM.z=mod(CUSTOM.z,1.0);\n"; //loop
+
+	} else {
+		code += "    CUSTOM.z=clamp(CUSTOM.z,0.0,1.0);\n"; //0 to 1 only
+	}
 	code += "  }\n";
 	//apply color
 	//apply hue rotation
@@ -747,28 +792,40 @@ void ParticlesMaterial::_update_shader() {
 	} else {
 		code += " COLOR = color_value * hue_rot_mat;\n";
 	}
+	if (emission_color_texture.is_valid() && emission_shape >= EMISSION_SHAPE_POINTS) {
+		code += " COLOR*= texelFetch(emission_texture_color,emission_tex_ofs,0);\n";
+	}
 	if (trail_color_modifier.is_valid()) {
 		code += "if (trail_divisor>1) { COLOR*=textureLod(trail_color_modifier,vec2(float(int(NUMBER)%trail_divisor)/float(trail_divisor-1),0.0),0.0); }\n";
 	}
 	code += "\n";
-	//orient particle Y towards velocity
-	if (flags[FLAG_ALIGN_Y_TO_VELOCITY]) {
-		code += " if (length(VELOCITY)>0.0) {TRANSFORM[1].xyz=normalize(VELOCITY);} else {TRANSFORM[1].xyz=normalize(TRANSFORM[1].xyz);}\n";
-		code += " if (TRANSFORM[1].xyz==normalize(TRANSFORM[0].xyz)) {\n";
-		code += "\tTRANSFORM[0].xyz=normalize(cross(normalize(TRANSFORM[1].xyz),normalize(TRANSFORM[2].xyz)));\n";
-		code += "\tTRANSFORM[2].xyz=normalize(cross(normalize(TRANSFORM[0].xyz),normalize(TRANSFORM[1].xyz)));\n";
-		code += " } else {\n";
-		code += "\tTRANSFORM[2].xyz=normalize(cross(normalize(TRANSFORM[0].xyz),normalize(TRANSFORM[1].xyz)));\n";
-		code += "\tTRANSFORM[0].xyz=normalize(cross(normalize(TRANSFORM[1].xyz),normalize(TRANSFORM[2].xyz)));\n";
-		code += " }\n";
+
+	if (flags[FLAG_DISABLE_Z]) {
+
+		code += " TRANSFORM[0]=vec4(cos(CUSTOM.x),-sin(CUSTOM.x),0.0,0.0);\n";
+		code += " TRANSFORM[1]=vec4(sin(CUSTOM.x),cos(CUSTOM.x),0.0,0.0);\n";
+		code += " TRANSFORM[2]=vec4(0.0,0.0,1.0,0.0);\n";
+
 	} else {
-		code += "\tTRANSFORM[0].xyz=normalize(TRANSFORM[0].xyz);\n";
-		code += "\tTRANSFORM[1].xyz=normalize(TRANSFORM[1].xyz);\n";
-		code += "\tTRANSFORM[2].xyz=normalize(TRANSFORM[2].xyz);\n";
-	}
-	//turn particle by rotation in Y
-	if (flags[FLAG_ROTATE_Y]) {
-		code += "\tTRANSFORM = TRANSFORM * mat4( vec4(cos(CUSTOM.x),0.0,-sin(CUSTOM.x),0.0), vec4(0.0,1.0,0.0,0.0),vec4(sin(CUSTOM.x),0.0,cos(CUSTOM.x),0.0),vec4(0.0,0.0,0.0,1.0));\n";
+		//orient particle Y towards velocity
+		if (flags[FLAG_ALIGN_Y_TO_VELOCITY]) {
+			code += " if (length(VELOCITY)>0.0) {TRANSFORM[1].xyz=normalize(VELOCITY);} else {TRANSFORM[1].xyz=normalize(TRANSFORM[1].xyz);}\n";
+			code += " if (TRANSFORM[1].xyz==normalize(TRANSFORM[0].xyz)) {\n";
+			code += "\tTRANSFORM[0].xyz=normalize(cross(normalize(TRANSFORM[1].xyz),normalize(TRANSFORM[2].xyz)));\n";
+			code += "\tTRANSFORM[2].xyz=normalize(cross(normalize(TRANSFORM[0].xyz),normalize(TRANSFORM[1].xyz)));\n";
+			code += " } else {\n";
+			code += "\tTRANSFORM[2].xyz=normalize(cross(normalize(TRANSFORM[0].xyz),normalize(TRANSFORM[1].xyz)));\n";
+			code += "\tTRANSFORM[0].xyz=normalize(cross(normalize(TRANSFORM[1].xyz),normalize(TRANSFORM[2].xyz)));\n";
+			code += " }\n";
+		} else {
+			code += "\tTRANSFORM[0].xyz=normalize(TRANSFORM[0].xyz);\n";
+			code += "\tTRANSFORM[1].xyz=normalize(TRANSFORM[1].xyz);\n";
+			code += "\tTRANSFORM[2].xyz=normalize(TRANSFORM[2].xyz);\n";
+		}
+		//turn particle by rotation in Y
+		if (flags[FLAG_ROTATE_Y]) {
+			code += "\tTRANSFORM = TRANSFORM * mat4( vec4(cos(CUSTOM.x),0.0,-sin(CUSTOM.x),0.0), vec4(0.0,1.0,0.0,0.0),vec4(sin(CUSTOM.x),0.0,cos(CUSTOM.x),0.0),vec4(0.0,0.0,0.0,1.0));\n";
+		}
 	}
 	//scale by scale
 	code += " float base_scale=mix(scale*tex_scale,1.0,scale_random*scale_rand);\n";
@@ -779,6 +836,10 @@ void ParticlesMaterial::_update_shader() {
 	code += " TRANSFORM[0].xyz*=base_scale;\n";
 	code += " TRANSFORM[1].xyz*=base_scale;\n";
 	code += " TRANSFORM[2].xyz*=base_scale;\n";
+	if (flags[FLAG_DISABLE_Z]) {
+		code += " VELOCITY.z=0.0;\n";
+		code += " TRANSFORM[3].z=0.0;\n";
+	}
 	code += "}\n";
 	code += "\n";
 
@@ -1130,6 +1191,16 @@ void ParticlesMaterial::set_emission_normal_texture(const Ref<Texture> &p_normal
 	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_texture_normal, texture);
 }
 
+void ParticlesMaterial::set_emission_color_texture(const Ref<Texture> &p_colors) {
+
+	emission_color_texture = p_colors;
+	RID texture;
+	if (p_colors.is_valid())
+		texture = p_colors->get_rid();
+	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_texture_color, texture);
+	_queue_shader_change();
+}
+
 void ParticlesMaterial::set_emission_point_count(int p_count) {
 
 	emission_point_count = p_count;
@@ -1156,6 +1227,11 @@ Ref<Texture> ParticlesMaterial::get_emission_point_texture() const {
 Ref<Texture> ParticlesMaterial::get_emission_normal_texture() const {
 
 	return emission_normal_texture;
+}
+
+Ref<Texture> ParticlesMaterial::get_emission_color_texture() const {
+
+	return emission_color_texture;
 }
 
 int ParticlesMaterial::get_emission_point_count() const {
@@ -1247,7 +1323,7 @@ void ParticlesMaterial::_validate_property(PropertyInfo &property) const {
 		property.usage = 0;
 	}
 
-	if (property.name == "emission_point_texture" && (emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS)) {
+	if ((property.name == "emission_point_texture" || property.name == "emission_color_texture") && (emission_shape < EMISSION_SHAPE_POINTS)) {
 		property.usage = 0;
 	}
 
@@ -1301,6 +1377,9 @@ void ParticlesMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_emission_normal_texture", "texture:Texture"), &ParticlesMaterial::set_emission_normal_texture);
 	ClassDB::bind_method(D_METHOD("get_emission_normal_texture:Texture"), &ParticlesMaterial::get_emission_normal_texture);
 
+	ClassDB::bind_method(D_METHOD("set_emission_color_texture", "texture:Texture"), &ParticlesMaterial::set_emission_color_texture);
+	ClassDB::bind_method(D_METHOD("get_emission_color_texture:Texture"), &ParticlesMaterial::get_emission_color_texture);
+
 	ClassDB::bind_method(D_METHOD("set_emission_point_count", "point_count"), &ParticlesMaterial::set_emission_point_count);
 	ClassDB::bind_method(D_METHOD("get_emission_point_count"), &ParticlesMaterial::get_emission_point_count);
 
@@ -1326,10 +1405,12 @@ void ParticlesMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "emission_box_extents"), "set_emission_box_extents", "get_emission_box_extents");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "emission_point_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_emission_point_texture", "get_emission_point_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "emission_normal_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_emission_normal_texture", "get_emission_normal_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "emission_color_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_emission_color_texture", "get_emission_color_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_point_count", PROPERTY_HINT_RANGE, "0,1000000,1"), "set_emission_point_count", "get_emission_point_count");
 	ADD_GROUP("Flags", "flag_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flag_align_y"), "set_flag", "get_flag", FLAG_ALIGN_Y_TO_VELOCITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flag_rotate_y"), "set_flag", "get_flag", FLAG_ROTATE_Y);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flag_disable_z"), "set_flag", "get_flag", FLAG_DISABLE_Z);
 	ADD_GROUP("Spread", "");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "spread", PROPERTY_HINT_RANGE, "0,180,0.01"), "set_spread", "get_spread");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "flatness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_flatness", "get_flatness");
@@ -1379,12 +1460,13 @@ void ParticlesMaterial::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "hue_variation_random", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param_randomness", "get_param_randomness", PARAM_HUE_VARIATION);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "hue_variation_curve", PROPERTY_HINT_RESOURCE_TYPE, "CurveTexture"), "set_param_texture", "get_param_texture", PARAM_HUE_VARIATION);
 	ADD_GROUP("Animation", "anim_");
-	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "anim_speed", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param", "get_param", PARAM_ANIM_SPEED);
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "anim_speed", PROPERTY_HINT_RANGE, "0,128,0.01"), "set_param", "get_param", PARAM_ANIM_SPEED);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "anim_speed_random", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param_randomness", "get_param_randomness", PARAM_ANIM_SPEED);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "anim_speed_curve", PROPERTY_HINT_RESOURCE_TYPE, "CurveTexture"), "set_param_texture", "get_param_texture", PARAM_ANIM_SPEED);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "anim_offset", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param", "get_param", PARAM_ANIM_OFFSET);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "anim_offset_random", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param_randomness", "get_param_randomness", PARAM_ANIM_OFFSET);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "anim_offset_curve", PROPERTY_HINT_RESOURCE_TYPE, "CurveTexture"), "set_param_texture", "get_param_texture", PARAM_ANIM_OFFSET);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "anim_loop"), "set_flag", "get_flag", FLAG_ANIM_LOOP);
 
 	BIND_CONSTANT(PARAM_INITIAL_LINEAR_VELOCITY);
 	BIND_CONSTANT(PARAM_ANGULAR_VELOCITY);

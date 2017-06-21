@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "rasterizer_canvas_gles3.h"
+#include "servers/visual/visual_server_raster.h"
 
 #include "global_config.h"
 #include "os/os.h"
@@ -606,6 +607,133 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 					state.canvas_shader.set_uniform(CanvasShaderGLES3::COLOR_TEXPIXEL_SIZE, texpixel_size);
 				}
 				_draw_polygon(polygon->indices.ptr(), polygon->count, polygon->points.size(), polygon->points.ptr(), polygon->uvs.ptr(), polygon->colors.ptr(), polygon->colors.size() == 1);
+
+			} break;
+			case Item::Command::TYPE_PARTICLES: {
+
+				Item::CommandParticles *particles_cmd = static_cast<Item::CommandParticles *>(c);
+
+				RasterizerStorageGLES3::Particles *particles = storage->particles_owner.getornull(particles_cmd->particles);
+				if (!particles)
+					break;
+
+				glVertexAttrib4f(VS::ARRAY_COLOR, 1, 1, 1, 1); //not used, so keep white
+
+				VisualServerRaster::redraw_request();
+
+				storage->particles_request_process(particles_cmd->particles);
+				//enable instancing
+
+				state.canvas_shader.set_conditional(CanvasShaderGLES3::USE_INSTANCE_CUSTOM, true);
+				state.canvas_shader.set_conditional(CanvasShaderGLES3::USE_PARTICLES, true);
+				state.canvas_shader.set_conditional(CanvasShaderGLES3::USE_INSTANCING, true);
+				//reset shader and force rebind
+				state.using_texture_rect = true;
+				_set_texture_rect_mode(false);
+
+				RasterizerStorageGLES3::Texture *texture = _bind_canvas_texture(particles_cmd->texture, particles_cmd->normal_map);
+
+				if (texture) {
+					Size2 texpixel_size(1.0 / (texture->width / particles_cmd->h_frames), 1.0 / (texture->height / particles_cmd->v_frames));
+					state.canvas_shader.set_uniform(CanvasShaderGLES3::COLOR_TEXPIXEL_SIZE, texpixel_size);
+				} else {
+					state.canvas_shader.set_uniform(CanvasShaderGLES3::COLOR_TEXPIXEL_SIZE, Vector2(1.0, 1.0));
+				}
+
+				if (!particles->use_local_coords) {
+
+					Transform2D inv_xf;
+					inv_xf.set_axis(0, Vector2(particles->emission_transform.basis.get_axis(0).x, particles->emission_transform.basis.get_axis(0).y));
+					inv_xf.set_axis(1, Vector2(particles->emission_transform.basis.get_axis(1).x, particles->emission_transform.basis.get_axis(1).y));
+					inv_xf.set_origin(Vector2(particles->emission_transform.get_origin().x, particles->emission_transform.get_origin().y));
+					inv_xf.affine_invert();
+
+					state.canvas_shader.set_uniform(CanvasShaderGLES3::MODELVIEW_MATRIX, state.final_transform * inv_xf);
+				}
+
+				state.canvas_shader.set_uniform(CanvasShaderGLES3::H_FRAMES, particles_cmd->h_frames);
+				state.canvas_shader.set_uniform(CanvasShaderGLES3::V_FRAMES, particles_cmd->v_frames);
+
+				glBindVertexArray(data.particle_quad_array); //use particle quad array
+				glBindBuffer(GL_ARRAY_BUFFER, particles->particle_buffers[0]); //bind particle buffer
+
+				int stride = sizeof(float) * 4 * 6;
+
+				int amount = particles->amount;
+
+				if (particles->draw_order != VS::PARTICLES_DRAW_ORDER_LIFETIME) {
+
+					glEnableVertexAttribArray(8); //xform x
+					glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + sizeof(float) * 4 * 3);
+					glVertexAttribDivisor(8, 1);
+					glEnableVertexAttribArray(9); //xform y
+					glVertexAttribPointer(9, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + sizeof(float) * 4 * 4);
+					glVertexAttribDivisor(9, 1);
+					glEnableVertexAttribArray(10); //xform z
+					glVertexAttribPointer(10, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + sizeof(float) * 4 * 5);
+					glVertexAttribDivisor(10, 1);
+					glEnableVertexAttribArray(11); //color
+					glVertexAttribPointer(11, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + 0);
+					glVertexAttribDivisor(11, 1);
+					glEnableVertexAttribArray(12); //custom
+					glVertexAttribPointer(12, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + sizeof(float) * 4 * 2);
+					glVertexAttribDivisor(12, 1);
+
+					glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, 4, amount);
+				} else {
+					//split
+
+					int stride = sizeof(float) * 4 * 6;
+					int split = int(Math::ceil(particles->phase * particles->amount));
+
+					if (amount - split > 0) {
+						glEnableVertexAttribArray(8); //xform x
+						glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + stride * split + sizeof(float) * 4 * 3);
+						glVertexAttribDivisor(8, 1);
+						glEnableVertexAttribArray(9); //xform y
+						glVertexAttribPointer(9, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + stride * split + sizeof(float) * 4 * 4);
+						glVertexAttribDivisor(9, 1);
+						glEnableVertexAttribArray(10); //xform z
+						glVertexAttribPointer(10, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + stride * split + sizeof(float) * 4 * 5);
+						glVertexAttribDivisor(10, 1);
+						glEnableVertexAttribArray(11); //color
+						glVertexAttribPointer(11, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + stride * split + 0);
+						glVertexAttribDivisor(11, 1);
+						glEnableVertexAttribArray(12); //custom
+						glVertexAttribPointer(12, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + stride * split + sizeof(float) * 4 * 2);
+						glVertexAttribDivisor(12, 1);
+
+						glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, 4, amount - split);
+					}
+
+					if (split > 0) {
+						glEnableVertexAttribArray(8); //xform x
+						glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + sizeof(float) * 4 * 3);
+						glVertexAttribDivisor(8, 1);
+						glEnableVertexAttribArray(9); //xform y
+						glVertexAttribPointer(9, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + sizeof(float) * 4 * 4);
+						glVertexAttribDivisor(9, 1);
+						glEnableVertexAttribArray(10); //xform z
+						glVertexAttribPointer(10, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + sizeof(float) * 4 * 5);
+						glVertexAttribDivisor(10, 1);
+						glEnableVertexAttribArray(11); //color
+						glVertexAttribPointer(11, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + 0);
+						glVertexAttribDivisor(11, 1);
+						glEnableVertexAttribArray(12); //custom
+						glVertexAttribPointer(12, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + sizeof(float) * 4 * 2);
+						glVertexAttribDivisor(12, 1);
+
+						glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, 4, split);
+					}
+				}
+
+				glBindVertexArray(0);
+
+				state.canvas_shader.set_conditional(CanvasShaderGLES3::USE_INSTANCE_CUSTOM, false);
+				state.canvas_shader.set_conditional(CanvasShaderGLES3::USE_INSTANCING, false);
+				state.canvas_shader.set_conditional(CanvasShaderGLES3::USE_PARTICLES, false);
+				state.using_texture_rect = true;
+				_set_texture_rect_mode(false);
 
 			} break;
 			case Item::Command::TYPE_CIRCLE: {
@@ -1351,7 +1479,39 @@ void RasterizerCanvasGLES3::initialize() {
 		glBindVertexArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
 	}
+	{
+		//particle quad buffers
 
+		glGenBuffers(1, &data.particle_quad_vertices);
+		glBindBuffer(GL_ARRAY_BUFFER, data.particle_quad_vertices);
+		{
+			//quad of size 1, with pivot on the center for particles, then regular UVS. Color is general plus fetched from particle
+			const float qv[16] = {
+				-0.5, -0.5,
+				0.0, 0.0,
+				-0.5, 0.5,
+				0.0, 1.0,
+				0.5, 0.5,
+				1.0, 1.0,
+				0.5, -0.5,
+				1.0, 0.0
+			};
+
+			glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 16, qv, GL_STATIC_DRAW);
+		}
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
+
+		glGenVertexArrays(1, &data.particle_quad_array);
+		glBindVertexArray(data.particle_quad_array);
+		glBindBuffer(GL_ARRAY_BUFFER, data.particle_quad_vertices);
+		glEnableVertexAttribArray(VS::ARRAY_VERTEX);
+		glVertexAttribPointer(VS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, 0);
+		glEnableVertexAttribArray(VS::ARRAY_TEX_UV);
+		glVertexAttribPointer(VS::ARRAY_TEX_UV, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, (float *)0 + 2);
+		glBindVertexArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
+	}
 	{
 
 		uint32_t poly_size = GLOBAL_DEF("rendering/buffers/canvas_polygon_buffer_size_kb", 128);
@@ -1424,6 +1584,9 @@ void RasterizerCanvasGLES3::initialize() {
 }
 
 void RasterizerCanvasGLES3::finalize() {
+
+	glDeleteBuffers(1, &data.canvas_quad_vertices);
+	glDeleteVertexArrays(1, &data.canvas_quad_array);
 
 	glDeleteBuffers(1, &data.canvas_quad_vertices);
 	glDeleteVertexArrays(1, &data.canvas_quad_array);

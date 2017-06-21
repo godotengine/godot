@@ -361,6 +361,8 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 		ERR_FAIL_V(NULL);
 	}
 
+	//_display_error_with_code("pepo", strings);
+
 	/* FRAGMENT SHADER */
 
 	strings.resize(strings_base_size);

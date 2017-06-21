@@ -2326,6 +2326,9 @@ void RasterizerStorageGLES3::_update_material(Material *material) {
 			if (E->get().order < 0)
 				continue; // texture, does not go here
 
+			//if (material->shader->mode == VS::SHADER_PARTICLES) {
+			//	print_line("uniform " + String(E->key()) + " order " + itos(E->get().order) + " offset " + itos(material->shader->ubo_offsets[E->get().order]));
+			//}
 			//regular uniform
 			uint8_t *data = &local_ubo[material->shader->ubo_offsets[E->get().order]];
 
