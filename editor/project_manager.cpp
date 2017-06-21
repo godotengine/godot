@@ -935,10 +935,10 @@ void ProjectManager::_open_project_confirm() {
 
 		List<String> args;
 
-		args.push_back("-path");
+		args.push_back("--path");
 		args.push_back(path);
 
-		args.push_back("-editor");
+		args.push_back("--editor");
 
 		String exec = OS::get_singleton()->get_executable_path();
 
@@ -977,7 +977,7 @@ void ProjectManager::_run_project_confirm() {
 
 		List<String> args;
 
-		args.push_back("-path");
+		args.push_back("--path");
 		args.push_back(path);
 
 		String exec = OS::get_singleton()->get_executable_path();
