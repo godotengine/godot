@@ -296,6 +296,7 @@ private:
 
 	//CallDialog *call_dialog;
 	ConfirmationDialog *confirmation;
+	ConfirmationDialog *save_confirmation;
 	ConfirmationDialog *import_confirmation;
 	ConfirmationDialog *open_recent_confirmation;
 	ConfirmationDialog *pick_main_scene;
@@ -465,6 +466,7 @@ private:
 	void _vp_resized();
 
 	void _save_scene(String p_file, int idx = -1);
+	void _discard_changes(const String &p_str = String());
 
 	void _instance_request(const Vector<String> &p_files);
 

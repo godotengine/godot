@@ -1117,14 +1117,24 @@ void EditorNode::_dialog_action(String p_file) {
 
 			get_undo_redo()->clear_history();
 		} break;
+		case FILE_CLOSE:
+		case SCENE_TAB_CLOSE:
 		case FILE_SAVE_SCENE:
 		case FILE_SAVE_AS_SCENE: {
+
+			int scene_idx = (current_option == FILE_CLOSE || current_option == SCENE_TAB_CLOSE) ? tab_closing : -1;
 
 			if (file->get_mode() == EditorFileDialog::MODE_SAVE_FILE) {
 
 				//_save_scene(p_file);
 				_save_default_environment();
-				_save_scene_with_preview(p_file);
+				if (scene_idx != editor_data.get_edited_scene() || _get_current_main_editor() == EDITOR_SCRIPT)
+					_save_scene(p_file, scene_idx);
+				else
+					_save_scene_with_preview(p_file);
+
+				if (scene_idx != -1)
+					_discard_changes();
 			}
 
 		} break;
@@ -1889,39 +1899,36 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case FILE_CLOSE: {
 
 			if (!p_confirmed && unsaved_cache) {
-				confirmation->get_ok()->set_text(TTR("Yes"));
-				//confirmation->get_cancel()->show();
-				confirmation->set_text(TTR("Close scene? (Unsaved changes will be lost)"));
-				confirmation->popup_centered_minsize();
+				tab_closing = editor_data.get_edited_scene();
+				save_confirmation->popup_centered_minsize();
 				break;
 			}
-
-			_remove_edited_scene();
-
-		} break;
-		case SCENE_TAB_CLOSE: {
-			_remove_scene(tab_closing);
-			_update_scene_tabs();
-			current_option = -1;
-		} break;
+		} // fallthrough
+		case SCENE_TAB_CLOSE:
 		case FILE_SAVE_SCENE: {
 
-			Node *scene = editor_data.get_edited_scene_root();
+			int scene_idx = (p_option == FILE_CLOSE || p_option == SCENE_TAB_CLOSE) ? tab_closing : -1;
+
+			Node *scene = editor_data.get_edited_scene_root(scene_idx);
 			if (scene && scene->get_filename() != "") {
 
 				// save in background if in the script editor
-				if (_get_current_main_editor() == EDITOR_SCRIPT) {
-					_save_scene(scene->get_filename());
+				if (scene_idx != editor_data.get_edited_scene() || _get_current_main_editor() == EDITOR_SCRIPT) {
+					_save_scene(scene->get_filename(), scene_idx);
 				} else {
 					_save_scene_with_preview(scene->get_filename());
 				}
+
+				if (scene_idx != -1)
+					_discard_changes();
+
 				return;
 			};
 			// fallthrough to save_as
 		};
 		case FILE_SAVE_AS_SCENE: {
 
-			Node *scene = editor_data.get_edited_scene_root();
+			Node *scene = editor_data.get_edited_scene_root((p_option == FILE_CLOSE || p_option == SCENE_TAB_CLOSE) ? tab_closing : -1);
 
 			if (!scene) {
 
@@ -1957,7 +1964,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 				String existing;
 				if (extensions.size()) {
-					String root_name(get_edited_scene()->get_name());
+					String root_name(scene->get_name());
 					existing = root_name + "." + extensions.front()->get().to_lower();
 				}
 				file->set_current_path(existing);
@@ -2687,6 +2694,22 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			} else if (p_option >= IMPORT_PLUGIN_BASE) {
 			}
 		}
+	}
+}
+
+void EditorNode::_discard_changes(const String &p_str) {
+
+	save_confirmation->hide();
+
+	switch (current_option) {
+
+		case FILE_CLOSE:
+		case SCENE_TAB_CLOSE: {
+
+			_remove_scene(tab_closing);
+			_update_scene_tabs();
+			current_option = -1;
+		} break;
 	}
 }
 
@@ -4266,14 +4289,9 @@ void EditorNode::_scene_tab_closed(int p_tab) {
 						   saved_version != editor_data.get_undo_redo().get_version() :
 						   editor_data.get_scene_version(p_tab) != 0;
 	if (unsaved) {
-		confirmation->get_ok()->set_text(TTR("Yes"));
-
-		//confirmation->get_cancel()->show();
-		confirmation->set_text(TTR("Close scene? (Unsaved changes will be lost)"));
-		confirmation->popup_centered_minsize();
+		save_confirmation->popup_centered_minsize();
 	} else {
-		_remove_scene(p_tab);
-		_update_scene_tabs();
+		_discard_changes();
 	}
 }
 
@@ -4891,6 +4909,7 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method("_scene_tab_script_edited", &EditorNode::_scene_tab_script_edited);
 	ClassDB::bind_method("_set_main_scene_state", &EditorNode::_set_main_scene_state);
 	ClassDB::bind_method("_update_scene_tabs", &EditorNode::_update_scene_tabs);
+	ClassDB::bind_method("_discard_changes", &EditorNode::_discard_changes);
 
 	ClassDB::bind_method("_prepare_history", &EditorNode::_prepare_history);
 	ClassDB::bind_method("_select_history", &EditorNode::_select_history);
@@ -5888,6 +5907,14 @@ EditorNode::EditorNode() {
 	confirmation = memnew(ConfirmationDialog);
 	gui_base->add_child(confirmation);
 	confirmation->connect("confirmed", this, "_menu_confirm_current");
+
+	save_confirmation = memnew(ConfirmationDialog);
+	save_confirmation->get_ok()->set_text(TTR("Save & Close"));
+	save_confirmation->add_button(TTR("Don't Save"), OS::get_singleton()->get_swap_ok_cancel(), "discard");
+	save_confirmation->set_text(TTR("Save changes to the scene before closing?"));
+	gui_base->add_child(save_confirmation);
+	save_confirmation->connect("confirmed", this, "_menu_confirm_current");
+	save_confirmation->connect("custom_action", this, "_discard_changes");
 
 	accept = memnew(AcceptDialog);
 	gui_base->add_child(accept);
