@@ -40,6 +40,10 @@ uint32_t atomic_conditional_increment(register uint32_t *counter);
 uint32_t atomic_decrement(register uint32_t *pw);
 uint32_t atomic_increment(register uint32_t *pw);
 
+uint64_t atomic_conditional_increment(register uint64_t *counter);
+uint64_t atomic_decrement(register uint64_t *pw);
+uint64_t atomic_increment(register uint64_t *pw);
+
 struct SafeRefCount {
 
 	uint32_t count;
