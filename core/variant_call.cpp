@@ -253,6 +253,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM1R(String,similarity);
 	VCALL_LOCALMEM2R(String,replace);
 	VCALL_LOCALMEM2R(String,replacen);
+	VCALL_LOCALMEM2R(String,replace_first);
 	VCALL_LOCALMEM2R(String,insert);
 	VCALL_LOCALMEM0R(String,capitalize);
 	VCALL_LOCALMEM2R(String,split);
@@ -1392,6 +1393,7 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 
 	ADDFUNC2(STRING,STRING,String,replace,STRING,"what",STRING,"forwhat",varray());
 	ADDFUNC2(STRING,STRING,String,replacen,STRING,"what",STRING,"forwhat",varray());
+	ADDFUNC2(STRING,STRING,String,replace_first,STRING,"what",STRING,"forwhat",varray());
 	ADDFUNC2(STRING,STRING,String,insert,INT,"pos",STRING,"what",varray());
 	ADDFUNC0(STRING,STRING,String,capitalize,varray());
 	ADDFUNC2(STRING,STRING_ARRAY,String,split,STRING,"divisor",BOOL,"allow_empty",varray(true));
