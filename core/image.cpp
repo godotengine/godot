@@ -2234,7 +2234,7 @@ void Image::blend_rect(const Image &p_src, const Rect2 &p_src_rect, const Point2
 	DVector<uint8_t>::Read rp = p_src.data.read();
 	const unsigned char *src_data_ptr = rp.ptr();
 
-	if (format == FORMAT_INDEXED || format == FORMAT_INDEXED || p_src.format == FORMAT_INDEXED || p_src.format == FORMAT_INDEXED_ALPHA) {
+	if (format == FORMAT_INDEXED || format == FORMAT_INDEXED_ALPHA || p_src.format == FORMAT_INDEXED || p_src.format == FORMAT_INDEXED_ALPHA) {
 
 		return;
 
@@ -2287,7 +2287,7 @@ void Image::blend_rect_mask(const Image &p_src, const Image &p_mask, const Rect2
 	DVector<uint8_t>::Read mrp = p_mask.data.read();
 	const unsigned char *mask_data_ptr = mrp.ptr();
 
-	if (format == FORMAT_INDEXED || format == FORMAT_INDEXED || p_src.format == FORMAT_INDEXED || p_src.format == FORMAT_INDEXED_ALPHA) {
+	if (format == FORMAT_INDEXED || format == FORMAT_INDEXED_ALPHA || p_src.format == FORMAT_INDEXED || p_src.format == FORMAT_INDEXED_ALPHA) {
 
 		return;
 
