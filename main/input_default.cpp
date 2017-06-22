@@ -833,6 +833,8 @@ uint32_t InputDefault::joy_axis(uint32_t p_last_id, int p_device, int p_axis, co
 
 	_THREAD_SAFE_METHOD_;
 
+	ERR_FAIL_INDEX_V(p_axis, JOY_AXIS_MAX, p_last_id);
+
 	Joystick &joy = joy_names[p_device];
 
 	if (joy.last_axis[p_axis] == p_value.value) {
