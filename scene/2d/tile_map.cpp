@@ -441,14 +441,15 @@ void TileMap::_update_dirty_quadrants() {
 					rect.position.y -= center.y;
 			}
 
+			Ref<Texture> normal_map = tile_set->tile_get_normal_map(c.id);
 			Color modulate = tile_set->tile_get_modulate(c.id);
 			Color self_modulate = get_self_modulate();
 			modulate = Color(modulate.r * self_modulate.r, modulate.g * self_modulate.g,
 					modulate.b * self_modulate.b, modulate.a * self_modulate.a);
 			if (r == Rect2()) {
-				tex->draw_rect(canvas_item, rect, false, modulate, c.transpose);
+				tex->draw_rect(canvas_item, rect, false, modulate, c.transpose, normal_map);
 			} else {
-				tex->draw_rect_region(canvas_item, rect, r, modulate, c.transpose);
+				tex->draw_rect_region(canvas_item, rect, r, modulate, c.transpose, normal_map);
 			}
 
 			Vector<Ref<Shape2D> > shapes = tile_set->tile_get_shapes(c.id);
