@@ -43,7 +43,7 @@ Ref<InputEvent> ShortCut::get_shortcut() const {
 
 bool ShortCut::is_shortcut(const Ref<InputEvent> &p_event) const {
 
-	return shortcut.is_valid() && shortcut->action_match(p_event);
+	return shortcut.is_valid() && shortcut->shortcut_match(p_event);
 }
 
 String ShortCut::get_as_text() const {

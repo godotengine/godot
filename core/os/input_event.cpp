@@ -89,6 +89,11 @@ bool InputEvent::action_match(const Ref<InputEvent> &p_event) const {
 	return false;
 }
 
+bool InputEvent::shortcut_match(const Ref<InputEvent> &p_event) const {
+
+	return false;
+}
+
 bool InputEvent::is_action_type() const {
 
 	return false;
@@ -130,6 +135,7 @@ void InputEvent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("as_text"), &InputEvent::as_text);
 
 	ClassDB::bind_method(D_METHOD("action_match", "event:InputEvent"), &InputEvent::action_match);
+	ClassDB::bind_method(D_METHOD("shortcut_match", "event:InputEvent"), &InputEvent::shortcut_match);
 
 	ClassDB::bind_method(D_METHOD("is_action_type"), &InputEvent::is_action_type);
 
@@ -276,6 +282,27 @@ uint32_t InputEventKey::get_scancode_with_modifiers() const {
 	return sc;
 }
 
+String InputEventKey::as_text() const {
+
+	String kc = keycode_get_string(scancode);
+	if (kc == String())
+		return kc;
+
+	if (get_metakey()) {
+		kc = "Meta+" + kc;
+	}
+	if (get_alt()) {
+		kc = "Alt+" + kc;
+	}
+	if (get_shift()) {
+		kc = "Shift+" + kc;
+	}
+	if (get_control()) {
+		kc = "Ctrl+" + kc;
+	}
+	return kc;
+}
+
 bool InputEventKey::action_match(const Ref<InputEvent> &p_event) const {
 
 	Ref<InputEventKey> key = p_event;
@@ -286,6 +313,18 @@ bool InputEventKey::action_match(const Ref<InputEvent> &p_event) const {
 	uint32_t event_code = key->get_scancode_with_modifiers();
 
 	return get_scancode() == key->get_scancode() && (!key->is_pressed() || (code & event_code) == code);
+}
+
+bool InputEventKey::shortcut_match(const Ref<InputEvent> &p_event) const {
+
+	Ref<InputEventKey> key = p_event;
+	if (key.is_null())
+		return false;
+
+	uint32_t code = get_scancode_with_modifiers();
+	uint32_t event_code = key->get_scancode_with_modifiers();
+
+	return code == event_code;
 }
 
 void InputEventKey::_bind_methods() {
