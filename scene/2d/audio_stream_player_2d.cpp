@@ -61,7 +61,7 @@ void AudioStreamPlayer2D::_mix_audio() {
 
 				for (int j = 0; j < buffer_size; j++) {
 
-					target[j] = buffer[j] * vol;
+					target[j] += buffer[j] * vol;
 					vol += vol_inc;
 				}
 
@@ -76,8 +76,8 @@ void AudioStreamPlayer2D::_mix_audio() {
 				for (int j = 0; j < buffer_size; j++) {
 
 					AudioFrame frame = buffer[j] * vol;
-					targets[0][j] = frame;
-					targets[1][j] = frame;
+					targets[0][j] += frame;
+					targets[1][j] += frame;
 					vol += vol_inc;
 				}
 
@@ -93,9 +93,9 @@ void AudioStreamPlayer2D::_mix_audio() {
 				for (int j = 0; j < buffer_size; j++) {
 
 					AudioFrame frame = buffer[j] * vol;
-					targets[0][j] = frame;
-					targets[1][j] = frame;
-					targets[2][j] = frame;
+					targets[0][j] += frame;
+					targets[1][j] += frame;
+					targets[2][j] += frame;
 					vol += vol_inc;
 				}
 
