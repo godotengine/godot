@@ -47,6 +47,10 @@ void *operator new(size_t p_size, void *(*p_allocfunc)(size_t p_size)) {
 #ifdef DEBUG_ENABLED
 size_t Memory::mem_usage = 0;
 size_t Memory::max_usage = 0;
+#ifdef DEBUG_MEMORY_TAGGING
+#define MEM_UNINIT_TAG 0xEA
+#define MEM_RELEASED_TAG 0xAE
+#endif
 #define PREPAD true
 #else
 #define PREPAD p_pad_align
@@ -73,8 +77,11 @@ void *Memory::alloc_static(size_t p_bytes, bool p_pad_align) {
 		uint64_t *s = (uint64_t *)mem;
 		*s = p_bytes;
 
-		uint8_t *s8 = (uint8_t *)mem;
-		return s8 + PAD_ALIGN;
+		uint8_t *s8 = (uint8_t *)mem + PAD_ALIGN;
+#if defined DEBUG_ENABLED && defined DEBUG_MEMORY_TAGGING
+		memset(s8, MEM_UNINIT_TAG, p_bytes);
+#endif
+		return s8;
 	} else {
 		return mem;
 	}
@@ -95,10 +102,19 @@ void *Memory::realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align) {
 		if (p_bytes == 0) {
 #ifdef DEBUG_ENABLED
 			mem_usage -= *s;
+#ifdef DEBUG_MEMORY_TAGGING
+			memset(mem, MEM_RELEASED_TAG, PAD_ALIGN + *s);
+#endif
 #endif
 			free(mem);
 			return NULL;
 		} else {
+#if defined DEBUG_ENABLED && defined DEBUG_MEMORY_TAGGING
+			if (p_bytes < *s) {
+				memset(mem + PAD_ALIGN + p_bytes, MEM_RELEASED_TAG, *s - p_bytes);
+			}
+#endif
+
 			mem = (uint8_t *)realloc(mem, p_bytes + PAD_ALIGN);
 			ERR_FAIL_COND_V(!mem, NULL);
 
@@ -106,6 +122,11 @@ void *Memory::realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align) {
 #ifdef DEBUG_ENABLED
 			mem_usage -= *s;
 			mem_usage += p_bytes;
+#ifdef DEBUG_MEMORY_TAGGING
+			if (p_bytes > *s) {
+				memset(mem + PAD_ALIGN + *s, MEM_UNINIT_TAG, p_bytes - *s);
+			}
+#endif
 #endif
 			*s = p_bytes;
 
@@ -131,6 +152,9 @@ void Memory::free_static(void *p_ptr, bool p_pad_align) {
 #ifdef DEBUG_ENABLED
 		const uint64_t s = *((uint64_t *)mem);
 		mem_usage -= s;
+#ifdef DEBUG_MEMORY_TAGGING
+		memset(mem, MEM_RELEASED_TAG, PAD_ALIGN + s);
+#endif
 #endif
 	}
 	atomic_decrement(&alloc_count);
