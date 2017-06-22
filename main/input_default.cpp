@@ -874,6 +874,8 @@ void InputDefault::joy_axis(int p_device, int p_axis, const JoyAxis &p_value) {
 
 	_THREAD_SAFE_METHOD_;
 
+	ERR_FAIL_INDEX(p_axis, JOY_AXIS_MAX);
+
 	Joypad &joy = joy_names[p_device];
 
 	if (joy.last_axis[p_axis] == p_value.value) {
