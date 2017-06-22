@@ -63,6 +63,14 @@ public:
 		}
 	};
 
+	struct ItemIndexSort {
+
+		_FORCE_INLINE_ bool operator()(const Item *p_left, const Item *p_right) const {
+
+			return p_left->index < p_right->index;
+		}
+	};
+
 	struct ItemPtrSort {
 
 		_FORCE_INLINE_ bool operator()(const Item *p_left, const Item *p_right) const {

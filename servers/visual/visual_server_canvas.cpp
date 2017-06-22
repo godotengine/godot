@@ -58,6 +58,12 @@ void VisualServerCanvas::_render_canvas_item(Item *p_canvas_item, const Transfor
 	if (!ci->visible)
 		return;
 
+	if (p_canvas_item->children_order_dirty) {
+
+		p_canvas_item->child_items.sort_custom<ItemIndexSort>();
+		p_canvas_item->children_order_dirty = false;
+	}
+
 	Rect2 rect = ci->get_rect();
 	Transform2D xform = p_transform * ci->xform;
 	Rect2 global_rect = xform.xform(rect);
@@ -170,6 +176,12 @@ void VisualServerCanvas::_light_mask_canvas_items(int p_z, RasterizerCanvas::Ite
 void VisualServerCanvas::render_canvas(Canvas *p_canvas, const Transform2D &p_transform, RasterizerCanvas::Light *p_lights, RasterizerCanvas::Light *p_masked_lights, const Rect2 &p_clip_rect) {
 
 	VSG::canvas_render->canvas_begin();
+
+	if (p_canvas->children_order_dirty) {
+
+		p_canvas->child_items.sort();
+		p_canvas->children_order_dirty = false;
+	}
 
 	int l = p_canvas->child_items.size();
 	Canvas::ChildItem *ci = p_canvas->child_items.ptr();
