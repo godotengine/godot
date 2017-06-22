@@ -38,10 +38,19 @@ class NinePatchRect : public Control {
 
 	GDCLASS(NinePatchRect, Control);
 
+public:
+	enum AxisStretchMode {
+		AXIS_STRETCH_MODE_STRETCH,
+		AXIS_STRETCH_MODE_TILE,
+		AXIS_STRETCH_MODE_TILE_FIT,
+	};
+
 	bool draw_center;
 	int margin[4];
 	Rect2 region_rect;
 	Ref<Texture> texture;
+
+	AxisStretchMode axis_h, axis_v;
 
 protected:
 	void _notification(int p_what);
@@ -61,7 +70,15 @@ public:
 	void set_draw_center(bool p_enable);
 	bool get_draw_center() const;
 
+	void set_h_axis_stretch_mode(AxisStretchMode p_mode);
+	AxisStretchMode get_h_axis_stretch_mode() const;
+
+	void set_v_axis_stretch_mode(AxisStretchMode p_mode);
+	AxisStretchMode get_v_axis_stretch_mode() const;
+
 	NinePatchRect();
 	~NinePatchRect();
 };
+
+VARIANT_ENUM_CAST(NinePatchRect::AxisStretchMode)
 #endif // PATCH_9_FRAME_H

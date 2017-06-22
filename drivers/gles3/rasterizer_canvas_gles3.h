@@ -67,6 +67,7 @@ public:
 		CanvasShadowShaderGLES3 canvas_shadow_shader;
 
 		bool using_texture_rect;
+		bool using_ninepatch;
 
 		RID current_tex;
 		RID current_normal;
@@ -111,7 +112,7 @@ public:
 	virtual void canvas_begin();
 	virtual void canvas_end();
 
-	_FORCE_INLINE_ void _set_texture_rect_mode(bool p_enable);
+	_FORCE_INLINE_ void _set_texture_rect_mode(bool p_enable, bool p_ninepatch = false);
 	_FORCE_INLINE_ RasterizerStorageGLES3::Texture *_bind_canvas_texture(const RID &p_texture, const RID &p_normal_map);
 
 	_FORCE_INLINE_ void _draw_gui_primitive(int p_points, const Vector2 *p_vertices, const Color *p_colors, const Vector2 *p_uvs);

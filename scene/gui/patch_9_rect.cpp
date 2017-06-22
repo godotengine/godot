@@ -44,7 +44,7 @@ void NinePatchRect::_notification(int p_what) {
 		texture->get_rect_region(rect, src_rect, rect, src_rect);
 
 		RID ci = get_canvas_item();
-		VS::get_singleton()->canvas_item_add_nine_patch(ci, rect, src_rect, texture->get_rid(), Vector2(margin[MARGIN_LEFT], margin[MARGIN_TOP]), Vector2(margin[MARGIN_RIGHT], margin[MARGIN_BOTTOM]), VS::NINE_PATCH_STRETCH, VS::NINE_PATCH_STRETCH, draw_center);
+		VS::get_singleton()->canvas_item_add_nine_patch(ci, rect, src_rect, texture->get_rid(), Vector2(margin[MARGIN_LEFT], margin[MARGIN_TOP]), Vector2(margin[MARGIN_RIGHT], margin[MARGIN_BOTTOM]), VS::NinePatchAxisMode(axis_h), VS::NinePatchAxisMode(axis_v), draw_center);
 	}
 }
 
@@ -62,6 +62,10 @@ void NinePatchRect::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_region_rect"), &NinePatchRect::get_region_rect);
 	ClassDB::bind_method(D_METHOD("set_draw_center", "draw_center"), &NinePatchRect::set_draw_center);
 	ClassDB::bind_method(D_METHOD("get_draw_center"), &NinePatchRect::get_draw_center);
+	ClassDB::bind_method(D_METHOD("set_h_axis_stretch_mode", "mode"), &NinePatchRect::set_h_axis_stretch_mode);
+	ClassDB::bind_method(D_METHOD("get_h_axis_stretch_mode"), &NinePatchRect::get_h_axis_stretch_mode);
+	ClassDB::bind_method(D_METHOD("set_v_axis_stretch_mode", "mode"), &NinePatchRect::set_v_axis_stretch_mode);
+	ClassDB::bind_method(D_METHOD("get_v_axis_stretch_mode"), &NinePatchRect::get_v_axis_stretch_mode);
 
 	ADD_SIGNAL(MethodInfo("texture_changed"));
 
@@ -74,6 +78,13 @@ void NinePatchRect::_bind_methods() {
 	ADD_PROPERTYINZ(PropertyInfo(Variant::INT, "patch_margin_top", PROPERTY_HINT_RANGE, "0,16384,1"), "set_patch_margin", "get_patch_margin", MARGIN_TOP);
 	ADD_PROPERTYINZ(PropertyInfo(Variant::INT, "patch_margin_right", PROPERTY_HINT_RANGE, "0,16384,1"), "set_patch_margin", "get_patch_margin", MARGIN_RIGHT);
 	ADD_PROPERTYINZ(PropertyInfo(Variant::INT, "patch_margin_bottom", PROPERTY_HINT_RANGE, "0,16384,1"), "set_patch_margin", "get_patch_margin", MARGIN_BOTTOM);
+	ADD_GROUP("Axis Stretch", "axis_stretch_");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "axis_stretch_horizontal", PROPERTY_HINT_ENUM, "Stretch,Tile,Tile Fit"), "set_h_axis_stretch_mode", "get_h_axis_stretch_mode");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "axis_stretch_vertical", PROPERTY_HINT_ENUM, "Stretch,Tile,Tile Fit"), "set_v_axis_stretch_mode", "get_v_axis_stretch_mode");
+
+	BIND_CONSTANT(AXIS_STRETCH_MODE_STRETCH);
+	BIND_CONSTANT(AXIS_STRETCH_MODE_TILE);
+	BIND_CONSTANT(AXIS_STRETCH_MODE_TILE_FIT);
 }
 
 void NinePatchRect::set_texture(const Ref<Texture> &p_tex) {
@@ -150,6 +161,26 @@ bool NinePatchRect::get_draw_center() const {
 	return draw_center;
 }
 
+void NinePatchRect::set_h_axis_stretch_mode(AxisStretchMode p_mode) {
+	axis_h = p_mode;
+	update();
+}
+
+NinePatchRect::AxisStretchMode NinePatchRect::get_h_axis_stretch_mode() const {
+	return axis_h;
+}
+
+void NinePatchRect::set_v_axis_stretch_mode(AxisStretchMode p_mode) {
+
+	axis_v = p_mode;
+	update();
+}
+
+NinePatchRect::AxisStretchMode NinePatchRect::get_v_axis_stretch_mode() const {
+
+	return axis_v;
+}
+
 NinePatchRect::NinePatchRect() {
 
 	margin[MARGIN_LEFT] = 0;
@@ -159,6 +190,9 @@ NinePatchRect::NinePatchRect() {
 
 	set_mouse_filter(MOUSE_FILTER_IGNORE);
 	draw_center = true;
+
+	axis_h = AXIS_STRETCH_MODE_STRETCH;
+	axis_v = AXIS_STRETCH_MODE_STRETCH;
 }
 
 NinePatchRect::~NinePatchRect() {
