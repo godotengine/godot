@@ -147,6 +147,7 @@ private:
 		String name;
 		Rect3 aabb;
 		Ref<Material> material;
+		bool is_2d;
 	};
 	Vector<Surface> surfaces;
 	RID mesh;

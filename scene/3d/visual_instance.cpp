@@ -316,7 +316,7 @@ void GeometryInstance::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_aabb"), &GeometryInstance::get_aabb);
 
 	ADD_GROUP("Geometry", "");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material_override", PROPERTY_HINT_RESOURCE_TYPE, "Material"), "set_material_override", "get_material_override");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material_override", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,SpatialMaterial"), "set_material_override", "get_material_override");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cast_shadow", PROPERTY_HINT_ENUM, "Off,On,Double-Sided,Shadows Only"), "set_cast_shadows_setting", "get_cast_shadows_setting");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "extra_cull_margin", PROPERTY_HINT_RANGE, "0,16384,0"), "set_extra_cull_margin", "get_extra_cull_margin");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "visible_in_all_rooms"), "set_flag", "get_flag", FLAG_VISIBLE_IN_ALL_ROOMS);

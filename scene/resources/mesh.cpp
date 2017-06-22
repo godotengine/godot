@@ -668,7 +668,11 @@ void ArrayMesh::_get_property_list(List<PropertyInfo> *p_list) const {
 
 		p_list->push_back(PropertyInfo(Variant::DICTIONARY, "surfaces/" + itos(i), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 		p_list->push_back(PropertyInfo(Variant::STRING, "surface_" + itos(i + 1) + "/name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, "surface_" + itos(i + 1) + "/material", PROPERTY_HINT_RESOURCE_TYPE, "Material", PROPERTY_USAGE_EDITOR));
+		if (surfaces[i].is_2d) {
+			p_list->push_back(PropertyInfo(Variant::OBJECT, "surface_" + itos(i + 1) + "/material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,CanvasItemMaterial", PROPERTY_USAGE_EDITOR));
+		} else {
+			p_list->push_back(PropertyInfo(Variant::OBJECT, "surface_" + itos(i + 1) + "/material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,SpatialMaterial", PROPERTY_USAGE_EDITOR));
+		}
 	}
 
 	p_list->push_back(PropertyInfo(Variant::RECT3, "custom_aabb/custom_aabb"));
@@ -692,6 +696,7 @@ void ArrayMesh::add_surface(uint32_t p_format, PrimitiveType p_primitive, const 
 
 	Surface s;
 	s.aabb = p_aabb;
+	s.is_2d = p_format & ARRAY_FLAG_USE_2D_VERTICES;
 	surfaces.push_back(s);
 	_recompute_aabb();
 
@@ -709,7 +714,8 @@ void ArrayMesh::add_surface_from_arrays(PrimitiveType p_primitive, const Array &
 
 	/* make aABB? */ {
 
-		PoolVector<Vector3> vertices = p_arrays[ARRAY_VERTEX];
+		Variant arr = p_arrays[ARRAY_VERTEX];
+		PoolVector<Vector3> vertices = arr;
 		int len = vertices.size();
 		ERR_FAIL_COND(len == 0);
 		PoolVector<Vector3>::Read r = vertices.read();
@@ -726,6 +732,7 @@ void ArrayMesh::add_surface_from_arrays(PrimitiveType p_primitive, const Array &
 		}
 
 		surfaces[surfaces.size() - 1].aabb = aabb;
+		surfaces[surfaces.size() - 1].is_2d = arr.get_type() == Variant::POOL_VECTOR2_ARRAY;
 
 		_recompute_aabb();
 	}
