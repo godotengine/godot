@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "particles_2d.h"
+
 #include "scene/3d/particles.h"
 #include "scene/scene_string_names.h"
 
@@ -276,10 +277,12 @@ void Particles2D::_notification(int p_what) {
 
 		VS::get_singleton()->canvas_item_add_particles(get_canvas_item(), particles, texture_rid, normal_rid, h_frames, v_frames);
 
+#ifdef TOOLS_ENABLED
 		if (get_tree()->is_editor_hint() && (this == get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->is_a_parent_of(this))) {
 
 			draw_rect(visibility_rect, Color(0, 0.7, 0.9, 0.4), false);
 		}
+#endif
 	}
 
 	if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
