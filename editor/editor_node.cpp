@@ -5311,36 +5311,6 @@ EditorNode::EditorNode() {
 	top_region->add_child(left_menu_hb);
 	menu_hb->add_child(top_region);
 
-	PopupMenu *p;
-
-	project_menu = memnew(MenuButton);
-	project_menu->set_tooltip(TTR("Miscellaneous project or scene-wide tools."));
-	project_menu->set_text(TTR("Project"));
-	project_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
-	left_menu_hb->add_child(project_menu);
-
-	p = project_menu->get_popup();
-	p->connect("id_pressed", this, "_menu_option");
-	p->add_item(TTR("Run Script"), FILE_RUN_SCRIPT, KEY_MASK_SHIFT + KEY_MASK_CMD + KEY_R);
-	p->add_item(TTR("Export"), FILE_EXPORT_PROJECT);
-
-	PopupMenu *tool_menu = memnew(PopupMenu);
-	tool_menu->set_name("Tools");
-	tool_menu->connect("id_pressed", this, "_menu_option");
-	p->add_child(tool_menu);
-	p->add_submenu_item(TTR("Tools"), "Tools");
-	tool_menu->add_item(TTR("Orphan Resource Explorer"), TOOLS_ORPHAN_RESOURCES);
-	p->add_separator();
-	p->add_item(TTR("Project Settings"), RUN_SETTINGS);
-	p->add_separator();
-
-#ifdef OSX_ENABLED
-	p->add_item(TTR("Quit to Project List"), RUN_PROJECT_MANAGER, KEY_MASK_SHIFT + KEY_MASK_ALT + KEY_Q);
-#else
-	p->add_item(TTR("Quit to Project List"), RUN_PROJECT_MANAGER, KEY_MASK_SHIFT + KEY_MASK_CTRL + KEY_Q);
-#endif
-	p->add_item(TTR("Quit"), FILE_QUIT, KEY_MASK_CMD + KEY_Q);
-
 	file_menu = memnew(MenuButton);
 	file_menu->set_text(TTR("Scene"));
 	//file_menu->set_icon(gui_base->get_icon("Save","EditorIcons"));
@@ -5360,6 +5330,7 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT("editor/next_tab", TTR("Next tab"), KEY_MASK_CMD + KEY_TAB);
 	ED_SHORTCUT("editor/prev_tab", TTR("Previous tab"), KEY_MASK_CMD + KEY_MASK_SHIFT + KEY_TAB);
 	ED_SHORTCUT("editor/filter_files", TTR("Filter Files.."), KEY_MASK_ALT + KEY_MASK_CMD + KEY_P);
+	PopupMenu *p;
 
 	file_menu->set_tooltip(TTR("Operations with scene files."));
 	p = file_menu->get_popup();
@@ -5379,7 +5350,6 @@ EditorNode::EditorNode() {
 	p->add_shortcut(ED_SHORTCUT("editor/quick_open_scene", TTR("Quick Open Scene.."), KEY_MASK_SHIFT + KEY_MASK_CMD + KEY_O), FILE_QUICK_OPEN_SCENE);
 	p->add_shortcut(ED_SHORTCUT("editor/quick_open_script", TTR("Quick Open Script.."), KEY_MASK_ALT + KEY_MASK_CMD + KEY_O), FILE_QUICK_OPEN_SCRIPT);
 	p->add_separator();
-
 	PopupMenu *pm_export = memnew(PopupMenu);
 	pm_export->set_name("Export");
 	p->add_child(pm_export);
@@ -5405,6 +5375,35 @@ EditorNode::EditorNode() {
 		sp->set_custom_minimum_size(Size2(30, 0) * EDSCALE);
 		menu_hb->add_child(sp);
 	}
+	p->add_separator();
+	p->add_item(TTR("Quit"), FILE_QUIT, KEY_MASK_CMD + KEY_Q);
+
+	project_menu = memnew(MenuButton);
+	project_menu->set_tooltip(TTR("Miscellaneous project or scene-wide tools."));
+	project_menu->set_text(TTR("Project"));
+	project_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
+	left_menu_hb->add_child(project_menu);
+
+	p = project_menu->get_popup();
+	p->add_item(TTR("Project Settings"), RUN_SETTINGS);
+	p->add_separator();
+	p->connect("id_pressed", this, "_menu_option");
+	p->add_item(TTR("Run Script"), FILE_RUN_SCRIPT, KEY_MASK_SHIFT + KEY_MASK_CMD + KEY_R);
+	p->add_item(TTR("Export"), FILE_EXPORT_PROJECT);
+
+	PopupMenu *tool_menu = memnew(PopupMenu);
+	tool_menu->set_name("Tools");
+	tool_menu->connect("id_pressed", this, "_menu_option");
+	p->add_child(tool_menu);
+	p->add_submenu_item(TTR("Tools"), "Tools");
+	tool_menu->add_item(TTR("Orphan Resource Explorer"), TOOLS_ORPHAN_RESOURCES);
+	p->add_separator();
+
+#ifdef OSX_ENABLED
+	p->add_item(TTR("Quit to Project List"), RUN_PROJECT_MANAGER, KEY_MASK_SHIFT + KEY_MASK_ALT + KEY_Q);
+#else
+	p->add_item(TTR("Quit to Project List"), RUN_PROJECT_MANAGER, KEY_MASK_SHIFT + KEY_MASK_CTRL + KEY_Q);
+#endif
 
 	PanelContainer *editor_region = memnew(PanelContainer);
 	main_editor_button_vb = memnew(HBoxContainer);
