@@ -30,6 +30,7 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
 
+#include "curve.h"
 #include "io/resource_loader.h"
 #include "math_2d.h"
 #include "resource.h"
@@ -389,20 +390,22 @@ public:
 	~CubeMap();
 };
 
-VARIANT_ENUM_CAST(CubeMap::Flags);
-VARIANT_ENUM_CAST(CubeMap::Side);
-VARIANT_ENUM_CAST(CubeMap::Storage);
+VARIANT_ENUM_CAST(CubeMap::Flags)
+VARIANT_ENUM_CAST(CubeMap::Side)
+VARIANT_ENUM_CAST(CubeMap::Storage)
 
 class CurveTexture : public Texture {
 
-	GDCLASS(CurveTexture, Texture);
-	RES_BASE_EXTENSION("curvetex");
+	GDCLASS(CurveTexture, Texture)
+	RES_BASE_EXTENSION("curvetex")
 
 private:
-	RID texture;
-	PoolVector<Vector2> points;
-	float min, max;
-	int width;
+	RID _texture;
+	Ref<Curve> _curve;
+	float _min, _max;
+	int _width;
+
+	void _update();
 
 protected:
 	static void _bind_methods();
@@ -417,8 +420,10 @@ public:
 	void set_width(int p_width);
 	int get_width() const;
 
-	void set_points(const PoolVector<Vector2> &p_points);
-	PoolVector<Vector2> get_points() const;
+	void ensure_default_setup();
+
+	void set_curve(Ref<Curve> p_curve);
+	Ref<Curve> get_curve() const;
 
 	virtual RID get_rid() const;
 

@@ -27,69 +27,119 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef CURVE_EDITOR_PLUGIN_H
 #define CURVE_EDITOR_PLUGIN_H
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
+#include "scene/resources/curve.h"
 
-class CurveTextureEdit : public Control {
+// Edits a y(x) curve
+class CurveEditor : public Control {
+	GDCLASS(CurveEditor, Control)
+public:
+	CurveEditor();
 
-	GDCLASS(CurveTextureEdit, Control);
+	Size2 get_minimum_size() const;
 
-	struct Point {
+	void set_curve(Ref<Curve> curve);
 
-		float offset;
-		float height;
-		bool operator<(const Point &p_ponit) const {
-			return offset < p_ponit.offset;
-		}
+	enum PresetID {
+		PRESET_FLAT0 = 0,
+		PRESET_FLAT1,
+		PRESET_LINEAR,
+		PRESET_EASE_IN,
+		PRESET_EASE_OUT,
+		PRESET_SMOOTHSTEP,
+		PRESET_COUNT
 	};
 
-	bool grabbing;
-	int grabbed;
-	Vector<Point> points;
-	float max, min;
+	enum ContextAction {
+		CONTEXT_ADD_POINT = 0,
+		CONTEXT_REMOVE_POINT
+	};
 
-	void _plot_curve(const Vector2 &p_a, const Vector2 &p_b, const Vector2 &p_c, const Vector2 &p_d);
+	enum TangentIndex {
+		TANGENT_NONE = -1,
+		TANGENT_LEFT = 0,
+		TANGENT_RIGHT = 1
+	};
 
 protected:
-	void _gui_input(const Ref<InputEvent> &p_event);
 	void _notification(int p_what);
+
 	static void _bind_methods();
 
-public:
-	void set_range(float p_min, float p_max);
-	void set_points(const Vector<Vector2> &p_points);
-	Vector<Vector2> get_points() const;
-	virtual Size2 get_minimum_size() const;
-	CurveTextureEdit();
+private:
+	void on_gui_input(const Ref<InputEvent> &p_event);
+	void on_preset_item_selected(int preset_id);
+	void _curve_changed();
+	void on_context_menu_item_selected(int action_id);
+
+	void open_context_menu(Vector2 pos);
+	int get_point_at(Vector2 pos) const;
+	int get_tangent_at(Vector2 pos) const;
+	void add_point(Vector2 pos);
+	void remove_point(int index);
+	void set_selected_point(int index);
+	void set_hover_point_index(int index);
+	void push_undo(Array previous_curve_data);
+	void update_view_transform();
+
+	Vector2 get_tangent_view_pos(int i, TangentIndex tangent) const;
+	Vector2 get_view_pos(Vector2 world_pos) const;
+	Vector2 get_world_pos(Vector2 view_pos) const;
+
+	void _draw();
+
+	void stroke_rect(Rect2 rect, Color color);
+
+private:
+	Rect2 _world_rect;
+	Transform2D _world_to_view;
+
+	Ref<Curve> _curve_ref;
+	PopupMenu *_context_menu;
+	PopupMenu *_presets_menu;
+
+	Array _undo_data;
+	bool _has_undo_data;
+	bool _undo_no_commit;
+
+	Vector2 _context_click_pos;
+	int _selected_point;
+	int _hover_point;
+	int _selected_tangent;
+	bool _dragging;
+
+	// Constant
+	float _hover_radius;
+	float _tangents_length;
 };
 
-class CurveTextureEditorPlugin : public EditorPlugin {
-
-	GDCLASS(CurveTextureEditorPlugin, EditorPlugin);
-
-	CurveTextureEdit *curve_editor;
-	Ref<CurveTexture> curve_texture_ref;
-	EditorNode *editor;
-	ToolButton *curve_button;
-
-protected:
-	static void _bind_methods();
-	void _curve_changed();
-	void _undo_redo_curve_texture(const PoolVector<Vector2> &points);
-	void _curve_settings_changed();
-
+class CurveEditorPlugin : public EditorPlugin {
+	GDCLASS(CurveEditorPlugin, EditorPlugin)
 public:
-	virtual String get_name() const { return "CurveTexture"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_node);
-	virtual bool handles(Object *p_node) const;
-	virtual void make_visible(bool p_visible);
+	CurveEditorPlugin(EditorNode *p_node);
+	~CurveEditorPlugin();
 
-	CurveTextureEditorPlugin(EditorNode *p_node);
-	~CurveTextureEditorPlugin();
+	String get_name() const { return "Curve"; }
+	bool has_main_screen() const { return false; }
+	void edit(Object *p_object);
+	bool handles(Object *p_object) const;
+	void make_visible(bool p_visible);
+
+private:
+	static void _bind_methods();
+
+	void _curve_texture_changed();
+
+private:
+	CurveEditor *_view;
+	Ref<Resource> _current_ref;
+	EditorNode *_editor_node;
+	ToolButton *_toggle_button;
 };
 
 #endif // CURVE_EDITOR_PLUGIN_H

@@ -61,8 +61,20 @@ void TextureEditor::_notification(int p_what) {
 			tex_height = texture->get_height() * tex_width / texture->get_width();
 		}
 
+		// Prevent the texture from being unpreviewable after the rescale, so that we can still see something
+		if (tex_height <= 0)
+			tex_height = 1;
+		if (tex_width <= 0)
+			tex_width = 1;
+
 		int ofs_x = (size.width - tex_width) / 2;
 		int ofs_y = (size.height - tex_height) / 2;
+
+		if (texture->cast_to<CurveTexture>()) {
+			// In the case of CurveTextures we know they are 1 in height, so fill the preview to see the gradient
+			ofs_y = 0;
+			tex_height = size.height;
+		}
 
 		draw_texture_rect(texture, Rect2(ofs_x, ofs_y, tex_width, tex_height));
 

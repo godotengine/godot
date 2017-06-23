@@ -6114,7 +6114,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(GradientEditorPlugin(this)));
 	add_editor_plugin(memnew(GradientTextureEditorPlugin(this)));
 	add_editor_plugin(memnew(CollisionShape2DEditorPlugin(this)));
-	add_editor_plugin(memnew(CurveTextureEditorPlugin(this)));
+	add_editor_plugin(memnew(CurveEditorPlugin(this)));
 	add_editor_plugin(memnew(TextureEditorPlugin(this)));
 	add_editor_plugin(memnew(AudioBusesEditorPlugin(audio_bus_editor)));
 	//add_editor_plugin( memnew( MaterialEditorPlugin(this) ) );

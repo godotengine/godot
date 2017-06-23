@@ -82,6 +82,78 @@ public:
 
 #endif
 
+// y(x) curve
+class Curve : public Resource {
+	GDCLASS(Curve, Resource)
+public:
+	static const int MIN_X = 0.f;
+	static const int MAX_X = 1.f;
+
+#ifdef TOOLS_ENABLED
+	bool _disable_set_data;
+#endif
+
+	struct Point {
+		Vector2 pos;
+		real_t left_tangent;
+		real_t right_tangent;
+
+		Point() {
+			left_tangent = 0;
+			right_tangent = 0;
+		}
+
+		Point(Vector2 p, real_t left = 0, real_t right = 0) {
+			pos = p;
+			left_tangent = left;
+			right_tangent = right;
+		}
+	};
+
+	Curve();
+
+	int get_point_count() const { return _points.size(); }
+
+	int add_point(Vector2 p_pos, real_t left_tangent = 0, real_t right_tangent = 0);
+	void remove_point(int p_index);
+	void clear_points();
+
+	int get_index(real_t offset) const;
+
+	void set_point_value(int p_index, real_t pos);
+	int set_point_offset(int p_index, float offset);
+	Vector2 get_point_pos(int p_index) const;
+
+	real_t interpolate(real_t offset) const;
+	real_t interpolate_local_nocheck(int index, real_t local_offset) const;
+
+	void clean_dupes();
+
+	void set_point_left_tangent(int i, real_t tangent);
+	void set_point_right_tangent(int i, real_t tangent);
+	real_t get_point_left_tangent(int i) const;
+	real_t get_point_right_tangent(int i) const;
+
+	Array get_data() const;
+	void set_data(Array input);
+
+	void bake();
+	int get_bake_resolution() const { return _bake_resolution; }
+	void set_bake_resolution(int p_interval);
+	real_t interpolate_baked(real_t offset);
+
+protected:
+	static void _bind_methods();
+
+private:
+	void mark_dirty();
+
+	Vector<Point> _points;
+	bool _baked_cache_dirty;
+	Vector<real_t> _baked_cache;
+	int _bake_resolution;
+};
+
 class Curve2D : public Resource {
 
 	GDCLASS(Curve2D, Resource);
