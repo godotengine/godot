@@ -245,7 +245,7 @@ void ScriptCreateDialog::_lang_changed(int l) {
 		template_menu->clear();
 		template_menu->add_item(TTR("Default"));
 		for (int i = 0; i < template_list.size(); i++) {
-			template_menu->add_item(template_list[i]);
+			template_menu->add_item(template_list[i].capitalize());
 		}
 	}
 
