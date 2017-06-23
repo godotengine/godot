@@ -7202,7 +7202,7 @@
 			<argument index="0" name="v" type="Vector3">
 			</argument>
 			<description>
-				Return a vector transformed (multiplied) by the matrix and return it.
+				Return a vector transformed (multiplied) by the matrix.
 			</description>
 		</method>
 		<method name="xform_inv">
@@ -7211,7 +7211,7 @@
 			<argument index="0" name="v" type="Vector3">
 			</argument>
 			<description>
-				Return a vector transformed (multiplied) by the transposed matrix and return it. Note that this is a multiplication by inverse only when the matrix represents a rotation-reflection.
+				Return a vector transformed (multiplied) by the transposed matrix. Note that this results in a multiplication by the inverse of the matrix only if it represents a rotation-reflection.
 			</description>
 		</method>
 	</methods>
