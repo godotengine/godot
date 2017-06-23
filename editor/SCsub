@@ -176,7 +176,7 @@ if (env["tools"] == "yes"):
 	reg_exporters += '\tregister_' + e + '_exporter();\n'
         reg_exporters_inc += '#include "platform/' + e + '/export/export.h"\n'
     reg_exporters += '}\n'
-    f = open("register_exporters.cpp", "wb")
+    f = open("register_exporters.gen.cpp", "wb")
     f.write(reg_exporters_inc)
     f.write(reg_exporters)
     f.close()
@@ -189,12 +189,12 @@ if (env["tools"] == "yes"):
         docfile = os.path.join(curmodle, "classes.xml")
         if os.path.isdir(curmodle) and os.path.isfile(docfile):
             docs.append(docfile)
-    env.Depends("#editor/doc_data_compressed.h", docs)
-    env.Command("#editor/doc_data_compressed.h", docs, make_doc_header)
+    env.Depends("#editor/doc_data_compressed.gen.h", docs)
+    env.Command("#editor/doc_data_compressed.gen.h", docs, make_doc_header)
 
     # Certificates
-    env.Depends("#editor/certs_compressed.h", "#thirdparty/certs/ca-certificates.crt")
-    env.Command("#editor/certs_compressed.h", "#thirdparty/certs/ca-certificates.crt", make_certs_header)
+    env.Depends("#editor/certs_compressed.gen.h", "#thirdparty/certs/ca-certificates.crt")
+    env.Command("#editor/certs_compressed.gen.h", "#thirdparty/certs/ca-certificates.crt", make_certs_header)
 
     import glob
     path = env.Dir('.').abspath
@@ -202,19 +202,19 @@ if (env["tools"] == "yes"):
     # Translations
     tlist = glob.glob(path + "/translations/*.po")
     print("translations: ", tlist)
-    env.Depends('#editor/translations.h', tlist)
-    env.Command('#editor/translations.h', tlist, make_translations_header)
+    env.Depends('#editor/translations.gen.h', tlist)
+    env.Command('#editor/translations.gen.h', tlist, make_translations_header)
 
     # Fonts
     flist = glob.glob(path + "/../thirdparty/fonts/*.ttf")
     flist.append(glob.glob(path + "/../thirdparty/fonts/*.otf"))
     print("fonts: ", flist)
-    env.Depends('#editor/builtin_fonts.h', flist)
-    env.Command('#editor/builtin_fonts.h', flist, make_fonts_header)
+    env.Depends('#editor/builtin_fonts.gen.h', flist)
+    env.Command('#editor/builtin_fonts.gen.h', flist, make_fonts_header)
 
     # Authors
-    env.Depends('#editor/authors.h', "../AUTHORS.md")
-    env.Command('#editor/authors.h', "../AUTHORS.md", make_authors_header)
+    env.Depends('#editor/authors.gen.h', "../AUTHORS.md")
+    env.Command('#editor/authors.gen.h', "../AUTHORS.md", make_authors_header)
 
 
     env.add_source_files(env.editor_sources, "*.cpp")

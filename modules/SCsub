@@ -7,7 +7,7 @@ env_modules = env.Clone()
 Export('env_modules')
 
 env.modules_sources = [
-    "register_module_types.cpp",
+    "register_module_types.gen.cpp",
 ]
 # env.add_source_files(env.modules_sources,"*.cpp")
 Export('env')

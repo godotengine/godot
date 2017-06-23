@@ -33,17 +33,17 @@
 /* Must come before shaders or the Windows build fails... */
 #include "rasterizer_storage_gles3.h"
 
-#include "drivers/gles3/shaders/cube_to_dp.glsl.h"
-#include "drivers/gles3/shaders/effect_blur.glsl.h"
-#include "drivers/gles3/shaders/exposure.glsl.h"
-#include "drivers/gles3/shaders/resolve.glsl.h"
-#include "drivers/gles3/shaders/scene.glsl.h"
-#include "drivers/gles3/shaders/screen_space_reflection.glsl.h"
-#include "drivers/gles3/shaders/ssao.glsl.h"
-#include "drivers/gles3/shaders/ssao_blur.glsl.h"
-#include "drivers/gles3/shaders/ssao_minify.glsl.h"
-#include "drivers/gles3/shaders/subsurf_scattering.glsl.h"
-#include "drivers/gles3/shaders/tonemap.glsl.h"
+#include "drivers/gles3/shaders/cube_to_dp.glsl.gen.h"
+#include "drivers/gles3/shaders/effect_blur.glsl.gen.h"
+#include "drivers/gles3/shaders/exposure.glsl.gen.h"
+#include "drivers/gles3/shaders/resolve.glsl.gen.h"
+#include "drivers/gles3/shaders/scene.glsl.gen.h"
+#include "drivers/gles3/shaders/screen_space_reflection.glsl.gen.h"
+#include "drivers/gles3/shaders/ssao.glsl.gen.h"
+#include "drivers/gles3/shaders/ssao_blur.glsl.gen.h"
+#include "drivers/gles3/shaders/ssao_minify.glsl.gen.h"
+#include "drivers/gles3/shaders/subsurf_scattering.glsl.gen.h"
+#include "drivers/gles3/shaders/tonemap.glsl.gen.h"
 
 class RasterizerSceneGLES3 : public RasterizerScene {
 public:

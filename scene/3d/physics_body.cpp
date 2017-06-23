@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "physics_body.h"
-#include "method_bind_ext.inc"
+#include "method_bind_ext.gen.inc"
 #include "scene/scene_string_names.h"
 
 void PhysicsBody::_notification(int p_what) {

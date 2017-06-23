@@ -47,11 +47,11 @@ env.add_source_files(env.main_sources, "*.cpp")
 
 Export('env')
 
-env.Depends("#main/splash.h", "#main/splash.png")
-env.Command("#main/splash.h", "#main/splash.png", make_splash)
+env.Depends("#main/splash.gen.h", "#main/splash.png")
+env.Command("#main/splash.gen.h", "#main/splash.png", make_splash)
 
-env.Depends("#main/app_icon.h", "#main/app_icon.png")
-env.Command("#main/app_icon.h", "#main/app_icon.png", make_app_icon)
+env.Depends("#main/app_icon.gen.h", "#main/app_icon.png")
+env.Command("#main/app_icon.gen.h", "#main/app_icon.png", make_app_icon)
 
 SConscript('tests/SCsub')
 

@@ -27,7 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "version_generated.h"
+#include "version_generated.gen.h"
 
 #ifdef VERSION_PATCH
 #define VERSION_MKSTRING "" _MKSTR(VERSION_MAJOR) "." _MKSTR(VERSION_MINOR) "." _MKSTR(VERSION_PATCH) "." _MKSTR(VERSION_STATUS) "." _MKSTR(VERSION_REVISION)

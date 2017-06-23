@@ -30,7 +30,7 @@
 #include "editor_node.h"
 
 #include "animation_editor.h"
-#include "authors.h"
+#include "authors.gen.h"
 #include "bind/core_bind.h"
 #include "class_db.h"
 #include "core/io/resource_loader.h"
