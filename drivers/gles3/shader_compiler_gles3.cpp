@@ -795,6 +795,7 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_PARTICLES].renames["INDEX"] = "index";
 	actions[VS::SHADER_PARTICLES].renames["GRAVITY"] = "current_gravity";
 	actions[VS::SHADER_PARTICLES].renames["EMISSION_TRANSFORM"] = "emission_transform";
+	actions[VS::SHADER_PARTICLES].renames["RANDOM_SEED"] = "random_seed";
 
 	actions[VS::SHADER_SPATIAL].render_mode_defines["disable_force"] = "#define DISABLE_FORCE\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["disable_velocity"] = "#define DISABLE_VELOCITY\n";

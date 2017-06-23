@@ -571,7 +571,7 @@ void ParticlesMaterial::_update_shader() {
 	code += "\n";
 
 	code += " uint base_number=NUMBER/uint(trail_divisor);\n";
-	code += " uint alt_seed=hash(base_number+uint(1));\n";
+	code += " uint alt_seed=hash(base_number+uint(1)+RANDOM_SEED);\n";
 	code += " float angle_rand=rand_from_seed(alt_seed);\n";
 	code += " float scale_rand=rand_from_seed(alt_seed);\n";
 	code += " float hue_rot_rand=rand_from_seed(alt_seed);\n";

@@ -469,6 +469,9 @@ void register_scene_types() {
 	ClassDB::register_class<Shader>();
 	ClassDB::register_class<ShaderMaterial>();
 	ClassDB::register_virtual_class<CanvasItem>();
+	ClassDB::register_class<CanvasItemMaterial>();
+	SceneTree::add_idle_callback(CanvasItemMaterial::flush_changes);
+	CanvasItemMaterial::init_shaders();
 	ClassDB::register_class<Node2D>();
 	ClassDB::register_class<Particles2D>();
 	//ClassDB::register_class<ParticleAttractor2D>();
@@ -663,5 +666,6 @@ void unregister_scene_types() {
 
 	SpatialMaterial::finish_shaders();
 	ParticlesMaterial::finish_shaders();
+	CanvasItemMaterial::finish_shaders();
 	SceneStringNames::free();
 }

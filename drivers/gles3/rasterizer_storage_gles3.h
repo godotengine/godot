@@ -1033,6 +1033,8 @@ public:
 
 	struct Particles : public GeometryOwner {
 
+		bool inactive;
+		float inactive_time;
 		bool emitting;
 		int amount;
 		float lifetime;
@@ -1060,6 +1062,7 @@ public:
 		float phase;
 		float prev_phase;
 		uint64_t prev_ticks;
+		uint32_t random_seed;
 
 		uint32_t cycle_number;
 
@@ -1088,6 +1091,7 @@ public:
 			frame_remainder = 0;
 			histories_enabled = false;
 			speed_scale = 1.0;
+			random_seed = 0;
 
 			custom_aabb = Rect3(Vector3(-4, -4, -4), Vector3(8, 8, 8));
 
@@ -1098,6 +1102,8 @@ public:
 			prev_ticks = 0;
 
 			clear = true;
+			inactive = true;
+			inactive_time = false;
 
 			glGenBuffers(2, particle_buffers);
 			glGenVertexArrays(2, particle_vaos);

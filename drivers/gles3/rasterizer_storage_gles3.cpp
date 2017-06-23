@@ -5288,6 +5288,7 @@ void RasterizerStorageGLES3::_particles_process(Particles *particles, float p_de
 
 	if (particles->clear) {
 		particles->cycle_number = 0;
+		particles->random_seed = Math::rand();
 	} else if (new_phase < particles->phase) {
 		particles->cycle_number++;
 	}
@@ -5298,6 +5299,8 @@ void RasterizerStorageGLES3::_particles_process(Particles *particles, float p_de
 
 	shaders.particles.set_uniform(ParticlesShaderGLES3::DELTA, p_delta * particles->speed_scale);
 	shaders.particles.set_uniform(ParticlesShaderGLES3::CLEAR, particles->clear);
+	glUniform1ui(shaders.particles.get_uniform_location(ParticlesShaderGLES3::RANDOM_SEED), particles->random_seed);
+
 	if (particles->use_local_coords)
 		shaders.particles.set_uniform(ParticlesShaderGLES3::EMISSION_TRANSFORM, Transform());
 	else
@@ -5352,6 +5355,33 @@ void RasterizerStorageGLES3::update_particles() {
 		//use transform feedback to process particles
 
 		Particles *particles = particle_update_list.first()->self();
+
+		if (particles->inactive && !particles->emitting) {
+
+			particle_update_list.remove(particle_update_list.first());
+			continue;
+		}
+
+		if (particles->emitting) {
+			if (particles->inactive) {
+				//restart system from scratch
+				particles->prev_ticks = 0;
+				particles->phase = 0;
+				particles->prev_phase = 0;
+				particles->clear = true;
+				particles->particle_valid_histories[0] = false;
+				particles->particle_valid_histories[1] = false;
+			}
+			particles->inactive = false;
+			particles->inactive_time = 0;
+		} else {
+			particles->inactive_time += particles->speed_scale * frame.delta;
+			if (particles->inactive_time > particles->lifetime * 1.2) {
+				particles->inactive = true;
+				particle_update_list.remove(particle_update_list.first());
+				continue;
+			}
+		}
 
 		Material *material = material_owner.getornull(particles->process_material);
 		if (!material || !material->shader || material->shader->mode != VS::SHADER_PARTICLES) {
