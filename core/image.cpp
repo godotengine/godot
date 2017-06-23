@@ -2167,7 +2167,7 @@ void Image::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_mipmap_offset", "mipmap"), &Image::get_mipmap_offset);
 
-	ClassDB::bind_method(D_METHOD("resize_to_po2", "square"), &Image::resize_to_po2, DEFVAL("false"));
+	ClassDB::bind_method(D_METHOD("resize_to_po2", "square"), &Image::resize_to_po2, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("resize", "width", "height", "interpolation"), &Image::resize, DEFVAL(INTERPOLATE_BILINEAR));
 	ClassDB::bind_method(D_METHOD("shrink_x2"), &Image::shrink_x2);
 	ClassDB::bind_method(D_METHOD("expand_x2_hq2x"), &Image::expand_x2_hq2x);
