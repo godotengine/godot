@@ -497,7 +497,7 @@ void ClassDB::_add_class2(const StringName &p_class, const StringName &p_inherit
 	}
 }
 
-void ClassDB::get_method_list(StringName p_class, List<MethodInfo> *p_methods, bool p_no_inheritance) {
+void ClassDB::get_method_list(StringName p_class, List<MethodInfo> *p_methods, bool p_no_inheritance, bool p_exclude_from_properties) {
 
 	OBJTYPE_RLOCK;
 
@@ -527,6 +527,9 @@ void ClassDB::get_method_list(StringName p_class, List<MethodInfo> *p_methods, b
 			MethodInfo minfo;
 			minfo.name = E->get();
 			minfo.id = method->get_method_id();
+
+			if (p_exclude_from_properties && type->methods_in_properties.has(minfo.name))
+				continue;
 
 			for (int i = 0; i < method->get_argument_count(); i++) {
 
@@ -802,7 +805,14 @@ void ClassDB::add_property(StringName p_class, const PropertyInfo &p_pinfo, cons
 	OBJTYPE_WLOCK
 
 	type->property_list.push_back(p_pinfo);
-
+#ifdef DEBUG_METHODS_ENABLED
+	if (mb_get) {
+		type->methods_in_properties.insert(p_getter);
+	}
+	if (mb_set) {
+		type->methods_in_properties.insert(p_setter);
+	}
+#endif
 	PropertySetGet psg;
 	psg.setter = p_setter;
 	psg.getter = p_getter;

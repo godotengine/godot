@@ -1276,7 +1276,7 @@ static void _find_identifiers_in_class(GDCompletionContext &context, bool p_stat
 				}
 			}
 			List<MethodInfo> methods;
-			ClassDB::get_method_list(type, &methods);
+			ClassDB::get_method_list(type, &methods, false, true);
 			for (List<MethodInfo>::Element *E = methods.front(); E; E = E->next()) {
 				if (E->get().name.begins_with("_"))
 					continue;
@@ -2251,7 +2251,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 					}
 
 					List<MethodInfo> mi;
-					ClassDB::get_method_list(t.obj_type, &mi);
+					ClassDB::get_method_list(t.obj_type, &mi, false, true);
 					for (List<MethodInfo>::Element *E = mi.front(); E; E = E->next()) {
 
 						if (E->get().name.begins_with("_"))

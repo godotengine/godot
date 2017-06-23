@@ -139,6 +139,7 @@ public:
 #ifdef DEBUG_METHODS_ENABLED
 		List<StringName> constant_order;
 		List<StringName> method_order;
+		Set<StringName> methods_in_properties;
 		List<MethodInfo> virtual_methods;
 		StringName category;
 #endif
@@ -486,7 +487,7 @@ public:
 	static bool has_method(StringName p_class, StringName p_method, bool p_no_inheritance = false);
 	static void set_method_flags(StringName p_class, StringName p_method, int p_flags);
 
-	static void get_method_list(StringName p_class, List<MethodInfo> *p_methods, bool p_no_inheritance = false);
+	static void get_method_list(StringName p_class, List<MethodInfo> *p_methods, bool p_no_inheritance = false, bool p_exclude_from_properties = false);
 	static MethodBind *get_method(StringName p_class, StringName p_name);
 
 	static void add_virtual_method(const StringName &p_class, const MethodInfo &p_method, bool p_virtual = true);
