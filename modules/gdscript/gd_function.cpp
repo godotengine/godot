@@ -1428,8 +1428,24 @@ Variant GDFunctionState::_signal_callback(const Variant **p_args, int p_argcount
 
 	state.result = arg;
 	Variant ret = function->call(NULL, NULL, 0, r_error, &state);
+
+	bool completed = true;
+
+	// If the return value is a GDFunctionState reference,
+	// then the function did yield again after resuming.
+	if (ret.is_ref()) {
+		GDFunctionState *gdfs = ret.operator Object *()->cast_to<GDFunctionState>();
+		if (gdfs && gdfs->function == function)
+			completed = false;
+	}
+
 	function = NULL; //cleaned up;
 	state.result = Variant();
+
+	if (completed) {
+		emit_signal("completed", ret);
+	}
+
 	return ret;
 }
 
@@ -1468,8 +1484,24 @@ Variant GDFunctionState::resume(const Variant &p_arg) {
 	state.result = p_arg;
 	Variant::CallError err;
 	Variant ret = function->call(NULL, NULL, 0, err, &state);
+
+	bool completed = true;
+
+	// If the return value is a GDFunctionState reference,
+	// then the function did yield again after resuming.
+	if (ret.is_ref()) {
+		GDFunctionState *gdfs = ret.operator Object *()->cast_to<GDFunctionState>();
+		if (gdfs && gdfs->function == function)
+			completed = false;
+	}
+
 	function = NULL; //cleaned up;
 	state.result = Variant();
+
+	if (completed) {
+		emit_signal("completed", ret);
+	}
+
 	return ret;
 }
 
@@ -1478,6 +1510,8 @@ void GDFunctionState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("resume:Variant", "arg"), &GDFunctionState::resume, DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("is_valid", "extended_check"), &GDFunctionState::is_valid, DEFVAL(false));
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "_signal_callback", &GDFunctionState::_signal_callback, MethodInfo("_signal_callback"));
+
+	ADD_SIGNAL(MethodInfo("completed", PropertyInfo(Variant::NIL, "result")));
 }
 
 GDFunctionState::GDFunctionState() {
