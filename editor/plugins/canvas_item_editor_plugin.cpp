@@ -2687,11 +2687,11 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 					Node2D *n2d = canvas_item->cast_to<Node2D>();
 
 					if (key_pos)
-						AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(n2d, "transform/pos", n2d->get_position(), existing);
+						AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(n2d, "position", n2d->get_position(), existing);
 					if (key_rot)
-						AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(n2d, "transform/rot", Math::rad2deg(n2d->get_rotation()), existing);
+						AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(n2d, "rotation_deg", Math::rad2deg(n2d->get_rotation()), existing);
 					if (key_scale)
-						AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(n2d, "transform/scale", n2d->get_scale(), existing);
+						AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(n2d, "scale", n2d->get_scale(), existing);
 
 					if (n2d->has_meta("_edit_bone_") && n2d->get_parent_item()) {
 						//look for an IK chain
@@ -2718,11 +2718,11 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 							for (List<Node2D *>::Element *F = ik_chain.front(); F; F = F->next()) {
 
 								if (key_pos)
-									AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(F->get(), "transform/pos", F->get()->get_position(), existing);
+									AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(F->get(), "position", F->get()->get_position(), existing);
 								if (key_rot)
-									AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(F->get(), "transform/rot", Math::rad2deg(F->get()->get_rotation()), existing);
+									AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(F->get(), "rotation_deg", Math::rad2deg(F->get()->get_rotation()), existing);
 								if (key_scale)
-									AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(F->get(), "transform/scale", F->get()->get_scale(), existing);
+									AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(F->get(), "scale", F->get()->get_scale(), existing);
 							}
 						}
 					}
@@ -2732,9 +2732,11 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 					Control *ctrl = canvas_item->cast_to<Control>();
 
 					if (key_pos)
-						AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(ctrl, "rect/pos", ctrl->get_position(), existing);
+						AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(ctrl, "rect_position", ctrl->get_position(), existing);
+					if (key_rot)
+						AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(ctrl, "rect_rotation", ctrl->get_rotation_deg(), existing);
 					if (key_scale)
-						AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(ctrl, "rect/size", ctrl->get_size(), existing);
+						AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(ctrl, "rect_size", ctrl->get_size(), existing);
 				}
 			}
 
@@ -2819,10 +2821,10 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				if (!n2d)
 					continue;
 				undo_redo->add_do_method(n2d, "set_position", E->get().pos);
-				undo_redo->add_do_method(n2d, "set_rot", E->get().rot);
+				undo_redo->add_do_method(n2d, "set_rotation", E->get().rot);
 				undo_redo->add_do_method(n2d, "set_scale", E->get().scale);
 				undo_redo->add_undo_method(n2d, "set_position", n2d->get_position());
-				undo_redo->add_undo_method(n2d, "set_rot", n2d->get_rotation());
+				undo_redo->add_undo_method(n2d, "set_rotation", n2d->get_rotation());
 				undo_redo->add_undo_method(n2d, "set_scale", n2d->get_scale());
 			}
 			undo_redo->commit_action();
