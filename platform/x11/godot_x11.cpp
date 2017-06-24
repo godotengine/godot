@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include <limits.h>
+#include <locale.h>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -37,6 +38,8 @@
 int main(int argc, char *argv[]) {
 
 	OS_X11 os;
+
+	setlocale(LC_CTYPE, "");
 
 	char *cwd = (char *)malloc(PATH_MAX);
 	getcwd(cwd, PATH_MAX);
