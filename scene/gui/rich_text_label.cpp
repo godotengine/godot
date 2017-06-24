@@ -1838,7 +1838,7 @@ void RichTextLabel::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("add_image", "image:Texture"), &RichTextLabel::add_image);
 	ObjectTypeDB::bind_method(_MD("newline"), &RichTextLabel::add_newline);
 	ObjectTypeDB::bind_method(_MD("remove_line"), &RichTextLabel::remove_line);
-	ObjectTypeDB::bind_method(_MD("push_font", "font"), &RichTextLabel::push_font);
+	ObjectTypeDB::bind_method(_MD("push_font", "font:Font"), &RichTextLabel::push_font);
 	ObjectTypeDB::bind_method(_MD("push_color", "color"), &RichTextLabel::push_color);
 	ObjectTypeDB::bind_method(_MD("push_align", "align"), &RichTextLabel::push_align);
 	ObjectTypeDB::bind_method(_MD("push_indent", "level"), &RichTextLabel::push_indent);
@@ -1861,7 +1861,7 @@ void RichTextLabel::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_scroll_follow", "follow"), &RichTextLabel::set_scroll_follow);
 	ObjectTypeDB::bind_method(_MD("is_scroll_following"), &RichTextLabel::is_scroll_following);
 
-	ObjectTypeDB::bind_method(_MD("get_v_scroll"), &RichTextLabel::get_v_scroll);
+	ObjectTypeDB::bind_method(_MD("get_v_scroll:VScrollBar"), &RichTextLabel::get_v_scroll);
 
 	ObjectTypeDB::bind_method(_MD("scroll_to_line", "line"), &RichTextLabel::scroll_to_line);
 
