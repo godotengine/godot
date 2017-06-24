@@ -264,54 +264,60 @@ class KinematicBody2D : public PhysicsBody2D {
 
 	GDCLASS(KinematicBody2D, PhysicsBody2D);
 
+public:
+	struct Collision {
+		Vector2 collision;
+		Vector2 normal;
+		Vector2 collider_vel;
+		ObjectID collider;
+		int collider_shape;
+		Variant collider_metadata;
+		Vector2 remainder;
+		Vector2 travel;
+		int local_shape;
+	};
+
+private:
 	float margin;
-	bool colliding;
-	Vector2 collision;
-	Vector2 normal;
-	Vector2 collider_vel;
-	ObjectID collider;
-	int collider_shape;
-	Variant collider_metadata;
-	Vector2 travel;
 
-	Vector2 move_and_slide_floor_velocity;
-	bool move_and_slide_on_floor;
-	bool move_and_slide_on_ceiling;
-	bool move_and_slide_on_wall;
-	Array move_and_slide_colliders;
-
-	Variant _get_collider() const;
+	Vector2 floor_velocity;
+	bool on_floor;
+	bool on_ceiling;
+	bool on_wall;
+	Vector<Collision> colliders;
 
 	_FORCE_INLINE_ bool _ignores_mode(Physics2DServer::BodyMode) const;
+
+	Dictionary _move(const Vector2 &p_motion);
 
 protected:
 	static void _bind_methods();
 
 public:
-	Vector2 move(const Vector2 &p_motion);
-	Vector2 move_to(const Vector2 &p_position);
-
+	bool move(const Vector2 &p_motion, Collision &r_collision);
 	bool test_move(const Transform2D &p_from, const Vector2 &p_motion);
-	bool is_colliding() const;
 
-	Vector2 get_travel() const;
-	void revert_motion();
-
-	Vector2 get_collision_pos() const;
-	Vector2 get_collision_normal() const;
-	Vector2 get_collider_velocity() const;
-	ObjectID get_collider() const;
-	int get_collider_shape() const;
-	Variant get_collider_metadata() const;
-
-	void set_collision_margin(float p_margin);
-	float get_collision_margin() const;
+	void set_safe_margin(float p_margin);
+	float get_safe_margin() const;
 
 	Vector2 move_and_slide(const Vector2 &p_linear_velocity, const Vector2 &p_floor_direction = Vector2(0, 0), float p_slope_stop_min_velocity = 5, int p_max_bounces = 4, float p_floor_max_angle = Math::deg2rad((float)45));
-	bool is_move_and_slide_on_floor() const;
-	bool is_move_and_slide_on_wall() const;
-	bool is_move_and_slide_on_ceiling() const;
-	Array get_move_and_slide_colliders() const;
+	bool is_on_floor() const;
+	bool is_on_wall() const;
+	bool is_on_ceiling() const;
+	Vector2 get_floor_velocity() const;
+
+	int get_collision_count() const;
+	Vector2 get_collision_position(int p_collision) const;
+	Vector2 get_collision_normal(int p_collision) const;
+	Vector2 get_collision_travel(int p_collision) const;
+	Vector2 get_collision_remainder(int p_collision) const;
+	Object *get_collision_local_shape(int p_collision) const;
+	Object *get_collision_collider(int p_collision) const;
+	ObjectID get_collision_collider_id(int p_collision) const;
+	Object *get_collision_collider_shape(int p_collision) const;
+	int get_collision_collider_shape_index(int p_collision) const;
+	Vector2 get_collision_collider_velocity(int p_collision) const;
+	Variant get_collision_collider_metadata(int p_collision) const;
 
 	KinematicBody2D();
 	~KinematicBody2D();

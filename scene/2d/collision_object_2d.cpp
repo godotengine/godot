@@ -160,9 +160,9 @@ void CollisionObject2D::shape_owner_set_transform(uint32_t p_owner, const Transf
 	sd.xform = p_transform;
 	for (int i = 0; i < sd.shapes.size(); i++) {
 		if (area) {
-			Physics2DServer::get_singleton()->area_set_shape_transform(rid, i, p_transform);
+			Physics2DServer::get_singleton()->area_set_shape_transform(rid, sd.shapes[i].index, p_transform);
 		} else {
-			Physics2DServer::get_singleton()->body_set_shape_transform(rid, i, p_transform);
+			Physics2DServer::get_singleton()->body_set_shape_transform(rid, sd.shapes[i].index, p_transform);
 		}
 	}
 }

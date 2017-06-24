@@ -474,6 +474,7 @@ public:
 		Vector2 collision_point;
 		Vector2 collision_normal;
 		Vector2 collider_velocity;
+		int collision_local_shape;
 		ObjectID collider_id;
 		RID collider;
 		int collider_shape;
