@@ -36,9 +36,9 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-class WorldEnvironment : public Spatial {
+class WorldEnvironment : public Node {
 
-	GDCLASS(WorldEnvironment, Spatial);
+	GDCLASS(WorldEnvironment, Node);
 
 	Ref<Environment> environment;
 

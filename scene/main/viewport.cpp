@@ -49,6 +49,7 @@
 #include "scene/scene_string_names.h"
 
 #include "global_config.h"
+#include "scene/3d/scenario_fx.h"
 
 void ViewportTexture::setup_local_to_scene() {
 
@@ -1017,10 +1018,9 @@ void Viewport::_propagate_enter_world(Node *p_node) {
 		if (!p_node->is_inside_tree()) //may not have entered scene yet
 			return;
 
-		Spatial *s = p_node->cast_to<Spatial>();
-		if (s) {
+		if (p_node->cast_to<Spatial>() || p_node->cast_to<WorldEnvironment>()) {
 
-			s->notification(Spatial::NOTIFICATION_ENTER_WORLD);
+			p_node->notification(Spatial::NOTIFICATION_ENTER_WORLD);
 		} else {
 			Viewport *v = p_node->cast_to<Viewport>();
 			if (v) {
@@ -1055,10 +1055,9 @@ void Viewport::_propagate_exit_world(Node *p_node) {
 		if (!p_node->is_inside_tree()) //may have exited scene already
 			return;
 
-		Spatial *s = p_node->cast_to<Spatial>();
-		if (s) {
+		if (p_node->cast_to<Spatial>() || p_node->cast_to<WorldEnvironment>()) {
 
-			s->notification(Spatial::NOTIFICATION_EXIT_WORLD, true);
+			p_node->notification(Spatial::NOTIFICATION_EXIT_WORLD);
 		} else {
 			Viewport *v = p_node->cast_to<Viewport>();
 			if (v) {

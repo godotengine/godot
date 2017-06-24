@@ -977,6 +977,27 @@ void RasterizerSceneGLES3::environment_set_fog_height(RID p_env, bool p_enable, 
 	env->fog_height_curve = p_height_curve;
 }
 
+bool RasterizerSceneGLES3::is_environment(RID p_env) {
+
+	return environment_owner.owns(p_env);
+}
+
+VS::EnvironmentBG RasterizerSceneGLES3::environment_get_background(RID p_env) {
+
+	const Environment *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND_V(!env, VS::ENV_BG_MAX);
+
+	return env->bg_mode;
+}
+
+int RasterizerSceneGLES3::environment_get_canvas_max_layer(RID p_env) {
+
+	const Environment *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND_V(!env, -1);
+
+	return env->canvas_max_layer;
+}
+
 RID RasterizerSceneGLES3::light_instance_create(RID p_light) {
 
 	LightInstance *light_instance = memnew(LightInstance);
@@ -3561,7 +3582,7 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 		glUniform2iv(state.exposure_shader.get_uniform(ExposureShaderGLES3::SOURCE_RENDER_SIZE), 1, ss);
 		glUniform2iv(state.exposure_shader.get_uniform(ExposureShaderGLES3::TARGET_SIZE), 1, ds);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->buffers.diffuse);
+		glBindTexture(GL_TEXTURE_2D, composite_from);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, exposure_shrink[0].fbo);
 		glViewport(0, 0, exposure_shrink_size, exposure_shrink_size);
@@ -3957,6 +3978,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 		use_mrt = use_mrt && !storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT];
 		use_mrt = use_mrt && !storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_NO_3D_EFFECTS];
 		use_mrt = use_mrt && state.debug_draw != VS::VIEWPORT_DEBUG_DRAW_OVERDRAW;
+		use_mrt = use_mrt && env && (env->bg_mode != VS::ENV_BG_KEEP && env->bg_mode != VS::ENV_BG_CANVAS);
 
 		glViewport(0, 0, storage->frame.current_rt->width, storage->frame.current_rt->height);
 
@@ -4020,6 +4042,10 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 			storage->frame.clear_request = false;
 		}
 
+	} else if (env->bg_mode == VS::ENV_BG_CANVAS) {
+
+		clear_color = env->bg_color.to_linear();
+		storage->frame.clear_request = false;
 	} else if (env->bg_mode == VS::ENV_BG_COLOR) {
 
 		clear_color = env->bg_color.to_linear();
@@ -4037,7 +4063,39 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 		storage->frame.clear_request = false;
 	}
 
-	glClearBufferfv(GL_COLOR, 0, clear_color.components); // specular
+	if (!env || env->bg_mode != VS::ENV_BG_KEEP) {
+		glClearBufferfv(GL_COLOR, 0, clear_color.components); // specular
+	}
+
+	if (env && env->bg_mode == VS::ENV_BG_CANVAS) {
+		//copy canvas to 3d buffer and convert it to linear
+
+		glDisable(GL_BLEND);
+		glDepthMask(GL_FALSE);
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_CULL_FACE);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->color);
+
+		storage->shaders.copy.set_conditional(CopyShaderGLES3::DISABLE_ALPHA, true);
+
+		storage->shaders.copy.set_conditional(CopyShaderGLES3::SRGB_TO_LINEAR, true);
+
+		storage->shaders.copy.bind();
+
+		_copy_screen();
+
+		//turn off everything used
+		storage->shaders.copy.set_conditional(CopyShaderGLES3::SRGB_TO_LINEAR, false);
+		storage->shaders.copy.set_conditional(CopyShaderGLES3::DISABLE_ALPHA, false);
+
+		//restore
+		glEnable(GL_BLEND);
+		glDepthMask(GL_TRUE);
+		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_CULL_FACE);
+	}
 
 	state.texscreen_copied = false;
 

@@ -2162,6 +2162,18 @@ void VisualServerScene::_render_scene(const Transform p_cam_transform, const Cam
 	VSG::scene_render->render_scene(p_cam_transform, p_cam_projection, p_cam_orthogonal, (RasterizerScene::InstanceBase **)instance_cull_result, cull_count, light_instance_cull_result, light_cull_count + directional_light_count, reflection_probe_instance_cull_result, reflection_probe_cull_count, environment, p_shadow_atlas, scenario->reflection_atlas, p_reflection_probe, p_reflection_probe_pass);
 }
 
+void VisualServerScene::render_empty_scene(RID p_scenario, RID p_shadow_atlas) {
+
+	Scenario *scenario = scenario_owner.getornull(p_scenario);
+
+	RID environment;
+	if (scenario->environment.is_valid())
+		environment = scenario->environment;
+	else
+		environment = scenario->fallback_environment;
+	VSG::scene_render->render_scene(Transform(), CameraMatrix(), true, NULL, 0, NULL, 0, NULL, 0, environment, p_shadow_atlas, scenario->reflection_atlas, RID(), 0);
+}
+
 bool VisualServerScene::_render_reflection_probe_step(Instance *p_instance, int p_step) {
 
 	InstanceReflectionProbeData *reflection_probe = static_cast<InstanceReflectionProbeData *>(p_instance->base_data);

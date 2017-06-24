@@ -35,23 +35,24 @@
 
 void VisualServerViewport::_draw_viewport(Viewport *p_viewport) {
 
-/* Camera should always be BEFORE any other 3D */
-#if 0
-	bool scenario_draw_canvas_bg=false;
-	int scenario_canvas_max_layer=0;
+	/* Camera should always be BEFORE any other 3D */
 
-	if (!p_viewport->hide_canvas && !p_viewport->disable_environment && scenario_owner.owns(p_viewport->scenario)) {
+	bool scenario_draw_canvas_bg = false; //draw canvas, or some layer of it, as BG for 3D instead of in front
+	int scenario_canvas_max_layer = 0;
 
-		Scenario *scenario=scenario_owner.get(p_viewport->scenario);
-		if (scenario->environment.is_valid()) {
-			if (rasterizer->is_environment(scenario->environment)) {
-				scenario_draw_canvas_bg=rasterizer->environment_get_background(scenario->environment)==VS::ENV_BG_CANVAS;
-				scenario_canvas_max_layer=rasterizer->environment_get_background_param(scenario->environment,VS::ENV_BG_PARAM_CANVAS_MAX_LAYER);
-			}
+	if (!p_viewport->hide_canvas && !p_viewport->disable_environment && VSG::scene->scenario_owner.owns(p_viewport->scenario)) {
+
+		VisualServerScene::Scenario *scenario = VSG::scene->scenario_owner.get(p_viewport->scenario);
+		if (VSG::scene_render->is_environment(scenario->environment)) {
+			scenario_draw_canvas_bg = VSG::scene_render->environment_get_background(scenario->environment) == VS::ENV_BG_CANVAS;
+
+			scenario_canvas_max_layer = VSG::scene_render->environment_get_canvas_max_layer(scenario->environment);
 		}
 	}
 
-	bool can_draw_3d=!p_viewport->hide_scenario && camera_owner.owns(p_viewport->camera) && scenario_owner.owns(p_viewport->scenario);
+	bool can_draw_3d = !p_viewport->disable_3d && !p_viewport->disable_3d_by_usage && VSG::scene->camera_owner.owns(p_viewport->camera);
+#if 0
+
 
 
 	if (scenario_draw_canvas_bg) {
@@ -88,7 +89,7 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport) {
 		}
 	}
 
-	if (!p_viewport->disable_3d && !p_viewport->disable_3d_by_usage && p_viewport->camera.is_valid()) {
+	if (!scenario_draw_canvas_bg && can_draw_3d) {
 
 		VSG::scene->render_camera(p_viewport->camera, p_viewport->scenario, p_viewport->size, p_viewport->shadow_atlas);
 	}
@@ -199,14 +200,15 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport) {
 
 		VSG::rasterizer->restore_render_target();
 
-#if 0
-		if (scenario_draw_canvas_bg && canvas_map.front() && canvas_map.front()->key().layer>scenario_canvas_max_layer) {
+		if (scenario_draw_canvas_bg && canvas_map.front() && canvas_map.front()->key().layer > scenario_canvas_max_layer) {
 
-			_draw_viewport_camera(p_viewport,!can_draw_3d);
-			scenario_draw_canvas_bg=false;
-
+			if (can_draw_3d) {
+				VSG::scene->render_camera(p_viewport->camera, p_viewport->scenario, p_viewport->size, p_viewport->shadow_atlas);
+			} else {
+				VSG::scene->render_empty_scene(p_viewport->scenario, p_viewport->shadow_atlas);
+			}
+			scenario_draw_canvas_bg = false;
 		}
-#endif
 
 		for (Map<Viewport::CanvasKey, Viewport::CanvasData *>::Element *E = canvas_map.front(); E; E = E->next()) {
 
@@ -229,19 +231,29 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport) {
 
 			VSG::canvas->render_canvas(canvas, xform, canvas_lights, lights_with_mask, clip_rect);
 			i++;
-#if 0
-			if (scenario_draw_canvas_bg && E->key().layer>=scenario_canvas_max_layer) {
-				_draw_viewport_camera(p_viewport,!can_draw_3d);
-				scenario_draw_canvas_bg=false;
+
+			if (scenario_draw_canvas_bg && E->key().layer >= scenario_canvas_max_layer) {
+
+				if (can_draw_3d) {
+					VSG::scene->render_camera(p_viewport->camera, p_viewport->scenario, p_viewport->size, p_viewport->shadow_atlas);
+				} else {
+					VSG::scene->render_empty_scene(p_viewport->scenario, p_viewport->shadow_atlas);
+				}
+
+				scenario_draw_canvas_bg = false;
 			}
-#endif
 		}
-#if 0
+
 		if (scenario_draw_canvas_bg) {
-			_draw_viewport_camera(p_viewport,!can_draw_3d);
-			scenario_draw_canvas_bg=false;
+
+			if (can_draw_3d) {
+				VSG::scene->render_camera(p_viewport->camera, p_viewport->scenario, p_viewport->size, p_viewport->shadow_atlas);
+			} else {
+				VSG::scene->render_empty_scene(p_viewport->scenario, p_viewport->shadow_atlas);
+			}
+
+			scenario_draw_canvas_bg = false;
 		}
-#endif
 
 		//VSG::canvas_render->canvas_debug_viewport_shadows(lights_with_shadow);
 	}
