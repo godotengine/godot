@@ -35,9 +35,9 @@ using namespace Windows::Foundation;
 void JoystickWinrt::register_events() {
 
 	Gamepad::GamepadAdded +=
-		ref new EventHandler<Gamepad^>(this, &JoystickWinrt::OnGamepadAdded);
+			ref new EventHandler<Gamepad ^>(this, &JoystickWinrt::OnGamepadAdded);
 	Gamepad::GamepadRemoved +=
-		ref new EventHandler<Gamepad^>(this, &JoystickWinrt::OnGamepadRemoved);
+			ref new EventHandler<Gamepad ^>(this, &JoystickWinrt::OnGamepadRemoved);
 }
 
 uint32_t JoystickWinrt::process_controllers(uint32_t p_last_id) {
@@ -48,26 +48,26 @@ uint32_t JoystickWinrt::process_controllers(uint32_t p_last_id) {
 
 		switch (controllers[i].type) {
 
-		case ControllerType::GAMEPAD_CONTROLLER: {
+			case ControllerType::GAMEPAD_CONTROLLER: {
 
-			GamepadReading reading = ((Gamepad^)controllers[i].controller_reference)->GetCurrentReading();
+				GamepadReading reading = ((Gamepad ^) controllers[i].controller_reference)->GetCurrentReading();
 
-			int button_mask = (int)GamepadButtons::Menu;
-			for (int j = 0; j < 14; j++) {
+				int button_mask = (int)GamepadButtons::Menu;
+				for (int j = 0; j < 14; j++) {
 
-				p_last_id = input->joy_button(p_last_id, controllers[i].id, j,(int)reading.Buttons & button_mask);
-				button_mask *= 2;
+					p_last_id = input->joy_button(p_last_id, controllers[i].id, j, (int)reading.Buttons & button_mask);
+					button_mask *= 2;
+				}
+
+				p_last_id = input->joy_axis(p_last_id, controllers[i].id, JOY_AXIS_0, axis_correct(reading.LeftThumbstickX));
+				p_last_id = input->joy_axis(p_last_id, controllers[i].id, JOY_AXIS_1, axis_correct(reading.LeftThumbstickY, true));
+				p_last_id = input->joy_axis(p_last_id, controllers[i].id, JOY_AXIS_2, axis_correct(reading.RightThumbstickX));
+				p_last_id = input->joy_axis(p_last_id, controllers[i].id, JOY_AXIS_3, axis_correct(reading.RightThumbstickY, true));
+				p_last_id = input->joy_axis(p_last_id, controllers[i].id, JOY_AXIS_4, axis_correct(reading.LeftTrigger, false, true));
+				p_last_id = input->joy_axis(p_last_id, controllers[i].id, JOY_AXIS_5, axis_correct(reading.RightTrigger, false, true));
+
+				break;
 			}
-
-			p_last_id = input->joy_axis(p_last_id, controllers[i].id, JOY_AXIS_0, axis_correct(reading.LeftThumbstickX));
-			p_last_id = input->joy_axis(p_last_id, controllers[i].id, JOY_AXIS_1, axis_correct(reading.LeftThumbstickY, true));
-			p_last_id = input->joy_axis(p_last_id, controllers[i].id, JOY_AXIS_2, axis_correct(reading.RightThumbstickX));
-			p_last_id = input->joy_axis(p_last_id, controllers[i].id, JOY_AXIS_3, axis_correct(reading.RightThumbstickY, true));
-			p_last_id = input->joy_axis(p_last_id, controllers[i].id, JOY_AXIS_4, axis_correct(reading.LeftTrigger, false, true));
-			p_last_id = input->joy_axis(p_last_id, controllers[i].id, JOY_AXIS_5, axis_correct(reading.RightTrigger, false, true));
-
-			break;
-		}
 		}
 	}
 
@@ -80,7 +80,7 @@ JoystickWinrt::JoystickWinrt() {
 		controllers[i].id = i;
 }
 
-JoystickWinrt::JoystickWinrt(InputDefault * p_input) {
+JoystickWinrt::JoystickWinrt(InputDefault *p_input) {
 
 	input = p_input;
 
@@ -103,9 +103,10 @@ void JoystickWinrt::OnGamepadAdded(Platform::Object ^ sender, Windows::Gaming::I
 
 	controllers[idx].connected = true;
 	controllers[idx].controller_reference = value;
+	controllers[idx].id = idx;
 	controllers[idx].type = ControllerType::GAMEPAD_CONTROLLER;
 
-	input->joy_connection_changed(idx, true, "Xbox Controller", "__WINRT_GAMEPAD__");
+	input->joy_connection_changed(controllers[idx].id, true, "Xbox Controller", "__WINRT_GAMEPAD__");
 }
 
 void JoystickWinrt::OnGamepadRemoved(Platform::Object ^ sender, Windows::Gaming::Input::Gamepad ^ value) {
@@ -122,15 +123,8 @@ void JoystickWinrt::OnGamepadRemoved(Platform::Object ^ sender, Windows::Gaming:
 
 	ERR_FAIL_COND(idx == -1);
 
-	for (int i = idx + 1; i < MAX_CONTROLLERS - 1; i++) {
-
-		if (!controllers[i].connected) {
-			break;
-		}
-
-		controllers[i - 1] = controllers[i];
-	}
-	controllers[MAX_CONTROLLERS - 1] = ControllerDevice();
+	controllers[idx].connected = false;
+	controllers[idx].controller_reference = nullptr;
 
 	input->joy_connection_changed(idx, false, "Xbox Controller");
 }
