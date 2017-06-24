@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Bzip2-compressed stream support.                                     */
 /*                                                                         */
-/*  Copyright 2010-2016 by                                                 */
+/*  Copyright 2010-2017 by                                                 */
 /*  Joel Klinghed.                                                         */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */

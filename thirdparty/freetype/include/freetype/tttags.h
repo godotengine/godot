@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Tags for TrueType and OpenType tables (specification only).          */
 /*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
+/*  Copyright 1996-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -43,6 +43,7 @@ FT_BEGIN_HEADER
 #define TTAG_CBDT  FT_MAKE_TAG( 'C', 'B', 'D', 'T' )
 #define TTAG_CBLC  FT_MAKE_TAG( 'C', 'B', 'L', 'C' )
 #define TTAG_CFF   FT_MAKE_TAG( 'C', 'F', 'F', ' ' )
+#define TTAG_CFF2  FT_MAKE_TAG( 'C', 'F', 'F', '2' )
 #define TTAG_CID   FT_MAKE_TAG( 'C', 'I', 'D', ' ' )
 #define TTAG_cmap  FT_MAKE_TAG( 'c', 'm', 'a', 'p' )
 #define TTAG_cvar  FT_MAKE_TAG( 'c', 'v', 'a', 'r' )
@@ -61,6 +62,7 @@ FT_BEGIN_HEADER
 #define TTAG_GPOS  FT_MAKE_TAG( 'G', 'P', 'O', 'S' )
 #define TTAG_GSUB  FT_MAKE_TAG( 'G', 'S', 'U', 'B' )
 #define TTAG_gvar  FT_MAKE_TAG( 'g', 'v', 'a', 'r' )
+#define TTAG_HVAR  FT_MAKE_TAG( 'H', 'V', 'A', 'R' )
 #define TTAG_hdmx  FT_MAKE_TAG( 'h', 'd', 'm', 'x' )
 #define TTAG_head  FT_MAKE_TAG( 'h', 'e', 'a', 'd' )
 #define TTAG_hhea  FT_MAKE_TAG( 'h', 'h', 'e', 'a' )
@@ -79,6 +81,7 @@ FT_BEGIN_HEADER
 #define TTAG_MMSD  FT_MAKE_TAG( 'M', 'M', 'S', 'D' )
 #define TTAG_mort  FT_MAKE_TAG( 'm', 'o', 'r', 't' )
 #define TTAG_morx  FT_MAKE_TAG( 'm', 'o', 'r', 'x' )
+#define TTAG_MVAR  FT_MAKE_TAG( 'M', 'V', 'A', 'R' )
 #define TTAG_name  FT_MAKE_TAG( 'n', 'a', 'm', 'e' )
 #define TTAG_opbd  FT_MAKE_TAG( 'o', 'p', 'b', 'd' )
 #define TTAG_OS2   FT_MAKE_TAG( 'O', 'S', '/', '2' )
@@ -100,6 +103,7 @@ FT_BEGIN_HEADER
 #define TTAG_VDMX  FT_MAKE_TAG( 'V', 'D', 'M', 'X' )
 #define TTAG_vhea  FT_MAKE_TAG( 'v', 'h', 'e', 'a' )
 #define TTAG_vmtx  FT_MAKE_TAG( 'v', 'm', 't', 'x' )
+#define TTAG_VVAR  FT_MAKE_TAG( 'V', 'V', 'A', 'R' )
 #define TTAG_wOFF  FT_MAKE_TAG( 'w', 'O', 'F', 'F' )
 
 

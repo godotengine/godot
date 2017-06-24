@@ -66,7 +66,7 @@ FT_BEGIN_HEADER
    * model our error mechanism on a Java-like exception mechanism.
    * When we assign an error code we are thus `throwing' an error.
    *
-   * The perservation of an error code is done by coding convention.
+   * The preservation of an error code is done by coding convention.
    * Upon a function call if the error code is anything other than
    * `FT_Err_Ok', which is guaranteed to be zero, we
    * will return without altering that error.  This will allow the

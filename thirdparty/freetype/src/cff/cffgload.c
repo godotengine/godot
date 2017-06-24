@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    OpenType Glyph Loader (body).                                        */
 /*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
+/*  Copyright 1996-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -278,11 +278,15 @@
 
       if ( hinting && size )
       {
-        CFF_Internal  internal = (CFF_Internal)size->root.internal;
+        FT_Size       ftsize   = FT_SIZE( size );
+        CFF_Internal  internal = (CFF_Internal)ftsize->internal->module_data;
 
 
-        builder->hints_globals = (void *)internal->topfont;
-        builder->hints_funcs   = glyph->root.internal->glyph_hints;
+        if ( internal )
+        {
+          builder->hints_globals = (void *)internal->topfont;
+          builder->hints_funcs   = glyph->root.internal->glyph_hints;
+        }
       }
     }
 
@@ -391,7 +395,7 @@
 
 
     /* clear everything */
-    FT_MEM_ZERO( decoder, sizeof ( *decoder ) );
+    FT_ZERO( decoder );
 
     /* initialize builder */
     cff_builder_init( &decoder->builder, face, size, slot, hinting );
@@ -440,7 +444,8 @@
 
       if ( builder->hints_funcs && size )
       {
-        CFF_Internal  internal = (CFF_Internal)size->root.internal;
+        FT_Size       ftsize   = FT_SIZE( size );
+        CFF_Internal  internal = (CFF_Internal)ftsize->internal->module_data;
 
 
         /* for CFFs without subfonts, this value has already been set */
@@ -457,7 +462,7 @@
     decoder->glyph_width   = sub->private_dict.default_width;
     decoder->nominal_width = sub->private_dict.nominal_width;
 
-    decoder->current_subfont = sub;     /* for Adobe's CFF handler */
+    decoder->current_subfont = sub;
 
   Exit:
     return error;
@@ -913,7 +918,6 @@
     FT_Byte*           limit;
     CFF_Builder*       builder = &decoder->builder;
     FT_Pos             x, y;
-    FT_Fixed           seed;
     FT_Fixed*          stack;
     FT_Int             charstring_type =
                          decoder->cff->top_font.font_dict.charstring_type;
@@ -928,15 +932,6 @@
     /* set default width */
     decoder->num_hints  = 0;
     decoder->read_width = 1;
-
-    /* compute random seed from stack address of parameter */
-    seed = (FT_Fixed)( ( (FT_Offset)(char*)&seed            ^
-                         (FT_Offset)(char*)&decoder         ^
-                         (FT_Offset)(char*)&charstring_base ) &
-                         FT_ULONG_MAX                         );
-    seed = ( seed ^ ( seed >> 10 ) ^ ( seed >> 20 ) ) & 0xFFFFL;
-    if ( seed == 0 )
-      seed = 0x7384;
 
     /* initialize the decoder */
     decoder->top  = decoder->stack;
@@ -1026,7 +1021,7 @@
         if ( !( val & 0xFFFFL ) )
           FT_TRACE4(( " %hd", (FT_Short)( (FT_UInt32)val >> 16 ) ));
         else
-          FT_TRACE4(( " %.2f", val / 65536.0 ));
+          FT_TRACE4(( " %.5f", val / 65536.0 ));
 #endif
 
       }
@@ -2104,22 +2099,16 @@
           break;
 
         case cff_op_random:
-          {
-            FT_Fixed  Rand;
+          FT_TRACE4(( " random\n" ));
 
+          /* only use the lower 16 bits of `random'  */
+          /* to generate a number in the range (0;1] */
+          args[0] = (FT_Fixed)
+                      ( ( decoder->current_subfont->random & 0xFFFF ) + 1 );
+          args++;
 
-            FT_TRACE4(( " rand\n" ));
-
-            Rand = seed;
-            if ( Rand >= 0x8000L )
-              Rand++;
-
-            args[0] = Rand;
-            seed    = FT_MulFix( seed, 0x10000L - seed );
-            if ( seed == 0 )
-              seed += 0x2873;
-            args++;
-          }
+          decoder->current_subfont->random =
+            cff_random( decoder->current_subfont->random );
           break;
 
         case cff_op_mul:
@@ -2445,7 +2434,7 @@
 
         case cff_op_and:
           {
-            FT_Fixed  cond = args[0] && args[1];
+            FT_Fixed  cond = ( args[0] && args[1] );
 
 
             FT_TRACE4(( " and\n" ));
@@ -2457,7 +2446,7 @@
 
         case cff_op_or:
           {
-            FT_Fixed  cond = args[0] || args[1];
+            FT_Fixed  cond = ( args[0] || args[1] );
 
 
             FT_TRACE4(( " or\n" ));
@@ -2481,7 +2470,7 @@
 
         case cff_op_eq:
           {
-            FT_Fixed  cond = args[0] == args[1];
+            FT_Fixed  cond = ( args[0] == args[1] );
 
 
             FT_TRACE4(( " eq\n" ));
@@ -2942,6 +2931,7 @@
       cff_decoder_init( &decoder, face, size, glyph, hinting,
                         FT_LOAD_TARGET_MODE( load_flags ) );
 
+      /* this is for pure CFFs */
       if ( load_flags & FT_LOAD_ADVANCE_ONLY )
         decoder.width_only = TRUE;
 

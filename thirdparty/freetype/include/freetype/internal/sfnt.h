@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    High-level `sfnt' driver interface (specification).                  */
 /*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
+/*  Copyright 1996-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -458,6 +458,37 @@ FT_BEGIN_HEADER
   /*************************************************************************/
   /*                                                                       */
   /* <FuncType>                                                            */
+  /*    TT_Get_Name_ID_Func                                                */
+  /*                                                                       */
+  /* <Description>                                                         */
+  /*    Search whether an ENGLISH version for a given name ID is in the    */
+  /*    `name' table.                                                      */
+  /*                                                                       */
+  /* <Input>                                                               */
+  /*    face     :: A handle to the source face object.                    */
+  /*                                                                       */
+  /*    nameid   :: The name id of the name record to return.              */
+  /*                                                                       */
+  /* <Out>                                                                 */
+  /*    win      :: If non-negative, an index into the `name' table with   */
+  /*                the corresponding (3,1) or (3,0) Windows entry.        */
+  /*                                                                       */
+  /*    apple    :: If non-negative, an index into the `name' table with   */
+  /*                the corresponding (1,0) Apple entry.                   */
+  /*                                                                       */
+  /* <Return>                                                              */
+  /*    1 if there is either a win or apple entry (or both), 0 otheriwse.  */
+  /*                                                                       */
+  typedef FT_Bool
+  (*TT_Get_Name_ID_Func)( TT_Face    face,
+                          FT_UShort  nameid,
+                          FT_Int    *win,
+                          FT_Int    *apple );
+
+
+  /*************************************************************************/
+  /*                                                                       */
+  /* <FuncType>                                                            */
   /*    TT_Load_Table_Func                                                 */
   /*                                                                       */
   /* <Description>                                                         */
@@ -588,6 +619,7 @@ FT_BEGIN_HEADER
     TT_Get_Metrics_Func          get_metrics;
 
     TT_Get_Name_Func             get_name;
+    TT_Get_Name_ID_Func          get_name_id;
 
   } SFNT_Interface;
 
@@ -628,7 +660,8 @@ FT_BEGIN_HEADER
           set_sbit_strike_,              \
           load_strike_metrics_,          \
           get_metrics_,                  \
-          get_name_ )                    \
+          get_name_,                     \
+          get_name_id_ )                 \
   static const SFNT_Interface  class_ =  \
   {                                      \
     goto_table_,                         \
@@ -661,6 +694,7 @@ FT_BEGIN_HEADER
     load_strike_metrics_,                \
     get_metrics_,                        \
     get_name_,                           \
+    get_name_id_                         \
   };
 
 #else /* FT_CONFIG_OPTION_PIC */
@@ -699,7 +733,8 @@ FT_BEGIN_HEADER
           set_sbit_strike_,                             \
           load_strike_metrics_,                         \
           get_metrics_,                                 \
-          get_name_ )                                   \
+          get_name_,                                    \
+          get_name_id_ )                                \
   void                                                  \
   FT_Init_Class_ ## class_( FT_Library       library,   \
                             SFNT_Interface*  clazz )    \
@@ -736,6 +771,7 @@ FT_BEGIN_HEADER
     clazz->load_strike_metrics = load_strike_metrics_;  \
     clazz->get_metrics         = get_metrics_;          \
     clazz->get_name            = get_name_;             \
+    clazz->get_name_id         = get_name_id_;          \
   }
 
 #endif /* FT_CONFIG_OPTION_PIC */

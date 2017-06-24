@@ -3,9 +3,9 @@
 /*  ftpatent.c                                                             */
 /*                                                                         */
 /*    FreeType API for checking patented TrueType bytecode instructions    */
-/*    (body).  Obsolete, retained for backwards compatibility.             */
+/*    (body).  Obsolete, retained for backward compatibility.              */
 /*                                                                         */
-/*  Copyright 2007-2016 by                                                 */
+/*  Copyright 2007-2017 by                                                 */
 /*  David Turner.                                                          */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */

@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    TrueType and OpenType embedded BDF properties (body).                */
 /*                                                                         */
-/*  Copyright 2005-2016 by                                                 */
+/*  Copyright 2005-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -48,7 +48,7 @@
       FT_Stream  stream = FT_FACE(face)->stream;
 
 
-      if ( bdf->table != NULL )
+      if ( bdf->table )
         FT_FRAME_RELEASE( bdf->table );
 
       bdf->table_end    = NULL;
@@ -165,7 +165,7 @@
 
     error = FT_ERR( Invalid_Argument );
 
-    if ( size == NULL || property_name == NULL )
+    if ( !size || !property_name )
       goto Exit;
 
     property_len = ft_strlen( property_name );
@@ -176,6 +176,7 @@
     {
       FT_UInt  _ppem  = FT_NEXT_USHORT( p );
       FT_UInt  _count = FT_NEXT_USHORT( p );
+
 
       if ( _ppem == size->metrics.y_ppem )
       {
@@ -192,6 +193,7 @@
     for ( ; count > 0; count-- )
     {
       FT_UInt  type = FT_PEEK_USHORT( p + 4 );
+
 
       if ( ( type & 0x10 ) != 0 )
       {
@@ -244,7 +246,12 @@
     return error;
   }
 
-#endif /* TT_CONFIG_OPTION_BDF */
+#else /* !TT_CONFIG_OPTION_BDF */
+
+  /* ANSI C doesn't like empty source files */
+  typedef int  _tt_bdf_dummy;
+
+#endif /* !TT_CONFIG_OPTION_BDF */
 
 
 /* END */

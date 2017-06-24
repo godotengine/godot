@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Some convenience conversions (specification).                        */
 /*                                                                         */
-/*  Copyright 2006-2016 by                                                 */
+/*  Copyright 2006-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */

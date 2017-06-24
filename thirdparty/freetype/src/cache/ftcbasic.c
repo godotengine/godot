@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    The FreeType basic cache interface (body).                           */
 /*                                                                         */
-/*  Copyright 2003-2016 by                                                 */
+/*  Copyright 2003-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -237,12 +237,14 @@
   {
     {
       sizeof ( FTC_BasicFamilyRec ),
-      ftc_basic_family_compare,
-      ftc_basic_family_init,
-      0,                        /* FTC_MruNode_ResetFunc */
-      0                         /* FTC_MruNode_DoneFunc  */
+
+      ftc_basic_family_compare, /* FTC_MruNode_CompareFunc  node_compare */
+      ftc_basic_family_init,    /* FTC_MruNode_InitFunc     node_init    */
+      NULL,                     /* FTC_MruNode_ResetFunc    node_reset   */
+      NULL                      /* FTC_MruNode_DoneFunc     node_done    */
     },
-    ftc_basic_family_load_glyph
+
+    ftc_basic_family_load_glyph /* FTC_IFamily_LoadGlyphFunc  family_load_glyph */
   };
 
 
@@ -250,16 +252,17 @@
   const FTC_GCacheClassRec  ftc_basic_image_cache_class =
   {
     {
-      ftc_inode_new,
-      ftc_inode_weight,
-      ftc_gnode_compare,
-      ftc_basic_gnode_compare_faceid,
-      ftc_inode_free,
+      ftc_inode_new,                  /* FTC_Node_NewFunc      node_new           */
+      ftc_inode_weight,               /* FTC_Node_WeightFunc   node_weight        */
+      ftc_gnode_compare,              /* FTC_Node_CompareFunc  node_compare       */
+      ftc_basic_gnode_compare_faceid, /* FTC_Node_CompareFunc  node_remove_faceid */
+      ftc_inode_free,                 /* FTC_Node_FreeFunc     node_free          */
 
       sizeof ( FTC_GCacheRec ),
-      ftc_gcache_init,
-      ftc_gcache_done
+      ftc_gcache_init,                /* FTC_Cache_InitFunc    cache_init         */
+      ftc_gcache_done                 /* FTC_Cache_DoneFunc    cache_done         */
     },
+
     (FTC_MruListClass)&ftc_basic_image_family_class
   };
 
@@ -419,11 +422,12 @@
   {
     {
       sizeof ( FTC_BasicFamilyRec ),
-      ftc_basic_family_compare,
-      ftc_basic_family_init,
-      0,                            /* FTC_MruNode_ResetFunc */
-      0                             /* FTC_MruNode_DoneFunc  */
+      ftc_basic_family_compare,     /* FTC_MruNode_CompareFunc  node_compare */
+      ftc_basic_family_init,        /* FTC_MruNode_InitFunc     node_init    */
+      NULL,                         /* FTC_MruNode_ResetFunc    node_reset   */
+      NULL                          /* FTC_MruNode_DoneFunc     node_done    */
     },
+
     ftc_basic_family_get_count,
     ftc_basic_family_load_bitmap
   };
@@ -433,16 +437,17 @@
   const FTC_GCacheClassRec  ftc_basic_sbit_cache_class =
   {
     {
-      ftc_snode_new,
-      ftc_snode_weight,
-      ftc_snode_compare,
-      ftc_basic_gnode_compare_faceid,
-      ftc_snode_free,
+      ftc_snode_new,                  /* FTC_Node_NewFunc      node_new           */
+      ftc_snode_weight,               /* FTC_Node_WeightFunc   node_weight        */
+      ftc_snode_compare,              /* FTC_Node_CompareFunc  node_compare       */
+      ftc_basic_gnode_compare_faceid, /* FTC_Node_CompareFunc  node_remove_faceid */
+      ftc_snode_free,                 /* FTC_Node_FreeFunc     node_free          */
 
       sizeof ( FTC_GCacheRec ),
-      ftc_gcache_init,
-      ftc_gcache_done
+      ftc_gcache_init,                /* FTC_Cache_InitFunc    cache_init         */
+      ftc_gcache_done                 /* FTC_Cache_DoneFunc    cache_done         */
     },
+
     (FTC_MruListClass)&ftc_basic_sbit_family_class
   };
 

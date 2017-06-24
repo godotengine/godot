@@ -5,7 +5,7 @@
 /*    Basic Type 1/Type 2 tables definitions and interface (specification  */
 /*    only).                                                               */
 /*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
+/*  Copyright 1996-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -291,7 +291,7 @@ FT_BEGIN_HEADER
 
   } PS_DesignMapRec, *PS_DesignMap;
 
-  /* backwards-compatible definition */
+  /* backward compatible definition */
   typedef PS_DesignMapRec  T1_DesignMap;
 
 
@@ -326,7 +326,7 @@ FT_BEGIN_HEADER
   } PS_BlendRec, *PS_Blend;
 
 
-  /* backwards-compatible definition */
+  /* backward compatible definition */
   typedef PS_BlendRec  T1_Blend;
 
 
