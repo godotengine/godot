@@ -140,6 +140,8 @@ void InputEvent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_action_type"), &InputEvent::is_action_type);
 
 	ClassDB::bind_method(D_METHOD("xformed_by:InputEvent", "xform", "local_ofs"), &InputEvent::xformed_by, DEFVAL(Vector2()));
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "device"), "set_device", "get_device");
 }
 
 InputEvent::InputEvent() {
