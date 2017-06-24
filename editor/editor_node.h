@@ -466,6 +466,8 @@ private:
 	void _vp_resized();
 
 	void _save_scene(String p_file, int idx = -1);
+	void _save_all_scenes();
+	bool _has_unsaved_scenes();
 	void _discard_changes(const String &p_str = String());
 
 	void _instance_request(const Vector<String> &p_files);

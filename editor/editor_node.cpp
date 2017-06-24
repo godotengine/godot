@@ -961,6 +961,23 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	}
 }
 
+void EditorNode::_save_all_scenes() {
+
+	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
+		Node *scene = editor_data.get_edited_scene_root(i);
+		if (scene && scene->get_filename() != "") {
+			// save in background if in the script editor
+			if (i != editor_data.get_edited_scene() || _get_current_main_editor() == EDITOR_SCRIPT) {
+				_save_scene(scene->get_filename(), i);
+			} else {
+				_save_scene_with_preview(scene->get_filename());
+			}
+		} // else: ignore new scenes
+	}
+
+	_save_default_environment();
+}
+
 void EditorNode::_import_action(const String &p_action) {
 #if 0
 	import_confirmation->hide();
@@ -1900,6 +1917,8 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 			if (!p_confirmed && unsaved_cache) {
 				tab_closing = editor_data.get_edited_scene();
+				save_confirmation->get_ok()->set_text(TTR("Save & Close"));
+				save_confirmation->set_text(TTR("Save changes to the scene before closing?"));
 				save_confirmation->popup_centered_minsize();
 				break;
 			}
@@ -1975,19 +1994,8 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 
 		case FILE_SAVE_ALL_SCENES: {
-			for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
-				Node *scene = editor_data.get_edited_scene_root(i);
-				if (scene && scene->get_filename() != "") {
-					// save in background if in the script editor
-					if (i != editor_data.get_edited_scene() || _get_current_main_editor() == EDITOR_SCRIPT) {
-						_save_scene(scene->get_filename(), i);
-					} else {
-						_save_scene_with_preview(scene->get_filename());
-					}
-				} // else: ignore new scenes
-			}
 
-			_save_default_environment();
+			_save_all_scenes();
 		} break;
 		case FILE_SAVE_BEFORE_RUN: {
 			if (!p_confirmed) {
@@ -2109,17 +2117,25 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case FILE_QUIT: {
 
 			if (!p_confirmed) {
+				if (_has_unsaved_scenes()) {
 
-				confirmation->get_ok()->set_text(TTR("Quit"));
-				//confirmation->get_cancel()->show();
-				confirmation->set_text(TTR("Exit the editor?"));
-				confirmation->popup_centered(Size2(180, 70) * EDSCALE);
-				break;
+					save_confirmation->get_ok()->set_text(TTR("Save & Quit"));
+					save_confirmation->set_text(TTR("Save changes to the scene before quitting?"));
+					save_confirmation->popup_centered_minsize();
+					break;
+				} else {
+
+					confirmation->get_ok()->set_text(TTR("Quit"));
+					//confirmation->get_cancel()->show();
+					confirmation->set_text(TTR("Exit the editor?"));
+					confirmation->popup_centered(Size2(180, 70) * EDSCALE);
+					break;
+				}
 			}
 
-			_menu_option_confirm(RUN_STOP, true);
-			exiting = true;
-			get_tree()->quit();
+			if (_has_unsaved_scenes())
+				_save_all_scenes();
+			_discard_changes();
 
 		} break;
 		case FILE_EXTERNAL_OPEN_SCENE: {
@@ -2453,25 +2469,24 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case RUN_PROJECT_MANAGER: {
 
 			if (!p_confirmed) {
-				confirmation->get_ok()->set_text(TTR("Yes"));
-				confirmation->set_text(TTR("Open Project Manager? \n(Unsaved changes will be lost)"));
-				confirmation->popup_centered_minsize();
-				break;
+				if (_has_unsaved_scenes()) {
+
+					save_confirmation->get_ok()->set_text(TTR("Save & Quit"));
+					save_confirmation->set_text(TTR("Save changes before opening Project Manager?"));
+					save_confirmation->popup_centered_minsize();
+					break;
+				} else {
+
+					confirmation->get_ok()->set_text(TTR("Yes"));
+					confirmation->set_text(TTR("Open Project Manager?"));
+					confirmation->popup_centered_minsize();
+					break;
+				}
 			}
 
-			_menu_option_confirm(RUN_STOP, true);
-			exiting = true;
-			get_tree()->quit();
-			String exec = OS::get_singleton()->get_executable_path();
-
-			List<String> args;
-			args.push_back("-path");
-			args.push_back(exec.get_base_dir());
-			args.push_back("-pm");
-
-			OS::ProcessID pid = 0;
-			Error err = OS::get_singleton()->execute(exec, args, false, &pid);
-			ERR_FAIL_COND(err);
+			if (_has_unsaved_scenes())
+				_save_all_scenes();
+			_discard_changes();
 		} break;
 		case RUN_FILE_SERVER: {
 
@@ -2697,6 +2712,19 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 	}
 }
 
+bool EditorNode::_has_unsaved_scenes() {
+
+	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
+
+		int current = editor_data.get_edited_scene();
+		bool unsaved = (i == current) ? saved_version != editor_data.get_undo_redo().get_version() : editor_data.get_scene_version(i) != 0;
+		if (unsaved)
+			return true;
+	}
+
+	return false;
+}
+
 void EditorNode::_discard_changes(const String &p_str) {
 
 	save_confirmation->hide();
@@ -2709,6 +2737,28 @@ void EditorNode::_discard_changes(const String &p_str) {
 			_remove_scene(tab_closing);
 			_update_scene_tabs();
 			current_option = -1;
+		} break;
+		case FILE_QUIT: {
+
+			_menu_option_confirm(RUN_STOP, true);
+			exiting = true;
+			get_tree()->quit();
+		} break;
+		case RUN_PROJECT_MANAGER: {
+
+			_menu_option_confirm(RUN_STOP, true);
+			exiting = true;
+			get_tree()->quit();
+			String exec = OS::get_singleton()->get_executable_path();
+
+			List<String> args;
+			args.push_back("-path");
+			args.push_back(exec.get_base_dir());
+			args.push_back("-pm");
+
+			OS::ProcessID pid = 0;
+			Error err = OS::get_singleton()->execute(exec, args, false, &pid);
+			ERR_FAIL_COND(err);
 		} break;
 	}
 }
@@ -4289,6 +4339,8 @@ void EditorNode::_scene_tab_closed(int p_tab) {
 						   saved_version != editor_data.get_undo_redo().get_version() :
 						   editor_data.get_scene_version(p_tab) != 0;
 	if (unsaved) {
+		save_confirmation->get_ok()->set_text(TTR("Save & Close"));
+		save_confirmation->set_text(TTR("Save changes to the scene before closing?"));
 		save_confirmation->popup_centered_minsize();
 	} else {
 		_discard_changes();
@@ -5909,9 +5961,7 @@ EditorNode::EditorNode() {
 	confirmation->connect("confirmed", this, "_menu_confirm_current");
 
 	save_confirmation = memnew(ConfirmationDialog);
-	save_confirmation->get_ok()->set_text(TTR("Save & Close"));
 	save_confirmation->add_button(TTR("Don't Save"), OS::get_singleton()->get_swap_ok_cancel(), "discard");
-	save_confirmation->set_text(TTR("Save changes to the scene before closing?"));
 	gui_base->add_child(save_confirmation);
 	save_confirmation->connect("confirmed", this, "_menu_confirm_current");
 	save_confirmation->connect("custom_action", this, "_discard_changes");
