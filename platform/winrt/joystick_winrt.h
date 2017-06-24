@@ -39,10 +39,9 @@ internal:
 	uint32_t process_controllers(uint32_t p_last_id);
 
 	JoystickWinrt();
-	JoystickWinrt(InputDefault* p_input);
+	JoystickWinrt(InputDefault *p_input);
 
 private:
-
 	enum {
 		MAX_CONTROLLERS = 4,
 	};
@@ -55,27 +54,35 @@ private:
 
 	struct ControllerDevice {
 
-		Windows::Gaming::Input::IGameController^ controller_reference;
+		Windows::Gaming::Input::IGameController ^ controller_reference;
 
 		int id;
 		bool connected;
 		ControllerType type;
+		float ff_timestamp;
+		float ff_end_timestamp;
+		bool vibrating;
 
 		ControllerDevice() {
 			id = -1;
 			connected = false;
 			type = ControllerType::GAMEPAD_CONTROLLER;
+			ff_timestamp = 0.0f;
+			ff_end_timestamp = 0.0f;
+			vibrating = false;
 		}
 	};
 
 	ControllerDevice controllers[MAX_CONTROLLERS];
 
-	InputDefault* input;
+	InputDefault *input;
 
-	void OnGamepadAdded(Platform::Object^ sender, Windows::Gaming::Input::Gamepad^ value);
-	void OnGamepadRemoved(Platform::Object^ sender, Windows::Gaming::Input::Gamepad^ value);
+	void OnGamepadAdded(Platform::Object ^ sender, Windows::Gaming::Input::Gamepad ^ value);
+	void OnGamepadRemoved(Platform::Object ^ sender, Windows::Gaming::Input::Gamepad ^ value);
 
 	InputDefault::JoyAxis axis_correct(double p_val, bool p_negate = false, bool p_trigger = false) const;
+	void joypad_vibration_start(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp);
+	void joypad_vibration_stop(int p_device, uint64_t p_timestamp);
 };
 
 #endif

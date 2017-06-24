@@ -28,6 +28,7 @@
 /*************************************************************************/
 
 #include "joystick_winrt.h"
+#include "core/os/os.h"
 
 using namespace Windows::Gaming::Input;
 using namespace Windows::Foundation;
@@ -44,27 +45,44 @@ uint32_t JoystickWinrt::process_controllers(uint32_t p_last_id) {
 
 	for (int i = 0; i < MAX_CONTROLLERS; i++) {
 
-		if (!controllers[i].connected) break;
+		ControllerDevice &joy = controllers[i];
 
-		switch (controllers[i].type) {
+		if (!joy.connected) break;
+
+		switch (joy.type) {
 
 			case ControllerType::GAMEPAD_CONTROLLER: {
 
-				GamepadReading reading = ((Gamepad ^) controllers[i].controller_reference)->GetCurrentReading();
+				GamepadReading reading = ((Gamepad ^) joy.controller_reference)->GetCurrentReading();
 
 				int button_mask = (int)GamepadButtons::Menu;
 				for (int j = 0; j < 14; j++) {
 
-					p_last_id = input->joy_button(p_last_id, controllers[i].id, j, (int)reading.Buttons & button_mask);
+					p_last_id = input->joy_button(p_last_id, joy.id, j, (int)reading.Buttons & button_mask);
 					button_mask *= 2;
 				}
 
-				p_last_id = input->joy_axis(p_last_id, controllers[i].id, JOY_AXIS_0, axis_correct(reading.LeftThumbstickX));
-				p_last_id = input->joy_axis(p_last_id, controllers[i].id, JOY_AXIS_1, axis_correct(reading.LeftThumbstickY, true));
-				p_last_id = input->joy_axis(p_last_id, controllers[i].id, JOY_AXIS_2, axis_correct(reading.RightThumbstickX));
-				p_last_id = input->joy_axis(p_last_id, controllers[i].id, JOY_AXIS_3, axis_correct(reading.RightThumbstickY, true));
-				p_last_id = input->joy_axis(p_last_id, controllers[i].id, JOY_AXIS_4, axis_correct(reading.LeftTrigger, false, true));
-				p_last_id = input->joy_axis(p_last_id, controllers[i].id, JOY_AXIS_5, axis_correct(reading.RightTrigger, false, true));
+				p_last_id = input->joy_axis(p_last_id, joy.id, JOY_AXIS_0, axis_correct(reading.LeftThumbstickX));
+				p_last_id = input->joy_axis(p_last_id, joy.id, JOY_AXIS_1, axis_correct(reading.LeftThumbstickY, true));
+				p_last_id = input->joy_axis(p_last_id, joy.id, JOY_AXIS_2, axis_correct(reading.RightThumbstickX));
+				p_last_id = input->joy_axis(p_last_id, joy.id, JOY_AXIS_3, axis_correct(reading.RightThumbstickY, true));
+				p_last_id = input->joy_axis(p_last_id, joy.id, JOY_AXIS_4, axis_correct(reading.LeftTrigger, false, true));
+				p_last_id = input->joy_axis(p_last_id, joy.id, JOY_AXIS_5, axis_correct(reading.RightTrigger, false, true));
+
+				uint64_t timestamp = input->get_joy_vibration_timestamp(joy.id);
+				if (timestamp > joy.ff_timestamp) {
+					Vector2 strength = input->get_joy_vibration_strength(joy.id);
+					float duration = input->get_joy_vibration_duration(joy.id);
+					if (strength.x == 0 && strength.y == 0) {
+						joypad_vibration_stop(i, timestamp);
+					} else {
+						joypad_vibration_start(i, strength.x, strength.y, duration, timestamp);
+					}
+				} else if (joy.vibrating && joy.ff_end_timestamp != 0) {
+					uint64_t current_time = OS::get_singleton()->get_ticks_usec();
+					if (current_time >= joy.ff_end_timestamp)
+						joypad_vibration_stop(i, current_time);
+				}
 
 				break;
 			}
@@ -123,8 +141,7 @@ void JoystickWinrt::OnGamepadRemoved(Platform::Object ^ sender, Windows::Gaming:
 
 	ERR_FAIL_COND(idx == -1);
 
-	controllers[idx].connected = false;
-	controllers[idx].controller_reference = nullptr;
+	controllers[idx] = ControllerDevice();
 
 	input->joy_connection_changed(idx, false, "Xbox Controller");
 }
@@ -137,4 +154,31 @@ InputDefault::JoyAxis JoystickWinrt::axis_correct(double p_val, bool p_negate, b
 	jx.value = (float)(p_negate ? -p_val : p_val);
 
 	return jx;
+}
+
+void JoystickWinrt::joypad_vibration_start(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp) {
+	ControllerDevice &joy = controllers[p_device];
+	if (joy.connected) {
+		GamepadVibration vibration;
+		vibration.LeftMotor = p_strong_magnitude;
+		vibration.RightMotor = p_weak_magnitude;
+		((Gamepad ^) joy.controller_reference)->Vibration = vibration;
+
+		joy.ff_timestamp = p_timestamp;
+		joy.ff_end_timestamp = p_duration == 0 ? 0 : p_timestamp + (uint64_t)(p_duration * 1000000.0);
+		joy.vibrating = true;
+	}
+}
+
+void JoystickWinrt::joypad_vibration_stop(int p_device, uint64_t p_timestamp) {
+	ControllerDevice &joy = controllers[p_device];
+	if (joy.connected) {
+		GamepadVibration vibration;
+		vibration.LeftMotor = 0.0;
+		vibration.RightMotor = 0.0;
+		((Gamepad ^) joy.controller_reference)->Vibration = vibration;
+
+		joy.ff_timestamp = p_timestamp;
+		joy.vibrating = false;
+	}
 }
