@@ -676,8 +676,6 @@ Body2DSW::Body2DSW()
 	area_linear_damp = 0;
 	contact_count = 0;
 	gravity_scale = 1.0;
-	using_one_way_cache = false;
-	one_way_collision_max_depth = 0.1;
 	first_integration = false;
 
 	still_time = 0;

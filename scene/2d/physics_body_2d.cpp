@@ -44,28 +44,6 @@ void PhysicsBody2D::_notification(int p_what) {
 	*/
 }
 
-void PhysicsBody2D::set_one_way_collision_direction(const Vector2 &p_dir) {
-
-	one_way_collision_direction = p_dir;
-	Physics2DServer::get_singleton()->body_set_one_way_collision_direction(get_rid(), p_dir);
-}
-
-Vector2 PhysicsBody2D::get_one_way_collision_direction() const {
-
-	return one_way_collision_direction;
-}
-
-void PhysicsBody2D::set_one_way_collision_max_depth(float p_depth) {
-
-	one_way_collision_max_depth = p_depth;
-	Physics2DServer::get_singleton()->body_set_one_way_collision_max_depth(get_rid(), p_depth);
-}
-
-float PhysicsBody2D::get_one_way_collision_max_depth() const {
-
-	return one_way_collision_max_depth;
-}
-
 void PhysicsBody2D::_set_layers(uint32_t p_mask) {
 
 	set_collision_layer(p_mask);
@@ -92,10 +70,6 @@ void PhysicsBody2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_set_layers", "mask"), &PhysicsBody2D::_set_layers);
 	ClassDB::bind_method(D_METHOD("_get_layers"), &PhysicsBody2D::_get_layers);
-	ClassDB::bind_method(D_METHOD("set_one_way_collision_direction", "dir"), &PhysicsBody2D::set_one_way_collision_direction);
-	ClassDB::bind_method(D_METHOD("get_one_way_collision_direction"), &PhysicsBody2D::get_one_way_collision_direction);
-	ClassDB::bind_method(D_METHOD("set_one_way_collision_max_depth", "depth"), &PhysicsBody2D::set_one_way_collision_max_depth);
-	ClassDB::bind_method(D_METHOD("get_one_way_collision_max_depth"), &PhysicsBody2D::get_one_way_collision_max_depth);
 	ClassDB::bind_method(D_METHOD("add_collision_exception_with", "body:PhysicsBody2D"), &PhysicsBody2D::add_collision_exception_with);
 	ClassDB::bind_method(D_METHOD("remove_collision_exception_with", "body:PhysicsBody2D"), &PhysicsBody2D::remove_collision_exception_with);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layers", PROPERTY_HINT_LAYERS_2D_PHYSICS, "", 0), "_set_layers", "_get_layers"); //for backwards compat
@@ -103,9 +77,6 @@ void PhysicsBody2D::_bind_methods() {
 	ADD_GROUP("Collision", "collision_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_collision_layer", "get_collision_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_collision_mask", "get_collision_mask");
-	ADD_GROUP("", "");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2, "one_way_collision/direction"), "set_one_way_collision_direction", "get_one_way_collision_direction");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "one_way_collision/max_depth"), "set_one_way_collision_max_depth", "get_one_way_collision_max_depth");
 }
 
 void PhysicsBody2D::set_collision_layer(uint32_t p_layer) {
@@ -164,7 +135,6 @@ PhysicsBody2D::PhysicsBody2D(Physics2DServer::BodyMode p_mode)
 
 	collision_layer = 1;
 	collision_mask = 1;
-	set_one_way_collision_max_depth(0);
 	set_pickable(false);
 }
 

@@ -35,37 +35,40 @@
 
 class CollisionObject2D : public Node2D {
 
-	GDCLASS(CollisionObject2D, Node2D);
+	GDCLASS(CollisionObject2D, Node2D)
 
 	bool area;
 	RID rid;
 	bool pickable;
 
 	struct ShapeData {
+
+		Object *owner;
 		Transform2D xform;
-		Ref<Shape2D> shape;
-		bool trigger;
+		struct Shape {
+			Ref<Shape2D> shape;
+			int index;
+		};
+
+		Vector<Shape> shapes;
+		bool disabled;
+		bool one_way_collision;
 
 		ShapeData() {
-			trigger = false;
+			disabled = false;
+			one_way_collision = false;
+			owner = NULL;
 		}
 	};
 
-	Vector<ShapeData> shapes;
+	int total_subshapes;
 
-	void _update_shapes();
-
-	friend class CollisionShape2D;
-	friend class CollisionPolygon2D;
-	void _update_shapes_from_children();
+	Map<uint32_t, ShapeData> shapes;
 
 protected:
 	CollisionObject2D(RID p_rid, bool p_area);
 
 	void _notification(int p_what);
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
 	static void _bind_methods();
 
 	void _update_pickable();
@@ -75,16 +78,29 @@ protected:
 	void _mouse_exit();
 
 public:
-	void add_shape(const Ref<Shape2D> &p_shape, const Transform2D &p_transform = Transform2D());
-	int get_shape_count() const;
-	void set_shape(int p_shape_idx, const Ref<Shape2D> &p_shape);
-	void set_shape_transform(int p_shape_idx, const Transform2D &p_transform);
-	Ref<Shape2D> get_shape(int p_shape_idx) const;
-	Transform2D get_shape_transform(int p_shape_idx) const;
-	void set_shape_as_trigger(int p_shape_idx, bool p_trigger);
-	bool is_shape_set_as_trigger(int p_shape_idx) const;
-	void remove_shape(int p_shape_idx);
-	void clear_shapes();
+	uint32_t create_shape_owner(Object *p_owner);
+	void remove_shape_owner(uint32_t owner);
+	void get_shape_owners(List<uint32_t> *r_owners);
+
+	void shape_owner_set_transform(uint32_t p_owner, const Transform2D &p_transform);
+	Transform2D shape_owner_get_transform(uint32_t p_owner) const;
+	Object *shape_owner_get_owner(uint32_t p_owner) const;
+
+	void shape_owner_set_disabled(uint32_t p_owner, bool p_disabled);
+	bool is_shape_owner_disabled(uint32_t p_owner) const;
+
+	void shape_owner_set_one_way_collision(uint32_t p_owner, bool p_enable);
+	bool is_shape_owner_one_way_collision_enabled(uint32_t p_owner) const;
+
+	void shape_owner_add_shape(uint32_t p_owner, const Ref<Shape2D> &p_shape);
+	int shape_owner_get_shape_count(uint32_t p_owner) const;
+	Ref<Shape> shape_owner_get_shape(uint32_t p_owner, int p_shape) const;
+	int shape_owner_get_shape_index(uint32_t p_owner, int p_shape) const;
+
+	void shape_owner_remove_shape(uint32_t p_owner, int p_shape);
+	void shape_owner_clear_shapes(uint32_t p_owner);
+
+	uint32_t shape_find_owner(int p_shape_index) const;
 
 	void set_pickable(bool p_enabled);
 	bool is_pickable() const;

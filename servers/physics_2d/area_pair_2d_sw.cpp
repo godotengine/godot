@@ -32,7 +32,13 @@
 
 bool AreaPair2DSW::setup(real_t p_step) {
 
-	bool result = area->test_collision_mask(body) && CollisionSolver2DSW::solve(body->get_shape(body_shape), body->get_transform() * body->get_shape_transform(body_shape), Vector2(), area->get_shape(area_shape), area->get_transform() * area->get_shape_transform(area_shape), Vector2(), NULL, this);
+	bool result = false;
+
+	if (area->is_shape_set_as_disabled(area_shape) || body->is_shape_set_as_disabled(body_shape)) {
+		result = false;
+	} else if (area->test_collision_mask(body) && CollisionSolver2DSW::solve(body->get_shape(body_shape), body->get_transform() * body->get_shape_transform(body_shape), Vector2(), area->get_shape(area_shape), area->get_transform() * area->get_shape_transform(area_shape), Vector2(), NULL, this)) {
+		result = true;
+	}
 
 	if (result != colliding) {
 
@@ -90,7 +96,12 @@ AreaPair2DSW::~AreaPair2DSW() {
 
 bool Area2Pair2DSW::setup(real_t p_step) {
 
-	bool result = area_a->test_collision_mask(area_b) && CollisionSolver2DSW::solve(area_a->get_shape(shape_a), area_a->get_transform() * area_a->get_shape_transform(shape_a), Vector2(), area_b->get_shape(shape_b), area_b->get_transform() * area_b->get_shape_transform(shape_b), Vector2(), NULL, this);
+	bool result = false;
+	if (area_a->is_shape_set_as_disabled(shape_a) || area_b->is_shape_set_as_disabled(shape_b)) {
+		result = false;
+	} else if (area_a->test_collision_mask(area_b) && CollisionSolver2DSW::solve(area_a->get_shape(shape_a), area_a->get_transform() * area_a->get_shape_transform(shape_a), Vector2(), area_b->get_shape(shape_b), area_b->get_transform() * area_b->get_shape_transform(shape_b), Vector2(), NULL, this)) {
+		result = true;
+	}
 
 	if (result != colliding) {
 

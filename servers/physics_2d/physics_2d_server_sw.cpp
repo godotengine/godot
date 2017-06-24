@@ -352,6 +352,15 @@ void Physics2DServerSW::area_set_shape_transform(RID p_area, int p_shape_idx, co
 	area->set_shape_transform(p_shape_idx, p_transform);
 }
 
+void Physics2DServerSW::area_set_shape_disabled(RID p_area, int p_shape, bool p_disabled) {
+
+	Area2DSW *area = area_owner.get(p_area);
+	ERR_FAIL_COND(!area);
+
+	ERR_FAIL_INDEX(p_shape, area->get_shape_count());
+	area->set_shape_as_disabled(p_shape, p_disabled);
+}
+
 int Physics2DServerSW::area_get_shape_count(RID p_area) const {
 
 	Area2DSW *area = area_owner.get(p_area);
@@ -640,24 +649,23 @@ void Physics2DServerSW::body_clear_shapes(RID p_body) {
 		body->remove_shape(0);
 }
 
-void Physics2DServerSW::body_set_shape_as_trigger(RID p_body, int p_shape_idx, bool p_enable) {
+void Physics2DServerSW::body_set_shape_disabled(RID p_body, int p_shape_idx, bool p_disabled) {
 
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
 	ERR_FAIL_INDEX(p_shape_idx, body->get_shape_count());
 
-	body->set_shape_as_trigger(p_shape_idx, p_enable);
+	body->set_shape_as_disabled(p_shape_idx, p_disabled);
 }
+void Physics2DServerSW::body_set_shape_as_one_way_collision(RID p_body, int p_shape_idx, bool p_enable) {
 
-bool Physics2DServerSW::body_is_shape_set_as_trigger(RID p_body, int p_shape_idx) const {
+	Body2DSW *body = body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
 
-	const Body2DSW *body = body_owner.get(p_body);
-	ERR_FAIL_COND_V(!body, false);
+	ERR_FAIL_INDEX(p_shape_idx, body->get_shape_count());
 
-	ERR_FAIL_INDEX_V(p_shape_idx, body->get_shape_count(), false);
-
-	return body->is_shape_set_as_trigger(p_shape_idx);
+	body->set_shape_as_one_way_collision(p_shape_idx, p_enable);
 }
 
 void Physics2DServerSW::body_set_continuous_collision_detection_mode(RID p_body, CCDMode p_mode) {
@@ -885,34 +893,6 @@ int Physics2DServerSW::body_get_max_contacts_reported(RID p_body) const {
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, -1);
 	return body->get_max_contacts_reported();
-}
-
-void Physics2DServerSW::body_set_one_way_collision_direction(RID p_body, const Vector2 &p_direction) {
-
-	Body2DSW *body = body_owner.get(p_body);
-	ERR_FAIL_COND(!body);
-	body->set_one_way_collision_direction(p_direction);
-}
-
-Vector2 Physics2DServerSW::body_get_one_way_collision_direction(RID p_body) const {
-
-	Body2DSW *body = body_owner.get(p_body);
-	ERR_FAIL_COND_V(!body, Vector2());
-	return body->get_one_way_collision_direction();
-}
-
-void Physics2DServerSW::body_set_one_way_collision_max_depth(RID p_body, real_t p_max_depth) {
-
-	Body2DSW *body = body_owner.get(p_body);
-	ERR_FAIL_COND(!body);
-	body->set_one_way_collision_max_depth(p_max_depth);
-}
-
-real_t Physics2DServerSW::body_get_one_way_collision_max_depth(RID p_body) const {
-
-	Body2DSW *body = body_owner.get(p_body);
-	ERR_FAIL_COND_V(!body, 0);
-	return body->get_one_way_collision_max_depth();
 }
 
 void Physics2DServerSW::body_set_force_integration_callback(RID p_body, Object *p_receiver, const StringName &p_method, const Variant &p_udata) {

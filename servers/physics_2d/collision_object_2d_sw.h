@@ -58,8 +58,12 @@ private:
 		Rect2 aabb_cache; //for rayqueries
 		Shape2DSW *shape;
 		Variant metadata;
-		bool trigger;
-		Shape() { trigger = false; }
+		bool disabled;
+		bool one_way_collision;
+		Shape() {
+			disabled = false;
+			one_way_collision = false;
+		}
 	};
 
 	Vector<Shape> shapes;
@@ -116,8 +120,11 @@ public:
 	_FORCE_INLINE_ Transform2D get_inv_transform() const { return inv_transform; }
 	_FORCE_INLINE_ Space2DSW *get_space() const { return space; }
 
-	_FORCE_INLINE_ void set_shape_as_trigger(int p_idx, bool p_enable) { shapes[p_idx].trigger = p_enable; }
-	_FORCE_INLINE_ bool is_shape_set_as_trigger(int p_idx) const { return shapes[p_idx].trigger; }
+	_FORCE_INLINE_ void set_shape_as_disabled(int p_idx, bool p_disabled) { shapes[p_idx].disabled = p_disabled; }
+	_FORCE_INLINE_ bool is_shape_set_as_disabled(int p_idx) const { return shapes[p_idx].disabled; }
+
+	_FORCE_INLINE_ void set_shape_as_one_way_collision(int p_idx, bool p_one_way_collision) { shapes[p_idx].one_way_collision = p_one_way_collision; }
+	_FORCE_INLINE_ bool is_shape_set_as_one_way_collision(int p_idx) const { return shapes[p_idx].one_way_collision; }
 
 	void set_collision_mask(uint32_t p_mask) { collision_mask = p_mask; }
 	_FORCE_INLINE_ uint32_t get_collision_mask() const { return collision_mask; }

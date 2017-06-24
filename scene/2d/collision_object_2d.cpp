@@ -31,18 +31,6 @@
 #include "scene/scene_string_names.h"
 #include "servers/physics_2d_server.h"
 
-void CollisionObject2D::_update_shapes_from_children() {
-
-	shapes.clear();
-	for (int i = 0; i < get_child_count(); i++) {
-
-		Node *n = get_child(i);
-		n->call("_add_to_collision_object", this);
-	}
-
-	_update_shapes();
-}
-
 void CollisionObject2D::_notification(int p_what) {
 
 	switch (p_what) {
@@ -88,82 +76,197 @@ void CollisionObject2D::_notification(int p_what) {
 	}
 }
 
-void CollisionObject2D::_update_shapes() {
+uint32_t CollisionObject2D::create_shape_owner(Object *p_owner) {
 
-	if (!rid.is_valid())
-		return;
+	ShapeData sd;
+	uint32_t id;
 
-	if (area)
-		Physics2DServer::get_singleton()->area_clear_shapes(rid);
-	else
-		Physics2DServer::get_singleton()->body_clear_shapes(rid);
+	if (shapes.size() == 0) {
+		id = 1;
+	} else {
+		id = shapes.back()->key() + 1;
+	}
 
-	for (int i = 0; i < shapes.size(); i++) {
+	sd.owner = p_owner;
 
-		if (shapes[i].shape.is_null())
-			continue;
-		if (area)
-			Physics2DServer::get_singleton()->area_add_shape(rid, shapes[i].shape->get_rid(), shapes[i].xform);
-		else {
-			Physics2DServer::get_singleton()->body_add_shape(rid, shapes[i].shape->get_rid(), shapes[i].xform);
-			if (shapes[i].trigger)
-				Physics2DServer::get_singleton()->body_set_shape_as_trigger(rid, i, shapes[i].trigger);
+	shapes[id] = sd;
+
+	return id;
+}
+
+void CollisionObject2D::remove_shape_owner(uint32_t owner) {
+
+	ERR_FAIL_COND(!shapes.has(owner));
+
+	shape_owner_clear_shapes(owner);
+
+	shapes.erase(owner);
+}
+
+void CollisionObject2D::shape_owner_set_disabled(uint32_t p_owner, bool p_disabled) {
+	ERR_FAIL_COND(!shapes.has(p_owner));
+
+	ShapeData &sd = shapes[p_owner];
+	sd.disabled = p_disabled;
+	for (int i = 0; i < sd.shapes.size(); i++) {
+		if (area) {
+			Physics2DServer::get_singleton()->area_set_shape_disabled(rid, sd.shapes[i].index, p_disabled);
+		} else {
+			Physics2DServer::get_singleton()->body_set_shape_disabled(rid, sd.shapes[i].index, p_disabled);
 		}
 	}
 }
 
-bool CollisionObject2D::_set(const StringName &p_name, const Variant &p_value) {
-	String name = p_name;
+bool CollisionObject2D::is_shape_owner_disabled(uint32_t p_owner) const {
 
-	if (name.begins_with("shapes/")) {
+	ERR_FAIL_COND_V(!shapes.has(p_owner), false);
 
-		int idx = name.get_slicec('/', 1).to_int();
-		String what = name.get_slicec('/', 2);
-		if (what == "shape") {
-			if (idx >= shapes.size())
-				add_shape(RefPtr(p_value));
-			else
-				set_shape(idx, RefPtr(p_value));
-		} else if (what == "transform")
-			set_shape_transform(idx, p_value);
-		else if (what == "trigger")
-			set_shape_as_trigger(idx, p_value);
-	} else
-		return false;
-
-	return true;
+	return shapes[p_owner].disabled;
 }
 
-bool CollisionObject2D::_get(const StringName &p_name, Variant &r_ret) const {
+void CollisionObject2D::shape_owner_set_one_way_collision(uint32_t p_owner, bool p_enable) {
 
-	String name = p_name;
+	if (area)
+		return; //not for areas
 
-	if (name.begins_with("shapes/")) {
+	ERR_FAIL_COND(!shapes.has(p_owner));
 
-		int idx = name.get_slicec('/', 1).to_int();
-		String what = name.get_slicec('/', 2);
-		if (what == "shape")
-			r_ret = get_shape(idx);
-		else if (what == "transform")
-			r_ret = get_shape_transform(idx);
-		else if (what == "trigger")
-			r_ret = is_shape_set_as_trigger(idx);
-	} else
-		return false;
-
-	return true;
-}
-
-void CollisionObject2D::_get_property_list(List<PropertyInfo> *p_list) const {
-
-	//p_list->push_back( PropertyInfo(Variant::INT,"shape_count",PROPERTY_HINT_RANGE,"0,256,1",PROPERTY_USAGE_NOEDITOR|PROPERTY_USAGE_NO_INSTANCE_STATE) );
-
-	for (int i = 0; i < shapes.size(); i++) {
-		String path = "shapes/" + itos(i) + "/";
-		p_list->push_back(PropertyInfo(Variant::OBJECT, path + "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape2D", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_NO_INSTANCE_STATE));
-		p_list->push_back(PropertyInfo(Variant::TRANSFORM, path + "transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_NO_INSTANCE_STATE));
-		p_list->push_back(PropertyInfo(Variant::BOOL, path + "trigger", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_NO_INSTANCE_STATE));
+	ShapeData &sd = shapes[p_owner];
+	sd.one_way_collision = p_enable;
+	for (int i = 0; i < sd.shapes.size(); i++) {
+		Physics2DServer::get_singleton()->body_set_shape_as_one_way_collision(rid, sd.shapes[i].index, p_enable);
 	}
+}
+
+bool CollisionObject2D::is_shape_owner_one_way_collision_enabled(uint32_t p_owner) const {
+
+	ERR_FAIL_COND_V(!shapes.has(p_owner), false);
+
+	return shapes[p_owner].one_way_collision;
+}
+
+void CollisionObject2D::get_shape_owners(List<uint32_t> *r_owners) {
+
+	for (Map<uint32_t, ShapeData>::Element *E = shapes.front(); E; E = E->next()) {
+		r_owners->push_back(E->key());
+	}
+}
+
+void CollisionObject2D::shape_owner_set_transform(uint32_t p_owner, const Transform2D &p_transform) {
+
+	ERR_FAIL_COND(!shapes.has(p_owner));
+
+	ShapeData &sd = shapes[p_owner];
+	sd.xform = p_transform;
+	for (int i = 0; i < sd.shapes.size(); i++) {
+		if (area) {
+			Physics2DServer::get_singleton()->area_set_shape_transform(rid, i, p_transform);
+		} else {
+			Physics2DServer::get_singleton()->body_set_shape_transform(rid, i, p_transform);
+		}
+	}
+}
+Transform2D CollisionObject2D::shape_owner_get_transform(uint32_t p_owner) const {
+
+	ERR_FAIL_COND_V(!shapes.has(p_owner), Transform2D());
+
+	return shapes[p_owner].xform;
+}
+
+Object *CollisionObject2D::shape_owner_get_owner(uint32_t p_owner) const {
+
+	ERR_FAIL_COND_V(!shapes.has(p_owner), NULL);
+
+	return shapes[p_owner].owner;
+}
+
+void CollisionObject2D::shape_owner_add_shape(uint32_t p_owner, const Ref<Shape2D> &p_shape) {
+
+	ERR_FAIL_COND(!shapes.has(p_owner));
+	ERR_FAIL_COND(p_shape.is_null());
+
+	ShapeData &sd = shapes[p_owner];
+	ShapeData::Shape s;
+	s.index = total_subshapes;
+	s.shape = p_shape;
+	if (area) {
+		Physics2DServer::get_singleton()->area_add_shape(rid, p_shape->get_rid(), sd.xform);
+	} else {
+		Physics2DServer::get_singleton()->body_add_shape(rid, p_shape->get_rid(), sd.xform);
+	}
+	sd.shapes.push_back(s);
+
+	total_subshapes++;
+}
+int CollisionObject2D::shape_owner_get_shape_count(uint32_t p_owner) const {
+
+	ERR_FAIL_COND_V(!shapes.has(p_owner), 0);
+
+	return shapes[p_owner].shapes.size();
+}
+Ref<Shape> CollisionObject2D::shape_owner_get_shape(uint32_t p_owner, int p_shape) const {
+
+	ERR_FAIL_COND_V(!shapes.has(p_owner), Ref<Shape>());
+	ERR_FAIL_INDEX_V(p_shape, shapes[p_owner].shapes.size(), Ref<Shape>());
+
+	return shapes[p_owner].shapes[p_shape].shape;
+}
+int CollisionObject2D::shape_owner_get_shape_index(uint32_t p_owner, int p_shape) const {
+
+	ERR_FAIL_COND_V(!shapes.has(p_owner), -1);
+	ERR_FAIL_INDEX_V(p_shape, shapes[p_owner].shapes.size(), -1);
+
+	return shapes[p_owner].shapes[p_shape].index;
+}
+
+void CollisionObject2D::shape_owner_remove_shape(uint32_t p_owner, int p_shape) {
+
+	ERR_FAIL_COND(!shapes.has(p_owner));
+	ERR_FAIL_INDEX(p_shape, shapes[p_owner].shapes.size());
+
+	int index_to_remove = shapes[p_owner].shapes[p_shape].index;
+	if (area) {
+		Physics2DServer::get_singleton()->area_remove_shape(rid, index_to_remove);
+	} else {
+		Physics2DServer::get_singleton()->body_remove_shape(rid, index_to_remove);
+	}
+
+	shapes[p_owner].shapes.remove(p_shape);
+
+	for (Map<uint32_t, ShapeData>::Element *E = shapes.front(); E; E = E->next()) {
+		for (int i = 0; i < E->get().shapes.size(); i++) {
+			if (E->get().shapes[i].index > index_to_remove) {
+				E->get().shapes[i].index -= 1;
+			}
+		}
+	}
+
+	total_subshapes--;
+}
+
+void CollisionObject2D::shape_owner_clear_shapes(uint32_t p_owner) {
+
+	ERR_FAIL_COND(!shapes.has(p_owner));
+
+	while (shape_owner_get_shape_count(p_owner) > 0) {
+		shape_owner_remove_shape(p_owner, 0);
+	}
+}
+
+uint32_t CollisionObject2D::shape_find_owner(int p_shape_index) const {
+
+	ERR_FAIL_INDEX_V(p_shape_index, total_subshapes, 0);
+
+	for (const Map<uint32_t, ShapeData>::Element *E = shapes.front(); E; E = E->next()) {
+		for (int i = 0; i < E->get().shapes.size(); i++) {
+			if (E->get().shapes[i].index == p_shape_index) {
+				return E->key();
+			}
+		}
+	}
+
+	//in theory it should be unreachable
+	return 0;
 }
 
 void CollisionObject2D::set_pickable(bool p_enabled) {
@@ -216,16 +319,6 @@ void CollisionObject2D::_update_pickable() {
 
 void CollisionObject2D::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("add_shape", "shape:Shape2D", "transform"), &CollisionObject2D::add_shape, DEFVAL(Transform2D()));
-	ClassDB::bind_method(D_METHOD("get_shape_count"), &CollisionObject2D::get_shape_count);
-	ClassDB::bind_method(D_METHOD("set_shape", "shape_idx", "shape:Shape"), &CollisionObject2D::set_shape);
-	ClassDB::bind_method(D_METHOD("set_shape_transform", "shape_idx", "transform"), &CollisionObject2D::set_shape_transform);
-	ClassDB::bind_method(D_METHOD("set_shape_as_trigger", "shape_idx", "enable"), &CollisionObject2D::set_shape_as_trigger);
-	ClassDB::bind_method(D_METHOD("get_shape:Shape2D", "shape_idx"), &CollisionObject2D::get_shape);
-	ClassDB::bind_method(D_METHOD("get_shape_transform", "shape_idx"), &CollisionObject2D::get_shape_transform);
-	ClassDB::bind_method(D_METHOD("is_shape_set_as_trigger", "shape_idx"), &CollisionObject2D::is_shape_set_as_trigger);
-	ClassDB::bind_method(D_METHOD("remove_shape", "shape_idx"), &CollisionObject2D::remove_shape);
-	ClassDB::bind_method(D_METHOD("clear_shapes"), &CollisionObject2D::clear_shapes);
 	ClassDB::bind_method(D_METHOD("get_rid"), &CollisionObject2D::get_rid);
 
 	ClassDB::bind_method(D_METHOD("set_pickable", "enabled"), &CollisionObject2D::set_pickable);
@@ -242,100 +335,13 @@ void CollisionObject2D::_bind_methods() {
 	ADD_GROUP("", "");
 }
 
-void CollisionObject2D::add_shape(const Ref<Shape2D> &p_shape, const Transform2D &p_transform) {
-
-	ERR_FAIL_COND(p_shape.is_null());
-
-	ShapeData sdata;
-	sdata.shape = p_shape;
-	sdata.xform = p_transform;
-	sdata.trigger = false;
-
-	if (area)
-		Physics2DServer::get_singleton()->area_add_shape(get_rid(), p_shape->get_rid(), p_transform);
-	else
-		Physics2DServer::get_singleton()->body_add_shape(get_rid(), p_shape->get_rid(), p_transform);
-
-	shapes.push_back(sdata);
-}
-int CollisionObject2D::get_shape_count() const {
-
-	return shapes.size();
-}
-void CollisionObject2D::set_shape(int p_shape_idx, const Ref<Shape2D> &p_shape) {
-
-	ERR_FAIL_INDEX(p_shape_idx, shapes.size());
-	ERR_FAIL_COND(p_shape.is_null());
-
-	shapes[p_shape_idx].shape = p_shape;
-	if (area)
-		Physics2DServer::get_singleton()->area_set_shape(get_rid(), p_shape_idx, p_shape->get_rid());
-	else
-		Physics2DServer::get_singleton()->body_set_shape(get_rid(), p_shape_idx, p_shape->get_rid());
-
-	//_update_shapes();
-}
-
-void CollisionObject2D::set_shape_transform(int p_shape_idx, const Transform2D &p_transform) {
-
-	ERR_FAIL_INDEX(p_shape_idx, shapes.size());
-	shapes[p_shape_idx].xform = p_transform;
-
-	if (area)
-		Physics2DServer::get_singleton()->area_set_shape_transform(get_rid(), p_shape_idx, p_transform);
-	else
-		Physics2DServer::get_singleton()->body_set_shape_transform(get_rid(), p_shape_idx, p_transform);
-
-	//_update_shapes();
-}
-
-Ref<Shape2D> CollisionObject2D::get_shape(int p_shape_idx) const {
-
-	ERR_FAIL_INDEX_V(p_shape_idx, shapes.size(), Ref<Shape2D>());
-	return shapes[p_shape_idx].shape;
-}
-Transform2D CollisionObject2D::get_shape_transform(int p_shape_idx) const {
-
-	ERR_FAIL_INDEX_V(p_shape_idx, shapes.size(), Transform2D());
-	return shapes[p_shape_idx].xform;
-}
-void CollisionObject2D::remove_shape(int p_shape_idx) {
-
-	ERR_FAIL_INDEX(p_shape_idx, shapes.size());
-	shapes.remove(p_shape_idx);
-
-	_update_shapes();
-}
-
-void CollisionObject2D::set_shape_as_trigger(int p_shape_idx, bool p_trigger) {
-
-	ERR_FAIL_INDEX(p_shape_idx, shapes.size());
-	shapes[p_shape_idx].trigger = p_trigger;
-	if (!area && rid.is_valid()) {
-
-		Physics2DServer::get_singleton()->body_set_shape_as_trigger(rid, p_shape_idx, p_trigger);
-	}
-}
-
-bool CollisionObject2D::is_shape_set_as_trigger(int p_shape_idx) const {
-
-	ERR_FAIL_INDEX_V(p_shape_idx, shapes.size(), false);
-	return shapes[p_shape_idx].trigger;
-}
-
-void CollisionObject2D::clear_shapes() {
-
-	shapes.clear();
-
-	_update_shapes();
-}
-
 CollisionObject2D::CollisionObject2D(RID p_rid, bool p_area) {
 
 	rid = p_rid;
 	area = p_area;
 	pickable = true;
 	set_notify_transform(true);
+	total_subshapes = 0;
 
 	if (p_area) {
 
@@ -348,6 +354,7 @@ CollisionObject2D::CollisionObject2D(RID p_rid, bool p_area) {
 CollisionObject2D::CollisionObject2D() {
 
 	//owner=
+
 	set_notify_transform(true);
 }
 

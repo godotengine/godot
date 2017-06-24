@@ -496,6 +496,7 @@ void Physics2DServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("area_add_shape", "area", "shape", "transform"), &Physics2DServer::area_add_shape, DEFVAL(Transform2D()));
 	ClassDB::bind_method(D_METHOD("area_set_shape", "area", "shape_idx", "shape"), &Physics2DServer::area_set_shape);
 	ClassDB::bind_method(D_METHOD("area_set_shape_transform", "area", "shape_idx", "transform"), &Physics2DServer::area_set_shape_transform);
+	ClassDB::bind_method(D_METHOD("area_set_shape_disabled", "area", "shape_idx", "disable"), &Physics2DServer::area_set_shape_disabled);
 
 	ClassDB::bind_method(D_METHOD("area_get_shape_count", "area"), &Physics2DServer::area_get_shape_count);
 	ClassDB::bind_method(D_METHOD("area_get_shape", "area", "shape_idx"), &Physics2DServer::area_get_shape);
@@ -539,8 +540,8 @@ void Physics2DServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("body_remove_shape", "body", "shape_idx"), &Physics2DServer::body_remove_shape);
 	ClassDB::bind_method(D_METHOD("body_clear_shapes", "body"), &Physics2DServer::body_clear_shapes);
 
-	ClassDB::bind_method(D_METHOD("body_set_shape_as_trigger", "body", "shape_idx", "enable"), &Physics2DServer::body_set_shape_as_trigger);
-	ClassDB::bind_method(D_METHOD("body_is_shape_set_as_trigger", "body", "shape_idx"), &Physics2DServer::body_is_shape_set_as_trigger);
+	ClassDB::bind_method(D_METHOD("body_set_shape_disabled", "body", "shape_idx", "disable"), &Physics2DServer::body_set_shape_disabled);
+	ClassDB::bind_method(D_METHOD("body_set_shape_as_one_way_collision", "body", "shape_idx", "enable"), &Physics2DServer::body_set_shape_as_one_way_collision);
 
 	ClassDB::bind_method(D_METHOD("body_attach_object_instance_ID", "body", "id"), &Physics2DServer::body_attach_object_instance_ID);
 	ClassDB::bind_method(D_METHOD("body_get_object_instance_ID", "body"), &Physics2DServer::body_get_object_instance_ID);
@@ -570,12 +571,6 @@ void Physics2DServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("body_set_max_contacts_reported", "body", "amount"), &Physics2DServer::body_set_max_contacts_reported);
 	ClassDB::bind_method(D_METHOD("body_get_max_contacts_reported", "body"), &Physics2DServer::body_get_max_contacts_reported);
-
-	ClassDB::bind_method(D_METHOD("body_set_one_way_collision_direction", "body", "normal"), &Physics2DServer::body_set_one_way_collision_direction);
-	ClassDB::bind_method(D_METHOD("body_get_one_way_collision_direction", "body"), &Physics2DServer::body_get_one_way_collision_direction);
-
-	ClassDB::bind_method(D_METHOD("body_set_one_way_collision_max_depth", "body", "depth"), &Physics2DServer::body_set_one_way_collision_max_depth);
-	ClassDB::bind_method(D_METHOD("body_get_one_way_collision_max_depth", "body"), &Physics2DServer::body_get_one_way_collision_max_depth);
 
 	ClassDB::bind_method(D_METHOD("body_set_omit_force_integration", "body", "enable"), &Physics2DServer::body_set_omit_force_integration);
 	ClassDB::bind_method(D_METHOD("body_is_omitting_force_integration", "body"), &Physics2DServer::body_is_omitting_force_integration);

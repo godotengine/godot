@@ -145,6 +145,7 @@ public:
 	FUNC3(area_add_shape, RID, RID, const Transform2D &);
 	FUNC3(area_set_shape, RID, int, RID);
 	FUNC3(area_set_shape_transform, RID, int, const Transform2D &);
+	FUNC3(area_set_shape_disabled, RID, int, bool);
 
 	FUNC1RC(int, area_get_shape_count, RID);
 	FUNC2RC(RID, area_get_shape, RID, int);
@@ -191,8 +192,8 @@ public:
 	FUNC2RC(Variant, body_get_shape_metadata, RID, int);
 	FUNC2RC(RID, body_get_shape, RID, int);
 
-	FUNC3(body_set_shape_as_trigger, RID, int, bool);
-	FUNC2RC(bool, body_is_shape_set_as_trigger, RID, int);
+	FUNC3(body_set_shape_disabled, RID, int, bool);
+	FUNC3(body_set_shape_as_one_way_collision, RID, int, bool);
 
 	FUNC2(body_remove_shape, RID, int);
 	FUNC1(body_clear_shapes, RID);
@@ -231,12 +232,6 @@ public:
 
 	FUNC2(body_set_max_contacts_reported, RID, int);
 	FUNC1RC(int, body_get_max_contacts_reported, RID);
-
-	FUNC2(body_set_one_way_collision_direction, RID, const Vector2 &);
-	FUNC1RC(Vector2, body_get_one_way_collision_direction, RID);
-
-	FUNC2(body_set_one_way_collision_max_depth, RID, real_t);
-	FUNC1RC(real_t, body_get_one_way_collision_max_depth, RID);
 
 	FUNC2(body_set_contacts_reported_depth_treshold, RID, real_t);
 	FUNC1RC(real_t, body_get_contacts_reported_depth_treshold, RID);

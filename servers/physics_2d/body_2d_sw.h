@@ -67,9 +67,6 @@ class Body2DSW : public CollisionObject2DSW {
 	Vector2 applied_force;
 	real_t applied_torque;
 
-	Vector2 one_way_collision_direction;
-	real_t one_way_collision_max_depth;
-
 	SelfList<Body2DSW> active_list;
 	SelfList<Body2DSW> inertia_update_list;
 	SelfList<Body2DSW> direct_state_query_list;
@@ -81,7 +78,6 @@ class Body2DSW : public CollisionObject2DSW {
 	bool can_sleep;
 	bool first_time_kinematic;
 	bool first_integration;
-	bool using_one_way_cache;
 	void _update_inertia();
 	virtual void _shapes_changed();
 	Transform2D new_transform;
@@ -245,17 +241,6 @@ public:
 
 	_FORCE_INLINE_ void set_continuous_collision_detection_mode(Physics2DServer::CCDMode p_mode) { continuous_cd_mode = p_mode; }
 	_FORCE_INLINE_ Physics2DServer::CCDMode get_continuous_collision_detection_mode() const { return continuous_cd_mode; }
-
-	void set_one_way_collision_direction(const Vector2 &p_dir) {
-		one_way_collision_direction = p_dir;
-		using_one_way_cache = one_way_collision_direction != Vector2();
-	}
-	Vector2 get_one_way_collision_direction() const { return one_way_collision_direction; }
-
-	void set_one_way_collision_max_depth(real_t p_depth) { one_way_collision_max_depth = p_depth; }
-	real_t get_one_way_collision_max_depth() const { return one_way_collision_max_depth; }
-
-	_FORCE_INLINE_ bool is_using_one_way_collision() const { return using_one_way_cache; }
 
 	void set_space(Space2DSW *p_space);
 

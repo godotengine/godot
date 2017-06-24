@@ -123,6 +123,8 @@ public:
 	virtual RID area_get_shape(RID p_area, int p_shape_idx) const;
 	virtual Transform2D area_get_shape_transform(RID p_area, int p_shape_idx) const;
 
+	virtual void area_set_shape_disabled(RID p_area, int p_shape, bool p_disabled);
+
 	virtual void area_remove_shape(RID p_area, int p_shape_idx);
 	virtual void area_clear_shapes(RID p_area);
 
@@ -167,8 +169,8 @@ public:
 	virtual void body_remove_shape(RID p_body, int p_shape_idx);
 	virtual void body_clear_shapes(RID p_body);
 
-	virtual void body_set_shape_as_trigger(RID p_body, int p_shape_idx, bool p_enable);
-	virtual bool body_is_shape_set_as_trigger(RID p_body, int p_shape_idx) const;
+	virtual void body_set_shape_disabled(RID p_body, int p_shape, bool p_disabled);
+	virtual void body_set_shape_as_one_way_collision(RID p_body, int p_shape, bool p_enabled);
 
 	virtual void body_attach_object_instance_ID(RID p_body, uint32_t p_ID);
 	virtual uint32_t body_get_object_instance_ID(RID p_body) const;
@@ -211,12 +213,6 @@ public:
 
 	virtual void body_set_max_contacts_reported(RID p_body, int p_contacts);
 	virtual int body_get_max_contacts_reported(RID p_body) const;
-
-	virtual void body_set_one_way_collision_direction(RID p_body, const Vector2 &p_direction);
-	virtual Vector2 body_get_one_way_collision_direction(RID p_body) const;
-
-	virtual void body_set_one_way_collision_max_depth(RID p_body, real_t p_max_depth);
-	virtual real_t body_get_one_way_collision_max_depth(RID p_body) const;
 
 	virtual void body_set_force_integration_callback(RID p_body, Object *p_receiver, const StringName &p_method, const Variant &p_udata = Variant());
 	virtual bool body_collide_shape(RID p_body, int p_body_shape, RID p_shape, const Transform2D &p_shape_xform, const Vector2 &p_motion, Vector2 *r_results, int p_result_max, int &r_result_count);

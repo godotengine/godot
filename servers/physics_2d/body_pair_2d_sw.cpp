@@ -225,6 +225,11 @@ bool BodyPair2DSW::setup(real_t p_step) {
 		return false;
 	}
 
+	if (A->is_shape_set_as_disabled(shape_A) || B->is_shape_set_as_disabled(shape_B)) {
+		collided = false;
+		return false;
+	}
+
 	//use local A coordinates to avoid numerical issues on collision detection
 	offset_B = B->get_transform().get_origin() - A->get_transform().get_origin();
 
@@ -280,8 +285,8 @@ bool BodyPair2DSW::setup(real_t p_step) {
 	//if (!prev_collided) {
 	{
 
-		if (A->is_using_one_way_collision()) {
-			Vector2 direction = A->get_one_way_collision_direction();
+		if (A->is_shape_set_as_one_way_collision(shape_A)) {
+			Vector2 direction = xform_A.get_axis(1).normalized();
 			bool valid = false;
 			if (B->get_linear_velocity().dot(direction) >= 0) {
 				for (int i = 0; i < contact_count; i++) {
@@ -303,8 +308,8 @@ bool BodyPair2DSW::setup(real_t p_step) {
 			}
 		}
 
-		if (B->is_using_one_way_collision()) {
-			Vector2 direction = B->get_one_way_collision_direction();
+		if (B->is_shape_set_as_one_way_collision(shape_B)) {
+			Vector2 direction = xform_B.get_axis(1).normalized();
 			bool valid = false;
 			if (A->get_linear_velocity().dot(direction) >= 0) {
 				for (int i = 0; i < contact_count; i++) {
@@ -390,7 +395,7 @@ bool BodyPair2DSW::setup(real_t p_step) {
 			}
 		}
 
-		if (A->is_shape_set_as_trigger(shape_A) || B->is_shape_set_as_trigger(shape_B) || (A->get_mode() <= Physics2DServer::BODY_MODE_KINEMATIC && B->get_mode() <= Physics2DServer::BODY_MODE_KINEMATIC)) {
+		if ((A->get_mode() <= Physics2DServer::BODY_MODE_KINEMATIC && B->get_mode() <= Physics2DServer::BODY_MODE_KINEMATIC)) {
 			c.active = false;
 			collided = false;
 			continue;

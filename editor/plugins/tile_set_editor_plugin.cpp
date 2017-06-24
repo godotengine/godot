@@ -105,13 +105,16 @@ void TileSetEditor::_import_node(Node *p_node, Ref<TileSet> p_library) {
 			if (!child2->cast_to<StaticBody2D>())
 				continue;
 			StaticBody2D *sb = child2->cast_to<StaticBody2D>();
-			int shape_count = sb->get_shape_count();
-			if (shape_count == 0)
-				continue;
-			for (int shape_index = 0; shape_index < shape_count; ++shape_index) {
-				Ref<Shape2D> collision = sb->get_shape(shape_index);
-				if (collision.is_valid()) {
-					collisions.push_back(collision);
+
+			List<uint32_t> shapes;
+			sb->get_shape_owners(&shapes);
+
+			for (List<uint32_t>::Element *E = shapes.front(); E; E = E->next()) {
+
+				for (int k = 0; k < sb->shape_owner_get_shape_count(E->get()); k++) {
+
+					Ref<Shape> shape = sb->shape_owner_get_shape(E->get(), k);
+					collisions.push_back(shape); //uh what about transform?
 				}
 			}
 		}

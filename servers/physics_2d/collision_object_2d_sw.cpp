@@ -37,7 +37,8 @@ void CollisionObject2DSW::add_shape(Shape2DSW *p_shape, const Transform2D &p_tra
 	s.xform = p_transform;
 	s.xform_inv = s.xform.affine_inverse();
 	s.bpid = 0; //needs update
-	s.trigger = false;
+	s.disabled = false;
+	s.one_way_collision = false;
 	shapes.push_back(s);
 	p_shape->add_owner(this);
 	_update_shapes();
