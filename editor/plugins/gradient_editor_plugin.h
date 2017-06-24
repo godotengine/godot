@@ -38,7 +38,6 @@ class GradientEditorPlugin : public EditorPlugin {
 
 	GDCLASS(GradientEditorPlugin, EditorPlugin);
 
-	bool _2d;
 	Ref<Gradient> gradient_ref;
 	GradientEdit *ramp_editor;
 	EditorNode *editor;

@@ -1508,13 +1508,6 @@ CurveTexture::~CurveTexture() {
 #define COLOR_RAMP_SET_COLORS "set_colors"
 
 GradientTexture::GradientTexture() {
-	//Set initial color ramp transition from black to white
-	points.resize(2);
-	points[0].color = Color(0, 0, 0, 1);
-	points[0].offset = 0;
-	points[1].color = Color(1, 1, 1, 1);
-	points[1].offset = 1;
-	is_sorted = true;
 	update_pending = false;
 	width = 2048;
 
@@ -1528,32 +1521,33 @@ GradientTexture::~GradientTexture() {
 
 void GradientTexture::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("add_point", "offset", "color"), &GradientTexture::add_point);
-	ClassDB::bind_method(D_METHOD("remove_point", "offset", "color"), &GradientTexture::remove_point);
-
-	ClassDB::bind_method(D_METHOD("set_offset", "point", "offset"), &GradientTexture::set_offset);
-	ClassDB::bind_method(D_METHOD("get_offset", "point"), &GradientTexture::get_offset);
-
-	ClassDB::bind_method(D_METHOD("set_color", "point", "color"), &GradientTexture::set_color);
-	ClassDB::bind_method(D_METHOD("get_color", "point"), &GradientTexture::get_color);
+	ClassDB::bind_method(D_METHOD("set_gradient", "gradient:Gradient"), &GradientTexture::set_gradient);
+	ClassDB::bind_method(D_METHOD("get_gradient:Gradient"), &GradientTexture::get_gradient);
 
 	ClassDB::bind_method(D_METHOD("set_width", "width"), &GradientTexture::set_width);
 
-	ClassDB::bind_method(D_METHOD("interpolate", "offset"), &GradientTexture::get_color_at_offset);
-
-	ClassDB::bind_method(D_METHOD("get_point_count"), &GradientTexture::get_points_count);
-
 	ClassDB::bind_method(D_METHOD("_update"), &GradientTexture::_update);
 
-	ClassDB::bind_method(D_METHOD(COLOR_RAMP_SET_OFFSETS, "offsets"), &GradientTexture::set_offsets);
-	ClassDB::bind_method(D_METHOD(COLOR_RAMP_GET_OFFSETS), &GradientTexture::get_offsets);
-
-	ClassDB::bind_method(D_METHOD(COLOR_RAMP_SET_COLORS, "colors"), &GradientTexture::set_colors);
-	ClassDB::bind_method(D_METHOD(COLOR_RAMP_GET_COLORS), &GradientTexture::get_colors);
-
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "gradient", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_gradient", "get_gradient");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "width"), "set_width", "get_width");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "offsets"), COLOR_RAMP_SET_OFFSETS, COLOR_RAMP_GET_OFFSETS);
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "colors"), COLOR_RAMP_SET_COLORS, COLOR_RAMP_GET_COLORS);
+}
+
+void GradientTexture::set_gradient(Ref<Gradient> p_gradient) {
+	if (p_gradient == gradient)
+		return;
+	if (gradient.is_valid()) {
+		gradient->disconnect(CoreStringNames::get_singleton()->changed, this, "_update");
+	}
+	gradient = p_gradient;
+	if (gradient.is_valid()) {
+		gradient->connect(CoreStringNames::get_singleton()->changed, this, "_update");
+	}
+	_update();
+	emit_changed();
+}
+
+Ref<Gradient> GradientTexture::get_gradient() const {
+	return gradient;
 }
 
 void GradientTexture::_queue_update() {
@@ -1566,16 +1560,22 @@ void GradientTexture::_queue_update() {
 
 void GradientTexture::_update() {
 
+	if (gradient.is_null())
+		return;
+
 	update_pending = false;
 
 	PoolVector<uint8_t> data;
 	data.resize(width * 4);
 	{
 		PoolVector<uint8_t>::Write wd8 = data.write();
-		for (int i = 0; i < width; i++) {
-			float ofs = float(i) / (width - 1);
+		Gradient &g = **gradient;
 
-			Color color = get_color_at_offset(ofs);
+		for (int i = 0; i < width; i++) {
+
+			float ofs = float(i) / (width - 1);
+			Color color = g.get_color_at_offset(ofs);
+
 			wd8[i * 4 + 0] = uint8_t(CLAMP(color.r * 255.0, 0, 255));
 			wd8[i * 4 + 1] = uint8_t(CLAMP(color.g * 255.0, 0, 255));
 			wd8[i * 4 + 2] = uint8_t(CLAMP(color.b * 255.0, 0, 255));
@@ -1601,112 +1601,6 @@ int GradientTexture::get_width() const {
 	return width;
 }
 
-Vector<float> GradientTexture::get_offsets() const {
-	Vector<float> offsets;
-	offsets.resize(points.size());
-	for (int i = 0; i < points.size(); i++) {
-		offsets[i] = points[i].offset;
-	}
-	return offsets;
-}
-
-Vector<Color> GradientTexture::get_colors() const {
-	Vector<Color> colors;
-	colors.resize(points.size());
-	for (int i = 0; i < points.size(); i++) {
-		colors[i] = points[i].color;
-	}
-	return colors;
-}
-
-void GradientTexture::set_offsets(const Vector<float> &p_offsets) {
-	points.resize(p_offsets.size());
-	for (int i = 0; i < points.size(); i++) {
-		points[i].offset = p_offsets[i];
-	}
-	is_sorted = false;
-	emit_changed();
-	_queue_update();
-}
-
-void GradientTexture::set_colors(const Vector<Color> &p_colors) {
-	if (points.size() < p_colors.size())
-		is_sorted = false;
-	points.resize(p_colors.size());
-	for (int i = 0; i < points.size(); i++) {
-		points[i].color = p_colors[i];
-	}
-	emit_changed();
-	_queue_update();
-}
-
-Vector<GradientTexture::Point> &GradientTexture::get_points() {
-	return points;
-}
-
-void GradientTexture::add_point(float p_offset, const Color &p_color) {
-
-	Point p;
-	p.offset = p_offset;
-	p.color = p_color;
-	is_sorted = false;
-	points.push_back(p);
-
-	emit_changed();
-	_queue_update();
-}
-
-void GradientTexture::remove_point(int p_index) {
-
-	ERR_FAIL_INDEX(p_index, points.size());
-	ERR_FAIL_COND(points.size() <= 2);
-	points.remove(p_index);
-	emit_changed();
-	_queue_update();
-}
-
-void GradientTexture::set_points(Vector<GradientTexture::Point> &p_points) {
-	points = p_points;
-	is_sorted = false;
-	emit_changed();
-	_queue_update();
-}
-
-void GradientTexture::set_offset(int pos, const float offset) {
-	if (points.size() <= pos)
-		points.resize(pos + 1);
-	points[pos].offset = offset;
-	is_sorted = false;
-	emit_changed();
-	_queue_update();
-}
-
-float GradientTexture::get_offset(int pos) const {
-	if (points.size() > pos)
-		return points[pos].offset;
-	return 0; //TODO: Maybe throw some error instead?
-}
-
 Ref<Image> GradientTexture::get_data() const {
 	return VisualServer::get_singleton()->texture_get_data(texture);
-}
-
-void GradientTexture::set_color(int pos, const Color &color) {
-	if (points.size() <= pos) {
-		points.resize(pos + 1);
-		is_sorted = false;
-	}
-	points[pos].color = color;
-	emit_changed();
-	_queue_update();
-}
-
-Color GradientTexture::get_color(int pos) const {
-	if (points.size() > pos)
-		return points[pos].color;
-	return Color(0, 0, 0, 1); //TODO: Maybe throw some error instead?
-}
-
-int GradientTexture::get_points_count() const {
-	return points.size();
 }

@@ -91,8 +91,7 @@ void GradientEditorPlugin::_ramp_changed() {
 	}
 }
 
-void GradientEditorPlugin::_undo_redo_gradient(const Vector<float> &offsets,
-		const Vector<Color> &colors) {
+void GradientEditorPlugin::_undo_redo_gradient(const Vector<float> &offsets, const Vector<Color> &colors) {
 
 	gradient_ref->set_offsets(offsets);
 	gradient_ref->set_colors(colors);

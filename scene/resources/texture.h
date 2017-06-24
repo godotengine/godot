@@ -34,6 +34,7 @@
 #include "io/resource_loader.h"
 #include "math_2d.h"
 #include "resource.h"
+#include "scene/resources/color_ramp.h"
 #include "servers/visual_server.h"
 
 /**
@@ -451,7 +452,7 @@ public:
 //VARIANT_ENUM_CAST( Texture::CubeMapSide );
 
 class GradientTexture : public Texture {
-	GDCLASS(GradientTexture, Texture);
+	GDCLASS(GradientTexture, Texture)
 
 public:
 	struct Point {
@@ -464,8 +465,7 @@ public:
 	};
 
 private:
-	Vector<Point> points;
-	bool is_sorted;
+	Ref<Gradient> gradient;
 	bool update_pending;
 	RID texture;
 	int width;
@@ -477,23 +477,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	void add_point(float p_offset, const Color &p_color);
-	void remove_point(int p_index);
-
-	void set_points(Vector<Point> &points);
-	Vector<Point> &get_points();
-
-	void set_offset(int pos, const float offset);
-	float get_offset(int pos) const;
-
-	void set_color(int pos, const Color &color);
-	Color get_color(int pos) const;
-
-	void set_offsets(const Vector<float> &offsets);
-	Vector<float> get_offsets() const;
-
-	void set_colors(const Vector<Color> &colors);
-	Vector<Color> get_colors() const;
+	void set_gradient(Ref<Gradient> p_gradient);
+	Ref<Gradient> get_gradient() const;
 
 	void set_width(int p_width);
 	int get_width() const;
@@ -505,51 +490,7 @@ public:
 	virtual void set_flags(uint32_t p_flags) {}
 	virtual uint32_t get_flags() const { return FLAG_FILTER; }
 
-	_FORCE_INLINE_ Color get_color_at_offset(float p_offset) {
-
-		if (points.empty())
-			return Color(0, 0, 0, 1);
-
-		if (!is_sorted) {
-			points.sort();
-			is_sorted = true;
-		}
-
-		//binary search
-		int low = 0;
-		int high = points.size() - 1;
-		int middle;
-
-		while (low <= high) {
-			middle = (low + high) / 2;
-			Point &point = points[middle];
-			if (point.offset > p_offset) {
-				high = middle - 1; //search low end of array
-			} else if (point.offset < p_offset) {
-				low = middle + 1; //search high end of array
-			} else {
-				return point.color;
-			}
-		}
-
-		//return interpolated value
-		if (points[middle].offset > p_offset) {
-			middle--;
-		}
-		int first = middle;
-		int second = middle + 1;
-		if (second >= points.size())
-			return points[points.size() - 1].color;
-		if (first < 0)
-			return points[0].color;
-		Point &pointFirst = points[first];
-		Point &pointSecond = points[second];
-		return pointFirst.color.linear_interpolate(pointSecond.color, (p_offset - pointFirst.offset) / (pointSecond.offset - pointFirst.offset));
-	}
-
 	virtual Ref<Image> get_data() const;
-
-	int get_points_count() const;
 
 	GradientTexture();
 	virtual ~GradientTexture();
