@@ -55,6 +55,7 @@ class ProjectSettings : public AcceptDialog {
 	Timer *timer;
 	InputType add_type;
 	String add_at;
+	int edit_idx;
 
 	EditorData *data;
 	UndoRedo *undo_redo;
@@ -105,7 +106,8 @@ class ProjectSettings : public AcceptDialog {
 	void _item_del();
 	void _update_actions();
 	void _save();
-	void _add_item(int p_item);
+	void _add_item(int p_item, Ref<InputEvent> p_exiting_event = NULL);
+	void _edit_item(Ref<InputEvent> p_exiting_event);
 
 	void _action_adds(String);
 	void _action_add();
@@ -114,6 +116,7 @@ class ProjectSettings : public AcceptDialog {
 	void _item_checked(const String &p_item, bool p_check);
 	void _action_selected();
 	void _action_edited();
+	void _action_activated();
 	void _action_button_pressed(Object *p_obj, int p_column, int p_id);
 	void _wait_for_key(const Ref<InputEvent> &p_event);
 	void _press_a_key_confirm();
