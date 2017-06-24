@@ -621,6 +621,7 @@ struct _VariantCall {
 	VCALL_PTR3R(Image, resized);
 	VCALL_PTR0R(Image, get_data);
 	VCALL_PTR3(Image, blit_rect);
+	VCALL_PTR4(Image, blit_rect_mask);
 	VCALL_PTR3(Image, blend_rect);
 	VCALL_PTR4(Image, blend_rect_mask);
 	VCALL_PTR1(Image, fill);
@@ -1474,6 +1475,7 @@ void register_variant_methods() {
 	ADDFUNC3(IMAGE, IMAGE, Image, resized, INT, "x", INT, "y", INT, "interpolation", varray(((int)Image::INTERPOLATE_BILINEAR)));
 	ADDFUNC0(IMAGE, RAW_ARRAY, Image, get_data, varray());
 	ADDFUNC3(IMAGE, NIL, Image, blit_rect, IMAGE, "src", RECT2, "src_rect", VECTOR2, "dest", varray(0));
+	ADDFUNC4(IMAGE, NIL, Image, blit_rect_mask, IMAGE, "src", IMAGE, "mask", RECT2, "src_rect", VECTOR2, "dest", varray(0));
 	ADDFUNC3(IMAGE, NIL, Image, blend_rect, IMAGE, "src", RECT2, "src_rect", VECTOR2, "dest", varray(0));
 	ADDFUNC4(IMAGE, NIL, Image, blend_rect_mask, IMAGE, "src", IMAGE, "mask", RECT2, "src_rect", VECTOR2, "dest", varray(0));
 	ADDFUNC1(IMAGE, NIL, Image, fill, COLOR, "color", varray(0));

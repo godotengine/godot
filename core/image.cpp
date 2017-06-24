@@ -2217,6 +2217,69 @@ void Image::blit_rect(const Image &p_src, const Rect2 &p_src_rect, const Point2 
 	}
 }
 
+void Image::blit_rect_mask(const Image &p_src, const Image &p_mask, const Rect2 &p_src_rect, const Point2 &p_dest) {
+
+	int dsize = data.size();
+	int srcdsize = p_src.data.size();
+	int maskdsize = p_mask.data.size();
+	ERR_FAIL_COND(dsize == 0);
+	ERR_FAIL_COND(srcdsize == 0);
+	ERR_FAIL_COND(maskdsize == 0);
+	ERR_FAIL_COND(p_src.width != p_mask.width);
+	ERR_FAIL_COND(p_src.height != p_mask.height);
+
+	Rect2 rrect = Rect2(0, 0, p_src.width, p_src.height).clip(p_src_rect);
+
+	DVector<uint8_t>::Write wp = data.write();
+	unsigned char *dst_data_ptr = wp.ptr();
+
+	DVector<uint8_t>::Read rp = p_src.data.read();
+	const unsigned char *src_data_ptr = rp.ptr();
+
+	DVector<uint8_t>::Read mp = p_mask.data.read();
+	const unsigned char *mask_data_ptr = mp.ptr();
+
+	if ((format == FORMAT_INDEXED || format == FORMAT_INDEXED_ALPHA) && (p_src.format == FORMAT_INDEXED || p_src.format == FORMAT_INDEXED_ALPHA)) {
+
+		Point2i desti(p_dest.x, p_dest.y);
+		Point2i srci(rrect.pos.x, rrect.pos.y);
+
+		for (int i = 0; i < rrect.size.y; i++) {
+
+			if (i + desti.y < 0 || i + desti.y >= height)
+				continue;
+			for (int j = 0; j < rrect.size.x; j++) {
+
+				if (j + desti.x < 0 || j + desti.x >= width)
+					continue;
+
+				BColor msk = p_mask._get_pixel(rrect.pos.x + j, rrect.pos.y + i, mask_data_ptr, maskdsize);
+				if (msk.a != 0) {
+					dst_data_ptr[width * (desti.y + i) + desti.x + j] = src_data_ptr[p_src.width * (srci.y + i) + srci.x + j];
+				}
+			}
+		}
+
+	} else {
+
+		for (int i = 0; i < rrect.size.y; i++) {
+
+			if (i + p_dest.y < 0 || i + p_dest.y >= height)
+				continue;
+			for (int j = 0; j < rrect.size.x; j++) {
+
+				if (j + p_dest.x < 0 || j + p_dest.x >= width)
+					continue;
+
+				BColor msk = p_mask._get_pixel(rrect.pos.x + j, rrect.pos.y + i, mask_data_ptr, maskdsize);
+				if (msk.a != 0) {
+					_put_pixel(p_dest.x + j, p_dest.y + i, p_src._get_pixel(rrect.pos.x + j, rrect.pos.y + i, src_data_ptr, srcdsize), dst_data_ptr);
+				}
+			}
+		}
+	}
+}
+
 void Image::blend_rect(const Image &p_src, const Rect2 &p_src_rect, const Point2 &p_dest) {
 
 	int dsize = data.size();
@@ -2234,7 +2297,7 @@ void Image::blend_rect(const Image &p_src, const Rect2 &p_src_rect, const Point2
 	DVector<uint8_t>::Read rp = p_src.data.read();
 	const unsigned char *src_data_ptr = rp.ptr();
 
-	if (format == FORMAT_INDEXED || format == FORMAT_INDEXED || p_src.format == FORMAT_INDEXED || p_src.format == FORMAT_INDEXED_ALPHA) {
+	if (format == FORMAT_INDEXED || format == FORMAT_INDEXED_ALPHA || p_src.format == FORMAT_INDEXED || p_src.format == FORMAT_INDEXED_ALPHA) {
 
 		return;
 
@@ -2287,7 +2350,7 @@ void Image::blend_rect_mask(const Image &p_src, const Image &p_mask, const Rect2
 	DVector<uint8_t>::Read mrp = p_mask.data.read();
 	const unsigned char *mask_data_ptr = mrp.ptr();
 
-	if (format == FORMAT_INDEXED || format == FORMAT_INDEXED || p_src.format == FORMAT_INDEXED || p_src.format == FORMAT_INDEXED_ALPHA) {
+	if (format == FORMAT_INDEXED || format == FORMAT_INDEXED_ALPHA || p_src.format == FORMAT_INDEXED || p_src.format == FORMAT_INDEXED_ALPHA) {
 
 		return;
 
