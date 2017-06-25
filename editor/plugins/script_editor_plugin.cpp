@@ -313,6 +313,13 @@ void ScriptEditor::_goto_script_line(REF p_script, int p_line) {
 
 	editor->push_item(p_script.ptr());
 
+	if (bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor"))) {
+
+		Ref<Script> script = p_script->cast_to<Script>();
+		if (!script.is_null() && script->get_path().is_resource_file())
+			edit(p_script, p_line, 0);
+	}
+
 	int selected = tab_container->get_current_tab();
 	if (selected < 0 || selected >= tab_container->get_child_count())
 		return;
@@ -866,6 +873,11 @@ void ScriptEditor::_menu_option(int p_option) {
 				debugger->set_hide_on_stop(visible);
 			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(DEBUG_SHOW_KEEP_OPEN), !visible);
 		} break;
+		case DEBUG_WITH_EXTERNAL_EDITOR: {
+			bool debug_with_external_editor = !debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(DEBUG_WITH_EXTERNAL_EDITOR));
+			debugger->set_debug_with_external_editor(debug_with_external_editor);
+			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(DEBUG_WITH_EXTERNAL_EDITOR), debug_with_external_editor);
+		}
 	}
 
 	int selected = tab_container->get_current_tab();
@@ -1545,13 +1557,10 @@ bool ScriptEditor::edit(const Ref<Script> &p_script, int p_line, int p_col, bool
 
 	bool open_dominant = EditorSettings::get_singleton()->get("text_editor/files/open_dominant_script_on_scene_change");
 
-	Error err = p_script->get_language()->open_in_external_editor(p_script, p_line >= 0 ? p_line : 0, p_col);
-	if (err == OK)
-		return false;
-	if (err != ERR_UNAVAILABLE)
-		WARN_PRINT("Couldn't open in custom external text editor");
-
-	if (p_script->get_path().is_resource_file() && bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor"))) {
+	if ((debugger->get_dump_stack_script() != p_script || debugger->get_debug_with_external_editor()) &&
+			p_script->get_language()->open_in_external_editor(p_script, p_line >= 0 ? p_line : 0, p_col) == OK &&
+			p_script->get_path().is_resource_file() &&
+			bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor"))) {
 
 		String path = EditorSettings::get_singleton()->get("text_editor/external/exec_path");
 		String flags = EditorSettings::get_singleton()->get("text_editor/external/exec_flags");
@@ -2244,6 +2253,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	debug_menu->get_popup()->add_separator();
 	//debug_menu->get_popup()->add_check_item("Show Debugger",DEBUG_SHOW);
 	debug_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("debugger/keep_debugger_open", TTR("Keep Debugger Open")), DEBUG_SHOW_KEEP_OPEN);
+	debug_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("debugger/debug_with_exteral_editor", TTR("Debug with external editor")), DEBUG_WITH_EXTERNAL_EDITOR);
 	debug_menu->get_popup()->connect("id_pressed", this, "_menu_option");
 
 	debug_menu->get_popup()->set_item_disabled(debug_menu->get_popup()->get_item_index(DEBUG_NEXT), true);

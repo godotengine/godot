@@ -557,6 +557,8 @@ void ScriptEditor::_update_modified_scripts_for_external_editor(Ref<Script> p_fo
 	if (!bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor")))
 		return;
 
+	ERR_FAIL_COND(!get_tree());
+
 	Set<Ref<Script> > scripts;
 
 	Node *base = get_tree()->get_edited_scene_root();

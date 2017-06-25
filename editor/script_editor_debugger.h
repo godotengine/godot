@@ -84,6 +84,8 @@ class ScriptEditorDebugger : public Control {
 	int last_error_count;
 
 	bool hide_on_stop;
+	bool enable_external_editor;
+	Ref<Script> stack_script;
 
 	TabContainer *tabs;
 
@@ -200,6 +202,11 @@ public:
 	void update_live_edit_root();
 
 	void set_hide_on_stop(bool p_hide);
+
+	bool get_debug_with_external_editor() const;
+	void set_debug_with_external_editor(bool p_enabled);
+
+	Ref<Script> get_dump_stack_script() const;
 
 	void set_tool_button(Button *p_tb) { debugger_button = p_tb; }
 
