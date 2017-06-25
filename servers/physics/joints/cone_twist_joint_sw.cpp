@@ -107,6 +107,7 @@ ConeTwistJointSW::ConeTwistJointSW(BodySW *rbA, BodySW *rbB, const Transform &rb
 	B->add_constraint(this, 1);
 
 	m_appliedImpulse = 0;
+	m_angularOnly = 0;
 }
 
 bool ConeTwistJointSW::setup(real_t p_step) {
