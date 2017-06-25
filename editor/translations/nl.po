@@ -351,12 +351,208 @@ msgstr "Wijzig Array Waarde Type"
 msgid "Change Array Value"
 msgstr "Wijzig Array Waarde"
 
+#: editor/asset_library_editor_plugin.cpp
+msgid "Free"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp editor/editor_plugin_settings.cpp
+msgid "Version:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Contents:"
+msgstr "Constanten:"
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "View Files"
+msgstr "Bestand:"
+
+#: editor/asset_library_editor_plugin.cpp editor/create_dialog.cpp
+#: editor/editor_help.cpp editor/script_editor_debugger.cpp
+msgid "Description:"
+msgstr "Omschrijving:"
+
+#: editor/asset_library_editor_plugin.cpp editor/project_manager.cpp
+msgid "Install"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp editor/call_dialog.cpp
+#: editor/connections_dialog.cpp
+#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/sample_library_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_settings.cpp
+#: editor/property_editor.cpp editor/run_settings_dialog.cpp
+#: editor/settings_config_dialog.cpp
+msgid "Close"
+msgstr "Sluiten"
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Can't resolve hostname:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Can't resolve."
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Connection error, please try again."
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Can't connect."
+msgstr "Verbind.."
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Can't connect to host:"
+msgstr "Verbind Aan Node:"
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "No response from host:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "No response."
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Request failed, return code:"
+msgstr "Opgevraagde bestandsformaat onbekend:"
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Req. Failed."
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Request failed, too many redirects"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Redirect Loop."
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Failed:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Bad download hash, assuming file has been tampered with."
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Expected:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Got:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Failed sha256 hash check"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Asset Download Error:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Success!"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Fetching:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Resolving.."
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Connecting.."
+msgstr "Verbind.."
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Requesting.."
+msgstr "Testen"
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Error making request"
+msgstr "Error bij het opslaan van resource!"
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Idle"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Retry"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Download Error"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Download for this asset is already in progress!"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "first"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "prev"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "next"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "last"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "All"
+msgstr "Alle"
+
 #: editor/asset_library_editor_plugin.cpp editor/create_dialog.cpp
 #: editor/editor_help.cpp editor/editor_node.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/quick_open.cpp
 #: editor/settings_config_dialog.cpp
 msgid "Search:"
 msgstr "Zoeken:"
+
+#: editor/asset_library_editor_plugin.cpp editor/code_editor.cpp
+#: editor/editor_help.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/project_settings.cpp
+msgid "Search"
+msgstr "Zoeken"
+
+#: editor/asset_library_editor_plugin.cpp editor/editor_node.cpp
+#: editor/io_plugins/editor_bitmask_import_plugin.cpp
+#: editor/io_plugins/editor_font_import_plugin.cpp
+#: editor/io_plugins/editor_mesh_import_plugin.cpp
+#: editor/io_plugins/editor_sample_import_plugin.cpp
+#: editor/io_plugins/editor_scene_import_plugin.cpp
+#: editor/io_plugins/editor_texture_import_plugin.cpp
+#: editor/io_plugins/editor_translation_import_plugin.cpp
+#: editor/project_manager.cpp
+msgid "Import"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp editor/project_settings.cpp
+msgid "Plugins"
+msgstr ""
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Sort:"
@@ -369,10 +565,6 @@ msgstr "Omkeren"
 #: editor/asset_library_editor_plugin.cpp editor/project_settings.cpp
 msgid "Category:"
 msgstr "Categorie:"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "All"
-msgstr "Alle"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Site:"
@@ -406,18 +598,6 @@ msgstr "Methode Lijst Voor '%s':"
 #: editor/call_dialog.cpp
 msgid "Call"
 msgstr "Aanroep"
-
-#: editor/call_dialog.cpp editor/connections_dialog.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/sample_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_settings.cpp
-#: editor/property_editor.cpp editor/run_settings_dialog.cpp
-#: editor/settings_config_dialog.cpp
-msgid "Close"
-msgstr "Sluiten"
 
 #: editor/call_dialog.cpp
 msgid "Method List:"
@@ -467,12 +647,6 @@ msgstr "Hele Woorden"
 #: editor/code_editor.cpp
 msgid "Selection Only"
 msgstr "Alleen Selectie"
-
-#: editor/code_editor.cpp editor/editor_help.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/project_settings.cpp
-msgid "Search"
-msgstr "Zoeken"
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "Find"
@@ -556,6 +730,7 @@ msgstr "Toevoegen"
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings.cpp
 msgid "Remove"
 msgstr "Verwijderen"
 
@@ -630,11 +805,6 @@ msgstr "Recente:"
 #: editor/plugins/script_editor_plugin.cpp editor/quick_open.cpp
 msgid "Matches:"
 msgstr "Matches:"
-
-#: editor/create_dialog.cpp editor/editor_help.cpp
-#: editor/script_editor_debugger.cpp
-msgid "Description:"
-msgstr "Omschrijving:"
 
 #: editor/dependency_editor.cpp
 msgid "Search Replacement For:"
@@ -980,7 +1150,8 @@ msgstr "Een geldige extensie moet gebruikt worden."
 msgid "ScanSources"
 msgstr "Scan Bronnen"
 
-#: editor/editor_help.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/editor_help.cpp editor/editor_node.cpp
+#: editor/plugins/script_editor_plugin.cpp
 msgid "Search Help"
 msgstr "Zoek Hulp"
 
@@ -1275,6 +1446,10 @@ msgid "Save Scene As.."
 msgstr ""
 
 #: editor/editor_node.cpp
+msgid "No"
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid "This scene has never been saved. Save before running?"
 msgstr ""
 
@@ -1484,17 +1659,6 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Import assets to the project."
-msgstr ""
-
-#: editor/editor_node.cpp editor/io_plugins/editor_bitmask_import_plugin.cpp
-#: editor/io_plugins/editor_font_import_plugin.cpp
-#: editor/io_plugins/editor_mesh_import_plugin.cpp
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-#: editor/project_manager.cpp
-msgid "Import"
 msgstr ""
 
 #: editor/editor_node.cpp
@@ -1734,6 +1898,14 @@ msgid "Thanks!"
 msgstr ""
 
 #: editor/editor_node.cpp
+msgid "Godot Engine contributors"
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Developers"
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
 msgstr ""
 
@@ -1761,12 +1933,36 @@ msgstr ""
 msgid "Load Errors"
 msgstr ""
 
-#: editor/editor_plugin_settings.cpp
-msgid "Installed Plugins:"
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Open 2D Editor"
+msgstr "Open een Map"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Open 3D Editor"
+msgstr "Open een Map"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Open Script Editor"
+msgstr "Afhankelijkheden Editor"
+
+#: editor/editor_node.cpp
+msgid "Open Asset Library"
+msgstr ""
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Open the next Editor"
+msgstr "Afhankelijkheden Editor"
+
+#: editor/editor_node.cpp
+msgid "Open the previous Editor"
 msgstr ""
 
 #: editor/editor_plugin_settings.cpp
-msgid "Version:"
+msgid "Installed Plugins:"
 msgstr ""
 
 #: editor/editor_plugin_settings.cpp
@@ -5258,10 +5454,6 @@ msgid "Install Project:"
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "Install"
-msgstr ""
-
-#: editor/project_manager.cpp
 msgid "Browse"
 msgstr ""
 
@@ -5318,6 +5510,11 @@ msgstr ""
 #: editor/project_manager.cpp
 msgid "New Project"
 msgstr ""
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Templates"
+msgstr "Verwijder Selectie"
 
 #: editor/project_manager.cpp
 msgid "Exit"
@@ -5436,6 +5633,10 @@ msgstr ""
 
 #: editor/project_settings.cpp
 msgid "Erase Input Action Event"
+msgstr ""
+
+#: editor/project_settings.cpp
+msgid "Add Event"
 msgstr ""
 
 #: editor/project_settings.cpp scene/gui/input_action.cpp
@@ -5577,10 +5778,6 @@ msgstr ""
 
 #: editor/project_settings.cpp
 msgid "AutoLoad"
-msgstr ""
-
-#: editor/project_settings.cpp
-msgid "Plugins"
 msgstr ""
 
 #: editor/property_editor.cpp
@@ -5887,7 +6084,54 @@ msgid "Toggle CanvasItem Visible"
 msgstr ""
 
 #: editor/scene_tree_editor.cpp
+msgid "Node configuration warning:"
+msgstr ""
+
+#: editor/scene_tree_editor.cpp
+msgid ""
+"Node has connection(s) and group(s)\n"
+"Click to show signals dock."
+msgstr ""
+
+#: editor/scene_tree_editor.cpp
+msgid ""
+"Node has connections.\n"
+"Click to show signals dock."
+msgstr ""
+
+#: editor/scene_tree_editor.cpp
+msgid ""
+"Node is in group(s).\n"
+"Click to show groups dock."
+msgstr ""
+
+#: editor/scene_tree_editor.cpp
+msgid "Subscene options"
+msgstr ""
+
+#: editor/scene_tree_editor.cpp
 msgid "Instance:"
+msgstr ""
+
+#: editor/scene_tree_editor.cpp
+#, fuzzy
+msgid "Open script"
+msgstr "Omschrijving:"
+
+#: editor/scene_tree_editor.cpp
+msgid ""
+"Node is locked.\n"
+"Click to unlock"
+msgstr ""
+
+#: editor/scene_tree_editor.cpp
+msgid ""
+"Children are not selectable.\n"
+"Click to make selectable"
+msgstr ""
+
+#: editor/scene_tree_editor.cpp
+msgid "Toggle Visibility"
 msgstr ""
 
 #: editor/scene_tree_editor.cpp
@@ -6215,6 +6459,89 @@ msgstr "Ongeldige dictionary formaat van instantie (ongeldige script op @path)"
 msgid "Invalid instance dictionary (invalid subclasses)"
 msgstr "Ongeldige dictionary van instantie (ongeldige subklassen)"
 
+#: platform/winrt/export/export.cpp
+#, fuzzy
+msgid ""
+"Couldn't read the certficate file. Are the path and password both correct?"
+msgstr ""
+"Kon het certificaat bestand niet lezen. Zijn het pad en wachtwoord beide "
+"correct?"
+
+#: platform/winrt/export/export.cpp
+msgid "Error creating the signature object."
+msgstr "Error bij het maken van het signatuur object."
+
+#: platform/winrt/export/export.cpp
+msgid "Error creating the package signature."
+msgstr "Error bij het maken van het pakket signatuur."
+
+#: platform/winrt/export/export.cpp
+msgid ""
+"No export templates found.\n"
+"Download and install export templates."
+msgstr ""
+"Geen export templates gevonden.\n"
+"Download en installeer export templates."
+
+#: platform/winrt/export/export.cpp
+msgid "Custom debug package not found."
+msgstr "Custom debug pakket niet gevonden."
+
+#: platform/winrt/export/export.cpp
+msgid "Custom release package not found."
+msgstr "Custom release pakket niet gevonden."
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid unique name."
+msgstr "Ongeldige unieke naam."
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid product GUID."
+msgstr "Ongeldig product GUID."
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid publisher GUID."
+msgstr "Ongeldige uitgever GUID."
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid background color."
+msgstr "Ongeldige achtergrondkleur."
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid Store Logo image dimensions (should be 50x50)."
+msgstr "Ongeldige afmetingen voor Store Logo afbeelding (moet 50×50 zijn)."
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
+msgstr ""
+"Ongeldige afmetingen van vierkante 44×44 logo afbeelding (moet 44×44 zijn)."
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
+msgstr ""
+"Ongeldige afmetingen van vierkante 71×71 logo afbeelding (moet 71×71 zijn)."
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
+msgstr ""
+"Ongeldige afmetingen van vierkante 150×150 logo afbeelding (moet 150×150 "
+"zijn)."
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
+msgstr ""
+"Ongeldige afmetingen van vierkante 310×310 logo afbeelding (moet 310×310 "
+"zijn)."
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
+msgstr ""
+"Ongeldige afmetingen van brede 310×150 logo afbeelding (moet 310×150 zijn)."
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid splash screen image dimensions (should be 620x300)."
+msgstr "Ongeldige afmetingen van splash screen afbeelding (moet 620×300 zijn)."
+
 #: scene/2d/animated_sprite.cpp
 msgid ""
 "A SpriteFrames resource must be created or set in the 'Frames' property in "
@@ -6511,16 +6838,8 @@ msgstr ""
 #~ msgstr "Error bij het opslaan van atlas:"
 
 #, fuzzy
-#~ msgid "Remove Template"
-#~ msgstr "Verwijder Selectie"
-
-#, fuzzy
 #~ msgid "Select template file"
 #~ msgstr "Verwijder geselecteerde bestanden?"
-
-#, fuzzy
-#~ msgid " Files"
-#~ msgstr "Bestand:"
 
 #, fuzzy
 #~ msgid "Import As:"
@@ -6787,74 +7106,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "Could not open template for export:\n"
 #~ msgstr "Map kon niet gemaakt worden."
-
-#, fuzzy
-#~ msgid ""
-#~ "Couldn't read the certificate file. Are the path and password both "
-#~ "correct?"
-#~ msgstr ""
-#~ "Kon het certificaat bestand niet lezen. Zijn het pad en wachtwoord beide "
-#~ "correct?"
-
-#~ msgid "Error creating the package signature."
-#~ msgstr "Error bij het maken van het pakket signatuur."
-
-#~ msgid ""
-#~ "No export templates found.\n"
-#~ "Download and install export templates."
-#~ msgstr ""
-#~ "Geen export templates gevonden.\n"
-#~ "Download en installeer export templates."
-
-#~ msgid "Custom debug package not found."
-#~ msgstr "Custom debug pakket niet gevonden."
-
-#~ msgid "Custom release package not found."
-#~ msgstr "Custom release pakket niet gevonden."
-
-#~ msgid "Invalid unique name."
-#~ msgstr "Ongeldige unieke naam."
-
-#~ msgid "Invalid product GUID."
-#~ msgstr "Ongeldig product GUID."
-
-#~ msgid "Invalid publisher GUID."
-#~ msgstr "Ongeldige uitgever GUID."
-
-#~ msgid "Invalid background color."
-#~ msgstr "Ongeldige achtergrondkleur."
-
-#~ msgid "Invalid Store Logo image dimensions (should be 50x50)."
-#~ msgstr "Ongeldige afmetingen voor Store Logo afbeelding (moet 50×50 zijn)."
-
-#~ msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
-#~ msgstr ""
-#~ "Ongeldige afmetingen van vierkante 44×44 logo afbeelding (moet 44×44 "
-#~ "zijn)."
-
-#~ msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
-#~ msgstr ""
-#~ "Ongeldige afmetingen van vierkante 71×71 logo afbeelding (moet 71×71 "
-#~ "zijn)."
-
-#~ msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
-#~ msgstr ""
-#~ "Ongeldige afmetingen van vierkante 150×150 logo afbeelding (moet 150×150 "
-#~ "zijn)."
-
-#~ msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
-#~ msgstr ""
-#~ "Ongeldige afmetingen van vierkante 310×310 logo afbeelding (moet 310×310 "
-#~ "zijn)."
-
-#~ msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
-#~ msgstr ""
-#~ "Ongeldige afmetingen van brede 310×150 logo afbeelding (moet 310×150 "
-#~ "zijn)."
-
-#~ msgid "Invalid splash screen image dimensions (should be 620x300)."
-#~ msgstr ""
-#~ "Ongeldige afmetingen van splash screen afbeelding (moet 620×300 zijn)."
 
 #~ msgid "Path property must point to a valid Spatial node to work."
 #~ msgstr ""

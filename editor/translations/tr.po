@@ -356,12 +356,210 @@ msgstr "Dizinin türünü degistir"
 msgid "Change Array Value"
 msgstr "Dizi Değerini Değiştir"
 
+#: editor/asset_library_editor_plugin.cpp
+msgid "Free"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp editor/editor_plugin_settings.cpp
+msgid "Version:"
+msgstr "Sürüm:"
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Contents:"
+msgstr "Sabitler:"
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "View Files"
+msgstr "Dizeç"
+
+#: editor/asset_library_editor_plugin.cpp editor/create_dialog.cpp
+#: editor/editor_help.cpp editor/script_editor_debugger.cpp
+msgid "Description:"
+msgstr "Açıklama:"
+
+#: editor/asset_library_editor_plugin.cpp editor/project_manager.cpp
+msgid "Install"
+msgstr "Kur"
+
+#: editor/asset_library_editor_plugin.cpp editor/call_dialog.cpp
+#: editor/connections_dialog.cpp
+#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/sample_library_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_settings.cpp
+#: editor/property_editor.cpp editor/run_settings_dialog.cpp
+#: editor/settings_config_dialog.cpp
+msgid "Close"
+msgstr "Kapat"
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Can't resolve hostname:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Can't resolve."
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Connection error, please try again."
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Can't connect."
+msgstr "Bağlan..."
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Can't connect to host:"
+msgstr "Düğüme Bağlan:"
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "No response from host:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "No response."
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Request failed, return code:"
+msgstr "İstenilen dizeç formatı bilinmiyor:"
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Req. Failed."
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Request failed, too many redirects"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Redirect Loop."
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Failed:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Bad download hash, assuming file has been tampered with."
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Expected:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Got:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Failed sha256 hash check"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Asset Download Error:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Success!"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Fetching:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Resolving.."
+msgstr "Kaydediliyor..."
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Connecting.."
+msgstr "Bağlan..."
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Requesting.."
+msgstr "Deneme"
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Error making request"
+msgstr "Kaynak kaydedilirken sorun!"
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Idle"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Retry"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Download Error"
+msgstr "Aşağı"
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Download for this asset is already in progress!"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "first"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "prev"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "next"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "last"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "All"
+msgstr "Hepsi"
+
 #: editor/asset_library_editor_plugin.cpp editor/create_dialog.cpp
 #: editor/editor_help.cpp editor/editor_node.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/quick_open.cpp
 #: editor/settings_config_dialog.cpp
 msgid "Search:"
 msgstr "Ara:"
+
+#: editor/asset_library_editor_plugin.cpp editor/code_editor.cpp
+#: editor/editor_help.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/project_settings.cpp
+msgid "Search"
+msgstr "Ara"
+
+#: editor/asset_library_editor_plugin.cpp editor/editor_node.cpp
+#: editor/io_plugins/editor_bitmask_import_plugin.cpp
+#: editor/io_plugins/editor_font_import_plugin.cpp
+#: editor/io_plugins/editor_mesh_import_plugin.cpp
+#: editor/io_plugins/editor_sample_import_plugin.cpp
+#: editor/io_plugins/editor_scene_import_plugin.cpp
+#: editor/io_plugins/editor_texture_import_plugin.cpp
+#: editor/io_plugins/editor_translation_import_plugin.cpp
+#: editor/project_manager.cpp
+msgid "Import"
+msgstr "İçe Aktar"
+
+#: editor/asset_library_editor_plugin.cpp editor/project_settings.cpp
+msgid "Plugins"
+msgstr "Eklentiler"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Sort:"
@@ -374,10 +572,6 @@ msgstr "Tersi"
 #: editor/asset_library_editor_plugin.cpp editor/project_settings.cpp
 msgid "Category:"
 msgstr "Katman:"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "All"
-msgstr "Hepsi"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Site:"
@@ -410,18 +604,6 @@ msgstr "'%s' İçin Yöntem Dizelgesi:"
 #: editor/call_dialog.cpp
 msgid "Call"
 msgstr "Çağır"
-
-#: editor/call_dialog.cpp editor/connections_dialog.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/sample_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_settings.cpp
-#: editor/property_editor.cpp editor/run_settings_dialog.cpp
-#: editor/settings_config_dialog.cpp
-msgid "Close"
-msgstr "Kapat"
 
 #: editor/call_dialog.cpp
 msgid "Method List:"
@@ -470,12 +652,6 @@ msgstr "Tüm Sözcükler"
 #: editor/code_editor.cpp
 msgid "Selection Only"
 msgstr "Yalnızca Seçim"
-
-#: editor/code_editor.cpp editor/editor_help.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/project_settings.cpp
-msgid "Search"
-msgstr "Ara"
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "Find"
@@ -559,6 +735,7 @@ msgstr "Ekle"
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings.cpp
 msgid "Remove"
 msgstr "Kaldır"
 
@@ -632,11 +809,6 @@ msgstr "Yakın zamanda:"
 #: editor/plugins/script_editor_plugin.cpp editor/quick_open.cpp
 msgid "Matches:"
 msgstr "Eşleşmeler:"
-
-#: editor/create_dialog.cpp editor/editor_help.cpp
-#: editor/script_editor_debugger.cpp
-msgid "Description:"
-msgstr "Açıklama:"
 
 #: editor/dependency_editor.cpp
 msgid "Search Replacement For:"
@@ -975,7 +1147,8 @@ msgstr "Gecerli bir uzantı kullanılmalı."
 msgid "ScanSources"
 msgstr "KaynaklarıTara"
 
-#: editor/editor_help.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/editor_help.cpp editor/editor_node.cpp
+#: editor/plugins/script_editor_plugin.cpp
 msgid "Search Help"
 msgstr "Yardım Ara"
 
@@ -1274,6 +1447,11 @@ msgid "Save Scene As.."
 msgstr "Sahneyi Başkaca Kaydet.."
 
 #: editor/editor_node.cpp
+#, fuzzy
+msgid "No"
+msgstr "Düğüm"
+
+#: editor/editor_node.cpp
 msgid "This scene has never been saved. Save before running?"
 msgstr "Sahne hiç kaydedilmedi. Çalıştırmadan önce kaydedilsin mi?"
 
@@ -1491,17 +1669,6 @@ msgstr "Tasarı Dizelgesine Git"
 #: editor/editor_node.cpp
 msgid "Import assets to the project."
 msgstr "Varlıkları tasarının içine aktar."
-
-#: editor/editor_node.cpp editor/io_plugins/editor_bitmask_import_plugin.cpp
-#: editor/io_plugins/editor_font_import_plugin.cpp
-#: editor/io_plugins/editor_mesh_import_plugin.cpp
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-#: editor/project_manager.cpp
-msgid "Import"
-msgstr "İçe Aktar"
 
 #: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
@@ -1759,6 +1926,14 @@ msgid "Thanks!"
 msgstr "Sağ olun!"
 
 #: editor/editor_node.cpp
+msgid "Godot Engine contributors"
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Developers"
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
 msgstr "Kalıpları ZIP Dizecinden İçe Aktar"
 
@@ -1786,13 +1961,39 @@ msgstr "Aç & Bir Betik Çalıştır"
 msgid "Load Errors"
 msgstr "Sorunları Yükle"
 
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Open 2D Editor"
+msgstr "Düzenleyicide Aç"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Open 3D Editor"
+msgstr "Düzenleyicide Aç"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Open Script Editor"
+msgstr "Düzenleyicide Aç"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Open Asset Library"
+msgstr "Betikevini Dışa Aktar"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Open the next Editor"
+msgstr "Düzenleyicide Aç"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Open the previous Editor"
+msgstr "Düzenleyicide Aç"
+
 #: editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
 msgstr "Yüklü Eklentiler:"
-
-#: editor/editor_plugin_settings.cpp
-msgid "Version:"
-msgstr "Sürüm:"
 
 #: editor/editor_plugin_settings.cpp
 msgid "Author:"
@@ -5309,10 +5510,6 @@ msgid "Install Project:"
 msgstr "Tasarıyı Kur:"
 
 #: editor/project_manager.cpp
-msgid "Install"
-msgstr "Kur"
-
-#: editor/project_manager.cpp
 msgid "Browse"
 msgstr "Gözat"
 
@@ -5372,6 +5569,11 @@ msgstr "Tarama için bir Dizin Seç"
 #: editor/project_manager.cpp
 msgid "New Project"
 msgstr "Yeni Tasarı"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Templates"
+msgstr "Öğeyi Kaldır"
 
 #: editor/project_manager.cpp
 msgid "Exit"
@@ -5493,6 +5695,11 @@ msgstr "Giriş Eylemi Ekle"
 #: editor/project_settings.cpp
 msgid "Erase Input Action Event"
 msgstr "Giriş Eylemi Olayını Sil"
+
+#: editor/project_settings.cpp
+#, fuzzy
+msgid "Add Event"
+msgstr "Boş Ekle"
 
 #: editor/project_settings.cpp scene/gui/input_action.cpp
 msgid "Device"
@@ -5634,10 +5841,6 @@ msgstr "Yerel"
 #: editor/project_settings.cpp
 msgid "AutoLoad"
 msgstr "KendindenYükle"
-
-#: editor/project_settings.cpp
-msgid "Plugins"
-msgstr "Eklentiler"
 
 #: editor/property_editor.cpp
 msgid "Preset.."
@@ -5948,8 +6151,57 @@ msgid "Toggle CanvasItem Visible"
 msgstr "CanvasItem'ı Görünür Duruma Getir"
 
 #: editor/scene_tree_editor.cpp
+msgid "Node configuration warning:"
+msgstr ""
+
+#: editor/scene_tree_editor.cpp
+msgid ""
+"Node has connection(s) and group(s)\n"
+"Click to show signals dock."
+msgstr ""
+
+#: editor/scene_tree_editor.cpp
+msgid ""
+"Node has connections.\n"
+"Click to show signals dock."
+msgstr ""
+
+#: editor/scene_tree_editor.cpp
+msgid ""
+"Node is in group(s).\n"
+"Click to show groups dock."
+msgstr ""
+
+#: editor/scene_tree_editor.cpp
+#, fuzzy
+msgid "Subscene options"
+msgstr "Sorun ayıklama seçenekleri"
+
+#: editor/scene_tree_editor.cpp
 msgid "Instance:"
 msgstr "Örnek:"
+
+#: editor/scene_tree_editor.cpp
+#, fuzzy
+msgid "Open script"
+msgstr "Sonraki betik"
+
+#: editor/scene_tree_editor.cpp
+msgid ""
+"Node is locked.\n"
+"Click to unlock"
+msgstr ""
+
+#: editor/scene_tree_editor.cpp
+msgid ""
+"Children are not selectable.\n"
+"Click to make selectable"
+msgstr ""
+
+#: editor/scene_tree_editor.cpp
+#, fuzzy
+msgid "Toggle Visibility"
+msgstr "Uzaysal Görünürlüğü Aç / Kapat"
 
 #: editor/scene_tree_editor.cpp
 msgid "Invalid node name, the following characters are not allowed:"
@@ -6276,6 +6528,81 @@ msgstr "Geçersiz örnek sözlük biçemi (@path 'taki kod geçersiz)"
 msgid "Invalid instance dictionary (invalid subclasses)"
 msgstr "Geçersiz örnek sözlüğü (geçersiz altbölütler)"
 
+#: platform/winrt/export/export.cpp
+#, fuzzy
+msgid ""
+"Couldn't read the certficate file. Are the path and password both correct?"
+msgstr ""
+"Onay belgesi dizeci okunamadı. Yol ve gizyazının her ikisi de doğru mu?"
+
+#: platform/winrt/export/export.cpp
+msgid "Error creating the signature object."
+msgstr "İmza nesnesini oluşturmada sorun."
+
+#: platform/winrt/export/export.cpp
+msgid "Error creating the package signature."
+msgstr "Çıkın imzasını oluşturmada sorun."
+
+#: platform/winrt/export/export.cpp
+msgid ""
+"No export templates found.\n"
+"Download and install export templates."
+msgstr ""
+"Hiçbir dışa aktarım kalıbı bulunamadı.\n"
+"Dışa aktarım kalıplarını indirin ve yükleyin.."
+
+#: platform/winrt/export/export.cpp
+msgid "Custom debug package not found."
+msgstr "Özel kusur ayıklama çıkını bulunmadı."
+
+#: platform/winrt/export/export.cpp
+msgid "Custom release package not found."
+msgstr "Özel yayınlama çıkını bulunamadı."
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid unique name."
+msgstr "Benzersiz Ad Geçersiz."
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid product GUID."
+msgstr "Geçersiz ürün GUID'i."
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid publisher GUID."
+msgstr "Geçersiz yayıncı GUID'i."
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid background color."
+msgstr "Geçersiz arkaplan rengi."
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid Store Logo image dimensions (should be 50x50)."
+msgstr "Geçersiz Yığım Belirtkesi, bedizin boyutları (50x50 olmalı)."
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
+msgstr "Geçersiz kare 44x44 belirtkenin bediz boyutları (44x44 olmalı)."
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
+msgstr "Geçersiz kare 71x71 belirtkenin bediz boyutları (71x71 olmalı)."
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
+msgstr "Geçersiz kare 150x150 belirtkenin bediz boyutları (150x150 olmalı)."
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
+msgstr "Geçersiz kare 310x310 belirtkenin bediz boyutları (310x310 olmalı)."
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
+msgstr "Geçersiz kare 310x150 belirtkenin bediz boyutları (310x150 olmalı)."
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid splash screen image dimensions (should be 620x300)."
+msgstr "Geçersiz açılış görüntülüğü bediz boyutları (620x300 olmalı)."
+
 #: scene/2d/animated_sprite.cpp
 msgid ""
 "A SpriteFrames resource must be created or set in the 'Frames' property in "
@@ -6572,10 +6899,6 @@ msgstr ""
 #~ msgstr "Kur"
 
 #, fuzzy
-#~ msgid "Download"
-#~ msgstr "Aşağı"
-
-#, fuzzy
 #~ msgid "(Current)"
 #~ msgstr "Geçerli:"
 
@@ -6600,10 +6923,6 @@ msgstr ""
 #~ msgstr "Tasarıyı Kur:"
 
 #, fuzzy
-#~ msgid "Remove Template"
-#~ msgstr "Öğeyi Kaldır"
-
-#, fuzzy
 #~ msgid "Select template file"
 #~ msgstr "Seçili dizeçleri sil?"
 
@@ -6614,10 +6933,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "Expand all"
 #~ msgstr "Ataya genişletin"
-
-#, fuzzy
-#~ msgid " Files"
-#~ msgstr "Dizeç"
 
 #, fuzzy
 #~ msgid "Import As:"
@@ -6963,65 +7278,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "Could not open template for export:\n"
 #~ msgstr "Dizin oluşturulamadı."
-
-#, fuzzy
-#~ msgid ""
-#~ "Couldn't read the certificate file. Are the path and password both "
-#~ "correct?"
-#~ msgstr ""
-#~ "Onay belgesi dizeci okunamadı. Yol ve gizyazının her ikisi de doğru mu?"
-
-#~ msgid "Error creating the signature object."
-#~ msgstr "İmza nesnesini oluşturmada sorun."
-
-#~ msgid "Error creating the package signature."
-#~ msgstr "Çıkın imzasını oluşturmada sorun."
-
-#~ msgid ""
-#~ "No export templates found.\n"
-#~ "Download and install export templates."
-#~ msgstr ""
-#~ "Hiçbir dışa aktarım kalıbı bulunamadı.\n"
-#~ "Dışa aktarım kalıplarını indirin ve yükleyin.."
-
-#~ msgid "Custom debug package not found."
-#~ msgstr "Özel kusur ayıklama çıkını bulunmadı."
-
-#~ msgid "Custom release package not found."
-#~ msgstr "Özel yayınlama çıkını bulunamadı."
-
-#~ msgid "Invalid unique name."
-#~ msgstr "Benzersiz Ad Geçersiz."
-
-#~ msgid "Invalid product GUID."
-#~ msgstr "Geçersiz ürün GUID'i."
-
-#~ msgid "Invalid publisher GUID."
-#~ msgstr "Geçersiz yayıncı GUID'i."
-
-#~ msgid "Invalid background color."
-#~ msgstr "Geçersiz arkaplan rengi."
-
-#~ msgid "Invalid Store Logo image dimensions (should be 50x50)."
-#~ msgstr "Geçersiz Yığım Belirtkesi, bedizin boyutları (50x50 olmalı)."
-
-#~ msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
-#~ msgstr "Geçersiz kare 44x44 belirtkenin bediz boyutları (44x44 olmalı)."
-
-#~ msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
-#~ msgstr "Geçersiz kare 71x71 belirtkenin bediz boyutları (71x71 olmalı)."
-
-#~ msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
-#~ msgstr "Geçersiz kare 150x150 belirtkenin bediz boyutları (150x150 olmalı)."
-
-#~ msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
-#~ msgstr "Geçersiz kare 310x310 belirtkenin bediz boyutları (310x310 olmalı)."
-
-#~ msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
-#~ msgstr "Geçersiz kare 310x150 belirtkenin bediz boyutları (310x150 olmalı)."
-
-#~ msgid "Invalid splash screen image dimensions (should be 620x300)."
-#~ msgstr "Geçersiz açılış görüntülüğü bediz boyutları (620x300 olmalı)."
 
 #~ msgid "Path property must point to a valid Spatial node to work."
 #~ msgstr ""

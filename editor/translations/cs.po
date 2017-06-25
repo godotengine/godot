@@ -352,12 +352,207 @@ msgstr "Změnit typ hodnot pole"
 msgid "Change Array Value"
 msgstr "Změnit hodnotu pole"
 
+#: editor/asset_library_editor_plugin.cpp
+msgid "Free"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp editor/editor_plugin_settings.cpp
+msgid "Version:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Contents:"
+msgstr "Spojité"
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "View Files"
+msgstr "Soubor:"
+
+#: editor/asset_library_editor_plugin.cpp editor/create_dialog.cpp
+#: editor/editor_help.cpp editor/script_editor_debugger.cpp
+msgid "Description:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp editor/project_manager.cpp
+msgid "Install"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp editor/call_dialog.cpp
+#: editor/connections_dialog.cpp
+#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/sample_library_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_settings.cpp
+#: editor/property_editor.cpp editor/run_settings_dialog.cpp
+#: editor/settings_config_dialog.cpp
+msgid "Close"
+msgstr "Zavřít"
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Can't resolve hostname:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Can't resolve."
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Connection error, please try again."
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Can't connect."
+msgstr "Připojit.."
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Can't connect to host:"
+msgstr "Připojit k uzlu:"
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "No response from host:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "No response."
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Request failed, return code:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Req. Failed."
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Request failed, too many redirects"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Redirect Loop."
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Failed:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Bad download hash, assuming file has been tampered with."
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Expected:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Got:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Failed sha256 hash check"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Asset Download Error:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Success!"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Fetching:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Resolving.."
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Connecting.."
+msgstr "Připojit.."
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Requesting.."
+msgstr "Testované"
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Error making request"
+msgstr "Chyba nahrávání fontu."
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Idle"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Retry"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Download Error"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Download for this asset is already in progress!"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "first"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "prev"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "next"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "last"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "All"
+msgstr "Všechny"
+
 #: editor/asset_library_editor_plugin.cpp editor/create_dialog.cpp
 #: editor/editor_help.cpp editor/editor_node.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/quick_open.cpp
 #: editor/settings_config_dialog.cpp
 msgid "Search:"
 msgstr "Hledat:"
+
+#: editor/asset_library_editor_plugin.cpp editor/code_editor.cpp
+#: editor/editor_help.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/project_settings.cpp
+msgid "Search"
+msgstr "Hledat"
+
+#: editor/asset_library_editor_plugin.cpp editor/editor_node.cpp
+#: editor/io_plugins/editor_bitmask_import_plugin.cpp
+#: editor/io_plugins/editor_font_import_plugin.cpp
+#: editor/io_plugins/editor_mesh_import_plugin.cpp
+#: editor/io_plugins/editor_sample_import_plugin.cpp
+#: editor/io_plugins/editor_scene_import_plugin.cpp
+#: editor/io_plugins/editor_texture_import_plugin.cpp
+#: editor/io_plugins/editor_translation_import_plugin.cpp
+#: editor/project_manager.cpp
+msgid "Import"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp editor/project_settings.cpp
+msgid "Plugins"
+msgstr ""
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Sort:"
@@ -370,10 +565,6 @@ msgstr "Naopak"
 #: editor/asset_library_editor_plugin.cpp editor/project_settings.cpp
 msgid "Category:"
 msgstr "Kategorie:"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "All"
-msgstr "Všechny"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Site:"
@@ -406,18 +597,6 @@ msgstr "Seznam metod '%s':"
 #: editor/call_dialog.cpp
 msgid "Call"
 msgstr "Zavolat"
-
-#: editor/call_dialog.cpp editor/connections_dialog.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/sample_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_settings.cpp
-#: editor/property_editor.cpp editor/run_settings_dialog.cpp
-#: editor/settings_config_dialog.cpp
-msgid "Close"
-msgstr "Zavřít"
 
 #: editor/call_dialog.cpp
 msgid "Method List:"
@@ -466,12 +645,6 @@ msgstr "Celá slova"
 #: editor/code_editor.cpp
 msgid "Selection Only"
 msgstr "Pouze výběr"
-
-#: editor/code_editor.cpp editor/editor_help.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/project_settings.cpp
-msgid "Search"
-msgstr "Hledat"
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "Find"
@@ -553,6 +726,7 @@ msgstr "Přidat"
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings.cpp
 msgid "Remove"
 msgstr "Odebrat"
 
@@ -626,11 +800,6 @@ msgstr ""
 #: editor/plugins/script_editor_plugin.cpp editor/quick_open.cpp
 msgid "Matches:"
 msgstr "Shody:"
-
-#: editor/create_dialog.cpp editor/editor_help.cpp
-#: editor/script_editor_debugger.cpp
-msgid "Description:"
-msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Search Replacement For:"
@@ -971,7 +1140,8 @@ msgstr "Je nutné použít platnou příponu."
 msgid "ScanSources"
 msgstr ""
 
-#: editor/editor_help.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/editor_help.cpp editor/editor_node.cpp
+#: editor/plugins/script_editor_plugin.cpp
 msgid "Search Help"
 msgstr ""
 
@@ -1261,6 +1431,10 @@ msgid "Save Scene As.."
 msgstr ""
 
 #: editor/editor_node.cpp
+msgid "No"
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid "This scene has never been saved. Save before running?"
 msgstr ""
 
@@ -1470,17 +1644,6 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Import assets to the project."
-msgstr ""
-
-#: editor/editor_node.cpp editor/io_plugins/editor_bitmask_import_plugin.cpp
-#: editor/io_plugins/editor_font_import_plugin.cpp
-#: editor/io_plugins/editor_mesh_import_plugin.cpp
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-#: editor/project_manager.cpp
-msgid "Import"
 msgstr ""
 
 #: editor/editor_node.cpp
@@ -1721,6 +1884,14 @@ msgid "Thanks!"
 msgstr ""
 
 #: editor/editor_node.cpp
+msgid "Godot Engine contributors"
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Developers"
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
 msgstr ""
 
@@ -1748,12 +1919,36 @@ msgstr ""
 msgid "Load Errors"
 msgstr ""
 
-#: editor/editor_plugin_settings.cpp
-msgid "Installed Plugins:"
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Open 2D Editor"
+msgstr "Otevřít složku"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Open 3D Editor"
+msgstr "Otevřít složku"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Open Script Editor"
+msgstr "Editor závislostí"
+
+#: editor/editor_node.cpp
+msgid "Open Asset Library"
+msgstr ""
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Open the next Editor"
+msgstr "Editor závislostí"
+
+#: editor/editor_node.cpp
+msgid "Open the previous Editor"
 msgstr ""
 
 #: editor/editor_plugin_settings.cpp
-msgid "Version:"
+msgid "Installed Plugins:"
 msgstr ""
 
 #: editor/editor_plugin_settings.cpp
@@ -5247,10 +5442,6 @@ msgid "Install Project:"
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "Install"
-msgstr ""
-
-#: editor/project_manager.cpp
 msgid "Browse"
 msgstr ""
 
@@ -5307,6 +5498,11 @@ msgstr ""
 #: editor/project_manager.cpp
 msgid "New Project"
 msgstr ""
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Templates"
+msgstr "Odstranit výběr"
 
 #: editor/project_manager.cpp
 msgid "Exit"
@@ -5425,6 +5621,10 @@ msgstr ""
 
 #: editor/project_settings.cpp
 msgid "Erase Input Action Event"
+msgstr ""
+
+#: editor/project_settings.cpp
+msgid "Add Event"
 msgstr ""
 
 #: editor/project_settings.cpp scene/gui/input_action.cpp
@@ -5566,10 +5766,6 @@ msgstr ""
 
 #: editor/project_settings.cpp
 msgid "AutoLoad"
-msgstr ""
-
-#: editor/project_settings.cpp
-msgid "Plugins"
 msgstr ""
 
 #: editor/property_editor.cpp
@@ -5878,7 +6074,54 @@ msgid "Toggle CanvasItem Visible"
 msgstr ""
 
 #: editor/scene_tree_editor.cpp
+msgid "Node configuration warning:"
+msgstr ""
+
+#: editor/scene_tree_editor.cpp
+msgid ""
+"Node has connection(s) and group(s)\n"
+"Click to show signals dock."
+msgstr ""
+
+#: editor/scene_tree_editor.cpp
+msgid ""
+"Node has connections.\n"
+"Click to show signals dock."
+msgstr ""
+
+#: editor/scene_tree_editor.cpp
+msgid ""
+"Node is in group(s).\n"
+"Click to show groups dock."
+msgstr ""
+
+#: editor/scene_tree_editor.cpp
+msgid "Subscene options"
+msgstr ""
+
+#: editor/scene_tree_editor.cpp
 msgid "Instance:"
+msgstr ""
+
+#: editor/scene_tree_editor.cpp
+#, fuzzy
+msgid "Open script"
+msgstr "Spustit skript"
+
+#: editor/scene_tree_editor.cpp
+msgid ""
+"Node is locked.\n"
+"Click to unlock"
+msgstr ""
+
+#: editor/scene_tree_editor.cpp
+msgid ""
+"Children are not selectable.\n"
+"Click to make selectable"
+msgstr ""
+
+#: editor/scene_tree_editor.cpp
+msgid "Toggle Visibility"
 msgstr ""
 
 #: editor/scene_tree_editor.cpp
@@ -6208,6 +6451,83 @@ msgstr "Neplatná instance slovníkového formátu (nemohu nahrát skript na @pa
 msgid "Invalid instance dictionary (invalid subclasses)"
 msgstr "Neplatná instance slovníku (neplatné podtřídy)"
 
+#: platform/winrt/export/export.cpp
+#, fuzzy
+msgid ""
+"Couldn't read the certficate file. Are the path and password both correct?"
+msgstr ""
+"Nepodařilo se přečíst soubor certifikátu. Jsou cesta a heslo obě korektní?"
+
+#: platform/winrt/export/export.cpp
+msgid "Error creating the signature object."
+msgstr "Chyba při vytváření podpisového objektu."
+
+#: platform/winrt/export/export.cpp
+msgid "Error creating the package signature."
+msgstr "Chyba při vytváření podpisu balíčku."
+
+#: platform/winrt/export/export.cpp
+#, fuzzy
+msgid ""
+"No export templates found.\n"
+"Download and install export templates."
+msgstr ""
+"Nebyly nalezeny žádné exportní šablony.\n"
+"Stáhněte a nainstalujte exportní šablony."
+
+#: platform/winrt/export/export.cpp
+msgid "Custom debug package not found."
+msgstr "Vlastní ladící balíček nebyl nalezen."
+
+#: platform/winrt/export/export.cpp
+#, fuzzy
+msgid "Custom release package not found."
+msgstr "Vlastní balíček k uveřejnění nebyl nalezen."
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid unique name."
+msgstr "Neplatný unikátní název."
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid product GUID."
+msgstr "Neplatné GUID produktu."
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid publisher GUID."
+msgstr "Neplatné GUID vydavatele."
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid background color."
+msgstr "Neplatná barva pozadí."
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid Store Logo image dimensions (should be 50x50)."
+msgstr "Neplatné rozměry Store Logo obrázku (měly by být 50x50)."
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
+msgstr "Neplatné rozměry Square 44x44 Logo obrázku (měly by být 44x44)."
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
+msgstr "Neplatné rozměry Square 71x71 Logo obrázku (měly by být 71x71)."
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
+msgstr "Neplatné rozměry Square 150x150 Logo obrázku (měly by být 150x150)."
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
+msgstr "Neplatné rozměry Square 310x310 Logo obrázku (měly by být 310x310)."
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
+msgstr "Neplatné rozměry Square 310x150 Logo obrázku (měly by být 310x150)."
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid splash screen image dimensions (should be 620x300)."
+msgstr "Neplatné rozměry obrázku uvítací obrazovky (měly by být 620x300)."
+
 #: scene/2d/animated_sprite.cpp
 msgid ""
 "A SpriteFrames resource must be created or set in the 'Frames' property in "
@@ -6477,16 +6797,8 @@ msgstr ""
 #~ msgstr "Chyba při vytváření podpisového objektu."
 
 #, fuzzy
-#~ msgid "Remove Template"
-#~ msgstr "Odstranit výběr"
-
-#, fuzzy
 #~ msgid "Select template file"
 #~ msgstr "Odstranit vybrané soubory?"
-
-#, fuzzy
-#~ msgid " Files"
-#~ msgstr "Soubor:"
 
 #, fuzzy
 #~ msgid "Add Point to Line2D"
@@ -6744,64 +7056,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "Could not open template for export:\n"
 #~ msgstr "Nelze vytvořit složku."
-
-#, fuzzy
-#~ msgid ""
-#~ "Couldn't read the certificate file. Are the path and password both "
-#~ "correct?"
-#~ msgstr ""
-#~ "Nepodařilo se přečíst soubor certifikátu. Jsou cesta a heslo obě korektní?"
-
-#~ msgid "Error creating the package signature."
-#~ msgstr "Chyba při vytváření podpisu balíčku."
-
-#, fuzzy
-#~ msgid ""
-#~ "No export templates found.\n"
-#~ "Download and install export templates."
-#~ msgstr ""
-#~ "Nebyly nalezeny žádné exportní šablony.\n"
-#~ "Stáhněte a nainstalujte exportní šablony."
-
-#~ msgid "Custom debug package not found."
-#~ msgstr "Vlastní ladící balíček nebyl nalezen."
-
-#, fuzzy
-#~ msgid "Custom release package not found."
-#~ msgstr "Vlastní balíček k uveřejnění nebyl nalezen."
-
-#~ msgid "Invalid unique name."
-#~ msgstr "Neplatný unikátní název."
-
-#~ msgid "Invalid product GUID."
-#~ msgstr "Neplatné GUID produktu."
-
-#~ msgid "Invalid publisher GUID."
-#~ msgstr "Neplatné GUID vydavatele."
-
-#~ msgid "Invalid background color."
-#~ msgstr "Neplatná barva pozadí."
-
-#~ msgid "Invalid Store Logo image dimensions (should be 50x50)."
-#~ msgstr "Neplatné rozměry Store Logo obrázku (měly by být 50x50)."
-
-#~ msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
-#~ msgstr "Neplatné rozměry Square 44x44 Logo obrázku (měly by být 44x44)."
-
-#~ msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
-#~ msgstr "Neplatné rozměry Square 71x71 Logo obrázku (měly by být 71x71)."
-
-#~ msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
-#~ msgstr "Neplatné rozměry Square 150x150 Logo obrázku (měly by být 150x150)."
-
-#~ msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
-#~ msgstr "Neplatné rozměry Square 310x310 Logo obrázku (měly by být 310x310)."
-
-#~ msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
-#~ msgstr "Neplatné rozměry Square 310x150 Logo obrázku (měly by být 310x150)."
-
-#~ msgid "Invalid splash screen image dimensions (should be 620x300)."
-#~ msgstr "Neplatné rozměry obrázku uvítací obrazovky (měly by být 620x300)."
 
 #, fuzzy
 #~ msgid "Path property must point to a valid Spatial node to work."
