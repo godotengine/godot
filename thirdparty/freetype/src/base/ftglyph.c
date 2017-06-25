@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType convenience functions to handle glyphs (body).              */
 /*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
+/*  Copyright 1996-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -132,16 +132,18 @@
   }
 
 
-  FT_DEFINE_GLYPH(ft_bitmap_glyph_class,
+  FT_DEFINE_GLYPH(
+    ft_bitmap_glyph_class,
+
     sizeof ( FT_BitmapGlyphRec ),
     FT_GLYPH_FORMAT_BITMAP,
 
-    ft_bitmap_glyph_init,
-    ft_bitmap_glyph_done,
-    ft_bitmap_glyph_copy,
-    0,                          /* FT_Glyph_TransformFunc */
-    ft_bitmap_glyph_bbox,
-    0                           /* FT_Glyph_PrepareFunc   */
+    ft_bitmap_glyph_init,    /* FT_Glyph_InitFunc       glyph_init      */
+    ft_bitmap_glyph_done,    /* FT_Glyph_DoneFunc       glyph_done      */
+    ft_bitmap_glyph_copy,    /* FT_Glyph_CopyFunc       glyph_copy      */
+    NULL,                    /* FT_Glyph_TransformFunc  glyph_transform */
+    ft_bitmap_glyph_bbox,    /* FT_Glyph_GetBBoxFunc    glyph_bbox      */
+    NULL                     /* FT_Glyph_PrepareFunc    glyph_prepare   */
   )
 
 
@@ -260,16 +262,18 @@
   }
 
 
-  FT_DEFINE_GLYPH( ft_outline_glyph_class,
+  FT_DEFINE_GLYPH(
+    ft_outline_glyph_class,
+
     sizeof ( FT_OutlineGlyphRec ),
     FT_GLYPH_FORMAT_OUTLINE,
 
-    ft_outline_glyph_init,
-    ft_outline_glyph_done,
-    ft_outline_glyph_copy,
-    ft_outline_glyph_transform,
-    ft_outline_glyph_bbox,
-    ft_outline_glyph_prepare
+    ft_outline_glyph_init,      /* FT_Glyph_InitFunc       glyph_init      */
+    ft_outline_glyph_done,      /* FT_Glyph_DoneFunc       glyph_done      */
+    ft_outline_glyph_copy,      /* FT_Glyph_CopyFunc       glyph_copy      */
+    ft_outline_glyph_transform, /* FT_Glyph_TransformFunc  glyph_transform */
+    ft_outline_glyph_bbox,      /* FT_Glyph_GetBBoxFunc    glyph_bbox      */
+    ft_outline_glyph_prepare    /* FT_Glyph_PrepareFunc    glyph_prepare   */
   )
 
 
@@ -542,8 +546,8 @@
     /* we render the glyph into a glyph bitmap using a `dummy' glyph slot */
     /* then calling FT_Render_Glyph_Internal()                            */
 
-    FT_MEM_ZERO( &dummy, sizeof ( dummy ) );
-    FT_MEM_ZERO( &dummy_internal, sizeof ( dummy_internal ) );
+    FT_ZERO( &dummy );
+    FT_ZERO( &dummy_internal );
     dummy.internal = &dummy_internal;
     dummy.library  = library;
     dummy.format   = clazz->glyph_format;

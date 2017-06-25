@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    OpenType objects manager (body).                                     */
 /*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
+/*  Copyright 1996-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -27,6 +27,11 @@
 #include FT_INTERNAL_SFNT_H
 #include FT_CFF_DRIVER_H
 
+#ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
+#include FT_MULTIPLE_MASTERS_H
+#include FT_SERVICE_MULTIPLE_MASTERS_H
+#endif
+
 #include "cffobjs.h"
 #include "cffload.h"
 #include "cffcmap.h"
@@ -48,9 +53,6 @@
   /*************************************************************************/
   /*                                                                       */
   /*                            SIZE FUNCTIONS                             */
-  /*                                                                       */
-  /*  Note that we store the global hints in the size's `internal' root    */
-  /*  field.                                                               */
   /*                                                                       */
   /*************************************************************************/
 
@@ -75,10 +77,11 @@
   FT_LOCAL_DEF( void )
   cff_size_done( FT_Size  cffsize )        /* CFF_Size */
   {
+    FT_Memory     memory   = cffsize->face->memory;
     CFF_Size      size     = (CFF_Size)cffsize;
     CFF_Face      face     = (CFF_Face)size->root.face;
     CFF_Font      font     = (CFF_Font)face->extra.data;
-    CFF_Internal  internal = (CFF_Internal)cffsize->internal;
+    CFF_Internal  internal = (CFF_Internal)cffsize->internal->module_data;
 
 
     if ( internal )
@@ -98,7 +101,7 @@
           funcs->destroy( internal->subfonts[i - 1] );
       }
 
-      /* `internal' is freed by destroy_size (in ftobjs.c) */
+      FT_FREE( internal );
     }
   }
 
@@ -114,7 +117,7 @@
     FT_UInt      n, count;
 
 
-    FT_MEM_ZERO( priv, sizeof ( *priv ) );
+    FT_ZERO( priv );
 
     count = priv->num_blue_values = cpriv->num_blue_values;
     for ( n = 0; n < count; n++ )
@@ -194,7 +197,7 @@
           goto Exit;
       }
 
-      cffsize->internal = (FT_Size_Internal)(void*)internal;
+      cffsize->internal->module_data = internal;
     }
 
     size->strike_index = 0xFFFFFFFFUL;
@@ -224,7 +227,7 @@
     {
       CFF_Face      face     = (CFF_Face)size->face;
       CFF_Font      font     = (CFF_Font)face->extra.data;
-      CFF_Internal  internal = (CFF_Internal)size->internal;
+      CFF_Internal  internal = (CFF_Internal)size->internal->module_data;
 
       FT_Long  top_upm  = (FT_Long)font->top_font.font_dict.units_per_em;
       FT_UInt  i;
@@ -296,7 +299,7 @@
     {
       CFF_Face      cffface  = (CFF_Face)size->face;
       CFF_Font      font     = (CFF_Font)cffface->extra.data;
-      CFF_Internal  internal = (CFF_Internal)size->internal;
+      CFF_Internal  internal = (CFF_Internal)size->internal->module_data;
 
       FT_Long  top_upm  = (FT_Long)font->top_font.font_dict.units_per_em;
       FT_UInt  i;
@@ -450,7 +453,7 @@
       FT_Int  idx;
 
 
-      for ( idx = 1; idx <= style_name_length; ++idx )
+      for ( idx = 1; idx <= style_name_length; idx++ )
       {
         if ( family_name[family_name_length - idx] !=
              style_name[style_name_length - idx] )
@@ -469,7 +472,7 @@
                   family_name[idx] == ' ' ||
                   family_name[idx] == '_' ||
                   family_name[idx] == '+' ) )
-          --idx;
+          idx--;
 
         if ( idx > 0 )
           family_name[idx + 1] = '\0';
@@ -491,6 +494,7 @@
     FT_Service_PsCMaps  psnames;
     PSHinter_Service    pshinter;
     FT_Bool             pure_cff    = 1;
+    FT_Bool             cff2        = 0;
     FT_Bool             sfnt_format = 0;
     FT_Library          library     = cffface->driver->root.library;
 
@@ -516,6 +520,7 @@
       goto Exit;
 
     /* check whether we have a valid OpenType file */
+    FT_TRACE2(( "  " ));
     error = sfnt->init_face( stream, face, face_index, num_params, params );
     if ( !error )
     {
@@ -553,8 +558,18 @@
           goto Exit;
       }
 
-      /* now load the CFF part of the file */
-      error = face->goto_table( face, TTAG_CFF, stream, 0 );
+      /* now load the CFF part of the file; */
+      /* give priority to CFF2              */
+      error = face->goto_table( face, TTAG_CFF2, stream, 0 );
+      if ( !error )
+      {
+        cff2          = 1;
+        face->is_cff2 = cff2;
+      }
+
+      if ( FT_ERR_EQ( error, Table_Missing ) )
+        error = face->goto_table( face, TTAG_CFF, stream, 0 );
+
       if ( error )
         goto Exit;
     }
@@ -579,7 +594,13 @@
         goto Exit;
 
       face->extra.data = cff;
-      error = cff_font_load( library, stream, face_index, cff, pure_cff );
+      error = cff_font_load( library,
+                             stream,
+                             face_index,
+                             cff,
+                             face,
+                             pure_cff,
+                             cff2 );
       if ( error )
         goto Exit;
 
@@ -666,6 +687,56 @@
         }
       }
 #endif /* FT_DEBUG_LEVEL_TRACE */
+
+#ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
+      {
+        FT_Service_MultiMasters  mm = (FT_Service_MultiMasters)face->mm;
+
+        FT_Int  instance_index = face_index >> 16;
+
+
+        if ( FT_HAS_MULTIPLE_MASTERS( cffface ) &&
+             mm                                 &&
+             instance_index > 0                 )
+        {
+          FT_MM_Var*  mm_var;
+
+
+          error = mm->get_mm_var( cffface, NULL );
+          if ( error )
+            goto Exit;
+
+          mm->get_var_blend( cffface, NULL, NULL, NULL, &mm_var );
+
+          if ( mm_var->namedstyle )
+          {
+            FT_Var_Named_Style*  named_style;
+            FT_String*           style_name;
+
+
+            /* in `face_index', the instance index starts with value 1 */
+            named_style = mm_var->namedstyle + instance_index - 1;
+            error = sfnt->get_name( face,
+                                    (FT_UShort)named_style->strid,
+                                    &style_name );
+            if ( error )
+              goto Exit;
+
+            /* set style name; if already set, replace it */
+            if ( face->root.style_name )
+              FT_FREE( face->root.style_name );
+            face->root.style_name = style_name;
+
+            /* finally, select the named instance */
+            error = mm->set_var_design( cffface,
+                                        mm_var->num_axis,
+                                        named_style->coords );
+            if ( error )
+              goto Exit;
+          }
+        }
+      }
+#endif /* TT_CONFIG_OPTION_GX_VAR_SUPPORT */
 
       if ( !dict->has_font_matrix )
         dict->units_per_em = pure_cff ? 1000 : face->root.units_per_EM;
@@ -949,7 +1020,6 @@
         cffface->style_flags = flags;
       }
 
-
 #ifndef FT_CONFIG_OPTION_NO_GLYPH_NAMES
       /* CID-keyed CFF fonts don't have glyph names -- the SFNT loader */
       /* has unset this flag because of the 3.0 `post' table.          */
@@ -959,7 +1029,6 @@
 
       if ( dict->cid_registry != 0xFFFFU && pure_cff )
         cffface->face_flags |= FT_FACE_FLAG_CID_KEYED;
-
 
       /*******************************************************************/
       /*                                                                 */
@@ -1011,7 +1080,7 @@
         error = FT_Err_Ok;
 
         /* if no Unicode charmap was previously selected, select this one */
-        if ( cffface->charmap == NULL && nn != (FT_UInt)cffface->num_charmaps )
+        if ( !cffface->charmap && nn != (FT_UInt)cffface->num_charmaps )
           cffface->charmap = cffface->charmaps[nn];
 
       Skip_Unicode:
@@ -1079,6 +1148,11 @@
         FT_FREE( face->extra.data );
       }
     }
+
+#ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
+    cff_done_blend( face );
+    face->blend = NULL;
+#endif
   }
 
 
@@ -1086,6 +1160,8 @@
   cff_driver_init( FT_Module  module )        /* CFF_Driver */
   {
     CFF_Driver  driver = (CFF_Driver)module;
+
+    FT_UInt32  seed;
 
 
     /* set default property values, cf. `ftcffdrv.h' */
@@ -1105,6 +1181,18 @@
     driver->darken_params[5] = CFF_CONFIG_OPTION_DARKENING_PARAMETER_Y3;
     driver->darken_params[6] = CFF_CONFIG_OPTION_DARKENING_PARAMETER_X4;
     driver->darken_params[7] = CFF_CONFIG_OPTION_DARKENING_PARAMETER_Y4;
+
+    /* compute random seed from some memory addresses */
+    seed = (FT_UInt32)( (FT_Offset)(char*)&seed          ^
+                        (FT_Offset)(char*)&module        ^
+                        (FT_Offset)(char*)module->memory );
+    seed = seed ^ ( seed >> 10 ) ^ ( seed >> 20 );
+
+    driver->random_seed = (FT_Int32)seed;
+    if ( driver->random_seed < 0 )
+      driver->random_seed = -driver->random_seed;
+    else if ( driver->random_seed == 0 )
+      driver->random_seed = 123456789;
 
     return FT_Err_Ok;
   }

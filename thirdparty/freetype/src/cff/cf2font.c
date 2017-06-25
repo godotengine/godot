@@ -234,7 +234,8 @@
   }
 
 
-  /* set up values for the current FontDict and matrix */
+  /* set up values for the current FontDict and matrix; */
+  /* called for each glyph to be rendered               */
 
   /* caller's transform is adjusted for subpixel positioning */
   static void
@@ -246,12 +247,18 @@
 
     FT_Bool  needExtraSetup = FALSE;
 
+    CFF_VStoreRec*  vstore;
+    FT_Bool         hasVariations = FALSE;
+
     /* character space units */
     CF2_Fixed  boldenX = font->syntheticEmboldeningAmountX;
     CF2_Fixed  boldenY = font->syntheticEmboldeningAmountY;
 
     CFF_SubFont  subFont;
     CF2_Fixed    ppem;
+
+    CF2_UInt   lenNormalizedV = 0;
+    FT_Fixed*  normalizedV    = NULL;
 
 
     /* clear previous error */
@@ -264,6 +271,48 @@
     {
       font->lastSubfont = subFont;
       needExtraSetup    = TRUE;
+    }
+
+    /* check for variation vectors */
+    vstore        = cf2_getVStore( decoder );
+    hasVariations = ( vstore->dataCount != 0 );
+
+    if ( hasVariations )
+    {
+#ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
+      /* check whether Private DICT in this subfont needs to be reparsed */
+      font->error = cf2_getNormalizedVector( decoder,
+                                             &lenNormalizedV,
+                                             &normalizedV );
+      if ( font->error )
+        return;
+
+      if ( cff_blend_check_vector( &subFont->blend,
+                                   subFont->private_dict.vsindex,
+                                   lenNormalizedV,
+                                   normalizedV ) )
+      {
+        /* blend has changed, reparse */
+        cff_load_private_dict( decoder->cff,
+                               subFont,
+                               lenNormalizedV,
+                               normalizedV );
+        needExtraSetup = TRUE;
+      }
+#endif
+
+      /* copy from subfont */
+      font->blend.font = subFont->blend.font;
+
+      /* clear state of charstring blend */
+      font->blend.usedBV = FALSE;
+
+      /* initialize value for charstring */
+      font->vsindex = subFont->private_dict.vsindex;
+
+      /* store vector inputs for blends in charstring */
+      font->lenNDV = lenNormalizedV;
+      font->NDV    = normalizedV;
     }
 
     /* if ppem has changed, we need to recompute some cached data         */
@@ -423,7 +472,8 @@
 
       /* compute blue zones for this instance */
       cf2_blues_init( &font->blues, font );
-    }
+
+    } /* needExtraSetup */
   }
 
 

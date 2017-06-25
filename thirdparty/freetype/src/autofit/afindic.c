@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Auto-fitter hinting routines for Indic writing system (body).        */
 /*                                                                         */
-/*  Copyright 2007-2016 by                                                 */
+/*  Copyright 2007-2017 by                                                 */
 /*  Rahul Bhalerao <rahul.bhalerao@redhat.com>, <b.rahul.pm@gmail.com>.    */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -18,13 +18,13 @@
 
 #include "aftypes.h"
 #include "aflatin.h"
+#include "afcjk.h"
 
 
 #ifdef AF_CONFIG_OPTION_INDIC
 
 #include "afindic.h"
 #include "aferrors.h"
-#include "afcjk.h"
 
 
 #ifdef AF_CONFIG_OPTION_USE_WARPER
@@ -121,13 +121,13 @@
 
     sizeof ( AF_CJKMetricsRec ),
 
-    (AF_WritingSystem_InitMetricsFunc) af_indic_metrics_init,
-    (AF_WritingSystem_ScaleMetricsFunc)af_indic_metrics_scale,
-    (AF_WritingSystem_DoneMetricsFunc) NULL,
-    (AF_WritingSystem_GetStdWidthsFunc)af_indic_get_standard_widths,
+    (AF_WritingSystem_InitMetricsFunc) af_indic_metrics_init,        /* style_metrics_init    */
+    (AF_WritingSystem_ScaleMetricsFunc)af_indic_metrics_scale,       /* style_metrics_scale   */
+    (AF_WritingSystem_DoneMetricsFunc) NULL,                         /* style_metrics_done    */
+    (AF_WritingSystem_GetStdWidthsFunc)af_indic_get_standard_widths, /* style_metrics_getstdw */
 
-    (AF_WritingSystem_InitHintsFunc)   af_indic_hints_init,
-    (AF_WritingSystem_ApplyHintsFunc)  af_indic_hints_apply
+    (AF_WritingSystem_InitHintsFunc)   af_indic_hints_init,          /* style_hints_init      */
+    (AF_WritingSystem_ApplyHintsFunc)  af_indic_hints_apply          /* style_hints_apply     */
   )
 
 
@@ -141,13 +141,13 @@
 
     sizeof ( AF_CJKMetricsRec ),
 
-    (AF_WritingSystem_InitMetricsFunc) NULL,
-    (AF_WritingSystem_ScaleMetricsFunc)NULL,
-    (AF_WritingSystem_DoneMetricsFunc) NULL,
-    (AF_WritingSystem_GetStdWidthsFunc)NULL,
+    (AF_WritingSystem_InitMetricsFunc) NULL, /* style_metrics_init    */
+    (AF_WritingSystem_ScaleMetricsFunc)NULL, /* style_metrics_scale   */
+    (AF_WritingSystem_DoneMetricsFunc) NULL, /* style_metrics_done    */
+    (AF_WritingSystem_GetStdWidthsFunc)NULL, /* style_metrics_getstdw */
 
-    (AF_WritingSystem_InitHintsFunc)   NULL,
-    (AF_WritingSystem_ApplyHintsFunc)  NULL
+    (AF_WritingSystem_InitHintsFunc)   NULL, /* style_hints_init      */
+    (AF_WritingSystem_ApplyHintsFunc)  NULL  /* style_hints_apply     */
   )
 
 

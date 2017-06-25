@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    PNG Bitmap glyph support.                                            */
 /*                                                                         */
-/*  Copyright 2013-2016 by                                                 */
+/*  Copyright 2013-2017 by                                                 */
 /*  Google, Inc.                                                           */
 /*  Written by Stuart Gill and Behdad Esfahbod.                            */
 /*                                                                         */
@@ -24,9 +24,10 @@
 #include FT_CONFIG_STANDARD_LIBRARY_H
 
 
-#ifdef FT_CONFIG_OPTION_USE_PNG
+#if defined( TT_CONFIG_OPTION_EMBEDDED_BITMAPS ) && \
+    defined( FT_CONFIG_OPTION_USE_PNG )
 
-  /* We always include <stjmp.h>, so make libpng shut up! */
+  /* We always include <setjmp.h>, so make libpng shut up! */
 #define PNG_SKIP_SETJMP_CHECK 1
 #include <png.h>
 #include "pngshim.h"
@@ -184,7 +185,8 @@
                  FT_Memory        memory,
                  FT_Byte*         data,
                  FT_UInt          png_len,
-                 FT_Bool          populate_map_and_metrics )
+                 FT_Bool          populate_map_and_metrics,
+                 FT_Bool          metrics_only )
   {
     FT_Bitmap    *map   = &slot->bitmap;
     FT_Error      error = FT_Err_Ok;
@@ -258,9 +260,6 @@
 
     if ( populate_map_and_metrics )
     {
-      FT_ULong  size;
-
-
       metrics->width  = (FT_UShort)imgWidth;
       metrics->height = (FT_UShort)imgHeight;
 
@@ -276,13 +275,6 @@
         error = FT_THROW( Array_Too_Large );
         goto DestroyExit;
       }
-
-      /* this doesn't overflow: 0x7FFF * 0x7FFF * 4 < 2^32 */
-      size = map->rows * (FT_ULong)map->pitch;
-
-      error = ft_glyphslot_alloc_bitmap( slot, size );
-      if ( error )
-        goto DestroyExit;
     }
 
     /* convert palette/gray image to rgb */
@@ -334,6 +326,9 @@
       goto DestroyExit;
     }
 
+    if ( metrics_only )
+      goto DestroyExit;
+
     switch ( color_type )
     {
     default:
@@ -347,6 +342,17 @@
       /* Humm, this smells.  Carry on though. */
       png_set_read_user_transform_fn( png, convert_bytes_to_data );
       break;
+    }
+
+    if ( populate_map_and_metrics )
+    {
+      /* this doesn't overflow: 0x7FFF * 0x7FFF * 4 < 2^32 */
+      FT_ULong  size = map->rows * (FT_ULong)map->pitch;
+
+
+      error = ft_glyphslot_alloc_bitmap( slot, size );
+      if ( error )
+        goto DestroyExit;
     }
 
     if ( FT_NEW_ARRAY( rows, imgHeight ) )
@@ -372,7 +378,12 @@
     return error;
   }
 
-#endif /* FT_CONFIG_OPTION_USE_PNG */
+#else /* !(TT_CONFIG_OPTION_EMBEDDED_BITMAPS && FT_CONFIG_OPTION_USE_PNG) */
+
+  /* ANSI C doesn't like empty source files */
+  typedef int  _pngshim_dummy;
+
+#endif /* !(TT_CONFIG_OPTION_EMBEDDED_BITMAPS && FT_CONFIG_OPTION_USE_PNG) */
 
 
 /* END */

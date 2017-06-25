@@ -5,7 +5,7 @@
 /*    Support for the FT_Outline type used to store glyph shapes of        */
 /*    most scalable font formats (specification).                          */
 /*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
+/*  Copyright 1996-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -115,6 +115,10 @@ FT_BEGIN_HEADER
   /*    outline for stroking purposes (otherwise it would result in a      */
   /*    visible dot when round caps are used).                             */
   /*                                                                       */
+  /*    Similarly, the function returns success for an empty outline also  */
+  /*    (doing nothing, this is, not calling any emitter); if necessary,   */
+  /*    you should filter this out, too.                                   */
+  /*                                                                       */
   FT_EXPORT( FT_Error )
   FT_Outline_Decompose( FT_Outline*              outline,
                         const FT_Outline_Funcs*  func_interface,
@@ -212,6 +216,10 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /* <Return>                                                              */
   /*    FreeType error code.  0~means success.                             */
+  /*                                                                       */
+  /* <Note>                                                                */
+  /*    An empty outline, or an outline with a single point only is also   */
+  /*    valid.                                                             */
   /*                                                                       */
   FT_EXPORT( FT_Error )
   FT_Outline_Check( FT_Outline*  outline );

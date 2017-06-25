@@ -401,10 +401,10 @@
         /* calculate all four possibilities; moves down are negative */
         CF2_Fixed  downMoveDown = 0 - fracDown;
         CF2_Fixed  upMoveDown   = 0 - fracUp;
-        CF2_Fixed  downMoveUp   = fracDown == 0
+        CF2_Fixed  downMoveUp   = ( fracDown == 0 )
                                     ? 0
                                     : cf2_intToFixed( 1 ) - fracDown;
-        CF2_Fixed  upMoveUp     = fracUp == 0
+        CF2_Fixed  upMoveUp     = ( fracUp == 0 )
                                     ? 0
                                     : cf2_intToFixed( 1 ) - fracUp;
 

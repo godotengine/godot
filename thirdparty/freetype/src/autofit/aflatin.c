@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Auto-fitter hinting routines for latin writing system (body).        */
 /*                                                                         */
-/*  Copyright 2003-2016 by                                                 */
+/*  Copyright 2003-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -262,6 +262,45 @@
     FT_TRACE5(( "\n" ));
 
     af_glyph_hints_done( hints );
+  }
+
+
+  static void
+  af_latin_sort_blue( FT_UInt        count,
+                      AF_LatinBlue*  table )
+  {
+    FT_UInt       i, j;
+    AF_LatinBlue  swap;
+
+
+    /* we sort from bottom to top */
+    for ( i = 1; i < count; i++ )
+    {
+      for ( j = i; j > 0; j-- )
+      {
+        FT_Pos  a, b;
+
+
+        if ( table[j - 1]->flags & ( AF_LATIN_BLUE_TOP     |
+                                     AF_LATIN_BLUE_SUB_TOP ) )
+          a = table[j - 1]->ref.org;
+        else
+          a = table[j - 1]->shoot.org;
+
+        if ( table[j]->flags & ( AF_LATIN_BLUE_TOP     |
+                                 AF_LATIN_BLUE_SUB_TOP ) )
+          b = table[j]->ref.org;
+        else
+          b = table[j]->shoot.org;
+
+        if ( b >= a )
+          break;
+
+        swap         = table[j];
+        table[j]     = table[j - 1];
+        table[j - 1] = swap;
+      }
+    }
   }
 
 
@@ -928,6 +967,60 @@
 
     af_shaper_buf_destroy( face, shaper_buf );
 
+    /* we finally check whether blue zones are ordered; */
+    /* `ref' and `shoot' values of two blue zones must not overlap */
+    if ( axis->blue_count )
+    {
+      FT_UInt       i;
+      AF_LatinBlue  blue_sorted[AF_BLUE_STRINGSET_MAX_LEN + 2];
+
+
+      for ( i = 0; i < axis->blue_count; i++ )
+        blue_sorted[i] = &axis->blues[i];
+
+      /* sort bottoms of blue zones... */
+      af_latin_sort_blue( axis->blue_count, blue_sorted );
+
+      /* ...and adjust top values if necessary */
+      for ( i = 0; i < axis->blue_count - 1; i++ )
+      {
+        FT_Pos*  a;
+        FT_Pos*  b;
+
+#ifdef FT_DEBUG_LEVEL_TRACE
+        FT_Bool  a_is_top = 0;
+#endif
+
+
+        if ( blue_sorted[i]->flags & ( AF_LATIN_BLUE_TOP     |
+                                       AF_LATIN_BLUE_SUB_TOP ) )
+        {
+          a = &blue_sorted[i]->shoot.org;
+#ifdef FT_DEBUG_LEVEL_TRACE
+          a_is_top = 1;
+#endif
+        }
+        else
+          a = &blue_sorted[i]->ref.org;
+
+        if ( blue_sorted[i + 1]->flags & ( AF_LATIN_BLUE_TOP     |
+                                           AF_LATIN_BLUE_SUB_TOP ) )
+          b = &blue_sorted[i + 1]->shoot.org;
+        else
+          b = &blue_sorted[i + 1]->ref.org;
+
+        if ( *a > *b )
+        {
+          *a = *b;
+          FT_TRACE5(( "blue zone overlap:"
+                      " adjusting %s %d to %ld\n",
+                      a_is_top ? "overshoot" : "reference",
+                      blue_sorted[i] - axis->blues,
+                      *a ));
+        }
+      }
+    }
+
     FT_TRACE5(( "\n" ));
 
     return;
@@ -941,7 +1034,7 @@
                                  FT_Face          face )
   {
     FT_Bool   started = 0, same_width = 1;
-    FT_Fixed  advance, old_advance = 0;
+    FT_Fixed  advance = 0, old_advance = 0;
 
     void*  shaper_buf;
 
@@ -1076,7 +1169,7 @@
         FT_UInt  ppem;
 
 
-        scaled    = FT_MulFix( blue->shoot.org, scaler->y_scale );
+        scaled    = FT_MulFix( blue->shoot.org, scale );
         ppem      = metrics->root.scaler.face->size->metrics.x_ppem;
         limit     = metrics->root.globals->increase_x_height;
         threshold = 40;
@@ -1123,18 +1216,18 @@
 
             if ( dist == 0 )
             {
-              scale = new_scale;
-
               FT_TRACE5((
                 "af_latin_metrics_scale_dim:"
                 " x height alignment (style `%s'):\n"
                 "                           "
-                " vertical scaling changed from %.4f to %.4f (by %d%%)\n"
+                " vertical scaling changed from %.5f to %.5f (by %d%%)\n"
                 "\n",
                 af_style_names[metrics->root.style_class->style],
-                axis->org_scale / 65536.0,
                 scale / 65536.0,
+                new_scale / 65536.0,
                 ( fitted - scaled ) * 100 / scaled ));
+
+              scale = new_scale;
             }
 #ifdef FT_DEBUG_LEVEL_TRACE
             else
@@ -1536,8 +1629,9 @@
               /* points are different: we are just leaving an edge, thus */
               /* record a new segment                                    */
 
-              segment->last = point;
-              segment->pos  = (FT_Short)( ( min_pos + max_pos ) >> 1 );
+              segment->last  = point;
+              segment->pos   = (FT_Short)( ( min_pos + max_pos ) >> 1 );
+              segment->delta = (FT_Short)( ( max_pos - min_pos ) >> 1 );
 
               /* a segment is round if either its first or last point */
               /* is a control point, and the length of the on points  */
@@ -1950,6 +2044,10 @@
     FT_Memory     memory = hints->memory;
     AF_LatinAxis  laxis  = &((AF_LatinMetrics)hints->metrics)->axis[dim];
 
+#ifdef FT_CONFIG_OPTION_PIC
+    AF_FaceGlobals  globals = hints->metrics->globals;
+#endif
+
     AF_StyleClass   style_class  = hints->metrics->style_class;
     AF_ScriptClass  script_class = AF_SCRIPT_CLASSES_GET
                                      [style_class->script];
@@ -1966,6 +2064,7 @@
     FT_Fixed      scale;
     FT_Pos        edge_distance_threshold;
     FT_Pos        segment_length_threshold;
+    FT_Pos        segment_width_threshold;
 
 
     axis->num_edges = 0;
@@ -1987,9 +2086,15 @@
      *  corresponding threshold in font units.
      */
     if ( dim == AF_DIMENSION_HORZ )
-        segment_length_threshold = FT_DivFix( 64, hints->y_scale );
+      segment_length_threshold = FT_DivFix( 64, hints->y_scale );
     else
-        segment_length_threshold = 0;
+      segment_length_threshold = 0;
+
+    /*
+     *  Similarly, we ignore segments that have a width delta
+     *  larger than 0.5px (i.e., a width larger than 1px).
+     */
+    segment_width_threshold = FT_DivFix( 32, scale );
 
     /*********************************************************************/
     /*                                                                   */
@@ -2022,9 +2127,10 @@
       FT_Int   ee;
 
 
-      /* ignore too short segments and, in this loop, */
-      /* one-point segments without a direction       */
+      /* ignore too short segments, too wide ones, and, in this loop, */
+      /* one-point segments without a direction                       */
       if ( seg->height < segment_length_threshold ||
+           seg->delta > segment_width_threshold   ||
            seg->dir == AF_DIR_NONE                )
         continue;
 
@@ -2202,7 +2308,7 @@
                                 seg->serif->edge         &&
                                 seg->serif->edge != edge );
 
-          if ( ( seg->link && seg->link->edge != NULL ) || is_serif )
+          if ( ( seg->link && seg->link->edge ) || is_serif )
           {
             AF_Edge     edge2;
             AF_Segment  seg2;
@@ -2469,23 +2575,23 @@
       other_flags |= AF_LATIN_HINTS_VERT_SNAP;
 
     /*
-     *  We adjust stems to full pixels only if we don't use the `light' mode.
+     *  We adjust stems to full pixels unless in `light' or `lcd' mode.
      */
-    if ( mode != FT_RENDER_MODE_LIGHT )
+    if ( mode != FT_RENDER_MODE_LIGHT && mode != FT_RENDER_MODE_LCD )
       other_flags |= AF_LATIN_HINTS_STEM_ADJUST;
 
     if ( mode == FT_RENDER_MODE_MONO )
       other_flags |= AF_LATIN_HINTS_MONO;
 
     /*
-     *  In `light' hinting mode we disable horizontal hinting completely.
+     *  In `light' or `lcd' mode we disable horizontal hinting completely.
      *  We also do it if the face is italic.
      *
      *  However, if warping is enabled (which only works in `light' hinting
      *  mode), advance widths get adjusted, too.
      */
-    if ( mode == FT_RENDER_MODE_LIGHT                      ||
-         ( face->style_flags & FT_STYLE_FLAG_ITALIC ) != 0 )
+    if ( mode == FT_RENDER_MODE_LIGHT || mode == FT_RENDER_MODE_LCD ||
+         ( face->style_flags & FT_STYLE_FLAG_ITALIC ) != 0          )
       scaler_flags |= AF_SCALER_FLAG_NO_HORIZONTAL;
 
 #ifdef AF_CONFIG_OPTION_USE_WARPER
@@ -2824,6 +2930,10 @@
     AF_Edge       edge;
     AF_Edge       anchor     = NULL;
     FT_Int        has_serifs = 0;
+
+#ifdef FT_CONFIG_OPTION_PIC
+    AF_FaceGlobals  globals = hints->metrics->globals;
+#endif
 
     AF_StyleClass   style_class  = hints->metrics->style_class;
     AF_ScriptClass  script_class = AF_SCRIPT_CLASSES_GET
@@ -3468,13 +3578,13 @@
 
     sizeof ( AF_LatinMetricsRec ),
 
-    (AF_WritingSystem_InitMetricsFunc) af_latin_metrics_init,
-    (AF_WritingSystem_ScaleMetricsFunc)af_latin_metrics_scale,
-    (AF_WritingSystem_DoneMetricsFunc) NULL,
-    (AF_WritingSystem_GetStdWidthsFunc)af_latin_get_standard_widths,
+    (AF_WritingSystem_InitMetricsFunc) af_latin_metrics_init,        /* style_metrics_init    */
+    (AF_WritingSystem_ScaleMetricsFunc)af_latin_metrics_scale,       /* style_metrics_scale   */
+    (AF_WritingSystem_DoneMetricsFunc) NULL,                         /* style_metrics_done    */
+    (AF_WritingSystem_GetStdWidthsFunc)af_latin_get_standard_widths, /* style_metrics_getstdw */
 
-    (AF_WritingSystem_InitHintsFunc)   af_latin_hints_init,
-    (AF_WritingSystem_ApplyHintsFunc)  af_latin_hints_apply
+    (AF_WritingSystem_InitHintsFunc)   af_latin_hints_init,          /* style_hints_init      */
+    (AF_WritingSystem_ApplyHintsFunc)  af_latin_hints_apply          /* style_hints_apply     */
   )
 
 

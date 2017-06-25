@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    The FreeType position independent code services for cff module.      */
 /*                                                                         */
-/*  Copyright 2009-2016 by                                                 */
+/*  Copyright 2009-2017 by                                                 */
 /*  Oran Agra and Mickey Gabel.                                            */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */

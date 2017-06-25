@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType initialization layer (body).                                */
 /*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
+/*  Copyright 1996-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -226,6 +226,94 @@
   }
 
 
+#ifdef FT_CONFIG_OPTION_ENVIRONMENT_PROPERTIES
+
+#define MAX_LENGTH  128
+
+  /* documentation is in ftmodapi.h */
+
+  FT_EXPORT_DEF( void )
+  FT_Set_Default_Properties( FT_Library  library )
+  {
+    const char*  env;
+    const char*  p;
+    const char*  q;
+
+    char  module_name[MAX_LENGTH + 1];
+    char  property_name[MAX_LENGTH + 1];
+    char  property_value[MAX_LENGTH + 1];
+
+    int  i;
+
+
+    env = ft_getenv( "FREETYPE_PROPERTIES" );
+    if ( !env )
+      return;
+
+    for ( p = env; *p; p++ )
+    {
+      /* skip leading whitespace and separators */
+      if ( *p == ' ' || *p == '\t' )
+        continue;
+
+      /* read module name, followed by `:' */
+      q = p;
+      for ( i = 0; i < MAX_LENGTH; i++ )
+      {
+        if ( !*p || *p == ':' )
+          break;
+        module_name[i] = *p++;
+      }
+      module_name[i] = '\0';
+
+      if ( !*p || *p != ':' || p == q )
+        break;
+
+      /* read property name, followed by `=' */
+      q = ++p;
+      for ( i = 0; i < MAX_LENGTH; i++ )
+      {
+        if ( !*p || *p == '=' )
+          break;
+        property_name[i] = *p++;
+      }
+      property_name[i] = '\0';
+
+      if ( !*p || *p != '=' || p == q )
+        break;
+
+      /* read property value, followed by whitespace (if any) */
+      q = ++p;
+      for ( i = 0; i < MAX_LENGTH; i++ )
+      {
+        if ( !*p || *p == ' ' || *p == '\t' )
+          break;
+        property_value[i] = *p++;
+      }
+      property_value[i] = '\0';
+
+      if ( !( *p == '\0' || *p == ' ' || *p == '\t' ) || p == q )
+        break;
+
+      /* we completely ignore errors */
+      ft_property_string_set( library,
+                              module_name,
+                              property_name,
+                              property_value );
+    }
+  }
+
+#else
+
+  FT_EXPORT_DEF( void )
+  FT_Set_Default_Properties( FT_Library  library )
+  {
+    FT_UNUSED( library );
+  }
+
+#endif
+
+
   /* documentation is in freetype.h */
 
   FT_EXPORT_DEF( FT_Error )
@@ -255,6 +343,8 @@
       FT_Done_Memory( memory );
     else
       FT_Add_Default_Modules( *alibrary );
+
+    FT_Set_Default_Properties( *alibrary );
 
     return error;
   }

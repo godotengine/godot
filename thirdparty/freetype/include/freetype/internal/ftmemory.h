@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    The FreeType memory management macros (specification).               */
 /*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
+/*  Copyright 1996-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg                       */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -108,9 +108,11 @@ extern "C++"
 
   /*
    *  The allocation functions return a pointer, and the error code
-   *  is written to through the `p_error' parameter.  See below for
-   *  for documentation.
+   *  is written to through the `p_error' parameter.
    */
+
+  /* The `q' variants of the functions below (`q' for `quick') don't fill */
+  /* the allocated or reallocated memory with zero bytes.                 */
 
   FT_BASE( FT_Pointer )
   ft_mem_alloc( FT_Memory  memory,
@@ -142,6 +144,9 @@ extern "C++"
   ft_mem_free( FT_Memory    memory,
                const void*  P );
 
+
+  /* The `Q' variants of the macros below (`Q' for `quick') don't fill */
+  /* the allocated or reallocated memory with zero bytes.              */
 
 #define FT_MEM_ALLOC( ptr, size )                               \
           FT_ASSIGNP_INNER( ptr, ft_mem_alloc( memory,          \

@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    CID driver interface (body).                                         */
 /*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
+/*  Copyright 1996-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -206,7 +206,7 @@
       0x10000L,  /* version 1.0 of driver */
       0x20000L,  /* requires FreeType 2.0 */
 
-      0,    /* module-specific interface */
+      NULL,    /* module-specific interface */
 
       cid_driver_init,          /* FT_Module_Constructor  module_init   */
       cid_driver_done,          /* FT_Module_Destructor   module_done   */
@@ -226,12 +226,12 @@
 
     cid_slot_load_glyph,        /* FT_Slot_LoadFunc  load_glyph */
 
-    0,                          /* FT_Face_GetKerningFunc   get_kerning  */
-    0,                          /* FT_Face_AttachFunc       attach_file  */
-    0,                          /* FT_Face_GetAdvancesFunc  get_advances */
+    NULL,                       /* FT_Face_GetKerningFunc   get_kerning  */
+    NULL,                       /* FT_Face_AttachFunc       attach_file  */
+    NULL,                       /* FT_Face_GetAdvancesFunc  get_advances */
 
     cid_size_request,           /* FT_Size_RequestFunc  request_size */
-    0                           /* FT_Size_SelectFunc   select_size  */
+    NULL                        /* FT_Size_SelectFunc   select_size  */
   };
 
 

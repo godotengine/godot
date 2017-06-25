@@ -5,7 +5,7 @@
 /*    Generate feature registry data for gxv `feat' validator.             */
 /*    This program is derived from gxfeatreg.c in gxlayout.                */
 /*                                                                         */
-/*  Copyright 2004-2016 by                                                 */
+/*  Copyright 2004-2017 by                                                 */
 /*  Masatake YAMATO and Redhat K.K.                                        */
 /*                                                                         */
 /*  This file may only be used,                                            */

@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType sbits manager (body).                                       */
 /*                                                                         */
-/*  Copyright 2000-2016 by                                                 */
+/*  Copyright 2000-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -378,7 +378,7 @@
        *
        */
 
-      if ( sbit->buffer == NULL && sbit->width == 255 )
+      if ( !sbit->buffer && sbit->width == 255 )
       {
         FT_ULong  size;
         FT_Error  error;

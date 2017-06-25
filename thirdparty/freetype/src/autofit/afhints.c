@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Auto-fitter hinting routines (body).                                 */
 /*                                                                         */
-/*  Copyright 2003-2016 by                                                 */
+/*  Copyright 2003-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -45,7 +45,7 @@
 
     if ( axis->num_segments < AF_SEGMENTS_EMBEDDED )
     {
-      if ( axis->segments == NULL )
+      if ( !axis->segments )
       {
         axis->segments     = axis->embedded.segments;
         axis->max_segments = AF_SEGMENTS_EMBEDDED;
@@ -110,7 +110,7 @@
 
     if ( axis->num_edges < AF_EDGES_EMBEDDED )
     {
-      if ( axis->edges == NULL )
+      if ( !axis->edges )
       {
         axis->edges     = axis->embedded.edges;
         axis->max_edges = AF_EDGES_EMBEDDED;
@@ -420,20 +420,19 @@
                 dimension == AF_DIMENSION_HORZ ? "vertical"
                                                : "horizontal" ));
       if ( axis->num_segments )
-        AF_DUMP(( "  index   pos    dir   from   to"
-                  "   link  serif  edge"
+        AF_DUMP(( "  index   pos   delta   dir   from   to "
+                  "  link  serif  edge"
                   "  height  extra     flags\n" ));
       else
         AF_DUMP(( "  (none)\n" ));
 
       for ( seg = segments; seg < limit; seg++ )
-        AF_DUMP(( "  %5d  %5.2g  %5s  %4d  %4d"
+        AF_DUMP(( "  %5d  %5d  %5d  %5s  %4d  %4d"
                   "  %4s  %5s  %4s"
                   "  %6d  %5d  %11s\n",
                   AF_INDEX_NUM( seg, segments ),
-                  dimension == AF_DIMENSION_HORZ
-                               ? (int)seg->first->ox / 64.0
-                               : (int)seg->first->oy / 64.0,
+                  seg->pos,
+                  seg->delta,
                   af_dir_str( (AF_Direction)seg->dir ),
                   AF_INDEX_NUM( seg->first, points ),
                   AF_INDEX_NUM( seg->last, points ),
@@ -553,18 +552,26 @@
        *  note: AF_DIMENSION_HORZ corresponds to _vertical_ edges
        *        since they have a constant X coordinate.
        */
-      AF_DUMP(( "Table of %s edges:\n",
-                dimension == AF_DIMENSION_HORZ ? "vertical"
-                                               : "horizontal" ));
+      if ( dimension == AF_DIMENSION_HORZ )
+        AF_DUMP(( "Table of %s edges (1px=%.2fu, 10u=%.2fpx):\n",
+                  "vertical",
+                  65536.0 * 64.0 / hints->x_scale,
+                  10.0 * hints->x_scale / 65536.0 / 64.0 ));
+      else
+        AF_DUMP(( "Table of %s edges (1px=%.2fu, 10u=%.2fpx):\n",
+                  "horizontal",
+                  65536.0 * 64.0 / hints->y_scale,
+                  10.0 * hints->y_scale / 65536.0 / 64.0 ));
+
       if ( axis->num_edges )
-        AF_DUMP(( "  index   pos    dir   link  serif"
-                  "  blue  opos    pos      flags\n" ));
+        AF_DUMP(( "  index    pos     dir   link  serif"
+                  "  blue    opos     pos       flags\n" ));
       else
         AF_DUMP(( "  (none)\n" ));
 
       for ( edge = edges; edge < limit; edge++ )
-        AF_DUMP(( "  %5d  %5.2g  %5s  %4s  %5s"
-                  "    %c   %5.2f  %5.2f  %11s\n",
+        AF_DUMP(( "  %5d  %7.2f  %5s  %4s  %5s"
+                  "    %c   %7.2f  %7.2f  %11s\n",
                   AF_INDEX_NUM( edge, edges ),
                   (int)edge->opos / 64.0,
                   af_dir_str( (AF_Direction)edge->dir ),
@@ -736,7 +743,7 @@
 
     if ( new_max <= AF_CONTOURS_EMBEDDED )
     {
-      if ( hints->contours == NULL )
+      if ( !hints->contours )
       {
         hints->contours     = hints->embedded.contours;
         hints->max_contours = AF_CONTOURS_EMBEDDED;
@@ -765,7 +772,7 @@
 
     if ( new_max <= AF_POINTS_EMBEDDED )
     {
-      if ( hints->points == NULL )
+      if ( !hints->points )
       {
         hints->points     = hints->embedded.points;
         hints->max_points = AF_POINTS_EMBEDDED;
@@ -1175,7 +1182,7 @@
         AF_Point  point, first, last;
 
 
-        if ( edge == NULL )
+        if ( !edge )
           continue;
 
         first = seg->first;
@@ -1201,7 +1208,7 @@
         AF_Point  point, first, last;
 
 
-        if ( edge == NULL )
+        if ( !edge )
           continue;
 
         first = seg->first;
