@@ -64,6 +64,12 @@ const char *CharString::get_data() const {
 
 void String::copy_from(const char *p_cstr) {
 
+	if (!p_cstr) {
+
+		resize(0);
+		return;
+	}
+
 	int len = 0;
 	const char *ptr = p_cstr;
 	while (*(ptr++) != 0)
@@ -86,6 +92,12 @@ void String::copy_from(const char *p_cstr) {
 }
 
 void String::copy_from(const CharType *p_cstr, int p_clip_to) {
+
+	if (!p_cstr) {
+
+		resize(0);
+		return;
+	}
 
 	int len = 0;
 	const CharType *ptr = p_cstr;
