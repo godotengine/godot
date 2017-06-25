@@ -2992,6 +2992,8 @@ void PropertyEditor::update_tree() {
 			if (group_base != "") {
 				if (basename.begins_with(group_base)) {
 					basename = basename.replace_first(group_base, "");
+				} else if (group_base.begins_with(basename)) {
+					//keep it, this is used pretty often
 				} else {
 					group = ""; //no longer using group base, clear
 				}
