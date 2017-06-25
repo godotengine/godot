@@ -47,6 +47,13 @@ Area2DSW::BodyKey::BodyKey(Area2DSW *p_body, uint32_t p_body_shape, uint32_t p_a
 void Area2DSW::_shapes_changed() {
 }
 
+void Area2DSW::_shape_index_removed(int p_index) {
+
+	for (Set<Constraint2DSW *>::Element *E = constraints.front(); E; E = E->next()) {
+		E->get()->shift_shape_indices(this, p_index);
+	}
+}
+
 void Area2DSW::set_transform(const Matrix32 &p_transform) {
 
 	if (!moved_list.in_list() && get_space())

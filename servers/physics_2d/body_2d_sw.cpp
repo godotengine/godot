@@ -255,6 +255,13 @@ void Body2DSW::_shapes_changed() {
 	wakeup_neighbours();
 }
 
+void Body2DSW::_shape_index_removed(int p_index) {
+
+	for (Map<Constraint2DSW *, int>::Element *E = constraint_map.front(); E; E = E->next()) {
+		E->key()->shift_shape_indices(this, p_index);
+	}
+}
+
 void Body2DSW::set_state(Physics2DServer::BodyState p_state, const Variant &p_variant) {
 
 	switch (p_state) {

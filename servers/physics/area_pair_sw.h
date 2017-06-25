@@ -46,6 +46,8 @@ public:
 	bool setup(float p_step);
 	void solve(float p_step);
 
+	virtual void shift_shape_indices(const CollisionObjectSW *p_object, int p_removed_index);
+
 	AreaPairSW(BodySW *p_body, int p_body_shape, AreaSW *p_area, int p_area_shape);
 	~AreaPairSW();
 };
@@ -61,6 +63,8 @@ class Area2PairSW : public ConstraintSW {
 public:
 	bool setup(float p_step);
 	void solve(float p_step);
+
+	virtual void shift_shape_indices(const CollisionObjectSW *p_object, int p_removed_index);
 
 	Area2PairSW(AreaSW *p_area_a, int p_shape_a, AreaSW *p_area_b, int p_shape_b);
 	~Area2PairSW();
