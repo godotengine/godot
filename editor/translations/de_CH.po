@@ -1,6 +1,5 @@
 # Swiss High German translation of the Godot Engine editor
-# Copyright (C) 2007-2017 Juan Linietsky, Ariel Manzur
-# Copyright (C) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)
+# Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
 # Christian Fisch <christian.fiesel@gmail.com>, 2016.
@@ -356,206 +355,11 @@ msgstr ""
 msgid "Change Array Value"
 msgstr ""
 
-#: editor/asset_library_editor_plugin.cpp
-msgid "Free"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp editor/editor_plugin_settings.cpp
-msgid "Version:"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Contents:"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-#, fuzzy
-msgid "View Files"
-msgstr "Datei(en) öffnen"
-
-#: editor/asset_library_editor_plugin.cpp editor/create_dialog.cpp
-#: editor/editor_help.cpp editor/property_selector.cpp
-#: editor/script_editor_debugger.cpp
-msgid "Description:"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp editor/project_manager.cpp
-msgid "Install"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp editor/call_dialog.cpp
-#: editor/connections_dialog.cpp editor/export_template_manager.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/sample_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_settings.cpp
-#: editor/property_editor.cpp editor/run_settings_dialog.cpp
-#: editor/settings_config_dialog.cpp
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Close"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Can't resolve hostname:"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Can't resolve."
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Connection error, please try again."
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Can't connect."
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-#, fuzzy
-msgid "Can't connect to host:"
-msgstr "Verbindung zu Node:"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "No response from host:"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "No response."
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Request failed, return code:"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Req. Failed."
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Request failed, too many redirects"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Redirect Loop."
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Failed:"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Bad download hash, assuming file has been tampered with."
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Expected:"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Got:"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Failed sha256 hash check"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Asset Download Error:"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Success!"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Fetching:"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Resolving.."
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-#, fuzzy
-msgid "Connecting.."
-msgstr "Connections editieren"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Requesting.."
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-#, fuzzy
-msgid "Error making request"
-msgstr "Szene kann nicht gespeichert werden."
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Idle"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Retry"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Download Error"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Download for this asset is already in progress!"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "first"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "prev"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "next"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "last"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "All"
-msgstr ""
-
 #: editor/asset_library_editor_plugin.cpp editor/create_dialog.cpp
 #: editor/editor_help.cpp editor/editor_node.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: editor/quick_open.cpp editor/settings_config_dialog.cpp
 msgid "Search:"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp editor/code_editor.cpp
-#: editor/editor_help.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/project_settings.cpp
-msgid "Search"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp editor/editor_node.cpp
-#: editor/io_plugins/editor_bitmask_import_plugin.cpp
-#: editor/io_plugins/editor_font_import_plugin.cpp
-#: editor/io_plugins/editor_mesh_import_plugin.cpp
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-#: editor/project_manager.cpp
-msgid "Import"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp editor/project_settings.cpp
-msgid "Plugins"
 msgstr ""
 
 #: editor/asset_library_editor_plugin.cpp
@@ -568,6 +372,10 @@ msgstr ""
 
 #: editor/asset_library_editor_plugin.cpp editor/project_settings.cpp
 msgid "Category:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "All"
 msgstr ""
 
 #: editor/asset_library_editor_plugin.cpp
@@ -600,6 +408,20 @@ msgstr ""
 
 #: editor/call_dialog.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Call"
+msgstr ""
+
+#: editor/call_dialog.cpp editor/connections_dialog.cpp
+#: editor/export_template_manager.cpp
+#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/sample_library_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_settings.cpp
+#: editor/property_editor.cpp editor/run_settings_dialog.cpp
+#: editor/settings_config_dialog.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Close"
 msgstr ""
 
 #: editor/call_dialog.cpp
@@ -648,6 +470,13 @@ msgstr ""
 
 #: editor/code_editor.cpp
 msgid "Selection Only"
+msgstr ""
+
+#: editor/code_editor.cpp editor/editor_help.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/project_settings.cpp
+msgid "Search"
 msgstr ""
 
 #: editor/code_editor.cpp editor/editor_help.cpp
@@ -799,6 +628,11 @@ msgstr ""
 #: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: editor/quick_open.cpp
 msgid "Matches:"
+msgstr ""
+
+#: editor/create_dialog.cpp editor/editor_help.cpp editor/property_selector.cpp
+#: editor/script_editor_debugger.cpp
+msgid "Description:"
 msgstr ""
 
 #: editor/dependency_editor.cpp
@@ -1274,6 +1108,10 @@ msgstr ""
 msgid "Clear"
 msgstr ""
 
+#: editor/editor_node.cpp
+msgid "Node From Scene"
+msgstr "Node von Szene"
+
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/resources_dock.cpp
 msgid "Error saving resource!"
@@ -1639,6 +1477,21 @@ msgid "Distraction Free Mode"
 msgstr ""
 
 #: editor/editor_node.cpp
+msgid "Import assets to the project."
+msgstr "Assets zum Projekt importieren."
+
+#: editor/editor_node.cpp editor/io_plugins/editor_bitmask_import_plugin.cpp
+#: editor/io_plugins/editor_font_import_plugin.cpp
+#: editor/io_plugins/editor_mesh_import_plugin.cpp
+#: editor/io_plugins/editor_sample_import_plugin.cpp
+#: editor/io_plugins/editor_scene_import_plugin.cpp
+#: editor/io_plugins/editor_texture_import_plugin.cpp
+#: editor/io_plugins/editor_translation_import_plugin.cpp
+#: editor/project_manager.cpp
+msgid "Import"
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
 msgstr "Verschiedene Projekte oder Szenenweite Werkzeuge."
 
@@ -1908,6 +1761,10 @@ msgstr ""
 
 #: editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
+msgstr ""
+
+#: editor/editor_plugin_settings.cpp
+msgid "Version:"
 msgstr ""
 
 #: editor/editor_plugin_settings.cpp
@@ -3901,10 +3758,6 @@ msgid "A processor material of type 'ParticlesMaterial' is required."
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Generating AABB"
-msgstr ""
-
-#: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
 msgstr "Flächen enthalten keinen Bereich!"
 
@@ -3952,14 +3805,6 @@ msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Emission Source: "
-msgstr ""
-
-#: editor/plugins/particles_editor_plugin.cpp
-msgid "Generate Visibility AABB"
-msgstr ""
-
-#: editor/plugins/particles_editor_plugin.cpp
-msgid "Generation Time (sec):"
 msgstr ""
 
 #: editor/plugins/path_2d_editor_plugin.cpp
@@ -4408,14 +4253,6 @@ msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Trim Trailing Whitespace"
-msgstr ""
-
-#: editor/plugins/script_text_editor.cpp
-msgid "Convert Indent To Spaces"
-msgstr ""
-
-#: editor/plugins/script_text_editor.cpp
-msgid "Convert Indent To Tabs"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
@@ -5279,12 +5116,12 @@ msgstr "Ungültiger Projektpfad, Pfad existiert nicht!"
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Invalid project path, *.godot must not exist."
+msgid "Invalid project path, godot.cfg must not exist."
 msgstr "Ungültiger Projektpfad, engine.cfg vorhanden!"
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Invalid project path, *.godot must exist."
+msgid "Invalid project path, godot.cfg must exist."
 msgstr "Ungültiger Projektpfad, engine.cfg nicht vorhanden!"
 
 #: editor/project_manager.cpp
@@ -5297,7 +5134,7 @@ msgstr "Ungültiger Projektpfad, (wurde was geändert?)!"
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Couldn't create *.godot project file in project path."
+msgid "Couldn't create godot.cfg in project path."
 msgstr "Die engine.cfg kann im Projektverzeichnis nicht erstellt werden."
 
 #: editor/project_manager.cpp
@@ -5330,6 +5167,10 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Install Project:"
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid "Install"
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -5389,11 +5230,6 @@ msgstr ""
 #: editor/project_manager.cpp
 msgid "New Project"
 msgstr ""
-
-#: editor/project_manager.cpp
-#, fuzzy
-msgid "Templates"
-msgstr "Ungültige Bilder löschen"
 
 #: editor/project_manager.cpp
 msgid "Exit"
@@ -5580,7 +5416,7 @@ msgstr ""
 
 #: editor/project_settings.cpp
 #, fuzzy
-msgid "Project Settings "
+msgid "Project Settings (godot.cfg)"
 msgstr "Projekteinstellungen"
 
 #: editor/project_settings.cpp editor/settings_config_dialog.cpp
@@ -5645,6 +5481,10 @@ msgstr ""
 
 #: editor/project_settings.cpp
 msgid "AutoLoad"
+msgstr ""
+
+#: editor/project_settings.cpp
+msgid "Plugins"
 msgstr ""
 
 #: editor/property_editor.cpp
@@ -6255,10 +6095,6 @@ msgid "Change Notifier Extents"
 msgstr ""
 
 #: editor/spatial_editor_gizmos.cpp
-msgid "Change Particles AABB"
-msgstr ""
-
-#: editor/spatial_editor_gizmos.cpp
 msgid "Change Probe Extents"
 msgstr ""
 
@@ -6833,17 +6669,6 @@ msgid ""
 "It only provides navigation data."
 msgstr ""
 
-#: scene/3d/particles.cpp
-msgid ""
-"Nothing is visible because meshes have not been assigned to draw passes."
-msgstr ""
-
-#: scene/3d/particles.cpp
-msgid ""
-"A material to process the particles is not assigned, so no behavior is "
-"imprinted."
-msgstr ""
-
 #: scene/3d/remote_transform.cpp
 #, fuzzy
 msgid "Path property must point to a valid Spatial node to work."
@@ -6909,16 +6734,6 @@ msgid ""
 "obtain a size. Otherwise, make it a RenderTarget and assign its internal "
 "texture to some node for display."
 msgstr ""
-
-#~ msgid "Node From Scene"
-#~ msgstr "Node von Szene"
-
-#~ msgid "Import assets to the project."
-#~ msgstr "Assets zum Projekt importieren."
-
-#, fuzzy
-#~ msgid "Project Settings (godot.cfg)"
-#~ msgstr "Projekteinstellungen"
 
 #~ msgid "Surface"
 #~ msgstr "Oberfläche"

@@ -1,6 +1,5 @@
 # Turkish translation of the Godot Engine editor
-# Copyright (C) 2007-2017 Juan Linietsky, Ariel Manzur
-# Copyright (C) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)
+# Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
 # Aprın Çor Tigin <kabusturk38@gmail.com>, 2016-2017.
@@ -363,213 +362,12 @@ msgstr "Dizinin türünü degistir"
 msgid "Change Array Value"
 msgstr "Dizi Değerini Değiştir"
 
-#: editor/asset_library_editor_plugin.cpp
-msgid "Free"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp editor/editor_plugin_settings.cpp
-msgid "Version:"
-msgstr "Sürüm:"
-
-#: editor/asset_library_editor_plugin.cpp
-#, fuzzy
-msgid "Contents:"
-msgstr "Sabitler:"
-
-#: editor/asset_library_editor_plugin.cpp
-#, fuzzy
-msgid "View Files"
-msgstr "Dizeç"
-
-#: editor/asset_library_editor_plugin.cpp editor/create_dialog.cpp
-#: editor/editor_help.cpp editor/property_selector.cpp
-#: editor/script_editor_debugger.cpp
-msgid "Description:"
-msgstr "Açıklama:"
-
-#: editor/asset_library_editor_plugin.cpp editor/project_manager.cpp
-msgid "Install"
-msgstr "Kur"
-
-#: editor/asset_library_editor_plugin.cpp editor/call_dialog.cpp
-#: editor/connections_dialog.cpp editor/export_template_manager.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/sample_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_settings.cpp
-#: editor/property_editor.cpp editor/run_settings_dialog.cpp
-#: editor/settings_config_dialog.cpp
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Close"
-msgstr "Kapat"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Can't resolve hostname:"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Can't resolve."
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Connection error, please try again."
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-#, fuzzy
-msgid "Can't connect."
-msgstr "Bağlan..."
-
-#: editor/asset_library_editor_plugin.cpp
-#, fuzzy
-msgid "Can't connect to host:"
-msgstr "Düğüme Bağlan:"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "No response from host:"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "No response."
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-#, fuzzy
-msgid "Request failed, return code:"
-msgstr "İstenilen dizeç formatı bilinmiyor:"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Req. Failed."
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Request failed, too many redirects"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Redirect Loop."
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Failed:"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Bad download hash, assuming file has been tampered with."
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Expected:"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Got:"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Failed sha256 hash check"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Asset Download Error:"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Success!"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Fetching:"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-#, fuzzy
-msgid "Resolving.."
-msgstr "Kaydediliyor..."
-
-#: editor/asset_library_editor_plugin.cpp
-#, fuzzy
-msgid "Connecting.."
-msgstr "Bağlan..."
-
-#: editor/asset_library_editor_plugin.cpp
-#, fuzzy
-msgid "Requesting.."
-msgstr "Deneme"
-
-#: editor/asset_library_editor_plugin.cpp
-#, fuzzy
-msgid "Error making request"
-msgstr "Kaynak kaydedilirken sorun!"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Idle"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Retry"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-#, fuzzy
-msgid "Download Error"
-msgstr "Aşağı"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Download for this asset is already in progress!"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "first"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "prev"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "next"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "last"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "All"
-msgstr "Hepsi"
-
 #: editor/asset_library_editor_plugin.cpp editor/create_dialog.cpp
 #: editor/editor_help.cpp editor/editor_node.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: editor/quick_open.cpp editor/settings_config_dialog.cpp
 msgid "Search:"
 msgstr "Ara:"
-
-#: editor/asset_library_editor_plugin.cpp editor/code_editor.cpp
-#: editor/editor_help.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/project_settings.cpp
-msgid "Search"
-msgstr "Ara"
-
-#: editor/asset_library_editor_plugin.cpp editor/editor_node.cpp
-#: editor/io_plugins/editor_bitmask_import_plugin.cpp
-#: editor/io_plugins/editor_font_import_plugin.cpp
-#: editor/io_plugins/editor_mesh_import_plugin.cpp
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-#: editor/project_manager.cpp
-msgid "Import"
-msgstr "İçe Aktar"
-
-#: editor/asset_library_editor_plugin.cpp editor/project_settings.cpp
-msgid "Plugins"
-msgstr "Eklentiler"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Sort:"
@@ -582,6 +380,10 @@ msgstr "Tersi"
 #: editor/asset_library_editor_plugin.cpp editor/project_settings.cpp
 msgid "Category:"
 msgstr "Katman:"
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "All"
+msgstr "Hepsi"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Site:"
@@ -614,6 +416,20 @@ msgstr "'%s' İçin Yöntem Dizelgesi:"
 #: editor/call_dialog.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Call"
 msgstr "Çağır"
+
+#: editor/call_dialog.cpp editor/connections_dialog.cpp
+#: editor/export_template_manager.cpp
+#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/sample_library_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_settings.cpp
+#: editor/property_editor.cpp editor/run_settings_dialog.cpp
+#: editor/settings_config_dialog.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Close"
+msgstr "Kapat"
 
 #: editor/call_dialog.cpp
 msgid "Method List:"
@@ -663,6 +479,13 @@ msgstr "Tüm Sözcükler"
 #: editor/code_editor.cpp
 msgid "Selection Only"
 msgstr "Yalnızca Seçim"
+
+#: editor/code_editor.cpp editor/editor_help.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/project_settings.cpp
+msgid "Search"
+msgstr "Ara"
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "Find"
@@ -815,6 +638,11 @@ msgstr "Yakın zamanda:"
 #: editor/quick_open.cpp
 msgid "Matches:"
 msgstr "Eşleşmeler:"
+
+#: editor/create_dialog.cpp editor/editor_help.cpp editor/property_selector.cpp
+#: editor/script_editor_debugger.cpp
+msgid "Description:"
+msgstr "Açıklama:"
 
 #: editor/dependency_editor.cpp
 msgid "Search Replacement For:"
@@ -1297,6 +1125,10 @@ msgstr " Çıktı:"
 msgid "Clear"
 msgstr "Temizle"
 
+#: editor/editor_node.cpp
+msgid "Node From Scene"
+msgstr "Sahneden Düğüm(node)"
+
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/resources_dock.cpp
 msgid "Error saving resource!"
@@ -1676,6 +1508,21 @@ msgid "Distraction Free Mode"
 msgstr "Dikkat Dağıtmayan Biçim"
 
 #: editor/editor_node.cpp
+msgid "Import assets to the project."
+msgstr "Varlıkları tasarının içine aktar."
+
+#: editor/editor_node.cpp editor/io_plugins/editor_bitmask_import_plugin.cpp
+#: editor/io_plugins/editor_font_import_plugin.cpp
+#: editor/io_plugins/editor_mesh_import_plugin.cpp
+#: editor/io_plugins/editor_sample_import_plugin.cpp
+#: editor/io_plugins/editor_scene_import_plugin.cpp
+#: editor/io_plugins/editor_texture_import_plugin.cpp
+#: editor/io_plugins/editor_translation_import_plugin.cpp
+#: editor/project_manager.cpp
+msgid "Import"
+msgstr "İçe Aktar"
+
+#: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
 msgstr "Türlü tasarı ya da sahne genişliğinde araçlar."
 
@@ -1962,6 +1809,10 @@ msgstr "Sorunları Yükle"
 #: editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
 msgstr "Yüklü Eklentiler:"
+
+#: editor/editor_plugin_settings.cpp
+msgid "Version:"
+msgstr "Sürüm:"
 
 #: editor/editor_plugin_settings.cpp
 msgid "Author:"
@@ -3973,11 +3824,6 @@ msgid "A processor material of type 'ParticlesMaterial' is required."
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
-msgid "Generating AABB"
-msgstr "AABB Üret"
-
-#: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
 msgstr "Yüzler alan içermez!"
 
@@ -4029,16 +3875,6 @@ msgstr "Oylum"
 #, fuzzy
 msgid "Emission Source: "
 msgstr "Yayma Dolumu:"
-
-#: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
-msgid "Generate Visibility AABB"
-msgstr "AABB Üret"
-
-#: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
-msgid "Generation Time (sec):"
-msgstr "Ortalama Zaman (sn)"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
@@ -4492,14 +4328,6 @@ msgstr "Simgeyi Tamamla"
 #: editor/plugins/script_text_editor.cpp
 msgid "Trim Trailing Whitespace"
 msgstr "İzleyenin Boşluklarını Kırp"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "Convert Indent To Spaces"
-msgstr ""
-
-#: editor/plugins/script_text_editor.cpp
-msgid "Convert Indent To Tabs"
-msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Auto Indent"
@@ -5376,12 +5204,12 @@ msgstr "Geçersiz tasarı yolu, yolun var olması gerekir!"
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Invalid project path, *.godot must not exist."
+msgid "Invalid project path, godot.cfg must not exist."
 msgstr "Geçersiz tasarı yolu, engine.cfg var olmaması gerekir."
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Invalid project path, *.godot must exist."
+msgid "Invalid project path, godot.cfg must exist."
 msgstr "Geçersiz tasarı yolu, engine.cfg var olması gerekir."
 
 #: editor/project_manager.cpp
@@ -5394,7 +5222,7 @@ msgstr "Geçersiz tasarı yolu (bir şey değişti mi?)."
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Couldn't create *.godot project file in project path."
+msgid "Couldn't create godot.cfg in project path."
 msgstr "engine.cfg tasarı yolunda oluşturulamadı."
 
 #: editor/project_manager.cpp
@@ -5428,6 +5256,10 @@ msgstr "Tasarı Yolu:"
 #: editor/project_manager.cpp
 msgid "Install Project:"
 msgstr "Tasarıyı Kur:"
+
+#: editor/project_manager.cpp
+msgid "Install"
+msgstr "Kur"
 
 #: editor/project_manager.cpp
 msgid "Browse"
@@ -5489,11 +5321,6 @@ msgstr "Tarama için bir Dizin Seç"
 #: editor/project_manager.cpp
 msgid "New Project"
 msgstr "Yeni Tasarı"
-
-#: editor/project_manager.cpp
-#, fuzzy
-msgid "Templates"
-msgstr "Öğeyi Kaldır"
 
 #: editor/project_manager.cpp
 msgid "Exit"
@@ -5682,8 +5509,8 @@ msgstr "Kaynak Yeniden Eşle Seçeneğini Kaldır"
 
 #: editor/project_settings.cpp
 #, fuzzy
-msgid "Project Settings "
-msgstr "Tasarı Ayarları"
+msgid "Project Settings (godot.cfg)"
+msgstr "Tasarı Ayarları (engine.cfg)"
 
 #: editor/project_settings.cpp editor/settings_config_dialog.cpp
 msgid "General"
@@ -5748,6 +5575,10 @@ msgstr "Yerel"
 #: editor/project_settings.cpp
 msgid "AutoLoad"
 msgstr "KendindenYükle"
+
+#: editor/project_settings.cpp
+msgid "Plugins"
+msgstr "Eklentiler"
 
 #: editor/property_editor.cpp
 #, fuzzy
@@ -6355,10 +6186,6 @@ msgstr "Işın Şeklinin Uzunluğunu Değiştir"
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
 msgstr "Bildirim Kapsamını Değiştir"
-
-#: editor/spatial_editor_gizmos.cpp
-msgid "Change Particles AABB"
-msgstr ""
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Probe Extents"
@@ -6969,17 +6796,6 @@ msgstr ""
 "NavigationMeshInstance, bir Navigation düğümünün çocuğu ya da torunu "
 "olmalıdır. O yalnızca yönlendirme verisi sağlar."
 
-#: scene/3d/particles.cpp
-msgid ""
-"Nothing is visible because meshes have not been assigned to draw passes."
-msgstr ""
-
-#: scene/3d/particles.cpp
-msgid ""
-"A material to process the particles is not assigned, so no behavior is "
-"imprinted."
-msgstr ""
-
 #: scene/3d/remote_transform.cpp
 msgid "Path property must point to a valid Spatial node to work."
 msgstr ""
@@ -7056,16 +6872,6 @@ msgstr ""
 "görüntlükte göstermek istiyorsanız, bir Denetimcinin çocuğu olun ve böylece "
 "bir boyut elde edin. Ya da, onu bir RenderTarget yapın ve iç dokusunu "
 "görüntülemesi için bir düğüme atayın."
-
-#~ msgid "Node From Scene"
-#~ msgstr "Sahneden Düğüm(node)"
-
-#~ msgid "Import assets to the project."
-#~ msgstr "Varlıkları tasarının içine aktar."
-
-#, fuzzy
-#~ msgid "Project Settings (godot.cfg)"
-#~ msgstr "Tasarı Ayarları (engine.cfg)"
 
 #~ msgid "Surface"
 #~ msgstr "Yüzey"

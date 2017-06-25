@@ -1,6 +1,5 @@
 # Bengali translation of the Godot Engine editor
-# Copyright (C) 2007-2017 Juan Linietsky, Ariel Manzur
-# Copyright (C) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)
+# Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
 # Abu Md. Maruf Sarker <maruf.webdev@gmail.com>, 2016-2017.
@@ -359,213 +358,12 @@ msgstr "শ্রেণীবিন্যাস/সারির মানের 
 msgid "Change Array Value"
 msgstr "শ্রেণীবিন্যাস/সারির মান পরিবর্তন করুন"
 
-#: editor/asset_library_editor_plugin.cpp
-msgid "Free"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp editor/editor_plugin_settings.cpp
-msgid "Version:"
-msgstr "সংস্করণ:"
-
-#: editor/asset_library_editor_plugin.cpp
-#, fuzzy
-msgid "Contents:"
-msgstr "ধ্রুবকসমূহ:"
-
-#: editor/asset_library_editor_plugin.cpp
-#, fuzzy
-msgid "View Files"
-msgstr "ফাইল"
-
-#: editor/asset_library_editor_plugin.cpp editor/create_dialog.cpp
-#: editor/editor_help.cpp editor/property_selector.cpp
-#: editor/script_editor_debugger.cpp
-msgid "Description:"
-msgstr "বর্ণনা:"
-
-#: editor/asset_library_editor_plugin.cpp editor/project_manager.cpp
-msgid "Install"
-msgstr "ইন্সটল"
-
-#: editor/asset_library_editor_plugin.cpp editor/call_dialog.cpp
-#: editor/connections_dialog.cpp editor/export_template_manager.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/sample_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_settings.cpp
-#: editor/property_editor.cpp editor/run_settings_dialog.cpp
-#: editor/settings_config_dialog.cpp
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Close"
-msgstr "বন্ধ করুন"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Can't resolve hostname:"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Can't resolve."
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Connection error, please try again."
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-#, fuzzy
-msgid "Can't connect."
-msgstr "সংযোগ.."
-
-#: editor/asset_library_editor_plugin.cpp
-#, fuzzy
-msgid "Can't connect to host:"
-msgstr "নোডের সাথে সংযুক্ত করুন:"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "No response from host:"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "No response."
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-#, fuzzy
-msgid "Request failed, return code:"
-msgstr "আবেদনকৃত ফাইল ফরম্যাট/ধরণ অজানা:"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Req. Failed."
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Request failed, too many redirects"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Redirect Loop."
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Failed:"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Bad download hash, assuming file has been tampered with."
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Expected:"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Got:"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Failed sha256 hash check"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Asset Download Error:"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Success!"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Fetching:"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-#, fuzzy
-msgid "Resolving.."
-msgstr "সংরক্ষিত হচ্ছে.."
-
-#: editor/asset_library_editor_plugin.cpp
-#, fuzzy
-msgid "Connecting.."
-msgstr "সংযোগ.."
-
-#: editor/asset_library_editor_plugin.cpp
-#, fuzzy
-msgid "Requesting.."
-msgstr "পরীক্ষামূলক উৎস"
-
-#: editor/asset_library_editor_plugin.cpp
-#, fuzzy
-msgid "Error making request"
-msgstr "রিসোর্স সংরক্ষণে সমস্যা হয়েছে!"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Idle"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Retry"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-#, fuzzy
-msgid "Download Error"
-msgstr "নীচে"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Download for this asset is already in progress!"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "first"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "prev"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "next"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "last"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "All"
-msgstr "সকল"
-
 #: editor/asset_library_editor_plugin.cpp editor/create_dialog.cpp
 #: editor/editor_help.cpp editor/editor_node.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: editor/quick_open.cpp editor/settings_config_dialog.cpp
 msgid "Search:"
 msgstr "অনুসন্ধান করুন:"
-
-#: editor/asset_library_editor_plugin.cpp editor/code_editor.cpp
-#: editor/editor_help.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/project_settings.cpp
-msgid "Search"
-msgstr "অনুসন্ধান করুন"
-
-#: editor/asset_library_editor_plugin.cpp editor/editor_node.cpp
-#: editor/io_plugins/editor_bitmask_import_plugin.cpp
-#: editor/io_plugins/editor_font_import_plugin.cpp
-#: editor/io_plugins/editor_mesh_import_plugin.cpp
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-#: editor/project_manager.cpp
-msgid "Import"
-msgstr "ইম্পোর্ট"
-
-#: editor/asset_library_editor_plugin.cpp editor/project_settings.cpp
-msgid "Plugins"
-msgstr "প্লাগইন-সমূহ"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Sort:"
@@ -578,6 +376,10 @@ msgstr "উল্টান/বিপরীত দিকে ফিরান"
 #: editor/asset_library_editor_plugin.cpp editor/project_settings.cpp
 msgid "Category:"
 msgstr "বিভাগ:"
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "All"
+msgstr "সকল"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Site:"
@@ -610,6 +412,20 @@ msgstr "'%s' এর জন্য মেথডের তালিকা:"
 #: editor/call_dialog.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Call"
 msgstr "ডাকুন (Call)"
+
+#: editor/call_dialog.cpp editor/connections_dialog.cpp
+#: editor/export_template_manager.cpp
+#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/sample_library_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_settings.cpp
+#: editor/property_editor.cpp editor/run_settings_dialog.cpp
+#: editor/settings_config_dialog.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Close"
+msgstr "বন্ধ করুন"
 
 #: editor/call_dialog.cpp
 msgid "Method List:"
@@ -659,6 +475,13 @@ msgstr "সম্পূর্ণ শব্দ"
 #: editor/code_editor.cpp
 msgid "Selection Only"
 msgstr "শুধুমাত্র নির্বাচিতসমূহ"
+
+#: editor/code_editor.cpp editor/editor_help.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/project_settings.cpp
+msgid "Search"
+msgstr "অনুসন্ধান করুন"
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "Find"
@@ -811,6 +634,11 @@ msgstr "সাম্প্রতিক:"
 #: editor/quick_open.cpp
 msgid "Matches:"
 msgstr "মিলসমূহ:"
+
+#: editor/create_dialog.cpp editor/editor_help.cpp editor/property_selector.cpp
+#: editor/script_editor_debugger.cpp
+msgid "Description:"
+msgstr "বর্ণনা:"
 
 #: editor/dependency_editor.cpp
 msgid "Search Replacement For:"
@@ -1300,6 +1128,10 @@ msgstr " আউটপুট/ফলাফল:"
 msgid "Clear"
 msgstr "পরিস্কার করুন/ক্লীয়ার"
 
+#: editor/editor_node.cpp
+msgid "Node From Scene"
+msgstr "দৃশ্য হতে নোড"
+
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/resources_dock.cpp
 msgid "Error saving resource!"
@@ -1682,6 +1514,21 @@ msgid "Distraction Free Mode"
 msgstr "বিক্ষেপ-হীন মোড"
 
 #: editor/editor_node.cpp
+msgid "Import assets to the project."
+msgstr "উপাদানসমূহ প্রকল্পে ইম্পোর্ট করুন।"
+
+#: editor/editor_node.cpp editor/io_plugins/editor_bitmask_import_plugin.cpp
+#: editor/io_plugins/editor_font_import_plugin.cpp
+#: editor/io_plugins/editor_mesh_import_plugin.cpp
+#: editor/io_plugins/editor_sample_import_plugin.cpp
+#: editor/io_plugins/editor_scene_import_plugin.cpp
+#: editor/io_plugins/editor_texture_import_plugin.cpp
+#: editor/io_plugins/editor_translation_import_plugin.cpp
+#: editor/project_manager.cpp
+msgid "Import"
+msgstr "ইম্পোর্ট"
+
+#: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
 msgstr "প্রকল্প অথবা দৃশ্যে-ব্যাপী বিবিধ সরঞ্জাম-সমূহ।"
 
@@ -1969,6 +1816,10 @@ msgstr "ভুল/সমস্যা-সমূহ লোড করুন"
 #: editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
 msgstr "ইন্সটল-কৃত প্লাগইন-সমূহ:"
+
+#: editor/editor_plugin_settings.cpp
+msgid "Version:"
+msgstr "সংস্করণ:"
 
 #: editor/editor_plugin_settings.cpp
 msgid "Author:"
@@ -3979,11 +3830,6 @@ msgid "A processor material of type 'ParticlesMaterial' is required."
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
-msgid "Generating AABB"
-msgstr "AABB উৎপন্ন করুন"
-
-#: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
 msgstr "পৃষ্ঠসমূহ কোনো আকার নেই!"
 
@@ -4035,16 +3881,6 @@ msgstr "আয়তন"
 #, fuzzy
 msgid "Emission Source: "
 msgstr "Emission পূরণ:"
-
-#: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
-msgid "Generate Visibility AABB"
-msgstr "AABB উৎপন্ন করুন"
-
-#: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
-msgid "Generation Time (sec):"
-msgstr "গড় সময় (সেঃ)"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
@@ -4496,14 +4332,6 @@ msgstr "সিম্বল সম্পূর্ণ করুন"
 #: editor/plugins/script_text_editor.cpp
 msgid "Trim Trailing Whitespace"
 msgstr "শেষের হোয়াইটস্পেস ছেঁটে ফেলুন"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "Convert Indent To Spaces"
-msgstr ""
-
-#: editor/plugins/script_text_editor.cpp
-msgid "Convert Indent To Tabs"
-msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Auto Indent"
@@ -5379,12 +5207,12 @@ msgstr "অকার্যকর প্রকল্পের পথ, পথট�
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Invalid project path, *.godot must not exist."
+msgid "Invalid project path, godot.cfg must not exist."
 msgstr "অকার্যকর প্রকল্পের পথ, engine.cfg অবশ্যই অনুপস্থিত হতে হবে।"
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Invalid project path, *.godot must exist."
+msgid "Invalid project path, godot.cfg must exist."
 msgstr "অকার্যকর প্রকল্পের পথ, engine.cfg অবশ্যই উপস্থিত হতে হবে।"
 
 #: editor/project_manager.cpp
@@ -5397,7 +5225,7 @@ msgstr "অকার্যকর প্রকল্পের পথ (কোন�
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Couldn't create *.godot project file in project path."
+msgid "Couldn't create godot.cfg in project path."
 msgstr "প্রকল্পের পথে engine.cfg তৈরি করা সম্ভব হয়নি।"
 
 #: editor/project_manager.cpp
@@ -5431,6 +5259,10 @@ msgstr "প্রকল্পের পথ:"
 #: editor/project_manager.cpp
 msgid "Install Project:"
 msgstr "প্রকল্প ইন্সটল করুন:"
+
+#: editor/project_manager.cpp
+msgid "Install"
+msgstr "ইন্সটল"
 
 #: editor/project_manager.cpp
 msgid "Browse"
@@ -5491,11 +5323,6 @@ msgstr "স্ক্যান করার জন্য ফোল্ডার �
 #: editor/project_manager.cpp
 msgid "New Project"
 msgstr "নতুন প্রকল্প"
-
-#: editor/project_manager.cpp
-#, fuzzy
-msgid "Templates"
-msgstr "বস্তু অপসারণ করুন"
 
 #: editor/project_manager.cpp
 msgid "Exit"
@@ -5684,8 +5511,8 @@ msgstr "রিসোর্সের পুনঃ-নকশার সিদ্ধ
 
 #: editor/project_settings.cpp
 #, fuzzy
-msgid "Project Settings "
-msgstr "প্রকল্পের সেটিংস"
+msgid "Project Settings (godot.cfg)"
+msgstr "প্রকল্পের সেটিংস (engine.cfg)"
 
 #: editor/project_settings.cpp editor/settings_config_dialog.cpp
 msgid "General"
@@ -5750,6 +5577,10 @@ msgstr "ঘটনাস্থল"
 #: editor/project_settings.cpp
 msgid "AutoLoad"
 msgstr "স্বয়ংক্রিয়-লোড"
+
+#: editor/project_settings.cpp
+msgid "Plugins"
+msgstr "প্লাগইন-সমূহ"
 
 #: editor/property_editor.cpp
 #, fuzzy
@@ -6360,10 +6191,6 @@ msgid "Change Notifier Extents"
 msgstr "Notifier এর সীমা পরিবর্তন করুন"
 
 #: editor/spatial_editor_gizmos.cpp
-msgid "Change Particles AABB"
-msgstr ""
-
-#: editor/spatial_editor_gizmos.cpp
 msgid "Change Probe Extents"
 msgstr "প্রোবের (Probe) পরিব্যাপ্তি পরিবর্তন করুন"
 
@@ -6965,17 +6792,6 @@ msgstr ""
 "NavigationMeshInstance-কে অবশ্যই Navigation-এর অংশ অথবা অংশের অংশ হতে হবে। "
 "এটা শুধুমাত্র ন্যাভিগেশনের তথ্য প্রদান করে।"
 
-#: scene/3d/particles.cpp
-msgid ""
-"Nothing is visible because meshes have not been assigned to draw passes."
-msgstr ""
-
-#: scene/3d/particles.cpp
-msgid ""
-"A material to process the particles is not assigned, so no behavior is "
-"imprinted."
-msgstr ""
-
 #: scene/3d/remote_transform.cpp
 msgid "Path property must point to a valid Spatial node to work."
 msgstr "Path এর দিক অবশ্যই একটি কার্যকর Spatial নোডের এর দিকে নির্দেশ করাতে হবে।"
@@ -7051,16 +6867,6 @@ msgstr ""
 "সরাসরি পর্দায় দেখাতে চান, এটিকে যেকোনো Control এর অংশভূত করুন যেনো এটি একটি "
 "আকার ধারণ করতে পারে। অন্যথায়, এটিকে একটি RenderTarget করুন এবং এর অভ্যন্তরীণ "
 "দৃশ্যাবলিকে (texture) দৃশ্যমান করতে কোনো নোডে হস্তান্তর করুন।"
-
-#~ msgid "Node From Scene"
-#~ msgstr "দৃশ্য হতে নোড"
-
-#~ msgid "Import assets to the project."
-#~ msgstr "উপাদানসমূহ প্রকল্পে ইম্পোর্ট করুন।"
-
-#, fuzzy
-#~ msgid "Project Settings (godot.cfg)"
-#~ msgstr "প্রকল্পের সেটিংস (engine.cfg)"
 
 #~ msgid "Surface"
 #~ msgstr "পৃষ্ঠতল"
