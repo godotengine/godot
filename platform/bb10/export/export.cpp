@@ -37,7 +37,7 @@
 #include "io/zip_io.h"
 #include "os/file_access.h"
 #include "os/os.h"
-#include "platform/bb10/logo.h"
+#include "platform/bb10/logo.gen.h"
 #include "version.h"
 
 #define MAX_DEVICES 5

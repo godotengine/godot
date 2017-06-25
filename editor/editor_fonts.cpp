@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_fonts.h"
-#include "builtin_fonts.h"
+#include "builtin_fonts.gen.h"
 #include "doc_code_font.h"
 #include "doc_font.h"
 #include "doc_title_font.h"

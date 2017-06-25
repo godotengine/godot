@@ -329,6 +329,6 @@ MethodBind *create_native_method_bind(Variant (T::*p_method)(const Variant **, i
 // if you declare an nonexistent class..
 class __UnexistingClass;
 
-#include "method_bind.inc"
+#include "method_bind.gen.inc"
 
 #endif

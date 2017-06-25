@@ -45,7 +45,7 @@
 #include "scene/main/node.h"
 #include "scene/main/scene_main_loop.h"
 #include "scene/main/viewport.h"
-#include "translations.h"
+#include "translations.gen.h"
 #include "version.h"
 
 Ref<EditorSettings> EditorSettings::singleton = NULL;

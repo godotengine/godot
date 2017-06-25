@@ -256,10 +256,10 @@ def configure(env):
 
     import methods
     env.Append(BUILDERS={'GLSL120': env.Builder(
-        action=methods.build_legacygl_headers, suffix='glsl.h', src_suffix='.glsl')})
+        action=methods.build_legacygl_headers, suffix='glsl.gen.h', src_suffix='.glsl')})
     env.Append(BUILDERS={'GLSL': env.Builder(
-        action=methods.build_glsl_headers, suffix='glsl.h', src_suffix='.glsl')})
+        action=methods.build_glsl_headers, suffix='glsl.gen.h', src_suffix='.glsl')})
     env.Append(BUILDERS={'GLSL120GLES': env.Builder(
-        action=methods.build_gles2_headers, suffix='glsl.h', src_suffix='.glsl')})
+        action=methods.build_gles2_headers, suffix='glsl.gen.h', src_suffix='.glsl')})
 
     env.use_windows_spawn_fix()

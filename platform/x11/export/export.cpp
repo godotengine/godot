@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "export.h"
 #include "editor/editor_import_export.h"
-#include "platform/x11/logo.h"
+#include "platform/x11/logo.gen.h"
 #include "scene/resources/texture.h"
 
 void register_x11_exporter() {

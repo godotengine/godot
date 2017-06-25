@@ -88,7 +88,7 @@ make_editor_icons_builder = Builder(action=make_editor_icons_action,
                                     suffix='.cpp',
                                     src_suffix='.png')
 env['BUILDERS']['MakeEditorIconsBuilder'] = make_editor_icons_builder
-env.Alias('editor_icons', [env.MakeEditorIconsBuilder('#editor/editor_icons.cpp', Glob("*.png"))])
+env.Alias('editor_icons', [env.MakeEditorIconsBuilder('#editor/editor_icons.gen.cpp', Glob("*.png"))])
 
-env.editor_sources.append("#editor/editor_icons.cpp")
+env.editor_sources.append("#editor/editor_icons.gen.cpp")
 Export('env')

@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "visual_server.h"
 #include "globals.h"
-#include "method_bind_ext.inc"
+#include "method_bind_ext.gen.inc"
 
 VisualServer *VisualServer::singleton = NULL;
 VisualServer *(*VisualServer::create_func)() = NULL;
