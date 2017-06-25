@@ -254,7 +254,8 @@ void Viewport::update_worlds() {
 	if (!is_inside_tree())
 		return;
 
-	Rect2 xformed_rect = (global_canvas_transform * canvas_transform).affine_inverse().xform(get_visible_rect());
+	Rect2 abstracted_rect = Rect2(Vector2(), get_visible_rect().size);
+	Rect2 xformed_rect = (global_canvas_transform * canvas_transform).affine_inverse().xform(abstracted_rect);
 	find_world_2d()->_update_viewport(this, xformed_rect);
 	find_world_2d()->_update();
 
