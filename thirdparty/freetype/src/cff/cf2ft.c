@@ -104,7 +104,8 @@
       FT_Memory  memory = font->memory;
 
 
-      (void)memory;
+      FT_FREE( font->blend.lastNDV );
+      FT_FREE( font->blend.BV );
     }
   }
 
@@ -239,7 +240,7 @@
                     FT_Memory    memory,
                     FT_Error*    error )
   {
-    FT_MEM_ZERO( outline, sizeof ( CF2_OutlineRec ) );
+    FT_ZERO( outline );
 
     outline->root.memory = memory;
     outline->root.error  = error;
@@ -311,7 +312,7 @@
     font = (CF2_Font)decoder->cff->cf2_instance.data;
 
     /* on first glyph, allocate instance structure */
-    if ( decoder->cff->cf2_instance.data == NULL )
+    if ( !decoder->cff->cf2_instance.data )
     {
       decoder->cff->cf2_instance.finalizer =
         (FT_Generic_Finalizer)cf2_free_instance;
@@ -338,6 +339,11 @@
 
       CFF_Builder*  builder = &decoder->builder;
       CFF_Driver    driver  = (CFF_Driver)FT_FACE_DRIVER( builder->face );
+
+      FT_Bool  no_stem_darkening_driver =
+                 driver->no_stem_darkening;
+      FT_Char  no_stem_darkening_font =
+                 builder->face->root.internal->no_stem_darkening;
 
       /* local error */
       FT_Error       error2 = FT_Err_Ok;
@@ -366,10 +372,15 @@
                                &hinted,
                                &scaled );
 
+      /* copy isCFF2 boolean from TT_Face to CF2_Font */
+      font->isCFF2 = builder->face->is_cff2;
+
       font->renderingFlags = 0;
       if ( hinted )
         font->renderingFlags |= CF2_FlagsHinted;
-      if ( scaled && !driver->no_stem_darkening )
+      if ( scaled && ( !no_stem_darkening_font        ||
+                       ( no_stem_darkening_font < 0 &&
+                         !no_stem_darkening_driver  ) ) )
         font->renderingFlags |= CF2_FlagsDarkened;
 
       font->darkenParams[0] = driver->darken_params[0];
@@ -411,6 +422,44 @@
 
     return decoder->current_subfont;
   }
+
+
+  /* get pointer to VStore structure */
+  FT_LOCAL_DEF( CFF_VStore )
+  cf2_getVStore( CFF_Decoder*  decoder )
+  {
+    FT_ASSERT( decoder && decoder->cff );
+
+    return &decoder->cff->vstore;
+  }
+
+
+  /* get maxstack value from CFF2 Top DICT */
+  FT_LOCAL_DEF( FT_UInt )
+  cf2_getMaxstack( CFF_Decoder*  decoder )
+  {
+    FT_ASSERT( decoder && decoder->cff );
+
+    return decoder->cff->top_font.font_dict.maxstack;
+  }
+
+
+#ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
+  /* Get normalized design vector for current render request; */
+  /* return pointer and length.                               */
+  /*                                                          */
+  /* Note: Uses FT_Fixed not CF2_Fixed for the vector.        */
+  FT_LOCAL_DEF( FT_Error )
+  cf2_getNormalizedVector( CFF_Decoder*  decoder,
+                           CF2_UInt     *len,
+                           FT_Fixed*    *vec )
+  {
+    FT_ASSERT( decoder && decoder->builder.face );
+    FT_ASSERT( vec && len );
+
+    return cff_get_var_blend( decoder->builder.face, len, NULL, vec, NULL );
+  }
+#endif
 
 
   /* get `y_ppem' from `CFF_Size' */

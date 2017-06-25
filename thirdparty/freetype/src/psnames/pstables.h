@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    PostScript glyph names.                                              */
 /*                                                                         */
-/*  Copyright 2005-2016 by                                                 */
+/*  Copyright 2005-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -19,7 +19,16 @@
   /* This file has been generated automatically -- do not edit! */
 
 
-  static const char  ft_standard_glyph_names[3696] =
+#ifndef  DEFINE_PS_TABLES
+#ifdef  __cplusplus
+  extern "C"
+#else
+  extern
+#endif
+#endif
+  const char  ft_standard_glyph_names[3696]
+#ifdef  DEFINE_PS_TABLES
+  =
   {
     '.','n','u','l','l', 0,
     'n','o','n','m','a','r','k','i','n','g','r','e','t','u','r','n', 0,
@@ -441,14 +450,25 @@
     'R','e','g','u','l','a','r', 0,
     'R','o','m','a','n', 0,
     'S','e','m','i','b','o','l','d', 0,
-  };
+  }
+#endif /* DEFINE_PS_TABLES */
+  ;
 
 
 #define FT_NUM_MAC_NAMES  258
 
   /* Values are offsets into the `ft_standard_glyph_names' table */
 
-  static const short  ft_mac_names[FT_NUM_MAC_NAMES] =
+#ifndef  DEFINE_PS_TABLES
+#ifdef  __cplusplus
+  extern "C"
+#else
+  extern
+#endif
+#endif
+  const short  ft_mac_names[FT_NUM_MAC_NAMES]
+#ifdef  DEFINE_PS_TABLES
+  =
   {
      253,   0,   6, 261, 267, 274, 283, 294, 301, 309, 758, 330, 340, 351,
      360, 365, 371, 378, 385, 391, 396, 400, 404, 410, 415, 420, 424, 430,
@@ -469,14 +489,25 @@
     1066,1073,1101,1143,1536,1783,1596,1843,1253,1207,1319,1579,1826,1229,
     1270,1313,1323,1171,1290,1332,1211,1235,1276, 169, 175, 182, 189, 200,
      209, 218, 225, 232, 239, 246
-  };
+  }
+#endif /* DEFINE_PS_TABLES */
+  ;
 
 
 #define FT_NUM_SID_NAMES  391
 
   /* Values are offsets into the `ft_standard_glyph_names' table */
 
-  static const short  ft_sid_names[FT_NUM_SID_NAMES] =
+#ifndef  DEFINE_PS_TABLES
+#ifdef  __cplusplus
+  extern "C"
+#else
+  extern
+#endif
+#endif
+  const short  ft_sid_names[FT_NUM_SID_NAMES]
+#ifdef  DEFINE_PS_TABLES
+  =
   {
      253, 261, 267, 274, 283, 294, 301, 309, 319, 330, 340, 351, 360, 365,
      371, 378, 385, 391, 396, 400, 404, 410, 415, 420, 424, 430, 436, 441,
@@ -506,11 +537,22 @@
     3237,3249,3264,3275,3283,3297,3309,3321,3338,3353,3365,3377,3394,3409,
     3418,3430,3442,3454,3471,3483,3498,3506,3518,3530,3542,3559,3574,3586,
     3597,3612,3620,3628,3636,3644,3650,3655,3660,3666,3673,3681,3687
-  };
+  }
+#endif /* DEFINE_PS_TABLES */
+  ;
 
 
   /* the following are indices into the SID name table */
-  static const unsigned short  t1_standard_encoding[256] =
+#ifndef  DEFINE_PS_TABLES
+#ifdef  __cplusplus
+  extern "C"
+#else
+  extern
+#endif
+#endif
+  const unsigned short  t1_standard_encoding[256]
+#ifdef  DEFINE_PS_TABLES
+  =
   {
       0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
       0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -528,11 +570,22 @@
     137,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
       0,138,  0,139,  0,  0,  0,  0,140,141,142,143,  0,  0,  0,  0,
       0,144,  0,  0,  0,145,  0,  0,146,147,148,149,  0,  0,  0,  0
-  };
+  }
+#endif /* DEFINE_PS_TABLES */
+  ;
 
 
   /* the following are indices into the SID name table */
-  static const unsigned short  t1_expert_encoding[256] =
+#ifndef  DEFINE_PS_TABLES
+#ifdef  __cplusplus
+  extern "C"
+#else
+  extern
+#endif
+#endif
+  const unsigned short  t1_expert_encoding[256]
+#ifdef  DEFINE_PS_TABLES
+  =
   {
       0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
       0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -550,7 +603,9 @@
     331,332,333,334,335,336,337,338,339,340,341,342,343,344,345,346,
     347,348,349,350,351,352,353,354,355,356,357,358,359,360,361,362,
     363,364,365,366,367,368,369,370,371,372,373,374,375,376,377,378
-  };
+  }
+#endif /* DEFINE_PS_TABLES */
+  ;
 
 
   /*
@@ -564,7 +619,16 @@
 
 #ifdef FT_CONFIG_OPTION_ADOBE_GLYPH_LIST
 
-  static const unsigned char  ft_adobe_glyph_list[55997L] =
+#ifndef  DEFINE_PS_TABLES
+#ifdef  __cplusplus
+  extern "C"
+#else
+  extern
+#endif
+#endif
+  const unsigned char  ft_adobe_glyph_list[55997L]
+#ifdef  DEFINE_PS_TABLES
+  =
   {
       0, 52,  0,106,  2,167,  3, 63,  4,220,  6,125,  9,143, 10, 23,
      11,137, 12,199, 14,246, 15, 87, 16,233, 17,219, 18,104, 19, 88,
@@ -4066,9 +4130,12 @@
     248,232,239,239,107,128,  2,144,243,244,242,239,235,101,128,  1,
     182,117,  2,218,167,218,178,232,233,242,225,231,225,238, 97,128,
      48, 90,235,225,244,225,235,225,238, 97,128, 48,186
-  };
+  }
+#endif /* DEFINE_PS_TABLES */
+  ;
 
 
+#ifdef  DEFINE_PS_TABLES
   /*
    *  This function searches the compressed table efficiently.
    */
@@ -4163,6 +4230,7 @@
   NotFound:
     return 0;
   }
+#endif /* DEFINE_PS_TABLES */
 
 #endif /* FT_CONFIG_OPTION_ADOBE_GLYPH_LIST */
 

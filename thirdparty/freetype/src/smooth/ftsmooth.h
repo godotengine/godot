@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Anti-aliasing renderer interface (specification).                    */
 /*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
+/*  Copyright 1996-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -27,18 +27,11 @@
 FT_BEGIN_HEADER
 
 
-#ifndef FT_CONFIG_OPTION_NO_STD_RASTER
-  FT_DECLARE_RENDERER( ft_std_renderer_class )
-#endif
-
-#ifndef FT_CONFIG_OPTION_NO_SMOOTH_RASTER
   FT_DECLARE_RENDERER( ft_smooth_renderer_class )
 
   FT_DECLARE_RENDERER( ft_smooth_lcd_renderer_class )
 
-  FT_DECLARE_RENDERER( ft_smooth_lcd_v_renderer_class )
-#endif
-
+  FT_DECLARE_RENDERER( ft_smooth_lcdv_renderer_class )
 
 
 FT_END_HEADER

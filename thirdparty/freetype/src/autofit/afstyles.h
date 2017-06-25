@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Auto-fitter styles (specification only).                             */
 /*                                                                         */
-/*  Copyright 2013-2016 by                                                 */
+/*  Copyright 2013-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -83,6 +83,13 @@
                        DEFAULT )
 
 
+  STYLE( adlm_dflt, ADLM_DFLT,
+         "Adlam default style",
+         AF_WRITING_SYSTEM_LATIN,
+         AF_SCRIPT_ADLM,
+         AF_BLUE_STRINGSET_ADLM,
+         AF_COVERAGE_DEFAULT )
+
   STYLE( arab_dflt, ARAB_DFLT,
          "Arabic default style",
          AF_WRITING_SYSTEM_LATIN,
@@ -97,11 +104,53 @@
          AF_BLUE_STRINGSET_ARMN,
          AF_COVERAGE_DEFAULT )
 
+  STYLE( avst_dflt, AVST_DFLT,
+         "Avestan default style",
+         AF_WRITING_SYSTEM_LATIN,
+         AF_SCRIPT_AVST,
+         AF_BLUE_STRINGSET_AVST,
+         AF_COVERAGE_DEFAULT )
+
+  STYLE( bamu_dflt, BAMU_DFLT,
+         "Bamum default style",
+         AF_WRITING_SYSTEM_LATIN,
+         AF_SCRIPT_BAMU,
+         AF_BLUE_STRINGSET_BAMU,
+         AF_COVERAGE_DEFAULT )
+
   STYLE( beng_dflt, BENG_DFLT,
          "Bengali default style",
          AF_WRITING_SYSTEM_LATIN,
          AF_SCRIPT_BENG,
          AF_BLUE_STRINGSET_BENG,
+         AF_COVERAGE_DEFAULT )
+
+  STYLE( buhd_dflt, BUHD_DFLT,
+         "Buhid default style",
+         AF_WRITING_SYSTEM_LATIN,
+         AF_SCRIPT_BUHD,
+         AF_BLUE_STRINGSET_BUHD,
+         AF_COVERAGE_DEFAULT )
+
+  STYLE( cakm_dflt, CAKM_DFLT,
+         "Chakma default style",
+         AF_WRITING_SYSTEM_LATIN,
+         AF_SCRIPT_CAKM,
+         AF_BLUE_STRINGSET_CAKM,
+         AF_COVERAGE_DEFAULT )
+
+  STYLE( cans_dflt, CANS_DFLT,
+         "Canadian Syllabics default style",
+         AF_WRITING_SYSTEM_LATIN,
+         AF_SCRIPT_CANS,
+         AF_BLUE_STRINGSET_CANS,
+         AF_COVERAGE_DEFAULT )
+
+  STYLE( cari_dflt, CARI_DFLT,
+         "Carian default style",
+         AF_WRITING_SYSTEM_LATIN,
+         AF_SCRIPT_CARI,
+         AF_BLUE_STRINGSET_CARI,
          AF_COVERAGE_DEFAULT )
 
   STYLE( cher_dflt, CHER_DFLT,
@@ -111,6 +160,20 @@
          AF_BLUE_STRINGSET_CHER,
          AF_COVERAGE_DEFAULT )
 
+  STYLE( copt_dflt, COPT_DFLT,
+         "Coptic default style",
+         AF_WRITING_SYSTEM_LATIN,
+         AF_SCRIPT_COPT,
+         AF_BLUE_STRINGSET_COPT,
+         AF_COVERAGE_DEFAULT )
+
+  STYLE( cprt_dflt, CPRT_DFLT,
+         "Cypriot default style",
+         AF_WRITING_SYSTEM_LATIN,
+         AF_SCRIPT_CPRT,
+         AF_BLUE_STRINGSET_CPRT,
+         AF_COVERAGE_DEFAULT )
+
   META_STYLE_LATIN( cyrl, CYRL, "Cyrillic" )
 
   STYLE( deva_dflt, DEVA_DFLT,
@@ -118,6 +181,13 @@
          AF_WRITING_SYSTEM_LATIN,
          AF_SCRIPT_DEVA,
          AF_BLUE_STRINGSET_DEVA,
+         AF_COVERAGE_DEFAULT )
+
+  STYLE( dsrt_dflt, DSRT_DFLT,
+         "Deseret default style",
+         AF_WRITING_SYSTEM_LATIN,
+         AF_SCRIPT_DSRT,
+         AF_BLUE_STRINGSET_DSRT,
          AF_COVERAGE_DEFAULT )
 
   STYLE( ethi_dflt, ETHI_DFLT,
@@ -141,6 +211,20 @@
          AF_BLUE_STRINGSET_GEOK,
          AF_COVERAGE_DEFAULT )
 
+  STYLE( glag_dflt, GLAG_DFLT,
+         "Glagolitic default style",
+         AF_WRITING_SYSTEM_LATIN,
+         AF_SCRIPT_GLAG,
+         AF_BLUE_STRINGSET_GLAG,
+         AF_COVERAGE_DEFAULT )
+
+  STYLE( goth_dflt, GOTH_DFLT,
+         "Gothic default style",
+         AF_WRITING_SYSTEM_LATIN,
+         AF_SCRIPT_GOTH,
+         AF_BLUE_STRINGSET_GOTH,
+         AF_COVERAGE_DEFAULT )
+
   META_STYLE_LATIN( grek, GREK, "Greek" )
 
   STYLE( gujr_dflt, GUJR_DFLT,
@@ -162,6 +246,13 @@
          AF_WRITING_SYSTEM_LATIN,
          AF_SCRIPT_HEBR,
          AF_BLUE_STRINGSET_HEBR,
+         AF_COVERAGE_DEFAULT )
+
+  STYLE( kali_dflt, KALI_DFLT,
+         "Kayah Li default style",
+         AF_WRITING_SYSTEM_LATIN,
+         AF_SCRIPT_KALI,
+         AF_BLUE_STRINGSET_KALI,
          AF_COVERAGE_DEFAULT )
 
   STYLE( knda_dflt, KNDA_DFLT,
@@ -217,6 +308,13 @@
          AF_COVERAGE_DEFAULT )
 #endif
 
+  STYLE( lisu_dflt, LISU_DFLT,
+         "Lisu default style",
+         AF_WRITING_SYSTEM_LATIN,
+         AF_SCRIPT_LISU,
+         AF_BLUE_STRINGSET_LISU,
+         AF_COVERAGE_DEFAULT )
+
   STYLE( mlym_dflt, MLYM_DFLT,
          "Malayalam default style",
          AF_WRITING_SYSTEM_LATIN,
@@ -231,11 +329,60 @@
          AF_BLUE_STRINGSET_MYMR,
          AF_COVERAGE_DEFAULT )
 
+  STYLE( nkoo_dflt, NKOO_DFLT,
+         "N'Ko default style",
+         AF_WRITING_SYSTEM_LATIN,
+         AF_SCRIPT_NKOO,
+         AF_BLUE_STRINGSET_NKOO,
+         AF_COVERAGE_DEFAULT )
+
   STYLE( none_dflt, NONE_DFLT,
          "no style",
          AF_WRITING_SYSTEM_DUMMY,
          AF_SCRIPT_NONE,
          AF_BLUE_STRINGSET_NONE,
+         AF_COVERAGE_DEFAULT )
+
+  STYLE( olck_dflt, OLCK_DFLT,
+         "Ol Chiki default style",
+         AF_WRITING_SYSTEM_LATIN,
+         AF_SCRIPT_OLCK,
+         AF_BLUE_STRINGSET_OLCK,
+         AF_COVERAGE_DEFAULT )
+
+  STYLE( orkh_dflt, ORKH_DFLT,
+         "Old Turkic default style",
+         AF_WRITING_SYSTEM_LATIN,
+         AF_SCRIPT_ORKH,
+         AF_BLUE_STRINGSET_ORKH,
+         AF_COVERAGE_DEFAULT )
+
+  STYLE( osge_dflt, OSGE_DFLT,
+         "Osage default style",
+         AF_WRITING_SYSTEM_LATIN,
+         AF_SCRIPT_OSGE,
+         AF_BLUE_STRINGSET_OSGE,
+         AF_COVERAGE_DEFAULT )
+
+  STYLE( osma_dflt, OSMA_DFLT,
+         "Osmanya default style",
+         AF_WRITING_SYSTEM_LATIN,
+         AF_SCRIPT_OSMA,
+         AF_BLUE_STRINGSET_OSMA,
+         AF_COVERAGE_DEFAULT )
+
+  STYLE( saur_dflt, SAUR_DFLT,
+         "Saurashtra default style",
+         AF_WRITING_SYSTEM_LATIN,
+         AF_SCRIPT_SAUR,
+         AF_BLUE_STRINGSET_SAUR,
+         AF_COVERAGE_DEFAULT )
+
+  STYLE( shaw_dflt, SHAW_DFLT,
+         "Shavian default style",
+         AF_WRITING_SYSTEM_LATIN,
+         AF_SCRIPT_SHAW,
+         AF_BLUE_STRINGSET_SHAW,
          AF_COVERAGE_DEFAULT )
 
   STYLE( sinh_dflt, SINH_DFLT,
@@ -245,11 +392,25 @@
          AF_BLUE_STRINGSET_SINH,
          AF_COVERAGE_DEFAULT )
 
+  STYLE( sund_dflt, SUND_DFLT,
+         "Sundanese default style",
+         AF_WRITING_SYSTEM_LATIN,
+         AF_SCRIPT_SUND,
+         AF_BLUE_STRINGSET_SUND,
+         AF_COVERAGE_DEFAULT )
+
   STYLE( taml_dflt, TAML_DFLT,
          "Tamil default style",
          AF_WRITING_SYSTEM_LATIN,
          AF_SCRIPT_TAML,
          AF_BLUE_STRINGSET_TAML,
+         AF_COVERAGE_DEFAULT )
+
+  STYLE( tavt_dflt, TAVT_DFLT,
+         "Tai Viet default style",
+         AF_WRITING_SYSTEM_LATIN,
+         AF_SCRIPT_TAVT,
+         AF_BLUE_STRINGSET_TAVT,
          AF_COVERAGE_DEFAULT )
 
   STYLE( telu_dflt, TELU_DFLT,
@@ -266,6 +427,20 @@
          AF_BLUE_STRINGSET_THAI,
          AF_COVERAGE_DEFAULT )
 
+  STYLE( tfng_dflt, TFNG_DFLT,
+         "Tifinagh default style",
+         AF_WRITING_SYSTEM_LATIN,
+         AF_SCRIPT_TFNG,
+         AF_BLUE_STRINGSET_TFNG,
+         AF_COVERAGE_DEFAULT )
+
+  STYLE( vaii_dflt, VAII_DFLT,
+         "Vai default style",
+         AF_WRITING_SYSTEM_LATIN,
+         AF_SCRIPT_VAII,
+         AF_BLUE_STRINGSET_VAII,
+         AF_COVERAGE_DEFAULT )
+
 #ifdef AF_CONFIG_OPTION_INDIC
 
   /* no blue stringset support for the Indic writing system yet */
@@ -280,7 +455,6 @@
 
   STYLE_DEFAULT_INDIC( limb, LIMB, "Limbu" )
   STYLE_DEFAULT_INDIC( orya, ORYA, "Oriya" )
-  STYLE_DEFAULT_INDIC( sund, SUND, "Sundanese" )
   STYLE_DEFAULT_INDIC( sylo, SYLO, "Syloti Nagri" )
   STYLE_DEFAULT_INDIC( tibt, TIBT, "Tibetan" )
 

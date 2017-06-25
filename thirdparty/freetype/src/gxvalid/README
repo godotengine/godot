@@ -413,7 +413,7 @@ gxvalid: TrueType GX validator
       format  assured for  Windows  and OS/2  support  is only  subtable
       format  0.  The  Microsoft TrueType  specification  also describes
       subtable format  2, but does  not mention which  platforms support
-      it.  Aubtable formats 1, 3,  and higher are documented as reserved
+      it.  Subtable formats 1, 3,  and higher are documented as reserved
       for future use.  Therefore, the classic version can store subtable
       formats 0 and 2, at least.  `ttfdump.exe', a font tool provided by
       Microsoft,  ignores the  subtable format  written in  the subtable
@@ -518,7 +518,7 @@ gxvalid: TrueType GX validator
 
 ------------------------------------------------------------------------
 
-Copyright 2004-2016 by
+Copyright 2004-2017 by
 suzuki toshiya, Masatake YAMATO, Red hat K.K.,
 David Turner, Robert Wilhelm, and Werner Lemberg.
 
