@@ -720,8 +720,8 @@ void Curve::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_point", "index"), &Curve::remove_point);
 	ClassDB::bind_method(D_METHOD("clear_points"), &Curve::clear_points);
 	ClassDB::bind_method(D_METHOD("get_point_pos", "index"), &Curve::get_point_pos);
-	ClassDB::bind_method(D_METHOD("set_point_value", "index, y"), &Curve::set_point_value);
-	ClassDB::bind_method(D_METHOD("set_point_offset", "index, offset"), &Curve::set_point_value);
+	ClassDB::bind_method(D_METHOD("set_point_value", "index", "y"), &Curve::set_point_value);
+	ClassDB::bind_method(D_METHOD("set_point_offset", "index", "offset"), &Curve::set_point_value);
 	ClassDB::bind_method(D_METHOD("interpolate", "offset"), &Curve::interpolate);
 	ClassDB::bind_method(D_METHOD("interpolate_baked", "offset"), &Curve::interpolate_baked);
 	ClassDB::bind_method(D_METHOD("get_point_left_tangent", "index"), &Curve::get_point_left_tangent);
