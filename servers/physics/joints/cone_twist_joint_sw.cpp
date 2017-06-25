@@ -100,6 +100,7 @@ ConeTwistJointSW::ConeTwistJointSW(BodySW *rbA, BodySW *rbB, const Transform &rb
 	m_biasFactor = 0.3f;
 	m_relaxationFactor = 1.0f;
 
+	m_angularOnly = false;
 	m_solveTwistLimit = false;
 	m_solveSwingLimit = false;
 
