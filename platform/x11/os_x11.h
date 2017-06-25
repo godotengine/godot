@@ -113,6 +113,10 @@ class OS_X11 : public OS_Unix {
 	::XIC xic;
 	::XIM xim;
 	::XIMStyle xim_style;
+	static void xim_destroy_callback(::XIM im, ::XPointer client_data,
+			::XPointer call_data);
+	void set_ime_position(short x, short y);
+
 	Point2i last_mouse_pos;
 	bool last_mouse_pos_valid;
 	Point2i last_click_pos;
