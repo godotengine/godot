@@ -40,14 +40,25 @@ class TileSet : public Resource {
 
 	GDCLASS(TileSet, Resource);
 
-	struct Data {
+public:
+	struct ShapeData {
+		Ref<Shape2D> shape;
+		Vector2 shape_offset;
+		bool one_way_collision;
+
+		ShapeData() {
+			one_way_collision = false;
+		}
+	};
+
+private:
+	struct TileData {
 
 		String name;
 		Ref<Texture> texture;
 		Vector2 offset;
-		Vector2 shape_offset;
 		Rect2i region;
-		Vector<Ref<Shape2D> > shapes;
+		Vector<ShapeData> shapes_data;
 		Vector2 occluder_offset;
 		Ref<OccluderPolygon2D> occluder;
 		Vector2 navigation_polygon_offset;
@@ -56,11 +67,11 @@ class TileSet : public Resource {
 		Color modulate;
 
 		// Default modulate for back-compat
-		explicit Data()
+		explicit TileData()
 			: modulate(1, 1, 1) {}
 	};
 
-	Map<int, Data> tile_map;
+	Map<int, TileData> tile_map;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -84,14 +95,24 @@ public:
 	void tile_set_texture_offset(int p_id, const Vector2 &p_offset);
 	Vector2 tile_get_texture_offset(int p_id) const;
 
-	void tile_set_shape_offset(int p_id, const Vector2 &p_offset);
-	Vector2 tile_get_shape_offset(int p_id) const;
-
 	void tile_set_region(int p_id, const Rect2 &p_region);
 	Rect2 tile_get_region(int p_id) const;
 
-	void tile_set_shape(int p_id, const Ref<Shape2D> &p_shape);
-	Ref<Shape2D> tile_get_shape(int p_id) const;
+	void tile_set_shape(int p_id, int p_shape_id, const Ref<Shape2D> &p_shape);
+	Ref<Shape2D> tile_get_shape(int p_id, int p_shape_id) const;
+
+	void tile_set_shape_offset(int p_id, int p_shape_id, const Vector2 &p_offset);
+	Vector2 tile_get_shape_offset(int p_id, int p_shape_id) const;
+
+	void tile_set_shape_one_way(int p_id, int p_shape_id, bool p_one_way);
+	bool tile_get_shape_one_way(int p_id, int p_shape_id) const;
+
+	void tile_clear_shapes(int p_id);
+	void tile_add_shape(int p_id, const Ref<Shape2D> &p_shape, const Vector2 &p_offset, bool p_one_way = false);
+	int tile_get_shape_count(int p_id) const;
+
+	void tile_set_shapes(int p_id, const Vector<ShapeData> &p_shapes);
+	Vector<ShapeData> tile_get_shapes(int p_id) const;
 
 	void tile_set_material(int p_id, const Ref<ShaderMaterial> &p_material);
 	Ref<ShaderMaterial> tile_get_material(int p_id) const;
@@ -110,9 +131,6 @@ public:
 
 	void tile_set_navigation_polygon(int p_id, const Ref<NavigationPolygon> &p_navigation_polygon);
 	Ref<NavigationPolygon> tile_get_navigation_polygon(int p_id) const;
-
-	void tile_set_shapes(int p_id, const Vector<Ref<Shape2D> > &p_shapes);
-	Vector<Ref<Shape2D> > tile_get_shapes(int p_id) const;
 
 	void remove_tile(int p_id);
 

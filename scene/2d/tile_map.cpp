@@ -451,25 +451,25 @@ void TileMap::_update_dirty_quadrants() {
 				tex->draw_rect_region(canvas_item, rect, r, modulate, c.transpose);
 			}
 
-			Vector<Ref<Shape2D> > shapes = tile_set->tile_get_shapes(c.id);
+			Vector<TileSet::ShapeData> shapes = tile_set->tile_get_shapes(c.id);
 
 			for (int i = 0; i < shapes.size(); i++) {
 
-				Ref<Shape2D> shape = shapes[i];
+				Ref<Shape2D> shape = shapes[i].shape;
 				if (shape.is_valid()) {
-
-					Vector2 shape_ofs = tile_set->tile_get_shape_offset(c.id);
 					Transform2D xform;
 					xform.set_origin(offset.floor());
 
-					_fix_cell_transform(xform, c, shape_ofs + center_ofs, s);
+					_fix_cell_transform(xform, c, shapes[i].shape_offset + center_ofs, s);
 
 					if (debug_canvas_item.is_valid()) {
 						vs->canvas_item_add_set_transform(debug_canvas_item, xform);
 						shape->draw(debug_canvas_item, debug_collision_color);
 					}
 					ps->body_add_shape(q.body, shape->get_rid(), xform);
-					ps->body_set_shape_metadata(q.body, shape_idx++, Vector2(E->key().x, E->key().y));
+					shape_idx++;
+					ps->body_set_shape_as_one_way_collision(q.body, shape_idx, shapes[i].one_way_collision);
+					ps->body_set_shape_metadata(q.body, shape_idx, Vector2(E->key().x, E->key().y));
 				}
 			}
 
