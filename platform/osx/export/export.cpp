@@ -37,7 +37,7 @@
 #include "io/zip_io.h"
 #include "os/file_access.h"
 #include "os/os.h"
-#include "platform/osx/logo.h"
+#include "platform/osx/logo.gen.h"
 #include "string.h"
 #include "version.h"
 

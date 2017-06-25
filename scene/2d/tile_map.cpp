@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "tile_map.h"
 #include "io/marshalls.h"
-#include "method_bind_ext.inc"
+#include "method_bind_ext.gen.inc"
 #include "os/os.h"
 #include "servers/physics_2d_server.h"
 

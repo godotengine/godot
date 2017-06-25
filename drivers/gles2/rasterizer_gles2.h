@@ -53,11 +53,11 @@
 #endif
 
 #include "drivers/gles2/shader_compiler_gles2.h"
-#include "drivers/gles2/shaders/blur.glsl.h"
-#include "drivers/gles2/shaders/canvas.glsl.h"
-#include "drivers/gles2/shaders/canvas_shadow.glsl.h"
-#include "drivers/gles2/shaders/copy.glsl.h"
-#include "drivers/gles2/shaders/material.glsl.h"
+#include "drivers/gles2/shaders/blur.glsl.gen.h"
+#include "drivers/gles2/shaders/canvas.glsl.gen.h"
+#include "drivers/gles2/shaders/canvas_shadow.glsl.gen.h"
+#include "drivers/gles2/shaders/copy.glsl.gen.h"
+#include "drivers/gles2/shaders/material.glsl.gen.h"
 #include "servers/visual/particle_system_sw.h"
 
 /**

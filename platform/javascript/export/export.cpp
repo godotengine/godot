@@ -36,7 +36,7 @@
 #include "io/zip_io.h"
 #include "os/file_access.h"
 #include "os/os.h"
-#include "platform/javascript/logo.h"
+#include "platform/javascript/logo.gen.h"
 #include "string.h"
 #include "version.h"
 class EditorExportPlatformJavaScript : public EditorExportPlatform {

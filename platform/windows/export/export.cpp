@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "export.h"
 #include "editor/editor_import_export.h"
-#include "platform/windows/logo.h"
+#include "platform/windows/logo.gen.h"
 
 void register_windows_exporter() {
 

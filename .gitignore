@@ -1,4 +1,5 @@
 # Godot auto generated files
+*.gen.*
 core/global_defaults.cpp
 core/method_bind_ext.inc
 core/method_bind.inc

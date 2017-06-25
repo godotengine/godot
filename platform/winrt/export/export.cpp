@@ -74,7 +74,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "io/zip_io.h"
 #include "object.h"
 #include "os/file_access.h"
-#include "platform/winrt/logo.h"
+#include "platform/winrt/logo.gen.h"
 #include "thirdparty/minizip/unzip.h"
 #include "thirdparty/minizip/zip.h"
 #include "thirdparty/misc/base64.h"

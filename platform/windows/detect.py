@@ -391,7 +391,7 @@ def configure(env):
         env['is_mingw'] = True
         env.Append(BUILDERS={'RES': env.Builder(action=build_res_file, suffix='.o', src_suffix='.rc')})
 
-    env.Append(BUILDERS={'GLSL120': env.Builder(action=methods.build_legacygl_headers, suffix='glsl.h', src_suffix='.glsl')})
-    env.Append(BUILDERS={'GLSL': env.Builder(action=methods.build_glsl_headers, suffix='glsl.h', src_suffix='.glsl')})
-    env.Append(BUILDERS={'HLSL9': env.Builder(action=methods.build_hlsl_dx9_headers, suffix='hlsl.h', src_suffix='.hlsl')})
-    env.Append(BUILDERS={'GLSL120GLES': env.Builder(action=methods.build_gles2_headers, suffix='glsl.h', src_suffix='.glsl')})
+    env.Append(BUILDERS={'GLSL120': env.Builder(action=methods.build_legacygl_headers, suffix='glsl.gen.h', src_suffix='.glsl')})
+    env.Append(BUILDERS={'GLSL': env.Builder(action=methods.build_glsl_headers, suffix='glsl.gen.h', src_suffix='.glsl')})
+    env.Append(BUILDERS={'HLSL9': env.Builder(action=methods.build_hlsl_dx9_headers, suffix='hlsl.gen.h', src_suffix='.hlsl')})
+    env.Append(BUILDERS={'GLSL120GLES': env.Builder(action=methods.build_gles2_headers, suffix='glsl.gen.h', src_suffix='.glsl')})
