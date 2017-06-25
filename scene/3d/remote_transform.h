@@ -39,6 +39,11 @@ class RemoteTransform : public Spatial {
 
 	ObjectID cache;
 
+	bool use_global_coordinates;
+	bool update_remote_position;
+	bool update_remote_rotation;
+	bool update_remote_scale;
+
 	void _update_remote();
 	void _update_cache();
 
@@ -49,6 +54,18 @@ protected:
 public:
 	void set_remote_node(const NodePath &p_remote_node);
 	NodePath get_remote_node() const;
+
+	void set_use_global_coordinates(const bool p_enable);
+	bool get_use_global_coordinates() const;
+
+	void set_update_position(const bool p_update);
+	bool get_update_position() const;
+
+	void set_update_rotation(const bool p_update);
+	bool get_update_rotation() const;
+
+	void set_update_scale(const bool p_update);
+	bool get_update_scale() const;
 
 	virtual String get_configuration_warning() const;
 
