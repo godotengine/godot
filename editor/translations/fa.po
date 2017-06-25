@@ -1,6 +1,5 @@
 # Persian translation of the Godot Engine editor
-# Copyright (C) 2007-2017 Juan Linietsky, Ariel Manzur
-# Copyright (C) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)
+# Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
 # alabd14313 <alabd14313@yahoo.com>, 2016.
@@ -485,6 +484,7 @@ msgid "Next"
 msgstr "بعدی"
 
 #: editor/code_editor.cpp
+#, fuzzy
 msgid "Replaced %d ocurrence(s)."
 msgstr "تعداد d% رخداد جایگزین شد."
 
@@ -4860,16 +4860,18 @@ msgid "Error"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Edit Script Options"
-msgstr ""
+msgstr "ویرایشگر ترجیحات"
 
 #: editor/project_export.cpp
 msgid "Please export outside the project folder!"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Error exporting project!"
-msgstr ""
+msgstr "صادر کردن پروژه"
 
 #: editor/project_export.cpp
 msgid "Error writing the project PCK!"
@@ -4889,8 +4891,9 @@ msgid "Full name"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Organizational unit"
-msgstr ""
+msgstr "انتقال"
 
 #: editor/project_export.cpp
 #, fuzzy
@@ -4947,20 +4950,23 @@ msgid "Include"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Change Image Group"
-msgstr ""
+msgstr "حلقه انیمیشن را تغییر بده"
 
 #: editor/project_export.cpp
 msgid "Group name can't be empty!"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Invalid character in group name!"
-msgstr ""
+msgstr "نام دارایی ایندکس نامعتبر."
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Group name already exists!"
-msgstr ""
+msgstr "بارگذاری خودکار 's%' هم اکنون موجود است!"
 
 #: editor/project_export.cpp
 msgid "Add Image Group"
@@ -4975,8 +4981,9 @@ msgid "Atlas Preview"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Project Export Settings"
-msgstr ""
+msgstr "ویرایشگر ترجیحات"
 
 #: editor/project_export.cpp
 msgid "Target"
@@ -5007,12 +5014,14 @@ msgid "Export Mode:"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Resources to Export:"
-msgstr ""
+msgstr "پوینده‌ی منبع جدا افتاده"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Action"
-msgstr ""
+msgstr "افزودن وظیفه"
 
 #: editor/project_export.cpp
 msgid ""
@@ -5092,20 +5101,23 @@ msgid "Shrink By:"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Preview Atlas"
-msgstr ""
+msgstr "زبانه قبلی"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Image Filter:"
-msgstr ""
+msgstr "صافی:"
 
 #: editor/project_export.cpp
 msgid "Images:"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Select None"
-msgstr ""
+msgstr "انتخاب حالت"
 
 #: editor/project_export.cpp
 msgid "Group"
@@ -5136,12 +5148,14 @@ msgid "Trim"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Trailing Silence:"
-msgstr ""
+msgstr "ذخیره سازی صحنه"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Script"
-msgstr ""
+msgstr "صحنه جدید"
 
 #: editor/project_export.cpp
 msgid "Script Export Mode:"
@@ -5168,20 +5182,23 @@ msgid "Export PCK/Zip"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Export Project PCK"
-msgstr ""
+msgstr "صادر کردن پروژه"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Export.."
-msgstr ""
+msgstr "پشتیبانی.."
 
 #: editor/project_export.cpp
 msgid "Project Export"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Export Preset:"
-msgstr ""
+msgstr "صادر کردن پروژه"
 
 #: editor/project_manager.cpp
 msgid "Invalid project path, the path must exist!"
@@ -6469,6 +6486,82 @@ msgstr ""
 "تا بتواند یک اندازه بگیرد. در غیر اینصورت، آن را یک RenderTarget قرار دهید و "
 "بافت داخلی آن را برای نمایش به تعدادی گره تخصیص دهید."
 
+#, fuzzy
+#~ msgid "Anim Track Change Wrap Mode"
+#~ msgstr "مقدار را در انیمیشن تغییر بده"
+
+#, fuzzy
+#~ msgid "(Re)Importing Assets"
+#~ msgstr "در حال وارد کردن دوباره..."
+
+#, fuzzy
+#~ msgid "Property Description:"
+#~ msgstr "خلاصه توضیحات:"
+
+#, fuzzy
+#~ msgid "(Installed)"
+#~ msgstr "افزونه های نصب شده:"
+
+#, fuzzy
+#~ msgid "Current Version:"
+#~ msgstr "نسخه:"
+
+#, fuzzy
+#~ msgid "Installed Versions:"
+#~ msgstr "افزونه های نصب شده:"
+
+#, fuzzy
+#~ msgid "Remove Template"
+#~ msgstr "برداشتن انتخاب شده"
+
+#, fuzzy
+#~ msgid "Select template file"
+#~ msgstr "آیا پرونده‌های انتخاب شده حذف شود؟"
+
+#, fuzzy
+#~ msgid " Files"
+#~ msgstr "پرونده:"
+
+#, fuzzy
+#~ msgid "Reimport"
+#~ msgstr "در حال وارد کردن دوباره..."
+
+#, fuzzy
+#~ msgid "Add Point to Line2D"
+#~ msgstr "برو به خط"
+
+#, fuzzy
+#~ msgid "Close All"
+#~ msgstr "بستن"
+
+#, fuzzy
+#~ msgid "Discard"
+#~ msgstr "گسسته"
+
+#, fuzzy
+#~ msgid "Delete patch '"
+#~ msgstr "حذف کن"
+
+#, fuzzy
+#~ msgid "Delete preset '%s'?"
+#~ msgstr "آیا پرونده‌های انتخاب شده حذف شود؟"
+
+#, fuzzy
+#~ msgid "Patches"
+#~ msgstr "تطبیق‌ها:"
+
+#, fuzzy
+#~ msgid "Pick a Node"
+#~ msgstr "مسیر به سمت گره:"
+
+#, fuzzy
+#~ msgid "Select Property"
+#~ msgstr "دارایی Setter را اضافه کن"
+
+#, fuzzy
+#~ msgid "Select Method"
+#~ msgstr "انتخاب حالت"
+
 #~ msgid ""
 #~ "A node yielded without working memory, please read the docs on how to "
 #~ "yield properly!"
@@ -6521,9 +6614,6 @@ msgstr ""
 
 #~ msgid "Rename Signal"
 #~ msgstr "Signal را تغییر نام بده"
-
-#~ msgid "Add Function"
-#~ msgstr "افزودن وظیفه"
 
 #~ msgid "Add Variable"
 #~ msgstr "افزودن متغیر"
@@ -6614,9 +6704,6 @@ msgstr ""
 #~ msgid "Iterator became invalid: "
 #~ msgstr "تکرارگر نامعتبر شد: "
 
-#~ msgid "Invalid index property name."
-#~ msgstr "نام دارایی ایندکس نامعتبر."
-
 #~ msgid "Base object is not a Node!"
 #~ msgstr "شیء پایه یک گره نیست!"
 
@@ -6650,6 +6737,18 @@ msgstr ""
 #~ "(error) باشد."
 
 #, fuzzy
+#~ msgid "Could not write file:\n"
+#~ msgstr "نمی‌تواند یک پوشه ایجاد شود."
+
+#, fuzzy
+#~ msgid "Could not read file:\n"
+#~ msgstr "نمی‌تواند یک پوشه ایجاد شود."
+
+#, fuzzy
+#~ msgid "Could not open template for export:\n"
+#~ msgstr "نمی‌تواند یک پوشه ایجاد شود."
+
+#, fuzzy
 #~ msgid "Invalid unique name."
 #~ msgstr "نام نامعتبر."
 
@@ -6660,22 +6759,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "Path property must point to a valid Spatial node to work."
 #~ msgstr "دارایی Path باید به یک گره Particles2D معتبر اشاره کند تا کار کند."
-
-#, fuzzy
-#~ msgid "Property Description:"
-#~ msgstr "خلاصه توضیحات:"
-
-#, fuzzy
-#~ msgid "Close All"
-#~ msgstr "بستن"
-
-#, fuzzy
-#~ msgid "Select Property"
-#~ msgstr "دارایی Setter را اضافه کن"
-
-#, fuzzy
-#~ msgid "Select Method"
-#~ msgstr "انتخاب حالت"
 
 #~ msgid ""
 #~ "Custom node has no _get_output_port_unsequenced(idx,wmem), but "

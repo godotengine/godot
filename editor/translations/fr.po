@@ -1,14 +1,15 @@
 # French translation of the Godot Engine editor
-# Copyright (C) 2007-2017 Juan Linietsky, Ariel Manzur
-# Copyright (C) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)
+# Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
 # Brice <bbric@free.fr>, 2016.
 # Chenebel Dorian <LoubiTek54@gmail.com>, 2016-2017.
 # derderder77 <derderder77380@gmail.com>, 2016.
 # finkiki <specialpopol@gmx.fr>, 2016.
+# Gilles Roudiere <gilles.roudiere@gmail.com>, 2017.
 # Hugo Locurcio <hugo.l@openmailbox.org>, 2016-2017.
 # Marc <marc.gilleron@gmail.com>, 2016-2017.
+# Nathan Lovato <nathan.lovato.art@gmail.com>, 2017.
 # Nicolas Lehuen <nicolas@lehuen.com>, 2016.
 # Omicron <tritonic.dev@gmail.com>, 2016.
 # Onyx Steinheim <thevoxelmanonyx@gmail.com>, 2016.
@@ -21,8 +22,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2017-02-28 20:39+0000\n"
-"Last-Translator: Hugo Locurcio <hugo.l@openmailbox.org>\n"
+"PO-Revision-Date: 2017-05-25 09:31+0000\n"
+"Last-Translator: Nathan Lovato <nathan.lovato.art@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -30,7 +31,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2.12-dev\n"
+"X-Generator: Weblate 2.14.1\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -291,7 +292,7 @@ msgstr "Outils de piste"
 
 #: editor/animation_editor.cpp
 msgid "Enable editing of individual keys by clicking them."
-msgstr "Activer la modification de pistes individuelles en cliquant dessus."
+msgstr "Activer la modification de chaque clé en cliquant dessus."
 
 #: editor/animation_editor.cpp
 msgid "Anim. Optimizer"
@@ -497,6 +498,7 @@ msgid "Next"
 msgstr "Suivant"
 
 #: editor/code_editor.cpp
+#, fuzzy
 msgid "Replaced %d ocurrence(s)."
 msgstr "%d occurrence(s) remplacée(s)."
 
@@ -1432,9 +1434,8 @@ msgid "Previous tab"
 msgstr "Onglet precedent"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Filter Files.."
-msgstr "Filtre rapide d'un fichier…"
+msgstr "Filtrer des fichiers…"
 
 #: editor/editor_node.cpp
 msgid "Operations with scene files."
@@ -1587,7 +1588,6 @@ msgid "Play custom scene"
 msgstr "Jouer une scène personnalisée"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Play Custom Scene"
 msgstr "Jouer une scène personnalisée"
 
@@ -1608,9 +1608,8 @@ msgstr ""
 "connecter à l'adresse IP de cet ordinateur afin de procéder au débogage."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Small Deploy with Network FS"
-msgstr "Petit déploiement avec le réseau FS"
+msgstr "Petit déploiement avec le réseau"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2012,7 +2011,7 @@ msgstr "Répertoire suivant"
 
 #: editor/filesystem_dock.cpp
 msgid "Re-Scan Filesystem"
-msgstr "Re-scanner le système de fichiers"
+msgstr "Analyser à nouveau le système de fichiers"
 
 #: editor/filesystem_dock.cpp
 msgid "Toggle folder status as Favorite"
@@ -2020,7 +2019,9 @@ msgstr "Basculer l'état favori du dossier"
 
 #: editor/filesystem_dock.cpp
 msgid "Instance the selected scene(s) as child of the selected node."
-msgstr "Instancie la/les scènes sélectionnées en tant qu'enfant du nœud."
+msgstr ""
+"Instancie la(les) scène(s) sélectionnée(s) en tant qu'enfant(s) du nœud "
+"sélectionné."
 
 #: editor/filesystem_dock.cpp
 msgid "Move"
@@ -2169,7 +2170,7 @@ msgstr "Impossible d'ouvrir le fichier en tant que fichier BMFont."
 #: editor/io_plugins/editor_font_import_plugin.cpp
 #: scene/resources/dynamic_font.cpp
 msgid "Error initializing FreeType."
-msgstr "Erreur d'initialisation de Freetype."
+msgstr "Erreur à l'initialisation de Freetype."
 
 #: editor/io_plugins/editor_font_import_plugin.cpp
 #: scene/resources/dynamic_font.cpp
@@ -2299,7 +2300,7 @@ msgstr "Script invalide ou cassé de post-importation."
 
 #: editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Error importing scene."
-msgstr "Erreur d'importation de la scène."
+msgstr "Erreur à l'importation de la scène."
 
 #: editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Import 3D Scene"
@@ -2523,8 +2524,8 @@ msgid ""
 "NOTICE: Importing 2D textures is not mandatory. Just copy png/jpg files to "
 "the project."
 msgstr ""
-"REMARQUE : Il n'est pas obligatoire d'importer les textures en 2D. Copiez "
-"directement les fichiers PNG ou JPEG dans le projet."
+"REMARQUE : L'import de textures 2D n'est pas obligatoire. Copiez directement "
+"les fichiers PNG ou JPEG dans le projet."
 
 #: editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Crop empty space."
@@ -2640,6 +2641,7 @@ msgid "Compress"
 msgstr "Compresser"
 
 #: editor/io_plugins/editor_translation_import_plugin.cpp
+#, fuzzy
 msgid "Add to Project (engine.cfg)"
 msgstr "Ajouter au projet (engine.cfg)"
 
@@ -2912,7 +2914,7 @@ msgstr "Mélange 1 :"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "X-Fade Time (s):"
-msgstr ""
+msgstr "Durée du fondu (s) :"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Current:"
@@ -3287,7 +3289,7 @@ msgstr "Tout ajouter"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Adding %s..."
-msgstr ""
+msgstr "Ajout de %s..."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Create Node"
@@ -3326,6 +3328,8 @@ msgid ""
 "Drag & drop + Shift : Add node as sibling\n"
 "Drag & drop + Alt : Change node type"
 msgstr ""
+"Glisser-déposer + Maj : Ajouter un nœud frère\n"
+"Glisser-déposer + Alt : Modifier le type de nœud"
 
 #: editor/plugins/collision_polygon_2d_editor_plugin.cpp
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
@@ -3451,7 +3455,7 @@ msgstr "Créer un corps statique de type Trimesh"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Static Convex Body"
-msgstr "Créer un corps statique de type convexe"
+msgstr "Créer corps convexe statique"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "This doesn't work on scene root!"
@@ -3672,10 +3676,12 @@ msgid "Generate AABB"
 msgstr "Générer un AABB"
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
 msgid "Create Emitter From Mesh"
 msgstr "Créer un émetteur à partir d'un maillage"
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
 msgid "Create Emitter From Node"
 msgstr "Créer un émetteur à partir d'un nœud"
 
@@ -3688,12 +3694,14 @@ msgid "Create Emitter"
 msgstr "Créer un émetteur"
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
 msgid "Emission Positions:"
 msgstr "Positions d'émission :"
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
 msgid "Emission Fill:"
-msgstr "Remplissage d'émission :"
+msgstr "Positions d'émission :"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Surface"
@@ -4182,7 +4190,7 @@ msgstr "Cherche dans la hiérarchie des classes."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
-msgstr "Cherche dans la documentation de référence."
+msgstr "Chercher dans la documentation de référence."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Go to previous edited document."
@@ -4637,7 +4645,7 @@ msgstr "Couleur de l'éclairage ambient :"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Perspective FOV (deg.):"
-msgstr "Champ de vision de perspective (degrés) :"
+msgstr "Champ visuel de la perspective (degrés) :"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Z-Near:"
@@ -5104,10 +5112,12 @@ msgid "Resources"
 msgstr "Ressources"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Export selected resources (including dependencies)."
 msgstr "Exporter les ressources sélectionnées (y compris les dépendences)."
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Export all resources in the project."
 msgstr "Exporter toutes les ressources dans le projet."
 
@@ -5120,6 +5130,7 @@ msgid "Export Mode:"
 msgstr "Mode d'exportation :"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Resources to Export:"
 msgstr "Ressources à exporter :"
 
@@ -5128,6 +5139,7 @@ msgid "Action"
 msgstr "Action"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid ""
 "Filters to export non-resource files (comma-separated, e.g.: *.json, *.txt):"
 msgstr ""
@@ -5135,6 +5147,7 @@ msgstr ""
 "virgules, par exemple : *.json, *.txt) :"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Filters to exclude from export (comma-separated, e.g.: *.json, *.txt):"
 msgstr ""
 "Filtres à utiliser pour exclure des fichiers (séparés par des virgules, par "
@@ -5306,10 +5319,12 @@ msgid "Invalid project path, the path must exist!"
 msgstr "Chemin de projet invalide, le chemin doit exister !"
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid project path, engine.cfg must not exist."
 msgstr "Chemin de projet invalide, engine.cfg ne doit pas exister."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid project path, engine.cfg must exist."
 msgstr "Chemin de projet invalide, engine.cfg doit exister."
 
@@ -5322,6 +5337,7 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Chemin de projet non valide (avez-vous changé quelque chose ?)."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Couldn't create engine.cfg in project path."
 msgstr ""
 "Impossible de créer le fichier engine.cfg dans le répertoire du projet."
@@ -5529,6 +5545,7 @@ msgid "Button 9"
 msgstr "Bouton 9"
 
 #: editor/project_settings.cpp
+#, fuzzy
 msgid "Joystick Axis Index:"
 msgstr "Index de l'axe du joystick :"
 
@@ -5537,6 +5554,7 @@ msgid "Axis"
 msgstr "Axe"
 
 #: editor/project_settings.cpp
+#, fuzzy
 msgid "Joystick Button Index:"
 msgstr "Index du bouton du joystick :"
 
@@ -5617,6 +5635,7 @@ msgid "Remove Resource Remap Option"
 msgstr ""
 
 #: editor/project_settings.cpp
+#, fuzzy
 msgid "Project Settings (engine.cfg)"
 msgstr "Paramètres du projet (engine.cfg)"
 
@@ -5955,9 +5974,8 @@ msgid "Attach Script"
 msgstr "Ajouter un script"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Clear Script"
-msgstr "Créer un script"
+msgstr "Supprimer le script"
 
 #: editor/scene_tree_dock.cpp
 msgid "Merge From Scene"
@@ -6288,7 +6306,7 @@ msgstr "Changer le rayon d'une forme en capsule"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Capsule Shape Height"
-msgstr "Changer la hauteur d'une forme en capsule"
+msgstr "Changer la hauteur de la forme capsule"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Ray Shape Length"
@@ -6608,6 +6626,240 @@ msgstr ""
 "nœud de type Control afin qu'il en obtienne une taille. Sinon, faites-en une "
 "RenderTarget et assignez sa texture à un nœud pouvant l'afficher."
 
+#, fuzzy
+#~ msgid "Anim Track Change Wrap Mode"
+#~ msgstr "Modifier le mode de valeur de la piste d'animation"
+
+#, fuzzy
+#~ msgid "Save Audio Bus Layout As.."
+#~ msgstr "Enregistrer la Disposition des Bus Audio Sous.."
+
+#~ msgid "Location for New Layout.."
+#~ msgstr "Emplacement de la Nouvelle Mise en Page.."
+
+#, fuzzy
+#~ msgid "Open Audio Bus Layout"
+#~ msgstr "Ouvrir la Mise en Page des Bus Audio"
+
+#~ msgid "Add Bus"
+#~ msgstr "Ajouter un bus"
+
+#~ msgid "Template file not found:\n"
+#~ msgstr "Fichier modèle introuvable :\n"
+
+#~ msgid "(Re)Importing Assets"
+#~ msgstr "Ré-importation des assets"
+
+#~ msgid "Property Description:"
+#~ msgstr "Description des propriétés :"
+
+#~ msgid ""
+#~ "Scene '%s' was automatically imported, so it can't be modified.\n"
+#~ "To make changes to it, a new inherited scene can be created."
+#~ msgstr ""
+#~ "La scène « %s » a été automatiquement importée, elle ne peut donc pas "
+#~ "être modifiée.\n"
+#~ "Pour y apporter des modification, une scène fille peut être créée."
+
+#~ msgid "Manage Export Templates"
+#~ msgstr "Gérer les modèles d'exportation"
+
+#~ msgid "Re-Download"
+#~ msgstr "Télécharger à nouveau"
+
+#~ msgid "Uninstall"
+#~ msgstr "Désinstaller"
+
+#~ msgid "(Installed)"
+#~ msgstr "(Installé)"
+
+#~ msgid "Download"
+#~ msgstr "Télécharger"
+
+#~ msgid "(Missing)"
+#~ msgstr "(Manquant)"
+
+#, fuzzy
+#~ msgid "(Current)"
+#~ msgstr "Actuel :"
+
+#~ msgid "Remove template version '%s'?"
+#~ msgstr "Supprimer la version '%s' du modèle ?"
+
+#, fuzzy
+#~ msgid "Invalid version.txt format inside templates."
+#~ msgstr "Le format de version.txt invalide dans les modèles."
+
+#, fuzzy
+#~ msgid ""
+#~ "Invalid version.txt format inside templates. Revision is not a valid "
+#~ "identifier."
+#~ msgstr ""
+#~ "Le format de version.txt invalide dans les modèles. Revision n'est pas un "
+#~ "identifiant valide."
+
+#, fuzzy
+#~ msgid "No version.txt found inside templates."
+#~ msgstr "Le fichier version.txt n'a pas été trouvé dans les modèles."
+
+#, fuzzy
+#~ msgid "Error creating path for templates:\n"
+#~ msgstr "Erreur de sauvegarde de l'atlas :"
+
+#, fuzzy
+#~ msgid "Extracting Export Templates"
+#~ msgstr "Chargement des modèles d'exportation"
+
+#, fuzzy
+#~ msgid "Current Version:"
+#~ msgstr "Version actuelle :"
+
+#, fuzzy
+#~ msgid "Installed Versions:"
+#~ msgstr "Extensions installées :"
+
+#, fuzzy
+#~ msgid "Install From File"
+#~ msgstr "Projets récents :"
+
+#, fuzzy
+#~ msgid "Remove Template"
+#~ msgstr "Supprimer l'item"
+
+#, fuzzy
+#~ msgid "Select template file"
+#~ msgstr "Supprimer les fichiers sélectionnés ?"
+
+#, fuzzy
+#~ msgid "Export Template Manager"
+#~ msgstr "Chargement des modèles d'exportation"
+
+#~ msgid "Cannot navigate to '"
+#~ msgstr "Ne peux pas acceder à '"
+
+#, fuzzy
+#~ msgid "Expand all"
+#~ msgstr "Étendre au parent"
+
+#~ msgid "Collapse all"
+#~ msgstr "Réduire tout"
+
+#, fuzzy
+#~ msgid " Files"
+#~ msgstr "Fichier"
+
+#, fuzzy
+#~ msgid "Import As:"
+#~ msgstr "Importer"
+
+#, fuzzy
+#~ msgid "Reimport"
+#~ msgstr "Ré-importer"
+
+#~ msgid "Same as Target Scene"
+#~ msgstr "Identique à la scène de destination"
+
+#~ msgid "Shared"
+#~ msgstr "Partagé"
+
+#~ msgid "Show Bones"
+#~ msgstr "Afficher les os"
+
+#, fuzzy
+#~ msgid "Modify Curve"
+#~ msgstr "Modifier la carte de courbes"
+
+#, fuzzy
+#~ msgid "Remove Point from Line2D"
+#~ msgstr "Supprimer le point d'une courbe"
+
+#, fuzzy
+#~ msgid "Add Point to Line2D"
+#~ msgstr "Ajouter un point à la courbe"
+
+#, fuzzy
+#~ msgid "Move Point in Line2D"
+#~ msgstr "Déplacer le point dans la courbe"
+
+#, fuzzy
+#~ msgid "Split Segment (in line)"
+#~ msgstr "Diviser le segment (en courbe)"
+
+#, fuzzy
+#~ msgid "Surface Points"
+#~ msgstr "Surface %d"
+
+#, fuzzy
+#~ msgid "Emission Source: "
+#~ msgstr "Remplissage d'émission :"
+
+#~ msgid "Close All"
+#~ msgstr "Fermer tout"
+
+#, fuzzy
+#~ msgid "Discard"
+#~ msgstr "Discret"
+
+#~ msgid "Pick Color"
+#~ msgstr "Prélever une couleur"
+
+#~ msgid "Theme"
+#~ msgstr "Thème"
+
+#, fuzzy
+#~ msgid "Runnable"
+#~ msgstr "Activer"
+
+#, fuzzy
+#~ msgid "Delete patch '"
+#~ msgstr "Supprimer l'entrée"
+
+#, fuzzy
+#~ msgid "Delete preset '%s'?"
+#~ msgstr "Supprimer les fichiers sélectionnés ?"
+
+#, fuzzy
+#~ msgid "Presets"
+#~ msgstr "Pré-réglage…"
+
+#, fuzzy
+#~ msgid "Export selected scenes (and dependencies)"
+#~ msgstr "Exporter les ressources sélectionnées (y compris les dépendences)."
+
+#, fuzzy
+#~ msgid "Patches"
+#~ msgstr "Correspondances :"
+
+#, fuzzy
+#~ msgid "Make Patch"
+#~ msgstr "Chemin de destination :"
+
+#, fuzzy
+#~ msgid "Export With Debug"
+#~ msgstr "Exporter un ensemble de tuiles"
+
+#, fuzzy
+#~ msgid "Pick a Viewport"
+#~ msgstr "1 vue"
+
+#, fuzzy
+#~ msgid "Show in File System"
+#~ msgstr "Système de fichiers"
+
+#, fuzzy
+#~ msgid "Pick a Node"
+#~ msgstr "Sélectionner un nœud"
+
+#~ msgid "Select Property"
+#~ msgstr "Sélectionnez une propriété"
+
+#~ msgid "Select Method"
+#~ msgstr "Sélectionner une méthode"
+
+#, fuzzy
+#~ msgid "Change Probe Extents"
+#~ msgstr "Changer les extents d'un notificateur"
+
 #~ msgid ""
 #~ "A node yielded without working memory, please read the docs on how to "
 #~ "yield properly!"
@@ -6786,7 +7038,7 @@ msgstr ""
 #~ msgstr "L'itérateur est devenu invalide"
 
 #~ msgid "Iterator became invalid: "
-#~ msgstr "L'itérateur est devenu invalide "
+#~ msgstr "L'itérateur est devenu invalide: "
 
 #~ msgid "Invalid index property name."
 #~ msgstr "Indice de nom de propriété invalide."
@@ -6830,8 +7082,26 @@ msgstr ""
 #~ msgid "just released"
 #~ msgstr "vient d'être relâché"
 
+#, fuzzy
+#~ msgid "Run in Browser"
+#~ msgstr "Parcourir"
+
+#, fuzzy
+#~ msgid "Could not write file:\n"
+#~ msgstr "Impossible de trouver la tuile :"
+
+#, fuzzy
+#~ msgid "Could not read file:\n"
+#~ msgstr "Impossible de trouver la tuile :"
+
+#, fuzzy
+#~ msgid "Could not open template for export:\n"
+#~ msgstr "Impossible de créer le dossier."
+
+#, fuzzy
 #~ msgid ""
-#~ "Couldn't read the certficate file. Are the path and password both correct?"
+#~ "Couldn't read the certificate file. Are the path and password both "
+#~ "correct?"
 #~ msgstr ""
 #~ "Le fichier certificat n'a pas pu être lu. Le chemin et le mot de passe "
 #~ "sont-ils tous deux corrects ?"
@@ -6902,37 +7172,6 @@ msgstr ""
 #~ msgstr ""
 #~ "La propriété Path doit pointer vers un nœud Spatial valide pour "
 #~ "fonctionner."
-
-#~ msgid "Property Description:"
-#~ msgstr "Description des propriétés :"
-
-#~ msgid "Same as Target Scene"
-#~ msgstr "Le même que la scène de destination"
-
-#~ msgid "Shared"
-#~ msgstr "Partagé"
-
-#~ msgid "Show Bones"
-#~ msgstr "Afficher les os"
-
-#~ msgid "Close All"
-#~ msgstr "Fermer tout"
-
-#~ msgid "Pick Color"
-#~ msgstr "Prélever une couleur"
-
-#~ msgid "Theme"
-#~ msgstr "Thème"
-
-#~ msgid "Select Property"
-#~ msgstr "Sélectionnez une propriété"
-
-#~ msgid "Select Method"
-#~ msgstr "Sélectionner une méthode"
-
-#, fuzzy
-#~ msgid "Change Probe Extents"
-#~ msgstr "Changer les extents d'un notificateur"
 
 #~ msgid ""
 #~ "This item cannot be made visible because the parent is hidden. Unhide the "

@@ -1,6 +1,5 @@
 # Turkish translation of the Godot Engine editor
-# Copyright (C) 2007-2017 Juan Linietsky, Ariel Manzur
-# Copyright (C) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)
+# Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
 # Aprın Çor Tigin <kabusturk38@gmail.com>, 2016-2017.
@@ -487,6 +486,7 @@ msgid "Next"
 msgstr "İleri"
 
 #: editor/code_editor.cpp
+#, fuzzy
 msgid "Replaced %d ocurrence(s)."
 msgstr "%d Olgusu(ları) ile Değiştirildi."
 
@@ -2603,6 +2603,7 @@ msgid "Compress"
 msgstr "Sıkıştır"
 
 #: editor/io_plugins/editor_translation_import_plugin.cpp
+#, fuzzy
 msgid "Add to Project (engine.cfg)"
 msgstr "Tasarıya Ekle (engine.cfg)"
 
@@ -3618,10 +3619,12 @@ msgid "Generate AABB"
 msgstr "AABB Üret"
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
 msgid "Create Emitter From Mesh"
 msgstr "Örüntüden Yayıcı Oluştur"
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
 msgid "Create Emitter From Node"
 msgstr "Düğümden Yayıcı Oluştur"
 
@@ -3634,12 +3637,14 @@ msgid "Create Emitter"
 msgstr "Yayıcı Oluştur"
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
 msgid "Emission Positions:"
 msgstr "Yayma Konumları:"
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
 msgid "Emission Fill:"
-msgstr "Yayma Dolumu:"
+msgstr "Yayma Konumları:"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Surface"
@@ -5043,10 +5048,12 @@ msgid "Resources"
 msgstr "Kaynaklar"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Export selected resources (including dependencies)."
 msgstr "Seçilen kaynakları dışa aktar (bağımlılıklar dahil)."
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Export all resources in the project."
 msgstr "Tasarıdaki tüm kaynakları dışa aktarın."
 
@@ -5059,6 +5066,7 @@ msgid "Export Mode:"
 msgstr "Dışa Aktarma Biçimi:"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Resources to Export:"
 msgstr "Dışa Aktarılacak Kaynaklar:"
 
@@ -5067,6 +5075,7 @@ msgid "Action"
 msgstr "Eylem"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid ""
 "Filters to export non-resource files (comma-separated, e.g.: *.json, *.txt):"
 msgstr ""
@@ -5074,6 +5083,7 @@ msgstr ""
 "ayrılmış, ör. * .json, * .txt):"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Filters to exclude from export (comma-separated, e.g.: *.json, *.txt):"
 msgstr ""
 "Dışa aktarma işleminden hariç tutulacak süzgeçler (virgülle ayrılmış, ör. * ."
@@ -5244,10 +5254,12 @@ msgid "Invalid project path, the path must exist!"
 msgstr "Geçersiz tasarı yolu, yolun var olması gerekir!"
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid project path, engine.cfg must not exist."
 msgstr "Geçersiz tasarı yolu, engine.cfg var olmaması gerekir."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid project path, engine.cfg must exist."
 msgstr "Geçersiz tasarı yolu, engine.cfg var olması gerekir."
 
@@ -5260,6 +5272,7 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Geçersiz tasarı yolu (bir şey değişti mi?)."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Couldn't create engine.cfg in project path."
 msgstr "engine.cfg tasarı yolunda oluşturulamadı."
 
@@ -5460,6 +5473,7 @@ msgid "Button 9"
 msgstr "Düğme 9"
 
 #: editor/project_settings.cpp
+#, fuzzy
 msgid "Joystick Axis Index:"
 msgstr "Oyunçubuğu Ekseni Dizini:"
 
@@ -5468,6 +5482,7 @@ msgid "Axis"
 msgstr "Eksen"
 
 #: editor/project_settings.cpp
+#, fuzzy
 msgid "Joystick Button Index:"
 msgstr "Oyunçubuğu Düğme Dizini:"
 
@@ -5548,6 +5563,7 @@ msgid "Remove Resource Remap Option"
 msgstr "Kaynak Yeniden Eşle Seçeneğini Kaldır"
 
 #: editor/project_settings.cpp
+#, fuzzy
 msgid "Project Settings (engine.cfg)"
 msgstr "Tasarı Ayarları (engine.cfg)"
 
@@ -6524,6 +6540,196 @@ msgstr ""
 "bir boyut elde edin. Ya da, onu bir RenderTarget yapın ve iç dokusunu "
 "görüntülemesi için bir düğüme atayın."
 
+#, fuzzy
+#~ msgid "Anim Track Change Wrap Mode"
+#~ msgstr "Canln İzi Değer Değiştir Biçimi"
+
+#, fuzzy
+#~ msgid "Add Bus"
+#~ msgstr "Ekle %s"
+
+#, fuzzy
+#~ msgid "(Re)Importing Assets"
+#~ msgstr "Yeniden-İçe Aktarım"
+
+#~ msgid "Property Description:"
+#~ msgstr "Özellik Açıklaması:"
+
+#, fuzzy
+#~ msgid "Manage Export Templates"
+#~ msgstr "Dışa Aktarım Kalıpları Yükleniyor"
+
+#, fuzzy
+#~ msgid "Re-Download"
+#~ msgstr "Yeniden Yükle"
+
+#, fuzzy
+#~ msgid "Uninstall"
+#~ msgstr "Kur"
+
+#, fuzzy
+#~ msgid "(Installed)"
+#~ msgstr "Kur"
+
+#, fuzzy
+#~ msgid "Download"
+#~ msgstr "Aşağı"
+
+#, fuzzy
+#~ msgid "(Current)"
+#~ msgstr "Geçerli:"
+
+#, fuzzy
+#~ msgid "Error creating path for templates:\n"
+#~ msgstr "Atlas kaydedilirken sorun oluştu:"
+
+#, fuzzy
+#~ msgid "Extracting Export Templates"
+#~ msgstr "Dışa Aktarım Kalıpları Yükleniyor"
+
+#, fuzzy
+#~ msgid "Current Version:"
+#~ msgstr "Şu anki Sahne"
+
+#, fuzzy
+#~ msgid "Installed Versions:"
+#~ msgstr "Yüklü Eklentiler:"
+
+#, fuzzy
+#~ msgid "Install From File"
+#~ msgstr "Tasarıyı Kur:"
+
+#, fuzzy
+#~ msgid "Remove Template"
+#~ msgstr "Öğeyi Kaldır"
+
+#, fuzzy
+#~ msgid "Select template file"
+#~ msgstr "Seçili dizeçleri sil?"
+
+#, fuzzy
+#~ msgid "Export Template Manager"
+#~ msgstr "Dışa Aktarım Kalıpları Yükleniyor"
+
+#, fuzzy
+#~ msgid "Expand all"
+#~ msgstr "Ataya genişletin"
+
+#, fuzzy
+#~ msgid " Files"
+#~ msgstr "Dizeç"
+
+#, fuzzy
+#~ msgid "Import As:"
+#~ msgstr "İçe Aktar"
+
+#, fuzzy
+#~ msgid "Reimport"
+#~ msgstr "Yeniden İçe Aktar"
+
+#~ msgid "Same as Target Scene"
+#~ msgstr "Hedef Sahne ile Aynı"
+
+#~ msgid "Shared"
+#~ msgstr "Paylaşılan"
+
+#~ msgid "Show Bones"
+#~ msgstr "Kemikleri Göster"
+
+#, fuzzy
+#~ msgid "Modify Curve"
+#~ msgstr "Eğri Haritasını Değiştir"
+
+#, fuzzy
+#~ msgid "Remove Point from Line2D"
+#~ msgstr "Noktayı Eğriden Kaldır"
+
+#, fuzzy
+#~ msgid "Add Point to Line2D"
+#~ msgstr "Noktayı Eğriye Ekle"
+
+#, fuzzy
+#~ msgid "Move Point in Line2D"
+#~ msgstr "Noktayı Eğriye Taşı"
+
+#, fuzzy
+#~ msgid "Split Segment (in line)"
+#~ msgstr "Parçayı Ayır (eğriye göre)"
+
+#, fuzzy
+#~ msgid "Surface Points"
+#~ msgstr "Yüzey %d"
+
+#, fuzzy
+#~ msgid "Emission Source: "
+#~ msgstr "Yayma Dolumu:"
+
+#~ msgid "Close All"
+#~ msgstr "Tümünü Kapat"
+
+#, fuzzy
+#~ msgid "Discard"
+#~ msgstr "Ayrık"
+
+#~ msgid "Pick Color"
+#~ msgstr "Renk Seç"
+
+#~ msgid "Theme"
+#~ msgstr "Kalıp"
+
+#, fuzzy
+#~ msgid "Runnable"
+#~ msgstr "Etkin"
+
+#, fuzzy
+#~ msgid "Delete patch '"
+#~ msgstr "Girişi Sil"
+
+#, fuzzy
+#~ msgid "Delete preset '%s'?"
+#~ msgstr "Seçili dizeçleri sil?"
+
+#, fuzzy
+#~ msgid "Presets"
+#~ msgstr "Ön ayar.."
+
+#, fuzzy
+#~ msgid "Export selected scenes (and dependencies)"
+#~ msgstr "Seçilen kaynakları dışa aktar (bağımlılıklar dahil)."
+
+#, fuzzy
+#~ msgid "Patches"
+#~ msgstr "Eşleşmeler:"
+
+#, fuzzy
+#~ msgid "Make Patch"
+#~ msgstr "Amaçlanan Dizeç Yolu :"
+
+#, fuzzy
+#~ msgid "Export With Debug"
+#~ msgstr "Döşenti Dizi Dışa Aktar"
+
+#, fuzzy
+#~ msgid "Pick a Viewport"
+#~ msgstr "1 Görünüm"
+
+#, fuzzy
+#~ msgid "Show in File System"
+#~ msgstr "DizeçDüzeni"
+
+#, fuzzy
+#~ msgid "Pick a Node"
+#~ msgstr "Bir Düğüm Seç"
+
+#~ msgid "Select Property"
+#~ msgstr "Nitelik Seç"
+
+#~ msgid "Select Method"
+#~ msgstr "Yöntem Seç"
+
+#~ msgid "Change Probe Extents"
+#~ msgstr "Deşme Genişlemesini Değiştir"
+
 #~ msgid ""
 #~ "A node yielded without working memory, please read the docs on how to "
 #~ "yield properly!"
@@ -6742,8 +6948,26 @@ msgstr ""
 #~ msgid "just released"
 #~ msgstr "yeni bırakıldı"
 
+#, fuzzy
+#~ msgid "Run in Browser"
+#~ msgstr "Gözat"
+
+#, fuzzy
+#~ msgid "Could not write file:\n"
+#~ msgstr "Karo Bulunamadı:"
+
+#, fuzzy
+#~ msgid "Could not read file:\n"
+#~ msgstr "Karo Bulunamadı:"
+
+#, fuzzy
+#~ msgid "Could not open template for export:\n"
+#~ msgstr "Dizin oluşturulamadı."
+
+#, fuzzy
 #~ msgid ""
-#~ "Couldn't read the certficate file. Are the path and password both correct?"
+#~ "Couldn't read the certificate file. Are the path and password both "
+#~ "correct?"
 #~ msgstr ""
 #~ "Onay belgesi dizeci okunamadı. Yol ve gizyazının her ikisi de doğru mu?"
 
@@ -6802,36 +7026,6 @@ msgstr ""
 #~ msgid "Path property must point to a valid Spatial node to work."
 #~ msgstr ""
 #~ "Yol niteliği, çalışmak için geçerli bir Spatial düğümü işaret etmelidir."
-
-#~ msgid "Property Description:"
-#~ msgstr "Özellik Açıklaması:"
-
-#~ msgid "Same as Target Scene"
-#~ msgstr "Hedef Sahne ile Aynı"
-
-#~ msgid "Shared"
-#~ msgstr "Paylaşılan"
-
-#~ msgid "Show Bones"
-#~ msgstr "Kemikleri Göster"
-
-#~ msgid "Close All"
-#~ msgstr "Tümünü Kapat"
-
-#~ msgid "Pick Color"
-#~ msgstr "Renk Seç"
-
-#~ msgid "Theme"
-#~ msgstr "Kalıp"
-
-#~ msgid "Select Property"
-#~ msgstr "Nitelik Seç"
-
-#~ msgid "Select Method"
-#~ msgstr "Yöntem Seç"
-
-#~ msgid "Change Probe Extents"
-#~ msgstr "Deşme Genişlemesini Değiştir"
 
 #~ msgid ""
 #~ "This item cannot be made visible because the parent is hidden. Unhide the "

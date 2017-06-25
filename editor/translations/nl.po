@@ -1,6 +1,5 @@
 # Dutch translation of the Godot Engine editor
-# Copyright (C) 2007-2017 Juan Linietsky, Ariel Manzur
-# Copyright (C) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)
+# Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
 # Aram Nap <xyphex.aram@gmail.com>, 2017
@@ -8,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-04-06 20:13+0000\n"
+"PO-Revision-Date: 2017-04-13 18:15+0000\n"
 "Last-Translator: Aram Nap <xyphex.aram@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
@@ -16,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.13-dev\n"
+"X-Generator: Weblate 2.14-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -484,6 +483,7 @@ msgid "Next"
 msgstr "Volgende"
 
 #: editor/code_editor.cpp
+#, fuzzy
 msgid "Replaced %d ocurrence(s)."
 msgstr "%d voorgekomen waarde(s) vervangen."
 
@@ -1147,19 +1147,19 @@ msgstr "Mislukt om resource te laden."
 
 #: editor/editor_node.cpp
 msgid "Can't load MeshLibrary for merging!"
-msgstr ""
+msgstr "Kan MeshLibrary niet laden om te samenvoegen!"
 
 #: editor/editor_node.cpp
 msgid "Error saving MeshLibrary!"
-msgstr ""
+msgstr "Error bij het opslaan van MeshLibrary!"
 
 #: editor/editor_node.cpp
 msgid "Can't load TileSet for merging!"
-msgstr ""
+msgstr "Kan TileSet niet laden om te samenvoegen!"
 
 #: editor/editor_node.cpp
 msgid "Error saving TileSet!"
-msgstr ""
+msgstr "Error bij het opslaan van TileSet!"
 
 #: editor/editor_node.cpp
 msgid "Can't open export templates zip."
@@ -1171,7 +1171,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Error trying to save layout!"
-msgstr ""
+msgstr "Error bij het opslaan van layout!"
 
 #: editor/editor_node.cpp
 msgid "Default editor layout overridden."
@@ -1361,7 +1361,7 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Default"
-msgstr ""
+msgstr "Standaard"
 
 #: editor/editor_node.cpp
 msgid "Switch Scene Tab"
@@ -2712,7 +2712,7 @@ msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save As"
-msgstr ""
+msgstr "Opslaan Als"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Display list of animations in player."
@@ -4874,20 +4874,23 @@ msgid "Please export outside the project folder!"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Error exporting project!"
-msgstr ""
+msgstr "Error bij het opslaan van resource!"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Error writing the project PCK!"
-msgstr ""
+msgstr "Error bij het maken van het signatuur object."
 
 #: editor/project_export.cpp
 msgid "No exporter for platform '%s' yet."
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Create Android keystore"
-msgstr ""
+msgstr "Map Maken"
 
 #: editor/project_export.cpp
 msgid "Full name"
@@ -4898,8 +4901,9 @@ msgid "Organizational unit"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Organization"
-msgstr ""
+msgstr "Transitie"
 
 #: editor/project_export.cpp
 msgid "City"
@@ -4922,8 +4926,9 @@ msgid "Password"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "at least 6 characters"
-msgstr ""
+msgstr "Geldige karakters:"
 
 #: editor/project_export.cpp
 msgid "File name"
@@ -4948,20 +4953,23 @@ msgid "Include"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Change Image Group"
-msgstr ""
+msgstr "Wijzig Anim Lus"
 
 #: editor/project_export.cpp
 msgid "Group name can't be empty!"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Invalid character in group name!"
-msgstr ""
+msgstr "Ongeldige index eigenschap naam."
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Group name already exists!"
-msgstr ""
+msgstr "Autoload '%s' bestaat al!"
 
 #: editor/project_export.cpp
 msgid "Add Image Group"
@@ -4972,8 +4980,9 @@ msgid "Delete Image Group"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Atlas Preview"
-msgstr ""
+msgstr "Preview:"
 
 #: editor/project_export.cpp
 msgid "Project Export Settings"
@@ -5008,12 +5017,14 @@ msgid "Export Mode:"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Resources to Export:"
-msgstr ""
+msgstr "Wees Resource Verkenner"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Action"
-msgstr ""
+msgstr "Functie Toevoegen"
 
 #: editor/project_export.cpp
 msgid ""
@@ -5093,20 +5104,23 @@ msgid "Shrink By:"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Preview Atlas"
-msgstr ""
+msgstr "Preview:"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Image Filter:"
-msgstr ""
+msgstr "Filter:"
 
 #: editor/project_export.cpp
 msgid "Images:"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Select None"
-msgstr ""
+msgstr "Alles Selecteren"
 
 #: editor/project_export.cpp
 msgid "Group"
@@ -5137,8 +5151,9 @@ msgid "Trim"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Trailing Silence:"
-msgstr ""
+msgstr "Scene Aan Het Opslaan"
 
 #: editor/project_export.cpp
 msgid "Script"
@@ -5173,16 +5188,18 @@ msgid "Export Project PCK"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Export.."
-msgstr ""
+msgstr "Ondersteuning.."
 
 #: editor/project_export.cpp
 msgid "Project Export"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Export Preset:"
-msgstr ""
+msgstr "Aan het exporteren voor %s"
 
 #: editor/project_manager.cpp
 msgid "Invalid project path, the path must exist!"
@@ -5600,7 +5617,7 @@ msgstr ""
 
 #: editor/property_editor.cpp editor/script_create_dialog.cpp
 msgid "Load"
-msgstr ""
+msgstr "Laden"
 
 #: editor/property_editor.cpp
 msgid "Assign"
@@ -6463,6 +6480,84 @@ msgstr ""
 "inhoud direct op het scherm te weergeven. Anders, maak er een RenderTarget "
 "van en wijs zijn interne texture toe aan een node om te tonen."
 
+#, fuzzy
+#~ msgid "Anim Track Change Wrap Mode"
+#~ msgstr "Anim Track Wijzig Waarde Modus"
+
+#~ msgid "Save Audio Bus Layout As.."
+#~ msgstr "Sla Audio Bus Layout Op Als.."
+
+#~ msgid "Location for New Layout.."
+#~ msgstr "Locatie voor Nieuwe Layout.."
+
+#~ msgid "Open Audio Bus Layout"
+#~ msgstr "Open Audio Bus Layout"
+
+#~ msgid "Add Bus"
+#~ msgstr "Bus Toevoegen"
+
+#~ msgid "Template file not found:\n"
+#~ msgstr "Template bestand niet gevonden:\n"
+
+#, fuzzy
+#~ msgid "(Re)Importing Assets"
+#~ msgstr "Aan Het Herimporteren"
+
+#~ msgid "Property Description:"
+#~ msgstr "Eigenschap Beschrijving:"
+
+#, fuzzy
+#~ msgid "Error creating path for templates:\n"
+#~ msgstr "Error bij het opslaan van atlas:"
+
+#, fuzzy
+#~ msgid "Remove Template"
+#~ msgstr "Verwijder Selectie"
+
+#, fuzzy
+#~ msgid "Select template file"
+#~ msgstr "Verwijder geselecteerde bestanden?"
+
+#, fuzzy
+#~ msgid " Files"
+#~ msgstr "Bestand:"
+
+#, fuzzy
+#~ msgid "Import As:"
+#~ msgstr "Aan Het Importeren:"
+
+#, fuzzy
+#~ msgid "Reimport"
+#~ msgstr "Aan Het Herimporteren"
+
+#, fuzzy
+#~ msgid "Add Point to Line2D"
+#~ msgstr "Ga naar Regel"
+
+#, fuzzy
+#~ msgid "Discard"
+#~ msgstr "Discreet"
+
+#, fuzzy
+#~ msgid "Runnable"
+#~ msgstr "Inschakelen"
+
+#, fuzzy
+#~ msgid "Delete patch '"
+#~ msgstr "Verwijder"
+
+#, fuzzy
+#~ msgid "Delete preset '%s'?"
+#~ msgstr "Verwijder geselecteerde bestanden?"
+
+#, fuzzy
+#~ msgid "Patches"
+#~ msgstr "Matches:"
+
+#, fuzzy
+#~ msgid "Pick a Node"
+#~ msgstr "Plak Nodes"
+
 #~ msgid ""
 #~ "A node yielded without working memory, please read the docs on how to "
 #~ "yield properly!"
@@ -6516,9 +6611,6 @@ msgstr ""
 
 #~ msgid "Rename Signal"
 #~ msgstr "Hernoem Signaal"
-
-#~ msgid "Add Function"
-#~ msgstr "Functie Toevoegen"
 
 #~ msgid "Add Variable"
 #~ msgstr "Variabele Toevoegen"
@@ -6628,6 +6720,9 @@ msgstr ""
 #~ msgid "Find Node Type"
 #~ msgstr "Vind Node Type"
 
+#~ msgid "Copy Nodes"
+#~ msgstr "Kopiëer Nodes"
+
 #~ msgid "Cut Nodes"
 #~ msgstr "Knip Nodes"
 
@@ -6642,9 +6737,6 @@ msgstr ""
 
 #~ msgid "Iterator became invalid: "
 #~ msgstr "Iterator werd ongeldig: "
-
-#~ msgid "Invalid index property name."
-#~ msgstr "Ongeldige index eigenschap naam."
 
 #~ msgid "Base object is not a Node!"
 #~ msgstr "Basis object is geen Node!"
@@ -6684,14 +6776,25 @@ msgstr ""
 #~ msgid "just released"
 #~ msgstr "reeds losgelaten"
 
+#, fuzzy
+#~ msgid "Could not write file:\n"
+#~ msgstr "Map kon niet gemaakt worden."
+
+#, fuzzy
+#~ msgid "Could not read file:\n"
+#~ msgstr "Map kon niet gemaakt worden."
+
+#, fuzzy
+#~ msgid "Could not open template for export:\n"
+#~ msgstr "Map kon niet gemaakt worden."
+
+#, fuzzy
 #~ msgid ""
-#~ "Couldn't read the certficate file. Are the path and password both correct?"
+#~ "Couldn't read the certificate file. Are the path and password both "
+#~ "correct?"
 #~ msgstr ""
 #~ "Kon het certificaat bestand niet lezen. Zijn het pad en wachtwoord beide "
 #~ "correct?"
-
-#~ msgid "Error creating the signature object."
-#~ msgstr "Error bij het maken van het signatuur object."
 
 #~ msgid "Error creating the package signature."
 #~ msgstr "Error bij het maken van het pakket signatuur."
@@ -6756,6 +6859,3 @@ msgstr ""
 #~ msgid "Path property must point to a valid Spatial node to work."
 #~ msgstr ""
 #~ "Pad eigenschap moet verwijzen naar een geldige Spatial node om te werken."
-
-#~ msgid "Property Description:"
-#~ msgstr "Eigenschap Beschrijving:"

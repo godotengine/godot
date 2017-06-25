@@ -1,6 +1,5 @@
 # Portuguese (Brazil) translation of the Godot Engine editor
-# Copyright (C) 2007-2017 Juan Linietsky, Ariel Manzur
-# Copyright (C) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)
+# Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
 # Allyson Souza <allyson_as@outlook.com>, 2017.
@@ -488,6 +487,7 @@ msgid "Next"
 msgstr "Próximo"
 
 #: editor/code_editor.cpp
+#, fuzzy
 msgid "Replaced %d ocurrence(s)."
 msgstr "%d ocorrência(s) substituída(s)."
 
@@ -2608,6 +2608,7 @@ msgid "Compress"
 msgstr "Comprimir"
 
 #: editor/io_plugins/editor_translation_import_plugin.cpp
+#, fuzzy
 msgid "Add to Project (engine.cfg)"
 msgstr "Adicionar ao Projeto (engine.cfg)"
 
@@ -3630,10 +3631,12 @@ msgid "Generate AABB"
 msgstr "Gerar AABB"
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
 msgid "Create Emitter From Mesh"
 msgstr "Criar Emissor a partir de Mesh"
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
 msgid "Create Emitter From Node"
 msgstr "Criar Emissor a partir de Nó"
 
@@ -3646,12 +3649,14 @@ msgid "Create Emitter"
 msgstr "Criar Emissor"
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
 msgid "Emission Positions:"
 msgstr "Posições de Emissão:"
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
 msgid "Emission Fill:"
-msgstr "Preenchimento de Emissão:"
+msgstr "Posições de Emissão:"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Surface"
@@ -4958,8 +4963,9 @@ msgid "Full name"
 msgstr "Nome Válido"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Organizational unit"
-msgstr ""
+msgstr "Transição"
 
 #: editor/project_export.cpp
 #, fuzzy
@@ -5061,10 +5067,12 @@ msgid "Resources"
 msgstr "Recursos"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Export selected resources (including dependencies)."
 msgstr "Exportar recursos selecionados (incluindo dependências)."
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Export all resources in the project."
 msgstr "Exportar todos os recursos no projeto."
 
@@ -5077,6 +5085,7 @@ msgid "Export Mode:"
 msgstr "Modo de Exportação:"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Resources to Export:"
 msgstr "Recursos a Exportar:"
 
@@ -5085,6 +5094,7 @@ msgid "Action"
 msgstr "Ação"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid ""
 "Filters to export non-resource files (comma-separated, e.g.: *.json, *.txt):"
 msgstr ""
@@ -5092,6 +5102,7 @@ msgstr ""
 "vírgula, e.g.: *.json, *.txt):"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Filters to exclude from export (comma-separated, e.g.: *.json, *.txt):"
 msgstr ""
 "Filtros para excluir da exportação (separados por vírgula, e.g.: *.json, *."
@@ -5262,10 +5273,12 @@ msgid "Invalid project path, the path must exist!"
 msgstr "Caminho de projeto inválido, o caminho deve existir!"
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid project path, engine.cfg must not exist."
 msgstr "Caminho de projeto inválido, engine.cfg não deve existir."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid project path, engine.cfg must exist."
 msgstr "Caminho de projeto inválido, engine.cfg deve existir."
 
@@ -5278,6 +5291,7 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Caminho de projeto inválido (mudou alguma coisa?)."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Couldn't create engine.cfg in project path."
 msgstr "Não se pôde criar engine.cfg no caminho do projeto."
 
@@ -5478,6 +5492,7 @@ msgid "Button 9"
 msgstr "Botão 9"
 
 #: editor/project_settings.cpp
+#, fuzzy
 msgid "Joystick Axis Index:"
 msgstr "Eixo do Joystick:"
 
@@ -5486,6 +5501,7 @@ msgid "Axis"
 msgstr "Eixo"
 
 #: editor/project_settings.cpp
+#, fuzzy
 msgid "Joystick Button Index:"
 msgstr "Botão do Joystick:"
 
@@ -5566,6 +5582,7 @@ msgid "Remove Resource Remap Option"
 msgstr "Remover Opção de Remapeamento de Recurso"
 
 #: editor/project_settings.cpp
+#, fuzzy
 msgid "Project Settings (engine.cfg)"
 msgstr "Configurações do Projeto (engine.cfg)"
 
@@ -6551,6 +6568,204 @@ msgstr ""
 "para que ele possa ter um tamanho. Caso contrário, defina-o como destino de "
 "render e atribua sua textura interna a algum nó para exibir."
 
+#, fuzzy
+#~ msgid "Anim Track Change Wrap Mode"
+#~ msgstr "Mudar Modo de Valor da Trilha"
+
+#, fuzzy
+#~ msgid "Add Bus"
+#~ msgstr "Adicionar Todos"
+
+#, fuzzy
+#~ msgid "(Re)Importing Assets"
+#~ msgstr "Re-Importando"
+
+#, fuzzy
+#~ msgid "Property Description:"
+#~ msgstr "Descrição breve:"
+
+#, fuzzy
+#~ msgid "Manage Export Templates"
+#~ msgstr "Carregando Modelos de Exportação"
+
+#, fuzzy
+#~ msgid "Re-Download"
+#~ msgstr "Recarregar"
+
+#, fuzzy
+#~ msgid "Uninstall"
+#~ msgstr "Instalar"
+
+#, fuzzy
+#~ msgid "(Installed)"
+#~ msgstr "Instalar"
+
+#, fuzzy
+#~ msgid "Download"
+#~ msgstr "Abaixo"
+
+#, fuzzy
+#~ msgid "(Current)"
+#~ msgstr "Atual:"
+
+#, fuzzy
+#~ msgid "Error creating path for templates:\n"
+#~ msgstr "Erro ao salvar atlas:"
+
+#, fuzzy
+#~ msgid "Extracting Export Templates"
+#~ msgstr "Carregando Modelos de Exportação"
+
+#, fuzzy
+#~ msgid "Current Version:"
+#~ msgstr "Cena Atual"
+
+#, fuzzy
+#~ msgid "Installed Versions:"
+#~ msgstr "Plugins Instalados:"
+
+#, fuzzy
+#~ msgid "Install From File"
+#~ msgstr "Instalar Projeto:"
+
+#, fuzzy
+#~ msgid "Remove Template"
+#~ msgstr "Remover Item"
+
+#, fuzzy
+#~ msgid "Select template file"
+#~ msgstr "Excluir os arquivos selecionados?"
+
+#, fuzzy
+#~ msgid "Export Template Manager"
+#~ msgstr "Carregando Modelos de Exportação"
+
+#, fuzzy
+#~ msgid "Expand all"
+#~ msgstr "Expandir para Pai"
+
+#, fuzzy
+#~ msgid " Files"
+#~ msgstr "Arquivo"
+
+#, fuzzy
+#~ msgid "Import As:"
+#~ msgstr "Importar"
+
+#, fuzzy
+#~ msgid "Reimport"
+#~ msgstr "Reimportar"
+
+#~ msgid "Same as Target Scene"
+#~ msgstr "Mesma da Cena Destino"
+
+#~ msgid "Shared"
+#~ msgstr "Compartilhado"
+
+#, fuzzy
+#~ msgid "Show Bones"
+#~ msgstr "Fazer Ossos"
+
+#, fuzzy
+#~ msgid "Modify Curve"
+#~ msgstr "Modificar Curve Map"
+
+#, fuzzy
+#~ msgid "Remove Point from Line2D"
+#~ msgstr "Remover Ponto da Curva"
+
+#, fuzzy
+#~ msgid "Add Point to Line2D"
+#~ msgstr "Adicionar Ponto à Curva"
+
+#, fuzzy
+#~ msgid "Move Point in Line2D"
+#~ msgstr "Mover Ponto na Curva"
+
+#, fuzzy
+#~ msgid "Split Segment (in line)"
+#~ msgstr "Dividir Segmentos (na curva)"
+
+#, fuzzy
+#~ msgid "Surface Points"
+#~ msgstr "Superfície %d"
+
+#, fuzzy
+#~ msgid "Emission Source: "
+#~ msgstr "Preenchimento de Emissão:"
+
+#, fuzzy
+#~ msgid "Close All"
+#~ msgstr "Fechar"
+
+#, fuzzy
+#~ msgid "Discard"
+#~ msgstr "Discreto"
+
+#, fuzzy
+#~ msgid "Pick Color"
+#~ msgstr "Cor"
+
+#, fuzzy
+#~ msgid "Theme"
+#~ msgstr "Salvar Tema"
+
+#, fuzzy
+#~ msgid "Runnable"
+#~ msgstr "Habilitar"
+
+#, fuzzy
+#~ msgid "Delete patch '"
+#~ msgstr "Deletar Entrada"
+
+#, fuzzy
+#~ msgid "Delete preset '%s'?"
+#~ msgstr "Excluir os arquivos selecionados?"
+
+#, fuzzy
+#~ msgid "Presets"
+#~ msgstr "Predefinição..."
+
+#, fuzzy
+#~ msgid "Export selected scenes (and dependencies)"
+#~ msgstr "Exportar recursos selecionados (incluindo dependências)."
+
+#, fuzzy
+#~ msgid "Patches"
+#~ msgstr "Combinações:"
+
+#, fuzzy
+#~ msgid "Make Patch"
+#~ msgstr "Caminho Destino:"
+
+#, fuzzy
+#~ msgid "Export With Debug"
+#~ msgstr "Exportar Tile Set"
+
+#, fuzzy
+#~ msgid "Pick a Viewport"
+#~ msgstr "1 Viewport"
+
+#, fuzzy
+#~ msgid "Show in File System"
+#~ msgstr "Arquivos"
+
+#, fuzzy
+#~ msgid "Pick a Node"
+#~ msgstr "Selecione um Nó"
+
+#, fuzzy
+#~ msgid "Select Property"
+#~ msgstr "Selecionar Pontos"
+
+#, fuzzy
+#~ msgid "Select Method"
+#~ msgstr "Modo de Seleção (Q)"
+
+#, fuzzy
+#~ msgid "Change Probe Extents"
+#~ msgstr "Alterar a Extensão do Notificador"
+
 #~ msgid "Node returned an invalid sequence output: "
 #~ msgstr "O nó retornou uma saída de sequência inválida: "
 
@@ -6720,6 +6935,22 @@ msgstr ""
 #~ msgstr ": Argumentos inválidos: "
 
 #, fuzzy
+#~ msgid "Run in Browser"
+#~ msgstr "Navegar"
+
+#, fuzzy
+#~ msgid "Could not write file:\n"
+#~ msgstr "Não se pôde achar tile:"
+
+#, fuzzy
+#~ msgid "Could not read file:\n"
+#~ msgstr "Não se pôde achar tile:"
+
+#, fuzzy
+#~ msgid "Could not open template for export:\n"
+#~ msgstr "Não foi possível criar a pasta."
+
+#, fuzzy
 #~ msgid "Error creating the signature object."
 #~ msgstr "Erro ao escrever o PCK do projeto!"
 
@@ -6743,44 +6974,6 @@ msgstr ""
 #~ msgid "Path property must point to a valid Spatial node to work."
 #~ msgstr ""
 #~ "A propriedade Caminho deve apontar a um nó Particles2D para funcionar."
-
-#, fuzzy
-#~ msgid "Property Description:"
-#~ msgstr "Descrição breve:"
-
-#~ msgid "Same as Target Scene"
-#~ msgstr "Mesma da Cena Destino"
-
-#~ msgid "Shared"
-#~ msgstr "Compartilhado"
-
-#, fuzzy
-#~ msgid "Show Bones"
-#~ msgstr "Fazer Ossos"
-
-#, fuzzy
-#~ msgid "Close All"
-#~ msgstr "Fechar"
-
-#, fuzzy
-#~ msgid "Pick Color"
-#~ msgstr "Cor"
-
-#, fuzzy
-#~ msgid "Theme"
-#~ msgstr "Salvar Tema"
-
-#, fuzzy
-#~ msgid "Select Property"
-#~ msgstr "Selecionar Pontos"
-
-#, fuzzy
-#~ msgid "Select Method"
-#~ msgstr "Modo de Seleção (Q)"
-
-#, fuzzy
-#~ msgid "Change Probe Extents"
-#~ msgstr "Alterar a Extensão do Notificador"
 
 #~ msgid ""
 #~ "This item cannot be made visible because the parent is hidden. Unhide the "

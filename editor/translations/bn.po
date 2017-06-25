@@ -1,6 +1,5 @@
 # Bengali translation of the Godot Engine editor
-# Copyright (C) 2007-2017 Juan Linietsky, Ariel Manzur
-# Copyright (C) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)
+# Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
 # Abu Md. Maruf Sarker <maruf.webdev@gmail.com>, 2016-2017.
@@ -483,6 +482,7 @@ msgid "Next"
 msgstr "পরবর্তী"
 
 #: editor/code_editor.cpp
+#, fuzzy
 msgid "Replaced %d ocurrence(s)."
 msgstr "%d টি সংঘটন প্রতিস্থাপিত হয়েছে।"
 
@@ -2610,6 +2610,7 @@ msgid "Compress"
 msgstr "সঙ্কোচন করুন"
 
 #: editor/io_plugins/editor_translation_import_plugin.cpp
+#, fuzzy
 msgid "Add to Project (engine.cfg)"
 msgstr "প্রকল্পে সংযুক্ত করুন (engine.cfg)"
 
@@ -3624,10 +3625,12 @@ msgid "Generate AABB"
 msgstr "AABB উৎপন্ন করুন"
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
 msgid "Create Emitter From Mesh"
 msgstr "Mesh হতে Emitter তৈরি করুন"
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
 msgid "Create Emitter From Node"
 msgstr "Node হতে Emitter তৈরি করুন"
 
@@ -3640,12 +3643,14 @@ msgid "Create Emitter"
 msgstr "Emitter তৈরি করুন"
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
 msgid "Emission Positions:"
 msgstr "Emission-এর স্থানসমূহ:"
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
 msgid "Emission Fill:"
-msgstr "Emission পূরণ:"
+msgstr "Emission-এর স্থানসমূহ:"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Surface"
@@ -5048,10 +5053,12 @@ msgid "Resources"
 msgstr "রিসোর্সসমূহ"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Export selected resources (including dependencies)."
 msgstr "নির্বাচিত রিসোর্সসমূহ এক্সপোর্ট করুন (ডিপেন্ডেন্সী সহ)।"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Export all resources in the project."
 msgstr "প্রকল্পের সকল রিসোর্স এক্সপোর্ট করুন।"
 
@@ -5064,6 +5071,7 @@ msgid "Export Mode:"
 msgstr "এক্সপোর্ট মোড:"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Resources to Export:"
 msgstr "এক্সপোর্টের জন্য রিসোর্স:"
 
@@ -5072,12 +5080,14 @@ msgid "Action"
 msgstr "প্রক্রিয়া/অ্যাকশন"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid ""
 "Filters to export non-resource files (comma-separated, e.g.: *.json, *.txt):"
 msgstr ""
 "রিসোর্স-নয় এমন ফাইল এক্সপোর্ট করার ফিল্টারসমূহ (কমা-বিভক্ত, যেমন: *.json, *.txt):"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Filters to exclude from export (comma-separated, e.g.: *.json, *.txt):"
 msgstr ""
 "এক্সপোর্ট (export) হতে বর্জনকৃত ফিল্টারসমূহ (filter) (কমা-বিভক্ত, যেমন: *.json, *."
@@ -5248,10 +5258,12 @@ msgid "Invalid project path, the path must exist!"
 msgstr "অকার্যকর প্রকল্পের পথ, পথটি অবশ্যই বিদ্যমান হতে হবে!"
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid project path, engine.cfg must not exist."
 msgstr "অকার্যকর প্রকল্পের পথ, engine.cfg অবশ্যই অনুপস্থিত হতে হবে।"
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid project path, engine.cfg must exist."
 msgstr "অকার্যকর প্রকল্পের পথ, engine.cfg অবশ্যই উপস্থিত হতে হবে।"
 
@@ -5264,6 +5276,7 @@ msgid "Invalid project path (changed anything?)."
 msgstr "অকার্যকর প্রকল্পের পথ (কোনোকিছু পরিবর্তন করেছেন?)।"
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Couldn't create engine.cfg in project path."
 msgstr "প্রকল্পের পথে engine.cfg তৈরি করা সম্ভব হয়নি।"
 
@@ -5463,6 +5476,7 @@ msgid "Button 9"
 msgstr "বোতাম ৯"
 
 #: editor/project_settings.cpp
+#, fuzzy
 msgid "Joystick Axis Index:"
 msgstr "জয়স্টিক অক্ষ ইন্ডেক্স:"
 
@@ -5471,6 +5485,7 @@ msgid "Axis"
 msgstr "অক্ষ"
 
 #: editor/project_settings.cpp
+#, fuzzy
 msgid "Joystick Button Index:"
 msgstr "জয়স্টিক বোতাম ইন্ডেক্স:"
 
@@ -5551,6 +5566,7 @@ msgid "Remove Resource Remap Option"
 msgstr "রিসোর্সের পুনঃ-নকশার সিদ্ধান্ত অপসারণ করুন"
 
 #: editor/project_settings.cpp
+#, fuzzy
 msgid "Project Settings (engine.cfg)"
 msgstr "প্রকল্পের সেটিংস (engine.cfg)"
 
@@ -6517,6 +6533,196 @@ msgstr ""
 "আকার ধারণ করতে পারে। অন্যথায়, এটিকে একটি RenderTarget করুন এবং এর অভ্যন্তরীণ "
 "দৃশ্যাবলিকে (texture) দৃশ্যমান করতে কোনো নোডে হস্তান্তর করুন।"
 
+#, fuzzy
+#~ msgid "Anim Track Change Wrap Mode"
+#~ msgstr "অ্যানিমেশন (Anim) ট্র্যাক/পথ-এর মানের ধরন/প্রকার পরিবর্তন করুন"
+
+#, fuzzy
+#~ msgid "Add Bus"
+#~ msgstr "%s সংযুক্ত করুন"
+
+#, fuzzy
+#~ msgid "(Re)Importing Assets"
+#~ msgstr "পুনরায় ইম্পোর্ট হচ্ছে"
+
+#~ msgid "Property Description:"
+#~ msgstr "মান/প্রোপার্টির বর্ণনা:"
+
+#, fuzzy
+#~ msgid "Manage Export Templates"
+#~ msgstr "এক্সপোর্ট টেমপ্লেটসমূহ লোড হচ্ছে"
+
+#, fuzzy
+#~ msgid "Re-Download"
+#~ msgstr "রিলোড"
+
+#, fuzzy
+#~ msgid "Uninstall"
+#~ msgstr "ইন্সটল"
+
+#, fuzzy
+#~ msgid "(Installed)"
+#~ msgstr "ইন্সটল"
+
+#, fuzzy
+#~ msgid "Download"
+#~ msgstr "নীচে"
+
+#, fuzzy
+#~ msgid "(Current)"
+#~ msgstr "বর্তমান:"
+
+#, fuzzy
+#~ msgid "Error creating path for templates:\n"
+#~ msgstr "এটলাস/মানচিত্রাবলী সংরক্ষণে সমস্যা হয়েছে:"
+
+#, fuzzy
+#~ msgid "Extracting Export Templates"
+#~ msgstr "এক্সপোর্ট টেমপ্লেটসমূহ লোড হচ্ছে"
+
+#, fuzzy
+#~ msgid "Current Version:"
+#~ msgstr "বর্তমান দৃশ্য"
+
+#, fuzzy
+#~ msgid "Installed Versions:"
+#~ msgstr "ইন্সটল-কৃত প্লাগইন-সমূহ:"
+
+#, fuzzy
+#~ msgid "Install From File"
+#~ msgstr "প্রকল্প ইন্সটল করুন:"
+
+#, fuzzy
+#~ msgid "Remove Template"
+#~ msgstr "বস্তু অপসারণ করুন"
+
+#, fuzzy
+#~ msgid "Select template file"
+#~ msgstr "নির্বাচিত ফাইলসমূহ অপসারণ করবেন?"
+
+#, fuzzy
+#~ msgid "Export Template Manager"
+#~ msgstr "এক্সপোর্ট টেমপ্লেটসমূহ লোড হচ্ছে"
+
+#, fuzzy
+#~ msgid "Expand all"
+#~ msgstr "ধারক/বাহক পর্যন্ত বিস্তৃত করুন"
+
+#, fuzzy
+#~ msgid " Files"
+#~ msgstr "ফাইল"
+
+#, fuzzy
+#~ msgid "Import As:"
+#~ msgstr "ইম্পোর্ট"
+
+#, fuzzy
+#~ msgid "Reimport"
+#~ msgstr "পুন-ইম্পোর্ট"
+
+#~ msgid "Same as Target Scene"
+#~ msgstr "উদ্দেশ্যিত দৃশ্যের ন্যায়"
+
+#~ msgid "Shared"
+#~ msgstr "শেয়ারকৃত"
+
+#~ msgid "Show Bones"
+#~ msgstr "বোন্‌/হাড় দেখান"
+
+#, fuzzy
+#~ msgid "Modify Curve"
+#~ msgstr "Curve Map পরিবর্তন করুন"
+
+#, fuzzy
+#~ msgid "Remove Point from Line2D"
+#~ msgstr "বক্ররেখা হতে বিন্দু অপসারণ করুন"
+
+#, fuzzy
+#~ msgid "Add Point to Line2D"
+#~ msgstr "বক্ররেখায় বিন্দু যোগ করুন"
+
+#, fuzzy
+#~ msgid "Move Point in Line2D"
+#~ msgstr "বক্ররেখায় বিন্দু সরান"
+
+#, fuzzy
+#~ msgid "Split Segment (in line)"
+#~ msgstr "অংশ বিভক্ত করুন (বক্ররেখায়)"
+
+#, fuzzy
+#~ msgid "Surface Points"
+#~ msgstr "পৃষ্ঠতল %d"
+
+#, fuzzy
+#~ msgid "Emission Source: "
+#~ msgstr "Emission পূরণ:"
+
+#~ msgid "Close All"
+#~ msgstr "সবগুলি বন্ধ করুন"
+
+#, fuzzy
+#~ msgid "Discard"
+#~ msgstr "স্বতন্ত্র/পৃথক্"
+
+#~ msgid "Pick Color"
+#~ msgstr "রঙ  পছন্দ করুন"
+
+#~ msgid "Theme"
+#~ msgstr "থিম"
+
+#, fuzzy
+#~ msgid "Runnable"
+#~ msgstr "সক্রিয় করুন"
+
+#, fuzzy
+#~ msgid "Delete patch '"
+#~ msgstr "ইনপুট অপসারণ করুন"
+
+#, fuzzy
+#~ msgid "Delete preset '%s'?"
+#~ msgstr "নির্বাচিত ফাইলসমূহ অপসারণ করবেন?"
+
+#, fuzzy
+#~ msgid "Presets"
+#~ msgstr "প্রিসেট.."
+
+#, fuzzy
+#~ msgid "Export selected scenes (and dependencies)"
+#~ msgstr "নির্বাচিত রিসোর্সসমূহ এক্সপোর্ট করুন (ডিপেন্ডেন্সী সহ)।"
+
+#, fuzzy
+#~ msgid "Patches"
+#~ msgstr "মিলসমূহ:"
+
+#, fuzzy
+#~ msgid "Make Patch"
+#~ msgstr "উদ্দেশ্যিত পথ:"
+
+#, fuzzy
+#~ msgid "Export With Debug"
+#~ msgstr "Tile Set এক্সপোর্ট করুন"
+
+#, fuzzy
+#~ msgid "Pick a Viewport"
+#~ msgstr "১ টি Viewport"
+
+#, fuzzy
+#~ msgid "Show in File System"
+#~ msgstr "ফাইলসিস্টেম"
+
+#, fuzzy
+#~ msgid "Pick a Node"
+#~ msgstr "একটি নোড নির্বাচন করুন"
+
+#~ msgid "Select Property"
+#~ msgstr "গুণাগুণ/বৈশিষ্ট্য বাছাই করুন"
+
+#~ msgid "Select Method"
+#~ msgstr "মেথড/পদ্ধতি বাছাই করুন"
+
+#~ msgid "Change Probe Extents"
+#~ msgstr "প্রোবের (Probe) পরিব্যাপ্তি পরিবর্তন করুন"
+
 #~ msgid ""
 #~ "A node yielded without working memory, please read the docs on how to "
 #~ "yield properly!"
@@ -6742,8 +6948,26 @@ msgstr ""
 #~ msgid "just released"
 #~ msgstr "এইমাত্র অব্যাহিত/মুক্ত"
 
+#, fuzzy
+#~ msgid "Run in Browser"
+#~ msgstr "ব্রাউস"
+
+#, fuzzy
+#~ msgid "Could not write file:\n"
+#~ msgstr "টাইলটি খুঁজে পাওয়া যায়নি:"
+
+#, fuzzy
+#~ msgid "Could not read file:\n"
+#~ msgstr "টাইলটি খুঁজে পাওয়া যায়নি:"
+
+#, fuzzy
+#~ msgid "Could not open template for export:\n"
+#~ msgstr "ফোল্ডার তৈরী করা সম্ভব হয়নি।"
+
+#, fuzzy
 #~ msgid ""
-#~ "Couldn't read the certficate file. Are the path and password both correct?"
+#~ "Couldn't read the certificate file. Are the path and password both "
+#~ "correct?"
 #~ msgstr ""
 #~ "সার্টিফিকেট ফাইলটি পড়া সম্ভব হচ্ছে না। ফাইলের পথ এবং পাসওয়ার্ড দুটোই কি সঠিক "
 #~ "দেয়া হয়েছে?"
@@ -6804,36 +7028,6 @@ msgstr ""
 #~ msgid "Path property must point to a valid Spatial node to work."
 #~ msgstr ""
 #~ "Path এর দিক অবশ্যই একটি কার্যকর Spatial নোডের এর দিকে নির্দেশ করাতে হবে।"
-
-#~ msgid "Property Description:"
-#~ msgstr "মান/প্রোপার্টির বর্ণনা:"
-
-#~ msgid "Same as Target Scene"
-#~ msgstr "উদ্দেশ্যিত দৃশ্যের ন্যায়"
-
-#~ msgid "Shared"
-#~ msgstr "শেয়ারকৃত"
-
-#~ msgid "Show Bones"
-#~ msgstr "বোন্‌/হাড় দেখান"
-
-#~ msgid "Close All"
-#~ msgstr "সবগুলি বন্ধ করুন"
-
-#~ msgid "Pick Color"
-#~ msgstr "রঙ  পছন্দ করুন"
-
-#~ msgid "Theme"
-#~ msgstr "থিম"
-
-#~ msgid "Select Property"
-#~ msgstr "গুণাগুণ/বৈশিষ্ট্য বাছাই করুন"
-
-#~ msgid "Select Method"
-#~ msgstr "মেথড/পদ্ধতি বাছাই করুন"
-
-#~ msgid "Change Probe Extents"
-#~ msgstr "প্রোবের (Probe) পরিব্যাপ্তি পরিবর্তন করুন"
 
 #~ msgid ""
 #~ "This item cannot be made visible because the parent is hidden. Unhide the "

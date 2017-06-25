@@ -1,6 +1,5 @@
 # Indonesian translation of the Godot Engine editor
-# Copyright (C) 2007-2017 Juan Linietsky, Ariel Manzur
-# Copyright (C) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)
+# Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
 # Abdul Aziz Muslim Alqudsy <abdul.aziz.muslim.alqudsy@gmail.com>, 2016.
@@ -1489,8 +1488,9 @@ msgid "Convert To.."
 msgstr ""
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "Translatable Strings.."
-msgstr ""
+msgstr "Simpan Kalimat yang Dapat Diterjemahkan"
 
 #: editor/editor_node.cpp
 msgid "MeshLibrary.."
@@ -1687,8 +1687,9 @@ msgid "Editor Layout"
 msgstr ""
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "Install Export Templates"
-msgstr ""
+msgstr "Memuat Ekspor Template-template."
 
 #: editor/editor_node.cpp
 msgid "About"
@@ -4921,8 +4922,9 @@ msgid "Please export outside the project folder!"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Error exporting project!"
-msgstr ""
+msgstr "Error menyimpan resource!"
 
 #: editor/project_export.cpp
 msgid "Error writing the project PCK!"
@@ -4942,8 +4944,9 @@ msgid "Full name"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Organizational unit"
-msgstr ""
+msgstr "Transisi"
 
 #: editor/project_export.cpp
 #, fuzzy
@@ -4998,32 +5001,37 @@ msgid "Include"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Change Image Group"
-msgstr ""
+msgstr "Ubah Perulangan Animasi"
 
 #: editor/project_export.cpp
 msgid "Group name can't be empty!"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Invalid character in group name!"
-msgstr ""
+msgstr "Nama properti index tidak sah."
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Group name already exists!"
-msgstr ""
+msgstr "Autoload '%s' telah ada!"
 
 #: editor/project_export.cpp
 msgid "Add Image Group"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Delete Image Group"
-msgstr ""
+msgstr "Hapus Penampilan"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Atlas Preview"
-msgstr ""
+msgstr "Pratinjau:"
 
 #: editor/project_export.cpp
 msgid "Project Export Settings"
@@ -5058,12 +5066,14 @@ msgid "Export Mode:"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Resources to Export:"
-msgstr ""
+msgstr "Penjelajah Resource Orphan"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Action"
-msgstr ""
+msgstr "Tambahkan Fungsi"
 
 #: editor/project_export.cpp
 msgid ""
@@ -5143,20 +5153,23 @@ msgid "Shrink By:"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Preview Atlas"
-msgstr ""
+msgstr "Pratinjau:"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Image Filter:"
-msgstr ""
+msgstr "Filter:"
 
 #: editor/project_export.cpp
 msgid "Images:"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Select None"
-msgstr ""
+msgstr "Tambahkan Properti Setter"
 
 #: editor/project_export.cpp
 msgid "Group"
@@ -5187,12 +5200,14 @@ msgid "Trim"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Trailing Silence:"
-msgstr ""
+msgstr "Menyimpan Scene"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Script"
-msgstr ""
+msgstr "Scene Baru"
 
 #: editor/project_export.cpp
 msgid "Script Export Mode:"
@@ -5223,16 +5238,18 @@ msgid "Export Project PCK"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Export.."
-msgstr ""
+msgstr "Dukungan.."
 
 #: editor/project_export.cpp
 msgid "Project Export"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Export Preset:"
-msgstr ""
+msgstr "Ekspor Tile Set"
 
 #: editor/project_manager.cpp
 msgid "Invalid project path, the path must exist!"
@@ -6529,6 +6546,90 @@ msgstr ""
 "sebuah RenderTarget dan tetapkannya tekstur internal untuk beberapa node "
 "untuk ditampilkan."
 
+#, fuzzy
+#~ msgid "Anim Track Change Wrap Mode"
+#~ msgstr "Ganti Mode Nilai Track Anim"
+
+#, fuzzy
+#~ msgid "(Re)Importing Assets"
+#~ msgstr "Mengimpor ulang"
+
+#, fuzzy
+#~ msgid "Property Description:"
+#~ msgstr "Deskripsi Singkat:"
+
+#, fuzzy
+#~ msgid "Error creating path for templates:\n"
+#~ msgstr "Gagal menyimpan atlas:"
+
+#, fuzzy
+#~ msgid "Extracting Export Templates"
+#~ msgstr "Memuat Ekspor Template-template."
+
+#, fuzzy
+#~ msgid "Remove Template"
+#~ msgstr "Hapus Pilihan"
+
+#, fuzzy
+#~ msgid "Select template file"
+#~ msgstr "Hapus file yang dipilih?"
+
+#, fuzzy
+#~ msgid "Export Template Manager"
+#~ msgstr "Memuat Ekspor Template-template."
+
+#, fuzzy
+#~ msgid " Files"
+#~ msgstr "File:"
+
+#, fuzzy
+#~ msgid "Import As:"
+#~ msgstr "Mengimpor:"
+
+#, fuzzy
+#~ msgid "Reimport"
+#~ msgstr "Mengimpor ulang"
+
+#, fuzzy
+#~ msgid "Add Point to Line2D"
+#~ msgstr "Pergi ke Barisan"
+
+#, fuzzy
+#~ msgid "Close All"
+#~ msgstr "Tutup"
+
+#, fuzzy
+#~ msgid "Discard"
+#~ msgstr "Berlainan"
+
+#, fuzzy
+#~ msgid "Runnable"
+#~ msgstr "Aktifkan"
+
+#, fuzzy
+#~ msgid "Delete patch '"
+#~ msgstr "Hapus Penampilan"
+
+#, fuzzy
+#~ msgid "Delete preset '%s'?"
+#~ msgstr "Hapus file yang dipilih?"
+
+#, fuzzy
+#~ msgid "Patches"
+#~ msgstr "Kecocokan:"
+
+#, fuzzy
+#~ msgid "Export With Debug"
+#~ msgstr "Ekspor Tile Set"
+
+#, fuzzy
+#~ msgid "Pick a Node"
+#~ msgstr "Path ke Node:"
+
+#, fuzzy
+#~ msgid "Select Method"
+#~ msgstr "Metode Publik:"
+
 #~ msgid ""
 #~ "A node yielded without working memory, please read the docs on how to "
 #~ "yield properly!"
@@ -6581,9 +6682,6 @@ msgstr ""
 
 #~ msgid "Rename Signal"
 #~ msgstr "Namai kembali Sinyal"
-
-#~ msgid "Add Function"
-#~ msgstr "Tambahkan Fungsi"
 
 #~ msgid "Add Variable"
 #~ msgstr "Tambahkan Variabel"
@@ -6664,6 +6762,10 @@ msgstr ""
 #~ msgstr "Cari Tipe Node"
 
 #, fuzzy
+#~ msgid "Copy Nodes"
+#~ msgstr "Salin Resource"
+
+#, fuzzy
 #~ msgid "Paste Nodes"
 #~ msgstr "Path ke Node:"
 
@@ -6675,9 +6777,6 @@ msgstr ""
 
 #~ msgid "Iterator became invalid: "
 #~ msgstr "Iterator menjadi tidak sah: "
-
-#~ msgid "Invalid index property name."
-#~ msgstr "Nama properti index tidak sah."
 
 #~ msgid "Base object is not a Node!"
 #~ msgstr "Objek dasar bukan sebuah Node!"
@@ -6713,6 +6812,18 @@ msgstr ""
 #~ "string (error)."
 
 #, fuzzy
+#~ msgid "Could not write file:\n"
+#~ msgstr "Tidak dapat membuat folder."
+
+#, fuzzy
+#~ msgid "Could not read file:\n"
+#~ msgstr "Tidak dapat membuat folder."
+
+#, fuzzy
+#~ msgid "Could not open template for export:\n"
+#~ msgstr "Tidak dapat membuat folder."
+
+#, fuzzy
 #~ msgid "Invalid unique name."
 #~ msgstr "Nama tidak sah."
 
@@ -6725,22 +6836,6 @@ msgstr ""
 #~ msgstr ""
 #~ "Properti path harus menunjuk ke sebuah node Particles2D yang sah agar "
 #~ "bekerja."
-
-#, fuzzy
-#~ msgid "Property Description:"
-#~ msgstr "Deskripsi Singkat:"
-
-#, fuzzy
-#~ msgid "Close All"
-#~ msgstr "Tutup"
-
-#, fuzzy
-#~ msgid "Select Property"
-#~ msgstr "Tambahkan Properti Setter"
-
-#, fuzzy
-#~ msgid "Select Method"
-#~ msgstr "Metode Publik:"
 
 #, fuzzy
 #~ msgid ""

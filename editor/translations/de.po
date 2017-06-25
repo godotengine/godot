@@ -1,6 +1,5 @@
 # German translation of the Godot Engine editor
-# Copyright (C) 2007-2017 Juan Linietsky, Ariel Manzur
-# Copyright (C) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)
+# Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
 # Alexander Mahr <alex.mahr@gmail.com>, 2016.
@@ -25,8 +24,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2017-03-25 22:20+0000\n"
-"Last-Translator: Eurocloud KnowHow <tobias.kloy@werde-volunteer.info>\n"
+"PO-Revision-Date: 2017-04-12 03:22+0000\n"
+"Last-Translator: So Wieso <sowieso@dukun.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -34,7 +33,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.12\n"
+"X-Generator: Weblate 2.13-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -500,6 +499,7 @@ msgid "Next"
 msgstr "Nächste"
 
 #: editor/code_editor.cpp
+#, fuzzy
 msgid "Replaced %d ocurrence(s)."
 msgstr "Suchbegriff wurde %d mal ersetzt."
 
@@ -2305,7 +2305,7 @@ msgstr "Post-Process Skript:"
 
 #: editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Custom Root Node Type:"
-msgstr "Angepasster Stamm-Node Typ:"
+msgstr "Angepasster Root-Node-Typ:"
 
 #: editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Auto"
@@ -2628,6 +2628,7 @@ msgid "Compress"
 msgstr "Komprimieren"
 
 #: editor/io_plugins/editor_translation_import_plugin.cpp
+#, fuzzy
 msgid "Add to Project (engine.cfg)"
 msgstr "Zu Projekt hinzufügen (engine.cfg)"
 
@@ -3646,10 +3647,12 @@ msgid "Generate AABB"
 msgstr "Erzeuge AABB"
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
 msgid "Create Emitter From Mesh"
 msgstr "Erzeuge Emittent aus Mesh"
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
 msgid "Create Emitter From Node"
 msgstr "Erzeuge Emittent aus Node"
 
@@ -3662,12 +3665,14 @@ msgid "Create Emitter"
 msgstr "Erzeuge Emittent"
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
 msgid "Emission Positions:"
 msgstr "Emissionsorte:"
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
 msgid "Emission Fill:"
-msgstr "Emissionsfüllung:"
+msgstr "Emissionsorte:"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Surface"
@@ -5071,10 +5076,12 @@ msgid "Resources"
 msgstr "Ressourcen"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Export selected resources (including dependencies)."
 msgstr "Exportiere ausgewählte Ressourcen (inklusive Abhängigkeiten)."
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Export all resources in the project."
 msgstr "Exportiere alle Ressourcen des Projekts."
 
@@ -5087,6 +5094,7 @@ msgid "Export Mode:"
 msgstr "Export-Modus:"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Resources to Export:"
 msgstr "Zu exportierende Ressourcen:"
 
@@ -5095,6 +5103,7 @@ msgid "Action"
 msgstr "Aktion"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid ""
 "Filters to export non-resource files (comma-separated, e.g.: *.json, *.txt):"
 msgstr ""
@@ -5102,6 +5111,7 @@ msgstr ""
 "B.: *.json, *.txt):"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Filters to exclude from export (comma-separated, e.g.: *.json, *.txt):"
 msgstr ""
 "Filter um vom Export auszuschließen (durch Kommata getrennt, z.B.: *.json, *."
@@ -5273,10 +5283,12 @@ msgid "Invalid project path, the path must exist!"
 msgstr "Ungültiger Projektpfad, der Pfad muss existieren!"
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid project path, engine.cfg must not exist."
 msgstr "Ungültiger Projektpfad, engine.cfg darf nicht existieren."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid project path, engine.cfg must exist."
 msgstr "Ungültiger Projektpfad, engine.cfg muss existieren."
 
@@ -5289,6 +5301,7 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Ungültiger Projektpfad (etwas geändert?)."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Couldn't create engine.cfg in project path."
 msgstr "Konnte engine.cfg in Projektpfad nicht erzeugen."
 
@@ -5488,6 +5501,7 @@ msgid "Button 9"
 msgstr "Taste 9"
 
 #: editor/project_settings.cpp
+#, fuzzy
 msgid "Joystick Axis Index:"
 msgstr "Joystickachsen-Index:"
 
@@ -5496,6 +5510,7 @@ msgid "Axis"
 msgstr "Achse"
 
 #: editor/project_settings.cpp
+#, fuzzy
 msgid "Joystick Button Index:"
 msgstr "Joysticktasten-Index:"
 
@@ -5576,6 +5591,7 @@ msgid "Remove Resource Remap Option"
 msgstr "Ressourcen-Remap-Option entfernen"
 
 #: editor/project_settings.cpp
+#, fuzzy
 msgid "Project Settings (engine.cfg)"
 msgstr "Projekteinstellungen (engine.cfg)"
 
@@ -5844,7 +5860,7 @@ msgstr "Diese Aktion kann nicht ohne eine Szene ausgeführt werden."
 
 #: editor/scene_tree_dock.cpp
 msgid "Can not perform with the root node."
-msgstr ""
+msgstr "Lässt sich nicht an Root-Node ausführen."
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on instanced scenes."
@@ -5945,7 +5961,7 @@ msgid ""
 "exists."
 msgstr ""
 "Instantiiere eine Szenendatei als Node. Erzeugt eine geerbte Szene falls "
-"keine Root-Node existiert."
+"kein Root-Node existiert."
 
 #: editor/scene_tree_dock.cpp
 msgid "Attach a new or existing script for the selected node."
@@ -6565,6 +6581,254 @@ msgstr ""
 "Eigenschaft ‚Render Target‘ des Viewports aktiviert und seine Textur "
 "irgendeinem Node zum Anzeigen zugewiesen werden."
 
+#, fuzzy
+#~ msgid "Anim Track Change Wrap Mode"
+#~ msgstr "Anim Spur ändere Wert Modus"
+
+#~ msgid "Save Audio Bus Layout As.."
+#~ msgstr "Audiobus-Layout speichern als…"
+
+#, fuzzy
+#~ msgid "Location for New Layout.."
+#~ msgstr "Ort für neues Layout…"
+
+#~ msgid "Open Audio Bus Layout"
+#~ msgstr "Öffne Audiobus-Layout"
+
+#, fuzzy
+#~ msgid "Add Bus"
+#~ msgstr "%s hinzufügen"
+
+#~ msgid "Template file not found:\n"
+#~ msgstr "Template-Datei nicht gefunden:\n"
+
+#, fuzzy
+#~ msgid "(Re)Importing Assets"
+#~ msgstr "Importiere erneut"
+
+#~ msgid "Property Description:"
+#~ msgstr "Eigenschaft-Beschreibung:"
+
+#~ msgid ""
+#~ "Scene '%s' was automatically imported, so it can't be modified.\n"
+#~ "To make changes to it, a new inherited scene can be created."
+#~ msgstr ""
+#~ "Szene ‚%s‘ wurde automatisch importiert und kann daher nicht verändert "
+#~ "werden.\n"
+#~ "Um Änderungen an der Szene vorzunehmen kann eine abgeleitete Szene "
+#~ "erstellt werden."
+
+#, fuzzy
+#~ msgid "Manage Export Templates"
+#~ msgstr "Lade Exportvorlagen"
+
+#, fuzzy
+#~ msgid "Re-Download"
+#~ msgstr "Neu laden"
+
+#, fuzzy
+#~ msgid "Uninstall"
+#~ msgstr "Installieren"
+
+#, fuzzy
+#~ msgid "(Installed)"
+#~ msgstr "Installieren"
+
+#, fuzzy
+#~ msgid "Download"
+#~ msgstr "Herunter"
+
+#~ msgid "(Missing)"
+#~ msgstr "(Fehlend)"
+
+#, fuzzy
+#~ msgid "(Current)"
+#~ msgstr "Laufend:"
+
+#~ msgid "Remove template version '%s'?"
+#~ msgstr "Template-Version ‚%s‘ entfernen?"
+
+#~ msgid "Invalid version.txt format inside templates."
+#~ msgstr "Ungültiges version.txt-Format in Templates."
+
+#~ msgid ""
+#~ "Invalid version.txt format inside templates. Revision is not a valid "
+#~ "identifier."
+#~ msgstr ""
+#~ "Ungültiges version.txt-Format in Templates. Revision ist kein gültiger "
+#~ "Bezeichner."
+
+#~ msgid "No version.txt found inside templates."
+#~ msgstr "Keine version.txt in Templates gefunden."
+
+#, fuzzy
+#~ msgid "Error creating path for templates:\n"
+#~ msgstr "Fehler beim speichern des Atlas:"
+
+#, fuzzy
+#~ msgid "Extracting Export Templates"
+#~ msgstr "Lade Exportvorlagen"
+
+#, fuzzy
+#~ msgid "Current Version:"
+#~ msgstr "Aktuelle Szene"
+
+#, fuzzy
+#~ msgid "Installed Versions:"
+#~ msgstr "Installierte Erweiterungen:"
+
+#, fuzzy
+#~ msgid "Install From File"
+#~ msgstr "Installiere Projekt:"
+
+#, fuzzy
+#~ msgid "Remove Template"
+#~ msgstr "Entferne Element"
+
+#, fuzzy
+#~ msgid "Select template file"
+#~ msgstr "Ausgewählte Dateien löschen?"
+
+#, fuzzy
+#~ msgid "Export Template Manager"
+#~ msgstr "Lade Exportvorlagen"
+
+#~ msgid "Cannot navigate to '"
+#~ msgstr "Kann Ordner ‚"
+
+#, fuzzy
+#~ msgid "Expand all"
+#~ msgstr "Auf übergeordnetes Node ausdehnen"
+
+#~ msgid "Collapse all"
+#~ msgstr "Alle einklappen"
+
+#, fuzzy
+#~ msgid " Files"
+#~ msgstr "Datei"
+
+#, fuzzy
+#~ msgid "Import As:"
+#~ msgstr "Import"
+
+#, fuzzy
+#~ msgid "Reimport"
+#~ msgstr "Neuimport"
+
+#~ msgid "Same as Target Scene"
+#~ msgstr "Dieselbe wie die Zielszene"
+
+#~ msgid "Shared"
+#~ msgstr "Geteilt"
+
+#~ msgid "Show Bones"
+#~ msgstr "Knochen anzeigen"
+
+#, fuzzy
+#~ msgid "Modify Curve"
+#~ msgstr "Verändere Curve-Map"
+
+#, fuzzy
+#~ msgid "Remove Point from Line2D"
+#~ msgstr "Punkt von Kurve entfernen"
+
+#, fuzzy
+#~ msgid "Add Point to Line2D"
+#~ msgstr "Punkt zu Kurve hinzufügen"
+
+#, fuzzy
+#~ msgid "Move Point in Line2D"
+#~ msgstr "Punkt auf Kurve verschieben"
+
+#, fuzzy
+#~ msgid "Split Segment (in line)"
+#~ msgstr "Segment aufteilen (in Kurve)"
+
+#~ msgid "A processor material of type 'ParticlesMaterial' is required."
+#~ msgstr ""
+#~ "Ein Verarbeitungsmaterial des Typs ‚ParticlesMaterial‘ wird benötigt."
+
+#, fuzzy
+#~ msgid "Surface Points"
+#~ msgstr "Oberfläche %d"
+
+#~ msgid "Surface Points+Normal (Directed)"
+#~ msgstr "Oberflächenpunkte + Normale (gerichtet)"
+
+#, fuzzy
+#~ msgid "Emission Source: "
+#~ msgstr "Emissionsfüllung:"
+
+#~ msgid "Close All"
+#~ msgstr "Alle schließen"
+
+#, fuzzy
+#~ msgid "Discard"
+#~ msgstr "Einzeln"
+
+#~ msgid "Pick Color"
+#~ msgstr "Farbe auswählen"
+
+#~ msgid "Theme"
+#~ msgstr "Motiv"
+
+#, fuzzy
+#~ msgid "Runnable"
+#~ msgstr "Aktivieren"
+
+#, fuzzy
+#~ msgid "Delete patch '"
+#~ msgstr "Eingang löschen"
+
+#, fuzzy
+#~ msgid "Delete preset '%s'?"
+#~ msgstr "Ausgewählte Dateien löschen?"
+
+#, fuzzy
+#~ msgid "Presets"
+#~ msgstr "Voreinstellungen.."
+
+#, fuzzy
+#~ msgid "Export selected scenes (and dependencies)"
+#~ msgstr "Exportiere ausgewählte Ressourcen (inklusive Abhängigkeiten)."
+
+#, fuzzy
+#~ msgid "Patches"
+#~ msgstr "Treffer:"
+
+#, fuzzy
+#~ msgid "Make Patch"
+#~ msgstr "Zielpfad:"
+
+#~ msgid "Export templates for this platform are missing:"
+#~ msgstr "Export-Templates für diese Systeme fehlen:"
+
+#, fuzzy
+#~ msgid "Export With Debug"
+#~ msgstr "Tileset exportieren"
+
+#, fuzzy
+#~ msgid "Pick a Viewport"
+#~ msgstr "Eine Ansicht"
+
+#, fuzzy
+#~ msgid "Show in File System"
+#~ msgstr "Dateisystem"
+
+#, fuzzy
+#~ msgid "Pick a Node"
+#~ msgstr "Wähle ein Node"
+
+#~ msgid "Select Property"
+#~ msgstr "Eigenschaft auswählen"
+
+#~ msgid "Select Method"
+#~ msgstr "Methode auswählen"
+
+#, fuzzy
+#~ msgid "Change Probe Extents"
+#~ msgstr "Ändere Ausmaße des Benachrichtigers"
+
 #~ msgid ""
 #~ "A node yielded without working memory, please read the docs on how to "
 #~ "yield properly!"
@@ -6790,8 +7054,30 @@ msgstr ""
 #~ msgid "just released"
 #~ msgstr "gerade losgelassen"
 
+#, fuzzy
+#~ msgid "Run in Browser"
+#~ msgstr "Durchstöbern"
+
+#~ msgid "Run exported HTML in the system's default browser."
+#~ msgstr ""
+#~ "Führe exportiertes HTML im Standard-Browser des Betriebssystems aus."
+
+#, fuzzy
+#~ msgid "Could not write file:\n"
+#~ msgstr "Konnte Kachel nicht finden:"
+
+#, fuzzy
+#~ msgid "Could not read file:\n"
+#~ msgstr "Konnte Kachel nicht finden:"
+
+#, fuzzy
+#~ msgid "Could not open template for export:\n"
+#~ msgstr "Ordner konnte nicht erstellt werden."
+
+#, fuzzy
 #~ msgid ""
-#~ "Couldn't read the certficate file. Are the path and password both correct?"
+#~ "Couldn't read the certificate file. Are the path and password both "
+#~ "correct?"
 #~ msgstr ""
 #~ "Zertifikat-Datei konnte nicht gelesen werden. Sind Pfad und Passwort "
 #~ "beide korrekt?"
@@ -6854,36 +7140,16 @@ msgstr ""
 #~ msgid "Path property must point to a valid Spatial node to work."
 #~ msgstr "Die Pfad-Eigenschaft muss auf ein gültiges Spatial-Node verweisen."
 
-#~ msgid "Property Description:"
-#~ msgstr "Eigenschaft-Beschreibung:"
-
-#~ msgid "Same as Target Scene"
-#~ msgstr "Dieselbe wie die Zielszene"
-
-#~ msgid "Shared"
-#~ msgstr "Geteilt"
-
-#~ msgid "Show Bones"
-#~ msgstr "Knochen anzeigen"
-
-#~ msgid "Close All"
-#~ msgstr "Alle schließen"
-
-#~ msgid "Pick Color"
-#~ msgstr "Farbe auswählen"
-
-#~ msgid "Theme"
-#~ msgstr "Motiv"
-
-#~ msgid "Select Property"
-#~ msgstr "Eigenschaft auswählen"
-
-#~ msgid "Select Method"
-#~ msgstr "Methode auswählen"
-
-#, fuzzy
-#~ msgid "Change Probe Extents"
-#~ msgstr "Ändere Ausmaße des Benachrichtigers"
+#~ msgid ""
+#~ "ScrollContainer is intended to work with a single child control.\n"
+#~ "Use a container as child (VBox,HBox,etc), or a Control and set the custom "
+#~ "minimum size manually."
+#~ msgstr ""
+#~ "ScrollContainer sollte mit einem einzigen Control-Unterobjekt verwendet "
+#~ "werden.\n"
+#~ "Um die Minimalgröße einzustellen sollte ein Behälter (VBox, HBox, …) oder "
+#~ "ein Control als Unterobjekt verwendet und dessen Minimalgröße eingestellt "
+#~ "werden."
 
 #~ msgid ""
 #~ "This item cannot be made visible because the parent is hidden. Unhide the "

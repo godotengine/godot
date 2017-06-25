@@ -1,6 +1,5 @@
 # Czech translation of the Godot Engine editor
-# Copyright (C) 2007-2017 Juan Linietsky, Ariel Manzur
-# Copyright (C) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)
+# Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
 # Jan 'spl!te' Kondelík <j.kondelik@centrum.cz>, 2016.
@@ -483,6 +482,7 @@ msgid "Next"
 msgstr "Další"
 
 #: editor/code_editor.cpp
+#, fuzzy
 msgid "Replaced %d ocurrence(s)."
 msgstr "Nahrazeno %d výskytů."
 
@@ -4863,12 +4863,14 @@ msgid "Please export outside the project folder!"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Error exporting project!"
-msgstr ""
+msgstr "Chyba nahrávání fontu."
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Error writing the project PCK!"
-msgstr ""
+msgstr "Chyba při vytváření podpisového objektu."
 
 #: editor/project_export.cpp
 msgid "No exporter for platform '%s' yet."
@@ -4884,8 +4886,9 @@ msgid "Full name"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Organizational unit"
-msgstr ""
+msgstr "Přechod"
 
 #: editor/project_export.cpp
 #, fuzzy
@@ -4940,20 +4943,23 @@ msgid "Include"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Change Image Group"
-msgstr ""
+msgstr "Změnit opakování animace"
 
 #: editor/project_export.cpp
 msgid "Group name can't be empty!"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Invalid character in group name!"
-msgstr ""
+msgstr "Neplatné jméno vlastnosti."
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Group name already exists!"
-msgstr ""
+msgstr "Autoload '%s' už existuje!"
 
 #: editor/project_export.cpp
 msgid "Add Image Group"
@@ -4968,8 +4974,9 @@ msgid "Atlas Preview"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Project Export Settings"
-msgstr ""
+msgstr "Nastavení projektu"
 
 #: editor/project_export.cpp
 msgid "Target"
@@ -5000,12 +5007,14 @@ msgid "Export Mode:"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Resources to Export:"
-msgstr ""
+msgstr "Průzkumník sirotků zdrojů"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Action"
-msgstr ""
+msgstr "Přidat funkci"
 
 #: editor/project_export.cpp
 msgid ""
@@ -5089,16 +5098,18 @@ msgid "Preview Atlas"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Image Filter:"
-msgstr ""
+msgstr "Filtr:"
 
 #: editor/project_export.cpp
 msgid "Images:"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Select None"
-msgstr ""
+msgstr "Vybrat vše"
 
 #: editor/project_export.cpp
 msgid "Group"
@@ -5133,8 +5144,9 @@ msgid "Trailing Silence:"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Script"
-msgstr ""
+msgstr "Spustit skript"
 
 #: editor/project_export.cpp
 msgid "Script Export Mode:"
@@ -5165,12 +5177,14 @@ msgid "Export Project PCK"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Export.."
-msgstr ""
+msgstr "Podpora.."
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Project Export"
-msgstr ""
+msgstr "Nastavení projektu"
 
 #: editor/project_export.cpp
 msgid "Export Preset:"
@@ -5482,8 +5496,9 @@ msgid "Remove Resource Remap Option"
 msgstr ""
 
 #: editor/project_settings.cpp
+#, fuzzy
 msgid "Project Settings (engine.cfg)"
-msgstr ""
+msgstr "Nastavení projektu"
 
 #: editor/project_settings.cpp editor/settings_config_dialog.cpp
 msgid "General"
@@ -6450,6 +6465,70 @@ msgstr ""
 "vnitřní texturu nějakému uzlu k zobrazení."
 
 #, fuzzy
+#~ msgid "Anim Track Change Wrap Mode"
+#~ msgstr "Animace: změna typu hodnot"
+
+#, fuzzy
+#~ msgid "Property Description:"
+#~ msgstr "Vytvořit odběr"
+
+#, fuzzy
+#~ msgid "Error creating path for templates:\n"
+#~ msgstr "Chyba při vytváření podpisového objektu."
+
+#, fuzzy
+#~ msgid "Remove Template"
+#~ msgstr "Odstranit výběr"
+
+#, fuzzy
+#~ msgid "Select template file"
+#~ msgstr "Odstranit vybrané soubory?"
+
+#, fuzzy
+#~ msgid " Files"
+#~ msgstr "Soubor:"
+
+#, fuzzy
+#~ msgid "Add Point to Line2D"
+#~ msgstr "Běž na řádek"
+
+#, fuzzy
+#~ msgid "Close All"
+#~ msgstr "Zavřít"
+
+#, fuzzy
+#~ msgid "Discard"
+#~ msgstr "Diskrétní"
+
+#, fuzzy
+#~ msgid "Runnable"
+#~ msgstr "Povolit"
+
+#, fuzzy
+#~ msgid "Delete patch '"
+#~ msgstr "Odstranit"
+
+#, fuzzy
+#~ msgid "Delete preset '%s'?"
+#~ msgstr "Odstranit vybrané soubory?"
+
+#, fuzzy
+#~ msgid "Patches"
+#~ msgstr "Shody:"
+
+#, fuzzy
+#~ msgid "Pick a Node"
+#~ msgstr "Vložit uzly"
+
+#, fuzzy
+#~ msgid "Select Property"
+#~ msgstr "Přidat vlastnost setter"
+
+#, fuzzy
+#~ msgid "Select Method"
+#~ msgstr "Vybrat vše"
+
+#, fuzzy
 #~ msgid ""
 #~ "A node yielded without working memory, please read the docs on how to "
 #~ "yield properly!"
@@ -6501,9 +6580,6 @@ msgstr ""
 
 #~ msgid "Rename Signal"
 #~ msgstr "Přejmenovat signál"
-
-#~ msgid "Add Function"
-#~ msgstr "Přidat funkci"
 
 #~ msgid "Add Variable"
 #~ msgstr "Přidat proměnnou"
@@ -6602,6 +6678,9 @@ msgstr ""
 #~ msgid "Find Node Type"
 #~ msgstr "Vyhledat typ uzlu"
 
+#~ msgid "Copy Nodes"
+#~ msgstr "Zkopírovat uzly"
+
 #~ msgid "Cut Nodes"
 #~ msgstr "Vyjmout uzly"
 
@@ -6616,9 +6695,6 @@ msgstr ""
 
 #~ msgid "Iterator became invalid: "
 #~ msgstr "Iterátor se stal neplatným: "
-
-#~ msgid "Invalid index property name."
-#~ msgstr "Neplatné jméno vlastnosti."
 
 #~ msgid "Base object is not a Node!"
 #~ msgstr "Základní objekt není Node!"
@@ -6657,13 +6733,24 @@ msgstr ""
 #~ msgid "just released"
 #~ msgstr "právě uvolněno"
 
+#, fuzzy
+#~ msgid "Could not write file:\n"
+#~ msgstr "Nelze vytvořit složku."
+
+#, fuzzy
+#~ msgid "Could not read file:\n"
+#~ msgstr "Nelze vytvořit složku."
+
+#, fuzzy
+#~ msgid "Could not open template for export:\n"
+#~ msgstr "Nelze vytvořit složku."
+
+#, fuzzy
 #~ msgid ""
-#~ "Couldn't read the certficate file. Are the path and password both correct?"
+#~ "Couldn't read the certificate file. Are the path and password both "
+#~ "correct?"
 #~ msgstr ""
 #~ "Nepodařilo se přečíst soubor certifikátu. Jsou cesta a heslo obě korektní?"
-
-#~ msgid "Error creating the signature object."
-#~ msgstr "Chyba při vytváření podpisového objektu."
 
 #~ msgid "Error creating the package signature."
 #~ msgstr "Chyba při vytváření podpisu balíčku."
@@ -6721,19 +6808,3 @@ msgstr ""
 #~ msgstr ""
 #~ "Aby ParticleAttractor2D fungoval, musí vlastnost path ukazovat na platný "
 #~ "uzel Particles2D."
-
-#, fuzzy
-#~ msgid "Property Description:"
-#~ msgstr "Vytvořit odběr"
-
-#, fuzzy
-#~ msgid "Close All"
-#~ msgstr "Zavřít"
-
-#, fuzzy
-#~ msgid "Select Property"
-#~ msgstr "Přidat vlastnost setter"
-
-#, fuzzy
-#~ msgid "Select Method"
-#~ msgstr "Vybrat vše"

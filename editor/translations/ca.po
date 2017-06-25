@@ -1,6 +1,5 @@
 # Catalan translation of the Godot Engine editor
-# Copyright (C) 2007-2017 Juan Linietsky, Ariel Manzur
-# Copyright (C) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)
+# Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
 # Roger BR <drai_kin@hotmail.com>, 2016.
@@ -483,6 +482,7 @@ msgid "Next"
 msgstr "Següent"
 
 #: editor/code_editor.cpp
+#, fuzzy
 msgid "Replaced %d ocurrence(s)."
 msgstr "Reemplaçades %d ocurrència/es."
 
@@ -3643,8 +3643,9 @@ msgid "Emission Fill:"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
 msgid "Surface"
-msgstr ""
+msgstr "Superfície %d"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Volume"
@@ -4913,20 +4914,23 @@ msgid "Error"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Edit Script Options"
-msgstr ""
+msgstr "Configuració de l'Editor"
 
 #: editor/project_export.cpp
 msgid "Please export outside the project folder!"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Error exporting project!"
-msgstr ""
+msgstr "Exporta Projecte"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Error writing the project PCK!"
-msgstr ""
+msgstr "No s'ha pogut l'objecte signatura."
 
 #: editor/project_export.cpp
 msgid "No exporter for platform '%s' yet."
@@ -4942,8 +4946,9 @@ msgid "Full name"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Organizational unit"
-msgstr ""
+msgstr "Transició"
 
 #: editor/project_export.cpp
 #, fuzzy
@@ -4996,76 +5001,90 @@ msgid "Fill Keystore/Release User and Release Password"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Include"
-msgstr ""
+msgstr "Inclusiu"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Change Image Group"
-msgstr ""
+msgstr "Canvia bucle"
 
 #: editor/project_export.cpp
 msgid "Group name can't be empty!"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Invalid character in group name!"
-msgstr ""
+msgstr "El Nom de la propietat index és invàlid."
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Group name already exists!"
-msgstr ""
+msgstr "l'AutoCàrrega '%s' ja existeix!"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Add Image Group"
-msgstr ""
+msgstr "Afegeix al Grup"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Delete Image Group"
-msgstr ""
+msgstr "Elimina Disposició (Layout)"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Atlas Preview"
-msgstr ""
+msgstr "Previsualització:"
 
 #: editor/project_export.cpp
 msgid "Project Export Settings"
 msgstr "Configuració d'Exportació de Projectes"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Target"
-msgstr ""
+msgstr "Camí de Destinació:"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Export to Platform"
-msgstr ""
+msgstr "Exporta el projecte a diverses plataformes."
 
 #: editor/project_export.cpp
 msgid "Resources"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Export selected resources (including dependencies)."
-msgstr ""
+msgstr "Importa actius al projecte."
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Export all resources in the project."
-msgstr ""
+msgstr "Importa actius al projecte."
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Export all files in the project directory."
-msgstr ""
+msgstr "Importa actius al projecte."
 
 #: editor/project_export.cpp
 msgid "Export Mode:"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Resources to Export:"
-msgstr ""
+msgstr "Cap malla per importar!"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Action"
-msgstr ""
+msgstr "Afegeix Funció"
 
 #: editor/project_export.cpp
 msgid ""
@@ -5089,8 +5108,9 @@ msgid "Keep Original"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Compress for Disk (Lossy, WebP)"
-msgstr ""
+msgstr "Compressió amb Pèrdua (WebP)"
 
 #: editor/project_export.cpp
 msgid "Compress for RAM (BC/PVRTC/ETC)"
@@ -5121,16 +5141,19 @@ msgid "Groups:"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Compress Disk"
-msgstr ""
+msgstr "Compressió (VRAM)"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Compress RAM"
-msgstr ""
+msgstr "Compressió (VRAM)"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Compress Mode:"
-msgstr ""
+msgstr "Compressió (VRAM)"
 
 #: editor/project_export.cpp
 msgid "Lossy Quality:"
@@ -5145,28 +5168,33 @@ msgid "Shrink By:"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Preview Atlas"
-msgstr ""
+msgstr "Previsualització:"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Image Filter:"
-msgstr ""
+msgstr "Filtre:"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Images:"
-msgstr ""
+msgstr "Importa Imatge:"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Select None"
-msgstr ""
+msgstr "Afegeix Col.locador de Proprietat (Setter)"
 
 #: editor/project_export.cpp
 msgid "Group"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Samples"
-msgstr ""
+msgstr "Mostra d'Àudio"
 
 #: editor/project_export.cpp
 msgid "Sample Conversion Mode: (.wav files):"
@@ -5177,8 +5205,9 @@ msgid "Keep"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Compress (RAM - IMA-ADPCM)"
-msgstr ""
+msgstr "Compressió (VRAM)"
 
 #: editor/project_export.cpp
 msgid "Sampling Rate Limit (Hz):"
@@ -5189,12 +5218,14 @@ msgid "Trim"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Trailing Silence:"
-msgstr ""
+msgstr "Desant Escena"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Script"
-msgstr ""
+msgstr "Executa Script"
 
 #: editor/project_export.cpp
 msgid "Script Export Mode:"
@@ -5217,36 +5248,43 @@ msgid "Script Encryption Key (256-bits as hex):"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Export PCK/Zip"
-msgstr ""
+msgstr "Exporta"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Export Project PCK"
-msgstr ""
+msgstr "Exporta Projecte"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Export.."
-msgstr ""
+msgstr "Exporta"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Project Export"
-msgstr ""
+msgstr "Configuració d'Exportació de Projectes"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Export Preset:"
-msgstr ""
+msgstr "Exporta Projecte"
 
 #: editor/project_manager.cpp
 msgid "Invalid project path, the path must exist!"
 msgstr ""
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid project path, engine.cfg must not exist."
-msgstr ""
+msgstr "El camí de Destinació ha d'existir."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid project path, engine.cfg must exist."
-msgstr ""
+msgstr "El camí de Destinació ha d'existir."
 
 #: editor/project_manager.cpp
 msgid "Imported Project"
@@ -5543,6 +5581,7 @@ msgid "Remove Resource Remap Option"
 msgstr ""
 
 #: editor/project_settings.cpp
+#, fuzzy
 msgid "Project Settings (engine.cfg)"
 msgstr "Configuració del Projecte (engine.cfg)"
 
@@ -6523,6 +6562,128 @@ msgstr ""
 "forma per tal d'obtenir-ne la mida. Altrament, establiu-la com a Destinació "
 "de Renderització i assigneu-ne la textura interna a algun node."
 
+#, fuzzy
+#~ msgid "Anim Track Change Wrap Mode"
+#~ msgstr "Canvia Valor del Mode de Pista"
+
+#, fuzzy
+#~ msgid "(Re)Importing Assets"
+#~ msgstr "Re-Importació"
+
+#, fuzzy
+#~ msgid "Property Description:"
+#~ msgstr "Descripció breu:"
+
+#, fuzzy
+#~ msgid "Manage Export Templates"
+#~ msgstr "Carregant Plantilles d'Exportació"
+
+#, fuzzy
+#~ msgid "(Installed)"
+#~ msgstr "Instància"
+
+#, fuzzy
+#~ msgid "Error creating path for templates:\n"
+#~ msgstr "Error en desar atles:"
+
+#, fuzzy
+#~ msgid "Extracting Export Templates"
+#~ msgstr "Carregant Plantilles d'Exportació"
+
+#, fuzzy
+#~ msgid "Current Version:"
+#~ msgstr "Versió:"
+
+#, fuzzy
+#~ msgid "Installed Versions:"
+#~ msgstr "Connectors Instal·lats:"
+
+#, fuzzy
+#~ msgid "Remove Template"
+#~ msgstr "Treu la Selecció"
+
+#, fuzzy
+#~ msgid "Select template file"
+#~ msgstr "Esborra fitxers seleccionats?"
+
+#, fuzzy
+#~ msgid "Export Template Manager"
+#~ msgstr "Carregant Plantilles d'Exportació"
+
+#, fuzzy
+#~ msgid " Files"
+#~ msgstr "Fitxer:"
+
+#, fuzzy
+#~ msgid "Import As:"
+#~ msgstr "Importa"
+
+#, fuzzy
+#~ msgid "Reimport"
+#~ msgstr "ReImporta"
+
+#~ msgid "Same as Target Scene"
+#~ msgstr "Igual que l'Escena de Destinació"
+
+#~ msgid "Shared"
+#~ msgstr "Compartit"
+
+#, fuzzy
+#~ msgid "Add Point to Line2D"
+#~ msgstr "Vés a la Línia"
+
+#, fuzzy
+#~ msgid "Surface Points"
+#~ msgstr "Superfície %d"
+
+#, fuzzy
+#~ msgid "Close All"
+#~ msgstr "Tanca"
+
+#, fuzzy
+#~ msgid "Discard"
+#~ msgstr "Discret"
+
+#, fuzzy
+#~ msgid "Runnable"
+#~ msgstr "Activa"
+
+#, fuzzy
+#~ msgid "Delete patch '"
+#~ msgstr "Elimina Disposició (Layout)"
+
+#, fuzzy
+#~ msgid "Delete preset '%s'?"
+#~ msgstr "Esborra fitxers seleccionats?"
+
+#, fuzzy
+#~ msgid "Patches"
+#~ msgstr "Coincidències:"
+
+#, fuzzy
+#~ msgid "Make Patch"
+#~ msgstr "Camí de Destinació:"
+
+#, fuzzy
+#~ msgid "Export With Debug"
+#~ msgstr "Exporta el joc de Mosaics (Tiles)"
+
+#, fuzzy
+#~ msgid "Pick a Viewport"
+#~ msgstr "1 Vista"
+
+#, fuzzy
+#~ msgid "Show in File System"
+#~ msgstr "SistemaDeFitxers"
+
+#, fuzzy
+#~ msgid "Pick a Node"
+#~ msgstr "Camí al Node:"
+
+#, fuzzy
+#~ msgid "Select Method"
+#~ msgstr "Mètodes públics:"
+
 #~ msgid ""
 #~ "A node yielded without working memory, please read the docs on how to "
 #~ "yield properly!"
@@ -6575,9 +6736,6 @@ msgstr ""
 
 #~ msgid "Rename Signal"
 #~ msgstr "Reanomena Senyal"
-
-#~ msgid "Add Function"
-#~ msgstr "Afegeix Funció"
 
 #~ msgid "Add Variable"
 #~ msgstr "Afegeix Variable"
@@ -6708,9 +6866,6 @@ msgstr ""
 #~ msgid "Iterator became invalid: "
 #~ msgstr "L'Iterador ha esdevingut invàlid: "
 
-#~ msgid "Invalid index property name."
-#~ msgstr "El Nom de la propietat index és invàlid."
-
 #~ msgid "Base object is not a Node!"
 #~ msgstr "L'objecte de Base no és un Node!"
 
@@ -6750,14 +6905,25 @@ msgstr ""
 #~ msgid "just released"
 #~ msgstr "alliberat"
 
+#, fuzzy
+#~ msgid "Could not write file:\n"
+#~ msgstr "No s'ha pogut crear la carpeta."
+
+#, fuzzy
+#~ msgid "Could not read file:\n"
+#~ msgstr "No s'ha pogut crear la carpeta."
+
+#, fuzzy
+#~ msgid "Could not open template for export:\n"
+#~ msgstr "No s'ha pogut crear la carpeta."
+
+#, fuzzy
 #~ msgid ""
-#~ "Couldn't read the certficate file. Are the path and password both correct?"
+#~ "Couldn't read the certificate file. Are the path and password both "
+#~ "correct?"
 #~ msgstr ""
 #~ "No s'ha pogut llegir el certificat. Comproveu que tant el camí com la "
 #~ "contrasenya són correctes"
-
-#~ msgid "Error creating the signature object."
-#~ msgstr "No s'ha pogut l'objecte signatura."
 
 #~ msgid "Error creating the package signature."
 #~ msgstr "No s'ha pogut crear el paquet signatura."
@@ -6821,28 +6987,6 @@ msgstr ""
 #~ msgstr ""
 #~ "Cal que la propietat Camí (Path) assenyali cap a un node Particles2D "
 #~ "vàlid."
-
-#, fuzzy
-#~ msgid "Property Description:"
-#~ msgstr "Descripció breu:"
-
-#~ msgid "Same as Target Scene"
-#~ msgstr "Igual que l'Escena de Destinació"
-
-#~ msgid "Shared"
-#~ msgstr "Compartit"
-
-#, fuzzy
-#~ msgid "Close All"
-#~ msgstr "Tanca"
-
-#, fuzzy
-#~ msgid "Select Property"
-#~ msgstr "Afegeix Col.locador de Proprietat (Setter)"
-
-#, fuzzy
-#~ msgid "Select Method"
-#~ msgstr "Mètodes públics:"
 
 #~ msgid ""
 #~ "Paths cannot start with '/', absolute paths must start with 'res://', "

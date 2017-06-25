@@ -1,6 +1,5 @@
 # Spanish (Argentina) translation of the Godot Engine editor
-# Copyright (C) 2007-2017 Juan Linietsky, Ariel Manzur
-# Copyright (C) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)
+# Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
 # Lisandro Lorea <lisandrolorea@gmail.com>, 2016-2017.
@@ -11,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2017-01-09 23:10+0000\n"
+"PO-Revision-Date: 2017-04-17 00:30+0000\n"
 "Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
@@ -20,7 +19,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.11-dev\n"
+"X-Generator: Weblate 2.14-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -486,8 +485,9 @@ msgid "Next"
 msgstr "Siguiente"
 
 #: editor/code_editor.cpp
+#, fuzzy
 msgid "Replaced %d ocurrence(s)."
-msgstr "%d Ocurrencia(s) Reemplazadas."
+msgstr "%d ocurrencia(s) Reemplazadas."
 
 #: editor/code_editor.cpp
 msgid "Not found!"
@@ -1160,11 +1160,11 @@ msgstr "Error guardando TileSet!"
 
 #: editor/editor_node.cpp
 msgid "Can't open export templates zip."
-msgstr "No se puede abir el zip de templates de exportación."
+msgstr "No se puede abir el zip de plantillas de exportación."
 
 #: editor/editor_node.cpp
 msgid "Loading Export Templates"
-msgstr "Cargando Templates de Exportación"
+msgstr "Cargando Plantillas de Exportación"
 
 #: editor/editor_node.cpp
 msgid "Error trying to save layout!"
@@ -1412,9 +1412,8 @@ msgid "Previous tab"
 msgstr "Pestaña anterior"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Filter Files.."
-msgstr "Filtrado Rápido de Archivos.."
+msgstr "Filtrar Archivos.."
 
 #: editor/editor_node.cpp
 msgid "Operations with scene files."
@@ -1768,7 +1767,7 @@ msgstr "Gracias!"
 
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
-msgstr "Importar Templates Desde Archivo ZIP"
+msgstr "Importar Plantillas Desde Archivo ZIP"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
@@ -2612,8 +2611,9 @@ msgid "Compress"
 msgstr "Comprimir"
 
 #: editor/io_plugins/editor_translation_import_plugin.cpp
+#, fuzzy
 msgid "Add to Project (engine.cfg)"
-msgstr "Agregar al Proyecto (engine.cfg)"
+msgstr "Agregar al Proyecto (godot.cfg)"
 
 #: editor/io_plugins/editor_translation_import_plugin.cpp
 msgid "Import Languages:"
@@ -2652,9 +2652,8 @@ msgid "Change Animation Name:"
 msgstr "Cambiar Nombre de Animación:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Delete Animation?"
-msgstr "Duplicar Animación"
+msgstr "Eliminar Animación?"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -3062,7 +3061,7 @@ msgstr "Editar CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change Anchors"
-msgstr "Cambiar Anchors"
+msgstr "Cambiar Anclas"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom (%):"
@@ -3631,12 +3630,14 @@ msgid "Generate AABB"
 msgstr "Generar AABB"
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
 msgid "Create Emitter From Mesh"
-msgstr "Crear Emisor desde Mesh"
+msgstr "Crear Puntos de Emisión desde Mesh"
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
 msgid "Create Emitter From Node"
-msgstr "Crear Emisor desde Nodo"
+msgstr "Crear Puntos de Emisión Desde Nodo"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Clear Emitter"
@@ -3647,12 +3648,14 @@ msgid "Create Emitter"
 msgstr "Crear Emisor"
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
 msgid "Emission Positions:"
-msgstr "Posiciones de Emisión:"
+msgstr "Puntos de Emisión:"
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
 msgid "Emission Fill:"
-msgstr "Relleno de Emisión:"
+msgstr "Puntos de Emisión:"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Surface"
@@ -4543,7 +4546,7 @@ msgstr "4 Viewports"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Normal"
-msgstr "Mostrar Normales"
+msgstr "Mostrar Normal"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Wireframe"
@@ -4764,11 +4767,11 @@ msgstr "Quitar Items de Clases"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Create Empty Template"
-msgstr "Crear Template Vacío"
+msgstr "Crear Plantilla Vacía"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Create Empty Editor Template"
-msgstr "Crear Template de Editor Vacío"
+msgstr "Crear Plantilla de Editor Vacía"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "CheckBox Radio1"
@@ -5056,12 +5059,14 @@ msgid "Resources"
 msgstr "Recursos"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Export selected resources (including dependencies)."
-msgstr "Exportar los recursos seleccionado (incluyendo dependencias)."
+msgstr "Exportar ecursos seleccionados (y dependencias)"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Export all resources in the project."
-msgstr "Exportar todos los recursos en el proyecto."
+msgstr "Exportar todos los recursos en el proyecto"
 
 #: editor/project_export.cpp
 msgid "Export all files in the project directory."
@@ -5072,25 +5077,28 @@ msgid "Export Mode:"
 msgstr "Modo de Exportación:"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Resources to Export:"
-msgstr "Recursos a Exportar:"
+msgstr "Recursos a exportar:"
 
 #: editor/project_export.cpp
 msgid "Action"
 msgstr "Acción"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid ""
 "Filters to export non-resource files (comma-separated, e.g.: *.json, *.txt):"
 msgstr ""
 "Filtros para exportar archivos que no son recursos (separados por comas, ej: "
-"*.json, *.txt):"
+"*.json, *.txt)"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Filters to exclude from export (comma-separated, e.g.: *.json, *.txt):"
 msgstr ""
-"Filtros para excluir de la exportación (separados por comas, ej: *.json, *."
-"txt):"
+"Filtros para excluir archivos del proyecto (separados por comas, ej: *.json, "
+"*.txt)"
 
 #: editor/project_export.cpp
 msgid "Convert text scenes to binary on export."
@@ -5257,12 +5265,14 @@ msgid "Invalid project path, the path must exist!"
 msgstr "Ruta de proyecto inválida, la ruta debe existir!"
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid project path, engine.cfg must not exist."
-msgstr "Ruta de proyecto inválida, engine.cfg no debe existir."
+msgstr "Ruta de proyecto inválida, godot.cfg no debe existir."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid project path, engine.cfg must exist."
-msgstr "Ruta de proyecto inválida, engine.cfg debe existir."
+msgstr "Ruta de proyecto inválida, godot.cfg debe existir."
 
 #: editor/project_manager.cpp
 msgid "Imported Project"
@@ -5273,8 +5283,9 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Ruta de proyecto inválida (cambiaste algo?)."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Couldn't create engine.cfg in project path."
-msgstr "No se pudo crear engine.cfg en la ruta de proyecto."
+msgstr "No se pudo crear godot.cfg en la ruta de proyecto."
 
 #: editor/project_manager.cpp
 msgid "The following files failed extraction from package:"
@@ -5474,16 +5485,18 @@ msgid "Button 9"
 msgstr "Botón 9"
 
 #: editor/project_settings.cpp
+#, fuzzy
 msgid "Joystick Axis Index:"
-msgstr "Indice de Ejes de Joystick:"
+msgstr "Indice del Eje del Gamepad:"
 
 #: editor/project_settings.cpp scene/gui/input_action.cpp
 msgid "Axis"
 msgstr "Eje"
 
 #: editor/project_settings.cpp
+#, fuzzy
 msgid "Joystick Button Index:"
-msgstr "Indice de Botones de Joystick:"
+msgstr "Indice del Boton del Gamepad:"
 
 #: editor/project_settings.cpp
 msgid "Add Input Action"
@@ -5562,8 +5575,9 @@ msgid "Remove Resource Remap Option"
 msgstr "Remover Opción de Remapeo de Recursos"
 
 #: editor/project_settings.cpp
+#, fuzzy
 msgid "Project Settings (engine.cfg)"
-msgstr "Ajustes de Proyecto (engine.cfg)"
+msgstr "Configuración de Proyecto (godot.cfg)"
 
 #: editor/project_settings.cpp editor/settings_config_dialog.cpp
 msgid "General"
@@ -5828,7 +5842,7 @@ msgstr "Esta operación no puede hacerse sin una escena."
 
 #: editor/scene_tree_dock.cpp
 msgid "Can not perform with the root node."
-msgstr ""
+msgstr "No se puede realizar sobre el nodo raíz."
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on instanced scenes."
@@ -5912,9 +5926,8 @@ msgid "Save Branch as Scene"
 msgstr "Guardar Rama como Escena"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Copy Node Path"
-msgstr "Copiar Ruta"
+msgstr "Copiar Ruta del Nodo"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete (No Confirm)"
@@ -6538,12 +6551,216 @@ msgstr ""
 "que pueda obtener un tamaño. Alternativamente, hacelo un RenderTarget y "
 "asigná su textura interna a algún otro nodo para mostrar."
 
+#~ msgid "Anim Track Change Wrap Mode"
+#~ msgstr "Cambiar Modo de Envoltura de Track de Anim"
+
+#~ msgid "Save Audio Bus Layout As.."
+#~ msgstr "Guardar Layout de Bus de Audio Como.."
+
+#~ msgid "Location for New Layout.."
+#~ msgstr "Ubicación para el Nuevo Layout.."
+
+#~ msgid "Open Audio Bus Layout"
+#~ msgstr "Abrir Layout de Bus de Audio"
+
+#~ msgid "Add Bus"
+#~ msgstr "Agregar Bus"
+
+#~ msgid "Template file not found:\n"
+#~ msgstr "Plantilla no encontrada:\n"
+
+#~ msgid "(Re)Importing Assets"
+#~ msgstr "(Re)Importando Assets"
+
+#~ msgid "Property Description:"
+#~ msgstr "Descripción de Propiedad:"
+
+#~ msgid ""
+#~ "Scene '%s' was automatically imported, so it can't be modified.\n"
+#~ "To make changes to it, a new inherited scene can be created."
+#~ msgstr ""
+#~ "La escena '%s' fue importada automaticamente, por lo tanto no puede ser "
+#~ "modificada.\n"
+#~ "Para realizar cambios, se debe crear una nueva escena heredada."
+
+#~ msgid "Manage Export Templates"
+#~ msgstr "Gestionar Plantillas de Exportación"
+
+#~ msgid "Re-Download"
+#~ msgstr "Volver a Descargar"
+
+#~ msgid "Uninstall"
+#~ msgstr "Desinstalar"
+
+#~ msgid "(Installed)"
+#~ msgstr "(Instalado)"
+
+#~ msgid "Download"
+#~ msgstr "Descargar"
+
+#~ msgid "(Missing)"
+#~ msgstr "(Faltante)"
+
+#~ msgid "(Current)"
+#~ msgstr "(Actual)"
+
+#~ msgid "Remove template version '%s'?"
+#~ msgstr "Quitar plantilla version '%s'?"
+
+#~ msgid "Invalid version.txt format inside templates."
+#~ msgstr "Formato de version.txt invalido dentro de plantillas."
+
+#~ msgid ""
+#~ "Invalid version.txt format inside templates. Revision is not a valid "
+#~ "identifier."
+#~ msgstr ""
+#~ "Formato de version.txt invalido dentro de plantillas. Revision no es un "
+#~ "identificador valido."
+
+#~ msgid "No version.txt found inside templates."
+#~ msgstr "No se encontro ningún version.txt dentro de las plantillas."
+
+#~ msgid "Error creating path for templates:\n"
+#~ msgstr "Error creando ruta para las plantillas:\n"
+
+#~ msgid "Extracting Export Templates"
+#~ msgstr "Extrayendo Plantillas de Exportación"
+
+#~ msgid "Current Version:"
+#~ msgstr "Version Actual:"
+
+#~ msgid "Installed Versions:"
+#~ msgstr "Versiones Instaladas:"
+
+#~ msgid "Install From File"
+#~ msgstr "Instalar Desde Archivo"
+
+#~ msgid "Remove Template"
+#~ msgstr "Remover Plantilla"
+
+#~ msgid "Select template file"
+#~ msgstr "Elegir archivo de plantilla"
+
+#~ msgid "Export Template Manager"
+#~ msgstr "Gestor de Plantillas de Exportación"
+
+#~ msgid "Cannot navigate to '"
+#~ msgstr "No se puede navegar a '"
+
+#~ msgid "Expand all"
+#~ msgstr "Expandir todos"
+
+#~ msgid "Collapse all"
+#~ msgstr "Colapsar todos"
+
+#~ msgid " Files"
+#~ msgstr " Archivos"
+
+#~ msgid "Import As:"
+#~ msgstr "Importar Como:"
+
+#~ msgid "Reimport"
+#~ msgstr "Reimportar"
+
+#~ msgid "Same as Target Scene"
+#~ msgstr "Igual que Escena de Destino"
+
+#~ msgid "Shared"
+#~ msgstr "Compartido"
+
+#~ msgid "Show Bones"
+#~ msgstr "Mostrar Huesos"
+
+#~ msgid "Modify Curve"
+#~ msgstr "Modificar Curva"
+
+#~ msgid "Remove Point from Line2D"
+#~ msgstr "Remover Punto de Line2D"
+
+#~ msgid "Add Point to Line2D"
+#~ msgstr "Agregar Punto a Line2D"
+
+#~ msgid "Move Point in Line2D"
+#~ msgstr "Mover Punto en Line2D"
+
+#~ msgid "Split Segment (in line)"
+#~ msgstr "Partir Segmento (en línea)"
+
+#~ msgid "A processor material of type 'ParticlesMaterial' is required."
+#~ msgstr "Se requiere un material procesador de tipo 'ParticlesMaterial'."
+
+#~ msgid "Surface Points"
+#~ msgstr "Puntos de Superficie"
+
+#~ msgid "Surface Points+Normal (Directed)"
+#~ msgstr "Puntos de Superficia+Normal (Dirigida)"
+
+#~ msgid "Emission Source: "
+#~ msgstr "Fuente de Emisión: "
+
+#~ msgid "Close All"
+#~ msgstr "Cerrar Todos"
+
+#~ msgid "Discard"
+#~ msgstr "Descartar"
+
+#~ msgid "Pick Color"
+#~ msgstr "Elegir Color"
+
+#~ msgid "Theme"
+#~ msgstr "Tema"
+
+#~ msgid "Runnable"
+#~ msgstr "Ejecutable"
+
+#~ msgid "Delete patch '"
+#~ msgstr "Eliminar parche '"
+
+#~ msgid "Delete preset '%s'?"
+#~ msgstr "Eliminar preset '%s'?"
+
+#~ msgid "Presets"
+#~ msgstr "Presets"
+
+#~ msgid "Export selected scenes (and dependencies)"
+#~ msgstr "Exportar escenas seleccionadas (y dependencias)"
+
+#~ msgid "Patches"
+#~ msgstr "Parches"
+
+#~ msgid "Make Patch"
+#~ msgstr "Crear Parche"
+
+#~ msgid "Export templates for this platform are missing:"
+#~ msgstr "Faltan las plantillas de exportación para esta plataforma:"
+
+#~ msgid "Export With Debug"
+#~ msgstr "Exportar Como Debug"
+
+#~ msgid "Pick a Viewport"
+#~ msgstr "Seleccionar un Viewport"
+
+#~ msgid "Show in File System"
+#~ msgstr "Mostrar en Sistema de Archivos"
+
+#~ msgid "Pick a Node"
+#~ msgstr "Seleccionar un Nodo"
+
+#~ msgid "Select Property"
+#~ msgstr "Seleccionar Propiedad"
+
+#~ msgid "Select Method"
+#~ msgstr "Seleccionar Método"
+
+#~ msgid "Change Probe Extents"
+#~ msgstr "Cambiar Extensión de Sonda"
+
 #~ msgid ""
 #~ "A node yielded without working memory, please read the docs on how to "
 #~ "yield properly!"
 #~ msgstr ""
-#~ "Un nodo rindió(yielded) sin memoria de trabajo, por favor lee los docs "
-#~ "sobre como usar yield correctamente!"
+#~ "Un nodo realizó un yield sin memoria de trabajo, por favor leé la "
+#~ "documentacion sobre como usar yield correctamente!"
 
 #~ msgid ""
 #~ "Node yielded, but did not return a function state in the first working "
@@ -6760,8 +6977,24 @@ msgstr ""
 #~ msgid "just released"
 #~ msgstr "recién soltado"
 
+#~ msgid "Run in Browser"
+#~ msgstr "Ejecutar en el Navegador"
+
+#~ msgid "Run exported HTML in the system's default browser."
+#~ msgstr "Ejecutar HTML exportado en el navegador por defecto del sistema."
+
+#~ msgid "Could not write file:\n"
+#~ msgstr "No se pudo escribir el archivo:\n"
+
+#~ msgid "Could not read file:\n"
+#~ msgstr "No se pudo leer el archivo:\n"
+
+#~ msgid "Could not open template for export:\n"
+#~ msgstr "No se pudo abrir la plantilla para exportar:\n"
+
 #~ msgid ""
-#~ "Couldn't read the certficate file. Are the path and password both correct?"
+#~ "Couldn't read the certificate file. Are the path and password both "
+#~ "correct?"
 #~ msgstr ""
 #~ "No se pudo leer el archivo de certificado. Son tanto la ruta como el "
 #~ "password correctos?"
@@ -6776,8 +7009,8 @@ msgstr ""
 #~ "No export templates found.\n"
 #~ "Download and install export templates."
 #~ msgstr ""
-#~ "No se encontraron export templates.\n"
-#~ "Descargá o instalá export templates."
+#~ "No se encontraron plantillas de exportación.\n"
+#~ "Descargá o instalá plantillas de exportación."
 
 #~ msgid "Custom debug package not found."
 #~ msgstr "Paquete debug personalizado no encontrado."
@@ -6834,35 +7067,14 @@ msgstr ""
 #~ msgstr ""
 #~ "La propiedad Path debe apuntar a un nodo Spatial valido para funcionar."
 
-#~ msgid "Property Description:"
-#~ msgstr "Descripción de Propiedad:"
-
-#~ msgid "Same as Target Scene"
-#~ msgstr "Igual que Escena de Destino"
-
-#~ msgid "Shared"
-#~ msgstr "Compartido"
-
-#~ msgid "Show Bones"
-#~ msgstr "Mostrar Huesos"
-
-#~ msgid "Close All"
-#~ msgstr "Cerrar Todos"
-
-#~ msgid "Pick Color"
-#~ msgstr "Elegir Color"
-
-#~ msgid "Theme"
-#~ msgstr "Tema"
-
-#~ msgid "Select Property"
-#~ msgstr "Seleccionar Propiedad"
-
-#~ msgid "Select Method"
-#~ msgstr "Seleccionar Método"
-
-#~ msgid "Change Probe Extents"
-#~ msgstr "Cambiar Extensión de Sonda"
+#~ msgid ""
+#~ "ScrollContainer is intended to work with a single child control.\n"
+#~ "Use a container as child (VBox,HBox,etc), or a Control and set the custom "
+#~ "minimum size manually."
+#~ msgstr ""
+#~ "ScrollContainer esta diseñado para trabajan con un unico control hijo.\n"
+#~ "Usá un container como hijo (VBox, HBox, etc), o un Control y seteá el "
+#~ "tamaño mínimo personalizado de forma manual."
 
 #~ msgid ""
 #~ "This item cannot be made visible because the parent is hidden. Unhide the "

@@ -1,6 +1,5 @@
 # Danish translation of the Godot Engine editor
-# Copyright (C) 2007-2017 Juan Linietsky, Ariel Manzur
-# Copyright (C) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)
+# Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
 # David Lamhauge <davidlamhauge@gmail.com>, 2016.
@@ -481,6 +480,7 @@ msgid "Next"
 msgstr "Næste"
 
 #: editor/code_editor.cpp
+#, fuzzy
 msgid "Replaced %d ocurrence(s)."
 msgstr "Erstattede %d tilfælde."
 
@@ -4855,8 +4855,9 @@ msgid "Please export outside the project folder!"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Error exporting project!"
-msgstr ""
+msgstr "Error loading skrifttype."
 
 #: editor/project_export.cpp
 msgid "Error writing the project PCK!"
@@ -4876,8 +4877,9 @@ msgid "Full name"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Organizational unit"
-msgstr ""
+msgstr "Overgang"
 
 #: editor/project_export.cpp
 #, fuzzy
@@ -4931,16 +4933,18 @@ msgid "Include"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Change Image Group"
-msgstr ""
+msgstr "Ændre Anim løkke"
 
 #: editor/project_export.cpp
 msgid "Group name can't be empty!"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Invalid character in group name!"
-msgstr ""
+msgstr "Ugyldigt index egenskabsnavn."
 
 #: editor/project_export.cpp
 msgid "Group name already exists!"
@@ -4995,8 +4999,9 @@ msgid "Resources to Export:"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Action"
-msgstr ""
+msgstr "Tilføj Funktion"
 
 #: editor/project_export.cpp
 msgid ""
@@ -5080,16 +5085,18 @@ msgid "Preview Atlas"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Image Filter:"
-msgstr ""
+msgstr "Filter:"
 
 #: editor/project_export.cpp
 msgid "Images:"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Select None"
-msgstr ""
+msgstr "Tilføj Setter Egenskab"
 
 #: editor/project_export.cpp
 msgid "Group"
@@ -5124,8 +5131,9 @@ msgid "Trailing Silence:"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Script"
-msgstr ""
+msgstr "Opret abonnement"
 
 #: editor/project_export.cpp
 msgid "Script Export Mode:"
@@ -5156,8 +5164,9 @@ msgid "Export Project PCK"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Export.."
-msgstr ""
+msgstr "Støtte..."
 
 #: editor/project_export.cpp
 msgid "Project Export"
@@ -6438,6 +6447,50 @@ msgstr ""
 "den kan opnå en størrelse. Ellers gør den til en RenderTarget og tildel dens "
 "indre textur til en node så den kan vises."
 
+#, fuzzy
+#~ msgid "Anim Track Change Wrap Mode"
+#~ msgstr "Anim spor Skift værdi Mode"
+
+#, fuzzy
+#~ msgid "Property Description:"
+#~ msgstr "Opret abonnement"
+
+#, fuzzy
+#~ msgid "Remove Template"
+#~ msgstr "Fjern markering"
+
+#, fuzzy
+#~ msgid "Select template file"
+#~ msgstr "Vælg alle"
+
+#, fuzzy
+#~ msgid " Files"
+#~ msgstr "Fil:"
+
+#, fuzzy
+#~ msgid "Add Point to Line2D"
+#~ msgstr "Gå til linje"
+
+#, fuzzy
+#~ msgid "Close All"
+#~ msgstr "Luk"
+
+#, fuzzy
+#~ msgid "Discard"
+#~ msgstr "Diskret"
+
+#, fuzzy
+#~ msgid "Patches"
+#~ msgstr "Matches:"
+
+#, fuzzy
+#~ msgid "Pick a Node"
+#~ msgstr "Sti til Node:"
+
+#, fuzzy
+#~ msgid "Select Method"
+#~ msgstr "Vælg alle"
+
 #~ msgid ""
 #~ "A node yielded without working memory, please read the docs on how to "
 #~ "yield properly!"
@@ -6488,9 +6541,6 @@ msgstr ""
 
 #~ msgid "Rename Signal"
 #~ msgstr "Omdøb Signal"
-
-#~ msgid "Add Function"
-#~ msgstr "Tilføj Funktion"
 
 #~ msgid "Add Variable"
 #~ msgstr "Tilføj variabel"
@@ -6579,9 +6629,6 @@ msgstr ""
 #~ msgid "Iterator became invalid: "
 #~ msgstr "Iterator blev ugyldig: "
 
-#~ msgid "Invalid index property name."
-#~ msgstr "Ugyldigt index egenskabsnavn."
-
 #~ msgid "Base object is not a Node!"
 #~ msgstr "Base-objekt er ikke en Node!"
 
@@ -6615,6 +6662,18 @@ msgstr ""
 #~ "streng (fejl)."
 
 #, fuzzy
+#~ msgid "Could not write file:\n"
+#~ msgstr "Kunne ikke oprette mappe."
+
+#, fuzzy
+#~ msgid "Could not read file:\n"
+#~ msgstr "Kunne ikke oprette mappe."
+
+#, fuzzy
+#~ msgid "Could not open template for export:\n"
+#~ msgstr "Kunne ikke oprette mappe."
+
+#, fuzzy
 #~ msgid "Invalid unique name."
 #~ msgstr "Ugyldigt index egenskabsnavn."
 
@@ -6626,22 +6685,6 @@ msgstr ""
 #~ msgid "Path property must point to a valid Spatial node to work."
 #~ msgstr ""
 #~ "Egenskaben Path skal pege på en gyldig Particles2D node for at virke."
-
-#, fuzzy
-#~ msgid "Property Description:"
-#~ msgstr "Opret abonnement"
-
-#, fuzzy
-#~ msgid "Close All"
-#~ msgstr "Luk"
-
-#, fuzzy
-#~ msgid "Select Property"
-#~ msgstr "Tilføj Setter Egenskab"
-
-#, fuzzy
-#~ msgid "Select Method"
-#~ msgstr "Vælg alle"
 
 #~ msgid ""
 #~ "Custom node has no _get_output_port_unsequenced(idx,wmem), but "

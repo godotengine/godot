@@ -1,6 +1,5 @@
 # Korean translation of the Godot Engine editor
-# Copyright (C) 2007-2017 Juan Linietsky, Ariel Manzur
-# Copyright (C) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)
+# Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
 # 박한얼 (volzhs) <volzhs@gmail.com>, 2016-2017.
@@ -483,6 +482,7 @@ msgid "Next"
 msgstr "다음"
 
 #: editor/code_editor.cpp
+#, fuzzy
 msgid "Replaced %d ocurrence(s)."
 msgstr "%d 회 변경됨."
 
@@ -2596,6 +2596,7 @@ msgid "Compress"
 msgstr "압축"
 
 #: editor/io_plugins/editor_translation_import_plugin.cpp
+#, fuzzy
 msgid "Add to Project (engine.cfg)"
 msgstr "프로젝트에 추가 (engine.cfg)"
 
@@ -3609,10 +3610,12 @@ msgid "Generate AABB"
 msgstr "AABB 생성"
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
 msgid "Create Emitter From Mesh"
 msgstr "메쉬로부터 에미터 만들기"
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
 msgid "Create Emitter From Node"
 msgstr "노드로부터 에미터 만들기"
 
@@ -3625,12 +3628,14 @@ msgid "Create Emitter"
 msgstr "에미터 만들기"
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
 msgid "Emission Positions:"
 msgstr "에미션 위치:"
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
 msgid "Emission Fill:"
-msgstr "에미션 채움:"
+msgstr "에미션 위치:"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Surface"
@@ -4932,8 +4937,9 @@ msgid "Full name"
 msgstr "성명"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Organizational unit"
-msgstr ""
+msgstr "조직"
 
 #: editor/project_export.cpp
 msgid "Organization"
@@ -5030,10 +5036,12 @@ msgid "Resources"
 msgstr "리소스"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Export selected resources (including dependencies)."
 msgstr "선택된 리소스 내보내기 (종속된 리소스 포함)."
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Export all resources in the project."
 msgstr "프로젝트의 모든 리소스 내보내기."
 
@@ -5046,6 +5054,7 @@ msgid "Export Mode:"
 msgstr "내보내기 모드:"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Resources to Export:"
 msgstr "내보낼 리소스:"
 
@@ -5054,11 +5063,13 @@ msgid "Action"
 msgstr "액션"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid ""
 "Filters to export non-resource files (comma-separated, e.g.: *.json, *.txt):"
 msgstr "내보내기 시, 포함시킬 파일 (콤마로 구분, 예: *.json, *.txt):"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Filters to exclude from export (comma-separated, e.g.: *.json, *.txt):"
 msgstr "내보내기 시, 제외시킬 파일 (콤마로 구분, 예: *.json, *.txt):"
 
@@ -5227,10 +5238,12 @@ msgid "Invalid project path, the path must exist!"
 msgstr "프로젝트 경로가 유효하지 않습니다. 경로가 반드시 존재해야 합니다!"
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid project path, engine.cfg must not exist."
 msgstr "프로젝트 경로가 유효하지 않습니다. engine.cfg가 있으면 안됩니다."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid project path, engine.cfg must exist."
 msgstr "프로젝트 경로가 유효하지 않습니다. engine.cfg가 존재해야합니다."
 
@@ -5243,6 +5256,7 @@ msgid "Invalid project path (changed anything?)."
 msgstr "유효하지 않은 프로젝트 경로 (뭔가 변경하신 거라도?)."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Couldn't create engine.cfg in project path."
 msgstr "프로젝트 경로에 engine.cfg를 생성할 수 없습니다."
 
@@ -5441,6 +5455,7 @@ msgid "Button 9"
 msgstr "버튼 9"
 
 #: editor/project_settings.cpp
+#, fuzzy
 msgid "Joystick Axis Index:"
 msgstr "조이스틱 축 인덱스:"
 
@@ -5449,6 +5464,7 @@ msgid "Axis"
 msgstr "축"
 
 #: editor/project_settings.cpp
+#, fuzzy
 msgid "Joystick Button Index:"
 msgstr "조이스틱 버튼 인덱스:"
 
@@ -5529,6 +5545,7 @@ msgid "Remove Resource Remap Option"
 msgstr "리소스 리맵핑 옵션 제거"
 
 #: editor/project_settings.cpp
+#, fuzzy
 msgid "Project Settings (engine.cfg)"
 msgstr "프로젝트 설정 (engine.cfg)"
 
@@ -6490,6 +6507,196 @@ msgstr ""
 "합니다. 그렇지 않을 경우, 화면에 표시하기 위해서는 Render target으로 설정하"
 "고 내부적인 텍스쳐를 다른 노드에 할당해야 합니다."
 
+#, fuzzy
+#~ msgid "Anim Track Change Wrap Mode"
+#~ msgstr "트랙 값 모드 변경"
+
+#, fuzzy
+#~ msgid "Add Bus"
+#~ msgstr "%s 추가"
+
+#, fuzzy
+#~ msgid "(Re)Importing Assets"
+#~ msgstr "다시 가져오기"
+
+#~ msgid "Property Description:"
+#~ msgstr "속성 설명:"
+
+#, fuzzy
+#~ msgid "Manage Export Templates"
+#~ msgstr "내보내기 템플릿 로딩 중"
+
+#, fuzzy
+#~ msgid "Re-Download"
+#~ msgstr "다시 로드"
+
+#, fuzzy
+#~ msgid "Uninstall"
+#~ msgstr "설치"
+
+#, fuzzy
+#~ msgid "(Installed)"
+#~ msgstr "설치"
+
+#, fuzzy
+#~ msgid "Download"
+#~ msgstr "아래"
+
+#, fuzzy
+#~ msgid "(Current)"
+#~ msgstr "현재:"
+
+#, fuzzy
+#~ msgid "Error creating path for templates:\n"
+#~ msgstr "아틀라스 저장 중 에러:"
+
+#, fuzzy
+#~ msgid "Extracting Export Templates"
+#~ msgstr "내보내기 템플릿 로딩 중"
+
+#, fuzzy
+#~ msgid "Current Version:"
+#~ msgstr "현재 씬"
+
+#, fuzzy
+#~ msgid "Installed Versions:"
+#~ msgstr "설치된 플러그인:"
+
+#, fuzzy
+#~ msgid "Install From File"
+#~ msgstr "프로젝트 설치:"
+
+#, fuzzy
+#~ msgid "Remove Template"
+#~ msgstr "아이템 삭제"
+
+#, fuzzy
+#~ msgid "Select template file"
+#~ msgstr "선택된 파일들을 삭제하시겠습니까?"
+
+#, fuzzy
+#~ msgid "Export Template Manager"
+#~ msgstr "내보내기 템플릿 로딩 중"
+
+#, fuzzy
+#~ msgid "Expand all"
+#~ msgstr "부모로 확장"
+
+#, fuzzy
+#~ msgid " Files"
+#~ msgstr "파일"
+
+#, fuzzy
+#~ msgid "Import As:"
+#~ msgstr "가져오기"
+
+#, fuzzy
+#~ msgid "Reimport"
+#~ msgstr "다시 가져오기"
+
+#~ msgid "Same as Target Scene"
+#~ msgstr "대상 씬과 같음"
+
+#~ msgid "Shared"
+#~ msgstr "공유됨"
+
+#~ msgid "Show Bones"
+#~ msgstr "뼈대 보기"
+
+#, fuzzy
+#~ msgid "Modify Curve"
+#~ msgstr "커브맵 수정"
+
+#, fuzzy
+#~ msgid "Remove Point from Line2D"
+#~ msgstr "커브에서 포인트 삭제"
+
+#, fuzzy
+#~ msgid "Add Point to Line2D"
+#~ msgstr "커브에 포인트 추가"
+
+#, fuzzy
+#~ msgid "Move Point in Line2D"
+#~ msgstr "커브의 포인트 이동"
+
+#, fuzzy
+#~ msgid "Split Segment (in line)"
+#~ msgstr "세그먼트 분할 (커브)"
+
+#, fuzzy
+#~ msgid "Surface Points"
+#~ msgstr "서페이스 %d"
+
+#, fuzzy
+#~ msgid "Emission Source: "
+#~ msgstr "에미션 채움:"
+
+#~ msgid "Close All"
+#~ msgstr "모두 닫기"
+
+#, fuzzy
+#~ msgid "Discard"
+#~ msgstr "비연속적인"
+
+#~ msgid "Pick Color"
+#~ msgstr "색상 선택"
+
+#~ msgid "Theme"
+#~ msgstr "테마"
+
+#, fuzzy
+#~ msgid "Runnable"
+#~ msgstr "활성화"
+
+#, fuzzy
+#~ msgid "Delete patch '"
+#~ msgstr "입력 삭제"
+
+#, fuzzy
+#~ msgid "Delete preset '%s'?"
+#~ msgstr "선택된 파일들을 삭제하시겠습니까?"
+
+#, fuzzy
+#~ msgid "Presets"
+#~ msgstr "프리셋.."
+
+#, fuzzy
+#~ msgid "Export selected scenes (and dependencies)"
+#~ msgstr "선택된 리소스 내보내기 (종속된 리소스 포함)."
+
+#, fuzzy
+#~ msgid "Patches"
+#~ msgstr "일치:"
+
+#, fuzzy
+#~ msgid "Make Patch"
+#~ msgstr "대상 경로:"
+
+#, fuzzy
+#~ msgid "Export With Debug"
+#~ msgstr "타일 셋 내보내기"
+
+#, fuzzy
+#~ msgid "Pick a Viewport"
+#~ msgstr "1개 뷰포트"
+
+#, fuzzy
+#~ msgid "Show in File System"
+#~ msgstr "파일 시스템"
+
+#, fuzzy
+#~ msgid "Pick a Node"
+#~ msgstr "노드 선택"
+
+#~ msgid "Select Property"
+#~ msgstr "속성 선택"
+
+#~ msgid "Select Method"
+#~ msgstr "메소드 선택"
+
+#~ msgid "Change Probe Extents"
+#~ msgstr "프로브 범위 변경"
+
 #~ msgid "Functions:"
 #~ msgstr "함수:"
 
@@ -6595,8 +6802,26 @@ msgstr ""
 #~ msgid ": Invalid arguments: "
 #~ msgstr ": 유효하지 인자: "
 
+#, fuzzy
+#~ msgid "Run in Browser"
+#~ msgstr "찾아보기"
+
+#, fuzzy
+#~ msgid "Could not write file:\n"
+#~ msgstr "타일을 찾을 수 없음:"
+
+#, fuzzy
+#~ msgid "Could not read file:\n"
+#~ msgstr "타일을 찾을 수 없음:"
+
+#, fuzzy
+#~ msgid "Could not open template for export:\n"
+#~ msgstr "폴더를 만들 수 없습니다."
+
+#, fuzzy
 #~ msgid ""
-#~ "Couldn't read the certficate file. Are the path and password both correct?"
+#~ "Couldn't read the certificate file. Are the path and password both "
+#~ "correct?"
 #~ msgstr "인증서 파일을 읽을 수 없습니다. 경로와 비밀번호가 정확합니까?"
 
 #~ msgid "Error creating the signature object."
@@ -6654,36 +6879,6 @@ msgstr ""
 
 #~ msgid "Path property must point to a valid Spatial node to work."
 #~ msgstr "Path 속성은 유효한 Spatial 노드를 가리켜야 합니다."
-
-#~ msgid "Property Description:"
-#~ msgstr "속성 설명:"
-
-#~ msgid "Same as Target Scene"
-#~ msgstr "대상 씬과 같음"
-
-#~ msgid "Shared"
-#~ msgstr "공유됨"
-
-#~ msgid "Show Bones"
-#~ msgstr "뼈대 보기"
-
-#~ msgid "Close All"
-#~ msgstr "모두 닫기"
-
-#~ msgid "Pick Color"
-#~ msgstr "색상 선택"
-
-#~ msgid "Theme"
-#~ msgstr "테마"
-
-#~ msgid "Select Property"
-#~ msgstr "속성 선택"
-
-#~ msgid "Select Method"
-#~ msgstr "메소드 선택"
-
-#~ msgid "Change Probe Extents"
-#~ msgstr "프로브 범위 변경"
 
 #~ msgid ""
 #~ "This item cannot be made visible because the parent is hidden. Unhide the "
