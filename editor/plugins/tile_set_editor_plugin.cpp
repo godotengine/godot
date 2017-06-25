@@ -89,6 +89,9 @@ void TileSetEditor::_import_node(Node *p_node, Ref<TileSet> p_library) {
 		Vector<Ref<Shape2D> > collisions;
 		Ref<NavigationPolygon> nav_poly;
 		Ref<OccluderPolygon2D> occluder;
+		bool one_way_ok = true;
+		Variant one_way_dir;
+		float one_way_max_depth = 0.0f;
 
 		for (int j = 0; j < mi->get_child_count(); j++) {
 
@@ -114,12 +117,30 @@ void TileSetEditor::_import_node(Node *p_node, Ref<TileSet> p_library) {
 			}
 
 			phys_offset -= sb->get_pos();
+
+			if (one_way_ok) {
+				Vector2 curr_dir = sb->get_one_way_collision_direction();
+				float curr_max_depth = sb->get_one_way_collision_max_depth();
+				if (one_way_dir == Variant()) {
+					one_way_dir = curr_dir;
+					one_way_max_depth = curr_max_depth;
+				} else {
+					if (curr_dir != one_way_dir || curr_max_depth != one_way_max_depth) {
+						one_way_ok = false;
+						WARN_PRINT(String("Mismatch in one-way collision parameters for " + child->get_name()).utf8().get_data());
+					}
+				}
+			}
 		}
 
 		if (collisions.size()) {
 
 			p_library->tile_set_shapes(id, collisions);
 			p_library->tile_set_shape_offset(id, -phys_offset);
+			if (one_way_ok && one_way_dir != Variant()) {
+				p_library->tile_set_one_way_collision_direction(id, one_way_dir);
+				p_library->tile_set_one_way_collision_max_depth(id, one_way_max_depth);
+			}
 		} else {
 			p_library->tile_set_shape_offset(id, Vector2());
 		}
