@@ -660,6 +660,11 @@ void LineEdit::_notification(int p_what) {
 																				Point2(x_ofs, y_ofs), Size2(1, caret_height)),
 						cursor_color);
 			}
+
+			if (has_focus()) {
+
+				OS::get_singleton()->set_ime_position(get_global_position() + Point2(x_ofs, y_ofs + caret_height));
+			}
 		} break;
 		case NOTIFICATION_FOCUS_ENTER: {
 
@@ -667,11 +672,16 @@ void LineEdit::_notification(int p_what) {
 				draw_caret = true;
 			}
 
+			Point2 cursor_pos = Point2(get_cursor_pos(), 1) * get_minimum_size().height;
+			OS::get_singleton()->set_ime_position(get_global_position() + cursor_pos);
+
 			if (OS::get_singleton()->has_virtual_keyboard())
 				OS::get_singleton()->show_virtual_keyboard(text, get_global_rect());
 
 		} break;
 		case NOTIFICATION_FOCUS_EXIT: {
+
+			OS::get_singleton()->set_ime_position(Point2());
 
 			if (OS::get_singleton()->has_virtual_keyboard())
 				OS::get_singleton()->hide_virtual_keyboard();

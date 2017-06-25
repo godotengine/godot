@@ -300,6 +300,11 @@ bool _OS::get_borderless_window() const {
 	return OS::get_singleton()->get_borderless_window();
 }
 
+void _OS::set_ime_position(const Point2 &p_pos) {
+
+	return OS::get_singleton()->set_ime_position(p_pos);
+}
+
 void _OS::set_use_file_access_save_and_swap(bool p_enable) {
 
 	FileAccess::set_backup_save(p_enable);
@@ -992,6 +997,8 @@ void _OS::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_borderless_window", "borderless"), &_OS::set_borderless_window);
 	ClassDB::bind_method(D_METHOD("get_borderless_window"), &_OS::get_borderless_window);
+
+	ClassDB::bind_method(D_METHOD("set_ime_position"), &_OS::set_ime_position);
 
 	ClassDB::bind_method(D_METHOD("set_screen_orientation", "orientation"), &_OS::set_screen_orientation);
 	ClassDB::bind_method(D_METHOD("get_screen_orientation"), &_OS::get_screen_orientation);

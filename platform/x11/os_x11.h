@@ -115,7 +115,6 @@ class OS_X11 : public OS_Unix {
 	::XIMStyle xim_style;
 	static void xim_destroy_callback(::XIM im, ::XPointer client_data,
 			::XPointer call_data);
-	void set_ime_position(short x, short y);
 
 	Point2i last_mouse_pos;
 	bool last_mouse_pos_valid;
@@ -253,6 +252,7 @@ public:
 
 	virtual void set_borderless_window(int p_borderless);
 	virtual bool get_borderless_window();
+	virtual void set_ime_position(const Point2 &p_pos);
 
 	virtual void move_window_to_foreground();
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
