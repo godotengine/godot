@@ -2696,20 +2696,20 @@ void PropertyEditor::_notification(int p_what) {
 	}
 }
 
-TreeItem *PropertyEditor::get_parent_node(String p_path, HashMap<String, TreeItem *> &item_paths, TreeItem *root) {
+TreeItem *PropertyEditor::get_parent_node(String p_path, HashMap<String, TreeItem *> &item_paths, TreeItem *root, TreeItem *category) {
 
 	TreeItem *item = NULL;
 
 	if (p_path == "") {
 
-		item = root;
+		item = category ? category : root;
 	} else if (item_paths.has(p_path)) {
 
 		item = item_paths.get(p_path);
 	} else {
 
 		//printf("path %s parent path %s - item name %s\n",p_path.ascii().get_data(),p_path.left( p_path.find_last("/") ).ascii().get_data(),p_path.right( p_path.find_last("/") ).ascii().get_data() );
-		TreeItem *parent = get_parent_node(p_path.left(p_path.find_last("/")), item_paths, root);
+		TreeItem *parent = get_parent_node(p_path.left(p_path.find_last("/")), item_paths, root, NULL);
 		item = tree->create_item(parent);
 
 		String name = (p_path.find("/") != -1) ? p_path.right(p_path.find_last("/") + 1) : p_path;
@@ -2720,9 +2720,21 @@ TreeItem *PropertyEditor::get_parent_node(String p_path, HashMap<String, TreeIte
 		}
 
 		item->set_editable(0, false);
+		if (!subsection_selectable) {
+			item->set_expand_right(0, true);
+		}
 		item->set_selectable(0, subsection_selectable);
 		item->set_editable(1, false);
 		item->set_selectable(1, subsection_selectable);
+
+		if (use_folding) {
+			if (!obj->editor_is_section_unfolded(p_path)) {
+				updating_folding = true;
+				item->set_collapsed(true);
+				updating_folding = false;
+			}
+			item->set_metadata(0, p_path);
+		}
 
 		if (item->get_parent() == root) {
 
@@ -2935,17 +2947,21 @@ void PropertyEditor::update_tree() {
 			TreeItem *sep = tree->create_item(root);
 			current_category = sep;
 			String type = p.name;
-			/*if (has_icon(type,"EditorIcons"))
-				sep->set_icon(0,get_icon(type,"EditorIcons") );
+			//*
+			if (has_icon(type, "EditorIcons"))
+				sep->set_icon(0, get_icon(type, "EditorIcons"));
 			else
-				sep->set_icon(0,get_icon("Object","EditorIcons") );
-			print_line("CATEGORY: "+type);
-			*/
+				sep->set_icon(0, get_icon("Object", "EditorIcons"));
+
+			//*/
 			sep->set_text(0, type);
+			sep->set_expand_right(0, true);
 			sep->set_selectable(0, false);
 			sep->set_selectable(1, false);
 			sep->set_custom_bg_color(0, get_color("prop_category", "Editor"));
 			sep->set_custom_bg_color(1, get_color("prop_category", "Editor"));
+			sep->set_text_align(0, TreeItem::ALIGN_CENTER);
+			sep->set_disable_folding(true);
 
 			if (use_doc_hints) {
 				StringName type = p.name;
@@ -3005,7 +3021,7 @@ void PropertyEditor::update_tree() {
 		}
 
 		//printf("property %s\n",basename.ascii().get_data());
-		TreeItem *parent = get_parent_node(path, item_path, current_category ? current_category : root);
+		TreeItem *parent = get_parent_node(path, item_path, root, current_category);
 		/*
 		if (parent->get_parent()==root)
 			parent=root;
@@ -3684,6 +3700,16 @@ void PropertyEditor::_draw_transparency(Object *t, const Rect2 &p_rect) {
 	tree->draw_rect(area, color);
 }
 
+void PropertyEditor::_item_folded(Object *item_obj) {
+
+	if (updating_folding)
+		return;
+
+	TreeItem *item = item_obj->cast_to<TreeItem>();
+
+	obj->editor_set_section_unfold(item->get_metadata(0), !item->is_collapsed());
+}
+
 void PropertyEditor::_item_selected() {
 
 	TreeItem *item = tree->get_selected();
@@ -4187,6 +4213,7 @@ void PropertyEditor::_bind_methods() {
 
 	ClassDB::bind_method("_item_edited", &PropertyEditor::_item_edited);
 	ClassDB::bind_method("_item_selected", &PropertyEditor::_item_selected);
+	ClassDB::bind_method("_item_folded", &PropertyEditor::_item_folded);
 	ClassDB::bind_method("_custom_editor_request", &PropertyEditor::_custom_editor_request);
 	ClassDB::bind_method("_custom_editor_edited", &PropertyEditor::_custom_editor_edited);
 	ClassDB::bind_method("_custom_editor_edited_field", &PropertyEditor::_custom_editor_edited_field, DEFVAL(""));
@@ -4292,11 +4319,18 @@ void PropertyEditor::set_subsection_selectable(bool p_selectable) {
 	update_tree();
 }
 
+void PropertyEditor::set_use_folding(bool p_enable) {
+
+	use_folding = p_enable;
+	tree->set_hide_folding(false);
+}
+
 PropertyEditor::PropertyEditor() {
 
 	_prop_edited = "property_edited";
 
 	hide_script = false;
+	use_folding = false;
 
 	undo_redo = NULL;
 	obj = NULL;
@@ -4329,6 +4363,7 @@ PropertyEditor::PropertyEditor() {
 
 	tree->connect("item_edited", this, "_item_edited", varray(), CONNECT_DEFERRED);
 	tree->connect("cell_selected", this, "_item_selected");
+	tree->connect("item_collapsed", this, "_item_folded");
 
 	tree->set_drag_forwarding(this);
 
@@ -4358,6 +4393,7 @@ PropertyEditor::PropertyEditor() {
 	show_categories = false;
 	refresh_countdown = 0;
 	use_doc_hints = false;
+	updating_folding = true;
 	use_filter = false;
 	subsection_selectable = false;
 	show_type_icons = EDITOR_DEF("interface/show_type_icons", false);

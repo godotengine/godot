@@ -622,6 +622,40 @@ bool TreeItem::is_custom_set_as_button(int p_column) const {
 	return cells[p_column].custom_button;
 }
 
+void TreeItem::set_text_align(int p_column, TextAlign p_align) {
+	ERR_FAIL_INDEX(p_column, cells.size());
+	cells[p_column].text_align = p_align;
+	_changed_notify(p_column);
+}
+
+TreeItem::TextAlign TreeItem::get_text_align(int p_column) const {
+	ERR_FAIL_INDEX_V(p_column, cells.size(), ALIGN_LEFT);
+	return cells[p_column].text_align;
+}
+
+void TreeItem::set_expand_right(int p_column, bool p_enable) {
+
+	ERR_FAIL_INDEX(p_column, cells.size());
+	cells[p_column].expand_right = p_enable;
+	_changed_notify(p_column);
+}
+
+bool TreeItem::get_expand_right(int p_column) const {
+
+	ERR_FAIL_INDEX_V(p_column, cells.size(), false);
+	return cells[p_column].expand_right;
+}
+
+void TreeItem::set_disable_folding(bool p_disable) {
+
+	disable_folding = p_disable;
+	_changed_notify(0);
+}
+
+bool TreeItem::is_folding_disabled() const {
+	return disable_folding;
+}
+
 void TreeItem::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_cell_mode", "column", "mode"), &TreeItem::set_cell_mode);
@@ -692,11 +726,18 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("erase_button", "column", "button_idx"), &TreeItem::erase_button);
 	ClassDB::bind_method(D_METHOD("is_button_disabled", "column", "button_idx"), &TreeItem::is_button_disabled);
 
+	ClassDB::bind_method(D_METHOD("set_expand_right", "column", "enable"), &TreeItem::set_expand_right);
+	ClassDB::bind_method(D_METHOD("get_expand_right", "column"), &TreeItem::get_expand_right);
+
 	ClassDB::bind_method(D_METHOD("set_tooltip", "column", "tooltip"), &TreeItem::set_tooltip);
 	ClassDB::bind_method(D_METHOD("get_tooltip", "column"), &TreeItem::get_tooltip);
-
+	ClassDB::bind_method(D_METHOD("set_text_align", "column", "text_align"), &TreeItem::set_text_align);
+	ClassDB::bind_method(D_METHOD("get_text_align", "column"), &TreeItem::get_text_align);
 	ClassDB::bind_method(D_METHOD("move_to_top"), &TreeItem::move_to_top);
 	ClassDB::bind_method(D_METHOD("move_to_bottom"), &TreeItem::move_to_bottom);
+
+	ClassDB::bind_method(D_METHOD("set_disable_folding", "disable"), &TreeItem::set_disable_folding);
+	ClassDB::bind_method(D_METHOD("is_folding_disabled"), &TreeItem::is_folding_disabled);
 
 	BIND_CONSTANT(CELL_MODE_STRING);
 	BIND_CONSTANT(CELL_MODE_CHECK);
@@ -724,6 +765,7 @@ TreeItem::TreeItem(Tree *p_tree) {
 
 	tree = p_tree;
 	collapsed = false;
+	disable_folding = false;
 
 	parent = 0; // parent item
 	next = 0; // next in list
@@ -894,6 +936,32 @@ int Tree::get_item_height(TreeItem *p_item) const {
 void Tree::draw_item_rect(const TreeItem::Cell &p_cell, const Rect2i &p_rect, const Color &p_color) {
 
 	Rect2i rect = p_rect;
+	Ref<Font> font = cache.font;
+	String text = p_cell.text;
+	if (p_cell.suffix != String())
+		text += " " + p_cell.suffix;
+
+	int w = 0;
+	if (!p_cell.icon.is_null()) {
+		Size2i bmsize = p_cell.get_icon_size();
+
+		if (p_cell.icon_max_w > 0 && bmsize.width > p_cell.icon_max_w) {
+			bmsize.width = p_cell.icon_max_w;
+		}
+		w += bmsize.width + cache.hseparation;
+	}
+	w += font->get_string_size(text).width;
+
+	switch (p_cell.text_align) {
+		case TreeItem::ALIGN_LEFT:
+			break; //do none
+		case TreeItem::ALIGN_CENTER:
+			rect.position.x = MAX(0, (rect.size.width - w) / 2);
+			break; //do none
+		case TreeItem::ALIGN_RIGHT:
+			rect.position.x = MAX(0, (rect.size.width - w));
+			break; //do none
+	}
 
 	RID ci = get_canvas_item();
 	if (!p_cell.icon.is_null()) {
@@ -913,12 +981,6 @@ void Tree::draw_item_rect(const TreeItem::Cell &p_cell, const Rect2i &p_rect, co
 	if (p_tool)
 		rect.size.x-=Math::floor(rect.size.y/2);
 	*/
-
-	Ref<Font> font = cache.font;
-
-	String text = p_cell.text;
-	if (p_cell.suffix != String())
-		text += " " + p_cell.suffix;
 
 	rect.position.y += Math::floor((rect.size.y - font->get_height()) / 2.0) + font->get_ascent();
 	font->draw(ci, rect.position, text, p_color, rect.size.x);
@@ -970,7 +1032,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 	if (!skip && (p_pos.y + label_h - cache.offset.y) > 0) {
 
-		if (!hide_folding && p_item->childs) { //has childs, draw the guide box
+		if (!p_item->disable_folding && !hide_folding && p_item->childs) { //has childs, draw the guide box
 
 			Ref<Texture> arrow;
 
@@ -991,8 +1053,14 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 		int font_ascent = font->get_ascent();
 
-		int ofs = p_pos.x + (hide_folding ? cache.hseparation : cache.item_margin);
+		int ofs = p_pos.x + ((p_item->disable_folding || hide_folding) ? cache.hseparation : cache.item_margin);
+		int skip = 0;
 		for (int i = 0; i < columns.size(); i++) {
+
+			if (skip) {
+				skip--;
+				continue;
+			}
 
 			int w = get_column_width(i);
 
@@ -1009,6 +1077,16 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 				ofs += cache.hseparation;
 				w -= cache.hseparation;
+			}
+
+			if (p_item->cells[i].expand_right) {
+
+				int plus = 1;
+				while (i + plus < columns.size() && !p_item->cells[i + plus].editable && p_item->cells[i + plus].mode == TreeItem::CELL_MODE_STRING && p_item->cells[i + plus].text == "" && p_item->cells[i + plus].icon.is_null()) {
+					w += get_column_width(i + plus);
+					plus++;
+					skip++;
+				}
 			}
 
 			int bw = 0;
@@ -1295,8 +1373,8 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 		while (c) {
 
 			if (cache.draw_relationship_lines == 1) {
-				int root_ofs = children_pos.x + (hide_folding ? cache.hseparation : cache.item_margin);
-				int parent_ofs = p_pos.x + (hide_folding ? cache.hseparation : cache.item_margin);
+				int root_ofs = children_pos.x + ((p_item->disable_folding || hide_folding) ? cache.hseparation : cache.item_margin);
+				int parent_ofs = p_pos.x + ((p_item->disable_folding || hide_folding) ? cache.hseparation : cache.item_margin);
 				Point2i root_pos = Point2i(root_ofs, children_pos.y + label_h / 2) - cache.offset + p_draw_ofs;
 				if (c->get_children() != NULL)
 					root_pos -= Point2i(cache.arrow->get_width(), 0);
@@ -1488,7 +1566,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 			return -1;
 		}
 
-		if (!hide_folding && (p_pos.x >= x_ofs && p_pos.x < (x_ofs + cache.item_margin))) {
+		if (!p_item->disable_folding && !hide_folding && (p_pos.x >= x_ofs && p_pos.x < (x_ofs + cache.item_margin))) {
 
 			if (p_item->childs)
 				p_item->set_collapsed(!p_item->is_collapsed());
@@ -1504,6 +1582,18 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 		for (int i = 0; i < columns.size(); i++) {
 
 			col_width = get_column_width(i);
+
+			if (p_item->cells[i].expand_right) {
+
+				int plus = 1;
+				while (i + plus < columns.size() && !p_item->cells[i + plus].editable && p_item->cells[i + plus].mode == TreeItem::CELL_MODE_STRING && p_item->cells[i + plus].text == "" && p_item->cells[i + plus].icon.is_null()) {
+					plus++;
+					col_width += cache.hseparation;
+					col_width += get_column_width(i + plus);
+					plus++;
+				}
+			}
+
 			if (x > col_width) {
 				col_ofs += col_width;
 				x -= col_width;
@@ -1526,6 +1616,11 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 
 			col_width -= cache.hseparation;
 			x -= cache.hseparation;
+		}
+
+		if (!p_item->disable_folding && !hide_folding && !p_item->cells[col].editable && !p_item->cells[col].selectable && p_item->get_children()) {
+			p_item->set_collapsed(!p_item->is_collapsed());
+			return -1; //collapse/uncollapse because nothing can be done with item
 		}
 
 		TreeItem::Cell &c = p_item->cells[col];

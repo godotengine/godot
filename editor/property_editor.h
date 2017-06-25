@@ -190,6 +190,9 @@ class PropertyEditor : public Control {
 	bool use_filter;
 	bool subsection_selectable;
 	bool hide_script;
+	bool use_folding;
+
+	bool updating_folding;
 
 	HashMap<String, String> pending;
 	String selected_property;
@@ -206,7 +209,7 @@ class PropertyEditor : public Control {
 
 	void _item_selected();
 	void _item_edited();
-	TreeItem *get_parent_node(String p_path, HashMap<String, TreeItem *> &item_paths, TreeItem *root);
+	TreeItem *get_parent_node(String p_path, HashMap<String, TreeItem *> &item_paths, TreeItem *root, TreeItem *category);
 
 	void set_item_text(TreeItem *p_item, int p_type, const String &p_name, int p_hint = PROPERTY_HINT_NONE, const String &p_hint_text = "");
 
@@ -244,6 +247,7 @@ class PropertyEditor : public Control {
 
 	void _resource_preview_done(const String &p_path, const Ref<Texture> &p_preview, Variant p_ud);
 	void _draw_transparency(Object *t, const Rect2 &p_rect);
+	void _item_folded(Object *item_obj);
 
 	UndoRedo *undo_redo;
 
@@ -285,6 +289,7 @@ public:
 
 	void set_subsection_selectable(bool p_selectable);
 
+	void set_use_folding(bool p_enable);
 	PropertyEditor();
 	~PropertyEditor();
 };

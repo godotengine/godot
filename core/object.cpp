@@ -419,6 +419,16 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 		if (r_valid)
 			*r_valid = true;
 		return;
+#ifdef TOOLS_ENABLED
+	} else if (p_name == CoreStringNames::get_singleton()->_sections_unfolded) {
+		Array arr = p_value;
+		for (int i = 0; i < arr.size(); i++) {
+			editor_section_folding.insert(arr[i]);
+		}
+		if (r_valid)
+			*r_valid = true;
+		return;
+#endif
 	} else {
 		//something inside the object... :|
 		bool success = _setv(p_name, p_value);
@@ -464,6 +474,16 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 		if (r_valid)
 			*r_valid = true;
 		return ret;
+#ifdef TOOLS_ENABLED
+	} else if (p_name == CoreStringNames::get_singleton()->_sections_unfolded) {
+		Array array;
+		for (Set<String>::Element *E = editor_section_folding.front(); E; E = E->next()) {
+			array.push_back(E->get());
+		}
+		if (r_valid)
+			*r_valid = true;
+		return array;
+#endif
 	} else {
 		//something inside the object... :|
 		bool success = _getv(p_name, ret);
@@ -516,6 +536,11 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 
 	if (!is_class("Script")) // can still be set, but this is for userfriendlyness
 		p_list->push_back(PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NONZERO));
+#ifdef TOOLS_ENABLED
+	if (editor_section_folding.size()) {
+		p_list->push_back(PropertyInfo(Variant::ARRAY, CoreStringNames::get_singleton()->_sections_unfolded, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+	}
+#endif
 	if (!metadata.empty())
 		p_list->push_back(PropertyInfo(Variant::DICTIONARY, "__meta__", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_STORE_IF_NONZERO));
 	if (script_instance && !p_reversed) {
@@ -1570,6 +1595,23 @@ void Object::_clear_internal_resource_paths(const Variant &p_var) {
 		default: {}
 	}
 }
+
+#ifdef TOOLS_ENABLED
+void Object::editor_set_section_unfold(const String &p_section, bool p_unfolded) {
+
+	set_edited(true);
+	if (p_unfolded)
+		editor_section_folding.insert(p_section);
+	else
+		editor_section_folding.erase(p_section);
+}
+
+bool Object::editor_is_section_unfolded(const String &p_section) {
+
+	return editor_section_folding.has(p_section);
+}
+
+#endif
 
 void Object::clear_internal_resource_paths() {
 

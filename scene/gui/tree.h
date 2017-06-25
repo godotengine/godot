@@ -58,6 +58,12 @@ public:
 		CELL_MODE_CUSTOM, ///< Contains a custom value, show a string, and an edit button
 	};
 
+	enum TextAlign {
+		ALIGN_LEFT,
+		ALIGN_CENTER,
+		ALIGN_RIGHT
+	};
+
 private:
 	friend class Tree;
 
@@ -82,6 +88,9 @@ private:
 		bool custom_bg_outline;
 		Color bg_color;
 		bool custom_button;
+		bool expand_right;
+
+		TextAlign text_align;
 
 		Variant meta;
 		String tooltip;
@@ -122,6 +131,8 @@ private:
 			custom_bg_color = false;
 			expr = false;
 			icon_max_w = 0;
+			text_align = ALIGN_LEFT;
+			expand_right = false;
 		}
 
 		Size2 get_icon_size() const;
@@ -131,6 +142,7 @@ private:
 	Vector<Cell> cells;
 
 	bool collapsed; // wont show childs
+	bool disable_folding;
 
 	TreeItem *parent; // parent item
 	TreeItem *next; // next in list
@@ -248,13 +260,23 @@ public:
 
 	void clear_children();
 
+	void set_text_align(int p_column, TextAlign p_align);
+	TextAlign get_text_align(int p_column) const;
+
+	void set_expand_right(int p_column, bool p_enable);
+	bool get_expand_right(int p_column) const;
+
 	void move_to_top();
 	void move_to_bottom();
+
+	void set_disable_folding(bool p_disable);
+	bool is_folding_disabled() const;
 
 	~TreeItem();
 };
 
 VARIANT_ENUM_CAST(TreeItem::TreeCellMode);
+VARIANT_ENUM_CAST(TreeItem::TextAlign);
 
 class Tree : public Control {
 
