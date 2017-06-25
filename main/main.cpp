@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "main.h"
-#include "app_icon.h"
+#include "app_icon.gen.h"
 #include "core/register_core_types.h"
 #include "drivers/register_driver_types.h"
 #include "global_config.h"
@@ -39,7 +39,7 @@
 #include "script_debugger_local.h"
 #include "script_debugger_remote.h"
 #include "servers/register_server_types.h"
-#include "splash.h"
+#include "splash.gen.h"
 
 #include "input_map.h"
 #include "io/resource_loader.h"

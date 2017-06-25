@@ -377,7 +377,7 @@ if selected_platform in platform_list:
         methods.no_verbose(sys, env)
 
     if (True): # FIXME: detect GLES3
-        env.Append( BUILDERS = { 'GLES3_GLSL' : env.Builder(action = methods.build_gles3_headers, suffix = 'glsl.h',src_suffix = '.glsl') } )
+        env.Append( BUILDERS = { 'GLES3_GLSL' : env.Builder(action = methods.build_gles3_headers, suffix = 'glsl.gen.h',src_suffix = '.glsl') } )
 
     Export('env')
 

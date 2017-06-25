@@ -30,7 +30,7 @@
 #include "editor/editor_node.h"
 #include "editor_export.h"
 #include "io/zip_io.h"
-#include "platform/javascript/logo.h"
+#include "platform/javascript/logo.gen.h"
 
 #define EXPORT_TEMPLATE_WEBASSEMBLY_RELEASE "webassembly_release.zip"
 #define EXPORT_TEMPLATE_WEBASSEMBLY_DEBUG "webassembly_debug.zip"

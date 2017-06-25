@@ -35,11 +35,11 @@
 #include "servers/visual/shader_language.h"
 #include "shader_compiler_gles3.h"
 #include "shader_gles3.h"
-#include "shaders/blend_shape.glsl.h"
-#include "shaders/canvas.glsl.h"
-#include "shaders/copy.glsl.h"
-#include "shaders/cubemap_filter.glsl.h"
-#include "shaders/particles.glsl.h"
+#include "shaders/blend_shape.glsl.gen.h"
+#include "shaders/canvas.glsl.gen.h"
+#include "shaders/copy.glsl.gen.h"
+#include "shaders/cubemap_filter.glsl.gen.h"
+#include "shaders/particles.glsl.gen.h"
 
 class RasterizerCanvasGLES3;
 class RasterizerSceneGLES3;

@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "texture.h"
-#include "core/method_bind_ext.inc"
+#include "core/method_bind_ext.gen.inc"
 #include "core/os/os.h"
 #include "core_string_names.h"
 #include "io/image_loader.h"
