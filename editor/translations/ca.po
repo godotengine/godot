@@ -358,12 +358,214 @@ msgstr "Canvia Tipus de la Matriu"
 msgid "Change Array Value"
 msgstr "Canvia Valor de la Matriu"
 
+#: editor/asset_library_editor_plugin.cpp
+msgid "Free"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp editor/editor_plugin_settings.cpp
+msgid "Version:"
+msgstr "Versió:"
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Contents:"
+msgstr "Constants:"
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "View Files"
+msgstr "Fitxer:"
+
+#: editor/asset_library_editor_plugin.cpp editor/create_dialog.cpp
+#: editor/editor_help.cpp editor/property_selector.cpp
+#: editor/script_editor_debugger.cpp
+msgid "Description:"
+msgstr "Descripció:"
+
+#: editor/asset_library_editor_plugin.cpp editor/project_manager.cpp
+msgid "Install"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp editor/call_dialog.cpp
+#: editor/connections_dialog.cpp editor/export_template_manager.cpp
+#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/sample_library_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_settings.cpp
+#: editor/property_editor.cpp editor/run_settings_dialog.cpp
+#: editor/settings_config_dialog.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Close"
+msgstr "Tanca"
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Can't resolve hostname:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Can't resolve."
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Connection error, please try again."
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Can't connect."
+msgstr "Connecta.."
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Can't connect to host:"
+msgstr "Connecta al Node:"
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "No response from host:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "No response."
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Request failed, return code:"
+msgstr "Format de fitxer desconegut:"
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Req. Failed."
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Request failed, too many redirects"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Redirect Loop."
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Failed:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Bad download hash, assuming file has been tampered with."
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Expected:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Got:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Failed sha256 hash check"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Asset Download Error:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Success!"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Fetching:"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Resolving.."
+msgstr "Desant..."
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Connecting.."
+msgstr "Connecta.."
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Requesting.."
+msgstr "Provant"
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Error making request"
+msgstr "Error en desar recurs!"
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Idle"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Retry"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Download Error"
+msgstr "Errors de Càrrega"
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "Download for this asset is already in progress!"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "first"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "prev"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "next"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "last"
+msgstr ""
+
+#: editor/asset_library_editor_plugin.cpp
+msgid "All"
+msgstr "Tot"
+
 #: editor/asset_library_editor_plugin.cpp editor/create_dialog.cpp
 #: editor/editor_help.cpp editor/editor_node.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: editor/quick_open.cpp editor/settings_config_dialog.cpp
 msgid "Search:"
 msgstr "Cerca:"
+
+#: editor/asset_library_editor_plugin.cpp editor/code_editor.cpp
+#: editor/editor_help.cpp editor/editor_node.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/project_settings.cpp
+msgid "Search"
+msgstr "Cerca"
+
+#: editor/asset_library_editor_plugin.cpp editor/editor_node.cpp
+#: editor/io_plugins/editor_bitmask_import_plugin.cpp
+#: editor/io_plugins/editor_font_import_plugin.cpp
+#: editor/io_plugins/editor_mesh_import_plugin.cpp
+#: editor/io_plugins/editor_sample_import_plugin.cpp
+#: editor/io_plugins/editor_scene_import_plugin.cpp
+#: editor/io_plugins/editor_texture_import_plugin.cpp
+#: editor/io_plugins/editor_translation_import_plugin.cpp
+#: editor/project_manager.cpp
+msgid "Import"
+msgstr "Importa"
+
+#: editor/asset_library_editor_plugin.cpp editor/project_settings.cpp
+msgid "Plugins"
+msgstr ""
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Sort:"
@@ -378,10 +580,6 @@ msgid "Category:"
 msgstr "Categoria:"
 
 #: editor/asset_library_editor_plugin.cpp
-msgid "All"
-msgstr "Tot"
-
-#: editor/asset_library_editor_plugin.cpp
 msgid "Site:"
 msgstr "Lloc:"
 
@@ -393,7 +591,7 @@ msgstr "Suport..."
 msgid "Official"
 msgstr "Oficial"
 
-#: editor/asset_library_editor_plugin.cpp
+#: editor/asset_library_editor_plugin.cpp editor/editor_node.cpp
 msgid "Community"
 msgstr "Comunitat"
 
@@ -412,20 +610,6 @@ msgstr "Llista de mètodes de '%s':"
 #: editor/call_dialog.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Call"
 msgstr "Crida"
-
-#: editor/call_dialog.cpp editor/connections_dialog.cpp
-#: editor/export_template_manager.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/sample_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_settings.cpp
-#: editor/property_editor.cpp editor/run_settings_dialog.cpp
-#: editor/settings_config_dialog.cpp
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Close"
-msgstr "Tanca"
 
 #: editor/call_dialog.cpp
 msgid "Method List:"
@@ -475,13 +659,6 @@ msgstr "Paraules senceres"
 #: editor/code_editor.cpp
 msgid "Selection Only"
 msgstr "Selecció Només"
-
-#: editor/code_editor.cpp editor/editor_help.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/project_settings.cpp
-msgid "Search"
-msgstr "Cerca"
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "Find"
@@ -558,6 +735,7 @@ msgstr "Afegeix"
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings.cpp
 msgid "Remove"
 msgstr "Treu"
 
@@ -634,11 +812,6 @@ msgstr "Recents:"
 msgid "Matches:"
 msgstr "Coincidències:"
 
-#: editor/create_dialog.cpp editor/editor_help.cpp editor/property_selector.cpp
-#: editor/script_editor_debugger.cpp
-msgid "Description:"
-msgstr "Descripció:"
-
 #: editor/dependency_editor.cpp
 msgid "Search Replacement For:"
 msgstr "Cerca Reemplaçant per a:"
@@ -673,6 +846,7 @@ msgstr "Recurs"
 
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
 #: editor/project_manager.cpp editor/project_settings.cpp
+#: editor/script_create_dialog.cpp
 msgid "Path"
 msgstr "Camí"
 
@@ -775,8 +949,7 @@ msgstr ""
 msgid "Add Bus"
 msgstr ""
 
-#: editor/editor_audio_buses.cpp editor/property_editor.cpp
-#: editor/script_create_dialog.cpp
+#: editor/editor_audio_buses.cpp editor/script_create_dialog.cpp
 msgid "Load"
 msgstr ""
 
@@ -786,6 +959,7 @@ msgid "Save As"
 msgstr ""
 
 #: editor/editor_audio_buses.cpp editor/editor_node.cpp editor/import_dock.cpp
+#: editor/script_create_dialog.cpp
 msgid "Default"
 msgstr "Predeterminat"
 
@@ -857,8 +1031,7 @@ msgid "Rearrange Autoloads"
 msgstr "Reorganitza AutoCàrregues"
 
 #: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
-#: editor/io_plugins/editor_font_import_plugin.cpp
-#: editor/script_create_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/io_plugins/editor_font_import_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Path:"
 msgstr "Camí:"
 
@@ -1050,7 +1223,8 @@ msgstr "Escaneja Fonts"
 msgid "(Re)Importing Assets"
 msgstr "Re-Importació"
 
-#: editor/editor_help.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/editor_help.cpp editor/editor_node.cpp
+#: editor/plugins/script_editor_plugin.cpp
 msgid "Search Help"
 msgstr "Cerca Ajuda"
 
@@ -1067,7 +1241,6 @@ msgid "Class:"
 msgstr "Classe:"
 
 #: editor/editor_help.cpp editor/scene_tree_editor.cpp
-#: editor/script_create_dialog.cpp
 msgid "Inherits:"
 msgstr "Hereta:"
 
@@ -1122,10 +1295,6 @@ msgstr " Sortida:"
 #: scene/gui/text_edit.cpp
 msgid "Clear"
 msgstr "Neteja"
-
-#: editor/editor_node.cpp
-msgid "Node From Scene"
-msgstr "Node de l'Escena"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/resources_dock.cpp
@@ -1242,10 +1411,11 @@ msgid "There is no defined scene to run."
 msgstr "No s'ha definit cap escena per executar."
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
 "No main scene has ever been defined, select one?\n"
-"You can change it later in later in \"Project Settings\" under the "
-"'application' category."
+"You can change it later in \"Project Settings\" under the 'application' "
+"category."
 msgstr ""
 "No s'ha definit cap escena principal. Seleccioneu-ne una.\n"
 "És possible triar-ne una altra més endavant a \"Configuració del Projecte\" "
@@ -1310,6 +1480,10 @@ msgid "Save Scene As.."
 msgstr "Desa Escena com..."
 
 #: editor/editor_node.cpp
+msgid "No"
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid "This scene has never been saved. Save before running?"
 msgstr ""
 "Aquesta Escena no s'ha desat mai encara. Voleu desar-la abans d'executar-la?"
@@ -1369,7 +1543,7 @@ msgid ""
 msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp editor/script_create_dialog.cpp
+#: editor/scene_tree_dock.cpp
 msgid "Ugh"
 msgstr "Uf..."
 
@@ -1408,6 +1582,10 @@ msgstr "%d fitxer(s) més"
 #: editor/editor_node.cpp
 msgid "%d more file(s) or folder(s)"
 msgstr "%d fitxer(s) o directori(s) més"
+
+#: editor/editor_node.cpp
+msgid "Distraction Free Mode"
+msgstr "Mode Lliure de Distraccions"
 
 #: editor/editor_node.cpp editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Scene"
@@ -1462,7 +1640,7 @@ msgstr "Tanca l'Escena"
 msgid "Close Goto Prev. Scene"
 msgstr "Tanca i Vés a l'Escena anterior"
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Open Recent"
 msgstr "Obre Recent"
 
@@ -1490,99 +1668,41 @@ msgid "Redo"
 msgstr "Refés"
 
 #: editor/editor_node.cpp
-msgid "Run Script"
-msgstr "Executa Script"
-
-#: editor/editor_node.cpp
-msgid "Project Settings"
-msgstr "Configuració del Projecte"
-
-#: editor/editor_node.cpp
 msgid "Revert Scene"
 msgstr "Reverteix Escena"
-
-#: editor/editor_node.cpp
-msgid "Quit to Project List"
-msgstr "Surt a la Llista de Projectes"
-
-#: editor/editor_node.cpp
-msgid "Distraction Free Mode"
-msgstr "Mode Lliure de Distraccions"
-
-#: editor/editor_node.cpp
-msgid "Import assets to the project."
-msgstr "Importa actius al projecte."
-
-#: editor/editor_node.cpp editor/io_plugins/editor_bitmask_import_plugin.cpp
-#: editor/io_plugins/editor_font_import_plugin.cpp
-#: editor/io_plugins/editor_mesh_import_plugin.cpp
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-#: editor/project_manager.cpp
-msgid "Import"
-msgstr "Importa"
 
 #: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
 msgstr "Eines vàries o d'escena."
 
 #: editor/editor_node.cpp
-msgid "Tools"
-msgstr "Eines"
+#, fuzzy
+msgid "Project"
+msgstr "Exporta Projecte"
 
 #: editor/editor_node.cpp
-msgid "Export the project to many platforms."
-msgstr "Exporta el projecte a diverses plataformes."
+msgid "Project Settings"
+msgstr "Configuració del Projecte"
+
+#: editor/editor_node.cpp
+msgid "Run Script"
+msgstr "Executa Script"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export"
 msgstr "Exporta"
 
 #: editor/editor_node.cpp
-msgid "Play the project."
-msgstr "Reprodueix el projecte."
-
-#: editor/editor_node.cpp editor/plugins/sample_library_editor_plugin.cpp
-msgid "Play"
-msgstr "Reprodueix"
+msgid "Tools"
+msgstr "Eines"
 
 #: editor/editor_node.cpp
-msgid "Pause the scene"
-msgstr "Pausa l'escena"
+msgid "Quit to Project List"
+msgstr "Surt a la Llista de Projectes"
 
-#: editor/editor_node.cpp
-msgid "Pause Scene"
-msgstr "Pausa Escena"
-
-#: editor/editor_node.cpp
-msgid "Stop the scene."
-msgstr "Atura l'escena."
-
-#: editor/editor_node.cpp editor/plugins/sample_library_editor_plugin.cpp
-msgid "Stop"
-msgstr "Atura"
-
-#: editor/editor_node.cpp
-msgid "Play the edited scene."
-msgstr "Reprodueix l'escena editada."
-
-#: editor/editor_node.cpp
-msgid "Play Scene"
-msgstr "Reprodueix Escena"
-
-#: editor/editor_node.cpp
-msgid "Play custom scene"
-msgstr "Reprodueix escena personalitzada"
-
-#: editor/editor_node.cpp
-msgid "Play Custom Scene"
-msgstr "Reprodueix Escena Personalitzada"
-
-#: editor/editor_node.cpp
-msgid "Debug options"
-msgstr "Opcions de Depuració (Debug)"
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+msgid "Debug"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Deploy with Remote Debug"
@@ -1672,9 +1792,10 @@ msgstr ""
 "En usar-se remotament en un dispositiu, un sistema de fitxers en xarxa en "
 "millora el rendiment."
 
-#: editor/editor_node.cpp editor/plugins/spatial_editor_plugin.cpp
-msgid "Settings"
-msgstr "Configuració"
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Editor"
+msgstr "Edita"
 
 #: editor/editor_node.cpp editor/settings_config_dialog.cpp
 msgid "Editor Settings"
@@ -1695,12 +1816,68 @@ msgid "Manage Export Templates"
 msgstr "Carregant Plantilles d'Exportació"
 
 #: editor/editor_node.cpp
+msgid "Help"
+msgstr ""
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+msgid "Classes"
+msgstr ""
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+msgid "Online Docs"
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Q&A"
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Issue Tracker"
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid "About"
 msgstr "Quant a"
 
 #: editor/editor_node.cpp
-msgid "Alerts when an external resource has changed."
-msgstr "Alerta en canviar un recurs extern."
+msgid "Play the project."
+msgstr "Reprodueix el projecte."
+
+#: editor/editor_node.cpp editor/plugins/sample_library_editor_plugin.cpp
+msgid "Play"
+msgstr "Reprodueix"
+
+#: editor/editor_node.cpp
+msgid "Pause the scene"
+msgstr "Pausa l'escena"
+
+#: editor/editor_node.cpp
+msgid "Pause Scene"
+msgstr "Pausa Escena"
+
+#: editor/editor_node.cpp
+msgid "Stop the scene."
+msgstr "Atura l'escena."
+
+#: editor/editor_node.cpp editor/plugins/sample_library_editor_plugin.cpp
+msgid "Stop"
+msgstr "Atura"
+
+#: editor/editor_node.cpp
+msgid "Play the edited scene."
+msgstr "Reprodueix l'escena editada."
+
+#: editor/editor_node.cpp
+msgid "Play Scene"
+msgstr "Reprodueix Escena"
+
+#: editor/editor_node.cpp
+msgid "Play custom scene"
+msgstr "Reprodueix escena personalitzada"
+
+#: editor/editor_node.cpp
+msgid "Play Custom Scene"
+msgstr "Reprodueix Escena Personalitzada"
 
 #: editor/editor_node.cpp
 msgid "Spins when the editor window repaints!"
@@ -1783,6 +1960,14 @@ msgid "Thanks!"
 msgstr "Gràcies!"
 
 #: editor/editor_node.cpp
+msgid "Godot Engine contributors"
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Developers"
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
 msgstr "Importa Plantilles des d'un Fitxer ZIP"
 
@@ -1810,13 +1995,38 @@ msgstr "Obre i Executa un Script"
 msgid "Load Errors"
 msgstr "Errors de Càrrega"
 
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Open 2D Editor"
+msgstr "Obre un Directori"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Open 3D Editor"
+msgstr "Obre un Directori"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Open Script Editor"
+msgstr "Editor de Dependències"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Open Asset Library"
+msgstr "Exporta Biblioteca"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Open the next Editor"
+msgstr "Editor de Dependències"
+
+#: editor/editor_node.cpp
+msgid "Open the previous Editor"
+msgstr ""
+
 #: editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
 msgstr "Connectors Instal·lats:"
-
-#: editor/editor_plugin_settings.cpp
-msgid "Version:"
-msgstr "Versió:"
 
 #: editor/editor_plugin_settings.cpp
 msgid "Author:"
@@ -2069,6 +2279,10 @@ msgid "Collapse all"
 msgstr ""
 
 #: editor/filesystem_dock.cpp
+msgid "Show In File Manager"
+msgstr "Mostra en el Gestor de Fitxers"
+
+#: editor/filesystem_dock.cpp
 msgid "Instance"
 msgstr "Instància"
 
@@ -2095,10 +2309,6 @@ msgstr "Mou cap a..."
 #: editor/filesystem_dock.cpp
 msgid "Info"
 msgstr "Informació"
-
-#: editor/filesystem_dock.cpp
-msgid "Show In File Manager"
-msgstr "Mostra en el Gestor de Fitxers"
 
 #: editor/filesystem_dock.cpp
 msgid "Re-Import.."
@@ -2267,9 +2477,10 @@ msgid "No target font resource!"
 msgstr "Cap recurs de Lletra!"
 
 #: editor/io_plugins/editor_font_import_plugin.cpp
+#, fuzzy
 msgid ""
 "Invalid file extension.\n"
-"Please use .fnt."
+"Please use .font."
 msgstr ""
 "Extensió de fitxer no vàlida.\n"
 "Utilitzeu .fnt."
@@ -2753,7 +2964,7 @@ msgid "Compress"
 msgstr ""
 
 #: editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Add to Project (godot.cfg)"
+msgid "Add to Project (project.godot)"
 msgstr ""
 
 #: editor/io_plugins/editor_translation_import_plugin.cpp
@@ -3415,7 +3626,7 @@ msgid "Change default type"
 msgstr "Canvia Tipus de la Matriu"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
-#: scene/gui/dialogs.cpp
+#: editor/script_create_dialog.cpp scene/gui/dialogs.cpp
 msgid "OK"
 msgstr "D'acord"
 
@@ -3464,17 +3675,6 @@ msgstr ""
 msgid "Set Handle"
 msgstr ""
 
-#: editor/plugins/color_ramp_editor_plugin.cpp
-#: editor/plugins/gradient_texture_editor_plugin.cpp
-msgid "Add/Remove Color Ramp Point"
-msgstr ""
-
-#: editor/plugins/color_ramp_editor_plugin.cpp
-#: editor/plugins/gradient_texture_editor_plugin.cpp
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Modify Color Ramp"
-msgstr ""
-
 #: editor/plugins/cube_grid_theme_editor_plugin.cpp
 msgid "Creating Mesh Library"
 msgstr ""
@@ -3506,7 +3706,31 @@ msgid "Update from Scene"
 msgstr ""
 
 #: editor/plugins/curve_editor_plugin.cpp
+#, fuzzy
+msgid "Add point"
+msgstr "Afegeix Senyal"
+
+#: editor/plugins/curve_editor_plugin.cpp
+#, fuzzy
+msgid "Remove point"
+msgstr "Treu Senyal"
+
+#: editor/plugins/curve_editor_plugin.cpp
+#, fuzzy
+msgid "Load preset"
+msgstr "Errors de Càrrega"
+
+#: editor/plugins/curve_editor_plugin.cpp
 msgid "Modify Curve"
+msgstr ""
+
+#: editor/plugins/gradient_editor_plugin.cpp
+msgid "Add/Remove Color Ramp Point"
+msgstr ""
+
+#: editor/plugins/gradient_editor_plugin.cpp
+#: editor/plugins/shader_graph_editor_plugin.cpp
+msgid "Modify Color Ramp"
 msgstr ""
 
 #: editor/plugins/item_list_editor_plugin.cpp
@@ -3779,6 +4003,19 @@ msgid "Remove Poly And Point"
 msgstr ""
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Clear Emission Mask"
+msgstr ""
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Generating AABB"
+msgstr ""
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Can only set point into a ParticlesMaterial process material"
+msgstr ""
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Error loading image:"
 msgstr ""
 
@@ -3791,7 +4028,7 @@ msgid "Set Emission Mask"
 msgstr ""
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Clear Emission Mask"
+msgid "Generate Visibility Rect"
 msgstr ""
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -3800,6 +4037,24 @@ msgstr ""
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generated Point Count:"
+msgstr ""
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
+msgid "Generation Time (sec):"
+msgstr "Temps Mitjà (s)"
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Emission Mask"
+msgstr ""
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Capture from Pixel"
+msgstr ""
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Emission Colors"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
@@ -3863,8 +4118,20 @@ msgstr ""
 msgid "Emission Source: "
 msgstr ""
 
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Generate Visibility AABB"
+msgstr ""
+
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
+msgstr ""
+
+#: editor/plugins/path_2d_editor_plugin.cpp
+msgid "Remove Out-Control from Curve"
+msgstr ""
+
+#: editor/plugins/path_2d_editor_plugin.cpp
+msgid "Remove In-Control from Curve"
 msgstr ""
 
 #: editor/plugins/path_2d_editor_plugin.cpp
@@ -3920,6 +4187,15 @@ msgstr ""
 
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Remove Path Point"
+msgstr ""
+
+#: editor/plugins/path_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Out-Control Point"
+msgstr "Treure Autocàrrega"
+
+#: editor/plugins/path_editor_plugin.cpp
+msgid "Remove In-Control Point"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -4075,6 +4351,10 @@ msgid "Pitch"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
+msgid "Clear Recent Files"
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
 msgid "Error while saving theme"
 msgstr ""
 
@@ -4163,10 +4443,6 @@ msgstr ""
 msgid "Find Next"
 msgstr ""
 
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Debug"
-msgstr ""
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Over"
 msgstr ""
@@ -4200,15 +4476,7 @@ msgid "Move Right"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Tutorials"
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Open https://godotengine.org at tutorials section."
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Classes"
+msgid "Open Godot online documentation"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -4264,6 +4532,23 @@ msgid "Pick Color"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Convert Case"
+msgstr "Converteix a..."
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Uppercase"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Lowercase"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Capitalize"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
 msgid "Cut"
@@ -4314,6 +4599,14 @@ msgid "Trim Trailing Whitespace"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
+msgid "Convert Indent To Spaces"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Convert Indent To Tabs"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
 msgid "Auto Indent"
 msgstr ""
 
@@ -4333,6 +4626,16 @@ msgstr ""
 #: editor/plugins/script_text_editor.cpp
 msgid "Goto Previous Breakpoint"
 msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Convert To Uppercase"
+msgstr "Converteix a..."
+
+#: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Convert To Lowercase"
+msgstr "Converteix a..."
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp
@@ -4355,6 +4658,10 @@ msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Contextual Help"
+msgstr ""
+
+#: editor/plugins/shader_editor_plugin.cpp
+msgid "Shader"
 msgstr ""
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
@@ -4574,11 +4881,93 @@ msgid "Animation Key Inserted."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Freelook Left"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Freelook Right"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Freelook Forward"
+msgstr "Endavant"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Freelook Backwards"
+msgstr "Enrere"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Freelook Up"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Freelook Down"
+msgstr "Roda Avall."
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Freelook Speed Modifier"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Objects Drawn"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Material Changes"
+msgstr "Actualitza Canvis"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Shader Changes"
+msgstr "Actualitza Canvis"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Surface Changes"
+msgstr "Actualitza Canvis"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Draw Calls"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Vertices"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Align with view"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Environment"
+msgid "Display Normal"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Display Wireframe"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Display Overdraw"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Display Unshaded"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "View Environment"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "View Gizmos"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "View Information"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -4586,23 +4975,7 @@ msgid "Audio Listener"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Gizmos"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "No scene selected to instance!"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Instance at Cursor"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Could not instance scene!"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -4662,6 +5035,24 @@ msgid "Align Selection With View"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Tool Select"
+msgstr "Tota la Selecció"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Tool Move"
+msgstr "Mou"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Tool Rotate"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Tool Scale"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform"
 msgstr ""
 
@@ -4671,14 +5062,6 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Dialog.."
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Use Default Light"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Use Default sRGB"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -4706,28 +5089,16 @@ msgid "4 Viewports"
 msgstr "4 Vistes"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Display Normal"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Display Wireframe"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Display Overdraw"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Display Shadeless"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Origin"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Grid"
 msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Settings"
+msgstr "Configuració"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Settings"
@@ -4748,14 +5119,6 @@ msgstr ""
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Viewport Settings"
 msgstr "Configuració de la Vista"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Default Light Normal:"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Ambient Light Color:"
-msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Perspective FOV (deg.):"
@@ -5179,12 +5542,12 @@ msgstr ""
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Invalid project path, godot.cfg must not exist."
+msgid "Invalid project path, project.godot must not exist."
 msgstr "El camí de Destinació ha d'existir."
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Invalid project path, godot.cfg must exist."
+msgid "Invalid project path, project.godot must exist."
 msgstr "El camí de Destinació ha d'existir."
 
 #: editor/project_manager.cpp
@@ -5196,7 +5559,7 @@ msgid "Invalid project path (changed anything?)."
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "Couldn't create godot.cfg in project path."
+msgid "Couldn't create project.godot in project path."
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -5229,10 +5592,6 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Install Project:"
-msgstr ""
-
-#: editor/project_manager.cpp
-msgid "Install"
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -5292,6 +5651,11 @@ msgstr ""
 #: editor/project_manager.cpp
 msgid "New Project"
 msgstr ""
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Templates"
+msgstr "Treu la Selecció"
 
 #: editor/project_manager.cpp
 msgid "Exit"
@@ -5412,6 +5776,10 @@ msgstr ""
 msgid "Erase Input Action Event"
 msgstr ""
 
+#: editor/project_settings.cpp
+msgid "Add Event"
+msgstr ""
+
 #: editor/project_settings.cpp scene/gui/input_action.cpp
 msgid "Device"
 msgstr "Dispositiu"
@@ -5478,7 +5846,7 @@ msgstr ""
 
 #: editor/project_settings.cpp
 #, fuzzy
-msgid "Project Settings (godot.cfg)"
+msgid "Project Settings (project.godot)"
 msgstr "Configuració del Projecte (engine.cfg)"
 
 #: editor/project_settings.cpp editor/settings_config_dialog.cpp
@@ -5545,10 +5913,6 @@ msgstr ""
 msgid "AutoLoad"
 msgstr ""
 
-#: editor/project_settings.cpp
-msgid "Plugins"
-msgstr ""
-
 #: editor/property_editor.cpp
 #, fuzzy
 msgid "Pick a Viewport"
@@ -5598,10 +5962,6 @@ msgstr "SistemaDeFitxers"
 
 #: editor/property_editor.cpp
 msgid "Error loading file: Not a resource!"
-msgstr ""
-
-#: editor/property_editor.cpp
-msgid "Couldn't load image"
 msgstr ""
 
 #: editor/property_editor.cpp
@@ -5792,6 +6152,11 @@ msgid "Error duplicating scene to save it."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Sub-Resources:"
+msgstr "Recurs"
+
+#: editor/scene_tree_dock.cpp
 msgid "Edit Groups"
 msgstr ""
 
@@ -5869,7 +6234,55 @@ msgid "Toggle CanvasItem Visible"
 msgstr ""
 
 #: editor/scene_tree_editor.cpp
+msgid "Node configuration warning:"
+msgstr ""
+
+#: editor/scene_tree_editor.cpp
+msgid ""
+"Node has connection(s) and group(s)\n"
+"Click to show signals dock."
+msgstr ""
+
+#: editor/scene_tree_editor.cpp
+msgid ""
+"Node has connections.\n"
+"Click to show signals dock."
+msgstr ""
+
+#: editor/scene_tree_editor.cpp
+msgid ""
+"Node is in group(s).\n"
+"Click to show groups dock."
+msgstr ""
+
+#: editor/scene_tree_editor.cpp
+#, fuzzy
+msgid "Subscene options"
+msgstr "Opcions de Depuració (Debug)"
+
+#: editor/scene_tree_editor.cpp
 msgid "Instance:"
+msgstr ""
+
+#: editor/scene_tree_editor.cpp
+#, fuzzy
+msgid "Open script"
+msgstr "Obertura Ràpida d'Scripts..."
+
+#: editor/scene_tree_editor.cpp
+msgid ""
+"Node is locked.\n"
+"Click to unlock"
+msgstr ""
+
+#: editor/scene_tree_editor.cpp
+msgid ""
+"Children are not selectable.\n"
+"Click to make selectable"
+msgstr ""
+
+#: editor/scene_tree_editor.cpp
+msgid "Toggle Visibility"
 msgstr ""
 
 #: editor/scene_tree_editor.cpp
@@ -5917,40 +6330,9 @@ msgid "Select a Node"
 msgstr ""
 
 #: editor/script_create_dialog.cpp
-msgid "Invalid parent class name"
-msgstr ""
-
-#: editor/script_create_dialog.cpp
-msgid "Valid chars:"
-msgstr ""
-
-#: editor/script_create_dialog.cpp
-msgid "Invalid class name"
-msgstr ""
-
-#: editor/script_create_dialog.cpp
-msgid "Valid name"
-msgstr ""
-
-#: editor/script_create_dialog.cpp
-msgid "N/A"
-msgstr ""
-
-#: editor/script_create_dialog.cpp
-msgid "Class name is invalid!"
-msgstr ""
-
-#: editor/script_create_dialog.cpp
-msgid "Parent class name is invalid!"
-msgstr ""
-
-#: editor/script_create_dialog.cpp
-msgid "Invalid path!"
-msgstr ""
-
-#: editor/script_create_dialog.cpp
-msgid "Could not create script in filesystem."
-msgstr ""
+#, fuzzy
+msgid "Error - Could not create script in filesystem."
+msgstr "No s'ha pogut crear la carpeta."
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
@@ -5974,22 +6356,68 @@ msgid "Invalid extension"
 msgstr ""
 
 #: editor/script_create_dialog.cpp
+msgid "Wrong extension chosen"
+msgstr ""
+
+#: editor/script_create_dialog.cpp
 #, fuzzy
-msgid "Create new script"
+msgid "Invalid Path"
+msgstr "Camí no vàlid."
+
+#: editor/script_create_dialog.cpp
+msgid "Invalid class name"
+msgstr ""
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Invalid inherited parent name or path"
+msgstr "El Nom de la propietat index és invàlid."
+
+#: editor/script_create_dialog.cpp
+msgid "Script valid"
+msgstr ""
+
+#: editor/script_create_dialog.cpp
+msgid "Allowed: a-z, A-Z, 0-9 and _"
+msgstr ""
+
+#: editor/script_create_dialog.cpp
+msgid "N/A"
+msgstr ""
+
+#: editor/script_create_dialog.cpp
+msgid "Built-in script (into scene file)"
+msgstr ""
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Create new script file"
 msgstr "Crea Subscripció"
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
-msgid "Load existing script"
+msgid "Load existing script file"
 msgstr "No s'ha pogut instanciar l'script:"
 
 #: editor/script_create_dialog.cpp
-msgid "Class Name:"
-msgstr ""
+#, fuzzy
+msgid "Inherits"
+msgstr "Hereta:"
 
 #: editor/script_create_dialog.cpp
-msgid "Built-In Script"
-msgstr ""
+#, fuzzy
+msgid "Class Name"
+msgstr "Classe:"
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Template"
+msgstr "Treu la Selecció"
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Built-in Script"
+msgstr "Executa Script"
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
@@ -6158,6 +6586,10 @@ msgstr ""
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp
+msgid "Change Particles AABB"
 msgstr ""
 
 #: editor/spatial_editor_gizmos.cpp
@@ -6698,10 +7130,11 @@ msgstr ""
 "Un node ParallaxLayer només funciona quan s'estableix com a fill d'un node "
 "ParallaxBackground."
 
-#: scene/2d/particles_2d.cpp
-msgid "Path property must point to a valid Particles2D node to work."
+#: scene/2d/particles_2d.cpp scene/3d/particles.cpp
+msgid ""
+"A material to process the particles is not assigned, so no behavior is "
+"imprinted."
 msgstr ""
-"Cal que la propietat Camí (Path) assenyali cap a un node Particles2D vàlid."
 
 #: scene/2d/path_2d.cpp
 msgid "PathFollow2D only works when set as a child of a Path2D node."
@@ -6784,6 +7217,11 @@ msgstr ""
 "NavigationMeshInstance ha de ser fill o nét d'un node Navigation. Només "
 "proporciona dades de navegació."
 
+#: scene/3d/particles.cpp
+msgid ""
+"Nothing is visible because meshes have not been assigned to draw passes."
+msgstr ""
+
 #: scene/3d/remote_transform.cpp
 #, fuzzy
 msgid "Path property must point to a valid Spatial node to work."
@@ -6804,6 +7242,14 @@ msgid ""
 msgstr ""
 "Cal crear o establir un recurs SpriteFrames en la propietat 'Frames' perquè "
 "AnimatedSprite3D dibuixi els quadres."
+
+#: scene/gui/color_picker.cpp
+msgid "RAW Mode"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Add current color as a preset"
+msgstr ""
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
@@ -6850,6 +7296,12 @@ msgid ""
 "minimum size manually."
 msgstr ""
 
+#: scene/main/scene_main_loop.cpp
+msgid ""
+"Default Environment as specified in Project Setings (Rendering -> Viewport -"
+"> Default Environment) could not be loaded."
+msgstr ""
+
 #: scene/main/viewport.cpp
 msgid ""
 "This viewport is not set as render target. If you intend for it to display "
@@ -6861,6 +7313,23 @@ msgstr ""
 "Per mostrar-ne el contingut, especifiqueu-la com a filla d'un Control de "
 "forma per tal d'obtenir-ne la mida. Altrament, establiu-la com a Destinació "
 "de Renderització i assigneu-ne la textura interna a algun node."
+
+#~ msgid "Node From Scene"
+#~ msgstr "Node de l'Escena"
+
+#~ msgid "Import assets to the project."
+#~ msgstr "Importa actius al projecte."
+
+#~ msgid "Export the project to many platforms."
+#~ msgstr "Exporta el projecte a diverses plataformes."
+
+#~ msgid "Alerts when an external resource has changed."
+#~ msgstr "Alerta en canviar un recurs extern."
+
+#~ msgid "Path property must point to a valid Particles2D node to work."
+#~ msgstr ""
+#~ "Cal que la propietat Camí (Path) assenyali cap a un node Particles2D "
+#~ "vàlid."
 
 #~ msgid ""
 #~ "A SampleLibrary resource must be created or set in the 'samples' property "
