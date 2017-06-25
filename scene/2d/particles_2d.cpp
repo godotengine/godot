@@ -50,6 +50,12 @@ void Particles2D::set_lifetime(float p_lifetime) {
 	lifetime = p_lifetime;
 	VS::get_singleton()->particles_set_lifetime(particles, lifetime);
 }
+
+void Particles2D::set_one_shot(bool p_enable) {
+
+	one_shot = p_enable;
+	VS::get_singleton()->particles_set_one_shot(particles, one_shot);
+}
 void Particles2D::set_pre_process_time(float p_time) {
 
 	pre_process_time = p_time;
@@ -84,7 +90,7 @@ void Particles2D::set_use_local_coordinates(bool p_enable) {
 	local_coords = p_enable;
 	VS::get_singleton()->particles_set_use_local_coordinates(particles, local_coords);
 	set_notify_transform(!p_enable);
-	if (!p_enable) {
+	if (!p_enable && is_inside_tree()) {
 		_update_particle_emission_transform();
 	}
 }
@@ -134,6 +140,11 @@ int Particles2D::get_amount() const {
 float Particles2D::get_lifetime() const {
 
 	return lifetime;
+}
+
+bool Particles2D::get_one_shot() const {
+
+	return one_shot;
 }
 float Particles2D::get_pre_process_time() const {
 
@@ -264,6 +275,10 @@ int Particles2D::get_h_frames() const {
 	return h_frames;
 }
 
+void Particles2D::restart() {
+	VS::get_singleton()->particles_restart(particles);
+}
+
 void Particles2D::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW) {
@@ -295,6 +310,7 @@ void Particles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_emitting", "emitting"), &Particles2D::set_emitting);
 	ClassDB::bind_method(D_METHOD("set_amount", "amount"), &Particles2D::set_amount);
 	ClassDB::bind_method(D_METHOD("set_lifetime", "secs"), &Particles2D::set_lifetime);
+	ClassDB::bind_method(D_METHOD("set_one_shot", "secs"), &Particles2D::set_one_shot);
 	ClassDB::bind_method(D_METHOD("set_pre_process_time", "secs"), &Particles2D::set_pre_process_time);
 	ClassDB::bind_method(D_METHOD("set_explosiveness_ratio", "ratio"), &Particles2D::set_explosiveness_ratio);
 	ClassDB::bind_method(D_METHOD("set_randomness_ratio", "ratio"), &Particles2D::set_randomness_ratio);
@@ -308,6 +324,7 @@ void Particles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_emitting"), &Particles2D::is_emitting);
 	ClassDB::bind_method(D_METHOD("get_amount"), &Particles2D::get_amount);
 	ClassDB::bind_method(D_METHOD("get_lifetime"), &Particles2D::get_lifetime);
+	ClassDB::bind_method(D_METHOD("get_one_shot"), &Particles2D::get_one_shot);
 	ClassDB::bind_method(D_METHOD("get_pre_process_time"), &Particles2D::get_pre_process_time);
 	ClassDB::bind_method(D_METHOD("get_explosiveness_ratio"), &Particles2D::get_explosiveness_ratio);
 	ClassDB::bind_method(D_METHOD("get_randomness_ratio"), &Particles2D::get_randomness_ratio);
@@ -335,10 +352,13 @@ void Particles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_h_frames", "frames"), &Particles2D::set_h_frames);
 	ClassDB::bind_method(D_METHOD("get_h_frames"), &Particles2D::get_h_frames);
 
+	ClassDB::bind_method(D_METHOD("restart"), &Particles2D::restart);
+
 	ADD_GROUP("Parameters", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting"), "set_emitting", "is_emitting");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "amount", PROPERTY_HINT_RANGE, "1,100000,1"), "set_amount", "get_amount");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "lifetime", PROPERTY_HINT_RANGE, "0.01,600.0,0.01"), "set_lifetime", "get_lifetime");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_shot"), "set_one_shot", "get_one_shot");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "preprocess", PROPERTY_HINT_RANGE, "0.00,600.0,0.01"), "set_pre_process_time", "get_pre_process_time");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "speed_scale", PROPERTY_HINT_RANGE, "0.01,64,0.01"), "set_speed_scale", "get_speed_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "explosiveness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_explosiveness_ratio", "get_explosiveness_ratio");
@@ -365,6 +385,7 @@ Particles2D::Particles2D() {
 	particles = VS::get_singleton()->particles_create();
 
 	set_emitting(true);
+	set_one_shot(false);
 	set_amount(8);
 	set_lifetime(1);
 	set_fixed_fps(0);

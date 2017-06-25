@@ -96,8 +96,8 @@ void CanvasItemMaterial::_update_shader() {
 
 	switch (light_mode) {
 		case LIGHT_MODE_NORMAL: break;
-		case LIGHT_MODE_UNSHADED: code += "unshaded"; break;
-		case LIGHT_MODE_LIGHT_ONLY: code += "light_only"; break;
+		case LIGHT_MODE_UNSHADED: code += ",unshaded"; break;
+		case LIGHT_MODE_LIGHT_ONLY: code += ",light_only"; break;
 	}
 	code += ";\n"; //thats it.
 
@@ -367,7 +367,9 @@ Transform2D CanvasItem::get_global_transform_with_canvas() const {
 }
 
 Transform2D CanvasItem::get_global_transform() const {
-
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_V(!is_inside_tree(), get_transform());
+#endif
 	if (global_invalid) {
 
 		const CanvasItem *pi = get_parent_item();
@@ -765,8 +767,9 @@ float CanvasItem::draw_char(const Ref<Font> &p_font, const Point2 &p_pos, const 
 
 void CanvasItem::_notify_transform(CanvasItem *p_node) {
 
-	if (/*p_node->xform_change.in_list() &&*/ p_node->global_invalid)
+	if (/*p_node->xform_change.in_list() &&*/ p_node->global_invalid) {
 		return; //nothing to do
+	}
 
 	p_node->global_invalid = true;
 
@@ -1067,7 +1070,15 @@ bool CanvasItem::is_local_transform_notification_enabled() const {
 }
 
 void CanvasItem::set_notify_transform(bool p_enable) {
+	if (notify_transform == p_enable)
+		return;
+
 	notify_transform = p_enable;
+
+	if (notify_transform && is_inside_tree()) {
+		//this ensures that invalid globals get resolved, so notifications can be received
+		get_global_transform();
+	}
 }
 
 bool CanvasItem::is_transform_notification_enabled() const {

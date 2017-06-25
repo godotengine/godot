@@ -306,6 +306,7 @@ public:
 	FUNC2(particles_set_emitting, RID, bool)
 	FUNC2(particles_set_amount, RID, int)
 	FUNC2(particles_set_lifetime, RID, float)
+	FUNC2(particles_set_one_shot, RID, bool)
 	FUNC2(particles_set_pre_process_time, RID, float)
 	FUNC2(particles_set_explosiveness_ratio, RID, float)
 	FUNC2(particles_set_randomness_ratio, RID, float)
@@ -315,6 +316,7 @@ public:
 	FUNC2(particles_set_process_material, RID, RID)
 	FUNC2(particles_set_fixed_fps, RID, int)
 	FUNC2(particles_set_fractional_delta, RID, bool)
+	FUNC1(particles_restart, RID)
 
 	FUNC2(particles_set_draw_order, RID, VS::ParticlesDrawOrder)
 

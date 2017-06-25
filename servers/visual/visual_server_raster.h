@@ -862,6 +862,7 @@ public:
 	BIND2(particles_set_emitting, RID, bool)
 	BIND2(particles_set_amount, RID, int)
 	BIND2(particles_set_lifetime, RID, float)
+	BIND2(particles_set_one_shot, RID, bool)
 	BIND2(particles_set_pre_process_time, RID, float)
 	BIND2(particles_set_explosiveness_ratio, RID, float)
 	BIND2(particles_set_randomness_ratio, RID, float)
@@ -871,6 +872,7 @@ public:
 	BIND2(particles_set_process_material, RID, RID)
 	BIND2(particles_set_fixed_fps, RID, int)
 	BIND2(particles_set_fractional_delta, RID, bool)
+	BIND1(particles_restart, RID)
 
 	BIND2(particles_set_draw_order, RID, VS::ParticlesDrawOrder)
 

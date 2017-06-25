@@ -5068,6 +5068,14 @@ void RasterizerStorageGLES3::particles_set_lifetime(RID p_particles, float p_lif
 	ERR_FAIL_COND(!particles);
 	particles->lifetime = p_lifetime;
 }
+
+void RasterizerStorageGLES3::particles_set_one_shot(RID p_particles, bool p_one_shot) {
+
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+	particles->one_shot = p_one_shot;
+}
+
 void RasterizerStorageGLES3::particles_set_pre_process_time(RID p_particles, float p_time) {
 
 	Particles *particles = particles_owner.getornull(p_particles);
@@ -5199,6 +5207,14 @@ void RasterizerStorageGLES3::particles_set_draw_pass_mesh(RID p_particles, int p
 	particles->draw_passes[p_pass] = p_mesh;
 }
 
+void RasterizerStorageGLES3::particles_restart(RID p_particles) {
+
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+
+	particles->restart_request = true;
+}
+
 void RasterizerStorageGLES3::particles_request_process(RID p_particles) {
 
 	Particles *particles = particles_owner.getornull(p_particles);
@@ -5290,6 +5306,10 @@ void RasterizerStorageGLES3::_particles_process(Particles *particles, float p_de
 		particles->cycle_number = 0;
 		particles->random_seed = Math::rand();
 	} else if (new_phase < particles->phase) {
+		if (particles->one_shot) {
+			particles->emitting = false;
+			shaders.particles.set_uniform(ParticlesShaderGLES3::EMITTING, false);
+		}
 		particles->cycle_number++;
 	}
 
@@ -5355,6 +5375,17 @@ void RasterizerStorageGLES3::update_particles() {
 		//use transform feedback to process particles
 
 		Particles *particles = particle_update_list.first()->self();
+
+		if (particles->restart_request) {
+			particles->emitting = true; //restart from zero
+			particles->prev_ticks = 0;
+			particles->phase = 0;
+			particles->prev_phase = 0;
+			particles->clear = true;
+			particles->particle_valid_histories[0] = false;
+			particles->particle_valid_histories[1] = false;
+			particles->restart_request = false;
+		}
 
 		if (particles->inactive && !particles->emitting) {
 

@@ -448,6 +448,7 @@ public:
 	virtual void particles_set_emitting(RID p_particles, bool p_emitting) = 0;
 	virtual void particles_set_amount(RID p_particles, int p_amount) = 0;
 	virtual void particles_set_lifetime(RID p_particles, float p_lifetime) = 0;
+	virtual void particles_set_one_shot(RID p_particles, bool p_one_shot) = 0;
 	virtual void particles_set_pre_process_time(RID p_particles, float p_time) = 0;
 	virtual void particles_set_explosiveness_ratio(RID p_particles, float p_ratio) = 0;
 	virtual void particles_set_randomness_ratio(RID p_particles, float p_ratio) = 0;
@@ -457,6 +458,7 @@ public:
 	virtual void particles_set_process_material(RID p_particles, RID p_material) = 0;
 	virtual void particles_set_fixed_fps(RID p_particles, int p_fps) = 0;
 	virtual void particles_set_fractional_delta(RID p_particles, bool p_enable) = 0;
+	virtual void particles_restart(RID p_particles) = 0;
 
 	virtual void particles_set_draw_order(RID p_particles, VS::ParticlesDrawOrder p_order) = 0;
 
