@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Arithmetic computations (body).                                      */
 /*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
+/*  Copyright 1996-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -449,8 +449,8 @@
       FT_Add64( &temp, &temp2, &temp );
 
       /* last attempt to ditch long division */
-      a = temp.hi == 0 ? temp.lo / c
-                       : ft_div64by32( temp.hi, temp.lo, c );
+      a = ( temp.hi == 0 ) ? temp.lo / c
+                           : ft_div64by32( temp.hi, temp.lo, c );
     }
 
     a_ = (FT_Long)a;
@@ -492,8 +492,8 @@
       ft_multo64( a, b, &temp );
 
       /* last attempt to ditch long division */
-      a = temp.hi == 0 ? temp.lo / c
-                       : ft_div64by32( temp.hi, temp.lo, c );
+      a = ( temp.hi == 0 ) ? temp.lo / c
+                           : ft_div64by32( temp.hi, temp.lo, c );
     }
 
     a_ = (FT_Long)a;

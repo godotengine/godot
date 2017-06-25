@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType convenience functions to handle glyphs (specification).     */
 /*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
+/*  Copyright 1996-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -453,7 +453,7 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /*                                                                       */
   /*        // load glyph                                                  */
-  /*        error = FT_Load_Char( face, glyph_index, FT_LOAD_DEFAUT );     */
+  /*        error = FT_Load_Char( face, glyph_index, FT_LOAD_DEFAULT );    */
   /*                                                                       */
   /*        // extract glyph image                                         */
   /*        error = FT_Get_Glyph( face->glyph, &glyph );                   */

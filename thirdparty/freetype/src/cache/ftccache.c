@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    The FreeType internal cache interface (body).                        */
 /*                                                                         */
-/*  Copyright 2000-2016 by                                                 */
+/*  Copyright 2000-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -147,7 +147,7 @@
         for (;;)
         {
           node = *pnode;
-          if ( node == NULL )
+          if ( !node )
             break;
 
           if ( node->hash & ( mask + 1 ) )
@@ -232,7 +232,7 @@
       FTC_Node  node = *pnode;
 
 
-      if ( node == NULL )
+      if ( !node )
       {
         FT_TRACE0(( "ftc_node_hash_unlink: unknown node\n" ));
         return;
@@ -288,7 +288,7 @@
     cache = manager->caches[node->cache_index];
 
 #ifdef FT_DEBUG_ERROR
-    if ( cache == NULL )
+    if ( !cache )
     {
       FT_TRACE0(( "ftc_node_destroy: invalid node handle\n" ));
       return;
@@ -494,7 +494,7 @@
     FTC_Node_CompareFunc  compare = cache->clazz.node_compare;
 
 
-    if ( cache == NULL || anode == NULL )
+    if ( !cache || !anode )
       return FT_THROW( Invalid_Argument );
 
     /* Go to the `top' node of the list sharing same masked hash */
@@ -505,7 +505,7 @@
     for (;;)
     {
       node = *pnode;
-      if ( node == NULL )
+      if ( !node )
         goto NewNode;
 
       if ( node->hash == hash                           &&
@@ -523,7 +523,7 @@
       /* Update pnode by modified linked list */
       while ( *pnode != node )
       {
-        if ( *pnode == NULL )
+        if ( !*pnode )
         {
           FT_ERROR(( "FTC_Cache_Lookup: oops!!!  node missing\n" ));
           goto NewNode;
@@ -582,7 +582,7 @@
         FT_Bool   list_changed = FALSE;
 
 
-        if ( node == NULL )
+        if ( !node )
           break;
 
         if ( cache->clazz.node_remove_faceid( node, face_id,

@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Build macros of the FreeType 2 library.                              */
 /*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
+/*  Copyright 1996-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -352,6 +352,19 @@
    *
    */
 #define FT_TRUETYPE_DRIVER_H  <freetype/ftttdrv.h>
+
+
+  /*************************************************************************
+   *
+   * @macro:
+   *   FT_PCF_DRIVER_H
+   *
+   * @description:
+   *   A macro used in #include statements to name the file containing
+   *   structures and macros related to the PCF driver module.
+   *
+   */
+#define FT_PCF_DRIVER_H  <freetype/ftpcfdrv.h>
 
 
   /*************************************************************************

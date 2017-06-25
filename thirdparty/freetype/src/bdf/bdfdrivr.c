@@ -276,7 +276,7 @@ THE SOFTWARE.
 
         len = lengths[nn];
 
-        if ( src == NULL )
+        if ( !src )
           continue;
 
         /* separate elements with a space */
@@ -423,7 +423,7 @@ THE SOFTWARE.
       else
         bdfface->family_name = NULL;
 
-      if ( ( error = bdf_interpret_style( face ) ) != 0 )
+      if ( FT_SET_ERROR( bdf_interpret_style( face ) ) )
         goto Exit;
 
       /* the number of glyphs (with one slot for the undefined glyph */
@@ -439,7 +439,7 @@ THE SOFTWARE.
         FT_Short         resolution_x = 0, resolution_y = 0;
 
 
-        FT_MEM_ZERO( bsize, sizeof ( FT_Bitmap_Size ) );
+        FT_ZERO( bsize );
 
         bsize->height = (FT_Short)( font->font_ascent + font->font_descent );
 
@@ -866,10 +866,10 @@ THE SOFTWARE.
       0x10000L,
       0x20000L,
 
-      0,    /* module-specific interface */
+      NULL,    /* module-specific interface */
 
-      0,                        /* FT_Module_Constructor  module_init   */
-      0,                        /* FT_Module_Destructor   module_done   */
+      NULL,                     /* FT_Module_Constructor  module_init   */
+      NULL,                     /* FT_Module_Destructor   module_done   */
       bdf_driver_requester      /* FT_Module_Requester    get_interface */
     },
 
@@ -879,16 +879,16 @@ THE SOFTWARE.
 
     BDF_Face_Init,              /* FT_Face_InitFunc  init_face */
     BDF_Face_Done,              /* FT_Face_DoneFunc  done_face */
-    0,                          /* FT_Size_InitFunc  init_size */
-    0,                          /* FT_Size_DoneFunc  done_size */
-    0,                          /* FT_Slot_InitFunc  init_slot */
-    0,                          /* FT_Slot_DoneFunc  done_slot */
+    NULL,                       /* FT_Size_InitFunc  init_size */
+    NULL,                       /* FT_Size_DoneFunc  done_size */
+    NULL,                       /* FT_Slot_InitFunc  init_slot */
+    NULL,                       /* FT_Slot_DoneFunc  done_slot */
 
     BDF_Glyph_Load,             /* FT_Slot_LoadFunc  load_glyph */
 
-    0,                          /* FT_Face_GetKerningFunc   get_kerning  */
-    0,                          /* FT_Face_AttachFunc       attach_file  */
-    0,                          /* FT_Face_GetAdvancesFunc  get_advances */
+    NULL,                       /* FT_Face_GetKerningFunc   get_kerning  */
+    NULL,                       /* FT_Face_AttachFunc       attach_file  */
+    NULL,                       /* FT_Face_GetAdvancesFunc  get_advances */
 
     BDF_Size_Request,           /* FT_Size_RequestFunc  request_size */
     BDF_Size_Select             /* FT_Size_SelectFunc   select_size  */

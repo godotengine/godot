@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Auxiliary functions for PostScript fonts (body).                     */
 /*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
+/*  Copyright 1996-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -344,7 +344,7 @@
       FT_Byte  c = *cur;
 
 
-      ++cur;
+      cur++;
 
       if ( c == '\\' )
       {
@@ -370,17 +370,17 @@
         case '\\':
         case '(':
         case ')':
-          ++cur;
+          cur++;
           break;
 
         default:
           /* skip octal escape or ignore backslash */
-          for ( i = 0; i < 3 && cur < limit; ++i )
+          for ( i = 0; i < 3 && cur < limit; i++ )
           {
             if ( !IS_OCTAL_DIGIT( *cur ) )
               break;
 
-            ++cur;
+            cur++;
           }
         }
       }
@@ -455,19 +455,19 @@
 
     FT_ASSERT( **acur == '{' );
 
-    for ( cur = *acur; cur < limit && error == FT_Err_Ok; ++cur )
+    for ( cur = *acur; cur < limit && error == FT_Err_Ok; cur++ )
     {
       switch ( *cur )
       {
       case '{':
-        ++embed;
+        embed++;
         break;
 
       case '}':
-        --embed;
+        embed--;
         if ( embed == 0 )
         {
-          ++cur;
+          cur++;
           goto end;
         }
         break;
@@ -695,7 +695,7 @@
       /* ************ otherwise, it is any token **************/
     default:
       token->start = cur;
-      token->type  = ( *cur == '/' ? T1_TOKEN_TYPE_KEY : T1_TOKEN_TYPE_ANY );
+      token->type  = ( *cur == '/' ) ? T1_TOKEN_TYPE_KEY : T1_TOKEN_TYPE_ANY;
       ps_parser_skip_PS_token( parser );
       cur = parser->cursor;
       if ( !parser->error )
@@ -750,7 +750,7 @@
         if ( !token.type )
           break;
 
-        if ( tokens != NULL && cur < limit )
+        if ( tokens && cur < limit )
           *cur = token;
 
         cur++;
@@ -815,12 +815,12 @@
 
       old_cur = cur;
 
-      if ( coords != NULL && count >= max_coords )
+      if ( coords && count >= max_coords )
         break;
 
       /* call PS_Conv_ToFixed() even if coords == NULL */
       /* to properly parse number at `cur'             */
-      *( coords != NULL ? &coords[count] : &dummy ) =
+      *( coords ? &coords[count] : &dummy ) =
         (FT_Short)( PS_Conv_ToFixed( &cur, limit, 0 ) >> 16 );
 
       if ( old_cur == cur )
@@ -895,12 +895,12 @@
 
       old_cur = cur;
 
-      if ( values != NULL && count >= max_values )
+      if ( values && count >= max_values )
         break;
 
       /* call PS_Conv_ToFixed() even if coords == NULL */
       /* to properly parse number at `cur'             */
-      *( values != NULL ? &values[count] : &dummy ) =
+      *( values ? &values[count] : &dummy ) =
         PS_Conv_ToFixed( &cur, limit, power_ten );
 
       if ( old_cur == cur )
@@ -1172,7 +1172,7 @@
 
           /* for this to work (FT_String**)q must have been */
           /* initialized to NULL                            */
-          if ( *(FT_String**)q != NULL )
+          if ( *(FT_String**)q )
           {
             FT_TRACE0(( "ps_parser_load_field: overwriting field %s\n",
                         field->ident ));
@@ -1551,7 +1551,7 @@
       builder->current = &loader->current.outline;
       FT_GlyphLoader_Rewind( loader );
 
-      builder->hints_globals = size->internal;
+      builder->hints_globals = size->internal->module_data;
       builder->hints_funcs   = NULL;
 
       if ( hinting )
@@ -1717,6 +1717,14 @@
 
     first = outline->n_contours <= 1
             ? 0 : outline->contours[outline->n_contours - 2] + 1;
+
+    /* in malformed fonts it can happen that a contour was started */
+    /* but no points were added                                    */
+    if ( outline->n_contours && first == outline->n_points )
+    {
+      outline->n_contours--;
+      return;
+    }
 
     /* We must not include the last point in the path if it */
     /* is located on the first point.                       */

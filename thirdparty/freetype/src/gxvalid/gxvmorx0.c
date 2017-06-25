@@ -5,7 +5,7 @@
 /*    TrueTypeGX/AAT morx table validation                                 */
 /*    body for type0 (Indic Script Rearrangement) subtable.                */
 /*                                                                         */
-/*  Copyright 2005-2016 by                                                 */
+/*  Copyright 2005-2017 by                                                 */
 /*  suzuki toshiya, Masatake YAMATO, Red Hat K.K.,                         */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */

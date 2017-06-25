@@ -5,7 +5,7 @@
 /*    FreeType glyph image formats and default raster interface            */
 /*    (specification).                                                     */
 /*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
+/*  Copyright 1996-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -619,7 +619,7 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /*    {                                                                  */
   /*      x' = (x << shift) - delta                                        */
-  /*      y' = (x << shift) - delta                                        */
+  /*      y' = (y << shift) - delta                                        */
   /*    }                                                                  */
   /*                                                                       */
   /*    Set the values of `shift' and `delta' to~0 to get the original     */
@@ -859,16 +859,6 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /*    This can be used to write anti-aliased outlines directly to a      */
   /*    given background bitmap, and even perform translucency.            */
-  /*                                                                       */
-  /*    Note that the `count' field cannot be greater than a fixed value   */
-  /*    defined by the `FT_MAX_GRAY_SPANS' configuration macro in          */
-  /*    `ftoption.h'.  By default, this value is set to~32, which means    */
-  /*    that if there are more than 32~spans on a given scanline, the      */
-  /*    callback is called several times with the same `y' parameter in    */
-  /*    order to draw all callbacks.                                       */
-  /*                                                                       */
-  /*    Otherwise, the callback is only called once per scan-line, and     */
-  /*    only for those scanlines that do have `gray' pixels on them.       */
   /*                                                                       */
   typedef void
   (*FT_SpanFunc)( int             y,
@@ -1190,6 +1180,7 @@ FT_BEGIN_HEADER
   typedef struct  FT_Raster_Funcs_
   {
     FT_Glyph_Format        glyph_format;
+
     FT_Raster_NewFunc      raster_new;
     FT_Raster_ResetFunc    raster_reset;
     FT_Raster_SetModeFunc  raster_set_mode;

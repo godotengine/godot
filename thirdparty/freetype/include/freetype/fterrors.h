@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType error code handling (specification).                        */
 /*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
+/*  Copyright 1996-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -106,7 +106,7 @@
   /*                                                                   */
   /*   #undefine __FTERRORS_H__                                        */
   /*                                                                   */
-  /* work for backwards compatibility.                                 */
+  /* work for backward compatibility.                                  */
   /*                                                                   */
 #if !( defined( FTERRORS_H_ ) && defined ( __FTERRORS_H__ ) )
 #define FTERRORS_H_

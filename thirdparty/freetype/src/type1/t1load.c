@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Type 1 font loader (body).                                           */
 /*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
+/*  Copyright 1996-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -237,7 +237,7 @@
     if ( ncv <= axismap->blend_points[0] )
       return INT_TO_FIXED( axismap->design_points[0] );
 
-    for ( j = 1; j < axismap->num_points; ++j )
+    for ( j = 1; j < axismap->num_points; j++ )
     {
       if ( ncv <= axismap->blend_points[j] )
         return INT_TO_FIXED( axismap->design_points[j - 1] ) +
@@ -321,12 +321,12 @@
 
     mmvar->num_axis        = mmaster.num_axis;
     mmvar->num_designs     = mmaster.num_designs;
-    mmvar->num_namedstyles = ~0U;                        /* Does not apply */
+    mmvar->num_namedstyles = 0;                           /* Not supported */
     mmvar->axis            = (FT_Var_Axis*)&mmvar[1];
                                       /* Point to axes after MM_Var struct */
     mmvar->namedstyle      = NULL;
 
-    for ( i = 0; i < mmaster.num_axis; ++i )
+    for ( i = 0; i < mmaster.num_axis; i++ )
     {
       mmvar->axis[i].name    = mmaster.axis[i].name;
       mmvar->axis[i].minimum = INT_TO_FIXED( mmaster.axis[i].minimum);
@@ -354,7 +354,7 @@
                         axiscoords,
                         blend->num_axis );
 
-      for ( i = 0; i < mmaster.num_axis; ++i )
+      for ( i = 0; i < mmaster.num_axis; i++ )
         mmvar->axis[i].def = mm_axis_unmap( &blend->design_map[i],
                                             axiscoords[i] );
     }
@@ -407,6 +407,41 @@
       }
       blend->weight_vector[n] = result;
     }
+
+    return FT_Err_Ok;
+  }
+
+
+  FT_LOCAL_DEF( FT_Error )
+  T1_Get_MM_Blend( T1_Face    face,
+                   FT_UInt    num_coords,
+                   FT_Fixed*  coords )
+  {
+    PS_Blend  blend = face->blend;
+
+    FT_Fixed  axiscoords[4];
+    FT_UInt   i, nc;
+
+
+    if ( !blend )
+      return FT_THROW( Invalid_Argument );
+
+    mm_weights_unmap( blend->weight_vector,
+                      axiscoords,
+                      blend->num_axis );
+
+    nc = num_coords;
+    if ( num_coords > blend->num_axis )
+    {
+      FT_TRACE2(( "T1_Get_MM_Blend: only using first %d of %d coordinates\n",
+                  blend->num_axis, num_coords ));
+      nc = blend->num_axis;
+    }
+
+    for ( i = 0; i < nc; i++ )
+      coords[i] = axiscoords[i];
+    for ( ; i < num_coords; i++ )
+      coords[i] = 0x8000;
 
     return FT_Err_Ok;
   }
@@ -504,10 +539,46 @@
      if ( num_coords > T1_MAX_MM_AXIS )
        num_coords = T1_MAX_MM_AXIS;
 
-     for ( i = 0; i < num_coords; ++i )
+     for ( i = 0; i < num_coords; i++ )
        lcoords[i] = FIXED_TO_INT( coords[i] );
 
      return T1_Set_MM_Design( face, num_coords, lcoords );
+  }
+
+
+  FT_LOCAL_DEF( FT_Error )
+  T1_Get_Var_Design( T1_Face    face,
+                     FT_UInt    num_coords,
+                     FT_Fixed*  coords )
+  {
+    PS_Blend  blend = face->blend;
+
+    FT_Fixed  axiscoords[4];
+    FT_UInt   i, nc;
+
+
+    if ( !blend )
+      return FT_THROW( Invalid_Argument );
+
+    mm_weights_unmap( blend->weight_vector,
+                      axiscoords,
+                      blend->num_axis );
+
+    nc = num_coords;
+    if ( num_coords > blend->num_axis )
+    {
+      FT_TRACE2(( "T1_Get_Var_Design:"
+                  " only using first %d of %d coordinates\n",
+                  blend->num_axis, num_coords ));
+      nc = blend->num_axis;
+    }
+
+    for ( i = 0; i < nc; i++ )
+      coords[i] = mm_axis_unmap( &blend->design_map[i], axiscoords[i] );
+    for ( ; i < num_coords; i++ )
+      coords[i] = 0;
+
+    return FT_Err_Ok;
   }
 
 
@@ -1406,7 +1477,6 @@
     FT_Error   error;
     FT_Int     num_subrs;
     FT_UInt    count;
-    FT_Hash    hash = NULL;
 
     PSAux_Service  psaux = (PSAux_Service)face->psaux;
 
@@ -1433,7 +1503,7 @@
     }
 
     /* we certainly need more than 8 bytes per subroutine */
-    if ( parser->root.limit > parser->root.cursor                      &&
+    if ( parser->root.limit >= parser->root.cursor                     &&
          num_subrs > ( parser->root.limit - parser->root.cursor ) >> 3 )
     {
       /*
@@ -1457,14 +1527,12 @@
                   ( parser->root.limit - parser->root.cursor ) >> 3 ));
       num_subrs = ( parser->root.limit - parser->root.cursor ) >> 3;
 
-      if ( !hash )
+      if ( !loader->subrs_hash )
       {
-        if ( FT_NEW( hash ) )
+        if ( FT_NEW( loader->subrs_hash ) )
           goto Fail;
 
-        loader->subrs_hash = hash;
-
-        error = ft_hash_num_init( hash, memory );
+        error = ft_hash_num_init( loader->subrs_hash, memory );
         if ( error )
           goto Fail;
       }
@@ -1527,9 +1595,9 @@
 
       /* if we use a hash, the subrs index is the key, and a running */
       /* counter specified for `T1_Add_Table' acts as the value      */
-      if ( hash )
+      if ( loader->subrs_hash )
       {
-        ft_hash_num_insert( idx, count, hash, memory );
+        ft_hash_num_insert( idx, count, loader->subrs_hash, memory );
         idx = count;
       }
 
@@ -1774,6 +1842,12 @@
 
         n++;
       }
+    }
+
+    if ( !n )
+    {
+      error = FT_THROW( Invalid_File_Format );
+      goto Fail;
     }
 
     loader->num_glyphs = n;
@@ -2104,7 +2178,7 @@
                 parser->root.error = t1_load_keyword( face,
                                                       loader,
                                                       keyword );
-                if ( parser->root.error != FT_Err_Ok )
+                if ( parser->root.error )
                 {
                   if ( FT_ERR_EQ( parser->root.error, Ignore ) )
                     parser->root.error = FT_Err_Ok;
@@ -2143,7 +2217,7 @@
   {
     FT_UNUSED( face );
 
-    FT_MEM_ZERO( loader, sizeof ( *loader ) );
+    FT_ZERO( loader );
   }
 
 

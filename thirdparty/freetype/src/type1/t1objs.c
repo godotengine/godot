@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Type 1 objects manager (body).                                       */
 /*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
+/*  Copyright 1996-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -49,9 +49,6 @@
   /*                                                                       */
   /*                            SIZE FUNCTIONS                             */
   /*                                                                       */
-  /*  note that we store the global hints in the size's "internal" root    */
-  /*  field                                                                */
-  /*                                                                       */
   /*************************************************************************/
 
 
@@ -77,16 +74,16 @@
     T1_Size  size = (T1_Size)t1size;
 
 
-    if ( size->root.internal )
+    if ( t1size->internal->module_data )
     {
       PSH_Globals_Funcs  funcs;
 
 
       funcs = T1_Size_Get_Globals_Funcs( size );
       if ( funcs )
-        funcs->destroy( (PSH_Globals)size->root.internal );
+        funcs->destroy( (PSH_Globals)t1size->internal->module_data );
 
-      size->root.internal = NULL;
+      t1size->internal->module_data = NULL;
     }
   }
 
@@ -108,7 +105,7 @@
       error = funcs->create( size->root.face->memory,
                              &face->type1.private_dict, &globals );
       if ( !error )
-        size->root.internal = (FT_Size_Internal)(void*)globals;
+        t1size->internal->module_data = globals;
     }
 
     return error;
@@ -126,7 +123,7 @@
     FT_Request_Metrics( size->root.face, req );
 
     if ( funcs )
-      funcs->set_scale( (PSH_Globals)size->root.internal,
+      funcs->set_scale( (PSH_Globals)t1size->internal->module_data,
                         size->root.metrics.x_scale,
                         size->root.metrics.y_scale,
                         0, 0 );

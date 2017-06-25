@@ -64,6 +64,18 @@ FT_BEGIN_HEADER
   FT_LOCAL( CFF_SubFont )
   cf2_getSubfont( CFF_Decoder*  decoder );
 
+  FT_LOCAL( CFF_VStore )
+  cf2_getVStore( CFF_Decoder*  decoder );
+
+  FT_LOCAL( FT_UInt )
+  cf2_getMaxstack( CFF_Decoder*  decoder );
+
+#ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
+  FT_LOCAL( FT_Error )
+  cf2_getNormalizedVector( CFF_Decoder*  decoder,
+                           CF2_UInt     *len,
+                           FT_Fixed*    *vec );
+#endif
 
   FT_LOCAL( CF2_Fixed )
   cf2_getPpemY( CFF_Decoder*  decoder );

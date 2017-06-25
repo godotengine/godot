@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType MRU support (body).                                         */
 /*                                                                         */
-/*  Copyright 2003-2016 by                                                 */
+/*  Copyright 2003-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -76,7 +76,7 @@
     FTC_MruNode  first = *plist;
 
 
-    FT_ASSERT( first != NULL );
+    FT_ASSERT( first );
 
     if ( first != node )
     {
@@ -126,7 +126,7 @@
     FTC_MruNode  prev, next;
 
 
-    FT_ASSERT( first != NULL );
+    FT_ASSERT( first );
 
 #ifdef FT_DEBUG_ERROR
       {
@@ -238,7 +238,7 @@
                    FTC_MruNode  *anode )
   {
     FT_Error     error;
-    FTC_MruNode  node = NULL;
+    FTC_MruNode  node   = NULL;
     FT_Memory    memory = list->memory;
 
 
@@ -296,7 +296,7 @@
 
 
     node = FTC_MruList_Find( list, key );
-    if ( node == NULL )
+    if ( !node )
       return FTC_MruList_New( list, key, anode );
 
     *anode = node;
@@ -332,7 +332,7 @@
 
 
     first = list->nodes;
-    while ( first && ( selection == NULL || selection( first, key ) ) )
+    while ( first && ( !selection || selection( first, key ) ) )
     {
       FTC_MruList_Remove( list, first );
       first = list->nodes;

@@ -25,7 +25,7 @@ TODO.
 ## freetype
 
 - Upstream: https://www.freetype.org
-- Version: 2.6.5
+- Version: 2.8
 - License: FreeType License (BSD-like)
 
 Files extracted from upstream source:

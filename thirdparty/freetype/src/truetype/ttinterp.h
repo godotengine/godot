@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    TrueType bytecode interpreter (specification).                       */
 /*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
+/*  Copyright 1996-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -170,6 +170,7 @@ FT_BEGIN_HEADER
                        pts,
                        twilight;
 
+    FT_Long            pointSize;  /* in 26.6 format */
     FT_Size_Metrics    metrics;
     TT_Size_Metrics    tt_metrics; /* size metrics */
 
@@ -255,7 +256,7 @@ FT_BEGIN_HEADER
      * Modern TrueType fonts are usually rendered through Microsoft's
      * collection of rendering techniques called ClearType (e.g., subpixel
      * rendering and subpixel hinting).  When ClearType was introduced, most
-     * fonts were not ready.  Microsoft decided to implement a backwards
+     * fonts were not ready.  Microsoft decided to implement a backward
      * compatibility mode that employed several simple to complicated
      * assumptions and tricks that modified the interpretation of the
      * bytecode contained in these fonts to make them look ClearType-y
@@ -315,12 +316,12 @@ FT_BEGIN_HEADER
      * very specific patterns (`superhinting') for pre-ClearType-displays,
      * the worse the results.
      *
-     * Microsoft defines a way to turn off backwards compatibility and
+     * Microsoft defines a way to turn off backward compatibility and
      * interpret instructions as before (called `native ClearType')[2][3].
      * The font designer then regains full control and is responsible for
      * making the font work correctly with ClearType without any
      * hand-holding by the interpreter or rasterizer[4].  The v40
-     * interpreter assumes backwards compatibility by default, which can be
+     * interpreter assumes backward compatibility by default, which can be
      * turned off the same way by executing the following in the control
      * program (cf. `Ins_INSTCTRL').
      *
@@ -330,7 +331,7 @@ FT_BEGIN_HEADER
      * [1] Tricky fonts as FreeType defines them rely on the bytecode
      *     interpreter to display correctly.  Hacks can interfere with them,
      *     so they get treated like native ClearType fonts (v40 with
-     *     backwards compatibility turned off).  Cf. `TT_RunIns'.
+     *     backward compatibility turned off).  Cf. `TT_RunIns'.
      *
      * [2] Proposed by Microsoft's Greg Hitchcock in
      *     https://www.microsoft.com/typography/cleartype/truetypecleartype.aspx
@@ -356,10 +357,10 @@ FT_BEGIN_HEADER
     /* is managed differently.                                            */
     FT_Bool            vertical_lcd_lean;
 
-    /* Default to backwards compatibility mode in v40 interpreter.  If  */
+    /* Default to backward compatibility mode in v40 interpreter.  If   */
     /* this is false, it implies the interpreter is in v35 or in native */
     /* ClearType mode.                                                  */
-    FT_Bool            backwards_compatibility;
+    FT_Bool            backward_compatibility;
 
     /* Useful for detecting and denying post-IUP trickery that is usually */
     /* used to fix pixel patterns (`superhinting').                       */
@@ -406,6 +407,14 @@ FT_BEGIN_HEADER
                                               /* special functions         */
 
 #endif /* TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY */
+
+    /* We maintain two counters (in addition to the instruction counter) */
+    /* that act as loop detectors for LOOPCALL and jump opcodes with     */
+    /* negative arguments.                                               */
+    FT_ULong           loopcall_counter;
+    FT_ULong           loopcall_counter_max;
+    FT_ULong           neg_jump_counter;
+    FT_ULong           neg_jump_counter_max;
 
   } TT_ExecContextRec;
 
