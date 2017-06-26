@@ -1135,11 +1135,13 @@ void EditorNode::_dialog_action(String p_file) {
 			get_undo_redo()->clear_history();
 		} break;
 		case FILE_CLOSE:
+		case FILE_CLOSE_ALL_AND_QUIT:
+		case FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER:
 		case SCENE_TAB_CLOSE:
 		case FILE_SAVE_SCENE:
 		case FILE_SAVE_AS_SCENE: {
 
-			int scene_idx = (current_option == FILE_CLOSE || current_option == SCENE_TAB_CLOSE) ? tab_closing : -1;
+			int scene_idx = (current_option == FILE_SAVE_SCENE || current_option == FILE_SAVE_AS_SCENE) ? -1 : tab_closing;
 
 			if (file->get_mode() == EditorFileDialog::MODE_SAVE_FILE) {
 
@@ -1913,12 +1915,15 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			open_request(previous_scenes.back()->get());
 
 		} break;
+		case FILE_CLOSE_ALL_AND_QUIT:
+		case FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER:
 		case FILE_CLOSE: {
 
-			if (!p_confirmed && unsaved_cache) {
-				tab_closing = editor_data.get_edited_scene();
+			if (!p_confirmed && (unsaved_cache || p_option == FILE_CLOSE_ALL_AND_QUIT || p_option == FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER)) {
+				tab_closing = p_option == FILE_CLOSE ? editor_data.get_edited_scene() : _next_unsaved_scene();
+				String scene_filename = editor_data.get_edited_scene_root(tab_closing)->get_filename();
 				save_confirmation->get_ok()->set_text(TTR("Save & Close"));
-				save_confirmation->set_text(TTR("Save changes to the scene before closing?"));
+				save_confirmation->set_text(vformat(TTR("Save changes to '%s' before closing?"), scene_filename != "" ? scene_filename : "unsaved scene"));
 				save_confirmation->popup_centered_minsize();
 				break;
 			}
@@ -1926,7 +1931,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case SCENE_TAB_CLOSE:
 		case FILE_SAVE_SCENE: {
 
-			int scene_idx = (p_option == FILE_CLOSE || p_option == SCENE_TAB_CLOSE) ? tab_closing : -1;
+			int scene_idx = (p_option == FILE_SAVE_SCENE) ? -1 : tab_closing;
 
 			Node *scene = editor_data.get_edited_scene_root(scene_idx);
 			if (scene && scene->get_filename() != "") {
@@ -1941,13 +1946,14 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				if (scene_idx != -1)
 					_discard_changes();
 
-				return;
-			};
+				break;
+			}
 			// fallthrough to save_as
 		};
 		case FILE_SAVE_AS_SCENE: {
+			int scene_idx = (p_option == FILE_SAVE_SCENE || p_option == FILE_SAVE_AS_SCENE) ? -1 : tab_closing;
 
-			Node *scene = editor_data.get_edited_scene_root((p_option == FILE_CLOSE || p_option == SCENE_TAB_CLOSE) ? tab_closing : -1);
+			Node *scene = editor_data.get_edited_scene_root(scene_idx);
 
 			if (!scene) {
 
@@ -2114,30 +2120,6 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 		} break;
 
-		case FILE_QUIT: {
-
-			if (!p_confirmed) {
-				if (_has_unsaved_scenes()) {
-
-					save_confirmation->get_ok()->set_text(TTR("Save & Quit"));
-					save_confirmation->set_text(TTR("Save changes to the scene before quitting?"));
-					save_confirmation->popup_centered_minsize();
-					break;
-				} else {
-
-					confirmation->get_ok()->set_text(TTR("Quit"));
-					//confirmation->get_cancel()->show();
-					confirmation->set_text(TTR("Exit the editor?"));
-					confirmation->popup_centered(Size2(180, 70) * EDSCALE);
-					break;
-				}
-			}
-
-			if (_has_unsaved_scenes())
-				_save_all_scenes();
-			_discard_changes();
-
-		} break;
 		case FILE_EXTERNAL_OPEN_SCENE: {
 
 			if (unsaved_cache && !p_confirmed) {
@@ -2466,26 +2448,52 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 			project_settings->popup_project_settings();
 		} break;
+		case FILE_QUIT:
 		case RUN_PROJECT_MANAGER: {
 
 			if (!p_confirmed) {
-				if (_has_unsaved_scenes()) {
+				if (_next_unsaved_scene() == -1) {
 
-					save_confirmation->get_ok()->set_text(TTR("Save & Quit"));
-					save_confirmation->set_text(TTR("Save changes before opening Project Manager?"));
-					save_confirmation->popup_centered_minsize();
-					break;
+					bool confirm = EDITOR_DEF("interface/quit_confirmation", true);
+					if (confirm) {
+
+						confirmation->get_ok()->set_text(p_option == FILE_QUIT ? TTR("Quit") : TTR("Yes"));
+						confirmation->set_text(p_option == FILE_QUIT ? TTR("Exit the editor?") : TTR("Open Project Manager?"));
+						confirmation->popup_centered_minsize();
+					} else {
+						_discard_changes();
+					}
 				} else {
 
-					confirmation->get_ok()->set_text(TTR("Yes"));
-					confirmation->set_text(TTR("Open Project Manager?"));
-					confirmation->popup_centered_minsize();
-					break;
+					bool save_each = EDITOR_DEF("interface/save_each_scene_on_quit", true);
+					if (save_each) {
+
+						_menu_option_confirm(p_option == FILE_QUIT ? FILE_CLOSE_ALL_AND_QUIT : FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER, false);
+					} else {
+
+						String unsaved_scenes;
+						for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
+							int current = editor_data.get_edited_scene();
+							bool unsaved = (i == current) ? saved_version != editor_data.get_undo_redo().get_version() : editor_data.get_scene_version(i) != 0;
+							if (unsaved) {
+
+								String scene_filename = editor_data.get_edited_scene_root(i)->get_filename();
+								unsaved_scenes += "\n            " + scene_filename;
+							}
+						}
+
+						save_confirmation->get_ok()->set_text(TTR("Save & Quit"));
+						save_confirmation->set_text((p_option == FILE_QUIT ? TTR("Save changes to the following scene(s) before quitting?") : TTR("Save changes the following scene(s) before opening Project Manager?")) + unsaved_scenes);
+						save_confirmation->popup_centered_minsize();
+					}
 				}
+
+				break;
 			}
 
-			if (_has_unsaved_scenes())
+			if (_next_unsaved_scene() != -1) {
 				_save_all_scenes();
+			}
 			_discard_changes();
 		} break;
 		case RUN_FILE_SERVER: {
@@ -2712,31 +2720,44 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 	}
 }
 
-bool EditorNode::_has_unsaved_scenes() {
+int EditorNode::_next_unsaved_scene() {
 
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
 
 		int current = editor_data.get_edited_scene();
 		bool unsaved = (i == current) ? saved_version != editor_data.get_undo_redo().get_version() : editor_data.get_scene_version(i) != 0;
-		if (unsaved)
-			return true;
+		if (unsaved) {
+			return i;
+		}
 	}
-
-	return false;
+	return -1;
 }
 
 void EditorNode::_discard_changes(const String &p_str) {
 
-	save_confirmation->hide();
-
 	switch (current_option) {
 
+		case FILE_CLOSE_ALL_AND_QUIT:
+		case FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER:
 		case FILE_CLOSE:
 		case SCENE_TAB_CLOSE: {
 
 			_remove_scene(tab_closing);
 			_update_scene_tabs();
-			current_option = -1;
+
+			if (current_option == FILE_CLOSE_ALL_AND_QUIT || current_option == FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER) {
+				int next_scene = _next_unsaved_scene();
+				if (next_scene == -1) {
+					current_option = current_option == FILE_CLOSE_ALL_AND_QUIT ? FILE_QUIT : RUN_PROJECT_MANAGER;
+					_discard_changes();
+				} else {
+					tab_closing = next_scene;
+					_menu_option_confirm(current_option, false);
+				}
+			} else {
+				current_option = -1;
+				save_confirmation->hide();
+			}
 		} break;
 		case FILE_QUIT: {
 
@@ -4334,13 +4355,14 @@ void EditorNode::_scene_tab_script_edited(int p_tab) {
 void EditorNode::_scene_tab_closed(int p_tab) {
 	current_option = SCENE_TAB_CLOSE;
 	tab_closing = p_tab;
+	Node *scene = editor_data.get_edited_scene_root(p_tab);
 
 	bool unsaved = (p_tab == editor_data.get_edited_scene()) ?
 						   saved_version != editor_data.get_undo_redo().get_version() :
 						   editor_data.get_scene_version(p_tab) != 0;
 	if (unsaved) {
 		save_confirmation->get_ok()->set_text(TTR("Save & Close"));
-		save_confirmation->set_text(TTR("Save changes to the scene before closing?"));
+		save_confirmation->set_text(vformat(TTR("Save changes to '%s' before closing?"), scene->get_filename() != "" ? scene->get_filename() : "unsaved scene"));
 		save_confirmation->popup_centered_minsize();
 	} else {
 		_discard_changes();

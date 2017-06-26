@@ -517,6 +517,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	set("interface/separate_distraction_mode", false);
 
+	set("interface/save_each_scene_on_quit", true); // Regression
+	set("interface/quit_confirmation", true);
+
 	set("interface/theme/preset", 0);
 	hints["interface/theme/preset"] = PropertyInfo(Variant::INT, "interface/theme/preset", PROPERTY_HINT_ENUM, "Default,Grey,Godot 2,Arc,Custom", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 	set("interface/theme/base_color", Color::html("#273241"));
