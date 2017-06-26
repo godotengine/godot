@@ -359,8 +359,8 @@ int CapsuleMesh::get_rings() const {
 
 CapsuleMesh::CapsuleMesh() {
 	// defaults
-	radius = 0.5;
-	mid_height = 0.5;
+	radius = 1.0;
+	mid_height = 1.0;
 	radial_segments = 64;
 	rings = 8;
 }
@@ -617,7 +617,7 @@ int CubeMesh::get_subdivide_depth() const {
 
 CubeMesh::CubeMesh() {
 	// defaults
-	size = Vector3(1.0, 1.0, 1.0);
+	size = Vector3(2.0, 2.0, 2.0);
 	subdivide_w = 0;
 	subdivide_h = 0;
 	subdivide_d = 0;
@@ -834,9 +834,9 @@ int CylinderMesh::get_rings() const {
 
 CylinderMesh::CylinderMesh() {
 	// defaults
-	top_radius = 0.5;
-	bottom_radius = 0.5;
-	height = 1.0;
+	top_radius = 1.0;
+	bottom_radius = 1.0;
+	height = 2.0;
 	radial_segments = 64;
 	rings = 4;
 }
@@ -951,7 +951,7 @@ int PlaneMesh::get_subdivide_depth() const {
 
 PlaneMesh::PlaneMesh() {
 	// defaults
-	size = Size2(1.0, 1.0);
+	size = Size2(2.0, 2.0);
 	subdivide_w = 0;
 	subdivide_d = 0;
 }
@@ -1242,7 +1242,7 @@ int PrismMesh::get_subdivide_depth() const {
 PrismMesh::PrismMesh() {
 	// defaults
 	left_to_right = 0.5;
-	size = Vector3(1.0, 1.0, 1.0);
+	size = Vector3(2.0, 2.0, 2.0);
 	subdivide_w = 0;
 	subdivide_h = 0;
 	subdivide_d = 0;
@@ -1446,8 +1446,8 @@ bool SphereMesh::get_is_hemisphere() const {
 
 SphereMesh::SphereMesh() {
 	// defaults
-	radius = 0.5;
-	height = 1.0;
+	radius = 1.0;
+	height = 2.0;
 	radial_segments = 64;
 	rings = 32;
 	is_hemisphere = false;
