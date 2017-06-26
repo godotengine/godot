@@ -140,6 +140,8 @@ private:
 		FILE_RUN_SCRIPT,
 		FILE_OPEN_PREV,
 		FILE_CLOSE,
+		FILE_CLOSE_ALL_AND_QUIT,
+		FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER,
 		FILE_QUIT,
 		FILE_EXTERNAL_OPEN_SCENE,
 		EDIT_UNDO,
@@ -296,6 +298,7 @@ private:
 
 	//CallDialog *call_dialog;
 	ConfirmationDialog *confirmation;
+	ConfirmationDialog *save_confirmation;
 	ConfirmationDialog *import_confirmation;
 	ConfirmationDialog *open_recent_confirmation;
 	ConfirmationDialog *pick_main_scene;
@@ -465,6 +468,9 @@ private:
 	void _vp_resized();
 
 	void _save_scene(String p_file, int idx = -1);
+	void _save_all_scenes();
+	int _next_unsaved_scene();
+	void _discard_changes(const String &p_str = String());
 
 	void _instance_request(const Vector<String> &p_files);
 
