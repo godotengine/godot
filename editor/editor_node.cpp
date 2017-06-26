@@ -1468,7 +1468,7 @@ void EditorNode::_edit_current() {
 		property_editor->edit(current_res);
 		node_dock->set_node(NULL);
 		object_menu->set_disabled(false);
-
+		EditorNode::get_singleton()->get_import_dock()->set_edit_path(r->get_path());
 		//resources_dock->add_resource(Ref<Resource>(current_res));
 
 		//top_pallete->set_current_tab(1);
@@ -1623,7 +1623,6 @@ void EditorNode::_resource_selected(const RES &p_res, const String &p_property) 
 		return;
 
 	RES r = p_res;
-	EditorNode::get_singleton()->get_import_dock()->set_edit_path(r->get_path());
 	push_item(r.operator->(), p_property);
 }
 
