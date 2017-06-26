@@ -1370,12 +1370,6 @@ CubeMap::~CubeMap() {
 
 void CurveTexture::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_max", "max"), &CurveTexture::set_max);
-	ClassDB::bind_method(D_METHOD("get_max"), &CurveTexture::get_max);
-
-	ClassDB::bind_method(D_METHOD("set_min", "min"), &CurveTexture::set_min);
-	ClassDB::bind_method(D_METHOD("get_min"), &CurveTexture::get_min);
-
 	ClassDB::bind_method(D_METHOD("set_width", "width"), &CurveTexture::set_width);
 
 	ClassDB::bind_method(D_METHOD("set_curve", "curve:Curve"), &CurveTexture::set_curve);
@@ -1383,52 +1377,31 @@ void CurveTexture::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_update"), &CurveTexture::_update);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "min", PROPERTY_HINT_RANGE, "-1024,1024"), "set_min", "get_min");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "max", PROPERTY_HINT_RANGE, "-1024,1024"), "set_max", "get_max");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "32,4096"), "set_width", "get_width");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_curve", "get_curve");
 }
-void CurveTexture::set_max(float p_max) {
 
-	_max = p_max;
-	emit_changed();
-}
-float CurveTexture::get_max() const {
-
-	return _max;
-}
-
-void CurveTexture::set_min(float p_min) {
-
-	_min = p_min;
-	emit_changed();
-}
-float CurveTexture::get_min() const {
-
-	return _min;
-}
 void CurveTexture::set_width(int p_width) {
 
 	ERR_FAIL_COND(p_width < 32 || p_width > 4096);
 	_width = p_width;
 	_update();
 }
+
 int CurveTexture::get_width() const {
 
 	return _width;
 }
 
-void CurveTexture::ensure_default_setup() {
-
+void CurveTexture::ensure_default_setup(float p_min, float p_max) {
 	if (_curve.is_null()) {
 		Ref<Curve> curve = Ref<Curve>(memnew(Curve));
 		curve->add_point(Vector2(0, 1));
 		curve->add_point(Vector2(1, 1));
+		curve->set_min_value(p_min);
+		curve->set_max_value(p_max);
 		set_curve(curve);
-	}
-
-	if (get_min() == 0 && get_max() == 1) {
-		set_max(32);
+		// Min and max is 0..1 by default
 	}
 }
 
@@ -1457,11 +1430,9 @@ void CurveTexture::_update() {
 
 		if (_curve.is_valid()) {
 			Curve &curve = **_curve;
-			float height = _max - _min;
 			for (int i = 0; i < _width; ++i) {
 				float t = i / static_cast<float>(_width);
-				float v = curve.interpolate_baked(t);
-				wd[i] = CLAMP(_min + v * height, _min, _max);
+				wd[i] = curve.interpolate_baked(t);
 			}
 
 		} else {
@@ -1490,9 +1461,6 @@ RID CurveTexture::get_rid() const {
 }
 
 CurveTexture::CurveTexture() {
-
-	_max = 1;
-	_min = 0;
 	_width = 2048;
 	_texture = VS::get_singleton()->texture_create();
 }
