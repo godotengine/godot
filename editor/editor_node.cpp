@@ -1623,6 +1623,7 @@ void EditorNode::_resource_selected(const RES &p_res, const String &p_property) 
 		return;
 
 	RES r = p_res;
+	EditorNode::get_singleton()->get_import_dock()->set_edit_path(r->get_path());
 	push_item(r.operator->(), p_property);
 }
 
