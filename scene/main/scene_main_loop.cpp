@@ -1729,6 +1729,7 @@ void SceneTree::set_network_peer(const Ref<NetworkedMultiplayerPeer> &p_network_
 		path_get_cache.clear();
 		path_send_cache.clear();
 		last_send_cache_id = 1;
+		rpc_id_stack.clear();
 	}
 
 	ERR_EXPLAIN("Supplied NetworkedNetworkPeer must be connecting or connected.");
@@ -1742,6 +1743,8 @@ void SceneTree::set_network_peer(const Ref<NetworkedMultiplayerPeer> &p_network_
 		network_peer->connect("connection_succeeded", this, "_connected_to_server");
 		network_peer->connect("connection_failed", this, "_connection_failed");
 		network_peer->connect("server_disconnected", this, "_server_disconnected");
+
+		rpc_id_stack.push_back(get_network_unique_id());
 	}
 }
 
@@ -1759,6 +1762,16 @@ int SceneTree::get_network_unique_id() const {
 
 	ERR_FAIL_COND_V(!network_peer.is_valid(), 0);
 	return network_peer->get_unique_id();
+}
+
+int SceneTree::get_rpc_id() const {
+
+	ERR_FAIL_COND_V(!network_peer.is_valid(), 0);
+	if (rpc_id_stack.size() > 0) {
+		return rpc_id_stack.back()->get();
+	} else {
+		return -1;
+	}
 }
 
 void SceneTree::set_refuse_new_network_connections(bool p_refuse) {
@@ -2154,7 +2167,9 @@ void SceneTree::_network_poll() {
 			ERR_PRINT("Error getting packet!");
 		}
 
+		rpc_id_stack.push_back(sender); // Push the sender id onto the stack
 		_network_process_packet(sender, packet, len);
+		rpc_id_stack.pop_back(); // Now pop it
 
 		if (!network_peer.is_valid()) {
 			break; //it's also possible that a packet or RPC caused a disconnection, so also check here
@@ -2235,6 +2250,7 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_network_server"), &SceneTree::is_network_server);
 	ClassDB::bind_method(D_METHOD("has_network_peer"), &SceneTree::has_network_peer);
 	ClassDB::bind_method(D_METHOD("get_network_unique_id"), &SceneTree::get_network_unique_id);
+	ClassDB::bind_method(D_METHOD("get_rpc_id"), &SceneTree::get_rpc_id);
 	ClassDB::bind_method(D_METHOD("set_refuse_new_network_connections", "refuse"), &SceneTree::set_refuse_new_network_connections);
 	ClassDB::bind_method(D_METHOD("is_refusing_new_network_connections"), &SceneTree::is_refusing_new_network_connections);
 	ClassDB::bind_method(D_METHOD("_network_peer_connected"), &SceneTree::_network_peer_connected);
