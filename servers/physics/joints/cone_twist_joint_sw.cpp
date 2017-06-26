@@ -100,6 +100,7 @@ ConeTwistJointSW::ConeTwistJointSW(BodySW *rbA, BodySW *rbB, const Transform &rb
 	m_biasFactor = 0.3f;
 	m_relaxationFactor = 1.0f;
 
+	m_angularOnly = false;
 	m_solveTwistLimit = false;
 	m_solveSwingLimit = false;
 
@@ -107,7 +108,6 @@ ConeTwistJointSW::ConeTwistJointSW(BodySW *rbA, BodySW *rbB, const Transform &rb
 	B->add_constraint(this, 1);
 
 	m_appliedImpulse = 0;
-	m_angularOnly = 0;
 }
 
 bool ConeTwistJointSW::setup(real_t p_step) {
