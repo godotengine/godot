@@ -119,6 +119,7 @@ void ProjectSettings::_action_selected() {
 		return;
 
 	add_at = "input/" + ti->get_text(0);
+	edit_idx = -1;
 }
 
 void ProjectSettings::_action_edited() {
@@ -180,6 +181,7 @@ void ProjectSettings::_device_input_add() {
 
 	Ref<InputEvent> ie;
 	String name = add_at;
+	int idx = edit_idx;
 	Variant old_val = GlobalConfig::get_singleton()->get(name);
 	Array arr = old_val;
 	//	ie.device = device_id->get_value();
@@ -251,7 +253,11 @@ void ProjectSettings::_device_input_add() {
 		default: {}
 	}
 
-	arr.push_back(ie);
+	if (idx < 0 || idx >= arr.size()) {
+		arr.push_back(ie);
+	} else {
+		arr[idx] = ie;
+	}
 
 	undo_redo->create_action(TTR("Add Input Action Event"));
 	undo_redo->add_do_method(GlobalConfig::get_singleton(), "set", name, arr);
@@ -279,6 +285,7 @@ void ProjectSettings::_press_a_key_confirm() {
 	ie->set_metakey(last_wait_for_key->get_metakey());
 
 	String name = add_at;
+	int idx = edit_idx;
 
 	Variant old_val = GlobalConfig::get_singleton()->get(name);
 	Array arr = old_val;
@@ -293,7 +300,11 @@ void ProjectSettings::_press_a_key_confirm() {
 		}
 	}
 
-	arr.push_back(ie);
+	if (idx < 0 || idx >= arr.size()) {
+		arr.push_back(ie);
+	} else {
+		arr[idx] = ie;
+	}
 
 	undo_redo->create_action(TTR("Add Input Action Event"));
 	undo_redo->add_do_method(GlobalConfig::get_singleton(), "set", name, arr);
@@ -362,7 +373,7 @@ void ProjectSettings::_wait_for_key(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void ProjectSettings::_add_item(int p_item) {
+void ProjectSettings::_add_item(int p_item, Ref<InputEvent> p_exiting_event) {
 
 	add_type = InputType(p_item);
 
@@ -377,7 +388,6 @@ void ProjectSettings::_add_item(int p_item) {
 		} break;
 		case INPUT_MOUSE_BUTTON: {
 
-			device_id->set_value(0);
 			device_index_label->set_text(TTR("Mouse Button Index:"));
 			device_index->clear();
 			device_index->add_item(TTR("Left Button"));
@@ -390,10 +400,19 @@ void ProjectSettings::_add_item(int p_item) {
 			device_index->add_item(TTR("Button 8"));
 			device_index->add_item(TTR("Button 9"));
 			device_input->popup_centered_minsize(Size2(350, 95));
+
+			Ref<InputEventMouseButton> mb = p_exiting_event;
+			if (mb.is_valid()) {
+				device_index->select(mb->get_button_index() - 1);
+				device_id->set_value(mb->get_device());
+				device_input->get_ok()->set_text(TTR("Change"));
+			} else {
+				device_id->set_value(0);
+				device_input->get_ok()->set_text(TTR("Add"));
+			}
 		} break;
 		case INPUT_JOY_MOTION: {
 
-			device_id->set_value(0);
 			device_index_label->set_text(TTR("Joypad Axis Index:"));
 			device_index->clear();
 			for (int i = 0; i < JOY_AXIS_MAX * 2; i++) {
@@ -403,10 +422,18 @@ void ProjectSettings::_add_item(int p_item) {
 			}
 			device_input->popup_centered_minsize(Size2(350, 95));
 
+			Ref<InputEventJoypadMotion> jm = p_exiting_event;
+			if (jm.is_valid()) {
+				device_index->select(jm->get_axis() * 2 + (jm->get_axis_value() > 0 ? 1 : 0));
+				device_id->set_value(jm->get_device());
+				device_input->get_ok()->set_text(TTR("Change"));
+			} else {
+				device_id->set_value(0);
+				device_input->get_ok()->set_text(TTR("Add"));
+			}
 		} break;
 		case INPUT_JOY_BUTTON: {
 
-			device_id->set_value(0);
 			device_index_label->set_text(TTR("Joypad Button Index:"));
 			device_index->clear();
 
@@ -416,9 +443,64 @@ void ProjectSettings::_add_item(int p_item) {
 			}
 			device_input->popup_centered_minsize(Size2(350, 95));
 
+			Ref<InputEventJoypadButton> jb = p_exiting_event;
+			if (jb.is_valid()) {
+				device_index->select(jb->get_button_index());
+				device_id->set_value(jb->get_device());
+				device_input->get_ok()->set_text(TTR("Change"));
+			} else {
+				device_id->set_value(0);
+				device_input->get_ok()->set_text(TTR("Add"));
+			}
+
 		} break;
 		default: {}
 	}
+}
+
+void ProjectSettings::_edit_item(Ref<InputEvent> p_exiting_event) {
+
+	InputType ie_type;
+
+	if ((Ref<InputEventKey>(p_exiting_event)).is_valid()) {
+		ie_type = INPUT_KEY;
+
+	} else if ((Ref<InputEventJoypadButton>(p_exiting_event)).is_valid()) {
+		ie_type = INPUT_JOY_BUTTON;
+
+	} else if ((Ref<InputEventMouseButton>(p_exiting_event)).is_valid()) {
+		ie_type = INPUT_MOUSE_BUTTON;
+
+	} else if ((Ref<InputEventJoypadMotion>(p_exiting_event)).is_valid()) {
+		ie_type = INPUT_JOY_MOTION;
+
+	} else {
+		return;
+	}
+
+	_add_item(ie_type, p_exiting_event);
+}
+void ProjectSettings::_action_activated() {
+
+	TreeItem *ti = input_editor->get_selected();
+
+	if (!ti || ti->get_parent() == input_editor->get_root())
+		return;
+
+	String name = "input/" + ti->get_parent()->get_text(0);
+	int idx = ti->get_metadata(0);
+	Array va = GlobalConfig::get_singleton()->get(name);
+
+	ERR_FAIL_INDEX(idx, va.size());
+
+	Ref<InputEvent> ie = va[idx];
+
+	if (ie.is_null())
+		return;
+
+	add_at = name;
+	edit_idx = idx;
+	_edit_item(ie);
 }
 
 void ProjectSettings::_action_button_pressed(Object *p_obj, int p_column, int p_id) {
@@ -436,6 +518,7 @@ void ProjectSettings::_action_button_pressed(Object *p_obj, int p_column, int p_
 		popup_add->set_position(ofs);
 		popup_add->popup();
 		add_at = "input/" + ti->get_text(0);
+		edit_idx = -1;
 
 	} else if (p_id == 2) {
 		//remove
@@ -483,6 +566,32 @@ void ProjectSettings::_action_button_pressed(Object *p_obj, int p_column, int p_
 			undo_redo->add_do_method(this, "_settings_changed");
 			undo_redo->add_undo_method(this, "_settings_changed");
 			undo_redo->commit_action();
+		}
+	} else if (p_id == 3) {
+		//edit
+
+		if (ti->get_parent() == input_editor->get_root()) {
+
+			ti->set_as_cursor(0);
+			input_editor->edit_selected();
+
+		} else {
+			//edit action
+			String name = "input/" + ti->get_parent()->get_text(0);
+			int idx = ti->get_metadata(0);
+			Array va = GlobalConfig::get_singleton()->get(name);
+
+			ERR_FAIL_INDEX(idx, va.size());
+
+			Ref<InputEvent> ie = va[idx];
+
+			if (ie.is_null())
+				return;
+
+			ti->set_as_cursor(0);
+			add_at = name;
+			edit_idx = idx;
+			_edit_item(ie);
 		}
 	}
 }
@@ -589,6 +698,7 @@ void ProjectSettings::_update_actions() {
 				action->set_text(0, str);
 				action->set_icon(0, get_icon("JoyAxis", "EditorIcons"));
 			}
+			action->add_button(0, get_icon("Edit", "EditorIcons"), 3, false, TTR("Edit"));
 			action->add_button(0, get_icon("Remove", "EditorIcons"), 2, false, TTR("Remove"));
 			action->set_metadata(0, i);
 			action->set_meta("__input", ie);
@@ -1174,10 +1284,11 @@ void ProjectSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_action_adds"), &ProjectSettings::_action_adds);
 	ClassDB::bind_method(D_METHOD("_action_selected"), &ProjectSettings::_action_selected);
 	ClassDB::bind_method(D_METHOD("_action_edited"), &ProjectSettings::_action_edited);
+	ClassDB::bind_method(D_METHOD("_action_activated"), &ProjectSettings::_action_activated);
 	ClassDB::bind_method(D_METHOD("_action_button_pressed"), &ProjectSettings::_action_button_pressed);
 	ClassDB::bind_method(D_METHOD("_update_actions"), &ProjectSettings::_update_actions);
 	ClassDB::bind_method(D_METHOD("_wait_for_key"), &ProjectSettings::_wait_for_key);
-	ClassDB::bind_method(D_METHOD("_add_item"), &ProjectSettings::_add_item);
+	ClassDB::bind_method(D_METHOD("_add_item"), &ProjectSettings::_add_item, DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("_device_input_add"), &ProjectSettings::_device_input_add);
 	ClassDB::bind_method(D_METHOD("_press_a_key_confirm"), &ProjectSettings::_press_a_key_confirm);
 	ClassDB::bind_method(D_METHOD("_settings_prop_edited"), &ProjectSettings::_settings_prop_edited);
@@ -1383,6 +1494,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 	vbc->add_child(input_editor);
 	input_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 	input_editor->connect("item_edited", this, "_action_edited");
+	input_editor->connect("item_activated", this, "_action_activated");
 	input_editor->connect("cell_selected", this, "_action_selected");
 	input_editor->connect("button_pressed", this, "_action_button_pressed");
 	popup_add = memnew(PopupMenu);
