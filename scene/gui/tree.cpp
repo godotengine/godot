@@ -1032,20 +1032,6 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 	if (!skip && (p_pos.y + label_h - cache.offset.y) > 0) {
 
-		if (!p_item->disable_folding && !hide_folding && p_item->childs) { //has childs, draw the guide box
-
-			Ref<Texture> arrow;
-
-			if (p_item->collapsed) {
-
-				arrow = cache.arrow_collapsed;
-			} else {
-				arrow = cache.arrow;
-			}
-
-			arrow->draw(ci, p_pos + p_draw_ofs + Point2i(0, (label_h - arrow->get_height()) / 2) - cache.offset);
-		}
-
 		//draw separation.
 		//if (p_item->get_parent()!=root || !hide_root)
 
@@ -1154,8 +1140,13 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			if (p_item->cells[i].custom_bg_color) {
 
 				Rect2 r = cell_rect;
-				r.position.x -= cache.hseparation;
-				r.size.x += cache.hseparation;
+				if (i == 0) {
+					r.position.x = p_draw_ofs.x;
+					r.size.x = w + ofs;
+				} else {
+					r.position.x -= cache.hseparation;
+					r.size.x += cache.hseparation;
+				}
 				if (p_item->cells[i].custom_bg_outline) {
 					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y, r.size.x, 1), p_item->cells[i].bg_color);
 					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y + r.size.y - 1, r.size.x, 1), p_item->cells[i].bg_color);
@@ -1352,6 +1343,19 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			}
 		}
 
+		if (!p_item->disable_folding && !hide_folding && p_item->childs) { //has childs, draw the guide box
+
+			Ref<Texture> arrow;
+
+			if (p_item->collapsed) {
+
+				arrow = cache.arrow_collapsed;
+			} else {
+				arrow = cache.arrow;
+			}
+
+			arrow->draw(ci, p_pos + p_draw_ofs + Point2i(0, (label_h - arrow->get_height()) / 2) - cache.offset);
+		}
 		//separator
 		//get_painter()->draw_fill_rect( Point2i(0,pos.y),Size2i(get_size().width,1),color( COLOR_TREE_GRID) );
 
