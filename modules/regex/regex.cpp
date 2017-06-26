@@ -603,10 +603,8 @@ struct RegExNodeGroup : public RegExNode {
 
 			int res = childset[i]->test(s, pos);
 
-			if (s.complete)
-				return res;
-
 			if (inverse) {
+				s.complete = false;
 				if (res < 0)
 					res = pos + 1;
 				else
@@ -615,6 +613,9 @@ struct RegExNodeGroup : public RegExNode {
 				if (i + 1 < childset.size())
 					continue;
 			}
+
+			if (s.complete)
+				return res;
 
 			if (res >= 0) {
 				if (reset_pos)
