@@ -257,10 +257,10 @@ Ref<Theme> create_editor_theme() {
 	Ref<StyleBox> style_tree_btn = make_flat_stylebox(light_color_1, 2, 4, 2, 4);
 	theme->set_stylebox("button_pressed", "Tree", style_tree_btn);
 
-	Ref<StyleBoxFlat> style_tree_focus = make_flat_stylebox(HIGHLIGHT_COLOR_DARK, 4, 4, 4, 4);
+	Ref<StyleBoxFlat> style_tree_focus = make_flat_stylebox(HIGHLIGHT_COLOR_DARK, 2, 2, 2, 2);
 	theme->set_stylebox("selected_focus", "Tree", style_tree_focus);
 
-	Ref<StyleBoxFlat> style_tree_selected = make_flat_stylebox(light_color_1, 4, 4, 4, 4);
+	Ref<StyleBoxFlat> style_tree_selected = make_flat_stylebox(light_color_1, 2, 2, 2, 2);
 	theme->set_stylebox("selected", "Tree", style_tree_selected);
 
 	Ref<StyleBoxFlat> style_tree_cursor = make_flat_stylebox(HIGHLIGHT_COLOR_DARK, 4, 4, 4, 4);
@@ -283,17 +283,18 @@ Ref<Theme> create_editor_theme() {
 	theme->set_color("drop_position_color", "Tree", highlight_color);
 
 	// ItemList
-	Ref<StyleBoxFlat> style_itemlist_cursor = make_flat_stylebox(highlight_color, 4, 4, 4, 4);
+	Ref<StyleBoxFlat> style_itemlist_bg = make_flat_stylebox(dark_color_1, 4, 4, 4, 4);
+	Ref<StyleBoxFlat> style_itemlist_cursor = make_flat_stylebox(highlight_color, 0, 0, 0, 0);
 	style_itemlist_cursor->set_draw_center(false);
 	style_itemlist_cursor->set_border_size(1 * EDSCALE);
-	style_itemlist_cursor->set_light_color(light_color_1);
-	style_itemlist_cursor->set_dark_color(light_color_1);
+	style_itemlist_cursor->set_light_color(HIGHLIGHT_COLOR_DARK);
+	style_itemlist_cursor->set_dark_color(HIGHLIGHT_COLOR_DARK);
 	theme->set_stylebox("cursor", "ItemList", style_itemlist_cursor);
 	theme->set_stylebox("cursor_unfocused", "ItemList", style_itemlist_cursor);
 	theme->set_stylebox("selected_focus", "ItemList", style_tree_focus);
 	theme->set_stylebox("selected", "ItemList", style_tree_selected);
 	theme->set_stylebox("bg_focus", "ItemList", focus_sbt);
-	theme->set_stylebox("bg", "ItemList", style_tree_bg);
+	theme->set_stylebox("bg", "ItemList", style_itemlist_bg);
 	theme->set_constant("vseparation", "ItemList", 5 * EDSCALE);
 
 	Ref<StyleBoxFlat> style_tab_fg = make_flat_stylebox(base_color, 15, 5, 15, 5);
