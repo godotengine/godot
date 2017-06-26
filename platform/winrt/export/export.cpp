@@ -616,7 +616,7 @@ void AppxPackager::make_content_types() {
 Vector<uint8_t> AppxPackager::make_file_header(FileMeta p_file_meta) {
 
 	Vector<uint8_t> buf;
-	buf.resize(BASE_FILE_HEADER_SIZE + p_file_meta.name.length());
+	buf.resize(BASE_FILE_HEADER_SIZE + p_file_meta.name.replace(" ", "%20").length());
 
 	int offs = 0;
 	// Write magic
@@ -644,13 +644,13 @@ Vector<uint8_t> AppxPackager::make_file_header(FileMeta p_file_meta) {
 	offs += buf_put_int32(p_file_meta.uncompressed_size, &buf[offs]);
 
 	// File name length
-	offs += buf_put_int16(p_file_meta.name.length(), &buf[offs]);
+	offs += buf_put_int16(p_file_meta.name.replace(" ", "%20").length(), &buf[offs]);
 
 	// Extra data length
 	offs += buf_put_int16(0, &buf[offs]);
 
 	// File name
-	offs += buf_put_string(p_file_meta.name, &buf[offs]);
+	offs += buf_put_string(p_file_meta.name.replace(" ", "%20"), &buf[offs]);
 
 	// Done!
 	return buf;
@@ -660,7 +660,7 @@ void AppxPackager::store_central_dir_header(const FileMeta p_file, bool p_do_has
 
 	Vector<uint8_t> &buf = central_dir_data;
 	int offs = buf.size();
-	buf.resize(buf.size() + BASE_CENTRAL_DIR_SIZE + p_file.name.length());
+	buf.resize(buf.size() + BASE_CENTRAL_DIR_SIZE + p_file.name.replace(" ", "%20").length());
 
 	// Write magic
 	offs += buf_put_int32(CENTRAL_DIR_MAGIC, &buf[offs]);
@@ -686,7 +686,7 @@ void AppxPackager::store_central_dir_header(const FileMeta p_file, bool p_do_has
 	offs += buf_put_int32(p_file.uncompressed_size, &buf[offs]);
 
 	// File name length
-	offs += buf_put_int16(p_file.name.length(), &buf[offs]);
+	offs += buf_put_int16(p_file.name.replace(" ", "%20").length(), &buf[offs]);
 
 	// Extra field length
 	offs += buf_put_int16(0, &buf[offs]);
@@ -703,7 +703,7 @@ void AppxPackager::store_central_dir_header(const FileMeta p_file, bool p_do_has
 	offs += buf_put_int32(p_file.zip_offset, &buf[offs]);
 
 	// File name
-	offs += buf_put_string(p_file.name, &buf[offs]);
+	offs += buf_put_string(p_file.name.replace(" ", "%20"), &buf[offs]);
 
 #ifdef OPENSSL_ENABLED
 	// Calculate the hash for signing
@@ -1968,8 +1968,8 @@ bool EditorExportPlatformWinrt::_get(const StringName &p_name, Variant &r_ret) c
 
 void EditorExportPlatformWinrt::_get_property_list(List<PropertyInfo> *p_list) const {
 
-	p_list->push_back(PropertyInfo(Variant::STRING, "custom_package/debug", PROPERTY_HINT_GLOBAL_FILE, "appx"));
-	p_list->push_back(PropertyInfo(Variant::STRING, "custom_package/release", PROPERTY_HINT_GLOBAL_FILE, "appx"));
+	p_list->push_back(PropertyInfo(Variant::STRING, "custom_package/debug", PROPERTY_HINT_GLOBAL_FILE, "zip"));
+	p_list->push_back(PropertyInfo(Variant::STRING, "custom_package/release", PROPERTY_HINT_GLOBAL_FILE, "zip"));
 
 	p_list->push_back(PropertyInfo(Variant::INT, "architecture/target", PROPERTY_HINT_ENUM, "ARM,x86,x64"));
 
