@@ -1357,6 +1357,21 @@ Array Object::_get_signal_connection_list(const String &p_signal) const {
 	return ret;
 }
 
+Array Object::_get_incoming_connections() const {
+
+	Array ret;
+	int connections_amount = connections.size();
+	for (int idx_conn = 0; idx_conn < connections_amount; idx_conn++) {
+		Dictionary conn_data;
+		conn_data["source"] = connections[idx_conn].source;
+		conn_data["signal_name"] = connections[idx_conn].signal;
+		conn_data["method_name"] = connections[idx_conn].method;
+		ret.push_back(conn_data);
+	}
+
+	return ret;
+}
+
 void Object::get_signal_list(List<MethodInfo> *p_signals) const {
 
 	if (!script.is_null()) {
@@ -1683,6 +1698,7 @@ void Object::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_signal_list"), &Object::_get_signal_list);
 	ClassDB::bind_method(D_METHOD("get_signal_connection_list", "signal"), &Object::_get_signal_connection_list);
+	ClassDB::bind_method(D_METHOD("get_incoming_connections"), &Object::_get_incoming_connections);
 
 	ClassDB::bind_method(D_METHOD("connect", "signal", "target:Object", "method", "binds", "flags"), &Object::connect, DEFVAL(Array()), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("disconnect", "signal", "target:Object", "method"), &Object::disconnect);
