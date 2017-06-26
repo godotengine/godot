@@ -53,6 +53,7 @@ void TileSetEditor::_import_node(Node *p_node, Ref<TileSet> p_library) {
 
 		Sprite *mi = child->cast_to<Sprite>();
 		Ref<Texture> texture = mi->get_texture();
+		Ref<Texture> normal_map = mi->get_normal_map();
 		Ref<ShaderMaterial> material = mi->get_material();
 
 		if (texture.is_null())
@@ -67,6 +68,7 @@ void TileSetEditor::_import_node(Node *p_node, Ref<TileSet> p_library) {
 		}
 
 		p_library->tile_set_texture(id, texture);
+		p_library->tile_set_normal_map(id, normal_map);
 		p_library->tile_set_material(id, material);
 
 		p_library->tile_set_modulate(id, mi->get_modulate());
