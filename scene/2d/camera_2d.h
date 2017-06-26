@@ -79,6 +79,10 @@ protected:
 
 	void _set_old_smoothing(float p_enable);
 
+	bool screen_drawing_enabled;
+	bool limit_drawing_enabled;
+	bool margin_drawing_enabled;
+
 protected:
 	virtual Transform2D get_camera_transform();
 	void _notification(int p_what);
@@ -137,6 +141,15 @@ public:
 	void force_update_scroll();
 	void reset_smoothing();
 	void align();
+
+	void set_screen_drawing_enabled(bool enable);
+	bool is_screen_drawing_enabled() const;
+
+	void set_limit_drawing_enabled(bool enable);
+	bool is_limit_drawing_enabled() const;
+
+	void set_margin_drawing_enabled(bool enable);
+	bool is_margin_drawing_enabled() const;
 
 	Camera2D();
 };
