@@ -235,10 +235,12 @@ Ref<Theme> create_editor_theme() {
 	style_popup_menu->set_dark_color(light_color_1);
 	theme->set_stylebox("panel", "PopupMenu", style_popup_menu);
 
-	// Tree & script background
-	Ref<StyleBoxFlat> style_bg = make_flat_stylebox(dark_color_1, 0, 0, 0, 0);
-	theme->set_stylebox("bg", "Tree", style_bg);
-	theme->set_stylebox("ScriptPanel", "EditorStyles", style_bg);
+	// Tree & ItemList background
+	Ref<StyleBoxFlat> style_tree_bg = make_flat_stylebox(dark_color_1, 2, 4, 2, 4);
+	theme->set_stylebox("bg", "Tree", style_tree_bg);
+	// Script background
+	Ref<StyleBoxFlat> style_script_bg = make_flat_stylebox(dark_color_1, 0, 0, 0, 0);
+	theme->set_stylebox("ScriptPanel", "EditorStyles", style_script_bg);
 
 	// Tree
 	theme->set_icon("checked", "Tree", theme->get_icon("Checked", "EditorIcons"));
@@ -291,7 +293,7 @@ Ref<Theme> create_editor_theme() {
 	theme->set_stylebox("selected_focus", "ItemList", style_tree_focus);
 	theme->set_stylebox("selected", "ItemList", style_tree_selected);
 	theme->set_stylebox("bg_focus", "ItemList", focus_sbt);
-	theme->set_stylebox("bg", "ItemList", style_bg);
+	theme->set_stylebox("bg", "ItemList", style_tree_bg);
 	theme->set_constant("vseparation", "ItemList", 5 * EDSCALE);
 
 	Ref<StyleBoxFlat> style_tab_fg = make_flat_stylebox(base_color, 15, 5, 15, 5);
