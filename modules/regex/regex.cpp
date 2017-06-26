@@ -590,6 +590,11 @@ struct RegExNodeGroup : public RegExNode {
 			memdelete(childset[i]);
 	}
 
+	virtual void test_success(RegExSearch &s, int pos) const {
+
+		return;
+	}
+
 	virtual int test(RegExSearch &s, int pos) const {
 
 		for (int i = 0; i < childset.size(); ++i) {
@@ -614,6 +619,7 @@ struct RegExNodeGroup : public RegExNode {
 			if (res >= 0) {
 				if (reset_pos)
 					res = pos;
+				this->test_success(s, res);
 				return next ? next->test(s, res) : res;
 			}
 		}
@@ -668,6 +674,12 @@ struct RegExNodeCapturing : public RegExNodeGroup {
 		id = p_id;
 	}
 
+	virtual void test_success(RegExSearch &s, int pos) const {
+
+		RegExMatch::Group &ref = s.match->captures[id];
+		ref.length = pos - ref.start;
+	}
+
 	virtual int test(RegExSearch &s, int pos) const {
 
 		RegExMatch::Group &ref = s.match->captures[id];
@@ -676,13 +688,8 @@ struct RegExNodeCapturing : public RegExNodeGroup {
 
 		int res = RegExNodeGroup::test(s, pos);
 
-		if (res >= 0) {
-			if (!s.complete)
-				ref.length = res - pos;
-		} else {
+		if (res < 0)
 			ref.start = old_start;
-		}
-
 		return res;
 	}
 
