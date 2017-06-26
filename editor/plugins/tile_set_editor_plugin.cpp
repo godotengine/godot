@@ -113,20 +113,15 @@ void TileSetEditor::_import_node(Node *p_node, Ref<TileSet> p_library) {
 
 			for (List<uint32_t>::Element *E = shapes.front(); E; E = E->next()) {
 
+				Vector2 shape_offset = sb->shape_owner_get_transform(E->get()).get_origin();
+				bool one_way = sb->is_shape_owner_one_way_collision_enabled(E->get());
+
 				for (int k = 0; k < sb->shape_owner_get_shape_count(E->get()); k++) {
 
 					Ref<Shape> shape = sb->shape_owner_get_shape(E->get(), k);
-					collisions.push_back(shape); //uh what about transform?
+					p_library->tile_add_shape(id, shape, shape_offset, one_way);
 				}
 			}
-		}
-
-		if (collisions.size()) {
-
-			p_library->tile_set_shapes(id, collisions);
-			p_library->tile_set_shape_offset(id, -phys_offset);
-		} else {
-			p_library->tile_set_shape_offset(id, Vector2());
 		}
 
 		p_library->tile_set_texture_offset(id, mi->get_offset());
