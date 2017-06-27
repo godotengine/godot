@@ -120,6 +120,7 @@ public:
 	bool is_subsequence_ofi(const String &p_string) const;
 	Vector<String> bigrams() const;
 	float similarity(const String &p_string) const;
+	String format(const Variant& values, String placeholder = "{_}") const;
 	String replace_first(String p_key, String p_with) const;
 	String replace(String p_key, String p_with) const;
 	String replacen(String p_key, String p_with) const;
