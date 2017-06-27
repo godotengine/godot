@@ -737,7 +737,7 @@ void EditorSettings::_load_default_text_editor_theme() {
 	set("text_editor/highlighting/string_color", Color::html("ef6ebe"));
 	set("text_editor/highlighting/number_color", Color::html("EB9532"));
 	set("text_editor/highlighting/symbol_color", Color::html("badfff"));
-	set("text_editor/highlighting/selection_color", Color::html("7b5dbe"));
+	set("text_editor/highlighting/selection_color", Color::html("6ca9c2"));
 	set("text_editor/highlighting/brace_mismatch_color", Color(1, 0.2, 0.2));
 	set("text_editor/highlighting/current_line_color", Color(0.3, 0.5, 0.8, 0.15));
 	set("text_editor/highlighting/line_length_guideline_color", Color(0.3, 0.5, 0.8, 0.1));
