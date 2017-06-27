@@ -2746,12 +2746,10 @@ void EditorNode::_discard_changes(const String &p_str) {
 			_update_scene_tabs();
 
 			if (current_option == FILE_CLOSE_ALL_AND_QUIT || current_option == FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER) {
-				int next_scene = _next_unsaved_scene();
-				if (next_scene == -1) {
+				if (_next_unsaved_scene() == -1) {
 					current_option = current_option == FILE_CLOSE_ALL_AND_QUIT ? FILE_QUIT : RUN_PROJECT_MANAGER;
 					_discard_changes();
 				} else {
-					tab_closing = next_scene;
 					_menu_option_confirm(current_option, false);
 				}
 			} else {
