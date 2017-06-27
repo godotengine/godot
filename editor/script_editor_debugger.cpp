@@ -1137,8 +1137,9 @@ void ScriptEditorDebugger::_stack_dump_frame_selected() {
 
 	Dictionary d = ti->get_metadata(0);
 
-	Ref<Script> s = ResourceLoader::load(d["file"]);
-	emit_signal("goto_script_line", s, int(d["line"]) - 1);
+	stack_script = ResourceLoader::load(d["file"]);
+	emit_signal("goto_script_line", stack_script, int(d["line"]) - 1);
+	stack_script.unref();
 
 	ERR_FAIL_COND(connection.is_null());
 	ERR_FAIL_COND(!connection->is_connected_to_host());
@@ -1522,6 +1523,21 @@ void ScriptEditorDebugger::set_hide_on_stop(bool p_hide) {
 	hide_on_stop = p_hide;
 }
 
+bool ScriptEditorDebugger::get_debug_with_external_editor() const {
+
+	return enable_external_editor;
+}
+
+void ScriptEditorDebugger::set_debug_with_external_editor(bool p_enabled) {
+
+	enable_external_editor = p_enabled;
+}
+
+Ref<Script> ScriptEditorDebugger::get_dump_stack_script() const {
+
+	return stack_script;
+}
+
 void ScriptEditorDebugger::_paused() {
 
 	ERR_FAIL_COND(connection.is_null());
@@ -1871,6 +1887,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 	last_path_id = false;
 	error_count = 0;
 	hide_on_stop = true;
+	enable_external_editor = false;
 	last_error_count = 0;
 
 	EditorNode::get_singleton()->get_pause_button()->connect("pressed", this, "_paused");
