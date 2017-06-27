@@ -96,6 +96,7 @@ public:
 	CursorShape cursor_shape;
 	MouseMode mouse_mode;
 
+	String title;
 	bool minimized;
 	bool maximized;
 	bool zoomed;
@@ -199,6 +200,9 @@ public:
 	virtual bool is_window_maximized() const;
 	virtual void request_attention();
 	virtual String get_joy_guid(int p_device) const;
+
+	virtual void set_borderless_window(int p_borderless);
+	virtual bool get_borderless_window();
 
 	virtual PowerState get_power_state();
 	virtual int get_power_seconds_left();
