@@ -68,6 +68,8 @@
 
 #undef CursorShape
 
+#include <X11/XKBlib.h>
+
 int OS_X11::get_video_driver_count() const {
 	return 1;
 }
@@ -93,6 +95,7 @@ const char *OS_X11::get_audio_driver_name(int p_driver) const {
 
 void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
+	long im_event_mask = 0;
 	last_button_state = 0;
 
 	xmbstring = NULL;
@@ -113,7 +116,32 @@ void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 	/** XLIB INITIALIZATION **/
 	x11_display = XOpenDisplay(NULL);
 
-	char *modifiers = XSetLocaleModifiers("@im=none");
+	Bool xkb_dar = False;
+	if (x11_display) {
+		XAutoRepeatOn(x11_display);
+		xkb_dar = XkbSetDetectableAutoRepeat(x11_display, True, NULL);
+	}
+
+	char *modifiers = NULL;
+
+	// Try to support IME if detectable auto-repeat is supported
+
+	if (xkb_dar == True) {
+
+// Xutf8LookupString will be used later instead of XmbLookupString before
+// the multibyte sequences can be converted to unicode string.
+
+#ifdef X_HAVE_UTF8_STRING
+		modifiers = XSetLocaleModifiers("");
+#endif
+	}
+
+	if (modifiers == NULL) {
+		if (is_stdout_verbose()) {
+			WARN_PRINT("IME is disabled");
+		}
+		modifiers = XSetLocaleModifiers("@im=none");
+	}
 	if (modifiers == NULL) {
 		WARN_PRINT("Error setting locale modifiers");
 	}
@@ -153,6 +181,14 @@ void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 		WARN_PRINT("XOpenIM failed");
 		xim_style = 0L;
 	} else {
+		::XIMCallback im_destroy_callback;
+		im_destroy_callback.client_data = (::XPointer)(this);
+		im_destroy_callback.callback = (::XIMProc)(xim_destroy_callback);
+		if (XSetIMValues(xim, XNDestroyCallback, &im_destroy_callback,
+					NULL) != NULL) {
+			WARN_PRINT("Error setting XIM destroy callback");
+		}
+
 		::XIMStyles *xim_styles = NULL;
 		xim_style = 0L;
 		char *imvalret = NULL;
@@ -303,7 +339,8 @@ void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 						  StructureNotifyMask |
 						  SubstructureNotifyMask | SubstructureRedirectMask |
 						  FocusChangeMask | PropertyChangeMask |
-						  ColormapChangeMask | OwnerGrabButtonMask;
+						  ColormapChangeMask | OwnerGrabButtonMask |
+						  im_event_mask;
 
 	XChangeWindowAttributes(x11_display, x11_window, CWEventMask, &new_attr);
 
@@ -327,6 +364,16 @@ void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 	if (xim && xim_style) {
 
 		xic = XCreateIC(xim, XNInputStyle, xim_style, XNClientWindow, x11_window, XNFocusWindow, x11_window, (char *)NULL);
+		if (XGetICValues(xic, XNFilterEvents, &im_event_mask, NULL) != NULL) {
+			WARN_PRINT("XGetICValues couldn't obtain XNFilterEvents value");
+			XDestroyIC(xic);
+			xic = NULL;
+		}
+		if (xic) {
+			XSetICFocus(xic);
+		} else {
+			WARN_PRINT("XCreateIC couldn't create xic");
+		}
 	} else {
 
 		xic = NULL;
@@ -445,6 +492,33 @@ void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 	_ensure_data_dir();
 }
 
+void OS_X11::xim_destroy_callback(::XIM im, ::XPointer client_data,
+		::XPointer call_data) {
+
+	WARN_PRINT("Input method stopped");
+	OS_X11 *os = reinterpret_cast<OS_X11 *>(client_data);
+	os->xim = NULL;
+	os->xic = NULL;
+}
+
+void OS_X11::set_ime_position(short x, short y) {
+
+	if (!xic) {
+		return;
+	}
+	::XPoint spot;
+	spot.x = x;
+	spot.y = y;
+	XVaNestedList preedit_attr = XVaCreateNestedList(0,
+			XNSpotLocation, &spot,
+			NULL);
+	XSetICValues(xic,
+			XNPreeditAttributes, preedit_attr,
+			NULL);
+	XFree(preedit_attr);
+	return;
+}
+
 void OS_X11::finalize() {
 
 	if (main_loop)
@@ -492,8 +566,12 @@ void OS_X11::finalize() {
 			XcursorImageDestroy(img[i]);
 	};
 
-	XDestroyIC(xic);
-	XCloseIM(xim);
+	if (xic) {
+		XDestroyIC(xic);
+	}
+	if (xim) {
+		XCloseIM(xim);
+	}
 
 	XCloseDisplay(x11_display);
 	if (xmbstring)
@@ -1041,9 +1119,61 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 		xmblen = 8;
 	}
 
+	keysym_unicode = keysym_keycode;
+
 	if (xkeyevent->type == KeyPress && xic) {
 
 		Status status;
+#ifdef X_HAVE_UTF8_STRING
+		int utf8len = 8;
+		char *utf8string = (char *)memalloc(sizeof(char) * utf8len);
+		int utf8bytes = Xutf8LookupString(xic, xkeyevent, utf8string,
+				utf8len - 1, &keysym_unicode, &status);
+		if (status == XBufferOverflow) {
+			utf8len = utf8bytes + 1;
+			utf8string = (char *)memrealloc(utf8string, utf8len);
+			utf8bytes = Xutf8LookupString(xic, xkeyevent, utf8string,
+					utf8len - 1, &keysym_unicode, &status);
+		}
+		utf8string[utf8bytes] = '\0';
+
+		if (status == XLookupChars) {
+			bool keypress = xkeyevent->type == KeyPress;
+			unsigned int keycode = KeyMappingX11::get_keycode(keysym_keycode);
+			if (keycode >= 'a' && keycode <= 'z')
+				keycode -= 'a' - 'A';
+
+			String tmp;
+			tmp.parse_utf8(utf8string, utf8bytes);
+			for (int i = 0; i < tmp.length(); i++) {
+				Ref<InputEventKey> k;
+				k.instance();
+				if (keycode == 0 && tmp[i] == 0) {
+					continue;
+				}
+
+				get_key_modifier_state(xkeyevent->state, k);
+
+				k->set_unicode(tmp[i]);
+
+				k->set_pressed(keypress);
+
+				k->set_scancode(keycode);
+
+				k->set_echo(false);
+
+				if (k->get_scancode() == KEY_BACKTAB) {
+					//make it consistent across platforms.
+					k->set_scancode(KEY_TAB);
+					k->set_shift(true);
+				}
+
+				input->parse_input_event(k);
+			}
+			return;
+		}
+		memfree(utf8string);
+#else
 		do {
 
 			int mnbytes = XmbLookupString(xic, xkeyevent, xmbstring, xmblen - 1, &keysym_unicode, &status);
@@ -1054,6 +1184,7 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 				xmbstring = (char *)memrealloc(xmbstring, xmblen);
 			}
 		} while (status == XBufferOverflow);
+#endif
 	}
 
 	/* Phase 2, obtain a pigui keycode from the keysym */
@@ -1082,11 +1213,6 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 
 	bool keypress = xkeyevent->type == KeyPress;
 
-	if (xkeyevent->type == KeyPress && xic) {
-		if (XFilterEvent((XEvent *)xkeyevent, x11_window))
-			return;
-	}
-
 	if (keycode == 0 && unicode == 0)
 		return;
 
@@ -1111,6 +1237,8 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 	// difference in time is below a treshold.
 
 	if (xkeyevent->type != KeyPress) {
+
+		p_echo = false;
 
 		// make sure there are events pending,
 		// so this call won't block.
@@ -1170,6 +1298,18 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 			k->set_alt(false);
 		else if (k->get_scancode() == KEY_META)
 			k->set_metakey(false);
+	}
+
+	bool last_is_pressed = Input::get_singleton()->is_key_pressed(k->get_scancode());
+	if (k->is_pressed()) {
+		if (last_is_pressed) {
+			k->set_echo(true);
+		}
+	} else {
+		//ignore
+		if (last_is_pressed == false) {
+			return;
+		}
 	}
 
 	//printf("key: %x\n",k->get_scancode());
@@ -1253,6 +1393,10 @@ void OS_X11::process_xevents() {
 		XEvent event;
 		XNextEvent(x11_display, &event);
 
+		if (XFilterEvent(&event, None)) {
+			continue;
+		}
+
 		switch (event.type) {
 			case Expose:
 				Main::force_redraw();
@@ -1295,6 +1439,9 @@ void OS_X11::process_xevents() {
 							ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
 							GrabModeAsync, GrabModeAsync, x11_window, None, CurrentTime);
 				}
+				if (xic) {
+					XSetICFocus(xic);
+				}
 				break;
 
 			case FocusOut:
@@ -1308,9 +1455,16 @@ void OS_X11::process_xevents() {
 					}
 					XUngrabPointer(x11_display, CurrentTime);
 				}
+				if (xic) {
+					XUnsetICFocus(xic);
+				}
 				break;
 
 			case ConfigureNotify:
+				if (xic) {
+					//  Not portable.
+					set_ime_position(0, 1);
+				}
 				/* call resizeGLScene only if our window-size changed */
 
 				if ((event.xconfigure.width == current_videomode.width) &&
