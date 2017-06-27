@@ -82,7 +82,7 @@ void EditorPluginSettings::update_plugins() {
 
 	plugins.sort();
 
-	Vector<String> active_plugins = GlobalConfig::get_singleton()->get("plugins/active");
+	Vector<String> active_plugins = GlobalConfig::get_singleton()->get("editor_plugins/enabled");
 
 	for (int i = 0; i < plugins.size(); i++) {
 
