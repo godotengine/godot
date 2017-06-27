@@ -380,9 +380,13 @@ Curve2D::Curve2D()
 
 #endif
 
+const char *Curve::SIGNAL_RANGE_CHANGED = "range_changed";
+
 Curve::Curve() {
 	_bake_resolution = 100;
 	_baked_cache_dirty = false;
+	_min_value = 0;
+	_max_value = 1;
 #ifdef TOOLS_ENABLED
 	_disable_set_data = false;
 #endif
@@ -496,12 +500,38 @@ void Curve::clean_dupes() {
 void Curve::set_point_left_tangent(int i, real_t tangent) {
 	ERR_FAIL_INDEX(i, _points.size());
 	_points[i].left_tangent = tangent;
+	_points[i].left_mode = TANGENT_FREE;
 	mark_dirty();
 }
 
 void Curve::set_point_right_tangent(int i, real_t tangent) {
 	ERR_FAIL_INDEX(i, _points.size());
 	_points[i].right_tangent = tangent;
+	_points[i].right_mode = TANGENT_FREE;
+	mark_dirty();
+}
+
+void Curve::set_point_left_mode(int i, TangentMode p_mode) {
+	ERR_FAIL_INDEX(i, _points.size());
+	_points[i].left_mode = p_mode;
+	if (i > 0) {
+		if (p_mode == TANGENT_LINEAR) {
+			Vector2 v = (_points[i - 1].pos - _points[i].pos).normalized();
+			_points[i].left_tangent = v.y / v.x;
+		}
+	}
+	mark_dirty();
+}
+
+void Curve::set_point_right_mode(int i, TangentMode p_mode) {
+	ERR_FAIL_INDEX(i, _points.size());
+	_points[i].right_mode = p_mode;
+	if (i + 1 < _points.size()) {
+		if (p_mode == TANGENT_LINEAR) {
+			Vector2 v = (_points[i + 1].pos - _points[i].pos).normalized();
+			_points[i].right_tangent = v.y / v.x;
+		}
+	}
 	mark_dirty();
 }
 
@@ -513,6 +543,16 @@ real_t Curve::get_point_left_tangent(int i) const {
 real_t Curve::get_point_right_tangent(int i) const {
 	ERR_FAIL_INDEX_V(i, _points.size(), 0);
 	return _points[i].right_tangent;
+}
+
+Curve::TangentMode Curve::get_point_left_mode(int i) const {
+	ERR_FAIL_INDEX_V(i, _points.size(), TANGENT_FREE);
+	return _points[i].left_mode;
+}
+
+Curve::TangentMode Curve::get_point_right_mode(int i) const {
+	ERR_FAIL_INDEX_V(i, _points.size(), TANGENT_FREE);
+	return _points[i].right_mode;
 }
 
 void Curve::remove_point(int p_index) {
@@ -529,6 +569,7 @@ void Curve::clear_points() {
 void Curve::set_point_value(int p_index, real_t pos) {
 	ERR_FAIL_INDEX(p_index, _points.size());
 	_points[p_index].pos.y = pos;
+	update_auto_tangents(p_index);
 	mark_dirty();
 }
 
@@ -539,12 +580,64 @@ int Curve::set_point_offset(int p_index, float offset) {
 	int i = add_point(Vector2(offset, p.pos.y));
 	_points[i].left_tangent = p.left_tangent;
 	_points[i].right_tangent = p.right_tangent;
+	_points[i].left_mode = p.left_mode;
+	_points[i].right_mode = p.right_mode;
+	if (p_index != i)
+		update_auto_tangents(p_index);
+	update_auto_tangents(i);
 	return i;
 }
 
 Vector2 Curve::get_point_pos(int p_index) const {
 	ERR_FAIL_INDEX_V(p_index, _points.size(), Vector2(0, 0));
 	return _points[p_index].pos;
+}
+
+void Curve::update_auto_tangents(int i) {
+
+	Point &p = _points[i];
+
+	if (i > 0) {
+		if (p.left_mode == TANGENT_LINEAR) {
+			Vector2 v = (_points[i - 1].pos - p.pos).normalized();
+			p.left_tangent = v.y / v.x;
+		}
+		if (_points[i - 1].right_mode == TANGENT_LINEAR) {
+			Vector2 v = (_points[i - 1].pos - p.pos).normalized();
+			_points[i - 1].right_tangent = v.y / v.x;
+		}
+	}
+
+	if (i + 1 < _points.size()) {
+		if (p.right_mode == TANGENT_LINEAR && i + 1 < _points.size()) {
+			Vector2 v = (_points[i + 1].pos - p.pos).normalized();
+			p.right_tangent = v.y / v.x;
+		}
+		if (_points[i + 1].left_mode == TANGENT_LINEAR) {
+			Vector2 v = (_points[i + 1].pos - p.pos).normalized();
+			_points[i + 1].left_tangent = v.y / v.x;
+		}
+	}
+}
+
+#define MIN_Y_RANGE 0.01
+
+void Curve::set_min_value(float p_min) {
+	if (p_min > _max_value - MIN_Y_RANGE)
+		_min_value = _max_value - MIN_Y_RANGE;
+	else
+		_min_value = p_min;
+	// Note: min and max are indicative values,
+	// it's still possible that existing points are out of range at this point.
+	emit_signal(SIGNAL_RANGE_CHANGED);
+}
+
+void Curve::set_max_value(float p_max) {
+	if (p_max < _min_value + MIN_Y_RANGE)
+		_max_value = _min_value + MIN_Y_RANGE;
+	else
+		_max_value = p_max;
+	emit_signal(SIGNAL_RANGE_CHANGED);
 }
 
 real_t Curve::interpolate(real_t offset) const {
@@ -636,6 +729,14 @@ void Curve::set_data(Array input) {
 		ERR_FAIL_COND(input[i].get_type() != Variant::VECTOR2);
 		ERR_FAIL_COND(input[i + 1].get_type() != Variant::REAL);
 		ERR_FAIL_COND(input[i + 2].get_type() != Variant::REAL);
+
+		ERR_FAIL_COND(input[i + 3].get_type() != Variant::INT);
+		int left_mode = input[i + 3];
+		ERR_FAIL_COND(left_mode < 0 || left_mode >= TANGENT_MODE_COUNT);
+
+		ERR_FAIL_COND(input[i + 4].get_type() != Variant::INT);
+		int right_mode = input[i + 4];
+		ERR_FAIL_COND(right_mode < 0 || right_mode >= TANGENT_MODE_COUNT);
 	}
 
 	_points.resize(input.size() / 3);
@@ -648,6 +749,11 @@ void Curve::set_data(Array input) {
 		p.pos = input[i];
 		p.left_tangent = input[i + 1];
 		p.right_tangent = input[i + 2];
+		// TODO For some reason the compiler won't convert from Variant to enum
+		int left_mode = input[i + 3];
+		int right_mode = input[i + 4];
+		p.left_mode = (TangentMode)left_mode;
+		p.right_mode = (TangentMode)right_mode;
 	}
 
 	mark_dirty();
@@ -726,8 +832,16 @@ void Curve::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("interpolate_baked", "offset"), &Curve::interpolate_baked);
 	ClassDB::bind_method(D_METHOD("get_point_left_tangent", "index"), &Curve::get_point_left_tangent);
 	ClassDB::bind_method(D_METHOD("get_point_right_tangent", "index"), &Curve::get_point_left_tangent);
+	ClassDB::bind_method(D_METHOD("get_point_left_mode", "index"), &Curve::get_point_left_mode);
+	ClassDB::bind_method(D_METHOD("get_point_right_mode", "index"), &Curve::get_point_left_mode);
 	ClassDB::bind_method(D_METHOD("set_point_left_tangent", "index", "tangent"), &Curve::set_point_left_tangent);
 	ClassDB::bind_method(D_METHOD("set_point_right_tangent", "index", "tangent"), &Curve::set_point_left_tangent);
+	ClassDB::bind_method(D_METHOD("set_point_left_mode", "index", "mode"), &Curve::set_point_left_mode);
+	ClassDB::bind_method(D_METHOD("set_point_right_mode", "index", "mode"), &Curve::set_point_left_mode);
+	ClassDB::bind_method(D_METHOD("get_min_value"), &Curve::get_min_value);
+	ClassDB::bind_method(D_METHOD("set_min_value", "min"), &Curve::set_min_value);
+	ClassDB::bind_method(D_METHOD("get_max_value"), &Curve::get_max_value);
+	ClassDB::bind_method(D_METHOD("set_max_value", "max"), &Curve::set_max_value);
 	ClassDB::bind_method(D_METHOD("clean_dupes"), &Curve::clean_dupes);
 	ClassDB::bind_method(D_METHOD("bake"), &Curve::bake);
 	ClassDB::bind_method(D_METHOD("get_bake_resolution"), &Curve::get_bake_resolution);
@@ -735,8 +849,12 @@ void Curve::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_data"), &Curve::get_data);
 	ClassDB::bind_method(D_METHOD("_set_data", "data"), &Curve::set_data);
 
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "min_value", PROPERTY_HINT_RANGE, "-1024,1024,0.01"), "set_min_value", "get_min_value");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "max_value", PROPERTY_HINT_RANGE, "-1024,1024,0.01"), "set_max_value", "get_max_value");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bake_resolution", PROPERTY_HINT_RANGE, "1,1000,1"), "set_bake_resolution", "get_bake_resolution");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "_set_data", "_get_data");
+
+	ADD_SIGNAL(MethodInfo(SIGNAL_RANGE_CHANGED));
 }
 
 int Curve2D::get_point_count() const {

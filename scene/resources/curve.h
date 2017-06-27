@@ -89,24 +89,38 @@ public:
 	static const int MIN_X = 0.f;
 	static const int MAX_X = 1.f;
 
+	static const char *SIGNAL_RANGE_CHANGED;
+
 #ifdef TOOLS_ENABLED
 	bool _disable_set_data;
 #endif
+
+	enum TangentMode {
+		TANGENT_FREE = 0,
+		TANGENT_LINEAR,
+		TANGENT_MODE_COUNT
+	};
 
 	struct Point {
 		Vector2 pos;
 		real_t left_tangent;
 		real_t right_tangent;
+		TangentMode left_mode;
+		TangentMode right_mode;
 
 		Point() {
 			left_tangent = 0;
 			right_tangent = 0;
+			left_mode = TANGENT_FREE;
+			right_mode = TANGENT_FREE;
 		}
 
 		Point(Vector2 p, real_t left = 0, real_t right = 0) {
 			pos = p;
 			left_tangent = left;
 			right_tangent = right;
+			left_mode = TANGENT_FREE;
+			right_mode = TANGENT_FREE;
 		}
 	};
 
@@ -124,6 +138,12 @@ public:
 	int set_point_offset(int p_index, float offset);
 	Vector2 get_point_pos(int p_index) const;
 
+	float get_min_value() const { return _min_value; }
+	void set_min_value(float p_min);
+
+	float get_max_value() const { return _max_value; }
+	void set_max_value(float p_max);
+
 	real_t interpolate(real_t offset) const;
 	real_t interpolate_local_nocheck(int index, real_t local_offset) const;
 
@@ -131,8 +151,15 @@ public:
 
 	void set_point_left_tangent(int i, real_t tangent);
 	void set_point_right_tangent(int i, real_t tangent);
+	void set_point_left_mode(int i, TangentMode p_mode);
+	void set_point_right_mode(int i, TangentMode p_mode);
+
 	real_t get_point_left_tangent(int i) const;
 	real_t get_point_right_tangent(int i) const;
+	TangentMode get_point_left_mode(int i) const;
+	TangentMode get_point_right_mode(int i) const;
+
+	void update_auto_tangents(int i);
 
 	Array get_data() const;
 	void set_data(Array input);
@@ -152,7 +179,11 @@ private:
 	bool _baked_cache_dirty;
 	Vector<real_t> _baked_cache;
 	int _bake_resolution;
+	float _min_value;
+	float _max_value;
 };
+
+VARIANT_ENUM_CAST(Curve::TangentMode)
 
 class Curve2D : public Resource {
 

@@ -43,7 +43,6 @@ CurveEditor::CurveEditor() {
 	_tangents_length = 40;
 	_dragging = false;
 	_has_undo_data = false;
-	_world_rect = Rect2(0, 0, 1, 1);
 
 	set_focus_mode(FOCUS_ALL);
 	set_clip_contents(true);
@@ -70,11 +69,15 @@ void CurveEditor::set_curve(Ref<Curve> curve) {
 		return;
 
 	if (_curve_ref.is_valid()) {
-		_curve_ref->disconnect("changed", this, "_curve_changed");
+		_curve_ref->disconnect(CoreStringNames::get_singleton()->changed, this, "_curve_changed");
+		_curve_ref->disconnect(Curve::SIGNAL_RANGE_CHANGED, this, "_curve_changed");
 	}
+
 	_curve_ref = curve;
+
 	if (_curve_ref.is_valid()) {
-		_curve_ref->connect("changed", this, "_curve_changed");
+		_curve_ref->connect(CoreStringNames::get_singleton()->changed, this, "_curve_changed");
+		_curve_ref->connect(Curve::SIGNAL_RANGE_CHANGED, this, "_curve_changed");
 	}
 
 	_selected_point = -1;
@@ -144,11 +147,13 @@ void CurveEditor::on_gui_input(const Ref<InputEvent> &p_event) {
 		Vector2 mpos = mm.get_position();
 
 		if (_dragging && _curve_ref.is_valid()) {
+			Curve &curve = **_curve_ref;
+
 			if (_selected_point != -1) {
 
 				if (!_has_undo_data) {
 					// Save curve state before dragging points
-					_undo_data = _curve_ref->get_data();
+					_undo_data = curve.get_data();
 					_has_undo_data = true;
 				}
 
@@ -157,26 +162,25 @@ void CurveEditor::on_gui_input(const Ref<InputEvent> &p_event) {
 
 					Vector2 point_pos = get_world_pos(mpos);
 
-					int i = _curve_ref->set_point_offset(_selected_point, point_pos.x);
+					int i = curve.set_point_offset(_selected_point, point_pos.x);
 					// The index may change if the point is dragged across another one
 					set_hover_point_index(i);
 					set_selected_point(i);
 
-					// TODO Get rid of this clamp if zoom is implemented in this editor.
 					// This is to prevent the user from loosing a point out of view.
-					if (point_pos.y < 0.0)
-						point_pos.y = 0.0;
-					else if (point_pos.y > 1.0)
-						point_pos.y = 1.0;
+					if (point_pos.y < curve.get_min_value())
+						point_pos.y = curve.get_min_value();
+					else if (point_pos.y > curve.get_max_value())
+						point_pos.y = curve.get_max_value();
 
-					_curve_ref->set_point_value(_selected_point, point_pos.y);
+					curve.set_point_value(_selected_point, point_pos.y);
 
 					//auto_calculate_tangents(i);
 
 				} else {
 					// Drag tangent
 
-					Vector2 point_pos = _curve_ref->get_point_pos(_selected_point);
+					Vector2 point_pos = curve.get_point_pos(_selected_point);
 					Vector2 control_pos = get_world_pos(mpos);
 
 					Vector2 dir = (control_pos - point_pos).normalized();
@@ -190,13 +194,17 @@ void CurveEditor::on_gui_input(const Ref<InputEvent> &p_event) {
 					bool link = !Input::get_singleton()->is_key_pressed(KEY_SHIFT);
 
 					if (_selected_tangent == TANGENT_LEFT) {
-						_curve_ref->set_point_left_tangent(_selected_point, tangent);
-						if (link && _selected_point != _curve_ref->get_point_count() - 1)
-							_curve_ref->set_point_right_tangent(_selected_point, tangent);
+						curve.set_point_left_tangent(_selected_point, tangent);
+
+						// Note: if a tangent is set to linear, it shouldn't be linked to the other
+						if (link && _selected_point != curve.get_point_count() - 1 && !curve.get_point_right_mode(_selected_point) != Curve::TANGENT_FREE)
+							curve.set_point_right_tangent(_selected_point, tangent);
+
 					} else {
-						_curve_ref->set_point_right_tangent(_selected_point, tangent);
-						if (link && _selected_point != 0)
-							_curve_ref->set_point_left_tangent(_selected_point, tangent);
+						curve.set_point_right_tangent(_selected_point, tangent);
+
+						if (link && _selected_point != 0 && !curve.get_point_left_mode(_selected_point) != Curve::TANGENT_FREE)
+							curve.set_point_left_tangent(_selected_point, tangent);
 					}
 				}
 			}
@@ -230,25 +238,31 @@ void CurveEditor::on_preset_item_selected(int preset_id) {
 		case PRESET_FLAT0:
 			curve.add_point(Vector2(0, 0));
 			curve.add_point(Vector2(1, 0));
+			curve.set_point_right_mode(0, Curve::TANGENT_LINEAR);
+			curve.set_point_left_mode(1, Curve::TANGENT_LINEAR);
 			break;
 
 		case PRESET_FLAT1:
 			curve.add_point(Vector2(0, 1));
 			curve.add_point(Vector2(1, 1));
+			curve.set_point_right_mode(0, Curve::TANGENT_LINEAR);
+			curve.set_point_left_mode(1, Curve::TANGENT_LINEAR);
 			break;
 
 		case PRESET_LINEAR:
-			curve.add_point(Vector2(0, 0), 0, 1);
-			curve.add_point(Vector2(1, 1), 1, 0);
+			curve.add_point(Vector2(0, 0));
+			curve.add_point(Vector2(1, 1));
+			curve.set_point_right_mode(0, Curve::TANGENT_LINEAR);
+			curve.set_point_left_mode(1, Curve::TANGENT_LINEAR);
 			break;
 
 		case PRESET_EASE_IN:
 			curve.add_point(Vector2(0, 0));
-			curve.add_point(Vector2(1, 1), 1.4, 0);
+			curve.add_point(Vector2(1, 1), (curve.get_max_value() - curve.get_min_value()) * 1.4, 0);
 			break;
 
 		case PRESET_EASE_OUT:
-			curve.add_point(Vector2(0, 0), 0, 1.4);
+			curve.add_point(Vector2(0, 0), 0, (curve.get_max_value() - curve.get_min_value()) * 1.4);
 			curve.add_point(Vector2(1, 1));
 			break;
 
@@ -281,6 +295,18 @@ void CurveEditor::on_context_menu_item_selected(int action_id) {
 		case CONTEXT_REMOVE_POINT:
 			remove_point(_selected_point);
 			break;
+
+		case CONTEXT_LINEAR:
+			toggle_linear();
+			break;
+
+		case CONTEXT_LEFT_LINEAR:
+			toggle_linear(TANGENT_LEFT);
+			break;
+
+		case CONTEXT_RIGHT_LINEAR:
+			toggle_linear(TANGENT_RIGHT);
+			break;
 	}
 }
 
@@ -291,9 +317,37 @@ void CurveEditor::open_context_menu(Vector2 pos) {
 
 	if (_curve_ref.is_valid()) {
 		_context_menu->add_item(TTR("Add point"), CONTEXT_ADD_POINT);
+
 		if (_selected_point >= 0) {
 			_context_menu->add_item(TTR("Remove point"), CONTEXT_REMOVE_POINT);
+
+			if (_selected_tangent != TANGENT_NONE) {
+				_context_menu->add_separator();
+
+				_context_menu->add_check_item(TTR("Linear"), CONTEXT_LINEAR);
+
+				bool is_linear = _selected_tangent == TANGENT_LEFT ?
+										 _curve_ref->get_point_left_mode(_selected_point) == Curve::TANGENT_LINEAR :
+										 _curve_ref->get_point_right_mode(_selected_point) == Curve::TANGENT_LINEAR;
+
+				_context_menu->set_item_checked(CONTEXT_LINEAR, is_linear);
+
+			} else {
+				_context_menu->add_separator();
+
+				if (_selected_point > 0) {
+					_context_menu->add_check_item(TTR("Left linear"), CONTEXT_LEFT_LINEAR);
+					_context_menu->set_item_checked(CONTEXT_LEFT_LINEAR,
+							_curve_ref->get_point_left_mode(_selected_point) == Curve::TANGENT_LINEAR);
+				}
+				if (_selected_point + 1 < _curve_ref->get_point_count()) {
+					_context_menu->add_check_item(TTR("Right linear"), CONTEXT_RIGHT_LINEAR);
+					_context_menu->set_item_checked(CONTEXT_RIGHT_LINEAR,
+							_curve_ref->get_point_right_mode(_selected_point) == Curve::TANGENT_LINEAR);
+				}
+			}
 		}
+
 		_context_menu->add_separator();
 	}
 
@@ -319,7 +373,7 @@ int CurveEditor::get_point_at(Vector2 pos) const {
 	return -1;
 }
 
-int CurveEditor::get_tangent_at(Vector2 pos) const {
+CurveEditor::TangentIndex CurveEditor::get_tangent_at(Vector2 pos) const {
 	if (_curve_ref.is_null() || _selected_point < 0)
 		return TANGENT_NONE;
 
@@ -369,6 +423,25 @@ void CurveEditor::remove_point(int index) {
 	push_undo(prev_data);
 }
 
+void CurveEditor::toggle_linear(TangentIndex tangent) {
+	ERR_FAIL_COND(_curve_ref.is_null());
+
+	Array prev_data = _curve_ref->get_data();
+
+	if (tangent == TANGENT_NONE)
+		tangent = _selected_tangent;
+
+	if (tangent == TANGENT_LEFT) {
+		bool is_linear = _curve_ref->get_point_left_mode(_selected_point) == Curve::TANGENT_LINEAR;
+		_curve_ref->set_point_left_mode(_selected_point, is_linear ? Curve::TANGENT_FREE : Curve::TANGENT_LINEAR);
+	} else {
+		bool is_linear = _curve_ref->get_point_right_mode(_selected_point) == Curve::TANGENT_LINEAR;
+		_curve_ref->set_point_right_mode(_selected_point, is_linear ? Curve::TANGENT_FREE : Curve::TANGENT_LINEAR);
+	}
+
+	push_undo(prev_data);
+}
+
 void CurveEditor::set_selected_point(int index) {
 	if (index != _selected_point) {
 		_selected_point = index;
@@ -401,14 +474,23 @@ void CurveEditor::update_view_transform() {
 	Vector2 control_size = get_size();
 	const real_t margin = 24;
 
-	_world_rect = Rect2(Curve::MIN_X, 0, Curve::MAX_X, 1);
+	float min_y = 0;
+	float max_y = 1;
+
+	if (_curve_ref.is_valid()) {
+		min_y = _curve_ref->get_min_value();
+		max_y = _curve_ref->get_max_value();
+	}
+
+	Rect2 world_rect = Rect2(Curve::MIN_X, min_y, Curve::MAX_X, max_y - min_y);
 	Vector2 wm = Vector2(margin, margin) / control_size;
-	_world_rect.position -= wm;
-	_world_rect.size += 2.0 * wm;
+	wm.y *= (max_y - min_y);
+	world_rect.position -= wm;
+	world_rect.size += 2.0 * wm;
 
 	_world_to_view = Transform2D();
-	_world_to_view.translate(-_world_rect.position - Vector2(0, _world_rect.size.y));
-	_world_to_view.scale(Vector2(control_size.x, -control_size.y) / _world_rect.size);
+	_world_to_view.translate(-world_rect.position - Vector2(0, world_rect.size.y));
+	_world_to_view.scale(Vector2(control_size.x, -control_size.y) / world_rect.size);
 }
 
 Vector2 CurveEditor::get_tangent_view_pos(int i, TangentIndex tangent) const {
@@ -509,17 +591,18 @@ void CurveEditor::_draw() {
 
 	const Color grid_color0(0, 0, 0, 0.5);
 	const Color grid_color1(0, 0, 0, 0.15);
-	draw_line(Vector2(min_edge.x, 0), Vector2(max_edge.x, 0), grid_color0);
+	draw_line(Vector2(min_edge.x, curve.get_min_value()), Vector2(max_edge.x, curve.get_min_value()), grid_color0);
+	draw_line(Vector2(max_edge.x, curve.get_max_value()), Vector2(min_edge.x, curve.get_max_value()), grid_color0);
 	draw_line(Vector2(0, min_edge.y), Vector2(0, max_edge.y), grid_color0);
 	draw_line(Vector2(1, max_edge.y), Vector2(1, min_edge.y), grid_color0);
-	draw_line(Vector2(max_edge.x, 1), Vector2(min_edge.x, 1), grid_color0);
 
-	const Vector2 grid_step(0.25, 0.5);
+	float curve_height = (curve.get_max_value() - curve.get_min_value());
+	const Vector2 grid_step(0.25, 0.5 * curve_height);
 
 	for (real_t x = 0; x < 1.0; x += grid_step.x) {
 		draw_line(Vector2(x, min_edge.y), Vector2(x, max_edge.y), grid_color1);
 	}
-	for (real_t y = 0; y < 1.0; y += grid_step.y) {
+	for (real_t y = curve.get_min_value(); y < curve.get_max_value(); y += grid_step.y) {
 		draw_line(Vector2(min_edge.x, y), Vector2(max_edge.x, y), grid_color1);
 	}
 
@@ -528,17 +611,30 @@ void CurveEditor::_draw() {
 	draw_set_transform_matrix(Transform2D());
 
 	Ref<Font> font = get_font("font", "Label");
+	float font_height = font->get_height();
 	const Color text_color(1, 1, 1, 0.3);
 
-	draw_string(font, get_view_pos(Vector2(0, 0)), "0.0", text_color);
+	{
+		// X axis
+		float y = curve.get_min_value();
+		Vector2 off(0, font_height - 1);
+		draw_string(font, get_view_pos(Vector2(0, y)) + off, "0.0", text_color);
+		draw_string(font, get_view_pos(Vector2(0.25, y)) + off, "0.25", text_color);
+		draw_string(font, get_view_pos(Vector2(0.5, y)) + off, "0.5", text_color);
+		draw_string(font, get_view_pos(Vector2(0.75, y)) + off, "0.75", text_color);
+		draw_string(font, get_view_pos(Vector2(1, y)) + off, "1.0", text_color);
+	}
 
-	draw_string(font, get_view_pos(Vector2(0.25, 0)), "0.25", text_color);
-	draw_string(font, get_view_pos(Vector2(0.5, 0)), "0.5", text_color);
-	draw_string(font, get_view_pos(Vector2(0.75, 0)), "0.75", text_color);
-	draw_string(font, get_view_pos(Vector2(1, 0)), "1.0", text_color);
-
-	draw_string(font, get_view_pos(Vector2(0, 0.5)), "0.5", text_color);
-	draw_string(font, get_view_pos(Vector2(0, 1)), "1.0", text_color);
+	{
+		// Y axis
+		float m0 = curve.get_min_value();
+		float m1 = 0.5 * (curve.get_min_value() + curve.get_max_value());
+		float m2 = curve.get_max_value();
+		Vector2 off(1, -1);
+		draw_string(font, get_view_pos(Vector2(0, m0)) + off, String::num(m0, 2), text_color);
+		draw_string(font, get_view_pos(Vector2(0, m1)) + off, String::num(m1, 2), text_color);
+		draw_string(font, get_view_pos(Vector2(0, m2)) + off, String::num(m2, 3), text_color);
+	}
 
 	// Draw tangents for current point
 
@@ -610,6 +706,12 @@ void CurveEditor::_draw() {
 		const Color hover_color = line_color;
 		Vector2 pos = curve.get_point_pos(_hover_point);
 		stroke_rect(Rect2(get_view_pos(pos), Vector2(1, 1)).grow(_hover_radius), hover_color);
+	}
+
+	// Help text
+
+	if (_selected_point > 0 && _selected_point + 1 < curve.get_point_count()) {
+		draw_string(font, Vector2(50, font_height), TTR("Hold Shift to edit tangents individually"), text_color);
 	}
 }
 

@@ -403,7 +403,6 @@ class CurveTexture : public Texture {
 private:
 	RID _texture;
 	Ref<Curve> _curve;
-	float _min, _max;
 	int _width;
 
 	void _update();
@@ -412,16 +411,10 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_max(float p_max);
-	float get_max() const;
-
-	void set_min(float p_min);
-	float get_min() const;
-
 	void set_width(int p_width);
 	int get_width() const;
 
-	void ensure_default_setup();
+	void ensure_default_setup(float p_min=0, float p_max=1);
 
 	void set_curve(Ref<Curve> p_curve);
 	Ref<Curve> get_curve() const;
