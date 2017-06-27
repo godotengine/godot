@@ -43,7 +43,7 @@
 
 #include "input_map.h"
 #include "io/resource_loader.h"
-#include "scene/main/scene_main_loop.h"
+#include "scene/main/scene_tree.h"
 #include "servers/audio_server.h"
 
 #include "io/resource_loader.h"

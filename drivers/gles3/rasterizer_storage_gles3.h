@@ -401,6 +401,8 @@ public:
 			};
 
 			int light_mode;
+			bool uses_screen_texture;
+			bool uses_screen_uv;
 
 		} canvas_item;
 

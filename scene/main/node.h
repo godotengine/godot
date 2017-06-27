@@ -35,7 +35,7 @@
 #include "map.h"
 #include "object.h"
 #include "path_db.h"
-#include "scene/main/scene_main_loop.h"
+#include "scene/main/scene_tree.h"
 #include "script_language.h"
 
 class Viewport;

@@ -34,6 +34,8 @@
 #include "servers/visual/rasterizer.h"
 #include "shaders/canvas_shadow.glsl.gen.h"
 
+class RasterizerSceneGLES3;
+
 class RasterizerCanvasGLES3 : public RasterizerCanvas {
 public:
 	struct CanvasItemUBO {
@@ -41,6 +43,8 @@ public:
 		float projection_matrix[16];
 		float time;
 	};
+
+	RasterizerSceneGLES3 *scene_render;
 
 	struct Data {
 
@@ -118,6 +122,7 @@ public:
 	_FORCE_INLINE_ void _draw_gui_primitive(int p_points, const Vector2 *p_vertices, const Color *p_colors, const Vector2 *p_uvs);
 	_FORCE_INLINE_ void _draw_polygon(const int *p_indices, int p_index_count, int p_vertex_count, const Vector2 *p_vertices, const Vector2 *p_uvs, const Color *p_colors, bool p_singlecolor);
 	_FORCE_INLINE_ void _canvas_item_render_commands(Item *p_item, Item *current_clip, bool &reclip);
+	_FORCE_INLINE_ void _copy_texscreen(const Rect2 &p_rect);
 
 	virtual void canvas_render_items(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light);
 	virtual void canvas_debug_viewport_shadows(Light *p_lights_with_shadow);

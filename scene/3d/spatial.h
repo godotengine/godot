@@ -31,7 +31,7 @@
 #define SPATIAL_H
 
 #include "scene/main/node.h"
-#include "scene/main/scene_main_loop.h"
+#include "scene/main/scene_tree.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>

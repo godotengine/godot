@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "rasterizer_canvas_gles3.h"
-#include "servers/visual/visual_server_raster.h"
-
 #include "global_config.h"
 #include "os/os.h"
+#include "rasterizer_scene_gles3.h"
+#include "servers/visual/visual_server_raster.h"
 #ifndef GLES_OVER_GL
 #define glClearDepth glClearDepthf
 #endif
@@ -172,6 +172,11 @@ void RasterizerCanvasGLES3::canvas_begin() {
 	state.canvas_shader.set_uniform(CanvasShaderGLES3::FINAL_MODULATE, Color(1, 1, 1, 1));
 	state.canvas_shader.set_uniform(CanvasShaderGLES3::MODELVIEW_MATRIX, Transform2D());
 	state.canvas_shader.set_uniform(CanvasShaderGLES3::EXTRA_MATRIX, Transform2D());
+	if (storage->frame.current_rt) {
+		state.canvas_shader.set_uniform(CanvasShaderGLES3::SCREEN_PIXEL_SIZE, Vector2(1.0 / storage->frame.current_rt->width, 1.0 / storage->frame.current_rt->height));
+	} else {
+		state.canvas_shader.set_uniform(CanvasShaderGLES3::SCREEN_PIXEL_SIZE, Vector2(1.0, 1.0));
+	}
 
 	//state.canvas_shader.set_uniform(CanvasShaderGLES3::PROJECTION_MATRIX,state.vp);
 	//state.canvas_shader.set_uniform(CanvasShaderGLES3::MODELVIEW_MATRIX,Transform());
@@ -282,7 +287,11 @@ void RasterizerCanvasGLES3::_set_texture_rect_mode(bool p_enable, bool p_ninepat
 	state.canvas_shader.set_uniform(CanvasShaderGLES3::FINAL_MODULATE, state.canvas_item_modulate);
 	state.canvas_shader.set_uniform(CanvasShaderGLES3::MODELVIEW_MATRIX, state.final_transform);
 	state.canvas_shader.set_uniform(CanvasShaderGLES3::EXTRA_MATRIX, state.extra_matrix);
-
+	if (storage->frame.current_rt) {
+		state.canvas_shader.set_uniform(CanvasShaderGLES3::SCREEN_PIXEL_SIZE, Vector2(1.0 / storage->frame.current_rt->width, 1.0 / storage->frame.current_rt->height));
+	} else {
+		state.canvas_shader.set_uniform(CanvasShaderGLES3::SCREEN_PIXEL_SIZE, Vector2(1.0, 1.0));
+	}
 	state.using_texture_rect = p_enable;
 	state.using_ninepatch = p_ninepatch;
 }
@@ -822,6 +831,78 @@ void RasterizerGLES2::_canvas_item_setup_shader_params(ShaderMaterial *material,
 
 #endif
 
+void RasterizerCanvasGLES3::_copy_texscreen(const Rect2 &p_rect) {
+
+	state.canvas_texscreen_used = true;
+	//blur diffuse into effect mipmaps using separatable convolution
+	//storage->shaders.copy.set_conditional(CopyShaderGLES3::GAUSSIAN_HORIZONTAL,true);
+
+	Vector2 wh(storage->frame.current_rt->width, storage->frame.current_rt->height);
+
+	Color blur_section(p_rect.position.x / wh.x, p_rect.position.y / wh.y, p_rect.size.x / wh.x, p_rect.size.y / wh.y);
+
+	if (p_rect != Rect2()) {
+
+		scene_render->state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::USE_BLUR_SECTION, true);
+		storage->shaders.copy.set_conditional(CopyShaderGLES3::USE_COPY_SECTION, true);
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->effects.mip_maps[0].sizes[0].fbo);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->color);
+
+	storage->shaders.copy.bind();
+	storage->shaders.copy.set_uniform(CopyShaderGLES3::COPY_SECTION, blur_section);
+
+	scene_render->_copy_screen();
+
+	for (int i = 0; i < storage->frame.current_rt->effects.mip_maps[1].sizes.size(); i++) {
+
+		int vp_w = storage->frame.current_rt->effects.mip_maps[1].sizes[i].width;
+		int vp_h = storage->frame.current_rt->effects.mip_maps[1].sizes[i].height;
+		glViewport(0, 0, vp_w, vp_h);
+		//horizontal pass
+		scene_render->state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::GAUSSIAN_HORIZONTAL, true);
+		scene_render->state.effect_blur_shader.bind();
+		scene_render->state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::PIXEL_SIZE, Vector2(1.0 / vp_w, 1.0 / vp_h));
+		scene_render->state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::LOD, float(i));
+		scene_render->state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::BLUR_SECTION, blur_section);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->effects.mip_maps[0].color); //previous level, since mipmaps[0] starts one level bigger
+		glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->effects.mip_maps[1].sizes[i].fbo);
+
+		scene_render->_copy_screen();
+
+		scene_render->state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::GAUSSIAN_HORIZONTAL, false);
+
+		//vertical pass
+		scene_render->state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::GAUSSIAN_VERTICAL, true);
+		scene_render->state.effect_blur_shader.bind();
+		scene_render->state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::PIXEL_SIZE, Vector2(1.0 / vp_w, 1.0 / vp_h));
+		scene_render->state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::LOD, float(i));
+		scene_render->state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::BLUR_SECTION, blur_section);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->effects.mip_maps[1].color);
+		glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->effects.mip_maps[0].sizes[i + 1].fbo); //next level, since mipmaps[0] starts one level bigger
+
+		scene_render->_copy_screen();
+
+		scene_render->state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::GAUSSIAN_VERTICAL, false);
+	}
+
+	scene_render->state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::USE_BLUR_SECTION, false);
+	storage->shaders.copy.set_conditional(CopyShaderGLES3::USE_COPY_SECTION, false);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->fbo); //back to front
+	glViewport(0, 0, storage->frame.current_rt->width, storage->frame.current_rt->height);
+	state.canvas_shader.bind(); //back to canvas
+
+	if (state.using_texture_rect) {
+		state.using_texture_rect = false;
+		_set_texture_rect_mode(state.using_texture_rect, state.using_ninepatch);
+	}
+}
+
 void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light) {
 
 	Item *current_clip = NULL;
@@ -875,43 +956,16 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 				glDisable(GL_SCISSOR_TEST);
 			}
 		}
-#if 0
-		if (ci->copy_back_buffer && framebuffer.active && framebuffer.scale==1) {
 
-			Rect2 rect;
-			int x,y;
+		if (ci->copy_back_buffer) {
 
 			if (ci->copy_back_buffer->full) {
 
-				x = viewport.x;
-				y = window_size.height-(viewport.height+viewport.y);
+				_copy_texscreen(Rect2());
 			} else {
-				x = viewport.x+ci->copy_back_buffer->screen_rect.pos.x;
-				y = window_size.height-(viewport.y+ci->copy_back_buffer->screen_rect.pos.y+ci->copy_back_buffer->screen_rect.size.y);
+				_copy_texscreen(ci->copy_back_buffer->rect);
 			}
-			glActiveTexture(GL_TEXTURE0+max_texture_units-1);
-			glBindTexture(GL_TEXTURE_2D,framebuffer.sample_color);
-
-#ifdef GLEW_ENABLED
-			if (current_rt) {
-				glReadBuffer(GL_COLOR_ATTACHMENT0);
-			} else {
-				glReadBuffer(GL_BACK);
-			}
-#endif
-			if (current_rt) {
-				glCopyTexSubImage2D(GL_TEXTURE_2D,0,viewport.x,viewport.y,viewport.x,viewport.y,viewport.width,viewport.height);
-				//window_size.height-(viewport.height+viewport.y)
-			} else {
-				glCopyTexSubImage2D(GL_TEXTURE_2D,0,x,y,x,y,viewport.width,viewport.height);
-			}
-
-			canvas_texscreen_used=true;
-			glActiveTexture(GL_TEXTURE0);
-
 		}
-
-#endif
 
 		//begin rect
 		Item *material_owner = ci->material_owner ? ci->material_owner : ci;
@@ -933,6 +987,11 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 			}
 
 			if (shader_ptr && shader_ptr != shader_cache) {
+
+				if (shader_ptr->canvas_item.uses_screen_texture && !state.canvas_texscreen_used) {
+					//copy if not copied before
+					_copy_texscreen(Rect2());
+				}
 
 				state.canvas_shader.set_custom_shader(shader_ptr->custom_code_id);
 				state.canvas_shader.bind();
@@ -1046,7 +1105,11 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 		state.canvas_shader.set_uniform(CanvasShaderGLES3::FINAL_MODULATE, state.canvas_item_modulate);
 		state.canvas_shader.set_uniform(CanvasShaderGLES3::MODELVIEW_MATRIX, state.final_transform);
 		state.canvas_shader.set_uniform(CanvasShaderGLES3::EXTRA_MATRIX, state.extra_matrix);
-
+		if (storage->frame.current_rt) {
+			state.canvas_shader.set_uniform(CanvasShaderGLES3::SCREEN_PIXEL_SIZE, Vector2(1.0 / storage->frame.current_rt->width, 1.0 / storage->frame.current_rt->height));
+		} else {
+			state.canvas_shader.set_uniform(CanvasShaderGLES3::SCREEN_PIXEL_SIZE, Vector2(1.0, 1.0));
+		}
 		if (unshaded || (state.canvas_item_modulate.a > 0.001 && (!shader_cache || shader_cache->canvas_item.light_mode != RasterizerStorageGLES3::Shader::CanvasItem::LIGHT_MODE_LIGHT_ONLY) && !ci->light_masked))
 			_canvas_item_render_commands(ci, current_clip, reclip);
 
@@ -1376,6 +1439,12 @@ void RasterizerCanvasGLES3::reset_canvas() {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
+	//use for reading from screen
+	if (storage->frame.current_rt) {
+		glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 3);
+		glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->effects.mip_maps[0].color);
+	}
+
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, storage->resources.white_tex);
 
@@ -1543,7 +1612,7 @@ void RasterizerCanvasGLES3::initialize() {
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 	state.canvas_shader.init();
-	state.canvas_shader.set_base_material_tex_index(1);
+	state.canvas_shader.set_base_material_tex_index(2);
 	state.canvas_shadow_shader.init();
 
 	state.canvas_shader.set_conditional(CanvasShaderGLES3::USE_RGBA_SHADOWS, storage->config.use_rgba_2d_shadows);

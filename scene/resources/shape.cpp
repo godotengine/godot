@@ -30,7 +30,7 @@
 #include "shape.h"
 
 #include "os/os.h"
-#include "scene/main/scene_main_loop.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/mesh.h"
 #include "servers/physics_server.h"
 

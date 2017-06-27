@@ -50,7 +50,7 @@
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
-#include "scene/main/scene_main_loop.h"
+#include "scene/main/scene_tree.h"
 
 #include "scene/3d/camera.h"
 #include "scene/main/viewport.h"

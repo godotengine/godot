@@ -35,7 +35,7 @@
 #include "os/file_access.h"
 #include "os/os.h"
 
-#include "scene/main/scene_main_loop.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/scene_format_text.h"
 
 #if defined(TOOLS_ENABLED) && defined(DEBUG_METHODS_ENABLED)

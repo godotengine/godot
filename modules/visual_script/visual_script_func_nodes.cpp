@@ -33,7 +33,7 @@
 #include "io/resource_loader.h"
 #include "os/os.h"
 #include "scene/main/node.h"
-#include "scene/main/scene_main_loop.h"
+#include "scene/main/scene_tree.h"
 #include "visual_script_nodes.h"
 
 //////////////////////////////////////////

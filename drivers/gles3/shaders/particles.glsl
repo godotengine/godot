@@ -47,7 +47,6 @@ out highp vec4 out_xform_1; //tfb:
 out highp vec4 out_xform_2; //tfb:
 out highp vec4 out_xform_3; //tfb:
 
-VERTEX_SHADER_GLOBALS
 
 #if defined(USE_MATERIAL)
 
@@ -58,6 +57,9 @@ MATERIAL_UNIFORMS
 };
 
 #endif
+
+
+VERTEX_SHADER_GLOBALS
 
 uint hash(uint x) {
 
@@ -233,7 +235,6 @@ VERTEX_SHADER_CODE
 
 //any code here is never executed, stuff is filled just so it works
 
-FRAGMENT_SHADER_GLOBALS
 
 #if defined(USE_MATERIAL)
 
@@ -244,6 +245,8 @@ MATERIAL_UNIFORMS
 };
 
 #endif
+
+FRAGMENT_SHADER_GLOBALS
 
 void main() {
 

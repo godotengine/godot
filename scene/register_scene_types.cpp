@@ -129,7 +129,7 @@
 #include "scene/animation/animation_tree_player.h"
 #include "scene/animation/tween.h"
 #include "scene/main/resource_preloader.h"
-#include "scene/main/scene_main_loop.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/packed_scene.h"
 
 #include "scene/resources/mesh_data_tool.h"

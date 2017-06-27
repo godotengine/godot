@@ -146,7 +146,7 @@ out vec3 binormal_interp;
 #endif
 
 
-VERTEX_SHADER_GLOBALS
+
 
 
 #if defined(USE_MATERIAL)
@@ -158,6 +158,8 @@ MATERIAL_UNIFORMS
 };
 
 #endif
+
+VERTEX_SHADER_GLOBALS
 
 #ifdef RENDER_DEPTH_DUAL_PARABOLOID
 
@@ -418,8 +420,6 @@ layout(std140) uniform Radiance { //ubo:2
 /* Material Uniforms */
 
 
-FRAGMENT_SHADER_GLOBALS
-
 
 #if defined(USE_MATERIAL)
 
@@ -431,6 +431,7 @@ MATERIAL_UNIFORMS
 
 #endif
 
+FRAGMENT_SHADER_GLOBALS
 
 layout(std140) uniform SceneData {
 

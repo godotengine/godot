@@ -90,7 +90,6 @@ uniform int h_frames;
 uniform int v_frames;
 #endif
 
-VERTEX_SHADER_GLOBALS
 
 #if defined(USE_MATERIAL)
 
@@ -101,6 +100,8 @@ MATERIAL_UNIFORMS
 };
 
 #endif
+
+VERTEX_SHADER_GLOBALS
 
 void main() {
 
@@ -211,6 +212,11 @@ uniform sampler2D screen_texture; // texunit:-3
 
 #endif
 
+#if defined(SCREEN_UV_USED)
+
+uniform vec2 screen_pixel_size;
+#endif
+
 layout(std140) uniform CanvasItemData {
 
 	highp mat4 projection_matrix;
@@ -256,7 +262,7 @@ const bool at_light_pass = false;
 
 uniform mediump vec4 final_modulate;
 
-FRAGMENT_SHADER_GLOBALS
+
 
 
 layout(location=0) out mediump vec4 frag_color;
@@ -272,6 +278,7 @@ MATERIAL_UNIFORMS
 
 #endif
 
+FRAGMENT_SHADER_GLOBALS
 
 void light_compute(inout vec3 light,vec3 light_vec,float light_height,vec4 light_color,vec2 light_uv,vec4 shadow,vec3 normal,vec2 uv,vec2 screen_uv,vec4 color) {
 
@@ -410,8 +417,8 @@ void main() {
 
 
 
-#if defined(ENABLE_SCREEN_UV)
-	vec2 screen_uv = gl_FragCoord.xy*screen_uv_mult;
+#if defined(SCREEN_UV_USED)
+	vec2 screen_uv = gl_FragCoord.xy*screen_pixel_size;
 #endif
 
 

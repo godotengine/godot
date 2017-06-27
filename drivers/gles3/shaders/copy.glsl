@@ -17,6 +17,12 @@ out vec2 uv_interp;
 
 out vec2 uv2_interp;
 
+#ifdef USE_COPY_SECTION
+
+uniform vec4 copy_section;
+
+#endif
+
 void main() {
 
 #if defined(USE_CUBEMAP) || defined(USE_PANORAMA)
@@ -30,6 +36,13 @@ void main() {
 #endif
 	uv2_interp = uv2_in;
 	gl_Position = vertex_attrib;
+
+#ifdef USE_COPY_SECTION
+
+	uv_interp = copy_section.xy + uv_interp * copy_section.zw;
+	gl_Position.xy = (copy_section.xy + (gl_Position.xy * 0.5 + 0.5) * copy_section.zw) * 2.0 - 1.0;
+#endif
+
 }
 
 [fragment]

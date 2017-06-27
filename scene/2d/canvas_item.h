@@ -31,7 +31,7 @@
 #define CANVAS_ITEM_H
 
 #include "scene/main/node.h"
-#include "scene/main/scene_main_loop.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/material.h"
 #include "scene/resources/shader.h"
 #include "scene/resources/texture.h"

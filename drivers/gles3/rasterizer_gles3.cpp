@@ -412,6 +412,7 @@ RasterizerGLES3::RasterizerGLES3() {
 	canvas = memnew(RasterizerCanvasGLES3);
 	scene = memnew(RasterizerSceneGLES3);
 	canvas->storage = storage;
+	canvas->scene_render = scene;
 	storage->canvas = canvas;
 	scene->storage = storage;
 	storage->scene = scene;
