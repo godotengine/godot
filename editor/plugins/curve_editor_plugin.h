@@ -88,7 +88,6 @@ private:
 	void toggle_linear(TangentIndex tangent = TANGENT_NONE);
 	void set_selected_point(int index);
 	void set_hover_point_index(int index);
-	void push_undo(Array previous_curve_data);
 	void update_view_transform();
 
 	Vector2 get_tangent_view_pos(int i, TangentIndex tangent) const;
@@ -108,7 +107,6 @@ private:
 
 	Array _undo_data;
 	bool _has_undo_data;
-	bool _undo_no_commit;
 
 	Vector2 _context_click_pos;
 	int _selected_point;

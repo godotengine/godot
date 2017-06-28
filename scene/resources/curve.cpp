@@ -387,12 +387,9 @@ Curve::Curve() {
 	_baked_cache_dirty = false;
 	_min_value = 0;
 	_max_value = 1;
-#ifdef TOOLS_ENABLED
-	_disable_set_data = false;
-#endif
 }
 
-int Curve::add_point(Vector2 p_pos, real_t left_tangent, real_t right_tangent) {
+int Curve::add_point(Vector2 p_pos, real_t left_tangent, real_t right_tangent, TangentMode left_mode, TangentMode right_mode) {
 	// Add a point and preserve order
 
 	// Curve bounds is in 0..1
@@ -404,7 +401,7 @@ int Curve::add_point(Vector2 p_pos, real_t left_tangent, real_t right_tangent) {
 	int ret = -1;
 
 	if (_points.size() == 0) {
-		_points.push_back(Point(p_pos, left_tangent, right_tangent));
+		_points.push_back(Point(p_pos, left_tangent, right_tangent, left_mode, right_mode));
 		ret = 0;
 
 	} else if (_points.size() == 1) {
@@ -413,10 +410,10 @@ int Curve::add_point(Vector2 p_pos, real_t left_tangent, real_t right_tangent) {
 		real_t diff = p_pos.x - _points[0].pos.x;
 
 		if (diff > 0) {
-			_points.push_back(Point(p_pos, left_tangent, right_tangent));
+			_points.push_back(Point(p_pos, left_tangent, right_tangent, left_mode, right_mode));
 			ret = 1;
 		} else {
-			_points.insert(0, Point(p_pos, left_tangent, right_tangent));
+			_points.insert(0, Point(p_pos, left_tangent, right_tangent, left_mode, right_mode));
 			ret = 0;
 		}
 
@@ -435,15 +432,17 @@ int Curve::add_point(Vector2 p_pos, real_t left_tangent, real_t right_tangent) {
 
 		if (i == 0 && p_pos.x < _points[0].pos.x) {
 			// Insert before anything else
-			_points.insert(0, Point(p_pos, left_tangent, right_tangent));
+			_points.insert(0, Point(p_pos, left_tangent, right_tangent, left_mode, right_mode));
 			ret = 0;
 		} else {
 			// Insert between i and i+1
 			++i;
-			_points.insert(i, Point(p_pos, left_tangent, right_tangent));
+			_points.insert(i, Point(p_pos, left_tangent, right_tangent, left_mode, right_mode));
 			ret = i;
 		}
 	}
+
+	update_auto_tangents(i);
 
 	mark_dirty();
 
@@ -593,6 +592,11 @@ Vector2 Curve::get_point_pos(int p_index) const {
 	return _points[p_index].pos;
 }
 
+Curve::Point Curve::get_point(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, _points.size(), Point());
+	return _points[p_index];
+}
+
 void Curve::update_auto_tangents(int i) {
 
 	Point &p = _points[i];
@@ -699,33 +703,32 @@ void Curve::mark_dirty() {
 Array Curve::get_data() const {
 
 	Array output;
-	output.resize(_points.size() * 3);
+	const unsigned int ELEMS = 5;
+	output.resize(_points.size() * ELEMS);
 
 	for (int j = 0; j < _points.size(); ++j) {
 
 		const Point p = _points[j];
-		int i = j * 3;
+		int i = j * ELEMS;
 
 		output[i] = p.pos;
 		output[i + 1] = p.left_tangent;
 		output[i + 2] = p.right_tangent;
+		output[i + 3] = p.left_mode;
+		output[i + 4] = p.right_mode;
 	}
 
 	return output;
 }
 
 void Curve::set_data(Array input) {
-	ERR_FAIL_COND(input.size() % 3 != 0);
-
-#ifdef TOOLS_ENABLED
-	if (_disable_set_data)
-		return;
-#endif
+	const unsigned int ELEMS = 5;
+	ERR_FAIL_COND(input.size() % ELEMS != 0);
 
 	_points.clear();
 
 	// Validate input
-	for (int i = 0; i < input.size(); i += 3) {
+	for (int i = 0; i < input.size(); i += ELEMS) {
 		ERR_FAIL_COND(input[i].get_type() != Variant::VECTOR2);
 		ERR_FAIL_COND(input[i + 1].get_type() != Variant::REAL);
 		ERR_FAIL_COND(input[i + 2].get_type() != Variant::REAL);
@@ -739,12 +742,12 @@ void Curve::set_data(Array input) {
 		ERR_FAIL_COND(right_mode < 0 || right_mode >= TANGENT_MODE_COUNT);
 	}
 
-	_points.resize(input.size() / 3);
+	_points.resize(input.size() / ELEMS);
 
 	for (int j = 0; j < _points.size(); ++j) {
 
 		Point &p = _points[j];
-		int i = j * 3;
+		int i = j * ELEMS;
 
 		p.pos = input[i];
 		p.left_tangent = input[i + 1];
@@ -822,7 +825,8 @@ real_t Curve::interpolate_baked(real_t offset) {
 
 void Curve::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("add_point", "pos", "left_tangent", "right_tangent"), &Curve::add_point, DEFVAL(0), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("add_point", "pos", "left_tangent", "right_tangent", "left_mode", "right_mode"),
+			&Curve::add_point, DEFVAL(0), DEFVAL(0), DEFVAL(TANGENT_FREE), DEFVAL(TANGENT_FREE));
 	ClassDB::bind_method(D_METHOD("remove_point", "index"), &Curve::remove_point);
 	ClassDB::bind_method(D_METHOD("clear_points"), &Curve::clear_points);
 	ClassDB::bind_method(D_METHOD("get_point_pos", "index"), &Curve::get_point_pos);
