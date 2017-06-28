@@ -53,6 +53,10 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#if MAC_OS_X_VERSION_MAX_ALLOWED < 101200
+#define NSWindowStyleMaskBorderless NSBorderlessWindowMask
+#endif
+
 static NSRect convertRectToBacking(NSRect contentRect) {
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
@@ -813,7 +817,13 @@ void OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 	// Don't use accumulation buffer support; it's not accelerated
 	// Aux buffers probably aren't accelerated either
 
-	unsigned int styleMask = NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | (p_desired.resizable ? NSResizableWindowMask : 0);
+	unsigned int styleMask;
+
+	if (p_desired.borderless_window) {
+		styleMask = NSWindowStyleMaskBorderless;
+	} else {
+		styleMask = NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | (p_desired.resizable ? NSResizableWindowMask : 0);
+	}
 
 	window_object = [[GodotWindow alloc]
 			initWithContentRect:NSMakeRect(0, 0, p_desired.width, p_desired.height)
@@ -1125,6 +1135,7 @@ int OS_OSX::get_mouse_button_state() const {
 }
 
 void OS_OSX::set_window_title(const String &p_title) {
+	title = p_title;
 
 	[window_object setTitle:[NSString stringWithUTF8String:p_title.utf8().get_data()]];
 }
@@ -1401,6 +1412,28 @@ void OS_OSX::move_window_to_foreground() {
 void OS_OSX::request_attention() {
 
 	[NSApp requestUserAttention:NSCriticalRequest];
+}
+
+void OS_OSX::set_borderless_window(int p_borderless) {
+
+	if (p_borderless)
+		[window_object setStyleMask:NSWindowStyleMaskBorderless];
+	else {
+		[window_object setStyleMask:NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | NSResizableWindowMask];
+
+		// Force update of the window styles
+		NSRect frameRect = [window_object frame];
+		[window_object setFrame:NSMakeRect(frameRect.origin.x, frameRect.origin.y, frameRect.size.width + 1, frameRect.size.height) display:NO];
+		[window_object setFrame:frameRect display:NO];
+
+		// Restore the window title
+		[window_object setTitle:[NSString stringWithUTF8String:title.utf8().get_data()]];
+	}
+}
+
+bool OS_OSX::get_borderless_window() {
+
+	return [window_object styleMask] == NSWindowStyleMaskBorderless;
 }
 
 String OS_OSX::get_executable_path() const {
