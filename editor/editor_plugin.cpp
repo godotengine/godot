@@ -284,12 +284,12 @@ void EditorPlugin::save_global_state() {}
 
 void EditorPlugin::add_import_plugin(const Ref<EditorImportPlugin> &p_importer) {
 	ResourceFormatImporter::get_singleton()->add_importer(p_importer);
-	EditorFileSystem::get_singleton()->scan_changes();
+	EditorFileSystem::get_singleton()->scan();
 }
 
 void EditorPlugin::remove_import_plugin(const Ref<EditorImportPlugin> &p_importer) {
 	ResourceFormatImporter::get_singleton()->remove_importer(p_importer);
-	EditorFileSystem::get_singleton()->scan_changes();
+	EditorFileSystem::get_singleton()->scan();
 }
 
 void EditorPlugin::set_window_layout(Ref<ConfigFile> p_layout) {
