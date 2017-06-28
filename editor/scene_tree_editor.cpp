@@ -164,7 +164,10 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		item_rect.position.y -= tree->get_scroll().y;
 		item_rect.position += tree->get_global_position();
 
-		if (n == get_scene_node()) {
+		if ((subscene_previously_clicked_at_time + 350) > OS::get_singleton()->get_ticks_msec()) {
+			instance_node = n->get_instance_ID();
+			_subscene_option(SCENE_MENU_OPEN);
+		} else if (n == get_scene_node()) {
 			inheritance_menu->set_position(item_rect.position + Vector2(0, item_rect.size.y));
 			inheritance_menu->set_size(Vector2(item_rect.size.x, 0));
 			inheritance_menu->popup();
@@ -190,6 +193,8 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 			instance_menu->popup();
 			instance_node = n->get_instance_ID();
 		}
+		subscene_previously_clicked_at_time = OS::get_singleton()->get_ticks_msec();
+
 		//emit_signal("open",n->get_filename());
 	} else if (p_id == BUTTON_SCRIPT) {
 		RefPtr script = n->get_script();
@@ -1176,6 +1181,8 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 
 	script_types = memnew(List<StringName>);
 	ClassDB::get_inheriters_from_class("Script", script_types);
+
+	subscene_previously_clicked_at_time = 0;
 }
 
 SceneTreeEditor::~SceneTreeEditor() {

@@ -141,6 +141,8 @@ class SceneTreeEditor : public Control {
 	List<StringName> *script_types;
 	bool _is_script_type(const StringName &p_type) const;
 
+	int subscene_previously_clicked_at_time;
+
 public:
 	void set_filter(const String &p_filter);
 	String get_filter() const;
