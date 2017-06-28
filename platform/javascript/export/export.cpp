@@ -31,6 +31,7 @@
 #include "editor_export.h"
 #include "io/zip_io.h"
 #include "platform/javascript/logo.gen.h"
+#include "platform/javascript/run_icon.gen.h"
 
 #define EXPORT_TEMPLATE_WEBASSEMBLY_RELEASE "webassembly_release.zip"
 #define EXPORT_TEMPLATE_WEBASSEMBLY_DEBUG "webassembly_debug.zip"
@@ -42,6 +43,8 @@ class EditorExportPlatformJavaScript : public EditorExportPlatform {
 	GDCLASS(EditorExportPlatformJavaScript, EditorExportPlatform)
 
 	Ref<ImageTexture> logo;
+	Ref<ImageTexture> run_icon;
+	bool runnable_when_last_polled;
 
 	void _fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug);
 	void _fix_fsloader_js(Vector<uint8_t> &p_js, const String &p_pack_name, uint64_t p_pack_size);
@@ -64,10 +67,12 @@ public:
 	virtual String get_binary_extension() const;
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0);
 
-	virtual int get_device_count() const { return 1; }
+	virtual bool poll_devices();
+	virtual int get_device_count() const;
 	virtual String get_device_name(int p_device) const { return TTR("Run in Browser"); }
 	virtual String get_device_info(int p_device) const { return TTR("Run exported HTML in the system's default browser."); }
 	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags);
+	virtual Ref<Texture> get_run_icon() const;
 
 	EditorExportPlatformJavaScript();
 };
@@ -303,6 +308,29 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 	return OK;
 }
 
+bool EditorExportPlatformJavaScript::poll_devices() {
+
+	Ref<EditorExportPreset> preset;
+
+	for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
+
+		Ref<EditorExportPreset> ep = EditorExport::get_singleton()->get_export_preset(i);
+		if (ep->is_runnable() && ep->get_platform() == this) {
+			preset = ep;
+			break;
+		}
+	}
+
+	bool prev = runnable_when_last_polled;
+	runnable_when_last_polled = preset.is_valid();
+	return runnable_when_last_polled != prev;
+}
+
+int EditorExportPlatformJavaScript::get_device_count() const {
+
+	return runnable_when_last_polled;
+}
+
 Error EditorExportPlatformJavaScript::run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags) {
 
 	String path = EditorSettings::get_singleton()->get_settings_path() + "/tmp/tmp_export.html";
@@ -314,11 +342,22 @@ Error EditorExportPlatformJavaScript::run(const Ref<EditorExportPreset> &p_prese
 	return OK;
 }
 
+Ref<Texture> EditorExportPlatformJavaScript::get_run_icon() const {
+
+	return run_icon;
+}
+
 EditorExportPlatformJavaScript::EditorExportPlatformJavaScript() {
 
 	Ref<Image> img = memnew(Image(_javascript_logo));
 	logo.instance();
 	logo->create_from_image(img);
+
+	img = Ref<Image>(memnew(Image(_javascript_run_icon)));
+	run_icon.instance();
+	run_icon->create_from_image(img);
+
+	runnable_when_last_polled = false;
 }
 
 void register_javascript_exporter() {
