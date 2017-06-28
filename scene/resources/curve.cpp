@@ -442,7 +442,7 @@ int Curve::add_point(Vector2 p_pos, real_t left_tangent, real_t right_tangent, T
 		}
 	}
 
-	update_auto_tangents(i);
+	update_auto_tangents(ret);
 
 	mark_dirty();
 
