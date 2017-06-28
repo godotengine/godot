@@ -36,6 +36,7 @@
 
 class ResourceInteractiveLoaderBinary : public ResourceInteractiveLoader {
 
+	bool translation_remapped;
 	String local_path;
 	String res_path;
 	String type;
@@ -87,6 +88,7 @@ public:
 	virtual Error poll();
 	virtual int get_stage() const;
 	virtual int get_stage_count() const;
+	virtual void set_translation_remapped(bool p_remapped);
 
 	void set_remaps(const Map<String, String> &p_remaps) { remaps = p_remaps; }
 	void open(FileAccess *p_f);

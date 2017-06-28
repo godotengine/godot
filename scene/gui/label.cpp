@@ -65,7 +65,12 @@ void Label::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_TRANSLATION_CHANGED) {
 
-		xl_text = XL_MESSAGE(text);
+		String new_text = XL_MESSAGE(text);
+		if (new_text == xl_text)
+			return; //nothing new
+		xl_text = new_text;
+
+		regenerate_word_cache();
 		minimum_size_changed();
 		update();
 	}

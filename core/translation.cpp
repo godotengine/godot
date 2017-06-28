@@ -870,6 +870,10 @@ void Translation::set_locale(const String &p_locale) {
 	} else {
 		locale = univ_locale;
 	}
+
+	if (OS::get_singleton()->get_main_loop()) {
+		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
+	}
 }
 
 void Translation::add_message(const StringName &p_src_text, const StringName &p_xlated_text) {
@@ -945,6 +949,8 @@ void TranslationServer::set_locale(const String &p_locale) {
 	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
 	}
+
+	ResourceLoader::reload_translation_remaps();
 }
 
 String TranslationServer::get_locale() const {

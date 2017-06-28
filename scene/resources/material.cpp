@@ -49,7 +49,7 @@ Material::~Material() {
 
 bool ShaderMaterial::_set(const StringName &p_name, const Variant &p_value) {
 
-	if (p_name == SceneStringNames::get_singleton()->shader_shader) {
+	if (p_name == SceneStringNames::get_singleton()->shader) {
 		set_shader(p_value);
 		return true;
 	} else {
@@ -75,7 +75,7 @@ bool ShaderMaterial::_set(const StringName &p_name, const Variant &p_value) {
 
 bool ShaderMaterial::_get(const StringName &p_name, Variant &r_ret) const {
 
-	if (p_name == SceneStringNames::get_singleton()->shader_shader) {
+	if (p_name == SceneStringNames::get_singleton()->shader) {
 
 		r_ret = get_shader();
 		return true;
@@ -97,7 +97,7 @@ bool ShaderMaterial::_get(const StringName &p_name, Variant &r_ret) const {
 
 void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 
-	p_list->push_back(PropertyInfo(Variant::OBJECT, "shader/shader", PROPERTY_HINT_RESOURCE_TYPE, "Shader,ShaderGraph"));
+	p_list->push_back(PropertyInfo(Variant::OBJECT, "shader", PROPERTY_HINT_RESOURCE_TYPE, "Shader,ShaderGraph"));
 
 	if (!shader.is_null()) {
 

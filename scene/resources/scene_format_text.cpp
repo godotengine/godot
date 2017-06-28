@@ -332,6 +332,7 @@ Error ResourceInteractiveLoaderText::poll() {
 					if (!ResourceCache::has(res_path)) {
 						resource->set_path(res_path);
 					}
+					resource->set_as_translation_remapped(translation_remapped);
 				}
 				return error;
 			}
@@ -604,6 +605,15 @@ int ResourceInteractiveLoaderText::get_stage() const {
 int ResourceInteractiveLoaderText::get_stage_count() const {
 
 	return resources_total; //+ext_resources;
+}
+
+void ResourceInteractiveLoaderText::set_translation_remapped(bool p_remapped) {
+
+	translation_remapped = p_remapped;
+}
+
+ResourceInteractiveLoaderText::ResourceInteractiveLoaderText() {
+	translation_remapped = false;
 }
 
 ResourceInteractiveLoaderText::~ResourceInteractiveLoaderText() {

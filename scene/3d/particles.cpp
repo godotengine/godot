@@ -627,7 +627,7 @@ void ParticlesMaterial::_update_shader() {
 
 	if (flags[FLAG_DISABLE_Z]) {
 
-		code += "    float angle1 = rand_from_seed(alt_seed)*spread*3.1416;\n";
+		code += "    float angle1 = (rand_from_seed(alt_seed)*2.0-1.0)*spread/180.0*3.1416;\n";
 		code += "    vec3 rot=vec3( cos(angle1), sin(angle1),0.0 );\n";
 		code += "    VELOCITY=(rot*initial_linear_velocity+rot*initial_linear_velocity_random*rand_from_seed(alt_seed));\n";
 

@@ -39,8 +39,6 @@ void AudioStreamPlaybackSample::start(float p_from_pos) {
 		ima_adpcm[i].last_nibble = -1;
 		ima_adpcm[i].loop_pos = 0x7FFFFFFF;
 		ima_adpcm[i].window_ofs = 0;
-		ima_adpcm[i].ptr = (const uint8_t *)base->data;
-		ima_adpcm[i].ptr += AudioStreamSample::DATA_PAD;
 	}
 
 	seek_pos(p_from_pos);
@@ -122,7 +120,8 @@ void AudioStreamPlaybackSample::do_resample(const Depth *p_src, AudioFrame *p_ds
 					int16_t nibble, diff, step;
 
 					ima_adpcm[i].last_nibble++;
-					const uint8_t *src_ptr = ima_adpcm[i].ptr;
+					const uint8_t *src_ptr = (const uint8_t *)base->data;
+					src_ptr += AudioStreamSample::DATA_PAD;
 
 					uint8_t nbb = src_ptr[(ima_adpcm[i].last_nibble >> 1) * (is_stereo ? 2 : 1) + i];
 					nibble = (ima_adpcm[i].last_nibble & 1) ? (nbb >> 4) : (nbb & 0xF);

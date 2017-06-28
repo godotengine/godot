@@ -49,6 +49,7 @@ public:
 	virtual Error poll() = 0;
 	virtual int get_stage() const = 0;
 	virtual int get_stage_count() const = 0;
+	virtual void set_translation_remapped(bool p_remapped) = 0;
 	virtual Error wait();
 
 	ResourceInteractiveLoader() {}
@@ -87,6 +88,12 @@ class ResourceLoader {
 	static void *dep_err_notify_ud;
 	static DependencyErrorNotify dep_err_notify;
 	static bool abort_on_missing_resource;
+	static HashMap<String, Vector<String> > translation_remaps;
+
+	static String _path_remap(const String &p_path, bool *r_translation_remapped = NULL);
+	friend class Resource;
+
+	static SelfList<Resource>::List remapped_list;
 
 public:
 	static Ref<ResourceInteractiveLoader> load_interactive(const String &p_path, const String &p_type_hint = "", bool p_no_cache = false, Error *r_error = NULL);
@@ -118,6 +125,13 @@ public:
 
 	static void set_abort_on_missing_resources(bool p_abort) { abort_on_missing_resource = p_abort; }
 	static bool get_abort_on_missing_resources() { return abort_on_missing_resource; }
+
+	static String path_remap(const String &p_path);
+	static String import_remap(const String &p_path);
+
+	static void reload_translation_remaps();
+	static void load_translation_remaps();
+	static void clear_translation_remaps();
 };
 
 #endif

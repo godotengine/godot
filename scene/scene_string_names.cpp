@@ -44,7 +44,7 @@ SceneStringNames::SceneStringNames() {
 	hide = StaticCString::create("hide");
 	visibility_changed = StaticCString::create("visibility_changed");
 	input_event = StaticCString::create("input_event");
-	shader_shader = StaticCString::create("shader/shader");
+	shader = StaticCString::create("shader");
 	shader_unshaded = StaticCString::create("shader/unshaded");
 	shading_mode = StaticCString::create("shader/shading_mode");
 	tree_entered = StaticCString::create("tree_entered");

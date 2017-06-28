@@ -5026,6 +5026,7 @@ EditorNode::EditorNode() {
 
 	EditorHelp::generate_doc(); //before any editor classes are crated
 	SceneState::set_disable_placeholders(true);
+	ResourceLoader::clear_translation_remaps(); //no remaps using during editor
 	editor_initialize_certificates(); //for asset sharing
 
 	InputDefault *id = Input::get_singleton()->cast_to<InputDefault>();

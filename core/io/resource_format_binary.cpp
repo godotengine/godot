@@ -689,6 +689,7 @@ Error ResourceInteractiveLoaderBinary::poll() {
 
 		f->close();
 		resource = res;
+		resource->set_as_translation_remapped(translation_remapped);
 		error = ERR_FILE_EOF;
 
 	} else {
@@ -704,6 +705,11 @@ int ResourceInteractiveLoaderBinary::get_stage() const {
 int ResourceInteractiveLoaderBinary::get_stage_count() const {
 
 	return external_resources.size() + internal_resources.size();
+}
+
+void ResourceInteractiveLoaderBinary::set_translation_remapped(bool p_remapped) {
+
+	translation_remapped = p_remapped;
 }
 
 static void save_ustring(FileAccess *f, const String &p_string) {
@@ -920,6 +926,7 @@ ResourceInteractiveLoaderBinary::ResourceInteractiveLoaderBinary() {
 	endian_swap = false;
 	use_real64 = false;
 	error = OK;
+	translation_remapped = false;
 }
 
 ResourceInteractiveLoaderBinary::~ResourceInteractiveLoaderBinary() {

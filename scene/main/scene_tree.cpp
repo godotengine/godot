@@ -687,7 +687,9 @@ void SceneTree::_notification(int p_notification) {
 			get_root()->propagate_notification(p_notification);
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			get_root()->propagate_notification(Node::NOTIFICATION_TRANSLATION_CHANGED);
+			if (!is_editor_hint()) {
+				get_root()->propagate_notification(Node::NOTIFICATION_TRANSLATION_CHANGED);
+			}
 		} break;
 		case NOTIFICATION_WM_UNFOCUS_REQUEST: {
 

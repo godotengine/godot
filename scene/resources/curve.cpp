@@ -730,7 +730,7 @@ void Curve::set_data(Array input) {
 	// Validate input
 	for (int i = 0; i < input.size(); i += ELEMS) {
 		ERR_FAIL_COND(input[i].get_type() != Variant::VECTOR2);
-		ERR_FAIL_COND(input[i + 1].get_type() != Variant::REAL);
+		ERR_FAIL_COND(!input[i + 1].is_num());
 		ERR_FAIL_COND(input[i + 2].get_type() != Variant::REAL);
 
 		ERR_FAIL_COND(input[i + 3].get_type() != Variant::INT);

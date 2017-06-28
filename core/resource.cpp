@@ -31,9 +31,9 @@
 
 #include "core_string_names.h"
 #include "io/resource_loader.h"
+#include "io/resource_loader.h"
 #include "os/file_access.h"
 #include "script_language.h"
-
 #include <stdio.h>
 
 void Resource::emit_changed() {
@@ -127,7 +127,7 @@ void Resource::reload_from_file() {
 	if (!path.is_resource_file())
 		return;
 
-	Ref<Resource> s = ResourceLoader::load(path, get_class(), true);
+	Ref<Resource> s = ResourceLoader::load(ResourceLoader::path_remap(path), get_class(), true);
 
 	if (!s.is_valid())
 		return;
@@ -302,6 +302,31 @@ void Resource::setup_local_to_scene() {
 
 Node *(*Resource::_get_local_scene_func)() = NULL;
 
+void Resource::set_as_translation_remapped(bool p_remapped) {
+
+	if (remapped_list.in_list() == p_remapped)
+		return;
+
+	if (ResourceCache::lock) {
+		ResourceCache::lock->write_lock();
+	}
+
+	if (p_remapped) {
+		ResourceLoader::remapped_list.add(&remapped_list);
+	} else {
+		ResourceLoader::remapped_list.remove(&remapped_list);
+	}
+
+	if (ResourceCache::lock) {
+		ResourceCache::lock->write_unlock();
+	}
+}
+
+bool Resource::is_translation_remapped() const {
+
+	return remapped_list.in_list();
+}
+
 void Resource::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_path", "path"), &Resource::_set_path);
@@ -325,7 +350,8 @@ void Resource::_bind_methods() {
 	BIND_VMETHOD(MethodInfo("_setup_local_to_scene"));
 }
 
-Resource::Resource() {
+Resource::Resource()
+	: remapped_list(this) {
 
 #ifdef TOOLS_ENABLED
 	last_modified_time = 0;

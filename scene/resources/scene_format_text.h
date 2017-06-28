@@ -38,6 +38,7 @@
 
 class ResourceInteractiveLoaderText : public ResourceInteractiveLoader {
 
+	bool translation_remapped;
 	String local_path;
 	String res_path;
 	String error_text;
@@ -94,12 +95,14 @@ public:
 	virtual Error poll();
 	virtual int get_stage() const;
 	virtual int get_stage_count() const;
+	virtual void set_translation_remapped(bool p_remapped);
 
 	void open(FileAccess *p_f, bool p_skip_first_tag = false);
 	String recognize(FileAccess *p_f);
 	void get_dependencies(FileAccess *p_f, List<String> *p_dependencies, bool p_add_types);
 	Error rename_dependencies(FileAccess *p_f, const String &p_path, const Map<String, String> &p_map);
 
+	ResourceInteractiveLoaderText();
 	~ResourceInteractiveLoaderText();
 };
 

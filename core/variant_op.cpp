@@ -2148,7 +2148,7 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 
 		} break; // 10
 		case RECT3: {
-			p_list->push_back(PropertyInfo(Variant::VECTOR3, "pos"));
+			p_list->push_back(PropertyInfo(Variant::VECTOR3, "position"));
 			p_list->push_back(PropertyInfo(Variant::VECTOR3, "size"));
 			p_list->push_back(PropertyInfo(Variant::VECTOR3, "end"));
 		} break;

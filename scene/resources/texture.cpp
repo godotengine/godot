@@ -91,7 +91,7 @@ Texture::Texture() {
 
 void ImageTexture::reload_from_file() {
 
-	String path = get_path();
+	String path = ResourceLoader::path_remap(get_path());
 	if (!path.is_resource_file())
 		return;
 
@@ -710,13 +710,16 @@ void StreamTexture::set_flags(uint32_t p_flags) {
 
 void StreamTexture::reload_from_file() {
 
-#ifdef TOOLS_ENABLED
-	String ipath = get_import_path();
-	if (ipath.is_resource_file() && ipath != path_to_file) {
-		path_to_file = ipath;
-	}
-#endif
-	load(path_to_file);
+	String path = get_path();
+	if (!path.is_resource_file())
+		return;
+
+	path = ResourceLoader::path_remap(path); //remap for translation
+	path = ResourceLoader::import_remap(path); //remap for import
+	if (!path.is_resource_file())
+		return;
+
+	load(path);
 }
 
 void StreamTexture::_bind_methods() {
