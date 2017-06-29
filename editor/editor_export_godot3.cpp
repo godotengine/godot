@@ -438,7 +438,7 @@ static const char *prop_renames[][2] = {
 	{ "texture/under", "texture_under" },
 	{ "texture/over", "texture_over" },
 	{ "texture/progress", "texture_progress" },
-	{ "mode", "fill_mode" },
+//	{ "mode", "fill_mode" }, breaks tilemap :\
 	{ "radial_fill/initial_angle", "radial_initial_angle" },
 	{ "radial_fill/fill_degrees", "radial_fill_degrees" },
 	{ "radial_fill/center_offset", "radial_center_offset" },
@@ -491,6 +491,9 @@ static const char *type_renames[][2] = {
 	{ "SampleLibrary", "Resource" },
 	{ "TextureFrame", "TextureRect" },
 	{ "FixedMaterial", "SpatialMaterial" },
+	{ "ColorRamp", "Gradient" },
+	{"CanvasItemShader","Shader"},
+	{"CanvasItemMaterial","ShaderMaterial"},
 	{ NULL, NULL }
 };
 
