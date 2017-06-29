@@ -416,6 +416,8 @@ void EditorNode::_fs_changed() {
 			}
 		}
 	}
+
+	_mark_unsaved_scenes();
 }
 
 void EditorNode::_sources_changed(bool p_exist) {
@@ -976,6 +978,29 @@ void EditorNode::_save_all_scenes() {
 	}
 
 	_save_default_environment();
+}
+
+void EditorNode::_mark_unsaved_scenes() {
+
+	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
+
+		Node *node = editor_data.get_edited_scene_root(i);
+		if (!node)
+			continue;
+
+		String path = node->get_filename();
+		if (!(path == String() || FileAccess::exists(path))) {
+
+			node->set_filename("");
+			if (i == editor_data.get_edited_scene())
+				set_current_version(-1);
+			else
+				editor_data.set_edited_scene_version(-1, i);
+		}
+	}
+
+	_update_title();
+	_update_scene_tabs();
 }
 
 void EditorNode::_import_action(const String &p_action) {
