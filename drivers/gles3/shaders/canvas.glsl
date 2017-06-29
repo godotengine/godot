@@ -368,7 +368,7 @@ void main() {
 				);
 
 	if (draw_center==0) {
-		color.a=0;
+		color.a=0.0;
 	}
 
 	uv = uv*src_rect.zw+src_rect.xy; //apply region if needed
