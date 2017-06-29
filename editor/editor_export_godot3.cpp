@@ -192,8 +192,8 @@ static const char *prop_renames[][2] = {
 	{ "focus_neighbour/top", "focus_neighbour_top" },
 	{ "focus/ignore_mouse", "focus_ignore_mouse" },
 	{ "focus/stop_mouse", "focus_stop_mouse" },
-	{ "size_flags/horizontal", "size_flags_horizontal" },
-	{ "size_flags/vertical", "size_flags_vertical" },
+	{ "size_flags/horizontal", "size_flags_horizontal" }, // TODO: Fix enum order got inverted Expand,Fill -> Fill,Expand
+	{ "size_flags/vertical", "size_flags_vertical" }, // TODO: Fix enum order got inverted Expand,Fill -> Fill,Expand
 	{ "size_flags/stretch_ratio", "size_flags_stretch_ratio" },
 	{ "theme/theme", "theme" },
 	{ "visibility/visible", "visible" },
@@ -363,7 +363,6 @@ static const char *prop_renames[][2] = {
 	{ "playback/process_mode", "playback_process_mode" },
 	{ "playback/default_blend_time", "playback_default_blend_time" },
 	{ "root/root", "root_node" },
-	{ "playback/process_mode", "playback_process_mode" },
 	{ "stream/stream", "stream" },
 	{ "stream/play", "playing" },
 	{ "stream/loop", "loop" },
@@ -405,7 +404,6 @@ static const char *prop_renames[][2] = {
 	{ "velocity/angular", "angular_velocity" },
 	{ "damp_override_linear", "linear_damp" },
 	{ "damp_override_angular", "angular_damp" },
-	{ "playback/process_mode", "playback_process_mode" },
 	{ "bbcode/enabled", "bbcode_enabled" },
 	{ "bbcode/bbcode", "bbcode_text" },
 	{ "scroll/horizontal", "scroll_horizontal" },
@@ -460,6 +458,10 @@ static const char *prop_renames[][2] = {
 	{ "cell/center_z", "cell_center_z" },
 	{ "cell/scale", "cell_scale" },
 	{ "region", "region_enabled" },
+	{ "rect/min_size", "rect_min_size" },
+	{ "rect/rotation", "rect_rotation" },
+	{ "rect/scale", "rect_scale" },
+	{ "process/pause_mode", "pause_mode" },
 	{ NULL, NULL }
 };
 
@@ -477,7 +479,7 @@ static const char *type_renames[][2] = {
 	{ "ColorRamp", "Gradient" },
 	{ "CanvasItemShader", "Shader" },
 	{ "CanvasItemMaterial", "ShaderMaterial" },
-	{ "TestCube", "MeshInstance" },
+	{ "TestCube", "MeshInstance" }, // TODO: Handle assignment of CubeMesh + default material?
 	{ NULL, NULL }
 };
 
