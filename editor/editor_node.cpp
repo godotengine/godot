@@ -2462,6 +2462,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 						confirmation->popup_centered_minsize();
 					} else {
 						_discard_changes();
+						break;
 					}
 				} else {
 
@@ -2488,6 +2489,8 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 					}
 				}
 
+				if (OS::get_singleton()->is_window_minimized())
+					OS::get_singleton()->request_attention();
 				break;
 			}
 
