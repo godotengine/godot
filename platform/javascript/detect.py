@@ -1,6 +1,6 @@
 import os
-import sys
 import string
+import sys
 
 
 def is_active():
@@ -12,7 +12,8 @@ def get_name():
 
 
 def can_build():
-    return os.environ.has_key("EMSCRIPTEN_ROOT")
+
+    return (os.environ.has_key("EMSCRIPTEN_ROOT"))
 
 
 def get_opts():
@@ -27,12 +28,12 @@ def get_flags():
 
     return [
         ('tools', 'no'),
-        ('module_etc1_enabled', 'no'),
         ('module_theora_enabled', 'no'),
     ]
 
 
 def create(env):
+
     # remove Windows' .exe suffix
     return env.Clone(tools=['textfile', 'zip'], PROGSUFFIX='')
 
@@ -45,10 +46,26 @@ def escape_target_backslashes(target, source, env, for_signature):
 
 
 def configure(env):
+
+    ## Build type
+
+    if (env["target"] == "release"):
+        env.Append(CCFLAGS=['-O3'])
+        env.Append(LINKFLAGS=['-O3'])
+
+    elif (env["target"] == "release_debug"):
+        env.Append(CCFLAGS=['-O2', '-DDEBUG_ENABLED'])
+        env.Append(LINKFLAGS=['-O2', '-s', 'ASSERTIONS=1'])
+        # retain function names at the cost of file size, for backtraces and profiling
+        env.Append(LINKFLAGS=['--profiling-funcs'])
+
+    elif (env["target"] == "debug"):
+        env.Append(CCFLAGS=['-O1', '-D_DEBUG', '-g', '-DDEBUG_ENABLED'])
+        env.Append(LINKFLAGS=['-O1', '-g'])
+
+    ## Compiler configuration
+
     env['ENV'] = os.environ
-
-    env.Append(CPPPATH=['#platform/javascript'])
-
     env.PrependENVPath('PATH', os.environ['EMSCRIPTEN_ROOT'])
     env['CC']      = 'emcc'
     env['CXX']     = 'em++'
@@ -57,6 +74,7 @@ def configure(env):
     # Emscripten's ar has issues with duplicate file names, so use cc
     env['AR']      = 'emcc'
     env['ARFLAGS'] = '-o'
+
     if (os.name == 'nt'):
         # use TempFileMunge on Windows since some commands get too long for
         # cmd.exe even with spawn_fix
@@ -68,26 +86,20 @@ def configure(env):
     env['OBJSUFFIX'] = '.bc'
     env['LIBSUFFIX'] = '.bc'
 
-    if (env["target"] == "release"):
-        env.Append(CCFLAGS=['-O3'])
-        env.Append(LINKFLAGS=['-O3'])
-    elif (env["target"] == "release_debug"):
-        env.Append(CCFLAGS=['-O2', '-DDEBUG_ENABLED'])
-        env.Append(LINKFLAGS=['-O2', '-s', 'ASSERTIONS=1'])
-        # retain function names at the cost of file size, for backtraces and profiling
-        env.Append(LINKFLAGS=['--profiling-funcs'])
-    elif (env["target"] == "debug"):
-        env.Append(CCFLAGS=['-O1', '-D_DEBUG', '-g', '-DDEBUG_ENABLED'])
-        env.Append(LINKFLAGS=['-O1', '-g'])
+    ## Compile flags
 
-    # TODO: Move that to opus module's config
-    if("module_opus_enabled" in env and env["module_opus_enabled"] != "no"):
-        env.opus_fixed_point = "yes"
+    env.Append(CPPPATH=['#platform/javascript'])
+    env.Append(CPPFLAGS=['-DJAVASCRIPT_ENABLED', '-DUNIX_ENABLED', '-DPTHREAD_NO_RENAME', '-DTYPED_METHOD_BIND', '-DNO_THREADS'])
+    env.Append(CPPFLAGS=['-DGLES3_ENABLED'])
 
     # These flags help keep the file size down
     env.Append(CPPFLAGS=["-fno-exceptions", '-DNO_SAFE_CAST', '-fno-rtti'])
-    env.Append(CPPFLAGS=['-DJAVASCRIPT_ENABLED', '-DUNIX_ENABLED', '-DPTHREAD_NO_RENAME', '-DTYPED_METHOD_BIND', '-DNO_THREADS'])
-    env.Append(CPPFLAGS=['-DGLES3_ENABLED'])
+
+    if env['javascript_eval'] == 'yes':
+        env.Append(CPPFLAGS=['-DJAVASCRIPT_EVAL_ENABLED'])
+
+    ## Link flags
+
     env.Append(LINKFLAGS=['-s', 'USE_WEBGL2=1'])
 
     if (env['wasm'] == 'yes'):
@@ -101,8 +113,6 @@ def configure(env):
         env.Append(LINKFLAGS=['-s', 'ASM_JS=1'])
         env.Append(LINKFLAGS=['--separate-asm'])
 
-    if env['javascript_eval'] == 'yes':
-        env.Append(CPPFLAGS=['-DJAVASCRIPT_EVAL_ENABLED'])
-
-
-    import methods
+    # TODO: Move that to opus module's config
+    if("module_opus_enabled" in env and env["module_opus_enabled"] != "no"):
+        env.opus_fixed_point = "yes"

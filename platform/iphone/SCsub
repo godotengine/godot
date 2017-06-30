@@ -17,16 +17,7 @@ iphone_lib = [
     'ios.mm',
 ]
 
-# env.Depends('#core/math/vector3.h', 'vector3_psp.h')
-
-#iphone_lib = env.Library('iphone', iphone_lib)
-
 env_ios = env.Clone()
-
-
-if env['ios_gles22_override'] == "yes":
-    env_ios.Append(CPPFLAGS=['-DGLES2_OVERRIDE'])
-
 
 obj = env_ios.Object('godot_iphone.cpp')
 
