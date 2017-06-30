@@ -94,7 +94,7 @@ public:
 
 	void shape_owner_add_shape(uint32_t p_owner, const Ref<Shape2D> &p_shape);
 	int shape_owner_get_shape_count(uint32_t p_owner) const;
-	Ref<Shape> shape_owner_get_shape(uint32_t p_owner, int p_shape) const;
+	Ref<Shape2D> shape_owner_get_shape(uint32_t p_owner, int p_shape) const;
 	int shape_owner_get_shape_index(uint32_t p_owner, int p_shape) const;
 
 	void shape_owner_remove_shape(uint32_t p_owner, int p_shape);
