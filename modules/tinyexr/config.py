@@ -4,4 +4,8 @@ def can_build(platform):
 
 
 def configure(env):
-    pass
+    # Tools only, disabled for non-tools
+    # TODO: Find a cleaner way to achieve that
+    if (env["tools"] == "no"):
+        env["module_tinyexr_enabled"] = "no"
+        env.disabled_modules.append("tinyexr")
