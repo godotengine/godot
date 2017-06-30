@@ -188,7 +188,7 @@ Error ResourceImporterOBJ::import(const String &p_source_file, const String &p_s
 
 					Vector3 vertex = vertices[vtx];
 					if (weld_vertices)
-						vertex = vertex.snapped(weld_tolerance);
+						vertex.snap(Vector3(weld_tolerance, weld_tolerance, weld_tolerance));
 					surf_tool->add_vertex(vertex);
 				}
 

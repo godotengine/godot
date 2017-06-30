@@ -594,7 +594,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 
 			for (int i = 0; i < 3; i++) {
 
-				Vector3 v = f.vertex[i].snapped(0.01);
+				Vector3 v = f.vertex[i].snapped(Vector3(0.01, 0.01, 0.01));
 				if (!points.has(v)) {
 					points.insert(v);
 					center += v;

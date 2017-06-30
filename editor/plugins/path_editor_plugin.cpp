@@ -104,7 +104,7 @@ void PathSpatialGizmo::set_handle(int p_idx, Camera *p_camera, const Point2 &p_p
 
 			if (SpatialEditor::get_singleton()->is_snap_enabled()) {
 				float snap = SpatialEditor::get_singleton()->get_translate_snap();
-				inters.snap(snap);
+				inters.snap(Vector3(snap, snap, snap));
 			}
 
 			Vector3 local = gi.xform(inters);
