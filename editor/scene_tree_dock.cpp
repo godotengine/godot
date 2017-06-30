@@ -658,7 +658,91 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				}
 			}
 		} break;
+		case TOOL_SCENE_EDITABLE_CHILDREN: {
+			List<Node *> selection = editor_selection->get_selected_node_list();
+			if (List<Node *>::Element *e = selection.front()) {
+				if (Node *node = e->get()) {
+					bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(node);
+					editable = !editable;
 
+					EditorNode::get_singleton()->get_edited_scene()->set_editable_instance(node, editable);
+					menu->set_item_checked(18, editable);
+					if (editable) {
+						node->set_scene_instance_load_placeholder(false);
+						menu->set_item_checked(19, false);
+					}
+					scene_tree->update_tree();
+				}
+			}
+		} break;
+		case TOOL_SCENE_USE_PLACEHOLDER: {
+			List<Node *> selection = editor_selection->get_selected_node_list();
+			if (List<Node *>::Element *e = selection.front()) {
+				if (Node *node = e->get()) {
+					bool placeholder = node->get_scene_instance_load_placeholder();
+					placeholder = !placeholder;
+					if (placeholder)
+						EditorNode::get_singleton()->get_edited_scene()->set_editable_instance(node, false);
+
+					node->set_scene_instance_load_placeholder(placeholder);
+					menu->set_item_checked(18, false);
+					menu->set_item_checked(19, placeholder);
+					scene_tree->update_tree();
+				}
+			}
+		} break;
+		case TOOL_SCENE_CLEAR_INSTANCING: {
+			List<Node *> selection = editor_selection->get_selected_node_list();
+			if (List<Node *>::Element *e = selection.front()) {
+				if (Node *node = e->get()) {
+					Node *root = EditorNode::get_singleton()->get_edited_scene();
+					UndoRedo *undo_redo = &editor_data->get_undo_redo();
+					if (!root)
+						break;
+
+					ERR_FAIL_COND(node->get_filename() == String());
+
+					undo_redo->create_action("Discard Instancing");
+					undo_redo->add_do_method(node, "set_filename", "");
+					undo_redo->add_undo_method(node, "set_filename", node->get_filename());
+					_node_replace_owner(node, node, root);
+					undo_redo->add_do_method(scene_tree, "update_tree");
+					undo_redo->add_undo_method(scene_tree, "update_tree");
+					undo_redo->commit_action();
+				}
+			}
+		} break;
+		case TOOL_SCENE_OPEN: {
+			List<Node *> selection = editor_selection->get_selected_node_list();
+			if (List<Node *>::Element *e = selection.front()) {
+				if (Node *node = e->get()) {
+					scene_tree->emit_signal("open", node->get_filename());
+				}
+			}
+		} break;
+		case TOOL_SCENE_CLEAR_INHERITANCE: {
+			clear_inherit_confirm->popup_centered_minsize();
+		} break;
+		case TOOL_SCENE_CLEAR_INHERITANCE_CONFIRM: {
+			List<Node *> selection = editor_selection->get_selected_node_list();
+			if (List<Node *>::Element *e = selection.front()) {
+				if (Node *node = e->get()) {
+					node->set_scene_inherited_state(Ref<SceneState>());
+					scene_tree->update_tree();
+					EditorNode::get_singleton()->get_property_editor()->update_tree();
+				}
+			}
+		} break;
+		case TOOL_SCENE_OPEN_INHERITED: {
+			List<Node *> selection = editor_selection->get_selected_node_list();
+			if (List<Node *>::Element *e = selection.front()) {
+				if (Node *node = e->get()) {
+					if (node && node->get_scene_inherited_state().is_valid()) {
+						scene_tree->emit_signal("open", node->get_scene_inherited_state()->get_path());
+					}
+				}
+			}
+		} break;
 		default: {
 
 			if (p_tool >= EDIT_SUBRESOURCE_BASE) {
@@ -702,6 +786,29 @@ void SceneTreeDock::_notification(int p_what) {
 			EditorNode::get_singleton()->get_editor_selection()->connect("selection_changed", this, "_selection_changed");
 
 		} break;
+
+		case NOTIFICATION_ENTER_TREE: {
+			clear_inherit_confirm->connect("confirmed", this, "_tool_selected", varray(TOOL_SCENE_CLEAR_INHERITANCE_CONFIRM));
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			clear_inherit_confirm->disconnect("confirmed", this, "_tool_selected");
+		} break;
+	}
+}
+
+void SceneTreeDock::_node_replace_owner(Node *p_base, Node *p_node, Node *p_root) {
+
+	if (p_base != p_node) {
+		if (p_node->get_owner() == p_base) {
+			UndoRedo *undo_redo = &editor_data->get_undo_redo();
+			undo_redo->add_do_method(p_node, "set_owner", p_root);
+			undo_redo->add_undo_method(p_node, "set_owner", p_base);
+		}
+	}
+
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		_node_replace_owner(p_base, p_node->get_child(i), p_root);
 	}
 }
 
@@ -1769,6 +1876,24 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		menu->add_icon_shortcut(get_icon("CreateNewSceneFrom", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/save_branch_as_scene"), TOOL_NEW_SCENE_FROM);
 		menu->add_separator();
 		menu->add_icon_shortcut(get_icon("CopyNodePath", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/copy_node_path"), TOOL_COPY_NODE_PATH);
+		bool is_external = (selection[0]->get_filename() != "") && (selection[0]->get_owner() != selection[0]);
+		if (is_external) {
+			bool is_inherited = selection[0]->get_scene_inherited_state() != NULL;
+			menu->add_separator();
+			if (is_inherited) {
+				menu->add_item(TTR("Clear Inheritance"), TOOL_SCENE_CLEAR_INHERITANCE);
+				menu->add_icon_item(get_icon("Load", "EditorIcons"), TTR("Open in Editor"), TOOL_SCENE_OPEN_INHERITED);
+			} else {
+				bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(selection[0]);
+				bool placeholder = selection[0]->get_scene_instance_load_placeholder();
+				menu->add_check_item(TTR("Editable Children"), TOOL_SCENE_EDITABLE_CHILDREN);
+				menu->add_check_item(TTR("Load As Placeholder"), TOOL_SCENE_USE_PLACEHOLDER);
+				menu->add_item(TTR("Discard Instancing"), TOOL_SCENE_CLEAR_INSTANCING);
+				menu->add_icon_item(get_icon("Load", "EditorIcons"), TTR("Open in Editor"), TOOL_SCENE_OPEN);
+				menu->set_item_checked(18, editable);
+				menu->set_item_checked(19, placeholder);
+			}
+		}
 	}
 	menu->add_separator();
 	menu->add_icon_shortcut(get_icon("Remove", "EditorIcons"), ED_SHORTCUT("scene_tree/delete", TTR("Delete Node(s)"), KEY_DELETE), TOOL_ERASE);
@@ -1977,6 +2102,11 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	menu->connect("id_pressed", this, "_tool_selected");
 	first_enter = true;
 	restore_script_editor_on_drag = false;
+
+	clear_inherit_confirm = memnew(ConfirmationDialog);
+	clear_inherit_confirm->set_text(TTR("Clear Inheritance? (No Undo!)"));
+	clear_inherit_confirm->get_ok()->set_text(TTR("Clear!"));
+	add_child(clear_inherit_confirm);
 
 	vbc->add_constant_override("separation", 4);
 	set_process_input(true);

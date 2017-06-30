@@ -56,27 +56,14 @@ class SceneTreeEditor : public Control {
 		BUTTON_GROUPS = 7,
 	};
 
-	enum {
-		SCENE_MENU_EDITABLE_CHILDREN,
-		SCENE_MENU_USE_PLACEHOLDER,
-		SCENE_MENU_OPEN,
-		SCENE_MENU_CLEAR_INHERITANCE,
-		SCENE_MENU_OPEN_INHERITED,
-		SCENE_MENU_CLEAR_INHERITANCE_CONFIRM,
-		SCENE_MENU_CLEAR_INSTANCING,
-	};
-
 	Tree *tree;
 	Node *selected;
-	PopupMenu *instance_menu;
-	PopupMenu *inheritance_menu;
 	ObjectID instance_node;
 
 	String filter;
 
 	AcceptDialog *error;
 	AcceptDialog *warning;
-	ConfirmationDialog *clear_inherit_confirm;
 
 	int blocked;
 
@@ -119,7 +106,6 @@ class SceneTreeEditor : public Control {
 	void _node_script_changed(Node *p_node);
 	void _node_visibility_changed(Node *p_node);
 	void _update_visibility_color(Node *p_node, TreeItem *p_item);
-	void _subscene_option(int p_idx);
 
 	void _node_replace_owner(Node *p_base, Node *p_node, Node *p_root);
 

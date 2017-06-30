@@ -70,7 +70,14 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_MULTI_EDIT,
 		TOOL_ERASE,
 		TOOL_COPY_NODE_PATH,
-		TOOL_BUTTON_MAX
+		TOOL_BUTTON_MAX,
+		TOOL_SCENE_EDITABLE_CHILDREN,
+		TOOL_SCENE_USE_PLACEHOLDER,
+		TOOL_SCENE_CLEAR_INSTANCING,
+		TOOL_SCENE_OPEN,
+		TOOL_SCENE_CLEAR_INHERITANCE,
+		TOOL_SCENE_CLEAR_INHERITANCE_CONFIRM,
+		TOOL_SCENE_OPEN_INHERITED
 	};
 
 	enum {
@@ -112,6 +119,7 @@ class SceneTreeDock : public VBoxContainer {
 	TextureRect *filter_icon;
 
 	PopupMenu *menu;
+	ConfirmationDialog *clear_inherit_confirm;
 
 	bool first_enter;
 
@@ -127,6 +135,7 @@ class SceneTreeDock : public VBoxContainer {
 	void _do_reparent(Node *p_new_parent, int p_position_in_parent, Vector<Node *> p_nodes, bool p_keep_global_xform);
 
 	void _set_owners(Node *p_owner, const Array &p_nodes);
+	void _node_replace_owner(Node *p_base, Node *p_node, Node *p_root);
 	void _load_request(const String &p_path);
 	void _script_open_request(const Ref<Script> &p_script);
 
