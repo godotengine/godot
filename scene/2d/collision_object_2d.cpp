@@ -204,10 +204,10 @@ int CollisionObject2D::shape_owner_get_shape_count(uint32_t p_owner) const {
 
 	return shapes[p_owner].shapes.size();
 }
-Ref<Shape> CollisionObject2D::shape_owner_get_shape(uint32_t p_owner, int p_shape) const {
+Ref<Shape2D> CollisionObject2D::shape_owner_get_shape(uint32_t p_owner, int p_shape) const {
 
-	ERR_FAIL_COND_V(!shapes.has(p_owner), Ref<Shape>());
-	ERR_FAIL_INDEX_V(p_shape, shapes[p_owner].shapes.size(), Ref<Shape>());
+	ERR_FAIL_COND_V(!shapes.has(p_owner), Ref<Shape2D>());
+	ERR_FAIL_INDEX_V(p_shape, shapes[p_owner].shapes.size(), Ref<Shape2D>());
 
 	return shapes[p_owner].shapes[p_shape].shape;
 }
