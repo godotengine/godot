@@ -255,6 +255,10 @@ void AnimationPlayerEditor::_play_bw_from_pressed() {
 }
 void AnimationPlayerEditor::_stop_pressed() {
 
+	if (!player) {
+		return;
+	}
+
 	player->stop(false);
 	play->set_pressed(false);
 	stop->set_pressed(true);
