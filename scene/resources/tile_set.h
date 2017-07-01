@@ -43,7 +43,7 @@ class TileSet : public Resource {
 public:
 	struct ShapeData {
 		Ref<Shape2D> shape;
-		Vector2 shape_offset;
+		Transform2D shape_transform;
 		bool one_way_collision;
 
 		ShapeData() {
@@ -105,14 +105,14 @@ public:
 	void tile_set_shape(int p_id, int p_shape_id, const Ref<Shape2D> &p_shape);
 	Ref<Shape2D> tile_get_shape(int p_id, int p_shape_id) const;
 
-	void tile_set_shape_offset(int p_id, int p_shape_id, const Vector2 &p_offset);
-	Vector2 tile_get_shape_offset(int p_id, int p_shape_id) const;
+	void tile_set_shape_transform(int p_id, int p_shape_id, const Transform2D &p_transform);
+	Transform2D tile_get_shape_transform(int p_id, int p_shape_id) const;
 
 	void tile_set_shape_one_way(int p_id, int p_shape_id, bool p_one_way);
 	bool tile_get_shape_one_way(int p_id, int p_shape_id) const;
 
 	void tile_clear_shapes(int p_id);
-	void tile_add_shape(int p_id, const Ref<Shape2D> &p_shape, const Vector2 &p_offset, bool p_one_way = false);
+	void tile_add_shape(int p_id, const Ref<Shape2D> &p_shape, const Transform2D &p_transform, bool p_one_way = false);
 	int tile_get_shape_count(int p_id) const;
 
 	void tile_set_shapes(int p_id, const Vector<ShapeData> &p_shapes);
