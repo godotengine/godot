@@ -57,8 +57,12 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 		tile_set_region(id, p_value);
 	else if (what == "shape")
 		tile_set_shape(id, 0, p_value);
-	else if (what == "shape_offset")
-		tile_set_shape_offset(id, 0, p_value);
+	else if (what == "shape_offset") {
+		Transform2D xform = tile_get_shape_transform(id, 0);
+		xform.set_origin(p_value);
+		tile_set_shape_transform(id, 0, xform);
+	} else if (what == "shape_transform")
+		tile_set_shape_transform(id, 0, p_value);
 	else if (what == "shape_one_way")
 		tile_set_shape_one_way(id, 0, p_value);
 	else if (what == "shapes")
@@ -106,7 +110,9 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 	else if (what == "shape")
 		r_ret = tile_get_shape(id, 0);
 	else if (what == "shape_offset")
-		r_ret = tile_get_shape_offset(id, 0);
+		r_ret = tile_get_shape_transform(id, 0).get_origin();
+	else if (what == "shape_transform")
+		r_ret = tile_get_shape_transform(id, 0);
 	else if (what == "shape_one_way")
 		r_ret = tile_get_shape_one_way(id, 0);
 	else if (what == "shapes")
@@ -143,6 +149,7 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::VECTOR2, pre + "navigation_offset"));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, pre + "navigation", PROPERTY_HINT_RESOURCE_TYPE, "NavigationPolygon"));
 		p_list->push_back(PropertyInfo(Variant::VECTOR2, pre + "shape_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
+		p_list->push_back(PropertyInfo(Variant::VECTOR2, pre + "shape_transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, pre + "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape2D", PROPERTY_USAGE_EDITOR));
 		p_list->push_back(PropertyInfo(Variant::BOOL, pre + "shape_one_way", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
 		p_list->push_back(PropertyInfo(Variant::ARRAY, pre + "shapes", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
@@ -252,13 +259,13 @@ void TileSet::tile_clear_shapes(int p_id) {
 	tile_map[p_id].shapes_data.clear();
 }
 
-void TileSet::tile_add_shape(int p_id, const Ref<Shape2D> &p_shape, const Vector2 &p_offset, bool p_one_way) {
+void TileSet::tile_add_shape(int p_id, const Ref<Shape2D> &p_shape, const Transform2D &p_transform, bool p_one_way) {
 
 	ERR_FAIL_COND(!tile_map.has(p_id));
 
 	ShapeData new_data = ShapeData();
 	new_data.shape = p_shape;
-	new_data.shape_offset = p_offset;
+	new_data.shape_transform = p_transform;
 	new_data.one_way_collision = p_one_way;
 
 	tile_map[p_id].shapes_data.push_back(new_data);
@@ -288,22 +295,22 @@ Ref<Shape2D> TileSet::tile_get_shape(int p_id, int p_shape_id) const {
 	return Ref<Shape2D>();
 }
 
-void TileSet::tile_set_shape_offset(int p_id, int p_shape_id, const Vector2 &p_offset) {
+void TileSet::tile_set_shape_transform(int p_id, int p_shape_id, const Transform2D &p_offset) {
 
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	if (tile_map[p_id].shapes_data.size() <= p_shape_id)
 		tile_map[p_id].shapes_data.resize(p_shape_id + 1);
-	tile_map[p_id].shapes_data[p_shape_id].shape_offset = p_offset;
+	tile_map[p_id].shapes_data[p_shape_id].shape_transform = p_offset;
 	emit_changed();
 }
 
-Vector2 TileSet::tile_get_shape_offset(int p_id, int p_shape_id) const {
+Transform2D TileSet::tile_get_shape_transform(int p_id, int p_shape_id) const {
 
-	ERR_FAIL_COND_V(!tile_map.has(p_id), Vector2());
+	ERR_FAIL_COND_V(!tile_map.has(p_id), Transform2D());
 	if (tile_map[p_id].shapes_data.size() > p_shape_id)
-		return tile_map[p_id].shapes_data[p_shape_id].shape_offset;
+		return tile_map[p_id].shapes_data[p_shape_id].shape_transform;
 
-	return Vector2();
+	return Transform2D();
 }
 
 void TileSet::tile_set_shape_one_way(int p_id, int p_shape_id, const bool p_one_way) {
@@ -388,7 +395,7 @@ void TileSet::_tile_set_shapes(int p_id, const Array &p_shapes) {
 
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	Vector<ShapeData> shapes_data;
-	Vector2 default_offset = tile_get_shape_offset(p_id, 0);
+	Transform2D default_transform = tile_get_shape_transform(p_id, 0);
 	bool default_one_way = tile_get_shape_one_way(p_id, 0);
 	for (int i = 0; i < p_shapes.size(); i++) {
 		ShapeData s = ShapeData();
@@ -398,7 +405,7 @@ void TileSet::_tile_set_shapes(int p_id, const Array &p_shapes) {
 			if (shape.is_null()) continue;
 
 			s.shape = shape;
-			s.shape_offset = default_offset;
+			s.shape_transform = default_transform;
 			s.one_way_collision = default_one_way;
 		} else if (p_shapes[i].get_type() == Variant::DICTIONARY) {
 			Dictionary d = p_shapes[i];
@@ -408,10 +415,12 @@ void TileSet::_tile_set_shapes(int p_id, const Array &p_shapes) {
 			else
 				continue;
 
-			if (d.has("shape_offset") && d["shape_offset"].get_type() == Variant::VECTOR2)
-				s.shape_offset = d["shape_offset"];
+			if (d.has("shape_transform") && d["shape_transform"].get_type() == Variant::TRANSFORM2D)
+				s.shape_transform = d["shape_transform"];
+			else if (d.has("shape_offset") && d["shape_offset"].get_type() == Variant::VECTOR2)
+				s.shape_transform = Transform2D(0, (Vector2)d["shape_offset"]);
 			else
-				s.shape_offset = default_offset;
+				s.shape_transform = default_transform;
 
 			if (d.has("one_way") && d["one_way"].get_type() == Variant::BOOL)
 				s.one_way_collision = d["one_way"];
@@ -438,7 +447,7 @@ Array TileSet::_tile_get_shapes(int p_id) const {
 	for (int i = 0; i < data.size(); i++) {
 		Dictionary shape_data;
 		shape_data["shape"] = data[i].shape;
-		shape_data["shape_offset"] = data[i].shape_offset;
+		shape_data["shape_transform"] = data[i].shape_transform;
 		shape_data["one_way"] = data[i].one_way_collision;
 		arr.push_back(shape_data);
 	}
@@ -520,11 +529,11 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("tile_get_region", "id"), &TileSet::tile_get_region);
 	ClassDB::bind_method(D_METHOD("tile_set_shape", "id", "shape_id", "shape:Shape2D"), &TileSet::tile_set_shape);
 	ClassDB::bind_method(D_METHOD("tile_get_shape:Shape2D", "id", "shape_id"), &TileSet::tile_get_shape);
-	ClassDB::bind_method(D_METHOD("tile_set_shape_offset", "id", "shape_id", "shape_offset"), &TileSet::tile_set_shape_offset);
-	ClassDB::bind_method(D_METHOD("tile_get_shape_offset", "id", "shape_id"), &TileSet::tile_get_shape_offset);
+	ClassDB::bind_method(D_METHOD("tile_set_shape_transform", "id", "shape_id", "shape_transform"), &TileSet::tile_set_shape_transform);
+	ClassDB::bind_method(D_METHOD("tile_get_shape_transform", "id", "shape_id"), &TileSet::tile_get_shape_transform);
 	ClassDB::bind_method(D_METHOD("tile_set_shape_one_way", "id", "shape_id", "one_way"), &TileSet::tile_set_shape_one_way);
 	ClassDB::bind_method(D_METHOD("tile_get_shape_one_way", "id", "shape_id"), &TileSet::tile_get_shape_one_way);
-	ClassDB::bind_method(D_METHOD("tile_add_shape", "id", "shape:Shape2D", "shape_offset", "one_way"), &TileSet::tile_add_shape, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("tile_add_shape", "id", "shape:Shape2D", "shape_transform", "one_way"), &TileSet::tile_add_shape, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("tile_get_shape_count", "id"), &TileSet::tile_get_shape_count);
 	ClassDB::bind_method(D_METHOD("tile_set_shapes", "id", "shapes"), &TileSet::_tile_set_shapes);
 	ClassDB::bind_method(D_METHOD("tile_get_shapes", "id"), &TileSet::_tile_get_shapes);
