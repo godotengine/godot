@@ -68,12 +68,12 @@ bool VisualScriptExpression::_set(const StringName &p_name, const Variant &p_val
 		return true;
 	}
 
-	if (String(p_name).begins_with("input/")) {
+	if (String(p_name).begins_with("input_")) {
 
-		int idx = String(p_name).get_slice("/", 1).to_int();
+		int idx = String(p_name).get_slicec('_', 1).get_slicec('/', 0).to_int();
 		ERR_FAIL_INDEX_V(idx, inputs.size(), false);
 
-		String what = String(p_name).get_slice("/", 2);
+		String what = String(p_name).get_slice("/", 1);
 
 		if (what == "type") {
 
@@ -115,12 +115,12 @@ bool VisualScriptExpression::_get(const StringName &p_name, Variant &r_ret) cons
 		return true;
 	}
 
-	if (String(p_name).begins_with("input/")) {
+	if (String(p_name).begins_with("input_")) {
 
-		int idx = String(p_name).get_slice("/", 1).to_int();
+		int idx = String(p_name).get_slicec('_', 1).get_slicec('/', 0).to_int();
 		ERR_FAIL_INDEX_V(idx, inputs.size(), false);
 
-		String what = String(p_name).get_slice("/", 2);
+		String what = String(p_name).get_slice("/", 1);
 
 		if (what == "type") {
 
@@ -151,8 +151,8 @@ void VisualScriptExpression::_get_property_list(List<PropertyInfo> *p_list) cons
 
 	for (int i = 0; i < inputs.size(); i++) {
 
-		p_list->push_back(PropertyInfo(Variant::INT, "input/" + itos(i) + "/type", PROPERTY_HINT_ENUM, argt));
-		p_list->push_back(PropertyInfo(Variant::STRING, "input/" + itos(i) + "/name"));
+		p_list->push_back(PropertyInfo(Variant::INT, "input_" + itos(i) + "/type", PROPERTY_HINT_ENUM, argt));
+		p_list->push_back(PropertyInfo(Variant::STRING, "input_" + itos(i) + "/name"));
 	}
 }
 

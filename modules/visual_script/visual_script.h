@@ -89,7 +89,7 @@ public:
 	struct TypeGuess {
 
 		Variant::Type type;
-		StringName GDCLASS;
+		StringName gdclass;
 		Ref<Script> script;
 
 		TypeGuess() {

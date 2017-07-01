@@ -261,6 +261,7 @@ public:
 	VisualScriptInputFilter();
 };
 #endif
+
 class VisualScriptTypeCast : public VisualScriptNode {
 
 	GDCLASS(VisualScriptTypeCast, VisualScriptNode)
@@ -292,6 +293,8 @@ public:
 
 	void set_base_script(const String &p_path);
 	String get_base_script() const;
+
+	virtual TypeGuess guess_output_type(TypeGuess *p_inputs, int p_output) const;
 
 	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance);
 

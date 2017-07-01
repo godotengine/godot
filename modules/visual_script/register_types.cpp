@@ -90,6 +90,7 @@ void register_visual_script_types() {
 	ClassDB::register_class<VisualScriptSequence>();
 	//ClassDB::register_class<VisualScriptInputFilter>();
 	ClassDB::register_class<VisualScriptSwitch>();
+	ClassDB::register_class<VisualScriptSelect>();
 
 	ClassDB::register_class<VisualScriptYield>();
 	ClassDB::register_class<VisualScriptYieldSignal>();

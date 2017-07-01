@@ -131,7 +131,12 @@ void SplitContainer::_resort() {
 
 		if (ratiomode) {
 
-			middle_sep = ms_first[axis] + available / 2;
+			int first_ratio = first->get_stretch_ratio();
+			int second_ratio = second->get_stretch_ratio();
+
+			float ratio = float(first_ratio) / (first_ratio + second_ratio);
+
+			middle_sep = ms_first[axis] + available * ratio;
 
 		} else if (expand_first_mode) {
 
@@ -144,12 +149,17 @@ void SplitContainer::_resort() {
 
 	} else if (ratiomode) {
 
-		if (expand_ofs < -(available / 2))
-			expand_ofs = -(available / 2);
-		else if (expand_ofs > (available / 2))
-			expand_ofs = (available / 2);
+		int first_ratio = first->get_stretch_ratio();
+		int second_ratio = second->get_stretch_ratio();
 
-		middle_sep = ms_first[axis] + available / 2 + expand_ofs;
+		float ratio = float(first_ratio) / (first_ratio + second_ratio);
+
+		if (expand_ofs < -(available * ratio))
+			expand_ofs = -(available * ratio);
+		else if (expand_ofs > (available * (1.0 - ratio)))
+			expand_ofs = (available * (1.0 - ratio));
+
+		middle_sep = ms_first[axis] + available * ratio + expand_ofs;
 
 	} else if (expand_first_mode) {
 

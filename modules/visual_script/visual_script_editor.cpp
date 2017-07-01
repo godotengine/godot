@@ -52,11 +52,13 @@ public:
 protected:
 	static void _bind_methods() {
 		ClassDB::bind_method("_sig_changed", &VisualScriptEditorSignalEdit::_sig_changed);
+		ADD_SIGNAL(MethodInfo("changed"));
 	}
 
 	void _sig_changed() {
 
 		_change_notify();
+		emit_signal("changed");
 	}
 
 	bool _set(const StringName &p_name, const Variant &p_value) {
@@ -191,15 +193,18 @@ protected:
 	static void _bind_methods() {
 		ClassDB::bind_method("_var_changed", &VisualScriptEditorVariableEdit::_var_changed);
 		ClassDB::bind_method("_var_value_changed", &VisualScriptEditorVariableEdit::_var_value_changed);
+		ADD_SIGNAL(MethodInfo("changed"));
 	}
 
 	void _var_changed() {
 
 		_change_notify();
+		emit_signal("changed");
 	}
 	void _var_value_changed() {
 
 		_change_notify("value"); //so the whole tree is not redrawn, makes editing smoother in general
+		emit_signal("changed");
 	}
 
 	bool _set(const StringName &p_name, const Variant &p_value) {
@@ -261,6 +266,7 @@ protected:
 
 		if (String(p_name) == "export") {
 			script->set_variable_export(var, p_value);
+			EditorNode::get_singleton()->get_property_editor()->update_tree();
 			return true;
 		}
 
@@ -699,7 +705,7 @@ void VisualScriptEditor::_update_members() {
 		ti->set_selectable(0, true);
 		ti->set_editable(0, true);
 		//ti->add_button(0,Control::get_icon("Edit","EditorIcons"),0); function arguments are in the node now
-		ti->add_button(0, Control::get_icon("Del", "EditorIcons"), 1);
+		//ti->add_button(0, Control::get_icon("Del", "EditorIcons"), 1);
 		ti->set_metadata(0, E->get());
 		if (E->get() == edited_func) {
 			ti->set_custom_bg_color(0, get_color("prop_category", "Editor"));
@@ -757,8 +763,8 @@ void VisualScriptEditor::_update_members() {
 
 		ti->set_selectable(0, true);
 		ti->set_editable(0, true);
-		ti->add_button(0, Control::get_icon("Edit", "EditorIcons"), 0);
-		ti->add_button(0, Control::get_icon("Del", "EditorIcons"), 1);
+		//ti->add_button(0, Control::get_icon("Edit", "EditorIcons"), 0);
+		//ti->add_button(0, Control::get_icon("Del", "EditorIcons"), 1);
 		ti->set_metadata(0, E->get());
 		if (selected == E->get())
 			ti->select(0);
@@ -777,8 +783,8 @@ void VisualScriptEditor::_update_members() {
 		ti->set_text(0, E->get());
 		ti->set_selectable(0, true);
 		ti->set_editable(0, true);
-		ti->add_button(0, Control::get_icon("Edit", "EditorIcons"), 0);
-		ti->add_button(0, Control::get_icon("Del", "EditorIcons"), 1);
+		//ti->add_button(0, Control::get_icon("Edit", "EditorIcons"), 0);
+		//ti->add_button(0, Control::get_icon("Del", "EditorIcons"), 1);
 		ti->set_metadata(0, E->get());
 		if (selected == E->get())
 			ti->select(0);
@@ -1066,105 +1072,6 @@ void VisualScriptEditor::_member_button(Object *p_item, int p_column, int p_butt
 			undo_redo->add_do_method(this, "_update_members");
 			undo_redo->add_undo_method(this, "_update_members");
 			undo_redo->commit_action();
-			return; //or crash because it will become invalid
-		}
-
-	} else {
-
-		if (ti->get_parent() == root->get_children()) {
-			//edit/remove function
-			String name = ti->get_metadata(0);
-
-			if (p_button == 1) {
-				//delete the function
-				undo_redo->create_action(TTR("Remove Function"));
-				undo_redo->add_do_method(script.ptr(), "remove_function", name);
-				undo_redo->add_undo_method(script.ptr(), "add_function", name);
-				List<int> nodes;
-				script->get_node_list(name, &nodes);
-				for (List<int>::Element *E = nodes.front(); E; E = E->next()) {
-					undo_redo->add_undo_method(script.ptr(), "add_node", name, E->get(), script->get_node(name, E->get()), script->get_node_pos(name, E->get()));
-				}
-
-				List<VisualScript::SequenceConnection> seq_connections;
-
-				script->get_sequence_connection_list(name, &seq_connections);
-
-				for (List<VisualScript::SequenceConnection>::Element *E = seq_connections.front(); E; E = E->next()) {
-					undo_redo->add_undo_method(script.ptr(), "sequence_connect", name, E->get().from_node, E->get().from_output, E->get().to_node);
-				}
-
-				List<VisualScript::DataConnection> data_connections;
-
-				script->get_data_connection_list(name, &data_connections);
-
-				for (List<VisualScript::DataConnection>::Element *E = data_connections.front(); E; E = E->next()) {
-					undo_redo->add_undo_method(script.ptr(), "data_connect", name, E->get().from_node, E->get().from_port, E->get().to_node, E->get().to_port);
-				}
-
-				/*
-				for(int i=0;i<script->function_get_argument_count(name);i++) {
-					undo_redo->add_undo_method(script.ptr(),"function_add_argument",name,script->function_get_argument_name(name,i),script->function_get_argument_type(name,i));
-				}
-				*/
-				undo_redo->add_do_method(this, "_update_members");
-				undo_redo->add_undo_method(this, "_update_members");
-				undo_redo->add_do_method(this, "_update_graph");
-				undo_redo->add_undo_method(this, "_update_graph");
-				undo_redo->commit_action();
-
-			} else if (p_button == 0) {
-			}
-			return; //or crash because it will become invalid
-		}
-
-		if (ti->get_parent() == root->get_children()->get_next()) {
-			//edit/remove variable
-
-			String name = ti->get_metadata(0);
-
-			if (p_button == 1) {
-
-				undo_redo->create_action(TTR("Remove Variable"));
-				undo_redo->add_do_method(script.ptr(), "remove_variable", name);
-				undo_redo->add_undo_method(script.ptr(), "add_variable", name, script->get_variable_default_value(name));
-				undo_redo->add_undo_method(script.ptr(), "set_variable_info", name, script->call("get_variable_info", name)); //return as dict
-				undo_redo->add_do_method(this, "_update_members");
-				undo_redo->add_undo_method(this, "_update_members");
-				undo_redo->commit_action();
-				return; //or crash because it will become invalid
-			} else if (p_button == 0) {
-
-				variable_editor->edit(name);
-				edit_variable_dialog->set_title(TTR("Editing Variable:") + " " + name);
-				edit_variable_dialog->popup_centered_minsize(Size2(400, 200) * EDSCALE);
-			}
-		}
-
-		if (ti->get_parent() == root->get_children()->get_next()->get_next()) {
-			//edit/remove variable
-			String name = ti->get_metadata(0);
-
-			if (p_button == 1) {
-
-				undo_redo->create_action(TTR("Remove Signal"));
-				undo_redo->add_do_method(script.ptr(), "remove_custom_signal", name);
-				undo_redo->add_undo_method(script.ptr(), "add_custom_signal", name);
-
-				for (int i = 0; i < script->custom_signal_get_argument_count(name); i++) {
-					undo_redo->add_undo_method(script.ptr(), "custom_signal_add_argument", name, script->custom_signal_get_argument_name(name, i), script->custom_signal_get_argument_type(name, i));
-				}
-
-				undo_redo->add_do_method(this, "_update_members");
-				undo_redo->add_undo_method(this, "_update_members");
-				undo_redo->commit_action();
-			} else if (p_button == 0) {
-
-				signal_editor->edit(name);
-				edit_signal_dialog->set_title(TTR("Editing Signal:") + " " + name);
-				edit_signal_dialog->popup_centered_minsize(Size2(400, 300) * EDSCALE);
-			}
-
 			return; //or crash because it will become invalid
 		}
 	}
@@ -2269,6 +2176,11 @@ void VisualScriptEditor::_change_base_type() {
 	select_base_type->popup_create(true);
 }
 
+void VisualScriptEditor::clear_edit_menu() {
+	memdelete(edit_menu);
+	memdelete(left_vsplit);
+}
+
 void VisualScriptEditor::_change_base_type_callback() {
 
 	String bt = select_base_type->get_selected_type();
@@ -2556,7 +2468,7 @@ VisualScriptNode::TypeGuess VisualScriptEditor::_guess_output_type(int p_node, i
 					if (obj) {
 
 						g.type = Variant::OBJECT;
-						g.GDCLASS = obj->get_class();
+						g.gdclass = obj->get_class();
 						g.script = obj->get_script();
 					}
 				}
@@ -2596,8 +2508,8 @@ void VisualScriptEditor::_port_action_menu(int p_option) {
 			if (tg.type == Variant::OBJECT) {
 				n->set_call_mode(VisualScriptFunctionCall::CALL_MODE_INSTANCE);
 
-				if (tg.GDCLASS != StringName()) {
-					n->set_base_type(tg.GDCLASS);
+				if (tg.gdclass != StringName()) {
+					n->set_base_type(tg.gdclass);
 				} else {
 					n->set_base_type("Object");
 				}
@@ -2627,8 +2539,8 @@ void VisualScriptEditor::_port_action_menu(int p_option) {
 			if (tg.type == Variant::OBJECT) {
 				n->set_call_mode(VisualScriptPropertySet::CALL_MODE_INSTANCE);
 
-				if (tg.GDCLASS != StringName()) {
-					n->set_base_type(tg.GDCLASS);
+				if (tg.gdclass != StringName()) {
+					n->set_base_type(tg.gdclass);
 				} else {
 					n->set_base_type("Object");
 				}
@@ -2657,8 +2569,8 @@ void VisualScriptEditor::_port_action_menu(int p_option) {
 			if (tg.type == Variant::OBJECT) {
 				n->set_call_mode(VisualScriptPropertyGet::CALL_MODE_INSTANCE);
 
-				if (tg.GDCLASS != StringName()) {
-					n->set_base_type(tg.GDCLASS);
+				if (tg.gdclass != StringName()) {
+					n->set_base_type(tg.gdclass);
 				} else {
 					n->set_base_type("Object");
 				}
@@ -2834,12 +2746,17 @@ void VisualScriptEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_READY) {
 		node_filter_icon->set_texture(Control::get_icon("Zoom", "EditorIcons"));
+		variable_editor->connect("changed", this, "_update_members");
+		signal_editor->connect("changed", this, "_update_members");
+	}
+	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
+		left_vsplit->set_visible(is_visible_in_tree());
 	}
 }
 
 void VisualScriptEditor::_graph_ofs_changed(const Vector2 &p_ofs) {
 
-	if (updating_graph)
+	if (updating_graph || !script.is_valid())
 		return;
 
 	updating_graph = true;
@@ -3053,6 +2970,142 @@ void VisualScriptEditor::_menu_option(int p_what) {
 	}
 }
 
+void VisualScriptEditor::_member_rmb_selected(const Vector2 &p_pos) {
+
+	TreeItem *ti = members->get_selected();
+	ERR_FAIL_COND(!ti);
+
+	member_popup->clear();
+	member_popup->set_position(members->get_global_position() + p_pos);
+	member_popup->set_size(Vector2());
+
+	TreeItem *root = members->get_root();
+
+	Ref<Texture> del_icon = Control::get_icon("Del", "EditorIcons");
+
+	Ref<Texture> edit_icon = Control::get_icon("Edit", "EditorIcons");
+
+	if (ti->get_parent() == root->get_children()) {
+
+		member_type = MEMBER_FUNCTION;
+		member_name = ti->get_text(0);
+		member_popup->add_icon_item(del_icon, TTR("Remove Function"), MEMBER_REMOVE);
+		member_popup->popup();
+		return;
+	}
+
+	if (ti->get_parent() == root->get_children()->get_next()) {
+
+		member_type = MEMBER_VARIABLE;
+		member_name = ti->get_text(0);
+		member_popup->add_icon_item(edit_icon, TTR("Edit Variable"), MEMBER_EDIT);
+		member_popup->add_separator();
+		member_popup->add_icon_item(del_icon, TTR("Remove Variable"), MEMBER_REMOVE);
+		member_popup->popup();
+		return;
+	}
+
+	if (ti->get_parent() == root->get_children()->get_next()->get_next()) {
+
+		member_type = MEMBER_SIGNAL;
+		member_name = ti->get_text(0);
+		member_popup->add_icon_item(edit_icon, TTR("Edit Signal"), MEMBER_EDIT);
+		member_popup->add_separator();
+		member_popup->add_icon_item(del_icon, TTR("Remove Signal"), MEMBER_REMOVE);
+		member_popup->popup();
+		return;
+	}
+}
+
+void VisualScriptEditor::_member_option(int p_option) {
+
+	switch (member_type) {
+		case MEMBER_FUNCTION: {
+
+			if (p_option == MEMBER_REMOVE) {
+				//delete the function
+				String name = member_name;
+
+				undo_redo->create_action(TTR("Remove Function"));
+				undo_redo->add_do_method(script.ptr(), "remove_function", name);
+				undo_redo->add_undo_method(script.ptr(), "add_function", name);
+				List<int> nodes;
+				script->get_node_list(name, &nodes);
+				for (List<int>::Element *E = nodes.front(); E; E = E->next()) {
+					undo_redo->add_undo_method(script.ptr(), "add_node", name, E->get(), script->get_node(name, E->get()), script->get_node_pos(name, E->get()));
+				}
+
+				List<VisualScript::SequenceConnection> seq_connections;
+
+				script->get_sequence_connection_list(name, &seq_connections);
+
+				for (List<VisualScript::SequenceConnection>::Element *E = seq_connections.front(); E; E = E->next()) {
+					undo_redo->add_undo_method(script.ptr(), "sequence_connect", name, E->get().from_node, E->get().from_output, E->get().to_node);
+				}
+
+				List<VisualScript::DataConnection> data_connections;
+
+				script->get_data_connection_list(name, &data_connections);
+
+				for (List<VisualScript::DataConnection>::Element *E = data_connections.front(); E; E = E->next()) {
+					undo_redo->add_undo_method(script.ptr(), "data_connect", name, E->get().from_node, E->get().from_port, E->get().to_node, E->get().to_port);
+				}
+
+				/*
+				for(int i=0;i<script->function_get_argument_count(name);i++) {
+					undo_redo->add_undo_method(script.ptr(),"function_add_argument",name,script->function_get_argument_name(name,i),script->function_get_argument_type(name,i));
+				}
+				*/
+				undo_redo->add_do_method(this, "_update_members");
+				undo_redo->add_undo_method(this, "_update_members");
+				undo_redo->add_do_method(this, "_update_graph");
+				undo_redo->add_undo_method(this, "_update_graph");
+				undo_redo->commit_action();
+			}
+		} break;
+		case MEMBER_VARIABLE: {
+
+			String name = member_name;
+
+			if (p_option == MEMBER_REMOVE) {
+				undo_redo->create_action(TTR("Remove Variable"));
+				undo_redo->add_do_method(script.ptr(), "remove_variable", name);
+				undo_redo->add_undo_method(script.ptr(), "add_variable", name, script->get_variable_default_value(name));
+				undo_redo->add_undo_method(script.ptr(), "set_variable_info", name, script->call("get_variable_info", name)); //return as dict
+				undo_redo->add_do_method(this, "_update_members");
+				undo_redo->add_undo_method(this, "_update_members");
+				undo_redo->commit_action();
+			} else if (p_option == MEMBER_EDIT) {
+				variable_editor->edit(name);
+				edit_variable_dialog->set_title(TTR("Editing Variable:") + " " + name);
+				edit_variable_dialog->popup_centered_minsize(Size2(400, 200) * EDSCALE);
+			}
+		} break;
+		case MEMBER_SIGNAL: {
+			String name = member_name;
+
+			if (p_option == MEMBER_REMOVE) {
+				undo_redo->create_action(TTR("Remove Signal"));
+				undo_redo->add_do_method(script.ptr(), "remove_custom_signal", name);
+				undo_redo->add_undo_method(script.ptr(), "add_custom_signal", name);
+
+				for (int i = 0; i < script->custom_signal_get_argument_count(name); i++) {
+					undo_redo->add_undo_method(script.ptr(), "custom_signal_add_argument", name, script->custom_signal_get_argument_name(name, i), script->custom_signal_get_argument_type(name, i));
+				}
+
+				undo_redo->add_do_method(this, "_update_members");
+				undo_redo->add_undo_method(this, "_update_members");
+				undo_redo->commit_action();
+			} else if (p_option == MEMBER_EDIT) {
+
+				signal_editor->edit(name);
+				edit_signal_dialog->set_title(TTR("Editing Signal:") + " " + name);
+				edit_signal_dialog->popup_centered_minsize(Size2(400, 300) * EDSCALE);
+			}
+		} break;
+	}
+}
+
 void VisualScriptEditor::_bind_methods() {
 
 	ClassDB::bind_method("_member_button", &VisualScriptEditor::_member_button);
@@ -3101,6 +3154,10 @@ void VisualScriptEditor::_bind_methods() {
 
 	ClassDB::bind_method("_selected_method", &VisualScriptEditor::_selected_method);
 	ClassDB::bind_method("_draw_color_over_button", &VisualScriptEditor::_draw_color_over_button);
+
+	ClassDB::bind_method("_member_rmb_selected", &VisualScriptEditor::_member_rmb_selected);
+
+	ClassDB::bind_method("_member_option", &VisualScriptEditor::_member_option);
 }
 
 VisualScriptEditor::VisualScriptEditor() {
@@ -3122,17 +3179,16 @@ VisualScriptEditor::VisualScriptEditor() {
 
 	edit_menu->get_popup()->connect("id_pressed", this, "_menu_option");
 
-	main_hsplit = memnew(HSplitContainer);
-	add_child(main_hsplit);
-	main_hsplit->set_area_as_parent_rect();
-
 	left_vsplit = memnew(VSplitContainer);
-	main_hsplit->add_child(left_vsplit);
+	ScriptEditor::get_singleton()->get_left_list_split()->call_deferred("add_child", left_vsplit); //add but wait until done settig up this
+	left_vsplit->set_v_size_flags(SIZE_EXPAND_FILL);
+	left_vsplit->set_stretch_ratio(2);
+	left_vsplit->hide();
 
 	VBoxContainer *left_vb = memnew(VBoxContainer);
 	left_vsplit->add_child(left_vb);
 	left_vb->set_v_size_flags(SIZE_EXPAND_FILL);
-	left_vb->set_custom_minimum_size(Size2(230, 1) * EDSCALE);
+	//left_vb->set_custom_minimum_size(Size2(230, 1) * EDSCALE);
 
 	base_type_select = memnew(Button);
 	left_vb->add_margin_child(TTR("Base Type:"), base_type_select);
@@ -3174,7 +3230,8 @@ VisualScriptEditor::VisualScriptEditor() {
 	nodes->set_drag_forwarding(this);
 
 	graph = memnew(GraphEdit);
-	main_hsplit->add_child(graph);
+	add_child(graph);
+	graph->set_area_as_parent_rect();
 	graph->set_h_size_flags(SIZE_EXPAND_FILL);
 	graph->connect("node_selected", this, "_node_selected");
 	graph->connect("_begin_node_move", this, "_begin_node_move");
@@ -3190,7 +3247,8 @@ VisualScriptEditor::VisualScriptEditor() {
 	select_func_text->set_align(Label::ALIGN_CENTER);
 	select_func_text->set_valign(Label::VALIGN_CENTER);
 	select_func_text->set_h_size_flags(SIZE_EXPAND_FILL);
-	main_hsplit->add_child(select_func_text);
+	add_child(select_func_text);
+	graph->set_area_as_parent_rect();
 
 	hint_text = memnew(Label);
 	hint_text->set_anchor_and_margin(MARGIN_TOP, ANCHOR_END, 100);
@@ -3280,6 +3338,12 @@ VisualScriptEditor::VisualScriptEditor() {
 	port_action_popup = memnew(PopupMenu);
 	add_child(port_action_popup);
 	port_action_popup->connect("id_pressed", this, "_port_action_menu");
+
+	member_popup = memnew(PopupMenu);
+	add_child(member_popup);
+	members->connect("item_rmb_selected", this, "_member_rmb_selected");
+	members->set_allow_rmb_select(true);
+	member_popup->connect("id_pressed", this, "_member_option");
 }
 
 VisualScriptEditor::~VisualScriptEditor() {

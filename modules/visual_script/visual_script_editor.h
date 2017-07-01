@@ -72,14 +72,24 @@ class VisualScriptEditor : public ScriptEditorBase {
 		CREATE_RETURN,
 	};
 
+	enum MemberAction {
+		MEMBER_EDIT,
+		MEMBER_REMOVE
+
+	};
+
+	enum MemberType {
+		MEMBER_FUNCTION,
+		MEMBER_VARIABLE,
+		MEMBER_SIGNAL
+	};
+
+	VSplitContainer *left_vsplit;
 	MenuButton *edit_menu;
 
 	Ref<VisualScript> script;
 
 	Button *base_type_select;
-
-	HSplitContainer *main_hsplit;
-	VSplitContainer *left_vsplit;
 
 	GraphEdit *graph;
 
@@ -154,6 +164,10 @@ class VisualScriptEditor : public ScriptEditorBase {
 	static Clipboard *clipboard;
 
 	PopupMenu *port_action_popup;
+	PopupMenu *member_popup;
+
+	MemberType member_type;
+	String member_name;
 
 	PortAction port_action;
 	int port_action_node;
@@ -223,6 +237,9 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	VisualScriptNode::TypeGuess _guess_output_type(int p_port_action_node, int p_port_action_output, Set<int> &visited_nodes);
 
+	void _member_rmb_selected(const Vector2 &p_pos);
+	void _member_option(int p_option);
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -252,6 +269,7 @@ public:
 	virtual void set_debugger_active(bool p_active);
 	virtual void set_tooltip_request_func(String p_method, Object *p_obj);
 	virtual Control *get_edit_menu();
+	virtual void clear_edit_menu();
 	virtual bool can_lose_focus_on_node_selection() { return false; }
 
 	static void register_editor();

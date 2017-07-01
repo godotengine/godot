@@ -51,6 +51,7 @@ private:
 
 	Ref<Material> material;
 
+	bool first_mesh;
 	bool cache_is_dirty;
 	void _update();
 
@@ -60,7 +61,7 @@ protected:
 	static void _bind_methods();
 
 	virtual void _create_mesh_array(Array &p_arr) = 0;
-	void _queue_update();
+	void _queue_update(bool p_first_mesh = false); //pretty bad hack to have the mesh built firt time parameters are set without delay
 
 	void set_aabb(Rect3 p_aabb);
 

@@ -1093,6 +1093,10 @@ Control *ScriptTextEditor::get_edit_menu() {
 	return edit_hb;
 }
 
+void ScriptTextEditor::clear_edit_menu() {
+	memdelete(edit_hb);
+}
+
 void ScriptTextEditor::reload(bool p_soft) {
 
 	TextEdit *te = code_editor->get_text_edit();

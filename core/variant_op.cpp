@@ -1109,11 +1109,11 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 
 				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
 				Vector2 *v = reinterpret_cast<Vector2 *>(_data._mem);
-				if (*str == "x" || *str == "width") {
+				if (*str == "x") {
 					valid = true;
 					v->x = p_value;
 					return;
-				} else if (*str == "y" || *str == "height") {
+				} else if (*str == "y") {
 					valid = true;
 					v->y = p_value;
 					return;
@@ -1177,7 +1177,7 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 					valid = true;
 					v->elements[1] = p_value;
 					return;
-				} else if (*str == "o") {
+				} else if (*str == "origin") {
 					valid = true;
 					v->elements[2] = p_value;
 					return;
@@ -1572,10 +1572,10 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 
 				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
 				const Vector2 *v = reinterpret_cast<const Vector2 *>(_data._mem);
-				if (*str == "x" || *str == "width") {
+				if (*str == "x") {
 					valid = true;
 					return v->x;
-				} else if (*str == "y" || *str == "height") {
+				} else if (*str == "y") {
 					valid = true;
 					return v->y;
 				}
@@ -1657,7 +1657,7 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 				} else if (*str == "y") {
 					valid = true;
 					return v->elements[1];
-				} else if (*str == "o") {
+				} else if (*str == "origin") {
 					valid = true;
 					return v->elements[2];
 				}
@@ -2105,8 +2105,6 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 
 			p_list->push_back(PropertyInfo(Variant::REAL, "x"));
 			p_list->push_back(PropertyInfo(Variant::REAL, "y"));
-			p_list->push_back(PropertyInfo(Variant::REAL, "width"));
-			p_list->push_back(PropertyInfo(Variant::REAL, "height"));
 
 		} break; // 5
 		case RECT2: {
@@ -2127,7 +2125,7 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 
 			p_list->push_back(PropertyInfo(Variant::VECTOR2, "x"));
 			p_list->push_back(PropertyInfo(Variant::VECTOR2, "y"));
-			p_list->push_back(PropertyInfo(Variant::VECTOR2, "o"));
+			p_list->push_back(PropertyInfo(Variant::VECTOR2, "origin"));
 
 		} break;
 		case PLANE: {

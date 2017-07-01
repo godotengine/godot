@@ -279,6 +279,7 @@ void VisualServerViewport::draw_viewports() {
 		ERR_CONTINUE(!vp->render_target.is_valid());
 
 		bool visible = vp->viewport_to_screen_rect != Rect2() || vp->update_mode == VS::VIEWPORT_UPDATE_ALWAYS || vp->update_mode == VS::VIEWPORT_UPDATE_ONCE || (vp->update_mode == VS::VIEWPORT_UPDATE_WHEN_VISIBLE && VSG::storage->render_target_was_used(vp->render_target));
+		visible = visible && vp->size.x > 0 && vp->size.y > 0;
 
 		if (!visible)
 			continue;

@@ -146,6 +146,21 @@ public:
 
 	};
 
+	enum AssignOp {
+		ASSIGN_OP_NONE,
+		ASSIGN_OP_ADD,
+		ASSIGN_OP_SUB,
+		ASSIGN_OP_MUL,
+		ASSIGN_OP_DIV,
+		ASSIGN_OP_MOD,
+		ASSIGN_OP_SHIFT_LEFT,
+		ASSIGN_OP_SHIFT_RIGHT,
+		ASSIGN_OP_BIT_AND,
+		ASSIGN_OP_BIT_OR,
+		ASSIGN_OP_BIT_XOR,
+		ASSIGN_OP_MAX
+	};
+
 private:
 	PropertyInfo type_cache;
 
@@ -155,6 +170,8 @@ private:
 	String base_script;
 	NodePath base_path;
 	StringName property;
+	StringName index;
+	AssignOp assign_op;
 
 	Node *_get_base_node() const;
 	StringName _get_base_type() const;
@@ -165,6 +182,8 @@ private:
 
 	void _set_type_cache(const Dictionary &p_type);
 	Dictionary _get_type_cache() const;
+
+	void _adjust_input_index(PropertyInfo &pinfo) const;
 
 protected:
 	virtual void _validate_property(PropertyInfo &property) const;
@@ -205,6 +224,12 @@ public:
 	void set_call_mode(CallMode p_mode);
 	CallMode get_call_mode() const;
 
+	void set_index(const StringName &p_type);
+	StringName get_index() const;
+
+	void set_assign_op(AssignOp p_op);
+	AssignOp get_assign_op() const;
+
 	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance);
 	virtual TypeGuess guess_output_type(TypeGuess *p_inputs, int p_output) const;
 
@@ -212,6 +237,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(VisualScriptPropertySet::CallMode);
+VARIANT_ENUM_CAST(VisualScriptPropertySet::AssignOp);
 
 class VisualScriptPropertyGet : public VisualScriptNode {
 
@@ -234,6 +260,7 @@ private:
 	String base_script;
 	NodePath base_path;
 	StringName property;
+	StringName index;
 
 	void _update_base_type();
 	Node *_get_base_node() const;
@@ -282,6 +309,9 @@ public:
 
 	void set_call_mode(CallMode p_mode);
 	CallMode get_call_mode() const;
+
+	void set_index(const StringName &p_type);
+	StringName get_index() const;
 
 	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance);
 

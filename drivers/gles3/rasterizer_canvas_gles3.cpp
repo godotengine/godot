@@ -348,6 +348,53 @@ void RasterizerCanvasGLES3::_draw_polygon(const int *p_indices, int p_index_coun
 	glBindVertexArray(0);
 }
 
+void RasterizerCanvasGLES3::_draw_generic(GLuint p_primitive, int p_vertex_count, const Vector2 *p_vertices, const Vector2 *p_uvs, const Color *p_colors, bool p_singlecolor) {
+
+	glBindVertexArray(data.polygon_buffer_pointer_array);
+	glBindBuffer(GL_ARRAY_BUFFER, data.polygon_buffer);
+
+	uint32_t buffer_ofs = 0;
+
+	//vertex
+	glBufferSubData(GL_ARRAY_BUFFER, buffer_ofs, sizeof(Vector2) * p_vertex_count, p_vertices);
+	glEnableVertexAttribArray(VS::ARRAY_VERTEX);
+	glVertexAttribPointer(VS::ARRAY_VERTEX, 2, GL_FLOAT, false, sizeof(Vector2), ((uint8_t *)0) + buffer_ofs);
+	buffer_ofs += sizeof(Vector2) * p_vertex_count;
+	//color
+
+	if (p_singlecolor) {
+		glDisableVertexAttribArray(VS::ARRAY_COLOR);
+		Color m = *p_colors;
+		glVertexAttrib4f(VS::ARRAY_COLOR, m.r, m.g, m.b, m.a);
+	} else if (!p_colors) {
+		glDisableVertexAttribArray(VS::ARRAY_COLOR);
+		glVertexAttrib4f(VS::ARRAY_COLOR, 1, 1, 1, 1);
+	} else {
+
+		glBufferSubData(GL_ARRAY_BUFFER, buffer_ofs, sizeof(Color) * p_vertex_count, p_colors);
+		glEnableVertexAttribArray(VS::ARRAY_COLOR);
+		glVertexAttribPointer(VS::ARRAY_COLOR, 4, GL_FLOAT, false, sizeof(Color), ((uint8_t *)0) + buffer_ofs);
+		buffer_ofs += sizeof(Color) * p_vertex_count;
+	}
+
+	if (p_uvs) {
+
+		glBufferSubData(GL_ARRAY_BUFFER, buffer_ofs, sizeof(Vector2) * p_vertex_count, p_uvs);
+		glEnableVertexAttribArray(VS::ARRAY_TEX_UV);
+		glVertexAttribPointer(VS::ARRAY_TEX_UV, 2, GL_FLOAT, false, sizeof(Vector2), ((uint8_t *)0) + buffer_ofs);
+		buffer_ofs += sizeof(Vector2) * p_vertex_count;
+
+	} else {
+		glDisableVertexAttribArray(VS::ARRAY_TEX_UV);
+	}
+
+	glDrawArrays(p_primitive, 0, p_vertex_count);
+
+	storage->frame.canvas_draw_commands++;
+
+	glBindVertexArray(0);
+}
+
 void RasterizerCanvasGLES3::_draw_gui_primitive(int p_points, const Vector2 *p_vertices, const Color *p_colors, const Vector2 *p_uvs) {
 
 	static const GLenum prim[5] = { GL_POINTS, GL_POINTS, GL_LINES, GL_TRIANGLES, GL_TRIANGLE_FAN };
@@ -425,22 +472,83 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 
 				glVertexAttrib4f(VS::ARRAY_COLOR, line->color.r, line->color.g, line->color.b, line->color.a);
 
-				Vector2 verts[2] = {
-					Vector2(line->from.x, line->from.y),
-					Vector2(line->to.x, line->to.y)
-				};
+				if (line->width <= 1) {
+					Vector2 verts[2] = {
+						Vector2(line->from.x, line->from.y),
+						Vector2(line->to.x, line->to.y)
+					};
 
 #ifdef GLES_OVER_GL
-				if (line->antialiased)
-					glEnable(GL_LINE_SMOOTH);
+					if (line->antialiased)
+						glEnable(GL_LINE_SMOOTH);
 #endif
-				//glLineWidth(line->width);
-				_draw_gui_primitive(2, verts, NULL, NULL);
+					//glLineWidth(line->width);
+					_draw_gui_primitive(2, verts, NULL, NULL);
 
 #ifdef GLES_OVER_GL
-				if (line->antialiased)
+					if (line->antialiased)
+						glDisable(GL_LINE_SMOOTH);
+#endif
+				} else {
+					//thicker line
+
+					Vector2 t = (line->from - line->to).normalized().tangent() * line->width * 0.5;
+
+					Vector2 verts[4] = {
+						line->from - t,
+						line->from + t,
+						line->to + t,
+						line->to - t,
+					};
+
+					//glLineWidth(line->width);
+					_draw_gui_primitive(4, verts, NULL, NULL);
+#ifdef GLES_OVER_GL
+					if (line->antialiased) {
+						glEnable(GL_LINE_SMOOTH);
+						for (int i = 0; i < 4; i++) {
+							Vector2 vertsl[2] = {
+								verts[i],
+								verts[(i + 1) % 4],
+							};
+							_draw_gui_primitive(2, vertsl, NULL, NULL);
+						}
+						glDisable(GL_LINE_SMOOTH);
+					}
+#endif
+				}
+
+			} break;
+			case Item::Command::TYPE_POLYLINE: {
+
+				Item::CommandPolyLine *pline = static_cast<Item::CommandPolyLine *>(c);
+				_set_texture_rect_mode(false);
+
+				_bind_canvas_texture(RID(), RID());
+
+				if (pline->triangles.size()) {
+
+					_draw_generic(GL_TRIANGLE_STRIP, pline->triangles.size(), pline->triangles.ptr(), NULL, pline->triangle_colors.ptr(), pline->triangle_colors.size() == 1);
+#ifdef GLES_OVER_GL
+					glEnable(GL_LINE_SMOOTH);
+					if (pline->lines.size()) {
+						_draw_generic(GL_LINE_LOOP, pline->lines.size(), pline->lines.ptr(), NULL, pline->line_colors.ptr(), pline->line_colors.size() == 1);
+					}
 					glDisable(GL_LINE_SMOOTH);
 #endif
+				} else {
+
+#ifdef GLES_OVER_GL
+					if (pline->antialiased)
+						glEnable(GL_LINE_SMOOTH);
+#endif
+					_draw_generic(GL_LINE_STRIP, pline->lines.size(), pline->lines.ptr(), NULL, pline->line_colors.ptr(), pline->line_colors.size() == 1);
+
+#ifdef GLES_OVER_GL
+					if (pline->antialiased)
+						glDisable(GL_LINE_SMOOTH);
+#endif
+				}
 
 			} break;
 			case Item::Command::TYPE_RECT: {

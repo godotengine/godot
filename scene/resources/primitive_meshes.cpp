@@ -53,7 +53,15 @@ void PrimitiveMesh::_update() {
 	emit_changed();
 }
 
-void PrimitiveMesh::_queue_update() {
+void PrimitiveMesh::_queue_update(bool p_first_mesh) {
+
+	if (first_mesh && p_first_mesh) {
+		first_mesh = false;
+		cache_is_dirty = true;
+		_update();
+		return;
+	}
+
 	if (!cache_is_dirty) {
 		cache_is_dirty = true;
 		call_deferred("_update");
@@ -145,6 +153,7 @@ PrimitiveMesh::PrimitiveMesh() {
 
 	// make sure we do an update after we've finished constructing our object
 	cache_is_dirty = false;
+	first_mesh = true;
 	_queue_update();
 }
 
@@ -350,7 +359,7 @@ int CapsuleMesh::get_radial_segments() const {
 
 void CapsuleMesh::set_rings(const int p_rings) {
 	rings = p_rings > 1 ? p_rings : 1;
-	_queue_update();
+	_queue_update(true); //last property set, force update mesh
 }
 
 int CapsuleMesh::get_rings() const {
@@ -608,7 +617,7 @@ int CubeMesh::get_subdivide_height() const {
 
 void CubeMesh::set_subdivide_depth(const int p_subdivide) {
 	subdivide_d = p_subdivide > 0 ? p_subdivide : 0;
-	_queue_update();
+	_queue_update(true); //last property set, force update mesh
 }
 
 int CubeMesh::get_subdivide_depth() const {
@@ -825,7 +834,7 @@ int CylinderMesh::get_radial_segments() const {
 
 void CylinderMesh::set_rings(const int p_rings) {
 	rings = p_rings > 0 ? p_rings : 0;
-	_queue_update();
+	_queue_update(true); //last property set, force update mesh
 }
 
 int CylinderMesh::get_rings() const {
@@ -942,7 +951,7 @@ int PlaneMesh::get_subdivide_width() const {
 
 void PlaneMesh::set_subdivide_depth(const int p_subdivide) {
 	subdivide_d = p_subdivide > 0 ? p_subdivide : 0;
-	_queue_update();
+	_queue_update(true); //last property set, force update mesh
 }
 
 int PlaneMesh::get_subdivide_depth() const {
@@ -1232,7 +1241,7 @@ int PrismMesh::get_subdivide_height() const {
 
 void PrismMesh::set_subdivide_depth(const int p_divisions) {
 	subdivide_d = p_divisions > 0 ? p_divisions : 0;
-	_queue_update();
+	_queue_update(true); //last property set, force update mesh
 }
 
 int PrismMesh::get_subdivide_depth() const {
@@ -1301,6 +1310,7 @@ void QuadMesh::_bind_methods() {
 
 QuadMesh::QuadMesh() {
 	primitive_type = PRIMITIVE_TRIANGLE_FAN;
+	_queue_update(true);
 }
 
 /**
@@ -1437,7 +1447,7 @@ int SphereMesh::get_rings() const {
 
 void SphereMesh::set_is_hemisphere(const bool p_is_hemisphere) {
 	is_hemisphere = p_is_hemisphere;
-	_queue_update();
+	_queue_update(true); //last property set, force update mesh
 }
 
 bool SphereMesh::get_is_hemisphere() const {

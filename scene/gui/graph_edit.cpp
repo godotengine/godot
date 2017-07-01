@@ -568,7 +568,7 @@ static _FORCE_INLINE_ Vector2 _bezier_interp(real_t t, Vector2 start, Vector2 co
 	return start * omt3 + control_1 * omt2 * t * 3.0 + control_2 * omt * t2 * 3.0 + end * t3;
 }
 
-void GraphEdit::_bake_segment2d(CanvasItem *p_where, float p_begin, float p_end, const Vector2 &p_a, const Vector2 &p_out, const Vector2 &p_b, const Vector2 &p_in, int p_depth, int p_min_depth, int p_max_depth, float p_tol, const Color &p_color, const Color &p_to_color, int &lines) const {
+void GraphEdit::_bake_segment2d(Vector<Vector2> &points, Vector<Color> &colors, float p_begin, float p_end, const Vector2 &p_a, const Vector2 &p_out, const Vector2 &p_b, const Vector2 &p_in, int p_depth, int p_min_depth, int p_max_depth, float p_tol, const Color &p_color, const Color &p_to_color, int &lines) const {
 
 	float mp = p_begin + (p_end - p_begin) * 0.5;
 	Vector2 beg = _bezier_interp(p_begin, p_a, p_a + p_out, p_b + p_in, p_b);
@@ -581,11 +581,12 @@ void GraphEdit::_bake_segment2d(CanvasItem *p_where, float p_begin, float p_end,
 
 	if (p_depth >= p_min_depth && (dp < p_tol || p_depth >= p_max_depth)) {
 
-		p_where->draw_line(beg, end, p_color.linear_interpolate(p_to_color, mp), 2, true);
+		points.push_back((beg + end) * 0.5);
+		colors.push_back(p_color.linear_interpolate(p_to_color, mp));
 		lines++;
 	} else {
-		_bake_segment2d(p_where, p_begin, mp, p_a, p_out, p_b, p_in, p_depth + 1, p_min_depth, p_max_depth, p_tol, p_color, p_to_color, lines);
-		_bake_segment2d(p_where, mp, p_end, p_a, p_out, p_b, p_in, p_depth + 1, p_min_depth, p_max_depth, p_tol, p_color, p_to_color, lines);
+		_bake_segment2d(points, colors, p_begin, mp, p_a, p_out, p_b, p_in, p_depth + 1, p_min_depth, p_max_depth, p_tol, p_color, p_to_color, lines);
+		_bake_segment2d(points, colors, mp, p_end, p_a, p_out, p_b, p_in, p_depth + 1, p_min_depth, p_max_depth, p_tol, p_color, p_to_color, lines);
 	}
 }
 
@@ -609,7 +610,16 @@ void GraphEdit::_draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const
 	Vector2 c2 = Vector2(-cp_offset * zoom, 0);
 
 	int lines = 0;
-	_bake_segment2d(p_where, 0, 1, p_from, c1, p_to, c2, 0, 3, 9, 8, p_color, p_to_color, lines);
+
+	Vector<Point2> points;
+	Vector<Color> colors;
+	points.push_back(p_from);
+	colors.push_back(p_color);
+	_bake_segment2d(points, colors, 0, 1, p_from, c1, p_to, c2, 0, 3, 9, 8, p_color, p_to_color, lines);
+	points.push_back(p_to);
+	colors.push_back(p_to_color);
+
+	p_where->draw_polyline_colors(points, colors, 2, true);
 
 #else
 

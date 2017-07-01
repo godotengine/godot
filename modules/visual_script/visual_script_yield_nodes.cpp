@@ -419,13 +419,13 @@ VisualScriptYieldSignal::CallMode VisualScriptYieldSignal::get_call_mode() const
 
 void VisualScriptYieldSignal::_validate_property(PropertyInfo &property) const {
 
-	if (property.name == "signal/base_type") {
+	if (property.name == "base_type") {
 		if (call_mode != CALL_MODE_INSTANCE) {
 			property.usage = PROPERTY_USAGE_NOEDITOR;
 		}
 	}
 
-	if (property.name == "signal/node_path") {
+	if (property.name == "node_path") {
 		if (call_mode != CALL_MODE_NODE_PATH) {
 			property.usage = 0;
 		} else {
@@ -438,7 +438,7 @@ void VisualScriptYieldSignal::_validate_property(PropertyInfo &property) const {
 		}
 	}
 
-	if (property.name == "signal/signal") {
+	if (property.name == "signal") {
 		property.hint = PROPERTY_HINT_ENUM;
 
 		List<MethodInfo> methods;
@@ -488,10 +488,10 @@ void VisualScriptYieldSignal::_bind_methods() {
 		bt += Variant::get_type_name(Variant::Type(i));
 	}
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "signal/call_mode", PROPERTY_HINT_ENUM, "Self,Node Path,Instance"), "set_call_mode", "get_call_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "signal/base_type", PROPERTY_HINT_TYPE_STRING, "Object"), "set_base_type", "get_base_type");
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "signal/node_path", PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE), "set_base_path", "get_base_path");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "signal/signal"), "set_signal", "get_signal");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "call_mode", PROPERTY_HINT_ENUM, "Self,Node Path,Instance"), "set_call_mode", "get_call_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "base_type", PROPERTY_HINT_TYPE_STRING, "Object"), "set_base_type", "get_base_type");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "node_path", PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE), "set_base_path", "get_base_path");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "signal"), "set_signal", "get_signal");
 
 	BIND_CONSTANT(CALL_MODE_SELF);
 	BIND_CONSTANT(CALL_MODE_NODE_PATH);

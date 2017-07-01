@@ -156,7 +156,7 @@ public:
 	virtual void set_debugger_active(bool p_active);
 
 	Control *get_edit_menu();
-
+	virtual void clear_edit_menu();
 	static void register_editor();
 
 	ScriptTextEditor();

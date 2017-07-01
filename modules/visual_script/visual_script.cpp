@@ -140,7 +140,7 @@ VisualScriptNode::TypeGuess VisualScriptNode::guess_output_type(TypeGuess *p_inp
 
 	tg.type = pinfo.type;
 	if (pinfo.hint == PROPERTY_HINT_RESOURCE_TYPE) {
-		tg.GDCLASS = pinfo.hint_string;
+		tg.gdclass = pinfo.hint_string;
 	}
 
 	return tg;
@@ -660,6 +660,9 @@ void VisualScript::set_variable_export(const StringName &p_name, bool p_export) 
 	ERR_FAIL_COND(!variables.has(p_name));
 
 	variables[p_name]._export = p_export;
+#ifdef TOOLS_ENABLED
+	_update_placeholders();
+#endif
 }
 
 bool VisualScript::get_variable_export(const StringName &p_name) const {
@@ -1067,9 +1070,11 @@ void VisualScript::get_script_property_list(List<PropertyInfo> *p_list) const {
 	get_variable_list(&vars);
 
 	for (List<StringName>::Element *E = vars.front(); E; E = E->next()) {
-		if (!variables[E->get()]._export)
-			continue;
-		p_list->push_back(variables[E->get()].info);
+		//if (!variables[E->get()]._export)
+		//	continue;
+		PropertyInfo pi = variables[E->get()].info;
+		pi.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
+		p_list->push_back(pi);
 	}
 }
 
@@ -1358,6 +1363,7 @@ void VisualScriptInstance::get_property_list(List<PropertyInfo> *p_properties) c
 			continue;
 		PropertyInfo p = E->get().info;
 		p.name = String(E->key());
+		p.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
 		p_properties->push_back(p);
 	}
 }

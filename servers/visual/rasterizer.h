@@ -612,6 +612,7 @@ public:
 			enum Type {
 
 				TYPE_LINE,
+				TYPE_POLYLINE,
 				TYPE_RECT,
 				TYPE_NINEPATCH,
 				TYPE_PRIMITIVE,
@@ -635,6 +636,18 @@ public:
 			float width;
 			bool antialiased;
 			CommandLine() { type = TYPE_LINE; }
+		};
+		struct CommandPolyLine : public Command {
+
+			bool antialiased;
+			Vector<Point2> triangles;
+			Vector<Color> triangle_colors;
+			Vector<Point2> lines;
+			Vector<Color> line_colors;
+			CommandPolyLine() {
+				type = TYPE_POLYLINE;
+				antialiased = false;
+			}
 		};
 
 		struct CommandRect : public Command {
@@ -814,6 +827,31 @@ public:
 						const Item::CommandLine *line = static_cast<const Item::CommandLine *>(c);
 						r.position = line->from;
 						r.expand_to(line->to);
+					} break;
+					case Item::Command::TYPE_POLYLINE: {
+
+						const Item::CommandPolyLine *pline = static_cast<const Item::CommandPolyLine *>(c);
+						if (pline->triangles.size()) {
+							for (int j = 0; j < pline->triangles.size(); j++) {
+
+								if (j == 0) {
+									r.position = pline->triangles[j];
+								} else {
+									r.expand_to(pline->triangles[j]);
+								}
+							}
+						} else {
+
+							for (int j = 0; j < pline->lines.size(); j++) {
+
+								if (j == 0) {
+									r.position = pline->lines[j];
+								} else {
+									r.expand_to(pline->lines[j]);
+								}
+							}
+						}
+
 					} break;
 					case Item::Command::TYPE_RECT: {
 

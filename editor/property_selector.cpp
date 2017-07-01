@@ -167,7 +167,7 @@ void PropertySelector::_update_search() {
 				continue;
 			}
 
-			if (!(E->get().usage & PROPERTY_USAGE_EDITOR))
+			if (!(E->get().usage & PROPERTY_USAGE_EDITOR) && !(E->get().usage & PROPERTY_USAGE_SCRIPT_VARIABLE))
 				continue;
 
 			if (search_box->get_text() != String() && E->get().name.find(search_box->get_text()) == -1)

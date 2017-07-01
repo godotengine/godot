@@ -30,6 +30,7 @@
 #include "visual_script_flow_control.h"
 
 #include "global_config.h"
+#include "io/resource_loader.h"
 #include "os/keyboard.h"
 
 //////////////////////////////////////////
@@ -119,8 +120,8 @@ void VisualScriptReturn::_bind_methods() {
 		argt += "," + Variant::get_type_name(Variant::Type(i));
 	}
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "return_value/enabled"), "set_enable_return_value", "is_return_value_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "return_value/type", PROPERTY_HINT_ENUM, argt), "set_return_type", "get_return_type");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "return_enabled"), "set_enable_return_value", "is_return_value_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "return_type", PROPERTY_HINT_ENUM, argt), "set_return_type", "get_return_type");
 }
 
 class VisualScriptNodeInstanceReturn : public VisualScriptNodeInstance {
@@ -1725,6 +1726,20 @@ String VisualScriptTypeCast::get_base_script() const {
 	return script;
 }
 
+VisualScriptTypeCast::TypeGuess VisualScriptTypeCast::guess_output_type(TypeGuess *p_inputs, int p_output) const {
+
+	TypeGuess tg;
+	tg.type = Variant::OBJECT;
+	if (script != String()) {
+		tg.script = ResourceLoader::load(script);
+	}
+	//if (!tg.script.is_valid()) {
+	//	tg.gdclass = base_type;
+	//}
+
+	return tg;
+}
+
 class VisualScriptNodeInstanceTypeCast : public VisualScriptNodeInstance {
 public:
 	VisualScriptInstance *instance;
@@ -1815,8 +1830,8 @@ void VisualScriptTypeCast::_bind_methods() {
 		script_ext_hint += "*." + E->get();
 	}
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "function/base_type", PROPERTY_HINT_TYPE_STRING, "Object"), "set_base_type", "get_base_type");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "property/base_script", PROPERTY_HINT_FILE, script_ext_hint), "set_base_script", "get_base_script");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "base_type", PROPERTY_HINT_TYPE_STRING, "Object"), "set_base_type", "get_base_type");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "base_script", PROPERTY_HINT_FILE, script_ext_hint), "set_base_script", "get_base_script");
 }
 
 VisualScriptTypeCast::VisualScriptTypeCast() {

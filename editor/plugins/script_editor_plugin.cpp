@@ -509,9 +509,8 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save) {
 		if (p_save) {
 			apply_scripts();
 		}
-		if (current->get_edit_menu()) {
-			memdelete(current->get_edit_menu());
-		}
+		current->clear_edit_menu();
+
 	} else {
 		EditorHelp *help = tab_container->get_child(selected)->cast_to<EditorHelp>();
 		_add_recent_script(help->get_class());
@@ -2180,13 +2179,15 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	script_list = memnew(ItemList);
 	list_split->add_child(script_list);
-	script_list->set_custom_minimum_size(Size2(0, 0));
+	script_list->set_custom_minimum_size(Size2(150 * EDSCALE, 100)); //need to give a bit of limit to avoid it from disappearing
+	script_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	script_split->set_split_offset(140);
-	list_split->set_split_offset(500);
+	//list_split->set_split_offset(500);
 
 	members_overview = memnew(ItemList);
 	list_split->add_child(members_overview);
-	members_overview->set_custom_minimum_size(Size2(0, 0));
+	members_overview->set_custom_minimum_size(Size2(0, 100)); //need to give a bit of limit to avoid it from disappearing
+	members_overview->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	tab_container = memnew(TabContainer);
 	tab_container->add_style_override("panel", p_editor->get_gui_base()->get_stylebox("ScriptPanel", "EditorStyles"));
