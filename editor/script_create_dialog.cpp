@@ -225,10 +225,8 @@ void ScriptCreateDialog::_browse_path() {
 	file_browse->clear_filters();
 	List<String> extensions;
 
-	// get all possible extensions for script
-	for (int l = 0; l < language_menu->get_item_count(); l++) {
-		ScriptServer::get_language(l)->get_recognized_extensions(&extensions);
-	}
+	int lang = language_menu->get_selected();
+	ScriptServer::get_language(lang)->get_recognized_extensions(&extensions);
 
 	for (List<String>::Element *E = extensions.front(); E; E = E->next()) {
 		file_browse->add_filter("*." + E->get());
