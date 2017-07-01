@@ -90,10 +90,9 @@ void TileSetEditor::_import_node(Node *p_node, Ref<TileSet> p_library) {
 			phys_offset += -s / 2;
 		}
 
-		Vector<TileSet::ShapeData> collisions;
+		Vector<Ref<Shape2D> > collisions;
 		Ref<NavigationPolygon> nav_poly;
 		Ref<OccluderPolygon2D> occluder;
-		bool found_collisions = false;
 
 		for (int j = 0; j < mi->get_child_count(); j++) {
 
@@ -107,36 +106,22 @@ void TileSetEditor::_import_node(Node *p_node, Ref<TileSet> p_library) {
 
 			if (!child2->cast_to<StaticBody2D>())
 				continue;
-
-			found_collisions = true;
-
 			StaticBody2D *sb = child2->cast_to<StaticBody2D>();
 
 			List<uint32_t> shapes;
 			sb->get_shape_owners(&shapes);
 
 			for (List<uint32_t>::Element *E = shapes.front(); E; E = E->next()) {
-				if (sb->is_shape_owner_disabled(E->get())) continue;
 
-				Transform2D shape_transform = sb->shape_owner_get_transform(E->get());
+				Vector2 shape_offset = sb->shape_owner_get_transform(E->get()).get_origin();
 				bool one_way = sb->is_shape_owner_one_way_collision_enabled(E->get());
-
-				shape_transform.set_origin(shape_transform.get_origin() - phys_offset);
 
 				for (int k = 0; k < sb->shape_owner_get_shape_count(E->get()); k++) {
 
-					Ref<Shape2D> shape = sb->shape_owner_get_shape(E->get(), k);
-					TileSet::ShapeData shape_data;
-					shape_data.shape = shape;
-					shape_data.shape_transform = shape_transform;
-					shape_data.one_way_collision = one_way;
-					collisions.push_back(shape_data);
+					Ref<Shape> shape = sb->shape_owner_get_shape(E->get(), k);
+					p_library->tile_add_shape(id, shape, shape_offset, one_way);
 				}
 			}
-		}
-
-		if (found_collisions) {
-			p_library->tile_set_shapes(id, collisions);
 		}
 
 		p_library->tile_set_texture_offset(id, mi->get_offset());
