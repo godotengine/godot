@@ -57,7 +57,11 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 		tile_set_region(id, p_value);
 	else if (what == "shape")
 		tile_set_shape(id, 0, p_value);
-	else if (what == "shape_transform")
+	else if (what == "shape_offset") {
+		Transform2D xform = tile_get_shape_transform(id, 0);
+		xform.set_origin(p_value);
+		tile_set_shape_transform(id, 0, xform);
+	} else if (what == "shape_transform")
 		tile_set_shape_transform(id, 0, p_value);
 	else if (what == "shape_one_way")
 		tile_set_shape_one_way(id, 0, p_value);
@@ -105,6 +109,8 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 		r_ret = tile_get_region(id);
 	else if (what == "shape")
 		r_ret = tile_get_shape(id, 0);
+	else if (what == "shape_offset")
+		r_ret = tile_get_shape_transform(id, 0).get_origin();
 	else if (what == "shape_transform")
 		r_ret = tile_get_shape_transform(id, 0);
 	else if (what == "shape_one_way")
@@ -142,6 +148,7 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::OBJECT, pre + "occluder", PROPERTY_HINT_RESOURCE_TYPE, "OccluderPolygon2D"));
 		p_list->push_back(PropertyInfo(Variant::VECTOR2, pre + "navigation_offset"));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, pre + "navigation", PROPERTY_HINT_RESOURCE_TYPE, "NavigationPolygon"));
+		p_list->push_back(PropertyInfo(Variant::VECTOR2, pre + "shape_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
 		p_list->push_back(PropertyInfo(Variant::VECTOR2, pre + "shape_transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, pre + "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape2D", PROPERTY_USAGE_EDITOR));
 		p_list->push_back(PropertyInfo(Variant::BOOL, pre + "shape_one_way", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
