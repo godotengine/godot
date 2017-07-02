@@ -134,7 +134,8 @@ public:
 		TK_ERROR,
 		TK_EOF,
 		TK_CURSOR, //used for code completion
-		TK_MAX
+		TK_MAX,
+		TK_ANNOTATION
 	};
 
 protected:

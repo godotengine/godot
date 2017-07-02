@@ -508,6 +508,8 @@ private:
 	void _parse_block(BlockNode *p_block, bool p_static);
 	void _parse_extends(ClassNode *p_class);
 	void _parse_class(ClassNode *p_class);
+	bool _is_keyword();
+	bool _is_valid_annotation(bool is_block_mode);
 	bool _end_statement();
 
 	Error _parse(const String &p_base_path);
