@@ -472,7 +472,7 @@ void SceneTreeEditor::_node_visibility_changed(Node *p_node) {
 void SceneTreeEditor::_update_visibility_color(Node *p_node, TreeItem *p_item) {
 	if (p_node->is_class("CanvasItem") || p_node->is_class("Spatial")) {
 		Color color(1, 1, 1, 1);
-		bool visible_on_screen = p_node->call("is_visible");
+		bool visible_on_screen = p_node->call("is_visible_in_tree");
 		if (!visible_on_screen) {
 			color = Color(0.6, 0.6, 0.6, 1);
 		}
