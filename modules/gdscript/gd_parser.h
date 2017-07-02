@@ -67,6 +67,10 @@ public:
 		virtual ~Node() {}
 	};
 
+	struct AnnotationNode : public Node {
+		StringName name;
+	};
+
 	struct FunctionNode;
 	struct BlockNode;
 

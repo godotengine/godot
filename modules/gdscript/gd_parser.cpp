@@ -92,17 +92,26 @@ bool GDParser:: _is_keyword() {
 			return false;
 	}
 }
+
 bool GDParser::_is_valid_annotation(bool is_block_mode) {
-	bool allow_keywords = false;
+	const bool allow_keywords = false;
+
+	AnnotationNode *annotation = alloc_node<AnnotationNode>();
 
 	if ((tokenizer->get_token(1) == GDTokenizer::TK_IDENTIFIER) || (allow_keywords && _is_keyword())) {
 		tokenizer->advance();
+
+		annotation->name = StringName(tokenizer->get_token_identifier()) ;
+
 		while ((tokenizer->get_token(1) == GDTokenizer::TK_CONSTANT)
 			|| (tokenizer->get_token(1) == GDTokenizer::TK_CONST_INF)
 			|| (tokenizer->get_token(1) == GDTokenizer::TK_CONST_NAN)
 			|| (tokenizer->get_token(1) == GDTokenizer::TK_CONST_PI)
 			|| (tokenizer->get_token(1) == GDTokenizer::TK_IDENTIFIER)
-			|| (tokenizer->get_token(1) == GDTokenizer::TK_BUILT_IN_TYPE)) tokenizer->advance();
+			|| (tokenizer->get_token(1) == GDTokenizer::TK_BUILT_IN_TYPE)) {
+
+			tokenizer->advance();
+		}
 
 		if ((tokenizer->get_token(1) == GDTokenizer::TK_NEWLINE) || (tokenizer->get_token() == GDTokenizer::TK_EOF)) {
 			if (is_block_mode) {
