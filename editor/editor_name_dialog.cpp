@@ -85,7 +85,6 @@ EditorNameDialog::EditorNameDialog() {
 	add_child(makevb);
 	name = memnew(LineEdit);
 	makevb->add_child(name);
-	makevb->move_child(name, get_label()->get_index() + 1);
 	name->set_margin(MARGIN_TOP, 5);
 	name->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 5);
 	name->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 5);
