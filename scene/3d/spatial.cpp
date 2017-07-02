@@ -547,10 +547,7 @@ void Spatial::show() {
 	if (!is_inside_tree())
 		return;
 
-	if (!data.parent || is_visible()) {
-
-		_propagate_visibility_changed();
-	}
+	_propagate_visibility_changed();
 }
 
 void Spatial::hide() {
@@ -558,14 +555,14 @@ void Spatial::hide() {
 	if (!data.visible)
 		return;
 
-	bool was_visible = is_visible();
 	data.visible = false;
 
-	if (!data.parent || was_visible) {
+	if (!is_inside_tree())
+		return;
 
-		_propagate_visibility_changed();
-	}
+	_propagate_visibility_changed();
 }
+
 bool Spatial::is_visible() const {
 
 	const Spatial *s = this;
