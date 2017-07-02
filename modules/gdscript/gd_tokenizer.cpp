@@ -553,7 +553,7 @@ void GDTokenizerText::_advance() {
 				if (_is_text_char(GETCHAR(1))) {
 					_make_token(TK_ANNOTATION);
 					break;
-				}else if (CharType(GETCHAR(1)) != '"' && CharType(GETCHAR(1)) != '\'') {
+				} else if (CharType(GETCHAR(1)) != '"' && CharType(GETCHAR(1)) != '\'') {
 					_make_error("Unexpected '@'");
 				}
 				INCPOS(1);

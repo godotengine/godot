@@ -94,7 +94,6 @@ bool GDParser:: _is_keyword() {
 }
 bool GDParser::_is_valid_annotation(bool is_block_mode) {
 	bool allow_keywords = false;
-	//tokenizer->advance();
 
 	if ((tokenizer->get_token(1) == GDTokenizer::TK_IDENTIFIER) || (allow_keywords && _is_keyword())) {
 		tokenizer->advance();
@@ -106,8 +105,8 @@ bool GDParser::_is_valid_annotation(bool is_block_mode) {
 			|| (tokenizer->get_token(1) == GDTokenizer::TK_BUILT_IN_TYPE)) tokenizer->advance();
 
 		if ((tokenizer->get_token(1) == GDTokenizer::TK_NEWLINE) || (tokenizer->get_token() == GDTokenizer::TK_EOF)) {
-			if(is_block_mode) {
-				if(tokenizer->get_token(2) != GDTokenizer::TK_PR_VAR) {
+			if (is_block_mode) {
+				if (tokenizer->get_token(2) != GDTokenizer::TK_PR_VAR) {
 					_set_error("Invalid annotation: annotations can only be inserted before 'var' declaration.");
 					return false;
 				}
@@ -121,7 +120,7 @@ bool GDParser::_is_valid_annotation(bool is_block_mode) {
 		}
 	} else {
 		tokenizer->advance();
-		if((!allow_keywords)  && _is_keyword()) {
+		if ((!allow_keywords) && _is_keyword()) {
 			_set_error("Invalid annotation: keywords are not allowed as annotation names.");
 		} else {
 			_set_error("Invalid annotation: expected identifier.");
@@ -2406,7 +2405,7 @@ void GDParser::_parse_block(BlockNode *p_block, bool p_static) {
 
 			} break;
 			case GDTokenizer::TK_ANNOTATION: {
-				if(!_is_valid_annotation(true)) {
+				if (!_is_valid_annotation(true)) {
 					return;
 				}
 			} break;
