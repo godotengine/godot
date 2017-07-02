@@ -80,11 +80,12 @@ void EditorNameDialog::_bind_methods() {
 
 EditorNameDialog::EditorNameDialog() {
 	makevb = memnew(VBoxContainer);
+	makevb->set_margin(MARGIN_TOP, 5);
+	makevb->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 5);
+	makevb->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 5);
 	add_child(makevb);
+
 	name = memnew(LineEdit);
 	makevb->add_child(name);
-	name->set_margin(MARGIN_TOP, 5);
-	name->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 5);
-	name->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 5);
 	name->connect("input_event", this, "_line_input_event");
 }
