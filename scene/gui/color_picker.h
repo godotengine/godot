@@ -79,7 +79,7 @@ private:
 	void _update_text_value();
 	void _text_type_toggled();
 	void _sample_draw();
-	void _hsv_draw(int p_wich, Control *c);
+	void _hsv_draw(int p_which, Control *c);
 
 	void _uv_input(const Ref<InputEvent> &p_input);
 	void _w_input(const Ref<InputEvent> &p_input);
