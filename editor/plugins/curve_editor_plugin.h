@@ -143,4 +143,11 @@ private:
 	ToolButton *_toggle_button;
 };
 
+class CurvePreviewGenerator : public EditorResourcePreviewGenerator {
+	GDCLASS(CurvePreviewGenerator, EditorResourcePreviewGenerator)
+public:
+	bool handles(const String &p_type) const;
+	Ref<Texture> generate(const Ref<Resource> &p_from);
+};
+
 #endif // CURVE_EDITOR_PLUGIN_H
