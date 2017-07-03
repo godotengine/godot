@@ -1279,8 +1279,8 @@ void RoomSpatialGizmo::redraw() {
 		for (int j = 0; j < 3; j++) {
 
 			_EdgeKey ek;
-			ek.from = r[i].vertex[j].snapped(CMP_EPSILON);
-			ek.to = r[i].vertex[(j + 1) % 3].snapped(CMP_EPSILON);
+			ek.from = r[i].vertex[j].snapped(Vector3(CMP_EPSILON, CMP_EPSILON, CMP_EPSILON));
+			ek.to = r[i].vertex[(j + 1) % 3].snapped(Vector3(CMP_EPSILON, CMP_EPSILON, CMP_EPSILON));
 			if (ek.from < ek.to)
 				SWAP(ek.from, ek.to);
 
@@ -2463,8 +2463,8 @@ void NavigationMeshSpatialGizmo::redraw() {
 
 				tw[tidx++] = f.vertex[j];
 				_EdgeKey ek;
-				ek.from = f.vertex[j].snapped(CMP_EPSILON);
-				ek.to = f.vertex[(j + 1) % 3].snapped(CMP_EPSILON);
+				ek.from = f.vertex[j].snapped(Vector3(CMP_EPSILON, CMP_EPSILON, CMP_EPSILON));
+				ek.to = f.vertex[(j + 1) % 3].snapped(Vector3(CMP_EPSILON, CMP_EPSILON, CMP_EPSILON));
 				if (ek.from < ek.to)
 					SWAP(ek.from, ek.to);
 

@@ -81,8 +81,8 @@ struct Vector3 {
 
 	_FORCE_INLINE_ void zero();
 
-	void snap(real_t p_val);
-	Vector3 snapped(real_t p_val) const;
+	void snap(Vector3 p_val);
+	Vector3 snapped(Vector3 p_val) const;
 
 	void rotate(const Vector3 &p_axis, real_t p_phi);
 	Vector3 rotated(const Vector3 &p_axis, real_t p_phi) const;

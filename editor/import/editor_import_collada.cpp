@@ -554,10 +554,10 @@ static void _generate_tangents_and_binormals(const PoolVector<int> &p_indices, c
 			tangent = Vector3();
 		} else {
 			tangent = Vector3((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r,
-							  (t2 * z1 - t1 * z2) * r)
+					(t2 * z1 - t1 * z2) * r)
 							  .normalized();
 			binormal = Vector3((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r,
-							   (s1 * z2 - s2 * z1) * r)
+					(s1 * z2 - s2 * z1) * r)
 							   .normalized();
 		}
 
@@ -867,7 +867,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 					int normal_pos = (normal_src->stride ? normal_src->stride : 3) * p.indices[src + normal_ofs];
 					ERR_FAIL_INDEX_V(normal_pos, normal_src->array.size(), ERR_INVALID_DATA);
 					vertex.normal = Vector3(normal_src->array[normal_pos + 0], normal_src->array[normal_pos + 1], normal_src->array[normal_pos + 2]);
-					vertex.normal = vertex.normal.snapped(0.001);
+					vertex.normal.snap(Vector3(0.001, 0.001, 0.001));
 
 					if (tangent_src && binormal_src) {
 

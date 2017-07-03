@@ -70,7 +70,7 @@ godot_vector3 GDAPI godot_vector3_normalized(const godot_vector3 *p_self);
 
 godot_vector3 GDAPI godot_vector3_inverse(const godot_vector3 *p_self);
 
-godot_vector3 GDAPI godot_vector3_snapped(const godot_vector3 *p_self, const godot_real p_by);
+godot_vector3 GDAPI godot_vector3_snapped(const godot_vector3 *p_self, const godot_vector3 *p_by);
 
 godot_vector3 GDAPI godot_vector3_rotated(const godot_vector3 *p_self, const godot_vector3 *p_axis, const godot_real p_phi);
 

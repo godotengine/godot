@@ -149,8 +149,8 @@ Ref<Mesh> NavigationMesh::get_debug_mesh() {
 
 				tw[tidx++] = f.vertex[j];
 				_EdgeKey ek;
-				ek.from = f.vertex[j].snapped(CMP_EPSILON);
-				ek.to = f.vertex[(j + 1) % 3].snapped(CMP_EPSILON);
+				ek.from = f.vertex[j].snapped(Vector3(CMP_EPSILON, CMP_EPSILON, CMP_EPSILON));
+				ek.to = f.vertex[(j + 1) % 3].snapped(Vector3(CMP_EPSILON, CMP_EPSILON, CMP_EPSILON));
 				if (ek.from < ek.to)
 					SWAP(ek.from, ek.to);
 

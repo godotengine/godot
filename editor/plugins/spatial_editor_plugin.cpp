@@ -1180,7 +1180,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						if (_edit.snap || spatial_editor->is_snap_enabled()) {
 
 							snap = spatial_editor->get_translate_snap();
-							motion.snap(snap);
+							motion.snap(Vector3(snap, snap, snap));
 						}
 
 						//set_message("Translating: "+motion);

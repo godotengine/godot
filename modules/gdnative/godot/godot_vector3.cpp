@@ -90,11 +90,12 @@ godot_vector3 GDAPI godot_vector3_inverse(const godot_vector3 *p_self) {
 	return dest;
 }
 
-godot_vector3 GDAPI godot_vector3_snapped(const godot_vector3 *p_self, const godot_real p_by) {
+godot_vector3 GDAPI godot_vector3_snapped(const godot_vector3 *p_self, const godot_vector3 *p_by) {
 	godot_vector3 dest;
 	const Vector3 *self = (const Vector3 *)p_self;
+	const Vector3 *snap_axis = (const Vector3 *)p_by;
 
-	*((Vector3 *)&dest) = self->snapped(p_by);
+	*((Vector3 *)&dest) = self->snapped(*snap_axis);
 	return dest;
 }
 
