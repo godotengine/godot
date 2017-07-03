@@ -1424,6 +1424,10 @@ void GDScriptLanguage::add_global_constant(const StringName &p_variable, const V
 
 void GDScriptLanguage::init() {
 
+	GLOBAL_DEF("gdscript/annotation_processor", "");
+	PropertyInfo prop_info(Variant::STRING, "gdscript/annotation_processor", PROPERTY_HINT_FILE, "");
+	GlobalConfig::get_singleton()->set_custom_property_info("gdscript/annotation_processor", prop_info);
+
 	//populate global constants
 	int gcc = GlobalConstants::get_global_constant_count();
 	for (int i = 0; i < gcc; i++) {

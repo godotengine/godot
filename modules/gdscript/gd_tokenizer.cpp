@@ -128,6 +128,7 @@ const char *GDTokenizer::token_names[TK_MAX] = {
 	"Error",
 	"EOF",
 	"Cursor"
+	"@"
 };
 
 const char *GDTokenizer::get_token_name(Token p_token) {
@@ -549,9 +550,11 @@ void GDTokenizerText::_advance() {
 				}
 			} break;
 			case '@':
-				if (CharType(GETCHAR(1)) != '"' && CharType(GETCHAR(1)) != '\'') {
+				if (_is_text_char(GETCHAR(1))) {
+					_make_token(TK_ANNOTATION);
+					break;
+				} else if (CharType(GETCHAR(1)) != '"' && CharType(GETCHAR(1)) != '\'') {
 					_make_error("Unexpected '@'");
-					return;
 				}
 				INCPOS(1);
 				is_node_path = true;

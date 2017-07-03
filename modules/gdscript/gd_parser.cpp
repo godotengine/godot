@@ -50,6 +50,94 @@ T *GDParser::alloc_node() {
 	return t;
 }
 
+
+bool GDParser:: _is_keyword() {
+	switch (tokenizer->get_token()) {
+		case GDTokenizer::TK_CF_IF:
+		case GDTokenizer::TK_CF_ELIF:
+		case GDTokenizer::TK_CF_ELSE:
+		case GDTokenizer::TK_CF_FOR:
+		case GDTokenizer::TK_CF_DO:
+		case GDTokenizer::TK_CF_WHILE:
+		case GDTokenizer::TK_CF_SWITCH:
+		case GDTokenizer::TK_CF_CASE:
+		case GDTokenizer::TK_CF_BREAK:
+		case GDTokenizer::TK_CF_CONTINUE:
+		case GDTokenizer::TK_CF_PASS:
+		case GDTokenizer::TK_CF_RETURN:
+		case GDTokenizer::TK_CF_MATCH:
+		case GDTokenizer::TK_PR_FUNCTION:
+		case GDTokenizer::TK_PR_CLASS:
+		case GDTokenizer::TK_PR_EXTENDS:
+		case GDTokenizer::TK_PR_IS:
+		case GDTokenizer::TK_PR_ONREADY:
+		case GDTokenizer::TK_PR_TOOL:
+		case GDTokenizer::TK_PR_STATIC:
+		case GDTokenizer::TK_PR_EXPORT:
+		case GDTokenizer::TK_PR_SETGET:
+		case GDTokenizer::TK_PR_CONST:
+		case GDTokenizer::TK_PR_VAR:
+		case GDTokenizer::TK_PR_ENUM:
+		case GDTokenizer::TK_PR_PRELOAD:
+		case GDTokenizer::TK_PR_ASSERT:
+		case GDTokenizer::TK_PR_YIELD:
+		case GDTokenizer::TK_PR_SIGNAL:
+		case GDTokenizer::TK_PR_BREAKPOINT:
+		case GDTokenizer::TK_PR_REMOTE:
+		case GDTokenizer::TK_PR_SYNC:
+		case GDTokenizer::TK_PR_MASTER:
+		case GDTokenizer::TK_PR_SLAVE:
+			return true;
+		default:
+			return false;
+	}
+}
+
+bool GDParser::_is_valid_annotation(bool is_block_mode) {
+	const bool allow_keywords = false;
+
+	AnnotationNode *annotation = alloc_node<AnnotationNode>();
+
+	if ((tokenizer->get_token(1) == GDTokenizer::TK_IDENTIFIER) || (allow_keywords && _is_keyword())) {
+		tokenizer->advance();
+
+		annotation->name = StringName(tokenizer->get_token_identifier()) ;
+
+		while ((tokenizer->get_token(1) == GDTokenizer::TK_CONSTANT)
+			|| (tokenizer->get_token(1) == GDTokenizer::TK_CONST_INF)
+			|| (tokenizer->get_token(1) == GDTokenizer::TK_CONST_NAN)
+			|| (tokenizer->get_token(1) == GDTokenizer::TK_CONST_PI)
+			|| (tokenizer->get_token(1) == GDTokenizer::TK_IDENTIFIER)
+			|| (tokenizer->get_token(1) == GDTokenizer::TK_BUILT_IN_TYPE)) {
+
+			tokenizer->advance();
+		}
+
+		if ((tokenizer->get_token(1) == GDTokenizer::TK_NEWLINE) || (tokenizer->get_token() == GDTokenizer::TK_EOF)) {
+			if (is_block_mode) {
+				if (tokenizer->get_token(2) != GDTokenizer::TK_PR_VAR) {
+					_set_error("Invalid annotation: annotations can only be inserted before 'var' declaration.");
+					return false;
+				}
+			}
+			tokenizer->advance();
+			return true;
+		} else {
+			tokenizer->advance();
+			_set_error("Invalid annotation: only constants ir build in types can be used as parameters.");
+			return false;
+		}
+	} else {
+		tokenizer->advance();
+		if ((!allow_keywords) && _is_keyword()) {
+			_set_error("Invalid annotation: keywords are not allowed as annotation names.");
+		} else {
+			_set_error("Invalid annotation: expected identifier.");
+		}
+		return false;
+	}
+}
+
 bool GDParser::_end_statement() {
 
 	if (tokenizer->get_token() == GDTokenizer::TK_SEMICOLON) {
@@ -2325,6 +2413,11 @@ void GDParser::_parse_block(BlockNode *p_block, bool p_static) {
 				p_block->statements.push_back(nl);
 
 			} break;
+			case GDTokenizer::TK_ANNOTATION: {
+				if (!_is_valid_annotation(true)) {
+					return;
+				}
+			} break;
 			case GDTokenizer::TK_CF_PASS: {
 				if (tokenizer->get_token(1) != GDTokenizer::TK_SEMICOLON && tokenizer->get_token(1) != GDTokenizer::TK_NEWLINE && tokenizer->get_token(1) != GDTokenizer::TK_EOF) {
 
@@ -2967,6 +3060,9 @@ void GDParser::_parse_class(ClassNode *p_class) {
 					}
 					return;
 				}
+			} break;
+			case GDTokenizer::TK_ANNOTATION: {
+				_is_valid_annotation(false);
 			} break;
 			case GDTokenizer::TK_PR_EXTENDS: {
 
