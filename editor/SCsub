@@ -143,6 +143,9 @@ def make_translations_header(target, source, env):
 
 def make_authors_header(target, source, env):
 
+    sections = ["Project Founders", "Lead Developer", "Project Manager", "Developers"]
+    sections_id = ["dev_founders", "dev_lead", "dev_manager", "dev_names"]
+
     src = source[0].srcnode().abspath
     dst = target[0].srcnode().abspath
     f = open(src, "rb")
@@ -151,19 +154,35 @@ def make_authors_header(target, source, env):
     g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
     g.write("#ifndef _EDITOR_AUTHORS_H\n")
     g.write("#define _EDITOR_AUTHORS_H\n")
-    g.write("static const char *dev_names[] = {\n")
 
+    current_section = ""
     name_count = -1
+
+    def close_section():
+        g.write("\t0\n")
+        g.write("};\n")
+        g.write("#define " + current_section.upper() + "_COUNT " + str(name_count) + "\n")
+
     for line in f:
         if name_count >= 0:
             if line.startswith("    "):
                 g.write("\t\"" + line.strip() + "\",\n")
                 name_count += 1
-        elif line.strip() == "## Developers":
-            name_count = 0
-    g.write("\t0\n")
-    g.write("};\n")
-    g.write("#define AUTHORS_COUNT " + str(name_count) + "\n")
+                continue
+        if line.startswith("## "):
+            if name_count >= 0:
+                close_section()
+                name_count = -1
+            for i in range(len(sections)):
+                if line.strip().endswith(sections[i]):
+                    current_section = sections_id[i]
+                    name_count = 0
+                    g.write("static const char *" + current_section + "[] = {\n")
+                    break
+
+    if name_count >= 0:
+        close_section()
+
     g.write("#endif\n")
 
 if (env["tools"] == "yes"):
