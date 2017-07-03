@@ -1,4 +1,4 @@
-/*************************************************************************/
+﻿/*************************************************************************/
 /*  key_mapping_win.cpp                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
@@ -165,12 +165,12 @@ static _WinTranslatePair _vk_to_keycode[] = {
 	{ KEY_F16, VK_F16 }, // (0x7F)
 	{ KEY_NUMLOCK, VK_NUMLOCK }, // (0x90)
 	{ KEY_SCROLLLOCK, VK_SCROLL }, // (0x91)
-	{ KEY_SHIFT, VK_LSHIFT }, // (0xA0)
-	{ KEY_SHIFT, VK_RSHIFT }, // (0xA1)
-	{ KEY_CONTROL, VK_LCONTROL }, // (0xA2)
-	{ KEY_CONTROL, VK_RCONTROL }, // (0xA3)
-	{ KEY_MENU, VK_LMENU }, // (0xA4)
-	{ KEY_MENU, VK_RMENU }, // (0xA5)
+	{ KEY_LSHIFT, VK_LSHIFT }, // (0xA0)
+	{ KEY_RSHIFT, VK_RSHIFT }, // (0xA1)
+	{ KEY_LCONTROL, VK_LCONTROL }, // (0xA2)
+	{ KEY_RCONTROL, VK_RCONTROL }, // (0xA3)
+	{ KEY_LMENU, VK_LMENU }, // (0xA4)
+	{ KEY_RMENU, VK_RMENU }, // (0xA5)
 
 	{ KEY_BACK, VK_BROWSER_BACK }, // (0xA6)
 
@@ -237,11 +237,50 @@ VK_PA1 (0xFD)
 VK_OEM_CLEAR (0xFE)
 */
 
-unsigned int KeyMappingWindows::get_keysym(unsigned int p_code) {
+unsigned int KeyMappingWindows::get_keysym(unsigned int wParam, unsigned int lParam) {
+
+	unsigned int virtual_key = wParam;
+
+	// detect left or right modifier keys
+	switch (wParam) {
+	case VK_SHIFT:
+		{
+			unsigned int scancode = (lParam & 0x00ff0000) >> 16;
+			virtual_key = MapVirtualKey(scancode, MAPVK_VSC_TO_VK_EX);
+
+			// below has same result as MapVirtualKey(scancode, MAPVK_VSC_TO_VK_EX)
+			//#define LSHIFT_MASK         0x2a
+			//#define RSHIFT_MASK         0X36
+			//if ((scancode ^ LSHIFT_MASK) == 0) 
+			//{
+			//	virtual_key = VK_LSHIFT;
+			//}
+			//else if ((scancode ^ RSHIFT_MASK) == 0) 
+			//{
+			//	virtual_key = VK_RSHIFT;
+			//}
+		}
+		break;
+	case VK_CONTROL:
+		{
+			bool is_extended = (lParam & 0x01000000) != 0;
+			virtual_key = is_extended ? VK_RCONTROL : VK_LCONTROL;
+		}
+		break;
+	case VK_MENU:
+		{
+			bool is_extended = (lParam & 0x01000000) != 0;
+			virtual_key = is_extended ? VK_RMENU : VK_LMENU;
+		}
+		break;
+	default:
+		// all other keys, do nothing, can't be mapped to left or right modifier keys
+		break;
+	}
 
 	for (int i = 0; _vk_to_keycode[i].keysym != KEY_UNKNOWN; i++) {
 
-		if (_vk_to_keycode[i].keycode == p_code) {
+		if (_vk_to_keycode[i].keycode == virtual_key) {
 			//printf("outcode: %x\n",_vk_to_keycode[i].keysym);
 
 			return _vk_to_keycode[i].keysym;

@@ -145,6 +145,13 @@ static const _KeyCodeText _keycodes[] = {
 		{KEY_LAUNCHE                       ,"LaunchE"},
 		{KEY_LAUNCHF                       ,"LaunchF"},
 
+		{KEY_LSHIFT                        ,"L Shift"},
+		{KEY_RSHIFT                        ,"R Shift"},
+		{KEY_LCONTROL                      ,"L Control"},
+		{KEY_RCONTROL                      ,"R Control"},
+		{KEY_LMENU                         ,"L Menu"},
+		{KEY_RMENU                         ,"R Menu"},
+
 		{KEY_UNKNOWN                       ,"Unknown"},
 
 		{KEY_SPACE                         ,"Space"},
@@ -383,6 +390,12 @@ bool keycode_has_unicode(uint32_t p_keycode) {
 		case KEY_LAUNCHD:
 		case KEY_LAUNCHE:
 		case KEY_LAUNCHF:
+		case KEY_LSHIFT:
+		case KEY_RSHIFT:
+		case KEY_LCONTROL:
+		case KEY_RCONTROL:
+		case KEY_LMENU:
+		case KEY_RMENU:
 			return false;
 	}
 
