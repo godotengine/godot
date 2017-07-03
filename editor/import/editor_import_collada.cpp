@@ -908,12 +908,20 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 #ifndef NO_UP_AXIS_SWAP
 				if (collada.state.up_axis == Vector3::AXIS_Z) {
 
+					Vector3 bn = vertex.normal.cross(vertex.tangent.normal) * vertex.tangent.d;
+
 					SWAP(vertex.vertex.z, vertex.vertex.y);
 					vertex.vertex.z = -vertex.vertex.z;
 					SWAP(vertex.normal.z, vertex.normal.y);
 					vertex.normal.z = -vertex.normal.z;
 					SWAP(vertex.tangent.normal.z, vertex.tangent.normal.y);
 					vertex.tangent.normal.z = -vertex.tangent.normal.z;
+					SWAP(bn.z, bn.y);
+					bn.z = -bn.z;
+
+					vertex.tangent.d = vertex.normal.cross(vertex.tangent.normal).dot(bn) > 0 ? 1 : -1;
+
+					print_line("Tangent " + itos(p_i) + ": " + vertex.tangent);
 				}
 
 #endif

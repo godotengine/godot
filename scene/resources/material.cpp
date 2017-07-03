@@ -452,7 +452,7 @@ void SpatialMaterial::_update_shader() {
 
 	if (features[FEATURE_DEPTH_MAPPING]) {
 		code += "\t{\n";
-		code += "\t\tvec3 view_dir = normalize(normalize(-VERTEX)*mat3(TANGENT,BINORMAL,NORMAL));\n";
+		code += "\t\tvec3 view_dir = normalize(normalize(-VERTEX)*mat3(TANGENT,-BINORMAL,NORMAL));\n"; //binormal is negative due to mikktpsace
 
 		if (deep_parallax) {
 			code += "\t\tfloat num_layers = mix(float(depth_max_layers),float(depth_min_layers), abs(dot(vec3(0.0, 0.0, 1.0), view_dir)));\n";
@@ -1265,7 +1265,7 @@ void SpatialMaterial::_bind_methods() {
 
 	ADD_GROUP("Anisotropy", "anisotropy_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "anisotropy_enabled"), "set_feature", "get_feature", FEATURE_ANISOTROPY);
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "anisotropy", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_anisotropy", "get_anisotropy");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "anisotropy", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_anisotropy", "get_anisotropy");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "anisotropy_flowmap", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture", TEXTURE_FLOWMAP);
 
 	ADD_GROUP("Ambient Occlusion", "ao_");

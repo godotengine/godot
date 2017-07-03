@@ -1763,6 +1763,16 @@ int SceneTree::get_network_unique_id() const {
 	return network_peer->get_unique_id();
 }
 
+Vector<int> SceneTree::get_network_connected_peers() const {
+	ERR_FAIL_COND_V(!network_peer.is_valid(), Vector<int>());
+
+	Vector<int> ret;
+	for (Set<int>::Element *E = connected_peers.front(); E; E = E->next()) {
+		ret.push_back(E->get());
+	}
+
+	return ret;
+}
 void SceneTree::set_refuse_new_network_connections(bool p_refuse) {
 	ERR_FAIL_COND(!network_peer.is_valid());
 	network_peer->set_refuse_new_connections(p_refuse);
@@ -1973,6 +1983,7 @@ void SceneTree::_network_process_packet(int p_from, const uint8_t *p_packet, int
 			Node *node = NULL;
 
 			if (target & 0x80000000) {
+				//use full path (not cached yet)
 
 				int ofs = target & 0x7FFFFFFF;
 				ERR_FAIL_COND(ofs >= p_packet_len);
@@ -1988,7 +1999,7 @@ void SceneTree::_network_process_packet(int p_from, const uint8_t *p_packet, int
 					ERR_FAIL_COND(node == NULL);
 				}
 			} else {
-
+				//use cached path
 				int id = target;
 
 				Map<int, PathGetCache>::Element *E = path_get_cache.find(p_from);
@@ -2023,7 +2034,7 @@ void SceneTree::_network_process_packet(int p_from, const uint8_t *p_packet, int
 
 			if (packet_type == NETWORK_COMMAND_REMOTE_CALL) {
 
-				if (!node->can_call_rpc(name))
+				if (!node->can_call_rpc(name, p_from))
 					return;
 
 				int ofs = len_end + 1;
@@ -2060,7 +2071,7 @@ void SceneTree::_network_process_packet(int p_from, const uint8_t *p_packet, int
 
 			} else {
 
-				if (!node->can_call_rset(name))
+				if (!node->can_call_rset(name, p_from))
 					return;
 
 				int ofs = len_end + 1;
@@ -2236,6 +2247,7 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_network_peer", "peer:NetworkedMultiplayerPeer"), &SceneTree::set_network_peer);
 	ClassDB::bind_method(D_METHOD("is_network_server"), &SceneTree::is_network_server);
 	ClassDB::bind_method(D_METHOD("has_network_peer"), &SceneTree::has_network_peer);
+	ClassDB::bind_method(D_METHOD("get_network_connected_peers"), &SceneTree::get_network_connected_peers);
 	ClassDB::bind_method(D_METHOD("get_network_unique_id"), &SceneTree::get_network_unique_id);
 	ClassDB::bind_method(D_METHOD("set_refuse_new_network_connections", "refuse"), &SceneTree::set_refuse_new_network_connections);
 	ClassDB::bind_method(D_METHOD("is_refusing_new_network_connections"), &SceneTree::is_refusing_new_network_connections);

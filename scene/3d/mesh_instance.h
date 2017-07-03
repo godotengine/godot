@@ -83,6 +83,8 @@ public:
 	Node *create_convex_collision_node();
 	void create_convex_collision();
 
+	void create_debug_tagents();
+
 	virtual Rect3 get_aabb() const;
 	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
 

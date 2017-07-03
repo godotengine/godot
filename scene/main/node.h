@@ -61,13 +61,6 @@ public:
 		DUPLICATE_USE_INSTANCING = 8
 	};
 
-	enum NetworkMode {
-
-		NETWORK_MODE_INHERIT,
-		NETWORK_MODE_MASTER,
-		NETWORK_MODE_SLAVE
-	};
-
 	enum RPCMode {
 
 		RPC_MODE_DISABLED, //no rpc for this method, calls to this will be blocked (default)
@@ -122,8 +115,7 @@ private:
 		PauseMode pause_mode;
 		Node *pause_owner;
 
-		NetworkMode network_mode;
-		Node *network_owner;
+		int network_master;
 		Map<StringName, RPCMode> rpc_methods;
 		Map<StringName, RPCMode> rpc_properties;
 
@@ -173,7 +165,6 @@ private:
 	void _propagate_validate_owner();
 	void _print_stray_nodes();
 	void _propagate_pause_owner(Node *p_owner);
-	void _propagate_network_owner(Node *p_owner);
 	Array _get_node_and_resource(const NodePath &p_path);
 
 	void _duplicate_signals(const Node *p_original, Node *p_copy) const;
@@ -393,8 +384,8 @@ public:
 	bool is_displayed_folded() const;
 	/* NETWORK */
 
-	void set_network_mode(NetworkMode p_mode);
-	NetworkMode get_network_mode() const;
+	void set_network_master(int p_peer_id, bool p_recursive = true);
+	int get_network_master() const;
 	bool is_network_master() const;
 
 	void rpc_config(const StringName &p_method, RPCMode p_mode); // config a local method for RPC
@@ -414,8 +405,8 @@ public:
 
 	void rsetp(int p_peer_id, bool p_unreliable, const StringName &p_property, const Variant &p_value);
 
-	bool can_call_rpc(const StringName &p_method) const;
-	bool can_call_rset(const StringName &p_property) const;
+	bool can_call_rpc(const StringName &p_method, int p_from) const;
+	bool can_call_rset(const StringName &p_property, int p_from) const;
 
 	Node();
 	~Node();

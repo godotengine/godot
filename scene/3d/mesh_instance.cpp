@@ -32,6 +32,7 @@
 #include "body_shape.h"
 #include "core_string_names.h"
 #include "physics_body.h"
+#include "scene/resources/material.h"
 #include "scene/scene_string_names.h"
 #include "skeleton.h"
 bool MeshInstance::_set(const StringName &p_name, const Variant &p_value) {
@@ -274,6 +275,80 @@ void MeshInstance::_mesh_changed() {
 	materials.resize(mesh->get_surface_count());
 }
 
+void MeshInstance::create_debug_tagents() {
+
+	Vector<Vector3> lines;
+	Vector<Color> colors;
+
+	Ref<Mesh> mesh = get_mesh();
+	if (!mesh.is_valid())
+		return;
+
+	for (int i = 0; i < mesh->get_surface_count(); i++) {
+		Array arrays = mesh->surface_get_arrays(i);
+		Vector<Vector3> verts = arrays[Mesh::ARRAY_VERTEX];
+		Vector<Vector3> norms = arrays[Mesh::ARRAY_NORMAL];
+		if (norms.size() == 0)
+			continue;
+		Vector<float> tangents = arrays[Mesh::ARRAY_TANGENT];
+		if (tangents.size() == 0)
+			continue;
+
+		for (int j = 0; j < verts.size(); j++) {
+			Vector3 v = verts[j];
+			Vector3 n = norms[j];
+			Vector3 t = Vector3(tangents[j * 4 + 0], tangents[j * 4 + 1], tangents[j * 4 + 2]);
+			Vector3 b = (n.cross(t)).normalized() * tangents[j * 4 + 3];
+
+			lines.push_back(v); //normal
+			colors.push_back(Color(0, 0, 1)); //color
+			lines.push_back(v + n * 0.04); //normal
+			colors.push_back(Color(0, 0, 1)); //color
+
+			lines.push_back(v); //tangent
+			colors.push_back(Color(1, 0, 0)); //color
+			lines.push_back(v + t * 0.04); //tangent
+			colors.push_back(Color(1, 0, 0)); //color
+
+			lines.push_back(v); //binormal
+			colors.push_back(Color(0, 1, 0)); //color
+			lines.push_back(v + b * 0.04); //binormal
+			colors.push_back(Color(0, 1, 0)); //color
+		}
+	}
+
+	if (lines.size()) {
+
+		Ref<SpatialMaterial> sm;
+		sm.instance();
+
+		sm->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
+		sm->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
+		sm->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+
+		Ref<ArrayMesh> am;
+		am.instance();
+		Array a;
+		a.resize(Mesh::ARRAY_MAX);
+		a[Mesh::ARRAY_VERTEX] = lines;
+		a[Mesh::ARRAY_COLOR] = colors;
+
+		am->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, a);
+		am->surface_set_material(0, sm);
+
+		MeshInstance *mi = memnew(MeshInstance);
+		mi->set_mesh(am);
+		mi->set_name("DebugTangents");
+		add_child(mi);
+		if (get_parent()) {
+			if (get_parent() == get_tree()->get_edited_scene_root())
+				mi->set_owner(get_parent());
+			else
+				mi->set_owner(get_parent()->get_owner());
+		}
+	}
+}
+
 void MeshInstance::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_mesh", "mesh:Mesh"), &MeshInstance::set_mesh);
@@ -289,6 +364,9 @@ void MeshInstance::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_convex_collision"), &MeshInstance::create_convex_collision);
 	ClassDB::set_method_flags("MeshInstance", "create_convex_collision", METHOD_FLAGS_DEFAULT);
 	ClassDB::bind_method(D_METHOD("_mesh_changed"), &MeshInstance::_mesh_changed);
+
+	ClassDB::bind_method(D_METHOD("create_debug_tagents"), &MeshInstance::create_debug_tagents);
+	ClassDB::set_method_flags("MeshInstance", "create_debug_tagents", METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_mesh", "get_mesh");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "skeleton"), "set_skeleton_path", "get_skeleton_path");

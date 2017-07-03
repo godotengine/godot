@@ -1262,9 +1262,9 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 
 					for (int j = 0; j < p_vertex_len; j++) {
 
-						const uint8_t *v = (const uint8_t *)&r[j * total_elem_size + offsets[i]];
+						const int8_t *v = (const int8_t *)&r[j * total_elem_size + offsets[i]];
 						for (int k = 0; k < 4; k++) {
-							w[j * 4 + k] = float(v[k] / 255.0) * 2.0 - 1.0;
+							w[j * 4 + k] = float(v[k] / 127.0);
 						}
 					}
 				} else {

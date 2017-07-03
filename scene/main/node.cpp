@@ -37,7 +37,6 @@
 #include "viewport.h"
 
 VARIANT_ENUM_CAST(Node::PauseMode);
-VARIANT_ENUM_CAST(Node::NetworkMode);
 VARIANT_ENUM_CAST(Node::RPCMode);
 
 void Node::_notification(int p_notification) {
@@ -77,16 +76,6 @@ void Node::_notification(int p_notification) {
 				data.pause_owner = this;
 			}
 
-			if (data.network_mode == NETWORK_MODE_INHERIT) {
-
-				if (data.parent)
-					data.network_owner = data.parent->data.network_owner;
-				else
-					data.network_owner = NULL;
-			} else {
-				data.network_owner = this;
-			}
-
 			if (data.input)
 				add_to_group("_vp_input" + itos(get_viewport()->get_instance_ID()));
 			if (data.unhandled_input)
@@ -108,7 +97,6 @@ void Node::_notification(int p_notification) {
 				remove_from_group("_vp_unhandled_key_input" + itos(get_viewport()->get_instance_ID()));
 
 			data.pause_owner = NULL;
-			data.network_owner = NULL;
 			if (data.path_cache) {
 				memdelete(data.path_cache);
 				data.path_cache = NULL;
@@ -472,69 +460,28 @@ void Node::_propagate_pause_owner(Node *p_owner) {
 	}
 }
 
-void Node::set_network_mode(NetworkMode p_mode) {
+void Node::set_network_master(int p_peer_id, bool p_recursive) {
 
-	if (data.network_mode == p_mode)
-		return;
+	data.network_master = p_peer_id;
 
-	bool prev_inherits = data.network_mode == NETWORK_MODE_INHERIT;
-	data.network_mode = p_mode;
-	if (!is_inside_tree())
-		return; //pointless
-	if ((data.network_mode == NETWORK_MODE_INHERIT) == prev_inherits)
-		return; ///nothing changed
+	if (p_recursive) {
+		for (int i = 0; i < data.children.size(); i++) {
 
-	Node *owner = NULL;
-
-	if (data.network_mode == NETWORK_MODE_INHERIT) {
-
-		if (data.parent)
-			owner = data.parent->data.network_owner;
-	} else {
-		owner = this;
+			data.children[i]->set_network_master(p_peer_id, true);
+		}
 	}
-
-	_propagate_network_owner(owner);
 }
 
-Node::NetworkMode Node::get_network_mode() const {
+int Node::get_network_master() const {
 
-	return data.network_mode;
+	return data.network_master;
 }
 
 bool Node::is_network_master() const {
 
 	ERR_FAIL_COND_V(!is_inside_tree(), false);
 
-	switch (data.network_mode) {
-		case NETWORK_MODE_INHERIT: {
-
-			if (data.network_owner)
-				return data.network_owner->is_network_master();
-			else
-				return get_tree()->is_network_server();
-		} break;
-		case NETWORK_MODE_MASTER: {
-
-			return true;
-		} break;
-		case NETWORK_MODE_SLAVE: {
-			return false;
-		} break;
-	}
-
-	return false;
-}
-
-void Node::_propagate_network_owner(Node *p_owner) {
-
-	if (data.network_mode != NETWORK_MODE_INHERIT)
-		return;
-	data.network_owner = p_owner;
-	for (int i = 0; i < data.children.size(); i++) {
-
-		data.children[i]->_propagate_network_owner(p_owner);
-	}
+	return get_tree()->get_network_unique_id() == data.network_master;
 }
 
 /***** RPC CONFIG ********/
@@ -962,7 +909,7 @@ void Node::rset_unreliable_id(int p_peer_id, const StringName &p_property, const
 
 //////////// end of rpc
 
-bool Node::can_call_rpc(const StringName &p_method) const {
+bool Node::can_call_rpc(const StringName &p_method, int p_from) const {
 
 	const Map<StringName, RPCMode>::Element *E = data.rpc_methods.find(p_method);
 	if (E) {
@@ -982,7 +929,7 @@ bool Node::can_call_rpc(const StringName &p_method) const {
 				return is_network_master();
 			} break;
 			case RPC_MODE_SLAVE: {
-				return !is_network_master();
+				return !is_network_master() && p_from == get_network_master();
 			} break;
 		}
 	}
@@ -1006,16 +953,16 @@ bool Node::can_call_rpc(const StringName &p_method) const {
 				return is_network_master();
 			} break;
 			case ScriptInstance::RPC_MODE_SLAVE: {
-				return !is_network_master();
+				return !is_network_master() && p_from == get_network_master();
 			} break;
 		}
 	}
 
-	ERR_PRINTS("RPC on unauthorized method attempted: " + String(p_method) + " on base: " + String(Variant(this)));
+	ERR_PRINTS("RPC from " + itos(p_from) + " on unauthorized method attempted: " + String(p_method) + " on base: " + String(Variant(this)));
 	return false;
 }
 
-bool Node::can_call_rset(const StringName &p_property) const {
+bool Node::can_call_rset(const StringName &p_property, int p_from) const {
 
 	const Map<StringName, RPCMode>::Element *E = data.rpc_properties.find(p_property);
 	if (E) {
@@ -1035,7 +982,7 @@ bool Node::can_call_rset(const StringName &p_property) const {
 				return is_network_master();
 			} break;
 			case RPC_MODE_SLAVE: {
-				return !is_network_master();
+				return !is_network_master() && p_from == get_network_master();
 			} break;
 		}
 	}
@@ -1059,12 +1006,12 @@ bool Node::can_call_rset(const StringName &p_property) const {
 				return is_network_master();
 			} break;
 			case ScriptInstance::RPC_MODE_SLAVE: {
-				return !is_network_master();
+				return !is_network_master() && p_from == get_network_master();
 			} break;
 		}
 	}
 
-	ERR_PRINTS("RSET on unauthorized property attempted: " + String(p_property) + " on base: " + String(Variant(this)));
+	ERR_PRINTS("RSET from " + itos(p_from) + " on unauthorized property attempted: " + String(p_property) + " on base: " + String(Variant(this)));
 
 	return false;
 }
@@ -2845,8 +2792,8 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("request_ready"), &Node::request_ready);
 
-	ClassDB::bind_method(D_METHOD("set_network_mode", "mode"), &Node::set_network_mode);
-	ClassDB::bind_method(D_METHOD("get_network_mode"), &Node::get_network_mode);
+	ClassDB::bind_method(D_METHOD("set_network_master", "id", "recursive"), &Node::set_network_master, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_network_master"), &Node::get_network_master);
 
 	ClassDB::bind_method(D_METHOD("is_network_master"), &Node::is_network_master);
 
@@ -2901,10 +2848,6 @@ void Node::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_TRANSLATION_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_INTERNAL_PROCESS);
 	BIND_CONSTANT(NOTIFICATION_INTERNAL_FIXED_PROCESS);
-
-	BIND_CONSTANT(NETWORK_MODE_INHERIT);
-	BIND_CONSTANT(NETWORK_MODE_MASTER);
-	BIND_CONSTANT(NETWORK_MODE_SLAVE);
 
 	BIND_CONSTANT(RPC_MODE_DISABLED);
 	BIND_CONSTANT(RPC_MODE_REMOTE);
@@ -2977,8 +2920,7 @@ Node::Node() {
 	data.unhandled_key_input = false;
 	data.pause_mode = PAUSE_MODE_INHERIT;
 	data.pause_owner = NULL;
-	data.network_mode = NETWORK_MODE_INHERIT;
-	data.network_owner = NULL;
+	data.network_master = 1; //server by default
 	data.path_cache = NULL;
 	data.parent_owned = false;
 	data.in_constructor = true;
