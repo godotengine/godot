@@ -117,6 +117,8 @@ public:
 			return 1.0;
 	}
 
+	void _update_window();
+
 	float display_scale;
 
 protected:

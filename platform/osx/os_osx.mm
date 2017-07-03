@@ -921,6 +921,8 @@ void OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 
 	[NSApp activateIgnoringOtherApps:YES];
 
+	_update_window();
+
 	[window_object makeKeyAndOrderFront:nil];
 
 	if (p_desired.fullscreen)
@@ -980,7 +982,8 @@ void OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 			displayScale = [[screenArray objectAtIndex:i] backingScaleFactor];
 		}
 
-		NSRect nsrect = [[screenArray objectAtIndex:i] visibleFrame];
+		// Note: Use frame to get the whole screen size
+		NSRect nsrect = [[screenArray objectAtIndex:i] frame];
 		Rect2 rect = Rect2(nsrect.origin.x, nsrect.origin.y, nsrect.size.width, nsrect.size.height);
 		rect.position *= displayScale;
 		rect.size *= displayScale;
@@ -1299,6 +1302,31 @@ Size2 OS_OSX::get_screen_size(int p_screen) const {
 	return screens[p_screen].size;
 };
 
+void OS_OSX::_update_window() {
+	bool borderless_full = false;
+
+	if (get_borderless_window()) {
+		NSRect frameRect = [window_object frame];
+		NSRect screenRect = [[window_object screen] frame];
+
+		// Check if our window covers up the screen
+		if (frameRect.origin.x <= screenRect.origin.x && frameRect.origin.y <= frameRect.origin.y &&
+				frameRect.size.width >= screenRect.size.width && frameRect.size.height >= screenRect.size.height) {
+			borderless_full = true;
+		}
+	}
+
+	if (borderless_full) {
+		// If the window covers up the screen set the level to above the main menu and hide on deactivate
+		[window_object setLevel:NSMainMenuWindowLevel + 1];
+		[window_object setHidesOnDeactivate:YES];
+	} else {
+		// Reset these when our window is not a borderless window that covers up the screen
+		[window_object setLevel:NSNormalWindowLevel];
+		[window_object setHidesOnDeactivate:NO];
+	}
+}
+
 Point2 OS_OSX::get_window_position() const {
 
 	Size2 wp([window_object frame].origin.x, [window_object frame].origin.y);
@@ -1311,6 +1339,8 @@ void OS_OSX::set_window_position(const Point2 &p_position) {
 	Point2 size = p_position;
 	size /= display_scale;
 	[window_object setFrame:NSMakeRect(size.x, size.y, [window_object frame].size.width, [window_object frame].size.height) display:YES];
+
+	_update_window();
 };
 
 Size2 OS_OSX::get_window_size() const {
@@ -1322,17 +1352,22 @@ void OS_OSX::set_window_size(const Size2 p_size) {
 
 	Size2 size = p_size;
 
-	// NSRect used by setFrame includes the title bar, so add it to our size.y
-	CGFloat menuBarHeight = [[[NSApplication sharedApplication] mainMenu] menuBarHeight];
-	if (menuBarHeight != 0.f) {
-		size.y += menuBarHeight;
+	if (get_borderless_window() == false) {
+		// NSRect used by setFrame includes the title bar, so add it to our size.y
+		CGFloat menuBarHeight = [[[NSApplication sharedApplication] mainMenu] menuBarHeight];
+		if (menuBarHeight != 0.f) {
+			size.y += menuBarHeight;
 #if MAC_OS_X_VERSION_MAX_ALLOWED <= 101104
-	} else {
-		size.y += [[NSStatusBar systemStatusBar] thickness];
+		} else {
+			size.y += [[NSStatusBar systemStatusBar] thickness];
 #endif
+		}
 	}
+
 	NSRect frame = [window_object frame];
 	[window_object setFrame:NSMakeRect(frame.origin.x, frame.origin.y, size.x, size.y) display:YES];
+
+	_update_window();
 };
 
 void OS_OSX::set_window_fullscreen(bool p_enabled) {
@@ -1416,9 +1451,12 @@ void OS_OSX::request_attention() {
 
 void OS_OSX::set_borderless_window(int p_borderless) {
 
-	if (p_borderless)
+	// OrderOut prevents a lose focus bug with the window
+	[window_object orderOut:nil];
+
+	if (p_borderless) {
 		[window_object setStyleMask:NSWindowStyleMaskBorderless];
-	else {
+	} else {
 		[window_object setStyleMask:NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | NSResizableWindowMask];
 
 		// Force update of the window styles
@@ -1429,6 +1467,10 @@ void OS_OSX::set_borderless_window(int p_borderless) {
 		// Restore the window title
 		[window_object setTitle:[NSString stringWithUTF8String:title.utf8().get_data()]];
 	}
+
+	_update_window();
+
+	[window_object makeKeyAndOrderFront:nil];
 }
 
 bool OS_OSX::get_borderless_window() {
