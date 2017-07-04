@@ -554,11 +554,12 @@ real_t RigidBody2D::get_inertia() const {
 
 void RigidBody2D::set_weight(real_t p_weight) {
 
-	set_mass(p_weight / 9.8);
+	set_mass(p_weight / real_t(GLOBAL_DEF("physics/2d/default_gravity", 98)) / 10);
 }
+
 real_t RigidBody2D::get_weight() const {
 
-	return mass * 9.8;
+	return mass * real_t(GLOBAL_DEF("physics/2d/default_gravity", 98)) / 10;
 }
 
 void RigidBody2D::set_friction(real_t p_friction) {
