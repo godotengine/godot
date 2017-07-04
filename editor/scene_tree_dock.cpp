@@ -1876,14 +1876,16 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		menu->add_icon_shortcut(get_icon("CreateNewSceneFrom", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/save_branch_as_scene"), TOOL_NEW_SCENE_FROM);
 		menu->add_separator();
 		menu->add_icon_shortcut(get_icon("CopyNodePath", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/copy_node_path"), TOOL_COPY_NODE_PATH);
-		bool is_external = (selection[0]->get_filename() != "") && (selection[0]->get_owner() != selection[0]);
+		bool is_external = (selection[0]->get_filename() != "");
 		if (is_external) {
 			bool is_inherited = selection[0]->get_scene_inherited_state() != NULL;
-			menu->add_separator();
+			bool is_top_level = selection[0]->get_owner() == NULL;
 			if (is_inherited) {
+				menu->add_separator();
 				menu->add_item(TTR("Clear Inheritance"), TOOL_SCENE_CLEAR_INHERITANCE);
 				menu->add_icon_item(get_icon("Load", "EditorIcons"), TTR("Open in Editor"), TOOL_SCENE_OPEN_INHERITED);
-			} else {
+			} else if (!is_top_level) {
+				menu->add_separator();
 				bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(selection[0]);
 				bool placeholder = selection[0]->get_scene_instance_load_placeholder();
 				menu->add_check_item(TTR("Editable Children"), TOOL_SCENE_EDITABLE_CHILDREN);
