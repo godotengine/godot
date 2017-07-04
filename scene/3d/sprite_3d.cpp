@@ -112,6 +112,15 @@ Point2 SpriteBase3D::get_offset() const {
 	return offset;
 }
 
+void SpriteBase3D::set_anchor(const Point2 &p_anchor) {
+	anchor = p_anchor;
+	anchor.x = CLAMP(anchor.x, -1, 1);
+	anchor.y = CLAMP(anchor.y, -1, 1);
+}
+Point2 SpriteBase3D::get_anchor() const {
+	return anchor;
+}
+
 void SpriteBase3D::set_flip_h(bool p_flip) {
 
 	hflip = p_flip;
@@ -233,6 +242,9 @@ void SpriteBase3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_offset", "offset"), &SpriteBase3D::set_offset);
 	ClassDB::bind_method(D_METHOD("get_offset"), &SpriteBase3D::get_offset);
 
+	ClassDB::bind_method(D_METHOD("set_anchor", "anchor"), &SpriteBase3D::set_anchor);
+	ClassDB::bind_method(D_METHOD("get_anchor"), &SpriteBase3D::get_anchor);
+
 	ClassDB::bind_method(D_METHOD("set_flip_h", "flip_h"), &SpriteBase3D::set_flip_h);
 	ClassDB::bind_method(D_METHOD("is_flipped_h"), &SpriteBase3D::is_flipped_h);
 
@@ -264,6 +276,8 @@ void SpriteBase3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_anchor"), "set_use_anchor", "get_use_anchor");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "anchor"), "set_anchor", "get_anchor");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "is_flipped_v");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), "set_modulate", "get_modulate");
@@ -344,6 +358,10 @@ void Sprite3D::_draw() {
 	Point2i ofs = get_offset();
 	if (is_centered())
 		ofs -= s / 2;
+
+	if (anchor.x != 0 || anchor.y != 0) {
+		ofs += Point2(s.width * anchor.x, s.height * -anchor.y);
+	}
 
 	Rect2i dst_rect(ofs, s);
 
@@ -561,6 +579,9 @@ void Sprite3D::_validate_property(PropertyInfo &property) const {
 }
 
 void Sprite3D::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_anchor", "anchor"), &Sprite3D::set_anchor);
+	ClassDB::bind_method(D_METHOD("get_anchor"), &Sprite3D::get_anchor);
 
 	ClassDB::bind_method(D_METHOD("set_texture", "texture:Texture"), &Sprite3D::set_texture);
 	ClassDB::bind_method(D_METHOD("get_texture:Texture"), &Sprite3D::get_texture);
@@ -847,6 +868,10 @@ void AnimatedSprite3D::_draw() {
 	Point2i ofs = get_offset();
 	if (is_centered())
 		ofs -= s / 2;
+
+	if (anchor.x != 0 || anchor.y != 0) {
+		ofs += Point2(s.width * anchor.x, s.height * -anchor.y);
+	}
 
 	Rect2i dst_rect(ofs, s);
 
@@ -1266,6 +1291,7 @@ void AnimatedSprite3D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("frame_changed"));
 
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "frames", PROPERTY_HINT_RESOURCE_TYPE, "SpriteFrames"), "set_sprite_frames", "get_sprite_frames");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2, "anchor"), "set_anchor", "get_anchor");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "animation"), "set_animation", "get_animation");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "frame", PROPERTY_HINT_SPRITE_FRAME), "set_frame", "get_frame");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "playing"), "_set_playing", "_is_playing");

@@ -394,6 +394,10 @@ void AnimatedSprite::_notification(int p_what) {
 			if (centered)
 				ofs -= s / 2;
 
+			if (anchor.x != 0 || anchor.y != 0) {
+				ofs += Point2(s.width * anchor.x, s.height * -anchor.y);
+			}
+
 			if (Engine::get_singleton()->get_use_pixel_snap()) {
 				ofs = ofs.floor();
 			}
@@ -488,6 +492,19 @@ void AnimatedSprite::set_offset(const Point2 &p_offset) {
 Point2 AnimatedSprite::get_offset() const {
 
 	return offset;
+}
+
+void AnimatedSprite::set_anchor(const Point2 &p_anchor) {
+
+	anchor = p_anchor;
+
+	update();
+	item_rect_changed();
+	_change_notify("anchor");
+}
+Point2 AnimatedSprite::get_anchor() const {
+
+	return anchor;
 }
 
 void AnimatedSprite::set_flip_h(bool p_flip) {
@@ -635,6 +652,9 @@ void AnimatedSprite::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_offset", "offset"), &AnimatedSprite::set_offset);
 	ClassDB::bind_method(D_METHOD("get_offset"), &AnimatedSprite::get_offset);
 
+	ClassDB::bind_method(D_METHOD("set_anchor", "anchor"), &AnimatedSprite::set_anchor);
+	ClassDB::bind_method(D_METHOD("get_anchor"), &AnimatedSprite::get_anchor);
+
 	ClassDB::bind_method(D_METHOD("set_flip_h", "flip_h"), &AnimatedSprite::set_flip_h);
 	ClassDB::bind_method(D_METHOD("is_flipped_h"), &AnimatedSprite::is_flipped_h);
 
@@ -655,6 +675,7 @@ void AnimatedSprite::_bind_methods() {
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "playing"), "_set_playing", "_is_playing");
 	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2, "anchor"), "set_anchor", "get_anchor");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "is_flipped_v");
 }

@@ -60,9 +60,6 @@ private:
 	List<SpriteBase3D *> children;
 	List<SpriteBase3D *>::Element *pI;
 
-	bool centered;
-	Point2 offset;
-
 	bool hflip;
 	bool vflip;
 
@@ -83,6 +80,11 @@ private:
 	void _propagate_color_changed();
 
 protected:
+	bool centered;
+	Point2 offset;
+	Point2 anchor;
+
+protected:
 	Color _get_color_accum();
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -97,6 +99,9 @@ public:
 
 	void set_offset(const Point2 &p_offset);
 	Point2 get_offset() const;
+
+	void set_anchor(const Point2 &p_anchor);
+	Point2 get_anchor() const;
 
 	void set_flip_h(bool p_flip);
 	bool is_flipped_h() const;
