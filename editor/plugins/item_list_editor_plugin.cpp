@@ -193,6 +193,45 @@ ItemListPopupMenuPlugin::ItemListPopupMenuPlugin() {
 }
 
 ///////////////////////////////////////////////////////////////
+
+void ItemListItemListPlugin::set_object(Object *p_object) {
+
+	pp = p_object->cast_to<ItemList>();
+}
+
+bool ItemListItemListPlugin::handles(Object *p_object) const {
+
+	return p_object->is_class("ItemList");
+}
+
+int ItemListItemListPlugin::get_flags() const {
+
+	return FLAG_ICON | FLAG_ENABLE;
+}
+
+void ItemListItemListPlugin::add_item() {
+
+	pp->add_item(vformat(TTR("Item %d"), pp->get_item_count()));
+	_change_notify();
+}
+
+int ItemListItemListPlugin::get_item_count() const {
+
+	return pp->get_item_count();
+}
+
+void ItemListItemListPlugin::erase(int p_idx) {
+
+	pp->remove_item(p_idx);
+	_change_notify();
+}
+
+ItemListItemListPlugin::ItemListItemListPlugin() {
+
+	pp = NULL;
+}
+
+///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
 
@@ -373,6 +412,7 @@ ItemListEditorPlugin::ItemListEditorPlugin(EditorNode *p_node) {
 	item_list_editor->hide();
 	item_list_editor->add_plugin(memnew(ItemListOptionButtonPlugin));
 	item_list_editor->add_plugin(memnew(ItemListPopupMenuPlugin));
+	item_list_editor->add_plugin(memnew(ItemListItemListPlugin));
 }
 
 ItemListEditorPlugin::~ItemListEditorPlugin() {

@@ -103,6 +103,9 @@ private:
 
 	real_t icon_scale;
 
+	Array _get_items() const;
+	void _set_items(const Array &p_items);
+
 	void _scroll_changed(double);
 	void _gui_input(const Ref<InputEvent> &p_event);
 
