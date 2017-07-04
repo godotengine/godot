@@ -185,6 +185,24 @@ def make_authors_header(target, source, env):
 
     g.write("#endif\n")
 
+def make_license_header(target, source, env):
+
+    src = source[0].srcnode().abspath
+    dst = target[0].srcnode().abspath
+    f = open(src, "rb")
+    g = open(dst, "wb")
+
+    g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
+    g.write("#ifndef _EDITOR_LICENSE_H\n")
+    g.write("#define _EDITOR_LICENSE_H\n")
+    g.write("static const char *about_license =")
+
+    for line in f:
+        g.write("\n\t\"" + line.strip().replace("\"", "\\\"") + "\\n\"")
+
+    g.write(";\n")
+    g.write("#endif\n")
+
 if (env["tools"] == "yes"):
 
     # Register exporters
@@ -234,6 +252,10 @@ if (env["tools"] == "yes"):
     # Authors
     env.Depends('#editor/authors.gen.h', "../AUTHORS.md")
     env.Command('#editor/authors.gen.h', "../AUTHORS.md", make_authors_header)
+
+    # License
+    env.Depends('#editor/license.gen.h', "../LICENSE.txt")
+    env.Command('#editor/license.gen.h', "../LICENSE.txt", make_license_header)
 
 
     env.add_source_files(env.editor_sources, "*.cpp")
