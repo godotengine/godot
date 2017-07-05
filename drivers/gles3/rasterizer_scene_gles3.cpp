@@ -1889,6 +1889,7 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 			} else {
 				glBindTexture(GL_TEXTURE_2D, p_base_env);
 			}
+
 			state.scene_shader.set_conditional(SceneShaderGLES3::USE_RADIANCE_MAP, true);
 			state.scene_shader.set_conditional(SceneShaderGLES3::USE_RADIANCE_MAP_ARRAY, storage->config.use_texture_array_environment);
 		} else {
@@ -4233,7 +4234,11 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 		storage->canvas->canvas_begin();
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, env_radiance_tex);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		storage->canvas->draw_generic_textured_rect(Rect2(0, 0, storage->frame.current_rt->width / 2, storage->frame.current_rt->height / 2), Rect2(0, 0, 1, 1));
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	}
 }
 

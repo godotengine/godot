@@ -219,9 +219,8 @@ void main() {
 	N.z = 0.5 - 0.5*((N.x * N.x) + (N.y * N.y));
 	N = normalize(N);
 
-	if (!z_flip) {
-		//N.y=-N.y; //y is flipped to improve blending between both sides
-	} else {
+	if (z_flip) {
+		N.y=-N.y; //y is flipped to improve blending between both sides
 		N.z=-N.z;
 	}
 

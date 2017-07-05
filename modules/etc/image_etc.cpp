@@ -153,6 +153,9 @@ static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_f
 	Etc::Image::Format etc2comp_etc_format = _image_format_to_etc2comp_format(etc_format);
 
 	int wofs = 0;
+
+	print_line("begin encoding, format: " + Image::get_format_name(etc_format));
+	uint64_t t = OS::get_singleton()->get_ticks_msec();
 	for (int i = 0; i < mmc + 1; i++) {
 		// convert source image to internal etc2comp format (which is equivalent to Image::FORMAT_RGBAF)
 		// NOTE: We can alternatively add a case to Image::convert to handle Image::FORMAT_RGBAF conversion.
@@ -177,6 +180,7 @@ static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_f
 		delete[] etc_data;
 		delete[] src_rgba_f;
 	}
+	print_line("time encoding: " + rtos(OS::get_singleton()->get_ticks_msec() - t));
 
 	p_img->create(imgw, imgh, mmc > 1 ? true : false, etc_format, dst_data);
 }

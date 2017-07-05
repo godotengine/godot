@@ -16,6 +16,7 @@ attribute vec2 uv_in; // attrib:4
 #endif
 attribute vec2 uv2_in; // attrib:5
 
+
 #ifdef USE_CUBEMAP
 varying vec3 cube_interp;
 #else
@@ -58,7 +59,9 @@ float sRGB_gamma_correct(float c){
 #define LUM_RANGE 4.0
 
 
-#ifdef USE_CUBEMAP
+#ifdef USE_ARRAY
+uniform sampler2DArray source;
+#elif defined(USE_CUBEMAP)
 varying vec3 cube_interp;
 uniform samplerCube source_cube;
 #else
@@ -145,23 +148,17 @@ uniform float custom_alpha;
 void main() {
 
 	//vec4 color = color_interp;
-#ifdef USE_HIGHP_SOURCE
 
-#ifdef USE_CUBEMAP
+
+#ifdef USE_ARRAY
+	highp vec4 color = textureLod( source,  vec3(uv_interp,0.0),0.0 );
+#elif defined(USE_CUBEMAP)
 	highp vec4 color = textureCube( source_cube,  normalize(cube_interp) );
 
 #else
 	highp vec4 color = texture2D( source,  uv_interp );
 #endif
 
-#else
-
-#ifdef USE_CUBEMAP
-	vec4 color = textureCube( source_cube,  normalize(cube_interp) );
-
-#else
-	vec4 color = texture2D( source,  uv_interp );
-#endif
 
 
 #endif

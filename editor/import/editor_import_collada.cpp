@@ -554,10 +554,10 @@ static void _generate_tangents_and_binormals(const PoolVector<int> &p_indices, c
 			tangent = Vector3();
 		} else {
 			tangent = Vector3((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r,
-					(t2 * z1 - t1 * z2) * r)
+							  (t2 * z1 - t1 * z2) * r)
 							  .normalized();
 			binormal = Vector3((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r,
-					(s1 * z2 - s2 * z1) * r)
+							   (s1 * z2 - s2 * z1) * r)
 							   .normalized();
 		}
 
@@ -920,8 +920,6 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 					bn.z = -bn.z;
 
 					vertex.tangent.d = vertex.normal.cross(vertex.tangent.normal).dot(bn) > 0 ? 1 : -1;
-
-					print_line("Tangent " + itos(p_i) + ": " + vertex.tangent);
 				}
 
 #endif
