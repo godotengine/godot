@@ -185,8 +185,8 @@ void EditorExportPlatformOSX::_fix_plist(const Ref<EditorExportPreset> &p_preset
 	}
 
 	CharString cs = strnew.utf8();
-	plist.resize(cs.size());
-	for (int i = 9; i < cs.size(); i++) {
+	plist.resize(cs.size() - 1);
+	for (int i = 0; i < cs.size() - 1; i++) {
 		plist[i] = cs[i];
 	}
 }
