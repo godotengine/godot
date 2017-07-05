@@ -599,9 +599,9 @@ public:
 
 	const V &operator[](const K &p_key) const {
 
-		ERR_FAIL_COND_V(!_data._root, *(V *)NULL); // crash on purpose
+		PRAY_COND(!_data._root, V);
 		const Element *e = find(p_key);
-		ERR_FAIL_COND_V(!e, *(V *)NULL); // crash on purpose
+		PRAY_COND(!e, V);
 		return e->_value;
 	}
 	V &operator[](const K &p_key) {
@@ -613,7 +613,7 @@ public:
 		if (!e)
 			e = insert(p_key, V());
 
-		ERR_FAIL_COND_V(!e, *(V *)NULL); // crash on purpose
+		PRAY_COND(!e, V);
 		return e->_value;
 	}
 

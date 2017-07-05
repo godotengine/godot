@@ -465,8 +465,7 @@ public:
 		if (!e) {
 
 			e = create_entry(p_key);
-			if (!e)
-				return *(TData *)NULL; /* panic! */
+			PRAY_COND(!e, TData);
 			check_hash_table(); // perform mantenience routine
 		}
 

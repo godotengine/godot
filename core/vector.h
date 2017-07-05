@@ -133,10 +133,7 @@ public:
 
 	inline T &operator[](int p_index) {
 
-		if (p_index < 0 || p_index >= size()) {
-			T &aux = *((T *)0); //nullreturn
-			ERR_FAIL_COND_V(p_index < 0 || p_index >= size(), aux);
-		}
+		PRAY_BAD_INDEX(p_index, size(), T);
 
 		_copy_on_write(); // wants to write, so copy on write.
 
@@ -145,10 +142,8 @@ public:
 
 	inline const T &operator[](int p_index) const {
 
-		if (p_index < 0 || p_index >= size()) {
-			const T &aux = *((T *)0); //nullreturn
-			ERR_FAIL_COND_V(p_index < 0 || p_index >= size(), aux);
-		}
+		PRAY_BAD_INDEX(p_index, size(), T);
+
 		// no cow needed, since it's reading
 		return _get_data()[p_index];
 	}
