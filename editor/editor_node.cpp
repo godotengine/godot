@@ -4436,6 +4436,11 @@ void EditorNode::_scene_tab_input(const Ref<InputEvent> &p_input) {
 	}
 }
 
+void EditorNode::_reposition_active_tab(int idx_to) {
+	editor_data.move_edited_scene_to_index(idx_to);
+	_update_scene_tabs();
+}
+
 void EditorNode::_thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Variant &p_udata) {
 	int p_tab = p_udata.operator signed int();
 	if (p_preview.is_valid()) {
@@ -5025,6 +5030,7 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method("_scene_tab_hover", &EditorNode::_scene_tab_hover);
 	ClassDB::bind_method("_scene_tab_exit", &EditorNode::_scene_tab_exit);
 	ClassDB::bind_method("_scene_tab_input", &EditorNode::_scene_tab_input);
+	ClassDB::bind_method("_reposition_active_tab", &EditorNode::_reposition_active_tab);
 	ClassDB::bind_method("_thumbnail_done", &EditorNode::_thumbnail_done);
 	ClassDB::bind_method("_scene_tab_script_edited", &EditorNode::_scene_tab_script_edited);
 	ClassDB::bind_method("_set_main_scene_state", &EditorNode::_set_main_scene_state);
@@ -5399,6 +5405,7 @@ EditorNode::EditorNode() {
 	scene_tabs->connect("tab_hover", this, "_scene_tab_hover");
 	scene_tabs->connect("mouse_exited", this, "_scene_tab_exit");
 	scene_tabs->connect("gui_input", this, "_scene_tab_input");
+	scene_tabs->connect("reposition_active_tab_request", this, "_reposition_active_tab");
 
 	HBoxContainer *tabbar_container = memnew(HBoxContainer);
 	scene_tabs->set_h_size_flags(Control::SIZE_EXPAND_FILL);

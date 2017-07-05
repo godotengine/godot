@@ -96,6 +96,11 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	Variant get_drag_data(const Point2 &p_point);
+	bool can_drop_data(const Point2 &p_point, const Variant &p_data) const;
+	void drop_data(const Point2 &p_point, const Variant &p_data);
+	int get_tab_idx_at_point(const Point2 &p_point) const;
+
 public:
 	void add_tab(const String &p_str = "", const Ref<Texture> &p_icon = Ref<Texture>());
 
@@ -128,7 +133,7 @@ public:
 	void ensure_tab_visible(int p_idx);
 	void set_min_width(int p_width);
 
-	Rect2 get_tab_rect(int p_tab);
+	Rect2 get_tab_rect(int p_tab) const;
 	Size2 get_minimum_size() const;
 
 	Tabs();
