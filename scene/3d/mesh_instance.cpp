@@ -340,12 +340,13 @@ void MeshInstance::create_debug_tagents() {
 		mi->set_mesh(am);
 		mi->set_name("DebugTangents");
 		add_child(mi);
-		if (get_parent()) {
-			if (get_parent() == get_tree()->get_edited_scene_root())
-				mi->set_owner(get_parent());
-			else
-				mi->set_owner(get_parent()->get_owner());
-		}
+#ifdef TOOLS_ENABLED
+
+		if (this == get_tree()->get_edited_scene_root())
+			mi->set_owner(this);
+		else
+			mi->set_owner(get_owner());
+#endif
 	}
 }
 

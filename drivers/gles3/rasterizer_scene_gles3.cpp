@@ -1884,14 +1884,21 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 
 		if (p_base_env) {
 			glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 2);
-			glBindTexture(GL_TEXTURE_2D, p_base_env);
+			if (storage->config.use_texture_array_environment) {
+				glBindTexture(GL_TEXTURE_2D_ARRAY, p_base_env);
+			} else {
+				glBindTexture(GL_TEXTURE_2D, p_base_env);
+			}
 			state.scene_shader.set_conditional(SceneShaderGLES3::USE_RADIANCE_MAP, true);
+			state.scene_shader.set_conditional(SceneShaderGLES3::USE_RADIANCE_MAP_ARRAY, storage->config.use_texture_array_environment);
 		} else {
 			state.scene_shader.set_conditional(SceneShaderGLES3::USE_RADIANCE_MAP, false);
+			state.scene_shader.set_conditional(SceneShaderGLES3::USE_RADIANCE_MAP_ARRAY, false);
 		}
 	} else {
 
 		state.scene_shader.set_conditional(SceneShaderGLES3::USE_RADIANCE_MAP, false);
+		state.scene_shader.set_conditional(SceneShaderGLES3::USE_RADIANCE_MAP_ARRAY, false);
 	}
 
 	state.cull_front = false;

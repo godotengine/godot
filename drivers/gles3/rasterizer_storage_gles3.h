@@ -86,6 +86,8 @@ public:
 
 		bool generate_wireframes;
 
+		bool use_texture_array_environment;
+
 		Set<String> extensions;
 
 		bool keep_original_textures;

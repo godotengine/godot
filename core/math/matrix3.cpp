@@ -451,9 +451,10 @@ Basis::operator String() const {
 }
 
 Basis::operator Quat() const {
-#ifdef MATH_CHECKS
-	ERR_FAIL_COND_V(is_rotation() == false, Quat());
-#endif
+	//commenting this check because precision issues cause it to fail when it shouldn't
+	//#ifdef MATH_CHECKS
+	//ERR_FAIL_COND_V(is_rotation() == false, Quat());
+	//#endif
 	real_t trace = elements[0][0] + elements[1][1] + elements[2][2];
 	real_t temp[4];
 

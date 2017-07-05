@@ -818,7 +818,7 @@ float Environment::get_fog_height_curve() const {
 void Environment::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_background", "mode"), &Environment::set_background);
-	ClassDB::bind_method(D_METHOD("set_sky", "sky:CubeMap"), &Environment::set_sky);
+	ClassDB::bind_method(D_METHOD("set_sky", "sky:Sky"), &Environment::set_sky);
 	ClassDB::bind_method(D_METHOD("set_sky_scale", "scale"), &Environment::set_sky_scale);
 	ClassDB::bind_method(D_METHOD("set_bg_color", "color"), &Environment::set_bg_color);
 	ClassDB::bind_method(D_METHOD("set_bg_energy", "energy"), &Environment::set_bg_energy);
