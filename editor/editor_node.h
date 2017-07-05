@@ -431,6 +431,9 @@ private:
 	List<String> previous_scenes;
 	bool opening_prev;
 
+	Tree *_tpl_tree;
+	TextEdit *_tpl_text;
+
 	void _dialog_action(String p_file);
 
 	void _edit_current();
@@ -635,6 +638,8 @@ private:
 	void _start_dimming(bool p_dimming);
 	void _dim_timeout();
 	void _check_gui_base_size();
+
+	void _license_tree_selected();
 
 protected:
 	void _notification(int p_what);
