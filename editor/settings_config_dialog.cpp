@@ -364,10 +364,6 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	press_a_key->add_child(l);
 	press_a_key->connect("input_event", this, "_wait_for_key");
 	press_a_key->connect("confirmed", this, "_press_a_key_confirm");
-	//Button *load = memnew( Button );
-
-	//load->set_text("Load..");
-	//hbc->add_child(load);
 
 	//get_ok()->set_text("Apply");
 	set_hide_on_ok(true);
