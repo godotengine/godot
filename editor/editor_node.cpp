@@ -43,6 +43,7 @@
 #include "io/config_file.h"
 #include "io/stream_peer_ssl.h"
 #include "io/zip_io.h"
+#include "license.gen.h"
 #include "main/input_default.h"
 #include "message_queue.h"
 #include "os/file_access.h"
@@ -6108,6 +6109,15 @@ EditorNode::EditorNode() {
 		dev_base->set_name(TTR("Authors"));
 		dev_base->set_v_size_flags(Control::SIZE_EXPAND);
 		tc->add_child(dev_base);
+
+		TextEdit *license = memnew(TextEdit);
+		license->set_name(TTR("License"));
+		license->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		license->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+		license->set_wrap(true);
+		license->set_readonly(true);
+		license->set_text(String::utf8(about_license));
+		tc->add_child(license);
 
 		VBoxContainer *dev_vbc = memnew(VBoxContainer);
 		dev_vbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
