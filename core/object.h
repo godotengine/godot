@@ -533,6 +533,12 @@ public:
 	void add_change_receptor(Object *p_receptor);
 	void remove_change_receptor(Object *p_receptor);
 
+// TODO: ensure 'this' is never NULL since it's UB, but by now, avoid warning flood
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wundefined-bool-conversion"
+#endif
+
 	template <class T>
 	T *cast_to() {
 
@@ -562,6 +568,10 @@ public:
 			return NULL;
 #endif
 	}
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 	enum {
 

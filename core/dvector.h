@@ -409,14 +409,9 @@ public:
 		if (p_to < 0) {
 			p_to = size() + p_to;
 		}
-		if (p_from < 0 || p_from >= size()) {
-			PoolVector<T> &aux = *((PoolVector<T> *)0); // nullreturn
-			ERR_FAIL_COND_V(p_from < 0 || p_from >= size(), aux)
-		}
-		if (p_to < 0 || p_to >= size()) {
-			PoolVector<T> &aux = *((PoolVector<T> *)0); // nullreturn
-			ERR_FAIL_COND_V(p_to < 0 || p_to >= size(), aux)
-		}
+
+		CRASH_BAD_INDEX(p_from, size());
+		CRASH_BAD_INDEX(p_to, size());
 
 		PoolVector<T> slice;
 		int span = 1 + p_to - p_from;
@@ -506,13 +501,9 @@ void PoolVector<T>::push_back(const T &p_val) {
 template <class T>
 const T PoolVector<T>::operator[](int p_index) const {
 
-	if (p_index < 0 || p_index >= size()) {
-		T &aux = *((T *)0); //nullreturn
-		ERR_FAIL_COND_V(p_index < 0 || p_index >= size(), aux);
-	}
+	CRASH_BAD_INDEX(p_index, size());
 
 	Read r = read();
-
 	return r[p_index];
 }
 
