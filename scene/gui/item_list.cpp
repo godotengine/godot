@@ -1223,6 +1223,36 @@ Vector<int> ItemList::get_selected_items() {
 	return selected;
 }
 
+void ItemList::_set_items(const Array &p_items) {
+
+	ERR_FAIL_COND(p_items.size() % 3);
+	clear();
+
+	for (int i = 0; i < p_items.size(); i += 3) {
+
+		String text = p_items[i + 0];
+		Ref<Texture> icon = p_items[i + 1];
+		bool disabled = p_items[i + 2];
+
+		int idx = get_item_count();
+		add_item(text, icon);
+		set_item_disabled(idx, disabled);
+	}
+}
+
+Array ItemList::_get_items() const {
+
+	Array items;
+	for (int i = 0; i < get_item_count(); i++) {
+
+		items.push_back(get_item_text(i));
+		items.push_back(get_item_icon(i));
+		items.push_back(is_item_disabled(i));
+	}
+
+	return items;
+}
+
 void ItemList::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("add_item", "text", "icon:Texture", "selectable"), &ItemList::add_item, DEFVAL(Variant()), DEFVAL(true));
@@ -1301,6 +1331,22 @@ void ItemList::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_scroll_changed"), &ItemList::_scroll_changed);
 	ClassDB::bind_method(D_METHOD("_gui_input"), &ItemList::_gui_input);
+
+	ClassDB::bind_method(D_METHOD("_set_items"), &ItemList::_set_items);
+	ClassDB::bind_method(D_METHOD("_get_items"), &ItemList::_get_items);
+
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "items", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "_set_items", "_get_items");
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "select_mode", PROPERTY_HINT_ENUM, "Single,Multi"), "set_select_mode", "get_select_mode");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "allow_rmb_select"), "set_allow_rmb_select", "get_allow_rmb_select");
+	ADD_PROPERTYNO(PropertyInfo(Variant::INT, "max_text_lines"), "set_max_text_lines", "get_max_text_lines");
+	ADD_GROUP("Columns", "");
+	ADD_PROPERTYNO(PropertyInfo(Variant::INT, "max_columns"), "set_max_columns", "get_max_columns");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "same_column_width"), "set_same_column_width", "is_same_column_width");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "fixed_column_width"), "set_fixed_column_width", "get_fixed_column_width");
+	ADD_GROUP("Icon", "");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "icon_mode", PROPERTY_HINT_ENUM, "Top,Left"), "set_icon_mode", "get_icon_mode");
+	ADD_PROPERTYNO(PropertyInfo(Variant::REAL, "icon_scale"), "set_icon_scale", "get_icon_scale");
 
 	BIND_CONSTANT(ICON_MODE_TOP);
 	BIND_CONSTANT(ICON_MODE_LEFT);
