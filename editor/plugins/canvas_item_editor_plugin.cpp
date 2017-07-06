@@ -2373,7 +2373,7 @@ void CanvasItemEditor::_update_scroll(float) {
 	viewport->update();
 }
 
-void CanvasItemEditor::_set_anchor(Control::AnchorType p_left, Control::AnchorType p_top, Control::AnchorType p_right, Control::AnchorType p_bottom) {
+void CanvasItemEditor::_set_anchor(float p_left, float p_top, float p_right, float p_bottom) {
 	List<Node *> &selection = editor_selection->get_selected_node_list();
 
 	undo_redo->create_action(TTR("Change Anchors"));
