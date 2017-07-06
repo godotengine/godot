@@ -10939,7 +10939,8 @@
 			<argument index="0" name="json" type="String">
 			</argument>
 			<description>
-				Parse json text to the dictionary. Return OK when successed or the error code when failed.
+				Parse JSON text to the dictionary. Return OK when successed or the error code when failed.
+				Be aware that the JSON specification does not define integer or float types, but only a number type. Therefore, parsing a JSON text will convert every numerical values to [float] types.
 			</description>
 		</method>
 		<method name="size">
