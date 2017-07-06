@@ -388,7 +388,8 @@
 			<argument index="0" name="json" type="String">
 			</argument>
 			<description>
-				Parse json text to a Variant (use [method typeof] to check if it is what you expect).
+				Parse JSON text to a Variant (use [method typeof] to check if it is what you expect).
+				Be aware that the JSON specification does not define integer or float types, but only a number type. Therefore, parsing a JSON text will convert every numerical values to [float] types.
 			</description>
 		</method>
 		<method name="pow">
