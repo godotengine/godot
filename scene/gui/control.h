@@ -51,11 +51,9 @@ class Control : public CanvasItem {
 	OBJ_CATEGORY("GUI Nodes");
 
 public:
-	enum AnchorType {
-		ANCHOR_BEGIN,
-		ANCHOR_END,
-		ANCHOR_CENTER,
-	};
+	static const float ANCHOR_BEGIN = 0.0f;
+	static const float ANCHOR_CENTER = 0.5f;
+	static const float ANCHOR_END = 1.0f;
 
 	enum GrowDirection {
 		GROW_DIRECTION_BEGIN,
@@ -122,7 +120,7 @@ private:
 		Size2 size_cache;
 
 		float margin[4];
-		AnchorType anchor[4];
+		float anchor[4];
 		FocusMode focus_mode;
 		GrowDirection h_grow;
 		GrowDirection v_grow;
@@ -182,12 +180,12 @@ private:
 	void _window_find_focus_neighbour(const Vector2 &p_dir, Node *p_at, const Point2 *p_points, float p_min, float &r_closest_dist, Control **r_closest);
 	Control *_get_focus_neighbour(Margin p_margin, int p_count = 0);
 
-	void _set_anchor(Margin p_margin, AnchorType p_anchor);
+	void _set_anchor(Margin p_margin, float p_anchor);
 
 	float _get_parent_range(int p_idx) const;
 	float _get_range(int p_idx) const;
-	float _s2a(float p_val, AnchorType p_anchor, float p_range) const;
-	float _a2s(float p_val, AnchorType p_anchor, float p_range) const;
+	float _s2a(float p_val, float p_anchor, float p_range) const;
+	float _a2s(float p_val, float p_anchor, float p_range) const;
 	void _propagate_theme_changed(CanvasItem *p_at, Control *p_owner, bool p_assign = true);
 	void _theme_changed();
 
@@ -275,10 +273,10 @@ public:
 
 	/* POSITIONING */
 
-	void set_anchor(Margin p_margin, AnchorType p_anchor, bool p_keep_margin = false);
-	void set_anchor_and_margin(Margin p_margin, AnchorType p_anchor, float p_pos);
+	void set_anchor(Margin p_margin, float p_anchor, bool p_keep_margin = false);
+	void set_anchor_and_margin(Margin p_margin, float p_anchor, float p_pos);
 
-	AnchorType get_anchor(Margin p_margin) const;
+	float get_anchor(Margin p_margin) const;
 
 	void set_margin(Margin p_margin, float p_value);
 
@@ -425,7 +423,6 @@ public:
 	~Control();
 };
 
-VARIANT_ENUM_CAST(Control::AnchorType);
 VARIANT_ENUM_CAST(Control::FocusMode);
 VARIANT_ENUM_CAST(Control::SizeFlags);
 VARIANT_ENUM_CAST(Control::CursorShape);

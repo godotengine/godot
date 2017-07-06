@@ -88,7 +88,7 @@ CameraEditor::CameraEditor() {
 	preview->set_toggle_mode(true);
 	preview->set_anchor(MARGIN_LEFT, Control::ANCHOR_END);
 	preview->set_anchor(MARGIN_RIGHT, Control::ANCHOR_END);
-	preview->set_margin(MARGIN_LEFT, 60);
+	preview->set_margin(MARGIN_LEFT, -60);
 	preview->set_margin(MARGIN_RIGHT, 0);
 	preview->set_margin(MARGIN_TOP, 0);
 	preview->set_margin(MARGIN_BOTTOM, 10);

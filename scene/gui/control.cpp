@@ -1212,21 +1212,7 @@ void Control::_size_changed() {
 	for (int i = 0; i < 4; i++) {
 
 		float area = parent_size[i & 1];
-		switch (data.anchor[i]) {
-
-			case ANCHOR_BEGIN: {
-
-				margin_pos[i] = data.margin[i];
-			} break;
-			case ANCHOR_END: {
-
-				margin_pos[i] = area - data.margin[i];
-			} break;
-			case ANCHOR_CENTER: {
-
-				margin_pos[i] = (area / 2) - data.margin[i];
-			} break;
-		}
+		margin_pos[i] = data.margin[i] + (data.anchor[i] * area);
 	}
 
 	Point2 new_pos_cache = Point2(margin_pos[0], margin_pos[1]);
@@ -1299,59 +1285,29 @@ float Control::_get_range(int p_idx) const {
 	return to - from;
 }
 
-float Control::_s2a(float p_val, AnchorType p_anchor, float p_range) const {
-
-	switch (p_anchor) {
-
-		case ANCHOR_BEGIN: {
-			return p_val;
-		} break;
-		case ANCHOR_END: {
-			return p_range - p_val;
-		} break;
-		case ANCHOR_CENTER: {
-			return (p_range / 2) - p_val;
-		} break;
-	}
-
-	return 0;
+float Control::_s2a(float p_val, float p_anchor, float p_range) const {
+	return p_val - (p_anchor * p_range);
 }
 
-float Control::_a2s(float p_val, AnchorType p_anchor, float p_range) const {
-
-	switch (p_anchor) {
-
-		case ANCHOR_BEGIN: {
-			return Math::floor(p_val);
-		} break;
-		case ANCHOR_END: {
-			return Math::floor(p_range - p_val);
-		} break;
-		case ANCHOR_CENTER: {
-			return Math::floor((p_range / 2) - p_val);
-		} break;
-	}
-	return 0;
+float Control::_a2s(float p_val, float p_anchor, float p_range) const {
+	return Math::floor(p_val + (p_anchor * p_range));
 }
 
-void Control::set_anchor(Margin p_margin, AnchorType p_anchor, bool p_keep_margin) {
-
-	if (!is_inside_tree()) {
-
-		data.anchor[p_margin] = p_anchor;
-	} else if (!p_keep_margin) {
-		float pr = _get_parent_range(p_margin);
-		float s = _a2s(data.margin[p_margin], data.anchor[p_margin], pr);
-		data.anchor[p_margin] = p_anchor;
-		data.margin[p_margin] = _s2a(s, p_anchor, pr);
-	} else {
-		data.anchor[p_margin] = p_anchor;
-		_size_changed();
+void Control::set_anchor(Margin p_margin, float p_anchor, bool p_keep_margin) {
+	data.anchor[p_margin] = CLAMP(p_anchor, 0.0, 1.0);
+	if (is_inside_tree()) {
+		if (!p_keep_margin) {
+			float pr = _get_parent_range(p_margin);
+			float s = _a2s(data.margin[p_margin], data.anchor[p_margin], pr);
+			data.margin[p_margin] = _s2a(s, p_anchor, pr);
+		} else {
+			_size_changed();
+		}
 	}
 	_change_notify();
 }
 
-void Control::_set_anchor(Margin p_margin, AnchorType p_anchor) {
+void Control::_set_anchor(Margin p_margin, float p_anchor) {
 #ifdef TOOLS_ENABLED
 	if (is_inside_tree() && get_tree()->is_editor_hint()) {
 		set_anchor(p_margin, p_anchor, EDITOR_DEF("editors/2d/keep_margins_when_changing_anchors", false));
@@ -1363,13 +1319,13 @@ void Control::_set_anchor(Margin p_margin, AnchorType p_anchor) {
 #endif
 }
 
-void Control::set_anchor_and_margin(Margin p_margin, AnchorType p_anchor, float p_pos) {
+void Control::set_anchor_and_margin(Margin p_margin, float p_anchor, float p_pos) {
 
 	set_anchor(p_margin, p_anchor);
 	set_margin(p_margin, p_pos);
 }
 
-Control::AnchorType Control::get_anchor(Margin p_margin) const {
+float Control::get_anchor(Margin p_margin) const {
 
 	return data.anchor[p_margin];
 }
@@ -1523,11 +1479,13 @@ Rect2 Control::get_item_rect() const {
 void Control::set_area_as_parent_rect(int p_margin) {
 
 	data.anchor[MARGIN_LEFT] = ANCHOR_BEGIN;
+	data.margin[MARGIN_LEFT] = p_margin;
 	data.anchor[MARGIN_TOP] = ANCHOR_BEGIN;
+	data.margin[MARGIN_TOP] = p_margin;
 	data.anchor[MARGIN_RIGHT] = ANCHOR_END;
+	data.margin[MARGIN_RIGHT] = -p_margin;
 	data.anchor[MARGIN_BOTTOM] = ANCHOR_END;
-	for (int i = 0; i < 4; i++)
-		data.margin[i] = p_margin;
+	data.margin[MARGIN_BOTTOM] = -p_margin;
 
 	_size_changed();
 }
@@ -2371,11 +2329,11 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("accept_event"), &Control::accept_event);
 	ClassDB::bind_method(D_METHOD("get_minimum_size"), &Control::get_minimum_size);
 	ClassDB::bind_method(D_METHOD("get_combined_minimum_size"), &Control::get_combined_minimum_size);
-	ClassDB::bind_method(D_METHOD("set_anchor", "margin", "anchor_mode", "keep_margin"), &Control::set_anchor, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("_set_anchor", "margin", "anchor_mode"), &Control::_set_anchor);
+	ClassDB::bind_method(D_METHOD("set_anchor", "margin", "anchor", "keep_margin"), &Control::set_anchor, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("_set_anchor", "margin", "anchor"), &Control::_set_anchor);
 	ClassDB::bind_method(D_METHOD("get_anchor", "margin"), &Control::get_anchor);
 	ClassDB::bind_method(D_METHOD("set_margin", "margin", "offset"), &Control::set_margin);
-	ClassDB::bind_method(D_METHOD("set_anchor_and_margin", "margin", "anchor_mode", "offset"), &Control::set_anchor_and_margin);
+	ClassDB::bind_method(D_METHOD("set_anchor_and_margin", "margin", "anchor", "offset"), &Control::set_anchor_and_margin);
 	ClassDB::bind_method(D_METHOD("set_begin", "pos"), &Control::set_begin);
 	ClassDB::bind_method(D_METHOD("set_end", "pos"), &Control::set_end);
 	ClassDB::bind_method(D_METHOD("set_position", "pos"), &Control::set_position);
@@ -2497,10 +2455,10 @@ void Control::_bind_methods() {
 	BIND_VMETHOD(MethodInfo("drop_data", PropertyInfo(Variant::VECTOR2, "pos"), PropertyInfo(Variant::NIL, "data")));
 
 	ADD_GROUP("Anchor", "anchor_");
-	ADD_PROPERTYINZ(PropertyInfo(Variant::INT, "anchor_left", PROPERTY_HINT_ENUM, "Begin,End,Center"), "_set_anchor", "get_anchor", MARGIN_LEFT);
-	ADD_PROPERTYINZ(PropertyInfo(Variant::INT, "anchor_top", PROPERTY_HINT_ENUM, "Begin,End,Center"), "_set_anchor", "get_anchor", MARGIN_TOP);
-	ADD_PROPERTYINZ(PropertyInfo(Variant::INT, "anchor_right", PROPERTY_HINT_ENUM, "Begin,End,Center"), "_set_anchor", "get_anchor", MARGIN_RIGHT);
-	ADD_PROPERTYINZ(PropertyInfo(Variant::INT, "anchor_bottom", PROPERTY_HINT_ENUM, "Begin,End,Center"), "_set_anchor", "get_anchor", MARGIN_BOTTOM);
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "anchor_left", PROPERTY_HINT_RANGE, "0,1,0.01"), "_set_anchor", "get_anchor", MARGIN_LEFT);
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "anchor_top", PROPERTY_HINT_RANGE, "0,1,0.01"), "_set_anchor", "get_anchor", MARGIN_TOP);
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "anchor_right", PROPERTY_HINT_RANGE, "0,1,0.01"), "_set_anchor", "get_anchor", MARGIN_RIGHT);
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "anchor_bottom", PROPERTY_HINT_RANGE, "0,1,0.01"), "_set_anchor", "get_anchor", MARGIN_BOTTOM);
 
 	ADD_GROUP("Margin", "margin_");
 	ADD_PROPERTYINZ(PropertyInfo(Variant::INT, "margin_left", PROPERTY_HINT_RANGE, "-4096,4096"), "set_margin", "get_margin", MARGIN_LEFT);
@@ -2541,9 +2499,6 @@ void Control::_bind_methods() {
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), "set_theme", "get_theme");
 	ADD_GROUP("", "");
 
-	BIND_CONSTANT(ANCHOR_BEGIN);
-	BIND_CONSTANT(ANCHOR_END);
-	BIND_CONSTANT(ANCHOR_CENTER);
 	BIND_CONSTANT(FOCUS_NONE);
 	BIND_CONSTANT(FOCUS_CLICK);
 	BIND_CONSTANT(FOCUS_ALL);

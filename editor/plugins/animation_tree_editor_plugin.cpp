@@ -1371,7 +1371,7 @@ AnimationTreeEditor::AnimationTreeEditor() {
 
 	edit_option = memnew(OptionButton);
 	edit_option->set_anchor(MARGIN_RIGHT, ANCHOR_END);
-	edit_option->set_margin(MARGIN_RIGHT, 10);
+	edit_option->set_margin(MARGIN_RIGHT, -10);
 	edit_dialog->add_child(edit_option);
 	edit_option->connect("item_selected", this, "_edit_dialog_changedf");
 	edit_option->hide();
@@ -1379,7 +1379,7 @@ AnimationTreeEditor::AnimationTreeEditor() {
 	for (int i = 0; i < 2; i++) {
 		edit_scroll[i] = memnew(HSlider);
 		edit_scroll[i]->set_anchor(MARGIN_RIGHT, ANCHOR_END);
-		edit_scroll[i]->set_margin(MARGIN_RIGHT, 10);
+		edit_scroll[i]->set_margin(MARGIN_RIGHT, -10);
 		edit_dialog->add_child(edit_scroll[i]);
 		edit_scroll[i]->hide();
 		edit_scroll[i]->connect("value_changed", this, "_edit_dialog_changedf");
@@ -1387,7 +1387,7 @@ AnimationTreeEditor::AnimationTreeEditor() {
 	for (int i = 0; i < 4; i++) {
 		edit_line[i] = memnew(LineEdit);
 		edit_line[i]->set_anchor(MARGIN_RIGHT, ANCHOR_END);
-		edit_line[i]->set_margin(MARGIN_RIGHT, 10);
+		edit_line[i]->set_margin(MARGIN_RIGHT, -10);
 		edit_dialog->add_child(edit_line[i]);
 		edit_line[i]->hide();
 		edit_line[i]->connect("text_changed", this, "_edit_dialog_changeds");
@@ -1399,14 +1399,14 @@ AnimationTreeEditor::AnimationTreeEditor() {
 
 	edit_button = memnew(Button);
 	edit_button->set_anchor(MARGIN_RIGHT, ANCHOR_END);
-	edit_button->set_margin(MARGIN_RIGHT, 10);
+	edit_button->set_margin(MARGIN_RIGHT, -10);
 	edit_dialog->add_child(edit_button);
 	edit_button->hide();
 	edit_button->connect("pressed", this, "_edit_oneshot_start");
 
 	edit_check = memnew(CheckButton);
 	edit_check->set_anchor(MARGIN_RIGHT, ANCHOR_END);
-	edit_check->set_margin(MARGIN_RIGHT, 10);
+	edit_check->set_margin(MARGIN_RIGHT, -10);
 	edit_dialog->add_child(edit_check);
 	edit_check->hide();
 	edit_check->connect("pressed", this, "_edit_dialog_changed");
@@ -1428,7 +1428,7 @@ AnimationTreeEditor::AnimationTreeEditor() {
 
 	filter_button = memnew(Button);
 	filter_button->set_anchor(MARGIN_RIGHT, ANCHOR_END);
-	filter_button->set_margin(MARGIN_RIGHT, 10);
+	filter_button->set_margin(MARGIN_RIGHT, -10);
 	edit_dialog->add_child(filter_button);
 	filter_button->hide();
 	filter_button->set_text(TTR("Filters.."));

@@ -120,8 +120,8 @@ SamplePlayerEditor::SamplePlayerEditor() {
 
 	play->set_position(Point2( 5, 5 ));
 	play->set_toggle_mode(true);
-	play->set_anchor_and_margin(MARGIN_LEFT,Control::ANCHOR_END,250);
-	play->set_anchor_and_margin(MARGIN_RIGHT,Control::ANCHOR_END,230);
+	play->set_anchor_and_margin(MARGIN_LEFT,Control::ANCHOR_END,-250);
+	play->set_anchor_and_margin(MARGIN_RIGHT,Control::ANCHOR_END,-230);
 	play->set_anchor_and_margin(MARGIN_TOP,Control::ANCHOR_BEGIN,0);
 	play->set_anchor_and_margin(MARGIN_BOTTOM,Control::ANCHOR_BEGIN,0);
 
@@ -131,15 +131,15 @@ SamplePlayerEditor::SamplePlayerEditor() {
 
 	stop->set_position(Point2( 35, 5 ));
 	stop->set_toggle_mode(true);
-	stop->set_anchor_and_margin(MARGIN_LEFT,Control::ANCHOR_END,220);
-	stop->set_anchor_and_margin(MARGIN_RIGHT,Control::ANCHOR_END,200);
+	stop->set_anchor_and_margin(MARGIN_LEFT,Control::ANCHOR_END,-220);
+	stop->set_anchor_and_margin(MARGIN_RIGHT,Control::ANCHOR_END,-200);
 	stop->set_anchor_and_margin(MARGIN_TOP,Control::ANCHOR_BEGIN,0);
 	stop->set_anchor_and_margin(MARGIN_BOTTOM,Control::ANCHOR_BEGIN,0);
 	add_child(stop);
 
 	samples = memnew( OptionButton );
-	samples->set_anchor_and_margin(MARGIN_LEFT,Control::ANCHOR_END,190);
-	samples->set_anchor_and_margin(MARGIN_RIGHT,Control::ANCHOR_END,5);
+	samples->set_anchor_and_margin(MARGIN_LEFT,Control::ANCHOR_END,-190);
+	samples->set_anchor_and_margin(MARGIN_RIGHT,Control::ANCHOR_END,-5);
 	samples->set_anchor_and_margin(MARGIN_TOP,Control::ANCHOR_BEGIN,0);
 	samples->set_anchor_and_margin(MARGIN_BOTTOM,Control::ANCHOR_BEGIN,0);
 	add_child(samples);
@@ -182,7 +182,7 @@ SamplePlayerEditorPlugin::SamplePlayerEditorPlugin(EditorNode *p_node) {
 
 	sample_player_editor->set_anchor(MARGIN_LEFT,Control::ANCHOR_END);
 	sample_player_editor->set_anchor(MARGIN_RIGHT,Control::ANCHOR_END);
-	sample_player_editor->set_margin(MARGIN_LEFT,250);
+	sample_player_editor->set_margin(MARGIN_LEFT,-250);
 	sample_player_editor->set_margin(MARGIN_RIGHT,0);
 	sample_player_editor->set_margin(MARGIN_TOP,0);
 	sample_player_editor->set_margin(MARGIN_BOTTOM,10);

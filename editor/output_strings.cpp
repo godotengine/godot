@@ -38,15 +38,15 @@ void OutputStrings::update_scrollbars() {
 	v_scroll->set_anchor(MARGIN_RIGHT, ANCHOR_END);
 	v_scroll->set_anchor(MARGIN_BOTTOM, ANCHOR_END);
 
-	v_scroll->set_begin(Point2(vmin.width, 0));
+	v_scroll->set_begin(Point2(-vmin.width, 0));
 	v_scroll->set_end(Point2(0, 0));
 
 	h_scroll->set_anchor(MARGIN_RIGHT, ANCHOR_END);
 	h_scroll->set_anchor(MARGIN_TOP, ANCHOR_END);
 	h_scroll->set_anchor(MARGIN_BOTTOM, ANCHOR_END);
 
-	h_scroll->set_begin(Point2(0, hmin.y));
-	h_scroll->set_end(Point2(vmin.x, 0));
+	h_scroll->set_begin(Point2(0, -hmin.y));
+	h_scroll->set_end(Point2(-vmin.x, 0));
 
 	margin.y = hmin.y;
 	margin.x = vmin.x;

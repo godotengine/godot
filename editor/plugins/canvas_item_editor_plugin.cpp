@@ -2338,7 +2338,7 @@ void CanvasItemEditor::_update_scroll(float) {
 	viewport->update();
 }
 
-void CanvasItemEditor::_set_anchor(Control::AnchorType p_left, Control::AnchorType p_top, Control::AnchorType p_right, Control::AnchorType p_bottom) {
+void CanvasItemEditor::_set_anchor(float p_left, float p_top, float p_right, float p_bottom) {
 	List<Node *> &selection = editor_selection->get_selected_node_list();
 
 	undo_redo->create_action(TTR("Change Anchors"));
@@ -3372,7 +3372,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	dialog_val = memnew(SpinBox);
 	dialog_val->set_anchor(MARGIN_RIGHT, ANCHOR_END);
 	dialog_val->set_begin(Point2(15, 25));
-	dialog_val->set_end(Point2(10, 25));
+	dialog_val->set_end(Point2(-10, 25));
 	value_dialog->add_child(dialog_val);
 	dialog_val->connect("value_changed", this, "_dialog_value_changed");
 	select_sb = Ref<StyleBoxTexture>(memnew(StyleBoxTexture));

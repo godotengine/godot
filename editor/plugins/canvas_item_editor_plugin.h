@@ -360,7 +360,7 @@ class CanvasItemEditor : public VBoxContainer {
 
 	void _focus_selection(int p_op);
 
-	void _set_anchor(Control::AnchorType p_left, Control::AnchorType p_top, Control::AnchorType p_right, Control::AnchorType p_bottom);
+	void _set_anchor(float p_left, float p_top, float p_right, float p_bottom);
 	void _set_full_rect();
 
 	HSplitContainer *palette_split;

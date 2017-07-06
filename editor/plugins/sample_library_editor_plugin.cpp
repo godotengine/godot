@@ -452,9 +452,9 @@ SampleLibraryEditor::SampleLibraryEditor() {
 	tree->set_columns(6);
 	add_child(tree);
 	tree->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_BEGIN,5);
-	tree->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_END,5);
+	tree->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_END,-5);
 	tree->set_anchor_and_margin(MARGIN_TOP,ANCHOR_BEGIN,30);
-	tree->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_END,5);
+	tree->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_END,-5);
 	tree->set_column_titles_visible(true);
 	tree->set_column_title(0,TTR("Name"));
 	tree->set_column_title(1,TTR("Preview"));
