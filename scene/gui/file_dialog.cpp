@@ -421,14 +421,14 @@ void FileDialog::update_file_list() {
 			ti->set_metadata(0, d);
 
 			if (file->get_text() == files.front()->get() || match_str == files.front()->get())
-				ti->select(0);
+				ti->set_selected(0);
 		}
 
 		files.pop_front();
 	}
 
 	if (tree->get_root() && tree->get_root()->get_children() && tree->get_selected() == NULL)
-		tree->get_root()->get_children()->select(0);
+		tree->get_root()->get_children()->set_selected(0);
 
 	files.clear();
 }
@@ -520,7 +520,7 @@ void FileDialog::set_current_file(const String &p_file) {
 	invalidate();
 	int lp = p_file.find_last(".");
 	if (lp != -1) {
-		file->select(0, lp);
+		file->set_selected(0, lp);
 		file->grab_focus();
 	}
 }
@@ -670,7 +670,7 @@ void FileDialog::_update_drives() {
 			drives->add_item(dir_access->get_drive(i));
 		}
 
-		drives->select(dir_access->get_current_drive());
+		drives->set_selected(dir_access->get_current_drive());
 	}
 }
 

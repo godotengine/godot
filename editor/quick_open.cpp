@@ -103,7 +103,7 @@ void EditorQuickOpen::_sbox_input(const Ref<InputEvent> &p_ie) {
 					item = search_options->get_next_selected(item);
 				}
 
-				current->select(0);
+				current->set_selected(0);
 
 			} break;
 		}
@@ -218,7 +218,7 @@ void EditorQuickOpen::_update_search() {
 	if (root->get_children()) {
 		TreeItem *ti = root->get_children();
 
-		ti->select(0);
+		ti->set_selected(0);
 		ti->set_as_cursor(0);
 	}
 

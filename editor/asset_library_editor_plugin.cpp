@@ -635,7 +635,7 @@ void EditorAssetLibrary::_select_category(int p_id) {
 			continue;
 		int id = categories->get_item_metadata(i);
 		if (id == p_id) {
-			categories->select(i);
+			categories->set_selected(i);
 			_search();
 			break;
 		}

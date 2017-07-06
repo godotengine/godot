@@ -120,7 +120,7 @@ void ImportDock::set_edit_path(const String &p_path) {
 		import_as->add_item(E->get().first);
 		import_as->set_item_metadata(import_as->get_item_count() - 1, E->get().second);
 		if (E->get().second == params->importer->get_importer_name()) {
-			import_as->select(import_as->get_item_count() - 1);
+			import_as->set_selected(import_as->get_item_count() - 1);
 		}
 	}
 
@@ -233,7 +233,7 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 		import_as->add_item(E->get().first);
 		import_as->set_item_metadata(import_as->get_item_count() - 1, E->get().second);
 		if (E->get().second == params->importer->get_importer_name()) {
-			import_as->select(import_as->get_item_count() - 1);
+			import_as->set_selected(import_as->get_item_count() - 1);
 		}
 	}
 

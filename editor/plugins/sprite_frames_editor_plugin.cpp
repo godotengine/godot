@@ -517,7 +517,7 @@ void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 			it->set_editable(0, true);
 
 			if (E->get() == edited_anim) {
-				it->select(0);
+				it->set_selected(0);
 			}
 		}
 	}
@@ -552,7 +552,7 @@ void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 		if (frames->get_frame(edited_anim, i).is_valid())
 			tree->set_item_tooltip(tree->get_item_count() - 1, frames->get_frame(edited_anim, i)->get_path());
 		if (sel == i)
-			tree->select(tree->get_item_count() - 1);
+			tree->set_selected(tree->get_item_count() - 1);
 	}
 
 	anim_speed->set_value(frames->get_animation_speed(edited_anim));

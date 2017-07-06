@@ -63,7 +63,7 @@ void ColorPicker::_notification(int p_what) {
 void ColorPicker::set_focus_on_line_edit() {
 
 	c_text->grab_focus();
-	c_text->select();
+	c_text->set_selected();
 }
 
 void ColorPicker::_update_controls() {

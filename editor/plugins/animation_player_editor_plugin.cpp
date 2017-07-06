@@ -469,7 +469,7 @@ void AnimationPlayerEditor::_select_anim_by_name(const String &p_anim) {
 
 	ERR_FAIL_COND(idx == -1);
 
-	animation->select(idx);
+	animation->set_selected(idx);
 
 	_animation_selected(idx);
 }
@@ -586,14 +586,14 @@ void AnimationPlayerEditor::_animation_blend() {
 		i++;
 		blend_editor.next->add_item(to, i);
 		if (to == player->animation_get_next(current)) {
-			blend_editor.next->select(i);
+			blend_editor.next->set_selected(i);
 			anim_found = true;
 		}
 	}
 
 	// make sure we reset it else it becomes out of sync and could contain a deleted animation
 	if (!anim_found) {
-		blend_editor.next->select(0);
+		blend_editor.next->set_selected(0);
 		player->animation_set_next(current, blend_editor.next->get_item_text(0));
 	}
 
@@ -776,7 +776,7 @@ void AnimationPlayerEditor::_update_animation() {
 	for (int i = 0; i < animation->get_item_count(); i++) {
 
 		if (animation->get_item_text(i) == current) {
-			animation->select(i);
+			animation->set_selected(i);
 			break;
 		}
 	}
@@ -826,13 +826,13 @@ void AnimationPlayerEditor::_update_player() {
 
 	updating = false;
 	if (active_idx != -1) {
-		animation->select(active_idx);
+		animation->set_selected(active_idx);
 		autoplay->set_pressed(animation->get_item_text(active_idx) == player->get_autoplay());
 		_animation_selected(active_idx);
 
 	} else if (animation->get_item_count() > 0) {
 
-		animation->select(0);
+		animation->set_selected(0);
 		autoplay->set_pressed(animation->get_item_text(0) == player->get_autoplay());
 		_animation_selected(0);
 	}
@@ -908,7 +908,7 @@ void AnimationPlayerEditor::_animation_duplicate() {
 
 		if (animation->get_item_text(i) == new_name) {
 
-			animation->select(i);
+			animation->set_selected(i);
 			_animation_selected(i);
 			return;
 		}

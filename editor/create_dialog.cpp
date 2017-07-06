@@ -271,7 +271,7 @@ void CreateDialog::_update_search() {
 	}
 
 	if (to_select) {
-		to_select->select(0);
+		to_select->set_selected(0);
 		favorite->set_disabled(false);
 		favorite->set_pressed(favorite_list.find(to_select->get_text(0)) != -1);
 	}

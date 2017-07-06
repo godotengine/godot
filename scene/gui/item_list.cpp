@@ -207,7 +207,7 @@ Variant ItemList::get_item_metadata(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, items.size(), Variant());
 	return items[p_idx].metadata;
 }
-void ItemList::select(int p_idx, bool p_single) {
+void ItemList::set_selected(int p_idx, bool p_single) {
 
 	ERR_FAIL_INDEX(p_idx, items.size());
 
@@ -231,7 +231,7 @@ void ItemList::select(int p_idx, bool p_single) {
 	}
 	update();
 }
-void ItemList::unselect(int p_idx) {
+void ItemList::deselect(int p_idx) {
 
 	ERR_FAIL_INDEX(p_idx, items.size());
 
@@ -254,7 +254,7 @@ void ItemList::set_current(int p_current) {
 	ERR_FAIL_INDEX(p_current, items.size());
 
 	if (select_mode == SELECT_SINGLE)
-		select(p_current, true);
+		set_selected(p_current, true);
 	else {
 		current = p_current;
 		update();
@@ -421,7 +421,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (defer_select_single >= 0 && mb.is_valid() && mb->get_button_index() == BUTTON_LEFT && !mb->is_pressed()) {
 
-		select(defer_select_single, true);
+		set_selected(defer_select_single, true);
 
 		emit_signal("multi_selected", defer_select_single, true);
 		defer_select_single = -1;
@@ -456,7 +456,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 			int i = closest;
 
 			if (select_mode == SELECT_MULTI && items[i].selected && mb->get_command()) {
-				unselect(i);
+				deselect(i);
 				emit_signal("multi_selected", i, false);
 
 			} else if (select_mode == SELECT_MULTI && mb->get_shift() && current >= 0 && current < items.size() && current != i) {
@@ -468,7 +468,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 				}
 				for (int j = from; j <= to; j++) {
 					bool selected = !items[j].selected;
-					select(j, false);
+					set_selected(j, false);
 					if (selected)
 						emit_signal("multi_selected", i, true);
 				}
@@ -490,7 +490,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 				} else {
 					bool selected = !items[i].selected;
 
-					select(i, select_mode == SELECT_SINGLE || !mb->get_command());
+					set_selected(i, select_mode == SELECT_SINGLE || !mb->get_command());
 
 					if (selected) {
 						if (select_mode == SELECT_SINGLE) {
@@ -513,7 +513,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 		} else {
 			Vector<int> sItems = get_selected_items();
 			for (int i = 0; i < sItems.size(); i++) {
-				unselect(sItems[i]);
+				deselect(sItems[i]);
 			}
 		}
 	}
@@ -657,10 +657,10 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 
 			if (select_mode == SELECT_MULTI && current >= 0 && current < items.size()) {
 				if (items[current].selectable && !items[current].disabled && !items[current].selected) {
-					select(current, false);
+					set_selected(current, false);
 					emit_signal("multi_selected", current, true);
 				} else if (items[current].selected) {
-					unselect(current);
+					deselect(current);
 					emit_signal("multi_selected", current, false);
 				}
 			}
@@ -1175,7 +1175,7 @@ void ItemList::sort_items_by_text() {
 	if (select_mode == SELECT_SINGLE) {
 		for (int i = 0; i < items.size(); i++) {
 			if (items[i].selected) {
-				select(i);
+				set_selected(i);
 				return;
 			}
 		}
@@ -1285,8 +1285,8 @@ void ItemList::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_tooltip", "idx", "tooltip"), &ItemList::set_item_tooltip);
 	ClassDB::bind_method(D_METHOD("get_item_tooltip", "idx"), &ItemList::get_item_tooltip);
 
-	ClassDB::bind_method(D_METHOD("select", "idx", "single"), &ItemList::select, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("unselect", "idx"), &ItemList::unselect);
+	ClassDB::bind_method(D_METHOD("set_selected", "idx", "single"), &ItemList::set_selected, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("deselect", "idx"), &ItemList::deselect);
 	ClassDB::bind_method(D_METHOD("is_selected", "idx"), &ItemList::is_selected);
 	ClassDB::bind_method(D_METHOD("get_selected_items"), &ItemList::get_selected_items);
 

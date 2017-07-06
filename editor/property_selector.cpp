@@ -64,7 +64,7 @@ void PropertySelector::_sbox_input(const Ref<InputEvent> &p_ie) {
 					item = search_options->get_next_selected(item);
 				}
 
-				current->select(0);
+				current->set_selected(0);
 
 			} break;
 		}
@@ -178,7 +178,7 @@ void PropertySelector::_update_search() {
 			item->set_icon(0, type_icons[E->get().type]);
 
 			if (!found && search_box->get_text() != String() && E->get().name.find(search_box->get_text()) != -1) {
-				item->select(0);
+				item->set_selected(0);
 				found = true;
 			}
 
@@ -288,7 +288,7 @@ void PropertySelector::_update_search() {
 			item->set_selectable(0, true);
 
 			if (!found && search_box->get_text() != String() && name.find(search_box->get_text()) != -1) {
-				item->select(0);
+				item->set_selected(0);
 				found = true;
 			}
 		}

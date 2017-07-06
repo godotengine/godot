@@ -159,7 +159,7 @@ void FindReplaceBar::_replace() {
 	if (result_line != -1 && result_col != -1) {
 		text_edit->begin_complex_operation();
 
-		text_edit->select(result_line, result_col, result_line, result_col + get_search_text().length());
+		text_edit->set_selected(result_line, result_col, result_line, result_col + get_search_text().length());
 		text_edit->insert_text_at_cursor(get_replace_text());
 
 		text_edit->end_complex_operation();
@@ -206,7 +206,7 @@ void FindReplaceBar::_replace_all() {
 
 		prev_match = Point2i(result_line, result_col + replace_text.length());
 
-		text_edit->select(result_line, result_col, result_line, match_to.y);
+		text_edit->set_selected(result_line, result_col, result_line, match_to.y);
 
 		if (selection_enabled && is_selection_only()) {
 
@@ -235,7 +235,7 @@ void FindReplaceBar::_replace_all() {
 
 	if (selection_enabled && is_selection_only()) {
 		// reselect
-		text_edit->select(selection_begin.x, selection_begin.y, selection_end.x, selection_end.y);
+		text_edit->set_selected(selection_begin.x, selection_begin.y, selection_end.x, selection_end.y);
 	} else {
 		text_edit->deselect();
 	}
@@ -602,7 +602,7 @@ void FindReplaceDialog::popup_replace() {
 	replace_vb->show();
 	popup_centered(Point2(300, 300));
 	if (search_text->get_text() != "" && replace_text->get_text() == "") {
-		search_text->select(0, 0);
+		search_text->set_selected(0, 0);
 		replace_text->grab_focus();
 	} else {
 		search_text->grab_focus();
@@ -696,7 +696,7 @@ void FindReplaceDialog::_replace() {
 
 		if (selection_enabled && is_replace_selection_only()) {
 			//reselect
-			text_edit->select(selection_begin.x, selection_begin.y, selection_end.x, selection_end.y);
+			text_edit->set_selected(selection_begin.x, selection_begin.y, selection_end.x, selection_end.y);
 		} else {
 			text_edit->deselect();
 		}
@@ -751,7 +751,7 @@ bool FindReplaceDialog::_search() {
 			text_edit->cursor_set_column(col);
 		else
 			text_edit->cursor_set_column(col + text.length());
-		text_edit->select(line, col, line, col + text.length());
+		text_edit->set_selected(line, col, line, col + text.length());
 		set_error("");
 		return true;
 	} else {

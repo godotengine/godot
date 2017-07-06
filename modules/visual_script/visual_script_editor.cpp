@@ -712,7 +712,7 @@ void VisualScriptEditor::_update_members() {
 			ti->set_custom_color(0, Color(1, 1, 1, 1));
 		}
 		if (selected == E->get())
-			ti->select(0);
+			ti->set_selected(0);
 	}
 
 	TreeItem *variables = members->create_item(root);
@@ -767,7 +767,7 @@ void VisualScriptEditor::_update_members() {
 		//ti->add_button(0, Control::get_icon("Del", "EditorIcons"), 1);
 		ti->set_metadata(0, E->get());
 		if (selected == E->get())
-			ti->select(0);
+			ti->set_selected(0);
 	}
 
 	TreeItem *_signals = members->create_item(root);
@@ -787,7 +787,7 @@ void VisualScriptEditor::_update_members() {
 		//ti->add_button(0, Control::get_icon("Del", "EditorIcons"), 1);
 		ti->set_metadata(0, E->get());
 		if (selected == E->get())
-			ti->select(0);
+			ti->set_selected(0);
 	}
 
 	String base_type = script->get_instance_base_type();

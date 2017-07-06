@@ -743,7 +743,7 @@ void GridMapEditor::update_pallete() {
 	}
 
 	if (selected != -1) {
-		theme_pallete->select(selected);
+		theme_pallete->set_selected(selected);
 	}
 
 	last_theme = theme.operator->();
@@ -792,7 +792,7 @@ void GridMapEditor::update_areas() {
 	}
 
 	if (selected)
-		selected->select(0);
+		selected->set_selected(0);
 }
 
 void GridMapEditor::edit(GridMap *p_gridmap) {

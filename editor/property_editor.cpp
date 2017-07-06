@@ -1794,7 +1794,7 @@ void CustomPropertyEditor::_focus_exit() {
 		case Variant::BASIS:
 		case Variant::TRANSFORM: {
 			for (int i = 0; i < MAX_VALUE_EDITORS; ++i) {
-				value_editor[i]->select(0, 0);
+				value_editor[i]->set_selected(0, 0);
 			}
 		} break;
 		default: {}
@@ -3114,7 +3114,7 @@ void PropertyEditor::update_tree() {
 
 		if (p.name == selected_property) {
 
-			item->select(1);
+			item->set_selected(1);
 		}
 
 		//printf("property %s type %i\n",p.name.ascii().get_data(),p.type);
@@ -4527,7 +4527,7 @@ void SectionedPropertyEditor::_section_selected() {
 void SectionedPropertyEditor::set_current_section(const String &p_section) {
 
 	if (section_map.has(p_section)) {
-		section_map[p_section]->select(0);
+		section_map[p_section]->set_selected(0);
 	}
 }
 
@@ -4572,7 +4572,7 @@ void SectionedPropertyEditor::edit(Object *p_object) {
 		editor->edit(filter);
 
 		if (sections->get_root()->get_children()) {
-			sections->get_root()->get_children()->select(0);
+			sections->get_root()->get_children()->set_selected(0);
 		}
 	} else {
 
@@ -4636,7 +4636,7 @@ void SectionedPropertyEditor::update_category_list() {
 	}
 
 	if (section_map.has(selected_category)) {
-		section_map[selected_category]->select(0);
+		section_map[selected_category]->set_selected(0);
 	}
 }
 

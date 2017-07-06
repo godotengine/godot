@@ -331,7 +331,7 @@ void AnimationTreeEditor::_popup_edit_dialog() {
 				edit_option->add_item(TTR("Mix"), 1);
 				edit_option->set_begin(Point2(15, 105));
 
-				edit_option->select(anim_tree->oneshot_node_get_mix_mode(edited_node));
+				edit_option->set_selected(anim_tree->oneshot_node_get_mix_mode(edited_node));
 				edit_option->show();
 
 				edit_check->set_text(TTR("Auto Restart:"));
@@ -446,7 +446,7 @@ void AnimationTreeEditor::_popup_edit_dialog() {
 					edit_option->add_item(itos(i), i);
 				}
 
-				edit_option->select(anim_tree->transition_node_get_current(edited_node));
+				edit_option->set_selected(anim_tree->transition_node_get_current(edited_node));
 				edit_option->show();
 				edit_dialog->set_size(Size2(150, 100));
 

@@ -749,7 +749,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 				}
 				int from_line_up = from_line > 0 ? from_line - 1 : from_line;
 				int to_line_up = to_line > 0 ? to_line - 1 : to_line;
-				tx->select(from_line_up, from_col, to_line_up, to_column);
+				tx->set_selected(from_line_up, from_col, to_line_up, to_column);
 			} else {
 				int line_id = tx->cursor_get_line();
 				int next_id = line_id - 1;
@@ -788,7 +788,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 				}
 				int from_line_down = from_line < tx->get_line_count() ? from_line + 1 : from_line;
 				int to_line_down = to_line < tx->get_line_count() ? to_line + 1 : to_line;
-				tx->select(from_line_down, from_col, to_line_down, to_column);
+				tx->set_selected(from_line_down, from_col, to_line_down, to_column);
 			} else {
 				int line_id = tx->cursor_get_line();
 				int next_id = line_id + 1;
@@ -883,7 +883,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 
 			tx->cursor_set_column(column);
 			if (tx->is_selection_active()) {
-				tx->select(to_line + 1, tx->get_selection_from_column(), next_line - 1, tx->get_selection_to_column());
+				tx->set_selected(to_line + 1, tx->get_selection_from_column(), next_line - 1, tx->get_selection_to_column());
 			}
 
 			tx->end_complex_operation();

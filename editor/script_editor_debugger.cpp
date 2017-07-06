@@ -373,7 +373,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 				it->set_icon(0, get_icon(p_data[i + 2], "EditorIcons"));
 			it->set_metadata(0, id);
 			if (id == inspected_object_id) {
-				it->select(0);
+				it->set_selected(0);
 			}
 
 			if (p) {
@@ -491,7 +491,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			s->set_text(0, line);
 
 			if (i == 0)
-				s->select(0);
+				s->set_selected(0);
 		}
 	} else if (p_msg == "stack_frame_vars") {
 

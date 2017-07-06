@@ -370,7 +370,7 @@ void TextEdit::_click_selection_held() {
 		int row, col;
 		_get_mouse_pos(Point2i(mp.x, mp.y), row, col);
 
-		select(selection.selecting_line, selection.selecting_column, row, col);
+		set_selected(selection.selecting_line, selection.selecting_column, row, col);
 
 		cursor_set_line(row);
 		cursor_set_column(col);
@@ -1586,7 +1586,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 				if (!mb->is_doubleclick() && (OS::get_singleton()->get_ticks_msec() - last_dblclk) < 600 && cursor.line == prev_line) {
 					//tripleclick select line
-					select(cursor.line, 0, cursor.line, text[cursor.line].length());
+					set_selected(cursor.line, 0, cursor.line, text[cursor.line].length());
 					selection.selecting_column = 0;
 					last_dblclk = 0;
 
@@ -1611,7 +1611,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 						if (end < s.length())
 							end += 1;
 
-						select(cursor.line, beg, cursor.line, end);
+						set_selected(cursor.line, beg, cursor.line, end);
 
 						selection.selecting_column = beg;
 					}
@@ -1668,7 +1668,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				int row, col;
 				_get_mouse_pos(mm->get_position(), row, col);
 
-				select(selection.selecting_line, selection.selecting_column, row, col);
+				set_selected(selection.selecting_line, selection.selecting_column, row, col);
 
 				cursor_set_line(row);
 				cursor_set_column(col);
@@ -2719,7 +2719,7 @@ void TextEdit::_post_shift_selection() {
 
 	if (selection.active && selection.selecting_mode == Selection::MODE_SHIFT) {
 
-		select(selection.selecting_line, selection.selecting_column, cursor.line, cursor.column);
+		set_selected(selection.selecting_line, selection.selecting_column, cursor.line, cursor.column);
 		update();
 	}
 
@@ -3564,7 +3564,7 @@ void TextEdit::deselect() {
 	update();
 }
 
-void TextEdit::select(int p_from_line, int p_from_column, int p_to_line, int p_to_column) {
+void TextEdit::set_selected(int p_from_line, int p_from_column, int p_to_line, int p_to_column) {
 
 	if (p_from_line >= text.size())
 		p_from_line = text.size() - 1;
@@ -4561,7 +4561,7 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("copy"), &TextEdit::copy);
 	ClassDB::bind_method(D_METHOD("paste"), &TextEdit::paste);
 	ClassDB::bind_method(D_METHOD("select_all"), &TextEdit::select_all);
-	ClassDB::bind_method(D_METHOD("select", "from_line", "from_column", "to_line", "to_column"), &TextEdit::select);
+	ClassDB::bind_method(D_METHOD("set_selected", "from_line", "from_column", "to_line", "to_column"), &TextEdit::set_selected);
 
 	ClassDB::bind_method(D_METHOD("is_selection_active"), &TextEdit::is_selection_active);
 	ClassDB::bind_method(D_METHOD("get_selection_from_line"), &TextEdit::get_selection_from_line);

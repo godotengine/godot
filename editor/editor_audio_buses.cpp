@@ -136,7 +136,7 @@ void EditorAudioBus::update_send() {
 			}
 		}
 
-		send->select(current_send_index);
+		send->set_selected(current_send_index);
 	}
 }
 

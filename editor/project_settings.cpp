@@ -338,7 +338,7 @@ void ProjectSettings::_show_last_added(const Ref<InputEvent> &p_event, const Str
 		while (child) {
 			Variant input = child->get_meta("__input");
 			if (p_event == input) {
-				child->select(0);
+				child->set_selected(0);
 				found = true;
 				break;
 			}
@@ -403,7 +403,7 @@ void ProjectSettings::_add_item(int p_item, Ref<InputEvent> p_exiting_event) {
 
 			Ref<InputEventMouseButton> mb = p_exiting_event;
 			if (mb.is_valid()) {
-				device_index->select(mb->get_button_index() - 1);
+				device_index->set_selected(mb->get_button_index() - 1);
 				device_id->set_value(mb->get_device());
 				device_input->get_ok()->set_text(TTR("Change"));
 			} else {
@@ -424,7 +424,7 @@ void ProjectSettings::_add_item(int p_item, Ref<InputEvent> p_exiting_event) {
 
 			Ref<InputEventJoypadMotion> jm = p_exiting_event;
 			if (jm.is_valid()) {
-				device_index->select(jm->get_axis() * 2 + (jm->get_axis_value() > 0 ? 1 : 0));
+				device_index->set_selected(jm->get_axis() * 2 + (jm->get_axis_value() > 0 ? 1 : 0));
 				device_id->set_value(jm->get_device());
 				device_input->get_ok()->set_text(TTR("Change"));
 			} else {
@@ -445,7 +445,7 @@ void ProjectSettings::_add_item(int p_item, Ref<InputEvent> p_exiting_event) {
 
 			Ref<InputEventJoypadButton> jb = p_exiting_event;
 			if (jb.is_valid()) {
-				device_index->select(jb->get_button_index());
+				device_index->set_selected(jb->get_button_index());
 				device_id->set_value(jb->get_device());
 				device_input->get_ok()->set_text(TTR("Change"));
 			} else {
@@ -855,7 +855,7 @@ void ProjectSettings::_action_add() {
 
 	if (!r)
 		return;
-	r->select(0);
+	r->set_selected(0);
 	input_editor->ensure_cursor_is_visible();
 }
 
@@ -1206,7 +1206,7 @@ void ProjectSettings::_update_translations() {
 			t->set_metadata(0, keys[i]);
 			t->add_button(0, get_icon("Del", "EditorIcons"), 0, false, TTR("Remove"));
 			if (keys[i] == remap_selected) {
-				t->select(0);
+				t->set_selected(0);
 				translation_res_option_add_button->set_disabled(false);
 
 				PoolStringArray selected = remaps[keys[i]];

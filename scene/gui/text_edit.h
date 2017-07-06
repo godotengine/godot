@@ -438,7 +438,7 @@ public:
 	void copy();
 	void paste();
 	void select_all();
-	void select(int p_from_line, int p_from_column, int p_to_line, int p_to_column);
+	void set_selected(int p_from_line, int p_from_column, int p_to_line, int p_to_column);
 	void deselect();
 
 	void set_search_text(const String &p_search_text);

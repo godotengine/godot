@@ -212,7 +212,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 				} break;
 				case (KEY_A): { //Select All
-					select();
+					select_all();
 				} break;
 				default: { handled = false; }
 			}
@@ -1124,7 +1124,7 @@ bool LineEdit::is_secret() const {
 	return pass;
 }
 
-void LineEdit::select(int p_from, int p_to) {
+void LineEdit::set_selected(int p_from, int p_to) {
 
 	if (p_from == 0 && p_to == 0) {
 		selection_clear();
@@ -1252,7 +1252,7 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_editable"), &LineEdit::is_editable);
 	ClassDB::bind_method(D_METHOD("set_secret", "enabled"), &LineEdit::set_secret);
 	ClassDB::bind_method(D_METHOD("is_secret"), &LineEdit::is_secret);
-	ClassDB::bind_method(D_METHOD("select", "from", "to"), &LineEdit::select, DEFVAL(0), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("set_selected", "from", "to"), &LineEdit::set_selected, DEFVAL(0), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("menu_option", "option"), &LineEdit::menu_option);
 	ClassDB::bind_method(D_METHOD("get_menu:PopupMenu"), &LineEdit::get_menu);
 

@@ -170,7 +170,7 @@ public:
 	void set_secret(bool p_secret);
 	bool is_secret() const;
 
-	void select(int p_from = 0, int p_to = -1);
+	void set_selected(int p_from = 0, int p_to = -1);
 
 	virtual Size2 get_minimum_size() const;
 

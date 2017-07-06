@@ -372,7 +372,7 @@ void EditorHelpIndex::select_class(const String &p_class) {
 
 	if (!tree_item_map.has(p_class))
 		return;
-	tree_item_map[p_class]->select(0);
+	tree_item_map[p_class]->set_selected(0);
 	class_list->ensure_cursor_is_visible();
 }
 
