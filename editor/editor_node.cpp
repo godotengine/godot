@@ -1575,6 +1575,11 @@ void EditorNode::_edit_current() {
 
 				editor_plugin_screen->make_visible(true);
 
+				int plugin_count = editor_data.get_editor_plugin_count();
+				for (int i = 0; i < plugin_count; i++) {
+					editor_data.get_editor_plugin(i)->notify_main_screen_changed(editor_plugin_screen->get_name());
+				}
+
 				for (int i = 0; i < editor_table.size(); i++) {
 
 					main_editor_buttons[i]->set_pressed(editor_table[i] == main_plugin);
@@ -2865,6 +2870,11 @@ void EditorNode::_editor_select(int p_which) {
 	editor_plugin_screen->make_visible(true);
 	editor_plugin_screen->selected_notify();
 
+	int plugin_count = editor_data.get_editor_plugin_count();
+	for (int i = 0; i < plugin_count; i++) {
+		editor_data.get_editor_plugin(i)->notify_main_screen_changed(editor_plugin_screen->get_name());
+	}
+
 	if (EditorSettings::get_singleton()->get("interface/separate_distraction_mode")) {
 		if (p_which == EDITOR_SCRIPT) {
 			set_distraction_free_mode(script_distraction);
@@ -3756,6 +3766,7 @@ void EditorNode::register_editor_types() {
 	ClassDB::register_class<EditorResourcePreviewGenerator>();
 	ClassDB::register_class<EditorFileSystem>();
 	ClassDB::register_class<EditorFileSystemDirectory>();
+	ClassDB::register_virtual_class<ScriptEditor>();
 
 	//ClassDB::register_type<EditorImporter>();
 	//ClassDB::register_type<EditorPostImport>();

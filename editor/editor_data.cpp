@@ -353,6 +353,7 @@ void EditorData::notify_edited_scene_changed() {
 	for (int i = 0; i < editor_plugins.size(); i++) {
 
 		editor_plugins[i]->edited_scene_changed();
+		editor_plugins[i]->notify_scene_changed(get_edited_scene_root());
 	}
 }
 
@@ -488,8 +489,14 @@ void EditorData::move_edited_scene_index(int p_idx, int p_to_idx) {
 }
 void EditorData::remove_scene(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, edited_scene.size());
-	if (edited_scene[p_idx].root)
+	if (edited_scene[p_idx].root) {
+
+		for (int i = 0; i < editor_plugins.size(); i++) {
+			editor_plugins[i]->notify_scene_closed(edited_scene[p_idx].root->get_filename());
+		}
+
 		memdelete(edited_scene[p_idx].root);
+	}
 
 	if (current_edited_scene > p_idx)
 		current_edited_scene--;
@@ -613,6 +620,17 @@ void EditorData::set_edited_scene_root(Node *p_root) {
 int EditorData::get_edited_scene_count() const {
 
 	return edited_scene.size();
+}
+
+Vector<EditorData::EditedScene> EditorData::get_edited_scenes() const {
+
+	Vector<EditedScene> out_edited_scenes_list = Vector<EditedScene>();
+
+	for (int i = 0; i < edited_scene.size(); i++) {
+		out_edited_scenes_list.push_back(edited_scene[i]);
+	}
+
+	return out_edited_scenes_list;
 }
 
 void EditorData::set_edited_scene_version(uint64_t version, int scene_idx) {

@@ -405,6 +405,8 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 		script_icon->set_texture(c->cast_to<ScriptEditorBase>()->get_icon());
 		if (is_visible_in_tree())
 			c->cast_to<ScriptEditorBase>()->ensure_focus();
+
+		notify_script_changed(c->cast_to<ScriptEditorBase>()->get_edited_script());
 	}
 	if (c->cast_to<EditorHelp>()) {
 
@@ -510,7 +512,7 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save) {
 			apply_scripts();
 		}
 		current->clear_edit_menu();
-
+		notify_script_close(current->get_edited_script());
 	} else {
 		EditorHelp *help = tab_container->get_child(selected)->cast_to<EditorHelp>();
 		_add_recent_script(help->get_class());
@@ -775,6 +777,31 @@ void ScriptEditor::_file_dialog_action(String p_file) {
 		} break;
 	}
 	file_dialog_option = -1;
+}
+
+Ref<Script> ScriptEditor::_get_current_script() {
+
+	int selected = tab_container->get_current_tab();
+	if (selected < 0 || selected >= tab_container->get_child_count())
+		return NULL;
+
+	ScriptEditorBase *current = tab_container->get_child(selected)->cast_to<ScriptEditorBase>();
+	if (current) {
+		return current->get_edited_script();
+	} else {
+		return NULL;
+	}
+}
+
+Array ScriptEditor::_get_opened_script_list() const {
+
+	Array ret;
+	Vector<Ref<Script> > scripts = get_opened_scripts();
+	int scrits_amount = scripts.size();
+	for (int idx_script = 0; idx_script < scrits_amount; idx_script++) {
+		ret.push_back(scripts[idx_script]);
+	}
+	return ret;
 }
 
 void ScriptEditor::_menu_option(int p_option) {
@@ -1125,6 +1152,14 @@ void ScriptEditor::close_builtin_scripts_from_scene(const String &p_scene) {
 void ScriptEditor::edited_scene_changed() {
 
 	_update_modified_scripts_for_external_editor();
+}
+
+void ScriptEditor::notify_script_close(const Ref<Script> &p_script) {
+	emit_signal("script_close", p_script);
+}
+
+void ScriptEditor::notify_script_changed(const Ref<Script> &p_script) {
+	emit_signal("script_changed", p_script);
 }
 
 static const Node *_find_node_with_script(const Node *p_node, const RefPtr &p_script) {
@@ -1662,6 +1697,7 @@ bool ScriptEditor::edit(const Ref<Script> &p_script, int p_line, int p_col, bool
 	if (p_line >= 0)
 		se->goto_line(p_line - 1);
 
+	notify_script_changed(p_script);
 	return true;
 }
 
@@ -2038,6 +2074,8 @@ void ScriptEditor::_update_history_pos(int p_new_pos) {
 
 		n->cast_to<ScriptEditorBase>()->set_edit_state(history[history_pos].state);
 		n->cast_to<ScriptEditorBase>()->ensure_focus();
+
+		notify_script_changed(n->cast_to<ScriptEditorBase>()->get_edited_script());
 	}
 
 	if (n->cast_to<EditorHelp>()) {
@@ -2065,6 +2103,21 @@ void ScriptEditor::_history_back() {
 		_update_history_pos(history_pos - 1);
 	}
 }
+
+Vector<Ref<Script> > ScriptEditor::get_opened_scripts() const {
+
+	Vector<Ref<Script> > out_scripts = Vector<Ref<Script> >();
+
+	for (int i = 0; i < tab_container->get_child_count(); i++) {
+		ScriptEditorBase *se = tab_container->get_child(i)->cast_to<ScriptEditorBase>();
+		if (!se)
+			continue;
+		out_scripts.push_back(se->get_edited_script());
+	}
+
+	return out_scripts;
+}
+
 void ScriptEditor::set_scene_root_script(Ref<Script> p_script) {
 
 	bool open_dominant = EditorSettings::get_singleton()->get("text_editor/files/open_dominant_script_on_scene_change");
@@ -2158,6 +2211,12 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_history_back", &ScriptEditor::_history_back);
 	ClassDB::bind_method("_live_auto_reload_running_scripts", &ScriptEditor::_live_auto_reload_running_scripts);
 	ClassDB::bind_method("_unhandled_input", &ScriptEditor::_unhandled_input);
+
+	ClassDB::bind_method(D_METHOD("get_current_script"), &ScriptEditor::_get_current_script);
+	ClassDB::bind_method(D_METHOD("get_opened_scripts_list"), &ScriptEditor::_get_opened_script_list);
+
+	ADD_SIGNAL(MethodInfo("script_changed", PropertyInfo(Variant::OBJECT, "script:Script")));
+	ADD_SIGNAL(MethodInfo("script_close", PropertyInfo(Variant::STRING, "script:String")));
 }
 
 ScriptEditor::ScriptEditor(EditorNode *p_editor) {
