@@ -90,11 +90,22 @@ Size2 Control::edit_get_minimum_size() const {
 	return get_combined_minimum_size();
 }
 
+Transform2D Control::_get_internal_transform() const {
+
+	Transform2D rot_scale;
+	rot_scale.set_rotation_and_scale(data.rotation, data.scale);
+	Transform2D offset;
+	offset.set_origin(-data.pivot_offset);
+
+	return offset.affine_inverse() * (rot_scale * offset);
+}
 void Control::edit_set_rect(const Rect2 &p_edit_rect) {
 
-	Transform2D postxf;
-	postxf.set_rotation_and_scale(data.rotation, data.scale);
-	Vector2 new_pos = postxf.xform(p_edit_rect.position);
+	Transform2D xform = _get_internal_transform();
+
+	//	xform[2] += get_position();
+
+	Vector2 new_pos = xform.basis_xform(p_edit_rect.position);
 
 	Vector2 pos = get_position() + new_pos;
 
@@ -353,8 +364,9 @@ void Control::remove_child_notify(Node *p_child) {
 
 void Control::_update_canvas_item_transform() {
 
-	Transform2D xform = Transform2D(data.rotation, get_position());
-	xform.scale_basis(data.scale);
+	Transform2D xform = _get_internal_transform();
+	xform[2] += get_position();
+
 	VisualServer::get_singleton()->canvas_item_set_transform(get_canvas_item(), xform);
 }
 
@@ -1903,8 +1915,8 @@ Control::CursorShape Control::get_cursor_shape(const Point2 &p_pos) const {
 
 Transform2D Control::get_transform() const {
 
-	Transform2D xform = Transform2D(data.rotation, get_position());
-	xform.scale_basis(data.scale);
+	Transform2D xform = _get_internal_transform();
+	xform[2] += get_position();
 	return xform;
 }
 
@@ -2230,6 +2242,19 @@ void Control::_font_changed() {
 	minimum_size_changed(); //fonts affect minimum size pretty much almost always
 }
 
+void Control::set_pivot_offset(const Vector2 &p_pivot) {
+
+	data.pivot_offset = p_pivot;
+	update();
+	_notify_transform();
+	_change_notify("rect_pivot_offset");
+}
+
+Vector2 Control::get_pivot_offset() const {
+
+	return data.pivot_offset;
+}
+
 void Control::set_scale(const Vector2 &p_scale) {
 
 	data.scale = p_scale;
@@ -2362,6 +2387,7 @@ void Control::_bind_methods() {
 	// TODO: Obsolete this method (old name) properly (GH-4397)
 	ClassDB::bind_method(D_METHOD("_set_rotation_deg", "degrees"), &Control::_set_rotation_deg);
 	ClassDB::bind_method(D_METHOD("set_scale", "scale"), &Control::set_scale);
+	ClassDB::bind_method(D_METHOD("set_pivot_offset", "pivot_offset"), &Control::set_pivot_offset);
 	ClassDB::bind_method(D_METHOD("get_margin", "margin"), &Control::get_margin);
 	ClassDB::bind_method(D_METHOD("get_begin"), &Control::get_begin);
 	ClassDB::bind_method(D_METHOD("get_end"), &Control::get_end);
@@ -2372,6 +2398,7 @@ void Control::_bind_methods() {
 	// TODO: Obsolete this method (old name) properly (GH-4397)
 	ClassDB::bind_method(D_METHOD("_get_rotation_deg"), &Control::_get_rotation_deg);
 	ClassDB::bind_method(D_METHOD("get_scale"), &Control::get_scale);
+	ClassDB::bind_method(D_METHOD("get_pivot_offset"), &Control::get_pivot_offset);
 	ClassDB::bind_method(D_METHOD("get_custom_minimum_size"), &Control::get_custom_minimum_size);
 	ClassDB::bind_method(D_METHOD("get_parent_area_size"), &Control::get_size);
 	ClassDB::bind_method(D_METHOD("get_global_position"), &Control::get_global_position);
@@ -2491,6 +2518,7 @@ void Control::_bind_methods() {
 	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2, "rect_min_size"), "set_custom_minimum_size", "get_custom_minimum_size");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "rect_rotation", PROPERTY_HINT_RANGE, "-1080,1080,0.01"), "set_rotation_deg", "get_rotation_deg");
 	ADD_PROPERTYNO(PropertyInfo(Variant::VECTOR2, "rect_scale"), "set_scale", "get_scale");
+	ADD_PROPERTYNO(PropertyInfo(Variant::VECTOR2, "rect_pivot_offset"), "set_pivot_offset", "get_pivot_offset");
 	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL, "rect_clip_content"), "set_clip_contents", "is_clipping_contents");
 
 	ADD_GROUP("Hint", "hint_");

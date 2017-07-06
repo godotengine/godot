@@ -127,6 +127,7 @@ private:
 
 		float rotation;
 		Vector2 scale;
+		Vector2 pivot_offset;
 
 		bool pending_resize;
 
@@ -206,6 +207,8 @@ private:
 	void _font_changed();
 
 	void _update_canvas_item_transform();
+
+	Transform2D _get_internal_transform() const;
 
 	friend class Viewport;
 	void _modal_stack_remove();
@@ -305,6 +308,9 @@ public:
 	void set_rotation_deg(float p_degrees);
 	float get_rotation() const;
 	float get_rotation_deg() const;
+
+	void set_pivot_offset(const Vector2 &p_pivot);
+	Vector2 get_pivot_offset() const;
 
 	void set_scale(const Vector2 &p_scale);
 	Vector2 get_scale() const;

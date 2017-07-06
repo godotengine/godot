@@ -199,6 +199,25 @@ void CanvasItemEditor::_edit_set_pivot(const Vector2 &mouse_pos) {
 				undo_redo->add_undo_method(n2dc, "set_global_position", n2dc->get_global_position());
 			}
 		}
+
+		Control *cnt = E->get()->cast_to<Control>();
+		if (cnt) {
+
+			Vector2 old_pivot = cnt->get_pivot_offset();
+			Vector2 new_pivot = cnt->get_global_transform_with_canvas().affine_inverse().xform(mouse_pos);
+			Vector2 old_pos = cnt->get_position();
+
+			Vector2 top_pos = cnt->get_transform().get_origin(); //remember where top pos was
+			cnt->set_pivot_offset(new_pivot);
+			Vector2 new_top_pos = cnt->get_transform().get_origin(); //check where it is now
+
+			Vector2 new_pos = old_pos - (new_top_pos - top_pos); //offset it back
+
+			undo_redo->add_do_method(cnt, "set_pivot_offset", new_pivot);
+			undo_redo->add_do_method(cnt, "set_position", new_pos);
+			undo_redo->add_undo_method(cnt, "set_pivot_offset", old_pivot);
+			undo_redo->add_undo_method(cnt, "set_position", old_pos);
+		}
 	}
 
 	undo_redo->commit_action();
@@ -842,6 +861,8 @@ void CanvasItemEditor::_prepare_drag(const Point2 &p_click_pos) {
 		se->undo_state = canvas_item->edit_get_state();
 		if (canvas_item->cast_to<Node2D>())
 			se->undo_pivot = canvas_item->cast_to<Node2D>()->edit_get_pivot();
+		if (canvas_item->cast_to<Control>())
+			se->undo_pivot = canvas_item->cast_to<Control>()->get_pivot_offset();
 	}
 
 	if (selection.size() == 1 && selection[0]->cast_to<Node2D>()) {
@@ -1149,6 +1170,8 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 						canvas_item->edit_set_state(se->undo_state);
 						if (canvas_item->cast_to<Node2D>())
 							canvas_item->cast_to<Node2D>()->edit_set_pivot(se->undo_pivot);
+						if (canvas_item->cast_to<Node2D>())
+							canvas_item->cast_to<Control>()->set_pivot_offset(se->undo_pivot);
 					}
 				}
 
@@ -1238,11 +1261,17 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 							Variant state = canvas_item->edit_get_state();
 							undo_redo->add_do_method(canvas_item, "edit_set_state", state);
 							undo_redo->add_undo_method(canvas_item, "edit_set_state", se->undo_state);
-							if (canvas_item->cast_to<Node2D>()) {
+							{
 								Node2D *pvt = canvas_item->cast_to<Node2D>();
-								if (pvt->edit_has_pivot()) {
+								if (pvt && pvt->edit_has_pivot()) {
 									undo_redo->add_do_method(canvas_item, "edit_set_pivot", pvt->edit_get_pivot());
 									undo_redo->add_undo_method(canvas_item, "edit_set_pivot", se->undo_pivot);
+								}
+
+								Control *cnt = canvas_item->cast_to<Control>();
+								if (cnt) {
+									undo_redo->add_do_method(canvas_item, "set_pivot_offset", cnt->get_pivot_offset());
+									undo_redo->add_undo_method(canvas_item, "set_pivot_offset", se->undo_pivot);
 								}
 							}
 						}
@@ -1380,7 +1409,7 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 				if (canvas_item->cast_to<Node2D>())
 					se->undo_pivot = canvas_item->cast_to<Node2D>()->edit_get_pivot();
 				if (canvas_item->cast_to<Control>())
-					se->undo_pivot = Vector2();
+					se->undo_pivot = canvas_item->cast_to<Control>()->get_pivot_offset();
 				return;
 			}
 
@@ -1405,6 +1434,8 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 					se->undo_state = canvas_item->edit_get_state();
 					if (canvas_item->cast_to<Node2D>())
 						se->undo_pivot = canvas_item->cast_to<Node2D>()->edit_get_pivot();
+					if (canvas_item->cast_to<Control>())
+						se->undo_pivot = canvas_item->cast_to<Control>()->get_pivot_offset();
 
 					return;
 				}
@@ -1522,6 +1553,8 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 				canvas_item->edit_set_state(se->undo_state); //reset state and reapply
 				if (canvas_item->cast_to<Node2D>())
 					canvas_item->cast_to<Node2D>()->edit_set_pivot(se->undo_pivot);
+				if (canvas_item->cast_to<Control>())
+					canvas_item->cast_to<Control>()->set_pivot_offset(se->undo_pivot);
 			}
 
 			Vector2 dfrom = drag_from;
@@ -1658,6 +1691,9 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 					if (canvas_item->cast_to<Node2D>()) {
 						Node2D *n2d = canvas_item->cast_to<Node2D>();
 						n2d->edit_set_pivot(se->undo_pivot + drag_vector);
+					}
+					if (canvas_item->cast_to<Control>()) {
+						canvas_item->cast_to<Control>()->set_pivot_offset(se->undo_pivot + drag_vector);
 					}
 					continue;
 				} break;
@@ -1920,6 +1956,14 @@ void CanvasItemEditor::_viewport_draw() {
 					pivot_found = true;
 				}
 			}
+			if (canvas_item->cast_to<Control>()) {
+				Vector2 pivot_ofs = canvas_item->cast_to<Control>()->get_pivot_offset();
+				if (pivot_ofs != Vector2()) {
+					viewport->draw_texture(pivot, xform.xform(pivot_ofs) + (-pivot->get_size() / 2).floor());
+				}
+				can_move_pivot = true;
+				pivot_found = true;
+			}
 
 			if (tool == TOOL_SELECT) {
 
@@ -2108,10 +2152,16 @@ void CanvasItemEditor::_notification(int p_what) {
 
 			Transform2D xform = canvas_item->get_transform();
 
-			if (r != se->prev_rect || xform != se->prev_xform) {
+			Vector2 pivot;
+			if (canvas_item->cast_to<Control>()) {
+				pivot = canvas_item->cast_to<Control>()->get_pivot_offset();
+			}
+
+			if (r != se->prev_rect || xform != se->prev_xform || pivot != se->prev_pivot) {
 				viewport->update();
 				se->prev_rect = r;
 				se->prev_xform = xform;
+				se->prev_pivot = pivot;
 			}
 		}
 

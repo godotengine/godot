@@ -56,6 +56,7 @@ public:
 	Transform2D prev_xform;
 	float prev_rot;
 	Rect2 prev_rect;
+	Vector2 prev_pivot;
 
 	CanvasItemEditorSelectedItem() { prev_rot = 0; }
 };
