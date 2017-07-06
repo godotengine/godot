@@ -3981,7 +3981,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 
 	} else {
 
-		use_mrt = env && (state.used_screen_texture || state.used_sss || env->ssao_enabled || env->ssr_enabled); //only enable MRT rendering if any of these is enabled
+		use_mrt = env && (state.used_sss || env->ssao_enabled || env->ssr_enabled); //only enable MRT rendering if any of these is enabled
 		//effects disabled and transparency also prevent using MRTs
 		use_mrt = use_mrt && !storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT];
 		use_mrt = use_mrt && !storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_NO_3D_EFFECTS];
@@ -4157,6 +4157,20 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 
 	if (use_mrt) {
 		_render_mrts(env, p_cam_projection);
+	} else {
+		//FIXME: check that this is possible to use
+		if (state.used_screen_texture) {
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, storage->frame.current_rt->buffers.fbo);
+			glReadBuffer(GL_COLOR_ATTACHMENT0);
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, storage->frame.current_rt->effects.mip_maps[0].sizes[0].fbo);
+			glBlitFramebuffer(0, 0, storage->frame.current_rt->width, storage->frame.current_rt->height, 0, 0, storage->frame.current_rt->width, storage->frame.current_rt->height, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+			_blur_effect_buffer();
+			//restored framebuffer
+			glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->buffers.fbo);
+			glViewport(0, 0, storage->frame.current_rt->width, storage->frame.current_rt->height);
+		}
 	}
 
 	if (state.used_screen_texture) {

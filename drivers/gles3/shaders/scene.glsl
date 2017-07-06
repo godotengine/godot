@@ -968,12 +968,12 @@ void light_process_spot(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 bi
 	vec3 light_rel_vec = spot_lights[idx].light_pos_inv_radius.xyz-vertex;
 	float light_length = length( light_rel_vec );
 	float normalized_distance = light_length*spot_lights[idx].light_pos_inv_radius.w;
-	vec3 light_attenuation = vec3(pow( max(1.0 - normalized_distance, 0.0), spot_lights[idx].light_direction_attenuation.w ));
+	vec3 light_attenuation = vec3(pow( max(1.0 - normalized_distance, 0.001), spot_lights[idx].light_direction_attenuation.w ));
 	vec3 spot_dir = spot_lights[idx].light_direction_attenuation.xyz;
 	float spot_cutoff=spot_lights[idx].light_params.y;
 	float scos = max(dot(-normalize(light_rel_vec), spot_dir),spot_cutoff);
 	float spot_rim = (1.0 - scos) / (1.0 - spot_cutoff);
-	light_attenuation *= 1.0 - pow( spot_rim, spot_lights[idx].light_params.x);
+	light_attenuation *= 1.0 - pow( max(spot_rim,0.001), spot_lights[idx].light_params.x);
 
 	if (spot_lights[idx].light_params.w>0.5) {
 		//there is a shadowmap
