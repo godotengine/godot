@@ -57,6 +57,11 @@ public:
 		ANCHOR_CENTER,
 	};
 
+	enum GrowDirection {
+		GROW_DIRECTION_BEGIN,
+		GROW_DIRECTION_END
+	};
+
 	enum FocusMode {
 		FOCUS_NONE,
 		FOCUS_CLICK,
@@ -117,6 +122,8 @@ private:
 		float margin[4];
 		AnchorType anchor[4];
 		FocusMode focus_mode;
+		GrowDirection h_grow;
+		GrowDirection v_grow;
 
 		float rotation;
 		Vector2 scale;
@@ -273,6 +280,12 @@ public:
 	void set_begin(const Point2 &p_point); // helper
 	void set_end(const Point2 &p_point); // helper
 
+	void set_h_grow_direction(GrowDirection p_direction);
+	GrowDirection get_h_grow_direction() const;
+
+	void set_v_grow_direction(GrowDirection p_direction);
+	GrowDirection get_v_grow_direction() const;
+
 	float get_margin(Margin p_margin) const;
 	Point2 get_begin() const;
 	Point2 get_end() const;
@@ -409,5 +422,6 @@ VARIANT_ENUM_CAST(Control::FocusMode);
 VARIANT_ENUM_CAST(Control::SizeFlags);
 VARIANT_ENUM_CAST(Control::CursorShape);
 VARIANT_ENUM_CAST(Control::MouseFilter);
+VARIANT_ENUM_CAST(Control::GrowDirection);
 
 #endif

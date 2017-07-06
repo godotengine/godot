@@ -1219,10 +1219,26 @@ void Control::_size_changed() {
 
 	Point2 new_pos_cache = Point2(margin_pos[0], margin_pos[1]).floor();
 	Size2 new_size_cache = Point2(margin_pos[2], margin_pos[3]).floor() - new_pos_cache;
+
 	Size2 minimum_size = get_combined_minimum_size();
 
-	new_size_cache.x = MAX(minimum_size.x, new_size_cache.x);
-	new_size_cache.y = MAX(minimum_size.y, new_size_cache.y);
+	if (data.h_grow == GROW_DIRECTION_BEGIN) {
+		if (minimum_size.width > new_size_cache.width) {
+			new_pos_cache.x = new_pos_cache.x + new_size_cache.width - minimum_size.width;
+			new_size_cache.width = minimum_size.width;
+		}
+	} else {
+		new_size_cache.width = MAX(minimum_size.width, new_size_cache.width);
+	}
+
+	if (data.v_grow == GROW_DIRECTION_BEGIN) {
+		if (minimum_size.height > new_size_cache.height) {
+			new_pos_cache.y = new_pos_cache.y + new_size_cache.height - minimum_size.height;
+			new_size_cache.height = minimum_size.height;
+		}
+	} else {
+		new_size_cache.height = MAX(minimum_size.height, new_size_cache.height);
+	}
 
 	bool pos_changed = new_pos_cache != data.pos_cache;
 	bool size_changed = new_size_cache != data.size_cache;
@@ -2300,6 +2316,27 @@ bool Control::is_clipping_contents() {
 	return data.clip_contents;
 }
 
+void Control::set_h_grow_direction(GrowDirection p_direction) {
+
+	data.h_grow = p_direction;
+	_size_changed();
+}
+
+Control::GrowDirection Control::get_h_grow_direction() const {
+
+	return data.h_grow;
+}
+
+void Control::set_v_grow_direction(GrowDirection p_direction) {
+
+	data.v_grow = p_direction;
+	_size_changed();
+}
+Control::GrowDirection Control::get_v_grow_direction() const {
+
+	return data.v_grow;
+}
+
 void Control::_bind_methods() {
 
 	//ClassDB::bind_method(D_METHOD("_window_resize_event"),&Control::_window_resize_event);
@@ -2388,6 +2425,12 @@ void Control::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_parent_control:Control"), &Control::get_parent_control);
 
+	ClassDB::bind_method(D_METHOD("set_h_grow_direction", "direction"), &Control::set_h_grow_direction);
+	ClassDB::bind_method(D_METHOD("get_h_grow_direction"), &Control::get_h_grow_direction);
+
+	ClassDB::bind_method(D_METHOD("set_v_grow_direction", "direction"), &Control::set_v_grow_direction);
+	ClassDB::bind_method(D_METHOD("get_v_grow_direction"), &Control::get_v_grow_direction);
+
 	ClassDB::bind_method(D_METHOD("set_tooltip", "tooltip"), &Control::set_tooltip);
 	ClassDB::bind_method(D_METHOD("get_tooltip", "atpos"), &Control::get_tooltip, DEFVAL(Point2()));
 	ClassDB::bind_method(D_METHOD("_get_tooltip"), &Control::_get_tooltip);
@@ -2437,6 +2480,10 @@ void Control::_bind_methods() {
 	ADD_PROPERTYINZ(PropertyInfo(Variant::INT, "margin_top", PROPERTY_HINT_RANGE, "-4096,4096"), "set_margin", "get_margin", MARGIN_TOP);
 	ADD_PROPERTYINZ(PropertyInfo(Variant::INT, "margin_right", PROPERTY_HINT_RANGE, "-4096,4096"), "set_margin", "get_margin", MARGIN_RIGHT);
 	ADD_PROPERTYINZ(PropertyInfo(Variant::INT, "margin_bottom", PROPERTY_HINT_RANGE, "-4096,4096"), "set_margin", "get_margin", MARGIN_BOTTOM);
+
+	ADD_GROUP("Grow Direction", "grow_");
+	ADD_PROPERTYNO(PropertyInfo(Variant::INT, "grow_horizontal", PROPERTY_HINT_ENUM, "Begin,End"), "set_h_grow_direction", "get_h_grow_direction");
+	ADD_PROPERTYNO(PropertyInfo(Variant::INT, "grow_vertical", PROPERTY_HINT_ENUM, "Begin,End"), "set_v_grow_direction", "get_v_grow_direction");
 
 	ADD_GROUP("Rect", "rect_");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2, "rect_position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_position", "get_position");
@@ -2507,6 +2554,9 @@ void Control::_bind_methods() {
 	BIND_CONSTANT(MOUSE_FILTER_PASS);
 	BIND_CONSTANT(MOUSE_FILTER_IGNORE);
 
+	BIND_CONSTANT(GROW_DIRECTION_BEGIN);
+	BIND_CONSTANT(GROW_DIRECTION_END);
+
 	ADD_SIGNAL(MethodInfo("resized"));
 	ADD_SIGNAL(MethodInfo("gui_input", PropertyInfo(Variant::OBJECT, "ev", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	ADD_SIGNAL(MethodInfo("mouse_entered"));
@@ -2543,6 +2593,8 @@ Control::Control() {
 	data.modal_frame = 0;
 	data.block_minimum_size_adjust = false;
 	data.disable_visibility_clip = false;
+	data.h_grow = GROW_DIRECTION_END;
+	data.v_grow = GROW_DIRECTION_END;
 
 	data.clip_contents = false;
 	for (int i = 0; i < 4; i++) {
