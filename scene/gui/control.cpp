@@ -2534,8 +2534,8 @@ void Control::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_filter", PROPERTY_HINT_ENUM, "Stop,Pass,Ignore"), "set_mouse_filter", "get_mouse_filter");
 
 	ADD_GROUP("Size Flags", "size_flags_");
-	ADD_PROPERTYNO(PropertyInfo(Variant::INT, "size_flags_horizontal", PROPERTY_HINT_FLAGS, "Fill,Expand"), "set_h_size_flags", "get_h_size_flags");
-	ADD_PROPERTYNO(PropertyInfo(Variant::INT, "size_flags_vertical", PROPERTY_HINT_FLAGS, "Fill,Expand"), "set_v_size_flags", "get_v_size_flags");
+	ADD_PROPERTYNO(PropertyInfo(Variant::INT, "size_flags_horizontal", PROPERTY_HINT_FLAGS, "Fill,Expand,Shrink Center,Shrink End"), "set_h_size_flags", "get_h_size_flags");
+	ADD_PROPERTYNO(PropertyInfo(Variant::INT, "size_flags_vertical", PROPERTY_HINT_FLAGS, "Fill,Expand,Shrink Center,Shrink End"), "set_v_size_flags", "get_v_size_flags");
 	ADD_PROPERTYNO(PropertyInfo(Variant::INT, "size_flags_stretch_ratio", PROPERTY_HINT_RANGE, "1,128,0.01"), "set_stretch_ratio", "get_stretch_ratio");
 	ADD_GROUP("Theme", "");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), "set_theme", "get_theme");
@@ -2577,6 +2577,8 @@ void Control::_bind_methods() {
 	BIND_CONSTANT(SIZE_EXPAND);
 	BIND_CONSTANT(SIZE_FILL);
 	BIND_CONSTANT(SIZE_EXPAND_FILL);
+	BIND_CONSTANT(SIZE_SHRINK_CENTER);
+	BIND_CONSTANT(SIZE_SHRINK_END);
 
 	BIND_CONSTANT(MOUSE_FILTER_STOP);
 	BIND_CONSTANT(MOUSE_FILTER_PASS);

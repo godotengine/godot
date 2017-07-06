@@ -95,13 +95,25 @@ void Container::fit_child_in_rect(Control *p_child, const Rect2 &p_rect) {
 	Rect2 r = p_rect;
 
 	if (!(p_child->get_h_size_flags() & SIZE_FILL)) {
-		r.size.x = minsize.x;
-		r.position.x += Math::floor((p_rect.size.x - minsize.x) / 2);
+		r.size.x = minsize.width;
+		if (p_child->get_h_size_flags() & SIZE_SHRINK_END) {
+			r.position.x += p_rect.size.width - minsize.width;
+		} else if (p_child->get_h_size_flags() & SIZE_SHRINK_CENTER) {
+			r.position.x += Math::floor((p_rect.size.x - minsize.width) / 2);
+		} else {
+			r.position.x += 0;
+		}
 	}
 
 	if (!(p_child->get_v_size_flags() & SIZE_FILL)) {
 		r.size.y = minsize.y;
-		r.position.y += Math::floor((p_rect.size.y - minsize.y) / 2);
+		if (p_child->get_v_size_flags() & SIZE_SHRINK_END) {
+			r.position.y += p_rect.size.height - minsize.height;
+		} else if (p_child->get_v_size_flags() & SIZE_SHRINK_CENTER) {
+			r.position.y += Math::floor((p_rect.size.y - minsize.height) / 2);
+		} else {
+			r.position.y += 0;
+		}
 	}
 
 	for (int i = 0; i < 4; i++)
