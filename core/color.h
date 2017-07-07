@@ -75,10 +75,10 @@ struct Color {
 
 		Color res = *this;
 
-		res.r += (p_t * (p_b.r - r));
-		res.g += (p_t * (p_b.g - g));
-		res.b += (p_t * (p_b.b - b));
-		res.a += (p_t * (p_b.a - a));
+		res.r = Math::sqrt(Math::lerp(Math::pow(r, 2.0f), Math::pow(p_b.r, 2.0f), p_t));
+		res.g = Math::sqrt(Math::lerp(Math::pow(g, 2.0f), Math::pow(p_b.g, 2.0f), p_t));
+		res.b = Math::sqrt(Math::lerp(Math::pow(b, 2.0f), Math::pow(p_b.b, 2.0f), p_t));
+		res.a = Math::sqrt(Math::lerp(Math::pow(a, 2.0f), Math::pow(p_b.a, 2.0f), p_t));
 
 		return res;
 	}
