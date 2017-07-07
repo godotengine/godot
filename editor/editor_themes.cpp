@@ -117,9 +117,9 @@ Ref<Theme> create_editor_theme() {
 			contrast = 0.25;
 		} break;
 		case 3: { // Arc
-			highlight_color = Color::html("#68a7f2");
-			base_color = Color::html("#434a59");
-			contrast = 0.2;
+			highlight_color = Color::html("#5294e2");
+			base_color = Color::html("#383c4a");
+			contrast = 0.25;
 		} break;
 	}
 
@@ -260,7 +260,7 @@ Ref<Theme> create_editor_theme() {
 	Ref<StyleBoxFlat> style_tree_focus = make_flat_stylebox(HIGHLIGHT_COLOR_DARK, 2, 2, 2, 2);
 	theme->set_stylebox("selected_focus", "Tree", style_tree_focus);
 
-	Ref<StyleBoxFlat> style_tree_selected = make_flat_stylebox(light_color_1, 2, 2, 2, 2);
+	Ref<StyleBoxFlat> style_tree_selected = make_flat_stylebox(HIGHLIGHT_COLOR_DARK, 2, 2, 2, 2);
 	theme->set_stylebox("selected", "Tree", style_tree_selected);
 
 	Ref<StyleBoxFlat> style_tree_cursor = make_flat_stylebox(HIGHLIGHT_COLOR_DARK, 4, 4, 4, 4);
@@ -275,10 +275,10 @@ Ref<Theme> create_editor_theme() {
 	theme->set_stylebox("title_button_hover", "Tree", style_tree_title);
 	theme->set_stylebox("title_button_pressed", "Tree", style_tree_title);
 
-	theme->set_color("prop_category", "Editor", dark_color_3);
-	theme->set_color("prop_section", "Editor", dark_color_1);
-	theme->set_color("prop_subsection", "Editor", dark_color_2);
-	theme->set_color("fg_selected", "Editor", Color::html("ffbd8e8e"));
+	theme->set_color("prop_category", "Editor", dark_color_1.linear_interpolate(Color(1, 1, 1, 1), 0.12));
+	theme->set_color("prop_section", "Editor", dark_color_1.linear_interpolate(Color(1, 1, 1, 1), 0.09));
+	theme->set_color("prop_subsection", "Editor", dark_color_1.linear_interpolate(Color(1, 1, 1, 1), 0.06));
+	theme->set_color("fg_selected", "Editor", HIGHLIGHT_COLOR_DARK);
 	theme->set_color("fg_error", "Editor", Color::html("ffbd8e8e"));
 	theme->set_color("drop_position_color", "Tree", highlight_color);
 
