@@ -19218,7 +19218,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="put_pixel">
+		<method name="set_pixel">
 			<argument index="0" name="x" type="int">
 			</argument>
 			<argument index="1" name="y" type="int">

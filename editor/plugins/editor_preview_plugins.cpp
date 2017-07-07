@@ -431,7 +431,7 @@ Ref<Texture> EditorScriptPreviewPlugin::generate(const RES &p_from) {
 
 	for (int i = 0; i < thumbnail_size; i++) {
 		for (int j = 0; j < thumbnail_size; j++) {
-			img->put_pixel(i, j, bg_color);
+			img->set_pixel(i, j, bg_color);
 		}
 	}
 
@@ -469,8 +469,8 @@ Ref<Texture> EditorScriptPreviewPlugin::generate(const RES &p_from) {
 
 				Color ul = color;
 				ul.a *= 0.5;
-				img->put_pixel(col, line * 2, bg_color.blend(ul));
-				img->put_pixel(col, line * 2 + 1, color);
+				img->set_pixel(col, line * 2, bg_color.blend(ul));
+				img->set_pixel(col, line * 2 + 1, color);
 
 				prev_is_text = _is_text_char(c);
 			}
