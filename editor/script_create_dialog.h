@@ -59,7 +59,6 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	bool create_new;
 	bool is_browsing_parent;
 	String initial_bp;
-	EditorSettings *editor_settings;
 	bool is_new_script_created;
 	bool is_path_valid;
 	bool has_named_classes;
@@ -70,6 +69,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	int current_language;
 	bool re_check_path;
 	String script_template;
+	Vector<String> template_list;
 
 	void _path_changed(const String &p_path = String());
 	void _lang_changed(int l = 0);
