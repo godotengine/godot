@@ -1382,7 +1382,7 @@ ToolButton *ShaderGraphView::make_editor(String text,GraphNode* gn,int p_id,int 
 		Color c = graph->default_get_value(type,p_id,param);
 		for (int x=1;x<14;x++)
 			for (int y=1;y<14;y++)
-				icon_color.put_pixel(x,y,c);
+				icon_color.set_pixel(x,y,c);
 		Ref<ImageTexture> t;
 		t.instance();
 		t->create_from_image(icon_color);

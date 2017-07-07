@@ -874,7 +874,7 @@ Ref<Texture> CurvePreviewGenerator::generate(const Ref<Resource> &p_from) {
 	Color bg_color(0.1, 0.1, 0.1, 1.0);
 	for (int i = 0; i < thumbnail_size; i++) {
 		for (int j = 0; j < thumbnail_size; j++) {
-			im.put_pixel(i, j, bg_color);
+			im.set_pixel(i, j, bg_color);
 		}
 	}
 
@@ -890,7 +890,7 @@ Ref<Texture> CurvePreviewGenerator::generate(const Ref<Resource> &p_from) {
 
 		// Plot point
 		if (y >= 0 && y < im.get_height()) {
-			im.put_pixel(x, y, line_color);
+			im.set_pixel(x, y, line_color);
 		}
 
 		// Plot vertical line to fix discontinuity (not 100% correct but enough for a preview)
@@ -904,7 +904,7 @@ Ref<Texture> CurvePreviewGenerator::generate(const Ref<Resource> &p_from) {
 				y1 = y;
 			}
 			for (int ly = y0; ly < y1; ++ly) {
-				im.put_pixel(x, ly, line_color);
+				im.set_pixel(x, ly, line_color);
 			}
 		}
 

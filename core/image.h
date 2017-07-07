@@ -315,7 +315,7 @@ public:
 	DetectChannels get_detected_channels();
 
 	Color get_pixel(int p_x, int p_y) const;
-	void put_pixel(int p_x, int p_y, const Color &p_color);
+	void set_pixel(int p_x, int p_y, const Color &p_color);
 
 	void copy_internals_from(const Ref<Image> &p_image) {
 		ERR_FAIL_COND(p_image.is_null());
