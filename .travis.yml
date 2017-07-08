@@ -88,8 +88,8 @@ script:
       sh ./misc/travis/clang-format.sh;
     else
       if [ "$TRAVIS_OS_NAME" = "windows" ]; then
-        scons platform=$GODOT_TARGET CXX=$CXX openssl=builtin;
+        scons platform=$GODOT_TARGET progress=no verbose=yes CXX=$CXX openssl=builtin;
       else
-        scons platform=$GODOT_TARGET bits=64 CXX=$CXX openssl=builtin;
+        scons platform=$GODOT_TARGET progress=no verbose=yes bits=64 CXX=$CXX openssl=builtin;
       fi
     fi
