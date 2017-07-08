@@ -853,13 +853,13 @@ void Physics2DServerSW::body_get_collision_exceptions(RID p_body, List<RID> *p_e
 	}
 };
 
-void Physics2DServerSW::body_set_contacts_reported_depth_treshold(RID p_body, real_t p_treshold) {
+void Physics2DServerSW::body_set_contacts_reported_depth_threshold(RID p_body, real_t p_threshold) {
 
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 };
 
-real_t Physics2DServerSW::body_get_contacts_reported_depth_treshold(RID p_body) const {
+real_t Physics2DServerSW::body_get_contacts_reported_depth_threshold(RID p_body) const {
 
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, 0);

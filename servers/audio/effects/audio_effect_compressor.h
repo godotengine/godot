@@ -51,7 +51,7 @@ class AudioEffectCompressor : public AudioEffect {
 	GDCLASS(AudioEffectCompressor, AudioEffect)
 
 	friend class AudioEffectCompressorInstance;
-	float treshold;
+	float threshold;
 	float ratio;
 	float gain;
 	float attack_us;
@@ -66,8 +66,8 @@ protected:
 public:
 	Ref<AudioEffectInstance> instance();
 
-	void set_treshold(float p_treshold);
-	float get_treshold() const;
+	void set_threshold(float p_threshold);
+	float get_threshold() const;
 
 	void set_ratio(float p_ratio);
 	float get_ratio() const;

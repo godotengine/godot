@@ -49,7 +49,7 @@ class AudioEffectLimiter : public AudioEffect {
 	GDCLASS(AudioEffectLimiter, AudioEffect)
 
 	friend class AudioEffectLimiterInstance;
-	float treshold;
+	float threshold;
 	float ceiling;
 	float soft_clip;
 	float soft_clip_ratio;
@@ -58,8 +58,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_treshold_db(float p_treshold);
-	float get_treshold_db() const;
+	void set_threshold_db(float p_threshold);
+	float get_threshold_db() const;
 
 	void set_ceiling_db(float p_ceiling);
 	float get_ceiling_db() const;

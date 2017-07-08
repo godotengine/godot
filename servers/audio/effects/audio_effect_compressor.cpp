@@ -32,7 +32,7 @@
 
 void AudioEffectCompressorInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
 
-	float treshold = Math::db2linear(base->treshold);
+	float threshold = Math::db2linear(base->threshold);
 	float sample_rate = AudioServer::get_singleton()->get_mix_rate();
 
 	float ratatcoef = exp(-1 / (0.00001f * sample_rate));
@@ -66,7 +66,7 @@ void AudioEffectCompressorInstance::process(const AudioFrame *p_src_frames, Audi
 
 		float peak = MAX(s.l, s.r);
 
-		float overdb = 2.08136898f * Math::linear2db(peak / treshold);
+		float overdb = 2.08136898f * Math::linear2db(peak / threshold);
 
 		if (overdb < 0.0) //we only care about what goes over to compress
 			overdb = 0.0;
@@ -125,14 +125,14 @@ Ref<AudioEffectInstance> AudioEffectCompressor::instance() {
 	return ins;
 }
 
-void AudioEffectCompressor::set_treshold(float p_treshold) {
+void AudioEffectCompressor::set_threshold(float p_threshold) {
 
-	treshold = p_treshold;
+	threshold = p_threshold;
 }
 
-float AudioEffectCompressor::get_treshold() const {
+float AudioEffectCompressor::get_threshold() const {
 
-	return treshold;
+	return threshold;
 }
 
 void AudioEffectCompressor::set_ratio(float p_ratio) {
@@ -208,8 +208,8 @@ void AudioEffectCompressor::_validate_property(PropertyInfo &property) const {
 
 void AudioEffectCompressor::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_treshold", "treshold"), &AudioEffectCompressor::set_treshold);
-	ClassDB::bind_method(D_METHOD("get_treshold"), &AudioEffectCompressor::get_treshold);
+	ClassDB::bind_method(D_METHOD("set_threshold", "threshold"), &AudioEffectCompressor::set_threshold);
+	ClassDB::bind_method(D_METHOD("get_threshold"), &AudioEffectCompressor::get_threshold);
 
 	ClassDB::bind_method(D_METHOD("set_ratio", "ratio"), &AudioEffectCompressor::set_ratio);
 	ClassDB::bind_method(D_METHOD("get_ratio"), &AudioEffectCompressor::get_ratio);
@@ -229,7 +229,7 @@ void AudioEffectCompressor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_sidechain", "sidechain"), &AudioEffectCompressor::set_sidechain);
 	ClassDB::bind_method(D_METHOD("get_sidechain"), &AudioEffectCompressor::get_sidechain);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "treshold", PROPERTY_HINT_RANGE, "-60,0,0.1"), "set_treshold", "get_treshold");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "threshold", PROPERTY_HINT_RANGE, "-60,0,0.1"), "set_threshold", "get_threshold");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ratio", PROPERTY_HINT_RANGE, "1,48,0.1"), "set_ratio", "get_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "gain", PROPERTY_HINT_RANGE, "-20,20,0.1"), "set_gain", "get_gain");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "attack_us", PROPERTY_HINT_RANGE, "20,2000,1"), "set_attack_us", "get_attack_us");
@@ -239,7 +239,7 @@ void AudioEffectCompressor::_bind_methods() {
 }
 
 AudioEffectCompressor::AudioEffectCompressor() {
-	treshold = 0;
+	threshold = 0;
 	ratio = 4;
 	gain = 0;
 	attack_us = 20;

@@ -869,7 +869,7 @@ void RasterizerSceneGLES3::environment_set_dof_blur_near(RID p_env, bool p_enabl
 	env->dof_blur_near_amount = p_amount;
 	env->dof_blur_near_quality = p_quality;
 }
-void RasterizerSceneGLES3::environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_bloom_treshold, VS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_treshold, float p_hdr_bleed_scale, bool p_bicubic_upscale) {
+void RasterizerSceneGLES3::environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_bloom_threshold, VS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, bool p_bicubic_upscale) {
 
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
@@ -878,9 +878,9 @@ void RasterizerSceneGLES3::environment_set_glow(RID p_env, bool p_enable, int p_
 	env->glow_levels = p_level_flags;
 	env->glow_intensity = p_intensity;
 	env->glow_strength = p_strength;
-	env->glow_bloom = p_bloom_treshold;
+	env->glow_bloom = p_bloom_threshold;
 	env->glow_blend_mode = p_blend_mode;
-	env->glow_hdr_bleed_treshold = p_hdr_bleed_treshold;
+	env->glow_hdr_bleed_threshold = p_hdr_bleed_threshold;
 	env->glow_hdr_bleed_scale = p_hdr_bleed_scale;
 	env->glow_bicubic_upscale = p_bicubic_upscale;
 }
@@ -3719,7 +3719,7 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 				glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->exposure.color);
 
 				state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::GLOW_BLOOM, env->glow_bloom);
-				state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::GLOW_HDR_TRESHOLD, env->glow_hdr_bleed_treshold);
+				state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::GLOW_HDR_THRESHOLD, env->glow_hdr_bleed_threshold);
 				state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::GLOW_HDR_SCALE, env->glow_hdr_bleed_scale);
 
 			} else {

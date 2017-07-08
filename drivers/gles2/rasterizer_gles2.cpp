@@ -4199,7 +4199,7 @@ void RasterizerGLES2::set_camera(const Transform &p_world, const CameraMatrix &p
 
 void RasterizerGLES2::add_light(RID p_light_instance) {
 
-#define LIGHT_FADE_TRESHOLD 0.05
+#define LIGHT_FADE_THRESHOLD 0.05
 
 	ERR_FAIL_COND(light_instance_count >= MAX_SCENE_LIGHTS);
 
@@ -6481,7 +6481,7 @@ void RasterizerGLES2::_process_glow_bloom() {
 
 	copy_shader.bind();
 	copy_shader.set_uniform(CopyShaderGLES2::BLOOM, float(current_env->fx_param[VS::ENV_FX_PARAM_GLOW_BLOOM]));
-	copy_shader.set_uniform(CopyShaderGLES2::BLOOM_TRESHOLD, float(current_env->fx_param[VS::ENV_FX_PARAM_GLOW_BLOOM_TRESHOLD]));
+	copy_shader.set_uniform(CopyShaderGLES2::BLOOM_THRESHOLD, float(current_env->fx_param[VS::ENV_FX_PARAM_GLOW_BLOOM_THRESHOLD]));
 	glUniform1i(copy_shader.get_uniform_location(CopyShaderGLES2::SOURCE), 0);
 
 	if (current_vd && current_env->fx_enabled[VS::ENV_FX_HDR]) {
@@ -6491,7 +6491,7 @@ void RasterizerGLES2::_process_glow_bloom() {
 		copy_shader.set_uniform(CopyShaderGLES2::TONEMAP_EXPOSURE, float(current_env->fx_param[VS::ENV_FX_PARAM_HDR_EXPOSURE]));
 		copy_shader.set_uniform(CopyShaderGLES2::TONEMAP_WHITE, float(current_env->fx_param[VS::ENV_FX_PARAM_HDR_WHITE]));
 		//copy_shader.set_uniform(CopyShaderGLES2::TONEMAP_WHITE,1.0);
-		copy_shader.set_uniform(CopyShaderGLES2::HDR_GLOW_TRESHOLD, float(current_env->fx_param[VS::ENV_FX_PARAM_HDR_GLOW_TRESHOLD]));
+		copy_shader.set_uniform(CopyShaderGLES2::HDR_GLOW_THRESHOLD, float(current_env->fx_param[VS::ENV_FX_PARAM_HDR_GLOW_THRESHOLD]));
 		copy_shader.set_uniform(CopyShaderGLES2::HDR_GLOW_SCALE, float(current_env->fx_param[VS::ENV_FX_PARAM_HDR_GLOW_SCALE]));
 
 		glActiveTexture(GL_TEXTURE0);

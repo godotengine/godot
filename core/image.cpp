@@ -1325,19 +1325,19 @@ void Image::create(const char **p_xpm) {
 		line++;
 	}
 }
-#define DETECT_ALPHA_MAX_TRESHOLD 254
-#define DETECT_ALPHA_MIN_TRESHOLD 2
+#define DETECT_ALPHA_MAX_THRESHOLD 254
+#define DETECT_ALPHA_MIN_THRESHOLD 2
 
-#define DETECT_ALPHA(m_value)                         \
-	{                                                 \
-		uint8_t value = m_value;                      \
-		if (value < DETECT_ALPHA_MIN_TRESHOLD)        \
-			bit = true;                               \
-		else if (value < DETECT_ALPHA_MAX_TRESHOLD) { \
-                                                      \
-			detected = true;                          \
-			break;                                    \
-		}                                             \
+#define DETECT_ALPHA(m_value)                          \
+	{                                                  \
+		uint8_t value = m_value;                       \
+		if (value < DETECT_ALPHA_MIN_THRESHOLD)        \
+			bit = true;                                \
+		else if (value < DETECT_ALPHA_MAX_THRESHOLD) { \
+                                                       \
+			detected = true;                           \
+			break;                                     \
+		}                                              \
 	}
 
 #define DETECT_NON_ALPHA(m_value) \
@@ -1673,7 +1673,7 @@ void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, co
 	const uint8_t *src_data_ptr = rp.ptr();
 
 	int pixel_size = get_format_pixel_size(format);
-	
+
 	Ref<Image> msk = p_mask;
 	msk->lock();
 
@@ -1683,7 +1683,7 @@ void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, co
 
 			int src_x = clipped_src_rect.position.x + j;
 			int src_y = clipped_src_rect.position.y + i;
-			
+
 			if (msk->get_pixel(src_x, src_y).a != 0) {
 
 				int dst_x = dest_rect.position.x + j;
@@ -2434,7 +2434,7 @@ void Image::fix_alpha_edges() {
 	unsigned char *data_ptr = wp.ptr();
 
 	const int max_radius = 4;
-	const int alpha_treshold = 20;
+	const int alpha_threshold = 20;
 	const int max_dist = 0x7FFFFFFF;
 
 	for (int i = 0; i < height; i++) {
@@ -2443,7 +2443,7 @@ void Image::fix_alpha_edges() {
 			const uint8_t *rptr = &srcptr[(i * width + j) * 4];
 			uint8_t *wptr = &data_ptr[(i * width + j) * 4];
 
-			if (rptr[3] >= alpha_treshold)
+			if (rptr[3] >= alpha_threshold)
 				continue;
 
 			int closest_dist = max_dist;
@@ -2465,7 +2465,7 @@ void Image::fix_alpha_edges() {
 
 					const uint8_t *rp = &srcptr[(k * width + l) << 2];
 
-					if (rp[3] < alpha_treshold)
+					if (rp[3] < alpha_threshold)
 						continue;
 
 					closest_color[0] = rp[0];

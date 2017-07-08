@@ -32,8 +32,8 @@
 #include "quick_hull.h"
 #include "sort.h"
 #define _POINT_SNAP 0.001953125
-#define _EDGE_IS_VALID_SUPPORT_TRESHOLD 0.0002
-#define _FACE_IS_VALID_SUPPORT_TRESHOLD 0.9998
+#define _EDGE_IS_VALID_SUPPORT_THRESHOLD 0.0002
+#define _FACE_IS_VALID_SUPPORT_THRESHOLD 0.9998
 
 void ShapeSW::configure(const Rect3 &p_aabb) {
 	aabb = p_aabb;
@@ -165,7 +165,7 @@ Vector3 RayShapeSW::get_support(const Vector3 &p_normal) const {
 
 void RayShapeSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount) const {
 
-	if (Math::abs(p_normal.z) < _EDGE_IS_VALID_SUPPORT_TRESHOLD) {
+	if (Math::abs(p_normal.z) < _EDGE_IS_VALID_SUPPORT_THRESHOLD) {
 
 		r_amount = 2;
 		r_supports[0] = Vector3(0, 0, 0);
@@ -306,7 +306,7 @@ void BoxShapeSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_sup
 		Vector3 axis;
 		axis[i] = 1.0;
 		real_t dot = p_normal.dot(axis);
-		if (Math::abs(dot) > _FACE_IS_VALID_SUPPORT_TRESHOLD) {
+		if (Math::abs(dot) > _FACE_IS_VALID_SUPPORT_THRESHOLD) {
 
 			//Vector3 axis_b;
 
@@ -350,7 +350,7 @@ void BoxShapeSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_sup
 		Vector3 axis;
 		axis[i] = 1.0;
 
-		if (Math::abs(p_normal.dot(axis)) < _EDGE_IS_VALID_SUPPORT_TRESHOLD) {
+		if (Math::abs(p_normal.dot(axis)) < _EDGE_IS_VALID_SUPPORT_THRESHOLD) {
 
 			r_amount = 2;
 
@@ -460,7 +460,7 @@ void CapsuleShapeSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r
 
 	real_t d = n.z;
 
-	if (Math::abs(d) < _EDGE_IS_VALID_SUPPORT_TRESHOLD) {
+	if (Math::abs(d) < _EDGE_IS_VALID_SUPPORT_THRESHOLD) {
 
 		// make it flat
 		n.z = 0.0;
@@ -655,7 +655,7 @@ void ConvexPolygonShapeSW::get_supports(const Vector3 &p_normal, int p_max, Vect
 
 	for (int i = 0; i < fc; i++) {
 
-		if (faces[i].plane.normal.dot(p_normal) > _FACE_IS_VALID_SUPPORT_TRESHOLD) {
+		if (faces[i].plane.normal.dot(p_normal) > _FACE_IS_VALID_SUPPORT_THRESHOLD) {
 
 			int ic = faces[i].indices.size();
 			const int *ind = faces[i].indices.ptr();
@@ -685,7 +685,7 @@ void ConvexPolygonShapeSW::get_supports(const Vector3 &p_normal, int p_max, Vect
 
 		real_t dot = (vertices[edges[i].a] - vertices[edges[i].b]).normalized().dot(p_normal);
 		dot = ABS(dot);
-		if (dot < _EDGE_IS_VALID_SUPPORT_TRESHOLD && (edges[i].a == vtx || edges[i].b == vtx)) {
+		if (dot < _EDGE_IS_VALID_SUPPORT_THRESHOLD && (edges[i].a == vtx || edges[i].b == vtx)) {
 
 			r_amount = 2;
 			r_supports[0] = vertices[edges[i].a];
@@ -818,7 +818,7 @@ void FaceShapeSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_su
 	Vector3 n = p_normal;
 
 	/** TEST FACE AS SUPPORT **/
-	if (normal.dot(n) > _FACE_IS_VALID_SUPPORT_TRESHOLD) {
+	if (normal.dot(n) > _FACE_IS_VALID_SUPPORT_THRESHOLD) {
 
 		r_amount = 3;
 		for (int i = 0; i < 3; i++) {
@@ -854,7 +854,7 @@ void FaceShapeSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_su
 		// check if edge is valid as a support
 		real_t dot = (vertex[i] - vertex[nx]).normalized().dot(n);
 		dot = ABS(dot);
-		if (dot < _EDGE_IS_VALID_SUPPORT_TRESHOLD) {
+		if (dot < _EDGE_IS_VALID_SUPPORT_THRESHOLD) {
 
 			r_amount = 2;
 			r_supports[0] = vertex[i];

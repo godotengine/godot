@@ -87,7 +87,7 @@ uniform sampler2D glow_source;
 
 
 #if defined(USE_HDR) && defined(USE_GLOW_COPY)
-uniform highp float hdr_glow_treshold;
+uniform highp float hdr_glow_threshold;
 uniform highp float hdr_glow_scale;
 #endif
 
@@ -107,7 +107,7 @@ uniform vec3 bcs;
 #ifdef USE_GLOW_COPY
 
 uniform float bloom;
-uniform float bloom_treshold;
+uniform float bloom_threshold;
 
 #endif
 
@@ -374,11 +374,11 @@ void main() {
 
 #ifdef USE_GLOW_COPY
 
-	highp vec3 glowcol = color.rgb*color.a+step(bloom_treshold,dot(vec3(0.3333,0.3333,0.3333),color.rgb))*bloom*color.rgb;
+	highp vec3 glowcol = color.rgb*color.a+step(bloom_threshold,dot(vec3(0.3333,0.3333,0.3333),color.rgb))*bloom*color.rgb;
 
 #ifdef USE_HDR
 	highp float collum = max(color.r,max(color.g,color.b));
-	glowcol+=color.rgb*max(collum-hdr_glow_treshold,0.0)*hdr_glow_scale;
+	glowcol+=color.rgb*max(collum-hdr_glow_threshold,0.0)*hdr_glow_scale;
 #endif
 	color.rgb=glowcol;
 	color.a=0.0;
@@ -500,7 +500,7 @@ void main() {
 
 	//lum_accum=exp(lum_accum);
 
-#ifdef USE_8BIT_HDR	
+#ifdef USE_8BIT_HDR
 
 	highp float vd_lum = dot(texture2D( source_vd_lum, vec2(0.0) ), _multcv  );
 	lum_accum = clamp( vd_lum + (lum_accum-vd_lum)*hdr_time_delta*hdr_exp_adj_speed,min_luminance*(1.0/LUM_RANGE),max_luminance*(1.0/LUM_RANGE));
@@ -555,4 +555,3 @@ void main() {
 #endif
 
 }
-

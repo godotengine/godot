@@ -205,8 +205,8 @@ public:
 	virtual void body_remove_collision_exception(RID p_body, RID p_body_b);
 	virtual void body_get_collision_exceptions(RID p_body, List<RID> *p_exceptions);
 
-	virtual void body_set_contacts_reported_depth_treshold(RID p_body, real_t p_treshold);
-	virtual real_t body_get_contacts_reported_depth_treshold(RID p_body) const;
+	virtual void body_set_contacts_reported_depth_threshold(RID p_body, real_t p_threshold);
+	virtual real_t body_get_contacts_reported_depth_threshold(RID p_body) const;
 
 	virtual void body_set_omit_force_integration(RID p_body, bool p_omit);
 	virtual bool body_is_omitting_force_integration(RID p_body) const;
