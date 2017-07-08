@@ -1,0 +1,33 @@
+# This is a sample udev file for HIDAPI devices which changes the permissions
+# to 0666 (world readable/writable) for a specified device on Linux systems.
+
+
+# If you are using the libusb implementation of hidapi (libusb/hid.c), then
+# use something like the following line, substituting the VID and PID with
+# those of your device. Note that for kernels before 2.6.24, you will need
+# to substitute "usb" with "usb_device". It shouldn't hurt to use two lines
+# (one each way) for compatibility with older systems.
+
+# HIDAPI/libusb
+SUBSYSTEM=="usb", ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="003f", MODE="0666"
+
+
+# If you are using the hidraw implementation (linux/hid.c), then do something
+# like the following, substituting the VID and PID with your device. Busnum 1
+# is USB.
+
+# HIDAPI/hidraw
+KERNEL=="hidraw*", ATTRS{busnum}=="1", ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="003f", MODE="0666"
+
+# Once done, optionally rename this file for your device, and drop it into
+# /etc/udev/rules.d and unplug and re-plug your device. This is all that is
+# necessary to see the new permissions. Udev does not have to be restarted.
+
+# Note that the hexadecimal values for VID and PID are case sensitive and
+# must be lower case.
+
+# If you think permissions of 0666 are too loose, then see:
+# http://reactivated.net/writing_udev_rules.html for more information on finer
+# grained permission setting. For example, it might be sufficient to just
+# set the group or user owner for specific devices (for example the plugdev
+# group on some systems).

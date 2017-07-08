@@ -223,13 +223,17 @@ def configure(env):
     if (platform.system() == "Linux"):
         env.Append(CPPFLAGS=["-DJOYDEV_ENABLED"])
 
-        if env['udev']:
+        if (env["udev"] == "yes" or env["module_openhmd_enabled"] != "no"):
             if (os.system("pkg-config --exists libudev") == 0): # 0 means found
                 print("Enabling udev support")
                 env.Append(CPPFLAGS=["-DUDEV_ENABLED"])
                 env.ParseConfig('pkg-config libudev --cflags --libs')
             else:
                 print("libudev development libraries not found, disabling udev support")
+                if (env["module_openhmd_enabled"] != "no"):
+                    print("Disabling OpenHMD module which requires libudev")
+                    env["module_openhmd_enabled"] = "no"
+                    env.disabled_modules.append("openhmd")
 
     # Linkflags below this line should typically stay the last ones
     if not env['builtin_zlib']:

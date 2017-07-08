@@ -1,0 +1,17 @@
+LIBRARY   hidapi
+EXPORTS
+   hid_open    @1
+   hid_write   @2
+   hid_read    @3
+   hid_close   @4
+   hid_get_product_string @5
+   hid_get_manufacturer_string @6
+   hid_get_serial_number_string @7
+   hid_get_indexed_string @8
+   hid_error @9
+   hid_set_nonblocking @10
+   hid_enumerate @11
+   hid_open_path @12
+   hid_send_feature_report @13
+   hid_get_feature_report @14
+   

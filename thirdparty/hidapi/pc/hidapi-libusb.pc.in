@@ -1,0 +1,10 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: hidapi-libusb
+Description: C Library for USB HID device access from Linux, Mac OS X, FreeBSD, and Windows. This is the libusb implementation.
+Version: @VERSION@
+Libs: -L${libdir} -lhidapi-libusb
+Cflags: -I${includedir}/hidapi

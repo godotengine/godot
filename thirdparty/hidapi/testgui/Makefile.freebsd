@@ -1,0 +1,33 @@
+###########################################
+# Simple Makefile for HIDAPI test program
+#
+# Alan Ott
+# Signal 11 Software
+# 2010-06-01
+###########################################
+
+all: testgui
+
+CC=cc
+CXX=c++
+COBJS=../libusb/hid.o
+CPPOBJS=test.o
+OBJS=$(COBJS) $(CPPOBJS)
+CFLAGS=-I../hidapi -I/usr/local/include `fox-config --cflags` -Wall -g -c
+LDFLAGS= -L/usr/local/lib
+LIBS= -lusb -liconv `fox-config --libs` -pthread
+
+
+testgui: $(OBJS)
+	$(CXX) -Wall -g $^ $(LDFLAGS) -o $@ $(LIBS)
+
+$(COBJS): %.o: %.c
+	$(CC) $(CFLAGS) $< -o $@
+
+$(CPPOBJS): %.o: %.cpp
+	$(CXX) $(CFLAGS) $< -o $@
+
+clean:
+	rm *.o testgui
+
+.PHONY: clean

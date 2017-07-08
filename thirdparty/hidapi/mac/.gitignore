@@ -1,0 +1,17 @@
+Debug
+Release
+*.exp
+*.ilk
+*.lib
+*.suo
+*.vcproj.*
+*.ncb
+*.suo
+*.dll
+*.pdb
+*.o
+hidapi-hidtest
+.deps
+.libs
+*.la
+*.lo

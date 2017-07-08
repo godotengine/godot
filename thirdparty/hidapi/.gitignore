@@ -1,0 +1,20 @@
+
+# Autotools-added generated files
+Makefile.in
+aclocal.m4
+autom4te.cache/
+config.*
+configure
+depcomp
+install-sh
+libusb/Makefile.in
+linux/Makefile.in
+ltmain.sh
+mac/Makefile.in
+missing
+testgui/Makefile.in
+windows/Makefile.in
+
+Makefile
+stamp-h1
+libtool

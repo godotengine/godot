@@ -1,0 +1,16 @@
+
+HIDAPI Authors:
+
+Alan Ott <alan@signal11.us>:
+	Original Author and Maintainer
+	Linux, Windows, and Mac implementations
+
+Ludovic Rousseau <rousseau@debian.org>:
+	Formatting for Doxygen documentation
+	Bug fixes
+	Correctness fixes
+
+
+For a comprehensive list of contributions, see the commit list at github:
+	http://github.com/signal11/hidapi/commits/master
+

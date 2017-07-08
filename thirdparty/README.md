@@ -93,6 +93,13 @@ The files we package are automatically generated.
 See the header of glad.c for instructions on how to generate them for
 the GLES version Godot targets.
 
+## hidapi
+
+- Upstream: https://github.com/signal11/hidapi
+- Version: ?
+- License: choice between BSD, GPL3 or own license
+
+Added full source
 
 ## jpeg-compressor
 
@@ -154,6 +161,18 @@ Files extracted from upstream source:
 - all .c, .h in lib/
 - all .h files in include/theora/ as theora/
 - COPYING and LICENSE
+
+
+## libusb
+
+- Upstream: https://github.com/libusb/libusb
+- Version: 1.0.21
+- License: Lesser GPL
+
+Files extracted from upstream source:
+
+- Contents of libusb
+- Custom config.h
 
 
 ## libvorbis
@@ -281,6 +300,16 @@ Collection of single-file libraries used in Godot components.
   * Version: 1.11
   * License: Public Domain (Unlicense) or MIT
 
+## openhmd
+
+- Upstream: http://www.openhmd.net/ (https://github.com/OpenHMD/OpenHMD)
+- Version: 0.0.1
+- License: Boost 1.0
+
+Files extracted from the upstream source:
+- src/*
+- include/*
+- LICENSE
 
 ## nanosvg
 
