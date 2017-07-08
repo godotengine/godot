@@ -272,8 +272,8 @@ void Face3::project_range(const Vector3 &p_normal, const Transform &p_transform,
 
 void Face3::get_support(const Vector3 &p_normal, const Transform &p_transform, Vector3 *p_vertices, int *p_count, int p_max) const {
 
-#define _FACE_IS_VALID_SUPPORT_TRESHOLD 0.98
-#define _EDGE_IS_VALID_SUPPORT_TRESHOLD 0.05
+#define _FACE_IS_VALID_SUPPORT_THRESHOLD 0.98
+#define _EDGE_IS_VALID_SUPPORT_THRESHOLD 0.05
 
 	if (p_max <= 0)
 		return;
@@ -281,7 +281,7 @@ void Face3::get_support(const Vector3 &p_normal, const Transform &p_transform, V
 	Vector3 n = p_transform.basis.xform_inv(p_normal);
 
 	/** TEST FACE AS SUPPORT **/
-	if (get_plane().normal.dot(n) > _FACE_IS_VALID_SUPPORT_TRESHOLD) {
+	if (get_plane().normal.dot(n) > _FACE_IS_VALID_SUPPORT_THRESHOLD) {
 
 		*p_count = MIN(3, p_max);
 
@@ -318,7 +318,7 @@ void Face3::get_support(const Vector3 &p_normal, const Transform &p_transform, V
 		// check if edge is valid as a support
 		real_t dot = (vertex[i] - vertex[(i + 1) % 3]).normalized().dot(n);
 		dot = ABS(dot);
-		if (dot < _EDGE_IS_VALID_SUPPORT_TRESHOLD) {
+		if (dot < _EDGE_IS_VALID_SUPPORT_THRESHOLD) {
 
 			*p_count = MIN(2, p_max);
 

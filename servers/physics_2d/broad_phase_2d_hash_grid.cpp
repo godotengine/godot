@@ -636,7 +636,7 @@ BroadPhase2DHashGrid::BroadPhase2DHashGrid() {
 	hash_table = memnew_arr(PosBin *, hash_table_size);
 
 	cell_size = GLOBAL_DEF("physics/2d/cell_size", 128);
-	large_object_min_surface = GLOBAL_DEF("physics/2d/large_object_surface_treshold_in_cells", 512);
+	large_object_min_surface = GLOBAL_DEF("physics/2d/large_object_surface_threshold_in_cells", 512);
 
 	for (int i = 0; i < hash_table_size; i++)
 		hash_table[i] = NULL;

@@ -31,7 +31,7 @@
 #define SHAPE_2D_2DSW_H
 
 #include "servers/physics_2d_server.h"
-#define _SEGMENT_IS_VALID_SUPPORT_TRESHOLD 0.99998
+#define _SEGMENT_IS_VALID_SUPPORT_THRESHOLD 0.99998
 
 /*
 
@@ -106,7 +106,7 @@ public:
 
 		if (r_amount == 1) {
 
-			if (Math::abs(p_normal.dot(p_cast.normalized())) < (1.0 - _SEGMENT_IS_VALID_SUPPORT_TRESHOLD)) {
+			if (Math::abs(p_normal.dot(p_cast.normalized())) < (1.0 - _SEGMENT_IS_VALID_SUPPORT_THRESHOLD)) {
 				//make line because they are parallel
 				r_amount = 2;
 				r_supports[1] = r_supports[0] + p_cast;
@@ -117,7 +117,7 @@ public:
 
 		} else {
 
-			if (Math::abs(p_normal.dot(p_cast.normalized())) < (1.0 - _SEGMENT_IS_VALID_SUPPORT_TRESHOLD)) {
+			if (Math::abs(p_normal.dot(p_cast.normalized())) < (1.0 - _SEGMENT_IS_VALID_SUPPORT_THRESHOLD)) {
 				//optimize line and make it larger because they are parallel
 				if ((r_supports[1] - r_supports[0]).dot(p_cast) > 0) {
 					//larger towards 1

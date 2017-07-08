@@ -30,7 +30,7 @@
 #include "collision_solver_sat.h"
 #include "geometry.h"
 
-#define _EDGE_IS_VALID_SUPPORT_TRESHOLD 0.02
+#define _EDGE_IS_VALID_SUPPORT_THRESHOLD 0.02
 
 struct _CollectorCallback {
 

@@ -220,7 +220,7 @@ bool Polygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 		Vector<Vector2> poly = Variant(node->get_polygon());
 
 		//first check if a point is to be added (segment split)
-		real_t grab_treshold = EDITOR_DEF("editors/poly_editor/point_grab_radius", 8);
+		real_t grab_threshold = EDITOR_DEF("editors/poly_editor/point_grab_radius", 8);
 
 		switch (mode) {
 
@@ -239,7 +239,7 @@ bool Polygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 						return true;
 					} else {
 
-						if (wip.size() > 1 && xform.xform(wip[0] + node->get_offset()).distance_to(gpoint) < grab_treshold) {
+						if (wip.size() > 1 && xform.xform(wip[0] + node->get_offset()).distance_to(gpoint) < grab_threshold) {
 							//wip closed
 							_wip_close();
 
@@ -293,7 +293,7 @@ bool Polygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 									continue; //not valid to reuse point
 
 								real_t d = cp.distance_to(gpoint);
-								if (d < closest_dist && d < grab_treshold) {
+								if (d < closest_dist && d < grab_threshold) {
 									closest_dist = d;
 									closest_pos = cp;
 									closest_idx = i;
@@ -322,7 +322,7 @@ bool Polygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 								Vector2 cp = xform.xform(poly[i] + node->get_offset());
 
 								real_t d = cp.distance_to(gpoint);
-								if (d < closest_dist && d < grab_treshold) {
+								if (d < closest_dist && d < grab_threshold) {
 									closest_dist = d;
 									closest_pos = cp;
 									closest_idx = i;
@@ -367,7 +367,7 @@ bool Polygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 						Vector2 cp = xform.xform(poly[i] + node->get_offset());
 
 						real_t d = cp.distance_to(gpoint);
-						if (d < closest_dist && d < grab_treshold) {
+						if (d < closest_dist && d < grab_threshold) {
 							closest_dist = d;
 							closest_pos = cp;
 							closest_idx = i;

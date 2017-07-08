@@ -233,8 +233,8 @@ public:
 	FUNC2(body_set_max_contacts_reported, RID, int);
 	FUNC1RC(int, body_get_max_contacts_reported, RID);
 
-	FUNC2(body_set_contacts_reported_depth_treshold, RID, real_t);
-	FUNC1RC(real_t, body_get_contacts_reported_depth_treshold, RID);
+	FUNC2(body_set_contacts_reported_depth_threshold, RID, real_t);
+	FUNC1RC(real_t, body_get_contacts_reported_depth_threshold, RID);
 
 	FUNC2(body_set_omit_force_integration, RID, bool);
 	FUNC1RC(bool, body_is_omitting_force_integration, RID);

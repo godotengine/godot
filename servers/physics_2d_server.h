@@ -272,8 +272,8 @@ public:
 		SPACE_PARAM_CONTACT_RECYCLE_RADIUS,
 		SPACE_PARAM_CONTACT_MAX_SEPARATION,
 		SPACE_PARAM_BODY_MAX_ALLOWED_PENETRATION,
-		SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_TRESHOLD,
-		SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_TRESHOLD,
+		SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD,
+		SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD,
 		SPACE_PARAM_BODY_TIME_TO_SLEEP,
 		SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS,
 	};
@@ -454,8 +454,8 @@ public:
 	virtual int body_get_max_contacts_reported(RID p_body) const = 0;
 
 	//missing remove
-	virtual void body_set_contacts_reported_depth_treshold(RID p_body, float p_treshold) = 0;
-	virtual float body_get_contacts_reported_depth_treshold(RID p_body) const = 0;
+	virtual void body_set_contacts_reported_depth_threshold(RID p_body, float p_threshold) = 0;
+	virtual float body_get_contacts_reported_depth_threshold(RID p_body) const = 0;
 
 	virtual void body_set_omit_force_integration(RID p_body, bool p_omit) = 0;
 	virtual bool body_is_omitting_force_integration(RID p_body) const = 0;

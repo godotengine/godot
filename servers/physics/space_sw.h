@@ -152,8 +152,8 @@ public:
 	_FORCE_INLINE_ real_t get_contact_max_separation() const { return contact_max_separation; }
 	_FORCE_INLINE_ real_t get_contact_max_allowed_penetration() const { return contact_max_allowed_penetration; }
 	_FORCE_INLINE_ real_t get_constraint_bias() const { return constraint_bias; }
-	_FORCE_INLINE_ real_t get_body_linear_velocity_sleep_treshold() const { return body_linear_velocity_sleep_threshold; }
-	_FORCE_INLINE_ real_t get_body_angular_velocity_sleep_treshold() const { return body_angular_velocity_sleep_threshold; }
+	_FORCE_INLINE_ real_t get_body_linear_velocity_sleep_threshold() const { return body_linear_velocity_sleep_threshold; }
+	_FORCE_INLINE_ real_t get_body_angular_velocity_sleep_threshold() const { return body_angular_velocity_sleep_threshold; }
 	_FORCE_INLINE_ real_t get_body_time_to_sleep() const { return body_time_to_sleep; }
 	_FORCE_INLINE_ real_t get_body_angular_velocity_damp_ratio() const { return body_angular_velocity_damp_ratio; }
 

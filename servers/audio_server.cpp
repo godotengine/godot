@@ -252,7 +252,7 @@ void AudioServer::_mix_step() {
 			if (!bus->channels[k].used) {
 				//see if any audio is contained, because channel was not used
 
-				if (MAX(peak.r, peak.l) > Math::db2linear(channel_disable_treshold_db)) {
+				if (MAX(peak.r, peak.l) > Math::db2linear(channel_disable_threshold_db)) {
 					bus->channels[k].last_mix_with_audio = mix_frames;
 				} else if (mix_frames - bus->channels[k].last_mix_with_audio > channel_disable_frames) {
 					bus->channels[k].active = false;
@@ -713,7 +713,7 @@ bool AudioServer::is_bus_channel_active(int p_bus, int p_channel) const {
 
 void AudioServer::init() {
 
-	channel_disable_treshold_db = GLOBAL_DEF("audio/channel_disable_treshold_db", -60.0);
+	channel_disable_threshold_db = GLOBAL_DEF("audio/channel_disable_threshold_db", -60.0);
 	channel_disable_frames = float(GLOBAL_DEF("audio/channel_disable_time", 2.0)) * get_mix_rate();
 	buffer_size = 1024; //harcoded for now
 	switch (get_speaker_mode()) {

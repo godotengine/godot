@@ -113,7 +113,7 @@ private:
 	uint64_t mix_count;
 	uint64_t mix_frames;
 
-	float channel_disable_treshold_db;
+	float channel_disable_threshold_db;
 	uint32_t channel_disable_frames;
 
 	int to_mix;

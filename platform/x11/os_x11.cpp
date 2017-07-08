@@ -1260,7 +1260,7 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 	// Echo characters in X11 are a keyrelease and a keypress
 	// one after the other with the (almot) same timestamp.
 	// To detect them, i use XPeekEvent and check that their
-	// difference in time is below a treshold.
+	// difference in time is below a threshold.
 
 	if (xkeyevent->type != KeyPress) {
 
@@ -1272,7 +1272,7 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 			XEvent peek_event;
 			XPeekEvent(x11_display, &peek_event);
 
-			// I'm using a treshold of 5 msecs,
+			// I'm using a threshold of 5 msecs,
 			// since sometimes there seems to be a little
 			// jitter. I'm still not convinced that all this approach
 			// is correct, but the xorg developers are
