@@ -13313,6 +13313,22 @@
 			<description>
 			</description>
 		</method>
+		<method name="open_scene_from_path">
+			<argument index="0" name="scene_filepath" type="String">
+			</argument>
+			</return>
+			<description>
+				Opens scene in editor. Do not use during plugin initialization. If you need, then use it together with [method Object.call_deferred].
+			</description>
+		</method>
+		<method name="reload_scene_from_path">
+			<argument index="0" name="scene_filepath" type="String">
+			</argument>
+			</return>
+			<description>
+				Reloads already loaded editor scene.
+			</description>
+		</method>
 		<method name="forward_canvas_gui_input" qualifiers="virtual">
 			<return type="bool">
 			</return>

@@ -103,6 +103,8 @@ public:
 	void remove_control_from_bottom_panel(Control *p_control);
 	Control *get_editor_viewport();
 	void edit_resource(const Ref<Resource> &p_resource);
+	void open_scene_from_path(const String &scene_path);
+	void reload_scene_from_path(const String &scene_path);
 
 	void add_tool_menu_item(const String &p_name, Object *p_handler, const String &p_callback, const Variant &p_ud = Variant());
 	void add_tool_submenu_item(const String &p_name, Object *p_submenu);

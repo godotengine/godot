@@ -80,6 +80,24 @@ void EditorPlugin::edit_resource(const Ref<Resource> &p_resource) {
 	EditorNode::get_singleton()->edit_resource(p_resource);
 }
 
+void EditorPlugin::open_scene_from_path(const String &scene_path) {
+
+	if (EditorNode::get_singleton()->is_changing_scene()) {
+		return;
+	}
+
+	EditorNode::get_singleton()->open_request(scene_path);
+}
+
+void EditorPlugin::reload_scene_from_path(const String &scene_path) {
+
+	if (EditorNode::get_singleton()->is_changing_scene()) {
+		return;
+	}
+
+	EditorNode::get_singleton()->reload_scene(scene_path);
+}
+
 void EditorPlugin::add_control_to_container(CustomControlContainer p_location, Control *p_control) {
 
 	switch (p_location) {
@@ -376,6 +394,8 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_editor_settings:EditorSettings"), &EditorPlugin::get_editor_settings);
 	ClassDB::bind_method(D_METHOD("queue_save_layout"), &EditorPlugin::queue_save_layout);
 	ClassDB::bind_method(D_METHOD("edit_resource"), &EditorPlugin::edit_resource);
+	ClassDB::bind_method(D_METHOD("open_scene_from_path", "scene_filepath"), &EditorPlugin::open_scene_from_path);
+	ClassDB::bind_method(D_METHOD("reload_scene_from_path", "scene_filepath"), &EditorPlugin::reload_scene_from_path);
 	ClassDB::bind_method(D_METHOD("add_import_plugin"), &EditorPlugin::add_import_plugin);
 	ClassDB::bind_method(D_METHOD("remove_import_plugin"), &EditorPlugin::remove_import_plugin);
 	ClassDB::bind_method(D_METHOD("set_input_event_forwarding_always_enabled"), &EditorPlugin::set_input_event_forwarding_always_enabled);
