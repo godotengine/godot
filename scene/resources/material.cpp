@@ -325,6 +325,7 @@ void SpatialMaterial::_update_shader() {
 		case SPECULAR_BLINN: code += ",specular_blinn"; break;
 		case SPECULAR_PHONG: code += ",specular_phong"; break;
 		case SPECULAR_TOON: code += ",specular_toon"; break;
+		case SPECULAR_DISABLED: code += ",specular_disabled"; break;
 	}
 
 	if (flags[FLAG_UNSHADED]) {
@@ -1458,7 +1459,7 @@ void SpatialMaterial::_bind_methods() {
 
 	ADD_GROUP("Parameters", "params_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_diffuse_mode", PROPERTY_HINT_ENUM, "Lambert,Lambert Wrap,Oren Nayar,Burley,Toon"), "set_diffuse_mode", "get_diffuse_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_specular_mode", PROPERTY_HINT_ENUM, "SchlickGGX,Blinn,Phong,Toon"), "set_specular_mode", "get_specular_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_specular_mode", PROPERTY_HINT_ENUM, "SchlickGGX,Blinn,Phong,Toon,Disabled"), "set_specular_mode", "get_specular_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_blend_mode", PROPERTY_HINT_ENUM, "Mix,Add,Sub,Mul"), "set_blend_mode", "get_blend_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_cull_mode", PROPERTY_HINT_ENUM, "Back,Front,Disabled"), "set_cull_mode", "get_cull_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_depth_draw_mode", PROPERTY_HINT_ENUM, "Opaque Only,Always,Never,Opaque Pre-Pass"), "set_depth_draw_mode", "get_depth_draw_mode");
@@ -1621,6 +1622,7 @@ void SpatialMaterial::_bind_methods() {
 	BIND_CONSTANT(SPECULAR_BLINN);
 	BIND_CONSTANT(SPECULAR_PHONG);
 	BIND_CONSTANT(SPECULAR_TOON);
+	BIND_CONSTANT(SPECULAR_DISABLED);
 
 	BIND_CONSTANT(BILLBOARD_DISABLED);
 	BIND_CONSTANT(BILLBOARD_ENABLED);

@@ -179,6 +179,7 @@ public:
 		SPECULAR_BLINN,
 		SPECULAR_PHONG,
 		SPECULAR_TOON,
+		SPECULAR_DISABLED,
 	};
 
 	enum BillboardMode {

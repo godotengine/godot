@@ -142,6 +142,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("specular_blinn");
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("specular_phong");
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("specular_toon");
+	shader_modes[VS::SHADER_SPATIAL].modes.insert("specular_disabled");
 
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("skip_vertex_transform");
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("world_vertex_coords");
