@@ -1170,7 +1170,7 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 						canvas_item->edit_set_state(se->undo_state);
 						if (canvas_item->cast_to<Node2D>())
 							canvas_item->cast_to<Node2D>()->edit_set_pivot(se->undo_pivot);
-						if (canvas_item->cast_to<Node2D>())
+						if (canvas_item->cast_to<Control>())
 							canvas_item->cast_to<Control>()->set_pivot_offset(se->undo_pivot);
 					}
 				}
