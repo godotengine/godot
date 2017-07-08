@@ -6105,6 +6105,7 @@ EditorNode::EditorNode() {
 		hbc->add_child(logo);
 
 		Label *about_text = memnew(Label);
+		about_text->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 		about_text->set_text(VERSION_FULL_NAME + String::utf8("\n\u00A9 2007-2017 Juan Linietsky, Ariel Manzur.\n\u00A9 2014-2017 ") +
 							 TTR("Godot Engine contributors") + "\n");
 		hbc->add_child(about_text);
