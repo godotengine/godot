@@ -775,6 +775,10 @@ LIGHT_SHADER_CODE
 		diffuse += diffuse_color * max(0.0, NdotL) * (A + vec3(B) * s / t) / M_PI;
 	}
 
+#elif defined(DIFFUSE_TOON)
+
+	diffuse += smoothstep(-roughness,roughness,dot(N,L)) * light_color * diffuse_color;
+
 #elif defined(DIFFUSE_BURLEY)
 
 	{
@@ -805,6 +809,34 @@ LIGHT_SHADER_CODE
 
 	if (roughness > 0.0) {
 
+
+		// D
+
+#if defined(SPECULAR_BLINN)
+
+		vec3 H = normalize(V + L);
+		float dotNH = max(dot(N,H), 0.0 );
+		float intensity = pow( dotNH, (1.0-roughness) * 256.0);
+		specular += light_color * intensity;
+
+#elif defined(SPECULAR_PHONG)
+
+		 vec3 R = normalize(-reflect(L,N));
+		 float dotNV = max(0.0,dot(R,V));
+		 float intensity = pow( dotNV, (1.0-roughness) * 256.0);
+		 specular += light_color * intensity;
+
+#elif defined(SPECULAR_TOON)
+
+		vec3 R = normalize(-reflect(L,N));
+		float dotNV = dot(R,V);
+		float mid = 1.0-roughness;
+		float intensity = smoothstep(mid-roughness*0.5,mid+roughness*0.5,dotNV);
+		diffuse += light_color * intensity; //write to diffuse, as in toon shading you generally want no reflection
+
+
+#else
+		// shlick+ggx as default
 		float alpha = roughness * roughness;
 
 		vec3 H = normalize(V + L);
@@ -812,7 +844,6 @@ LIGHT_SHADER_CODE
 		float dotNH = max(dot(N,H), 0.0 );
 		float dotLH = max(dot(L,H), 0.0 );
 
-		// D
 #if defined(LIGHT_USE_ANISOTROPY)
 
 		float aspect = sqrt(1.0-anisotropy*0.9);
@@ -844,6 +875,7 @@ LIGHT_SHADER_CODE
 		float speci = dotNL * D * F * vis;
 
 		specular += speci * light_color * specular_blob_intensity;
+#endif
 
 #if defined(LIGHT_USE_CLEARCOAT)
 		float Dr = GTR1(dotNH, mix(.1,.001,clearcoat_gloss));
@@ -1686,7 +1718,7 @@ FRAGMENT_SHADER_CODE
 		float ndotv = clamp(dot(normal,eye_vec),0.0,1.0);
 
 		//energy conservation
-		vec3 dielectric = vec3(0.034) * 0.5 * 2.0;
+		vec3 dielectric = vec3(0.034) * specular * 2.0;
 		vec3 f0 = mix(dielectric, albedo, metallic);
 		const vec4 c0 = vec4(-1.0, -0.0275, -0.572, 0.022);
 		const vec4 c1 = vec4( 1.0, 0.0425, 1.04, -0.04);

@@ -47,11 +47,16 @@ class Material : public Resource {
 	OBJ_SAVE_TYPE(Material)
 
 	RID material;
+	Ref<Material> next_pass;
 
 protected:
 	_FORCE_INLINE_ RID _get_material() const { return material; }
+	static void _bind_methods();
 
 public:
+	void set_next_pass(const Ref<Material> &p_pass);
+	Ref<Material> get_next_pass() const;
+
 	virtual RID get_rid() const;
 	Material();
 	virtual ~Material();
@@ -166,6 +171,14 @@ public:
 		DIFFUSE_HALF_LAMBERT,
 		DIFFUSE_OREN_NAYAR,
 		DIFFUSE_BURLEY,
+		DIFFUSE_TOON,
+	};
+
+	enum SpecularMode {
+		SPECULAR_SCHLICK_GGX,
+		SPECULAR_BLINN,
+		SPECULAR_PHONG,
+		SPECULAR_TOON,
 	};
 
 	enum BillboardMode {
@@ -186,10 +199,12 @@ private:
 			uint64_t cull_mode : 2;
 			uint64_t flags : 9;
 			uint64_t detail_blend_mode : 2;
-			uint64_t diffuse_mode : 2;
+			uint64_t diffuse_mode : 3;
+			uint64_t specular_mode : 2;
 			uint64_t invalid_key : 1;
 			uint64_t deep_parallax : 1;
 			uint64_t billboard_mode : 2;
+			uint64_t grow : 1;
 		};
 
 		uint64_t key;
@@ -228,9 +243,10 @@ private:
 		}
 		mk.detail_blend_mode = detail_blend_mode;
 		mk.diffuse_mode = diffuse_mode;
+		mk.specular_mode = specular_mode;
 		mk.billboard_mode = billboard_mode;
 		mk.deep_parallax = deep_parallax ? 1 : 0;
-		;
+		mk.grow = grow_enabled;
 
 		return mk;
 	}
@@ -263,6 +279,7 @@ private:
 		StringName depth_max_layers;
 		StringName uv1_blend_sharpness;
 		StringName uv2_blend_sharpness;
+		StringName grow;
 
 		StringName texture_names[TEXTURE_MAX];
 	};
@@ -294,6 +311,8 @@ private:
 	float refraction;
 	float line_width;
 	float point_size;
+	bool grow_enabled;
+	float grow;
 	int particles_anim_h_frames;
 	int particles_anim_v_frames;
 	bool particles_anim_loop;
@@ -317,6 +336,7 @@ private:
 	DepthDrawMode depth_draw_mode;
 	CullMode cull_mode;
 	bool flags[FLAG_MAX];
+	SpecularMode specular_mode;
 	DiffuseMode diffuse_mode;
 	BillboardMode billboard_mode;
 
@@ -409,6 +429,9 @@ public:
 	void set_diffuse_mode(DiffuseMode p_mode);
 	DiffuseMode get_diffuse_mode() const;
 
+	void set_specular_mode(SpecularMode p_mode);
+	SpecularMode get_specular_mode() const;
+
 	void set_flag(Flags p_flag, bool p_enabled);
 	bool get_flag(Flags p_flag) const;
 
@@ -447,6 +470,12 @@ public:
 	void set_particles_anim_loop(int p_frames);
 	int get_particles_anim_loop() const;
 
+	void set_grow_enabled(bool p_enable);
+	bool is_grow_enabled() const;
+
+	void set_grow(float p_grow);
+	float get_grow() const;
+
 	static void init_shaders();
 	static void finish_shaders();
 	static void flush_changes();
@@ -463,6 +492,7 @@ VARIANT_ENUM_CAST(SpatialMaterial::DepthDrawMode)
 VARIANT_ENUM_CAST(SpatialMaterial::CullMode)
 VARIANT_ENUM_CAST(SpatialMaterial::Flags)
 VARIANT_ENUM_CAST(SpatialMaterial::DiffuseMode)
+VARIANT_ENUM_CAST(SpatialMaterial::SpecularMode)
 VARIANT_ENUM_CAST(SpatialMaterial::BillboardMode)
 
 //////////////////////

@@ -136,6 +136,12 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("diffuse_half_lambert");
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("diffuse_oren_nayar");
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("diffuse_burley");
+	shader_modes[VS::SHADER_SPATIAL].modes.insert("diffuse_toon");
+
+	shader_modes[VS::SHADER_SPATIAL].modes.insert("specular_schlick_ggx");
+	shader_modes[VS::SHADER_SPATIAL].modes.insert("specular_blinn");
+	shader_modes[VS::SHADER_SPATIAL].modes.insert("specular_phong");
+	shader_modes[VS::SHADER_SPATIAL].modes.insert("specular_toon");
 
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("skip_vertex_transform");
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("world_vertex_coords");

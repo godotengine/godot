@@ -30,9 +30,34 @@
 #include "material.h"
 #include "scene/scene_string_names.h"
 
+void Material::set_next_pass(const Ref<Material> &p_pass) {
+
+	if (next_pass == p_pass)
+		return;
+
+	next_pass = p_pass;
+	RID next_pass_rid;
+	if (next_pass.is_valid())
+		next_pass_rid = next_pass->get_rid();
+	VS::get_singleton()->material_set_next_pass(material, next_pass_rid);
+}
+
+Ref<Material> Material::get_next_pass() const {
+
+	return next_pass;
+}
+
 RID Material::get_rid() const {
 
 	return material;
+}
+
+void Material::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_next_pass", "next_pass:Material"), &Material::set_next_pass);
+	ClassDB::bind_method(D_METHOD("get_next_pass:Material"), &Material::get_next_pass);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "next_pass", PROPERTY_HINT_RESOURCE_TYPE, "Material"), "set_next_pass", "get_next_pass");
 }
 
 Material::Material() {
@@ -207,6 +232,8 @@ void SpatialMaterial::init_shaders() {
 	shader_names->depth_min_layers = "depth_min_layers";
 	shader_names->depth_max_layers = "depth_max_layers";
 
+	shader_names->grow = "grow";
+
 	shader_names->texture_names[TEXTURE_ALBEDO] = "texture_albedo";
 	shader_names->texture_names[TEXTURE_METALLIC] = "texture_metallic";
 	shader_names->texture_names[TEXTURE_ROUGHNESS] = "texture_roughness";
@@ -291,6 +318,13 @@ void SpatialMaterial::_update_shader() {
 		case DIFFUSE_HALF_LAMBERT: code += ",diffuse_half_lambert"; break;
 		case DIFFUSE_OREN_NAYAR: code += ",diffuse_oren_nayar"; break;
 		case DIFFUSE_BURLEY: code += ",diffuse_burley"; break;
+		case DIFFUSE_TOON: code += ",diffuse_toon"; break;
+	}
+	switch (specular_mode) {
+		case SPECULAR_SCHLICK_GGX: code += ",specular_schlick_ggx"; break;
+		case SPECULAR_BLINN: code += ",specular_blinn"; break;
+		case SPECULAR_PHONG: code += ",specular_phong"; break;
+		case SPECULAR_TOON: code += ",specular_toon"; break;
 	}
 
 	if (flags[FLAG_UNSHADED]) {
@@ -309,6 +343,9 @@ void SpatialMaterial::_update_shader() {
 	code += "uniform sampler2D texture_albedo : hint_albedo;\n";
 	code += "uniform float specular;\n";
 	code += "uniform float metallic;\n";
+	if (grow_enabled) {
+		code += "uniform float grow;\n";
+	}
 
 	code += "uniform float roughness : hint_range(0,1);\n";
 	code += "uniform float point_size : hint_range(0,128);\n";
@@ -492,6 +529,10 @@ void SpatialMaterial::_update_shader() {
 		code += "\tuv2_world_pos *= vec3(1.0,-1.0, 1.0);\n";
 	}
 
+	if (grow_enabled) {
+		code += "\tVERTEX+=NORMAL*grow;\n";
+	}
+
 	code += "}\n";
 	code += "\n\n";
 	if (flags[FLAG_UV1_USE_TRIPLANAR] || flags[FLAG_UV2_USE_TRIPLANAR]) {
@@ -642,7 +683,7 @@ void SpatialMaterial::_update_shader() {
 		} else {
 			code += "\tvec3 anisotropy_tex = texture(texture_flowmap,base_uv).rga;\n";
 		}
-		code += "\tANISOTROPY = anisotropy_ratio*anisotropy_tex.a;\n";
+		code += "\tANISOTROPY = anisotropy_ratio*anisotropy_tex.b;\n";
 		code += "\tANISOTROPY_FLOW = anisotropy_tex.rg*2.0-1.0;\n";
 	}
 
@@ -1003,6 +1044,19 @@ SpatialMaterial::DiffuseMode SpatialMaterial::get_diffuse_mode() const {
 	return diffuse_mode;
 }
 
+void SpatialMaterial::set_specular_mode(SpecularMode p_mode) {
+
+	if (specular_mode == p_mode)
+		return;
+
+	specular_mode = p_mode;
+	_queue_shader_change();
+}
+SpatialMaterial::SpecularMode SpatialMaterial::get_specular_mode() const {
+
+	return specular_mode;
+}
+
 void SpatialMaterial::set_flag(Flags p_flag, bool p_enabled) {
 
 	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
@@ -1073,6 +1127,10 @@ void SpatialMaterial::_validate_property(PropertyInfo &property) const {
 	_validate_feature("detail", FEATURE_DETAIL, property);
 
 	if (property.name.begins_with("particles_anim_") && billboard_mode != BILLBOARD_PARTICLES) {
+		property.usage = 0;
+	}
+
+	if (property.name == "params_grow_amount" && !grow_enabled) {
 		property.usage = 0;
 	}
 }
@@ -1240,6 +1298,26 @@ int SpatialMaterial::get_depth_deep_parallax_max_layers() const {
 	return deep_parallax_max_layers;
 }
 
+void SpatialMaterial::set_grow_enabled(bool p_enable) {
+	grow_enabled = p_enable;
+	_queue_shader_change();
+	_change_notify();
+}
+
+bool SpatialMaterial::is_grow_enabled() const {
+	return grow_enabled;
+}
+
+void SpatialMaterial::set_grow(float p_grow) {
+	grow = p_grow;
+	VS::get_singleton()->material_set_param(_get_material(), shader_names->grow, p_grow);
+}
+
+float SpatialMaterial::get_grow() const {
+
+	return grow;
+}
+
 void SpatialMaterial::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_albedo", "albedo"), &SpatialMaterial::set_albedo);
@@ -1308,6 +1386,9 @@ void SpatialMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_diffuse_mode", "diffuse_mode"), &SpatialMaterial::set_diffuse_mode);
 	ClassDB::bind_method(D_METHOD("get_diffuse_mode"), &SpatialMaterial::get_diffuse_mode);
 
+	ClassDB::bind_method(D_METHOD("set_specular_mode", "specular_mode"), &SpatialMaterial::set_specular_mode);
+	ClassDB::bind_method(D_METHOD("get_specular_mode"), &SpatialMaterial::get_specular_mode);
+
 	ClassDB::bind_method(D_METHOD("set_flag", "flag", "enable"), &SpatialMaterial::set_flag);
 	ClassDB::bind_method(D_METHOD("get_flag"), &SpatialMaterial::get_flag);
 
@@ -1359,6 +1440,12 @@ void SpatialMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_depth_deep_parallax_max_layers", "layer"), &SpatialMaterial::set_depth_deep_parallax_max_layers);
 	ClassDB::bind_method(D_METHOD("get_depth_deep_parallax_max_layers"), &SpatialMaterial::get_depth_deep_parallax_max_layers);
 
+	ClassDB::bind_method(D_METHOD("set_grow", "amount"), &SpatialMaterial::set_grow);
+	ClassDB::bind_method(D_METHOD("get_grow"), &SpatialMaterial::get_grow);
+
+	ClassDB::bind_method(D_METHOD("set_grow_enabled", "enable"), &SpatialMaterial::set_grow_enabled);
+	ClassDB::bind_method(D_METHOD("is_grow_enabled"), &SpatialMaterial::is_grow_enabled);
+
 	ADD_GROUP("Flags", "flags_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_transparent"), "set_feature", "get_feature", FEATURE_TRANSPARENT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_unshaded"), "set_flag", "get_flag", FLAG_UNSHADED);
@@ -1370,13 +1457,16 @@ void SpatialMaterial::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "vertex_color_is_srgb"), "set_flag", "get_flag", FLAG_SRGB_VERTEX_COLOR);
 
 	ADD_GROUP("Parameters", "params_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_diffuse_mode", PROPERTY_HINT_ENUM, "Lambert,Lambert Wrap,Oren Nayar,Burley"), "set_diffuse_mode", "get_diffuse_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_diffuse_mode", PROPERTY_HINT_ENUM, "Lambert,Lambert Wrap,Oren Nayar,Burley,Toon"), "set_diffuse_mode", "get_diffuse_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_specular_mode", PROPERTY_HINT_ENUM, "SchlickGGX,Blinn,Phong,Toon"), "set_specular_mode", "get_specular_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_blend_mode", PROPERTY_HINT_ENUM, "Mix,Add,Sub,Mul"), "set_blend_mode", "get_blend_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_cull_mode", PROPERTY_HINT_ENUM, "Back,Front,Disabled"), "set_cull_mode", "get_cull_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_depth_draw_mode", PROPERTY_HINT_ENUM, "Opaque Only,Always,Never,Opaque Pre-Pass"), "set_depth_draw_mode", "get_depth_draw_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "params_line_width", PROPERTY_HINT_RANGE, "0.1,128,0.1"), "set_line_width", "get_line_width");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "params_point_size", PROPERTY_HINT_RANGE, "0.1,128,0.1"), "set_point_size", "get_point_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_billboard_mode", PROPERTY_HINT_ENUM, "Disabled,Enabled,Y-Billboard,Particle Billboard"), "set_billboard_mode", "get_billboard_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "params_grow"), "set_grow_enabled", "is_grow_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "params_grow_amount", PROPERTY_HINT_RANGE, "-16,10,0.01"), "set_grow", "get_grow");
 	ADD_GROUP("Particles Anim", "particles_anim_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "particles_anim_h_frames", PROPERTY_HINT_RANGE, "1,128,1"), "set_particles_anim_h_frames", "get_particles_anim_h_frames");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "particles_anim_v_frames", PROPERTY_HINT_RANGE, "1,128,1"), "set_particles_anim_v_frames", "get_particles_anim_v_frames");
@@ -1458,13 +1548,13 @@ void SpatialMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "uv1_scale"), "set_uv1_scale", "get_uv1_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "uv1_offset"), "set_uv1_offset", "get_uv1_offset");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "uv1_triplanar"), "set_flag", "get_flag", FLAG_UV1_USE_TRIPLANAR);
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "uv1_triplanar_sharpness"), "set_uv1_triplanar_blend_sharpness", "get_uv1_triplanar_blend_sharpness");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "uv1_triplanar_sharpness", PROPERTY_HINT_EXP_EASING), "set_uv1_triplanar_blend_sharpness", "get_uv1_triplanar_blend_sharpness");
 
 	ADD_GROUP("UV2", "uv2_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "uv2_scale"), "set_uv2_scale", "get_uv2_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "uv2_offset"), "set_uv2_offset", "get_uv2_offset");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "uv2_triplanar"), "set_flag", "get_flag", FLAG_UV2_USE_TRIPLANAR);
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "uv2_triplanar_sharpness"), "set_uv2_triplanar_blend_sharpness", "get_uv2_triplanar_blend_sharpness");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "uv2_triplanar_sharpness", PROPERTY_HINT_EXP_EASING), "set_uv2_triplanar_blend_sharpness", "get_uv2_triplanar_blend_sharpness");
 
 	BIND_CONSTANT(TEXTURE_ALBEDO);
 	BIND_CONSTANT(TEXTURE_METALLIC);
@@ -1525,6 +1615,12 @@ void SpatialMaterial::_bind_methods() {
 	BIND_CONSTANT(DIFFUSE_HALF_LAMBERT);
 	BIND_CONSTANT(DIFFUSE_OREN_NAYAR);
 	BIND_CONSTANT(DIFFUSE_BURLEY);
+	BIND_CONSTANT(DIFFUSE_TOON);
+
+	BIND_CONSTANT(SPECULAR_SCHLICK_GGX);
+	BIND_CONSTANT(SPECULAR_BLINN);
+	BIND_CONSTANT(SPECULAR_PHONG);
+	BIND_CONSTANT(SPECULAR_TOON);
 
 	BIND_CONSTANT(BILLBOARD_DISABLED);
 	BIND_CONSTANT(BILLBOARD_ENABLED);
@@ -1564,6 +1660,9 @@ SpatialMaterial::SpatialMaterial()
 	set_particles_anim_v_frames(1);
 	set_particles_anim_loop(false);
 
+	grow_enabled = false;
+	set_grow(0.0);
+
 	deep_parallax = false;
 	set_depth_deep_parallax_min_layers(8);
 	set_depth_deep_parallax_max_layers(32);
@@ -1577,6 +1676,7 @@ SpatialMaterial::SpatialMaterial()
 		flags[i] = 0;
 	}
 	diffuse_mode = DIFFUSE_LAMBERT;
+	specular_mode = SPECULAR_SCHLICK_GGX;
 
 	for (int i = 0; i < FEATURE_MAX; i++) {
 		features[i] = false;

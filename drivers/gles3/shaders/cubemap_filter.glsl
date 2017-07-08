@@ -204,7 +204,9 @@ vec4 textureDualParaboloidArray(vec3 normal) {
 	vec3 norm = normalize(normal);
 	norm.xy/=1.0+abs(norm.z);
 	norm.xy=norm.xy * vec2(0.5,0.25) + vec2(0.5,0.25);
-	norm.y+=max(0.0,sign(-norm.z))*0.5;
+	if (norm.z<0) {
+		norm.y=0.5-norm.y+0.5;
+	}
 	return textureLod(source_dual_paraboloid_array, vec3(norm.xy, float(source_array_index) ), 0.0);
 
 }

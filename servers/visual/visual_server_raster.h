@@ -685,6 +685,7 @@ public:
 	BIND2RC(Variant, material_get_param, RID, const StringName &)
 
 	BIND2(material_set_line_width, RID, float)
+	BIND2(material_set_next_pass, RID, RID)
 
 	/* MESH API */
 

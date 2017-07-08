@@ -1870,6 +1870,14 @@ void RasterizerStorageGLES3::material_set_line_width(RID p_material, float p_wid
 	material->line_width = p_width;
 }
 
+void RasterizerStorageGLES3::material_set_next_pass(RID p_material, RID p_next_material) {
+
+	Material *material = material_owner.get(p_material);
+	ERR_FAIL_COND(!material);
+
+	material->next_pass = p_next_material;
+}
+
 bool RasterizerStorageGLES3::material_is_animated(RID p_material) {
 
 	Material *material = material_owner.get(p_material);
@@ -1878,7 +1886,11 @@ bool RasterizerStorageGLES3::material_is_animated(RID p_material) {
 		_update_material(material);
 	}
 
-	return material->is_animated_cache;
+	bool animated = material->is_animated_cache;
+	if (!animated && material->next_pass.is_valid()) {
+		animated = material_is_animated(material->next_pass);
+	}
+	return animated;
 }
 bool RasterizerStorageGLES3::material_casts_shadows(RID p_material) {
 
@@ -1888,7 +1900,13 @@ bool RasterizerStorageGLES3::material_casts_shadows(RID p_material) {
 		_update_material(material);
 	}
 
-	return material->can_cast_shadow_cache;
+	bool casts_shadows = material->can_cast_shadow_cache;
+
+	if (!casts_shadows && material->next_pass.is_valid()) {
+		casts_shadows = material_casts_shadows(material->next_pass);
+	}
+
+	return casts_shadows;
 }
 
 void RasterizerStorageGLES3::material_add_instance_owner(RID p_material, RasterizerScene::InstanceBase *p_instance) {

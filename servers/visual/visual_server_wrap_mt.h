@@ -129,6 +129,7 @@ public:
 	FUNC2RC(Variant, material_get_param, RID, const StringName &)
 
 	FUNC2(material_set_line_width, RID, float)
+	FUNC2(material_set_next_pass, RID, RID)
 
 	/* MESH API */
 

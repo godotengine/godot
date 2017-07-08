@@ -225,6 +225,8 @@ public:
 
 	virtual void material_set_line_width(RID p_material, float p_width) = 0;
 
+	virtual void material_set_next_pass(RID p_material, RID p_next_material) = 0;
+
 	virtual bool material_is_animated(RID p_material) = 0;
 	virtual bool material_casts_shadows(RID p_material) = 0;
 
