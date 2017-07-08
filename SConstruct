@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python
 
 EnsureSConsVersion(0, 14)
@@ -143,9 +142,11 @@ opts.Add('disable_3d', "Disable 3D nodes for smaller executable (yes/no)", 'no')
 opts.Add('disable_advanced_gui', "Disable advance 3D gui nodes and behaviors (yes/no)", 'no')
 opts.Add('extra_suffix', "Custom extra suffix added to the base filename of all generated binary files", '')
 opts.Add('unix_global_settings_path', "UNIX-specific path to system-wide settings. Currently only used for templates", '')
-opts.Add('verbose', "Enable verbose output for the compilation (yes/no)", 'yes')
+opts.Add('verbose', "Enable verbose output for the compilation (yes/no)", 'no')
 opts.Add('vsproj', "Generate Visual Studio Project. (yes/no)", 'no')
-opts.Add('warnings', "Set the level of warnings emitted during compilation (extra/all/moderate/no)", 'all')
+opts.Add('warnings', "Set the level of warnings emitted during compilation (extra/all/moderate/no)", 'no')
+opts.Add('progress', "Show a progress indicator during build (yes/no)", 'yes')
+opts.Add('dev', "If yes, alias for verbose=yes warnings=all", 'no')
 
 # Thirdparty libraries
 opts.Add('builtin_freetype', "Use the builtin freetype library (yes/no)", 'yes')
@@ -171,7 +172,6 @@ opts.Add("CC", "C compiler")
 opts.Add("CCFLAGS", "Custom flags for the C and C++ compilers")
 opts.Add("CFLAGS", "Custom flags for the C compiler")
 opts.Add("LINKFLAGS", "Custom flags for the linker")
-
 
 # add platform specific options
 
@@ -228,6 +228,10 @@ if selected_platform in platform_list:
         env = detect.create(env_base)
     else:
         env = env_base.Clone()
+
+    if (env["dev"] == "yes"):
+        env["warnings"] = "all"
+        env["verbose"] = "yes"
 
     if env['vsproj'] == "yes":
         env.vs_incs = []
@@ -443,3 +447,40 @@ else:
     for x in platform_list:
         print("\t" + x)
     print("\nPlease run scons again with argument: platform=<string>")
+
+
+screen = sys.stdout
+node_count = 0
+node_count_max = 0
+node_count_interval = 1
+node_count_fname = str(env.Dir('#')) + '/.scons_node_count'
+
+def progress_function(node):
+    global node_count, node_count_max, node_count_interval, node_count_fname
+    node_count += node_count_interval
+    if (node_count_max > 0 and node_count <= node_count_max):
+        screen.write('\r[%3d%%] ' % (node_count * 100 / node_count_max))
+        screen.flush()
+    elif (node_count_max > 0 and node_count > node_count_max):
+        screen.write('\r[100%] ')
+        screen.flush()
+    else:
+        screen.write('\r[Initial build] ')
+        screen.flush()
+
+def progress_finish(target, source, env):
+    global node_count
+    with open(node_count_fname, 'w') as f:
+        f.write('%d\n' % node_count)
+
+if (env["progress"] == "yes"):
+    try:
+        with open(node_count_fname) as f:
+            node_count_max = int(f.readline())
+    except:
+        pass
+    Progress(progress_function, interval = node_count_interval)
+    progress_finish_command = Command('progress_finish', [], progress_finish)
+    AlwaysBuild(progress_finish_command)
+
+
