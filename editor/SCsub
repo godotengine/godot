@@ -187,9 +187,11 @@ def make_authors_header(target, source, env):
 
 def make_license_header(target, source, env):
 
-    src = source[0].srcnode().abspath
+    src_copyright = source[0].srcnode().abspath
+    src_license = source[1].srcnode().abspath
     dst = target[0].srcnode().abspath
-    f = open(src, "rb")
+    f = open(src_license, "rb")
+    fc = open(src_copyright, "rb")
     g = open(dst, "wb")
 
     g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
@@ -201,6 +203,145 @@ def make_license_header(target, source, env):
         g.write("\n\t\"" + line.strip().replace("\"", "\\\"") + "\\n\"")
 
     g.write(";\n")
+
+    tp_current = 0
+    tp_file = ""
+    tp_comment = ""
+    tp_copyright = ""
+    tp_license = ""
+
+    tp_licensename = ""
+    tp_licensebody = ""
+
+    tp = []
+    tp_licensetext = []
+    for line in fc:
+        if line.startswith("#"):
+            continue
+
+        if line.startswith("Files:"):
+            tp_file = line[6:].strip()
+            tp_current = 1
+        elif line.startswith("Comment:"):
+            tp_comment = line[8:].strip()
+            tp_current = 2
+        elif line.startswith("Copyright:"):
+            tp_copyright = line[10:].strip()
+            tp_current = 3
+        elif line.startswith("License:"):
+            if tp_current != 0:
+                tp_license = line[8:].strip()
+                tp_current = 4
+            else:
+                tp_licensename = line[8:].strip()
+                tp_current = 5
+        elif line.startswith(" "):
+            if tp_current == 1:
+                tp_file += "\n" + line.strip()
+            elif tp_current == 3:
+                tp_copyright += "\n" + line.strip()
+            elif tp_current == 5:
+                if line.strip() == ".":
+                    tp_licensebody += "\n"
+                else:
+                    tp_licensebody += line[1:]
+        else:
+            if tp_current != 0:
+                if tp_current == 5:
+                    tp_licensetext.append([tp_licensename, tp_licensebody])
+
+                    tp_licensename = ""
+                    tp_licensebody = ""
+                else:
+                    added = False
+                    for i in tp:
+                        if i[0] == tp_comment:
+                            i[1].append([tp_file, tp_copyright, tp_license])
+                            added = True
+                            break
+                    if not added:
+                        tp.append([tp_comment,[[tp_file, tp_copyright, tp_license]]])
+
+                    tp_file = []
+                    tp_comment = ""
+                    tp_copyright = []
+                    tp_license = ""
+                tp_current = 0
+
+    about_thirdparty = ""
+    about_tp_copyright_count = ""
+    about_tp_license = ""
+    about_tp_copyright = ""
+    about_tp_file = ""
+
+    for i in tp:
+        about_thirdparty += "\t\"" + i[0] + "\",\n"
+        about_tp_copyright_count += str(len(i[1])) + ", "
+        for j in i[1]:
+            file_body = ""
+            copyright_body = ""
+            for k in j[0].split("\n"):
+                if file_body != "":
+                    file_body += "\\n\"\n"
+                file_body += "\t\"" + k.strip().replace("\"", "\\\"")
+            for k in j[1].split("\n"):
+                if copyright_body != "":
+                    copyright_body += "\\n\"\n"
+                copyright_body += "\t\"" + k.strip().replace("\"", "\\\"")
+
+            about_tp_file += "\t" + file_body + "\",\n"
+            about_tp_copyright += "\t" + copyright_body + "\",\n"
+            about_tp_license += "\t\"" + j[2] + "\",\n"
+
+    about_license_name = ""
+    about_license_body = ""
+
+    for i in tp_licensetext:
+        body = ""
+        for j in i[1].split("\n"):
+            if body != "":
+                body += "\\n\"\n"
+            body += "\t\"" + j.strip().replace("\"", "\\\"")
+
+        about_license_name += "\t\"" + i[0] + "\",\n"
+        about_license_body += "\t" + body + "\",\n"
+
+    g.write("static const char *about_thirdparty[] = {\n")
+    g.write(about_thirdparty)
+    g.write("\t0\n")
+    g.write("};\n")
+    g.write("#define THIRDPARTY_COUNT " + str(len(tp)) + "\n")
+
+    g.write("static const int about_tp_copyright_count[] = {\n\t")
+    g.write(about_tp_copyright_count)
+    g.write("0\n};\n")
+
+    g.write("static const char *about_tp_file[] = {\n")
+    g.write(about_tp_file)
+    g.write("\t0\n")
+    g.write("};\n")
+
+    g.write("static const char *about_tp_copyright[] = {\n")
+    g.write(about_tp_copyright)
+    g.write("\t0\n")
+    g.write("};\n")
+
+    g.write("static const char *about_tp_license[] = {\n")
+    g.write(about_tp_license)
+    g.write("\t0\n")
+    g.write("};\n")
+
+    g.write("static const char *about_license_name[] = {\n")
+    g.write(about_license_name)
+    g.write("\t0\n")
+    g.write("};\n")
+    g.write("#define LICENSE_COUNT " + str(len(tp_licensetext)) + "\n")
+
+    g.write("static const char *about_license_body[] = {\n")
+    g.write(about_license_body)
+    g.write("\t0\n")
+    g.write("};\n")
+
     g.write("#endif\n")
 
 if (env["tools"] == "yes"):
@@ -254,8 +395,8 @@ if (env["tools"] == "yes"):
     env.Command('#editor/authors.gen.h', "../AUTHORS.md", make_authors_header)
 
     # License
-    env.Depends('#editor/license.gen.h', "../LICENSE.txt")
-    env.Command('#editor/license.gen.h', "../LICENSE.txt", make_license_header)
+    env.Depends('#editor/license.gen.h', ["../COPYRIGHT.txt", "../LICENSE.txt"])
+    env.Command('#editor/license.gen.h', ["../COPYRIGHT.txt", "../LICENSE.txt"], make_license_header)
 
 
     env.add_source_files(env.editor_sources, "*.cpp")
