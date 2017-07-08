@@ -153,6 +153,8 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 
 			uint16_t compression_code = file->get_16();
 
+			//Issue: #7755 : Not a bug - usage of other formats (format codes) are unsupported in current importer version.
+			//Consider revision for engine version 3.0
 			if (compression_code != 1) {
 				ERR_PRINT("Format not supported for WAVE file (not PCM). Save WAVE files as uncompressed PCM instead.");
 				break;
@@ -248,6 +250,15 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 
 		if (chunkID[0] == 's' && chunkID[1] == 'm' && chunkID[2] == 'p' && chunkID[3] == 'l') {
 			//loop point info!
+
+			/**
+			*	Consider exploring next document:
+			*		http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/Docs/RIFFNEW.pdf
+			*	Especially on page:
+			*		16 - 17
+			*	Timestamp:
+			*		22:38 06.07.2017 GMT
+			**/
 
 			for (int i = 0; i < 10; i++)
 				file->get_32(); // i wish to know why should i do this... no doc!
