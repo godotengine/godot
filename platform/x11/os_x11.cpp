@@ -278,6 +278,13 @@ void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 		xev.xclient.data.l[2] = 0;
 
 		XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureNotifyMask, &xev);
+	} else if (current_videomode.borderless_window) {
+		Hints hints;
+		Atom property;
+		hints.flags = 2;
+		hints.decorations = 0;
+		property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
+		XChangeProperty(x11_display, x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
 	}
 
 	// disable resizable window
@@ -1016,6 +1023,25 @@ bool OS_X11::is_window_maximized() const {
 	}
 
 	return false;
+}
+
+void OS_X11::set_borderless_window(int p_borderless) {
+
+	if (current_videomode.borderless_window == p_borderless)
+		return;
+
+	current_videomode.borderless_window = p_borderless;
+
+	Hints hints;
+	Atom property;
+	hints.flags = 2;
+	hints.decorations = current_videomode.borderless_window ? 0 : 1;
+	property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
+	XChangeProperty(x11_display, x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
+}
+
+bool OS_X11::get_borderless_window() {
+	return current_videomode.borderless_window;
 }
 
 void OS_X11::request_attention() {
