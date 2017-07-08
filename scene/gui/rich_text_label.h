@@ -258,6 +258,7 @@ private:
 	Selection selection;
 
 	int visible_characters;
+	float percent_visible;
 
 	void _process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &y, int p_width, int p_line, ProcessMode p_mode, const Ref<Font> &p_base_font, const Color &p_base_color, const Point2i &p_click_pos = Point2i(), Item **r_click_item = NULL, int *r_click_char = NULL, bool *r_outside = NULL, int p_char_count = 0);
 	void _find_click(ItemFrame *p_frame, const Point2i &p_click, Item **r_click_item = NULL, int *r_click_char = NULL, bool *r_outside = NULL);
@@ -340,9 +341,14 @@ public:
 	void set_bbcode(const String &p_bbcode);
 	String get_bbcode() const;
 
+	void set_text(const String &p_string);
+
 	void set_visible_characters(int p_visible);
 	int get_visible_characters() const;
 	int get_total_character_count() const;
+
+	void set_percent_visible(float p_percent);
+	float get_percent_visible() const;
 
 	RichTextLabel();
 	~RichTextLabel();
