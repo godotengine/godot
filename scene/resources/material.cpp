@@ -198,6 +198,8 @@ void SpatialMaterial::init_shaders() {
 	shader_names->uv1_offset = "uv1_offset";
 	shader_names->uv2_scale = "uv2_scale";
 	shader_names->uv2_offset = "uv2_offset";
+	shader_names->uv1_blend_sharpness = "uv1_blend_sharpness";
+	shader_names->uv2_blend_sharpness = "uv2_blend_sharpness";
 
 	shader_names->particle_h_frames = "particle_h_frames";
 	shader_names->particle_v_frames = "particle_v_frames";
@@ -298,6 +300,9 @@ void SpatialMaterial::_update_shader() {
 		code += ",ontop";
 	}
 
+	if (flags[FLAG_UV1_USE_TRIPLANAR] || flags[FLAG_UV2_USE_TRIPLANAR]) {
+		code += ",world_vertex_coords";
+	}
 	code += ";\n";
 
 	code += "uniform vec4 albedo : hint_color;\n";
@@ -309,10 +314,6 @@ void SpatialMaterial::_update_shader() {
 	code += "uniform float point_size : hint_range(0,128);\n";
 	code += "uniform sampler2D texture_metallic : hint_white;\n";
 	code += "uniform sampler2D texture_roughness : hint_white;\n";
-	code += "uniform vec2 uv1_scale;\n";
-	code += "uniform vec2 uv1_offset;\n";
-	code += "uniform vec2 uv2_scale;\n";
-	code += "uniform vec2 uv2_offset;\n";
 	if (billboard_mode == BILLBOARD_PARTICLES) {
 		code += "uniform int particles_anim_h_frames;\n";
 		code += "uniform int particles_anim_v_frames;\n";
@@ -371,6 +372,26 @@ void SpatialMaterial::_update_shader() {
 		code += "uniform int depth_min_layers;\n";
 		code += "uniform int depth_max_layers;\n";
 	}
+	if (flags[FLAG_UV1_USE_TRIPLANAR]) {
+		code += "varying vec3 uv1_world_pos;\n";
+	}
+	if (flags[FLAG_UV2_USE_TRIPLANAR]) {
+		code += "varying vec3 uv2_world_pos;\n";
+	}
+	if (flags[FLAG_UV1_USE_TRIPLANAR]) {
+		code += "uniform float uv1_blend_sharpness;\n";
+		code += "varying vec3 uv1_power_normal;\n";
+	}
+
+	if (flags[FLAG_UV2_USE_TRIPLANAR]) {
+		code += "uniform float uv2_blend_sharpness;\n";
+		code += "varying vec3 uv2_power_normal;\n";
+	}
+
+	code += "uniform vec3 uv1_scale;\n";
+	code += "uniform vec3 uv1_offset;\n";
+	code += "uniform vec3 uv2_scale;\n";
+	code += "uniform vec3 uv2_offset;\n";
 
 	code += "\n\n";
 
@@ -384,7 +405,10 @@ void SpatialMaterial::_update_shader() {
 
 		code += "\tPOINT_SIZE=point_size;\n";
 	}
-	code += "\tUV=UV*uv1_scale+uv1_offset;\n";
+
+	if (!flags[FLAG_UV1_USE_TRIPLANAR]) {
+		code += "\tUV=UV*uv1_scale.xy+uv1_offset.xy;\n";
+	}
 
 	switch (billboard_mode) {
 		case BILLBOARD_DISABLED: {
@@ -414,7 +438,6 @@ void SpatialMaterial::_update_shader() {
 			//code += "\tUV+= UV * vec2(float(particle_frame % particles_anim_h_frames),float(particle_frame / particles_anim_v_frames));\n";
 			//handle rotation
 			//	code += "\tmat4 rotation = mat4("
-
 		} break;
 	}
 
@@ -437,20 +460,61 @@ void SpatialMaterial::_update_shader() {
 		code += "\t}\n";
 	}
 
-	if (detail_uv == DETAIL_UV_2) {
+	if (detail_uv == DETAIL_UV_2 && !flags[FLAG_UV2_USE_TRIPLANAR]) {
 		code += "\tUV2=UV2*uv2_scale+uv2_offset;\n";
+	}
+	if (flags[FLAG_UV1_USE_TRIPLANAR] || flags[FLAG_UV2_USE_TRIPLANAR]) {
+		//generate tangent and binormal in world space
+		code += "\tTANGENT = vec3(0.0,0.0,-1.0) * abs(NORMAL.x);\n";
+		code += "\tTANGENT+= vec3(1.0,0.0,0.0) * abs(NORMAL.y);\n";
+		code += "\tTANGENT+= vec3(1.0,0.0,0.0) * abs(NORMAL.z);\n";
+		code += "\tTANGENT = normalize(TANGENT);\n";
+
+		code += "\tBINORMAL = vec3(0.0,1.0,0.0) * abs(NORMAL.x);\n";
+		code += "\tBINORMAL+= vec3(0.0,0.0,-1.0) * abs(NORMAL.y);\n";
+		code += "\tBINORMAL+= vec3(0.0,1.0,0.0) * abs(NORMAL.z);\n";
+		code += "\tBINORMAL = normalize(BINORMAL);\n";
+	}
+
+	if (flags[FLAG_UV1_USE_TRIPLANAR]) {
+
+		code += "\tuv1_power_normal=pow(abs(NORMAL),vec3(uv1_blend_sharpness));\n";
+		code += "\tuv1_power_normal/=dot(uv1_power_normal,vec3(1.0));\n";
+		code += "\tuv1_world_pos = VERTEX * uv1_scale + uv1_offset;\n";
+		code += "\tuv1_world_pos *= vec3(1.0,-1.0, 1.0);\n";
+	}
+
+	if (flags[FLAG_UV2_USE_TRIPLANAR]) {
+
+		code += "\tuv2_power_normal=pow(abs(NORMAL), vec3(uv2_blend_sharpness));\n";
+		code += "\tuv2_power_normal/=dot(uv2_power_normal,vec3(1.0));\n";
+		code += "\tuv2_world_pos = VERTEX * uv2_scale + uv2_offset;\n";
+		code += "\tuv2_world_pos *= vec3(1.0,-1.0, 1.0);\n";
 	}
 
 	code += "}\n";
 	code += "\n\n";
+	if (flags[FLAG_UV1_USE_TRIPLANAR] || flags[FLAG_UV2_USE_TRIPLANAR]) {
+		code += "vec4 triplanar_texture(sampler2D p_sampler,vec3 p_weights,vec3 p_world_pos) {\n";
+		code += "\tvec4 samp=vec4(0.0);\n";
+		code += "\tsamp+= texture(p_sampler,p_world_pos.xy) * p_weights.z;\n";
+		code += "\tsamp+= texture(p_sampler,p_world_pos.xz) * p_weights.y;\n";
+		code += "\tsamp+= texture(p_sampler,p_world_pos.zy * vec2(-1.0,1.0)) * p_weights.x;\n";
+		code += "\treturn samp;\n";
+		code += "}\n";
+	}
+	code += "\n\n";
 	code += "void fragment() {\n";
 
-	code += "\tvec2 base_uv = UV;\n";
-	if (features[FEATURE_DETAIL] && detail_uv == DETAIL_UV_2) {
+	if (!flags[FLAG_UV1_USE_TRIPLANAR]) {
+		code += "\tvec2 base_uv = UV;\n";
+	}
+
+	if ((features[FEATURE_DETAIL] && detail_uv == DETAIL_UV_2) || (features[FEATURE_AMBIENT_OCCLUSION] && flags[FLAG_AO_ON_UV2])) {
 		code += "\tvec2 base_uv2 = UV2;\n";
 	}
 
-	if (features[FEATURE_DEPTH_MAPPING]) {
+	if (features[FEATURE_DEPTH_MAPPING] && !flags[FLAG_UV1_USE_TRIPLANAR]) { //depthmap not supported with triplanar
 		code += "\t{\n";
 		code += "\t\tvec3 view_dir = normalize(normalize(-VERTEX)*mat3(TANGENT,-BINORMAL,NORMAL));\n"; //binormal is negative due to mikktpsace
 
@@ -490,7 +554,11 @@ void SpatialMaterial::_update_shader() {
 	if (flags[FLAG_USE_POINT_SIZE]) {
 		code += "\tvec4 albedo_tex = texture(texture_albedo,POINT_COORD);\n";
 	} else {
-		code += "\tvec4 albedo_tex = texture(texture_albedo,base_uv);\n";
+		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
+			code += "\tvec4 albedo_tex = triplanar_texture(texture_albedo,uv1_power_normal,uv1_world_pos);\n";
+		} else {
+			code += "\tvec4 albedo_tex = texture(texture_albedo,base_uv);\n";
+		}
 	}
 
 	if (flags[FLAG_ALBEDO_FROM_VERTEX_COLOR]) {
@@ -498,22 +566,39 @@ void SpatialMaterial::_update_shader() {
 	}
 
 	code += "\tALBEDO = albedo.rgb * albedo_tex.rgb;\n";
-	code += "\tfloat metallic_tex = texture(texture_metallic,base_uv).r;\n";
+	if (flags[FLAG_UV1_USE_TRIPLANAR]) {
+		code += "\tfloat metallic_tex = triplanar_texture(texture_metallic,uv1_power_normal,uv1_world_pos).r;\n";
+	} else {
+		code += "\tfloat metallic_tex = texture(texture_metallic,base_uv).r;\n";
+	}
 	code += "\tMETALLIC = metallic_tex * metallic;\n";
-	code += "\tfloat roughness_tex = texture(texture_roughness,base_uv).r;\n";
+	if (flags[FLAG_UV1_USE_TRIPLANAR]) {
+		code += "\tfloat roughness_tex = triplanar_texture(texture_roughness,uv1_power_normal,uv1_world_pos).r;\n";
+	} else {
+		code += "\tfloat roughness_tex = texture(texture_roughness,base_uv).r;\n";
+	}
 	code += "\tROUGHNESS = roughness_tex * roughness;\n";
 	code += "\tSPECULAR = specular;\n";
 
 	if (features[FEATURE_NORMAL_MAPPING]) {
-		code += "\tNORMALMAP = texture(texture_normal,base_uv).rgb;\n";
+		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
+			code += "\tNORMALMAP = triplanar_texture(texture_normal,uv1_power_normal,uv1_world_pos).rgb;\n";
+		} else {
+			code += "\tNORMALMAP = texture(texture_normal,base_uv).rgb;\n";
+		}
 		code += "\tNORMALMAP_DEPTH = normal_scale;\n";
 	}
 
 	if (features[FEATURE_EMISSION]) {
-		code += "\tEMISSION = (emission.rgb+texture(texture_emission,base_uv).rgb)*emission_energy;\n";
+		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
+			code += "\tvec3 emission_tex = triplanar_texture(texture_emission,uv1_power_normal,uv1_world_pos).rgb;\n";
+		} else {
+			code += "\tvec3 emission_tex = texture(texture_emission,base_uv).rgb;\n";
+		}
+		code += "\tEMISSION = (emission.rgb+emission_tex)*emission_energy;\n";
 	}
 
-	if (features[FEATURE_REFRACTION]) {
+	if (features[FEATURE_REFRACTION] && !flags[FLAG_UV1_USE_TRIPLANAR]) { //refraction not supported with triplanar
 
 		if (features[FEATURE_NORMAL_MAPPING]) {
 			code += "\tvec3 ref_normal = normalize( mix(NORMAL,TANGENT * NORMALMAP.x + BINORMAL * NORMALMAP.y + NORMAL * NORMALMAP.z,NORMALMAP_DEPTH) ) * SIDE;\n";
@@ -532,38 +617,82 @@ void SpatialMaterial::_update_shader() {
 	}
 
 	if (features[FEATURE_RIM]) {
-		code += "\tvec2 rim_tex = texture(texture_rim,base_uv).xw;\n";
+		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
+			code += "\tvec2 rim_tex = triplanar_texture(texture_rim,uv1_power_normal,uv1_world_pos).xy;\n";
+		} else {
+			code += "\tvec2 rim_tex = texture(texture_rim,base_uv).xy;\n";
+		}
 		code += "\tRIM = rim*rim_tex.x;";
 		code += "\tRIM_TINT = rim_tint*rim_tex.y;\n";
 	}
 
 	if (features[FEATURE_CLEARCOAT]) {
-		code += "\tvec2 clearcoat_tex = texture(texture_clearcoat,base_uv).xw;\n";
+		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
+			code += "\tvec2 clearcoat_tex = triplanar_texture(texture_clearcoat,uv1_power_normal,uv1_world_pos).xy;\n";
+		} else {
+			code += "\tvec2 clearcoat_tex = texture(texture_clearcoat,base_uv).xy;\n";
+		}
 		code += "\tCLEARCOAT = clearcoat*clearcoat_tex.x;";
 		code += "\tCLEARCOAT_GLOSS = clearcoat_gloss*clearcoat_tex.y;\n";
 	}
 
 	if (features[FEATURE_ANISOTROPY]) {
-		code += "\tvec4 anisotropy_tex = texture(texture_flowmap,base_uv);\n";
+		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
+			code += "\tvec3 anisotropy_tex = triplanar_texture(texture_flowmap,uv1_power_normal,uv1_world_pos).rga;\n";
+		} else {
+			code += "\tvec3 anisotropy_tex = texture(texture_flowmap,base_uv).rga;\n";
+		}
 		code += "\tANISOTROPY = anisotropy_ratio*anisotropy_tex.a;\n";
 		code += "\tANISOTROPY_FLOW = anisotropy_tex.rg*2.0-1.0;\n";
 	}
 
 	if (features[FEATURE_AMBIENT_OCCLUSION]) {
-		code += "\tAO = texture(texture_ambient_occlusion,base_uv).r;\n";
+		if (flags[FLAG_AO_ON_UV2]) {
+			if (flags[FLAG_UV2_USE_TRIPLANAR]) {
+				code += "\tAO = triplanar_texture(texture_ambient_occlusion,uv2_power_normal,uv2_world_pos).r;\n";
+			} else {
+				code += "\tAO = texture(texture_ambient_occlusion,base_uv2).r;\n";
+			}
+		} else {
+			if (flags[FLAG_UV1_USE_TRIPLANAR]) {
+				code += "\tAO = triplanar_texture(texture_ambient_occlusion,uv1_power_normal,uv1_world_pos).r;\n";
+			} else {
+				code += "\tAO = texture(texture_ambient_occlusion,base_uv).r;\n";
+			}
+		}
 	}
 
 	if (features[FEATURE_SUBSURACE_SCATTERING]) {
 
-		code += "\tfloat sss_tex = texture(texture_subsurface_scattering,base_uv).r;\n";
+		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
+			code += "\tfloat sss_tex = triplanar_texture(texture_subsurface_scattering,uv1_power_normal,uv1_world_pos).r;\n";
+		} else {
+			code += "\tfloat sss_tex = texture(texture_subsurface_scattering,base_uv).r;\n";
+		}
 		code += "\tSSS_STRENGTH=subsurface_scattering_strength*sss_tex;\n";
 	}
 
 	if (features[FEATURE_DETAIL]) {
-		String det_uv = detail_uv == DETAIL_UV_1 ? "base_uv" : "base_uv2";
-		code += "\tvec4 detail_tex = texture(texture_detail_albedo," + det_uv + ");\n";
-		code += "\tvec4 detail_norm_tex = texture(texture_detail_normal," + det_uv + ");\n";
-		code += "\tvec4 detail_mask_tex = texture(texture_detail_mask,base_uv);\n";
+
+		bool triplanar = (flags[FLAG_UV1_USE_TRIPLANAR] && detail_uv == DETAIL_UV_1) || (flags[FLAG_UV2_USE_TRIPLANAR] && detail_uv == DETAIL_UV_2);
+
+		if (triplanar) {
+			String tp_uv = detail_uv == DETAIL_UV_1 ? "uv1" : "uv2";
+			code += "\tvec4 detail_tex = triplanar_texture(texture_detail_albedo," + tp_uv + "_power_normal," + tp_uv + "_world_pos);\n";
+			code += "\tvec4 detail_norm_tex = triplanar_texture(texture_detail_normal," + tp_uv + "_power_normal," + tp_uv + "_world_pos);\n";
+
+		} else {
+			String det_uv = detail_uv == DETAIL_UV_1 ? "base_uv" : "base_uv2";
+			code += "\tvec4 detail_tex = texture(texture_detail_albedo," + det_uv + ");\n";
+			code += "\tvec4 detail_norm_tex = texture(texture_detail_normal," + det_uv + ");\n";
+		}
+
+		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
+
+			code += "\tvec4 detail_mask_tex = triplanar_texture(texture_detail_mask,uv1_power_normal);\n";
+		} else {
+			code += "\tvec4 detail_mask_tex = texture(texture_detail_mask,base_uv);\n";
+		}
 
 		switch (detail_blend_mode) {
 			case BLEND_MODE_MIX: {
@@ -581,7 +710,6 @@ void SpatialMaterial::_update_shader() {
 		}
 
 		code += "\tvec3 detail_norm = mix(NORMALMAP,detail_norm_tex.rgb,detail_tex.a);\n";
-
 		code += "\tNORMALMAP = mix(NORMALMAP,detail_norm,detail_mask_tex.r);\n";
 		code += "\tALBEDO.rgb = mix(ALBEDO.rgb,detail,detail_mask_tex.r);\n";
 	}
@@ -971,47 +1099,69 @@ float SpatialMaterial::get_point_size() const {
 	return point_size;
 }
 
-void SpatialMaterial::set_uv1_scale(const Vector2 &p_scale) {
+void SpatialMaterial::set_uv1_scale(const Vector3 &p_scale) {
 
 	uv1_scale = p_scale;
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->uv1_scale, p_scale);
 }
 
-Vector2 SpatialMaterial::get_uv1_scale() const {
+Vector3 SpatialMaterial::get_uv1_scale() const {
 
 	return uv1_scale;
 }
 
-void SpatialMaterial::set_uv1_offset(const Vector2 &p_offset) {
+void SpatialMaterial::set_uv1_offset(const Vector3 &p_offset) {
 
 	uv1_offset = p_offset;
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->uv1_offset, p_offset);
 }
-Vector2 SpatialMaterial::get_uv1_offset() const {
+Vector3 SpatialMaterial::get_uv1_offset() const {
 
 	return uv1_offset;
 }
 
-void SpatialMaterial::set_uv2_scale(const Vector2 &p_scale) {
+void SpatialMaterial::set_uv1_triplanar_blend_sharpness(float p_sharpness) {
+
+	uv1_triplanar_sharpness = p_sharpness;
+	VS::get_singleton()->material_set_param(_get_material(), shader_names->uv1_blend_sharpness, p_sharpness);
+}
+
+float SpatialMaterial::get_uv1_triplanar_blend_sharpness() const {
+
+	return uv1_triplanar_sharpness;
+}
+
+void SpatialMaterial::set_uv2_scale(const Vector3 &p_scale) {
 
 	uv2_scale = p_scale;
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->uv2_scale, p_scale);
 }
 
-Vector2 SpatialMaterial::get_uv2_scale() const {
+Vector3 SpatialMaterial::get_uv2_scale() const {
 
 	return uv2_scale;
 }
 
-void SpatialMaterial::set_uv2_offset(const Vector2 &p_offset) {
+void SpatialMaterial::set_uv2_offset(const Vector3 &p_offset) {
 
 	uv2_offset = p_offset;
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->uv2_offset, p_offset);
 }
 
-Vector2 SpatialMaterial::get_uv2_offset() const {
+Vector3 SpatialMaterial::get_uv2_offset() const {
 
 	return uv2_offset;
+}
+
+void SpatialMaterial::set_uv2_triplanar_blend_sharpness(float p_sharpness) {
+
+	uv2_triplanar_sharpness = p_sharpness;
+	VS::get_singleton()->material_set_param(_get_material(), shader_names->uv2_blend_sharpness, p_sharpness);
+}
+
+float SpatialMaterial::get_uv2_triplanar_blend_sharpness() const {
+
+	return uv2_triplanar_sharpness;
 }
 
 void SpatialMaterial::set_billboard_mode(BillboardMode p_mode) {
@@ -1063,7 +1213,6 @@ void SpatialMaterial::set_depth_deep_parallax(bool p_enable) {
 	deep_parallax = p_enable;
 	_queue_shader_change();
 	_change_notify();
-	;
 }
 
 bool SpatialMaterial::is_depth_deep_parallax_enabled() const {
@@ -1177,11 +1326,17 @@ void SpatialMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_uv1_offset", "offset"), &SpatialMaterial::set_uv1_offset);
 	ClassDB::bind_method(D_METHOD("get_uv1_offset"), &SpatialMaterial::get_uv1_offset);
 
+	ClassDB::bind_method(D_METHOD("set_uv1_triplanar_blend_sharpness", "sharpness"), &SpatialMaterial::set_uv1_triplanar_blend_sharpness);
+	ClassDB::bind_method(D_METHOD("get_uv1_triplanar_blend_sharpness"), &SpatialMaterial::get_uv1_triplanar_blend_sharpness);
+
 	ClassDB::bind_method(D_METHOD("set_uv2_scale", "scale"), &SpatialMaterial::set_uv2_scale);
 	ClassDB::bind_method(D_METHOD("get_uv2_scale"), &SpatialMaterial::get_uv2_scale);
 
 	ClassDB::bind_method(D_METHOD("set_uv2_offset", "offset"), &SpatialMaterial::set_uv2_offset);
 	ClassDB::bind_method(D_METHOD("get_uv2_offset"), &SpatialMaterial::get_uv2_offset);
+
+	ClassDB::bind_method(D_METHOD("set_uv2_triplanar_blend_sharpness", "sharpness"), &SpatialMaterial::set_uv2_triplanar_blend_sharpness);
+	ClassDB::bind_method(D_METHOD("get_uv2_triplanar_blend_sharpness"), &SpatialMaterial::get_uv2_triplanar_blend_sharpness);
 
 	ClassDB::bind_method(D_METHOD("set_billboard_mode", "mode"), &SpatialMaterial::set_billboard_mode);
 	ClassDB::bind_method(D_METHOD("get_billboard_mode"), &SpatialMaterial::get_billboard_mode);
@@ -1271,6 +1426,7 @@ void SpatialMaterial::_bind_methods() {
 	ADD_GROUP("Ambient Occlusion", "ao_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "ao_enabled"), "set_feature", "get_feature", FEATURE_AMBIENT_OCCLUSION);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "ao_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture", TEXTURE_AMBIENT_OCCLUSION);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "ao_on_uv2"), "set_flag", "get_flag", FLAG_AO_ON_UV2);
 
 	ADD_GROUP("Depth", "depth_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "depth_enabled"), "set_feature", "get_feature", FEATURE_DEPTH_MAPPING);
@@ -1299,12 +1455,16 @@ void SpatialMaterial::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "detail_normal", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture", TEXTURE_DETAIL_NORMAL);
 
 	ADD_GROUP("UV1", "uv1_");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "uv1_scale"), "set_uv1_scale", "get_uv1_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "uv1_offset"), "set_uv1_offset", "get_uv1_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "uv1_scale"), "set_uv1_scale", "get_uv1_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "uv1_offset"), "set_uv1_offset", "get_uv1_offset");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "uv1_triplanar"), "set_flag", "get_flag", FLAG_UV1_USE_TRIPLANAR);
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "uv1_triplanar_sharpness"), "set_uv1_triplanar_blend_sharpness", "get_uv1_triplanar_blend_sharpness");
 
 	ADD_GROUP("UV2", "uv2_");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "uv2_scale"), "set_uv2_scale", "get_uv2_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "uv2_offset"), "set_uv2_offset", "get_uv2_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "uv2_scale"), "set_uv2_scale", "get_uv2_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "uv2_offset"), "set_uv2_offset", "get_uv2_offset");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "uv2_triplanar"), "set_flag", "get_flag", FLAG_UV2_USE_TRIPLANAR);
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "uv2_triplanar_sharpness"), "set_uv2_triplanar_blend_sharpness", "get_uv2_triplanar_blend_sharpness");
 
 	BIND_CONSTANT(TEXTURE_ALBEDO);
 	BIND_CONSTANT(TEXTURE_METALLIC);
@@ -1393,10 +1553,12 @@ SpatialMaterial::SpatialMaterial()
 	set_refraction(0.05);
 	set_line_width(1);
 	set_point_size(1);
-	set_uv1_offset(Vector2(0, 0));
-	set_uv1_scale(Vector2(1, 1));
-	set_uv2_offset(Vector2(0, 0));
-	set_uv2_scale(Vector2(1, 1));
+	set_uv1_offset(Vector3(0, 0, 0));
+	set_uv1_scale(Vector3(1, 1, 1));
+	set_uv1_triplanar_blend_sharpness(1);
+	set_uv2_offset(Vector3(0, 0, 0));
+	set_uv2_scale(Vector3(1, 1, 1));
+	set_uv2_triplanar_blend_sharpness(1);
 	set_billboard_mode(BILLBOARD_DISABLED);
 	set_particles_anim_h_frames(1);
 	set_particles_anim_v_frames(1);

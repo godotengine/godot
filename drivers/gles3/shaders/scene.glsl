@@ -275,6 +275,19 @@ void main() {
 	highp mat4 modelview = camera_inverse_matrix * world_matrix;
 	highp mat4 local_projection = projection_matrix;
 
+//using world coordinates
+#if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
+
+	vertex = world_matrix * vertex;
+	normal = normalize((world_matrix * vec4(normal,0.0)).xyz);
+
+#if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
+
+	tangent = normalize((world_matrix * vec4(tangent,0.0)).xyz);
+	binormal = normalize((world_matrix * vec4(binormal,0.0)).xyz);
+#endif
+#endif
+
 //defines that make writing custom shaders easier
 #define projection_matrix local_projection
 #define world_transform world_matrix
@@ -286,28 +299,41 @@ VERTEX_SHADER_CODE
 
 
 
-
-#if !defined(SKIP_TRANSFORM_USED)
+//using local coordinates (default)
+#if !defined(SKIP_TRANSFORM_USED) && !defined(VERTEX_WORLD_COORDS_USED)
 
 	vertex = modelview * vertex;
 	normal = normalize((modelview * vec4(normal,0.0)).xyz);
+
+#if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
+
+	tangent = normalize((modelview * vec4(tangent,0.0)).xyz);
+	binormal = normalize((modelview * vec4(binormal,0.0)).xyz);
+#endif
 #endif
 
+//using world coordinates
+#if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
+
+	vertex = camera_inverse_matrix * vertex;
+	normal = normalize((camera_inverse_matrix * vec4(normal,0.0)).xyz);
+
+#if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
+
+	tangent = normalize((camera_inverse_matrix * vec4(tangent,0.0)).xyz);
+	binormal = normalize((camera_inverse_matrix * vec4(binormal,0.0)).xyz);
+#endif
+#endif
 
 	vertex_interp = vertex.xyz;
 	normal_interp = normal;
 
+
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
-
-#if !defined(SKIP_TRANSFORM_USED)
-
-	tangent = normalize((modelview * vec4(tangent,0.0)).xyz);
-	binormal = normalize((modelview * vec4(binormal,0.0)).xyz);
-
-#endif
 	tangent_interp = tangent;
 	binormal_interp = binormal;
 #endif
+
 
 #ifdef RENDER_DEPTH
 

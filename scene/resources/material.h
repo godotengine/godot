@@ -155,6 +155,9 @@ public:
 		FLAG_SRGB_VERTEX_COLOR,
 		FLAG_USE_POINT_SIZE,
 		FLAG_FIXED_SIZE,
+		FLAG_UV1_USE_TRIPLANAR,
+		FLAG_UV2_USE_TRIPLANAR,
+		FLAG_AO_ON_UV2,
 		FLAG_MAX
 	};
 
@@ -176,20 +179,20 @@ private:
 	union MaterialKey {
 
 		struct {
-			uint32_t feature_mask : 11;
-			uint32_t detail_uv : 1;
-			uint32_t blend_mode : 2;
-			uint32_t depth_draw_mode : 2;
-			uint32_t cull_mode : 2;
-			uint32_t flags : 6;
-			uint32_t detail_blend_mode : 2;
-			uint32_t diffuse_mode : 2;
-			uint32_t invalid_key : 1;
-			uint32_t deep_parallax : 1;
-			uint32_t billboard_mode : 2;
+			uint64_t feature_mask : 11;
+			uint64_t detail_uv : 1;
+			uint64_t blend_mode : 2;
+			uint64_t depth_draw_mode : 2;
+			uint64_t cull_mode : 2;
+			uint64_t flags : 9;
+			uint64_t detail_blend_mode : 2;
+			uint64_t diffuse_mode : 2;
+			uint64_t invalid_key : 1;
+			uint64_t deep_parallax : 1;
+			uint64_t billboard_mode : 2;
 		};
 
-		uint32_t key;
+		uint64_t key;
 
 		bool operator<(const MaterialKey &p_key) const {
 			return key < p_key.key;
@@ -258,6 +261,8 @@ private:
 		StringName particles_anim_loop;
 		StringName depth_min_layers;
 		StringName depth_max_layers;
+		StringName uv1_blend_sharpness;
+		StringName uv2_blend_sharpness;
 
 		StringName texture_names[TEXTURE_MAX];
 	};
@@ -293,11 +298,13 @@ private:
 	int particles_anim_v_frames;
 	bool particles_anim_loop;
 
-	Vector2 uv1_scale;
-	Vector2 uv1_offset;
+	Vector3 uv1_scale;
+	Vector3 uv1_offset;
+	float uv1_triplanar_sharpness;
 
-	Vector2 uv2_scale;
-	Vector2 uv2_offset;
+	Vector3 uv2_scale;
+	Vector3 uv2_offset;
+	float uv2_triplanar_sharpness;
 
 	DetailUV detail_uv;
 
@@ -411,17 +418,23 @@ public:
 	void set_feature(Feature p_feature, bool p_enabled);
 	bool get_feature(Feature p_feature) const;
 
-	void set_uv1_scale(const Vector2 &p_scale);
-	Vector2 get_uv1_scale() const;
+	void set_uv1_scale(const Vector3 &p_scale);
+	Vector3 get_uv1_scale() const;
 
-	void set_uv1_offset(const Vector2 &p_offset);
-	Vector2 get_uv1_offset() const;
+	void set_uv1_offset(const Vector3 &p_offset);
+	Vector3 get_uv1_offset() const;
 
-	void set_uv2_scale(const Vector2 &p_scale);
-	Vector2 get_uv2_scale() const;
+	void set_uv1_triplanar_blend_sharpness(float p_sharpness);
+	float get_uv1_triplanar_blend_sharpness() const;
 
-	void set_uv2_offset(const Vector2 &p_offset);
-	Vector2 get_uv2_offset() const;
+	void set_uv2_scale(const Vector3 &p_scale);
+	Vector3 get_uv2_scale() const;
+
+	void set_uv2_offset(const Vector3 &p_offset);
+	Vector3 get_uv2_offset() const;
+
+	void set_uv2_triplanar_blend_sharpness(float p_sharpness);
+	float get_uv2_triplanar_blend_sharpness() const;
 
 	void set_billboard_mode(BillboardMode p_mode);
 	BillboardMode get_billboard_mode() const;

@@ -304,6 +304,7 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 			uniform_sizes.resize(max_uniforms);
 			uniform_alignments.resize(max_uniforms);
 			uniform_defines.resize(max_uniforms);
+			bool uses_uniforms = false;
 
 			for (Map<StringName, SL::ShaderNode::Uniform>::Element *E = pnode->uniforms.front(); E; E = E->next()) {
 
@@ -323,9 +324,10 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 					r_gen_code.texture_uniforms[E->get().texture_order] = _mkid(E->key());
 					r_gen_code.texture_hints[E->get().texture_order] = E->get().hint;
 				} else {
-					if (r_gen_code.uniforms.empty()) {
+					if (!uses_uniforms) {
 
 						r_gen_code.defines.push_back(String("#define USE_MATERIAL\n").ascii());
+						uses_uniforms = true;
 					}
 					uniform_defines[E->get().order] = ucode;
 					uniform_sizes[E->get().order] = _get_datatype_size(E->get().type);
@@ -651,6 +653,14 @@ Error ShaderCompilerGLES3::compile(VS::ShaderMode p_mode, const String &p_code, 
 
 	_dump_node_code(parser.get_shader(), 1, r_gen_code, *p_actions, actions[p_mode]);
 
+	if (r_gen_code.uniform_total_size) { //uniforms used?
+		int md = sizeof(float) * 4;
+		if (r_gen_code.uniform_total_size % md) {
+			r_gen_code.uniform_total_size += md - (r_gen_code.uniform_total_size % md);
+		}
+		r_gen_code.uniform_total_size += md; //pad just in case
+	}
+
 	return OK;
 }
 
@@ -700,7 +710,7 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_CANVAS_ITEM].usage_defines["NORMALMAP"] = "#define NORMALMAP_USED\n";
 	actions[VS::SHADER_CANVAS_ITEM].usage_defines["SHADOW_COLOR"] = "#define SHADOW_COLOR_USED\n";
 
-	actions[VS::SHADER_CANVAS_ITEM].render_mode_defines["skip_transform"] = "#define SKIP_TRANSFORM_USED\n";
+	actions[VS::SHADER_CANVAS_ITEM].render_mode_defines["skip_vertex_transform"] = "#define SKIP_TRANSFORM_USED\n";
 
 	/** SPATIAL SHADER **/
 
@@ -775,7 +785,8 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 
 	actions[VS::SHADER_SPATIAL].renames["SSS_STRENGTH"] = "sss_strength";
 
-	actions[VS::SHADER_SPATIAL].render_mode_defines["skip_default_transform"] = "#define SKIP_TRANSFORM_USED\n";
+	actions[VS::SHADER_SPATIAL].render_mode_defines["skip_vertex_transform"] = "#define SKIP_TRANSFORM_USED\n";
+	actions[VS::SHADER_SPATIAL].render_mode_defines["world_vertex_coords"] = "#define VERTEX_WORLD_COORDS_USED\n";
 
 	actions[VS::SHADER_SPATIAL].render_mode_defines["diffuse_burley"] = "#define DIFFUSE_BURLEY\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["diffuse_oren_nayar"] = "#define DIFFUSE_OREN_NAYAR\n";

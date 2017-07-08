@@ -137,7 +137,8 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("diffuse_oren_nayar");
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("diffuse_burley");
 
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("skip_default_transform");
+	shader_modes[VS::SHADER_SPATIAL].modes.insert("skip_vertex_transform");
+	shader_modes[VS::SHADER_SPATIAL].modes.insert("world_vertex_coords");
 
 	/************ CANVAS ITEM **************************/
 
@@ -188,7 +189,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[VS::SHADER_CANVAS_ITEM].functions["light"]["POINT_COORD"] = ShaderLanguage::TYPE_VEC2;
 	shader_modes[VS::SHADER_CANVAS_ITEM].functions["light"]["TIME"] = ShaderLanguage::TYPE_FLOAT;
 
-	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("skip_transform");
+	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("skip_vertex_transform");
 
 	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("blend_mix");
 	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("blend_add");

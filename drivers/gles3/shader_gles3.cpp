@@ -416,7 +416,8 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 	strings.push_back(fragment_code4.get_data());
 
 #ifdef DEBUG_SHADER
-	DEBUG_PRINT("\nFragment Code:\n\n" + String(code_string.get_data()));
+	DEBUG_PRINT("\nFragment Globals:\n\n" + String(code_globals.get_data()));
+	DEBUG_PRINT("\nFragment Code:\n\n" + String(code_string2.get_data()));
 	for (int i = 0; i < strings.size(); i++) {
 
 		//print_line("frag strings "+itos(i)+":"+String(strings[i]));
