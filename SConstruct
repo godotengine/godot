@@ -87,6 +87,13 @@ env_base.disabled_modules = []
 env_base.use_ptrcall = False
 env_base.split_drivers = False
 
+# To decide whether to rebuild a file, use the MD5 sum only if the timestamp has changed.
+# http://scons.org/doc/production/HTML/scons-user/ch06.html#idm139837621851792
+env_base.Decider('MD5-timestamp')
+# Use cached implicit dependencies by default. Can be overridden by specifying `--implicit-deps-changed` in the command line.
+# http://scons.org/doc/production/HTML/scons-user/ch06s04.html
+env_base.SetOption('implicit_cache', 1)
+
 
 env_base.__class__.android_add_maven_repository = methods.android_add_maven_repository
 env_base.__class__.android_add_dependency = methods.android_add_dependency
