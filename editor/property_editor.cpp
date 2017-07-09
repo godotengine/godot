@@ -4462,7 +4462,7 @@ class SectionedPropertyEditorFilter : public Object {
 				continue;
 
 			if (sp == -1) {
-				pi.name = "Global/" + pi.name;
+				pi.name = "global/" + pi.name;
 			}
 
 			if (pi.name.begins_with(section + "/")) {
