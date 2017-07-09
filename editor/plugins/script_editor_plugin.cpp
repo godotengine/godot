@@ -2182,7 +2182,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	script_list = memnew(ItemList);
 	list_split->add_child(script_list);
-	script_list->set_custom_minimum_size(Size2(150 * EDSCALE, 100)); //need to give a bit of limit to avoid it from disappearing
+	script_list->set_custom_minimum_size(Size2(0, 100)); //need to give a bit of limit to avoid it from disappearing
 	script_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	script_split->set_split_offset(140);
 	//list_split->set_split_offset(500);
