@@ -2753,6 +2753,8 @@ int EditorNode::_next_unsaved_scene() {
 
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
 
+		if (!editor_data.get_edited_scene_root(i))
+			continue;
 		int current = editor_data.get_edited_scene();
 		bool unsaved = (i == current) ? saved_version != editor_data.get_undo_redo().get_version() : editor_data.get_scene_version(i) != 0;
 		if (unsaved) {
@@ -4383,6 +4385,10 @@ void EditorNode::_scene_tab_closed(int p_tab) {
 	current_option = SCENE_TAB_CLOSE;
 	tab_closing = p_tab;
 	Node *scene = editor_data.get_edited_scene_root(p_tab);
+	if (!scene) {
+		_discard_changes();
+		return;
+	}
 
 	bool unsaved = (p_tab == editor_data.get_edited_scene()) ?
 						   saved_version != editor_data.get_undo_redo().get_version() :
