@@ -114,6 +114,13 @@ public:
 		DOCK_SLOT_MAX
 	};
 
+	enum DockSide {
+		DOCK_SIDE_NONE,
+		DOCK_SIDE_LEFT,
+		DOCK_SIDE_RIGHT,
+		DOCK_SIDE_BOTH,
+	};
+
 private:
 	enum {
 		HISTORY_SIZE = 64
@@ -221,16 +228,19 @@ private:
 
 	//split
 
-	HSplitContainer *left_l_hsplit;
+	HSplitContainer *center_left_hsplit;
+	HSplitContainer *center_right_hsplit;
+
+	HSplitContainer *left_hsplit;
 	VSplitContainer *left_l_vsplit;
-	HSplitContainer *left_r_hsplit;
 	VSplitContainer *left_r_vsplit;
-	HSplitContainer *main_hsplit;
 	HSplitContainer *right_hsplit;
 	VSplitContainer *right_l_vsplit;
 	VSplitContainer *right_r_vsplit;
-
 	VSplitContainer *center_split;
+	PanelContainer *left_dock;
+	PanelContainer *right_dock;
+	int floating_docks;
 
 	//main tabs
 
@@ -363,7 +373,7 @@ private:
 	TabContainer *dock_slot[DOCK_SLOT_MAX];
 	Rect2 dock_select_rect[DOCK_SLOT_MAX];
 	int dock_select_rect_over;
-	PopupPanel *dock_select_popoup;
+	PopupPanel *dock_select_popup;
 	Control *dock_select;
 	ToolButton *dock_tab_move_left;
 	ToolButton *dock_tab_move_right;
@@ -575,6 +585,11 @@ private:
 	void _thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Variant &p_udata);
 	void _scene_tab_script_edited(int p_tab);
 
+	void _check_hover_floating_docks();
+	void _dock_slot_changed(Node *node, int slot);
+	bool _show_left_dock_temp;
+	bool _show_right_dock_temp;
+
 	Dictionary _get_main_scene_state();
 	void _set_main_scene_state(Dictionary p_state, Node *p_for_scene);
 
@@ -671,6 +686,8 @@ public:
 
 	void set_docks_visible(bool p_show);
 	bool get_docks_visible() const;
+
+	void show_dock(Node *p_node);
 
 	void set_distraction_free_mode(bool p_enter);
 	bool get_distraction_free_mode() const;
