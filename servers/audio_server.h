@@ -215,6 +215,7 @@ public:
 
 	void set_bus_name(int p_bus, const String &p_name);
 	String get_bus_name(int p_bus) const;
+	int get_bus_index(const StringName &p_bus_name) const;
 
 	void set_bus_volume_db(int p_bus, float p_volume_db);
 	float get_bus_volume_db(int p_bus) const;
