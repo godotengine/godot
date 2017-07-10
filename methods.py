@@ -1176,6 +1176,20 @@ def update_version():
     f.write("#define VERSION_STATUS " + str(version.status) + "\n")
     import datetime
     f.write("#define VERSION_YEAR " + str(datetime.datetime.now().year) + "\n")
+    f.close()
+
+    fhash = open("core/version_hash.gen.h", "wb")
+    githash = ""
+    if os.path.isfile(".git/HEAD"):
+        head = open(".git/HEAD", "rb").readline().strip()
+        if head.startswith("ref: "):
+            head = ".git/" + head[5:]
+            if os.path.isfile(head):
+                githash = open(head, "rb").readline().strip()
+        else:
+            githash = head
+    fhash.write("#define VERSION_HASH \"" + githash + "\"")
+    fhash.close()
 
 
 def parse_cg_file(fname, uniforms, sizes, conditionals):
