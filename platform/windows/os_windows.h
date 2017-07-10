@@ -133,6 +133,8 @@ class OS_Windows : public OS {
 	void _drag_event(int p_x, int p_y, int idx);
 	void _touch_event(bool p_pressed, int p_x, int p_y, int idx);
 
+	void _update_window_style(bool repaint = true);
+
 	// functions used by main to initialize/deintialize the OS
 protected:
 	virtual int get_video_driver_count() const;
