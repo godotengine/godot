@@ -636,13 +636,13 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	if (last_selected_language != "") {
 		for (int i = 0; i < language_menu->get_item_count(); i++) {
 			if (language_menu->get_item_text(i) == last_selected_language) {
-				language_menu->select(i);
+				language_menu->set_selected(i);
 				current_language = i;
 				break;
 			}
 		}
 	} else {
-		language_menu->select(default_lang);
+		language_menu->set_selected(default_lang);
 		current_language = default_lang;
 	}
 

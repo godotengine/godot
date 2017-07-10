@@ -97,13 +97,13 @@ void OptionButton::add_icon_item(const Ref<Texture> &p_icon, const String &p_lab
 
 	popup->add_icon_check_item(p_icon, p_label, p_ID);
 	if (popup->get_item_count() == 1)
-		select(0);
+		set_selected(0);
 }
 void OptionButton::add_item(const String &p_label, int p_ID) {
 
 	popup->add_check_item(p_label, p_ID);
 	if (popup->get_item_count() == 1)
-		select(0);
+		set_selected(0);
 }
 
 void OptionButton::set_item_text(int p_idx, const String &p_text) {
@@ -199,7 +199,7 @@ void OptionButton::_select_int(int p_which) {
 	_select(p_which, false);
 }
 
-void OptionButton::select(int p_idx) {
+void OptionButton::set_selected(int p_idx) {
 
 	_select(p_idx, false);
 }
@@ -288,7 +288,7 @@ void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_count"), &OptionButton::get_item_count);
 	ClassDB::bind_method(D_METHOD("add_separator"), &OptionButton::add_separator);
 	ClassDB::bind_method(D_METHOD("clear"), &OptionButton::clear);
-	ClassDB::bind_method(D_METHOD("select", "idx"), &OptionButton::select);
+	ClassDB::bind_method(D_METHOD("set_selected", "idx"), &OptionButton::set_selected);
 	ClassDB::bind_method(D_METHOD("get_selected"), &OptionButton::get_selected);
 	ClassDB::bind_method(D_METHOD("get_selected_ID"), &OptionButton::get_selected_ID);
 	ClassDB::bind_method(D_METHOD("get_selected_metadata"), &OptionButton::get_selected_metadata);

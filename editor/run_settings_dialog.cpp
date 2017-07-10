@@ -64,7 +64,7 @@ int RunSettingsDialog::get_run_mode() const {
 
 void RunSettingsDialog::set_run_mode(int p_run_mode) {
 
-	run_mode->select(p_run_mode);
+	run_mode->set_selected(p_run_mode);
 	arguments->set_editable(p_run_mode);
 }
 

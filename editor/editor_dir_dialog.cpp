@@ -166,7 +166,7 @@ void EditorDirDialog::set_current_path(const String &p_path) {
 		r = p;
 	}
 
-	r->select(0);
+	r->set_selected(0);
 }
 
 void EditorDirDialog::ok_pressed() {

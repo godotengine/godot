@@ -147,8 +147,8 @@ public:
 	void set_item_custom_bg_color(int p_idx, const Color &p_custom_bg_color);
 	Color get_item_custom_bg_color(int p_idx) const;
 
-	void select(int p_idx, bool p_single = true);
-	void unselect(int p_idx);
+	void set_selected(int p_idx, bool p_single = true);
+	void deselect(int p_idx);
 	bool is_selected(int p_idx) const;
 	Vector<int> get_selected_items();
 

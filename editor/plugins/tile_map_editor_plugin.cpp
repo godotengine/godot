@@ -141,7 +141,7 @@ void TileMapEditor::set_selected_tile(int p_tile) {
 	int idx = palette->find_metadata(p_tile);
 
 	if (idx >= 0) {
-		palette->select(idx, true);
+		palette->set_selected(idx, true);
 		palette->ensure_current_is_visible();
 	}
 }
@@ -295,7 +295,7 @@ void TileMapEditor::_update_palette() {
 	if (selected != -1)
 		set_selected_tile(selected);
 	else
-		palette->select(0);
+		palette->set_selected(0);
 }
 
 void TileMapEditor::_pick_tile(const Point2 &p_pos) {

@@ -672,7 +672,7 @@ void EditorFileDialog::update_file_list() {
 	}
 
 	if (favorites->get_current() >= 0) {
-		favorites->unselect(favorites->get_current());
+		favorites->deselect(favorites->get_current());
 	}
 
 	favorite->set_pressed(false);
@@ -680,7 +680,7 @@ void EditorFileDialog::update_file_list() {
 	fav_down->set_disabled(true);
 	for (int i = 0; i < favorites->get_item_count(); i++) {
 		if (favorites->get_item_metadata(i) == base_dir) {
-			favorites->select(i);
+			favorites->set_selected(i);
 			favorite->set_pressed(true);
 			if (i > 0) {
 				fav_up->set_disabled(false);
@@ -778,7 +778,7 @@ void EditorFileDialog::set_current_file(const String &p_file) {
 	invalidate();
 	int lp = p_file.find_last(".");
 	if (lp != -1) {
-		file->select(0, lp);
+		file->set_selected(0, lp);
 		file->grab_focus();
 	}
 
@@ -934,7 +934,7 @@ void EditorFileDialog::_update_drives() {
 			drives->add_item(dir_access->get_drive(i));
 		}
 
-		drives->select(dir_access->get_current_drive());
+		drives->set_selected(dir_access->get_current_drive());
 	}
 }
 

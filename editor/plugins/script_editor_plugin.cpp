@@ -191,7 +191,7 @@ void ScriptEditorQuickOpen::_update_search() {
 			TreeItem *ti = search_options->create_item(root);
 			ti->set_text(0, file);
 			if (root->get_children() == ti)
-				ti->select(0);
+				ti->set_selected(0);
 		}
 	}
 
@@ -996,7 +996,7 @@ void ScriptEditor::_menu_option(int p_option) {
 				if (p_option >= WINDOW_SELECT_BASE) {
 
 					tab_container->set_current_tab(p_option - WINDOW_SELECT_BASE);
-					script_list->select(p_option - WINDOW_SELECT_BASE);
+					script_list->set_selected(p_option - WINDOW_SELECT_BASE);
 				}
 			}
 		}
@@ -1538,7 +1538,7 @@ void ScriptEditor::_update_script_names() {
 			script_list->set_item_custom_bg_color(index, Color(88 / 255.0, 88 / 255.0, 60 / 255.0));
 		}
 		if (tab_container->get_current_tab() == sedata[i].index) {
-			script_list->select(index);
+			script_list->set_selected(index);
 			script_name_label->set_text(sedata[i].name);
 			script_icon->set_texture(sedata[i].icon);
 		}
@@ -1610,7 +1610,7 @@ bool ScriptEditor::edit(const Ref<Script> &p_script, int p_line, int p_col, bool
 			if (open_dominant || !EditorNode::get_singleton()->is_changing_scene()) {
 				if (tab_container->get_current_tab() != i) {
 					_go_to_tab(i);
-					script_list->select(script_list->find_metadata(i));
+					script_list->set_selected(script_list->find_metadata(i));
 				}
 				if (is_visible_in_tree())
 					se->ensure_focus();
@@ -1769,7 +1769,7 @@ void ScriptEditor::_add_callback(Object *p_obj, const String &p_function, const 
 
 		_go_to_tab(i);
 
-		script_list->select(script_list->find_metadata(i));
+		script_list->set_selected(script_list->find_metadata(i));
 
 		break;
 	}

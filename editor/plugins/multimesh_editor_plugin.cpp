@@ -265,7 +265,7 @@ void MultiMeshEditor::_menu_option(int p_option) {
 
 				surface_source->set_text("..");
 				mesh_source->set_text("..");
-				populate_axis->select(1);
+				populate_axis->set_selected(1);
 				populate_rotate_random->set_value(0);
 				populate_tilt_random->set_value(0);
 				populate_scale_random->set_value(0);
@@ -349,7 +349,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	populate_axis->add_item(TTR("X-Axis"));
 	populate_axis->add_item(TTR("Y-Axis"));
 	populate_axis->add_item(TTR("Z-Axis"));
-	populate_axis->select(2);
+	populate_axis->set_selected(2);
 	vbc->add_margin_child(TTR("Mesh Up Axis:"), populate_axis);
 
 	populate_rotate_random = memnew(HSlider);

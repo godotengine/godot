@@ -58,7 +58,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 	}
 	item->set_metadata(0, lpath);
 	if (lpath == path) {
-		item->select(0);
+		item->set_selected(0);
 	}
 
 	for (int i = 0; i < p_dir->get_subdir_count(); i++)
@@ -298,7 +298,7 @@ void FileSystemDock::navigate_to_path(const String &p_path) {
 		// Focus the given file.
 		for (int i = 0; i < files->get_item_count(); i++) {
 			if (files->get_item_text(i) == file_name) {
-				files->select(i, true);
+				files->set_selected(i, true);
 				files->ensure_current_is_visible();
 				break;
 			}
@@ -475,7 +475,7 @@ void FileSystemDock::_update_files(bool p_keep_selection) {
 			files->set_item_metadata(files->get_item_count() - 1, path.plus_file(dname) + "/");
 
 			if (cselection.has(dname))
-				files->select(files->get_item_count() - 1, false);
+				files->set_selected(files->get_item_count() - 1, false);
 		}
 	}
 
@@ -552,7 +552,7 @@ void FileSystemDock::_update_files(bool p_keep_selection) {
 		}
 
 		if (cselection.has(fname))
-			files->select(files->get_item_count() - 1, false);
+			files->set_selected(files->get_item_count() - 1, false);
 
 		files->set_item_tooltip(files->get_item_count() - 1, tooltip);
 	}
@@ -560,7 +560,7 @@ void FileSystemDock::_update_files(bool p_keep_selection) {
 
 void FileSystemDock::_select_file(int p_idx) {
 
-	files->select(p_idx, true);
+	files->set_selected(p_idx, true);
 	_file_option(FILE_OPEN);
 }
 
@@ -1544,7 +1544,7 @@ void FileSystemDock::select_file(const String &p_file) {
 	_go_to_dir(p_file.get_base_dir());
 	for (int i = 0; i < files->get_item_count(); i++) {
 		if (files->get_item_metadata(i) == p_file) {
-			files->select(i);
+			files->set_selected(i);
 			files->ensure_current_is_visible();
 			break;
 		}

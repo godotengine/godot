@@ -302,7 +302,7 @@ void TreeItem::set_collapsed(bool p_collapsed) {
 				emit_signal("cell_selected");
 			} else {
 
-				select(tree->selected_col);
+				set_selected(tree->selected_col);
 			}
 
 			tree->update();
@@ -452,7 +452,7 @@ void TreeItem::set_as_cursor(int p_column) {
 	tree->update();
 }
 
-void TreeItem::select(int p_column) {
+void TreeItem::set_selected(int p_column) {
 
 	ERR_FAIL_INDEX(p_column, cells.size());
 	_cell_selected(p_column);
@@ -703,7 +703,7 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_selectable", "column"), &TreeItem::is_selectable);
 
 	ClassDB::bind_method(D_METHOD("is_selected", "column"), &TreeItem::is_selected);
-	ClassDB::bind_method(D_METHOD("select", "column"), &TreeItem::select);
+	ClassDB::bind_method(D_METHOD("set_selected", "column"), &TreeItem::set_selected);
 	ClassDB::bind_method(D_METHOD("deselect", "column"), &TreeItem::deselect);
 
 	ClassDB::bind_method(D_METHOD("set_editable", "column", "enabled"), &TreeItem::set_editable);
@@ -1670,7 +1670,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 
 				if (!c.selected || p_button == BUTTON_RIGHT) {
 
-					p_item->select(col);
+					p_item->set_selected(col);
 					emit_signal("multi_selected", p_item, col, true);
 					if (p_button == BUTTON_RIGHT) {
 						emit_signal("item_rmb_selected", get_local_mouse_pos());
@@ -2026,7 +2026,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 					emit_signal("cell_selected");
 				} else {
 
-					selected_item->select(selected_col + 1);
+					selected_item->set_selected(selected_col + 1);
 				}
 
 				update();
@@ -2048,7 +2048,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 					emit_signal("cell_selected");
 				} else {
 
-					selected_item->select(selected_col - 1);
+					selected_item->set_selected(selected_col - 1);
 				}
 
 				update();
@@ -2094,7 +2094,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 						next = next->get_next_visible();
 					if (!next)
 						EXIT_BREAK; // do nothing..
-					next->select(col);
+					next->set_selected(col);
 				}
 
 				ensure_cursor_is_visible();
@@ -2135,7 +2135,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 						prev = prev->get_prev_visible();
 					if (!prev)
 						break; // do nothing..
-					prev->select(col);
+					prev->set_selected(col);
 				}
 
 				ensure_cursor_is_visible();
@@ -2173,7 +2173,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 						next = next->get_next_visible();
 					if (!next)
 						EXIT_BREAK; // do nothing..
-					next->select(selected_col);
+					next->set_selected(selected_col);
 				}
 
 				ensure_cursor_is_visible();
@@ -2209,7 +2209,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 						prev = prev->get_prev_visible();
 					if (!prev)
 						EXIT_BREAK; // do nothing..
-					prev->select(selected_col);
+					prev->set_selected(selected_col);
 				}
 
 				ensure_cursor_is_visible();
@@ -2237,7 +2237,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 						selected_item->deselect(selected_col);
 						emit_signal("multi_selected", selected_item, selected_col, false);
 					} else if (selected_item->is_selectable(selected_col)) {
-						selected_item->select(selected_col);
+						selected_item->set_selected(selected_col);
 						emit_signal("multi_selected", selected_item, selected_col, true);
 					}
 				}
@@ -3305,7 +3305,7 @@ void Tree::_do_incr_search(const String &p_add) {
 	if (!item)
 		return;
 
-	item->select(col);
+	item->set_selected(col);
 	ensure_cursor_is_visible();
 }
 

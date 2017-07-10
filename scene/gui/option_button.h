@@ -78,7 +78,7 @@ public:
 
 	void clear();
 
-	void select(int p_idx);
+	void set_selected(int p_idx);
 	int get_selected() const;
 	int get_selected_ID() const;
 	Variant get_selected_metadata() const;

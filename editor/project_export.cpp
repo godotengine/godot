@@ -139,7 +139,7 @@ void ProjectExportDialog::_update_presets() {
 	}
 
 	if (current_idx != -1) {
-		presets->select(current_idx);
+		presets->set_selected(current_idx);
 		//_edit_preset(current_idx);
 	}
 
@@ -166,7 +166,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 
 	updating = true;
 
-	presets->select(p_index);
+	presets->set_selected(p_index);
 	sections->show();
 
 	name->set_editable(true);
@@ -176,7 +176,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	runnable->set_pressed(current->is_runnable());
 	parameters->edit(current.ptr());
 
-	export_filter->select(current->get_export_filter());
+	export_filter->set_selected(current->get_export_filter());
 	include_filters->set_text(current->get_include_filter());
 	exclude_filters->set_text(current->get_exclude_filter());
 

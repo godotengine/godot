@@ -282,13 +282,13 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 	if (editor_selection) {
 		if (editor_selection->is_selected(p_node)) {
 
-			item->select(0);
+			item->set_selected(0);
 		}
 	}
 
 	if (selected == p_node) {
 		if (!editor_selection)
-			item->select(0);
+			item->set_selected(0);
 		item->set_as_cursor(0);
 	}
 
@@ -564,7 +564,7 @@ void SceneTreeEditor::set_selected(Node *p_node, bool p_emit_selected) {
 			node->set_collapsed(false);
 			node = node->get_parent();
 		}
-		item->select(0);
+		item->set_selected(0);
 		item->set_as_cursor(0);
 		selected = p_node;
 		tree->ensure_cursor_is_visible();
@@ -698,7 +698,7 @@ void SceneTreeEditor::_update_selection(TreeItem *item) {
 		return;
 
 	if (editor_selection->is_selected(n))
-		item->select(0);
+		item->set_selected(0);
 	else
 		item->deselect(0);
 

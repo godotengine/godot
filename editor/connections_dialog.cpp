@@ -326,7 +326,7 @@ ConnectDialog::ConnectDialog() {
 	type_list->add_item("Transform", Variant::TRANSFORM);
 	//type_list->add_separator();
 	type_list->add_item("Color", Variant::COLOR);
-	type_list->select(0);
+	type_list->set_selected(0);
 
 	Button *add_bind = memnew(Button);
 

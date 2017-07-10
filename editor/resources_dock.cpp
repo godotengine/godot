@@ -243,7 +243,7 @@ void ResourcesDock::add_resource(const Ref<Resource> &p_resource) {
 		Ref<Resource> r = existing->get_metadata(0);
 		if (r == p_resource) {
 			//existing->move_to_top();
-			existing->select(0);
+			existing->set_selected(0);
 			resources->ensure_cursor_is_visible();
 			return; // existing
 		}
@@ -260,7 +260,7 @@ void ResourcesDock::add_resource(const Ref<Resource> &p_resource) {
 	_update_name(res);
 	res->add_button(0, get_icon("Del", "EditorIcons"));
 	res->move_to_top();
-	res->select(0);
+	res->set_selected(0);
 	resources->ensure_cursor_is_visible();
 }
 
