@@ -58,7 +58,6 @@ void ScriptCreateDialog::config(const String &p_base_name, const String &p_base_
 		file_path->set_text("");
 	}
 	_lang_changed(current_language);
-	_template_changed(template_menu->get_selected());
 	_parent_name_changed(parent_name->get_text());
 	_class_name_changed("");
 	_path_changed(file_path->get_text());
@@ -246,24 +245,30 @@ void ScriptCreateDialog::_lang_changed(int l) {
 
 	bool use_templates = language->is_using_templates();
 	template_menu->set_disabled(!use_templates);
+	template_menu->clear();
 	if (use_templates) {
+
 		template_list = EditorSettings::get_singleton()->get_script_templates(language->get_extension());
 
 		String last_lang = EditorSettings::get_singleton()->get_project_metadata("script_setup", "last_selected_language", "");
 		String last_template = EditorSettings::get_singleton()->get_project_metadata("script_setup", "last_selected_template", "");
 
-		template_menu->clear();
 		template_menu->add_item(TTR("Default"));
 		for (int i = 0; i < template_list.size(); i++) {
 			String s = template_list[i].capitalize();
 			template_menu->add_item(s);
-			if (language_menu->get_item_text(l) == last_lang && last_template == s) {
+			if (language_menu->get_item_text(language_menu->get_selected()) == last_lang && last_template == s) {
 				template_menu->select(i + 1);
 			}
 		}
-		_template_changed(template_menu->get_selected());
-		EditorSettings::get_singleton()->set_project_metadata("script_setup", "last_selected_language", language_menu->get_item_text(l));
+	} else {
+
+		template_menu->add_item(TTR("N/A"));
+		script_template = "";
 	}
+
+	_template_changed(template_menu->get_selected());
+	EditorSettings::get_singleton()->set_project_metadata("script_setup", "last_selected_language", language_menu->get_item_text(language_menu->get_selected()));
 
 	_update_dialog();
 }
