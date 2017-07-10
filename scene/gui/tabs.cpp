@@ -593,6 +593,41 @@ void Tabs::remove_tab(int p_idx) {
 	_ensure_no_over_offset();
 }
 
+Variant Tabs::get_drag_data(const Point2 &p_point) {
+
+	return get_tab_idx_at_point(p_point);
+}
+
+bool Tabs::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
+
+	return get_tab_idx_at_point(p_point) > -1;
+}
+
+void Tabs::drop_data(const Point2 &p_point, const Variant &p_data) {
+
+	int hover_now = get_tab_idx_at_point(p_point);
+
+	ERR_FAIL_INDEX(hover_now, tabs.size());
+	emit_signal("reposition_active_tab_request", hover_now);
+}
+
+int Tabs::get_tab_idx_at_point(const Point2 &p_point) const {
+
+	int hover_now = -1;
+	for (int i = 0; i < tabs.size(); i++) {
+
+		if (i < offset)
+			continue;
+
+		Rect2 rect = get_tab_rect(i);
+		if (rect.has_point(p_point)) {
+			hover_now = i;
+		}
+	}
+
+	return hover_now;
+}
+
 void Tabs::set_tab_align(TabAlign p_align) {
 
 	tab_align = p_align;
@@ -708,7 +743,7 @@ void Tabs::ensure_tab_visible(int p_idx) {
 	}
 }
 
-Rect2 Tabs::get_tab_rect(int p_tab) {
+Rect2 Tabs::get_tab_rect(int p_tab) const {
 	return Rect2(tabs[p_tab].ofs_cache, 0, tabs[p_tab].size_cache, get_size().height);
 }
 
@@ -743,6 +778,7 @@ void Tabs::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("right_button_pressed", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("tab_close", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("tab_hover", PropertyInfo(Variant::INT, "tab")));
+	ADD_SIGNAL(MethodInfo("reposition_active_tab_request", PropertyInfo(Variant::INT, "idx_to")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1", PROPERTY_USAGE_EDITOR), "set_current_tab", "get_current_tab");
 

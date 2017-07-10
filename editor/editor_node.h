@@ -572,6 +572,7 @@ private:
 	void _scene_tab_hover(int p_tab);
 	void _scene_tab_exit();
 	void _scene_tab_input(const Ref<InputEvent> &p_input);
+	void _reposition_active_tab(int idx_to);
 	void _thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Variant &p_udata);
 	void _scene_tab_script_edited(int p_tab);
 
