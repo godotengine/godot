@@ -1301,7 +1301,7 @@ OS_Windows::MouseMode OS_Windows::get_mouse_mode() const {
 	return mouse_mode;
 }
 
-void OS_Windows::warp_mouse_pos(const Point2 &p_to) {
+void OS_Windows::set_mouse_position(const Point2 &p_to) {
 
 	if (mouse_mode == MOUSE_MODE_CAPTURED) {
 

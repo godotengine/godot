@@ -2136,9 +2136,9 @@ Control *Control::get_focus_owner() const {
 	return get_viewport()->_gui_get_focus_owner();
 }
 
-void Control::warp_mouse(const Point2 &p_to_pos) {
+void Control::set_mouse_position(const Point2 &p_to_pos) {
 	ERR_FAIL_COND(!is_inside_tree());
-	get_viewport()->warp_mouse(get_global_transform().xform(p_to_pos));
+	get_viewport()->set_mouse_position(get_global_transform().xform(p_to_pos));
 }
 
 bool Control::is_text_field() const {
@@ -2412,7 +2412,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_drag_forwarding", "target:Control"), &Control::set_drag_forwarding);
 	ClassDB::bind_method(D_METHOD("set_drag_preview", "control:Control"), &Control::set_drag_preview);
 
-	ClassDB::bind_method(D_METHOD("warp_mouse", "to_pos"), &Control::warp_mouse);
+	ClassDB::bind_method(D_METHOD("set_mouse_position", "to_pos"), &Control::set_mouse_position);
 
 	ClassDB::bind_method(D_METHOD("minimum_size_changed"), &Control::minimum_size_changed);
 

@@ -1389,10 +1389,10 @@ Vector2 Viewport::get_mouse_position() const {
 	return (get_final_transform().affine_inverse() * _get_input_pre_xform()).xform(Input::get_singleton()->get_mouse_position() - _get_window_offset());
 }
 
-void Viewport::warp_mouse(const Vector2 &p_pos) {
+void Viewport::set_mouse_position(const Vector2 &p_pos) {
 
 	Vector2 gpos = (get_final_transform().affine_inverse() * _get_input_pre_xform()).affine_inverse().xform(p_pos);
-	Input::get_singleton()->warp_mouse_pos(gpos);
+	Input::get_singleton()->set_mouse_position(gpos);
 }
 
 void Viewport::_gui_sort_subwindows() {
@@ -2620,7 +2620,7 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_attach_to_screen_rect", "rect"), &Viewport::set_attach_to_screen_rect);
 
 	ClassDB::bind_method(D_METHOD("get_mouse_position"), &Viewport::get_mouse_position);
-	ClassDB::bind_method(D_METHOD("warp_mouse", "to_pos"), &Viewport::warp_mouse);
+	ClassDB::bind_method(D_METHOD("set_mouse_position", "to_pos"), &Viewport::set_mouse_position);
 
 	ClassDB::bind_method(D_METHOD("gui_has_modal_stack"), &Viewport::gui_has_modal_stack);
 	ClassDB::bind_method(D_METHOD("gui_get_drag_data:Variant"), &Viewport::gui_get_drag_data);

@@ -147,7 +147,7 @@ void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
 		if (drag.enabled) {
 			drag.enabled = false;
 			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
-			warp_mouse(drag.capture_pos);
+			set_mouse_position(drag.capture_pos);
 		}
 	}
 

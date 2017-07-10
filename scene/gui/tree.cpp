@@ -2403,7 +2403,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 
 						range_drag_enabled = false;
 						Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
-						warp_mouse(range_drag_capture_pos);
+						set_mouse_position(range_drag_capture_pos);
 					} else {
 						Rect2 rect = get_selected()->get_meta("__focus_rect");
 						if (rect.has_point(Point2(b->get_position().x, b->get_position().y))) {
@@ -2957,7 +2957,7 @@ void Tree::clear() {
 		if (range_drag_enabled) {
 			range_drag_enabled = false;
 			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
-			warp_mouse(range_drag_capture_pos);
+			set_mouse_position(range_drag_capture_pos);
 		}
 		pressing_for_editor = false;
 	}
