@@ -39,6 +39,10 @@ Size2 Slider::get_minimum_size() const {
 
 void Slider::_gui_input(Ref<InputEvent> p_event) {
 
+	if (!editable) {
+		return;
+	}
+
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
@@ -158,7 +162,7 @@ void Slider::_notification(int p_what) {
 			Size2i size = get_size();
 			Ref<StyleBox> style = get_stylebox("slider");
 			Ref<StyleBox> focus = get_stylebox("focus");
-			Ref<Texture> grabber = get_icon(mouse_inside || has_focus() ? "grabber_highlight" : "grabber");
+			Ref<Texture> grabber = get_icon(editable ? ((mouse_inside || has_focus()) ? "grabber_highlight" : "grabber") : "grabber_disabled");
 			Ref<Texture> tick = get_icon("tick");
 
 			if (orientation == VERTICAL) {
@@ -231,6 +235,17 @@ void Slider::set_ticks_on_borders(bool _tob) {
 	update();
 }
 
+void Slider::set_editable(bool p_editable) {
+
+	editable = p_editable;
+	update();
+}
+
+bool Slider::is_editable() const {
+
+	return editable;
+}
+
 void Slider::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_gui_input"), &Slider::_gui_input);
@@ -240,6 +255,10 @@ void Slider::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_ticks_on_borders"), &Slider::get_ticks_on_borders);
 	ClassDB::bind_method(D_METHOD("set_ticks_on_borders", "ticks_on_border"), &Slider::set_ticks_on_borders);
 
+	ClassDB::bind_method(D_METHOD("set_editable", "editable"), &Slider::set_editable);
+	ClassDB::bind_method(D_METHOD("is_editable"), &Slider::is_editable);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tick_count", PROPERTY_HINT_RANGE, "0,4096,1"), "set_ticks", "get_ticks");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ticks_on_borders"), "set_ticks_on_borders", "get_ticks_on_borders");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "focus_mode", PROPERTY_HINT_ENUM, "None,Click,All"), "set_focus_mode", "get_focus_mode");
@@ -251,5 +270,6 @@ Slider::Slider(Orientation p_orientation) {
 	grab.active = false;
 	ticks = 0;
 	custom_step = -1;
+	editable = true;
 	set_focus_mode(FOCUS_ALL);
 }

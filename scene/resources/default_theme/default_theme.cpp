@@ -510,20 +510,24 @@ void fill_default_theme(Ref<Theme> &t, const Ref<Font> &default_font, const Ref<
 
 	t->set_stylebox("slider", "HSlider", make_stylebox(hslider_bg_png, 4, 4, 4, 4));
 	t->set_stylebox("grabber_highlight", "HSlider", make_stylebox(hslider_grabber_hl_png, 6, 6, 6, 6));
+	t->set_stylebox("grabber_disabled", "HSlider", make_stylebox(hslider_grabber_disabled_png, 6, 6, 6, 6));
 	t->set_stylebox("focus", "HSlider", focus);
 
 	t->set_icon("grabber", "HSlider", make_icon(hslider_grabber_png));
 	t->set_icon("grabber_highlight", "HSlider", make_icon(hslider_grabber_hl_png));
+	t->set_icon("grabber_disabled", "HSlider", make_icon(hslider_grabber_disabled_png));
 	t->set_icon("tick", "HSlider", make_icon(hslider_tick_png));
 
 	// VSlider
 
 	t->set_stylebox("slider", "VSlider", make_stylebox(vslider_bg_png, 4, 4, 4, 4));
 	t->set_stylebox("grabber_highlight", "VSlider", make_stylebox(vslider_grabber_hl_png, 6, 6, 6, 6));
+	t->set_stylebox("grabber_disabled", "VSlider", make_stylebox(vslider_grabber_disabled_png, 6, 6, 6, 6));
 	t->set_stylebox("focus", "HSlider", focus);
 
 	t->set_icon("grabber", "VSlider", make_icon(vslider_grabber_png));
 	t->set_icon("grabber_highlight", "VSlider", make_icon(vslider_grabber_hl_png));
+	t->set_icon("grabber_disabled", "VSlider", make_icon(vslider_grabber_disabled_png));
 	t->set_icon("tick", "VSlider", make_icon(vslider_tick_png));
 
 	// SpinBox
