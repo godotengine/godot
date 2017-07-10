@@ -57,6 +57,7 @@ public:
 	float prev_rot;
 	Rect2 prev_rect;
 	Vector2 prev_pivot;
+	float prev_anchors[4];
 
 	CanvasItemEditorSelectedItem() { prev_rot = 0; }
 };
@@ -300,6 +301,7 @@ class CanvasItemEditor : public VBoxContainer {
 #endif
 	Ref<StyleBoxTexture> select_sb;
 	Ref<Texture> select_handle;
+	Ref<Texture> anchor_handle;
 
 	int handle_len;
 	bool _is_part_of_subscene(CanvasItem *p_item);
@@ -327,6 +329,8 @@ class CanvasItemEditor : public VBoxContainer {
 
 	DragType _find_drag_type(const Point2 &p_click, Vector2 &r_point);
 	void _prepare_drag(const Point2 &p_click_pos);
+
+	Vector2 _anchor_to_position(Control *p_control, Vector2 anchor);
 
 	void _popup_callback(int p_op);
 	bool updating_scroll;

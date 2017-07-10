@@ -775,6 +775,15 @@ CanvasItemEditor::DragType CanvasItemEditor::_find_drag_type(const Point2 &p_cli
 	return DRAG_NONE;
 }
 
+Vector2 CanvasItemEditor::_anchor_to_position(Control *p_control, Vector2 anchor) {
+	ERR_FAIL_COND_V(!p_control, Vector2());
+
+	Transform2D parent_transform = p_control->get_transform().affine_inverse();
+	Size2 parent_size = p_control->get_parent_area_size();
+
+	return parent_transform.xform(Vector2(parent_size.x * anchor.x, parent_size.y * anchor.y));
+}
+
 void CanvasItemEditor::_prepare_drag(const Point2 &p_click_pos) {
 
 	List<Node *> &selection = editor_selection->get_selected_node_list();
@@ -1528,76 +1537,75 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 				// Keep the height/width ratio of the item
 				float aspect = local_rect.size.aspect();
 				switch (drag) {
-					case DRAG_LEFT: {
+					case DRAG_LEFT:
 						drag_vector.y = -drag_vector.x / aspect;
-					} break;
-					case DRAG_RIGHT: {
+						break;
+					case DRAG_RIGHT:
 						drag_vector.y = drag_vector.x / aspect;
-					} break;
-					case DRAG_TOP: {
+						break;
+					case DRAG_TOP:
 						drag_vector.x = -drag_vector.y * aspect;
-					} break;
-					case DRAG_BOTTOM: {
+						break;
+					case DRAG_BOTTOM:
 						drag_vector.x = drag_vector.y * aspect;
-					} break;
+						break;
 					case DRAG_BOTTOM_LEFT:
-					case DRAG_TOP_RIGHT: {
+					case DRAG_TOP_RIGHT:
 						if (aspect > 1.0) { // width > height, take x as reference
 							drag_vector.y = -drag_vector.x / aspect;
 						} else { // height > width, take y as reference
 							drag_vector.x = -drag_vector.y * aspect;
 						}
-					} break;
+						break;
 					case DRAG_BOTTOM_RIGHT:
-					case DRAG_TOP_LEFT: {
+					case DRAG_TOP_LEFT:
 						if (aspect > 1.0) { // width > height, take x as reference
 							drag_vector.y = drag_vector.x / aspect;
 						} else { // height > width, take y as reference
 							drag_vector.x = drag_vector.y * aspect;
 						}
-					} break;
+						break;
 				}
 			} else {
 				switch (drag) {
 					case DRAG_RIGHT:
-					case DRAG_LEFT: {
+					case DRAG_LEFT:
 						drag_vector.y = 0;
-					} break;
+						break;
 					case DRAG_TOP:
-					case DRAG_BOTTOM: {
+					case DRAG_BOTTOM:
 						drag_vector.x = 0;
-					} break;
+						break;
 				}
 			}
 
 			switch (drag) {
-				case DRAG_ALL: {
+				case DRAG_ALL:
 					begin += drag_vector;
 					end += drag_vector;
-				} break;
+					break;
 				case DRAG_RIGHT:
 				case DRAG_BOTTOM:
-				case DRAG_BOTTOM_RIGHT: {
+				case DRAG_BOTTOM_RIGHT:
 					incend(begin.x, end.x, drag_vector.x, minsize.x, symmetric);
 					incend(begin.y, end.y, drag_vector.y, minsize.y, symmetric);
-				} break;
-
-				case DRAG_TOP_LEFT: {
+					break;
+				case DRAG_TOP_LEFT:
 					incbeg(begin.x, end.x, drag_vector.x, minsize.x, symmetric);
 					incbeg(begin.y, end.y, drag_vector.y, minsize.y, symmetric);
-				} break;
-
+					break;
 				case DRAG_TOP:
-				case DRAG_TOP_RIGHT: {
+				case DRAG_TOP_RIGHT:
 					incbeg(begin.y, end.y, drag_vector.y, minsize.y, symmetric);
 					incend(begin.x, end.x, drag_vector.x, minsize.x, symmetric);
-				} break;
+					break;
 				case DRAG_LEFT:
-				case DRAG_BOTTOM_LEFT: {
+				case DRAG_BOTTOM_LEFT:
 					incbeg(begin.x, end.x, drag_vector.x, minsize.x, symmetric);
 					incend(begin.y, end.y, drag_vector.y, minsize.y, symmetric);
-				} break;
-				case DRAG_PIVOT: {
+					break;
+
+				case DRAG_PIVOT:
 
 					if (canvas_item->cast_to<Node2D>()) {
 						Node2D *n2d = canvas_item->cast_to<Node2D>();
@@ -1607,15 +1615,13 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 						canvas_item->cast_to<Control>()->set_pivot_offset(se->undo_pivot + drag_vector);
 					}
 					continue;
-				} break;
-				case DRAG_NODE_2D: {
+					break;
+				case DRAG_NODE_2D:
 
 					ERR_FAIL_COND(!canvas_item->cast_to<Node2D>());
 					canvas_item->cast_to<Node2D>()->set_global_position(dto);
 					continue;
-				} break;
-
-				default: {}
+					break;
 			}
 
 			if (!dragging_bone) {
@@ -1870,13 +1876,32 @@ void CanvasItemEditor::_viewport_draw() {
 					pivot_found = true;
 				}
 			}
-			if (canvas_item->cast_to<Control>()) {
-				Vector2 pivot_ofs = canvas_item->cast_to<Control>()->get_pivot_offset();
+
+			Control *control = canvas_item->cast_to<Control>();
+			if (control) {
+				Vector2 pivot_ofs = control->get_pivot_offset();
 				if (pivot_ofs != Vector2()) {
 					viewport->draw_texture(pivot, xform.xform(pivot_ofs) + (-pivot->get_size() / 2).floor());
 				}
 				can_move_pivot = true;
 				pivot_found = true;
+
+				if (tool == TOOL_SELECT) {
+					// Draw the anchors
+					Rect2 anchor_rects[4];
+					anchor_rects[0] = Rect2(xform.xform(_anchor_to_position(control, Vector2(control->get_anchor(MARGIN_LEFT), control->get_anchor(MARGIN_TOP)))), anchor_handle->get_size());
+					anchor_rects[1] = Rect2(xform.xform(_anchor_to_position(control, Vector2(control->get_anchor(MARGIN_RIGHT), control->get_anchor(MARGIN_TOP)))), Point2(-anchor_handle->get_size().x, anchor_handle->get_size().y));
+					anchor_rects[2] = Rect2(xform.xform(_anchor_to_position(control, Vector2(control->get_anchor(MARGIN_RIGHT), control->get_anchor(MARGIN_BOTTOM)))), -anchor_handle->get_size());
+					anchor_rects[3] = Rect2(xform.xform(_anchor_to_position(control, Vector2(control->get_anchor(MARGIN_LEFT), control->get_anchor(MARGIN_BOTTOM)))), Point2(anchor_handle->get_size().x, -anchor_handle->get_size().y));
+
+					anchor_rects[0].position -= anchor_handle->get_size();
+					anchor_rects[1].position -= Vector2(0.0, anchor_handle->get_size().y);
+					anchor_rects[3].position -= Vector2(anchor_handle->get_size().x, 0.0);
+
+					for (int i = 0; i < 4; i++) {
+						anchor_handle->draw_rect(ci, anchor_rects[i]);
+					}
+				}
 			}
 
 			if (tool == TOOL_SELECT) {
@@ -2063,19 +2088,27 @@ void CanvasItemEditor::_notification(int p_what) {
 				continue;
 
 			Rect2 r = canvas_item->get_item_rect();
-
 			Transform2D xform = canvas_item->get_transform();
 
+			float anchors[4];
 			Vector2 pivot;
 			if (canvas_item->cast_to<Control>()) {
 				pivot = canvas_item->cast_to<Control>()->get_pivot_offset();
+				anchors[MARGIN_LEFT] = canvas_item->cast_to<Control>()->get_anchor(MARGIN_LEFT);
+				anchors[MARGIN_RIGHT] = canvas_item->cast_to<Control>()->get_anchor(MARGIN_RIGHT);
+				anchors[MARGIN_TOP] = canvas_item->cast_to<Control>()->get_anchor(MARGIN_TOP);
+				anchors[MARGIN_BOTTOM] = canvas_item->cast_to<Control>()->get_anchor(MARGIN_BOTTOM);
 			}
 
-			if (r != se->prev_rect || xform != se->prev_xform || pivot != se->prev_pivot) {
+			if (r != se->prev_rect || xform != se->prev_xform || pivot != se->prev_pivot || anchors[MARGIN_LEFT] != se->prev_anchors[MARGIN_LEFT] || anchors[MARGIN_RIGHT] != se->prev_anchors[MARGIN_RIGHT] || anchors[MARGIN_TOP] != se->prev_anchors[MARGIN_TOP] || anchors[MARGIN_BOTTOM] != se->prev_anchors[MARGIN_BOTTOM]) {
 				viewport->update();
 				se->prev_rect = r;
 				se->prev_xform = xform;
 				se->prev_pivot = pivot;
+				se->prev_anchors[MARGIN_LEFT] = anchors[MARGIN_LEFT];
+				se->prev_anchors[MARGIN_RIGHT] = anchors[MARGIN_RIGHT];
+				se->prev_anchors[MARGIN_TOP] = anchors[MARGIN_TOP];
+				se->prev_anchors[MARGIN_BOTTOM] = anchors[MARGIN_BOTTOM];
 			}
 		}
 
@@ -2124,6 +2157,7 @@ void CanvasItemEditor::_notification(int p_what) {
 		pan_button->set_icon(get_icon("ToolPan", "EditorIcons"));
 		pivot_button->set_icon(get_icon("EditPivot", "EditorIcons"));
 		select_handle = get_icon("EditorHandle", "EditorIcons");
+		anchor_handle = get_icon("EditorControlAnchor", "EditorIcons");
 		lock_button->set_icon(get_icon("Lock", "EditorIcons"));
 		unlock_button->set_icon(get_icon("Unlock", "EditorIcons"));
 		group_button->set_icon(get_icon("Group", "EditorIcons"));

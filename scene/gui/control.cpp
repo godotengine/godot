@@ -1304,6 +1304,7 @@ void Control::set_anchor(Margin p_margin, float p_anchor, bool p_keep_margin) {
 			_size_changed();
 		}
 	}
+	update();
 	_change_notify();
 }
 
