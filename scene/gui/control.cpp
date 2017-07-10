@@ -1229,8 +1229,8 @@ void Control::_size_changed() {
 		}
 	}
 
-	Point2 new_pos_cache = Point2(margin_pos[0], margin_pos[1]).floor();
-	Size2 new_size_cache = Point2(margin_pos[2], margin_pos[3]).floor() - new_pos_cache;
+	Point2 new_pos_cache = Point2(margin_pos[0], margin_pos[1]);
+	Size2 new_size_cache = Point2(margin_pos[2], margin_pos[3]) - new_pos_cache;
 
 	Size2 minimum_size = get_combined_minimum_size();
 
