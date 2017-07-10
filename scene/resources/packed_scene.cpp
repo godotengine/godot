@@ -1671,7 +1671,7 @@ void SceneState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_node_groups", "idx"), &SceneState::_get_node_groups);
 	ClassDB::bind_method(D_METHOD("get_node_property_count", "idx"), &SceneState::get_node_property_count);
 	ClassDB::bind_method(D_METHOD("get_node_property_name", "idx", "prop_idx"), &SceneState::get_node_property_name);
-	ClassDB::bind_method(D_METHOD("get_node_property_value", "idx", "prop_idx"), &SceneState::get_node_property_value);
+	ClassDB::bind_method(D_METHOD("get_node_property_value:Variant", "idx", "prop_idx"), &SceneState::get_node_property_value);
 	ClassDB::bind_method(D_METHOD("get_connection_count"), &SceneState::get_connection_count);
 	ClassDB::bind_method(D_METHOD("get_connection_source", "idx"), &SceneState::get_connection_source);
 	ClassDB::bind_method(D_METHOD("get_connection_signal", "idx"), &SceneState::get_connection_signal);

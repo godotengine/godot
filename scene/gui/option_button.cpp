@@ -283,7 +283,7 @@ void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_text", "idx"), &OptionButton::get_item_text);
 	ClassDB::bind_method(D_METHOD("get_item_icon:Texture", "idx"), &OptionButton::get_item_icon);
 	ClassDB::bind_method(D_METHOD("get_item_ID", "idx"), &OptionButton::get_item_ID);
-	ClassDB::bind_method(D_METHOD("get_item_metadata", "idx"), &OptionButton::get_item_metadata);
+	ClassDB::bind_method(D_METHOD("get_item_metadata:Variant", "idx"), &OptionButton::get_item_metadata);
 	ClassDB::bind_method(D_METHOD("is_item_disabled", "idx"), &OptionButton::is_item_disabled);
 	ClassDB::bind_method(D_METHOD("get_item_count"), &OptionButton::get_item_count);
 	ClassDB::bind_method(D_METHOD("add_separator"), &OptionButton::add_separator);
@@ -291,7 +291,7 @@ void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("select", "idx"), &OptionButton::select);
 	ClassDB::bind_method(D_METHOD("get_selected"), &OptionButton::get_selected);
 	ClassDB::bind_method(D_METHOD("get_selected_ID"), &OptionButton::get_selected_ID);
-	ClassDB::bind_method(D_METHOD("get_selected_metadata"), &OptionButton::get_selected_metadata);
+	ClassDB::bind_method(D_METHOD("get_selected_metadata:Variant"), &OptionButton::get_selected_metadata);
 	ClassDB::bind_method(D_METHOD("remove_item", "idx"), &OptionButton::remove_item);
 	ClassDB::bind_method(D_METHOD("_select_int"), &OptionButton::_select_int);
 
