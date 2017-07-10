@@ -2352,7 +2352,7 @@ void Viewport::unhandled_input(const Ref<InputEvent> &p_event) {
 
 	if (physics_object_picking && !get_tree()->input_handled) {
 
-		if (p_event->cast_to<InputEventMouseButton>() || p_event->cast_to<InputEventMouseMotion>() || p_event->cast_to<InputEventScreenDrag>() || p_event->cast_to<InputEventScreenTouch>()) {
+		if (Input::get_singleton()->get_mouse_mode() != Input::MOUSE_MODE_CAPTURED && (p_event->cast_to<InputEventMouseButton>() || p_event->cast_to<InputEventMouseMotion>() || p_event->cast_to<InputEventScreenDrag>() || p_event->cast_to<InputEventScreenTouch>())) {
 			physics_picking_events.push_back(p_event);
 		}
 	}
