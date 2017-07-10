@@ -46,6 +46,7 @@ class Slider : public Range {
 	bool mouse_inside;
 	Orientation orientation;
 	float custom_step;
+	bool editable;
 
 protected:
 	void _gui_input(Ref<InputEvent> p_event);
@@ -64,6 +65,9 @@ public:
 
 	void set_ticks_on_borders(bool);
 	bool get_ticks_on_borders() const;
+
+	void set_editable(bool p_editable);
+	bool is_editable() const;
 
 	Slider(Orientation p_orientation = VERTICAL);
 };
