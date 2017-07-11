@@ -163,7 +163,7 @@ void ShaderMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shader", "shader:Shader"), &ShaderMaterial::set_shader);
 	ClassDB::bind_method(D_METHOD("get_shader:Shader"), &ShaderMaterial::get_shader);
 	ClassDB::bind_method(D_METHOD("set_shader_param", "param", "value"), &ShaderMaterial::set_shader_param);
-	ClassDB::bind_method(D_METHOD("get_shader_param", "param"), &ShaderMaterial::get_shader_param);
+	ClassDB::bind_method(D_METHOD("get_shader_param:Variant", "param"), &ShaderMaterial::get_shader_param);
 }
 
 void ShaderMaterial::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
