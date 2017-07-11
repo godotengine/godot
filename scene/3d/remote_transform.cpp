@@ -63,7 +63,45 @@ void RemoteTransform::_update_remote() {
 		return;
 
 	//todo make faster
-	n->set_global_transform(get_global_transform());
+	if (use_global_coordinates) {
+
+		if (update_remote_position && update_remote_rotation && update_remote_scale) {
+			n->set_global_transform(get_global_transform());
+		} else {
+			Transform n_trans = n->get_global_transform();
+			Transform our_trans = get_global_transform();
+
+			if (!update_remote_position)
+				our_trans.set_origin(n_trans.get_origin());
+
+			n->set_global_transform(our_trans);
+
+			if (!update_remote_rotation)
+				n->set_rotation(n_trans.basis.get_rotation());
+
+			if (!update_remote_scale)
+				n->set_scale(n_trans.basis.get_scale());
+		}
+
+	} else {
+		if (update_remote_position && update_remote_rotation && update_remote_scale) {
+			n->set_global_transform(get_global_transform());
+		} else {
+			Transform n_trans = n->get_transform();
+			Transform our_trans = get_transform();
+
+			if (!update_remote_position)
+				our_trans.set_origin(n_trans.get_origin());
+
+			n->set_transform(our_trans);
+
+			if (!update_remote_rotation)
+				n->set_rotation(n_trans.basis.get_rotation());
+
+			if (!update_remote_scale)
+				n->set_scale(n_trans.basis.get_scale());
+		}
+	}
 }
 
 void RemoteTransform::_notification(int p_what) {
@@ -102,6 +140,41 @@ NodePath RemoteTransform::get_remote_node() const {
 	return remote_node;
 }
 
+void RemoteTransform::set_use_global_coordinates(const bool p_enable) {
+	use_global_coordinates = p_enable;
+}
+
+bool RemoteTransform::get_use_global_coordinates() const {
+	return use_global_coordinates;
+}
+
+void RemoteTransform::set_update_position(const bool p_update) {
+	update_remote_position = p_update;
+	_update_remote();
+}
+
+bool RemoteTransform::get_update_position() const {
+	return update_remote_position;
+}
+
+void RemoteTransform::set_update_rotation(const bool p_update) {
+	update_remote_rotation = p_update;
+	_update_remote();
+}
+
+bool RemoteTransform::get_update_rotation() const {
+	return update_remote_rotation;
+}
+
+void RemoteTransform::set_update_scale(const bool p_update) {
+	update_remote_scale = p_update;
+	_update_remote();
+}
+
+bool RemoteTransform::get_update_scale() const {
+	return update_remote_scale;
+}
+
 String RemoteTransform::get_configuration_warning() const {
 
 	if (!has_node(remote_node) || !get_node(remote_node) || !get_node(remote_node)->cast_to<Spatial>()) {
@@ -116,10 +189,31 @@ void RemoteTransform::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_remote_node", "path"), &RemoteTransform::set_remote_node);
 	ClassDB::bind_method(D_METHOD("get_remote_node"), &RemoteTransform::get_remote_node);
 
+	ClassDB::bind_method(D_METHOD("set_use_global_coordinates", "use_global_coordinates"), &RemoteTransform::set_use_global_coordinates);
+	ClassDB::bind_method(D_METHOD("get_use_global_coordinates"), &RemoteTransform::get_use_global_coordinates);
+
+	ClassDB::bind_method(D_METHOD("set_update_position", "update_remote_position"), &RemoteTransform::set_update_position);
+	ClassDB::bind_method(D_METHOD("get_update_position"), &RemoteTransform::get_update_position);
+	ClassDB::bind_method(D_METHOD("set_update_rotation", "update_remote_rotation"), &RemoteTransform::set_update_rotation);
+	ClassDB::bind_method(D_METHOD("get_update_rotation"), &RemoteTransform::get_update_rotation);
+	ClassDB::bind_method(D_METHOD("set_update_scale", "update_remote_scale"), &RemoteTransform::set_update_scale);
+	ClassDB::bind_method(D_METHOD("get_update_scale"), &RemoteTransform::get_update_scale);
+
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "remote_path"), "set_remote_node", "get_remote_node");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_global_coordinates"), "set_use_global_coordinates", "get_use_global_coordinates");
+
+	ADD_GROUP("Update", "update_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "update_position"), "set_update_position", "get_update_position");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "update_rotation"), "set_update_rotation", "get_update_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "update_scale"), "set_update_scale", "get_update_scale");
 }
 
 RemoteTransform::RemoteTransform() {
+
+	use_global_coordinates = true;
+	update_remote_position = true;
+	update_remote_rotation = true;
+	update_remote_scale = true;
 
 	cache = 0;
 	set_notify_transform(true);
