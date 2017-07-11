@@ -515,6 +515,15 @@ String AudioServer::get_bus_name(int p_bus) const {
 	return buses[p_bus]->name;
 }
 
+int AudioServer::get_bus_index(const StringName &p_bus_name) const {
+	for (int i = 0; i < buses.size(); ++i) {
+		if (buses[i]->name == p_bus_name) {
+			return i;
+		}
+	}
+	return -1;
+}
+
 void AudioServer::set_bus_volume_db(int p_bus, float p_volume_db) {
 
 	ERR_FAIL_INDEX(p_bus, buses.size());
@@ -958,6 +967,7 @@ void AudioServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_bus_name", "bus_idx", "name"), &AudioServer::set_bus_name);
 	ClassDB::bind_method(D_METHOD("get_bus_name", "bus_idx"), &AudioServer::get_bus_name);
+	ClassDB::bind_method(D_METHOD("get_bus_index", "bus_name"), &AudioServer::get_bus_index);
 
 	ClassDB::bind_method(D_METHOD("set_bus_volume_db", "bus_idx", "volume_db"), &AudioServer::set_bus_volume_db);
 	ClassDB::bind_method(D_METHOD("get_bus_volume_db", "bus_idx"), &AudioServer::get_bus_volume_db);
