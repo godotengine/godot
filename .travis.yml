@@ -86,5 +86,5 @@ script:
   - if [ "$STATIC_CHECKS" = "yes" ]; then
       sh ./misc/travis/clang-format.sh;
     else
-      scons platform=$GODOT_TARGET CXX=$CXX openssl=builtin;
+      scons platform=$GODOT_TARGET progress=no verbose=yes CXX=$CXX openssl=builtin;
     fi
