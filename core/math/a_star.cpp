@@ -123,6 +123,12 @@ void AStar::disconnect_points(int p_id, int p_with_id) {
 	a->neighbours.erase(b);
 	b->neighbours.erase(a);
 }
+
+bool AStar::has_point(int p_id) const {
+
+	return points.has(p_id);
+}
+
 bool AStar::are_points_connected(int p_id, int p_with_id) const {
 
 	Segment s(p_id, p_with_id);
@@ -400,6 +406,7 @@ void AStar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_point_pos", "id"), &AStar::get_point_pos);
 	ClassDB::bind_method(D_METHOD("get_point_weight_scale", "id"), &AStar::get_point_weight_scale);
 	ClassDB::bind_method(D_METHOD("remove_point", "id"), &AStar::remove_point);
+	ClassDB::bind_method(D_METHOD("has_point", "id"), &AStar::has_point);
 
 	ClassDB::bind_method(D_METHOD("connect_points", "id", "to_id", "bidirectional"), &AStar::connect_points, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("disconnect_points", "id", "to_id"), &AStar::disconnect_points);
