@@ -329,7 +329,10 @@ void Area2D::_clear_monitoring() {
 
 			Object *obj = ObjectDB::get_instance(E->key());
 			Node *node = obj ? obj->cast_to<Node>() : NULL;
-			ERR_CONTINUE(!node);
+
+			if (!node) //node may have been deleted in previous frame or at other legiminate point
+				continue;
+			//ERR_CONTINUE(!node);
 
 			node->disconnect(SceneStringNames::get_singleton()->enter_tree, this, SceneStringNames::get_singleton()->_body_enter_tree);
 			node->disconnect(SceneStringNames::get_singleton()->exit_tree, this, SceneStringNames::get_singleton()->_body_exit_tree);
@@ -357,7 +360,7 @@ void Area2D::_clear_monitoring() {
 			Object *obj = ObjectDB::get_instance(E->key());
 			Node *node = obj ? obj->cast_to<Node>() : NULL;
 
-			if (!node) //node may have been deleted in previous frame, this should not be an error
+			if (!node) //node may have been deleted in previous frame or at other legiminate point
 				continue;
 			//ERR_CONTINUE(!node);
 
