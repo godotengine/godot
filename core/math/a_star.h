@@ -104,6 +104,7 @@ public:
 	Vector3 get_point_pos(int p_id) const;
 	float get_point_weight_scale(int p_id) const;
 	void remove_point(int p_id);
+	bool has_point(int p_id) const;
 
 	void connect_points(int p_id, int p_with_id, bool bidirectional = true);
 	void disconnect_points(int p_id, int p_with_id);
