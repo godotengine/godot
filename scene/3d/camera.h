@@ -33,6 +33,7 @@
 #include "scene/3d/spatial.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/environment.h"
+#include "core/math/frustum.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -44,7 +45,13 @@ public:
 	enum Projection {
 
 		PROJECTION_PERSPECTIVE,
-		PROJECTION_ORTHOGONAL
+		PROJECTION_ORTHOGONAL,
+		PROJECTION_FRUSTUM
+	};
+
+	enum Eye {
+		EYE_LEFT,
+		EYE_RIGHT
 	};
 
 	enum KeepAspect {
@@ -64,6 +71,8 @@ private:
 	float v_offset;
 	float h_offset;
 	KeepAspect keep_aspect;
+
+	Frustum frustum;
 
 	RID camera;
 	RID scenario_id;
@@ -102,6 +111,8 @@ public:
 
 	void set_perspective(float p_fovy_degrees, float p_z_near, float p_z_far);
 	void set_orthogonal(float p_size, float p_z_near, float p_z_far);
+	void set_perspective_for_eye(float p_fovy_degrees, float p_z_near, float p_z_far, int p_eye, float p_intraocular_dist, float p_convergence_dist);
+	void set_frustum(float p_left, float p_right, float p_top, float p_bottom, float p_z_near, float p_z_far);
 
 	void make_current();
 	void clear_current();
@@ -111,6 +122,10 @@ public:
 
 	float get_fov() const;
 	float get_size() const;
+	float get_left() const;
+	float get_right() const;
+	float get_top() const;
+	float get_bottom() const;
 	float get_zfar() const;
 	float get_znear() const;
 	Projection get_projection() const;
@@ -146,6 +161,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(Camera::Projection);
+VARIANT_ENUM_CAST(Camera::Eye);
 VARIANT_ENUM_CAST(Camera::KeepAspect);
 
 #endif
