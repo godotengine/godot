@@ -20195,7 +20195,7 @@
 		Simple margin container.
 	</brief_description>
 	<description>
-		Simple margin container. Adds a left margin to anything contained.
+		Simple margin container. Adds custom margins to anything contained.
 	</description>
 	<methods>
 	</methods>
