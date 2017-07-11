@@ -108,7 +108,6 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 	void *request_scene_tree_ud;
 
 	void _set_object_property(ObjectID p_id, const String &p_property, const Variant &p_value);
-
 	void _send_object_id(ObjectID p_id);
 	void _send_video_memory();
 	LiveEditFuncs *live_edit_funcs;
@@ -117,6 +116,9 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 	static void _err_handler(void *, const char *, const char *, int p_line, const char *, const char *, ErrorHandlerType p_type);
 
 	void _send_profiling_data(bool p_for_frame);
+
+	int _serialize_variant(const Variant &var, const PropertyInfo &p_info, DVector<uint8_t> &buff);
+	DVector<uint8_t> _serialize(const Variant &var, const PropertyInfo &p_info);
 
 	struct FrameData {
 

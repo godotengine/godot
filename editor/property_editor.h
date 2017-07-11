@@ -236,6 +236,8 @@ class PropertyEditor : public Control {
 	void _resource_preview_done(const String &p_path, const Ref<Texture> &p_preview, Variant p_ud);
 	void _draw_transparency(Object *t, const Rect2 &p_rect);
 
+	ObjectID _get_curent_remote_object_id(const StringName &p_name);
+
 	UndoRedo *undo_redo;
 
 protected:

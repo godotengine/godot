@@ -72,7 +72,7 @@ class ScriptEditorDebugger : public Control {
 	float inspect_scene_tree_timeout;
 	float inspect_edited_object_timeout;
 	ObjectID inspected_object_id;
-	ScriptEditorDebuggerInspectedObject *inspected_object;
+	Map<ObjectID, ScriptEditorDebuggerInspectedObject *> remote_objects;
 	bool updating_scene_tree;
 	Set<ObjectID> unfold_cache;
 
@@ -142,9 +142,10 @@ class ScriptEditorDebugger : public Control {
 	void _scene_tree_selected();
 	void _scene_tree_request();
 	void _parse_message(const String &p_msg, const Array &p_data);
+	Variant _unserialize_variant(const DVector<uint8_t> &data, PropertyInfo &r_info, int &r_len);
 	void _scene_tree_property_select_object(ObjectID p_object);
 	void _scene_tree_property_value_edited(const String &p_prop, const Variant &p_value);
-
+	void _scene_tree_variable_value_edited(const String &p_prop, const Variant &p_value);
 	void _video_mem_request();
 
 	int _get_node_path_cache(const NodePath &p_path);
@@ -167,6 +168,9 @@ class ScriptEditorDebugger : public Control {
 	void _profiler_seeked();
 
 	void _paused();
+
+	void _set_remote_object(ObjectID p_id, ScriptEditorDebuggerInspectedObject *p_obj);
+	void _clear_remote_objects();
 
 protected:
 	void _notification(int p_what);

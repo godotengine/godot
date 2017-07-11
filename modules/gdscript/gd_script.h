@@ -138,8 +138,8 @@ public:
 	bool is_valid() const { return valid; }
 
 	const Map<StringName, Ref<GDScript> > &get_subclasses() const { return subclasses; }
-	const Map<StringName, Variant> &get_constants() const { return constants; }
-	const Set<StringName> &get_members() const { return members; }
+	virtual const Map<StringName, Variant> &get_constants() const { return constants; }
+	virtual const Set<StringName> &get_members() const { return members; }
 	const Map<StringName, GDFunction *> &get_member_functions() const { return member_functions; }
 	const Ref<GDNativeClass> &get_native() const { return native; }
 
@@ -199,7 +199,7 @@ class GDInstance : public ScriptInstance {
 	void _ml_call_reversed(GDScript *sptr, const StringName &p_method, const Variant **p_args, int p_argcount);
 
 public:
-	_FORCE_INLINE_ Object *get_owner() { return owner; }
+	virtual Object *get_owner() { return owner; }
 
 	virtual bool set(const StringName &p_name, const Variant &p_value);
 	virtual bool get(const StringName &p_name, Variant &r_ret) const;
@@ -374,7 +374,8 @@ public:
 	virtual String debug_get_stack_level_source(int p_level) const;
 	virtual void debug_get_stack_level_locals(int p_level, List<String> *p_locals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1);
 	virtual void debug_get_stack_level_members(int p_level, List<String> *p_members, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1);
-	virtual void debug_get_globals(List<String> *p_locals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1);
+	virtual void debug_get_globals(List<String> *p_globals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1);
+	virtual ScriptInstance *debug_get_stack_level_instance(int p_level);
 	virtual String debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems = -1, int p_max_depth = -1);
 
 	virtual void reload_all_scripts();
