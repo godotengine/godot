@@ -579,7 +579,7 @@ Button *ConfirmationDialog::get_cancel() {
 }
 
 ConfirmationDialog::ConfirmationDialog() {
-
+	set_exclusive(true);
 	set_title(RTR("Please Confirm..."));
 	cancel = add_cancel();
 }

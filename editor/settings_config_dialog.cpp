@@ -303,6 +303,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 
 	set_title(TTR("Editor Settings"));
 	set_resizable(true);
+	set_exclusive(true);
 
 	tabs = memnew(TabContainer);
 	tabs->set_tab_align(TabContainer::ALIGN_LEFT);

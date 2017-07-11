@@ -1317,6 +1317,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 	singleton = this;
 	set_title(TTR("Project Settings (project.godot)"));
 	set_resizable(true);
+	set_exclusive(true);
 	undo_redo = &p_data->get_undo_redo();
 	data = p_data;
 
