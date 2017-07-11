@@ -30,6 +30,7 @@
 #include "engine.h"
 
 #include "version.h"
+#include "version_hash.gen.h"
 
 void Engine::set_iterations_per_second(int p_ips) {
 
@@ -86,6 +87,9 @@ Dictionary Engine::get_version_info() const {
 	dict["status"] = _MKSTR(VERSION_STATUS);
 	dict["revision"] = _MKSTR(VERSION_REVISION);
 	dict["year"] = VERSION_YEAR;
+
+	String hash = String(VERSION_HASH);
+	dict["hash"] = hash.length() == 0 ? String("unknown") : hash;
 
 	String stringver = String(dict["major"]) + "." + String(dict["minor"]);
 	if ((int)dict["patch"] != 0)
