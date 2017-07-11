@@ -59,6 +59,16 @@ void VisualServerScene::camera_set_orthogonal(RID p_camera, float p_size, float 
 	camera->zfar = p_z_far;
 }
 
+void VisualServerScene::camera_set_frustum(RID p_camera, const Frustum &p_frustum, float p_z_near, float p_z_far) {
+
+	Camera *camera = camera_owner.get(p_camera);
+	ERR_FAIL_COND(!camera);
+	camera->type = Camera::FRUSTUM;
+	camera->frustum = p_frustum;
+	camera->znear = p_z_near;
+	camera->zfar = p_z_far;
+}
+
 void VisualServerScene::camera_set_transform(RID p_camera, const Transform &p_transform) {
 
 	Camera *camera = camera_owner.get(p_camera);
@@ -1666,6 +1676,18 @@ void VisualServerScene::render_camera(RID p_camera, RID p_scenario, Size2 p_view
 					camera->znear,
 					camera->zfar,
 					camera->vaspect
+
+					);
+			ortho = false;
+
+		} break;
+
+		case Camera::FRUSTUM: {
+			camera_matrix = camera->frustum.make_camera_matrix(
+					p_viewport_size.width / (float)p_viewport_size.height,
+					camera->vaspect,
+					camera->znear,
+					camera->zfar
 
 					);
 			ortho = false;

@@ -103,7 +103,8 @@ public:
 
 		enum Type {
 			PERSPECTIVE,
-			ORTHOGONAL
+			ORTHOGONAL,
+			FRUSTUM
 		};
 		Type type;
 		float fov;
@@ -113,6 +114,7 @@ public:
 		bool vaspect;
 		RID env;
 
+		Frustum frustum;
 		Transform transform;
 
 		Camera() {
@@ -132,6 +134,7 @@ public:
 	virtual RID camera_create();
 	virtual void camera_set_perspective(RID p_camera, float p_fovy_degrees, float p_z_near, float p_z_far);
 	virtual void camera_set_orthogonal(RID p_camera, float p_size, float p_z_near, float p_z_far);
+	virtual void camera_set_frustum(RID p_camera, const Frustum &p_frustum, float p_z_near, float p_z_far);
 	virtual void camera_set_transform(RID p_camera, const Transform &p_transform);
 	virtual void camera_set_cull_mask(RID p_camera, uint32_t p_layers);
 	virtual void camera_set_environment(RID p_camera, RID p_env);
