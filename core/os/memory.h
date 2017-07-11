@@ -48,7 +48,8 @@ class Memory {
 	static size_t mem_usage;
 	static size_t max_usage;
 #endif
-	static uint64_t alloc_count;
+
+	static size_t alloc_count;
 
 public:
 	static void *alloc_static(size_t p_bytes, bool p_pad_align = false);
