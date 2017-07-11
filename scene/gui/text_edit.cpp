@@ -1191,12 +1191,19 @@ void TextEdit::_notification(int p_what) {
 				}
 			}
 
+			if (has_focus()) {
+				OS::get_singleton()->set_ime_position(get_global_position() + cursor_pos + Point2(0, get_row_height()));
+			}
 		} break;
 		case NOTIFICATION_FOCUS_ENTER: {
 
 			if (!caret_blink_enabled) {
 				draw_caret = true;
 			}
+
+			Point2 cursor_pos = Point2(cursor_get_column(), cursor_get_line()) * get_row_height();
+			OS::get_singleton()->set_ime_position(get_global_position() + cursor_pos);
+
 			if (OS::get_singleton()->has_virtual_keyboard())
 				OS::get_singleton()->show_virtual_keyboard(get_text(), get_global_rect());
 			if (raised_from_completion) {
@@ -1205,6 +1212,8 @@ void TextEdit::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_FOCUS_EXIT: {
+
+			OS::get_singleton()->set_ime_position(Point2());
 
 			if (OS::get_singleton()->has_virtual_keyboard())
 				OS::get_singleton()->hide_virtual_keyboard();

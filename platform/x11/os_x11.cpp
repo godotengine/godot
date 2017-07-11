@@ -508,22 +508,17 @@ void OS_X11::xim_destroy_callback(::XIM im, ::XPointer client_data,
 	os->xic = NULL;
 }
 
-void OS_X11::set_ime_position(short x, short y) {
+void OS_X11::set_ime_position(const Point2 &p_pos) {
 
-	if (!xic) {
+	if (!xic)
 		return;
-	}
+
 	::XPoint spot;
-	spot.x = x;
-	spot.y = y;
-	XVaNestedList preedit_attr = XVaCreateNestedList(0,
-			XNSpotLocation, &spot,
-			NULL);
-	XSetICValues(xic,
-			XNPreeditAttributes, preedit_attr,
-			NULL);
+	spot.x = short(p_pos.x);
+	spot.y = short(p_pos.y);
+	XVaNestedList preedit_attr = XVaCreateNestedList(0, XNSpotLocation, &spot, NULL);
+	XSetICValues(xic, XNPreeditAttributes, preedit_attr, NULL);
 	XFree(preedit_attr);
-	return;
 }
 
 void OS_X11::finalize() {
@@ -1489,7 +1484,7 @@ void OS_X11::process_xevents() {
 			case ConfigureNotify:
 				if (xic) {
 					//  Not portable.
-					set_ime_position(0, 1);
+					set_ime_position(Point2(0, 1));
 				}
 				/* call resizeGLScene only if our window-size changed */
 
