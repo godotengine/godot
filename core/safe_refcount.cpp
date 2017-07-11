@@ -62,6 +62,22 @@ static _ALWAYS_INLINE_T _atomic_increment_impl(register T *pw) {
 	return *pw;
 }
 
+template <class T>
+static _ALWAYS_INLINE_ T _atomic_sub_impl(register T *pw, register T val) {
+
+	(*pw) -= val;
+
+	return *pw;
+}
+
+template <class T>
+static _ALWAYS_INLINE_T _atomic_add_impl(register T *pw, register T val) {
+
+	(*pw) += val;
+
+	return *pw;
+}
+
 #elif defined(__GNUC__)
 
 /* Implementation for GCC & Clang */
@@ -91,6 +107,18 @@ template <class T>
 static _ALWAYS_INLINE_ T _atomic_increment_impl(register T *pw) {
 
 	return __sync_add_and_fetch(pw, 1);
+}
+
+template <class T>
+static _ALWAYS_INLINE_ T _atomic_sub_impl(register T *pw, register T val) {
+
+	return __sync_sub_and_fetch(pw, val);
+}
+
+template <class T>
+static _ALWAYS_INLINE_ T _atomic_add_impl(register T *pw, register T val) {
+
+	return __sync_add_and_fetch(pw, val);
 }
 
 #elif defined(_MSC_VER)
@@ -126,6 +154,20 @@ static _ALWAYS_INLINE_ uint32_t _atomic_increment_impl(register uint32_t *pw) {
 	return InterlockedIncrement((LONG volatile *)pw);
 }
 
+static _ALWAYS_INLINE_ uint32_t _atomic_sub_impl(register uint32_t *pw, register uint32_t val) {
+
+#if _WIN32_WINNT >= 0x0601 // Windows 7+
+	return InterlockedExchangeSubtract(pw, val) - val;
+#else
+	return InterlockedExchangeAdd((LONG volatile *)pw, -(int32_t)val) - val;
+#endif
+}
+
+static _ALWAYS_INLINE_ uint32_t _atomic_add_impl(register uint32_t *pw, register uint32_t val) {
+
+	return InterlockedAdd((LONG volatile *)pw, val);
+}
+
 static _ALWAYS_INLINE_ uint64_t _atomic_conditional_increment_impl(register uint64_t *pw) {
 
 	ATOMIC_CONDITIONAL_INCREMENT_BODY(pw, LONGLONG, InterlockedCompareExchange64, uint64_t)
@@ -139,6 +181,20 @@ static _ALWAYS_INLINE_ uint64_t _atomic_decrement_impl(register uint64_t *pw) {
 static _ALWAYS_INLINE_ uint64_t _atomic_increment_impl(register uint64_t *pw) {
 
 	return InterlockedIncrement64((LONGLONG volatile *)pw);
+}
+
+static _ALWAYS_INLINE_ uint64_t _atomic_sub_impl(register uint64_t *pw, register uint64_t val) {
+
+#if _WIN32_WINNT >= 0x0601 // Windows 7+
+	return InterlockedExchangeSubtract64(pw, val) - val;
+#else
+	return InterlockedExchangeAdd64((LONGLONG volatile *)pw, -(int64_t)val) - val;
+#endif
+}
+
+static _ALWAYS_INLINE_ uint64_t _atomic_add_impl(register uint64_t *pw, register uint64_t val) {
+
+	return InterlockedAdd64((LONGLONG volatile *)pw, val);
 }
 
 #else
@@ -162,6 +218,14 @@ uint32_t atomic_increment(register uint32_t *pw) {
 	return _atomic_increment_impl(pw);
 }
 
+uint32_t atomic_sub(register uint32_t *pw, register uint32_t val) {
+	return _atomic_sub_impl(pw, val);
+}
+
+uint32_t atomic_add(register uint32_t *pw, register uint32_t val) {
+	return _atomic_add_impl(pw, val);
+}
+
 uint64_t atomic_conditional_increment(register uint64_t *counter) {
 	return _atomic_conditional_increment_impl(counter);
 }
@@ -172,4 +236,12 @@ uint64_t atomic_decrement(register uint64_t *pw) {
 
 uint64_t atomic_increment(register uint64_t *pw) {
 	return _atomic_increment_impl(pw);
+}
+
+uint64_t atomic_sub(register uint64_t *pw, register uint64_t val) {
+	return _atomic_sub_impl(pw, val);
+}
+
+uint64_t atomic_add(register uint64_t *pw, register uint64_t val) {
+	return _atomic_add_impl(pw, val);
 }
