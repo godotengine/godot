@@ -29,7 +29,6 @@
 /*************************************************************************/
 #include "memory.h"
 #include "copymem.h"
-#include "core/safe_refcount.h"
 #include "error_macros.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,44 +43,42 @@ void *operator new(size_t p_size, void *(*p_allocfunc)(size_t p_size)) {
 	return p_allocfunc(p_size);
 }
 
+#include <stdio.h>
+
 #ifdef DEBUG_ENABLED
 size_t Memory::mem_usage = 0;
 size_t Memory::max_usage = 0;
-#ifdef DEBUG_MEMORY_TAGGING
-#define MEM_UNINIT_TAG 0xEA
-#define MEM_RELEASED_TAG 0xAE
-#endif
-#define PREPAD true
-#else
-#define PREPAD p_pad_align
 #endif
 
-uint64_t Memory::alloc_count = 0;
+size_t Memory::alloc_count = 0;
 
 void *Memory::alloc_static(size_t p_bytes, bool p_pad_align) {
 
-	void *mem = malloc(p_bytes + (PREPAD ? PAD_ALIGN : 0));
+#ifdef DEBUG_ENABLED
+	bool prepad = true;
+#else
+	bool prepad = p_pad_align;
+#endif
+
+	void *mem = malloc(p_bytes + (prepad ? PAD_ALIGN : 0));
+
+	alloc_count++;
 
 	ERR_FAIL_COND_V(!mem, NULL);
 
-	atomic_increment(&alloc_count);
+	if (prepad) {
+		uint64_t *s = (uint64_t *)mem;
+		*s = p_bytes;
 
-	if (PREPAD) {
+		uint8_t *s8 = (uint8_t *)mem;
+
 #ifdef DEBUG_ENABLED
 		mem_usage += p_bytes;
 		if (mem_usage > max_usage) {
 			max_usage = mem_usage;
 		}
 #endif
-
-		uint64_t *s = (uint64_t *)mem;
-		*s = p_bytes;
-
-		uint8_t *s8 = (uint8_t *)mem + PAD_ALIGN;
-#if defined DEBUG_ENABLED && defined DEBUG_MEMORY_TAGGING
-		memset(s8, MEM_UNINIT_TAG, p_bytes);
-#endif
-		return s8;
+		return s8 + PAD_ALIGN;
 	} else {
 		return mem;
 	}
@@ -95,44 +92,38 @@ void *Memory::realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align) {
 
 	uint8_t *mem = (uint8_t *)p_memory;
 
-	if (PREPAD) {
+#ifdef DEBUG_ENABLED
+	bool prepad = true;
+#else
+	bool prepad = p_pad_align;
+#endif
+
+	if (prepad) {
 		mem -= PAD_ALIGN;
 		uint64_t *s = (uint64_t *)mem;
 
-		if (p_bytes == 0) {
 #ifdef DEBUG_ENABLED
-			mem_usage -= *s;
-#ifdef DEBUG_MEMORY_TAGGING
-			memset(mem, MEM_RELEASED_TAG, PAD_ALIGN + *s);
+		mem_usage -= *s;
+		mem_usage += p_bytes;
 #endif
-#endif
+
+		if (p_bytes == 0) {
 			free(mem);
 			return NULL;
 		} else {
-#if defined DEBUG_ENABLED && defined DEBUG_MEMORY_TAGGING
-			if (p_bytes < *s) {
-				memset(mem + PAD_ALIGN + p_bytes, MEM_RELEASED_TAG, *s - p_bytes);
-			}
-#endif
+			*s = p_bytes;
 
 			mem = (uint8_t *)realloc(mem, p_bytes + PAD_ALIGN);
 			ERR_FAIL_COND_V(!mem, NULL);
 
 			s = (uint64_t *)mem;
-#ifdef DEBUG_ENABLED
-			mem_usage -= *s;
-			mem_usage += p_bytes;
-#ifdef DEBUG_MEMORY_TAGGING
-			if (p_bytes > *s) {
-				memset(mem + PAD_ALIGN + *s, MEM_UNINIT_TAG, p_bytes - *s);
-			}
-#endif
-#endif
+
 			*s = p_bytes;
 
 			return mem + PAD_ALIGN;
 		}
 	} else {
+
 		mem = (uint8_t *)realloc(mem, p_bytes);
 
 		ERR_FAIL_COND_V(mem == NULL && p_bytes > 0, NULL);
@@ -147,19 +138,27 @@ void Memory::free_static(void *p_ptr, bool p_pad_align) {
 
 	uint8_t *mem = (uint8_t *)p_ptr;
 
-	if (PREPAD) {
-		mem -= PAD_ALIGN;
 #ifdef DEBUG_ENABLED
-		const uint64_t s = *((uint64_t *)mem);
-		mem_usage -= s;
-#ifdef DEBUG_MEMORY_TAGGING
-		memset(mem, MEM_RELEASED_TAG, PAD_ALIGN + s);
+	bool prepad = true;
+#else
+	bool prepad = p_pad_align;
 #endif
-#endif
-	}
-	atomic_decrement(&alloc_count);
 
-	free(mem);
+	alloc_count--;
+
+	if (prepad) {
+		mem -= PAD_ALIGN;
+		uint64_t *s = (uint64_t *)mem;
+
+#ifdef DEBUG_ENABLED
+		mem_usage -= *s;
+#endif
+
+		free(mem);
+	} else {
+
+		free(mem);
+	}
 }
 
 size_t Memory::get_mem_available() {
