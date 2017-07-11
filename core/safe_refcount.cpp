@@ -57,6 +57,30 @@ uint32_t atomic_decrement(register uint32_t *pw) {
 	return *pw;
 }
 
+uint64_t atomic_conditional_increment(register uint64_t *pw) {
+
+	if (*pw == 0)
+		return 0;
+
+	(*pw)++;
+
+	return *pw;
+}
+
+uint64_t atomic_increment(register uint64_t *pw) {
+
+	(*pw)++;
+
+	return *pw;
+}
+
+uint64_t atomic_decrement(register uint64_t *pw) {
+
+	(*pw)--;
+
+	return *pw;
+}
+
 #else
 
 #ifdef _MSC_VER
@@ -84,6 +108,28 @@ uint32_t atomic_decrement(register uint32_t *pw) {
 uint32_t atomic_increment(register uint32_t *pw) {
 	return InterlockedIncrement((LONG volatile *)pw);
 }
+
+uint64_t atomic_conditional_increment(register uint64_t *pw) {
+
+	/* try to increment until it actually works */
+	// taken from boost
+
+	while (true) {
+		uint64_t tmp = static_cast<uint64_t const volatile &>(*pw);
+		if (tmp == 0)
+			return 0; // if zero, can't add to it anymore
+		if (InterlockedCompareExchange64((LONGLONG volatile *)pw, tmp + 1, tmp) == tmp)
+			return tmp + 1;
+	}
+}
+
+uint64_t atomic_decrement(register uint64_t *pw) {
+	return InterlockedDecrement64((LONGLONG volatile *)pw);
+}
+
+uint64_t atomic_increment(register uint64_t *pw) {
+	return InterlockedIncrement64((LONGLONG volatile *)pw);
+}
 #elif defined(__GNUC__)
 
 uint32_t atomic_conditional_increment(register uint32_t *pw) {
@@ -103,6 +149,27 @@ uint32_t atomic_decrement(register uint32_t *pw) {
 }
 
 uint32_t atomic_increment(register uint32_t *pw) {
+
+	return __sync_add_and_fetch(pw, 1);
+}
+
+uint64_t atomic_conditional_increment(register uint64_t *pw) {
+
+	while (true) {
+		uint64_t tmp = static_cast<uint64_t const volatile &>(*pw);
+		if (tmp == 0)
+			return 0; // if zero, can't add to it anymore
+		if (__sync_val_compare_and_swap(pw, tmp, tmp + 1) == tmp)
+			return tmp + 1;
+	}
+}
+
+uint64_t atomic_decrement(register uint64_t *pw) {
+
+	return __sync_sub_and_fetch(pw, 1);
+}
+
+uint64_t atomic_increment(register uint64_t *pw) {
 
 	return __sync_add_and_fetch(pw, 1);
 }
