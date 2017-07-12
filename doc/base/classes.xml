@@ -44112,12 +44112,30 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_tab_rect">
+			<return type="Rect2">
+			</return>
+			<argument index="0" name="tab_idx" type="int">
+			</argument>
+			<description>
+				Returns tab [Rect2] with local position and size.
+			</description>
+		</method>
 		<method name="get_tab_title" qualifiers="const">
 			<return type="String">
 			</return>
 			<argument index="0" name="tab_idx" type="int">
 			</argument>
 			<description>
+			</description>
+		</method>
+		<method name="move_tab">
+			<argument index="0" name="from" type="int">
+			</argument>
+			<argument index="1" name="to" type="int">
+			</argument>
+			<description>
+				Rearrange tab.
 			</description>
 		</method>
 		<method name="remove_tab">
