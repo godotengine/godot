@@ -88,7 +88,6 @@ def configure(env):
 
             angle_build_cmd += "Win32"
 
-            env.Append(CPPFLAGS=['/DPNG_ABORT=abort'])
             env.Append(LINKFLAGS=['/MACHINE:X86'])
             env.Append(LIBPATH=[os.environ['VCINSTALLDIR'] + 'lib/store'])
             env.Append(LIBPATH=[angle_root + '/winrt/10/src/Release_Win32/lib'])
@@ -104,7 +103,7 @@ def configure(env):
 
     env.Append(CPPPATH=['#platform/winrt','#drivers/windows'])
     env.Append(LINKFLAGS=['/MANIFEST:NO', '/NXCOMPAT', '/DYNAMICBASE', '/WINMD', '/APPCONTAINER', '/ERRORREPORT:PROMPT', '/NOLOGO', '/TLBID:1', '/NODEFAULTLIB:"kernel32.lib"', '/NODEFAULTLIB:"ole32.lib"'])
-    env.Append(CPPFLAGS=['/D','__WRL_NO_DEFAULT_LIB__','/D','WIN32'])
+    env.Append(CPPFLAGS=['/D', '__WRL_NO_DEFAULT_LIB__', '/D', 'WIN32', '/DPNG_ABORT=abort'])
     env.Append(CPPFLAGS=['/FU', os.environ['VCINSTALLDIR'] + 'lib/store/references/platform.winmd'])
     env.Append(CPPFLAGS=['/AI', os.environ['VCINSTALLDIR'] + 'lib/store/references'])
 
