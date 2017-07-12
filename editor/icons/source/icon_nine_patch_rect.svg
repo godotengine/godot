@@ -14,11 +14,11 @@
    viewBox="0 0 16 16"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.1 r"
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_center_container.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90"
-   sodipodi:docname="icon_patch_9_frame.svg">
+   sodipodi:docname="icon_nine_patch_rect.svg">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -29,8 +29,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="32"
-     inkscape:cx="10.35114"
-     inkscape:cy="9.1140348"
+     inkscape:cx="8.03864"
+     inkscape:cy="8.0827848"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -42,8 +42,8 @@
      inkscape:snap-bbox-midpoints="true"
      inkscape:snap-object-midpoints="true"
      inkscape:snap-center="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1016"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1">
@@ -69,35 +69,35 @@
      id="layer1"
      transform="translate(0,-1036.3622)">
     <rect
-       style="opacity:1;fill:#a5efac;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="opacity:1;fill:#a5efac;fill-opacity:1;stroke:none;stroke-width:2.82842708;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect4154"
-       width="1"
+       width="2"
        height="14"
        x="1"
        y="1037.3622" />
     <rect
-       y="1050.3622"
+       y="1049.3622"
        x="1"
-       height="0.9999826"
+       height="1.9999652"
        width="14"
        id="rect4156"
-       style="opacity:1;fill:#a5efac;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+       style="opacity:1;fill:#a5efac;fill-opacity:1;stroke:none;stroke-width:2.82842708;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
     <rect
-       style="opacity:1;fill:#a5efac;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="opacity:1;fill:#a5efac;fill-opacity:1;stroke:none;stroke-width:2.82846403;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect4158"
        width="14"
-       height="0.9999826"
+       height="2.0000174"
        x="1"
        y="1037.3622" />
     <rect
        y="1037.3622"
-       x="14"
+       x="13"
        height="14"
-       width="1"
+       width="2"
        id="rect4160"
-       style="opacity:1;fill:#a5efac;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+       style="opacity:1;fill:#a5efac;fill-opacity:1;stroke:none;stroke-width:2.82842708;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
     <rect
-       y="1040.3622"
+       y="1041.3622"
        x="1"
        height="0.9999826"
        width="14"
@@ -109,18 +109,18 @@
        width="14"
        height="0.9999826"
        x="1"
-       y="1047.3622" />
+       y="1046.3622" />
     <rect
        style="opacity:1;fill:#a5efac;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect4166"
        width="14"
        height="0.9999826"
        x="1037.3622"
-       y="-5"
-       transform="matrix(0,1,-1,0,0,0)" />
+       y="-6"
+       transform="rotate(90)" />
     <rect
-       transform="matrix(0,1,-1,0,0,0)"
-       y="-12"
+       transform="rotate(90)"
+       y="-10.999983"
        x="1037.3622"
        height="0.9999826"
        width="14"

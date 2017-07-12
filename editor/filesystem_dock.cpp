@@ -153,7 +153,7 @@ void FileSystemDock::_notification(int p_what) {
 			files->connect("item_activated", this, "_select_file");
 			button_hist_next->connect("pressed", this, "_fw_history");
 			button_hist_prev->connect("pressed", this, "_bw_history");
-			search_icon->set_texture(get_icon("Zoom", "EditorIcons"));
+			search_icon->set_texture(get_icon("Search", "EditorIcons"));
 
 			button_hist_next->set_icon(get_icon("Forward", "EditorIcons"));
 			button_hist_prev->set_icon(get_icon("Back", "EditorIcons"));
