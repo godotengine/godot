@@ -1782,8 +1782,8 @@ void EditorHelpBit::_bind_methods() {
 
 void EditorHelpBit::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		add_style_override("panel", get_stylebox("ScriptPanel", "EditorStyles"));
+	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
+		add_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_stylebox("ScriptPanel", "EditorStyles"));
 	}
 }
 
@@ -1800,4 +1800,5 @@ EditorHelpBit::EditorHelpBit() {
 	rich_text->set_area_as_parent_rect(8 * EDSCALE);
 	rich_text->connect("meta_clicked", this, "_meta_clicked");
 	set_custom_minimum_size(Size2(0, 70 * EDSCALE));
+	add_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_stylebox("ScriptPanel", "EditorStyles"));
 }
