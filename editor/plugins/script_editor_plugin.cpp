@@ -746,18 +746,16 @@ void ScriptEditor::_close_tab(int p_idx) {
 		history_pos = history.size() - 1;
 	}
 
-	int idx = tab_container->get_current_tab();
+	tab_container->clear_current();
 	memdelete(tselected);
-	if (idx >= tab_container->get_child_count())
-		idx = tab_container->get_child_count() - 1;
-	if (idx >= 0) {
+
+	if (tab_container->get_child_count() > 0) {
+		int idx = tab_container->get_current_tab();
 
 		if (history_pos >= 0) {
 			idx = history[history_pos].control->get_index();
 		}
 		tab_container->set_current_tab(idx);
-
-		//script_list->select(idx);
 	}
 
 	_update_history_arrows();

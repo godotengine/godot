@@ -459,6 +459,11 @@ void TabContainer::set_current_tab(int p_current) {
 	update();
 }
 
+void TabContainer::clear_current() {
+
+	current = 0;
+}
+
 int TabContainer::get_current_tab() const {
 
 	return current;
