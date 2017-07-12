@@ -151,20 +151,10 @@ public:
 		return refptr;
 	};
 
-#if 0
-	// go to RefPtr
-	operator RefPtr() const {
-
-		return get_ref_ptr();
-	}
-#endif
-
-#if 1
 	operator Variant() const {
 
 		return Variant(get_ref_ptr());
 	}
-#endif
 
 	void operator=(const Ref &p_from) {
 
