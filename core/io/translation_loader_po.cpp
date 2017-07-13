@@ -51,6 +51,8 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error, const S
 
 	Ref<Translation> translation = Ref<Translation>(memnew(Translation));
 	int line = 1;
+	bool skip_this;
+	bool skip_next;
 
 	while (true) {
 
@@ -60,9 +62,10 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error, const S
 
 			if (status == STATUS_READING_STRING) {
 
-				if (msg_id != "")
-					translation->add_message(msg_id, msg_str);
-				else if (config == "")
+				if (msg_id != "") {
+					if (!skip_this)
+						translation->add_message(msg_id, msg_str);
+				} else if (config == "")
 					config = msg_str;
 				break;
 
@@ -85,15 +88,18 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error, const S
 				ERR_FAIL_V(RES());
 			}
 
-			if (msg_id != "")
-				translation->add_message(msg_id, msg_str);
-			else if (config == "")
+			if (msg_id != "") {
+				if (!skip_this)
+					translation->add_message(msg_id, msg_str);
+			} else if (config == "")
 				config = msg_str;
 
 			l = l.substr(5, l.length()).strip_edges();
 			status = STATUS_READING_ID;
 			msg_id = "";
 			msg_str = "";
+			skip_this = skip_next;
+			skip_next = false;
 		}
 
 		if (l.begins_with("msgstr")) {
@@ -110,6 +116,9 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error, const S
 		}
 
 		if (l == "" || l.begins_with("#")) {
+			if (l.find("fuzzy") != -1) {
+				skip_next = true;
+			}
 			line++;
 			continue; //nothing to read or comment
 		}
