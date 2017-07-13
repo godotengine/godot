@@ -31,6 +31,7 @@
 
 #include "core/globals.h"
 #include "geometry.h"
+#include "io/file_access_compressed.h"
 #include "io/file_access_encrypted.h"
 #include "io/marshalls.h"
 #include "os/keyboard.h"
@@ -1827,6 +1828,10 @@ void _File::_bind_methods() {
 	BIND_CONSTANT(WRITE);
 	BIND_CONSTANT(READ_WRITE);
 	BIND_CONSTANT(WRITE_READ);
+
+	BIND_CONSTANT(COMPRESSION_FASTLZ);
+	BIND_CONSTANT(COMPRESSION_DEFLATE);
+	BIND_CONSTANT(COMPRESSION_GZIP);
 }
 
 _File::_File() {

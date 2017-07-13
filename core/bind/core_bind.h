@@ -30,6 +30,7 @@
 #ifndef CORE_BIND_H
 #define CORE_BIND_H
 
+#include "io/compression.h"
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
 #include "os/dir_access.h"
@@ -381,6 +382,12 @@ public:
 		WRITE = 2,
 		READ_WRITE = 3,
 		WRITE_READ = 7,
+	};
+
+	enum CompressionMode {
+		COMPRESSION_FASTLZ = Compression::MODE_FASTLZ,
+		COMPRESSION_DEFLATE = Compression::MODE_DEFLATE,
+		COMPRESSION_GZIP = Compression::MODE_GZIP
 	};
 
 	Error open_encrypted(const String &p_path, int p_mode_flags, const Vector<uint8_t> &p_key);

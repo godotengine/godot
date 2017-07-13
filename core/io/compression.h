@@ -36,7 +36,8 @@ class Compression {
 public:
 	enum Mode {
 		MODE_FASTLZ,
-		MODE_DEFLATE
+		MODE_DEFLATE,
+		MODE_GZIP
 	};
 
 	static int compress(uint8_t *p_dst, const uint8_t *p_src, int p_src_size, Mode p_mode = MODE_FASTLZ);

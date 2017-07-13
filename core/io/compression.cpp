@@ -51,13 +51,16 @@ int Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int p_src_size, 
 			}
 
 		} break;
-		case MODE_DEFLATE: {
+		case MODE_DEFLATE:
+		case MODE_GZIP: {
+
+			int window_bits = p_mode == MODE_DEFLATE ? 15 : 15 + 16;
 
 			z_stream strm;
 			strm.zalloc = zipio_alloc;
 			strm.zfree = zipio_free;
 			strm.opaque = Z_NULL;
-			int err = deflateInit(&strm, Z_DEFAULT_COMPRESSION);
+			int err = deflateInit2(&strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, window_bits, 8, Z_DEFAULT_STRATEGY);
 			if (err != Z_OK)
 				return -1;
 
@@ -88,13 +91,16 @@ int Compression::get_max_compressed_buffer_size(int p_src_size, Mode p_mode) {
 			return ss;
 
 		} break;
-		case MODE_DEFLATE: {
+		case MODE_DEFLATE:
+		case MODE_GZIP: {
+
+			int window_bits = p_mode == MODE_DEFLATE ? 15 : 15 + 16;
 
 			z_stream strm;
 			strm.zalloc = zipio_alloc;
 			strm.zfree = zipio_free;
 			strm.opaque = Z_NULL;
-			int err = deflateInit(&strm, Z_DEFAULT_COMPRESSION);
+			int err = deflateInit2(&strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, window_bits, 8, Z_DEFAULT_STRATEGY);
 			if (err != Z_OK)
 				return -1;
 			int aout = deflateBound(&strm, p_src_size);
@@ -122,7 +128,10 @@ int Compression::decompress(uint8_t *p_dst, int p_dst_max_size, const uint8_t *p
 			}
 			return ret_size;
 		} break;
-		case MODE_DEFLATE: {
+		case MODE_DEFLATE:
+		case MODE_GZIP: {
+
+			int window_bits = p_mode == MODE_DEFLATE ? 15 : 15 + 16;
 
 			z_stream strm;
 			strm.zalloc = zipio_alloc;
@@ -130,7 +139,7 @@ int Compression::decompress(uint8_t *p_dst, int p_dst_max_size, const uint8_t *p
 			strm.opaque = Z_NULL;
 			strm.avail_in = 0;
 			strm.next_in = Z_NULL;
-			int err = inflateInit(&strm);
+			int err = inflateInit2(&strm, window_bits);
 			ERR_FAIL_COND_V(err != Z_OK, -1);
 
 			strm.avail_in = p_src_size;
