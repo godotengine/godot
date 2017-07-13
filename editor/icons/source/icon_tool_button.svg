@@ -14,7 +14,7 @@
    viewBox="0 0 16 16"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.1 r"
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_button.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90"
@@ -29,8 +29,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="32"
-     inkscape:cx="8.173168"
-     inkscape:cy="9.7479984"
+     inkscape:cx="7.704418"
+     inkscape:cy="7.4979984"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -42,8 +42,8 @@
      inkscape:snap-bbox-midpoints="true"
      inkscape:snap-object-midpoints="true"
      inkscape:snap-center="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1016"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1">
@@ -60,7 +60,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -69,26 +69,44 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-1036.3622)">
+    <rect
+       style="fill:#a5efac;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect829"
+       width="6"
+       height="4"
+       x="2"
+       y="1047.3622"
+       ry="1.5" />
+    <rect
+       style="fill:#a5efac;fill-opacity:1;stroke:none;stroke-width:1.71867573;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect825"
+       width="8"
+       height="2.0000174"
+       x="1"
+       y="1049.3622"
+       ry="0" />
     <path
-       style="opacity:1;fill:#a5efac;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       d="M 1 3 L 1 11 L 15 11 L 15 3 L 1 3 z M 11 4 A 3 3 0 0 1 13.826172 6 L 11 6 A 1 1 0 0 0 10 7 A 1 1 0 0 0 11 8 L 13.824219 8 A 3 3 0 0 1 11 10 A 3 3 0 0 1 8.1757812 8 L 3 8 A 1 1 0 0 1 2 7 A 1 1 0 0 1 3 6 L 8.1738281 6 A 3 3 0 0 1 11 4 z "
-       transform="translate(0,1036.3622)"
-       id="rect4139" />
-    <rect
-       transform="scale(1,-1)"
-       style="opacity:1;fill:#a5efac;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       id="rect4160"
-       width="14"
-       height="2.0000522"
-       x="1"
-       y="-1049.3622" />
-    <rect
-       y="-1049.3622"
-       x="1"
-       height="2.0000522"
-       width="14"
-       id="rect4142"
-       style="opacity:1;fill:#000000;fill-opacity:0.07843138;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       transform="scale(1,-1)" />
+       style="fill:none;stroke:#a5efac;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 2,1042.3622 3,2 3,-2"
+       id="path831"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#a5efac;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 5,1039.3622 v 5"
+       id="path833"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
+    <g
+       id="layer1-7"
+       inkscape:label="Layer 1"
+       transform="translate(9,-1)"
+       style="fill:#a5efac;fill-opacity:1">
+      <path
+         id="path828"
+         d="m 2,1038.536 c -1.1978593,0.4235 -1.9990448,1.5557 -2,2.8262 9.552e-4,1.2705 0.8021407,2.4027 2,2.8262 v 6.1738 1 c 0,0.554 0.446,1 1,1 0.554,0 1,-0.446 1,-1 v -4 -3.1758 c 1.197184,-0.4232 1.998218,-1.5544 2,-2.8242 -0.00178,-1.2698 -0.802816,-2.401 -2,-2.8242 v 2.8242 c 0,0.5523 -0.447715,1 -1,1 -0.552285,0 -1,-0.4477 -1,-1 z"
+         style="fill:#a5efac;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         inkscape:connector-curvature="0"
+         sodipodi:nodetypes="ccccsssccccsssc" />
+    </g>
   </g>
 </svg>

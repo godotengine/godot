@@ -14,7 +14,7 @@
    viewBox="0 0 16 16"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.1 r"
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_center_container.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90"
@@ -29,7 +29,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="32"
-     inkscape:cx="9.1371771"
+     inkscape:cx="2.7934271"
      inkscape:cy="7.8450604"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
@@ -42,8 +42,8 @@
      inkscape:snap-bbox-midpoints="true"
      inkscape:snap-object-midpoints="true"
      inkscape:snap-center="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1016"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
@@ -63,7 +63,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -73,25 +73,9 @@
      id="layer1"
      transform="translate(0,-1036.3622)">
     <path
-       style="opacity:1;fill:#a5efac;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       d="M 3,3 C 1.8954305,3 1,3.8954305 1,5 l 0,6 c 0,1.104569 0.8954305,2 2,2 l 10,0 c 1.104569,0 2,-0.895431 2,-2 L 15,5 C 15,3.8954305 14.104569,3 13,3 Z m 0,2 10,0 0,6 -10,0 z"
-       transform="translate(0,1036.3622)"
-       id="rect4140"
        inkscape:connector-curvature="0"
-       sodipodi:nodetypes="sssssssssccccc" />
-    <rect
-       style="opacity:1;fill:none;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0.99607843"
-       id="rect4181"
-       width="4"
-       height="4"
-       x="4"
-       y="1042.3622" />
-    <rect
-       style="opacity:1;fill:#a5efac;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0.99607843"
-       id="rect4187"
-       width="4"
-       height="4"
-       x="4"
-       y="1042.3622" />
+       style="fill:#a5efac;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 15,1041.3622 c 0,-1.108 -0.892,-2 -2,-2 H 3 c -1.108,0 -2,0.892 -2,2 v 6 c 0,1.108 0.892,2 2,2 h 10 c 1.108,0 2,-0.892 2,-2 z m -1,2.9883 a 1.0001,1.0001 0 0 1 -0.168,0.5664 l -2,3 a 1.0001,1.0001 0 1 1 -1.664,-1.1094 l 1.6289,-2.4453 -1.6289,-2.4453 a 1.0001,1.0001 0 1 1 1.664,-1.1094 l 2,3 a 1.0001,1.0001 0 0 1 0.168,0.543 z m -7.9922,-2.9981 a 1.0001,1.0001 0 0 1 -0.1758,0.5645 l -1.6308,2.4453 1.6308,2.4453 a 1.0001,1.0001 0 1 1 -1.664,1.1094 l -2,-3 a 1.0001,1.0001 0 0 1 0,-1.1094 l 2,-3 a 1.0001,1.0001 0 0 1 1.8398,0.5449 z"
+       id="rect825" />
   </g>
 </svg>

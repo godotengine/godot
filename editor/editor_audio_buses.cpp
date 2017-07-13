@@ -47,6 +47,10 @@ void EditorAudioBus::_notification(int p_what) {
 
 		disabled_vu = get_icon("BusVuFrozen", "EditorIcons");
 
+		solo->set_icon(get_icon("AudioBusSolo", "EditorIcons"));
+		mute->set_icon(get_icon("AudioBusMute", "EditorIcons"));
+		bypass->set_icon(get_icon("AudioBusBypass", "EditorIcons"));
+
 		prev_active = true;
 		update_bus();
 		set_process(true);
@@ -630,24 +634,24 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses) {
 	vb->add_child(hbc);
 	hbc->add_spacer();
 	solo = memnew(ToolButton);
-	solo->set_text("S");
 	solo->set_toggle_mode(true);
+	solo->set_tooltip(TTR("Solo"));
 	solo->add_color_override("font_color_pressed", Color(0.2, 0.9, 0.2));
 	solo->add_color_override("font_color_hover", Color(0.6, 0.9, 0.6));
 	solo->set_focus_mode(FOCUS_NONE);
 	solo->connect("pressed", this, "_solo_toggled");
 	hbc->add_child(solo);
 	mute = memnew(ToolButton);
-	mute->set_text("M");
 	mute->set_toggle_mode(true);
+	mute->set_tooltip(TTR("Mute"));
 	mute->add_color_override("font_color_pressed", Color(0.9, 0.2, 0.2));
 	mute->add_color_override("font_color_hover", Color(0.9, 0.6, 0.6));
 	mute->set_focus_mode(FOCUS_NONE);
 	mute->connect("pressed", this, "_mute_toggled");
 	hbc->add_child(mute);
 	bypass = memnew(ToolButton);
-	bypass->set_text("B");
 	bypass->set_toggle_mode(true);
+	bypass->set_tooltip(TTR("Bypass"));
 	bypass->add_color_override("font_color_pressed", Color(0.9, 0.9, 0.2));
 	bypass->add_color_override("font_color_hover", Color(0.9, 0.9, 0.6));
 	bypass->set_focus_mode(FOCUS_NONE);

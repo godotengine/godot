@@ -14,7 +14,7 @@
    viewBox="0 0 16 16"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.1 r"
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_confirmation_dialog.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90"
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="16"
-     inkscape:cx="7.6980886"
-     inkscape:cy="13.203824"
+     inkscape:zoom="32"
+     inkscape:cx="8.6970479"
+     inkscape:cy="7.4854117"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -42,8 +42,8 @@
      inkscape:snap-bbox-midpoints="true"
      inkscape:snap-object-midpoints="true"
      inkscape:snap-center="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1016"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1">
@@ -59,7 +59,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -70,7 +70,7 @@
      transform="translate(0,-1036.3622)">
     <path
        style="opacity:1;fill:#a5efac;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       d="M 3 1 C 1.89543 1 1 1.8954 1 3 L 1 4 L 15 4 L 15 3 C 15 1.8954 14.104569 1 13 1 L 3 1 z M 12 2 L 13 2 L 13 3 L 12 3 L 12 2 z M 1 5 L 1 13 C 1 14.1046 1.89543 15 3 15 L 13 15 C 14.104569 15 15 14.1046 15 13 L 15 5 L 1 5 z M 2.5859375 8.8789062 L 4 10.292969 L 5.4140625 8.8789062 L 6.1210938 9.5859375 L 4.7070312 11 L 6.1210938 12.414062 L 5.4140625 13.121094 L 4 11.707031 L 2.5859375 13.121094 L 1.8789062 12.414062 L 3.2929688 11 L 1.8789062 9.5859375 L 2.5859375 8.8789062 z M 12.949219 8.8789062 L 13.65625 9.5859375 L 10.828125 12.414062 L 10.121094 13.121094 L 9.4140625 12.414062 L 8 11 L 8.7070312 10.292969 L 10.121094 11.707031 L 12.949219 8.8789062 z "
+       d="M 3 1 C 1.89543 1 1 1.8954 1 3 L 1 4 L 15 4 L 15 3 C 15 1.8954 14.104569 1 13 1 L 3 1 z M 12 2 L 13 2 L 13 3 L 12 3 L 12 2 z M 1 5 L 1 13 C 1 14.1046 1.89543 15 3 15 L 13 15 C 14.104569 15 15 14.1046 15 13 L 15 5 L 1 5 z M 7.9863281 6.0019531 C 8.3332141 5.9996687 8.6849305 6.0577156 9.0253906 6.1816406 C 10.387231 6.6772406 11.206736 8.0942844 10.955078 9.5214844 C 10.764025 10.604982 9.9933535 11.46759 9 11.822266 L 9 12 L 8 12 L 7 12 L 7 11.158203 A 1.0001 1.0001 0 0 1 8 10 C 8.4919343 10 8.898952 9.6582281 8.984375 9.1738281 C 9.0697985 8.6893281 8.8040639 8.2287469 8.3417969 8.0605469 C 7.8795298 7.8922469 7.3807328 8.074 7.1347656 8.5 A 1.0001606 1.0001606 0 0 1 5.4023438 7.5 C 5.9458088 6.558525 6.9456702 6.0088063 7.9863281 6.0019531 z M 7 13 L 9 13 L 9 14 L 7 14 L 7 13 z "
        transform="translate(0,1036.3622)"
        id="rect4140" />
   </g>

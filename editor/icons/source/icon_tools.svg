@@ -14,11 +14,11 @@
    viewBox="0 0 16 16"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.1 r"
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_g_d_script.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90"
-   sodipodi:docname="icon_g_d_script.svg">
+   sodipodi:docname="icon_tools.svg">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="32"
-     inkscape:cx="6.7306265"
-     inkscape:cy="9.0071681"
+     inkscape:zoom="22.627417"
+     inkscape:cx="17.67723"
+     inkscape:cy="10.600994"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -42,8 +42,8 @@
      inkscape:snap-bbox-midpoints="true"
      inkscape:snap-object-midpoints="true"
      inkscape:snap-center="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1016"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1">
@@ -59,7 +59,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -69,9 +69,9 @@
      id="layer1"
      transform="translate(0,-1036.3622)">
     <path
-       style="opacity:1;fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       d="M 7 1 L 6.4355469 3.2578125 A 5.0000172 5.0000172 0 0 0 5.7460938 3.5371094 L 3.7578125 2.34375 L 2.34375 3.7578125 L 3.5390625 5.7519531 A 5.0000172 5.0000172 0 0 0 3.2539062 6.4375 L 1 7 L 1 9 L 3.2578125 9.5644531 A 5.0000172 5.0000172 0 0 0 3.5371094 10.251953 L 2.34375 12.242188 L 3.7578125 13.65625 L 5.7519531 12.460938 A 5.0000172 5.0000172 0 0 0 6.4375 12.746094 L 7 15 L 9 15 L 9.5644531 12.742188 A 5.0000172 5.0000172 0 0 0 10.251953 12.462891 L 12.242188 13.65625 L 13.65625 12.242188 L 12.460938 10.248047 A 5.0000172 5.0000172 0 0 0 12.746094 9.5625 L 15 9 L 15 7 L 12.742188 6.4355469 A 5.0000172 5.0000172 0 0 0 12.462891 5.7480469 L 13.65625 3.7578125 L 12.242188 2.34375 L 10.248047 3.5390625 A 5.0000172 5.0000172 0 0 0 9.5625 3.2539062 L 9 1 L 7 1 z M 8 6 A 2.0000174 2.0000174 0 0 1 10 8 A 2.0000174 2.0000174 0 0 1 8 10 A 2.0000174 2.0000174 0 0 1 6 8 A 2.0000174 2.0000174 0 0 1 8 6 z "
+       style="fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 4 1 L 3 3 L 4 5 L 4 9 L 2 9 L 2 12 L 2 12.5 C 2 13.885 3.115 15 4.5 15 C 5.885 15 7 13.885 7 12.5 L 7 11.5 L 7 9 L 5 9 L 5 5 L 6 3 L 5 1 L 4 1 z M 10 1.1738281 A 3 3 0 0 0 8 4 A 3 3 0 0 0 10 6.8261719 L 10 13 L 10 14 C 10 14.554 10.446 15 11 15 C 11.554 15 12 14.554 12 14 L 12 10 L 12 6.8242188 A 3 3 0 0 0 14 4 A 3 3 0 0 0 12 1.1757812 L 12 4 A 1 1 0 0 1 11 5 A 1 1 0 0 1 10 4 L 10 1.1738281 z "
        transform="translate(0,1036.3622)"
-       id="path4176" />
+       id="path828" />
   </g>
 </svg>

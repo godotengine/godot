@@ -14,7 +14,7 @@
    viewBox="0 0 64 64"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.1 r"
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_new.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90"
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="11.313708"
-     inkscape:cx="32.899003"
-     inkscape:cy="32.88081"
+     inkscape:zoom="8"
+     inkscape:cx="29.157928"
+     inkscape:cy="37.490712"
      inkscape:document-units="px"
      inkscape:current-layer="layer1-8"
      showgrid="true"
@@ -42,14 +42,16 @@
      inkscape:snap-bbox-midpoints="false"
      inkscape:snap-object-midpoints="true"
      inkscape:snap-center="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1016"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
-     inkscape:object-paths="false"
-     inkscape:snap-intersection-paths="false"
-     inkscape:object-nodes="false">
+     inkscape:object-paths="true"
+     inkscape:snap-intersection-paths="true"
+     inkscape:object-nodes="true"
+     inkscape:snap-midpoints="true"
+     inkscape:snap-smooth-nodes="true">
     <inkscape:grid
        type="xygrid"
        id="grid3336" />
@@ -76,12 +78,10 @@
        inkscape:label="Layer 1"
        transform="translate(0,-1.6949463e-5)">
       <path
-         style="opacity:1;fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-         d="m 10,5 0,54 44,0 0,-36 -18,0 0,-18 z m 31,0 0,13 13,0 z"
+         style="color:#000000;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:medium;line-height:normal;font-family:sans-serif;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-feature-settings:normal;text-indent:0;text-align:start;text-decoration:none;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000000;letter-spacing:normal;word-spacing:normal;text-transform:none;writing-mode:lr-tb;direction:ltr;text-orientation:mixed;dominant-baseline:auto;baseline-shift:baseline;text-anchor:start;white-space:normal;shape-padding:0;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;vector-effect:none;fill:#ffffff;fill-opacity:0.58823532;fill-rule:nonzero;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate"
+         d="M 14 5 C 11.801312 5 10 6.80131 10 9 L 10 55 C 10 57.1987 11.801312 59 14 59 L 50 59 C 52.198688 59 54 57.1987 54 55 L 54 22 L 53.992188 22 C 53.994308 21.751685 53.912915 21.499015 53.707031 21.292969 L 37.707031 5.2929688 C 37.519176 5.1060418 37.264574 5.003582 37 5.0039062 L 37 5 L 14 5 z M 14 7 L 36 7 L 36 9 L 36 19 C 36 21.1987 37.801349 23 40 23 L 50 23 L 52 23 L 52 55 C 52 56.1253 51.125282 57 50 57 L 14 57 C 12.874718 57 12 56.1253 12 55 L 12 9 C 12 7.87472 12.874718 7 14 7 z "
          transform="translate(0,988.36222)"
-         id="rect4158"
-         inkscape:connector-curvature="0"
-         sodipodi:nodetypes="ccccccccccc" />
+         id="rect815" />
     </g>
   </g>
 </svg>

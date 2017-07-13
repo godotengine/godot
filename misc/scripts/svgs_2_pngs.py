@@ -16,7 +16,7 @@ last_svg_data = None
 SCRIPT_FOLDER = dirname(realpath(__file__)) + '/'
 theme_dir_base = SCRIPT_FOLDER + '../../scene/resources/default_theme/'
 theme_dir_source = theme_dir_base + 'source/'
-icons_dir_base = SCRIPT_FOLDER + '../editor/icons/'
+icons_dir_base = SCRIPT_FOLDER + '../../editor/icons/'
 icons_dir_2x = icons_dir_base + '2x/'
 icons_dir_source = icons_dir_base + 'source/'
 
@@ -108,8 +108,10 @@ special_icons = {
         theme_output_names=['icon_reload']
     ),
     'icon_multi_edit': dict(output_names=['icon_multi_node_edit']),
+    'icon_load': dict(
+        output_names=['icon_open']
+    ),
     'icon_folder': dict(
-        output_names=['icon_load', 'icon_open'],
         theme_output_names=['icon_folder']
     ),
     'icon_file_list': dict(output_names=['icon_enum']),
