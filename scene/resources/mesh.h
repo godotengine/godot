@@ -46,6 +46,8 @@ class Mesh : public Resource {
 protected:
 	void _clear_triangle_mesh();
 
+	static void _bind_methods();
+
 public:
 	enum {
 
