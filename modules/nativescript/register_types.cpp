@@ -28,51 +28,66 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "register_types.h"
-#include "gdnative.h"
 
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
 
+#include "nativescript.h"
+
 #include "core/os/os.h"
 
-godot_variant cb_standard_varcall(void *handle, godot_string *p_procedure, godot_array *p_args) {
-	if (handle == NULL) {
-		ERR_PRINT("No valid library handle, can't call standard varcall procedure");
-		godot_variant ret;
-		godot_variant_new_nil(&ret);
-		return ret;
+NativeScriptLanguage *native_script_language;
+
+typedef void (*native_script_init_fn)(void *);
+
+void init_call_cb(void *p_handle, godot_string *p_proc_name, void *p_data, int p_num_args, void **args, void *r_ret) {
+	if (p_handle == NULL) {
+		ERR_PRINT("No valid library handle, can't call nativescript init procedure");
+		return;
 	}
 
 	void *library_proc;
 	Error err = OS::get_singleton()->get_dynamic_library_symbol_handle(
-			handle,
-			*(String *)p_procedure,
+			p_handle,
+			*(String *)p_proc_name,
 			library_proc);
 	if (err != OK) {
-		ERR_PRINT((String("GDNative procedure \"" + *(String *)p_procedure) + "\" does not exists and can't be called").utf8().get_data());
-		godot_variant ret;
-		godot_variant_new_nil(&ret);
-		return ret;
+		ERR_PRINT((String("GDNative procedure \"" + *(String *)p_proc_name) + "\" does not exists and can't be called").utf8().get_data());
+		return;
 	}
 
-	godot_gdnative_procedure_fn proc;
-	proc = (godot_gdnative_procedure_fn)library_proc;
+	native_script_init_fn fn = (native_script_init_fn)library_proc;
 
-	return proc(NULL, p_args);
+	fn(args[0]);
 }
 
-GDNativeCallRegistry *GDNativeCallRegistry::singleton;
+ResourceFormatLoaderNativeScript *resource_loader_gdns = NULL;
+ResourceFormatSaverNativeScript *resource_saver_gdns = NULL;
 
-void register_gdnative_types() {
+void register_nativescript_types() {
+	native_script_language = memnew(NativeScriptLanguage);
 
-	ClassDB::register_class<GDNativeLibrary>();
-	ClassDB::register_class<GDNative>();
+	ClassDB::register_class<NativeScript>();
 
-	GDNativeCallRegistry::singleton = memnew(GDNativeCallRegistry);
+	ScriptServer::register_language(native_script_language);
 
-	GDNativeCallRegistry::singleton->register_native_call_type("standard_varcall", cb_standard_varcall);
+	GDNativeCallRegistry::singleton->register_native_raw_call_type(native_script_language->_init_call_type, init_call_cb);
+
+	resource_saver_gdns = memnew(ResourceFormatSaverNativeScript);
+	ResourceSaver::add_resource_format_saver(resource_saver_gdns);
+
+	resource_loader_gdns = memnew(ResourceFormatLoaderNativeScript);
+	ResourceLoader::add_resource_format_loader(resource_loader_gdns);
 }
 
-void unregister_gdnative_types() {
-	memdelete(GDNativeCallRegistry::singleton);
+void unregister_nativescript_types() {
+
+	memdelete(resource_loader_gdns);
+
+	memdelete(resource_saver_gdns);
+
+	if (native_script_language) {
+		ScriptServer::unregister_language(native_script_language);
+		memdelete(native_script_language);
+	}
 }
