@@ -522,6 +522,8 @@ void SceneTree::init() {
 
 	root->_set_tree(this);
 	MainLoop::init();
+	
+	_call_init_callbacks();
 }
 
 bool SceneTree::iteration(float p_time) {
@@ -2287,6 +2289,21 @@ void SceneTree::_bind_methods() {
 }
 
 SceneTree *SceneTree::singleton = NULL;
+
+SceneTree::InitCallback SceneTree::init_callbacks[SceneTree::MAX_INIT_CALLBACKS];
+int SceneTree::init_callback_count = 0;
+
+void SceneTree::_call_init_callbacks() {
+
+	for (int i = 0; i < init_callback_count; i++) {
+		init_callbacks[i]();
+	}
+}
+
+void SceneTree::add_init_callback(InitCallback p_callback) {
+	ERR_FAIL_COND(init_callback_count >= MAX_INIT_CALLBACKS);
+	init_callbacks[init_callback_count++] = p_callback;
+}
 
 SceneTree::IdleCallback SceneTree::idle_callbacks[SceneTree::MAX_IDLE_CALLBACKS];
 int SceneTree::idle_callback_count = 0;
