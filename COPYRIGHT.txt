@@ -95,13 +95,6 @@ Copyright: 1997-2017, Sam Lantinga
   2014-2017, Godot Engine contributors (cf. AUTHORS.md)
 License: Expat and Zlib
 
-Files: ./platform/uwp/export/export.cpp
-Comment: fb-util-for-appx
-Copyright: 2016, Facebook, Inc. All rights reserved.
-  2007-2017, Juan Linietsky, Ariel Manzur.
-  2014-2017, Godot Engine contributors (cf. AUTHORS.md)
-License: BSD-3-clause and Expat
-
 Files: ./servers/physics/gjk_epa.cpp
  ./servers/physics/joints/generic_6dof_joint_sw.cpp
  ./servers/physics/joints/generic_6dof_joint_sw.h
