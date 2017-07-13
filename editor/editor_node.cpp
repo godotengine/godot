@@ -174,6 +174,65 @@ void EditorNode::_update_title() {
 	OS::get_singleton()->set_window_title(title);
 }
 
+void EditorNode::show_dock(Node *node) {
+
+	ERR_FAIL_COND(!node);
+	ERR_FAIL_COND(!node->has_meta("dockside"));
+
+	int ds = node->get_meta("dockside");
+	if (ds < 0) {
+		show_dock(node->get_parent());
+		return;
+	}
+
+	_show_left_dock_temp |= (ds & DOCK_SIDE_LEFT) != 0;
+	_show_right_dock_temp |= (ds & DOCK_SIDE_RIGHT) != 0;
+	if (_show_left_dock_temp) {
+		left_dock->show();
+		left_dock->add_style_override("panel", gui_base->get_stylebox("DockPersist", "EditorStyles"));
+	}
+	if (_show_right_dock_temp) {
+		right_dock->show();
+		right_dock->add_style_override("panel", gui_base->get_stylebox("DockPersist", "EditorStyles"));
+	}
+}
+
+void EditorNode::_check_hover_floating_docks() {
+
+	if (Node::get_viewport()->get_modal_stack_top())
+		return; //ignore because of modal window
+
+	bool autohide = EDITOR_DEF("docks/floating_docks/auto_hide_all_docks", false);
+	int mouse_pos_x = get_tree()->get_root()->get_mouse_position().x;
+	int viewport_width = get_tree()->get_root()->get_size().x;
+	const int popup_threshold = MAX(1, int(EDITOR_DEF("docks/floating_docks/popup_trigger_width", 3)) * EDSCALE);
+	const int offset = int(EDITOR_DEF("docks/floating_docks/hide_trigger_distance", 100)) * EDSCALE;
+
+	// Check if mouse is in hide trigger zone (and dock is not force shown)
+	if (mouse_pos_x >= left_dock->get_size().x + offset && (autohide || (floating_docks & DOCK_SIDE_LEFT) != 0))
+		if (!_show_left_dock_temp)
+			left_dock->hide();
+	if (mouse_pos_x <= viewport_width - right_dock->get_size().x - offset && (autohide || (floating_docks & DOCK_SIDE_RIGHT) != 0))
+		if (!_show_right_dock_temp)
+			right_dock->hide();
+
+	// Check if force show could be turned off
+	if (_show_left_dock_temp && mouse_pos_x <= left_dock->get_size().x) {
+		left_dock->add_style_override("panel", gui_base->get_stylebox("DockBackground", "EditorStyles"));
+		_show_left_dock_temp = false;
+	}
+	if (_show_right_dock_temp && mouse_pos_x >= viewport_width - right_dock->get_size().x) {
+		right_dock->add_style_override("panel", gui_base->get_stylebox("DockBackground", "EditorStyles"));
+		_show_right_dock_temp = false;
+	}
+
+	// Check if mouse is in popup trigger zone
+	if (mouse_pos_x < popup_threshold)
+		left_dock->show();
+	if (mouse_pos_x > viewport_width - popup_threshold - 1)
+		right_dock->show();
+}
+
 void EditorNode::_unhandled_input(const Ref<InputEvent> &p_event) {
 
 	if (Node::get_viewport()->get_modal_stack_top())
@@ -275,6 +334,8 @@ void EditorNode::_notification(int p_what) {
 		scene_root->set_size_override(true, Size2(GlobalConfig::get_singleton()->get("display/window/width"), GlobalConfig::get_singleton()->get("display/window/height")));
 
 		ResourceImporterTexture::get_singleton()->update_imports();
+
+		_check_hover_floating_docks();
 	}
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
@@ -1521,6 +1582,7 @@ void EditorNode::_edit_current() {
 		ERR_FAIL_COND(!current_res);
 		scene_tree_dock->set_selected(NULL);
 		property_editor->edit(current_res);
+		show_dock(property_editor);
 		node_dock->set_node(NULL);
 		object_menu->set_disabled(false);
 		EditorNode::get_singleton()->get_import_dock()->set_edit_path(current_res->get_path());
@@ -1534,9 +1596,12 @@ void EditorNode::_edit_current() {
 		//		ERR_FAIL_COND(!current_node->is_inside_tree());
 
 		property_editor->edit(current_node);
+		show_dock(property_editor);
 		if (current_node->is_inside_tree()) {
 			node_dock->set_node(current_node);
 			scene_tree_dock->set_selected(current_node);
+			show_dock(node_dock);
+			show_dock(scene_tree_dock);
 		} else {
 			node_dock->set_node(NULL);
 			scene_tree_dock->set_selected(NULL);
@@ -1548,6 +1613,7 @@ void EditorNode::_edit_current() {
 	} else {
 
 		property_editor->edit(current_obj);
+		show_dock(property_editor);
 		node_dock->set_node(NULL);
 		//scene_tree_dock->set_selected(current_node);
 		//object_menu->get_popup()->clear();
@@ -4098,9 +4164,9 @@ void EditorNode::_save_docks_to_config(Ref<ConfigFile> p_layout, const String &p
 	}
 
 	HSplitContainer *h_splits[4] = {
-		left_l_hsplit,
-		left_r_hsplit,
-		main_hsplit,
+		center_left_hsplit,
+		center_right_hsplit,
+		left_hsplit,
 		right_hsplit,
 	};
 
@@ -4139,6 +4205,7 @@ void EditorNode::_load_docks() {
 
 void EditorNode::_update_dock_slots_visibility() {
 
+	/*
 	VSplitContainer *splits[DOCK_SLOT_MAX / 2] = {
 		left_l_vsplit,
 		left_r_vsplit,
@@ -4146,10 +4213,8 @@ void EditorNode::_update_dock_slots_visibility() {
 		right_r_vsplit,
 	};
 
-	HSplitContainer *h_splits[4] = {
-		left_l_hsplit,
-		left_r_hsplit,
-		main_hsplit,
+	HSplitContainer *h_splits[2] = {
+		left_hsplit,
 		right_hsplit,
 	};
 
@@ -4190,6 +4255,21 @@ void EditorNode::_update_dock_slots_visibility() {
 		}
 		bottom_panel->show();
 		right_hsplit->show();
+	}
+	*/
+	VSplitContainer *splits[DOCK_SLOT_MAX / 2] = {
+		left_l_vsplit,
+		left_r_vsplit,
+		right_l_vsplit,
+		right_r_vsplit,
+	};
+
+	for (int i = 0; i < DOCK_SLOT_MAX / 2; i++) {
+		bool in_use = dock_slot[i * 2 + 0]->get_tab_count() || dock_slot[i * 2 + 1]->get_tab_count();
+		if (in_use)
+			splits[i]->show();
+		else
+			splits[i]->hide();
 	}
 }
 
@@ -4247,6 +4327,8 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 			}
 			dock_slot[i]->add_child(node);
 			dock_slot[i]->show();
+
+			_dock_slot_changed(node, i);
 		}
 	}
 
@@ -4273,9 +4355,9 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 	}
 
 	HSplitContainer *h_splits[4] = {
-		left_l_hsplit,
-		left_r_hsplit,
-		main_hsplit,
+		center_left_hsplit,
+		center_right_hsplit,
+		left_hsplit,
 		right_hsplit,
 	};
 
@@ -4300,6 +4382,14 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 			dock_slot[i]->set_current_tab(0);
 		}
 	}
+}
+
+void EditorNode::_dock_slot_changed(Node *node, int slot) {
+
+	ERR_FAIL_COND(!node)
+	ERR_FAIL_COND(slot >= DOCK_SLOT_MAX);
+
+	node->set_meta("dockside", slot < 0 ? Variant() : Variant((slot < DOCK_SLOT_MAX / 2) ? DOCK_SIDE_LEFT : DOCK_SIDE_RIGHT));
 }
 
 void EditorNode::_update_layouts_menu() {
@@ -4666,6 +4756,7 @@ bool EditorNode::get_distraction_free_mode() const {
 void EditorNode::add_control_to_dock(DockSlot p_slot, Control *p_control) {
 	ERR_FAIL_INDEX(p_slot, DOCK_SLOT_MAX);
 	dock_slot[p_slot]->add_child(p_control);
+	_dock_slot_changed(p_control, p_slot);
 	_update_dock_slots_visibility();
 }
 
@@ -4683,6 +4774,7 @@ void EditorNode::remove_control_from_dock(Control *p_control) {
 	ERR_FAIL_COND(!dock);
 
 	dock->remove_child(p_control);
+	_dock_slot_changed(p_control, -1);
 	_update_dock_slots_visibility();
 }
 
@@ -5243,15 +5335,22 @@ EditorNode::EditorNode() {
 	menu_hb = memnew(HBoxContainer);
 	main_vbox->add_child(menu_hb);
 
-	//top_dark_vb->add_child(scene_tabs);
-	//left
-	left_l_hsplit = memnew(HSplitContainer);
-	main_vbox->add_child(left_l_hsplit);
+	left_dock = memnew(PanelContainer);
+	right_dock = memnew(PanelContainer);
 
-	left_l_hsplit->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	VBoxContainer *center_vb = memnew(VBoxContainer);
+	center_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+
+	center_left_hsplit = memnew(HSplitContainer);
+	center_left_hsplit->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	center_right_hsplit = memnew(HSplitContainer);
+	center_right_hsplit->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+
+	left_hsplit = memnew(HSplitContainer);
+	left_dock->add_child(left_hsplit);
 
 	left_l_vsplit = memnew(VSplitContainer);
-	left_l_hsplit->add_child(left_l_vsplit);
+	left_hsplit->add_child(left_l_vsplit);
 	dock_slot[DOCK_SLOT_LEFT_UL] = memnew(TabContainer);
 	left_l_vsplit->add_child(dock_slot[DOCK_SLOT_LEFT_UL]);
 	dock_slot[DOCK_SLOT_LEFT_BL] = memnew(TabContainer);
@@ -5260,10 +5359,8 @@ EditorNode::EditorNode() {
 	dock_slot[DOCK_SLOT_LEFT_UL]->hide();
 	dock_slot[DOCK_SLOT_LEFT_BL]->hide();
 
-	left_r_hsplit = memnew(HSplitContainer);
-	left_l_hsplit->add_child(left_r_hsplit);
 	left_r_vsplit = memnew(VSplitContainer);
-	left_r_hsplit->add_child(left_r_vsplit);
+	left_hsplit->add_child(left_r_vsplit);
 	dock_slot[DOCK_SLOT_LEFT_UR] = memnew(TabContainer);
 	left_r_vsplit->add_child(dock_slot[DOCK_SLOT_LEFT_UR]);
 	dock_slot[DOCK_SLOT_LEFT_BR] = memnew(TabContainer);
@@ -5272,21 +5369,13 @@ EditorNode::EditorNode() {
 	//dock_slot[DOCK_SLOT_LEFT_UR]->hide();
 	//dock_slot[DOCK_SLOT_LEFT_BR]->hide();
 
-	main_hsplit = memnew(HSplitContainer);
-	left_r_hsplit->add_child(main_hsplit);
-	//main_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	VBoxContainer *center_vb = memnew(VBoxContainer);
-	main_hsplit->add_child(center_vb);
-	center_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-
 	center_split = memnew(VSplitContainer);
-	//main_hsplit->add_child(center_split);
 	center_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	center_split->set_collapsed(false);
 	center_vb->add_child(center_split);
 
 	right_hsplit = memnew(HSplitContainer);
-	main_hsplit->add_child(right_hsplit);
+	right_dock->add_child(right_hsplit);
 
 	right_l_vsplit = memnew(VSplitContainer);
 	right_hsplit->add_child(right_l_vsplit);
@@ -5308,20 +5397,53 @@ EditorNode::EditorNode() {
 	dock_slot[DOCK_SLOT_RIGHT_UR]->hide();
 	dock_slot[DOCK_SLOT_RIGHT_BR]->hide();
 
+	{
+		floating_docks = EDITOR_DEF("docks/floating_docks/floating_docks", 0);
+
+		center_left_hsplit->add_child((floating_docks & DOCK_SIDE_LEFT) != 0 ? memnew(Control) : left_dock);
+		center_left_hsplit->add_child(center_right_hsplit);
+		center_right_hsplit->add_child(center_vb);
+		center_right_hsplit->add_child((floating_docks & DOCK_SIDE_RIGHT) != 0 ? memnew(Control) : right_dock);
+
+		PanelContainer *center_panel = memnew(PanelContainer);
+		//center_panel->add_child(center_vb);
+		center_panel->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		center_panel->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+		main_vbox->add_child(center_panel);
+		center_panel->add_child(center_left_hsplit);
+
+		if ((floating_docks & DOCK_SIDE_LEFT) != 0) {
+
+			left_dock->add_style_override("panel", gui_base->get_stylebox("DockBackground", "EditorStyles"));
+			left_dock->set_h_size_flags(0);
+			left_dock->set_v_size_flags(Control::SIZE_FILL);
+			center_panel->add_child(left_dock);
+		}
+
+		if ((floating_docks & DOCK_SIDE_RIGHT) != 0) {
+
+			right_dock->add_style_override("panel", gui_base->get_stylebox("DockBackground", "EditorStyles"));
+			right_dock->set_h_size_flags(Control::SIZE_SHRINK_END);
+			right_dock->set_v_size_flags(Control::SIZE_FILL);
+			center_panel->add_child(right_dock);
+		}
+	}
+
 	left_l_vsplit->connect("dragged", this, "_dock_split_dragged");
 	left_r_vsplit->connect("dragged", this, "_dock_split_dragged");
 	right_l_vsplit->connect("dragged", this, "_dock_split_dragged");
 	right_r_vsplit->connect("dragged", this, "_dock_split_dragged");
 
-	left_l_hsplit->connect("dragged", this, "_dock_split_dragged");
-	left_r_hsplit->connect("dragged", this, "_dock_split_dragged");
-	main_hsplit->connect("dragged", this, "_dock_split_dragged");
+	center_left_hsplit->connect("dragged", this, "_dock_split_dragged");
+	center_right_hsplit->connect("dragged", this, "_dock_split_dragged");
+
+	left_hsplit->connect("dragged", this, "_dock_split_dragged");
 	right_hsplit->connect("dragged", this, "_dock_split_dragged");
 
-	dock_select_popoup = memnew(PopupPanel);
-	gui_base->add_child(dock_select_popoup);
+	dock_select_popup = memnew(PopupPanel);
+	gui_base->add_child(dock_select_popup);
 	VBoxContainer *dock_vb = memnew(VBoxContainer);
-	dock_select_popoup->add_child(dock_vb);
+	dock_select_popup->add_child(dock_vb);
 
 	HBoxContainer *dock_hb = memnew(HBoxContainer);
 	dock_tab_move_left = memnew(ToolButton);
@@ -5348,14 +5470,14 @@ EditorNode::EditorNode() {
 	dock_select->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	dock_vb->add_child(dock_select);
 
-	dock_select_popoup->set_as_minsize();
+	dock_select_popup->set_as_minsize();
 	dock_select_rect_over = -1;
 	dock_popup_selected = -1;
-	//dock_select_popoup->set_(Size2(20,20));
+	//dock_select_popup->set_(Size2(20,20));
 	for (int i = 0; i < DOCK_SLOT_MAX; i++) {
 		dock_slot[i]->set_custom_minimum_size(Size2(230, 220) * EDSCALE);
 		dock_slot[i]->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-		dock_slot[i]->set_popup(dock_select_popoup);
+		dock_slot[i]->set_popup(dock_select_popup);
 		dock_slot[i]->connect("pre_popup_pressed", this, "_dock_pre_popup", varray(i));
 		dock_slot[i]->set_tab_align(TabContainer::ALIGN_LEFT);
 	}
@@ -5805,6 +5927,7 @@ EditorNode::EditorNode() {
 	scene_tree_dock->set_name(TTR("Scene"));
 	//top_pallete->add_child(scene_tree_dock);
 	dock_slot[DOCK_SLOT_RIGHT_UL]->add_child(scene_tree_dock);
+	_dock_slot_changed(scene_tree_dock, DOCK_SLOT_RIGHT_UL);
 #if 0
 	resources_dock = memnew( ResourcesDock(this) );
 	resources_dock->set_name("Resources");
@@ -5834,6 +5957,7 @@ EditorNode::EditorNode() {
 	VBoxContainer *prop_editor_base = memnew(VBoxContainer);
 	prop_editor_base->set_name(TTR("Inspector")); // Properties?
 	dock_slot[DOCK_SLOT_RIGHT_BL]->add_child(prop_editor_base);
+	_dock_slot_changed(prop_editor_base, DOCK_SLOT_RIGHT_BL);
 
 	HBoxContainer *prop_editor_hb = memnew(HBoxContainer);
 
@@ -5942,11 +6066,13 @@ EditorNode::EditorNode() {
 	property_editor->register_text_enter(search_box);
 
 	prop_editor_base->add_child(property_editor);
+	property_editor->set_meta("dockside", -1);
 	property_editor->set_undo_redo(&editor_data.get_undo_redo());
 
 	import_dock = memnew(ImportDock);
 	dock_slot[DOCK_SLOT_RIGHT_UL]->add_child(import_dock);
 	import_dock->set_name(TTR("Import"));
+	_dock_slot_changed(import_dock, DOCK_SLOT_RIGHT_UL);
 
 	bool use_single_dock_column = (OS::get_singleton()->get_screen_size(OS::get_singleton()->get_current_screen()).x < 1200);
 
@@ -5954,8 +6080,10 @@ EditorNode::EditorNode() {
 	//node_dock->set_undoredo(&editor_data.get_undo_redo());
 	if (use_single_dock_column) {
 		dock_slot[DOCK_SLOT_RIGHT_UL]->add_child(node_dock);
+		_dock_slot_changed(node_dock, DOCK_SLOT_RIGHT_UL);
 	} else {
 		dock_slot[DOCK_SLOT_RIGHT_BL]->add_child(node_dock);
+		_dock_slot_changed(node_dock, DOCK_SLOT_RIGHT_BL);
 	}
 
 	filesystem_dock = memnew(FileSystemDock(this));
@@ -5964,11 +6092,13 @@ EditorNode::EditorNode() {
 
 	if (use_single_dock_column) {
 		dock_slot[DOCK_SLOT_RIGHT_BL]->add_child(filesystem_dock);
+		_dock_slot_changed(filesystem_dock, DOCK_SLOT_RIGHT_BL);
 		left_r_vsplit->hide();
 		dock_slot[DOCK_SLOT_LEFT_UR]->hide();
 		dock_slot[DOCK_SLOT_LEFT_BR]->hide();
 	} else {
 		dock_slot[DOCK_SLOT_LEFT_UR]->add_child(filesystem_dock);
+		_dock_slot_changed(filesystem_dock, DOCK_SLOT_LEFT_UR);
 	}
 	//prop_pallete->add_child(filesystem_dock);
 	filesystem_dock->connect("open", this, "open_request");
@@ -5986,6 +6116,9 @@ EditorNode::EditorNode() {
 		default_layout->set_value(docks_section, "dock_hsplit_" + itos(i + 1), 0);
 	for (int i = 0; i < DOCK_SLOT_MAX / 2; i++)
 		default_layout->set_value(docks_section, "dock_split_" + itos(i + 1), 0);
+
+	_show_left_dock_temp = false;
+	_show_right_dock_temp = false;
 
 	_update_layouts_menu();
 

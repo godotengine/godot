@@ -531,7 +531,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["interface/dim_transition_time"] = PropertyInfo(Variant::REAL, "interface/dim_transition_time", PROPERTY_HINT_RANGE, "0,1,0.001", PROPERTY_USAGE_DEFAULT);
 
 	set("interface/separate_distraction_mode", false);
-
 	set("interface/save_each_scene_on_quit", true); // Regression
 	set("interface/quit_confirmation", true);
 
@@ -682,6 +681,15 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	set("docks/property_editor/texture_preview_width", 48);
 	set("docks/property_editor/auto_refresh_interval", 0.3);
+
+	set("docks/floating_docks/floating_docks", 0);
+	hints["docks/floating_docks/floating_docks"] = PropertyInfo(Variant::INT, "docks/floating_docks/floating_docks", PROPERTY_HINT_ENUM, "None,Left,Right,Both");
+	set("docks/floating_docks/auto_hide_all_docks", false);
+	set("docks/floating_docks/hide_trigger_distance", 100);
+	hints["docks/floating_docks/hide_trigger_distance"] = PropertyInfo(Variant::INT, "docks/floating_docks/hide_trigger_distance", PROPERTY_HINT_RANGE, "0,2048,1");
+	set("docks/floating_docks/popup_trigger_width", 3);
+	hints["docks/floating_docks/popup_trigger_width"] = PropertyInfo(Variant::INT, "docks/floating_docks/popup_trigger_width", PROPERTY_HINT_RANGE, "1,8,1");
+
 	set("text_editor/help/doc_path", "");
 
 	set("filesystem/import/ask_save_before_reimport", false);

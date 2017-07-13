@@ -197,6 +197,12 @@ Ref<Theme> create_editor_theme() {
 	theme->set_stylebox("panel", "TabContainer", style_content_panel);
 	theme->set_stylebox("Content", "EditorStyles", style_content_panel);
 
+	// Dock background
+	Ref<StyleBoxFlat> style_dock = make_flat_stylebox(base_color, 4, 4, 4, 4);
+	theme->set_stylebox("DockBackground", "EditorStyles", style_dock);
+	Ref<StyleBoxFlat> style_dock_persist = make_flat_stylebox(light_color_2, 4, 4, 4, 4);
+	theme->set_stylebox("DockPersist", "EditorStyles", style_dock_persist);
+
 	// Button
 	Ref<StyleBoxFlat> style_button = make_flat_stylebox(dark_color_1, 4, 4, 4, 4);
 	style_button->set_draw_center(true);
