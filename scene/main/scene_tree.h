@@ -75,6 +75,7 @@ class SceneTree : public MainLoop {
 	GDCLASS(SceneTree, MainLoop);
 
 public:
+	typedef void (*InitCallback)();
 	typedef void (*IdleCallback)();
 
 	enum StretchMode {
@@ -305,8 +306,13 @@ private:
 #endif
 
 	enum {
+		MAX_INIT_CALLBACKS = 256,
 		MAX_IDLE_CALLBACKS = 256
 	};
+
+	static InitCallback init_callbacks[MAX_INIT_CALLBACKS];
+	static int init_callback_count;
+	void _call_init_callbacks();
 
 	static IdleCallback idle_callbacks[MAX_IDLE_CALLBACKS];
 	static int idle_callback_count;
@@ -456,7 +462,9 @@ public:
 	void set_refuse_new_network_connections(bool p_refuse);
 	bool is_refusing_new_network_connections() const;
 
+	static void add_init_callback(InitCallback p_callback);
 	static void add_idle_callback(IdleCallback p_callback);
+
 	SceneTree();
 	~SceneTree();
 };
