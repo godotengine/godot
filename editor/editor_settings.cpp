@@ -216,6 +216,20 @@ Variant _EDITOR_DEF(const String &p_var, const Variant &p_default) {
 	return p_default;
 }
 
+static void _create_script_templates(const String &p_path) {
+
+	FileAccess *file = FileAccess::open(p_path.plus_file("no_comments.gd"), FileAccess::WRITE);
+	ERR_FAIL_COND(!file);
+	String script = String("extends %BASE%\n\nfunc _ready():\n%TS%pass\n");
+	file->store_string(script);
+	file->close();
+	file->reopen(p_path.plus_file("empty.gd"), FileAccess::WRITE);
+	script = "extends %BASE%\n\n";
+	file->store_string(script);
+	file->close();
+	memdelete(file);
+}
+
 void EditorSettings::create() {
 
 	if (singleton.ptr())
@@ -294,6 +308,7 @@ void EditorSettings::create() {
 
 		if (dir->change_dir("script_templates") != OK) {
 			dir->make_dir("script_templates");
+			_create_script_templates(dir->get_current_dir() + "/script_templates");
 		} else {
 			dir->change_dir("..");
 		}
