@@ -40,6 +40,22 @@ uint32_t atomic_conditional_increment(register uint32_t *counter);
 uint32_t atomic_decrement(register uint32_t *pw);
 uint32_t atomic_increment(register uint32_t *pw);
 
+#ifdef NO_THREADS
+
+#define atomic_compare_exchange(m_pw, m_oldval, m_newval) (*(m_pw) == *(m_oldval) ? (*(m_pw) = (m_newval), 1) : (*(m_oldval) = *(m_pw), 0))
+
+#else
+
+#ifdef _MSC_VER
+#define atomic_compare_exchange(m_pw, m_oldval, m_newval) InterlockedCompareExchange((LONG volatile *)(m_pw), m_newval, *(m_oldval)) == *(m_oldval) ? 1 : (*(m_oldval) = *(m_pw), 0)
+#elif defined(__GNUC__)
+#define atomic_compare_exchange(m_pw, m_oldval, m_newval) __sync_bool_compare_and_swap(m_pw, *(m_oldval), m_newval) ? 1 : (*(m_oldval) = *(m_pw), 0)
+#else
+#error Must provide atomic functions for this platform or compiler!
+#endif
+
+#endif
+
 struct SafeRefCount {
 
 	uint32_t count;

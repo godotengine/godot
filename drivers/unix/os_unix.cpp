@@ -67,6 +67,73 @@
 
 extern bool _print_error_enabled;
 
+#define PID_ARRAY_SIZE 32
+
+struct ChildrenNode {
+
+	uint32_t used;
+	pid_t pid_array[PID_ARRAY_SIZE];
+	ChildrenNode *next;
+
+	ChildrenNode() {
+		used = 0;
+		zeromem(pid_array, sizeof(pid_array));
+		next = NULL;
+	}
+};
+
+static ChildrenNode children;
+
+static struct sigaction old_sigaction;
+static uint32_t init_status = 0;
+
+static Error allocate_child(pid_t **r_pid, ChildrenNode **r_node) {
+
+	ERR_FAIL_COND_V(!r_pid || !r_node, ERR_BUG);
+
+	ChildrenNode *node = &children;
+
+	do {
+		uint32_t used = atomic_increment(&node->used);
+
+		if (used <= PID_ARRAY_SIZE) {
+
+			for (int i = 0; i < PID_ARRAY_SIZE; i++) {
+				pid_t tmp = 0;
+				if (atomic_compare_exchange(&node->pid_array[i], &tmp, -1)) {
+					*r_pid = &node->pid_array[i];
+					*r_node = node;
+					return OK;
+				}
+			}
+		}
+
+		atomic_decrement(&node->used);
+
+		if (!node->next) {
+			ChildrenNode *new_next = memnew(ChildrenNode);
+			if (!new_next)
+				return ERR_OUT_OF_MEMORY;
+
+			ChildrenNode *tmp = NULL;
+			if (!atomic_compare_exchange(&node->next, &tmp, new_next)) {
+				memdelete(new_next);
+			}
+		}
+
+		node = node->next;
+
+	} while (node);
+
+	return ERR_BUSY;
+}
+
+static void deallocate_child(pid_t *p_pid_ptr, ChildrenNode *p_node) {
+
+	*p_pid_ptr = -1;
+	atomic_decrement(&p_node->used);
+}
+
 void OS_Unix::print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type) {
 
 	if (!_print_error_enabled)
@@ -117,13 +184,32 @@ int OS_Unix::unix_initialize_audio(int p_audio_driver) {
 	return 0;
 }
 
-// Very simple signal handler to reap processes where ::execute was called with
-// !p_blocking
+// Signal handler to reap processes where ::execute was called with !p_blocking
 void handle_sigchld(int sig) {
-	int saved_errno = errno;
-	while (waitpid((pid_t)(-1), 0, WNOHANG) > 0) {
+
+	if (init_status == 1) {
+
+		int saved_errno = errno;
+
+		ChildrenNode *node = &children;
+		while (node) {
+			for (int i = 0; i < PID_ARRAY_SIZE; ++i) {
+				pid_t pid = node->pid_array[i];
+				if (pid <= 0)
+					continue;
+
+				if (waitpid(pid, NULL, WNOHANG) > 0) {
+					deallocate_child(&node->pid_array[i], node);
+				}
+			}
+			node = node->next;
+		}
+
+		errno = saved_errno;
 	}
-	errno = saved_errno;
+
+	if (old_sigaction.sa_handler != SIG_IGN && old_sigaction.sa_handler != SIG_DFL)
+		old_sigaction.sa_handler(sig);
 }
 
 void OS_Unix::initialize_core() {
@@ -160,12 +246,27 @@ void OS_Unix::initialize_core() {
 	sa.sa_handler = &handle_sigchld;
 	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = SA_RESTART | SA_NOCLDSTOP;
-	if (sigaction(SIGCHLD, &sa, 0) == -1) {
+	if (sigaction(SIGCHLD, &sa, &old_sigaction) == -1) {
 		perror("ERROR sigaction() failed:");
 	}
+
+	atomic_increment(&init_status);
 }
 
 void OS_Unix::finalize_core() {
+
+	if (!init_status)
+		return;
+
+	atomic_decrement(&init_status);
+
+	ChildrenNode *node = children.next;
+
+	while (node) {
+		ChildrenNode *next = node->next;
+		memdelete(node);
+		node = next;
+	}
 }
 
 void OS_Unix::vprint(const char *p_format, va_list p_list, bool p_stder) {
@@ -358,8 +459,22 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 		return OK;
 	}
 
+	pid_t *pid_ptr = NULL;
+	ChildrenNode *node = NULL;
+
+	if (!p_blocking) {
+		Error error = allocate_child(&pid_ptr, &node);
+		ERR_FAIL_COND_V(error != OK, error);
+		ERR_FAIL_COND_V(!pid_ptr, ERR_BUG);
+	}
+
 	pid_t pid = fork();
-	ERR_FAIL_COND_V(pid < 0, ERR_CANT_FORK);
+
+	if (pid < 0) {
+		if (!p_blocking)
+			deallocate_child(pid_ptr, node);
+		ERR_FAIL_COND_V(pid < 0, ERR_CANT_FORK);
+	}
 
 	if (pid == 0) {
 		// is child
@@ -396,6 +511,8 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 		if (r_exitcode)
 			*r_exitcode = WEXITSTATUS(status);
 	} else {
+
+		*pid_ptr = pid;
 
 		if (r_child_id)
 			*r_child_id = pid;
