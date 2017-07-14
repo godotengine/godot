@@ -1,7 +1,7 @@
 
 /* pngpriv.h - private declarations for use inside libpng
  *
- * Last changed in libpng 1.6.29 [March 16, 2017]
+ * Last changed in libpng 1.6.30 [(PENDING RELEASE)]
  * Copyright (c) 1998-2002,2004,2006-2017 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
@@ -466,7 +466,16 @@
    static_cast<type>(static_cast<const void*>(value))
 #else
 #  define png_voidcast(type, value) (value)
-#  define png_constcast(type, value) ((type)(value))
+#  ifdef _WIN64
+#     ifdef __GNUC__
+         typedef unsigned long long png_ptruint;
+#     else
+         typedef unsigned __int64 png_ptruint;
+#     endif
+#  else
+      typedef unsigned long png_ptruint;
+#  endif
+#  define png_constcast(type, value) ((type)(png_ptruint)(const void*)(value))
 #  define png_aligncast(type, value) ((void*)(value))
 #  define png_aligncastconst(type, value) ((const void*)(value))
 #endif /* __cplusplus */
