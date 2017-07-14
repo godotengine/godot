@@ -63,4 +63,4 @@ such as text and video tutorials, demos, etc. Consult the [community channels](h
 for more info.
 
 [![Build Status](https://travis-ci.org/godotengine/godot.svg?branch=master)](https://travis-ci.org/godotengine/godot)
-[![Code Triagers Badge](http://www.codetriage.com/godotengine/godot/badges/users.svg)](http://www.codetriage.com/godotengine/godot)
+[![Code Triagers Badge](https://www.codetriage.com/godotengine/godot/badges/users.svg)](https://www.codetriage.com/godotengine/godot)
