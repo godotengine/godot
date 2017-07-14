@@ -663,13 +663,16 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (List<Node *>::Element *e = selection.front()) {
 				if (Node *node = e->get()) {
 					bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(node);
+					int editable_item_idx = menu->get_item_idx_from_text(TTR("Editable Children"));
+					int placeholder_item_idx = menu->get_item_idx_from_text(TTR("Load As Placeholder"));
 					editable = !editable;
 
 					EditorNode::get_singleton()->get_edited_scene()->set_editable_instance(node, editable);
-					menu->set_item_checked(18, editable);
+
+					menu->set_item_checked(editable_item_idx, editable);
 					if (editable) {
 						node->set_scene_instance_load_placeholder(false);
-						menu->set_item_checked(19, false);
+						menu->set_item_checked(placeholder_item_idx, false);
 					}
 					scene_tree->update_tree();
 				}
@@ -681,12 +684,14 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				if (Node *node = e->get()) {
 					bool placeholder = node->get_scene_instance_load_placeholder();
 					placeholder = !placeholder;
+					int editable_item_idx = menu->get_item_idx_from_text(TTR("Editable Children"));
+					int placeholder_item_idx = menu->get_item_idx_from_text(TTR("Load As Placeholder"));
 					if (placeholder)
 						EditorNode::get_singleton()->get_edited_scene()->set_editable_instance(node, false);
 
 					node->set_scene_instance_load_placeholder(placeholder);
-					menu->set_item_checked(18, false);
-					menu->set_item_checked(19, placeholder);
+					menu->set_item_checked(editable_item_idx, false);
+					menu->set_item_checked(placeholder_item_idx, placeholder);
 					scene_tree->update_tree();
 				}
 			}
@@ -1892,8 +1897,8 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 				menu->add_check_item(TTR("Load As Placeholder"), TOOL_SCENE_USE_PLACEHOLDER);
 				menu->add_item(TTR("Discard Instancing"), TOOL_SCENE_CLEAR_INSTANCING);
 				menu->add_icon_item(get_icon("Load", "EditorIcons"), TTR("Open in Editor"), TOOL_SCENE_OPEN);
-				menu->set_item_checked(18, editable);
-				menu->set_item_checked(19, placeholder);
+				menu->set_item_checked(menu->get_item_idx_from_text(TTR("Editable Children")), editable);
+				menu->set_item_checked(menu->get_item_idx_from_text(TTR("Load As Placeholder")), placeholder);
 			}
 		}
 	}
