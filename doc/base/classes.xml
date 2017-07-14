@@ -2081,6 +2081,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="has_point" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="remove_point">
 			<argument index="0" name="id" type="int">
 			</argument>
@@ -4122,6 +4130,12 @@
 				Return the angular damp rate.
 			</description>
 		</method>
+		<method name="get_audio_bus" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_collision_layer" qualifiers="const">
 			<return type="int">
 			</return>
@@ -4231,6 +4245,12 @@
 				Return whether this area detects bodies/areas entering/exiting it.
 			</description>
 		</method>
+		<method name="is_overriding_audio_bus" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="overlaps_area" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -4255,6 +4275,18 @@
 			<description>
 				Set the rate at which objects stop spinning in this area, if there are not any other forces making it spin. The value is a fraction of its current speed, lost per second. Thus, a value of 1.0 should mean stopping immediately, and 0.0 means the object never stops.
 				In practice, as the fraction of speed lost gets smaller with each frame, a value of 1.0 does not mean the object will stop in exactly one second. Only when the physics calculations are done at 1 frame per second, it does stop in a second.
+			</description>
+		</method>
+		<method name="set_audio_bus">
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_audio_bus_override">
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_collision_layer">
@@ -4366,6 +4398,10 @@
 	</methods>
 	<members>
 		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp" brief="">
+		</member>
+		<member name="audio_bus_name" type="String" setter="set_audio_bus" getter="get_audio_bus" brief="">
+		</member>
+		<member name="audio_bus_override" type="bool" setter="set_audio_bus_override" getter="is_overriding_audio_bus" brief="">
 		</member>
 		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" brief="">
 		</member>
@@ -5326,7 +5362,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_treshold" qualifiers="const">
+		<method name="get_threshold" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
@@ -5368,8 +5404,8 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_treshold">
-			<argument index="0" name="treshold" type="float">
+		<method name="set_threshold">
+			<argument index="0" name="threshold" type="float">
 			</argument>
 			<description>
 			</description>
@@ -5388,7 +5424,7 @@
 		</member>
 		<member name="sidechain" type="float" setter="set_sidechain" getter="get_sidechain" brief="">
 		</member>
-		<member name="treshold" type="float" setter="set_treshold" getter="get_treshold" brief="">
+		<member name="threshold" type="float" setter="set_threshold" getter="get_threshold" brief="">
 		</member>
 	</members>
 	<constants>
@@ -5844,7 +5880,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_treshold_db" qualifiers="const">
+		<method name="get_threshold_db" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
@@ -5868,8 +5904,8 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_treshold_db">
-			<argument index="0" name="treshold" type="float">
+		<method name="set_threshold_db">
+			<argument index="0" name="threshold" type="float">
 			</argument>
 			<description>
 			</description>
@@ -5882,7 +5918,7 @@
 		</member>
 		<member name="soft_clip_ratio" type="float" setter="set_soft_clip_ratio" getter="get_soft_clip_ratio" brief="">
 		</member>
-		<member name="treshold_db" type="float" setter="set_treshold_db" getter="get_treshold_db" brief="">
+		<member name="threshold_db" type="float" setter="set_threshold_db" getter="get_threshold_db" brief="">
 		</member>
 	</members>
 	<constants>
@@ -6230,118 +6266,6 @@
 	<constants>
 	</constants>
 </class>
-<class name="AudioPlayer" inherits="Node" category="Core">
-	<brief_description>
-	</brief_description>
-	<description>
-	</description>
-	<methods>
-		<method name="get_bus" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_mix_target" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_pos">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_stream" qualifiers="const">
-			<return type="Object">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_volume_db" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_autoplay_enabled">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_playing" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="play">
-			<argument index="0" name="from_pos" type="float" default="0">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="seek">
-			<argument index="0" name="to_pos" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_autoplay">
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_bus">
-			<argument index="0" name="bus" type="String">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_mix_target">
-			<argument index="0" name="mix_target" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_stream">
-			<argument index="0" name="stream" type="AudioStream">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_volume_db">
-			<argument index="0" name="volume_db" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="stop">
-			<description>
-			</description>
-		</method>
-	</methods>
-	<members>
-		<member name="autoplay" type="bool" setter="set_autoplay" getter="is_autoplay_enabled" brief="">
-		</member>
-		<member name="bus" type="String" setter="set_bus" getter="get_bus" brief="">
-		</member>
-		<member name="mix_target" type="int" setter="set_mix_target" getter="get_mix_target" brief="">
-		</member>
-		<member name="playing" type="bool" setter="_set_playing" getter="_is_active" brief="">
-		</member>
-		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream" brief="">
-		</member>
-		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db" brief="">
-		</member>
-	</members>
-	<constants>
-	</constants>
-</class>
 <class name="AudioServer" inherits="Object" category="Core">
 	<brief_description>
 		Server interface for low level audio access.
@@ -6394,6 +6318,14 @@
 			<argument index="1" name="arg1" type="Object">
 			</argument>
 			<argument index="2" name="arg2" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_bus_index" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="bus_name" type="String">
 			</argument>
 			<description>
 			</description>
@@ -6669,6 +6601,258 @@
 	</description>
 	<methods>
 	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="AudioStreamPlayer" inherits="Node" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_bus" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_mix_target" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_pos">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_stream" qualifiers="const">
+			<return type="Object">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_volume_db" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_autoplay_enabled">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_playing" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="play">
+			<argument index="0" name="from_pos" type="float" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="seek">
+			<argument index="0" name="to_pos" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_autoplay">
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_bus">
+			<argument index="0" name="bus" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_mix_target">
+			<argument index="0" name="mix_target" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_stream">
+			<argument index="0" name="stream" type="AudioStream">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_volume_db">
+			<argument index="0" name="volume_db" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="stop">
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="autoplay" type="bool" setter="set_autoplay" getter="is_autoplay_enabled" brief="">
+		</member>
+		<member name="bus" type="String" setter="set_bus" getter="get_bus" brief="">
+		</member>
+		<member name="mix_target" type="int" setter="set_mix_target" getter="get_mix_target" brief="">
+		</member>
+		<member name="playing" type="bool" setter="_set_playing" getter="_is_active" brief="">
+		</member>
+		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream" brief="">
+		</member>
+		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db" brief="">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>
+<class name="AudioStreamPlayer2D" inherits="Node2D" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_area_mask" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_attenuation" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_bus" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_max_distance" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_pos">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_stream" qualifiers="const">
+			<return type="Object">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_volume_db" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_autoplay_enabled">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_playing" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="play">
+			<argument index="0" name="from_pos" type="float" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="seek">
+			<argument index="0" name="to_pos" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_area_mask">
+			<argument index="0" name="mask" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_attenuation">
+			<argument index="0" name="curve" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_autoplay">
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_bus">
+			<argument index="0" name="bus" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_max_distance">
+			<argument index="0" name="pixels" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_stream">
+			<argument index="0" name="stream" type="AudioStream">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_volume_db">
+			<argument index="0" name="volume_db" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="stop">
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="area_mask" type="int" setter="set_area_mask" getter="get_area_mask" brief="">
+		</member>
+		<member name="attenuation" type="float" setter="set_attenuation" getter="get_attenuation" brief="">
+		</member>
+		<member name="autoplay" type="bool" setter="set_autoplay" getter="is_autoplay_enabled" brief="">
+		</member>
+		<member name="bus" type="String" setter="set_bus" getter="get_bus" brief="">
+		</member>
+		<member name="max_distance" type="float" setter="set_max_distance" getter="get_max_distance" brief="">
+		</member>
+		<member name="playing" type="bool" setter="_set_playing" getter="_is_active" brief="">
+		</member>
+		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream" brief="">
+		</member>
+		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db" brief="">
+		</member>
+	</members>
 	<constants>
 	</constants>
 </class>
@@ -8004,13 +8188,31 @@
 			<description>
 			</description>
 		</method>
+		<method name="is_limit_drawing_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="is_limit_smoothing_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
 			</description>
 		</method>
+		<method name="is_margin_drawing_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="is_rotating" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_screen_drawing_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
@@ -8087,12 +8289,24 @@
 				Set the scrolling limit in pixels.
 			</description>
 		</method>
+		<method name="set_limit_drawing_enabled">
+			<argument index="0" name="limit_drawing_enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_limit_smoothing_enabled">
 			<argument index="0" name="limit_smoothing_enabled" type="bool">
 			</argument>
 			<description>
 				Smooth camera when reaching camera limits.
 				This requires camera smoothing being enabled to have a noticeable effect.
+			</description>
+		</method>
+		<method name="set_margin_drawing_enabled">
+			<argument index="0" name="margin_drawing_enabled" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_offset">
@@ -8104,6 +8318,12 @@
 		</method>
 		<method name="set_rotating">
 			<argument index="0" name="rotating" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_screen_drawing_enabled">
+			<argument index="0" name="screen_drawing_enabled" type="bool">
 			</argument>
 			<description>
 			</description>
@@ -8143,6 +8363,12 @@
 		<member name="drag_margin_top" type="float" setter="set_drag_margin" getter="get_drag_margin" brief="">
 		</member>
 		<member name="drag_margin_v_enabled" type="bool" setter="set_v_drag_enabled" getter="is_v_drag_enabled" brief="">
+		</member>
+		<member name="editor_draw_drag_margin" type="bool" setter="set_margin_drawing_enabled" getter="is_margin_drawing_enabled" brief="">
+		</member>
+		<member name="editor_draw_limits" type="bool" setter="set_limit_drawing_enabled" getter="is_limit_drawing_enabled" brief="">
+		</member>
+		<member name="editor_draw_screen" type="bool" setter="set_screen_drawing_enabled" getter="is_screen_drawing_enabled" brief="">
 		</member>
 		<member name="limit_bottom" type="int" setter="set_limit" getter="get_limit" brief="">
 		</member>
@@ -8226,6 +8452,8 @@
 			</argument>
 			<argument index="3" name="texture" type="Texture" default="NULL">
 			</argument>
+			<argument index="4" name="normal_map" type="Texture" default="NULL">
+			</argument>
 			<description>
 				Draw a colored polygon of any amount of points, convex or concave.
 			</description>
@@ -8254,8 +8482,34 @@
 			</argument>
 			<argument index="3" name="texture" type="Texture" default="NULL">
 			</argument>
+			<argument index="4" name="normal_map" type="Texture" default="NULL">
+			</argument>
 			<description>
 				Draw a polygon of any amount of points, convex or concave.
+			</description>
+		</method>
+		<method name="draw_polyline">
+			<argument index="0" name="points" type="PoolVector2Array">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<argument index="2" name="width" type="float" default="1">
+			</argument>
+			<argument index="3" name="antialiased" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="draw_polyline_colors">
+			<argument index="0" name="points" type="PoolVector2Array">
+			</argument>
+			<argument index="1" name="colors" type="PoolColorArray">
+			</argument>
+			<argument index="2" name="width" type="float" default="1">
+			</argument>
+			<argument index="3" name="antialiased" type="bool" default="false">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="draw_primitive">
@@ -8269,6 +8523,8 @@
 			</argument>
 			<argument index="4" name="width" type="float" default="1">
 			</argument>
+			<argument index="5" name="normal_map" type="Texture" default="NULL">
+			</argument>
 			<description>
 				Draw a custom primitive, 1 point for a point, 2 points for a line, 3 points for a triangle and 4 points for a quad.
 			</description>
@@ -8277,6 +8533,8 @@
 			<argument index="0" name="rect" type="Rect2">
 			</argument>
 			<argument index="1" name="color" type="Color">
+			</argument>
+			<argument index="2" name="filled" type="bool" default="true">
 			</argument>
 			<description>
 				Draw a colored rectangle.
@@ -8330,6 +8588,8 @@
 			</argument>
 			<argument index="2" name="modulate" type="Color" default="Color(1,1,1,1)">
 			</argument>
+			<argument index="3" name="normal_map" type="Texture" default="NULL">
+			</argument>
 			<description>
 				Draw a texture at a given position.
 			</description>
@@ -8345,6 +8605,8 @@
 			</argument>
 			<argument index="4" name="transpose" type="bool" default="false">
 			</argument>
+			<argument index="5" name="normal_map" type="Texture" default="NULL">
+			</argument>
 			<description>
 				Draw a textured rectangle at a given position, optionally modulated by a color. Transpose swaps the x and y coordinates when reading the texture.
 			</description>
@@ -8359,6 +8621,10 @@
 			<argument index="3" name="modulate" type="Color" default="Color(1,1,1,1)">
 			</argument>
 			<argument index="4" name="transpose" type="bool" default="false">
+			</argument>
+			<argument index="5" name="normal_map" type="Texture" default="NULL">
+			</argument>
+			<argument index="6" name="clip_uv" type="bool" default="true">
 			</argument>
 			<description>
 				Draw a textured rectangle region at a given position, optionally modulated by a color. Transpose swaps the x and y coordinates when reading the texture.
@@ -8462,7 +8728,7 @@
 			</description>
 		</method>
 		<method name="get_material" qualifiers="const">
-			<return type="ShaderMaterial">
+			<return type="Material">
 			</return>
 			<description>
 				Get the material of this item.
@@ -8599,7 +8865,7 @@
 			</description>
 		</method>
 		<method name="set_material">
-			<argument index="0" name="material" type="ShaderMaterial">
+			<argument index="0" name="material" type="Material">
 			</argument>
 			<description>
 				Set the material of this item.
@@ -8660,7 +8926,7 @@
 	<members>
 		<member name="light_mask" type="int" setter="set_light_mask" getter="get_light_mask" brief="">
 		</member>
-		<member name="material" type="ShaderMaterial" setter="set_material" getter="get_material" brief="">
+		<member name="material" type="ShaderMaterial,CanvasItemMaterial" setter="set_material" getter="get_material" brief="">
 		</member>
 		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" brief="">
 		</member>
@@ -8727,6 +8993,62 @@
 		</constant>
 		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="29">
 			Canvas item transform has changed. Only received if requested.
+		</constant>
+	</constants>
+</class>
+<class name="CanvasItemMaterial" inherits="Material" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_blend_mode" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_light_mode" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_blend_mode">
+			<argument index="0" name="blend_mode" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_light_mode">
+			<argument index="0" name="light_mode" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="blend_mode" type="int" setter="set_blend_mode" getter="get_blend_mode" brief="">
+		</member>
+		<member name="light_mode" type="int" setter="set_light_mode" getter="get_light_mode" brief="">
+		</member>
+	</members>
+	<constants>
+		<constant name="BLEND_MODE_MIX" value="0">
+		</constant>
+		<constant name="BLEND_MODE_ADD" value="1">
+		</constant>
+		<constant name="BLEND_MODE_SUB" value="2">
+		</constant>
+		<constant name="BLEND_MODE_MUL" value="3">
+		</constant>
+		<constant name="BLEND_MODE_PREMULT_ALPHA" value="4">
+		</constant>
+		<constant name="LIGHT_MODE_NORMAL" value="0">
+		</constant>
+		<constant name="LIGHT_MODE_UNSHADED" value="1">
+		</constant>
+		<constant name="LIGHT_MODE_LIGHT_ONLY" value="2">
 		</constant>
 	</constants>
 </class>
@@ -9563,50 +9885,11 @@
 			<description>
 			</description>
 		</method>
-		<method name="add_shape">
-			<argument index="0" name="shape" type="Shape2D">
-			</argument>
-			<argument index="1" name="transform" type="Transform2D" default="((1, 0), (0, 1), (0, 0))">
-			</argument>
-			<description>
-				Add a [Shape2D] to the collision body, with a given custom transform.
-			</description>
-		</method>
-		<method name="clear_shapes">
-			<description>
-				Remove all shapes.
-			</description>
-		</method>
 		<method name="get_rid" qualifiers="const">
 			<return type="RID">
 			</return>
 			<description>
 				Return the RID of this object.
-			</description>
-		</method>
-		<method name="get_shape" qualifiers="const">
-			<return type="Shape2D">
-			</return>
-			<argument index="0" name="shape_idx" type="int">
-			</argument>
-			<description>
-				Return the shape in the given index.
-			</description>
-		</method>
-		<method name="get_shape_count" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Return the amount of shapes in the collision body. Because a [CollisionPolygon2D] can generate more than one [Shape2D], the amount returned does not have to match the sum of [CollisionShape2D] and [CollisionPolygon2D].
-			</description>
-		</method>
-		<method name="get_shape_transform" qualifiers="const">
-			<return type="Transform2D">
-			</return>
-			<argument index="0" name="shape_idx" type="int">
-			</argument>
-			<description>
-				Return the shape transform in the given index.
 			</description>
 		</method>
 		<method name="is_pickable" qualifiers="const">
@@ -9616,54 +9899,11 @@
 				Return whether this object is pickable.
 			</description>
 		</method>
-		<method name="is_shape_set_as_trigger" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="shape_idx" type="int">
-			</argument>
-			<description>
-				Return whether a shape is a trigger. A trigger shape detects collisions, but is otherwise unaffected by physics (i.e. colliding objects will not get blocked).
-			</description>
-		</method>
-		<method name="remove_shape">
-			<argument index="0" name="shape_idx" type="int">
-			</argument>
-			<description>
-				Remove the shape in the given index.
-			</description>
-		</method>
 		<method name="set_pickable">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
 				Set whether this object is pickable. A pickable object can detect the mouse pointer enter/leave it and, if the mouse is inside it, report input events.
-			</description>
-		</method>
-		<method name="set_shape">
-			<argument index="0" name="shape_idx" type="int">
-			</argument>
-			<argument index="1" name="shape" type="Shape">
-			</argument>
-			<description>
-				Change a shape in the collision body.
-			</description>
-		</method>
-		<method name="set_shape_as_trigger">
-			<argument index="0" name="shape_idx" type="int">
-			</argument>
-			<argument index="1" name="enable" type="bool">
-			</argument>
-			<description>
-				Set whether a shape is a trigger. A trigger shape detects collisions, but is otherwise unaffected by physics (i.e. colliding objects will not get blocked).
-			</description>
-		</method>
-		<method name="set_shape_transform">
-			<argument index="0" name="shape_idx" type="int">
-			</argument>
-			<argument index="1" name="transform" type="Transform2D">
-			</argument>
-			<description>
-				Change the shape transform in the collision body.
 			</description>
 		</method>
 	</methods>
@@ -9779,22 +10019,6 @@
 				Return whether the polygon is a [ConvexPolygonShape2D] ([code]build_mode==0[/code]), or a [ConcavePolygonShape2D] ([code]build_mode==1[/code]).
 			</description>
 		</method>
-		<method name="get_collision_object_first_shape" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Return the index of the first shape generated by the editor.
-				When [code]build_mode[/code] is set to generate convex polygons, the shape shown in the editor may be decomposed into many convex polygons. In that case, a range of indexes is needed to directly access the [Shape2D].
-				When [code]build_mode[/code] is set to generate concave polygons, there is only one [Shape2D] generated, so the start index and the end index are the same.
-			</description>
-		</method>
-		<method name="get_collision_object_last_shape" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Return the index of the last shape generated by the editor.
-			</description>
-		</method>
 		<method name="get_polygon" qualifiers="const">
 			<return type="PoolVector2Array">
 			</return>
@@ -9802,11 +10026,16 @@
 				Return the list of points that define the polygon.
 			</description>
 		</method>
-		<method name="is_trigger" qualifiers="const">
+		<method name="is_disabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Return whether this polygon is a trigger.
+			</description>
+		</method>
+		<method name="is_one_way_collision_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="set_build_mode">
@@ -9814,6 +10043,18 @@
 			</argument>
 			<description>
 				Set whether the polygon is to be a [ConvexPolygonShape2D] ([code]build_mode==0[/code]), or a [ConcavePolygonShape2D] ([code]build_mode==1[/code]).
+			</description>
+		</method>
+		<method name="set_disabled">
+			<argument index="0" name="disabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_one_way_collision">
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_polygon">
@@ -9824,22 +10065,15 @@
 				When editing the point list via the editor, depending on [method get_build_mode], it has to be a list of points (for [code]build_mode==0[/code]), or a list of lines (for [code]build_mode==1[/code]). In the second case, the even elements of the array define the start point of the line, and the odd elements the end point.
 			</description>
 		</method>
-		<method name="set_trigger">
-			<argument index="0" name="trigger" type="bool">
-			</argument>
-			<description>
-				Set whether this polygon is a trigger. A trigger polygon detects collisions, but is otherwise unaffected by physics (i.e. colliding objects will not get blocked).
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="build_mode" type="int" setter="set_build_mode" getter="get_build_mode" brief="">
 		</member>
+		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" brief="">
+		</member>
+		<member name="one_way_collision" type="bool" setter="set_one_way_collision" getter="is_one_way_collision_enabled" brief="">
+		</member>
 		<member name="polygon" type="PoolVector2Array" setter="set_polygon" getter="get_polygon" brief="">
-		</member>
-		<member name="shape_range" type="Vector2" setter="_set_shape_range" getter="_get_shape_range" brief="">
-		</member>
-		<member name="trigger" type="bool" setter="set_trigger" getter="is_trigger" brief="">
 		</member>
 	</members>
 	<constants>
@@ -9911,13 +10145,6 @@
 		Editor-only class. This is not present when running the game. It's used in the editor to properly edit and position collision shapes in [CollisionObject2D]. This is not accessible from regular code.
 	</description>
 	<methods>
-		<method name="get_collision_object_shape_index" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Return the index of this shape inside its container [CollisionObject2D]. This can be used to directly access the underlying [Shape2D].
-			</description>
-		</method>
 		<method name="get_shape" qualifiers="const">
 			<return type="Object">
 			</return>
@@ -9925,11 +10152,28 @@
 				Return this shape's [Shape2D].
 			</description>
 		</method>
-		<method name="is_trigger" qualifiers="const">
+		<method name="is_disabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Return whether this shape is a trigger.
+			</description>
+		</method>
+		<method name="is_one_way_collision_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_disabled">
+			<argument index="0" name="disabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_one_way_collision">
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_shape">
@@ -9939,20 +10183,13 @@
 				Set this shape's [Shape2D]. This will not appear as a node, but can be directly edited as a property.
 			</description>
 		</method>
-		<method name="set_trigger">
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Set whether this shape is a trigger. A trigger shape detects collisions, but is otherwise unaffected by physics (i.e. will not block movement of colliding objects).
-			</description>
-		</method>
 	</methods>
 	<members>
-		<member name="_update_shape_index" type="int" setter="_set_update_shape_index" getter="_get_update_shape_index" brief="">
+		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" brief="">
+		</member>
+		<member name="one_way_collision" type="bool" setter="set_one_way_collision" getter="is_one_way_collision_enabled" brief="">
 		</member>
 		<member name="shape" type="Shape2D" setter="set_shape" getter="get_shape" brief="">
-		</member>
-		<member name="trigger" type="bool" setter="set_trigger" getter="is_trigger" brief="">
 		</member>
 	</members>
 	<constants>
@@ -10822,6 +11059,12 @@
 				Return position and size of the Control, relative to the top-left corner of the [i]window[/i] Control. This is a helper (see [method get_global_pos], [method get_size]).
 			</description>
 		</method>
+		<method name="get_h_grow_direction" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_h_size_flags" qualifiers="const">
 			<return type="int">
 			</return>
@@ -10870,6 +11113,12 @@
 		</method>
 		<method name="get_parent_control" qualifiers="const">
 			<return type="Control">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_pivot_offset" qualifiers="const">
+			<return type="Vector2">
 			</return>
 			<description>
 			</description>
@@ -10946,6 +11195,12 @@
 			</argument>
 			<description>
 				Return the tooltip, which will appear when the cursor is resting over this control.
+			</description>
+		</method>
+		<method name="get_v_grow_direction" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="get_v_size_flags" qualifiers="const">
@@ -11180,6 +11435,12 @@
 				Move the Control to a new position, relative to the top-left corner of the [i]window[/i] Control, and without changing current anchor mode. (see [method set_margin]).
 			</description>
 		</method>
+		<method name="set_h_grow_direction">
+			<argument index="0" name="direction" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_h_size_flags">
 			<argument index="0" name="flags" type="int">
 			</argument>
@@ -11201,6 +11462,12 @@
 			</argument>
 			<description>
 				Set when the control is ignoring mouse events (even touchpad events send mouse events). (see the MOUSE_FILTER_* constants)
+			</description>
+		</method>
+		<method name="set_pivot_offset">
+			<argument index="0" name="pivot_offset" type="Vector2">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_position">
@@ -11258,6 +11525,12 @@
 				Set a tooltip, which will appear when the cursor is resting over this control.
 			</description>
 		</method>
+		<method name="set_v_grow_direction">
+			<argument index="0" name="direction" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_v_size_flags">
 			<argument index="0" name="flags" type="int">
 			</argument>
@@ -11296,6 +11569,10 @@
 		</member>
 		<member name="focus_neighbour_top" type="NodePath" setter="set_focus_neighbour" getter="get_focus_neighbour" brief="">
 		</member>
+		<member name="grow_horizontal" type="int" setter="set_h_grow_direction" getter="get_h_grow_direction" brief="">
+		</member>
+		<member name="grow_vertical" type="int" setter="set_v_grow_direction" getter="get_v_grow_direction" brief="">
+		</member>
 		<member name="hint_tooltip" type="String" setter="set_tooltip" getter="_get_tooltip" brief="">
 		</member>
 		<member name="margin_bottom" type="int" setter="set_margin" getter="get_margin" brief="">
@@ -11311,6 +11588,8 @@
 		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" brief="">
 		</member>
 		<member name="rect_min_size" type="Vector2" setter="set_custom_minimum_size" getter="get_custom_minimum_size" brief="">
+		</member>
+		<member name="rect_pivot_offset" type="Vector2" setter="set_pivot_offset" getter="get_pivot_offset" brief="">
 		</member>
 		<member name="rect_position" type="Vector2" setter="set_position" getter="get_position" brief="">
 		</member>
@@ -11455,11 +11734,19 @@
 		</constant>
 		<constant name="SIZE_EXPAND_FILL" value="3">
 		</constant>
+		<constant name="SIZE_SHRINK_CENTER" value="4">
+		</constant>
+		<constant name="SIZE_SHRINK_END" value="8">
+		</constant>
 		<constant name="MOUSE_FILTER_STOP" value="0">
 		</constant>
 		<constant name="MOUSE_FILTER_PASS" value="1">
 		</constant>
 		<constant name="MOUSE_FILTER_IGNORE" value="2">
+		</constant>
+		<constant name="GROW_DIRECTION_BEGIN" value="0">
+		</constant>
+		<constant name="GROW_DIRECTION_END" value="1">
 		</constant>
 	</constants>
 </class>
@@ -11694,6 +11981,206 @@
 		<member name="subdivide_width" type="int" setter="set_subdivide_width" getter="get_subdivide_width" brief="">
 		</member>
 	</members>
+	<constants>
+	</constants>
+</class>
+<class name="Curve" inherits="Resource" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="add_point">
+			<return type="int">
+			</return>
+			<argument index="0" name="pos" type="Vector2">
+			</argument>
+			<argument index="1" name="left_tangent" type="float" default="0">
+			</argument>
+			<argument index="2" name="right_tangent" type="float" default="0">
+			</argument>
+			<argument index="3" name="left_mode" type="int" default="0">
+			</argument>
+			<argument index="4" name="right_mode" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bake">
+			<description>
+			</description>
+		</method>
+		<method name="clean_dupes">
+			<description>
+			</description>
+		</method>
+		<method name="clear_points">
+			<description>
+			</description>
+		</method>
+		<method name="get_bake_resolution" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_max_value" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_min_value" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_point_left_mode" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_point_left_tangent" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_point_pos" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_point_right_mode" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_point_right_tangent" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="interpolate" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="offset" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="interpolate_baked">
+			<return type="float">
+			</return>
+			<argument index="0" name="offset" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_point">
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_bake_resolution">
+			<argument index="0" name="resolution" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_max_value">
+			<argument index="0" name="max" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_min_value">
+			<argument index="0" name="min" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_point_left_mode">
+			<argument index="0" name="index" type="int">
+			</argument>
+			<argument index="1" name="mode" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_point_left_tangent">
+			<argument index="0" name="index" type="int">
+			</argument>
+			<argument index="1" name="tangent" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_point_offset">
+			<argument index="0" name="index" type="int">
+			</argument>
+			<argument index="1" name="offset" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_point_right_mode">
+			<argument index="0" name="index" type="int">
+			</argument>
+			<argument index="1" name="mode" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_point_right_tangent">
+			<argument index="0" name="index" type="int">
+			</argument>
+			<argument index="1" name="tangent" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_point_value">
+			<argument index="0" name="index" type="int">
+			</argument>
+			<argument index="1" name="y" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="_data" type="int" setter="_set_data" getter="_get_data" brief="">
+		</member>
+		<member name="bake_resolution" type="int" setter="set_bake_resolution" getter="get_bake_resolution" brief="">
+		</member>
+		<member name="max_value" type="float" setter="set_max_value" getter="get_max_value" brief="">
+		</member>
+		<member name="min_value" type="float" setter="set_min_value" getter="get_min_value" brief="">
+		</member>
+	</members>
+	<signals>
+		<signal name="range_changed">
+			<description>
+			</description>
+		</signal>
+	</signals>
 	<constants>
 	</constants>
 </class>
@@ -12091,38 +12578,14 @@
 	<description>
 	</description>
 	<methods>
-		<method name="get_max" qualifiers="const">
-			<return type="float">
+		<method name="get_curve" qualifiers="const">
+			<return type="Curve">
 			</return>
 			<description>
 			</description>
 		</method>
-		<method name="get_min" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_points" qualifiers="const">
-			<return type="PoolVector2Array">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_max">
-			<argument index="0" name="max" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_min">
-			<argument index="0" name="min" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_points">
-			<argument index="0" name="points" type="PoolVector2Array">
+		<method name="set_curve">
+			<argument index="0" name="curve" type="Curve">
 			</argument>
 			<description>
 			</description>
@@ -12135,11 +12598,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="max" type="float" setter="set_max" getter="get_max" brief="">
-		</member>
-		<member name="min" type="float" setter="set_min" getter="get_min" brief="">
-		</member>
-		<member name="points" type="PoolVector2Array" setter="set_points" getter="get_points" brief="">
+		<member name="curve" type="Curve" setter="set_curve" getter="get_curve" brief="">
 		</member>
 		<member name="width" type="int" setter="set_width" getter="get_width" brief="">
 		</member>
@@ -13313,22 +13772,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="open_scene_from_path">
-			<argument index="0" name="scene_filepath" type="String">
-			</argument>
-			</return>
-			<description>
-				Opens scene in editor. Do not use during plugin initialization. If you need, then use it together with [method Object.call_deferred].
-			</description>
-		</method>
-		<method name="reload_scene_from_path">
-			<argument index="0" name="scene_filepath" type="String">
-			</argument>
-			</return>
-			<description>
-				Reloads already loaded editor scene.
-			</description>
-		</method>
 		<method name="forward_canvas_gui_input" qualifiers="virtual">
 			<return type="bool">
 			</return>
@@ -13478,9 +13921,23 @@
 				Remember that you have to manage the visibility of all your editor controls manually.
 			</description>
 		</method>
+		<method name="open_scene_from_path">
+			<argument index="0" name="scene_filepath" type="String">
+			</argument>
+			<description>
+				Opens scene in editor. Do not use during plugin initialization. If you need, then use it together with [method Object.call_deferred].
+			</description>
+		</method>
 		<method name="queue_save_layout" qualifiers="const">
 			<description>
 				Queue save the project's editor layout.
+			</description>
+		</method>
+		<method name="reload_scene_from_path">
+			<argument index="0" name="scene_filepath" type="String">
+			</argument>
+			<description>
+				Reloads already loaded editor scene.
 			</description>
 		</method>
 		<method name="remove_control_from_bottom_panel">
@@ -13513,6 +13970,10 @@
 		<method name="save_external_data" qualifiers="virtual">
 			<description>
 				This method is called after the editor saves the project or when it's closed. It asks the plugin to save edited external scenes/resources.
+			</description>
+		</method>
+		<method name="set_input_event_forwarding_always_enabled">
+			<description>
 			</description>
 		</method>
 		<method name="set_state" qualifiers="virtual">
@@ -14271,7 +14732,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_glow_hdr_bleed_treshold" qualifiers="const">
+		<method name="get_glow_hdr_bleed_threshold" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
@@ -14741,8 +15202,8 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_glow_hdr_bleed_treshold">
-			<argument index="0" name="treshold" type="float">
+		<method name="set_glow_hdr_bleed_threshold">
+			<argument index="0" name="threshold" type="float">
 			</argument>
 			<description>
 			</description>
@@ -14768,7 +15229,7 @@
 			</description>
 		</method>
 		<method name="set_sky">
-			<argument index="0" name="sky" type="CubeMap">
+			<argument index="0" name="sky" type="Sky">
 			</argument>
 			<description>
 			</description>
@@ -15013,7 +15474,7 @@
 		</member>
 		<member name="glow_hdr_scale" type="float" setter="set_glow_hdr_bleed_scale" getter="get_glow_hdr_bleed_scale" brief="">
 		</member>
-		<member name="glow_hdr_treshold" type="float" setter="set_glow_hdr_bleed_treshold" getter="get_glow_hdr_bleed_treshold" brief="">
+		<member name="glow_hdr_threshold" type="float" setter="set_glow_hdr_bleed_threshold" getter="get_glow_hdr_bleed_threshold" brief="">
 		</member>
 		<member name="glow_intensity" type="float" setter="set_glow_intensity" getter="get_glow_intensity" brief="">
 		</member>
@@ -15831,6 +16292,14 @@
 			</description>
 		</method>
 	</methods>
+	<signals>
+		<signal name="completed">
+			<argument index="0" name="result" type="Nil">
+			</argument>
+			<description>
+			</description>
+		</signal>
+	</signals>
 	<constants>
 	</constants>
 </class>
@@ -16880,7 +17349,7 @@
 		</member>
 		<member name="lod_min_hysteresis" type="int" setter="set_lod_min_hysteresis" getter="get_lod_min_hysteresis" brief="">
 		</member>
-		<member name="material_override" type="Material" setter="set_material_override" getter="get_material_override" brief="">
+		<member name="material_override" type="ShaderMaterial,SpatialMaterial" setter="set_material_override" getter="get_material_override" brief="">
 		</member>
 		<member name="use_in_baked_light" type="bool" setter="set_flag" getter="get_flag" brief="">
 		</member>
@@ -17008,6 +17477,8 @@
 			</description>
 		</method>
 		<method name="property_get_revert">
+			<return type="Variant">
+			</return>
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
@@ -17168,86 +17639,14 @@
 	<description>
 	</description>
 	<methods>
-		<method name="add_point">
-			<argument index="0" name="offset" type="float">
-			</argument>
-			<argument index="1" name="color" type="Color">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_color" qualifiers="const">
-			<return type="Color">
-			</return>
-			<argument index="0" name="point" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_colors" qualifiers="const">
-			<return type="PoolColorArray">
+		<method name="get_gradient" qualifiers="const">
+			<return type="Gradient">
 			</return>
 			<description>
 			</description>
 		</method>
-		<method name="get_offset" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="point" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_offsets" qualifiers="const">
-			<return type="PoolRealArray">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_point_count" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="interpolate">
-			<return type="Color">
-			</return>
-			<argument index="0" name="offset" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="remove_point">
-			<argument index="0" name="offset" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_color">
-			<argument index="0" name="point" type="int">
-			</argument>
-			<argument index="1" name="color" type="Color">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_colors">
-			<argument index="0" name="colors" type="PoolColorArray">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_offset">
-			<argument index="0" name="point" type="int">
-			</argument>
-			<argument index="1" name="offset" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_offsets">
-			<argument index="0" name="offsets" type="PoolRealArray">
+		<method name="set_gradient">
+			<argument index="0" name="gradient" type="Gradient">
 			</argument>
 			<description>
 			</description>
@@ -17260,9 +17659,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="colors" type="float" setter="set_colors" getter="get_colors" brief="">
-		</member>
-		<member name="offsets" type="float" setter="set_offsets" getter="get_offsets" brief="">
+		<member name="gradient" type="Gradient" setter="set_gradient" getter="get_gradient" brief="">
 		</member>
 		<member name="width" type="int" setter="set_width" getter="get_width" brief="">
 		</member>
@@ -18247,6 +18644,10 @@
 		</theme_item>
 		<theme_item name="grabber" type="Texture">
 		</theme_item>
+		<theme_item name="grabber_disabled" type="Texture">
+		</theme_item>
+		<theme_item name="grabber_disabled" type="StyleBox">
+		</theme_item>
 		<theme_item name="grabber_highlight" type="Texture">
 		</theme_item>
 		<theme_item name="grabber_highlight" type="StyleBox">
@@ -19023,6 +19424,18 @@
 				Copy a "src_rect" [Rect2] from "src" [Image] to this [Image] on coordinates "dest".
 			</description>
 		</method>
+		<method name="blit_rect_mask">
+			<argument index="0" name="src" type="Image">
+			</argument>
+			<argument index="1" name="mask" type="Image">
+			</argument>
+			<argument index="2" name="src_rect" type="Rect2">
+			</argument>
+			<argument index="3" name="dst" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="clear_mipmaps">
 			<description>
 			</description>
@@ -19234,16 +19647,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_pixel">
-			<argument index="0" name="x" type="int">
-			</argument>
-			<argument index="1" name="y" type="int">
-			</argument>
-			<argument index="2" name="color" type="Color">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="resize">
 			<argument index="0" name="width" type="int">
 			</argument>
@@ -19255,7 +19658,7 @@
 			</description>
 		</method>
 		<method name="resize_to_po2">
-			<argument index="0" name="square" type="bool" default="&quot;false&quot;">
+			<argument index="0" name="square" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -19267,6 +19670,16 @@
 			</argument>
 			<description>
 				Save this [Image] as a png.
+			</description>
+		</method>
+		<method name="set_pixel">
+			<argument index="0" name="x" type="int">
+			</argument>
+			<argument index="1" name="y" type="int">
+			</argument>
+			<argument index="2" name="color" type="Color">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="shrink_x2">
@@ -20000,6 +20413,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="shortcut_match" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="event" type="InputEvent">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="xformed_by" qualifiers="const">
 			<return type="InputEvent">
 			</return>
@@ -20011,6 +20432,10 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="device" type="int" setter="set_device" getter="get_device" brief="">
+		</member>
+	</members>
 	<constants>
 	</constants>
 </class>
@@ -20898,6 +21323,8 @@
 			</description>
 		</method>
 		<method name="get_item_metadata" qualifiers="const">
+			<return type="Variant">
+			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
@@ -21167,6 +21594,26 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="allow_rmb_select" type="bool" setter="set_allow_rmb_select" getter="get_allow_rmb_select" brief="">
+		</member>
+		<member name="fixed_column_width" type="int" setter="set_fixed_column_width" getter="get_fixed_column_width" brief="">
+		</member>
+		<member name="icon_mode" type="int" setter="set_icon_mode" getter="get_icon_mode" brief="">
+		</member>
+		<member name="icon_scale" type="float" setter="set_icon_scale" getter="get_icon_scale" brief="">
+		</member>
+		<member name="items" type="Array" setter="_set_items" getter="_get_items" brief="">
+		</member>
+		<member name="max_columns" type="int" setter="set_max_columns" getter="get_max_columns" brief="">
+		</member>
+		<member name="max_text_lines" type="int" setter="set_max_text_lines" getter="get_max_text_lines" brief="">
+		</member>
+		<member name="same_column_width" type="bool" setter="set_same_column_width" getter="is_same_column_width" brief="">
+		</member>
+		<member name="select_mode" type="int" setter="set_select_mode" getter="get_select_mode" brief="">
+		</member>
+	</members>
 	<signals>
 		<signal name="item_activated">
 			<argument index="0" name="index" type="int">
@@ -21615,95 +22062,131 @@
 		Kinematic Characters: KinematicBody2D also has an api for moving objects (the [method move] method) while performing collision tests. This makes them really useful to implement characters that collide against a world, but that don't require advanced physics.
 	</description>
 	<methods>
-		<method name="get_collider" qualifiers="const">
-			<return type="Variant">
+		<method name="get_collision_collider" qualifiers="const">
+			<return type="Object">
 			</return>
+			<argument index="0" name="collision" type="int">
+			</argument>
 			<description>
-				Return the body that collided with this one.
 			</description>
 		</method>
-		<method name="get_collider_metadata" qualifiers="const">
-			<return type="Variant">
-			</return>
-			<description>
-				Return the metadata of the shape that collided with this body. If there is no collision, it will return 0, so collisions must be checked first with [method is_colliding]. Additionally, this metadata can not be set with [method Object.set_meta], it must be set with [method Physics2DServer.body_set_shape_metadata].
-			</description>
-		</method>
-		<method name="get_collider_shape" qualifiers="const">
+		<method name="get_collision_collider_id" qualifiers="const">
 			<return type="int">
 			</return>
+			<argument index="0" name="collision" type="int">
+			</argument>
 			<description>
-				Return the shape index from the body that collided with this one. If there is no collision, this method will return 0, so collisions must be checked first with [method is_colliding].
 			</description>
 		</method>
-		<method name="get_collider_velocity" qualifiers="const">
+		<method name="get_collision_collider_metadata" qualifiers="const">
+			<argument index="0" name="collision" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_collider_shape" qualifiers="const">
+			<return type="Object">
+			</return>
+			<argument index="0" name="collision" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_collider_shape_index" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="collision" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_collider_velocity" qualifiers="const">
 			<return type="Vector2">
 			</return>
+			<argument index="0" name="collision" type="int">
+			</argument>
 			<description>
 				Return the velocity of the body that collided with this one.
 			</description>
 		</method>
-		<method name="get_collision_margin" qualifiers="const">
-			<return type="float">
+		<method name="get_collision_count" qualifiers="const">
+			<return type="int">
 			</return>
 			<description>
-				Return the collision margin for this object.
+			</description>
+		</method>
+		<method name="get_collision_local_shape" qualifiers="const">
+			<return type="Object">
+			</return>
+			<argument index="0" name="collision" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="get_collision_normal" qualifiers="const">
 			<return type="Vector2">
 			</return>
+			<argument index="0" name="collision" type="int">
+			</argument>
 			<description>
-				Return the normal of the surface the body collided with. This is useful to implement sliding along a surface.
 			</description>
 		</method>
-		<method name="get_collision_pos" qualifiers="const">
+		<method name="get_collision_position" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="collision" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_remainder" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="collision" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_travel" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="collision" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_floor_velocity" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
-				Return the point in space where the body is touching another. If there is no collision, this method will return (0,0), so collisions must be checked first with [method is_colliding].
 			</description>
 		</method>
-		<method name="get_move_and_slide_colliders" qualifiers="const">
-			<return type="Array">
+		<method name="get_safe_margin" qualifiers="const">
+			<return type="float">
 			</return>
 			<description>
 			</description>
 		</method>
-		<method name="get_travel" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-				Return the last movement done by the body.
-			</description>
-		</method>
-		<method name="is_colliding" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Return whether the body is colliding with another.
-			</description>
-		</method>
-		<method name="is_move_and_slide_on_ceiling" qualifiers="const">
+		<method name="is_on_ceiling" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
 			</description>
 		</method>
-		<method name="is_move_and_slide_on_floor" qualifiers="const">
+		<method name="is_on_floor" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
 			</description>
 		</method>
-		<method name="is_move_and_slide_on_wall" qualifiers="const">
+		<method name="is_on_wall" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
 			</description>
 		</method>
 		<method name="move">
-			<return type="Vector2">
+			<return type="Dictionary">
 			</return>
 			<argument index="0" name="rel_vec" type="Vector2">
 			</argument>
@@ -21727,26 +22210,10 @@
 			<description>
 			</description>
 		</method>
-		<method name="move_to">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<description>
-				Move the body to the given position. This is not a teleport, and the body will stop if there is an obstacle. The returned vector is how much movement was remaining before being stopped.
-				[code]floor_max_angle[/code] is in radians (default is pi/4), and filters which obstacles should be considered as floors/cellings instead of walls.
-			</description>
-		</method>
-		<method name="revert_motion">
-			<description>
-				Undo the last movement done by the body.
-			</description>
-		</method>
-		<method name="set_collision_margin">
+		<method name="set_safe_margin">
 			<argument index="0" name="pixels" type="float">
 			</argument>
 			<description>
-				Set the collision margin for this object. A collision margin is an amount (in pixels) that all shapes will grow when computing collisions, to account for numerical imprecision.
 			</description>
 		</method>
 		<method name="test_move">
@@ -21762,7 +22229,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="collision/margin" type="float" setter="set_collision_margin" getter="get_collision_margin" brief="">
+		<member name="collision/safe_margin" type="float" setter="set_safe_margin" getter="get_safe_margin" brief="">
 		</member>
 	</members>
 	<constants>
@@ -23466,7 +23933,23 @@
 		Material is a base [Resource] used for coloring and shading geometry. All materials inherit from it and almost all [VisualInstance] derived nodes carry a Material. A few flags and parameters are shared between all material types and are configured here.
 	</description>
 	<methods>
+		<method name="get_next_pass" qualifiers="const">
+			<return type="Material">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_next_pass">
+			<argument index="0" name="next_pass" type="Material">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
+	<members>
+		<member name="next_pass" type="Material" setter="set_next_pass" getter="get_next_pass" brief="">
+		</member>
+	</members>
 	<constants>
 	</constants>
 </class>
@@ -23610,6 +24093,8 @@
 			</description>
 		</method>
 		<method name="get_edge_meta" qualifiers="const">
+			<return type="Variant">
+			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
@@ -23642,6 +24127,8 @@
 			</description>
 		</method>
 		<method name="get_face_meta" qualifiers="const">
+			<return type="Variant">
+			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
@@ -23724,6 +24211,8 @@
 			</description>
 		</method>
 		<method name="get_vertex_meta" qualifiers="const">
+			<return type="Variant">
+			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
@@ -23879,6 +24368,10 @@
 			<description>
 			</description>
 		</method>
+		<method name="create_debug_tagents">
+			<description>
+			</description>
+		</method>
 		<method name="create_trimesh_collision">
 			<description>
 				This helper creates a [StaticBody] child [Node] using the mesh geometry as collision. It's mainly used for testing.
@@ -23897,6 +24390,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_surface_material" qualifiers="const">
+			<return type="Material">
+			</return>
+			<argument index="0" name="surface" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_mesh">
 			<argument index="0" name="mesh" type="Mesh">
 			</argument>
@@ -23906,6 +24407,14 @@
 		</method>
 		<method name="set_skeleton_path">
 			<argument index="0" name="skeleton_path" type="NodePath">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_surface_material">
+			<argument index="0" name="surface" type="int">
+			</argument>
+			<argument index="1" name="material" type="Material">
 			</argument>
 			<description>
 			</description>
@@ -24974,6 +25483,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_h_axis_stretch_mode" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_patch_margin" qualifiers="const">
 			<return type="int">
 			</return>
@@ -24994,8 +25509,20 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_v_axis_stretch_mode" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="set_draw_center">
 			<argument index="0" name="draw_center" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_h_axis_stretch_mode">
+			<argument index="0" name="mode" type="int">
 			</argument>
 			<description>
 			</description>
@@ -25020,8 +25547,18 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_v_axis_stretch_mode">
+			<argument index="0" name="mode" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<members>
+		<member name="axis_stretch_horizontal" type="int" setter="set_h_axis_stretch_mode" getter="get_h_axis_stretch_mode" brief="">
+		</member>
+		<member name="axis_stretch_vertical" type="int" setter="set_v_axis_stretch_mode" getter="get_v_axis_stretch_mode" brief="">
+		</member>
 		<member name="draw_center" type="bool" setter="set_draw_center" getter="get_draw_center" brief="">
 		</member>
 		<member name="patch_margin_bottom" type="int" setter="set_patch_margin" getter="get_patch_margin" brief="">
@@ -25044,6 +25581,12 @@
 		</signal>
 	</signals>
 	<constants>
+		<constant name="AXIS_STRETCH_MODE_STRETCH" value="0">
+		</constant>
+		<constant name="AXIS_STRETCH_MODE_TILE" value="1">
+		</constant>
+		<constant name="AXIS_STRETCH_MODE_TILE_FIT" value="2">
+		</constant>
 	</constants>
 </class>
 <class name="Node" inherits="Object" category="Core">
@@ -25224,7 +25767,7 @@
 				Return the name of the node. This name is unique among the siblings (other child nodes from the same parent).
 			</description>
 		</method>
-		<method name="get_network_mode" qualifiers="const">
+		<method name="get_network_master" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
@@ -25628,11 +26171,12 @@
 				Set the name of the [Node]. Name must be unique within parent, and setting an already existing name will cause for the node to be automatically renamed.
 			</description>
 		</method>
-		<method name="set_network_mode">
-			<argument index="0" name="mode" type="int">
+		<method name="set_network_master">
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="recursive" type="bool" default="true">
 			</argument>
 			<description>
-				Change the networking mode of the [Node], where [i]mode[/i] is one of the constants NETWORK_MODE_*. Master nodes will only call gdscript methods defined as [i]master func[/i] if a RPC call is received (slave nodes will only call [i]slave func[/i]; both will call [i]remote func[/i] if the call is not local, and [i]sync func[/i] in any case). Inherit mode looks at the parent node to determine the value (root node depends on the [SceneTree] having a networking peer set with [method SceneTree.set_network_peer])
 			</description>
 		</method>
 		<method name="set_owner">
@@ -25748,12 +26292,6 @@
 		<constant name="NOTIFICATION_INTERNAL_PROCESS" value="25">
 		</constant>
 		<constant name="NOTIFICATION_INTERNAL_FIXED_PROCESS" value="26">
-		</constant>
-		<constant name="NETWORK_MODE_INHERIT" value="0">
-		</constant>
-		<constant name="NETWORK_MODE_MASTER" value="1">
-		</constant>
-		<constant name="NETWORK_MODE_SLAVE" value="2">
 		</constant>
 		<constant name="RPC_MODE_DISABLED" value="0">
 		</constant>
@@ -26717,6 +27255,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_ime_position">
+			<argument index="0" name="arg0" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_keep_screen_on">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
@@ -27051,6 +27595,12 @@
 			</return>
 			<description>
 				Return the class of the object as a string.
+			</description>
+		</method>
+		<method name="get_incoming_connections" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="get_instance_ID" qualifiers="const">
@@ -27425,6 +27975,8 @@
 			</description>
 		</method>
 		<method name="get_item_metadata" qualifiers="const">
+			<return type="Variant">
+			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
@@ -27453,6 +28005,8 @@
 			</description>
 		</method>
 		<method name="get_selected_metadata" qualifiers="const">
+			<return type="Variant">
+			</return>
 			<description>
 			</description>
 		</method>
@@ -28096,102 +28650,6 @@
 	<constants>
 	</constants>
 </class>
-<class name="ParticleAttractor2D" inherits="Node2D" category="Core">
-	<brief_description>
-	</brief_description>
-	<description>
-	</description>
-	<methods>
-		<method name="get_absorption" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_disable_radius" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_gravity" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_particles_path" qualifiers="const">
-			<return type="NodePath">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_radius" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_absorption">
-			<argument index="0" name="absorption" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_disable_radius">
-			<argument index="0" name="radius" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_enabled">
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_gravity">
-			<argument index="0" name="gravity" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_particles_path">
-			<argument index="0" name="path" type="NodePath">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_radius">
-			<argument index="0" name="radius" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-	</methods>
-	<members>
-		<member name="absorption" type="float" setter="set_absorption" getter="get_absorption" brief="">
-		</member>
-		<member name="disable_radius" type="float" setter="set_disable_radius" getter="get_disable_radius" brief="">
-		</member>
-		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" brief="">
-		</member>
-		<member name="gravity" type="float" setter="set_gravity" getter="get_gravity" brief="">
-		</member>
-		<member name="particles_path" type="NodePath" setter="set_particles_path" getter="get_particles_path" brief="">
-		</member>
-		<member name="radius" type="float" setter="set_radius" getter="get_radius" brief="">
-		</member>
-	</members>
-	<constants>
-	</constants>
-</class>
 <class name="Particles" inherits="GeometryInstance" category="Core">
 	<brief_description>
 	</brief_description>
@@ -28254,6 +28712,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_one_shot" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_pre_process_time" qualifiers="const">
 			<return type="float">
 			</return>
@@ -28293,6 +28757,10 @@
 		<method name="is_emitting" qualifiers="const">
 			<return type="bool">
 			</return>
+			<description>
+			</description>
+		</method>
+		<method name="restart">
 			<description>
 			</description>
 		</method>
@@ -28348,6 +28816,12 @@
 		</method>
 		<method name="set_lifetime">
 			<argument index="0" name="secs" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_one_shot">
+			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
 			</description>
@@ -28416,9 +28890,11 @@
 		</member>
 		<member name="local_coords" type="bool" setter="set_use_local_coordinates" getter="get_use_local_coordinates" brief="">
 		</member>
+		<member name="one_shot" type="bool" setter="set_one_shot" getter="get_one_shot" brief="">
+		</member>
 		<member name="preprocess" type="float" setter="set_pre_process_time" getter="get_pre_process_time" brief="">
 		</member>
-		<member name="process_material" type="ParticlesMaterial,ShaderMaterial" setter="set_process_material" getter="get_process_material" brief="">
+		<member name="process_material" type="ShaderMaterial,ParticlesMaterial" setter="set_process_material" getter="get_process_material" brief="">
 		</member>
 		<member name="randomness" type="float" setter="set_randomness_ratio" getter="get_randomness_ratio" brief="">
 		</member>
@@ -28446,6 +28922,12 @@
 		Particles2D is a particle system 2D [Node] that is used to simulate several types of particle effects, such as explosions, rain, snow, fireflies, or other magical-like shinny sparkles. Particles are drawn using impostors, and given their dynamic behavior, the user must provide a visibility bounding box (although helpers to create one automatically exist).
 	</description>
 	<methods>
+		<method name="capture_rect" qualifiers="const">
+			<return type="Rect2">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_amount" qualifiers="const">
 			<return type="int">
 			</return>
@@ -28453,83 +28935,32 @@
 				Returns the amount of particles spawned at each emission
 			</description>
 		</method>
-		<method name="get_color" qualifiers="const">
-			<return type="Color">
-			</return>
-			<description>
-				Returns the tint color for each particle.
-			</description>
-		</method>
-		<method name="get_color_phase_color" qualifiers="const">
-			<return type="Color">
-			</return>
-			<argument index="0" name="phase" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_color_phase_pos" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="phase" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_color_phases" qualifiers="const">
+		<method name="get_draw_order" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
 			</description>
 		</method>
-		<method name="get_emission_half_extents" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-				Returns the half extents of the emission box.
-			</description>
-		</method>
-		<method name="get_emission_points" qualifiers="const">
-			<return type="PoolVector2Array">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_emissor_offset" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-				Returns the particle spawn origin position relative to the emitter.
-			</description>
-		</method>
-		<method name="get_emit_timeout" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Returns the amount of seconds during which the emitter will spawn particles
-			</description>
-		</method>
-		<method name="get_explosiveness" qualifiers="const">
+		<method name="get_explosiveness_ratio" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
 			</description>
 		</method>
-		<method name="get_gradient" qualifiers="const">
-			<return type="Gradient">
+		<method name="get_fixed_fps" qualifiers="const">
+			<return type="int">
 			</return>
 			<description>
-				Returns the [Gradient] used to tint each particle.
+			</description>
+		</method>
+		<method name="get_fractional_delta" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="get_h_frames" qualifiers="const">
 			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_initial_velocity" qualifiers="const">
-			<return type="Vector2">
 			</return>
 			<description>
 			</description>
@@ -28541,13 +28972,16 @@
 				Gets the amount of seconds that each particle will be visible.
 			</description>
 		</method>
-		<method name="get_param" qualifiers="const">
-			<return type="float">
+		<method name="get_normal_map" qualifiers="const">
+			<return type="Texture">
 			</return>
-			<argument index="0" name="param" type="int">
-			</argument>
 			<description>
-				Returns the value of the specified emitter parameter
+			</description>
+		</method>
+		<method name="get_one_shot" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="get_pre_process_time" qualifiers="const">
@@ -28556,19 +28990,22 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_process_mode" qualifiers="const">
-			<return type="int">
+		<method name="get_process_material" qualifiers="const">
+			<return type="Material">
 			</return>
 			<description>
 			</description>
 		</method>
-		<method name="get_randomness" qualifiers="const">
+		<method name="get_randomness_ratio" qualifiers="const">
 			<return type="float">
 			</return>
-			<argument index="0" name="param" type="int">
-			</argument>
 			<description>
-				Returns the randomness value of the specified emitter parameter
+			</description>
+		</method>
+		<method name="get_speed_scale" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="get_texture" qualifiers="const">
@@ -28578,15 +29015,20 @@
 				Returns the texture for emitted particles
 			</description>
 		</method>
-		<method name="get_time_scale" qualifiers="const">
-			<return type="float">
+		<method name="get_use_local_coordinates" qualifiers="const">
+			<return type="bool">
 			</return>
 			<description>
-				Returns the emitter time scale
 			</description>
 		</method>
 		<method name="get_v_frames" qualifiers="const">
 			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_visibility_rect" qualifiers="const">
+			<return type="Rect2">
 			</return>
 			<description>
 			</description>
@@ -28598,31 +29040,7 @@
 				Returns whether this emitter is currently emitting or not
 			</description>
 		</method>
-		<method name="is_flipped_h" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_flipped_v" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_using_local_space" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="pre_process">
-			<argument index="0" name="time" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="reset">
+		<method name="restart">
 			<description>
 			</description>
 		</method>
@@ -28633,348 +29051,153 @@
 				Sets the amount of particles spawned at each emission
 			</description>
 		</method>
-		<method name="set_color">
-			<argument index="0" name="color" type="Color">
+		<method name="set_draw_order">
+			<argument index="0" name="order" type="int">
 			</argument>
 			<description>
-				Set the tint color for each particle.
-			</description>
-		</method>
-		<method name="set_color_phase_color">
-			<argument index="0" name="phase" type="int">
-			</argument>
-			<argument index="1" name="color" type="Color">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_color_phase_pos">
-			<argument index="0" name="phase" type="int">
-			</argument>
-			<argument index="1" name="pos" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_color_phases">
-			<argument index="0" name="phases" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_emission_half_extents">
-			<argument index="0" name="extents" type="Vector2">
-			</argument>
-			<description>
-				Sets the half extents of the emission box, particles will be spawned at random inside this box.
-			</description>
-		</method>
-		<method name="set_emission_points">
-			<argument index="0" name="points" type="PoolVector2Array">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_emissor_offset">
-			<argument index="0" name="offset" type="Vector2">
-			</argument>
-			<description>
-				Sets the particle spawn origin position relative to the emitter center. for example if this value is set to (50, 50), the particle will spawn 50 units to the right and  50 units to the bottom of the emitter center.
-			</description>
-		</method>
-		<method name="set_emit_timeout">
-			<argument index="0" name="value" type="float">
-			</argument>
-			<description>
-				Sets the amount of seconds during which the emitter will spawn particles, after the specified seconds the emitter state will be set to non emitting, so calling [method is_emitting] will return false. If the timeout is 0 the emitter will spawn forever.
 			</description>
 		</method>
 		<method name="set_emitting">
-			<argument index="0" name="active" type="bool">
+			<argument index="0" name="emitting" type="bool">
 			</argument>
 			<description>
 				If this is set to true then the particle emitter will emit particles, if its false it will not.
 			</description>
 		</method>
-		<method name="set_explosiveness">
-			<argument index="0" name="amount" type="float">
+		<method name="set_explosiveness_ratio">
+			<argument index="0" name="ratio" type="float">
 			</argument>
 			<description>
 			</description>
 		</method>
-		<method name="set_flip_h">
+		<method name="set_fixed_fps">
+			<argument index="0" name="fps" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_fractional_delta">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-			</description>
-		</method>
-		<method name="set_flip_v">
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_gradient">
-			<return type="Gradient">
-			</return>
-			<argument index="0" name="gradient" type="Object">
-			</argument>
-			<description>
-				Sets the [Gradient] used to tint each particle. Particle will be tinted according to their lifetimes.
 			</description>
 		</method>
 		<method name="set_h_frames">
-			<argument index="0" name="enable" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_initial_velocity">
-			<argument index="0" name="velocity" type="Vector2">
+			<argument index="0" name="frames" type="int">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="set_lifetime">
-			<argument index="0" name="lifetime" type="float">
+			<argument index="0" name="secs" type="float">
 			</argument>
 			<description>
 				Sets the amount of seconds that each particle will be visible.
 			</description>
 		</method>
-		<method name="set_param">
-			<argument index="0" name="param" type="int">
-			</argument>
-			<argument index="1" name="value" type="float">
+		<method name="set_normal_map">
+			<argument index="0" name="texture" type="Texture">
 			</argument>
 			<description>
-				Sets the value of the specified emitter parameter (see the constants secction for the list of parameters)
+			</description>
+		</method>
+		<method name="set_one_shot">
+			<argument index="0" name="secs" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_pre_process_time">
-			<argument index="0" name="time" type="float">
+			<argument index="0" name="secs" type="float">
 			</argument>
 			<description>
 			</description>
 		</method>
-		<method name="set_process_mode">
-			<argument index="0" name="mode" type="int">
+		<method name="set_process_material">
+			<argument index="0" name="material" type="Material">
 			</argument>
 			<description>
 			</description>
 		</method>
-		<method name="set_randomness">
-			<argument index="0" name="param" type="int">
-			</argument>
-			<argument index="1" name="value" type="float">
+		<method name="set_randomness_ratio">
+			<argument index="0" name="ratio" type="float">
 			</argument>
 			<description>
-				Sets the randomness value of the specified emitter parameter (see the constants secction for the list of parameters), 0 means no randomness, so every particle will have the parameters specified, 1 means that the parameter will be chosen at random, the closer the randomness value gets to 0 the more conservative the variation of the parameter will be.
+			</description>
+		</method>
+		<method name="set_speed_scale">
+			<argument index="0" name="scale" type="float">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_texture">
-			<return type="Texture">
-			</return>
-			<argument index="0" name="texture" type="Object">
+			<argument index="0" name="texture" type="Texture">
 			</argument>
 			<description>
-				Sets the texture for each particle
 			</description>
 		</method>
-		<method name="set_time_scale">
-			<argument index="0" name="time_scale" type="float">
-			</argument>
-			<description>
-				Sets the increment or decrement for the particle lifetime. for example: if the time scale is set to 2, the particles will die and move twice as fast.
-			</description>
-		</method>
-		<method name="set_use_local_space">
+		<method name="set_use_local_coordinates">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="set_v_frames">
-			<argument index="0" name="enable" type="int">
+			<argument index="0" name="frames" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_visibility_rect">
+			<argument index="0" name="aabb" type="Rect2">
 			</argument>
 			<description>
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="color/color" type="Color" setter="set_color" getter="get_color" brief="">
+		<member name="amount" type="int" setter="set_amount" getter="get_amount" brief="">
 		</member>
-		<member name="color/color_ramp" type="Gradient" setter="set_color_ramp" getter="get_color_ramp" brief="">
+		<member name="draw_order" type="int" setter="set_draw_order" getter="get_draw_order" brief="">
 		</member>
-		<member name="color_phases/count" type="int" setter="set_color_phases" getter="get_color_phases" brief="">
+		<member name="emitting" type="bool" setter="set_emitting" getter="is_emitting" brief="">
 		</member>
-		<member name="config/amount" type="int" setter="set_amount" getter="get_amount" brief="">
+		<member name="explosiveness" type="float" setter="set_explosiveness_ratio" getter="get_explosiveness_ratio" brief="">
 		</member>
-		<member name="config/emit_timeout" type="float" setter="set_emit_timeout" getter="get_emit_timeout" brief="">
+		<member name="fixed_fps" type="int" setter="set_fixed_fps" getter="get_fixed_fps" brief="">
 		</member>
-		<member name="config/emitting" type="bool" setter="set_emitting" getter="is_emitting" brief="">
+		<member name="fract_delta" type="bool" setter="set_fractional_delta" getter="get_fractional_delta" brief="">
 		</member>
-		<member name="config/explosiveness" type="float" setter="set_explosiveness" getter="get_explosiveness" brief="">
+		<member name="h_frames" type="int" setter="set_h_frames" getter="get_h_frames" brief="">
 		</member>
-		<member name="config/flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h" brief="">
+		<member name="lifetime" type="float" setter="set_lifetime" getter="get_lifetime" brief="">
 		</member>
-		<member name="config/flip_v" type="bool" setter="set_flip_v" getter="is_flipped_v" brief="">
+		<member name="local_coords" type="bool" setter="set_use_local_coordinates" getter="get_use_local_coordinates" brief="">
 		</member>
-		<member name="config/h_frames" type="int" setter="set_h_frames" getter="get_h_frames" brief="">
+		<member name="normal_map" type="Texture" setter="set_normal_map" getter="get_normal_map" brief="">
 		</member>
-		<member name="config/half_extents" type="Vector2" setter="set_emission_half_extents" getter="get_emission_half_extents" brief="">
+		<member name="one_shot" type="bool" setter="set_one_shot" getter="get_one_shot" brief="">
 		</member>
-		<member name="config/lifetime" type="float" setter="set_lifetime" getter="get_lifetime" brief="">
+		<member name="preprocess" type="float" setter="set_pre_process_time" getter="get_pre_process_time" brief="">
 		</member>
-		<member name="config/local_space" type="bool" setter="set_use_local_space" getter="is_using_local_space" brief="">
+		<member name="process_material" type="ShaderMaterial,ParticlesMaterial" setter="set_process_material" getter="get_process_material" brief="">
 		</member>
-		<member name="config/offset" type="Vector2" setter="set_emissor_offset" getter="get_emissor_offset" brief="">
+		<member name="randomness" type="float" setter="set_randomness_ratio" getter="get_randomness_ratio" brief="">
 		</member>
-		<member name="config/preprocess" type="float" setter="set_pre_process_time" getter="get_pre_process_time" brief="">
+		<member name="speed_scale" type="float" setter="set_speed_scale" getter="get_speed_scale" brief="">
 		</member>
-		<member name="config/process_mode" type="int" setter="set_process_mode" getter="get_process_mode" brief="">
+		<member name="texture" type="Texture" setter="set_texture" getter="get_texture" brief="">
 		</member>
-		<member name="config/texture" type="Texture" setter="set_texture" getter="get_texture" brief="">
+		<member name="v_frames" type="int" setter="set_v_frames" getter="get_v_frames" brief="">
 		</member>
-		<member name="config/time_scale" type="float" setter="set_time_scale" getter="get_time_scale" brief="">
-		</member>
-		<member name="config/v_frames" type="int" setter="set_v_frames" getter="get_v_frames" brief="">
-		</member>
-		<member name="emission_points" type="PoolVector2Array" setter="set_emission_points" getter="get_emission_points" brief="">
-		</member>
-		<member name="params/anim_initial_pos" type="float" setter="set_param" getter="get_param" brief="">
-		</member>
-		<member name="params/anim_speed_scale" type="float" setter="set_param" getter="get_param" brief="">
-		</member>
-		<member name="params/damping" type="float" setter="set_param" getter="get_param" brief="">
-		</member>
-		<member name="params/direction" type="float" setter="set_param" getter="get_param" brief="">
-		</member>
-		<member name="params/final_size" type="float" setter="set_param" getter="get_param" brief="">
-		</member>
-		<member name="params/gravity_direction" type="float" setter="set_param" getter="get_param" brief="">
-		</member>
-		<member name="params/gravity_strength" type="float" setter="set_param" getter="get_param" brief="">
-		</member>
-		<member name="params/hue_variation" type="float" setter="set_param" getter="get_param" brief="">
-		</member>
-		<member name="params/initial_angle" type="float" setter="set_param" getter="get_param" brief="">
-		</member>
-		<member name="params/initial_size" type="float" setter="set_param" getter="get_param" brief="">
-		</member>
-		<member name="params/linear_velocity" type="float" setter="set_param" getter="get_param" brief="">
-		</member>
-		<member name="params/orbit_velocity" type="float" setter="set_param" getter="get_param" brief="">
-		</member>
-		<member name="params/radial_accel" type="float" setter="set_param" getter="get_param" brief="">
-		</member>
-		<member name="params/spin_velocity" type="float" setter="set_param" getter="get_param" brief="">
-		</member>
-		<member name="params/spread" type="float" setter="set_param" getter="get_param" brief="">
-		</member>
-		<member name="params/tangential_accel" type="float" setter="set_param" getter="get_param" brief="">
-		</member>
-		<member name="phase_0/color" type="Color" setter="set_color_phase_color" getter="get_color_phase_color" brief="">
-		</member>
-		<member name="phase_0/pos" type="float" setter="set_color_phase_pos" getter="get_color_phase_pos" brief="">
-		</member>
-		<member name="phase_1/color" type="Color" setter="set_color_phase_color" getter="get_color_phase_color" brief="">
-		</member>
-		<member name="phase_1/pos" type="float" setter="set_color_phase_pos" getter="get_color_phase_pos" brief="">
-		</member>
-		<member name="phase_2/color" type="Color" setter="set_color_phase_color" getter="get_color_phase_color" brief="">
-		</member>
-		<member name="phase_2/pos" type="float" setter="set_color_phase_pos" getter="get_color_phase_pos" brief="">
-		</member>
-		<member name="phase_3/color" type="Color" setter="set_color_phase_color" getter="get_color_phase_color" brief="">
-		</member>
-		<member name="phase_3/pos" type="float" setter="set_color_phase_pos" getter="get_color_phase_pos" brief="">
-		</member>
-		<member name="randomness/anim_initial_pos" type="float" setter="set_randomness" getter="get_randomness" brief="">
-		</member>
-		<member name="randomness/anim_speed_scale" type="float" setter="set_randomness" getter="get_randomness" brief="">
-		</member>
-		<member name="randomness/damping" type="float" setter="set_randomness" getter="get_randomness" brief="">
-		</member>
-		<member name="randomness/direction" type="float" setter="set_randomness" getter="get_randomness" brief="">
-		</member>
-		<member name="randomness/final_size" type="float" setter="set_randomness" getter="get_randomness" brief="">
-		</member>
-		<member name="randomness/gravity_direction" type="float" setter="set_randomness" getter="get_randomness" brief="">
-		</member>
-		<member name="randomness/gravity_strength" type="float" setter="set_randomness" getter="get_randomness" brief="">
-		</member>
-		<member name="randomness/hue_variation" type="float" setter="set_randomness" getter="get_randomness" brief="">
-		</member>
-		<member name="randomness/initial_angle" type="float" setter="set_randomness" getter="get_randomness" brief="">
-		</member>
-		<member name="randomness/initial_size" type="float" setter="set_randomness" getter="get_randomness" brief="">
-		</member>
-		<member name="randomness/linear_velocity" type="float" setter="set_randomness" getter="get_randomness" brief="">
-		</member>
-		<member name="randomness/orbit_velocity" type="float" setter="set_randomness" getter="get_randomness" brief="">
-		</member>
-		<member name="randomness/radial_accel" type="float" setter="set_randomness" getter="get_randomness" brief="">
-		</member>
-		<member name="randomness/spin_velocity" type="float" setter="set_randomness" getter="get_randomness" brief="">
-		</member>
-		<member name="randomness/spread" type="float" setter="set_randomness" getter="get_randomness" brief="">
-		</member>
-		<member name="randomness/tangential_accel" type="float" setter="set_randomness" getter="get_randomness" brief="">
+		<member name="visibility_rect" type="Rect3" setter="set_visibility_rect" getter="get_visibility_rect" brief="">
 		</member>
 	</members>
-	<signals>
-		<signal name="emission_finished">
-			<description>
-			</description>
-		</signal>
-	</signals>
 	<constants>
-		<constant name="PARAM_DIRECTION" value="0">
-			Direction in degrees at which the particles will be launched, Notice that when the direction is set to 0 the particles will be launched to the negative
+		<constant name="DRAW_ORDER_INDEX" value="0">
 		</constant>
-		<constant name="PARAM_SPREAD" value="1">
-		</constant>
-		<constant name="PARAM_LINEAR_VELOCITY" value="2">
-			Velocity at which the particles will be launched.
-		</constant>
-		<constant name="PARAM_SPIN_VELOCITY" value="3">
-			The speed at which particles will spin around its own center.
-		</constant>
-		<constant name="PARAM_ORBIT_VELOCITY" value="4">
-			Velocity at which the particles will orbit around the emitter center
-		</constant>
-		<constant name="PARAM_GRAVITY_DIRECTION" value="5">
-			Direction in degrees at which the particles will be attracted
-		</constant>
-		<constant name="PARAM_GRAVITY_STRENGTH" value="6">
-			Strength of the gravitation attraction for each particle
-		</constant>
-		<constant name="PARAM_RADIAL_ACCEL" value="7">
-		</constant>
-		<constant name="PARAM_TANGENTIAL_ACCEL" value="8">
-		</constant>
-		<constant name="PARAM_DAMPING" value="9">
-			Amount of damping for each particle
-		</constant>
-		<constant name="PARAM_INITIAL_ANGLE" value="10">
-			Initial angle in radians at which each particle will be spawned
-		</constant>
-		<constant name="PARAM_INITIAL_SIZE" value="11">
-			Initial size of each particle
-		</constant>
-		<constant name="PARAM_FINAL_SIZE" value="12">
-			Final size of each particle, the particle size will interpolate to this value during its lifetime.
-		</constant>
-		<constant name="PARAM_HUE_VARIATION" value="13">
-		</constant>
-		<constant name="PARAM_ANIM_SPEED_SCALE" value="14">
-		</constant>
-		<constant name="PARAM_ANIM_INITIAL_POS" value="15">
-		</constant>
-		<constant name="PARAM_MAX" value="16">
-		</constant>
-		<constant name="MAX_COLOR_PHASES" value="4">
+		<constant name="DRAW_ORDER_LIFETIME" value="1">
 		</constant>
 	</constants>
 </class>
@@ -28998,6 +29221,12 @@
 		</method>
 		<method name="get_emission_box_extents" qualifiers="const">
 			<return type="Vector3">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_emission_color_texture" qualifiers="const">
+			<return type="Texture">
 			</return>
 			<description>
 			</description>
@@ -29118,6 +29347,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_emission_color_texture">
+			<argument index="0" name="texture" type="Texture">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_emission_normal_texture">
 			<argument index="0" name="texture" type="Texture">
 			</argument>
@@ -29230,6 +29465,8 @@
 		</member>
 		<member name="angular_velocity_random" type="float" setter="set_param_randomness" getter="get_param_randomness" brief="">
 		</member>
+		<member name="anim_loop" type="bool" setter="set_flag" getter="get_flag" brief="">
+		</member>
 		<member name="anim_offset" type="float" setter="set_param" getter="get_param" brief="">
 		</member>
 		<member name="anim_offset_curve" type="CurveTexture" setter="set_param_texture" getter="get_param_texture" brief="">
@@ -29254,6 +29491,8 @@
 		</member>
 		<member name="emission_box_extents" type="Vector3" setter="set_emission_box_extents" getter="get_emission_box_extents" brief="">
 		</member>
+		<member name="emission_color_texture" type="Texture" setter="set_emission_color_texture" getter="get_emission_color_texture" brief="">
+		</member>
 		<member name="emission_normal_texture" type="Texture" setter="set_emission_normal_texture" getter="get_emission_normal_texture" brief="">
 		</member>
 		<member name="emission_point_count" type="int" setter="set_emission_point_count" getter="get_emission_point_count" brief="">
@@ -29265,6 +29504,8 @@
 		<member name="emission_sphere_radius" type="float" setter="set_emission_sphere_radius" getter="get_emission_sphere_radius" brief="">
 		</member>
 		<member name="flag_align_y" type="bool" setter="set_flag" getter="get_flag" brief="">
+		</member>
+		<member name="flag_disable_z" type="bool" setter="set_flag" getter="get_flag" brief="">
 		</member>
 		<member name="flag_rotate_y" type="bool" setter="set_flag" getter="get_flag" brief="">
 		</member>
@@ -29352,7 +29593,7 @@
 		</constant>
 		<constant name="FLAG_ROTATE_Y" value="1">
 		</constant>
-		<constant name="FLAG_MAX" value="2">
+		<constant name="FLAG_MAX" value="4">
 		</constant>
 		<constant name="EMISSION_SHAPE_POINT" value="0">
 		</constant>
@@ -30289,6 +30530,16 @@
 				Substitute a given area shape by another. The old shape is selected by its index, the new one by its [RID].
 			</description>
 		</method>
+		<method name="area_set_shape_disabled">
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="shape_idx" type="int">
+			</argument>
+			<argument index="2" name="disable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="area_set_shape_transform">
 			<argument index="0" name="area" type="RID">
 			</argument>
@@ -30450,24 +30701,6 @@
 				Get the instance ID of the object the area is assigned to.
 			</description>
 		</method>
-		<method name="body_get_one_way_collision_direction" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<description>
-				Return the direction used for one-way collision detection.
-			</description>
-		</method>
-		<method name="body_get_one_way_collision_max_depth" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<description>
-				Return how far a body can go through the given one, when it allows one-way collisions.
-			</description>
-		</method>
 		<method name="body_get_param" qualifiers="const">
 			<return type="float">
 			</return>
@@ -30544,17 +30777,6 @@
 			</argument>
 			<description>
 				Return whether a body uses a callback function to calculate its own physics (see [method body_set_force_integration_callback]).
-			</description>
-		</method>
-		<method name="body_is_shape_set_as_trigger" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="shape_idx" type="int">
-			</argument>
-			<description>
-				Return whether a body's shape is marked as a trigger.
 			</description>
 		</method>
 		<method name="body_remove_collision_exception">
@@ -30652,24 +30874,6 @@
 				Set whether a body uses a callback function to calculate its own physics (see [method body_set_force_integration_callback]).
 			</description>
 		</method>
-		<method name="body_set_one_way_collision_direction">
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="normal" type="Vector2">
-			</argument>
-			<description>
-				Set a direction in which bodies can go through the given one. If this value is different from (0,0), any movement within 90 degrees of this vector is considered a valid movement. Set this direction to (0,0) to disable one-way collisions.
-			</description>
-		</method>
-		<method name="body_set_one_way_collision_max_depth">
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="depth" type="float">
-			</argument>
-			<description>
-				Set how far a body can go through the given one, if it allows one-way collisions (see [method body_set_one_way_collision_direction]).
-			</description>
-		</method>
 		<method name="body_set_param">
 			<argument index="0" name="body" type="RID">
 			</argument>
@@ -30692,7 +30896,7 @@
 				Substitute a given body shape by another. The old shape is selected by its index, the new one by its [RID].
 			</description>
 		</method>
-		<method name="body_set_shape_as_trigger">
+		<method name="body_set_shape_as_one_way_collision">
 			<argument index="0" name="body" type="RID">
 			</argument>
 			<argument index="1" name="shape_idx" type="int">
@@ -30700,7 +30904,16 @@
 			<argument index="2" name="enable" type="bool">
 			</argument>
 			<description>
-				Mark a body's shape as a trigger. A trigger shape cannot affect other bodies, but detects other shapes entering and exiting it.
+			</description>
+		</method>
+		<method name="body_set_shape_disabled">
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="shape_idx" type="int">
+			</argument>
+			<argument index="2" name="disable" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="body_set_shape_metadata">
@@ -30984,11 +31197,9 @@
 		<constant name="SPACE_PARAM_BODY_MAX_ALLOWED_PENETRATION" value="2">
 			Constant to set/get the maximum distance a shape can penetrate another shape before it is considered a collision.
 		</constant>
-		<constant name="SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_TRESHOLD" value="3">
-			Constant to set/get the linear velocity threshold. Bodies slower than this will be marked as potentially inactive.
+		<constant name="SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD" value="3">
 		</constant>
-		<constant name="SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_TRESHOLD" value="4">
-			Constant to set/get the angular velocity threshold. Bodies slower than this will be marked as potentially inactive.
+		<constant name="SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD" value="4">
 		</constant>
 		<constant name="SPACE_PARAM_BODY_TIME_TO_SLEEP" value="5">
 			Constant to set/get the maximum time of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after this time.
@@ -31528,20 +31739,6 @@
 				Return an individual bit on the collision mask.
 			</description>
 		</method>
-		<method name="get_one_way_collision_direction" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-				Return the direction used for one-way collision detection.
-			</description>
-		</method>
-		<method name="get_one_way_collision_max_depth" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Return how far a body can go through this one, when it allows one-way collisions.
-			</description>
-		</method>
 		<method name="remove_collision_exception_with">
 			<argument index="0" name="body" type="PhysicsBody2D">
 			</argument>
@@ -31583,20 +31780,6 @@
 				Set/clear individual bits on the collision mask. This makes selecting the areas scanned easier.
 			</description>
 		</method>
-		<method name="set_one_way_collision_direction">
-			<argument index="0" name="dir" type="Vector2">
-			</argument>
-			<description>
-				Set a direction in which bodies can go through this one. If this value is different from (0,0), any movement within 90 degrees of this vector is considered a valid movement. Set this direction to (0,0) to disable one-way collisions.
-			</description>
-		</method>
-		<method name="set_one_way_collision_max_depth">
-			<argument index="0" name="depth" type="float">
-			</argument>
-			<description>
-				Set how far a body can go through this one, when it allows one-way collisions (see [method set_one_way_collision_direction]).
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" brief="">
@@ -31604,10 +31787,6 @@
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" brief="">
 		</member>
 		<member name="layers" type="int" setter="_set_layers" getter="_get_layers" brief="">
-		</member>
-		<member name="one_way_collision/direction" type="Vector2" setter="set_one_way_collision_direction" getter="get_one_way_collision_direction" brief="">
-		</member>
-		<member name="one_way_collision/max_depth" type="float" setter="set_one_way_collision_max_depth" getter="get_one_way_collision_max_depth" brief="">
 		</member>
 	</members>
 	<constants>
@@ -33809,7 +33988,7 @@
 			<argument index="0" name="compression_mode" type="int" default="0">
 			</argument>
 			<description>
-			Returns a new [PoolByteArray] with the data compressed. The compression mode can be set using one of the COMPRESS_* constants of [File].
+				Returns a new [PoolByteArray] with the data compressed. The compression mode can be set using one of the COMPRESS_* constants of [File].
 			</description>
 		</method>
 		<method name="decompress">
@@ -33820,7 +33999,7 @@
 			<argument index="1" name="compression_mode" type="int" default="0">
 			</argument>
 			<description>
-			Returns a new [PoolByteArray] with the data decompressed. The buffer_size should be set as the size of the uncompressed data. The compression mode can be set using one of the COMPRESS_* constants of [File].
+				Returns a new [PoolByteArray] with the data decompressed. The buffer_size should be set as the size of the uncompressed data. The compression mode can be set using one of the COMPRESS_* constants of [File].
 			</description>
 		</method>
 		<method name="get_string_from_ascii">
@@ -34694,6 +34873,8 @@
 			</description>
 		</method>
 		<method name="get_item_metadata" qualifiers="const">
+			<return type="Variant">
+			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
@@ -34734,6 +34915,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="is_hide_on_checkable_item_selection">
+			<return type="bool">
+			</return>
+			<description>
+				Returns a boolean that indicates whether or not the PopupMenu will hide on checkable item selection.
+			</description>
+		</method>
 		<method name="is_hide_on_item_selection">
 			<return type="bool">
 			</return>
@@ -34741,13 +34929,6 @@
 				Returns a boolean that indicates whether or not the PopupMenu will hide on item selection.
 			</description>
 		</method>
-                <method name="is_hide_on_checkable_item_selection">
-                        <return type="bool">
-                        </return>
-                        <description>
-                                Returns a boolean that indicates whether or not the PopupMenu will hide on checkable item selection.
-                        </description>
-                </method>
 		<method name="is_item_checkable" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -34791,6 +34972,13 @@
 				Removes the item at index "idx" from the menu. Note that the indexes of items after the removed item are going to be shifted by one.
 			</description>
 		</method>
+		<method name="set_hide_on_checkable_item_selection">
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Sets whether or not the PopupMenu will hide on checkable item selection.
+			</description>
+		</method>
 		<method name="set_hide_on_item_selection">
 			<argument index="0" name="enable" type="bool">
 			</argument>
@@ -34798,13 +34986,6 @@
 				Sets whether or not the PopupMenu will hide on item selection.
 			</description>
 		</method>
-                <method name="set_hide_on_checkable_item_selection">
-                        <argument index="0" name="enable" type="bool">
-                        </argument>
-                        <description>
-                                Sets whether or not the PopupMenu will hide on checkable item selection.
-                        </description>
-                </method>
 		<method name="set_item_ID">
 			<argument index="0" name="idx" type="int">
 			</argument>
@@ -34921,6 +35102,8 @@
 		</method>
 	</methods>
 	<members>
+		<member name="hide_on_checkable_item_selection" type="bool" setter="set_hide_on_checkable_item_selection" getter="is_hide_on_checkable_item_selection" brief="">
+		</member>
 		<member name="hide_on_item_selection" type="bool" setter="set_hide_on_item_selection" getter="is_hide_on_item_selection" brief="">
 		</member>
 		<member name="items" type="Array" setter="_set_items" getter="_get_items" brief="">
@@ -36400,6 +36583,7 @@
 			Ending corner.
 		</member>
 		<member name="position" type="Vector2" setter="" getter="" brief="">
+			Position (starting corner).
 		</member>
 		<member name="size" type="Vector2" setter="" getter="" brief="">
 			Size from position to end.
@@ -36596,8 +36780,7 @@
 		<member name="end" type="Vector3" setter="" getter="" brief="">
 			Ending corner.
 		</member>
-		<member name="pos" type="Vector3" setter="" getter="" brief="">
-			Position (starting corner).
+		<member name="position" type="Vector3" setter="" getter="" brief="">
 		</member>
 		<member name="size" type="Vector3" setter="" getter="" brief="">
 			Size from position to end.
@@ -36940,7 +37123,7 @@
 			</description>
 		</method>
 		<method name="search" qualifiers="const">
-			<return type="Object">
+			<return type="RegExMatch">
 			</return>
 			<argument index="0" name="text" type="String">
 			</argument>
@@ -37063,8 +37246,56 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_update_position" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_update_rotation" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_update_scale" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_use_global_coordinates" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="set_remote_node">
 			<argument index="0" name="path" type="NodePath">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_update_position">
+			<argument index="0" name="update_remote_position" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_update_rotation">
+			<argument index="0" name="update_remote_rotation" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_update_scale">
+			<argument index="0" name="update_remote_scale" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_use_global_coordinates">
+			<argument index="0" name="use_global_coordinates" type="bool">
 			</argument>
 			<description>
 			</description>
@@ -37072,6 +37303,14 @@
 	</methods>
 	<members>
 		<member name="remote_path" type="NodePath" setter="set_remote_node" getter="get_remote_node" brief="">
+		</member>
+		<member name="update_position" type="bool" setter="set_update_position" getter="get_update_position" brief="">
+		</member>
+		<member name="update_rotation" type="bool" setter="set_update_rotation" getter="get_update_rotation" brief="">
+		</member>
+		<member name="update_scale" type="bool" setter="set_update_scale" getter="get_update_scale" brief="">
+		</member>
+		<member name="use_global_coordinates" type="bool" setter="set_use_global_coordinates" getter="get_use_global_coordinates" brief="">
 		</member>
 	</members>
 	<constants>
@@ -37089,8 +37328,56 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_update_position" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_update_rotation" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_update_scale" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_use_global_coordinates" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="set_remote_node">
 			<argument index="0" name="path" type="NodePath">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_update_position">
+			<argument index="0" name="update_remote_position" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_update_rotation">
+			<argument index="0" name="update_remote_rotation" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_update_scale">
+			<argument index="0" name="update_remote_scale" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_use_global_coordinates">
+			<argument index="0" name="use_global_coordinates" type="bool">
 			</argument>
 			<description>
 			</description>
@@ -37098,6 +37385,14 @@
 	</methods>
 	<members>
 		<member name="remote_path" type="NodePath" setter="set_remote_node" getter="get_remote_node" brief="">
+		</member>
+		<member name="update_position" type="bool" setter="set_update_position" getter="get_update_position" brief="">
+		</member>
+		<member name="update_rotation" type="bool" setter="set_update_rotation" getter="get_update_rotation" brief="">
+		</member>
+		<member name="update_scale" type="bool" setter="set_update_scale" getter="get_update_scale" brief="">
+		</member>
+		<member name="use_global_coordinates" type="bool" setter="set_use_global_coordinates" getter="get_use_global_coordinates" brief="">
 		</member>
 	</members>
 	<constants>
@@ -37488,6 +37783,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_percent_visible" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_tab_size" qualifiers="const">
 			<return type="int">
 			</return>
@@ -37508,7 +37809,7 @@
 			</description>
 		</method>
 		<method name="get_v_scroll">
-			<return type="Object">
+			<return type="VScrollBar">
 			</return>
 			<description>
 			</description>
@@ -37583,7 +37884,7 @@
 			</description>
 		</method>
 		<method name="push_font">
-			<argument index="0" name="font" type="Object">
+			<argument index="0" name="font" type="Font">
 			</argument>
 			<description>
 			</description>
@@ -37642,6 +37943,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_percent_visible">
+			<argument index="0" name="percent_visible" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_scroll_active">
 			<argument index="0" name="active" type="bool">
 			</argument>
@@ -37677,6 +37984,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_text">
+			<argument index="0" name="text" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_use_bbcode">
 			<argument index="0" name="enable" type="bool">
 			</argument>
@@ -37694,6 +38007,8 @@
 		<member name="bbcode_enabled" type="bool" setter="set_use_bbcode" getter="is_using_bbcode" brief="">
 		</member>
 		<member name="bbcode_text" type="String" setter="set_bbcode" getter="get_bbcode" brief="">
+		</member>
+		<member name="percent_visible" type="float" setter="set_percent_visible" getter="get_percent_visible" brief="">
 		</member>
 		<member name="visible_characters" type="int" setter="set_visible_characters" getter="get_visible_characters" brief="">
 		</member>
@@ -38777,6 +39092,8 @@
 			</description>
 		</method>
 		<method name="get_node_property_value" qualifiers="const">
+			<return type="Variant">
+			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<argument index="1" name="prop_idx" type="int">
@@ -38874,6 +39191,12 @@
 		</method>
 		<method name="get_frame" qualifiers="const">
 			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_network_connected_peers" qualifiers="const">
+			<return type="PoolIntArray">
 			</return>
 			<description>
 			</description>
@@ -39523,6 +39846,8 @@
 			</description>
 		</method>
 		<method name="get_shader_param" qualifiers="const">
+			<return type="Variant">
+			</return>
 			<argument index="0" name="param" type="String">
 			</argument>
 			<description>
@@ -39949,6 +40274,18 @@
 				Return true if ticks are visible on borders.
 			</description>
 		</method>
+		<method name="is_editable" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_editable">
+			<argument index="0" name="editable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_ticks">
 			<argument index="0" name="count" type="int">
 			</argument>
@@ -39965,6 +40302,8 @@
 		</method>
 	</methods>
 	<members>
+		<member name="editable" type="bool" setter="set_editable" getter="is_editable" brief="">
+		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" brief="">
 		</member>
 		<member name="tick_count" type="int" setter="set_ticks" getter="get_ticks" brief="">
@@ -40513,6 +40852,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_grow" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_line_width" qualifiers="const">
 			<return type="float">
 			</return>
@@ -40585,6 +40930,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_specular_mode" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_subsurface_scattering_strength" qualifiers="const">
 			<return type="float">
 			</return>
@@ -40600,30 +40951,48 @@
 			</description>
 		</method>
 		<method name="get_uv1_offset" qualifiers="const">
-			<return type="Vector2">
+			<return type="Vector3">
 			</return>
 			<description>
 			</description>
 		</method>
 		<method name="get_uv1_scale" qualifiers="const">
-			<return type="Vector2">
+			<return type="Vector3">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_uv1_triplanar_blend_sharpness" qualifiers="const">
+			<return type="float">
 			</return>
 			<description>
 			</description>
 		</method>
 		<method name="get_uv2_offset" qualifiers="const">
-			<return type="Vector2">
+			<return type="Vector3">
 			</return>
 			<description>
 			</description>
 		</method>
 		<method name="get_uv2_scale" qualifiers="const">
-			<return type="Vector2">
+			<return type="Vector3">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_uv2_triplanar_blend_sharpness" qualifiers="const">
+			<return type="float">
 			</return>
 			<description>
 			</description>
 		</method>
 		<method name="is_depth_deep_parallax_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_grow_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
@@ -40747,6 +41116,18 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_grow">
+			<argument index="0" name="amount" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_grow_enabled">
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_line_width">
 			<argument index="0" name="line_width" type="float">
 			</argument>
@@ -40819,6 +41200,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_specular_mode">
+			<argument index="0" name="specular_mode" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_subsurface_scattering_strength">
 			<argument index="0" name="strength" type="float">
 			</argument>
@@ -40834,25 +41221,37 @@
 			</description>
 		</method>
 		<method name="set_uv1_offset">
-			<argument index="0" name="offset" type="Vector2">
+			<argument index="0" name="offset" type="Vector3">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="set_uv1_scale">
-			<argument index="0" name="scale" type="Vector2">
+			<argument index="0" name="scale" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_uv1_triplanar_blend_sharpness">
+			<argument index="0" name="sharpness" type="float">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="set_uv2_offset">
-			<argument index="0" name="offset" type="Vector2">
+			<argument index="0" name="offset" type="Vector3">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="set_uv2_scale">
-			<argument index="0" name="scale" type="Vector2">
+			<argument index="0" name="scale" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_uv2_triplanar_blend_sharpness">
+			<argument index="0" name="sharpness" type="float">
 			</argument>
 			<description>
 			</description>
@@ -40863,7 +41262,7 @@
 		</member>
 		<member name="albedo_texture" type="Texture" setter="set_texture" getter="get_texture" brief="">
 		</member>
-		<member name="anisotropy_anisotropy" type="float" setter="set_anisotropy" getter="get_anisotropy" brief="">
+		<member name="anisotropy" type="float" setter="set_anisotropy" getter="get_anisotropy" brief="">
 		</member>
 		<member name="anisotropy_enabled" type="bool" setter="set_feature" getter="get_feature" brief="">
 		</member>
@@ -40871,9 +41270,11 @@
 		</member>
 		<member name="ao_enabled" type="bool" setter="set_feature" getter="get_feature" brief="">
 		</member>
+		<member name="ao_on_uv2" type="bool" setter="set_flag" getter="get_flag" brief="">
+		</member>
 		<member name="ao_texture" type="Texture" setter="set_texture" getter="get_texture" brief="">
 		</member>
-		<member name="clearcoat_amount" type="float" setter="set_clearcoat" getter="get_clearcoat" brief="">
+		<member name="clearcoat" type="float" setter="set_clearcoat" getter="get_clearcoat" brief="">
 		</member>
 		<member name="clearcoat_enabled" type="bool" setter="set_feature" getter="get_feature" brief="">
 		</member>
@@ -40905,7 +41306,7 @@
 		</member>
 		<member name="detail_uv_layer" type="int" setter="set_detail_uv" getter="get_detail_uv" brief="">
 		</member>
-		<member name="emission_color" type="Color" setter="set_emission" getter="get_emission" brief="">
+		<member name="emission" type="Color" setter="set_emission" getter="get_emission" brief="">
 		</member>
 		<member name="emission_enabled" type="bool" setter="set_feature" getter="get_feature" brief="">
 		</member>
@@ -40923,7 +41324,7 @@
 		</member>
 		<member name="flags_use_point_size" type="bool" setter="set_flag" getter="get_flag" brief="">
 		</member>
-		<member name="metallic_amount" type="float" setter="set_metallic" getter="get_metallic" brief="">
+		<member name="metallic" type="float" setter="set_metallic" getter="get_metallic" brief="">
 		</member>
 		<member name="metallic_specular" type="float" setter="set_specular" getter="get_specular" brief="">
 		</member>
@@ -40945,9 +41346,15 @@
 		</member>
 		<member name="params_diffuse_mode" type="int" setter="set_diffuse_mode" getter="get_diffuse_mode" brief="">
 		</member>
+		<member name="params_grow" type="bool" setter="set_grow_enabled" getter="is_grow_enabled" brief="">
+		</member>
+		<member name="params_grow_amount" type="float" setter="set_grow" getter="get_grow" brief="">
+		</member>
 		<member name="params_line_width" type="float" setter="set_line_width" getter="get_line_width" brief="">
 		</member>
 		<member name="params_point_size" type="float" setter="set_point_size" getter="get_point_size" brief="">
+		</member>
+		<member name="params_specular_mode" type="int" setter="set_specular_mode" getter="get_specular_mode" brief="">
 		</member>
 		<member name="particles_anim_h_frames" type="int" setter="set_particles_anim_h_frames" getter="get_particles_anim_h_frames" brief="">
 		</member>
@@ -40961,7 +41368,7 @@
 		</member>
 		<member name="refraction_texture" type="Texture" setter="set_texture" getter="get_texture" brief="">
 		</member>
-		<member name="rim_amount" type="float" setter="set_rim" getter="get_rim" brief="">
+		<member name="rim" type="float" setter="set_rim" getter="get_rim" brief="">
 		</member>
 		<member name="rim_enabled" type="bool" setter="set_feature" getter="get_feature" brief="">
 		</member>
@@ -40969,7 +41376,7 @@
 		</member>
 		<member name="rim_tint" type="float" setter="set_rim_tint" getter="get_rim_tint" brief="">
 		</member>
-		<member name="roughness_amount" type="float" setter="set_roughness" getter="get_roughness" brief="">
+		<member name="roughness" type="float" setter="set_roughness" getter="get_roughness" brief="">
 		</member>
 		<member name="roughness_texture" type="Texture" setter="set_texture" getter="get_texture" brief="">
 		</member>
@@ -40979,13 +41386,21 @@
 		</member>
 		<member name="subsurf_scatter_texture" type="Texture" setter="set_texture" getter="get_texture" brief="">
 		</member>
-		<member name="uv1_offset" type="Vector2" setter="set_uv1_offset" getter="get_uv1_offset" brief="">
+		<member name="uv1_offset" type="Vector3" setter="set_uv1_offset" getter="get_uv1_offset" brief="">
 		</member>
-		<member name="uv1_scale" type="Vector2" setter="set_uv1_scale" getter="get_uv1_scale" brief="">
+		<member name="uv1_scale" type="Vector3" setter="set_uv1_scale" getter="get_uv1_scale" brief="">
 		</member>
-		<member name="uv2_offset" type="Vector2" setter="set_uv2_offset" getter="get_uv2_offset" brief="">
+		<member name="uv1_triplanar" type="bool" setter="set_flag" getter="get_flag" brief="">
 		</member>
-		<member name="uv2_scale" type="Vector2" setter="set_uv2_scale" getter="get_uv2_scale" brief="">
+		<member name="uv1_triplanar_sharpness" type="float" setter="set_uv1_triplanar_blend_sharpness" getter="get_uv1_triplanar_blend_sharpness" brief="">
+		</member>
+		<member name="uv2_offset" type="Vector3" setter="set_uv2_offset" getter="get_uv2_offset" brief="">
+		</member>
+		<member name="uv2_scale" type="Vector3" setter="set_uv2_scale" getter="get_uv2_scale" brief="">
+		</member>
+		<member name="uv2_triplanar" type="bool" setter="set_flag" getter="get_flag" brief="">
+		</member>
+		<member name="uv2_triplanar_sharpness" type="float" setter="set_uv2_triplanar_blend_sharpness" getter="get_uv2_triplanar_blend_sharpness" brief="">
 		</member>
 		<member name="vertex_color_is_srgb" type="bool" setter="set_flag" getter="get_flag" brief="">
 		</member>
@@ -41087,7 +41502,7 @@
 		</constant>
 		<constant name="FLAG_FIXED_SIZE" value="5">
 		</constant>
-		<constant name="FLAG_MAX" value="6">
+		<constant name="FLAG_MAX" value="9">
 		</constant>
 		<constant name="DIFFUSE_LAMBERT" value="0">
 		</constant>
@@ -41096,6 +41511,18 @@
 		<constant name="DIFFUSE_OREN_NAYAR" value="2">
 		</constant>
 		<constant name="DIFFUSE_BURLEY" value="3">
+		</constant>
+		<constant name="DIFFUSE_TOON" value="4">
+		</constant>
+		<constant name="SPECULAR_SCHLICK_GGX" value="0">
+		</constant>
+		<constant name="SPECULAR_BLINN" value="1">
+		</constant>
+		<constant name="SPECULAR_PHONG" value="2">
+		</constant>
+		<constant name="SPECULAR_TOON" value="3">
+		</constant>
+		<constant name="SPECULAR_DISABLED" value="4">
 		</constant>
 		<constant name="BILLBOARD_DISABLED" value="0">
 		</constant>
@@ -41410,6 +41837,12 @@
 				Return the amount of horizontal frames. See [method set_hframes].
 			</description>
 		</method>
+		<method name="get_normal_map" qualifiers="const">
+			<return type="Texture">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_offset" qualifiers="const">
 			<return type="Vector2">
 			</return>
@@ -41466,6 +41899,12 @@
 				Return if the sprite reads from a region.
 			</description>
 		</method>
+		<method name="is_region_filter_clip_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="set_centered">
 			<argument index="0" name="centered" type="bool">
 			</argument>
@@ -41501,6 +41940,12 @@
 				Set the amount of horizontal frames and converts the sprite into a sprite-sheet. This is useful for animation.
 			</description>
 		</method>
+		<method name="set_normal_map">
+			<argument index="0" name="normal_map" type="Texture">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_offset">
 			<argument index="0" name="offset" type="Vector2">
 			</argument>
@@ -41513,6 +41958,12 @@
 			</argument>
 			<description>
 				Set the sprite as a sub-region of a bigger texture. Useful for texture-atlases.
+			</description>
+		</method>
+		<method name="set_region_filter_clip">
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_region_rect">
@@ -41548,9 +41999,13 @@
 		</member>
 		<member name="hframes" type="int" setter="set_hframes" getter="get_hframes" brief="">
 		</member>
+		<member name="normal_map" type="Texture" setter="set_normal_map" getter="get_normal_map" brief="">
+		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" brief="">
 		</member>
-		<member name="region" type="bool" setter="set_region" getter="is_region" brief="">
+		<member name="region_enabled" type="bool" setter="set_region" getter="is_region" brief="">
+		</member>
+		<member name="region_filter_clip" type="bool" setter="set_region_filter_clip" getter="is_region_filter_clip_enabled" brief="">
 		</member>
 		<member name="region_rect" type="Rect2" setter="set_region_rect" getter="get_region_rect" brief="">
 		</member>
@@ -41656,7 +42111,7 @@
 		</member>
 		<member name="hframes" type="int" setter="set_hframes" getter="get_hframes" brief="">
 		</member>
-		<member name="region" type="bool" setter="set_region" getter="is_region" brief="">
+		<member name="region_enabled" type="bool" setter="set_region" getter="is_region" brief="">
 		</member>
 		<member name="region_rect" type="Rect2" setter="set_region_rect" getter="get_region_rect" brief="">
 		</member>
@@ -41818,6 +42273,8 @@
 		</member>
 		<member name="centered" type="bool" setter="set_centered" getter="is_centered" brief="">
 		</member>
+		<member name="double_sided" type="bool" setter="set_draw_flag" getter="get_draw_flag" brief="">
+		</member>
 		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h" brief="">
 		</member>
 		<member name="flip_v" type="bool" setter="set_flip_v" getter="is_flipped_v" brief="">
@@ -41840,7 +42297,9 @@
 		</constant>
 		<constant name="FLAG_SHADED" value="1">
 		</constant>
-		<constant name="FLAG_MAX" value="2">
+		<constant name="FLAG_DOUBLE_SIDED" value="2">
+		</constant>
+		<constant name="FLAG_MAX" value="3">
 		</constant>
 		<constant name="ALPHA_CUT_DISABLED" value="0">
 		</constant>
@@ -43559,6 +44018,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_normal_map" qualifiers="const">
+			<return type="Texture">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_region_rect" qualifiers="const">
 			<return type="Rect2">
 			</return>
@@ -43599,6 +44064,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_normal_map">
+			<argument index="0" name="normal_map" type="Texture">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_region_rect">
 			<argument index="0" name="region" type="Rect2">
 			</argument>
@@ -43632,6 +44103,8 @@
 		<member name="margin_top" type="float" setter="set_margin_size" getter="get_margin_size" brief="">
 		</member>
 		<member name="modulate_color" type="Color" setter="set_modulate" getter="get_modulate" brief="">
+		</member>
+		<member name="normal_map" type="Texture" setter="set_normal_map" getter="get_normal_map" brief="">
 		</member>
 		<member name="region_rect" type="Rect2" setter="set_region_rect" getter="get_region_rect" brief="">
 		</member>
@@ -44168,6 +44641,12 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="reposition_active_tab_request">
+			<argument index="0" name="idx_to" type="int">
+			</argument>
+			<description>
+			</description>
+		</signal>
 		<signal name="right_button_pressed">
 			<argument index="0" name="tab" type="int">
 			</argument>
@@ -44729,6 +45208,8 @@
 			</argument>
 			<argument index="3" name="transpose" type="bool" default="false">
 			</argument>
+			<argument index="4" name="normal_map" type="Texture" default="NULL">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -44743,6 +45224,8 @@
 			</argument>
 			<argument index="4" name="transpose" type="bool" default="false">
 			</argument>
+			<argument index="5" name="normal_map" type="Texture" default="NULL">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -44756,6 +45239,10 @@
 			<argument index="3" name="modulate" type="Color" default="Color(1,1,1,1)">
 			</argument>
 			<argument index="4" name="transpose" type="bool" default="false">
+			</argument>
+			<argument index="5" name="normal_map" type="Texture" default="NULL">
+			</argument>
+			<argument index="6" name="clip_uv" type="bool" default="true">
 			</argument>
 			<description>
 			</description>
@@ -46014,6 +46501,18 @@
 				Remove the tile referenced by the given ID.
 			</description>
 		</method>
+		<method name="tile_add_shape">
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="shape" type="Shape2D">
+			</argument>
+			<argument index="2" name="shape_transform" type="Transform2D">
+			</argument>
+			<argument index="3" name="one_way" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="tile_get_light_occluder" qualifiers="const">
 			<return type="OccluderPolygon2D">
 			</return>
@@ -46059,6 +46558,14 @@
 				Return the offset of the tile's navigation polygon.
 			</description>
 		</method>
+		<method name="tile_get_normal_map" qualifiers="const">
+			<return type="Texture">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="tile_get_occluder_offset" qualifiers="const">
 			<return type="Vector2">
 			</return>
@@ -46082,17 +46589,37 @@
 			</return>
 			<argument index="0" name="id" type="int">
 			</argument>
+			<argument index="1" name="shape_id" type="int">
+			</argument>
 			<description>
-				Return the shape of the tile.
 			</description>
 		</method>
-		<method name="tile_get_shape_offset" qualifiers="const">
-			<return type="Vector2">
+		<method name="tile_get_shape_count" qualifiers="const">
+			<return type="int">
 			</return>
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Return the shape offset of the tile.
+			</description>
+		</method>
+		<method name="tile_get_shape_one_way" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="shape_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="tile_get_shape_transform" qualifiers="const">
+			<return type="Transform2D">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="shape_id" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="tile_get_shapes" qualifiers="const">
@@ -46167,6 +46694,14 @@
 				Set an offset for the tile's navigation polygon.
 			</description>
 		</method>
+		<method name="tile_set_normal_map">
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="normal_map" type="Texture">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="tile_set_occluder_offset">
 			<argument index="0" name="id" type="int">
 			</argument>
@@ -46188,19 +46723,31 @@
 		<method name="tile_set_shape">
 			<argument index="0" name="id" type="int">
 			</argument>
-			<argument index="1" name="shape" type="Shape2D">
+			<argument index="1" name="shape_id" type="int">
+			</argument>
+			<argument index="2" name="shape" type="Shape2D">
 			</argument>
 			<description>
-				Set a shape for the tile, enabling physics to collide with it.
 			</description>
 		</method>
-		<method name="tile_set_shape_offset">
+		<method name="tile_set_shape_one_way">
 			<argument index="0" name="id" type="int">
 			</argument>
-			<argument index="1" name="shape_offset" type="Vector2">
+			<argument index="1" name="shape_id" type="int">
+			</argument>
+			<argument index="2" name="one_way" type="bool">
 			</argument>
 			<description>
-				Set the shape offset of the tile.
+			</description>
+		</method>
+		<method name="tile_set_shape_transform">
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="shape_id" type="int">
+			</argument>
+			<argument index="2" name="shape_transform" type="Transform2D">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="tile_set_shapes">
@@ -46846,7 +47393,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="o" type="Vector2" setter="" getter="" brief="">
+		<member name="origin" type="Vector2" setter="" getter="" brief="">
 		</member>
 		<member name="x" type="Vector2" setter="" getter="" brief="">
 		</member>
@@ -47513,6 +48060,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_expand_right" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_icon" qualifiers="const">
 			<return type="Texture">
 			</return>
@@ -47597,6 +48152,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_text_align" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_tooltip" qualifiers="const">
 			<return type="String">
 			</return>
@@ -47642,6 +48205,12 @@
 			</return>
 			<argument index="0" name="column" type="int">
 			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_folding_disabled" qualifiers="const">
+			<return type="bool">
+			</return>
 			<description>
 			</description>
 		</method>
@@ -47751,10 +48320,24 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_disable_folding">
+			<argument index="0" name="disable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_editable">
 			<argument index="0" name="column" type="int">
 			</argument>
 			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_expand_right">
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
 			</description>
@@ -47825,6 +48408,14 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<argument index="1" name="text" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_text_align">
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="text_align" type="int">
 			</argument>
 			<description>
 			</description>
@@ -48511,6 +49102,10 @@ do_property].
 	<theme_items>
 		<theme_item name="grabber" type="Texture">
 		</theme_item>
+		<theme_item name="grabber_disabled" type="Texture">
+		</theme_item>
+		<theme_item name="grabber_disabled" type="StyleBox">
+		</theme_item>
 		<theme_item name="grabber_highlight" type="Texture">
 		</theme_item>
 		<theme_item name="grabber_highlight" type="StyleBox">
@@ -48761,12 +49356,6 @@ do_property].
 		</method>
 	</methods>
 	<members>
-		<member name="height" type="float" setter="" getter="" brief="">
-			Height of the vector (Same as Y).
-		</member>
-		<member name="width" type="float" setter="" getter="" brief="">
-			Width of the vector (Same as X).
-		</member>
 		<member name="x" type="float" setter="" getter="" brief="">
 			X component of the vector.
 		</member>
@@ -50960,6 +51549,8 @@ do_property].
 			</description>
 		</method>
 		<method name="get_constant_value" qualifiers="const">
+			<return type="Variant">
+			</return>
 			<description>
 			</description>
 		</method>
@@ -50977,9 +51568,9 @@ do_property].
 		</method>
 	</methods>
 	<members>
-		<member name="constant/type" type="int" setter="set_constant_type" getter="get_constant_type" brief="">
+		<member name="type" type="int" setter="set_constant_type" getter="get_constant_type" brief="">
 		</member>
-		<member name="constant/value" type="Nil" setter="set_constant_value" getter="get_constant_value" brief="">
+		<member name="value" type="Nil" setter="set_constant_value" getter="get_constant_value" brief="">
 		</member>
 	</members>
 	<constants>
@@ -51201,7 +51792,7 @@ do_property].
 		</method>
 	</methods>
 	<members>
-		<member name="signal/signal" type="String" setter="set_signal" getter="get_signal" brief="">
+		<member name="signal" type="String" setter="set_signal" getter="get_signal" brief="">
 		</member>
 	</members>
 	<constants>
@@ -51381,27 +51972,27 @@ do_property].
 		</method>
 	</methods>
 	<members>
-		<member name="function/argument_cache" type="Dictionary" setter="_set_argument_cache" getter="_get_argument_cache" brief="">
+		<member name="argument_cache" type="Dictionary" setter="_set_argument_cache" getter="_get_argument_cache" brief="">
 		</member>
-		<member name="function/base_script" type="String" setter="set_base_script" getter="get_base_script" brief="">
+		<member name="base_script" type="String" setter="set_base_script" getter="get_base_script" brief="">
 		</member>
-		<member name="function/base_type" type="String" setter="set_base_type" getter="get_base_type" brief="">
+		<member name="base_type" type="String" setter="set_base_type" getter="get_base_type" brief="">
 		</member>
-		<member name="function/basic_type" type="int" setter="set_basic_type" getter="get_basic_type" brief="">
+		<member name="basic_type" type="int" setter="set_basic_type" getter="get_basic_type" brief="">
 		</member>
-		<member name="function/call_mode" type="int" setter="set_call_mode" getter="get_call_mode" brief="">
+		<member name="call_mode" type="int" setter="set_call_mode" getter="get_call_mode" brief="">
 		</member>
-		<member name="function/function" type="String" setter="set_function" getter="get_function" brief="">
+		<member name="function" type="String" setter="set_function" getter="get_function" brief="">
 		</member>
-		<member name="function/node_path" type="NodePath" setter="set_base_path" getter="get_base_path" brief="">
+		<member name="node_path" type="NodePath" setter="set_base_path" getter="get_base_path" brief="">
 		</member>
-		<member name="function/singleton" type="String" setter="set_singleton" getter="get_singleton" brief="">
+		<member name="rpc_call_mode" type="int" setter="set_rpc_call_mode" getter="get_rpc_call_mode" brief="">
 		</member>
-		<member name="function/use_default_args" type="int" setter="set_use_default_args" getter="get_use_default_args" brief="">
+		<member name="singleton" type="String" setter="set_singleton" getter="get_singleton" brief="">
 		</member>
-		<member name="function/validate" type="bool" setter="set_validate" getter="get_validate" brief="">
+		<member name="use_default_args" type="int" setter="set_use_default_args" getter="get_use_default_args" brief="">
 		</member>
-		<member name="rpc/call_mode" type="int" setter="set_rpc_call_mode" getter="get_rpc_call_mode" brief="">
+		<member name="validate" type="bool" setter="set_validate" getter="get_validate" brief="">
 		</member>
 	</members>
 	<constants>
@@ -51577,9 +52168,9 @@ do_property].
 		</method>
 	</methods>
 	<members>
-		<member name="variable/name" type="String" setter="set_var_name" getter="get_var_name" brief="">
+		<member name="type" type="int" setter="set_var_type" getter="get_var_type" brief="">
 		</member>
-		<member name="variable/type" type="int" setter="set_var_type" getter="get_var_type" brief="">
+		<member name="var_name" type="String" setter="set_var_name" getter="get_var_name" brief="">
 		</member>
 	</members>
 	<constants>
@@ -51617,9 +52208,9 @@ do_property].
 		</method>
 	</methods>
 	<members>
-		<member name="variable/name" type="String" setter="set_var_name" getter="get_var_name" brief="">
+		<member name="type" type="int" setter="set_var_type" getter="get_var_type" brief="">
 		</member>
-		<member name="variable/type" type="int" setter="set_var_type" getter="get_var_type" brief="">
+		<member name="var_name" type="String" setter="set_var_name" getter="get_var_name" brief="">
 		</member>
 	</members>
 	<constants>
@@ -51725,9 +52316,9 @@ do_property].
 		</method>
 	</methods>
 	<members>
-		<member name="operator_value/type" type="int" setter="set_operator" getter="get_operator" brief="">
+		<member name="operator" type="int" setter="set_operator" getter="get_operator" brief="">
 		</member>
-		<member name="typed_value/typed" type="int" setter="set_typed" getter="get_typed" brief="">
+		<member name="type" type="int" setter="set_typed" getter="get_typed" brief="">
 		</member>
 	</members>
 	<constants>
@@ -51795,6 +52386,12 @@ do_property].
 			<description>
 			</description>
 		</method>
+		<method name="get_index" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_property" qualifiers="const">
 			<return type="String">
 			</return>
@@ -51831,6 +52428,12 @@ do_property].
 			<description>
 			</description>
 		</method>
+		<method name="set_index">
+			<argument index="0" name="index" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_property">
 			<argument index="0" name="property" type="String">
 			</argument>
@@ -51839,19 +52442,21 @@ do_property].
 		</method>
 	</methods>
 	<members>
-		<member name="property/base_script" type="String" setter="set_base_script" getter="get_base_script" brief="">
+		<member name="base_script" type="String" setter="set_base_script" getter="get_base_script" brief="">
 		</member>
-		<member name="property/base_type" type="String" setter="set_base_type" getter="get_base_type" brief="">
+		<member name="base_type" type="String" setter="set_base_type" getter="get_base_type" brief="">
 		</member>
-		<member name="property/basic_type" type="int" setter="set_basic_type" getter="get_basic_type" brief="">
+		<member name="basic_type" type="int" setter="set_basic_type" getter="get_basic_type" brief="">
 		</member>
-		<member name="property/node_path" type="NodePath" setter="set_base_path" getter="get_base_path" brief="">
+		<member name="index" type="String" setter="set_index" getter="get_index" brief="">
 		</member>
-		<member name="property/property" type="String" setter="set_property" getter="get_property" brief="">
+		<member name="node_path" type="NodePath" setter="set_base_path" getter="get_base_path" brief="">
 		</member>
-		<member name="property/set_mode" type="int" setter="set_call_mode" getter="get_call_mode" brief="">
+		<member name="property" type="String" setter="set_property" getter="get_property" brief="">
 		</member>
-		<member name="property/type_cache" type="int" setter="_set_type_cache" getter="_get_type_cache" brief="">
+		<member name="set_mode" type="int" setter="set_call_mode" getter="get_call_mode" brief="">
+		</member>
+		<member name="type_cache" type="int" setter="_set_type_cache" getter="_get_type_cache" brief="">
 		</member>
 	</members>
 	<constants>
@@ -51869,6 +52474,12 @@ do_property].
 	<description>
 	</description>
 	<methods>
+		<method name="get_assign_op" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_base_path" qualifiers="const">
 			<return type="NodePath">
 			</return>
@@ -51899,9 +52510,21 @@ do_property].
 			<description>
 			</description>
 		</method>
+		<method name="get_index" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_property" qualifiers="const">
 			<return type="String">
 			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_assign_op">
+			<argument index="0" name="assign_op" type="int">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -51935,6 +52558,12 @@ do_property].
 			<description>
 			</description>
 		</method>
+		<method name="set_index">
+			<argument index="0" name="index" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_property">
 			<argument index="0" name="property" type="String">
 			</argument>
@@ -51943,19 +52572,23 @@ do_property].
 		</method>
 	</methods>
 	<members>
-		<member name="property/base_script" type="String" setter="set_base_script" getter="get_base_script" brief="">
+		<member name="assign_op" type="int" setter="set_assign_op" getter="get_assign_op" brief="">
 		</member>
-		<member name="property/base_type" type="String" setter="set_base_type" getter="get_base_type" brief="">
+		<member name="base_script" type="String" setter="set_base_script" getter="get_base_script" brief="">
 		</member>
-		<member name="property/basic_type" type="int" setter="set_basic_type" getter="get_basic_type" brief="">
+		<member name="base_type" type="String" setter="set_base_type" getter="get_base_type" brief="">
 		</member>
-		<member name="property/node_path" type="NodePath" setter="set_base_path" getter="get_base_path" brief="">
+		<member name="basic_type" type="int" setter="set_basic_type" getter="get_basic_type" brief="">
 		</member>
-		<member name="property/property" type="String" setter="set_property" getter="get_property" brief="">
+		<member name="index" type="String" setter="set_index" getter="get_index" brief="">
 		</member>
-		<member name="property/set_mode" type="int" setter="set_call_mode" getter="get_call_mode" brief="">
+		<member name="node_path" type="NodePath" setter="set_base_path" getter="get_base_path" brief="">
 		</member>
-		<member name="property/type_cache" type="int" setter="_set_type_cache" getter="_get_type_cache" brief="">
+		<member name="property" type="String" setter="set_property" getter="get_property" brief="">
+		</member>
+		<member name="set_mode" type="int" setter="set_call_mode" getter="get_call_mode" brief="">
+		</member>
+		<member name="type_cache" type="int" setter="_set_type_cache" getter="_get_type_cache" brief="">
 		</member>
 	</members>
 	<constants>
@@ -52025,9 +52658,9 @@ do_property].
 		</method>
 	</methods>
 	<members>
-		<member name="return_value/enabled" type="bool" setter="set_enable_return_value" getter="is_return_value_enabled" brief="">
+		<member name="return_enabled" type="bool" setter="set_enable_return_value" getter="is_return_value_enabled" brief="">
 		</member>
-		<member name="return_value/type" type="int" setter="set_return_type" getter="get_return_type" brief="">
+		<member name="return_type" type="int" setter="set_return_type" getter="get_return_type" brief="">
 		</member>
 	</members>
 	<constants>
@@ -52066,6 +52699,32 @@ do_property].
 	</description>
 	<methods>
 	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="VisualScriptSelect" inherits="VisualScriptNode" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_typed" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_typed">
+			<argument index="0" name="type" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="type" type="int" setter="set_typed" getter="get_typed" brief="">
+		</member>
+	</members>
 	<constants>
 	</constants>
 </class>
@@ -52163,9 +52822,9 @@ do_property].
 		</method>
 	</methods>
 	<members>
-		<member name="function/base_type" type="String" setter="set_base_type" getter="get_base_type" brief="">
+		<member name="base_script" type="String" setter="set_base_script" getter="get_base_script" brief="">
 		</member>
-		<member name="property/base_script" type="String" setter="set_base_script" getter="get_base_script" brief="">
+		<member name="base_type" type="String" setter="set_base_type" getter="get_base_type" brief="">
 		</member>
 	</members>
 	<constants>
@@ -52191,7 +52850,7 @@ do_property].
 		</method>
 	</methods>
 	<members>
-		<member name="variable/name" type="String" setter="set_variable" getter="get_variable" brief="">
+		<member name="var_name" type="String" setter="set_variable" getter="get_variable" brief="">
 		</member>
 	</members>
 	<constants>
@@ -52217,7 +52876,7 @@ do_property].
 		</method>
 	</methods>
 	<members>
-		<member name="variable/name" type="String" setter="set_variable" getter="get_variable" brief="">
+		<member name="var_name" type="String" setter="set_variable" getter="get_variable" brief="">
 		</member>
 	</members>
 	<constants>
@@ -52335,13 +52994,13 @@ do_property].
 		</method>
 	</methods>
 	<members>
-		<member name="signal/base_type" type="String" setter="set_base_type" getter="get_base_type" brief="">
+		<member name="base_type" type="String" setter="set_base_type" getter="get_base_type" brief="">
 		</member>
-		<member name="signal/call_mode" type="int" setter="set_call_mode" getter="get_call_mode" brief="">
+		<member name="call_mode" type="int" setter="set_call_mode" getter="get_call_mode" brief="">
 		</member>
-		<member name="signal/node_path" type="NodePath" setter="set_base_path" getter="get_base_path" brief="">
+		<member name="node_path" type="NodePath" setter="set_base_path" getter="get_base_path" brief="">
 		</member>
-		<member name="signal/signal" type="String" setter="set_signal" getter="get_signal" brief="">
+		<member name="signal" type="String" setter="set_signal" getter="get_signal" brief="">
 		</member>
 	</members>
 	<constants>
@@ -52592,13 +53251,6 @@ do_property].
 				Retrieve the state of this world's physics space. This allows arbitrary querying for collision.
 			</description>
 		</method>
-		<method name="get_sound_space">
-			<return type="RID">
-			</return>
-			<description>
-				Retrieve the [RID] of this world's sound space resource. Used by the [SpatialSound2DServer] for 2D spatial audio.
-			</description>
-		</method>
 		<method name="get_space">
 			<return type="RID">
 			</return>
@@ -52610,7 +53262,7 @@ do_property].
 	<constants>
 	</constants>
 </class>
-<class name="WorldEnvironment" inherits="Spatial" category="Core">
+<class name="WorldEnvironment" inherits="Node" category="Core">
 	<brief_description>
 		Sets environment properties for the entire scene
 	</brief_description>
