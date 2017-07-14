@@ -1,7 +1,7 @@
 
 /* png.c - location for general purpose libpng functions
  *
- * Last changed in libpng 1.6.29 [March 16, 2017]
+ * Last changed in libpng 1.6.30 [(PENDING RELEASE)]
  * Copyright (c) 1998-2002,2004,2006-2017 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
@@ -14,7 +14,7 @@
 #include "pngpriv.h"
 
 /* Generate a compiler error if there is an old png.h in the search path. */
-typedef png_libpng_version_1_6_29 Your_png_h_is_not_version_1_6_29;
+typedef png_libpng_version_1_6_30 Your_png_h_is_not_version_1_6_30;
 
 /* Tells libpng that we have already handled the first "num_bytes" bytes
  * of the PNG file signature.  If the PNG data is embedded into another
@@ -776,14 +776,14 @@ png_get_copyright(png_const_structrp png_ptr)
 #else
 #  ifdef __STDC__
    return PNG_STRING_NEWLINE \
-      "libpng version 1.6.29 - March 16, 2017" PNG_STRING_NEWLINE \
+      "libpng version 1.6.30 - June 28, 2017" PNG_STRING_NEWLINE \
       "Copyright (c) 1998-2002,2004,2006-2017 Glenn Randers-Pehrson" \
       PNG_STRING_NEWLINE \
       "Copyright (c) 1996-1997 Andreas Dilger" PNG_STRING_NEWLINE \
       "Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc." \
       PNG_STRING_NEWLINE;
 #  else
-   return "libpng version 1.6.29 - March 16, 2017\
+   return "libpng version 1.6.30 - June 28, 2017\
       Copyright (c) 1998-2002,2004,2006-2017 Glenn Randers-Pehrson\
       Copyright (c) 1996-1997 Andreas Dilger\
       Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.";
@@ -2832,7 +2832,7 @@ png_pow10(int power)
    if (power < 0)
    {
       if (power < DBL_MIN_10_EXP) return 0;
-      recip = 1, power = -power;
+      recip = 1; power = -power;
    }
 
    if (power > 0)
@@ -2910,7 +2910,9 @@ png_ascii_from_fp(png_const_structrp png_ptr, png_charp ascii, png_size_t size,
             double test = png_pow10(exp_b10+1);
 
             if (test <= DBL_MAX)
-               ++exp_b10, base = test;
+            {
+               ++exp_b10; base = test;
+            }
 
             else
                break;
@@ -2924,7 +2926,10 @@ png_ascii_from_fp(png_const_structrp png_ptr, png_charp ascii, png_size_t size,
           * test on DBL_MAX above.
           */
          fp /= base;
-         while (fp >= 1) fp /= 10, ++exp_b10;
+         while (fp >= 1)
+         {
+            fp /= 10; ++exp_b10;
+         }
 
          /* Because of the code above fp may, at this point, be
           * less than .1, this is ok because the code below can
@@ -2975,7 +2980,7 @@ png_ascii_from_fp(png_const_structrp png_ptr, png_charp ascii, png_size_t size,
                      /* Rounding up to 10, handle that here. */
                      if (czero > 0)
                      {
-                        --czero, d = 1;
+                        --czero; d = 1;
                         if (cdigits == 0) --clead;
                      }
                      else
@@ -2989,7 +2994,7 @@ png_ascii_from_fp(png_const_structrp png_ptr, png_charp ascii, png_size_t size,
 
                            else if (ch == 46)
                            {
-                              ch = *--ascii, ++size;
+                              ch = *--ascii; ++size;
                               /* Advance exp_b10 to '1', so that the
                                * decimal point happens after the
                                * previous digit.
@@ -3016,7 +3021,9 @@ png_ascii_from_fp(png_const_structrp png_ptr, png_charp ascii, png_size_t size,
                               int ch = *--ascii;
 
                               if (ch == 46)
-                                 ++size, exp_b10 = 1;
+                              {
+                                 ++size; exp_b10 = 1;
+                              }
 
                               /* Else lost a leading zero, so 'exp_b10' is
                                * still ok at (-1)
@@ -3052,21 +3059,26 @@ png_ascii_from_fp(png_const_structrp png_ptr, png_charp ascii, png_size_t size,
                       */
                      if (exp_b10 != (-1))
                      {
-                        if (exp_b10 == 0) *ascii++ = 46, --size;
+                        if (exp_b10 == 0)
+                        {
+                           *ascii++ = 46; --size;
+                        }
                         /* PLUS 1: TOTAL 4 */
                         --exp_b10;
                      }
-                     *ascii++ = 48, --czero;
+                     *ascii++ = 48; --czero;
                   }
 
                   if (exp_b10 != (-1))
                   {
                      if (exp_b10 == 0)
-                        *ascii++ = 46, --size; /* counted above */
+                     {
+                        *ascii++ = 46; --size; /* counted above */
+                     }
 
                      --exp_b10;
                   }
-                  *ascii++ = (char)(48 + (int)d), ++cdigits;
+                  *ascii++ = (char)(48 + (int)d); ++cdigits;
                }
             }
             while (cdigits+czero < precision+clead && fp > DBL_MIN);
@@ -3107,7 +3119,7 @@ png_ascii_from_fp(png_const_structrp png_ptr, png_charp ascii, png_size_t size,
              */
             size -= cdigits;
 
-            *ascii++ = 69, --size;    /* 'E': PLUS 1 TOTAL 2+precision */
+            *ascii++ = 69; --size;    /* 'E': PLUS 1 TOTAL 2+precision */
 
             /* The following use of an unsigned temporary avoids ambiguities in
              * the signed arithmetic on exp_b10 and permits GCC at least to do
@@ -3118,7 +3130,7 @@ png_ascii_from_fp(png_const_structrp png_ptr, png_charp ascii, png_size_t size,
 
                if (exp_b10 < 0)
                {
-                  *ascii++ = 45, --size; /* '-': PLUS 1 TOTAL 3+precision */
+                  *ascii++ = 45; --size; /* '-': PLUS 1 TOTAL 3+precision */
                   uexp_b10 = (unsigned int)(-exp_b10);
                }
 
@@ -3185,7 +3197,9 @@ png_ascii_from_fixed(png_const_structrp png_ptr, png_charp ascii,
 
       /* Avoid overflow here on the minimum integer. */
       if (fp < 0)
-         *ascii++ = 45, num = (png_uint_32)(-fp);
+      {
+         *ascii++ = 45; num = (png_uint_32)(-fp);
+      }
       else
          num = (png_uint_32)fp;
 
@@ -3223,7 +3237,10 @@ png_ascii_from_fixed(png_const_structrp png_ptr, png_charp ascii,
                 * then ndigits digits to first:
                 */
                i = 5;
-               while (ndigits < i) *ascii++ = 48, --i;
+               while (ndigits < i)
+               {
+                  *ascii++ = 48; --i;
+               }
                while (ndigits >= first) *ascii++ = digits[--ndigits];
                /* Don't output the trailing zeros! */
             }
@@ -4278,7 +4295,7 @@ png_set_option(png_structrp png_ptr, int option, int onoff)
    defined(PNG_SIMPLIFIED_WRITE_SUPPORTED)
 /* sRGB conversion tables; these are machine generated with the code in
  * contrib/tools/makesRGB.c.  The actual sRGB transfer curve defined in the
- * specification (see the article at http://en.wikipedia.org/wiki/SRGB)
+ * specification (see the article at https://en.wikipedia.org/wiki/SRGB)
  * is used, not the gamma=1/2.2 approximation use elsewhere in libpng.
  * The sRGB to linear table is exact (to the nearest 16-bit linear fraction).
  * The inverse (linear to sRGB) table has accuracies as follows:
