@@ -1410,7 +1410,9 @@ void KinematicBody2D::_bind_methods() {
 
 }
 
-KinematicBody2D::KinematicBody2D() : PhysicsBody2D(Physics2DServer::BODY_MODE_KINEMATIC){
+KinematicBody2D::KinematicBody2D() : RigidBody2D(){
+
+	set_mode(MODE_KINEMATIC);
 
 	colliding=false;
 	collider=0;

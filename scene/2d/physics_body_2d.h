@@ -288,9 +288,9 @@ VARIANT_ENUM_CAST(RigidBody2D::CCDMode);
 
 
 
-class KinematicBody2D : public PhysicsBody2D {
+class KinematicBody2D : public RigidBody2D {
 
-	OBJ_TYPE(KinematicBody2D,PhysicsBody2D);
+	OBJ_TYPE(KinematicBody2D,RigidBody2D);
 
 	float margin;
 	bool colliding;

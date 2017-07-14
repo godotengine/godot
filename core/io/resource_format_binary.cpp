@@ -2273,6 +2273,7 @@ void ResourceFormatSaverBinary::get_recognized_extensions(const RES& p_resource,
 
 	String base = p_resource->get_base_extension().to_lower();
 	p_extensions->push_back(base);
+	p_extensions->push_back("res");
 
 }
 
