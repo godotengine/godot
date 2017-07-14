@@ -2276,6 +2276,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="has_point" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="remove_point">
 			<argument index="0" name="id" type="int">
 			</argument>
@@ -32669,6 +32677,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_percent_visible" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_tab_size" qualifiers="const">
 			<return type="int">
 			</return>
@@ -32823,6 +32837,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_percent_visible">
+			<argument index="0" name="percent_visible" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_scroll_active">
 			<argument index="0" name="active" type="bool">
 			</argument>
@@ -32854,6 +32874,12 @@
 			<argument index="1" name="expand" type="bool">
 			</argument>
 			<argument index="2" name="ratio" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_text">
+			<argument index="0" name="text" type="String">
 			</argument>
 			<description>
 			</description>
@@ -39138,6 +39164,16 @@
 			</argument>
 			<description>
 				Find the first occurrence of a substring but search as case-insensitive, return the starting position of the substring or -1 if not found. Optionally, the initial search index can be passed.
+			</description>
+		</method>
+		<method name="format">
+			<return type="String">
+			</return>
+			<argument index="0" name="values" type="var">
+			</argument>
+			<argument index="1" name="placeholder" type="String" default="{_}">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="get_base_dir">
