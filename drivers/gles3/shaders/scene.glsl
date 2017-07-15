@@ -1655,7 +1655,7 @@ FRAGMENT_SHADER_CODE
 #endif //#USE_LIGHT_DIRECTIONAL
 
 #ifdef USE_GI_PROBES
-	gi_probes_compute(vertex,normal,roughness,specular_light,ambient_light);
+	gi_probes_compute(vertex,normal,roughness,env_reflection_light,ambient_light);
 
 #endif
 
