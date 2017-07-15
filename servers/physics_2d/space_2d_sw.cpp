@@ -1186,7 +1186,7 @@ Space2DSW::Space2DSW() {
 	contact_max_allowed_penetration = 0.3;
 
 	constraint_bias = 0.2;
-	body_linear_velocity_sleep_threshold = GLOBAL_DEF("physics/2d/sleep_threashold_linear", 2.0);
+	body_linear_velocity_sleep_threshold = GLOBAL_DEF("physics/2d/sleep_threshold_linear", 2.0);
 	body_angular_velocity_sleep_threshold = GLOBAL_DEF("physics/2d/sleep_threshold_angular", (8.0 / 180.0 * Math_PI));
 	body_time_to_sleep = GLOBAL_DEF("physics/2d/time_before_sleep", 0.5);
 
