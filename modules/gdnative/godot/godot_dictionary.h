@@ -74,6 +74,8 @@ void GDAPI godot_dictionary_set(godot_dictionary *p_self, const godot_variant *p
 
 godot_variant GDAPI *godot_dictionary_operator_index(godot_dictionary *p_self, const godot_variant *p_key);
 
+godot_variant GDAPI *godot_dictionary_next(const godot_dictionary *p_self, const godot_variant *p_key);
+
 godot_bool GDAPI godot_dictionary_operator_equal(const godot_dictionary *p_self, const godot_dictionary *p_b);
 
 godot_string GDAPI godot_dictionary_to_json(const godot_dictionary *p_self);
