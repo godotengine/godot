@@ -164,7 +164,7 @@
 #include "scene/resources/polygon_path_finder.h"
 
 //#include "scene/resources/sample.h"
-//#include "scene/audio/sample_player.h"
+#include "scene/3d/audio_stream_player_3d.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/room.h"
@@ -212,7 +212,7 @@
 
 #include "scene/3d/area.h"
 
-#include "scene/3d/body_shape.h"
+#include "scene/3d/collision_shape.h"
 #include "scene/3d/immediate_geometry.h"
 #include "scene/3d/multimesh_instance.h"
 #include "scene/3d/physics_joint.h"
@@ -532,8 +532,6 @@ void register_scene_types() {
 	ClassDB::register_class<SphereMesh>();
 	ClassDB::register_virtual_class<Material>();
 	ClassDB::register_class<SpatialMaterial>();
-	ClassDB::add_compatibility_class("FixedSpatialMaterial", "SpatialMaterial");
-	ClassDB::add_compatibility_class("Mesh", "ArrayMesh");
 	SceneTree::add_idle_callback(SpatialMaterial::flush_changes);
 	SpatialMaterial::init_shaders();
 
@@ -562,6 +560,7 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); //may take time to init
 
+	ClassDB::register_class<SpatialVelocityTracker>();
 #endif
 	ClassDB::register_class<World>();
 	ClassDB::register_class<Environment>();
@@ -598,6 +597,7 @@ void register_scene_types() {
 
 	ClassDB::register_class<AudioStreamPlayer>();
 	ClassDB::register_class<AudioStreamPlayer2D>();
+	ClassDB::register_class<AudioStreamPlayer3D>();
 	ClassDB::register_virtual_class<VideoStream>();
 	ClassDB::register_class<AudioStreamSample>();
 
@@ -627,6 +627,13 @@ void register_scene_types() {
 
 	ClassDB::register_class<SceneTree>();
 	ClassDB::register_virtual_class<SceneTreeTimer>(); //sorry, you can't create it
+
+#ifndef DISABLE_DEPRECATED
+	ClassDB::add_compatibility_class("ImageSkyBox", "PanoramaSky");
+	ClassDB::add_compatibility_class("FixedSpatialMaterial", "SpatialMaterial");
+	ClassDB::add_compatibility_class("Mesh", "ArrayMesh");
+
+#endif
 
 	OS::get_singleton()->yield(); //may take time to init
 

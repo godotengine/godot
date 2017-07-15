@@ -42,12 +42,11 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-#if 0
 class CanvasItemEditor;
 
 class CollisionPolygonEditor : public HBoxContainer {
 
-	GDCLASS(CollisionPolygonEditor, HBoxContainer );
+	GDCLASS(CollisionPolygonEditor, HBoxContainer);
 
 	UndoRedo *undo_redo;
 	enum Mode {
@@ -62,7 +61,6 @@ class CollisionPolygonEditor : public HBoxContainer {
 	ToolButton *button_create;
 	ToolButton *button_edit;
 
-
 	Ref<SpatialMaterial> line_material;
 	Ref<SpatialMaterial> handle_material;
 
@@ -71,7 +69,7 @@ class CollisionPolygonEditor : public HBoxContainer {
 	CollisionPolygon *node;
 	ImmediateGeometry *imgeom;
 	MeshInstance *pointsm;
-	Ref<Mesh> m;
+	Ref<ArrayMesh> m;
 
 	MenuButton *options;
 
@@ -91,9 +89,9 @@ protected:
 	void _notification(int p_what);
 	void _node_removed(Node *p_node);
 	static void _bind_methods();
-public:
 
-	virtual bool forward_spatial_gui_input(Camera* p_camera,const InputEvent& p_event);
+public:
+	virtual bool forward_spatial_gui_input(Camera *p_camera, const Ref<InputEvent> &p_event);
 	void edit(Node *p_collision_polygon);
 	CollisionPolygonEditor(EditorNode *p_editor);
 	~CollisionPolygonEditor();
@@ -101,14 +99,13 @@ public:
 
 class CollisionPolygonEditorPlugin : public EditorPlugin {
 
-	GDCLASS( CollisionPolygonEditorPlugin, EditorPlugin );
+	GDCLASS(CollisionPolygonEditorPlugin, EditorPlugin);
 
 	CollisionPolygonEditor *collision_polygon_editor;
 	EditorNode *editor;
 
 public:
-
-	virtual bool forward_spatial_gui_input(Camera* p_camera,const InputEvent& p_event) { return collision_polygon_editor->forward_spatial_gui_input(p_camera,p_event); }
+	virtual bool forward_spatial_gui_input(Camera *p_camera, const Ref<InputEvent> &p_event) { return collision_polygon_editor->forward_spatial_gui_input(p_camera, p_event); }
 
 	virtual String get_name() const { return "CollisionPolygon"; }
 	bool has_main_screen() const { return false; }
@@ -118,7 +115,6 @@ public:
 
 	CollisionPolygonEditorPlugin(EditorNode *p_node);
 	~CollisionPolygonEditorPlugin();
-
 };
-#endif
+
 #endif // COLLISION_POLYGON_EDITOR_PLUGIN_H

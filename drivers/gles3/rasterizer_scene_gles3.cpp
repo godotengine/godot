@@ -4199,7 +4199,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_SCISSOR_TEST);
 
-	render_list.sort_by_depth(true);
+	render_list.sort_by_reverse_depth(true);
 
 	if (state.directional_light_count == 0) {
 		directional_light = NULL;

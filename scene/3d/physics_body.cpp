@@ -879,313 +879,105 @@ RigidBody::~RigidBody() {
 //////////////////////////////////////////////////////
 //////////////////////////
 
-Variant KinematicBody::_get_collider() const {
+Dictionary KinematicBody::_move(const Vector3 &p_motion) {
 
-	ObjectID oid = get_collider();
-	if (oid == 0)
-		return Variant();
-	Object *obj = ObjectDB::get_instance(oid);
-	if (!obj)
-		return Variant();
-
-	Reference *ref = obj->cast_to<Reference>();
-	if (ref) {
-		return Ref<Reference>(ref);
-	}
-
-	return obj;
-}
-
-bool KinematicBody::_ignores_mode(PhysicsServer::BodyMode p_mode) const {
-
-	switch (p_mode) {
-		case PhysicsServer::BODY_MODE_STATIC: return !collide_static;
-		case PhysicsServer::BODY_MODE_KINEMATIC: return !collide_kinematic;
-		case PhysicsServer::BODY_MODE_RIGID: return !collide_rigid;
-		case PhysicsServer::BODY_MODE_CHARACTER: return !collide_character;
-	}
-
-	return true;
-}
-
-void KinematicBody::revert_motion() {
-
-	Transform gt = get_global_transform();
-	gt.origin -= travel; //I do hope this is correct.
-	travel = Vector3();
-	set_global_transform(gt);
-}
-
-Vector3 KinematicBody::get_travel() const {
-
-	return travel;
-}
-
-Vector3 KinematicBody::move(const Vector3 &p_motion) {
-
-	//give me back regular physics engine logic
-	//this is madness
-	//and most people using this function will think
-	//what it does is simpler than using physics
-	//this took about a week to get right..
-	//but is it right? who knows at this point..
-
-	colliding = false;
-	ERR_FAIL_COND_V(!is_inside_tree(), Vector3());
-	PhysicsDirectSpaceState *dss = PhysicsServer::get_singleton()->space_get_direct_state(get_world()->get_space());
-	ERR_FAIL_COND_V(!dss, Vector3());
-	const int max_shapes = 32;
-	Vector3 sr[max_shapes * 2];
-	int res_shapes;
-
-	Set<RID> exclude;
-	exclude.insert(get_rid());
-
-	//recover first
-	int recover_attempts = 4;
-
-	bool collided = false;
-	uint32_t mask = 0;
-	if (collide_static)
-		mask |= PhysicsDirectSpaceState::TYPE_MASK_STATIC_BODY;
-	if (collide_kinematic)
-		mask |= PhysicsDirectSpaceState::TYPE_MASK_KINEMATIC_BODY;
-	if (collide_rigid)
-		mask |= PhysicsDirectSpaceState::TYPE_MASK_RIGID_BODY;
-	if (collide_character)
-		mask |= PhysicsDirectSpaceState::TYPE_MASK_CHARACTER_BODY;
-
-	//print_line("motion: "+p_motion+" margin: "+rtos(margin));
-
-	//print_line("margin: "+rtos(margin));
-
-	float m = margin;
-	//m=0.001;
-
-	do {
-
-		//motion recover
-		for (int i = 0; i < get_shape_count(); i++) {
-
-			if (is_shape_set_as_trigger(i))
-				continue;
-
-			if (dss->collide_shape(get_shape(i)->get_rid(), get_global_transform() * get_shape_transform(i), m, sr, max_shapes, res_shapes, exclude, get_collision_layer(), mask)) {
-				collided = true;
-			}
+	Collision col;
+	if (move(p_motion, col)) {
+		Dictionary d;
+		d["position"] = col.collision;
+		d["normal"] = col.collision;
+		d["local_shape"] = col.local_shape;
+		d["travel"] = col.travel;
+		d["remainder"] = col.remainder;
+		d["collider_id"] = col.collider;
+		if (col.collider) {
+			d["collider"] = ObjectDB::get_instance(col.collider);
+		} else {
+			d["collider"] = Variant();
 		}
 
-		if (!collided)
-			break;
+		d["collider_shape_index"] = col.collider_shape;
+		d["collider_metadata"] = col.collider_metadata;
 
-		//print_line("have to recover");
-		Vector3 recover_motion;
-		bool all_outside = true;
-		for (int j = 0; j < 8; j++) {
-			for (int i = 0; i < res_shapes; i++) {
+		return d;
 
-				Vector3 a = sr[i * 2 + 0];
-				Vector3 b = sr[i * 2 + 1];
-//print_line(String()+a+" -> "+b);
-#if 0
-				float d = a.distance_to(b);
-
-				/*
-				if (d<margin)
-					continue;
-				*/
-				recover_motion+=(b-a)*0.2;
-#else
-				float dist = a.distance_to(b);
-				if (dist > CMP_EPSILON) {
-					Vector3 norm = (b - a).normalized();
-					if (dist > margin * 0.5)
-						all_outside = false;
-					float adv = norm.dot(recover_motion);
-					//print_line(itos(i)+" dist: "+rtos(dist)+" adv: "+rtos(adv));
-					recover_motion += norm * MAX(dist - adv, 0) * 0.4;
-				}
-#endif
-			}
-		}
-
-		if (recover_motion == Vector3()) {
-			collided = false;
-			break;
-		}
-
-		//print_line("**** RECOVER: "+recover_motion);
-
-		Transform gt = get_global_transform();
-		gt.origin += recover_motion;
-		set_global_transform(gt);
-
-		recover_attempts--;
-
-		if (all_outside)
-			break;
-
-	} while (recover_attempts);
-
-	//move second
-	float safe = 1.0;
-	float unsafe = 1.0;
-	int best_shape = -1;
-
-	PhysicsDirectSpaceState::ShapeRestInfo rest;
-
-	//print_line("pos: "+get_global_transform().origin);
-	//print_line("motion: "+p_motion);
-
-	for (int i = 0; i < get_shape_count(); i++) {
-
-		if (is_shape_set_as_trigger(i))
-			continue;
-
-		float lsafe, lunsafe;
-		PhysicsDirectSpaceState::ShapeRestInfo lrest;
-		bool valid = dss->cast_motion(get_shape(i)->get_rid(), get_global_transform() * get_shape_transform(i), p_motion, 0, lsafe, lunsafe, exclude, get_collision_layer(), mask, &lrest);
-		//print_line("shape: "+itos(i)+" travel:"+rtos(ltravel));
-		if (!valid) {
-			safe = 0;
-			unsafe = 0;
-			best_shape = i; //sadly it's the best
-			//print_line("initial stuck");
-
-			break;
-		}
-		if (lsafe == 1.0) {
-			//print_line("initial free");
-			continue;
-		}
-		if (lsafe < safe) {
-
-			//print_line("initial at "+rtos(lsafe));
-			safe = lsafe;
-			safe = MAX(0, lsafe - 0.01);
-			unsafe = lunsafe;
-			best_shape = i;
-			rest = lrest;
-		}
-	}
-
-	//print_line("best shape: "+itos(best_shape)+" motion "+p_motion);
-
-	if (safe >= 1) {
-		//not collided
-		colliding = false;
 	} else {
-
-		colliding = true;
-
-		if (true || (safe == 0 && unsafe == 0)) { //use it always because it's more precise than GJK
-			//no advance, use rest info from collision
-			Transform ugt = get_global_transform();
-			ugt.origin += p_motion * unsafe;
-
-			PhysicsDirectSpaceState::ShapeRestInfo rest_info;
-			bool c2 = dss->rest_info(get_shape(best_shape)->get_rid(), ugt * get_shape_transform(best_shape), m, &rest, exclude, get_collision_layer(), mask);
-			if (!c2) {
-				//should not happen, but floating point precision is so weird..
-				colliding = false;
-			}
-
-			//print_line("Rest Travel: "+rest.normal);
-		}
-
-		if (colliding) {
-
-			collision = rest.point;
-			normal = rest.normal;
-			collider = rest.collider_id;
-			collider_vel = rest.linear_velocity;
-			collider_shape = rest.shape;
-		}
+		return Dictionary();
 	}
-
-	Vector3 motion = p_motion * safe;
-	/*
-	if (colliding)
-		motion+=normal*0.001;
-	*/
-	Transform gt = get_global_transform();
-	gt.origin += motion;
-	set_global_transform(gt);
-	travel = motion;
-
-	return p_motion - motion;
 }
 
-Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Vector3 &p_floor_direction, const Vector3 &p_ceil_direction, float p_slope_stop_min_velocity, int p_max_bounces, float p_floor_max_angle, float p_ceil_max_angle) {
+bool KinematicBody::move(const Vector3 &p_motion, Collision &r_collision) {
 
-	/*
-	Things to note:
-	1. This function is basically the KinematicBody2D function ported over.
-	2. The 'travel' variable and stuff relating to it exists more or less for this function's sake.
-	3. Someone is going to have to document this, so here's an example for them:
-	vel = move_and_slide(vel, Vector3(0, 1, 0), Vector3(0, -1, 0), 0.1);
-	Very useful for FPS controllers so long as you control horizontal motion properly - even for Quake-style AABB colliders.
-	The slope stop system is... rather weird, and it's correct operation depends on what scale your game is built on,
-	 but as far as I can tell in theory it's suppposed to be a way of turning impassable slopes into invisible walls.
-	It can also be a pain, since there's a better-known way of defining such things: "let gravity do the work".
-	If you don't like it, set it to positive infinity.
-	4. Might be a bug somewhere else in physics: When there are two CollisionShape nodes with a shared Shape, only one is considered, I think.
-	   Test this further.
-	*/
+	Transform gt = get_global_transform();
+	PhysicsServer::MotionResult result;
+	bool colliding = PhysicsServer::get_singleton()->body_test_motion(get_rid(), gt, p_motion, margin, &result);
 
-	Vector3 motion = (move_and_slide_floor_velocity + p_linear_velocity) * get_fixed_process_delta_time();
+	if (colliding) {
+		r_collision.collider_metadata = result.collider_metadata;
+		r_collision.collider_shape = result.collider_shape;
+		r_collision.collider_vel = result.collider_velocity;
+		r_collision.collision = result.collision_point;
+		r_collision.normal = result.collision_normal;
+		r_collision.collider = result.collider_id;
+		r_collision.travel = result.motion;
+		r_collision.remainder = result.remainder;
+		r_collision.local_shape = result.collision_local_shape;
+	}
+
+	gt.origin += result.motion;
+	set_global_transform(gt);
+
+	return colliding;
+}
+
+Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Vector3 &p_floor_direction, float p_slope_stop_min_velocity, int p_max_bounces, float p_floor_max_angle) {
+
+	Vector3 motion = (floor_velocity + p_linear_velocity) * get_fixed_process_delta_time();
 	Vector3 lv = p_linear_velocity;
 
-	move_and_slide_on_floor = false;
-	move_and_slide_on_ceiling = false;
-	move_and_slide_on_wall = false;
-	move_and_slide_colliders.clear();
-	move_and_slide_floor_velocity = Vector3();
+	on_floor = false;
+	on_ceiling = false;
+	on_wall = false;
+	colliders.clear();
+	floor_velocity = Vector3();
 
 	while (p_max_bounces) {
 
-		motion = move(motion);
+		Collision collision;
 
-		if (is_colliding()) {
+		bool collided = move(motion, collision);
 
-			bool hit_horizontal = false; //hit floor or ceiling
+		if (collided) {
 
-			if (p_floor_direction != Vector3()) {
-				if (get_collision_normal().dot(p_floor_direction) >= Math::cos(p_floor_max_angle)) { //floor
+			motion = collision.remainder;
 
-					hit_horizontal = true;
-					move_and_slide_on_floor = true;
-					move_and_slide_floor_velocity = get_collider_velocity();
+			if (p_floor_direction == Vector3()) {
+				//all is a wall
+				on_wall = true;
+			} else {
+				if (collision.normal.dot(p_floor_direction) >= Math::cos(p_floor_max_angle)) { //floor
 
-					//Note: These two lines are the only lines that really changed between 3D/2D, see if it can't be reused somehow???
-					Vector2 hz_velocity = Vector2(lv.x - move_and_slide_floor_velocity.x, lv.z - move_and_slide_floor_velocity.z);
-					if (get_travel().length() < 1 && hz_velocity.length() < p_slope_stop_min_velocity) {
-						revert_motion();
+					on_floor = true;
+					floor_velocity = collision.collider_vel;
+
+					/*if (collision.travel.length() < 0.01 && ABS((lv.x - floor_velocity.x)) < p_slope_stop_min_velocity) {
+						Transform gt = get_global_transform();
+						gt.elements[2] -= collision.travel;
+						set_global_transform(gt);
 						return Vector3();
-					}
+					}*/
+				} else if (collision.normal.dot(-p_floor_direction) >= Math::cos(p_floor_max_angle)) { //ceiling
+					on_ceiling = true;
+				} else {
+					on_wall = true;
 				}
 			}
 
-			if (p_ceil_direction != Vector3()) {
-				if (get_collision_normal().dot(p_ceil_direction) >= Math::cos(p_ceil_max_angle)) { //ceiling
-					hit_horizontal = true;
-					move_and_slide_on_ceiling = true;
-				}
-			}
-
-			//if it hit something but didn't hit a floor or ceiling, it is by default a wall
-			//(this imitates the pre-specifiable-ceiling logic more or less, except ceiling is optional)
-			if (!hit_horizontal) {
-				move_and_slide_on_wall = true;
-			}
-
-			Vector3 n = get_collision_normal();
+			Vector3 n = collision.normal;
 			motion = motion.slide(n);
 			lv = lv.slide(n);
-			Variant collider = _get_collider();
-			if (collider.get_type() != Variant::NIL) {
-				move_and_slide_colliders.push_back(collider);
-			}
+
+			colliders.push_back(collision);
 
 		} else {
 			break;
@@ -1199,199 +991,148 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 	return lv;
 }
 
-bool KinematicBody::is_move_and_slide_on_floor() const {
+bool KinematicBody::is_on_floor() const {
 
-	return move_and_slide_on_floor;
+	return on_floor;
 }
-bool KinematicBody::is_move_and_slide_on_wall() const {
+bool KinematicBody::is_on_wall() const {
 
-	return move_and_slide_on_wall;
+	return on_wall;
 }
-bool KinematicBody::is_move_and_slide_on_ceiling() const {
+bool KinematicBody::is_on_ceiling() const {
 
-	return move_and_slide_on_ceiling;
-}
-Array KinematicBody::get_move_and_slide_colliders() const {
-
-	return move_and_slide_colliders;
+	return on_ceiling;
 }
 
-Vector3 KinematicBody::move_to(const Vector3 &p_position) {
+Vector3 KinematicBody::get_floor_velocity() const {
 
-	return move(p_position - get_global_transform().origin);
+	return floor_velocity;
 }
 
-bool KinematicBody::can_teleport_to(const Vector3 &p_position) {
-
-	ERR_FAIL_COND_V(!is_inside_tree(), false);
-	PhysicsDirectSpaceState *dss = PhysicsServer::get_singleton()->space_get_direct_state(get_world()->get_space());
-	ERR_FAIL_COND_V(!dss, false);
-
-	uint32_t mask = 0;
-	if (collide_static)
-		mask |= PhysicsDirectSpaceState::TYPE_MASK_STATIC_BODY;
-	if (collide_kinematic)
-		mask |= PhysicsDirectSpaceState::TYPE_MASK_KINEMATIC_BODY;
-	if (collide_rigid)
-		mask |= PhysicsDirectSpaceState::TYPE_MASK_RIGID_BODY;
-	if (collide_character)
-		mask |= PhysicsDirectSpaceState::TYPE_MASK_CHARACTER_BODY;
-
-	Transform xform = get_global_transform();
-	xform.origin = p_position;
-
-	Set<RID> exclude;
-	exclude.insert(get_rid());
-
-	for (int i = 0; i < get_shape_count(); i++) {
-
-		if (is_shape_set_as_trigger(i))
-			continue;
-
-		bool col = dss->intersect_shape(get_shape(i)->get_rid(), xform * get_shape_transform(i), 0, NULL, 1, exclude, get_collision_layer(), mask);
-		if (col)
-			return false;
-	}
-
-	return true;
-}
-
-bool KinematicBody::is_colliding() const {
+bool KinematicBody::test_move(const Transform &p_from, const Vector3 &p_motion) {
 
 	ERR_FAIL_COND_V(!is_inside_tree(), false);
 
-	return colliding;
-}
-Vector3 KinematicBody::get_collision_pos() const {
-
-	ERR_FAIL_COND_V(!colliding, Vector3());
-	return collision;
-}
-Vector3 KinematicBody::get_collision_normal() const {
-
-	ERR_FAIL_COND_V(!colliding, Vector3());
-	return normal;
+	return PhysicsServer::get_singleton()->body_test_motion(get_rid(), p_from, p_motion, margin);
 }
 
-Vector3 KinematicBody::get_collider_velocity() const {
-
-	return collider_vel;
-}
-
-ObjectID KinematicBody::get_collider() const {
-
-	ERR_FAIL_COND_V(!colliding, 0);
-	return collider;
-}
-int KinematicBody::get_collider_shape() const {
-
-	ERR_FAIL_COND_V(!colliding, -1);
-	return collider_shape;
-}
-void KinematicBody::set_collide_with_static_bodies(bool p_enable) {
-
-	collide_static = p_enable;
-}
-bool KinematicBody::can_collide_with_static_bodies() const {
-
-	return collide_static;
-}
-
-void KinematicBody::set_collide_with_rigid_bodies(bool p_enable) {
-
-	collide_rigid = p_enable;
-}
-bool KinematicBody::can_collide_with_rigid_bodies() const {
-
-	return collide_rigid;
-}
-
-void KinematicBody::set_collide_with_kinematic_bodies(bool p_enable) {
-
-	collide_kinematic = p_enable;
-}
-bool KinematicBody::can_collide_with_kinematic_bodies() const {
-
-	return collide_kinematic;
-}
-
-void KinematicBody::set_collide_with_character_bodies(bool p_enable) {
-
-	collide_character = p_enable;
-}
-bool KinematicBody::can_collide_with_character_bodies() const {
-
-	return collide_character;
-}
-
-void KinematicBody::set_collision_margin(float p_margin) {
+void KinematicBody::set_safe_margin(float p_margin) {
 
 	margin = p_margin;
 }
 
-float KinematicBody::get_collision_margin() const {
+float KinematicBody::get_safe_margin() const {
 
 	return margin;
 }
 
+int KinematicBody::get_collision_count() const {
+
+	return colliders.size();
+}
+Vector3 KinematicBody::get_collision_position(int p_collision) const {
+
+	ERR_FAIL_INDEX_V(p_collision, colliders.size(), Vector3());
+
+	return colliders[p_collision].collision;
+}
+Vector3 KinematicBody::get_collision_normal(int p_collision) const {
+	ERR_FAIL_INDEX_V(p_collision, colliders.size(), Vector3());
+	return colliders[p_collision].normal;
+}
+
+Vector3 KinematicBody::get_collision_travel(int p_collision) const {
+	ERR_FAIL_INDEX_V(p_collision, colliders.size(), Vector3());
+	return colliders[p_collision].travel;
+}
+Vector3 KinematicBody::get_collision_remainder(int p_collision) const {
+	ERR_FAIL_INDEX_V(p_collision, colliders.size(), Vector3());
+	return colliders[p_collision].remainder;
+}
+Object *KinematicBody::get_collision_local_shape(int p_collision) const {
+	ERR_FAIL_INDEX_V(p_collision, colliders.size(), NULL);
+	uint32_t owner = shape_find_owner(colliders[p_collision].local_shape);
+	return shape_owner_get_owner(owner);
+}
+Object *KinematicBody::get_collision_collider(int p_collision) const {
+	ERR_FAIL_INDEX_V(p_collision, colliders.size(), NULL);
+
+	if (colliders[p_collision].collider) {
+		return ObjectDB::get_instance(colliders[p_collision].collider);
+	}
+
+	return NULL;
+}
+ObjectID KinematicBody::get_collision_collider_id(int p_collision) const {
+	ERR_FAIL_INDEX_V(p_collision, colliders.size(), 0);
+
+	return colliders[p_collision].collider;
+}
+Object *KinematicBody::get_collision_collider_shape(int p_collision) const {
+	ERR_FAIL_INDEX_V(p_collision, colliders.size(), NULL);
+	Object *collider = get_collision_collider(p_collision);
+	if (collider) {
+		CollisionObject *obj2d = collider->cast_to<CollisionObject>();
+		if (obj2d) {
+			uint32_t owner = shape_find_owner(colliders[p_collision].collider_shape);
+			return obj2d->shape_owner_get_owner(owner);
+		}
+	}
+
+	return NULL;
+}
+int KinematicBody::get_collision_collider_shape_index(int p_collision) const {
+	ERR_FAIL_INDEX_V(p_collision, colliders.size(), -1);
+	return colliders[p_collision].collider_shape;
+}
+Vector3 KinematicBody::get_collision_collider_velocity(int p_collision) const {
+	ERR_FAIL_INDEX_V(p_collision, colliders.size(), Vector3());
+	return colliders[p_collision].collider_vel;
+}
+Variant KinematicBody::get_collision_collider_metadata(int p_collision) const {
+	ERR_FAIL_INDEX_V(p_collision, colliders.size(), Variant());
+	return colliders[p_collision].collider_metadata;
+}
+
 void KinematicBody::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("move", "rel_vec"), &KinematicBody::move);
-	ClassDB::bind_method(D_METHOD("move_to", "position"), &KinematicBody::move_to);
-	ClassDB::bind_method(D_METHOD("move_and_slide", "linear_velocity", "floor_normal", "ceil_normal", "slope_stop_min_velocity", "max_bounces", "floor_max_angle", "ceil_max_angle"), &KinematicBody::move_and_slide, DEFVAL(Vector3(0, 0, 0)), DEFVAL(Vector3(0, 0, 0)), DEFVAL(5), DEFVAL(4), DEFVAL(Math::deg2rad((float)45)), DEFVAL(Math::deg2rad((float)45)));
+	ClassDB::bind_method(D_METHOD("move", "rel_vec"), &KinematicBody::_move);
+	ClassDB::bind_method(D_METHOD("move_and_slide", "linear_velocity", "floor_normal", "slope_stop_min_velocity", "max_bounces", "floor_max_angle"), &KinematicBody::move_and_slide, DEFVAL(Vector3(0, 0, 0)), DEFVAL(0.05), DEFVAL(4), DEFVAL(Math::deg2rad((float)45)));
 
-	ClassDB::bind_method(D_METHOD("can_teleport_to", "position"), &KinematicBody::can_teleport_to);
+	ClassDB::bind_method(D_METHOD("test_move", "from", "rel_vec"), &KinematicBody::test_move);
 
-	ClassDB::bind_method(D_METHOD("is_colliding"), &KinematicBody::is_colliding);
+	ClassDB::bind_method(D_METHOD("is_on_floor"), &KinematicBody::is_on_floor);
+	ClassDB::bind_method(D_METHOD("is_on_ceiling"), &KinematicBody::is_on_ceiling);
+	ClassDB::bind_method(D_METHOD("is_on_wall"), &KinematicBody::is_on_wall);
+	ClassDB::bind_method(D_METHOD("get_floor_velocity"), &KinematicBody::get_floor_velocity);
 
-	ClassDB::bind_method(D_METHOD("get_collision_pos"), &KinematicBody::get_collision_pos);
-	ClassDB::bind_method(D_METHOD("get_collision_normal"), &KinematicBody::get_collision_normal);
-	ClassDB::bind_method(D_METHOD("get_collider_velocity"), &KinematicBody::get_collider_velocity);
-	ClassDB::bind_method(D_METHOD("get_collider:Variant"), &KinematicBody::_get_collider);
-	ClassDB::bind_method(D_METHOD("get_collider_shape"), &KinematicBody::get_collider_shape);
+	ClassDB::bind_method(D_METHOD("set_safe_margin", "pixels"), &KinematicBody::set_safe_margin);
+	ClassDB::bind_method(D_METHOD("get_safe_margin", "pixels"), &KinematicBody::get_safe_margin);
 
-	ClassDB::bind_method(D_METHOD("set_collide_with_static_bodies", "enable"), &KinematicBody::set_collide_with_static_bodies);
-	ClassDB::bind_method(D_METHOD("can_collide_with_static_bodies"), &KinematicBody::can_collide_with_static_bodies);
+	ClassDB::bind_method(D_METHOD("get_collision_count"), &KinematicBody::get_collision_count);
+	ClassDB::bind_method(D_METHOD("get_collision_position", "collision"), &KinematicBody::get_collision_position);
+	ClassDB::bind_method(D_METHOD("get_collision_normal", "collision"), &KinematicBody::get_collision_normal);
+	ClassDB::bind_method(D_METHOD("get_collision_travel", "collision"), &KinematicBody::get_collision_travel);
+	ClassDB::bind_method(D_METHOD("get_collision_remainder", "collision"), &KinematicBody::get_collision_remainder);
+	ClassDB::bind_method(D_METHOD("get_collision_local_shape", "collision"), &KinematicBody::get_collision_local_shape);
+	ClassDB::bind_method(D_METHOD("get_collision_collider", "collision"), &KinematicBody::get_collision_collider);
+	ClassDB::bind_method(D_METHOD("get_collision_collider_id", "collision"), &KinematicBody::get_collision_collider_id);
+	ClassDB::bind_method(D_METHOD("get_collision_collider_shape", "collision"), &KinematicBody::get_collision_collider_shape);
+	ClassDB::bind_method(D_METHOD("get_collision_collider_shape_index", "collision"), &KinematicBody::get_collision_collider_shape_index);
+	ClassDB::bind_method(D_METHOD("get_collision_collider_velocity", "collision"), &KinematicBody::get_collision_collider_velocity);
+	ClassDB::bind_method(D_METHOD("get_collision_collider_metadata", "collision"), &KinematicBody::get_collision_collider_metadata);
 
-	ClassDB::bind_method(D_METHOD("set_collide_with_kinematic_bodies", "enable"), &KinematicBody::set_collide_with_kinematic_bodies);
-	ClassDB::bind_method(D_METHOD("can_collide_with_kinematic_bodies"), &KinematicBody::can_collide_with_kinematic_bodies);
-
-	ClassDB::bind_method(D_METHOD("set_collide_with_rigid_bodies", "enable"), &KinematicBody::set_collide_with_rigid_bodies);
-	ClassDB::bind_method(D_METHOD("can_collide_with_rigid_bodies"), &KinematicBody::can_collide_with_rigid_bodies);
-
-	ClassDB::bind_method(D_METHOD("set_collide_with_character_bodies", "enable"), &KinematicBody::set_collide_with_character_bodies);
-	ClassDB::bind_method(D_METHOD("can_collide_with_character_bodies"), &KinematicBody::can_collide_with_character_bodies);
-
-	ClassDB::bind_method(D_METHOD("set_collision_margin", "pixels"), &KinematicBody::set_collision_margin);
-	ClassDB::bind_method(D_METHOD("get_collision_margin", "pixels"), &KinematicBody::get_collision_margin);
-
-	ClassDB::bind_method(D_METHOD("get_travel"), &KinematicBody::get_travel);
-	ClassDB::bind_method(D_METHOD("revert_motion"), &KinematicBody::revert_motion);
-
-	ClassDB::bind_method(D_METHOD("get_move_and_slide_colliders"), &KinematicBody::get_move_and_slide_colliders);
-	ClassDB::bind_method(D_METHOD("is_move_and_slide_on_floor"), &KinematicBody::is_move_and_slide_on_floor);
-	ClassDB::bind_method(D_METHOD("is_move_and_slide_on_ceiling"), &KinematicBody::is_move_and_slide_on_ceiling);
-	ClassDB::bind_method(D_METHOD("is_move_and_slide_on_wall"), &KinematicBody::is_move_and_slide_on_wall);
-
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with/static"), "set_collide_with_static_bodies", "can_collide_with_static_bodies");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with/kinematic"), "set_collide_with_kinematic_bodies", "can_collide_with_kinematic_bodies");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with/rigid"), "set_collide_with_rigid_bodies", "can_collide_with_rigid_bodies");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with/character"), "set_collide_with_character_bodies", "can_collide_with_character_bodies");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "collision/margin", PROPERTY_HINT_RANGE, "0.001,256,0.001"), "set_collision_margin", "get_collision_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "collision/safe_margin", PROPERTY_HINT_RANGE, "0.001,256,0.001"), "set_safe_margin", "get_safe_margin");
 }
 
 KinematicBody::KinematicBody()
 	: PhysicsBody(PhysicsServer::BODY_MODE_KINEMATIC) {
 
-	collide_static = true;
-	collide_rigid = true;
-	collide_kinematic = true;
-	collide_character = true;
-
-	colliding = false;
-	collider = 0;
 	margin = 0.001;
-	collider_shape = 0;
+
+	on_floor = false;
+	on_ceiling = false;
+	on_wall = false;
 }
 KinematicBody::~KinematicBody() {
 }

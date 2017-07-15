@@ -105,6 +105,26 @@ int BroadPhaseBasic::get_subindex(ID p_id) const {
 	return E->get().subindex;
 }
 
+int BroadPhaseBasic::cull_point(const Vector3 &p_point, CollisionObjectSW **p_results, int p_max_results, int *p_result_indices) {
+
+	int rc = 0;
+
+	for (Map<ID, Element>::Element *E = element_map.front(); E; E = E->next()) {
+
+		const Rect3 aabb = E->get().aabb;
+		if (aabb.has_point(p_point)) {
+
+			p_results[rc] = E->get().owner;
+			p_result_indices[rc] = E->get().subindex;
+			rc++;
+			if (rc >= p_max_results)
+				break;
+		}
+	}
+
+	return rc;
+}
+
 int BroadPhaseBasic::cull_segment(const Vector3 &p_from, const Vector3 &p_to, CollisionObjectSW **p_results, int p_max_results, int *p_result_indices) {
 
 	int rc = 0;

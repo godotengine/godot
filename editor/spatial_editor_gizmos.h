@@ -31,9 +31,10 @@
 #define SPATIAL_EDITOR_GIZMOS_H
 
 #include "editor/plugins/spatial_editor_plugin.h"
-#include "scene/3d/body_shape.h"
+#include "scene/3d/audio_stream_player_3d.h"
 #include "scene/3d/camera.h"
 #include "scene/3d/collision_polygon.h"
+#include "scene/3d/collision_shape.h"
 #include "scene/3d/gi_probe.h"
 #include "scene/3d/light.h"
 #include "scene/3d/listener.h"
@@ -135,6 +136,22 @@ public:
 
 	void redraw();
 	LightSpatialGizmo(Light *p_light = NULL);
+};
+
+class AudioStreamPlayer3DSpatialGizmo : public EditorSpatialGizmo {
+
+	GDCLASS(AudioStreamPlayer3DSpatialGizmo, EditorSpatialGizmo);
+
+	AudioStreamPlayer3D *player;
+
+public:
+	virtual String get_handle_name(int p_idx) const;
+	virtual Variant get_handle_value(int p_idx) const;
+	virtual void set_handle(int p_idx, Camera *p_camera, const Point2 &p_point);
+	virtual void commit_handle(int p_idx, const Variant &p_restore, bool p_cancel = false);
+
+	void redraw();
+	AudioStreamPlayer3DSpatialGizmo(AudioStreamPlayer3D *p_player = NULL);
 };
 
 class CameraSpatialGizmo : public EditorSpatialGizmo {

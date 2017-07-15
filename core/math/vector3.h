@@ -100,6 +100,7 @@ struct Vector3 {
 
 	_FORCE_INLINE_ Vector3 abs() const;
 	_FORCE_INLINE_ Vector3 floor() const;
+	_FORCE_INLINE_ Vector3 sign() const;
 	_FORCE_INLINE_ Vector3 ceil() const;
 
 	_FORCE_INLINE_ real_t distance_to(const Vector3 &p_b) const;
@@ -185,6 +186,11 @@ Basis Vector3::to_diagonal_matrix() const {
 Vector3 Vector3::abs() const {
 
 	return Vector3(Math::abs(x), Math::abs(y), Math::abs(z));
+}
+
+Vector3 Vector3::sign() const {
+
+	return Vector3(SGN(x), SGN(y), SGN(z));
 }
 
 Vector3 Vector3::floor() const {

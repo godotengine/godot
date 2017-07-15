@@ -66,6 +66,11 @@ int BroadPhaseOctree::get_subindex(ID p_id) const {
 	return octree.get_subindex(p_id);
 }
 
+int BroadPhaseOctree::cull_point(const Vector3 &p_point, CollisionObjectSW **p_results, int p_max_results, int *p_result_indices) {
+
+	return octree.cull_point(p_point, p_results, p_max_results, p_result_indices);
+}
+
 int BroadPhaseOctree::cull_segment(const Vector3 &p_from, const Vector3 &p_to, CollisionObjectSW **p_results, int p_max_results, int *p_result_indices) {
 
 	return octree.cull_segment(p_from, p_to, p_results, p_max_results, p_result_indices);

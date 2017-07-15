@@ -57,6 +57,7 @@ public:
 	virtual bool is_static(ID p_id) const = 0;
 	virtual int get_subindex(ID p_id) const = 0;
 
+	virtual int cull_point(const Vector3 &p_point, CollisionObjectSW **p_results, int p_max_results, int *p_result_indices = NULL) = 0;
 	virtual int cull_segment(const Vector3 &p_from, const Vector3 &p_to, CollisionObjectSW **p_results, int p_max_results, int *p_result_indices = NULL) = 0;
 	virtual int cull_aabb(const Rect3 &p_aabb, CollisionObjectSW **p_results, int p_max_results, int *p_result_indices = NULL) = 0;
 

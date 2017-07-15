@@ -231,7 +231,7 @@ void AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, in
 
 	/* some 64-bit fixed point precaches */
 
-	int64_t loop_begin_fp = ((int64_t)len << MIX_FRAC_BITS);
+	int64_t loop_begin_fp = ((int64_t)base->loop_begin << MIX_FRAC_BITS);
 	int64_t loop_end_fp = ((int64_t)base->loop_end << MIX_FRAC_BITS);
 	int64_t length_fp = ((int64_t)len << MIX_FRAC_BITS);
 	int64_t begin_limit = (base->loop_mode != AudioStreamSample::LOOP_DISABLED) ? loop_begin_fp : 0;

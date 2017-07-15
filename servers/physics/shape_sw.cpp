@@ -117,6 +117,20 @@ bool PlaneShapeSW::intersect_segment(const Vector3 &p_begin, const Vector3 &p_en
 	return inters;
 }
 
+bool PlaneShapeSW::intersect_point(const Vector3 &p_point) const {
+
+	return plane.distance_to(p_point) < 0;
+}
+
+Vector3 PlaneShapeSW::get_closest_point_to(const Vector3 &p_point) const {
+
+	if (plane.is_point_over(p_point)) {
+		return plane.project(p_point);
+	} else {
+		return p_point;
+	}
+}
+
 Vector3 PlaneShapeSW::get_moment_of_inertia(real_t p_mass) const {
 
 	return Vector3(); //wtf
@@ -184,6 +198,21 @@ bool RayShapeSW::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end,
 	return false; //simply not possible
 }
 
+bool RayShapeSW::intersect_point(const Vector3 &p_point) const {
+
+	return false; //simply not possible
+}
+
+Vector3 RayShapeSW::get_closest_point_to(const Vector3 &p_point) const {
+
+	Vector3 s[2] = {
+		Vector3(0, 0, 0),
+		Vector3(0, 0, length)
+	};
+
+	return Geometry::get_closest_point_to_segment(p_point, s);
+}
+
 Vector3 RayShapeSW::get_moment_of_inertia(real_t p_mass) const {
 
 	return Vector3();
@@ -243,6 +272,20 @@ void SphereShapeSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_
 bool SphereShapeSW::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const {
 
 	return Geometry::segment_intersects_sphere(p_begin, p_end, Vector3(), radius, &r_result, &r_normal);
+}
+
+bool SphereShapeSW::intersect_point(const Vector3 &p_point) const {
+
+	return p_point.length() < radius;
+}
+
+Vector3 SphereShapeSW::get_closest_point_to(const Vector3 &p_point) const {
+
+	Vector3 p = p_point;
+	float l = p.length();
+	if (l < radius)
+		return p_point;
+	return (p / l) * radius;
 }
 
 Vector3 SphereShapeSW::get_moment_of_inertia(real_t p_mass) const {
@@ -388,6 +431,62 @@ bool BoxShapeSW::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end,
 	Rect3 aabb(-half_extents, half_extents * 2.0);
 
 	return aabb.intersects_segment(p_begin, p_end, &r_result, &r_normal);
+}
+
+bool BoxShapeSW::intersect_point(const Vector3 &p_point) const {
+
+	return (Math::abs(p_point.x) < half_extents.x && Math::abs(p_point.y) < half_extents.y && Math::abs(p_point.z) < half_extents.z);
+}
+
+Vector3 BoxShapeSW::get_closest_point_to(const Vector3 &p_point) const {
+
+	int outside = 0;
+	Vector3 min_point;
+
+	for (int i = 0; i < 3; i++) {
+
+		if (Math::abs(p_point[i]) > half_extents[i]) {
+			outside++;
+			if (outside == 1) {
+				//use plane if only one side matches
+				Vector3 n;
+				n[i] = SGN(p_point[i]);
+
+				Plane p(n, half_extents[i]);
+				min_point = p.project(p_point);
+			}
+		}
+	}
+
+	if (!outside)
+		return p_point; //it's inside, don't do anything else
+
+	if (outside == 1) //if only above one plane, this plane clearly wins
+		return min_point;
+
+	//check segments
+	float min_distance = 1e20;
+	Vector3 closest_vertex = half_extents * p_point.sign();
+	Vector3 s[2] = {
+		closest_vertex,
+		closest_vertex
+	};
+
+	for (int i = 0; i < 3; i++) {
+
+		s[1] = closest_vertex;
+		s[1][i] = -s[1][i]; //edge
+
+		Vector3 closest_edge = Geometry::get_closest_point_to_segment(p_point, s);
+
+		float d = p_point.distance_to(closest_edge);
+		if (d < min_distance) {
+			min_point = closest_edge;
+			min_distance = d;
+		}
+	}
+
+	return min_point;
 }
 
 Vector3 BoxShapeSW::get_moment_of_inertia(real_t p_mass) const {
@@ -540,6 +639,32 @@ bool CapsuleShapeSW::intersect_segment(const Vector3 &p_begin, const Vector3 &p_
 		r_normal = n;
 	}
 	return collision;
+}
+
+bool CapsuleShapeSW::intersect_point(const Vector3 &p_point) const {
+
+	if (Math::abs(p_point.z) < height * 0.5) {
+		return Vector3(p_point.x, p_point.y, 0).length() < radius;
+	} else {
+		Vector3 p = p_point;
+		p.z = Math::abs(p.z) - height * 0.5;
+		return p.length() < radius;
+	}
+}
+
+Vector3 CapsuleShapeSW::get_closest_point_to(const Vector3 &p_point) const {
+
+	Vector3 s[2] = {
+		Vector3(0, 0, -height * 0.5),
+		Vector3(0, 0, height * 0.5),
+	};
+
+	Vector3 p = Geometry::get_closest_point_to_segment(p_point, s);
+
+	if (p.distance_to(p_point) < radius)
+		return p_point;
+
+	return p + (p_point - p).normalized() * radius;
 }
 
 Vector3 CapsuleShapeSW::get_moment_of_inertia(real_t p_mass) const {
@@ -738,6 +863,81 @@ bool ConvexPolygonShapeSW::intersect_segment(const Vector3 &p_begin, const Vecto
 	return col;
 }
 
+bool ConvexPolygonShapeSW::intersect_point(const Vector3 &p_point) const {
+
+	const Geometry::MeshData::Face *faces = mesh.faces.ptr();
+	int fc = mesh.faces.size();
+
+	for (int i = 0; i < fc; i++) {
+
+		if (faces[i].plane.distance_to(p_point) >= 0)
+			return false;
+	}
+
+	return true;
+}
+
+Vector3 ConvexPolygonShapeSW::get_closest_point_to(const Vector3 &p_point) const {
+
+	const Geometry::MeshData::Face *faces = mesh.faces.ptr();
+	int fc = mesh.faces.size();
+	const Vector3 *vertices = mesh.vertices.ptr();
+
+	bool all_inside = true;
+	for (int i = 0; i < fc; i++) {
+
+		if (!faces[i].plane.is_point_over(p_point))
+			continue;
+
+		all_inside = false;
+		bool is_inside = true;
+		int ic = faces[i].indices.size();
+		const int *indices = faces[i].indices.ptr();
+
+		for (int j = 0; j < ic; j++) {
+
+			Vector3 a = vertices[indices[j]];
+			Vector3 b = vertices[indices[(j + 1) % ic]];
+			Vector3 n = (a - b).cross(faces[i].plane.normal).normalized();
+			if (Plane(a, n).is_point_over(p_point)) {
+				is_inside = false;
+				break;
+			}
+		}
+
+		if (is_inside) {
+			return faces[i].plane.project(p_point);
+		}
+	}
+
+	if (all_inside) {
+		return p_point;
+	}
+
+	float min_distance = 1e20;
+	Vector3 min_point;
+
+	//check edges
+	const Geometry::MeshData::Edge *edges = mesh.edges.ptr();
+	int ec = mesh.edges.size();
+	for (int i = 0; i < ec; i++) {
+
+		Vector3 s[2] = {
+			vertices[edges[i].a],
+			vertices[edges[i].b]
+		};
+
+		Vector3 closest = Geometry::get_closest_point_to_segment(p_point, s);
+		float d = closest.distance_to(p_point);
+		if (d < min_distance) {
+			min_distance = d;
+			min_point = closest;
+		}
+	}
+
+	return min_point;
+}
+
 Vector3 ConvexPolygonShapeSW::get_moment_of_inertia(real_t p_mass) const {
 
 	// use crappy AABB approximation
@@ -878,6 +1078,16 @@ bool FaceShapeSW::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end
 	}
 
 	return c;
+}
+
+bool FaceShapeSW::intersect_point(const Vector3 &p_point) const {
+
+	return false; //face is flat
+}
+
+Vector3 FaceShapeSW::get_closest_point_to(const Vector3 &p_point) const {
+
+	return Face3(vertex[0], vertex[1], vertex[2]).get_closest_point_to(p_point);
 }
 
 Vector3 FaceShapeSW::get_moment_of_inertia(real_t p_mass) const {
@@ -1044,6 +1254,16 @@ bool ConcavePolygonShapeSW::intersect_segment(const Vector3 &p_begin, const Vect
 
 		return false;
 	}
+}
+
+bool ConcavePolygonShapeSW::intersect_point(const Vector3 &p_point) const {
+
+	return false; //face is flat
+}
+
+Vector3 ConcavePolygonShapeSW::get_closest_point_to(const Vector3 &p_point) const {
+
+	return Vector3();
 }
 
 void ConcavePolygonShapeSW::_cull(int p_idx, _CullParams *p_params) const {
@@ -1469,6 +1689,15 @@ Vector3 HeightMapShapeSW::get_support(const Vector3 &p_normal) const {
 bool HeightMapShapeSW::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_point, Vector3 &r_normal) const {
 
 	return false;
+}
+
+bool HeightMapShapeSW::intersect_point(const Vector3 &p_point) const {
+	return false;
+}
+
+Vector3 HeightMapShapeSW::get_closest_point_to(const Vector3 &p_point) const {
+
+	return Vector3();
 }
 
 void HeightMapShapeSW::cull(const Rect3 &p_local_aabb, Callback p_callback, void *p_userdata) const {

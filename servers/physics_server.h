@@ -156,6 +156,16 @@ protected:
 	static void _bind_methods();
 
 public:
+	struct ShapeResult {
+
+		RID rid;
+		ObjectID collider_id;
+		Object *collider;
+		int shape;
+	};
+
+	virtual int intersect_point(const Vector3 &p_point, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_layer = 0xFFFFFFFF, uint32_t p_object_type_mask = TYPE_MASK_COLLISION) = 0;
+
 	struct RayResult {
 
 		Vector3 position;
@@ -167,14 +177,6 @@ public:
 	};
 
 	virtual bool intersect_ray(const Vector3 &p_from, const Vector3 &p_to, RayResult &r_result, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_layer = 0xFFFFFFFF, uint32_t p_object_type_mask = TYPE_MASK_COLLISION, bool p_pick_ray = false) = 0;
-
-	struct ShapeResult {
-
-		RID rid;
-		ObjectID collider_id;
-		Object *collider;
-		int shape;
-	};
 
 	virtual int intersect_shape(const RID &p_shape, const Transform &p_xform, float p_margin, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_layer = 0xFFFFFFFF, uint32_t p_object_type_mask = TYPE_MASK_COLLISION) = 0;
 
@@ -193,6 +195,8 @@ public:
 	virtual bool collide_shape(RID p_shape, const Transform &p_shape_xform, float p_margin, Vector3 *r_results, int p_result_max, int &r_result_count, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_layer = 0xFFFFFFFF, uint32_t p_object_type_mask = TYPE_MASK_COLLISION) = 0;
 
 	virtual bool rest_info(RID p_shape, const Transform &p_shape_xform, float p_margin, ShapeRestInfo *r_info, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_layer = 0xFFFFFFFF, uint32_t p_object_type_mask = TYPE_MASK_COLLISION) = 0;
+
+	virtual Vector3 get_closest_point_to_object_volume(RID p_object, const Vector3 p_point) const = 0;
 
 	PhysicsDirectSpaceState();
 };
@@ -322,6 +326,8 @@ public:
 	virtual void area_remove_shape(RID p_area, int p_shape_idx) = 0;
 	virtual void area_clear_shapes(RID p_area) = 0;
 
+	virtual void area_set_shape_disabled(RID p_area, int p_shape_idx, bool p_disabled) = 0;
+
 	virtual void area_attach_object_instance_ID(RID p_area, ObjectID p_ID) = 0;
 	virtual ObjectID area_get_object_instance_ID(RID p_area) const = 0;
 
@@ -370,11 +376,10 @@ public:
 	virtual RID body_get_shape(RID p_body, int p_shape_idx) const = 0;
 	virtual Transform body_get_shape_transform(RID p_body, int p_shape_idx) const = 0;
 
-	virtual void body_set_shape_as_trigger(RID p_body, int p_shape_idx, bool p_enable) = 0;
-	virtual bool body_is_shape_set_as_trigger(RID p_body, int p_shape_idx) const = 0;
-
 	virtual void body_remove_shape(RID p_body, int p_shape_idx) = 0;
 	virtual void body_clear_shapes(RID p_body) = 0;
+
+	virtual void body_set_shape_disabled(RID p_body, int p_shape_idx, bool p_disabled) = 0;
 
 	virtual void body_attach_object_instance_ID(RID p_body, uint32_t p_ID) = 0;
 	virtual uint32_t body_get_object_instance_ID(RID p_body) const = 0;
@@ -457,6 +462,23 @@ public:
 
 	virtual void body_set_ray_pickable(RID p_body, bool p_enable) = 0;
 	virtual bool body_is_ray_pickable(RID p_body) const = 0;
+
+	struct MotionResult {
+
+		Vector3 motion;
+		Vector3 remainder;
+
+		Vector3 collision_point;
+		Vector3 collision_normal;
+		Vector3 collider_velocity;
+		int collision_local_shape;
+		ObjectID collider_id;
+		RID collider;
+		int collider_shape;
+		Variant collider_metadata;
+	};
+
+	virtual bool body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, float p_margin = 0.001, MotionResult *r_result = NULL) = 0;
 
 	/* JOINT API */
 

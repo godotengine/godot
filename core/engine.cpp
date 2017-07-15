@@ -119,4 +119,6 @@ Engine::Engine() {
 	_fixed_frames = 0;
 	_idle_frames = 0;
 	_in_fixed = false;
+	_frame_ticks = 0;
+	_frame_step = 0;
 }

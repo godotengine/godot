@@ -102,6 +102,16 @@ struct AudioFrame {
 		r = ::undenormalise(r);
 	}
 
+	_FORCE_INLINE_ AudioFrame linear_interpolate(const AudioFrame &p_b, float p_t) const {
+
+		AudioFrame res = *this;
+
+		res.l += (p_t * (p_b.l - l));
+		res.r += (p_t * (p_b.r - r));
+
+		return res;
+	}
+
 	_ALWAYS_INLINE_ AudioFrame(float p_l, float p_r) {
 		l = p_l;
 		r = p_r;

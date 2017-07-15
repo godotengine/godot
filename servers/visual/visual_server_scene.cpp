@@ -1482,6 +1482,8 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 				// a pre pass will need to be needed to determine the actual z-near to be used
 
+				Plane near_plane(p_instance->transform.origin, -p_instance->transform.basis.get_axis(2));
+
 				for (int j = 0; j < cull_count; j++) {
 
 					float min, max;
@@ -1494,6 +1496,8 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 					}
 
 					instance->transformed_aabb.project_range_in_plane(Plane(z_vec, 0), min, max);
+					instance->depth = near_plane.distance_to(instance->transform.origin);
+					instance->depth_layer = 0;
 					if (max > z_max)
 						z_max = max;
 				}
@@ -1539,6 +1543,7 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 						planes[4] = p_instance->transform.xform(Plane(Vector3(0, -1, z).normalized(), radius));
 
 						int cull_count = p_scenario->octree.cull_convex(planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, VS::INSTANCE_GEOMETRY_MASK);
+						Plane near_plane(p_instance->transform.origin, p_instance->transform.basis.get_axis(2) * z);
 
 						for (int j = 0; j < cull_count; j++) {
 
@@ -1547,6 +1552,9 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 								cull_count--;
 								SWAP(instance_shadow_cull_result[j], instance_shadow_cull_result[cull_count]);
 								j--;
+							} else {
+								instance->depth = near_plane.distance_to(instance->transform.origin);
+								instance->depth_layer = 0;
 							}
 						}
 
@@ -1587,6 +1595,7 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 						int cull_count = p_scenario->octree.cull_convex(planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, VS::INSTANCE_GEOMETRY_MASK);
 
+						Plane near_plane(xform.origin, -xform.basis.get_axis(2));
 						for (int j = 0; j < cull_count; j++) {
 
 							Instance *instance = instance_shadow_cull_result[j];
@@ -1594,6 +1603,9 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 								cull_count--;
 								SWAP(instance_shadow_cull_result[j], instance_shadow_cull_result[cull_count]);
 								j--;
+							} else {
+								instance->depth = near_plane.distance_to(instance->transform.origin);
+								instance->depth_layer = 0;
 							}
 						}
 
@@ -1619,6 +1631,7 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 			Vector<Plane> planes = cm.get_projection_planes(p_instance->transform);
 			int cull_count = p_scenario->octree.cull_convex(planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, VS::INSTANCE_GEOMETRY_MASK);
 
+			Plane near_plane(p_instance->transform.origin, -p_instance->transform.basis.get_axis(2));
 			for (int j = 0; j < cull_count; j++) {
 
 				Instance *instance = instance_shadow_cull_result[j];
@@ -1626,6 +1639,9 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 					cull_count--;
 					SWAP(instance_shadow_cull_result[j], instance_shadow_cull_result[cull_count]);
 					j--;
+				} else {
+					instance->depth = near_plane.distance_to(instance->transform.origin);
+					instance->depth_layer = 0;
 				}
 			}
 
@@ -3344,6 +3360,8 @@ void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 					for (int i = 0; i < dp; i++) {
 
 						RID mesh = VSG::storage->particles_get_draw_pass_mesh(p_instance->base, i);
+						if (!mesh.is_valid())
+							continue;
 
 						int sc = VSG::storage->mesh_get_surface_count(mesh);
 						for (int j = 0; j < sc; j++) {

@@ -1953,6 +1953,14 @@ void Tree::text_editor_enter(String p_text) {
 				c.val = evaluator->eval(p_text);
 			else
 				c.val = p_text.to_double();
+
+			if (c.step > 0)
+				c.val = Math::stepify(c.val, c.step);
+			if (c.val < c.min)
+				c.val = c.min;
+			else if (c.val > c.max)
+				c.val = c.max;
+
 		} break;
 		default: { ERR_FAIL(); }
 	}

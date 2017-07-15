@@ -32,7 +32,7 @@
 
 #include "scene/3d/spatial.h"
 #include "scene/resources/shape.h"
-
+class CollisionObject;
 class CollisionShape : public Spatial {
 
 	GDCLASS(CollisionShape, Spatial);
@@ -40,34 +40,13 @@ class CollisionShape : public Spatial {
 
 	Ref<Shape> shape;
 
-	/*
-	RID _get_visual_instance_rid() const;
-
-
-	void _update_indicator();
-
-	RID material;
-	RID indicator;
-	RID indicator_instance;
-	*/
+	uint32_t owner_id;
+	CollisionObject *parent;
 
 	Node *debug_shape;
 
 	void resource_changed(RES res);
-
-	bool updating_body;
-	bool unparenting;
-	bool trigger;
-
-	bool can_update_body;
-
-	int update_shape_index;
-
-	void _update_body();
-	void _add_to_collision_object(Object *p_cshape);
-
-	void _set_update_shape_index(int p_index);
-	int _get_update_shape_index() const;
+	bool disabled;
 
 	void _create_debug_shape();
 
@@ -81,13 +60,8 @@ public:
 	void set_shape(const Ref<Shape> &p_shape);
 	Ref<Shape> get_shape() const;
 
-	void set_updating_body(bool p_update);
-	bool is_updating_body() const;
-
-	void set_trigger(bool p_trigger);
-	bool is_trigger() const;
-
-	int get_collision_object_shape_index() const { return _get_update_shape_index(); }
+	void set_disabled(bool p_disabled);
+	bool is_disabled() const;
 
 	String get_configuration_warning() const;
 

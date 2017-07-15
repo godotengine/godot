@@ -1525,10 +1525,14 @@ static uint64_t idle_process_max = 0;
 bool Main::iteration() {
 
 	uint64_t ticks = OS::get_singleton()->get_ticks_usec();
+	Engine::get_singleton()->_frame_ticks = ticks;
+
 	uint64_t ticks_elapsed = ticks - last_ticks;
 
 	double step = (double)ticks_elapsed / 1000000.0;
 	float frame_slice = 1.0 / Engine::get_singleton()->get_iterations_per_second();
+
+	Engine::get_singleton()->_frame_step = step;
 
 	/*
 	if (time_accum+step < frame_slice)

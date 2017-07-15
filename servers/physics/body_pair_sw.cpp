@@ -214,6 +214,11 @@ bool BodyPairSW::setup(real_t p_step) {
 		return false;
 	}
 
+	if (A->is_shape_set_as_disabled(shape_A) || B->is_shape_set_as_disabled(shape_B)) {
+		collided = false;
+		return false;
+	}
+
 	offset_B = B->get_transform().get_origin() - A->get_transform().get_origin();
 
 	validate_contacts();
@@ -311,12 +316,6 @@ bool BodyPairSW::setup(real_t p_step) {
 		if (B->can_report_contacts()) {
 			Vector3 crB = B->get_angular_velocity().cross(c.rB) + B->get_linear_velocity();
 			B->add_contact(global_B, c.normal, depth, shape_B, global_A, shape_A, A->get_instance_id(), A->get_self(), crB);
-		}
-
-		if (A->is_shape_set_as_trigger(shape_A) || B->is_shape_set_as_trigger(shape_B) || (A->get_mode() <= PhysicsServer::BODY_MODE_KINEMATIC && B->get_mode() <= PhysicsServer::BODY_MODE_KINEMATIC)) {
-			c.active = false;
-			collided = false;
-			continue;
 		}
 
 		c.active = true;

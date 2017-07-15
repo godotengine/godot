@@ -299,6 +299,13 @@ PhysicsDirectSpaceState *World::get_direct_space_state() {
 	return PhysicsServer::get_singleton()->space_get_direct_state(space);
 }
 
+void World::get_camera_list(List<Camera *> *r_cameras) {
+
+	for (Map<Camera *, SpatialIndexer::CameraData>::Element *E = indexer->cameras.front(); E; E = E->next()) {
+		r_cameras->push_back(E->key());
+	}
+}
+
 void World::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_space"), &World::get_space);

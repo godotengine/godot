@@ -2025,6 +2025,15 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 			view_menu->get_popup()->set_item_checked(idx, current);
 
 		} break;
+		case VIEW_AUDIO_DOPPLER: {
+
+			int idx = view_menu->get_popup()->get_item_index(VIEW_AUDIO_DOPPLER);
+			bool current = view_menu->get_popup()->is_item_checked(idx);
+			current = !current;
+			camera->set_doppler_tracking(current ? Camera::DOPPLER_TRACKING_IDLE_STEP : Camera::DOPPLER_TRACKING_DISABLED);
+			view_menu->get_popup()->set_item_checked(idx, current);
+
+		} break;
 		case VIEW_GIZMOS: {
 
 			int idx = view_menu->get_popup()->get_item_index(VIEW_GIZMOS);
@@ -2237,6 +2246,13 @@ void SpatialEditorViewport::set_state(const Dictionary &p_state) {
 		viewport->set_as_audio_listener(listener);
 		view_menu->get_popup()->set_item_checked(idx, listener);
 	}
+	if (p_state.has("doppler")) {
+		bool doppler = p_state["doppler"];
+
+		int idx = view_menu->get_popup()->get_item_index(VIEW_AUDIO_DOPPLER);
+		camera->set_doppler_tracking(doppler ? Camera::DOPPLER_TRACKING_IDLE_STEP : Camera::DOPPLER_TRACKING_DISABLED);
+		view_menu->get_popup()->set_item_checked(idx, doppler);
+	}
 
 	if (p_state.has("previewing")) {
 		Node *pv = EditorNode::get_singleton()->get_edited_scene()->get_node(p_state["previewing"]);
@@ -2395,6 +2411,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_ENVIRONMENT), true);
 	view_menu->get_popup()->add_separator();
 	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_audio_listener", TTR("Audio Listener")), VIEW_AUDIO_LISTENER);
+	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_audio_doppler", TTR("Doppler Enable")), VIEW_AUDIO_DOPPLER);
 	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_GIZMOS), true);
 
 	view_menu->get_popup()->add_separator();

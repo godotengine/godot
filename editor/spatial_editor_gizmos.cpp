@@ -867,6 +867,127 @@ LightSpatialGizmo::LightSpatialGizmo(Light *p_light) {
 
 //////
 
+//// player gizmo
+
+String AudioStreamPlayer3DSpatialGizmo::get_handle_name(int p_idx) const {
+
+	return "Emission Radius";
+}
+
+Variant AudioStreamPlayer3DSpatialGizmo::get_handle_value(int p_idx) const {
+
+	return player->get_emission_angle();
+}
+
+void AudioStreamPlayer3DSpatialGizmo::set_handle(int p_idx, Camera *p_camera, const Point2 &p_point) {
+
+	Transform gt = player->get_global_transform();
+	gt.orthonormalize();
+	Transform gi = gt.affine_inverse();
+
+	Vector3 ray_from = p_camera->project_ray_origin(p_point);
+	Vector3 ray_dir = p_camera->project_ray_normal(p_point);
+	Vector3 ray_to = ray_from + ray_dir * 4096;
+
+	ray_from = gi.xform(ray_from);
+	ray_to = gi.xform(ray_to);
+
+	float closest_dist = 1e20;
+	float closest_angle = 1e20;
+
+	for (int i = 0; i < 180; i++) {
+
+		float a = i * Math_PI / 180.0;
+		float an = (i + 1) * Math_PI / 180.0;
+
+		Vector3 from(Math::sin(a), 0, -Math::cos(a));
+		Vector3 to(Math::sin(an), 0, -Math::cos(an));
+
+		Vector3 r1, r2;
+		Geometry::get_closest_points_between_segments(from, to, ray_from, ray_to, r1, r2);
+		float d = r1.distance_to(r2);
+		if (d < closest_dist) {
+			closest_dist = d;
+			closest_angle = i;
+		}
+	}
+
+	if (closest_angle < 91) {
+		player->set_emission_angle(closest_angle);
+	}
+}
+
+void AudioStreamPlayer3DSpatialGizmo::commit_handle(int p_idx, const Variant &p_restore, bool p_cancel) {
+
+	if (p_cancel) {
+
+		player->set_emission_angle(p_restore);
+
+	} else {
+
+		UndoRedo *ur = SpatialEditor::get_singleton()->get_undo_redo();
+		ur->create_action(TTR("Change AudioStreamPlayer3D Emission Angle"));
+		ur->add_do_method(player, "set_emission_angle", player->get_emission_angle());
+		ur->add_undo_method(player, "set_emission_angle", p_restore);
+		ur->commit_action();
+	}
+}
+
+void AudioStreamPlayer3DSpatialGizmo::redraw() {
+
+	clear();
+
+	if (player->is_emission_angle_enabled()) {
+		float pc = player->get_emission_angle();
+
+		Vector<Vector3> points;
+		points.resize(208);
+
+		float ofs = -Math::cos(Math::deg2rad(pc));
+		float radius = Math::sin(Math::deg2rad(pc));
+
+		for (int i = 0; i < 100; i++) {
+
+			float a = i * 2.0 * Math_PI / 100.0;
+			float an = (i + 1) * 2.0 * Math_PI / 100.0;
+
+			Vector3 from(Math::sin(a) * radius, Math::cos(a) * radius, ofs);
+			Vector3 to(Math::sin(an) * radius, Math::cos(an) * radius, ofs);
+
+			points[i * 2 + 0] = from;
+			points[i * 2 + 1] = to;
+		}
+
+		for (int i = 0; i < 4; i++) {
+
+			float a = i * 2.0 * Math_PI / 4.0;
+
+			Vector3 from(Math::sin(a) * radius, Math::cos(a) * radius, ofs);
+
+			points[200 + i * 2 + 0] = from;
+			points[200 + i * 2 + 1] = Vector3();
+		}
+
+		add_lines(points, SpatialEditorGizmos::singleton->car_wheel_material);
+		add_collision_segments(points);
+
+		Vector<Vector3> handles;
+		float ha = Math::deg2rad(player->get_emission_angle());
+		handles.push_back(Vector3(Math::sin(ha), 0, -Math::cos(ha)));
+		add_handles(handles);
+	}
+
+	add_unscaled_billboard(SpatialEditorGizmos::singleton->sample_player_icon, 0.05);
+}
+
+AudioStreamPlayer3DSpatialGizmo::AudioStreamPlayer3DSpatialGizmo(AudioStreamPlayer3D *p_player) {
+
+	player = p_player;
+	set_spatial_node(p_player);
+}
+
+//////
+
 String CameraSpatialGizmo::get_handle_name(int p_idx) const {
 
 	if (camera->get_projection() == Camera::PROJECTION_PERSPECTIVE) {
@@ -3098,6 +3219,12 @@ Ref<SpatialEditorGizmo> SpatialEditorGizmos::get_gizmo(Spatial *p_spatial) {
 	if (p_spatial->cast_to<CollisionPolygon>()) {
 
 		Ref<CollisionPolygonSpatialGizmo> misg = memnew(CollisionPolygonSpatialGizmo(p_spatial->cast_to<CollisionPolygon>()));
+		return misg;
+	}
+
+	if (p_spatial->cast_to<AudioStreamPlayer3D>()) {
+
+		Ref<AudioStreamPlayer3DSpatialGizmo> misg = memnew(AudioStreamPlayer3DSpatialGizmo(p_spatial->cast_to<AudioStreamPlayer3D>()));
 		return misg;
 	}
 

@@ -41,33 +41,36 @@ class CollisionObject : public Spatial {
 	RID rid;
 
 	struct ShapeData {
+
+		Object *owner;
 		Transform xform;
-		Ref<Shape> shape;
-		bool trigger;
+		struct ShapeBase {
+			Ref<Shape> shape;
+			int index;
+		};
+
+		Vector<ShapeBase> shapes;
+		bool disabled;
 
 		ShapeData() {
-			trigger = false;
+			disabled = false;
+			owner = NULL;
 		}
 	};
 
+	int total_subshapes;
+
+	Map<uint32_t, ShapeData> shapes;
+
 	bool capture_input_on_drag;
 	bool ray_pickable;
-	Vector<ShapeData> shapes;
 
 	void _update_pickable();
-	void _update_shapes();
-
-	friend class CollisionShape;
-	friend class CollisionPolygon;
-	void _update_shapes_from_children();
 
 protected:
 	CollisionObject(RID p_rid, bool p_area);
 
 	void _notification(int p_what);
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
 	static void _bind_methods();
 	friend class Viewport;
 	virtual void _input_event(Node *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape);
@@ -75,16 +78,26 @@ protected:
 	virtual void _mouse_exit();
 
 public:
-	void add_shape(const Ref<Shape> &p_shape, const Transform &p_transform = Transform());
-	int get_shape_count() const;
-	void set_shape(int p_shape_idx, const Ref<Shape> &p_shape);
-	void set_shape_transform(int p_shape_idx, const Transform &p_transform);
-	Ref<Shape> get_shape(int p_shape_idx) const;
-	Transform get_shape_transform(int p_shape_idx) const;
-	void remove_shape(int p_shape_idx);
-	void clear_shapes();
-	void set_shape_as_trigger(int p_shape_idx, bool p_trigger);
-	bool is_shape_set_as_trigger(int p_shape_idx) const;
+	uint32_t create_shape_owner(Object *p_owner);
+	void remove_shape_owner(uint32_t owner);
+	void get_shape_owners(List<uint32_t> *r_owners);
+
+	void shape_owner_set_transform(uint32_t p_owner, const Transform &p_transform);
+	Transform shape_owner_get_transform(uint32_t p_owner) const;
+	Object *shape_owner_get_owner(uint32_t p_owner) const;
+
+	void shape_owner_set_disabled(uint32_t p_owner, bool p_disabled);
+	bool is_shape_owner_disabled(uint32_t p_owner) const;
+
+	void shape_owner_add_shape(uint32_t p_owner, const Ref<Shape> &p_shape);
+	int shape_owner_get_shape_count(uint32_t p_owner) const;
+	Ref<Shape> shape_owner_get_shape(uint32_t p_owner, int p_shape) const;
+	int shape_owner_get_shape_index(uint32_t p_owner, int p_shape) const;
+
+	void shape_owner_remove_shape(uint32_t p_owner, int p_shape);
+	void shape_owner_clear_shapes(uint32_t p_owner);
+
+	uint32_t shape_find_owner(int p_shape_index) const;
 
 	void set_ray_pickable(bool p_ray_pickable);
 	bool is_ray_pickable() const;

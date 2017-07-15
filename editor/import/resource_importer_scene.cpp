@@ -33,7 +33,7 @@
 #include "io/resource_saver.h"
 #include "scene/resources/packed_scene.h"
 
-#include "scene/3d/body_shape.h"
+#include "scene/3d/collision_shape.h"
 #include "scene/3d/mesh_instance.h"
 #include "scene/3d/navigation.h"
 #include "scene/3d/physics_body.h"
@@ -369,10 +369,8 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 			p_node = col;
 
 			StaticBody *sb = col->cast_to<StaticBody>();
-			CollisionShape *colshape = memnew(CollisionShape);
-			colshape->set_shape(sb->get_shape(0));
+			CollisionShape *colshape = sb->get_child(0)->cast_to<CollisionShape>();
 			colshape->set_name("shape");
-			sb->add_child(colshape);
 			colshape->set_owner(p_node->get_owner());
 		} else if (p_node->has_meta("empty_draw_type")) {
 			String empty_draw_type = String(p_node->get_meta("empty_draw_type"));
@@ -463,8 +461,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 		p_node->add_child(col);
 
 		StaticBody *sb = col->cast_to<StaticBody>();
-		CollisionShape *colshape = memnew(CollisionShape);
-		colshape->set_shape(sb->get_shape(0));
+		CollisionShape *colshape = sb->get_child(0)->cast_to<CollisionShape>();
 		colshape->set_name("shape");
 		col->add_child(colshape);
 		colshape->set_owner(p_node->get_owner());

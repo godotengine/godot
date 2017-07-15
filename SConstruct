@@ -210,8 +210,8 @@ if (env_base['target'] == 'debug'):
     env_base.Append(CPPFLAGS=['-DDEBUG_MEMORY_ALLOC'])
     env_base.Append(CPPFLAGS=['-DSCI_NAMESPACE'])
 
-if (env_base['deprecated'] != 'no'):
-    env_base.Append(CPPFLAGS=['-DENABLE_DEPRECATED'])
+if (env_base['deprecated'] == 'no'):
+    env_base.Append(CPPFLAGS=['-DDISABLE_DEPRECATED'])
 
 env_base.platforms = {}
 

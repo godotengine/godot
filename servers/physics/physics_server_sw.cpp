@@ -330,6 +330,14 @@ void PhysicsServerSW::area_clear_shapes(RID p_area) {
 		area->remove_shape(0);
 }
 
+void PhysicsServerSW::area_set_shape_disabled(RID p_area, int p_shape_idx, bool p_disabled) {
+
+	AreaSW *area = area_owner.get(p_area);
+	ERR_FAIL_COND(!area);
+	ERR_FAIL_INDEX(p_shape_idx, area->get_shape_count());
+	area->set_shape_as_disabled(p_shape_idx, p_disabled);
+}
+
 void PhysicsServerSW::area_attach_object_instance_ID(RID p_area, ObjectID p_ID) {
 
 	if (space_owner.owns(p_area)) {
@@ -551,21 +559,12 @@ RID PhysicsServerSW::body_get_shape(RID p_body, int p_shape_idx) const {
 	return shape->get_self();
 }
 
-void PhysicsServerSW::body_set_shape_as_trigger(RID p_body, int p_shape_idx, bool p_enable) {
+void PhysicsServerSW::body_set_shape_disabled(RID p_body, int p_shape_idx, bool p_disabled) {
 
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 	ERR_FAIL_INDEX(p_shape_idx, body->get_shape_count());
-	body->set_shape_as_trigger(p_shape_idx, p_enable);
-}
-
-bool PhysicsServerSW::body_is_shape_set_as_trigger(RID p_body, int p_shape_idx) const {
-
-	BodySW *body = body_owner.get(p_body);
-	ERR_FAIL_COND_V(!body, false);
-	ERR_FAIL_INDEX_V(p_shape_idx, body->get_shape_count(), false);
-
-	return body->is_shape_set_as_trigger(p_shape_idx);
+	body->set_shape_as_disabled(p_shape_idx, p_disabled);
 }
 
 Transform PhysicsServerSW::body_get_shape_transform(RID p_body, int p_shape_idx) const {
@@ -873,6 +872,16 @@ bool PhysicsServerSW::body_is_ray_pickable(RID p_body) const {
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, false);
 	return body->is_ray_pickable();
+}
+
+bool PhysicsServerSW::body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, float p_margin, MotionResult *r_result) {
+
+	BodySW *body = body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, false);
+	ERR_FAIL_COND_V(!body->get_space(), false);
+	ERR_FAIL_COND_V(body->get_space()->is_locked(), false);
+
+	return body->get_space()->test_body_motion(body, p_from, p_motion, p_margin, r_result);
 }
 
 /* JOINT API */
@@ -1530,8 +1539,9 @@ void PhysicsServerSW::_shape_col_cbk(const Vector3 &p_point_A, const Vector3 &p_
 	}
 }
 
+PhysicsServerSW *PhysicsServerSW::singleton = NULL;
 PhysicsServerSW::PhysicsServerSW() {
-
+	singleton = this;
 	BroadPhaseSW::create_func = BroadPhaseOctree::_create;
 	island_count = 0;
 	active_objects = 0;

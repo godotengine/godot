@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "mesh_instance.h"
 
-#include "body_shape.h"
+#include "collision_shape.h"
 #include "core_string_names.h"
 #include "physics_body.h"
 #include "scene/resources/material.h"
@@ -194,7 +194,9 @@ Node *MeshInstance::create_trimesh_collision_node() {
 		return NULL;
 
 	StaticBody *static_body = memnew(StaticBody);
-	static_body->add_shape(shape);
+	CollisionShape *cshape = memnew(CollisionShape);
+	cshape->set_shape(shape);
+	static_body->add_child(cshape);
 	return static_body;
 }
 
@@ -205,13 +207,11 @@ void MeshInstance::create_trimesh_collision() {
 	static_body->set_name(String(get_name()) + "_col");
 
 	add_child(static_body);
-	if (get_owner())
+	if (get_owner()) {
+		CollisionShape *cshape = static_body->get_child(0)->cast_to<CollisionShape>();
 		static_body->set_owner(get_owner());
-	CollisionShape *cshape = memnew(CollisionShape);
-	cshape->set_shape(static_body->get_shape(0));
-	static_body->add_child(cshape);
-	if (get_owner())
 		cshape->set_owner(get_owner());
+	}
 }
 
 Node *MeshInstance::create_convex_collision_node() {
@@ -224,7 +224,9 @@ Node *MeshInstance::create_convex_collision_node() {
 		return NULL;
 
 	StaticBody *static_body = memnew(StaticBody);
-	static_body->add_shape(shape);
+	CollisionShape *cshape = memnew(CollisionShape);
+	cshape->set_shape(shape);
+	static_body->add_child(cshape);
 	return static_body;
 }
 
@@ -235,13 +237,11 @@ void MeshInstance::create_convex_collision() {
 	static_body->set_name(String(get_name()) + "_col");
 
 	add_child(static_body);
-	if (get_owner())
+	if (get_owner()) {
+		CollisionShape *cshape = static_body->get_child(0)->cast_to<CollisionShape>();
 		static_body->set_owner(get_owner());
-	CollisionShape *cshape = memnew(CollisionShape);
-	cshape->set_shape(static_body->get_shape(0));
-	static_body->add_child(cshape);
-	if (get_owner())
 		cshape->set_owner(get_owner());
+	}
 }
 
 void MeshInstance::_notification(int p_what) {

@@ -666,7 +666,7 @@ public:
 			uint64_t sort_key;
 		};
 
-		Element *_elements;
+		Element *base_elements;
 		Element **elements;
 
 		int element_count;
@@ -700,13 +700,30 @@ public:
 		struct SortByDepth {
 
 			_FORCE_INLINE_ bool operator()(const Element *A, const Element *B) const {
+				return A->instance->depth < B->instance->depth;
+			}
+		};
+
+		void sort_by_depth(bool p_alpha) { //used for shadows
+
+			SortArray<Element *, SortByDepth> sorter;
+			if (p_alpha) {
+				sorter.sort(&elements[max_elements - alpha_element_count], alpha_element_count);
+			} else {
+				sorter.sort(elements, element_count);
+			}
+		}
+
+		struct SortByReverseDepth {
+
+			_FORCE_INLINE_ bool operator()(const Element *A, const Element *B) const {
 				return A->instance->depth > B->instance->depth;
 			}
 		};
 
-		void sort_by_depth(bool p_alpha) {
+		void sort_by_reverse_depth(bool p_alpha) { //used for alpha
 
-			SortArray<Element *, SortByDepth> sorter;
+			SortArray<Element *, SortByReverseDepth> sorter;
 			if (p_alpha) {
 				sorter.sort(&elements[max_elements - alpha_element_count], alpha_element_count);
 			} else {
@@ -718,7 +735,7 @@ public:
 
 			if (element_count + alpha_element_count >= max_elements)
 				return NULL;
-			elements[element_count] = &_elements[element_count];
+			elements[element_count] = &base_elements[element_count];
 			return elements[element_count++];
 		}
 
@@ -727,7 +744,7 @@ public:
 			if (element_count + alpha_element_count >= max_elements)
 				return NULL;
 			int idx = max_elements - alpha_element_count - 1;
-			elements[idx] = &_elements[idx];
+			elements[idx] = &base_elements[idx];
 			alpha_element_count++;
 			return elements[idx];
 		}
@@ -737,9 +754,9 @@ public:
 			element_count = 0;
 			alpha_element_count = 0;
 			elements = memnew_arr(Element *, max_elements);
-			_elements = memnew_arr(Element, max_elements);
+			base_elements = memnew_arr(Element, max_elements);
 			for (int i = 0; i < max_elements; i++)
-				elements[i] = &_elements[i]; // assign elements
+				elements[i] = &base_elements[i]; // assign elements
 		}
 
 		RenderList() {
@@ -749,7 +766,7 @@ public:
 
 		~RenderList() {
 			memdelete_arr(elements);
-			memdelete_arr(_elements);
+			memdelete_arr(base_elements);
 		}
 	};
 

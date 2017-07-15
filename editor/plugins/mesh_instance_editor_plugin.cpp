@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "mesh_instance_editor_plugin.h"
 
-#include "scene/3d/body_shape.h"
+#include "scene/3d/collision_shape.h"
 #include "scene/3d/navigation_mesh.h"
 #include "scene/3d/physics_body.h"
 #include "scene/gui/box_container.h"

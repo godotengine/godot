@@ -42,6 +42,8 @@ class Engine {
 	String _custom_level;
 	uint64_t frames_drawn;
 	uint32_t _frame_delay;
+	uint64_t _frame_ticks;
+	float _frame_step;
 
 	int ips;
 	float _fps;
@@ -72,6 +74,8 @@ public:
 	uint64_t get_fixed_frames() const { return _fixed_frames; }
 	uint64_t get_idle_frames() const { return _idle_frames; }
 	bool is_in_fixed_frame() const { return _in_fixed; }
+	uint64_t get_idle_frame_ticks() const { return _frame_ticks; }
+	float get_idle_frame_step() const { return _frame_step; }
 
 	void set_time_scale(float p_scale);
 	float get_time_scale() const;
