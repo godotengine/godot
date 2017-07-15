@@ -1675,8 +1675,11 @@ void ScriptEditorDebugger::_set_remote_object(ObjectID p_id, ScriptEditorDebugge
 
 void ScriptEditorDebugger::_clear_remote_objects() {
 
-	inspector->edit(NULL);
-	inspect_properties->edit(NULL);
+	if (inspector)
+		inspector->edit(NULL);
+
+	if (inspect_properties)
+		inspect_properties->edit(NULL);
 
 	for (Map<ObjectID, ScriptEditorDebuggerInspectedObject *>::Element *E = remote_objects.front(); E; E = E->next()) {
 		memdelete(E->value());
@@ -2024,8 +2027,10 @@ ScriptEditorDebugger::~ScriptEditorDebugger() {
 
 	//	inspector->edit(NULL);
 	memdelete(variables);
-
 	ppeer->set_stream_peer(Ref<StreamPeer>());
+
+	inspector = NULL;
+	inspect_properties = NULL;
 
 	server->stop();
 	_clear_remote_objects();
