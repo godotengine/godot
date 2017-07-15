@@ -348,7 +348,7 @@ void Sprite3D::_draw() {
 
 	Rect2 final_rect;
 	Rect2 final_uv_rect;
-	if (!texture->get_rect_region(dst_rect, src_rect, final_rect, final_uv_rect))
+	if (!texture->get_rect_region_uv_rect(dst_rect, src_rect, final_rect, final_uv_rect))
 		return;
 
 	if (final_rect.size.x == 0 || final_rect.size.y == 0)
@@ -629,7 +629,7 @@ void AnimatedSprite3D::_draw() {
 
 	Rect2 final_rect;
 	Rect2 final_src_rect;
-	if (!texture->get_rect_region(dst_rect,src_rect,final_rect, final_uv_rect))
+	if (!texture->get_rect_region_uv_rect(dst_rect,src_rect,final_rect, final_uv_rect))
 		return;
 
 
@@ -839,15 +839,11 @@ void AnimatedSprite3D::_draw() {
 
 	src_rect.size = s;
 
-	Point2i ofs = get_offset();
-	if (is_centered())
-		ofs -= s / 2;
-
 	Rect2i dst_rect(0, 0, s.width, s.height);
 
 	Rect2 final_rect;
 	Rect2 final_uv_rect;
-	if (!texture->get_rect_region(dst_rect, src_rect, final_rect, final_uv_rect))
+	if (!texture->get_rect_region_uv_rect(dst_rect, src_rect, final_rect, final_uv_rect))
 		return;
 
 	if (final_rect.size.x == 0 || final_rect.size.y == 0)
@@ -858,6 +854,10 @@ void AnimatedSprite3D::_draw() {
 
 	if (!is_flipped_v())
 		final_rect.pos.y = dst_rect.size.y - final_rect.pos.y - final_rect.size.y;
+
+	Point2i ofs = get_offset();
+	if (is_centered())
+		ofs -= s / 2;
 
 	final_rect.pos += ofs;
 
