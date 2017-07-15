@@ -341,7 +341,7 @@ void EditorNode::_notification(int p_what) {
 		gui_base->add_style_override("panel", gui_base->get_stylebox("Background", "EditorStyles"));
 		play_button_panel->add_style_override("panel", gui_base->get_stylebox("PlayButtonPanel", "EditorStyles"));
 		scene_root_parent->add_style_override("panel", gui_base->get_stylebox("Content", "EditorStyles"));
-		bottom_panel->add_style_override("panel", gui_base->get_stylebox("Content", "EditorStyles"));
+		bottom_panel->add_style_override("panel", gui_base->get_stylebox("panel", "TabContainer"));
 		scene_tabs->add_style_override("tab_fg", gui_base->get_stylebox("SceneTabFG", "EditorStyles"));
 		scene_tabs->add_style_override("tab_bg", gui_base->get_stylebox("SceneTabBG", "EditorStyles"));
 		if (bool(EDITOR_DEF("interface/scene_tabs/resize_if_many_tabs", true))) {
@@ -5422,6 +5422,7 @@ EditorNode::EditorNode() {
 	scene_root_parent = memnew(PanelContainer);
 	scene_root_parent->set_custom_minimum_size(Size2(0, 80) * EDSCALE);
 	scene_root_parent->add_style_override("panel", gui_base->get_stylebox("Content", "EditorStyles"));
+	// sc->add_style_override("panel", gui_base->get_stylebox("Background", "EditorStyles"));
 
 	//Ref<StyleBox> sp = scene_root_parent->get_stylebox("panel","TabContainer");
 	//scene_root_parent->add_style_override("panel",sp);
@@ -5990,7 +5991,7 @@ EditorNode::EditorNode() {
 	_update_layouts_menu();
 
 	bottom_panel = memnew(PanelContainer);
-	bottom_panel->add_style_override("panel", gui_base->get_stylebox("Content", "EditorStyles"));
+	bottom_panel->add_style_override("panel", gui_base->get_stylebox("panel", "TabContainer"));
 	center_split->add_child(bottom_panel);
 	center_split->set_dragger_visibility(SplitContainer::DRAGGER_HIDDEN);
 

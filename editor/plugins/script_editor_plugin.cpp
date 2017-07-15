@@ -1056,7 +1056,7 @@ void ScriptEditor::_notification(int p_what) {
 		}
 
 		EditorSettings::get_singleton()->connect("settings_changed", this, "_editor_settings_changed");
-		help_search->set_icon(get_icon("Help", "EditorIcons"));
+		help_search->set_icon(get_icon("HelpSearch", "EditorIcons"));
 		site_search->set_icon(get_icon("Instance", "EditorIcons"));
 		class_search->set_icon(get_icon("ClassList", "EditorIcons"));
 
@@ -2172,11 +2172,17 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	members_overview_enabled = true;
 	editor = p_editor;
 
+	Ref<StyleBox> sb = p_editor->get_gui_base()->get_stylebox("panel", "TabContainer")->duplicate();
+	sb->set_default_margin(MARGIN_TOP, 0);
+	add_style_override("panel", sb);
+	VBoxContainer *main_container = memnew(VBoxContainer);
+	add_child(main_container);
+
 	menu_hb = memnew(HBoxContainer);
-	add_child(menu_hb);
+	main_container->add_child(menu_hb);
 
 	script_split = memnew(HSplitContainer);
-	add_child(script_split);
+	main_container->add_child(script_split);
 	script_split->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	list_split = memnew(VSplitContainer);

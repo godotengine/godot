@@ -115,9 +115,9 @@ typedef ScriptEditorBase *(*CreateScriptEditorFunc)(const Ref<Script> &p_script)
 
 class EditorScriptCodeCompletionCache;
 
-class ScriptEditor : public VBoxContainer {
+class ScriptEditor : public PanelContainer {
 
-	GDCLASS(ScriptEditor, VBoxContainer);
+	GDCLASS(ScriptEditor, PanelContainer);
 
 	EditorNode *editor;
 	enum {

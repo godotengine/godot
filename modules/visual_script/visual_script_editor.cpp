@@ -492,7 +492,8 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 		}
 
 		if (EditorSettings::get_singleton()->has("editors/visual_script/color_" + node->get_category())) {
-			gnode->set_modulate(EditorSettings::get_singleton()->get("editors/visual_script/color_" + node->get_category()));
+			Color c = EditorSettings::get_singleton()->get("editors/visual_script/color_" + node->get_category());
+			gnode->set_self_modulate(c);
 		}
 
 		gnode->set_meta("__vnode", node);
@@ -2745,7 +2746,7 @@ void VisualScriptEditor::_node_filter_changed(const String &p_text) {
 void VisualScriptEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_READY) {
-		node_filter_icon->set_texture(Control::get_icon("Zoom", "EditorIcons"));
+		node_filter_icon->set_texture(Control::get_icon("Search", "EditorIcons"));
 		variable_editor->connect("changed", this, "_update_members");
 		signal_editor->connect("changed", this, "_update_members");
 	}
@@ -3375,7 +3376,7 @@ static void register_editor_callback() {
 	EditorSettings::get_singleton()->set("editors/visual_script/color_functions", Color(1, 0.9, 0.9));
 	EditorSettings::get_singleton()->set("editors/visual_script/color_data", Color(0.9, 1.0, 0.9));
 	EditorSettings::get_singleton()->set("editors/visual_script/color_operators", Color(0.9, 0.9, 1.0));
-	EditorSettings::get_singleton()->set("editors/visual_script/color_flow_control", Color(1.0, 1.0, 0.8));
+	EditorSettings::get_singleton()->set("editors/visual_script/color_flow_control", Color(1.0, 1.0, 1.0));
 	EditorSettings::get_singleton()->set("editors/visual_script/color_custom", Color(0.8, 1.0, 1.0));
 	EditorSettings::get_singleton()->set("editors/visual_script/color_constants", Color(1.0, 0.8, 1.0));
 
