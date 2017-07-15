@@ -1093,27 +1093,19 @@ void reflection_process(int idx, vec3 vertex, vec3 normal,vec3 binormal, vec3 ta
 		}
 
 
-
-		vec3 splane=normalize(local_ref_vec);
 		vec4 clamp_rect=reflections[idx].atlas_clamp;
-
-		splane.z*=-1.0;
-		if (splane.z>=0.0) {
-			splane.z+=1.0;
-			clamp_rect.y+=clamp_rect.w;
-		} else {
-			splane.z=1.0 - splane.z;
-			splane.y=-splane.y;
+		vec3 norm = normalize(local_ref_vec);
+		norm.xy/=1.0+abs(norm.z);
+		norm.xy=norm.xy * vec2(0.5,0.25) + vec2(0.5,0.25);
+		if (norm.z>0) {
+			norm.y=0.5-norm.y+0.5;
 		}
 
-		splane.xy/=splane.z;
-		splane.xy=splane.xy * 0.5 + 0.5;
-
-		splane.xy = splane.xy * clamp_rect.zw + clamp_rect.xy;
-		splane.xy = clamp(splane.xy,clamp_rect.xy,clamp_rect.xy+clamp_rect.zw);
+		vec2 atlas_uv =  norm.xy * clamp_rect.zw + clamp_rect.xy;
+		atlas_uv = clamp(atlas_uv,clamp_rect.xy,clamp_rect.xy+clamp_rect.zw);
 
 		highp vec4 reflection;
-		reflection.rgb = textureLod(reflection_atlas,splane.xy,roughness*5.0).rgb;
+		reflection.rgb = textureLod(reflection_atlas,atlas_uv,roughness*5.0).rgb;
 
 		if (reflections[idx].params.z < 0.5) {
 			reflection.rgb = mix(skybox,reflection.rgb,blend);
@@ -1466,6 +1458,7 @@ FRAGMENT_SHADER_CODE
 	vec3 specular_light = vec3(0.0,0.0,0.0);
 	vec3 ambient_light;
 	vec3 diffuse_light = vec3(0.0,0.0,0.0);
+	vec3 env_reflection_light = vec3(0.0,0.0,0.0);
 
 	vec3 eye_vec = -normalize( vertex_interp );
 
@@ -1483,7 +1476,7 @@ FRAGMENT_SHADER_CODE
 				vec3 ref_vec = reflect(-eye_vec,normal); //2.0 * ndotv * normal - view; // reflect(v, n);
 				ref_vec=normalize((radiance_inverse_xform * vec4(ref_vec,0.0)).xyz);
 				vec3 radiance = textureDualParaboloid(radiance_map,ref_vec,roughness) * bg_energy;
-				specular_light = radiance;
+				env_reflection_light = radiance;
 
 			}
 			//no longer a cubemap
@@ -1673,12 +1666,15 @@ FRAGMENT_SHADER_CODE
 	highp vec4 ambient_accum = vec4(0.0,0.0,0.0,0.0);
 
 	for(int i=0;i<reflection_count;i++) {
-		reflection_process(reflection_indices[i],vertex,normal,binormal,tangent,roughness,anisotropy,ambient_light,specular_light,reflection_accum,ambient_accum);
+		reflection_process(reflection_indices[i],vertex,normal,binormal,tangent,roughness,anisotropy,ambient_light,env_reflection_light,reflection_accum,ambient_accum);
 	}
 
 	if (reflection_accum.a>0.0) {
 		specular_light+=reflection_accum.rgb/reflection_accum.a;
+	} else {
+		specular_light+=env_reflection_light;
 	}
+
 	if (ambient_accum.a>0.0) {
 		ambient_light+=ambient_accum.rgb/ambient_accum.a;
 	}

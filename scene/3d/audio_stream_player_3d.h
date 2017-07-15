@@ -48,7 +48,12 @@ private:
 		AudioFrame reverb_vol[3];
 		Viewport *viewport; //pointer only used for reference to previous mix
 
-		Output() { filter_gain = 0; }
+		Output() {
+			filter_gain = 0;
+			viewport = NULL;
+			reverb_bus_index = -1;
+			bus_index = -1;
+		}
 	};
 
 	Output outputs[MAX_OUTPUTS];

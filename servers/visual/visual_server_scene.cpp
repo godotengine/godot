@@ -1849,7 +1849,7 @@ void VisualServerScene::_render_scene(const Transform p_cam_transform, const Cam
 						if (reflection_probe->reflection_dirty || VSG::scene_render->reflection_probe_instance_needs_redraw(reflection_probe->instance)) {
 							if (!reflection_probe->update_list.in_list()) {
 								reflection_probe->render_step = 0;
-								reflection_probe_render_list.add(&reflection_probe->update_list);
+								reflection_probe_render_list.add_last(&reflection_probe->update_list);
 							}
 
 							reflection_probe->reflection_dirty = false;

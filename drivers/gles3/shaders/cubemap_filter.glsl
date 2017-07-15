@@ -247,6 +247,7 @@ void main() {
 
 #if !defined(USE_SOURCE_DUAL_PARABOLOID_ARRAY) && !defined(USE_SOURCE_PANORAMA)
 
+	N.y=-N.y;
 	frag_color=vec4(texture(N,source_cube).rgb,1.0);
 #endif
 
@@ -277,6 +278,7 @@ void main() {
 #endif
 
 #if !defined(USE_SOURCE_DUAL_PARABOLOID_ARRAY) && !defined(USE_SOURCE_PANORAMA)
+			H.y=-H.y;
 			sum.rgb += textureLod(source_cube, H, 0.0).rgb *ndotl;
 #endif
 			sum.a += ndotl;

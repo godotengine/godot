@@ -761,7 +761,7 @@ bool RasterizerSceneGLES3::reflection_probe_instance_postprocess_step(RID p_inst
 	storage->shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::LOW_QUALITY, rpi->probe_ptr->update_mode == VS::REFLECTION_PROBE_UPDATE_ALWAYS);
 	for (int i = 0; i < 2; i++) {
 
-		storage->shaders.cubemap_filter.set_uniform(CubemapFilterShaderGLES3::Z_FLIP, i > 0);
+		storage->shaders.cubemap_filter.set_uniform(CubemapFilterShaderGLES3::Z_FLIP, i == 0);
 		storage->shaders.cubemap_filter.set_uniform(CubemapFilterShaderGLES3::ROUGHNESS, rpi->render_step / 5.0);
 
 		uint32_t local_width = width, local_height = height;
@@ -2889,7 +2889,7 @@ void RasterizerSceneGLES3::_setup_reflections(RID *p_reflection_probe_cull_resul
 		reflection_ubo.atlas_clamp[0] = float(x) / reflection_atlas->size;
 		reflection_ubo.atlas_clamp[1] = float(y) / reflection_atlas->size;
 		reflection_ubo.atlas_clamp[2] = float(width) / reflection_atlas->size;
-		reflection_ubo.atlas_clamp[3] = float(height / 2) / reflection_atlas->size;
+		reflection_ubo.atlas_clamp[3] = float(height) / reflection_atlas->size;
 
 		Transform proj = (p_camera_inverse_transform * rpi->transform).inverse();
 		store_transform(proj, reflection_ubo.local_matrix);
@@ -4156,7 +4156,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 		glDrawBuffers(1, &gldb);
 	}
 
-	if (env && env->bg_mode == VS::ENV_BG_SKY && !storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT] && state.debug_draw != VS::VIEWPORT_DEBUG_DRAW_OVERDRAW) {
+	if (env && env->bg_mode == VS::ENV_BG_SKY && (!storage->frame.current_rt || (!storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT] && state.debug_draw != VS::VIEWPORT_DEBUG_DRAW_OVERDRAW))) {
 
 		/*
 		if (use_mrt) {
@@ -4175,7 +4175,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 		_render_mrts(env, p_cam_projection);
 	} else {
 		//FIXME: check that this is possible to use
-		if (state.used_screen_texture) {
+		if (storage->frame.current_rt && state.used_screen_texture) {
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, storage->frame.current_rt->buffers.fbo);
 			glReadBuffer(GL_COLOR_ATTACHMENT0);
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, storage->frame.current_rt->effects.mip_maps[0].sizes[0].fbo);
@@ -4189,7 +4189,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 		}
 	}
 
-	if (state.used_screen_texture) {
+	if (storage->frame.current_rt && state.used_screen_texture) {
 		glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 7);
 		glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->effects.mip_maps[0].color);
 	}

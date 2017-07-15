@@ -382,6 +382,9 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 					} break;
 				}
 
+				bool filled_reverb = false;
+				int vol_index_max = AudioServer::get_singleton()->get_speaker_mode() + 1;
+
 				if (area) {
 
 					if (area->is_overriding_audio_bus()) {
@@ -391,13 +394,13 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 					}
 
 					if (area->is_using_reverb_bus()) {
+
+						filled_reverb = true;
 						StringName bus_name = area->get_reverb_bus();
 						output.reverb_bus_index = AudioServer::get_singleton()->thread_find_bus_index(bus_name);
 
 						float uniformity = area->get_reverb_uniformity();
 						float area_send = area->get_reverb_amount();
-
-						int vol_index_max = AudioServer::get_singleton()->get_speaker_mode() + 1;
 
 						if (uniformity > 0.0) {
 
@@ -405,6 +408,9 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 							float attenuation = Math::db2linear(_get_attenuation_db(distance));
 
 							//float dist_att_db = -20 * Math::log(dist + 0.00001); //logarithmic attenuation, like in real life
+
+							float center_val[3] = { 0.5, 0.25, 0.16666 };
+							AudioFrame center_frame(center_val[vol_index_max - 1], center_val[vol_index_max - 1]);
 
 							if (attenuation < 1.0) {
 								//pan the uniform sound
@@ -448,14 +454,20 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 									} break;
 								}
-							}
 
-							float center_val[3] = { 0.5, 0.25, 0.16666 };
-							AudioFrame center_frame(center_val[vol_index_max - 1], center_val[vol_index_max - 1]);
+								for (int i = 0; i < vol_index_max; i++) {
+
+									output.reverb_vol[i] = output.reverb_vol[i].linear_interpolate(center_frame, attenuation);
+								}
+							} else {
+								for (int i = 0; i < vol_index_max; i++) {
+
+									output.reverb_vol[i] = center_frame;
+								}
+							}
 
 							for (int i = 0; i < vol_index_max; i++) {
 
-								output.reverb_vol[i] = output.reverb_vol[i].linear_interpolate(center_frame, attenuation);
 								output.reverb_vol[i] = output.vol[i].linear_interpolate(output.reverb_vol[i] * attenuation, uniformity);
 								output.reverb_vol[i] *= area_send;
 							}
@@ -489,6 +501,14 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 				} else {
 					output.pitch_scale = 1.0;
+				}
+
+				if (!filled_reverb) {
+
+					for (int i = 0; i < vol_index_max; i++) {
+
+						output.reverb_vol[i] = AudioFrame(0, 0);
+					}
 				}
 
 				outputs[new_output_count] = output;

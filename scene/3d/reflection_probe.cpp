@@ -162,7 +162,7 @@ bool ReflectionProbe::are_shadows_enabled() const {
 void ReflectionProbe::set_cull_mask(uint32_t p_layers) {
 
 	cull_mask = p_layers;
-	VS::get_singleton()->reflection_probe_set_enable_shadows(probe, p_layers);
+	VS::get_singleton()->reflection_probe_set_cull_mask(probe, p_layers);
 }
 uint32_t ReflectionProbe::get_cull_mask() const {
 
