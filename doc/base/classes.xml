@@ -19764,6 +19764,7 @@
 			<argument index="3" name="dst" type="Vector2">
 			</argument>
 			<description>
+				Blits a "src_rect" [Rect2] from "src" [Image] to this [Image] using a "mask" [Image] on coordinates "dest". Alpha channel is required for "mask", will copy src pixel onto dest if the corresponding mask pixel's alpha value is not 0. "src" [Image] and "mask" [Image] *must* have the same size (width and height) but they can have different formats
 			</description>
 		</method>
 		<method name="clear_mipmaps">
