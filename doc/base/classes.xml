@@ -3762,6 +3762,12 @@
 				Return the angular damp rate.
 			</description>
 		</method>
+		<method name="get_audio_bus" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_collision_layer" qualifiers="const">
 			<return type="int">
 			</return>
@@ -3843,6 +3849,24 @@
 				Return the processing order of this area.
 			</description>
 		</method>
+		<method name="get_reverb_amount" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_reverb_bus" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_reverb_uniformity" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_space_override_mode" qualifiers="const">
 			<return type="int">
 			</return>
@@ -3871,6 +3895,18 @@
 				Return whether this area detects bodies/areas entering/exiting it.
 			</description>
 		</method>
+		<method name="is_overriding_audio_bus" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_using_reverb_bus" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="overlaps_area" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -3895,6 +3931,18 @@
 			<description>
 				Set the rate at which objects stop spinning in this area, if there are not any other forces making it spin. The value is a fraction of its current speed, lost per second. Thus, a value of 1.0 should mean stopping immediately, and 0.0 means the object never stops.
 				In practice, as the fraction of speed lost gets smaller with each frame, a value of 1.0 does not mean the object will stop in exactly one second. Only when the physics calculations are done at 1 frame per second, it does stop in a second.
+			</description>
+		</method>
+		<method name="set_audio_bus">
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_audio_bus_override">
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_collision_layer">
@@ -3991,6 +4039,24 @@
 				Areas with the same priority value get evaluated in an unpredictable order, and should be differentiated if evaluation order is to be important.
 			</description>
 		</method>
+		<method name="set_reverb_amount">
+			<argument index="0" name="amount" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_reverb_bus">
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_reverb_uniformity">
+			<argument index="0" name="amount" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_space_override_mode">
 			<argument index="0" name="enable" type="int">
 			</argument>
@@ -4003,9 +4069,19 @@
 				AREA_SPACE_OVERRIDE_REPLACE_COMBINE: This area replaces any gravity/damp calculated so far, but keeps calculating the rest of the areas, down to the default one.
 			</description>
 		</method>
+		<method name="set_use_reverb_bus">
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp" brief="">
+		</member>
+		<member name="audio_bus_name" type="String" setter="set_audio_bus" getter="get_audio_bus" brief="">
+		</member>
+		<member name="audio_bus_override" type="bool" setter="set_audio_bus_override" getter="is_overriding_audio_bus" brief="">
 		</member>
 		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" brief="">
 		</member>
@@ -4026,6 +4102,14 @@
 		<member name="monitoring" type="bool" setter="set_monitoring" getter="is_monitoring" brief="">
 		</member>
 		<member name="priority" type="int" setter="set_priority" getter="get_priority" brief="">
+		</member>
+		<member name="reverb_bus_amount" type="float" setter="set_reverb_amount" getter="get_reverb_amount" brief="">
+		</member>
+		<member name="reverb_bus_enable" type="bool" setter="set_use_reverb_bus" getter="is_using_reverb_bus" brief="">
+		</member>
+		<member name="reverb_bus_name" type="String" setter="set_reverb_bus" getter="get_reverb_bus" brief="">
+		</member>
+		<member name="reverb_bus_uniformity" type="float" setter="set_reverb_uniformity" getter="get_reverb_uniformity" brief="">
 		</member>
 		<member name="space_override" type="int" setter="set_space_override_mode" getter="get_space_override_mode" brief="">
 		</member>
@@ -6856,6 +6940,328 @@
 	<constants>
 	</constants>
 </class>
+<class name="AudioStreamPlayer3D" inherits="Spatial" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_area_mask" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_attenuation_filter_cutoff_hz" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_attenuation_filter_db" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_attenuation_model" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_bus" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_doppler_tracking" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_emission_angle" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_emission_angle_filter_attenuation_db" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_max_db" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_max_distance" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_out_of_range_mode" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_pos">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_stream" qualifiers="const">
+			<return type="Object">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_unit_db" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_unit_size" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_autoplay_enabled">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_emission_angle_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_playing" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="play">
+			<argument index="0" name="from_pos" type="float" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="seek">
+			<argument index="0" name="to_pos" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_area_mask">
+			<argument index="0" name="mask" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_attenuation_filter_cutoff_hz">
+			<argument index="0" name="degrees" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_attenuation_filter_db">
+			<argument index="0" name="db" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_attenuation_model">
+			<argument index="0" name="model" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_autoplay">
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_bus">
+			<argument index="0" name="bus" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_doppler_tracking">
+			<argument index="0" name="mode" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_emission_angle">
+			<argument index="0" name="degrees" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_emission_angle_enabled">
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_emission_angle_filter_attenuation_db">
+			<argument index="0" name="db" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_max_db">
+			<argument index="0" name="max_db" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_max_distance">
+			<argument index="0" name="metres" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_out_of_range_mode">
+			<argument index="0" name="mode" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_stream">
+			<argument index="0" name="stream" type="AudioStream">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_unit_db">
+			<argument index="0" name="unit_db" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_unit_size">
+			<argument index="0" name="unit_size" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="stop">
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="area_mask" type="int" setter="set_area_mask" getter="get_area_mask" brief="">
+		</member>
+		<member name="attenuation_filter_cutoff_hz" type="float" setter="set_attenuation_filter_cutoff_hz" getter="get_attenuation_filter_cutoff_hz" brief="">
+		</member>
+		<member name="attenuation_filter_db" type="float" setter="set_attenuation_filter_db" getter="get_attenuation_filter_db" brief="">
+		</member>
+		<member name="attenuation_model" type="int" setter="set_attenuation_model" getter="get_attenuation_model" brief="">
+		</member>
+		<member name="autoplay" type="bool" setter="set_autoplay" getter="is_autoplay_enabled" brief="">
+		</member>
+		<member name="bus" type="String" setter="set_bus" getter="get_bus" brief="">
+		</member>
+		<member name="doppler_tracking" type="int" setter="set_doppler_tracking" getter="get_doppler_tracking" brief="">
+		</member>
+		<member name="emission_angle_degrees" type="float" setter="set_emission_angle" getter="get_emission_angle" brief="">
+		</member>
+		<member name="emission_angle_enabled" type="bool" setter="set_emission_angle_enabled" getter="is_emission_angle_enabled" brief="">
+		</member>
+		<member name="emission_angle_filter_attenuation_db" type="float" setter="set_emission_angle_filter_attenuation_db" getter="get_emission_angle_filter_attenuation_db" brief="">
+		</member>
+		<member name="max_db" type="float" setter="set_max_db" getter="get_max_db" brief="">
+		</member>
+		<member name="max_distance" type="float" setter="set_max_distance" getter="get_max_distance" brief="">
+		</member>
+		<member name="out_of_range_mode" type="int" setter="set_out_of_range_mode" getter="get_out_of_range_mode" brief="">
+		</member>
+		<member name="playing" type="bool" setter="_set_playing" getter="_is_active" brief="">
+		</member>
+		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream" brief="">
+		</member>
+		<member name="unit_db" type="float" setter="set_unit_db" getter="get_unit_db" brief="">
+		</member>
+		<member name="unit_size" type="float" setter="set_unit_size" getter="get_unit_size" brief="">
+		</member>
+	</members>
+	<constants>
+		<constant name="ATTENUATION_INVERSE_DISTANCE" value="0">
+		</constant>
+		<constant name="ATTENUATION_INVERSE_SQUARE_DISTANCE" value="1">
+		</constant>
+		<constant name="ATTENUATION_LOGARITHMIC" value="2">
+		</constant>
+		<constant name="OUT_OF_RANGE_MIX" value="0">
+		</constant>
+		<constant name="OUT_OF_RANGE_PAUSE" value="1">
+		</constant>
+		<constant name="DOPPLER_TRACKING_DISABLED" value="0">
+		</constant>
+		<constant name="DOPPLER_TRACKING_IDLE_STEP" value="1">
+		</constant>
+		<constant name="DOPPLER_TRACKING_FIXED_STEP" value="2">
+		</constant>
+	</constants>
+</class>
+<class name="AudioStreamRandomPitch" inherits="AudioStream" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_audio_stream" qualifiers="const">
+			<return type="Object">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_random_pitch" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_audio_stream">
+			<argument index="0" name="stream" type="Object">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_random_pitch">
+			<argument index="0" name="scale" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="audio_stream" type="AudioStream" setter="set_audio_stream" getter="get_audio_stream" brief="">
+		</member>
+		<member name="random_pitch" type="float" setter="set_random_pitch" getter="get_random_pitch" brief="">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>
 <class name="AudioStreamSample" inherits="AudioStream" category="Core">
 	<brief_description>
 	</brief_description>
@@ -7889,6 +8295,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_doppler_tracking" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_environment" qualifiers="const">
 			<return type="Environment">
 			</return>
@@ -8003,6 +8415,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_doppler_tracking">
+			<argument index="0" name="mode" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_environment">
 			<argument index="0" name="env" type="Environment">
 			</argument>
@@ -8069,6 +8487,12 @@
 		<constant name="KEEP_WIDTH" value="0">
 		</constant>
 		<constant name="KEEP_HEIGHT" value="1">
+		</constant>
+		<constant name="DOPPLER_TRACKING_DISABLED" value="0">
+		</constant>
+		<constant name="DOPPLER_TRACKING_IDLE_STEP" value="1">
+		</constant>
+		<constant name="DOPPLER_TRACKING_FIXED_STEP" value="2">
 		</constant>
 	</constants>
 </class>
@@ -9731,18 +10155,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="add_shape">
-			<argument index="0" name="shape" type="Shape">
-			</argument>
-			<argument index="1" name="transform" type="Transform" default="Transform()">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="clear_shapes">
-			<description>
-			</description>
-		</method>
 		<method name="get_capture_input_on_drag" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -9755,45 +10167,9 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_shape" qualifiers="const">
-			<return type="Shape">
-			</return>
-			<argument index="0" name="shape_idx" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_shape_count" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_shape_transform" qualifiers="const">
-			<return type="Transform">
-			</return>
-			<argument index="0" name="shape_idx" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="is_ray_pickable" qualifiers="const">
 			<return type="bool">
 			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_shape_set_as_trigger" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="shape_idx" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="remove_shape">
-			<argument index="0" name="shape_idx" type="int">
-			</argument>
 			<description>
 			</description>
 		</method>
@@ -9805,30 +10181,6 @@
 		</method>
 		<method name="set_ray_pickable">
 			<argument index="0" name="ray_pickable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_shape">
-			<argument index="0" name="shape_idx" type="int">
-			</argument>
-			<argument index="1" name="shape" type="Shape">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_shape_as_trigger">
-			<argument index="0" name="shape_idx" type="int">
-			</argument>
-			<argument index="1" name="enable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_shape_transform">
-			<argument index="0" name="shape_idx" type="int">
-			</argument>
-			<argument index="1" name="transform" type="Transform">
 			</argument>
 			<description>
 			</description>
@@ -9942,24 +10294,6 @@
 	<description>
 	</description>
 	<methods>
-		<method name="get_build_mode" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_collision_object_first_shape" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_collision_object_last_shape" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_depth" qualifiers="const">
 			<return type="float">
 			</return>
@@ -9972,14 +10306,20 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_build_mode">
-			<argument index="0" name="build_mode" type="int">
-			</argument>
+		<method name="is_disabled" qualifiers="const">
+			<return type="bool">
+			</return>
 			<description>
 			</description>
 		</method>
 		<method name="set_depth">
 			<argument index="0" name="depth" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_disabled">
+			<argument index="0" name="disabled" type="bool">
 			</argument>
 			<description>
 			</description>
@@ -9992,13 +10332,11 @@
 		</method>
 	</methods>
 	<members>
-		<member name="build_mode" type="int" setter="set_build_mode" getter="get_build_mode" brief="">
-		</member>
 		<member name="depth" type="float" setter="set_depth" getter="get_depth" brief="">
 		</member>
-		<member name="polygon" type="PoolVector2Array" setter="set_polygon" getter="get_polygon" brief="">
+		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" brief="">
 		</member>
-		<member name="shape_range" type="Vector2" setter="_set_shape_range" getter="_get_shape_range" brief="">
+		<member name="polygon" type="PoolVector2Array" setter="set_polygon" getter="get_polygon" brief="">
 		</member>
 	</members>
 	<constants>
@@ -10085,19 +10423,13 @@
 	<description>
 	</description>
 	<methods>
-		<method name="get_collision_object_shape_index" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_shape" qualifiers="const">
 			<return type="Object">
 			</return>
 			<description>
 			</description>
 		</method>
-		<method name="is_trigger" qualifiers="const">
+		<method name="is_disabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
@@ -10113,25 +10445,23 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_disabled">
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_shape">
 			<argument index="0" name="shape" type="Object">
 			</argument>
 			<description>
 			</description>
 		</method>
-		<method name="set_trigger">
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
-		<member name="_update_shape_index" type="int" setter="_set_update_shape_index" getter="_get_update_shape_index" brief="">
+		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" brief="">
 		</member>
 		<member name="shape" type="Shape" setter="set_shape" getter="get_shape" brief="">
-		</member>
-		<member name="trigger" type="bool" setter="set_trigger" getter="is_trigger" brief="">
 		</member>
 	</members>
 	<constants>
@@ -19434,6 +19764,7 @@
 			<argument index="3" name="dst" type="Vector2">
 			</argument>
 			<description>
+				Blits a "src_rect" [Rect2] from "src" [Image] to this [Image] using a "mask" [Image] on coordinates "dest". Alpha channel is required for "mask", will copy src pixel onto dest if the corresponding mask pixel's alpha value is not 0. "src" [Image] and "mask" [Image] *must* have the same size (width and height) but they can have different formats
 			</description>
 		</method>
 		<method name="clear_mipmaps">
@@ -21843,124 +22174,130 @@
 		Kinematic Characters: KinematicBody also has an api for moving objects (the [method move] method) while performing collision tests. This makes them really useful to implement characters that collide against a world, but that don't require advanced physics.
 	</description>
 	<methods>
-		<method name="can_collide_with_character_bodies" qualifiers="const">
-			<return type="bool">
+		<method name="get_collision_collider" qualifiers="const">
+			<return type="Object">
 			</return>
-			<description>
-				Return if this body can collide with character bodies.
-			</description>
-		</method>
-		<method name="can_collide_with_kinematic_bodies" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Return if this body can collide with kinematic bodies.
-			</description>
-		</method>
-		<method name="can_collide_with_rigid_bodies" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Return if this body can collide with rigid bodies.
-			</description>
-		</method>
-		<method name="can_collide_with_static_bodies" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Return if this body can collide with static bodies.
-			</description>
-		</method>
-		<method name="can_teleport_to">
-			<return type="bool">
-			</return>
-			<argument index="0" name="position" type="Vector3">
+			<argument index="0" name="collision" type="int">
 			</argument>
 			<description>
-				Returns whether the KinematicBody can be teleported to the destination given as an argument, checking all collision shapes of the body against potential colliders at the destination.
 			</description>
 		</method>
-		<method name="get_collider" qualifiers="const">
-			<return type="Variant">
+		<method name="get_collision_collider_id" qualifiers="const">
+			<return type="int">
 			</return>
+			<argument index="0" name="collision" type="int">
+			</argument>
 			<description>
-				Return the body that collided with this one.
 			</description>
 		</method>
-		<method name="get_collider_shape" qualifiers="const">
+		<method name="get_collision_collider_metadata" qualifiers="const">
+			<argument index="0" name="collision" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_collider_shape" qualifiers="const">
+			<return type="Object">
+			</return>
+			<argument index="0" name="collision" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_collider_shape_index" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="collision" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_collider_velocity" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="collision" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the shape index from the body that collided with this one. If there is no collision, this method will return 0, so collisions must be checked first with [method is_colliding].
 			</description>
 		</method>
-		<method name="get_collider_velocity" qualifiers="const">
-			<return type="Vector3">
+		<method name="get_collision_local_shape" qualifiers="const">
+			<return type="Object">
 			</return>
+			<argument index="0" name="collision" type="int">
+			</argument>
 			<description>
-				Return the velocity of the body that collided with this one.
-			</description>
-		</method>
-		<method name="get_collision_margin" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Return the collision margin for this object.
 			</description>
 		</method>
 		<method name="get_collision_normal" qualifiers="const">
 			<return type="Vector3">
 			</return>
+			<argument index="0" name="collision" type="int">
+			</argument>
 			<description>
-				Return the normal of the surface the body collided with. This is useful to implement sliding along a surface.
 			</description>
 		</method>
-		<method name="get_collision_pos" qualifiers="const">
+		<method name="get_collision_position" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="collision" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_remainder" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="collision" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_travel" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="collision" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_floor_velocity" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
-				Return the point in space where the body is touching another. If there is no collision, this method will return (0,0,0), so collisions must be checked first with [method is_colliding].
 			</description>
 		</method>
-		<method name="get_move_and_slide_colliders" qualifiers="const">
-			<return type="Array">
+		<method name="get_safe_margin" qualifiers="const">
+			<return type="float">
 			</return>
 			<description>
 			</description>
 		</method>
-		<method name="get_travel" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_colliding" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Return whether the body is colliding with another.
-			</description>
-		</method>
-		<method name="is_move_and_slide_on_ceiling" qualifiers="const">
+		<method name="is_on_ceiling" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
 			</description>
 		</method>
-		<method name="is_move_and_slide_on_floor" qualifiers="const">
+		<method name="is_on_floor" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
 			</description>
 		</method>
-		<method name="is_move_and_slide_on_wall" qualifiers="const">
+		<method name="is_on_wall" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
 			</description>
 		</method>
 		<method name="move">
-			<return type="Vector3">
+			<return type="Dictionary">
 			</return>
 			<argument index="0" name="rel_vec" type="Vector3">
 			</argument>
@@ -21975,78 +22312,34 @@
 			</argument>
 			<argument index="1" name="floor_normal" type="Vector3" default="Vector3(0, 0, 0)">
 			</argument>
-			<argument index="2" name="ceil_normal" type="Vector3" default="Vector3(0, 0, 0)">
+			<argument index="2" name="slope_stop_min_velocity" type="float" default="0.05">
 			</argument>
-			<argument index="3" name="slope_stop_min_velocity" type="float" default="5">
+			<argument index="3" name="max_bounces" type="int" default="4">
 			</argument>
-			<argument index="4" name="max_bounces" type="int" default="4">
-			</argument>
-			<argument index="5" name="floor_max_angle" type="float" default="0.785398">
-			</argument>
-			<argument index="6" name="ceil_max_angle" type="float" default="0.785398">
+			<argument index="4" name="floor_max_angle" type="float" default="0.785398">
 			</argument>
 			<description>
 			</description>
 		</method>
-		<method name="move_to">
-			<return type="Vector3">
-			</return>
-			<argument index="0" name="position" type="Vector3">
-			</argument>
-			<description>
-				Move the body to the given position. This is not a teleport, and the body will stop if there is an obstacle. The returned vector is how much movement was remaining before being stopped.
-			</description>
-		</method>
-		<method name="revert_motion">
-			<description>
-			</description>
-		</method>
-		<method name="set_collide_with_character_bodies">
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Set if this body should collide with character bodies.
-			</description>
-		</method>
-		<method name="set_collide_with_kinematic_bodies">
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Set if this body should collide with kinematic bodies.
-			</description>
-		</method>
-		<method name="set_collide_with_rigid_bodies">
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Set if this body should collide with rigid bodies.
-			</description>
-		</method>
-		<method name="set_collide_with_static_bodies">
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Set if this body should collide with static bodies.
-			</description>
-		</method>
-		<method name="set_collision_margin">
+		<method name="set_safe_margin">
 			<argument index="0" name="pixels" type="float">
 			</argument>
 			<description>
-				Set the collision margin for this object. A collision margin is an amount that all shapes will grow when computing collisions, to account for numerical imprecision.
+			</description>
+		</method>
+		<method name="test_move">
+			<return type="bool">
+			</return>
+			<argument index="0" name="from" type="Transform">
+			</argument>
+			<argument index="1" name="rel_vec" type="Vector3">
+			</argument>
+			<description>
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="collide_with/character" type="bool" setter="set_collide_with_character_bodies" getter="can_collide_with_character_bodies" brief="">
-		</member>
-		<member name="collide_with/kinematic" type="bool" setter="set_collide_with_kinematic_bodies" getter="can_collide_with_kinematic_bodies" brief="">
-		</member>
-		<member name="collide_with/rigid" type="bool" setter="set_collide_with_rigid_bodies" getter="can_collide_with_rigid_bodies" brief="">
-		</member>
-		<member name="collide_with/static" type="bool" setter="set_collide_with_static_bodies" getter="can_collide_with_static_bodies" brief="">
-		</member>
-		<member name="collision/margin" type="float" setter="set_collision_margin" getter="get_collision_margin" brief="">
+		<member name="collision/safe_margin" type="float" setter="set_safe_margin" getter="get_safe_margin" brief="">
 		</member>
 	</members>
 	<constants>
@@ -41532,6 +41825,46 @@
 		</constant>
 		<constant name="BILLBOARD_PARTICLES" value="3">
 		</constant>
+	</constants>
+</class>
+<class name="SpatialVelocityTracker" inherits="Reference" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_tracked_linear_velocity" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_tracking_fixed_step" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="reset">
+			<argument index="0" name="position" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_track_fixed_step">
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="update_position">
+			<argument index="0" name="position" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
 	</constants>
 </class>
 <class name="SphereMesh" inherits="PrimitiveMesh" category="Core">
