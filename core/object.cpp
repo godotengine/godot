@@ -1538,7 +1538,7 @@ void Object::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_script:Script"), &Object::get_script);
 
 	ObjectTypeDB::bind_method(_MD("set_meta", "name", "value"), &Object::set_meta);
-	ObjectTypeDB::bind_method(_MD("get_meta", "name", "value"), &Object::get_meta);
+	ObjectTypeDB::bind_method(_MD("get_meta:Variant", "name", "value"), &Object::get_meta);
 	ObjectTypeDB::bind_method(_MD("has_meta", "name"), &Object::has_meta);
 	ObjectTypeDB::bind_method(_MD("get_meta_list"), &Object::_get_meta_list_bind);
 
