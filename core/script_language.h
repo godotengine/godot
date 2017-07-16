@@ -57,7 +57,7 @@ public:
 
 	static void set_scripting_enabled(bool p_enabled);
 	static bool is_scripting_enabled();
-	static int get_language_count();
+	_FORCE_INLINE_ static int get_language_count() { return _language_count; }
 	static ScriptLanguage *get_language(int p_idx);
 	static void register_language(ScriptLanguage *p_language);
 	static void unregister_language(ScriptLanguage *p_language);
@@ -273,6 +273,9 @@ public:
 
 	virtual int profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max) = 0;
 	virtual int profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max) = 0;
+
+	virtual void *alloc_instance_binding_data(Object *p_object) { return NULL; } //optional, not used by all languages
+	virtual void free_instance_binding_data(void *p_data) {} //optional, not used by all languages
 
 	virtual void frame();
 

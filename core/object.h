@@ -381,6 +381,10 @@ public:
 	};
 
 private:
+	enum {
+		MAX_SCRIPT_INSTANCE_BINDINGS = 8
+	};
+
 #ifdef DEBUG_ENABLED
 	friend class _ObjectDebugLock;
 #endif
@@ -446,6 +450,8 @@ private:
 	Array _get_incoming_connections() const;
 	void _set_bind(const String &p_set, const Variant &p_value);
 	Variant _get_bind(const String &p_name) const;
+
+	void *_script_instance_bindings[MAX_SCRIPT_INSTANCE_BINDINGS];
 
 	void property_list_changed_notify();
 
@@ -682,6 +688,9 @@ public:
 	void editor_set_section_unfold(const String &p_section, bool p_unfolded);
 	bool editor_is_section_unfolded(const String &p_section);
 #endif
+
+	//used by script languages to store binding data
+	void *get_script_instance_binding(int p_script_language_index);
 
 	void clear_internal_resource_paths();
 

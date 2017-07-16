@@ -66,11 +66,6 @@ bool ScriptServer::is_scripting_enabled() {
 	return scripting_enabled;
 }
 
-int ScriptServer::get_language_count() {
-
-	return _language_count;
-}
-
 ScriptLanguage *ScriptServer::get_language(int p_idx) {
 
 	ERR_FAIL_INDEX_V(p_idx, _language_count, NULL);
