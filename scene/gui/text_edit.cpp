@@ -1,4 +1,4 @@
-/*************************************************************************/
+﻿/*************************************************************************/
 /*  text_edit.cpp                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
@@ -2867,6 +2867,9 @@ void TextEdit::_base_remove_text(int p_from_line, int p_from_column, int p_to_li
 }
 
 void TextEdit::_insert_text(int p_line, int p_char, const String &p_text, int *r_end_line, int *r_end_column) {
+	//Hit max chars
+	if (max_chars > 0 && get_char_count() >= max_chars)
+		return;
 
 	if (!setting_text)
 		idle_detect->start();
@@ -2977,6 +2980,9 @@ void TextEdit::_remove_text(int p_from_line, int p_from_column, int p_to_line, i
 }
 
 void TextEdit::_insert_text_at_cursor(const String &p_text) {
+	//Hit max chars
+	if (max_chars > 0 && get_char_count() >= max_chars)
+		return;
 
 	int new_column, new_line;
 	_insert_text(cursor.line, cursor.column, p_text, &new_line, &new_column);
