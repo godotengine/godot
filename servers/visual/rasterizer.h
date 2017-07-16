@@ -109,19 +109,20 @@ public:
 		bool mirror : 8;
 		bool receive_shadows : 8;
 		bool visible : 8;
+		bool baked_light : 8; //this flag is only to know if it actually did use baked light
 
 		float depth; //used for sorting
 
 		SelfList<InstanceBase> dependency_item;
-		InstanceBase *baked_light; //baked light to use
-		SelfList<InstanceBase> baked_light_item;
+		//InstanceBase *baked_light; //baked light to use
+		//SelfList<InstanceBase> baked_light_item;
 
 		virtual void base_removed() = 0;
 		virtual void base_changed() = 0;
 		virtual void base_material_changed() = 0;
 
 		InstanceBase()
-			: dependency_item(this), baked_light_item(this) {
+			: dependency_item(this) {
 
 			base_type = VS::INSTANCE_NONE;
 			cast_shadows = VS::SHADOW_CASTING_SETTING_ON;
@@ -129,7 +130,7 @@ public:
 			visible = true;
 			depth_layer = 0;
 			layer_mask = 1;
-			baked_light = NULL;
+			baked_light = false;
 		}
 	};
 
@@ -421,6 +422,9 @@ public:
 
 	virtual void gi_probe_set_bias(RID p_probe, float p_range) = 0;
 	virtual float gi_probe_get_bias(RID p_probe) const = 0;
+
+	virtual void gi_probe_set_normal_bias(RID p_probe, float p_range) = 0;
+	virtual float gi_probe_get_normal_bias(RID p_probe) const = 0;
 
 	virtual void gi_probe_set_propagation(RID p_probe, float p_range) = 0;
 	virtual float gi_probe_get_propagation(RID p_probe) const = 0;

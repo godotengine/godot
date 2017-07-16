@@ -67,6 +67,9 @@ public:
 	void set_bias(float p_range);
 	float get_bias() const;
 
+	void set_normal_bias(float p_range);
+	float get_normal_bias() const;
+
 	void set_interior(bool p_enable);
 	bool is_interior() const;
 
@@ -163,6 +166,7 @@ private:
 	int dynamic_range;
 	float energy;
 	float bias;
+	float normal_bias;
 	float propagation;
 	bool interior;
 	bool compress;
@@ -203,6 +207,9 @@ public:
 
 	void set_bias(float p_bias);
 	float get_bias() const;
+
+	void set_normal_bias(float p_normal_bias);
+	float get_normal_bias() const;
 
 	void set_propagation(float p_propagation);
 	float get_propagation() const;

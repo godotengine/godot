@@ -972,6 +972,7 @@ public:
 		int dynamic_range;
 		float energy;
 		float bias;
+		float normal_bias;
 		float propagation;
 		bool interior;
 		bool compress;
@@ -1005,6 +1006,9 @@ public:
 
 	virtual void gi_probe_set_bias(RID p_probe, float p_range);
 	virtual float gi_probe_get_bias(RID p_probe) const;
+
+	virtual void gi_probe_set_normal_bias(RID p_probe, float p_range);
+	virtual float gi_probe_get_normal_bias(RID p_probe) const;
 
 	virtual void gi_probe_set_propagation(RID p_probe, float p_range);
 	virtual float gi_probe_get_propagation(RID p_probe) const;

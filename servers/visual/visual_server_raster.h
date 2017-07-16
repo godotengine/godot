@@ -844,6 +844,9 @@ public:
 	BIND2(gi_probe_set_bias, RID, float)
 	BIND1RC(float, gi_probe_get_bias, RID)
 
+	BIND2(gi_probe_set_normal_bias, RID, float)
+	BIND1RC(float, gi_probe_get_normal_bias, RID)
+
 	BIND2(gi_probe_set_propagation, RID, float)
 	BIND1RC(float, gi_probe_get_propagation, RID)
 

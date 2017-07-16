@@ -288,6 +288,9 @@ public:
 	FUNC2(gi_probe_set_bias, RID, float)
 	FUNC1RC(float, gi_probe_get_bias, RID)
 
+	FUNC2(gi_probe_set_normal_bias, RID, float)
+	FUNC1RC(float, gi_probe_get_normal_bias, RID)
+
 	FUNC2(gi_probe_set_propagation, RID, float)
 	FUNC1RC(float, gi_probe_get_propagation, RID)
 

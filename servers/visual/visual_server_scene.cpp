@@ -993,6 +993,11 @@ void VisualServerScene::instance_geometry_set_flag(RID p_instance, VS::InstanceF
 			instance->visible_in_all_rooms = p_enabled;
 
 		} break;
+		case VS::INSTANCE_FLAG_USE_BAKED_LIGHT: {
+
+			instance->baked_light = p_enabled;
+
+		} break;
 	}
 }
 void VisualServerScene::instance_geometry_set_cast_shadows_setting(RID p_instance, VS::ShadowCastingSetting p_shadow_casting_setting) {

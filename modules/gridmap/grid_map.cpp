@@ -380,6 +380,7 @@ void GridMap::set_cell_item(int p_x, int p_y, int p_z, int p_item, int p_rot) {
 		ii.multimesh->set_mesh(ii.mesh);
 		ii.multimesh_instance = VS::get_singleton()->instance_create();
 		VS::get_singleton()->instance_set_base(ii.multimesh_instance, ii.multimesh->get_rid());
+		VS::get_singleton()->instance_geometry_set_flag(ii.multimesh_instance, VS::INSTANCE_FLAG_USE_BAKED_LIGHT, true);
 
 		g.items[p_item] = ii;
 	}
