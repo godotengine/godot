@@ -1897,11 +1897,6 @@ void CanvasItemEditor::_viewport_draw() {
 
 	if (viewport->has_focus()) {
 		Size2 size = viewport->get_size();
-		if (v_scroll->is_visible_in_tree())
-			size.width -= v_scroll->get_size().width;
-		if (h_scroll->is_visible_in_tree())
-			size.height -= h_scroll->get_size().height;
-
 		get_stylebox("Focus", "EditorStyles")->draw(ci, Rect2(Point2(), size));
 	}
 
