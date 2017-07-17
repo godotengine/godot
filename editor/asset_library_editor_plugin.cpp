@@ -98,10 +98,10 @@ EditorAssetLibraryItem::EditorAssetLibraryItem() {
 
 	Ref<StyleBoxEmpty> border;
 	border.instance();
-	/*border->set_default_margin(MARGIN_LEFT,5);
-	border->set_default_margin(MARGIN_RIGHT,5);
-	border->set_default_margin(MARGIN_BOTTOM,5);
-	border->set_default_margin(MARGIN_TOP,5);*/
+	border->set_default_margin(MARGIN_LEFT, 5);
+	border->set_default_margin(MARGIN_RIGHT, 5);
+	border->set_default_margin(MARGIN_BOTTOM, 5);
+	border->set_default_margin(MARGIN_TOP, 5);
 	add_style_override("panel", border);
 
 	HBoxContainer *hb = memnew(HBoxContainer);
@@ -1260,15 +1260,6 @@ void EditorAssetLibrary::_bind_methods() {
 EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	templates_only = p_templates_only;
-
-	Ref<StyleBoxEmpty> border;
-	border.instance();
-	border->set_default_margin(MARGIN_LEFT, 15);
-	border->set_default_margin(MARGIN_RIGHT, 15);
-	border->set_default_margin(MARGIN_BOTTOM, 5);
-	border->set_default_margin(MARGIN_TOP, 5);
-
-	add_style_override("panel", border);
 
 	VBoxContainer *library_main = memnew(VBoxContainer);
 

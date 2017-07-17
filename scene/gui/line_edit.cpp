@@ -574,8 +574,12 @@ void LineEdit::_notification(int p_what) {
 			RID ci = get_canvas_item();
 
 			Ref<StyleBox> style = get_stylebox("normal");
-			if (!is_editable())
+			float disabled_alpha = 1.0; // used to set the disabled input text color
+			if (!is_editable()) {
 				style = get_stylebox("read_only");
+				disabled_alpha = .5;
+				draw_caret = false;
+			}
 
 			Ref<Font> font = get_font("font");
 
@@ -622,6 +626,7 @@ void LineEdit::_notification(int p_what) {
 			// draw placeholder color
 			if (text.empty())
 				font_color.a *= placeholder_alpha;
+			font_color.a *= disabled_alpha;
 
 			int caret_height = font->get_height() > y_area ? y_area : font->get_height();
 			while (true) {
