@@ -111,10 +111,10 @@ class CanvasItemEditor : public VBoxContainer {
 		ANCHOR_ALIGN_VCENTER_WIDE,
 		ANCHOR_ALIGN_HCENTER_WIDE,
 		ANCHOR_ALIGN_WIDE,
+		ANCHOR_ALIGN_WIDE_FIT,
 
 		SPACE_HORIZONTAL,
 		SPACE_VERTICAL,
-		EXPAND_TO_PARENT,
 		ANIM_INSERT_KEY,
 		ANIM_INSERT_KEY_EXISTING,
 		ANIM_INSERT_POS,
@@ -361,6 +361,7 @@ class CanvasItemEditor : public VBoxContainer {
 	void _focus_selection(int p_op);
 
 	void _set_anchor(Control::AnchorType p_left, Control::AnchorType p_top, Control::AnchorType p_right, Control::AnchorType p_bottom);
+	void _set_full_rect();
 
 	HSplitContainer *palette_split;
 	VSplitContainer *bottom_split;
