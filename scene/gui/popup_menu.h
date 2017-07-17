@@ -132,6 +132,7 @@ public:
 	void toggle_item_checked(int p_idx);
 
 	String get_item_text(int p_idx) const;
+	int get_item_idx_from_text(const String &text) const;
 	Ref<Texture> get_item_icon(int p_idx) const;
 	bool is_item_checked(int p_idx) const;
 	int get_item_ID(int p_idx) const;

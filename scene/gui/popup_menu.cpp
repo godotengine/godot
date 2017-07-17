@@ -696,6 +696,17 @@ String PopupMenu::get_item_text(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, items.size(), "");
 	return items[p_idx].text;
 }
+
+int PopupMenu::get_item_idx_from_text(const String &text) const {
+
+	for (int idx = 0; idx < items.size(); idx++) {
+		if (items[idx].text == text)
+			return idx;
+	}
+
+	return -1;
+}
+
 Ref<Texture> PopupMenu::get_item_icon(int p_idx) const {
 
 	ERR_FAIL_INDEX_V(p_idx, items.size(), Ref<Texture>());
