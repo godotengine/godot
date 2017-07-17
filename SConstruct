@@ -62,7 +62,7 @@ platform_arg = ARGUMENTS.get("platform", ARGUMENTS.get("p", False))
 if (os.name == "posix"):
     pass
 elif (os.name == "nt"):
-    if (os.getenv("VCINSTALLDIR") == None or platform_arg == "android"):
+    if (os.getenv("VCINSTALLDIR") == None or platform_arg == "android" or platform_arg == "javascript"):
         custom_tools = ['mingw']
 
 env_base = Environment(tools=custom_tools)
@@ -283,7 +283,7 @@ if selected_platform in platform_list:
     if (env["warnings"] == 'yes'):
         print("WARNING: warnings=yes is deprecated; assuming warnings=all")
 
-    if (os.name == "nt" and os.getenv("VCINSTALLDIR")): # MSVC, needs to stand out of course
+    if (os.name == "nt" and os.getenv("VCINSTALLDIR") and (platform_arg == "windows" or platform_arg == "uwp")): # MSVC, needs to stand out of course
         # This is an ugly hack.  It's possible (and common in the case of having older versions of MSVC installed)
         # to have MSVC installed but not Visual Studio itself.  If this happens the environment variable
         # "VSINSTALLDIR" is never set as Visual Studio isn't installed.  However, near as I can figure out,
