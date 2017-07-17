@@ -241,7 +241,6 @@ void CanvasItemEditor::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
 		} else if (!Input::get_singleton()->is_mouse_button_pressed(0)) {
 
 			List<Node *> &selection = editor_selection->get_selected_node_list();
-
 			Vector2 mouse_pos = viewport->get_local_mouse_pos();
 			if (selection.size() && viewport->get_rect().has_point(mouse_pos)) {
 				//just in case, make it work if over viewport
@@ -449,44 +448,7 @@ bool CanvasItemEditor::_is_part_of_subscene(CanvasItem *p_item) {
 	return item_owner && item_owner != scene_node && p_item != scene_node && item_owner->get_filename() != "";
 }
 
-// slow but modern computers should have no problem
-CanvasItem *CanvasItemEditor::_select_canvas_item_at_pos(const Point2 &p_pos, Node *p_node, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform) {
-
-	if (!p_node)
-		return NULL;
-	if (p_node->cast_to<Viewport>())
-		return NULL;
-
-	CanvasItem *c = p_node->cast_to<CanvasItem>();
-
-	for (int i = p_node->get_child_count() - 1; i >= 0; i--) {
-
-		CanvasItem *r = NULL;
-
-		if (c && !c->is_set_as_toplevel())
-			r = _select_canvas_item_at_pos(p_pos, p_node->get_child(i), p_parent_xform * c->get_transform(), p_canvas_xform);
-		else {
-			CanvasLayer *cl = p_node->cast_to<CanvasLayer>();
-			r = _select_canvas_item_at_pos(p_pos, p_node->get_child(i), transform, cl ? cl->get_transform() : p_canvas_xform); //use base transform
-		}
-
-		if (r)
-			return r;
-	}
-
-	if (c && c->is_visible_in_tree() && !c->has_meta("_edit_lock_") && !_is_part_of_subscene(c) && !c->cast_to<CanvasLayer>()) {
-
-		Rect2 rect = c->get_item_rect();
-		Point2 local_pos = (p_parent_xform * p_canvas_xform * c->get_transform()).affine_inverse().xform(p_pos);
-
-		if (rect.has_point(local_pos))
-			return c;
-	}
-
-	return NULL;
-}
-
-void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform, Vector<_SelectResult> &r_items) {
+void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform, Vector<_SelectResult> &r_items, unsigned int limit) {
 	if (!p_node)
 		return;
 	if (p_node->cast_to<Viewport>())
@@ -502,6 +464,9 @@ void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_no
 			CanvasLayer *cl = p_node->cast_to<CanvasLayer>();
 			_find_canvas_items_at_pos(p_pos, p_node->get_child(i), transform, cl ? cl->get_transform() : p_canvas_xform, r_items); //use base transform
 		}
+
+		if (limit != 0 && r_items.size() >= limit)
+			return;
 	}
 
 	if (c && c->is_visible_in_tree() && !c->has_meta("_edit_lock_") && !c->cast_to<CanvasLayer>()) {
@@ -766,7 +731,7 @@ CanvasItem *CanvasItemEditor::get_single_item() {
 	return single_item;
 }
 
-CanvasItemEditor::DragType CanvasItemEditor::_find_drag_type(const Transform2D &p_xform, const Rect2 &p_local_rect, const Point2 &p_click, Vector2 &r_point) {
+CanvasItemEditor::DragType CanvasItemEditor::_find_drag_type(const Point2 &p_click, Vector2 &r_point) {
 
 	CanvasItem *canvas_item = get_single_item();
 
@@ -805,8 +770,6 @@ CanvasItemEditor::DragType CanvasItemEditor::_find_drag_type(const Transform2D &
 
 	float radius = (select_handle->get_size().width / 2) * 1.5;
 
-	//try draggers
-
 	for (int i = 0; i < 4; i++) {
 
 		int prev = (i + 3) % 4;
@@ -830,14 +793,6 @@ CanvasItemEditor::DragType CanvasItemEditor::_find_drag_type(const Transform2D &
 		if (ofs.distance_to(p_click) < radius)
 			return dragger[i * 2 + 1];
 	}
-
-	/*
-	if (rect.has_point(xform.affine_inverse().xform(p_click))) {
-		r_point=_find_topleftmost_point();
-		return DRAG_ALL;
-	}*/
-
-	//try draggers
 
 	return DRAG_NONE;
 }
@@ -1390,19 +1345,16 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		CanvasItem *single_item = get_single_item();
-
-		if (single_item) {
-			//try single canvas_item edit
-
-			CanvasItem *canvas_item = single_item;
+		// Single seleted item
+		CanvasItem *canvas_item = get_single_item();
+		if (canvas_item) {
 			CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
 			ERR_FAIL_COND(!se);
 
 			Point2 click = b->get_position();
 
+			// Rotation
 			if ((b->get_control() && tool == TOOL_SELECT) || tool == TOOL_ROTATE) {
-
 				drag = DRAG_ROTATE;
 				drag_from = transform.affine_inverse().xform(click);
 				se->undo_state = canvas_item->edit_get_state();
@@ -1413,22 +1365,17 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 				return;
 			}
 
-			Transform2D xform = transform * canvas_item->get_global_transform_with_canvas();
-			Rect2 rect = canvas_item->get_item_rect();
-			//float handle_radius = handle_len * 1.4144; //magic number, guess what it means!
-
 			if (tool == TOOL_SELECT) {
-				drag = _find_drag_type(xform, rect, click, drag_point_from);
-
+				// Open a sub-scene on double-click
 				if (b->is_doubleclick()) {
-
 					if (canvas_item->get_filename() != "" && canvas_item != editor->get_edited_scene()) {
-
 						editor->open_request(canvas_item->get_filename());
 						return;
 					}
 				}
 
+				// Drag
+				drag = _find_drag_type(click, drag_point_from);
 				if (drag != DRAG_NONE && (!Cbone || drag != DRAG_ALL)) {
 					drag_from = transform.affine_inverse().xform(click);
 					se->undo_state = canvas_item->edit_get_state();
@@ -1436,11 +1383,9 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 						se->undo_pivot = canvas_item->cast_to<Node2D>()->edit_get_pivot();
 					if (canvas_item->cast_to<Control>())
 						se->undo_pivot = canvas_item->cast_to<Control>()->get_pivot_offset();
-
 					return;
 				}
 			} else {
-
 				drag = DRAG_NONE;
 			}
 		}
@@ -1475,7 +1420,10 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 				c = c->get_parent_item();
 		}
 		if (!c) {
-			c = _select_canvas_item_at_pos(click, scene, transform, Transform2D());
+			Vector<_SelectResult> selection;
+			_find_canvas_items_at_pos(click, scene, transform, Transform2D(), selection, 1);
+			if (!selection.empty())
+				c = selection[0].item;
 
 			CanvasItem *cn = c;
 
