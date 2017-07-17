@@ -1244,16 +1244,17 @@ ProjectManager::ProjectManager() {
 	ccl->add_child(l);
 	top_hb->add_child(ccl);
 	top_hb->add_spacer();
-	l = memnew(Label);
-	String hash = String(VERSION_HASH);
+	LineEdit *ver = memnew(LineEdit);
+	String hash(VERSION_HASH);
 	if (hash.length() != 0)
 		hash = "." + hash.left(7);
-	l->set_text("v" VERSION_MKSTRING "" + hash);
-	//l->add_font_override("font",get_font("bold","Fonts"));
-	l->set_align(Label::ALIGN_CENTER);
-	top_hb->add_child(l);
-	//vb->add_child(memnew(HSeparator));
-	//vb->add_margin_child("\n",memnew(Control));
+	ver->set_text("v" VERSION_MKSTRING "" + hash);
+	ver->set_align(LineEdit::ALIGN_RIGHT);
+	ver->add_style_override("focus", gui_base->get_stylebox("MenuPanel", "EditorStyles"));
+	ver->add_style_override("read_only", gui_base->get_stylebox("MenuPanel", "EditorStyles"));
+	ver->set_custom_minimum_size(Size2(250 * EDSCALE, 0));
+	ver->set_editable(false);
+	top_hb->add_child(ver);
 
 	tabs = memnew(TabContainer);
 	vb->add_child(tabs);
