@@ -84,6 +84,11 @@ void Sprite::_notification(int p_what) {
 			Point2 ofs = offset;
 			if (centered)
 				ofs -= s / 2;
+
+			if (anchor.x != 0 || anchor.y != 0) {
+				ofs += Point2(s.width * anchor.x, s.height * -anchor.y);
+			}
+
 			if (Engine::get_singleton()->get_use_pixel_snap()) {
 				ofs = ofs.floor();
 			}
@@ -162,6 +167,19 @@ void Sprite::set_offset(const Point2 &p_offset) {
 Point2 Sprite::get_offset() const {
 
 	return offset;
+}
+
+void Sprite::set_anchor(const Point2 &p_anchor) {
+
+	anchor = p_anchor;
+
+	update();
+	item_rect_changed();
+	_change_notify("anchor");
+}
+Point2 Sprite::get_anchor() const {
+
+	return anchor;
 }
 
 void Sprite::set_flip_h(bool p_flip) {
@@ -322,6 +340,9 @@ void Sprite::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_offset", "offset"), &Sprite::set_offset);
 	ClassDB::bind_method(D_METHOD("get_offset"), &Sprite::get_offset);
 
+	ClassDB::bind_method(D_METHOD("set_anchor", "anchor"), &Sprite::set_anchor);
+	ClassDB::bind_method(D_METHOD("get_anchor"), &Sprite::get_anchor);
+
 	ClassDB::bind_method(D_METHOD("set_flip_h", "flip_h"), &Sprite::set_flip_h);
 	ClassDB::bind_method(D_METHOD("is_flipped_h"), &Sprite::is_flipped_h);
 
@@ -354,6 +375,7 @@ void Sprite::_bind_methods() {
 	ADD_GROUP("Offset", "");
 	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2, "anchor"), "set_anchor", "get_anchor");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "is_flipped_v");
 	ADD_GROUP("Animation", "");

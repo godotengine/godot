@@ -131,6 +131,7 @@ class AnimatedSprite : public Node2D {
 
 	bool centered;
 	Point2 offset;
+	Point2 anchor;
 
 	float timeout;
 
@@ -171,6 +172,9 @@ public:
 
 	void set_offset(const Point2 &p_offset);
 	Point2 get_offset() const;
+
+	void set_anchor(const Point2 &p_anchor);
+	Point2 get_anchor() const;
 
 	void set_flip_h(bool p_flip);
 	bool is_flipped_h() const;
