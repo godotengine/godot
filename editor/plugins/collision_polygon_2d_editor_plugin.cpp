@@ -99,7 +99,7 @@ bool CollisionPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event)
 	if (!node)
 		return false;
 
-	Ref<InputEventMouseButton> mb;
+	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
 		Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
