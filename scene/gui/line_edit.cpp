@@ -1184,7 +1184,9 @@ void LineEdit::menu_option(int p_option) {
 			select_all();
 		} break;
 		case MENU_UNDO: {
-			undo();
+			if (editable) {
+				undo();
+			}
 		} break;
 	}
 }
