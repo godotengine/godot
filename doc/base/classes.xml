@@ -5057,27 +5057,6 @@
 		<constant name="ARRAY_FORMAT_INDEX" value="256">
 			Index array will be used.
 		</constant>
-		<constant name="PRIMITIVE_POINTS" value="0">
-			Render array as points (one vertex equals one point).
-		</constant>
-		<constant name="PRIMITIVE_LINES" value="1">
-			Render array as lines (every two vertices a line is created).
-		</constant>
-		<constant name="PRIMITIVE_LINE_STRIP" value="2">
-			Render array as line strip.
-		</constant>
-		<constant name="PRIMITIVE_LINE_LOOP" value="3">
-			Render array as line loop (like line strip, but closed).
-		</constant>
-		<constant name="PRIMITIVE_TRIANGLES" value="4">
-			Render array as triangles (every three vertices a triangle is created).
-		</constant>
-		<constant name="PRIMITIVE_TRIANGLE_STRIP" value="5">
-			Render array as triangle strips.
-		</constant>
-		<constant name="PRIMITIVE_TRIANGLE_FAN" value="6">
-			Render array as triangle fans.
-		</constant>
 	</constants>
 </class>
 <class name="AtlasTexture" inherits="Texture" category="Core">
@@ -24341,6 +24320,27 @@
 		</method>
 	</methods>
 	<constants>
+		<constant name="PRIMITIVE_POINTS" value="0">
+			Render array as points (one vertex equals one point).
+		</constant>
+		<constant name="PRIMITIVE_LINES" value="1">
+			Render array as lines (every two vertices a line is created).
+		</constant>
+		<constant name="PRIMITIVE_LINE_STRIP" value="2">
+			Render array as line strip.
+		</constant>
+		<constant name="PRIMITIVE_LINE_LOOP" value="3">
+			Render array as line loop (like line strip, but closed).
+		</constant>
+		<constant name="PRIMITIVE_TRIANGLES" value="4">
+			Render array as triangles (every three vertices a triangle is created).
+		</constant>
+		<constant name="PRIMITIVE_TRIANGLE_STRIP" value="5">
+			Render array as triangle strips.
+		</constant>
+		<constant name="PRIMITIVE_TRIANGLE_FAN" value="6">
+			Render array as triangle fans.
+		</constant>
 	</constants>
 </class>
 <class name="MeshDataTool" inherits="Reference" category="Core">
