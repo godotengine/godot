@@ -520,8 +520,8 @@ void MeshDataTool::set_material(const Ref<Material> &p_material) {
 void MeshDataTool::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("clear"), &MeshDataTool::clear);
-	ClassDB::bind_method(D_METHOD("create_from_surface", "mesh", "surface"), &MeshDataTool::create_from_surface);
-	ClassDB::bind_method(D_METHOD("commit_to_surface", "mesh"), &MeshDataTool::commit_to_surface);
+	ClassDB::bind_method(D_METHOD("create_from_surface", "mesh:ArrayMesh", "surface"), &MeshDataTool::create_from_surface);
+	ClassDB::bind_method(D_METHOD("commit_to_surface", "mesh:ArrayMesh"), &MeshDataTool::commit_to_surface);
 
 	ClassDB::bind_method(D_METHOD("get_format"), &MeshDataTool::get_format);
 
@@ -574,7 +574,7 @@ void MeshDataTool::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_face_normal", "idx"), &MeshDataTool::get_face_normal);
 
 	ClassDB::bind_method(D_METHOD("set_material", "material:Material"), &MeshDataTool::set_material);
-	ClassDB::bind_method(D_METHOD("get_material", "material"), &MeshDataTool::get_material);
+	ClassDB::bind_method(D_METHOD("get_material:Material", "material"), &MeshDataTool::get_material);
 }
 
 MeshDataTool::MeshDataTool() {

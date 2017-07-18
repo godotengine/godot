@@ -1587,13 +1587,13 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 		} break;
 		case TO_JSON: {
 
-			MethodInfo mi("to_json", PropertyInfo(Variant::NIL, "var:Variant"));
+			MethodInfo mi("to_json", PropertyInfo(Variant::NIL, "var"));
 			mi.return_val.type = Variant::STRING;
 			return mi;
 		} break;
 		case HASH: {
 
-			MethodInfo mi("hash", PropertyInfo(Variant::NIL, "var:Variant"));
+			MethodInfo mi("hash", PropertyInfo(Variant::NIL, "var"));
 			mi.return_val.type = Variant::INT;
 			return mi;
 		} break;

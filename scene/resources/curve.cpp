@@ -1188,7 +1188,7 @@ void Curve2D::_set_data(const Dictionary &p_data) {
 	baked_cache_dirty = true;
 }
 
-PoolVector2Array Curve2D::tesselate(int p_max_stages, float p_tolerance) const {
+PoolVector2Array Curve2D::tessellate(int p_max_stages, float p_tolerance) const {
 
 	PoolVector2Array tess;
 
@@ -1250,7 +1250,7 @@ void Curve2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_baked_length"), &Curve2D::get_baked_length);
 	ClassDB::bind_method(D_METHOD("interpolate_baked", "offset", "cubic"), &Curve2D::interpolate_baked, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_baked_points"), &Curve2D::get_baked_points);
-	ClassDB::bind_method(D_METHOD("tesselate", "max_stages", "tolerance_degrees"), &Curve2D::tesselate, DEFVAL(5), DEFVAL(4));
+	ClassDB::bind_method(D_METHOD("tessellate", "max_stages", "tolerance_degrees"), &Curve2D::tessellate, DEFVAL(5), DEFVAL(4));
 
 	ClassDB::bind_method(D_METHOD("_get_data"), &Curve2D::_get_data);
 	ClassDB::bind_method(D_METHOD("_set_data"), &Curve2D::_set_data);
@@ -1683,7 +1683,7 @@ void Curve3D::_set_data(const Dictionary &p_data) {
 	baked_cache_dirty = true;
 }
 
-PoolVector3Array Curve3D::tesselate(int p_max_stages, float p_tolerance) const {
+PoolVector3Array Curve3D::tessellate(int p_max_stages, float p_tolerance) const {
 
 	PoolVector3Array tess;
 
@@ -1748,7 +1748,7 @@ void Curve3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("interpolate_baked", "offset", "cubic"), &Curve3D::interpolate_baked, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_baked_points"), &Curve3D::get_baked_points);
 	ClassDB::bind_method(D_METHOD("get_baked_tilts"), &Curve3D::get_baked_tilts);
-	ClassDB::bind_method(D_METHOD("tesselate", "max_stages", "tolerance_degrees"), &Curve3D::tesselate, DEFVAL(5), DEFVAL(4));
+	ClassDB::bind_method(D_METHOD("tessellate", "max_stages", "tolerance_degrees"), &Curve3D::tessellate, DEFVAL(5), DEFVAL(4));
 
 	ClassDB::bind_method(D_METHOD("_get_data"), &Curve3D::_get_data);
 	ClassDB::bind_method(D_METHOD("_set_data"), &Curve3D::_set_data);

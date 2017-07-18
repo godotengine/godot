@@ -283,11 +283,11 @@ void Line2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_default_color", "color"), &Line2D::set_default_color);
 	ClassDB::bind_method(D_METHOD("get_default_color"), &Line2D::get_default_color);
 
-	ClassDB::bind_method(D_METHOD("set_gradient", "color"), &Line2D::set_gradient);
-	ClassDB::bind_method(D_METHOD("get_gradient"), &Line2D::get_gradient);
+	ClassDB::bind_method(D_METHOD("set_gradient", "color:Gradient"), &Line2D::set_gradient);
+	ClassDB::bind_method(D_METHOD("get_gradient:Gradient"), &Line2D::get_gradient);
 
-	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &Line2D::set_texture);
-	ClassDB::bind_method(D_METHOD("get_texture"), &Line2D::get_texture);
+	ClassDB::bind_method(D_METHOD("set_texture", "texture:Texture"), &Line2D::set_texture);
+	ClassDB::bind_method(D_METHOD("get_texture:Texture"), &Line2D::get_texture);
 
 	ClassDB::bind_method(D_METHOD("set_texture_mode", "mode"), &Line2D::set_texture_mode);
 	ClassDB::bind_method(D_METHOD("get_texture_mode"), &Line2D::get_texture_mode);

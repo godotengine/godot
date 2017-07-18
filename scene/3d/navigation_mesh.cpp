@@ -374,8 +374,8 @@ String NavigationMeshInstance::get_configuration_warning() const {
 
 void NavigationMeshInstance::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_navigation_mesh", "navmesh"), &NavigationMeshInstance::set_navigation_mesh);
-	ClassDB::bind_method(D_METHOD("get_navigation_mesh"), &NavigationMeshInstance::get_navigation_mesh);
+	ClassDB::bind_method(D_METHOD("set_navigation_mesh", "navmesh:NavigationMesh"), &NavigationMeshInstance::set_navigation_mesh);
+	ClassDB::bind_method(D_METHOD("get_navigation_mesh:NavigationMesh"), &NavigationMeshInstance::get_navigation_mesh);
 
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &NavigationMeshInstance::set_enabled);
 	ClassDB::bind_method(D_METHOD("is_enabled"), &NavigationMeshInstance::is_enabled);

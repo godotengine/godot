@@ -393,11 +393,11 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_selection:EditorSelection"), &EditorPlugin::get_selection);
 	ClassDB::bind_method(D_METHOD("get_editor_settings:EditorSettings"), &EditorPlugin::get_editor_settings);
 	ClassDB::bind_method(D_METHOD("queue_save_layout"), &EditorPlugin::queue_save_layout);
-	ClassDB::bind_method(D_METHOD("edit_resource"), &EditorPlugin::edit_resource);
+	ClassDB::bind_method(D_METHOD("edit_resource", "resource:Resource"), &EditorPlugin::edit_resource);
 	ClassDB::bind_method(D_METHOD("open_scene_from_path", "scene_filepath"), &EditorPlugin::open_scene_from_path);
 	ClassDB::bind_method(D_METHOD("reload_scene_from_path", "scene_filepath"), &EditorPlugin::reload_scene_from_path);
-	ClassDB::bind_method(D_METHOD("add_import_plugin"), &EditorPlugin::add_import_plugin);
-	ClassDB::bind_method(D_METHOD("remove_import_plugin"), &EditorPlugin::remove_import_plugin);
+	ClassDB::bind_method(D_METHOD("add_import_plugin", "importer:EditorImportPlugin"), &EditorPlugin::add_import_plugin);
+	ClassDB::bind_method(D_METHOD("remove_import_plugin", "importer:EditorImportPlugin"), &EditorPlugin::remove_import_plugin);
 	ClassDB::bind_method(D_METHOD("set_input_event_forwarding_always_enabled"), &EditorPlugin::set_input_event_forwarding_always_enabled);
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "forward_canvas_gui_input", PropertyInfo(Variant::TRANSFORM2D, "canvas_xform"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("forward_draw_over_canvas", PropertyInfo(Variant::TRANSFORM2D, "canvas_xform"), PropertyInfo(Variant::OBJECT, "canvas:Control")));

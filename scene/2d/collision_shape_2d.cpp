@@ -201,8 +201,8 @@ bool CollisionShape2D::is_one_way_collision_enabled() const {
 
 void CollisionShape2D::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_shape", "shape"), &CollisionShape2D::set_shape);
-	ClassDB::bind_method(D_METHOD("get_shape"), &CollisionShape2D::get_shape);
+	ClassDB::bind_method(D_METHOD("set_shape", "shape:Shape2D"), &CollisionShape2D::set_shape);
+	ClassDB::bind_method(D_METHOD("get_shape:Shape2D"), &CollisionShape2D::get_shape);
 	ClassDB::bind_method(D_METHOD("set_disabled", "disabled"), &CollisionShape2D::set_disabled);
 	ClassDB::bind_method(D_METHOD("is_disabled"), &CollisionShape2D::is_disabled);
 	ClassDB::bind_method(D_METHOD("set_one_way_collision", "enabled"), &CollisionShape2D::set_one_way_collision);

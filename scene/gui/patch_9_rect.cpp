@@ -54,8 +54,8 @@ Size2 NinePatchRect::get_minimum_size() const {
 }
 void NinePatchRect::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &NinePatchRect::set_texture);
-	ClassDB::bind_method(D_METHOD("get_texture"), &NinePatchRect::get_texture);
+	ClassDB::bind_method(D_METHOD("set_texture", "texture:Texture"), &NinePatchRect::set_texture);
+	ClassDB::bind_method(D_METHOD("get_texture:Texture"), &NinePatchRect::get_texture);
 	ClassDB::bind_method(D_METHOD("set_patch_margin", "margin", "value"), &NinePatchRect::set_patch_margin);
 	ClassDB::bind_method(D_METHOD("get_patch_margin", "margin"), &NinePatchRect::get_patch_margin);
 	ClassDB::bind_method(D_METHOD("set_region_rect", "rect"), &NinePatchRect::set_region_rect);

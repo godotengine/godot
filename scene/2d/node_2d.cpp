@@ -444,7 +444,7 @@ void Node2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("edit_set_pivot", "pivot"), &Node2D::edit_set_pivot);
 
-	ClassDB::bind_method(D_METHOD("get_relative_transform_to_parent", "parent"), &Node2D::get_relative_transform_to_parent);
+	ClassDB::bind_method(D_METHOD("get_relative_transform_to_parent", "parent:Node2D"), &Node2D::get_relative_transform_to_parent);
 
 	ADD_GROUP("Transform", "");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2, "position"), "set_position", "get_position");

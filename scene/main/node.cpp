@@ -2786,7 +2786,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_scene_instance_load_placeholder", "load_placeholder"), &Node::set_scene_instance_load_placeholder);
 	ClassDB::bind_method(D_METHOD("get_scene_instance_load_placeholder"), &Node::get_scene_instance_load_placeholder);
 
-	ClassDB::bind_method(D_METHOD("get_viewport"), &Node::get_viewport);
+	ClassDB::bind_method(D_METHOD("get_viewport:Viewport"), &Node::get_viewport);
 
 	ClassDB::bind_method(D_METHOD("queue_free"), &Node::queue_delete);
 
