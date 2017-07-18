@@ -69,6 +69,15 @@ static Ref<StyleBoxFlat> make_flat_stylebox(Color color, float p_margin_left = -
 	return style;
 }
 
+static Ref<StyleBoxLine> make_line_stylebox(Color color, int thickness = 1, float grow = 1, bool vertical = false) {
+	Ref<StyleBoxLine> style(memnew(StyleBoxLine));
+	style->set_color(color);
+	style->set_grow(grow);
+	style->set_thickness(thickness);
+	style->set_vertical(vertical);
+	return style;
+}
+
 static Ref<StyleBoxFlat> change_border_color(Ref<StyleBoxFlat> p_style, Color p_color) {
 	Ref<StyleBoxFlat> style = p_style->duplicate();
 	style->set_light_color(p_color);
@@ -142,6 +151,9 @@ Ref<Theme> create_editor_theme() {
 	bool dark_bg = ((title_color_hl.r + title_color_hl.g + title_color_hl.b) / 3.0) < 0.5;
 	Color title_color_hl_text_color = dark_bg ? Color(1, 1, 1, 0.9) : Color(0, 0, 0, 0.9);
 	Ref<Texture> title_hl_close_icon = theme->get_icon((dark_bg ? "GuiCloseLight" : "GuiCloseDark"), "EditorIcons");
+
+	bool dark_base = ((base_color.r + base_color.g + base_color.b) / 3.0) < 0.5;
+	Color separator_color = dark_base ? Color(1, 1, 1, 0.1) : Color(0, 0, 0, 0.1);
 
 	theme->set_color("highlight_color", "Editor", highlight_color);
 	theme->set_color("base_color", "Editor", base_color);
@@ -244,7 +256,7 @@ Ref<Theme> create_editor_theme() {
 	theme->set_color("icon_color_pressed", "Button", Color(highlight_color.r * 1.15, highlight_color.g * 1.15, highlight_color.b * 1.15, highlight_color.a));
 
 	// OptionButton
-	Ref<StyleBoxFlat> style_option_button = make_flat_stylebox(dark_color_1, 4, 4, 4, 4);
+	Ref<StyleBoxFlat> style_option_button = make_flat_stylebox(dark_color_1, 4, 4, 8, 4);
 	style_option_button->set_border_size(border_width);
 	style_option_button->set_light_color(light_color_1);
 	style_option_button->set_dark_color(light_color_1);
@@ -259,6 +271,8 @@ Ref<Theme> create_editor_theme() {
 	theme->set_color("font_color_pressed", "OptionButton", highlight_color);
 	theme->set_color("icon_color_hover", "OptionButton", HIGHLIGHT_COLOR_LIGHT);
 	theme->set_icon("arrow", "OptionButton", theme->get_icon("GuiOptionArrow", "EditorIcons"));
+	theme->set_constant("arrow_margin", "OptionButton", 4);
+	theme->set_constant("modulate_arrow", "OptionButton", true);
 
 	// CheckButton
 	theme->set_icon("on", "CheckButton", theme->get_icon("GuiToggleOn", "EditorIcons"));
@@ -271,7 +285,7 @@ Ref<Theme> create_editor_theme() {
 	style_popup_menu->set_dark_color(light_color_1);
 	style_popup_menu->set_border_blend(false);
 	theme->set_stylebox("panel", "PopupMenu", style_popup_menu);
-	theme->set_stylebox("separator", "PopupMenu", make_empty_stylebox());
+	theme->set_stylebox("separator", "PopupMenu", make_line_stylebox(separator_color, border_width, 8 - border_width));
 
 	// Tree & ItemList background
 	Ref<StyleBoxFlat> style_tree_bg = make_flat_stylebox(dark_color_1, 2, 4, 2, 4);
@@ -362,8 +376,8 @@ Ref<Theme> create_editor_theme() {
 	theme->set_icon("close", "Tabs", title_hl_close_icon);
 
 	// Separatos (no separatos)
-	theme->set_stylebox("separator", "HSeparator", make_empty_stylebox());
-	theme->set_stylebox("separator", "VSeparator", make_empty_stylebox());
+	theme->set_stylebox("separator", "HSeparator", make_line_stylebox(separator_color, border_width));
+	theme->set_stylebox("separator", "VSeparator", make_line_stylebox(separator_color, border_width, 0, true));
 
 	// Debugger
 	Ref<StyleBoxFlat> style_panel_debugger = make_flat_stylebox(dark_color_2, 0, 4, 0, 0);

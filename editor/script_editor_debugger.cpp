@@ -1849,30 +1849,31 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 	}
 
 	{ // misc
-		VBoxContainer *info_left = memnew(VBoxContainer);
-		info_left->set_h_size_flags(SIZE_EXPAND_FILL);
+		GridContainer *info_left = memnew(GridContainer);
+		info_left->set_columns(2);
 		info_left->set_name(TTR("Misc"));
 		tabs->add_child(info_left);
 		clicked_ctrl = memnew(LineEdit);
-		info_left->add_margin_child(TTR("Clicked Control:"), clicked_ctrl);
+		clicked_ctrl->set_h_size_flags(SIZE_EXPAND_FILL);
+		info_left->add_child(memnew(Label(TTR("Clicked Control:"))));
+		info_left->add_child(clicked_ctrl);
 		clicked_ctrl_type = memnew(LineEdit);
-		info_left->add_margin_child(TTR("Clicked Control Type:"), clicked_ctrl_type);
+		info_left->add_child(memnew(Label(TTR("Clicked Control Type:"))));
+		info_left->add_child(clicked_ctrl_type);
 
 		live_edit_root = memnew(LineEdit);
+		live_edit_root->set_h_size_flags(SIZE_EXPAND_FILL);
 
 		{
 			HBoxContainer *lehb = memnew(HBoxContainer);
 			Label *l = memnew(Label(TTR("Live Edit Root:")));
-			lehb->add_child(l);
-			l->set_h_size_flags(SIZE_EXPAND_FILL);
+			info_left->add_child(l);
+			lehb->add_child(live_edit_root);
 			le_set = memnew(Button(TTR("Set From Tree")));
 			lehb->add_child(le_set);
 			le_clear = memnew(Button(TTR("Clear")));
 			lehb->add_child(le_clear);
 			info_left->add_child(lehb);
-			MarginContainer *mc = memnew(MarginContainer);
-			mc->add_child(live_edit_root);
-			info_left->add_child(mc);
 			le_set->set_disabled(true);
 			le_clear->set_disabled(true);
 		}
