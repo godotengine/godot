@@ -161,12 +161,12 @@ Physics2DServerWrapMT::Physics2DServerWrapMT(Physics2DServer *p_contained, bool 
 	step_thread_up = false;
 	alloc_mutex = Mutex::create();
 
-	shape_pool_max_size = GLOBAL_GET("memory/multithread/thread_rid_pool_prealloc");
-	area_pool_max_size = GLOBAL_GET("memory/multithread/thread_rid_pool_prealloc");
-	body_pool_max_size = GLOBAL_GET("memory/multithread/thread_rid_pool_prealloc");
-	pin_joint_pool_max_size = GLOBAL_GET("memory/multithread/thread_rid_pool_prealloc");
-	groove_joint_pool_max_size = GLOBAL_GET("memory/multithread/thread_rid_pool_prealloc");
-	damped_spring_joint_pool_max_size = GLOBAL_GET("memory/multithread/thread_rid_pool_prealloc");
+	shape_pool_max_size = GLOBAL_GET("memory/limits/multithreaded_server/rid_pool_prealloc");
+	area_pool_max_size = GLOBAL_GET("memory/limits/multithreaded_server/rid_pool_prealloc");
+	body_pool_max_size = GLOBAL_GET("memory/limits/multithreaded_server/rid_pool_prealloc");
+	pin_joint_pool_max_size = GLOBAL_GET("memory/limits/multithreaded_server/rid_pool_prealloc");
+	groove_joint_pool_max_size = GLOBAL_GET("memory/limits/multithreaded_server/rid_pool_prealloc");
+	damped_spring_joint_pool_max_size = GLOBAL_GET("memory/limits/multithreaded_server/rid_pool_prealloc");
 
 	if (!p_create_thread) {
 		server_thread = Thread::get_caller_ID();

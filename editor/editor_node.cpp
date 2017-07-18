@@ -163,7 +163,7 @@ void EditorNode::_update_scene_tabs() {
 
 void EditorNode::_update_title() {
 
-	String appname = GlobalConfig::get_singleton()->get("application/name");
+	String appname = GlobalConfig::get_singleton()->get("application/config/name");
 	String title = appname.empty() ? String(VERSION_FULL_NAME) : String(_MKSTR(VERSION_NAME) + String(" - ") + appname);
 	String edited = editor_data.get_edited_scene_root() ? editor_data.get_edited_scene_root()->get_filename() : String();
 	if (!edited.empty())
@@ -272,7 +272,7 @@ void EditorNode::_notification(int p_what) {
 		}
 		editor_selection->update();
 
-		scene_root->set_size_override(true, Size2(GlobalConfig::get_singleton()->get("display/window/width"), GlobalConfig::get_singleton()->get("display/window/height")));
+		scene_root->set_size_override(true, Size2(GlobalConfig::get_singleton()->get("display/window/size/width"), GlobalConfig::get_singleton()->get("display/window/size/height")));
 
 		ResourceImporterTexture::get_singleton()->update_imports();
 	}
@@ -1132,7 +1132,7 @@ void EditorNode::_dialog_action(String p_file) {
 		} break;
 		case SETTINGS_PICK_MAIN_SCENE: {
 
-			GlobalConfig::get_singleton()->set("application/main_scene", p_file);
+			GlobalConfig::get_singleton()->set("application/run/main_scene", p_file);
 			GlobalConfig::get_singleton()->save();
 			//would be nice to show the project manager opened with the highlighted field..
 			_run(false, ""); // automatically run the project
@@ -1731,7 +1731,7 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 	if (run_filename == "") {
 
 		//evidently, run the scene
-		main_scene = GLOBAL_DEF("application/main_scene", "");
+		main_scene = GLOBAL_DEF("application/run/main_scene", "");
 		if (main_scene == "") {
 
 			current_option = -1;
@@ -5151,10 +5151,6 @@ EditorNode::EditorNode() {
 		import_wav.instance();
 		ResourceFormatImporter::get_singleton()->add_importer(import_wav);
 
-		Ref<ResourceImporterOBJ> import_obj;
-		import_obj.instance();
-		ResourceFormatImporter::get_singleton()->add_importer(import_obj);
-
 		Ref<ResourceImporterScene> import_scene;
 		import_scene.instance();
 		ResourceFormatImporter::get_singleton()->add_importer(import_scene);
@@ -5163,6 +5159,10 @@ EditorNode::EditorNode() {
 			Ref<EditorSceneImporterCollada> import_collada;
 			import_collada.instance();
 			import_scene->add_importer(import_collada);
+
+			Ref<EditorOBJImporter> import_obj;
+			import_obj.instance();
+			import_scene->add_importer(import_obj);
 		}
 	}
 
@@ -5937,6 +5937,7 @@ EditorNode::EditorNode() {
 	property_editor->set_use_folding(true);
 	property_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	property_editor->set_use_doc_hints(true);
+	property_editor->set_hide_script(false);
 	property_editor->set_enable_capitalize_paths(bool(EDITOR_DEF("interface/capitalize_properties", true)));
 
 	property_editor->hide_top_label();

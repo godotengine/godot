@@ -1567,10 +1567,22 @@ VisualServer::VisualServer() {
 
 	//ERR_FAIL_COND(singleton);
 	singleton = this;
-	GLOBAL_DEF("rendering/vram_formats/use_s3tc", true);
-	GLOBAL_DEF("rendering/vram_formats/use_etc", false);
-	GLOBAL_DEF("rendering/vram_formats/use_etc2", true);
-	GLOBAL_DEF("rendering/vram_formats/use_pvrtc", false);
+	GLOBAL_DEF("rendering/vram_compression/import_s3tc", true);
+	GLOBAL_DEF("rendering/vram_compression/import_etc", false);
+	GLOBAL_DEF("rendering/vram_compression/import_etc2", true);
+	GLOBAL_DEF("rendering/vram_compression/import_pvrtc", false);
+
+	GLOBAL_DEF("rendering/quality/directional_shadow/size", 4096);
+	GLOBAL_DEF("rendering/quality/shadow_atlas/size", 4096);
+	GlobalConfig::get_singleton()->set_custom_property_info("rendering/shadow_atlas/size", PropertyInfo(Variant::INT, "rendering/shadow_atlas/size", PROPERTY_HINT_RANGE, "256,16384"));
+	GLOBAL_DEF("rendering/quality/shadow_atlas/quadrant_0_subdiv", 1);
+	GLOBAL_DEF("rendering/quality/shadow_atlas/quadrant_1_subdiv", 2);
+	GLOBAL_DEF("rendering/quality/shadow_atlas/quadrant_2_subdiv", 3);
+	GLOBAL_DEF("rendering/quality/shadow_atlas/quadrant_3_subdiv", 4);
+	GlobalConfig::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/quadrant_0_subdiv", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/quadrant_0_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
+	GlobalConfig::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/quadrant_1_subdiv", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/quadrant_1_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
+	GlobalConfig::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/quadrant_2_subdiv", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/quadrant_2_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
+	GlobalConfig::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/quadrant_3_subdiv", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/quadrant_3_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
 }
 
 VisualServer::~VisualServer() {

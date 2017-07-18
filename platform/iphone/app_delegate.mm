@@ -29,11 +29,11 @@
 /*************************************************************************/
 #import "app_delegate.h"
 
+#include "audio_driver_iphone.h"
 #include "core/global_config.h"
 #import "gl_view.h"
 #include "main/main.h"
 #include "os_iphone.h"
-#include "audio_driver_iphone.h"
 
 #ifdef MODULE_FACEBOOKSCORER_IOS_ENABLED
 #include "modules/FacebookScorer_ios/FacebookScorer.h"
@@ -615,7 +615,7 @@ static int frame_count = 0;
 	view_controller.view = glView;
 	window.rootViewController = view_controller;
 
-	_set_keep_screen_on(bool(GLOBAL_DEF("display/keep_screen_on", true)) ? YES : NO);
+	_set_keep_screen_on(bool(GLOBAL_DEF("display/window/keep_screen_on", true)) ? YES : NO);
 	glView.useCADisplayLink =
 			bool(GLOBAL_DEF("display.iOS/use_cadisplaylink", true)) ? YES : NO;
 	printf("cadisaplylink: %d", glView.useCADisplayLink);
@@ -673,7 +673,6 @@ static int frame_count = 0;
 												  isAdvertisingTrackingEnabled]];
 
 #endif
-
 };
 
 - (void)applicationWillTerminate:(UIApplication *)application {
@@ -737,7 +736,7 @@ static int frame_count = 0;
 	};
 
 	// Fixed audio can not resume if it is interrupted cause by an incoming phone call
-	if(AudioDriverIphone::get_singleton() != NULL)
+	if (AudioDriverIphone::get_singleton() != NULL)
 		AudioDriverIphone::get_singleton()->start();
 }
 

@@ -269,7 +269,7 @@ String OS::get_system_dir(SystemDir p_dir) const {
 }
 
 String OS::get_safe_application_name() const {
-	String an = GlobalConfig::get_singleton()->get("application/name");
+	String an = GlobalConfig::get_singleton()->get("application/config/name");
 	Vector<String> invalid_char = String("\\ / : * ? \" < > |").split(" ");
 	for (int i = 0; i < invalid_char.size(); i++) {
 		an = an.replace(invalid_char[i], "-");

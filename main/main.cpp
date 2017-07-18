@@ -578,9 +578,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		I = N;
 	}
 
-	GLOBAL_DEF("memory/multithread/thread_rid_pool_prealloc", 60);
-
-	GLOBAL_DEF("network/debug/max_remote_stdout_chars_per_second", 2048);
+	GLOBAL_DEF("memory/limits/multithreaded_server/rid_pool_prealloc", 60);
+	GLOBAL_DEF("network/limits/debugger_stdout/max_chars_per_second", 2048);
 
 	if (debug_mode == "remote") {
 
@@ -666,10 +665,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		use_custom_res = false;
 	}
 
-	if (bool(GlobalConfig::get_singleton()->get("application/disable_stdout"))) {
+	if (bool(GlobalConfig::get_singleton()->get("application/run/disable_stdout"))) {
 		quiet_stdout = true;
 	}
-	if (bool(GlobalConfig::get_singleton()->get("application/disable_stderr"))) {
+	if (bool(GlobalConfig::get_singleton()->get("application/run/disable_stderr"))) {
 		_print_error_enabled = false;
 	};
 
@@ -680,7 +679,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 #ifdef TOOLS_ENABLED
 
-	if (main_args.size() == 0 && (!GlobalConfig::get_singleton()->has("application/main_loop_type")) && (!GlobalConfig::get_singleton()->has("application/main_scene") || String(GlobalConfig::get_singleton()->get("application/main_scene")) == ""))
+	if (main_args.size() == 0 && (!GlobalConfig::get_singleton()->has("application/run/main_loop_type")) && (!GlobalConfig::get_singleton()->has("application/main_scene") || String(GlobalConfig::get_singleton()->get("application/main_scene")) == ""))
 		use_custom_res = false; //project manager (run without arguments)
 
 #endif
@@ -690,43 +689,43 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	else
 		input_map->load_from_globals(); //keys for game
 
-	if (video_driver == "") // specified in project.godot
-		video_driver = GLOBAL_DEF("display/driver/name", Variant((const char *)OS::get_singleton()->get_video_driver_name(0)));
+	//if (video_driver == "") // useless for now, so removing
+	//	video_driver = GLOBAL_DEF("display/driver/name", Variant((const char *)OS::get_singleton()->get_video_driver_name(0)));
 
-	if (!force_res && use_custom_res && globals->has("display/window/width"))
-		video_mode.width = globals->get("display/window/width");
-	if (!force_res && use_custom_res && globals->has("display/window/height"))
-		video_mode.height = globals->get("display/window/height");
-	if (!editor && ((globals->has("display/window/allow_hidpi") && !globals->get("display/window/allow_hidpi")) || force_lowdpi)) {
+	if (!force_res && use_custom_res && globals->has("display/window/size/width"))
+		video_mode.width = globals->get("display/window/size/width");
+	if (!force_res && use_custom_res && globals->has("display/window/size/height"))
+		video_mode.height = globals->get("display/window/size/height");
+	if (!editor && ((globals->has("display/window/dpi/allow_hidpi") && !globals->get("display/window/dpi/allow_hidpi")) || force_lowdpi)) {
 		OS::get_singleton()->_allow_hidpi = false;
 	}
-	if (use_custom_res && globals->has("display/window/fullscreen"))
-		video_mode.fullscreen = globals->get("display/window/fullscreen");
-	if (use_custom_res && globals->has("display/window/resizable"))
-		video_mode.resizable = globals->get("display/window/resizable");
-	if (use_custom_res && globals->has("display/window/borderless"))
-		video_mode.borderless_window = globals->get("display/window/borderless");
+	if (use_custom_res && globals->has("display/window/size/fullscreen"))
+		video_mode.fullscreen = globals->get("display/window/size/fullscreen");
+	if (use_custom_res && globals->has("display/window/size/resizable"))
+		video_mode.resizable = globals->get("display/window/size/resizable");
+	if (use_custom_res && globals->has("display/window/size/borderless"))
+		video_mode.borderless_window = globals->get("display/window/size/borderless");
 
-	if (!force_res && use_custom_res && globals->has("display/window/test_width") && globals->has("display/window/test_height")) {
-		int tw = globals->get("display/window/test_width");
-		int th = globals->get("display/window/test_height");
+	if (!force_res && use_custom_res && globals->has("display/window/size/test_width") && globals->has("display/window/size/test_height")) {
+		int tw = globals->get("display/window/size/test_width");
+		int th = globals->get("display/window/size/test_height");
 		if (tw > 0 && th > 0) {
 			video_mode.width = tw;
 			video_mode.height = th;
 		}
 	}
 
-	GLOBAL_DEF("display/window/width", video_mode.width);
-	GLOBAL_DEF("display/window/height", video_mode.height);
-	GLOBAL_DEF("display/window/allow_hidpi", false);
-	GLOBAL_DEF("display/window/fullscreen", video_mode.fullscreen);
-	GLOBAL_DEF("display/window/resizable", video_mode.resizable);
-	GLOBAL_DEF("display/window/borderless", video_mode.borderless_window);
-	use_vsync = GLOBAL_DEF("display/window/use_vsync", use_vsync);
-	GLOBAL_DEF("display/window/test_width", 0);
-	GLOBAL_DEF("display/window/test_height", 0);
-	Engine::get_singleton()->_pixel_snap = GLOBAL_DEF("rendering/2d/use_pixel_snap", false);
-	OS::get_singleton()->_keep_screen_on = GLOBAL_DEF("display/energy_saving/keep_screen_on", true);
+	GLOBAL_DEF("display/window/size/width", video_mode.width);
+	GLOBAL_DEF("display/window/size/height", video_mode.height);
+	GLOBAL_DEF("display/window/dpi/allow_hidpi", false);
+	GLOBAL_DEF("display/window/size/fullscreen", video_mode.fullscreen);
+	GLOBAL_DEF("display/window/size/resizable", video_mode.resizable);
+	GLOBAL_DEF("display/window/size/borderless", video_mode.borderless_window);
+	use_vsync = GLOBAL_DEF("display/window/vsync/use_vsync", use_vsync);
+	GLOBAL_DEF("display/window/size/test_width", 0);
+	GLOBAL_DEF("display/window/size/test_height", 0);
+	Engine::get_singleton()->_pixel_snap = GLOBAL_DEF("rendering/quality/2d/use_pixel_snap", false);
+	OS::get_singleton()->_keep_screen_on = GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true);
 	if (rtm == -1) {
 		rtm = GLOBAL_DEF("rendering/threads/thread_model", OS::RENDER_THREAD_SAFE);
 		if (rtm >= 1) //hack for now
@@ -757,7 +756,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	if (video_driver_idx < 0) {
 
-		OS::get_singleton()->alert("Invalid Video Driver: " + video_driver);
+		//OS::get_singleton()->alert("Invalid Video Driver: " + video_driver);
 		video_driver_idx = 0;
 		//goto error;
 	}
@@ -779,7 +778,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	{
-		String orientation = GLOBAL_DEF("display/handheld/orientation", "landscape");
+		String orientation = GLOBAL_DEF("display/window/handheld/orientation", "landscape");
 
 		if (orientation == "portrait")
 			OS::get_singleton()->set_screen_orientation(OS::SCREEN_PORTRAIT);
@@ -798,15 +797,15 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	Engine::get_singleton()->set_iterations_per_second(GLOBAL_DEF("physics/common/fixed_fps", 60));
-	Engine::get_singleton()->set_target_fps(GLOBAL_DEF("debug/fps/force_fps", 0));
+	Engine::get_singleton()->set_target_fps(GLOBAL_DEF("debug/settings/fps/force_fps", 0));
 
-	GLOBAL_DEF("debug/stdout/print_fps", OS::get_singleton()->is_stdout_verbose());
+	GLOBAL_DEF("debug/settings/stdout/print_fps", OS::get_singleton()->is_stdout_verbose());
 
 	if (!OS::get_singleton()->_verbose_stdout) //overrided
-		OS::get_singleton()->_verbose_stdout = GLOBAL_DEF("debug/stdout/verbose_stdout", false);
+		OS::get_singleton()->_verbose_stdout = GLOBAL_DEF("debug/settings/stdout/verbose_stdout", false);
 
 	if (frame_delay == 0) {
-		frame_delay = GLOBAL_DEF("application/frame_delay_msec", 0);
+		frame_delay = GLOBAL_DEF("application/run/frame_delay_msec", 0);
 	}
 
 	Engine::get_singleton()->set_frame_delay(frame_delay);
@@ -908,13 +907,13 @@ Error Main::setup2() {
 
 	MAIN_PRINT("Main: Load Remaps");
 
-	Color clear = GLOBAL_DEF("rendering/viewport/default_clear_color", Color(0.3, 0.3, 0.3));
+	Color clear = GLOBAL_DEF("rendering/environment/default_clear_color", Color(0.3, 0.3, 0.3));
 	VisualServer::get_singleton()->set_default_clear_color(clear);
 
 	if (show_logo) { //boot logo!
-		String boot_logo_path = GLOBAL_DEF("application/boot_splash", String());
-		bool boot_logo_scale = GLOBAL_DEF("application/boot_splash_fullsize", true);
-		GlobalConfig::get_singleton()->set_custom_property_info("application/boot_splash", PropertyInfo(Variant::STRING, "application/boot_splash", PROPERTY_HINT_FILE, "*.png"));
+		String boot_logo_path = GLOBAL_DEF("application/boot_splash/image", String());
+		bool boot_logo_scale = GLOBAL_DEF("application/boot_splash/fullsize", true);
+		GlobalConfig::get_singleton()->set_custom_property_info("application/boot_splash/image", PropertyInfo(Variant::STRING, "application/boot_splash/image", PROPERTY_HINT_FILE, "*.png"));
 
 		Ref<Image> boot_logo;
 
@@ -930,7 +929,7 @@ Error Main::setup2() {
 
 		if (boot_logo.is_valid()) {
 			OS::get_singleton()->_msec_splash = OS::get_singleton()->get_ticks_msec();
-			Color boot_bg = GLOBAL_DEF("application/boot_bg_color", clear);
+			Color boot_bg = GLOBAL_DEF("application/boot_splash/bg_color", clear);
 			VisualServer::get_singleton()->set_boot_image(boot_logo, boot_bg, boot_logo_scale);
 #ifndef TOOLS_ENABLED
 //no tools, so free the boot logo (no longer needed)
@@ -955,13 +954,13 @@ Error Main::setup2() {
 	}
 
 	MAIN_PRINT("Main: DCC");
-	VisualServer::get_singleton()->set_default_clear_color(GLOBAL_DEF("rendering/viewport/default_clear_color", Color(0.3, 0.3, 0.3)));
+	VisualServer::get_singleton()->set_default_clear_color(GLOBAL_DEF("rendering/environment/default_clear_color", Color(0.3, 0.3, 0.3)));
 	MAIN_PRINT("Main: END");
 
-	GLOBAL_DEF("application/icon", String());
-	GlobalConfig::get_singleton()->set_custom_property_info("application/icon", PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_FILE, "*.png,*.webp"));
+	GLOBAL_DEF("application/config/icon", String());
+	GlobalConfig::get_singleton()->set_custom_property_info("application/config/icon", PropertyInfo(Variant::STRING, "application/config/icon", PROPERTY_HINT_FILE, "*.png,*.webp"));
 
-	if (bool(GLOBAL_DEF("display/handheld/emulate_touchscreen", false))) {
+	if (bool(GLOBAL_DEF("display/window/handheld/emulate_touchscreen", false))) {
 		if (!OS::get_singleton()->has_touchscreen_ui_hint() && Input::get_singleton() && !editor) {
 			//only if no touchscreen ui hint, set emulation
 			InputDefault *id = Input::get_singleton()->cast_to<InputDefault>();
@@ -1145,8 +1144,8 @@ bool Main::start() {
 		}
 	}
 
-	if (script == "" && game_path == "" && String(GLOBAL_DEF("application/main_scene", "")) != "") {
-		game_path = GLOBAL_DEF("application/main_scene", "");
+	if (script == "" && game_path == "" && String(GLOBAL_DEF("application/run/main_scene", "")) != "") {
+		game_path = GLOBAL_DEF("application/run/main_scene", "");
 	}
 
 	MainLoop *main_loop = NULL;
@@ -1189,7 +1188,7 @@ bool Main::start() {
 		}
 
 	} else {
-		main_loop_type = GLOBAL_DEF("application/main_loop_type", "");
+		main_loop_type = GLOBAL_DEF("application/run/main_loop_type", "");
 	}
 
 	if (!main_loop && main_loop_type == "")
@@ -1249,12 +1248,15 @@ bool Main::start() {
 		}
 #endif
 
+		{
+		}
+
 		if (!editor) {
 			//standard helpers that can be changed from main config
 
-			String stretch_mode = GLOBAL_DEF("display/stretch/mode", "disabled");
-			String stretch_aspect = GLOBAL_DEF("display/stretch/aspect", "ignore");
-			Size2i stretch_size = Size2(GLOBAL_DEF("display/window/width", 0), GLOBAL_DEF("display/window/height", 0));
+			String stretch_mode = GLOBAL_DEF("display/window/stretch/mode", "disabled");
+			String stretch_aspect = GLOBAL_DEF("display/window/stretch/aspect", "ignore");
+			Size2i stretch_size = Size2(GLOBAL_DEF("display/window/size/width", 0), GLOBAL_DEF("display/window/size/height", 0));
 
 			SceneTree::StretchMode sml_sm = SceneTree::STRETCH_MODE_DISABLED;
 			if (stretch_mode == "2d")
@@ -1272,17 +1274,17 @@ bool Main::start() {
 
 			sml->set_screen_stretch(sml_sm, sml_aspect, stretch_size);
 
-			sml->set_auto_accept_quit(GLOBAL_DEF("application/auto_accept_quit", true));
-			sml->set_quit_on_go_back(GLOBAL_DEF("application/quit_on_go_back", true));
-			String appname = GlobalConfig::get_singleton()->get("application/name");
+			sml->set_auto_accept_quit(GLOBAL_DEF("application/config/auto_accept_quit", true));
+			sml->set_quit_on_go_back(GLOBAL_DEF("application/config/quit_on_go_back", true));
+			String appname = GlobalConfig::get_singleton()->get("application/config/name");
 			appname = TranslationServer::get_singleton()->translate(appname);
 			OS::get_singleton()->set_window_title(appname);
 
-			int shadow_atlas_size = GLOBAL_DEF("rendering/shadow_atlas/size", 2048);
-			int shadow_atlas_q0_subdiv = GLOBAL_DEF("rendering/shadow_atlas/quadrant_0_subdiv", 2);
-			int shadow_atlas_q1_subdiv = GLOBAL_DEF("rendering/shadow_atlas/quadrant_1_subdiv", 2);
-			int shadow_atlas_q2_subdiv = GLOBAL_DEF("rendering/shadow_atlas/quadrant_2_subdiv", 3);
-			int shadow_atlas_q3_subdiv = GLOBAL_DEF("rendering/shadow_atlas/quadrant_3_subdiv", 4);
+			int shadow_atlas_size = GLOBAL_GET("rendering/quality/shadow_atlas/size");
+			int shadow_atlas_q0_subdiv = GLOBAL_GET("rendering/quality/shadow_atlas/quadrant_0_subdiv");
+			int shadow_atlas_q1_subdiv = GLOBAL_GET("rendering/quality/shadow_atlas/quadrant_1_subdiv");
+			int shadow_atlas_q2_subdiv = GLOBAL_GET("rendering/quality/shadow_atlas/quadrant_2_subdiv");
+			int shadow_atlas_q3_subdiv = GLOBAL_GET("rendering/quality/shadow_atlas/quadrant_3_subdiv");
 
 			sml->get_root()->set_shadow_atlas_size(shadow_atlas_size);
 			sml->get_root()->set_shadow_atlas_quadrant_subdiv(0, Viewport::ShadowAtlasQuadrantSubdiv(shadow_atlas_q0_subdiv));
@@ -1291,24 +1293,12 @@ bool Main::start() {
 			sml->get_root()->set_shadow_atlas_quadrant_subdiv(3, Viewport::ShadowAtlasQuadrantSubdiv(shadow_atlas_q3_subdiv));
 
 		} else {
-			GLOBAL_DEF("display/stretch/mode", "disabled");
-			GlobalConfig::get_singleton()->set_custom_property_info("display/stretch/mode", PropertyInfo(Variant::STRING, "display/stretch/mode", PROPERTY_HINT_ENUM, "disabled,2d,viewport"));
-			GLOBAL_DEF("display/stretch/aspect", "ignore");
-			GlobalConfig::get_singleton()->set_custom_property_info("display/stretch/aspect", PropertyInfo(Variant::STRING, "display/stretch/aspect", PROPERTY_HINT_ENUM, "ignore,keep,keep_width,keep_height"));
-			sml->set_auto_accept_quit(GLOBAL_DEF("application/auto_accept_quit", true));
-			sml->set_quit_on_go_back(GLOBAL_DEF("application/quit_on_go_back", true));
-
-			GLOBAL_DEF("rendering/shadow_atlas/size", 2048);
-			GlobalConfig::get_singleton()->set_custom_property_info("rendering/shadow_atlas/size", PropertyInfo(Variant::INT, "rendering/shadow_atlas/size", PROPERTY_HINT_RANGE, "256,16384"));
-
-			GLOBAL_DEF("rendering/shadow_atlas/quadrant_0_subdiv", 2);
-			GLOBAL_DEF("rendering/shadow_atlas/quadrant_1_subdiv", 2);
-			GLOBAL_DEF("rendering/shadow_atlas/quadrant_2_subdiv", 3);
-			GLOBAL_DEF("rendering/shadow_atlas/quadrant_3_subdiv", 4);
-			GlobalConfig::get_singleton()->set_custom_property_info("rendering/shadow_atlas/quadrant_0_subdiv", PropertyInfo(Variant::INT, "rendering/shadow_atlas/quadrant_0_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
-			GlobalConfig::get_singleton()->set_custom_property_info("rendering/shadow_atlas/quadrant_1_subdiv", PropertyInfo(Variant::INT, "rendering/shadow_atlas/quadrant_1_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
-			GlobalConfig::get_singleton()->set_custom_property_info("rendering/shadow_atlas/quadrant_2_subdiv", PropertyInfo(Variant::INT, "rendering/shadow_atlas/quadrant_2_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
-			GlobalConfig::get_singleton()->set_custom_property_info("rendering/shadow_atlas/quadrant_3_subdiv", PropertyInfo(Variant::INT, "rendering/shadow_atlas/quadrant_3_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
+			GLOBAL_DEF("display/window/stretch/mode", "disabled");
+			GlobalConfig::get_singleton()->set_custom_property_info("display/window/stretch/mode", PropertyInfo(Variant::STRING, "display/window/stretch/mode", PROPERTY_HINT_ENUM, "disabled,2d,viewport"));
+			GLOBAL_DEF("display/window/stretch/aspect", "ignore");
+			GlobalConfig::get_singleton()->set_custom_property_info("display/window/stretch/aspect", PropertyInfo(Variant::STRING, "display/window/stretch/aspect", PROPERTY_HINT_ENUM, "ignore,keep,keep_width,keep_height"));
+			sml->set_auto_accept_quit(GLOBAL_DEF("application/config/auto_accept_quit", true));
+			sml->set_quit_on_go_back(GLOBAL_DEF("application/config/quit_on_go_back", true));
 		}
 
 		String local_game_path;
@@ -1463,7 +1453,7 @@ bool Main::start() {
 				//sml->get_root()->add_child(scene);
 				sml->add_current_scene(scene);
 
-				String iconpath = GLOBAL_DEF("application/icon", "Variant()");
+				String iconpath = GLOBAL_DEF("application/config/icon", "Variant()");
 				if (iconpath != "") {
 					Ref<Image> icon;
 					if (icon->load(iconpath) == OK)
@@ -1641,7 +1631,7 @@ bool Main::iteration() {
 
 	if (frame > 1000000) {
 
-		if (GLOBAL_DEF("debug/stdout/print_fps", OS::get_singleton()->is_stdout_verbose())) {
+		if (GLOBAL_DEF("debug/settings/stdout/print_fps", OS::get_singleton()->is_stdout_verbose())) {
 			print_line("FPS: " + itos(frames));
 		};
 

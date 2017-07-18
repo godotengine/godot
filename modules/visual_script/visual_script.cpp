@@ -2658,7 +2658,7 @@ VisualScriptLanguage::VisualScriptLanguage() {
 	_debug_parse_err_node = -1;
 	_debug_parse_err_file = "";
 	_debug_call_stack_pos = 0;
-	int dmcs = GLOBAL_DEF("debug/script/max_call_stack", 1024);
+	int dmcs = GLOBAL_DEF("debug/settings/visual_script/max_call_stack", 1024);
 	if (ScriptDebugger::get_singleton()) {
 		//debugging enabled!
 		_debug_max_call_stack = dmcs;

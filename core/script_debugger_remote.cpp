@@ -957,7 +957,7 @@ ScriptDebuggerRemote::ScriptDebuggerRemote() {
 	poll_every = 0;
 	request_scene_tree = NULL;
 	live_edit_funcs = NULL;
-	max_cps = GLOBAL_DEF("network/debug/max_remote_stdout_chars_per_second", 2048);
+	max_cps = GLOBAL_GET("network/limits/debugger_stdout/max_chars_per_second");
 	char_count = 0;
 	msec_count = 0;
 	last_msec = 0;
@@ -967,7 +967,7 @@ ScriptDebuggerRemote::ScriptDebuggerRemote() {
 	eh.userdata = this;
 	add_error_handler(&eh);
 
-	profile_info.resize(CLAMP(int(GlobalConfig::get_singleton()->get("debug/profiler/max_functions")), 128, 65535));
+	profile_info.resize(CLAMP(int(GlobalConfig::get_singleton()->get("debug/settings/profiler/max_functions")), 128, 65535));
 	profile_info_ptrs.resize(profile_info.size());
 	profiling = false;
 	max_frame_functions = 16;

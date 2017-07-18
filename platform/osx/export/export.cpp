@@ -345,7 +345,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 			if (p_preset->get("application/icon") != "")
 				iconpath = p_preset->get("application/icon");
 			else
-				iconpath = GlobalConfig::get_singleton()->get("application/icon");
+				iconpath = GlobalConfig::get_singleton()->get("application/config/icon");
 			print_line("icon? " + iconpath);
 			if (iconpath != "") {
 				Ref<Image> icon;
@@ -484,8 +484,8 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	String pkg_name;
 	if (p_preset->get("application/name") != "")
 		pkg_name = p_preset->get("application/name"); // app_name
-	else if (String(GlobalConfig::get_singleton()->get("application/name")) != "")
-		pkg_name = String(GlobalConfig::get_singleton()->get("application/name"));
+	else if (String(GlobalConfig::get_singleton()->get("application/config/name")) != "")
+		pkg_name = String(GlobalConfig::get_singleton()->get("application/config/name"));
 	else
 		pkg_name = "Unnamed";
 
@@ -539,7 +539,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 			if (p_preset->get("application/icon") != "")
 				iconpath = p_preset->get("application/icon");
 			else
-				iconpath = GlobalConfig::get_singleton()->get("application/icon");
+				iconpath = GlobalConfig::get_singleton()->get("application/config/icon");
 			print_line("icon? " + iconpath);
 			if (iconpath != "") {
 				Ref<Image> icon;

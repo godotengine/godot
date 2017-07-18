@@ -4331,7 +4331,7 @@ PropertyEditor::PropertyEditor() {
 
 	_prop_edited = "property_edited";
 
-	hide_script = false;
+	hide_script = true;
 	use_folding = false;
 
 	undo_redo = NULL;
@@ -4512,6 +4512,7 @@ public:
 void SectionedPropertyEditor::_bind_methods() {
 
 	ClassDB::bind_method("_section_selected", &SectionedPropertyEditor::_section_selected);
+	ClassDB::bind_method("_search_changed", &SectionedPropertyEditor::_search_changed);
 
 	ClassDB::bind_method("update_category_list", &SectionedPropertyEditor::update_category_list);
 }
@@ -4609,6 +4610,10 @@ void SectionedPropertyEditor::update_category_list() {
 
 		if (pi.name.find(":") != -1 || pi.name == "script" || pi.name == "resource_name" || pi.name == "resource_path")
 			continue;
+
+		if (search_box && search_box->get_text() != String() && pi.name.findn(search_box->get_text()) == -1)
+			continue;
+
 		int sp = pi.name.find("/");
 		if (sp == -1)
 			pi.name = "Global/" + pi.name;
@@ -4616,7 +4621,9 @@ void SectionedPropertyEditor::update_category_list() {
 		Vector<String> sectionarr = pi.name.split("/");
 		String metasection;
 
-		for (int i = 0; i < MIN(2, sectionarr.size() - 1); i++) {
+		int sc = MIN(2, sectionarr.size() - 1);
+
+		for (int i = 0; i < sc; i++) {
 
 			TreeItem *parent = section_map[metasection];
 
@@ -4631,6 +4638,12 @@ void SectionedPropertyEditor::update_category_list() {
 				section_map[metasection] = ms;
 				ms->set_text(0, sectionarr[i].capitalize());
 				ms->set_metadata(0, metasection);
+				ms->set_selectable(0, false);
+			}
+
+			if (i == sc - 1) {
+				//if it has children, make selectable
+				section_map[metasection]->set_selectable(0, true);
 			}
 		}
 	}
@@ -4638,6 +4651,18 @@ void SectionedPropertyEditor::update_category_list() {
 	if (section_map.has(selected_category)) {
 		section_map[selected_category]->select(0);
 	}
+}
+
+void SectionedPropertyEditor::register_search_box(LineEdit *p_box) {
+
+	search_box = p_box;
+	editor->register_text_enter(p_box);
+	search_box->connect("text_changed", this, "_search_changed");
+}
+
+void SectionedPropertyEditor::_search_changed(const String &p_what) {
+
+	update_category_list();
 }
 
 PropertyEditor *SectionedPropertyEditor::get_property_editor() {
@@ -4648,6 +4673,8 @@ PropertyEditor *SectionedPropertyEditor::get_property_editor() {
 SectionedPropertyEditor::SectionedPropertyEditor() {
 
 	obj = -1;
+
+	search_box = NULL;
 
 	VBoxContainer *left_vb = memnew(VBoxContainer);
 	left_vb->set_custom_minimum_size(Size2(160, 0) * EDSCALE);

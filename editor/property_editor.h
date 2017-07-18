@@ -1,4 +1,4 @@
-/*************************************************************************/
+﻿/*************************************************************************/
 /*  property_editor.h                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
@@ -307,11 +307,15 @@ class SectionedPropertyEditor : public HBoxContainer {
 
 	Map<String, TreeItem *> section_map;
 	PropertyEditor *editor;
+	LineEdit *search_box;
 
 	static void _bind_methods();
 	void _section_selected();
 
+	void _search_changed(const String &p_what);
+
 public:
+	void register_search_box(LineEdit *p_box);
 	PropertyEditor *get_property_editor();
 	void edit(Object *p_object);
 	String get_full_item_path(const String &p_item);

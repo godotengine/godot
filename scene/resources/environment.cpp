@@ -1113,8 +1113,6 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "adjustment_saturation", PROPERTY_HINT_RANGE, "0.01,8,0.01"), "set_adjustment_saturation", "get_adjustment_saturation");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "adjustment_color_correction", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_adjustment_color_correction", "get_adjustment_color_correction");
 
-	GLOBAL_DEF("rendering/sky/irradiance_cube_resolution", 256);
-
 	BIND_CONSTANT(BG_KEEP);
 	BIND_CONSTANT(BG_CLEAR_COLOR);
 	BIND_CONSTANT(BG_COLOR);

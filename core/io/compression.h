@@ -33,7 +33,12 @@
 #include "typedefs.h"
 
 class Compression {
+
 public:
+	static int zlib_level;
+	static int gzip_level;
+	static int zstd_level;
+
 	enum Mode {
 		MODE_FASTLZ,
 		MODE_DEFLATE,

@@ -6848,8 +6848,8 @@ void RasterizerStorageGLES3::initialize() {
 	}
 
 	config.shrink_textures_x2 = false;
-	config.use_fast_texture_filter = int(GlobalConfig::get_singleton()->get("rendering/quality/use_nearest_mipmap_filter"));
-	config.use_anisotropic_filter = config.extensions.has("GL_EXT_texture_filter_anisotropic");
+	config.use_fast_texture_filter = int(GlobalConfig::get_singleton()->get("rendering/quality/filters/use_nearest_mipmap_filter"));
+	config.use_anisotropic_filter = config.extensions.has("rendering/quality/filters/anisotropic_filter_level");
 
 	config.s3tc_supported = config.extensions.has("GL_EXT_texture_compression_dxt1") || config.extensions.has("GL_EXT_texture_compression_s3tc") || config.extensions.has("WEBGL_compressed_texture_s3tc");
 	config.etc_supported = config.extensions.has("GL_OES_compressed_ETC1_RGB8_texture");
@@ -6983,7 +6983,7 @@ void RasterizerStorageGLES3::initialize() {
 
 	{
 		//transform feedback buffers
-		uint32_t xf_feedback_size = GLOBAL_DEF("rendering/buffers/blend_shape_max_buffer_size_kb", 4096);
+		uint32_t xf_feedback_size = GLOBAL_DEF("rendering/limits/buffers/blend_shape_max_buffer_size_kb", 4096);
 		for (int i = 0; i < 2; i++) {
 
 			glGenBuffers(1, &resources.transform_feedback_buffers[i]);
@@ -7009,7 +7009,7 @@ void RasterizerStorageGLES3::initialize() {
 	frame.current_rt = NULL;
 	config.keep_original_textures = false;
 	config.generate_wireframes = false;
-	config.use_texture_array_environment = GLOBAL_DEF("rendering/quality/texture_array_environments", true);
+	config.use_texture_array_environment = GLOBAL_DEF("rendering/quality/reflections/texture_array_reflections", true);
 }
 
 void RasterizerStorageGLES3::finalize() {

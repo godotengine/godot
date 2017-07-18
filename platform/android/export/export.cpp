@@ -554,7 +554,7 @@ void EditorExportPlatformAndroid::_fix_resources(Vector<uint8_t>& p_manifest) {
 			} else {
 
 				String lang = str.substr(str.find_last("-")+1,str.length()).replace("-","_");
-				String prop = "application/name_"+lang;
+				String prop = "application/config/name_"+lang;
 				if (GlobalConfig::get_singleton()->has(prop)) {
 					str = GlobalConfig::get_singleton()->get(prop);
 				} else {
@@ -628,7 +628,7 @@ String EditorExportPlatformAndroid::get_project_name() const {
 	if (this->name!="") {
 		aname=this->name;
 	} else {
-		aname = GlobalConfig::get_singleton()->get("application/name");
+		aname = GlobalConfig::get_singleton()->get("application/config/name");
 
 	}
 
@@ -1144,7 +1144,7 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 
 			if (!found) {
 
-				String appicon = GlobalConfig::get_singleton()->get("application/icon");
+				String appicon = GlobalConfig::get_singleton()->get("application/config/icon");
 				if (appicon!="" && appicon.ends_with(".png")) {
 					FileAccess*f = FileAccess::open(appicon,FileAccess::READ);
 					if (f) {
@@ -1763,7 +1763,7 @@ Error EditorExportPlatformAndroid::run(int p_device, int p_flags) {
 String EditorExportPlatformAndroid::get_package_name() {
 
 	String pname = package;
-	String basename = GlobalConfig::get_singleton()->get("application/name");
+	String basename = GlobalConfig::get_singleton()->get("application/config/name");
 	basename=basename.to_lower();
 
 	String name;
@@ -2208,7 +2208,7 @@ class EditorExportAndroid : public EditorExportPlatform {
 		if (p_name != "") {
 			aname = p_name;
 		} else {
-			aname = GlobalConfig::get_singleton()->get("application/name");
+			aname = GlobalConfig::get_singleton()->get("application/config/name");
 		}
 
 		if (aname == "") {
@@ -2221,7 +2221,7 @@ class EditorExportAndroid : public EditorExportPlatform {
 	String get_package_name(const String &p_package) {
 
 		String pname = p_package;
-		String basename = GlobalConfig::get_singleton()->get("application/name");
+		String basename = GlobalConfig::get_singleton()->get("application/config/name");
 		basename = basename.to_lower();
 
 		String name;
@@ -2750,7 +2750,7 @@ class EditorExportAndroid : public EditorExportPlatform {
 				} else {
 
 					String lang = str.substr(str.find_last("-") + 1, str.length()).replace("-", "_");
-					String prop = "application/name_" + lang;
+					String prop = "application/config/name_" + lang;
 					if (GlobalConfig::get_singleton()->has(prop)) {
 						str = GlobalConfig::get_singleton()->get(prop);
 					} else {
@@ -3219,7 +3219,7 @@ public:
 
 				if (!found) {
 
-					String appicon = GlobalConfig::get_singleton()->get("application/icon");
+					String appicon = GlobalConfig::get_singleton()->get("application/config/icon");
 					if (appicon != "" && appicon.ends_with(".png")) {
 						FileAccess *f = FileAccess::open(appicon, FileAccess::READ);
 						if (f) {

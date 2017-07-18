@@ -130,33 +130,8 @@ bool GlobalConfig::_set(const StringName &p_name, const Variant &p_value) {
 			if (!props[p_name].overrided)
 				props[p_name].variant = p_value;
 
-			if (props[p_name].order >= NO_ORDER_BASE && registering_order) {
-				props[p_name].order = last_order++;
-			}
 		} else {
-			props[p_name] = VariantContainer(p_value, last_order++ + (registering_order ? 0 : NO_ORDER_BASE));
-		}
-	}
-
-	if (!disable_platform_override) {
-
-		String s = String(p_name);
-		int sl = s.find("/");
-		int p = s.find(".");
-		if (p != -1 && sl != -1 && p < sl) {
-
-			Vector<String> ps = s.substr(0, sl).split(".");
-			String prop = s.substr(sl, s.length() - sl);
-			for (int i = 1; i < ps.size(); i++) {
-
-				if (ps[i] == OS::get_singleton()->get_name()) {
-
-					String fullprop = ps[0] + prop;
-
-					set(fullprop, p_value);
-					props[fullprop].overrided = true;
-				}
-			}
+			props[p_name] = VariantContainer(p_value, last_order++);
 		}
 	}
 
@@ -372,8 +347,6 @@ Error GlobalConfig::_load_settings_binary(const String p_path) {
 		ERR_FAIL_V(ERR_FILE_CORRUPT;)
 	}
 
-	set_registering_order(false);
-
 	uint32_t count = f->get_32();
 
 	for (uint32_t i = 0; i < count; i++) {
@@ -396,8 +369,6 @@ Error GlobalConfig::_load_settings_binary(const String p_path) {
 		ERR_CONTINUE(err != OK);
 		set(key, value);
 	}
-
-	set_registering_order(true);
 
 	return OK;
 }
@@ -466,6 +437,14 @@ void GlobalConfig::set_order(const String &p_name, int p_order) {
 
 	ERR_FAIL_COND(!props.has(p_name));
 	props[p_name].order = p_order;
+}
+
+void GlobalConfig::set_builtin_order(const String &p_name) {
+
+	ERR_FAIL_COND(!props.has(p_name));
+	if (props[p_name].order >= NO_BUILTIN_ORDER_BASE) {
+		props[p_name].order = last_builtin_order++;
+	}
 }
 
 void GlobalConfig::clear(const String &p_name) {
@@ -715,13 +694,16 @@ Error GlobalConfig::save_custom(const String &p_path, const CustomMap &p_custom,
 
 Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default) {
 
+	Variant ret;
 	if (GlobalConfig::get_singleton()->has(p_var)) {
-		GlobalConfig::get_singleton()->set_initial_value(p_var, p_default);
-		return GlobalConfig::get_singleton()->get(p_var);
+		ret = GlobalConfig::get_singleton()->get(p_var);
+	} else {
+		GlobalConfig::get_singleton()->set(p_var, p_default);
+		ret = p_default;
 	}
-	GlobalConfig::get_singleton()->set(p_var, p_default);
 	GlobalConfig::get_singleton()->set_initial_value(p_var, p_default);
-	return p_default;
+	GlobalConfig::get_singleton()->set_builtin_order(p_var);
+	return ret;
 }
 
 void GlobalConfig::add_singleton(const Singleton &p_singleton) {
@@ -843,7 +825,8 @@ void GlobalConfig::_bind_methods() {
 GlobalConfig::GlobalConfig() {
 
 	singleton = this;
-	last_order = 0;
+	last_order = NO_BUILTIN_ORDER_BASE;
+	last_builtin_order = 0;
 	disable_platform_override = false;
 	registering_order = true;
 
@@ -851,12 +834,12 @@ GlobalConfig::GlobalConfig() {
 	Ref<InputEventKey> key;
 	Ref<InputEventJoypadButton> joyb;
 
-	GLOBAL_DEF("application/name", "");
-	GLOBAL_DEF("application/main_scene", "");
-	custom_prop_info["application/main_scene"] = PropertyInfo(Variant::STRING, "application/main_scene", PROPERTY_HINT_FILE, "tscn,scn,xscn,xml,res");
-	GLOBAL_DEF("application/disable_stdout", false);
-	GLOBAL_DEF("application/disable_stderr", false);
-	GLOBAL_DEF("application/use_shared_user_dir", true);
+	GLOBAL_DEF("application/config/name", "");
+	GLOBAL_DEF("application/run/main_scene", "");
+	custom_prop_info["application/run/main_scene"] = PropertyInfo(Variant::STRING, "application/run/main_scene", PROPERTY_HINT_FILE, "tscn,scn,res");
+	GLOBAL_DEF("application/run/disable_stdout", false);
+	GLOBAL_DEF("application/run/disable_stderr", false);
+	GLOBAL_DEF("application/config/use_shared_user_dir", true);
 
 	key.instance();
 	key->set_scancode(KEY_RETURN);
@@ -964,18 +947,19 @@ GlobalConfig::GlobalConfig() {
 
 	//GLOBAL_DEF("display/handheld/orientation", "landscape");
 
-	custom_prop_info["display/handheld/orientation"] = PropertyInfo(Variant::STRING, "display/handheld/orientation", PROPERTY_HINT_ENUM, "landscape,portrait,reverse_landscape,reverse_portrait,sensor_landscape,sensor_portrait,sensor");
+	custom_prop_info["display/window/handheld/orientation"] = PropertyInfo(Variant::STRING, "display/window/handheld/orientation", PROPERTY_HINT_ENUM, "landscape,portrait,reverse_landscape,reverse_portrait,sensor_landscape,sensor_portrait,sensor");
 	custom_prop_info["rendering/threads/thread_model"] = PropertyInfo(Variant::INT, "rendering/threads/thread_model", PROPERTY_HINT_ENUM, "Single-Unsafe,Single-Safe,Multi-Threaded");
 	custom_prop_info["physics/2d/thread_model"] = PropertyInfo(Variant::INT, "physics/2d/thread_model", PROPERTY_HINT_ENUM, "Single-Unsafe,Single-Safe,Multi-Threaded");
 
-	GLOBAL_DEF("debug/profiler/max_functions", 16384);
+	GLOBAL_DEF("debug/settings/profiler/max_functions", 16384);
 
-	GLOBAL_DEF("compression/zstd/compression_level", 3);
-	custom_prop_info["compression/zstd/compression_level"] = PropertyInfo(Variant::INT, "compression/zstd/compression_level", PROPERTY_HINT_RANGE, "1,22,1");
-	GLOBAL_DEF("compression/zlib/compression_level", Z_DEFAULT_COMPRESSION);
-	custom_prop_info["compression/zlib/compression_level"] = PropertyInfo(Variant::INT, "compression/zlib/compression_level", PROPERTY_HINT_RANGE, "-1,9,1");
-	GLOBAL_DEF("compression/gzip/compression_level", Z_DEFAULT_COMPRESSION);
-	custom_prop_info["compression/gzip/compression_level"] = PropertyInfo(Variant::INT, "compression/gzip/compression_level", PROPERTY_HINT_RANGE, "-1,9,1");
+	//assigning here, because using GLOBAL_GET on every block for compressing can be slow
+	Compression::zstd_level = GLOBAL_DEF("compression/formats/zstd/compression_level", 3);
+	custom_prop_info["compression/formats/zstd/compression_level"] = PropertyInfo(Variant::INT, "compression/formats/zstd/compression_level", PROPERTY_HINT_RANGE, "1,22,1");
+	Compression::zlib_level = GLOBAL_DEF("compression/formats/zlib/compression_level", Z_DEFAULT_COMPRESSION);
+	custom_prop_info["compression/formats/zlib/compression_level"] = PropertyInfo(Variant::INT, "compression/formats/zlib/compression_level", PROPERTY_HINT_RANGE, "-1,9,1");
+	Compression::gzip_level = GLOBAL_DEF("compression/formats/gzip/compression_level", Z_DEFAULT_COMPRESSION);
+	custom_prop_info["compression/formats/gzip/compression_level"] = PropertyInfo(Variant::INT, "compression/formats/gzip/compression_level", PROPERTY_HINT_RANGE, "-1,9,1");
 
 	using_datapack = false;
 }

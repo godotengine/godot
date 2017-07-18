@@ -1885,7 +1885,7 @@ GDScriptLanguage::GDScriptLanguage() {
 	script_frame_time = 0;
 
 	_debug_call_stack_pos = 0;
-	int dmcs = GLOBAL_DEF("debug/script/max_call_stack", 1024);
+	int dmcs = GLOBAL_DEF("debug/settings/gdscript/max_call_stack", 1024);
 	if (ScriptDebugger::get_singleton()) {
 		//debugging enabled!
 

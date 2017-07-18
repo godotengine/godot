@@ -73,8 +73,6 @@ ShaderTypes *shader_types = NULL;
 
 void register_server_types() {
 
-	GLOBAL_DEF("memory/multithread/thread_rid_pool_prealloc", 20);
-
 	GlobalConfig::get_singleton()->add_singleton(GlobalConfig::Singleton("VisualServer", VisualServer::get_singleton()));
 	GlobalConfig::get_singleton()->add_singleton(GlobalConfig::Singleton("AudioServer", AudioServer::get_singleton()));
 	GlobalConfig::get_singleton()->add_singleton(GlobalConfig::Singleton("PhysicsServer", PhysicsServer::get_singleton()));

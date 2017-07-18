@@ -4638,7 +4638,7 @@ void RasterizerSceneGLES3::initialize() {
 	glBufferData(GL_UNIFORM_BUFFER, sizeof(State::EnvironmentRadianceUBO), &state.env_radiance_ubo, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-	render_list.max_elements = GLOBAL_DEF("rendering/gles3/max_renderable_elements", (int)RenderList::DEFAULT_MAX_ELEMENTS);
+	render_list.max_elements = GLOBAL_DEF("rendering/limits/rendering/max_renderable_elements", (int)RenderList::DEFAULT_MAX_ELEMENTS);
 	if (render_list.max_elements > 1000000)
 		render_list.max_elements = 1000000;
 	if (render_list.max_elements < 1024)
@@ -4712,7 +4712,7 @@ void RasterizerSceneGLES3::initialize() {
 	{
 		//directional light shadow
 		directional_shadow.light_count = 0;
-		directional_shadow.size = nearest_power_of_2(GLOBAL_DEF("rendering/shadows/directional_shadow_size", 4096));
+		directional_shadow.size = nearest_power_of_2(GLOBAL_GET("rendering/quality/directional_shadow/size"));
 		glGenFramebuffers(1, &directional_shadow.fbo);
 		glBindFramebuffer(GL_FRAMEBUFFER, directional_shadow.fbo);
 		glGenTextures(1, &directional_shadow.depth);
@@ -4779,8 +4779,8 @@ void RasterizerSceneGLES3::initialize() {
 		state.scene_shader.add_custom_define("#define MAX_SKELETON_BONES " + itos(state.max_skeleton_bones) + "\n");
 	}
 
-	GLOBAL_DEF("rendering/gles3/shadow_filter_mode", 1);
-	GlobalConfig::get_singleton()->set_custom_property_info("rendering/gles3/shadow_filter_mode", PropertyInfo(Variant::INT, "rendering/gles3/shadow_filter_mode", PROPERTY_HINT_ENUM, "Disabled,PCF5,PCF13"));
+	GLOBAL_DEF("rendering/quality/shadows/filter_mode", 1);
+	GlobalConfig::get_singleton()->set_custom_property_info("rendering/quality/shadows/filter_mode", PropertyInfo(Variant::INT, "rendering/quality/shadows/filter_mode", PROPERTY_HINT_ENUM, "Disabled,PCF5,PCF13"));
 	shadow_filter_mode = SHADOW_FILTER_NEAREST;
 
 	{ //reflection cubemaps
@@ -4844,7 +4844,7 @@ void RasterizerSceneGLES3::initialize() {
 
 	{
 
-		uint32_t immediate_buffer_size = GLOBAL_DEF("rendering/buffers/immediate_buffer_size_kb", 2048);
+		uint32_t immediate_buffer_size = GLOBAL_DEF("rendering/limits/buffers/immediate_buffer_size_kb", 2048);
 
 		glGenBuffers(1, &state.immediate_buffer);
 		glBindBuffer(GL_ARRAY_BUFFER, state.immediate_buffer);
@@ -4871,13 +4871,13 @@ void RasterizerSceneGLES3::initialize() {
 	state.tonemap_shader.init();
 
 	{
-		GLOBAL_DEF("rendering/ssurf_scattering/quality", 1);
-		GlobalConfig::get_singleton()->set_custom_property_info("rendering/ssurf_scattering/quality", PropertyInfo(Variant::INT, "rendering/ssurf_scattering/quality", PROPERTY_HINT_ENUM, "Low,Medium,High"));
-		GLOBAL_DEF("rendering/ssurf_scattering/max_size", 1.0);
-		GlobalConfig::get_singleton()->set_custom_property_info("rendering/ssurf_scattering/max_size", PropertyInfo(Variant::INT, "rendering/ssurf_scattering/max_size", PROPERTY_HINT_RANGE, "0.01,8,0.01"));
-		GLOBAL_DEF("rendering/ssurf_scattering/follow_surface", false);
+		GLOBAL_DEF("rendering/quality/subsurface_scattering/quality", 1);
+		GlobalConfig::get_singleton()->set_custom_property_info("rendering/quality/subsurface_scattering/quality", PropertyInfo(Variant::INT, "rendering/quality/subsurface_scattering/quality", PROPERTY_HINT_ENUM, "Low,Medium,High"));
+		GLOBAL_DEF("rendering/quality/subsurface_scattering/scale", 1.0);
+		GlobalConfig::get_singleton()->set_custom_property_info("rendering/quality/subsurface_scattering/scale", PropertyInfo(Variant::INT, "rendering/quality/subsurface_scattering/scale", PROPERTY_HINT_RANGE, "0.01,8,0.01"));
+		GLOBAL_DEF("rendering/quality/subsurface_scattering/follow_surface", false);
 
-		GLOBAL_DEF("rendering/reflections/high_quality_vct_gi", true);
+		GLOBAL_DEF("rendering/quality/voxel_cone_tracing/high_quality", true);
 	}
 
 	exposure_shrink_size = 243;
@@ -4916,12 +4916,12 @@ void RasterizerSceneGLES3::initialize() {
 
 void RasterizerSceneGLES3::iteration() {
 
-	shadow_filter_mode = ShadowFilterMode(int(GlobalConfig::get_singleton()->get("rendering/gles3/shadow_filter_mode")));
-	subsurface_scatter_follow_surface = GlobalConfig::get_singleton()->get("rendering/ssurf_scattering/follow_surface");
-	subsurface_scatter_quality = SubSurfaceScatterQuality(int(GlobalConfig::get_singleton()->get("rendering/ssurf_scattering/quality")));
-	subsurface_scatter_size = GlobalConfig::get_singleton()->get("rendering/ssurf_scattering/max_size");
+	shadow_filter_mode = ShadowFilterMode(int(GlobalConfig::get_singleton()->get("rendering/quality/shadows/filter_mode")));
+	subsurface_scatter_follow_surface = GlobalConfig::get_singleton()->get("rendering/quality/subsurface_scattering/follow_surface");
+	subsurface_scatter_quality = SubSurfaceScatterQuality(int(GlobalConfig::get_singleton()->get("rendering/quality/subsurface_scattering/quality")));
+	subsurface_scatter_size = GlobalConfig::get_singleton()->get("rendering/quality/subsurface_scattering/scale");
 
-	state.scene_shader.set_conditional(SceneShaderGLES3::VCT_QUALITY_HIGH, GlobalConfig::get_singleton()->get("rendering/reflections/high_quality_vct_gi"));
+	state.scene_shader.set_conditional(SceneShaderGLES3::VCT_QUALITY_HIGH, GlobalConfig::get_singleton()->get("rendering/quality/voxel_cone_tracing/high_quality"));
 }
 
 void RasterizerSceneGLES3::finalize() {

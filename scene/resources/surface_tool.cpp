@@ -812,6 +812,7 @@ void SurfaceTool::clear() {
 	index_array.clear();
 	vertex_array.clear();
 	smooth_groups.clear();
+	material.unref();
 }
 
 void SurfaceTool::_bind_methods() {

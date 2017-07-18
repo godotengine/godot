@@ -79,12 +79,12 @@ Error EditorRun::run(const String &p_scene, const String p_custom_args, const Li
 
 	Size2 desired_size;
 
-	desired_size.x = GlobalConfig::get_singleton()->get("display/window/width");
-	desired_size.y = GlobalConfig::get_singleton()->get("display/window/height");
+	desired_size.x = GlobalConfig::get_singleton()->get("display/window/size/width");
+	desired_size.y = GlobalConfig::get_singleton()->get("display/window/size/height");
 
 	Size2 test_size;
-	test_size.x = GlobalConfig::get_singleton()->get("display/window/test_width");
-	test_size.y = GlobalConfig::get_singleton()->get("display/window/test_height");
+	test_size.x = GlobalConfig::get_singleton()->get("display/window/size/test_width");
+	test_size.y = GlobalConfig::get_singleton()->get("display/window/size/test_height");
 	if (test_size.x > 0 && test_size.y > 0) {
 
 		desired_size = test_size;

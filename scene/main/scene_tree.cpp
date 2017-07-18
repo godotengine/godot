@@ -614,7 +614,7 @@ bool SceneTree::idle(float p_time) {
 
 	if (is_editor_hint()) {
 		//simple hack to reload fallback environment if it changed from editor
-		String env_path = GlobalConfig::get_singleton()->get("rendering/viewport/default_environment");
+		String env_path = GlobalConfig::get_singleton()->get("rendering/environment/default_environment");
 		env_path = env_path.strip_edges(); //user may have added a space or two
 		String cpath;
 		Ref<Environment> fallback = get_root()->get_world()->get_fallback_environment();
@@ -2317,11 +2317,11 @@ SceneTree::SceneTree() {
 	debug_collisions_hint = false;
 	debug_navigation_hint = false;
 #endif
-	debug_collisions_color = GLOBAL_DEF("debug/collision/shape_color", Color(0.0, 0.6, 0.7, 0.5));
-	debug_collision_contact_color = GLOBAL_DEF("debug/collision/contact_color", Color(1.0, 0.2, 0.1, 0.8));
-	debug_navigation_color = GLOBAL_DEF("debug/navigation/geometry_color", Color(0.1, 1.0, 0.7, 0.4));
-	debug_navigation_disabled_color = GLOBAL_DEF("debug/navigation/disabled_geometry_color", Color(1.0, 0.7, 0.1, 0.4));
-	collision_debug_contacts = GLOBAL_DEF("debug/collision/max_contacts_displayed", 10000);
+	debug_collisions_color = GLOBAL_DEF("debug/shapes/collision/shape_color", Color(0.0, 0.6, 0.7, 0.5));
+	debug_collision_contact_color = GLOBAL_DEF("debug/shapes/collision/contact_color", Color(1.0, 0.2, 0.1, 0.8));
+	debug_navigation_color = GLOBAL_DEF("debug/shapes/navigation/geometry_color", Color(0.1, 1.0, 0.7, 0.4));
+	debug_navigation_disabled_color = GLOBAL_DEF("debug/shapes/navigation/disabled_geometry_color", Color(1.0, 0.7, 0.1, 0.4));
+	collision_debug_contacts = GLOBAL_DEF("debug/shapes/collision/max_contacts_displayed", 10000);
 
 	tree_version = 1;
 	fixed_process_time = 1;
@@ -2348,12 +2348,12 @@ SceneTree::SceneTree() {
 	root->set_as_audio_listener_2d(true);
 	current_scene = NULL;
 
-	int ref_atlas_size = GLOBAL_DEF("rendering/reflections/atlas_size", 2048);
-	int ref_atlas_subdiv = GLOBAL_DEF("rendering/reflections/atlas_subdiv", 8);
-	int msaa_mode = GLOBAL_DEF("rendering/quality/msaa", 0);
-	GlobalConfig::get_singleton()->set_custom_property_info("rendering/quality/msaa", PropertyInfo(Variant::INT, "rendering/quality/msaa", PROPERTY_HINT_ENUM, "Disabled,2x,4x,8x,16x"));
+	int ref_atlas_size = GLOBAL_DEF("rendering/quality/reflections/atlas_size", 2048);
+	int ref_atlas_subdiv = GLOBAL_DEF("rendering/quality/reflections/atlas_subdiv", 8);
+	int msaa_mode = GLOBAL_DEF("rendering/quality/filters/msaa", 0);
+	GlobalConfig::get_singleton()->set_custom_property_info("rendering/quality/filters/msaa", PropertyInfo(Variant::INT, "rendering/quality/filters/msaa", PROPERTY_HINT_ENUM, "Disabled,2x,4x,8x,16x"));
 	root->set_msaa(Viewport::MSAA(msaa_mode));
-	bool hdr = GLOBAL_DEF("rendering/quality/hdr", true);
+	bool hdr = GLOBAL_DEF("rendering/quality/depth/hdr", true);
 	root->set_hdr(hdr);
 
 	VS::get_singleton()->scenario_set_reflection_atlas_size(root->get_world()->get_scenario(), ref_atlas_size, ref_atlas_subdiv);
@@ -2369,9 +2369,9 @@ SceneTree::SceneTree() {
 			ext_hint += "*." + E->get();
 		}
 		//get path
-		String env_path = GLOBAL_DEF("rendering/viewport/default_environment", "");
+		String env_path = GLOBAL_DEF("rendering/environment/default_environment", "");
 		//setup property
-		GlobalConfig::get_singleton()->set_custom_property_info("rendering/viewport/default_environment", PropertyInfo(Variant::STRING, "rendering/viewport/default_environment", PROPERTY_HINT_FILE, ext_hint));
+		GlobalConfig::get_singleton()->set_custom_property_info("rendering/environment/default_environment", PropertyInfo(Variant::STRING, "rendering/viewport/default_environment", PROPERTY_HINT_FILE, ext_hint));
 		env_path = env_path.strip_edges();
 		if (env_path != String()) {
 			Ref<Environment> env = ResourceLoader::load(env_path);
@@ -2380,7 +2380,7 @@ SceneTree::SceneTree() {
 			} else {
 				if (is_editor_hint()) {
 					//file was erased, clear the field.
-					GlobalConfig::get_singleton()->set("rendering/viewport/default_environment", "");
+					GlobalConfig::get_singleton()->set("rendering/environment/default_environment", "");
 				} else {
 					//file was erased, notify user.
 					ERR_PRINTS(RTR("Default Environment as specified in Project Setings (Rendering -> Viewport -> Default Environment) could not be loaded."));

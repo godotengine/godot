@@ -56,7 +56,8 @@ public:
 
 protected:
 	enum {
-		NO_ORDER_BASE = 1 << 18
+		//properties that are not for built in values begin from this value, so builtin ones are displayed first
+		NO_BUILTIN_ORDER_BASE = 1 << 16
 	};
 
 	struct VariantContainer {
@@ -83,6 +84,7 @@ protected:
 
 	bool registering_order;
 	int last_order;
+	int last_builtin_order;
 	Map<StringName, VariantContainer> props;
 	String resource_path;
 	Map<StringName, PropertyInfo> custom_prop_info;
@@ -130,6 +132,7 @@ public:
 	void clear(const String &p_name);
 	int get_order(const String &p_name) const;
 	void set_order(const String &p_name, int p_order);
+	void set_builtin_order(const String &p_name);
 
 	Error setup(const String &p_path, const String &p_main_pack);
 

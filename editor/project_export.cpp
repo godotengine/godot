@@ -763,7 +763,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	parameters->set_name(TTR("Options"));
 	parameters->hide_top_label();
 	parameters->set_v_size_flags(SIZE_EXPAND_FILL);
-	parameters->set_hide_script(true);
+
 	parameters->connect("property_edited", this, "_update_parameters");
 
 	VBoxContainer *resources_vb = memnew(VBoxContainer);

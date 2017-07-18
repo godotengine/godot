@@ -3941,7 +3941,7 @@ void RasterizerGLES2::begin_frame() {
 
 //fragment_lighting=Globals::get_singleton()->get("rasterizer/use_fragment_lighting");
 #ifdef TOOLS_ENABLED
-	canvas_shader.set_conditional(CanvasShaderGLES2::USE_PIXEL_SNAP, GLOBAL_DEF("display/use_2d_pixel_snap", false));
+	canvas_shader.set_conditional(CanvasShaderGLES2::USE_PIXEL_SNAP, GLOBAL_DEF("rendering/use_2d_pixel_snap", false));
 	shadow_filter = ShadowFilterTechnique(int(GlobalConfig::get_singleton()->get("rasterizer/shadow_filter")));
 #endif
 
@@ -10386,7 +10386,7 @@ void RasterizerGLES2::init() {
 	copy_shader.set_conditional(CopyShaderGLES2::USE_8BIT_HDR, !use_fp16_fb);
 	canvas_shader.set_conditional(CanvasShaderGLES2::USE_DEPTH_SHADOWS, read_depth_supported);
 
-	canvas_shader.set_conditional(CanvasShaderGLES2::USE_PIXEL_SNAP, GLOBAL_DEF("display/use_2d_pixel_snap", false));
+	canvas_shader.set_conditional(CanvasShaderGLES2::USE_PIXEL_SNAP, GLOBAL_DEF("rendering/use_2d_pixel_snap", false));
 
 	npo2_textures_available = true;
 	//fragment_lighting=false;

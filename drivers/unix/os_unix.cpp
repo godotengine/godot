@@ -494,7 +494,7 @@ String OS_Unix::get_data_dir() const {
 
 		if (has_environment("HOME")) {
 
-			bool use_godot = GlobalConfig::get_singleton()->get("application/use_shared_user_dir");
+			bool use_godot = GlobalConfig::get_singleton()->get("application/config/use_shared_user_dir");
 			if (use_godot)
 				return get_environment("HOME") + "/.godot/app_userdata/" + an;
 			else

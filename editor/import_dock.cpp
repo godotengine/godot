@@ -328,7 +328,6 @@ ImportDock::ImportDock() {
 	add_child(import_opts);
 	import_opts->set_v_size_flags(SIZE_EXPAND_FILL);
 	import_opts->hide_top_label();
-	import_opts->set_hide_script(true);
 
 	hb = memnew(HBoxContainer);
 	add_child(hb);
