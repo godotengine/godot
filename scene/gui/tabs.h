@@ -119,6 +119,8 @@ public:
 	void set_tab_align(TabAlign p_align);
 	TabAlign get_tab_align() const;
 
+	void move_tab(int from, int to);
+
 	void set_tab_close_display_policy(CloseButtonDisplayPolicy p_policy);
 
 	int get_tab_count() const;

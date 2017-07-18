@@ -639,6 +639,22 @@ Tabs::TabAlign Tabs::get_tab_align() const {
 	return tab_align;
 }
 
+void Tabs::move_tab(int from, int to) {
+
+	if (from == to)
+		return;
+
+	ERR_FAIL_INDEX(from, tabs.size());
+	ERR_FAIL_INDEX(to, tabs.size());
+
+	Tab tab_from = tabs[from];
+	tabs.remove(from);
+	tabs.insert(to, tab_from);
+
+	_update_cache();
+	update();
+}
+
 int Tabs::get_tab_width(int p_idx) const {
 
 	ERR_FAIL_INDEX_V(p_idx, tabs.size(), 0);
@@ -773,6 +789,8 @@ void Tabs::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tab_align", "align"), &Tabs::set_tab_align);
 	ClassDB::bind_method(D_METHOD("get_tab_align"), &Tabs::get_tab_align);
 	ClassDB::bind_method(D_METHOD("ensure_tab_visible", "idx"), &Tabs::ensure_tab_visible);
+	ClassDB::bind_method(D_METHOD("get_tab_rect", "tab_idx"), &Tabs::get_tab_rect);
+	ClassDB::bind_method(D_METHOD("move_tab", "from", "to"), &Tabs::move_tab);
 
 	ADD_SIGNAL(MethodInfo("tab_changed", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("right_button_pressed", PropertyInfo(Variant::INT, "tab")));
