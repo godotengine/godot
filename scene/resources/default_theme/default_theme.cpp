@@ -761,11 +761,11 @@ void fill_default_theme(Ref<Theme> &t, const Ref<Font> &default_font, const Ref<
 
 	// colorPicker
 
-	t->set_constant("value_height", "ColorPicker", 23 * scale);
-	t->set_constant("value_width", "ColorPicker", 50 * scale);
-	t->set_constant("color_width", "ColorPicker", 100 * scale);
-	t->set_constant("label_width", "ColorPicker", 20 * scale);
-	t->set_constant("hseparator", "ColorPicker", 4 * scale);
+	t->set_constant("margin", "ColorPicker", 4 * scale);
+	t->set_constant("sv_width", "ColorPicker", 256 * scale);
+	t->set_constant("sv_height", "ColorPicker", 256 * scale);
+	t->set_constant("h_width", "ColorPicker", 30 * scale);
+	t->set_constant("label_width", "ColorPicker", 10 * scale);
 
 	t->set_icon("screen_picker", "ColorPicker", make_icon(icon_color_pick_png));
 	t->set_icon("add_preset", "ColorPicker", make_icon(icon_add_png));

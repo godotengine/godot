@@ -815,16 +815,12 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				color_picker = memnew(ColorPicker);
 				add_child(color_picker);
 				color_picker->hide();
-				color_picker->set_area_as_parent_rect();
-				for (int i = 0; i < 4; i++)
-					color_picker->set_margin((Margin)i, 5);
 				color_picker->connect("color_changed", this, "_color_changed");
 			}
 
 			color_picker->show();
 			color_picker->set_edit_alpha(hint != PROPERTY_HINT_COLOR_NO_ALPHA);
 			color_picker->set_pick_color(v);
-			set_size(Size2(307 * EDSCALE, 460 * EDSCALE));
 			color_picker->set_focus_on_line_edit();
 			/*
 			int ofs=80;

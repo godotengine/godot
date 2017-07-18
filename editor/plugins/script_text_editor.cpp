@@ -1276,8 +1276,6 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 						color_picker->set_pick_color(Color(color[0], color[1], color[2], alpha));
 					}
 					color_panel->set_position(get_global_transform().xform(get_local_mouse_pos()));
-					Size2 ms = Size2(300, color_picker->get_combined_minimum_size().height + 10);
-					color_panel->set_size(ms);
 				} else {
 					have_color = false;
 				}
@@ -1360,7 +1358,6 @@ ScriptTextEditor::ScriptTextEditor() {
 	add_child(color_panel);
 	color_picker = memnew(ColorPicker);
 	color_panel->add_child(color_picker);
-	color_panel->set_child_rect(color_picker); //NOT
 	color_picker->connect("color_changed", this, "_color_changed");
 
 	edit_hb = memnew(HBoxContainer);
