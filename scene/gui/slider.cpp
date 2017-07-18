@@ -167,7 +167,8 @@ void Slider::_notification(int p_what) {
 
 			if (orientation == VERTICAL) {
 
-				style->draw(ci, Rect2i(Point2i(), Size2i(style->get_minimum_size().width + style->get_center_size().width, size.height)));
+				int widget_width = style->get_minimum_size().width + style->get_center_size().width;
+				style->draw(ci, Rect2i(Point2i(size.width / 2 - widget_width / 2, 0), Size2i(widget_width, size.height)));
 				/*
 				if (mouse_inside||has_focus())
 					focus->draw(ci,Rect2i(Point2i(),Size2i(style->get_minimum_size().width+style->get_center_size().width,size.height)));
@@ -183,7 +184,9 @@ void Slider::_notification(int p_what) {
 				}
 				grabber->draw(ci, Point2i(size.width / 2 - grabber->get_size().width / 2, size.height - get_as_ratio() * areasize - grabber->get_size().height));
 			} else {
-				style->draw(ci, Rect2i(Point2i(), Size2i(size.width, style->get_minimum_size().height + style->get_center_size().height)));
+
+				int widget_height = style->get_minimum_size().height + style->get_center_size().height;
+				style->draw(ci, Rect2i(Point2i(0, size.height / 2 - widget_height / 2), Size2i(size.width, widget_height)));
 				/*
 				if (mouse_inside||has_focus())
 					focus->draw(ci,Rect2i(Point2i(),Size2i(size.width,style->get_minimum_size().height+style->get_center_size().height)));

@@ -3774,6 +3774,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	zoom->set_max(2.0);
 	zoom->set_value(1.0);
 	zoom->set_h_size_flags(SIZE_EXPAND_FILL);
+	zoom->set_v_size_flags(SIZE_EXPAND_FILL);
 	zoom->set_stretch_ratio(2);
 	hb->add_child(zoom);
 	zoom->connect("value_changed", this, "_scroll_changed");
