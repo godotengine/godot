@@ -39,6 +39,14 @@
 uint32_t atomic_conditional_increment(register uint32_t *counter);
 uint32_t atomic_decrement(register uint32_t *pw);
 uint32_t atomic_increment(register uint32_t *pw);
+uint32_t atomic_sub(register uint32_t *pw, register uint32_t val);
+uint32_t atomic_add(register uint32_t *pw, register uint32_t val);
+
+uint64_t atomic_conditional_increment(register uint64_t *counter);
+uint64_t atomic_decrement(register uint64_t *pw);
+uint64_t atomic_increment(register uint64_t *pw);
+uint64_t atomic_sub(register uint64_t *pw, register uint64_t val);
+uint64_t atomic_add(register uint64_t *pw, register uint64_t val);
 
 struct SafeRefCount {
 
