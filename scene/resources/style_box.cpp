@@ -437,3 +437,81 @@ StyleBoxFlat::StyleBoxFlat() {
 }
 StyleBoxFlat::~StyleBoxFlat() {
 }
+
+void StyleBoxLine::set_color(const Color &p_color) {
+	color = p_color;
+	emit_changed();
+}
+Color StyleBoxLine::get_color() const {
+	return color;
+}
+
+void StyleBoxLine::set_thickness(int p_thickness) {
+	thickness = p_thickness;
+	emit_changed();
+}
+int StyleBoxLine::get_thickness() const {
+	return thickness;
+}
+
+void StyleBoxLine::set_vertical(bool p_vertical) {
+	vertical = p_vertical;
+}
+bool StyleBoxLine::is_vertical() const {
+	return vertical;
+}
+
+void StyleBoxLine::set_grow(float p_grow) {
+	grow = p_grow;
+	emit_changed();
+}
+float StyleBoxLine::get_grow() const {
+	return grow;
+}
+
+void StyleBoxLine::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_color", "color"), &StyleBoxLine::set_color);
+	ClassDB::bind_method(D_METHOD("get_color"), &StyleBoxLine::get_color);
+	ClassDB::bind_method(D_METHOD("set_thickness", "thickness"), &StyleBoxLine::set_thickness);
+	ClassDB::bind_method(D_METHOD("get_thickness"), &StyleBoxLine::get_thickness);
+	ClassDB::bind_method(D_METHOD("set_grow", "grow"), &StyleBoxLine::set_grow);
+	ClassDB::bind_method(D_METHOD("get_grow"), &StyleBoxLine::get_grow);
+	ClassDB::bind_method(D_METHOD("set_vertical", "vertical"), &StyleBoxLine::set_vertical);
+	ClassDB::bind_method(D_METHOD("is_vertical"), &StyleBoxLine::is_vertical);
+
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "thickness", PROPERTY_HINT_RANGE, "0,10"), "set_thickness", "get_thickness");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "vertical"), "set_vertical", "get_vertical");
+}
+float StyleBoxLine::get_style_margin(Margin p_margin) const {
+	return thickness;
+}
+Size2 StyleBoxLine::get_center_size() const {
+	return Size2();
+}
+
+void StyleBoxLine::draw(RID p_canvas_item, const Rect2 &p_rect) const {
+	VisualServer *vs = VisualServer::get_singleton();
+	Rect2i r = p_rect;
+
+	if (vertical) {
+		r.position.y -= grow;
+		r.size.y += grow * 2;
+		r.size.x = thickness;
+	} else {
+		r.position.x -= grow;
+		r.size.x += grow * 2;
+		r.size.y = thickness;
+	}
+
+	vs->canvas_item_add_rect(p_canvas_item, r, color);
+}
+
+StyleBoxLine::StyleBoxLine() {
+	grow = 1.0;
+	thickness = 1;
+	color = Color(0.0, 0.0, 0.0);
+	vertical = false;
+}
+StyleBoxLine::~StyleBoxLine() {}

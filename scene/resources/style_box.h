@@ -164,4 +164,38 @@ public:
 	~StyleBoxFlat();
 };
 
+// just used to draw lines.
+class StyleBoxLine : public StyleBox {
+
+	GDCLASS(StyleBoxLine, StyleBox);
+	Color color;
+	int thickness;
+	bool vertical;
+	float grow;
+
+protected:
+	virtual float get_style_margin(Margin p_margin) const;
+	static void _bind_methods();
+
+public:
+	void set_color(const Color &p_color);
+	Color get_color() const;
+
+	void set_thickness(int p_thickness);
+	int get_thickness() const;
+
+	void set_vertical(bool p_vertical);
+	bool is_vertical() const;
+
+	void set_grow(float p_grow);
+	float get_grow() const;
+
+	virtual Size2 get_center_size() const;
+
+	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const;
+
+	StyleBoxLine();
+	~StyleBoxLine();
+};
+
 #endif

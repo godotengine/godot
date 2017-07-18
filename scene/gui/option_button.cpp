@@ -52,11 +52,26 @@ void OptionButton::_notification(int p_what) {
 			RID ci = get_canvas_item();
 			Ref<Texture> arrow = Control::get_icon("arrow");
 			Ref<StyleBox> normal = get_stylebox("normal");
+			Color clr = Color(1, 1, 1);
+			if (get_constant("modulate_arrow"))
+				switch (get_draw_mode()) {
+					case DRAW_PRESSED:
+						clr = get_color("font_color_pressed");
+						break;
+					case DRAW_HOVER:
+						clr = get_color("font_color_hover");
+						break;
+					case DRAW_DISABLED:
+						clr = get_color("font_color_disabled");
+						break;
+					default:
+						clr = get_color("font_color");
+				}
 
 			Size2 size = get_size();
 
 			Point2 ofs(size.width - arrow->get_width() - get_constant("arrow_margin"), int(Math::abs((size.height - arrow->get_height()) / 2)));
-			arrow->draw(ci, ofs);
+			arrow->draw(ci, ofs, clr);
 
 		} break;
 	}
