@@ -257,7 +257,6 @@ void CanvasItemEditor::_tool_select(int p_index) {
 
 	ToolButton *tb[TOOL_MAX] = { select_button, list_select_button, move_button, rotate_button, pivot_button, pan_button };
 	for (int i = 0; i < TOOL_MAX; i++) {
-
 		tb[i]->set_pressed(i == p_index);
 	}
 
@@ -530,72 +529,50 @@ void CanvasItemEditor::_find_canvas_items_at_rect(const Rect2 &p_rect, Node *p_n
 	}
 }
 
-bool CanvasItemEditor::_select(CanvasItem *item, Point2 p_click_pos, bool p_append, bool p_drag) {
-
-	if (p_append) {
-		//additive selection
-
-		if (!item) {
-
-			if (p_drag) {
-				drag_from = transform.affine_inverse().xform(p_click_pos);
-
-				box_selecting = true;
-				box_selecting_to = drag_from;
-			}
-
-			return false; //nothing to add
-		}
-
-		if (editor_selection->is_selected(item)) {
-			//already in here, erase it
-			editor_selection->remove_node(item);
-			//_remove_canvas_item(c);
-
-			viewport->update();
-			return false;
-		}
-		_append_canvas_item(item);
+void CanvasItemEditor::_select_click_on_empty_area(Point2 p_click_pos, bool p_append, bool p_box_selection) {
+	if (!p_append) {
+		editor_selection->clear();
 		viewport->update();
+	};
 
-		return true;
+	if (p_box_selection) {
+		// Start a box selection
+		drag_from = transform.affine_inverse().xform(p_click_pos);
+		box_selecting = true;
+		box_selecting_to = drag_from;
+	}
+}
 
-	} else {
-		//regular selection
-
-		if (!item) {
-			//clear because nothing clicked
-			editor_selection->clear();
-
-			if (p_drag) {
-				drag_from = transform.affine_inverse().xform(p_click_pos);
-
-				box_selecting = true;
-				box_selecting_to = drag_from;
-			}
-
-			viewport->update();
-			return false;
+bool CanvasItemEditor::_select_click_on_item(CanvasItem *item, Point2 p_click_pos, bool p_append, bool p_drag) {
+	bool still_selected = true;
+	if (p_append) {
+		if (editor_selection->is_selected(item)) {
+			// Already in the selection, remove it from the selected nodes
+			editor_selection->remove_node(item);
+			still_selected = false;
+		} else {
+			// Add the item to the selection
+			_append_canvas_item(item);
 		}
-
+	} else {
 		if (!editor_selection->is_selected(item)) {
-			//select a new one and clear previous selection
+			// Select a new one and clear previous selection
 			editor_selection->clear();
 			editor_selection->add_node(item);
-			//reselect
+			// Reselect
 			if (get_tree()->is_editor_hint()) {
 				editor->call("edit_node", item);
 			}
 		}
-
-		if (p_drag) {
-			_prepare_drag(p_click_pos);
-		}
-
-		viewport->update();
-
-		return true;
 	}
+
+	if (still_selected && p_drag) {
+		// Drag the node(s) if requested
+		_prepare_drag(p_click_pos);
+	}
+
+	viewport->update();
+	return still_selected;
 }
 
 void CanvasItemEditor::_key_move(const Vector2 &p_dir, bool p_snap, KeyMoveMODE p_move_mode) {
@@ -921,7 +898,7 @@ void CanvasItemEditor::_selection_result_pressed(int p_result) {
 	CanvasItem *item = selection_results[p_result].item;
 
 	if (item)
-		_select(item, Point2(), additive_selection, false);
+		_select_click_on_item(item, Point2(), additive_selection, false);
 }
 
 void CanvasItemEditor::_selection_menu_hide() {
@@ -961,7 +938,8 @@ void CanvasItemEditor::_list_select(const Ref<InputEventMouseButton> &b) {
 		selection_results.clear();
 
 		additive_selection = b->get_shift();
-		if (!_select(item, click, additive_selection, false))
+
+		if (!_select_click_on_item(item, click, additive_selection, false))
 			return;
 
 	} else if (!selection_results.empty()) {
@@ -1003,7 +981,6 @@ void CanvasItemEditor::_list_select(const Ref<InputEventMouseButton> &b) {
 void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 
 	{
-
 		EditorNode *en = editor;
 		EditorPluginList *over_plugin_list = en->get_editor_plugins_over();
 
@@ -1017,11 +994,11 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventMouseButton> b = p_event;
-
 	if (b.is_valid()) {
+		// Button event
 
 		if (b->get_button_index() == BUTTON_WHEEL_DOWN) {
-
+			// Scroll or pan down
 			if (bool(EditorSettings::get_singleton()->get("editors/2d/scroll_to_pan"))) {
 
 				v_scroll->set_value(v_scroll->get_value() + int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor());
@@ -1047,7 +1024,7 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (b->get_button_index() == BUTTON_WHEEL_UP) {
-
+			// Scroll or pan up
 			if (bool(EditorSettings::get_singleton()->get("editors/2d/scroll_to_pan"))) {
 
 				v_scroll->set_value(v_scroll->get_value() - int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor());
@@ -1071,7 +1048,7 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (b->get_button_index() == BUTTON_WHEEL_LEFT) {
-
+			// Pan left
 			if (bool(EditorSettings::get_singleton()->get("editors/2d/scroll_to_pan"))) {
 
 				h_scroll->set_value(h_scroll->get_value() - int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor());
@@ -1079,7 +1056,7 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (b->get_button_index() == BUTTON_WHEEL_RIGHT) {
-
+			// Pan right
 			if (bool(EditorSettings::get_singleton()->get("editors/2d/scroll_to_pan"))) {
 
 				h_scroll->set_value(h_scroll->get_value() + int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor());
@@ -1089,29 +1066,24 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 		if (b->get_button_index() == BUTTON_RIGHT) {
 
 			if (b->is_pressed() && (tool == TOOL_SELECT && b->get_alt())) {
-
+				// Open the selection list
 				_list_select(b);
 				return;
 			}
 
 			if (get_item_count() > 0 && drag != DRAG_NONE) {
-				//cancel drag
-
+				// Cancel a drag
 				if (bone_ik_list.size()) {
-
 					for (List<BoneIK>::Element *E = bone_ik_list.back(); E; E = E->prev()) {
-
 						E->get().node->edit_set_state(E->get().orig_state);
 					}
 
 					bone_ik_list.clear();
 
 				} else {
-
 					List<Node *> &selection = editor_selection->get_selected_node_list();
 
 					for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
-
 						CanvasItem *canvas_item = E->get()->cast_to<CanvasItem>();
 						if (!canvas_item || !canvas_item->is_visible_in_tree())
 							continue;
@@ -1135,33 +1107,23 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 				can_move_pivot = false;
 
 			} else if (box_selecting) {
+				// Cancel box selection
 				box_selecting = false;
 				viewport->update();
-			} else if (b->is_pressed()) {
-#if 0
-				ref_item = NULL;
-				Node* scene = get_scene()->get_root_node()->cast_to<EditorNode>()->get_edited_scene();
-				if ( scene ) ref_item =_select_canvas_item_at_pos( Point2( b.x, b.y ), scene, transform );
-#endif
-				//popup->set_position(Point2(b.x,b.y));
-				//popup->popup();
 			}
 			return;
 		}
-		/*
-		if (!canvas_items.size())
-			return;
-		*/
 
 		if (b->get_button_index() == BUTTON_LEFT && tool == TOOL_LIST_SELECT) {
 			if (b->is_pressed())
+				// Open the selection list
 				_list_select(b);
 			return;
 		}
 
 		if (b->get_button_index() == BUTTON_LEFT && tool == TOOL_EDIT_PIVOT) {
 			if (b->is_pressed()) {
-
+				// Set the pivot point
 				Point2 mouse_pos = b->get_position();
 				mouse_pos = transform.affine_inverse().xform(mouse_pos);
 				mouse_pos = snap_point(mouse_pos);
@@ -1171,16 +1133,18 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (tool == TOOL_PAN || b->get_button_index() != BUTTON_LEFT || Input::get_singleton()->is_key_pressed(KEY_SPACE))
+			// Pan the view
 			return;
+
+		// -- From now we consider that the button is BUTTON_LEFT --
 
 		if (!b->is_pressed()) {
 
 			if (drag != DRAG_NONE) {
-
+				// Stop dragging
 				if (undo_redo) {
 
 					if (bone_ik_list.size()) {
-
 						undo_redo->create_action(TTR("Edit IK Chain"));
 
 						for (List<BoneIK>::Element *E = bone_ik_list.back(); E; E = E->prev()) {
@@ -1196,7 +1160,6 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 
 						undo_redo->commit_action();
 					} else {
-
 						undo_redo->create_action(TTR("Edit CanvasItem"));
 
 						List<Node *> &selection = editor_selection->get_selected_node_list();
@@ -1240,11 +1203,7 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			if (box_selecting) {
-#if 0
-				if ( ! b->get_shift() ) _clear_canvas_items();
-				if ( box_selection_end() ) return;
-#endif
-
+				// Stop box selection
 				Node *scene = editor->get_edited_scene();
 				if (scene) {
 
@@ -1270,6 +1229,8 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 			}
 			return;
 		}
+
+		// -- From now we consider that the button is BUTTON_LEFT and that it is pressed --
 
 		Map<ObjectID, BoneList>::Element *Cbone = NULL; //closest
 
@@ -1345,7 +1306,7 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		// Single seleted item
+		// Single selected item
 		CanvasItem *canvas_item = get_single_item();
 		if (canvas_item) {
 			CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
@@ -1376,7 +1337,7 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 
 				// Drag
 				drag = _find_drag_type(click, drag_point_from);
-				if (drag != DRAG_NONE && (!Cbone || drag != DRAG_ALL)) {
+				if (drag != DRAG_NONE) {
 					drag_from = transform.affine_inverse().xform(click);
 					se->undo_state = canvas_item->edit_get_state();
 					if (canvas_item->cast_to<Node2D>())
@@ -1385,40 +1346,32 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 						se->undo_pivot = canvas_item->cast_to<Control>()->get_pivot_offset();
 					return;
 				}
-			} else {
-				drag = DRAG_NONE;
 			}
 		}
 
-		//multi canvas_item edit
-
+		// Multiple selected items
 		Point2 click = b->get_position();
 
 		if ((b->get_alt() || tool == TOOL_MOVE) && get_item_count()) {
+			// Drag the nodes
 			_prepare_drag(click);
 			viewport->update();
 			return;
 		}
 
-		Node *scene = editor->get_edited_scene();
-		if (!scene)
-			return;
-
-		/*
-		if (current_window) {
-			//no window.... ?
-			click-=current_window->get_scroll();
-		}*/
 		CanvasItem *c = NULL;
-
 		if (Cbone) {
-
 			Object *obj = ObjectDB::get_instance(Cbone->get().bone);
 			if (obj)
 				c = obj->cast_to<CanvasItem>();
 			if (c)
 				c = c->get_parent_item();
 		}
+
+		Node *scene = editor->get_edited_scene();
+		if (!scene)
+			return;
+		// Find the item to select
 		if (!c) {
 			Vector<_SelectResult> selection;
 			_find_canvas_items_at_pos(click, scene, transform, Transform2D(), selection, 1);
@@ -1426,7 +1379,6 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 				c = selection[0].item;
 
 			CanvasItem *cn = c;
-
 			while (cn) {
 				if (cn->has_meta("_edit_group_")) {
 					c = cn;
@@ -1436,28 +1388,29 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		Node *n = c;
-
 		while ((n && n != scene && n->get_owner() != scene) || (n && !n->is_class("CanvasItem"))) {
 			n = n->get_parent();
 		};
 		c = n->cast_to<CanvasItem>();
-#if 0
-		if ( b->is_pressed() ) box_selection_start( click );
-#endif
 
+		// Select the item
 		additive_selection = b->get_shift();
-		if (!_select(c, click, additive_selection))
+		if (!c) {
+			_select_click_on_empty_area(click, additive_selection, true);
+		} else if (!_select_click_on_item(c, click, additive_selection, true)) {
 			return;
+		}
 	}
 
 	Ref<InputEventMouseMotion> m = p_event;
 	if (m.is_valid()) {
+		// Mouse motion event
 
 		if (!viewport->has_focus() && (!get_focus_owner() || !get_focus_owner()->is_text_field()))
 			viewport->call_deferred("grab_focus");
 
 		if (box_selecting) {
-
+			// Update box selection
 			box_selecting_to = transform.affine_inverse().xform(m->get_position());
 			viewport->update();
 			return;
