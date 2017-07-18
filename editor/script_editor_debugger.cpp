@@ -1625,24 +1625,24 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 
 		hbc->add_child(memnew(VSeparator));
 
-		step = memnew(Button);
+		step = memnew(ToolButton);
 		hbc->add_child(step);
 		step->set_tooltip(TTR("Step Into"));
 		step->connect("pressed", this, "debug_step");
 
-		next = memnew(Button);
+		next = memnew(ToolButton);
 		hbc->add_child(next);
 		next->set_tooltip(TTR("Step Over"));
 		next->connect("pressed", this, "debug_next");
 
 		hbc->add_child(memnew(VSeparator));
 
-		dobreak = memnew(Button);
+		dobreak = memnew(ToolButton);
 		hbc->add_child(dobreak);
 		dobreak->set_tooltip(TTR("Break"));
 		dobreak->connect("pressed", this, "debug_break");
 
-		docontinue = memnew(Button);
+		docontinue = memnew(ToolButton);
 		hbc->add_child(docontinue);
 		docontinue->set_tooltip(TTR("Continue"));
 		docontinue->connect("pressed", this, "debug_continue");
@@ -1816,7 +1816,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		vmem_total->set_editable(false);
 		vmem_total->set_custom_minimum_size(Size2(100, 1) * EDSCALE);
 		vmem_hb->add_child(vmem_total);
-		vmem_refresh = memnew(Button);
+		vmem_refresh = memnew(ToolButton);
 		vmem_hb->add_child(vmem_refresh);
 		vmem_vb->add_child(vmem_hb);
 		vmem_refresh->connect("pressed", this, "_video_mem_request");

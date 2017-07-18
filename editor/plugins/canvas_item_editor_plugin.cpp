@@ -3386,6 +3386,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 
 	key_loc_button = memnew(Button("loc"));
 	key_loc_button->set_toggle_mode(true);
+	key_loc_button->set_flat(true);
 	key_loc_button->set_pressed(true);
 	key_loc_button->set_focus_mode(FOCUS_NONE);
 	key_loc_button->add_color_override("font_color", Color(1, 0.6, 0.6));
@@ -3394,6 +3395,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	animation_hb->add_child(key_loc_button);
 	key_rot_button = memnew(Button("rot"));
 	key_rot_button->set_toggle_mode(true);
+	key_rot_button->set_flat(true);
 	key_rot_button->set_pressed(true);
 	key_rot_button->set_focus_mode(FOCUS_NONE);
 	key_rot_button->add_color_override("font_color", Color(1, 0.6, 0.6));
@@ -3402,12 +3404,14 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	animation_hb->add_child(key_rot_button);
 	key_scale_button = memnew(Button("scl"));
 	key_scale_button->set_toggle_mode(true);
+	key_scale_button->set_flat(true);
 	key_scale_button->set_focus_mode(FOCUS_NONE);
 	key_scale_button->add_color_override("font_color", Color(1, 0.6, 0.6));
 	key_scale_button->add_color_override("font_color_pressed", Color(0.6, 1, 0.6));
 	key_scale_button->connect("pressed", this, "_popup_callback", varray(ANIM_INSERT_SCALE));
 	animation_hb->add_child(key_scale_button);
 	key_insert_button = memnew(Button);
+	key_insert_button->set_flat(true);
 	key_insert_button->set_focus_mode(FOCUS_NONE);
 	key_insert_button->connect("pressed", this, "_popup_callback", varray(ANIM_INSERT_KEY));
 	key_insert_button->set_tooltip(TTR("Insert Keys"));

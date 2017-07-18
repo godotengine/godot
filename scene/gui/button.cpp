@@ -89,7 +89,8 @@ void Button::_notification(int p_what) {
 			case DRAW_PRESSED: {
 
 				style = get_stylebox("pressed");
-				style->draw(ci, Rect2(Point2(0, 0), size));
+				if (!flat)
+					style->draw(ci, Rect2(Point2(0, 0), size));
 				if (has_color("font_color_pressed"))
 					color = get_color("font_color_pressed");
 				else
@@ -101,7 +102,8 @@ void Button::_notification(int p_what) {
 			case DRAW_HOVER: {
 
 				style = get_stylebox("hover");
-				style->draw(ci, Rect2(Point2(0, 0), size));
+				if (!flat)
+					style->draw(ci, Rect2(Point2(0, 0), size));
 				color = get_color("font_color_hover");
 				if (has_color("icon_color_hover"))
 					color_icon = get_color("icon_color_hover");
@@ -110,7 +112,8 @@ void Button::_notification(int p_what) {
 			case DRAW_DISABLED: {
 
 				style = get_stylebox("disabled");
-				style->draw(ci, Rect2(Point2(0, 0), size));
+				if (!flat)
+					style->draw(ci, Rect2(Point2(0, 0), size));
 				color = get_color("font_color_disabled");
 				if (has_color("icon_color_disabled"))
 					color_icon = get_color("icon_color_disabled");
