@@ -247,10 +247,7 @@ private:
 	Control *vp_base;
 	PaneDrag *pd;
 	//PaneDrag *pd_anim;
-	Panel *menu_panel;
 
-	//HSplitContainer *editor_hsplit;
-	//VSplitContainer *editor_vsplit;
 	CenterContainer *play_cc;
 	HBoxContainer *menu_hb;
 	Control *viewport;
@@ -300,7 +297,6 @@ private:
 	ConfirmationDialog *confirmation;
 	ConfirmationDialog *save_confirmation;
 	ConfirmationDialog *import_confirmation;
-	ConfirmationDialog *open_recent_confirmation;
 	ConfirmationDialog *pick_main_scene;
 	AcceptDialog *accept;
 	AcceptDialog *about;
@@ -326,8 +322,6 @@ private:
 	String current_path;
 	MenuButton *update_menu;
 
-	//TabContainer *prop_pallete;
-	//TabContainer *top_pallete;
 	String defer_load_scene;
 	String defer_export;
 	String defer_export_platform;
@@ -363,7 +357,7 @@ private:
 	TabContainer *dock_slot[DOCK_SLOT_MAX];
 	Rect2 dock_select_rect[DOCK_SLOT_MAX];
 	int dock_select_rect_over;
-	PopupPanel *dock_select_popoup;
+	PopupPanel *dock_select_popup;
 	Control *dock_select;
 	ToolButton *dock_tab_move_left;
 	ToolButton *dock_tab_move_right;
