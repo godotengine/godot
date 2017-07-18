@@ -153,7 +153,7 @@ void FileSystemDock::_notification(int p_what) {
 			files->connect("item_activated", this, "_select_file");
 			button_hist_next->connect("pressed", this, "_fw_history");
 			button_hist_prev->connect("pressed", this, "_bw_history");
-			search_icon->set_texture(get_icon("Search", "EditorIcons"));
+			search_box->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
 
 			button_hist_next->set_icon(get_icon("Forward", "EditorIcons"));
 			button_hist_prev->set_icon(get_icon("Back", "EditorIcons"));
@@ -1748,10 +1748,6 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
 	path_hb->add_child(search_box);
 	search_box->connect("text_changed", this, "_search_changed");
-
-	search_icon = memnew(TextureRect);
-	search_icon->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
-	path_hb->add_child(search_icon);
 
 	button_display_mode = memnew(ToolButton);
 	path_hb->add_child(button_display_mode);

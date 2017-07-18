@@ -786,7 +786,7 @@ void SceneTreeDock::_notification(int p_what) {
 			button_create_script->set_icon(get_icon("ScriptCreate", "EditorIcons"));
 			button_clear_script->set_icon(get_icon("ScriptRemove", "EditorIcons"));
 
-			filter_icon->set_texture(get_icon("Search", "EditorIcons"));
+			filter->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
 
 			EditorNode::get_singleton()->get_editor_selection()->connect("selection_changed", this, "_selection_changed");
 
@@ -2021,11 +2021,8 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	vbc->add_child(filter_hbc);
 	filter = memnew(LineEdit);
 	filter->set_h_size_flags(SIZE_EXPAND_FILL);
+	filter->set_placeholder(TTR("Filter nodes"));
 	filter_hbc->add_child(filter);
-	filter_icon = memnew(TextureRect);
-	filter_icon->set_custom_minimum_size(Size2(24 * EDSCALE, 0));
-	filter_hbc->add_child(filter_icon);
-	filter_icon->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
 	filter->connect("text_changed", this, "_filter_changed");
 
 	tb = memnew(ToolButton);

@@ -36,7 +36,8 @@
 #include "os/keyboard.h"
 
 void EditorHelpSearch::popup() {
-	popup_centered_ratio(0.6);
+
+	popup_centered(Size2(700, 600) * EDSCALE);
 	if (search_box->get_text() != "") {
 		search_box->select_all();
 		_update_search();
@@ -46,7 +47,7 @@ void EditorHelpSearch::popup() {
 
 void EditorHelpSearch::popup(const String &p_term) {
 
-	popup_centered_ratio(0.6);
+	popup_centered(Size2(700, 600) * EDSCALE);
 	if (p_term != "") {
 		search_box->set_text(p_term);
 		search_box->select_all();
@@ -262,6 +263,8 @@ void EditorHelpSearch::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
+		search_box->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
+
 		connect("confirmed", this, "_confirmed");
 		_update_search();
 	}
@@ -293,12 +296,7 @@ EditorHelpSearch::EditorHelpSearch() {
 
 	HBoxContainer *sb_hb = memnew(HBoxContainer);
 	search_box = memnew(LineEdit);
-	sb_hb->add_child(search_box);
-	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
-	Button *sb = memnew(Button(TTR("Search")));
-	sb->connect("pressed", this, "_update_search");
-	sb_hb->add_child(sb);
-	vbc->add_margin_child(TTR("Search:"), sb_hb);
+	vbc->add_child(search_box);
 	search_box->connect("text_changed", this, "_text_changed");
 	search_box->connect("gui_input", this, "_sbox_input");
 	search_options = memnew(Tree);
@@ -378,7 +376,7 @@ void EditorHelpIndex::select_class(const String &p_class) {
 
 void EditorHelpIndex::popup() {
 
-	popup_centered_ratio(0.6);
+	popup_centered(Size2(500, 600) * EDSCALE);
 
 	search_box->set_text("");
 	_update_class_list();
@@ -388,6 +386,7 @@ void EditorHelpIndex::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
+		search_box->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
 		_update_class_list();
 
 		connect("confirmed", this, "_tree_item_selected");
@@ -478,7 +477,7 @@ EditorHelpIndex::EditorHelpIndex() {
 	add_child(vbc);
 
 	search_box = memnew(LineEdit);
-	vbc->add_margin_child(TTR("Search:"), search_box);
+	vbc->add_child(search_box);
 	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	register_text_enter(search_box);
