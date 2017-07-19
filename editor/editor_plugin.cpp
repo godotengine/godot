@@ -175,7 +175,7 @@ Node *EditorPlugin::get_edited_scene_root() {
 	return EditorNode::get_singleton()->get_edited_scene();
 }
 
-Array EditorPlugin::get_opened_scenes_list() const {
+Array EditorPlugin::get_open_scenes() const {
 
 	Array ret;
 	Vector<EditorData::EditedScene> scenes = EditorNode::get_singleton()->get_editor_data().get_edited_scenes();
@@ -440,7 +440,7 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_import_plugin", "importer:EditorImportPlugin"), &EditorPlugin::add_import_plugin);
 	ClassDB::bind_method(D_METHOD("remove_import_plugin", "importer:EditorImportPlugin"), &EditorPlugin::remove_import_plugin);
 	ClassDB::bind_method(D_METHOD("set_input_event_forwarding_always_enabled"), &EditorPlugin::set_input_event_forwarding_always_enabled);
-	ClassDB::bind_method(D_METHOD("get_opened_scenes_list"), &EditorPlugin::get_opened_scenes_list);
+	ClassDB::bind_method(D_METHOD("get_open_scenes"), &EditorPlugin::get_open_scenes);
 	ClassDB::bind_method(D_METHOD("get_edited_scene_root:Node"), &EditorPlugin::get_edited_scene_root);
 
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "forward_canvas_gui_input", PropertyInfo(Variant::TRANSFORM2D, "canvas_xform"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));

@@ -118,7 +118,7 @@ public:
 	bool is_input_event_forwarding_always_enabled() { return input_event_forwarding_always_enabled; }
 
 	Node *get_edited_scene_root();
-	Array get_opened_scenes_list() const;
+	Array get_open_scenes() const;
 	ScriptEditor *get_script_editor();
 
 	void notify_main_screen_changed(const String &screen_name);

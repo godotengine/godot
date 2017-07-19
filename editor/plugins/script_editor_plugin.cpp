@@ -793,10 +793,10 @@ Ref<Script> ScriptEditor::_get_current_script() {
 	}
 }
 
-Array ScriptEditor::_get_opened_script_list() const {
+Array ScriptEditor::_get_open_scripts() const {
 
 	Array ret;
-	Vector<Ref<Script> > scripts = get_opened_scripts();
+	Vector<Ref<Script> > scripts = get_open_scripts();
 	int scrits_amount = scripts.size();
 	for (int idx_script = 0; idx_script < scrits_amount; idx_script++) {
 		ret.push_back(scripts[idx_script]);
@@ -1159,7 +1159,7 @@ void ScriptEditor::notify_script_close(const Ref<Script> &p_script) {
 }
 
 void ScriptEditor::notify_script_changed(const Ref<Script> &p_script) {
-	emit_signal("script_changed", p_script);
+	emit_signal("editor_script_changed", p_script);
 }
 
 static const Node *_find_node_with_script(const Node *p_node, const RefPtr &p_script) {
@@ -2104,7 +2104,7 @@ void ScriptEditor::_history_back() {
 	}
 }
 
-Vector<Ref<Script> > ScriptEditor::get_opened_scripts() const {
+Vector<Ref<Script> > ScriptEditor::get_open_scripts() const {
 
 	Vector<Ref<Script> > out_scripts = Vector<Ref<Script> >();
 
@@ -2213,9 +2213,9 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_unhandled_input", &ScriptEditor::_unhandled_input);
 
 	ClassDB::bind_method(D_METHOD("get_current_script"), &ScriptEditor::_get_current_script);
-	ClassDB::bind_method(D_METHOD("get_opened_scripts_list"), &ScriptEditor::_get_opened_script_list);
+	ClassDB::bind_method(D_METHOD("get_open_scripts"), &ScriptEditor::_get_open_scripts);
 
-	ADD_SIGNAL(MethodInfo("script_changed", PropertyInfo(Variant::OBJECT, "script:Script")));
+	ADD_SIGNAL(MethodInfo("editor_script_changed", PropertyInfo(Variant::OBJECT, "script:Script")));
 	ADD_SIGNAL(MethodInfo("script_close", PropertyInfo(Variant::STRING, "script:String")));
 }
 
