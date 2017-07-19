@@ -190,6 +190,21 @@ void GDAPI godot_nativescript_register_signal(void *p_gdnative_handle, const cha
 	E->get().signals_.insert(*(String *)&p_signal->name, signal);
 }
 
+godot_object GDAPI *godot_nativescript_new(const char *p_classname) {
+	StringName name = StringName(p_classname);
+	ClassDB::ClassInfo *class_info = ClassDB::classes.getptr(name);
+	if (class_info)
+		return ((godot_class_constructor)class_info->creation_func)();
+
+	NativeScript *script = NativeScriptLanguage::get_singleton()->get_script(name);
+	if (script) {
+		Variant::CallError err;
+		return (godot_object *)((Object *)(script->_new(NULL, 0, err)));
+	}
+
+	return NULL;
+}
+
 void GDAPI *godot_nativescript_get_userdata(godot_object *p_instance) {
 	Object *instance = (Object *)p_instance;
 	if (!instance)

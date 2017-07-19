@@ -104,6 +104,15 @@ class NativeScript : public Script {
 
 	Set<Object *> instance_owners;
 
+	/**
+	 * Registers the script in the library's script map.
+	 */
+	void register_script();
+	/**
+	 * Unregisters the script from the library's script map.
+	 */
+	void unregister_script();
+
 protected:
 	static void _bind_methods();
 
@@ -197,11 +206,13 @@ private:
 
 	void _unload_stuff();
 
+	NativeScriptDesc *get_script_desc(const StringName p_name, String &r_lib_name) const;
+
 public:
 	Map<String, Map<StringName, NativeScriptDesc> > library_classes;
 	Map<String, Ref<GDNative> > library_gdnatives;
 
-	Map<String, Set<NativeScript *> > library_script_users;
+	Map<String, Map<StringName, Set<NativeScript *> > > library_script_users;
 
 	const StringName _init_call_type = "nativescript_init";
 	const StringName _init_call_name = "godot_nativescript_init";
@@ -214,6 +225,7 @@ public:
 	}
 
 	void _hacky_api_anchor();
+	NativeScript *get_script(const StringName p_name);
 
 	virtual String get_name() const;
 	virtual void init();

@@ -90,8 +90,33 @@ void NativeScript::_placeholder_erased(PlaceHolderScriptInstance *p_placeholder)
 
 #endif
 
+void NativeScript::register_script() {
+	if (lib_path.length() > 0 && class_name.length() > 0) {
+		Map<StringName, Set<NativeScript *> > &scripts = NSL->library_script_users[lib_path];
+		if (!scripts.has(class_name)) {
+			scripts.insert(class_name, Set<NativeScript *>());
+		}
+		scripts[class_name].insert(this);
+	}
+}
+
+void NativeScript::unregister_script() {
+	if (lib_path.length() > 0 && class_name.length() > 0) {
+		Map<StringName, Set<NativeScript *> > &scripts = NSL->library_script_users[lib_path];
+		scripts[class_name].erase(this);
+		if (scripts[class_name].size() == 0) {
+			scripts.erase(class_name);
+		}
+		if (scripts.size() == 0) {
+			NSL->library_script_users.erase(lib_path);
+		}
+	}
+}
+
 void NativeScript::set_class_name(String p_class_name) {
+	unregister_script();
 	class_name = p_class_name;
+	register_script();
 }
 
 String NativeScript::get_class_name() const {
@@ -123,9 +148,9 @@ void NativeScript::set_library(Ref<GDNativeLibrary> p_library) {
 		NSL->library_classes.insert(lib_path, Map<StringName, NativeScriptDesc>());
 
 		if (!NSL->library_script_users.has(lib_path))
-			NSL->library_script_users.insert(lib_path, Set<NativeScript *>());
+			NSL->library_script_users.insert(lib_path, Map<StringName, Set<NativeScript *> >());
 
-		NSL->library_script_users[lib_path].insert(this);
+		register_script();
 
 		void *args[1] = {
 			(void *)&lib_path
@@ -443,7 +468,7 @@ NativeScript::NativeScript() {
 
 // TODO(karroffel): implement this
 NativeScript::~NativeScript() {
-	NSL->library_script_users[lib_path].erase(this);
+	unregister_script();
 }
 
 ////// ScriptInstance stuff
@@ -764,6 +789,37 @@ void NativeScriptLanguage::_hacky_api_anchor() {
 	_native_script_hook();
 }
 
+NativeScriptDesc *NativeScriptLanguage::get_script_desc(const StringName p_name, String &r_lib_name) const {
+	for (Map<String, Map<StringName, NativeScriptDesc> >::Element *E = library_classes.front(); E; E = E->next()) {
+		Map<StringName, NativeScriptDesc>::Element *e_script = E->value().find(p_name);
+		if (e_script) {
+			r_lib_name = E->key();
+			return &e_script->value();
+		}
+	}
+	return NULL;
+}
+
+NativeScript *NativeScriptLanguage::get_script(const StringName p_name) {
+	for (Map<String, Map<StringName, Set<NativeScript *> > >::Element *e_lib = library_script_users.front(); e_lib; e_lib = e_lib->next()) {
+		Map<StringName, Set<NativeScript *> >::Element *e_script = e_lib->value().find(p_name);
+		if (e_script) {
+			return e_script->value().front()->get();
+		}
+	}
+
+	String lib_name;
+	NativeScriptDesc *desc = get_script_desc(p_name, lib_name);
+	if (desc) {
+		NativeScript *new_script = memnew(NativeScript);
+		new_script->set_class_name(p_name);
+		new_script->set_library(library_gdnatives[lib_name]->get_library());
+		return new_script;
+	}
+
+	return NULL;
+}
+
 void NativeScriptLanguage::_unload_stuff() {
 	for (Map<String, Map<StringName, NativeScriptDesc> >::Element *L = library_classes.front(); L; L = L->next()) {
 		for (Map<StringName, NativeScriptDesc>::Element *C = L->get().front(); C; C = C->next()) {
@@ -993,15 +1049,17 @@ void NativeReloadNode::_notification(int p_what) {
 						args,
 						NULL);
 
-				for (Map<String, Set<NativeScript *> >::Element *U = NSL->library_script_users.front(); U; U = U->next()) {
-					for (Set<NativeScript *>::Element *S = U->get().front(); S; S = S->next()) {
-						NativeScript *script = S->get();
+				for (Map<String, Map<StringName, Set<NativeScript *> > >::Element *e_lib = NSL->library_script_users.front(); e_lib; e_lib = e_lib->next()) {
+					for (Map<StringName, Set<NativeScript *> >::Element *e_script = e_lib->value().front(); e_script; e_script = e_script->next()) {
+						for (Set<NativeScript *>::Element *S = e_script->get().front(); S; S = S->next()) {
+							NativeScript *script = S->get();
 
-						if (script->placeholders.size() == 0)
-							continue;
+							if (script->placeholders.size() == 0)
+								continue;
 
-						for (Set<PlaceHolderScriptInstance *>::Element *P = script->placeholders.front(); P; P = P->next()) {
-							script->_update_placeholder(P->get());
+							for (Set<PlaceHolderScriptInstance *>::Element *P = script->placeholders.front(); P; P = P->next()) {
+								script->_update_placeholder(P->get());
+							}
 						}
 					}
 				}

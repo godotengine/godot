@@ -217,6 +217,7 @@ typedef struct {
 } godot_signal;
 
 void GDAPI godot_nativescript_register_signal(void *p_gdnative_handle, const char *p_name, const godot_signal *p_signal);
+godot_object GDAPI *godot_nativescript_new(const char *p_classname);
 
 void GDAPI *godot_nativescript_get_userdata(godot_object *p_instance);
 
