@@ -29,8 +29,8 @@
 /*************************************************************************/
 #import "gl_view.h"
 
-#include "core/project_settings.h"
 #include "core/os/keyboard.h"
+#include "core/project_settings.h"
 #include "os_iphone.h"
 #include "servers/audio_server.h"
 
@@ -46,7 +46,7 @@
 @end
 */
 
-int gl_view_base_fb;
+int gl_view_base_fb = 0;
 static String keyboard_text;
 static GLView *_instance = NULL;
 
@@ -310,7 +310,7 @@ static void clear_touches() {
 - (BOOL)createFramebuffer {
 	// Generate IDs for a framebuffer object and a color renderbuffer
 	UIScreen *mainscr = [UIScreen mainScreen];
-	printf("******** screen size %i, %i\n", (int)mainscr.currentMode.size.width, (int)mainscr.currentMode.size.height);
+	NSLog(@"******** screen size %i, %i", (int)mainscr.currentMode.size.width, (int)mainscr.currentMode.size.height);
 	float minPointSize = MIN(mainscr.bounds.size.width, mainscr.bounds.size.height);
 	float minScreenSize = MIN(mainscr.currentMode.size.width, mainscr.currentMode.size.height);
 	self.contentScaleFactor = minScreenSize / minPointSize;
@@ -458,7 +458,7 @@ static void clear_touches() {
 #ifdef DEBUG_ENABLED
 	GLenum err = glGetError();
 	if (err)
-		NSLog(@"%x error", err);
+		NSLog(@"gl_view.drawView: %x error", err);
 #endif
 }
 
