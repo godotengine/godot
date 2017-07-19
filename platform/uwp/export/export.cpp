@@ -774,7 +774,7 @@ class EditorExportUWP : public EditorExportPlatform {
 		String architecture = arch == ARM ? "ARM" : arch == X86 ? "x86" : "x64";
 		result = result.replace("$architecture$", architecture);
 
-		result = result.replace("$display_name$", String(p_preset->get("package/display_name")).empty() ? (String)GlobalConfig::get_singleton()->get("application/name") : String(p_preset->get("package/display_name")));
+		result = result.replace("$display_name$", String(p_preset->get("package/display_name")).empty() ? (String)GlobalConfig::get_singleton()->get("application/config/name") : String(p_preset->get("package/display_name")));
 		result = result.replace("$publisher_display_name$", p_preset->get("package/publisher_display_name"));
 		result = result.replace("$app_description$", p_preset->get("package/description"));
 		result = result.replace("$bg_color$", p_preset->get("images/background_color"));

@@ -275,8 +275,8 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	String pkg_name;
 	if (p_preset->get("application/name") != "")
 		pkg_name = p_preset->get("application/name"); // app_name
-	else if (String(GlobalConfig::get_singleton()->get("application/name")) != "")
-		pkg_name = String(GlobalConfig::get_singleton()->get("application/name"));
+	else if (String(GlobalConfig::get_singleton()->get("application/config/name")) != "")
+		pkg_name = String(GlobalConfig::get_singleton()->get("application/config/name"));
 	else
 		pkg_name = "Unnamed";
 
@@ -438,7 +438,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 /**
 	When exporting for OSX from any other platform we don't have access to code signing or creating DMGs so we'll wrap the bundle into a zip file.
 
-	Should probably find a nicer way to have just one export method instead of duplicating the method like this but I would the code got very 
+	Should probably find a nicer way to have just one export method instead of duplicating the method like this but I would the code got very
 	messy with switches inside of it.
 **/
 Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {

@@ -679,7 +679,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 #ifdef TOOLS_ENABLED
 
-	if (main_args.size() == 0 && (!GlobalConfig::get_singleton()->has("application/run/main_loop_type")) && (!GlobalConfig::get_singleton()->has("application/main_scene") || String(GlobalConfig::get_singleton()->get("application/main_scene")) == ""))
+	if (main_args.size() == 0 && (!GlobalConfig::get_singleton()->has("application/run/main_loop_type")) && (!GlobalConfig::get_singleton()->has("application/run/main_scene") || String(GlobalConfig::get_singleton()->get("application/run/main_scene")) == ""))
 		use_custom_res = false; //project manager (run without arguments)
 
 #endif

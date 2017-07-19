@@ -281,7 +281,7 @@ void InputMap::load_default() {
 	key->set_scancode(KEY_PAGEDOWN);
 	action_add_event("ui_page_down", key);
 
-	//set("display/handheld/orientation", "landscape");
+	//set("display/window/handheld/orientation", "landscape");
 }
 
 InputMap::InputMap() {
