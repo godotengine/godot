@@ -245,6 +245,10 @@ void GDAPI godot_object_destroy(godot_object *p_o);
 
 godot_object GDAPI *godot_global_get_singleton(char *p_name); // result shouldn't be freed
 
+////// OS API
+
+void GDAPI *godot_get_stack_bottom(); //  returns stack bottom of the main thread
+
 ////// MethodBind API
 
 typedef struct {

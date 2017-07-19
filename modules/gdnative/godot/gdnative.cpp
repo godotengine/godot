@@ -33,6 +33,7 @@
 #include "error_macros.h"
 #include "gdnative.h"
 #include "global_constants.h"
+#include "os/os.h"
 #include "project_settings.h"
 #include "variant.h"
 
@@ -88,6 +89,10 @@ void GDAPI godot_object_destroy(godot_object *p_o) {
 godot_object GDAPI *godot_global_get_singleton(char *p_name) {
 	return (godot_object *)ProjectSettings::get_singleton()->get_singleton_object(String(p_name));
 } // result shouldn't be freed
+
+void GDAPI *godot_get_stack_bottom() {
+	return OS::get_singleton()->get_stack_bottom();
+}
 
 // MethodBind API
 
