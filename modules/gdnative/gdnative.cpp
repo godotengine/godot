@@ -847,6 +847,16 @@ bool GDNativeInstance::set(const StringName &p_name, const Variant &p_value) {
 		script->script_data->properties[p_name].setter.set_func((godot_object *)owner, script->script_data->properties[p_name].setter.method_data, userdata, *(godot_variant *)&p_value);
 		return true;
 	}
+
+	Map<StringName, GDNativeScriptData::Method>::Element *E = script->script_data->methods.find("_set");
+	if (E) {
+		Variant name = p_name;
+		const Variant *args[2] = { &name, &p_value };
+
+		E->get().method.method((godot_object *)owner, E->get().method.method_data, userdata, 2, (godot_variant **)args);
+		return true;
+	}
+
 	return false;
 }
 
@@ -856,14 +866,66 @@ bool GDNativeInstance::get(const StringName &p_name, Variant &r_ret) const {
 	if (script->script_data->properties.has(p_name)) {
 		godot_variant value = script->script_data->properties[p_name].getter.get_func((godot_object *)owner, script->script_data->properties[p_name].getter.method_data, userdata);
 		r_ret = *(Variant *)&value;
+		godot_variant_destroy(&value);
 		return true;
 	}
+
+	Map<StringName, GDNativeScriptData::Method>::Element *E = script->script_data->methods.find("_get");
+	if (E) {
+		Variant name = p_name;
+		const Variant *args[1] = { &name };
+
+		godot_variant result = E->get().method.method((godot_object *)owner, E->get().method.method_data, userdata, 1, (godot_variant **)args);
+		r_ret = *(Variant *)&result;
+		godot_variant_destroy(&result);
+		return true;
+	}
+
 	return false;
 }
 
 void GDNativeInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 	script->get_script_property_list(p_properties);
 	// TODO: dynamic properties
+
+	Map<StringName, GDNativeScriptData::Method>::Element *E = script->script_data->methods.find("_get_property_list");
+	if (E) {
+		godot_variant result = E->get().method.method((godot_object *)owner, E->get().method.method_data, userdata, 0, NULL);
+		Variant ret = *(Variant *)&result;
+		godot_variant_destroy(&result);
+
+		if (ret.get_type() != Variant::ARRAY) {
+			ERR_EXPLAIN("Wrong type for _get_property_list, must be an array of dictionaries.");
+			ERR_FAIL();
+		}
+
+		Array arr = ret;
+		for (int i = 0; i < arr.size(); i++) {
+			Dictionary d = arr[i];
+			ERR_CONTINUE(!d.has("name"))
+			ERR_CONTINUE(!d.has("type"))
+
+			PropertyInfo pinfo;
+
+			pinfo.type = Variant::Type(d["type"].operator int());
+			ERR_CONTINUE(pinfo.type < 0 || pinfo.type >= Variant::VARIANT_MAX);
+
+			pinfo.name = d["name"];
+			ERR_CONTINUE(pinfo.name == "");
+
+			if (d.has("hint")) {
+				pinfo.hint = PropertyHint(d["hint"].operator int());
+			}
+			if (d.has("hint_string")) {
+				pinfo.hint_string = d["hint_string"];
+			}
+			if (d.has("usage")) {
+				pinfo.usage = d["usage"];
+			}
+
+			p_properties->push_back(pinfo);
+		}
+	}
 }
 
 Variant::Type GDNativeInstance::get_property_type(const StringName &p_name, bool *r_is_valid) const {

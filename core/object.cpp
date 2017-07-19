@@ -1723,7 +1723,7 @@ void Object::_bind_methods() {
 	BIND_VMETHOD(MethodInfo("_set", PropertyInfo(Variant::STRING, "property"), PropertyInfo(Variant::NIL, "value")));
 #ifdef TOOLS_ENABLED
 	MethodInfo miget("_get", PropertyInfo(Variant::STRING, "property"));
-	miget.return_val.name = "var";
+	miget.return_val.name = "Variant";
 	BIND_VMETHOD(miget);
 
 	MethodInfo plget("_get_property_list");

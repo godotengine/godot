@@ -268,6 +268,8 @@ List<ClassAPI> generate_c_api_classes() {
 					method_api.method_name = method_api.method_name.get_slice(":", 0);
 				} else if (m->get().return_val.type != Variant::NIL) {
 					method_api.return_type = m->get().return_val.hint == PROPERTY_HINT_RESOURCE_TYPE ? m->get().return_val.hint_string : Variant::get_type_name(m->get().return_val.type);
+				} else if (m->get().return_val.name != "") {
+					method_api.return_type = m->get().return_val.name;
 				} else {
 					method_api.return_type = "void";
 				}
