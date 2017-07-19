@@ -249,7 +249,7 @@ public:
 	Vector2 interpolate_baked(float p_offset, bool p_cubic = false) const;
 	PoolVector2Array get_baked_points() const; //useful for going through
 
-	PoolVector2Array tesselate(int p_max_stages = 5, float p_tolerance = 4) const; //useful for display
+	PoolVector2Array tessellate(int p_max_stages = 5, float p_tolerance = 4) const; //useful for display
 
 	Curve2D();
 };
@@ -318,7 +318,7 @@ public:
 	PoolVector3Array get_baked_points() const; //useful for going through
 	PoolRealArray get_baked_tilts() const; //useful for going through
 
-	PoolVector3Array tesselate(int p_max_stages = 5, float p_tolerance = 4) const; //useful for display
+	PoolVector3Array tessellate(int p_max_stages = 5, float p_tolerance = 4) const; //useful for display
 
 	Curve3D();
 };

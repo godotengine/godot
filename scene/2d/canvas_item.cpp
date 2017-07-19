@@ -949,7 +949,7 @@ void CanvasItem::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_canvas_item"), &CanvasItem::get_canvas_item);
 
-	ClassDB::bind_method(D_METHOD("set_visible"), &CanvasItem::set_visible);
+	ClassDB::bind_method(D_METHOD("set_visible", "visible"), &CanvasItem::set_visible);
 	ClassDB::bind_method(D_METHOD("is_visible"), &CanvasItem::is_visible);
 	ClassDB::bind_method(D_METHOD("is_visible_in_tree"), &CanvasItem::is_visible_in_tree);
 	ClassDB::bind_method(D_METHOD("show"), &CanvasItem::show);
@@ -1001,7 +1001,7 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_local_mouse_pos"), &CanvasItem::get_local_mouse_pos);
 	ClassDB::bind_method(D_METHOD("get_global_mouse_position"), &CanvasItem::get_global_mouse_position);
 	ClassDB::bind_method(D_METHOD("get_canvas"), &CanvasItem::get_canvas);
-	ClassDB::bind_method(D_METHOD("get_world_2d"), &CanvasItem::get_world_2d);
+	ClassDB::bind_method(D_METHOD("get_world_2d:World2D"), &CanvasItem::get_world_2d);
 	//ClassDB::bind_method(D_METHOD("get_viewport"),&CanvasItem::get_viewport);
 
 	ClassDB::bind_method(D_METHOD("set_material", "material:Material"), &CanvasItem::set_material);
@@ -1018,7 +1018,7 @@ void CanvasItem::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("make_canvas_pos_local", "screen_point"),
 			&CanvasItem::make_canvas_pos_local);
-	ClassDB::bind_method(D_METHOD("make_input_local", "event"), &CanvasItem::make_input_local);
+	ClassDB::bind_method(D_METHOD("make_input_local:InputEvent", "event:InputEvent"), &CanvasItem::make_input_local);
 
 	BIND_VMETHOD(MethodInfo("_draw"));
 

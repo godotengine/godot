@@ -1323,8 +1323,8 @@ void CubeMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_flags", "flags"), &CubeMap::set_flags);
 	ClassDB::bind_method(D_METHOD("get_flags"), &CubeMap::get_flags);
 
-	ClassDB::bind_method(D_METHOD("set_side", "side", "image"), &CubeMap::set_side);
-	ClassDB::bind_method(D_METHOD("get_side", "side"), &CubeMap::get_side);
+	ClassDB::bind_method(D_METHOD("set_side", "side", "image:Image"), &CubeMap::set_side);
+	ClassDB::bind_method(D_METHOD("get_side:Image", "side"), &CubeMap::get_side);
 	ClassDB::bind_method(D_METHOD("set_storage", "mode"), &CubeMap::set_storage);
 	ClassDB::bind_method(D_METHOD("get_storage"), &CubeMap::get_storage);
 	ClassDB::bind_method(D_METHOD("set_lossy_storage_quality", "quality"), &CubeMap::set_lossy_storage_quality);

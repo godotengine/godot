@@ -1327,7 +1327,7 @@ void ItemList::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("ensure_current_is_visible"), &ItemList::ensure_current_is_visible);
 
-	ClassDB::bind_method(D_METHOD("get_v_scroll"), &ItemList::get_v_scroll);
+	ClassDB::bind_method(D_METHOD("get_v_scroll:VScrollBar"), &ItemList::get_v_scroll);
 
 	ClassDB::bind_method(D_METHOD("_scroll_changed"), &ItemList::_scroll_changed);
 	ClassDB::bind_method(D_METHOD("_gui_input"), &ItemList::_gui_input);

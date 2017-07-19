@@ -478,7 +478,7 @@ void ColorPicker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_raw_mode"), &ColorPicker::is_raw_mode);
 	ClassDB::bind_method(D_METHOD("set_edit_alpha", "show"), &ColorPicker::set_edit_alpha);
 	ClassDB::bind_method(D_METHOD("is_editing_alpha"), &ColorPicker::is_editing_alpha);
-	ClassDB::bind_method(D_METHOD("add_preset"), &ColorPicker::add_preset);
+	ClassDB::bind_method(D_METHOD("add_preset", "color"), &ColorPicker::add_preset);
 	ClassDB::bind_method(D_METHOD("_value_changed"), &ColorPicker::_value_changed);
 	ClassDB::bind_method(D_METHOD("_html_entered"), &ColorPicker::_html_entered);
 	ClassDB::bind_method(D_METHOD("_text_type_toggled"), &ColorPicker::_text_type_toggled);

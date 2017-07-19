@@ -1038,7 +1038,7 @@ void _OS::_bind_methods() {
 			&_OS::get_unix_time_from_datetime);
 	ClassDB::bind_method(D_METHOD("get_system_time_secs"), &_OS::get_system_time_secs);
 
-	ClassDB::bind_method(D_METHOD("set_icon", "icon"), &_OS::set_icon);
+	ClassDB::bind_method(D_METHOD("set_icon", "icon:Image"), &_OS::set_icon);
 
 	ClassDB::bind_method(D_METHOD("get_exit_code"), &_OS::get_exit_code);
 	ClassDB::bind_method(D_METHOD("set_exit_code", "code"), &_OS::set_exit_code);

@@ -240,7 +240,7 @@ void IP::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_resolve_item_address", "id"), &IP::get_resolve_item_address);
 	ClassDB::bind_method(D_METHOD("erase_resolve_item", "id"), &IP::erase_resolve_item);
 	ClassDB::bind_method(D_METHOD("get_local_addresses"), &IP::_get_local_addresses);
-	ClassDB::bind_method(D_METHOD("clear_cache"), &IP::clear_cache, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("clear_cache", "hostname"), &IP::clear_cache, DEFVAL(""));
 
 	BIND_CONSTANT(RESOLVER_STATUS_NONE);
 	BIND_CONSTANT(RESOLVER_STATUS_WAITING);

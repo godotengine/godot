@@ -204,7 +204,7 @@ void PathSpatialGizmo::redraw() {
 	if (c.is_null())
 		return;
 
-	PoolVector<Vector3> v3a = c->tesselate();
+	PoolVector<Vector3> v3a = c->tessellate();
 	//PoolVector<Vector3> v3a=c->get_baked_points();
 
 	int v3s = v3a.size();
@@ -289,7 +289,7 @@ bool PathEditorPlugin::forward_spatial_gui_input(Camera *p_camera, const Ref<Inp
 
 		if (mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT && (curve_create->is_pressed() || (curve_edit->is_pressed() && mb->get_control()))) {
 			//click into curve, break it down
-			PoolVector<Vector3> v3a = c->tesselate();
+			PoolVector<Vector3> v3a = c->tessellate();
 			int idx = 0;
 			int rc = v3a.size();
 			int closest_seg = -1;

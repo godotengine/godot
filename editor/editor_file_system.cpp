@@ -137,7 +137,7 @@ EditorFileSystemDirectory *EditorFileSystemDirectory::get_parent() {
 void EditorFileSystemDirectory::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_subdir_count"), &EditorFileSystemDirectory::get_subdir_count);
-	ClassDB::bind_method(D_METHOD("get_subdir", "idx"), &EditorFileSystemDirectory::get_subdir);
+	ClassDB::bind_method(D_METHOD("get_subdir:EditorFileSystemDirectory", "idx"), &EditorFileSystemDirectory::get_subdir);
 	ClassDB::bind_method(D_METHOD("get_file_count"), &EditorFileSystemDirectory::get_file_count);
 	ClassDB::bind_method(D_METHOD("get_file", "idx"), &EditorFileSystemDirectory::get_file);
 	ClassDB::bind_method(D_METHOD("get_file_path", "idx"), &EditorFileSystemDirectory::get_file_path);

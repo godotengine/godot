@@ -355,8 +355,8 @@ void Light2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_editor_only", "editor_only"), &Light2D::set_editor_only);
 	ClassDB::bind_method(D_METHOD("is_editor_only"), &Light2D::is_editor_only);
 
-	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &Light2D::set_texture);
-	ClassDB::bind_method(D_METHOD("get_texture"), &Light2D::get_texture);
+	ClassDB::bind_method(D_METHOD("set_texture", "texture:Texture"), &Light2D::set_texture);
+	ClassDB::bind_method(D_METHOD("get_texture:Texture"), &Light2D::get_texture);
 
 	ClassDB::bind_method(D_METHOD("set_texture_offset", "texture_offset"), &Light2D::set_texture_offset);
 	ClassDB::bind_method(D_METHOD("get_texture_offset"), &Light2D::get_texture_offset);

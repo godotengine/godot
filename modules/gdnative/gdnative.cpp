@@ -481,8 +481,8 @@ void GDNativeScript::set_script_name(StringName p_script_name) {
 }
 
 void GDNativeScript::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_library"), &GDNativeScript::get_library);
-	ClassDB::bind_method(D_METHOD("set_library", "library"), &GDNativeScript::set_library);
+	ClassDB::bind_method(D_METHOD("get_library:GDNativeLibrary"), &GDNativeScript::get_library);
+	ClassDB::bind_method(D_METHOD("set_library", "library:GDNativeLibrary"), &GDNativeScript::set_library);
 	ClassDB::bind_method(D_METHOD("get_script_name"), &GDNativeScript::get_script_name);
 	ClassDB::bind_method(D_METHOD("set_script_name", "script_name"), &GDNativeScript::set_script_name);
 

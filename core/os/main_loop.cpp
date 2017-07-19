@@ -32,7 +32,7 @@
 
 void MainLoop::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("input_event", "ev"), &MainLoop::input_event);
+	ClassDB::bind_method(D_METHOD("input_event", "ev:InputEvent"), &MainLoop::input_event);
 	ClassDB::bind_method(D_METHOD("input_text", "text"), &MainLoop::input_text);
 	ClassDB::bind_method(D_METHOD("init"), &MainLoop::init);
 	ClassDB::bind_method(D_METHOD("iteration", "delta"), &MainLoop::iteration);

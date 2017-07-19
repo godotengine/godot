@@ -1193,7 +1193,7 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_scroll_offset"), &GraphEdit::_update_scroll_offset);
 	ClassDB::bind_method(D_METHOD("_connections_layer_draw"), &GraphEdit::_connections_layer_draw);
 
-	ClassDB::bind_method(D_METHOD("set_selected", "node"), &GraphEdit::set_selected);
+	ClassDB::bind_method(D_METHOD("set_selected", "node:Node"), &GraphEdit::set_selected);
 
 	ADD_SIGNAL(MethodInfo("connection_request", PropertyInfo(Variant::STRING, "from"), PropertyInfo(Variant::INT, "from_slot"), PropertyInfo(Variant::STRING, "to"), PropertyInfo(Variant::INT, "to_slot")));
 	ADD_SIGNAL(MethodInfo("disconnection_request", PropertyInfo(Variant::STRING, "from"), PropertyInfo(Variant::INT, "from_slot"), PropertyInfo(Variant::STRING, "to"), PropertyInfo(Variant::INT, "to_slot")));

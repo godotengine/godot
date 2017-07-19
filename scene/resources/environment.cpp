@@ -1103,8 +1103,8 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_adjustment_saturation", "saturation"), &Environment::set_adjustment_saturation);
 	ClassDB::bind_method(D_METHOD("get_adjustment_saturation"), &Environment::get_adjustment_saturation);
 
-	ClassDB::bind_method(D_METHOD("set_adjustment_color_correction", "color_correction"), &Environment::set_adjustment_color_correction);
-	ClassDB::bind_method(D_METHOD("get_adjustment_color_correction"), &Environment::get_adjustment_color_correction);
+	ClassDB::bind_method(D_METHOD("set_adjustment_color_correction", "color_correction:Texture"), &Environment::set_adjustment_color_correction);
+	ClassDB::bind_method(D_METHOD("get_adjustment_color_correction:Texture"), &Environment::get_adjustment_color_correction);
 
 	ADD_GROUP("Adjustments", "adjustment_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "adjustment_enabled"), "set_adjustment_enable", "is_adjustment_enabled");
