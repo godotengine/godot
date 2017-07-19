@@ -60,13 +60,14 @@ Error AudioDriverOSX::initDevice() {
 
 	zeromem(&desc, sizeof(desc));
 	desc.componentType = kAudioUnitType_Output;
-	desc.componentSubType = 0; /* !!! FIXME: ? */
-	comp = AudioComponentFindNext(NULL, &desc);
+	desc.componentSubType = kAudioUnitSubType_HALOutput;
 	desc.componentManufacturer = kAudioUnitManufacturer_Apple;
+
+	comp = AudioComponentFindNext(NULL, &desc);
+	ERR_FAIL_COND_V(comp == NULL, FAILED);
 
 	result = AudioComponentInstanceNew(comp, &audio_unit);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
-	ERR_FAIL_COND_V(comp == NULL, FAILED);
 
 	result = AudioUnitSetProperty(audio_unit, kAudioUnitProperty_StreamFormat, scope, bus, &strdesc, sizeof(strdesc));
 	ERR_FAIL_COND_V(result != noErr, FAILED);
