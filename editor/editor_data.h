@@ -31,6 +31,7 @@
 #define EDITOR_DATA_H
 
 #include "editor/editor_plugin.h"
+#include "editor/plugins/script_editor_plugin.h"
 #include "list.h"
 #include "pair.h"
 #include "scene/resources/texture.h"
@@ -109,6 +110,17 @@ public:
 		Ref<Texture> icon;
 	};
 
+	struct EditedScene {
+		Node *root;
+		Dictionary editor_states;
+		List<Node *> selection;
+		Vector<EditorHistory::History> history_stored;
+		int history_current;
+		Dictionary custom_state;
+		uint64_t version;
+		NodePath live_edit_root;
+	};
+
 private:
 	Vector<EditorPlugin *> editor_plugins;
 
@@ -123,17 +135,6 @@ private:
 	UndoRedo undo_redo;
 
 	void _cleanup_history();
-
-	struct EditedScene {
-		Node *root;
-		Dictionary editor_states;
-		List<Node *> selection;
-		Vector<EditorHistory::History> history_stored;
-		int history_current;
-		Dictionary custom_state;
-		uint64_t version;
-		NodePath live_edit_root;
-	};
 
 	Vector<EditedScene> edited_scene;
 	int current_edited_scene;
@@ -180,6 +181,7 @@ public:
 	int get_edited_scene() const;
 	Node *get_edited_scene_root(int p_idx = -1);
 	int get_edited_scene_count() const;
+	Vector<EditedScene> get_edited_scenes() const;
 	String get_scene_title(int p_idx) const;
 	String get_scene_path(int p_idx) const;
 	String get_scene_type(int p_idx) const;

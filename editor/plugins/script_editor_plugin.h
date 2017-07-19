@@ -321,6 +321,9 @@ class ScriptEditor : public PanelContainer {
 	int file_dialog_option;
 	void _file_dialog_action(String p_file);
 
+	Ref<Script> _get_current_script();
+	Array _get_opened_script_list() const;
+
 	static void _open_script_request(const String &p_path);
 
 	static ScriptEditor *script_editor;
@@ -354,10 +357,14 @@ public:
 	void get_window_layout(Ref<ConfigFile> p_layout);
 
 	void set_scene_root_script(Ref<Script> p_script);
+	Vector<Ref<Script> > get_opened_scripts() const;
 
 	bool script_goto_method(Ref<Script> p_script, const String &p_method);
 
 	virtual void edited_scene_changed();
+
+	void notify_script_close(const Ref<Script> &p_script);
+	void notify_script_changed(const Ref<Script> &p_script);
 
 	void close_builtin_scripts_from_scene(const String &p_scene);
 
