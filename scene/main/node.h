@@ -31,7 +31,7 @@
 #define NODE_H
 
 #include "class_db.h"
-#include "global_config.h"
+#include "project_settings.h"
 #include "map.h"
 #include "object.h"
 #include "path_db.h"

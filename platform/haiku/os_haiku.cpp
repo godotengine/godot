@@ -331,3 +331,8 @@ void OS_Haiku::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) c
 String OS_Haiku::get_executable_path() const {
 	return OS::get_executable_path();
 }
+
+bool OS_Haiku::_check_internal_feature_support(const String &p_feature) {
+
+	return p_feature == "pc" || p_feature == "s3tc";
+}

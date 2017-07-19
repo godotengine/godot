@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "audio_driver_jandroid.h"
 
-#include "global_config.h"
+#include "project_settings.h"
 #include "os/os.h"
 #include "thread_jandroid.h"
 

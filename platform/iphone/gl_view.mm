@@ -29,7 +29,7 @@
 /*************************************************************************/
 #import "gl_view.h"
 
-#include "core/global_config.h"
+#include "core/project_settings.h"
 #include "core/os/keyboard.h"
 #include "os_iphone.h"
 #include "servers/audio_server.h"
@@ -77,7 +77,7 @@ void _hide_keyboard() {
 };
 
 bool _play_video(String p_path, float p_volume, String p_audio_track, String p_subtitle_track) {
-	p_path = GlobalConfig::get_singleton()->globalize_path(p_path);
+	p_path = ProjectSettings::get_singleton()->globalize_path(p_path);
 
 	NSString *file_path = [[[NSString alloc] initWithUTF8String:p_path.utf8().get_data()] autorelease];
 

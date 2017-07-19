@@ -31,7 +31,7 @@
 #include "broad_phase_2d_basic.h"
 #include "broad_phase_2d_hash_grid.h"
 #include "collision_solver_2d_sw.h"
-#include "global_config.h"
+#include "project_settings.h"
 #include "os/os.h"
 #include "script_language.h"
 
@@ -1264,7 +1264,7 @@ Physics2DServerSW::Physics2DServerSW() {
 	island_count = 0;
 	active_objects = 0;
 	collision_pairs = 0;
-	using_threads = int(GlobalConfig::get_singleton()->get("physics/2d/thread_model")) == 2;
+	using_threads = int(ProjectSettings::get_singleton()->get("physics/2d/thread_model")) == 2;
 };
 
 Physics2DServerSW::~Physics2DServerSW(){

@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "core_bind.h"
 
-#include "core/global_config.h"
+#include "core/project_settings.h"
 #include "geometry.h"
 #include "io/file_access_compressed.h"
 #include "io/file_access_encrypted.h"
@@ -106,7 +106,7 @@ PoolStringArray _ResourceLoader::get_dependencies(const String &p_path) {
 
 bool _ResourceLoader::has(const String &p_path) {
 
-	String local_path = GlobalConfig::get_singleton()->localize_path(p_path);
+	String local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	return ResourceCache::has(local_path);
 };
 

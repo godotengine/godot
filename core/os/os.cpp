@@ -30,9 +30,9 @@
 #include "os.h"
 
 #include "dir_access.h"
-#include "global_config.h"
 #include "input.h"
 #include "os/file_access.h"
+#include "project_settings.h"
 
 #include <stdarg.h>
 
@@ -260,7 +260,7 @@ String OS::get_locale() const {
 
 String OS::get_resource_dir() const {
 
-	return GlobalConfig::get_singleton()->get_resource_path();
+	return ProjectSettings::get_singleton()->get_resource_path();
 }
 
 String OS::get_system_dir(SystemDir p_dir) const {
@@ -269,7 +269,7 @@ String OS::get_system_dir(SystemDir p_dir) const {
 }
 
 String OS::get_safe_application_name() const {
-	String an = GlobalConfig::get_singleton()->get("application/config/name");
+	String an = ProjectSettings::get_singleton()->get("application/config/name");
 	Vector<String> invalid_char = String("\\ / : * ? \" < > |").split(" ");
 	for (int i = 0; i < invalid_char.size(); i++) {
 		an = an.replace(invalid_char[i], "-");
@@ -492,6 +492,24 @@ int OS::get_power_seconds_left() {
 }
 int OS::get_power_percent_left() {
 	return -1;
+}
+
+bool OS::check_feature_support(const String &p_feature) {
+
+	if (p_feature == get_name())
+		return true;
+#ifdef DEBUG_ENABLED
+	if (p_feature == "debug")
+		return true;
+#else
+	if (p_feature == "release")
+		return true;
+#endif
+
+	if (_check_internal_feature_support(p_feature))
+		return true;
+
+	return false;
 }
 
 OS::OS() {

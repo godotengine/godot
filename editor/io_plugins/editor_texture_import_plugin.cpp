@@ -33,7 +33,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor_atlas.h"
-#include "global_config.h"
+#include "project_settings.h"
 #include "io/image_loader.h"
 #include "io/marshalls.h"
 #include "io/resource_saver.h"
@@ -1653,7 +1653,7 @@ Vector<uint8_t> EditorTextureImportPlugin::custom_export(const String& p_path, c
 	uint8_t f4[4];
 	encode_uint32(flags,&f4[0]);
 	MD5Init(&ctx);
-	String gp = GlobalConfig::get_singleton()->globalize_path(p_path);
+	String gp = ProjectSettings::get_singleton()->globalize_path(p_path);
 	CharString cs = gp.utf8();
 	MD5Update(&ctx,(unsigned char*)cs.get_data(),cs.length());
 	MD5Update(&ctx,f4,4);

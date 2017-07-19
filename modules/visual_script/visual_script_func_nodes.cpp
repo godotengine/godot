@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "visual_script_func_nodes.h"
 
-#include "global_config.h"
+#include "project_settings.h"
 #include "io/resource_loader.h"
 #include "os/os.h"
 #include "scene/main/node.h"
@@ -347,7 +347,7 @@ void VisualScriptFunctionCall::set_singleton(const StringName &p_path) {
 		return;
 
 	singleton = p_path;
-	Object *obj = GlobalConfig::get_singleton()->get_singleton_object(singleton);
+	Object *obj = ProjectSettings::get_singleton()->get_singleton_object(singleton);
 	if (obj) {
 		base_type = obj->get_class();
 	}
@@ -383,7 +383,7 @@ void VisualScriptFunctionCall::_update_method_cache() {
 
 	} else if (call_mode == CALL_MODE_SINGLETON) {
 
-		Object *obj = GlobalConfig::get_singleton()->get_singleton_object(singleton);
+		Object *obj = ProjectSettings::get_singleton()->get_singleton_object(singleton);
 		if (obj) {
 			type = obj->get_class();
 			script = obj->get_script();
@@ -568,11 +568,11 @@ void VisualScriptFunctionCall::_validate_property(PropertyInfo &property) const 
 		if (call_mode != CALL_MODE_SINGLETON) {
 			property.usage = 0;
 		} else {
-			List<GlobalConfig::Singleton> names;
-			GlobalConfig::get_singleton()->get_singletons(&names);
+			List<ProjectSettings::Singleton> names;
+			ProjectSettings::get_singleton()->get_singletons(&names);
 			property.hint = PROPERTY_HINT_ENUM;
 			String sl;
-			for (List<GlobalConfig::Singleton>::Element *E = names.front(); E; E = E->next()) {
+			for (List<ProjectSettings::Singleton>::Element *E = names.front(); E; E = E->next()) {
 				if (sl != String())
 					sl += ",";
 				sl += E->get().name;
@@ -606,7 +606,7 @@ void VisualScriptFunctionCall::_validate_property(PropertyInfo &property) const 
 			property.hint_string = itos(get_visual_script()->get_instance_ID());
 		} else if (call_mode == CALL_MODE_SINGLETON) {
 
-			Object *obj = GlobalConfig::get_singleton()->get_singleton_object(singleton);
+			Object *obj = ProjectSettings::get_singleton()->get_singleton_object(singleton);
 			if (obj) {
 				property.hint = PROPERTY_HINT_METHOD_OF_INSTANCE;
 				property.hint_string = itos(obj->get_instance_ID());
@@ -867,7 +867,7 @@ public:
 			} break;
 			case VisualScriptFunctionCall::CALL_MODE_SINGLETON: {
 
-				Object *object = GlobalConfig::get_singleton()->get_singleton_object(singleton);
+				Object *object = ProjectSettings::get_singleton()->get_singleton_object(singleton);
 				if (!object) {
 					r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
 					r_error_str = "Invalid singleton name: '" + String(singleton) + "'";

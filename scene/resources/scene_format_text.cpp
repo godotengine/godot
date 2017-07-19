@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "scene_format_text.h"
 
-#include "global_config.h"
+#include "project_settings.h"
 #include "os/dir_access.h"
 #include "version.h"
 
@@ -110,7 +110,7 @@ Error ResourceInteractiveLoaderText::_parse_ext_resource(VariantParser::Stream *
 
 		if (path.find("://") == -1 && path.is_rel_path()) {
 			// path is relative to file being loaded, so convert to a resource path
-			path = GlobalConfig::get_singleton()->localize_path(res_path.get_base_dir().plus_file(path));
+			path = ProjectSettings::get_singleton()->localize_path(res_path.get_base_dir().plus_file(path));
 		}
 
 		r_res = ResourceLoader::load(path, type);
@@ -165,7 +165,7 @@ Error ResourceInteractiveLoaderText::poll() {
 
 		if (path.find("://") == -1 && path.is_rel_path()) {
 			// path is relative to file being loaded, so convert to a resource path
-			path = GlobalConfig::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
+			path = ProjectSettings::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
 		}
 
 		if (remaps.has(path)) {
@@ -648,7 +648,7 @@ void ResourceInteractiveLoaderText::get_dependencies(FileAccess *f, List<String>
 
 		if (path.find("://") == -1 && path.is_rel_path()) {
 			// path is relative to file being loaded, so convert to a resource path
-			path = GlobalConfig::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
+			path = ProjectSettings::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
 		}
 
 		if (p_add_types) {
@@ -905,9 +905,9 @@ Ref<ResourceInteractiveLoader> ResourceFormatLoaderText::load_interactive(const 
 	}
 
 	Ref<ResourceInteractiveLoaderText> ria = memnew(ResourceInteractiveLoaderText);
-	ria->local_path = GlobalConfig::get_singleton()->localize_path(p_path);
+	ria->local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	ria->res_path = ria->local_path;
-	//ria->set_local_path( GlobalConfig::get_singleton()->localize_path(p_path) );
+	//ria->set_local_path( ProjectSettings::get_singleton()->localize_path(p_path) );
 	ria->open(f);
 
 	return ria;
@@ -953,9 +953,9 @@ String ResourceFormatLoaderText::get_resource_type(const String &p_path) const {
 	}
 
 	Ref<ResourceInteractiveLoaderText> ria = memnew(ResourceInteractiveLoaderText);
-	ria->local_path = GlobalConfig::get_singleton()->localize_path(p_path);
+	ria->local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	ria->res_path = ria->local_path;
-	//ria->set_local_path( GlobalConfig::get_singleton()->localize_path(p_path) );
+	//ria->set_local_path( ProjectSettings::get_singleton()->localize_path(p_path) );
 	String r = ria->recognize(f);
 	return r;
 }
@@ -969,9 +969,9 @@ void ResourceFormatLoaderText::get_dependencies(const String &p_path, List<Strin
 	}
 
 	Ref<ResourceInteractiveLoaderText> ria = memnew(ResourceInteractiveLoaderText);
-	ria->local_path = GlobalConfig::get_singleton()->localize_path(p_path);
+	ria->local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	ria->res_path = ria->local_path;
-	//ria->set_local_path( GlobalConfig::get_singleton()->localize_path(p_path) );
+	//ria->set_local_path( ProjectSettings::get_singleton()->localize_path(p_path) );
 	ria->get_dependencies(f, p_dependencies, p_add_types);
 }
 
@@ -984,9 +984,9 @@ Error ResourceFormatLoaderText::rename_dependencies(const String &p_path, const 
 	}
 
 	Ref<ResourceInteractiveLoaderText> ria = memnew(ResourceInteractiveLoaderText);
-	ria->local_path = GlobalConfig::get_singleton()->localize_path(p_path);
+	ria->local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	ria->res_path = ria->local_path;
-	//ria->set_local_path( GlobalConfig::get_singleton()->localize_path(p_path) );
+	//ria->set_local_path( ProjectSettings::get_singleton()->localize_path(p_path) );
 	return ria->rename_dependencies(f, p_path, p_map);
 }
 
@@ -1118,7 +1118,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 	ERR_FAIL_COND_V(err, ERR_CANT_OPEN);
 	FileAccessRef _fref(f);
 
-	local_path = GlobalConfig::get_singleton()->localize_path(p_path);
+	local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 
 	relative_paths = p_flags & ResourceSaver::FLAG_RELATIVE_PATHS;
 	skip_editor = p_flags & ResourceSaver::FLAG_OMIT_EDITOR_PROPERTIES;

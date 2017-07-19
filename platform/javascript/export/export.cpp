@@ -61,6 +61,7 @@ public:
 	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const;
 
 	virtual String get_name() const;
+	virtual String get_os_name() const;
 	virtual Ref<Texture> get_logo() const;
 
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const;
@@ -73,6 +74,12 @@ public:
 	virtual String get_device_info(int p_device) const { return TTR("Run exported HTML in the system's default browser."); }
 	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags);
 	virtual Ref<Texture> get_run_icon() const;
+
+	virtual void get_platform_features(List<String> *r_features) {
+
+		r_features->push_back("web");
+		r_features->push_back("JavaScript");
+	}
 
 	EditorExportPlatformJavaScript();
 };
@@ -165,6 +172,11 @@ bool EditorExportPlatformJavaScript::get_option_visibility(const String &p_optio
 String EditorExportPlatformJavaScript::get_name() const {
 
 	return "HTML5";
+}
+
+String EditorExportPlatformJavaScript::get_os_name() const {
+
+	return "JavaScript";
 }
 
 Ref<Texture> EditorExportPlatformJavaScript::get_logo() const {

@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "visual_script.h"
 
-#include "global_config.h"
+#include "project_settings.h"
 #include "os/os.h"
 #include "scene/main/node.h"
 #include "visual_script_nodes.h"

@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "compression.h"
-#include "global_config.h"
+#include "project_settings.h"
 #include "os/copymem.h"
 #include "zip_io.h"
 

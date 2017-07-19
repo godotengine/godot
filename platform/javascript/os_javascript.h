@@ -164,6 +164,8 @@ public:
 	virtual int get_power_seconds_left();
 	virtual int get_power_percent_left();
 
+	virtual bool _check_internal_feature_support(const String &p_feature);
+
 	OS_JavaScript(const char *p_execpath, GetDataDirFunc p_get_data_dir_func);
 	~OS_JavaScript();
 };

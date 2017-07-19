@@ -36,7 +36,7 @@
 #include "body_pair_2d_sw.h"
 #include "broad_phase_2d_sw.h"
 #include "collision_object_2d_sw.h"
-#include "global_config.h"
+#include "project_settings.h"
 #include "hash_map.h"
 #include "typedefs.h"
 

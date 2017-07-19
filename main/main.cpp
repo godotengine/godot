@@ -31,10 +31,10 @@
 #include "app_icon.gen.h"
 #include "core/register_core_types.h"
 #include "drivers/register_driver_types.h"
-#include "global_config.h"
 #include "message_queue.h"
 #include "modules/register_module_types.h"
 #include "os/os.h"
+#include "project_settings.h"
 #include "scene/register_scene_types.h"
 #include "script_debugger_local.h"
 #include "script_debugger_remote.h"
@@ -74,7 +74,7 @@
 #include "translation.h"
 #include "version.h"
 
-static GlobalConfig *globals = NULL;
+static ProjectSettings *globals = NULL;
 static Engine *engine = NULL;
 static InputMap *input_map = NULL;
 static bool _start_success = false;
@@ -205,14 +205,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	Thread::_main_thread_id = Thread::get_caller_ID();
 
-	globals = memnew(GlobalConfig);
+	globals = memnew(ProjectSettings);
 	input_map = memnew(InputMap);
 
 	register_core_settings(); //here globals is present
 
 	translation_server = memnew(TranslationServer);
 	performance = memnew(Performance);
-	globals->add_singleton(GlobalConfig::Singleton("Performance", performance));
+	globals->add_singleton(ProjectSettings::Singleton("Performance", performance));
 
 	MAIN_PRINT("Main: Parse CMDLine");
 
@@ -529,7 +529,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 			if (I->next()) {
 
-				GlobalConfig::get_singleton()->set("editor_scene", game_path = I->next()->get());
+				ProjectSettings::get_singleton()->set("editor_scene", game_path = I->next()->get());
 			} else {
 				goto error;
 			}
@@ -551,7 +551,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			if (I->next()) {
 
 				int editor_pid = I->next()->get().to_int();
-				GlobalConfig::get_singleton()->set("editor_pid", editor_pid);
+				ProjectSettings::get_singleton()->set("editor_pid", editor_pid);
 				N = I->next()->next();
 			} else {
 				goto error;
@@ -642,7 +642,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #ifdef TOOLS_ENABLED
 	if (editor) {
 		packed_data->set_disabled(true);
-		globals->set_disable_platform_override(true);
+		globals->set_disable_feature_overrides(true);
 		StreamPeerSSL::initialize_certs = false; //will be initialized by editor
 	}
 
@@ -665,10 +665,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		use_custom_res = false;
 	}
 
-	if (bool(GlobalConfig::get_singleton()->get("application/run/disable_stdout"))) {
+	if (bool(ProjectSettings::get_singleton()->get("application/run/disable_stdout"))) {
 		quiet_stdout = true;
 	}
-	if (bool(GlobalConfig::get_singleton()->get("application/run/disable_stderr"))) {
+	if (bool(ProjectSettings::get_singleton()->get("application/run/disable_stderr"))) {
 		_print_error_enabled = false;
 	};
 
@@ -679,7 +679,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 #ifdef TOOLS_ENABLED
 
-	if (main_args.size() == 0 && (!GlobalConfig::get_singleton()->has("application/run/main_loop_type")) && (!GlobalConfig::get_singleton()->has("application/run/main_scene") || String(GlobalConfig::get_singleton()->get("application/run/main_scene")) == ""))
+	if (main_args.size() == 0 && (!ProjectSettings::get_singleton()->has("application/run/main_loop_type")) && (!ProjectSettings::get_singleton()->has("application/run/main_scene") || String(ProjectSettings::get_singleton()->get("application/run/main_scene")) == ""))
 		use_custom_res = false; //project manager (run without arguments)
 
 #endif
@@ -724,6 +724,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	use_vsync = GLOBAL_DEF("display/window/vsync/use_vsync", use_vsync);
 	GLOBAL_DEF("display/window/size/test_width", 0);
 	GLOBAL_DEF("display/window/size/test_height", 0);
+	GLOBAL_DEF("rendering/quality/intended_usage/framebuffer_allocation", 2);
+	GLOBAL_DEF("rendering/quality/intended_usage/framebuffer_allocation.mobile", 3);
+
 	Engine::get_singleton()->_pixel_snap = GLOBAL_DEF("rendering/quality/2d/use_pixel_snap", false);
 	OS::get_singleton()->_keep_screen_on = GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true);
 	if (rtm == -1) {
@@ -812,7 +815,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	message_queue = memnew(MessageQueue);
 
-	GlobalConfig::get_singleton()->register_global_defaults();
+	ProjectSettings::get_singleton()->register_global_defaults();
 
 	if (p_second_phase)
 		return setup2();
@@ -913,7 +916,7 @@ Error Main::setup2() {
 	if (show_logo) { //boot logo!
 		String boot_logo_path = GLOBAL_DEF("application/boot_splash/image", String());
 		bool boot_logo_scale = GLOBAL_DEF("application/boot_splash/fullsize", true);
-		GlobalConfig::get_singleton()->set_custom_property_info("application/boot_splash/image", PropertyInfo(Variant::STRING, "application/boot_splash/image", PROPERTY_HINT_FILE, "*.png"));
+		ProjectSettings::get_singleton()->set_custom_property_info("application/boot_splash/image", PropertyInfo(Variant::STRING, "application/boot_splash/image", PROPERTY_HINT_FILE, "*.png"));
 
 		Ref<Image> boot_logo;
 
@@ -933,7 +936,7 @@ Error Main::setup2() {
 			VisualServer::get_singleton()->set_boot_image(boot_logo, boot_bg, boot_logo_scale);
 #ifndef TOOLS_ENABLED
 //no tools, so free the boot logo (no longer needed)
-//GlobalConfig::get_singleton()->set("application/boot_logo",Image());
+//ProjectSettings::get_singleton()->set("application/boot_logo",Image());
 #endif
 
 		} else {
@@ -958,7 +961,7 @@ Error Main::setup2() {
 	MAIN_PRINT("Main: END");
 
 	GLOBAL_DEF("application/config/icon", String());
-	GlobalConfig::get_singleton()->set_custom_property_info("application/config/icon", PropertyInfo(Variant::STRING, "application/config/icon", PROPERTY_HINT_FILE, "*.png,*.webp"));
+	ProjectSettings::get_singleton()->set_custom_property_info("application/config/icon", PropertyInfo(Variant::STRING, "application/config/icon", PROPERTY_HINT_FILE, "*.png,*.webp"));
 
 	if (bool(GLOBAL_DEF("display/window/handheld/emulate_touchscreen", false))) {
 		if (!OS::get_singleton()->has_touchscreen_ui_hint() && Input::get_singleton() && !editor) {
@@ -977,15 +980,15 @@ Error Main::setup2() {
 
 	GLOBAL_DEF("display/mouse_cursor/custom_image", String());
 	GLOBAL_DEF("display/mouse_cursor/custom_image_hotspot", Vector2());
-	GlobalConfig::get_singleton()->set_custom_property_info("display/mouse_cursor/custom_image", PropertyInfo(Variant::STRING, "display/mouse_cursor/custom_image", PROPERTY_HINT_FILE, "*.png,*.webp"));
+	ProjectSettings::get_singleton()->set_custom_property_info("display/mouse_cursor/custom_image", PropertyInfo(Variant::STRING, "display/mouse_cursor/custom_image", PROPERTY_HINT_FILE, "*.png,*.webp"));
 
-	if (String(GlobalConfig::get_singleton()->get("display/mouse_cursor/custom_image")) != String()) {
+	if (String(ProjectSettings::get_singleton()->get("display/mouse_cursor/custom_image")) != String()) {
 
 		//print_line("use custom cursor");
-		Ref<Texture> cursor = ResourceLoader::load(GlobalConfig::get_singleton()->get("display/mouse_cursor/custom_image"));
+		Ref<Texture> cursor = ResourceLoader::load(ProjectSettings::get_singleton()->get("display/mouse_cursor/custom_image"));
 		if (cursor.is_valid()) {
 			//print_line("loaded ok");
-			Vector2 hotspot = GlobalConfig::get_singleton()->get("display/mouse_cursor/custom_image_hotspot");
+			Vector2 hotspot = ProjectSettings::get_singleton()->get("display/mouse_cursor/custom_image_hotspot");
 			Input::get_singleton()->set_custom_mouse_cursor(cursor, hotspot);
 		}
 	}
@@ -1276,7 +1279,7 @@ bool Main::start() {
 
 			sml->set_auto_accept_quit(GLOBAL_DEF("application/config/auto_accept_quit", true));
 			sml->set_quit_on_go_back(GLOBAL_DEF("application/config/quit_on_go_back", true));
-			String appname = GlobalConfig::get_singleton()->get("application/config/name");
+			String appname = ProjectSettings::get_singleton()->get("application/config/name");
 			appname = TranslationServer::get_singleton()->translate(appname);
 			OS::get_singleton()->set_window_title(appname);
 
@@ -1291,12 +1294,14 @@ bool Main::start() {
 			sml->get_root()->set_shadow_atlas_quadrant_subdiv(1, Viewport::ShadowAtlasQuadrantSubdiv(shadow_atlas_q1_subdiv));
 			sml->get_root()->set_shadow_atlas_quadrant_subdiv(2, Viewport::ShadowAtlasQuadrantSubdiv(shadow_atlas_q2_subdiv));
 			sml->get_root()->set_shadow_atlas_quadrant_subdiv(3, Viewport::ShadowAtlasQuadrantSubdiv(shadow_atlas_q3_subdiv));
+			Viewport::Usage usage = Viewport::Usage(int(GLOBAL_GET("rendering/quality/intended_usage/framebuffer_allocation")));
+			sml->get_root()->set_usage(usage);
 
 		} else {
 			GLOBAL_DEF("display/window/stretch/mode", "disabled");
-			GlobalConfig::get_singleton()->set_custom_property_info("display/window/stretch/mode", PropertyInfo(Variant::STRING, "display/window/stretch/mode", PROPERTY_HINT_ENUM, "disabled,2d,viewport"));
+			ProjectSettings::get_singleton()->set_custom_property_info("display/window/stretch/mode", PropertyInfo(Variant::STRING, "display/window/stretch/mode", PROPERTY_HINT_ENUM, "disabled,2d,viewport"));
 			GLOBAL_DEF("display/window/stretch/aspect", "ignore");
-			GlobalConfig::get_singleton()->set_custom_property_info("display/window/stretch/aspect", PropertyInfo(Variant::STRING, "display/window/stretch/aspect", PROPERTY_HINT_ENUM, "ignore,keep,keep_width,keep_height"));
+			ProjectSettings::get_singleton()->set_custom_property_info("display/window/stretch/aspect", PropertyInfo(Variant::STRING, "display/window/stretch/aspect", PROPERTY_HINT_ENUM, "ignore,keep,keep_width,keep_height"));
 			sml->set_auto_accept_quit(GLOBAL_DEF("application/config/auto_accept_quit", true));
 			sml->set_quit_on_go_back(GLOBAL_DEF("application/config/quit_on_go_back", true));
 		}
@@ -1311,7 +1316,7 @@ bool Main::start() {
 
 				if (!absolute) {
 
-					if (GlobalConfig::get_singleton()->is_using_datapack()) {
+					if (ProjectSettings::get_singleton()->is_using_datapack()) {
 
 						local_game_path = "res://" + local_game_path;
 
@@ -1334,7 +1339,7 @@ bool Main::start() {
 				}
 			}
 
-			local_game_path = GlobalConfig::get_singleton()->localize_path(local_game_path);
+			local_game_path = ProjectSettings::get_singleton()->localize_path(local_game_path);
 
 #ifdef TOOLS_ENABLED
 			if (editor) {
@@ -1360,7 +1365,7 @@ bool Main::start() {
 			if (game_path != "" || script != "") {
 				//autoload
 				List<PropertyInfo> props;
-				GlobalConfig::get_singleton()->get_property_list(&props);
+				ProjectSettings::get_singleton()->get_property_list(&props);
 
 				//first pass, add the constants so they exist before any script is loaded
 				for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
@@ -1369,7 +1374,7 @@ bool Main::start() {
 					if (!s.begins_with("autoload/"))
 						continue;
 					String name = s.get_slicec('/', 1);
-					String path = GlobalConfig::get_singleton()->get(s);
+					String path = ProjectSettings::get_singleton()->get(s);
 					bool global_var = false;
 					if (path.begins_with("*")) {
 						global_var = true;
@@ -1390,7 +1395,7 @@ bool Main::start() {
 					if (!s.begins_with("autoload/"))
 						continue;
 					String name = s.get_slicec('/', 1);
-					String path = GlobalConfig::get_singleton()->get(s);
+					String path = ProjectSettings::get_singleton()->get(s);
 					bool global_var = false;
 					if (path.begins_with("*")) {
 						global_var = true;

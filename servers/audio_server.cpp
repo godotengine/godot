@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "audio_server.h"
-#include "global_config.h"
+#include "project_settings.h"
 #include "io/resource_loader.h"
 #include "os/file_access.h"
 #include "os/os.h"

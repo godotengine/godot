@@ -33,7 +33,7 @@
 #include "os/keyboard.h"
 #include "os/os.h"
 
-#include "global_config.h"
+#include "project_settings.h"
 #include "message_queue.h"
 #include "scene/main/viewport.h"
 

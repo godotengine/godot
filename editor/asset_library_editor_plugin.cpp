@@ -1228,8 +1228,8 @@ void EditorAssetLibrary::_asset_open() {
 
 void EditorAssetLibrary::_manage_plugins() {
 
-	ProjectSettings::get_singleton()->popup_project_settings();
-	ProjectSettings::get_singleton()->set_plugins_page();
+	ProjectSettingsEditor::get_singleton()->popup_project_settings();
+	ProjectSettingsEditor::get_singleton()->set_plugins_page();
 }
 
 void EditorAssetLibrary::_install_external_asset(String p_zip_path, String p_title) {

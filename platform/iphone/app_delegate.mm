@@ -30,7 +30,7 @@
 #import "app_delegate.h"
 
 #include "audio_driver_iphone.h"
-#include "core/global_config.h"
+#include "core/project_settings.h"
 #import "gl_view.h"
 #include "main/main.h"
 #include "os_iphone.h"
@@ -449,14 +449,14 @@ static int frame_count = 0;
 					NSString *str = (NSString *)value;
 					String uval = String::utf8([str UTF8String]);
 
-					GlobalConfig::get_singleton()->set("Info.plist/" + ukey, uval);
+					ProjectSettings::get_singleton()->set("Info.plist/" + ukey, uval);
 
 				} else if ([value isKindOfClass:[NSNumber class]]) {
 
 					NSNumber *n = (NSNumber *)value;
 					double dval = [n doubleValue];
 
-					GlobalConfig::get_singleton()->set("Info.plist/" + ukey, dval);
+					ProjectSettings::get_singleton()->set("Info.plist/" + ukey, dval);
 				};
 				// do stuff
 			}
@@ -645,10 +645,10 @@ static int frame_count = 0;
 
 #ifdef MODULE_GAME_ANALYTICS_ENABLED
 	printf("********************* didFinishLaunchingWithOptions\n");
-	if (!GlobalConfig::get_singleton()->has("mobileapptracker/advertiser_id")) {
+	if (!ProjectSettings::get_singleton()->has("mobileapptracker/advertiser_id")) {
 		return;
 	}
-	if (!GlobalConfig::get_singleton()->has("mobileapptracker/conversion_key")) {
+	if (!ProjectSettings::get_singleton()->has("mobileapptracker/conversion_key")) {
 		return;
 	}
 

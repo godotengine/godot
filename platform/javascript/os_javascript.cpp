@@ -29,8 +29,8 @@
 /*************************************************************************/
 #include "os_javascript.h"
 
-#include "core/global_config.h"
 #include "core/io/file_access_buffered_fa.h"
+#include "core/project_settings.h"
 #include "dom_keys.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "drivers/unix/dir_access_unix.h"
@@ -487,7 +487,7 @@ void OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, i
 
 #ifdef JAVASCRIPT_EVAL_ENABLED
 	javascript_eval = memnew(JavaScript);
-	GlobalConfig::get_singleton()->add_singleton(GlobalConfig::Singleton("JavaScript", javascript_eval));
+	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton("JavaScript", javascript_eval));
 #endif
 
 	visual_server->init();
@@ -828,7 +828,7 @@ String OS_JavaScript::get_data_dir() const {
 		return get_data_dir_func();
 	*/
 	return "/userfs";
-	//return GlobalConfig::get_singleton()->get_singleton_object("GodotOS")->call("get_data_dir");
+	//return ProjectSettings::get_singleton()->get_singleton_object("GodotOS")->call("get_data_dir");
 };
 
 String OS_JavaScript::get_executable_path() const {
@@ -909,6 +909,11 @@ int OS_JavaScript::get_power_seconds_left() {
 
 int OS_JavaScript::get_power_percent_left() {
 	return power_manager->get_power_percent_left();
+}
+
+bool OS_JavaScript::_check_internal_feature_support(const String &p_feature) {
+
+	return p_feature == "web" || p_feature == "s3tc"; // TODO check for these features really being available
 }
 
 OS_JavaScript::OS_JavaScript(const char *p_execpath, GetDataDirFunc p_get_data_dir_func) {

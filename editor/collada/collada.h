@@ -32,7 +32,7 @@
 #ifndef COLLADA_H
 #define COLLADA_H
 
-#include "global_config.h"
+#include "project_settings.h"
 #include "io/xml_parser.h"
 #include "map.h"
 #include "scene/resources/material.h"

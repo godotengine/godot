@@ -741,7 +741,7 @@
 		<member name="Geometry" type="Geometry" setter="" getter="" brief="">
 			[Geometry] singleton
 		</member>
-		<member name="GlobalConfig" type="GlobalConfig" setter="" getter="" brief="">
+		<member name="ProjectSettings" type="ProjectSettings" setter="" getter="" brief="">
 		</member>
 		<member name="IP" type="IP" setter="" getter="" brief="">
 			[IP] singleton
@@ -17682,7 +17682,7 @@
 		</constant>
 	</constants>
 </class>
-<class name="GlobalConfig" inherits="Object" category="Core">
+<class name="ProjectSettings" inherits="Object" category="Core">
 	<brief_description>
 		Contains global variables accessible from everywhere.
 	</brief_description>

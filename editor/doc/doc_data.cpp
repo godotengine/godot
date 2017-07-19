@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "doc_data.h"
 
-#include "global_config.h"
+#include "project_settings.h"
 #include "global_constants.h"
 #include "io/compression.h"
 #include "io/marshalls.h"
@@ -568,14 +568,14 @@ void DocData::generate(bool p_basic_types) {
 			c.constants.push_back(cd);
 		}
 
-		List<GlobalConfig::Singleton> singletons;
-		GlobalConfig::get_singleton()->get_singletons(&singletons);
+		List<ProjectSettings::Singleton> singletons;
+		ProjectSettings::get_singleton()->get_singletons(&singletons);
 
 		//servers (this is kind of hackish)
-		for (List<GlobalConfig::Singleton>::Element *E = singletons.front(); E; E = E->next()) {
+		for (List<ProjectSettings::Singleton>::Element *E = singletons.front(); E; E = E->next()) {
 
 			PropertyDoc pd;
-			GlobalConfig::Singleton &s = E->get();
+			ProjectSettings::Singleton &s = E->get();
 			pd.name = s.name;
 			pd.type = s.ptr->get_class();
 			while (String(ClassDB::get_parent_class(pd.type)) != "Object")

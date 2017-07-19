@@ -32,13 +32,13 @@
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
-#include "global_config.h"
 #include "io/marshalls.h"
 #include "io/resource_saver.h"
 #include "io/zip_io.h"
 #include "os/file_access.h"
 #include "os/os.h"
 #include "platform/osx/logo.gen.h"
+#include "project_settings.h"
 #include "string.h"
 #include "version.h"
 
@@ -60,12 +60,19 @@ protected:
 
 public:
 	virtual String get_name() const { return "iOS"; }
+	virtual String get_os_name() const { return "iOS"; }
 	virtual Ref<Texture> get_logo() const { return logo; }
 
 	virtual String get_binary_extension() const { return "xcodeproj"; }
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0);
 
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const;
+
+	virtual void get_platform_features(List<String> *r_features) {
+
+		r_features->push_back("mobile");
+		r_features->push_back("iOS");
+	}
 
 	EditorExportPlatformIOS();
 	~EditorExportPlatformIOS();
@@ -175,8 +182,8 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	String pkg_name;
 	if (p_preset->get("application/name") != "")
 		pkg_name = p_preset->get("application/name"); // app_name
-	else if (String(GlobalConfig::get_singleton()->get("application/config/name")) != "")
-		pkg_name = String(GlobalConfig::get_singleton()->get("application/config/name"));
+	else if (String(ProjectSettings::get_singleton()->get("application/config/name")) != "")
+		pkg_name = String(ProjectSettings::get_singleton()->get("application/config/name"));
 	else
 		pkg_name = "Unnamed";
 

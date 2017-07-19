@@ -31,7 +31,7 @@
 
 #include "editor_node.h"
 #include "editor_settings.h"
-#include "global_config.h"
+#include "project_settings.h"
 #include "io/resource_loader.h"
 #include "os/dir_access.h"
 #include "os/file_access.h"
@@ -879,7 +879,7 @@ void FileSystemDock::_file_option(int p_option) {
 
 			String path = files->get_item_metadata(idx);
 			if (p_option == FILE_SHOW_IN_EXPLORER) {
-				String dir = GlobalConfig::get_singleton()->globalize_path(path);
+				String dir = ProjectSettings::get_singleton()->globalize_path(path);
 				dir = dir.substr(0, dir.find_last("/"));
 				OS::get_singleton()->shell_open(String("file://") + dir);
 				return;
@@ -1067,7 +1067,7 @@ void FileSystemDock::_folder_option(int p_option) {
 			break;
 		case FOLDER_SHOW_IN_EXPLORER:
 			String path = item->get_metadata(tree->get_selected_column());
-			String dir = GlobalConfig::get_singleton()->globalize_path(path);
+			String dir = ProjectSettings::get_singleton()->globalize_path(path);
 			OS::get_singleton()->shell_open(String("file://") + dir);
 			return;
 	}

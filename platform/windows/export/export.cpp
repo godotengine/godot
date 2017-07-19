@@ -46,6 +46,7 @@ void register_windows_exporter() {
 	platform->set_debug_32("windows_32_debug.exe");
 	platform->set_release_64("windows_64_release.exe");
 	platform->set_debug_64("windows_64_debug.exe");
+	platform->set_os_name("Windows");
 
 	EditorExport::get_singleton()->add_export_platform(platform);
 }

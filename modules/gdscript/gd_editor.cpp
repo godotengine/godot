@@ -30,7 +30,7 @@
 #include "editor/editor_settings.h"
 #include "gd_compiler.h"
 #include "gd_script.h"
-#include "global_config.h"
+#include "project_settings.h"
 #include "os/file_access.h"
 #ifdef TOOLS_ENABLED
 #include "editor/editor_file_system.h"
@@ -638,7 +638,7 @@ static bool _guess_expression_type(GDCompletionContext &context, const GDParser:
 									String which = arg1.get_slice("/", 2);
 									if (which != "") {
 										List<PropertyInfo> props;
-										GlobalConfig::get_singleton()->get_property_list(&props);
+										ProjectSettings::get_singleton()->get_property_list(&props);
 										//print_line("find singleton");
 
 										for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
@@ -650,7 +650,7 @@ static bool _guess_expression_type(GDCompletionContext &context, const GDParser:
 											String name = s.get_slice("/", 1);
 											//print_line("name: "+name+", which: "+which);
 											if (name == which) {
-												String script = GlobalConfig::get_singleton()->get(s);
+												String script = ProjectSettings::get_singleton()->get(s);
 
 												if (!script.begins_with("res://")) {
 													script = "res://" + script;
@@ -1105,7 +1105,7 @@ static bool _guess_identifier_type(GDCompletionContext &context, int p_line, con
 
 	//autoloads as singletons
 	List<PropertyInfo> props;
-	GlobalConfig::get_singleton()->get_property_list(&props);
+	ProjectSettings::get_singleton()->get_property_list(&props);
 
 	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
 
@@ -1115,7 +1115,7 @@ static bool _guess_identifier_type(GDCompletionContext &context, int p_line, con
 		String name = s.get_slice("/", 1);
 		if (name == String(p_identifier)) {
 
-			String path = GlobalConfig::get_singleton()->get(s);
+			String path = ProjectSettings::get_singleton()->get(s);
 			if (path.begins_with("*")) {
 				String script = path.substr(1, path.length());
 
@@ -1344,7 +1344,7 @@ static void _find_identifiers(GDCompletionContext &context, int p_line, bool p_o
 
 	//autoload singletons
 	List<PropertyInfo> props;
-	GlobalConfig::get_singleton()->get_property_list(&props);
+	ProjectSettings::get_singleton()->get_property_list(&props);
 
 	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
 
@@ -1352,7 +1352,7 @@ static void _find_identifiers(GDCompletionContext &context, int p_line, bool p_o
 		if (!s.begins_with("autoload/"))
 			continue;
 		String name = s.get_slice("/", 1);
-		String path = GlobalConfig::get_singleton()->get(s);
+		String path = ProjectSettings::get_singleton()->get(s);
 		if (path.begins_with("*")) {
 			result.insert(name);
 		}
@@ -1685,7 +1685,7 @@ static void _find_type_arguments(GDCompletionContext &context, const GDParser::N
 				if (p_argidx == 0 && (String(p_method) == "get_node" || String(p_method) == "has_node") && ClassDB::is_parent_class(id.obj_type, "Node")) {
 
 					List<PropertyInfo> props;
-					GlobalConfig::get_singleton()->get_property_list(&props);
+					ProjectSettings::get_singleton()->get_property_list(&props);
 
 					for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
 
@@ -2660,7 +2660,7 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 
 				//guess in autoloads as singletons
 				List<PropertyInfo> props;
-				GlobalConfig::get_singleton()->get_property_list(&props);
+				ProjectSettings::get_singleton()->get_property_list(&props);
 
 				for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
 
@@ -2670,7 +2670,7 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 					String name = s.get_slice("/", 1);
 					if (name == String(p_symbol)) {
 
-						String path = GlobalConfig::get_singleton()->get(s);
+						String path = ProjectSettings::get_singleton()->get(s);
 						if (path.begins_with("*")) {
 							String script = path.substr(1, path.length());
 

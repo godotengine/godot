@@ -31,7 +31,7 @@
 
 #include "editor/editor_scale.h"
 #include "editor_file_system.h"
-#include "global_config.h"
+#include "project_settings.h"
 #include "io/resource_saver.h"
 #include "os/file_access.h"
 #include "script_language.h"
@@ -167,7 +167,7 @@ void ScriptCreateDialog::_create_new() {
 		scr->set_name(cname);
 
 	if (!is_built_in) {
-		String lpath = GlobalConfig::get_singleton()->localize_path(file_path->get_text());
+		String lpath = ProjectSettings::get_singleton()->localize_path(file_path->get_text());
 		scr->set_path(lpath);
 		Error err = ResourceSaver::save(lpath, scr, ResourceSaver::FLAG_CHANGE_PATH);
 		if (err != OK) {
@@ -305,7 +305,7 @@ void ScriptCreateDialog::_browse_path(bool browse_parent) {
 
 void ScriptCreateDialog::_file_selected(const String &p_file) {
 
-	String p = GlobalConfig::get_singleton()->localize_path(p_file);
+	String p = ProjectSettings::get_singleton()->localize_path(p_file);
 	if (is_browsing_parent) {
 		parent_name->set_text("\"" + p + "\"");
 		_class_name_changed("\"" + p + "\"");
@@ -327,7 +327,7 @@ void ScriptCreateDialog::_path_changed(const String &p_path) {
 		return;
 	}
 
-	p = GlobalConfig::get_singleton()->localize_path(p);
+	p = ProjectSettings::get_singleton()->localize_path(p);
 	if (!p.begins_with("res://")) {
 		_msg_path_valid(false, TTR("Path is not local"));
 		_update_dialog();

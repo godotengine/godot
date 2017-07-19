@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "packed_scene.h"
 #include "core/core_string_names.h"
-#include "global_config.h"
+#include "project_settings.h"
 #include "io/resource_loader.h"
 #include "scene/2d/node_2d.h"
 #include "scene/3d/spatial.h"

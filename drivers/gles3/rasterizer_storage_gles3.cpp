@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "rasterizer_storage_gles3.h"
-#include "global_config.h"
+#include "project_settings.h"
 #include "rasterizer_canvas_gles3.h"
 #include "rasterizer_scene_gles3.h"
 
@@ -6848,7 +6848,7 @@ void RasterizerStorageGLES3::initialize() {
 	}
 
 	config.shrink_textures_x2 = false;
-	config.use_fast_texture_filter = int(GlobalConfig::get_singleton()->get("rendering/quality/filters/use_nearest_mipmap_filter"));
+	config.use_fast_texture_filter = int(ProjectSettings::get_singleton()->get("rendering/quality/filters/use_nearest_mipmap_filter"));
 	config.use_anisotropic_filter = config.extensions.has("rendering/quality/filters/anisotropic_filter_level");
 
 	config.s3tc_supported = config.extensions.has("GL_EXT_texture_compression_dxt1") || config.extensions.has("GL_EXT_texture_compression_s3tc") || config.extensions.has("WEBGL_compressed_texture_s3tc");
@@ -6872,7 +6872,7 @@ void RasterizerStorageGLES3::initialize() {
 	config.use_anisotropic_filter = config.extensions.has("GL_EXT_texture_filter_anisotropic");
 	if (config.use_anisotropic_filter) {
 		glGetFloatv(_GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &config.anisotropic_level);
-		config.anisotropic_level = MIN(int(GlobalConfig::get_singleton()->get("rendering/quality/anisotropic_filter_level")), config.anisotropic_level);
+		config.anisotropic_level = MIN(int(ProjectSettings::get_singleton()->get("rendering/quality/anisotropic_filter_level")), config.anisotropic_level);
 	}
 
 	frame.clear_request = false;
@@ -7009,7 +7009,7 @@ void RasterizerStorageGLES3::initialize() {
 	frame.current_rt = NULL;
 	config.keep_original_textures = false;
 	config.generate_wireframes = false;
-	config.use_texture_array_environment = GLOBAL_DEF("rendering/quality/reflections/texture_array_reflections", true);
+	config.use_texture_array_environment = GLOBAL_GET("rendering/quality/reflections/texture_array_reflections");
 }
 
 void RasterizerStorageGLES3::finalize() {

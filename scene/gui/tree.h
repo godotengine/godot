@@ -89,6 +89,7 @@ private:
 		Color bg_color;
 		bool custom_button;
 		bool expand_right;
+		Color icon_color;
 
 		TextAlign text_align;
 
@@ -133,10 +134,11 @@ private:
 			icon_max_w = 0;
 			text_align = ALIGN_LEFT;
 			expand_right = false;
+			icon_color = Color(1, 1, 1);
 		}
 
 		Size2 get_icon_size() const;
-		void draw_icon(const RID &p_where, const Point2 &p_pos, const Size2 &p_size = Size2()) const;
+		void draw_icon(const RID &p_where, const Point2 &p_pos, const Size2 &p_size = Size2(), const Color &p_color = Color()) const;
 	};
 
 	Vector<Cell> cells;
@@ -192,6 +194,9 @@ public:
 
 	void set_icon_region(int p_column, const Rect2 &p_icon_region);
 	Rect2 get_icon_region(int p_column) const;
+
+	void set_icon_color(int p_column, const Color &p_icon_color);
+	Color get_icon_color(int p_column) const;
 
 	void set_icon_max_width(int p_column, int p_max);
 	int get_icon_max_width(int p_column) const;
@@ -361,7 +366,7 @@ private:
 	int compute_item_height(TreeItem *p_item) const;
 	int get_item_height(TreeItem *p_item) const;
 	//void draw_item_text(String p_text,const Ref<Texture>& p_icon,int p_icon_max_w,bool p_tool,Rect2i p_rect,const Color& p_color);
-	void draw_item_rect(const TreeItem::Cell &p_cell, const Rect2i &p_rect, const Color &p_color);
+	void draw_item_rect(const TreeItem::Cell &p_cell, const Rect2i &p_rect, const Color &p_color, const Color &p_icon_color);
 	int draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 &p_draw_size, TreeItem *p_item);
 	void select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_col, TreeItem *p_prev = NULL, bool *r_in_range = NULL, bool p_force_deselect = false);
 	int propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool p_doubleclick, TreeItem *p_item, int p_button, const Ref<InputEventWithModifiers> &p_mod);

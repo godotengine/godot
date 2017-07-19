@@ -27,9 +27,10 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "global_config.h"
+#include "project_settings.h"
 
 #include "bind/core_bind.h"
+#include "core_string_names.h"
 #include "io/file_access_network.h"
 #include "io/file_access_pack.h"
 #include "io/marshalls.h"
@@ -38,24 +39,23 @@
 #include "os/keyboard.h"
 #include "os/os.h"
 #include "variant_parser.h"
-
 #include <zlib.h>
 
 #define FORMAT_VERSION 3
 
-GlobalConfig *GlobalConfig::singleton = NULL;
+ProjectSettings *ProjectSettings::singleton = NULL;
 
-GlobalConfig *GlobalConfig::get_singleton() {
+ProjectSettings *ProjectSettings::get_singleton() {
 
 	return singleton;
 }
 
-String GlobalConfig::get_resource_path() const {
+String ProjectSettings::get_resource_path() const {
 
 	return resource_path;
 };
 
-String GlobalConfig::localize_path(const String &p_path) const {
+String ProjectSettings::localize_path(const String &p_path) const {
 
 	if (resource_path == "")
 		return p_path; //not initialied yet
@@ -99,13 +99,13 @@ String GlobalConfig::localize_path(const String &p_path) const {
 	};
 }
 
-void GlobalConfig::set_initial_value(const String &p_name, const Variant &p_value) {
+void ProjectSettings::set_initial_value(const String &p_name, const Variant &p_value) {
 
 	ERR_FAIL_COND(!props.has(p_name));
 	props[p_name].initial = p_value;
 }
 
-String GlobalConfig::globalize_path(const String &p_path) const {
+String ProjectSettings::globalize_path(const String &p_path) const {
 
 	if (p_path.begins_with("res://")) {
 
@@ -119,13 +119,44 @@ String GlobalConfig::globalize_path(const String &p_path) const {
 	return p_path;
 }
 
-bool GlobalConfig::_set(const StringName &p_name, const Variant &p_value) {
+bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 
 	_THREAD_SAFE_METHOD_
 
 	if (p_value.get_type() == Variant::NIL)
 		props.erase(p_name);
 	else {
+
+		if (p_name == CoreStringNames::get_singleton()->_custom_features) {
+			Vector<String> custom_feature_array = p_value;
+			for (int i = 0; i < custom_feature_array.size(); i++) {
+
+				custom_features.insert(custom_feature_array[i]);
+			}
+			return true;
+		}
+
+		if (!disable_feature_overrides) {
+			int dot = p_name.operator String().find(".");
+			if (dot != -1) {
+				Vector<String> s = p_name.operator String().split(".");
+
+				bool override_valid = false;
+				for (int i = 1; i < s.size(); i++) {
+					String feature = s[i].strip_edges();
+					if (OS::get_singleton()->check_feature_support(feature) || custom_features.has(feature)) {
+						override_valid = true;
+						break;
+					}
+				}
+
+				if (override_valid) {
+
+					feature_overrides[s[0]] = p_name;
+				}
+			}
+		}
+
 		if (props.has(p_name)) {
 			if (!props[p_name].overrided)
 				props[p_name].variant = p_value;
@@ -137,15 +168,19 @@ bool GlobalConfig::_set(const StringName &p_name, const Variant &p_value) {
 
 	return true;
 }
-bool GlobalConfig::_get(const StringName &p_name, Variant &r_ret) const {
+bool ProjectSettings::_get(const StringName &p_name, Variant &r_ret) const {
 
 	_THREAD_SAFE_METHOD_
 
-	if (!props.has(p_name)) {
-		print_line("WARNING: not found: " + String(p_name));
+	StringName name = p_name;
+	if (!disable_feature_overrides && feature_overrides.has(name)) {
+		name = feature_overrides[name];
+	}
+	if (!props.has(name)) {
+		print_line("WARNING: not found: " + String(name));
 		return false;
 	}
-	r_ret = props[p_name].variant;
+	r_ret = props[name].variant;
 	return true;
 }
 
@@ -159,7 +194,7 @@ struct _VCSort {
 	bool operator<(const _VCSort &p_vcs) const { return order == p_vcs.order ? name < p_vcs.name : order < p_vcs.order; }
 };
 
-void GlobalConfig::_get_property_list(List<PropertyInfo> *p_list) const {
+void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	_THREAD_SAFE_METHOD_
 
@@ -186,8 +221,13 @@ void GlobalConfig::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	for (Set<_VCSort>::Element *E = vclist.front(); E; E = E->next()) {
 
-		if (custom_prop_info.has(E->get().name)) {
-			PropertyInfo pi = custom_prop_info[E->get().name];
+		String prop_info_name = E->get().name;
+		int dot = prop_info_name.find(".");
+		if (dot != -1)
+			prop_info_name = prop_info_name.substr(0, dot);
+
+		if (custom_prop_info.has(prop_info_name)) {
+			PropertyInfo pi = custom_prop_info[prop_info_name];
 			pi.name = E->get().name;
 			pi.usage = E->get().flags;
 			p_list->push_back(pi);
@@ -196,7 +236,7 @@ void GlobalConfig::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
-bool GlobalConfig::_load_resource_pack(const String &p_pack) {
+bool ProjectSettings::_load_resource_pack(const String &p_pack) {
 
 	if (PackedData::get_singleton()->is_disabled())
 		return false;
@@ -213,13 +253,13 @@ bool GlobalConfig::_load_resource_pack(const String &p_pack) {
 	return true;
 }
 
-Error GlobalConfig::setup(const String &p_path, const String &p_main_pack) {
+Error ProjectSettings::setup(const String &p_path, const String &p_main_pack) {
 
 	//If looking for files in network, just use network!
 
 	if (FileAccessNetworkClient::get_singleton()) {
 
-		if (_load_settings("res://project.godot") == OK || _load_settings_binary("res://godot.cfb") == OK) {
+		if (_load_settings("res://project.godot") == OK || _load_settings_binary("res://project.binary") == OK) {
 
 			_load_settings("res://override.cfg");
 		}
@@ -236,7 +276,7 @@ Error GlobalConfig::setup(const String &p_path, const String &p_main_pack) {
 		bool ok = _load_resource_pack(p_main_pack);
 		ERR_FAIL_COND_V(!ok, ERR_CANT_OPEN);
 
-		if (_load_settings("res://project.godot") == OK || _load_settings_binary("res://godot.cfb") == OK) {
+		if (_load_settings("res://project.godot") == OK || _load_settings_binary("res://project.binary") == OK) {
 			//load override from location of the main pack
 			_load_settings(p_main_pack.get_base_dir().plus_file("override.cfg"));
 		}
@@ -249,7 +289,7 @@ Error GlobalConfig::setup(const String &p_path, const String &p_main_pack) {
 
 		if (_load_resource_pack(exec_path.get_basename() + ".pck")) {
 
-			if (_load_settings("res://project.godot") == OK || _load_settings_binary("res://godot.cfb") == OK) {
+			if (_load_settings("res://project.godot") == OK || _load_settings_binary("res://project.binary") == OK) {
 				//load override from location of executable
 				_load_settings(exec_path.get_base_dir().plus_file("override.cfg"));
 			}
@@ -270,7 +310,7 @@ Error GlobalConfig::setup(const String &p_path, const String &p_main_pack) {
 		// data.pck and data.zip are deprecated and no longer supported, apologies.
 		// make sure this is loaded from the resource path
 
-		if (_load_settings("res://project.godot") == OK || _load_settings_binary("res://godot.cfb") == OK) {
+		if (_load_settings("res://project.godot") == OK || _load_settings_binary("res://project.binary") == OK) {
 			_load_settings("res://override.cfg");
 		}
 
@@ -291,7 +331,7 @@ Error GlobalConfig::setup(const String &p_path, const String &p_main_pack) {
 	while (true) {
 		//try to load settings in ascending through dirs shape!
 
-		if (_load_settings(current_dir + "/project.godot") == OK || _load_settings_binary(current_dir + "/godot.cfb") == OK) {
+		if (_load_settings(current_dir + "/project.godot") == OK || _load_settings_binary(current_dir + "/project.binary") == OK) {
 
 			_load_settings(current_dir + "/override.cfg");
 			candidate = current_dir;
@@ -318,19 +358,19 @@ Error GlobalConfig::setup(const String &p_path, const String &p_main_pack) {
 	return OK;
 }
 
-bool GlobalConfig::has(String p_var) const {
+bool ProjectSettings::has(String p_var) const {
 
 	_THREAD_SAFE_METHOD_
 
 	return props.has(p_var);
 }
 
-void GlobalConfig::set_registering_order(bool p_enable) {
+void ProjectSettings::set_registering_order(bool p_enable) {
 
 	registering_order = p_enable;
 }
 
-Error GlobalConfig::_load_settings_binary(const String p_path) {
+Error ProjectSettings::_load_settings_binary(const String p_path) {
 
 	Error err;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
@@ -343,7 +383,7 @@ Error GlobalConfig::_load_settings_binary(const String p_path) {
 	if (hdr[0] != 'E' || hdr[1] != 'C' || hdr[2] != 'F' || hdr[3] != 'G') {
 
 		memdelete(f);
-		ERR_EXPLAIN("Corrupted header in binary godot.cfb (not ECFG)");
+		ERR_EXPLAIN("Corrupted header in binary project.binary (not ECFG)");
 		ERR_FAIL_V(ERR_FILE_CORRUPT;)
 	}
 
@@ -372,7 +412,7 @@ Error GlobalConfig::_load_settings_binary(const String p_path) {
 
 	return OK;
 }
-Error GlobalConfig::_load_settings(const String p_path) {
+Error ProjectSettings::_load_settings(const String p_path) {
 
 	Error err;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
@@ -403,7 +443,7 @@ Error GlobalConfig::_load_settings(const String p_path) {
 			memdelete(f);
 			return OK;
 		} else if (err != OK) {
-			ERR_PRINTS("GlobalConfig::load - " + p_path + ":" + itos(lines) + " error: " + error_text);
+			ERR_PRINTS("ProjectSettings::load - " + p_path + ":" + itos(lines) + " error: " + error_text);
 			memdelete(f);
 			return err;
 		}
@@ -427,19 +467,19 @@ Error GlobalConfig::_load_settings(const String p_path) {
 	return OK;
 }
 
-int GlobalConfig::get_order(const String &p_name) const {
+int ProjectSettings::get_order(const String &p_name) const {
 
 	ERR_FAIL_COND_V(!props.has(p_name), -1);
 	return props[p_name].order;
 }
 
-void GlobalConfig::set_order(const String &p_name, int p_order) {
+void ProjectSettings::set_order(const String &p_name, int p_order) {
 
 	ERR_FAIL_COND(!props.has(p_name));
 	props[p_name].order = p_order;
 }
 
-void GlobalConfig::set_builtin_order(const String &p_name) {
+void ProjectSettings::set_builtin_order(const String &p_name) {
 
 	ERR_FAIL_COND(!props.has(p_name));
 	if (props[p_name].order >= NO_BUILTIN_ORDER_BASE) {
@@ -447,24 +487,24 @@ void GlobalConfig::set_builtin_order(const String &p_name) {
 	}
 }
 
-void GlobalConfig::clear(const String &p_name) {
+void ProjectSettings::clear(const String &p_name) {
 
 	ERR_FAIL_COND(!props.has(p_name));
 	props.erase(p_name);
 }
 
-Error GlobalConfig::save() {
+Error ProjectSettings::save() {
 
 	return save_custom(get_resource_path() + "/project.godot");
 }
 
-Error GlobalConfig::_save_settings_binary(const String &p_file, const Map<String, List<String> > &props, const CustomMap &p_custom) {
+Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<String, List<String> > &props, const CustomMap &p_custom, const String &p_custom_features) {
 
 	Error err;
 	FileAccess *file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 	if (err != OK) {
 
-		ERR_EXPLAIN("Couldn't save godot.cfb at " + p_file);
+		ERR_EXPLAIN("Couldn't save project.binary at " + p_file);
 		ERR_FAIL_COND_V(err, err)
 	}
 
@@ -481,7 +521,34 @@ Error GlobalConfig::_save_settings_binary(const String &p_file, const Map<String
 		}
 	}
 
-	file->store_32(count); //store how many properties are saved
+	if (p_custom_features != String()) {
+		file->store_32(count + 1);
+		//store how many properties are saved, add one for custom featuers, which must always go first
+		String key = CoreStringNames::get_singleton()->_custom_features;
+		file->store_32(key.length());
+		file->store_string(key);
+
+		int len;
+		Error err = encode_variant(p_custom_features, NULL, len);
+		if (err != OK) {
+			memdelete(file);
+			ERR_FAIL_V(err);
+		}
+
+		Vector<uint8_t> buff;
+		buff.resize(len);
+
+		err = encode_variant(p_custom_features, &buff[0], len);
+		if (err != OK) {
+			memdelete(file);
+			ERR_FAIL_V(err);
+		}
+		file->store_32(len);
+		file->store_buffer(buff.ptr(), buff.size());
+
+	} else {
+		file->store_32(count); //store how many properties are saved
+	}
 
 	for (Map<String, List<String> >::Element *E = props.front(); E; E = E->next()) {
 
@@ -523,7 +590,7 @@ Error GlobalConfig::_save_settings_binary(const String &p_file, const Map<String
 	return OK;
 }
 
-Error GlobalConfig::_save_settings_text(const String &p_file, const Map<String, List<String> > &props, const CustomMap &p_custom) {
+Error ProjectSettings::_save_settings_text(const String &p_file, const Map<String, List<String> > &props, const CustomMap &p_custom, const String &p_custom_features) {
 
 	Error err;
 	FileAccess *file = FileAccess::open(p_file, FileAccess::WRITE, &err);
@@ -534,6 +601,8 @@ Error GlobalConfig::_save_settings_text(const String &p_file, const Map<String, 
 	}
 
 	file->store_string("config_version=" + itos(FORMAT_VERSION) + "\n");
+	if (p_custom_features != String())
+		file->store_string("_custom_featores=\"" + p_custom_features + "\"\n");
 
 	for (Map<String, List<String> >::Element *E = props.front(); E; E = E->next()) {
 
@@ -565,12 +634,12 @@ Error GlobalConfig::_save_settings_text(const String &p_file, const Map<String, 
 	return OK;
 }
 
-Error GlobalConfig::_save_custom_bnd(const String &p_file) { // add other params as dictionary and array?
+Error ProjectSettings::_save_custom_bnd(const String &p_file) { // add other params as dictionary and array?
 
 	return save_custom(p_file);
 };
 
-Error GlobalConfig::save_custom(const String &p_path, const CustomMap &p_custom, const Set<String> &p_ignore_masks) {
+Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_custom, const Vector<String> &p_custom_features) {
 
 	ERR_FAIL_COND_V(p_path == "", ERR_INVALID_PARAMETER);
 
@@ -584,19 +653,6 @@ Error GlobalConfig::save_custom(const String &p_path, const CustomMap &p_custom,
 			continue;
 
 		if (p_custom.has(G->key()))
-			continue;
-
-		bool discard = false;
-
-		for (const Set<String>::Element *E = p_ignore_masks.front(); E; E = E->next()) {
-
-			if (String(G->key()).match(E->get())) {
-				discard = true;
-				break;
-			}
-		}
-
-		if (discard)
 			continue;
 
 		_VCSort vc;
@@ -639,10 +695,20 @@ Error GlobalConfig::save_custom(const String &p_path, const CustomMap &p_custom,
 		props[category].push_back(name);
 	}
 
+	String custom_features;
+
+	for (int i = 0; i < p_custom_features.size(); i++) {
+		if (i > 0)
+			custom_features += ",";
+
+		String f = p_custom_features[i].strip_edges().replace("\"", "");
+		custom_features += f;
+	}
+
 	if (p_path.ends_with(".godot"))
-		return _save_settings_text(p_path, props, p_custom);
-	else if (p_path.ends_with(".cfb"))
-		return _save_settings_binary(p_path, props, p_custom);
+		return _save_settings_text(p_path, props, p_custom, custom_features);
+	else if (p_path.ends_with(".binary"))
+		return _save_settings_binary(p_path, props, p_custom, custom_features);
 	else {
 
 		ERR_EXPLAIN("Unknown config file format: " + p_path);
@@ -695,24 +761,24 @@ Error GlobalConfig::save_custom(const String &p_path, const CustomMap &p_custom,
 Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default) {
 
 	Variant ret;
-	if (GlobalConfig::get_singleton()->has(p_var)) {
-		ret = GlobalConfig::get_singleton()->get(p_var);
+	if (ProjectSettings::get_singleton()->has(p_var)) {
+		ret = ProjectSettings::get_singleton()->get(p_var);
 	} else {
-		GlobalConfig::get_singleton()->set(p_var, p_default);
+		ProjectSettings::get_singleton()->set(p_var, p_default);
 		ret = p_default;
 	}
-	GlobalConfig::get_singleton()->set_initial_value(p_var, p_default);
-	GlobalConfig::get_singleton()->set_builtin_order(p_var);
+	ProjectSettings::get_singleton()->set_initial_value(p_var, p_default);
+	ProjectSettings::get_singleton()->set_builtin_order(p_var);
 	return ret;
 }
 
-void GlobalConfig::add_singleton(const Singleton &p_singleton) {
+void ProjectSettings::add_singleton(const Singleton &p_singleton) {
 
 	singletons.push_back(p_singleton);
 	singleton_ptrs[p_singleton.name] = p_singleton.ptr;
 }
 
-Object *GlobalConfig::get_singleton_object(const String &p_name) const {
+Object *ProjectSettings::get_singleton_object(const String &p_name) const {
 
 	const Map<StringName, Object *>::Element *E = singleton_ptrs.find(p_name);
 	if (!E)
@@ -721,21 +787,21 @@ Object *GlobalConfig::get_singleton_object(const String &p_name) const {
 		return E->get();
 };
 
-bool GlobalConfig::has_singleton(const String &p_name) const {
+bool ProjectSettings::has_singleton(const String &p_name) const {
 
 	return get_singleton_object(p_name) != NULL;
 };
 
-void GlobalConfig::get_singletons(List<Singleton> *p_singletons) {
+void ProjectSettings::get_singletons(List<Singleton> *p_singletons) {
 
 	for (List<Singleton>::Element *E = singletons.front(); E; E = E->next())
 		p_singletons->push_back(E->get());
 }
 
-Vector<String> GlobalConfig::get_optimizer_presets() const {
+Vector<String> ProjectSettings::get_optimizer_presets() const {
 
 	List<PropertyInfo> pi;
-	GlobalConfig::get_singleton()->get_property_list(&pi);
+	ProjectSettings::get_singleton()->get_property_list(&pi);
 	Vector<String> names;
 
 	for (List<PropertyInfo>::Element *E = pi.front(); E; E = E->next()) {
@@ -750,7 +816,7 @@ Vector<String> GlobalConfig::get_optimizer_presets() const {
 	return names;
 }
 
-void GlobalConfig::_add_property_info_bind(const Dictionary &p_info) {
+void ProjectSettings::_add_property_info_bind(const Dictionary &p_info) {
 
 	ERR_FAIL_COND(!p_info.has("name"));
 	ERR_FAIL_COND(!p_info.has("type"));
@@ -769,24 +835,24 @@ void GlobalConfig::_add_property_info_bind(const Dictionary &p_info) {
 	set_custom_property_info(pinfo.name, pinfo);
 }
 
-void GlobalConfig::set_custom_property_info(const String &p_prop, const PropertyInfo &p_info) {
+void ProjectSettings::set_custom_property_info(const String &p_prop, const PropertyInfo &p_info) {
 
 	ERR_FAIL_COND(!props.has(p_prop));
 	custom_prop_info[p_prop] = p_info;
 	custom_prop_info[p_prop].name = p_prop;
 }
 
-void GlobalConfig::set_disable_platform_override(bool p_disable) {
+void ProjectSettings::set_disable_feature_overrides(bool p_disable) {
 
-	disable_platform_override = p_disable;
+	disable_feature_overrides = p_disable;
 }
 
-bool GlobalConfig::is_using_datapack() const {
+bool ProjectSettings::is_using_datapack() const {
 
 	return using_datapack;
 }
 
-bool GlobalConfig::property_can_revert(const String &p_name) {
+bool ProjectSettings::property_can_revert(const String &p_name) {
 
 	if (!props.has(p_name))
 		return false;
@@ -794,7 +860,7 @@ bool GlobalConfig::property_can_revert(const String &p_name) {
 	return props[p_name].initial != props[p_name].variant;
 }
 
-Variant GlobalConfig::property_get_revert(const String &p_name) {
+Variant ProjectSettings::property_get_revert(const String &p_name) {
 
 	if (!props.has(p_name))
 		return Variant();
@@ -802,32 +868,32 @@ Variant GlobalConfig::property_get_revert(const String &p_name) {
 	return props[p_name].initial;
 }
 
-void GlobalConfig::_bind_methods() {
+void ProjectSettings::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("has", "name"), &GlobalConfig::has);
-	ClassDB::bind_method(D_METHOD("set_order", "name", "pos"), &GlobalConfig::set_order);
-	ClassDB::bind_method(D_METHOD("get_order", "name"), &GlobalConfig::get_order);
-	ClassDB::bind_method(D_METHOD("set_initial_value", "name", "value"), &GlobalConfig::set_initial_value);
-	ClassDB::bind_method(D_METHOD("add_property_info", "hint"), &GlobalConfig::_add_property_info_bind);
-	ClassDB::bind_method(D_METHOD("clear", "name"), &GlobalConfig::clear);
-	ClassDB::bind_method(D_METHOD("localize_path", "path"), &GlobalConfig::localize_path);
-	ClassDB::bind_method(D_METHOD("globalize_path", "path"), &GlobalConfig::globalize_path);
-	ClassDB::bind_method(D_METHOD("save"), &GlobalConfig::save);
-	ClassDB::bind_method(D_METHOD("has_singleton", "name"), &GlobalConfig::has_singleton);
-	ClassDB::bind_method(D_METHOD("get_singleton", "name"), &GlobalConfig::get_singleton_object);
-	ClassDB::bind_method(D_METHOD("load_resource_pack", "pack"), &GlobalConfig::_load_resource_pack);
-	ClassDB::bind_method(D_METHOD("property_can_revert", "name"), &GlobalConfig::property_can_revert);
-	ClassDB::bind_method(D_METHOD("property_get_revert:Variant", "name"), &GlobalConfig::property_get_revert);
+	ClassDB::bind_method(D_METHOD("has", "name"), &ProjectSettings::has);
+	ClassDB::bind_method(D_METHOD("set_order", "name", "pos"), &ProjectSettings::set_order);
+	ClassDB::bind_method(D_METHOD("get_order", "name"), &ProjectSettings::get_order);
+	ClassDB::bind_method(D_METHOD("set_initial_value", "name", "value"), &ProjectSettings::set_initial_value);
+	ClassDB::bind_method(D_METHOD("add_property_info", "hint"), &ProjectSettings::_add_property_info_bind);
+	ClassDB::bind_method(D_METHOD("clear", "name"), &ProjectSettings::clear);
+	ClassDB::bind_method(D_METHOD("localize_path", "path"), &ProjectSettings::localize_path);
+	ClassDB::bind_method(D_METHOD("globalize_path", "path"), &ProjectSettings::globalize_path);
+	ClassDB::bind_method(D_METHOD("save"), &ProjectSettings::save);
+	ClassDB::bind_method(D_METHOD("has_singleton", "name"), &ProjectSettings::has_singleton);
+	ClassDB::bind_method(D_METHOD("get_singleton", "name"), &ProjectSettings::get_singleton_object);
+	ClassDB::bind_method(D_METHOD("load_resource_pack", "pack"), &ProjectSettings::_load_resource_pack);
+	ClassDB::bind_method(D_METHOD("property_can_revert", "name"), &ProjectSettings::property_can_revert);
+	ClassDB::bind_method(D_METHOD("property_get_revert:Variant", "name"), &ProjectSettings::property_get_revert);
 
-	ClassDB::bind_method(D_METHOD("save_custom", "file"), &GlobalConfig::_save_custom_bnd);
+	ClassDB::bind_method(D_METHOD("save_custom", "file"), &ProjectSettings::_save_custom_bnd);
 }
 
-GlobalConfig::GlobalConfig() {
+ProjectSettings::ProjectSettings() {
 
 	singleton = this;
 	last_order = NO_BUILTIN_ORDER_BASE;
 	last_builtin_order = 0;
-	disable_platform_override = false;
+	disable_feature_overrides = false;
 	registering_order = true;
 
 	Array va;
@@ -950,6 +1016,8 @@ GlobalConfig::GlobalConfig() {
 	custom_prop_info["display/window/handheld/orientation"] = PropertyInfo(Variant::STRING, "display/window/handheld/orientation", PROPERTY_HINT_ENUM, "landscape,portrait,reverse_landscape,reverse_portrait,sensor_landscape,sensor_portrait,sensor");
 	custom_prop_info["rendering/threads/thread_model"] = PropertyInfo(Variant::INT, "rendering/threads/thread_model", PROPERTY_HINT_ENUM, "Single-Unsafe,Single-Safe,Multi-Threaded");
 	custom_prop_info["physics/2d/thread_model"] = PropertyInfo(Variant::INT, "physics/2d/thread_model", PROPERTY_HINT_ENUM, "Single-Unsafe,Single-Safe,Multi-Threaded");
+	custom_prop_info["rendering/quality/intended_usage/framebuffer_allocation"] = PropertyInfo(Variant::INT, "rendering/quality/intended_usage/framebuffer_allocation", PROPERTY_HINT_ENUM, "2D,2D Without Sampling,3D,3D Without Effects");
+	GLOBAL_DEF("rendering/quality/intended_usage/framebuffer_mode", 2);
 
 	GLOBAL_DEF("debug/settings/profiler/max_functions", 16384);
 
@@ -964,7 +1032,7 @@ GlobalConfig::GlobalConfig() {
 	using_datapack = false;
 }
 
-GlobalConfig::~GlobalConfig() {
+ProjectSettings::~ProjectSettings() {
 
 	singleton = NULL;
 }

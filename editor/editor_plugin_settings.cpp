@@ -30,7 +30,7 @@
 #include "editor_plugin_settings.h"
 
 #include "editor_node.h"
-#include "global_config.h"
+#include "project_settings.h"
 #include "io/config_file.h"
 #include "os/file_access.h"
 #include "os/main_loop.h"
@@ -82,7 +82,7 @@ void EditorPluginSettings::update_plugins() {
 
 	plugins.sort();
 
-	Vector<String> active_plugins = GlobalConfig::get_singleton()->get("editor_plugins/enabled");
+	Vector<String> active_plugins = ProjectSettings::get_singleton()->get("editor_plugins/enabled");
 
 	for (int i = 0; i < plugins.size(); i++) {
 

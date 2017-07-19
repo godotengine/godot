@@ -288,7 +288,7 @@ public:
 	virtual int get_power_seconds_left();
 	virtual int get_power_percent_left();
 
-	virtual bool check_feature_support(const String &p_feature);
+	virtual bool _check_internal_feature_support(const String &p_feature);
 
 	OS_Windows(HINSTANCE _hInstance);
 	~OS_Windows();

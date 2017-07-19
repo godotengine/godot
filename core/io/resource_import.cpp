@@ -49,6 +49,7 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 
 	int lines = 0;
 	String error_text;
+	bool path_found = false; //first match must have priority
 	while (true) {
 
 		assign = Variant();
@@ -66,14 +67,16 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 		}
 
 		if (assign != String()) {
-			if (assign.begins_with("path.") && r_path_and_type.path == String()) {
+			if (!path_found && assign.begins_with("path.") && r_path_and_type.path == String()) {
 				String feature = assign.get_slicec('.', 1);
 				if (OS::get_singleton()->check_feature_support(feature)) {
 					r_path_and_type.path = value;
+					path_found = true; //first match must have priority
 				}
 
-			} else if (assign == "path") {
+			} else if (!path_found && assign == "path") {
 				r_path_and_type.path = value;
+				path_found = true; //first match must have priority
 			} else if (assign == "type") {
 				r_path_and_type.type = value;
 			}

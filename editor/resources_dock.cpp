@@ -32,10 +32,10 @@
 #include "editor_file_system.h"
 #include "editor_node.h"
 #include "editor_settings.h"
-#include "global_config.h"
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
 #include "project_settings.h"
+#include "project_settings_editor.h"
 
 void ResourcesDock::_tool_selected(int p_tool) {
 
@@ -124,7 +124,7 @@ void ResourcesDock::save_resource(const String &p_path, const Ref<Resource> &p_r
 		flg|=ResourceSaver::FLAG_RELATIVE_PATHS;
 	*/
 
-	String path = GlobalConfig::get_singleton()->localize_path(p_path);
+	String path = ProjectSettings::get_singleton()->localize_path(p_path);
 	Error err = ResourceSaver::save(path, p_resource, flg | ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS);
 
 	if (err != OK) {

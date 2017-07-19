@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "video_stream_theora.h"
 
-#include "global_config.h"
+#include "project_settings.h"
 #include "os/os.h"
 
 #include "thirdparty/misc/yuv2rgb.h"
@@ -728,7 +728,7 @@ void VideoStreamPlaybackTheora::play() {
 	}
 
 	playing = true;
-	delay_compensation = GlobalConfig::get_singleton()->get("audio/video_delay_compensation_ms");
+	delay_compensation = ProjectSettings::get_singleton()->get("audio/video_delay_compensation_ms");
 	delay_compensation /= 1000.0;
 };
 

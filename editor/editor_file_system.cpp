@@ -32,12 +32,12 @@
 #include "editor_node.h"
 #include "editor_resource_preview.h"
 #include "editor_settings.h"
-#include "global_config.h"
 #include "io/resource_import.h"
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
 #include "os/file_access.h"
 #include "os/os.h"
+#include "project_settings.h"
 #include "variant_parser.h"
 
 EditorFileSystem *EditorFileSystem::singleton = NULL;
@@ -179,7 +179,7 @@ void EditorFileSystem::_scan_filesystem() {
 	sources_changed.clear();
 	file_cache.clear();
 
-	String project = GlobalConfig::get_singleton()->get_resource_path();
+	String project = ProjectSettings::get_singleton()->get_resource_path();
 
 	String fscache = EditorSettings::get_singleton()->get_project_settings_path().plus_file("filesystem_cache2");
 	FileAccess *f = FileAccess::open(fscache, FileAccess::READ);
@@ -1008,7 +1008,7 @@ bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirector
 	if (!filesystem || scanning)
 		return false;
 
-	String f = GlobalConfig::get_singleton()->localize_path(p_file);
+	String f = ProjectSettings::get_singleton()->localize_path(p_file);
 
 	if (!f.begins_with("res://"))
 		return false;
@@ -1121,7 +1121,7 @@ EditorFileSystemDirectory *EditorFileSystem::get_filesystem_path(const String &p
 	if (!filesystem || scanning)
 		return NULL;
 
-	String f = GlobalConfig::get_singleton()->localize_path(p_path);
+	String f = ProjectSettings::get_singleton()->localize_path(p_path);
 
 	if (!f.begins_with("res://"))
 		return NULL;
@@ -1335,7 +1335,7 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 	f->store_line("[params]");
 	f->store_line("");
 
-	//store options in provided order, to avoid file changing
+	//store options in provided order, to avoid file changing. Order is also important because first match is accepted first.
 
 	for (List<ResourceImporter::ImportOption>::Element *E = opts.front(); E; E = E->next()) {
 

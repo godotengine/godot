@@ -32,7 +32,7 @@
 #include "editor_file_system.h"
 #include "editor_node.h"
 #include "editor_settings.h"
-#include "global_config.h"
+#include "project_settings.h"
 #include "os/keyboard.h"
 #include "scene/gui/margin_container.h"
 

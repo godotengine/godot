@@ -200,6 +200,7 @@ public:
 	virtual void native_video_focus_out();
 	virtual void native_video_stop();
 
+	virtual bool _check_internal_feature_support(const String &p_feature);
 	OSIPhone(int width, int height);
 	~OSIPhone();
 };

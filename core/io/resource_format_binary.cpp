@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "resource_format_binary.h"
-#include "global_config.h"
+#include "project_settings.h"
 #include "image.h"
 #include "io/file_access_compressed.h"
 #include "io/marshalls.h"
@@ -317,7 +317,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 
 					if (path.find("://") == -1 && path.is_rel_path()) {
 						// path is relative to file being loaded, so convert to a resource path
-						path = GlobalConfig::get_singleton()->localize_path(res_path.get_base_dir().plus_file(path));
+						path = ProjectSettings::get_singleton()->localize_path(res_path.get_base_dir().plus_file(path));
 					}
 
 					if (remaps.find(path)) {
@@ -346,7 +346,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 
 						if (path.find("://") == -1 && path.is_rel_path()) {
 							// path is relative to file being loaded, so convert to a resource path
-							path = GlobalConfig::get_singleton()->localize_path(res_path.get_base_dir().plus_file(path));
+							path = ProjectSettings::get_singleton()->localize_path(res_path.get_base_dir().plus_file(path));
 						}
 
 						RES res = ResourceLoader::load(path, type);
@@ -1017,7 +1017,7 @@ Ref<ResourceInteractiveLoader> ResourceFormatLoaderBinary::load_interactive(cons
 	}
 
 	Ref<ResourceInteractiveLoaderBinary> ria = memnew(ResourceInteractiveLoaderBinary);
-	ria->local_path = GlobalConfig::get_singleton()->localize_path(p_path);
+	ria->local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	ria->res_path = ria->local_path;
 	//ria->set_local_path( Globals::get_singleton()->localize_path(p_path) );
 	ria->open(f);
@@ -1065,7 +1065,7 @@ void ResourceFormatLoaderBinary::get_dependencies(const String &p_path, List<Str
 	ERR_FAIL_COND(!f);
 
 	Ref<ResourceInteractiveLoaderBinary> ria = memnew(ResourceInteractiveLoaderBinary);
-	ria->local_path = GlobalConfig::get_singleton()->localize_path(p_path);
+	ria->local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	ria->res_path = ria->local_path;
 	//ria->set_local_path( Globals::get_singleton()->localize_path(p_path) );
 	ria->get_dependencies(f, p_dependencies, p_add_types);
@@ -1152,7 +1152,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 		}
 
 		Ref<ResourceInteractiveLoaderBinary> ria = memnew(ResourceInteractiveLoaderBinary);
-		ria->local_path = GlobalConfig::get_singleton()->localize_path(p_path);
+		ria->local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 		ria->res_path = ria->local_path;
 		ria->remaps = p_map;
 		//ria->set_local_path( Globals::get_singleton()->localize_path(p_path) );
@@ -1281,7 +1281,7 @@ String ResourceFormatLoaderBinary::get_resource_type(const String &p_path) const
 	}
 
 	Ref<ResourceInteractiveLoaderBinary> ria = memnew(ResourceInteractiveLoaderBinary);
-	ria->local_path = GlobalConfig::get_singleton()->localize_path(p_path);
+	ria->local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	ria->res_path = ria->local_path;
 	//ria->set_local_path( Globals::get_singleton()->localize_path(p_path) );
 	String r = ria->recognize(f);
@@ -1984,7 +1984,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 
 Error ResourceFormatSaverBinary::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
 
-	String local_path = GlobalConfig::get_singleton()->localize_path(p_path);
+	String local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	ResourceFormatSaverBinaryInstance saver;
 	return saver.save(local_path, p_resource, p_flags);
 }

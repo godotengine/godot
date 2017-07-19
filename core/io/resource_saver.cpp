@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "resource_saver.h"
-#include "global_config.h"
+#include "project_settings.h"
 #include "os/file_access.h"
 #include "resource_loader.h"
 #include "script_language.h"
@@ -64,7 +64,7 @@ Error ResourceSaver::save(const String &p_path, const RES &p_resource, uint32_t 
 
 		String old_path = p_resource->get_path();
 
-		String local_path = GlobalConfig::get_singleton()->localize_path(p_path);
+		String local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 
 		RES rwcopy = p_resource;
 		if (p_flags & FLAG_CHANGE_PATH)

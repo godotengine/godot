@@ -37,8 +37,6 @@
 #include "editor_help.h"
 #include "editor_node.h"
 #include "editor_settings.h"
-#include "global_config.h"
-#include "global_config.h"
 #include "io/image_loader.h"
 #include "io/resource_loader.h"
 #include "multi_node_edit.h"
@@ -46,6 +44,8 @@
 #include "os/keyboard.h"
 #include "pair.h"
 #include "print_string.h"
+#include "project_settings.h"
+#include "project_settings.h"
 #include "property_selector.h"
 #include "scene/gui/label.h"
 #include "scene/main/viewport.h"
@@ -415,7 +415,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 
 						int idx = i * 10 + j;
 						CheckBox *c = checks20[idx];
-						c->set_text(GlobalConfig::get_singleton()->get(basename + "/layer_" + itos(idx + 1)));
+						c->set_text(ProjectSettings::get_singleton()->get(basename + "/layer_" + itos(idx + 1)));
 						c->set_pressed(flgs & (1 << (i * 10 + j)));
 						c->show();
 					}
@@ -1019,7 +1019,7 @@ void CustomPropertyEditor::_file_selected(String p_file) {
 
 			if (hint == PROPERTY_HINT_FILE || hint == PROPERTY_HINT_DIR) {
 
-				v = GlobalConfig::get_singleton()->localize_path(p_file);
+				v = ProjectSettings::get_singleton()->localize_path(p_file);
 				emit_signal("variant_changed");
 				hide();
 			}
@@ -3002,8 +3002,18 @@ void PropertyEditor::update_tree() {
 
 		String name = (basename.find("/") != -1) ? basename.right(basename.find_last("/") + 1) : basename;
 
-		if (capitalize_paths)
-			name = name.camelcase_to_underscore().capitalize();
+		if (capitalize_paths) {
+			int dot = name.find(".");
+			if (dot != -1) {
+				String ov = name.right(dot);
+				name = name.substr(0, dot);
+				name = name.camelcase_to_underscore().capitalize();
+				name += ov;
+
+			} else {
+				name = name.camelcase_to_underscore().capitalize();
+			}
+		}
 
 		String path = basename.left(basename.find_last("/"));
 
@@ -3046,7 +3056,7 @@ void PropertyEditor::update_tree() {
 			//item->set_custom_bg_color(1,col);
 		}
 		item->set_editable(0, false);
-		item->set_selectable(0, false);
+		item->set_selectable(0, property_selectable);
 
 		if (p.usage & PROPERTY_USAGE_CHECKABLE) {
 
@@ -3058,6 +3068,18 @@ void PropertyEditor::update_tree() {
 
 		item->set_text(0, name);
 		item->set_tooltip(0, p.name);
+
+		if (name.find(".") != -1) {
+			Color textcol = get_color("font_color", "Tree");
+			textcol.a *= 0.5;
+			//override :D
+			item->set_custom_color(0, textcol);
+			item->set_custom_color(1, textcol);
+
+			Color iconcol(1, 1, 1, 0.6);
+			item->set_icon_color(0, iconcol);
+			item->set_icon_color(1, iconcol);
+		}
 
 		if (use_doc_hints) {
 			StringName setter;
@@ -4308,6 +4330,11 @@ void PropertyEditor::register_text_enter(Node *p_line_edit) {
 		search_box->connect("text_changed", this, "_filter_changed");
 }
 
+void PropertyEditor::set_property_selectable(bool p_selectable) {
+	property_selectable = p_selectable;
+	update_tree();
+}
+
 void PropertyEditor::set_subsection_selectable(bool p_selectable) {
 
 	if (p_selectable == subsection_selectable)
@@ -4394,6 +4421,7 @@ PropertyEditor::PropertyEditor() {
 	updating_folding = true;
 	use_filter = false;
 	subsection_selectable = false;
+	property_selectable = false;
 	show_type_icons = EDITOR_DEF("interface/show_type_icons", false);
 }
 
@@ -4647,6 +4675,8 @@ void SectionedPropertyEditor::update_category_list() {
 	if (section_map.has(selected_category)) {
 		section_map[selected_category]->select(0);
 	}
+
+	editor->update_tree();
 }
 
 void SectionedPropertyEditor::register_search_box(LineEdit *p_box) {

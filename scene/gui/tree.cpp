@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "tree.h"
-#include "global_config.h"
 #include "os/input.h"
 #include "os/keyboard.h"
 #include "os/os.h"
 #include "print_string.h"
+#include "project_settings.h"
 #include "scene/main/viewport.h"
 
 void TreeItem::move_to_top() {
@@ -70,7 +70,7 @@ Size2 TreeItem::Cell::get_icon_size() const {
 		return icon_region.size;
 }
 
-void TreeItem::Cell::draw_icon(const RID &p_where, const Point2 &p_pos, const Size2 &p_size) const {
+void TreeItem::Cell::draw_icon(const RID &p_where, const Point2 &p_pos, const Size2 &p_size, const Color &p_color) const {
 
 	if (icon.is_null())
 		return;
@@ -79,10 +79,10 @@ void TreeItem::Cell::draw_icon(const RID &p_where, const Point2 &p_pos, const Si
 
 	if (icon_region == Rect2i()) {
 
-		icon->draw_rect_region(p_where, Rect2(p_pos, dsize), Rect2(Point2(), icon->get_size()));
+		icon->draw_rect_region(p_where, Rect2(p_pos, dsize), Rect2(Point2(), icon->get_size()), p_color);
 	} else {
 
-		icon->draw_rect_region(p_where, Rect2(p_pos, dsize), icon_region);
+		icon->draw_rect_region(p_where, Rect2(p_pos, dsize), icon_region, p_color);
 	}
 }
 
@@ -201,6 +201,19 @@ Rect2 TreeItem::get_icon_region(int p_column) const {
 
 	ERR_FAIL_INDEX_V(p_column, cells.size(), Rect2());
 	return cells[p_column].icon_region;
+}
+
+void TreeItem::set_icon_color(int p_column, const Color &p_icon_color) {
+
+	ERR_FAIL_INDEX(p_column, cells.size());
+	cells[p_column].icon_color = p_icon_color;
+	_changed_notify(p_column);
+}
+
+Color TreeItem::get_icon_color(int p_column) const {
+
+	ERR_FAIL_INDEX_V(p_column, cells.size(), Color());
+	return cells[p_column].icon_color;
 }
 
 void TreeItem::set_icon_max_width(int p_column, int p_max) {
@@ -933,7 +946,7 @@ int Tree::get_item_height(TreeItem *p_item) const {
 	return height;
 }
 
-void Tree::draw_item_rect(const TreeItem::Cell &p_cell, const Rect2i &p_rect, const Color &p_color) {
+void Tree::draw_item_rect(const TreeItem::Cell &p_cell, const Rect2i &p_rect, const Color &p_color, const Color &p_icon_color) {
 
 	Rect2i rect = p_rect;
 	Ref<Font> font = cache.font;
@@ -972,7 +985,7 @@ void Tree::draw_item_rect(const TreeItem::Cell &p_cell, const Rect2i &p_rect, co
 			bmsize.width = p_cell.icon_max_w;
 		}
 
-		p_cell.draw_icon(ci, rect.position + Size2i(0, Math::floor((real_t)(rect.size.y - bmsize.y) / 2)), bmsize);
+		p_cell.draw_icon(ci, rect.position + Size2i(0, Math::floor((real_t)(rect.size.y - bmsize.y) / 2)), bmsize, p_icon_color);
 		rect.position.x += bmsize.x + cache.hseparation;
 		rect.size.x -= bmsize.x + cache.hseparation;
 	}
@@ -1176,6 +1189,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			}
 
 			Color col = p_item->cells[i].custom_color ? p_item->cells[i].color : get_color(p_item->cells[i].selected ? "font_color_selected" : "font_color");
+			Color icon_col = p_item->cells[i].icon_color;
 
 			Point2i text_pos = item_rect.position;
 			text_pos.y += Math::floor((item_rect.size.y - font->get_height()) / 2) + font_ascent;
@@ -1184,7 +1198,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 				case TreeItem::CELL_MODE_STRING: {
 
-					draw_item_rect(p_item->cells[i], item_rect, col);
+					draw_item_rect(p_item->cells[i], item_rect, col, icon_col);
 				} break;
 				case TreeItem::CELL_MODE_CHECK: {
 
@@ -1195,9 +1209,9 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 					if (p_item->cells[i].checked) {
 
-						checked->draw(ci, check_ofs);
+						checked->draw(ci, check_ofs, icon_col);
 					} else {
-						unchecked->draw(ci, check_ofs);
+						unchecked->draw(ci, check_ofs, icon_col);
 					}
 
 					int check_w = checked->get_width() + cache.hseparation;
@@ -1207,7 +1221,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 					item_rect.size.x -= check_w;
 					item_rect.position.x += check_w;
 
-					draw_item_rect(p_item->cells[i], item_rect, col);
+					draw_item_rect(p_item->cells[i], item_rect, col, icon_col);
 
 					//font->draw( ci, text_pos, p_item->cells[i].text, col,item_rect.size.x-check_w );
 
@@ -1237,7 +1251,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 						arrow_pos.x += item_rect.size.x - downarrow->get_width();
 						arrow_pos.y += Math::floor(((item_rect.size.y - downarrow->get_height())) / 2.0);
 
-						downarrow->draw(ci, arrow_pos);
+						downarrow->draw(ci, arrow_pos, icon_col);
 					} else {
 
 						Ref<Texture> updown = cache.updown;
@@ -1257,7 +1271,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 						updown_pos.x += item_rect.size.x - updown->get_width();
 						updown_pos.y += Math::floor(((item_rect.size.y - updown->get_height())) / 2.0);
 
-						updown->draw(ci, updown_pos);
+						updown->draw(ci, updown_pos, icon_col);
 					}
 
 				} break;
@@ -1274,7 +1288,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 					Point2i icon_ofs = (item_rect.size - icon_size) / 2;
 					icon_ofs += item_rect.position;
 
-					draw_texture_rect(p_item->cells[i].icon, Rect2(icon_ofs, icon_size));
+					draw_texture_rect(p_item->cells[i].icon, Rect2(icon_ofs, icon_size), false, icon_col);
 					//p_item->cells[i].icon->draw(ci, icon_ofs);
 
 				} break;
@@ -1291,7 +1305,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 					if (!p_item->cells[i].editable) {
 
-						draw_item_rect(p_item->cells[i], item_rect, col);
+						draw_item_rect(p_item->cells[i], item_rect, col, icon_col);
 						break;
 					}
 
@@ -1319,7 +1333,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 						ir.position += cache.custom_button->get_offset();
 					}
 
-					draw_item_rect(p_item->cells[i], ir, col);
+					draw_item_rect(p_item->cells[i], ir, col, icon_col);
 
 					downarrow->draw(ci, arrow_pos);
 

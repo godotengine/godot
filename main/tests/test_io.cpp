@@ -31,7 +31,7 @@
 
 #ifdef MINIZIP_ENABLED
 
-#include "core/global_config.h"
+#include "core/project_settings.h"
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
 #include "os/dir_access.h"
@@ -91,10 +91,10 @@ MainLoop *test() {
 	ResourceSaver::save("test_data/rock.xml", texture);
 
 	print_line("localize paths");
-	print_line(GlobalConfig::get_singleton()->localize_path("algo.xml"));
-	print_line(GlobalConfig::get_singleton()->localize_path("c:\\windows\\algo.xml"));
-	print_line(GlobalConfig::get_singleton()->localize_path(GlobalConfig::get_singleton()->get_resource_path() + "/something/something.xml"));
-	print_line(GlobalConfig::get_singleton()->localize_path("somedir/algo.xml"));
+	print_line(ProjectSettings::get_singleton()->localize_path("algo.xml"));
+	print_line(ProjectSettings::get_singleton()->localize_path("c:\\windows\\algo.xml"));
+	print_line(ProjectSettings::get_singleton()->localize_path(ProjectSettings::get_singleton()->get_resource_path() + "/something/something.xml"));
+	print_line(ProjectSettings::get_singleton()->localize_path("somedir/algo.xml"));
 
 	{
 

@@ -30,7 +30,7 @@
 #include "editor_settings.h"
 
 #include "editor_node.h"
-#include "global_config.h"
+#include "project_settings.h"
 #include "io/compression.h"
 #include "io/config_file.h"
 #include "io/file_access_memory.h"
@@ -329,7 +329,7 @@ void EditorSettings::create() {
 
 		dir->change_dir("config");
 
-		String pcp = GlobalConfig::get_singleton()->get_resource_path();
+		String pcp = ProjectSettings::get_singleton()->get_resource_path();
 		if (pcp.ends_with("/"))
 			pcp = config_path.substr(0, pcp.size() - 1);
 		pcp = pcp.get_file() + "-" + pcp.md5_text();

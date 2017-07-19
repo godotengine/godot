@@ -37,9 +37,9 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-class GlobalConfig : public Object {
+class ProjectSettings : public Object {
 
-	GDCLASS(GlobalConfig, Object);
+	GDCLASS(ProjectSettings, Object);
 	_THREAD_SAFE_CLASS_
 
 public:
@@ -53,13 +53,12 @@ public:
 			ptr = p_ptr;
 		}
 	};
-
-protected:
 	enum {
 		//properties that are not for built in values begin from this value, so builtin ones are displayed first
 		NO_BUILTIN_ORDER_BASE = 1 << 16
 	};
 
+protected:
 	struct VariantContainer {
 		int order;
 		bool persist;
@@ -88,21 +87,24 @@ protected:
 	Map<StringName, VariantContainer> props;
 	String resource_path;
 	Map<StringName, PropertyInfo> custom_prop_info;
-	bool disable_platform_override;
+	bool disable_feature_overrides;
 	bool using_datapack;
 	List<String> input_presets;
+
+	Set<String> custom_features;
+	Map<StringName, StringName> feature_overrides;
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
-	static GlobalConfig *singleton;
+	static ProjectSettings *singleton;
 
 	Error _load_settings(const String p_path);
 	Error _load_settings_binary(const String p_path);
 
-	Error _save_settings_text(const String &p_file, const Map<String, List<String> > &props, const CustomMap &p_custom = CustomMap());
-	Error _save_settings_binary(const String &p_file, const Map<String, List<String> > &props, const CustomMap &p_custom = CustomMap());
+	Error _save_settings_text(const String &p_file, const Map<String, List<String> > &props, const CustomMap &p_custom = CustomMap(), const String &p_custom_features = String());
+	Error _save_settings_binary(const String &p_file, const Map<String, List<String> > &props, const CustomMap &p_custom = CustomMap(), const String &p_custom_features = String());
 
 	List<Singleton> singletons;
 	Map<StringName, Object *> singleton_ptrs;
@@ -127,7 +129,7 @@ public:
 
 	String get_resource_path() const;
 
-	static GlobalConfig *get_singleton();
+	static ProjectSettings *get_singleton();
 
 	void clear(const String &p_name);
 	int get_order(const String &p_name) const;
@@ -136,7 +138,7 @@ public:
 
 	Error setup(const String &p_path, const String &p_main_pack);
 
-	Error save_custom(const String &p_path = "", const CustomMap &p_custom = CustomMap(), const Set<String> &p_ignore_masks = Set<String>());
+	Error save_custom(const String &p_path = "", const CustomMap &p_custom = CustomMap(), const Vector<String> &p_custom_features = Vector<String>());
 	Error save();
 	void set_custom_property_info(const String &p_prop, const PropertyInfo &p_info);
 
@@ -149,7 +151,7 @@ public:
 
 	List<String> get_input_presets() const { return input_presets; }
 
-	void set_disable_platform_override(bool p_disable);
+	void set_disable_feature_overrides(bool p_disable);
 	Object *get_singleton_object(const String &p_name) const;
 
 	void register_global_defaults();
@@ -158,13 +160,13 @@ public:
 
 	void set_registering_order(bool p_registering);
 
-	GlobalConfig();
-	~GlobalConfig();
+	ProjectSettings();
+	~ProjectSettings();
 };
 
 //not a macro any longer
 Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default);
 #define GLOBAL_DEF(m_var, m_value) _GLOBAL_DEF(m_var, m_value)
-#define GLOBAL_GET(m_var) GlobalConfig::get_singleton()->get(m_var)
+#define GLOBAL_GET(m_var) ProjectSettings::get_singleton()->get(m_var)
 
 #endif

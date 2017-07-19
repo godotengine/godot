@@ -32,7 +32,7 @@
 #include "editor_data.h"
 #include "editor_node.h"
 #include "editor_settings.h"
-#include "global_config.h"
+#include "project_settings.h"
 #include "io/image_loader.h"
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
@@ -51,6 +51,7 @@ void ProjectExportDialog::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			delete_preset->set_icon(get_icon("Del", "EditorIcons"));
 			connect("confirmed", this, "_export_pck_zip");
+			custom_feature_display->get_parent_control()->add_style_override("panel", get_stylebox("bg", "Tree"));
 		} break;
 		case NOTIFICATION_POPUP_HIDE: {
 			EditorSettings::get_singleton()->set("interface/dialogs/export_bounds", get_rect());
@@ -240,7 +241,60 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 		export_button->set_disabled(false);
 	}
 
+	custom_features->set_text(current->get_custom_features());
+	_update_feature_list();
+
 	updating = false;
+}
+
+void ProjectExportDialog::_update_feature_list() {
+
+	Ref<EditorExportPreset> current = EditorExport::get_singleton()->get_export_preset(presets->get_current());
+	ERR_FAIL_COND(current.is_null());
+
+	Set<String> fset;
+	List<String> features;
+
+	current->get_platform()->get_platform_features(&features);
+	current->get_platform()->get_preset_features(current, &features);
+
+	String custom = current->get_custom_features();
+	Vector<String> custom_list = custom.split(",");
+	for (int i = 0; i < custom_list.size(); i++) {
+		String f = custom_list[i].strip_edges();
+		if (f != String()) {
+			features.push_back(f);
+		}
+	}
+
+	for (List<String>::Element *E = features.front(); E; E = E->next()) {
+		fset.insert(E->get());
+	}
+
+	custom_feature_display->clear();
+	for (Set<String>::Element *E = fset.front(); E; E = E->next()) {
+		String f = E->get();
+		if (E->next()) {
+			f += ", ";
+		}
+		custom_feature_display->add_text(f);
+	}
+}
+
+void ProjectExportDialog::_custom_features_changed(const String &p_text) {
+
+	if (updating)
+		return;
+
+	Ref<EditorExportPreset> current = EditorExport::get_singleton()->get_export_preset(presets->get_current());
+	ERR_FAIL_COND(current.is_null());
+
+	current->set_custom_features(p_text);
+	_update_feature_list();
+}
+
+void ProjectExportDialog::_tab_changed(int) {
+	_update_feature_list();
 }
 
 void ProjectExportDialog::_patch_button_pressed(Object *p_item, int p_column, int p_id) {
@@ -294,10 +348,10 @@ void ProjectExportDialog::_patch_selected(const String &p_path) {
 
 	if (patch_index >= patches.size()) {
 
-		current->add_patch(GlobalConfig::get_singleton()->get_resource_path().path_to(p_path) + "*");
+		current->add_patch(ProjectSettings::get_singleton()->get_resource_path().path_to(p_path) + "*");
 	} else {
 		String enabled = patches[patch_index].ends_with("*") ? String("*") : String();
-		current->set_patch(patch_index, GlobalConfig::get_singleton()->get_resource_path().path_to(p_path) + enabled);
+		current->set_patch(patch_index, ProjectSettings::get_singleton()->get_resource_path().path_to(p_path) + enabled);
 	}
 
 	_edit_preset(presets->get_current());
@@ -705,6 +759,8 @@ void ProjectExportDialog::_bind_methods() {
 	ClassDB::bind_method("_open_export_template_manager", &ProjectExportDialog::_open_export_template_manager);
 	ClassDB::bind_method("_export_project", &ProjectExportDialog::_export_project);
 	ClassDB::bind_method("_export_project_to_path", &ProjectExportDialog::_export_project_to_path);
+	ClassDB::bind_method("_custom_features_changed", &ProjectExportDialog::_custom_features_changed);
+	ClassDB::bind_method("_tab_changed", &ProjectExportDialog::_tab_changed);
 }
 ProjectExportDialog::ProjectExportDialog() {
 
@@ -827,6 +883,21 @@ ProjectExportDialog::ProjectExportDialog() {
 	patch_erase->get_ok()->set_text(TTR("Delete"));
 	patch_erase->connect("confirmed", this, "_patch_deleted");
 	add_child(patch_erase);
+
+	VBoxContainer *feature_vb = memnew(VBoxContainer);
+	feature_vb->set_name(TTR("Features"));
+	custom_features = memnew(LineEdit);
+	custom_features->connect("text_changed", this, "_custom_features_changed");
+	feature_vb->add_margin_child(TTR("Custom (comma-separated):"), custom_features);
+	Panel *features_panel = memnew(Panel);
+	custom_feature_display = memnew(RichTextLabel);
+	features_panel->add_child(custom_feature_display);
+	custom_feature_display->set_area_as_parent_rect(10 * EDSCALE);
+	custom_feature_display->set_v_size_flags(SIZE_EXPAND_FILL);
+	feature_vb->add_margin_child(TTR("Feature List:"), features_panel, true);
+	sections->add_child(feature_vb);
+
+	sections->connect("tab_changed", this, "_tab_changed");
 
 	//disable by default
 	name->set_editable(false);

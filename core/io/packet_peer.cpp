@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "packet_peer.h"
 
-#include "global_config.h"
+#include "project_settings.h"
 #include "io/marshalls.h"
 /* helpers / binders */
 

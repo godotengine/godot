@@ -32,7 +32,7 @@
 #include "servers/visual_server.h"
 
 #include "geometry.h"
-#include "global_config.h"
+#include "project_settings.h"
 #include "scene/resources/surface_tool.h"
 
 void Room::_notification(int p_what) {

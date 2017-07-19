@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "dir_access.h"
-#include "global_config.h"
+#include "project_settings.h"
 #include "os/file_access.h"
 #include "os/memory.h"
 #include "os/os.h"
@@ -37,7 +37,7 @@ String DirAccess::_get_root_path() const {
 
 	switch (_access_type) {
 
-		case ACCESS_RESOURCES: return GlobalConfig::get_singleton()->get_resource_path();
+		case ACCESS_RESOURCES: return ProjectSettings::get_singleton()->get_resource_path();
 		case ACCESS_USERDATA: return OS::get_singleton()->get_data_dir();
 		default: return "";
 	}
@@ -200,10 +200,10 @@ String DirAccess::fix_path(String p_path) const {
 
 		case ACCESS_RESOURCES: {
 
-			if (GlobalConfig::get_singleton()) {
+			if (ProjectSettings::get_singleton()) {
 				if (p_path.begins_with("res://")) {
 
-					String resource_path = GlobalConfig::get_singleton()->get_resource_path();
+					String resource_path = ProjectSettings::get_singleton()->get_resource_path();
 					if (resource_path != "") {
 
 						return p_path.replace_first("res:/", resource_path);

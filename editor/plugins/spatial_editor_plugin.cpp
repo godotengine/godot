@@ -36,7 +36,7 @@
 #include "editor/editor_settings.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/spatial_editor_gizmos.h"
-#include "global_config.h"
+#include "project_settings.h"
 #include "os/keyboard.h"
 #include "print_string.h"
 #include "scene/3d/camera.h"
@@ -1717,11 +1717,11 @@ void SpatialEditorViewport::_notification(int p_what) {
 
 		//update shadow atlas if changed
 
-		int shadowmap_size = GlobalConfig::get_singleton()->get("rendering/quality/shadow_atlas/size");
-		int atlas_q0 = GlobalConfig::get_singleton()->get("rendering/quality/shadow_atlas/quadrant_0_subdiv");
-		int atlas_q1 = GlobalConfig::get_singleton()->get("rendering/quality/shadow_atlas/quadrant_1_subdiv");
-		int atlas_q2 = GlobalConfig::get_singleton()->get("rendering/quality/shadow_atlas/quadrant_2_subdiv");
-		int atlas_q3 = GlobalConfig::get_singleton()->get("rendering/quality/shadow_atlas/quadrant_3_subdiv");
+		int shadowmap_size = ProjectSettings::get_singleton()->get("rendering/quality/shadow_atlas/size");
+		int atlas_q0 = ProjectSettings::get_singleton()->get("rendering/quality/shadow_atlas/quadrant_0_subdiv");
+		int atlas_q1 = ProjectSettings::get_singleton()->get("rendering/quality/shadow_atlas/quadrant_1_subdiv");
+		int atlas_q2 = ProjectSettings::get_singleton()->get("rendering/quality/shadow_atlas/quadrant_2_subdiv");
+		int atlas_q3 = ProjectSettings::get_singleton()->get("rendering/quality/shadow_atlas/quadrant_3_subdiv");
 
 		viewport->set_shadow_atlas_size(shadowmap_size);
 		viewport->set_shadow_atlas_quadrant_subdiv(0, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q0));
@@ -1731,10 +1731,10 @@ void SpatialEditorViewport::_notification(int p_what) {
 
 		//update msaa if changed
 
-		int msaa_mode = GlobalConfig::get_singleton()->get("rendering/quality/filters/msaa");
+		int msaa_mode = ProjectSettings::get_singleton()->get("rendering/quality/filters/msaa");
 		viewport->set_msaa(Viewport::MSAA(msaa_mode));
 
-		bool hdr = GlobalConfig::get_singleton()->get("rendering/quality/depth/hdr");
+		bool hdr = ProjectSettings::get_singleton()->get("rendering/quality/depth/hdr");
 		viewport->set_hdr(hdr);
 
 		bool show_info = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_INFORMATION));
@@ -1834,7 +1834,7 @@ void SpatialEditorViewport::_draw() {
 
 	if (previewing) {
 
-		Size2 ss = Size2(GlobalConfig::get_singleton()->get("display/window/size/width"), GlobalConfig::get_singleton()->get("display/window/size/height"));
+		Size2 ss = Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height"));
 		float aspect = ss.aspect();
 		Size2 s = get_size();
 

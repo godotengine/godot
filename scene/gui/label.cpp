@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "label.h"
-#include "global_config.h"
+#include "project_settings.h"
 #include "print_string.h"
 #include "translation.h"
 

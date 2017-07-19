@@ -103,7 +103,7 @@ bool InputEvent::is_action_type() const {
 if (String(p_method) == "is_action" && p_argidx == 0) {
 
 	List<PropertyInfo> pinfo;
-	GlobalConfig::get_singleton()->get_property_list(&pinfo);
+	ProjectSettings::get_singleton()->get_property_list(&pinfo);
 
 	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
 		const PropertyInfo &pi = E->get();

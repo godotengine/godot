@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "environment.h"
-#include "global_config.h"
+#include "project_settings.h"
 #include "servers/visual_server.h"
 #include "texture.h"
 

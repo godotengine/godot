@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "input_map.h"
 
-#include "global_config.h"
+#include "project_settings.h"
 #include "os/keyboard.h"
 
 InputMap *InputMap::singleton = NULL;
@@ -189,7 +189,7 @@ void InputMap::load_from_globals() {
 	input_map.clear();
 
 	List<PropertyInfo> pinfo;
-	GlobalConfig::get_singleton()->get_property_list(&pinfo);
+	ProjectSettings::get_singleton()->get_property_list(&pinfo);
 
 	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
 		const PropertyInfo &pi = E->get();
@@ -201,7 +201,7 @@ void InputMap::load_from_globals() {
 
 		add_action(name);
 
-		Array va = GlobalConfig::get_singleton()->get(pi.name);
+		Array va = ProjectSettings::get_singleton()->get(pi.name);
 
 		for (int i = 0; i < va.size(); i++) {
 

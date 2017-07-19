@@ -37,12 +37,12 @@
 #include "drivers/windows/rw_lock_windows.h"
 #include "drivers/windows/semaphore_windows.h"
 #include "drivers/windows/thread_windows.h"
-#include "global_config.h"
 #include "io/marshalls.h"
 #include "joypad.h"
 #include "lang_table.h"
 #include "main/main.h"
 #include "packet_peer_udp_winsock.h"
+#include "project_settings.h"
 #include "servers/audio_server.h"
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
@@ -2229,7 +2229,7 @@ String OS_Windows::get_data_dir() const {
 
 		if (has_environment("APPDATA")) {
 
-			bool use_godot = GlobalConfig::get_singleton()->get("application/config/use_shared_user_dir");
+			bool use_godot = ProjectSettings::get_singleton()->get("application/config/use_shared_user_dir");
 			if (!use_godot)
 				return (OS::get_singleton()->get_environment("APPDATA") + "/" + an).replace("\\", "/");
 			else
@@ -2237,7 +2237,7 @@ String OS_Windows::get_data_dir() const {
 		}
 	}
 
-	return GlobalConfig::get_singleton()->get_resource_path();
+	return ProjectSettings::get_singleton()->get_resource_path();
 }
 
 bool OS_Windows::is_joy_known(int p_device) {
@@ -2274,9 +2274,9 @@ int OS_Windows::get_power_percent_left() {
 	return power_manager->get_power_percent_left();
 }
 
-bool OS_Windows::check_feature_support(const String &p_feature) {
+bool OS_Windows::_check_internal_feature_support(const String &p_feature) {
 
-	return VisualServer::get_singleton()->has_os_feature(p_feature);
+	return p_feature == "pc" || p_feature == "s3tc";
 }
 
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {

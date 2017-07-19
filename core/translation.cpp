@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "translation.h"
 
-#include "global_config.h"
+#include "project_settings.h"
 #include "io/resource_loader.h"
 #include "os/os.h"
 
@@ -1053,8 +1053,8 @@ TranslationServer *TranslationServer::singleton = NULL;
 
 bool TranslationServer::_load_translations(const String &p_from) {
 
-	if (GlobalConfig::get_singleton()->has(p_from)) {
-		PoolVector<String> translations = GlobalConfig::get_singleton()->get(p_from);
+	if (ProjectSettings::get_singleton()->has(p_from)) {
+		PoolVector<String> translations = ProjectSettings::get_singleton()->get(p_from);
 
 		int tcount = translations.size();
 
@@ -1095,7 +1095,7 @@ void TranslationServer::setup() {
 			options += locale_list[idx];
 			idx++;
 		}
-		GlobalConfig::get_singleton()->set_custom_property_info("locale/fallback", PropertyInfo(Variant::STRING, "locale/fallback", PROPERTY_HINT_ENUM, options));
+		ProjectSettings::get_singleton()->set_custom_property_info("locale/fallback", PropertyInfo(Variant::STRING, "locale/fallback", PROPERTY_HINT_ENUM, options));
 	}
 #endif
 	//load translations

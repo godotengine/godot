@@ -191,6 +191,7 @@ class PropertyEditor : public Control {
 	bool subsection_selectable;
 	bool hide_script;
 	bool use_folding;
+	bool property_selectable;
 
 	bool updating_folding;
 
@@ -288,6 +289,7 @@ public:
 	void register_text_enter(Node *p_line_edit);
 
 	void set_subsection_selectable(bool p_selectable);
+	void set_property_selectable(bool p_selectable);
 
 	void set_use_folding(bool p_enable);
 	PropertyEditor();

@@ -1947,6 +1947,11 @@ Error OS_X11::shell_open(String p_uri) {
 	return ok;
 }
 
+bool OS_X11::_check_internal_feature_support(const String &p_feature) {
+
+	return p_feature == "pc" || p_feature == "s3tc";
+}
+
 String OS_X11::get_system_dir(SystemDir p_dir) const {
 
 	String xdgparam;

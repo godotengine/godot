@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "resource_loader.h"
-#include "global_config.h"
+#include "project_settings.h"
 #include "io/resource_import.h"
 #include "os/file_access.h"
 #include "os/os.h"
@@ -166,7 +166,7 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p
 	if (p_path.is_rel_path())
 		local_path = "res://" + p_path;
 	else
-		local_path = GlobalConfig::get_singleton()->localize_path(p_path);
+		local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 
 	bool xl_remapped = false;
 	String path = _path_remap(local_path, &xl_remapped);
@@ -233,7 +233,7 @@ Ref<ResourceInteractiveLoader> ResourceLoader::load_interactive(const String &p_
 	if (p_path.is_rel_path())
 		local_path = "res://" + p_path;
 	else
-		local_path = GlobalConfig::get_singleton()->localize_path(p_path);
+		local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 
 	bool xl_remapped = false;
 	String path = _path_remap(local_path, &xl_remapped);
@@ -304,7 +304,7 @@ void ResourceLoader::get_dependencies(const String &p_path, List<String> *p_depe
 	if (path.is_rel_path())
 		local_path = "res://" + path;
 	else
-		local_path = GlobalConfig::get_singleton()->localize_path(path);
+		local_path = ProjectSettings::get_singleton()->localize_path(path);
 
 	for (int i = 0; i < loader_count; i++) {
 
@@ -327,7 +327,7 @@ Error ResourceLoader::rename_dependencies(const String &p_path, const Map<String
 	if (path.is_rel_path())
 		local_path = "res://" + path;
 	else
-		local_path = GlobalConfig::get_singleton()->localize_path(path);
+		local_path = ProjectSettings::get_singleton()->localize_path(path);
 
 	for (int i = 0; i < loader_count; i++) {
 
@@ -350,7 +350,7 @@ String ResourceLoader::get_resource_type(const String &p_path) {
 	if (p_path.is_rel_path())
 		local_path = "res://" + p_path;
 	else
-		local_path = GlobalConfig::get_singleton()->localize_path(p_path);
+		local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 
 	for (int i = 0; i < loader_count; i++) {
 
@@ -430,7 +430,7 @@ void ResourceLoader::reload_translation_remaps() {
 
 void ResourceLoader::load_translation_remaps() {
 
-	Dictionary remaps = GlobalConfig::get_singleton()->get("locale/translation_remaps");
+	Dictionary remaps = ProjectSettings::get_singleton()->get("locale/translation_remaps");
 	List<Variant> keys;
 	remaps.get_key_list(&keys);
 	for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {

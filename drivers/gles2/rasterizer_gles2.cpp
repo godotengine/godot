@@ -31,7 +31,7 @@
 
 #include "rasterizer_gles2.h"
 #include "gl_context/context_gl.h"
-#include "global_config.h"
+#include "project_settings.h"
 #include "os/os.h"
 #include "servers/visual/particle_system_sw.h"
 #include "servers/visual/shader_language.h"
@@ -3942,7 +3942,7 @@ void RasterizerGLES2::begin_frame() {
 //fragment_lighting=Globals::get_singleton()->get("rasterizer/use_fragment_lighting");
 #ifdef TOOLS_ENABLED
 	canvas_shader.set_conditional(CanvasShaderGLES2::USE_PIXEL_SNAP, GLOBAL_DEF("rendering/use_2d_pixel_snap", false));
-	shadow_filter = ShadowFilterTechnique(int(GlobalConfig::get_singleton()->get("rasterizer/shadow_filter")));
+	shadow_filter = ShadowFilterTechnique(int(ProjectSettings::get_singleton()->get("rasterizer/shadow_filter")));
 #endif
 
 	canvas_shader.set_conditional(CanvasShaderGLES2::SHADOW_PCF5, shadow_filter == SHADOW_FILTER_PCF5);
@@ -6819,7 +6819,7 @@ void RasterizerGLES2::end_scene() {
 				if (current_env->bg_mode == VS::ENV_BG_COLOR)
 					bgcolor = current_env->bg_param[VS::ENV_BG_PARAM_COLOR];
 				else
-					bgcolor = GlobalConfig::get_singleton()->get("render/default_clear_color");
+					bgcolor = ProjectSettings::get_singleton()->get("render/default_clear_color");
 				bgcolor = _convert_color(bgcolor);
 				float a = use_fb ? float(current_env->bg_param[VS::ENV_BG_PARAM_GLOW]) : 1.0;
 				glClearColor(bgcolor.r, bgcolor.g, bgcolor.b, a);
@@ -10718,7 +10718,7 @@ RasterizerGLES2::RasterizerGLES2(bool p_compress_arrays, bool p_keep_ram_copy, b
 	fragment_lighting = GLOBAL_DEF("rasterizer/use_fragment_lighting", true);
 	read_depth_supported = true; //todo check for extension
 	shadow_filter = ShadowFilterTechnique((int)(GLOBAL_DEF("rasterizer/shadow_filter", SHADOW_FILTER_PCF5)));
-	GlobalConfig::get_singleton()->set_custom_property_info("rasterizer/shadow_filter", PropertyInfo(Variant::INT, "rasterizer/shadow_filter", PROPERTY_HINT_ENUM, "None,PCF5,PCF13,ESM"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rasterizer/shadow_filter", PropertyInfo(Variant::INT, "rasterizer/shadow_filter", PROPERTY_HINT_ENUM, "None,PCF5,PCF13,ESM"));
 	use_fp16_fb = bool(GLOBAL_DEF("rasterizer/fp16_framebuffer", true));
 	use_shadow_mapping = true;
 	use_fast_texture_filter = !bool(GLOBAL_DEF("rasterizer/trilinear_mipmap_filter", true));

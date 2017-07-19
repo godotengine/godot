@@ -32,7 +32,7 @@
 #include "editor_node.h"
 #include "editor_profiler.h"
 #include "editor_settings.h"
-#include "global_config.h"
+#include "project_settings.h"
 #include "main/performance.h"
 #include "property_editor.h"
 #include "scene/gui/dialogs.h"

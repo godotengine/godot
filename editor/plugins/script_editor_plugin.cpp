@@ -32,7 +32,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/script_editor_debugger.h"
-#include "global_config.h"
+#include "project_settings.h"
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
 #include "os/file_access.h"
@@ -1603,8 +1603,8 @@ bool ScriptEditor::edit(const Ref<Script> &p_script, int p_line, int p_col, bool
 		String flags = EditorSettings::get_singleton()->get("text_editor/external/exec_flags");
 
 		Dictionary keys;
-		keys["project"] = GlobalConfig::get_singleton()->get_resource_path();
-		keys["file"] = GlobalConfig::get_singleton()->globalize_path(p_script->get_path());
+		keys["project"] = ProjectSettings::get_singleton()->get_resource_path();
+		keys["file"] = ProjectSettings::get_singleton()->globalize_path(p_script->get_path());
 		keys["line"] = p_line >= 0 ? p_line : 0;
 		keys["col"] = p_col;
 

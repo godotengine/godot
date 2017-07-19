@@ -30,7 +30,7 @@
 #include "editor_export_scene.h"
 #if 0
 #include "editor/editor_settings.h"
-#include "global_config.h"
+#include "project_settings.h"
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
 #include "os/dir_access.h"
@@ -63,7 +63,7 @@ Vector<uint8_t> EditorSceneExportPlugin::custom_export(String& p_path,const Ref<
 
 	uint64_t sd=0;
 	String smd5;
-	String gp = GlobalConfig::get_singleton()->globalize_path(p_path);
+	String gp = ProjectSettings::get_singleton()->globalize_path(p_path);
 	String md5=gp.md5_text();
 	String tmp_path = EditorSettings::get_singleton()->get_settings_path().plus_file("tmp/");
 

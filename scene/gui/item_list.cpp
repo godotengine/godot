@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "item_list.h"
-#include "global_config.h"
+#include "project_settings.h"
 #include "os/os.h"
 
 void ItemList::add_item(const String &p_item, const Ref<Texture> &p_texture, bool p_selectable) {
@@ -534,7 +534,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 				uint64_t now = OS::get_singleton()->get_ticks_msec();
 				uint64_t diff = now - search_time_msec;
 
-				if (diff < int(GlobalConfig::get_singleton()->get("gui/timers/incremental_search_max_interval_msec")) * 2) {
+				if (diff < int(ProjectSettings::get_singleton()->get("gui/timers/incremental_search_max_interval_msec")) * 2) {
 
 					for (int i = current - 1; i >= 0; i--) {
 
@@ -569,7 +569,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 				uint64_t now = OS::get_singleton()->get_ticks_msec();
 				uint64_t diff = now - search_time_msec;
 
-				if (diff < int(GlobalConfig::get_singleton()->get("gui/timers/incremental_search_max_interval_msec")) * 2) {
+				if (diff < int(ProjectSettings::get_singleton()->get("gui/timers/incremental_search_max_interval_msec")) * 2) {
 
 					for (int i = current + 1; i < items.size(); i++) {
 

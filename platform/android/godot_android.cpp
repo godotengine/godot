@@ -36,7 +36,7 @@
 #include <GLES2/gl2.h>
 
 #include "file_access_android.h"
-#include "global_config.h"
+#include "project_settings.h"
 #include "main/main.h"
 #include "os_android.h"
 #include <android/log.h>
@@ -623,7 +623,7 @@ static void engine_handle_cmd(struct android_app *app, int32_t cmd) {
 #else
 					Error err = Main::setup("apk", 0, NULL);
 
-					String modules = GlobalConfig::get_singleton()->get("android/modules");
+					String modules = ProjectSettings::get_singleton()->get("android/modules");
 					Vector<String> mods = modules.split(",", false);
 					mods.push_back("GodotOS");
 					__android_log_print(ANDROID_LOG_INFO, "godot", "mod count: %i", mods.size());
@@ -859,7 +859,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_Godot_registerSingleton(JNIEnv
 	s->set_instance(env->NewGlobalRef(p_object));
 	jni_singletons[singname] = s;
 
-	GlobalConfig::get_singleton()->add_singleton(GlobalConfig::Singleton(singname, s));
+	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton(singname, s));
 }
 
 static Variant::Type get_jni_type(const String &p_type) {
@@ -926,7 +926,7 @@ JNIEXPORT jstring JNICALL Java_org_godotengine_godot_Godot_getGlobal(JNIEnv *env
 
 	String js = env->GetStringUTFChars(path, NULL);
 
-	return env->NewStringUTF(GlobalConfig::get_singleton()->get(js).operator String().utf8().get_data());
+	return env->NewStringUTF(ProjectSettings::get_singleton()->get(js).operator String().utf8().get_data());
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_Godot_registerMethod(JNIEnv *env, jobject obj, jstring sname, jstring name, jstring ret, jobjectArray args) {

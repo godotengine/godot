@@ -29,11 +29,11 @@
 /*************************************************************************/
 #include "gdnative.h"
 
-#include "global_config.h"
 #include "global_constants.h"
 #include "io/file_access_encrypted.h"
 #include "os/file_access.h"
 #include "os/os.h"
+#include "project_settings.h"
 
 #include "scene/main/scene_tree.h"
 #include "scene/resources/scene_format_text.h"
@@ -573,7 +573,7 @@ Error GDNativeLibrary::_initialize() {
 	}
 	ERR_FAIL_COND_V(platform_file == "", ERR_DOES_NOT_EXIST);
 
-	StringName path = GlobalConfig::get_singleton()->globalize_path(platform_file);
+	StringName path = ProjectSettings::get_singleton()->globalize_path(platform_file);
 
 	GDNativeLibrary::currently_initialized_library = this;
 
@@ -1083,7 +1083,7 @@ void GDNativeScriptLanguage::init() {
 	// TODO: Expose globals
 	GLOBAL_DEF("gdnative/default_gdnativelibrary", "");
 	PropertyInfo prop_info(Variant::STRING, "gdnative/default_gdnativelibrary", PROPERTY_HINT_FILE, "tres,res,dllib");
-	GlobalConfig::get_singleton()->set_custom_property_info("gdnative/default_gdnativelibrary", prop_info);
+	ProjectSettings::get_singleton()->set_custom_property_info("gdnative/default_gdnativelibrary", prop_info);
 
 // generate bindings
 #if defined(TOOLS_ENABLED) && defined(DEBUG_METHODS_ENABLED)

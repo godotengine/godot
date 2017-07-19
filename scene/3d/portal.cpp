@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "portal.h"
-#include "global_config.h"
+#include "project_settings.h"
 #include "scene/resources/surface_tool.h"
 #include "servers/visual_server.h"
 

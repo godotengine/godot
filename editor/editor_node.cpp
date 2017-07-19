@@ -39,7 +39,6 @@
 #include "editor_help.h"
 #include "editor_settings.h"
 #include "editor_themes.h"
-#include "global_config.h"
 #include "io/config_file.h"
 #include "io/stream_peer_ssl.h"
 #include "io/zip_io.h"
@@ -52,6 +51,7 @@
 #include "os/os.h"
 #include "path_remap.h"
 #include "print_string.h"
+#include "project_settings.h"
 #include "pvrtc_compress.h"
 #include "register_exporters.h"
 #include "scene/resources/packed_scene.h"
@@ -163,7 +163,7 @@ void EditorNode::_update_scene_tabs() {
 
 void EditorNode::_update_title() {
 
-	String appname = GlobalConfig::get_singleton()->get("application/config/name");
+	String appname = ProjectSettings::get_singleton()->get("application/config/name");
 	String title = appname.empty() ? String(VERSION_FULL_NAME) : String(_MKSTR(VERSION_NAME) + String(" - ") + appname);
 	String edited = editor_data.get_edited_scene_root() ? editor_data.get_edited_scene_root()->get_filename() : String();
 	if (!edited.empty())
@@ -272,7 +272,7 @@ void EditorNode::_notification(int p_what) {
 		}
 		editor_selection->update();
 
-		scene_root->set_size_override(true, Size2(GlobalConfig::get_singleton()->get("display/window/size/width"), GlobalConfig::get_singleton()->get("display/window/size/height")));
+		scene_root->set_size_override(true, Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height")));
 
 		ResourceImporterTexture::get_singleton()->update_imports();
 	}
@@ -519,7 +519,7 @@ void EditorNode::save_resource_in_path(const Ref<Resource> &p_resource, const St
 		flg|=ResourceSaver::FLAG_RELATIVE_PATHS;
 	*/
 
-	String path = GlobalConfig::get_singleton()->localize_path(p_path);
+	String path = ProjectSettings::get_singleton()->localize_path(p_path);
 	Error err = ResourceSaver::save(path, p_resource, flg | ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS);
 
 	if (err != OK) {
@@ -870,7 +870,7 @@ void EditorNode::_save_scene_with_preview(String p_file) {
 
 		//save thumbnail directly, as thumbnailer may not update due to actual scene not changing md5
 		String temp_path = EditorSettings::get_singleton()->get_settings_path().plus_file("tmp");
-		String cache_base = GlobalConfig::get_singleton()->globalize_path(p_file).md5_text();
+		String cache_base = ProjectSettings::get_singleton()->globalize_path(p_file).md5_text();
 		cache_base = temp_path.plus_file("resthumb-" + cache_base);
 
 		//does not have it, try to load a cached thumbnail
@@ -950,7 +950,7 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	_save_edited_subresources(scene, processed, flg);
 	editor_data.save_editor_external_data();
 	if (err == OK) {
-		scene->set_filename(GlobalConfig::get_singleton()->localize_path(p_file));
+		scene->set_filename(ProjectSettings::get_singleton()->localize_path(p_file));
 		//EditorFileSystem::get_singleton()->update_file(p_file,sdata->get_type());
 		if (idx < 0 || idx == editor_data.get_edited_scene())
 			set_current_version(editor_data.get_undo_redo().get_version());
@@ -1029,7 +1029,7 @@ void EditorNode::_import_action(const String &p_action) {
 		EditorImport::generate_version_hashes(src);
 
 
-		Node *dst = SceneLoader::load(editor_data.get_imported_scene(GlobalConfig::get_singleton()->localize_path(_tmp_import_path)));
+		Node *dst = SceneLoader::load(editor_data.get_imported_scene(ProjectSettings::get_singleton()->localize_path(_tmp_import_path)));
 
 		if (!dst) {
 
@@ -1132,8 +1132,8 @@ void EditorNode::_dialog_action(String p_file) {
 		} break;
 		case SETTINGS_PICK_MAIN_SCENE: {
 
-			GlobalConfig::get_singleton()->set("application/run/main_scene", p_file);
-			GlobalConfig::get_singleton()->save();
+			ProjectSettings::get_singleton()->set("application/run/main_scene", p_file);
+			ProjectSettings::get_singleton()->save();
 			//would be nice to show the project manager opened with the highlighted field..
 			_run(false, ""); // automatically run the project
 		} break;
@@ -1802,7 +1802,7 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 	List<String> breakpoints;
 	editor_data.get_editor_breakpoints(&breakpoints);
 
-	args = GlobalConfig::get_singleton()->get("editor/main_run_args");
+	args = ProjectSettings::get_singleton()->get("editor/main_run_args");
 
 	Error error = editor_run.run(run_filename, args, breakpoints);
 
@@ -2269,7 +2269,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			}
 
 			instanced_scene->generate_instance_state();
-			instanced_scene->set_filename( GlobalConfig::get_singleton()->localize_path(external_file) );
+			instanced_scene->set_filename( ProjectSettings::get_singleton()->localize_path(external_file) );
 
 			editor_data.get_undo_redo().create_action("Instance Scene");
 			editor_data.get_undo_redo().add_do_method(parent,"add_child",instanced_scene);
@@ -2944,9 +2944,9 @@ void EditorNode::_update_addon_config() {
 	}
 
 	if (enabled_addons.size() == 0) {
-		GlobalConfig::get_singleton()->set("editor_plugins/enabled", Variant());
+		ProjectSettings::get_singleton()->set("editor_plugins/enabled", Variant());
 	} else {
-		GlobalConfig::get_singleton()->set("editor_plugins/enabled", enabled_addons);
+		ProjectSettings::get_singleton()->set("editor_plugins/enabled", enabled_addons);
 	}
 
 	project_settings->queue_save();
@@ -3287,7 +3287,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 	if (p_clear_errors)
 		load_errors->clear();
 
-	String lpath = GlobalConfig::get_singleton()->localize_path(p_scene);
+	String lpath = ProjectSettings::get_singleton()->localize_path(p_scene);
 
 	if (!lpath.begins_with("res://")) {
 
@@ -3575,7 +3575,7 @@ void EditorNode::animation_editor_make_visible(bool p_visible) {
 #endif
 void EditorNode::_add_to_recent_scenes(const String &p_scene) {
 
-	String base = "_" + GlobalConfig::get_singleton()->get_resource_path().replace("\\", "::").replace("/", "::");
+	String base = "_" + ProjectSettings::get_singleton()->get_resource_path().replace("\\", "::").replace("/", "::");
 	Vector<String> rc = EDITOR_DEF(base + "/_recent_scenes", Array());
 	String name = p_scene;
 	name = name.replace("res://", "");
@@ -3592,7 +3592,7 @@ void EditorNode::_add_to_recent_scenes(const String &p_scene) {
 
 void EditorNode::_open_recent_scene(int p_idx) {
 
-	String base = "_" + GlobalConfig::get_singleton()->get_resource_path().replace("\\", "::").replace("/", "::");
+	String base = "_" + ProjectSettings::get_singleton()->get_resource_path().replace("\\", "::").replace("/", "::");
 	Vector<String> rc = EDITOR_DEF(base + "/_recent_scenes", Array());
 
 	ERR_FAIL_INDEX(p_idx, rc.size());
@@ -3635,13 +3635,13 @@ void EditorNode::_save_optimized() {
 
 	}
 
-	project_settings->add_remapped_path(GlobalConfig::get_singleton()->localize_path(get_edited_scene()->get_filename()),GlobalConfig::get_singleton()->localize_path(path),platform);
+	project_settings->add_remapped_path(ProjectSettings::get_singleton()->localize_path(get_edited_scene()->get_filename()),ProjectSettings::get_singleton()->localize_path(path),platform);
 #endif
 }
 
 void EditorNode::_update_recent_scenes() {
 
-	String base = "_" + GlobalConfig::get_singleton()->get_resource_path().replace("\\", "::").replace("/", "::");
+	String base = "_" + ProjectSettings::get_singleton()->get_resource_path().replace("\\", "::").replace("/", "::");
 	Vector<String> rc = EDITOR_DEF(base + "/_recent_scenes", Array());
 	recent_scenes->clear();
 	for (int i = 0; i < rc.size(); i++) {
@@ -5419,7 +5419,7 @@ EditorNode::EditorNode() {
 	VisualServer::get_singleton()->viewport_set_hide_scenario(scene_root->get_viewport_rid(), true);
 	scene_root->set_disable_input(true);
 	scene_root->set_as_audio_listener_2d(true);
-	//scene_root->set_size_override(true,Size2(GlobalConfig::get_singleton()->get("display/width"),GlobalConfig::get_singleton()->get("display/height")));
+	//scene_root->set_size_override(true,Size2(ProjectSettings::get_singleton()->get("display/width"),ProjectSettings::get_singleton()->get("display/height")));
 
 	//scene_root->set_world_2d( Ref<World2D>( memnew( World2D )) );
 
@@ -5948,7 +5948,7 @@ EditorNode::EditorNode() {
 	settings_config_dialog = memnew(EditorSettingsDialog);
 	gui_base->add_child(settings_config_dialog);
 
-	project_settings = memnew(ProjectSettings(&editor_data));
+	project_settings = memnew(ProjectSettingsEditor(&editor_data));
 	gui_base->add_child(project_settings);
 
 	import_confirmation = memnew(ConfirmationDialog);
@@ -6275,7 +6275,7 @@ EditorNode::EditorNode() {
 	Physics2DServer::get_singleton()->set_active(false); // no physics by default if editor
 	ScriptServer::set_scripting_enabled(false); // no scripting by default if editor
 
-	//GlobalConfig::get_singleton()->set("render/room_cull_enabled",false);
+	//ProjectSettings::get_singleton()->set("render/room_cull_enabled",false);
 
 	reference_resource_mem = true;
 	save_external_resources_mem = true;
@@ -6288,7 +6288,7 @@ EditorNode::EditorNode() {
 		//store project name in ssettings
 		String project_name;
 		//figure it out from path
-		project_name = GlobalConfig::get_singleton()->get_resource_path().replace("\\", "/");
+		project_name = ProjectSettings::get_singleton()->get_resource_path().replace("\\", "/");
 		print_line("path: " + project_name);
 		if (project_name.length() && project_name[project_name.length() - 1] == '/')
 			project_name = project_name.substr(0, project_name.length() - 1);
@@ -6296,7 +6296,7 @@ EditorNode::EditorNode() {
 		project_name = project_name.replace("/", "::");
 
 		if (project_name != "") {
-			EditorSettings::get_singleton()->set("projects/" + project_name, GlobalConfig::get_singleton()->get_resource_path());
+			EditorSettings::get_singleton()->set("projects/" + project_name, ProjectSettings::get_singleton()->get_resource_path());
 			EditorSettings::get_singleton()->raise_order("projects/" + project_name);
 			EditorSettings::get_singleton()->save();
 		}
@@ -6377,8 +6377,8 @@ EditorNode::EditorNode() {
 
 		_initializing_addons = true;
 		Vector<String> addons;
-		if (GlobalConfig::get_singleton()->has("editor_plugins/enabled")) {
-			addons = GlobalConfig::get_singleton()->get("editor_plugins/enabled");
+		if (ProjectSettings::get_singleton()->has("editor_plugins/enabled")) {
+			addons = ProjectSettings::get_singleton()->get("editor_plugins/enabled");
 		}
 
 		for (int i = 0; i < addons.size(); i++) {

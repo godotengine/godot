@@ -236,7 +236,7 @@ public:
 	virtual void move_window_to_foreground();
 	virtual String get_data_dir() const;
 
-	virtual bool check_feature_support(const String &p_feature);
+	virtual bool _check_internal_feature_support(const String &p_feature);
 
 	void set_gl_context(ContextEGL *p_context);
 	void screen_size_changed();

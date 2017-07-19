@@ -31,7 +31,7 @@
 
 #include "editor_node.h"
 #include "editor_settings.h"
-#include "global_config.h"
+#include "project_settings.h"
 #include "io/resource_loader.h"
 #include "os/dir_access.h"
 #include "os/file_access.h"

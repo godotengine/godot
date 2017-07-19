@@ -30,7 +30,7 @@
 #ifndef WORLD_2D_H
 #define WORLD_2D_H
 
-#include "global_config.h"
+#include "project_settings.h"
 #include "resource.h"
 #include "servers/physics_2d_server.h"
 

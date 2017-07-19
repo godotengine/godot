@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "audio_driver_rtaudio.h"
 
-#include "global_config.h"
+#include "project_settings.h"
 #include "os/os.h"
 
 #ifdef RTAUDIO_ENABLED

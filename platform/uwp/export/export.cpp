@@ -32,12 +32,12 @@
 #include "bind/core_bind.h"
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
-#include "global_config.h"
 #include "io/marshalls.h"
 #include "io/zip_io.h"
 #include "object.h"
 #include "os/file_access.h"
 #include "platform/uwp/logo.gen.h"
+#include "project_settings.h"
 #include "version.h"
 
 #include "thirdparty/minizip/unzip.h"
@@ -774,7 +774,8 @@ class EditorExportUWP : public EditorExportPlatform {
 		String architecture = arch == ARM ? "ARM" : arch == X86 ? "x86" : "x64";
 		result = result.replace("$architecture$", architecture);
 
-		result = result.replace("$display_name$", String(p_preset->get("package/display_name")).empty() ? (String)GlobalConfig::get_singleton()->get("application/config/name") : String(p_preset->get("package/display_name")));
+		result = result.replace("$display_name$", String(p_preset->get("package/display_name")).empty() ? (String)ProjectSettings::get_singleton()->get("application/config/name") : String(p_preset->get("package/display_name")));
+
 		result = result.replace("$publisher_display_name$", p_preset->get("package/publisher_display_name"));
 		result = result.replace("$app_description$", p_preset->get("package/description"));
 		result = result.replace("$bg_color$", p_preset->get("images/background_color"));
@@ -1007,6 +1008,9 @@ class EditorExportUWP : public EditorExportPlatform {
 public:
 	virtual String get_name() const {
 		return "Windows Universal";
+	}
+	virtual String get_os_name() const {
+		return "UWP";
 	}
 
 	virtual String get_binary_extension() const {
@@ -1367,6 +1371,12 @@ public:
 		packager.finish();
 
 		return OK;
+	}
+
+	virtual void get_platform_features(List<String> *r_features) {
+
+		r_features->push_back("pc");
+		r_features->push_back("UWP");
 	}
 
 	EditorExportUWP() {

@@ -29,8 +29,8 @@
 /*************************************************************************/
 #include "os_android.h"
 
-#include "core/global_config.h"
 #include "core/io/file_access_buffered_fa.h"
+#include "core/project_settings.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
@@ -677,7 +677,7 @@ String OS_Android::get_data_dir() const {
 	}
 
 	return ".";
-	//return GlobalConfig::get_singleton()->get_singleton_object("GodotOS")->call("get_data_dir");
+	//return ProjectSettings::get_singleton()->get_singleton_object("GodotOS")->call("get_data_dir");
 }
 
 void OS_Android::set_screen_orientation(ScreenOrientation p_orientation) {
@@ -739,6 +739,10 @@ bool OS_Android::is_joy_known(int p_device) {
 
 String OS_Android::get_joy_guid(int p_device) const {
 	return input->get_joy_guid_remapped(p_device);
+}
+
+bool OS_Android::_check_internal_feature_support(const String &p_feature) {
+	return p_feature == "mobile" || p_feature == "etc" || p_feature == "etc2"; //TODO support etc2 only if GLES3 driver is selected
 }
 
 OS_Android::OS_Android(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func, GetLocaleFunc p_get_locale_func, GetModelFunc p_get_model_func, GetScreenDPIFunc p_get_screen_dpi_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk, SetScreenOrientationFunc p_screen_orient, GetUniqueIDFunc p_get_unique_id, GetSystemDirFunc p_get_sdir_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, AlertFunc p_alert_func, bool p_use_apk_expansion) {

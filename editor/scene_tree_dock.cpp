@@ -37,7 +37,7 @@
 #include "editor/plugins/spatial_editor_plugin.h"
 #include "editor_node.h"
 #include "editor_settings.h"
-#include "global_config.h"
+#include "project_settings.h"
 #include "multi_node_edit.h"
 #include "os/keyboard.h"
 #include "scene/main/viewport.h"
@@ -183,7 +183,7 @@ void SceneTreeDock::_perform_instance_scenes(const Vector<String> &p_files, Node
 			}
 		}
 
-		instanced_scene->set_filename(GlobalConfig::get_singleton()->localize_path(p_files[i]));
+		instanced_scene->set_filename(ProjectSettings::get_singleton()->localize_path(p_files[i]));
 
 		instances.push_back(instanced_scene);
 	}

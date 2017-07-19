@@ -117,8 +117,6 @@ public:
 	virtual String get_executable_path() const;
 	virtual String get_data_dir() const;
 
-	virtual bool check_feature_support(const String &p_feature);
-
 	//virtual void run( MainLoop * p_main_loop );
 };
 

@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "register_server_types.h"
-#include "global_config.h"
+#include "project_settings.h"
 
 #include "audio/audio_effect.h"
 #include "audio/audio_stream.h"
@@ -73,10 +73,10 @@ ShaderTypes *shader_types = NULL;
 
 void register_server_types() {
 
-	GlobalConfig::get_singleton()->add_singleton(GlobalConfig::Singleton("VisualServer", VisualServer::get_singleton()));
-	GlobalConfig::get_singleton()->add_singleton(GlobalConfig::Singleton("AudioServer", AudioServer::get_singleton()));
-	GlobalConfig::get_singleton()->add_singleton(GlobalConfig::Singleton("PhysicsServer", PhysicsServer::get_singleton()));
-	GlobalConfig::get_singleton()->add_singleton(GlobalConfig::Singleton("Physics2DServer", Physics2DServer::get_singleton()));
+	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton("VisualServer", VisualServer::get_singleton()));
+	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton("AudioServer", AudioServer::get_singleton()));
+	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton("PhysicsServer", PhysicsServer::get_singleton()));
+	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton("Physics2DServer", Physics2DServer::get_singleton()));
 
 	shader_types = memnew(ShaderTypes);
 

@@ -31,13 +31,13 @@
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
-#include "global_config.h"
 #include "io/marshalls.h"
 #include "io/zip_io.h"
 #include "os/file_access.h"
 #include "os/os.h"
 #include "platform/android/logo.gen.h"
 #include "platform/android/run_icon.gen.h"
+#include "project_settings.h"
 #include "version.h"
 #include <string.h>
 #if 0
@@ -555,8 +555,8 @@ void EditorExportPlatformAndroid::_fix_resources(Vector<uint8_t>& p_manifest) {
 
 				String lang = str.substr(str.find_last("-")+1,str.length()).replace("-","_");
 				String prop = "application/config/name_"+lang;
-				if (GlobalConfig::get_singleton()->has(prop)) {
-					str = GlobalConfig::get_singleton()->get(prop);
+				if (ProjectSettings::get_singleton()->has(prop)) {
+					str = ProjectSettings::get_singleton()->get(prop);
 				} else {
 					str = get_project_name();
 				}
@@ -628,7 +628,7 @@ String EditorExportPlatformAndroid::get_project_name() const {
 	if (this->name!="") {
 		aname=this->name;
 	} else {
-		aname = GlobalConfig::get_singleton()->get("application/config/name");
+		aname = ProjectSettings::get_singleton()->get("application/config/name");
 
 	}
 
@@ -1144,7 +1144,7 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 
 			if (!found) {
 
-				String appicon = GlobalConfig::get_singleton()->get("application/config/icon");
+				String appicon = ProjectSettings::get_singleton()->get("application/config/icon");
 				if (appicon!="" && appicon.ends_with(".png")) {
 					FileAccess*f = FileAccess::open(appicon,FileAccess::READ);
 					if (f) {
@@ -1763,7 +1763,7 @@ Error EditorExportPlatformAndroid::run(int p_device, int p_flags) {
 String EditorExportPlatformAndroid::get_package_name() {
 
 	String pname = package;
-	String basename = GlobalConfig::get_singleton()->get("application/config/name");
+	String basename = ProjectSettings::get_singleton()->get("application/config/name");
 	basename=basename.to_lower();
 
 	String name;
@@ -2208,7 +2208,7 @@ class EditorExportAndroid : public EditorExportPlatform {
 		if (p_name != "") {
 			aname = p_name;
 		} else {
-			aname = GlobalConfig::get_singleton()->get("application/config/name");
+			aname = ProjectSettings::get_singleton()->get("application/config/name");
 		}
 
 		if (aname == "") {
@@ -2221,7 +2221,7 @@ class EditorExportAndroid : public EditorExportPlatform {
 	String get_package_name(const String &p_package) {
 
 		String pname = p_package;
-		String basename = GlobalConfig::get_singleton()->get("application/config/name");
+		String basename = ProjectSettings::get_singleton()->get("application/config/name");
 		basename = basename.to_lower();
 
 		String name;
@@ -2537,6 +2537,10 @@ class EditorExportAndroid : public EditorExportPlatform {
 							}*/
 						}
 
+						if (tname == "uses-feature" && /*nspace=="android" &&*/ attrname == "glEsVersion") {
+							print_line("version number: " + itos(decode_uint32(&p_manifest[iofs + 16])));
+						}
+
 						if (tname == "uses-permission" && /*nspace=="android" &&*/ attrname == "name") {
 
 							if (value.begins_with("godot.custom")) {
@@ -2751,8 +2755,8 @@ class EditorExportAndroid : public EditorExportPlatform {
 
 					String lang = str.substr(str.find_last("-") + 1, str.length()).replace("-", "_");
 					String prop = "application/config/name_" + lang;
-					if (GlobalConfig::get_singleton()->has(prop)) {
-						str = GlobalConfig::get_singleton()->get(prop);
+					if (ProjectSettings::get_singleton()->has(prop)) {
+						str = ProjectSettings::get_singleton()->get(prop);
 					} else {
 						str = get_project_name(package_name);
 					}
@@ -2831,6 +2835,8 @@ public:
 
 	virtual void get_export_options(List<ExportOption> *r_options) {
 
+		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "graphics/api", PROPERTY_HINT_ENUM, "OpenGL ES 2.0,OpenGL ES 3.0"), 1));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "graphics/32_bits_framebuffer"), true));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "one_click_deploy/clear_previous_install"), true));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_package/debug", PROPERTY_HINT_GLOBAL_FILE, "apk"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_package/release", PROPERTY_HINT_GLOBAL_FILE, "apk"), ""));
@@ -2843,7 +2849,6 @@ public:
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/signed"), true));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "architecture/arm"), true));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "architecture/x86"), false));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/use_32_bits_view"), true));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/immersive_mode"), true));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "screen/orientation", PROPERTY_HINT_ENUM, "Landscape,Portrait"), 0));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_small"), true));
@@ -2875,6 +2880,11 @@ public:
 	virtual String get_name() const {
 		return "Android";
 	}
+
+	virtual String get_os_name() const {
+		return "Android";
+	}
+
 	virtual Ref<Texture> get_logo() const {
 		return logo;
 	}
@@ -3219,7 +3229,7 @@ public:
 
 				if (!found) {
 
-					String appicon = GlobalConfig::get_singleton()->get("application/config/icon");
+					String appicon = ProjectSettings::get_singleton()->get("application/config/icon");
 					if (appicon != "" && appicon.ends_with(".png")) {
 						FileAccess *f = FileAccess::open(appicon, FileAccess::READ);
 						if (f) {
@@ -3525,6 +3535,12 @@ public:
 		}
 
 		return OK;
+	}
+
+	virtual void get_platform_features(List<String> *r_features) {
+
+		r_features->push_back("mobile");
+		r_features->push_back("Android");
 	}
 
 	EditorExportAndroid() {

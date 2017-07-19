@@ -29,12 +29,12 @@
 /*************************************************************************/
 #include "scene_tree.h"
 
-#include "global_config.h"
 #include "message_queue.h"
 #include "node.h"
 #include "os/keyboard.h"
 #include "os/os.h"
 #include "print_string.h"
+#include "project_settings.h"
 #include <stdio.h>
 //#include "servers/spatial_sound_2d_server.h"
 
@@ -614,7 +614,7 @@ bool SceneTree::idle(float p_time) {
 
 	if (is_editor_hint()) {
 		//simple hack to reload fallback environment if it changed from editor
-		String env_path = GlobalConfig::get_singleton()->get("rendering/environment/default_environment");
+		String env_path = ProjectSettings::get_singleton()->get("rendering/environment/default_environment");
 		env_path = env_path.strip_edges(); //user may have added a space or two
 		String cpath;
 		Ref<Environment> fallback = get_root()->get_world()->get_fallback_environment();
@@ -2351,9 +2351,13 @@ SceneTree::SceneTree() {
 	int ref_atlas_size = GLOBAL_DEF("rendering/quality/reflections/atlas_size", 2048);
 	int ref_atlas_subdiv = GLOBAL_DEF("rendering/quality/reflections/atlas_subdiv", 8);
 	int msaa_mode = GLOBAL_DEF("rendering/quality/filters/msaa", 0);
-	GlobalConfig::get_singleton()->set_custom_property_info("rendering/quality/filters/msaa", PropertyInfo(Variant::INT, "rendering/quality/filters/msaa", PROPERTY_HINT_ENUM, "Disabled,2x,4x,8x,16x"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/msaa", PropertyInfo(Variant::INT, "rendering/quality/filters/msaa", PROPERTY_HINT_ENUM, "Disabled,2x,4x,8x,16x"));
 	root->set_msaa(Viewport::MSAA(msaa_mode));
-	bool hdr = GLOBAL_DEF("rendering/quality/depth/hdr", true);
+
+	GLOBAL_DEF("rendering/quality/depth/hdr", true);
+	GLOBAL_DEF("rendering/quality/depth/hdr.mobile", false);
+
+	bool hdr = GLOBAL_GET("rendering/quality/depth/hdr");
 	root->set_hdr(hdr);
 
 	VS::get_singleton()->scenario_set_reflection_atlas_size(root->get_world()->get_scenario(), ref_atlas_size, ref_atlas_subdiv);
@@ -2371,7 +2375,7 @@ SceneTree::SceneTree() {
 		//get path
 		String env_path = GLOBAL_DEF("rendering/environment/default_environment", "");
 		//setup property
-		GlobalConfig::get_singleton()->set_custom_property_info("rendering/environment/default_environment", PropertyInfo(Variant::STRING, "rendering/viewport/default_environment", PROPERTY_HINT_FILE, ext_hint));
+		ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/default_environment", PropertyInfo(Variant::STRING, "rendering/viewport/default_environment", PROPERTY_HINT_FILE, ext_hint));
 		env_path = env_path.strip_edges();
 		if (env_path != String()) {
 			Ref<Environment> env = ResourceLoader::load(env_path);
@@ -2380,7 +2384,7 @@ SceneTree::SceneTree() {
 			} else {
 				if (is_editor_hint()) {
 					//file was erased, clear the field.
-					GlobalConfig::get_singleton()->set("rendering/environment/default_environment", "");
+					ProjectSettings::get_singleton()->set("rendering/environment/default_environment", "");
 				} else {
 					//file was erased, notify user.
 					ERR_PRINTS(RTR("Default Environment as specified in Project Setings (Rendering -> Viewport -> Default Environment) could not be loaded."));

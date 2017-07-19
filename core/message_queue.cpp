@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "message_queue.h"
 
-#include "global_config.h"
+#include "project_settings.h"
 #include "script_language.h"
 
 MessageQueue *MessageQueue::singleton = NULL;

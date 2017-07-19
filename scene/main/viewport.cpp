@@ -48,7 +48,7 @@
 #include "scene/main/timer.h"
 #include "scene/scene_string_names.h"
 
-#include "global_config.h"
+#include "project_settings.h"
 #include "scene/3d/scenario_fx.h"
 
 void ViewportTexture::setup_local_to_scene() {

@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "visual_server.h"
-#include "global_config.h"
 #include "method_bind_ext.gen.inc"
+#include "project_settings.h"
 
 VisualServer *VisualServer::singleton = NULL;
 VisualServer *(*VisualServer::create_func)() = NULL;
@@ -1573,16 +1573,25 @@ VisualServer::VisualServer() {
 	GLOBAL_DEF("rendering/vram_compression/import_pvrtc", false);
 
 	GLOBAL_DEF("rendering/quality/directional_shadow/size", 4096);
+	GLOBAL_DEF("rendering/quality/directional_shadow/size.mobile", 2048);
 	GLOBAL_DEF("rendering/quality/shadow_atlas/size", 4096);
-	GlobalConfig::get_singleton()->set_custom_property_info("rendering/shadow_atlas/size", PropertyInfo(Variant::INT, "rendering/shadow_atlas/size", PROPERTY_HINT_RANGE, "256,16384"));
+	GLOBAL_DEF("rendering/quality/shadow_atlas/size.mobile", 2048);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadow_atlas/size", PropertyInfo(Variant::INT, "rendering/shadow_atlas/size", PROPERTY_HINT_RANGE, "256,16384"));
 	GLOBAL_DEF("rendering/quality/shadow_atlas/quadrant_0_subdiv", 1);
 	GLOBAL_DEF("rendering/quality/shadow_atlas/quadrant_1_subdiv", 2);
 	GLOBAL_DEF("rendering/quality/shadow_atlas/quadrant_2_subdiv", 3);
 	GLOBAL_DEF("rendering/quality/shadow_atlas/quadrant_3_subdiv", 4);
-	GlobalConfig::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/quadrant_0_subdiv", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/quadrant_0_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
-	GlobalConfig::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/quadrant_1_subdiv", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/quadrant_1_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
-	GlobalConfig::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/quadrant_2_subdiv", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/quadrant_2_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
-	GlobalConfig::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/quadrant_3_subdiv", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/quadrant_3_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/quadrant_0_subdiv", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/quadrant_0_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/quadrant_1_subdiv", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/quadrant_1_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/quadrant_2_subdiv", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/quadrant_2_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/quadrant_3_subdiv", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/quadrant_3_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
+
+	GLOBAL_DEF("rendering/quality/shadows/filter_mode", 1);
+	GLOBAL_DEF("rendering/quality/shadows/filter_mode.mobile", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadows/filter_mode", PropertyInfo(Variant::INT, "rendering/quality/shadows/filter_mode", PROPERTY_HINT_ENUM, "Disabled,PCF5,PCF13"));
+
+	GLOBAL_DEF("rendering/quality/reflections/texture_array_reflections", true);
+	GLOBAL_DEF("rendering/quality/reflections/texture_array_reflections.mobile", false);
 }
 
 VisualServer::~VisualServer() {

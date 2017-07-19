@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "visual_server_raster.h"
 #include "default_mouse_cursor.xpm"
-#include "global_config.h"
+#include "project_settings.h"
 #include "io/marshalls.h"
 #include "os/os.h"
 #include "sort.h"

@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "audio_driver_xaudio2.h"
 
-#include "global_config.h"
+#include "project_settings.h"
 #include "os/os.h"
 
 const char *AudioDriverXAudio2::get_name() const {

@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "animation_tree_editor_plugin.h"
 
-#include "core/global_config.h"
+#include "core/project_settings.h"
 #include "core/io/resource_loader.h"
 #include "os/input.h"
 #include "os/keyboard.h"
@@ -1408,7 +1408,7 @@ AnimationTreeEditor::AnimationTreeEditor() {
 
 	file_dialog = memnew(EditorFileDialog);
 	file_dialog->set_enable_multiple_selection(true);
-	file_dialog->set_current_dir(GlobalConfig::get_singleton()->get_resource_path());
+	file_dialog->set_current_dir(ProjectSettings::get_singleton()->get_resource_path());
 	add_child(file_dialog);
 	file_dialog->connect("file_selected", this, "_file_dialog_selected");
 

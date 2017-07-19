@@ -40,8 +40,8 @@
 
 //#include "project_export_settings.h"
 
-class ProjectSettings : public AcceptDialog {
-	GDCLASS(ProjectSettings, AcceptDialog);
+class ProjectSettingsEditor : public AcceptDialog {
+	GDCLASS(ProjectSettingsEditor, AcceptDialog);
 
 	enum InputType {
 		INPUT_KEY,
@@ -78,7 +78,7 @@ class ProjectSettings : public AcceptDialog {
 	SpinBox *device_id;
 	OptionButton *device_index;
 	Label *device_index_label;
-	MenuButton *popup_platform;
+	MenuButton *popup_copy_to_feature;
 
 	LineEdit *action_name;
 	Tree *input_editor;
@@ -145,9 +145,11 @@ class ProjectSettings : public AcceptDialog {
 	void _toggle_search_bar(bool p_pressed);
 	void _clear_search_box();
 
-	ProjectSettings();
+	void _copy_to_platform_about_to_show();
 
-	static ProjectSettings *singleton;
+	ProjectSettingsEditor();
+
+	static ProjectSettingsEditor *singleton;
 
 protected:
 	void _notification(int p_what);
@@ -155,13 +157,13 @@ protected:
 
 public:
 	void add_translation(const String &p_translation);
-	static ProjectSettings *get_singleton() { return singleton; }
+	static ProjectSettingsEditor *get_singleton() { return singleton; }
 	void popup_project_settings();
 	void set_plugins_page();
 
 	void queue_save();
 
-	ProjectSettings(EditorData *p_data);
+	ProjectSettingsEditor(EditorData *p_data);
 };
 
 #endif // PROJECT_SETTINGS_H

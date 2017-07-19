@@ -29,8 +29,8 @@
 /*************************************************************************/
 #include "rasterizer_scene_gles3.h"
 
-#include "global_config.h"
 #include "os/os.h"
+#include "project_settings.h"
 #include "rasterizer_canvas_gles3.h"
 
 #ifndef GLES_OVER_GL
@@ -4779,8 +4779,6 @@ void RasterizerSceneGLES3::initialize() {
 		state.scene_shader.add_custom_define("#define MAX_SKELETON_BONES " + itos(state.max_skeleton_bones) + "\n");
 	}
 
-	GLOBAL_DEF("rendering/quality/shadows/filter_mode", 1);
-	GlobalConfig::get_singleton()->set_custom_property_info("rendering/quality/shadows/filter_mode", PropertyInfo(Variant::INT, "rendering/quality/shadows/filter_mode", PROPERTY_HINT_ENUM, "Disabled,PCF5,PCF13"));
 	shadow_filter_mode = SHADOW_FILTER_NEAREST;
 
 	{ //reflection cubemaps
@@ -4872,9 +4870,9 @@ void RasterizerSceneGLES3::initialize() {
 
 	{
 		GLOBAL_DEF("rendering/quality/subsurface_scattering/quality", 1);
-		GlobalConfig::get_singleton()->set_custom_property_info("rendering/quality/subsurface_scattering/quality", PropertyInfo(Variant::INT, "rendering/quality/subsurface_scattering/quality", PROPERTY_HINT_ENUM, "Low,Medium,High"));
+		ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/subsurface_scattering/quality", PropertyInfo(Variant::INT, "rendering/quality/subsurface_scattering/quality", PROPERTY_HINT_ENUM, "Low,Medium,High"));
 		GLOBAL_DEF("rendering/quality/subsurface_scattering/scale", 1.0);
-		GlobalConfig::get_singleton()->set_custom_property_info("rendering/quality/subsurface_scattering/scale", PropertyInfo(Variant::INT, "rendering/quality/subsurface_scattering/scale", PROPERTY_HINT_RANGE, "0.01,8,0.01"));
+		ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/subsurface_scattering/scale", PropertyInfo(Variant::INT, "rendering/quality/subsurface_scattering/scale", PROPERTY_HINT_RANGE, "0.01,8,0.01"));
 		GLOBAL_DEF("rendering/quality/subsurface_scattering/follow_surface", false);
 
 		GLOBAL_DEF("rendering/quality/voxel_cone_tracing/high_quality", true);
@@ -4916,12 +4914,12 @@ void RasterizerSceneGLES3::initialize() {
 
 void RasterizerSceneGLES3::iteration() {
 
-	shadow_filter_mode = ShadowFilterMode(int(GlobalConfig::get_singleton()->get("rendering/quality/shadows/filter_mode")));
-	subsurface_scatter_follow_surface = GlobalConfig::get_singleton()->get("rendering/quality/subsurface_scattering/follow_surface");
-	subsurface_scatter_quality = SubSurfaceScatterQuality(int(GlobalConfig::get_singleton()->get("rendering/quality/subsurface_scattering/quality")));
-	subsurface_scatter_size = GlobalConfig::get_singleton()->get("rendering/quality/subsurface_scattering/scale");
+	shadow_filter_mode = ShadowFilterMode(int(ProjectSettings::get_singleton()->get("rendering/quality/shadows/filter_mode")));
+	subsurface_scatter_follow_surface = ProjectSettings::get_singleton()->get("rendering/quality/subsurface_scattering/follow_surface");
+	subsurface_scatter_quality = SubSurfaceScatterQuality(int(ProjectSettings::get_singleton()->get("rendering/quality/subsurface_scattering/quality")));
+	subsurface_scatter_size = ProjectSettings::get_singleton()->get("rendering/quality/subsurface_scattering/scale");
 
-	state.scene_shader.set_conditional(SceneShaderGLES3::VCT_QUALITY_HIGH, GlobalConfig::get_singleton()->get("rendering/quality/voxel_cone_tracing/high_quality"));
+	state.scene_shader.set_conditional(SceneShaderGLES3::VCT_QUALITY_HIGH, ProjectSettings::get_singleton()->get("rendering/quality/voxel_cone_tracing/high_quality"));
 }
 
 void RasterizerSceneGLES3::finalize() {

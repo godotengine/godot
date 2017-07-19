@@ -33,13 +33,13 @@
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor_node.h"
 #include "editor_settings.h"
-#include "global_config.h"
 #include "io/config_file.h"
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
 #include "io/zip_io.h"
 #include "os/dir_access.h"
 #include "os/file_access.h"
+#include "project_settings.h"
 #include "script_language.h"
 #include "version.h"
 
@@ -198,6 +198,17 @@ String EditorExportPreset::get_patch(int p_index) {
 
 Vector<String> EditorExportPreset::get_patches() const {
 	return patches;
+}
+
+void EditorExportPreset::set_custom_features(const String &p_custom_features) {
+
+	custom_features = p_custom_features;
+	EditorExport::singleton->save_presets();
+}
+
+String EditorExportPreset::get_custom_features() const {
+
+	return custom_features;
 }
 
 EditorExportPreset::EditorExportPreset() {
@@ -491,9 +502,23 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 
 	//save config!
 
-	String config_file = "godot.cfb";
+	Vector<String> custom_list;
+
+	if (p_preset->get_custom_features() != String()) {
+
+		Vector<String> tmp_custom_list = p_preset->get_custom_features().split(",");
+
+		for (int i = 0; i < tmp_custom_list.size(); i++) {
+			String f = tmp_custom_list[i].strip_edges();
+			if (f != String()) {
+				custom_list.push_back(f);
+			}
+		}
+	}
+
+	String config_file = "project.binary";
 	String engine_cfb = EditorSettings::get_singleton()->get_settings_path() + "/tmp/tmp" + config_file;
-	GlobalConfig::get_singleton()->save_custom(engine_cfb);
+	ProjectSettings::get_singleton()->save_custom(engine_cfb, ProjectSettings::CustomMap(), custom_list);
 	Vector<uint8_t> data = FileAccess::get_file_as_array(engine_cfb);
 
 	p_func(p_udata, "res://" + config_file, data, idx, total);
@@ -691,6 +716,7 @@ void EditorExport::_save() {
 		config->set_value(section, "name", preset->get_name());
 		config->set_value(section, "platform", preset->get_platform()->get_name());
 		config->set_value(section, "runnable", preset->is_runnable());
+		config->set_value(section, "custom_feaures", preset->get_custom_features());
 		bool save_files = false;
 		switch (preset->get_export_filter()) {
 			case EditorExportPreset::EXPORT_ALL_RESOURCES: {
@@ -823,6 +849,10 @@ void EditorExport::load_config() {
 		preset->set_name(config->get_value(section, "name"));
 		preset->set_runnable(config->get_value(section, "runnable"));
 
+		if (config->has_section_key(section, "custom_features")) {
+			preset->set_custom_features(config->get_value(section, "custom_features"));
+		}
+
 		String export_filter = config->get_value(section, "export_filter");
 
 		bool get_files = false;
@@ -931,6 +961,11 @@ String EditorExportPlatformPC::get_name() const {
 
 	return name;
 }
+
+String EditorExportPlatformPC::get_os_name() const {
+
+	return os_name;
+}
 Ref<Texture> EditorExportPlatformPC::get_logo() const {
 
 	return logo;
@@ -1033,6 +1068,10 @@ void EditorExportPlatformPC::set_name(const String &p_name) {
 	name = p_name;
 }
 
+void EditorExportPlatformPC::set_os_name(const String &p_name) {
+	os_name = p_name;
+}
+
 void EditorExportPlatformPC::set_logo(const Ref<Texture> &p_logo) {
 	logo = p_logo;
 }
@@ -1055,6 +1094,20 @@ void EditorExportPlatformPC::set_debug_32(const String &p_file) {
 	debug_file_32 = p_file;
 }
 
+void EditorExportPlatformPC::add_platform_feature(const String &p_feature) {
+
+	extra_features.insert(p_feature);
+}
+
+void EditorExportPlatformPC::get_platform_features(List<String> *r_features) {
+	r_features->push_back("pc"); //all pcs support "pc"
+	r_features->push_back("s3tc"); //all pcs support "s3tc" compression
+	r_features->push_back(get_os_name()); //OS name is a feature
+	for (Set<String>::Element *E = extra_features.front(); E; E = E->next()) {
+		r_features->push_back(E->get());
+	}
+}
+
 EditorExportPlatformPC::EditorExportPlatformPC() {
 }
 
@@ -1065,7 +1118,6 @@ EditorExportPlatformPC::EditorExportPlatformPC() {
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor_node.h"
 #include "editor_settings.h"
-#include "global_config.h"
 #include "io/config_file.h"
 #include "io/md5.h"
 #include "io/resource_loader.h"
@@ -1074,14 +1126,15 @@ EditorExportPlatformPC::EditorExportPlatformPC() {
 #include "io_plugins/editor_texture_import_plugin.h"
 #include "os/dir_access.h"
 #include "os/file_access.h"
+#include "project_settings.h"
 #include "script_language.h"
 #include "version.h"
 
 
 String EditorImportPlugin::validate_source_path(const String& p_path) {
 
-	String gp = GlobalConfig::get_singleton()->globalize_path(p_path);
-	String rp = GlobalConfig::get_singleton()->get_resource_path();
+	String gp = ProjectSettings::get_singleton()->globalize_path(p_path);
+	String rp = ProjectSettings::get_singleton()->get_resource_path();
 	if (!rp.ends_with("/"))
 		rp+="/";
 
@@ -1091,7 +1144,7 @@ String EditorImportPlugin::validate_source_path(const String& p_path) {
 String EditorImportPlugin::expand_source_path(const String& p_path) {
 
 	if (p_path.is_rel_path()) {
-		return GlobalConfig::get_singleton()->get_resource_path().plus_file(p_path).simplify_path();
+		return ProjectSettings::get_singleton()->get_resource_path().plus_file(p_path).simplify_path();
 	} else {
 		return p_path;
 	}
@@ -1766,7 +1819,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 		{
 			MD5_CTX ctx;
 			MD5Init(&ctx);
-			String path = GlobalConfig::get_singleton()->get_resource_path()+"::"+String(E->get())+"::"+get_name();
+			String path = ProjectSettings::get_singleton()->get_resource_path()+"::"+String(E->get())+"::"+get_name();
 			MD5Update(&ctx,(unsigned char*)path.utf8().get_data(),path.utf8().length());
 			MD5Final(&ctx);
 			md5 = String::md5(ctx.digest);
@@ -1875,11 +1928,11 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 
 			int flags=0;
 
-			if (GlobalConfig::get_singleton()->get("image_loader/filter"))
+			if (ProjectSettings::get_singleton()->get("image_loader/filter"))
 				flags|=EditorTextureImportPlugin::IMAGE_FLAG_FILTER;
-			if (!GlobalConfig::get_singleton()->get("image_loader/gen_mipmaps"))
+			if (!ProjectSettings::get_singleton()->get("image_loader/gen_mipmaps"))
 				flags|=EditorTextureImportPlugin::IMAGE_FLAG_NO_MIPMAPS;
-			if (!GlobalConfig::get_singleton()->get("image_loader/repeat"))
+			if (!ProjectSettings::get_singleton()->get("image_loader/repeat"))
 				flags|=EditorTextureImportPlugin::IMAGE_FLAG_REPEAT;
 
 			flags|=EditorTextureImportPlugin::IMAGE_FLAG_FIX_BORDER_ALPHA;
@@ -1988,7 +2041,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 	StringName engine_cfg="res://project.godot";
 	StringName boot_splash;
 	{
-		String splash=GlobalConfig::get_singleton()->get("application/boot_splash"); //avoid splash from being converted
+		String splash=ProjectSettings::get_singleton()->get("application/boot_splash"); //avoid splash from being converted
 		splash=splash.strip_edges();
 		if (splash!=String()) {
 			if (!splash.begins_with("res://"))
@@ -1999,7 +2052,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 	}
 	StringName custom_cursor;
 	{
-		String splash=GlobalConfig::get_singleton()->get("display/custom_mouse_cursor"); //avoid splash from being converted
+		String splash=ProjectSettings::get_singleton()->get("display/custom_mouse_cursor"); //avoid splash from being converted
 		splash=splash.strip_edges();
 		if (splash!=String()) {
 			if (!splash.begins_with("res://"))
@@ -2083,9 +2136,9 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 
 		}
 
-		String remap_file="godot.cfb";
+		String remap_file="project.binary";
 		String engine_cfb =EditorSettings::get_singleton()->get_settings_path()+"/tmp/tmp"+remap_file;
-		GlobalConfig::get_singleton()->save_custom(engine_cfb,custom);
+		ProjectSettings::get_singleton()->save_custom(engine_cfb,custom);
 		Vector<uint8_t> data = FileAccess::get_file_as_array(engine_cfb);
 
 		Error err = p_func(p_udata,"res://"+remap_file,data,counter,files.size());

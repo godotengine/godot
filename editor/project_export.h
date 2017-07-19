@@ -40,6 +40,7 @@
 #include "scene/gui/label.h"
 #include "scene/gui/link_button.h"
 #include "scene/gui/option_button.h"
+#include "scene/gui/rich_text_label.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/tree.h"
 #include "scene/main/timer.h"
@@ -91,6 +92,9 @@ private:
 
 	Button *export_button;
 
+	LineEdit *custom_features;
+	RichTextLabel *custom_feature_display;
+
 	Label *export_error;
 	HBoxContainer *export_templates_error;
 
@@ -131,6 +135,11 @@ private:
 
 	void _export_project();
 	void _export_project_to_path(const String &p_path);
+
+	void _update_feature_list();
+	void _custom_features_changed(const String &p_text);
+
+	void _tab_changed(int);
 
 protected:
 	void _notification(int p_what);

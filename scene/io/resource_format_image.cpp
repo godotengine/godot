@@ -30,7 +30,7 @@
 #include "resource_format_image.h"
 
 #if 0
-#include "global_config.h"
+#include "project_settings.h"
 #include "io/image_loader.h"
 #include "os/os.h"
 #include "scene/resources/texture.h"
@@ -128,7 +128,7 @@ RES ResourceFormatLoaderImage::load(const String &p_path, const String& p_origin
 		if (max_texture_size && (image.get_width() > max_texture_size || image.get_height() > max_texture_size)) {
 
 
-			if (bool(GlobalConfig::get_singleton()->get("debug/image_loader/max_texture_size_alert"))) {
+			if (bool(ProjectSettings::get_singleton()->get("debug/image_loader/max_texture_size_alert"))) {
 				OS::get_singleton()->alert("Texture is too large: '"+p_path+"', at "+itos(image.get_width())+"x"+itos(image.get_height())+". Max allowed size is: "+itos(max_texture_size)+"x"+itos(max_texture_size)+".","BAD ARTIST, NO COOKIE!");
 			}
 

@@ -38,10 +38,10 @@
 #include "audio_driver_iphone.h"
 #include "main/main.h"
 
-#include "core/global_config.h"
 #include "core/io/file_access_pack.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
+#include "core/project_settings.h"
 
 #include "sem_iphone.h"
 
@@ -138,28 +138,28 @@ void OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p_
 /*
 #ifdef IOS_SCORELOOP_ENABLED
 	scoreloop = memnew(ScoreloopIOS);
-	GlobalConfig::get_singleton()->add_singleton(GlobalConfig::Singleton("Scoreloop", scoreloop));
+	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton("Scoreloop", scoreloop));
 	scoreloop->connect();
 #endif
 	*/
 
 #ifdef GAME_CENTER_ENABLED
 	game_center = memnew(GameCenter);
-	GlobalConfig::get_singleton()->add_singleton(GlobalConfig::Singleton("GameCenter", game_center));
+	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton("GameCenter", game_center));
 	game_center->connect();
 #endif
 
 #ifdef STOREKIT_ENABLED
 	store_kit = memnew(InAppStore);
-	GlobalConfig::get_singleton()->add_singleton(GlobalConfig::Singleton("InAppStore", store_kit));
+	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton("InAppStore", store_kit));
 #endif
 
 #ifdef ICLOUD_ENABLED
 	icloud = memnew(ICloud);
-	GlobalConfig::get_singleton()->add_singleton(GlobalConfig::Singleton("ICloud", icloud));
+	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton("ICloud", icloud));
 //icloud->connect();
 #endif
-	GlobalConfig::get_singleton()->add_singleton(GlobalConfig::Singleton("iOS", memnew(iOS)));
+	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton("iOS", memnew(iOS)));
 };
 
 MainLoop *OSIPhone::get_main_loop() const {
@@ -517,7 +517,7 @@ Error OSIPhone::native_video_play(String p_path, float p_volume, String p_audio_
 			print("Unable to play %S using the native player as it resides in a .pck file\n", p_path.c_str());
 			return ERR_INVALID_PARAMETER;
 		} else {
-			p_path = p_path.replace("res:/", GlobalConfig::get_singleton()->get_resource_path());
+			p_path = p_path.replace("res:/", ProjectSettings::get_singleton()->get_resource_path());
 		}
 	} else if (p_path.begins_with("user://"))
 		p_path = p_path.replace("user:/", get_data_dir());
@@ -550,6 +550,11 @@ void OSIPhone::native_video_focus_out() {
 void OSIPhone::native_video_stop() {
 	if (native_video_is_playing())
 		_stop_video();
+}
+
+bool OSIPhone::_check_internal_feature_support(const String &p_feature) {
+
+	return p_feature == "mobile" || p_feature == "etc" || p_feature == "pvrtc" || p_feature == "etc2";
 }
 
 OSIPhone::OSIPhone(int width, int height) {

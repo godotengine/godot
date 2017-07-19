@@ -64,7 +64,7 @@
 #include "editor/editor_log.h"
 #include "editor/editor_run_script.h"
 #include "editor/project_export.h"
-#include "editor/project_settings.h"
+#include "editor/project_settings_editor.h"
 #include "editor/resources_dock.h"
 #include "editor/run_settings_dialog.h"
 #include "editor/scene_tree_dock.h"
@@ -310,7 +310,7 @@ private:
 	//OptimizedPresetsDialog *optimized_presets;
 	EditorSettingsDialog *settings_config_dialog;
 	RunSettingsDialog *run_settings_dialog;
-	ProjectSettings *project_settings;
+	ProjectSettingsEditor *project_settings;
 	EditorFileDialog *file;
 	ExportTemplateManager *export_template_manager;
 	FileDialog *file_templates;

@@ -32,8 +32,8 @@
 #include "class_db.h"
 #include "error_macros.h"
 #include "gdnative.h"
-#include "global_config.h"
 #include "global_constants.h"
+#include "project_settings.h"
 #include "variant.h"
 
 #ifdef __cplusplus
@@ -93,7 +93,7 @@ void GDAPI godot_object_destroy(godot_object *p_o) {
 // Singleton API
 
 godot_object GDAPI *godot_global_get_singleton(char *p_name) {
-	return (godot_object *)GlobalConfig::get_singleton()->get_singleton_object(String(p_name));
+	return (godot_object *)ProjectSettings::get_singleton()->get_singleton_object(String(p_name));
 } // result shouldn't be freed
 
 // MethodBind API

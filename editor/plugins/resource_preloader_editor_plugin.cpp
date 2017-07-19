@@ -30,7 +30,7 @@
 #include "resource_preloader_editor_plugin.h"
 
 #include "editor/editor_settings.h"
-#include "global_config.h"
+#include "project_settings.h"
 #include "io/resource_loader.h"
 
 void ResourcePreloaderEditor::_gui_input(Ref<InputEvent> p_event) {
