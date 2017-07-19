@@ -464,7 +464,7 @@
    static_cast<type>(static_cast<void*>(value))
 #  define png_aligncastconst(type, value) \
    static_cast<type>(static_cast<const void*>(value))
-#else
+#elif !defined(__ASSEMBLER__)
 #  define png_voidcast(type, value) (value)
 #  ifdef _WIN64
 #     ifdef __GNUC__

@@ -87,20 +87,6 @@ def configure(env):
 
         env['SPAWN'] = mySpawn
 
-    ## Build type
-
-    if (env["target"].startswith("release")):
-        env.Append(LINKFLAGS=['-O2'])
-        env.Append(CPPFLAGS=['-O2', '-DNDEBUG', '-ffast-math', '-funsafe-math-optimizations', '-fomit-frame-pointer'])
-        if (can_vectorize):
-            env.Append(CPPFLAGS=['-ftree-vectorize'])
-        if (env["target"] == "release_debug"):
-            env.Append(CPPFLAGS=['-DDEBUG_ENABLED'])
-    elif (env["target"] == "debug"):
-        env.Append(LINKFLAGS=['-O0'])
-        env.Append(CPPFLAGS=['-O0', '-D_DEBUG', '-UNDEBUG', '-DDEBUG_ENABLED',
-                             '-DDEBUG_MEMORY_ENABLED', '-g', '-fno-limit-debug-info'])
-
     ## Architecture
 
     if env['android_arch'] not in ['armv7', 'armv6', 'x86']:
@@ -132,6 +118,20 @@ def configure(env):
             env.extra_suffix = ".armv7.neon" + env.extra_suffix
         else:
             env.extra_suffix = ".armv7" + env.extra_suffix
+
+    ## Build type
+
+    if (env["target"].startswith("release")):
+        env.Append(LINKFLAGS=['-O2'])
+        env.Append(CPPFLAGS=['-O2', '-DNDEBUG', '-ffast-math', '-funsafe-math-optimizations', '-fomit-frame-pointer'])
+        if (can_vectorize):
+            env.Append(CPPFLAGS=['-ftree-vectorize'])
+        if (env["target"] == "release_debug"):
+            env.Append(CPPFLAGS=['-DDEBUG_ENABLED'])
+    elif (env["target"] == "debug"):
+        env.Append(LINKFLAGS=['-O0'])
+        env.Append(CPPFLAGS=['-O0', '-D_DEBUG', '-UNDEBUG', '-DDEBUG_ENABLED',
+                             '-DDEBUG_MEMORY_ENABLED', '-g', '-fno-limit-debug-info'])
 
     ## Compiler configuration
 
