@@ -58,6 +58,7 @@
 #include "servers/physics_2d_server.h"
 #include "translation.h"
 #include "version.h"
+#include "version_hash.gen.h"
 #include <stdio.h>
 // plugins
 #include "asset_library_editor_plugin.h"
@@ -5976,7 +5977,6 @@ EditorNode::EditorNode() {
 
 		VBoxContainer *vbc = memnew(VBoxContainer);
 		HBoxContainer *hbc = memnew(HBoxContainer);
-		hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		hbc->set_alignment(BoxContainer::ALIGN_CENTER);
 		hbc->add_constant_override("separation", 30 * EDSCALE);
 		about->add_child(vbc);
@@ -5986,11 +5986,26 @@ EditorNode::EditorNode() {
 		logo->set_texture(gui_base->get_icon("Logo", "EditorIcons"));
 		hbc->add_child(logo);
 
+		VBoxContainer *about_text_vbc = memnew(VBoxContainer);
+		about_text_vbc->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
+		hbc->add_child(about_text_vbc);
+
+		String hash(VERSION_HASH);
+		if (hash.length() != 0)
+			hash = "." + hash.left(7);
+
+		LineEdit *ver = memnew(LineEdit);
+		ver->set_text(VERSION_FULL_NAME + hash);
+		ver->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		ver->add_style_override("focus", gui_base->get_stylebox("MenuPanel", "EditorStyles"));
+		ver->add_style_override("read_only", gui_base->get_stylebox("MenuPanel", "EditorStyles"));
+		ver->set_editable(false);
+		ver->set_custom_minimum_size(Size2(320 * EDSCALE, 0));
+		about_text_vbc->add_child(ver);
+
 		Label *about_text = memnew(Label);
-		about_text->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
-		about_text->set_text(VERSION_FULL_NAME + String::utf8("\n\u00A9 2007-2017 Juan Linietsky, Ariel Manzur.\n\u00A9 2014-2017 ") +
-							 TTR("Godot Engine contributors") + "\n");
-		hbc->add_child(about_text);
+		about_text->set_text(String::utf8("\u00A9 2007-2017 Juan Linietsky, Ariel Manzur.\n\u00A9 2014-2017 ") + TTR("Godot Engine contributors"));
+		about_text_vbc->add_child(about_text);
 
 		TabContainer *tc = memnew(TabContainer);
 		tc->set_custom_minimum_size(Size2(600, 240) * EDSCALE);
