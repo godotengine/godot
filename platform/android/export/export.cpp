@@ -2829,8 +2829,15 @@ public:
 
 public:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
-
-		r_features->push_back("etc");
+		if (p_preset->get("texture_format/s3tc")) {
+			r_features->push_back("s3tc");
+		}
+		if (p_preset->get("texture_format/etc")) {
+			r_features->push_back("etc");
+		}
+		if (p_preset->get("texture_format/etc2")) {
+			r_features->push_back("etc2");
+		}
 	}
 
 	virtual void get_export_options(List<ExportOption> *r_options) {
@@ -2861,6 +2868,9 @@ public:
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "apk_expansion/enable"), false));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "apk_expansion/SALT"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "apk_expansion/public_key", PROPERTY_HINT_MULTILINE_TEXT), ""));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/s3tc"), false));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc"), true));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc2"), false));
 
 		const char **perms = android_perms;
 		while (*perms) {
@@ -3541,6 +3551,10 @@ public:
 
 		r_features->push_back("mobile");
 		r_features->push_back("Android");
+	}
+
+	virtual void get_custom_settings(const Ref<EditorExportPreset> &p_preset, Map<String, Variant> &map) {
+		map["graphics/api"] = p_preset->get("graphics/api");
 	}
 
 	EditorExportAndroid() {
