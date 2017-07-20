@@ -1099,7 +1099,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			return OK;
 
-		} else if (id == "PoolFloatArray" || id == "FloatArray") {
+		} else if (id == "PoolRealArray" || id == "FloatArray") {
 
 			Vector<float> args;
 			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
@@ -1855,7 +1855,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		} break;
 		case Variant::POOL_REAL_ARRAY: {
 
-			p_store_string_func(p_store_string_ud, "PoolFloatArray( ");
+			p_store_string_func(p_store_string_ud, "PoolRealArray( ");
 			PoolVector<real_t> data = p_variant;
 			int len = data.size();
 			PoolVector<real_t>::Read r = data.read();

@@ -159,7 +159,7 @@ static const _bit _type_list[] = {
 	{ Variant::ARRAY, "Array" },
 	{ Variant::POOL_BYTE_ARRAY, "PoolByteArray" },
 	{ Variant::POOL_INT_ARRAY, "PoolIntArray" },
-	{ Variant::POOL_REAL_ARRAY, "PoolFloatArray" },
+	{ Variant::POOL_REAL_ARRAY, "PoolRealArray" },
 	{ Variant::POOL_STRING_ARRAY, "PoolStringArray" },
 	{ Variant::POOL_VECTOR2_ARRAY, "PoolVector2Array" },
 	{ Variant::POOL_VECTOR3_ARRAY, "PoolVector3Array" },
