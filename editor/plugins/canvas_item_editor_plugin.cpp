@@ -35,10 +35,10 @@
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/script_editor_debugger.h"
-#include "project_settings.h"
 #include "os/input.h"
 #include "os/keyboard.h"
 #include "print_string.h"
+#include "project_settings.h"
 #include "scene/2d/light_2d.h"
 #include "scene/2d/particles_2d.h"
 #include "scene/2d/polygon_2d.h"
@@ -1519,8 +1519,21 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 			Vector2 minsize = canvas_item->edit_get_minimum_size();
 
 			if (uniform) {
+				// Keep the height/width ratio of the item
 				float aspect = local_rect.size.aspect();
 				switch (drag) {
+					case DRAG_LEFT: {
+						drag_vector.y = -drag_vector.x / aspect;
+					} break;
+					case DRAG_RIGHT: {
+						drag_vector.y = drag_vector.x / aspect;
+					} break;
+					case DRAG_TOP: {
+						drag_vector.x = -drag_vector.y * aspect;
+					} break;
+					case DRAG_BOTTOM: {
+						drag_vector.x = drag_vector.y * aspect;
+					} break;
 					case DRAG_BOTTOM_LEFT:
 					case DRAG_TOP_RIGHT: {
 						if (aspect > 1.0) { // width > height, take x as reference
@@ -1537,7 +1550,17 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 							drag_vector.x = drag_vector.y * aspect;
 						}
 					} break;
-					default: {}
+				}
+			} else {
+				switch (drag) {
+					case DRAG_RIGHT:
+					case DRAG_LEFT: {
+						drag_vector.y = 0;
+					} break;
+					case DRAG_TOP:
+					case DRAG_BOTTOM: {
+						drag_vector.x = 0;
+					} break;
 				}
 			}
 
@@ -1546,44 +1569,25 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 					begin += drag_vector;
 					end += drag_vector;
 				} break;
-				case DRAG_RIGHT: {
-
-					incend(begin.x, end.x, drag_vector.x, minsize.x, symmetric);
-
-				} break;
-				case DRAG_BOTTOM: {
-
-					incend(begin.y, end.y, drag_vector.y, minsize.y, symmetric);
-
-				} break;
+				case DRAG_RIGHT:
+				case DRAG_BOTTOM:
 				case DRAG_BOTTOM_RIGHT: {
-
 					incend(begin.x, end.x, drag_vector.x, minsize.x, symmetric);
 					incend(begin.y, end.y, drag_vector.y, minsize.y, symmetric);
 				} break;
+
 				case DRAG_TOP_LEFT: {
-
 					incbeg(begin.x, end.x, drag_vector.x, minsize.x, symmetric);
 					incbeg(begin.y, end.y, drag_vector.y, minsize.y, symmetric);
 				} break;
-				case DRAG_TOP: {
 
-					incbeg(begin.y, end.y, drag_vector.y, minsize.y, symmetric);
-
-				} break;
-				case DRAG_LEFT: {
-
-					incbeg(begin.x, end.x, drag_vector.x, minsize.x, symmetric);
-
-				} break;
+				case DRAG_TOP:
 				case DRAG_TOP_RIGHT: {
-
 					incbeg(begin.y, end.y, drag_vector.y, minsize.y, symmetric);
 					incend(begin.x, end.x, drag_vector.x, minsize.x, symmetric);
-
 				} break;
+				case DRAG_LEFT:
 				case DRAG_BOTTOM_LEFT: {
-
 					incbeg(begin.x, end.x, drag_vector.x, minsize.x, symmetric);
 					incend(begin.y, end.y, drag_vector.y, minsize.y, symmetric);
 				} break;
