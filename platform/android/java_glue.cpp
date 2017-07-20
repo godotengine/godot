@@ -36,11 +36,11 @@
 #include "dir_access_jandroid.h"
 #include "file_access_android.h"
 #include "file_access_jandroid.h"
-#include "project_settings.h"
 #include "java_class_wrapper.h"
 #include "main/input_default.h"
 #include "main/main.h"
 #include "os_android.h"
+#include "project_settings.h"
 #include "thread_jandroid.h"
 #include <unistd.h>
 
@@ -883,9 +883,9 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 	__android_log_print(ANDROID_LOG_INFO, "godot", "*****SETUP OK");
 
 	//video driver is determined here, because once initialized, it can't be changed
-	String vd = ProjectSettings::get_singleton()->get("display/driver");
+	bool use_gl2 = (0 == int(ProjectSettings::get_singleton()->get("graphics/api")));
 
-	env->CallVoidMethod(_godot_instance, _on_video_init, (jboolean) true);
+	env->CallVoidMethod(_godot_instance, _on_video_init, (jboolean)use_gl2);
 
 	__android_log_print(ANDROID_LOG_INFO, "godot", "**START");
 

@@ -518,7 +518,9 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 
 	String config_file = "project.binary";
 	String engine_cfb = EditorSettings::get_singleton()->get_settings_path() + "/tmp/tmp" + config_file;
-	ProjectSettings::get_singleton()->save_custom(engine_cfb, ProjectSettings::CustomMap(), custom_list);
+	Map<String, Variant> custom_settings;
+	platform->get_custom_settings(p_preset, custom_settings);
+	ProjectSettings::get_singleton()->save_custom(engine_cfb, custom_settings, custom_list);
 	Vector<uint8_t> data = FileAccess::get_file_as_array(engine_cfb);
 
 	p_func(p_udata, "res://" + config_file, data, idx, total);

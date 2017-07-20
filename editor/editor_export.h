@@ -211,6 +211,7 @@ public:
 	virtual String get_binary_extension() const = 0;
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) = 0;
 	virtual void get_platform_features(List<String> *r_features) = 0;
+	virtual void get_custom_settings(const Ref<EditorExportPreset> &p_preset, Map<String, Variant> &map) {}
 
 	EditorExportPlatform();
 };
