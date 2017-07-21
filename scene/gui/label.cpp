@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "label.h"
-#include "project_settings.h"
 #include "print_string.h"
+#include "project_settings.h"
 #include "translation.h"
 
 void Label::set_autowrap(bool p_autowrap) {
@@ -292,7 +292,7 @@ void Label::_notification(int p_what) {
 Size2 Label::get_minimum_size() const {
 
 	if (autowrap)
-		return Size2(1, 1);
+		return Size2(1, clip ? 1 : minsize.height);
 	else {
 
 		// don't want to mutable everything
@@ -487,13 +487,13 @@ void Label::regenerate_word_cache() {
 		}
 	}
 
-	if (!autowrap) {
+	if (!autowrap)
 		minsize.width = width;
-		if (max_lines_visible > 0 && line_count > max_lines_visible) {
-			minsize.height = (font->get_height() * max_lines_visible) + (line_spacing * (max_lines_visible - 1));
-		} else {
-			minsize.height = (font->get_height() * line_count) + (line_spacing * (line_count - 1));
-		}
+
+	if (max_lines_visible > 0 && line_count > max_lines_visible) {
+		minsize.height = (font->get_height() * max_lines_visible) + (line_spacing * (max_lines_visible - 1));
+	} else {
+		minsize.height = (font->get_height() * line_count) + (line_spacing * (line_count - 1));
 	}
 
 	word_cache_dirty = false;
