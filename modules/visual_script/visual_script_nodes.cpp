@@ -29,10 +29,10 @@
 /*************************************************************************/
 #include "visual_script_nodes.h"
 
-#include "project_settings.h"
 #include "global_constants.h"
 #include "os/input.h"
 #include "os/os.h"
+#include "project_settings.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 
@@ -2596,10 +2596,10 @@ public:
 			in_values.resize(in_count);
 
 			for (int i = 0; i < in_count; i++) {
-				in_values[i] = p_inputs[i];
+				in_values[i] = *p_inputs[i];
 			}
 
-			out_values.resize(in_count);
+			out_values.resize(out_count);
 
 			work_mem.resize(work_mem_size);
 
@@ -2645,6 +2645,7 @@ VisualScriptNodeInstance *VisualScriptCustomNode::instance(VisualScriptInstance 
 
 	VisualScriptNodeInstanceCustomNode *instance = memnew(VisualScriptNodeInstanceCustomNode);
 	instance->instance = p_instance;
+	instance->node = this;
 	instance->in_count = get_input_value_port_count();
 	instance->out_count = get_output_value_port_count();
 
