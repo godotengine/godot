@@ -38,9 +38,9 @@ def can_build():
 
     if (os.name == "posix"):
 
-        mingw = "i586-mingw32msvc-"
-        mingw64 = "x86_64-w64-mingw32-"
-        mingw32 = "i686-w64-mingw32-"
+        mingw = "i586-mingw32msvc-gcc"
+        mingw64 = "x86_64-w64-mingw32-gcc"
+        mingw32 = "i686-w64-mingw32-gcc"
 
         if (os.getenv("MINGW32_PREFIX")):
             mingw32 = os.getenv("MINGW32_PREFIX")
@@ -48,9 +48,13 @@ def can_build():
         if (os.getenv("MINGW64_PREFIX")):
             mingw64 = os.getenv("MINGW64_PREFIX")
 
-        test = "gcc --version &>/dev/null"
-        if (os.system(mingw + test) == 0 or os.system(mingw64 + test) == 0 or os.system(mingw32 + test) == 0):
-            return True
+        test = " --version &>/dev/null"
+        for path in os.environ["PATH"].split(os.pathsep):
+            for bin in mingw,mingw64,mingw32:
+                ming = os.path.join(path, bin)
+                if os.path.isfile(ming):
+                    if os.system(ming + test) == 0:
+                        return True
 
     return False
 
