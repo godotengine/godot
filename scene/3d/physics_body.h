@@ -287,7 +287,7 @@ private:
 
 	_FORCE_INLINE_ bool _ignores_mode(PhysicsServer::BodyMode) const;
 
-	Dictionary _move(const Vector3 &p_motion);
+	bool _move(const Vector3 &p_motion);
 
 protected:
 	static void _bind_methods();
@@ -306,17 +306,17 @@ public:
 	Vector3 get_floor_velocity() const;
 
 	int get_collision_count() const;
-	Vector3 get_collision_position(int p_collision) const;
-	Vector3 get_collision_normal(int p_collision) const;
-	Vector3 get_collision_travel(int p_collision) const;
-	Vector3 get_collision_remainder(int p_collision) const;
-	Object *get_collision_local_shape(int p_collision) const;
-	Object *get_collision_collider(int p_collision) const;
-	ObjectID get_collision_collider_id(int p_collision) const;
-	Object *get_collision_collider_shape(int p_collision) const;
-	int get_collision_collider_shape_index(int p_collision) const;
-	Vector3 get_collision_collider_velocity(int p_collision) const;
-	Variant get_collision_collider_metadata(int p_collision) const;
+	Vector3 get_collision_position(int p_collision = 0) const;
+	Vector3 get_collision_normal(int p_collision = 0) const;
+	Vector3 get_collision_travel(int p_collision = 0) const;
+	Vector3 get_collision_remainder(int p_collision = 0) const;
+	Object *get_collision_local_shape(int p_collision = 0) const;
+	Object *get_collision_collider(int p_collision = 0) const;
+	ObjectID get_collision_collider_id(int p_collision = 0) const;
+	Object *get_collision_collider_shape(int p_collision = 0) const;
+	int get_collision_collider_shape_index(int p_collision = 0) const;
+	Vector3 get_collision_collider_velocity(int p_collision = 0) const;
+	Variant get_collision_collider_metadata(int p_collision = 0) const;
 
 	KinematicBody();
 	~KinematicBody();
