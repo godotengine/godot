@@ -431,6 +431,7 @@ void register_scene_types() {
 	ClassDB::register_class<StaticBody>();
 	ClassDB::register_class<RigidBody>();
 	ClassDB::register_class<KinematicBody>();
+	ClassDB::register_class<KinematicCollision>();
 
 	ClassDB::register_class<VehicleBody>();
 	ClassDB::register_class<VehicleWheel>();

@@ -259,22 +259,46 @@ public:
 VARIANT_ENUM_CAST(RigidBody::Mode);
 VARIANT_ENUM_CAST(RigidBody::AxisLock);
 
+class KinematicCollision : public Reference {
+
+	GDCLASS(KinematicCollision, Reference);
+
+	Vector3 position;
+	Vector3 normal;
+	Vector3 travel;
+	Vector3 remainder;
+	ObjectID parent;
+	int local_shape;
+	ObjectID collider;
+	int collider_shape;
+	Vector3 collider_vel;
+	Variant collider_metadata;
+
+protected:
+	friend class KinematicBody;
+	static void _bind_methods();
+
+public:
+	Vector3 get_position() const;
+	Vector3 get_normal() const;
+	Vector3 get_travel() const;
+	Vector3 get_remainder() const;
+	Object *get_parent() const;
+	Object *get_local_shape() const;
+	int get_local_shape_index() const;
+	Object *get_collider() const;
+	ObjectID get_collider_id() const;
+	Object *get_collider_shape() const;
+	int get_collider_shape_index() const;
+	Vector3 get_collider_velocity() const;
+	Variant get_collider_metadata() const;
+
+	KinematicCollision();
+};
+
 class KinematicBody : public PhysicsBody {
 
 	GDCLASS(KinematicBody, PhysicsBody);
-
-public:
-	struct Collision {
-		Vector3 collision;
-		Vector3 normal;
-		Vector3 collider_vel;
-		ObjectID collider;
-		int collider_shape;
-		Variant collider_metadata;
-		Vector3 remainder;
-		Vector3 travel;
-		int local_shape;
-	};
 
 private:
 	float margin;
@@ -283,17 +307,17 @@ private:
 	bool on_floor;
 	bool on_ceiling;
 	bool on_wall;
-	Vector<Collision> colliders;
+	Vector<Ref<KinematicCollision> > colliders;
 
 	_FORCE_INLINE_ bool _ignores_mode(PhysicsServer::BodyMode) const;
 
-	Dictionary _move(const Vector3 &p_motion);
+	Ref<KinematicCollision> _move(const Vector3 &p_motion);
 
 protected:
 	static void _bind_methods();
 
 public:
-	bool move(const Vector3 &p_motion, Collision &r_collision);
+	bool move(const Vector3 &p_motion, Ref<KinematicCollision> &r_collision);
 	bool test_move(const Transform &p_from, const Vector3 &p_motion);
 
 	void set_safe_margin(float p_margin);
@@ -306,17 +330,7 @@ public:
 	Vector3 get_floor_velocity() const;
 
 	int get_collision_count() const;
-	Vector3 get_collision_position(int p_collision) const;
-	Vector3 get_collision_normal(int p_collision) const;
-	Vector3 get_collision_travel(int p_collision) const;
-	Vector3 get_collision_remainder(int p_collision) const;
-	Object *get_collision_local_shape(int p_collision) const;
-	Object *get_collision_collider(int p_collision) const;
-	ObjectID get_collision_collider_id(int p_collision) const;
-	Object *get_collision_collider_shape(int p_collision) const;
-	int get_collision_collider_shape_index(int p_collision) const;
-	Vector3 get_collision_collider_velocity(int p_collision) const;
-	Variant get_collision_collider_metadata(int p_collision) const;
+	Ref<KinematicCollision> get_collision(int p_collision) const;
 
 	KinematicBody();
 	~KinematicBody();
