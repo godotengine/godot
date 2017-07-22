@@ -19,10 +19,12 @@ extern "C" {
 
 
 /* =====   ZSTDERRORLIB_API : control library symbols visibility   ===== */
-#if defined(__GNUC__) && (__GNUC__ >= 4)
-#  define ZSTDERRORLIB_VISIBILITY __attribute__ ((visibility ("default")))
-#else
-#  define ZSTDERRORLIB_VISIBILITY
+#ifndef ZSTDERRORLIB_VISIBILITY
+#  if defined(__GNUC__) && (__GNUC__ >= 4)
+#    define ZSTDERRORLIB_VISIBILITY __attribute__ ((visibility ("default")))
+#  else
+#    define ZSTDERRORLIB_VISIBILITY
+#  endif
 #endif
 #if defined(ZSTD_DLL_EXPORT) && (ZSTD_DLL_EXPORT==1)
 #  define ZSTDERRORLIB_API __declspec(dllexport) ZSTDERRORLIB_VISIBILITY
@@ -33,8 +35,11 @@ extern "C" {
 #endif
 
 /*-****************************************
-*  error codes list
-******************************************/
+ *  error codes list
+ *  note : this API is still considered unstable
+ *         it should not be used with a dynamic library
+ *         only static linking is allowed
+ ******************************************/
 typedef enum {
   ZSTD_error_no_error,
   ZSTD_error_GENERIC,
@@ -45,6 +50,7 @@ typedef enum {
   ZSTD_error_frameParameter_unsupportedBy32bits,
   ZSTD_error_frameParameter_windowTooLarge,
   ZSTD_error_compressionParameter_unsupported,
+  ZSTD_error_compressionParameter_outOfBound,
   ZSTD_error_init_missing,
   ZSTD_error_memory_allocation,
   ZSTD_error_stage_wrong,
@@ -58,12 +64,14 @@ typedef enum {
   ZSTD_error_dictionary_corrupted,
   ZSTD_error_dictionary_wrong,
   ZSTD_error_dictionaryCreation_failed,
+  ZSTD_error_frameIndex_tooLarge,
+  ZSTD_error_seekableIO,
   ZSTD_error_maxCode
 } ZSTD_ErrorCode;
 
 /*! ZSTD_getErrorCode() :
     convert a `size_t` function result into a `ZSTD_ErrorCode` enum type,
-    which can be used to compare directly with enum list published into "error_public.h" */
+    which can be used to compare with enum list published above */
 ZSTDERRORLIB_API ZSTD_ErrorCode ZSTD_getErrorCode(size_t functionResult);
 ZSTDERRORLIB_API const char* ZSTD_getErrorString(ZSTD_ErrorCode code);
 

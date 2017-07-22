@@ -352,20 +352,6 @@ MEM_STATIC void MEM_writeBEST(void* memPtr, size_t val)
 }
 
 
-/* function safe only for comparisons */
-MEM_STATIC U32 MEM_readMINMATCH(const void* memPtr, U32 length)
-{
-    switch (length)
-    {
-    default :
-    case 4 : return MEM_read32(memPtr);
-    case 3 : if (MEM_isLittleEndian())
-                return MEM_read32(memPtr)<<8;
-             else
-                return MEM_read32(memPtr)>>8;
-    }
-}
-
 #if defined (__cplusplus)
 }
 #endif

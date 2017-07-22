@@ -32,6 +32,11 @@ POOL_ctx *POOL_create(size_t numThreads, size_t queueSize);
 */
 void POOL_free(POOL_ctx *ctx);
 
+/*! POOL_sizeof() :
+    return memory usage of pool returned by POOL_create().
+*/
+size_t POOL_sizeof(POOL_ctx *ctx);
+
 /*! POOL_function :
     The function type that can be added to a thread pool.
 */
