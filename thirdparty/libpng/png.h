@@ -1,7 +1,7 @@
 
 /* png.h - header file for PNG reference library
  *
- * libpng version 1.6.30, June 28, 2017
+ * libpng version 1.6.31rc01, July 19, 2017
  *
  * Copyright (c) 1998-2002,2004,2006-2017 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
@@ -12,7 +12,7 @@
  * Authors and maintainers:
  *   libpng versions 0.71, May 1995, through 0.88, January 1996: Guy Schalnat
  *   libpng versions 0.89, June 1996, through 0.96, May 1997: Andreas Dilger
- *   libpng versions 0.97, January 1998, through 1.6.30, June 28, 2017:
+ *   libpng versions 0.97, January 1998, through 1.6.31rc01, July 19, 2017:
  *     Glenn Randers-Pehrson.
  *   See also "Contributing Authors", below.
  */
@@ -25,7 +25,7 @@
  *
  * This code is released under the libpng license.
  *
- * libpng versions 1.0.7, July 1, 2000 through 1.6.30, June 28, 2017 are
+ * libpng versions 1.0.7, July 1, 2000 through 1.6.31rc01, July 19, 2017 are
  * Copyright (c) 2000-2002, 2004, 2006-2017 Glenn Randers-Pehrson, are
  * derived from libpng-1.0.6, and are distributed according to the same
  * disclaimer and license as libpng-1.0.6 with the following individuals
@@ -213,7 +213,7 @@
  *    ...
  *    1.5.28                  15    10527  15.so.15.28[.0]
  *    ...
- *    1.6.30                  16    10630  16.so.16.30[.0]
+ *    1.6.31                  16    10631  16.so.16.31[.0]
  *
  *    Henceforth the source version will match the shared-library major
  *    and minor numbers; the shared-library major version number will be
@@ -241,13 +241,13 @@
  * Y2K compliance in libpng:
  * =========================
  *
- *    June 28, 2017
+ *    July 19, 2017
  *
  *    Since the PNG Development group is an ad-hoc body, we can't make
  *    an official declaration.
  *
  *    This is your unofficial assurance that libpng from version 0.71 and
- *    upward through 1.6.30 are Y2K compliant.  It is my belief that
+ *    upward through 1.6.31rc01 are Y2K compliant.  It is my belief that
  *    earlier versions were also Y2K compliant.
  *
  *    Libpng only has two year fields.  One is a 2-byte unsigned integer
@@ -309,8 +309,8 @@
  */
 
 /* Version information for png.h - this should match the version in png.c */
-#define PNG_LIBPNG_VER_STRING "1.6.30"
-#define PNG_HEADER_VERSION_STRING " libpng version 1.6.30 - June 28, 2017\n"
+#define PNG_LIBPNG_VER_STRING "1.6.31rc01"
+#define PNG_HEADER_VERSION_STRING " libpng version 1.6.31rc01 - July 19, 2017\n"
 
 #define PNG_LIBPNG_VER_SONUM   16
 #define PNG_LIBPNG_VER_DLLNUM  16
@@ -318,13 +318,13 @@
 /* These should match the first 3 components of PNG_LIBPNG_VER_STRING: */
 #define PNG_LIBPNG_VER_MAJOR   1
 #define PNG_LIBPNG_VER_MINOR   6
-#define PNG_LIBPNG_VER_RELEASE 30
+#define PNG_LIBPNG_VER_RELEASE 31
 
 /* This should match the numeric part of the final component of
  * PNG_LIBPNG_VER_STRING, omitting any leading zero:
  */
 
-#define PNG_LIBPNG_VER_BUILD  0
+#define PNG_LIBPNG_VER_BUILD  01
 
 /* Release Status */
 #define PNG_LIBPNG_BUILD_ALPHA    1
@@ -341,7 +341,7 @@
 #define PNG_LIBPNG_BUILD_SPECIAL 32 /* Cannot be OR'ed with
                                        PNG_LIBPNG_BUILD_PRIVATE */
 
-#define PNG_LIBPNG_BUILD_BASE_TYPE PNG_LIBPNG_BUILD_STABLE
+#define PNG_LIBPNG_BUILD_BASE_TYPE PNG_LIBPNG_BUILD_RC
 
 /* Careful here.  At one time, Guy wanted to use 082, but that would be octal.
  * We must not include leading zeros.
@@ -349,7 +349,7 @@
  * version 1.0.0 was mis-numbered 100 instead of 10000).  From
  * version 1.0.1 it's    xxyyzz, where x=major, y=minor, z=release
  */
-#define PNG_LIBPNG_VER 10630 /* 1.6.30 */
+#define PNG_LIBPNG_VER 10631 /* 1.6.31 */
 
 /* Library configuration: these options cannot be changed after
  * the library has been built.
@@ -459,7 +459,7 @@ extern "C" {
 /* This triggers a compiler error in png.c, if png.c and png.h
  * do not agree upon the version number.
  */
-typedef char* png_libpng_version_1_6_30;
+typedef char* png_libpng_version_1_6_31rc01;
 
 /* Basic control structions.  Read libpng-manual.txt or libpng.3 for more info.
  *
@@ -776,6 +776,7 @@ typedef png_unknown_chunk * * png_unknown_chunkpp;
 #define PNG_INFO_sPLT 0x2000U  /* ESR, 1.0.6 */
 #define PNG_INFO_sCAL 0x4000U  /* ESR, 1.0.6 */
 #define PNG_INFO_IDAT 0x8000U  /* ESR, 1.0.6 */
+#define PNG_INFO_eXIf 0x10000U /* GR-P, 1.6.31 */
 
 /* This is used for the transformation routines, as some of them
  * change these values for the row.  It also should enable using
@@ -1788,7 +1789,8 @@ PNG_EXPORT(99, void, png_data_freer, (png_const_structrp png_ptr,
 #define PNG_FREE_PLTE 0x1000U
 #define PNG_FREE_TRNS 0x2000U
 #define PNG_FREE_TEXT 0x4000U
-#define PNG_FREE_ALL  0x7fffU
+#define PNG_FREE_EXIF 0x8000U /* Added at libpng-1.6.31 */
+#define PNG_FREE_ALL  0xffffU
 #define PNG_FREE_MUL  0x4220U /* PNG_FREE_SPLT|PNG_FREE_TEXT|PNG_FREE_UNKN */
 
 #ifdef PNG_USER_MEM_SUPPORTED
@@ -2007,6 +2009,13 @@ PNG_FIXED_EXPORT(233, void, png_set_cHRM_XYZ_fixed, (png_const_structrp png_ptr,
     png_fixed_point int_blue_Z))
 #endif
 
+#ifdef PNG_eXIf_SUPPORTED
+PNG_EXPORT(246, png_uint_32, png_get_eXIf, (png_const_structrp png_ptr,
+    png_inforp info_ptr, png_bytep *exif));
+PNG_EXPORT(247, void, png_set_eXIf, (png_const_structrp png_ptr,
+    png_inforp info_ptr, const png_bytep exif));
+#endif
+
 #ifdef PNG_gAMA_SUPPORTED
 PNG_FP_EXPORT(137, png_uint_32, png_get_gAMA, (png_const_structrp png_ptr,
     png_const_inforp info_ptr, double *file_gamma))
@@ -2025,9 +2034,6 @@ PNG_FIXED_EXPORT(140, void, png_set_gAMA_fixed, (png_const_structrp png_ptr,
 #ifdef PNG_hIST_SUPPORTED
 PNG_EXPORT(141, png_uint_32, png_get_hIST, (png_const_structrp png_ptr,
     png_inforp info_ptr, png_uint_16p *hist));
-#endif
-
-#ifdef PNG_hIST_SUPPORTED
 PNG_EXPORT(142, void, png_set_hIST, (png_const_structrp png_ptr,
     png_inforp info_ptr, png_const_uint_16p hist));
 #endif
@@ -3253,7 +3259,7 @@ PNG_EXPORT(244, int, png_set_option, (png_structrp png_ptr, int option,
  * one to use is one more than this.)
  */
 #ifdef PNG_EXPORT_LAST_ORDINAL
-  PNG_EXPORT_LAST_ORDINAL(245);
+  PNG_EXPORT_LAST_ORDINAL(247);
 #endif
 
 #ifdef __cplusplus

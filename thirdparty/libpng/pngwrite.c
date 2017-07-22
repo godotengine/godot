@@ -1,8 +1,8 @@
 
 /* pngwrite.c - general routines to write a PNG file
  *
- * Last changed in libpng 1.6.26 [October 20, 2016]
- * Copyright (c) 1998-2002,2004,2006-2016 Glenn Randers-Pehrson
+ * Last changed in libpng 1.6.31 [(PENDING RELEASE)]
+ * Copyright (c) 1998-2002,2004,2006-2017 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
  *
@@ -1007,8 +1007,8 @@ png_set_filter(png_structrp png_ptr, int method, int filters)
          case 5:
          case 6:
          case 7: png_app_error(png_ptr, "Unknown row filter for method 0");
-            /* FALL THROUGH */
 #endif /* WRITE_FILTER */
+            /* FALLTHROUGH */
          case PNG_FILTER_VALUE_NONE:
             png_ptr->do_filter = PNG_FILTER_NONE; break;
 
@@ -1875,7 +1875,7 @@ png_image_set_PLTE(png_image_write_control *display)
                tRNS[i] = entry[afirst ? 0 : 3];
                if (tRNS[i] < 255)
                   num_trans = i+1;
-               /* FALL THROUGH */
+               /* FALLTHROUGH */
             case 3:
                palette[i].blue = entry[afirst + (2 ^ bgr)];
                palette[i].green = entry[afirst + 1];
@@ -1886,7 +1886,7 @@ png_image_set_PLTE(png_image_write_control *display)
                tRNS[i] = entry[1 ^ afirst];
                if (tRNS[i] < 255)
                   num_trans = i+1;
-               /* FALL THROUGH */
+               /* FALLTHROUGH */
             case 1:
                palette[i].blue = palette[i].red = palette[i].green =
                   entry[afirst];

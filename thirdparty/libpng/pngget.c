@@ -773,6 +773,24 @@ png_get_sPLT(png_const_structrp png_ptr, png_inforp info_ptr,
 }
 #endif
 
+#ifdef PNG_eXIf_SUPPORTED
+png_uint_32 PNGAPI
+png_get_eXIf(png_const_structrp png_ptr, png_inforp info_ptr,
+    png_bytep *exif)
+{
+   png_debug1(1, "in %s retrieval function", "eXIf");
+
+   if (png_ptr != NULL && info_ptr != NULL &&
+       (info_ptr->valid & PNG_INFO_eXIf) != 0 && exif != NULL)
+   {
+      *exif = info_ptr->exif;
+      return (PNG_INFO_eXIf);
+   }
+
+   return (0);
+}
+#endif
+
 #ifdef PNG_hIST_SUPPORTED
 png_uint_32 PNGAPI
 png_get_hIST(png_const_structrp png_ptr, png_inforp info_ptr,
