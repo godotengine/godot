@@ -274,7 +274,6 @@ public:
 	virtual int profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max) = 0;
 	virtual int profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max) = 0;
 
-	virtual void *alloc_instance_binding_data(Object *p_object) { return NULL; } //optional, not used by all languages
 	virtual void free_instance_binding_data(void *p_data) {} //optional, not used by all languages
 
 	virtual void frame();
