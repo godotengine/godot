@@ -55,7 +55,7 @@ static _ALWAYS_INLINE_ T _atomic_decrement_impl(register T *pw) {
 }
 
 template <class T>
-static _ALWAYS_INLINE_T _atomic_increment_impl(register T *pw) {
+static _ALWAYS_INLINE_ T _atomic_increment_impl(register T *pw) {
 
 	(*pw)++;
 
@@ -71,7 +71,7 @@ static _ALWAYS_INLINE_ T _atomic_sub_impl(register T *pw, register T val) {
 }
 
 template <class T>
-static _ALWAYS_INLINE_T _atomic_add_impl(register T *pw, register T val) {
+static _ALWAYS_INLINE_ T _atomic_add_impl(register T *pw, register T val) {
 
 	(*pw) += val;
 
