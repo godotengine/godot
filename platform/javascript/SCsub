@@ -19,7 +19,7 @@ javascript_objects = []
 for x in javascript_files:
     javascript_objects.append(env_javascript.Object(x))
 
-env.Append(LINKFLAGS=["-s", "EXPORTED_FUNCTIONS=\"['_main','_audio_server_mix_function','_main_after_fs_sync']\""])
+env.Append(LINKFLAGS=["-s", "EXPORTED_FUNCTIONS=\"['_main','_audio_server_mix_function','_main_after_fs_sync','_send_notification']\""])
 env.Append(LINKFLAGS=["--shell-file", '"platform/javascript/godot_shell.html"'])
 
 # output file name without file extension
