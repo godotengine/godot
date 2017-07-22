@@ -202,10 +202,10 @@ private:
 					f->store_line("\n");
 					f->store_line("[application]");
 					f->store_line("\n");
-					f->store_line("name=\"" + project_name->get_text() + "\"");
-					f->store_line("icon=\"res://icon.png\"");
+					f->store_line("config/name=\"" + project_name->get_text() + "\"");
+					f->store_line("config/icon=\"res://icon.png\"");
 					f->store_line("[rendering]");
-					f->store_line("viewport/default_environment=\"res://default_env.tres\"");
+					f->store_line("environment/default_environment=\"res://default_env.tres\"");
 					memdelete(f);
 
 					ResourceSaver::save(dir.plus_file("/icon.png"), get_icon("DefaultProjectIcon", "EditorIcons"));
@@ -811,16 +811,16 @@ void ProjectManager::_load_recent_projects() {
 
 		String project_name = TTR("Unnamed Project");
 
-		if (cf->has_section_key("application", "name")) {
-			project_name = static_cast<String>(cf->get_value("application", "name")).xml_unescape();
+		if (cf->has_section_key("application", "config/name")) {
+			project_name = static_cast<String>(cf->get_value("application", "config/name")).xml_unescape();
 		}
 
 		if (filter_option == ProjectListFilter::FILTER_NAME && search_term != "" && project_name.findn(search_term) == -1)
 			continue;
 
 		Ref<Texture> icon;
-		if (cf->has_section_key("application", "icon")) {
-			String appicon = cf->get_value("application", "icon");
+		if (cf->has_section_key("application", "config/icon")) {
+			String appicon = cf->get_value("application", "config/icon");
 			if (appicon != "") {
 				Ref<Image> img;
 				img.instance();
@@ -840,8 +840,8 @@ void ProjectManager::_load_recent_projects() {
 		}
 
 		String main_scene;
-		if (cf->has_section_key("application", "main_scene")) {
-			main_scene = cf->get_value("application", "main_scene");
+		if (cf->has_section_key("application", "run/main_scene")) {
+			main_scene = cf->get_value("application", "run/main_scene");
 		}
 
 		selected_list_copy.erase(project);
