@@ -41,7 +41,8 @@ public:
 
 		ALIGN_LEFT,
 		ALIGN_CENTER,
-		ALIGN_RIGHT
+		ALIGN_RIGHT,
+		ALIGN_MAX
 	};
 
 	enum CloseButtonDisplayPolicy {
@@ -49,6 +50,7 @@ public:
 		CLOSE_BUTTON_SHOW_NEVER,
 		CLOSE_BUTTON_SHOW_ACTIVE_ONLY,
 		CLOSE_BUTTON_SHOW_ALWAYS,
+		CLOSE_BUTTON_MAX
 	};
 
 private:
@@ -122,6 +124,7 @@ public:
 	void move_tab(int from, int to);
 
 	void set_tab_close_display_policy(CloseButtonDisplayPolicy p_policy);
+	CloseButtonDisplayPolicy get_tab_close_display_policy() const;
 
 	int get_tab_count() const;
 	void set_current_tab(int p_current);
@@ -142,5 +145,6 @@ public:
 };
 
 VARIANT_ENUM_CAST(Tabs::TabAlign);
+VARIANT_ENUM_CAST(Tabs::CloseButtonDisplayPolicy);
 
 #endif // TABS_H
