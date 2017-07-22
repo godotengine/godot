@@ -1030,6 +1030,7 @@ static int _get_pad(int p_alignment, int p_n) {
 void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags) {
 
 	String host = EditorSettings::get_singleton()->get("network/debug_host");
+	int remote_port = (int)EditorSettings::get_singleton()->get("network/debug_port");
 
 	if (p_flags & EXPORT_REMOTE_DEBUG_LOCALHOST)
 		host = "localhost";
@@ -1049,7 +1050,7 @@ void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags
 
 		r_flags.push_back("-rdebug");
 
-		r_flags.push_back(host + ":" + String::num(GLOBAL_DEF("network/debug_port", 6007)));
+		r_flags.push_back(host + ":" + String::num(remote_port));
 
 		List<String> breakpoints;
 		ScriptEditor::get_singleton()->get_breakpoints(&breakpoints);

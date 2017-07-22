@@ -1169,9 +1169,9 @@ void ScriptEditorDebugger::start() {
 		perf_max[i] = 0;
 	}
 
-	uint16_t remote_port = GLOBAL_DEF("debug/remote_port", 6007);
-	if (server->listen(remote_port) != OK) {
-		EditorNode::get_log()->add_message(String("** Error listening on port ") + itos(remote_port) + String(" **"));
+	uint16_t debug_port = (int)EditorSettings::get_singleton()->get("network/debug_port");
+	if (server->listen(debug_port) != OK) {
+		EditorNode::get_log()->add_message(String("** Error listening on port ") + itos(debug_port) + String(" **"));
 		return;
 	}
 	set_process(true);
