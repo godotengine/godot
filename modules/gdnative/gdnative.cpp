@@ -876,9 +876,12 @@ bool GDNativeInstance::get(const StringName &p_name, Variant &r_ret) const {
 		const Variant *args[1] = { &name };
 
 		godot_variant result = E->get().method.method((godot_object *)owner, E->get().method.method_data, userdata, 1, (godot_variant **)args);
-		r_ret = *(Variant *)&result;
+		if (((Variant *)&result)->get_type() != Variant::NIL) {
+			r_ret = *(Variant *)&result;
+			godot_variant_destroy(&result);
+			return true;
+		}
 		godot_variant_destroy(&result);
-		return true;
 	}
 
 	return false;
