@@ -29,9 +29,9 @@
 /*************************************************************************/
 #include "visual_script_flow_control.h"
 
-#include "project_settings.h"
 #include "io/resource_loader.h"
 #include "os/keyboard.h"
+#include "project_settings.h"
 
 //////////////////////////////////////////
 ////////////////RETURN////////////////////
@@ -138,11 +138,11 @@ public:
 
 		if (with_value) {
 			*p_working_mem = *p_inputs[0];
+			return STEP_EXIT_FUNCTION_BIT;
 		} else {
 			*p_working_mem = Variant();
+			return 0;
 		}
-
-		return 0;
 	}
 };
 
