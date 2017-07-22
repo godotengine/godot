@@ -651,6 +651,8 @@ public:
 	void set_script_instance(ScriptInstance *p_instance);
 	_FORCE_INLINE_ ScriptInstance *get_script_instance() const { return script_instance; }
 
+	void set_script_and_instance(const RefPtr &p_script, ScriptInstance *p_instance); //some script languages can't control instance creation, so this function eases the process
+
 	void add_user_signal(const MethodInfo &p_signal);
 	void emit_signal(const StringName &p_name, VARIANT_ARG_LIST);
 	void emit_signal(const StringName &p_name, const Variant **p_args, int p_argcount);

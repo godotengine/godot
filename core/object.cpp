@@ -993,6 +993,17 @@ void Object::cancel_delete() {
 	_predelete_ok = true;
 }
 
+void Object::set_script_and_instance(const RefPtr &p_script, ScriptInstance *p_instance) {
+
+	//this function is not meant to be used in any of these ways
+	ERR_FAIL_COND(p_script.is_null());
+	ERR_FAIL_COND(!p_instance);
+	ERR_FAIL_COND(script_instance != NULL || !script.is_null());
+
+	script = p_script;
+	script_instance = p_instance;
+}
+
 void Object::set_script(const RefPtr &p_script) {
 
 	if (script == p_script)
