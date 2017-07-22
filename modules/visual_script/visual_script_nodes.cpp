@@ -2658,6 +2658,10 @@ VisualScriptNodeInstance *VisualScriptCustomNode::instance(VisualScriptInstance 
 	return instance;
 }
 
+void VisualScriptCustomNode::_script_changed() {
+	ports_changed_notify();
+}
+
 void VisualScriptCustomNode::_bind_methods() {
 
 	BIND_VMETHOD(MethodInfo(Variant::INT, "_get_output_sequence_port_count"));
@@ -2680,6 +2684,8 @@ void VisualScriptCustomNode::_bind_methods() {
 	BIND_VMETHOD(MethodInfo(Variant::INT, "_get_working_memory_size"));
 	BIND_VMETHOD(MethodInfo(Variant::NIL, "_step:Variant", PropertyInfo(Variant::ARRAY, "inputs"), PropertyInfo(Variant::ARRAY, "outputs"), PropertyInfo(Variant::INT, "start_mode"), PropertyInfo(Variant::ARRAY, "working_mem")));
 
+	ClassDB::bind_method(D_METHOD("_script_changed"), &VisualScriptCustomNode::_script_changed);
+
 	BIND_CONSTANT(START_MODE_BEGIN_SEQUENCE);
 	BIND_CONSTANT(START_MODE_CONTINUE_SEQUENCE);
 	BIND_CONSTANT(START_MODE_RESUME_YIELD);
@@ -2692,6 +2698,7 @@ void VisualScriptCustomNode::_bind_methods() {
 }
 
 VisualScriptCustomNode::VisualScriptCustomNode() {
+	connect("script_changed", this, "_script_changed");
 }
 
 //////////////////////////////////////////
