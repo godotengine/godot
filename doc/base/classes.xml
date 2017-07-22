@@ -4737,7 +4737,13 @@
 			<argument index="0" name="value" type="var">
 			</argument>
 			<description>
-				Return true if the array contains given value. [code][ "inside", 7 ].has("inside") == true, [ "inside", 7 ].has("outside") == false, [ "inside", 7 ].has(7) == true, [ "inside", 7 ].has("7") == false[/code]
+				Return true if the array contains given value.
+				[codeblock]
+				[ "inside", 7 ].has("inside") == true
+				[ "inside", 7 ].has("outside") == false
+				[ "inside", 7 ].has(7) == true
+				[ "inside", 7 ].has("7") == false
+				[/codeblock]
 			</description>
 		</method>
 		<method name="hash">
@@ -11470,7 +11476,7 @@
 			<return type="Vector2">
 			</return>
 			<description>
-				Returns the size of the Control, computed from all margins, however the size returned will [b]never be smaller than the minimum size reported by [method get_minimum_size][/b]. This means that even if end position of the Control rectangle is smaller than the begin position, the Control will still display and interact correctly. (see description, [method get_minimum_size], [method set_margin], [method set_anchor]).
+				Returns the size of the Control, computed from all margins, however the size returned will [b]never be smaller than the minimum size reported by[/b] [method get_minimum_size]. This means that even if end position of the Control rectangle is smaller than the begin position, the Control will still display and interact correctly. (see description, [method get_minimum_size], [method set_margin], [method set_anchor]).
 			</description>
 		</method>
 		<method name="get_stretch_ratio" qualifiers="const">
@@ -28651,7 +28657,7 @@
 		UDP packet peer.
 	</brief_description>
 	<description>
-		UDP packet peer. Can be used to send raw UDP packets as well as [Variant]s.
+		UDP packet peer. Can be used to send raw UDP packets as well as [Variant]\ s.
 	</description>
 	<methods>
 		<method name="close">
@@ -30577,7 +30583,7 @@
 				collider_id: Id of the object the point is in.
 				collider: Object the point is inside of.
 				rid: [RID] of the object the point is in.
-				Additionally, the method can take an array of objects or [RID]s that are to be excluded from collisions, a bitmask representing the physics layers to check in, and another bitmask for the types of objects to check (see TYPE_MASK_* constants).
+				Additionally, the method can take an array of objects or [RID]\ s that are to be excluded from collisions, a bitmask representing the physics layers to check in, and another bitmask for the types of objects to check (see TYPE_MASK_* constants).
 			</description>
 		</method>
 		<method name="intersect_ray">
@@ -30603,7 +30609,7 @@
 				collider: Object against which the ray was stopped.
 				rid: [RID] of the object against which the ray was stopped.
 				If the ray did not intersect anything, then an empty dictionary (dir.empty()==true) is returned instead.
-				Additionally, the method can take an array of objects or [RID]s that are to be excluded from collisions, a bitmask representing the physics layers to check in, and another bitmask for the types of objects to check (see TYPE_MASK_* constants).
+				Additionally, the method can take an array of objects or [RID]\ s that are to be excluded from collisions, a bitmask representing the physics layers to check in, and another bitmask for the types of objects to check (see TYPE_MASK_* constants).
 			</description>
 		</method>
 		<method name="intersect_shape">
@@ -31694,7 +31700,7 @@
 			<return type="Array">
 			</return>
 			<description>
-				Return the list of objects, or object [RID]s, that will be excluded from collisions.
+				Return the list of objects, or object [RID]\ s, that will be excluded from collisions.
 			</description>
 		</method>
 		<method name="get_margin" qualifiers="const">
@@ -31743,7 +31749,7 @@
 			<argument index="0" name="exclude" type="Array">
 			</argument>
 			<description>
-				Set the list of objects, or object [RID]s, that will be excluded from collisions.
+				Set the list of objects, or object [RID]\ s, that will be excluded from collisions.
 			</description>
 		</method>
 		<method name="set_margin">
@@ -46288,7 +46294,7 @@
 		A unit of execution in a process.
 	</brief_description>
 	<description>
-		A unit of execution in a process. Can run methods on [Object]s simultaneously. The use of synchronization via [Mutex], [Semaphore] is advised if working with shared objects.
+		A unit of execution in a process. Can run methods on [Object]\ s simultaneously. The use of synchronization via [Mutex], [Semaphore] is advised if working with shared objects.
 	</description>
 	<methods>
 		<method name="get_id" qualifiers="const">
@@ -50713,7 +50719,7 @@ do_property].
 			<argument index="0" name="xform" type="Transform2D">
 			</argument>
 			<description>
-				Set the canvas transform of the viewport, useful for changing the on-screen positions of all child [CanvasItem]s. This is relative to the global canvas transform of the viewport.
+				Set the canvas transform of the viewport, useful for changing the on-screen positions of all child [CanvasItem]\ s. This is relative to the global canvas transform of the viewport.
 			</description>
 		</method>
 		<method name="set_clear_on_new_frame">
