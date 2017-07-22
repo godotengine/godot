@@ -1031,6 +1031,23 @@ void Object::set_script_instance(ScriptInstance *p_instance) {
 		script = RefPtr();
 }
 
+void Object::set_script_and_instance(const RefPtr &p_script, ScriptInstance *p_instance) {
+
+	if (script == p_script)
+		return;
+
+	if (script_instance) {
+		memdelete(script_instance);
+		script_instance = NULL;
+	}
+
+	script = p_script;
+	script_instance = p_instance;
+
+	_change_notify("script");
+	emit_signal(CoreStringNames::get_singleton()->script_changed);
+}
+
 RefPtr Object::get_script() const {
 
 	return script;
