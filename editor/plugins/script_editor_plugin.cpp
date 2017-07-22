@@ -32,13 +32,13 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/script_editor_debugger.h"
-#include "project_settings.h"
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
 #include "os/file_access.h"
 #include "os/input.h"
 #include "os/keyboard.h"
 #include "os/os.h"
+#include "project_settings.h"
 #include "scene/main/viewport.h"
 
 /*** SCRIPT EDITOR ****/
@@ -1316,7 +1316,8 @@ void ScriptEditor::ensure_focus_current() {
 
 	int cidx = tab_container->get_current_tab();
 	if (cidx < 0 || cidx >= tab_container->get_tab_count())
-		;
+		return;
+
 	Control *c = tab_container->get_child(cidx)->cast_to<Control>();
 	if (!c)
 		return;
@@ -1406,6 +1407,11 @@ struct _ScriptEditorItemData {
 };
 
 void ScriptEditor::_update_members_overview_visibility() {
+
+	int selected = tab_container->get_current_tab();
+	if (selected < 0 || selected >= tab_container->get_child_count())
+		return;
+
 	Node *current = tab_container->get_child(tab_container->get_current_tab());
 	ScriptEditorBase *se = current->cast_to<ScriptEditorBase>();
 	if (!se) {
@@ -1422,6 +1428,10 @@ void ScriptEditor::_update_members_overview_visibility() {
 
 void ScriptEditor::_update_members_overview() {
 	members_overview->clear();
+
+	int selected = tab_container->get_current_tab();
+	if (selected < 0 || selected >= tab_container->get_child_count())
+		return;
 
 	Node *current = tab_container->get_child(tab_container->get_current_tab());
 	ScriptEditorBase *se = current->cast_to<ScriptEditorBase>();
