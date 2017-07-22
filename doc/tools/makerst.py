@@ -172,6 +172,7 @@ def rstize_text(text, cclass):
             pos += 1
 
     # Handle [tags]
+    inside_code = False
     pos = 0
     while True:
         pos = text.find('[', pos)
@@ -191,7 +192,18 @@ def rstize_text(text, cclass):
         else:  # command
             cmd = tag_text
             space_pos = tag_text.find(' ')
-            if cmd.find('html') == 0:
+            if cmd == '/codeblock':
+                tag_text = ''
+                inside_code = False
+                # Strip newline if the tag was alone on one
+                if pre_text[-1] == '\n':
+                    pre_text = pre_text[:-1]
+            elif cmd == '/code':
+                tag_text = '``'
+                inside_code = False
+            elif inside_code:
+                tag_text = '[' + tag_text + ']'
+            elif cmd.find('html') == 0:
                 cmd = tag_text[:space_pos]
                 param = tag_text[space_pos + 1:]
                 tag_text = param
@@ -216,11 +228,7 @@ def rstize_text(text, cclass):
                 tag_text = ''
             elif cmd == 'codeblock':
                 tag_text = '\n::\n'
-            elif cmd == '/codeblock':
-                tag_text = ''
-                # Strip newline if the tag was alone on one
-                if pre_text[-1] == '\n':
-                    pre_text = pre_text[:-1]
+                inside_code = True
             elif cmd == 'br':
                 # Make a new paragraph instead of a linebreak, rst is not so linebreak friendly
                 tag_text = '\n\n'
@@ -233,10 +241,11 @@ def rstize_text(text, cclass):
                 tag_text = '**'
             elif cmd == 'u' or cmd == '/u':
                 tag_text = ''
-            elif cmd == 'code' or cmd == '/code':
+            elif cmd == 'code':
                 tag_text = '``'
+                inside_code = True
             else:
-                tag_text = ':ref:`' + tag_text + '<class_' + tag_text.lower() + '>`'
+                tag_text = make_type(tag_text)
 
         text = pre_text + tag_text + post_text
         pos = len(pre_text) + len(tag_text)
