@@ -716,7 +716,7 @@ void EditorExport::_save() {
 		config->set_value(section, "name", preset->get_name());
 		config->set_value(section, "platform", preset->get_platform()->get_name());
 		config->set_value(section, "runnable", preset->is_runnable());
-		config->set_value(section, "custom_feaures", preset->get_custom_features());
+		config->set_value(section, "custom_features", preset->get_custom_features());
 		bool save_files = false;
 		switch (preset->get_export_filter()) {
 			case EditorExportPreset::EXPORT_ALL_RESOURCES: {
