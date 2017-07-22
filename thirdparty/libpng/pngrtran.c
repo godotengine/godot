@@ -1,7 +1,7 @@
 
 /* pngrtran.c - transforms the data in a row for PNG readers
  *
- * Last changed in libpng 1.6.30 [(PENDING RELEASE)]
+ * Last changed in libpng 1.6.31 [(PENDING RELEASE)]
  * Copyright (c) 1998-2002,2004,2006-2017 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
@@ -49,6 +49,7 @@ png_set_crc_action(png_structrp png_ptr, int crit_action, int ancil_action)
       case PNG_CRC_WARN_DISCARD:    /* Not a valid action for critical data */
          png_warning(png_ptr,
              "Can't discard critical data on CRC error");
+         /* FALLTHROUGH */
       case PNG_CRC_ERROR_QUIT:                                /* Error/quit */
 
       case PNG_CRC_DEFAULT:
@@ -1253,7 +1254,7 @@ png_init_rgb_transformations(png_structrp png_ptr)
             default:
 
             case 8:
-               /* FALL THROUGH (Already 8 bits) */
+               /* FALLTHROUGH */ /*  (Already 8 bits) */
 
             case 16:
                /* Already a full 16 bits */

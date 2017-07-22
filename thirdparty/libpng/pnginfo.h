@@ -185,6 +185,11 @@ defined(PNG_READ_BACKGROUND_SUPPORTED)
    png_byte phys_unit_type; /* resolution type (see PNG_RESOLUTION_ below) */
 #endif
 
+#ifdef PNG_eXIf_SUPPORTED
+   int num_exif;
+   png_bytep exif;
+#endif
+
 #ifdef PNG_hIST_SUPPORTED
    /* The hIST chunk contains the relative frequency or importance of the
     * various palette entries, so that a viewer can intelligently select a
