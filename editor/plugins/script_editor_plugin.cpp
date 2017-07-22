@@ -731,6 +731,9 @@ void ScriptEditor::_close_tab(int p_idx) {
 		apply_scripts();
 	}
 
+	// roll back to previous tab
+	_history_back();
+
 	//remove from history
 	history.resize(history_pos + 1);
 
