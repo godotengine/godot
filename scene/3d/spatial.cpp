@@ -704,7 +704,7 @@ void Spatial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_scale"), &Spatial::get_scale);
 	ClassDB::bind_method(D_METHOD("set_global_transform", "global"), &Spatial::set_global_transform);
 	ClassDB::bind_method(D_METHOD("get_global_transform"), &Spatial::get_global_transform);
-	ClassDB::bind_method(D_METHOD("get_parent_spatial"), &Spatial::get_parent_spatial);
+	ClassDB::bind_method(D_METHOD("get_parent_spatial:Spatial"), &Spatial::get_parent_spatial);
 	ClassDB::bind_method(D_METHOD("set_ignore_transform_notification", "enabled"), &Spatial::set_ignore_transform_notification);
 	ClassDB::bind_method(D_METHOD("set_as_toplevel", "enable"), &Spatial::set_as_toplevel);
 	ClassDB::bind_method(D_METHOD("is_set_as_toplevel"), &Spatial::is_set_as_toplevel);
@@ -722,7 +722,7 @@ void Spatial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_gizmo", "gizmo:SpatialGizmo"), &Spatial::set_gizmo);
 	ClassDB::bind_method(D_METHOD("get_gizmo:SpatialGizmo"), &Spatial::get_gizmo);
 
-	ClassDB::bind_method(D_METHOD("set_visible"), &Spatial::set_visible);
+	ClassDB::bind_method(D_METHOD("set_visible", "visible"), &Spatial::set_visible);
 	ClassDB::bind_method(D_METHOD("is_visible"), &Spatial::is_visible);
 	ClassDB::bind_method(D_METHOD("is_visible_in_tree"), &Spatial::is_visible_in_tree);
 	ClassDB::bind_method(D_METHOD("show"), &Spatial::show);

@@ -33,8 +33,8 @@
 #include "os/keyboard.h"
 #include "os/os.h"
 
-#include "project_settings.h"
 #include "message_queue.h"
+#include "project_settings.h"
 #include "scene/main/viewport.h"
 
 #define TAB_PIXELS
@@ -4597,7 +4597,7 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_keyword_color", "keyword", "color"), &TextEdit::add_keyword_color);
 	ClassDB::bind_method(D_METHOD("add_color_region", "begin_key", "end_key", "color", "line_only"), &TextEdit::add_color_region, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("clear_colors"), &TextEdit::clear_colors);
-	ClassDB::bind_method(D_METHOD("menu_option"), &TextEdit::menu_option);
+	ClassDB::bind_method(D_METHOD("menu_option", "option"), &TextEdit::menu_option);
 	ClassDB::bind_method(D_METHOD("get_menu:PopupMenu"), &TextEdit::get_menu);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "syntax_highlighting"), "set_syntax_coloring", "is_syntax_coloring_enabled");

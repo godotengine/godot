@@ -356,17 +356,17 @@ bool TouchScreenButton::is_passby_press_enabled() const {
 
 void TouchScreenButton::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &TouchScreenButton::set_texture);
-	ClassDB::bind_method(D_METHOD("get_texture"), &TouchScreenButton::get_texture);
+	ClassDB::bind_method(D_METHOD("set_texture", "texture:Texture"), &TouchScreenButton::set_texture);
+	ClassDB::bind_method(D_METHOD("get_texture:Texture"), &TouchScreenButton::get_texture);
 
-	ClassDB::bind_method(D_METHOD("set_texture_pressed", "texture_pressed"), &TouchScreenButton::set_texture_pressed);
-	ClassDB::bind_method(D_METHOD("get_texture_pressed"), &TouchScreenButton::get_texture_pressed);
+	ClassDB::bind_method(D_METHOD("set_texture_pressed", "texture_pressed:Texture"), &TouchScreenButton::set_texture_pressed);
+	ClassDB::bind_method(D_METHOD("get_texture_pressed:Texture"), &TouchScreenButton::get_texture_pressed);
 
-	ClassDB::bind_method(D_METHOD("set_bitmask", "bitmask"), &TouchScreenButton::set_bitmask);
-	ClassDB::bind_method(D_METHOD("get_bitmask"), &TouchScreenButton::get_bitmask);
+	ClassDB::bind_method(D_METHOD("set_bitmask", "bitmask:BitMap"), &TouchScreenButton::set_bitmask);
+	ClassDB::bind_method(D_METHOD("get_bitmask:BitMap"), &TouchScreenButton::get_bitmask);
 
-	ClassDB::bind_method(D_METHOD("set_shape", "shape"), &TouchScreenButton::set_shape);
-	ClassDB::bind_method(D_METHOD("get_shape"), &TouchScreenButton::get_shape);
+	ClassDB::bind_method(D_METHOD("set_shape", "shape:Shape2D"), &TouchScreenButton::set_shape);
+	ClassDB::bind_method(D_METHOD("get_shape:Shape2D"), &TouchScreenButton::get_shape);
 
 	ClassDB::bind_method(D_METHOD("set_shape_centered", "bool"), &TouchScreenButton::set_shape_centered);
 	ClassDB::bind_method(D_METHOD("is_shape_centered"), &TouchScreenButton::is_shape_centered);

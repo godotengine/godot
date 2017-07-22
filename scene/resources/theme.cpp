@@ -660,8 +660,8 @@ void Theme::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_constant", "name", "type"), &Theme::clear_constant);
 	ClassDB::bind_method(D_METHOD("get_constant_list", "type"), &Theme::_get_constant_list);
 
-	ClassDB::bind_method(D_METHOD("set_default_font", "font"), &Theme::set_default_theme_font);
-	ClassDB::bind_method(D_METHOD("get_default_font"), &Theme::get_default_theme_font);
+	ClassDB::bind_method(D_METHOD("set_default_font", "font:Font"), &Theme::set_default_theme_font);
+	ClassDB::bind_method(D_METHOD("get_default_font:Font"), &Theme::get_default_theme_font);
 
 	ClassDB::bind_method(D_METHOD("get_type_list", "type"), &Theme::_get_type_list);
 

@@ -1855,7 +1855,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &RichTextLabel::set_text);
 	ClassDB::bind_method(D_METHOD("add_image", "image:Texture"), &RichTextLabel::add_image);
 	ClassDB::bind_method(D_METHOD("newline"), &RichTextLabel::add_newline);
-	ClassDB::bind_method(D_METHOD("remove_line"), &RichTextLabel::remove_line);
+	ClassDB::bind_method(D_METHOD("remove_line", "line"), &RichTextLabel::remove_line);
 	ClassDB::bind_method(D_METHOD("push_font", "font:Font"), &RichTextLabel::push_font);
 	ClassDB::bind_method(D_METHOD("push_color", "color"), &RichTextLabel::push_color);
 	ClassDB::bind_method(D_METHOD("push_align", "align"), &RichTextLabel::push_align);

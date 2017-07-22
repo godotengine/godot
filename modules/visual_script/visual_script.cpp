@@ -29,8 +29,8 @@
 /*************************************************************************/
 #include "visual_script.h"
 
-#include "project_settings.h"
 #include "os/os.h"
+#include "project_settings.h"
 #include "scene/main/node.h"
 #include "visual_script_nodes.h"
 
@@ -1264,14 +1264,14 @@ void VisualScript::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_function", "name"), &VisualScript::has_function);
 	ClassDB::bind_method(D_METHOD("remove_function", "name"), &VisualScript::remove_function);
 	ClassDB::bind_method(D_METHOD("rename_function", "name", "new_name"), &VisualScript::rename_function);
-	ClassDB::bind_method(D_METHOD("set_function_scroll", "ofs"), &VisualScript::set_function_scroll);
-	ClassDB::bind_method(D_METHOD("get_function_scroll"), &VisualScript::get_function_scroll);
+	ClassDB::bind_method(D_METHOD("set_function_scroll", "name", "ofs"), &VisualScript::set_function_scroll);
+	ClassDB::bind_method(D_METHOD("get_function_scroll", "name"), &VisualScript::get_function_scroll);
 
-	ClassDB::bind_method(D_METHOD("add_node", "func", "id", "node", "pos"), &VisualScript::add_node, DEFVAL(Point2()));
+	ClassDB::bind_method(D_METHOD("add_node", "func", "id", "node:VisualScriptNode", "pos"), &VisualScript::add_node, DEFVAL(Point2()));
 	ClassDB::bind_method(D_METHOD("remove_node", "func", "id"), &VisualScript::remove_node);
 	ClassDB::bind_method(D_METHOD("get_function_node_id", "name"), &VisualScript::get_function_node_id);
 
-	ClassDB::bind_method(D_METHOD("get_node", "func", "id"), &VisualScript::get_node);
+	ClassDB::bind_method(D_METHOD("get_node:VisualScriptNode", "func", "id"), &VisualScript::get_node);
 	ClassDB::bind_method(D_METHOD("has_node", "func", "id"), &VisualScript::has_node);
 	ClassDB::bind_method(D_METHOD("set_node_pos", "func", "id", "pos"), &VisualScript::set_node_pos);
 	ClassDB::bind_method(D_METHOD("get_node_pos", "func", "id"), &VisualScript::get_node_pos);
@@ -1302,7 +1302,7 @@ void VisualScript::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("custom_signal_get_argument_type", "name", "argidx"), &VisualScript::custom_signal_get_argument_type);
 	ClassDB::bind_method(D_METHOD("custom_signal_set_argument_name", "name", "argidx", "argname"), &VisualScript::custom_signal_set_argument_name);
 	ClassDB::bind_method(D_METHOD("custom_signal_get_argument_name", "name", "argidx"), &VisualScript::custom_signal_get_argument_name);
-	ClassDB::bind_method(D_METHOD("custom_signal_remove_argument", "argidx"), &VisualScript::custom_signal_remove_argument);
+	ClassDB::bind_method(D_METHOD("custom_signal_remove_argument", "name", "argidx"), &VisualScript::custom_signal_remove_argument);
 	ClassDB::bind_method(D_METHOD("custom_signal_get_argument_count", "name"), &VisualScript::custom_signal_get_argument_count);
 	ClassDB::bind_method(D_METHOD("custom_signal_swap_argument", "name", "argidx", "withidx"), &VisualScript::custom_signal_swap_argument);
 	ClassDB::bind_method(D_METHOD("remove_custom_signal", "name"), &VisualScript::remove_custom_signal);

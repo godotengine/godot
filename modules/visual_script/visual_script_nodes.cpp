@@ -29,10 +29,10 @@
 /*************************************************************************/
 #include "visual_script_nodes.h"
 
-#include "project_settings.h"
 #include "global_constants.h"
 #include "os/input.h"
 #include "os/os.h"
+#include "project_settings.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 
@@ -1190,8 +1190,8 @@ Ref<Resource> VisualScriptPreload::get_preload() const {
 
 void VisualScriptPreload::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_preload", "resource"), &VisualScriptPreload::set_preload);
-	ClassDB::bind_method(D_METHOD("get_preload"), &VisualScriptPreload::get_preload);
+	ClassDB::bind_method(D_METHOD("set_preload", "resource:Resource"), &VisualScriptPreload::set_preload);
+	ClassDB::bind_method(D_METHOD("get_preload:Resource"), &VisualScriptPreload::get_preload);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource"), "set_preload", "get_preload");
 }

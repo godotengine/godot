@@ -1075,19 +1075,19 @@ void PopupMenu::clear_autohide_areas() {
 void PopupMenu::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_gui_input"), &PopupMenu::_gui_input);
-	ClassDB::bind_method(D_METHOD("add_icon_item", "texture", "label", "id", "accel"), &PopupMenu::add_icon_item, DEFVAL(-1), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("add_icon_item", "texture:Texture", "label", "id", "accel"), &PopupMenu::add_icon_item, DEFVAL(-1), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("add_item", "label", "id", "accel"), &PopupMenu::add_item, DEFVAL(-1), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("add_icon_check_item", "texture", "label", "id", "accel"), &PopupMenu::add_icon_check_item, DEFVAL(-1), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("add_icon_check_item", "texture:Texture", "label", "id", "accel"), &PopupMenu::add_icon_check_item, DEFVAL(-1), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("add_check_item", "label", "id", "accel"), &PopupMenu::add_check_item, DEFVAL(-1), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("add_submenu_item", "label", "submenu", "id"), &PopupMenu::add_submenu_item, DEFVAL(-1));
 
-	ClassDB::bind_method(D_METHOD("add_icon_shortcut", "texture", "shortcut:ShortCut", "id", "global"), &PopupMenu::add_icon_shortcut, DEFVAL(-1), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("add_icon_shortcut", "texture:Texture", "shortcut:ShortCut", "id", "global"), &PopupMenu::add_icon_shortcut, DEFVAL(-1), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("add_shortcut", "shortcut:ShortCut", "id", "global"), &PopupMenu::add_shortcut, DEFVAL(-1), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("add_icon_check_shortcut", "texture", "shortcut:ShortCut", "id", "global"), &PopupMenu::add_icon_check_shortcut, DEFVAL(-1), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("add_icon_check_shortcut", "texture:Texture", "shortcut:ShortCut", "id", "global"), &PopupMenu::add_icon_check_shortcut, DEFVAL(-1), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("add_check_shortcut", "shortcut:ShortCut", "id", "global"), &PopupMenu::add_check_shortcut, DEFVAL(-1), DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("set_item_text", "idx", "text"), &PopupMenu::set_item_text);
-	ClassDB::bind_method(D_METHOD("set_item_icon", "idx", "icon"), &PopupMenu::set_item_icon);
+	ClassDB::bind_method(D_METHOD("set_item_icon", "idx", "icon:Texture"), &PopupMenu::set_item_icon);
 	ClassDB::bind_method(D_METHOD("set_item_checked", "idx", "checked"), &PopupMenu::set_item_checked);
 	ClassDB::bind_method(D_METHOD("set_item_ID", "idx", "id"), &PopupMenu::set_item_ID);
 	ClassDB::bind_method(D_METHOD("set_item_accelerator", "idx", "accel"), &PopupMenu::set_item_accelerator);
@@ -1102,7 +1102,7 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("toggle_item_checked", "idx"), &PopupMenu::toggle_item_checked);
 
 	ClassDB::bind_method(D_METHOD("get_item_text", "idx"), &PopupMenu::get_item_text);
-	ClassDB::bind_method(D_METHOD("get_item_icon", "idx"), &PopupMenu::get_item_icon);
+	ClassDB::bind_method(D_METHOD("get_item_icon:Texture", "idx"), &PopupMenu::get_item_icon);
 	ClassDB::bind_method(D_METHOD("is_item_checked", "idx"), &PopupMenu::is_item_checked);
 	ClassDB::bind_method(D_METHOD("get_item_ID", "idx"), &PopupMenu::get_item_ID);
 	ClassDB::bind_method(D_METHOD("get_item_index", "id"), &PopupMenu::get_item_index);

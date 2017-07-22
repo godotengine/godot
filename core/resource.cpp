@@ -31,7 +31,6 @@
 
 #include "core_string_names.h"
 #include "io/resource_loader.h"
-#include "io/resource_loader.h"
 #include "os/file_access.h"
 #include "script_language.h"
 #include <stdio.h>
@@ -340,7 +339,7 @@ void Resource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_local_scene:Node"), &Resource::get_local_scene);
 	ClassDB::bind_method(D_METHOD("setup_local_to_scene"), &Resource::setup_local_to_scene);
 
-	ClassDB::bind_method(D_METHOD("duplicate", "subresources"), &Resource::duplicate, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("duplicate:Resource", "subresources"), &Resource::duplicate, DEFVAL(false));
 	ADD_SIGNAL(MethodInfo("changed"));
 	ADD_GROUP("Resource", "resource_");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "resource_local_to_scene"), "set_local_to_scene", "is_local_to_scene");
