@@ -1817,6 +1817,14 @@ uint32_t Object::get_edited_version() const {
 }
 #endif
 
+void Object::set_script_instance_binding(int p_script_language_index, void *p_data) {
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_INDEX(p_script_language_index, MAX_SCRIPT_INSTANCE_BINDINGS);
+#endif
+
+	_script_instance_bindings[p_script_language_index] = p_data;
+}
+
 void *Object::get_script_instance_binding(int p_script_language_index) {
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_INDEX_V(p_script_language_index, MAX_SCRIPT_INSTANCE_BINDINGS, NULL);
@@ -1826,10 +1834,6 @@ void *Object::get_script_instance_binding(int p_script_language_index) {
 	//just return the same pointer.
 	//if you want to put a big lock in the entire function and keep allocated pointers in a map or something, feel free to do it
 	//as it should not really affect performance much (won't be called too often), as in far most caes the condition below will be false afterwards
-
-	if (!_script_instance_bindings[p_script_language_index]) {
-		_script_instance_bindings[p_script_language_index] = ScriptServer::get_language(p_script_language_index)->alloc_instance_binding_data(this);
-	}
 
 	return _script_instance_bindings[p_script_language_index];
 }
