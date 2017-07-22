@@ -1697,13 +1697,15 @@ void Main::cleanup() {
 	OS::get_singleton()->_execpath = "";
 	OS::get_singleton()->_local_clipboard = "";
 
-	if (audio_server) {
-		memdelete(audio_server);
-	}
+	ScriptServer::finish_languages();
 
 #ifdef TOOLS_ENABLED
 	EditorNode::unregister_editor_types();
 #endif
+
+	if (audio_server) {
+		memdelete(audio_server);
+	}
 
 	unregister_driver_types();
 	unregister_module_types();

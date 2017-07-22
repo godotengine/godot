@@ -69,6 +69,7 @@ public:
 	static void thread_exit();
 
 	static void init_languages();
+	static void finish_languages();
 };
 
 class ScriptInstance;

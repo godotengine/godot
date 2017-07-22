@@ -99,6 +99,13 @@ void ScriptServer::init_languages() {
 	}
 }
 
+void ScriptServer::finish_languages() {
+
+	for (int i = 0; i < _language_count; i++) {
+		_languages[i]->finish();
+	}
+}
+
 void ScriptServer::set_reload_scripts_on_save(bool p_enable) {
 
 	reload_scripts_on_save = p_enable;
