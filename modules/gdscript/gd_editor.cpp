@@ -30,8 +30,8 @@
 #include "editor/editor_settings.h"
 #include "gd_compiler.h"
 #include "gd_script.h"
-#include "project_settings.h"
 #include "os/file_access.h"
+#include "project_settings.h"
 #ifdef TOOLS_ENABLED
 #include "editor/editor_file_system.h"
 #include "editor/editor_settings.h"

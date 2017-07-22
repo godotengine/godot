@@ -29,8 +29,8 @@
 /*************************************************************************/
 #include "audio_driver_jandroid.h"
 
-#include "project_settings.h"
 #include "os/os.h"
+#include "project_settings.h"
 #include "thread_jandroid.h"
 
 #ifndef ANDROID_NATIVE_ACTIVITY

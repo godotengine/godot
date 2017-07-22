@@ -29,8 +29,8 @@
 /*************************************************************************/
 #include "space_sw.h"
 #include "collision_solver_sw.h"
-#include "project_settings.h"
 #include "physics_server_sw.h"
+#include "project_settings.h"
 
 _FORCE_INLINE_ static bool _match_object_type_query(CollisionObjectSW *p_object, uint32_t p_collision_layer, uint32_t p_type_mask) {
 

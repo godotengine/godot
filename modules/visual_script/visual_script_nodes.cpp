@@ -29,10 +29,10 @@
 /*************************************************************************/
 #include "visual_script_nodes.h"
 
-#include "project_settings.h"
 #include "global_constants.h"
 #include "os/input.h"
 #include "os/os.h"
+#include "project_settings.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 

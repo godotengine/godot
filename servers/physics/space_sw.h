@@ -36,8 +36,8 @@
 #include "body_sw.h"
 #include "broad_phase_sw.h"
 #include "collision_object_sw.h"
-#include "project_settings.h"
 #include "hash_map.h"
+#include "project_settings.h"
 #include "typedefs.h"
 
 class PhysicsDirectSpaceStateSW : public PhysicsDirectSpaceState {

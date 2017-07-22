@@ -29,8 +29,8 @@
 /*************************************************************************/
 #include "video_stream_theora.h"
 
-#include "project_settings.h"
 #include "os/os.h"
+#include "project_settings.h"
 
 #include "thirdparty/misc/yuv2rgb.h"
 

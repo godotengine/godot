@@ -36,9 +36,9 @@
 #include <GLES2/gl2.h>
 
 #include "file_access_android.h"
-#include "project_settings.h"
 #include "main/main.h"
 #include "os_android.h"
+#include "project_settings.h"
 #include <android/log.h>
 #include <android/sensor.h>
 #include <android/window.h>

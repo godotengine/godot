@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "audio_server.h"
-#include "project_settings.h"
 #include "io/resource_loader.h"
 #include "os/file_access.h"
 #include "os/os.h"
+#include "project_settings.h"
 #include "servers/audio/effects/audio_effect_compressor.h"
 #ifdef TOOLS_ENABLED
 

@@ -36,7 +36,6 @@
 #include "geometry.h"
 #include "octree.h"
 #include "os/semaphore.h"
-#include "os/semaphore.h"
 #include "os/thread.h"
 #include "self_list.h"
 
