@@ -1592,6 +1592,14 @@ VisualServer::VisualServer() {
 
 	GLOBAL_DEF("rendering/quality/reflections/texture_array_reflections", true);
 	GLOBAL_DEF("rendering/quality/reflections/texture_array_reflections.mobile", false);
+	GLOBAL_DEF("rendering/quality/reflections/high_quality_ggx", true);
+	GLOBAL_DEF("rendering/quality/reflections/high_quality_ggx.mobile", false);
+
+	GLOBAL_DEF("rendering/quality/shading/force_vertex_shading", false);
+	GLOBAL_DEF("rendering/quality/shading/force_vertex_shading.mobile", true);
+
+	GLOBAL_DEF("rendering/quality/depth_prepass/enable", true);
+	GLOBAL_DEF("rendering/quality/depth_prepass/disable_for_vendors", "PowerVR,Mali,Adreno");
 }
 
 VisualServer::~VisualServer() {

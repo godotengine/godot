@@ -47,8 +47,11 @@ void Sky::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_radiance_size", "size"), &Sky::set_radiance_size);
 	ClassDB::bind_method(D_METHOD("get_radiance_size"), &Sky::get_radiance_size);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "radiance_size", PROPERTY_HINT_ENUM, "256,512,1024,2048"), "set_radiance_size", "get_radiance_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "radiance_size", PROPERTY_HINT_ENUM, "32,64,128,256,512,1024,2048"), "set_radiance_size", "get_radiance_size");
 
+	BIND_CONSTANT(RADIANCE_SIZE_32);
+	BIND_CONSTANT(RADIANCE_SIZE_64);
+	BIND_CONSTANT(RADIANCE_SIZE_128);
 	BIND_CONSTANT(RADIANCE_SIZE_256);
 	BIND_CONSTANT(RADIANCE_SIZE_512);
 	BIND_CONSTANT(RADIANCE_SIZE_1024);
@@ -66,7 +69,7 @@ void PanoramaSky::_radiance_changed() {
 
 	if (panorama.is_valid()) {
 		static const int size[RADIANCE_SIZE_MAX] = {
-			256, 512, 1024, 2048
+			32, 64, 128, 256, 512, 1024, 2048
 		};
 		VS::get_singleton()->sky_set_texture(sky, panorama->get_rid(), size[get_radiance_size()]);
 	}
@@ -120,7 +123,7 @@ void ProceduralSky::_radiance_changed() {
 		return; //do nothing yet
 
 	static const int size[RADIANCE_SIZE_MAX] = {
-		256, 512, 1024, 2048
+		32, 64, 128, 256, 512, 1024, 2048
 	};
 	VS::get_singleton()->sky_set_texture(sky, texture, size[get_radiance_size()]);
 }
@@ -132,7 +135,7 @@ void ProceduralSky::_update_sky() {
 	PoolVector<uint8_t> imgdata;
 
 	static const int size[TEXTURE_SIZE_MAX] = {
-		1024, 2048, 4096
+		256, 512, 1024, 2048, 4096
 	};
 
 	int w = size[texture_size];
@@ -465,7 +468,14 @@ void ProceduralSky::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "sun_energy", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_sun_energy", "get_sun_energy");
 
 	ADD_GROUP("Texture", "texture_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_size", PROPERTY_HINT_ENUM, "1024,2048,4096"), "set_texture_size", "get_texture_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_size", PROPERTY_HINT_ENUM, "256,512,1024,2048,4096"), "set_texture_size", "get_texture_size");
+
+	BIND_CONSTANT(TEXTURE_SIZE_256);
+	BIND_CONSTANT(TEXTURE_SIZE_512);
+	BIND_CONSTANT(TEXTURE_SIZE_1024);
+	BIND_CONSTANT(TEXTURE_SIZE_2048);
+	BIND_CONSTANT(TEXTURE_SIZE_4096);
+	BIND_CONSTANT(TEXTURE_SIZE_MAX);
 }
 
 ProceduralSky::ProceduralSky() {

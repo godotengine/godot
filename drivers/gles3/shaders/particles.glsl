@@ -178,7 +178,7 @@ VERTEX_SHADER_CODE
 
 #if !defined(DISABLE_FORCE)
 
-		if (true) {
+		if (false) {
 
 			vec3 force = vec3(0.0);
 			for(int i=0;i<attractor_count;i++) {
@@ -187,7 +187,7 @@ VERTEX_SHADER_CODE
 				float dist = length(rel_vec);
 				if (attractors[i].radius < dist)
 					continue;
-				if (attractors[i].eat_radius>0 &&  attractors[i].eat_radius > dist) {
+				if (attractors[i].eat_radius>0.0 &&  attractors[i].eat_radius > dist) {
 					out_velocity_active.a=0.0;
 				}
 

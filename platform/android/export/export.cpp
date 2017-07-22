@@ -2830,7 +2830,11 @@ public:
 public:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
 
-		r_features->push_back("etc");
+		int api = p_preset->get("graphics/api");
+		if (api == 0)
+			r_features->push_back("etc");
+		else
+			r_features->push_back("etc2");
 	}
 
 	virtual void get_export_options(List<ExportOption> *r_options) {

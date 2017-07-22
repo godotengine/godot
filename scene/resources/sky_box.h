@@ -37,6 +37,9 @@ class Sky : public Resource {
 
 public:
 	enum RadianceSize {
+		RADIANCE_SIZE_32,
+		RADIANCE_SIZE_64,
+		RADIANCE_SIZE_128,
 		RADIANCE_SIZE_256,
 		RADIANCE_SIZE_512,
 		RADIANCE_SIZE_1024,
@@ -85,6 +88,8 @@ class ProceduralSky : public Sky {
 
 public:
 	enum TextureSize {
+		TEXTURE_SIZE_256,
+		TEXTURE_SIZE_512,
 		TEXTURE_SIZE_1024,
 		TEXTURE_SIZE_2048,
 		TEXTURE_SIZE_4096,

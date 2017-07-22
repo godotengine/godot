@@ -15,6 +15,9 @@ void main() {
 
 [fragment]
 
+#if !defined(GLES_OVER_GL)
+precision mediump float;
+#endif
 
 in vec2 uv_interp;
 uniform sampler2D source_specular; //texunit:0

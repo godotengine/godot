@@ -30,8 +30,8 @@
 #include "rasterizer_gles3.h"
 
 #include "gl_context/context_gl.h"
-#include "project_settings.h"
 #include "os/os.h"
+#include "project_settings.h"
 #include <string.h>
 RasterizerStorage *RasterizerGLES3::get_storage() {
 
@@ -186,6 +186,9 @@ void RasterizerGLES3::initialize() {
 			GL_DEBUG_SEVERITY_HIGH_ARB,5, "hello");
 
 */
+
+	const GLubyte *renderer = glGetString(GL_RENDERER);
+	print_line("OpenGL ES 3.0 Renderer: " + String((const char *)renderer));
 	storage->initialize();
 	canvas->initialize();
 	scene->initialize();
@@ -336,6 +339,10 @@ void RasterizerGLES3::blit_render_target_to_screen(RID p_render_target, const Re
 	glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, rt->color);
+	//glBindTexture(GL_TEXTURE_2D, rt->effects.mip_maps[0].color);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, storage->resources.normal_tex);
+
 	canvas->draw_generic_textured_rect(p_screen_rect, Rect2(0, 0, 1, -1));
 	glBindTexture(GL_TEXTURE_2D, 0);
 	canvas->canvas_end();

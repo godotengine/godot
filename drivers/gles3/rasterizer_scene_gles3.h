@@ -187,6 +187,7 @@ public:
 		bool cull_front;
 		bool used_sss;
 		bool used_screen_texture;
+		bool using_contact_shadows;
 
 		VS::ViewportDebugDraw debug_draw;
 	} state;
@@ -645,8 +646,9 @@ public:
 #define SORT_KEY_UNSHADED_FLAG (uint64_t(1) << 59)
 #define SORT_KEY_NO_DIRECTIONAL_FLAG (uint64_t(1) << 58)
 #define SORT_KEY_GI_PROBES_FLAG (uint64_t(1) << 57)
-			SORT_KEY_SHADING_SHIFT = 57,
-			SORT_KEY_SHADING_MASK = 7,
+#define SORT_KEY_VERTEX_LIT_FLAG (uint64_t(1) << 56)
+			SORT_KEY_SHADING_SHIFT = 56,
+			SORT_KEY_SHADING_MASK = 15,
 			SORT_KEY_MATERIAL_INDEX_SHIFT = 40,
 			SORT_KEY_GEOMETRY_INDEX_SHIFT = 20,
 			SORT_KEY_GEOMETRY_TYPE_SHIFT = 15,
@@ -795,7 +797,7 @@ public:
 	void _setup_lights(RID *p_light_cull_result, int p_light_cull_count, const Transform &p_camera_inverse_transform, const CameraMatrix &p_camera_projection, RID p_shadow_atlas);
 	void _setup_reflections(RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, const Transform &p_camera_inverse_transform, const CameraMatrix &p_camera_projection, RID p_reflection_atlas, Environment *p_env);
 
-	void _copy_screen();
+	void _copy_screen(bool p_invalidate_color = false, bool p_invalidate_depth = false);
 	void _copy_to_front_buffer(Environment *env);
 	void _copy_texture_to_front_buffer(GLuint p_texture); //used for debug
 

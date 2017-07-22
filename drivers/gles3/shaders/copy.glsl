@@ -49,6 +49,9 @@ void main() {
 
 #define M_PI 3.14159265359
 
+#if !defined(USE_GLES_OVER_GL)
+precision mediump float;
+#endif
 
 #if defined(USE_CUBEMAP) || defined(USE_PANORAMA)
 in vec3 cube_interp;
@@ -87,14 +90,6 @@ vec4 texturePanorama(vec3 normal,sampler2D pano ) {
 
 #endif
 
-float sRGB_gamma_correct(float c){
-    float a = 0.055;
-    if(c < 0.0031308)
-	return 12.92*c;
-    else
-	return (1.0+a)*pow(c, 1.0/2.4) - a;
-}
-
 
 uniform float stuff;
 uniform vec2 pixel_size;
@@ -131,7 +126,7 @@ void main() {
 	vec4 color = texture( source_cube,  normalize(cube_interp) );
 
 #else
-	vec4 color = texture( source,  uv_interp );
+	vec4 color = textureLod( source,  uv_interp,0.0 );
 #endif
 
 
