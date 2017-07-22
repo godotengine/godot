@@ -32,13 +32,13 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/script_editor_debugger.h"
-#include "project_settings.h"
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
 #include "os/file_access.h"
 #include "os/input.h"
 #include "os/keyboard.h"
 #include "os/os.h"
+#include "project_settings.h"
 #include "scene/main/viewport.h"
 
 /*** SCRIPT EDITOR ****/
@@ -517,6 +517,9 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save) {
 		EditorHelp *help = tab_container->get_child(selected)->cast_to<EditorHelp>();
 		_add_recent_script(help->get_class());
 	}
+
+	// roll back to previous tab
+	_history_back();
 
 	//remove from history
 	history.resize(history_pos + 1);
