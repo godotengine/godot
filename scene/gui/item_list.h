@@ -78,6 +78,9 @@ private:
 	bool ensure_selected_visible;
 	bool same_column_width;
 
+	bool auto_height;
+	float auto_height_value;
+
 	Vector<Item> items;
 	Vector<int> separators;
 
@@ -197,6 +200,11 @@ public:
 
 	void set_icon_scale(real_t p_scale);
 	real_t get_icon_scale() const;
+
+	void set_auto_height(bool p_enable);
+	bool has_auto_height() const;
+
+	Size2 get_minimum_size() const;
 
 	VScrollBar *get_v_scroll() { return scroll_bar; }
 

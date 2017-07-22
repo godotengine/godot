@@ -58,6 +58,7 @@
 #include "servers/physics_2d_server.h"
 #include "translation.h"
 #include "version.h"
+#include "version_hash.gen.h"
 #include <stdio.h>
 // plugins
 #include "asset_library_editor_plugin.h"
@@ -5986,14 +5987,18 @@ EditorNode::EditorNode() {
 		logo->set_texture(gui_base->get_icon("Logo", "EditorIcons"));
 		hbc->add_child(logo);
 
+		String hash = String(VERSION_HASH);
+		if (hash.length() != 0)
+			hash = "." + hash.left(7);
+
 		Label *about_text = memnew(Label);
 		about_text->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
-		about_text->set_text(VERSION_FULL_NAME + String::utf8("\n\u00A9 2007-2017 Juan Linietsky, Ariel Manzur.\n\u00A9 2014-2017 ") +
+		about_text->set_text(VERSION_FULL_NAME + hash + String::utf8("\n\u00A9 2007-2017 Juan Linietsky, Ariel Manzur.\n\u00A9 2014-2017 ") +
 							 TTR("Godot Engine contributors") + "\n");
 		hbc->add_child(about_text);
 
 		TabContainer *tc = memnew(TabContainer);
-		tc->set_custom_minimum_size(Size2(600, 240) * EDSCALE);
+		tc->set_custom_minimum_size(Size2(630, 240) * EDSCALE);
 		tc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		vbc->add_child(tc);
 
@@ -6021,14 +6026,14 @@ EditorNode::EditorNode() {
 			dev_vbc->add_child(lbl);
 
 			ItemList *il = memnew(ItemList);
-			il->set_max_columns(32);
+			il->set_max_columns(16);
 			il->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-			il->set_custom_minimum_size(Size2(0, i == 3 ? DEV_NAMES_COUNT * 7.6 : 30) * EDSCALE);
+			il->set_fixed_column_width(230 * EDSCALE);
+			il->set_auto_height(true);
 			const char **dev_names_ptr = dev_src[i];
 			while (*dev_names_ptr)
 				il->add_item(String::utf8(*dev_names_ptr++), NULL, false);
 			dev_vbc->add_child(il);
-			il->set_fixed_column_width(240 * EDSCALE);
 
 			HSeparator *hs = memnew(HSeparator);
 			hs->set_modulate(Color(0, 0, 0, 0));
