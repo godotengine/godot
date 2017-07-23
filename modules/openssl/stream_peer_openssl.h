@@ -30,9 +30,9 @@
 #ifndef STREAM_PEER_OPEN_SSL_H
 #define STREAM_PEER_OPEN_SSL_H
 
-#include "project_settings.h"
 #include "io/stream_peer_ssl.h"
 #include "os/file_access.h"
+#include "project_settings.h"
 
 #include "thirdparty/misc/curl_hostcheck.h"
 

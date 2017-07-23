@@ -29,8 +29,8 @@
 /*************************************************************************/
 #include "audio_driver_dummy.h"
 
-#include "project_settings.h"
 #include "os/os.h"
+#include "project_settings.h"
 
 Error AudioDriverDummy::init() {
 

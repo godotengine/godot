@@ -34,8 +34,8 @@
 
 #include "mkvparser/mkvparser.h"
 
-#include "project_settings.h"
 #include "os/file_access.h"
+#include "project_settings.h"
 
 #include "thirdparty/misc/yuv2rgb.h"
 

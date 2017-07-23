@@ -29,8 +29,8 @@
 /*************************************************************************/
 #include "visual_script.h"
 
-#include "project_settings.h"
 #include "os/os.h"
+#include "project_settings.h"
 #include "scene/main/node.h"
 #include "visual_script_nodes.h"
 

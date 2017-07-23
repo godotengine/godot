@@ -29,9 +29,9 @@
 /*************************************************************************/
 #include "visual_server_raster.h"
 #include "default_mouse_cursor.xpm"
-#include "project_settings.h"
 #include "io/marshalls.h"
 #include "os/os.h"
+#include "project_settings.h"
 #include "sort.h"
 #include "visual_server_canvas.h"
 #include "visual_server_global.h"
