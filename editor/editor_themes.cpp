@@ -434,7 +434,8 @@ Ref<Theme> create_editor_theme() {
 	theme->set_icon("close", "WindowDialog", title_hl_close_icon);
 	theme->set_icon("close_highlight", "WindowDialog", title_hl_close_icon);
 	theme->set_constant("close_h_ofs", "WindowDialog", 22 * EDSCALE);
-	theme->set_constant("close_v_ofs", "WindowDialog", 18 * EDSCALE);
+	theme->set_constant("close_v_ofs", "WindowDialog", 20 * EDSCALE);
+	theme->set_constant("title_height", "WindowDialog", 24 * EDSCALE);
 
 	// HScrollBar
 	Ref<Texture> empty_icon = memnew(ImageTexture);

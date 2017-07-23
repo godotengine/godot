@@ -2746,7 +2746,7 @@ void VisualScriptEditor::_node_filter_changed(const String &p_text) {
 void VisualScriptEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_READY) {
-		node_filter_icon->set_texture(Control::get_icon("Search", "EditorIcons"));
+		node_filter->add_icon_override("right_icon", Control::get_icon("Search", "EditorIcons"));
 		variable_editor->connect("changed", this, "_update_members");
 		signal_editor->connect("changed", this, "_update_members");
 	}
@@ -3215,9 +3215,6 @@ VisualScriptEditor::VisualScriptEditor() {
 	node_filter->connect("text_changed", this, "_node_filter_changed");
 	hbc_nodes->add_child(node_filter);
 	node_filter->set_h_size_flags(SIZE_EXPAND_FILL);
-	node_filter_icon = memnew(TextureRect);
-	node_filter_icon->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
-	hbc_nodes->add_child(node_filter_icon);
 	vbc_nodes->add_child(hbc_nodes);
 
 	nodes = memnew(Tree);
