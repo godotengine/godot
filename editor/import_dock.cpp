@@ -309,6 +309,13 @@ void ImportDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_preset_selected"), &ImportDock::_preset_selected);
 }
 
+void ImportDock::initialize_import_options() const {
+
+	ERR_FAIL_COND(!import_opts || !params);
+
+	import_opts->edit(params);
+}
+
 ImportDock::ImportDock() {
 
 	imported = memnew(LineEdit);
@@ -339,7 +346,6 @@ ImportDock::ImportDock() {
 	hb->add_spacer();
 
 	params = memnew(ImportDockParameters);
-	import_opts->edit(params);
 }
 
 ImportDock::~ImportDock() {

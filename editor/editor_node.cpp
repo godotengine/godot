@@ -6210,6 +6210,8 @@ EditorNode::EditorNode() {
 	editor_data.set_edited_scene(0);
 	_update_scene_tabs();
 
+	import_dock->initialize_import_options();
+
 	{
 
 		_initializing_addons = true;
