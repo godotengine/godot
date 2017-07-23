@@ -105,20 +105,7 @@ void Sprite::set_texture(const Ref<Texture> &p_texture) {
 
 	if (p_texture == texture)
 		return;
-#ifdef DEBUG_ENABLED
-	if (texture.is_valid()) {
-		texture->disconnect(CoreStringNames::get_singleton()->changed, this, SceneStringNames::get_singleton()->update);
-	}
-#endif
 	texture = p_texture;
-	/* this should no longer be needed in 3.0
-#ifdef DEBUG_ENABLED
-	if (texture.is_valid()) {
-		texture->set_flags(texture->get_flags()); //remove repeat from texture, it looks bad in sprites
-		texture->connect(CoreStringNames::get_singleton()->changed, this, SceneStringNames::get_singleton()->update);
-	}
-#endif
-*/
 	update();
 	emit_signal("texture_changed");
 	item_rect_changed();
