@@ -33,6 +33,7 @@
 #include "editor/call_dialog.h"
 #include "editor/connections_dialog.h"
 #include "editor/create_dialog.h"
+#include "editor/editor_about.h"
 #include "editor/editor_data.h"
 #include "editor/editor_path.h"
 #include "editor/editor_run.h"
@@ -299,7 +300,7 @@ private:
 	ConfirmationDialog *import_confirmation;
 	ConfirmationDialog *pick_main_scene;
 	AcceptDialog *accept;
-	AcceptDialog *about;
+	EditorAbout *about;
 	AcceptDialog *warning;
 
 	int overridden_default_layout;
@@ -424,9 +425,6 @@ private:
 	String external_file;
 	List<String> previous_scenes;
 	bool opening_prev;
-
-	Tree *_tpl_tree;
-	TextEdit *_tpl_text;
 
 	void _dialog_action(String p_file);
 
