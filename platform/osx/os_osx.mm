@@ -109,6 +109,7 @@ static int mouse_y = 0;
 static int prev_mouse_x = 0;
 static int prev_mouse_y = 0;
 static int button_mask = 0;
+static bool mouse_down_control = false;
 
 @interface GodotApplication : NSApplication
 @end
@@ -316,28 +317,39 @@ static int button_mask = 0;
 	//setModeCursor(window, window->cursorMode);
 }
 
-- (void)mouseDown:(NSEvent *)event {
-	//print_line("mouse down:");
-	button_mask |= BUTTON_MASK_LEFT;
+static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
+	if (pressed) {
+		button_mask |= mask;
+	} else {
+		button_mask &= ~mask;
+	}
+
 	InputEvent ev;
+
 	ev.type = InputEvent::MOUSE_BUTTON;
-	ev.mouse_button.button_index = BUTTON_LEFT;
-	ev.mouse_button.pressed = true;
+	ev.mouse_button.button_index = index;
+	ev.mouse_button.pressed = pressed;
 	ev.mouse_button.x = mouse_x;
 	ev.mouse_button.y = mouse_y;
 	ev.mouse_button.global_x = mouse_x;
 	ev.mouse_button.global_y = mouse_y;
 	ev.mouse_button.button_mask = button_mask;
-	ev.mouse_button.doubleclick = [event clickCount] == 2;
+	if (index == BUTTON_LEFT && pressed) {
+		ev.mouse_button.doubleclick = [event clickCount] == 2;
+	}
 	ev.mouse_button.mod = translateFlags([event modifierFlags]);
-	OS_OSX::singleton->push_input(ev);
 
-	/*
-	_glfwInputMouseClick(window,
-		GLFW_MOUSE_BUTTON_LEFT,
-		GLFW_PRESS,
-		translateFlags([event modifierFlags]));
-*/
+	OS_OSX::singleton->push_input(ev);
+}
+
+- (void)mouseDown:(NSEvent *)event {
+	if (([event modifierFlags] & NSControlKeyMask)) {
+		mouse_down_control = true;
+		_mouseDownEvent(event, BUTTON_RIGHT, BUTTON_MASK_RIGHT, true);
+	} else {
+		mouse_down_control = false;
+		_mouseDownEvent(event, BUTTON_LEFT, BUTTON_MASK_LEFT, true);
+	}
 }
 
 - (void)mouseDragged:(NSEvent *)event {
@@ -345,25 +357,11 @@ static int button_mask = 0;
 }
 
 - (void)mouseUp:(NSEvent *)event {
-	button_mask &= ~BUTTON_MASK_LEFT;
-	InputEvent ev;
-	ev.type = InputEvent::MOUSE_BUTTON;
-	ev.mouse_button.button_index = BUTTON_LEFT;
-	ev.mouse_button.pressed = false;
-	ev.mouse_button.x = mouse_x;
-	ev.mouse_button.y = mouse_y;
-	ev.mouse_button.global_x = mouse_x;
-	ev.mouse_button.global_y = mouse_y;
-	ev.mouse_button.button_mask = button_mask;
-	ev.mouse_button.mod = translateFlags([event modifierFlags]);
-	OS_OSX::singleton->push_input(ev);
-
-	/*
-	_glfwInputMouseClick(window,
-		GLFW_MOUSE_BUTTON_LEFT,
-		GLFW_RELEASE,
-		translateFlags([event modifierFlags]));
-*/
+	if (mouse_down_control) {
+		_mouseDownEvent(event, BUTTON_RIGHT, BUTTON_MASK_RIGHT, false);
+	} else {
+		_mouseDownEvent(event, BUTTON_LEFT, BUTTON_MASK_LEFT, false);
+	}
 }
 
 - (void)mouseMoved:(NSEvent *)event {
@@ -401,26 +399,7 @@ static int button_mask = 0;
 }
 
 - (void)rightMouseDown:(NSEvent *)event {
-
-	button_mask |= BUTTON_MASK_RIGHT;
-	InputEvent ev;
-	ev.type = InputEvent::MOUSE_BUTTON;
-	ev.mouse_button.button_index = BUTTON_RIGHT;
-	ev.mouse_button.pressed = true;
-	ev.mouse_button.x = mouse_x;
-	ev.mouse_button.y = mouse_y;
-	ev.mouse_button.global_x = mouse_x;
-	ev.mouse_button.global_y = mouse_y;
-	ev.mouse_button.button_mask = button_mask;
-	ev.mouse_button.mod = translateFlags([event modifierFlags]);
-	OS_OSX::singleton->push_input(ev);
-
-	/*
-	_glfwInputMouseClick(window,
-		GLFW_MOUSE_BUTTON_RIGHT,
-		GLFW_PRESS,
-		translateFlags([event modifierFlags]));
-*/
+	_mouseDownEvent(event, BUTTON_RIGHT, BUTTON_MASK_RIGHT, true);
 }
 
 - (void)rightMouseDragged:(NSEvent *)event {
@@ -428,26 +407,7 @@ static int button_mask = 0;
 }
 
 - (void)rightMouseUp:(NSEvent *)event {
-
-	button_mask &= ~BUTTON_MASK_RIGHT;
-	InputEvent ev;
-	ev.type = InputEvent::MOUSE_BUTTON;
-	ev.mouse_button.button_index = BUTTON_RIGHT;
-	ev.mouse_button.pressed = false;
-	ev.mouse_button.x = mouse_x;
-	ev.mouse_button.y = mouse_y;
-	ev.mouse_button.global_x = mouse_x;
-	ev.mouse_button.global_y = mouse_y;
-	ev.mouse_button.button_mask = button_mask;
-	ev.mouse_button.mod = translateFlags([event modifierFlags]);
-	OS_OSX::singleton->push_input(ev);
-
-	/*
-	_glfwInputMouseClick(window,
-		GLFW_MOUSE_BUTTON_RIGHT,
-		GLFW_RELEASE,
-		translateFlags([event modifierFlags]));
-*/
+	_mouseDownEvent(event, BUTTON_RIGHT, BUTTON_MASK_RIGHT, false);
 }
 
 - (void)otherMouseDown:(NSEvent *)event {
@@ -455,25 +415,7 @@ static int button_mask = 0;
 	if ((int)[event buttonNumber] != 2)
 		return;
 
-	button_mask |= BUTTON_MASK_MIDDLE;
-	InputEvent ev;
-	ev.type = InputEvent::MOUSE_BUTTON;
-	ev.mouse_button.button_index = BUTTON_MIDDLE;
-	ev.mouse_button.pressed = true;
-	ev.mouse_button.x = mouse_x;
-	ev.mouse_button.y = mouse_y;
-	ev.mouse_button.global_x = mouse_x;
-	ev.mouse_button.global_y = mouse_y;
-	ev.mouse_button.button_mask = button_mask;
-	ev.mouse_button.mod = translateFlags([event modifierFlags]);
-	OS_OSX::singleton->push_input(ev);
-
-	/*
-	_glfwInputMouseClick(window,
-		(int) [event buttonNumber],
-		GLFW_PRESS,
-		translateFlags([event modifierFlags]));
-*/
+	_mouseDownEvent(event, BUTTON_MIDDLE, BUTTON_MASK_MIDDLE, true);
 }
 
 - (void)otherMouseDragged:(NSEvent *)event {
@@ -485,25 +427,7 @@ static int button_mask = 0;
 	if ((int)[event buttonNumber] != 2)
 		return;
 
-	button_mask &= ~BUTTON_MASK_MIDDLE;
-	InputEvent ev;
-	ev.type = InputEvent::MOUSE_BUTTON;
-	ev.mouse_button.button_index = BUTTON_MIDDLE;
-	ev.mouse_button.pressed = false;
-	ev.mouse_button.x = mouse_x;
-	ev.mouse_button.y = mouse_y;
-	ev.mouse_button.global_x = mouse_x;
-	ev.mouse_button.global_y = mouse_y;
-	ev.mouse_button.button_mask = button_mask;
-	ev.mouse_button.mod = translateFlags([event modifierFlags]);
-	OS_OSX::singleton->push_input(ev);
-
-	/*
-	_glfwInputMouseClick(window,
-		(int) [event buttonNumber],
-		GLFW_RELEASE,
-		translateFlags([event modifierFlags]));
-*/
+	_mouseDownEvent(event, BUTTON_MIDDLE, BUTTON_MASK_MIDDLE, false);
 }
 
 - (void)mouseExited:(NSEvent *)event {
