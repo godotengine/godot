@@ -630,6 +630,7 @@ int Tabs::get_tab_idx_at_point(const Point2 &p_point) const {
 
 void Tabs::set_tab_align(TabAlign p_align) {
 
+	ERR_FAIL_INDEX(p_align, ALIGN_MAX);
 	tab_align = p_align;
 	update();
 }
@@ -764,8 +765,15 @@ Rect2 Tabs::get_tab_rect(int p_tab) const {
 }
 
 void Tabs::set_tab_close_display_policy(CloseButtonDisplayPolicy p_policy) {
+
+	ERR_FAIL_INDEX(p_policy, CLOSE_BUTTON_MAX);
 	cb_displaypolicy = p_policy;
 	update();
+}
+
+Tabs::CloseButtonDisplayPolicy Tabs::get_tab_close_display_policy() const {
+
+	return cb_displaypolicy;
 }
 
 void Tabs::set_min_width(int p_width) {
@@ -791,6 +799,8 @@ void Tabs::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("ensure_tab_visible", "idx"), &Tabs::ensure_tab_visible);
 	ClassDB::bind_method(D_METHOD("get_tab_rect", "tab_idx"), &Tabs::get_tab_rect);
 	ClassDB::bind_method(D_METHOD("move_tab", "from", "to"), &Tabs::move_tab);
+	ClassDB::bind_method(D_METHOD("set_tab_close_display_policy", "policy"), &Tabs::set_tab_close_display_policy);
+	ClassDB::bind_method(D_METHOD("get_tab_close_display_policy"), &Tabs::get_tab_close_display_policy);
 
 	ADD_SIGNAL(MethodInfo("tab_changed", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("right_button_pressed", PropertyInfo(Variant::INT, "tab")));
@@ -799,14 +809,17 @@ void Tabs::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("reposition_active_tab_request", PropertyInfo(Variant::INT, "idx_to")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1", PROPERTY_USAGE_EDITOR), "set_current_tab", "get_current_tab");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "tab_close_display_policy", PROPERTY_HINT_ENUM, "Show Never,Show Active Only,Show Always"), "set_tab_close_display_policy", "get_tab_close_display_policy");
 
 	BIND_CONSTANT(ALIGN_LEFT);
 	BIND_CONSTANT(ALIGN_CENTER);
 	BIND_CONSTANT(ALIGN_RIGHT);
+	BIND_CONSTANT(ALIGN_MAX);
 
 	BIND_CONSTANT(CLOSE_BUTTON_SHOW_ACTIVE_ONLY);
 	BIND_CONSTANT(CLOSE_BUTTON_SHOW_ALWAYS);
 	BIND_CONSTANT(CLOSE_BUTTON_SHOW_NEVER);
+	BIND_CONSTANT(CLOSE_BUTTON_MAX);
 }
 
 Tabs::Tabs() {
