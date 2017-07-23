@@ -35,10 +35,12 @@
 #include "servers/audio/audio_server_sw.h"
 
 #include <AudioUnit/AudioUnit.h>
+#include <CoreAudio/AudioHardware.h>
 
 class AudioDriverOSX : public AudioDriverSW {
 
 	AudioComponentInstance audio_unit;
+	AudioObjectPropertyAddress outputDeviceAddress;
 	bool active;
 	Mutex *mutex;
 
@@ -52,6 +54,9 @@ class AudioDriverOSX : public AudioDriverSW {
 			UInt32 inBusNumber, UInt32 inNumberFrames,
 			AudioBufferList *ioData);
 
+	Error initDevice();
+	Error finishDevice();
+
 public:
 	const char *get_name() const {
 		return "AudioUnit";
@@ -64,6 +69,8 @@ public:
 	virtual void lock();
 	virtual void unlock();
 	virtual void finish();
+
+	Error reopen();
 
 	AudioDriverOSX();
 	~AudioDriverOSX();
