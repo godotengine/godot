@@ -518,6 +518,9 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save) {
 		_add_recent_script(help->get_class());
 	}
 
+	// roll back to previous tab
+	_history_back();
+
 	//remove from history
 	history.resize(history_pos + 1);
 
