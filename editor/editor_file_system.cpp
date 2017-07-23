@@ -1239,7 +1239,7 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 	String importer_name;
 
 	if (FileAccess::exists(p_file + ".import")) {
-
+		//use existing
 		Ref<ConfigFile> cf;
 		cf.instance();
 		Error err = cf->load(p_file + ".import");
@@ -1254,6 +1254,7 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 	}
 
 	Ref<ResourceImporter> importer;
+	bool load_default = false;
 	//find the importer
 	if (importer_name != "") {
 		importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(importer_name);
@@ -1262,6 +1263,7 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 	if (importer.is_null()) {
 		//not found by name, find by extension
 		importer = ResourceFormatImporter::get_singleton()->get_importer_by_extension(p_file.get_extension());
+		load_default = true;
 		if (importer.is_null()) {
 			ERR_PRINT("BUG: File queued for import, but can't be imported!");
 			ERR_FAIL();
@@ -1275,6 +1277,17 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 	for (List<ResourceImporter::ImportOption>::Element *E = opts.front(); E; E = E->next()) {
 		if (!params.has(E->get().option.name)) { //this one is not present
 			params[E->get().option.name] = E->get().default_value;
+		}
+	}
+
+	if (load_default && ProjectSettings::get_singleton()->get("importer_defaults/" + importer->get_importer_name())) {
+		//use defaults if exist
+		Dictionary d = ProjectSettings::get_singleton()->get("importer_defaults/" + importer->get_importer_name());
+		List<Variant> v;
+		d.get_key_list(&v);
+
+		for (List<Variant>::Element *E = v.front(); E; E = E->next()) {
+			params[E->get()] = d[E->get()];
 		}
 	}
 

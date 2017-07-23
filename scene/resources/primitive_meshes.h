@@ -47,23 +47,20 @@ class PrimitiveMesh : public Mesh {
 
 private:
 	RID mesh;
-	Rect3 aabb;
+	mutable Rect3 aabb;
 
 	Ref<Material> material;
 
-	bool first_mesh;
-	bool cache_is_dirty;
-	void _update();
+	mutable bool pending_request;
+	void _update() const;
 
 protected:
 	Mesh::PrimitiveType primitive_type;
 
 	static void _bind_methods();
 
-	virtual void _create_mesh_array(Array &p_arr) = 0;
-	void _queue_update(bool p_first_mesh = false); //pretty bad hack to have the mesh built firt time parameters are set without delay
-
-	void set_aabb(Rect3 p_aabb);
+	virtual void _create_mesh_array(Array &p_arr) const = 0;
+	void _request_update();
 
 public:
 	virtual int get_surface_count() const;
@@ -99,7 +96,7 @@ private:
 
 protected:
 	static void _bind_methods();
-	virtual void _create_mesh_array(Array &p_arr);
+	virtual void _create_mesh_array(Array &p_arr) const;
 
 public:
 	void set_radius(const float p_radius);
@@ -132,7 +129,7 @@ private:
 
 protected:
 	static void _bind_methods();
-	virtual void _create_mesh_array(Array &p_arr);
+	virtual void _create_mesh_array(Array &p_arr) const;
 
 public:
 	void set_size(const Vector3 &p_size);
@@ -167,7 +164,7 @@ private:
 
 protected:
 	static void _bind_methods();
-	virtual void _create_mesh_array(Array &p_arr);
+	virtual void _create_mesh_array(Array &p_arr) const;
 
 public:
 	void set_top_radius(const float p_radius);
@@ -202,7 +199,7 @@ private:
 
 protected:
 	static void _bind_methods();
-	virtual void _create_mesh_array(Array &p_arr);
+	virtual void _create_mesh_array(Array &p_arr) const;
 
 public:
 	void set_size(const Size2 &p_size);
@@ -233,7 +230,7 @@ private:
 
 protected:
 	static void _bind_methods();
-	virtual void _create_mesh_array(Array &p_arr);
+	virtual void _create_mesh_array(Array &p_arr) const;
 
 public:
 	void set_left_to_right(const float p_left_to_right);
@@ -267,7 +264,7 @@ private:
 
 protected:
 	static void _bind_methods();
-	virtual void _create_mesh_array(Array &p_arr);
+	virtual void _create_mesh_array(Array &p_arr) const;
 
 public:
 	QuadMesh();
@@ -289,7 +286,7 @@ private:
 
 protected:
 	static void _bind_methods();
-	virtual void _create_mesh_array(Array &p_arr);
+	virtual void _create_mesh_array(Array &p_arr) const;
 
 public:
 	void set_radius(const float p_radius);

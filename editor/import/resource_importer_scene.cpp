@@ -104,13 +104,26 @@ bool ResourceImporterScene::get_option_visibility(const String &p_option, const 
 		}
 	}
 
+	if (p_option == "materials/keep_files" && int(p_options["materials/storage"]) == 0) {
+		return false;
+	}
+
 	return true;
 }
 
 int ResourceImporterScene::get_preset_count() const {
-	return 0;
+	return 6;
 }
 String ResourceImporterScene::get_preset_name(int p_idx) const {
+
+	switch (p_idx) {
+		case PRESET_SINGLE_SCENE: return TTR("Import as Single Scene");
+		case PRESET_SEPARATE_MATERIALS: return TTR("Import as Separate Materials");
+		case PRESET_SEPARATE_MESHES: return TTR("Import as Separate Objects");
+		case PRESET_SEPARATE_MESHES_AND_MATERIALS: return TTR("Import as Separate Objects+Materials");
+		case PRESET_MULTIPLE_SCENES: return TTR("Import as Multiple Scenes");
+		case PRESET_MULTIPLE_SCENES_AND_MATERIALS: return TTR("Import as Multiple Scenes+Materials");
+	}
 
 	return "";
 }
@@ -969,7 +982,7 @@ static String _make_extname(const String &p_str) {
 	return ext_name;
 }
 
-void ResourceImporterScene::_make_external_resources(Node *p_node, const String &p_base_path, bool p_make_materials, bool p_make_meshes, Map<Ref<Material>, Ref<Material> > &p_materials, Map<Ref<ArrayMesh>, Ref<ArrayMesh> > &p_meshes) {
+void ResourceImporterScene::_make_external_resources(Node *p_node, const String &p_base_path, bool p_make_materials, bool p_keep_materials, bool p_make_meshes, Map<Ref<Material>, Ref<Material> > &p_materials, Map<Ref<ArrayMesh>, Ref<ArrayMesh> > &p_meshes) {
 
 	List<PropertyInfo> pi;
 
@@ -984,8 +997,8 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 
 				if (!p_materials.has(mat)) {
 
-					String ext_name = p_base_path + "." + _make_extname(mat->get_name()) + ".material";
-					if (FileAccess::exists(ext_name)) {
+					String ext_name = p_base_path.plus_file(_make_extname(mat->get_name()) + ".material");
+					if (p_keep_materials && FileAccess::exists(ext_name)) {
 						//if exists, use it
 						Ref<Material> existing = ResourceLoader::load(ext_name);
 						p_materials[mat] = existing;
@@ -1012,17 +1025,12 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 
 						if (!p_meshes.has(mesh)) {
 
-							String ext_name = p_base_path + "." + _make_extname(mesh->get_name()) + ".mesh";
-							if (FileAccess::exists(ext_name)) {
-								//if exists, use it
-								Ref<ArrayMesh> existing = ResourceLoader::load(ext_name);
-								p_meshes[mesh] = existing;
-							} else {
+							//meshes are always overwritten, keeping them is not practical
+							String ext_name = p_base_path.plus_file(_make_extname(mesh->get_name()) + ".mesh");
 
-								ResourceSaver::save(ext_name, mesh, ResourceSaver::FLAG_CHANGE_PATH);
-								p_meshes[mesh] = mesh;
-								mesh_just_added = true;
-							}
+							ResourceSaver::save(ext_name, mesh, ResourceSaver::FLAG_CHANGE_PATH);
+							p_meshes[mesh] = mesh;
+							mesh_just_added = true;
 						}
 					}
 
@@ -1067,7 +1075,7 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 
-		_make_external_resources(p_node->get_child(i), p_base_path, p_make_materials, p_make_meshes, p_materials, p_meshes);
+		_make_external_resources(p_node->get_child(i), p_base_path, p_make_materials, p_keep_materials, p_make_meshes, p_materials, p_meshes);
 	}
 }
 
@@ -1087,12 +1095,19 @@ void ResourceImporterScene::get_import_options(List<ImportOption> *r_options, in
 		script_ext_hint += "*." + E->get();
 	}
 
+	bool materials_out = p_preset == PRESET_SEPARATE_MATERIALS || p_preset == PRESET_SEPARATE_MESHES_AND_MATERIALS || p_preset == PRESET_MULTIPLE_SCENES_AND_MATERIALS;
+	bool meshes_out = p_preset == PRESET_SEPARATE_MESHES || p_preset == PRESET_SEPARATE_MESHES_AND_MATERIALS;
+	bool scenes_out = p_preset == PRESET_MULTIPLE_SCENES || p_preset == PRESET_MULTIPLE_SCENES_AND_MATERIALS;
+
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "nodes/custom_script", PROPERTY_HINT_FILE, script_ext_hint), ""));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "materials/location", PROPERTY_HINT_ENUM, "Node,Mesh"), 0));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "materials/storage", PROPERTY_HINT_ENUM, "Bult-In,Files"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "nodes/storage", PROPERTY_HINT_ENUM, "Single Scene,Instanced Sub-Scenes"), scenes_out ? 1 : 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "materials/location", PROPERTY_HINT_ENUM, "Node,Mesh"), meshes_out ? 1 : 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "materials/storage", PROPERTY_HINT_ENUM, "Bult-In,Files", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), materials_out ? 1 : 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "materials/keep_files"), materials_out ? true : false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "geometry/compress"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "geometry/ensure_tangents"), true));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "geometry/storage", PROPERTY_HINT_ENUM, "Built-In,Files"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "geometry/storage", PROPERTY_HINT_ENUM, "Built-In,Files"), meshes_out ? true : false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "external_files/store_in_subdir"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/import", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "animation/fps", PROPERTY_HINT_RANGE, "1,120,1"), 15));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "animation/filter_script", PROPERTY_HINT_MULTILINE_TEXT), ""));
@@ -1107,6 +1122,18 @@ void ResourceImporterScene::get_import_options(List<ImportOption> *r_options, in
 		r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "animation/clip_" + itos(i + 1) + "/start_frame"), 0));
 		r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "animation/clip_" + itos(i + 1) + "/end_frame"), 0));
 		r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/clip_" + itos(i + 1) + "/loops"), false));
+	}
+}
+
+void ResourceImporterScene::_replace_owner(Node *p_node, Node *p_scene, Node *p_new_owner) {
+
+	if (p_node != p_new_owner && p_node->get_owner() == p_scene) {
+		p_node->set_owner(p_new_owner);
+	}
+
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		Node *n = p_node->get_child(i);
+		_replace_owner(n, p_scene, p_new_owner);
 	}
 }
 
@@ -1224,11 +1251,30 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 
 	bool external_materials = p_options["materials/storage"];
 	bool external_meshes = p_options["geometry/storage"];
+	bool external_scenes = int(p_options["nodes/storage"]) == 1;
+
+	String base_path = p_source_file.get_base_dir();
+
+	if (external_materials || external_meshes || external_scenes) {
+
+		if (bool(p_options["external_files/store_in_subdir"])) {
+			String subdir_name = p_source_file.get_file().get_basename();
+			DirAccess *da = DirAccess::open(base_path);
+			print_line("at path " + da->get_current_dir() + " making " + subdir_name);
+			Error err = da->make_dir(subdir_name);
+			memdelete(da);
+			ERR_FAIL_COND_V(err != OK && err != ERR_ALREADY_EXISTS, err);
+			base_path = base_path.plus_file(subdir_name);
+		}
+	}
 
 	if (external_materials || external_meshes) {
 		Map<Ref<Material>, Ref<Material> > mat_map;
 		Map<Ref<ArrayMesh>, Ref<ArrayMesh> > mesh_map;
-		_make_external_resources(scene, p_source_file.get_basename(), external_materials, external_meshes, mat_map, mesh_map);
+
+		bool keep_materials = bool(p_options["materials/keep_files"]);
+
+		_make_external_resources(scene, base_path, external_materials, keep_materials, external_meshes, mat_map, mesh_map);
 	}
 
 	progress.step(TTR("Running Custom Script.."), 2);
@@ -1263,10 +1309,33 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 
 	progress.step(TTR("Saving.."), 104);
 
+	if (external_scenes) {
+		//save sub-scenes as instances!
+		for (int i = 0; i < scene->get_child_count(); i++) {
+			Node *child = scene->get_child(i);
+			if (child->get_owner() != scene)
+				continue; //not a real child probably created by scene type (ig, a scrollbar)
+			_replace_owner(child, scene, child);
+
+			String cn = String(child->get_name()).strip_edges().replace(".", "_").replace(":", "_");
+			if (cn == String()) {
+				cn = "ChildNode" + itos(i);
+			}
+			String path = base_path.plus_file(cn + ".scn");
+			child->set_filename(path);
+
+			Ref<PackedScene> packer = memnew(PackedScene);
+			packer->pack(child);
+			err = ResourceSaver::save(path, packer); //do not take over, let the changed files reload themselves
+			ERR_FAIL_COND_V(err != OK, err);
+		}
+	}
+
 	Ref<PackedScene> packer = memnew(PackedScene);
 	packer->pack(scene);
 	print_line("SAVING TO: " + p_save_path + ".scn");
 	err = ResourceSaver::save(p_save_path + ".scn", packer); //do not take over, let the changed files reload themselves
+	ERR_FAIL_COND_V(err != OK, err);
 
 	memdelete(scene);
 

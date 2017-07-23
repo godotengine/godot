@@ -57,6 +57,12 @@ class ImportDock : public VBoxContainer {
 
 	void _reimport();
 
+	enum {
+		ITEM_SET_AS_DEFAULT = 100,
+		ITEM_LOAD_DEFAULT,
+		ITEM_CLEAR_DEFAULT,
+	};
+
 protected:
 	static void _bind_methods();
 

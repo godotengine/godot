@@ -134,6 +134,14 @@ void ImportDock::set_edit_path(const String &p_path) {
 		}
 	}
 
+	preset->get_popup()->add_separator();
+	preset->get_popup()->add_item(vformat(TTR("Set as Default for '%s'"), params->importer->get_visible_name()), ITEM_SET_AS_DEFAULT);
+	if (ProjectSettings::get_singleton()->has("importer_defaults/" + params->importer->get_importer_name())) {
+		preset->get_popup()->add_item(TTR("Load Default"), ITEM_LOAD_DEFAULT);
+		preset->get_popup()->add_separator();
+		preset->get_popup()->add_item(vformat(TTR("Clear Default for '%s'"), params->importer->get_visible_name()), ITEM_CLEAR_DEFAULT);
+	}
+
 	params->paths.clear();
 	params->paths.push_back(p_path);
 	import->set_disabled(false);
@@ -256,17 +264,56 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 
 void ImportDock::_preset_selected(int p_idx) {
 
-	print_line("preset selected? " + p_idx);
-	List<ResourceImporter::ImportOption> options;
+	switch (p_idx) {
+		case ITEM_SET_AS_DEFAULT: {
+			List<ResourceImporter::ImportOption> options;
 
-	params->importer->get_import_options(&options, p_idx);
+			params->importer->get_import_options(&options, p_idx);
 
-	for (List<ResourceImporter::ImportOption>::Element *E = options.front(); E; E = E->next()) {
+			Dictionary d;
+			for (List<ResourceImporter::ImportOption>::Element *E = options.front(); E; E = E->next()) {
 
-		params->values[E->get().option.name] = E->get().default_value;
+				d[E->get().option.name] = E->get().default_value;
+			}
+
+			ProjectSettings::get_singleton()->set("importer_defaults/" + params->importer->get_importer_name(), d);
+			ProjectSettings::get_singleton()->save();
+
+		} break;
+		case ITEM_LOAD_DEFAULT: {
+
+			ERR_FAIL_COND(!ProjectSettings::get_singleton()->has("importer_defaults/" + params->importer->get_importer_name()));
+
+			Dictionary d = ProjectSettings::get_singleton()->get("importer_defaults/" + params->importer->get_importer_name());
+			List<Variant> v;
+			d.get_key_list(&v);
+
+			for (List<Variant>::Element *E = v.front(); E; E = E->next()) {
+				params->values[E->get()] = d[E->get()];
+			}
+			params->update();
+
+		} break;
+		case ITEM_CLEAR_DEFAULT: {
+
+			ProjectSettings::get_singleton()->set("importer_defaults/" + params->importer->get_importer_name(), Variant());
+			ProjectSettings::get_singleton()->save();
+
+		} break;
+		default: {
+
+			List<ResourceImporter::ImportOption> options;
+
+			params->importer->get_import_options(&options, p_idx);
+
+			for (List<ResourceImporter::ImportOption>::Element *E = options.front(); E; E = E->next()) {
+
+				params->values[E->get().option.name] = E->get().default_value;
+			}
+
+			params->update();
+		} break;
 	}
-
-	params->update();
 }
 
 void ImportDock::clear() {

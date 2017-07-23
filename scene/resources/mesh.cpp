@@ -32,7 +32,7 @@
 #include "scene/resources/convex_polygon_shape.h"
 #include "surface_tool.h"
 
-void Mesh::_clear_triangle_mesh() {
+void Mesh::_clear_triangle_mesh() const {
 
 	triangle_mesh.unref();
 	;

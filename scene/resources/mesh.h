@@ -44,7 +44,7 @@ class Mesh : public Resource {
 
 	mutable Ref<TriangleMesh> triangle_mesh; //cached
 protected:
-	void _clear_triangle_mesh();
+	void _clear_triangle_mesh() const;
 
 	static void _bind_methods();
 
