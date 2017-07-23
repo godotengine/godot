@@ -15,25 +15,34 @@
  #endif
 
 
-/* Note : All prototypes defined in this file shall be considered experimental.
- *        There is no guarantee of API continuity (yet) on any of these prototypes */
+/* Note : All prototypes defined in this file are labelled experimental.
+ *        No guarantee of API continuity is provided on any of them.
+ *        In fact, the expectation is that these prototypes will be replaced
+ *        by ZSTD_compress_generic() API in the near future */
 
 /* ===   Dependencies   === */
-#include <stddef.h>   /* size_t */
+#include <stddef.h>                /* size_t */
 #define ZSTD_STATIC_LINKING_ONLY   /* ZSTD_parameters */
-#include "zstd.h"     /* ZSTD_inBuffer, ZSTD_outBuffer, ZSTDLIB_API */
+#include "zstd.h"            /* ZSTD_inBuffer, ZSTD_outBuffer, ZSTDLIB_API */
 
 
-/* ===   Simple one-pass functions   === */
-
+/* ===   Memory management   === */
 typedef struct ZSTDMT_CCtx_s ZSTDMT_CCtx;
 ZSTDLIB_API ZSTDMT_CCtx* ZSTDMT_createCCtx(unsigned nbThreads);
-ZSTDLIB_API size_t ZSTDMT_freeCCtx(ZSTDMT_CCtx* cctx);
+ZSTDLIB_API ZSTDMT_CCtx* ZSTDMT_createCCtx_advanced(unsigned nbThreads,
+                                                    ZSTD_customMem cMem);
+ZSTDLIB_API size_t ZSTDMT_freeCCtx(ZSTDMT_CCtx* mtctx);
 
-ZSTDLIB_API size_t ZSTDMT_compressCCtx(ZSTDMT_CCtx* cctx,
-                           void* dst, size_t dstCapacity,
-                     const void* src, size_t srcSize,
-                           int compressionLevel);
+ZSTDLIB_API size_t ZSTDMT_sizeof_CCtx(ZSTDMT_CCtx* mtctx);
+
+
+/* ===   Simple buffer-to-butter one-pass function   === */
+
+ZSTDLIB_API size_t ZSTDMT_compressCCtx(ZSTDMT_CCtx* mtctx,
+                                       void* dst, size_t dstCapacity,
+                                 const void* src, size_t srcSize,
+                                       int compressionLevel);
+
 
 
 /* ===   Streaming functions   === */
@@ -53,8 +62,22 @@ ZSTDLIB_API size_t ZSTDMT_endStream(ZSTDMT_CCtx* mtctx, ZSTD_outBuffer* output);
 #  define ZSTDMT_SECTION_SIZE_MIN (1U << 20)   /* 1 MB - Minimum size of each compression job */
 #endif
 
-ZSTDLIB_API size_t ZSTDMT_initCStream_advanced(ZSTDMT_CCtx* mtctx, const void* dict, size_t dictSize,  /**< dict can be released after init, a local copy is preserved within zcs */
-                                          ZSTD_parameters params, unsigned long long pledgedSrcSize);  /**< pledgedSrcSize is optional and can be zero == unknown */
+ZSTDLIB_API size_t ZSTDMT_compress_advanced(ZSTDMT_CCtx* mtctx,
+                                           void* dst, size_t dstCapacity,
+                                     const void* src, size_t srcSize,
+                                     const ZSTD_CDict* cdict,
+                                           ZSTD_parameters const params,
+                                           unsigned overlapRLog);
+
+ZSTDLIB_API size_t ZSTDMT_initCStream_advanced(ZSTDMT_CCtx* mtctx,
+                                        const void* dict, size_t dictSize,   /* dict can be released after init, a local copy is preserved within zcs */
+                                        ZSTD_parameters params,
+                                        unsigned long long pledgedSrcSize);  /* pledgedSrcSize is optional and can be zero == unknown */
+
+ZSTDLIB_API size_t ZSTDMT_initCStream_usingCDict(ZSTDMT_CCtx* mtctx,
+                                        const ZSTD_CDict* cdict,
+                                        ZSTD_frameParameters fparams,
+                                        unsigned long long pledgedSrcSize);  /* note : zero means empty */
 
 /* ZSDTMT_parameter :
  * List of parameters that can be set using ZSTDMT_setMTCtxParameter() */
@@ -69,6 +92,19 @@ typedef enum {
  * Parameters not explicitly reset by ZSTDMT_init*() remain the same in consecutive compression sessions.
  * @return : 0, or an error code (which can be tested using ZSTD_isError()) */
 ZSTDLIB_API size_t ZSTDMT_setMTCtxParameter(ZSTDMT_CCtx* mtctx, ZSDTMT_parameter parameter, unsigned value);
+
+
+/*! ZSTDMT_compressStream_generic() :
+ *  Combines ZSTDMT_compressStream() with ZSTDMT_flushStream() or ZSTDMT_endStream()
+ *  depending on flush directive.
+ * @return : minimum amount of data still to be flushed
+ *           0 if fully flushed
+ *           or an error code */
+ZSTDLIB_API size_t ZSTDMT_compressStream_generic(ZSTDMT_CCtx* mtctx,
+                                                ZSTD_outBuffer* output,
+                                                ZSTD_inBuffer* input,
+                                                ZSTD_EndDirective endOp);
+
 
 
 #if defined (__cplusplus)

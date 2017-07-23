@@ -18,6 +18,7 @@
 #  include <intrin.h>                    /* For Visual 2005 */
 #  pragma warning(disable : 4100)        /* disable: C4100: unreferenced formal parameter */
 #  pragma warning(disable : 4127)        /* disable: C4127: conditional expression is constant */
+#  pragma warning(disable : 4204)        /* disable: C4204: non-constant aggregate initializer */
 #  pragma warning(disable : 4324)        /* disable: C4324: padded structure */
 #else
 #  if defined (__cplusplus) || defined (__STDC_VERSION__) && __STDC_VERSION__ >= 199901L   /* C99 */
@@ -50,9 +51,42 @@
 #define ZSTD_STATIC_LINKING_ONLY
 #include "zstd.h"
 #ifndef XXH_STATIC_LINKING_ONLY
-#  define XXH_STATIC_LINKING_ONLY   /* XXH64_state_t */
+#  define XXH_STATIC_LINKING_ONLY  /* XXH64_state_t */
 #endif
-#include "xxhash.h"               /* XXH_reset, update, digest */
+#include "xxhash.h"                /* XXH_reset, update, digest */
+
+
+/*-*************************************
+*  Debug
+***************************************/
+#if defined(ZSTD_DEBUG) && (ZSTD_DEBUG>=1)
+#  include <assert.h>
+#else
+#  ifndef assert
+#    define assert(condition) ((void)0)
+#  endif
+#endif
+
+#define ZSTD_STATIC_ASSERT(c) { enum { ZSTD_static_assert = 1/(int)(!!(c)) }; }
+
+#if defined(ZSTD_DEBUG) && (ZSTD_DEBUG>=2)
+#  include <stdio.h>
+/* recommended values for ZSTD_DEBUG display levels :
+ * 1 : no display, enables assert() only
+ * 2 : reserved for currently active debugging path
+ * 3 : events once per object lifetime (CCtx, CDict)
+ * 4 : events once per frame
+ * 5 : events once per block
+ * 6 : events once per sequence (*very* verbose) */
+#  define DEBUGLOG(l, ...) {                         \
+                if (l<=ZSTD_DEBUG) {                 \
+                    fprintf(stderr, __FILE__ ": ");  \
+                    fprintf(stderr, __VA_ARGS__);    \
+                    fprintf(stderr, " \n");          \
+            }   }
+#else
+#  define DEBUGLOG(l, ...)      {}    /* disabled */
+#endif
 
 
 /*-*************************************
@@ -70,7 +104,6 @@
 *  Common constants
 ***************************************/
 #define ZSTD_OPT_NUM    (1<<12)
-#define ZSTD_DICT_MAGIC  0xEC30A437   /* v0.7+ */
 
 #define ZSTD_REP_NUM      3                 /* number of repcodes */
 #define ZSTD_REP_CHECK    (ZSTD_REP_NUM)    /* number of repcodes to check by the optimal parser */
@@ -235,15 +268,10 @@ typedef struct {
 
 const seqStore_t* ZSTD_getSeqStore(const ZSTD_CCtx* ctx);
 void ZSTD_seqToCodes(const seqStore_t* seqStorePtr);
-int ZSTD_isSkipFrame(ZSTD_DCtx* dctx);
 
 /* custom memory allocation functions */
-void* ZSTD_defaultAllocFunction(void* opaque, size_t size);
-void ZSTD_defaultFreeFunction(void* opaque, void* address);
-#ifndef ZSTD_DLL_IMPORT
-static const ZSTD_customMem defaultCustomMem = { ZSTD_defaultAllocFunction, ZSTD_defaultFreeFunction, NULL };
-#endif
 void* ZSTD_malloc(size_t size, ZSTD_customMem customMem);
+void* ZSTD_calloc(size_t size, ZSTD_customMem customMem);
 void ZSTD_free(void* ptr, ZSTD_customMem customMem);
 
 
@@ -279,6 +307,28 @@ MEM_STATIC U32 ZSTD_highbit32(U32 val)
  * Note : only works with regular variant;
  *        do not use with extDict variant ! */
 void ZSTD_invalidateRepCodes(ZSTD_CCtx* cctx);
+
+
+/*! ZSTD_initCStream_internal() :
+ *  Private use only. Init streaming operation.
+ *  expects params to be valid.
+ *  must receive dict, or cdict, or none, but not both.
+ *  @return : 0, or an error code */
+size_t ZSTD_initCStream_internal(ZSTD_CStream* zcs,
+                     const void* dict, size_t dictSize,
+                     const ZSTD_CDict* cdict,
+                     ZSTD_parameters params, unsigned long long pledgedSrcSize);
+
+/*! ZSTD_compressStream_generic() :
+ *  Private use only. To be called from zstdmt_compress.c in single-thread mode. */
+size_t ZSTD_compressStream_generic(ZSTD_CStream* zcs,
+                                   ZSTD_outBuffer* output,
+                                   ZSTD_inBuffer* input,
+                                   ZSTD_EndDirective const flushMode);
+
+/*! ZSTD_getParamsFromCDict() :
+ *  as the name implies */
+ZSTD_parameters ZSTD_getParamsFromCDict(const ZSTD_CDict* cdict);
 
 
 #endif   /* ZSTD_CCOMMON_H_MODULE */
