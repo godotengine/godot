@@ -36,9 +36,9 @@
 #include "editor/editor_settings.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/spatial_editor_gizmos.h"
-#include "project_settings.h"
 #include "os/keyboard.h"
 #include "print_string.h"
+#include "project_settings.h"
 #include "scene/3d/camera.h"
 #include "scene/3d/visual_instance.h"
 #include "scene/resources/surface_tool.h"
@@ -518,7 +518,7 @@ void SpatialEditorViewport::_compute_edit(const Point2 &p_point) {
 	*/
 }
 
-static int _get_key_modifier(const String &p_property) {
+static int _get_key_modifier_setting(const String &p_property) {
 
 	switch (EditorSettings::get_singleton()->get(p_property).operator int()) {
 
@@ -528,6 +528,18 @@ static int _get_key_modifier(const String &p_property) {
 		case 3: return KEY_META;
 		case 4: return KEY_CONTROL;
 	}
+	return 0;
+}
+
+static int _get_key_modifier(Ref<InputEventWithModifiers> e) {
+	if (e->get_shift())
+		return KEY_SHIFT;
+	if (e->get_alt())
+		return KEY_ALT;
+	if (e->get_control())
+		return KEY_CONTROL;
+	if (e->get_metakey())
+		return KEY_META;
 	return 0;
 }
 
@@ -774,7 +786,15 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					set_message(TTR("Transform Aborted."), 3);
 				}
 
-				freelook_active = b->is_pressed();
+				if (b->is_pressed()) {
+					int mod = _get_key_modifier(b);
+					if (mod == _get_key_modifier_setting("editors/3d/freelook_activation_modifier")) {
+						freelook_active = true;
+					}
+				} else {
+					freelook_active = false;
+				}
+
 				if (freelook_active && !surface->has_focus()) {
 					// Focus usually doesn't trigger on right-click, but in case of freelook it should,
 					// otherwise using keyboard navigation would misbehave
@@ -1297,7 +1317,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 			if (nav_scheme == NAVIGATION_MAYA && m->get_alt()) {
 				nav_mode = NAVIGATION_ZOOM;
-			} else {
+			} else if (freelook_active) {
 				nav_mode = NAVIGATION_LOOK;
 			}
 
@@ -1305,21 +1325,13 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 			if (nav_scheme == NAVIGATION_GODOT) {
 
-				int mod = 0;
-				if (m->get_shift())
-					mod = KEY_SHIFT;
-				if (m->get_alt())
-					mod = KEY_ALT;
-				if (m->get_control())
-					mod = KEY_CONTROL;
-				if (m->get_metakey())
-					mod = KEY_META;
+				int mod = _get_key_modifier(m);
 
-				if (mod == _get_key_modifier("editors/3d/pan_modifier"))
+				if (mod == _get_key_modifier_setting("editors/3d/pan_modifier"))
 					nav_mode = NAVIGATION_PAN;
-				else if (mod == _get_key_modifier("editors/3d/zoom_modifier"))
+				else if (mod == _get_key_modifier_setting("editors/3d/zoom_modifier"))
 					nav_mode = NAVIGATION_ZOOM;
-				else if (mod == _get_key_modifier("editors/3d/orbit_modifier"))
+				else if (mod == _get_key_modifier_setting("editors/3d/orbit_modifier"))
 					nav_mode = NAVIGATION_ORBIT;
 
 			} else if (nav_scheme == NAVIGATION_MAYA) {
@@ -1329,22 +1341,14 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 		} else if (EditorSettings::get_singleton()->get("editors/3d/emulate_3_button_mouse")) {
 			// Handle trackpad (no external mouse) use case
-			int mod = 0;
-			if (m->get_shift())
-				mod = KEY_SHIFT;
-			if (m->get_alt())
-				mod = KEY_ALT;
-			if (m->get_control())
-				mod = KEY_CONTROL;
-			if (m->get_metakey())
-				mod = KEY_META;
+			int mod = _get_key_modifier(m);
 
 			if (mod) {
-				if (mod == _get_key_modifier("editors/3d/pan_modifier"))
+				if (mod == _get_key_modifier_setting("editors/3d/pan_modifier"))
 					nav_mode = NAVIGATION_PAN;
-				else if (mod == _get_key_modifier("editors/3d/zoom_modifier"))
+				else if (mod == _get_key_modifier_setting("editors/3d/zoom_modifier"))
 					nav_mode = NAVIGATION_ZOOM;
-				else if (mod == _get_key_modifier("editors/3d/orbit_modifier"))
+				else if (mod == _get_key_modifier_setting("editors/3d/orbit_modifier"))
 					nav_mode = NAVIGATION_ORBIT;
 			}
 		}

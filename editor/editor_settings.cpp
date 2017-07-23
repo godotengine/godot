@@ -30,7 +30,6 @@
 #include "editor_settings.h"
 
 #include "editor_node.h"
-#include "project_settings.h"
 #include "io/compression.h"
 #include "io/config_file.h"
 #include "io/file_access_memory.h"
@@ -41,6 +40,7 @@
 #include "os/file_access.h"
 #include "os/keyboard.h"
 #include "os/os.h"
+#include "project_settings.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/viewport.h"
@@ -638,6 +638,10 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set("editors/3d/warped_mouse_panning", true);
 
 	set("editors/3d/freelook_base_speed", 1);
+
+	set("editors/3d/freelook_activation_modifier", 0);
+	hints["editors/3d/freelook_activation_modifier"] = PropertyInfo(Variant::INT, "editors/3d/freelook_activation_modifier", PROPERTY_HINT_ENUM, "None,Shift,Alt,Meta,Ctrl");
+
 	set("editors/3d/freelook_modifier_speed_factor", 5.0);
 
 	set("editors/2d/bone_width", 5);
