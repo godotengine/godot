@@ -80,6 +80,7 @@ static int mouse_y = 0;
 static int prev_mouse_x = 0;
 static int prev_mouse_y = 0;
 static int button_mask = 0;
+static bool mouse_down_control = false;
 
 @interface GodotApplication : NSApplication
 @end
@@ -285,21 +286,36 @@ static int button_mask = 0;
 	//setModeCursor(window, window->cursorMode);
 }
 
-- (void)mouseDown:(NSEvent *)event {
-
-	button_mask |= BUTTON_MASK_LEFT;
+static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
+	if (pressed) {
+		button_mask |= mask;
+	} else {
+		button_mask &= ~mask;
+	}
 
 	Ref<InputEventMouseButton> mb;
 	mb.instance();
 
 	get_key_modifier_state([event modifierFlags], mb);
-	mb->set_button_index(BUTTON_LEFT);
-	mb->set_pressed(true);
+	mb->set_button_index(index);
+	mb->set_pressed(pressed);
 	mb->set_position(Vector2(mouse_x, mouse_y));
 	mb->set_global_position(Vector2(mouse_x, mouse_y));
 	mb->set_button_mask(button_mask);
-	mb->set_doubleclick([event clickCount] == 2);
+	if (index == BUTTON_LEFT && pressed) {
+		mb->set_doubleclick([event clickCount] == 2);
+	}
 	OS_OSX::singleton->push_input(mb);
+}
+
+- (void)mouseDown:(NSEvent *)event {
+	if (([event modifierFlags] & NSControlKeyMask)) {
+		mouse_down_control = true;
+		_mouseDownEvent(event, BUTTON_RIGHT, BUTTON_MASK_RIGHT, true);
+	} else {
+		mouse_down_control = false;
+		_mouseDownEvent(event, BUTTON_LEFT, BUTTON_MASK_LEFT, true);
+	}
 }
 
 - (void)mouseDragged:(NSEvent *)event {
@@ -307,19 +323,11 @@ static int button_mask = 0;
 }
 
 - (void)mouseUp:(NSEvent *)event {
-
-	button_mask &= ~BUTTON_MASK_LEFT;
-	Ref<InputEventMouseButton> mb;
-	mb.instance();
-
-	get_key_modifier_state([event modifierFlags], mb);
-	mb->set_button_index(BUTTON_LEFT);
-	mb->set_pressed(false);
-	mb->set_position(Vector2(mouse_x, mouse_y));
-	mb->set_global_position(Vector2(mouse_x, mouse_y));
-	mb->set_button_mask(button_mask);
-	mb->set_doubleclick([event clickCount] == 2);
-	OS_OSX::singleton->push_input(mb);
+	if (mouse_down_control) {
+		_mouseDownEvent(event, BUTTON_RIGHT, BUTTON_MASK_RIGHT, false);
+	} else {
+		_mouseDownEvent(event, BUTTON_LEFT, BUTTON_MASK_LEFT, false);
+	}
 }
 
 - (void)mouseMoved:(NSEvent *)event {
@@ -347,20 +355,7 @@ static int button_mask = 0;
 }
 
 - (void)rightMouseDown:(NSEvent *)event {
-
-	button_mask |= BUTTON_MASK_RIGHT;
-
-	Ref<InputEventMouseButton> mb;
-	mb.instance();
-
-	get_key_modifier_state([event modifierFlags], mb);
-	mb->set_button_index(BUTTON_RIGHT);
-	mb->set_pressed(true);
-	mb->set_position(Vector2(mouse_x, mouse_y));
-	mb->set_global_position(Vector2(mouse_x, mouse_y));
-	mb->set_button_mask(button_mask);
-	mb->set_doubleclick([event clickCount] == 2);
-	OS_OSX::singleton->push_input(mb);
+	_mouseDownEvent(event, BUTTON_RIGHT, BUTTON_MASK_RIGHT, true);
 }
 
 - (void)rightMouseDragged:(NSEvent *)event {
@@ -368,20 +363,7 @@ static int button_mask = 0;
 }
 
 - (void)rightMouseUp:(NSEvent *)event {
-
-	button_mask &= ~BUTTON_MASK_RIGHT;
-
-	Ref<InputEventMouseButton> mb;
-	mb.instance();
-
-	get_key_modifier_state([event modifierFlags], mb);
-	mb->set_button_index(BUTTON_RIGHT);
-	mb->set_pressed(false);
-	mb->set_position(Vector2(mouse_x, mouse_y));
-	mb->set_global_position(Vector2(mouse_x, mouse_y));
-	mb->set_button_mask(button_mask);
-	mb->set_doubleclick([event clickCount] == 2);
-	OS_OSX::singleton->push_input(mb);
+	_mouseDownEvent(event, BUTTON_RIGHT, BUTTON_MASK_RIGHT, false);
 }
 
 - (void)otherMouseDown:(NSEvent *)event {
@@ -389,19 +371,7 @@ static int button_mask = 0;
 	if ((int)[event buttonNumber] != 2)
 		return;
 
-	button_mask |= BUTTON_MASK_MIDDLE;
-
-	Ref<InputEventMouseButton> mb;
-	mb.instance();
-
-	get_key_modifier_state([event modifierFlags], mb);
-	mb->set_button_index(BUTTON_MIDDLE);
-	mb->set_pressed(true);
-	mb->set_position(Vector2(mouse_x, mouse_y));
-	mb->set_global_position(Vector2(mouse_x, mouse_y));
-	mb->set_button_mask(button_mask);
-	mb->set_doubleclick([event clickCount] == 2);
-	OS_OSX::singleton->push_input(mb);
+	_mouseDownEvent(event, BUTTON_MIDDLE, BUTTON_MASK_MIDDLE, true);
 }
 
 - (void)otherMouseDragged:(NSEvent *)event {
@@ -413,19 +383,7 @@ static int button_mask = 0;
 	if ((int)[event buttonNumber] != 2)
 		return;
 
-	button_mask &= ~BUTTON_MASK_MIDDLE;
-
-	Ref<InputEventMouseButton> mb;
-	mb.instance();
-
-	get_key_modifier_state([event modifierFlags], mb);
-	mb->set_button_index(BUTTON_MIDDLE);
-	mb->set_pressed(false);
-	mb->set_position(Vector2(mouse_x, mouse_y));
-	mb->set_global_position(Vector2(mouse_x, mouse_y));
-	mb->set_button_mask(button_mask);
-	mb->set_doubleclick([event clickCount] == 2);
-	OS_OSX::singleton->push_input(mb);
+	_mouseDownEvent(event, BUTTON_MIDDLE, BUTTON_MASK_MIDDLE, false);
 }
 
 - (void)mouseExited:(NSEvent *)event {
