@@ -83,6 +83,10 @@
 			color: white;
 		}
 
+		#canvas:focus {
+			outline: none;
+		}
+
 
 		/* Status display
 		 * ============== */
@@ -147,7 +151,7 @@ $GODOT_HEAD_INCLUDE
 </head>
 <body>
 	<div id="container">
-		<canvas id="canvas" width="640" height="480" onclick="canvas.ownerDocument.defaultView.focus();" oncontextmenu="event.preventDefault();">
+		<canvas id="canvas" width="640" height="480" tabindex="0" oncontextmenu="event.preventDefault();">
 			HTML5 canvas appears to be unsupported in the current browser.<br />
 			Please try updating or use a different browser.
 		</canvas>

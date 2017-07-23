@@ -145,6 +145,31 @@ static EM_BOOL _fullscreen_change_callback(int event_type, const EmscriptenFulls
 
 static InputDefault *_input;
 
+static bool is_canvas_focused() {
+
+	/* clang-format off */
+	return EM_ASM_INT_V(
+		return document.activeElement == Module.canvas;
+	);
+	/* clang-format on */
+}
+
+static void focus_canvas() {
+
+	/* clang-format off */
+	EM_ASM(
+		Module.canvas.focus();
+	);
+	/* clang-format on */
+}
+
+static bool _cursor_inside_canvas = true;
+
+static bool is_cursor_inside_canvas() {
+
+	return _cursor_inside_canvas;
+}
+
 static EM_BOOL _mousebutton_callback(int event_type, const EmscriptenMouseEvent *mouse_event, void *user_data) {
 
 	ERR_FAIL_COND_V(event_type != EMSCRIPTEN_EVENT_MOUSEDOWN && event_type != EMSCRIPTEN_EVENT_MOUSEUP, false);
@@ -164,26 +189,42 @@ static EM_BOOL _mousebutton_callback(int event_type, const EmscriptenMouseEvent 
 	}
 
 	int mask = _input->get_mouse_button_mask();
-	if (ev->is_pressed())
+	if (ev->is_pressed()) {
+		// since the event is consumed, focus manually
+		if (!is_canvas_focused()) {
+			focus_canvas();
+		}
 		mask |= 1 << ev->get_button_index();
-	else
+	} else if (mask & (1 << ev->get_button_index())) {
 		mask &= ~(1 << ev->get_button_index());
+	} else {
+		// release event, but press was outside the canvas, so ignore
+		return false;
+	}
 	ev->set_button_mask(mask >> 1);
 
 	_input->parse_input_event(ev);
+	// prevent selection dragging
 	return true;
 }
 
 static EM_BOOL _mousemove_callback(int event_type, const EmscriptenMouseEvent *mouse_event, void *user_data) {
 
 	ERR_FAIL_COND_V(event_type != EMSCRIPTEN_EVENT_MOUSEMOVE, false);
+	OS_JavaScript *os = static_cast<OS_JavaScript *>(user_data);
+	int input_mask = _input->get_mouse_button_mask();
+	Point2 pos = Point2(mouse_event->canvasX, mouse_event->canvasY);
+	// outside the canvas, only read mouse movement if dragging started inside
+	// the canvas; imitating desktop app behaviour
+	if (!is_cursor_inside_canvas() && !input_mask)
+		return false;
 
 	Ref<InputEventMouseMotion> ev;
 	ev.instance();
 	dom2godot_mod(mouse_event, ev);
-	ev->set_button_mask(_input->get_mouse_button_mask() >> 1);
+	ev->set_button_mask(input_mask >> 1);
 
-	ev->set_position(Point2(mouse_event->canvasX, mouse_event->canvasY));
+	ev->set_position(pos);
 	ev->set_global_position(ev->get_position());
 
 	ev->set_relative(_input->get_mouse_position() - ev->get_position());
@@ -191,12 +232,20 @@ static EM_BOOL _mousemove_callback(int event_type, const EmscriptenMouseEvent *m
 	ev->set_speed(_input->get_last_mouse_speed());
 
 	_input->parse_input_event(ev);
-	return true;
+	// don't suppress mouseover/leave events
+	return false;
 }
 
 static EM_BOOL _wheel_callback(int event_type, const EmscriptenWheelEvent *wheel_event, void *user_data) {
 
 	ERR_FAIL_COND_V(event_type != EMSCRIPTEN_EVENT_WHEEL, false);
+	if (!is_canvas_focused()) {
+		if (is_cursor_inside_canvas()) {
+			focus_canvas();
+		} else {
+			return false;
+		}
+	}
 
 	Ref<InputEventMouseButton> ev;
 	ev.instance();
@@ -387,6 +436,15 @@ static EM_BOOL joy_callback_func(int p_type, const EmscriptenGamepadEvent *p_eve
 	return false;
 }
 
+extern "C" {
+void send_notification(int notif) {
+	if (notif == MainLoop::NOTIFICATION_WM_MOUSE_ENTER || notif == MainLoop::NOTIFICATION_WM_MOUSE_EXIT) {
+		_cursor_inside_canvas = notif == MainLoop::NOTIFICATION_WM_MOUSE_ENTER;
+	}
+	OS_JavaScript::get_singleton()->get_main_loop()->notification(notif);
+}
+}
+
 void OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
 	print_line("Init OS");
@@ -465,17 +523,17 @@ void OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, i
 	EM_CHECK(ev)
 
 	EMSCRIPTEN_RESULT result;
-	SET_EM_CALLBACK("#canvas", mousemove, _mousemove_callback)
+	SET_EM_CALLBACK("#window", mousemove, _mousemove_callback)
 	SET_EM_CALLBACK("#canvas", mousedown, _mousebutton_callback)
-	SET_EM_CALLBACK("#canvas", mouseup, _mousebutton_callback)
-	SET_EM_CALLBACK("#canvas", wheel, _wheel_callback)
-	SET_EM_CALLBACK("#canvas", touchstart, _touchpress_callback)
-	SET_EM_CALLBACK("#canvas", touchmove, _touchmove_callback)
-	SET_EM_CALLBACK("#canvas", touchend, _touchpress_callback)
-	SET_EM_CALLBACK("#canvas", touchcancel, _touchpress_callback)
-	SET_EM_CALLBACK(NULL, keydown, _keydown_callback)
-	SET_EM_CALLBACK(NULL, keypress, _keypress_callback)
-	SET_EM_CALLBACK(NULL, keyup, _keyup_callback)
+	SET_EM_CALLBACK("#window", mouseup, _mousebutton_callback)
+	SET_EM_CALLBACK("#window", wheel, _wheel_callback)
+	SET_EM_CALLBACK("#window", touchstart, _touchpress_callback)
+	SET_EM_CALLBACK("#window", touchmove, _touchmove_callback)
+	SET_EM_CALLBACK("#window", touchend, _touchpress_callback)
+	SET_EM_CALLBACK("#window", touchcancel, _touchpress_callback)
+	SET_EM_CALLBACK("#canvas", keydown, _keydown_callback)
+	SET_EM_CALLBACK("#canvas", keypress, _keypress_callback)
+	SET_EM_CALLBACK("#canvas", keyup, _keyup_callback)
 	SET_EM_CALLBACK(NULL, resize, _browser_resize_callback)
 	SET_EM_CALLBACK(NULL, fullscreenchange, _fullscreen_change_callback)
 	SET_EM_CALLBACK_NODATA(gamepadconnected, joy_callback_func)
@@ -484,6 +542,21 @@ void OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, i
 #undef SET_EM_CALLBACK_NODATA
 #undef SET_EM_CALLBACK
 #undef EM_CHECK
+
+	/* clang-format off */
+	EM_ASM_ARGS({
+		const send_notification = Module.cwrap('send_notification', null, ['number']);
+		const notifs = arguments;
+		(['mouseover', 'mouseleave', 'focus', 'blur']).forEach(function(event, i) {
+			Module.canvas.addEventListener(event, send_notification.bind(this, notifs[i]));
+		});
+	},
+		MainLoop::NOTIFICATION_WM_MOUSE_ENTER,
+		MainLoop::NOTIFICATION_WM_MOUSE_EXIT,
+		MainLoop::NOTIFICATION_WM_FOCUS_IN,
+		MainLoop::NOTIFICATION_WM_FOCUS_OUT
+	);
+/* clang-format on */
 
 #ifdef JAVASCRIPT_EVAL_ENABLED
 	javascript_eval = memnew(JavaScript);
@@ -775,20 +848,6 @@ void OS_JavaScript::main_loop_end() {
 
 	if (main_loop)
 		main_loop->finish();
-}
-
-void OS_JavaScript::main_loop_focusout() {
-
-	if (main_loop)
-		main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
-	//audio_driver_javascript.set_pause(true);
-}
-
-void OS_JavaScript::main_loop_focusin() {
-
-	if (main_loop)
-		main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
-	//audio_driver_javascript.set_pause(false);
 }
 
 void OS_JavaScript::process_accelerometer(const Vector3 &p_accelerometer) {
