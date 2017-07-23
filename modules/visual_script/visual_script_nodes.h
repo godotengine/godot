@@ -712,6 +712,8 @@ public:
 
 	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance);
 
+	void _script_changed();
+
 	VisualScriptCustomNode();
 };
 

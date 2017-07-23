@@ -29,10 +29,10 @@
 /*************************************************************************/
 #include "visual_script_nodes.h"
 
-#include "project_settings.h"
 #include "global_constants.h"
 #include "os/input.h"
 #include "os/os.h"
+#include "project_settings.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 
@@ -2596,10 +2596,10 @@ public:
 			in_values.resize(in_count);
 
 			for (int i = 0; i < in_count; i++) {
-				in_values[i] = p_inputs[i];
+				in_values[i] = *p_inputs[i];
 			}
 
-			out_values.resize(in_count);
+			out_values.resize(out_count);
 
 			work_mem.resize(work_mem_size);
 
@@ -2645,6 +2645,7 @@ VisualScriptNodeInstance *VisualScriptCustomNode::instance(VisualScriptInstance 
 
 	VisualScriptNodeInstanceCustomNode *instance = memnew(VisualScriptNodeInstanceCustomNode);
 	instance->instance = p_instance;
+	instance->node = this;
 	instance->in_count = get_input_value_port_count();
 	instance->out_count = get_output_value_port_count();
 
@@ -2655,6 +2656,10 @@ VisualScriptNodeInstance *VisualScriptCustomNode::instance(VisualScriptInstance 
 	}
 
 	return instance;
+}
+
+void VisualScriptCustomNode::_script_changed() {
+	ports_changed_notify();
 }
 
 void VisualScriptCustomNode::_bind_methods() {
@@ -2679,6 +2684,8 @@ void VisualScriptCustomNode::_bind_methods() {
 	BIND_VMETHOD(MethodInfo(Variant::INT, "_get_working_memory_size"));
 	BIND_VMETHOD(MethodInfo(Variant::NIL, "_step:Variant", PropertyInfo(Variant::ARRAY, "inputs"), PropertyInfo(Variant::ARRAY, "outputs"), PropertyInfo(Variant::INT, "start_mode"), PropertyInfo(Variant::ARRAY, "working_mem")));
 
+	ClassDB::bind_method(D_METHOD("_script_changed"), &VisualScriptCustomNode::_script_changed);
+
 	BIND_CONSTANT(START_MODE_BEGIN_SEQUENCE);
 	BIND_CONSTANT(START_MODE_CONTINUE_SEQUENCE);
 	BIND_CONSTANT(START_MODE_RESUME_YIELD);
@@ -2691,6 +2698,7 @@ void VisualScriptCustomNode::_bind_methods() {
 }
 
 VisualScriptCustomNode::VisualScriptCustomNode() {
+	connect("script_changed", this, "_script_changed");
 }
 
 //////////////////////////////////////////
