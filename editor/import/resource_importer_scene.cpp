@@ -118,9 +118,9 @@ String ResourceImporterScene::get_preset_name(int p_idx) const {
 
 	switch (p_idx) {
 		case PRESET_SINGLE_SCENE: return TTR("Import as Single Scene");
-		case PRESET_SEPARATE_MATERIALS: return TTR("Import as Separate Materials");
-		case PRESET_SEPARATE_MESHES: return TTR("Import as Separate Objects");
-		case PRESET_SEPARATE_MESHES_AND_MATERIALS: return TTR("Import as Separate Objects+Materials");
+		case PRESET_SEPARATE_MATERIALS: return TTR("Import with Separate Materials");
+		case PRESET_SEPARATE_MESHES: return TTR("Import with Separate Objects");
+		case PRESET_SEPARATE_MESHES_AND_MATERIALS: return TTR("Import with Separate Objects+Materials");
 		case PRESET_MULTIPLE_SCENES: return TTR("Import as Multiple Scenes");
 		case PRESET_MULTIPLE_SCENES_AND_MATERIALS: return TTR("Import as Multiple Scenes+Materials");
 	}
