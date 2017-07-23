@@ -200,6 +200,7 @@ uint32_t Dictionary::hash() const {
 
 Array Dictionary::keys() const {
 
+#if 0
 	Array karr;
 	karr.resize(size());
 	const Variant *K = NULL;
@@ -208,6 +209,26 @@ Array Dictionary::keys() const {
 		karr[idx++] = (*K);
 	}
 	return karr;
+#else
+
+	Array varr;
+	varr.resize(size());
+	if (_p->variant_map.empty())
+		return varr;
+
+	int count = _p->variant_map.size();
+	const HashMap<Variant, DictionaryPrivate::Data, _DictionaryVariantHash>::Pair **pairs = (const HashMap<Variant, DictionaryPrivate::Data, _DictionaryVariantHash>::Pair **)alloca(count * sizeof(HashMap<Variant, DictionaryPrivate::Data, _DictionaryVariantHash>::Pair *));
+	_p->variant_map.get_key_value_ptr_array(pairs);
+
+	SortArray<const HashMap<Variant, DictionaryPrivate::Data, _DictionaryVariantHash>::Pair *, DictionaryPrivateSort> sort;
+	sort.sort(pairs, count);
+
+	for (int i = 0; i < count; i++) {
+		varr[i] = pairs[i]->key;
+	}
+
+	return varr;
+#endif
 }
 
 Array Dictionary::values() const {
