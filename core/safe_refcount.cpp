@@ -185,7 +185,7 @@ static _ALWAYS_INLINE_ uint64_t _atomic_increment_impl(register uint64_t *pw) {
 
 static _ALWAYS_INLINE_ uint64_t _atomic_sub_impl(register uint64_t *pw, register uint64_t val) {
 
-#if _WIN32_WINNT >= 0x0601 // Windows 7+
+#if _WIN32_WINNT >= 0x0601 && !defined(UWP_ENABLED) // Windows 7+ except UWP
 	return InterlockedExchangeSubtract64(pw, val) - val;
 #else
 	return InterlockedExchangeAdd64((LONGLONG volatile *)pw, -(int64_t)val) - val;
