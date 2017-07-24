@@ -1399,13 +1399,13 @@ void SpatialMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_specular_mode"), &SpatialMaterial::get_specular_mode);
 
 	ClassDB::bind_method(D_METHOD("set_flag", "flag", "enable"), &SpatialMaterial::set_flag);
-	ClassDB::bind_method(D_METHOD("get_flag"), &SpatialMaterial::get_flag);
+	ClassDB::bind_method(D_METHOD("get_flag", "flag"), &SpatialMaterial::get_flag);
 
 	ClassDB::bind_method(D_METHOD("set_feature", "feature", "enable"), &SpatialMaterial::set_feature);
 	ClassDB::bind_method(D_METHOD("get_feature", "feature"), &SpatialMaterial::get_feature);
 
-	ClassDB::bind_method(D_METHOD("set_texture", "param:Texture", "texture"), &SpatialMaterial::set_texture);
-	ClassDB::bind_method(D_METHOD("get_texture:Texture", "param:Texture"), &SpatialMaterial::get_texture);
+	ClassDB::bind_method(D_METHOD("set_texture", "param", "texture:Texture"), &SpatialMaterial::set_texture);
+	ClassDB::bind_method(D_METHOD("get_texture:Texture", "param"), &SpatialMaterial::get_texture);
 
 	ClassDB::bind_method(D_METHOD("set_detail_blend_mode", "detail_blend_mode"), &SpatialMaterial::set_detail_blend_mode);
 	ClassDB::bind_method(D_METHOD("get_detail_blend_mode"), &SpatialMaterial::get_detail_blend_mode);

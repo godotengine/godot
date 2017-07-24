@@ -2193,8 +2193,8 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_debugging_navigation_hint"), &SceneTree::is_debugging_navigation_hint);
 
 #ifdef TOOLS_ENABLED
-	ClassDB::bind_method(D_METHOD("set_edited_scene_root", "scene"), &SceneTree::set_edited_scene_root);
-	ClassDB::bind_method(D_METHOD("get_edited_scene_root"), &SceneTree::get_edited_scene_root);
+	ClassDB::bind_method(D_METHOD("set_edited_scene_root", "scene:Node"), &SceneTree::set_edited_scene_root);
+	ClassDB::bind_method(D_METHOD("get_edited_scene_root:Node"), &SceneTree::get_edited_scene_root);
 #endif
 
 	ClassDB::bind_method(D_METHOD("set_pause", "enable"), &SceneTree::set_pause);

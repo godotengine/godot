@@ -330,8 +330,8 @@ void Polygon2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_vertex_colors", "vertex_colors"), &Polygon2D::set_vertex_colors);
 	ClassDB::bind_method(D_METHOD("get_vertex_colors"), &Polygon2D::get_vertex_colors);
 
-	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &Polygon2D::set_texture);
-	ClassDB::bind_method(D_METHOD("get_texture"), &Polygon2D::get_texture);
+	ClassDB::bind_method(D_METHOD("set_texture", "texture:Texture"), &Polygon2D::set_texture);
+	ClassDB::bind_method(D_METHOD("get_texture:Texture"), &Polygon2D::get_texture);
 
 	ClassDB::bind_method(D_METHOD("set_texture_offset", "texture_offset"), &Polygon2D::set_texture_offset);
 	ClassDB::bind_method(D_METHOD("get_texture_offset"), &Polygon2D::get_texture_offset);

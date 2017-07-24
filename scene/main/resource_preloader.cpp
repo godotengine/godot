@@ -153,11 +153,11 @@ void ResourcePreloader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_resources"), &ResourcePreloader::_set_resources);
 	ClassDB::bind_method(D_METHOD("_get_resources"), &ResourcePreloader::_get_resources);
 
-	ClassDB::bind_method(D_METHOD("add_resource", "name", "resource"), &ResourcePreloader::add_resource);
+	ClassDB::bind_method(D_METHOD("add_resource", "name", "resource:Resource"), &ResourcePreloader::add_resource);
 	ClassDB::bind_method(D_METHOD("remove_resource", "name"), &ResourcePreloader::remove_resource);
 	ClassDB::bind_method(D_METHOD("rename_resource", "name", "newname"), &ResourcePreloader::rename_resource);
 	ClassDB::bind_method(D_METHOD("has_resource", "name"), &ResourcePreloader::has_resource);
-	ClassDB::bind_method(D_METHOD("get_resource", "name"), &ResourcePreloader::get_resource);
+	ClassDB::bind_method(D_METHOD("get_resource:Resource", "name"), &ResourcePreloader::get_resource);
 	ClassDB::bind_method(D_METHOD("get_resource_list"), &ResourcePreloader::_get_resource_list);
 
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "resources", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "_set_resources", "_get_resources");

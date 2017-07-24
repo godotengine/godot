@@ -2606,8 +2606,8 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_physics_object_picking"), &Viewport::get_physics_object_picking);
 
 	ClassDB::bind_method(D_METHOD("get_viewport_rid"), &Viewport::get_viewport_rid);
-	ClassDB::bind_method(D_METHOD("input", "local_event"), &Viewport::input);
-	ClassDB::bind_method(D_METHOD("unhandled_input", "local_event"), &Viewport::unhandled_input);
+	ClassDB::bind_method(D_METHOD("input", "local_event:InputEvent"), &Viewport::input);
+	ClassDB::bind_method(D_METHOD("unhandled_input", "local_event:InputEvent"), &Viewport::unhandled_input);
 
 	ClassDB::bind_method(D_METHOD("update_worlds"), &Viewport::update_worlds);
 

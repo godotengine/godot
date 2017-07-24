@@ -149,7 +149,7 @@ _ResourceSaver *_ResourceSaver::singleton = NULL;
 void _ResourceSaver::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("save", "path", "resource:Resource", "flags"), &_ResourceSaver::save, DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("get_recognized_extensions", "type"), &_ResourceSaver::get_recognized_extensions);
+	ClassDB::bind_method(D_METHOD("get_recognized_extensions", "type:Resource"), &_ResourceSaver::get_recognized_extensions);
 
 	BIND_CONSTANT(FLAG_RELATIVE_PATHS);
 	BIND_CONSTANT(FLAG_BUNDLE_RESOURCES);
@@ -998,7 +998,7 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_borderless_window", "borderless"), &_OS::set_borderless_window);
 	ClassDB::bind_method(D_METHOD("get_borderless_window"), &_OS::get_borderless_window);
 
-	ClassDB::bind_method(D_METHOD("set_ime_position"), &_OS::set_ime_position);
+	ClassDB::bind_method(D_METHOD("set_ime_position", "position"), &_OS::set_ime_position);
 
 	ClassDB::bind_method(D_METHOD("set_screen_orientation", "orientation"), &_OS::set_screen_orientation);
 	ClassDB::bind_method(D_METHOD("get_screen_orientation"), &_OS::get_screen_orientation);
