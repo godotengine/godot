@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  node_path.h                                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,52 +27,51 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "register_types.h"
+#ifndef GODOT_NODE_PATH_H
+#define GODOT_NODE_PATH_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include <stdint.h>
+
+#define GODOT_NODE_PATH_SIZE 8
+
+#ifndef GODOT_CORE_API_GODOT_NODE_PATH_TYPE_DEFINED
+#define GODOT_CORE_API_GODOT_NODE_PATH_TYPE_DEFINED
+typedef struct {
+	uint8_t _dont_touch_that[GODOT_NODE_PATH_SIZE];
+} godot_node_path;
+#endif
+
 #include "gdnative.h"
+#include "string.h"
 
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
+void GDAPI godot_node_path_new(godot_node_path *r_dest, const godot_string *p_from);
+void GDAPI godot_node_path_new_copy(godot_node_path *r_dest, const godot_node_path *p_src);
+void GDAPI godot_node_path_destroy(godot_node_path *p_self);
 
-#include "core/os/os.h"
+godot_string GDAPI godot_node_path_as_string(const godot_node_path *p_self);
 
-godot_variant cb_standard_varcall(void *handle, godot_string *p_procedure, godot_array *p_args) {
-	if (handle == NULL) {
-		ERR_PRINT("No valid library handle, can't call standard varcall procedure");
-		godot_variant ret;
-		godot_variant_new_nil(&ret);
-		return ret;
-	}
+godot_bool GDAPI godot_node_path_is_absolute(const godot_node_path *p_self);
 
-	void *library_proc;
-	Error err = OS::get_singleton()->get_dynamic_library_symbol_handle(
-			handle,
-			*(String *)p_procedure,
-			library_proc);
-	if (err != OK) {
-		ERR_PRINT((String("GDNative procedure \"" + *(String *)p_procedure) + "\" does not exists and can't be called").utf8().get_data());
-		godot_variant ret;
-		godot_variant_new_nil(&ret);
-		return ret;
-	}
+godot_int GDAPI godot_node_path_get_name_count(const godot_node_path *p_self);
 
-	godot_gdnative_procedure_fn proc;
-	proc = (godot_gdnative_procedure_fn)library_proc;
+godot_string GDAPI godot_node_path_get_name(const godot_node_path *p_self, const godot_int p_idx);
 
-	return proc(NULL, p_args);
+godot_int GDAPI godot_node_path_get_subname_count(const godot_node_path *p_self);
+
+godot_string GDAPI godot_node_path_get_subname(const godot_node_path *p_self, const godot_int p_idx);
+
+godot_string GDAPI godot_node_path_get_property(const godot_node_path *p_self);
+
+godot_bool GDAPI godot_node_path_is_empty(const godot_node_path *p_self);
+
+godot_bool GDAPI godot_node_path_operator_equal(const godot_node_path *p_self, const godot_node_path *p_b);
+
+#ifdef __cplusplus
 }
+#endif
 
-GDNativeCallRegistry *GDNativeCallRegistry::singleton;
-
-void register_gdnative_types() {
-
-	ClassDB::register_class<GDNativeLibrary>();
-	ClassDB::register_class<GDNative>();
-
-	GDNativeCallRegistry::singleton = memnew(GDNativeCallRegistry);
-
-	GDNativeCallRegistry::singleton->register_native_call_type("standard_varcall", cb_standard_varcall);
-}
-
-void unregister_gdnative_types() {
-	memdelete(GDNativeCallRegistry::singleton);
-}
+#endif // GODOT_NODE_PATH_H

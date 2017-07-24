@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  string.h                                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,52 +27,50 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "register_types.h"
+#ifndef GODOT_STRING_H
+#define GODOT_STRING_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include <stdint.h>
+#include <wchar.h>
+
+#define GODOT_STRING_SIZE 8
+
+#ifndef GODOT_CORE_API_GODOT_STRING_TYPE_DEFINED
+#define GODOT_CORE_API_GODOT_STRING_TYPE_DEFINED
+typedef struct {
+	uint8_t _dont_touch_that[GODOT_STRING_SIZE];
+} godot_string;
+#endif
+
 #include "gdnative.h"
 
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
+void GDAPI godot_string_new(godot_string *r_dest);
+void GDAPI godot_string_new_copy(godot_string *r_dest, const godot_string *p_src);
+void GDAPI godot_string_new_data(godot_string *r_dest, const char *p_contents, const int p_size);
+void GDAPI godot_string_new_unicode_data(godot_string *r_dest, const wchar_t *p_contents, const int p_size);
 
-#include "core/os/os.h"
+void GDAPI godot_string_get_data(const godot_string *p_self, char *p_dest, int *p_size);
 
-godot_variant cb_standard_varcall(void *handle, godot_string *p_procedure, godot_array *p_args) {
-	if (handle == NULL) {
-		ERR_PRINT("No valid library handle, can't call standard varcall procedure");
-		godot_variant ret;
-		godot_variant_new_nil(&ret);
-		return ret;
-	}
+wchar_t GDAPI *godot_string_operator_index(godot_string *p_self, const godot_int p_idx);
+const char GDAPI *godot_string_c_str(const godot_string *p_self);
+const wchar_t GDAPI *godot_string_unicode_str(const godot_string *p_self);
 
-	void *library_proc;
-	Error err = OS::get_singleton()->get_dynamic_library_symbol_handle(
-			handle,
-			*(String *)p_procedure,
-			library_proc);
-	if (err != OK) {
-		ERR_PRINT((String("GDNative procedure \"" + *(String *)p_procedure) + "\" does not exists and can't be called").utf8().get_data());
-		godot_variant ret;
-		godot_variant_new_nil(&ret);
-		return ret;
-	}
+godot_bool GDAPI godot_string_operator_equal(const godot_string *p_self, const godot_string *p_b);
+godot_bool GDAPI godot_string_operator_less(const godot_string *p_self, const godot_string *p_b);
+godot_string GDAPI godot_string_operator_plus(const godot_string *p_self, const godot_string *p_b);
 
-	godot_gdnative_procedure_fn proc;
-	proc = (godot_gdnative_procedure_fn)library_proc;
+// @Incomplete
+// hmm, I guess exposing the whole API doesn't make much sense
+// since the language used in the library has its own string funcs
 
-	return proc(NULL, p_args);
+void GDAPI godot_string_destroy(godot_string *p_self);
+
+#ifdef __cplusplus
 }
+#endif
 
-GDNativeCallRegistry *GDNativeCallRegistry::singleton;
-
-void register_gdnative_types() {
-
-	ClassDB::register_class<GDNativeLibrary>();
-	ClassDB::register_class<GDNative>();
-
-	GDNativeCallRegistry::singleton = memnew(GDNativeCallRegistry);
-
-	GDNativeCallRegistry::singleton->register_native_call_type("standard_varcall", cb_standard_varcall);
-}
-
-void unregister_gdnative_types() {
-	memdelete(GDNativeCallRegistry::singleton);
-}
+#endif // GODOT_STRING_H

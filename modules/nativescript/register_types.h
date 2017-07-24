@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  register_types.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,52 +27,5 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "register_types.h"
-#include "gdnative.h"
-
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
-
-#include "core/os/os.h"
-
-godot_variant cb_standard_varcall(void *handle, godot_string *p_procedure, godot_array *p_args) {
-	if (handle == NULL) {
-		ERR_PRINT("No valid library handle, can't call standard varcall procedure");
-		godot_variant ret;
-		godot_variant_new_nil(&ret);
-		return ret;
-	}
-
-	void *library_proc;
-	Error err = OS::get_singleton()->get_dynamic_library_symbol_handle(
-			handle,
-			*(String *)p_procedure,
-			library_proc);
-	if (err != OK) {
-		ERR_PRINT((String("GDNative procedure \"" + *(String *)p_procedure) + "\" does not exists and can't be called").utf8().get_data());
-		godot_variant ret;
-		godot_variant_new_nil(&ret);
-		return ret;
-	}
-
-	godot_gdnative_procedure_fn proc;
-	proc = (godot_gdnative_procedure_fn)library_proc;
-
-	return proc(NULL, p_args);
-}
-
-GDNativeCallRegistry *GDNativeCallRegistry::singleton;
-
-void register_gdnative_types() {
-
-	ClassDB::register_class<GDNativeLibrary>();
-	ClassDB::register_class<GDNative>();
-
-	GDNativeCallRegistry::singleton = memnew(GDNativeCallRegistry);
-
-	GDNativeCallRegistry::singleton->register_native_call_type("standard_varcall", cb_standard_varcall);
-}
-
-void unregister_gdnative_types() {
-	memdelete(GDNativeCallRegistry::singleton);
-}
+void register_nativescript_types();
+void unregister_nativescript_types();

@@ -1,0 +1,10 @@
+#!/usr/bin/env python
+
+Import('env')
+
+mod_env = env.Clone()
+mod_env.add_source_files(env.modules_sources, "*.cpp")
+mod_env.Append(CPPPATH='#modules/gdnative')
+mod_env.Append(CPPFLAGS=['-DGDAPI_BUILT_IN'])
+
+Export('mod_env')

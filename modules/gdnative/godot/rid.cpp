@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  rid.cpp                                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,52 +27,49 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "register_types.h"
-#include "gdnative.h"
+#include "rid.h"
+#include "core/variant.h"
 
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
+#include "core/resource.h"
+#include "core/rid.h"
 
-#include "core/os/os.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-godot_variant cb_standard_varcall(void *handle, godot_string *p_procedure, godot_array *p_args) {
-	if (handle == NULL) {
-		ERR_PRINT("No valid library handle, can't call standard varcall procedure");
-		godot_variant ret;
-		godot_variant_new_nil(&ret);
-		return ret;
+void _rid_api_anchor() {}
+
+void GDAPI godot_rid_new(godot_rid *r_dest) {
+	RID *dest = (RID *)r_dest;
+	memnew_placement(dest, RID);
+}
+
+godot_int GDAPI godot_rid_get_id(const godot_rid *p_self) {
+	const RID *self = (const RID *)p_self;
+	return self->get_id();
+}
+
+void GDAPI godot_rid_new_with_resource(godot_rid *r_dest, const godot_object *p_from) {
+	const Resource *res_from = ((const Object *)p_from)->cast_to<Resource>();
+	godot_rid_new(r_dest);
+	if (res_from) {
+		RID *dest = (RID *)r_dest;
+		*dest = RID(res_from->get_rid());
 	}
-
-	void *library_proc;
-	Error err = OS::get_singleton()->get_dynamic_library_symbol_handle(
-			handle,
-			*(String *)p_procedure,
-			library_proc);
-	if (err != OK) {
-		ERR_PRINT((String("GDNative procedure \"" + *(String *)p_procedure) + "\" does not exists and can't be called").utf8().get_data());
-		godot_variant ret;
-		godot_variant_new_nil(&ret);
-		return ret;
-	}
-
-	godot_gdnative_procedure_fn proc;
-	proc = (godot_gdnative_procedure_fn)library_proc;
-
-	return proc(NULL, p_args);
 }
 
-GDNativeCallRegistry *GDNativeCallRegistry::singleton;
-
-void register_gdnative_types() {
-
-	ClassDB::register_class<GDNativeLibrary>();
-	ClassDB::register_class<GDNative>();
-
-	GDNativeCallRegistry::singleton = memnew(GDNativeCallRegistry);
-
-	GDNativeCallRegistry::singleton->register_native_call_type("standard_varcall", cb_standard_varcall);
+godot_bool GDAPI godot_rid_operator_equal(const godot_rid *p_self, const godot_rid *p_b) {
+	const RID *self = (const RID *)p_self;
+	const RID *b = (const RID *)p_b;
+	return *self == *b;
 }
 
-void unregister_gdnative_types() {
-	memdelete(GDNativeCallRegistry::singleton);
+godot_bool GDAPI godot_rid_operator_less(const godot_rid *p_self, const godot_rid *p_b) {
+	const RID *self = (const RID *)p_self;
+	const RID *b = (const RID *)p_b;
+	return *self < *b;
 }
+
+#ifdef __cplusplus
+}
+#endif
