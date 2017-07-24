@@ -879,31 +879,19 @@ RigidBody::~RigidBody() {
 //////////////////////////////////////////////////////
 //////////////////////////
 
-Dictionary KinematicBody::_move(const Vector3 &p_motion) {
+bool KinematicBody::_move(const Vector3 &p_motion) {
 
+	on_floor = false;
+	on_ceiling = false;
+	on_wall = false;
+	colliders.clear();
+	floor_velocity = Vector3();
 	Collision col;
 	if (move(p_motion, col)) {
-		Dictionary d;
-		d["position"] = col.collision;
-		d["normal"] = col.collision;
-		d["local_shape"] = col.local_shape;
-		d["travel"] = col.travel;
-		d["remainder"] = col.remainder;
-		d["collider_id"] = col.collider;
-		if (col.collider) {
-			d["collider"] = ObjectDB::get_instance(col.collider);
-		} else {
-			d["collider"] = Variant();
-		}
-
-		d["collider_shape_index"] = col.collider_shape;
-		d["collider_metadata"] = col.collider_metadata;
-
-		return d;
-
-	} else {
-		return Dictionary();
+		colliders.push_back(col);
+		return false;
 	}
+	return true;
 }
 
 bool KinematicBody::move(const Vector3 &p_motion, Collision &r_collision) {
@@ -1110,17 +1098,17 @@ void KinematicBody::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_safe_margin", "pixels"), &KinematicBody::get_safe_margin);
 
 	ClassDB::bind_method(D_METHOD("get_collision_count"), &KinematicBody::get_collision_count);
-	ClassDB::bind_method(D_METHOD("get_collision_position", "collision"), &KinematicBody::get_collision_position);
-	ClassDB::bind_method(D_METHOD("get_collision_normal", "collision"), &KinematicBody::get_collision_normal);
-	ClassDB::bind_method(D_METHOD("get_collision_travel", "collision"), &KinematicBody::get_collision_travel);
-	ClassDB::bind_method(D_METHOD("get_collision_remainder", "collision"), &KinematicBody::get_collision_remainder);
-	ClassDB::bind_method(D_METHOD("get_collision_local_shape", "collision"), &KinematicBody::get_collision_local_shape);
-	ClassDB::bind_method(D_METHOD("get_collision_collider", "collision"), &KinematicBody::get_collision_collider);
-	ClassDB::bind_method(D_METHOD("get_collision_collider_id", "collision"), &KinematicBody::get_collision_collider_id);
-	ClassDB::bind_method(D_METHOD("get_collision_collider_shape", "collision"), &KinematicBody::get_collision_collider_shape);
-	ClassDB::bind_method(D_METHOD("get_collision_collider_shape_index", "collision"), &KinematicBody::get_collision_collider_shape_index);
-	ClassDB::bind_method(D_METHOD("get_collision_collider_velocity", "collision"), &KinematicBody::get_collision_collider_velocity);
-	ClassDB::bind_method(D_METHOD("get_collision_collider_metadata", "collision"), &KinematicBody::get_collision_collider_metadata);
+	ClassDB::bind_method(D_METHOD("get_collision_position", "collision"), &KinematicBody::get_collision_position, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_collision_normal", "collision"), &KinematicBody::get_collision_normal, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_collision_travel", "collision"), &KinematicBody::get_collision_travel, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_collision_remainder", "collision"), &KinematicBody::get_collision_remainder, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_collision_local_shape", "collision"), &KinematicBody::get_collision_local_shape, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_collision_collider", "collision"), &KinematicBody::get_collision_collider, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_collision_collider_id", "collision"), &KinematicBody::get_collision_collider_id, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_collision_collider_shape", "collision"), &KinematicBody::get_collision_collider_shape, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_collision_collider_shape_index", "collision"), &KinematicBody::get_collision_collider_shape_index, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_collision_collider_velocity", "collision"), &KinematicBody::get_collision_collider_velocity, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_collision_collider_metadata", "collision"), &KinematicBody::get_collision_collider_metadata, DEFVAL(0));
 
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "collision/safe_margin", PROPERTY_HINT_RANGE, "0.001,256,0.001"), "set_safe_margin", "get_safe_margin");
 }
