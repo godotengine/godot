@@ -799,7 +799,7 @@ NativeScriptLanguage::NativeScriptLanguage() {
 
 // TODO(karroffel): implement this
 NativeScriptLanguage::~NativeScriptLanguage() {
-	_unload_stuff();
+	// _unload_stuff(); // NOTE(karroffel): This gets called in ::finish()
 
 	for (Map<String, Ref<GDNative> >::Element *L = NSL->library_gdnatives.front(); L; L = L->next()) {
 
@@ -1010,40 +1010,6 @@ void NativeReloadNode::_notification(int p_what) {
 			for (Set<StringName>::Element *R = libs_to_remove.front(); R; R = R->next()) {
 				NSL->library_gdnatives.erase(R->get());
 			}
-
-			/*
-			for (Set<NativeLibrary *>::Element *L = libs_to_reload.front(); L; L = L->next()) {
-
-				GDNativeLibrary *lib = L->get()->dllib;
-
-				lib->_terminate();
-				lib->_initialize();
-
-				// update placeholders (if any)
-
-				Set<GDNativeScript *> scripts;
-
-				for (Set<GDNativeScript *>::Element *S = GDNativeScriptLanguage::get_singleton()->script_list.front(); S; S = S->next()) {
-
-					if (lib->native_library->scripts.has(S->get()->get_script_name())) {
-						GDNativeScript *script = S->get();
-						script->script_data = lib->get_script_data(script->get_script_name());
-						scripts.insert(script);
-					}
-				}
-
-				for (Set<GDNativeScript *>::Element *S = scripts.front(); S; S = S->next()) {
-					GDNativeScript *script = S->get();
-					if (script->placeholders.size() == 0)
-						continue;
-
-					for (Set<PlaceHolderScriptInstance *>::Element *P = script->placeholders.front(); P; P = P->next()) {
-						PlaceHolderScriptInstance *p = P->get();
-						script->_update_placeholder(p);
-					}
-				}
-			}
-			*/
 
 		} break;
 		default: {
