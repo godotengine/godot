@@ -109,9 +109,9 @@ void OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p_
 
 	RasterizerGLES3::register_config();
 	RasterizerGLES3::make_current();
-	RasterizerStorageGLES3::system_fbo = gl_view_base_fb;
 
 	visual_server = memnew(VisualServerRaster());
+
 	/*
 		FIXME: Reimplement threaded rendering? Or remove?
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
@@ -121,6 +121,7 @@ void OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p_
 
 	visual_server->init();
 	visual_server->cursor_set_visible(false, 0);
+	RasterizerStorageGLES3::system_fbo = gl_view_base_fb;
 
 	audio_driver = memnew(AudioDriverIphone);
 	audio_driver->set_singleton();
@@ -434,7 +435,8 @@ bool OSIPhone::can_draw() const {
 
 int OSIPhone::set_base_framebuffer(int p_fb) {
 
-	RasterizerStorageGLES3::system_fbo = gl_view_base_fb;
+	// gl_view_base_fb has not been updated yet
+	RasterizerStorageGLES3::system_fbo = p_fb;
 
 	return 0;
 };
