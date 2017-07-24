@@ -65,8 +65,17 @@ String GDNativeLibrary::platform_lib_ext[NUM_PLATFORMS] = {
 	"wasm"
 };
 
-// TODO(karroffel): make this actually do something lol.
-GDNativeLibrary::Platform GDNativeLibrary::current_platform = X11_64BIT;
+// TODO(karroffel): make this actually do the right thing.
+GDNativeLibrary::Platform GDNativeLibrary::current_platform =
+#if defined(X11_ENABLED)
+		X11_64BIT;
+#elif defined(WINDOWS_ENABLED)
+		WINDOWS_64BIT;
+#elif defined(OSX_ENABLED)
+		OSX;
+#else
+		X11_64BIT; // need a sensible default..
+#endif
 
 GDNativeLibrary::GDNativeLibrary()
 	: library_paths() {
