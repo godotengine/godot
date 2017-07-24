@@ -6082,15 +6082,11 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
 					GL_TEXTURE_2D, rt->buffers.effect, 0);
 
-			if (status != GL_FRAMEBUFFER_COMPLETE) {
-				printf("err status: %x\n", status);
-				_render_target_clear(rt);
-				ERR_FAIL_COND(status != GL_FRAMEBUFFER_COMPLETE);
-			}
-
+			status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 			glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
 
 			if (status != GL_FRAMEBUFFER_COMPLETE) {
+				printf("err status: %x\n", status);
 				_render_target_clear(rt);
 				ERR_FAIL_COND(status != GL_FRAMEBUFFER_COMPLETE);
 			}
