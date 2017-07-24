@@ -160,11 +160,11 @@ class NativeScriptInstance : public ScriptInstance {
 	Object *owner;
 	Ref<NativeScript> script;
 
-	void *userdata;
-
 	void _ml_call_reversed(NativeScriptDesc *script_data, const StringName &p_method, const Variant **p_args, int p_argcount);
 
 public:
+	void *userdata;
+
 	virtual bool set(const StringName &p_name, const Variant &p_value);
 	virtual bool get(const StringName &p_name, Variant &r_ret) const;
 	virtual void get_property_list(List<PropertyInfo> *p_properties) const;
