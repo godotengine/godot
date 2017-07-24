@@ -128,6 +128,22 @@ void CollisionObject::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_capture_input_on_drag", "enable"), &CollisionObject::set_capture_input_on_drag);
 	ClassDB::bind_method(D_METHOD("get_capture_input_on_drag"), &CollisionObject::get_capture_input_on_drag);
 	ClassDB::bind_method(D_METHOD("get_rid"), &CollisionObject::get_rid);
+	ClassDB::bind_method(D_METHOD("create_shape_owner", "owner:Object"), &CollisionObject::create_shape_owner);
+	ClassDB::bind_method(D_METHOD("remove_shape_owner", "owner_id"), &CollisionObject::remove_shape_owner);
+	ClassDB::bind_method(D_METHOD("get_shape_owners"), &CollisionObject::_get_shape_owners);
+	ClassDB::bind_method(D_METHOD("shape_owner_set_transform", "owner_id", "transform:Transform"), &CollisionObject::shape_owner_set_transform);
+	ClassDB::bind_method(D_METHOD("shape_owner_get_transform", "owner_id"), &CollisionObject::shape_owner_get_transform);
+	ClassDB::bind_method(D_METHOD("shape_owner_get_owner", "owner_id"), &CollisionObject::shape_owner_get_owner);
+	ClassDB::bind_method(D_METHOD("shape_owner_set_disabled", "owner_id", "disabled"), &CollisionObject::shape_owner_set_disabled);
+	ClassDB::bind_method(D_METHOD("is_shape_owner_disabled", "owner_id"), &CollisionObject::is_shape_owner_disabled);
+	ClassDB::bind_method(D_METHOD("shape_owner_add_shape", "owner_id", "shape:Shape"), &CollisionObject::shape_owner_add_shape);
+	ClassDB::bind_method(D_METHOD("shape_owner_get_shape_count", "owner_id"), &CollisionObject::shape_owner_get_shape_count);
+	ClassDB::bind_method(D_METHOD("shape_owner_get_shape", "owner_id", "shape_id"), &CollisionObject::shape_owner_get_shape);
+	ClassDB::bind_method(D_METHOD("shape_owner_get_shape_index", "owner_id", "shape_id"), &CollisionObject::shape_owner_get_shape_index);
+	ClassDB::bind_method(D_METHOD("shape_owner_remove_shape", "owner_id", "shape_id"), &CollisionObject::shape_owner_remove_shape);
+	ClassDB::bind_method(D_METHOD("shape_owner_clear_shapes", "owner_id"), &CollisionObject::shape_owner_clear_shapes);
+	ClassDB::bind_method(D_METHOD("shape_find_owner", "shape_index"), &CollisionObject::shape_find_owner);
+
 	BIND_VMETHOD(MethodInfo("_input_event", PropertyInfo(Variant::OBJECT, "camera"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::VECTOR3, "click_pos"), PropertyInfo(Variant::VECTOR3, "click_normal"), PropertyInfo(Variant::INT, "shape_idx")));
 
 	ADD_SIGNAL(MethodInfo("input_event", PropertyInfo(Variant::OBJECT, "camera"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::VECTOR3, "click_pos"), PropertyInfo(Variant::VECTOR3, "click_normal"), PropertyInfo(Variant::INT, "shape_idx")));
@@ -191,6 +207,16 @@ void CollisionObject::get_shape_owners(List<uint32_t> *r_owners) {
 	for (Map<uint32_t, ShapeData>::Element *E = shapes.front(); E; E = E->next()) {
 		r_owners->push_back(E->key());
 	}
+}
+
+Array CollisionObject::_get_shape_owners() {
+
+	Array ret;
+	for (Map<uint32_t, ShapeData>::Element *E = shapes.front(); E; E = E->next()) {
+		ret.push_back(E->key());
+	}
+
+	return ret;
 }
 
 void CollisionObject::shape_owner_set_transform(uint32_t p_owner, const Transform &p_transform) {
