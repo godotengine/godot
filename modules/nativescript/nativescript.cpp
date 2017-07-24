@@ -59,6 +59,8 @@ void NativeScript::_bind_methods() {
 
 	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "class_name"), "set_class_name", "get_class_name");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "library", PROPERTY_HINT_RESOURCE_TYPE, "GDNativeLibrary"), "set_library", "get_library");
+
+	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "new", &NativeScript::_new, MethodInfo(Variant::OBJECT, "new"));
 }
 
 #define NSL NativeScriptLanguage::get_singleton()
