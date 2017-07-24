@@ -31,11 +31,15 @@
 
 #include "audio_driver_osx.h"
 
-Error AudioDriverOSX::init() {
+static OSStatus outputDeviceAddressCB(AudioObjectID inObjectID, UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses, void *__nullable inClientData) {
+	AudioDriverOSX *driver = (AudioDriverOSX *)inClientData;
 
-	active = false;
-	channels = 2;
+	driver->reopen();
 
+	return noErr;
+}
+
+Error AudioDriverOSX::initDevice() {
 	AudioStreamBasicDescription strdesc;
 	strdesc.mFormatID = kAudioFormatLinearPCM;
 	strdesc.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger | kLinearPCMFormatFlagIsPacked;
@@ -43,12 +47,10 @@ Error AudioDriverOSX::init() {
 	strdesc.mSampleRate = 44100;
 	strdesc.mFramesPerPacket = 1;
 	strdesc.mBitsPerChannel = 16;
-	strdesc.mBytesPerFrame =
-			strdesc.mBitsPerChannel * strdesc.mChannelsPerFrame / 8;
-	strdesc.mBytesPerPacket =
-			strdesc.mBytesPerFrame * strdesc.mFramesPerPacket;
+	strdesc.mBytesPerFrame = strdesc.mBitsPerChannel * strdesc.mChannelsPerFrame / 8;
+	strdesc.mBytesPerPacket = strdesc.mBytesPerFrame * strdesc.mFramesPerPacket;
 
-	OSStatus result = noErr;
+	OSStatus result;
 	AURenderCallbackStruct callback;
 	AudioComponentDescription desc;
 	AudioComponent comp = NULL;
@@ -58,39 +60,98 @@ Error AudioDriverOSX::init() {
 
 	zeromem(&desc, sizeof(desc));
 	desc.componentType = kAudioUnitType_Output;
-	desc.componentSubType = 0; /* !!! FIXME: ? */
-	comp = AudioComponentFindNext(NULL, &desc);
+	desc.componentSubType = kAudioUnitSubType_HALOutput;
 	desc.componentManufacturer = kAudioUnitManufacturer_Apple;
+
+	comp = AudioComponentFindNext(NULL, &desc);
+	ERR_FAIL_COND_V(comp == NULL, FAILED);
 
 	result = AudioComponentInstanceNew(comp, &audio_unit);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
-	ERR_FAIL_COND_V(comp == NULL, FAILED);
 
-	result = AudioUnitSetProperty(audio_unit,
-			kAudioUnitProperty_StreamFormat,
-			scope, bus, &strdesc, sizeof(strdesc));
+	result = AudioUnitSetProperty(audio_unit, kAudioUnitProperty_StreamFormat, scope, bus, &strdesc, sizeof(strdesc));
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
 	zeromem(&callback, sizeof(AURenderCallbackStruct));
 	callback.inputProc = &AudioDriverOSX::output_callback;
 	callback.inputProcRefCon = this;
-	result = AudioUnitSetProperty(audio_unit,
-			kAudioUnitProperty_SetRenderCallback,
-			scope, bus, &callback, sizeof(callback));
+	result = AudioUnitSetProperty(audio_unit, kAudioUnitProperty_SetRenderCallback, scope, bus, &callback, sizeof(callback));
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
 	result = AudioUnitInitialize(audio_unit);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
-	result = AudioOutputUnitStart(audio_unit);
+	return OK;
+}
+
+Error AudioDriverOSX::finishDevice() {
+	OSStatus result;
+
+	if (active) {
+		result = AudioOutputUnitStop(audio_unit);
+		ERR_FAIL_COND_V(result != noErr, FAILED);
+
+		active = false;
+	}
+
+	result = AudioUnitUninitialize(audio_unit);
+	ERR_FAIL_COND_V(result != noErr, FAILED);
+
+	return OK;
+}
+
+Error AudioDriverOSX::init() {
+	OSStatus result;
+
+	active = false;
+	channels = 2;
+
+	outputDeviceAddress.mSelector = kAudioHardwarePropertyDefaultOutputDevice;
+	outputDeviceAddress.mScope = kAudioObjectPropertyScopeGlobal;
+	outputDeviceAddress.mElement = kAudioObjectPropertyElementMaster;
+
+	result = AudioObjectAddPropertyListener(kAudioObjectSystemObject, &outputDeviceAddress, &outputDeviceAddressCB, this);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
 	const int samples = 1024;
 	samples_in = memnew_arr(int32_t, samples); // whatever
 	buffer_frames = samples / channels;
 
-	return OK;
+	return initDevice();
 };
+
+Error AudioDriverOSX::reopen() {
+	Error err;
+	bool restart = false;
+
+	lock();
+
+	if (active) {
+		restart = true;
+	}
+
+	err = finishDevice();
+	if (err != OK) {
+		ERR_PRINT("finishDevice failed");
+		unlock();
+		return err;
+	}
+
+	err = initDevice();
+	if (err != OK) {
+		ERR_PRINT("initDevice failed");
+		unlock();
+		return err;
+	}
+
+	if (restart) {
+		start();
+	}
+
+	unlock();
+
+	return OK;
+}
 
 OSStatus AudioDriverOSX::output_callback(void *inRefCon,
 		AudioUnitRenderActionFlags *ioActionFlags,
@@ -149,7 +210,14 @@ OSStatus AudioDriverOSX::output_callback(void *inRefCon,
 };
 
 void AudioDriverOSX::start() {
-	active = true;
+	if (!active) {
+		OSStatus result = AudioOutputUnitStart(audio_unit);
+		if (result != noErr) {
+			ERR_PRINT("AudioOutputUnitStart failed");
+		} else {
+			active = true;
+		}
+	}
 };
 
 int AudioDriverOSX::get_mix_rate() const {
@@ -161,18 +229,23 @@ AudioDriverSW::OutputFormat AudioDriverOSX::get_output_format() const {
 };
 
 void AudioDriverOSX::lock() {
-	if (active && mutex)
+	if (mutex)
 		mutex->lock();
 };
 void AudioDriverOSX::unlock() {
-	if (active && mutex)
+	if (mutex)
 		mutex->unlock();
 };
 
 void AudioDriverOSX::finish() {
+	OSStatus result;
 
-	if (active)
-		AudioOutputUnitStop(audio_unit);
+	finishDevice();
+
+	result = AudioObjectRemovePropertyListener(kAudioObjectSystemObject, &outputDeviceAddress, &outputDeviceAddressCB, this);
+	if (result != noErr) {
+		ERR_PRINT("AudioObjectRemovePropertyListener failed");
+	}
 
 	memdelete_arr(samples_in);
 };
