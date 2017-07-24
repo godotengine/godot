@@ -532,6 +532,7 @@ bool NativeScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void NativeScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const {
+	script->get_script_property_list(p_properties);
 
 	NativeScriptDesc *script_data = GET_SCRIPT_DESC();
 
