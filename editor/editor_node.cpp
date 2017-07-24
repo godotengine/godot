@@ -5380,6 +5380,7 @@ EditorNode::EditorNode() {
 	distraction_free = memnew(ToolButton);
 	tabbar_container->add_child(distraction_free);
 	distraction_free->set_shortcut(ED_SHORTCUT("editor/distraction_free_mode", TTR("Distraction Free Mode"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_F11));
+	distraction_free->set_tooltip(TTR("Toggle distraction-free mode."));
 	distraction_free->connect("pressed", this, "_toggle_distraction_free_mode");
 	distraction_free->set_icon(gui_base->get_icon("DistractionFree", "EditorIcons"));
 	distraction_free->set_toggle_mode(true);
