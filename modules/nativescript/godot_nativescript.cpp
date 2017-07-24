@@ -195,7 +195,7 @@ void GDAPI *godot_nativescript_get_userdata(godot_object *p_instance) {
 	if (!instance)
 		return NULL;
 	if (instance->get_script_instance() && instance->get_script_instance()->get_language() == NativeScriptLanguage::get_singleton()) {
-		// return ((NativeScriptInstance *)instance->get_script_instance())->get_userdata();
+		return ((NativeScriptInstance *)instance->get_script_instance())->userdata;
 	}
 	return NULL;
 }
