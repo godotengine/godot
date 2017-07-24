@@ -398,6 +398,16 @@ float Node2D::get_angle_to(const Vector2 &p_pos) const {
 	return (get_global_transform().affine_inverse().xform(p_pos)).angle();
 }
 
+Point2 Node2D::to_local(Point2 p_global) const {
+
+	return get_global_transform().affine_inverse().xform(p_global);
+}
+
+Point2 Node2D::to_global(Point2 p_local) const {
+
+	return get_global_transform().xform(p_local);
+}
+
 void Node2D::_bind_methods() {
 
 	// TODO: Obsolete those two methods (old name) properly (GH-4397)
@@ -435,6 +445,9 @@ void Node2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("look_at", "point"), &Node2D::look_at);
 	ClassDB::bind_method(D_METHOD("get_angle_to", "point"), &Node2D::get_angle_to);
+
+	ClassDB::bind_method(D_METHOD("to_local", "global_point"), &Node2D::to_local);
+	ClassDB::bind_method(D_METHOD("to_global", "local_point"), &Node2D::to_global);
 
 	ClassDB::bind_method(D_METHOD("set_z", "z"), &Node2D::set_z);
 	ClassDB::bind_method(D_METHOD("get_z"), &Node2D::get_z);
