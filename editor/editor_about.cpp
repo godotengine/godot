@@ -137,7 +137,6 @@ EditorAbout::EditorAbout() {
 	tc->add_child(license_thirdparty);
 
 	Label *tpl_label = memnew(Label);
-	tpl_label->set_custom_minimum_size(Size2(0, 64 * EDSCALE));
 	tpl_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	tpl_label->set_autowrap(true);
 	tpl_label->set_text(TTR("Godot Engine relies on a number of thirdparty free and open source libraries, all compatible with the terms of its MIT license. The following is an exhaustive list of all such thirdparty components with their respective copyright statements and license terms."));
