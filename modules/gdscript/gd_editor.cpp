@@ -1334,8 +1334,8 @@ static void _find_identifiers(GDCompletionContext &context, int p_line, bool p_o
 
 	static const char *_type_names[Variant::VARIANT_MAX] = {
 		"null", "bool", "int", "float", "String", "Vector2", "Rect2", "Vector3", "Transform2D", "Plane", "Quat", "AABB", "Basis", "Transform",
-		"Color", "NodePath", "RID", "Object", "Dictionary", "Array", "RawArray", "IntArray", "FloatArray", "StringArray",
-		"Vector2Array", "Vector3Array", "ColorArray"
+		"Color", "NodePath", "RID", "Object", "Dictionary", "Array", "PoolByteArray", "PoolIntArray", "PoolRealArray", "PoolStringArray",
+		"PoolVector2Array", "PoolVector3Array", "PoolColorArray"
 	};
 
 	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
