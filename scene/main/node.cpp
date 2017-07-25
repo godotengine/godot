@@ -311,6 +311,11 @@ void Node::move_child(Node *p_child, int p_pos) {
 		ERR_FAIL_COND(data.blocked > 0);
 	}
 
+	// Specifying one place beyond the end
+	// means the same as moving to the last position
+	if (p_pos == data.children.size())
+		p_pos--;
+
 	if (p_child->data.pos == p_pos)
 		return; //do nothing
 
