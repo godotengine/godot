@@ -757,7 +757,8 @@ BodySW::BodySW()
 
 	contact_count = 0;
 	gravity_scale = 1.0;
-
+	linear_damp = -1;
+	angular_damp = -1;
 	area_angular_damp = 0;
 	area_linear_damp = 0;
 
