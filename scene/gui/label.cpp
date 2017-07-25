@@ -36,7 +36,6 @@ void Label::set_autowrap(bool p_autowrap) {
 
 	autowrap = p_autowrap;
 	word_cache_dirty = true;
-	minimum_size_changed();
 	update();
 }
 bool Label::has_autowrap() const {
@@ -48,7 +47,6 @@ void Label::set_uppercase(bool p_uppercase) {
 
 	uppercase = p_uppercase;
 	word_cache_dirty = true;
-	minimum_size_changed();
 	update();
 }
 bool Label::is_uppercase() const {
@@ -71,7 +69,6 @@ void Label::_notification(int p_what) {
 		xl_text = new_text;
 
 		regenerate_word_cache();
-		minimum_size_changed();
 		update();
 	}
 
@@ -496,6 +493,7 @@ void Label::regenerate_word_cache() {
 		minsize.height = (font->get_height() * line_count) + (line_spacing * (line_count - 1));
 	}
 
+	minimum_size_changed();
 	word_cache_dirty = false;
 }
 
@@ -533,9 +531,6 @@ void Label::set_text(const String &p_string) {
 	if (percent_visible < 1)
 		visible_chars = get_total_character_count() * percent_visible;
 	update();
-	if (!autowrap) {
-		minimum_size_changed();
-	}
 }
 
 void Label::set_clip_text(bool p_clip) {
