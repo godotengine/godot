@@ -39,7 +39,7 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Remove sign (works for integer and float).
+				Returns the absolute value of parameter s  (i.e. unsigned value, works for integer and float).
 			</description>
 		</method>
 		<method name="acos">
@@ -48,7 +48,7 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Arc-cosine.
+				Returns the principal value of the arc cosine of s, expressed in radians. In trigonometrics, arc cosine is the inverse operation of cosine.
 			</description>
 		</method>
 		<method name="asin">
@@ -57,7 +57,7 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Arc-sine.
+				Returns the principal value of the arc sine of s, expressed in radians. In trigonometrics, arc sine is the inverse operation of sine.
 			</description>
 		</method>
 		<method name="assert">
@@ -75,7 +75,7 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Arc-tangent.
+				Returns the principal value of the arc tangent of s, expressed in radians. In trigonometrics, arc tangent is the inverse operation of tangent. Notice that because of the sign ambiguity, the function cannot determine with certainty in which quadrant the angle falls only by its tangent value. See [method atan2] for an alternative that takes a fractional argument instead.
 			</description>
 		</method>
 		<method name="atan2">
@@ -86,7 +86,7 @@
 			<argument index="1" name="y" type="float">
 			</argument>
 			<description>
-				Arc-tangent that takes a 2D vector as argument, returns the full -pi to +pi range.
+				Returns the principal value of the arc tangent of y/x, expressed in radians. To compute the value, the function takes into account the sign of both arguments in order to determine the quadrant.
 			</description>
 		</method>
 		<method name="bytes2var">
@@ -104,7 +104,7 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Ceiling (rounds up to nearest integer).
+				Rounds s upward, returning the smallest integral value that is not less than s.
 			</description>
 		</method>
 		<method name="char">
@@ -125,7 +125,7 @@
 			<argument index="2" name="max" type="float">
 			</argument>
 			<description>
-				Clamp both values to a range.
+				Clamps a value between a minimum and maximum value.
 			</description>
 		</method>
 		<method name="convert">
@@ -145,7 +145,7 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Standard cosine function.
+				Returns the cosine of an angle of s radians.
 			</description>
 		</method>
 		<method name="cosh">
@@ -154,7 +154,7 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Hyperbolic cosine.
+				Returns the hyperbolic cosine of s.
 			</description>
 		</method>
 		<method name="db2linear">
@@ -223,7 +223,7 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Exponential logarithm.
+				Returns the base-e exponential function of s, which is e raised to the power s: e^s.
 			</description>
 		</method>
 		<method name="floor">
@@ -232,7 +232,7 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Floor (rounds down to nearest integer).
+				Rounds s downward, returning the largest integral value that is not greater than s.
 			</description>
 		</method>
 		<method name="fmod">
@@ -243,7 +243,11 @@
 			<argument index="1" name="y" type="float">
 			</argument>
 			<description>
-				Module (remainder of x/y).
+				Returns the floating-point remainder of x/y (rounded towards zero):
+				[codeblock]
+				fmod = x - tquot * y 
+				[/codeblock]
+				Where tquot is the truncated (i.e., rounded towards zero) result of: x/y.
 			</description>
 		</method>
 		<method name="fposmod">
@@ -301,6 +305,7 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
+				Returns whether s is an infinity value (either positive infinity or negative infinity).
 			</description>
 		</method>
 		<method name="is_nan">
@@ -309,6 +314,7 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
+				Returns whether s is a NaN (Not-A-Number) value.
 			</description>
 		</method>
 		<method name="lerp">
@@ -539,7 +545,7 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Round to nearest integer.
+				Returns the integral value that is nearest to s, with halfway cases rounded away from zero.
 			</description>
 		</method>
 		<method name="seed">
@@ -566,7 +572,7 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Standard sine function.
+				Returns the sine of an angle of s radians.
 			</description>
 		</method>
 		<method name="sinh">
@@ -575,7 +581,7 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Hyperbolic sine.
+				Returns the hyperbolic sine of s.
 			</description>
 		</method>
 		<method name="sqrt">
@@ -584,7 +590,7 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Square root.
+				Returns the square root of s.
 			</description>
 		</method>
 		<method name="stepify">
@@ -606,7 +612,7 @@
 			<argument index="1" name="..." type="Variant">
 			</argument>
 			<description>
-				Convert one or more arguments to strings in the best way possible.
+				Convert one or more arguments to string in the best way possible.
 			</description>
 		</method>
 		<method name="str2var">
@@ -624,7 +630,7 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Standard tangent function.
+				Returns the tangent of an angle of s radians.
 			</description>
 		</method>
 		<method name="tanh">
@@ -633,7 +639,7 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Hyperbolic tangent.
+				Returns the hyperbolic tangent of s.
 			</description>
 		</method>
 		<method name="to_json">
@@ -668,6 +674,7 @@
 			<argument index="0" name="json" type="String">
 			</argument>
 			<description>
+				This method is used to validate the structure and data types of a piece of JSON, similar to XML Schema for XML.
 			</description>
 		</method>
 		<method name="var2bytes">
@@ -695,6 +702,7 @@
 			</argument>
 			<description>
 				Return a weak reference to an object.
+				A weak reference to an object is not enough to keep the object alive: when the only remaining references to a referent are weak references, garbage collection is free to destroy the referent and reuse its memory for something else. However, until the object is actually destroyed the weak reference may return the object even if there are no strong references to it.
 			</description>
 		</method>
 		<method name="yield">
@@ -715,8 +723,11 @@
 			Constant that represents how many times the diameter of a circumference fits around its perimeter.
 		</constant>
 		<constant name="INF" value="inf">
+			A positive infinity. (For negative infinity, use -INF).
 		</constant>
 		<constant name="NAN" value="nan">
+			Macro constant that expands to an expression of type float that represents a NaN.
+			The NaN values are used to identify undefined or non-representable values for floating-point elements, such as the square root of negative numbers or the result of 0/0.
 		</constant>
 	</constants>
 </class>
@@ -1960,8 +1971,11 @@
 </class>
 <class name="AStar" inherits="Reference" category="Core">
 	<brief_description>
+		AStar class representation that uses vectors as edges.
 	</brief_description>
 	<description>
+		A* (A star) is a computer algorithm that is widely used in pathfinding and graph traversal, the process of plotting an efficiently directed path between multiple points. It enjoys widespread use due to its performance and accuracy. Godot's A* implementation make use of vectors as points.
+		You must add points manually with [method AStar.add_point] and create segments manually with [method AStar.connect_points]. So you can test if there is a path between two points with the [method AStar.are_points_connected] function, get the list of existing ids in the found path with [method AStar.get_id_path], or the points list with [method AStar.get_point_path].
 	</description>
 	<methods>
 		<method name="_compute_cost" qualifiers="virtual">
@@ -1988,7 +2002,7 @@
 			<argument index="2" name="weight_scale" type="float" default="1">
 			</argument>
 			<description>
-				Add a new point at the given position. The [code]weight_scale[/code] has to be 1 or larger.
+				Add a new point at the given position [code]pos[/code] with the given identifier [code]id[/code]. The [code]weight_scale[/code] has to be 1 or larger.
 			</description>
 		</method>
 		<method name="are_points_connected" qualifiers="const">
@@ -1999,10 +2013,12 @@
 			<argument index="1" name="to_id" type="int">
 			</argument>
 			<description>
+				Returns if there is a connection/segment between points [code]id[/code] and [code]from_id[/code]
 			</description>
 		</method>
 		<method name="clear">
 			<description>
+				Clear all the points and segments from AStar instance.
 			</description>
 		</method>
 		<method name="connect_points">
@@ -2013,6 +2029,7 @@
 			<argument index="2" name="bidirectional" type="bool" default="true">
 			</argument>
 			<description>
+				Create a segment between points [code]id[/code] and [code]to_id[/code].
 			</description>
 		</method>
 		<method name="disconnect_points">
@@ -2021,6 +2038,7 @@
 			<argument index="1" name="to_id" type="int">
 			</argument>
 			<description>
+				Deletes a segment between points [code]id[/code] and [code]to_id[/code].
 			</description>
 		</method>
 		<method name="get_available_point_id" qualifiers="const">
@@ -2035,6 +2053,7 @@
 			<argument index="0" name="to_pos" type="Vector3">
 			</argument>
 			<description>
+				Returns the id of closest point of given point.  -1 is returned if there are no points on AStar.
 			</description>
 		</method>
 		<method name="get_closest_pos_in_segment" qualifiers="const">
@@ -2043,6 +2062,7 @@
 			<argument index="0" name="to_pos" type="Vector3">
 			</argument>
 			<description>
+				Returns the position of closest point that has segments.
 			</description>
 		</method>
 		<method name="get_id_path">
@@ -2053,6 +2073,7 @@
 			<argument index="1" name="to_id" type="int">
 			</argument>
 			<description>
+				Returns an array with the point ids of path found by AStar between two given points.
 			</description>
 		</method>
 		<method name="get_point_path">
@@ -2063,6 +2084,7 @@
 			<argument index="1" name="to_id" type="int">
 			</argument>
 			<description>
+				Returns an array with the points of path found by AStar between two given points.
 			</description>
 		</method>
 		<method name="get_point_pos" qualifiers="const">
@@ -2071,6 +2093,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
+				Returns the position of point with given id.
 			</description>
 		</method>
 		<method name="get_point_weight_scale" qualifiers="const">
@@ -2079,6 +2102,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
+				Returns the weight scale of point with given id.
 			</description>
 		</method>
 		<method name="has_point" qualifiers="const">
@@ -2087,12 +2111,14 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
+				Returns if the point with given id exists on AStar;
 			</description>
 		</method>
 		<method name="remove_point">
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
+				Removes the point with given id.
 			</description>
 		</method>
 	</methods>
@@ -10743,17 +10769,17 @@
 		</theme_item>
 		<theme_item name="color_sample" type="Texture">
 		</theme_item>
-		<theme_item name="color_width" type="int">
-		</theme_item>
-		<theme_item name="hseparator" type="int">
+		<theme_item name="h_width" type="int">
 		</theme_item>
 		<theme_item name="label_width" type="int">
 		</theme_item>
+		<theme_item name="margin" type="int">
+		</theme_item>
 		<theme_item name="screen_picker" type="Texture">
 		</theme_item>
-		<theme_item name="value_height" type="int">
+		<theme_item name="sv_height" type="int">
 		</theme_item>
-		<theme_item name="value_width" type="int">
+		<theme_item name="sv_width" type="int">
 		</theme_item>
 	</theme_items>
 </class>
@@ -16307,6 +16333,8 @@
 		<constant name="COMPRESSION_ZSTD" value="2">
 			Use the Zstd compression method.
 		</constant>
+		<constant name="COMPRESSION_GZIP" value="3">
+		</constant>
 	</constants>
 </class>
 <class name="FileDialog" inherits="ConfirmationDialog" category="Core">
@@ -16815,6 +16843,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_normal_bias" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_probe_data" qualifiers="const">
 			<return type="Object">
 			</return>
@@ -16881,6 +16915,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_normal_bias">
+			<argument index="0" name="max" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_probe_data">
 			<argument index="0" name="data" type="Object">
 			</argument>
@@ -16914,6 +16954,8 @@
 		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents" brief="">
 		</member>
 		<member name="interior" type="bool" setter="set_interior" getter="is_interior" brief="">
+		</member>
+		<member name="normal_bias" type="float" setter="set_normal_bias" getter="get_normal_bias" brief="">
 		</member>
 		<member name="propagation" type="float" setter="set_propagation" getter="get_propagation" brief="">
 		</member>
@@ -16968,6 +17010,12 @@
 			</description>
 		</method>
 		<method name="get_energy" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_normal_bias" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
@@ -17045,6 +17093,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_normal_bias">
+			<argument index="0" name="bias" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_propagation">
 			<argument index="0" name="propagation" type="float">
 			</argument>
@@ -17074,6 +17128,8 @@
 		<member name="energy" type="float" setter="set_energy" getter="get_energy" brief="">
 		</member>
 		<member name="interior" type="bool" setter="set_interior" getter="is_interior" brief="">
+		</member>
+		<member name="normal_bias" type="float" setter="set_normal_bias" getter="get_normal_bias" brief="">
 		</member>
 		<member name="propagation" type="float" setter="set_propagation" getter="get_propagation" brief="">
 		</member>
@@ -27962,6 +28018,8 @@
 			</description>
 		</method>
 		<method name="get_meta" qualifiers="const">
+			<return type="Variant">
+			</return>
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
