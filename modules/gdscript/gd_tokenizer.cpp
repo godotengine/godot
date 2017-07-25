@@ -250,7 +250,7 @@ bool GDTokenizer::is_token_literal(int p_offset, bool variable_safe) const {
 		case TK_BUILT_IN_FUNC:
 
 		case TK_OP_IN:
-		case TK_OP_NOT:
+		//case TK_OP_NOT:
 		//case TK_OP_OR:
 		//case TK_OP_AND:
 

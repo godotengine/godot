@@ -3283,7 +3283,7 @@ void GDParser::_parse_class(ClassNode *p_class) {
 							break;
 						}
 
-						if (tokenizer->is_token_literal(0, true)) {
+						if (!tokenizer->is_token_literal(0, true)) {
 							_set_error("Expected identifier in signal argument.");
 							return;
 						}
