@@ -602,7 +602,8 @@ Error ProjectSettings::_save_settings_text(const String &p_file, const Map<Strin
 
 	file->store_string("config_version=" + itos(FORMAT_VERSION) + "\n");
 	if (p_custom_features != String())
-		file->store_string("_custom_featores=\"" + p_custom_features + "\"\n");
+		file->store_string("custom_features=\"" + p_custom_features + "\"\n");
+	file->store_string("\n");
 
 	for (Map<String, List<String> >::Element *E = props.front(); E; E = E->next()) {
 
