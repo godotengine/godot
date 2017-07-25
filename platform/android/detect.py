@@ -178,7 +178,7 @@ def configure(env):
 
     env.Append(CPPFLAGS=["-isystem", sysroot + "/usr/include"])
     env.Append(CPPFLAGS=string.split('-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -fvisibility=hidden -fno-strict-aliasing'))
-    env.Append(CPPFLAGS=string.split('-DANDROID -DNO_STATVFS -DGLES2_ENABLED'))
+    env.Append(CPPFLAGS=string.split('-DNO_STATVFS -DGLES2_ENABLED'))
 
     env['neon_enabled'] = False
     if env['android_arch'] == 'x86':
