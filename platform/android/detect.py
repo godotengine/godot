@@ -22,7 +22,7 @@ def get_opts():
         ('ANDROID_NDK_ROOT', 'the path to Android NDK',
          os.environ.get("ANDROID_NDK_ROOT", 0)),
         ('ndk_platform', 'compile for platform: (android-<api> , example: android-14)', "android-14"),
-        ('android_arch', 'select compiler architecture: (armv7/armv6/x86)', "armv7"),
+        ('android_arch', 'select compiler architecture: (armv7/armv6/arm64v8/x86)', "armv7"),
         ('android_neon', 'enable neon (armv7 only)', "yes"),
         ('android_stl', 'enable STL support in android port (for modules)', "no")
     ]
@@ -89,7 +89,7 @@ def configure(env):
 
     ndk_platform = env['ndk_platform']
 
-    if env['android_arch'] not in ['armv7', 'armv6', 'x86']:
+    if env['android_arch'] not in ['armv7', 'armv6', 'arm64v8', 'x86']:
         env['android_arch'] = 'armv7'
 
     if env['android_arch'] == 'x86':
@@ -107,16 +107,19 @@ def configure(env):
     env.Append(CPPPATH=['#platform/android'])
 
     if env['android_arch'] == 'x86':
+        env['ARCH'] = 'arch-x86'
         env.extra_suffix = ".x86" + env.extra_suffix
         target_subpath = "x86-4.9"
         abi_subpath = "i686-linux-android"
         arch_subpath = "x86"
     elif env['android_arch'] == 'armv6':
+        env['ARCH'] = 'arch-arm'
         env.extra_suffix = ".armv6" + env.extra_suffix
         target_subpath = "arm-linux-androideabi-4.9"
         abi_subpath = "arm-linux-androideabi"
         arch_subpath = "armeabi"
     elif env["android_arch"] == "armv7":
+        env['ARCH'] = 'arch-arm'
         target_subpath = "arm-linux-androideabi-4.9"
         abi_subpath = "arm-linux-androideabi"
         arch_subpath = "armeabi-v7a"
@@ -124,6 +127,12 @@ def configure(env):
             env.extra_suffix = ".armv7.neon" + env.extra_suffix
         else:
             env.extra_suffix = ".armv7" + env.extra_suffix
+    elif env["android_arch"] == "arm64v8":
+        env['ARCH'] = 'arch-arm64'
+        target_subpath = "aarch64-linux-android-4.9"
+        abi_subpath = "aarch64-linux-android"
+        arch_subpath = "arm64-v8a"
+        env.extra_suffix = ".armv8" + env.extra_suffix
 
     mt_link = True
     if (sys.platform.startswith("linux")):
@@ -136,6 +145,9 @@ def configure(env):
         else:
             mt_link = False
             host_subpath = "windows"
+
+    if env["android_arch"] == "arm64v8":
+        mt_link = False
 
     compiler_path = env["ANDROID_NDK_ROOT"] + \
         "/toolchains/llvm/prebuilt/" + host_subpath + "/bin"
@@ -158,11 +170,6 @@ def configure(env):
     env['AR'] = tools_path + "/ar"
     env['RANLIB'] = tools_path + "/ranlib"
     env['AS'] = tools_path + "/as"
-
-    if env['android_arch'] == 'x86':
-        env['ARCH'] = 'arch-x86'
-    else:
-        env['ARCH'] = 'arch-arm'
 
     common_opts = ['-fno-integrated-as', '-gcc-toolchain', gcc_toolchain_path]
 
@@ -204,6 +211,11 @@ def configure(env):
         else:
             env.Append(CPPFLAGS=['-mfpu=vfpv3-d16'])
 
+    elif env["android_arch"] == "arm64v8":
+        target_opts = ['-target', 'aarch64-none-linux-android']
+        env.Append(CPPFLAGS=['-D__ARM_ARCH_8A__'])
+        env.Append(CPPFLAGS=['-mfix-cortex-a53-835769'])
+
     env.Append(CPPFLAGS=target_opts)
     env.Append(CPPFLAGS=common_opts)
 
@@ -215,9 +227,11 @@ def configure(env):
         env['SHLIBSUFFIX'] = '.so'
 
     env['LINKFLAGS'] = ['-shared', '--sysroot=' + lib_sysroot, '-Wl,--warn-shared-textrel']
-    env.Append(LINKFLAGS='-Wl,--fix-cortex-a8'.split())
+    if env["android_arch"] == "armv7":
+        env.Append(LINKFLAGS=string.split('-Wl,--fix-cortex-a8'))
     env.Append(LINKFLAGS='-Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now'.split())
     env.Append(LINKFLAGS='-Wl,-soname,libgodot_android.so -Wl,--gc-sections'.split())
+
     if mt_link:
         env.Append(LINKFLAGS=['-Wl,--threads'])
     env.Append(LINKFLAGS=target_opts)
