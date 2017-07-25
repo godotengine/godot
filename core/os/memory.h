@@ -45,20 +45,20 @@ class Memory {
 
 	Memory();
 #ifdef DEBUG_ENABLED
-	static size_t mem_usage;
-	static size_t max_usage;
+	static uint64_t mem_usage;
+	static uint64_t max_usage;
 #endif
 
-	static size_t alloc_count;
+	static uint64_t alloc_count;
 
 public:
 	static void *alloc_static(size_t p_bytes, bool p_pad_align = false);
 	static void *realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align = false);
 	static void free_static(void *p_ptr, bool p_pad_align = false);
 
-	static size_t get_mem_available();
-	static size_t get_mem_usage();
-	static size_t get_mem_max_usage();
+	static uint64_t get_mem_available();
+	static uint64_t get_mem_usage();
+	static uint64_t get_mem_max_usage();
 };
 
 class DefaultAllocator {
