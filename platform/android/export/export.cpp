@@ -219,6 +219,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	bool use_32_fb;
 	bool immersive;
 	bool export_arm;
+	bool export_arm64;
 	bool export_x86;
 	String apk_expansion_salt;
 	String apk_expansion_pkey;
@@ -319,6 +320,8 @@ bool EditorExportPlatformAndroid::_set(const StringName& p_name, const Variant& 
 		_signed=p_value;
 	else if (n=="architecture/arm")
 		export_arm=p_value;
+	else if (n=="architecture/arm64")
+		export_arm64=p_value;
 	else if (n=="architecture/x86")
 		export_x86=p_value;
 	else if (n=="screen/use_32_bits_view")
@@ -392,6 +395,8 @@ bool EditorExportPlatformAndroid::_get(const StringName& p_name,Variant &r_ret) 
 		r_ret=_signed;
 	else if (n=="architecture/arm")
 		r_ret=export_arm;
+	else if (n=="architecture/arm64")
+		r_ret=export_arm64;
 	else if (n=="architecture/x86")
 		r_ret=export_x86;
 	else if (n=="screen/use_32_bits_view")
@@ -1164,6 +1169,10 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 			skip=true;
 		}
 
+		if (file.match("lib/arm64*/libgodot_android.so") && !export_arm64) {
+			skip = true;
+		}
+
 		if (file.begins_with("META-INF") && _signed) {
 			skip=true;
 		}
@@ -1801,6 +1810,7 @@ EditorExportPlatformAndroid::EditorExportPlatformAndroid() {
 	immersive=true;
 
 	export_arm=true;
+	export_arm64=false;
 	export_x86=false;
 
 
@@ -3162,6 +3172,7 @@ public:
 
 		bool export_x86 = p_preset->get("architecture/x86");
 		bool export_arm = p_preset->get("architecture/arm");
+		bool export_arm64 = p_preset->get("architecture/arm64");
 
 		bool use_32_fb = p_preset->get("screen/use_32_bits_view");
 		bool immersive = p_preset->get("screen/immersive_mode");
@@ -3250,6 +3261,10 @@ public:
 			}
 
 			if (file.match("lib/armeabi*/libgodot_android.so") && !export_arm) {
+				skip = true;
+			}
+
+			if (file.match("lib/arm64*/libgodot_android.so") && !export_arm64) {
 				skip = true;
 			}
 

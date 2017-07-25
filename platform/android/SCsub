@@ -141,6 +141,8 @@ if env['android_arch'] == 'armv6':
     lib_arch_dir = 'armeabi'
 elif env['android_arch'] == 'armv7':
     lib_arch_dir = 'armeabi-v7a'
+elif env['android_arch'] == 'arm64v8':
+    lib_arch_dir = 'arm64-v8a'
 elif env['android_arch'] == 'x86':
     lib_arch_dir = 'x86'
 else:
