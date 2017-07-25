@@ -296,6 +296,14 @@ void Physics2DServerSW::area_set_space(RID p_area, RID p_space) {
 	if (area->get_space() == space)
 		return; //pointless
 
+	for (Set<Constraint2DSW *>::Element *E = area->get_constraints().front(); E; E = E->next()) {
+		RID self = E->get()->get_self();
+		if (!self.is_valid())
+			continue;
+		free(self);
+	}
+	area->clear_constraints();
+
 	area->set_space(space);
 };
 
@@ -539,6 +547,14 @@ void Physics2DServerSW::body_set_space(RID p_body, RID p_space) {
 
 	if (body->get_space() == space)
 		return; //pointless
+
+	while (body->get_constraint_map().size()) {
+		RID self = body->get_constraint_map().front()->key()->get_self();
+		if (!self.is_valid())
+			continue;
+		free(self);
+	}
+	body->clear_constraint_map();
 
 	body->set_space(space);
 };
@@ -1080,17 +1096,11 @@ void Physics2DServerSW::free(RID p_rid) {
 			_clear_query(body->get_direct_state_query());
 		*/
 
-		body->set_space(NULL);
+		body_set_space(p_rid, RID());
 
 		while (body->get_shape_count()) {
 
 			body->remove_shape(0);
-		}
-
-		while (body->get_constraint_map().size()) {
-			RID self = body->get_constraint_map().front()->key()->get_self();
-			ERR_FAIL_COND(!self.is_valid());
-			free(self);
 		}
 
 		body_owner.free(p_rid);
