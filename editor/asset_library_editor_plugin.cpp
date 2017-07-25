@@ -1334,10 +1334,13 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	search_hb2->add_child(memnew(Label(TTR("Site:") + " ")));
 	repository = memnew(OptionButton);
 
+	// FIXME: Reenable me once GH-7147 is fixed.
+	/*
 	repository->add_item("godotengine.org");
 	repository->set_item_metadata(0, "https://godotengine.org/asset-library/api");
-	repository->add_item("localhost"); // TODO: Maybe remove?
-	repository->set_item_metadata(1, "http://127.0.0.1/asset-library/api");
+	*/
+	repository->add_item("localhost");
+	repository->set_item_metadata(/*1*/ 0, "http://127.0.0.1/asset-library/api");
 	repository->connect("item_selected", this, "_repository_changed");
 
 	search_hb2->add_child(repository);
