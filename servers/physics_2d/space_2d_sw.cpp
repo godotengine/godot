@@ -553,7 +553,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 					const CollisionObject2DSW *col_obj = intersection_query_results[i];
 					int shape_idx = intersection_query_subindex_results[i];
 
-					if (col_obj->is_shape_set_as_one_way_collision(j)) {
+					if (col_obj->is_shape_set_as_one_way_collision(shape_idx)) {
 
 						cbk.valid_dir = body_shape_xform.get_axis(1).normalized();
 						cbk.valid_depth = p_margin; //only valid depth is the collision margin
