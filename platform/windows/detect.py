@@ -48,7 +48,7 @@ def can_build():
         if (os.getenv("MINGW64_PREFIX")):
             mingw64 = os.getenv("MINGW64_PREFIX")
 
-        test = "gcc --version &>/dev/null"
+        test = "gcc --version > /dev/null 2>&1"
         if (os.system(mingw + test) == 0 or os.system(mingw64 + test) == 0 or os.system(mingw32 + test) == 0):
             return True
 
@@ -65,7 +65,7 @@ def get_opts():
         mingw32 = "i686-w64-mingw32-"
         mingw64 = "x86_64-w64-mingw32-"
 
-        if os.system(mingw32 + "gcc --version &>/dev/null") != 0:
+        if os.system(mingw32 + "gcc --version > /dev/null 2>&1") != 0:
             mingw32 = mingw
 
     if (os.getenv("MINGW32_PREFIX")):
@@ -251,13 +251,6 @@ def configure(env):
         else:
             env.Append(LINKFLAGS=['-static'])
             mingw_prefix = env["mingw_prefix_64"]
-
-        nulstr = ""
-
-        if (os.name == "posix"):
-            nulstr = ">/dev/null"
-        else:
-            nulstr = ">nul"
 
         env["CC"] = mingw_prefix + "gcc"
         env['AS'] = mingw_prefix + "as"
