@@ -303,11 +303,11 @@ class CanvasItemEditor : public VBoxContainer {
 
 	int handle_len;
 	bool _is_part_of_subscene(CanvasItem *p_item);
-	CanvasItem *_select_canvas_item_at_pos(const Point2 &p_pos, Node *p_node, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform);
-	void _find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform, Vector<_SelectResult> &r_items);
+	void _find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform, Vector<_SelectResult> &r_items, unsigned int limit = 0);
 	void _find_canvas_items_at_rect(const Rect2 &p_rect, Node *p_node, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform, List<CanvasItem *> *r_items);
 
-	bool _select(CanvasItem *item, Point2 p_click_pos, bool p_append, bool p_drag = true);
+	void _select_click_on_empty_area(Point2 p_click_pos, bool p_append, bool p_box_selection);
+	bool _select_click_on_item(CanvasItem *item, Point2 p_click_pos, bool p_append, bool p_drag);
 
 	ConfirmationDialog *snap_dialog;
 
@@ -325,7 +325,7 @@ class CanvasItemEditor : public VBoxContainer {
 	void _key_move(const Vector2 &p_dir, bool p_snap, KeyMoveMODE p_move_mode);
 	void _list_select(const Ref<InputEventMouseButton> &b);
 
-	DragType _find_drag_type(const Transform2D &p_xform, const Rect2 &p_local_rect, const Point2 &p_click, Vector2 &r_point);
+	DragType _find_drag_type(const Point2 &p_click, Vector2 &r_point);
 	void _prepare_drag(const Point2 &p_click_pos);
 
 	void _popup_callback(int p_op);
