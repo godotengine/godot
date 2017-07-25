@@ -176,7 +176,6 @@ void CanvasItemEditor::_edit_set_pivot(const Vector2 &mouse_pos) {
 	for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 
 		Node2D *n2d = E->get()->cast_to<Node2D>();
-
 		if (n2d && n2d->edit_has_pivot()) {
 
 			Vector2 offset = n2d->edit_get_pivot();
@@ -1736,11 +1735,9 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventKey> k = p_event;
-
 	if (k.is_valid()) {
-
 		if (k->is_pressed() && drag == DRAG_NONE) {
-
+			// Move the object with the arrow keys
 			KeyMoveMODE move_mode = MOVE_VIEW_BASE;
 			if (k->get_alt()) move_mode = MOVE_LOCAL_BASE;
 			if (k->get_control() || k->get_metakey()) move_mode = MOVE_LOCAL_WITH_ROT;
@@ -1773,13 +1770,23 @@ void CanvasItemEditor::_viewport_draw() {
 	RID ci = viewport->get_canvas_item();
 
 	if (snap_show_grid) {
+		//Draw the grid
 		Size2 s = viewport->get_size();
 		int last_cell;
 		Transform2D xform = transform.affine_inverse();
 
+		Vector2 grid_offset;
+		if (snap_relative && snap_grid && get_item_count() > 0) {
+			Vector2 topleft = _find_topleftmost_point();
+			grid_offset.x = fmod(topleft.x, snap_step.x);
+			grid_offset.y = fmod(topleft.y, snap_step.y);
+		} else {
+			grid_offset = snap_offset;
+		}
+
 		if (snap_step.x != 0) {
 			for (int i = 0; i < s.width; i++) {
-				int cell = Math::fast_ftoi(Math::floor((xform.xform(Vector2(i, 0)).x - snap_offset.x) / snap_step.x));
+				int cell = Math::fast_ftoi(Math::floor((xform.xform(Vector2(i, 0)).x - grid_offset.x) / snap_step.x));
 				if (i == 0)
 					last_cell = cell;
 				if (last_cell != cell)
@@ -1790,7 +1797,7 @@ void CanvasItemEditor::_viewport_draw() {
 
 		if (snap_step.y != 0) {
 			for (int i = 0; i < s.height; i++) {
-				int cell = Math::fast_ftoi(Math::floor((xform.xform(Vector2(0, i)).y - snap_offset.y) / snap_step.y));
+				int cell = Math::fast_ftoi(Math::floor((xform.xform(Vector2(0, i)).y - grid_offset.y) / snap_step.y));
 				if (i == 0)
 					last_cell = cell;
 				if (last_cell != cell)
@@ -2383,6 +2390,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			snap_grid = !snap_grid;
 			int idx = edit_menu->get_popup()->get_item_index(SNAP_USE);
 			edit_menu->get_popup()->set_item_checked(idx, snap_grid);
+			viewport->update();
 		} break;
 		case SNAP_SHOW_GRID: {
 			snap_show_grid = !snap_show_grid;
@@ -2399,6 +2407,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			snap_relative = !snap_relative;
 			int idx = edit_menu->get_popup()->get_item_index(SNAP_RELATIVE);
 			edit_menu->get_popup()->set_item_checked(idx, snap_relative);
+			viewport->update();
 		} break;
 		case SNAP_USE_PIXEL: {
 			snap_pixel = !snap_pixel;
