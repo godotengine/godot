@@ -611,7 +611,7 @@ Error ProjectSettings::_save_settings_text(const String &p_file, const Map<Strin
 			file->store_string("\n");
 
 		if (E->key() != "")
-			file->store_string("[" + E->key() + "]\n\n");
+			file->store_string("[" + E->key() + "]\n");
 		for (List<String>::Element *F = E->get().front(); F; F = F->next()) {
 
 			String key = F->get();
