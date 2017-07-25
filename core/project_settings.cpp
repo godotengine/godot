@@ -600,7 +600,7 @@ Error ProjectSettings::_save_settings_text(const String &p_file, const Map<Strin
 		ERR_FAIL_COND_V(err, err)
 	}
 
-	file->store_string("config_version=" + itos(FORMAT_VERSION) + "\n");
+	file->store_string("config_version=" + itos(FORMAT_VERSION) + "\n\n");
 	if (p_custom_features != String())
 		file->store_string("_custom_featores=\"" + p_custom_features + "\"\n");
 
