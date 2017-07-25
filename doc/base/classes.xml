@@ -14114,6 +14114,8 @@
 			<argument index="1" name="event" type="InputEvent">
 			</argument>
 			<description>
+				Implement this function if you are interested in 3D view screen input events. It will be called only if currently selected node is handled by your plugin.
+				If you would like to always gets those input events then additionally use [method set_input_forwarding_always_enabled].
 			</description>
 		</method>
 		<method name="get_base_control">
@@ -14137,6 +14139,13 @@
 				Get the general settings for the editor (the same window that appears in the Settings menu).
 			</description>
 		</method>
+		<method name="get_edited_scene_root">
+			<return type="Node">
+			</return>
+			<description>
+				Returns root node of currently edited scene.
+			</description>
+		</method>
 		<method name="get_editor_viewport">
 			<return type="Control">
 			</return>
@@ -14151,6 +14160,13 @@
 				Get the name of the editor plugin. For main scren plugins this is what will appear in the selector (which by default is 2D, 3D, Script).
 			</description>
 		</method>
+		<method name="get_open_scenes">
+			<return type="Array">
+			</return>
+			<description>
+				Will return an Array of Strings which represent file paths to currently open scenes.
+			</description>
+		</method>
 		<method name="get_resource_filesystem">
 			<return type="EditorFileSystem">
 			</return>
@@ -14163,6 +14179,13 @@
 			</return>
 			<description>
 				Get tool for generating resource previews.
+			</description>
+		</method>
+		<method name="get_script_editor">
+			<return type="ScriptEditor">
+			</return>
+			<description>
+				Will return ScriptEditor object which contains informations about state of the scripts which are currently open by the editor.
 			</description>
 		</method>
 		<method name="get_selection">
@@ -14289,6 +14312,7 @@
 		</method>
 		<method name="set_input_event_forwarding_always_enabled">
 			<description>
+				Use this method if you always want to receive inputs from 3D view screen inside [method forward_spatial_gui_input]. It might be especially usable if your plugin will want to use raycast in the scene.
 			</description>
 		</method>
 		<method name="set_state" qualifiers="virtual">
@@ -14345,6 +14369,29 @@
 		<constant name="DOCK_SLOT_MAX" value="8">
 		</constant>
 	</constants>
+	<signals>
+		<signal name="main_screen_changed">
+			<argument index="0" name="screen_name" type="String">
+			</argument>
+			<description>
+				Emitted when user change main screen view (2D, 3D, Script, AssetLib). Works also with screens which are defined by plugins.
+			</description>
+		</signal>
+		<signal name="scene_changed">
+			<argument index="0" name="scene_root" type="Node">
+			</argument>
+			<description>
+				Emitted when user change scene. The argument is a root node of freshly opened scene.
+			</description>
+		</signal>
+		<signal name="scene_closed">
+			<argument index="0" name="filepath" type="String">
+			</argument>
+			<description>
+				Emitted when user close scene. The argument is file path to a closed scene.
+			</description>
+		</signal>
+	</signals>
 </class>
 <class name="EditorResourcePreview" inherits="Node" category="Core">
 	<brief_description>
@@ -39988,6 +40035,44 @@
 	</members>
 	<constants>
 	</constants>
+</class>
+<class name="ScriptEditor" inherits="PanelContainer" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_current_script">
+			<return type="Script">
+			</return>
+			<description>
+					Returns a [Script] that is currently active in editor.
+			</description>
+		</method>
+		<method name="get_open_scripts">
+			<return type="Array">
+			</return>
+			<description>
+						Returns an array with all [Script] objects which are currently open in editor.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="editor_script_changed">
+			<argument index="0" name="script" type="Script">
+			</argument>
+			<description>
+				Emitted when user changed active script. Argument is a freshly activated [Script].
+			</description>
+		</signal>
+		<signal name="script_close">
+			<argument index="0" name="script" type="Script">
+			</argument>
+			<description>
+				Emitted when editor is about to close the active script. Argument is a [Script] that is going to be closed.
+			</description>
+		</signal>
+	</signals>
 </class>
 <class name="SegmentShape2D" inherits="Shape2D" category="Core">
 	<brief_description>
