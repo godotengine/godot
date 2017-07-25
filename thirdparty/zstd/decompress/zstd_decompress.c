@@ -53,7 +53,7 @@
 #  include "zstd_legacy.h"
 #endif
 
-#if defined(_MSC_VER) && !defined(_M_IA64)  /* _mm_prefetch() is not defined for ia64 */
+#if defined(_MSC_VER) && (defined(_M_X64) || defined(_M_I86))  /* _mm_prefetch() is not defined outside of x86/x64 */
 #  include <mmintrin.h>   /* https://msdn.microsoft.com/fr-fr/library/84szxsww(v=vs.90).aspx */
 #  define ZSTD_PREFETCH(ptr)   _mm_prefetch((const char*)ptr, _MM_HINT_T0)
 #elif defined(__GNUC__)
@@ -465,13 +465,6 @@ static size_t ZSTD_decodeFrameHeader(ZSTD_DCtx* dctx, const void* src, size_t he
     return 0;
 }
 
-
-typedef struct
-{
-    blockType_e blockType;
-    U32 lastBlock;
-    U32 origSize;
-} blockProperties_t;
 
 /*! ZSTD_getcBlockSize() :
 *   Provides the size of compressed block from block header `src` */
