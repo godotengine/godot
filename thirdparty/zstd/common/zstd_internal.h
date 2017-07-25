@@ -331,4 +331,16 @@ size_t ZSTD_compressStream_generic(ZSTD_CStream* zcs,
 ZSTD_parameters ZSTD_getParamsFromCDict(const ZSTD_CDict* cdict);
 
 
+typedef struct {
+    blockType_e blockType;
+    U32 lastBlock;
+    U32 origSize;
+} blockProperties_t;
+
+/*! ZSTD_getcBlockSize() :
+ *   Provides the size of compressed block from block header `src` */
+ size_t ZSTD_getcBlockSize(const void* src, size_t srcSize,
+                           blockProperties_t* bpPtr);
+
+
 #endif   /* ZSTD_CCOMMON_H_MODULE */
