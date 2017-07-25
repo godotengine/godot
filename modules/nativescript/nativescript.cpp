@@ -502,7 +502,7 @@ bool NativeScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 		if (P) {
 			godot_variant value;
 			value = P->get().getter.get_func((godot_object *)owner,
-					P->get().setter.method_data,
+					P->get().getter.method_data,
 					userdata);
 			r_ret = *(Variant *)&value;
 			godot_variant_destroy(&value);
