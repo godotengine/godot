@@ -222,11 +222,15 @@ void PhysicsServerSW::area_set_space(RID p_area, RID p_space) {
 
 	AreaSW *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
+
 	SpaceSW *space = NULL;
 	if (p_space.is_valid()) {
 		space = space_owner.get(p_space);
 		ERR_FAIL_COND(!space);
 	}
+
+	if (area->get_space() == space)
+		return; //pointless
 
 	area->set_space(space);
 };
@@ -471,15 +475,15 @@ void PhysicsServerSW::body_set_space(RID p_body, RID p_space) {
 
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
-	SpaceSW *space = NULL;
 
+	SpaceSW *space = NULL;
 	if (p_space.is_valid()) {
 		space = space_owner.get(p_space);
 		ERR_FAIL_COND(!space);
 	}
 
 	if (body->get_space() == space)
-		return; //pointles
+		return; //pointless
 
 	body->set_space(space);
 };

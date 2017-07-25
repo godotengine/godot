@@ -286,11 +286,15 @@ void Physics2DServerSW::area_set_space(RID p_area, RID p_space) {
 
 	Area2DSW *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
+
 	Space2DSW *space = NULL;
 	if (p_space.is_valid()) {
 		space = space_owner.get(p_space);
 		ERR_FAIL_COND(!space);
 	}
+
+	if (area->get_space() == space)
+		return; //pointless
 
 	area->set_space(space);
 };
@@ -532,6 +536,9 @@ void Physics2DServerSW::body_set_space(RID p_body, RID p_space) {
 		space = space_owner.get(p_space);
 		ERR_FAIL_COND(!space);
 	}
+
+	if (body->get_space() == space)
+		return; //pointless
 
 	body->set_space(space);
 };
