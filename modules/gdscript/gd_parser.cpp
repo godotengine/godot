@@ -185,8 +185,8 @@ void GDParser::_make_completable_call(int p_arg) {
 bool GDParser::_get_completable_identifier(CompletionType p_type, StringName &identifier) {
 
 	identifier = StringName();
-	if (tokenizer->get_token() == GDTokenizer::TK_IDENTIFIER) {
-		identifier = tokenizer->get_token_identifier();
+	if (tokenizer->is_token_literal()) {
+		identifier = tokenizer->get_token_literal();
 		tokenizer->advance();
 	}
 	if (tokenizer->get_token() == GDTokenizer::TK_CURSOR) {
@@ -201,8 +201,8 @@ bool GDParser::_get_completable_identifier(CompletionType p_type, StringName &id
 		completion_ident_is_call = false;
 		tokenizer->advance();
 
-		if (tokenizer->get_token() == GDTokenizer::TK_IDENTIFIER) {
-			identifier = identifier.operator String() + tokenizer->get_token_identifier().operator String();
+		if (tokenizer->is_token_literal()) {
+			identifier = identifier.operator String() + tokenizer->get_token_literal().operator String();
 			tokenizer->advance();
 		}
 
@@ -296,17 +296,6 @@ GDParser::Node *GDParser::_parse_expression(Node *p_parent, bool p_static, bool 
 						need_identifier = false;
 
 					} break;
-					case GDTokenizer::TK_IDENTIFIER: {
-						if (!need_identifier) {
-							done = true;
-							break;
-						}
-
-						path += String(tokenizer->get_token_identifier());
-						tokenizer->advance();
-						need_identifier = false;
-
-					} break;
 					case GDTokenizer::TK_OP_DIV: {
 
 						if (need_identifier) {
@@ -320,6 +309,13 @@ GDParser::Node *GDParser::_parse_expression(Node *p_parent, bool p_static, bool 
 
 					} break;
 					default: {
+						// Instead of checking for TK_IDENTIFIER, we check with is_token_literal, as this allows us to use match/sync/etc. as a name
+						if (need_identifier && tokenizer->is_token_literal()) {
+							path += String(tokenizer->get_token_literal());
+							tokenizer->advance();
+							need_identifier = false;
+						}
+
 						done = true;
 						break;
 					}
@@ -585,7 +581,8 @@ GDParser::Node *GDParser::_parse_expression(Node *p_parent, bool p_static, bool 
 			cn->value = Variant::get_numeric_constant_value(bi_type, identifier);
 			expr = cn;
 
-		} else if (tokenizer->get_token(1) == GDTokenizer::TK_PARENTHESIS_OPEN && (tokenizer->get_token() == GDTokenizer::TK_BUILT_IN_TYPE || tokenizer->get_token() == GDTokenizer::TK_IDENTIFIER || tokenizer->get_token() == GDTokenizer::TK_BUILT_IN_FUNC)) {
+		} else if (tokenizer->get_token(1) == GDTokenizer::TK_PARENTHESIS_OPEN && tokenizer->is_token_literal()) {
+			// We check with is_token_literal, as this allows us to use match/sync/etc. as a name
 			//function or constructor
 
 			OperatorNode *op = alloc_node<OperatorNode>();
@@ -627,7 +624,8 @@ GDParser::Node *GDParser::_parse_expression(Node *p_parent, bool p_static, bool 
 
 			expr = op;
 
-		} else if (tokenizer->get_token() == GDTokenizer::TK_IDENTIFIER) {
+		} else if (tokenizer->is_token_literal(0, true)) {
+			// We check with is_token_literal, as this allows us to use match/sync/etc. as a name
 			//identifier (reference)
 
 			const ClassNode *cln = current_class;
@@ -827,10 +825,11 @@ GDParser::Node *GDParser::_parse_expression(Node *p_parent, bool p_static, bool 
 
 					if (expecting == DICT_EXPECT_KEY) {
 
-						if (tokenizer->get_token() == GDTokenizer::TK_IDENTIFIER && tokenizer->get_token(1) == GDTokenizer::TK_OP_ASSIGN) {
+						if (tokenizer->is_token_literal() && tokenizer->get_token(1) == GDTokenizer::TK_OP_ASSIGN) {
+							// We check with is_token_literal, as this allows us to use match/sync/etc. as a name
 							//lua style identifier, easier to write
 							ConstantNode *cn = alloc_node<ConstantNode>();
-							cn->value = tokenizer->get_token_identifier();
+							cn->value = tokenizer->get_token_literal();
 							key = cn;
 							tokenizer->advance(2);
 							expecting = DICT_EXPECT_VALUE;
@@ -870,7 +869,8 @@ GDParser::Node *GDParser::_parse_expression(Node *p_parent, bool p_static, bool 
 
 			expr = dict;
 
-		} else if (tokenizer->get_token() == GDTokenizer::TK_PERIOD && (tokenizer->get_token(1) == GDTokenizer::TK_IDENTIFIER || tokenizer->get_token(1) == GDTokenizer::TK_CURSOR) && tokenizer->get_token(2) == GDTokenizer::TK_PARENTHESIS_OPEN) {
+		} else if (tokenizer->get_token() == GDTokenizer::TK_PERIOD && (tokenizer->is_token_literal(1) || tokenizer->get_token(1) == GDTokenizer::TK_CURSOR) && tokenizer->get_token(2) == GDTokenizer::TK_PARENTHESIS_OPEN) {
+			// We check with is_token_literal, as this allows us to use match/sync/etc. as a name
 			// parent call
 
 			tokenizer->advance(); //goto identifier
@@ -922,7 +922,8 @@ GDParser::Node *GDParser::_parse_expression(Node *p_parent, bool p_static, bool 
 
 				//indexing using "."
 
-				if (tokenizer->get_token(1) != GDTokenizer::TK_CURSOR && tokenizer->get_token(1) != GDTokenizer::TK_IDENTIFIER && tokenizer->get_token(1) != GDTokenizer::TK_BUILT_IN_FUNC) {
+				if (tokenizer->get_token(1) != GDTokenizer::TK_CURSOR && !tokenizer->is_token_literal(1)) {
+					// We check with is_token_literal, as this allows us to use match/sync/etc. as a name
 					_set_error("Expected identifier as member");
 					return NULL;
 				} else if (tokenizer->get_token(2) == GDTokenizer::TK_PARENTHESIS_OPEN) {
@@ -2341,12 +2342,12 @@ void GDParser::_parse_block(BlockNode *p_block, bool p_static) {
 				//variale declaration and (eventual) initialization
 
 				tokenizer->advance();
-				if (tokenizer->get_token() != GDTokenizer::TK_IDENTIFIER) {
+				if (!tokenizer->is_token_literal(0, true)) {
 
 					_set_error("Expected identifier for local variable name.");
 					return;
 				}
-				StringName n = tokenizer->get_token_identifier();
+				StringName n = tokenizer->get_token_literal();
 				tokenizer->advance();
 				if (current_function) {
 					for (int i = 0; i < current_function->arguments.size(); i++) {
@@ -2571,7 +2572,7 @@ void GDParser::_parse_block(BlockNode *p_block, bool p_static) {
 
 				tokenizer->advance();
 
-				if (tokenizer->get_token() != GDTokenizer::TK_IDENTIFIER) {
+				if (!tokenizer->is_token_literal(0, true)) {
 
 					_set_error("identifier expected after 'for'");
 				}
@@ -3108,7 +3109,7 @@ void GDParser::_parse_class(ClassNode *p_class) {
 							tokenizer->advance(); //var before the identifier is allowed
 						}
 
-						if (tokenizer->get_token() != GDTokenizer::TK_IDENTIFIER) {
+						if (!tokenizer->is_token_literal(0, true)) {
 
 							_set_error("Expected identifier for argument.");
 							return;
@@ -3260,7 +3261,7 @@ void GDParser::_parse_class(ClassNode *p_class) {
 			case GDTokenizer::TK_PR_SIGNAL: {
 				tokenizer->advance();
 
-				if (tokenizer->get_token() != GDTokenizer::TK_IDENTIFIER) {
+				if (!tokenizer->is_token_literal()) {
 					_set_error("Expected identifier after 'signal'.");
 					return;
 				}
@@ -3282,7 +3283,7 @@ void GDParser::_parse_class(ClassNode *p_class) {
 							break;
 						}
 
-						if (tokenizer->get_token() != GDTokenizer::TK_IDENTIFIER) {
+						if (tokenizer->is_token_literal(0, true)) {
 							_set_error("Expected identifier in signal argument.");
 							return;
 						}
@@ -3847,13 +3848,13 @@ void GDParser::_parse_class(ClassNode *p_class) {
 				bool onready = tokenizer->get_token(-1) == GDTokenizer::TK_PR_ONREADY;
 
 				tokenizer->advance();
-				if (tokenizer->get_token() != GDTokenizer::TK_IDENTIFIER) {
+				if (!tokenizer->is_token_literal(0, true)) {
 
 					_set_error("Expected identifier for member variable name.");
 					return;
 				}
 
-				member.identifier = tokenizer->get_token_identifier();
+				member.identifier = tokenizer->get_token_literal();
 				member.expression = NULL;
 				member._export.name = member.identifier;
 				member.line = tokenizer->get_token_line();
@@ -3979,11 +3980,11 @@ void GDParser::_parse_class(ClassNode *p_class) {
 
 					if (tokenizer->get_token() != GDTokenizer::TK_COMMA) {
 						//just comma means using only getter
-						if (tokenizer->get_token() != GDTokenizer::TK_IDENTIFIER) {
-							_set_error("Expected identifier for setter function after 'notify'.");
+						if (!tokenizer->is_token_literal()) {
+							_set_error("Expected identifier for setter function after 'setget'.");
 						}
 
-						member.setter = tokenizer->get_token_identifier();
+						member.setter = tokenizer->get_token_literal();
 
 						tokenizer->advance();
 					}
@@ -3992,11 +3993,11 @@ void GDParser::_parse_class(ClassNode *p_class) {
 						//there is a getter
 						tokenizer->advance();
 
-						if (tokenizer->get_token() != GDTokenizer::TK_IDENTIFIER) {
+						if (!tokenizer->is_token_literal()) {
 							_set_error("Expected identifier for getter function after ','.");
 						}
 
-						member.getter = tokenizer->get_token_identifier();
+						member.getter = tokenizer->get_token_literal();
 						tokenizer->advance();
 					}
 				}
@@ -4014,13 +4015,13 @@ void GDParser::_parse_class(ClassNode *p_class) {
 				ClassNode::Constant constant;
 
 				tokenizer->advance();
-				if (tokenizer->get_token() != GDTokenizer::TK_IDENTIFIER) {
+				if (!tokenizer->is_token_literal(0, true)) {
 
 					_set_error("Expected name (identifier) for constant.");
 					return;
 				}
 
-				constant.identifier = tokenizer->get_token_identifier();
+				constant.identifier = tokenizer->get_token_literal();
 				tokenizer->advance();
 
 				if (tokenizer->get_token() != GDTokenizer::TK_OP_ASSIGN) {
@@ -4061,8 +4062,8 @@ void GDParser::_parse_class(ClassNode *p_class) {
 				Dictionary enum_dict;
 
 				tokenizer->advance();
-				if (tokenizer->get_token() == GDTokenizer::TK_IDENTIFIER) {
-					enum_name = tokenizer->get_token_identifier();
+				if (tokenizer->is_token_literal(0, true)) {
+					enum_name = tokenizer->get_token_literal();
 					tokenizer->advance();
 				}
 				if (tokenizer->get_token() != GDTokenizer::TK_CURLY_BRACKET_OPEN) {
@@ -4079,7 +4080,7 @@ void GDParser::_parse_class(ClassNode *p_class) {
 
 						tokenizer->advance();
 						break; // End of enum
-					} else if (tokenizer->get_token() != GDTokenizer::TK_IDENTIFIER) {
+					} else if (!tokenizer->is_token_literal(0, true)) {
 
 						if (tokenizer->get_token() == GDTokenizer::TK_EOF) {
 							_set_error("Unexpected end of file.");
@@ -4088,10 +4089,10 @@ void GDParser::_parse_class(ClassNode *p_class) {
 						}
 
 						return;
-					} else { // tokenizer->get_token()==GDTokenizer::TK_IDENTIFIER
+					} else { // tokenizer->is_token_literal(0, true)
 						ClassNode::Constant constant;
 
-						constant.identifier = tokenizer->get_token_identifier();
+						constant.identifier = tokenizer->get_token_literal();
 
 						tokenizer->advance();
 
