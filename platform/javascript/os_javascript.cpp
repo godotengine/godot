@@ -96,22 +96,11 @@ static EM_BOOL _browser_resize_callback(int event_type, const EmscriptenUiEvent 
 	ERR_FAIL_COND_V(event_type != EMSCRIPTEN_EVENT_RESIZE, false);
 
 	OS_JavaScript *os = static_cast<OS_JavaScript *>(user_data);
-
-	// the order in which _browser_resize_callback and
-	// _fullscreen_change_callback are called is browser-dependent,
-	// so try adjusting for fullscreen in both
-	if (os->is_window_fullscreen() || os->is_window_maximized()) {
-
-		OS::VideoMode vm = os->get_video_mode();
-		vm.width = ui_event->windowInnerWidth;
-		vm.height = ui_event->windowInnerHeight;
-		os->set_video_mode(vm);
-		emscripten_set_canvas_size(ui_event->windowInnerWidth, ui_event->windowInnerHeight);
-	}
+	// The order of the fullscreen change event and the window size change
+	// event varies, even within just one browser, so defer handling
+	os->request_canvas_size_adjustment();
 	return false;
 }
-
-static Size2 _windowed_size;
 
 static EM_BOOL _fullscreen_change_callback(int event_type, const EmscriptenFullscreenChangeEvent *event, void *user_data) {
 
@@ -119,7 +108,6 @@ static EM_BOOL _fullscreen_change_callback(int event_type, const EmscriptenFulls
 
 	OS_JavaScript *os = static_cast<OS_JavaScript *>(user_data);
 	String id = String::utf8(event->id);
-
 	// empty id is canvas
 	if (id.empty() || id == "canvas") {
 
@@ -127,18 +115,8 @@ static EM_BOOL _fullscreen_change_callback(int event_type, const EmscriptenFulls
 		// this event property is the only reliable information on
 		// browser fullscreen state
 		vm.fullscreen = event->isFullscreen;
-
-		if (event->isFullscreen) {
-			vm.width = event->screenWidth;
-			vm.height = event->screenHeight;
-			os->set_video_mode(vm);
-			emscripten_set_canvas_size(vm.width, vm.height);
-		} else {
-			os->set_video_mode(vm);
-			if (!os->is_window_maximized()) {
-				os->set_window_size(_windowed_size);
-			}
-		}
+		os->set_video_mode(vm);
+		os->request_canvas_size_adjustment();
 	}
 	return false;
 }
@@ -719,14 +697,17 @@ Size2 OS_JavaScript::get_screen_size(int p_screen) const {
 
 void OS_JavaScript::set_window_size(const Size2 p_size) {
 
-	window_maximized = false;
+	windowed_size = p_size;
 	if (is_window_fullscreen()) {
+		window_maximized = false;
 		set_window_fullscreen(false);
+	} else if (is_window_maximized()) {
+		set_window_maximized(false);
+	} else {
+		video_mode.width = p_size.x;
+		video_mode.height = p_size.y;
+		emscripten_set_canvas_size(p_size.x, p_size.y);
 	}
-	_windowed_size = p_size;
-	video_mode.width = p_size.x;
-	video_mode.height = p_size.y;
-	emscripten_set_canvas_size(p_size.x, p_size.y);
 }
 
 Size2 OS_JavaScript::get_window_size() const {
@@ -739,20 +720,30 @@ Size2 OS_JavaScript::get_window_size() const {
 void OS_JavaScript::set_window_maximized(bool p_enabled) {
 
 	window_maximized = p_enabled;
-	if (p_enabled) {
+	if (is_window_fullscreen()) {
+		set_window_fullscreen(false);
+		return;
+	}
+	// Calling emscripten_enter_soft_fullscreen mutltiple times hides all
+	// page elements except the canvas permanently, so track state
+	if (p_enabled && !soft_fs_enabled) {
 
-		if (is_window_fullscreen()) {
-			// _browser_resize callback will set canvas size
-			set_window_fullscreen(false);
-		} else {
-			/* clang-format off */
-			video_mode.width = EM_ASM_INT_V(return window.innerWidth);
-			video_mode.height = EM_ASM_INT_V(return window.innerHeight);
-			/* clang-format on */
-			emscripten_set_canvas_size(video_mode.width, video_mode.height);
-		}
-	} else {
-		set_window_size(_windowed_size);
+		EmscriptenFullscreenStrategy strategy;
+		strategy.scaleMode = EMSCRIPTEN_FULLSCREEN_SCALE_STRETCH;
+		strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;
+		strategy.filteringMode = EMSCRIPTEN_FULLSCREEN_FILTERING_DEFAULT;
+		strategy.canvasResizedCallback = NULL;
+		emscripten_enter_soft_fullscreen(NULL, &strategy);
+		soft_fs_enabled = true;
+		video_mode.width = get_window_size().width;
+		video_mode.height = get_window_size().height;
+	} else if (!p_enabled) {
+
+		emscripten_exit_soft_fullscreen();
+		soft_fs_enabled = false;
+		video_mode.width = windowed_size.width;
+		video_mode.height = windowed_size.height;
+		emscripten_set_canvas_size(video_mode.width, video_mode.height);
 	}
 }
 
@@ -766,9 +757,17 @@ void OS_JavaScript::set_window_fullscreen(bool p_enable) {
 	// _browser_resize_callback or _fullscreen_change_callback
 	EMSCRIPTEN_RESULT result;
 	if (p_enable) {
-		/* clang-format off */
-		EM_ASM(Module.requestFullscreen(false, false););
-		/* clang-format on */
+		if (window_maximized) {
+			// soft fs during real fs can cause issues
+			set_window_maximized(false);
+			window_maximized = true;
+		}
+		EmscriptenFullscreenStrategy strategy;
+		strategy.scaleMode = EMSCRIPTEN_FULLSCREEN_SCALE_STRETCH;
+		strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;
+		strategy.filteringMode = EMSCRIPTEN_FULLSCREEN_FILTERING_DEFAULT;
+		strategy.canvasResizedCallback = NULL;
+		emscripten_request_fullscreen_strategy(NULL, false, &strategy);
 	} else {
 		result = emscripten_exit_fullscreen();
 		if (result != EMSCRIPTEN_RESULT_SUCCESS) {
@@ -780,6 +779,11 @@ void OS_JavaScript::set_window_fullscreen(bool p_enable) {
 bool OS_JavaScript::is_window_fullscreen() const {
 
 	return video_mode.fullscreen;
+}
+
+void OS_JavaScript::request_canvas_size_adjustment() {
+
+	canvas_size_adjustment_requested = true;
 }
 
 void OS_JavaScript::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) const {
@@ -841,6 +845,17 @@ bool OS_JavaScript::main_loop_iterate() {
 		}
 	}
 	process_joypads();
+	if (canvas_size_adjustment_requested) {
+
+		if (video_mode.fullscreen || window_maximized) {
+			video_mode.width = get_window_size().width;
+			video_mode.height = get_window_size().height;
+		}
+		if (!video_mode.fullscreen) {
+			set_window_maximized(window_maximized);
+		}
+		canvas_size_adjustment_requested = false;
+	}
 	return Main::iteration();
 }
 
@@ -980,6 +995,8 @@ OS_JavaScript::OS_JavaScript(const char *p_execpath, GetDataDirFunc p_get_data_d
 	main_loop = NULL;
 	gl_extensions = NULL;
 	window_maximized = false;
+	soft_fs_enabled = false;
+	canvas_size_adjustment_requested = false;
 
 	get_data_dir_func = p_get_data_dir_func;
 	FileAccessUnix::close_notification_func = _close_notification_funcs;
