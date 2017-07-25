@@ -958,7 +958,8 @@ void NativeReloadNode::_notification(int p_what) {
 	switch (p_what) {
 		case MainLoop::NOTIFICATION_WM_FOCUS_OUT: {
 
-			print_line("unload");
+			if (unloaded)
+				break;
 
 			NSL->_unload_stuff();
 			for (Map<String, Ref<GDNative> >::Element *L = NSL->library_gdnatives.front(); L; L = L->next()) {
@@ -967,11 +968,14 @@ void NativeReloadNode::_notification(int p_what) {
 				NSL->library_classes.erase(L->key());
 			}
 
+			unloaded = true;
+
 		} break;
 
 		case MainLoop::NOTIFICATION_WM_FOCUS_IN: {
 
-			print_line("load");
+			if (!unloaded)
+				break;
 
 			Set<StringName> libs_to_remove;
 
@@ -1009,6 +1013,8 @@ void NativeReloadNode::_notification(int p_what) {
 					}
 				}
 			}
+
+			unloaded = false;
 
 			for (Set<StringName>::Element *R = libs_to_remove.front(); R; R = R->next()) {
 				NSL->library_gdnatives.erase(R->get());
