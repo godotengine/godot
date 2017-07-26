@@ -275,7 +275,7 @@ void MeshInstance::_mesh_changed() {
 	materials.resize(mesh->get_surface_count());
 }
 
-void MeshInstance::create_debug_tagents() {
+void MeshInstance::create_debug_tangents() {
 
 	Vector<Vector3> lines;
 	Vector<Color> colors;
@@ -366,8 +366,8 @@ void MeshInstance::_bind_methods() {
 	ClassDB::set_method_flags("MeshInstance", "create_convex_collision", METHOD_FLAGS_DEFAULT);
 	ClassDB::bind_method(D_METHOD("_mesh_changed"), &MeshInstance::_mesh_changed);
 
-	ClassDB::bind_method(D_METHOD("create_debug_tagents"), &MeshInstance::create_debug_tagents);
-	ClassDB::set_method_flags("MeshInstance", "create_debug_tagents", METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
+	ClassDB::bind_method(D_METHOD("create_debug_tangents"), &MeshInstance::create_debug_tangents);
+	ClassDB::set_method_flags("MeshInstance", "create_debug_tangents", METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_mesh", "get_mesh");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "skeleton"), "set_skeleton_path", "get_skeleton_path");
