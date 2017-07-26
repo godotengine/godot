@@ -1576,7 +1576,7 @@ VisualServer::VisualServer() {
 	GLOBAL_DEF("rendering/quality/directional_shadow/size.mobile", 2048);
 	GLOBAL_DEF("rendering/quality/shadow_atlas/size", 4096);
 	GLOBAL_DEF("rendering/quality/shadow_atlas/size.mobile", 2048);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadow_atlas/size", PropertyInfo(Variant::INT, "rendering/shadow_atlas/size", PROPERTY_HINT_RANGE, "256,16384"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/size", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/size", PROPERTY_HINT_RANGE, "256,16384"));
 	GLOBAL_DEF("rendering/quality/shadow_atlas/quadrant_0_subdiv", 1);
 	GLOBAL_DEF("rendering/quality/shadow_atlas/quadrant_1_subdiv", 2);
 	GLOBAL_DEF("rendering/quality/shadow_atlas/quadrant_2_subdiv", 3);

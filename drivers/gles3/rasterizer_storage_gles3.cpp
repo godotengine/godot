@@ -6915,7 +6915,7 @@ void RasterizerStorageGLES3::initialize() {
 	config.use_anisotropic_filter = config.extensions.has("GL_EXT_texture_filter_anisotropic");
 	if (config.use_anisotropic_filter) {
 		glGetFloatv(_GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &config.anisotropic_level);
-		config.anisotropic_level = MIN(int(ProjectSettings::get_singleton()->get("rendering/quality/anisotropic_filter_level")), config.anisotropic_level);
+		config.anisotropic_level = MIN(int(ProjectSettings::get_singleton()->get("rendering/quality/filters/anisotropic_filter_level")), config.anisotropic_level);
 	}
 
 	frame.clear_request = false;
