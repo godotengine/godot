@@ -6189,6 +6189,8 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 			glBindTexture(GL_TEXTURE_2D, rt->effects.mip_maps[i].color);
 
 			int level = 0;
+			int fb_w = w;
+			int fb_h = h;
 
 			while (true) {
 
@@ -6206,13 +6208,15 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 				level++;
 			}
 
-			glTexStorage2DCustom(GL_TEXTURE_2D, level + 1, color_internal_format, rt->width, rt->height, color_format, color_type);
+			glTexStorage2DCustom(GL_TEXTURE_2D, level + 1, color_internal_format, fb_w, fb_h, color_format, color_type);
 
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, level);
 			glDisable(GL_SCISSOR_TEST);
 			glColorMask(1, 1, 1, 1);
-			glDepthMask(GL_TRUE);
+			if (rt->buffers.active == false) {
+				glDepthMask(GL_TRUE);
+			}
 
 			for (int j = 0; j < rt->effects.mip_maps[i].sizes.size(); j++) {
 
@@ -6235,7 +6239,6 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 
 				float zero[4] = { 1, 0, 1, 0 };
 				glViewport(0, 0, rt->effects.mip_maps[i].sizes[j].width, rt->effects.mip_maps[i].sizes[j].height);
-
 				glClearBufferfv(GL_COLOR, 0, zero);
 				if (used_depth) {
 					glClearBufferfi(GL_DEPTH_STENCIL, 0, 1.0, 0);

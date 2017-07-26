@@ -144,6 +144,38 @@ vec4 texture2D_bicubic(sampler2D tex, vec2 uv,int p_lod)
 #endif
 
 
+vec3 tonemap_filmic(vec3 color,float white) {
+
+	float A = 0.15;
+	float B = 0.50;
+	float C = 0.10;
+	float D = 0.20;
+	float E = 0.02;
+	float F = 0.30;
+	float W = 11.2;
+
+	vec3 coltn = ((color*(A*color+C*B)+D*E)/(color*(A*color+B)+D*F))-E/F;
+	float whitetn = ((white*(A*white+C*B)+D*E)/(white*(A*white+B)+D*F))-E/F;
+
+	return coltn/whitetn;
+
+}
+
+vec3 tonemap_aces(vec3 color) {
+	float a = 2.51f;
+	float b = 0.03f;
+	float c = 2.43f;
+	float d = 0.59f;
+	float e = 0.14f;
+	return color = clamp((color*(a*color+b))/(color*(c*color+d)+e),vec3(0.0),vec3(1.0));
+}
+
+vec3 tonemap_reindhart(vec3 color,vec3 white) {
+
+	return ( color * ( 1.0 + ( color / ( white) ) ) ) / ( 1.0 + color );
+}
+
+
 void main() {
 
 	ivec2 coord = ivec2(gl_FragCoord.xy);
@@ -157,8 +189,11 @@ void main() {
 
 	color*=exposure;
 
-
 #if defined(USE_GLOW_LEVEL1) || defined(USE_GLOW_LEVEL2) || defined(USE_GLOW_LEVEL3) || defined(USE_GLOW_LEVEL4) || defined(USE_GLOW_LEVEL5) || defined(USE_GLOW_LEVEL6) || defined(USE_GLOW_LEVEL7)
+#define USING_GLOW
+#endif
+
+#if defined(USING_GLOW)
 	vec3 glow = vec3(0.0);
 
 #ifdef USE_GLOW_LEVEL1
@@ -193,7 +228,54 @@ void main() {
 
 	glow *= glow_intensity;
 
+#endif
 
+
+#ifdef USE_REINDHART_TONEMAPPER
+
+	color.rgb = tonemap_reindhart(color.rgb,white);
+
+# if defined(USING_GLOW)
+	glow = tonemap_reindhart(glow,white);
+# endif
+
+#endif
+
+#ifdef USE_FILMIC_TONEMAPPER
+
+	color.rgb = tonemap_filmic(color.rgb,white);
+
+# if defined(USING_GLOW)
+	glow = tonemap_filmic(glow,white);
+# endif
+
+#endif
+
+#ifdef USE_ACES_TONEMAPPER
+
+	color.rgb = tonemap_aces(color.rgb);
+
+# if defined(USING_GLOW)
+	glow = tonemap_aces(glow);
+# endif
+
+#endif
+
+	//regular Linear -> SRGB conversion
+	vec3 a = vec3(0.055);
+	color.rgb = mix( (vec3(1.0)+a)*pow(color.rgb,vec3(1.0/2.4))-a , 12.92*color.rgb , lessThan(color.rgb,vec3(0.0031308)));
+
+#if defined(USING_GLOW)
+	glow = mix( (vec3(1.0)+a)*pow(glow,vec3(1.0/2.4))-a , 12.92*glow , lessThan(glow,vec3(0.0031308)));
+#endif
+
+//glow needs to be added in SRGB space (together with image space effects)
+
+	color.rgb = clamp(color.rgb,0.0,1.0);
+
+#if defined(USING_GLOW)
+	glow = clamp(glow,0.0,1.0);
+#endif
 
 #ifdef USE_GLOW_REPLACE
 
@@ -203,7 +285,7 @@ void main() {
 
 #ifdef USE_GLOW_SCREEN
 
-	color.rgb = clamp((color.rgb + glow) - (color.rgb * glow), 0.0, 1.0);
+	color.rgb = max((color.rgb + glow) - (color.rgb * glow), vec3(0.0));
 
 #endif
 
@@ -219,59 +301,10 @@ void main() {
 
 #endif
 
-#if !defined(USE_GLOW_SCREEN) && !defined(USE_GLOW_SOFTLIGHT) && !defined(USE_GLOW_REPLACE)
+#if defined(USING_GLOW) && !defined(USE_GLOW_SCREEN) && !defined(USE_GLOW_SOFTLIGHT) && !defined(USE_GLOW_REPLACE)
+	//additive
 	color.rgb+=glow;
 #endif
-
-
-#endif
-
-
-#ifdef USE_REINDHART_TONEMAPPER
-
-	{
-		color.rgb = ( color.rgb * ( 1.0 + ( color.rgb / ( white) ) ) ) / ( 1.0 + color.rgb );
-
-	}
-#endif
-
-#ifdef USE_FILMIC_TONEMAPPER
-
-	{
-
-		float A = 0.15;
-		float B = 0.50;
-		float C = 0.10;
-		float D = 0.20;
-		float E = 0.02;
-		float F = 0.30;
-		float W = 11.2;
-
-		vec3 coltn = ((color.rgb*(A*color.rgb+C*B)+D*E)/(color.rgb*(A*color.rgb+B)+D*F))-E/F;
-		float whitetn = ((white*(A*white+C*B)+D*E)/(white*(A*white+B)+D*F))-E/F;
-
-		color.rgb=coltn/whitetn;
-
-	}
-#endif
-
-#ifdef USE_ACES_TONEMAPPER
-
-	{
-		float a = 2.51f;
-		float b = 0.03f;
-		float c = 2.43f;
-		float d = 0.59f;
-		float e = 0.14f;
-		color.rgb = clamp((color.rgb*(a*color.rgb+b))/(color.rgb*(c*color.rgb+d)+e),vec3(0.0),vec3(1.0));
-	}
-
-#endif
-
-	//regular Linear -> SRGB conversion
-	vec3 a = vec3(0.055);
-	color.rgb = mix( (vec3(1.0)+a)*pow(color.rgb,vec3(1.0/2.4))-a , 12.92*color.rgb , lessThan(color.rgb,vec3(0.0031308)));
-
 
 #ifdef USE_BCS
 

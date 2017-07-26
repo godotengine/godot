@@ -167,6 +167,7 @@ void Environment::set_tonemap_auto_exposure(bool p_enabled) {
 
 	tonemap_auto_exposure = p_enabled;
 	VS::get_singleton()->environment_set_tonemap(environment, VS::EnvironmentToneMapper(tone_mapper), tonemap_exposure, tonemap_white, tonemap_auto_exposure, tonemap_auto_exposure_min, tonemap_auto_exposure_max, tonemap_auto_exposure_speed, tonemap_auto_exposure_grey);
+	_change_notify();
 }
 bool Environment::get_tonemap_auto_exposure() const {
 

@@ -1285,12 +1285,11 @@ public:
 			buffers.fbo = 0;
 			used_in_frame = false;
 
-			flags[RENDER_TARGET_VFLIP] = false;
-			flags[RENDER_TARGET_TRANSPARENT] = false;
-			flags[RENDER_TARGET_NO_3D_EFFECTS] = false;
-			flags[RENDER_TARGET_NO_3D] = false;
-			flags[RENDER_TARGET_NO_SAMPLING] = false;
+			for (int i = 0; i < RENDER_TARGET_FLAG_MAX; i++) {
+				flags[i] = false;
+			}
 			flags[RENDER_TARGET_HDR] = true;
+
 			buffers.active = false;
 			buffers.effects_active = false;
 
