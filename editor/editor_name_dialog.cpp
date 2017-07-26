@@ -40,6 +40,7 @@ void EditorNameDialog::_line_input_event(const InputEvent &p_event) {
 			return;
 
 		switch (p_event.key.scancode) {
+			case KEY_KP_ENTER:
 			case KEY_ENTER:
 			case KEY_RETURN: {
 

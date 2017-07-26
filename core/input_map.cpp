@@ -259,6 +259,8 @@ void InputMap::load_default() {
 	action_add_event("ui_accept", key);
 	key.key.scancode = KEY_ENTER;
 	action_add_event("ui_accept", key);
+	key.key.scancode = KEY_KP_ENTER;
+	action_add_event("ui_accept", key);
 	key.key.scancode = KEY_SPACE;
 	action_add_event("ui_accept", key);
 

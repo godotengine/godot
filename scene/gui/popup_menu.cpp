@@ -248,6 +248,7 @@ void PopupMenu::_input_event(const InputEvent &p_event) {
 					}
 				} break;
 				case KEY_RETURN:
+				case KEY_KP_ENTER:
 				case KEY_ENTER: {
 
 					if (mouse_over >= 0 && mouse_over < items.size() && !items[mouse_over].separator) {
