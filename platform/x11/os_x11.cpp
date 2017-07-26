@@ -497,6 +497,8 @@ void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 	joypad = memnew(JoypadLinux(input));
 #endif
 	_ensure_data_dir();
+
+	power_manager = memnew(PowerX11);
 }
 
 void OS_X11::xim_destroy_callback(::XIM im, ::XPointer client_data,
