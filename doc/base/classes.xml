@@ -957,9 +957,6 @@
 		<constant name="KEY_F16" value="16777259">
 			F16 Key
 		</constant>
-		<constant name="KEY_KP_ENTER" value="16777344">
-			Enter Key on Numpad
-		</constant>
 		<constant name="KEY_KP_MULTIPLY" value="16777345">
 			Multiply Key on Numpad
 		</constant>
