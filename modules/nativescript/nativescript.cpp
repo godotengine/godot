@@ -650,6 +650,28 @@ void NativeScriptInstance::notification(int p_notification) {
 	call_multilevel("_notification", args, 1);
 }
 
+void NativeScriptInstance::refcount_incremented() {
+	Variant::CallError err;
+	call("_refcount_incremented", NULL, 0, err);
+	if (err.error != Variant::CallError::CALL_OK && err.error != Variant::CallError::CALL_ERROR_INVALID_METHOD) {
+		ERR_PRINT("Failed to invoke _refcount_incremented - should not happen");
+	}
+}
+
+bool NativeScriptInstance::refcount_decremented() {
+	Variant::CallError err;
+	Variant ret = call("_refcount_decremented", NULL, 0, err);
+	if (err.error != Variant::CallError::CALL_OK && err.error != Variant::CallError::CALL_ERROR_INVALID_METHOD) {
+		ERR_PRINT("Failed to invoke _refcount_decremented - should not happen");
+		return true; // assume we can destroy the object
+	}
+	if (err.error == Variant::CallError::CALL_ERROR_INVALID_METHOD) {
+		// the method does not exist, default is true
+		return true;
+	}
+	return ret;
+}
+
 Ref<Script> NativeScriptInstance::get_script() const {
 	return script;
 }
