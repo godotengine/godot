@@ -41,6 +41,10 @@
 #include "godot_nativescript.h"
 #include "modules/gdnative/gdnative.h"
 
+#ifndef NO_THREADS
+#include "os/mutex.h"
+#endif
+
 struct NativeScriptDesc {
 
 	struct Method {
@@ -197,6 +201,19 @@ private:
 
 	void _unload_stuff();
 
+#ifndef NO_THREADS
+	Mutex *mutex;
+
+	Set<Ref<GDNativeLibrary> > libs_to_init;
+	Set<NativeScript *> scripts_to_register;
+	volatile bool has_objects_to_register; // so that we don't lock mutex every frame - it's rarely needed
+	void defer_init_library(Ref<GDNativeLibrary> lib, NativeScript *script);
+#endif
+
+	void init_library(const Ref<GDNativeLibrary> &lib);
+	void register_script(NativeScript *script);
+	void unregister_script(NativeScript *script);
+
 public:
 	Map<String, Map<StringName, NativeScriptDesc> > library_classes;
 	Map<String, Ref<GDNative> > library_gdnatives;
@@ -206,6 +223,10 @@ public:
 	const StringName _init_call_type = "nativescript_init";
 	const StringName _init_call_name = "godot_nativescript_init";
 
+	const StringName _thread_cb_call_type = "godot_nativescript_thread_cb";
+	const StringName _thread_enter_call_name = "godot_nativescript_thread_enter";
+	const StringName _thread_exit_call_name = "godot_nativescript_thread_exit";
+
 	NativeScriptLanguage();
 	~NativeScriptLanguage();
 
@@ -214,6 +235,13 @@ public:
 	}
 
 	void _hacky_api_anchor();
+
+#ifndef NO_THREADS
+	virtual void thread_enter();
+	virtual void thread_exit();
+
+	virtual void frame();
+#endif
 
 	virtual String get_name() const;
 	virtual void init();
