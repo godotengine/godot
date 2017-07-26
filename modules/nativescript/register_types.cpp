@@ -61,6 +61,32 @@ void init_call_cb(void *p_handle, godot_string *p_proc_name, void *p_data, int p
 	fn(args[0]);
 }
 
+#ifndef NO_THREADS
+
+typedef void (*native_script_empty_callback)();
+
+void thread_call_cb(void *p_handle, godot_string *p_proc_name, void *p_data, int p_num_args, void **args, void *r_ret) {
+	if (p_handle == NULL) {
+		ERR_PRINT("No valid library handle, can't call nativescript thread enter/exit callback");
+		return;
+	}
+
+	void *library_proc;
+	Error err = OS::get_singleton()->get_dynamic_library_symbol_handle(
+			p_handle,
+			*(String *)p_proc_name,
+			library_proc);
+	if (err != OK) {
+		// it's fine if thread callbacks are not present in the library.
+		return;
+	}
+
+	native_script_empty_callback fn = (native_script_empty_callback)library_proc;
+	fn();
+}
+
+#endif // NO_THREADS
+
 ResourceFormatLoaderNativeScript *resource_loader_gdns = NULL;
 ResourceFormatSaverNativeScript *resource_saver_gdns = NULL;
 
@@ -72,6 +98,9 @@ void register_nativescript_types() {
 	ScriptServer::register_language(native_script_language);
 
 	GDNativeCallRegistry::singleton->register_native_raw_call_type(native_script_language->_init_call_type, init_call_cb);
+#ifndef NO_THREADS
+	GDNativeCallRegistry::singleton->register_native_raw_call_type(native_script_language->_thread_cb_call_type, thread_call_cb);
+#endif
 
 	resource_saver_gdns = memnew(ResourceFormatSaverNativeScript);
 	ResourceSaver::add_resource_format_saver(resource_saver_gdns);
