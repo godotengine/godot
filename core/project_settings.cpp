@@ -455,8 +455,10 @@ Error ProjectSettings::_load_settings(const String p_path) {
 					memdelete(f);
 					ERR_FAIL_COND_V(config_version > FORMAT_VERSION, ERR_FILE_CANT_OPEN);
 				}
+			} else {
+				// config_version is checked and dropped
+				set(section + "/" + assign, value);
 			}
-			set(section + "/" + assign, value);
 		} else if (next_tag.name != String()) {
 			section = next_tag.name;
 		}
@@ -600,6 +602,15 @@ Error ProjectSettings::_save_settings_text(const String &p_file, const Map<Strin
 		ERR_FAIL_COND_V(err, err)
 	}
 
+	file->store_line("; Engine configuration file.");
+	file->store_line("; It's best edited using the editor UI and not directly,");
+	file->store_line("; since the parameters that go here are not all obvious.");
+	file->store_line("; ");
+	file->store_line("; Format: ");
+	file->store_line(";   [section] ; section goes between []");
+	file->store_line(";   param=value ; assign values to parameters");
+	file->store_line("");
+
 	file->store_string("config_version=" + itos(FORMAT_VERSION) + "\n");
 	if (p_custom_features != String())
 		file->store_string("custom_features=\"" + p_custom_features + "\"\n");
@@ -640,38 +651,43 @@ Error ProjectSettings::_save_custom_bnd(const String &p_file) { // add other par
 	return save_custom(p_file);
 };
 
-Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_custom, const Vector<String> &p_custom_features) {
+Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_custom, const Vector<String> &p_custom_features, bool p_merge_with_current) {
 
 	ERR_FAIL_COND_V(p_path == "", ERR_INVALID_PARAMETER);
 
 	Set<_VCSort> vclist;
 
-	for (Map<StringName, VariantContainer>::Element *G = props.front(); G; G = G->next()) {
+	if (p_merge_with_current) {
+		for (Map<StringName, VariantContainer>::Element *G = props.front(); G; G = G->next()) {
 
-		const VariantContainer *v = &G->get();
+			const VariantContainer *v = &G->get();
 
-		if (v->hide_from_editor)
-			continue;
+			if (v->hide_from_editor)
+				continue;
 
-		if (p_custom.has(G->key()))
-			continue;
+			if (p_custom.has(G->key()))
+				continue;
 
-		_VCSort vc;
-		vc.name = G->key(); //*k;
-		vc.order = v->order;
-		vc.type = v->variant.get_type();
-		vc.flags = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE;
-		if (v->variant == v->initial)
-			continue;
+			_VCSort vc;
+			vc.name = G->key(); //*k;
+			vc.order = v->order;
+			vc.type = v->variant.get_type();
+			vc.flags = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE;
+			if (v->variant == v->initial)
+				continue;
 
-		vclist.insert(vc);
+			vclist.insert(vc);
+		}
 	}
 
 	for (const Map<String, Variant>::Element *E = p_custom.front(); E; E = E->next()) {
 
+		// Lookup global prop to store in the same order
+		Map<StringName, VariantContainer>::Element *global_prop = props.find(E->key());
+
 		_VCSort vc;
 		vc.name = E->key();
-		vc.order = 0xFFFFFFF;
+		vc.order = global_prop ? global_prop->get().order : 0xFFFFFFF;
 		vc.type = E->get().get_type();
 		vc.flags = PROPERTY_USAGE_STORAGE;
 		vclist.insert(vc);

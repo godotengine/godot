@@ -187,30 +187,17 @@ private:
 		} else {
 			if (mode == MODE_NEW) {
 
-				FileAccess *f = FileAccess::open(dir.plus_file("/project.godot"), FileAccess::WRITE);
-				if (!f) {
+				ProjectSettings::CustomMap initial_settings;
+				initial_settings["application/config/name"] = project_name->get_text();
+				initial_settings["application/config/icon"] = "res://icon.png";
+				initial_settings["rendering/environment/default_environment"] = "res://default_env.tres";
+
+				if (ProjectSettings::get_singleton()->save_custom(dir.plus_file("/project.godot"), initial_settings, Vector<String>(), false)) {
 					error->set_text(TTR("Couldn't create project.godot in project path."));
 				} else {
-
-					f->store_line("; Engine configuration file.");
-					f->store_line("; It's best edited using the editor UI and not directly,");
-					f->store_line("; since the parameters that go here are not all obvious.");
-					f->store_line("; ");
-					f->store_line("; Format: ");
-					f->store_line(";   [section] ; section goes between []");
-					f->store_line(";   param=value ; assign values to parameters");
-					f->store_line("\n");
-					f->store_line("[application]");
-					f->store_line("\n");
-					f->store_line("config/name=\"" + project_name->get_text() + "\"");
-					f->store_line("config/icon=\"res://icon.png\"");
-					f->store_line("[rendering]");
-					f->store_line("environment/default_environment=\"res://default_env.tres\"");
-					memdelete(f);
-
 					ResourceSaver::save(dir.plus_file("/icon.png"), get_icon("DefaultProjectIcon", "EditorIcons"));
 
-					f = FileAccess::open(dir.plus_file("/default_env.tres"), FileAccess::WRITE);
+					FileAccess *f = FileAccess::open(dir.plus_file("/default_env.tres"), FileAccess::WRITE);
 					if (!f) {
 						error->set_text(TTR("Couldn't create project.godot in project path."));
 					} else {
