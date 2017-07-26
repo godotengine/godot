@@ -143,7 +143,7 @@ Ref<Theme> create_editor_theme() {
 	Color light_color_1 = base_color.linear_interpolate(Color(1, 1, 1, 1), contrast);
 	Color light_color_2 = base_color.linear_interpolate(Color(1, 1, 1, 1), contrast * 1.5);
 
-	const int border_width = MIN(border_size, 3) * EDSCALE;
+	const int border_width = CLAMP(border_size, 0, 3) * EDSCALE;
 
 	Color title_color_hl = base_color;
 	if (highlight_tabs)

@@ -1621,12 +1621,18 @@ void EditorHelp::_notification(int p_what) {
 	switch (p_what) {
 
 		case NOTIFICATION_READY: {
-
 			//forward->set_icon(get_icon("Forward","EditorIcons"));
 			//back->set_icon(get_icon("Back","EditorIcons"));
 			_update_doc();
-
 		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			Ref<StyleBoxFlat> style(memnew(StyleBoxFlat));
+			style->set_bg_color(EditorSettings::get_singleton()->get("text_editor/highlighting/background_color"));
+			background_panel->add_style_override("panel", style);
+		} break;
+
+		default: break;
 	}
 }
 
@@ -1695,14 +1701,14 @@ EditorHelp::EditorHelp() {
 	//class_list->set_selection_enabled(true);
 
 	{
-		Panel *pc = memnew(Panel);
+		background_panel = memnew(Panel);
 		Ref<StyleBoxFlat> style(memnew(StyleBoxFlat));
 		style->set_bg_color(EditorSettings::get_singleton()->get("text_editor/highlighting/background_color"));
-		pc->set_v_size_flags(SIZE_EXPAND_FILL);
-		pc->add_style_override("panel", style); //get_stylebox("normal","TextEdit"));
-		vbc->add_child(pc);
+		background_panel->set_v_size_flags(SIZE_EXPAND_FILL);
+		background_panel->add_style_override("panel", style); //get_stylebox("normal","TextEdit"));
+		vbc->add_child(background_panel);
 		class_desc = memnew(RichTextLabel);
-		pc->add_child(class_desc);
+		background_panel->add_child(class_desc);
 		class_desc->set_area_as_parent_rect(8);
 		class_desc->connect("meta_clicked", this, "_class_desc_select");
 		class_desc->connect("gui_input", this, "_class_desc_input");
