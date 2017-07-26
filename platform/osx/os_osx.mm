@@ -1661,12 +1661,52 @@ OS_OSX::OS_OSX() {
 	// In case we are unbundled, make us a proper UI application
 	[NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
 
-#if 0
 	// Menu bar setup must go between sharedApplication above and
 	// finishLaunching below, in order to properly emulate the behavior
 	// of NSApplicationMain
-	createMenuBar();
-#endif
+	NSMenuItem *menu_item;
+	NSString *title;
+
+	NSString *nsappname = [[[NSBundle mainBundle] performSelector:@selector(localizedInfoDictionary)] objectForKey:@"CFBundleName"];
+	if (nsappname == nil)
+		nsappname = [[NSProcessInfo processInfo] processName];
+
+	// Setup Apple menu
+	NSMenu *apple_menu = [[NSMenu alloc] initWithTitle:@""];
+	title = [NSString stringWithFormat:NSLocalizedString(@"About %@", nil), nsappname];
+	[apple_menu addItemWithTitle:title action:@selector(orderFrontStandardAboutPanel:) keyEquivalent:@""];
+
+	[apple_menu addItem:[NSMenuItem separatorItem]];
+
+	NSMenu *services = [[NSMenu alloc] initWithTitle:@""];
+	menu_item = [apple_menu addItemWithTitle:NSLocalizedString(@"Services", nil) action:nil keyEquivalent:@""];
+	[apple_menu setSubmenu:services forItem:menu_item];
+	[NSApp setServicesMenu:services];
+	[services release];
+
+	[apple_menu addItem:[NSMenuItem separatorItem]];
+
+	title = [NSString stringWithFormat:NSLocalizedString(@"Hide %@", nil), nsappname];
+	[apple_menu addItemWithTitle:title action:@selector(hide:) keyEquivalent:@"h"];
+
+	menu_item = [apple_menu addItemWithTitle:NSLocalizedString(@"Hide Others", nil) action:@selector(hideOtherApplications:) keyEquivalent:@"h"];
+	[menu_item setKeyEquivalentModifierMask:(NSAlternateKeyMask | NSCommandKeyMask)];
+
+	[apple_menu addItemWithTitle:NSLocalizedString(@"Show all", nil) action:@selector(unhideAllApplications:) keyEquivalent:@""];
+
+	[apple_menu addItem:[NSMenuItem separatorItem]];
+
+	title = [NSString stringWithFormat:NSLocalizedString(@"Quit %@", nil), nsappname];
+	[apple_menu addItemWithTitle:title action:@selector(terminate:) keyEquivalent:@"q"];
+
+	// Setup menu bar
+	NSMenu *main_menu = [[NSMenu alloc] initWithTitle:@""];
+	menu_item = [main_menu addItemWithTitle:@"" action:nil keyEquivalent:@""];
+	[main_menu setSubmenu:apple_menu forItem:menu_item];
+	[NSApp setMainMenu:main_menu];
+
+	[main_menu release];
+	[apple_menu release];
 
 	[NSApp finishLaunching];
 
