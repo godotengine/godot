@@ -512,7 +512,13 @@ bool OS::check_feature_support(const String &p_feature) {
 	return false;
 }
 
+void *OS::get_stack_bottom() const {
+	return _stack_bottom;
+}
+
 OS::OS() {
+	void *volatile stack_bottom;
+
 	last_error = NULL;
 	singleton = this;
 	_keep_screen_on = true; // set default value to true, because this had been true before godot 2.0.
@@ -525,6 +531,7 @@ OS::OS() {
 	_render_thread_mode = RENDER_THREAD_SAFE;
 
 	_allow_hidpi = true;
+	_stack_bottom = (void *)(&stack_bottom);
 }
 
 OS::~OS() {
