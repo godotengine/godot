@@ -14062,7 +14062,7 @@
 			<description>
 				Add a custom type, which will appear in the list of nodes or resources. An icon can be optionally passed.
 				When given node or resource is selected, the base type will be instanced (ie, "Spatial", "Control", "Resource"), then the script will be loaded and set to this object.
-				You can use the [method EditorPlugin.handles] to check if your custom object is being edited by checking the script or using 'extends' keyword.
+				You can use the [method EditorPlugin.handles] to check if your custom object is being edited by checking the script or using 'is' keyword.
 				During run-time, this will be a simple object with a script so this function does not need to be called then.
 			</description>
 		</method>
