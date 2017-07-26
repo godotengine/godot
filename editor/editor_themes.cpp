@@ -143,7 +143,7 @@ Ref<Theme> create_editor_theme() {
 	Color light_color_1 = base_color.linear_interpolate(Color(1, 1, 1, 1), contrast);
 	Color light_color_2 = base_color.linear_interpolate(Color(1, 1, 1, 1), contrast * 1.5);
 
-	const int border_width = (border_size % 3) * EDSCALE;
+	const int border_width = MIN(border_size, 3) * EDSCALE;
 
 	Color title_color_hl = base_color;
 	if (highlight_tabs)
@@ -280,12 +280,12 @@ Ref<Theme> create_editor_theme() {
 
 	// PopupMenu
 	Ref<StyleBoxFlat> style_popup_menu = make_flat_stylebox(dark_color_1, 8, 8, 8, 8);
-	style_popup_menu->set_border_size(border_width);
+	style_popup_menu->set_border_size(MAX(EDSCALE, border_width));
 	style_popup_menu->set_light_color(light_color_1);
 	style_popup_menu->set_dark_color(light_color_1);
 	style_popup_menu->set_border_blend(false);
 	theme->set_stylebox("panel", "PopupMenu", style_popup_menu);
-	theme->set_stylebox("separator", "PopupMenu", make_line_stylebox(separator_color, border_width, 8 - border_width));
+	theme->set_stylebox("separator", "PopupMenu", make_line_stylebox(separator_color, MAX(EDSCALE, border_width), 8 - MAX(EDSCALE, border_width)));
 
 	// Tree & ItemList background
 	Ref<StyleBoxFlat> style_tree_bg = make_flat_stylebox(dark_color_1, 2, 4, 2, 4);
@@ -424,7 +424,7 @@ Ref<Theme> create_editor_theme() {
 
 	// WindowDialog
 	Ref<StyleBoxFlat> style_window = make_flat_stylebox(dark_color_2, 4, 4, 4, 4);
-	style_window->set_border_size(border_width);
+	style_window->set_border_size(MAX(EDSCALE, border_width));
 	style_window->set_border_blend(false);
 	style_window->set_light_color(title_color_hl);
 	style_window->set_dark_color(title_color_hl);
@@ -470,6 +470,9 @@ Ref<Theme> create_editor_theme() {
 	theme->set_stylebox("slider", "VSlider", make_stylebox(theme->get_icon("GuiVsliderBg", "EditorIcons"), 4, 4, 4, 4));
 	theme->set_icon("grabber", "VSlider", theme->get_icon("GuiSliderGrabber", "EditorIcons"));
 	theme->set_icon("grabber_highlight", "VSlider", theme->get_icon("GuiSliderGrabberHl", "EditorIcons"));
+
+	//RichTextLabel
+	theme->set_stylebox("focus", "RichTextLabel", make_empty_stylebox());
 
 	// Panel
 	theme->set_stylebox("panel", "Panel", style_panel);
