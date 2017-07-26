@@ -1646,7 +1646,7 @@ void Image::blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Po
 	}
 }
 
-void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2 &p_src_rect, const Point2 &p_dest) {
+void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2 &p_src_rect, const Point2 &p_dest, bool use_alpha) {
 
 	ERR_FAIL_COND(p_src.is_null());
 	ERR_FAIL_COND(p_mask.is_null());
@@ -1684,7 +1684,7 @@ void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, co
 			int src_x = clipped_src_rect.position.x + j;
 			int src_y = clipped_src_rect.position.y + i;
 
-			if (msk->get_pixel(src_x, src_y).a != 0) {
+			if ( (!use_alpha && msk->get_pixel(src_x, src_y).a != 0) || (use_alpha && msk->get_pixel(src_x, src_y).a == 0)) {
 
 				int dst_x = dest_rect.position.x + j;
 				int dst_y = dest_rect.position.y + i;
@@ -2255,7 +2255,7 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("normalmap_to_xy"), &Image::normalmap_to_xy);
 
 	ClassDB::bind_method(D_METHOD("blit_rect", "src:Image", "src_rect", "dst"), &Image::blit_rect);
-	ClassDB::bind_method(D_METHOD("blit_rect_mask", "src:Image", "mask:Image", "src_rect", "dst"), &Image::blit_rect_mask);
+	ClassDB::bind_method(D_METHOD("blit_rect_mask", "src:Image", "mask:Image", "src_rect", "dst", "use_alpha"), &Image::blit_rect_mask, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("blend_rect", "src:Image", "src_rect", "dst"), &Image::blend_rect);
 	ClassDB::bind_method(D_METHOD("blend_rect_mask", "src:Image", "mask:Image", "src_rect", "dst"), &Image::blend_rect_mask);
 	ClassDB::bind_method(D_METHOD("fill", "color"), &Image::fill);
