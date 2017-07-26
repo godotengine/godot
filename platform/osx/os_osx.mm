@@ -152,6 +152,16 @@ static bool mouse_down_control = false;
 	return NO;
 }
 
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
+- (void)windowDidEnterFullScreen:(NSNotification *)notification {
+	OS_OSX::singleton->zoomed = true;
+}
+
+- (void)windowDidExitFullScreen:(NSNotification *)notification {
+	OS_OSX::singleton->zoomed = false;
+}
+#endif // MAC_OS_X_VERSION_MAX_ALLOWED
+
 - (void)windowDidResize:(NSNotification *)notification {
 	[OS_OSX::singleton->context update];
 
@@ -1233,13 +1243,21 @@ int OS_OSX::get_screen_count() const {
 };
 
 int OS_OSX::get_current_screen() const {
+	Vector2 wpos = get_window_position();
 
-	return current_screen;
+	int count = get_screen_count();
+	for (int i = 0; i < count; i++) {
+		Point2 pos = get_screen_position(i);
+		Size2 size = get_screen_size(i);
+		if ((wpos.x >= pos.x && wpos.x < pos.x + size.width) && (wpos.y >= pos.y && wpos.y < pos.y + size.height))
+			return i;
+	}
+	return 0;
 };
 
 void OS_OSX::set_current_screen(int p_screen) {
-
-	current_screen = p_screen;
+	Vector2 wpos = get_window_position() - get_screen_position(get_current_screen());
+	set_window_position(wpos + get_screen_position(p_screen));
 };
 
 Point2 OS_OSX::get_screen_position(int p_screen) const {
@@ -1383,7 +1401,7 @@ void OS_OSX::set_window_maximized(bool p_enabled) {
 
 	if (p_enabled) {
 		restore_rect = Rect2(get_window_position(), get_window_size());
-		[window_object setFrame:[[[NSScreen screens] objectAtIndex:current_screen] visibleFrame] display:YES];
+		[window_object setFrame:[[[NSScreen screens] objectAtIndex:get_current_screen()] visibleFrame] display:YES];
 	} else {
 		set_window_size(restore_rect.size);
 		set_window_position(restore_rect.position);
@@ -1715,8 +1733,6 @@ OS_OSX::OS_OSX() {
 	[NSApp setDelegate:delegate];
 
 	cursor_shape = CURSOR_ARROW;
-
-	current_screen = 0;
 
 	maximized = false;
 	minimized = false;
