@@ -314,9 +314,10 @@ GDParser::Node *GDParser::_parse_expression(Node *p_parent, bool p_static, bool 
 							path += String(tokenizer->get_token_literal());
 							tokenizer->advance();
 							need_identifier = false;
+						} else {
+							done = true;
 						}
 
-						done = true;
 						break;
 					}
 				}
