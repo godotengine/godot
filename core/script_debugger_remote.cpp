@@ -74,7 +74,7 @@ Error ScriptDebuggerRemote::connect_to_host(const String &p_host, uint16_t p_por
 		} else {
 
 			OS::get_singleton()->delay_usec(1000000);
-			print_line("Remote Debugger: Connection failed with status: " + String::num(tcp_client->get_status()) + "'', retrying in 1 sec.");
+			print_line("Remote Debugger: Connection failed with status: '" + String::num(tcp_client->get_status()) + "', retrying in 1 sec.");
 		};
 	};
 
