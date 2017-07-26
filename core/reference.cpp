@@ -74,7 +74,8 @@ bool Reference::unreference() {
 	bool die = refcount.unref();
 
 	if (get_script_instance()) {
-		die = die && get_script_instance()->refcount_decremented();
+		bool script_ret = get_script_instance()->refcount_decremented();
+		die = die && script_ret;
 	}
 
 	return die;

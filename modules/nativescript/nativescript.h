@@ -185,6 +185,9 @@ public:
 	virtual void call_multilevel(const StringName &p_method, const Variant **p_args, int p_argcount);
 	virtual void call_multilevel_reversed(const StringName &p_method, const Variant **p_args, int p_argcount);
 
+	virtual void refcount_incremented();
+	virtual bool refcount_decremented();
+
 	~NativeScriptInstance();
 };
 
