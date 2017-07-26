@@ -206,6 +206,10 @@ private:
 					f->store_line("\n");
 					f->store_line("name=\"" + project_name->get_text() + "\"");
 					f->store_line("icon=\"res://icon.png\"");
+					f->store_line("\n");
+					f->store_line("[physics_2d]");
+					f->store_line("\n");
+					f->store_line("motion_fix_enabled=true");
 
 					memdelete(f);
 
