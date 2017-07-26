@@ -1719,6 +1719,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 void Tree::_text_editor_modal_close() {
 
 	if (Input::get_singleton()->is_key_pressed(KEY_ESCAPE) ||
+			Input::get_singleton()->is_key_pressed(KEY_KP_ENTER) ||
 			Input::get_singleton()->is_key_pressed(KEY_ENTER) ||
 			Input::get_singleton()->is_key_pressed(KEY_RETURN)) {
 
@@ -2032,6 +2033,7 @@ void Tree::_input_event(InputEvent p_event) {
 				} break;
 				case KEY_F2:
 				case KEY_RETURN:
+				case KEY_KP_ENTER:
 				case KEY_ENTER: {
 
 					if (selected_item) {

@@ -1703,7 +1703,7 @@ void TextEdit::_input_event(const InputEvent &p_input_event) {
 							return;
 						}
 
-						if (k.scancode == KEY_ENTER || k.scancode == KEY_RETURN || k.scancode == KEY_TAB) {
+						if (k.scancode == KEY_KP_ENTER || k.scancode == KEY_ENTER || k.scancode == KEY_RETURN || k.scancode == KEY_TAB) {
 
 							_confirm_completion();
 							accept_event();
@@ -1871,6 +1871,7 @@ void TextEdit::_input_event(const InputEvent &p_input_event) {
 
 			switch (k.scancode) {
 
+				case KEY_KP_ENTER:
 				case KEY_ENTER:
 				case KEY_RETURN: {
 

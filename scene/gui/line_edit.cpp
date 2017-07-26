@@ -234,6 +234,7 @@ void LineEdit::_input_event(InputEvent p_event) {
 				bool handled = true;
 				switch (code) {
 
+					case KEY_KP_ENTER:
 					case KEY_ENTER:
 					case KEY_RETURN: {
 

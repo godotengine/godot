@@ -1392,6 +1392,8 @@ Globals::Globals() {
 	va.push_back(key);
 	key.key.scancode = KEY_ENTER;
 	va.push_back(key);
+	key.key.scancode = KEY_KP_ENTER;
+	va.push_back(key);
 	key.key.scancode = KEY_SPACE;
 	va.push_back(key);
 	joyb.joy_button.button_index = JOY_BUTTON_0;
