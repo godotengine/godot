@@ -1563,13 +1563,13 @@ void SpatialEditorViewport::_update_freelook(real_t delta) {
 	Vector3 right = camera->get_transform().basis.xform(Vector3(1, 0, 0));
 	Vector3 up = camera->get_transform().basis.xform(Vector3(0, 1, 0));
 
-	int key_left = ED_SHORTCUT("spatial_editor/freelook_left", TTR("Freelook Left"), KEY_A)->get_shortcut()->cast_to<InputEventKey>()->get_scancode();
-	int key_right = ED_SHORTCUT("spatial_editor/freelook_right", TTR("Freelook Right"), KEY_D)->get_shortcut()->cast_to<InputEventKey>()->get_scancode();
-	int key_forward = ED_SHORTCUT("spatial_editor/freelook_forward", TTR("Freelook Forward"), KEY_W)->get_shortcut()->cast_to<InputEventKey>()->get_scancode();
-	int key_backwards = ED_SHORTCUT("spatial_editor/freelook_backwards", TTR("Freelook Backwards"), KEY_S)->get_shortcut()->cast_to<InputEventKey>()->get_scancode();
-	int key_up = ED_SHORTCUT("spatial_editor/freelook_up", TTR("Freelook Up"), KEY_Q)->get_shortcut()->cast_to<InputEventKey>()->get_scancode();
-	int key_down = ED_SHORTCUT("spatial_editor/freelook_down", TTR("Freelook Down"), KEY_E)->get_shortcut()->cast_to<InputEventKey>()->get_scancode();
-	int key_speed_modifier = ED_SHORTCUT("spatial_editor/freelook_speed_modifier", TTR("Freelook Speed Modifier"), KEY_SHIFT)->get_shortcut()->cast_to<InputEventKey>()->get_scancode();
+	int key_left = ED_GET_SHORTCUT("spatial_editor/freelook_left")->get_shortcut()->cast_to<InputEventKey>()->get_scancode();
+	int key_right = ED_GET_SHORTCUT("spatial_editor/freelook_right")->get_shortcut()->cast_to<InputEventKey>()->get_scancode();
+	int key_forward = ED_GET_SHORTCUT("spatial_editor/freelook_forward")->get_shortcut()->cast_to<InputEventKey>()->get_scancode();
+	int key_backwards = ED_GET_SHORTCUT("spatial_editor/freelook_backwards")->get_shortcut()->cast_to<InputEventKey>()->get_scancode();
+	int key_up = ED_GET_SHORTCUT("spatial_editor/freelook_up")->get_shortcut()->cast_to<InputEventKey>()->get_scancode();
+	int key_down = ED_GET_SHORTCUT("spatial_editor/freelook_down")->get_shortcut()->cast_to<InputEventKey>()->get_scancode();
+	int key_speed_modifier = ED_GET_SHORTCUT("spatial_editor/freelook_speed_modifier")->get_shortcut()->cast_to<InputEventKey>()->get_scancode();
 
 	Vector3 velocity;
 	bool pressed = false;
@@ -2423,6 +2423,14 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_selection"), VIEW_CENTER_TO_SELECTION);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/align_selection_with_view"), VIEW_ALIGN_SELECTION_WITH_VIEW);
 	view_menu->get_popup()->connect("id_pressed", this, "_menu_option");
+
+	ED_SHORTCUT("spatial_editor/freelook_left", TTR("Freelook Left"), KEY_A);
+	ED_SHORTCUT("spatial_editor/freelook_right", TTR("Freelook Right"), KEY_D);
+	ED_SHORTCUT("spatial_editor/freelook_forward", TTR("Freelook Forward"), KEY_W);
+	ED_SHORTCUT("spatial_editor/freelook_backwards", TTR("Freelook Backwards"), KEY_S);
+	ED_SHORTCUT("spatial_editor/freelook_up", TTR("Freelook Up"), KEY_Q);
+	ED_SHORTCUT("spatial_editor/freelook_down", TTR("Freelook Down"), KEY_E);
+	ED_SHORTCUT("spatial_editor/freelook_speed_modifier", TTR("Freelook Speed Modifier"), KEY_SHIFT);
 
 	preview_camera = memnew(Button);
 	preview_camera->set_toggle_mode(true);
