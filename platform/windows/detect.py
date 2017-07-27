@@ -114,7 +114,7 @@ def can_build():
 
     if (os.name == "nt"):
         # building natively on windows!
-        if (os.getenv("VSINSTALLDIR")):
+        if (os.getenv("VCINSTALLDIR")):
             return True
         else:
             print("\nMSVC not detected, attempting Mingw.")
@@ -214,7 +214,7 @@ def configure(env):
     winver = "0x0600" # Windows Vista is the minimum target for windows builds
 
     env['is_mingw'] = False
-    if (os.name == "nt" and os.getenv("VSINSTALLDIR") != None):
+    if (os.name == "nt" and os.getenv("VCINSTALLDIR")):
         # build using visual studio
         env['ENV']['TMP'] = os.environ['TMP']
         env.Append(CPPPATH=['#platform/windows/include'])
