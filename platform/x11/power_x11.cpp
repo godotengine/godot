@@ -171,25 +171,18 @@ void PowerX11::check_proc_acpi_battery(const char *node, bool *have_battery, boo
 				charge = true;
 			}
 		} else if (String(key) == "remaining capacity") {
-			char *endptr = NULL;
-			//const int cvt = (int) strtol(val, &endptr, 10);
 			String sval = val;
 			const int cvt = sval.to_int();
-			if (*endptr == ' ') {
-				remaining = cvt;
-			}
+			remaining = cvt;
 		}
 	}
 
 	ptr = &info[0];
 	while (make_proc_acpi_key_val(&ptr, &key, &val)) {
 		if (String(key) == "design capacity") {
-			char *endptr = NULL;
 			String sval = val;
 			const int cvt = sval.to_int();
-			if (*endptr == ' ') {
-				maximum = cvt;
-			}
+			maximum = cvt;
 		}
 	}
 
