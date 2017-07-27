@@ -50,7 +50,8 @@ void init_call_cb(void *p_handle, godot_string *p_proc_name, void *p_data, int p
 	Error err = OS::get_singleton()->get_dynamic_library_symbol_handle(
 			p_handle,
 			*(String *)p_proc_name,
-			library_proc);
+			library_proc,
+			true); // we print our own message
 	if (err != OK) {
 		ERR_PRINT((String("GDNative procedure \"" + *(String *)p_proc_name) + "\" does not exists and can't be called").utf8().get_data());
 		return;
@@ -75,7 +76,8 @@ void thread_call_cb(void *p_handle, godot_string *p_proc_name, void *p_data, int
 	Error err = OS::get_singleton()->get_dynamic_library_symbol_handle(
 			p_handle,
 			*(String *)p_proc_name,
-			library_proc);
+			library_proc,
+			true);
 	if (err != OK) {
 		// it's fine if thread callbacks are not present in the library.
 		return;

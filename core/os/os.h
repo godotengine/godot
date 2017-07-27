@@ -184,9 +184,9 @@ public:
 
 	virtual void set_ime_position(const Point2 &p_pos) {}
 
-	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle) { return ERR_UNAVAILABLE; };
-	virtual Error close_dynamic_library(void *p_library_handle) { return ERR_UNAVAILABLE; };
-	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle) { return ERR_UNAVAILABLE; };
+	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle) { return ERR_UNAVAILABLE; }
+	virtual Error close_dynamic_library(void *p_library_handle) { return ERR_UNAVAILABLE; }
+	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional = false) { return ERR_UNAVAILABLE; }
 
 	virtual void set_keep_screen_on(bool p_enabled);
 	virtual bool is_keep_screen_on() const;

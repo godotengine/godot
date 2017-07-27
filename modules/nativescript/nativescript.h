@@ -106,6 +106,9 @@ class NativeScript : public Script {
 
 	String class_name;
 
+#ifndef NO_THREADS
+	Mutex *owners_lock;
+#endif
 	Set<Object *> instance_owners;
 
 protected:

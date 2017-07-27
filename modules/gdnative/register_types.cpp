@@ -47,7 +47,8 @@ godot_variant cb_standard_varcall(void *handle, godot_string *p_procedure, godot
 	Error err = OS::get_singleton()->get_dynamic_library_symbol_handle(
 			handle,
 			*(String *)p_procedure,
-			library_proc);
+			library_proc,
+			true); // we roll our own message
 	if (err != OK) {
 		ERR_PRINT((String("GDNative procedure \"" + *(String *)p_procedure) + "\" does not exists and can't be called").utf8().get_data());
 		godot_variant ret;
