@@ -792,7 +792,7 @@ NativeScriptInstance::~NativeScriptInstance() {
 		script->instance_owners.erase(owner);
 
 #ifndef NO_THREADS
-		script->owners_lock->lock();
+		script->owners_lock->unlock();
 #endif
 	}
 }
