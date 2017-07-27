@@ -54,14 +54,15 @@ class ThemeEditor : public Control {
 
 	MenuButton *theme_menu;
 	ConfirmationDialog *add_del_dialog;
+	HBoxContainer *type_hbc;
 	MenuButton *type_menu;
 	LineEdit *type_edit;
+	HBoxContainer *name_hbc;
 	MenuButton *name_menu;
 	LineEdit *name_edit;
 	OptionButton *type_select;
 	Label *type_select_label;
 	Label *name_select_label;
-	Label *dtype_select_label;
 
 	enum PopupMode {
 		POPUP_ADD,
