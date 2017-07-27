@@ -203,7 +203,15 @@ ScriptInstance *NativeScript::instance_create(Object *p_this) {
 	nsi->userdata = script_data->create_func.create_func((godot_object *)p_this, script_data->create_func.method_data);
 #endif
 
+#ifndef NO_THREADS
+	owners_lock->lock();
+#endif
+
 	instance_owners.insert(p_this);
+
+#ifndef NO_THREADS
+	owners_lock->unlock();
+#endif
 	return nsi;
 }
 
@@ -393,9 +401,6 @@ Variant NativeScript::_new(const Variant **p_args, int p_argcount, Variant::Call
 		ref = REF(r);
 	}
 
-	// GDScript does it like this: _create_instance(p_args, p_argcount, owner, r != NULL, r_error);
-	// TODO(karroffel): support varargs for constructors.
-
 	NativeScriptInstance *instance = (NativeScriptInstance *)instance_create(owner);
 
 	owner->set_script_instance(instance);
@@ -405,6 +410,24 @@ Variant NativeScript::_new(const Variant **p_args, int p_argcount, Variant::Call
 			memdelete(owner); //no owner, sorry
 		}
 		return Variant();
+	}
+
+	call("_init", p_args, p_argcount, r_error);
+
+	if (r_error.error != Variant::CallError::CALL_OK) {
+		instance->script = Ref<NativeScript>();
+		instance->owner->set_script_instance(NULL);
+
+#ifndef NO_THREADS
+		owners_lock->lock();
+#endif
+		instance_owners.erase(owner);
+
+#ifndef NO_THREADS
+		owners_lock->unlock();
+#endif
+
+		ERR_FAIL_COND_V(r_error.error != Variant::CallError::CALL_OK, Variant());
 	}
 
 	if (ref.is_valid()) {
@@ -419,11 +442,18 @@ NativeScript::NativeScript() {
 	library = Ref<GDNative>();
 	lib_path = "";
 	class_name = "";
+#ifndef NO_THREADS
+	owners_lock = Mutex::create();
+#endif
 }
 
 // TODO(karroffel): implement this
 NativeScript::~NativeScript() {
 	NSL->unregister_script(this);
+
+#ifndef NO_THREADS
+	memdelete(owners_lock);
+#endif
 }
 
 ////// ScriptInstance stuff
@@ -754,7 +784,16 @@ NativeScriptInstance::~NativeScriptInstance() {
 	script_data->destroy_func.destroy_func((godot_object *)owner, script_data->destroy_func.method_data, userdata);
 
 	if (owner) {
+
+#ifndef NO_THREADS
+		script->owners_lock->lock();
+#endif
+
 		script->instance_owners.erase(owner);
+
+#ifndef NO_THREADS
+		script->owners_lock->lock();
+#endif
 	}
 }
 
