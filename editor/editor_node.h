@@ -464,7 +464,7 @@ private:
 
 	void _save_scene(String p_file, int idx = -1);
 	void _save_all_scenes();
-	int _next_unsaved_scene();
+	int _next_unsaved_scene(bool p_valid_filename, int p_start = 0);
 	void _discard_changes(const String &p_str = String());
 
 	void _instance_request(const Vector<String> &p_files);
