@@ -80,7 +80,15 @@ public:
 
 void EditorExportPlatformIOS::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
 
-	// what does this need to do?
+	if (p_preset->get("texture_format/s3tc")) {
+		r_features->push_back("s3tc");
+	}
+	if (p_preset->get("texture_format/etc")) {
+		r_features->push_back("etc");
+	}
+	if (p_preset->get("texture_format/etc2")) {
+		r_features->push_back("etc2");
+	}
 }
 
 void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) {
@@ -97,6 +105,10 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/version"), "1.0"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/copyright"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/bits_mode", PROPERTY_HINT_ENUM, "Fat (32 & 64 bits),64 bits,32 bits"), 1));
+
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/s3tc"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc2"), true));
 
 	/* probably need some more info */
 }
