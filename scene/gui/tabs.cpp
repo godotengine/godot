@@ -224,9 +224,9 @@ void Tabs::_gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (found != -1) {
-
+			int cache_current = current;
 			set_current_tab(found);
-			emit_signal("tab_changed", found);
+			emit_signal("tab_changed", cache_current, found);
 		}
 	}
 }
@@ -802,7 +802,7 @@ void Tabs::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tab_close_display_policy", "policy"), &Tabs::set_tab_close_display_policy);
 	ClassDB::bind_method(D_METHOD("get_tab_close_display_policy"), &Tabs::get_tab_close_display_policy);
 
-	ADD_SIGNAL(MethodInfo("tab_changed", PropertyInfo(Variant::INT, "tab")));
+	ADD_SIGNAL(MethodInfo("tab_changed", PropertyInfo(Variant::INT, "old_tab"), PropertyInfo(Variant::INT, "new_tab")));
 	ADD_SIGNAL(MethodInfo("right_button_pressed", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("tab_close", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("tab_hover", PropertyInfo(Variant::INT, "tab")));
