@@ -81,7 +81,6 @@ static const _KeyCodeText _keycodes[] = {
 		{KEY_F14                           ,"F14"},
 		{KEY_F15                           ,"F15"},
 		{KEY_F16                           ,"F16"},
-		{KEY_KP_ENTER                      ,"Kp Enter"},
 		{KEY_KP_MULTIPLY                   ,"Kp Multiply"},
 		{KEY_KP_DIVIDE                     ,"Kp Divide"},
 		{KEY_KP_SUBTRACT                   ,"Kp Subtract"},
@@ -334,7 +333,6 @@ bool keycode_has_unicode(uint32_t p_keycode) {
 		case KEY_F14:
 		case KEY_F15:
 		case KEY_F16:
-		case KEY_KP_ENTER:
 		case KEY_SUPER_L:
 		case KEY_SUPER_R:
 		case KEY_MENU:

@@ -94,7 +94,6 @@ static _XTranslatePair _xkeysym_to_keycode[] = {
 	//{ XK_KP_Separator,            KEY_COMMA   },
 	{ XK_KP_Decimal, KEY_KP_PERIOD },
 	{ XK_KP_Delete, KEY_KP_PERIOD },
-	{ XK_KP_Enter, KEY_KP_ENTER },
 	{ XK_KP_Multiply, KEY_KP_MULTIPLY },
 	{ XK_KP_Divide, KEY_KP_DIVIDE },
 	{ XK_KP_Subtract, KEY_KP_SUBTRACT },
