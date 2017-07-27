@@ -2199,6 +2199,7 @@ void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String &p
 		case Variant::BOOL: {
 
 			p_item->set_checked(1, obj->get(p_name));
+			p_item->set_text(1, obj->get(p_name) ? TTR("On") : TTR("Off"));
 		} break;
 		case Variant::REAL:
 		case Variant::INT: {
@@ -3141,7 +3142,7 @@ void PropertyEditor::update_tree() {
 			case Variant::BOOL: {
 
 				item->set_cell_mode(1, TreeItem::CELL_MODE_CHECK);
-				item->set_text(1, TTR("On"));
+				item->set_text(1, obj->get(p.name) ? TTR("On") : TTR("Off"));
 				item->set_tooltip(1, obj->get(p.name) ? "True" : "False");
 				item->set_checked(1, obj->get(p.name));
 				if (show_type_icons)
