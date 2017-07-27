@@ -212,6 +212,12 @@ ScriptInstance *NativeScript::instance_create(Object *p_this) {
 #ifndef NO_THREADS
 	owners_lock->unlock();
 #endif
+
+	// try to call _init
+	// we don't care if it doesn't exist, so we ignore errors.
+	Variant::CallError err;
+	call("_init", NULL, 0, err);
+
 	return nsi;
 }
 
@@ -410,24 +416,6 @@ Variant NativeScript::_new(const Variant **p_args, int p_argcount, Variant::Call
 			memdelete(owner); //no owner, sorry
 		}
 		return Variant();
-	}
-
-	call("_init", p_args, p_argcount, r_error);
-
-	if (r_error.error != Variant::CallError::CALL_OK) {
-		instance->script = Ref<NativeScript>();
-		instance->owner->set_script_instance(NULL);
-
-#ifndef NO_THREADS
-		owners_lock->lock();
-#endif
-		instance_owners.erase(owner);
-
-#ifndef NO_THREADS
-		owners_lock->unlock();
-#endif
-
-		ERR_FAIL_COND_V(r_error.error != Variant::CallError::CALL_OK, Variant());
 	}
 
 	if (ref.is_valid()) {
