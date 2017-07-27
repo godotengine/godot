@@ -85,7 +85,7 @@ public:
 
 	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle);
 	virtual Error close_dynamic_library(void *p_library_handle);
-	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle);
+	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional = false);
 
 	virtual Error set_cwd(const String &p_cwd);
 

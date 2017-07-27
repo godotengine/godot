@@ -1569,12 +1569,16 @@ Error OS_Windows::close_dynamic_library(void *p_library_handle) {
 	return OK;
 }
 
-Error OS_Windows::get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle) {
+Error OS_Windows::get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional) {
 	char *error;
 	p_symbol_handle = (void *)GetProcAddress((HMODULE)p_library_handle, p_name.utf8().get_data());
 	if (!p_symbol_handle) {
-		ERR_EXPLAIN("Can't resolve symbol " + p_name + ". Error: " + String::num(GetLastError()));
-		ERR_FAIL_V(ERR_CANT_RESOLVE);
+		if (!p_optional) {
+			ERR_EXPLAIN("Can't resolve symbol " + p_name + ". Error: " + String::num(GetLastError()));
+			ERR_FAIL_V(ERR_CANT_RESOLVE);
+		} else {
+			return ERR_CANT_RESOLVE;
+		}
 	}
 	return OK;
 }

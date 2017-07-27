@@ -453,7 +453,7 @@ Error OS_Unix::close_dynamic_library(void *p_library_handle) {
 	return OK;
 }
 
-Error OS_Unix::get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle) {
+Error OS_Unix::get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional) {
 	const char *error;
 	dlerror(); // Clear existing errors
 
@@ -461,8 +461,12 @@ Error OS_Unix::get_dynamic_library_symbol_handle(void *p_library_handle, const S
 
 	error = dlerror();
 	if (error != NULL) {
-		ERR_EXPLAIN("Can't resolve symbol " + p_name + ". Error: " + error);
-		ERR_FAIL_V(ERR_CANT_RESOLVE);
+		if (!p_optional) {
+			ERR_EXPLAIN("Can't resolve symbol " + p_name + ". Error: " + error);
+			ERR_FAIL_V(ERR_CANT_RESOLVE);
+		} else {
+			return ERR_CANT_RESOLVE;
+		}
 	}
 	return OK;
 }
