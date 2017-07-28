@@ -161,6 +161,12 @@ static bool mouse_down_control = false;
 	OS_OSX::singleton->window_size.width = fbRect.size.width * OS_OSX::singleton->display_scale;
 	OS_OSX::singleton->window_size.height = fbRect.size.height * OS_OSX::singleton->display_scale;
 
+	if (OS_OSX::singleton->main_loop) {
+		Main::force_redraw();
+		//Event retrieval blocks until resize is over. Call Main::iteration() directly.
+		Main::iteration();
+	}
+
 	/*
 	_GodotInputFramebufferSize(window, fbRect.size.width, fbRect.size.height);
 	_GodotInputWindowSize(window, contentRect.size.width, contentRect.size.height);
