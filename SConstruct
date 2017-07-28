@@ -62,7 +62,7 @@ platform_arg = ARGUMENTS.get("platform", ARGUMENTS.get("p", False))
 if (os.name == "posix"):
     pass
 elif (os.name == "nt"):
-    if (os.getenv("VSINSTALLDIR") == None or platform_arg == "android"):
+    if (os.getenv("VCINSTALLDIR") == None or platform_arg == "android"):
         custom_tools = ['mingw']
 
 env_base = Environment(tools=custom_tools)
@@ -283,7 +283,15 @@ if selected_platform in platform_list:
     if (env["warnings"] == 'yes'):
         print("WARNING: warnings=yes is deprecated; assuming warnings=all")
 
-    if (os.name == "nt" and os.getenv("VSINSTALLDIR")): # MSVC, needs to stand out of course
+    if (os.name == "nt" and os.getenv("VCINSTALLDIR")): # MSVC, needs to stand out of course
+        # This is an ugly hack.  It's possible (and common in the case of having older versions of MSVC installed)
+        # to have MSVC installed but not Visual Studio itself.  If this happens the environment variable
+        # "VSINSTALLDIR" is never set as Visual Studio isn't installed.  However, near as I can figure out,
+        # internally scons uses the "VSINSTALLDIR" environment variable for something so it needs to be set.
+        # So we set it to the same directory as MSVC itself.  It's an ugly hack but it works without side effects.
+        if os.getenv("VSINSTALLDIR") is None:
+            os.environ["VSINSTALLDIR"] = os.getenv("VCINSTALLDIR")
+
         disable_nonessential_warnings = ['/wd4267', '/wd4244', '/wd4305', '/wd4800'] # Truncations, narrowing conversions...
         if (env["warnings"] == 'extra'):
             env.Append(CCFLAGS=['/Wall']) # Implies /W4
