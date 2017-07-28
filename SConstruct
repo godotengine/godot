@@ -288,7 +288,7 @@ if selected_platform in platform_list:
     if (env["warnings"] == 'yes'):
         print("WARNING: warnings=yes is deprecated; assuming warnings=all")
 
-    if (os.name == "nt" and os.getenv("VSINSTALLDIR") and (platform_arg == "windows" or platform_arg == "uwp")): # MSVC, needs to stand out of course
+    if (os.name == "nt" and os.getenv("VCINSTALLDIR") and (platform_arg == "windows" or platform_arg == "uwp")): # MSVC, needs to stand out of course
         disable_nonessential_warnings = ['/wd4267', '/wd4244', '/wd4305', '/wd4800'] # Truncations, narrowing conversions...
         if (env["warnings"] == 'extra'):
             env.Append(CCFLAGS=['/Wall']) # Implies /W4
