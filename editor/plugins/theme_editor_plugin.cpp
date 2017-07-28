@@ -493,11 +493,10 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 
 	Ref<Theme> base_theme;
 
-	type_select->show();
-	type_select_label->show();
 	name_select_label->show();
-	name_edit->show();
-	name_menu->show();
+	name_hbc->show();
+	type_select_label->show();
+	type_select->show();
 
 	if (p_option == POPUP_ADD) { //add
 
@@ -515,11 +514,10 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 
 		base_theme = Theme::get_default();
 
-		type_select->hide();
 		name_select_label->hide();
+		name_hbc->hide();
 		type_select_label->hide();
-		name_edit->hide();
-		name_menu->hide();
+		type_select->hide();
 
 	} else if (p_option == POPUP_REMOVE) {
 
@@ -537,11 +535,10 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 
 		base_theme = Theme::get_default();
 
-		type_select->hide();
 		name_select_label->hide();
+		name_hbc->hide();
 		type_select_label->hide();
-		name_edit->hide();
-		name_menu->hide();
+		type_select->hide();
 	}
 	popup_mode = p_option;
 
@@ -832,48 +829,46 @@ ThemeEditor::ThemeEditor() {
 	add_del_dialog->hide();
 	add_child(add_del_dialog);
 
+	VBoxContainer *dialog_vbc = memnew(VBoxContainer);
+	add_del_dialog->add_child(dialog_vbc);
+
 	Label *l = memnew(Label);
-	l->set_position(Point2(5, 5) * EDSCALE);
 	l->set_text(TTR("Type:"));
-	add_del_dialog->add_child(l);
-	dtype_select_label = l;
+	dialog_vbc->add_child(l);
+
+	type_hbc = memnew(HBoxContainer);
+	dialog_vbc->add_child(type_hbc);
 
 	type_edit = memnew(LineEdit);
-	type_edit->set_position(Point2(5, 25) * EDSCALE);
-	type_edit->set_size(Point2(150, 5) * EDSCALE);
-	add_del_dialog->add_child(type_edit);
+	type_edit->set_h_size_flags(SIZE_EXPAND_FILL);
+	type_hbc->add_child(type_edit);
 	type_menu = memnew(MenuButton);
-	type_menu->set_position(Point2(160, 25) * EDSCALE);
-	type_menu->set_size(Point2(30, 5) * EDSCALE);
 	type_menu->set_text("..");
-	add_del_dialog->add_child(type_menu);
+	type_hbc->add_child(type_menu);
 
 	type_menu->get_popup()->connect("id_pressed", this, "_type_menu_cbk");
 
 	l = memnew(Label);
-	l->set_position(Point2(200, 5) * EDSCALE);
 	l->set_text(TTR("Name:"));
-	add_del_dialog->add_child(l);
+	dialog_vbc->add_child(l);
 	name_select_label = l;
 
-	name_edit = memnew(LineEdit);
-	name_edit->set_position(Point2(200, 25) * EDSCALE);
-	name_edit->set_size(Point2(150, 5) * EDSCALE);
-	add_del_dialog->add_child(name_edit);
-	name_menu = memnew(MenuButton);
-	name_menu->set_position(Point2(360, 25) * EDSCALE);
-	name_menu->set_size(Point2(30, 5) * EDSCALE);
-	name_menu->set_text("..");
+	name_hbc = memnew(HBoxContainer);
+	dialog_vbc->add_child(name_hbc);
 
-	add_del_dialog->add_child(name_menu);
+	name_edit = memnew(LineEdit);
+	name_edit->set_h_size_flags(SIZE_EXPAND_FILL);
+	name_hbc->add_child(name_edit);
+	name_menu = memnew(MenuButton);
+	name_menu->set_text("..");
+	name_hbc->add_child(name_menu);
 
 	name_menu->get_popup()->connect("about_to_show", this, "_name_menu_about_to_show");
 	name_menu->get_popup()->connect("id_pressed", this, "_name_menu_cbk");
 
 	type_select_label = memnew(Label);
-	type_select_label->set_position(Point2(400, 5) * EDSCALE);
 	type_select_label->set_text(TTR("Data Type:"));
-	add_del_dialog->add_child(type_select_label);
+	dialog_vbc->add_child(type_select_label);
 
 	type_select = memnew(OptionButton);
 	type_select->add_item(TTR("Icon"));
@@ -881,10 +876,8 @@ ThemeEditor::ThemeEditor() {
 	type_select->add_item(TTR("Font"));
 	type_select->add_item(TTR("Color"));
 	type_select->add_item(TTR("Constant"));
-	type_select->set_position(Point2(400, 25) * EDSCALE);
-	type_select->set_size(Point2(80, 5) * EDSCALE);
 
-	add_del_dialog->add_child(type_select);
+	dialog_vbc->add_child(type_select);
 
 	add_del_dialog->get_ok()->connect("pressed", this, "_dialog_cbk");
 
