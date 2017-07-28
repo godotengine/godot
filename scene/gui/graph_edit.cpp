@@ -601,7 +601,7 @@ void GraphEdit::_draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const
 	int cp_neg_len = get_constant("bezier_len_neg");
 
 	if (diff > 0) {
-		cp_offset = MAX(cp_len, diff * 0.5);
+		cp_offset = MIN(cp_len, diff * 0.5);
 	} else {
 		cp_offset = MAX(MIN(cp_len - diff, cp_neg_len), -diff * 0.5);
 	}
