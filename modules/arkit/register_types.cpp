@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  camera_ios.h                                                         */
+/*  register_types.cpp                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,18 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CAMERAIOS_H
-#define CAMERAIOS_H
+#include "register_types.h"
 
-#include "servers/camera_server.h"
+#include "arkit_interface.h"
 
-class CameraIOS : public CameraServer {
-private:
-public:
-	CameraIOS();
-	~CameraIOS();
+void register_arkit_types() {
+	// does it make sense to register the class?
 
-	void update_feeds();
-};
+	Ref<ARKitInterface> arkit_interface;
+	arkit_interface.instance();
+	ARVRServer::get_singleton()->add_interface(arkit_interface);
+}
 
-#endif /* CAMERAIOS_H */
+void unregister_arkit_types() {
+	// should clean itself up nicely :)
+}

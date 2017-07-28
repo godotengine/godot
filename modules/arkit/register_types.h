@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  camera_ios.h                                                         */
+/*  register_types.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,18 +28,5 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CAMERAIOS_H
-#define CAMERAIOS_H
-
-#include "servers/camera_server.h"
-
-class CameraIOS : public CameraServer {
-private:
-public:
-	CameraIOS();
-	~CameraIOS();
-
-	void update_feeds();
-};
-
-#endif /* CAMERAIOS_H */
+void register_arkit_types();
+void unregister_arkit_types();
