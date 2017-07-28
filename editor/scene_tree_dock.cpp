@@ -37,9 +37,9 @@
 #include "editor/plugins/spatial_editor_plugin.h"
 #include "editor_node.h"
 #include "editor_settings.h"
-#include "project_settings.h"
 #include "multi_node_edit.h"
 #include "os/keyboard.h"
+#include "project_settings.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/packed_scene.h"
 #include "script_editor_debugger.h"
@@ -1885,7 +1885,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		if (is_external) {
 			bool is_inherited = selection[0]->get_scene_inherited_state() != NULL;
 			bool is_top_level = selection[0]->get_owner() == NULL;
-			if (is_inherited) {
+			if (is_inherited && is_top_level) {
 				menu->add_separator();
 				menu->add_item(TTR("Clear Inheritance"), TOOL_SCENE_CLEAR_INHERITANCE);
 				menu->add_icon_item(get_icon("Load", "EditorIcons"), TTR("Open in Editor"), TOOL_SCENE_OPEN_INHERITED);
