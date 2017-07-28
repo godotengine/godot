@@ -152,6 +152,16 @@ static bool mouse_down_control = false;
 	return NO;
 }
 
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
+- (void)windowDidEnterFullScreen:(NSNotification *)notification {
+	OS_OSX::singleton->zoomed = true;
+}
+
+- (void)windowDidExitFullScreen:(NSNotification *)notification {
+	OS_OSX::singleton->zoomed = false;
+}
+#endif // MAC_OS_X_VERSION_MAX_ALLOWED
+
 - (void)windowDidResize:(NSNotification *)notification {
 	[OS_OSX::singleton->context update];
 
@@ -1239,13 +1249,21 @@ int OS_OSX::get_screen_count() const {
 };
 
 int OS_OSX::get_current_screen() const {
+	Vector2 wpos = get_window_position();
 
-	return current_screen;
+	int count = get_screen_count();
+	for (int i = 0; i < count; i++) {
+		Point2 pos = get_screen_position(i);
+		Size2 size = get_screen_size(i);
+		if ((wpos.x >= pos.x && wpos.x < pos.x + size.width) && (wpos.y >= pos.y && wpos.y < pos.y + size.height))
+			return i;
+	}
+	return 0;
 };
 
 void OS_OSX::set_current_screen(int p_screen) {
-
-	current_screen = p_screen;
+	Vector2 wpos = get_window_position() - get_screen_position(get_current_screen());
+	set_window_position(wpos + get_screen_position(p_screen));
 };
 
 Point2 OS_OSX::get_screen_position(int p_screen) const {
@@ -1389,7 +1407,7 @@ void OS_OSX::set_window_maximized(bool p_enabled) {
 
 	if (p_enabled) {
 		restore_rect = Rect2(get_window_position(), get_window_size());
-		[window_object setFrame:[[[NSScreen screens] objectAtIndex:current_screen] visibleFrame] display:YES];
+		[window_object setFrame:[[[NSScreen screens] objectAtIndex:get_current_screen()] visibleFrame] display:YES];
 	} else {
 		set_window_size(restore_rect.size);
 		set_window_position(restore_rect.position);
@@ -1667,12 +1685,52 @@ OS_OSX::OS_OSX() {
 	// In case we are unbundled, make us a proper UI application
 	[NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
 
-#if 0
 	// Menu bar setup must go between sharedApplication above and
 	// finishLaunching below, in order to properly emulate the behavior
 	// of NSApplicationMain
-	createMenuBar();
-#endif
+	NSMenuItem *menu_item;
+	NSString *title;
+
+	NSString *nsappname = [[[NSBundle mainBundle] performSelector:@selector(localizedInfoDictionary)] objectForKey:@"CFBundleName"];
+	if (nsappname == nil)
+		nsappname = [[NSProcessInfo processInfo] processName];
+
+	// Setup Apple menu
+	NSMenu *apple_menu = [[NSMenu alloc] initWithTitle:@""];
+	title = [NSString stringWithFormat:NSLocalizedString(@"About %@", nil), nsappname];
+	[apple_menu addItemWithTitle:title action:@selector(orderFrontStandardAboutPanel:) keyEquivalent:@""];
+
+	[apple_menu addItem:[NSMenuItem separatorItem]];
+
+	NSMenu *services = [[NSMenu alloc] initWithTitle:@""];
+	menu_item = [apple_menu addItemWithTitle:NSLocalizedString(@"Services", nil) action:nil keyEquivalent:@""];
+	[apple_menu setSubmenu:services forItem:menu_item];
+	[NSApp setServicesMenu:services];
+	[services release];
+
+	[apple_menu addItem:[NSMenuItem separatorItem]];
+
+	title = [NSString stringWithFormat:NSLocalizedString(@"Hide %@", nil), nsappname];
+	[apple_menu addItemWithTitle:title action:@selector(hide:) keyEquivalent:@"h"];
+
+	menu_item = [apple_menu addItemWithTitle:NSLocalizedString(@"Hide Others", nil) action:@selector(hideOtherApplications:) keyEquivalent:@"h"];
+	[menu_item setKeyEquivalentModifierMask:(NSAlternateKeyMask | NSCommandKeyMask)];
+
+	[apple_menu addItemWithTitle:NSLocalizedString(@"Show all", nil) action:@selector(unhideAllApplications:) keyEquivalent:@""];
+
+	[apple_menu addItem:[NSMenuItem separatorItem]];
+
+	title = [NSString stringWithFormat:NSLocalizedString(@"Quit %@", nil), nsappname];
+	[apple_menu addItemWithTitle:title action:@selector(terminate:) keyEquivalent:@"q"];
+
+	// Setup menu bar
+	NSMenu *main_menu = [[NSMenu alloc] initWithTitle:@""];
+	menu_item = [main_menu addItemWithTitle:@"" action:nil keyEquivalent:@""];
+	[main_menu setSubmenu:apple_menu forItem:menu_item];
+	[NSApp setMainMenu:main_menu];
+
+	[main_menu release];
+	[apple_menu release];
 
 	[NSApp finishLaunching];
 
@@ -1681,8 +1739,6 @@ OS_OSX::OS_OSX() {
 	[NSApp setDelegate:delegate];
 
 	cursor_shape = CURSOR_ARROW;
-
-	current_screen = 0;
 
 	maximized = false;
 	minimized = false;
