@@ -138,7 +138,7 @@ public:
 
 	Error setup(const String &p_path, const String &p_main_pack);
 
-	Error save_custom(const String &p_path = "", const CustomMap &p_custom = CustomMap(), const Vector<String> &p_custom_features = Vector<String>());
+	Error save_custom(const String &p_path = "", const CustomMap &p_custom = CustomMap(), const Vector<String> &p_custom_features = Vector<String>(), bool p_merge_with_current = true);
 	Error save();
 	void set_custom_property_info(const String &p_prop, const PropertyInfo &p_info);
 
