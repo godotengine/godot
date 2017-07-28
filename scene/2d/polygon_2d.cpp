@@ -165,8 +165,13 @@ void Polygon2D::_notification(int p_what) {
 
 			Vector<Color> colors;
 			int color_len = vertex_colors.size();
-			colors.resize(len);
-			{
+			if (color_len == 0) {
+				// No vertex colors => Pass only the main color
+				// The rasterizer handles this case especially, taking alpha into account
+				colors.push_back(color);
+			} else {
+				// Vertex colors present => Fill color array and pad with main color as necessary
+				colors.resize(len);
 				DVector<Color>::Read color_r = vertex_colors.read();
 				for (int i = 0; i < color_len && i < len; i++) {
 					colors[i] = color_r[i];
