@@ -623,7 +623,7 @@ void Tabs::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_tab_icon", "tab_idx", "icon:Texture"), &Tabs::set_tab_icon);
 	ObjectTypeDB::bind_method(_MD("get_tab_icon:Texture", "tab_idx"), &Tabs::get_tab_icon);
 	ObjectTypeDB::bind_method(_MD("remove_tab", "tab_idx"), &Tabs::remove_tab);
-	ObjectTypeDB::bind_method(_MD("add_tab", "title", "icon:Texture"), &Tabs::add_tab);
+	ObjectTypeDB::bind_method(_MD("add_tab", "title", "icon:Texture"), &Tabs::add_tab, DEFVAL(""), DEFVAL(Ref<Texture>()));
 	ObjectTypeDB::bind_method(_MD("set_tab_align", "align"), &Tabs::set_tab_align);
 	ObjectTypeDB::bind_method(_MD("get_tab_align"), &Tabs::get_tab_align);
 	ObjectTypeDB::bind_method(_MD("ensure_tab_visible", "idx"), &Tabs::ensure_tab_visible);
