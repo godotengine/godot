@@ -162,6 +162,36 @@ static bool mouse_down_control = false;
 }
 #endif // MAC_OS_X_VERSION_MAX_ALLOWED
 
+- (void)windowDidChangeBackingProperties:(NSNotification *)notification {
+	if (!OS_OSX::singleton)
+		return;
+
+	NSWindow *window = (NSWindow *)[notification object];
+	CGFloat newBackingScaleFactor = [window backingScaleFactor];
+	CGFloat oldBackingScaleFactor = [[[notification userInfo] objectForKey:@"NSBackingPropertyOldScaleFactorKey"] doubleValue];
+
+	if (newBackingScaleFactor != oldBackingScaleFactor) {
+		//Set new display scale and window size
+		OS_OSX::singleton->display_scale = newBackingScaleFactor;
+
+		const NSRect contentRect = [OS_OSX::singleton->window_view frame];
+		const NSRect fbRect = contentRect; //convertRectToBacking(contentRect);
+
+		OS_OSX::singleton->window_size.width = fbRect.size.width * OS_OSX::singleton->display_scale;
+		OS_OSX::singleton->window_size.height = fbRect.size.height * OS_OSX::singleton->display_scale;
+
+		//Update context
+		if (OS_OSX::singleton->main_loop) {
+			[OS_OSX::singleton->context update];
+
+			//Force window resize ???
+			NSRect frame = [OS_OSX::singleton->window_object frame];
+			[OS_OSX::singleton->window_object setFrame:NSMakeRect(frame.origin.x, frame.origin.y, 1, 1) display:YES];
+			[OS_OSX::singleton->window_object setFrame:frame display:YES];
+		}
+	}
+}
+
 - (void)windowDidResize:(NSNotification *)notification {
 	[OS_OSX::singleton->context update];
 
