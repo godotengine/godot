@@ -103,6 +103,7 @@ public:
 
 /*
 	ARVRAnchor is a helper node that automatically updates it's position based on anchor data, it represents a real world location.
+
 	It must be a child node of our ARVROrigin node
 */
 

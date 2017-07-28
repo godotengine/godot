@@ -635,6 +635,9 @@ static int frame_count = 0;
 - (void)applicationDidEnterBackground:(UIApplication *)application {
 	///@TODO maybe add pause motionManager? and where would we unpause it?
 
+	// maybe move part of whats below into this call
+	OSIPhone::get_singleton()->focus_out();
+
 	if (OS::get_singleton()->get_main_loop())
 		OS::get_singleton()->get_main_loop()->notification(
 				MainLoop::NOTIFICATION_WM_FOCUS_OUT);
@@ -657,6 +660,9 @@ static int frame_count = 0;
 }
 
 - (void)applicationDidBecomeActive:(UIApplication *)application {
+	// maybe move part of whats below into this call
+	OSIPhone::get_singleton()->focus_in();
+
 	if (OS::get_singleton()->get_main_loop())
 		OS::get_singleton()->get_main_loop()->notification(
 				MainLoop::NOTIFICATION_WM_FOCUS_IN);

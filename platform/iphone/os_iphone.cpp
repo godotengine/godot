@@ -144,7 +144,7 @@ Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p
 #ifdef ICLOUD_ENABLED
 	icloud = memnew(ICloud);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ICloud", icloud));
-	//icloud->connect();
+//icloud->connect();
 #endif
 	Engine::get_singleton()->add_singleton(Engine::Singleton("iOS", memnew(iOS)));
 
@@ -159,6 +159,14 @@ MainLoop *OSIPhone::get_main_loop() const {
 void OSIPhone::set_main_loop(MainLoop *p_main_loop) {
 
 	main_loop = p_main_loop;
+
+#ifdef ARKIT_ENABLED
+	// park this here for now... this needs a better spot.
+	if (arkit_interface.is_null()) {
+		arkit_interface.instance();
+		ARVRServer::get_singleton()->add_interface(arkit_interface);
+	}
+#endif
 
 	if (main_loop) {
 		input->set_main_loop(p_main_loop);
@@ -603,6 +611,22 @@ void add_ios_init_callback(init_callback cb) {
 		++ios_init_callbacks_count;
 	}
 }
+
+void OSIPhone::focus_in() {
+#ifdef ARKIT_ENABLED
+	if (arkit_interface.is_valid()) {
+		arkit_interface->start_session();
+	};
+#endif
+};
+
+void OSIPhone::focus_out() {
+#ifdef ARKIT_ENABLED
+	if (arkit_interface.is_valid()) {
+		arkit_interface->stop_session();
+	};
+#endif
+};
 
 OSIPhone::OSIPhone(int width, int height, String p_data_dir) {
 	for (int i = 0; i < ios_init_callbacks_count; ++i) {
