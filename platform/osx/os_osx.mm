@@ -946,33 +946,6 @@ void OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 
 	_ensure_data_dir();
 
-	NSArray *screenArray = [NSScreen screens];
-	printf("nscreen count %i\n", (int)[screenArray count]);
-	for (int i = 0; i < [screenArray count]; i++) {
-
-		float displayScale = 1.0;
-
-		if (display_scale > 1.0 && [[screenArray objectAtIndex:i] respondsToSelector:@selector(backingScaleFactor)]) {
-			displayScale = [[screenArray objectAtIndex:i] backingScaleFactor];
-		}
-
-		// Note: Use frame to get the whole screen size
-		NSRect nsrect = [[screenArray objectAtIndex:i] frame];
-		Rect2 rect = Rect2(nsrect.origin.x, nsrect.origin.y, nsrect.size.width, nsrect.size.height);
-		rect.position *= displayScale;
-		rect.size *= displayScale;
-		screens.push_back(rect);
-
-		NSDictionary *description = [[screenArray objectAtIndex:i] deviceDescription];
-		NSSize displayPixelSize = [[description objectForKey:NSDeviceSize] sizeValue];
-		CGSize displayPhysicalSize = CGDisplayScreenSize(
-				[[description objectForKey:@"NSScreenNumber"] unsignedIntValue]);
-
-		//printf("width: %i pwidth %i rect width %i\n",int(displayPixelSize.width*displayScale),int(displayPhysicalSize.width*displayScale),int(nsrect.size.width));
-		int dpi = (displayPixelSize.width * 25.4f / displayPhysicalSize.width) * displayScale;
-
-		screen_dpi.push_back(dpi);
-	};
 	restore_rect = Rect2(get_window_position(), get_window_size());
 }
 
@@ -993,8 +966,6 @@ void OS_OSX::finalize() {
 
 	physics_2d_server->finish();
 	memdelete(physics_2d_server);
-
-	screens.clear();
 }
 
 void OS_OSX::set_main_loop(MainLoop *p_main_loop) {
@@ -1244,8 +1215,8 @@ void OS_OSX::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) con
 }
 
 int OS_OSX::get_screen_count() const {
-
-	return screens.size();
+	NSArray *screenArray = [NSScreen screens];
+	return [screenArray count];
 };
 
 int OS_OSX::get_current_screen() const {
@@ -1267,22 +1238,57 @@ void OS_OSX::set_current_screen(int p_screen) {
 };
 
 Point2 OS_OSX::get_screen_position(int p_screen) const {
+	NSArray *screenArray = [NSScreen screens];
+	if (p_screen < [screenArray count]) {
+		float displayScale = 1.0;
 
-	ERR_FAIL_INDEX_V(p_screen, screens.size(), Point2());
-	return screens[p_screen].position;
-};
+		if (display_scale > 1.0 && [[screenArray objectAtIndex:p_screen] respondsToSelector:@selector(backingScaleFactor)]) {
+			displayScale = [[screenArray objectAtIndex:p_screen] backingScaleFactor];
+		}
+
+		NSRect nsrect = [[screenArray objectAtIndex:p_screen] frame];
+		return Point2(nsrect.origin.x, nsrect.origin.y) * displayScale;
+	}
+
+	return Point2();
+}
 
 int OS_OSX::get_screen_dpi(int p_screen) const {
+	NSArray *screenArray = [NSScreen screens];
+	if (p_screen < [screenArray count]) {
+		float displayScale = 1.0;
 
-	ERR_FAIL_INDEX_V(p_screen, screens.size(), 72);
-	return screen_dpi[p_screen];
+		if (display_scale > 1.0 && [[screenArray objectAtIndex:p_screen] respondsToSelector:@selector(backingScaleFactor)]) {
+			displayScale = [[screenArray objectAtIndex:p_screen] backingScaleFactor];
+		}
+
+		NSDictionary *description = [[screenArray objectAtIndex:p_screen] deviceDescription];
+		NSSize displayPixelSize = [[description objectForKey:NSDeviceSize] sizeValue];
+		CGSize displayPhysicalSize = CGDisplayScreenSize(
+				[[description objectForKey:@"NSScreenNumber"] unsignedIntValue]);
+
+		return (displayPixelSize.width * 25.4f / displayPhysicalSize.width) * displayScale;
+	}
+
+	return 72;
 }
 
 Size2 OS_OSX::get_screen_size(int p_screen) const {
+	NSArray *screenArray = [NSScreen screens];
+	if (p_screen < [screenArray count]) {
+		float displayScale = 1.0;
 
-	ERR_FAIL_INDEX_V(p_screen, screens.size(), Point2());
-	return screens[p_screen].size;
-};
+		if (display_scale > 1.0 && [[screenArray objectAtIndex:p_screen] respondsToSelector:@selector(backingScaleFactor)]) {
+			displayScale = [[screenArray objectAtIndex:p_screen] backingScaleFactor];
+		}
+
+		// Note: Use frame to get the whole screen size
+		NSRect nsrect = [[screenArray objectAtIndex:p_screen] frame];
+		return Size2(nsrect.size.width, nsrect.size.height) * displayScale;
+	}
+
+	return Size2();
+}
 
 void OS_OSX::_update_window() {
 	bool borderless_full = false;
