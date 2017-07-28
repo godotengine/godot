@@ -154,6 +154,7 @@ def configure(env):
                           '-framework', 'Security',
                           '-framework', 'SystemConfiguration',
                           '-framework', 'UIKit',
+                          '-framework', 'ARKit',
                           ])
 
     # Feature options
