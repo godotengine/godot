@@ -1957,11 +1957,6 @@ CustomPropertyEditor::CustomPropertyEditor() {
 	add_child(error);
 	//error->get_cancel()->hide();
 
-	type_button = memnew(MenuButton);
-	add_child(type_button);
-	type_button->hide();
-	type_button->get_popup()->connect("id_pressed", this, "_type_create_selected");
-
 	scene_tree = memnew(SceneTreeDialog);
 	add_child(scene_tree);
 	scene_tree->connect("selected", this, "_node_path_selected");
@@ -1978,6 +1973,11 @@ CustomPropertyEditor::CustomPropertyEditor() {
 	easing_draw->connect("gui_input", this, "_drag_easing");
 	//easing_draw->emit_signal(SceneStringNames::get_singleton()->input_event,InputEvent());
 	easing_draw->set_default_cursor_shape(Control::CURSOR_MOVE);
+
+	type_button = memnew(MenuButton);
+	add_child(type_button);
+	type_button->hide();
+	type_button->get_popup()->connect("id_pressed", this, "_type_create_selected");
 
 	menu = memnew(PopupMenu);
 	add_child(menu);
