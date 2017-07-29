@@ -13,6 +13,25 @@ import methods
 
 methods.update_version()
 
+auto_jobs = True
+for opt in sys.argv:
+    if opt.startswith('-j') or opt.startswith('--jobs'):
+        auto_jobs = False
+        break
+
+if auto_jobs:
+    sf = os.environ.get('SCONSFLAGS')
+    if sf and ('-j' in sf or '--jobs' in sf):
+        auto_jobs = False
+
+if auto_jobs:
+    j = methods.cpu_count()
+    if j:
+        SetOption('num_jobs', j)
+        print("Running with %d concurrent jobs (-j%d)." % (j, j))
+
+
+
 # scan possible build platforms
 
 platform_list = []  # list of platforms
