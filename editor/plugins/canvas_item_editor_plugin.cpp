@@ -709,8 +709,8 @@ CanvasItem *CanvasItemEditor::get_single_item() {
 	return single_item;
 }
 
-CanvasItemEditor::DragType CanvasItemEditor::_find_drag_type(const Point2 &p_click, Vector2 &r_point) {
-
+CanvasItemEditor::DragType CanvasItemEditor::_get_resize_handle_drag_type(const Point2 &p_click, Vector2 &r_point) {
+	// Returns a drag type if a resize handle is clicked
 	CanvasItem *canvas_item = get_single_item();
 
 	ERR_FAIL_COND_V(!canvas_item, DRAG_NONE);
@@ -782,6 +782,51 @@ Vector2 CanvasItemEditor::_anchor_to_position(Control *p_control, Vector2 anchor
 	Size2 parent_size = p_control->get_parent_area_size();
 
 	return parent_transform.xform(Vector2(parent_size.x * anchor.x, parent_size.y * anchor.y));
+}
+
+Vector2 CanvasItemEditor::_position_to_anchor(Control *p_control, Vector2 position) {
+	ERR_FAIL_COND_V(!p_control, Vector2());
+	Size2 parent_size = p_control->get_parent_area_size();
+
+	return p_control->get_transform().xform(position) / parent_size;
+}
+
+CanvasItemEditor::DragType CanvasItemEditor::_get_anchor_handle_drag_type(const Point2 &p_click, Vector2 &r_point) {
+	// Returns a drag type if an anchor handle is clicked
+	CanvasItem *canvas_item = get_single_item();
+	ERR_FAIL_COND_V(!canvas_item, DRAG_NONE);
+
+	Control *control = canvas_item->cast_to<Control>();
+	ERR_FAIL_COND_V(!control, DRAG_NONE);
+
+	Vector2 anchor_pos[4];
+	anchor_pos[0] = Vector2(control->get_anchor(MARGIN_LEFT), control->get_anchor(MARGIN_TOP));
+	anchor_pos[1] = Vector2(control->get_anchor(MARGIN_RIGHT), control->get_anchor(MARGIN_TOP));
+	anchor_pos[2] = Vector2(control->get_anchor(MARGIN_RIGHT), control->get_anchor(MARGIN_BOTTOM));
+	anchor_pos[3] = Vector2(control->get_anchor(MARGIN_LEFT), control->get_anchor(MARGIN_BOTTOM));
+
+	Rect2 anchor_rects[4];
+	for (int i = 0; i < 4; i++) {
+		anchor_pos[i] = (transform * control->get_global_transform_with_canvas()).xform(_anchor_to_position(control, anchor_pos[i]));
+		anchor_rects[i] = Rect2(anchor_pos[i], anchor_handle->get_size());
+		anchor_rects[i].position -= anchor_handle->get_size() * Vector2(i == 0 || i == 3, i <= 1);
+	}
+
+	DragType dragger[] = {
+		DRAG_ANCHOR_TOP_LEFT,
+		DRAG_ANCHOR_TOP_RIGHT,
+		DRAG_ANCHOR_BOTTOM_RIGHT,
+		DRAG_ANCHOR_BOTTOM_LEFT,
+	};
+
+	for (int i = 0; i < 4; i++) {
+		if (anchor_rects[i].has_point(p_click)) {
+			r_point = transform.affine_inverse().xform(anchor_pos[i]);
+			return dragger[i];
+		}
+	}
+
+	return DRAG_NONE;
 }
 
 void CanvasItemEditor::_prepare_drag(const Point2 &p_click_pos) {
@@ -1345,8 +1390,8 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 					}
 				}
 
-				// Drag
-				drag = _find_drag_type(click, drag_point_from);
+				// Drag resize handles
+				drag = _get_resize_handle_drag_type(click, drag_point_from);
 				if (drag != DRAG_NONE) {
 					drag_from = transform.affine_inverse().xform(click);
 					se->undo_state = canvas_item->edit_get_state();
@@ -1355,6 +1400,16 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 					if (canvas_item->cast_to<Control>())
 						se->undo_pivot = canvas_item->cast_to<Control>()->get_pivot_offset();
 					return;
+				}
+
+				// Drag anchor handles
+				if (canvas_item->cast_to<Control>()) {
+					drag = _get_anchor_handle_drag_type(click, drag_point_from);
+					if (drag != DRAG_NONE) {
+						drag_from = transform.affine_inverse().xform(click);
+						se->undo_state = canvas_item->edit_get_state();
+						return;
+					}
 				}
 			}
 		}
@@ -1432,9 +1487,8 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (drag == DRAG_NONE) {
-
 			if ((m->get_button_mask() & BUTTON_MASK_LEFT && tool == TOOL_PAN) || m->get_button_mask() & BUTTON_MASK_MIDDLE || (m->get_button_mask() & BUTTON_MASK_LEFT && Input::get_singleton()->is_key_pressed(KEY_SPACE))) {
-
+				// Pan the viewport
 				Point2i relative;
 				if (bool(EditorSettings::get_singleton()->get("editors/2d/warped_mouse_panning"))) {
 					relative = Input::get_singleton()->warp_mouse_motion(m, viewport->get_global_rect());
@@ -1450,7 +1504,6 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		List<Node *> &selection = editor_selection->get_selected_node_list();
-
 		for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 
 			CanvasItem *canvas_item = E->get()->cast_to<CanvasItem>();
@@ -1479,7 +1532,7 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 				continue;
 
 			if (drag == DRAG_ROTATE) {
-
+				// Rotate the node
 				Vector2 center = canvas_item->get_global_transform_with_canvas().get_origin();
 				{
 					Node2D *node = canvas_item->cast_to<Node2D>();
@@ -1508,10 +1561,40 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 				continue;
 			}
 
+			Control *control = canvas_item->cast_to<Control>();
+			if (control) {
+				Vector2 anchor = _position_to_anchor(control, canvas_item->get_global_transform_with_canvas().affine_inverse().xform(dto - drag_from + drag_point_from));
+
+				switch (drag) {
+					// Handles anchor dragging
+					case DRAG_ANCHOR_TOP_LEFT:
+						control->set_anchor(MARGIN_LEFT, anchor.x);
+						control->set_anchor(MARGIN_TOP, anchor.y);
+						continue;
+						break;
+					case DRAG_ANCHOR_TOP_RIGHT:
+						control->set_anchor(MARGIN_RIGHT, anchor.x);
+						control->set_anchor(MARGIN_TOP, anchor.y);
+						continue;
+						break;
+					case DRAG_ANCHOR_BOTTOM_RIGHT:
+						control->set_anchor(MARGIN_RIGHT, anchor.x);
+						control->set_anchor(MARGIN_BOTTOM, anchor.y);
+						continue;
+						break;
+					case DRAG_ANCHOR_BOTTOM_LEFT:
+						control->set_anchor(MARGIN_LEFT, anchor.x);
+						control->set_anchor(MARGIN_BOTTOM, anchor.y);
+						continue;
+						break;
+				}
+			}
+
 			bool uniform = m->get_shift();
 			bool symmetric = m->get_alt();
 
-			dto = dto - (drag == DRAG_ALL || drag == DRAG_NODE_2D ? drag_from - drag_point_from : Vector2(0, 0));
+			if (drag == DRAG_ALL || drag == DRAG_NODE_2D)
+				dto -= drag_from - drag_point_from;
 
 			if (uniform && (drag == DRAG_ALL || drag == DRAG_NODE_2D)) {
 				if (ABS(dto.x - drag_point_from.x) > ABS(dto.y - drag_point_from.y)) {

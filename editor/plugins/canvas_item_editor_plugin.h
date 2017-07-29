@@ -144,11 +144,14 @@ class CanvasItemEditor : public VBoxContainer {
 		DRAG_BOTTOM_RIGHT,
 		DRAG_BOTTOM,
 		DRAG_BOTTOM_LEFT,
+		DRAG_ANCHOR_TOP_LEFT,
+		DRAG_ANCHOR_TOP_RIGHT,
+		DRAG_ANCHOR_BOTTOM_RIGHT,
+		DRAG_ANCHOR_BOTTOM_LEFT,
 		DRAG_ALL,
 		DRAG_ROTATE,
 		DRAG_PIVOT,
 		DRAG_NODE_2D,
-
 	};
 
 	enum KeyMoveMODE {
@@ -327,10 +330,12 @@ class CanvasItemEditor : public VBoxContainer {
 	void _key_move(const Vector2 &p_dir, bool p_snap, KeyMoveMODE p_move_mode);
 	void _list_select(const Ref<InputEventMouseButton> &b);
 
-	DragType _find_drag_type(const Point2 &p_click, Vector2 &r_point);
+	DragType _get_resize_handle_drag_type(const Point2 &p_click, Vector2 &r_point);
 	void _prepare_drag(const Point2 &p_click_pos);
+	DragType _get_anchor_handle_drag_type(const Point2 &p_click, Vector2 &r_point);
 
 	Vector2 _anchor_to_position(Control *p_control, Vector2 anchor);
+	Vector2 _position_to_anchor(Control *p_control, Vector2 position);
 
 	void _popup_callback(int p_op);
 	bool updating_scroll;
