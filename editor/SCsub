@@ -381,14 +381,14 @@ if (env["tools"] == "yes"):
 
     # Translations
     tlist = glob.glob(path + "/translations/*.po")
-    print("translations: ", tlist)
+    #print("translations: ", tlist)
     env.Depends('#editor/translations.gen.h', tlist)
     env.Command('#editor/translations.gen.h', tlist, make_translations_header)
 
     # Fonts
     flist = glob.glob(path + "/../thirdparty/fonts/*.ttf")
     flist.append(glob.glob(path + "/../thirdparty/fonts/*.otf"))
-    print("fonts: ", flist)
+    #print("fonts: ", flist)
     env.Depends('#editor/builtin_fonts.gen.h', flist)
     env.Command('#editor/builtin_fonts.gen.h', flist, make_fonts_header)
 
