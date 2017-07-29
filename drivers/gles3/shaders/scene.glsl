@@ -810,6 +810,9 @@ float contact_shadow_compute(vec3 pos, vec3 dir, float max_distance) {
 
 	vec2 screen_rel = to_screen - from_screen;
 
+	if (length(screen_rel)<0.00001)
+		return 1.0; //too small, don't do anything
+
 	/*float pixel_size; //approximate pixel size
 
 	if (screen_rel.x > screen_rel.y) {
@@ -825,15 +828,16 @@ float contact_shadow_compute(vec3 pos, vec3 dir, float max_distance) {
 
 	vec2 pixel_incr = normalize(screen_rel)*screen_pixel_size;
 
-	float steps = length(screen_rel) / length(pixel_incr);
 
+	float steps = length(screen_rel) / length(pixel_incr);
+	steps = min(2000.0,steps); //put a limit to avoid freezing in some strange situation
 	//steps=10.0;
 
 	vec4 incr = (dest - source)/steps;
 	float ratio=0.0;
 	float ratio_incr = 1.0/steps;
 
-	do {
+	while(steps>0.0) {
 		source += incr*2.0;
 		bias+=incr*2.0;
 
@@ -851,7 +855,7 @@ float contact_shadow_compute(vec3 pos, vec3 dir, float max_distance) {
 
 		ratio+=ratio_incr;
 		steps-=1.0;
-	} while (steps>0.0);
+	}
 
 	return 1.0;
 }

@@ -2716,8 +2716,8 @@ void VisualServerScene::_bake_gi_probe_light(const GIProbeDataHeader *header, co
 					success_count++;
 				}
 			}
-			print_line("BAKE TIME: " + rtos((OS::get_singleton()->get_ticks_usec() - us) / 1000000.0));
-			print_line("valid cells: " + itos(success_count));
+			//print_line("BAKE TIME: " + rtos((OS::get_singleton()->get_ticks_usec() - us) / 1000000.0));
+			//print_line("valid cells: " + itos(success_count));
 
 		} break;
 		case VS::LIGHT_OMNI:
@@ -2822,7 +2822,7 @@ void VisualServerScene::_bake_gi_probe_light(const GIProbeDataHeader *header, co
 					light->energy[2] += int32_t(light_b * att * ((cell->albedo) & 0xFF) / 255.0);
 				}
 			}
-			print_line("BAKE TIME: " + rtos((OS::get_singleton()->get_ticks_usec() - us) / 1000000.0));
+			//print_line("BAKE TIME: " + rtos((OS::get_singleton()->get_ticks_usec() - us) / 1000000.0));
 
 		} break;
 	}
@@ -2921,7 +2921,7 @@ void VisualServerScene::_bake_gi_probe(Instance *p_gi_probe) {
 			if (stage >= probe_data->dynamic.mipmaps_3d.size())
 				continue; //no mipmap for this one
 
-			print_line("generating mipmap stage: " + itos(stage));
+			//print_line("generating mipmap stage: " + itos(stage));
 			int level_cell_count = probe_data->dynamic.level_cell_lists[i].size();
 			const uint32_t *level_cells = probe_data->dynamic.level_cell_lists[i].ptr();
 

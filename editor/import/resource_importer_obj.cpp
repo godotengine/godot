@@ -323,8 +323,8 @@ Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, in
 				surf_tool->add_smooth_group(false);
 			else
 				surf_tool->add_smooth_group(true);
-		} else if (l.begins_with("g ") || l.begins_with("usemtl ") || (l.begins_with("o ") || f->eof_reached())) { //commit group to mesh
-
+		} else if (/*l.begins_with("g ") ||*/ l.begins_with("usemtl ") || (l.begins_with("o ") || f->eof_reached())) { //commit group to mesh
+			//groups are too annoying
 			if (surf_tool->get_vertex_array().size()) {
 				//another group going on, commit it
 				if (normals.size() == 0) {
