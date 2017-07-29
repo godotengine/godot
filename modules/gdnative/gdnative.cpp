@@ -185,6 +185,8 @@ void GDNative::_bind_methods() {
 }
 
 void GDNative::set_library(Ref<GDNativeLibrary> p_library) {
+	ERR_EXPLAIN("Tried to change library of GDNative when it is already set");
+	ERR_FAIL_COND(library.is_valid());
 	library = p_library;
 }
 
@@ -229,6 +231,7 @@ bool GDNative::initialize() {
 	options.core_api_hash = ClassDB::get_api_hash(ClassDB::API_CORE);
 	options.editor_api_hash = ClassDB::get_api_hash(ClassDB::API_EDITOR);
 	options.no_api_hash = ClassDB::get_api_hash(ClassDB::API_NONE);
+	options.gd_native_library = (godot_object *)(get_library().ptr());
 
 	library_init_fpointer(&options);
 
