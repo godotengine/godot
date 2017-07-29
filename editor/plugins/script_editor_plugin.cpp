@@ -2229,7 +2229,7 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_open_scripts"), &ScriptEditor::_get_open_scripts);
 
 	ADD_SIGNAL(MethodInfo("editor_script_changed", PropertyInfo(Variant::OBJECT, "script:Script")));
-	ADD_SIGNAL(MethodInfo("script_close", PropertyInfo(Variant::STRING, "script:String")));
+	ADD_SIGNAL(MethodInfo("script_close", PropertyInfo(Variant::OBJECT, "script:Script")));
 }
 
 ScriptEditor::ScriptEditor(EditorNode *p_editor) {
