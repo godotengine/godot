@@ -1689,3 +1689,11 @@ def precious_program(env, program, sources, **args):
     program = env.ProgramOriginal(program, sources, **args)
     env.Precious(program)
     return program
+
+def cpu_count():
+    try:
+        import multiprocessing
+        return multiprocessing.cpu_count()
+    except:
+        return 0
+
