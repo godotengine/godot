@@ -39,7 +39,7 @@ void AudioStreamPlaybackOGGVorbis::_mix_internal(AudioFrame *p_buffer, int p_fra
 
 	int todo = p_frames;
 
-	while (todo) {
+	while (todo && active) {
 
 		int mixed = stb_vorbis_get_samples_float_interleaved(ogg_stream, 2, (float *)p_buffer, todo * 2);
 		todo -= mixed;
