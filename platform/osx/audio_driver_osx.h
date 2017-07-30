@@ -70,6 +70,7 @@ public:
 	virtual void unlock();
 	virtual void finish();
 
+	bool try_lock();
 	Error reopen();
 
 	AudioDriverOSX();
