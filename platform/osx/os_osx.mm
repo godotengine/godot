@@ -236,7 +236,7 @@ static bool mouse_down_control = false;
 		//Event retrieval blocks until resize is over. Call Main::iteration() directly.
 		Main::iteration();
 	}
-	
+
 	//_GodotInputFramebufferSize(window, fbRect.size.width, fbRect.size.height);
 	//_GodotInputWindowSize(window, contentRect.size.width, contentRect.size.height);
 	//_GodotInputWindowDamage(window);
@@ -1725,7 +1725,7 @@ OS_OSX::OS_OSX() {
 	NSMenu *apple_menu = [[NSMenu alloc] initWithTitle:@""];
 	title = [NSString stringWithFormat:NSLocalizedString(@"About %@", nil), nsappname];
 	[apple_menu addItemWithTitle:title action:@selector(orderFrontStandardAboutPanel:) keyEquivalent:@""];
-	
+
 	[apple_menu addItem:[NSMenuItem separatorItem]];
 
 	NSMenu *services = [[NSMenu alloc] initWithTitle:@""];
@@ -1740,7 +1740,7 @@ OS_OSX::OS_OSX() {
 	[apple_menu addItemWithTitle:title action:@selector(hide:) keyEquivalent:@"h"];
 
 	menu_item = [apple_menu addItemWithTitle:NSLocalizedString(@"Hide Others", nil) action:@selector(hideOtherApplications:) keyEquivalent:@"h"];
-	[menu_item setKeyEquivalentModifierMask:(NSAlternateKeyMask|NSCommandKeyMask)];
+	[menu_item setKeyEquivalentModifierMask:(NSAlternateKeyMask | NSCommandKeyMask)];
 
 	[apple_menu addItemWithTitle:NSLocalizedString(@"Show all", nil) action:@selector(unhideAllApplications:) keyEquivalent:@""];
 
@@ -1752,12 +1752,12 @@ OS_OSX::OS_OSX() {
 	// Setup menu bar
 	NSMenu *main_menu = [[NSMenu alloc] initWithTitle:@""];
 	menu_item = [main_menu addItemWithTitle:@"" action:nil keyEquivalent:@""];
-	[main_menu setSubmenu:apple_menu forItem:menu_item];	
+	[main_menu setSubmenu:apple_menu forItem:menu_item];
 	[NSApp setMainMenu:main_menu];
 
 	[main_menu release];
 	[apple_menu release];
-	
+
 	[NSApp finishLaunching];
 
 	delegate = [[GodotApplicationDelegate alloc] init];

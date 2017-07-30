@@ -29,11 +29,11 @@
 /*************************************************************************/
 #import "app_delegate.h"
 
+#include "audio_driver_iphone.h"
 #include "core/globals.h"
 #import "gl_view.h"
 #include "main/main.h"
 #include "os_iphone.h"
-#include "audio_driver_iphone.h"
 
 #ifdef MODULE_FACEBOOKSCORER_IOS_ENABLED
 #include "modules/FacebookScorer_ios/FacebookScorer.h"
@@ -156,7 +156,7 @@ NSMutableDictionary *ios_joysticks = nil;
 
 			// add it to our dictionary, this will retain our controllers
 			[ios_joysticks setObject:controller
-												forKey:[NSNumber numberWithInt:joy_id]];
+							  forKey:[NSNumber numberWithInt:joy_id]];
 
 			// set our input handler
 			[self setControllerInputHandler:controller];
@@ -210,37 +210,37 @@ NSMutableDictionary *ios_joysticks = nil;
 
 			if (element == gamepad.buttonA) {
 				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_0,
-																							gamepad.buttonA.isPressed);
+						gamepad.buttonA.isPressed);
 			} else if (element == gamepad.buttonB) {
 				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_1,
-																							gamepad.buttonB.isPressed);
+						gamepad.buttonB.isPressed);
 			} else if (element == gamepad.buttonX) {
 				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_2,
-																							gamepad.buttonX.isPressed);
+						gamepad.buttonX.isPressed);
 			} else if (element == gamepad.buttonY) {
 				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_3,
-																							gamepad.buttonY.isPressed);
+						gamepad.buttonY.isPressed);
 			} else if (element == gamepad.leftShoulder) {
 				OSIPhone::get_singleton()->joy_button(joy_id, JOY_L,
-																							gamepad.leftShoulder.isPressed);
+						gamepad.leftShoulder.isPressed);
 			} else if (element == gamepad.rightShoulder) {
 				OSIPhone::get_singleton()->joy_button(joy_id, JOY_R,
-																							gamepad.rightShoulder.isPressed);
+						gamepad.rightShoulder.isPressed);
 			} else if (element == gamepad.leftTrigger) {
 				OSIPhone::get_singleton()->joy_button(joy_id, JOY_L2,
-																							gamepad.leftTrigger.isPressed);
+						gamepad.leftTrigger.isPressed);
 			} else if (element == gamepad.rightTrigger) {
 				OSIPhone::get_singleton()->joy_button(joy_id, JOY_R2,
-																							gamepad.rightTrigger.isPressed);
+						gamepad.rightTrigger.isPressed);
 			} else if (element == gamepad.dpad) {
 				OSIPhone::get_singleton()->joy_button(joy_id, JOY_DPAD_UP,
-																							gamepad.dpad.up.isPressed);
+						gamepad.dpad.up.isPressed);
 				OSIPhone::get_singleton()->joy_button(joy_id, JOY_DPAD_DOWN,
-																							gamepad.dpad.down.isPressed);
+						gamepad.dpad.down.isPressed);
 				OSIPhone::get_singleton()->joy_button(joy_id, JOY_DPAD_LEFT,
-																							gamepad.dpad.left.isPressed);
+						gamepad.dpad.left.isPressed);
 				OSIPhone::get_singleton()->joy_button(joy_id, JOY_DPAD_RIGHT,
-																							gamepad.dpad.right.isPressed);
+						gamepad.dpad.right.isPressed);
 			};
 
 			InputDefault::JoyAxis jx;
@@ -267,36 +267,36 @@ NSMutableDictionary *ios_joysticks = nil;
 		// gamepad is the standard profile with 4 buttons, shoulder buttons and a
 		// D-pad
 		controller.gamepad.valueChangedHandler = ^(GCGamepad *gamepad,
-																							 GCControllerElement *element) {
+				GCControllerElement *element) {
 			int joy_id = [self getJoyIdForController:controller];
 
 			if (element == gamepad.buttonA) {
 				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_0,
-																							gamepad.buttonA.isPressed);
+						gamepad.buttonA.isPressed);
 			} else if (element == gamepad.buttonB) {
 				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_1,
-																							gamepad.buttonB.isPressed);
+						gamepad.buttonB.isPressed);
 			} else if (element == gamepad.buttonX) {
 				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_2,
-																							gamepad.buttonX.isPressed);
+						gamepad.buttonX.isPressed);
 			} else if (element == gamepad.buttonY) {
 				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_3,
-																							gamepad.buttonY.isPressed);
+						gamepad.buttonY.isPressed);
 			} else if (element == gamepad.leftShoulder) {
 				OSIPhone::get_singleton()->joy_button(joy_id, JOY_L,
-																							gamepad.leftShoulder.isPressed);
+						gamepad.leftShoulder.isPressed);
 			} else if (element == gamepad.rightShoulder) {
 				OSIPhone::get_singleton()->joy_button(joy_id, JOY_R,
-																							gamepad.rightShoulder.isPressed);
+						gamepad.rightShoulder.isPressed);
 			} else if (element == gamepad.dpad) {
 				OSIPhone::get_singleton()->joy_button(joy_id, JOY_DPAD_UP,
-																							gamepad.dpad.up.isPressed);
+						gamepad.dpad.up.isPressed);
 				OSIPhone::get_singleton()->joy_button(joy_id, JOY_DPAD_DOWN,
-																							gamepad.dpad.down.isPressed);
+						gamepad.dpad.down.isPressed);
 				OSIPhone::get_singleton()->joy_button(joy_id, JOY_DPAD_LEFT,
-																							gamepad.dpad.left.isPressed);
+						gamepad.dpad.left.isPressed);
 				OSIPhone::get_singleton()->joy_button(joy_id, JOY_DPAD_RIGHT,
-																							gamepad.dpad.right.isPressed);
+						gamepad.dpad.right.isPressed);
 			};
 		};
 #ifdef ADD_MICRO_GAMEPAD // disabling this for now, only available on iOS 9+ and we're still compiling for iOS 7+
@@ -307,19 +307,19 @@ NSMutableDictionary *ios_joysticks = nil;
 
 			if (element == gamepad.buttonA) {
 				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_0,
-																							gamepad.buttonA.isPressed);
+						gamepad.buttonA.isPressed);
 			} else if (element == gamepad.buttonX) {
 				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_2,
-																							gamepad.buttonX.isPressed);
+						gamepad.buttonX.isPressed);
 			} else if (element == gamepad.dpad) {
 				OSIPhone::get_singleton()->joy_button(joy_id, JOY_DPAD_UP,
-																							gamepad.dpad.up.isPressed);
+						gamepad.dpad.up.isPressed);
 				OSIPhone::get_singleton()->joy_button(joy_id, JOY_DPAD_DOWN,
-																							gamepad.dpad.down.isPressed);
+						gamepad.dpad.down.isPressed);
 				OSIPhone::get_singleton()->joy_button(joy_id, JOY_DPAD_LEFT,
-																							gamepad.dpad.left.isPressed);
+						gamepad.dpad.left.isPressed);
 				OSIPhone::get_singleton()->joy_button(joy_id, JOY_DPAD_RIGHT,
-																							gamepad.dpad.right.isPressed);
+						gamepad.dpad.right.isPressed);
 			};
 		};
 #endif
@@ -337,27 +337,27 @@ NSMutableDictionary *ios_joysticks = nil;
 	// already connected controllers
 	[[NSNotificationCenter defaultCenter]
 			addObserver:self
-				 selector:@selector(controllerWasConnected:)
-						 name:GCControllerDidConnectNotification
-					 object:nil];
+			   selector:@selector(controllerWasConnected:)
+				   name:GCControllerDidConnectNotification
+				 object:nil];
 
 	// get told when controllers disconnect
 	[[NSNotificationCenter defaultCenter]
 			addObserver:self
-				 selector:@selector(controllerWasDisconnected:)
-						 name:GCControllerDidDisconnectNotification
-					 object:nil];
+			   selector:@selector(controllerWasDisconnected:)
+				   name:GCControllerDidDisconnectNotification
+				 object:nil];
 };
 
 - (void)deinitGameControllers {
 	[[NSNotificationCenter defaultCenter]
 			removeObserver:self
-								name:GCControllerDidConnectNotification
-							object:nil];
+					  name:GCControllerDidConnectNotification
+					object:nil];
 	[[NSNotificationCenter defaultCenter]
 			removeObserver:self
-								name:GCControllerDidDisconnectNotification
-							object:nil];
+					  name:GCControllerDidDisconnectNotification
+					object:nil];
 
 	if (ios_joysticks != nil) {
 		[ios_joysticks dealloc];
@@ -370,194 +370,194 @@ static int frame_count = 0;
 {
 
 	switch (frame_count) {
-	case 0: {
-		int backingWidth;
-		int backingHeight;
-		glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES,
-																		GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
-		glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES,
-																		GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
+		case 0: {
+			int backingWidth;
+			int backingHeight;
+			glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES,
+					GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
+			glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES,
+					GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
 
-		OS::VideoMode vm;
-		vm.fullscreen = true;
-		vm.width = backingWidth;
-		vm.height = backingHeight;
-		vm.resizable = false;
-		OS::get_singleton()->set_video_mode(vm);
+			OS::VideoMode vm;
+			vm.fullscreen = true;
+			vm.width = backingWidth;
+			vm.height = backingHeight;
+			vm.resizable = false;
+			OS::get_singleton()->set_video_mode(vm);
 
-		if (!OS::get_singleton()) {
-			exit(0);
-		};
-		++frame_count;
+			if (!OS::get_singleton()) {
+				exit(0);
+			};
+			++frame_count;
 
-		NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,
-																												 NSUserDomainMask, YES);
-		NSString *documentsDirectory = [paths objectAtIndex:0];
-		// NSString *documentsDirectory = [[[NSFileManager defaultManager]
-		// URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask]
-		// lastObject];
-		OSIPhone::get_singleton()->set_data_dir(
-				String::utf8([documentsDirectory UTF8String]));
+			NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,
+					NSUserDomainMask, YES);
+			NSString *documentsDirectory = [paths objectAtIndex:0];
+			// NSString *documentsDirectory = [[[NSFileManager defaultManager]
+			// URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask]
+			// lastObject];
+			OSIPhone::get_singleton()->set_data_dir(
+					String::utf8([documentsDirectory UTF8String]));
 
-		NSString *locale_code = [[NSLocale currentLocale] localeIdentifier];
-		OSIPhone::get_singleton()->set_locale(
-				String::utf8([locale_code UTF8String]));
+			NSString *locale_code = [[NSLocale currentLocale] localeIdentifier];
+			OSIPhone::get_singleton()->set_locale(
+					String::utf8([locale_code UTF8String]));
 
-		NSString *uuid;
-		if ([[UIDevice currentDevice]
+			NSString *uuid;
+			if ([[UIDevice currentDevice]
 						respondsToSelector:@selector(identifierForVendor)]) {
-			uuid = [UIDevice currentDevice].identifierForVendor.UUIDString;
-		} else {
+				uuid = [UIDevice currentDevice].identifierForVendor.UUIDString;
+			} else {
 
-			// before iOS 6, so just generate an identifier and store it
-			uuid = [[NSUserDefaults standardUserDefaults]
-					objectForKey:@"identiferForVendor"];
-			if (!uuid) {
-				CFUUIDRef cfuuid = CFUUIDCreate(NULL);
-				uuid = (__bridge_transfer NSString *)CFUUIDCreateString(NULL, cfuuid);
-				CFRelease(cfuuid);
-				[[NSUserDefaults standardUserDefaults]
-						setObject:uuid
-							 forKey:@"identifierForVendor"];
+				// before iOS 6, so just generate an identifier and store it
+				uuid = [[NSUserDefaults standardUserDefaults]
+						objectForKey:@"identiferForVendor"];
+				if (!uuid) {
+					CFUUIDRef cfuuid = CFUUIDCreate(NULL);
+					uuid = (__bridge_transfer NSString *)CFUUIDCreateString(NULL, cfuuid);
+					CFRelease(cfuuid);
+					[[NSUserDefaults standardUserDefaults]
+							setObject:uuid
+							   forKey:@"identifierForVendor"];
+				}
 			}
-		}
 
-		OSIPhone::get_singleton()->set_unique_ID(String::utf8([uuid UTF8String]));
+			OSIPhone::get_singleton()->set_unique_ID(String::utf8([uuid UTF8String]));
 
-	}; break;
-	/*
+		}; break;
+		/*
 	case 1: {
 																	++frame_count;
 	}; break;
 */
-	case 1: {
+		case 1: {
 
-		Main::setup2();
-		++frame_count;
+			Main::setup2();
+			++frame_count;
 
-		// this might be necessary before here
-		NSDictionary *dict = [[NSBundle mainBundle] infoDictionary];
-		for (NSString *key in dict) {
-			NSObject *value = [dict objectForKey:key];
-			String ukey = String::utf8([key UTF8String]);
+			// this might be necessary before here
+			NSDictionary *dict = [[NSBundle mainBundle] infoDictionary];
+			for (NSString *key in dict) {
+				NSObject *value = [dict objectForKey:key];
+				String ukey = String::utf8([key UTF8String]);
 
-			// we need a NSObject to Variant conversor
+				// we need a NSObject to Variant conversor
 
-			if ([value isKindOfClass:[NSString class]]) {
-				NSString *str = (NSString *)value;
-				String uval = String::utf8([str UTF8String]);
+				if ([value isKindOfClass:[NSString class]]) {
+					NSString *str = (NSString *)value;
+					String uval = String::utf8([str UTF8String]);
 
-				Globals::get_singleton()->set("Info.plist/" + ukey, uval);
+					Globals::get_singleton()->set("Info.plist/" + ukey, uval);
 
-			} else if ([value isKindOfClass:[NSNumber class]]) {
+				} else if ([value isKindOfClass:[NSNumber class]]) {
 
-				NSNumber *n = (NSNumber *)value;
-				double dval = [n doubleValue];
+					NSNumber *n = (NSNumber *)value;
+					double dval = [n doubleValue];
 
-				Globals::get_singleton()->set("Info.plist/" + ukey, dval);
-			};
-			// do stuff
-		}
+					Globals::get_singleton()->set("Info.plist/" + ukey, dval);
+				};
+				// do stuff
+			}
 
-	}; break;
-	/*
+		}; break;
+		/*
 	case 3: {
 																	++frame_count;
 	} break;
 */
-	case 2: {
+		case 2: {
 
-		Main::start();
-		++frame_count;
+			Main::start();
+			++frame_count;
 
-	}; break; // no fallthrough
+		}; break; // no fallthrough
 
-	default: {
-		if (OSIPhone::get_singleton()) {
-			if (motionInitialised) {
-				// Just using polling approach for now, we can set this up so it sends
-				// data to us in intervals, might be better. See Apple reference pages
-				// for more details:
-				// https://developer.apple.com/reference/coremotion/cmmotionmanager?language=objc
+		default: {
+			if (OSIPhone::get_singleton()) {
+				if (motionInitialised) {
+					// Just using polling approach for now, we can set this up so it sends
+					// data to us in intervals, might be better. See Apple reference pages
+					// for more details:
+					// https://developer.apple.com/reference/coremotion/cmmotionmanager?language=objc
 
-				// Apple splits our accelerometer date into a gravity and user movement
-				// component. We add them back together
-				CMAcceleration gravity = motionManager.deviceMotion.gravity;
-				CMAcceleration acceleration =
-						motionManager.deviceMotion.userAcceleration;
+					// Apple splits our accelerometer date into a gravity and user movement
+					// component. We add them back together
+					CMAcceleration gravity = motionManager.deviceMotion.gravity;
+					CMAcceleration acceleration =
+							motionManager.deviceMotion.userAcceleration;
 
-				///@TODO We don't seem to be getting data here, is my device broken or
-				/// is this code incorrect?
-				CMMagneticField magnetic =
-						motionManager.deviceMotion.magneticField.field;
+					///@TODO We don't seem to be getting data here, is my device broken or
+					/// is this code incorrect?
+					CMMagneticField magnetic =
+							motionManager.deviceMotion.magneticField.field;
 
-				///@TODO we can access rotationRate as a CMRotationRate variable
-				///(processed date) or CMGyroData (raw data), have to see what works
-				/// best
-				CMRotationRate rotation = motionManager.deviceMotion.rotationRate;
+					///@TODO we can access rotationRate as a CMRotationRate variable
+					///(processed date) or CMGyroData (raw data), have to see what works
+					/// best
+					CMRotationRate rotation = motionManager.deviceMotion.rotationRate;
 
-				// Adjust for screen orientation.
-				// [[UIDevice currentDevice] orientation] changes even if we've fixed
-				// our orientation which is not a good thing when you're trying to get
-				// your user to move the screen in all directions and want consistent
-				// output
+					// Adjust for screen orientation.
+					// [[UIDevice currentDevice] orientation] changes even if we've fixed
+					// our orientation which is not a good thing when you're trying to get
+					// your user to move the screen in all directions and want consistent
+					// output
 
-				///@TODO Using [[UIApplication sharedApplication] statusBarOrientation]
-				/// is a bit of a hack. Godot obviously knows the orientation so maybe
-				/// we
-				// can use that instead? (note that left and right seem swapped)
+					///@TODO Using [[UIApplication sharedApplication] statusBarOrientation]
+					/// is a bit of a hack. Godot obviously knows the orientation so maybe
+					/// we
+					// can use that instead? (note that left and right seem swapped)
 
-				switch ([[UIApplication sharedApplication] statusBarOrientation]) {
-				case UIDeviceOrientationLandscapeLeft: {
-					OSIPhone::get_singleton()->update_gravity(-gravity.y, gravity.x,
-																										gravity.z);
-					OSIPhone::get_singleton()->update_accelerometer(
-							-(acceleration.y + gravity.y), (acceleration.x + gravity.x),
-							acceleration.z + gravity.z);
-					OSIPhone::get_singleton()->update_magnetometer(
-							-magnetic.y, magnetic.x, magnetic.z);
-					OSIPhone::get_singleton()->update_gyroscope(-rotation.y, rotation.x,
-																											rotation.z);
-				}; break;
-				case UIDeviceOrientationLandscapeRight: {
-					OSIPhone::get_singleton()->update_gravity(gravity.y, -gravity.x,
-																										gravity.z);
-					OSIPhone::get_singleton()->update_accelerometer(
-							(acceleration.y + gravity.y), -(acceleration.x + gravity.x),
-							acceleration.z + gravity.z);
-					OSIPhone::get_singleton()->update_magnetometer(
-							magnetic.y, -magnetic.x, magnetic.z);
-					OSIPhone::get_singleton()->update_gyroscope(rotation.y, -rotation.x,
-																											rotation.z);
-				}; break;
-				case UIDeviceOrientationPortraitUpsideDown: {
-					OSIPhone::get_singleton()->update_gravity(-gravity.x, gravity.y,
-																										gravity.z);
-					OSIPhone::get_singleton()->update_accelerometer(
-							-(acceleration.x + gravity.x), (acceleration.y + gravity.y),
-							acceleration.z + gravity.z);
-					OSIPhone::get_singleton()->update_magnetometer(
-							-magnetic.x, magnetic.y, magnetic.z);
-					OSIPhone::get_singleton()->update_gyroscope(-rotation.x, rotation.y,
-																											rotation.z);
-				}; break;
-				default: { // assume portrait
-					OSIPhone::get_singleton()->update_gravity(gravity.x, gravity.y,
-																										gravity.z);
-					OSIPhone::get_singleton()->update_accelerometer(
-							acceleration.x + gravity.x, acceleration.y + gravity.y,
-							acceleration.z + gravity.z);
-					OSIPhone::get_singleton()->update_magnetometer(magnetic.x, magnetic.y,
-																												 magnetic.z);
-					OSIPhone::get_singleton()->update_gyroscope(rotation.x, rotation.y,
-																											rotation.z);
-				}; break;
-				};
-			}
+					switch ([[UIApplication sharedApplication] statusBarOrientation]) {
+						case UIDeviceOrientationLandscapeLeft: {
+							OSIPhone::get_singleton()->update_gravity(-gravity.y, gravity.x,
+									gravity.z);
+							OSIPhone::get_singleton()->update_accelerometer(
+									-(acceleration.y + gravity.y), (acceleration.x + gravity.x),
+									acceleration.z + gravity.z);
+							OSIPhone::get_singleton()->update_magnetometer(
+									-magnetic.y, magnetic.x, magnetic.z);
+							OSIPhone::get_singleton()->update_gyroscope(-rotation.y, rotation.x,
+									rotation.z);
+						}; break;
+						case UIDeviceOrientationLandscapeRight: {
+							OSIPhone::get_singleton()->update_gravity(gravity.y, -gravity.x,
+									gravity.z);
+							OSIPhone::get_singleton()->update_accelerometer(
+									(acceleration.y + gravity.y), -(acceleration.x + gravity.x),
+									acceleration.z + gravity.z);
+							OSIPhone::get_singleton()->update_magnetometer(
+									magnetic.y, -magnetic.x, magnetic.z);
+							OSIPhone::get_singleton()->update_gyroscope(rotation.y, -rotation.x,
+									rotation.z);
+						}; break;
+						case UIDeviceOrientationPortraitUpsideDown: {
+							OSIPhone::get_singleton()->update_gravity(-gravity.x, gravity.y,
+									gravity.z);
+							OSIPhone::get_singleton()->update_accelerometer(
+									-(acceleration.x + gravity.x), (acceleration.y + gravity.y),
+									acceleration.z + gravity.z);
+							OSIPhone::get_singleton()->update_magnetometer(
+									-magnetic.x, magnetic.y, magnetic.z);
+							OSIPhone::get_singleton()->update_gyroscope(-rotation.x, rotation.y,
+									rotation.z);
+						}; break;
+						default: { // assume portrait
+							OSIPhone::get_singleton()->update_gravity(gravity.x, gravity.y,
+									gravity.z);
+							OSIPhone::get_singleton()->update_accelerometer(
+									acceleration.x + gravity.x, acceleration.y + gravity.y,
+									acceleration.z + gravity.z);
+							OSIPhone::get_singleton()->update_magnetometer(magnetic.x, magnetic.y,
+									magnetic.z);
+							OSIPhone::get_singleton()->update_gyroscope(rotation.x, rotation.y,
+									rotation.z);
+						}; break;
+					};
+				}
 
-			bool quit_request = OSIPhone::get_singleton()->iterate();
+				bool quit_request = OSIPhone::get_singleton()->iterate();
+			};
 		};
-	};
 	};
 };
 
@@ -595,9 +595,9 @@ static int frame_count = 0;
 	int backingWidth;
 	int backingHeight;
 	glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES,
-																	GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
+			GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
 	glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES,
-																	GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
+			GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
 
 	iphone_main(backingWidth, backingHeight, gargc, gargv);
 
@@ -605,8 +605,7 @@ static int frame_count = 0;
 	view_controller.view = glView;
 	window.rootViewController = view_controller;
 
-	_set_keep_screen_on(bool(GLOBAL_DEF("display/keep_screen_on", true)) ? YES
-																																			 : NO);
+	_set_keep_screen_on(bool(GLOBAL_DEF("display/keep_screen_on", true)) ? YES : NO);
 	glView.useCADisplayLink =
 			bool(GLOBAL_DEF("display.iOS/use_cadisplaylink", true)) ? YES : NO;
 	printf("cadisaplylink: %d", glView.useCADisplayLink);
@@ -621,7 +620,7 @@ static int frame_count = 0;
 		if (motionManager.deviceMotionAvailable) {
 			motionManager.deviceMotionUpdateInterval = 1.0 / 70.0;
 			[motionManager startDeviceMotionUpdatesUsingReferenceFrame:
-												 CMAttitudeReferenceFrameXMagneticNorthZVertical];
+								   CMAttitudeReferenceFrameXMagneticNorthZVertical];
 			motionInitialised = YES;
 		};
 	};
@@ -652,15 +651,15 @@ static int frame_count = 0;
 
 	// Account Configuration info - must be set
 	[MobileAppTracker initializeWithMATAdvertiserId:advertiser_id
-																 MATConversionKey:conversion_key];
+								   MATConversionKey:conversion_key];
 
 	// Used to pass us the IFA, enables highly accurate 1-to-1 attribution.
 	// Required for many advertising networks.
 	[MobileAppTracker
 			setAppleAdvertisingIdentifier:[[ASIdentifierManager sharedManager]
-																				advertisingIdentifier]
-				 advertisingTrackingEnabled:[[ASIdentifierManager sharedManager]
-																				isAdvertisingTrackingEnabled]];
+												  advertisingIdentifier]
+			   advertisingTrackingEnabled:[[ASIdentifierManager sharedManager]
+												  isAdvertisingTrackingEnabled]];
 
 #endif
 };
@@ -728,7 +727,7 @@ static int frame_count = 0;
 	};
 
 	// Fixed audio can not resume if it is interrupted cause by an incoming phone call
-	if(AudioDriverIphone::get_singleton() != NULL)
+	if (AudioDriverIphone::get_singleton() != NULL)
 		AudioDriverIphone::get_singleton()->start();
 }
 
@@ -742,16 +741,16 @@ static int frame_count = 0;
 
 // For 4.2+ support
 - (BOOL)application:(UIApplication *)application
-							openURL:(NSURL *)url
+				  openURL:(NSURL *)url
 		sourceApplication:(NSString *)sourceApplication
-					 annotation:(id)annotation {
+			   annotation:(id)annotation {
 #ifdef MODULE_PARSE_ENABLED
 	NSLog(@"Handling application openURL");
 	return
 			[[FBSDKApplicationDelegate sharedInstance] application:application
-																										 openURL:url
-																					 sourceApplication:sourceApplication
-																									annotation:annotation];
+														   openURL:url
+												 sourceApplication:sourceApplication
+														annotation:annotation];
 #endif
 
 #ifdef MODULE_FACEBOOKSCORER_IOS_ENABLED

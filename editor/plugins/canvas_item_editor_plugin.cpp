@@ -1041,8 +1041,7 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent &p_event) {
 
 				v_scroll->set_val(v_scroll->get_val() + int(EditorSettings::get_singleton()->get("2d_editor/pan_speed")) / zoom * b.factor);
 
-			}
-			else {
+			} else {
 
 				if (zoom < MIN_ZOOM)
 					return;
@@ -1055,7 +1054,6 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent &p_event) {
 					h_scroll->set_val(h_scroll->get_val() + ofs.x);
 					v_scroll->set_val(v_scroll->get_val() + ofs.y);
 				}
-
 			}
 
 			_update_scroll(0);
@@ -1069,8 +1067,7 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent &p_event) {
 
 				v_scroll->set_val(v_scroll->get_val() - int(EditorSettings::get_singleton()->get("2d_editor/pan_speed")) / zoom * b.factor);
 
-			}
-			else {
+			} else {
 
 				if (zoom > MAX_ZOOM)
 					return;
@@ -1083,7 +1080,6 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent &p_event) {
 					h_scroll->set_val(h_scroll->get_val() + ofs.x);
 					v_scroll->set_val(v_scroll->get_val() + ofs.y);
 				}
-
 			}
 
 			_update_scroll(0);
@@ -1099,9 +1095,7 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent &p_event) {
 
 				_update_scroll(0);
 				viewport->update();
-
 			}
-
 		}
 
 		if (b.button_index == BUTTON_WHEEL_RIGHT) {
@@ -1112,9 +1106,7 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent &p_event) {
 
 				_update_scroll(0);
 				viewport->update();
-
 			}
-
 		}
 
 		if (b.button_index == BUTTON_RIGHT) {

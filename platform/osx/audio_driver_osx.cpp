@@ -257,7 +257,6 @@ AudioDriverOSX::AudioDriverOSX() {
 	samples_in = NULL;
 };
 
-AudioDriverOSX::~AudioDriverOSX() {
-};
+AudioDriverOSX::~AudioDriverOSX(){};
 
 #endif

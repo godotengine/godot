@@ -35,6 +35,9 @@
 #include "GLES2/gl2.h"
 #include "os_winrt.h"
 
+/** clang-format does not play nice with this C++/CX hybrid, needs investigation. */
+/* clang-format off */
+
 namespace GodotWinRT
 {
 	ref class App sealed : public Windows::ApplicationModel::Core::IFrameworkView
@@ -106,3 +109,5 @@ namespace GodotWinRT
 	};
 
 }
+
+/* clang-format on */

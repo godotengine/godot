@@ -512,7 +512,6 @@ Error EditorMeshImportPlugin::import(const String &p_path, const Ref<ResourceImp
 					surf_tool->add_smooth_group(true);
 
 				has_index_data = false;
-
 			}
 
 			if (l.begins_with("o ")) //name

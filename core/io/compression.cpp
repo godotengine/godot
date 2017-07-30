@@ -111,7 +111,7 @@ int Compression::decompress(uint8_t *p_dst, int p_dst_max_size, const uint8_t *p
 	switch (p_mode) {
 		case MODE_FASTLZ: {
 
-			int ret_size=0;
+			int ret_size = 0;
 
 			if (p_dst_max_size < 16) {
 				uint8_t dst[16];

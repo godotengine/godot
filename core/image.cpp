@@ -2314,12 +2314,12 @@ void Image::blend_rect(const Image &p_src, const Rect2 &p_src_rect, const Point2
 
 				BColor src = p_src._get_pixel(rrect.pos.x + j, rrect.pos.y + i, src_data_ptr, srcdsize);
 				BColor dst = _get_pixel(p_dest.x + j, p_dest.y + i, dst_data_ptr, dst_data_size);
-				float ba = (float) dst.a / 255.0;
-				float fa = (float) src.a / 255.0;
-				dst.r = (uint8_t) (fa*src.r + ba*(1.0 - fa) * dst.r);
-				dst.g = (uint8_t) (fa*src.g + ba*(1.0 - fa) * dst.g);
-				dst.b = (uint8_t) (fa*src.b + ba*(1.0 - fa) * dst.b);
-				dst.a = (uint8_t) (255.0 * (fa + ba * (1.0 - fa)));
+				float ba = (float)dst.a / 255.0;
+				float fa = (float)src.a / 255.0;
+				dst.r = (uint8_t)(fa * src.r + ba * (1.0 - fa) * dst.r);
+				dst.g = (uint8_t)(fa * src.g + ba * (1.0 - fa) * dst.g);
+				dst.b = (uint8_t)(fa * src.b + ba * (1.0 - fa) * dst.b);
+				dst.a = (uint8_t)(255.0 * (fa + ba * (1.0 - fa)));
 				_put_pixel(p_dest.x + j, p_dest.y + i, dst, dst_data_ptr);
 			}
 		}
@@ -2369,12 +2369,12 @@ void Image::blend_rect_mask(const Image &p_src, const Image &p_mask, const Rect2
 				if (msk.a != 0) {
 					BColor src = p_src._get_pixel(rrect.pos.x + j, rrect.pos.y + i, src_data_ptr, srcdsize);
 					BColor dst = _get_pixel(p_dest.x + j, p_dest.y + i, dst_data_ptr, dst_data_size);
-					float ba = (float) dst.a / 255.0;
-					float fa = (float) src.a / 255.0;
-					dst.r = (uint8_t) (fa*src.r + ba*(1.0 - fa) * dst.r);
-					dst.g = (uint8_t) (fa*src.g + ba*(1.0 - fa) * dst.g);
-					dst.b = (uint8_t) (fa*src.b + ba*(1.0 - fa) * dst.b);
-					dst.a = (uint8_t) (255.0 * (fa + ba * (1.0 - fa)));
+					float ba = (float)dst.a / 255.0;
+					float fa = (float)src.a / 255.0;
+					dst.r = (uint8_t)(fa * src.r + ba * (1.0 - fa) * dst.r);
+					dst.g = (uint8_t)(fa * src.g + ba * (1.0 - fa) * dst.g);
+					dst.b = (uint8_t)(fa * src.b + ba * (1.0 - fa) * dst.b);
+					dst.a = (uint8_t)(255.0 * (fa + ba * (1.0 - fa)));
 					_put_pixel(p_dest.x + j, p_dest.y + i, dst, dst_data_ptr);
 				}
 			}
@@ -2388,8 +2388,8 @@ void Image::fill(const Color &p_color) {
 
 	DVector<uint8_t>::Write wp = data.write();
 	unsigned char *dst_data_ptr = wp.ptr();
-	
-	BColor c = BColor(p_color.r*255, p_color.g*255, p_color.b*255, p_color.a*255);
+
+	BColor c = BColor(p_color.r * 255, p_color.g * 255, p_color.b * 255, p_color.a * 255);
 
 	for (int i = 0; i < height; i++) {
 
@@ -2398,7 +2398,6 @@ void Image::fill(const Color &p_color) {
 			_put_pixel(j, i, c, dst_data_ptr);
 		}
 	}
-	
 }
 
 Image (*Image::_png_mem_loader_func)(const uint8_t *, int) = NULL;

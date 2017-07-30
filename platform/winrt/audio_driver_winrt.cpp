@@ -37,8 +37,7 @@ using namespace Windows::Media::MediaProperties;
 using namespace Windows::Media::Editing;
 using namespace Windows::Foundation;
 
-const char * AudioDriverWinRT::get_name() const
-{
+const char *AudioDriverWinRT::get_name() const {
 	return "WinRT";
 }
 
@@ -50,7 +49,6 @@ Error AudioDriverWinRT::init() {
 	pcm_open = false;
 	samples_in = NULL;
 
-
 	mix_rate = 48000;
 	output_format = OUTPUT_STEREO;
 	channels = 2;
@@ -58,11 +56,11 @@ Error AudioDriverWinRT::init() {
 	int latency = GLOBAL_DEF("audio/output_latency", 25);
 	buffer_size = nearest_power_of_2(latency * mix_rate / 1000);
 
-	samples_in = memnew_arr(int32_t, buffer_size*channels);
+	samples_in = memnew_arr(int32_t, buffer_size * channels);
 	for (int i = 0; i < AUDIO_BUFFERS; i++) {
-		samples_out[i] = memnew_arr(int16_t, buffer_size*channels);
+		samples_out[i] = memnew_arr(int16_t, buffer_size * channels);
 		xaudio_buffer[i].AudioBytes = buffer_size * channels * sizeof(int16_t);
-		xaudio_buffer[i].pAudioData = (const BYTE*)(samples_out[i]);
+		xaudio_buffer[i].pAudioData = (const BYTE *)(samples_out[i]);
 		xaudio_buffer[i].Flags = 0;
 	}
 
@@ -100,14 +98,13 @@ Error AudioDriverWinRT::init() {
 	return OK;
 };
 
-void AudioDriverWinRT::thread_func(void* p_udata) {
+void AudioDriverWinRT::thread_func(void *p_udata) {
 
-	AudioDriverWinRT* ad = (AudioDriverWinRT*)p_udata;
+	AudioDriverWinRT *ad = (AudioDriverWinRT *)p_udata;
 
 	uint64_t usdelay = (ad->buffer_size / float(ad->mix_rate)) * 1000000;
 
 	while (!ad->exit_thread) {
-
 
 		if (!ad->active) {
 
@@ -123,30 +120,27 @@ void AudioDriverWinRT::thread_func(void* p_udata) {
 
 			ad->unlock();
 
-			for (unsigned int i = 0;i < ad->buffer_size*ad->channels;i++) {
+			for (unsigned int i = 0; i < ad->buffer_size * ad->channels; i++) {
 
 				ad->samples_out[ad->current_buffer][i] = ad->samples_in[i] >> 16;
 			}
 
 			ad->xaudio_buffer[ad->current_buffer].Flags = 0;
 			ad->xaudio_buffer[ad->current_buffer].AudioBytes = ad->buffer_size * ad->channels * sizeof(int16_t);
-			ad->xaudio_buffer[ad->current_buffer].pAudioData = (const BYTE*)(ad->samples_out[ad->current_buffer]);
+			ad->xaudio_buffer[ad->current_buffer].pAudioData = (const BYTE *)(ad->samples_out[ad->current_buffer]);
 			ad->xaudio_buffer[ad->current_buffer].PlayBegin = 0;
 			ad->source_voice->SubmitSourceBuffer(&(ad->xaudio_buffer[ad->current_buffer]));
 
 			ad->current_buffer = (ad->current_buffer + 1) % AUDIO_BUFFERS;
 
 			XAUDIO2_VOICE_STATE state;
-			while (ad->source_voice->GetState(&state), state.BuffersQueued > AUDIO_BUFFERS - 1)
-			{
+			while (ad->source_voice->GetState(&state), state.BuffersQueued > AUDIO_BUFFERS - 1) {
 				WaitForSingleObject(ad->voice_callback->buffer_end_event, INFINITE);
 			}
 		}
-
 	};
 
 	ad->thread_exited = true;
-
 };
 
 void AudioDriverWinRT::start() {
@@ -236,9 +230,6 @@ AudioDriverWinRT::AudioDriverWinRT() {
 	current_buffer = 0;
 };
 
-AudioDriverWinRT::~AudioDriverWinRT() {
-
+AudioDriverWinRT::~AudioDriverWinRT(){
 
 };
-
-
