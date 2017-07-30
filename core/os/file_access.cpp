@@ -31,8 +31,8 @@
 
 #include "core/io/file_access_pack.h"
 #include "core/io/marshalls.h"
-#include "project_settings.h"
 #include "os/os.h"
+#include "project_settings.h"
 
 #include "thirdparty/misc/md5.h"
 #include "thirdparty/misc/sha256.h"

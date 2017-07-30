@@ -29,10 +29,10 @@
 /*************************************************************************/
 #include "doc_data.h"
 
-#include "project_settings.h"
 #include "global_constants.h"
 #include "io/compression.h"
 #include "io/marshalls.h"
+#include "project_settings.h"
 #include "scene/resources/theme.h"
 #include "script_language.h"
 #include "version.h"

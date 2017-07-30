@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "resource_saver.h"
-#include "project_settings.h"
 #include "os/file_access.h"
+#include "project_settings.h"
 #include "resource_loader.h"
 #include "script_language.h"
 

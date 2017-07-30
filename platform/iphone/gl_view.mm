@@ -29,8 +29,8 @@
 /*************************************************************************/
 #import "gl_view.h"
 
-#include "core/project_settings.h"
 #include "core/os/keyboard.h"
+#include "core/project_settings.h"
 #include "os_iphone.h"
 #include "servers/audio_server.h"
 

@@ -31,11 +31,11 @@
 
 #include "editor_scale.h"
 #include "editor_settings.h"
-#include "project_settings.h"
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
 #include "message_queue.h"
 #include "os/file_access.h"
+#include "project_settings.h"
 
 bool EditorResourcePreviewGenerator::handles(const String &p_type) const {
 

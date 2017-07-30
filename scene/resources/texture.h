@@ -414,7 +414,7 @@ public:
 	void set_width(int p_width);
 	int get_width() const;
 
-	void ensure_default_setup(float p_min=0, float p_max=1);
+	void ensure_default_setup(float p_min = 0, float p_max = 1);
 
 	void set_curve(Ref<Curve> p_curve);
 	Ref<Curve> get_curve() const;

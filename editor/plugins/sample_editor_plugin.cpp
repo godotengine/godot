@@ -31,8 +31,8 @@
 
 #if 0
 #include "editor/editor_settings.h"
-#include "project_settings.h"
 #include "io/resource_loader.h"
+#include "project_settings.h"
 
 
 

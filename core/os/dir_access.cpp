@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "dir_access.h"
-#include "project_settings.h"
 #include "os/file_access.h"
 #include "os/memory.h"
 #include "os/os.h"
+#include "project_settings.h"
 
 String DirAccess::_get_root_path() const {
 

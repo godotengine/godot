@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "compression.h"
-#include "project_settings.h"
 #include "os/copymem.h"
+#include "project_settings.h"
 #include "zip_io.h"
 
 #include "thirdparty/misc/fastlz.h"

@@ -29,10 +29,10 @@
 /*************************************************************************/
 #include "file_access_memory.h"
 
-#include "project_settings.h"
 #include "map.h"
 #include "os/copymem.h"
 #include "os/dir_access.h"
+#include "project_settings.h"
 
 static Map<String, Vector<uint8_t> > *files = NULL;
 

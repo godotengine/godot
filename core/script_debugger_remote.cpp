@@ -29,10 +29,10 @@
 /*************************************************************************/
 #include "script_debugger_remote.h"
 
-#include "project_settings.h"
 #include "io/ip.h"
 #include "os/input.h"
 #include "os/os.h"
+#include "project_settings.h"
 
 void ScriptDebuggerRemote::_send_video_memory() {
 

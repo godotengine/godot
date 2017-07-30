@@ -31,10 +31,10 @@
 
 #include "editor/animation_editor.h"
 #include "editor/editor_settings.h"
-#include "project_settings.h"
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
 #include "os/keyboard.h"
+#include "project_settings.h"
 
 void AnimationPlayerEditor::_node_removed(Node *p_node) {
 

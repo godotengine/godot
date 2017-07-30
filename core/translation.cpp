@@ -29,9 +29,9 @@
 /*************************************************************************/
 #include "translation.h"
 
-#include "project_settings.h"
 #include "io/resource_loader.h"
 #include "os/os.h"
+#include "project_settings.h"
 
 static const char *locale_list[] = {
 	"aa", //  Afar

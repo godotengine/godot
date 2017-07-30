@@ -36,7 +36,7 @@ void iOS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rate_url", "app_id"), &iOS::get_rate_url);
 };
 
-void iOS::alert(const char* p_alert, const char* p_title) {
+void iOS::alert(const char *p_alert, const char *p_title) {
 	UIAlertView *alert = [[[UIAlertView alloc] initWithTitle:[NSString stringWithUTF8String:p_title] message:[NSString stringWithUTF8String:p_alert] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil] autorelease];
 	[alert show];
 }

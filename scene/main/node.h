@@ -31,10 +31,10 @@
 #define NODE_H
 
 #include "class_db.h"
-#include "project_settings.h"
 #include "map.h"
 #include "object.h"
 #include "path_db.h"
+#include "project_settings.h"
 #include "scene/main/scene_tree.h"
 #include "script_language.h"
 

@@ -30,8 +30,8 @@
 #include "editor_autoload_settings.h"
 
 #include "editor_node.h"
-#include "project_settings.h"
 #include "global_constants.h"
+#include "project_settings.h"
 
 #define PREVIEW_LIST_MAX_SIZE 10
 

@@ -29,8 +29,8 @@
 /*************************************************************************/
 #include "input_map.h"
 
-#include "project_settings.h"
 #include "os/keyboard.h"
+#include "project_settings.h"
 
 InputMap *InputMap::singleton = NULL;
 

@@ -30,11 +30,11 @@
 #include "editor_export_scene.h"
 #if 0
 #include "editor/editor_settings.h"
-#include "project_settings.h"
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
 #include "os/dir_access.h"
 #include "os/file_access.h"
+#include "project_settings.h"
 #include "scene/resources/packed_scene.h"
 
 Vector<uint8_t> EditorSceneExportPlugin::custom_export(String& p_path,const Ref<EditorExportPlatform> &p_platform) {

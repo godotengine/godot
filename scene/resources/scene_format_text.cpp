@@ -29,8 +29,8 @@
 /*************************************************************************/
 #include "scene_format_text.h"
 
-#include "project_settings.h"
 #include "os/dir_access.h"
+#include "project_settings.h"
 #include "version.h"
 
 //version 2: changed names for basis, rect3, poolvectors, etc.

@@ -31,9 +31,9 @@
 
 #include "editor/editor_scale.h"
 #include "editor_file_system.h"
-#include "project_settings.h"
 #include "io/resource_saver.h"
 #include "os/file_access.h"
+#include "project_settings.h"
 #include "script_language.h"
 
 void ScriptCreateDialog::_notification(int p_what) {

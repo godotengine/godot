@@ -29,8 +29,8 @@
 /*************************************************************************/
 #include "file_type_cache.h"
 
-#include "project_settings.h"
 #include "os/file_access.h"
+#include "project_settings.h"
 
 FileTypeCache *FileTypeCache::singleton = NULL;
 

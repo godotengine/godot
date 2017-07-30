@@ -36,7 +36,6 @@
 #include "core_string_names.h"
 #include "func_ref.h"
 #include "geometry.h"
-#include "project_settings.h"
 #include "input_map.h"
 #include "io/config_file.h"
 #include "io/http_client.h"
@@ -54,6 +53,7 @@
 #include "os/main_loop.h"
 #include "packed_data_container.h"
 #include "path_remap.h"
+#include "project_settings.h"
 #include "translation.h"
 #include "undo_redo.h"
 

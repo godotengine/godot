@@ -32,8 +32,8 @@
 #include "editor_file_system.h"
 #include "editor_node.h"
 #include "editor_settings.h"
-#include "project_settings.h"
 #include "os/keyboard.h"
+#include "project_settings.h"
 #include "scene/gui/margin_container.h"
 
 void EditorSettingsDialog::ok_pressed() {

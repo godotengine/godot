@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "register_scene_types.h"
-#include "project_settings.h"
 #include "os/os.h"
+#include "project_settings.h"
 #include "scene/io/resource_format_image.h"
 #include "scene/io/resource_format_wav.h"
 

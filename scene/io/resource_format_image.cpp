@@ -30,9 +30,9 @@
 #include "resource_format_image.h"
 
 #if 0
-#include "project_settings.h"
 #include "io/image_loader.h"
 #include "os/os.h"
+#include "project_settings.h"
 #include "scene/resources/texture.h"
 RES ResourceFormatLoaderImage::load(const String &p_path, const String& p_original_path, Error *r_error) {
 
