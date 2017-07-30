@@ -72,6 +72,7 @@ RES ResourceFormatLoaderWAV::load(const String &p_path, const String &p_original
 		ERR_FAIL_V(RES());
 	}
 
+	uint16_t compression_code = 1;
 	bool format_found = false;
 	bool data_found = false;
 	int format_bits = 0;
@@ -102,9 +103,8 @@ RES ResourceFormatLoaderWAV::load(const String &p_path, const String &p_original
 		if (chunkID[0] == 'f' && chunkID[1] == 'm' && chunkID[2] == 't' && chunkID[3] == ' ' && !format_found) {
 			/* IS FORMAT CHUNK */
 
-			uint16_t compression_code = file->get_16();
-
-			if (compression_code != 1) {
+			compression_code = file->get_16();
+			if (compression_code != 1 && compression_code != 3) {
 				ERR_PRINT("Format not supported for WAVE file (not PCM). Save WAVE files as uncompressed PCM instead.");
 				break;
 			}
@@ -167,38 +167,43 @@ RES ResourceFormatLoaderWAV::load(const String &p_path, const String &p_original
 			DVector<uint8_t>::Write dataw = data.write();
 			void *data_ptr = dataw.ptr();
 
-			for (int i = 0; i < frames; i++) {
+			if (format_bits == 8) {
+				int8_t *data_ptr8 = (int8_t *)data_ptr;
+				for (int i = 0; i < frames * format_channels; i++) {
+					// 8 bit samples are UNSIGNED
 
-				for (int c = 0; c < format_channels; c++) {
+					uint8_t s = file->get_8();
+					data_ptr8[i] = (int8_t)(s-128);
+				}
+			} else if (format_bits == 32 && compression_code == 3) {
+				int16_t *data_ptr16 = (int16_t *)data_ptr;
+				for (int i = 0; i < frames * format_channels; i++) {
+					//32 bit IEEE Float
 
-					if (format_bits == 8) {
-						// 8 bit samples are UNSIGNED
+					float s = file->get_float();
+					data_ptr16[i] = (int32_t)(s * 32768.f);
+				}
+			} else if (format_bits == 16) {
+				int16_t *data_ptr16 = (int16_t *)data_ptr;
+				for (int i = 0; i < frames * format_channels; i++) {
+					//16 bit SIGNED
 
-						uint8_t s = file->get_8();
-						s -= 128;
-						int8_t *sp = (int8_t *)&s;
+					data_ptr16[i] = file->get_16();
+				}
+			} else {
+				int16_t *data_ptr16 = (int16_t *)data_ptr;
+				for (int i = 0; i < frames * format_channels; i++) {
+					//16+ bits samples are SIGNED
+					// if sample is > 16 bits, just read extra bytes
 
-						int8_t *data_ptr8 = &((int8_t *)data_ptr)[i * format_channels + c];
+					uint32_t s = 0;
+					for (int b = 0; b < (format_bits >> 3); b++) {
 
-						*data_ptr8 = *sp;
-
-					} else {
-						//16+ bits samples are SIGNED
-						// if sample is > 16 bits, just read extra bytes
-
-						uint32_t data = 0;
-						for (int b = 0; b < (format_bits >> 3); b++) {
-
-							data |= ((uint32_t)file->get_8()) << (b * 8);
-						}
-						data <<= (32 - format_bits);
-
-						int32_t s = data;
-
-						int16_t *data_ptr16 = &((int16_t *)data_ptr)[i * format_channels + c];
-
-						*data_ptr16 = s >> 16;
+						s |= ((uint32_t)file->get_8()) << (b * 8);
 					}
+					s <<= (32 - format_bits);
+
+					data_ptr16[i] = s >> 16;
 				}
 			}
 
