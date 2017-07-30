@@ -775,23 +775,40 @@ CanvasItemEditor::DragType CanvasItemEditor::_get_resize_handle_drag_type(const 
 	return DRAG_NONE;
 }
 
-Vector2 CanvasItemEditor::_anchor_snap(Vector2 anchor) {
+Vector2 CanvasItemEditor::_anchor_snap(const Vector2 anchor, bool *snapped_x, bool *snapped_y) {
+	Vector2 result = anchor;
+	if (snapped_x)
+		*snapped_x = false;
+	if (snapped_y)
+		*snapped_y = false;
 	float radius = 0.05 / zoom;
-	if (fabs(anchor.x - ANCHOR_BEGIN) < radius) {
-		anchor.x = ANCHOR_BEGIN;
-	} else if (fabs(anchor.x - ANCHOR_CENTER) < radius) {
-		anchor.x = ANCHOR_CENTER;
-	} else if (fabs(anchor.x - ANCHOR_END) < radius) {
-		anchor.x = ANCHOR_END;
+	if (fabs(result.x - ANCHOR_BEGIN) < radius) {
+		result.x = ANCHOR_BEGIN;
+		if (snapped_x)
+			*snapped_x = true;
+	} else if (fabs(result.x - ANCHOR_CENTER) < radius) {
+		result.x = ANCHOR_CENTER;
+		if (snapped_x)
+			*snapped_x = true;
+	} else if (fabs(result.x - ANCHOR_END) < radius) {
+		result.x = ANCHOR_END;
+		if (snapped_x)
+			*snapped_x = true;
 	}
-	if (fabs(anchor.y - ANCHOR_BEGIN) < radius) {
-		anchor.y = ANCHOR_BEGIN;
-	} else if (fabs(anchor.y - ANCHOR_CENTER) < radius) {
-		anchor.y = ANCHOR_CENTER;
-	} else if (fabs(anchor.y - ANCHOR_END) < radius) {
-		anchor.y = ANCHOR_END;
+	if (fabs(result.y - ANCHOR_BEGIN) < radius) {
+		result.y = ANCHOR_BEGIN;
+		if (snapped_y)
+			*snapped_y = true;
+	} else if (fabs(result.y - ANCHOR_CENTER) < radius) {
+		result.y = ANCHOR_CENTER;
+		if (snapped_y)
+			*snapped_y = true;
+	} else if (fabs(result.y - ANCHOR_END) < radius) {
+		result.y = ANCHOR_END;
+		if (snapped_y)
+			*snapped_y = true;
 	}
-	return anchor;
+	return result;
 }
 Vector2 CanvasItemEditor::_anchor_to_position(Control *p_control, Vector2 anchor) {
 	ERR_FAIL_COND_V(!p_control, Vector2());
@@ -1991,15 +2008,61 @@ void CanvasItemEditor::_viewport_draw() {
 
 				if (tool == TOOL_SELECT) {
 					// Draw the anchors
-					Rect2 anchor_rects[4];
-					anchor_rects[0] = Rect2(xform.xform(_anchor_to_position(control, Vector2(control->get_anchor(MARGIN_LEFT), control->get_anchor(MARGIN_TOP)))), anchor_handle->get_size());
-					anchor_rects[1] = Rect2(xform.xform(_anchor_to_position(control, Vector2(control->get_anchor(MARGIN_RIGHT), control->get_anchor(MARGIN_TOP)))), Point2(-anchor_handle->get_size().x, anchor_handle->get_size().y));
-					anchor_rects[2] = Rect2(xform.xform(_anchor_to_position(control, Vector2(control->get_anchor(MARGIN_RIGHT), control->get_anchor(MARGIN_BOTTOM)))), -anchor_handle->get_size());
-					anchor_rects[3] = Rect2(xform.xform(_anchor_to_position(control, Vector2(control->get_anchor(MARGIN_LEFT), control->get_anchor(MARGIN_BOTTOM)))), Point2(anchor_handle->get_size().x, -anchor_handle->get_size().y));
+					Vector2 anchors[4];
+					anchors[0] = Vector2(control->get_anchor(MARGIN_LEFT), control->get_anchor(MARGIN_TOP));
+					anchors[1] = Vector2(control->get_anchor(MARGIN_RIGHT), control->get_anchor(MARGIN_TOP));
+					anchors[2] = Vector2(control->get_anchor(MARGIN_RIGHT), control->get_anchor(MARGIN_BOTTOM));
+					anchors[3] = Vector2(control->get_anchor(MARGIN_LEFT), control->get_anchor(MARGIN_BOTTOM));
 
-					anchor_rects[0].position -= anchor_handle->get_size();
-					anchor_rects[1].position -= Vector2(0.0, anchor_handle->get_size().y);
-					anchor_rects[3].position -= Vector2(anchor_handle->get_size().x, 0.0);
+					Vector2 anchors_pos[4];
+					for (int i = 0; i < 4; i++) {
+						anchors_pos[i] = xform.xform(_anchor_to_position(control, anchors[i]));
+					}
+
+					// Get which anchor is dragged
+					int dragged_anchor = -1;
+					switch (drag) {
+						case DRAG_ANCHOR_TOP_LEFT:
+							dragged_anchor = 0;
+							break;
+						case DRAG_ANCHOR_TOP_RIGHT:
+							dragged_anchor = 1;
+							break;
+						case DRAG_ANCHOR_BOTTOM_RIGHT:
+							dragged_anchor = 2;
+							break;
+						case DRAG_ANCHOR_BOTTOM_LEFT:
+							dragged_anchor = 3;
+							break;
+					}
+
+					if (dragged_anchor >= 0) {
+						// Draw the 4 lines when dragged
+						bool snapped_x, snapped_y;
+						Color color_snapped = Color(0.64, 0.93, 0.67, 0.5);
+						Color color_base = Color(0.8, 0.8, 0.8, 0.5);
+
+						Vector2 corners_pos[4];
+						for (int i = 0; i < 4; i++) {
+							corners_pos[i] = xform.xform(_anchor_to_position(control, Vector2((i == 0 || i == 3) ? ANCHOR_BEGIN : ANCHOR_END, (i <= 1) ? ANCHOR_BEGIN : ANCHOR_END)));
+						}
+
+						for (int i = 0; i < 4; i++) {
+							float anchor_val = (i % 2 == 0) ? anchors[i].x : anchors[i].y;
+							anchor_val = (i >= 2) ? ANCHOR_END - anchor_val : anchor_val;
+							Vector2 line_start = Vector2::linear_interpolate(corners_pos[i], corners_pos[(i + 1) % 4], anchor_val);
+							Vector2 line_end = Vector2::linear_interpolate(corners_pos[(i + 3) % 4], corners_pos[(i + 2) % 4], anchor_val);
+							_anchor_snap(anchors[i], &snapped_x, &snapped_y);
+							viewport->draw_line(line_start, line_end, ((i % 2 == 0 && snapped_x) || (i % 2 == 1 && snapped_y)) ? color_snapped : color_base, (i == dragged_anchor || (i + 3) % 4 == dragged_anchor) ? 2 : 1);
+						}
+
+					}
+
+					Rect2 anchor_rects[4];
+					anchor_rects[0] = Rect2(anchors_pos[0] - anchor_handle->get_size(), anchor_handle->get_size());
+					anchor_rects[1] = Rect2(anchors_pos[1] - Vector2(0.0, anchor_handle->get_size().y), Point2(-anchor_handle->get_size().x, anchor_handle->get_size().y));
+					anchor_rects[2] = Rect2(anchors_pos[2], -anchor_handle->get_size());
+					anchor_rects[3] = Rect2(anchors_pos[3] - Vector2(anchor_handle->get_size().x, 0.0), Point2(anchor_handle->get_size().x, -anchor_handle->get_size().y));
 
 					for (int i = 0; i < 4; i++) {
 						anchor_handle->draw_rect(ci, anchor_rects[i]);
