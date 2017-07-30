@@ -24189,6 +24189,8 @@
 			</description>
 		</method>
 		<method name="get_meta" qualifiers="const">
+			<return type="Variant">
+			</return>
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
@@ -40379,9 +40381,9 @@
 	</description>
 	<methods>
 		<method name="add_tab">
-			<argument index="0" name="title" type="String">
+			<argument index="0" name="title" type="String" default="&quot;&quot;">
 			</argument>
-			<argument index="1" name="icon" type="Texture">
+			<argument index="1" name="icon" type="Texture" default="NULL">
 			</argument>
 			<description>
 			</description>
