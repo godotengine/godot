@@ -775,6 +775,24 @@ CanvasItemEditor::DragType CanvasItemEditor::_get_resize_handle_drag_type(const 
 	return DRAG_NONE;
 }
 
+Vector2 CanvasItemEditor::_anchor_snap(Vector2 anchor) {
+	float radius = 0.05 / zoom;
+	if (fabs(anchor.x - ANCHOR_BEGIN) < radius) {
+		anchor.x = ANCHOR_BEGIN;
+	} else if (fabs(anchor.x - ANCHOR_CENTER) < radius) {
+		anchor.x = ANCHOR_CENTER;
+	} else if (fabs(anchor.x - ANCHOR_END) < radius) {
+		anchor.x = ANCHOR_END;
+	}
+	if (fabs(anchor.y - ANCHOR_BEGIN) < radius) {
+		anchor.y = ANCHOR_BEGIN;
+	} else if (fabs(anchor.y - ANCHOR_CENTER) < radius) {
+		anchor.y = ANCHOR_CENTER;
+	} else if (fabs(anchor.y - ANCHOR_END) < radius) {
+		anchor.y = ANCHOR_END;
+	}
+	return anchor;
+}
 Vector2 CanvasItemEditor::_anchor_to_position(Control *p_control, Vector2 anchor) {
 	ERR_FAIL_COND_V(!p_control, Vector2());
 
@@ -1319,6 +1337,7 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 				if (b) {
 
 					bool ik_found = false;
+
 					bool first = true;
 
 					while (b) {
@@ -1563,10 +1582,11 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 
 			Control *control = canvas_item->cast_to<Control>();
 			if (control) {
+				// Drag and snap the anchor
 				Vector2 anchor = _position_to_anchor(control, canvas_item->get_global_transform_with_canvas().affine_inverse().xform(dto - drag_from + drag_point_from));
+				anchor = _anchor_snap(anchor);
 
 				switch (drag) {
-					// Handles anchor dragging
 					case DRAG_ANCHOR_TOP_LEFT:
 						control->set_anchor(MARGIN_LEFT, anchor.x);
 						control->set_anchor(MARGIN_TOP, anchor.y);
