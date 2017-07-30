@@ -190,6 +190,11 @@ for x in module_list:
 
 opts.Update(env_base)  # update environment
 Help(opts.GenerateHelpText(env_base))  # generate help
+if '--help' in sys.argv or '-h' in sys.argv:
+	import SCons
+	print SCons.Script.help_text
+	print 'Use scons -H for help about command-line options.'
+	Exit()
 
 # add default include paths
 

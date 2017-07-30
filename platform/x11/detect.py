@@ -191,7 +191,6 @@ def configure(env):
     ## Flags
 
     if (os.system("pkg-config --exists alsa") == 0): # 0 means found
-        print("Enabling ALSA")
         env.Append(CPPFLAGS=["-DALSA_ENABLED"])
         env.ParseConfig('pkg-config alsa --cflags --libs')
     else:
@@ -199,7 +198,6 @@ def configure(env):
 
     if (env["pulseaudio"] == "yes"):
         if (os.system("pkg-config --exists libpulse-simple") == 0): # 0 means found
-            print("Enabling PulseAudio")
             env.Append(CPPFLAGS=["-DPULSEAUDIO_ENABLED"])
             env.ParseConfig('pkg-config --cflags --libs libpulse-simple')
         else:
@@ -210,7 +208,6 @@ def configure(env):
 
         if (env["udev"] == "yes"):
             if (os.system("pkg-config --exists libudev") == 0): # 0 means found
-                print("Enabling udev support")
                 env.Append(CPPFLAGS=["-DUDEV_ENABLED"])
                 env.ParseConfig('pkg-config libudev --cflags --libs')
             else:
