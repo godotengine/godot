@@ -288,9 +288,13 @@ ScriptLanguage *NativeScript::get_language() const {
 
 bool NativeScript::has_script_signal(const StringName &p_signal) const {
 	NativeScriptDesc *script_data = get_script_desc();
-	if (!script_data)
-		return false;
-	return script_data->signals_.has(p_signal);
+
+	while (script_data) {
+		if (script_data->signals_.has(p_signal))
+			return true;
+		script_data = script_data->base_data;
+	}
+	return false;
 }
 
 void NativeScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
