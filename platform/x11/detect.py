@@ -20,20 +20,14 @@ def can_build():
     if sys.platform == "darwin":
         return False  # no x11 on mac for now
 
-    errorval = os.system("pkg-config --version > /dev/null")
-
-    if (errorval):
+    x11_error = os.system("pkg-config --version > /dev/null")
+    if (x11_error):
         print("pkg-config not found.. x11 disabled.")
         return False
 
     x11_error = os.system("pkg-config x11 --modversion > /dev/null ")
     if (x11_error):
         print("X11 not found.. x11 disabled.")
-        return False
-
-    ssl_error = os.system("pkg-config openssl --modversion > /dev/null ")
-    if (ssl_error):
-        print("OpenSSL not found.. x11 disabled.")
         return False
 
     x11_error = os.system("pkg-config xcursor --modversion > /dev/null ")
