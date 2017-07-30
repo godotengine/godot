@@ -96,9 +96,9 @@ public:
 		TData data;
 
 		Pair() {}
-		Pair(const TKey &p_key, const TData &p_data) {
-			key = p_key;
-			data = p_data;
+		Pair(const TKey &p_key, const TData &p_data)
+			: key(p_key),
+			  data(p_data) {
 		}
 	};
 

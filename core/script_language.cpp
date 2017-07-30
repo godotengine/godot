@@ -384,11 +384,10 @@ void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, c
 	//change notify
 }
 
-PlaceHolderScriptInstance::PlaceHolderScriptInstance(ScriptLanguage *p_language, Ref<Script> p_script, Object *p_owner) {
-
-	language = p_language;
-	script = p_script;
-	owner = p_owner;
+PlaceHolderScriptInstance::PlaceHolderScriptInstance(ScriptLanguage *p_language, Ref<Script> p_script, Object *p_owner)
+	: owner(p_owner),
+	  language(p_language),
+	  script(p_script) {
 }
 
 PlaceHolderScriptInstance::~PlaceHolderScriptInstance() {

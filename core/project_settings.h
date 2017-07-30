@@ -48,9 +48,9 @@ public:
 	struct Singleton {
 		StringName name;
 		Object *ptr;
-		Singleton(const StringName &p_name = StringName(), Object *p_ptr = NULL) {
-			name = p_name;
-			ptr = p_ptr;
+		Singleton(const StringName &p_name = StringName(), Object *p_ptr = NULL)
+			: name(p_name),
+			  ptr(p_ptr) {
 		}
 	};
 	enum {
@@ -66,18 +66,18 @@ protected:
 		Variant initial;
 		bool hide_from_editor;
 		bool overrided;
-		VariantContainer() {
-			order = 0;
-			hide_from_editor = false;
-			persist = false;
-			overrided = false;
+		VariantContainer()
+			: order(0),
+			  persist(false),
+			  hide_from_editor(false),
+			  overrided(false) {
 		}
-		VariantContainer(const Variant &p_variant, int p_order, bool p_persist = false) {
-			variant = p_variant;
-			order = p_order;
-			hide_from_editor = false;
-			persist = p_persist;
-			overrided = false;
+		VariantContainer(const Variant &p_variant, int p_order, bool p_persist = false)
+			: order(p_order),
+			  persist(p_persist),
+			  variant(p_variant),
+			  hide_from_editor(false),
+			  overrided(false) {
 		}
 	};
 

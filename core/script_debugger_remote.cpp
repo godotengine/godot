@@ -940,29 +940,32 @@ void ScriptDebuggerRemote::profiling_set_frame_times(float p_frame_time, float p
 
 ScriptDebuggerRemote::ResourceUsageFunc ScriptDebuggerRemote::resource_usage_func = NULL;
 
-ScriptDebuggerRemote::ScriptDebuggerRemote() {
+ScriptDebuggerRemote::ScriptDebuggerRemote()
+	: profiling(false),
+	  max_frame_functions(16),
+	  skip_profile_frame(false),
+	  reload_all_scripts(false),
+	  tcp_client(StreamPeerTCP::create_ref()),
+	  packet_peer_stream(Ref<PacketPeerStream>(memnew(PacketPeerStream))),
+	  last_perf_time(0),
+	  performance(ProjectSettings::get_singleton()->get_singleton_object("Performance")),
+	  requested_quit(false),
+	  mutex(Mutex::create()),
+	  max_cps(GLOBAL_GET("network/limits/debugger_stdout/max_chars_per_second")),
+	  char_count(0),
+	  last_msec(0),
+	  msec_count(0),
+	  locking(false),
+	  poll_every(0),
+	  request_scene_tree(NULL),
+	  live_edit_funcs(NULL) {
 
-	tcp_client = StreamPeerTCP::create_ref();
-	packet_peer_stream = Ref<PacketPeerStream>(memnew(PacketPeerStream));
 	packet_peer_stream->set_stream_peer(tcp_client);
 	packet_peer_stream->set_output_buffer_max_size(1024 * 1024 * 8); //8mb should be way more than enough
-	mutex = Mutex::create();
-	locking = false;
 
 	phl.printfunc = _print_handler;
 	phl.userdata = this;
 	add_print_handler(&phl);
-	requested_quit = false;
-	performance = ProjectSettings::get_singleton()->get_singleton_object("Performance");
-	last_perf_time = 0;
-	poll_every = 0;
-	request_scene_tree = NULL;
-	live_edit_funcs = NULL;
-	max_cps = GLOBAL_GET("network/limits/debugger_stdout/max_chars_per_second");
-	char_count = 0;
-	msec_count = 0;
-	last_msec = 0;
-	skip_profile_frame = false;
 
 	eh.errfunc = _err_handler;
 	eh.userdata = this;
@@ -970,9 +973,6 @@ ScriptDebuggerRemote::ScriptDebuggerRemote() {
 
 	profile_info.resize(CLAMP(int(ProjectSettings::get_singleton()->get("debug/settings/profiler/max_functions")), 128, 65535));
 	profile_info_ptrs.resize(profile_info.size());
-	profiling = false;
-	max_frame_functions = 16;
-	reload_all_scripts = false;
 }
 
 ScriptDebuggerRemote::~ScriptDebuggerRemote() {
