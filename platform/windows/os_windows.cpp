@@ -805,7 +805,12 @@ void OS_Windows::process_key_events() {
 
 				k->set_pressed(ke.uMsg == WM_KEYDOWN);
 
-				k->set_scancode(KeyMappingWindows::get_keysym(ke.wParam));
+				if ((ke.lParam & (1 << 24)) && (ke.wParam == VK_RETURN)) {
+					// Special case for Numpad Enter key
+					k->set_scancode(KEY_ENTER);
+				} else {
+					k->set_scancode(KeyMappingWindows::get_keysym(ke.wParam));
+				}
 
 				if (i + 1 < key_event_pos && key_event_buffer[i + 1].uMsg == WM_CHAR) {
 					k->set_unicode(key_event_buffer[i + 1].wParam);
