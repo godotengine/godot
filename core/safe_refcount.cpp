@@ -78,6 +78,15 @@ static _ALWAYS_INLINE_ T _atomic_add_impl(register T *pw, register T val) {
 	return *pw;
 }
 
+template <class T>
+static _ALWAYS_INLINE_ T _atomic_exchange_if_greater_impl(register T *pw, register T val) {
+
+	if (val > *pw)
+		*pw = val;
+
+	return *pw;
+}
+
 #elif defined(__GNUC__)
 
 /* Implementation for GCC & Clang */
@@ -121,6 +130,18 @@ static _ALWAYS_INLINE_ T _atomic_add_impl(register T *pw, register T val) {
 	return __sync_add_and_fetch(pw, val);
 }
 
+template <class T>
+static _ALWAYS_INLINE_ T _atomic_exchange_if_greater_impl(register T *pw, register T val) {
+
+	while (true) {
+		T tmp = static_cast<T const volatile &>(*pw);
+		if (tmp >= val)
+			return tmp; // already greater, or equal
+		if (__sync_val_compare_and_swap(pw, tmp, val) == tmp)
+			return val;
+	}
+}
+
 #elif defined(_MSC_VER)
 
 /* Implementation for MSVC-Windows */
@@ -137,6 +158,15 @@ static _ALWAYS_INLINE_ T _atomic_add_impl(register T *pw, register T val) {
 			return 0; /* if zero, can't add to it anymore */                           \
 		if (m_win_cmpxchg((m_win_type volatile *)(m_pw), tmp + 1, tmp) == tmp)         \
 			return tmp + 1;                                                            \
+	}
+
+#define ATOMIC_EXCHANGE_IF_GREATER_BODY(m_pw, m_val, m_win_type, m_win_cmpxchg, m_cpp_type) \
+	while (true) {                                                                          \
+		m_cpp_type tmp = static_cast<m_cpp_type const volatile &>(*(m_pw));                 \
+		if (tmp >= m_val)                                                                   \
+			return tmp; /* already greater, or equal */                                     \
+		if (m_win_cmpxchg((m_win_type volatile *)(m_pw), m_val, tmp) == tmp)                \
+			return m_val;                                                                   \
 	}
 
 static _ALWAYS_INLINE_ uint32_t _atomic_conditional_increment_impl(register uint32_t *pw) {
@@ -156,16 +186,17 @@ static _ALWAYS_INLINE_ uint32_t _atomic_increment_impl(register uint32_t *pw) {
 
 static _ALWAYS_INLINE_ uint32_t _atomic_sub_impl(register uint32_t *pw, register uint32_t val) {
 
-#if _WIN32_WINNT >= 0x0601 // Windows 7+
-	return InterlockedExchangeSubtract(pw, val) - val;
-#else
 	return InterlockedExchangeAdd((LONG volatile *)pw, -(int32_t)val) - val;
-#endif
 }
 
 static _ALWAYS_INLINE_ uint32_t _atomic_add_impl(register uint32_t *pw, register uint32_t val) {
 
 	return InterlockedAdd((LONG volatile *)pw, val);
+}
+
+static _ALWAYS_INLINE_ uint32_t _atomic_exchange_if_greater_impl(register uint32_t *pw, register uint32_t val) {
+
+	ATOMIC_EXCHANGE_IF_GREATER_BODY(pw, val, LONG, InterlockedCompareExchange, uint32_t)
 }
 
 static _ALWAYS_INLINE_ uint64_t _atomic_conditional_increment_impl(register uint64_t *pw) {
@@ -185,16 +216,17 @@ static _ALWAYS_INLINE_ uint64_t _atomic_increment_impl(register uint64_t *pw) {
 
 static _ALWAYS_INLINE_ uint64_t _atomic_sub_impl(register uint64_t *pw, register uint64_t val) {
 
-#if _WIN32_WINNT >= 0x0601 && !defined(UWP_ENABLED) // Windows 7+ except UWP
-	return InterlockedExchangeSubtract64(pw, val) - val;
-#else
 	return InterlockedExchangeAdd64((LONGLONG volatile *)pw, -(int64_t)val) - val;
-#endif
 }
 
 static _ALWAYS_INLINE_ uint64_t _atomic_add_impl(register uint64_t *pw, register uint64_t val) {
 
 	return InterlockedAdd64((LONGLONG volatile *)pw, val);
+}
+
+static _ALWAYS_INLINE_ uint64_t _atomic_exchange_if_greater_impl(register uint64_t *pw, register uint64_t val) {
+
+	ATOMIC_EXCHANGE_IF_GREATER_BODY(pw, val, LONGLONG, InterlockedCompareExchange64, uint64_t)
 }
 
 #else
@@ -226,6 +258,10 @@ uint32_t atomic_add(register uint32_t *pw, register uint32_t val) {
 	return _atomic_add_impl(pw, val);
 }
 
+uint32_t atomic_exchange_if_greater(register uint32_t *pw, register uint32_t val) {
+	return _atomic_exchange_if_greater_impl(pw, val);
+}
+
 uint64_t atomic_conditional_increment(register uint64_t *counter) {
 	return _atomic_conditional_increment_impl(counter);
 }
@@ -244,4 +280,8 @@ uint64_t atomic_sub(register uint64_t *pw, register uint64_t val) {
 
 uint64_t atomic_add(register uint64_t *pw, register uint64_t val) {
 	return _atomic_add_impl(pw, val);
+}
+
+uint64_t atomic_exchange_if_greater(register uint64_t *pw, register uint64_t val) {
+	return _atomic_exchange_if_greater_impl(pw, val);
 }
