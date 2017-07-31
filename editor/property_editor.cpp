@@ -3858,7 +3858,7 @@ void PropertyEditor::_item_edited() {
 				break;
 
 			if (type == Variant::INT)
-				_edit_set(name, int(item->get_range(1)), refresh_all);
+				_edit_set(name, round(item->get_range(1)), refresh_all);
 			else
 				_edit_set(name, item->get_range(1), refresh_all);
 		} break;
