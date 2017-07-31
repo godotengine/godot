@@ -365,29 +365,18 @@ static const char *prop_renames[][2] = {
 	{ "root/root", "root_node" },
 	{ "playback/process_mode", "playback_process_mode" },
 	{ "stream/stream", "stream" },
-	{ "stream/play", "play" },
+	{ "stream/play", "playing" },
 	{ "stream/loop", "loop" },
 	{ "stream/volume_db", "volume_db" },
+	{ "stream/autoplay", "autoplay" },
+	{ "stream/paused", "paused" },
+	{ "stream/loop_restart_time", "loop_restart_time" },
+	{ "stream/buffering_ms", "buffering_ms" },
 	{ "stream/pitch_scale", "pitch_scale" },
 	{ "stream/tempo_scale", "tempo_scale" },
-	{ "stream/autoplay", "autoplay" },
-	{ "stream/paused", "paused" },
-	{ "stream/stream", "stream" },
-	{ "stream/play", "play" },
-	{ "stream/loop", "loop" },
-	{ "stream/volume_db", "volume_db" },
-	{ "stream/autoplay", "autoplay" },
-	{ "stream/paused", "paused" },
-	{ "stream/loop_restart_time", "loop_restart_time" },
-	{ "stream/buffering_ms", "buffering_ms" },
-	{ "stream/stream", "stream" },
-	{ "stream/play", "play" },
-	{ "stream/loop", "loop" },
-	{ "stream/volume_db", "volume_db" },
-	{ "stream/autoplay", "autoplay" },
-	{ "stream/paused", "paused" },
-	{ "stream/loop_restart_time", "loop_restart_time" },
-	{ "stream/buffering_ms", "buffering_ms" },
+	{ "stream/audio_track", "audio_track" },
+	{ "stream/autoplay", "stream_autoplay" },
+	{ "stream/paused", "stream_paused" },
 	{ "window/title", "window_title" },
 	{ "dialog/text", "dialog_text" },
 	{ "dialog/hide_on_ok", "dialog_hide_on_ok" },
@@ -442,11 +431,6 @@ static const char *prop_renames[][2] = {
 	{ "radial_fill/initial_angle", "radial_initial_angle" },
 	{ "radial_fill/fill_degrees", "radial_fill_degrees" },
 	{ "radial_fill/center_offset", "radial_center_offset" },
-	{ "stream/audio_track", "audio_track" },
-	{ "stream/stream", "stream" },
-	{ "stream/volume_db", "volume_db" },
-	{ "stream/autoplay", "stream_autoplay" },
-	{ "stream/paused", "stream_paused" },
 	{ "font/size", "size" },
 	{ "extra_spacing/top", "extra_spacing_top" },
 	{ "extra_spacing/bottom", "extra_spacing_bottom" },
@@ -480,15 +464,12 @@ static const char *prop_renames[][2] = {
 };
 
 static const char *type_renames[][2] = {
-	{ "SpatialPlayer", "Spatial" },
-	{ "SpatialSamplePlayer", "Spatial" },
-	{ "SpatialStreamPlayer", "Spatial" },
-	{ "Particles", "Spatial" },
+	{ "StreamPlayer", "AudioStreamPlayer" },
+	{ "SpatialSamplePlayer", "AudioStreamPlayer3D" },
+	{ "SpatialStreamPlayer", "AudioStreamPlayer3D" },
 	{ "SamplePlayer", "Node" },
-	{ "SamplePlayer2D", "Node2D" },
+	{ "SamplePlayer2D", "AudioStreamPlayer2D" },
 	{ "SoundPlayer2D", "Node2D" },
-	{ "StreamPlayer2D", "Node2D" },
-	{ "Particles2D", "Node2D" },
 	{ "SampleLibrary", "Resource" },
 	{ "TextureFrame", "TextureRect" },
 	{ "Patch9Frame", "NinePatchRect" },
@@ -1182,7 +1163,7 @@ Error EditorExportGodot3::_get_property_as_text(const Variant &p_variant, String
 		} break;
 		case Variant::REAL_ARRAY: {
 
-			p_string += ("PoolFloatArray( ");
+			p_string += ("PoolRealArray( ");
 			DVector<real_t> data = p_variant;
 			int len = data.size();
 			DVector<real_t>::Read r = data.read();
@@ -1993,7 +1974,7 @@ Error EditorExportGodot3::export_godot3(const String &p_path) {
 	List<String> files;
 	_find_files(EditorFileSystem::get_singleton()->get_filesystem(), &files);
 
-	EditorProgress progress("exporting", "Exporting Godot 3.0", files.size());
+	EditorProgress progress("exporting", "Exporting the project to Godot 3.0", files.size());
 
 	//find XML resources
 
