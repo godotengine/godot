@@ -334,7 +334,7 @@ class CanvasItemEditor : public VBoxContainer {
 	void _prepare_drag(const Point2 &p_click_pos);
 	DragType _get_anchor_handle_drag_type(const Point2 &p_click, Vector2 &r_point);
 
-	Vector2 _anchor_snap(const Vector2 anchor, bool *snapped_x = NULL, bool *snapped_y = NULL);
+	float _anchor_snap(const float anchor, bool *snapped = NULL);
 	Vector2 _anchor_to_position(Control *p_control, Vector2 anchor);
 	Vector2 _position_to_anchor(Control *p_control, Vector2 position);
 

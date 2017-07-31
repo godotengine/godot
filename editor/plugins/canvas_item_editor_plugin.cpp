@@ -775,41 +775,27 @@ CanvasItemEditor::DragType CanvasItemEditor::_get_resize_handle_drag_type(const 
 	return DRAG_NONE;
 }
 
-Vector2 CanvasItemEditor::_anchor_snap(const Vector2 anchor, bool *snapped_x, bool *snapped_y) {
-	Vector2 result = anchor;
-	if (snapped_x)
-		*snapped_x = false;
-	if (snapped_y)
-		*snapped_y = false;
+float CanvasItemEditor::_anchor_snap(const float anchor, bool *snapped) {
+	float result = anchor;
+	if (snapped)
+		*snapped = false;
 	float radius = 0.05 / zoom;
-	if (fabs(result.x - ANCHOR_BEGIN) < radius) {
-		result.x = ANCHOR_BEGIN;
-		if (snapped_x)
-			*snapped_x = true;
-	} else if (fabs(result.x - ANCHOR_CENTER) < radius) {
-		result.x = ANCHOR_CENTER;
-		if (snapped_x)
-			*snapped_x = true;
-	} else if (fabs(result.x - ANCHOR_END) < radius) {
-		result.x = ANCHOR_END;
-		if (snapped_x)
-			*snapped_x = true;
-	}
-	if (fabs(result.y - ANCHOR_BEGIN) < radius) {
-		result.y = ANCHOR_BEGIN;
-		if (snapped_y)
-			*snapped_y = true;
-	} else if (fabs(result.y - ANCHOR_CENTER) < radius) {
-		result.y = ANCHOR_CENTER;
-		if (snapped_y)
-			*snapped_y = true;
-	} else if (fabs(result.y - ANCHOR_END) < radius) {
-		result.y = ANCHOR_END;
-		if (snapped_y)
-			*snapped_y = true;
+	if (fabs(result - ANCHOR_BEGIN) < radius) {
+		result = ANCHOR_BEGIN;
+		if (snapped)
+			*snapped = true;
+	} else if (fabs(result - ANCHOR_CENTER) < radius) {
+		result = ANCHOR_CENTER;
+		if (snapped)
+			*snapped = true;
+	} else if (fabs(result - ANCHOR_END) < radius) {
+		result = ANCHOR_END;
+		if (snapped)
+			*snapped = true;
 	}
 	return result;
 }
+
 Vector2 CanvasItemEditor::_anchor_to_position(Control *p_control, Vector2 anchor) {
 	ERR_FAIL_COND_V(!p_control, Vector2());
 
@@ -1601,27 +1587,26 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 			if (control) {
 				// Drag and snap the anchor
 				Vector2 anchor = _position_to_anchor(control, canvas_item->get_global_transform_with_canvas().affine_inverse().xform(dto - drag_from + drag_point_from));
-				anchor = _anchor_snap(anchor);
 
 				switch (drag) {
 					case DRAG_ANCHOR_TOP_LEFT:
-						control->set_anchor(MARGIN_LEFT, anchor.x);
-						control->set_anchor(MARGIN_TOP, anchor.y);
+						control->set_anchor(MARGIN_LEFT, _anchor_snap(anchor.x));
+						control->set_anchor(MARGIN_TOP, _anchor_snap(anchor.y));
 						continue;
 						break;
 					case DRAG_ANCHOR_TOP_RIGHT:
-						control->set_anchor(MARGIN_RIGHT, anchor.x);
-						control->set_anchor(MARGIN_TOP, anchor.y);
+						control->set_anchor(MARGIN_RIGHT, _anchor_snap(anchor.x));
+						control->set_anchor(MARGIN_TOP, _anchor_snap(anchor.y));
 						continue;
 						break;
 					case DRAG_ANCHOR_BOTTOM_RIGHT:
-						control->set_anchor(MARGIN_RIGHT, anchor.x);
-						control->set_anchor(MARGIN_BOTTOM, anchor.y);
+						control->set_anchor(MARGIN_RIGHT, _anchor_snap(anchor.x));
+						control->set_anchor(MARGIN_BOTTOM, _anchor_snap(anchor.y));
 						continue;
 						break;
 					case DRAG_ANCHOR_BOTTOM_LEFT:
-						control->set_anchor(MARGIN_LEFT, anchor.x);
-						control->set_anchor(MARGIN_BOTTOM, anchor.y);
+						control->set_anchor(MARGIN_LEFT, _anchor_snap(anchor.x));
+						control->set_anchor(MARGIN_BOTTOM, _anchor_snap(anchor.y));
 						continue;
 						break;
 				}
@@ -2007,15 +1992,17 @@ void CanvasItemEditor::_viewport_draw() {
 				pivot_found = true;
 
 				if (tool == TOOL_SELECT) {
+					float anchors_values[4];
+					anchors_values[0] = control->get_anchor(MARGIN_LEFT);
+					anchors_values[1] = control->get_anchor(MARGIN_TOP);
+					anchors_values[2] = control->get_anchor(MARGIN_RIGHT);
+					anchors_values[3] = control->get_anchor(MARGIN_BOTTOM);
+
 					// Draw the anchors
 					Vector2 anchors[4];
-					anchors[0] = Vector2(control->get_anchor(MARGIN_LEFT), control->get_anchor(MARGIN_TOP));
-					anchors[1] = Vector2(control->get_anchor(MARGIN_RIGHT), control->get_anchor(MARGIN_TOP));
-					anchors[2] = Vector2(control->get_anchor(MARGIN_RIGHT), control->get_anchor(MARGIN_BOTTOM));
-					anchors[3] = Vector2(control->get_anchor(MARGIN_LEFT), control->get_anchor(MARGIN_BOTTOM));
-
 					Vector2 anchors_pos[4];
 					for (int i = 0; i < 4; i++) {
+						anchors[i] = Vector2((i % 2 == 0) ? anchors_values[i] : anchors_values[(i + 1) % 4], (i % 2 == 1) ? anchors_values[i] : anchors_values[(i + 1) % 4]);
 						anchors_pos[i] = xform.xform(_anchor_to_position(control, anchors[i]));
 					}
 
@@ -2038,7 +2025,7 @@ void CanvasItemEditor::_viewport_draw() {
 
 					if (dragged_anchor >= 0) {
 						// Draw the 4 lines when dragged
-						bool snapped_x, snapped_y;
+						bool snapped;
 						Color color_snapped = Color(0.64, 0.93, 0.67, 0.5);
 						Color color_base = Color(0.8, 0.8, 0.8, 0.5);
 
@@ -2048,12 +2035,11 @@ void CanvasItemEditor::_viewport_draw() {
 						}
 
 						for (int i = 0; i < 4; i++) {
-							float anchor_val = (i % 2 == 0) ? anchors[i].x : anchors[i].y;
-							anchor_val = (i >= 2) ? ANCHOR_END - anchor_val : anchor_val;
+							float anchor_val = (i >= 2) ? ANCHOR_END - anchors_values[i] : anchors_values[i];
 							Vector2 line_start = Vector2::linear_interpolate(corners_pos[i], corners_pos[(i + 1) % 4], anchor_val);
 							Vector2 line_end = Vector2::linear_interpolate(corners_pos[(i + 3) % 4], corners_pos[(i + 2) % 4], anchor_val);
-							_anchor_snap(anchors[i], &snapped_x, &snapped_y);
-							viewport->draw_line(line_start, line_end, ((i % 2 == 0 && snapped_x) || (i % 2 == 1 && snapped_y)) ? color_snapped : color_base, (i == dragged_anchor || (i + 3) % 4 == dragged_anchor) ? 2 : 1);
+							_anchor_snap(anchors_values[i], &snapped);
+							viewport->draw_line(line_start, line_end, snapped ? color_snapped : color_base, (i == dragged_anchor || (i + 3) % 4 == dragged_anchor) ? 2 : 1);
 						}
 
 					}
