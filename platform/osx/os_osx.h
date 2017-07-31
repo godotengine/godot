@@ -107,9 +107,6 @@ public:
 	bool maximized;
 	bool zoomed;
 
-	Vector<Rect2> screens;
-	Vector<int> screen_dpi;
-
 	Size2 window_size;
 	Rect2 restore_rect;
 
