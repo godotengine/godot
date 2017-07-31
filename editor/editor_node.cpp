@@ -183,12 +183,12 @@ void EditorNode::_unhandled_input(const Ref<InputEvent> &p_event) {
 		if (ED_IS_SHORTCUT("editor/next_tab", p_event)) {
 			int next_tab = editor_data.get_edited_scene() + 1;
 			next_tab %= editor_data.get_edited_scene_count();
-			_scene_tab_changed(next_tab);
+			_scene_tab_changed(-1, next_tab);
 		}
 		if (ED_IS_SHORTCUT("editor/prev_tab", p_event)) {
 			int next_tab = editor_data.get_edited_scene() - 1;
 			next_tab = next_tab >= 0 ? next_tab : editor_data.get_edited_scene_count() - 1;
-			_scene_tab_changed(next_tab);
+			_scene_tab_changed(-1, next_tab);
 		}
 		if (ED_IS_SHORTCUT("editor/filter_files", p_event)) {
 			filesystem_dock->focus_on_filter();
@@ -1891,7 +1891,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			}*/
 
 			int idx = editor_data.add_edited_scene(-1);
-			_scene_tab_changed(idx);
+			_scene_tab_changed(-1, idx);
 			editor_data.clear_editor_states();
 
 			//_cleanup_scene();
@@ -3027,7 +3027,7 @@ void EditorNode::_remove_edited_scene() {
 	if (editor_data.get_scene_path(old_index) != String()) {
 		ScriptEditor::get_singleton()->close_builtin_scripts_from_scene(editor_data.get_scene_path(old_index));
 	}
-	_scene_tab_changed(new_index);
+	_scene_tab_changed(-1, new_index);
 	editor_data.remove_scene(old_index);
 	editor_data.get_undo_redo().clear_history();
 	_update_title();
@@ -3266,7 +3266,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 		for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
 
 			if (editor_data.get_scene_path(i) == p_scene) {
-				_scene_tab_changed(i);
+				_scene_tab_changed(-1, i);
 				return OK;
 			}
 		}
@@ -3304,7 +3304,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 	if (!editor_data.get_edited_scene_root() && editor_data.get_edited_scene_count() == 2) {
 		_remove_edited_scene();
 	} else {
-		_scene_tab_changed(idx);
+		_scene_tab_changed(-1, idx);
 	}
 
 	//_cleanup_scene(); // i'm sorry but this MUST happen to avoid modified resources to not be reloaded.
@@ -4449,7 +4449,7 @@ void EditorNode::_thumbnail_done(const String &p_path, const Ref<Texture> &p_pre
 	}
 }
 
-void EditorNode::_scene_tab_changed(int p_tab) {
+void EditorNode::_scene_tab_changed(int old_tab, int p_tab) {
 	tab_preview_panel->hide();
 
 	//print_line("set current 1 ");
@@ -4859,7 +4859,7 @@ void EditorNode::reload_scene(const String &p_path) {
 	get_undo_redo()->clear_history();
 	//recover the tab
 	scene_tabs->set_current_tab(current_tab);
-	_scene_tab_changed(current_tab);
+	_scene_tab_changed(-1, current_tab);
 }
 
 int EditorNode::plugin_init_callback_count = 0;

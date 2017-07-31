@@ -559,7 +559,7 @@ private:
 	void _dock_pre_popup(int p_which);
 	void _dock_split_dragged(int ofs);
 	void _dock_popup_exit();
-	void _scene_tab_changed(int p_tab);
+	void _scene_tab_changed(int old_tab, int p_tab);
 	void _scene_tab_closed(int p_tab);
 	void _scene_tab_hover(int p_tab);
 	void _scene_tab_exit();
