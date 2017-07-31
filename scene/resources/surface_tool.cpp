@@ -818,6 +818,7 @@ void SurfaceTool::clear() {
 void SurfaceTool::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("begin", "primitive"), &SurfaceTool::begin);
+
 	ClassDB::bind_method(D_METHOD("add_vertex", "vertex"), &SurfaceTool::add_vertex);
 	ClassDB::bind_method(D_METHOD("add_color", "color"), &SurfaceTool::add_color);
 	ClassDB::bind_method(D_METHOD("add_normal", "normal"), &SurfaceTool::add_normal);
@@ -827,15 +828,25 @@ void SurfaceTool::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_bones", "bones"), &SurfaceTool::add_bones);
 	ClassDB::bind_method(D_METHOD("add_weights", "weights"), &SurfaceTool::add_weights);
 	ClassDB::bind_method(D_METHOD("add_smooth_group", "smooth"), &SurfaceTool::add_smooth_group);
+
 	ClassDB::bind_method(D_METHOD("add_triangle_fan", "vertexes", "uvs", "colors", "uv2s", "normals", "tangents"), &SurfaceTool::add_triangle_fan, DEFVAL(Vector<Vector2>()), DEFVAL(Vector<Color>()), DEFVAL(Vector<Vector2>()), DEFVAL(Vector<Vector3>()), DEFVAL(Vector<Plane>()));
-	ClassDB::bind_method(D_METHOD("set_material", "material:Material"), &SurfaceTool::set_material);
+
+	ClassDB::bind_method(D_METHOD("add_index", "index"), &SurfaceTool::add_index);
+
 	ClassDB::bind_method(D_METHOD("index"), &SurfaceTool::index);
 	ClassDB::bind_method(D_METHOD("deindex"), &SurfaceTool::deindex);
-	///ClassDB::bind_method(D_METHOD("generate_flat_normals"),&SurfaceTool::generate_flat_normals);
 	ClassDB::bind_method(D_METHOD("generate_normals"), &SurfaceTool::generate_normals);
-	ClassDB::bind_method(D_METHOD("add_index", "index"), &SurfaceTool::add_index);
-	ClassDB::bind_method(D_METHOD("commit:Mesh", "existing:Mesh"), &SurfaceTool::commit, DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("generate_tangents"), &SurfaceTool::generate_tangents);
+
+	ClassDB::bind_method(D_METHOD("add_to_format", "flags"), &SurfaceTool::add_to_format);
+
+	ClassDB::bind_method(D_METHOD("set_material", "material:Material"), &SurfaceTool::set_material);
+
 	ClassDB::bind_method(D_METHOD("clear"), &SurfaceTool::clear);
+
+	ClassDB::bind_method(D_METHOD("create_from", "existing:Mesh", "surface"), &SurfaceTool::create_from);
+	ClassDB::bind_method(D_METHOD("append_from", "existing:Mesh", "surface", "transform"), &SurfaceTool::append_from);
+	ClassDB::bind_method(D_METHOD("commit:Mesh", "existing:Mesh"), &SurfaceTool::commit, DEFVAL(Variant()));
 }
 
 SurfaceTool::SurfaceTool() {
