@@ -801,6 +801,7 @@ void SurfaceTool::clear() {
 void SurfaceTool::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("begin", "primitive"), &SurfaceTool::begin);
+
 	ObjectTypeDB::bind_method(_MD("add_vertex", "vertex"), &SurfaceTool::add_vertex);
 	ObjectTypeDB::bind_method(_MD("add_color", "color"), &SurfaceTool::add_color);
 	ObjectTypeDB::bind_method(_MD("add_normal", "normal"), &SurfaceTool::add_normal);
@@ -810,15 +811,25 @@ void SurfaceTool::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("add_bones", "bones"), &SurfaceTool::add_bones);
 	ObjectTypeDB::bind_method(_MD("add_weights", "weights"), &SurfaceTool::add_weights);
 	ObjectTypeDB::bind_method(_MD("add_smooth_group", "smooth"), &SurfaceTool::add_smooth_group);
+
 	ObjectTypeDB::bind_method(_MD("add_triangle_fan", "vertexes", "uvs", "colors", "uv2s", "normals", "tangents"), &SurfaceTool::add_triangle_fan, DEFVAL(Vector<Vector2>()), DEFVAL(Vector<Color>()), DEFVAL(Vector<Vector2>()), DEFVAL(Vector<Vector3>()), DEFVAL(Vector<Plane>()));
-	ObjectTypeDB::bind_method(_MD("set_material", "material:Material"), &SurfaceTool::set_material);
+
+	ObjectTypeDB::bind_method(_MD("add_index", "index"), &SurfaceTool::add_index);
+
 	ObjectTypeDB::bind_method(_MD("index"), &SurfaceTool::index);
 	ObjectTypeDB::bind_method(_MD("deindex"), &SurfaceTool::deindex);
-	///ObjectTypeDB::bind_method(_MD("generate_flat_normals"),&SurfaceTool::generate_flat_normals);
 	ObjectTypeDB::bind_method(_MD("generate_normals"), &SurfaceTool::generate_normals);
-	ObjectTypeDB::bind_method(_MD("add_index", "index"), &SurfaceTool::add_index);
-	ObjectTypeDB::bind_method(_MD("commit:Mesh", "existing:Mesh"), &SurfaceTool::commit, DEFVAL(Variant()));
+	ObjectTypeDB::bind_method(_MD("generate_tangents"), &SurfaceTool::generate_tangents);
+
+	ObjectTypeDB::bind_method(_MD("add_to_format", "flags"), &SurfaceTool::add_to_format);
+
+	ObjectTypeDB::bind_method(_MD("set_material", "material:Material"), &SurfaceTool::set_material);
+
 	ObjectTypeDB::bind_method(_MD("clear"), &SurfaceTool::clear);
+
+	ObjectTypeDB::bind_method(_MD("create_from", "existing:Mesh", "surface"), &SurfaceTool::create_from);
+	ObjectTypeDB::bind_method(_MD("append_from", "existing:Mesh", "surface", "transform"), &SurfaceTool::append_from);
+	ObjectTypeDB::bind_method(_MD("commit:Mesh", "existing:Mesh"), &SurfaceTool::commit, DEFVAL(Variant()));
 }
 
 SurfaceTool::SurfaceTool() {
