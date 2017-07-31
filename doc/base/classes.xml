@@ -10169,10 +10169,71 @@
 			<description>
 			</description>
 		</method>
+		<method name="create_shape_owner">
+			<return type="int">
+			</return>
+			<argument index="0" name="owner" type="Object">
+			</argument>
+			<description>
+				Creates new holder for the shapes. Argument is a [CollisionShape] node. It will return owner_id which usually you will want to save for later use.
+			</description>
+		</method>
 		<method name="get_rid" qualifiers="const">
 			<return type="RID">
 			</return>
 			<description>
+			</description>
+		</method>
+		<method name="get_shape_owners">
+			<return type="Array">
+			</return>
+			<description>
+				Shape owner is a node which is holding concrete shape resources. This method will return an array which is holding an integer numbers that are representing unique ID of each owner. You can use those ids when you are using others shape_owner methods.
+			</description>
+		</method>
+		<method name="shape_owner_clear_shapes">
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<description>
+				Will remove all the shapes associated with given owner.
+			</description>
+		</method>
+		<method name="shape_owner_get_shape">
+			<return type="Shape">
+			</return>
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<argument index="1" name="shape_id" type="int">
+			</argument>
+			<description>
+				Will return a [Shape]. First argument owner_id is an integer that can be obtained from [method get_shape_owners]. Shape_id is a position of the shape inside owner; it's a value in range from 0 to [method shape_owner_get_shape_count].
+			</description>
+		</method>
+		<method name="shape_owner_get_shape_count">
+			<return type="int">
+			</return>
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<description>
+				Returns number of shapes to which given owner is associated to.
+			</description>
+		</method>
+		<method name="shape_owner_get_transform">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<description>
+				Will return [Transform] of an owner node.
+			</description>
+		</method>
+		<method name="shape_owner_remove_shape">
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<argument index="1" name="shape_id" type="int">
+			</argument>
+			<description>
+				Removes related shape from the owner.
 			</description>
 		</method>
 		<method name="is_ray_pickable" qualifiers="const">
@@ -10245,11 +10306,72 @@
 			<description>
 			</description>
 		</method>
+		<method name="create_shape_owner">
+			<return type="int">
+			</return>
+			<argument index="0" name="owner" type="Object">
+			</argument>
+			<description>
+				Creates new holder for the shapes. Argument is a [CollisionShape2D] node. It will return owner_id which usually you will want to save for later use.
+			</description>
+		</method>
 		<method name="get_rid" qualifiers="const">
 			<return type="RID">
 			</return>
 			<description>
 				Return the RID of this object.
+			</description>
+		</method>
+		<method name="get_shape_owners">
+			<return type="Array">
+			</return>
+			<description>
+				Shape owner is a node which is holding concrete shape resources. This method will return an array which is holding an integer numbers that are representing unique ID of each owner. You can use those ids when you are using others shape_owner methods.
+			</description>
+		</method>
+		<method name="shape_owner_clear_shapes">
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<description>
+				Will remove all the shapes associated with given owner.
+			</description>
+		</method>
+		<method name="shape_owner_get_shape">
+			<return type="Shape2D">
+			</return>
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<argument index="1" name="shape_id" type="int">
+			</argument>
+			<description>
+				Will return a [Shape2D]. First argument owner_id is an integer that can be obtained from [method get_shape_owners]. Shape_id is a position of the shape inside owner; it's a value in range from 0 to [method shape_owner_get_shape_count].
+			</description>
+		</method>
+		<method name="shape_owner_get_shape_count">
+			<return type="int">
+			</return>
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<description>
+				Returns number of shapes to which given owner is associated to.
+			</description>
+		</method>
+		<method name="shape_owner_get_transform">
+			<return type="Transform2D">
+			</return>
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<description>
+				Will return [Transform2D] of an owner node.
+			</description>
+		</method>
+		<method name="shape_owner_remove_shape">
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<argument index="1" name="shape_id" type="int">
+			</argument>
+			<description>
+				Removes related shape from the owner.
 			</description>
 		</method>
 		<method name="is_pickable" qualifiers="const">
