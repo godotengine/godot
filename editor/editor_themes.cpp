@@ -163,6 +163,13 @@ Ref<Theme> create_editor_theme() {
 	theme->set_color("light_color_1", "Editor", light_color_1);
 	theme->set_color("light_color_2", "Editor", light_color_2);
 
+	Color success_color = highlight_color.linear_interpolate(Color(0, 1, .8), 0.8);
+	Color warning_color = highlight_color.linear_interpolate(Color(1, 1, .2), 0.8);
+	Color error_color = highlight_color.linear_interpolate(Color(1, .2, .2), 0.8);
+	theme->set_color("success_color", "Editor", success_color);
+	theme->set_color("warning_color", "Editor", warning_color);
+	theme->set_color("error_color", "Editor", error_color);
+
 	// Checkbox icon
 	theme->set_icon("checked", "CheckBox", theme->get_icon("GuiChecked", "EditorIcons"));
 	theme->set_icon("unchecked", "CheckBox", theme->get_icon("GuiUnchecked", "EditorIcons"));
@@ -307,8 +314,8 @@ Ref<Theme> create_editor_theme() {
 	theme->set_icon("arrow_collapsed", "Tree", theme->get_icon("GuiTreeArrowRight", "EditorIcons"));
 	theme->set_icon("select_arrow", "Tree", theme->get_icon("GuiDropdown", "EditorIcons"));
 	theme->set_stylebox("bg_focus", "Tree", focus_sbt);
-	theme->set_stylebox("custom_button", "Tree", style_button_type);
-	theme->set_stylebox("custom_button_pressed", "Tree", style_button_type);
+	theme->set_stylebox("custom_button", "Tree", make_empty_stylebox());
+	theme->set_stylebox("custom_button_pressed", "Tree", make_empty_stylebox());
 	theme->set_stylebox("custom_button_hover", "Tree", style_button_type);
 	theme->set_color("custom_button_font_highlight", "Tree", HIGHLIGHT_COLOR_LIGHT);
 

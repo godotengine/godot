@@ -9,9 +9,9 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="8"
+   width="14"
    height="14"
-   viewBox="0 0 8 14"
+   viewBox="0 0 14 14"
    id="svg2"
    version="1.1"
    inkscape:version="0.92+devel unknown"
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="45.254834"
-     inkscape:cx="1.2944669"
-     inkscape:cy="5.9830116"
+     inkscape:zoom="32"
+     inkscape:cx="6.5843041"
+     inkscape:cy="6.8000184"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -72,21 +72,21 @@
      id="layer1"
      transform="translate(0,-1038.3622)">
     <circle
-       style="fill:#ffffff;fill-opacity:0.58823532;stroke-width:2;stroke-linejoin:round;stroke-opacity:0.39215686"
+       style="fill:#ffffff;fill-opacity:0.58823529;stroke-width:2;stroke-linejoin:round;stroke-opacity:0.39215686"
        id="path4268"
-       cx="4.5"
+       cx="7.5"
        cy="1040.8622"
        r="1.5" />
     <circle
        r="1.5"
        cy="1045.8622"
-       cx="4.5"
+       cx="7.5"
        id="circle4271"
-       style="fill:#ffffff;fill-opacity:0.58823532;stroke-width:2;stroke-linejoin:round;stroke-opacity:0.39215686" />
+       style="fill:#ffffff;fill-opacity:0.58823529;stroke-width:2;stroke-linejoin:round;stroke-opacity:0.39215686" />
     <circle
-       style="fill:#ffffff;fill-opacity:0.58823532;stroke-width:2;stroke-linejoin:round;stroke-opacity:0.39215686"
+       style="fill:#ffffff;fill-opacity:0.58823529;stroke-width:2;stroke-linejoin:round;stroke-opacity:0.39215686"
        id="circle4273"
-       cx="4.5"
+       cx="7.5"
        cy="1050.8622"
        r="1.5" />
   </g>
