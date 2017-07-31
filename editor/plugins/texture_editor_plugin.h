@@ -43,6 +43,7 @@ class TextureEditor : public Control {
 protected:
 	void _notification(int p_what);
 	void _gui_input(Ref<InputEvent> p_event);
+	void _changed_callback(Object *p_changed, const char *p_prop);
 	static void _bind_methods();
 
 public:

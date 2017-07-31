@@ -99,6 +99,7 @@ void NinePatchRect::set_texture(const Ref<Texture> &p_tex) {
 	*/
 	minimum_size_changed();
 	emit_signal("texture_changed");
+	_change_notify("texture");
 }
 
 Ref<Texture> NinePatchRect::get_texture() const {

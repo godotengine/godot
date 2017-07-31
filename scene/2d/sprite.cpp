@@ -109,6 +109,7 @@ void Sprite::set_texture(const Ref<Texture> &p_texture) {
 	update();
 	emit_signal("texture_changed");
 	item_rect_changed();
+	_change_notify("texture");
 }
 
 void Sprite::set_normal_map(const Ref<Texture> &p_texture) {
