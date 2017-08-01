@@ -74,6 +74,9 @@
 
 #include <X11/XKBlib.h>
 
+#include "modules/bullet/bullet_physics_server.h"
+#include "modules/bullet/stepper_bullet.h"
+
 int OS_X11::get_video_driver_count() const {
 	return 1;
 }
@@ -461,6 +464,23 @@ void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 	requested = None;
 
 	visual_server->init();
+
+	//
+
+	if (!int(ProjectSettings::get_singleton()->get("physics/3d/physics_engine"))) {
+		// 0 Godot default
+		physics_server = memnew(PhysicsServerSW);
+	} else {
+		// 1 Bullet
+		BulletPhysicsServer *bps = memnew(BulletPhysicsServer);
+		bps->setStepper<SyncStepperBullet>();
+		physics_server = bps;
+	}
+	physics_server->init();
+
+	//physics_2d_server = memnew( Physics2DServerSW );
+	physics_2d_server = Physics2DServerWrapMT::init_server<Physics2DServerSW>();
+	physics_2d_server->init();
 
 	input = memnew(InputDefault);
 

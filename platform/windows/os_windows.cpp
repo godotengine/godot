@@ -53,6 +53,9 @@
 #include <regstr.h>
 #include <shlobj.h>
 
+#include "modules/bullet/bullet_physics_server.h"
+#include "modules/bullet/stepper_bullet.h"
+
 static const WORD MAX_CONSOLE_LINES = 1500;
 
 extern "C" {
@@ -1056,6 +1059,20 @@ void OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int 
 
 		visual_server = memnew(VisualServerWrapMT(visual_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
 	}
+
+	if (!int(ProjectSettings::get_singleton()->get("physics/3d/physics_engine"))) {
+		// 0 Godot default
+		physics_server = memnew(PhysicsServerSW);
+	} else {
+		// 1 Bullet
+		BulletPhysicsServer *bps = memnew(BulletPhysicsServer);
+		bps->setStepper<SyncStepperBullet>();
+		physics_server = bps;
+	}
+	physics_server->init();
+
+	physics_2d_server = Physics2DServerWrapMT::init_server<Physics2DServerSW>();
+	physics_2d_server->init();
 
 	if (!is_no_window_mode_enabled()) {
 		ShowWindow(hWnd, SW_SHOW); // Show The Window
