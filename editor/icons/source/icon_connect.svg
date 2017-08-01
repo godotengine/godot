@@ -14,7 +14,7 @@
    viewBox="0 0 16 16"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92+devel unknown"
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_add_track.png"
    inkscape:export-xdpi="45"
    inkscape:export-ydpi="45"
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="22.627418"
-     inkscape:cx="0.78663326"
-     inkscape:cy="12.940707"
+     inkscape:zoom="32.000001"
+     inkscape:cx="13.864856"
+     inkscape:cy="7.2235346"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -46,7 +46,8 @@
      inkscape:window-height="1016"
      inkscape:window-x="0"
      inkscape:window-y="27"
-     inkscape:window-maximized="1">
+     inkscape:window-maximized="1"
+     inkscape:document-rotation="0">
     <inkscape:grid
        type="xygrid"
        id="grid3336" />
@@ -68,10 +69,37 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-1036.3622)">
+    <circle
+       style="fill:#e0e0e0;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"
+       id="path4266"
+       cx="4"
+       cy="1048.3622"
+       r="2" />
     <path
-       style="fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 7 2 A 2 2 0 0 0 5 4 L 5 7 L 1 7 L 1 9 L 5 9 L 5 12 A 2 2 0 0 0 7 14 L 11 14 L 11 12 L 14 12 L 14 10 L 11 10 L 11 6 L 14 6 L 14 4 L 11 4 L 11 2 L 7 2 z "
-       transform="translate(0,1036.3622)"
-       id="rect4155" />
+       id="circle4268"
+       style="fill:none;stroke:#e0e0e0;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       sodipodi:type="arc"
+       sodipodi:cx="4"
+       sodipodi:cy="1048.3622"
+       sodipodi:rx="5"
+       sodipodi:ry="5"
+       sodipodi:start="4.712389"
+       sodipodi:end="0"
+       sodipodi:arc-type="arc"
+       d="M 4.0000001,1043.3622 A 5,5 0 0 1 9,1048.3622"
+       sodipodi:open="true" />
+    <path
+       id="circle4270"
+       style="fill:none;stroke:#e0e0e0;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       sodipodi:type="arc"
+       sodipodi:cx="4"
+       sodipodi:cy="1048.3622"
+       sodipodi:rx="9"
+       sodipodi:ry="9"
+       sodipodi:start="4.712389"
+       sodipodi:end="0"
+       sodipodi:open="true"
+       sodipodi:arc-type="arc"
+       d="m 4.0000002,1039.3622 a 9,9 0 0 1 8.9999998,9" />
   </g>
 </svg>
