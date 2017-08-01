@@ -66,7 +66,8 @@ void AudioDriver::audio_server_process(int p_frames, int32_t *p_buffer, bool p_u
 void AudioDriver::update_mix_time(int p_frames) {
 
 	_mix_amount += p_frames;
-	_last_mix_time = OS::get_singleton()->get_ticks_usec();
+	if (OS::get_singleton())
+		_last_mix_time = OS::get_singleton()->get_ticks_usec();
 }
 
 double AudioDriver::get_mix_time() const {
