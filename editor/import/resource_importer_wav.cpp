@@ -291,7 +291,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 
 	bool limit_rate = p_options["force/max_rate"];
 	int limit_rate_hz = p_options["force/max_rate_hz"];
-	if (limit_rate && rate > limit_rate_hz) {
+	if (limit_rate && rate > limit_rate_hz && rate > 0 && frames > 0) {
 		//resampleeee!!!
 		int new_data_frames = frames * limit_rate_hz / rate;
 		Vector<float> new_data;
@@ -356,7 +356,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 
 	bool trim = p_options["edit/trim"];
 
-	if (trim && !loop) {
+	if (trim && !loop && format_channels > 0) {
 
 		int first = 0;
 		int last = (frames * format_channels) - 1;
