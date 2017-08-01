@@ -1605,7 +1605,6 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 
 				int plus = 1;
 				while (i + plus < columns.size() && !p_item->cells[i + plus].editable && p_item->cells[i + plus].mode == TreeItem::CELL_MODE_STRING && p_item->cells[i + plus].text == "" && p_item->cells[i + plus].icon.is_null()) {
-					plus++;
 					col_width += cache.hseparation;
 					col_width += get_column_width(i + plus);
 					plus++;
