@@ -36,6 +36,7 @@
 #ifndef GLES2_INCLUDE_H
 #include <GLES2/gl2.h>
 #else
+// cppcheck-suppress *
 #include GLES2_INCLUDE_H
 #endif
 

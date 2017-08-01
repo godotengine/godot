@@ -46,7 +46,7 @@ struct DictionaryPrivate {
 
 	SafeRefCount refcount;
 	HashMap<Variant, Data, _DictionaryVariantHash> variant_map;
-	int counter;
+	int counter = 0;
 };
 
 struct DictionaryPrivateSort {

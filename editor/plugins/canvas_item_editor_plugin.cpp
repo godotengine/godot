@@ -2208,6 +2208,7 @@ void CanvasItemEditor::_find_canvas_items_span(Node *p_node, Rect2 &r_rect, cons
 			if (!bone_list.has(id)) {
 				BoneList bone;
 				bone.bone = id;
+				bone.last_pass = 0;
 				bone_list[id] = bone;
 			}
 

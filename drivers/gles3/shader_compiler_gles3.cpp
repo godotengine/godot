@@ -241,11 +241,13 @@ void ShaderCompilerGLES3::_dump_function_deps(SL::ShaderNode *p_node, const Stri
 		r_to_add += "\n";
 
 		String header;
+		// cppcheck-suppress nullPointerDefaultArg
 		header = _typestr(fnode->return_type) + " " + _mkid(fnode->name) + "(";
 		for (int i = 0; i < fnode->arguments.size(); i++) {
 
 			if (i > 0)
 				header += ", ";
+			// cppcheck-suppress nullPointerDefaultArg
 			header += _qualstr(fnode->arguments[i].qualifier) + _prestr(fnode->arguments[i].precision) + _typestr(fnode->arguments[i].type) + " " + _mkid(fnode->arguments[i].name);
 		}
 
