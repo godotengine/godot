@@ -236,7 +236,7 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 		format |= StreamTexture::FORMAT_BIT_DETECT_NORMAL;
 
 	if ((p_compress_mode == COMPRESS_LOSSLESS || p_compress_mode == COMPRESS_LOSSY) && p_image->get_format() > Image::FORMAT_RGBA8) {
-		p_compress_mode == COMPRESS_UNCOMPRESSED; //these can't go as lossy
+		p_compress_mode = COMPRESS_UNCOMPRESSED; //these can't go as lossy
 	}
 
 	switch (p_compress_mode) {
