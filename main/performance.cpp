@@ -117,8 +117,8 @@ float Performance::get_monitor(Monitor p_monitor) const {
 		case TIME_FIXED_PROCESS: return _fixed_process_time;
 		case MEMORY_STATIC: return Memory::get_mem_usage();
 		case MEMORY_DYNAMIC: return MemoryPool::total_memory;
-		case MEMORY_STATIC_MAX: return MemoryPool::max_memory;
-		case MEMORY_DYNAMIC_MAX: return 0;
+		case MEMORY_STATIC_MAX: return Memory::get_mem_max_usage();
+		case MEMORY_DYNAMIC_MAX: return MemoryPool::max_memory;
 		case MEMORY_MESSAGE_BUFFER_MAX: return MessageQueue::get_singleton()->get_max_buffer_usage();
 		case OBJECT_COUNT: return ObjectDB::get_object_count();
 		case OBJECT_RESOURCE_COUNT: return ResourceCache::get_cached_resource_count();
