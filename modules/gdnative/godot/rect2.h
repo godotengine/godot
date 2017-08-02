@@ -43,8 +43,8 @@ typedef struct godot_rect2 {
 } godot_rect2;
 #endif
 
-#include "gdnative.h"
-#include "vector2.h"
+#include <godot/gdnative.h>
+#include <godot/vector2.h>
 
 void GDAPI godot_rect2_new_with_position_and_size(godot_rect2 *r_dest, const godot_vector2 *p_pos, const godot_vector2 *p_size);
 void GDAPI godot_rect2_new(godot_rect2 *r_dest, const godot_real p_x, const godot_real p_y, const godot_real p_width, const godot_real p_height);

@@ -45,9 +45,9 @@ typedef struct {
 } godot_transform2d;
 #endif
 
-#include "gdnative.h"
-#include "variant.h"
-#include "vector2.h"
+#include <godot/gdnative.h>
+#include <godot/variant.h>
+#include <godot/vector2.h>
 
 void GDAPI godot_transform2d_new(godot_transform2d *r_dest, const godot_real p_rot, const godot_vector2 *p_pos);
 void GDAPI godot_transform2d_new_axis_origin(godot_transform2d *r_dest, const godot_vector2 *p_x_axis, const godot_vector2 *p_y_axis, const godot_vector2 *p_origin);

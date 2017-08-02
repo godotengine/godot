@@ -99,25 +99,25 @@ typedef struct godot_variant_call_error {
 	godot_variant_type expected;
 } godot_variant_call_error;
 
-#include "array.h"
-#include "basis.h"
-#include "color.h"
-#include "dictionary.h"
-#include "node_path.h"
-#include "plane.h"
-#include "pool_arrays.h"
-#include "quat.h"
-#include "rect2.h"
-#include "rect3.h"
-#include "rid.h"
-#include "string.h"
-#include "transform.h"
-#include "transform2d.h"
-#include "variant.h"
-#include "vector2.h"
-#include "vector3.h"
+#include <godot/array.h>
+#include <godot/basis.h>
+#include <godot/color.h>
+#include <godot/dictionary.h>
+#include <godot/node_path.h>
+#include <godot/plane.h>
+#include <godot/pool_arrays.h>
+#include <godot/quat.h>
+#include <godot/rect2.h>
+#include <godot/rect3.h>
+#include <godot/rid.h>
+#include <godot/string.h>
+#include <godot/transform.h>
+#include <godot/transform2d.h>
+#include <godot/variant.h>
+#include <godot/vector2.h>
+#include <godot/vector3.h>
 
-#include "gdnative.h"
+#include <godot/gdnative.h>
 
 godot_variant_type GDAPI godot_variant_get_type(const godot_variant *p_v);
 

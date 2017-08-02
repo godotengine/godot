@@ -45,8 +45,8 @@ typedef struct {
 } godot_vector3;
 #endif
 
-#include "basis.h"
-#include "gdnative.h"
+#include <godot/basis.h>
+#include <godot/gdnative.h>
 
 typedef enum {
 	GODOT_VECTOR3_AXIS_X,

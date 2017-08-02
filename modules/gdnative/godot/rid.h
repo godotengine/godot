@@ -45,7 +45,7 @@ typedef struct {
 } godot_rid;
 #endif
 
-#include "gdnative.h"
+#include <godot/gdnative.h>
 
 void GDAPI godot_rid_new(godot_rid *r_dest);
 

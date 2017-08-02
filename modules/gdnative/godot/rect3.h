@@ -45,9 +45,9 @@ typedef struct {
 } godot_rect3;
 #endif
 
-#include "gdnative.h"
-#include "plane.h"
-#include "vector3.h"
+#include <godot/gdnative.h>
+#include <godot/plane.h>
+#include <godot/vector3.h>
 
 void GDAPI godot_rect3_new(godot_rect3 *r_dest, const godot_vector3 *p_pos, const godot_vector3 *p_size);
 

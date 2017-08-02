@@ -113,12 +113,12 @@ typedef struct {
 } godot_pool_color_array;
 #endif
 
-#include "array.h"
-#include "color.h"
-#include "vector2.h"
-#include "vector3.h"
+#include <godot/array.h>
+#include <godot/color.h>
+#include <godot/vector2.h>
+#include <godot/vector3.h>
 
-#include "gdnative.h"
+#include <godot/gdnative.h>
 
 // byte
 

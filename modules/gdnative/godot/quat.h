@@ -45,8 +45,8 @@ typedef struct {
 } godot_quat;
 #endif
 
-#include "gdnative.h"
-#include "vector3.h"
+#include <godot/gdnative.h>
+#include <godot/vector3.h>
 
 void GDAPI godot_quat_new(godot_quat *r_dest, const godot_real p_x, const godot_real p_y, const godot_real p_z, const godot_real p_w);
 void GDAPI godot_quat_new_with_axis_angle(godot_quat *r_dest, const godot_vector3 *p_axis, const godot_real p_angle);

@@ -45,10 +45,10 @@ typedef struct {
 } godot_transform;
 #endif
 
-#include "basis.h"
-#include "gdnative.h"
-#include "variant.h"
-#include "vector3.h"
+#include <godot/basis.h>
+#include <godot/gdnative.h>
+#include <godot/variant.h>
+#include <godot/vector3.h>
 
 void GDAPI godot_transform_new_with_axis_origin(godot_transform *r_dest, const godot_vector3 *p_x_axis, const godot_vector3 *p_y_axis, const godot_vector3 *p_z_axis, const godot_vector3 *p_origin);
 void GDAPI godot_transform_new(godot_transform *r_dest, const godot_basis *p_basis, const godot_vector3 *p_origin);

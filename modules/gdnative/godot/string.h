@@ -46,7 +46,7 @@ typedef struct {
 } godot_string;
 #endif
 
-#include "gdnative.h"
+#include <godot/gdnative.h>
 
 void GDAPI godot_string_new(godot_string *r_dest);
 void GDAPI godot_string_new_copy(godot_string *r_dest, const godot_string *p_src);
