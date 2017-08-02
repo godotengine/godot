@@ -46,10 +46,10 @@ typedef struct {
 } godot_array;
 #endif
 
-#include "pool_arrays.h"
-#include "variant.h"
+#include <godot/pool_arrays.h>
+#include <godot/variant.h>
 
-#include "gdnative.h"
+#include <godot/gdnative.h>
 
 void GDAPI godot_array_new(godot_array *r_dest);
 void GDAPI godot_array_new_copy(godot_array *r_dest, const godot_array *p_src);

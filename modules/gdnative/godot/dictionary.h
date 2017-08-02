@@ -45,9 +45,9 @@ typedef struct {
 } godot_dictionary;
 #endif
 
-#include "array.h"
-#include "gdnative.h"
-#include "variant.h"
+#include <godot/array.h>
+#include <godot/gdnative.h>
+#include <godot/variant.h>
 
 void GDAPI godot_dictionary_new(godot_dictionary *r_dest);
 void GDAPI godot_dictionary_new_copy(godot_dictionary *r_dest, const godot_dictionary *p_src);

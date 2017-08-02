@@ -27,9 +27,9 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "vector3.h"
-#include "core/variant.h"
+#include <godot/vector3.h>
 
+#include "core/variant.h"
 #include "core/vector.h"
 
 #ifdef __cplusplus

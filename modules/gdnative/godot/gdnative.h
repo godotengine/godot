@@ -174,72 +174,72 @@ typedef struct godot_pool_color_array godot_pool_color_array;
 */
 /////// String
 
-#include "string.h"
+#include <godot/string.h>
 
 ////// Vector2
 
-#include "vector2.h"
+#include <godot/vector2.h>
 
 ////// Rect2
 
-#include "rect2.h"
+#include <godot/rect2.h>
 
 ////// Vector3
 
-#include "vector3.h"
+#include <godot/vector3.h>
 
 ////// Transform2D
 
-#include "transform2d.h"
+#include <godot/transform2d.h>
 
 /////// Plane
 
-#include "plane.h"
+#include <godot/plane.h>
 
 /////// Quat
 
-#include "quat.h"
+#include <godot/quat.h>
 
 /////// Rect3
 
-#include "rect3.h"
+#include <godot/rect3.h>
 
 /////// Basis
 
-#include "basis.h"
+#include <godot/basis.h>
 
 /////// Transform
 
-#include "transform.h"
+#include <godot/transform.h>
 
 /////// Color
 
-#include "color.h"
+#include <godot/color.h>
 
 /////// NodePath
 
-#include "node_path.h"
+#include <godot/node_path.h>
 
 /////// RID
 
-#include "rid.h"
+#include <godot/rid.h>
 
 /////// Dictionary
 
-#include "dictionary.h"
+#include <godot/dictionary.h>
 
 /////// Array
 
-#include "array.h"
+#include <godot/array.h>
 
 // single API file for Pool*Array
-#include "pool_arrays.h"
+#include <godot/pool_arrays.h>
 
 void GDAPI godot_object_destroy(godot_object *p_o);
 
 ////// Variant
 
-#include "variant.h"
+#include <godot/variant.h>
 
 ////// Singleton API
 

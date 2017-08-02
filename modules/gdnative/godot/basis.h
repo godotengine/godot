@@ -45,9 +45,9 @@ typedef struct {
 } godot_basis;
 #endif
 
-#include "gdnative.h"
-#include "quat.h"
-#include "vector3.h"
+#include <godot/gdnative.h>
+#include <godot/quat.h>
+#include <godot/vector3.h>
 
 void GDAPI godot_basis_new_with_rows(godot_basis *r_dest, const godot_vector3 *p_x_axis, const godot_vector3 *p_y_axis, const godot_vector3 *p_z_axis);
 void GDAPI godot_basis_new_with_axis_and_angle(godot_basis *r_dest, const godot_vector3 *p_axis, const godot_real p_phi);

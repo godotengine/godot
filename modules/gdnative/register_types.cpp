@@ -76,4 +76,26 @@ void register_gdnative_types() {
 
 void unregister_gdnative_types() {
 	memdelete(GDNativeCallRegistry::singleton);
+
+	// This is for printing out the sizes of the core types
+
+	/*
+	print_line(String("array:\t")     + itos(sizeof(Array)));
+	print_line(String("basis:\t")     + itos(sizeof(Basis)));
+	print_line(String("color:\t")     + itos(sizeof(Color)));
+	print_line(String("dict:\t" )     + itos(sizeof(Dictionary)));
+	print_line(String("node_path:\t") + itos(sizeof(NodePath)));
+	print_line(String("plane:\t")     + itos(sizeof(Plane)));
+	print_line(String("poolarray:\t") + itos(sizeof(PoolByteArray)));
+	print_line(String("quat:\t")      + itos(sizeof(Quat)));
+	print_line(String("rect2:\t")     + itos(sizeof(Rect2)));
+	print_line(String("rect3:\t")     + itos(sizeof(Rect3)));
+	print_line(String("rid:\t")       + itos(sizeof(RID)));
+	print_line(String("string:\t")    + itos(sizeof(String)));
+	print_line(String("transform:\t") + itos(sizeof(Transform)));
+	print_line(String("transfo2D:\t") + itos(sizeof(Transform2D)));
+	print_line(String("variant:\t")   + itos(sizeof(Variant)));
+	print_line(String("vector2:\t")   + itos(sizeof(Vector2)));
+	print_line(String("vector3:\t")   + itos(sizeof(Vector3)));
+	*/
 }

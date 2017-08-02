@@ -27,10 +27,10 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "rect3.h"
-#include "core/variant.h"
+#include <godot/rect3.h>
 
 #include "core/math/rect3.h"
+#include "core/variant.h"
 
 #ifdef __cplusplus
 extern "C" {

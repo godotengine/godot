@@ -45,7 +45,7 @@ typedef struct {
 } godot_vector2;
 #endif
 
-#include "gdnative.h"
+#include <godot/gdnative.h>
 
 void GDAPI godot_vector2_new(godot_vector2 *r_dest, const godot_real p_x, const godot_real p_y);
 

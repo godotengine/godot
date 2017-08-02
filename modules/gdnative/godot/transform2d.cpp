@@ -27,10 +27,10 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "transform2d.h"
-#include "core/variant.h"
+#include <godot/transform2d.h>
 
 #include "core/math/math_2d.h"
+#include "core/variant.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -27,11 +27,11 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "rid.h"
-#include "core/variant.h"
+#include <godot/rid.h>
 
 #include "core/resource.h"
 #include "core/rid.h"
+#include "core/variant.h"
 
 #ifdef __cplusplus
 extern "C" {
