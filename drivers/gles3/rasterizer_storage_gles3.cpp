@@ -6905,7 +6905,11 @@ void RasterizerStorageGLES3::initialize() {
 	config.s3tc_supported = config.extensions.has("GL_EXT_texture_compression_dxt1") || config.extensions.has("GL_EXT_texture_compression_s3tc") || config.extensions.has("WEBGL_compressed_texture_s3tc");
 	config.etc_supported = config.extensions.has("GL_OES_compressed_ETC1_RGB8_texture");
 	config.latc_supported = config.extensions.has("GL_EXT_texture_compression_latc");
-	config.rgtc_supported = config.extensions.has("GL_EXT_texture_compression_rgtc");
+#ifdef OSX_ENABLED
+	config.rgtc_supported = true;
+#else
+	config.rgtc_supported = config.extensions.has("GL_EXT_texture_compression_rgtc") || config.extensions.has("GL_ARB_texture_compression_rgtc");
+#endif
 	config.bptc_supported = config.extensions.has("GL_ARB_texture_compression_bptc");
 #ifdef GLES_OVER_GL
 	config.hdr_supported = true;
