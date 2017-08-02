@@ -1879,6 +1879,30 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
+void CanvasItemEditor::_draw_percentage_at_position(float p_value, Point2 p_position, Margin p_side) {
+	if (p_value != 0) {
+		Color color = Color(0.8, 0.8, 0.8, 0.5);
+		Ref<Font> font = get_font("font", "Label");
+		String str = vformat("%.1f %%", p_value * 100.0);
+		Size2 text_size = font->get_string_size(str);
+		switch (p_side) {
+			case MARGIN_LEFT:
+				p_position += Vector2(-text_size.x - 5, text_size.y / 2);
+				break;
+			case MARGIN_TOP:
+				p_position += Vector2(-text_size.x / 2, -5);
+				break;
+			case MARGIN_RIGHT:
+				p_position += Vector2(5, text_size.y / 2);
+				break;
+			case MARGIN_BOTTOM:
+				p_position += Vector2(-text_size.x / 2, text_size.y + 5);
+				break;
+		}
+		viewport->draw_string(font, p_position, str, color);
+	}
+}
+
 void CanvasItemEditor::_viewport_draw() {
 
 	// TODO fetch the viewport?
@@ -2034,14 +2058,33 @@ void CanvasItemEditor::_viewport_draw() {
 							corners_pos[i] = xform.xform(_anchor_to_position(control, Vector2((i == 0 || i == 3) ? ANCHOR_BEGIN : ANCHOR_END, (i <= 1) ? ANCHOR_BEGIN : ANCHOR_END)));
 						}
 
+						Vector2 line_starts[4];
+						Vector2 line_ends[4];
 						for (int i = 0; i < 4; i++) {
 							float anchor_val = (i >= 2) ? ANCHOR_END - anchors_values[i] : anchors_values[i];
-							Vector2 line_start = Vector2::linear_interpolate(corners_pos[i], corners_pos[(i + 1) % 4], anchor_val);
-							Vector2 line_end = Vector2::linear_interpolate(corners_pos[(i + 3) % 4], corners_pos[(i + 2) % 4], anchor_val);
+							line_starts[i] = Vector2::linear_interpolate(corners_pos[i], corners_pos[(i + 1) % 4], anchor_val);
+							line_ends[i] = Vector2::linear_interpolate(corners_pos[(i + 3) % 4], corners_pos[(i + 2) % 4], anchor_val);
 							_anchor_snap(anchors_values[i], &snapped);
-							viewport->draw_line(line_start, line_end, snapped ? color_snapped : color_base, (i == dragged_anchor || (i + 3) % 4 == dragged_anchor) ? 2 : 1);
+							viewport->draw_line(line_starts[i], line_ends[i], snapped ? color_snapped : color_base, (i == dragged_anchor || (i + 3) % 4 == dragged_anchor) ? 2 : 1);
 						}
 
+						// Display the percentages next to the lines
+						float percent_val;
+						percent_val = anchors_values[(dragged_anchor + 2) % 4] - anchors_values[dragged_anchor];
+						percent_val = (dragged_anchor >= 2) ? -percent_val : percent_val;
+						_draw_percentage_at_position(percent_val, (anchors_pos[dragged_anchor] + anchors_pos[(dragged_anchor + 1) % 4]) / 2, (Margin)((dragged_anchor + 1) % 4));
+
+						percent_val = anchors_values[(dragged_anchor + 3) % 4] - anchors_values[(dragged_anchor + 1) % 4];
+						percent_val = ((dragged_anchor + 1) % 4 >= 2) ? -percent_val : percent_val;
+						_draw_percentage_at_position(percent_val, (anchors_pos[dragged_anchor] + anchors_pos[(dragged_anchor + 3) % 4]) / 2, (Margin)(dragged_anchor));
+
+						percent_val = anchors_values[(dragged_anchor + 1) % 4];
+						percent_val = ((dragged_anchor + 1) % 4 >= 2) ? ANCHOR_END - percent_val : percent_val;
+						_draw_percentage_at_position(percent_val, (line_starts[dragged_anchor] + anchors_pos[dragged_anchor]) / 2, (Margin)(dragged_anchor));
+
+						percent_val = anchors_values[dragged_anchor];
+						percent_val = (dragged_anchor >= 2) ? ANCHOR_END - percent_val : percent_val;
+						_draw_percentage_at_position(percent_val, (line_ends[(dragged_anchor + 1) % 4] + anchors_pos[dragged_anchor]) / 2, (Margin)((dragged_anchor + 1) % 4));
 					}
 
 					Rect2 anchor_rects[4];
