@@ -3051,6 +3051,11 @@ void RasterizerSceneGLES3::_fill_render_list(InstanceBase **p_cull_result, int p
 			} break;
 			case VS::INSTANCE_IMMEDIATE: {
 
+				RasterizerStorageGLES3::Immediate *immediate = storage->immediate_owner.getptr(inst->base);
+				ERR_CONTINUE(!immediate);
+
+				_add_geometry(immediate,inst,NULL,-1,p_shadow);
+
 			} break;
 			case VS::INSTANCE_PARTICLES: {
 
