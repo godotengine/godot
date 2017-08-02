@@ -110,6 +110,7 @@
 // end
 #include "editor_settings.h"
 #include "import/editor_import_collada.h"
+#include "import/editor_scene_importer_gltf.h"
 #include "io_plugins/editor_bitmask_import_plugin.h"
 #include "io_plugins/editor_export_scene.h"
 #include "io_plugins/editor_font_import_plugin.h"
@@ -5151,6 +5152,10 @@ EditorNode::EditorNode() {
 			Ref<EditorOBJImporter> import_obj;
 			import_obj.instance();
 			import_scene->add_importer(import_obj);
+
+			Ref<EditorSceneImporterGLTF> import_gltf;
+			import_gltf.instance();
+			import_scene->add_importer(import_gltf);
 		}
 	}
 

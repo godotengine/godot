@@ -234,6 +234,14 @@ void SpatialMaterial::init_shaders() {
 
 	shader_names->grow = "grow";
 
+	shader_names->metallic_texture_channel = "metallic_texture_channel";
+	shader_names->roughness_texture_channel = "roughness_texture_channel";
+	shader_names->ao_texture_channel = "ao_texture_channel";
+	shader_names->clearcoat_texture_channel = "clearcoat_texture_channel";
+	shader_names->rim_texture_channel = "rim_texture_channel";
+	shader_names->depth_texture_channel = "depth_texture_channel";
+	shader_names->refraction_texture_channel = "refraction_texture_channel";
+
 	shader_names->texture_names[TEXTURE_ALBEDO] = "texture_albedo";
 	shader_names->texture_names[TEXTURE_METALLIC] = "texture_metallic";
 	shader_names->texture_names[TEXTURE_ROUGHNESS] = "texture_roughness";
@@ -354,7 +362,9 @@ void SpatialMaterial::_update_shader() {
 	code += "uniform float roughness : hint_range(0,1);\n";
 	code += "uniform float point_size : hint_range(0,128);\n";
 	code += "uniform sampler2D texture_metallic : hint_white;\n";
+	code += "uniform vec4 metallic_texture_channel;\n";
 	code += "uniform sampler2D texture_roughness : hint_white;\n";
+	code += "uniform vec4 roughness_texture_channel;\n";
 	if (billboard_mode == BILLBOARD_PARTICLES) {
 		code += "uniform int particles_anim_h_frames;\n";
 		code += "uniform int particles_anim_v_frames;\n";
@@ -371,6 +381,7 @@ void SpatialMaterial::_update_shader() {
 	if (features[FEATURE_REFRACTION]) {
 		code += "uniform sampler2D texture_refraction;\n";
 		code += "uniform float refraction : hint_range(-16,16);\n";
+		code += "uniform vec4 refraction_texture_channel;\n";
 	}
 
 	if (features[FEATURE_NORMAL_MAPPING]) {
@@ -393,6 +404,7 @@ void SpatialMaterial::_update_shader() {
 	}
 	if (features[FEATURE_AMBIENT_OCCLUSION]) {
 		code += "uniform sampler2D texture_ambient_occlusion : hint_white;\n";
+		code += "uniform vec4 ao_texture_channel;\n";
 	}
 
 	if (features[FEATURE_DETAIL]) {
@@ -617,15 +629,15 @@ void SpatialMaterial::_update_shader() {
 
 	code += "\tALBEDO = albedo.rgb * albedo_tex.rgb;\n";
 	if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-		code += "\tfloat metallic_tex = triplanar_texture(texture_metallic,uv1_power_normal,uv1_world_pos).r;\n";
+		code += "\tfloat metallic_tex = dot(triplanar_texture(texture_metallic,uv1_power_normal,uv1_world_pos),metallic_texture_channel);\n";
 	} else {
-		code += "\tfloat metallic_tex = texture(texture_metallic,base_uv).r;\n";
+		code += "\tfloat metallic_tex = dot(texture(texture_metallic,base_uv),metallic_texture_channel);\n";
 	}
 	code += "\tMETALLIC = metallic_tex * metallic;\n";
 	if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-		code += "\tfloat roughness_tex = triplanar_texture(texture_roughness,uv1_power_normal,uv1_world_pos).r;\n";
+		code += "\tfloat roughness_tex = dot(triplanar_texture(texture_roughness,uv1_power_normal,uv1_world_pos),roughness_texture_channel);\n";
 	} else {
-		code += "\tfloat roughness_tex = texture(texture_roughness,base_uv).r;\n";
+		code += "\tfloat roughness_tex = dot(texture(texture_roughness,base_uv),roughness_texture_channel);\n";
 	}
 	code += "\tROUGHNESS = roughness_tex * roughness;\n";
 	code += "\tSPECULAR = specular;\n";
@@ -656,7 +668,7 @@ void SpatialMaterial::_update_shader() {
 			code += "\tvec3 ref_normal = NORMAL;\n";
 		}
 
-		code += "\tvec2 ref_ofs = SCREEN_UV - ref_normal.xy * texture(texture_refraction,base_uv).r * refraction;\n";
+		code += "\tvec2 ref_ofs = SCREEN_UV - ref_normal.xy * dot(texture(texture_refraction,base_uv),refraction_texture_channel) * refraction;\n";
 		code += "\tfloat ref_amount = 1.0 - albedo.a * albedo_tex.a;\n";
 		code += "\tEMISSION += textureLod(SCREEN_TEXTURE,ref_ofs,ROUGHNESS * 8.0).rgb * ref_amount;\n";
 		code += "\tALBEDO *= 1.0 - ref_amount;\n";
@@ -699,15 +711,15 @@ void SpatialMaterial::_update_shader() {
 	if (features[FEATURE_AMBIENT_OCCLUSION]) {
 		if (flags[FLAG_AO_ON_UV2]) {
 			if (flags[FLAG_UV2_USE_TRIPLANAR]) {
-				code += "\tAO = triplanar_texture(texture_ambient_occlusion,uv2_power_normal,uv2_world_pos).r;\n";
+				code += "\tAO = dot(triplanar_texture(texture_ambient_occlusion,uv2_power_normal,uv2_world_pos),ao_texture_channel);\n";
 			} else {
-				code += "\tAO = texture(texture_ambient_occlusion,base_uv2).r;\n";
+				code += "\tAO = dot(texture(texture_ambient_occlusion,base_uv2),ao_texture_channel);\n";
 			}
 		} else {
 			if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-				code += "\tAO = triplanar_texture(texture_ambient_occlusion,uv1_power_normal,uv1_world_pos).r;\n";
+				code += "\tAO = dot(triplanar_texture(texture_ambient_occlusion,uv1_power_normal,uv1_world_pos),ao_texture_channel);\n";
 			} else {
-				code += "\tAO = texture(texture_ambient_occlusion,base_uv).r;\n";
+				code += "\tAO = dot(texture(texture_ambient_occlusion,base_uv),ao_texture_channel);\n";
 			}
 		}
 	}
@@ -1327,6 +1339,58 @@ float SpatialMaterial::get_grow() const {
 	return grow;
 }
 
+static Plane _get_texture_mask(SpatialMaterial::TextureChannel p_channel) {
+	static const Plane masks[5] = {
+		Plane(1, 0, 0, 0),
+		Plane(0, 1, 0, 0),
+		Plane(0, 0, 1, 0),
+		Plane(0, 0, 0, 1),
+		Plane(0.3333333, 0.3333333, 0.3333333, 0),
+	};
+
+	return masks[p_channel];
+}
+
+void SpatialMaterial::set_metallic_texture_channel(TextureChannel p_channel) {
+
+	metallic_texture_channel = p_channel;
+	VS::get_singleton()->material_set_param(_get_material(), shader_names->metallic_texture_channel, _get_texture_mask(p_channel));
+}
+
+SpatialMaterial::TextureChannel SpatialMaterial::get_metallic_texture_channel() const {
+	return metallic_texture_channel;
+}
+
+void SpatialMaterial::set_roughness_texture_channel(TextureChannel p_channel) {
+
+	roughness_texture_channel = p_channel;
+	VS::get_singleton()->material_set_param(_get_material(), shader_names->roughness_texture_channel, _get_texture_mask(p_channel));
+}
+
+SpatialMaterial::TextureChannel SpatialMaterial::get_roughness_texture_channel() const {
+	return roughness_texture_channel;
+}
+
+void SpatialMaterial::set_ao_texture_channel(TextureChannel p_channel) {
+
+	ao_texture_channel = p_channel;
+	VS::get_singleton()->material_set_param(_get_material(), shader_names->ao_texture_channel, _get_texture_mask(p_channel));
+}
+
+SpatialMaterial::TextureChannel SpatialMaterial::get_ao_texture_channel() const {
+	return ao_texture_channel;
+}
+
+void SpatialMaterial::set_refraction_texture_channel(TextureChannel p_channel) {
+
+	refraction_texture_channel = p_channel;
+	VS::get_singleton()->material_set_param(_get_material(), shader_names->refraction_texture_channel, _get_texture_mask(p_channel));
+}
+
+SpatialMaterial::TextureChannel SpatialMaterial::get_refraction_texture_channel() const {
+	return refraction_texture_channel;
+}
+
 void SpatialMaterial::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_albedo", "albedo"), &SpatialMaterial::set_albedo);
@@ -1455,6 +1519,18 @@ void SpatialMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_grow_enabled", "enable"), &SpatialMaterial::set_grow_enabled);
 	ClassDB::bind_method(D_METHOD("is_grow_enabled"), &SpatialMaterial::is_grow_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_metallic_texture_channel", "channel"), &SpatialMaterial::set_metallic_texture_channel);
+	ClassDB::bind_method(D_METHOD("get_metallic_texture_channel"), &SpatialMaterial::get_metallic_texture_channel);
+
+	ClassDB::bind_method(D_METHOD("set_roughness_texture_channel", "channel"), &SpatialMaterial::set_roughness_texture_channel);
+	ClassDB::bind_method(D_METHOD("get_roughness_texture_channel"), &SpatialMaterial::get_roughness_texture_channel);
+
+	ClassDB::bind_method(D_METHOD("set_ao_texture_channel", "channel"), &SpatialMaterial::set_ao_texture_channel);
+	ClassDB::bind_method(D_METHOD("get_ao_texture_channel"), &SpatialMaterial::get_ao_texture_channel);
+
+	ClassDB::bind_method(D_METHOD("set_refraction_texture_channel", "channel"), &SpatialMaterial::set_refraction_texture_channel);
+	ClassDB::bind_method(D_METHOD("get_refraction_texture_channel"), &SpatialMaterial::get_refraction_texture_channel);
+
 	ADD_GROUP("Flags", "flags_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_transparent"), "set_feature", "get_feature", FEATURE_TRANSPARENT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_unshaded"), "set_flag", "get_flag", FLAG_UNSHADED);
@@ -1490,10 +1566,12 @@ void SpatialMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "metallic", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_metallic", "get_metallic");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "metallic_specular", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_specular", "get_specular");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "metallic_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture", TEXTURE_METALLIC);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "metallic_texture_channel", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Gray"), "set_metallic_texture_channel", "get_metallic_texture_channel");
 
 	ADD_GROUP("Roughness", "roughness_");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "roughness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_roughness", "get_roughness");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "roughness_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture", TEXTURE_ROUGHNESS);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "roughness_texture_channel", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Gray"), "set_roughness_texture_channel", "get_roughness_texture_channel");
 
 	ADD_GROUP("Emission", "emission_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "emission_enabled"), "set_feature", "get_feature", FEATURE_EMISSION);
@@ -1527,6 +1605,7 @@ void SpatialMaterial::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "ao_enabled"), "set_feature", "get_feature", FEATURE_AMBIENT_OCCLUSION);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "ao_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture", TEXTURE_AMBIENT_OCCLUSION);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "ao_on_uv2"), "set_flag", "get_flag", FLAG_AO_ON_UV2);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "ao_texture_channel", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Gray"), "set_ao_texture_channel", "get_ao_texture_channel");
 
 	ADD_GROUP("Depth", "depth_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "depth_enabled"), "set_feature", "get_feature", FEATURE_DEPTH_MAPPING);
@@ -1545,6 +1624,7 @@ void SpatialMaterial::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "refraction_enabled"), "set_feature", "get_feature", FEATURE_REFRACTION);
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "refraction_scale", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_refraction", "get_refraction");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "refraction_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture", TEXTURE_REFRACTION);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "refraction_texture_channel", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Gray"), "set_refraction_texture_channel", "get_refraction_texture_channel");
 
 	ADD_GROUP("Detail", "detail_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "detail_enabled"), "set_feature", "get_feature", FEATURE_DETAIL);
@@ -1638,6 +1718,12 @@ void SpatialMaterial::_bind_methods() {
 	BIND_CONSTANT(BILLBOARD_ENABLED);
 	BIND_CONSTANT(BILLBOARD_FIXED_Y);
 	BIND_CONSTANT(BILLBOARD_PARTICLES);
+
+	BIND_CONSTANT(TEXTURE_CHANNEL_RED);
+	BIND_CONSTANT(TEXTURE_CHANNEL_GREEN);
+	BIND_CONSTANT(TEXTURE_CHANNEL_BLUE);
+	BIND_CONSTANT(TEXTURE_CHANNEL_ALPHA);
+	BIND_CONSTANT(TEXTURE_CHANNEL_GRAYSCALE);
 }
 
 SpatialMaterial::SpatialMaterial()
@@ -1671,6 +1757,11 @@ SpatialMaterial::SpatialMaterial()
 	set_particles_anim_h_frames(1);
 	set_particles_anim_v_frames(1);
 	set_particles_anim_loop(false);
+
+	set_metallic_texture_channel(TEXTURE_CHANNEL_RED);
+	set_roughness_texture_channel(TEXTURE_CHANNEL_RED);
+	set_ao_texture_channel(TEXTURE_CHANNEL_RED);
+	set_refraction_texture_channel(TEXTURE_CHANNEL_RED);
 
 	grow_enabled = false;
 	set_grow(0.0);

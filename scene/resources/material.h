@@ -190,6 +190,14 @@ public:
 		BILLBOARD_PARTICLES,
 	};
 
+	enum TextureChannel {
+		TEXTURE_CHANNEL_RED,
+		TEXTURE_CHANNEL_GREEN,
+		TEXTURE_CHANNEL_BLUE,
+		TEXTURE_CHANNEL_ALPHA,
+		TEXTURE_CHANNEL_GRAYSCALE
+	};
+
 private:
 	union MaterialKey {
 
@@ -283,6 +291,14 @@ private:
 		StringName uv2_blend_sharpness;
 		StringName grow;
 
+		StringName metallic_texture_channel;
+		StringName roughness_texture_channel;
+		StringName ao_texture_channel;
+		StringName clearcoat_texture_channel;
+		StringName rim_texture_channel;
+		StringName depth_texture_channel;
+		StringName refraction_texture_channel;
+
 		StringName texture_names[TEXTURE_MAX];
 	};
 
@@ -341,6 +357,11 @@ private:
 	SpecularMode specular_mode;
 	DiffuseMode diffuse_mode;
 	BillboardMode billboard_mode;
+
+	TextureChannel metallic_texture_channel;
+	TextureChannel roughness_texture_channel;
+	TextureChannel ao_texture_channel;
+	TextureChannel refraction_texture_channel;
 
 	bool features[FEATURE_MAX];
 
@@ -478,6 +499,15 @@ public:
 	void set_grow(float p_grow);
 	float get_grow() const;
 
+	void set_metallic_texture_channel(TextureChannel p_channel);
+	TextureChannel get_metallic_texture_channel() const;
+	void set_roughness_texture_channel(TextureChannel p_channel);
+	TextureChannel get_roughness_texture_channel() const;
+	void set_ao_texture_channel(TextureChannel p_channel);
+	TextureChannel get_ao_texture_channel() const;
+	void set_refraction_texture_channel(TextureChannel p_channel);
+	TextureChannel get_refraction_texture_channel() const;
+
 	static void init_shaders();
 	static void finish_shaders();
 	static void flush_changes();
@@ -496,6 +526,7 @@ VARIANT_ENUM_CAST(SpatialMaterial::Flags)
 VARIANT_ENUM_CAST(SpatialMaterial::DiffuseMode)
 VARIANT_ENUM_CAST(SpatialMaterial::SpecularMode)
 VARIANT_ENUM_CAST(SpatialMaterial::BillboardMode)
+VARIANT_ENUM_CAST(SpatialMaterial::TextureChannel)
 
 //////////////////////
 

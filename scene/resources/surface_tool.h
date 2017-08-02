@@ -80,6 +80,7 @@ private:
 	Vector<float> last_weights;
 	Plane last_tangent;
 
+	void _create_list_from_arrays(Array arr, List<Vertex> *r_vertex, List<int> *r_index, int &lformat);
 	void _create_list(const Ref<Mesh> &p_existing, int p_surface, List<Vertex> *r_vertex, List<int> *r_index, int &lformat);
 
 	//mikktspace callbacks
@@ -123,6 +124,8 @@ public:
 
 	List<Vertex> &get_vertex_array() { return vertex_array; }
 
+	void create_from_triangle_arrays(const Array &p_arrays);
+	Array commit_to_arrays();
 	void create_from(const Ref<Mesh> &p_existing, int p_surface);
 	void append_from(const Ref<Mesh> &p_existing, int p_surface, const Transform &p_xform);
 	Ref<ArrayMesh> commit(const Ref<ArrayMesh> &p_existing = Ref<ArrayMesh>());

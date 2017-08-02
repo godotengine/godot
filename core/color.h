@@ -140,8 +140,16 @@ struct Color {
 				b < 0.04045 ? b * (1.0 / 12.92) : Math::pow((b + 0.055) * (1.0 / (1 + 0.055)), 2.4),
 				a);
 	}
+	_FORCE_INLINE_ Color to_srgb() const {
 
-	static Color hex(uint32_t p_hex);
+		return Color(
+				r < 0.0031308 ? 12.92 * r : (1.0 + 0.055) * Math::pow(r, 1.0f / 2.4f) - 0.055,
+				g < 0.0031308 ? 12.92 * g : (1.0 + 0.055) * Math::pow(g, 1.0f / 2.4f) - 0.055,
+				b < 0.0031308 ? 12.92 * b : (1.0 + 0.055) * Math::pow(b, 1.0f / 2.4f) - 0.055, a);
+	}
+
+	static Color
+	hex(uint32_t p_hex);
 	static Color html(const String &p_color);
 	static bool html_is_valid(const String &p_color);
 	static Color named(const String &p_name);
