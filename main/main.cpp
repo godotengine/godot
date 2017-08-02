@@ -1704,7 +1704,6 @@ void Main::cleanup() {
 #endif
 
 	if (audio_server) {
-		audio_server->finish();
 		memdelete(audio_server);
 	}
 
