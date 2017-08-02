@@ -1192,10 +1192,6 @@ void OS_Windows::finalize() {
 
 	main_loop = NULL;
 
-	for (int i = 0; i < get_audio_driver_count(); i++) {
-		AudioDriverManager::get_driver(i)->finish();
-	}
-
 	memdelete(joypad);
 	memdelete(input);
 

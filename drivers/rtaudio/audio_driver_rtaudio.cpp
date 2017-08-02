@@ -79,7 +79,7 @@ int AudioDriverRtAudio::callback(void *outputBuffer, void *inputBuffer, unsigned
 Error AudioDriverRtAudio::init() {
 
 	active = false;
-	mutex = NULL;
+	mutex = Mutex::create(true);
 	dac = memnew(RtAudio);
 
 	ERR_EXPLAIN("Cannot initialize RtAudio audio driver: No devices present.")
@@ -136,7 +136,6 @@ Error AudioDriverRtAudio::init() {
 
 			try {
 				dac->openStream(&parameters, NULL, RTAUDIO_SINT32, mix_rate, &buffer_size, &callback, this, &options);
-				mutex = Mutex::create(true);
 				active = true;
 
 				break;
@@ -162,6 +161,7 @@ Error AudioDriverRtAudio::init() {
 
 			try {
 				dac->closeStream();
+				active = false;
 			} catch (RtAudioError &e) {
 				ERR_PRINT(e.what());
 				ERR_FAIL_V(ERR_UNAVAILABLE);
@@ -212,17 +212,27 @@ void AudioDriverRtAudio::unlock() {
 
 void AudioDriverRtAudio::finish() {
 
-	if (active && dac->isStreamOpen())
+	lock();
+	if (active && dac->isStreamOpen()) {
 		dac->closeStream();
-	if (mutex)
+		active = false;
+	}
+	unlock();
+
+	if (mutex) {
 		memdelete(mutex);
-	if (dac)
+		mutex = NULL;
+	}
+	if (dac) {
 		memdelete(dac);
+		dac = NULL;
+	}
 }
 
 AudioDriverRtAudio::AudioDriverRtAudio() {
 
 	mutex = NULL;
+	dac = NULL;
 	mix_rate = 44100;
 	speaker_mode = SPEAKER_MODE_STEREO;
 }

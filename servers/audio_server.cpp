@@ -772,10 +772,11 @@ void AudioServer::finish() {
 
 	buses.clear();
 
-	if (AudioDriver::get_singleton()) {
-		AudioDriver::get_singleton()->finish();
+	for (int i = 0; i < AudioDriverManager::get_driver_count(); i++) {
+		AudioDriverManager::get_driver(i)->finish();
 	}
 }
+
 void AudioServer::update() {
 }
 
