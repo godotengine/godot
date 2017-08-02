@@ -213,11 +213,6 @@ ScriptInstance *NativeScript::instance_create(Object *p_this) {
 	owners_lock->unlock();
 #endif
 
-	// try to call _init
-	// we don't care if it doesn't exist, so we ignore errors.
-	Variant::CallError err;
-	call("_init", NULL, 0, err);
-
 	return nsi;
 }
 

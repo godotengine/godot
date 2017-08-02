@@ -1,15 +1,13 @@
 #!/usr/bin/env python
 
 Import('env')
-Import('env_modules')
 
-mod_env = env_modules.Clone()
-mod_env.add_source_files(env.modules_sources, "*.cpp")
-mod_env.add_source_files(env.modules_sources, "godot/*.cpp")
+env.add_source_files(env.modules_sources, "*.cpp")
+env.add_source_files(env.modules_sources, "godot/*.cpp")
 
-mod_env.Append(CPPFLAGS=['-DGDAPI_BUILT_IN'])
-mod_env.Append(CPPPATH=['#modules/gdnative/'])
+env.Append(CPPFLAGS=['-DGDAPI_BUILT_IN'])
+env.Append(CPPPATH=['#modules/gdnative/'])
 
 if "platform" in env and env["platform"] == "x11": # there has to be a better solution?
-    mod_env.Append(LINKFLAGS=["-rdynamic"])
-mod_env.use_ptrcall = True
+    env.Append(LINKFLAGS=["-rdynamic"])
+env.use_ptrcall = True
