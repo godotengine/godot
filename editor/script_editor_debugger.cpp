@@ -997,6 +997,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 							msg.push_back("inspect_object");
 							msg.push_back(inspected_object_id);
 							ppeer->put_var(msg);
+							inspected_object_id = 0;
 						}
 					}
 				}
@@ -1010,6 +1011,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 						msg.push_back("inspect_object");
 						msg.push_back(inspected_object_id);
 						ppeer->put_var(msg);
+						inspected_object_id = 0;
 					}
 				}
 			}
