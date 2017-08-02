@@ -775,25 +775,30 @@ CanvasItemEditor::DragType CanvasItemEditor::_get_resize_handle_drag_type(const 
 	return DRAG_NONE;
 }
 
-float CanvasItemEditor::_anchor_snap(const float anchor, bool *snapped) {
-	float result = anchor;
-	if (snapped)
-		*snapped = false;
+float CanvasItemEditor::_anchor_snap(float p_anchor, bool *p_snapped, float p_opposite_anchor) {
+	bool snapped = false;
+	float dist, dist_min = 0.0;
 	float radius = 0.05 / zoom;
-	if (fabs(result - ANCHOR_BEGIN) < radius) {
-		result = ANCHOR_BEGIN;
-		if (snapped)
-			*snapped = true;
-	} else if (fabs(result - ANCHOR_CENTER) < radius) {
-		result = ANCHOR_CENTER;
-		if (snapped)
-			*snapped = true;
-	} else if (fabs(result - ANCHOR_END) < radius) {
-		result = ANCHOR_END;
-		if (snapped)
-			*snapped = true;
+	float basic_anchors[3] = { ANCHOR_BEGIN, ANCHOR_CENTER, ANCHOR_END };
+	for (int i = 0; i < 3; i++) {
+		if ((dist = fabs(p_anchor - basic_anchors[i])) < radius) {
+			if (!snapped || dist <= dist_min) {
+				p_anchor = basic_anchors[i];
+				dist_min = dist;
+				snapped = true;
+			}
+		}
 	}
-	return result;
+	if (p_opposite_anchor >= 0 && (dist = fabs(p_anchor - p_opposite_anchor)) < radius) {
+		if (!snapped || dist <= dist_min) {
+			p_anchor = p_opposite_anchor;
+			dist_min = dist;
+			snapped = true;
+		}
+	}
+	if (p_snapped)
+		*p_snapped = snapped;
+	return p_anchor;
 }
 
 Vector2 CanvasItemEditor::_anchor_to_position(Control *p_control, Vector2 anchor) {
@@ -1590,23 +1595,23 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 
 				switch (drag) {
 					case DRAG_ANCHOR_TOP_LEFT:
-						control->set_anchor(MARGIN_LEFT, _anchor_snap(anchor.x));
-						control->set_anchor(MARGIN_TOP, _anchor_snap(anchor.y));
+						control->set_anchor(MARGIN_LEFT, _anchor_snap(anchor.x, NULL, control->get_anchor(MARGIN_RIGHT)));
+						control->set_anchor(MARGIN_TOP, _anchor_snap(anchor.y, NULL, control->get_anchor(MARGIN_BOTTOM)));
 						continue;
 						break;
 					case DRAG_ANCHOR_TOP_RIGHT:
-						control->set_anchor(MARGIN_RIGHT, _anchor_snap(anchor.x));
-						control->set_anchor(MARGIN_TOP, _anchor_snap(anchor.y));
+						control->set_anchor(MARGIN_RIGHT, _anchor_snap(anchor.x, NULL, control->get_anchor(MARGIN_LEFT)));
+						control->set_anchor(MARGIN_TOP, _anchor_snap(anchor.y, NULL, control->get_anchor(MARGIN_BOTTOM)));
 						continue;
 						break;
 					case DRAG_ANCHOR_BOTTOM_RIGHT:
-						control->set_anchor(MARGIN_RIGHT, _anchor_snap(anchor.x));
-						control->set_anchor(MARGIN_BOTTOM, _anchor_snap(anchor.y));
+						control->set_anchor(MARGIN_RIGHT, _anchor_snap(anchor.x, NULL, control->get_anchor(MARGIN_LEFT)));
+						control->set_anchor(MARGIN_BOTTOM, _anchor_snap(anchor.y, NULL, control->get_anchor(MARGIN_TOP)));
 						continue;
 						break;
 					case DRAG_ANCHOR_BOTTOM_LEFT:
-						control->set_anchor(MARGIN_LEFT, _anchor_snap(anchor.x));
-						control->set_anchor(MARGIN_BOTTOM, _anchor_snap(anchor.y));
+						control->set_anchor(MARGIN_LEFT, _anchor_snap(anchor.x, NULL, control->get_anchor(MARGIN_RIGHT)));
+						control->set_anchor(MARGIN_BOTTOM, _anchor_snap(anchor.y, NULL, control->get_anchor(MARGIN_TOP)));
 						continue;
 						break;
 				}
