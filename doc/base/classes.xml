@@ -746,13 +746,16 @@
 			[AudioServer] singleton
 		</member>
 		<member name="ClassDB" type="ClassDB" setter="" getter="" brief="">
+			[ClassDB] singleton
 		</member>
 		<member name="Engine" type="Engine" setter="" getter="" brief="">
+			[Engine] singleton
 		</member>
 		<member name="Geometry" type="Geometry" setter="" getter="" brief="">
 			[Geometry] singleton
 		</member>
 		<member name="ProjectSettings" type="ProjectSettings" setter="" getter="" brief="">
+			[ProjectSettings] singleton
 		</member>
 		<member name="IP" type="IP" setter="" getter="" brief="">
 			[IP] singleton
@@ -4632,7 +4635,7 @@
 			<argument index="0" name="from" type="PoolColorArray">
 			</argument>
 			<description>
-				Construct an array from a [PoolByteArray].
+				Construct an array from a [PoolColorArray].
 			</description>
 		</method>
 		<method name="Array">
@@ -4641,7 +4644,7 @@
 			<argument index="0" name="from" type="PoolVector3Array">
 			</argument>
 			<description>
-				Construct an array from a [PoolByteArray].
+				Construct an array from a [PoolVector3Array].
 			</description>
 		</method>
 		<method name="Array">
@@ -4650,7 +4653,7 @@
 			<argument index="0" name="from" type="PoolVector2Array">
 			</argument>
 			<description>
-				Construct an array from a [PoolByteArray].
+				Construct an array from a [PoolVector2Array].
 			</description>
 		</method>
 		<method name="Array">
@@ -4677,7 +4680,7 @@
 			<argument index="0" name="from" type="PoolIntArray">
 			</argument>
 			<description>
-				Construct an array from a [PoolByteArray].
+				Construct an array from a [PoolIntArray].
 			</description>
 		</method>
 		<method name="Array">
@@ -11516,7 +11519,7 @@
 			<return type="Rect2">
 			</return>
 			<description>
-				Return position and size of the Control, relative to the top-left corner of the [i]window[/i] Control. This is a helper (see [method get_global_pos], [method get_size]).
+				Return position and size of the Control, relative to the top-left corner of the [i]window[/i] Control. This is a helper (see [method get_global_position], [method get_size]).
 			</description>
 		</method>
 		<method name="get_h_grow_direction" qualifiers="const">
@@ -11594,7 +11597,7 @@
 			<return type="Rect2">
 			</return>
 			<description>
-				Return position and size of the Control, relative to the top-left corner of the parent Control. This is a helper (see [method get_pos], [method get_size]).
+				Return position and size of the Control, relative to the top-left corner of the parent Control. This is a helper (see [method get_position], [method get_size]).
 			</description>
 		</method>
 		<method name="get_rotation" qualifiers="const">
@@ -17915,7 +17918,7 @@
 		Contains global variables accessible from everywhere.
 	</brief_description>
 	<description>
-		Contains global variables accessible from everywhere. Use the normal [Object] API, such as "Globals.get(variable)", "Globals.set(variable,value)" or "Globals.has(variable)" to access them. Variables stored in project.godot are also loaded into globals, making this object very useful for reading custom game configuration options.
+		Contains global variables accessible from everywhere. Use the normal [Object] API, such as "ProjectSettings.get(variable)", "ProjectSettings.set(variable,value)" or "ProjectSettings.has(variable)" to access them. Variables stored in project.godot are also loaded into ProjectSettings, making this object very useful for reading custom game configuration options.
 	</description>
 	<methods>
 		<method name="add_property_info">
@@ -17925,7 +17928,7 @@
 				Add a custom property info to a property. The dictionary must contain: name:[String](the name of the property) and type:[int](see TYPE_* in [@Global Scope]), and optionally hint:[int](see PROPERTY_HINT_* in [@Global Scope]), hint_string:[String].
 				Example:
 				[codeblock]
-				Globals.set("category/property_name", 0)
+				ProjectSettings.set("category/property_name", 0)
 
 				var property_info = {
 				    "name": "category/property_name",
@@ -17934,7 +17937,7 @@
 				    "hint_string": "one,two,three"
 				}
 
-				Globals.add_property_info(property_info)
+				ProjectSettings.add_property_info(property_info)
 				[/codeblock]
 			</description>
 		</method>
@@ -21642,7 +21645,7 @@
 		</method>
 		<method name="load_from_globals">
 			<description>
-				Clear the [InputMap] and load it anew from [Globals].
+				Clear the [InputMap] and load it anew from [ProjectSettings].
 			</description>
 		</method>
 	</methods>
@@ -25089,7 +25092,7 @@
 		MultiMesh provides low level mesh instancing. If the amount of [Mesh] instances needed goes from hundreds to thousands (and most need to be visible at close proximity) creating such a large amount of [MeshInstance] nodes may affect performance by using too much CPU or video memory.
 		For this case a MultiMesh becomes very useful, as it can draw thousands of instances with little API overhead.
 		As a drawback, if the instances are too far away of each other, performance may be reduced as every single instance will always rendered (they are spatially indexed as one, for the whole object).
-		Since instances may have any behavior, the Rect3 used for visibility must be provided by the user, or generated with [method generate_aabb].
+		Since instances may have any behavior, the Rect3 used for visibility must be provided by the user.
 	</description>
 	<methods>
 		<method name="get_aabb" qualifiers="const">
@@ -28019,7 +28022,7 @@
 			<return type="Array">
 			</return>
 			<description>
-				Return the property list, array of dictionaries, dictionaries must contain: name:String, type:int (see TYPE_* enum in globals) and optionally: hint:int (see PROPERTY_HINT_* in globals), hint_string:String, usage:int (see PROPERTY_USAGE_* in globals).
+				Return the property list, array of dictionaries, dictionaries must contain: name:String, type:int (see TYPE_* enum in [@Global Scope]) and optionally: hint:int (see PROPERTY_HINT_* in [@Global Scope]), hint_string:String, usage:int (see PROPERTY_USAGE_* in [@Global Scope]).
 			</description>
 		</method>
 		<method name="_init" qualifiers="virtual">
@@ -28180,7 +28183,7 @@
 			<return type="Array">
 			</return>
 			<description>
-				Return the list of properties as an array of dictionaries, dictionaries contain: name:String, type:int (see TYPE_* enum in globals) and optionally: hint:int (see PROPERTY_HINT_* in globals), hint_string:String, usage:int (see PROPERTY_USAGE_* in globals).
+				Return the list of properties as an array of dictionaries, dictionaries contain: name:String, type:int (see TYPE_* enum in [@Global Scope]) and optionally: hint:int (see PROPERTY_HINT_* in [@Global Scope]), hint_string:String, usage:int (see PROPERTY_USAGE_* in [@Global Scope]).
 			</description>
 		</method>
 		<method name="get_script" qualifiers="const">
@@ -34623,7 +34626,7 @@
 			<argument index="1" name="to" type="int">
 			</argument>
 			<description>
-				Returns the slice of the [PoolByteArray] between indices (inclusive) as a new [RawArray].  Any negative index is considered to be from the end of the array.
+				Returns the slice of the [PoolByteArray] between indices (inclusive) as a new [PoolByteArray].  Any negative index is considered to be from the end of the array.
 			</description>
 		</method>
 	</methods>
@@ -37280,7 +37283,7 @@
 			<argument index="0" name="with" type="Rect3">
 			</argument>
 			<description>
-				Return the intersection between two [Rect3]. An empty AABB (size 0,0,0) is returned on failure.
+				Return the intersection between two [Rect3]. An empty Rect3 (size 0,0,0) is returned on failure.
 			</description>
 		</method>
 		<method name="intersects">
