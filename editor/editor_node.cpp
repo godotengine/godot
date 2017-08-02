@@ -2803,9 +2803,9 @@ void EditorNode::_discard_changes(const String &p_str) {
 			String exec = OS::get_singleton()->get_executable_path();
 
 			List<String> args;
-			args.push_back("--path");
+			args.push_back("-path");
 			args.push_back(exec.get_base_dir());
-			args.push_back("--project-manager");
+			args.push_back("-pm");
 
 			OS::ProcessID pid = 0;
 			Error err = OS::get_singleton()->execute(exec, args, false, &pid);
