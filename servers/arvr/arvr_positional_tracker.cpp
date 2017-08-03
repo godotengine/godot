@@ -40,6 +40,13 @@ void ARVRPositionalTracker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tracks_position"), &ARVRPositionalTracker::get_tracks_position);
 	ClassDB::bind_method(D_METHOD("get_position"), &ARVRPositionalTracker::get_position);
 	ClassDB::bind_method(D_METHOD("get_transform", "adjust_by_reference_frame"), &ARVRPositionalTracker::get_transform);
+
+	// these functions we don't want to expose to normal users but do need to be callable from GDNative
+	ClassDB::bind_method(D_METHOD("_set_type", "type"), &ARVRPositionalTracker::set_type);
+	ClassDB::bind_method(D_METHOD("_set_name", "name"), &ARVRPositionalTracker::set_name);
+	ClassDB::bind_method(D_METHOD("_set_joy_id", "joy_id"), &ARVRPositionalTracker::set_joy_id);
+	ClassDB::bind_method(D_METHOD("_set_orientation", "orientation"), &ARVRPositionalTracker::set_orientation);
+	ClassDB::bind_method(D_METHOD("_set_rw_position", "rw_position"), &ARVRPositionalTracker::set_rw_position);
 };
 
 void ARVRPositionalTracker::set_type(ARVRServer::TrackerType p_type) {
@@ -102,14 +109,36 @@ bool ARVRPositionalTracker::get_tracks_position() const {
 void ARVRPositionalTracker::set_position(const Vector3 &p_position) {
 	_THREAD_SAFE_METHOD_
 
+	ARVRServer *arvr_server = ARVRServer::get_singleton();
+	ERR_FAIL_NULL(arvr_server);
+	real_t world_scale = arvr_server->get_world_scale();
+	ERR_FAIL_COND(world_scale == 0);
+
 	tracks_position = true; // obviously we have this
-	position = p_position;
+	rw_position = p_position / world_scale;
 };
 
 Vector3 ARVRPositionalTracker::get_position() const {
 	_THREAD_SAFE_METHOD_
 
-	return position;
+	ARVRServer *arvr_server = ARVRServer::get_singleton();
+	ERR_FAIL_NULL_V(arvr_server, rw_position);
+	real_t world_scale = arvr_server->get_world_scale();
+
+	return rw_position * world_scale;
+};
+
+void ARVRPositionalTracker::set_rw_position(const Vector3 &p_rw_position) {
+	_THREAD_SAFE_METHOD_
+
+	tracks_position = true; // obviously we have this
+	rw_position = p_rw_position;
+};
+
+Vector3 ARVRPositionalTracker::get_rw_position() const {
+	_THREAD_SAFE_METHOD_
+
+	return rw_position;
 };
 
 Transform ARVRPositionalTracker::get_transform(bool p_adjust_by_reference_frame) const {

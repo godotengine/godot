@@ -39,7 +39,7 @@
 **/
 
 /*
-  ARVRCamera is a subclass of camera which will register itself with its parent ARVROrigin and as a result is automatically positioned
+	ARVRCamera is a subclass of camera which will register itself with its parent ARVROrigin and as a result is automatically positioned
 */
 class ARVRCamera : public Camera {
 
@@ -56,9 +56,9 @@ public:
 };
 
 /*
-  ARVRController is a helper node that automatically updates it's position based on tracker data.
+	ARVRController is a helper node that automatically updates it's position based on tracker data.
 
-  It must be a child node of our ARVROrigin node
+	It must be a child node of our ARVROrigin node
 */
 
 class ARVRController : public Spatial {
@@ -89,6 +89,37 @@ public:
 
 	ARVRController();
 	~ARVRController();
+};
+
+/*
+	ARVRAnchor is a helper node that automatically updates it's position based on anchor data, it represents a real world location.
+	It must be a child node of our ARVROrigin node
+*/
+
+class ARVRAnchor : public Spatial {
+	GDCLASS(ARVRAnchor, Spatial);
+
+private:
+	int anchor_id;
+	bool is_active;
+	Vector3 size;
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	void set_anchor_id(int p_anchor_id);
+	int get_anchor_id(void) const;
+	String get_anchor_name(void) const;
+
+	bool get_is_active() const;
+	Vector3 get_size() const;
+
+	String get_configuration_warning() const;
+
+	ARVRAnchor();
+	~ARVRAnchor();
 };
 
 /*
