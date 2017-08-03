@@ -1057,9 +1057,21 @@ void NativeScriptLanguage::unregister_script(NativeScript *script) {
 #endif
 }
 
-#ifndef NO_THREADS
+void NativeScriptLanguage::call_libraries_cb(const StringName &name) {
+	// library_gdnatives is modified only from the main thread, so it's safe not to use mutex here
+	for (Map<String, Ref<GDNative> >::Element *L = library_gdnatives.front(); L; L = L->next()) {
+		L->get()->call_native_raw(
+				_noarg_call_type,
+				name,
+				NULL,
+				0,
+				NULL,
+				NULL);
+	}
+}
 
 void NativeScriptLanguage::frame() {
+#ifndef NO_THREADS
 	if (has_objects_to_register) {
 		MutexLock lock(mutex);
 		for (Set<Ref<GDNativeLibrary> >::Element *L = libs_to_init.front(); L; L = L->next()) {
@@ -1072,44 +1084,18 @@ void NativeScriptLanguage::frame() {
 		scripts_to_register.clear();
 		has_objects_to_register = false;
 	}
+#endif
+	call_libraries_cb(_frame_call_name);
 }
 
+#ifndef NO_THREADS
+
 void NativeScriptLanguage::thread_enter() {
-	Vector<Ref<GDNative> > libs;
-	{
-		MutexLock lock(mutex);
-		for (Map<String, Ref<GDNative> >::Element *L = library_gdnatives.front(); L; L = L->next()) {
-			libs.push_back(L->get());
-		}
-	}
-	for (int i = 0; i < libs.size(); ++i) {
-		libs[i]->call_native_raw(
-				_thread_cb_call_type,
-				_thread_enter_call_name,
-				NULL,
-				0,
-				NULL,
-				NULL);
-	}
+	call_libraries_cb(_thread_enter_call_name);
 }
 
 void NativeScriptLanguage::thread_exit() {
-	Vector<Ref<GDNative> > libs;
-	{
-		MutexLock lock(mutex);
-		for (Map<String, Ref<GDNative> >::Element *L = library_gdnatives.front(); L; L = L->next()) {
-			libs.push_back(L->get());
-		}
-	}
-	for (int i = 0; i < libs.size(); ++i) {
-		libs[i]->call_native_raw(
-				_thread_cb_call_type,
-				_thread_exit_call_name,
-				NULL,
-				0,
-				NULL,
-				NULL);
-	}
+	call_libraries_cb(_thread_exit_call_name);
 }
 
 #endif // NO_THREADS
