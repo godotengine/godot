@@ -220,7 +220,10 @@ private:
 	void register_script(NativeScript *script);
 	void unregister_script(NativeScript *script);
 
+	void call_libraries_cb(const StringName &name);
+
 public:
+	// These two maps must only be touched on the main thread
 	Map<String, Map<StringName, NativeScriptDesc> > library_classes;
 	Map<String, Ref<GDNative> > library_gdnatives;
 
@@ -229,9 +232,14 @@ public:
 	const StringName _init_call_type = "nativescript_init";
 	const StringName _init_call_name = "godot_nativescript_init";
 
-	const StringName _thread_cb_call_type = "godot_nativescript_thread_cb";
+	const StringName _noarg_call_type = "nativescript_no_arg";
+
+	const StringName _frame_call_name = "godot_nativescript_frame";
+
+#ifndef NO_THREADS
 	const StringName _thread_enter_call_name = "godot_nativescript_thread_enter";
 	const StringName _thread_exit_call_name = "godot_nativescript_thread_exit";
+#endif
 
 	NativeScriptLanguage();
 	~NativeScriptLanguage();
@@ -245,9 +253,9 @@ public:
 #ifndef NO_THREADS
 	virtual void thread_enter();
 	virtual void thread_exit();
+#endif
 
 	virtual void frame();
-#endif
 
 	virtual String get_name() const;
 	virtual void init();
