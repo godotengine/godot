@@ -5,6 +5,8 @@
 #include "scene/3d/skeleton.h"
 #include "scene/3d/spatial.h"
 
+class AnimationPlayer;
+
 class EditorSceneImporterGLTF : public EditorSceneImporter {
 
 	GDCLASS(EditorSceneImporterGLTF, EditorSceneImporter);
@@ -50,6 +52,8 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 
 		Transform xform;
 		String name;
+		Node *godot_node;
+		int godot_bone_index;
 
 		int mesh;
 		int camera;
@@ -69,6 +73,8 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		Vector<int> children;
 
 		GLTFNode() {
+			godot_node = NULL;
+			godot_bone_index = -1;
 			joint_skin = -1;
 			joint_bone = -1;
 			child_of_skeleton = -1;
@@ -172,12 +178,41 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		}
 	};
 
+	struct GLTFAnimation {
+
+		enum Interpolation {
+			INTERP_LINEAR,
+			INTERP_STEP,
+			INTERP_CATMULLROMSPLINE,
+			INTERP_CUBIC_SPLINE
+		};
+
+		template <class T>
+		struct Channel {
+			Interpolation interpolation;
+			Vector<float> times;
+			Vector<T> values;
+		};
+
+		struct Track {
+
+			Channel<Vector3> translation_track;
+			Channel<Quat> rotation_track;
+			Channel<Vector3> scale_track;
+			Vector<Channel<float> > weight_tracks;
+		};
+
+		String name;
+
+		Map<int, Track> tracks;
+	};
+
 	struct GLTFState {
 
 		Dictionary json;
 		int major_version;
 		int minor_version;
-		Vector<uint8_t> gfb_data;
+		Vector<uint8_t> glb_data;
 
 		Vector<GLTFNode *> nodes;
 		Vector<Vector<uint8_t> > buffers;
@@ -198,6 +233,8 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 
 		Set<String> unique_names;
 
+		Vector<GLTFAnimation> animations;
+
 		Map<int, Vector<int> > skin_users; //cache skin users
 
 		~GLTFState() {
@@ -212,6 +249,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	Ref<Texture> _get_texture(GLTFState &state, int p_texture);
 
 	Error _parse_json(const String &p_path, GLTFState &state);
+	Error _parse_glb(const String &p_path, GLTFState &state);
 
 	Error _parse_scenes(GLTFState &state);
 	Error _parse_nodes(GLTFState &state);
@@ -226,13 +264,16 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	PoolVector<Vector2> _decode_accessor_as_vec2(GLTFState &state, int p_accessor, bool p_for_vertex);
 	PoolVector<Vector3> _decode_accessor_as_vec3(GLTFState &state, int p_accessor, bool p_for_vertex);
 	PoolVector<Color> _decode_accessor_as_color(GLTFState &state, int p_accessor, bool p_for_vertex);
+	Vector<Quat> _decode_accessor_as_quat(GLTFState &state, int p_accessor, bool p_for_vertex);
 	Vector<Transform2D> _decode_accessor_as_xform2d(GLTFState &state, int p_accessor, bool p_for_vertex);
 	Vector<Basis> _decode_accessor_as_basis(GLTFState &state, int p_accessor, bool p_for_vertex);
 	Vector<Transform> _decode_accessor_as_xform(GLTFState &state, int p_accessor, bool p_for_vertex);
 
 	void _generate_bone(GLTFState &state, int p_node, Vector<Skeleton *> &skeletons, int p_parent_bone);
 	void _generate_node(GLTFState &state, int p_node, Node *p_parent, Node *p_owner, Vector<Skeleton *> &skeletons);
-	Spatial *_generate_scene(GLTFState &state);
+	void _import_animation(GLTFState &state, AnimationPlayer *ap, int index, int bake_fps, Vector<Skeleton *> skeletons);
+
+	Spatial *_generate_scene(GLTFState &state, int p_bake_fps);
 
 	Error _parse_meshes(GLTFState &state);
 	Error _parse_images(GLTFState &state, const String &p_base_path);
@@ -244,7 +285,12 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 
 	Error _parse_cameras(GLTFState &state);
 
+	Error _parse_animations(GLTFState &state);
+
 	void _assign_scene_names(GLTFState &state);
+
+	template <class T>
+	T _interpolate_track(const Vector<float> &p_times, const Vector<T> &p_values, float p_time, GLTFAnimation::Interpolation p_interp);
 
 public:
 	virtual uint32_t get_import_flags() const;

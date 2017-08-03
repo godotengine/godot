@@ -4,6 +4,7 @@
 #include "os/os.h"
 #include "scene/3d/camera.h"
 #include "scene/3d/mesh_instance.h"
+#include "scene/animation/animation_player.h"
 #include "scene/resources/surface_tool.h"
 #include "thirdparty/misc/base64.h"
 
@@ -14,7 +15,7 @@ uint32_t EditorSceneImporterGLTF::get_import_flags() const {
 void EditorSceneImporterGLTF::get_extensions(List<String> *r_extensions) const {
 
 	r_extensions->push_back("gltf");
-	r_extensions->push_back("gfb");
+	r_extensions->push_back("glb");
 }
 
 Error EditorSceneImporterGLTF::_parse_json(const String &p_path, GLTFState &state) {
@@ -40,6 +41,60 @@ Error EditorSceneImporterGLTF::_parse_json(const String &p_path, GLTFState &stat
 		return err;
 	}
 	state.json = v;
+
+	return OK;
+}
+
+Error EditorSceneImporterGLTF::_parse_glb(const String &p_path, GLTFState &state) {
+
+	Error err;
+	FileAccessRef f = FileAccess::open(p_path, FileAccess::READ, &err);
+	if (!f) {
+		return err;
+	}
+
+	uint32_t magic = f->get_32();
+	ERR_FAIL_COND_V(magic != 0x46546C67, ERR_FILE_UNRECOGNIZED); //glTF
+	uint32_t version = f->get_32();
+	uint32_t length = f->get_32();
+
+	uint32_t chunk_length = f->get_32();
+	uint32_t chunk_type = f->get_32();
+
+	ERR_FAIL_COND_V(chunk_type != 0x4E4F534A, ERR_PARSE_ERROR); //JSON
+	Vector<uint8_t> json_data;
+	json_data.resize(chunk_length);
+	uint32_t len = f->get_buffer(json_data.ptr(), chunk_length);
+	ERR_FAIL_COND_V(len != chunk_length, ERR_FILE_CORRUPT);
+
+	String text;
+	text.parse_utf8((const char *)json_data.ptr(), json_data.size());
+
+	String err_txt;
+	int err_line;
+	Variant v;
+	err = JSON::parse(text, v, err_txt, err_line);
+	if (err != OK) {
+		_err_print_error("", p_path.utf8().get_data(), err_line, err_txt.utf8().get_data(), ERR_HANDLER_SCRIPT);
+		return err;
+	}
+
+	state.json = v;
+
+	//data?
+
+	chunk_length = f->get_32();
+	chunk_type = f->get_32();
+
+	if (f->eof_reached()) {
+		return OK; //all good
+	}
+
+	ERR_FAIL_COND_V(chunk_type != 0x004E4942, ERR_PARSE_ERROR); //BIN
+
+	state.glb_data.resize(chunk_length);
+	len = f->get_buffer(state.glb_data.ptr(), chunk_length);
+	ERR_FAIL_COND_V(len != chunk_length, ERR_FILE_CORRUPT);
 
 	return OK;
 }
@@ -208,8 +263,8 @@ Error EditorSceneImporterGLTF::_parse_buffers(GLTFState &state, const String &p_
 	Array buffers = state.json["buffers"];
 	for (int i = 0; i < buffers.size(); i++) {
 
-		if (i == 0 && state.gfb_data.size()) {
-			state.buffers.push_back(state.gfb_data);
+		if (i == 0 && state.glb_data.size()) {
+			state.buffers.push_back(state.glb_data);
 
 		} else {
 			Dictionary buffer = buffers[i];
@@ -681,6 +736,23 @@ PoolVector<Color> EditorSceneImporterGLTF::_decode_accessor_as_color(GLTFState &
 		PoolVector<Color>::Write w = ret.write();
 		for (int i = 0; i < ret_size; i++) {
 			w[i] = Color(attribs_ptr[i * 4 + 0], attribs_ptr[i * 4 + 1], attribs_ptr[i * 4 + 2], attribs_ptr[i * 4 + 3]);
+		}
+	}
+	return ret;
+}
+Vector<Quat> EditorSceneImporterGLTF::_decode_accessor_as_quat(GLTFState &state, int p_accessor, bool p_for_vertex) {
+
+	Vector<double> attribs = _decode_accessor(state, p_accessor, p_for_vertex);
+	Vector<Quat> ret;
+	if (attribs.size() == 0)
+		return ret;
+	ERR_FAIL_COND_V(attribs.size() % 4 != 0, ret);
+	const double *attribs_ptr = attribs.ptr();
+	int ret_size = attribs.size() / 4;
+	ret.resize(ret_size);
+	{
+		for (int i = 0; i < ret_size; i++) {
+			ret[i] = Quat(attribs_ptr[i * 4 + 0], attribs_ptr[i * 4 + 1], attribs_ptr[i * 4 + 2], attribs_ptr[i * 4 + 3]);
 		}
 	}
 	return ret;
@@ -1359,6 +1431,136 @@ Error EditorSceneImporterGLTF::_parse_cameras(GLTFState &state) {
 
 		state.cameras.push_back(camera);
 	}
+
+	print_line("total cameras: " + itos(state.cameras.size()));
+}
+
+Error EditorSceneImporterGLTF::_parse_animations(GLTFState &state) {
+
+	if (!state.json.has("animations"))
+		return OK;
+
+	Array animations = state.json["animations"];
+
+	for (int i = 0; i < animations.size(); i++) {
+
+		Dictionary d = animations[i];
+
+		GLTFAnimation animation;
+
+		if (!d.has("channels") || !d.has("samplers"))
+			continue;
+
+		Array channels = d["channels"];
+		Array samplers = d["samplers"];
+
+		if (d.has("name")) {
+			animation.name = d["name"];
+		}
+
+		for (int j = 0; j < channels.size(); j++) {
+
+			Dictionary c = channels[j];
+			if (!c.has("target"))
+				continue;
+
+			Dictionary t = c["target"];
+			if (!t.has("node") || !t.has("path")) {
+				continue;
+			}
+
+			ERR_FAIL_COND_V(!c.has("sampler"), ERR_PARSE_ERROR);
+			int sampler = c["sampler"];
+			ERR_FAIL_INDEX_V(sampler, samplers.size(), ERR_PARSE_ERROR);
+
+			int node = t["node"];
+			String path = t["path"];
+
+			ERR_FAIL_INDEX_V(node, state.nodes.size(), ERR_PARSE_ERROR);
+
+			GLTFAnimation::Track *track = NULL;
+
+			if (!animation.tracks.has(node)) {
+				animation.tracks[node] = GLTFAnimation::Track();
+			}
+
+			track = &animation.tracks[node];
+
+			Dictionary s = samplers[sampler];
+
+			ERR_FAIL_COND_V(!s.has("input"), ERR_PARSE_ERROR);
+			ERR_FAIL_COND_V(!s.has("output"), ERR_PARSE_ERROR);
+
+			int input = s["input"];
+			int output = s["output"];
+
+			GLTFAnimation::Interpolation interp = GLTFAnimation::INTERP_LINEAR;
+			if (s.has("interpolation")) {
+				String in = s["interpolation"];
+				if (in == "STEP") {
+					interp = GLTFAnimation::INTERP_STEP;
+				} else if (in == "LINEAR") {
+					interp = GLTFAnimation::INTERP_LINEAR;
+				} else if (in == "CATMULLROMSPLINE") {
+					interp = GLTFAnimation::INTERP_CATMULLROMSPLINE;
+				} else if (in == "CUBICSPLINE") {
+					interp = GLTFAnimation::INTERP_CUBIC_SPLINE;
+				}
+			}
+
+			print_line("path: " + path);
+			PoolVector<float> times = _decode_accessor_as_floats(state, input, false);
+			if (path == "translation") {
+				PoolVector<Vector3> translations = _decode_accessor_as_vec3(state, output, false);
+				track->translation_track.interpolation = interp;
+				track->translation_track.times = Variant(times); //convert via variant
+				track->translation_track.values = Variant(translations); //convert via variant
+			} else if (path == "rotation") {
+				Vector<Quat> rotations = _decode_accessor_as_quat(state, output, false);
+				track->rotation_track.interpolation = interp;
+				track->rotation_track.times = Variant(times); //convert via variant
+				track->rotation_track.values = rotations; //convert via variant
+			} else if (path == "scale") {
+				PoolVector<Vector3> scales = _decode_accessor_as_vec3(state, output, false);
+				track->scale_track.interpolation = interp;
+				track->scale_track.times = Variant(times); //convert via variant
+				track->scale_track.values = Variant(scales); //convert via variant
+			} else if (path == "weights") {
+				PoolVector<float> weights = _decode_accessor_as_floats(state, output, false);
+
+				ERR_FAIL_INDEX_V(state.nodes[node]->mesh, state.meshes.size(), ERR_PARSE_ERROR);
+				GLTFMesh *mesh = &state.meshes[state.nodes[node]->mesh];
+				ERR_FAIL_COND_V(mesh->blend_weights.size() == 0, ERR_PARSE_ERROR);
+				int wc = mesh->blend_weights.size();
+
+				track->weight_tracks.resize(wc);
+
+				int wlen = weights.size() / wc;
+				PoolVector<float>::Read r = weights.read();
+				for (int k = 0; k < wc; k++) { //separate tracks, having them together is not such a good idea
+					GLTFAnimation::Channel<float> cf;
+					cf.interpolation = interp;
+					cf.times = Variant(times);
+					Vector<float> wdata;
+					wdata.resize(wlen);
+					for (int l = 0; l < wlen; l++) {
+						wdata[l] = r[l * wc + k];
+					}
+
+					cf.values = wdata;
+					track->weight_tracks[k] = cf;
+				}
+			} else {
+				WARN_PRINTS("Invalid path: " + path);
+			}
+		}
+
+		state.animations.push_back(animation);
+	}
+
+	print_line("total animations: " + itos(state.animations.size()));
+
+	return OK;
 }
 
 void EditorSceneImporterGLTF::_assign_scene_names(GLTFState &state) {
@@ -1423,6 +1625,8 @@ void EditorSceneImporterGLTF::_generate_node(GLTFState &state, int p_node, Node 
 	node->set_owner(p_owner);
 	node->set_transform(n->xform);
 
+	n->godot_node = node;
+
 	for (int i = 0; i < n->skeleton_children.size(); i++) {
 
 		Skeleton *s = skeletons[n->skeleton_children[i]];
@@ -1454,13 +1658,308 @@ void EditorSceneImporterGLTF::_generate_bone(GLTFState &state, int p_node, Vecto
 	}
 	skeletons[n->joint_skin]->set_bone_rest(bone_index, state.skins[n->joint_skin].bones[n->joint_bone].inverse_bind.affine_inverse());
 
+	n->godot_node = skeletons[n->joint_skin];
+	n->godot_bone_index = bone_index;
+
 	for (int i = 0; i < n->children.size(); i++) {
 		ERR_CONTINUE(state.nodes[n->children[i]]->joint_skin < 0);
 		_generate_bone(state, n->children[i], skeletons, bone_index);
 	}
 }
 
-Spatial *EditorSceneImporterGLTF::_generate_scene(GLTFState &state) {
+template <class T>
+struct EditorSceneImporterGLTFInterpolate {
+
+	T lerp(const T &a, const T &b, float c) const {
+
+		return a + (b - a) * c;
+	}
+
+	T catmull_rom(const T &p0, const T &p1, const T &p2, const T &p3, float t) {
+
+		float t2 = t * t;
+		float t3 = t2 * t;
+
+		return 0.5f * ((2.0f * p1) + (-p0 + p2) * t + (2.0f * p0 - 5.0f * p1 + 4 * p2 - p3) * t2 + (-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3);
+	}
+
+	T bezier(T start, T control_1, T control_2, T end, float t) {
+		/* Formula from Wikipedia article on Bezier curves. */
+		real_t omt = (1.0 - t);
+		real_t omt2 = omt * omt;
+		real_t omt3 = omt2 * omt;
+		real_t t2 = t * t;
+		real_t t3 = t2 * t;
+
+		return start * omt3 + control_1 * omt2 * t * 3.0 + control_2 * omt * t2 * 3.0 + end * t3;
+	}
+};
+
+//thank you for existing, partial specialization
+template <>
+struct EditorSceneImporterGLTFInterpolate<Quat> {
+
+	Quat lerp(const Quat &a, const Quat &b, float c) const {
+
+		return a.slerp(b, c);
+	}
+
+	Quat catmull_rom(const Quat &p0, const Quat &p1, const Quat &p2, const Quat &p3, float c) {
+
+		return p1.slerp(p2, c);
+	}
+
+	Quat bezier(Quat start, Quat control_1, Quat control_2, Quat end, float t) {
+		return start.slerp(end, t);
+	}
+};
+
+template <class T>
+T EditorSceneImporterGLTF::_interpolate_track(const Vector<float> &p_times, const Vector<T> &p_values, float p_time, GLTFAnimation::Interpolation p_interp) {
+
+	//could use binary search, worth it?
+	int idx = -1;
+	for (int i = 0; i < p_times.size(); i++) {
+		if (p_times[i] > p_time)
+			break;
+		idx++;
+	}
+
+	EditorSceneImporterGLTFInterpolate<T> interp;
+
+	switch (p_interp) {
+		case GLTFAnimation::INTERP_LINEAR: {
+
+			if (idx == -1) {
+				return p_values[0];
+			} else if (idx >= p_times.size() - 1) {
+				return p_values[p_times.size() - 1];
+			}
+
+			float c = (p_time - p_times[idx]) / (p_times[idx + 1] - p_times[idx]);
+
+			return interp.lerp(p_values[idx], p_values[idx + 1], c);
+
+		} break;
+		case GLTFAnimation::INTERP_STEP: {
+
+			if (idx == -1) {
+				return p_values[0];
+			} else if (idx >= p_times.size() - 1) {
+				return p_values[p_times.size() - 1];
+			}
+
+			return p_values[idx];
+
+		} break;
+		case GLTFAnimation::INTERP_CATMULLROMSPLINE: {
+
+			if (idx == -1) {
+				return p_values[1];
+			} else if (idx >= p_times.size() - 1) {
+				return p_values[1 + p_times.size() - 1];
+			}
+
+			float c = (p_time - p_times[idx]) / (p_times[idx + 1] - p_times[idx]);
+
+			return interp.catmull_rom(p_values[idx - 1], p_values[idx], p_values[idx + 1], p_values[idx + 3], c);
+
+		} break;
+		case GLTFAnimation::INTERP_CUBIC_SPLINE: {
+
+			if (idx == -1) {
+				return p_values[1];
+			} else if (idx >= p_times.size() - 1) {
+				return p_values[(p_times.size() - 1) * 3 + 1];
+			}
+
+			float c = (p_time - p_times[idx]) / (p_times[idx + 1] - p_times[idx]);
+
+			T from = p_values[idx * 3 + 1];
+			T c1 = from + p_values[idx * 3 + 0];
+			T to = p_values[idx * 3 + 3];
+			T c2 = to + p_values[idx * 3 + 2];
+
+			return interp.bezier(from, c1, c2, to, c);
+
+		} break;
+	}
+
+	ERR_FAIL_V(p_values[0]);
+}
+
+void EditorSceneImporterGLTF::_import_animation(GLTFState &state, AnimationPlayer *ap, int index, int bake_fps, Vector<Skeleton *> skeletons) {
+
+	const GLTFAnimation &anim = state.animations[index];
+
+	String name = anim.name;
+	if (name == "") {
+		name = _gen_unique_name(state, "Animation");
+	}
+
+	Ref<Animation> animation;
+	animation.instance();
+	animation->set_name(name);
+
+	for (Map<int, GLTFAnimation::Track>::Element *E = anim.tracks.front(); E; E = E->next()) {
+
+		const GLTFAnimation::Track &track = E->get();
+		//need to find the path
+		NodePath node_path;
+
+		GLTFNode *node = state.nodes[E->key()];
+		ERR_CONTINUE(!node->godot_node);
+
+		if (node->godot_bone_index >= 0) {
+			Skeleton *sk = (Skeleton *)node->godot_node;
+			String path = ap->get_parent()->get_path_to(sk);
+			String bone = sk->get_bone_name(node->godot_bone_index);
+			node_path = path + ":" + bone;
+		} else {
+			node_path = ap->get_parent()->get_path_to(node->godot_node);
+		}
+
+		float length = 0;
+
+		for (int i = 0; i < track.rotation_track.times.size(); i++) {
+			length = MAX(length, track.rotation_track.times[i]);
+		}
+		for (int i = 0; i < track.translation_track.times.size(); i++) {
+			length = MAX(length, track.translation_track.times[i]);
+		}
+		for (int i = 0; i < track.scale_track.times.size(); i++) {
+			length = MAX(length, track.scale_track.times[i]);
+		}
+
+		for (int i = 0; i < track.weight_tracks.size(); i++) {
+			for (int j = 0; j < track.weight_tracks[i].times.size(); j++) {
+				length = MAX(length, track.weight_tracks[i].times[j]);
+			}
+		}
+
+		animation->set_length(length);
+
+		if (track.rotation_track.values.size() || track.translation_track.values.size() || track.scale_track.values.size()) {
+			//make transform track
+			int track_idx = animation->get_track_count();
+			animation->add_track(Animation::TYPE_TRANSFORM);
+			animation->track_set_path(track_idx, node_path);
+			//first determine animation length
+
+			float increment = 1.0 / float(bake_fps);
+			float time = 0.0;
+
+			Vector3 base_pos;
+			Quat base_rot;
+			Vector3 base_scale = Vector3(1, 1, 1);
+
+			if (!track.rotation_track.values.size()) {
+				base_rot = state.nodes[E->key()]->rotation;
+			}
+
+			if (!track.translation_track.values.size()) {
+				base_pos = state.nodes[E->key()]->translation;
+			}
+
+			if (!track.scale_track.values.size()) {
+				base_scale = state.nodes[E->key()]->scale;
+			}
+
+			bool last = false;
+			while (true) {
+
+				Vector3 pos = base_pos;
+				Quat rot = base_rot;
+				Vector3 scale = base_scale;
+
+				if (track.translation_track.times.size()) {
+
+					pos = _interpolate_track<Vector3>(track.translation_track.times, track.translation_track.values, time, track.translation_track.interpolation);
+				}
+
+				if (track.rotation_track.times.size()) {
+
+					rot = _interpolate_track<Quat>(track.rotation_track.times, track.rotation_track.values, time, track.rotation_track.interpolation);
+				}
+
+				if (track.scale_track.times.size()) {
+
+					scale = _interpolate_track<Vector3>(track.scale_track.times, track.scale_track.values, time, track.scale_track.interpolation);
+				}
+
+				if (node->godot_bone_index >= 0) {
+
+					Transform xform;
+					xform.basis = Basis(rot);
+					xform.basis.scale(scale);
+					xform.origin = pos;
+
+					Skeleton *skeleton = skeletons[node->joint_skin];
+					int bone = node->godot_bone_index;
+					xform = skeleton->get_bone_rest(bone).affine_inverse() * xform;
+
+					rot = xform.basis;
+					rot.normalize();
+					scale = xform.basis.get_scale();
+					pos = xform.origin;
+				}
+
+				animation->transform_track_insert_key(track_idx, time, pos, rot, scale);
+
+				if (last) {
+					break;
+				}
+				time += increment;
+				if (time >= length) {
+					last = true;
+					time = length;
+				}
+			}
+		}
+
+		for (int i = 0; i < track.weight_tracks.size(); i++) {
+			ERR_CONTINUE(node->mesh < 0 || node->mesh >= state.meshes.size());
+			const GLTFMesh &mesh = state.meshes[node->mesh];
+			String prop = "blend_shapes/" + mesh.mesh->get_blend_shape_name(i);
+			node_path = String(node_path) + ":" + prop;
+
+			int track_idx = animation->get_track_count();
+			animation->add_track(Animation::TYPE_VALUE);
+			animation->track_set_path(track_idx, node_path);
+
+			if (track.weight_tracks[i].interpolation <= GLTFAnimation::INTERP_STEP) {
+				animation->track_set_interpolation_type(track_idx, track.weight_tracks[i].interpolation == GLTFAnimation::INTERP_STEP ? Animation::INTERPOLATION_NEAREST : Animation::INTERPOLATION_NEAREST);
+				for (int j = 0; j < track.weight_tracks[i].times.size(); j++) {
+					float t = track.weight_tracks[i].times[j];
+					float w = track.weight_tracks[i].values[j];
+					animation->track_insert_key(track_idx, t, w);
+				}
+			} else {
+				//must bake, apologies.
+				float increment = 1.0 / float(bake_fps);
+				float time = 0.0;
+
+				bool last = false;
+				while (true) {
+
+					float value = _interpolate_track<float>(track.weight_tracks[i].times, track.weight_tracks[i].values, time, track.weight_tracks[i].interpolation);
+					if (last) {
+						break;
+					}
+					time += increment;
+					if (time >= length) {
+						last = true;
+						time = length;
+					}
+				}
+			}
+		}
+	}
+
+	ap->add_animation(name, animation);
+}
+
+Spatial *EditorSceneImporterGLTF::_generate_scene(GLTFState &state, int p_bake_fps) {
 
 	Spatial *root = memnew(Spatial);
 	root->set_name(state.scene_name);
@@ -1489,15 +1988,36 @@ Spatial *EditorSceneImporterGLTF::_generate_scene(GLTFState &state) {
 		skeletons[i]->localize_rests();
 	}
 
+	if (state.animations.size()) {
+		AnimationPlayer *ap = memnew(AnimationPlayer);
+		ap->set_name("AnimationPlayer");
+		root->add_child(ap);
+		ap->set_owner(root);
+
+		for (int i = 0; i < state.animations.size(); i++) {
+			_import_animation(state, ap, i, p_bake_fps, skeletons);
+		}
+	}
+
 	return root;
 }
 
 Node *EditorSceneImporterGLTF::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err) {
 
 	GLTFState state;
-	Error err = _parse_json(p_path, state);
-	if (err)
-		return NULL;
+
+	if (p_path.to_lower().ends_with("glb")) {
+		//binary file
+		//text file
+		Error err = _parse_glb(p_path, state);
+		if (err)
+			return NULL;
+	} else {
+		//text file
+		Error err = _parse_json(p_path, state);
+		if (err)
+			return NULL;
+	}
 
 	ERR_FAIL_COND_V(!state.json.has("asset"), NULL);
 
@@ -1511,7 +2031,7 @@ Node *EditorSceneImporterGLTF::import_scene(const String &p_path, uint32_t p_fla
 	state.minor_version = version.get_slice(".", 1).to_int();
 
 	/* STEP 0 PARSE SCENE */
-	err = _parse_scenes(state);
+	Error err = _parse_scenes(state);
 	if (err != OK)
 		return NULL;
 
@@ -1565,9 +2085,16 @@ Node *EditorSceneImporterGLTF::import_scene(const String &p_path, uint32_t p_fla
 	if (err != OK)
 		return NULL;
 
+	/* STEP 11 PARSE ANIMATIONS */
+	err = _parse_animations(state);
+	if (err != OK)
+		return NULL;
+
+	/* STEP 12 ASSIGN SCENE NAMES */
 	_assign_scene_names(state);
 
-	Spatial *scene = _generate_scene(state);
+	/* STEP 13 MAKE SCENE! */
+	Spatial *scene = _generate_scene(state, p_bake_fps);
 
 	return scene;
 }
