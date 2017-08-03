@@ -586,7 +586,7 @@ void FileSystemDock::_go_to_dir(const String &p_dir) {
 
 void FileSystemDock::_preview_invalidated(const String &p_path) {
 
-	if (p_path.get_base_dir() == path && search_box->get_text() == String() && file_list_vb->is_visible()) {
+	if (display_mode == DISPLAY_THUMBNAILS && p_path.get_base_dir() == path && search_box->get_text() == String() && file_list_vb->is_visible()) {
 
 		for (int i = 0; i < files->get_item_count(); i++) {
 
