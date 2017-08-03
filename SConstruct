@@ -461,7 +461,8 @@ screen = sys.stdout
 node_count = 0
 node_count_max = 0
 node_count_interval = 1
-node_count_fname = str(env.Dir('#')) + '/.scons_node_count'
+if ('env' in locals()):
+    node_count_fname = str(env.Dir('#')) + '/.scons_node_count'
 
 def progress_function(node):
     global node_count, node_count_max, node_count_interval, node_count_fname
@@ -481,7 +482,7 @@ def progress_finish(target, source, env):
     with open(node_count_fname, 'w') as f:
         f.write('%d\n' % node_count)
 
-if (env["progress"] == "yes"):
+if ('env' in locals() and env["progress"] == "yes"):
     try:
         with open(node_count_fname) as f:
             node_count_max = int(f.readline())
