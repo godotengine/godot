@@ -409,6 +409,7 @@ void register_scene_types() {
 	ClassDB::register_class<Listener>();
 	ClassDB::register_class<ARVRCamera>();
 	ClassDB::register_class<ARVRController>();
+	ClassDB::register_class<ARVRAnchor>();
 	ClassDB::register_class<ARVROrigin>();
 	ClassDB::register_class<InterpolatedCamera>();
 	ClassDB::register_class<MeshInstance>();

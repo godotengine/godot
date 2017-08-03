@@ -4353,6 +4353,23 @@ String TextEdit::get_word_at_pos(const Vector2 &p_pos) const {
 
 		bool symbol = beg < s.length() && _is_symbol(s[beg]); //not sure if right but most editors behave like this
 
+		bool inside_quotes = false;
+		int qbegin, qend;
+		for (int i = 0; i < s.length(); i++) {
+			if (s[i] == '"') {
+				if (inside_quotes) {
+					qend = i;
+					inside_quotes = false;
+					if (col >= qbegin && col <= qend) {
+						return s.substr(qbegin, qend - qbegin);
+					}
+				} else {
+					qbegin = i + 1;
+					inside_quotes = true;
+				}
+			}
+		}
+
 		while (beg > 0 && s[beg - 1] > 32 && (symbol == _is_symbol(s[beg - 1]))) {
 			beg--;
 		}

@@ -330,6 +330,8 @@ PoolVector<Vector2> TileMapEditor::_bucket_fill(const Point2i &p_start, bool era
 
 		if (id == TileMap::INVALID_CELL)
 			return PoolVector<Vector2>();
+	} else if (prev_id == TileMap::INVALID_CELL) {
+		return PoolVector<Vector2>();
 	}
 
 	Rect2i r = node->get_item_rect();

@@ -56,7 +56,7 @@ private:
 	bool tracks_orientation; // do we track orientation?
 	Basis orientation; // our orientation
 	bool tracks_position; // do we track position?
-	Vector3 position; // our position
+	Vector3 rw_position; // our position "in the real world, so without world_scale applied"
 
 protected:
 	static void _bind_methods();
@@ -73,8 +73,10 @@ public:
 	void set_orientation(const Basis &p_orientation);
 	Basis get_orientation() const;
 	bool get_tracks_position() const;
-	void set_position(const Vector3 &p_position);
-	Vector3 get_position() const;
+	void set_position(const Vector3 &p_position); // set position with world_scale applied
+	Vector3 get_position() const; // get position with world_scale applied
+	void set_rw_position(const Vector3 &p_rw_position);
+	Vector3 get_rw_position() const;
 
 	Transform get_transform(bool p_adjust_by_reference_frame) const;
 

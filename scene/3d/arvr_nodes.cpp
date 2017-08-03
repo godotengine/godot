@@ -98,6 +98,7 @@ void ARVRController::_notification(int p_what) {
 				is_active = false;
 				button_states = 0;
 			} else {
+				is_active = true;
 				set_transform(tracker->get_transform(true));
 
 				int joy_id = tracker->get_joy_id();
@@ -226,6 +227,118 @@ ARVRController::ARVRController() {
 };
 
 ARVRController::~ARVRController(){
+	// nothing to do here yet for now..
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void ARVRAnchor::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			set_process_internal(true);
+		}; break;
+		case NOTIFICATION_EXIT_TREE: {
+			set_process_internal(false);
+		}; break;
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			// get our ARVRServer
+			ARVRServer *arvr_server = ARVRServer::get_singleton();
+			ERR_FAIL_NULL(arvr_server);
+
+			// find the tracker for our anchor
+			ARVRPositionalTracker *tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_ANCHOR, anchor_id);
+			if (tracker == NULL) {
+				// this anchor is currently not available
+				is_active = false;
+			} else {
+				is_active = true;
+				Transform transform;
+
+				// we'll need our world_scale
+				real_t world_scale = arvr_server->get_world_scale();
+
+				// get our info from our tracker
+				transform.basis = tracker->get_orientation();
+				transform.origin = tracker->get_position(); // <-- already adjusted to world scale
+
+				// our basis is scaled to the size of the plane the anchor is tracking
+				// extract the size from our basis and reset the scale
+				size = transform.basis.get_scale() * world_scale;
+				transform.basis.set_scale(Vector3(1.0, 1.0, 1.0));
+
+				// apply our reference frame and set our transform
+				set_transform(arvr_server->get_reference_frame() * transform);
+			};
+		}; break;
+		default:
+			break;
+	};
+};
+
+void ARVRAnchor::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_anchor_id", "anchor_id"), &ARVRAnchor::set_anchor_id);
+	ClassDB::bind_method(D_METHOD("get_anchor_id"), &ARVRAnchor::get_anchor_id);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "anchor_id"), "set_anchor_id", "get_anchor_id");
+	ClassDB::bind_method(D_METHOD("get_anchor_name"), &ARVRAnchor::get_anchor_name);
+
+	ClassDB::bind_method(D_METHOD("get_is_active"), &ARVRAnchor::get_is_active);
+	ClassDB::bind_method(D_METHOD("get_size"), &ARVRAnchor::get_size);
+};
+
+void ARVRAnchor::set_anchor_id(int p_anchor_id) {
+	// we don't check any bounds here, this anchor may not yet be active and just be a place holder until it is.
+	anchor_id = p_anchor_id;
+};
+
+int ARVRAnchor::get_anchor_id(void) const {
+	return anchor_id;
+};
+
+Vector3 ARVRAnchor::get_size() const {
+	return size;
+};
+
+String ARVRAnchor::get_anchor_name(void) const {
+	// get our ARVRServer
+	ARVRServer *arvr_server = ARVRServer::get_singleton();
+	ERR_FAIL_NULL_V(arvr_server, String());
+
+	ARVRPositionalTracker *tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_ANCHOR, anchor_id);
+	if (tracker == NULL) {
+		return String("Not connected");
+	};
+
+	return tracker->get_name();
+};
+
+bool ARVRAnchor::get_is_active() const {
+	return is_active;
+};
+
+String ARVRAnchor::get_configuration_warning() const {
+	if (!is_visible() || !is_inside_tree())
+		return String();
+
+	// must be child node of ARVROrigin!
+	ARVROrigin *origin = get_parent()->cast_to<ARVROrigin>();
+	if (origin == NULL) {
+		return TTR("ARVRAnchor must have an ARVROrigin node as its parent");
+	};
+
+	if (anchor_id == 0) {
+		return TTR("The anchor id must not be 0 or this anchor will not be bound to an actual anchor");
+	};
+
+	return String();
+};
+
+ARVRAnchor::ARVRAnchor() {
+	anchor_id = 0;
+	is_active = true;
+};
+
+ARVRAnchor::~ARVRAnchor(){
 	// nothing to do here yet for now..
 };
 
