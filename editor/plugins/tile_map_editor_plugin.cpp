@@ -330,6 +330,8 @@ DVector<Vector2> TileMapEditor::_bucket_fill(const Point2i &p_start, bool erase,
 
 		if (id == TileMap::INVALID_CELL)
 			return DVector<Vector2>();
+	} else if (prev_id == TileMap::INVALID_CELL) {
+		return DVector<Vector2>();
 	}
 
 	Rect2i r = node->get_item_rect();
