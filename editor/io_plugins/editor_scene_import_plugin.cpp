@@ -1307,7 +1307,7 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 	//confirm_import->set_child_rect(cvb);
 
 	PanelContainer *pc = memnew( PanelContainer );
-	pc->add_style_override("panel",get_stylebox("normal","TextEdit"));
+	pc->add_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_stylebox("normal","TextEdit"));
 	//ec->add_child(pc);
 	missing_files = memnew( RichTextLabel );
 	cvb->add_margin_child(TTR("The Following Files are Missing:"),pc,true);

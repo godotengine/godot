@@ -189,7 +189,14 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 		} break;
 	}
 }
-
+void EditorAssetLibraryItemDescription::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			previews_bg->add_style_override("panel", get_stylebox("normal", "TextEdit"));
+			desc_bg->add_style_override("panel", get_stylebox("normal", "TextEdit"));
+		} break;
+	}
+}
 void EditorAssetLibraryItemDescription::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_image"), &EditorAssetLibraryItemDescription::set_image);
 	ClassDB::bind_method(D_METHOD("_link_click"), &EditorAssetLibraryItemDescription::_link_click);
@@ -274,23 +281,21 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 	desc_vbox->add_child(item);
 	desc_vbox->set_custom_minimum_size(Size2(300, 0));
 
-	PanelContainer *desc_bg = memnew(PanelContainer);
+	desc_bg = memnew(PanelContainer);
 	desc_vbox->add_child(desc_bg);
 	desc_bg->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	description = memnew(RichTextLabel);
 	description->connect("meta_clicked", this, "_link_click");
 	desc_bg->add_child(description);
-	desc_bg->add_style_override("panel", get_stylebox("normal", "TextEdit"));
 
 	preview = memnew(TextureRect);
 	preview->set_custom_minimum_size(Size2(640, 345));
 	hbox->add_child(preview);
 
-	PanelContainer *previews_bg = memnew(PanelContainer);
+	previews_bg = memnew(PanelContainer);
 	vbox->add_child(previews_bg);
 	previews_bg->set_custom_minimum_size(Size2(0, 85));
-	previews_bg->add_style_override("panel", get_stylebox("normal", "TextEdit"));
 
 	previews = memnew(ScrollContainer);
 	previews_bg->add_child(previews);
@@ -525,53 +530,62 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 ////////////////////////////////////////////////////////////////////////////////
 void EditorAssetLibrary::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_READY) {
-		TextureRect *tf = memnew(TextureRect);
-		tf->set_texture(get_icon("Error", "EditorIcons"));
-		reverse->set_icon(get_icon("Updown", "EditorIcons"));
+	switch (p_what) {
+		case NOTIFICATION_READY: {
 
-		error_hb->add_child(tf);
-		error_label->raise();
-	}
+			TextureRect *tf = memnew(TextureRect);
+			tf->set_texture(get_icon("Error", "EditorIcons"));
+			reverse->set_icon(get_icon("Updown", "EditorIcons"));
 
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		if (is_visible()) {
-			_repository_changed(0); // Update when shown for the first time
-		}
-	}
+			error_hb->add_child(tf);
+			error_label->raise();
+		} break;
 
-	if (p_what == NOTIFICATION_PROCESS) {
+		case NOTIFICATION_VISIBILITY_CHANGED: {
 
-		HTTPClient::Status s = request->get_http_client_status();
-		bool visible = s != HTTPClient::STATUS_DISCONNECTED;
-
-		if (visible != load_status->is_visible()) {
-			load_status->set_visible(visible);
-		}
-
-		if (visible) {
-			switch (s) {
-
-				case HTTPClient::STATUS_RESOLVING: {
-					load_status->set_value(0.1);
-				} break;
-				case HTTPClient::STATUS_CONNECTING: {
-					load_status->set_value(0.2);
-				} break;
-				case HTTPClient::STATUS_REQUESTING: {
-					load_status->set_value(0.3);
-				} break;
-				case HTTPClient::STATUS_BODY: {
-					load_status->set_value(0.4);
-				} break;
-				default: {}
+			if (is_visible()) {
+				_repository_changed(0); // Update when shown for the first time
 			}
-		}
+		} break;
 
-		bool no_downloads = downloads_hb->get_child_count() == 0;
-		if (no_downloads == downloads_scroll->is_visible()) {
-			downloads_scroll->set_visible(!no_downloads);
-		}
+		case NOTIFICATION_PROCESS: {
+
+			HTTPClient::Status s = request->get_http_client_status();
+			bool visible = s != HTTPClient::STATUS_DISCONNECTED;
+
+			if (visible != load_status->is_visible()) {
+				load_status->set_visible(visible);
+			}
+
+			if (visible) {
+				switch (s) {
+
+					case HTTPClient::STATUS_RESOLVING: {
+						load_status->set_value(0.1);
+					} break;
+					case HTTPClient::STATUS_CONNECTING: {
+						load_status->set_value(0.2);
+					} break;
+					case HTTPClient::STATUS_REQUESTING: {
+						load_status->set_value(0.3);
+					} break;
+					case HTTPClient::STATUS_BODY: {
+						load_status->set_value(0.4);
+					} break;
+					default: {}
+				}
+			}
+
+			bool no_downloads = downloads_hb->get_child_count() == 0;
+			if (no_downloads == downloads_scroll->is_visible()) {
+				downloads_scroll->set_visible(!no_downloads);
+			}
+
+		} break;
+		case NOTIFICATION_THEME_CHANGED: {
+
+			library_scroll_bg->add_style_override("panel", get_stylebox("bg", "Tree"));
+		} break;
 	}
 }
 
@@ -1360,9 +1374,8 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	/////////
 
-	PanelContainer *library_scroll_bg = memnew(PanelContainer);
+	library_scroll_bg = memnew(PanelContainer);
 	library_main->add_child(library_scroll_bg);
-	library_scroll_bg->add_style_override("panel", get_stylebox("normal", "TextEdit"));
 	library_scroll_bg->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	library_scroll = memnew(ScrollContainer);
