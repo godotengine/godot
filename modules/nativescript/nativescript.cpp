@@ -1055,13 +1055,15 @@ void NativeScriptLanguage::unregister_script(NativeScript *script) {
 void NativeScriptLanguage::call_libraries_cb(const StringName &name) {
 	// library_gdnatives is modified only from the main thread, so it's safe not to use mutex here
 	for (Map<String, Ref<GDNative> >::Element *L = library_gdnatives.front(); L; L = L->next()) {
-		L->get()->call_native_raw(
-				_noarg_call_type,
-				name,
-				NULL,
-				0,
-				NULL,
-				NULL);
+		if (L->get()->is_initialized()) {
+			L->get()->call_native_raw(
+					_noarg_call_type,
+					name,
+					NULL,
+					0,
+					NULL,
+					NULL);
+		}
 	}
 }
 
