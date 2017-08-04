@@ -45,7 +45,6 @@
 #include "pair.h"
 #include "print_string.h"
 #include "project_settings.h"
-#include "project_settings.h"
 #include "property_selector.h"
 #include "scene/gui/label.h"
 #include "scene/main/viewport.h"
@@ -3858,7 +3857,7 @@ void PropertyEditor::_item_edited() {
 				break;
 
 			if (type == Variant::INT)
-				_edit_set(name, round(item->get_range(1)), refresh_all);
+				_edit_set(name, int(round(item->get_range(1))), refresh_all);
 			else
 				_edit_set(name, item->get_range(1), refresh_all);
 		} break;
