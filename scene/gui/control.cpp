@@ -51,6 +51,12 @@ Variant Control::edit_get_state() const {
 	s["rect"] = get_rect();
 	s["rot"] = get_rotation();
 	s["scale"] = get_scale();
+	Array anchors;
+	anchors.push_back(get_anchor(MARGIN_LEFT));
+	anchors.push_back(get_anchor(MARGIN_TOP));
+	anchors.push_back(get_anchor(MARGIN_RIGHT));
+	anchors.push_back(get_anchor(MARGIN_BOTTOM));
+	s["anchors"] = anchors;
 	return s;
 }
 void Control::edit_set_state(const Variant &p_state) {
@@ -62,6 +68,11 @@ void Control::edit_set_state(const Variant &p_state) {
 	set_size(state.size);
 	set_rotation(s["rot"]);
 	set_scale(s["scale"]);
+	Array anchors = s["anchors"];
+	set_anchor(MARGIN_LEFT, anchors[0]);
+	set_anchor(MARGIN_TOP, anchors[1]);
+	set_anchor(MARGIN_RIGHT, anchors[2]);
+	set_anchor(MARGIN_BOTTOM, anchors[3]);
 }
 
 void Control::set_custom_minimum_size(const Size2 &p_custom) {
