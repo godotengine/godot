@@ -29,9 +29,10 @@
 /*************************************************************************/
 #include <godot/dictionary.h>
 
+#include "core/variant.h"
+
 #include "core/dictionary.h"
 #include "core/io/json.h"
-#include "core/variant.h"
 
 #ifdef __cplusplus
 extern "C" {
