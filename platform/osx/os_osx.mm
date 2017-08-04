@@ -1151,18 +1151,13 @@ void OS_OSX::warp_mouse_pos(const Point2 &p_to) {
 	} else {
 		//set OS position
 
-		/* this code has not been tested, please be a kind soul and fix it if it fails! */
-
 		//local point in window coords
-		NSPoint localPoint = { p_to.x, p_to.y };
-
-		NSPoint pointInWindow = [window_view convertPoint:localPoint toView:nil];
-		NSRect pointInWindowRect;
-		pointInWindowRect.origin = pointInWindow;
+		const NSRect contentRect = [window_view frame];
+		NSRect pointInWindowRect = NSMakeRect(p_to.x / display_scale, contentRect.size.height - (p_to.y / display_scale) - 1, 0, 0);
 		NSPoint pointOnScreen = [[window_view window] convertRectToScreen:pointInWindowRect].origin;
 
 		//point in scren coords
-		CGPoint lMouseWarpPos = { pointOnScreen.x, pointOnScreen.y };
+		CGPoint lMouseWarpPos = { pointOnScreen.x, CGDisplayBounds(CGMainDisplayID()).size.height - pointOnScreen.y };
 
 		//do the warping
 		CGEventSourceRef lEventRef = CGEventSourceCreate(kCGEventSourceStateCombinedSessionState);
