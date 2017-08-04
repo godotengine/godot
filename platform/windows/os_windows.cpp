@@ -170,6 +170,8 @@ static MemoryPoolDynamic *mempool_dynamic = NULL;
 
 void OS_Windows::initialize_core() {
 
+	crash_handler.initialize();
+
 	last_button_state = 0;
 
 	//RedirectIOToConsole();
@@ -2307,6 +2309,14 @@ bool OS_Windows::is_vsync_enabled() const {
 		return gl_context->is_using_vsync();
 
 	return true;
+}
+
+void OS_Windows::disable_crash_handler() {
+	crash_handler.disable();
+}
+
+bool OS_Windows::is_disable_crash_handler() const {
+	return crash_handler.is_disabled();
 }
 
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {

@@ -64,6 +64,10 @@ Error EditorRun::run(const String &p_scene, const String p_custom_args, const Li
 		args.push_back("-debugnav");
 	}
 
+	if (OS::get_singleton()->is_disable_crash_handler()) {
+		args.push_back("--disable-crash-handler");
+	}
+
 	int screen = EditorSettings::get_singleton()->get("game_window_placement/screen");
 
 	if (screen == 0) {

@@ -179,6 +179,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("\t-lang [locale]: Use a specific locale\n");
 	OS::get_singleton()->print("\t-rfs <host/ip>[:<port>] : Remote FileSystem.\n");
 	OS::get_singleton()->print("\t-rfs_pass <password> : Password for Remote FileSystem.\n");
+	OS::get_singleton()->print("\t-dch : Disable crash handler when supported by the platform code.\n");
 #ifdef TOOLS_ENABLED
 	OS::get_singleton()->print("\t-doctool FILE: Dump the whole engine api to FILE in XML format. If FILE exists, it will be merged.\n");
 	OS::get_singleton()->print("\t-nodocbase: Disallow dump the base types (used with -doctool).\n");
@@ -211,6 +212,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	translation_server = memnew(TranslationServer);
 	performance = memnew(Performance);
 	globals->add_singleton(Globals::Singleton("Performance", performance));
+
+	GLOBAL_DEF("application/crash_handler_message", String("Please include this when reporting the bug on https://github.com/godotengine/godot/issues"));
 
 	MAIN_PRINT("Main: Parse CMDLine");
 
@@ -536,6 +539,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			} else {
 				goto error;
 			}
+		} else if (I->get() == "-dch") {
+			OS::get_singleton()->disable_crash_handler();
 		} else {
 
 			//test for game path

@@ -30,6 +30,7 @@
 #ifndef OS_OSX_H
 #define OS_OSX_H
 
+#include "crash_handler_osx.h"
 #include "drivers/alsa/audio_driver_alsa.h"
 #include "drivers/rtaudio/audio_driver_rtaudio.h"
 #include "drivers/unix/os_unix.h"
@@ -110,6 +111,8 @@ public:
 
 	Size2 window_size;
 	Rect2 restore_rect;
+
+	CrashHandler crash_handler;
 
 	float _mouse_scale(float p_scale) {
 		if (display_scale > 1.0)
@@ -213,6 +216,9 @@ public:
 
 	void set_mouse_mode(MouseMode p_mode);
 	MouseMode get_mouse_mode() const;
+
+	void disable_crash_handler();
+	bool is_disable_crash_handler() const;
 
 	OS_OSX();
 };
