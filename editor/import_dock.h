@@ -41,7 +41,7 @@ class ImportDockParameters;
 class ImportDock : public VBoxContainer {
 	GDCLASS(ImportDock, VBoxContainer)
 
-	LineEdit *imported;
+	Label *imported;
 	OptionButton *import_as;
 	MenuButton *preset;
 	PropertyEditor *import_opts;
