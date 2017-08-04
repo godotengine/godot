@@ -432,7 +432,7 @@ SampleLibraryEditor::SampleLibraryEditor() {
 
 	player = memnew(SamplePlayer);
 	add_child(player);
-	add_style_override("panel", get_stylebox("panel","Panel"));
+	add_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_stylebox("panel","Panel"));
 
 
 	load = memnew( Button );

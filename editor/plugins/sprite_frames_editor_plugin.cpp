@@ -714,7 +714,7 @@ void SpriteFramesEditor::_bind_methods() {
 
 SpriteFramesEditor::SpriteFramesEditor() {
 
-	//add_style_override("panel", get_stylebox("panel","Panel"));
+	//add_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_stylebox("panel","Panel"));
 
 	split = memnew(HSplitContainer);
 	add_child(split);
