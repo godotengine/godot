@@ -848,7 +848,11 @@ CanvasItemEditor::DragType CanvasItemEditor::_get_anchor_handle_drag_type(const 
 	for (int i = 0; i < 4; i++) {
 		if (anchor_rects[i].has_point(p_click)) {
 			r_point = transform.affine_inverse().xform(anchor_pos[i]);
-			return dragger[i];
+			if ((anchor_pos[0] == anchor_pos[2]) && (anchor_pos[0].distance_to(p_click) < anchor_handle->get_size().length() / 3.0)) {
+				return DRAG_ANCHOR_ALL;
+			} else {
+				return dragger[i];
+			}
 		}
 	}
 
@@ -1614,6 +1618,13 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 						control->set_anchor(MARGIN_BOTTOM, _anchor_snap(anchor.y, NULL, control->get_anchor(MARGIN_TOP)));
 						continue;
 						break;
+					case DRAG_ANCHOR_ALL:
+						control->set_anchor(MARGIN_LEFT, _anchor_snap(anchor.x));
+						control->set_anchor(MARGIN_RIGHT, _anchor_snap(anchor.x));
+						control->set_anchor(MARGIN_TOP, _anchor_snap(anchor.y));
+						control->set_anchor(MARGIN_BOTTOM, _anchor_snap(anchor.y));
+						continue;
+						break;
 				}
 			}
 
@@ -2038,6 +2049,7 @@ void CanvasItemEditor::_viewport_draw() {
 					// Get which anchor is dragged
 					int dragged_anchor = -1;
 					switch (drag) {
+						case DRAG_ANCHOR_ALL:
 						case DRAG_ANCHOR_TOP_LEFT:
 							dragged_anchor = 0;
 							break;
