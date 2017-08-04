@@ -117,7 +117,6 @@ class GDNative : public Reference {
 	GDCLASS(GDNative, Reference)
 
 	Ref<GDNativeLibrary> library;
-	bool initialized;
 
 	// TODO(karroffel): different platforms? WASM????
 	void *native_handle;
