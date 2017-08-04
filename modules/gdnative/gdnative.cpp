@@ -155,7 +155,6 @@ String GDNativeLibrary::get_active_library_path() const {
 }
 
 GDNative::GDNative() {
-	initialized = false;
 	native_handle = NULL;
 }
 
@@ -219,6 +218,9 @@ bool GDNative::initialize() {
 			library_init);
 
 	if (err || !library_init) {
+		OS::get_singleton()->close_dynamic_library(native_handle);
+		native_handle = NULL;
+		ERR_PRINT("Failed to obtain godot_gdnative_init symbol");
 		return false;
 	}
 
@@ -272,7 +274,11 @@ bool GDNative::terminate() {
 	OS::get_singleton()->close_dynamic_library(native_handle);
 	native_handle = NULL;
 
-	return false;
+	return true;
+}
+
+bool GDNative::is_initialized() {
+	return (native_handle != NULL);
 }
 
 void GDNativeCallRegistry::register_native_call_type(StringName p_call_type, native_call_cb p_callback) {
