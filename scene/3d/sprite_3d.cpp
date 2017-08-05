@@ -502,7 +502,7 @@ void Sprite3D::set_vframes(int p_amount) {
 	ERR_FAIL_COND(p_amount < 1);
 	vframes = p_amount;
 	_queue_update();
-	_change_notify("frame");
+	_change_notify();
 }
 int Sprite3D::get_vframes() const {
 
@@ -514,7 +514,7 @@ void Sprite3D::set_hframes(int p_amount) {
 	ERR_FAIL_COND(p_amount < 1);
 	hframes = p_amount;
 	_queue_update();
-	_change_notify("frame");
+	_change_notify();
 }
 int Sprite3D::get_hframes() const {
 
