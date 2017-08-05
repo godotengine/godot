@@ -243,7 +243,7 @@ void Node2D::global_translate(const Vector2 &p_amount) {
 	set_global_position(get_global_position() + p_amount);
 }
 
-void Node2D::scale(const Size2 &p_amount) {
+void Node2D::apply_scale(const Size2 &p_amount) {
 
 	set_scale(get_scale() * p_amount);
 }
@@ -429,7 +429,7 @@ void Node2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("move_local_y", "delta", "scaled"), &Node2D::move_y, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("translate", "offset"), &Node2D::translate);
 	ClassDB::bind_method(D_METHOD("global_translate", "offset"), &Node2D::global_translate);
-	ClassDB::bind_method(D_METHOD("scale", "ratio"), &Node2D::scale);
+	ClassDB::bind_method(D_METHOD("apply_scale", "ratio"), &Node2D::apply_scale);
 
 	ClassDB::bind_method(D_METHOD("set_global_position", "pos"), &Node2D::set_global_position);
 	ClassDB::bind_method(D_METHOD("get_global_position"), &Node2D::get_global_position);
