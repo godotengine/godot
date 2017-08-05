@@ -346,6 +346,7 @@ void AnimatedSprite::_notification(int p_what) {
 
 					update();
 					_change_notify("frame");
+					emit_signal(SceneStringNames::get_singleton()->frame_changed);
 				}
 
 				float to_process = MIN(timeout, remaining);
