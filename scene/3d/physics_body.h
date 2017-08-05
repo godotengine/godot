@@ -252,6 +252,8 @@ public:
 
 	void apply_impulse(const Vector3 &p_pos, const Vector3 &p_impulse);
 
+	virtual String get_configuration_warning() const;
+
 	RigidBody();
 	~RigidBody();
 };
