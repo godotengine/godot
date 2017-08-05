@@ -30,7 +30,7 @@
 #ifndef SCENE_STRING_NAMES_H
 #define SCENE_STRING_NAMES_H
 
-#include "path_db.h"
+#include "node_path.h"
 #include "string_db.h"
 class SceneStringNames {
 

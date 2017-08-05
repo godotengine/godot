@@ -33,7 +33,7 @@
 #include "class_db.h"
 #include "map.h"
 #include "object.h"
-#include "path_db.h"
+#include "node_path.h"
 #include "project_settings.h"
 #include "scene/main/scene_tree.h"
 #include "script_language.h"

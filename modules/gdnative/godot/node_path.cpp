@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include <godot/node_path.h>
 
-#include "core/path_db.h"
+#include "core/node_path.h"
 #include "core/variant.h"
 
 #ifdef __cplusplus

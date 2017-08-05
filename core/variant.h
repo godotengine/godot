@@ -43,7 +43,7 @@
 #include "math_2d.h"
 #include "matrix3.h"
 #include "os/power.h"
-#include "path_db.h"
+#include "node_path.h"
 #include "plane.h"
 #include "quat.h"
 #include "rect3.h"
