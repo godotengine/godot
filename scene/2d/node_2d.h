@@ -78,7 +78,7 @@ public:
 	void move_y(float p_delta, bool p_scaled = false);
 	void translate(const Vector2 &p_amount);
 	void global_translate(const Vector2 &p_amount);
-	void scale(const Size2 &p_amount);
+	void apply_scale(const Size2 &p_amount);
 
 	Point2 get_position() const;
 	float get_rotation() const;
