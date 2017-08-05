@@ -798,6 +798,40 @@ bool RigidBody2D::is_contact_monitor_enabled() const {
 	return contact_monitor != NULL;
 }
 
+void RigidBody2D::_notification(int p_what) {
+
+#ifdef TOOLS_ENABLED
+	if (p_what == NOTIFICATION_ENTER_TREE) {
+		if (get_tree()->is_editor_hint()) {
+			set_notify_local_transform(true); //used for warnings and only in editor
+		}
+	}
+
+	if (p_what == NOTIFICATION_LOCAL_TRANSFORM_CHANGED) {
+		if (get_tree()->is_editor_hint()) {
+			update_configuration_warning();
+		}
+	}
+
+#endif
+}
+
+String RigidBody2D::get_configuration_warning() const {
+
+	Transform2D t = get_transform();
+
+	String warning = CollisionObject2D::get_configuration_warning();
+
+	if ((get_mode() == MODE_RIGID || get_mode() == MODE_CHARACTER) && (ABS(t.elements[0].length() - 1.0) > 0.05 || ABS(t.elements[1].length() - 1.0) > 0.05)) {
+		if (warning != String()) {
+			warning += "\n";
+		}
+		warning += TTR("Size changes to RigidBody2D (in character or rigid modes) will be overriden by the physics engine when running.\nChange the size in children collision shapes instead.");
+	}
+
+	return warning;
+}
+
 void RigidBody2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_mode", "mode"), &RigidBody2D::set_mode);

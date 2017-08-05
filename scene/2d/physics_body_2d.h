@@ -185,6 +185,7 @@ private:
 	bool _test_motion(const Vector2 &p_motion, float p_margin = 0.08, const Ref<Physics2DTestMotionResult> &p_result = Ref<Physics2DTestMotionResult>());
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
@@ -252,6 +253,8 @@ public:
 	void add_force(const Vector2 &p_offset, const Vector2 &p_force);
 
 	Array get_colliding_bodies() const; //function for script
+
+	virtual String get_configuration_warning() const;
 
 	RigidBody2D();
 	~RigidBody2D();

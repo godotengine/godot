@@ -473,6 +473,21 @@ void RigidBody::_direct_state_changed(Object *p_state) {
 }
 
 void RigidBody::_notification(int p_what) {
+
+#ifdef TOOLS_ENABLED
+	if (p_what == NOTIFICATION_ENTER_TREE) {
+		if (get_tree()->is_editor_hint()) {
+			set_notify_local_transform(true); //used for warnings and only in editor
+		}
+	}
+
+	if (p_what == NOTIFICATION_LOCAL_TRANSFORM_CHANGED) {
+		if (get_tree()->is_editor_hint()) {
+			update_configuration_warning();
+		}
+	}
+
+#endif
 }
 
 void RigidBody::set_mode(Mode p_mode) {
@@ -745,6 +760,22 @@ Array RigidBody::get_colliding_bodies() const {
 	}
 
 	return ret;
+}
+
+String RigidBody::get_configuration_warning() const {
+
+	Transform t = get_transform();
+
+	String warning = CollisionObject::get_configuration_warning();
+
+	if ((get_mode() == MODE_RIGID || get_mode() == MODE_CHARACTER) && (ABS(t.basis.get_axis(0).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(1).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(0).length() - 1.0) > 0.05)) {
+		if (warning != String()) {
+			warning += "\n";
+		}
+		warning += TTR("Size changes to RigidBody (in character or rigid modes) will be overriden by the physics engine when running.\nChange the size in children collision shapes instead.");
+	}
+
+	return warning;
 }
 
 void RigidBody::_bind_methods() {
