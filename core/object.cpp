@@ -1182,10 +1182,10 @@ Variant Object::_emit_signal(const Variant **p_args, int p_argcount, Variant::Ca
 	return Variant();
 }
 
-void Object::emit_signal(const StringName &p_name, const Variant **p_args, int p_argcount) {
+Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int p_argcount) {
 
 	if (_block_signals)
-		return; //no emit, signals blocked
+		return ERR_CANT_AQUIRE_RESOURCE; //no emit, signals blocked
 
 	Signal *s = signal_map.getptr(p_name);
 	if (!s) {
@@ -1194,11 +1194,11 @@ void Object::emit_signal(const StringName &p_name, const Variant **p_args, int p
 		//check in script
 		if (!signal_is_valid && !script.is_null() && !Ref<Script>(script)->has_script_signal(p_name)) {
 			ERR_EXPLAIN("Can't emit non-existing signal " + String("\"") + p_name + "\".");
-			ERR_FAIL();
+			ERR_FAIL_V(ERR_UNAVAILABLE);
 		}
 #endif
 		//not connected? just return
-		return;
+		return ERR_UNAVAILABLE;
 	}
 
 	List<_ObjectSignalDisconnectData> disconnect_data;
@@ -1213,6 +1213,8 @@ void Object::emit_signal(const StringName &p_name, const Variant **p_args, int p
 	OBJ_DEBUG_LOCK
 
 	Vector<const Variant *> bind_mem;
+
+	Error err = OK;
 
 	for (int i = 0; i < ssize; i++) {
 
@@ -1249,12 +1251,14 @@ void Object::emit_signal(const StringName &p_name, const Variant **p_args, int p
 		} else {
 			Variant::CallError ce;
 			target->call(c.method, args, argc, ce);
+
 			if (ce.error != Variant::CallError::CALL_OK) {
 
 				if (ce.error == Variant::CallError::CALL_ERROR_INVALID_METHOD && !ClassDB::class_exists(target->get_class_name())) {
 					//most likely object is not initialized yet, do not throw error.
 				} else {
 					ERR_PRINTS("Error calling method from signal '" + String(p_name) + "': " + Variant::get_call_error_text(target, c.method, args, argc, ce));
+					err = ERR_METHOD_NOT_FOUND;
 				}
 			}
 		}
@@ -1274,21 +1278,24 @@ void Object::emit_signal(const StringName &p_name, const Variant **p_args, int p
 		disconnect(dd.signal, dd.target, dd.method);
 		disconnect_data.pop_front();
 	}
+
+	return err;
 }
 
-void Object::emit_signal(const StringName &p_name, VARIANT_ARG_DECLARE) {
+Error Object::emit_signal(const StringName &p_name, VARIANT_ARG_DECLARE) {
 
 	VARIANT_ARGPTRS;
 
 	int argc = 0;
 
 	for (int i = 0; i < VARIANT_ARG_MAX; i++) {
+
 		if (argptr[i]->get_type() == Variant::NIL)
 			break;
 		argc++;
 	}
 
-	emit_signal(p_name, argptr, argc);
+	return emit_signal(p_name, argptr, argc);
 }
 
 void Object::_add_user_signal(const String &p_name, const Array &p_args) {

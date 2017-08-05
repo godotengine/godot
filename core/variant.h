@@ -42,8 +42,8 @@
 #include "io/ip_address.h"
 #include "math_2d.h"
 #include "matrix3.h"
-#include "os/power.h"
 #include "node_path.h"
+#include "os/power.h"
 #include "plane.h"
 #include "quat.h"
 #include "rect3.h"
@@ -239,7 +239,7 @@ public:
 
 	operator IP_Address() const;
 
-	Variant(bool p_bool);
+	explicit Variant(bool p_bool);
 	Variant(signed int p_int); // real one
 	Variant(unsigned int p_int);
 #ifdef NEED_LONG_INT

@@ -32,6 +32,7 @@
 #include "core_string_names.h"
 #include "io/resource_loader.h"
 #include "os/file_access.h"
+#include "scene/main/node.h" //only so casting works
 #include "script_language.h"
 #include <stdio.h>
 

@@ -29,6 +29,7 @@
 /*************************************************************************/
 #include "visibility_notifier.h"
 
+#include "scene/3d/camera.h"
 #include "scene/3d/physics_body.h"
 #include "scene/animation/animation_player.h"
 #include "scene/scene_string_names.h"
@@ -42,6 +43,7 @@ void VisibilityNotifier::_enter_camera(Camera *p_camera) {
 		emit_signal(SceneStringNames::get_singleton()->screen_entered);
 		_screen_enter();
 	}
+
 	emit_signal(SceneStringNames::get_singleton()->camera_entered, p_camera);
 }
 
