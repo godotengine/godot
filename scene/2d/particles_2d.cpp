@@ -396,6 +396,7 @@ Particles2D::Particles2D() {
 	set_randomness_ratio(0);
 	set_visibility_rect(Rect2(Vector2(-100, -100), Vector2(200, 200)));
 	set_use_local_coordinates(true);
+	set_draw_order(DRAW_ORDER_INDEX);
 	set_speed_scale(1);
 	h_frames = 1;
 	v_frames = 1;
