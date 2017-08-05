@@ -225,7 +225,7 @@ void Sprite::set_vframes(int p_amount) {
 	vframes = p_amount;
 	update();
 	item_rect_changed();
-	_change_notify("frame");
+	_change_notify();
 }
 int Sprite::get_vframes() const {
 
@@ -238,7 +238,7 @@ void Sprite::set_hframes(int p_amount) {
 	hframes = p_amount;
 	update();
 	item_rect_changed();
-	_change_notify("frame");
+	_change_notify();
 }
 int Sprite::get_hframes() const {
 
