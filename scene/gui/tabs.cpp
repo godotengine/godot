@@ -226,7 +226,6 @@ void Tabs::_gui_input(const Ref<InputEvent> &p_event) {
 		if (found != -1) {
 
 			set_current_tab(found);
-			emit_signal("tab_changed", found);
 		}
 	}
 }
@@ -419,6 +418,7 @@ int Tabs::get_tab_count() const {
 
 void Tabs::set_current_tab(int p_current) {
 
+	if (current == p_current) return;
 	ERR_FAIL_INDEX(p_current, get_tab_count());
 
 	current = p_current;
@@ -426,6 +426,8 @@ void Tabs::set_current_tab(int p_current) {
 	_change_notify("current_tab");
 	_update_cache();
 	update();
+
+	emit_signal("tab_changed", p_current);
 }
 
 int Tabs::get_current_tab() const {
