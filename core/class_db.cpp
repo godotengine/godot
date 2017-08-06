@@ -937,6 +937,28 @@ bool ClassDB::get_property(Object *p_object, const StringName &p_property, Varia
 	return false;
 }
 
+int ClassDB::get_property_index(const StringName &p_class, const StringName &p_property, bool *r_is_valid) {
+
+	ClassInfo *type = classes.getptr(p_class);
+	ClassInfo *check = type;
+	while (check) {
+		const PropertySetGet *psg = check->property_setget.getptr(p_property);
+		if (psg) {
+
+			if (r_is_valid)
+				*r_is_valid = true;
+
+			return psg->index;
+		}
+
+		check = check->inherits_ptr;
+	}
+	if (r_is_valid)
+		*r_is_valid = false;
+
+	return -1;
+}
+
 Variant::Type ClassDB::get_property_type(const StringName &p_class, const StringName &p_property, bool *r_is_valid) {
 
 	ClassInfo *type = classes.getptr(p_class);
