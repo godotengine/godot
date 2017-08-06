@@ -123,7 +123,7 @@ public:
 	void set_flags(uint32_t p_flags);
 	uint32_t get_flags() const;
 	Image::Format get_format() const;
-	void load(const String &p_path);
+	Error load(const String &p_path);
 	void set_data(const Ref<Image> &p_image);
 	Ref<Image> get_data() const;
 
@@ -148,6 +148,16 @@ public:
 
 	ImageTexture();
 	~ImageTexture();
+};
+
+VARIANT_ENUM_CAST(ImageTexture::Storage);
+
+class ResourceFormatLoaderImageTexture : public ResourceFormatLoader {
+public:
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
+	virtual void get_recognized_extensions(List<String> *p_extensions) const;
+	virtual bool handles_type(const String &p_type) const;
+	virtual String get_resource_type(const String &p_path) const;
 };
 
 class StreamTexture : public Texture {
@@ -225,8 +235,6 @@ public:
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
 };
-
-VARIANT_ENUM_CAST(ImageTexture::Storage);
 
 class AtlasTexture : public Texture {
 

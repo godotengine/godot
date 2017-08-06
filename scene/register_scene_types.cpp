@@ -244,6 +244,7 @@ static ResourceFormatLoaderText *resource_loader_text = NULL;
 static ResourceFormatLoaderDynamicFont *resource_loader_dynamic_font = NULL;
 
 static ResourceFormatLoaderStreamTexture *resource_loader_stream_texture = NULL;
+static ResourceFormatLoaderImageTexture *resource_loader_image_texture = NULL;
 
 //static SceneStringNames *string_names;
 
@@ -262,6 +263,9 @@ void register_scene_types() {
 
 	resource_loader_stream_texture = memnew(ResourceFormatLoaderStreamTexture);
 	ResourceLoader::add_resource_format_loader(resource_loader_stream_texture);
+
+	resource_loader_image_texture = memnew(ResourceFormatLoaderImageTexture);
+	ResourceLoader::add_resource_format_loader(resource_loader_image_texture);
 
 #ifdef TOOLS_ENABLED
 
@@ -664,6 +668,7 @@ void unregister_scene_types() {
 	//	memdelete( resource_loader_wav );
 	memdelete(resource_loader_dynamic_font);
 	memdelete(resource_loader_stream_texture);
+	memdelete(resource_loader_image_texture);
 
 #ifdef TOOLS_ENABLED
 

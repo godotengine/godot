@@ -226,12 +226,15 @@ Image::Format ImageTexture::get_format() const {
 	return format;
 }
 
-void ImageTexture::load(const String &p_path) {
+Error ImageTexture::load(const String &p_path) {
 
 	Ref<Image> img;
 	img.instance();
-	img->load(p_path);
+
+	Error err = img->load(p_path);
 	create_from_image(img);
+
+	return err;
 }
 
 void ImageTexture::set_data(const Ref<Image> &p_image) {
@@ -379,6 +382,37 @@ ImageTexture::ImageTexture() {
 ImageTexture::~ImageTexture() {
 
 	VisualServer::get_singleton()->free(texture);
+}
+
+RES ResourceFormatLoaderImageTexture::load(const String &p_path, const String &p_original_path, Error *r_error) {
+
+	Ref<ImageTexture> tex;
+	tex.instance();
+	Error err = tex->load(p_path);
+
+	if (r_error)
+		*r_error = err;
+	if (err != OK)
+		return RES();
+
+	return tex;
+}
+
+void ResourceFormatLoaderImageTexture::get_recognized_extensions(List<String> *p_extensions) const {
+
+	ImageLoader::get_recognized_extensions(p_extensions);
+}
+
+bool ResourceFormatLoaderImageTexture::handles_type(const String &p_type) const {
+
+	return p_type == "ImageTexture";
+}
+
+String ResourceFormatLoaderImageTexture::get_resource_type(const String &p_path) const {
+
+	if (ImageLoader::recognize(p_path.get_extension().to_lower()))
+		return "ImageTexture";
+	return "";
 }
 
 //////////////////////////////////////////
