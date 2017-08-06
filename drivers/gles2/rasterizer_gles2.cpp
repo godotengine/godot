@@ -4621,16 +4621,19 @@ void RasterizerGLES2::_add_geometry(const Geometry *p_geometry, const InstanceDa
 			if (duplicate) {
 
 				ec = render_list->add_element();
-				memcpy(ec, e, sizeof(RenderList::Element));
+				if (ec)
+					memcpy(ec, e, sizeof(RenderList::Element));
 			} else {
 
 				ec = e;
 				duplicate = true;
 			}
 
-			ec->light_type = light_type;
-			ec->light = sort_key;
-			ec->additive_ptr = &e->additive;
+			if (ec) {
+				ec->light_type = light_type;
+				ec->light = sort_key;
+				ec->additive_ptr = &e->additive;
+			}
 		}
 
 		const RID *liptr = p_instance->light_instances.ptr();
@@ -4651,16 +4654,18 @@ void RasterizerGLES2::_add_geometry(const Geometry *p_geometry, const InstanceDa
 			if (duplicate) {
 
 				ec = render_list->add_element();
-				memcpy(ec, e, sizeof(RenderList::Element));
+				if (ec)
+					memcpy(ec, e, sizeof(RenderList::Element));
 			} else {
-
 				duplicate = true;
 				ec = e;
 			}
 
-			ec->light_type = light_type;
-			ec->light = sort_key;
-			ec->additive_ptr = &e->additive;
+			if (ec) {
+				ec->light_type = light_type;
+				ec->light = sort_key;
+				ec->additive_ptr = &e->additive;
+			}
 		}
 	}
 
