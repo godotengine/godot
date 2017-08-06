@@ -239,7 +239,7 @@ public:
 
 	operator IP_Address() const;
 
-	explicit Variant(bool p_bool);
+	Variant(bool p_bool);
 	Variant(signed int p_int); // real one
 	Variant(unsigned int p_int);
 #ifdef NEED_LONG_INT
