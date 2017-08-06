@@ -433,7 +433,6 @@ godot_variant GDAPI godot_variant_call(godot_variant *p_self, const godot_string
 	Variant *dest = (Variant *)&raw_dest;
 	Variant::CallError error;
 	memnew_placement_custom(dest, Variant, Variant(self->call(*method, args, p_argcount, error)));
-	*dest = self->call(StringName(*method), args, p_argcount, r_error);
 	if (r_error) {
 		r_error->error = (godot_variant_call_error_error)error.error;
 		r_error->argument = error.argument;
