@@ -516,6 +516,9 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 
 		bool isdefault = ((E->get().usage & PROPERTY_USAGE_STORE_IF_NONZERO) && value.is_zero()) || ((E->get().usage & PROPERTY_USAGE_STORE_IF_NONONE) && value.is_one());
 
+		if (E->get().usage & PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE) {
+			isdefault = true; //is script default value
+		}
 		/*
 		if (nd.instance<0 && ((E->get().usage & PROPERTY_USAGE_STORE_IF_NONZERO) && value.is_zero()) || ((E->get().usage & PROPERTY_USAGE_STORE_IF_NONONE) && value.is_one())) {
 			continue;
