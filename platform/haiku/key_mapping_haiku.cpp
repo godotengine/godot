@@ -83,7 +83,7 @@ static _HaikuTranslatePair _fn_to_keycode[] = {
 static _HaikuTranslatePair _hb_to_keycode[] = {
 	{ KEY_BACKSPACE, B_BACKSPACE },
 	{ KEY_TAB, B_TAB },
-	{ KEY_RETURN, B_RETURN },
+	{ KEY_ENTER, B_RETURN },
 	{ KEY_CAPSLOCK, B_CAPS_LOCK },
 	{ KEY_ESCAPE, B_ESCAPE },
 	{ KEY_SPACE, B_SPACE },

@@ -573,7 +573,7 @@ void ProjectManager::_unhandled_input(const Ref<InputEvent> &p_ev) {
 
 		switch (k->get_scancode()) {
 
-			case KEY_RETURN: {
+			case KEY_ENTER: {
 
 				_open_project();
 			} break;

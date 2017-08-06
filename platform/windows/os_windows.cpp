@@ -807,7 +807,7 @@ void OS_Windows::process_key_events() {
 
 				if ((ke.lParam & (1 << 24)) && (ke.wParam == VK_RETURN)) {
 					// Special case for Numpad Enter key
-					k->set_scancode(KEY_ENTER);
+					k->set_scancode(KEY_KP_ENTER);
 				} else {
 					k->set_scancode(KeyMappingWindows::get_keysym(ke.wParam));
 				}

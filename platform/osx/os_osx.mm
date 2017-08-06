@@ -518,7 +518,7 @@ static int translateKey(unsigned int key) {
 		/* 21 */ KEY_BRACELEFT,
 		/* 22 */ KEY_I,
 		/* 23 */ KEY_P,
-		/* 24 */ KEY_RETURN,
+		/* 24 */ KEY_ENTER,
 		/* 25 */ KEY_L,
 		/* 26 */ KEY_J,
 		/* 27 */ KEY_APOSTROPHE,
@@ -558,7 +558,7 @@ static int translateKey(unsigned int key) {
 		/* 49 */ KEY_UNKNOWN, /* VolumeDown */
 		/* 4a */ KEY_UNKNOWN, /* Mute */
 		/* 4b */ KEY_KP_DIVIDE,
-		/* 4c */ KEY_ENTER,
+		/* 4c */ KEY_KP_ENTER,
 		/* 4d */ KEY_UNKNOWN,
 		/* 4e */ KEY_KP_SUBTRACT,
 		/* 4f */ KEY_UNKNOWN,

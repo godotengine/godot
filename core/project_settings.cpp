@@ -925,10 +925,10 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("application/config/use_shared_user_dir", true);
 
 	key.instance();
-	key->set_scancode(KEY_RETURN);
+	key->set_scancode(KEY_ENTER);
 	va.push_back(key);
 	key.instance();
-	key->set_scancode(KEY_ENTER);
+	key->set_scancode(KEY_KP_ENTER);
 	va.push_back(key);
 	key.instance();
 	key->set_scancode(KEY_SPACE);
