@@ -104,6 +104,10 @@ public:
 	Size2 window_size;
 	Rect2 restore_rect;
 
+	Point2 im_position;
+	ImeCallback im_callback;
+	void *im_target;
+
 	power_osx *power_manager;
 
 	float _mouse_scale(float p_scale) {
@@ -203,6 +207,8 @@ public:
 
 	virtual void set_borderless_window(int p_borderless);
 	virtual bool get_borderless_window();
+	virtual void set_ime_position(const Point2 &p_pos);
+	virtual void set_ime_intermediate_text_callback(ImeCallback p_callback, void *p_inp);
 
 	virtual PowerState get_power_state();
 	virtual int get_power_seconds_left();

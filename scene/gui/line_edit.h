@@ -70,6 +70,8 @@ private:
 	String text;
 	String placeholder;
 	float placeholder_alpha;
+	String ime_text;
+	Point2 ime_selection;
 
 	PopupMenu *menu;
 
@@ -92,6 +94,7 @@ private:
 
 	Timer *caret_blink_timer;
 
+	static void _ime_text_callback(void *p_self, String p_text, Point2 p_selection);
 	void _text_changed();
 	bool expand_to_text_length;
 
