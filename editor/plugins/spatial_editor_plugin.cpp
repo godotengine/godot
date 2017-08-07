@@ -2385,7 +2385,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 
 	view_menu = memnew(MenuButton);
 	surface->add_child(view_menu);
-	view_menu->set_position(Point2(4, 4));
+	view_menu->set_position(Point2(4, 4) * EDSCALE);
 	view_menu->set_self_modulate(Color(1, 1, 1, 0.5));
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/top_view"), VIEW_TOP);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/bottom_view"), VIEW_BOTTOM);
@@ -2429,8 +2429,8 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 
 	preview_camera = memnew(Button);
 	preview_camera->set_toggle_mode(true);
-	preview_camera->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_END, 90);
-	preview_camera->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 10);
+	preview_camera->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_END, 90 * EDSCALE);
+	preview_camera->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 10 * EDSCALE);
 	preview_camera->set_text("preview");
 	surface->add_child(preview_camera);
 	preview_camera->hide();
@@ -2450,7 +2450,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 
 	selection_menu = memnew(PopupMenu);
 	add_child(selection_menu);
-	selection_menu->set_custom_minimum_size(Vector2(100, 0));
+	selection_menu->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
 	selection_menu->connect("id_pressed", this, "_selection_result_pressed");
 	selection_menu->connect("popup_hide", this, "_selection_menu_hide");
 
@@ -2459,7 +2459,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 		viewport->set_as_audio_listener(true);
 	}
 
-	name = TTR("Top");
+	name = "";
 	_update_name();
 
 	EditorSettings::get_singleton()->connect("settings_changed", this, "update_transform_gizmo_view");
