@@ -266,6 +266,18 @@ void Particles::_validate_property(PropertyInfo &property) const {
 	}
 }
 
+void Particles::_notification(int p_what) {
+
+	if (p_what == NOTIFICATION_PAUSED || p_what == NOTIFICATION_UNPAUSED) {
+		if (can_process()) {
+			VS::get_singleton()->particles_set_speed_scale(particles, speed_scale);
+		} else {
+
+			VS::get_singleton()->particles_set_speed_scale(particles, 0);
+		}
+	}
+}
+
 void Particles::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_emitting", "emitting"), &Particles::set_emitting);

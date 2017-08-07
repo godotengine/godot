@@ -300,6 +300,15 @@ void Particles2D::_notification(int p_what) {
 #endif
 	}
 
+	if (p_what == NOTIFICATION_PAUSED || p_what == NOTIFICATION_UNPAUSED) {
+		if (can_process()) {
+			VS::get_singleton()->particles_set_speed_scale(particles, speed_scale);
+		} else {
+
+			VS::get_singleton()->particles_set_speed_scale(particles, 0);
+		}
+	}
+
 	if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
 		_update_particle_emission_transform();
 	}
