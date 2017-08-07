@@ -122,15 +122,7 @@ void JoypadUWP::OnGamepadRemoved(Platform::Object ^ sender, Windows::Gaming::Inp
 
 	ERR_FAIL_COND(idx == -1);
 
-	for (int i = idx + 1; i < MAX_CONTROLLERS - 1; i++) {
-
-		if (!controllers[i].connected) {
-			break;
-		}
-
-		controllers[i - 1] = controllers[i];
-	}
-	controllers[MAX_CONTROLLERS - 1] = ControllerDevice();
+	controllers[idx] = ControllerDevice();
 
 	input->joy_connection_changed(idx, false, "Xbox Controller");
 }
