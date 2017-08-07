@@ -6902,17 +6902,19 @@ void RasterizerStorageGLES3::initialize() {
 	config.use_fast_texture_filter = int(ProjectSettings::get_singleton()->get("rendering/quality/filters/use_nearest_mipmap_filter"));
 	config.use_anisotropic_filter = config.extensions.has("rendering/quality/filters/anisotropic_filter_level");
 
-	config.s3tc_supported = config.extensions.has("GL_EXT_texture_compression_dxt1") || config.extensions.has("GL_EXT_texture_compression_s3tc") || config.extensions.has("WEBGL_compressed_texture_s3tc");
 	config.etc_supported = config.extensions.has("GL_OES_compressed_ETC1_RGB8_texture");
 	config.latc_supported = config.extensions.has("GL_EXT_texture_compression_latc");
-	config.rgtc_supported = config.extensions.has("GL_EXT_texture_compression_rgtc");
 	config.bptc_supported = config.extensions.has("GL_ARB_texture_compression_bptc");
 #ifdef GLES_OVER_GL
 	config.hdr_supported = true;
 	config.etc2_supported = false;
+	config.rgtc_supported = true; //supported by spec
+	config.s3tc_supported = true; //supported by spec
 #else
 	config.etc2_supported = true;
 	config.hdr_supported = false;
+	config.rgtc_supported = config.extensions.has("GL_EXT_texture_compression_rgtc");
+	config.s3tc_supported = config.extensions.has("GL_EXT_texture_compression_dxt1") || config.extensions.has("GL_EXT_texture_compression_s3tc") || config.extensions.has("WEBGL_compressed_texture_s3tc");
 #endif
 
 	config.pvrtc_supported = config.extensions.has("GL_IMG_texture_compression_pvrtc");
