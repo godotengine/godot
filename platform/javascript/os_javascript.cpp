@@ -872,7 +872,11 @@ void OS_JavaScript::process_accelerometer(const Vector3 &p_accelerometer) {
 
 bool OS_JavaScript::has_touchscreen_ui_hint() const {
 
-	return false; //???
+	/* clang-format off */
+	return EM_ASM_INT_V(
+		return 'ontouchstart' in window;
+	);
+	/* clang-format on */
 }
 
 void OS_JavaScript::main_loop_request_quit() {
