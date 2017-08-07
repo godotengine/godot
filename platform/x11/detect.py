@@ -188,6 +188,11 @@ def configure(env):
         if any(platform.machine() in s for s in list_of_x86):
             env["x86_libtheora_opt_gcc"] = True
 
+    # On Linux wchar_t should be 32-bits
+    # 16-bit library shouldn't be required due to compiler optimisations
+    if (env['builtin_pcre2'] == 'no'):
+        env.ParseConfig('pkg-config libpcre2-32 --cflags --libs')
+
     ## Flags
 
     if (os.system("pkg-config --exists alsa") == 0): # 0 means found
