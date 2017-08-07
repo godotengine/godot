@@ -123,6 +123,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 	int format_channels = 0;
 
 	AudioStreamSample::LoopMode loop = AudioStreamSample::LOOP_DISABLED;
+	uint16_t compression_code = 1;
 	bool format_found = false;
 	bool data_found = false;
 	int format_freq = 0;
@@ -151,11 +152,10 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 		if (chunkID[0] == 'f' && chunkID[1] == 'm' && chunkID[2] == 't' && chunkID[3] == ' ' && !format_found) {
 			/* IS FORMAT CHUNK */
 
-			uint16_t compression_code = file->get_16();
-
 			//Issue: #7755 : Not a bug - usage of other formats (format codes) are unsupported in current importer version.
 			//Consider revision for engine version 3.0
-			if (compression_code != 1) {
+			compression_code = file->get_16();
+			if (compression_code != 1 && compression_code != 3) {
 				ERR_PRINT("Format not supported for WAVE file (not PCM). Save WAVE files as uncompressed PCM instead.");
 				break;
 			}
@@ -210,33 +210,37 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 
 			data.resize(frames * format_channels);
 
-			for (int i = 0; i < frames; i++) {
+			if (format_bits == 8) {
+				for (int i = 0; i < frames * format_channels; i++) {
+					// 8 bit samples are UNSIGNED
 
-				for (int c = 0; c < format_channels; c++) {
+					data[i] = int8_t(file->get_8() - 128) / 128.f;
+				}
+			} else if (format_bits == 32 && compression_code == 3) {
+				for (int i = 0; i < frames * format_channels; i++) {
+					//32 bit IEEE Float
 
-					if (format_bits == 8) {
-						// 8 bit samples are UNSIGNED
+					data[i] = file->get_float();
+				}
+			} else if (format_bits == 16) {
+				for (int i = 0; i < frames * format_channels; i++) {
+					//16 bit SIGNED
 
-						uint8_t s = file->get_8();
-						s -= 128;
-						int8_t *sp = (int8_t *)&s;
+					data[i] = int16_t(file->get_16()) / 32768.f;
+				}
+			} else {
+				for (int i = 0; i < frames * format_channels; i++) {
+					//16+ bits samples are SIGNED
+					// if sample is > 16 bits, just read extra bytes
 
-						data[i * format_channels + c] = float(*sp) / 128.0;
+					uint32_t s = 0;
+					for (int b = 0; b < (format_bits >> 3); b++) {
 
-					} else {
-						//16+ bits samples are SIGNED
-						// if sample is > 16 bits, just read extra bytes
-
-						uint32_t s = 0;
-						for (int b = 0; b < (format_bits >> 3); b++) {
-
-							s |= ((uint32_t)file->get_8()) << (b * 8);
-						}
-						s <<= (32 - format_bits);
-						int32_t ss = s;
-
-						data[i * format_channels + c] = (ss >> 16) / 32768.0;
+						s |= ((uint32_t)file->get_8()) << (b * 8);
 					}
+					s <<= (32 - format_bits);
+
+					data[i] = (int32_t(s) >> 16) / 32768.f;
 				}
 			}
 
