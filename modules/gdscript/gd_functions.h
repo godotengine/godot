@@ -105,6 +105,7 @@ public:
 		COLORN,
 		PRINT_STACK,
 		INSTANCE_FROM_ID,
+		LEN,
 		FUNC_MAX
 
 	};

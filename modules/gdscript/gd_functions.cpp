@@ -113,6 +113,7 @@ const char *GDFunctions::get_func_name(Function p_func) {
 		"ColorN",
 		"print_stack",
 		"instance_from_id",
+		"len",
 	};
 
 	return _names[p_func];
@@ -1154,6 +1155,62 @@ void GDFunctions::call(Function p_func, const Variant **p_args, int p_arg_count,
 			r_ret = ObjectDB::get_instance(id);
 
 		} break;
+		case LEN: {
+
+			VALIDATE_ARG_COUNT(1);
+			switch (p_args[0]->get_type()) {
+				case Variant::DICTIONARY: {
+					Dictionary d = *p_args[0];
+					r_ret = d.size();
+				} break;
+				case Variant::ARRAY: {
+					Array d = *p_args[0];
+					r_ret = d.size();
+				} break;
+				case Variant::POOL_BYTE_ARRAY: {
+					PoolVector<uint8_t> d = *p_args[0];
+					r_ret = d.size();
+
+				} break;
+				case Variant::POOL_INT_ARRAY: {
+					PoolVector<int> d = *p_args[0];
+					r_ret = d.size();
+				} break;
+				case Variant::POOL_REAL_ARRAY: {
+
+					PoolVector<real_t> d = *p_args[0];
+					r_ret = d.size();
+				} break;
+				case Variant::POOL_STRING_ARRAY: {
+					PoolVector<String> d = *p_args[0];
+					r_ret = d.size();
+
+				} break;
+				case Variant::POOL_VECTOR2_ARRAY: {
+					PoolVector<Vector2> d = *p_args[0];
+					r_ret = d.size();
+
+				} break;
+				case Variant::POOL_VECTOR3_ARRAY: {
+
+					PoolVector<Vector3> d = *p_args[0];
+					r_ret = d.size();
+				} break;
+				case Variant::POOL_COLOR_ARRAY: {
+
+					PoolVector<Color> d = *p_args[0];
+					r_ret = d.size();
+				} break;
+				default: {
+					r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+					r_error.argument = 0;
+					r_error.expected = Variant::OBJECT;
+					r_ret = Variant();
+					r_ret = RTR("Object can't provide a length.");
+				}
+			}
+
+		} break;
 		case FUNC_MAX: {
 
 			ERR_FAIL();
@@ -1210,6 +1267,7 @@ bool GDFunctions::is_deterministic(Function p_func) {
 		case TEXT_CHAR:
 		case TEXT_STR:
 		case COLOR8:
+		case LEN:
 			// enable for debug only, otherwise not desirable - case GEN_RANGE:
 			return true;
 		default:
@@ -1619,6 +1677,11 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 		case INSTANCE_FROM_ID: {
 			MethodInfo mi("instance_from_id", PropertyInfo(Variant::INT, "instance_id"));
 			mi.return_val.type = Variant::OBJECT;
+			return mi;
+		} break;
+		case LEN: {
+			MethodInfo mi("len", PropertyInfo(Variant::NIL, "var"));
+			mi.return_val.type = Variant::INT;
 			return mi;
 		} break;
 
