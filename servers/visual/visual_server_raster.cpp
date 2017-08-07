@@ -41,22 +41,28 @@
 
 int VisualServerRaster::changes = 0;
 
-/* CURSOR */
-void VisualServerRaster::cursor_set_rotation(float p_rotation, int p_cursor) {
-}
-void VisualServerRaster::cursor_set_texture(RID p_texture, const Point2 &p_center_offset, int p_cursor, const Rect2 &p_region) {
-}
-void VisualServerRaster::cursor_set_visible(bool p_visible, int p_cursor) {
-}
-void VisualServerRaster::cursor_set_pos(const Point2 &p_pos, int p_cursor) {
-}
-
 /* BLACK BARS */
 
 void VisualServerRaster::black_bars_set_margins(int p_left, int p_top, int p_right, int p_bottom) {
+
+	black_margin[MARGIN_LEFT] = p_left;
+	black_margin[MARGIN_TOP] = p_top;
+	black_margin[MARGIN_RIGHT] = p_right;
+	black_margin[MARGIN_BOTTOM] = p_bottom;
 }
+
 void VisualServerRaster::black_bars_set_images(RID p_left, RID p_top, RID p_right, RID p_bottom) {
+
+	black_image[MARGIN_LEFT] = p_left;
+	black_image[MARGIN_TOP] = p_top;
+	black_image[MARGIN_RIGHT] = p_right;
+	black_image[MARGIN_BOTTOM] = p_bottom;
 }
+
+void VisualServerRaster::_draw_margins() {
+
+	VSG::canvas_render->draw_window_margins(black_margin, black_image);
+};
 
 /* FREE */
 
@@ -121,6 +127,8 @@ void VisualServerRaster::draw() {
 
 		frame_drawn_callbacks.pop_front();
 	}
+
+	_draw_margins();
 }
 void VisualServerRaster::sync() {
 }
@@ -189,6 +197,9 @@ VisualServerRaster::VisualServerRaster() {
 	VSG::storage = VSG::rasterizer->get_storage();
 	VSG::canvas_render = VSG::rasterizer->get_canvas();
 	VSG::scene_render = VSG::rasterizer->get_scene();
+
+	for (int i = 0; i < 4; i++)
+		black_margin[i] = 0;
 }
 
 VisualServerRaster::~VisualServerRaster() {

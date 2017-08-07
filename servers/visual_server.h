@@ -875,12 +875,6 @@ public:
 	};
 	virtual void canvas_occluder_polygon_set_cull_mode(RID p_occluder_polygon, CanvasOccluderPolygonCullMode p_mode) = 0;
 
-	/* CURSOR */
-	virtual void cursor_set_rotation(float p_rotation, int p_cursor = 0) = 0; // radians
-	virtual void cursor_set_texture(RID p_texture, const Point2 &p_center_offset = Point2(0, 0), int p_cursor = 0, const Rect2 &p_region = Rect2()) = 0;
-	virtual void cursor_set_visible(bool p_visible, int p_cursor = 0) = 0;
-	virtual void cursor_set_pos(const Point2 &p_pos, int p_cursor = 0) = 0;
-
 	/* BLACK BARS */
 
 	virtual void black_bars_set_margins(int p_left, int p_top, int p_right, int p_bottom) = 0;

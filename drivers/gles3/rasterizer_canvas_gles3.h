@@ -138,6 +138,8 @@ public:
 	void initialize();
 	void finalize();
 
+	virtual void draw_window_margins(int *black_margin, RID *black_image);
+
 	RasterizerCanvasGLES3();
 };
 
