@@ -491,17 +491,8 @@ void ProjectManager::_update_project_buttons() {
 		item->update();
 	}
 
-	bool has_runnable_scene = false;
-	for (Map<String, String>::Element *E = selected_list.front(); E; E = E->next()) {
-		const String &selected_main = E->get();
-		if (selected_main == "") continue;
-		has_runnable_scene = true;
-		break;
-	}
-
 	erase_btn->set_disabled(selected_list.size() < 1);
 	open_btn->set_disabled(selected_list.size() < 1);
-	run_btn->set_disabled(!has_runnable_scene);
 }
 
 void ProjectManager::_panel_input(const Ref<InputEvent> &p_ev, Node *p_hb) {
@@ -969,10 +960,22 @@ void ProjectManager::_run_project_confirm() {
 	for (Map<String, String>::Element *E = selected_list.front(); E; E = E->next()) {
 
 		const String &selected_main = E->get();
-		if (selected_main == "") continue;
+		if (selected_main == "") {
+			run_error_diag->set_text(TTR("Can't run project: no main scene defined.\nPlease edit the project and set the main scene in \"Project Settings\" under the \"Application\" category."));
+			run_error_diag->popup_centered();
+			return;
+		}
+
 
 		const String &selected = E->key();
 		String path = EditorSettings::get_singleton()->get("projects/" + selected);
+
+		if (!DirAccess::exists(path + "/.import")) {
+			run_error_diag->set_text(TTR("Can't run project: Assets need to be imported.\nPlease edit the project to trigger the initial import."));
+			run_error_diag->popup_centered();
+			return;
+		}
+
 		print_line("OPENING: " + path + " (" + selected + ")");
 
 		List<String> args;
@@ -1390,6 +1393,10 @@ ProjectManager::ProjectManager() {
 	last_clicked = "";
 
 	SceneTree::get_singleton()->connect("files_dropped", this, "_files_dropped");
+
+	run_error_diag = memnew(AcceptDialog);
+	gui_base->add_child(run_error_diag);
+	run_error_diag->set_title(TTR("Can't run project"));
 }
 
 ProjectManager::~ProjectManager() {

@@ -57,6 +57,7 @@ class ProjectManager : public Control {
 	ConfirmationDialog *multi_open_ask;
 	ConfirmationDialog *multi_run_ask;
 	ConfirmationDialog *multi_scan_ask;
+	AcceptDialog *run_error_diag;
 	NewProjectDialog *npdialog;
 	ScrollContainer *scroll;
 	VBoxContainer *scroll_childs;
