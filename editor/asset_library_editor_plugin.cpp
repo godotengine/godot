@@ -281,7 +281,7 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 	description = memnew(RichTextLabel);
 	description->connect("meta_clicked", this, "_link_click");
 	desc_bg->add_child(description);
-	desc_bg->add_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_stylebox("normal", "TextEdit"));
+	desc_bg->add_style_override("panel", get_stylebox("normal", "TextEdit"));
 
 	preview = memnew(TextureRect);
 	preview->set_custom_minimum_size(Size2(640, 345));
@@ -290,7 +290,7 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 	PanelContainer *previews_bg = memnew(PanelContainer);
 	vbox->add_child(previews_bg);
 	previews_bg->set_custom_minimum_size(Size2(0, 85));
-	previews_bg->add_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_stylebox("normal", "TextEdit"));
+	previews_bg->add_style_override("panel", get_stylebox("normal", "TextEdit"));
 
 	previews = memnew(ScrollContainer);
 	previews_bg->add_child(previews);
@@ -1362,7 +1362,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	PanelContainer *library_scroll_bg = memnew(PanelContainer);
 	library_main->add_child(library_scroll_bg);
-	library_scroll_bg->add_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_stylebox("bg", "Tree"));
+	library_scroll_bg->add_style_override("panel", get_stylebox("normal", "TextEdit"));
 	library_scroll_bg->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	library_scroll = memnew(ScrollContainer);
