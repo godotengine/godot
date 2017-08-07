@@ -211,9 +211,11 @@ void ScriptEditorQuickOpen::_confirmed() {
 
 void ScriptEditorQuickOpen::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_ENTER_TREE) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
 
-		connect("confirmed", this, "_confirmed");
+			connect("confirmed", this, "_confirmed");
+		} break;
 	}
 }
 
@@ -1064,58 +1066,73 @@ void ScriptEditor::_tab_changed(int p_which) {
 
 void ScriptEditor::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_ENTER_TREE) {
+	switch (p_what) {
 
-		editor->connect("play_pressed", this, "_editor_play");
-		editor->connect("pause_pressed", this, "_editor_pause");
-		editor->connect("stop_pressed", this, "_editor_stop");
-		editor->connect("script_add_function_request", this, "_add_callback");
-		editor->connect("resource_saved", this, "_res_saved_callback");
-		script_list->connect("item_selected", this, "_script_selected");
-		members_overview->connect("item_selected", this, "_members_overview_selected");
-		script_split->connect("dragged", this, "_script_split_dragged");
-		autosave_timer->connect("timeout", this, "_autosave_scripts");
-		{
-			float autosave_time = EditorSettings::get_singleton()->get("text_editor/files/autosave_interval_secs");
-			if (autosave_time > 0) {
-				autosave_timer->set_wait_time(autosave_time);
-				autosave_timer->start();
-			} else {
-				autosave_timer->stop();
+		case NOTIFICATION_ENTER_TREE: {
+
+			editor->connect("play_pressed", this, "_editor_play");
+			editor->connect("pause_pressed", this, "_editor_pause");
+			editor->connect("stop_pressed", this, "_editor_stop");
+			editor->connect("script_add_function_request", this, "_add_callback");
+			editor->connect("resource_saved", this, "_res_saved_callback");
+			script_list->connect("item_selected", this, "_script_selected");
+			members_overview->connect("item_selected", this, "_members_overview_selected");
+			script_split->connect("dragged", this, "_script_split_dragged");
+			autosave_timer->connect("timeout", this, "_autosave_scripts");
+			{
+				float autosave_time = EditorSettings::get_singleton()->get("text_editor/files/autosave_interval_secs");
+				if (autosave_time > 0) {
+					autosave_timer->set_wait_time(autosave_time);
+					autosave_timer->start();
+				} else {
+					autosave_timer->stop();
+				}
 			}
-		}
 
-		EditorSettings::get_singleton()->connect("settings_changed", this, "_editor_settings_changed");
-		help_search->set_icon(get_icon("HelpSearch", "EditorIcons"));
-		site_search->set_icon(get_icon("Instance", "EditorIcons"));
-		class_search->set_icon(get_icon("ClassList", "EditorIcons"));
+			EditorSettings::get_singleton()->connect("settings_changed", this, "_editor_settings_changed");
+			help_search->set_icon(get_icon("HelpSearch", "EditorIcons"));
+			site_search->set_icon(get_icon("Instance", "EditorIcons"));
+			class_search->set_icon(get_icon("ClassList", "EditorIcons"));
 
-		script_forward->set_icon(get_icon("Forward", "EditorIcons"));
-		script_back->set_icon(get_icon("Back", "EditorIcons"));
-	}
+			script_forward->set_icon(get_icon("Forward", "EditorIcons"));
+			script_back->set_icon(get_icon("Back", "EditorIcons"));
+		} break;
 
-	if (p_what == NOTIFICATION_READY) {
+		case NOTIFICATION_READY: {
 
-		get_tree()->connect("tree_changed", this, "_tree_changed");
-		editor->connect("request_help", this, "_request_help");
-		editor->connect("request_help_search", this, "_help_search");
-		editor->connect("request_help_index", this, "_help_index");
-	}
+			get_tree()->connect("tree_changed", this, "_tree_changed");
+			editor->connect("request_help", this, "_request_help");
+			editor->connect("request_help_search", this, "_help_search");
+			editor->connect("request_help_index", this, "_help_index");
+		} break;
 
-	if (p_what == NOTIFICATION_EXIT_TREE) {
+		case NOTIFICATION_EXIT_TREE: {
 
-		editor->disconnect("play_pressed", this, "_editor_play");
-		editor->disconnect("pause_pressed", this, "_editor_pause");
-		editor->disconnect("stop_pressed", this, "_editor_stop");
-	}
+			editor->disconnect("play_pressed", this, "_editor_play");
+			editor->disconnect("pause_pressed", this, "_editor_pause");
+			editor->disconnect("stop_pressed", this, "_editor_stop");
+		} break;
 
-	if (p_what == MainLoop::NOTIFICATION_WM_FOCUS_IN) {
+		case MainLoop::NOTIFICATION_WM_FOCUS_IN: {
 
-		_test_script_times_on_disk();
-		_update_modified_scripts_for_external_editor();
-	}
+			_test_script_times_on_disk();
+			_update_modified_scripts_for_external_editor();
+		} break;
 
-	if (p_what == NOTIFICATION_PROCESS) {
+		case NOTIFICATION_PROCESS: {
+		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+
+			tab_container->add_style_override("panel", editor->get_gui_base()->get_stylebox("ScriptPanel", "EditorStyles"));
+
+			Ref<StyleBox> sb = editor->get_gui_base()->get_stylebox("panel", "TabContainer")->duplicate();
+			sb->set_default_margin(MARGIN_TOP, 0);
+			add_style_override("panel", sb);
+		} break;
+
+		default:
+			break;
 	}
 }
 
