@@ -2028,6 +2028,89 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		}
 	}
 
+	Ref<InputEventScreenTouch> touch_event = p_event;
+	if (touch_event.is_valid()) {
+
+		Size2 pos = touch_event->get_position();
+		if (touch_event->is_pressed()) {
+
+			Control *over = _gui_find_control(pos);
+			if (over) {
+
+				if (!gui.modal_stack.empty()) {
+
+					Control *top = gui.modal_stack.back()->get();
+					if (over != top && !top->is_a_parent_of(over)) {
+
+						return;
+					}
+				}
+				if (over->can_process()) {
+
+					touch_event = touch_event->xformed_by(Transform2D()); //make a copy
+					if (over == gui.mouse_focus) {
+						pos = gui.focus_inv_xform.xform(pos);
+					} else {
+						pos = over->get_global_transform_with_canvas().affine_inverse().xform(pos);
+					}
+					touch_event->set_position(pos);
+					_gui_call_input(over, touch_event);
+				}
+				get_tree()->set_input_as_handled();
+				return;
+			}
+		} else if (gui.mouse_focus) {
+
+			if (gui.mouse_focus->can_process()) {
+
+				touch_event = touch_event->xformed_by(Transform2D()); //make a copy
+				touch_event->set_position(gui.focus_inv_xform.xform(pos));
+
+				_gui_call_input(gui.mouse_focus, touch_event);
+			}
+			get_tree()->set_input_as_handled();
+			return;
+		}
+	}
+
+	Ref<InputEventScreenDrag> drag_event = p_event;
+	if (drag_event.is_valid()) {
+
+		Control *over = gui.mouse_focus;
+		if (!over) {
+			over = _gui_find_control(drag_event->get_position());
+		}
+		if (over) {
+
+			if (!gui.modal_stack.empty()) {
+
+				Control *top = gui.modal_stack.back()->get();
+				if (over != top && !top->is_a_parent_of(over)) {
+
+					return;
+				}
+			}
+			if (over->can_process()) {
+
+				Transform2D localizer = over->get_global_transform_with_canvas().affine_inverse();
+				Size2 pos = localizer.xform(drag_event->get_position());
+				Vector2 speed = localizer.basis_xform(drag_event->get_speed());
+				Vector2 rel = localizer.basis_xform(drag_event->get_relative());
+
+				drag_event = drag_event->xformed_by(Transform2D()); //make a copy
+
+				drag_event->set_speed(speed);
+				drag_event->set_relative(rel);
+				drag_event->set_position(pos);
+
+				_gui_call_input(over, drag_event);
+			}
+
+			get_tree()->set_input_as_handled();
+			return;
+		}
+	}
+
 	if (mm.is_null() && mb.is_null() && p_event->is_action_type()) {
 
 		if (gui.key_focus && !gui.key_focus->is_visible_in_tree()) {
