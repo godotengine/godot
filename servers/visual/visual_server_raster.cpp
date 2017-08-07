@@ -78,7 +78,7 @@ void VisualServerRaster::request_frame_drawn_callback(Object *p_where, const Str
 
 	ERR_FAIL_NULL(p_where);
 	FrameDrawnCallbacks fdc;
-	fdc.object = p_where->get_instance_ID();
+	fdc.object = p_where->get_instance_id();
 	fdc.method = p_method;
 	fdc.param = p_userdata;
 
@@ -2626,14 +2626,14 @@ AABB VisualServerRaster::instance_get_base_aabb(RID p_instance) const {
 
 }
 
-void VisualServerRaster::instance_attach_object_instance_ID(RID p_instance,uint32_t p_ID) {
+void VisualServerRaster::instance_attach_object_instance_id(RID p_instance,uint32_t p_ID) {
 	VS_CHANGED;
 	Instance *instance = instance_owner.get( p_instance );
 	ERR_FAIL_COND( !instance );
 
 	instance->object_ID=p_ID;
 }
-uint32_t VisualServerRaster::instance_get_object_instance_ID(RID p_instance) const {
+uint32_t VisualServerRaster::instance_get_object_instance_id(RID p_instance) const {
 
 	Instance *instance = instance_owner.get( p_instance );
 	ERR_FAIL_COND_V( !instance, 0 );

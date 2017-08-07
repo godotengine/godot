@@ -615,7 +615,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 
 						Ref<Resource> res = value;
 						Array arr;
-						arr.push_back(button->get_instance_ID());
+						arr.push_back(button->get_instance_id());
 						arr.push_back(String(value));
 						EditorResourcePreview::get_singleton()->queue_edited_resource_preview(res, this, "_button_resource_previewed", arr);
 
@@ -1969,7 +1969,7 @@ String VisualScriptEditor::get_name() {
 	} else if (script->get_name() != "")
 		name = script->get_name();
 	else
-		name = script->get_class() + "(" + itos(script->get_instance_ID()) + ")";
+		name = script->get_class() + "(" + itos(script->get_instance_id()) + ")";
 
 	return name;
 }

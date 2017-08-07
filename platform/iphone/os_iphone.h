@@ -190,8 +190,8 @@ public:
 	void set_locale(String p_locale);
 	String get_locale() const;
 
-	void set_unique_ID(String p_ID);
-	String get_unique_ID() const;
+	void set_unique_id(String p_ID);
+	String get_unique_id() const;
 
 	virtual Error native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track);
 	virtual bool native_video_is_playing() const;

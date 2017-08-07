@@ -2303,7 +2303,7 @@ List<Control *>::Element *Viewport::_gui_show_modal(Control *p_control) {
 
 	gui.modal_stack.push_back(p_control);
 	if (gui.key_focus)
-		p_control->_modal_set_prev_focus_owner(gui.key_focus->get_instance_ID());
+		p_control->_modal_set_prev_focus_owner(gui.key_focus->get_instance_id());
 	else
 		p_control->_modal_set_prev_focus_owner(0);
 
@@ -2769,7 +2769,7 @@ Viewport::Viewport() {
 	set_shadow_atlas_quadrant_subdiv(2, SHADOW_ATLAS_QUADRANT_SUBDIV_16);
 	set_shadow_atlas_quadrant_subdiv(3, SHADOW_ATLAS_QUADRANT_SUBDIV_64);
 
-	String id = itos(get_instance_ID());
+	String id = itos(get_instance_id());
 	input_group = "_vp_input" + id;
 	gui_input_group = "_vp_gui_input" + id;
 	unhandled_input_group = "_vp_unhandled_input" + id;

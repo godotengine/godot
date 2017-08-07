@@ -63,7 +63,7 @@ void EditorPath::_add_children_to_popup(Object *p_obj, int p_depth) {
 		int index = popup->get_item_count();
 		popup->add_icon_item(icon, E->get().name.capitalize(), objects.size());
 		popup->set_item_h_offset(index, p_depth * 10 * EDSCALE);
-		objects.push_back(obj->get_instance_ID());
+		objects.push_back(obj->get_instance_id());
 
 		_add_children_to_popup(obj, p_depth + 1);
 	}

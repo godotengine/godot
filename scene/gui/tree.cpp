@@ -291,7 +291,7 @@ void TreeItem::set_custom_draw(int p_column, Object *p_object, const StringName 
 	ERR_FAIL_INDEX(p_column, cells.size());
 	ERR_FAIL_NULL(p_object);
 
-	cells[p_column].custom_draw_obj = p_object->get_instance_ID();
+	cells[p_column].custom_draw_obj = p_object->get_instance_id();
 	cells[p_column].custom_draw_callback = p_callback;
 }
 

@@ -39,7 +39,7 @@ class ThreadDummy : public Thread {
 	static Thread *create(ThreadCreateCallback p_callback, void *p_user, const Settings &p_settings = Settings());
 
 public:
-	virtual ID get_ID() const { return 0; };
+	virtual ID get_id() const { return 0; };
 
 	static void make_default();
 };

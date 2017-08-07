@@ -222,7 +222,7 @@ public:
 	virtual String get_model_name() const;
 	virtual int get_screen_dpi(int p_screen = 0) const;
 
-	virtual String get_unique_ID() const;
+	virtual String get_unique_id() const;
 
 	virtual String get_system_dir(SystemDir p_dir) const;
 

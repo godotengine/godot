@@ -1948,7 +1948,7 @@ Error OS_Windows::kill(const ProcessID &p_pid) {
 	return ret != 0 ? OK : FAILED;
 };
 
-int OS_Windows::get_process_ID() const {
+int OS_Windows::get_process_id() const {
 	return _getpid();
 }
 

@@ -2370,7 +2370,7 @@ void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String &p
 					p_item->set_text(1, res->get_path().get_file());
 				} else if (!res->is_class("Texture")) {
 					//texture already previews via itself
-					EditorResourcePreview::get_singleton()->queue_edited_resource_preview(res, this, "_resource_preview_done", p_item->get_instance_ID());
+					EditorResourcePreview::get_singleton()->queue_edited_resource_preview(res, this, "_resource_preview_done", p_item->get_instance_id());
 				}
 			}
 
@@ -3630,7 +3630,7 @@ void PropertyEditor::update_tree() {
 						item->set_text(1, res->get_path().get_file());
 					} else if (!res->is_class("Texture")) {
 						//texture already previews via itself
-						EditorResourcePreview::get_singleton()->queue_edited_resource_preview(res, this, "_resource_preview_done", item->get_instance_ID());
+						EditorResourcePreview::get_singleton()->queue_edited_resource_preview(res, this, "_resource_preview_done", item->get_instance_id());
 					}
 				}
 
@@ -4586,7 +4586,7 @@ void SectionedPropertyEditor::edit(Object *p_object) {
 		return;
 	}
 
-	ObjectID id = p_object->get_instance_ID();
+	ObjectID id = p_object->get_instance_id();
 
 	if (obj != id) {
 

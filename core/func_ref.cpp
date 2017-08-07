@@ -48,7 +48,7 @@ Variant FuncRef::call_func(const Variant **p_args, int p_argcount, Variant::Call
 void FuncRef::set_instance(Object *p_obj) {
 
 	ERR_FAIL_NULL(p_obj);
-	id = p_obj->get_instance_ID();
+	id = p_obj->get_instance_id();
 }
 void FuncRef::set_function(const StringName &p_func) {
 

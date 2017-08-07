@@ -183,7 +183,7 @@ ObjectID EditorHistory::get_current() {
 	if (!obj)
 		return 0;
 
-	return obj->get_instance_ID();
+	return obj->get_instance_id();
 }
 
 int EditorHistory::get_path_size() const {
@@ -208,7 +208,7 @@ ObjectID EditorHistory::get_path_object(int p_index) const {
 	if (!obj)
 		return 0;
 
-	return obj->get_instance_ID();
+	return obj->get_instance_id();
 }
 
 String EditorHistory::get_path_property(int p_index) const {

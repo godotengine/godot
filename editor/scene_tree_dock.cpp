@@ -1369,8 +1369,8 @@ void SceneTreeDock::_delete_confirm() {
 			editor_data->get_undo_redo().add_undo_reference(n);
 
 			ScriptEditorDebugger *sed = ScriptEditor::get_singleton()->get_debugger();
-			editor_data->get_undo_redo().add_do_method(sed, "live_debug_remove_and_keep_node", edited_scene->get_path_to(n), n->get_instance_ID());
-			editor_data->get_undo_redo().add_undo_method(sed, "live_debug_restore_node", n->get_instance_ID(), edited_scene->get_path_to(n->get_parent()), n->get_index());
+			editor_data->get_undo_redo().add_do_method(sed, "live_debug_remove_and_keep_node", edited_scene->get_path_to(n), n->get_instance_id());
+			editor_data->get_undo_redo().add_undo_method(sed, "live_debug_restore_node", n->get_instance_id(), edited_scene->get_path_to(n->get_parent()), n->get_index());
 		}
 	}
 	editor_data->get_undo_redo().commit_action();
@@ -1824,7 +1824,7 @@ void SceneTreeDock::_add_children_to_popup(Object *p_obj, int p_depth) {
 		int index = menu->get_item_count();
 		menu->add_icon_item(icon, E->get().name.capitalize(), EDIT_SUBRESOURCE_BASE + subresources.size());
 		menu->set_item_h_offset(index, p_depth * 10 * EDSCALE);
-		subresources.push_back(obj->get_instance_ID());
+		subresources.push_back(obj->get_instance_id());
 
 		_add_children_to_popup(obj, p_depth + 1);
 	}

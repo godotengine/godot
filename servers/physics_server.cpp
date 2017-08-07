@@ -434,8 +434,8 @@ void PhysicsServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("area_get_param", "area", "param"), &PhysicsServer::area_get_param);
 	ClassDB::bind_method(D_METHOD("area_get_transform", "area"), &PhysicsServer::area_get_transform);
 
-	ClassDB::bind_method(D_METHOD("area_attach_object_instance_ID", "area", "id"), &PhysicsServer::area_attach_object_instance_ID);
-	ClassDB::bind_method(D_METHOD("area_get_object_instance_ID", "area"), &PhysicsServer::area_get_object_instance_ID);
+	ClassDB::bind_method(D_METHOD("area_attach_object_instance_id", "area", "id"), &PhysicsServer::area_attach_object_instance_id);
+	ClassDB::bind_method(D_METHOD("area_get_object_instance_id", "area"), &PhysicsServer::area_get_object_instance_id);
 
 	ClassDB::bind_method(D_METHOD("area_set_monitor_callback", "area", "receiver", "method"), &PhysicsServer::area_set_monitor_callback);
 
@@ -467,8 +467,8 @@ void PhysicsServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("body_remove_shape", "body", "shape_idx"), &PhysicsServer::body_remove_shape);
 	ClassDB::bind_method(D_METHOD("body_clear_shapes", "body"), &PhysicsServer::body_clear_shapes);
 
-	ClassDB::bind_method(D_METHOD("body_attach_object_instance_ID", "body", "id"), &PhysicsServer::body_attach_object_instance_ID);
-	ClassDB::bind_method(D_METHOD("body_get_object_instance_ID", "body"), &PhysicsServer::body_get_object_instance_ID);
+	ClassDB::bind_method(D_METHOD("body_attach_object_instance_id", "body", "id"), &PhysicsServer::body_attach_object_instance_id);
+	ClassDB::bind_method(D_METHOD("body_get_object_instance_id", "body"), &PhysicsServer::body_get_object_instance_id);
 
 	ClassDB::bind_method(D_METHOD("body_set_enable_continuous_collision_detection", "body", "enable"), &PhysicsServer::body_set_enable_continuous_collision_detection);
 	ClassDB::bind_method(D_METHOD("body_is_continuous_collision_detection_enabled", "body"), &PhysicsServer::body_is_continuous_collision_detection_enabled);
@@ -516,11 +516,11 @@ void PhysicsServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("pin_joint_set_param", "joint", "param", "value"), &PhysicsServer::pin_joint_set_param);
 	ClassDB::bind_method(D_METHOD("pin_joint_get_param", "joint", "param"), &PhysicsServer::pin_joint_get_param);
 
-	ClassDB::bind_method(D_METHOD("pin_joint_set_local_A", "joint", "local_A"), &PhysicsServer::pin_joint_set_local_A);
-	ClassDB::bind_method(D_METHOD("pin_joint_get_local_A", "joint"), &PhysicsServer::pin_joint_get_local_A);
+	ClassDB::bind_method(D_METHOD("pin_joint_set_local_a", "joint", "local_A"), &PhysicsServer::pin_joint_set_local_a);
+	ClassDB::bind_method(D_METHOD("pin_joint_get_local_a", "joint"), &PhysicsServer::pin_joint_get_local_a);
 
-	ClassDB::bind_method(D_METHOD("pin_joint_set_local_B", "joint", "local_B"), &PhysicsServer::pin_joint_set_local_B);
-	ClassDB::bind_method(D_METHOD("pin_joint_get_local_B", "joint"), &PhysicsServer::pin_joint_get_local_B);
+	ClassDB::bind_method(D_METHOD("pin_joint_set_local_b", "joint", "local_B"), &PhysicsServer::pin_joint_set_local_b);
+	ClassDB::bind_method(D_METHOD("pin_joint_get_local_b", "joint"), &PhysicsServer::pin_joint_get_local_b);
 
 	BIND_CONSTANT(PIN_JOINT_BIAS);
 	BIND_CONSTANT(PIN_JOINT_DAMPING);

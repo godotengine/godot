@@ -251,7 +251,7 @@ void ArrayPropertyEdit::edit(Object *p_obj, const StringName &p_prop, const Stri
 
 	page = 0;
 	property = p_prop;
-	obj = p_obj->get_instance_ID();
+	obj = p_obj->get_instance_id();
 	default_type = p_deftype;
 
 	if (!p_hint_string.empty()) {

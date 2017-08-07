@@ -480,7 +480,7 @@ Array Area2D::get_overlapping_areas() const {
 bool Area2D::overlaps_area(Node *p_area) const {
 
 	ERR_FAIL_NULL_V(p_area, false);
-	const Map<ObjectID, AreaState>::Element *E = area_map.find(p_area->get_instance_ID());
+	const Map<ObjectID, AreaState>::Element *E = area_map.find(p_area->get_instance_id());
 	if (!E)
 		return false;
 	return E->get().in_tree;
@@ -489,7 +489,7 @@ bool Area2D::overlaps_area(Node *p_area) const {
 bool Area2D::overlaps_body(Node *p_body) const {
 
 	ERR_FAIL_NULL_V(p_body, false);
-	const Map<ObjectID, BodyState>::Element *E = body_map.find(p_body->get_instance_ID());
+	const Map<ObjectID, BodyState>::Element *E = body_map.find(p_body->get_instance_id());
 	if (!E)
 		return false;
 	return E->get().in_tree;

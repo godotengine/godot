@@ -41,7 +41,7 @@ Thread *ThreadUWP::create_func_uwp(ThreadCreateCallback p_callback, void *p_user
 	return thread;
 };
 
-Thread::ID ThreadUWP::get_thread_ID_func_uwp() {
+Thread::ID ThreadUWP::get_thread_id_func_uwp() {
 
 	return std::hash<std::thread::id>()(std::this_thread::get_id());
 };
@@ -52,14 +52,14 @@ void ThreadUWP::wait_to_finish_func_uwp(Thread *p_thread) {
 	tp->thread.join();
 };
 
-Thread::ID ThreadUWP::get_ID() const {
+Thread::ID ThreadUWP::get_id() const {
 
 	return std::hash<std::thread::id>()(thread.get_id());
 };
 
 void ThreadUWP::make_default() {
 	create_func = create_func_uwp;
-	get_thread_ID_func = get_thread_ID_func_uwp;
+	get_thread_id_func = get_thread_id_func_uwp;
 	wait_to_finish_func = wait_to_finish_func_uwp;
 };
 

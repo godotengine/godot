@@ -514,8 +514,8 @@ void Physics2DServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("area_get_param", "area", "param"), &Physics2DServer::area_get_param);
 	ClassDB::bind_method(D_METHOD("area_get_transform", "area"), &Physics2DServer::area_get_transform);
 
-	ClassDB::bind_method(D_METHOD("area_attach_object_instance_ID", "area", "id"), &Physics2DServer::area_attach_object_instance_ID);
-	ClassDB::bind_method(D_METHOD("area_get_object_instance_ID", "area"), &Physics2DServer::area_get_object_instance_ID);
+	ClassDB::bind_method(D_METHOD("area_attach_object_instance_id", "area", "id"), &Physics2DServer::area_attach_object_instance_id);
+	ClassDB::bind_method(D_METHOD("area_get_object_instance_id", "area"), &Physics2DServer::area_get_object_instance_id);
 
 	ClassDB::bind_method(D_METHOD("area_set_monitor_callback", "area", "receiver", "method"), &Physics2DServer::area_set_monitor_callback);
 
@@ -543,8 +543,8 @@ void Physics2DServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("body_set_shape_disabled", "body", "shape_idx", "disable"), &Physics2DServer::body_set_shape_disabled);
 	ClassDB::bind_method(D_METHOD("body_set_shape_as_one_way_collision", "body", "shape_idx", "enable"), &Physics2DServer::body_set_shape_as_one_way_collision);
 
-	ClassDB::bind_method(D_METHOD("body_attach_object_instance_ID", "body", "id"), &Physics2DServer::body_attach_object_instance_ID);
-	ClassDB::bind_method(D_METHOD("body_get_object_instance_ID", "body"), &Physics2DServer::body_get_object_instance_ID);
+	ClassDB::bind_method(D_METHOD("body_attach_object_instance_id", "body", "id"), &Physics2DServer::body_attach_object_instance_id);
+	ClassDB::bind_method(D_METHOD("body_get_object_instance_id", "body"), &Physics2DServer::body_get_object_instance_id);
 
 	ClassDB::bind_method(D_METHOD("body_set_continuous_collision_detection_mode", "body", "mode"), &Physics2DServer::body_set_continuous_collision_detection_mode);
 	ClassDB::bind_method(D_METHOD("body_get_continuous_collision_detection_mode", "body"), &Physics2DServer::body_get_continuous_collision_detection_mode);

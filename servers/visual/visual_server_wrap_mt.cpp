@@ -68,7 +68,7 @@ void VisualServerWrapMT::_thread_callback(void *_instance) {
 
 void VisualServerWrapMT::thread_loop() {
 
-	server_thread = Thread::get_caller_ID();
+	server_thread = Thread::get_caller_id();
 
 	OS::get_singleton()->make_rendering_thread();
 
@@ -179,7 +179,7 @@ VisualServerWrapMT::VisualServerWrapMT(VisualServer *p_contained, bool p_create_
 	pool_max_size = GLOBAL_GET("memory/limits/multithreaded_server/rid_pool_prealloc");
 
 	if (!p_create_thread) {
-		server_thread = Thread::get_caller_ID();
+		server_thread = Thread::get_caller_id();
 	} else {
 		server_thread = 0;
 	}

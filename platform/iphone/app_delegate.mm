@@ -424,7 +424,7 @@ static int frame_count = 0;
 				}
 			}
 
-			OSIPhone::get_singleton()->set_unique_ID(String::utf8([uuid UTF8String]));
+			OSIPhone::get_singleton()->set_unique_id(String::utf8([uuid UTF8String]));
 
 		}; break;
 		/*

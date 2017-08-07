@@ -372,9 +372,9 @@ CollisionObject2D::CollisionObject2D(RID p_rid, bool p_area) {
 
 	if (p_area) {
 
-		Physics2DServer::get_singleton()->area_attach_object_instance_ID(rid, get_instance_ID());
+		Physics2DServer::get_singleton()->area_attach_object_instance_id(rid, get_instance_id());
 	} else {
-		Physics2DServer::get_singleton()->body_attach_object_instance_ID(rid, get_instance_ID());
+		Physics2DServer::get_singleton()->body_attach_object_instance_id(rid, get_instance_id());
 	}
 }
 

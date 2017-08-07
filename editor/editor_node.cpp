@@ -1358,7 +1358,7 @@ void EditorNode::push_item(Object *p_object, const String &p_property) {
 		return;
 	}
 
-	uint32_t id = p_object->get_instance_ID();
+	uint32_t id = p_object->get_instance_id();
 	if (id != editor_history.get_current()) {
 
 		if (p_property == "")

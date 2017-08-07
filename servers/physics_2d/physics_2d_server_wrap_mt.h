@@ -98,7 +98,7 @@ public:
 	//these work well, but should be used from the main thread only
 	bool shape_collide(RID p_shape_A, const Transform2D &p_xform_A, const Vector2 &p_motion_A, RID p_shape_B, const Transform2D &p_xform_B, const Vector2 &p_motion_B, Vector2 *r_results, int p_result_max, int &r_result_count) {
 
-		ERR_FAIL_COND_V(main_thread != Thread::get_caller_ID(), false);
+		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), false);
 		return physics_2d_server->shape_collide(p_shape_A, p_xform_A, p_motion_A, p_shape_B, p_xform_B, p_motion_B, r_results, p_result_max, r_result_count);
 	}
 
@@ -114,20 +114,20 @@ public:
 	// this function only works on fixed process, errors and returns null otherwise
 	Physics2DDirectSpaceState *space_get_direct_state(RID p_space) {
 
-		ERR_FAIL_COND_V(main_thread != Thread::get_caller_ID(), NULL);
+		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), NULL);
 		return physics_2d_server->space_get_direct_state(p_space);
 	}
 
 	FUNC2(space_set_debug_contacts, RID, int);
 	virtual Vector<Vector2> space_get_contacts(RID p_space) const {
 
-		ERR_FAIL_COND_V(main_thread != Thread::get_caller_ID(), Vector<Vector2>());
+		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), Vector<Vector2>());
 		return physics_2d_server->space_get_contacts(p_space);
 	}
 
 	virtual int space_get_contact_count(RID p_space) const {
 
-		ERR_FAIL_COND_V(main_thread != Thread::get_caller_ID(), 0);
+		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), 0);
 		return physics_2d_server->space_get_contact_count(p_space);
 	}
 
@@ -153,8 +153,8 @@ public:
 	FUNC2(area_remove_shape, RID, int);
 	FUNC1(area_clear_shapes, RID);
 
-	FUNC2(area_attach_object_instance_ID, RID, ObjectID);
-	FUNC1RC(ObjectID, area_get_object_instance_ID, RID);
+	FUNC2(area_attach_object_instance_id, RID, ObjectID);
+	FUNC1RC(ObjectID, area_get_object_instance_id, RID);
 
 	FUNC3(area_set_param, RID, AreaParameter, const Variant &);
 	FUNC2(area_set_transform, RID, const Transform2D &);
@@ -198,8 +198,8 @@ public:
 	FUNC2(body_remove_shape, RID, int);
 	FUNC1(body_clear_shapes, RID);
 
-	FUNC2(body_attach_object_instance_ID, RID, uint32_t);
-	FUNC1RC(uint32_t, body_get_object_instance_ID, RID);
+	FUNC2(body_attach_object_instance_id, RID, uint32_t);
+	FUNC1RC(uint32_t, body_get_object_instance_id, RID);
 
 	FUNC2(body_set_continuous_collision_detection_mode, RID, CCDMode);
 	FUNC1RC(CCDMode, body_get_continuous_collision_detection_mode, RID);
@@ -249,7 +249,7 @@ public:
 
 	bool body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, real_t p_margin = 0.001, MotionResult *r_result = NULL) {
 
-		ERR_FAIL_COND_V(main_thread != Thread::get_caller_ID(), false);
+		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), false);
 		return physics_2d_server->body_test_motion(p_body, p_from, p_motion, p_margin, r_result);
 	}
 

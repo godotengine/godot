@@ -38,7 +38,7 @@
 
 #include "os/memory.h"
 
-Thread::ID ThreadPosix::get_ID() const {
+Thread::ID ThreadPosix::get_id() const {
 
 	return id;
 }
@@ -75,7 +75,7 @@ Thread *ThreadPosix::create_func_posix(ThreadCreateCallback p_callback, void *p_
 
 	return tr;
 }
-Thread::ID ThreadPosix::get_thread_ID_func_posix() {
+Thread::ID ThreadPosix::get_thread_id_func_posix() {
 
 	return (ID)pthread_self();
 }
@@ -122,7 +122,7 @@ Error ThreadPosix::set_name_func_posix(const String &p_name) {
 void ThreadPosix::make_default() {
 
 	create_func = create_func_posix;
-	get_thread_ID_func = get_thread_ID_func_posix;
+	get_thread_id_func = get_thread_id_func_posix;
 	wait_to_finish_func = wait_to_finish_func_posix;
 	set_name_func = set_name_func_posix;
 }

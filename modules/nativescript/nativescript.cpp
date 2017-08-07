@@ -113,7 +113,7 @@ void NativeScript::set_library(Ref<GDNativeLibrary> p_library) {
 	lib_path = library->get_active_library_path();
 
 #ifndef NO_THREADS
-	if (Thread::get_caller_ID() != Thread::get_main_ID()) {
+	if (Thread::get_caller_id() != Thread::get_main_id()) {
 		NSL->defer_init_library(p_library, this);
 	} else
 #endif

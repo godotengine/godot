@@ -108,12 +108,12 @@ Variant WeakRef::get_ref() const {
 }
 
 void WeakRef::set_obj(Object *p_object) {
-	ref = p_object ? p_object->get_instance_ID() : 0;
+	ref = p_object ? p_object->get_instance_id() : 0;
 }
 
 void WeakRef::set_ref(const REF &p_ref) {
 
-	ref = p_ref.is_valid() ? p_ref->get_instance_ID() : 0;
+	ref = p_ref.is_valid() ? p_ref->get_instance_id() : 0;
 }
 
 WeakRef::WeakRef() {

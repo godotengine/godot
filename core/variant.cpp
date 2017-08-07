@@ -1600,7 +1600,7 @@ Variant::operator String() const {
 					};
 				};
 #endif
-				return "[" + _get_obj().obj->get_class() + ":" + itos(_get_obj().obj->get_instance_ID()) + "]";
+				return "[" + _get_obj().obj->get_class() + ":" + itos(_get_obj().obj->get_instance_id()) + "]";
 			} else
 				return "[Object:null]";
 

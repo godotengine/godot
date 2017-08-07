@@ -149,7 +149,7 @@ void VisualInstance::set_base(const RID &p_base) {
 VisualInstance::VisualInstance() {
 
 	instance = VisualServer::get_singleton()->instance_create();
-	VisualServer::get_singleton()->instance_attach_object_instance_ID(instance, get_instance_ID());
+	VisualServer::get_singleton()->instance_attach_object_instance_id(instance, get_instance_id());
 	layers = 1;
 	set_notify_transform(true);
 }

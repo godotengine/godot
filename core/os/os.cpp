@@ -129,7 +129,7 @@ String OS::get_executable_path() const {
 	return _execpath;
 }
 
-int OS::get_process_ID() const {
+int OS::get_process_id() const {
 
 	return -1;
 };
@@ -175,7 +175,7 @@ static void _OS_printres(Object *p_obj) {
 	if (!res)
 		return;
 
-	String str = itos(res->get_instance_ID()) + String(res->get_class()) + ":" + String(res->get_name()) + " - " + res->get_path();
+	String str = itos(res->get_instance_id()) + String(res->get_class()) + ":" + String(res->get_name()) + " - " + res->get_path();
 	if (_OSPRF)
 		_OSPRF->store_line(str);
 	else
@@ -412,7 +412,7 @@ void OS::make_rendering_thread() {
 void OS::swap_buffers() {
 }
 
-String OS::get_unique_ID() const {
+String OS::get_unique_id() const {
 
 	ERR_FAIL_V("");
 }

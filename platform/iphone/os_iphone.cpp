@@ -83,12 +83,12 @@ void OSIPhone::set_data_dir(String p_dir) {
 	memdelete(da);
 };
 
-void OSIPhone::set_unique_ID(String p_ID) {
+void OSIPhone::set_unique_id(String p_ID) {
 
 	unique_ID = p_ID;
 };
 
-String OSIPhone::get_unique_ID() const {
+String OSIPhone::get_unique_id() const {
 
 	return unique_ID;
 };

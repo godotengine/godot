@@ -32,7 +32,7 @@
 #include "os/memory.h"
 #include "script_language.h"
 
-Thread::ID ThreadAndroid::get_ID() const {
+Thread::ID ThreadAndroid::get_id() const {
 
 	return id;
 }
@@ -66,7 +66,7 @@ Thread *ThreadAndroid::create_func_jandroid(ThreadCreateCallback p_callback, voi
 	return tr;
 }
 
-Thread::ID ThreadAndroid::get_thread_ID_func_jandroid() {
+Thread::ID ThreadAndroid::get_thread_id_func_jandroid() {
 
 	return (ID)pthread_self();
 }
@@ -107,7 +107,7 @@ void ThreadAndroid::make_default(JavaVM *p_java_vm) {
 
 	java_vm = p_java_vm;
 	create_func = create_func_jandroid;
-	get_thread_ID_func = get_thread_ID_func_jandroid;
+	get_thread_id_func = get_thread_id_func_jandroid;
 	wait_to_finish_func = wait_to_finish_func_jandroid;
 	pthread_key_create(&jvm_key, _thread_destroyed);
 	setup_thread();

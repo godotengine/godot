@@ -295,7 +295,7 @@ void EditorResourcePreview::queue_edited_resource_preview(const Ref<Resource> &p
 
 	preview_mutex->lock();
 
-	String path_id = "ID:" + itos(p_res->get_instance_ID());
+	String path_id = "ID:" + itos(p_res->get_instance_id());
 
 	if (cache.has(path_id) && cache[path_id].last_hash == p_res->hash_edited_version()) {
 
@@ -310,7 +310,7 @@ void EditorResourcePreview::queue_edited_resource_preview(const Ref<Resource> &p
 	//print_line("send to thread "+p_path);
 	QueueItem item;
 	item.function = p_receiver_func;
-	item.id = p_receiver->get_instance_ID();
+	item.id = p_receiver->get_instance_id();
 	item.resource = p_res;
 	item.path = path_id;
 	item.userdata = p_userdata;
@@ -334,7 +334,7 @@ void EditorResourcePreview::queue_resource_preview(const String &p_path, Object 
 	//print_line("send to thread "+p_path);
 	QueueItem item;
 	item.function = p_receiver_func;
-	item.id = p_receiver->get_instance_ID();
+	item.id = p_receiver->get_instance_id();
 	item.path = p_path;
 	item.userdata = p_userdata;
 

@@ -58,7 +58,7 @@ public:
 
 protected:
 	static Thread *(*create_func)(ThreadCreateCallback p_callback, void *, const Settings &);
-	static ID (*get_thread_ID_func)();
+	static ID (*get_thread_id_func)();
 	static void (*wait_to_finish_func)(Thread *);
 	static Error (*set_name_func)(const String &);
 
@@ -69,11 +69,11 @@ protected:
 	Thread();
 
 public:
-	virtual ID get_ID() const = 0;
+	virtual ID get_id() const = 0;
 
 	static Error set_name(const String &p_name);
-	_FORCE_INLINE_ static ID get_main_ID() { return _main_thread_id; } ///< get the ID of the main thread
-	static ID get_caller_ID(); ///< get the ID of the caller function ID
+	_FORCE_INLINE_ static ID get_main_id() { return _main_thread_id; } ///< get the ID of the main thread
+	static ID get_caller_id(); ///< get the ID of the caller function ID
 	static void wait_to_finish(Thread *p_thread); ///< waits until thread is finished, and deallocates it.
 	static Thread *create(ThreadCreateCallback p_callback, void *p_user, const Settings &p_settings = Settings()); ///< Static function to create a thread, will call p_callback
 

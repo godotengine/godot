@@ -30,16 +30,16 @@
 #include "thread.h"
 
 Thread *(*Thread::create_func)(ThreadCreateCallback, void *, const Settings &) = NULL;
-Thread::ID (*Thread::get_thread_ID_func)() = NULL;
+Thread::ID (*Thread::get_thread_id_func)() = NULL;
 void (*Thread::wait_to_finish_func)(Thread *) = NULL;
 Error (*Thread::set_name_func)(const String &) = NULL;
 
 Thread::ID Thread::_main_thread_id = 0;
 
-Thread::ID Thread::get_caller_ID() {
+Thread::ID Thread::get_caller_id() {
 
-	if (get_thread_ID_func)
-		return get_thread_ID_func();
+	if (get_thread_id_func)
+		return get_thread_id_func();
 	return 0;
 }
 

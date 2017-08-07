@@ -888,8 +888,8 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				gdfs->state._class = _class;
 				gdfs->state.ip = ip + ipofs;
 				gdfs->state.line = line;
-				gdfs->state.instance_id = (p_instance && p_instance->get_owner()) ? p_instance->get_owner()->get_instance_ID() : 0;
-				gdfs->state.script_id = _class->get_instance_ID();
+				gdfs->state.instance_id = (p_instance && p_instance->get_owner()) ? p_instance->get_owner()->get_instance_id() : 0;
+				gdfs->state.script_id = _class->get_instance_id();
 				//gdfs->state.result_pos=ip+ipofs-1;
 				gdfs->state.defarg = defarg;
 				gdfs->state.instance = p_instance;

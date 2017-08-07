@@ -647,7 +647,7 @@ void PopupMenu::set_item_checked(int p_idx, bool p_checked) {
 
 	update();
 }
-void PopupMenu::set_item_ID(int p_idx, int p_ID) {
+void PopupMenu::set_item_id(int p_idx, int p_ID) {
 
 	ERR_FAIL_INDEX(p_idx, items.size());
 	items[p_idx].ID = p_ID;
@@ -737,7 +737,7 @@ bool PopupMenu::is_item_checked(int p_idx) const {
 	return items[p_idx].checked;
 }
 
-int PopupMenu::get_item_ID(int p_idx) const {
+int PopupMenu::get_item_id(int p_idx) const {
 
 	ERR_FAIL_INDEX_V(p_idx, items.size(), 0);
 	return items[p_idx].ID;
@@ -956,7 +956,7 @@ Array PopupMenu::_get_items() const {
 		items.push_back(is_item_checked(i));
 		items.push_back(is_item_disabled(i));
 
-		items.push_back(get_item_ID(i));
+		items.push_back(get_item_id(i));
 		items.push_back(get_item_accelerator(i));
 		items.push_back(get_item_metadata(i));
 		items.push_back(get_item_submenu(i));
@@ -1011,7 +1011,7 @@ void PopupMenu::_set_items(const Array &p_items) {
 		set_item_as_checkable(idx, checkable);
 		set_item_checked(idx, checked);
 		set_item_disabled(idx, disabled);
-		set_item_ID(idx, id);
+		set_item_id(idx, id);
 		set_item_metadata(idx, meta);
 		set_item_as_separator(idx, sep);
 		set_item_accelerator(idx, accel);
@@ -1089,7 +1089,7 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_text", "idx", "text"), &PopupMenu::set_item_text);
 	ClassDB::bind_method(D_METHOD("set_item_icon", "idx", "icon:Texture"), &PopupMenu::set_item_icon);
 	ClassDB::bind_method(D_METHOD("set_item_checked", "idx", "checked"), &PopupMenu::set_item_checked);
-	ClassDB::bind_method(D_METHOD("set_item_ID", "idx", "id"), &PopupMenu::set_item_ID);
+	ClassDB::bind_method(D_METHOD("set_item_id", "idx", "id"), &PopupMenu::set_item_id);
 	ClassDB::bind_method(D_METHOD("set_item_accelerator", "idx", "accel"), &PopupMenu::set_item_accelerator);
 	ClassDB::bind_method(D_METHOD("set_item_metadata", "idx", "metadata"), &PopupMenu::set_item_metadata);
 	ClassDB::bind_method(D_METHOD("set_item_disabled", "idx", "disabled"), &PopupMenu::set_item_disabled);
@@ -1104,7 +1104,7 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_text", "idx"), &PopupMenu::get_item_text);
 	ClassDB::bind_method(D_METHOD("get_item_icon:Texture", "idx"), &PopupMenu::get_item_icon);
 	ClassDB::bind_method(D_METHOD("is_item_checked", "idx"), &PopupMenu::is_item_checked);
-	ClassDB::bind_method(D_METHOD("get_item_ID", "idx"), &PopupMenu::get_item_ID);
+	ClassDB::bind_method(D_METHOD("get_item_id", "idx"), &PopupMenu::get_item_id);
 	ClassDB::bind_method(D_METHOD("get_item_index", "id"), &PopupMenu::get_item_index);
 	ClassDB::bind_method(D_METHOD("get_item_accelerator", "idx"), &PopupMenu::get_item_accelerator);
 	ClassDB::bind_method(D_METHOD("get_item_metadata:Variant", "idx"), &PopupMenu::get_item_metadata);

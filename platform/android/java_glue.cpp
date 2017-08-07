@@ -895,7 +895,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_resize(JNIEnv *env, jobject obj, jint width, jint height, jboolean reload) {
 
-	__android_log_print(ANDROID_LOG_INFO, "godot", "^_^_^_^_^ resize %lld, %i, %i\n", Thread::get_caller_ID(), width, height);
+	__android_log_print(ANDROID_LOG_INFO, "godot", "^_^_^_^_^ resize %lld, %i, %i\n", Thread::get_caller_id(), width, height);
 	if (os_android)
 		os_android->set_display_size(Size2(width, height));
 
@@ -909,7 +909,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_resize(JNIEnv *env, j
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_newcontext(JNIEnv *env, jobject obj, bool p_32_bits) {
 
-	__android_log_print(ANDROID_LOG_INFO, "godot", "^_^_^_^_^ newcontext %lld\n", Thread::get_caller_ID());
+	__android_log_print(ANDROID_LOG_INFO, "godot", "^_^_^_^_^ newcontext %lld\n", Thread::get_caller_id());
 
 	if (os_android) {
 		os_android->set_context_is_16_bits(!p_32_bits);
@@ -995,7 +995,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, job
 
 	ThreadAndroid::setup_thread();
 
-	//__android_log_print(ANDROID_LOG_INFO,"godot","**STEP EVENT! - %p-%i\n",env,Thread::get_caller_ID());
+	//__android_log_print(ANDROID_LOG_INFO,"godot","**STEP EVENT! - %p-%i\n",env,Thread::get_caller_id());
 
 	suspend_mutex->lock();
 	input_mutex->lock();
@@ -1069,7 +1069,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, job
 		jclass cls = env->FindClass("org/godotengine/godot/Godot");
 		jmethodID _finish = env->GetMethodID(cls, "forceQuit", "()V");
 		env->CallVoidMethod(_godot_instance, _finish);
-		__android_log_print(ANDROID_LOG_INFO, "godot", "**FINISH REQUEST!!! - %p-%i\n", env, Thread::get_caller_ID());
+		__android_log_print(ANDROID_LOG_INFO, "godot", "**FINISH REQUEST!!! - %p-%i\n", env, Thread::get_caller_id());
 	}
 
 	suspend_mutex->unlock();
@@ -1077,7 +1077,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, job
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_touch(JNIEnv *env, jobject obj, jint ev, jint pointer, jint count, jintArray positions) {
 
-	//__android_log_print(ANDROID_LOG_INFO,"godot","**TOUCH EVENT! - %p-%i\n",env,Thread::get_caller_ID());
+	//__android_log_print(ANDROID_LOG_INFO,"godot","**TOUCH EVENT! - %p-%i\n",env,Thread::get_caller_id());
 
 	Vector<OS_Android::TouchPos> points;
 	for (int i = 0; i < count; i++) {

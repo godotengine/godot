@@ -70,7 +70,7 @@ void EditorSpatialGizmo::redraw() {
 void EditorSpatialGizmo::Instance::create_instance(Spatial *p_base) {
 
 	instance = VS::get_singleton()->instance_create2(mesh->get_rid(), p_base->get_world()->get_scenario());
-	VS::get_singleton()->instance_attach_object_instance_ID(instance, p_base->get_instance_ID());
+	VS::get_singleton()->instance_attach_object_instance_id(instance, p_base->get_instance_id());
 	if (skeleton.is_valid())
 		VS::get_singleton()->instance_attach_skeleton(instance, skeleton);
 	if (extra_margin)

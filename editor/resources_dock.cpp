@@ -204,7 +204,7 @@ void ResourcesDock::_update_name(TreeItem *item) {
 	else if (res->get_path() != "" && res->get_path().find("::") == -1)
 		item->set_text(0, res->get_path().get_file());
 	else
-		item->set_text(0, res->get_class() + " (" + itos(res->get_instance_ID()) + ")");
+		item->set_text(0, res->get_class() + " (" + itos(res->get_instance_id()) + ")");
 }
 
 void ResourcesDock::remove_resource(const Ref<Resource> &p_resource) {
