@@ -1929,7 +1929,7 @@ FRAGMENT_SHADER_CODE
 
 		if (fog_depth_enabled) {
 
-			float fog_z = smoothstep(fog_depth_begin,z_far,-vertex.z);
+			float fog_z = smoothstep(fog_depth_begin,z_far,length(vertex));
 
 			fog_amount = pow(fog_z,fog_depth_curve);
 			if (fog_transmit_enabled) {
