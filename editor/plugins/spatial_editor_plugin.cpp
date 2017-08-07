@@ -57,6 +57,12 @@
 
 #define FREELOOK_MIN_SPEED 0.1
 
+#define MIN_Z 0.01
+#define MAX_Z 10000
+
+#define MIN_FOV 0.01
+#define MAX_FOV 179
+
 void SpatialEditorViewport::_update_camera() {
 	if (orthogonal) {
 		//camera->set_orthogonal(size.width*cursor.distance,get_znear(),get_zfar());
@@ -153,26 +159,15 @@ int SpatialEditorViewport::get_selected_count() const {
 
 float SpatialEditorViewport::get_znear() const {
 
-	float val = spatial_editor->get_znear();
-	if (val < 0.001)
-		val = 0.001;
-	return val;
+	return CLAMP(spatial_editor->get_znear(), MIN_Z, MAX_Z);
 }
 float SpatialEditorViewport::get_zfar() const {
 
-	float val = spatial_editor->get_zfar();
-	if (val < 0.001)
-		val = 0.001;
-	return val;
+	return CLAMP(spatial_editor->get_zfar(), MIN_Z, MAX_Z);
 }
 float SpatialEditorViewport::get_fov() const {
 
-	float val = spatial_editor->get_fov();
-	if (val < 0.001)
-		val = 0.001;
-	if (val > 89)
-		val = 89;
-	return val;
+	return CLAMP(spatial_editor->get_fov(), MIN_FOV, MAX_FOV);
 }
 
 Transform SpatialEditorViewport::_get_camera_transform() const {
@@ -3933,27 +3928,27 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	settings_dialog->set_title(TTR("Viewport Settings"));
 	add_child(settings_dialog);
 	settings_vbc = memnew(VBoxContainer);
-	settings_vbc->set_custom_minimum_size(Size2(200, 0));
+	settings_vbc->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	settings_dialog->add_child(settings_vbc);
 	//settings_dialog->set_child_rect(settings_vbc);
 
 	settings_fov = memnew(SpinBox);
-	settings_fov->set_max(179);
-	settings_fov->set_min(1);
+	settings_fov->set_max(MAX_FOV);
+	settings_fov->set_min(MIN_FOV);
 	settings_fov->set_step(0.01);
 	settings_fov->set_value(EDITOR_DEF("editors/3d/default_fov", 55.0));
 	settings_vbc->add_margin_child(TTR("Perspective FOV (deg.):"), settings_fov);
 
 	settings_znear = memnew(SpinBox);
-	settings_znear->set_max(10000);
-	settings_znear->set_min(0.1);
+	settings_znear->set_max(MAX_Z);
+	settings_znear->set_min(MIN_Z);
 	settings_znear->set_step(0.01);
 	settings_znear->set_value(EDITOR_DEF("editors/3d/default_z_near", 0.1));
 	settings_vbc->add_margin_child(TTR("View Z-Near:"), settings_znear);
 
 	settings_zfar = memnew(SpinBox);
-	settings_zfar->set_max(10000);
-	settings_zfar->set_min(0.1);
+	settings_zfar->set_max(MAX_Z);
+	settings_zfar->set_min(MIN_Z);
 	settings_zfar->set_step(0.01);
 	settings_zfar->set_value(EDITOR_DEF("editors/3d/default_z_far", 1500));
 	settings_vbc->add_margin_child(TTR("View Z-Far:"), settings_zfar);
