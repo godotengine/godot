@@ -238,7 +238,7 @@ Ref<Theme> create_editor_theme() {
 	theme->set_stylebox("panel", "TabContainer", style_content_panel);
 	theme->set_stylebox("Content", "EditorStyles", style_content_panel_vp);
 
-	Ref<StyleBoxFlat> style_button_type = make_flat_stylebox(dark_color_1, 4, 4, 6, 4);
+	Ref<StyleBoxFlat> style_button_type = make_flat_stylebox(dark_color_1, 6, 4, 6, 4);
 	style_button_type->set_draw_center(true);
 	style_button_type->set_border_size(border_width);
 	style_button_type->set_light_color(light_color_1);
