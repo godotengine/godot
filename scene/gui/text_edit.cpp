@@ -1805,7 +1805,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 						return;
 					}
 
-					if (k->get_scancode() == KEY_ENTER || k->get_scancode() == KEY_RETURN || k->get_scancode() == KEY_TAB) {
+					if (k->get_scancode() == KEY_KP_ENTER || k->get_scancode() == KEY_ENTER || k->get_scancode() == KEY_TAB) {
 
 						_confirm_completion();
 						accept_event();
@@ -1974,8 +1974,8 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 		switch (k->get_scancode()) {
 
-			case KEY_ENTER:
-			case KEY_RETURN: {
+			case KEY_KP_ENTER:
+			case KEY_ENTER: {
 
 				if (readonly)
 					break;

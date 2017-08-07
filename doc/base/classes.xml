@@ -846,10 +846,10 @@
 		<constant name="KEY_BACKSPACE" value="16777220">
 			Backspace Key
 		</constant>
-		<constant name="KEY_RETURN" value="16777221">
+		<constant name="KEY_ENTER" value="16777221">
 			Return Key (On Main Keyboard)
 		</constant>
-		<constant name="KEY_ENTER" value="16777222">
+		<constant name="KEY_KP_ENTER" value="16777222">
 			Enter Key (On Numpad)
 		</constant>
 		<constant name="KEY_INSERT" value="16777223">

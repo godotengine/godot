@@ -44,7 +44,7 @@ static _WinTranslatePair _vk_to_keycode[] = {
 
 	//VK_CLEAR (0x0C)
 
-	{ KEY_RETURN, VK_RETURN }, //(0x0D)
+	{ KEY_ENTER, VK_RETURN }, //(0x0D)
 
 	{ KEY_SHIFT, VK_SHIFT }, //(0x10)
 

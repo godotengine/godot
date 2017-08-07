@@ -229,8 +229,8 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 			bool handled = true;
 			switch (code) {
 
-				case KEY_ENTER:
-				case KEY_RETURN: {
+				case KEY_KP_ENTER:
+				case KEY_ENTER: {
 
 					emit_signal("text_entered", text);
 					if (OS::get_singleton()->has_virtual_keyboard())

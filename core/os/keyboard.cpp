@@ -42,8 +42,8 @@ static const _KeyCodeText _keycodes[] = {
 		{KEY_TAB                           ,"Tab"},
 		{KEY_BACKTAB                       ,"BackTab"},
 		{KEY_BACKSPACE                     ,"BackSpace"},
-		{KEY_RETURN                        ,"Return"},
 		{KEY_ENTER                         ,"Enter"},
+		{KEY_KP_ENTER                      ,"Kp Enter"},
 		{KEY_INSERT                        ,"Insert"},
 		{KEY_DELETE                        ,"Delete"},
 		{KEY_PAUSE                         ,"Pause"},
@@ -294,8 +294,8 @@ bool keycode_has_unicode(uint32_t p_keycode) {
 		case KEY_TAB:
 		case KEY_BACKTAB:
 		case KEY_BACKSPACE:
-		case KEY_RETURN:
 		case KEY_ENTER:
+		case KEY_KP_ENTER:
 		case KEY_INSERT:
 		case KEY_DELETE:
 		case KEY_PAUSE:

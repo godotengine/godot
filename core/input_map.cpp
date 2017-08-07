@@ -219,11 +219,11 @@ void InputMap::load_default() {
 
 	add_action("ui_accept");
 	key.instance();
-	key->set_scancode(KEY_RETURN);
+	key->set_scancode(KEY_ENTER);
 	action_add_event("ui_accept", key);
 
 	key.instance();
-	key->set_scancode(KEY_ENTER);
+	key->set_scancode(KEY_KP_ENTER);
 	action_add_event("ui_accept", key);
 
 	key.instance();

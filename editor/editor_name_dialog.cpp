@@ -42,8 +42,8 @@ void EditorNameDialog::_line_gui_input(const Ref<InputEvent> &p_event) {
 			return;
 
 		switch (k->get_scancode()) {
-			case KEY_ENTER:
-			case KEY_RETURN: {
+			case KEY_KP_ENTER:
+			case KEY_ENTER: {
 
 				if (get_hide_on_ok())
 					hide();
