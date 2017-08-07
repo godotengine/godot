@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  path_db.h                                                            */
+/*  node_path.h                                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,8 +27,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef PATH_DB_H
-#define PATH_DB_H
+#ifndef NODE_PATH_H
+#define NODE_PATH_H
 
 #include "string_db.h"
 #include "ustring.h"
