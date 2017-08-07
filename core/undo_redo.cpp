@@ -110,7 +110,7 @@ void UndoRedo::add_do_method(Object *p_object, const String &p_method, VARIANT_A
 	ERR_FAIL_COND(action_level <= 0);
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 	Operation do_op;
-	do_op.object = p_object->get_instance_ID();
+	do_op.object = p_object->get_instance_id();
 	if (p_object->cast_to<Resource>())
 		do_op.resref = Ref<Resource>(p_object->cast_to<Resource>());
 
@@ -134,7 +134,7 @@ void UndoRedo::add_undo_method(Object *p_object, const String &p_method, VARIANT
 		return;
 
 	Operation undo_op;
-	undo_op.object = p_object->get_instance_ID();
+	undo_op.object = p_object->get_instance_id();
 	if (p_object->cast_to<Resource>())
 		undo_op.resref = Ref<Resource>(p_object->cast_to<Resource>());
 
@@ -151,7 +151,7 @@ void UndoRedo::add_do_property(Object *p_object, const String &p_property, const
 	ERR_FAIL_COND(action_level <= 0);
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 	Operation do_op;
-	do_op.object = p_object->get_instance_ID();
+	do_op.object = p_object->get_instance_id();
 	if (p_object->cast_to<Resource>())
 		do_op.resref = Ref<Resource>(p_object->cast_to<Resource>());
 
@@ -170,7 +170,7 @@ void UndoRedo::add_undo_property(Object *p_object, const String &p_property, con
 		return;
 
 	Operation undo_op;
-	undo_op.object = p_object->get_instance_ID();
+	undo_op.object = p_object->get_instance_id();
 	if (p_object->cast_to<Resource>())
 		undo_op.resref = Ref<Resource>(p_object->cast_to<Resource>());
 
@@ -184,7 +184,7 @@ void UndoRedo::add_do_reference(Object *p_object) {
 	ERR_FAIL_COND(action_level <= 0);
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 	Operation do_op;
-	do_op.object = p_object->get_instance_ID();
+	do_op.object = p_object->get_instance_id();
 	if (p_object->cast_to<Resource>())
 		do_op.resref = Ref<Resource>(p_object->cast_to<Resource>());
 
@@ -201,7 +201,7 @@ void UndoRedo::add_undo_reference(Object *p_object) {
 		return;
 
 	Operation undo_op;
-	undo_op.object = p_object->get_instance_ID();
+	undo_op.object = p_object->get_instance_id();
 	if (p_object->cast_to<Resource>())
 		undo_op.resref = Ref<Resource>(p_object->cast_to<Resource>());
 

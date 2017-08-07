@@ -603,13 +603,13 @@ void VisualScriptFunctionCall::_validate_property(PropertyInfo &property) const 
 
 		} else if (call_mode == CALL_MODE_SELF && get_visual_script().is_valid()) {
 			property.hint = PROPERTY_HINT_METHOD_OF_SCRIPT;
-			property.hint_string = itos(get_visual_script()->get_instance_ID());
+			property.hint_string = itos(get_visual_script()->get_instance_id());
 		} else if (call_mode == CALL_MODE_SINGLETON) {
 
 			Object *obj = ProjectSettings::get_singleton()->get_singleton_object(singleton);
 			if (obj) {
 				property.hint = PROPERTY_HINT_METHOD_OF_INSTANCE;
-				property.hint_string = itos(obj->get_instance_ID());
+				property.hint_string = itos(obj->get_instance_id());
 			} else {
 
 				property.hint = PROPERTY_HINT_METHOD_OF_BASE_TYPE;
@@ -631,7 +631,7 @@ void VisualScriptFunctionCall::_validate_property(PropertyInfo &property) const 
 					if (script.is_valid()) {
 
 						property.hint = PROPERTY_HINT_METHOD_OF_SCRIPT;
-						property.hint_string = itos(script->get_instance_ID());
+						property.hint_string = itos(script->get_instance_id());
 					}
 				}
 			}
@@ -640,7 +640,7 @@ void VisualScriptFunctionCall::_validate_property(PropertyInfo &property) const 
 			Node *node = _get_base_node();
 			if (node) {
 				property.hint = PROPERTY_HINT_METHOD_OF_INSTANCE;
-				property.hint_string = itos(node->get_instance_ID());
+				property.hint_string = itos(node->get_instance_id());
 			} else {
 				property.hint = PROPERTY_HINT_METHOD_OF_BASE_TYPE;
 				property.hint_string = get_base_type();
@@ -1379,7 +1379,7 @@ void VisualScriptPropertySet::_validate_property(PropertyInfo &property) const {
 
 		} else if (call_mode == CALL_MODE_SELF && get_visual_script().is_valid()) {
 			property.hint = PROPERTY_HINT_PROPERTY_OF_SCRIPT;
-			property.hint_string = itos(get_visual_script()->get_instance_ID());
+			property.hint_string = itos(get_visual_script()->get_instance_id());
 		} else if (call_mode == CALL_MODE_INSTANCE) {
 			property.hint = PROPERTY_HINT_PROPERTY_OF_BASE_TYPE;
 			property.hint_string = base_type;
@@ -1396,7 +1396,7 @@ void VisualScriptPropertySet::_validate_property(PropertyInfo &property) const {
 					if (script.is_valid()) {
 
 						property.hint = PROPERTY_HINT_PROPERTY_OF_SCRIPT;
-						property.hint_string = itos(script->get_instance_ID());
+						property.hint_string = itos(script->get_instance_id());
 					}
 				}
 			}
@@ -1405,7 +1405,7 @@ void VisualScriptPropertySet::_validate_property(PropertyInfo &property) const {
 			Node *node = _get_base_node();
 			if (node) {
 				property.hint = PROPERTY_HINT_PROPERTY_OF_INSTANCE;
-				property.hint_string = itos(node->get_instance_ID());
+				property.hint_string = itos(node->get_instance_id());
 			} else {
 				property.hint = PROPERTY_HINT_PROPERTY_OF_BASE_TYPE;
 				property.hint_string = get_base_type();
@@ -2095,7 +2095,7 @@ void VisualScriptPropertyGet::_validate_property(PropertyInfo &property) const {
 
 		} else if (call_mode == CALL_MODE_SELF && get_visual_script().is_valid()) {
 			property.hint = PROPERTY_HINT_PROPERTY_OF_SCRIPT;
-			property.hint_string = itos(get_visual_script()->get_instance_ID());
+			property.hint_string = itos(get_visual_script()->get_instance_id());
 		} else if (call_mode == CALL_MODE_INSTANCE) {
 			property.hint = PROPERTY_HINT_PROPERTY_OF_BASE_TYPE;
 			property.hint_string = base_type;
@@ -2112,7 +2112,7 @@ void VisualScriptPropertyGet::_validate_property(PropertyInfo &property) const {
 					if (script.is_valid()) {
 
 						property.hint = PROPERTY_HINT_PROPERTY_OF_SCRIPT;
-						property.hint_string = itos(script->get_instance_ID());
+						property.hint_string = itos(script->get_instance_id());
 					}
 				}
 			}
@@ -2120,7 +2120,7 @@ void VisualScriptPropertyGet::_validate_property(PropertyInfo &property) const {
 			Node *node = _get_base_node();
 			if (node) {
 				property.hint = PROPERTY_HINT_PROPERTY_OF_INSTANCE;
-				property.hint_string = itos(node->get_instance_ID());
+				property.hint_string = itos(node->get_instance_id());
 			} else {
 				property.hint = PROPERTY_HINT_PROPERTY_OF_BASE_TYPE;
 				property.hint_string = get_base_type();

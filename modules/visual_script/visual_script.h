@@ -509,7 +509,7 @@ public:
 
 	_FORCE_INLINE_ void enter_function(VisualScriptInstance *p_instance, const StringName *p_function, Variant *p_stack, Variant **p_work_mem, int *current_id) {
 
-		if (Thread::get_main_ID() != Thread::get_caller_ID())
+		if (Thread::get_main_id() != Thread::get_caller_id())
 			return; //no support for other threads than main for now
 
 		if (ScriptDebugger::get_singleton()->get_lines_left() > 0 && ScriptDebugger::get_singleton()->get_depth() >= 0)
@@ -532,7 +532,7 @@ public:
 
 	_FORCE_INLINE_ void exit_function() {
 
-		if (Thread::get_main_ID() != Thread::get_caller_ID())
+		if (Thread::get_main_id() != Thread::get_caller_id())
 			return; //no support for other threads than main for now
 
 		if (ScriptDebugger::get_singleton()->get_lines_left() > 0 && ScriptDebugger::get_singleton()->get_depth() >= 0)

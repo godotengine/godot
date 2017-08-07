@@ -418,7 +418,7 @@ void PropertySelector::select_method_from_script(const Ref<Script> &p_script, co
 	base_type = p_script->get_instance_base_type();
 	selected = p_current;
 	type = Variant::NIL;
-	script = p_script->get_instance_ID();
+	script = p_script->get_instance_id();
 	properties = false;
 	instance = NULL;
 
@@ -452,7 +452,7 @@ void PropertySelector::select_method_from_instance(Object *p_instance, const Str
 	{
 		Ref<Script> scr = p_instance->get_script();
 		if (scr.is_valid())
-			script = scr->get_instance_ID();
+			script = scr->get_instance_id();
 	}
 	properties = false;
 	instance = NULL;
@@ -485,7 +485,7 @@ void PropertySelector::select_property_from_script(const Ref<Script> &p_script, 
 	base_type = p_script->get_instance_base_type();
 	selected = p_current;
 	type = Variant::NIL;
-	script = p_script->get_instance_ID();
+	script = p_script->get_instance_id();
 	properties = true;
 	instance = NULL;
 

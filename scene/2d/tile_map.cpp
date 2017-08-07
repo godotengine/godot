@@ -589,7 +589,7 @@ Map<TileMap::PosKey, TileMap::Quadrant>::Element *TileMap::_create_quadrant(cons
 	xform.set_origin(q.pos);
 	//q.canvas_item = VisualServer::get_singleton()->canvas_item_create();
 	q.body = Physics2DServer::get_singleton()->body_create(use_kinematic ? Physics2DServer::BODY_MODE_KINEMATIC : Physics2DServer::BODY_MODE_STATIC);
-	Physics2DServer::get_singleton()->body_attach_object_instance_ID(q.body, get_instance_ID());
+	Physics2DServer::get_singleton()->body_attach_object_instance_id(q.body, get_instance_id());
 	Physics2DServer::get_singleton()->body_set_collision_layer(q.body, collision_layer);
 	Physics2DServer::get_singleton()->body_set_collision_mask(q.body, collision_mask);
 	Physics2DServer::get_singleton()->body_set_param(q.body, Physics2DServer::BODY_PARAM_FRICTION, friction);

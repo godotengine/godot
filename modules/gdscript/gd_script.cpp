@@ -479,7 +479,7 @@ bool GDScript::_update_exports() {
 			const GDParser::ClassNode *c = static_cast<const GDParser::ClassNode *>(root);
 
 			if (base_cache.is_valid()) {
-				base_cache->inheriters_cache.erase(get_instance_ID());
+				base_cache->inheriters_cache.erase(get_instance_id());
 				base_cache = Ref<GDScript>();
 			}
 
@@ -505,7 +505,7 @@ bool GDScript::_update_exports() {
 
 						//print_line("parent is: "+bf->get_path());
 						base_cache = bf;
-						bf->inheriters_cache.insert(get_instance_ID());
+						bf->inheriters_cache.insert(get_instance_id());
 
 						//bf->_update_exports(p_instances,true,false);
 					}
@@ -1693,7 +1693,7 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 				if (obj->get_script_instance()) {
 
 					obj->get_script_instance()->get_property_state(state);
-					map[obj->get_instance_ID()] = state;
+					map[obj->get_instance_id()] = state;
 					obj->set_script(RefPtr());
 				}
 			}
@@ -1709,7 +1709,7 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 				if (obj->get_script_instance()) {
 
 					obj->get_script_instance()->get_property_state(state);
-					map[obj->get_instance_ID()] = state;
+					map[obj->get_instance_id()] = state;
 					obj->set_script(RefPtr());
 				} else {
 					// no instance found. Let's remove it so we don't loop forever
@@ -1743,8 +1743,8 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 			obj->set_script(scr.get_ref_ptr());
 			if (!obj->get_script_instance()) {
 				//failed, save reload state for next time if not saved
-				if (!scr->pending_reload_state.has(obj->get_instance_ID())) {
-					scr->pending_reload_state[obj->get_instance_ID()] = F->get();
+				if (!scr->pending_reload_state.has(obj->get_instance_id())) {
+					scr->pending_reload_state[obj->get_instance_id()] = F->get();
 				}
 				continue;
 			}
@@ -1753,7 +1753,7 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 				obj->get_script_instance()->set(G->get().first, G->get().second);
 			}
 
-			scr->pending_reload_state.erase(obj->get_instance_ID()); //as it reloaded, remove pending state
+			scr->pending_reload_state.erase(obj->get_instance_id()); //as it reloaded, remove pending state
 		}
 
 		//if instance states were saved, set them!

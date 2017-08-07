@@ -180,8 +180,8 @@ int _OS::get_mouse_button_state() const {
 	return OS::get_singleton()->get_mouse_button_state();
 }
 
-String _OS::get_unique_ID() const {
-	return OS::get_singleton()->get_unique_ID();
+String _OS::get_unique_id() const {
+	return OS::get_singleton()->get_unique_id();
 }
 bool _OS::has_touchscreen_ui_hint() const {
 
@@ -369,9 +369,9 @@ Error _OS::kill(int p_pid) {
 	return OS::get_singleton()->kill(p_pid);
 }
 
-int _OS::get_process_ID() const {
+int _OS::get_process_id() const {
 
-	return OS::get_singleton()->get_process_ID();
+	return OS::get_singleton()->get_process_id();
 };
 
 bool _OS::has_environment(const String &p_var) const {
@@ -800,7 +800,7 @@ void _OS::print_all_textures_by_size() {
 			img.fmt = fmt;
 			img.path = E->get()->get_path();
 			img.vram = Image::get_image_data_size(img.size.width, img.size.height, Image::Format(img.fmt));
-			img.id = E->get()->get_instance_ID();
+			img.id = E->get()->get_instance_id();
 			total += img.vram;
 			imgs.push_back(img);
 		}
@@ -1019,7 +1019,7 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("execute", "path", "arguments", "blocking", "output"), &_OS::execute, DEFVAL(Array()));
 	ClassDB::bind_method(D_METHOD("kill", "pid"), &_OS::kill);
 	ClassDB::bind_method(D_METHOD("shell_open", "uri"), &_OS::shell_open);
-	ClassDB::bind_method(D_METHOD("get_process_ID"), &_OS::get_process_ID);
+	ClassDB::bind_method(D_METHOD("get_process_id"), &_OS::get_process_id);
 
 	ClassDB::bind_method(D_METHOD("get_environment", "environment"), &_OS::get_environment);
 	ClassDB::bind_method(D_METHOD("has_environment", "environment"), &_OS::has_environment);
@@ -1074,7 +1074,7 @@ void _OS::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_data_dir"), &_OS::get_data_dir);
 	ClassDB::bind_method(D_METHOD("get_system_dir", "dir"), &_OS::get_system_dir);
-	ClassDB::bind_method(D_METHOD("get_unique_ID"), &_OS::get_unique_ID);
+	ClassDB::bind_method(D_METHOD("get_unique_id"), &_OS::get_unique_id);
 
 	ClassDB::bind_method(D_METHOD("is_ok_left_and_cancel_right"), &_OS::is_ok_left_and_cancel_right);
 
@@ -2256,7 +2256,7 @@ String _Thread::get_id() const {
 	if (!thread)
 		return String();
 
-	return itos(thread->get_ID());
+	return itos(thread->get_id());
 }
 
 bool _Thread::is_active() const {

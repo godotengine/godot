@@ -175,7 +175,7 @@ public:
 	Error kill(int p_pid);
 	Error shell_open(String p_uri);
 
-	int get_process_ID() const;
+	int get_process_id() const;
 
 	bool has_environment(const String &p_var) const;
 	String get_environment(const String &p_var) const;
@@ -204,7 +204,7 @@ public:
 
 	bool is_debug_build() const;
 
-	String get_unique_ID() const;
+	String get_unique_id() const;
 
 	String get_scancode_string(uint32_t p_code) const;
 	bool is_scancode_unicode(uint32_t p_unicode) const;

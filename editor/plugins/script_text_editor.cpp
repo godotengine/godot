@@ -456,7 +456,7 @@ String ScriptTextEditor::get_name() {
 	} else if (script->get_name() != "")
 		name = script->get_name();
 	else
-		name = script->get_class() + "(" + itos(script->get_instance_ID()) + ")";
+		name = script->get_class() + "(" + itos(script->get_instance_id()) + ")";
 
 	return name;
 }

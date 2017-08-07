@@ -95,7 +95,7 @@ static Object *_ScriptDebuggerRemote_find = NULL;
 static void _ScriptDebuggerRemote_debug_func(Object *p_obj) {
 
 	if (_ScriptDebuggerRemote_find == p_obj) {
-		_ScriptDebuggerRemote_found_id = p_obj->get_instance_ID();
+		_ScriptDebuggerRemote_found_id = p_obj->get_instance_id();
 	}
 }
 
@@ -109,7 +109,7 @@ static ObjectID safe_get_instance_id(const Variant &p_v) {
 		REF r = p_v;
 		if (r.is_valid()) {
 
-			return r->get_instance_ID();
+			return r->get_instance_id();
 		} else {
 
 			_ScriptDebuggerRemote_found_id = 0;
@@ -572,7 +572,7 @@ void ScriptDebuggerRemote::_send_object_id(ObjectID p_id) {
 				ObjectID id2;
 				Object *obj = var;
 				if (obj) {
-					id2 = obj->get_instance_ID();
+					id2 = obj->get_instance_id();
 				} else {
 					id2 = 0;
 				}

@@ -204,7 +204,7 @@ void CanvasLayer::set_custom_viewport(Node *p_viewport) {
 	custom_viewport = p_viewport->cast_to<Viewport>();
 
 	if (custom_viewport) {
-		custom_viewport_id = custom_viewport->get_instance_ID();
+		custom_viewport_id = custom_viewport->get_instance_id();
 	} else {
 		custom_viewport_id = 0;
 	}

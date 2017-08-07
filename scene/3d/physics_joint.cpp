@@ -979,9 +979,9 @@ Generic6DOFJoint::Generic6DOFJoint() {
 void PhysicsJoint::_set(const String& p_name, const Variant& p_value) {
 
 	if (p_name=="body_A")
-		set_body_A(p_value);
+		set_body_a(p_value);
 	else if (p_name=="body_B")
-		set_body_B(p_value);
+		set_body_b(p_value);
 	else if (p_name=="active")
 		set_active(p_value);
 	else if (p_name=="no_collision")
@@ -990,9 +990,9 @@ void PhysicsJoint::_set(const String& p_name, const Variant& p_value) {
 Variant PhysicsJoint::_get(const String& p_name) const {
 
 	if (p_name=="body_A")
-		return get_body_A();
+		return get_body_a();
 	else if (p_name=="body_B")
-		return get_body_B();
+		return get_body_b();
 	else if (p_name=="active")
 		return is_active();
 	else if (p_name=="no_collision")
@@ -1034,7 +1034,7 @@ void PhysicsJoint::_notification(int p_what) {
 			if (indicator.is_valid()) {
 
 				indicator_instance=VisualServer::get_singleton()->instance_create(indicator,get_world()->get_scenario());
-				VisualServer::get_singleton()->instance_attach_object_instance_ID( indicator_instance,get_instance_ID() );
+				VisualServer::get_singleton()->instance_attach_object_instance_id( indicator_instance,get_instance_id() );
 			}
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
@@ -1067,10 +1067,10 @@ RID PhysicsJoint::_get_visual_instance_rid() const {
 void PhysicsJoint::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_get_visual_instance_rid"),&PhysicsJoint::_get_visual_instance_rid);
-	ClassDB::bind_method(D_METHOD("set_body_A","path"),&PhysicsJoint::set_body_A);
-	ClassDB::bind_method(D_METHOD("set_body_B"),&PhysicsJoint::set_body_B);
-	ClassDB::bind_method(D_METHOD("get_body_A","path"),&PhysicsJoint::get_body_A);
-	ClassDB::bind_method(D_METHOD("get_body_B"),&PhysicsJoint::get_body_B);
+	ClassDB::bind_method(D_METHOD("set_body_a","path"),&PhysicsJoint::set_body_a);
+	ClassDB::bind_method(D_METHOD("set_body_b"),&PhysicsJoint::set_body_b);
+	ClassDB::bind_method(D_METHOD("get_body_a","path"),&PhysicsJoint::get_body_a);
+	ClassDB::bind_method(D_METHOD("get_body_b"),&PhysicsJoint::get_body_b);
 
 	ClassDB::bind_method(D_METHOD("set_active","active"),&PhysicsJoint::set_active);
 	ClassDB::bind_method(D_METHOD("is_active"),&PhysicsJoint::is_active);
@@ -1085,14 +1085,14 @@ void PhysicsJoint::_bind_methods() {
 
 }
 
-void PhysicsJoint::set_body_A(const NodePath& p_path) {
+void PhysicsJoint::set_body_a(const NodePath& p_path) {
 
 	_disconnect();
 	body_A=p_path;
 	_connect();
 	_change_notify("body_A");
 }
-void PhysicsJoint::set_body_B(const NodePath& p_path) {
+void PhysicsJoint::set_body_b(const NodePath& p_path) {
 
 	_disconnect();
 	body_B=p_path;
@@ -1100,11 +1100,11 @@ void PhysicsJoint::set_body_B(const NodePath& p_path) {
 	_change_notify("body_B");
 
 }
-NodePath PhysicsJoint::get_body_A() const {
+NodePath PhysicsJoint::get_body_a() const {
 
 	return body_A;
 }
-NodePath PhysicsJoint::get_body_B() const {
+NodePath PhysicsJoint::get_body_b() const {
 
 	return body_B;
 }

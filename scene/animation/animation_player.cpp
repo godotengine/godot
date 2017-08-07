@@ -247,7 +247,7 @@ void AnimationPlayer::_generate_node_caches(AnimationData *p_anim) {
 			ERR_EXPLAIN("On Animation: '" + p_anim->name + "', couldn't resolve track:  '" + String(a->track_get_path(i)) + "'");
 		}
 		ERR_CONTINUE(!child); // couldn't find the child node
-		uint32_t id = resource.is_valid() ? resource->get_instance_ID() : child->get_instance_ID();
+		uint32_t id = resource.is_valid() ? resource->get_instance_id() : child->get_instance_id();
 		int bone_idx = -1;
 
 		if (a->track_get_path(i).get_property() && child->cast_to<Skeleton>()) {

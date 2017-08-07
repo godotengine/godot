@@ -430,7 +430,7 @@ public:
 	FUNC2(instance_set_scenario, RID, RID) // from can be mesh, light, poly, area and portal so far.
 	FUNC2(instance_set_layer_mask, RID, uint32_t)
 	FUNC2(instance_set_transform, RID, const Transform &)
-	FUNC2(instance_attach_object_instance_ID, RID, ObjectID)
+	FUNC2(instance_attach_object_instance_id, RID, ObjectID)
 	FUNC3(instance_set_blend_shape_weight, RID, int, float)
 	FUNC3(instance_set_surface_material, RID, int, RID)
 	FUNC2(instance_set_visible, RID, bool)

@@ -2,7 +2,7 @@
 text = """
 #define FUNC$numR(m_r,m_func,$argt)\\
 	virtual m_r m_func($argtp) { \\
-		if (Thread::get_caller_ID()!=server_thread) {\\
+		if (Thread::get_caller_id()!=server_thread) {\\
 			m_r ret;\\
 			command_queue.push_and_ret( visual_server, &VisualServer::m_func,$argp,&ret);\\
 			return ret;\\
@@ -13,7 +13,7 @@ text = """
 
 #define FUNC$numRC(m_r,m_func,$argt)\\
 	virtual m_r m_func($argtp) const { \\
-		if (Thread::get_caller_ID()!=server_thread) {\\
+		if (Thread::get_caller_id()!=server_thread) {\\
 			m_r ret;\\
 			command_queue.push_and_ret( visual_server, &VisualServer::m_func,$argp,&ret);\\
 			return ret;\\
@@ -25,7 +25,7 @@ text = """
 
 #define FUNC$numS(m_func,$argt)\\
 	virtual void m_func($argtp) { \\
-		if (Thread::get_caller_ID()!=server_thread) {\\
+		if (Thread::get_caller_id()!=server_thread) {\\
 			command_queue.push_and_sync( visual_server, &VisualServer::m_func,$argp);\\
 		} else {\\
 			visual_server->m_func($argp);\\
@@ -34,7 +34,7 @@ text = """
 
 #define FUNC$numSC(m_func,$argt)\\
 	virtual void m_func($argtp) const { \\
-		if (Thread::get_caller_ID()!=server_thread) {\\
+		if (Thread::get_caller_id()!=server_thread) {\\
 			command_queue.push_and_sync( visual_server, &VisualServer::m_func,$argp);\\
 		} else {\\
 			visual_server->m_func($argp);\\
@@ -44,7 +44,7 @@ text = """
 
 #define FUNC$num(m_func,$argt)\\
 	virtual void m_func($argtp) { \\
-		if (Thread::get_caller_ID()!=server_thread) {\\
+		if (Thread::get_caller_id()!=server_thread) {\\
 			command_queue.push( visual_server, &VisualServer::m_func,$argp);\\
 		} else {\\
 			visual_server->m_func($argp);\\
@@ -53,7 +53,7 @@ text = """
 
 #define FUNC$numC(m_func,$argt)\\
 	virtual void m_func($argtp) const { \\
-		if (Thread::get_caller_ID()!=server_thread) {\\
+		if (Thread::get_caller_id()!=server_thread) {\\
 			command_queue.push( visual_server, &VisualServer::m_func,$argp);\\
 		} else {\\
 			visual_server->m_func($argp);\\

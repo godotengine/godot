@@ -665,7 +665,7 @@ void SpatialEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 
 	if (selection_results.size() == 1) {
 
-		clicked = selection_results[0].item->get_instance_ID();
+		clicked = selection_results[0].item->get_instance_id();
 		selection_results.clear();
 
 		if (clicked) {
@@ -2166,7 +2166,7 @@ void SpatialEditorViewport::_selection_result_pressed(int p_result) {
 	if (selection_results.size() <= p_result)
 		return;
 
-	clicked = selection_results[p_result].item->get_instance_ID();
+	clicked = selection_results[p_result].item->get_instance_id();
 
 	if (clicked) {
 		_select_clicked(clicked_wants_append, true);
@@ -3039,9 +3039,9 @@ void SpatialEditor::edit(Spatial *p_spatial) {
 	/*
 	if (p_spatial) {
 		_validate_selection();
-		if (selected.has(p_spatial->get_instance_ID()) && selected.size()==1)
+		if (selected.has(p_spatial->get_instance_id()) && selected.size()==1)
 			return;
-		_select(p_spatial->get_instance_ID(),false,true);
+		_select(p_spatial->get_instance_id(),false,true);
 
 		// should become the selection
 	}

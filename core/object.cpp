@@ -599,7 +599,7 @@ Variant Object::_call_deferred_bind(const Variant **p_args, int p_argcount, Vari
 
 	StringName method = *p_args[0];
 
-	MessageQueue::get_singleton()->push_call(get_instance_ID(), method, &p_args[1], p_argcount - 1);
+	MessageQueue::get_singleton()->push_call(get_instance_id(), method, &p_args[1], p_argcount - 1);
 
 	return Variant();
 }
@@ -1247,7 +1247,7 @@ Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int 
 		}
 
 		if (c.flags & CONNECT_DEFERRED) {
-			MessageQueue::get_singleton()->push_call(target->get_instance_ID(), c.method, args, argc, true);
+			MessageQueue::get_singleton()->push_call(target->get_instance_id(), c.method, args, argc, true);
 		} else {
 			Variant::CallError ce;
 			target->call(c.method, args, argc, ce);
@@ -1478,7 +1478,7 @@ Error Object::connect(const StringName &p_signal, Object *p_to_object, const Str
 		s = &signal_map[p_signal];
 	}
 
-	Signal::Target target(p_to_object->get_instance_ID(), p_to_method);
+	Signal::Target target(p_to_object->get_instance_id(), p_to_method);
 	if (s->slot_map.has(target)) {
 		ERR_EXPLAIN("Signal '" + p_signal + "'' already connected to given method '" + p_to_method + "' in that object.");
 		ERR_FAIL_COND_V(s->slot_map.has(target), ERR_INVALID_PARAMETER);
@@ -1516,7 +1516,7 @@ bool Object::is_connected(const StringName &p_signal, Object *p_to_object, const
 		ERR_FAIL_COND_V(!s, false);
 	}
 
-	Signal::Target target(p_to_object->get_instance_ID(), p_to_method);
+	Signal::Target target(p_to_object->get_instance_id(), p_to_method);
 
 	return s->slot_map.has(target);
 	//const Map<Signal::Target,Signal::Slot>::Element *E = s->slot_map.find(target);
@@ -1536,7 +1536,7 @@ void Object::disconnect(const StringName &p_signal, Object *p_to_object, const S
 		ERR_FAIL_COND(s->lock > 0);
 	}
 
-	Signal::Target target(p_to_object->get_instance_ID(), p_to_method);
+	Signal::Target target(p_to_object->get_instance_id(), p_to_method);
 
 	if (!s->slot_map.has(target)) {
 		ERR_EXPLAIN("Disconnecting nonexistent signal '" + p_signal + "', slot: " + itos(target._id) + ":" + target.method);
@@ -1667,7 +1667,7 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_property_list"), &Object::_get_property_list_bind);
 	ClassDB::bind_method(D_METHOD("get_method_list"), &Object::_get_method_list_bind);
 	ClassDB::bind_method(D_METHOD("notification", "what", "reversed"), &Object::notification, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("get_instance_ID"), &Object::get_instance_ID);
+	ClassDB::bind_method(D_METHOD("get_instance_id"), &Object::get_instance_id);
 
 	ClassDB::bind_method(D_METHOD("set_script", "script:Script"), &Object::set_script);
 	ClassDB::bind_method(D_METHOD("get_script:Script"), &Object::get_script);
@@ -1936,7 +1936,7 @@ ObjectID ObjectDB::instance_counter = 1;
 HashMap<Object *, ObjectID, ObjectDB::ObjectPtrHash> ObjectDB::instance_checks;
 ObjectID ObjectDB::add_instance(Object *p_object) {
 
-	ERR_FAIL_COND_V(p_object->get_instance_ID() != 0, 0);
+	ERR_FAIL_COND_V(p_object->get_instance_id() != 0, 0);
 
 	rw_lock->write_lock();
 	instances[++instance_counter] = p_object;
@@ -1952,7 +1952,7 @@ void ObjectDB::remove_instance(Object *p_object) {
 
 	rw_lock->write_lock();
 
-	instances.erase(p_object->get_instance_ID());
+	instances.erase(p_object->get_instance_id());
 #ifdef DEBUG_ENABLED
 	instance_checks.erase(p_object);
 #endif

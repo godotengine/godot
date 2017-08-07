@@ -228,12 +228,12 @@ RID Resource::get_rid() const {
 
 void Resource::register_owner(Object *p_owner) {
 
-	owners.insert(p_owner->get_instance_ID());
+	owners.insert(p_owner->get_instance_id());
 }
 
 void Resource::unregister_owner(Object *p_owner) {
 
-	owners.erase(p_owner->get_instance_ID());
+	owners.erase(p_owner->get_instance_id());
 }
 
 void Resource::notify_change_to_owners() {

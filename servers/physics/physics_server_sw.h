@@ -121,8 +121,8 @@ public:
 
 	virtual void area_set_shape_disabled(RID p_area, int p_shape_idx, bool p_disabled);
 
-	virtual void area_attach_object_instance_ID(RID p_area, ObjectID p_ID);
-	virtual ObjectID area_get_object_instance_ID(RID p_area) const;
+	virtual void area_attach_object_instance_id(RID p_area, ObjectID p_ID);
+	virtual ObjectID area_get_object_instance_id(RID p_area) const;
 
 	virtual void area_set_param(RID p_area, AreaParameter p_param, const Variant &p_value);
 	virtual void area_set_transform(RID p_area, const Transform &p_transform);
@@ -165,8 +165,8 @@ public:
 	virtual void body_remove_shape(RID p_body, int p_shape_idx);
 	virtual void body_clear_shapes(RID p_body);
 
-	virtual void body_attach_object_instance_ID(RID p_body, uint32_t p_ID);
-	virtual uint32_t body_get_object_instance_ID(RID p_body) const;
+	virtual void body_attach_object_instance_id(RID p_body, uint32_t p_ID);
+	virtual uint32_t body_get_object_instance_id(RID p_body) const;
 
 	virtual void body_set_enable_continuous_collision_detection(RID p_body, bool p_enable);
 	virtual bool body_is_continuous_collision_detection_enabled(RID p_body) const;
@@ -226,11 +226,11 @@ public:
 	virtual void pin_joint_set_param(RID p_joint, PinJointParam p_param, real_t p_value);
 	virtual real_t pin_joint_get_param(RID p_joint, PinJointParam p_param) const;
 
-	virtual void pin_joint_set_local_A(RID p_joint, const Vector3 &p_A);
-	virtual Vector3 pin_joint_get_local_A(RID p_joint) const;
+	virtual void pin_joint_set_local_a(RID p_joint, const Vector3 &p_A);
+	virtual Vector3 pin_joint_get_local_a(RID p_joint) const;
 
-	virtual void pin_joint_set_local_B(RID p_joint, const Vector3 &p_B);
-	virtual Vector3 pin_joint_get_local_B(RID p_joint) const;
+	virtual void pin_joint_set_local_b(RID p_joint, const Vector3 &p_B);
+	virtual Vector3 pin_joint_get_local_b(RID p_joint) const;
 
 	virtual RID joint_create_hinge(RID p_body_A, const Transform &p_frame_A, RID p_body_B, const Transform &p_frame_B);
 	virtual RID joint_create_hinge_simple(RID p_body_A, const Vector3 &p_pivot_A, const Vector3 &p_axis_A, RID p_body_B, const Vector3 &p_pivot_B, const Vector3 &p_axis_B);

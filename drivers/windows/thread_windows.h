@@ -52,13 +52,13 @@ class ThreadWindows : public Thread {
 	static DWORD WINAPI thread_callback(LPVOID userdata);
 
 	static Thread *create_func_windows(ThreadCreateCallback p_callback, void *, const Settings &);
-	static ID get_thread_ID_func_windows();
+	static ID get_thread_id_func_windows();
 	static void wait_to_finish_func_windows(Thread *p_thread);
 
 	ThreadWindows();
 
 public:
-	virtual ID get_ID() const;
+	virtual ID get_id() const;
 
 	static void make_default();
 

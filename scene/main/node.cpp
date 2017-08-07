@@ -77,11 +77,11 @@ void Node::_notification(int p_notification) {
 			}
 
 			if (data.input)
-				add_to_group("_vp_input" + itos(get_viewport()->get_instance_ID()));
+				add_to_group("_vp_input" + itos(get_viewport()->get_instance_id()));
 			if (data.unhandled_input)
-				add_to_group("_vp_unhandled_input" + itos(get_viewport()->get_instance_ID()));
+				add_to_group("_vp_unhandled_input" + itos(get_viewport()->get_instance_id()));
 			if (data.unhandled_key_input)
-				add_to_group("_vp_unhandled_key_input" + itos(get_viewport()->get_instance_ID()));
+				add_to_group("_vp_unhandled_key_input" + itos(get_viewport()->get_instance_id()));
 
 			get_tree()->node_count++;
 
@@ -90,11 +90,11 @@ void Node::_notification(int p_notification) {
 
 			get_tree()->node_count--;
 			if (data.input)
-				remove_from_group("_vp_input" + itos(get_viewport()->get_instance_ID()));
+				remove_from_group("_vp_input" + itos(get_viewport()->get_instance_id()));
 			if (data.unhandled_input)
-				remove_from_group("_vp_unhandled_input" + itos(get_viewport()->get_instance_ID()));
+				remove_from_group("_vp_unhandled_input" + itos(get_viewport()->get_instance_id()));
 			if (data.unhandled_key_input)
-				remove_from_group("_vp_unhandled_key_input" + itos(get_viewport()->get_instance_ID()));
+				remove_from_group("_vp_unhandled_key_input" + itos(get_viewport()->get_instance_id()));
 
 			data.pause_owner = NULL;
 			if (data.path_cache) {
@@ -1115,9 +1115,9 @@ void Node::set_process_input(bool p_enable) {
 		return;
 
 	if (p_enable)
-		add_to_group("_vp_input" + itos(get_viewport()->get_instance_ID()));
+		add_to_group("_vp_input" + itos(get_viewport()->get_instance_id()));
 	else
-		remove_from_group("_vp_input" + itos(get_viewport()->get_instance_ID()));
+		remove_from_group("_vp_input" + itos(get_viewport()->get_instance_id()));
 }
 
 bool Node::is_processing_input() const {
@@ -1133,9 +1133,9 @@ void Node::set_process_unhandled_input(bool p_enable) {
 		return;
 
 	if (p_enable)
-		add_to_group("_vp_unhandled_input" + itos(get_viewport()->get_instance_ID()));
+		add_to_group("_vp_unhandled_input" + itos(get_viewport()->get_instance_id()));
 	else
-		remove_from_group("_vp_unhandled_input" + itos(get_viewport()->get_instance_ID()));
+		remove_from_group("_vp_unhandled_input" + itos(get_viewport()->get_instance_id()));
 }
 
 bool Node::is_processing_unhandled_input() const {
@@ -1151,9 +1151,9 @@ void Node::set_process_unhandled_key_input(bool p_enable) {
 		return;
 
 	if (p_enable)
-		add_to_group("_vp_unhandled_key_input" + itos(get_viewport()->get_instance_ID()));
+		add_to_group("_vp_unhandled_key_input" + itos(get_viewport()->get_instance_id()));
 	else
-		remove_from_group("_vp_unhandled_key_input" + itos(get_viewport()->get_instance_ID()));
+		remove_from_group("_vp_unhandled_key_input" + itos(get_viewport()->get_instance_id()));
 }
 
 bool Node::is_processing_unhandled_key_input() const {
@@ -2606,7 +2606,7 @@ static void _Node_debug_sn(Object *p_obj) {
 		path = n->get_name();
 	else
 		path = String(p->get_name()) + "/" + p->get_path_to(n);
-	print_line(itos(p_obj->get_instance_ID()) + "- Stray Node: " + path + " (Type: " + n->get_class() + ")");
+	print_line(itos(p_obj->get_instance_id()) + "- Stray Node: " + path + " (Type: " + n->get_class() + ")");
 }
 
 void Node::_print_stray_nodes() {

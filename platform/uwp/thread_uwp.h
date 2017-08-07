@@ -41,13 +41,13 @@ class ThreadUWP : public Thread {
 	std::thread thread;
 
 	static Thread *create_func_uwp(ThreadCreateCallback p_callback, void *, const Settings &);
-	static ID get_thread_ID_func_uwp();
+	static ID get_thread_id_func_uwp();
 	static void wait_to_finish_func_uwp(Thread *p_thread);
 
 	ThreadUWP();
 
 public:
-	virtual ID get_ID() const;
+	virtual ID get_id() const;
 
 	static void make_default();
 

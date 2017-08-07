@@ -346,9 +346,9 @@ CollisionObject::CollisionObject(RID p_rid, bool p_area) {
 	total_subshapes = 0;
 
 	if (p_area) {
-		PhysicsServer::get_singleton()->area_attach_object_instance_ID(rid, get_instance_ID());
+		PhysicsServer::get_singleton()->area_attach_object_instance_id(rid, get_instance_id());
 	} else {
-		PhysicsServer::get_singleton()->body_attach_object_instance_ID(rid, get_instance_ID());
+		PhysicsServer::get_singleton()->body_attach_object_instance_id(rid, get_instance_id());
 	}
 	//set_transform_notify(true);
 }

@@ -1024,7 +1024,7 @@ bool Tween::interpolate_property(Object *p_object, String p_property, Variant p_
 	data.finish = false;
 	data.elapsed = 0;
 
-	data.id = p_object->get_instance_ID();
+	data.id = p_object->get_instance_id();
 	data.key = p_property;
 	data.initial_val = p_initial_val;
 	data.final_val = p_final_val;
@@ -1066,7 +1066,7 @@ bool Tween::interpolate_method(Object *p_object, String p_method, Variant p_init
 	data.finish = false;
 	data.elapsed = 0;
 
-	data.id = p_object->get_instance_ID();
+	data.id = p_object->get_instance_id();
 	data.key = p_method;
 	data.initial_val = p_initial_val;
 	data.final_val = p_final_val;
@@ -1103,7 +1103,7 @@ bool Tween::interpolate_callback(Object *p_object, real_t p_duration, String p_c
 	data.call_deferred = false;
 	data.elapsed = 0;
 
-	data.id = p_object->get_instance_ID();
+	data.id = p_object->get_instance_id();
 	data.key = p_callback;
 	data.duration = p_duration;
 	data.delay = 0;
@@ -1155,7 +1155,7 @@ bool Tween::interpolate_deferred_callback(Object *p_object, real_t p_duration, S
 	data.call_deferred = true;
 	data.elapsed = 0;
 
-	data.id = p_object->get_instance_ID();
+	data.id = p_object->get_instance_id();
 	data.key = p_callback;
 	data.duration = p_duration;
 	data.delay = 0;
@@ -1222,10 +1222,10 @@ bool Tween::follow_property(Object *p_object, String p_property, Variant p_initi
 	data.finish = false;
 	data.elapsed = 0;
 
-	data.id = p_object->get_instance_ID();
+	data.id = p_object->get_instance_id();
 	data.key = p_property;
 	data.initial_val = p_initial_val;
-	data.target_id = p_target->get_instance_ID();
+	data.target_id = p_target->get_instance_id();
 	data.target_key = p_target_property;
 	data.duration = p_duration;
 	data.trans_type = p_trans_type;
@@ -1272,10 +1272,10 @@ bool Tween::follow_method(Object *p_object, String p_method, Variant p_initial_v
 	data.finish = false;
 	data.elapsed = 0;
 
-	data.id = p_object->get_instance_ID();
+	data.id = p_object->get_instance_id();
 	data.key = p_method;
 	data.initial_val = p_initial_val;
-	data.target_id = p_target->get_instance_ID();
+	data.target_id = p_target->get_instance_id();
 	data.target_key = p_target_method;
 	data.duration = p_duration;
 	data.trans_type = p_trans_type;
@@ -1321,9 +1321,9 @@ bool Tween::targeting_property(Object *p_object, String p_property, Object *p_in
 	data.finish = false;
 	data.elapsed = 0;
 
-	data.id = p_object->get_instance_ID();
+	data.id = p_object->get_instance_id();
 	data.key = p_property;
-	data.target_id = p_initial->get_instance_ID();
+	data.target_id = p_initial->get_instance_id();
 	data.target_key = p_initial_property;
 	data.initial_val = initial_val;
 	data.final_val = p_final_val;
@@ -1375,9 +1375,9 @@ bool Tween::targeting_method(Object *p_object, String p_method, Object *p_initia
 	data.finish = false;
 	data.elapsed = 0;
 
-	data.id = p_object->get_instance_ID();
+	data.id = p_object->get_instance_id();
 	data.key = p_method;
-	data.target_id = p_initial->get_instance_ID();
+	data.target_id = p_initial->get_instance_id();
 	data.target_key = p_initial_method;
 	data.initial_val = initial_val;
 	data.final_val = p_final_val;

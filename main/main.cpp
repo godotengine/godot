@@ -203,7 +203,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	MAIN_PRINT("Main: Initialize Globals");
 
-	Thread::_main_thread_id = Thread::get_caller_ID();
+	Thread::_main_thread_id = Thread::get_caller_id();
 
 	globals = memnew(ProjectSettings);
 	input_map = memnew(InputMap);

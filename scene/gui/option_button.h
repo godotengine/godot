@@ -62,13 +62,13 @@ public:
 
 	void set_item_text(int p_idx, const String &p_text);
 	void set_item_icon(int p_idx, const Ref<Texture> &p_icon);
-	void set_item_ID(int p_idx, int p_ID);
+	void set_item_id(int p_idx, int p_ID);
 	void set_item_metadata(int p_idx, const Variant &p_metadata);
 	void set_item_disabled(int p_idx, bool p_disabled);
 
 	String get_item_text(int p_idx) const;
 	Ref<Texture> get_item_icon(int p_idx) const;
-	int get_item_ID(int p_idx) const;
+	int get_item_id(int p_idx) const;
 	Variant get_item_metadata(int p_idx) const;
 	bool is_item_disabled(int p_idx) const;
 
@@ -80,7 +80,7 @@ public:
 
 	void select(int p_idx);
 	int get_selected() const;
-	int get_selected_ID() const;
+	int get_selected_id() const;
 	Variant get_selected_metadata() const;
 
 	void remove_item(int p_idx);

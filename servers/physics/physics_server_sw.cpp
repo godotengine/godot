@@ -350,7 +350,7 @@ void PhysicsServerSW::area_set_shape_disabled(RID p_area, int p_shape_idx, bool 
 	area->set_shape_as_disabled(p_shape_idx, p_disabled);
 }
 
-void PhysicsServerSW::area_attach_object_instance_ID(RID p_area, ObjectID p_ID) {
+void PhysicsServerSW::area_attach_object_instance_id(RID p_area, ObjectID p_ID) {
 
 	if (space_owner.owns(p_area)) {
 		SpaceSW *space = space_owner.get(p_area);
@@ -360,7 +360,7 @@ void PhysicsServerSW::area_attach_object_instance_ID(RID p_area, ObjectID p_ID) 
 	ERR_FAIL_COND(!area);
 	area->set_instance_id(p_ID);
 }
-ObjectID PhysicsServerSW::area_get_object_instance_ID(RID p_area) const {
+ObjectID PhysicsServerSW::area_get_object_instance_id(RID p_area) const {
 
 	if (space_owner.owns(p_area)) {
 		SpaceSW *space = space_owner.get(p_area);
@@ -438,7 +438,7 @@ void PhysicsServerSW::area_set_monitor_callback(RID p_area, Object *p_receiver, 
 	AreaSW *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
 
-	area->set_monitor_callback(p_receiver ? p_receiver->get_instance_ID() : 0, p_method);
+	area->set_monitor_callback(p_receiver ? p_receiver->get_instance_id() : 0, p_method);
 }
 
 void PhysicsServerSW::area_set_ray_pickable(RID p_area, bool p_enable) {
@@ -462,7 +462,7 @@ void PhysicsServerSW::area_set_area_monitor_callback(RID p_area, Object *p_recei
 	AreaSW *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
 
-	area->set_area_monitor_callback(p_receiver ? p_receiver->get_instance_ID() : 0, p_method);
+	area->set_area_monitor_callback(p_receiver ? p_receiver->get_instance_id() : 0, p_method);
 }
 
 /* BODY API */
@@ -662,7 +662,7 @@ uint32_t PhysicsServerSW::body_get_collision_mask(RID p_body) const {
 	return body->get_collision_mask();
 }
 
-void PhysicsServerSW::body_attach_object_instance_ID(RID p_body, uint32_t p_ID) {
+void PhysicsServerSW::body_attach_object_instance_id(RID p_body, uint32_t p_ID) {
 
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
@@ -670,7 +670,7 @@ void PhysicsServerSW::body_attach_object_instance_ID(RID p_body, uint32_t p_ID) 
 	body->set_instance_id(p_ID);
 };
 
-uint32_t PhysicsServerSW::body_get_object_instance_ID(RID p_body) const {
+uint32_t PhysicsServerSW::body_get_object_instance_id(RID p_body) const {
 
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, 0);
@@ -877,7 +877,7 @@ void PhysicsServerSW::body_set_force_integration_callback(RID p_body, Object *p_
 
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
-	body->set_force_integration_callback(p_receiver ? p_receiver->get_instance_ID() : ObjectID(0), p_method, p_udata);
+	body->set_force_integration_callback(p_receiver ? p_receiver->get_instance_id() : ObjectID(0), p_method, p_udata);
 }
 
 void PhysicsServerSW::body_set_ray_pickable(RID p_body, bool p_enable) {
@@ -944,38 +944,38 @@ real_t PhysicsServerSW::pin_joint_get_param(RID p_joint, PinJointParam p_param) 
 	return pin_joint->get_param(p_param);
 }
 
-void PhysicsServerSW::pin_joint_set_local_A(RID p_joint, const Vector3 &p_A) {
+void PhysicsServerSW::pin_joint_set_local_a(RID p_joint, const Vector3 &p_A) {
 
 	JointSW *joint = joint_owner.get(p_joint);
 	ERR_FAIL_COND(!joint);
 	ERR_FAIL_COND(joint->get_type() != JOINT_PIN);
 	PinJointSW *pin_joint = static_cast<PinJointSW *>(joint);
-	pin_joint->set_pos_A(p_A);
+	pin_joint->set_pos_a(p_A);
 }
-Vector3 PhysicsServerSW::pin_joint_get_local_A(RID p_joint) const {
+Vector3 PhysicsServerSW::pin_joint_get_local_a(RID p_joint) const {
 
 	JointSW *joint = joint_owner.get(p_joint);
 	ERR_FAIL_COND_V(!joint, Vector3());
 	ERR_FAIL_COND_V(joint->get_type() != JOINT_PIN, Vector3());
 	PinJointSW *pin_joint = static_cast<PinJointSW *>(joint);
-	return pin_joint->get_pos_A();
+	return pin_joint->get_pos_a();
 }
 
-void PhysicsServerSW::pin_joint_set_local_B(RID p_joint, const Vector3 &p_B) {
+void PhysicsServerSW::pin_joint_set_local_b(RID p_joint, const Vector3 &p_B) {
 
 	JointSW *joint = joint_owner.get(p_joint);
 	ERR_FAIL_COND(!joint);
 	ERR_FAIL_COND(joint->get_type() != JOINT_PIN);
 	PinJointSW *pin_joint = static_cast<PinJointSW *>(joint);
-	pin_joint->set_pos_B(p_B);
+	pin_joint->set_pos_b(p_B);
 }
-Vector3 PhysicsServerSW::pin_joint_get_local_B(RID p_joint) const {
+Vector3 PhysicsServerSW::pin_joint_get_local_b(RID p_joint) const {
 
 	JointSW *joint = joint_owner.get(p_joint);
 	ERR_FAIL_COND_V(!joint, Vector3());
 	ERR_FAIL_COND_V(joint->get_type() != JOINT_PIN, Vector3());
 	PinJointSW *pin_joint = static_cast<PinJointSW *>(joint);
-	return pin_joint->get_pos_B();
+	return pin_joint->get_pos_b();
 }
 
 RID PhysicsServerSW::joint_create_hinge(RID p_body_A, const Transform &p_frame_A, RID p_body_B, const Transform &p_frame_B) {

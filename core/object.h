@@ -534,7 +534,7 @@ public:
 
 	bool _is_gpl_reversed() const { return false; }
 
-	_FORCE_INLINE_ ObjectID get_instance_ID() const { return _instance_ID; }
+	_FORCE_INLINE_ ObjectID get_instance_id() const { return _instance_ID; }
 	// this is used for editors
 
 	void add_change_receptor(Object *p_receptor);

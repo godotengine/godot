@@ -328,8 +328,8 @@ public:
 
 	virtual void area_set_shape_disabled(RID p_area, int p_shape_idx, bool p_disabled) = 0;
 
-	virtual void area_attach_object_instance_ID(RID p_area, ObjectID p_ID) = 0;
-	virtual ObjectID area_get_object_instance_ID(RID p_area) const = 0;
+	virtual void area_attach_object_instance_id(RID p_area, ObjectID p_ID) = 0;
+	virtual ObjectID area_get_object_instance_id(RID p_area) const = 0;
 
 	virtual void area_set_param(RID p_area, AreaParameter p_param, const Variant &p_value) = 0;
 	virtual void area_set_transform(RID p_area, const Transform &p_transform) = 0;
@@ -381,8 +381,8 @@ public:
 
 	virtual void body_set_shape_disabled(RID p_body, int p_shape_idx, bool p_disabled) = 0;
 
-	virtual void body_attach_object_instance_ID(RID p_body, uint32_t p_ID) = 0;
-	virtual uint32_t body_get_object_instance_ID(RID p_body) const = 0;
+	virtual void body_attach_object_instance_id(RID p_body, uint32_t p_ID) = 0;
+	virtual uint32_t body_get_object_instance_id(RID p_body) const = 0;
 
 	virtual void body_set_enable_continuous_collision_detection(RID p_body, bool p_enable) = 0;
 	virtual bool body_is_continuous_collision_detection_enabled(RID p_body) const = 0;
@@ -508,11 +508,11 @@ public:
 	virtual void pin_joint_set_param(RID p_joint, PinJointParam p_param, float p_value) = 0;
 	virtual float pin_joint_get_param(RID p_joint, PinJointParam p_param) const = 0;
 
-	virtual void pin_joint_set_local_A(RID p_joint, const Vector3 &p_A) = 0;
-	virtual Vector3 pin_joint_get_local_A(RID p_joint) const = 0;
+	virtual void pin_joint_set_local_a(RID p_joint, const Vector3 &p_A) = 0;
+	virtual Vector3 pin_joint_get_local_a(RID p_joint) const = 0;
 
-	virtual void pin_joint_set_local_B(RID p_joint, const Vector3 &p_B) = 0;
-	virtual Vector3 pin_joint_get_local_B(RID p_joint) const = 0;
+	virtual void pin_joint_set_local_b(RID p_joint, const Vector3 &p_B) = 0;
+	virtual Vector3 pin_joint_get_local_b(RID p_joint) const = 0;
 
 	enum HingeJointParam {
 

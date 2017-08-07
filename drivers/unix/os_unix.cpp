@@ -415,7 +415,7 @@ Error OS_Unix::kill(const ProcessID &p_pid) {
 	return ret ? ERR_INVALID_PARAMETER : OK;
 }
 
-int OS_Unix::get_process_ID() const {
+int OS_Unix::get_process_id() const {
 
 	return getpid();
 };

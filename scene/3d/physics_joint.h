@@ -354,10 +354,10 @@ protected:
 	void _connect();
 public:
 
-	void set_body_A(const NodePath& p_path);
-	void set_body_B(const NodePath& p_path);
-	NodePath get_body_A() const;
-	NodePath get_body_B() const;
+	void set_body_a(const NodePath& p_path);
+	void set_body_b(const NodePath& p_path);
+	NodePath get_body_a() const;
+	NodePath get_body_b() const;
 
 	void set_active(bool p_active);
 	bool is_active() const;

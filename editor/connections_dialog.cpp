@@ -220,7 +220,7 @@ void ConnectDialog::_add_bind() {
 
 	if (cdbinds->params.size() >= VARIANT_ARG_MAX)
 		return;
-	Variant::Type vt = (Variant::Type)type_list->get_item_ID(type_list->get_selected());
+	Variant::Type vt = (Variant::Type)type_list->get_item_id(type_list->get_selected());
 
 	Variant value;
 

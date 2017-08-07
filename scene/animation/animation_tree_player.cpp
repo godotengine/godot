@@ -1481,7 +1481,7 @@ AnimationTreePlayer::Track *AnimationTreePlayer::_find_track(const NodePath &p_p
 		return NULL;
 	}
 
-	ObjectID id = child->get_instance_ID();
+	ObjectID id = child->get_instance_id();
 	StringName property;
 	int bone_idx = -1;
 

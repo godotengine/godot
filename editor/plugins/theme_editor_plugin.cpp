@@ -104,7 +104,7 @@ struct _TECategory {
 
 		Ref<T> item;
 		StringName name;
-		bool operator<(const RefItem<T> &p) const { return item->get_instance_ID() < p.item->get_instance_ID(); }
+		bool operator<(const RefItem<T> &p) const { return item->get_instance_id() < p.item->get_instance_id(); }
 	};
 
 	template <class T>

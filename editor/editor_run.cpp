@@ -55,7 +55,7 @@ Error EditorRun::run(const String &p_scene, const String p_custom_args, const Li
 	}
 
 	args.push_back("-epid");
-	args.push_back(String::num(OS::get_singleton()->get_process_ID()));
+	args.push_back(String::num(OS::get_singleton()->get_process_id()));
 
 	if (debug_collisions) {
 		args.push_back("-debugcol");

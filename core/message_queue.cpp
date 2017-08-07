@@ -153,16 +153,16 @@ Error MessageQueue::push_notification(ObjectID p_id, int p_notification) {
 
 Error MessageQueue::push_call(Object *p_object, const StringName &p_method, VARIANT_ARG_DECLARE) {
 
-	return push_call(p_object->get_instance_ID(), p_method, VARIANT_ARG_PASS);
+	return push_call(p_object->get_instance_id(), p_method, VARIANT_ARG_PASS);
 }
 
 Error MessageQueue::push_notification(Object *p_object, int p_notification) {
 
-	return push_notification(p_object->get_instance_ID(), p_notification);
+	return push_notification(p_object->get_instance_id(), p_notification);
 }
 Error MessageQueue::push_set(Object *p_object, const StringName &p_prop, const Variant &p_value) {
 
-	return push_set(p_object->get_instance_ID(), p_prop, p_value);
+	return push_set(p_object->get_instance_id(), p_prop, p_value);
 }
 
 void MessageQueue::statistics() {

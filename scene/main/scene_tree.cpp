@@ -1106,7 +1106,7 @@ static void _fill_array(Node *p_node, Array &array, int p_level) {
 	array.push_back(p_level);
 	array.push_back(p_node->get_name());
 	array.push_back(p_node->get_class());
-	array.push_back(p_node->get_instance_ID());
+	array.push_back(p_node->get_instance_id());
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 
 		_fill_array(p_node->get_child(i), array, p_level + 1);
@@ -1141,7 +1141,7 @@ void SceneTree::queue_delete(Object *p_object) {
 	_THREAD_SAFE_METHOD_
 	ERR_FAIL_NULL(p_object);
 	p_object->_is_queued_for_deletion = true;
-	delete_queue.push_back(p_object->get_instance_ID());
+	delete_queue.push_back(p_object->get_instance_id());
 }
 
 int SceneTree::get_node_count() const {

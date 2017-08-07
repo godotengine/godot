@@ -51,7 +51,7 @@ void Physics2DServerWrapMT::_thread_callback(void *_instance) {
 
 void Physics2DServerWrapMT::thread_loop() {
 
-	server_thread = Thread::get_caller_ID();
+	server_thread = Thread::get_caller_id();
 
 	OS::get_singleton()->make_rendering_thread();
 
@@ -169,12 +169,12 @@ Physics2DServerWrapMT::Physics2DServerWrapMT(Physics2DServer *p_contained, bool 
 	damped_spring_joint_pool_max_size = GLOBAL_GET("memory/limits/multithreaded_server/rid_pool_prealloc");
 
 	if (!p_create_thread) {
-		server_thread = Thread::get_caller_ID();
+		server_thread = Thread::get_caller_id();
 	} else {
 		server_thread = 0;
 	}
 
-	main_thread = Thread::get_caller_ID();
+	main_thread = Thread::get_caller_id();
 	first_frame = true;
 }
 

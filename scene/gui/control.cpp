@@ -603,7 +603,7 @@ bool Control::has_point(const Point2 &p_point) const {
 void Control::set_drag_forwarding(Control *p_target) {
 
 	if (p_target)
-		data.drag_owner = p_target->get_instance_ID();
+		data.drag_owner = p_target->get_instance_id();
 	else
 		data.drag_owner = 0;
 }

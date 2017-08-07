@@ -36,7 +36,7 @@
 void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, ErrorHandlerType p_type) {
 
 	EditorLog *self = (EditorLog *)p_self;
-	if (self->current != Thread::get_caller_ID())
+	if (self->current != Thread::get_caller_id())
 		return;
 
 	String err_str;
@@ -204,7 +204,7 @@ EditorLog::EditorLog() {
 	eh.userdata = this;
 	add_error_handler(&eh);
 
-	current = Thread::get_caller_ID();
+	current = Thread::get_caller_id();
 
 	EditorNode::get_undo_redo()->set_commit_notify_callback(_undo_redo_cbk, this);
 }
