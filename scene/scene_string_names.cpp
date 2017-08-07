@@ -142,9 +142,9 @@ SceneStringNames::SceneStringNames() {
 	h_offset = StaticCString::create("h_offset");
 	v_offset = StaticCString::create("v_offset");
 
-	transform_pos = StaticCString::create("transform/pos");
-	transform_rot = StaticCString::create("transform/rot");
-	transform_scale = StaticCString::create("transform/scale");
+	transform_pos = StaticCString::create("position");
+	transform_rot = StaticCString::create("rotation_deg");
+	transform_scale = StaticCString::create("scale");
 
 	_update_remote = StaticCString::create("_update_remote");
 	_update_pairs = StaticCString::create("_update_pairs");
@@ -157,8 +157,6 @@ SceneStringNames::SceneStringNames() {
 	has_point = StaticCString::create("has_point");
 
 	line_separation = StaticCString::create("line_separation");
-
-	play_play = StaticCString::create("play/play");
 
 	get_drag_data = StaticCString::create("get_drag_data");
 	drop_data = StaticCString::create("drop_data");
