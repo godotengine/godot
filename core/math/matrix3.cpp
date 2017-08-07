@@ -30,7 +30,7 @@
 #include "matrix3.h"
 #include "math_funcs.h"
 #include "os/copymem.h"
-
+#include "print_string.h"
 #define cofac(row1, col1, row2, col2) \
 	(elements[row1][col1] * elements[row2][col2] - elements[row1][col2] * elements[row2][col1])
 
@@ -169,8 +169,16 @@ Vector3 Matrix3::get_euler() const {
 	euler.y = Math::asin(m[0][2]);
 	if (euler.y < Math_PI * 0.5) {
 		if (euler.y > -Math_PI * 0.5) {
-			euler.x = Math::atan2(-m[1][2], m[2][2]);
-			euler.z = Math::atan2(-m[0][1], m[0][0]);
+			//if rotation is Y-only, return a proper -pi,pi range like in x or z for the same case.
+			if (m[1][0] == 0.0 && m[0][1] == 0.0 && m[0][0] < 0.0) {
+				if (euler.y > 0.0)
+					euler.y = Math_PI - euler.y;
+				else
+					euler.y = -(Math_PI + euler.y);
+			} else {
+				euler.x = Math::atan2(-m[1][2], m[2][2]);
+				euler.z = Math::atan2(-m[0][1], m[0][0]);
+			}
 
 		} else {
 			real_t r = Math::atan2(m[1][0], m[1][1]);
