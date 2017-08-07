@@ -44,6 +44,9 @@
 #include <IOKit/IOKitLib.h>
 #include <IOKit/hid/IOHIDKeys.h>
 #include <IOKit/hid/IOHIDLib.h>
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 101200
+#include <os/log.h>
+#endif
 
 #include <fcntl.h>
 #include <libproc.h>
@@ -1015,6 +1018,45 @@ void OS_OSX::delete_main_loop() {
 String OS_OSX::get_name() {
 
 	return "OSX";
+}
+
+void OS_OSX::print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type) {
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 101200
+	if (!_print_error_enabled)
+		return;
+
+	const char *err_details;
+	if (p_rationale && p_rationale[0])
+		err_details = p_rationale;
+	else
+		err_details = p_code;
+
+	switch (p_type) {
+		case ERR_ERROR:
+			os_log_error(OS_LOG_DEFAULT, "ERROR: %{public}s: %{public}s\nAt: %{public}s:%i.", p_function, err_details, p_file, p_line);
+			print("\E[1;31mERROR: %s: \E[0m\E[1m%s\n", p_function, err_details);
+			print("\E[0;31m   At: %s:%i.\E[0m\n", p_file, p_line);
+			break;
+		case ERR_WARNING:
+			os_log_info(OS_LOG_DEFAULT, "WARNING: %{public}s: %{public}s\nAt: %{public}s:%i.", p_function, err_details, p_file, p_line);
+			print("\E[1;33mWARNING: %s: \E[0m\E[1m%s\n", p_function, err_details);
+			print("\E[0;33m   At: %s:%i.\E[0m\n", p_file, p_line);
+			break;
+		case ERR_SCRIPT:
+			os_log_error(OS_LOG_DEFAULT, "SCRIPT ERROR: %{public}s: %{public}s\nAt: %{public}s:%i.", p_function, err_details, p_file, p_line);
+			print("\E[1;35mSCRIPT ERROR: %s: \E[0m\E[1m%s\n", p_function, err_details);
+			print("\E[0;35m   At: %s:%i.\E[0m\n", p_file, p_line);
+			break;
+		case ERR_SHADER:
+			os_log_error(OS_LOG_DEFAULT, "SHADER ERROR: %{public}s: %{public}s\nAt: %{public}s:%i.", p_function, err_details, p_file, p_line);
+			print("\E[1;36mSHADER ERROR: %s: \E[0m\E[1m%s\n", p_function, err_details);
+			print("\E[0;36m   At: %s:%i.\E[0m\n", p_file, p_line);
+			break;
+	}
+#else
+	OS_Unix::print_error(p_function, p_file, p_line, p_code, p_rationale, p_type);
+#endif
 }
 
 void OS_OSX::alert(const String &p_alert, const String &p_title) {
