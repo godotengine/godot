@@ -102,7 +102,7 @@ void FileSystemDock::_notification(int p_what) {
 
 		case NOTIFICATION_RESIZED: {
 
-			bool new_mode = get_size().height < get_viewport_rect().size.height * 3 / 4;
+			bool new_mode = get_size().height < get_viewport_rect().size.height / 2;
 
 			if (new_mode != split_mode) {
 
