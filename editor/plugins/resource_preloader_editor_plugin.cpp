@@ -362,7 +362,7 @@ void ResourcePreloaderEditor::_bind_methods() {
 
 ResourcePreloaderEditor::ResourcePreloaderEditor() {
 
-	//add_style_override("panel", get_stylebox("panel","Panel"));
+	//add_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_stylebox("panel","Panel"));
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
