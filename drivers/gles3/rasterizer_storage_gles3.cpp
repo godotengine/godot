@@ -6905,16 +6905,16 @@ void RasterizerStorageGLES3::initialize() {
 	config.etc_supported = config.extensions.has("GL_OES_compressed_ETC1_RGB8_texture");
 	config.latc_supported = config.extensions.has("GL_EXT_texture_compression_latc");
 	config.bptc_supported = config.extensions.has("GL_ARB_texture_compression_bptc");
+	//S3TC - not core, implemented as external library (libtxc-dxtn-s2tc0) on Linux distributions with Mesa based open-source drivers and may be not installed by default.
+	config.s3tc_supported = config.extensions.has("GL_EXT_texture_compression_dxt1") || config.extensions.has("GL_EXT_texture_compression_s3tc") || config.extensions.has("WEBGL_compressed_texture_s3tc");
 #ifdef GLES_OVER_GL
 	config.hdr_supported = true;
 	config.etc2_supported = false;
-	config.rgtc_supported = true; //supported by spec
-	config.s3tc_supported = true; //supported by spec
+	config.rgtc_supported = true; //RGTC - core since OpenGL version 3.0
 #else
 	config.etc2_supported = true;
 	config.hdr_supported = false;
-	config.rgtc_supported = config.extensions.has("GL_EXT_texture_compression_rgtc");
-	config.s3tc_supported = config.extensions.has("GL_EXT_texture_compression_dxt1") || config.extensions.has("GL_EXT_texture_compression_s3tc") || config.extensions.has("WEBGL_compressed_texture_s3tc");
+	config.rgtc_supported = config.extensions.has("GL_EXT_texture_compression_rgtc") || config.extensions.has("GL_ARB_texture_compression_rgtc");
 #endif
 
 	config.pvrtc_supported = config.extensions.has("GL_IMG_texture_compression_pvrtc");
