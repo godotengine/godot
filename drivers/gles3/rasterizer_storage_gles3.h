@@ -1353,7 +1353,7 @@ public:
 		bool clear_request;
 		Color clear_request_color;
 		int canvas_draw_commands;
-		float time[4];
+		double time[4];
 		float delta;
 		uint64_t prev_tick;
 		uint64_t count;
