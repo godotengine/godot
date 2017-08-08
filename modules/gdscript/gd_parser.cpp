@@ -2369,8 +2369,7 @@ void GDParser::_parse_block(BlockNode *p_block, bool p_static) {
 					check_block = check_block->parent_block;
 				}
 
-				p_block->variables.push_back(n); //line?
-				p_block->variable_lines.push_back(tokenizer->get_token_line());
+				int var_line = tokenizer->get_token_line();
 
 				//must know when the local variable is declared
 				LocalVarNode *lv = alloc_node<LocalVarNode>();
@@ -2400,6 +2399,10 @@ void GDParser::_parse_block(BlockNode *p_block, bool p_static) {
 					c->value = Variant();
 					assigned = c;
 				}
+				//must be added later, to avoid self-referencing.
+				p_block->variables.push_back(n); //line?
+				p_block->variable_lines.push_back(var_line);
+
 				IdentifierNode *id = alloc_node<IdentifierNode>();
 				id->name = n;
 
