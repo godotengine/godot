@@ -1190,17 +1190,47 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							motion = motion_mask.dot(motion) * motion_mask;
 						}
 
+						//set_message("Translating: "+motion);
+
+						List<Node *> &selection = editor_selection->get_selected_node_list();
+
 						float snap = 0;
 
 						if (_edit.snap || spatial_editor->is_snap_enabled()) {
 
 							snap = spatial_editor->get_translate_snap();
-							motion.snap(Vector3(snap, snap, snap));
+							bool local_coords = spatial_editor->are_local_coords_enabled();
+
+							if (local_coords) {
+								bool multiple = false;
+								Spatial *node = NULL;
+								for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
+
+									Spatial *sp = E->get()->cast_to<Spatial>();
+									if (!sp) {
+										continue;
+									}
+									if (node) {
+										multiple = true;
+										break;
+									} else {
+										node = sp;
+									}
+								}
+
+								if (multiple) {
+									motion.snap(Vector3(snap, snap, snap));
+								} else {
+									Basis b = node->get_global_transform().basis.orthonormalized();
+									Vector3 local_motion = b.inverse().xform(motion);
+									local_motion.snap(Vector3(snap, snap, snap));
+									motion = b.xform(local_motion);
+								}
+
+							} else {
+								motion.snap(Vector3(snap, snap, snap));
+							}
 						}
-
-						//set_message("Translating: "+motion);
-
-						List<Node *> &selection = editor_selection->get_selected_node_list();
 
 						for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 
