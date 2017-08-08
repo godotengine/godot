@@ -75,7 +75,8 @@ class PacketPeerStream : public PacketPeer {
 
 	mutable Ref<StreamPeer> peer;
 	mutable RingBuffer<uint8_t> ring_buffer;
-	mutable Vector<uint8_t> temp_buffer;
+	mutable Vector<uint8_t> input_buffer;
+	mutable Vector<uint8_t> output_buffer;
 
 	Error _poll_buffer() const;
 
@@ -92,6 +93,7 @@ public:
 
 	void set_stream_peer(const Ref<StreamPeer> &p_peer);
 	void set_input_buffer_max_size(int p_max_size);
+	void set_output_buffer_max_size(int p_max_size);
 	PacketPeerStream();
 };
 

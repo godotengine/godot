@@ -139,6 +139,8 @@ void PacketPeerStream::_set_stream_peer(REF p_peer) {
 void PacketPeerStream::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_stream_peer", "peer:StreamPeer"), &PacketPeerStream::_set_stream_peer);
+	ClassDB::bind_method(D_METHOD("set_input_buffer_max_size", "max_size_bytes"), &PacketPeerStream::set_input_buffer_max_size);
+	ClassDB::bind_method(D_METHOD("set_output_buffer_max_size", "max_size_bytes"), &PacketPeerStream::set_output_buffer_max_size);
 }
 
 Error PacketPeerStream::_poll_buffer() const {
@@ -146,13 +148,13 @@ Error PacketPeerStream::_poll_buffer() const {
 	ERR_FAIL_COND_V(peer.is_null(), ERR_UNCONFIGURED);
 
 	int read = 0;
-	Error err = peer->get_partial_data(&temp_buffer[0], ring_buffer.space_left(), read);
+	Error err = peer->get_partial_data(&input_buffer[0], ring_buffer.space_left(), read);
 	if (err)
 		return err;
 	if (read == 0)
 		return OK;
 
-	int w = ring_buffer.write(&temp_buffer[0], read);
+	int w = ring_buffer.write(&input_buffer[0], read);
 	ERR_FAIL_COND_V(w != read, ERR_BUG);
 
 	return OK;
@@ -198,9 +200,9 @@ Error PacketPeerStream::get_packet(const uint8_t **r_buffer, int &r_buffer_size)
 	ERR_FAIL_COND_V(remaining < (int)len, ERR_UNAVAILABLE);
 
 	ring_buffer.read(lbuf, 4); //get rid of first 4 bytes
-	ring_buffer.read(&temp_buffer[0], len); // read packet
+	ring_buffer.read(&input_buffer[0], len); // read packet
 
-	*r_buffer = &temp_buffer[0];
+	*r_buffer = &input_buffer[0];
 	r_buffer_size = len;
 	return OK;
 }
@@ -217,19 +219,19 @@ Error PacketPeerStream::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 		return OK;
 
 	ERR_FAIL_COND_V(p_buffer_size < 0, ERR_INVALID_PARAMETER);
-	ERR_FAIL_COND_V(p_buffer_size + 4 > temp_buffer.size(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_buffer_size + 4 > output_buffer.size(), ERR_INVALID_PARAMETER);
 
-	encode_uint32(p_buffer_size, &temp_buffer[0]);
-	uint8_t *dst = &temp_buffer[4];
+	encode_uint32(p_buffer_size, &output_buffer[0]);
+	uint8_t *dst = &output_buffer[4];
 	for (int i = 0; i < p_buffer_size; i++)
 		dst[i] = p_buffer[i];
 
-	return peer->put_data(&temp_buffer[0], p_buffer_size + 4);
+	return peer->put_data(&output_buffer[0], p_buffer_size + 4);
 }
 
 int PacketPeerStream::get_max_packet_size() const {
 
-	return temp_buffer.size();
+	return output_buffer.size();
 }
 
 void PacketPeerStream::set_stream_peer(const Ref<StreamPeer> &p_peer) {
@@ -249,7 +251,12 @@ void PacketPeerStream::set_input_buffer_max_size(int p_max_size) {
 	ERR_EXPLAIN("Buffer in use, resizing would cause loss of data");
 	ERR_FAIL_COND(ring_buffer.data_left());
 	ring_buffer.resize(nearest_shift(p_max_size + 4));
-	temp_buffer.resize(nearest_power_of_2(p_max_size + 4));
+	input_buffer.resize(nearest_power_of_2(p_max_size + 4));
+}
+
+void PacketPeerStream::set_output_buffer_max_size(int p_max_size) {
+
+	output_buffer.resize(nearest_power_of_2(p_max_size + 4));
 }
 
 PacketPeerStream::PacketPeerStream() {
@@ -257,5 +264,6 @@ PacketPeerStream::PacketPeerStream() {
 	int rbsize = GLOBAL_GET("network/limits/packet_peer_stream/max_buffer_po2");
 
 	ring_buffer.resize(rbsize);
-	temp_buffer.resize(1 << rbsize);
+	input_buffer.resize(1 << rbsize);
+	output_buffer.resize(1 << rbsize);
 }
