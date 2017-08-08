@@ -202,6 +202,11 @@ void RasterizerGLES3::begin_frame() {
 
 	time_total += delta;
 
+	if (delta == 0) {
+		//to avoid hiccups
+		delta = 0.001;
+	}
+
 	prev_ticks = tick;
 
 	double time_roll_over = GLOBAL_GET("rendering/limits/time/time_rollover_secs");
@@ -213,11 +218,7 @@ void RasterizerGLES3::begin_frame() {
 	storage->frame.time[2] = Math::fmod(time_total, 900);
 	storage->frame.time[3] = Math::fmod(time_total, 60);
 	storage->frame.count++;
-	storage->frame.delta = double(tick - storage->frame.prev_tick) / 1000000.0;
-	if (storage->frame.prev_tick == 0) {
-		//to avoid hiccups
-		storage->frame.delta = 0.001;
-	}
+	storage->frame.delta = delta;
 
 	storage->frame.prev_tick = tick;
 
