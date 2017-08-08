@@ -880,13 +880,13 @@ void VisualServerScene::instance_attach_skeleton(RID p_instance, RID p_skeleton)
 		return;
 
 	if (instance->skeleton.is_valid()) {
-		VSG::storage->instance_remove_skeleton(p_skeleton, instance);
+		VSG::storage->instance_remove_skeleton(instance->skeleton, instance);
 	}
 
 	instance->skeleton = p_skeleton;
 
 	if (instance->skeleton.is_valid()) {
-		VSG::storage->instance_add_skeleton(p_skeleton, instance);
+		VSG::storage->instance_add_skeleton(instance->skeleton, instance);
 	}
 
 	_instance_queue_update(instance, true);

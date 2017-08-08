@@ -540,6 +540,7 @@ bool SceneTree::iteration(float p_time) {
 	_notify_group_pause("fixed_process_internal", Node::NOTIFICATION_INTERNAL_FIXED_PROCESS);
 	_notify_group_pause("fixed_process", Node::NOTIFICATION_FIXED_PROCESS);
 	_flush_ugc();
+	MessageQueue::get_singleton()->flush(); //small little hack
 	_flush_transform_notifications();
 	call_group_flags(GROUP_CALL_REALTIME, "_viewports", "update_worlds");
 	root_lock--;
@@ -566,6 +567,8 @@ bool SceneTree::idle(float p_time) {
 
 	emit_signal("idle_frame");
 
+	MessageQueue::get_singleton()->flush(); //small little hack
+
 	_flush_transform_notifications();
 
 	_notify_group_pause("idle_process_internal", Node::NOTIFICATION_INTERNAL_PROCESS);
@@ -581,6 +584,7 @@ bool SceneTree::idle(float p_time) {
 	}
 
 	_flush_ugc();
+	MessageQueue::get_singleton()->flush(); //small little hack
 	_flush_transform_notifications(); //transforms after world update, to avoid unnecessary enter/exit notifications
 	call_group_flags(GROUP_CALL_REALTIME, "_viewports", "update_worlds");
 
