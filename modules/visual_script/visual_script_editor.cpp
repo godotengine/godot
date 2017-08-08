@@ -869,14 +869,26 @@ void VisualScriptEditor::_member_edited() {
 		}
 		selected = new_name;
 
-		_update_graph();
-
+		int node_id = script->get_function_node_id(name);
+		Ref<VisualScriptFunction> func;
+		if (script->has_node(name, node_id)) {
+			func = script->get_node(name, node_id);
+		}
 		undo_redo->create_action(TTR("Rename Function"));
 		undo_redo->add_do_method(script.ptr(), "rename_function", name, new_name);
 		undo_redo->add_undo_method(script.ptr(), "rename_function", new_name, name);
+		if (func.is_valid()) {
+
+			undo_redo->add_do_method(func.ptr(), "set_name", new_name);
+			undo_redo->add_undo_method(func.ptr(), "set_name", name);
+		}
 		undo_redo->add_do_method(this, "_update_members");
 		undo_redo->add_undo_method(this, "_update_members");
+		undo_redo->add_do_method(this, "_update_graph");
+		undo_redo->add_undo_method(this, "_update_graph");
 		undo_redo->commit_action();
+
+		//		_update_graph();
 
 		return; //or crash because it will become invalid
 	}
