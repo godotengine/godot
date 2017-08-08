@@ -52,31 +52,6 @@ void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_f
 	*/
 
 	err_str = " " + err_str;
-	self->log->add_newline();
-
-	Ref<Texture> icon;
-
-	switch (p_type) {
-		case ERR_HANDLER_ERROR: {
-
-			icon = self->get_icon("Error", "EditorIcons");
-			return; // these are confusing
-		} break;
-		case ERR_HANDLER_WARNING: {
-
-			icon = self->get_icon("Error", "EditorIcons");
-
-		} break;
-		case ERR_HANDLER_SCRIPT: {
-
-			icon = self->get_icon("ScriptError", "EditorIcons");
-		} break;
-		case ERR_HANDLER_SHADER: {
-
-			icon = self->get_icon("Shader", "EditorIcons");
-		} break;
-	}
-
 	self->add_message(err_str, true);
 }
 
@@ -114,16 +89,16 @@ void EditorLog::clear() {
 
 void EditorLog::add_message(const String &p_msg, bool p_error) {
 
+	log->add_newline();
 	if (p_error) {
+		log->push_color(get_color("fg_error", "Editor"));
 		Ref<Texture> icon = get_icon("Error", "EditorIcons");
 		log->add_image(icon);
 		//button->set_icon(icon);
-		log->push_color(get_color("fg_error", "Editor"));
 	} else {
 		//button->set_icon(Ref<Texture>());
 	}
 
-	log->add_newline();
 	log->add_text(p_msg);
 	//button->set_text(p_msg);
 
