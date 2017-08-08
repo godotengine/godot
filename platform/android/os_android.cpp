@@ -135,7 +135,7 @@ void OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int 
 		visual_server = memnew(VisualServerWrapMT(visual_server, false));
 	};*/
 	visual_server->init();
-	visual_server->cursor_set_visible(false, 0);
+	//	visual_server->cursor_set_visible(false, 0);
 
 	AudioDriverManager::get_driver(p_audio_driver)->set_singleton();
 

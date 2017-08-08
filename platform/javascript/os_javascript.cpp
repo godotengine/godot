@@ -476,7 +476,7 @@ void OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, i
 	print_line("Init VS");
 
 	visual_server = memnew(VisualServerRaster());
-	visual_server->cursor_set_visible(false, 0);
+	//	visual_server->cursor_set_visible(false, 0);
 
 	print_line("Init Physicsserver");
 
