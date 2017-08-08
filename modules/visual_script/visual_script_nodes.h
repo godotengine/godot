@@ -46,6 +46,7 @@ class VisualScriptFunction : public VisualScriptNode {
 	bool stack_less;
 	int stack_size;
 	ScriptInstance::RPCMode rpc_mode;
+	bool sequenced;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -79,8 +80,17 @@ public:
 	void set_stack_less(bool p_enable);
 	bool is_stack_less() const;
 
+	void set_sequenced(bool p_enable);
+	bool is_sequenced() const;
+
 	void set_stack_size(int p_size);
 	int get_stack_size() const;
+
+	void set_return_type_enabled(bool p_returns);
+	bool is_return_type_enabled() const;
+
+	void set_return_type(Variant::Type p_type);
+	Variant::Type get_return_type() const;
 
 	void set_rpc_mode(ScriptInstance::RPCMode p_mode);
 	ScriptInstance::RPCMode get_rpc_mode() const;

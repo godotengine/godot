@@ -1058,6 +1058,10 @@ MethodInfo VisualScript::get_method_info(const StringName &p_method) const {
 				arg.type = func->get_argument_type(i);
 				mi.arguments.push_back(arg);
 			}
+
+			if (!func->is_sequenced()) {
+				mi.flags |= METHOD_FLAG_CONST;
+			}
 		}
 	}
 
@@ -1399,6 +1403,10 @@ void VisualScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
 					arg.type = vsf->get_argument_type(i);
 
 					mi.arguments.push_back(arg);
+				}
+
+				if (!vsf->is_sequenced()) { //assumed constant if not sequenced
+					mi.flags |= METHOD_FLAG_CONST;
 				}
 
 				//vsf->Get_ for now at least it does not return..
