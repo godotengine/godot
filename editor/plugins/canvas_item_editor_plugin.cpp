@@ -1390,7 +1390,12 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 		while ((n && n != scene && n->get_owner() != scene) || (n && !n->is_class("CanvasItem"))) {
 			n = n->get_parent();
 		};
-		c = n->cast_to<CanvasItem>();
+
+		if (n) {
+			c = n->cast_to<CanvasItem>();
+		} else {
+			c = NULL;
+		}
 
 		// Select the item
 		additive_selection = b->get_shift();
