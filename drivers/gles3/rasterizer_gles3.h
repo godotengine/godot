@@ -43,6 +43,9 @@ class RasterizerGLES3 : public Rasterizer {
 	RasterizerCanvasGLES3 *canvas;
 	RasterizerSceneGLES3 *scene;
 
+	uint64_t prev_ticks;
+	double time_total;
+
 public:
 	virtual RasterizerStorage *get_storage();
 	virtual RasterizerCanvas *get_canvas();
