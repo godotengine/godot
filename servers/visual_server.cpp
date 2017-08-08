@@ -136,11 +136,6 @@ void VisualServer::_free_internal_rids() {
 		free(white_texture);
 	if (test_material.is_valid())
 		free(test_material);
-
-	for (int i = 0; i < 32; i++) {
-		if (material_2d[i].is_valid())
-			free(material_2d[i]);
-	}
 }
 
 RID VisualServer::_make_test_cube() {
@@ -282,37 +277,6 @@ RID VisualServer::make_sphere_mesh(int p_lats, int p_lons, float p_radius) {
 	mesh_add_surface_from_arrays(mesh, PRIMITIVE_TRIANGLES, d);
 
 	return mesh;
-}
-
-RID VisualServer::material_2d_get(bool p_shaded, bool p_transparent, bool p_double_sided, bool p_cut_alpha, bool p_opaque_prepass) {
-
-	int version = 0;
-	if (p_shaded)
-		version = 1;
-	if (p_transparent)
-		version |= 2;
-	if (p_cut_alpha)
-		version |= 4;
-	if (p_opaque_prepass)
-		version |= 8;
-	if (p_double_sided)
-		version |= 16;
-	if (material_2d[version].is_valid())
-		return material_2d[version];
-
-	//not valid, make
-
-	/*	material_2d[version]=fixed_material_create();
-	fixed_material_set_flag(material_2d[version],FIXED_MATERIAL_FLAG_USE_ALPHA,p_transparent);
-	fixed_material_set_flag(material_2d[version],FIXED_MATERIAL_FLAG_USE_COLOR_ARRAY,true);
-	fixed_material_set_flag(material_2d[version],FIXED_MATERIAL_FLAG_DISCARD_ALPHA,p_cut_alpha);
-	material_set_flag(material_2d[version],MATERIAL_FLAG_UNSHADED,!p_shaded);
-	material_set_flag(material_2d[version], MATERIAL_FLAG_DOUBLE_SIDED, p_double_sided);
-	material_set_depth_draw_mode(material_2d[version],p_opaque_prepass?MATERIAL_DEPTH_DRAW_OPAQUE_PRE_PASS_ALPHA:MATERIAL_DEPTH_DRAW_OPAQUE_ONLY);
-	fixed_material_set_texture(material_2d[version],FIXED_MATERIAL_PARAM_DIFFUSE,get_white_texture());
-	//material cut alpha?*/
-
-	return material_2d[version];
 }
 
 RID VisualServer::get_white_texture() {

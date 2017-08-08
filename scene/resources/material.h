@@ -164,6 +164,7 @@ public:
 		FLAG_UV1_USE_TRIPLANAR,
 		FLAG_UV2_USE_TRIPLANAR,
 		FLAG_AO_ON_UV2,
+		FLAG_USE_ALPHA_SCISSOR,
 		FLAG_MAX
 	};
 
@@ -207,7 +208,7 @@ private:
 			uint64_t blend_mode : 2;
 			uint64_t depth_draw_mode : 2;
 			uint64_t cull_mode : 2;
-			uint64_t flags : 9;
+			uint64_t flags : 11;
 			uint64_t detail_blend_mode : 2;
 			uint64_t diffuse_mode : 3;
 			uint64_t specular_mode : 2;
@@ -298,6 +299,7 @@ private:
 		StringName rim_texture_channel;
 		StringName depth_texture_channel;
 		StringName refraction_texture_channel;
+		StringName alpha_scissor_threshold;
 
 		StringName texture_names[TEXTURE_MAX];
 	};
@@ -329,6 +331,7 @@ private:
 	float refraction;
 	float line_width;
 	float point_size;
+	float alpha_scissor_threshold;
 	bool grow_enabled;
 	float grow;
 	int particles_anim_h_frames;
@@ -368,6 +371,12 @@ private:
 	Ref<Texture> textures[TEXTURE_MAX];
 
 	_FORCE_INLINE_ void _validate_feature(const String &text, Feature feature, PropertyInfo &property) const;
+
+	enum {
+		MAX_MATERIALS_FOR_2D = 32
+	};
+
+	static Ref<SpatialMaterial> materials_for_2d[MAX_MATERIALS_FOR_2D]; //used by Sprite3D and other stuff
 
 protected:
 	static void _bind_methods();
@@ -499,6 +508,9 @@ public:
 	void set_grow(float p_grow);
 	float get_grow() const;
 
+	void set_alpha_scissor_threshold(float p_treshold);
+	float get_alpha_scissor_threshold() const;
+
 	void set_metallic_texture_channel(TextureChannel p_channel);
 	TextureChannel get_metallic_texture_channel() const;
 	void set_roughness_texture_channel(TextureChannel p_channel);
@@ -511,6 +523,8 @@ public:
 	static void init_shaders();
 	static void finish_shaders();
 	static void flush_changes();
+
+	static RID get_material_rid_for_2d(bool p_shaded, bool p_transparent, bool p_double_sided, bool p_cut_alpha, bool p_opaque_prepass);
 
 	SpatialMaterial();
 	virtual ~SpatialMaterial();

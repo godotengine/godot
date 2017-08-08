@@ -241,6 +241,7 @@ void SpatialMaterial::init_shaders() {
 	shader_names->rim_texture_channel = "rim_texture_channel";
 	shader_names->depth_texture_channel = "depth_texture_channel";
 	shader_names->refraction_texture_channel = "refraction_texture_channel";
+	shader_names->alpha_scissor_threshold = "alpha_scissor_threshold";
 
 	shader_names->texture_names[TEXTURE_ALBEDO] = "texture_albedo";
 	shader_names->texture_names[TEXTURE_METALLIC] = "texture_metallic";
@@ -259,7 +260,13 @@ void SpatialMaterial::init_shaders() {
 	shader_names->texture_names[TEXTURE_DETAIL_NORMAL] = "texture_detail_normal";
 }
 
+Ref<SpatialMaterial> SpatialMaterial::materials_for_2d[SpatialMaterial::MAX_MATERIALS_FOR_2D];
+
 void SpatialMaterial::finish_shaders() {
+
+	for (int i = 0; i < MAX_MATERIALS_FOR_2D; i++) {
+		materials_for_2d[i].unref();
+	}
 
 #ifndef NO_THREADS
 	memdelete(material_mutex);
@@ -359,6 +366,9 @@ void SpatialMaterial::_update_shader() {
 		code += "uniform float grow;\n";
 	}
 
+	if (flags[FLAG_USE_ALPHA_SCISSOR]) {
+		code += "uniform float alpha_scissor_threshold;\n";
+	}
 	code += "uniform float roughness : hint_range(0,1);\n";
 	code += "uniform float point_size : hint_range(0,128);\n";
 	code += "uniform sampler2D texture_metallic : hint_white;\n";
@@ -674,7 +684,7 @@ void SpatialMaterial::_update_shader() {
 		code += "\tALBEDO *= 1.0 - ref_amount;\n";
 		code += "\tALPHA = 1.0;\n";
 
-	} else if (features[FEATURE_TRANSPARENT]) {
+	} else if (features[FEATURE_TRANSPARENT] || features[FLAG_USE_ALPHA_SCISSOR]) {
 		code += "\tALPHA = albedo.a * albedo_tex.a;\n";
 	}
 
@@ -774,6 +784,10 @@ void SpatialMaterial::_update_shader() {
 		code += "\tvec3 detail_norm = mix(NORMALMAP,detail_norm_tex.rgb,detail_tex.a);\n";
 		code += "\tNORMALMAP = mix(NORMALMAP,detail_norm,detail_mask_tex.r);\n";
 		code += "\tALBEDO.rgb = mix(ALBEDO.rgb,detail,detail_mask_tex.r);\n";
+
+		if (flags[FLAG_USE_ALPHA_SCISSOR]) {
+			code += "\tALPHA_SCISSOR=alpha_scissor_threshold;\n";
+		}
 	}
 
 	code += "}\n";
@@ -1086,6 +1100,9 @@ void SpatialMaterial::set_flag(Flags p_flag, bool p_enabled) {
 		return;
 
 	flags[p_flag] = p_enabled;
+	if (p_flag == FLAG_USE_ALPHA_SCISSOR) {
+		_change_notify();
+	}
 	_queue_shader_change();
 }
 
@@ -1130,9 +1147,6 @@ void SpatialMaterial::_validate_feature(const String &text, Feature feature, Pro
 	if (property.name.begins_with(text) && property.name != text + "_enabled" && !features[feature]) {
 		property.usage = 0;
 	}
-	if ((property.name == "depth_min_layers" || property.name == "depth_max_layers") && !deep_parallax) {
-		property.usage = 0;
-	}
 }
 
 void SpatialMaterial::_validate_property(PropertyInfo &property) const {
@@ -1152,6 +1166,14 @@ void SpatialMaterial::_validate_property(PropertyInfo &property) const {
 	}
 
 	if (property.name == "params_grow_amount" && !grow_enabled) {
+		property.usage = 0;
+	}
+
+	if (property.name == "params_alpha_scissor_threshold" && !flags[FLAG_USE_ALPHA_SCISSOR]) {
+		property.usage = 0;
+	}
+
+	if ((property.name == "depth_min_layers" || property.name == "depth_max_layers") && !deep_parallax) {
 		property.usage = 0;
 	}
 }
@@ -1329,6 +1351,16 @@ bool SpatialMaterial::is_grow_enabled() const {
 	return grow_enabled;
 }
 
+void SpatialMaterial::set_alpha_scissor_threshold(float p_treshold) {
+	alpha_scissor_threshold = p_treshold;
+	VS::get_singleton()->material_set_param(_get_material(), shader_names->alpha_scissor_threshold, p_treshold);
+}
+
+float SpatialMaterial::get_alpha_scissor_threshold() const {
+
+	return alpha_scissor_threshold;
+}
+
 void SpatialMaterial::set_grow(float p_grow) {
 	grow = p_grow;
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->grow, p_grow);
@@ -1389,6 +1421,40 @@ void SpatialMaterial::set_refraction_texture_channel(TextureChannel p_channel) {
 
 SpatialMaterial::TextureChannel SpatialMaterial::get_refraction_texture_channel() const {
 	return refraction_texture_channel;
+}
+
+RID SpatialMaterial::get_material_rid_for_2d(bool p_shaded, bool p_transparent, bool p_double_sided, bool p_cut_alpha, bool p_opaque_prepass) {
+
+	int version = 0;
+	if (p_shaded)
+		version = 1;
+	if (p_transparent)
+		version |= 2;
+	if (p_cut_alpha)
+		version |= 4;
+	if (p_opaque_prepass)
+		version |= 8;
+	if (p_double_sided)
+		version |= 16;
+
+	if (materials_for_2d[version].is_valid()) {
+		return materials_for_2d[version]->get_rid();
+	}
+
+	Ref<SpatialMaterial> material;
+	material.instance();
+
+	material->set_flag(FLAG_UNSHADED, !p_shaded);
+	material->set_feature(FEATURE_TRANSPARENT, p_transparent);
+	material->set_cull_mode(p_double_sided ? CULL_DISABLED : CULL_BACK);
+	material->set_depth_draw_mode(p_opaque_prepass ? DEPTH_DRAW_ALPHA_OPAQUE_PREPASS : DEPTH_DRAW_OPAQUE_ONLY);
+	material->set_flag(FLAG_SRGB_VERTEX_COLOR, true);
+	material->set_flag(FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	material->set_flag(FLAG_USE_ALPHA_SCISSOR, p_cut_alpha);
+
+	materials_for_2d[version] = material;
+
+	return materials_for_2d[version]->get_rid();
 }
 
 void SpatialMaterial::_bind_methods() {
@@ -1516,6 +1582,9 @@ void SpatialMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_grow", "amount"), &SpatialMaterial::set_grow);
 	ClassDB::bind_method(D_METHOD("get_grow"), &SpatialMaterial::get_grow);
 
+	ClassDB::bind_method(D_METHOD("set_alpha_scissor_threshold", "threshold"), &SpatialMaterial::set_alpha_scissor_threshold);
+	ClassDB::bind_method(D_METHOD("get_alpha_scissor_threshold"), &SpatialMaterial::get_alpha_scissor_threshold);
+
 	ClassDB::bind_method(D_METHOD("set_grow_enabled", "enable"), &SpatialMaterial::set_grow_enabled);
 	ClassDB::bind_method(D_METHOD("is_grow_enabled"), &SpatialMaterial::is_grow_enabled);
 
@@ -1553,6 +1622,8 @@ void SpatialMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_billboard_mode", PROPERTY_HINT_ENUM, "Disabled,Enabled,Y-Billboard,Particle Billboard"), "set_billboard_mode", "get_billboard_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "params_grow"), "set_grow_enabled", "is_grow_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "params_grow_amount", PROPERTY_HINT_RANGE, "-16,10,0.01"), "set_grow", "get_grow");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "params_use_alpha_scissor"), "set_flag", "get_flag", FLAG_USE_ALPHA_SCISSOR);
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "params_alpha_scissor_threshold", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_alpha_scissor_threshold", "get_alpha_scissor_threshold");
 	ADD_GROUP("Particles Anim", "particles_anim_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "particles_anim_h_frames", PROPERTY_HINT_RANGE, "1,128,1"), "set_particles_anim_h_frames", "get_particles_anim_h_frames");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "particles_anim_v_frames", PROPERTY_HINT_RANGE, "1,128,1"), "set_particles_anim_v_frames", "get_particles_anim_v_frames");
@@ -1697,9 +1768,13 @@ void SpatialMaterial::_bind_methods() {
 	BIND_CONSTANT(FLAG_USE_VERTEX_LIGHTING);
 	BIND_CONSTANT(FLAG_ONTOP);
 	BIND_CONSTANT(FLAG_ALBEDO_FROM_VERTEX_COLOR);
-	BIND_CONSTANT(FLAG_SRGB_VERTEX_COLOR)
-	BIND_CONSTANT(FLAG_USE_POINT_SIZE)
-	BIND_CONSTANT(FLAG_FIXED_SIZE)
+	BIND_CONSTANT(FLAG_SRGB_VERTEX_COLOR);
+	BIND_CONSTANT(FLAG_USE_POINT_SIZE);
+	BIND_CONSTANT(FLAG_FIXED_SIZE);
+	BIND_CONSTANT(FLAG_UV1_USE_TRIPLANAR);
+	BIND_CONSTANT(FLAG_UV2_USE_TRIPLANAR);
+	BIND_CONSTANT(FLAG_AO_ON_UV2);
+	BIND_CONSTANT(FLAG_USE_ALPHA_SCISSOR);
 	BIND_CONSTANT(FLAG_MAX);
 
 	BIND_CONSTANT(DIFFUSE_LAMBERT);
@@ -1757,6 +1832,7 @@ SpatialMaterial::SpatialMaterial()
 	set_particles_anim_h_frames(1);
 	set_particles_anim_v_frames(1);
 	set_particles_anim_loop(false);
+	set_alpha_scissor_threshold(0.98);
 
 	set_metallic_texture_channel(TEXTURE_CHANNEL_RED);
 	set_roughness_texture_channel(TEXTURE_CHANNEL_RED);

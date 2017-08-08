@@ -442,6 +442,7 @@ public:
 			int cull_mode;
 
 			bool uses_alpha;
+			bool uses_alpha_scissor;
 			bool unshaded;
 			bool ontop;
 			bool uses_vertex;

@@ -1523,6 +1523,10 @@ void main() {
 #endif
 
 
+#if defined(ALPHA_SCISSOR_USED)
+	float alpha_scissor = 0.5;
+#endif
+
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
 	vec3 binormal = normalize(binormal_interp)*side;
 	vec3 tangent = normalize(tangent_interp)*side;
@@ -1570,6 +1574,12 @@ FRAGMENT_SHADER_CODE
 
 }
 
+
+#if defined(ALPHA_SCISSOR_USED)
+	if (alpha<alpha_scissor) {
+		discard;
+	}
+#endif
 
 
 #if defined(ENABLE_NORMALMAP)
