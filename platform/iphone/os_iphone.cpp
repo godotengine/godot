@@ -119,7 +119,7 @@ void OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p_
 	*/
 
 	visual_server->init();
-	visual_server->cursor_set_visible(false, 0);
+	//	visual_server->cursor_set_visible(false, 0);
 
 	// reset this to what it should be, it will have been set to 0 after visual_server->init() is called
 	RasterizerStorageGLES3::system_fbo = gl_view_base_fb;
