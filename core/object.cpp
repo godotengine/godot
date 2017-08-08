@@ -1850,7 +1850,7 @@ void ObjectDB::cleanup() {
 				String node_name;
 				if (instances[*K]->is_type("Node"))
 					node_name = " - Node Name: " + String(instances[*K]->call("get_name"));
-				if (instances[*K]->is_type("Resoucre"))
+				if (instances[*K]->is_type("Resource"))
 					node_name = " - Resource Name: " + String(instances[*K]->call("get_name")) + " Path: " + String(instances[*K]->call("get_path"));
 				print_line("Leaked Instance: " + String(instances[*K]->get_type()) + ":" + itos(*K) + node_name);
 			}
