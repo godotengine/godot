@@ -637,7 +637,6 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 	} else if (p_msg == "profile_sig") {
 		//cache a signature
-		print_line("SIG: " + String(Variant(p_data)));
 		profiler_signature[p_data[1]] = p_data[0];
 
 	} else if (p_msg == "profile_frame" || p_msg == "profile_total") {
@@ -796,8 +795,9 @@ void ScriptEditorDebugger::_performance_draw() {
 		r.position += graph_sb->get_offset();
 		r.size -= graph_sb->get_minimum_size();
 		int pi = which[i];
-		Color c = Color(0.7, 0.9, 0.5);
+		Color c = get_color("success_color", "Editor");
 		c.set_hsv(Math::fmod(c.get_h() + pi * 0.7654, 1), c.get_s(), c.get_v());
+		//c = c.linear_interpolate(get_color("base_color", "Editor"), 0.9);
 
 		c.a = 0.8;
 		perf_draw->draw_string(graph_font, r.position + Point2(0, graph_font->get_ascent()), perf_items[pi]->get_text(0), c, r.size.x);
@@ -847,6 +847,8 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			error_list->connect("item_selected", this, "_error_selected");
 			error_stack->connect("item_selected", this, "_error_stack_selected");
 			vmem_refresh->set_icon(get_icon("Reload", "EditorIcons"));
+
+			reason->add_color_override("font_color", get_color("error_color", "Editor"));
 
 		} break;
 		case NOTIFICATION_PROCESS: {
@@ -1615,13 +1617,10 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		HBoxContainer *hbc = memnew(HBoxContainer);
 		vbc->add_child(hbc);
 
-		reason = memnew(LineEdit);
+		reason = memnew(Label);
 		reason->set_text("");
-		reason->set_editable(false);
 		hbc->add_child(reason);
-		reason->add_color_override("font_color", Color(1, 0.4, 0.0, 0.8));
 		reason->set_h_size_flags(SIZE_EXPAND_FILL);
-		//reason->set_clip_text(true);
 
 		hbc->add_child(memnew(VSeparator));
 
@@ -1646,8 +1645,6 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		hbc->add_child(docontinue);
 		docontinue->set_tooltip(TTR("Continue"));
 		docontinue->connect("pressed", this, "debug_continue");
-
-		//hbc->add_child( memnew( VSeparator) );
 
 		back = memnew(Button);
 		hbc->add_child(back);
@@ -1690,10 +1687,6 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		breaked = false;
 
 		tabs->add_child(dbg);
-		//tabs->move_child(vbc,0);
-
-		hbc = memnew(HBoxContainer);
-		vbc->add_child(hbc);
 	}
 
 	{ //errors
@@ -1821,7 +1814,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		vmem_vb->add_child(vmem_hb);
 		vmem_refresh->connect("pressed", this, "_video_mem_request");
 
-		MarginContainer *vmmc = memnew(MarginContainer);
+		VBoxContainer *vmmc = memnew(VBoxContainer);
 		vmem_tree = memnew(Tree);
 		vmem_tree->set_v_size_flags(SIZE_EXPAND_FILL);
 		vmem_tree->set_h_size_flags(SIZE_EXPAND_FILL);

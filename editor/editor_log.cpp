@@ -168,14 +168,9 @@ EditorLog::EditorLog() {
 	HBoxContainer *hb = memnew(HBoxContainer);
 	vb->add_child(hb);
 	title = memnew(Label);
-	title->set_text(TTR(" Output:"));
+	title->set_text(TTR("Output:"));
 	title->set_h_size_flags(SIZE_EXPAND_FILL);
 	hb->add_child(title);
-
-	//pd = memnew( PaneDrag );
-	//hb->add_child(pd);
-	//pd->connect("dragged",this,"_dragged");
-	//pd->set_default_cursor_shape(Control::CURSOR_MOVE);
 
 	clearbutton = memnew(Button);
 	hb->add_child(clearbutton);
@@ -184,7 +179,7 @@ EditorLog::EditorLog() {
 
 	ec = memnew(Control);
 	vb->add_child(ec);
-	ec->set_custom_minimum_size(Size2(0, 180));
+	ec->set_custom_minimum_size(Size2(0, 180) * EDSCALE);
 	ec->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	pc = memnew(PanelContainer);

@@ -1737,7 +1737,6 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	file_list_vb->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	path_hb = memnew(HBoxContainer);
-	path_hb->add_child(memnew(Control));
 	file_list_vb->add_child(path_hb);
 
 	button_back = memnew(ToolButton);
