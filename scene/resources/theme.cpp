@@ -929,8 +929,8 @@ RES ResourceFormatLoaderTheme::load(const String &p_path, const String &p_origin
 					dark = Color::html(params[3]);
 				}
 
-				sbflat->set_dark_color(dark);
-				sbflat->set_light_color(bright);
+				sbflat->set_border_color_all(bright);
+				//				sbflat->set_dark_color(dark);
 				sbflat->set_bg_color(normal);
 
 				if (params.size() == ccodes + 5) {

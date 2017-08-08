@@ -291,35 +291,16 @@ Color StyleBoxFlat::get_bg_color() const {
 	return bg_color;
 }
 
-void StyleBoxFlat::set_light_color(const Color &p_color) {
-
-	set_border_color(MARGIN_LEFT, p_color);
-	set_border_color(MARGIN_TOP, p_color);
-	set_border_color(MARGIN_RIGHT, p_color);
-	emit_changed();
-}
-
-Color StyleBoxFlat::get_light_color() const {
-
-	return get_border_color(MARGIN_TOP);
-}
-
-void StyleBoxFlat::set_dark_color(const Color &p_color) {
-	set_border_color(MARGIN_BOTTOM, p_color);
-	emit_changed();
-}
-
-Color StyleBoxFlat::get_dark_color() const {
-
-	return get_border_color(MARGIN_BOTTOM);
-}
-
 void StyleBoxFlat::set_border_color_all(const Color &p_color) {
 	for (int i = 0; i < 4; i++) {
 
 		border_color.write()[i] = p_color;
 	}
 	emit_changed();
+}
+Color StyleBoxFlat::get_border_color_all() const {
+
+	return border_color[MARGIN_TOP];
 }
 void StyleBoxFlat::set_border_color(Margin p_border, const Color &p_color) {
 
@@ -497,7 +478,6 @@ inline void draw_ring(Vector<Vector2> &verts, Vector<int> &indices, Vector<Color
 	}
 	int rings = (border_width[0] == 0 && border_width[1] == 0 && border_width[2] == 0 && border_width[3] == 0) ? 1 : 2;
 	rings = 2;
-	//TODO: check if the border_width is not too big... so it gets sized negative
 
 	int ring_corner_radius[4];
 	set_inner_corner_radius(style_rect, ring_rect, corner_radius, ring_corner_radius);
@@ -677,17 +657,11 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 			}
 		} else if (!(border_width[0] == 0 && border_width[1] == 0 && border_width[2] == 0 && border_width[3] == 0)) {
 			//DRAW INNER BORDER AA
-			//			for (int i = 0; i < 4; i++) {
-			//				aa_border_width[i] = ((border_width[i] == 0) ? 0 : aa_size);
-			//			}
 			draw_ring(verts, indices, colors, style_rect, adapted_corner,
 					infill_rect, aa_border_width, border_color_alpha, border_color.read().ptr(), corner_detail);
 		}
 		//DRAW OUTER BORDER AA
 		if (!(border_width[0] == 0 && border_width[1] == 0 && border_width[2] == 0 && border_width[3] == 0)) {
-			//			for (int i = 0; i < 4; i++) {
-			//				aa_border_width[i] = ((border_width[i] == 0) ? 0 : aa_size);
-			//			}
 			draw_ring(verts, indices, colors, style_rect, adapted_corner,
 					style_rect.grow(aa_size), aa_border_width, border_color.read().ptr(), border_color_alpha, corner_detail);
 		}
@@ -705,16 +679,7 @@ void StyleBoxFlat::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_bg_color"), &StyleBoxFlat::get_bg_color);
 
 	ClassDB::bind_method(D_METHOD("set_border_color", "color"), &StyleBoxFlat::set_border_color_all);
-	ClassDB::bind_method(D_METHOD("get_border_color", "color"), &StyleBoxFlat::get_light_color);
-
-	//	ClassDB::bind_method(D_METHOD("set_border_color", "margin", "color"), &StyleBoxFlat::set_border_color);
-	//	ClassDB::bind_method(D_METHOD("get_border_color", "margin"), &StyleBoxFlat::get_border_color);
-
-	ClassDB::bind_method(D_METHOD("set_light_color", "color"), &StyleBoxFlat::set_light_color);
-	ClassDB::bind_method(D_METHOD("get_light_color"), &StyleBoxFlat::get_light_color);
-
-	ClassDB::bind_method(D_METHOD("set_dark_color", "color"), &StyleBoxFlat::set_dark_color);
-	ClassDB::bind_method(D_METHOD("get_dark_color"), &StyleBoxFlat::get_dark_color);
+	ClassDB::bind_method(D_METHOD("get_border_color", "color"), &StyleBoxFlat::get_border_color_all);
 
 	ClassDB::bind_method(D_METHOD("set_border_width_all", "width"), &StyleBoxFlat::set_border_width_all);
 	ClassDB::bind_method(D_METHOD("get_border_width_min"), &StyleBoxFlat::get_border_width_min);
@@ -764,9 +729,6 @@ void StyleBoxFlat::_bind_methods() {
 
 	ADD_GROUP("Border", "border_");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "border_color"), "set_border_color", "get_border_color");
-	//	ADD_PROPERTYI(PropertyInfo(Variant::COLOR, "border_color_top"), "set_border_color", "get_border_color", MARGIN_TOP);
-	//	ADD_PROPERTYI(PropertyInfo(Variant::COLOR, "border_color_right"), "set_border_color", "get_border_color", MARGIN_RIGHT);
-	//	ADD_PROPERTYI(PropertyInfo(Variant::COLOR, "border_color_bottom"), "set_border_color", "get_border_color", MARGIN_BOTTOM);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "border_blend"), "set_border_blend", "get_border_blend");
 

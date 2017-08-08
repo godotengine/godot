@@ -147,14 +147,9 @@ public:
 	void set_bg_color(const Color &p_color);
 	Color get_bg_color() const;
 
-	void set_light_color(const Color &p_color);
-	Color get_light_color() const;
-
-	void set_dark_color(const Color &p_color);
-	Color get_dark_color() const;
-
 	//Border Color
 	void set_border_color_all(const Color &p_color);
+	Color get_border_color_all() const;
 	void set_border_color(Margin p_border, const Color &p_color);
 	Color get_border_color(Margin p_border) const;
 
