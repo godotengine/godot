@@ -2207,6 +2207,7 @@ void Collada::_merge_skeletons(VisualScene *p_vscene, Node *p_node) {
 				ERR_CONTINUE(!state.scene_map.has(nodeid)); //weird, it should have it...
 
 				NodeJoint *nj = SAFE_CAST<NodeJoint *>(state.scene_map[nodeid]);
+				ERR_CONTINUE(!nj); //broken collada
 				if (!nj->owner) {
 					print_line("no owner for: " + String(nodeid));
 				}
