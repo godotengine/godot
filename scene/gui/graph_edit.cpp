@@ -207,9 +207,10 @@ void GraphEdit::_graph_node_raised(Node *p_gn) {
 
 	GraphNode *gn = p_gn->cast_to<GraphNode>();
 	ERR_FAIL_COND(!gn);
-	gn->raise();
 	if (gn->is_comment()) {
 		move_child(gn, 0);
+	} else {
+		gn->raise();
 	}
 	int first_not_comment = 0;
 	for (int i = 0; i < get_child_count(); i++) {
@@ -870,21 +871,19 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 		if (b->get_button_index() == BUTTON_LEFT && b->is_pressed()) {
 
 			GraphNode *gn = NULL;
-			GraphNode *gn_selected = NULL;
+
 			for (int i = get_child_count() - 1; i >= 0; i--) {
 
-				gn_selected = get_child(i)->cast_to<GraphNode>();
+				GraphNode *gn_selected = get_child(i)->cast_to<GraphNode>();
 
 				if (gn_selected) {
-
 					if (gn_selected->is_resizing())
 						continue;
 
-					Rect2 r = gn_selected->get_rect();
-					r.size *= zoom;
-					if (r.has_point(get_local_mouse_pos()))
+					if (gn_selected->has_point(gn_selected->get_local_mouse_pos())) {
 						gn = gn_selected;
-					break;
+						break;
+					}
 				}
 			}
 
@@ -1225,6 +1224,7 @@ GraphEdit::GraphEdit() {
 	connections_layer->connect("draw", this, "_connections_layer_draw");
 	connections_layer->set_name("CLAYER");
 	connections_layer->set_disable_visibility_clip(true); // so it can draw freely and be offseted
+	connections_layer->set_mouse_filter(MOUSE_FILTER_IGNORE);
 
 	h_scroll = memnew(HScrollBar);
 	h_scroll->set_name("_h_scroll");

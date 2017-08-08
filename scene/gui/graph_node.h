@@ -99,8 +99,6 @@ private:
 
 	Overlay overlay;
 
-	bool has_point(const Point2 &p_point) const;
-
 protected:
 	void _gui_input(const Ref<InputEvent> &p_ev);
 	void _notification(int p_what);
@@ -111,6 +109,8 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
+	bool has_point(const Point2 &p_point) const;
+
 	void set_slot(int p_idx, bool p_enable_left, int p_type_left, const Color &p_color_left, bool p_enable_right, int p_type_right, const Color &p_color_right, const Ref<Texture> &p_custom_left = Ref<Texture>(), const Ref<Texture> &p_custom_right = Ref<Texture>());
 	void clear_slot(int p_idx);
 	void clear_all_slots();

@@ -176,6 +176,7 @@ bool GraphNode::has_point(const Point2 &p_point) const {
 		if (Rect2(get_size() - resizer->get_size(), resizer->get_size()).has_point(p_point)) {
 			return true;
 		}
+
 		if (Rect2(0, 0, get_size().width, comment->get_margin(MARGIN_TOP)).has_point(p_point)) {
 			return true;
 		}
@@ -719,7 +720,7 @@ GraphNode::GraphNode() {
 	overlay = OVERLAY_DISABLED;
 	show_close = false;
 	connpos_dirty = true;
-	set_mouse_filter(MOUSE_FILTER_PASS);
+	set_mouse_filter(MOUSE_FILTER_STOP);
 	comment = false;
 	resizeable = false;
 	resizing = false;
