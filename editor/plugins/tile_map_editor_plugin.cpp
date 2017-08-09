@@ -1451,6 +1451,11 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	ED_SHORTCUT("tile_map_editor/mirror_x", TTR("Mirror X"), KEY_A);
 	ED_SHORTCUT("tile_map_editor/mirror_y", TTR("Mirror Y"), KEY_S);
 
+	HBoxContainer *tool_hb1 = memnew(HBoxContainer);
+	add_child(tool_hb1);
+	HBoxContainer *tool_hb2 = memnew(HBoxContainer);
+	add_child(tool_hb2);
+
 	search_box = memnew(LineEdit);
 	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
 	search_box->connect("text_entered", this, "_text_entered");
@@ -1514,47 +1519,44 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	transp->set_tooltip(TTR("Transpose") + " (" + ED_GET_SHORTCUT("tile_map_editor/transpose")->get_as_text() + ")");
 	transp->set_focus_mode(FOCUS_NONE);
 	transp->connect("pressed", this, "_update_transform_buttons", make_binds(transp));
-	toolbar->add_child(transp);
+	tool_hb1->add_child(transp);
 	mirror_x = memnew(ToolButton);
 	mirror_x->set_toggle_mode(true);
 	mirror_x->set_tooltip(TTR("Mirror X") + " (" + ED_GET_SHORTCUT("tile_map_editor/mirror_x")->get_as_text() + ")");
 	mirror_x->set_focus_mode(FOCUS_NONE);
 	mirror_x->connect("pressed", this, "_update_transform_buttons", make_binds(mirror_x));
-	toolbar->add_child(mirror_x);
+	tool_hb1->add_child(mirror_x);
 	mirror_y = memnew(ToolButton);
 	mirror_y->set_toggle_mode(true);
 	mirror_y->set_tooltip(TTR("Mirror Y") + " (" + ED_GET_SHORTCUT("tile_map_editor/mirror_y")->get_as_text() + ")");
 	mirror_y->set_focus_mode(FOCUS_NONE);
 	mirror_y->connect("pressed", this, "_update_transform_buttons", make_binds(mirror_y));
-	toolbar->add_child(mirror_y);
-
-	toolbar->add_child(memnew(VSeparator));
+	tool_hb1->add_child(mirror_y);
 
 	rotate_0 = memnew(ToolButton);
 	rotate_0->set_toggle_mode(true);
 	rotate_0->set_tooltip(TTR("Rotate 0 degrees"));
 	rotate_0->set_focus_mode(FOCUS_NONE);
 	rotate_0->connect("pressed", this, "_update_transform_buttons", make_binds(rotate_0));
-	toolbar->add_child(rotate_0);
+	tool_hb2->add_child(rotate_0);
 	rotate_90 = memnew(ToolButton);
 	rotate_90->set_toggle_mode(true);
 	rotate_90->set_tooltip(TTR("Rotate 90 degrees"));
 	rotate_90->set_focus_mode(FOCUS_NONE);
 	rotate_90->connect("pressed", this, "_update_transform_buttons", make_binds(rotate_90));
-	toolbar->add_child(rotate_90);
+	tool_hb2->add_child(rotate_90);
 	rotate_180 = memnew(ToolButton);
 	rotate_180->set_toggle_mode(true);
 	rotate_180->set_tooltip(TTR("Rotate 180 degrees"));
 	rotate_180->set_focus_mode(FOCUS_NONE);
 	rotate_180->connect("pressed", this, "_update_transform_buttons", make_binds(rotate_180));
-	toolbar->add_child(rotate_180);
+	tool_hb2->add_child(rotate_180);
 	rotate_270 = memnew(ToolButton);
 	rotate_270->set_toggle_mode(true);
 	rotate_270->set_tooltip(TTR("Rotate 270 degrees"));
 	rotate_270->set_focus_mode(FOCUS_NONE);
 	rotate_270->connect("pressed", this, "_update_transform_buttons", make_binds(rotate_270));
-	toolbar->add_child(rotate_270);
-	toolbar->hide();
+	tool_hb2->add_child(rotate_270);
 
 	rotate_0->set_pressed(true);
 }
