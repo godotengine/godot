@@ -349,6 +349,8 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 		int idx = edit_menu->get_popup()->get_item_index(SNAP_USE_PIXEL);
 		edit_menu->get_popup()->set_item_checked(idx, snap_pixel);
 	}
+
+	viewport->update();
 }
 
 void CanvasItemEditor::_add_canvas_item(CanvasItem *p_canvas_item) {
