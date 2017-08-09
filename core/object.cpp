@@ -1699,7 +1699,7 @@ void Object::_bind_methods() {
 		mi.name = "call";
 		mi.arguments.push_back(PropertyInfo(Variant::STRING, "method"));
 
-		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "call:Variant", &Object::_call_bind, mi);
+		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "call", &Object::_call_bind, mi);
 	}
 
 	{

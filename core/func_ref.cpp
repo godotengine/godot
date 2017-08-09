@@ -61,7 +61,7 @@ void FuncRef::_bind_methods() {
 		MethodInfo mi;
 		mi.name = "call_func";
 		Vector<Variant> defargs;
-		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "call_func:Variant", &FuncRef::call_func, mi, defargs);
+		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "call_func", &FuncRef::call_func, mi, defargs);
 	}
 
 	ClassDB::bind_method(D_METHOD("set_instance", "instance"), &FuncRef::set_instance);
