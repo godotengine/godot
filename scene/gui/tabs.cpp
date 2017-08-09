@@ -226,6 +226,7 @@ void Tabs::_gui_input(const Ref<InputEvent> &p_event) {
 		if (found != -1) {
 
 			set_current_tab(found);
+			emit_signal("tab_clicked", found);
 		}
 	}
 }
@@ -809,6 +810,7 @@ void Tabs::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tab_close", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("tab_hover", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("reposition_active_tab_request", PropertyInfo(Variant::INT, "idx_to")));
+	ADD_SIGNAL(MethodInfo("tab_clicked", PropertyInfo(Variant::INT, "tab")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1", PROPERTY_USAGE_EDITOR), "set_current_tab", "get_current_tab");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "tab_close_display_policy", PROPERTY_HINT_ENUM, "Show Never,Show Active Only,Show Always"), "set_tab_close_display_policy", "get_tab_close_display_policy");
