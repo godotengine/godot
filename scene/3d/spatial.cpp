@@ -72,8 +72,12 @@ SpatialGizmo::SpatialGizmo() {
 
 void Spatial::_notify_dirty() {
 
+#ifdef TOOLS_ENABLED
+	if ((data.gizmo.is_valid() || data.notify_transform) && !data.ignore_notification && !xform_change.in_list()) {
+#else
 	if (data.notify_transform && !data.ignore_notification && !xform_change.in_list()) {
 
+#endif
 		get_tree()->xform_change_list.add(&xform_change);
 	}
 }
@@ -104,9 +108,11 @@ void Spatial::_propagate_transform_changed(Spatial *p_origin) {
 			continue; //don't propagate to a toplevel
 		E->get()->_propagate_transform_changed(p_origin);
 	}
-
+#ifdef TOOLS_ENABLED
+	if ((data.gizmo.is_valid() || data.notify_transform) && !data.ignore_notification && !xform_change.in_list()) {
+#else
 	if (data.notify_transform && !data.ignore_notification && !xform_change.in_list()) {
-
+#endif
 		get_tree()->xform_change_list.add(&xform_change);
 	}
 	data.dirty |= DIRTY_GLOBAL;
