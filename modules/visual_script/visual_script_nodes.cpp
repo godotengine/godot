@@ -2844,7 +2844,7 @@ VisualScriptNodeInstance *VisualScriptSubCall::instance(VisualScriptInstance *p_
 
 void VisualScriptSubCall::_bind_methods() {
 
-	BIND_VMETHOD(MethodInfo(Variant::NIL, "_subcall", PropertyInfo(Variant::NIL, "arguments:Variant")));
+	BIND_VMETHOD(MethodInfo(Variant::NIL, "_subcall:Variant", PropertyInfo(Variant::NIL, "arguments:Variant")));
 }
 
 VisualScriptSubCall::VisualScriptSubCall() {
