@@ -375,6 +375,8 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 		int idx = skeleton_menu->get_item_index(SKELETON_SHOW_BONES);
 		skeleton_menu->set_item_checked(idx, skeleton_show_bones);
 	}
+
+	viewport->update();
 }
 
 void CanvasItemEditor::_add_canvas_item(CanvasItem *p_canvas_item) {
