@@ -169,8 +169,8 @@ void GDNative::_compile_dummy_for_api() {
 }
 
 void GDNative::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_library", "library:GDNativeLibrary"), &GDNative::set_library);
-	ClassDB::bind_method(D_METHOD("get_library:GDNativeLibrary"), &GDNative::get_library);
+	ClassDB::bind_method(D_METHOD("set_library", "library"), &GDNative::set_library);
+	ClassDB::bind_method(D_METHOD("get_library"), &GDNative::get_library);
 
 	ClassDB::bind_method(D_METHOD("initialize"), &GDNative::initialize);
 	ClassDB::bind_method(D_METHOD("terminate"), &GDNative::terminate);
@@ -178,7 +178,7 @@ void GDNative::_bind_methods() {
 	// TODO(karroffel): get_native_(raw_)call_types binding?
 
 	// TODO(karroffel): make this a varargs function?
-	ClassDB::bind_method(D_METHOD("call_native:Variant", "procedure_name", "arguments:Array"), &GDNative::call_native);
+	ClassDB::bind_method(D_METHOD("call_native", "procedure_name", "arguments"), &GDNative::call_native);
 
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "library", PROPERTY_HINT_RESOURCE_TYPE, "GDNativeLibrary"), "set_library", "get_library");
 }

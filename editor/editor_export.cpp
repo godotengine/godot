@@ -3218,24 +3218,24 @@ PoolVector<String> EditorImportExport::_get_export_platforms() {
 
 void EditorImportExport::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("add_import_plugin","plugin:EditorImportPlugin"),&EditorImportExport::add_import_plugin);
-	ClassDB::bind_method(D_METHOD("remove_import_plugin","plugin:EditorImportPlugin"),&EditorImportExport::remove_import_plugin);
+	ClassDB::bind_method(D_METHOD("add_import_plugin","plugin"),&EditorImportExport::add_import_plugin);
+	ClassDB::bind_method(D_METHOD("remove_import_plugin","plugin"),&EditorImportExport::remove_import_plugin);
 	ClassDB::bind_method(D_METHOD("get_import_plugin_count"),&EditorImportExport::get_import_plugin_count);
-	ClassDB::bind_method(D_METHOD("get_import_plugin:EditorImportPlugin","idx"),&EditorImportExport::get_import_plugin);
-	ClassDB::bind_method(D_METHOD("get_import_plugin_by_name:EditorImportPlugin","name"),&EditorImportExport::get_import_plugin_by_name);
+	ClassDB::bind_method(D_METHOD("get_import_plugin","idx"),&EditorImportExport::get_import_plugin);
+	ClassDB::bind_method(D_METHOD("get_import_plugin_by_name","name"),&EditorImportExport::get_import_plugin_by_name);
 
-	ClassDB::bind_method(D_METHOD("add_export_plugin","plugin:EditorExportPlugin"),&EditorImportExport::add_export_plugin);
-	ClassDB::bind_method(D_METHOD("remove_export_plugin","plugin:EditorExportPlugin"),&EditorImportExport::remove_export_plugin);
+	ClassDB::bind_method(D_METHOD("add_export_plugin","plugin"),&EditorImportExport::add_export_plugin);
+	ClassDB::bind_method(D_METHOD("remove_export_plugin","plugin"),&EditorImportExport::remove_export_plugin);
 	ClassDB::bind_method(D_METHOD("get_export_plugin_count"),&EditorImportExport::get_export_plugin_count);
-	ClassDB::bind_method(D_METHOD("get_export_plugin:EditorExportPlugin","idx"),&EditorImportExport::get_export_plugin);
+	ClassDB::bind_method(D_METHOD("get_export_plugin","idx"),&EditorImportExport::get_export_plugin);
 
 	ClassDB::bind_method(D_METHOD("set_export_file_action","file","action"),&EditorImportExport::set_export_file_action);
 	ClassDB::bind_method(D_METHOD("get_export_file_action","file"),&EditorImportExport::get_export_file_action);
 	ClassDB::bind_method(D_METHOD("get_export_file_list"),&EditorImportExport::_get_export_file_list);
 
-	ClassDB::bind_method(D_METHOD("add_export_platform","platform:EditorExportplatform"),&EditorImportExport::add_export_platform);
-	//ClassDB::bind_method(D_METHOD("remove_export_platform","platform:EditorExportplatform"),&EditorImportExport::add_export_platform);
-	ClassDB::bind_method(D_METHOD("get_export_platform:EditorExportPlatform","name"),&EditorImportExport::get_export_platform);
+	ClassDB::bind_method(D_METHOD("add_export_platform","platform"),&EditorImportExport::add_export_platform);
+	//ClassDB::bind_method(D_METHOD("remove_export_platform","platform"),&EditorImportExport::add_export_platform);
+	ClassDB::bind_method(D_METHOD("get_export_platform","name"),&EditorImportExport::get_export_platform);
 	ClassDB::bind_method(D_METHOD("get_export_platforms"),&EditorImportExport::_get_export_platforms);
 
 	ClassDB::bind_method(D_METHOD("set_export_filter","filter"),&EditorImportExport::set_export_filter);

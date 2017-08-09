@@ -101,8 +101,8 @@ Size2 TextureRect::get_minimum_size() const {
 }
 void TextureRect::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_texture", "texture:Texture"), &TextureRect::set_texture);
-	ClassDB::bind_method(D_METHOD("get_texture:Texture"), &TextureRect::get_texture);
+	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &TextureRect::set_texture);
+	ClassDB::bind_method(D_METHOD("get_texture"), &TextureRect::get_texture);
 	ClassDB::bind_method(D_METHOD("set_expand", "enable"), &TextureRect::set_expand);
 	ClassDB::bind_method(D_METHOD("has_expand"), &TextureRect::has_expand);
 	ClassDB::bind_method(D_METHOD("set_stretch_mode", "stretch_mode"), &TextureRect::set_stretch_mode);

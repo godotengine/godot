@@ -229,8 +229,8 @@ void StaticBody::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bounce", "bounce"), &StaticBody::set_bounce);
 	ClassDB::bind_method(D_METHOD("get_bounce"), &StaticBody::get_bounce);
 
-	ClassDB::bind_method(D_METHOD("add_collision_exception_with", "body:PhysicsBody"), &PhysicsBody::add_collision_exception_with);
-	ClassDB::bind_method(D_METHOD("remove_collision_exception_with", "body:PhysicsBody"), &PhysicsBody::remove_collision_exception_with);
+	ClassDB::bind_method(D_METHOD("add_collision_exception_with", "body"), &PhysicsBody::add_collision_exception_with);
+	ClassDB::bind_method(D_METHOD("remove_collision_exception_with", "body"), &PhysicsBody::remove_collision_exception_with);
 
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "friction", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_friction", "get_friction");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "bounce", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_bounce", "get_bounce");

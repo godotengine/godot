@@ -236,8 +236,8 @@ void Button::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &Button::set_text);
 	ClassDB::bind_method(D_METHOD("get_text"), &Button::get_text);
-	ClassDB::bind_method(D_METHOD("set_button_icon", "texture:Texture"), &Button::set_icon);
-	ClassDB::bind_method(D_METHOD("get_button_icon:Texture"), &Button::get_icon);
+	ClassDB::bind_method(D_METHOD("set_button_icon", "texture"), &Button::set_icon);
+	ClassDB::bind_method(D_METHOD("get_button_icon"), &Button::get_icon);
 	ClassDB::bind_method(D_METHOD("set_flat", "enabled"), &Button::set_flat);
 	ClassDB::bind_method(D_METHOD("set_clip_text", "enabled"), &Button::set_clip_text);
 	ClassDB::bind_method(D_METHOD("get_clip_text"), &Button::get_clip_text);

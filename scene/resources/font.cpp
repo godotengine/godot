@@ -549,11 +549,11 @@ void BitmapFont::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_kerning_pair", "char_a", "char_b", "kerning"), &BitmapFont::add_kerning_pair);
 	ClassDB::bind_method(D_METHOD("get_kerning_pair", "char_a", "char_b"), &BitmapFont::get_kerning_pair);
 
-	ClassDB::bind_method(D_METHOD("add_texture", "texture:Texture"), &BitmapFont::add_texture);
+	ClassDB::bind_method(D_METHOD("add_texture", "texture"), &BitmapFont::add_texture);
 	ClassDB::bind_method(D_METHOD("add_char", "character", "texture", "rect", "align", "advance"), &BitmapFont::add_char, DEFVAL(Point2()), DEFVAL(-1));
 
 	ClassDB::bind_method(D_METHOD("get_texture_count"), &BitmapFont::get_texture_count);
-	ClassDB::bind_method(D_METHOD("get_texture:Texture", "idx"), &BitmapFont::get_texture);
+	ClassDB::bind_method(D_METHOD("get_texture", "idx"), &BitmapFont::get_texture);
 
 	ClassDB::bind_method(D_METHOD("get_char_size", "char", "next"), &BitmapFont::get_char_size, DEFVAL(0));
 
@@ -570,8 +570,8 @@ void BitmapFont::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_textures"), &BitmapFont::_set_textures);
 	ClassDB::bind_method(D_METHOD("_get_textures"), &BitmapFont::_get_textures);
 
-	ClassDB::bind_method(D_METHOD("set_fallback", "fallback:BitmapFont"), &BitmapFont::set_fallback);
-	ClassDB::bind_method(D_METHOD("get_fallback:BitmapFont"), &BitmapFont::get_fallback);
+	ClassDB::bind_method(D_METHOD("set_fallback", "fallback"), &BitmapFont::set_fallback);
+	ClassDB::bind_method(D_METHOD("get_fallback"), &BitmapFont::get_fallback);
 
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "textures", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "_set_textures", "_get_textures");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_INT_ARRAY, "chars", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "_set_chars", "_get_chars");

@@ -348,8 +348,8 @@ bool VideoPlayer::has_autoplay() const {
 
 void VideoPlayer::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_stream", "stream:VideoStream"), &VideoPlayer::set_stream);
-	ClassDB::bind_method(D_METHOD("get_stream:VideoStream"), &VideoPlayer::get_stream);
+	ClassDB::bind_method(D_METHOD("set_stream", "stream"), &VideoPlayer::set_stream);
+	ClassDB::bind_method(D_METHOD("get_stream"), &VideoPlayer::get_stream);
 
 	ClassDB::bind_method(D_METHOD("play"), &VideoPlayer::play);
 	ClassDB::bind_method(D_METHOD("stop"), &VideoPlayer::stop);
@@ -381,7 +381,7 @@ void VideoPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_buffering_msec", "msec"), &VideoPlayer::set_buffering_msec);
 	ClassDB::bind_method(D_METHOD("get_buffering_msec"), &VideoPlayer::get_buffering_msec);
 
-	ClassDB::bind_method(D_METHOD("get_video_texture:Texture"), &VideoPlayer::get_video_texture);
+	ClassDB::bind_method(D_METHOD("get_video_texture"), &VideoPlayer::get_video_texture);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "audio_track", PROPERTY_HINT_RANGE, "0,128,1"), "set_audio_track", "get_audio_track");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "VideoStream"), "set_stream", "get_stream");

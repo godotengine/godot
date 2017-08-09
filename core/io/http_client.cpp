@@ -624,9 +624,9 @@ Error HTTPClient::_get_http_data(uint8_t *p_buffer, int p_bytes, int &r_received
 
 void HTTPClient::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("connect_to_host:Error", "host", "port", "use_ssl", "verify_host"), &HTTPClient::connect_to_host, DEFVAL(false), DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("set_connection", "connection:StreamPeer"), &HTTPClient::set_connection);
-	ClassDB::bind_method(D_METHOD("get_connection:StreamPeer"), &HTTPClient::get_connection);
+	ClassDB::bind_method(D_METHOD("connect_to_host", "host", "port", "use_ssl", "verify_host"), &HTTPClient::connect_to_host, DEFVAL(false), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("set_connection", "connection"), &HTTPClient::set_connection);
+	ClassDB::bind_method(D_METHOD("get_connection"), &HTTPClient::get_connection);
 	ClassDB::bind_method(D_METHOD("request_raw", "method", "url", "headers", "body"), &HTTPClient::request_raw);
 	ClassDB::bind_method(D_METHOD("request", "method", "url", "headers", "body"), &HTTPClient::request, DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("send_body_text", "body"), &HTTPClient::send_body_text);
@@ -646,9 +646,9 @@ void HTTPClient::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_blocking_mode_enabled"), &HTTPClient::is_blocking_mode_enabled);
 
 	ClassDB::bind_method(D_METHOD("get_status"), &HTTPClient::get_status);
-	ClassDB::bind_method(D_METHOD("poll:Error"), &HTTPClient::poll);
+	ClassDB::bind_method(D_METHOD("poll"), &HTTPClient::poll);
 
-	ClassDB::bind_method(D_METHOD("query_string_from_dict:String", "fields"), &HTTPClient::query_string_from_dict);
+	ClassDB::bind_method(D_METHOD("query_string_from_dict", "fields"), &HTTPClient::query_string_from_dict);
 
 	BIND_CONSTANT(METHOD_GET);
 	BIND_CONSTANT(METHOD_HEAD);

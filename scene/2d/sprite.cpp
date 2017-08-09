@@ -298,11 +298,11 @@ void Sprite::_validate_property(PropertyInfo &property) const {
 
 void Sprite::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_texture", "texture:Texture"), &Sprite::set_texture);
-	ClassDB::bind_method(D_METHOD("get_texture:Texture"), &Sprite::get_texture);
+	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &Sprite::set_texture);
+	ClassDB::bind_method(D_METHOD("get_texture"), &Sprite::get_texture);
 
-	ClassDB::bind_method(D_METHOD("set_normal_map", "normal_map:Texture"), &Sprite::set_normal_map);
-	ClassDB::bind_method(D_METHOD("get_normal_map:Texture"), &Sprite::get_normal_map);
+	ClassDB::bind_method(D_METHOD("set_normal_map", "normal_map"), &Sprite::set_normal_map);
+	ClassDB::bind_method(D_METHOD("get_normal_map"), &Sprite::get_normal_map);
 
 	ClassDB::bind_method(D_METHOD("set_centered", "centered"), &Sprite::set_centered);
 	ClassDB::bind_method(D_METHOD("is_centered"), &Sprite::is_centered);

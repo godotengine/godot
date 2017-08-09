@@ -2641,12 +2641,12 @@ void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &Viewport::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &Viewport::get_size);
-	ClassDB::bind_method(D_METHOD("set_world_2d", "world_2d:World2D"), &Viewport::set_world_2d);
-	ClassDB::bind_method(D_METHOD("get_world_2d:World2D"), &Viewport::get_world_2d);
-	ClassDB::bind_method(D_METHOD("find_world_2d:World2D"), &Viewport::find_world_2d);
-	ClassDB::bind_method(D_METHOD("set_world", "world:World"), &Viewport::set_world);
-	ClassDB::bind_method(D_METHOD("get_world:World"), &Viewport::get_world);
-	ClassDB::bind_method(D_METHOD("find_world:World"), &Viewport::find_world);
+	ClassDB::bind_method(D_METHOD("set_world_2d", "world_2d"), &Viewport::set_world_2d);
+	ClassDB::bind_method(D_METHOD("get_world_2d"), &Viewport::get_world_2d);
+	ClassDB::bind_method(D_METHOD("find_world_2d"), &Viewport::find_world_2d);
+	ClassDB::bind_method(D_METHOD("set_world", "world"), &Viewport::set_world);
+	ClassDB::bind_method(D_METHOD("get_world"), &Viewport::get_world);
+	ClassDB::bind_method(D_METHOD("find_world"), &Viewport::find_world);
 
 	ClassDB::bind_method(D_METHOD("set_canvas_transform", "xform"), &Viewport::set_canvas_transform);
 	ClassDB::bind_method(D_METHOD("get_canvas_transform"), &Viewport::get_canvas_transform);
@@ -2696,21 +2696,21 @@ void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_render_info", "info"), &Viewport::get_render_info);
 
-	ClassDB::bind_method(D_METHOD("get_texture:ViewportTexture"), &Viewport::get_texture);
+	ClassDB::bind_method(D_METHOD("get_texture"), &Viewport::get_texture);
 
 	ClassDB::bind_method(D_METHOD("set_physics_object_picking", "enable"), &Viewport::set_physics_object_picking);
 	ClassDB::bind_method(D_METHOD("get_physics_object_picking"), &Viewport::get_physics_object_picking);
 
 	ClassDB::bind_method(D_METHOD("get_viewport_rid"), &Viewport::get_viewport_rid);
-	ClassDB::bind_method(D_METHOD("input", "local_event:InputEvent"), &Viewport::input);
-	ClassDB::bind_method(D_METHOD("unhandled_input", "local_event:InputEvent"), &Viewport::unhandled_input);
+	ClassDB::bind_method(D_METHOD("input", "local_event"), &Viewport::input);
+	ClassDB::bind_method(D_METHOD("unhandled_input", "local_event"), &Viewport::unhandled_input);
 
 	ClassDB::bind_method(D_METHOD("update_worlds"), &Viewport::update_worlds);
 
 	ClassDB::bind_method(D_METHOD("set_use_own_world", "enable"), &Viewport::set_use_own_world);
 	ClassDB::bind_method(D_METHOD("is_using_own_world"), &Viewport::is_using_own_world);
 
-	ClassDB::bind_method(D_METHOD("get_camera:Camera"), &Viewport::get_camera);
+	ClassDB::bind_method(D_METHOD("get_camera"), &Viewport::get_camera);
 
 	ClassDB::bind_method(D_METHOD("set_as_audio_listener", "enable"), &Viewport::set_as_audio_listener);
 	ClassDB::bind_method(D_METHOD("is_audio_listener", "enable"), &Viewport::is_audio_listener);
@@ -2723,7 +2723,7 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("warp_mouse", "to_pos"), &Viewport::warp_mouse);
 
 	ClassDB::bind_method(D_METHOD("gui_has_modal_stack"), &Viewport::gui_has_modal_stack);
-	ClassDB::bind_method(D_METHOD("gui_get_drag_data:Variant"), &Viewport::gui_get_drag_data);
+	ClassDB::bind_method(D_METHOD("gui_get_drag_data"), &Viewport::gui_get_drag_data);
 
 	ClassDB::bind_method(D_METHOD("set_disable_input", "disable"), &Viewport::set_disable_input);
 	ClassDB::bind_method(D_METHOD("is_input_disabled"), &Viewport::is_input_disabled);

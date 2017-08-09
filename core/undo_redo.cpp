@@ -496,8 +496,8 @@ void UndoRedo::_bind_methods() {
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "add_undo_method", &UndoRedo::_add_undo_method, mi);
 	}
 
-	ClassDB::bind_method(D_METHOD("add_do_property", "object", "property", "value:Variant"), &UndoRedo::add_do_property);
-	ClassDB::bind_method(D_METHOD("add_undo_property", "object", "property", "value:Variant"), &UndoRedo::add_undo_property);
+	ClassDB::bind_method(D_METHOD("add_do_property", "object", "property", "value"), &UndoRedo::add_do_property);
+	ClassDB::bind_method(D_METHOD("add_undo_property", "object", "property", "value"), &UndoRedo::add_undo_property);
 	ClassDB::bind_method(D_METHOD("add_do_reference", "object"), &UndoRedo::add_do_reference);
 	ClassDB::bind_method(D_METHOD("add_undo_reference", "object"), &UndoRedo::add_undo_reference);
 	ClassDB::bind_method(D_METHOD("clear_history"), &UndoRedo::clear_history);

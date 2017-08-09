@@ -1507,7 +1507,7 @@ Variant GDFunctionState::resume(const Variant &p_arg) {
 
 void GDFunctionState::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("resume:Variant", "arg"), &GDFunctionState::resume, DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("resume", "arg"), &GDFunctionState::resume, DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("is_valid", "extended_check"), &GDFunctionState::is_valid, DEFVAL(false));
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "_signal_callback", &GDFunctionState::_signal_callback, MethodInfo("_signal_callback"));
 

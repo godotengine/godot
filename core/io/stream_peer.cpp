@@ -385,7 +385,7 @@ void StreamPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("put_float", "val"), &StreamPeer::put_float);
 	ClassDB::bind_method(D_METHOD("put_double", "val"), &StreamPeer::put_double);
 	ClassDB::bind_method(D_METHOD("put_utf8_string", "val"), &StreamPeer::put_utf8_string);
-	ClassDB::bind_method(D_METHOD("put_var", "val:Variant"), &StreamPeer::put_var);
+	ClassDB::bind_method(D_METHOD("put_var", "val"), &StreamPeer::put_var);
 
 	ClassDB::bind_method(D_METHOD("get_8"), &StreamPeer::get_8);
 	ClassDB::bind_method(D_METHOD("get_u8"), &StreamPeer::get_u8);
@@ -399,7 +399,7 @@ void StreamPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_double"), &StreamPeer::get_double);
 	ClassDB::bind_method(D_METHOD("get_string", "bytes"), &StreamPeer::get_string);
 	ClassDB::bind_method(D_METHOD("get_utf8_string", "bytes"), &StreamPeer::get_utf8_string);
-	ClassDB::bind_method(D_METHOD("get_var:Variant"), &StreamPeer::get_var);
+	ClassDB::bind_method(D_METHOD("get_var"), &StreamPeer::get_var);
 }
 ////////////////////////////////
 
@@ -412,7 +412,7 @@ void StreamPeerBuffer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_data_array", "data"), &StreamPeerBuffer::set_data_array);
 	ClassDB::bind_method(D_METHOD("get_data_array"), &StreamPeerBuffer::get_data_array);
 	ClassDB::bind_method(D_METHOD("clear"), &StreamPeerBuffer::clear);
-	ClassDB::bind_method(D_METHOD("duplicate:StreamPeerBuffer"), &StreamPeerBuffer::duplicate);
+	ClassDB::bind_method(D_METHOD("duplicate"), &StreamPeerBuffer::duplicate);
 }
 
 Error StreamPeerBuffer::put_data(const uint8_t *p_data, int p_bytes) {

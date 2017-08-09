@@ -861,8 +861,8 @@ void DynamicFont::_get_property_list(List<PropertyInfo> *p_list) const {
 
 void DynamicFont::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_font_data", "data:DynamicFontData"), &DynamicFont::set_font_data);
-	ClassDB::bind_method(D_METHOD("get_font_data:DynamicFontData"), &DynamicFont::get_font_data);
+	ClassDB::bind_method(D_METHOD("set_font_data", "data"), &DynamicFont::set_font_data);
+	ClassDB::bind_method(D_METHOD("get_font_data"), &DynamicFont::get_font_data);
 
 	ClassDB::bind_method(D_METHOD("set_size", "data"), &DynamicFont::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &DynamicFont::get_size);
@@ -874,9 +874,9 @@ void DynamicFont::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_spacing", "type", "value"), &DynamicFont::set_spacing);
 	ClassDB::bind_method(D_METHOD("get_spacing", "type"), &DynamicFont::get_spacing);
 
-	ClassDB::bind_method(D_METHOD("add_fallback", "data:DynamicFontData"), &DynamicFont::add_fallback);
-	ClassDB::bind_method(D_METHOD("set_fallback", "idx", "data:DynamicFontData"), &DynamicFont::set_fallback);
-	ClassDB::bind_method(D_METHOD("get_fallback:DynamicFontData", "idx"), &DynamicFont::get_fallback);
+	ClassDB::bind_method(D_METHOD("add_fallback", "data"), &DynamicFont::add_fallback);
+	ClassDB::bind_method(D_METHOD("set_fallback", "idx", "data"), &DynamicFont::set_fallback);
+	ClassDB::bind_method(D_METHOD("get_fallback", "idx"), &DynamicFont::get_fallback);
 	ClassDB::bind_method(D_METHOD("remove_fallback", "idx"), &DynamicFont::remove_fallback);
 	ClassDB::bind_method(D_METHOD("get_fallback_count"), &DynamicFont::get_fallback_count);
 

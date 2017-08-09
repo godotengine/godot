@@ -186,8 +186,8 @@ MultiMesh::TransformFormat MultiMesh::get_transform_format() const {
 
 void MultiMesh::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_mesh", "mesh:Mesh"), &MultiMesh::set_mesh);
-	ClassDB::bind_method(D_METHOD("get_mesh:Mesh"), &MultiMesh::get_mesh);
+	ClassDB::bind_method(D_METHOD("set_mesh", "mesh"), &MultiMesh::set_mesh);
+	ClassDB::bind_method(D_METHOD("get_mesh"), &MultiMesh::get_mesh);
 	ClassDB::bind_method(D_METHOD("set_color_format", "format"), &MultiMesh::set_color_format);
 	ClassDB::bind_method(D_METHOD("get_color_format"), &MultiMesh::get_color_format);
 	ClassDB::bind_method(D_METHOD("set_transform_format", "format"), &MultiMesh::set_transform_format);

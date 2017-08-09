@@ -238,11 +238,11 @@ void ShaderGraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("xform_input_node_set_value","shader_type","id","value"),&ShaderGraph::xform_input_node_set_value);
 	ClassDB::bind_method(D_METHOD("xform_input_node_get_value","shader_type","id"),&ShaderGraph::xform_input_node_get_value);
 
-	ClassDB::bind_method(D_METHOD("texture_input_node_set_value","shader_type","id","value:Texture"),&ShaderGraph::texture_input_node_set_value);
-	ClassDB::bind_method(D_METHOD("texture_input_node_get_value:Texture","shader_type","id"),&ShaderGraph::texture_input_node_get_value);
+	ClassDB::bind_method(D_METHOD("texture_input_node_set_value","shader_type","id","value"),&ShaderGraph::texture_input_node_set_value);
+	ClassDB::bind_method(D_METHOD("texture_input_node_get_value","shader_type","id"),&ShaderGraph::texture_input_node_get_value);
 
-	ClassDB::bind_method(D_METHOD("cubemap_input_node_set_value","shader_type","id","value:CubeMap"),&ShaderGraph::cubemap_input_node_set_value);
-	ClassDB::bind_method(D_METHOD("cubemap_input_node_get_value:CubeMap","shader_type","id"),&ShaderGraph::cubemap_input_node_get_value);
+	ClassDB::bind_method(D_METHOD("cubemap_input_node_set_value","shader_type","id","value"),&ShaderGraph::cubemap_input_node_set_value);
+	ClassDB::bind_method(D_METHOD("cubemap_input_node_get_value","shader_type","id"),&ShaderGraph::cubemap_input_node_get_value);
 
 	ClassDB::bind_method(D_METHOD("comment_node_set_text","shader_type","id","text"),&ShaderGraph::comment_node_set_text);
 	ClassDB::bind_method(D_METHOD("comment_node_get_text","shader_type","id"),&ShaderGraph::comment_node_get_text);
@@ -254,7 +254,7 @@ void ShaderGraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("curve_map_node_set_points","shader_type","id","points"),&ShaderGraph::curve_map_node_set_points);
 	ClassDB::bind_method(D_METHOD("curve_map_node_get_points","shader_type","id"),&ShaderGraph::curve_map_node_get_points);
 
-	ClassDB::bind_method(D_METHOD("connect_node:Error","shader_type","src_id","src_slot","dst_id","dst_slot"),&ShaderGraph::connect_node);
+	ClassDB::bind_method(D_METHOD("connect_node","shader_type","src_id","src_slot","dst_id","dst_slot"),&ShaderGraph::connect_node);
 	ClassDB::bind_method(D_METHOD("is_node_connected","shader_type","src_id","src_slot","dst_id","dst_slot"),&ShaderGraph::is_node_connected);
 	ClassDB::bind_method(D_METHOD("disconnect_node","shader_type","src_id","src_slot","dst_id","dst_slot"),&ShaderGraph::disconnect_node);
 	ClassDB::bind_method(D_METHOD("get_node_connections","shader_type"),&ShaderGraph::_get_connections);
@@ -262,7 +262,7 @@ void ShaderGraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear","shader_type"),&ShaderGraph::clear);
 
 	ClassDB::bind_method(D_METHOD("node_set_state","shader_type","id","state"),&ShaderGraph::node_set_state);
-	ClassDB::bind_method(D_METHOD("node_get_state:Variant","shader_type","id"),&ShaderGraph::node_get_state);
+	ClassDB::bind_method(D_METHOD("node_get_state","shader_type","id"),&ShaderGraph::node_get_state);
 
 	ClassDB::bind_method(D_METHOD("_set_data"),&ShaderGraph::_set_data);
 	ClassDB::bind_method(D_METHOD("_get_data"),&ShaderGraph::_get_data);

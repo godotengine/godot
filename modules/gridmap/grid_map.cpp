@@ -830,8 +830,8 @@ void GridMap::_update_dirty_map_callback() {
 
 void GridMap::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_theme", "theme:MeshLibrary"), &GridMap::set_theme);
-	ClassDB::bind_method(D_METHOD("get_theme:MeshLibrary"), &GridMap::get_theme);
+	ClassDB::bind_method(D_METHOD("set_theme", "theme"), &GridMap::set_theme);
+	ClassDB::bind_method(D_METHOD("get_theme"), &GridMap::get_theme);
 
 	ClassDB::bind_method(D_METHOD("set_cell_size", "size"), &GridMap::set_cell_size);
 	ClassDB::bind_method(D_METHOD("get_cell_size"), &GridMap::get_cell_size);

@@ -627,20 +627,20 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_current_tab", "tab_idx"), &TabContainer::set_current_tab);
 	ClassDB::bind_method(D_METHOD("get_current_tab"), &TabContainer::get_current_tab);
 	ClassDB::bind_method(D_METHOD("get_previous_tab"), &TabContainer::get_previous_tab);
-	ClassDB::bind_method(D_METHOD("get_current_tab_control:Control"), &TabContainer::get_current_tab_control);
-	ClassDB::bind_method(D_METHOD("get_tab_control:Control", "idx"), &TabContainer::get_tab_control);
+	ClassDB::bind_method(D_METHOD("get_current_tab_control"), &TabContainer::get_current_tab_control);
+	ClassDB::bind_method(D_METHOD("get_tab_control", "idx"), &TabContainer::get_tab_control);
 	ClassDB::bind_method(D_METHOD("set_tab_align", "align"), &TabContainer::set_tab_align);
 	ClassDB::bind_method(D_METHOD("get_tab_align"), &TabContainer::get_tab_align);
 	ClassDB::bind_method(D_METHOD("set_tabs_visible", "visible"), &TabContainer::set_tabs_visible);
 	ClassDB::bind_method(D_METHOD("are_tabs_visible"), &TabContainer::are_tabs_visible);
 	ClassDB::bind_method(D_METHOD("set_tab_title", "tab_idx", "title"), &TabContainer::set_tab_title);
 	ClassDB::bind_method(D_METHOD("get_tab_title", "tab_idx"), &TabContainer::get_tab_title);
-	ClassDB::bind_method(D_METHOD("set_tab_icon", "tab_idx", "icon:Texture"), &TabContainer::set_tab_icon);
-	ClassDB::bind_method(D_METHOD("get_tab_icon:Texture", "tab_idx"), &TabContainer::get_tab_icon);
+	ClassDB::bind_method(D_METHOD("set_tab_icon", "tab_idx", "icon"), &TabContainer::set_tab_icon);
+	ClassDB::bind_method(D_METHOD("get_tab_icon", "tab_idx"), &TabContainer::get_tab_icon);
 	ClassDB::bind_method(D_METHOD("set_tab_disabled", "tab_idx", "disabled"), &TabContainer::set_tab_disabled);
 	ClassDB::bind_method(D_METHOD("get_tab_disabled", "tab_idx"), &TabContainer::get_tab_disabled);
-	ClassDB::bind_method(D_METHOD("set_popup", "popup:Popup"), &TabContainer::set_popup);
-	ClassDB::bind_method(D_METHOD("get_popup:Popup"), &TabContainer::get_popup);
+	ClassDB::bind_method(D_METHOD("set_popup", "popup"), &TabContainer::set_popup);
+	ClassDB::bind_method(D_METHOD("get_popup"), &TabContainer::get_popup);
 
 	ClassDB::bind_method(D_METHOD("_child_renamed_callback"), &TabContainer::_child_renamed_callback);
 

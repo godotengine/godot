@@ -1154,7 +1154,7 @@ void EditorFileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_current_path", "path"), &EditorFileDialog::set_current_path);
 	ClassDB::bind_method(D_METHOD("set_mode", "mode"), &EditorFileDialog::set_mode);
 	ClassDB::bind_method(D_METHOD("get_mode"), &EditorFileDialog::get_mode);
-	ClassDB::bind_method(D_METHOD("get_vbox:VBoxContainer"), &EditorFileDialog::get_vbox);
+	ClassDB::bind_method(D_METHOD("get_vbox"), &EditorFileDialog::get_vbox);
 	ClassDB::bind_method(D_METHOD("set_access", "access"), &EditorFileDialog::set_access);
 	ClassDB::bind_method(D_METHOD("get_access"), &EditorFileDialog::get_access);
 	ClassDB::bind_method(D_METHOD("set_show_hidden_files", "show"), &EditorFileDialog::set_show_hidden_files);
@@ -1454,9 +1454,9 @@ void EditorLineEditFileChooser::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_browse"), &EditorLineEditFileChooser::_browse);
 	ClassDB::bind_method(D_METHOD("_chosen"), &EditorLineEditFileChooser::_chosen);
-	ClassDB::bind_method(D_METHOD("get_button:Button"), &EditorLineEditFileChooser::get_button);
-	ClassDB::bind_method(D_METHOD("get_line_edit:LineEdit"), &EditorLineEditFileChooser::get_line_edit);
-	ClassDB::bind_method(D_METHOD("get_file_dialog:EditorFileDialog"), &EditorLineEditFileChooser::get_file_dialog);
+	ClassDB::bind_method(D_METHOD("get_button"), &EditorLineEditFileChooser::get_button);
+	ClassDB::bind_method(D_METHOD("get_line_edit"), &EditorLineEditFileChooser::get_line_edit);
+	ClassDB::bind_method(D_METHOD("get_file_dialog"), &EditorLineEditFileChooser::get_file_dialog);
 }
 
 void EditorLineEditFileChooser::_chosen(const String &p_text) {

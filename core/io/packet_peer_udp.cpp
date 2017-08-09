@@ -59,9 +59,9 @@ Error PacketPeerUDP::_set_dest_address(const String &p_address, int p_port) {
 
 void PacketPeerUDP::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("listen:Error", "port", "bind_address", "recv_buf_size"), &PacketPeerUDP::listen, DEFVAL("*"), DEFVAL(65536));
+	ClassDB::bind_method(D_METHOD("listen", "port", "bind_address", "recv_buf_size"), &PacketPeerUDP::listen, DEFVAL("*"), DEFVAL(65536));
 	ClassDB::bind_method(D_METHOD("close"), &PacketPeerUDP::close);
-	ClassDB::bind_method(D_METHOD("wait:Error"), &PacketPeerUDP::wait);
+	ClassDB::bind_method(D_METHOD("wait"), &PacketPeerUDP::wait);
 	ClassDB::bind_method(D_METHOD("is_listening"), &PacketPeerUDP::is_listening);
 	ClassDB::bind_method(D_METHOD("get_packet_ip"), &PacketPeerUDP::_get_packet_ip);
 	//ClassDB::bind_method(D_METHOD("get_packet_address"),&PacketPeerUDP::_get_packet_address);

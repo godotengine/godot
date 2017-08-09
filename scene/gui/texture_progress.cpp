@@ -242,14 +242,14 @@ Point2 TextureProgress::get_radial_center_offset() {
 
 void TextureProgress::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_under_texture", "tex:Texture"), &TextureProgress::set_under_texture);
-	ClassDB::bind_method(D_METHOD("get_under_texture:Texture"), &TextureProgress::get_under_texture);
+	ClassDB::bind_method(D_METHOD("set_under_texture", "tex"), &TextureProgress::set_under_texture);
+	ClassDB::bind_method(D_METHOD("get_under_texture"), &TextureProgress::get_under_texture);
 
-	ClassDB::bind_method(D_METHOD("set_progress_texture", "tex:Texture"), &TextureProgress::set_progress_texture);
-	ClassDB::bind_method(D_METHOD("get_progress_texture:Texture"), &TextureProgress::get_progress_texture);
+	ClassDB::bind_method(D_METHOD("set_progress_texture", "tex"), &TextureProgress::set_progress_texture);
+	ClassDB::bind_method(D_METHOD("get_progress_texture"), &TextureProgress::get_progress_texture);
 
-	ClassDB::bind_method(D_METHOD("set_over_texture", "tex:Texture"), &TextureProgress::set_over_texture);
-	ClassDB::bind_method(D_METHOD("get_over_texture:Texture"), &TextureProgress::get_over_texture);
+	ClassDB::bind_method(D_METHOD("set_over_texture", "tex"), &TextureProgress::set_over_texture);
+	ClassDB::bind_method(D_METHOD("get_over_texture"), &TextureProgress::get_over_texture);
 
 	ClassDB::bind_method(D_METHOD("set_fill_mode", "mode"), &TextureProgress::set_fill_mode);
 	ClassDB::bind_method(D_METHOD("get_fill_mode"), &TextureProgress::get_fill_mode);

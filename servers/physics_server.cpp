@@ -109,7 +109,7 @@ void PhysicsDirectBodyState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_contact_collider_velocity_at_pos", "contact_idx"), &PhysicsDirectBodyState::get_contact_collider_velocity_at_pos);
 	ClassDB::bind_method(D_METHOD("get_step"), &PhysicsDirectBodyState::get_step);
 	ClassDB::bind_method(D_METHOD("integrate_forces"), &PhysicsDirectBodyState::integrate_forces);
-	ClassDB::bind_method(D_METHOD("get_space_state:PhysicsDirectSpaceState"), &PhysicsDirectBodyState::get_space_state);
+	ClassDB::bind_method(D_METHOD("get_space_state"), &PhysicsDirectBodyState::get_space_state);
 }
 
 PhysicsDirectBodyState::PhysicsDirectBodyState() {}
@@ -188,7 +188,7 @@ Vector<RID> PhysicsShapeQueryParameters::get_exclude() const {
 
 void PhysicsShapeQueryParameters::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_shape", "shape:Shape"), &PhysicsShapeQueryParameters::set_shape);
+	ClassDB::bind_method(D_METHOD("set_shape", "shape"), &PhysicsShapeQueryParameters::set_shape);
 	ClassDB::bind_method(D_METHOD("set_shape_rid", "shape"), &PhysicsShapeQueryParameters::set_shape_rid);
 	ClassDB::bind_method(D_METHOD("get_shape_rid"), &PhysicsShapeQueryParameters::get_shape_rid);
 
@@ -341,13 +341,13 @@ PhysicsDirectSpaceState::PhysicsDirectSpaceState() {
 void PhysicsDirectSpaceState::_bind_methods() {
 
 	//ClassDB::bind_method(D_METHOD("intersect_ray","from","to","exclude","umask"),&PhysicsDirectSpaceState::_intersect_ray,DEFVAL(Array()),DEFVAL(0));
-	//ClassDB::bind_method(D_METHOD("intersect_shape:PhysicsShapeQueryResult","shape","xform","result_max","exclude","umask"),&PhysicsDirectSpaceState::_intersect_shape,DEFVAL(Array()),DEFVAL(0));
+	//ClassDB::bind_method(D_METHOD("intersect_shape","shape","xform","result_max","exclude","umask"),&PhysicsDirectSpaceState::_intersect_shape,DEFVAL(Array()),DEFVAL(0));
 
-	ClassDB::bind_method(D_METHOD("intersect_ray:Dictionary", "from", "to", "exclude", "collision_layer", "type_mask"), &PhysicsDirectSpaceState::_intersect_ray, DEFVAL(Array()), DEFVAL(0x7FFFFFFF), DEFVAL(TYPE_MASK_COLLISION));
-	ClassDB::bind_method(D_METHOD("intersect_shape", "shape:PhysicsShapeQueryParameters", "max_results"), &PhysicsDirectSpaceState::_intersect_shape, DEFVAL(32));
-	ClassDB::bind_method(D_METHOD("cast_motion", "shape:PhysicsShapeQueryParameters", "motion"), &PhysicsDirectSpaceState::_cast_motion);
-	ClassDB::bind_method(D_METHOD("collide_shape", "shape:PhysicsShapeQueryParameters", "max_results"), &PhysicsDirectSpaceState::_collide_shape, DEFVAL(32));
-	ClassDB::bind_method(D_METHOD("get_rest_info", "shape:PhysicsShapeQueryParameters"), &PhysicsDirectSpaceState::_get_rest_info);
+	ClassDB::bind_method(D_METHOD("intersect_ray", "from", "to", "exclude", "collision_layer", "type_mask"), &PhysicsDirectSpaceState::_intersect_ray, DEFVAL(Array()), DEFVAL(0x7FFFFFFF), DEFVAL(TYPE_MASK_COLLISION));
+	ClassDB::bind_method(D_METHOD("intersect_shape", "shape", "max_results"), &PhysicsDirectSpaceState::_intersect_shape, DEFVAL(32));
+	ClassDB::bind_method(D_METHOD("cast_motion", "shape", "motion"), &PhysicsDirectSpaceState::_cast_motion);
+	ClassDB::bind_method(D_METHOD("collide_shape", "shape", "max_results"), &PhysicsDirectSpaceState::_collide_shape, DEFVAL(32));
+	ClassDB::bind_method(D_METHOD("get_rest_info", "shape"), &PhysicsDirectSpaceState::_get_rest_info);
 
 	BIND_CONSTANT(TYPE_MASK_STATIC_BODY);
 	BIND_CONSTANT(TYPE_MASK_KINEMATIC_BODY);
@@ -405,7 +405,7 @@ void PhysicsServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("space_is_active", "space"), &PhysicsServer::space_is_active);
 	ClassDB::bind_method(D_METHOD("space_set_param", "space", "param", "value"), &PhysicsServer::space_set_param);
 	ClassDB::bind_method(D_METHOD("space_get_param", "space", "param"), &PhysicsServer::space_get_param);
-	ClassDB::bind_method(D_METHOD("space_get_direct_state:PhysicsDirectSpaceState", "space"), &PhysicsServer::space_get_direct_state);
+	ClassDB::bind_method(D_METHOD("space_get_direct_state", "space"), &PhysicsServer::space_get_direct_state);
 
 	ClassDB::bind_method(D_METHOD("area_create"), &PhysicsServer::area_create);
 	ClassDB::bind_method(D_METHOD("area_set_space", "area", "space"), &PhysicsServer::area_set_space);

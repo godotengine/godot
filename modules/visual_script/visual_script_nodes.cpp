@@ -1101,7 +1101,7 @@ void VisualScriptConstant::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_constant_type"), &VisualScriptConstant::get_constant_type);
 
 	ClassDB::bind_method(D_METHOD("set_constant_value", "value"), &VisualScriptConstant::set_constant_value);
-	ClassDB::bind_method(D_METHOD("get_constant_value:Variant"), &VisualScriptConstant::get_constant_value);
+	ClassDB::bind_method(D_METHOD("get_constant_value"), &VisualScriptConstant::get_constant_value);
 
 	String argt = "Null";
 	for (int i = 1; i < Variant::VARIANT_MAX; i++) {
@@ -1215,8 +1215,8 @@ Ref<Resource> VisualScriptPreload::get_preload() const {
 
 void VisualScriptPreload::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_preload", "resource:Resource"), &VisualScriptPreload::set_preload);
-	ClassDB::bind_method(D_METHOD("get_preload:Resource"), &VisualScriptPreload::get_preload);
+	ClassDB::bind_method(D_METHOD("set_preload", "resource"), &VisualScriptPreload::set_preload);
+	ClassDB::bind_method(D_METHOD("get_preload"), &VisualScriptPreload::get_preload);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource"), "set_preload", "get_preload");
 }

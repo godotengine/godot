@@ -1208,8 +1208,8 @@ void TileMap::set_light_mask(int p_light_mask) {
 
 void TileMap::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_tileset", "tileset:TileSet"), &TileMap::set_tileset);
-	ClassDB::bind_method(D_METHOD("get_tileset:TileSet"), &TileMap::get_tileset);
+	ClassDB::bind_method(D_METHOD("set_tileset", "tileset"), &TileMap::set_tileset);
+	ClassDB::bind_method(D_METHOD("get_tileset"), &TileMap::get_tileset);
 
 	ClassDB::bind_method(D_METHOD("set_mode", "mode"), &TileMap::set_mode);
 	ClassDB::bind_method(D_METHOD("get_mode"), &TileMap::get_mode);

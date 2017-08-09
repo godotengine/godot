@@ -262,8 +262,8 @@ void AudioStreamPlayer::_bus_layout_changed() {
 
 void AudioStreamPlayer::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_stream", "stream:AudioStream"), &AudioStreamPlayer::set_stream);
-	ClassDB::bind_method(D_METHOD("get_stream:AudioStream"), &AudioStreamPlayer::get_stream);
+	ClassDB::bind_method(D_METHOD("set_stream", "stream"), &AudioStreamPlayer::set_stream);
+	ClassDB::bind_method(D_METHOD("get_stream"), &AudioStreamPlayer::get_stream);
 
 	ClassDB::bind_method(D_METHOD("set_volume_db", "volume_db"), &AudioStreamPlayer::set_volume_db);
 	ClassDB::bind_method(D_METHOD("get_volume_db"), &AudioStreamPlayer::get_volume_db);

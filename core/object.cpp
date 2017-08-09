@@ -1663,17 +1663,17 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_class"), &Object::get_class);
 	ClassDB::bind_method(D_METHOD("is_class", "type"), &Object::is_class);
 	ClassDB::bind_method(D_METHOD("set", "property", "value"), &Object::_set_bind);
-	ClassDB::bind_method(D_METHOD("get:Variant", "property"), &Object::_get_bind);
+	ClassDB::bind_method(D_METHOD("get", "property"), &Object::_get_bind);
 	ClassDB::bind_method(D_METHOD("get_property_list"), &Object::_get_property_list_bind);
 	ClassDB::bind_method(D_METHOD("get_method_list"), &Object::_get_method_list_bind);
 	ClassDB::bind_method(D_METHOD("notification", "what", "reversed"), &Object::notification, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_instance_id"), &Object::get_instance_id);
 
-	ClassDB::bind_method(D_METHOD("set_script", "script:Script"), &Object::set_script);
-	ClassDB::bind_method(D_METHOD("get_script:Script"), &Object::get_script);
+	ClassDB::bind_method(D_METHOD("set_script", "script"), &Object::set_script);
+	ClassDB::bind_method(D_METHOD("get_script"), &Object::get_script);
 
 	ClassDB::bind_method(D_METHOD("set_meta", "name", "value"), &Object::set_meta);
-	ClassDB::bind_method(D_METHOD("get_meta:Variant", "name", "value"), &Object::get_meta);
+	ClassDB::bind_method(D_METHOD("get_meta", "name", "value"), &Object::get_meta);
 	ClassDB::bind_method(D_METHOD("has_meta", "name"), &Object::has_meta);
 	ClassDB::bind_method(D_METHOD("get_meta_list"), &Object::_get_meta_list_bind);
 
@@ -1710,7 +1710,7 @@ void Object::_bind_methods() {
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "call_deferred", &Object::_call_deferred_bind, mi);
 	}
 
-	ClassDB::bind_method(D_METHOD("callv:Variant", "method", "arg_array"), &Object::callv);
+	ClassDB::bind_method(D_METHOD("callv", "method", "arg_array"), &Object::callv);
 
 	ClassDB::bind_method(D_METHOD("has_method", "method"), &Object::has_method);
 
@@ -1718,9 +1718,9 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_signal_connection_list", "signal"), &Object::_get_signal_connection_list);
 	ClassDB::bind_method(D_METHOD("get_incoming_connections"), &Object::_get_incoming_connections);
 
-	ClassDB::bind_method(D_METHOD("connect", "signal", "target:Object", "method", "binds", "flags"), &Object::connect, DEFVAL(Array()), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("disconnect", "signal", "target:Object", "method"), &Object::disconnect);
-	ClassDB::bind_method(D_METHOD("is_connected", "signal", "target:Object", "method"), &Object::is_connected);
+	ClassDB::bind_method(D_METHOD("connect", "signal", "target", "method", "binds", "flags"), &Object::connect, DEFVAL(Array()), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("disconnect", "signal", "target", "method"), &Object::disconnect);
+	ClassDB::bind_method(D_METHOD("is_connected", "signal", "target", "method"), &Object::is_connected);
 
 	ClassDB::bind_method(D_METHOD("set_block_signals", "enable"), &Object::set_block_signals);
 	ClassDB::bind_method(D_METHOD("is_blocking_signals"), &Object::is_blocking_signals);

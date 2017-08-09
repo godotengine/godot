@@ -407,41 +407,41 @@ EditorFileSystem *EditorPlugin::get_resource_file_system() {
 
 void EditorPlugin::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("add_control_to_container", "container", "control:Control"), &EditorPlugin::add_control_to_container);
-	ClassDB::bind_method(D_METHOD("add_control_to_bottom_panel:ToolButton", "control:Control", "title"), &EditorPlugin::add_control_to_bottom_panel);
-	ClassDB::bind_method(D_METHOD("add_control_to_dock", "slot", "control:Control"), &EditorPlugin::add_control_to_dock);
-	ClassDB::bind_method(D_METHOD("remove_control_from_docks", "control:Control"), &EditorPlugin::remove_control_from_docks);
-	ClassDB::bind_method(D_METHOD("remove_control_from_bottom_panel", "control:Control"), &EditorPlugin::remove_control_from_bottom_panel);
+	ClassDB::bind_method(D_METHOD("add_control_to_container", "container", "control"), &EditorPlugin::add_control_to_container);
+	ClassDB::bind_method(D_METHOD("add_control_to_bottom_panel", "control", "title"), &EditorPlugin::add_control_to_bottom_panel);
+	ClassDB::bind_method(D_METHOD("add_control_to_dock", "slot", "control"), &EditorPlugin::add_control_to_dock);
+	ClassDB::bind_method(D_METHOD("remove_control_from_docks", "control"), &EditorPlugin::remove_control_from_docks);
+	ClassDB::bind_method(D_METHOD("remove_control_from_bottom_panel", "control"), &EditorPlugin::remove_control_from_bottom_panel);
 	//ClassDB::bind_method(D_METHOD("add_tool_menu_item", "name", "handler", "callback", "ud"),&EditorPlugin::add_tool_menu_item,DEFVAL(Variant()));
-	ClassDB::bind_method(D_METHOD("add_tool_submenu_item", "name", "submenu:PopupMenu"), &EditorPlugin::add_tool_submenu_item);
+	ClassDB::bind_method(D_METHOD("add_tool_submenu_item", "name", "submenu"), &EditorPlugin::add_tool_submenu_item);
 	//ClassDB::bind_method(D_METHOD("remove_tool_menu_item", "name"),&EditorPlugin::remove_tool_menu_item);
-	ClassDB::bind_method(D_METHOD("add_custom_type", "type", "base", "script:Script", "icon:Texture"), &EditorPlugin::add_custom_type);
+	ClassDB::bind_method(D_METHOD("add_custom_type", "type", "base", "script", "icon"), &EditorPlugin::add_custom_type);
 	ClassDB::bind_method(D_METHOD("remove_custom_type", "type"), &EditorPlugin::remove_custom_type);
-	ClassDB::bind_method(D_METHOD("get_editor_viewport:Control"), &EditorPlugin::get_editor_viewport);
+	ClassDB::bind_method(D_METHOD("get_editor_viewport"), &EditorPlugin::get_editor_viewport);
 
-	ClassDB::bind_method(D_METHOD("get_resource_previewer:EditorResourcePreview"), &EditorPlugin::get_resource_previewer);
-	ClassDB::bind_method(D_METHOD("get_resource_filesystem:EditorFileSystem"), &EditorPlugin::get_resource_file_system);
+	ClassDB::bind_method(D_METHOD("get_resource_previewer"), &EditorPlugin::get_resource_previewer);
+	ClassDB::bind_method(D_METHOD("get_resource_filesystem"), &EditorPlugin::get_resource_file_system);
 
 	ClassDB::bind_method(D_METHOD("inspect_object", "object", "for_property"), &EditorPlugin::inspect_object, DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("update_canvas"), &EditorPlugin::update_canvas);
 
-	ClassDB::bind_method(D_METHOD("make_bottom_panel_item_visible", "item:Control"), &EditorPlugin::make_bottom_panel_item_visible);
+	ClassDB::bind_method(D_METHOD("make_bottom_panel_item_visible", "item"), &EditorPlugin::make_bottom_panel_item_visible);
 	ClassDB::bind_method(D_METHOD("hide_bottom_panel"), &EditorPlugin::hide_bottom_panel);
 
-	ClassDB::bind_method(D_METHOD("get_base_control:Control"), &EditorPlugin::get_base_control);
-	ClassDB::bind_method(D_METHOD("get_undo_redo:UndoRedo"), &EditorPlugin::_get_undo_redo);
-	ClassDB::bind_method(D_METHOD("get_selection:EditorSelection"), &EditorPlugin::get_selection);
-	ClassDB::bind_method(D_METHOD("get_editor_settings:EditorSettings"), &EditorPlugin::get_editor_settings);
-	ClassDB::bind_method(D_METHOD("get_script_editor:ScriptEditor"), &EditorPlugin::get_script_editor);
+	ClassDB::bind_method(D_METHOD("get_base_control"), &EditorPlugin::get_base_control);
+	ClassDB::bind_method(D_METHOD("get_undo_redo"), &EditorPlugin::_get_undo_redo);
+	ClassDB::bind_method(D_METHOD("get_selection"), &EditorPlugin::get_selection);
+	ClassDB::bind_method(D_METHOD("get_editor_settings"), &EditorPlugin::get_editor_settings);
+	ClassDB::bind_method(D_METHOD("get_script_editor"), &EditorPlugin::get_script_editor);
 	ClassDB::bind_method(D_METHOD("queue_save_layout"), &EditorPlugin::queue_save_layout);
-	ClassDB::bind_method(D_METHOD("edit_resource", "resource:Resource"), &EditorPlugin::edit_resource);
+	ClassDB::bind_method(D_METHOD("edit_resource", "resource"), &EditorPlugin::edit_resource);
 	ClassDB::bind_method(D_METHOD("open_scene_from_path", "scene_filepath"), &EditorPlugin::open_scene_from_path);
 	ClassDB::bind_method(D_METHOD("reload_scene_from_path", "scene_filepath"), &EditorPlugin::reload_scene_from_path);
-	ClassDB::bind_method(D_METHOD("add_import_plugin", "importer:EditorImportPlugin"), &EditorPlugin::add_import_plugin);
-	ClassDB::bind_method(D_METHOD("remove_import_plugin", "importer:EditorImportPlugin"), &EditorPlugin::remove_import_plugin);
+	ClassDB::bind_method(D_METHOD("add_import_plugin", "importer"), &EditorPlugin::add_import_plugin);
+	ClassDB::bind_method(D_METHOD("remove_import_plugin", "importer"), &EditorPlugin::remove_import_plugin);
 	ClassDB::bind_method(D_METHOD("set_input_event_forwarding_always_enabled"), &EditorPlugin::set_input_event_forwarding_always_enabled);
 	ClassDB::bind_method(D_METHOD("get_open_scenes"), &EditorPlugin::get_open_scenes);
-	ClassDB::bind_method(D_METHOD("get_edited_scene_root:Node"), &EditorPlugin::get_edited_scene_root);
+	ClassDB::bind_method(D_METHOD("get_edited_scene_root"), &EditorPlugin::get_edited_scene_root);
 
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "forward_canvas_gui_input", PropertyInfo(Variant::TRANSFORM2D, "canvas_xform"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("forward_draw_over_canvas", PropertyInfo(Variant::TRANSFORM2D, "canvas_xform"), PropertyInfo(Variant::OBJECT, "canvas:Control")));

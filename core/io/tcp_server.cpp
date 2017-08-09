@@ -49,7 +49,7 @@ void TCP_Server::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("listen", "port", "bind_address"), &TCP_Server::listen, DEFVAL("*"));
 	ClassDB::bind_method(D_METHOD("is_connection_available"), &TCP_Server::is_connection_available);
-	ClassDB::bind_method(D_METHOD("take_connection:StreamPeerTCP"), &TCP_Server::take_connection);
+	ClassDB::bind_method(D_METHOD("take_connection"), &TCP_Server::take_connection);
 	ClassDB::bind_method(D_METHOD("stop"), &TCP_Server::stop);
 }
 

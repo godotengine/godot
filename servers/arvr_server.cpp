@@ -48,10 +48,10 @@ void ARVRServer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "world_scale"), "set_world_scale", "get_world_scale");
 
 	ClassDB::bind_method(D_METHOD("get_interface_count"), &ARVRServer::get_interface_count);
-	ClassDB::bind_method(D_METHOD("get_interface:ARVRInterface", "idx"), &ARVRServer::get_interface);
-	ClassDB::bind_method(D_METHOD("find_interface:ARVRInterface", "name"), &ARVRServer::find_interface);
+	ClassDB::bind_method(D_METHOD("get_interface", "idx"), &ARVRServer::get_interface);
+	ClassDB::bind_method(D_METHOD("find_interface", "name"), &ARVRServer::find_interface);
 	ClassDB::bind_method(D_METHOD("get_tracker_count"), &ARVRServer::get_tracker_count);
-	ClassDB::bind_method(D_METHOD("get_tracker:ARVRPositionalTracker", "idx"), &ARVRServer::get_tracker);
+	ClassDB::bind_method(D_METHOD("get_tracker", "idx"), &ARVRServer::get_tracker);
 
 	ClassDB::bind_method(D_METHOD("set_primary_interface"), &ARVRServer::set_primary_interface);
 

@@ -546,7 +546,7 @@ JavaObject::~JavaObject() {
 
 void JavaClassWrapper::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("wrap:JavaClass", "name"), &JavaClassWrapper::wrap);
+	ClassDB::bind_method(D_METHOD("wrap", "name"), &JavaClassWrapper::wrap);
 }
 
 bool JavaClassWrapper::_get_type_sig(JNIEnv *env, jobject obj, uint32_t &sig, String &strsig) {

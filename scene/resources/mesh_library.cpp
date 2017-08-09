@@ -230,13 +230,13 @@ void MeshLibrary::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("create_item", "id"), &MeshLibrary::create_item);
 	ClassDB::bind_method(D_METHOD("set_item_name", "id", "name"), &MeshLibrary::set_item_name);
-	ClassDB::bind_method(D_METHOD("set_item_mesh", "id", "mesh:Mesh"), &MeshLibrary::set_item_mesh);
-	ClassDB::bind_method(D_METHOD("set_item_navmesh", "id", "navmesh:NavigationMesh"), &MeshLibrary::set_item_navmesh);
-	ClassDB::bind_method(D_METHOD("set_item_shape", "id", "shape:Shape"), &MeshLibrary::set_item_shape);
+	ClassDB::bind_method(D_METHOD("set_item_mesh", "id", "mesh"), &MeshLibrary::set_item_mesh);
+	ClassDB::bind_method(D_METHOD("set_item_navmesh", "id", "navmesh"), &MeshLibrary::set_item_navmesh);
+	ClassDB::bind_method(D_METHOD("set_item_shape", "id", "shape"), &MeshLibrary::set_item_shape);
 	ClassDB::bind_method(D_METHOD("get_item_name", "id"), &MeshLibrary::get_item_name);
-	ClassDB::bind_method(D_METHOD("get_item_mesh:Mesh", "id"), &MeshLibrary::get_item_mesh);
-	ClassDB::bind_method(D_METHOD("get_item_navmesh:NavigationMesh", "id"), &MeshLibrary::get_item_navmesh);
-	ClassDB::bind_method(D_METHOD("get_item_shape:Shape", "id"), &MeshLibrary::get_item_shape);
+	ClassDB::bind_method(D_METHOD("get_item_mesh", "id"), &MeshLibrary::get_item_mesh);
+	ClassDB::bind_method(D_METHOD("get_item_navmesh", "id"), &MeshLibrary::get_item_navmesh);
+	ClassDB::bind_method(D_METHOD("get_item_shape", "id"), &MeshLibrary::get_item_shape);
 	ClassDB::bind_method(D_METHOD("remove_item", "id"), &MeshLibrary::remove_item);
 	ClassDB::bind_method(D_METHOD("clear"), &MeshLibrary::clear);
 	ClassDB::bind_method(D_METHOD("get_item_list"), &MeshLibrary::get_item_list);

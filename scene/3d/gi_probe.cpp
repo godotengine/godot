@@ -1443,8 +1443,8 @@ PoolVector<Face3> GIProbe::get_faces(uint32_t p_usage_flags) const {
 
 void GIProbe::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_probe_data", "data:GIProbeData"), &GIProbe::set_probe_data);
-	ClassDB::bind_method(D_METHOD("get_probe_data:GIProbeData"), &GIProbe::get_probe_data);
+	ClassDB::bind_method(D_METHOD("set_probe_data", "data"), &GIProbe::set_probe_data);
+	ClassDB::bind_method(D_METHOD("get_probe_data"), &GIProbe::get_probe_data);
 
 	ClassDB::bind_method(D_METHOD("set_subdiv", "subdiv"), &GIProbe::set_subdiv);
 	ClassDB::bind_method(D_METHOD("get_subdiv"), &GIProbe::get_subdiv);
@@ -1473,7 +1473,7 @@ void GIProbe::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_compress", "enable"), &GIProbe::set_compress);
 	ClassDB::bind_method(D_METHOD("is_compressed"), &GIProbe::is_compressed);
 
-	ClassDB::bind_method(D_METHOD("bake", "from_node:Node", "create_visual_debug"), &GIProbe::bake, DEFVAL(Variant()), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("bake", "from_node", "create_visual_debug"), &GIProbe::bake, DEFVAL(Variant()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("debug_bake"), &GIProbe::_debug_bake);
 	ClassDB::set_method_flags(get_class_static(), _scs_create("debug_bake"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 

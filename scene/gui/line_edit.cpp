@@ -1277,7 +1277,7 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_secret"), &LineEdit::is_secret);
 	ClassDB::bind_method(D_METHOD("select", "from", "to"), &LineEdit::select, DEFVAL(0), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("menu_option", "option"), &LineEdit::menu_option);
-	ClassDB::bind_method(D_METHOD("get_menu:PopupMenu"), &LineEdit::get_menu);
+	ClassDB::bind_method(D_METHOD("get_menu"), &LineEdit::get_menu);
 
 	ADD_SIGNAL(MethodInfo("text_changed", PropertyInfo(Variant::STRING, "text")));
 	ADD_SIGNAL(MethodInfo("text_entered", PropertyInfo(Variant::STRING, "text")));

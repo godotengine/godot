@@ -400,7 +400,7 @@ uint32_t AudioStreamPlayer2D::get_area_mask() const {
 
 void AudioStreamPlayer2D::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_stream", "stream:AudioStream"), &AudioStreamPlayer2D::set_stream);
+	ClassDB::bind_method(D_METHOD("set_stream", "stream"), &AudioStreamPlayer2D::set_stream);
 	ClassDB::bind_method(D_METHOD("get_stream"), &AudioStreamPlayer2D::get_stream);
 
 	ClassDB::bind_method(D_METHOD("set_volume_db", "volume_db"), &AudioStreamPlayer2D::set_volume_db);

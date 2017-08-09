@@ -116,12 +116,12 @@ bool ShortCut::is_valid() const {
 
 void ShortCut::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_shortcut", "event:InputEvent"), &ShortCut::set_shortcut);
-	ClassDB::bind_method(D_METHOD("get_shortcut:InputEvent"), &ShortCut::get_shortcut);
+	ClassDB::bind_method(D_METHOD("set_shortcut", "event"), &ShortCut::set_shortcut);
+	ClassDB::bind_method(D_METHOD("get_shortcut"), &ShortCut::get_shortcut);
 
 	ClassDB::bind_method(D_METHOD("is_valid"), &ShortCut::is_valid);
 
-	ClassDB::bind_method(D_METHOD("is_shortcut", "event:InputEvent"), &ShortCut::is_shortcut);
+	ClassDB::bind_method(D_METHOD("is_shortcut", "event"), &ShortCut::is_shortcut);
 	ClassDB::bind_method(D_METHOD("get_as_text"), &ShortCut::get_as_text);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), "set_shortcut", "get_shortcut");

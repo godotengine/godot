@@ -128,8 +128,8 @@ void Shader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_code", "code"), &Shader::set_code);
 	ClassDB::bind_method(D_METHOD("get_code"), &Shader::get_code);
 
-	ClassDB::bind_method(D_METHOD("set_default_texture_param", "param", "texture:Texture"), &Shader::set_default_texture_param);
-	ClassDB::bind_method(D_METHOD("get_default_texture_param:Texture", "param"), &Shader::get_default_texture_param);
+	ClassDB::bind_method(D_METHOD("set_default_texture_param", "param", "texture"), &Shader::set_default_texture_param);
+	ClassDB::bind_method(D_METHOD("get_default_texture_param", "param"), &Shader::get_default_texture_param);
 
 	ClassDB::bind_method(D_METHOD("has_param", "name"), &Shader::has_param);
 

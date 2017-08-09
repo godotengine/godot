@@ -2411,7 +2411,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_focus"), &Control::has_focus);
 	ClassDB::bind_method(D_METHOD("grab_focus"), &Control::grab_focus);
 	ClassDB::bind_method(D_METHOD("release_focus"), &Control::release_focus);
-	ClassDB::bind_method(D_METHOD("get_focus_owner:Control"), &Control::get_focus_owner);
+	ClassDB::bind_method(D_METHOD("get_focus_owner"), &Control::get_focus_owner);
 
 	ClassDB::bind_method(D_METHOD("set_h_size_flags", "flags"), &Control::set_h_size_flags);
 	ClassDB::bind_method(D_METHOD("get_h_size_flags"), &Control::get_h_size_flags);
@@ -2422,19 +2422,19 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_v_size_flags", "flags"), &Control::set_v_size_flags);
 	ClassDB::bind_method(D_METHOD("get_v_size_flags"), &Control::get_v_size_flags);
 
-	ClassDB::bind_method(D_METHOD("set_theme", "theme:Theme"), &Control::set_theme);
-	ClassDB::bind_method(D_METHOD("get_theme:Theme"), &Control::get_theme);
+	ClassDB::bind_method(D_METHOD("set_theme", "theme"), &Control::set_theme);
+	ClassDB::bind_method(D_METHOD("get_theme"), &Control::get_theme);
 
-	ClassDB::bind_method(D_METHOD("add_icon_override", "name", "texture:Texture"), &Control::add_icon_override);
-	ClassDB::bind_method(D_METHOD("add_shader_override", "name", "shader:Shader"), &Control::add_shader_override);
-	ClassDB::bind_method(D_METHOD("add_style_override", "name", "stylebox:StyleBox"), &Control::add_style_override);
-	ClassDB::bind_method(D_METHOD("add_font_override", "name", "font:Font"), &Control::add_font_override);
+	ClassDB::bind_method(D_METHOD("add_icon_override", "name", "texture"), &Control::add_icon_override);
+	ClassDB::bind_method(D_METHOD("add_shader_override", "name", "shader"), &Control::add_shader_override);
+	ClassDB::bind_method(D_METHOD("add_style_override", "name", "stylebox"), &Control::add_style_override);
+	ClassDB::bind_method(D_METHOD("add_font_override", "name", "font"), &Control::add_font_override);
 	ClassDB::bind_method(D_METHOD("add_color_override", "name", "color"), &Control::add_color_override);
 	ClassDB::bind_method(D_METHOD("add_constant_override", "name", "constant"), &Control::add_constant_override);
 
-	ClassDB::bind_method(D_METHOD("get_icon:Texture", "name", "type"), &Control::get_icon, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_stylebox:StyleBox", "name", "type"), &Control::get_stylebox, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_font:Font", "name", "type"), &Control::get_font, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_icon", "name", "type"), &Control::get_icon, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_stylebox", "name", "type"), &Control::get_stylebox, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_font", "name", "type"), &Control::get_font, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_color", "name", "type"), &Control::get_color, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_constant", "name", "type"), &Control::get_constant, DEFVAL(""));
 
@@ -2450,7 +2450,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_color", "name", "type"), &Control::has_color, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("has_constant", "name", "type"), &Control::has_constant, DEFVAL(""));
 
-	ClassDB::bind_method(D_METHOD("get_parent_control:Control"), &Control::get_parent_control);
+	ClassDB::bind_method(D_METHOD("get_parent_control"), &Control::get_parent_control);
 
 	ClassDB::bind_method(D_METHOD("set_h_grow_direction", "direction"), &Control::set_h_grow_direction);
 	ClassDB::bind_method(D_METHOD("get_h_grow_direction"), &Control::get_h_grow_direction);
@@ -2469,7 +2469,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_focus_neighbour", "margin", "neighbour"), &Control::set_focus_neighbour);
 	ClassDB::bind_method(D_METHOD("get_focus_neighbour", "margin"), &Control::get_focus_neighbour);
 
-	ClassDB::bind_method(D_METHOD("force_drag", "data", "preview:Control"), &Control::force_drag);
+	ClassDB::bind_method(D_METHOD("force_drag", "data", "preview"), &Control::force_drag);
 
 	ClassDB::bind_method(D_METHOD("set_mouse_filter", "filter"), &Control::set_mouse_filter);
 	ClassDB::bind_method(D_METHOD("get_mouse_filter"), &Control::get_mouse_filter);
@@ -2479,8 +2479,8 @@ void Control::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("grab_click_focus"), &Control::grab_click_focus);
 
-	ClassDB::bind_method(D_METHOD("set_drag_forwarding", "target:Control"), &Control::set_drag_forwarding);
-	ClassDB::bind_method(D_METHOD("set_drag_preview", "control:Control"), &Control::set_drag_preview);
+	ClassDB::bind_method(D_METHOD("set_drag_forwarding", "target"), &Control::set_drag_forwarding);
+	ClassDB::bind_method(D_METHOD("set_drag_preview", "control"), &Control::set_drag_preview);
 
 	ClassDB::bind_method(D_METHOD("warp_mouse", "to_pos"), &Control::warp_mouse);
 

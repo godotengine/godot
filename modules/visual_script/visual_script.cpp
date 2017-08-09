@@ -122,9 +122,9 @@ Array VisualScriptNode::_get_default_input_values() const {
 
 void VisualScriptNode::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("get_visual_script:VisualScript"), &VisualScriptNode::get_visual_script);
-	ClassDB::bind_method(D_METHOD("set_default_input_value", "port_idx", "value:Variant"), &VisualScriptNode::set_default_input_value);
-	ClassDB::bind_method(D_METHOD("get_default_input_value:Variant", "port_idx"), &VisualScriptNode::get_default_input_value);
+	ClassDB::bind_method(D_METHOD("get_visual_script"), &VisualScriptNode::get_visual_script);
+	ClassDB::bind_method(D_METHOD("set_default_input_value", "port_idx", "value"), &VisualScriptNode::set_default_input_value);
+	ClassDB::bind_method(D_METHOD("get_default_input_value", "port_idx"), &VisualScriptNode::get_default_input_value);
 	ClassDB::bind_method(D_METHOD("_set_default_input_values", "values"), &VisualScriptNode::_set_default_input_values);
 	ClassDB::bind_method(D_METHOD("_get_default_input_values"), &VisualScriptNode::_get_default_input_values);
 
@@ -1271,11 +1271,11 @@ void VisualScript::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_function_scroll", "name", "ofs"), &VisualScript::set_function_scroll);
 	ClassDB::bind_method(D_METHOD("get_function_scroll", "name"), &VisualScript::get_function_scroll);
 
-	ClassDB::bind_method(D_METHOD("add_node", "func", "id", "node:VisualScriptNode", "pos"), &VisualScript::add_node, DEFVAL(Point2()));
+	ClassDB::bind_method(D_METHOD("add_node", "func", "id", "node", "pos"), &VisualScript::add_node, DEFVAL(Point2()));
 	ClassDB::bind_method(D_METHOD("remove_node", "func", "id"), &VisualScript::remove_node);
 	ClassDB::bind_method(D_METHOD("get_function_node_id", "name"), &VisualScript::get_function_node_id);
 
-	ClassDB::bind_method(D_METHOD("get_node:VisualScriptNode", "func", "id"), &VisualScript::get_node);
+	ClassDB::bind_method(D_METHOD("get_node", "func", "id"), &VisualScript::get_node);
 	ClassDB::bind_method(D_METHOD("has_node", "func", "id"), &VisualScript::has_node);
 	ClassDB::bind_method(D_METHOD("set_node_pos", "func", "id", "pos"), &VisualScript::set_node_pos);
 	ClassDB::bind_method(D_METHOD("get_node_pos", "func", "id"), &VisualScript::get_node_pos);
@@ -2326,7 +2326,7 @@ Variant VisualScriptFunctionState::resume(Array p_args) {
 void VisualScriptFunctionState::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("connect_to_signal", "obj", "signals", "args"), &VisualScriptFunctionState::connect_to_signal);
-	ClassDB::bind_method(D_METHOD("resume:Array", "args"), &VisualScriptFunctionState::resume, DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("resume", "args"), &VisualScriptFunctionState::resume, DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("is_valid"), &VisualScriptFunctionState::is_valid);
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "_signal_callback", &VisualScriptFunctionState::_signal_callback, MethodInfo("_signal_callback"));
 }

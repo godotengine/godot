@@ -939,7 +939,7 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_callback"), &CanvasItem::_update_callback);
 
 	ClassDB::bind_method(D_METHOD("edit_set_state", "state"), &CanvasItem::edit_set_state);
-	ClassDB::bind_method(D_METHOD("edit_get_state:Variant"), &CanvasItem::edit_get_state);
+	ClassDB::bind_method(D_METHOD("edit_get_state"), &CanvasItem::edit_get_state);
 	ClassDB::bind_method(D_METHOD("edit_set_rect", "rect"), &CanvasItem::edit_set_rect);
 	ClassDB::bind_method(D_METHOD("edit_rotate", "degrees"), &CanvasItem::edit_rotate);
 
@@ -980,15 +980,15 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_polyline_colors", "points", "colors", "width", "antialiased"), &CanvasItem::draw_polyline_colors, DEFVAL(1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_rect", "rect", "color", "filled"), &CanvasItem::draw_rect, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("draw_circle", "pos", "radius", "color"), &CanvasItem::draw_circle);
-	ClassDB::bind_method(D_METHOD("draw_texture", "texture:Texture", "pos", "modulate", "normal_map:Texture"), &CanvasItem::draw_texture, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(Variant()));
-	ClassDB::bind_method(D_METHOD("draw_texture_rect", "texture:Texture", "rect", "tile", "modulate", "transpose", "normal_map:Texture"), &CanvasItem::draw_texture_rect, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(Variant()));
-	ClassDB::bind_method(D_METHOD("draw_texture_rect_region", "texture:Texture", "rect", "src_rect", "modulate", "transpose", "normal_map:Texture", "clip_uv"), &CanvasItem::draw_texture_rect_region, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(Variant()), DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("draw_style_box", "style_box:StyleBox", "rect"), &CanvasItem::draw_style_box);
-	ClassDB::bind_method(D_METHOD("draw_primitive", "points", "colors", "uvs", "texture:Texture", "width", "normal_map:Texture"), &CanvasItem::draw_primitive, DEFVAL(Variant()), DEFVAL(1.0), DEFVAL(Variant()));
-	ClassDB::bind_method(D_METHOD("draw_polygon", "points", "colors", "uvs", "texture:Texture", "normal_map:Texture"), &CanvasItem::draw_polygon, DEFVAL(PoolVector2Array()), DEFVAL(Variant()), DEFVAL(Variant()));
-	ClassDB::bind_method(D_METHOD("draw_colored_polygon", "points", "color", "uvs", "texture:Texture", "normal_map:Texture"), &CanvasItem::draw_colored_polygon, DEFVAL(PoolVector2Array()), DEFVAL(Variant()), DEFVAL(Variant()));
-	ClassDB::bind_method(D_METHOD("draw_string", "font:Font", "pos", "text", "modulate", "clip_w"), &CanvasItem::draw_string, DEFVAL(Color(1, 1, 1)), DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("draw_char", "font:Font", "pos", "char", "next", "modulate"), &CanvasItem::draw_char, DEFVAL(Color(1, 1, 1)));
+	ClassDB::bind_method(D_METHOD("draw_texture", "texture", "pos", "modulate", "normal_map"), &CanvasItem::draw_texture, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("draw_texture_rect", "texture", "rect", "tile", "modulate", "transpose", "normal_map"), &CanvasItem::draw_texture_rect, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("draw_texture_rect_region", "texture", "rect", "src_rect", "modulate", "transpose", "normal_map", "clip_uv"), &CanvasItem::draw_texture_rect_region, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(Variant()), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("draw_style_box", "style_box", "rect"), &CanvasItem::draw_style_box);
+	ClassDB::bind_method(D_METHOD("draw_primitive", "points", "colors", "uvs", "texture", "width", "normal_map"), &CanvasItem::draw_primitive, DEFVAL(Variant()), DEFVAL(1.0), DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("draw_polygon", "points", "colors", "uvs", "texture", "normal_map"), &CanvasItem::draw_polygon, DEFVAL(PoolVector2Array()), DEFVAL(Variant()), DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("draw_colored_polygon", "points", "color", "uvs", "texture", "normal_map"), &CanvasItem::draw_colored_polygon, DEFVAL(PoolVector2Array()), DEFVAL(Variant()), DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("draw_string", "font", "pos", "text", "modulate", "clip_w"), &CanvasItem::draw_string, DEFVAL(Color(1, 1, 1)), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("draw_char", "font", "pos", "char", "next", "modulate"), &CanvasItem::draw_char, DEFVAL(Color(1, 1, 1)));
 
 	ClassDB::bind_method(D_METHOD("draw_set_transform", "pos", "rot", "scale"), &CanvasItem::draw_set_transform);
 	ClassDB::bind_method(D_METHOD("draw_set_transform_matrix", "xform"), &CanvasItem::draw_set_transform_matrix);
@@ -1001,11 +1001,11 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_local_mouse_pos"), &CanvasItem::get_local_mouse_pos);
 	ClassDB::bind_method(D_METHOD("get_global_mouse_position"), &CanvasItem::get_global_mouse_position);
 	ClassDB::bind_method(D_METHOD("get_canvas"), &CanvasItem::get_canvas);
-	ClassDB::bind_method(D_METHOD("get_world_2d:World2D"), &CanvasItem::get_world_2d);
+	ClassDB::bind_method(D_METHOD("get_world_2d"), &CanvasItem::get_world_2d);
 	//ClassDB::bind_method(D_METHOD("get_viewport"),&CanvasItem::get_viewport);
 
-	ClassDB::bind_method(D_METHOD("set_material", "material:Material"), &CanvasItem::set_material);
-	ClassDB::bind_method(D_METHOD("get_material:Material"), &CanvasItem::get_material);
+	ClassDB::bind_method(D_METHOD("set_material", "material"), &CanvasItem::set_material);
+	ClassDB::bind_method(D_METHOD("get_material"), &CanvasItem::get_material);
 
 	ClassDB::bind_method(D_METHOD("set_use_parent_material", "enable"), &CanvasItem::set_use_parent_material);
 	ClassDB::bind_method(D_METHOD("get_use_parent_material"), &CanvasItem::get_use_parent_material);
@@ -1018,7 +1018,7 @@ void CanvasItem::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("make_canvas_pos_local", "screen_point"),
 			&CanvasItem::make_canvas_pos_local);
-	ClassDB::bind_method(D_METHOD("make_input_local:InputEvent", "event:InputEvent"), &CanvasItem::make_input_local);
+	ClassDB::bind_method(D_METHOD("make_input_local", "event"), &CanvasItem::make_input_local);
 
 	BIND_VMETHOD(MethodInfo("_draw"));
 

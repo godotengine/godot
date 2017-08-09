@@ -518,8 +518,8 @@ void Skeleton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bone_disable_rest", "bone_idx", "disable"), &Skeleton::set_bone_disable_rest);
 	ClassDB::bind_method(D_METHOD("is_bone_rest_disabled", "bone_idx"), &Skeleton::is_bone_rest_disabled);
 
-	ClassDB::bind_method(D_METHOD("bind_child_node_to_bone", "bone_idx", "node:Node"), &Skeleton::bind_child_node_to_bone);
-	ClassDB::bind_method(D_METHOD("unbind_child_node_from_bone", "bone_idx", "node:Node"), &Skeleton::unbind_child_node_from_bone);
+	ClassDB::bind_method(D_METHOD("bind_child_node_to_bone", "bone_idx", "node"), &Skeleton::bind_child_node_to_bone);
+	ClassDB::bind_method(D_METHOD("unbind_child_node_from_bone", "bone_idx", "node"), &Skeleton::unbind_child_node_from_bone);
 	ClassDB::bind_method(D_METHOD("get_bound_child_nodes_to_bone", "bone_idx"), &Skeleton::_get_bound_child_nodes_to_bone);
 
 	ClassDB::bind_method(D_METHOD("clear_bones"), &Skeleton::clear_bones);

@@ -148,8 +148,8 @@ RID PrimitiveMesh::get_rid() const {
 void PrimitiveMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update"), &PrimitiveMesh::_update);
 
-	ClassDB::bind_method(D_METHOD("set_material", "material:Material"), &PrimitiveMesh::set_material);
-	ClassDB::bind_method(D_METHOD("get_material:Material"), &PrimitiveMesh::get_material);
+	ClassDB::bind_method(D_METHOD("set_material", "material"), &PrimitiveMesh::set_material);
+	ClassDB::bind_method(D_METHOD("get_material"), &PrimitiveMesh::get_material);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "Material"), "set_material", "get_material");
 }

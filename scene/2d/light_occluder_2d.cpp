@@ -212,8 +212,8 @@ String LightOccluder2D::get_configuration_warning() const {
 
 void LightOccluder2D::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_occluder_polygon", "polygon:OccluderPolygon2D"), &LightOccluder2D::set_occluder_polygon);
-	ClassDB::bind_method(D_METHOD("get_occluder_polygon:OccluderPolygon2D"), &LightOccluder2D::get_occluder_polygon);
+	ClassDB::bind_method(D_METHOD("set_occluder_polygon", "polygon"), &LightOccluder2D::set_occluder_polygon);
+	ClassDB::bind_method(D_METHOD("get_occluder_polygon"), &LightOccluder2D::get_occluder_polygon);
 
 	ClassDB::bind_method(D_METHOD("set_occluder_light_mask", "mask"), &LightOccluder2D::set_occluder_light_mask);
 	ClassDB::bind_method(D_METHOD("get_occluder_light_mask"), &LightOccluder2D::get_occluder_light_mask);

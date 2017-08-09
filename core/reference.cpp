@@ -122,7 +122,7 @@ WeakRef::WeakRef() {
 
 void WeakRef::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("get_ref:Object"), &WeakRef::get_ref);
+	ClassDB::bind_method(D_METHOD("get_ref"), &WeakRef::get_ref);
 }
 #if 0
 

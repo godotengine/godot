@@ -4615,7 +4615,7 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_color_region", "begin_key", "end_key", "color", "line_only"), &TextEdit::add_color_region, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("clear_colors"), &TextEdit::clear_colors);
 	ClassDB::bind_method(D_METHOD("menu_option", "option"), &TextEdit::menu_option);
-	ClassDB::bind_method(D_METHOD("get_menu:PopupMenu"), &TextEdit::get_menu);
+	ClassDB::bind_method(D_METHOD("get_menu"), &TextEdit::get_menu);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "syntax_highlighting"), "set_syntax_coloring", "is_syntax_coloring_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_line_numbers"), "set_show_line_numbers", "is_show_line_numbers_enabled");

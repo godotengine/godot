@@ -70,10 +70,10 @@ void Texture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_alpha"), &Texture::has_alpha);
 	ClassDB::bind_method(D_METHOD("set_flags", "flags"), &Texture::set_flags);
 	ClassDB::bind_method(D_METHOD("get_flags"), &Texture::get_flags);
-	ClassDB::bind_method(D_METHOD("draw", "canvas_item", "pos", "modulate", "transpose", "normal_map:Texture"), &Texture::draw, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(Variant()));
-	ClassDB::bind_method(D_METHOD("draw_rect", "canvas_item", "rect", "tile", "modulate", "transpose", "normal_map:Texture"), &Texture::draw_rect, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(Variant()));
-	ClassDB::bind_method(D_METHOD("draw_rect_region", "canvas_item", "rect", "src_rect", "modulate", "transpose", "normal_map:Texture", "clip_uv"), &Texture::draw_rect_region, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(Variant()), DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("get_data:Image"), &Texture::get_data);
+	ClassDB::bind_method(D_METHOD("draw", "canvas_item", "pos", "modulate", "transpose", "normal_map"), &Texture::draw, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("draw_rect", "canvas_item", "rect", "tile", "modulate", "transpose", "normal_map"), &Texture::draw_rect, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("draw_rect_region", "canvas_item", "rect", "src_rect", "modulate", "transpose", "normal_map", "clip_uv"), &Texture::draw_rect_region, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(Variant()), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_data"), &Texture::get_data);
 
 	BIND_CONSTANT(FLAG_MIPMAPS);
 	BIND_CONSTANT(FLAG_REPEAT);
@@ -350,10 +350,10 @@ void ImageTexture::_set_data(Dictionary p_data) {
 void ImageTexture::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("create", "width", "height", "format", "flags"), &ImageTexture::create, DEFVAL(FLAGS_DEFAULT));
-	ClassDB::bind_method(D_METHOD("create_from_image", "image:Image", "flags"), &ImageTexture::create_from_image, DEFVAL(FLAGS_DEFAULT));
+	ClassDB::bind_method(D_METHOD("create_from_image", "image", "flags"), &ImageTexture::create_from_image, DEFVAL(FLAGS_DEFAULT));
 	ClassDB::bind_method(D_METHOD("get_format"), &ImageTexture::get_format);
 	ClassDB::bind_method(D_METHOD("load", "path"), &ImageTexture::load);
-	ClassDB::bind_method(D_METHOD("set_data", "image:Image"), &ImageTexture::set_data);
+	ClassDB::bind_method(D_METHOD("set_data", "image"), &ImageTexture::set_data);
 	ClassDB::bind_method(D_METHOD("set_storage", "mode"), &ImageTexture::set_storage);
 	ClassDB::bind_method(D_METHOD("get_storage"), &ImageTexture::get_storage);
 	ClassDB::bind_method(D_METHOD("set_lossy_storage_quality", "quality"), &ImageTexture::set_lossy_storage_quality);
@@ -868,8 +868,8 @@ Rect2 AtlasTexture::get_margin() const {
 
 void AtlasTexture::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_atlas", "atlas:Texture"), &AtlasTexture::set_atlas);
-	ClassDB::bind_method(D_METHOD("get_atlas:Texture"), &AtlasTexture::get_atlas);
+	ClassDB::bind_method(D_METHOD("set_atlas", "atlas"), &AtlasTexture::set_atlas);
+	ClassDB::bind_method(D_METHOD("get_atlas"), &AtlasTexture::get_atlas);
 
 	ClassDB::bind_method(D_METHOD("set_region", "region"), &AtlasTexture::set_region);
 	ClassDB::bind_method(D_METHOD("get_region"), &AtlasTexture::get_region);
@@ -1100,15 +1100,15 @@ Ref<Texture> LargeTexture::get_piece_texture(int p_idx) const {
 
 void LargeTexture::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("add_piece", "ofs", "texture:Texture"), &LargeTexture::add_piece);
+	ClassDB::bind_method(D_METHOD("add_piece", "ofs", "texture"), &LargeTexture::add_piece);
 	ClassDB::bind_method(D_METHOD("set_piece_offset", "idx", "ofs"), &LargeTexture::set_piece_offset);
-	ClassDB::bind_method(D_METHOD("set_piece_texture", "idx", "texture:Texture"), &LargeTexture::set_piece_texture);
+	ClassDB::bind_method(D_METHOD("set_piece_texture", "idx", "texture"), &LargeTexture::set_piece_texture);
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &LargeTexture::set_size);
 	ClassDB::bind_method(D_METHOD("clear"), &LargeTexture::clear);
 
 	ClassDB::bind_method(D_METHOD("get_piece_count"), &LargeTexture::get_piece_count);
 	ClassDB::bind_method(D_METHOD("get_piece_offset", "idx"), &LargeTexture::get_piece_offset);
-	ClassDB::bind_method(D_METHOD("get_piece_texture:Texture", "idx"), &LargeTexture::get_piece_texture);
+	ClassDB::bind_method(D_METHOD("get_piece_texture", "idx"), &LargeTexture::get_piece_texture);
 
 	ClassDB::bind_method(D_METHOD("_set_data", "data"), &LargeTexture::_set_data);
 	ClassDB::bind_method(D_METHOD("_get_data"), &LargeTexture::_get_data);
@@ -1328,8 +1328,8 @@ void CubeMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_flags", "flags"), &CubeMap::set_flags);
 	ClassDB::bind_method(D_METHOD("get_flags"), &CubeMap::get_flags);
 
-	ClassDB::bind_method(D_METHOD("set_side", "side", "image:Image"), &CubeMap::set_side);
-	ClassDB::bind_method(D_METHOD("get_side:Image", "side"), &CubeMap::get_side);
+	ClassDB::bind_method(D_METHOD("set_side", "side", "image"), &CubeMap::set_side);
+	ClassDB::bind_method(D_METHOD("get_side", "side"), &CubeMap::get_side);
 	ClassDB::bind_method(D_METHOD("set_storage", "mode"), &CubeMap::set_storage);
 	ClassDB::bind_method(D_METHOD("get_storage"), &CubeMap::get_storage);
 	ClassDB::bind_method(D_METHOD("set_lossy_storage_quality", "quality"), &CubeMap::set_lossy_storage_quality);
@@ -1380,8 +1380,8 @@ void CurveTexture::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_width", "width"), &CurveTexture::set_width);
 
-	ClassDB::bind_method(D_METHOD("set_curve", "curve:Curve"), &CurveTexture::set_curve);
-	ClassDB::bind_method(D_METHOD("get_curve:Curve"), &CurveTexture::get_curve);
+	ClassDB::bind_method(D_METHOD("set_curve", "curve"), &CurveTexture::set_curve);
+	ClassDB::bind_method(D_METHOD("get_curve"), &CurveTexture::get_curve);
 
 	ClassDB::bind_method(D_METHOD("_update"), &CurveTexture::_update);
 
@@ -1497,8 +1497,8 @@ GradientTexture::~GradientTexture() {
 
 void GradientTexture::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_gradient", "gradient:Gradient"), &GradientTexture::set_gradient);
-	ClassDB::bind_method(D_METHOD("get_gradient:Gradient"), &GradientTexture::get_gradient);
+	ClassDB::bind_method(D_METHOD("set_gradient", "gradient"), &GradientTexture::set_gradient);
+	ClassDB::bind_method(D_METHOD("get_gradient"), &GradientTexture::get_gradient);
 
 	ClassDB::bind_method(D_METHOD("set_width", "width"), &GradientTexture::set_width);
 
