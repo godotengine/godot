@@ -1138,7 +1138,7 @@ void KinematicBody::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_floor_velocity"), &KinematicBody::get_floor_velocity);
 
 	ClassDB::bind_method(D_METHOD("set_safe_margin", "pixels"), &KinematicBody::set_safe_margin);
-	ClassDB::bind_method(D_METHOD("get_safe_margin", "pixels"), &KinematicBody::get_safe_margin);
+	ClassDB::bind_method(D_METHOD("get_safe_margin"), &KinematicBody::get_safe_margin);
 
 	ClassDB::bind_method(D_METHOD("get_collision_count"), &KinematicBody::get_collision_count);
 	ClassDB::bind_method(D_METHOD("get_collision_position", "collision"), &KinematicBody::get_collision_position);

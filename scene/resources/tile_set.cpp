@@ -550,7 +550,7 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &TileSet::clear);
 	ClassDB::bind_method(D_METHOD("get_last_unused_tile_id"), &TileSet::get_last_unused_tile_id);
 	ClassDB::bind_method(D_METHOD("find_tile_by_name", "name"), &TileSet::find_tile_by_name);
-	ClassDB::bind_method(D_METHOD("get_tiles_ids", "name"), &TileSet::_get_tiles_ids);
+	ClassDB::bind_method(D_METHOD("get_tiles_ids"), &TileSet::_get_tiles_ids);
 }
 
 TileSet::TileSet() {

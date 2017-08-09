@@ -2713,10 +2713,10 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_camera"), &Viewport::get_camera);
 
 	ClassDB::bind_method(D_METHOD("set_as_audio_listener", "enable"), &Viewport::set_as_audio_listener);
-	ClassDB::bind_method(D_METHOD("is_audio_listener", "enable"), &Viewport::is_audio_listener);
+	ClassDB::bind_method(D_METHOD("is_audio_listener"), &Viewport::is_audio_listener);
 
 	ClassDB::bind_method(D_METHOD("set_as_audio_listener_2d", "enable"), &Viewport::set_as_audio_listener_2d);
-	ClassDB::bind_method(D_METHOD("is_audio_listener_2d", "enable"), &Viewport::is_audio_listener_2d);
+	ClassDB::bind_method(D_METHOD("is_audio_listener_2d"), &Viewport::is_audio_listener_2d);
 	ClassDB::bind_method(D_METHOD("set_attach_to_screen_rect", "rect"), &Viewport::set_attach_to_screen_rect);
 
 	ClassDB::bind_method(D_METHOD("get_mouse_position"), &Viewport::get_mouse_position);

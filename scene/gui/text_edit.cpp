@@ -4596,7 +4596,7 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_selection_to_column"), &TextEdit::get_selection_to_column);
 	ClassDB::bind_method(D_METHOD("get_selection_text"), &TextEdit::get_selection_text);
 	ClassDB::bind_method(D_METHOD("get_word_under_cursor"), &TextEdit::get_word_under_cursor);
-	ClassDB::bind_method(D_METHOD("search", "flags", "from_line", "from_column", "to_line", "to_column"), &TextEdit::_search_bind);
+	ClassDB::bind_method(D_METHOD("search", "key", "flags", "from_line", "from_column"), &TextEdit::_search_bind);
 
 	ClassDB::bind_method(D_METHOD("undo"), &TextEdit::undo);
 	ClassDB::bind_method(D_METHOD("redo"), &TextEdit::redo);

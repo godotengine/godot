@@ -2234,8 +2234,8 @@ void SceneTree::_bind_methods() {
 
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "call_group", &SceneTree::_call_group, mi2);
 
-	ClassDB::bind_method(D_METHOD("notify_group", "call_flags", "group", "notification"), &SceneTree::notify_group);
-	ClassDB::bind_method(D_METHOD("set_group", "call_flags", "group", "property", "value"), &SceneTree::set_group);
+	ClassDB::bind_method(D_METHOD("notify_group", "group", "notification"), &SceneTree::notify_group);
+	ClassDB::bind_method(D_METHOD("set_group", "group", "property", "value"), &SceneTree::set_group);
 
 	ClassDB::bind_method(D_METHOD("get_nodes_in_group", "group"), &SceneTree::_get_nodes_in_group);
 

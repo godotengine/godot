@@ -1673,7 +1673,7 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_script"), &Object::get_script);
 
 	ClassDB::bind_method(D_METHOD("set_meta", "name", "value"), &Object::set_meta);
-	ClassDB::bind_method(D_METHOD("get_meta", "name", "value"), &Object::get_meta);
+	ClassDB::bind_method(D_METHOD("get_meta", "name"), &Object::get_meta);
 	ClassDB::bind_method(D_METHOD("has_meta", "name"), &Object::has_meta);
 	ClassDB::bind_method(D_METHOD("get_meta_list"), &Object::_get_meta_list_bind);
 

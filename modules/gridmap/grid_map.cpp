@@ -857,7 +857,7 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_clip", "enabled", "clipabove", "floor", "axis"), &GridMap::set_clip, DEFVAL(true), DEFVAL(0), DEFVAL(Vector3::AXIS_X));
 
 	ClassDB::bind_method(D_METHOD("create_area", "id", "area"), &GridMap::create_area);
-	ClassDB::bind_method(D_METHOD("area_get_bounds", "area", "bounds"), &GridMap::area_get_bounds);
+	ClassDB::bind_method(D_METHOD("area_get_bounds", "area"), &GridMap::area_get_bounds);
 	ClassDB::bind_method(D_METHOD("area_set_exterior_portal", "area", "enable"), &GridMap::area_set_exterior_portal);
 	ClassDB::bind_method(D_METHOD("area_set_name", "area", "name"), &GridMap::area_set_name);
 	ClassDB::bind_method(D_METHOD("area_get_name", "area"), &GridMap::area_get_name);
@@ -867,7 +867,7 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("area_set_portal_disable_color", "area", "color"), &GridMap::area_set_portal_disable_color);
 	ClassDB::bind_method(D_METHOD("area_get_portal_disable_color", "area"), &GridMap::area_get_portal_disable_color);
 	ClassDB::bind_method(D_METHOD("erase_area", "area"), &GridMap::erase_area);
-	ClassDB::bind_method(D_METHOD("get_unused_area_id", "area"), &GridMap::get_unused_area_id);
+	ClassDB::bind_method(D_METHOD("get_unused_area_id"), &GridMap::get_unused_area_id);
 
 	ClassDB::bind_method(D_METHOD("clear"), &GridMap::clear);
 
