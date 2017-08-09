@@ -77,14 +77,12 @@ void NativeScript::_update_placeholder(PlaceHolderScriptInstance *p_placeholder)
 	ERR_FAIL_COND(!script_data);
 
 	List<PropertyInfo> info;
+	get_script_property_list(&info);
 	Map<StringName, Variant> values;
-
-	for (Map<StringName, NativeScriptDesc::Property>::Element *E = script_data->properties.front(); E; E = E->next()) {
-		PropertyInfo p = E->get().info;
-		p.name = String(E->key());
-
-		info.push_back(p);
-		values[p.name] = E->get().default_value;
+	for (List<PropertyInfo>::Element *E = info.front(); E; E = E->next()) {
+		Variant value;
+		get_property_default_value(E->get().name, value);
+		values[E->get().name] = value;
 	}
 
 	p_placeholder->update(info, values);
