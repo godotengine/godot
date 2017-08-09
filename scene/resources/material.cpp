@@ -1805,10 +1805,10 @@ SpatialMaterial::SpatialMaterial()
 	: element(this) {
 
 	//initialize to right values
-	set_albedo(Color(0.7, 0.7, 0.7, 1.0));
+	set_albedo(Color(1.0, 1.0, 1.0, 1.0));
 	set_specular(0.5);
 	set_roughness(0.0);
-	set_metallic(0.1);
+	set_metallic(0.0);
 	set_emission(Color(0, 0, 0));
 	set_emission_energy(1.0);
 	set_normal_scale(1);
