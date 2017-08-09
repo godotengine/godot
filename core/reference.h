@@ -374,5 +374,23 @@ struct PtrToArg<const RefPtr &> {
 	}
 };
 
+template <class T>
+struct GetTypeInfo<Ref<T> > {
+	enum { VARIANT_TYPE = Variant::OBJECT };
+
+	static inline StringName get_class_name() {
+		return T::get_class_static();
+	}
+};
+
+template <class T>
+struct GetTypeInfo<const Ref<T> &> {
+	enum { VARIANT_TYPE = Variant::OBJECT };
+
+	static inline StringName get_class_name() {
+		return T::get_class_static();
+	}
+};
+
 #endif
 #endif // REFERENCE_H

@@ -49,7 +49,6 @@
 #include "rect3.h"
 #include "ref_ptr.h"
 #include "rid.h"
-#include "simple_type.h"
 #include "transform.h"
 #include "ustring.h"
 #include "vector3.h"
@@ -153,15 +152,6 @@ public:
 	static String get_type_name(Variant::Type p_type);
 	static bool can_convert(Type p_type_from, Type p_type_to);
 	static bool can_convert_strict(Type p_type_from, Type p_type_to);
-
-	template <class T>
-	static Type get_type_for() {
-
-		GetSimpleType<T> t;
-		Variant v(t.type);
-		Type r = v.get_type();
-		return r;
-	}
 
 	bool is_ref() const;
 	_FORCE_INLINE_ bool is_num() const { return type == INT || type == REAL; };

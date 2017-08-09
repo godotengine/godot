@@ -44,6 +44,8 @@
 #define DEBUG_METHODS_ENABLED
 #endif
 
+#include "type_info.h"
+
 enum MethodFlags {
 
 	METHOD_FLAG_NORMAL = 1,
@@ -87,12 +89,10 @@ struct VariantCaster<const T &> {
 #define _VC(m_idx) \
 	(VariantCaster<P##m_idx>::cast((m_idx - 1) >= p_arg_count ? get_default_argument(m_idx - 1) : *p_args[m_idx - 1]))
 
-//SIMPLE_NUMERIC_TYPE is used to avoid a warning on Variant::get_type_for
-
 #ifdef PTRCALL_ENABLED
 
 #define VARIANT_ENUM_CAST(m_enum)                                            \
-	SIMPLE_NUMERIC_TYPE(m_enum);                                             \
+	MAKE_ENUM_TYPE_INFO(m_enum)                                              \
 	template <>                                                              \
 	struct VariantCaster<m_enum> {                                           \
                                                                              \
@@ -113,7 +113,7 @@ struct VariantCaster<const T &> {
 #else
 
 #define VARIANT_ENUM_CAST(m_enum)                                     \
-	SIMPLE_NUMERIC_TYPE(m_enum);                                      \
+	MAKE_ENUM_TYPE_INFO(m_enum)                                       \
 	template <>                                                       \
 	struct VariantCaster<m_enum> {                                    \
                                                                       \
@@ -165,6 +165,7 @@ class MethodBind {
 	int argument_count;
 #ifdef DEBUG_METHODS_ENABLED
 	Vector<StringName> arg_names;
+	Vector<StringName> arg_type_hints;
 	Variant::Type *argument_types;
 	StringName ret_type;
 #endif
@@ -176,6 +177,7 @@ protected:
 	void _set_returns(bool p_returns);
 #ifdef DEBUG_METHODS_ENABLED
 	virtual Variant::Type _gen_argument_type(int p_arg) const = 0;
+	virtual StringName _gen_argument_type_hint(int p_arg) const = 0;
 	void _generate_argument_types(int p_count);
 	void set_argument_types(Variant::Type *p_types) { argument_types = p_types; }
 #endif
@@ -220,6 +222,9 @@ public:
 
 	void set_argument_names(const Vector<StringName> &p_names);
 	Vector<StringName> get_argument_names() const;
+
+	void set_argument_type_hints(const Vector<StringName> &p_type_hints);
+	Vector<StringName> get_argument_type_hints() const;
 #endif
 	void set_hint_flags(uint32_t p_hint) { hint_flags = p_hint; }
 	uint32_t get_hint_flags() const { return hint_flags | (is_const() ? METHOD_FLAG_CONST : 0) | (is_vararg() ? METHOD_FLAG_VARARG : 0); }
@@ -282,11 +287,17 @@ public:
 		return Variant::NIL;
 	}
 
+	virtual StringName _gen_argument_type_hint(int p_arg) const {
+
+		return "Variant";
+	}
+
 	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Variant::CallError &r_error) {
 
 		T *instance = static_cast<T *>(p_object);
 		return (instance->*call_method)(p_args, p_arg_count, r_error);
 	}
+
 	void set_method_info(const MethodInfo &p_info) {
 
 		set_argument_count(p_info.arguments.size());

@@ -1082,12 +1082,6 @@ MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, const c
 	StringName mdname = StaticCString::create(method_name);
 #endif
 
-	StringName rettype;
-	if (mdname.operator String().find(":") != -1) {
-		rettype = mdname.operator String().get_slice(":", 1);
-		mdname = mdname.operator String().get_slice(":", 0);
-	}
-
 	OBJTYPE_WLOCK;
 	ERR_FAIL_COND_V(!p_bind, NULL);
 	p_bind->set_name(mdname);
@@ -1106,7 +1100,7 @@ MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, const c
 	if (!type) {
 		ERR_PRINTS("Couldn't bind method '" + mdname + "' for instance: " + instance_type);
 		memdelete(p_bind);
-		ERR_FAIL_COND_V(!type, NULL);
+		ERR_FAIL_V(NULL);
 	}
 
 	if (type->method_map.has(mdname)) {
@@ -1115,11 +1109,20 @@ MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, const c
 		ERR_EXPLAIN("Method already bound: " + instance_type + "::" + mdname);
 		ERR_FAIL_V(NULL);
 	}
+
 #ifdef DEBUG_METHODS_ENABLED
+
+	if (method_name.args.size() > p_bind->get_argument_count()) {
+		memdelete(p_bind);
+		ERR_EXPLAIN("Method definition provides more arguments than the method actually has: " + instance_type + "::" + mdname);
+		ERR_FAIL_V(NULL);
+	}
+
 	p_bind->set_argument_names(method_name.args);
-	p_bind->set_return_type(rettype);
+
 	type->method_order.push_back(mdname);
 #endif
+
 	type->method_map[mdname] = p_bind;
 
 	Vector<Variant> defvals;

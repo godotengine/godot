@@ -11,10 +11,17 @@ public:
 #ifdef DEBUG_METHODS_ENABLED
 	virtual Variant::Type _gen_argument_type(int p_arg) const { return _get_argument_type(p_arg); }
 	Variant::Type _get_argument_type(int p_argument) const {
-		$ifret if (p_argument==-1) return Variant::get_type_for<R>();$
-		$arg if (p_argument==(@-1)) return Variant::get_type_for<P@>();
+		$ifret if (p_argument==-1) return (Variant::Type)GetTypeInfo<R>::VARIANT_TYPE;$
+		$arg if (p_argument==(@-1)) return (Variant::Type)GetTypeInfo<P@>::VARIANT_TYPE;
 		$
 		return Variant::NIL;
+	}
+	virtual StringName _gen_argument_type_name(int p_arg) const { return _gen_argument_type_hint(p_arg); }
+	StringName _gen_argument_type_hint(int p_argument) const {
+		$ifret if (p_argument==-1) return GetTypeInfo<R>::get_class_name();$
+		$arg if (p_argument==(@-1)) return GetTypeInfo<P@>::get_class_name();
+		$
+		return StringName();
 	}
 #endif
 	virtual String get_instance_class() const {
@@ -91,10 +98,19 @@ public:
 	virtual Variant::Type _gen_argument_type(int p_arg) const { return _get_argument_type(p_arg); }
 
 	Variant::Type _get_argument_type(int p_argument) const {
-		$ifret if (p_argument==-1) return Variant::get_type_for<R>();$
-		$arg if (p_argument==(@-1)) return Variant::get_type_for<P@>();
+		$ifret if (p_argument==-1) return (Variant::Type)GetTypeInfo<R>::VARIANT_TYPE;$
+		$arg if (p_argument==(@-1)) return (Variant::Type)GetTypeInfo<P@>::VARIANT_TYPE;
 		$
 		return Variant::NIL;
+	}
+
+	virtual StringName _gen_argument_type_name(int p_arg) const { return _gen_argument_type_hint(p_arg); }
+
+	StringName _gen_argument_type_hint(int p_argument) const {
+		$ifret if (p_argument==-1) return GetTypeInfo<R>::get_class_name();$
+		$arg if (p_argument==(@-1)) return GetTypeInfo<P@>::get_class_name();
+		$
+		return StringName();
 	}
 #endif
 	virtual String get_instance_class() const {
