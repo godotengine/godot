@@ -317,11 +317,11 @@ void NativeScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
 bool NativeScript::get_property_default_value(const StringName &p_property, Variant &r_value) const {
 	NativeScriptDesc *script_data = get_script_desc();
 
-	if (!script_data)
-		return false;
-
-	Map<StringName, NativeScriptDesc::Property>::Element *P = script_data->properties.find(p_property);
-
+	Map<StringName, NativeScriptDesc::Property>::Element *P = NULL;
+	while (!P && script_data) {
+		P = script_data->properties.find(p_property);
+		script_data = script_data->base_data;
+	}
 	if (!P)
 		return false;
 
