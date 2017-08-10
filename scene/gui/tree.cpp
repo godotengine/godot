@@ -1856,13 +1856,14 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 
 				bring_up_editor = false;
 
+				custom_popup_rect = Rect2i(get_global_position() + Point2i(col_ofs, _get_title_button_height() + y_ofs + item_h - cache.offset.y), Size2(get_column_width(col), item_h));
+
 				if (on_arrow || !p_item->cells[col].custom_button) {
-					custom_popup_rect = Rect2i(get_global_position() + Point2i(col_ofs, _get_title_button_height() + y_ofs + item_h - cache.offset.y), Size2(get_column_width(col), item_h));
 					emit_signal("custom_popup_edited", ((bool)(x >= (col_width - item_h / 2))));
 				}
 
 				if (!p_item->cells[col].custom_button || !on_arrow) {
-					item_edited(col, p_item);
+					item_edited(col, p_item, p_button == BUTTON_LEFT);
 				}
 				click_handled = true;
 				return -1;
@@ -2925,11 +2926,14 @@ TreeItem *Tree::get_last_item() {
 	return last;
 }
 
-void Tree::item_edited(int p_column, TreeItem *p_item) {
+void Tree::item_edited(int p_column, TreeItem *p_item, bool p_lmb) {
 
 	edited_item = p_item;
 	edited_col = p_column;
-	emit_signal("item_edited");
+	if (p_lmb)
+		emit_signal("item_edited");
+	else
+		emit_signal("item_rmb_edited");
 }
 
 void Tree::item_changed(int p_column, TreeItem *p_item) {
@@ -3645,6 +3649,7 @@ void Tree::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("item_rmb_selected", PropertyInfo(Variant::VECTOR2, "pos")));
 	ADD_SIGNAL(MethodInfo("empty_tree_rmb_selected", PropertyInfo(Variant::VECTOR2, "pos")));
 	ADD_SIGNAL(MethodInfo("item_edited"));
+	ADD_SIGNAL(MethodInfo("item_rmb_edited"));
 	ADD_SIGNAL(MethodInfo("item_custom_button_pressed"));
 	ADD_SIGNAL(MethodInfo("item_double_clicked"));
 	ADD_SIGNAL(MethodInfo("item_collapsed", PropertyInfo(Variant::OBJECT, "item")));

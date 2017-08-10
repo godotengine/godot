@@ -209,6 +209,7 @@ class PropertyEditor : public Control {
 	void _custom_editor_request(bool p_arrow);
 
 	void _item_selected();
+	void _item_rmb_edited();
 	void _item_edited();
 	TreeItem *get_parent_node(String p_path, HashMap<String, TreeItem *> &item_paths, TreeItem *root, TreeItem *category);
 

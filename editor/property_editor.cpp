@@ -3736,6 +3736,10 @@ void PropertyEditor::_item_selected() {
 	selected_property = item->get_metadata(1);
 }
 
+void PropertyEditor::_item_rmb_edited() {
+	_custom_editor_request(true);
+}
+
 void PropertyEditor::_edit_set(const String &p_name, const Variant &p_value, bool p_refresh_all, const String &p_changed_field) {
 
 	if (autoclear) {
@@ -4232,6 +4236,7 @@ void PropertyEditor::_bind_methods() {
 
 	ClassDB::bind_method("_item_edited", &PropertyEditor::_item_edited);
 	ClassDB::bind_method("_item_selected", &PropertyEditor::_item_selected);
+	ClassDB::bind_method("_item_rmb_edited", &PropertyEditor::_item_rmb_edited);
 	ClassDB::bind_method("_item_folded", &PropertyEditor::_item_folded);
 	ClassDB::bind_method("_custom_editor_request", &PropertyEditor::_custom_editor_request);
 	ClassDB::bind_method("_custom_editor_edited", &PropertyEditor::_custom_editor_edited);
@@ -4386,6 +4391,7 @@ PropertyEditor::PropertyEditor() {
 	add_child(tree);
 
 	tree->connect("item_edited", this, "_item_edited", varray(), CONNECT_DEFERRED);
+	tree->connect("item_rmb_edited", this, "_item_rmb_edited");
 	tree->connect("cell_selected", this, "_item_selected");
 	tree->connect("item_collapsed", this, "_item_folded");
 
