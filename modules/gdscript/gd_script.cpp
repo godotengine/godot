@@ -50,7 +50,7 @@ GDNativeClass::GDNativeClass(const StringName &p_name) {
 bool GDNativeClass::_get(const StringName &p_name, Variant &r_ret) const {
 
 	bool ok;
-	int v = ClassDB::get_integer_constant(name, p_name, &ok);
+	Variant v = ClassDB::get_constant(name, p_name, &ok);
 
 	if (ok) {
 		r_ret = v;

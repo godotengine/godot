@@ -2436,10 +2436,10 @@ Array _ClassDB::get_method_list(StringName p_class, bool p_no_inheritance) const
 	return ret;
 }
 
-PoolStringArray _ClassDB::get_integer_constant_list(const StringName &p_class, bool p_no_inheritance) const {
+PoolStringArray _ClassDB::get_constant_list(const StringName &p_class, bool p_no_inheritance) const {
 
 	List<String> constants;
-	ClassDB::get_integer_constant_list(p_class, &constants, p_no_inheritance);
+	ClassDB::get_constant_list(p_class, &constants, p_no_inheritance);
 
 	PoolStringArray ret;
 	ret.resize(constants.size());
@@ -2451,17 +2451,17 @@ PoolStringArray _ClassDB::get_integer_constant_list(const StringName &p_class, b
 	return ret;
 }
 
-bool _ClassDB::has_integer_constant(const StringName &p_class, const StringName &p_name) const {
+bool _ClassDB::has_constant(const StringName &p_class, const StringName &p_name) const {
 
 	bool success;
-	ClassDB::get_integer_constant(p_class, p_name, &success);
+	ClassDB::get_constant(p_class, p_name, &success);
 	return success;
 }
 
-int _ClassDB::get_integer_constant(const StringName &p_class, const StringName &p_name) const {
+Variant _ClassDB::get_constant(const StringName &p_class, const StringName &p_name) const {
 
 	bool found;
-	int c = ClassDB::get_integer_constant(p_class, p_name, &found);
+	int c = ClassDB::get_constant(p_class, p_name, &found);
 	ERR_FAIL_COND_V(!found, 0);
 	return c;
 }
@@ -2497,10 +2497,10 @@ void _ClassDB::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("class_get_method_list", "class", "no_inheritance"), &_ClassDB::get_method_list, DEFVAL(false));
 
-	ClassDB::bind_method(D_METHOD("class_get_integer_constant_list", "class", "no_inheritance"), &_ClassDB::get_integer_constant_list, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("class_get_constant_list", "class", "no_inheritance"), &_ClassDB::get_constant_list, DEFVAL(false));
 
-	ClassDB::bind_method(D_METHOD("class_has_integer_constant", "class", "name"), &_ClassDB::has_integer_constant);
-	ClassDB::bind_method(D_METHOD("class_get_integer_constant", "class", "name"), &_ClassDB::get_integer_constant);
+	ClassDB::bind_method(D_METHOD("class_has_constant", "class", "name"), &_ClassDB::has_constant);
+	ClassDB::bind_method(D_METHOD("class_get_constant", "class", "name"), &_ClassDB::get_constant);
 
 	ClassDB::bind_method(D_METHOD("class_get_category", "class"), &_ClassDB::get_category);
 	ClassDB::bind_method(D_METHOD("is_class_enabled", "class"), &_ClassDB::is_class_enabled);

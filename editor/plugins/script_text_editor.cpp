@@ -666,7 +666,7 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 				StringName cname = result.class_name;
 				bool success;
 				while (true) {
-					ClassDB::get_integer_constant(cname, result.class_member, &success);
+					ClassDB::get_constant(cname, result.class_member, &success);
 					if (success) {
 						result.class_name = cname;
 						cname = ClassDB::get_parent_class(cname);

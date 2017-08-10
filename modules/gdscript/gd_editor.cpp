@@ -1258,7 +1258,7 @@ static void _find_identifiers_in_class(GDCompletionContext &context, bool p_stat
 			if (!p_only_functions) {
 
 				List<String> constants;
-				ClassDB::get_integer_constant_list(type, &constants);
+				ClassDB::get_constant_list(type, &constants);
 				for (List<String>::Element *E = constants.front(); E; E = E->next()) {
 					result.insert(E->get());
 				}
@@ -2099,7 +2099,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 					if (gdn.is_valid()) {
 						StringName cn = gdn->get_name();
 						List<String> cnames;
-						ClassDB::get_integer_constant_list(cn, &cnames);
+						ClassDB::get_constant_list(cn, &cnames);
 						for (List<String>::Element *E = cnames.front(); E; E = E->next()) {
 							options.insert(E->get());
 						}
@@ -2236,7 +2236,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 					}
 
 					if (!isfunction) {
-						ClassDB::get_integer_constant_list(t.obj_type, r_options);
+						ClassDB::get_constant_list(t.obj_type, r_options);
 
 						List<PropertyInfo> pinfo;
 						ClassDB::get_property_list(t.obj_type, &pinfo);
@@ -2789,7 +2789,7 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 					}
 
 					bool success;
-					ClassDB::get_integer_constant(t.obj_type, p_symbol, &success);
+					ClassDB::get_constant(t.obj_type, p_symbol, &success);
 					if (success) {
 						r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS_CONSTANT;
 						r_result.class_name = t.obj_type;

@@ -133,7 +133,7 @@ public:
 		APIType api;
 		ClassInfo *inherits_ptr;
 		HashMap<StringName, MethodBind *, StringNameHasher> method_map;
-		HashMap<StringName, int, StringNameHasher> constant_map;
+		HashMap<StringName, Variant, StringNameHasher> constant_map;
 		HashMap<StringName, MethodInfo, StringNameHasher> signal_map;
 		List<PropertyInfo> property_list;
 #ifdef DEBUG_METHODS_ENABLED
@@ -494,10 +494,14 @@ public:
 	static void add_virtual_method(const StringName &p_class, const MethodInfo &p_method, bool p_virtual = true);
 	static void get_virtual_methods(const StringName &p_class, List<MethodInfo> *p_methods, bool p_no_inheritance = false);
 
-	static void bind_integer_constant(const StringName &p_class, const StringName &p_name, int p_constant);
-	static void get_integer_constant_list(const StringName &p_class, List<String> *p_constants, bool p_no_inheritance = false);
-	static int get_integer_constant(const StringName &p_class, const StringName &p_name, bool *p_success = NULL);
+	static void bind_constant(const StringName &p_class, const StringName &p_name, Variant p_constant);
+	static void get_constant_list(const StringName &p_class, List<String> *p_constants, bool p_no_inheritance = false);
+	static Variant get_constant(const StringName &p_class, const StringName &p_name, bool *p_success = NULL);
 	static StringName get_category(const StringName &p_node);
+
+	static void bind_real_constant(const StringName &p_class, const StringName &p_name, int p_constant);
+	static void get_real_constant_list(const StringName &p_class, List<String> *p_constants, bool p_no_inheritance = false);
+	static float get_real_constant(const StringName &p_class, const StringName &p_name, bool *p_success = NULL);
 
 	static bool get_setter_and_type_for_property(const StringName &p_class, const StringName &p_prop, StringName &r_class, StringName &r_setter);
 
@@ -516,7 +520,7 @@ public:
 };
 
 #define BIND_CONSTANT(m_constant) \
-	ClassDB::bind_integer_constant(get_class_static(), #m_constant, m_constant);
+	ClassDB::bind_constant(get_class_static(), #m_constant, m_constant);
 
 #ifdef TOOLS_ENABLED
 
