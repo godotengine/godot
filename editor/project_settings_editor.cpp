@@ -1534,14 +1534,14 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	input_base->add_child(vbc);
-	vbc->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 5);
-	vbc->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 5);
-	vbc->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 5);
-	vbc->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 5);
+	vbc->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 0);
+	vbc->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 0);
+	vbc->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 0);
+	vbc->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 0);
 
 	l = memnew(Label);
 	vbc->add_child(l);
-	l->set_position(Point2(6, 5));
+	l->set_position(Point2(6, 5) * EDSCALE);
 	l->set_text(TTR("Action:"));
 
 	hbc = memnew(HBoxContainer);
@@ -1632,6 +1632,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	//translations
 	TabContainer *translations = memnew(TabContainer);
+	translations->add_style_override("panel", memnew(StyleBoxEmpty));
 	translations->set_tab_align(TabContainer::ALIGN_LEFT);
 	translations->set_name(TTR("Localization"));
 	tab_container->add_child(translations);
@@ -1648,7 +1649,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		Button *addtr = memnew(Button(TTR("Add..")));
 		addtr->connect("pressed", this, "_translation_file_open");
 		thb->add_child(addtr);
-		MarginContainer *tmc = memnew(MarginContainer);
+		VBoxContainer *tmc = memnew(VBoxContainer);
 		tvb->add_child(tmc);
 		tmc->set_v_size_flags(SIZE_EXPAND_FILL);
 		translation_list = memnew(Tree);
@@ -1672,7 +1673,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		Button *addtr = memnew(Button(TTR("Add..")));
 		addtr->connect("pressed", this, "_translation_res_file_open");
 		thb->add_child(addtr);
-		MarginContainer *tmc = memnew(MarginContainer);
+		VBoxContainer *tmc = memnew(VBoxContainer);
 		tvb->add_child(tmc);
 		tmc->set_v_size_flags(SIZE_EXPAND_FILL);
 		translation_remap = memnew(Tree);
@@ -1694,7 +1695,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		addtr->connect("pressed", this, "_translation_res_option_file_open");
 		translation_res_option_add_button = addtr;
 		thb->add_child(addtr);
-		tmc = memnew(MarginContainer);
+		tmc = memnew(VBoxContainer);
 		tvb->add_child(tmc);
 		tmc->set_v_size_flags(SIZE_EXPAND_FILL);
 		translation_remap_options = memnew(Tree);

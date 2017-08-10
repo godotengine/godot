@@ -1061,19 +1061,18 @@ EditorAudioBuses::EditorAudioBuses() {
 	top_hb = memnew(HBoxContainer);
 	add_child(top_hb);
 
+	file = memnew(ToolButton);
+	file->set_text("default_bus_layout.tres");
+	top_hb->add_child(file);
+	file->connect("pressed", this, "_select_layout");
+
 	add = memnew(Button);
 	top_hb->add_child(add);
-	;
 	add->set_text(TTR("Add Bus"));
 
 	add->connect("pressed", this, "_add_bus");
 
 	top_hb->add_spacer();
-
-	file = memnew(ToolButton);
-	file->set_text("default_bus_layout.tres");
-	top_hb->add_child(file);
-	file->connect("pressed", this, "_select_layout");
 
 	load = memnew(Button);
 	load->set_text(TTR("Load"));
@@ -1096,6 +1095,7 @@ EditorAudioBuses::EditorAudioBuses() {
 	_new->connect("pressed", this, "_new_layout");
 
 	bus_scroll = memnew(ScrollContainer);
+	bus_scroll->add_style_override("panel", memnew(StyleBoxEmpty));
 	bus_scroll->set_v_size_flags(SIZE_EXPAND_FILL);
 	bus_scroll->set_enable_h_scroll(true);
 	bus_scroll->set_enable_v_scroll(false);

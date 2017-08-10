@@ -163,7 +163,7 @@ Ref<Theme> create_editor_theme() {
 	theme->set_color("light_color_1", "Editor", light_color_1);
 	theme->set_color("light_color_2", "Editor", light_color_2);
 
-	Color success_color = highlight_color.linear_interpolate(Color(0, 1, .8), 0.8);
+	Color success_color = highlight_color.linear_interpolate(Color(.6, 1, .6), 0.8);
 	Color warning_color = highlight_color.linear_interpolate(Color(1, 1, .2), 0.8);
 	Color error_color = highlight_color.linear_interpolate(Color(1, .2, .2), 0.8);
 	theme->set_color("success_color", "Editor", success_color);
@@ -382,12 +382,12 @@ Ref<Theme> create_editor_theme() {
 	theme->set_stylebox("SceneTabBG", "EditorStyles", make_empty_stylebox(6, 5, 6, 5));
 	theme->set_icon("close", "Tabs", title_hl_close_icon);
 
-	// Separatos (no separatos)
+	// Separators (no separators)
 	theme->set_stylebox("separator", "HSeparator", make_line_stylebox(separator_color, border_width));
 	theme->set_stylebox("separator", "VSeparator", make_line_stylebox(separator_color, border_width, 0, true));
 
 	// Debugger
-	Ref<StyleBoxFlat> style_panel_debugger = make_flat_stylebox(dark_color_2, 0, 4, 0, 0);
+	Ref<StyleBoxFlat> style_panel_debugger = make_flat_stylebox(dark_color_2, 4, 4, 4, 4);
 	theme->set_stylebox("DebuggerPanel", "EditorStyles", style_panel_debugger);
 
 	Ref<StyleBoxFlat> style_tab_fg_debugger = make_flat_stylebox(dark_color_2, 10, 5, 10, 5);

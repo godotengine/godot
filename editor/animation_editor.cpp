@@ -1091,11 +1091,11 @@ void AnimationKeyEditor::_track_editor_draw() {
 	int sep = get_constant("vseparation", "Tree");
 	int hsep = get_constant("hseparation", "Tree");
 	Color color = get_color("font_color", "Tree");
-	Color sepcolor = get_color("light_color_1", "Editor");
-	Color timecolor = get_color("dark_color_2", "Editor");
+	Color sepcolor = Color(1, 1, 1, 0.2);
+	Color timecolor = Color(1, 1, 1, 0.2);
 	Color hover_color = Color(1, 1, 1, 0.05);
 	Color select_color = Color(1, 1, 1, 0.1);
-	Color invalid_path_color = Color(1, 0.6, 0.4, 0.5);
+	Color invalid_path_color = get_color("error_color", "Editor");
 	Color track_select_color = get_color("highlight_color", "Editor");
 
 	Ref<Texture> remove_icon = get_icon("Remove", "EditorIcons");
@@ -1156,11 +1156,12 @@ void AnimationKeyEditor::_track_editor_draw() {
 	int settings_limit = size.width - right_separator_ofs;
 	int name_limit = settings_limit * name_column_ratio;
 
-	te->draw_line(ofs + Point2(name_limit, 0), ofs + Point2(name_limit, size.height), color);
-	te->draw_line(ofs + Point2(settings_limit, 0), ofs + Point2(settings_limit, size.height), color);
+	Color linecolor = Color(1, 1, 1, 0.2);
+	te->draw_line(ofs + Point2(name_limit, 0), ofs + Point2(name_limit, size.height), linecolor);
+	te->draw_line(ofs + Point2(settings_limit, 0), ofs + Point2(settings_limit, size.height), linecolor);
 	te->draw_texture(hsize_icon, ofs + Point2(name_limit - hsize_icon->get_width() - hsep, (h - hsize_icon->get_height()) / 2));
 
-	te->draw_line(ofs + Point2(0, h), ofs + Point2(size.width, h), color);
+	te->draw_line(ofs + Point2(0, h), ofs + Point2(size.width, h), linecolor);
 	// draw time
 
 	float keys_from;
@@ -1180,7 +1181,7 @@ void AnimationKeyEditor::_track_editor_draw() {
 
 		int end_px = (l - h_scroll->get_value()) * scale;
 		int begin_px = -h_scroll->get_value() * scale;
-		Color notimecol = get_color("light_color_1", "Editor");
+		Color notimecol = get_color("dark_color_2", "Editor");
 
 		{
 
@@ -1276,7 +1277,7 @@ void AnimationKeyEditor::_track_editor_draw() {
 			if ((sc / step) != (prev_sc / step) || (prev_sc < 0 && sc >= 0)) {
 
 				int scd = sc < 0 ? prev_sc : sc;
-				te->draw_line(ofs + Point2(name_limit + i, 0), ofs + Point2(name_limit + i, h), color);
+				te->draw_line(ofs + Point2(name_limit + i, 0), ofs + Point2(name_limit + i, h), linecolor);
 				te->draw_string(font, ofs + Point2(name_limit + i + 3, (h - font->get_height()) / 2 + font->get_ascent()).floor(), String::num((scd - (scd % step)) / double(SC_ADJ), decimals), sub ? color_time_dec : color_time_sec, zoomw - i);
 			}
 		}
@@ -1335,7 +1336,7 @@ void AnimationKeyEditor::_track_editor_draw() {
 		te->draw_line(ofs + Point2(0, y + h), ofs + Point2(size.width, y + h), sepcolor);
 
 		Point2 icon_ofs = ofs + Point2(size.width, y + (h - remove_icon->get_height()) / 2).floor();
-		icon_ofs.y += 4;
+		icon_ofs.y += 4 * EDSCALE;
 
 		/*		icon_ofs.x-=remove_icon->get_width();
 
@@ -1353,7 +1354,7 @@ void AnimationKeyEditor::_track_editor_draw() {
 		*/
 		track_ofs[0] = size.width - icon_ofs.x;
 		icon_ofs.x -= down_icon->get_width();
-		te->draw_texture(down_icon, icon_ofs);
+		te->draw_texture(down_icon, icon_ofs - Size2(0, 4 * EDSCALE));
 
 		int wrap_type = animation->track_get_interpolation_loop_wrap(idx) ? 1 : 0;
 		icon_ofs.x -= hsep;
@@ -1366,7 +1367,7 @@ void AnimationKeyEditor::_track_editor_draw() {
 		track_ofs[1] = size.width - icon_ofs.x;
 
 		icon_ofs.x -= down_icon->get_width();
-		te->draw_texture(down_icon, icon_ofs);
+		te->draw_texture(down_icon, icon_ofs - Size2(0, 4 * EDSCALE));
 
 		int interp_type = animation->track_get_interpolation_type(idx);
 		ERR_CONTINUE(interp_type < 0 || interp_type >= 3);
@@ -1385,7 +1386,7 @@ void AnimationKeyEditor::_track_editor_draw() {
 
 			icon_ofs.x -= hsep;
 			icon_ofs.x -= down_icon->get_width();
-			te->draw_texture(down_icon, icon_ofs);
+			te->draw_texture(down_icon, icon_ofs - Size2(0, 4 * EDSCALE));
 
 			icon_ofs.x -= hsep;
 			icon_ofs.x -= cont_icon[umode]->get_width();
@@ -3745,7 +3746,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	history = EditorNode::get_singleton()->get_editor_history();
 
 	ec = memnew(Control);
-	ec->set_custom_minimum_size(Size2(0, 150));
+	ec->set_custom_minimum_size(Size2(0, 150) * EDSCALE);
 	add_child(ec);
 	ec->set_v_size_flags(SIZE_EXPAND_FILL);
 

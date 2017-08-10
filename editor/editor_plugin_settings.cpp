@@ -193,15 +193,16 @@ EditorPluginSettings::EditorPluginSettings() {
 	plugin_list->set_column_expand(1, false);
 	plugin_list->set_column_expand(2, false);
 	plugin_list->set_column_expand(3, false);
-	plugin_list->set_column_min_width(1, 100);
-	plugin_list->set_column_min_width(2, 250);
-	plugin_list->set_column_min_width(3, 80);
+	plugin_list->set_column_min_width(1, 100 * EDSCALE);
+	plugin_list->set_column_min_width(2, 250 * EDSCALE);
+	plugin_list->set_column_min_width(3, 80 * EDSCALE);
 	plugin_list->set_hide_root(true);
 	plugin_list->connect("item_edited", this, "_plugin_activity_changed");
 
-	MarginContainer *mc = memnew(MarginContainer);
+	VBoxContainer *mc = memnew(VBoxContainer);
 	mc->add_child(plugin_list);
 	mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	mc->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	add_child(mc);
 

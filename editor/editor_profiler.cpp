@@ -129,10 +129,11 @@ String EditorProfiler::_get_time_as_text(Metric &m, float p_time, int p_calls) {
 
 Color EditorProfiler::_get_color_from_signature(const StringName &p_signature) const {
 
+	Color bc = get_color("error_color", "Editor");
 	double rot = ABS(double(p_signature.hash()) / double(0x7FFFFFFF));
 	Color c;
-	c.set_hsv(rot, 1, 1);
-	return c;
+	c.set_hsv(rot, bc.get_s(), bc.get_v());
+	return c.linear_interpolate(get_color("base_color", "Editor"), 0.07);
 }
 
 void EditorProfiler::_item_edited() {
@@ -387,7 +388,6 @@ void EditorProfiler::_update_frame() {
 
 		if (plot_sigs.has(m.categories[i].signature)) {
 			category->set_checked(0, true);
-			category->set_custom_bg_color(0, Color(0, 0, 0));
 			category->set_custom_color(0, _get_color_from_signature(m.categories[i].signature));
 		}
 
@@ -411,7 +411,6 @@ void EditorProfiler::_update_frame() {
 
 			if (plot_sigs.has(it.signature)) {
 				item->set_checked(0, true);
-				item->set_custom_bg_color(0, Color(0, 0, 0));
 				item->set_custom_color(0, _get_color_from_signature(it.signature));
 			}
 		}

@@ -45,7 +45,6 @@
 #include "pair.h"
 #include "print_string.h"
 #include "project_settings.h"
-#include "project_settings.h"
 #include "property_selector.h"
 #include "scene/gui/label.h"
 #include "scene/main/viewport.h"
@@ -321,7 +320,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 
 			CheckBox *c = checks20[0];
 			c->set_text("True");
-			checks20gc->set_position(Vector2(4, 4));
+			checks20gc->set_position(Vector2(4, 4) * EDSCALE);
 			c->set_pressed(v);
 			c->show();
 
@@ -434,14 +433,14 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 
 			} else if (hint == PROPERTY_HINT_EXP_EASING) {
 
-				easing_draw->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 5);
-				easing_draw->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 5);
-				easing_draw->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 5);
-				easing_draw->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 30);
-				type_button->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 3);
-				type_button->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 3);
-				type_button->set_anchor_and_margin(MARGIN_TOP, ANCHOR_END, 25);
-				type_button->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 7);
+				easing_draw->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 5 * EDSCALE);
+				easing_draw->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 5 * EDSCALE);
+				easing_draw->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 5 * EDSCALE);
+				easing_draw->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 30 * EDSCALE);
+				type_button->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 3 * EDSCALE);
+				type_button->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 3 * EDSCALE);
+				type_button->set_anchor_and_margin(MARGIN_TOP, ANCHOR_END, 25 * EDSCALE);
+				type_button->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 7 * EDSCALE);
 				type_button->set_text(TTR("Preset.."));
 				type_button->get_popup()->clear();
 				type_button->get_popup()->add_item(TTR("Linear"), EASING_LINEAR);
@@ -524,7 +523,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				action_buttons[0]->set_anchor(MARGIN_TOP, ANCHOR_END);
 				action_buttons[0]->set_anchor(MARGIN_RIGHT, ANCHOR_END);
 				action_buttons[0]->set_anchor(MARGIN_BOTTOM, ANCHOR_END);
-				action_buttons[0]->set_begin(Point2(70, button_margin - 5));
+				action_buttons[0]->set_begin(Point2(70 * EDSCALE, button_margin - 5 * EDSCALE));
 				action_buttons[0]->set_end(Point2(margin, margin));
 				action_buttons[0]->set_text(TTR("Close"));
 				action_buttons[0]->show();
@@ -872,7 +871,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				break;
 
 			menu->clear();
-			menu->set_size(Size2(1, 1));
+			menu->set_size(Size2(1, 1) * EDSCALE);
 
 			if (p_name == "script" && hint_text == "Script" && owner->cast_to<Node>()) {
 				menu->add_icon_item(get_icon("Script", "EditorIcons"), TTR("New Script"), OBJ_MENU_NEW_SCRIPT);
@@ -921,7 +920,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 
 			if (!RES(v).is_null()) {
 
-				menu->add_icon_item(get_icon("EditResource", "EditorIcons"), "Edit", OBJ_MENU_EDIT);
+				menu->add_icon_item(get_icon("Edit", "EditorIcons"), "Edit", OBJ_MENU_EDIT);
 				menu->add_icon_item(get_icon("Del", "EditorIcons"), "Clear", OBJ_MENU_CLEAR);
 				menu->add_icon_item(get_icon("Duplicate", "EditorIcons"), "Make Unique", OBJ_MENU_MAKE_UNIQUE);
 				RES r = v;

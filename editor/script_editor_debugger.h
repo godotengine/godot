@@ -89,7 +89,7 @@ class ScriptEditorDebugger : public Control {
 
 	TabContainer *tabs;
 
-	LineEdit *reason;
+	Label *reason;
 	ScriptEditorDebuggerVariables *variables;
 
 	Button *step;
