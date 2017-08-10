@@ -51,6 +51,8 @@ void EditorAudioBus::_notification(int p_what) {
 		mute->set_icon(get_icon("AudioBusMute", "EditorIcons"));
 		bypass->set_icon(get_icon("AudioBusBypass", "EditorIcons"));
 
+		bus_options->set_icon(get_icon("GuiMiniTabMenu", "EditorIcons"));
+
 		prev_active = true;
 		update_bus();
 		set_process(true);
@@ -620,15 +622,26 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses) {
 	buses = p_buses;
 	updating_bus = false;
 
+	set_tooltip(TTR("Audio Bus, Drag and Drop to rearrange."));
+
 	VBoxContainer *vb = memnew(VBoxContainer);
 	add_child(vb);
 
 	set_v_size_flags(SIZE_EXPAND_FILL);
 
+	HBoxContainer *head = memnew(HBoxContainer);
 	track_name = memnew(LineEdit);
-	vb->add_child(track_name);
+	head->add_child(track_name);
 	track_name->connect("text_entered", this, "_name_changed");
 	track_name->connect("focus_exited", this, "_name_focus_exit");
+	track_name->set_h_size_flags(SIZE_EXPAND_FILL);
+
+	bus_options = memnew(MenuButton);
+	bus_options->set_h_size_flags(SIZE_SHRINK_END);
+	bus_options->set_tooltip(TTR("Bus options"));
+	head->add_child(bus_options);
+
+	vb->add_child(head);
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	vb->add_child(hbc);
@@ -636,24 +649,18 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses) {
 	solo = memnew(ToolButton);
 	solo->set_toggle_mode(true);
 	solo->set_tooltip(TTR("Solo"));
-	solo->add_color_override("font_color_pressed", Color(0.2, 0.9, 0.2));
-	solo->add_color_override("font_color_hover", Color(0.6, 0.9, 0.6));
 	solo->set_focus_mode(FOCUS_NONE);
 	solo->connect("pressed", this, "_solo_toggled");
 	hbc->add_child(solo);
 	mute = memnew(ToolButton);
 	mute->set_toggle_mode(true);
 	mute->set_tooltip(TTR("Mute"));
-	mute->add_color_override("font_color_pressed", Color(0.9, 0.2, 0.2));
-	mute->add_color_override("font_color_hover", Color(0.9, 0.6, 0.6));
 	mute->set_focus_mode(FOCUS_NONE);
 	mute->connect("pressed", this, "_mute_toggled");
 	hbc->add_child(mute);
 	bypass = memnew(ToolButton);
 	bypass->set_toggle_mode(true);
 	bypass->set_tooltip(TTR("Bypass"));
-	bypass->add_color_override("font_color_pressed", Color(0.9, 0.9, 0.2));
-	bypass->add_color_override("font_color_hover", Color(0.9, 0.9, 0.6));
 	bypass->set_focus_mode(FOCUS_NONE);
 	bypass->connect("pressed", this, "_bypass_toggled");
 	hbc->add_child(bypass);
@@ -689,7 +696,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses) {
 
 	effects = memnew(Tree);
 	effects->set_hide_root(true);
-	effects->set_custom_minimum_size(Size2(0, 90) * EDSCALE);
+	effects->set_custom_minimum_size(Size2(0, 100) * EDSCALE);
 	effects->set_hide_folding(true);
 	vb->add_child(effects);
 	effects->connect("item_edited", this, "_effect_edited");
@@ -698,6 +705,8 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses) {
 	effects->set_drag_forwarding(this);
 	effects->connect("item_rmb_selected", this, "_effect_rmb");
 	effects->set_allow_rmb_select(true);
+	effects->set_single_select_cell_editing_only_when_already_selected(true);
+	effects->set_focus_mode(FOCUS_CLICK);
 
 	send = memnew(OptionButton);
 	send->set_clip_text(true);
@@ -726,7 +735,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses) {
 		effect_options->set_item_icon(effect_options->get_item_count() - 1, icon);
 	}
 
-	delete_popup = memnew(PopupMenu);
+	delete_popup = bus_options->get_popup();
 	delete_popup->add_item("Duplicate");
 	delete_popup->add_item("Delete");
 	add_child(delete_popup);
@@ -1069,6 +1078,7 @@ EditorAudioBuses::EditorAudioBuses() {
 	add = memnew(Button);
 	top_hb->add_child(add);
 	add->set_text(TTR("Add Bus"));
+	add->set_tooltip(TTR("Create a new Bus Layout."));
 
 	add->connect("pressed", this, "_add_bus");
 
@@ -1076,21 +1086,25 @@ EditorAudioBuses::EditorAudioBuses() {
 
 	load = memnew(Button);
 	load->set_text(TTR("Load"));
+	load->set_tooltip(TTR("Load an existing Bus Layout."));
 	top_hb->add_child(load);
 	load->connect("pressed", this, "_load_layout");
 
 	save_as = memnew(Button);
 	save_as->set_text(TTR("Save As"));
+	save_as->set_tooltip(TTR("Save this Bus Layout to a file."));
 	top_hb->add_child(save_as);
 	save_as->connect("pressed", this, "_save_as_layout");
 
 	_default = memnew(Button);
-	_default->set_text(TTR("Default"));
+	_default->set_text(TTR("Load Default"));
+	_default->set_tooltip(TTR("Load the default Bus Layout."));
 	top_hb->add_child(_default);
 	_default->connect("pressed", this, "_load_default_layout");
 
 	_new = memnew(Button);
 	_new->set_text(TTR("Create"));
+	_new->set_tooltip(TTR("Create a new Bus Layout."));
 	top_hb->add_child(_new);
 	_new->connect("pressed", this, "_new_layout");
 

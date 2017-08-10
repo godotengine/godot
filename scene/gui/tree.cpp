@@ -1478,7 +1478,7 @@ void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_c
 
 			if (!r_in_range && &selected_cell == &c) {
 
-				if (!selected_cell.selected) {
+				if (!selected_cell.selected || force_select_on_already_selected) {
 
 					selected_cell.selected = true;
 
