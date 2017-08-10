@@ -1591,7 +1591,7 @@ public:
 VisualScriptNodeInstance *VisualScriptClassConstant::instance(VisualScriptInstance *p_instance) {
 
 	VisualScriptNodeInstanceClassConstant *instance = memnew(VisualScriptNodeInstanceClassConstant);
-	instance->value = ClassDB::get_integer_constant(base_type, name, &instance->valid);
+	instance->value = ClassDB::get_constant(base_type, name, &instance->valid);
 	return instance;
 }
 
@@ -1600,7 +1600,7 @@ void VisualScriptClassConstant::_validate_property(PropertyInfo &property) const
 	if (property.name == "constant/constant") {
 
 		List<String> constants;
-		ClassDB::get_integer_constant_list(base_type, &constants, true);
+		ClassDB::get_constant_list(base_type, &constants, true);
 
 		property.hint_string = "";
 		for (List<String>::Element *E = constants.front(); E; E = E->next()) {

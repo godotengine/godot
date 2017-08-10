@@ -235,7 +235,7 @@ int GDCompiler::_parse_expression(CodeGen &codegen, const GDParser::Node *p_expr
 				if (nc) {
 
 					bool success = false;
-					int constant = ClassDB::get_integer_constant(nc->get_name(), identifier, &success);
+					Variant constant = ClassDB::get_constant(nc->get_name(), identifier, &success);
 					if (success) {
 						Variant key = constant;
 						int idx;

@@ -397,13 +397,13 @@ void DocData::generate(bool p_basic_types) {
 		}
 
 		List<String> constant_list;
-		ClassDB::get_integer_constant_list(name, &constant_list, true);
+		ClassDB::get_constant_list(name, &constant_list, true);
 
 		for (List<String>::Element *E = constant_list.front(); E; E = E->next()) {
 
 			ConstantDoc constant;
 			constant.name = E->get();
-			constant.value = itos(ClassDB::get_integer_constant(name, E->get()));
+			constant.value = ClassDB::get_constant(name, E->get());
 			c.constants.push_back(constant);
 		}
 

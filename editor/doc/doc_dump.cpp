@@ -269,7 +269,7 @@ void DocDump::dump(const String &p_file) {
 		_write_string(f, 1, "<constants>");
 
 		List<String> constant_list;
-		ClassDB::get_integer_constant_list(name, &constant_list, true);
+		ClassDB::get_constant_list(name, &constant_list, true);
 
 		/* constants are sorted in a special way */
 
@@ -278,7 +278,7 @@ void DocDump::dump(const String &p_file) {
 		for (List<String>::Element *E = constant_list.front(); E; E = E->next()) {
 			_ConstantSort cs;
 			cs.name = E->get();
-			cs.value = ClassDB::get_integer_constant(name, E->get());
+			cs.value = ClassDB::get_constant(name, E->get());
 			constant_sort.push_back(cs);
 		}
 

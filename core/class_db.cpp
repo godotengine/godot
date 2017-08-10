@@ -583,7 +583,7 @@ MethodBind *ClassDB::get_method(StringName p_class, StringName p_name) {
 	return NULL;
 }
 
-void ClassDB::bind_integer_constant(const StringName &p_class, const StringName &p_name, int p_constant) {
+void ClassDB::bind_constant(const StringName &p_class, const StringName &p_name, Variant p_constant) {
 
 	OBJTYPE_WLOCK;
 
@@ -604,7 +604,7 @@ void ClassDB::bind_integer_constant(const StringName &p_class, const StringName 
 #endif
 }
 
-void ClassDB::get_integer_constant_list(const StringName &p_class, List<String> *p_constants, bool p_no_inheritance) {
+void ClassDB::get_constant_list(const StringName &p_class, List<String> *p_constants, bool p_no_inheritance) {
 
 	OBJTYPE_RLOCK;
 
@@ -630,7 +630,7 @@ void ClassDB::get_integer_constant_list(const StringName &p_class, List<String> 
 	}
 }
 
-int ClassDB::get_integer_constant(const StringName &p_class, const StringName &p_name, bool *p_success) {
+Variant ClassDB::get_constant(const StringName &p_class, const StringName &p_name, bool *p_success) {
 
 	OBJTYPE_RLOCK;
 
@@ -638,7 +638,7 @@ int ClassDB::get_integer_constant(const StringName &p_class, const StringName &p
 
 	while (type) {
 
-		int *constant = type->constant_map.getptr(p_name);
+		Variant *constant = type->constant_map.getptr(p_name);
 		if (constant) {
 
 			if (p_success)
@@ -923,7 +923,7 @@ bool ClassDB::get_property(Object *p_object, const StringName &p_property, Varia
 			return true;
 		}
 
-		const int *c = check->constant_map.getptr(p_property);
+		const Variant *c = check->constant_map.getptr(p_property);
 		if (c) {
 
 			r_value = *c;

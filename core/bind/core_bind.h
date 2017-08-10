@@ -606,9 +606,9 @@ public:
 
 	Array get_method_list(StringName p_class, bool p_no_inheritance = false) const;
 
-	PoolStringArray get_integer_constant_list(const StringName &p_class, bool p_no_inheritance = false) const;
-	bool has_integer_constant(const StringName &p_class, const StringName &p_name) const;
-	int get_integer_constant(const StringName &p_class, const StringName &p_name) const;
+	PoolStringArray get_constant_list(const StringName &p_class, bool p_no_inheritance = false) const;
+	bool has_constant(const StringName &p_class, const StringName &p_name) const;
+	Variant get_constant(const StringName &p_class, const StringName &p_name) const;
 	StringName get_category(const StringName &p_node) const;
 
 	bool is_class_enabled(StringName p_class) const;

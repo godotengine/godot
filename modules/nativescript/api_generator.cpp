@@ -166,11 +166,11 @@ List<ClassAPI> generate_c_api_classes() {
 		// constants
 		{
 			List<String> constant;
-			ClassDB::get_integer_constant_list(class_name, &constant, true);
+			ClassDB::get_constant_list(class_name, &constant, true);
 			for (List<String>::Element *c = constant.front(); c != NULL; c = c->next()) {
 				ConstantAPI constant_api;
 				constant_api.constant_name = c->get();
-				constant_api.constant_value = ClassDB::get_integer_constant(class_name, c->get());
+				constant_api.constant_value = ClassDB::get_constant(class_name, c->get());
 
 				class_api.constants.push_back(constant_api);
 			}
