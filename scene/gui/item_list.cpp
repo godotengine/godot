@@ -339,7 +339,7 @@ void ItemList::set_same_column_width(bool p_enable) {
 	update();
 	shape_changed = true;
 }
-int ItemList::is_same_column_width() const {
+bool ItemList::is_same_column_width() const {
 
 	return same_column_width;
 }
