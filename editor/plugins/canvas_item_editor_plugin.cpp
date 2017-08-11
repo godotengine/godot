@@ -2584,7 +2584,7 @@ void CanvasItemEditor::_update_scroll(float) {
 	viewport->update();
 }
 
-void CanvasItemEditor::_set_anchor(float p_left, float p_top, float p_right, float p_bottom) {
+void CanvasItemEditor::_set_anchors_preset(Control::LayoutPreset p_preset) {
 	List<Node *> &selection = editor_selection->get_selected_node_list();
 
 	undo_redo->create_action(TTR("Change Anchors"));
@@ -2592,10 +2592,7 @@ void CanvasItemEditor::_set_anchor(float p_left, float p_top, float p_right, flo
 
 		Control *c = E->get()->cast_to<Control>();
 
-		undo_redo->add_do_method(c, "set_anchor", MARGIN_LEFT, p_left);
-		undo_redo->add_do_method(c, "set_anchor", MARGIN_TOP, p_top);
-		undo_redo->add_do_method(c, "set_anchor", MARGIN_RIGHT, p_right);
-		undo_redo->add_do_method(c, "set_anchor", MARGIN_BOTTOM, p_bottom);
+		undo_redo->add_do_method(c, "set_anchors_preset", p_preset);
 		undo_redo->add_undo_method(c, "set_anchor", MARGIN_LEFT, c->get_anchor(MARGIN_LEFT));
 		undo_redo->add_undo_method(c, "set_anchor", MARGIN_TOP, c->get_anchor(MARGIN_TOP));
 		undo_redo->add_undo_method(c, "set_anchor", MARGIN_RIGHT, c->get_anchor(MARGIN_RIGHT));
@@ -2613,10 +2610,7 @@ void CanvasItemEditor::_set_full_rect() {
 
 		Control *c = E->get()->cast_to<Control>();
 
-		undo_redo->add_do_method(c, "set_anchor", MARGIN_LEFT, ANCHOR_BEGIN);
-		undo_redo->add_do_method(c, "set_anchor", MARGIN_TOP, ANCHOR_BEGIN);
-		undo_redo->add_do_method(c, "set_anchor", MARGIN_RIGHT, ANCHOR_END);
-		undo_redo->add_do_method(c, "set_anchor", MARGIN_BOTTOM, ANCHOR_END);
+		undo_redo->add_do_method(c, "set_anchors_preset", PRESET_WIDE);
 		undo_redo->add_do_method(c, "set_margin", MARGIN_LEFT, 0);
 		undo_redo->add_do_method(c, "set_margin", MARGIN_TOP, 0);
 		undo_redo->add_do_method(c, "set_margin", MARGIN_RIGHT, 0);
@@ -2837,53 +2831,52 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			//space_selected_items< proj_vector2_y, compare_items_y >();
 		} break;
 		case ANCHOR_ALIGN_TOP_LEFT: {
-			_set_anchor(ANCHOR_BEGIN, ANCHOR_BEGIN, ANCHOR_BEGIN, ANCHOR_BEGIN);
+			_set_anchors_preset(PRESET_TOP_LEFT);
 		} break;
 		case ANCHOR_ALIGN_TOP_RIGHT: {
-			_set_anchor(ANCHOR_END, ANCHOR_BEGIN, ANCHOR_END, ANCHOR_BEGIN);
+			_set_anchors_preset(PRESET_TOP_RIGHT);
 		} break;
 		case ANCHOR_ALIGN_BOTTOM_LEFT: {
-			_set_anchor(ANCHOR_BEGIN, ANCHOR_END, ANCHOR_BEGIN, ANCHOR_END);
+			_set_anchors_preset(PRESET_BOTTOM_LEFT);
 		} break;
 		case ANCHOR_ALIGN_BOTTOM_RIGHT: {
-			_set_anchor(ANCHOR_END, ANCHOR_END, ANCHOR_END, ANCHOR_END);
+			_set_anchors_preset(PRESET_BOTTOM_RIGHT);
 		} break;
 		case ANCHOR_ALIGN_CENTER_LEFT: {
-			_set_anchor(ANCHOR_BEGIN, ANCHOR_CENTER, ANCHOR_BEGIN, ANCHOR_CENTER);
+			_set_anchors_preset(PRESET_CENTER_LEFT);
 		} break;
 		case ANCHOR_ALIGN_CENTER_RIGHT: {
-
-			_set_anchor(ANCHOR_END, ANCHOR_CENTER, ANCHOR_END, ANCHOR_CENTER);
+			_set_anchors_preset(PRESET_CENTER_RIGHT);
 		} break;
 		case ANCHOR_ALIGN_CENTER_TOP: {
-			_set_anchor(ANCHOR_CENTER, ANCHOR_BEGIN, ANCHOR_CENTER, ANCHOR_BEGIN);
+			_set_anchors_preset(PRESET_CENTER_TOP);
 		} break;
 		case ANCHOR_ALIGN_CENTER_BOTTOM: {
-			_set_anchor(ANCHOR_CENTER, ANCHOR_END, ANCHOR_CENTER, ANCHOR_END);
+			_set_anchors_preset(PRESET_CENTER_BOTTOM);
 		} break;
 		case ANCHOR_ALIGN_CENTER: {
-			_set_anchor(ANCHOR_CENTER, ANCHOR_CENTER, ANCHOR_CENTER, ANCHOR_CENTER);
+			_set_anchors_preset(PRESET_CENTER);
 		} break;
 		case ANCHOR_ALIGN_TOP_WIDE: {
-			_set_anchor(ANCHOR_BEGIN, ANCHOR_BEGIN, ANCHOR_END, ANCHOR_BEGIN);
+			_set_anchors_preset(PRESET_TOP_WIDE);
 		} break;
 		case ANCHOR_ALIGN_LEFT_WIDE: {
-			_set_anchor(ANCHOR_BEGIN, ANCHOR_BEGIN, ANCHOR_BEGIN, ANCHOR_END);
+			_set_anchors_preset(PRESET_LEFT_WIDE);
 		} break;
 		case ANCHOR_ALIGN_RIGHT_WIDE: {
-			_set_anchor(ANCHOR_END, ANCHOR_BEGIN, ANCHOR_END, ANCHOR_END);
+			_set_anchors_preset(PRESET_RIGHT_WIDE);
 		} break;
 		case ANCHOR_ALIGN_BOTTOM_WIDE: {
-			_set_anchor(ANCHOR_BEGIN, ANCHOR_END, ANCHOR_END, ANCHOR_END);
+			_set_anchors_preset(PRESET_BOTTOM_WIDE);
 		} break;
 		case ANCHOR_ALIGN_VCENTER_WIDE: {
-			_set_anchor(ANCHOR_CENTER, ANCHOR_BEGIN, ANCHOR_CENTER, ANCHOR_END);
+			_set_anchors_preset(PRESET_VCENTER_WIDE);
 		} break;
 		case ANCHOR_ALIGN_HCENTER_WIDE: {
-			_set_anchor(ANCHOR_BEGIN, ANCHOR_CENTER, ANCHOR_END, ANCHOR_CENTER);
+			_set_anchors_preset(PRESET_HCENTER_WIDE);
 		} break;
 		case ANCHOR_ALIGN_WIDE: {
-			_set_anchor(ANCHOR_BEGIN, ANCHOR_BEGIN, ANCHOR_END, ANCHOR_END);
+			_set_anchors_preset(PRESET_WIDE);
 		} break;
 		case ANCHOR_ALIGN_WIDE_FIT: {
 			_set_full_rect();

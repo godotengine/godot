@@ -1337,6 +1337,120 @@ void Control::set_anchor_and_margin(Margin p_margin, float p_anchor, float p_pos
 	set_margin(p_margin, p_pos);
 }
 
+void Control::set_anchors_preset(LayoutPreset p_preset, bool p_keep_margin) {
+	//Left
+	switch (p_preset) {
+		case PRESET_TOP_LEFT:
+		case PRESET_BOTTOM_LEFT:
+		case PRESET_CENTER_LEFT:
+		case PRESET_TOP_WIDE:
+		case PRESET_BOTTOM_WIDE:
+		case PRESET_LEFT_WIDE:
+		case PRESET_HCENTER_WIDE:
+		case PRESET_WIDE:
+			set_anchor(MARGIN_LEFT, ANCHOR_BEGIN, p_keep_margin);
+			break;
+
+		case PRESET_CENTER_TOP:
+		case PRESET_CENTER_BOTTOM:
+		case PRESET_CENTER:
+		case PRESET_VCENTER_WIDE:
+			set_anchor(MARGIN_LEFT, ANCHOR_CENTER, p_keep_margin);
+			break;
+
+		case PRESET_TOP_RIGHT:
+		case PRESET_BOTTOM_RIGHT:
+		case PRESET_CENTER_RIGHT:
+		case PRESET_RIGHT_WIDE:
+			set_anchor(MARGIN_LEFT, ANCHOR_END, p_keep_margin);
+			break;
+	}
+
+	// Top
+	switch (p_preset) {
+		case PRESET_TOP_LEFT:
+		case PRESET_TOP_RIGHT:
+		case PRESET_CENTER_TOP:
+		case PRESET_LEFT_WIDE:
+		case PRESET_RIGHT_WIDE:
+		case PRESET_TOP_WIDE:
+		case PRESET_VCENTER_WIDE:
+		case PRESET_WIDE:
+			set_anchor(MARGIN_TOP, ANCHOR_BEGIN, p_keep_margin);
+			break;
+
+		case PRESET_CENTER_LEFT:
+		case PRESET_CENTER_RIGHT:
+		case PRESET_CENTER:
+		case PRESET_HCENTER_WIDE:
+			set_anchor(MARGIN_TOP, ANCHOR_CENTER, p_keep_margin);
+			break;
+
+		case PRESET_BOTTOM_LEFT:
+		case PRESET_BOTTOM_RIGHT:
+		case PRESET_CENTER_BOTTOM:
+		case PRESET_BOTTOM_WIDE:
+			set_anchor(MARGIN_TOP, ANCHOR_END, p_keep_margin);
+			break;
+	}
+
+	// Right
+	switch (p_preset) {
+		case PRESET_TOP_LEFT:
+		case PRESET_BOTTOM_LEFT:
+		case PRESET_CENTER_LEFT:
+		case PRESET_LEFT_WIDE:
+			set_anchor(MARGIN_RIGHT, ANCHOR_BEGIN, p_keep_margin);
+			break;
+
+		case PRESET_CENTER_TOP:
+		case PRESET_CENTER_BOTTOM:
+		case PRESET_CENTER:
+		case PRESET_VCENTER_WIDE:
+			set_anchor(MARGIN_RIGHT, ANCHOR_CENTER, p_keep_margin);
+			break;
+
+		case PRESET_TOP_RIGHT:
+		case PRESET_BOTTOM_RIGHT:
+		case PRESET_CENTER_RIGHT:
+		case PRESET_TOP_WIDE:
+		case PRESET_RIGHT_WIDE:
+		case PRESET_BOTTOM_WIDE:
+		case PRESET_HCENTER_WIDE:
+		case PRESET_WIDE:
+			set_anchor(MARGIN_RIGHT, ANCHOR_END, p_keep_margin);
+			break;
+	}
+
+	// Bottom
+	switch (p_preset) {
+		case PRESET_TOP_LEFT:
+		case PRESET_TOP_RIGHT:
+		case PRESET_CENTER_TOP:
+		case PRESET_TOP_WIDE:
+			set_anchor(MARGIN_BOTTOM, ANCHOR_BEGIN, p_keep_margin);
+			break;
+
+		case PRESET_CENTER_LEFT:
+		case PRESET_CENTER_RIGHT:
+		case PRESET_CENTER:
+		case PRESET_HCENTER_WIDE:
+			set_anchor(MARGIN_BOTTOM, ANCHOR_CENTER, p_keep_margin);
+			break;
+
+		case PRESET_BOTTOM_LEFT:
+		case PRESET_BOTTOM_RIGHT:
+		case PRESET_CENTER_BOTTOM:
+		case PRESET_LEFT_WIDE:
+		case PRESET_RIGHT_WIDE:
+		case PRESET_BOTTOM_WIDE:
+		case PRESET_VCENTER_WIDE:
+		case PRESET_WIDE:
+			set_anchor(MARGIN_BOTTOM, ANCHOR_END, p_keep_margin);
+			break;
+	}
+}
+
 float Control::get_anchor(Margin p_margin) const {
 
 	return data.anchor[p_margin];
@@ -2343,6 +2457,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_combined_minimum_size"), &Control::get_combined_minimum_size);
 	ClassDB::bind_method(D_METHOD("set_anchor", "margin", "anchor", "keep_margin"), &Control::set_anchor, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("_set_anchor", "margin", "anchor"), &Control::_set_anchor);
+	ClassDB::bind_method(D_METHOD("set_anchors_preset", "preset", "keep_margin"), &Control::set_anchors_preset, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_anchor", "margin"), &Control::get_anchor);
 	ClassDB::bind_method(D_METHOD("set_margin", "margin", "offset"), &Control::set_margin);
 	ClassDB::bind_method(D_METHOD("set_anchor_and_margin", "margin", "anchor", "offset"), &Control::set_anchor_and_margin);
@@ -2540,6 +2655,23 @@ void Control::_bind_methods() {
 	BIND_CONSTANT(CURSOR_VSPLIT);
 	BIND_CONSTANT(CURSOR_HSPLIT);
 	BIND_CONSTANT(CURSOR_HELP);
+
+	BIND_CONSTANT(PRESET_TOP_LEFT);
+	BIND_CONSTANT(PRESET_TOP_RIGHT);
+	BIND_CONSTANT(PRESET_BOTTOM_LEFT);
+	BIND_CONSTANT(PRESET_BOTTOM_RIGHT);
+	BIND_CONSTANT(PRESET_CENTER_LEFT);
+	BIND_CONSTANT(PRESET_CENTER_TOP);
+	BIND_CONSTANT(PRESET_CENTER_RIGHT);
+	BIND_CONSTANT(PRESET_CENTER_BOTTOM);
+	BIND_CONSTANT(PRESET_CENTER);
+	BIND_CONSTANT(PRESET_LEFT_WIDE);
+	BIND_CONSTANT(PRESET_TOP_WIDE);
+	BIND_CONSTANT(PRESET_RIGHT_WIDE);
+	BIND_CONSTANT(PRESET_BOTTOM_WIDE);
+	BIND_CONSTANT(PRESET_VCENTER_WIDE);
+	BIND_CONSTANT(PRESET_HCENTER_WIDE);
+	BIND_CONSTANT(PRESET_WIDE);
 
 	BIND_CONSTANT(SIZE_EXPAND);
 	BIND_CONSTANT(SIZE_FILL);
