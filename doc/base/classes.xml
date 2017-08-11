@@ -49814,6 +49814,7 @@
 			<return type="Vector2">
 			</return>
 			<description>
+				Returns a new vector with all components in absolute values (i.e. positive).
 			</description>
 		</method>
 		<method name="angle">
@@ -49864,6 +49865,7 @@
 			<argument index="0" name="length" type="float">
 			</argument>
 			<description>
+				Returns the vector with a maximum length.
 			</description>
 		</method>
 		<method name="cubic_interpolate">
@@ -50034,7 +50036,7 @@
 			<return type="Vector3">
 			</return>
 			<description>
-				Returns a new vector with all components in absolute values (e.g. positive).
+				Returns a new vector with all components in absolute values (i.e. positive).
 			</description>
 		</method>
 		<method name="angle_to">
