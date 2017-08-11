@@ -56,19 +56,19 @@ class ResourceInteractiveLoaderBinary : public ResourceInteractiveLoader {
 
 	StringName _get_string();
 
-	struct ExtResoucre {
+	struct ExtResource {
 		String path;
 		String type;
 	};
 
-	Vector<ExtResoucre> external_resources;
+	Vector<ExtResource> external_resources;
 
-	struct IntResoucre {
+	struct IntResource {
 		String path;
 		uint64_t offset;
 	};
 
-	Vector<IntResoucre> internal_resources;
+	Vector<IntResource> internal_resources;
 
 	String get_unicode_string();
 	void _advance_padding(uint32_t p_len);
