@@ -130,9 +130,9 @@ struct _VariantCall {
 		StringName name;
 		Variant::Type type;
 		Arg() { type = Variant::NIL; }
-		Arg(Variant::Type p_type, const StringName &p_name) {
-			name = p_name;
-			type = p_type;
+		Arg(Variant::Type p_type, const StringName &p_name)
+			: name(p_name),
+			  type(p_type) {
 		}
 	};
 

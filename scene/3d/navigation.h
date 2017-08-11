@@ -58,9 +58,9 @@ class Navigation : public Spatial {
 			return (a.key == p_key.a.key) ? (b.key < p_key.b.key) : (a.key < p_key.a.key);
 		};
 
-		EdgeKey(const Point &p_a = Point(), const Point &p_b = Point()) {
-			a = p_a;
-			b = p_b;
+		EdgeKey(const Point &p_a = Point(), const Point &p_b = Point())
+			: a(p_a),
+			  b(p_b) {
 			if (a.key > b.key) {
 				SWAP(a, b);
 			}

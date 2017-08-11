@@ -378,13 +378,13 @@ struct Rect2 {
 	operator String() const { return String(position) + ", " + String(size); }
 
 	Rect2() {}
-	Rect2(real_t p_x, real_t p_y, real_t p_width, real_t p_height) {
-		position = Point2(p_x, p_y);
-		size = Size2(p_width, p_height);
+	Rect2(real_t p_x, real_t p_y, real_t p_width, real_t p_height)
+		: position(Point2(p_x, p_y)),
+		  size(Size2(p_width, p_height)) {
 	}
-	Rect2(const Point2 &p_pos, const Size2 &p_size) {
-		position = p_pos;
-		size = p_size;
+	Rect2(const Point2 &p_pos, const Size2 &p_size)
+		: position(p_pos),
+		  size(p_size) {
 	}
 };
 
@@ -571,18 +571,18 @@ struct Rect2i {
 	operator String() const { return String(position) + ", " + String(size); }
 
 	operator Rect2() const { return Rect2(position, size); }
-	Rect2i(const Rect2 &p_r2) {
-		position = p_r2.position;
-		size = p_r2.size;
+	Rect2i(const Rect2 &p_r2)
+		: position(p_r2.position),
+		  size(p_r2.size) {
 	}
 	Rect2i() {}
-	Rect2i(int p_x, int p_y, int p_width, int p_height) {
-		position = Point2(p_x, p_y);
-		size = Size2(p_width, p_height);
+	Rect2i(int p_x, int p_y, int p_width, int p_height)
+		: position(Point2(p_x, p_y)),
+		  size(Size2(p_width, p_height)) {
 	}
-	Rect2i(const Point2 &p_pos, const Size2 &p_size) {
-		position = p_pos;
-		size = p_size;
+	Rect2i(const Point2 &p_pos, const Size2 &p_size)
+		: position(p_pos),
+		  size(p_size) {
 	}
 };
 

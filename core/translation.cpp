@@ -923,9 +923,8 @@ void Translation::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "locale"), "set_locale", "get_locale");
 }
 
-Translation::Translation() {
-
-	locale = "en";
+Translation::Translation()
+	: locale("en") {
 }
 
 ///////////////////////////////////////////////
@@ -1144,9 +1143,8 @@ void TranslationServer::load_translations() {
 	}
 }
 
-TranslationServer::TranslationServer() {
-
+TranslationServer::TranslationServer()
+	: locale("en"),
+	  enabled(true) {
 	singleton = this;
-	locale = "en";
-	enabled = true;
 }

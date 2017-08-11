@@ -46,9 +46,9 @@
 
 #ifdef DEBUG_METHODS_ENABLED
 
-ParamDef::ParamDef(const Variant &p_variant) {
-	used = true;
-	val = p_variant;
+ParamDef::ParamDef(const Variant &p_variant)
+	: used(true),
+	  val(p_variant) {
 }
 
 MethodDefinition D_METHOD(const char *p_name) {
