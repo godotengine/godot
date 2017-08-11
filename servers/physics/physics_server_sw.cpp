@@ -493,8 +493,8 @@ void PhysicsServerSW::body_set_space(RID p_body, RID p_space) {
 	if (body->get_space() == space)
 		return; //pointless
 
-	while (body->get_constraint_map().size()) {
-		RID self = body->get_constraint_map().front()->key()->get_self();
+	for (Map<ConstraintSW *, int>::Element *E = body->get_constraint_map().front(); E; E = E->next()) {
+		RID self = E->key()->get_self();
 		if (!self.is_valid())
 			continue;
 		free(self);
