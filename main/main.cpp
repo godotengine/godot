@@ -1223,6 +1223,8 @@ bool Main::start() {
 				sml_aspect = SceneTree::STRETCH_ASPECT_KEEP_WIDTH;
 			else if (stretch_aspect == "keep_height")
 				sml_aspect = SceneTree::STRETCH_ASPECT_KEEP_HEIGHT;
+			else if (stretch_aspect == "expand")
+				sml_aspect = SceneTree::STRETCH_ASPECT_EXPAND;
 
 			sml->set_screen_stretch(sml_sm, sml_aspect, stretch_size);
 
@@ -1235,7 +1237,7 @@ bool Main::start() {
 			GLOBAL_DEF("display/stretch_mode", "disabled");
 			Globals::get_singleton()->set_custom_property_info("display/stretch_mode", PropertyInfo(Variant::STRING, "display/stretch_mode", PROPERTY_HINT_ENUM, "disabled,2d,viewport"));
 			GLOBAL_DEF("display/stretch_aspect", "ignore");
-			Globals::get_singleton()->set_custom_property_info("display/stretch_aspect", PropertyInfo(Variant::STRING, "display/stretch_aspect", PROPERTY_HINT_ENUM, "ignore,keep,keep_width,keep_height"));
+			Globals::get_singleton()->set_custom_property_info("display/stretch_aspect", PropertyInfo(Variant::STRING, "display/stretch_aspect", PROPERTY_HINT_ENUM, "ignore,keep,keep_width,keep_height,expand"));
 			sml->set_auto_accept_quit(GLOBAL_DEF("application/auto_accept_quit", true));
 		}
 
