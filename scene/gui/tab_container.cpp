@@ -548,11 +548,11 @@ Ref<Texture> TabContainer::get_tab_icon(int p_tab) const {
 		return Ref<Texture>();
 }
 
-void TabContainer::set_tab_disabled(int p_tab, bool p_enabled) {
+void TabContainer::set_tab_disabled(int p_tab, bool p_disabled) {
 
 	Control *child = _get_tab(p_tab);
 	ERR_FAIL_COND(!child);
-	child->set_meta("_tab_disabled", p_enabled);
+	child->set_meta("_tab_disabled", p_disabled);
 	update();
 }
 

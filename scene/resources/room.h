@@ -50,7 +50,7 @@ protected:
 public:
 	virtual RID get_rid() const;
 
-	void set_geometry_hint(const PoolVector<Face3> &geometry_hint);
+	void set_geometry_hint(const PoolVector<Face3> &p_geometry_hint);
 	PoolVector<Face3> get_geometry_hint() const;
 
 	RoomBounds();

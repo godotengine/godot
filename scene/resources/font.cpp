@@ -179,14 +179,14 @@ Vector<Variant> BitmapFont::_get_textures() const {
 	return rtextures;
 }
 
-Error BitmapFont::create_from_fnt(const String &p_string) {
+Error BitmapFont::create_from_fnt(const String &p_file) {
 	//fnt format used by angelcode bmfont
 	//http://www.angelcode.com/products/bmfont/
 
-	FileAccess *f = FileAccess::open(p_string, FileAccess::READ);
+	FileAccess *f = FileAccess::open(p_file, FileAccess::READ);
 
 	if (!f) {
-		ERR_EXPLAIN("Can't open font: " + p_string);
+		ERR_EXPLAIN("Can't open font: " + p_file);
 		ERR_FAIL_V(ERR_FILE_NOT_FOUND);
 	}
 
@@ -255,7 +255,7 @@ Error BitmapFont::create_from_fnt(const String &p_string) {
 			if (keys.has("file")) {
 
 				String file = keys["file"];
-				file = p_string.get_base_dir() + "/" + file;
+				file = p_file.get_base_dir() + "/" + file;
 				Ref<Texture> tex = ResourceLoader::load(file);
 				if (tex.is_null()) {
 					ERR_PRINT("Can't load font texture!");

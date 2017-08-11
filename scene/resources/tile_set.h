@@ -105,7 +105,7 @@ public:
 	void tile_set_shape(int p_id, int p_shape_id, const Ref<Shape2D> &p_shape);
 	Ref<Shape2D> tile_get_shape(int p_id, int p_shape_id) const;
 
-	void tile_set_shape_transform(int p_id, int p_shape_id, const Transform2D &p_transform);
+	void tile_set_shape_transform(int p_id, int p_shape_id, const Transform2D &p_offset);
 	Transform2D tile_get_shape_transform(int p_id, int p_shape_id) const;
 
 	void tile_set_shape_one_way(int p_id, int p_shape_id, bool p_one_way);
@@ -121,7 +121,7 @@ public:
 	void tile_set_material(int p_id, const Ref<ShaderMaterial> &p_material);
 	Ref<ShaderMaterial> tile_get_material(int p_id) const;
 
-	void tile_set_modulate(int p_id, const Color &p_color);
+	void tile_set_modulate(int p_id, const Color &p_modulate);
 	Color tile_get_modulate(int p_id) const;
 
 	void tile_set_occluder_offset(int p_id, const Vector2 &p_offset);

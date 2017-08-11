@@ -106,11 +106,11 @@ uint8_t FileAccessBuffered::get_8() const {
 	return byte;
 };
 
-int FileAccessBuffered::get_buffer(uint8_t *p_dest, int p_elements) const {
+int FileAccessBuffered::get_buffer(uint8_t *p_dest, int p_length) const {
 
 	ERR_FAIL_COND_V(!file.open, -1);
 
-	if (p_elements > cache_size) {
+	if (p_length > cache_size) {
 
 		int total_read = 0;
 
@@ -122,12 +122,12 @@ int FileAccessBuffered::get_buffer(uint8_t *p_dest, int p_elements) const {
 			//memcpy(p_dest, read.ptr() + (file.offset - cache.offset), size);
 			memcpy(p_dest, cache.buffer.ptr() + (file.offset - cache.offset), size);
 			p_dest += size;
-			p_elements -= size;
+			p_length -= size;
 			file.offset += size;
 			total_read += size;
 		};
 
-		int err = read_data_block(file.offset, p_elements, p_dest);
+		int err = read_data_block(file.offset, p_length, p_dest);
 		if (err >= 0) {
 			total_read += err;
 			file.offset += err;
@@ -136,7 +136,7 @@ int FileAccessBuffered::get_buffer(uint8_t *p_dest, int p_elements) const {
 		return total_read;
 	};
 
-	int to_read = p_elements;
+	int to_read = p_length;
 	int total_read = 0;
 	while (to_read > 0) {
 
@@ -161,7 +161,7 @@ int FileAccessBuffered::get_buffer(uint8_t *p_dest, int p_elements) const {
 		to_read -= r;
 	};
 
-	return p_elements;
+	return p_length;
 };
 
 bool FileAccessBuffered::is_open() const {

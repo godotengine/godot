@@ -80,7 +80,7 @@ public:
 	void set_emitting(bool p_emitting);
 	void set_amount(int p_amount);
 	void set_lifetime(float p_lifetime);
-	void set_one_shot(bool p_enabled);
+	void set_one_shot(bool p_enable);
 	void set_pre_process_time(float p_time);
 	void set_explosiveness_ratio(float p_ratio);
 	void set_randomness_ratio(float p_ratio);

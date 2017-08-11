@@ -110,7 +110,7 @@ ConeTwistJointSW::ConeTwistJointSW(BodySW *rbA, BodySW *rbB, const Transform &rb
 	m_appliedImpulse = 0;
 }
 
-bool ConeTwistJointSW::setup(real_t p_step) {
+bool ConeTwistJointSW::setup(real_t p_timestep) {
 	m_appliedImpulse = real_t(0.);
 
 	//set bias, sign, clear accumulator
@@ -237,7 +237,7 @@ bool ConeTwistJointSW::setup(real_t p_step) {
 	return true;
 }
 
-void ConeTwistJointSW::solve(real_t timeStep) {
+void ConeTwistJointSW::solve(real_t p_timestep) {
 
 	Vector3 pivotAInW = A->get_transform().xform(m_rbAFrame.origin);
 	Vector3 pivotBInW = B->get_transform().xform(m_rbBFrame.origin);
@@ -261,7 +261,7 @@ void ConeTwistJointSW::solve(real_t timeStep) {
 			rel_vel = normal.dot(vel);
 			//positional error (zeroth order error)
 			real_t depth = -(pivotAInW - pivotBInW).dot(normal); //this is the error projected on the normal
-			real_t impulse = depth * tau / timeStep * jacDiagABInv - rel_vel * jacDiagABInv;
+			real_t impulse = depth * tau / p_timestep * jacDiagABInv - rel_vel * jacDiagABInv;
 			m_appliedImpulse += impulse;
 			Vector3 impulse_vector = normal * impulse;
 			A->apply_impulse(pivotAInW - A->get_transform().origin, impulse_vector);
@@ -276,7 +276,7 @@ void ConeTwistJointSW::solve(real_t timeStep) {
 
 		// solve swing limit
 		if (m_solveSwingLimit) {
-			real_t amplitude = ((angVelB - angVelA).dot(m_swingAxis) * m_relaxationFactor * m_relaxationFactor + m_swingCorrection * (real_t(1.) / timeStep) * m_biasFactor);
+			real_t amplitude = ((angVelB - angVelA).dot(m_swingAxis) * m_relaxationFactor * m_relaxationFactor + m_swingCorrection * (real_t(1.) / p_timestep) * m_biasFactor);
 			real_t impulseMag = amplitude * m_kSwing;
 
 			// Clamp the accumulated impulse
@@ -292,7 +292,7 @@ void ConeTwistJointSW::solve(real_t timeStep) {
 
 		// solve twist limit
 		if (m_solveTwistLimit) {
-			real_t amplitude = ((angVelB - angVelA).dot(m_twistAxis) * m_relaxationFactor * m_relaxationFactor + m_twistCorrection * (real_t(1.) / timeStep) * m_biasFactor);
+			real_t amplitude = ((angVelB - angVelA).dot(m_twistAxis) * m_relaxationFactor * m_relaxationFactor + m_twistCorrection * (real_t(1.) / p_timestep) * m_biasFactor);
 			real_t impulseMag = amplitude * m_kTwist;
 
 			// Clamp the accumulated impulse

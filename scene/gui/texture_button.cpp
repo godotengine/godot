@@ -286,8 +286,8 @@ void TextureButton::set_expand(bool p_expand) {
 	update();
 }
 
-void TextureButton::set_stretch_mode(StretchMode p_mode) {
-	stretch_mode = p_mode;
+void TextureButton::set_stretch_mode(StretchMode p_stretch_mode) {
+	stretch_mode = p_stretch_mode;
 	update();
 }
 

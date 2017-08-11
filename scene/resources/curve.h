@@ -174,7 +174,7 @@ public:
 
 	void bake();
 	int get_bake_resolution() const { return _bake_resolution; }
-	void set_bake_resolution(int p_interval);
+	void set_bake_resolution(int p_resolution);
 	real_t interpolate_baked(real_t offset);
 
 protected:
@@ -242,7 +242,7 @@ public:
 	Vector2 interpolate(int p_index, float p_offset) const;
 	Vector2 interpolatef(real_t p_findex) const;
 
-	void set_bake_interval(float p_distance);
+	void set_bake_interval(float p_tolerance);
 	float get_bake_interval() const;
 
 	float get_baked_length() const;
@@ -309,7 +309,7 @@ public:
 	Vector3 interpolate(int p_index, float p_offset) const;
 	Vector3 interpolatef(real_t p_findex) const;
 
-	void set_bake_interval(float p_distance);
+	void set_bake_interval(float p_tolerance);
 	float get_bake_interval() const;
 
 	float get_baked_length() const;

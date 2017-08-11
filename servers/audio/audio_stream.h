@@ -74,7 +74,7 @@ protected:
 	virtual float get_stream_sampling_rate() = 0;
 
 public:
-	virtual void mix(AudioFrame *p_bufer, float p_rate_scale, int p_frames);
+	virtual void mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames);
 
 	AudioStreamPlaybackResampled() { mix_offset = 0; }
 };
@@ -104,7 +104,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_audio_stream(const Ref<AudioStream> &audio_stream);
+	void set_audio_stream(const Ref<AudioStream> &p_audio_stream);
 	Ref<AudioStream> get_audio_stream() const;
 
 	void set_random_pitch(float p_pitch);

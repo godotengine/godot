@@ -20,7 +20,7 @@ protected:
 
 public:
 	void reset(const Vector3 &p_new_pos);
-	void set_track_fixed_step(bool p_use_fixed_step);
+	void set_track_fixed_step(bool p_track_fixed_step);
 	bool is_tracking_fixed_step() const;
 	void update_position(const Vector3 &p_position);
 	Vector3 get_tracked_linear_velocity() const;

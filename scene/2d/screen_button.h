@@ -61,7 +61,7 @@ private:
 
 	VisibilityMode visibility;
 
-	void _input(const Ref<InputEvent> &p_Event);
+	void _input(const Ref<InputEvent> &p_event);
 
 	bool _is_point_inside(const Point2 &p_point);
 

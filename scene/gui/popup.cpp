@@ -203,15 +203,15 @@ void Popup::popup_centered_ratio(float p_screen_ratio) {
 	popped_up = true;
 }
 
-void Popup::popup(const Rect2 &bounds) {
+void Popup::popup(const Rect2 &p_bounds) {
 
 	emit_signal("about_to_show");
 	show_modal(exclusive);
 
 	// Fit the popup into the optionally provided bounds.
-	if (!bounds.has_no_area()) {
-		set_position(bounds.position);
-		set_size(bounds.size);
+	if (!p_bounds.has_no_area()) {
+		set_position(p_bounds.position);
+		set_size(p_bounds.size);
 	}
 	_fix_size();
 

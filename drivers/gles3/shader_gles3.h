@@ -306,7 +306,7 @@ public:
 	};
 
 	GLint get_uniform_location(const String &p_name) const;
-	GLint get_uniform_location(int p_uniform) const;
+	GLint get_uniform_location(int p_index) const;
 
 	static _FORCE_INLINE_ ShaderGLES3 *get_active() { return active; };
 	bool bind();
@@ -318,9 +318,9 @@ public:
 	void clear_caches();
 
 	uint32_t create_custom_shader();
-	void set_custom_shader_code(uint32_t p_id, const String &p_vertex, const String &p_vertex_globals, const String &p_fragment, const String &p_p_light, const String &p_fragment_globals, const String &p_uniforms, const Vector<StringName> &p_texture_uniforms, const Vector<CharString> &p_custom_defines);
-	void set_custom_shader(uint32_t p_id);
-	void free_custom_shader(uint32_t p_id);
+	void set_custom_shader_code(uint32_t p_code_id, const String &p_vertex, const String &p_vertex_globals, const String &p_fragment, const String &p_light, const String &p_fragment_globals, const String &p_uniforms, const Vector<StringName> &p_texture_uniforms, const Vector<CharString> &p_custom_defines);
+	void set_custom_shader(uint32_t p_code_id);
+	void free_custom_shader(uint32_t p_code_id);
 
 	void set_uniform_default(int p_idx, const Variant &p_value) {
 

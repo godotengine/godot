@@ -97,24 +97,24 @@ public:
 
 /* inline methods */
 
-void AudioFilterSW::Processor::process_one(float &p_val) {
+void AudioFilterSW::Processor::process_one(float &p_sample) {
 
-	float pre = p_val;
-	p_val = (p_val * coeffs.b0 + hb1 * coeffs.b1 + hb2 * coeffs.b2 + ha1 * coeffs.a1 + ha2 * coeffs.a2);
+	float pre = p_sample;
+	p_sample = (p_sample * coeffs.b0 + hb1 * coeffs.b1 + hb2 * coeffs.b2 + ha1 * coeffs.a1 + ha2 * coeffs.a2);
 	ha2 = ha1;
 	hb2 = hb1;
 	hb1 = pre;
-	ha1 = p_val;
+	ha1 = p_sample;
 }
 
-void AudioFilterSW::Processor::process_one_interp(float &p_val) {
+void AudioFilterSW::Processor::process_one_interp(float &p_sample) {
 
-	float pre = p_val;
-	p_val = (p_val * coeffs.b0 + hb1 * coeffs.b1 + hb2 * coeffs.b2 + ha1 * coeffs.a1 + ha2 * coeffs.a2);
+	float pre = p_sample;
+	p_sample = (p_sample * coeffs.b0 + hb1 * coeffs.b1 + hb2 * coeffs.b2 + ha1 * coeffs.a1 + ha2 * coeffs.a2);
 	ha2 = ha1;
 	hb2 = hb1;
 	hb1 = pre;
-	ha1 = p_val;
+	ha1 = p_sample;
 
 	coeffs.b0 += incr_coeffs.b0;
 	coeffs.b1 += incr_coeffs.b1;

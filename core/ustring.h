@@ -78,7 +78,7 @@ public:
 	//String operator+(CharType p_char) const;
 
 	String &operator+=(const String &);
-	String &operator+=(CharType p_str);
+	String &operator+=(CharType p_char);
 	String &operator+=(const char *p_str);
 	String &operator+=(const CharType *p_str);
 
@@ -156,7 +156,7 @@ public:
 
 	int get_slice_count(String p_splitter) const;
 	String get_slice(String p_splitter, int p_slice) const;
-	String get_slicec(CharType splitter, int p_slice) const;
+	String get_slicec(CharType p_splitter, int p_slice) const;
 
 	Vector<String> split(const String &p_splitter, bool p_allow_empty = true) const;
 	Vector<String> split_spaces() const;
@@ -186,8 +186,8 @@ public:
 	bool parse_utf8(const char *p_utf8, int p_len = -1); //return true on error
 	static String utf8(const char *p_utf8, int p_len = -1);
 
-	static uint32_t hash(const CharType *p_str, int p_len); /* hash the string */
-	static uint32_t hash(const CharType *p_str); /* hash the string */
+	static uint32_t hash(const CharType *p_cstr, int p_len); /* hash the string */
+	static uint32_t hash(const CharType *p_cstr); /* hash the string */
 	static uint32_t hash(const char *p_cstr, int p_len); /* hash the string */
 	static uint32_t hash(const char *p_cstr); /* hash the string */
 	uint32_t hash() const; /* hash the string */

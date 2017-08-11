@@ -52,8 +52,8 @@ public:
 	void set_normal(const Vector3 &p_normal);
 	void set_tangent(const Plane &p_tangent);
 	void set_color(const Color &p_color);
-	void set_uv(const Vector2 &tex_uv);
-	void set_uv2(const Vector2 &tex_uv);
+	void set_uv(const Vector2 &p_uv);
+	void set_uv2(const Vector2 &p_uv2);
 
 	void add_vertex(const Vector3 &p_vertex);
 

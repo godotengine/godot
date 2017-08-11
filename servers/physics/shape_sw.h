@@ -385,7 +385,7 @@ public:
 
 	virtual void project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const;
 	virtual Vector3 get_support(const Vector3 &p_normal) const;
-	virtual bool intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const;
+	virtual bool intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_point, Vector3 &r_normal) const;
 	virtual bool intersect_point(const Vector3 &p_point) const;
 
 	virtual Vector3 get_closest_point_to(const Vector3 &p_point) const;

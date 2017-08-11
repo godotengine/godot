@@ -429,9 +429,9 @@ void ScriptDebuggerRemote::_err_handler(void *ud, const char *p_func, const char
 	sdr->mutex->unlock();
 }
 
-bool ScriptDebuggerRemote::_parse_live_edit(const Array &cmd) {
+bool ScriptDebuggerRemote::_parse_live_edit(const Array &p_command) {
 
-	String cmdstr = cmd[0];
+	String cmdstr = p_command[0];
 	if (!live_edit_funcs || !cmdstr.begins_with("live_"))
 		return false;
 
@@ -441,7 +441,7 @@ bool ScriptDebuggerRemote::_parse_live_edit(const Array &cmd) {
 		if (!live_edit_funcs->root_func)
 			return true;
 		//print_line("root: "+Variant(cmd).get_construct_string());
-		live_edit_funcs->root_func(live_edit_funcs->udata, cmd[1], cmd[2]);
+		live_edit_funcs->root_func(live_edit_funcs->udata, p_command[1], p_command[2]);
 
 	} else if (cmdstr == "live_node_path") {
 
@@ -449,75 +449,75 @@ bool ScriptDebuggerRemote::_parse_live_edit(const Array &cmd) {
 			return true;
 		//print_line("path: "+Variant(cmd).get_construct_string());
 
-		live_edit_funcs->node_path_func(live_edit_funcs->udata, cmd[1], cmd[2]);
+		live_edit_funcs->node_path_func(live_edit_funcs->udata, p_command[1], p_command[2]);
 
 	} else if (cmdstr == "live_res_path") {
 
 		if (!live_edit_funcs->res_path_func)
 			return true;
-		live_edit_funcs->res_path_func(live_edit_funcs->udata, cmd[1], cmd[2]);
+		live_edit_funcs->res_path_func(live_edit_funcs->udata, p_command[1], p_command[2]);
 
 	} else if (cmdstr == "live_node_prop_res") {
 		if (!live_edit_funcs->node_set_res_func)
 			return true;
 
-		live_edit_funcs->node_set_res_func(live_edit_funcs->udata, cmd[1], cmd[2], cmd[3]);
+		live_edit_funcs->node_set_res_func(live_edit_funcs->udata, p_command[1], p_command[2], p_command[3]);
 
 	} else if (cmdstr == "live_node_prop") {
 
 		if (!live_edit_funcs->node_set_func)
 			return true;
-		live_edit_funcs->node_set_func(live_edit_funcs->udata, cmd[1], cmd[2], cmd[3]);
+		live_edit_funcs->node_set_func(live_edit_funcs->udata, p_command[1], p_command[2], p_command[3]);
 
 	} else if (cmdstr == "live_res_prop_res") {
 
 		if (!live_edit_funcs->res_set_res_func)
 			return true;
-		live_edit_funcs->res_set_res_func(live_edit_funcs->udata, cmd[1], cmd[2], cmd[3]);
+		live_edit_funcs->res_set_res_func(live_edit_funcs->udata, p_command[1], p_command[2], p_command[3]);
 
 	} else if (cmdstr == "live_res_prop") {
 
 		if (!live_edit_funcs->res_set_func)
 			return true;
-		live_edit_funcs->res_set_func(live_edit_funcs->udata, cmd[1], cmd[2], cmd[3]);
+		live_edit_funcs->res_set_func(live_edit_funcs->udata, p_command[1], p_command[2], p_command[3]);
 
 	} else if (cmdstr == "live_node_call") {
 
 		if (!live_edit_funcs->node_call_func)
 			return true;
-		live_edit_funcs->node_call_func(live_edit_funcs->udata, cmd[1], cmd[2], cmd[3], cmd[4], cmd[5], cmd[6], cmd[7]);
+		live_edit_funcs->node_call_func(live_edit_funcs->udata, p_command[1], p_command[2], p_command[3], p_command[4], p_command[5], p_command[6], p_command[7]);
 
 	} else if (cmdstr == "live_res_call") {
 
 		if (!live_edit_funcs->res_call_func)
 			return true;
-		live_edit_funcs->res_call_func(live_edit_funcs->udata, cmd[1], cmd[2], cmd[3], cmd[4], cmd[5], cmd[6], cmd[7]);
+		live_edit_funcs->res_call_func(live_edit_funcs->udata, p_command[1], p_command[2], p_command[3], p_command[4], p_command[5], p_command[6], p_command[7]);
 
 	} else if (cmdstr == "live_create_node") {
 
-		live_edit_funcs->tree_create_node_func(live_edit_funcs->udata, cmd[1], cmd[2], cmd[3]);
+		live_edit_funcs->tree_create_node_func(live_edit_funcs->udata, p_command[1], p_command[2], p_command[3]);
 
 	} else if (cmdstr == "live_instance_node") {
 
-		live_edit_funcs->tree_instance_node_func(live_edit_funcs->udata, cmd[1], cmd[2], cmd[3]);
+		live_edit_funcs->tree_instance_node_func(live_edit_funcs->udata, p_command[1], p_command[2], p_command[3]);
 
 	} else if (cmdstr == "live_remove_node") {
 
-		live_edit_funcs->tree_remove_node_func(live_edit_funcs->udata, cmd[1]);
+		live_edit_funcs->tree_remove_node_func(live_edit_funcs->udata, p_command[1]);
 
 	} else if (cmdstr == "live_remove_and_keep_node") {
 
-		live_edit_funcs->tree_remove_and_keep_node_func(live_edit_funcs->udata, cmd[1], cmd[2]);
+		live_edit_funcs->tree_remove_and_keep_node_func(live_edit_funcs->udata, p_command[1], p_command[2]);
 	} else if (cmdstr == "live_restore_node") {
 
-		live_edit_funcs->tree_restore_node_func(live_edit_funcs->udata, cmd[1], cmd[2], cmd[3]);
+		live_edit_funcs->tree_restore_node_func(live_edit_funcs->udata, p_command[1], p_command[2], p_command[3]);
 
 	} else if (cmdstr == "live_duplicate_node") {
 
-		live_edit_funcs->tree_duplicate_node_func(live_edit_funcs->udata, cmd[1], cmd[2]);
+		live_edit_funcs->tree_duplicate_node_func(live_edit_funcs->udata, p_command[1], p_command[2]);
 	} else if (cmdstr == "live_reparent_node") {
 
-		live_edit_funcs->tree_reparent_node_func(live_edit_funcs->udata, cmd[1], cmd[2], cmd[3], cmd[4]);
+		live_edit_funcs->tree_reparent_node_func(live_edit_funcs->udata, p_command[1], p_command[2], p_command[3], p_command[4]);
 
 	} else {
 

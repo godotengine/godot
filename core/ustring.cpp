@@ -279,16 +279,16 @@ void String::operator=(const CharType *p_str) {
 	copy_from(p_str);
 }
 
-bool String::operator==(const StrRange &p_range) const {
+bool String::operator==(const StrRange &p_str_range) const {
 
-	int len = p_range.len;
+	int len = p_str_range.len;
 
 	if (length() != len)
 		return false;
 	if (empty())
 		return true;
 
-	const CharType *c_str = p_range.c_str;
+	const CharType *c_str = p_str_range.c_str;
 	const CharType *dst = &operator[](0);
 
 	/* Compare char by char */

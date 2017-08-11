@@ -739,21 +739,21 @@ static void engine_handle_cmd(struct android_app *app, int32_t cmd) {
 	}
 }
 
-void android_main(struct android_app *state) {
+void android_main(struct android_app *app) {
 	struct engine engine;
 	// Make sure glue isn't stripped.
 	app_dummy();
 
 	memset(&engine, 0, sizeof(engine));
-	state->userData = &engine;
-	state->onAppCmd = engine_handle_cmd;
-	state->onInputEvent = engine_handle_input;
-	engine.app = state;
+	app->userData = &engine;
+	app->onAppCmd = engine_handle_cmd;
+	app->onInputEvent = engine_handle_input;
+	engine.app = app;
 	engine.requested_quit = false;
 	engine.os = NULL;
 	engine.display_active = false;
 
-	FileAccessAndroid::asset_manager = state->activity->assetManager;
+	FileAccessAndroid::asset_manager = app->activity->assetManager;
 
 	// Prepare to monitor sensors
 	engine.sensorManager = ASensorManager_getInstance();
@@ -764,11 +764,11 @@ void android_main(struct android_app *state) {
 	engine.gyroscopeSensor = ASensorManager_getDefaultSensor(engine.sensorManager,
 			ASENSOR_TYPE_GYROSCOPE);
 	engine.sensorEventQueue = ASensorManager_createEventQueue(engine.sensorManager,
-			state->looper, LOOPER_ID_USER, NULL, NULL);
+			app->looper, LOOPER_ID_USER, NULL, NULL);
 
-	ANativeActivity_setWindowFlags(state->activity, AWINDOW_FLAG_FULLSCREEN | AWINDOW_FLAG_KEEP_SCREEN_ON, 0);
+	ANativeActivity_setWindowFlags(app->activity, AWINDOW_FLAG_FULLSCREEN | AWINDOW_FLAG_KEEP_SCREEN_ON, 0);
 
-	state->activity->vm->AttachCurrentThread(&engine.jni, NULL);
+	app->activity->vm->AttachCurrentThread(&engine.jni, NULL);
 
 	// loop waiting for stuff to do.
 
@@ -790,7 +790,7 @@ void android_main(struct android_app *state) {
 
 			if (source != NULL) {
 				// LOGI("process\n");
-				source->process(state, source);
+				source->process(app, source);
 			} else {
 				nullmax--;
 				if (nullmax < 0)
@@ -824,11 +824,11 @@ void android_main(struct android_app *state) {
 			}
 
 			// Check if we are exiting.
-			if (state->destroyRequested != 0) {
+			if (app->destroyRequested != 0) {
 				if (engine.os) {
 					engine.os->main_loop_request_quit();
 				}
-				state->destroyRequested = 0;
+				app->destroyRequested = 0;
 			}
 
 			if (engine.requested_quit) {

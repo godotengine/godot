@@ -119,7 +119,7 @@ public:
 	void set_pixel_size(float p_amount);
 	float get_pixel_size() const;
 
-	void set_axis(Vector3::Axis p_amount);
+	void set_axis(Vector3::Axis p_axis);
 	Vector3::Axis get_axis() const;
 
 	void set_draw_flag(DrawFlags p_flag, bool p_enable);

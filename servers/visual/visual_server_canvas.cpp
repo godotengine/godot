@@ -392,14 +392,14 @@ void VisualServerCanvas::canvas_item_set_draw_behind_parent(RID p_item, bool p_e
 	canvas_item->behind = p_enable;
 }
 
-void VisualServerCanvas::canvas_item_add_line(RID p_item, const Point2 &p_from, const Point2 &p_to, const Color &p_colors, float p_width, bool p_antialiased) {
+void VisualServerCanvas::canvas_item_add_line(RID p_item, const Point2 &p_from, const Point2 &p_to, const Color &p_color, float p_width, bool p_antialiased) {
 
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
 	Item::CommandLine *line = memnew(Item::CommandLine);
 	ERR_FAIL_COND(!line);
-	line->color = p_colors;
+	line->color = p_color;
 	line->from = p_from;
 	line->to = p_to;
 	line->width = p_width;

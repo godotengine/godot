@@ -33,36 +33,36 @@
 #define _VERTEX_SNAP 0.0001
 #define EQ_VERTEX_DIST 0.00001
 
-bool SurfaceTool::Vertex::operator==(const Vertex &p_b) const {
+bool SurfaceTool::Vertex::operator==(const Vertex &p_vertex) const {
 
-	if (vertex != p_b.vertex)
+	if (vertex != p_vertex.vertex)
 		return false;
 
-	if (uv != p_b.uv)
+	if (uv != p_vertex.uv)
 		return false;
 
-	if (uv2 != p_b.uv2)
+	if (uv2 != p_vertex.uv2)
 		return false;
 
-	if (normal != p_b.normal)
+	if (normal != p_vertex.normal)
 		return false;
 
-	if (binormal != p_b.binormal)
+	if (binormal != p_vertex.binormal)
 		return false;
 
-	if (color != p_b.color)
+	if (color != p_vertex.color)
 		return false;
 
-	if (bones.size() != p_b.bones.size())
+	if (bones.size() != p_vertex.bones.size())
 		return false;
 
 	for (int i = 0; i < bones.size(); i++) {
-		if (bones[i] != p_b.bones[i])
+		if (bones[i] != p_vertex.bones[i])
 			return false;
 	}
 
 	for (int i = 0; i < weights.size(); i++) {
-		if (weights[i] != p_b.weights[i])
+		if (weights[i] != p_vertex.weights[i])
 			return false;
 	}
 

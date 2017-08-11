@@ -296,7 +296,7 @@ public:
 	void push_align(Align p_align);
 	void push_indent(int p_level);
 	void push_list(ListType p_list);
-	void push_meta(const Variant &p_data);
+	void push_meta(const Variant &p_meta);
 	void push_table(int p_columns);
 	void set_table_column_expand(int p_column, bool p_expand, int p_ratio = 1);
 	int get_current_table_column() const;

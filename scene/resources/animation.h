@@ -212,7 +212,7 @@ private:
 	}
 
 	bool _transform_track_optimize_key(const TKey<TransformKey> &t0, const TKey<TransformKey> &t1, const TKey<TransformKey> &t2, float p_alowed_linear_err, float p_alowed_angular_err, float p_max_optimizable_angle, const Vector3 &p_norm);
-	void _transform_track_optimize(int p_idx, float p_allowed_err = 0.05, float p_alowed_angular_err = 0.01, float p_max_optimizable_angle = Math_PI * 0.125);
+	void _transform_track_optimize(int p_idx, float p_allowed_linear_err = 0.05, float p_allowed_angular_err = 0.01, float p_max_optimizable_angle = Math_PI * 0.125);
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);

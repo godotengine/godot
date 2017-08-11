@@ -177,7 +177,7 @@ public:
 
 	virtual Size2 get_minimum_size() const;
 
-	void set_expand_to_text_length(bool p_len);
+	void set_expand_to_text_length(bool p_enabled);
 	bool get_expand_to_text_length() const;
 
 	virtual bool is_text_field() const;

@@ -71,16 +71,16 @@ public:
 	void set_mode(Mode p_mode);
 	Mode get_mode() const;
 
-	void set_pre_gain(float pre_gain);
+	void set_pre_gain(float p_pre_gain);
 	float get_pre_gain() const;
 
-	void set_keep_hf_hz(float keep_hf_hz);
+	void set_keep_hf_hz(float p_keep_hf_hz);
 	float get_keep_hf_hz() const;
 
-	void set_drive(float drive);
+	void set_drive(float p_drive);
 	float get_drive() const;
 
-	void set_post_gain(float post_gain);
+	void set_post_gain(float p_post_gain);
 	float get_post_gain() const;
 
 	AudioEffectDistortion();

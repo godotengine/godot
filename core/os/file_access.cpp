@@ -475,9 +475,9 @@ void FileAccess::store_buffer(const uint8_t *p_src, int p_length) {
 		store_8(p_src[i]);
 }
 
-Vector<uint8_t> FileAccess::get_file_as_array(const String &p_file) {
+Vector<uint8_t> FileAccess::get_file_as_array(const String &p_path) {
 
-	FileAccess *f = FileAccess::open(p_file, READ);
+	FileAccess *f = FileAccess::open(p_path, READ);
 	ERR_FAIL_COND_V(!f, Vector<uint8_t>());
 	Vector<uint8_t> data;
 	data.resize(f->get_len());
