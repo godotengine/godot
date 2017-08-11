@@ -35,6 +35,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/line_edit.h"
+#include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/panel_container.h"
@@ -57,6 +58,7 @@ class EditorAudioBus : public PanelContainer {
 
 	Ref<Texture> disabled_vu;
 	LineEdit *track_name;
+	MenuButton *bus_options;
 	VSlider *slider;
 	TextureProgress *vu_l;
 	TextureProgress *vu_r;
