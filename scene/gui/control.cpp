@@ -1304,14 +1304,22 @@ float Control::_a2s(float p_val, float p_anchor, float p_range) const {
 	return Math::floor(p_val + (p_anchor * p_range));
 }
 
-void Control::set_anchor(Margin p_margin, float p_anchor, bool p_keep_margin) {
+void Control::set_anchor(Margin p_margin, float p_anchor, bool p_keep_margin, bool p_push_opposite_anchor) {
+	bool pushed = false;
 	data.anchor[p_margin] = CLAMP(p_anchor, 0.0, 1.0);
-	if (is_inside_tree()) {
-		if (!p_keep_margin) {
-			float pr = _get_parent_range(p_margin);
-			float s = _a2s(data.margin[p_margin], data.anchor[p_margin], pr);
-			data.margin[p_margin] = _s2a(s, p_anchor, pr);
+
+	if (((p_margin == MARGIN_LEFT || p_margin == MARGIN_TOP) && data.anchor[p_margin] > data.anchor[(p_margin + 2) % 4]) ||
+			((p_margin == MARGIN_RIGHT || p_margin == MARGIN_BOTTOM) && data.anchor[p_margin] < data.anchor[(p_margin + 2) % 4])) {
+		if (p_push_opposite_anchor) {
+			data.anchor[(p_margin + 2) % 4] = data.anchor[p_margin];
+			pushed = true;
 		} else {
+			data.anchor[p_margin] = data.anchor[(p_margin + 2) % 4];
+		}
+	}
+
+	if (is_inside_tree()) {
+		if (p_keep_margin) {
 			_size_changed();
 		}
 	}
@@ -1331,9 +1339,9 @@ void Control::_set_anchor(Margin p_margin, float p_anchor) {
 #endif
 }
 
-void Control::set_anchor_and_margin(Margin p_margin, float p_anchor, float p_pos) {
+void Control::set_anchor_and_margin(Margin p_margin, float p_anchor, float p_pos, bool p_push_opposite_anchor) {
 
-	set_anchor(p_margin, p_anchor);
+	set_anchor(p_margin, p_anchor, false, p_push_opposite_anchor);
 	set_margin(p_margin, p_pos);
 }
 
@@ -2455,12 +2463,12 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("accept_event"), &Control::accept_event);
 	ClassDB::bind_method(D_METHOD("get_minimum_size"), &Control::get_minimum_size);
 	ClassDB::bind_method(D_METHOD("get_combined_minimum_size"), &Control::get_combined_minimum_size);
-	ClassDB::bind_method(D_METHOD("set_anchor", "margin", "anchor", "keep_margin"), &Control::set_anchor, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("set_anchor", "margin", "anchor", "keep_margin", "push_opposite_anchor"), &Control::set_anchor, DEFVAL(false), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("_set_anchor", "margin", "anchor"), &Control::_set_anchor);
 	ClassDB::bind_method(D_METHOD("set_anchors_preset", "preset", "keep_margin"), &Control::set_anchors_preset, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_anchor", "margin"), &Control::get_anchor);
 	ClassDB::bind_method(D_METHOD("set_margin", "margin", "offset"), &Control::set_margin);
-	ClassDB::bind_method(D_METHOD("set_anchor_and_margin", "margin", "anchor", "offset"), &Control::set_anchor_and_margin);
+	ClassDB::bind_method(D_METHOD("set_anchor_and_margin", "margin", "anchor", "offset", "push_opposite_anchor"), &Control::set_anchor_and_margin, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("set_begin", "pos"), &Control::set_begin);
 	ClassDB::bind_method(D_METHOD("set_end", "pos"), &Control::set_end);
 	ClassDB::bind_method(D_METHOD("set_position", "pos"), &Control::set_position);

@@ -1599,23 +1599,23 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 
 				switch (drag) {
 					case DRAG_ANCHOR_TOP_LEFT:
-						control->set_anchor(MARGIN_LEFT, _anchor_snap(anchor.x, NULL, control->get_anchor(MARGIN_RIGHT)));
-						control->set_anchor(MARGIN_TOP, _anchor_snap(anchor.y, NULL, control->get_anchor(MARGIN_BOTTOM)));
+						control->set_anchor(MARGIN_LEFT, _anchor_snap(anchor.x, NULL, control->get_anchor(MARGIN_RIGHT)), false, false);
+						control->set_anchor(MARGIN_TOP, _anchor_snap(anchor.y, NULL, control->get_anchor(MARGIN_BOTTOM)), false, false);
 						continue;
 						break;
 					case DRAG_ANCHOR_TOP_RIGHT:
-						control->set_anchor(MARGIN_RIGHT, _anchor_snap(anchor.x, NULL, control->get_anchor(MARGIN_LEFT)));
-						control->set_anchor(MARGIN_TOP, _anchor_snap(anchor.y, NULL, control->get_anchor(MARGIN_BOTTOM)));
+						control->set_anchor(MARGIN_RIGHT, _anchor_snap(anchor.x, NULL, control->get_anchor(MARGIN_LEFT)), false, false);
+						control->set_anchor(MARGIN_TOP, _anchor_snap(anchor.y, NULL, control->get_anchor(MARGIN_BOTTOM)), false, false);
 						continue;
 						break;
 					case DRAG_ANCHOR_BOTTOM_RIGHT:
-						control->set_anchor(MARGIN_RIGHT, _anchor_snap(anchor.x, NULL, control->get_anchor(MARGIN_LEFT)));
-						control->set_anchor(MARGIN_BOTTOM, _anchor_snap(anchor.y, NULL, control->get_anchor(MARGIN_TOP)));
+						control->set_anchor(MARGIN_RIGHT, _anchor_snap(anchor.x, NULL, control->get_anchor(MARGIN_LEFT)), false, false);
+						control->set_anchor(MARGIN_BOTTOM, _anchor_snap(anchor.y, NULL, control->get_anchor(MARGIN_TOP)), false, false);
 						continue;
 						break;
 					case DRAG_ANCHOR_BOTTOM_LEFT:
-						control->set_anchor(MARGIN_LEFT, _anchor_snap(anchor.x, NULL, control->get_anchor(MARGIN_RIGHT)));
-						control->set_anchor(MARGIN_BOTTOM, _anchor_snap(anchor.y, NULL, control->get_anchor(MARGIN_TOP)));
+						control->set_anchor(MARGIN_LEFT, _anchor_snap(anchor.x, NULL, control->get_anchor(MARGIN_RIGHT)), false, false);
+						control->set_anchor(MARGIN_BOTTOM, _anchor_snap(anchor.y, NULL, control->get_anchor(MARGIN_TOP)), false, false);
 						continue;
 						break;
 					case DRAG_ANCHOR_ALL:

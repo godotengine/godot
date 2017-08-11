@@ -292,8 +292,8 @@ public:
 
 	/* POSITIONING */
 
-	void set_anchor(Margin p_margin, float p_anchor, bool p_keep_margin = false);
-	void set_anchor_and_margin(Margin p_margin, float p_anchor, float p_pos);
+	void set_anchor(Margin p_margin, float p_anchor, bool p_keep_margin = false, bool p_push_opposite_anchor = true);
+	void set_anchor_and_margin(Margin p_margin, float p_anchor, float p_pos, bool p_push_opposite_anchor = true);
 	void set_anchors_preset(LayoutPreset p_preset, bool p_keep_margin = false);
 
 	float get_anchor(Margin p_margin) const;
