@@ -63,6 +63,8 @@ class OS {
 	void *_stack_bottom;
 
 public:
+	typedef void (*ImeCallback)(void *p_inp, String p_text, Point2 p_selection);
+
 	enum RenderThreadMode {
 
 		RENDER_THREAD_UNSAFE,
@@ -183,6 +185,7 @@ public:
 	virtual bool get_borderless_window() { return 0; }
 
 	virtual void set_ime_position(const Point2 &p_pos) {}
+	virtual void set_ime_intermediate_text_callback(ImeCallback p_callback, void *p_inp) {}
 
 	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle) { return ERR_UNAVAILABLE; }
 	virtual Error close_dynamic_library(void *p_library_handle) { return ERR_UNAVAILABLE; }

@@ -261,10 +261,12 @@ static bool mouse_down_control = false;
 
 @end
 
-@interface GodotContentView : NSView {
+@interface GodotContentView : NSView <NSTextInputClient> {
 	NSTrackingArea *trackingArea;
+	NSMutableAttributedString *markedText;
+	bool imeMode;
 }
-
+- (void)cancelComposition;
 @end
 
 @implementation GodotContentView
@@ -278,14 +280,126 @@ static bool mouse_down_control = false;
 - (id)init {
 	self = [super init];
 	trackingArea = nil;
+	imeMode = false;
 	[self updateTrackingAreas];
 	[self registerForDraggedTypes:[NSArray arrayWithObject:NSFilenamesPboardType]];
+	markedText = [[NSMutableAttributedString alloc] init];
 	return self;
 }
 
 - (void)dealloc {
 	[trackingArea release];
+	[markedText release];
 	[super dealloc];
+}
+
+static const NSRange kEmptyRange = { NSNotFound, 0 };
+
+- (BOOL)hasMarkedText {
+	return (markedText.length > 0);
+}
+
+- (NSRange)markedRange {
+	return (markedText.length > 0) ? NSMakeRange(0, markedText.length - 1) : kEmptyRange;
+}
+
+- (NSRange)selectedRange {
+	return kEmptyRange;
+}
+
+- (void)setMarkedText:(id)aString selectedRange:(NSRange)selectedRange replacementRange:(NSRange)replacementRange {
+	if ([aString isKindOfClass:[NSAttributedString class]]) {
+		[markedText initWithAttributedString:aString];
+	} else {
+		[markedText initWithString:aString];
+	}
+	if (OS_OSX::singleton->im_callback) {
+		imeMode = true;
+		String ret;
+		ret.parse_utf8([[markedText mutableString] UTF8String]);
+		OS_OSX::singleton->im_callback(OS_OSX::singleton->im_target, ret, Point2(selectedRange.location, selectedRange.length));
+	}
+}
+
+- (void)doCommandBySelector:(SEL)aSelector {
+	if ([self respondsToSelector:aSelector])
+		[self performSelector:aSelector];
+}
+
+- (void)unmarkText {
+	imeMode = false;
+	[[markedText mutableString] setString:@""];
+	if (OS_OSX::singleton->im_callback)
+		OS_OSX::singleton->im_callback(OS_OSX::singleton->im_target, "", Point2());
+}
+
+- (NSArray *)validAttributesForMarkedText {
+	return [NSArray array];
+}
+
+- (NSAttributedString *)attributedSubstringForProposedRange:(NSRange)aRange actualRange:(NSRangePointer)actualRange {
+	return nil;
+}
+
+- (NSUInteger)characterIndexForPoint:(NSPoint)aPoint {
+	return 0;
+}
+
+- (NSRect)firstRectForCharacterRange:(NSRange)aRange actualRange:(NSRangePointer)actualRange {
+	const NSRect contentRect = [OS_OSX::singleton->window_view frame];
+	NSRect pointInWindowRect = NSMakeRect(OS_OSX::singleton->im_position.x / OS_OSX::singleton->display_scale, contentRect.size.height - (OS_OSX::singleton->im_position.y / OS_OSX::singleton->display_scale) - 1, 0, 0);
+	NSPoint pointOnScreen = [[OS_OSX::singleton->window_view window] convertRectToScreen:pointInWindowRect].origin;
+
+	return NSMakeRect(pointOnScreen.x, pointOnScreen.y, 0, 0);
+}
+
+- (void)cancelComposition {
+	[self unmarkText];
+	NSInputManager *currentInputManager = [NSInputManager currentInputManager];
+	[currentInputManager markedTextAbandoned:self];
+}
+
+- (void)insertText:(id)aString {
+	[self insertText:aString replacementRange:NSMakeRange(0, 0)];
+}
+
+- (void)insertText:(id)aString replacementRange:(NSRange)replacementRange {
+	NSEvent *event = [NSApp currentEvent];
+	Ref<InputEventKey> k;
+	k.instance();
+
+	get_key_modifier_state([event modifierFlags], k);
+	k->set_pressed(true);
+	k->set_echo(false);
+	k->set_scancode(0);
+
+	NSString *characters;
+	if ([aString isKindOfClass:[NSAttributedString class]]) {
+		characters = [aString string];
+	} else {
+		characters = (NSString *)aString;
+	}
+
+	NSUInteger i, length = [characters length];
+
+	NSCharacterSet *ctrlChars = [NSCharacterSet controlCharacterSet];
+	NSCharacterSet *wsnlChars = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+	if ([characters rangeOfCharacterFromSet:ctrlChars].length && [characters rangeOfCharacterFromSet:wsnlChars].length == 0) {
+		NSInputManager *currentInputManager = [NSInputManager currentInputManager];
+		[currentInputManager markedTextAbandoned:self];
+		[self cancelComposition];
+		return;
+	}
+
+	for (i = 0; i < length; i++) {
+		const unichar codepoint = [characters characterAtIndex:i];
+		if ((codepoint & 0xFF00) == 0xF700)
+			continue;
+
+		k->set_unicode(codepoint);
+		OS_OSX::singleton->push_input(k);
+	}
+	[self cancelComposition];
 }
 
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender {
@@ -634,15 +748,12 @@ static int translateKey(unsigned int key) {
 	NSString *characters = [event characters];
 	NSUInteger i, length = [characters length];
 
-	if (length > 0 && keycode_has_unicode(k->get_scancode())) {
-		for (i = 0; i < length; i++) {
-			k->set_unicode([characters characterAtIndex:i]);
-			OS_OSX::singleton->push_input(k);
-			k->set_scancode(0);
-		}
-	} else {
+	//disable raw input in IME mode
+	if (!imeMode)
 		OS_OSX::singleton->push_input(k);
-	}
+
+	if ((OS_OSX::singleton->im_position.x != 0) && (OS_OSX::singleton->im_position.y != 0))
+		[self interpretKeyEvents:[NSArray arrayWithObject:event]];
 }
 
 - (void)flagsChanged:(NSEvent *)event {
@@ -760,6 +871,18 @@ inline void sendScrollEvent(int button, double factor, int modifierFlags) {
 }
 
 @end
+
+void OS_OSX::set_ime_intermediate_text_callback(ImeCallback p_callback, void *p_inp) {
+	im_callback = p_callback;
+	im_target = p_inp;
+	if (!im_callback) {
+		[window_view cancelComposition];
+	}
+}
+
+void OS_OSX::set_ime_position(const Point2 &p_pos) {
+	im_position = p_pos;
+}
 
 int OS_OSX::get_video_driver_count() const {
 	return 1;
@@ -1735,6 +1858,9 @@ OS_OSX::OS_OSX() {
 	mouse_mode = OS::MOUSE_MODE_VISIBLE;
 	main_loop = NULL;
 	singleton = this;
+	im_position = Point2();
+	im_callback = NULL;
+	im_target = NULL;
 	autoreleasePool = [[NSAutoreleasePool alloc] init];
 
 	eventSource = CGEventSourceCreate(kCGEventSourceStateHIDSystemState);
