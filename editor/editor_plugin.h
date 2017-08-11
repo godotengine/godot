@@ -88,7 +88,7 @@ public:
 		DOCK_SLOT_MAX
 	};
 
-	//TODO: send a resoucre for editing to the editor node?
+	//TODO: send a resource for editing to the editor node?
 
 	void add_control_to_container(CustomControlContainer p_location, Control *p_control);
 	ToolButton *add_control_to_bottom_panel(Control *p_control, const String &p_title);

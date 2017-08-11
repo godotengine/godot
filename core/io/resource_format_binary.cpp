@@ -777,7 +777,7 @@ Error ResourceInteractiveLoaderBinary::poll() {
 	if (!r) {
 		error = ERR_FILE_CORRUPT;
 		memdelete(obj); //bye
-		ERR_EXPLAIN(local_path + ":Resoucre type in resource field not a resource, type is: " + obj->get_type());
+		ERR_EXPLAIN(local_path + ":Resource type in resource field not a resource, type is: " + obj->get_type());
 		ERR_FAIL_COND_V(!r, ERR_FILE_CORRUPT);
 	}
 
@@ -1047,7 +1047,7 @@ void ResourceInteractiveLoaderBinary::open(FileAccess *p_f) {
 	uint32_t ext_resources_size = f->get_32();
 	for (uint32_t i = 0; i < ext_resources_size; i++) {
 
-		ExtResoucre er;
+		ExtResource er;
 		er.type = get_unicode_string();
 		er.path = get_unicode_string();
 		external_resources.push_back(er);
@@ -1072,7 +1072,7 @@ void ResourceInteractiveLoaderBinary::open(FileAccess *p_f) {
 
 	for (uint32_t i = 0; i < int_resources_size; i++) {
 
-		IntResoucre ir;
+		IntResource ir;
 		ir.path = get_unicode_string();
 		ir.offset = f->get_64();
 		internal_resources.push_back(ir);
