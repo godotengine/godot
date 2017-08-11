@@ -266,6 +266,8 @@ ObjectID SpatialEditorViewport::_select_ray(const Point2 &p_pos, bool p_append, 
 	float closest_dist = 1e20;
 	int selected_handle = -1;
 
+	Vector<Spatial *> subscenes = Vector<Spatial *>();
+
 	for (int i = 0; i < instances.size(); i++) {
 
 		Object *obj = ObjectDB::get_instance(instances[i]);
@@ -279,11 +281,19 @@ ObjectID SpatialEditorViewport::_select_ray(const Point2 &p_pos, bool p_append, 
 
 		Ref<SpatialEditorGizmo> seg = spat->get_gizmo();
 
-		if (!seg.is_valid())
-			continue;
+		if ((!seg.is_valid()) || found_gizmos.has(seg)) {
 
-		if (found_gizmos.has(seg))
+			Node *subscene_candidate = spat;
+
+			while (subscene_candidate->get_owner() != editor->get_edited_scene())
+				subscene_candidate = subscene_candidate->get_owner();
+
+			spat = subscene_candidate->cast_to<Spatial>();
+			if (spat && (spat->get_filename() != ""))
+				subscenes.push_back(spat);
+
 			continue;
+		}
 
 		found_gizmos.insert(seg);
 		Vector3 point;
@@ -309,6 +319,22 @@ ObjectID SpatialEditorViewport::_select_ray(const Point2 &p_pos, bool p_append, 
 
 		//	if (editor_selection->is_selected(spat))
 		//		r_includes_current=true;
+	}
+
+	for (int idx_subscene = 0; idx_subscene < subscenes.size(); idx_subscene++) {
+
+		Spatial *subscene = subscenes.get(idx_subscene);
+		float dist = ray.cross(subscene->get_global_transform().origin - pos).length();
+
+		if ((dist < 0) || (dist > 1.2))
+			continue;
+
+		if (dist < closest_dist) {
+			closest = subscene->get_instance_id();
+			closest_dist = dist;
+			item = subscene;
+			selected_handle = -1;
+		}
 	}
 
 	if (!item)
