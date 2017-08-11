@@ -1464,6 +1464,7 @@ bool Main::start() {
 				String iconpath = GLOBAL_DEF("application/config/icon", "Variant()");
 				if (iconpath != "") {
 					Ref<Image> icon;
+					icon.instance();
 					if (icon->load(iconpath) == OK)
 						OS::get_singleton()->set_icon(icon);
 				}
