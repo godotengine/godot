@@ -381,7 +381,7 @@ private:
 
 	Size2 get_minimum_size() const;
 
-	void item_edited(int p_column, TreeItem *p_item);
+	void item_edited(int p_column, TreeItem *p_item, bool p_lmb = true);
 	void item_changed(int p_column, TreeItem *p_item);
 	void item_selected(int p_column, TreeItem *p_item);
 	void item_deselected(int p_column, TreeItem *p_item);
