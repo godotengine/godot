@@ -100,6 +100,7 @@ IP_Address IP_Unix::_resolve_hostname(const String &p_hostname, Type p_type) {
 		hints.ai_family = AF_UNSPEC;
 		hints.ai_flags = AI_ADDRCONFIG;
 	};
+	hints.ai_flags &= !AI_NUMERICHOST;
 
 	int s = getaddrinfo(p_hostname.utf8().get_data(), NULL, &hints, &result);
 	if (s != 0) {
