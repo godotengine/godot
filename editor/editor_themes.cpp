@@ -175,6 +175,10 @@ Ref<Theme> create_editor_theme() {
 	theme->set_icon("unchecked", "CheckBox", theme->get_icon("GuiUnchecked", "EditorIcons"));
 	theme->set_icon("checked", "PopupMenu", theme->get_icon("GuiChecked", "EditorIcons"));
 	theme->set_icon("unchecked", "PopupMenu", theme->get_icon("GuiUnchecked", "EditorIcons"));
+	theme->set_icon("radio_checked", "CheckBox", theme->get_icon("GuiRadioChecked", "EditorIcons"));
+	theme->set_icon("radio_unchecked", "CheckBox", theme->get_icon("GuiRadioUnchecked", "EditorIcons"));
+	theme->set_icon("radio_checked", "PopupMenu", theme->get_icon("GuiChecked", "EditorIcons"));
+	theme->set_icon("radio_unchecked", "PopupMenu", theme->get_icon("GuiUnchecked", "EditorIcons"));
 
 	// Editor background
 	Ref<StyleBoxFlat> style_panel = make_flat_stylebox(dark_color_2, 4, 4, 4, 4);
