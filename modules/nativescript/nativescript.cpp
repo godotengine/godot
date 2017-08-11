@@ -972,11 +972,11 @@ void NativeScriptLanguage::profiling_stop() {
 }
 
 int NativeScriptLanguage::profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max) {
-	return -1;
+	return 0;
 }
 
 int NativeScriptLanguage::profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max) {
-	return -1;
+	return 0;
 }
 
 #ifndef NO_THREADS
