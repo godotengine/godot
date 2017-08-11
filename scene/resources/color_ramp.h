@@ -60,7 +60,7 @@ public:
 	void add_point(float p_offset, const Color &p_color);
 	void remove_point(int p_index);
 
-	void set_points(Vector<Point> &points);
+	void set_points(Vector<Point> &p_points);
 	Vector<Point> &get_points();
 
 	void set_offset(int pos, const float offset);
@@ -69,10 +69,10 @@ public:
 	void set_color(int pos, const Color &color);
 	Color get_color(int pos) const;
 
-	void set_offsets(const Vector<float> &offsets);
+	void set_offsets(const Vector<float> &p_offsets);
 	Vector<float> get_offsets() const;
 
-	void set_colors(const Vector<Color> &colors);
+	void set_colors(const Vector<Color> &p_colors);
 	Vector<Color> get_colors() const;
 
 	_FORCE_INLINE_ Color get_color_at_offset(float p_offset) {

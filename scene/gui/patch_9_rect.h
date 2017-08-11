@@ -67,7 +67,7 @@ public:
 	void set_region_rect(const Rect2 &p_region_rect);
 	Rect2 get_region_rect() const;
 
-	void set_draw_center(bool p_enable);
+	void set_draw_center(bool p_draw);
 	bool get_draw_center() const;
 
 	void set_h_axis_stretch_mode(AxisStretchMode p_mode);

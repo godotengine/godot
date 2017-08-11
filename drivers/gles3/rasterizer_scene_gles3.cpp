@@ -2180,38 +2180,38 @@ void RasterizerSceneGLES3::_add_geometry(RasterizerStorageGLES3::Geometry *p_geo
 	}
 }
 
-void RasterizerSceneGLES3::_add_geometry_with_material(RasterizerStorageGLES3::Geometry *p_geometry, InstanceBase *p_instance, RasterizerStorageGLES3::GeometryOwner *p_owner, RasterizerStorageGLES3::Material *m, bool p_shadow) {
+void RasterizerSceneGLES3::_add_geometry_with_material(RasterizerStorageGLES3::Geometry *p_geometry, InstanceBase *p_instance, RasterizerStorageGLES3::GeometryOwner *p_owner, RasterizerStorageGLES3::Material *p_material, bool p_shadow) {
 
-	bool has_base_alpha = (m->shader->spatial.uses_alpha && !m->shader->spatial.uses_alpha_scissor) || m->shader->spatial.uses_screen_texture || m->shader->spatial.unshaded;
-	bool has_blend_alpha = m->shader->spatial.blend_mode != RasterizerStorageGLES3::Shader::Spatial::BLEND_MODE_MIX || m->shader->spatial.ontop;
+	bool has_base_alpha = (p_material->shader->spatial.uses_alpha && !p_material->shader->spatial.uses_alpha_scissor) || p_material->shader->spatial.uses_screen_texture || p_material->shader->spatial.unshaded;
+	bool has_blend_alpha = p_material->shader->spatial.blend_mode != RasterizerStorageGLES3::Shader::Spatial::BLEND_MODE_MIX || p_material->shader->spatial.ontop;
 	bool has_alpha = has_base_alpha || has_blend_alpha;
 	bool shadow = false;
 
 	bool mirror = p_instance->mirror;
 
-	if (m->shader->spatial.cull_mode == RasterizerStorageGLES3::Shader::Spatial::CULL_MODE_FRONT) {
+	if (p_material->shader->spatial.cull_mode == RasterizerStorageGLES3::Shader::Spatial::CULL_MODE_FRONT) {
 		mirror = !mirror;
 	}
 
-	if (m->shader->spatial.uses_sss) {
+	if (p_material->shader->spatial.uses_sss) {
 		state.used_sss = true;
 	}
 
-	if (m->shader->spatial.uses_screen_texture) {
+	if (p_material->shader->spatial.uses_screen_texture) {
 		state.used_screen_texture = true;
 	}
 
 	if (p_shadow) {
 
-		if (has_blend_alpha || (has_base_alpha && m->shader->spatial.depth_draw_mode != RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS))
+		if (has_blend_alpha || (has_base_alpha && p_material->shader->spatial.depth_draw_mode != RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS))
 			return; //bye
 
-		if (!m->shader->spatial.uses_alpha_scissor && !m->shader->spatial.writes_modelview_or_projection && !m->shader->spatial.uses_vertex && !m->shader->spatial.uses_discard && m->shader->spatial.depth_draw_mode != RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS) {
+		if (!p_material->shader->spatial.uses_alpha_scissor && !p_material->shader->spatial.writes_modelview_or_projection && !p_material->shader->spatial.uses_vertex && !p_material->shader->spatial.uses_discard && p_material->shader->spatial.depth_draw_mode != RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS) {
 			//shader does not use discard and does not write a vertex position, use generic material
 			if (p_instance->cast_shadows == VS::SHADOW_CASTING_SETTING_DOUBLE_SIDED)
-				m = storage->material_owner.getptr(default_material_twosided);
+				p_material = storage->material_owner.getptr(default_material_twosided);
 			else
-				m = storage->material_owner.getptr(default_material);
+				p_material = storage->material_owner.getptr(default_material);
 		}
 
 		has_alpha = false;
@@ -2223,7 +2223,7 @@ void RasterizerSceneGLES3::_add_geometry_with_material(RasterizerStorageGLES3::G
 		return;
 
 	e->geometry = p_geometry;
-	e->material = m;
+	e->material = p_material;
 	e->instance = p_instance;
 	e->owner = p_owner;
 	e->sort_key = 0;
@@ -2250,7 +2250,7 @@ void RasterizerSceneGLES3::_add_geometry_with_material(RasterizerStorageGLES3::G
 		e->sort_key |= uint64_t(e->material->index) << RenderList::SORT_KEY_MATERIAL_INDEX_SHIFT;
 		e->sort_key |= uint64_t(e->instance->depth_layer) << RenderList::SORT_KEY_DEPTH_LAYER_SHIFT;
 
-		if (!has_blend_alpha && has_alpha && m->shader->spatial.depth_draw_mode == RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS) {
+		if (!has_blend_alpha && has_alpha && p_material->shader->spatial.depth_draw_mode == RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS) {
 
 			//if nothing exists, add this element as opaque too
 			RenderList::Element *oe = render_list.add_element();
@@ -2277,12 +2277,12 @@ void RasterizerSceneGLES3::_add_geometry_with_material(RasterizerStorageGLES3::G
 
 	//e->light_type=0xFF; // no lights!
 
-	if (shadow || m->shader->spatial.unshaded || state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_UNSHADED) {
+	if (shadow || p_material->shader->spatial.unshaded || state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_UNSHADED) {
 
 		e->sort_key |= SORT_KEY_UNSHADED_FLAG;
 	}
 
-	if (!shadow && (m->shader->spatial.uses_vertex_lighting || storage->config.force_vertex_shading)) {
+	if (!shadow && (p_material->shader->spatial.uses_vertex_lighting || storage->config.force_vertex_shading)) {
 
 		e->sort_key |= SORT_KEY_VERTEX_LIT_FLAG;
 	}

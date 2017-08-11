@@ -103,11 +103,11 @@ void ShaderGLES2::bind_uniforms() {
 	uniforms_dirty = false;
 };
 
-GLint ShaderGLES2::get_uniform_location(int p_idx) const {
+GLint ShaderGLES2::get_uniform_location(int p_index) const {
 
 	ERR_FAIL_COND_V(!version, -1);
 
-	return version->uniform_location[p_idx];
+	return version->uniform_location[p_index];
 };
 
 bool ShaderGLES2::bind() {

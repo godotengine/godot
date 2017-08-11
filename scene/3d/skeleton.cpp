@@ -82,9 +82,9 @@ bool Skeleton::_set(const StringName &p_path, const Variant &p_value) {
 	return true;
 }
 
-bool Skeleton::_get(const StringName &p_name, Variant &r_ret) const {
+bool Skeleton::_get(const StringName &p_path, Variant &r_ret) const {
 
-	String path = p_name;
+	String path = p_path;
 
 	if (!path.begins_with("bones/"))
 		return false;

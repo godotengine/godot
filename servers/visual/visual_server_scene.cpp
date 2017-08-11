@@ -2645,11 +2645,11 @@ static float _get_normal_advance(const Vector3 &p_normal) {
 	return 1.0 / normal.dot(unorm);
 }
 
-void VisualServerScene::_bake_gi_probe_light(const GIProbeDataHeader *header, const GIProbeDataCell *cells, InstanceGIProbeData::LocalData *local_data, const uint32_t *leaves, int leaf_count, const InstanceGIProbeData::LightCache &light_cache, int sign) {
+void VisualServerScene::_bake_gi_probe_light(const GIProbeDataHeader *header, const GIProbeDataCell *cells, InstanceGIProbeData::LocalData *local_data, const uint32_t *leaves, int p_leaf_count, const InstanceGIProbeData::LightCache &light_cache, int p_sign) {
 
-	int light_r = int(light_cache.color.r * light_cache.energy * 1024.0) * sign;
-	int light_g = int(light_cache.color.g * light_cache.energy * 1024.0) * sign;
-	int light_b = int(light_cache.color.b * light_cache.energy * 1024.0) * sign;
+	int light_r = int(light_cache.color.r * light_cache.energy * 1024.0) * p_sign;
+	int light_g = int(light_cache.color.g * light_cache.energy * 1024.0) * p_sign;
+	int light_b = int(light_cache.color.b * light_cache.energy * 1024.0) * p_sign;
 
 	float limits[3] = { float(header->width), float(header->height), float(header->depth) };
 	Plane clip[3];
@@ -2685,7 +2685,7 @@ void VisualServerScene::_bake_gi_probe_light(const GIProbeDataHeader *header, co
 
 			uint64_t us = OS::get_singleton()->get_ticks_usec();
 
-			for (int i = 0; i < leaf_count; i++) {
+			for (int i = 0; i < p_leaf_count; i++) {
 
 				uint32_t idx = leaves[i];
 
@@ -2750,7 +2750,7 @@ void VisualServerScene::_bake_gi_probe_light(const GIProbeDataHeader *header, co
 
 			float local_radius = light_cache.radius * light_cache.transform.basis.get_axis(2).length();
 
-			for (int i = 0; i < leaf_count; i++) {
+			for (int i = 0; i < p_leaf_count; i++) {
 
 				uint32_t idx = leaves[i];
 

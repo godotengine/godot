@@ -48,7 +48,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_motion_offset(const Size2 &p_scale);
+	void set_motion_offset(const Size2 &p_offset);
 	Size2 get_motion_offset() const;
 
 	void set_motion_scale(const Size2 &p_scale);
@@ -57,7 +57,7 @@ public:
 	void set_mirroring(const Size2 &p_mirroring);
 	Size2 get_mirroring() const;
 
-	void set_base_offset_and_scale(const Point2 &p_offsetf, float p_scale);
+	void set_base_offset_and_scale(const Point2 &p_offset, float p_scale);
 
 	virtual String get_configuration_warning() const;
 	ParallaxLayer();

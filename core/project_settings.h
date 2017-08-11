@@ -158,7 +158,7 @@ public:
 
 	bool is_using_datapack() const;
 
-	void set_registering_order(bool p_registering);
+	void set_registering_order(bool p_enable);
 
 	ProjectSettings();
 	~ProjectSettings();

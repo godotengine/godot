@@ -134,7 +134,7 @@ public:
 	virtual void area_set_param(RID p_area, AreaParameter p_param, const Variant &p_value);
 	virtual void area_set_transform(RID p_area, const Transform2D &p_transform);
 
-	virtual Variant area_get_param(RID p_parea, AreaParameter p_param) const;
+	virtual Variant area_get_param(RID p_area, AreaParameter p_param) const;
 	virtual Transform2D area_get_transform(RID p_area) const;
 	virtual void area_set_monitorable(RID p_area, bool p_monitorable);
 	virtual void area_set_collision_mask(RID p_area, uint32_t p_mask);
@@ -169,8 +169,8 @@ public:
 	virtual void body_remove_shape(RID p_body, int p_shape_idx);
 	virtual void body_clear_shapes(RID p_body);
 
-	virtual void body_set_shape_disabled(RID p_body, int p_shape, bool p_disabled);
-	virtual void body_set_shape_as_one_way_collision(RID p_body, int p_shape, bool p_enabled);
+	virtual void body_set_shape_disabled(RID p_body, int p_shape_idx, bool p_disabled);
+	virtual void body_set_shape_as_one_way_collision(RID p_body, int p_shape_idx, bool p_enable);
 
 	virtual void body_attach_object_instance_id(RID p_body, uint32_t p_ID);
 	virtual uint32_t body_get_object_instance_id(RID p_body) const;
@@ -182,7 +182,7 @@ public:
 	virtual uint32_t body_get_collision_layer(RID p_body) const;
 
 	virtual void body_set_collision_mask(RID p_body, uint32_t p_mask);
-	virtual uint32_t body_get_collision_mask(RID p_) const;
+	virtual uint32_t body_get_collision_mask(RID p_body) const;
 
 	virtual void body_set_param(RID p_body, BodyParameter p_param, real_t p_value);
 	virtual real_t body_get_param(RID p_body, BodyParameter p_param) const;

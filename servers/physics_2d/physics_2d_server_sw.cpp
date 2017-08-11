@@ -722,11 +722,11 @@ uint32_t Physics2DServerSW::body_get_object_instance_id(RID p_body) const {
 	return body->get_instance_id();
 };
 
-void Physics2DServerSW::body_set_collision_layer(RID p_body, uint32_t p_flags) {
+void Physics2DServerSW::body_set_collision_layer(RID p_body, uint32_t p_layer) {
 
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
-	body->set_collision_layer(p_flags);
+	body->set_collision_layer(p_layer);
 };
 
 uint32_t Physics2DServerSW::body_get_collision_layer(RID p_body) const {
@@ -737,11 +737,11 @@ uint32_t Physics2DServerSW::body_get_collision_layer(RID p_body) const {
 	return body->get_collision_layer();
 };
 
-void Physics2DServerSW::body_set_collision_mask(RID p_body, uint32_t p_flags) {
+void Physics2DServerSW::body_set_collision_mask(RID p_body, uint32_t p_mask) {
 
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
-	body->set_collision_mask(p_flags);
+	body->set_collision_mask(p_mask);
 };
 
 uint32_t Physics2DServerSW::body_get_collision_mask(RID p_body) const {

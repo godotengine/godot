@@ -75,7 +75,7 @@ public:
 	void set_ipv4(const uint8_t *p_ip);
 
 	const uint8_t *get_ipv6() const;
-	void set_ipv6(const uint8_t *buf);
+	void set_ipv6(const uint8_t *p_buf);
 
 	operator String() const;
 	IP_Address(const String &p_string);

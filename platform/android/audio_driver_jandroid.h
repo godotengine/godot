@@ -71,7 +71,7 @@ public:
 
 	virtual void set_pause(bool p_pause);
 
-	static void setup(jobject act);
+	static void setup(jobject p_io);
 	static void thread_func(JNIEnv *env);
 
 	AudioDriverAndroid();

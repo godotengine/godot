@@ -621,9 +621,9 @@ ResourceInteractiveLoaderText::~ResourceInteractiveLoaderText() {
 	memdelete(f);
 }
 
-void ResourceInteractiveLoaderText::get_dependencies(FileAccess *f, List<String> *p_dependencies, bool p_add_types) {
+void ResourceInteractiveLoaderText::get_dependencies(FileAccess *p_f, List<String> *p_dependencies, bool p_add_types) {
 
-	open(f);
+	open(p_f);
 	ignore_resource_parsing = true;
 	ERR_FAIL_COND(error != OK);
 

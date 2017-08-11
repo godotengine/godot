@@ -66,7 +66,7 @@ class VariantConstruct {
 	static Error _get_token(const CharType *p_str, int &index, int p_len, Token &r_token, int &line, String &r_err_str);
 	static Error _parse_value(Variant &value, Token &token, const CharType *p_str, int &index, int p_len, int &line, String &r_err_str, Variant::ObjectConstruct *p_construct, void *p_ud);
 	static Error _parse_array(Array &array, const CharType *p_str, int &index, int p_len, int &line, String &r_err_str, Variant::ObjectConstruct *p_construct, void *p_ud);
-	static Error _parse_dict(Dictionary &object, const CharType *p_str, int &index, int p_len, int &line, String &r_err_str, Variant::ObjectConstruct *p_construct, void *p_ud);
+	static Error _parse_dict(Dictionary &dict, const CharType *p_str, int &index, int p_len, int &line, String &r_err_str, Variant::ObjectConstruct *p_construct, void *p_ud);
 
 public:
 	static Error parse(const String &p_string, Variant &r_ret, String &r_err_str, int &r_err_line, Variant::ObjectConstruct *p_construct, void *p_ud);
@@ -85,15 +85,15 @@ const char *VariantConstruct::tk_name[TK_MAX] = {
 	"EOF",
 };
 
-Error VariantConstruct::_get_token(const CharType *p_str, int &idx, int p_len, Token &r_token, int &line, String &r_err_str) {
+Error VariantConstruct::_get_token(const CharType *p_str, int &index, int p_len, Token &r_token, int &line, String &r_err_str) {
 
 	while (true) {
-		switch (p_str[idx]) {
+		switch (p_str[index]) {
 
 			case '\n': {
 
 				line++;
-				idx++;
+				index++;
 				break;
 			};
 			case 0: {
@@ -103,54 +103,54 @@ Error VariantConstruct::_get_token(const CharType *p_str, int &idx, int p_len, T
 			case '{': {
 
 				r_token.type = TK_CURLY_BRACKET_OPEN;
-				idx++;
+				index++;
 				return OK;
 			};
 			case '}': {
 
 				r_token.type = TK_CURLY_BRACKET_CLOSE;
-				idx++;
+				index++;
 				return OK;
 			};
 			case '[': {
 
 				r_token.type = TK_BRACKET_OPEN;
-				idx++;
+				index++;
 				return OK;
 			};
 			case ']': {
 
 				r_token.type = TK_BRACKET_CLOSE;
-				idx++;
+				index++;
 				return OK;
 			};
 			case ':': {
 
 				r_token.type = TK_COLON;
-				idx++;
+				index++;
 				return OK;
 			};
 			case ',': {
 
 				r_token.type = TK_COMMA;
-				idx++;
+				index++;
 				return OK;
 			};
 			case '"': {
 
-				idx++;
+				index++;
 				String str;
 				while (true) {
-					if (p_str[idx] == 0) {
+					if (p_str[index] == 0) {
 						r_err_str = "Unterminated String";
 						return ERR_PARSE_ERROR;
-					} else if (p_str[idx] == '"') {
-						idx++;
+					} else if (p_str[index] == '"') {
+						index++;
 						break;
-					} else if (p_str[idx] == '\\') {
+					} else if (p_str[index] == '\\') {
 						//escaped characters...
-						idx++;
-						CharType next = p_str[idx];
+						index++;
+						CharType next = p_str[index];
 						if (next == 0) {
 							r_err_str = "Unterminated String";
 							return ERR_PARSE_ERROR;
@@ -171,7 +171,7 @@ Error VariantConstruct::_get_token(const CharType *p_str, int &idx, int p_len, T
 								//hexnumbarh - oct is deprecated
 
 								for (int j = 0; j < 4; j++) {
-									CharType c = p_str[idx + j + 1];
+									CharType c = p_str[index + j + 1];
 									if (c == 0) {
 										r_err_str = "Unterminated String";
 										return ERR_PARSE_ERROR;
@@ -198,7 +198,7 @@ Error VariantConstruct::_get_token(const CharType *p_str, int &idx, int p_len, T
 									res <<= 4;
 									res |= v;
 								}
-								idx += 4; //will add at the end anyway
+								index += 4; //will add at the end anyway
 
 							} break;
 							default: {
@@ -211,11 +211,11 @@ Error VariantConstruct::_get_token(const CharType *p_str, int &idx, int p_len, T
 						str += res;
 
 					} else {
-						if (p_str[idx] == '\n')
+						if (p_str[index] == '\n')
 							line++;
-						str += p_str[idx];
+						str += p_str[index];
 					}
-					idx++;
+					index++;
 				}
 
 				r_token.type = TK_STRING;
@@ -225,28 +225,28 @@ Error VariantConstruct::_get_token(const CharType *p_str, int &idx, int p_len, T
 			} break;
 			default: {
 
-				if (p_str[idx] <= 32) {
-					idx++;
+				if (p_str[index] <= 32) {
+					index++;
 					break;
 				}
 
-				if (p_str[idx] == '-' || (p_str[idx] >= '0' && p_str[idx] <= '9')) {
+				if (p_str[index] == '-' || (p_str[index] >= '0' && p_str[index] <= '9')) {
 					//a number
 					const CharType *rptr;
-					double number = String::to_double(&p_str[idx], &rptr);
-					idx += (rptr - &p_str[idx]);
+					double number = String::to_double(&p_str[index], &rptr);
+					index += (rptr - &p_str[index]);
 					r_token.type = TK_NUMBER;
 					r_token.value = number;
 					return OK;
 
-				} else if ((p_str[idx] >= 'A' && p_str[idx] <= 'Z') || (p_str[idx] >= 'a' && p_str[idx] <= 'z')) {
+				} else if ((p_str[index] >= 'A' && p_str[index] <= 'Z') || (p_str[index] >= 'a' && p_str[index] <= 'z')) {
 
 					String id;
 
-					while ((p_str[idx] >= 'A' && p_str[idx] <= 'Z') || (p_str[idx] >= 'a' && p_str[idx] <= 'z')) {
+					while ((p_str[index] >= 'A' && p_str[index] <= 'Z') || (p_str[index] >= 'a' && p_str[index] <= 'z')) {
 
-						id += p_str[idx];
-						idx++;
+						id += p_str[index];
+						index++;
 					}
 
 					r_token.type = TK_IDENTIFIER;

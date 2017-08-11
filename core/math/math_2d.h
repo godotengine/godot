@@ -107,9 +107,9 @@ struct Vector2 {
 	Vector2 cubic_interpolate(const Vector2 &p_b, const Vector2 &p_pre_a, const Vector2 &p_post_b, real_t p_t) const;
 	Vector2 cubic_interpolate_soft(const Vector2 &p_b, const Vector2 &p_pre_a, const Vector2 &p_post_b, real_t p_t) const;
 
-	Vector2 slide(const Vector2 &p_vec) const;
-	Vector2 bounce(const Vector2 &p_vec) const;
-	Vector2 reflect(const Vector2 &p_vec) const;
+	Vector2 slide(const Vector2 &p_normal) const;
+	Vector2 bounce(const Vector2 &p_normal) const;
+	Vector2 reflect(const Vector2 &p_normal) const;
 
 	Vector2 operator+(const Vector2 &p_v) const;
 	void operator+=(const Vector2 &p_v);
@@ -621,9 +621,9 @@ struct Transform2D {
 	void affine_invert();
 	Transform2D affine_inverse() const;
 
-	void set_rotation(real_t p_phi);
+	void set_rotation(real_t p_rot);
 	real_t get_rotation() const;
-	_FORCE_INLINE_ void set_rotation_and_scale(real_t p_phi, const Size2 &p_scale);
+	_FORCE_INLINE_ void set_rotation_and_scale(real_t p_rot, const Size2 &p_scale);
 	void rotate(real_t p_phi);
 
 	void scale(const Size2 &p_scale);
@@ -660,8 +660,8 @@ struct Transform2D {
 	_FORCE_INLINE_ Vector2 basis_xform_inv(const Vector2 &p_vec) const;
 	_FORCE_INLINE_ Vector2 xform(const Vector2 &p_vec) const;
 	_FORCE_INLINE_ Vector2 xform_inv(const Vector2 &p_vec) const;
-	_FORCE_INLINE_ Rect2 xform(const Rect2 &p_vec) const;
-	_FORCE_INLINE_ Rect2 xform_inv(const Rect2 &p_vec) const;
+	_FORCE_INLINE_ Rect2 xform(const Rect2 &p_rect) const;
+	_FORCE_INLINE_ Rect2 xform_inv(const Rect2 &p_rect) const;
 
 	operator String() const;
 
@@ -833,25 +833,25 @@ next4:
 	return true;
 }
 
-Vector2 Transform2D::basis_xform(const Vector2 &v) const {
+Vector2 Transform2D::basis_xform(const Vector2 &p_vec) const {
 
 	return Vector2(
-			tdotx(v),
-			tdoty(v));
+			tdotx(p_vec),
+			tdoty(p_vec));
 }
 
-Vector2 Transform2D::basis_xform_inv(const Vector2 &v) const {
+Vector2 Transform2D::basis_xform_inv(const Vector2 &p_vec) const {
 
 	return Vector2(
-			elements[0].dot(v),
-			elements[1].dot(v));
+			elements[0].dot(p_vec),
+			elements[1].dot(p_vec));
 }
 
-Vector2 Transform2D::xform(const Vector2 &v) const {
+Vector2 Transform2D::xform(const Vector2 &p_vec) const {
 
 	return Vector2(
-				   tdotx(v),
-				   tdoty(v)) +
+				   tdotx(p_vec),
+				   tdoty(p_vec)) +
 		   elements[2];
 }
 Vector2 Transform2D::xform_inv(const Vector2 &p_vec) const {

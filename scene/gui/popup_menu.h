@@ -140,7 +140,7 @@ public:
 	uint32_t get_item_accelerator(int p_idx) const;
 	Variant get_item_metadata(int p_idx) const;
 	bool is_item_disabled(int p_idx) const;
-	String get_item_submenu(int p_ID) const;
+	String get_item_submenu(int p_idx) const;
 	bool is_item_separator(int p_idx) const;
 	bool is_item_checkable(int p_idx) const;
 	String get_item_tooltip(int p_idx) const;

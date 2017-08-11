@@ -54,7 +54,7 @@ protected:
 
 public:
 	Ref<AudioEffectInstance> instance();
-	void set_pan(float p_volume);
+	void set_pan(float p_cpanume);
 	float get_pan() const;
 
 	AudioEffectPanner();

@@ -471,7 +471,7 @@ private:
 
 	TreeItem *_search_item_text(TreeItem *p_at, const String &p_find, int *r_col, bool p_selectable, bool p_backwards = false);
 
-	TreeItem *_find_item_at_pos(TreeItem *p_current, const Point2 &p_pos, int &r_column, int &h, int &section) const;
+	TreeItem *_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_column, int &h, int &section) const;
 
 	/*	float drag_speed;
 	float drag_accum;
@@ -524,7 +524,7 @@ public:
 	void set_column_expand(int p_column, bool p_expand);
 	int get_column_width(int p_column) const;
 
-	void set_hide_root(bool p_eanbled);
+	void set_hide_root(bool p_enabled);
 	TreeItem *get_next_selected(TreeItem *p_item);
 	TreeItem *get_selected() const;
 	int get_selected_column() const;

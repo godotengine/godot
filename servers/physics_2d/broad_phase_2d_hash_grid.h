@@ -167,7 +167,7 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 	void _check_motion(Element *p_elem);
 
 public:
-	virtual ID create(CollisionObject2DSW *p_object_, int p_subindex = 0);
+	virtual ID create(CollisionObject2DSW *p_object, int p_subindex = 0);
 	virtual void move(ID p_id, const Rect2 &p_aabb);
 	virtual void set_static(ID p_id, bool p_static);
 	virtual void remove(ID p_id);

@@ -245,11 +245,11 @@ Dictionary Physics2DDirectSpaceState::_intersect_ray(const Vector2 &p_from, cons
 	return d;
 }
 
-Array Physics2DDirectSpaceState::_intersect_shape(const Ref<Physics2DShapeQueryParameters> &psq, int p_max_results) {
+Array Physics2DDirectSpaceState::_intersect_shape(const Ref<Physics2DShapeQueryParameters> &p_shape_query, int p_max_results) {
 
 	Vector<ShapeResult> sr;
 	sr.resize(p_max_results);
-	int rc = intersect_shape(psq->shape, psq->transform, psq->motion, psq->margin, sr.ptr(), sr.size(), psq->exclude, psq->collision_layer, psq->object_type_mask);
+	int rc = intersect_shape(p_shape_query->shape, p_shape_query->transform, p_shape_query->motion, p_shape_query->margin, sr.ptr(), sr.size(), p_shape_query->exclude, p_shape_query->collision_layer, p_shape_query->object_type_mask);
 	Array ret;
 	ret.resize(rc);
 	for (int i = 0; i < rc; i++) {
@@ -266,10 +266,10 @@ Array Physics2DDirectSpaceState::_intersect_shape(const Ref<Physics2DShapeQueryP
 	return ret;
 }
 
-Array Physics2DDirectSpaceState::_cast_motion(const Ref<Physics2DShapeQueryParameters> &psq) {
+Array Physics2DDirectSpaceState::_cast_motion(const Ref<Physics2DShapeQueryParameters> &p_shape_query) {
 
 	float closest_safe, closest_unsafe;
-	bool res = cast_motion(psq->shape, psq->transform, psq->motion, psq->margin, closest_safe, closest_unsafe, psq->exclude, psq->collision_layer, psq->object_type_mask);
+	bool res = cast_motion(p_shape_query->shape, p_shape_query->transform, p_shape_query->motion, p_shape_query->margin, closest_safe, closest_unsafe, p_shape_query->exclude, p_shape_query->collision_layer, p_shape_query->object_type_mask);
 	if (!res)
 		return Array();
 	Array ret;
@@ -307,12 +307,12 @@ Array Physics2DDirectSpaceState::_intersect_point(const Vector2 &p_point, int p_
 	return r;
 }
 
-Array Physics2DDirectSpaceState::_collide_shape(const Ref<Physics2DShapeQueryParameters> &psq, int p_max_results) {
+Array Physics2DDirectSpaceState::_collide_shape(const Ref<Physics2DShapeQueryParameters> &p_shape_query, int p_max_results) {
 
 	Vector<Vector2> ret;
 	ret.resize(p_max_results * 2);
 	int rc = 0;
-	bool res = collide_shape(psq->shape, psq->transform, psq->motion, psq->margin, ret.ptr(), p_max_results, rc, psq->exclude, psq->collision_layer, psq->object_type_mask);
+	bool res = collide_shape(p_shape_query->shape, p_shape_query->transform, p_shape_query->motion, p_shape_query->margin, ret.ptr(), p_max_results, rc, p_shape_query->exclude, p_shape_query->collision_layer, p_shape_query->object_type_mask);
 	if (!res)
 		return Array();
 	Array r;
@@ -321,11 +321,11 @@ Array Physics2DDirectSpaceState::_collide_shape(const Ref<Physics2DShapeQueryPar
 		r[i] = ret[i];
 	return r;
 }
-Dictionary Physics2DDirectSpaceState::_get_rest_info(const Ref<Physics2DShapeQueryParameters> &psq) {
+Dictionary Physics2DDirectSpaceState::_get_rest_info(const Ref<Physics2DShapeQueryParameters> &p_shape_query) {
 
 	ShapeRestInfo sri;
 
-	bool res = rest_info(psq->shape, psq->transform, psq->motion, psq->margin, &sri, psq->exclude, psq->collision_layer, psq->object_type_mask);
+	bool res = rest_info(p_shape_query->shape, p_shape_query->transform, p_shape_query->motion, p_shape_query->margin, &sri, p_shape_query->exclude, p_shape_query->collision_layer, p_shape_query->object_type_mask);
 	Dictionary r;
 	if (!res)
 		return r;

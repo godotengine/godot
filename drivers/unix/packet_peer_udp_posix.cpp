@@ -172,13 +172,13 @@ Error PacketPeerUDPPosix::wait() {
 	return _poll(true);
 }
 
-Error PacketPeerUDPPosix::_poll(bool p_wait) {
+Error PacketPeerUDPPosix::_poll(bool p_block) {
 
 	if (sockfd == -1) {
 		return FAILED;
 	}
 
-	_set_sock_blocking(p_wait);
+	_set_sock_blocking(p_block);
 
 	struct sockaddr_storage from = { 0 };
 	socklen_t len = sizeof(struct sockaddr_storage);
@@ -216,7 +216,7 @@ Error PacketPeerUDPPosix::_poll(bool p_wait) {
 
 		len = sizeof(struct sockaddr_storage);
 		++queue_count;
-		if (p_wait)
+		if (p_block)
 			break;
 	};
 

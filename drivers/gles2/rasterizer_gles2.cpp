@@ -1600,9 +1600,9 @@ RID RasterizerGLES2::material_create() {
 	return material;
 }
 
-void RasterizerGLES2::material_set_shader(RID p_material, RID p_shader) {
+void RasterizerGLES2::material_set_shader(RID p_shader_material, RID p_shader) {
 
-	Material *material = material_owner.get(p_material);
+	Material *material = material_owner.get(p_shader_material);
 	ERR_FAIL_COND(!material);
 	if (material->shader == p_shader)
 		return;
@@ -1610,9 +1610,9 @@ void RasterizerGLES2::material_set_shader(RID p_material, RID p_shader) {
 	material->shader_version = 0;
 }
 
-RID RasterizerGLES2::material_get_shader(RID p_material) const {
+RID RasterizerGLES2::material_get_shader(RID p_shader_material) const {
 
-	Material *material = material_owner.get(p_material);
+	Material *material = material_owner.get(p_shader_material);
 	ERR_FAIL_COND_V(!material, RID());
 	return material->shader;
 }
@@ -7891,7 +7891,7 @@ void RasterizerGLES2::canvas_draw_rect(const Rect2 &p_rect, int p_flags, const R
 	_rinfo.ci_draw_commands++;
 }
 
-void RasterizerGLES2::canvas_draw_style_box(const Rect2 &p_rect, const Rect2 &p_src_region, RID p_texture, const float *p_margin, bool p_draw_center, const Color &p_modulate) {
+void RasterizerGLES2::canvas_draw_style_box(const Rect2 &p_rect, const Rect2 &p_src_region, RID p_texture, const float *p_margins, bool p_draw_center, const Color &p_modulate) {
 
 	Color m = p_modulate;
 	m.a *= canvas_opacity;
@@ -7907,47 +7907,47 @@ void RasterizerGLES2::canvas_draw_style_box(const Rect2 &p_rect, const Rect2 &p_
 		region.size.height = texture->height;
 	/* CORNERS */
 	_draw_textured_quad( // top left
-			Rect2(p_rect.pos, Size2(p_margin[MARGIN_LEFT], p_margin[MARGIN_TOP])),
-			Rect2(region.pos, Size2(p_margin[MARGIN_LEFT], p_margin[MARGIN_TOP])),
+			Rect2(p_rect.pos, Size2(p_margins[MARGIN_LEFT], p_margins[MARGIN_TOP])),
+			Rect2(region.pos, Size2(p_margins[MARGIN_LEFT], p_margins[MARGIN_TOP])),
 			Size2(texture->width, texture->height));
 
 	_draw_textured_quad( // top right
-			Rect2(Point2(p_rect.pos.x + p_rect.size.width - p_margin[MARGIN_RIGHT], p_rect.pos.y), Size2(p_margin[MARGIN_RIGHT], p_margin[MARGIN_TOP])),
-			Rect2(Point2(region.pos.x + region.size.width - p_margin[MARGIN_RIGHT], region.pos.y), Size2(p_margin[MARGIN_RIGHT], p_margin[MARGIN_TOP])),
+			Rect2(Point2(p_rect.pos.x + p_rect.size.width - p_margins[MARGIN_RIGHT], p_rect.pos.y), Size2(p_margins[MARGIN_RIGHT], p_margins[MARGIN_TOP])),
+			Rect2(Point2(region.pos.x + region.size.width - p_margins[MARGIN_RIGHT], region.pos.y), Size2(p_margins[MARGIN_RIGHT], p_margins[MARGIN_TOP])),
 			Size2(texture->width, texture->height));
 
 	_draw_textured_quad( // bottom left
-			Rect2(Point2(p_rect.pos.x, p_rect.pos.y + p_rect.size.height - p_margin[MARGIN_BOTTOM]), Size2(p_margin[MARGIN_LEFT], p_margin[MARGIN_BOTTOM])),
-			Rect2(Point2(region.pos.x, region.pos.y + region.size.height - p_margin[MARGIN_BOTTOM]), Size2(p_margin[MARGIN_LEFT], p_margin[MARGIN_BOTTOM])),
+			Rect2(Point2(p_rect.pos.x, p_rect.pos.y + p_rect.size.height - p_margins[MARGIN_BOTTOM]), Size2(p_margins[MARGIN_LEFT], p_margins[MARGIN_BOTTOM])),
+			Rect2(Point2(region.pos.x, region.pos.y + region.size.height - p_margins[MARGIN_BOTTOM]), Size2(p_margins[MARGIN_LEFT], p_margins[MARGIN_BOTTOM])),
 			Size2(texture->width, texture->height));
 
 	_draw_textured_quad( // bottom right
-			Rect2(Point2(p_rect.pos.x + p_rect.size.width - p_margin[MARGIN_RIGHT], p_rect.pos.y + p_rect.size.height - p_margin[MARGIN_BOTTOM]), Size2(p_margin[MARGIN_RIGHT], p_margin[MARGIN_BOTTOM])),
-			Rect2(Point2(region.pos.x + region.size.width - p_margin[MARGIN_RIGHT], region.pos.y + region.size.height - p_margin[MARGIN_BOTTOM]), Size2(p_margin[MARGIN_RIGHT], p_margin[MARGIN_BOTTOM])),
+			Rect2(Point2(p_rect.pos.x + p_rect.size.width - p_margins[MARGIN_RIGHT], p_rect.pos.y + p_rect.size.height - p_margins[MARGIN_BOTTOM]), Size2(p_margins[MARGIN_RIGHT], p_margins[MARGIN_BOTTOM])),
+			Rect2(Point2(region.pos.x + region.size.width - p_margins[MARGIN_RIGHT], region.pos.y + region.size.height - p_margins[MARGIN_BOTTOM]), Size2(p_margins[MARGIN_RIGHT], p_margins[MARGIN_BOTTOM])),
 			Size2(texture->width, texture->height));
 
-	Rect2 rect_center(p_rect.pos + Point2(p_margin[MARGIN_LEFT], p_margin[MARGIN_TOP]), Size2(p_rect.size.width - p_margin[MARGIN_LEFT] - p_margin[MARGIN_RIGHT], p_rect.size.height - p_margin[MARGIN_TOP] - p_margin[MARGIN_BOTTOM]));
+	Rect2 rect_center(p_rect.pos + Point2(p_margins[MARGIN_LEFT], p_margins[MARGIN_TOP]), Size2(p_rect.size.width - p_margins[MARGIN_LEFT] - p_margins[MARGIN_RIGHT], p_rect.size.height - p_margins[MARGIN_TOP] - p_margins[MARGIN_BOTTOM]));
 
-	Rect2 src_center(Point2(region.pos.x + p_margin[MARGIN_LEFT], region.pos.y + p_margin[MARGIN_TOP]), Size2(region.size.width - p_margin[MARGIN_LEFT] - p_margin[MARGIN_RIGHT], region.size.height - p_margin[MARGIN_TOP] - p_margin[MARGIN_BOTTOM]));
+	Rect2 src_center(Point2(region.pos.x + p_margins[MARGIN_LEFT], region.pos.y + p_margins[MARGIN_TOP]), Size2(region.size.width - p_margins[MARGIN_LEFT] - p_margins[MARGIN_RIGHT], region.size.height - p_margins[MARGIN_TOP] - p_margins[MARGIN_BOTTOM]));
 
 	_draw_textured_quad( // top
-			Rect2(Point2(rect_center.pos.x, p_rect.pos.y), Size2(rect_center.size.width, p_margin[MARGIN_TOP])),
-			Rect2(Point2(src_center.pos.x, region.pos.y), Size2(src_center.size.width, p_margin[MARGIN_TOP])),
+			Rect2(Point2(rect_center.pos.x, p_rect.pos.y), Size2(rect_center.size.width, p_margins[MARGIN_TOP])),
+			Rect2(Point2(src_center.pos.x, region.pos.y), Size2(src_center.size.width, p_margins[MARGIN_TOP])),
 			Size2(texture->width, texture->height));
 
 	_draw_textured_quad( // bottom
-			Rect2(Point2(rect_center.pos.x, rect_center.pos.y + rect_center.size.height), Size2(rect_center.size.width, p_margin[MARGIN_BOTTOM])),
-			Rect2(Point2(src_center.pos.x, src_center.pos.y + src_center.size.height), Size2(src_center.size.width, p_margin[MARGIN_BOTTOM])),
+			Rect2(Point2(rect_center.pos.x, rect_center.pos.y + rect_center.size.height), Size2(rect_center.size.width, p_margins[MARGIN_BOTTOM])),
+			Rect2(Point2(src_center.pos.x, src_center.pos.y + src_center.size.height), Size2(src_center.size.width, p_margins[MARGIN_BOTTOM])),
 			Size2(texture->width, texture->height));
 
 	_draw_textured_quad( // left
-			Rect2(Point2(p_rect.pos.x, rect_center.pos.y), Size2(p_margin[MARGIN_LEFT], rect_center.size.height)),
-			Rect2(Point2(region.pos.x, region.pos.y + p_margin[MARGIN_TOP]), Size2(p_margin[MARGIN_LEFT], src_center.size.height)),
+			Rect2(Point2(p_rect.pos.x, rect_center.pos.y), Size2(p_margins[MARGIN_LEFT], rect_center.size.height)),
+			Rect2(Point2(region.pos.x, region.pos.y + p_margins[MARGIN_TOP]), Size2(p_margins[MARGIN_LEFT], src_center.size.height)),
 			Size2(texture->width, texture->height));
 
 	_draw_textured_quad( // right
-			Rect2(Point2(rect_center.pos.x + rect_center.size.width, rect_center.pos.y), Size2(p_margin[MARGIN_RIGHT], rect_center.size.height)),
-			Rect2(Point2(src_center.pos.x + src_center.size.width, region.pos.y + p_margin[MARGIN_TOP]), Size2(p_margin[MARGIN_RIGHT], src_center.size.height)),
+			Rect2(Point2(rect_center.pos.x + rect_center.size.width, rect_center.pos.y), Size2(p_margins[MARGIN_RIGHT], rect_center.size.height)),
+			Rect2(Point2(src_center.pos.x + src_center.size.width, region.pos.y + p_margins[MARGIN_TOP]), Size2(p_margins[MARGIN_RIGHT], src_center.size.height)),
 			Size2(texture->width, texture->height));
 
 	if (p_draw_center) {
@@ -8700,17 +8700,17 @@ void RasterizerGLES2::_canvas_item_render_commands(CanvasItem *p_item, CanvasIte
 	}
 }
 
-void RasterizerGLES2::_canvas_item_setup_shader_params(ShaderMaterial *material, Shader *shader) {
+void RasterizerGLES2::_canvas_item_setup_shader_params(ShaderMaterial *material, Shader *p_shader) {
 
 	if (canvas_shader.bind())
 		rebind_texpixel_size = true;
 
-	if (material->shader_version != shader->version) {
+	if (material->shader_version != p_shader->version) {
 		//todo optimize uniforms
-		material->shader_version = shader->version;
+		material->shader_version = p_shader->version;
 	}
 
-	if (shader->has_texscreen && framebuffer.active) {
+	if (p_shader->has_texscreen && framebuffer.active) {
 
 		int x = viewport.x;
 		int y = window_size.height - (viewport.height + viewport.y);
@@ -8742,19 +8742,19 @@ void RasterizerGLES2::_canvas_item_setup_shader_params(ShaderMaterial *material,
 		glActiveTexture(GL_TEXTURE0);
 	}
 
-	if (shader->has_screen_uv) {
+	if (p_shader->has_screen_uv) {
 		canvas_shader.set_uniform(CanvasShaderGLES2::SCREEN_UV_MULT, Vector2(1.0 / viewport.width, 1.0 / viewport.height));
 	}
 
-	uses_texpixel_size = shader->uses_texpixel_size;
+	uses_texpixel_size = p_shader->uses_texpixel_size;
 }
 
-void RasterizerGLES2::_canvas_item_setup_shader_uniforms(ShaderMaterial *material, Shader *shader) {
+void RasterizerGLES2::_canvas_item_setup_shader_uniforms(ShaderMaterial *material, Shader *p_shader) {
 
 	//this can be optimized..
 	int tex_id = 1;
 	int idx = 0;
-	for (Map<StringName, ShaderLanguage::Uniform>::Element *E = shader->uniforms.front(); E; E = E->next()) {
+	for (Map<StringName, ShaderLanguage::Uniform>::Element *E = p_shader->uniforms.front(); E; E = E->next()) {
 
 		Map<StringName, Variant>::Element *F = material->shader_param.find(E->key());
 
@@ -8767,7 +8767,7 @@ void RasterizerGLES2::_canvas_item_setup_shader_uniforms(ShaderMaterial *materia
 
 			if (!rid.is_valid()) {
 
-				Map<StringName, RID>::Element *DT = shader->default_textures.find(E->key());
+				Map<StringName, RID>::Element *DT = p_shader->default_textures.find(E->key());
 				if (DT) {
 					rid = DT->get();
 				}
@@ -8799,7 +8799,7 @@ void RasterizerGLES2::_canvas_item_setup_shader_uniforms(ShaderMaterial *materia
 		glActiveTexture(GL_TEXTURE0);
 	}
 
-	if (shader->uses_time) {
+	if (p_shader->uses_time) {
 		canvas_shader.set_uniform(CanvasShaderGLES2::TIME, Math::fmod(last_time, shader_time_rollback));
 		draw_next_frame = true;
 	}

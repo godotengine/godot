@@ -105,7 +105,7 @@ public:
 	String get_stream_name() const;
 	float get_stream_pos() const;
 
-	void set_autoplay(bool p_vol);
+	void set_autoplay(bool p_enable);
 	bool has_autoplay() const;
 
 	void set_audio_track(int p_track);

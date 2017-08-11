@@ -98,7 +98,7 @@ protected:
 	void _set_static(bool p_static);
 
 	virtual void _shapes_changed() = 0;
-	void _set_space(SpaceSW *space);
+	void _set_space(SpaceSW *p_space);
 
 	bool ray_pickable;
 

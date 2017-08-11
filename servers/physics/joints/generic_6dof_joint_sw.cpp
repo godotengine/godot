@@ -298,7 +298,7 @@ bool Generic6DOFJointSW::testAngularLimitMotor(int axis_index) {
 	return m_angularLimits[axis_index].needApplyTorques();
 }
 
-bool Generic6DOFJointSW::setup(real_t p_step) {
+bool Generic6DOFJointSW::setup(real_t p_timestep) {
 
 	// Clear accumulated impulses for the next simulation step
 	m_linearLimits.m_accumulatedImpulse = Vector3(real_t(0.), real_t(0.), real_t(0.));
@@ -347,8 +347,8 @@ bool Generic6DOFJointSW::setup(real_t p_step) {
 	return true;
 }
 
-void Generic6DOFJointSW::solve(real_t timeStep) {
-	m_timeStep = timeStep;
+void Generic6DOFJointSW::solve(real_t p_timestep) {
+	m_timeStep = p_timestep;
 
 	//calculateTransforms();
 

@@ -324,7 +324,7 @@ enum KeyModifierMask {
 };
 
 String keycode_get_string(uint32_t p_code);
-bool keycode_has_unicode(uint32_t p_unicode);
+bool keycode_has_unicode(uint32_t p_keycode);
 int find_keycode(const String &p_code);
 int keycode_get_count();
 int keycode_get_value_by_index(int p_index);

@@ -102,8 +102,8 @@ public:
 	void add_normal(const Vector3 &p_normal);
 	void add_tangent(const Plane &p_tangent);
 	void add_uv(const Vector2 &p_uv);
-	void add_uv2(const Vector2 &p_uv);
-	void add_bones(const Vector<int> &p_indices);
+	void add_uv2(const Vector2 &p_uv2);
+	void add_bones(const Vector<int> &p_bones);
 	void add_weights(const Vector<float> &p_weights);
 	void add_smooth_group(bool p_smooth);
 

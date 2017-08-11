@@ -196,7 +196,7 @@ public:
 	void set_engine_force(float p_engine_force);
 	float get_engine_force() const;
 
-	void set_brake(float p_force);
+	void set_brake(float p_brake);
 	float get_brake() const;
 
 	void set_steering(float p_steering);

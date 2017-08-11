@@ -81,7 +81,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_softness(real_t p_stiffness);
+	void set_softness(real_t p_softness);
 	real_t get_softness() const;
 
 	PinJoint2D();

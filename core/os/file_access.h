@@ -129,7 +129,7 @@ public:
 	virtual void store_real(real_t p_real);
 
 	virtual void store_string(const String &p_string);
-	virtual void store_line(const String &p_string);
+	virtual void store_line(const String &p_line);
 
 	virtual void store_pascal_string(const String &p_string);
 	virtual String get_pascal_string();

@@ -1524,7 +1524,7 @@ public:
 	virtual void light_directional_set_shadow_param(RID p_light, VS::LightDirectionalShadowParam p_param, float p_value);
 	virtual float light_directional_get_shadow_param(RID p_light, VS::LightDirectionalShadowParam p_param) const;
 
-	virtual AABB light_get_aabb(RID p_poly) const;
+	virtual AABB light_get_aabb(RID p_light) const;
 
 	virtual RID light_instance_create(RID p_light);
 	virtual void light_instance_set_transform(RID p_light_instance, const Transform &p_transform);

@@ -431,7 +431,7 @@ public:
 	void set_depth_deep_parallax_max_layers(int p_layer);
 	int get_depth_deep_parallax_max_layers() const;
 
-	void set_subsurface_scattering_strength(float p_strength);
+	void set_subsurface_scattering_strength(float p_subsurface_scattering_strength);
 	float get_subsurface_scattering_strength() const;
 
 	void set_refraction(float p_refraction);
