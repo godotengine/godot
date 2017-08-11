@@ -355,7 +355,9 @@ void ScriptTextEditor::convert_indent_to_spaces() {
 			}
 			j++;
 		}
-		tx->set_line(i, line);
+		if (changed_indentation) {
+			tx->set_line(i, line);
+		}
 	}
 	if (changed_indentation) {
 		tx->cursor_set_column(cursor_column);
@@ -409,7 +411,9 @@ void ScriptTextEditor::convert_indent_to_tabs() {
 			}
 			j++;
 		}
-		tx->set_line(i, line);
+		if (changed_indentation) {
+			tx->set_line(i, line);
+		}
 	}
 	if (changed_indentation) {
 		tx->cursor_set_column(cursor_column);
