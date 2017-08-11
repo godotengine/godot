@@ -291,7 +291,7 @@ void Particles::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_local_coordinates", "enable"), &Particles::set_use_local_coordinates);
 	ClassDB::bind_method(D_METHOD("set_fixed_fps", "fps"), &Particles::set_fixed_fps);
 	ClassDB::bind_method(D_METHOD("set_fractional_delta", "enable"), &Particles::set_fractional_delta);
-	ClassDB::bind_method(D_METHOD("set_process_material", "material:Material"), &Particles::set_process_material);
+	ClassDB::bind_method(D_METHOD("set_process_material", "material"), &Particles::set_process_material);
 	ClassDB::bind_method(D_METHOD("set_speed_scale", "scale"), &Particles::set_speed_scale);
 
 	ClassDB::bind_method(D_METHOD("is_emitting"), &Particles::is_emitting);
@@ -305,7 +305,7 @@ void Particles::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_use_local_coordinates"), &Particles::get_use_local_coordinates);
 	ClassDB::bind_method(D_METHOD("get_fixed_fps"), &Particles::get_fixed_fps);
 	ClassDB::bind_method(D_METHOD("get_fractional_delta"), &Particles::get_fractional_delta);
-	ClassDB::bind_method(D_METHOD("get_process_material:Material"), &Particles::get_process_material);
+	ClassDB::bind_method(D_METHOD("get_process_material"), &Particles::get_process_material);
 	ClassDB::bind_method(D_METHOD("get_speed_scale"), &Particles::get_speed_scale);
 
 	ClassDB::bind_method(D_METHOD("set_draw_order", "order"), &Particles::set_draw_order);
@@ -313,10 +313,10 @@ void Particles::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_draw_order"), &Particles::get_draw_order);
 
 	ClassDB::bind_method(D_METHOD("set_draw_passes", "passes"), &Particles::set_draw_passes);
-	ClassDB::bind_method(D_METHOD("set_draw_pass_mesh", "pass", "mesh:Mesh"), &Particles::set_draw_pass_mesh);
+	ClassDB::bind_method(D_METHOD("set_draw_pass_mesh", "pass", "mesh"), &Particles::set_draw_pass_mesh);
 
 	ClassDB::bind_method(D_METHOD("get_draw_passes"), &Particles::get_draw_passes);
-	ClassDB::bind_method(D_METHOD("get_draw_pass_mesh:Mesh", "pass"), &Particles::get_draw_pass_mesh);
+	ClassDB::bind_method(D_METHOD("get_draw_pass_mesh", "pass"), &Particles::get_draw_pass_mesh);
 
 	ClassDB::bind_method(D_METHOD("restart"), &Particles::restart);
 	ClassDB::bind_method(D_METHOD("capture_aabb"), &Particles::capture_aabb);
@@ -1372,8 +1372,8 @@ void ParticlesMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_color", "color"), &ParticlesMaterial::set_color);
 	ClassDB::bind_method(D_METHOD("get_color"), &ParticlesMaterial::get_color);
 
-	ClassDB::bind_method(D_METHOD("set_color_ramp", "ramp:Texture"), &ParticlesMaterial::set_color_ramp);
-	ClassDB::bind_method(D_METHOD("get_color_ramp:Texture"), &ParticlesMaterial::get_color_ramp);
+	ClassDB::bind_method(D_METHOD("set_color_ramp", "ramp"), &ParticlesMaterial::set_color_ramp);
+	ClassDB::bind_method(D_METHOD("get_color_ramp"), &ParticlesMaterial::get_color_ramp);
 
 	ClassDB::bind_method(D_METHOD("set_flag", "flag", "enable"), &ParticlesMaterial::set_flag);
 	ClassDB::bind_method(D_METHOD("get_flag", "flag"), &ParticlesMaterial::get_flag);
@@ -1387,14 +1387,14 @@ void ParticlesMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_emission_box_extents", "extents"), &ParticlesMaterial::set_emission_box_extents);
 	ClassDB::bind_method(D_METHOD("get_emission_box_extents"), &ParticlesMaterial::get_emission_box_extents);
 
-	ClassDB::bind_method(D_METHOD("set_emission_point_texture", "texture:Texture"), &ParticlesMaterial::set_emission_point_texture);
-	ClassDB::bind_method(D_METHOD("get_emission_point_texture:Texture"), &ParticlesMaterial::get_emission_point_texture);
+	ClassDB::bind_method(D_METHOD("set_emission_point_texture", "texture"), &ParticlesMaterial::set_emission_point_texture);
+	ClassDB::bind_method(D_METHOD("get_emission_point_texture"), &ParticlesMaterial::get_emission_point_texture);
 
-	ClassDB::bind_method(D_METHOD("set_emission_normal_texture", "texture:Texture"), &ParticlesMaterial::set_emission_normal_texture);
-	ClassDB::bind_method(D_METHOD("get_emission_normal_texture:Texture"), &ParticlesMaterial::get_emission_normal_texture);
+	ClassDB::bind_method(D_METHOD("set_emission_normal_texture", "texture"), &ParticlesMaterial::set_emission_normal_texture);
+	ClassDB::bind_method(D_METHOD("get_emission_normal_texture"), &ParticlesMaterial::get_emission_normal_texture);
 
-	ClassDB::bind_method(D_METHOD("set_emission_color_texture", "texture:Texture"), &ParticlesMaterial::set_emission_color_texture);
-	ClassDB::bind_method(D_METHOD("get_emission_color_texture:Texture"), &ParticlesMaterial::get_emission_color_texture);
+	ClassDB::bind_method(D_METHOD("set_emission_color_texture", "texture"), &ParticlesMaterial::set_emission_color_texture);
+	ClassDB::bind_method(D_METHOD("get_emission_color_texture"), &ParticlesMaterial::get_emission_color_texture);
 
 	ClassDB::bind_method(D_METHOD("set_emission_point_count", "point_count"), &ParticlesMaterial::set_emission_point_count);
 	ClassDB::bind_method(D_METHOD("get_emission_point_count"), &ParticlesMaterial::get_emission_point_count);
@@ -1402,11 +1402,11 @@ void ParticlesMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_trail_divisor", "divisor"), &ParticlesMaterial::set_trail_divisor);
 	ClassDB::bind_method(D_METHOD("get_trail_divisor"), &ParticlesMaterial::get_trail_divisor);
 
-	ClassDB::bind_method(D_METHOD("set_trail_size_modifier", "texture:CurveTexture"), &ParticlesMaterial::set_trail_size_modifier);
-	ClassDB::bind_method(D_METHOD("get_trail_size_modifier:CurveTexture"), &ParticlesMaterial::get_trail_size_modifier);
+	ClassDB::bind_method(D_METHOD("set_trail_size_modifier", "texture"), &ParticlesMaterial::set_trail_size_modifier);
+	ClassDB::bind_method(D_METHOD("get_trail_size_modifier"), &ParticlesMaterial::get_trail_size_modifier);
 
-	ClassDB::bind_method(D_METHOD("set_trail_color_modifier", "texture:GradientTexture"), &ParticlesMaterial::set_trail_color_modifier);
-	ClassDB::bind_method(D_METHOD("get_trail_color_modifier:GradientTexture"), &ParticlesMaterial::get_trail_color_modifier);
+	ClassDB::bind_method(D_METHOD("set_trail_color_modifier", "texture"), &ParticlesMaterial::set_trail_color_modifier);
+	ClassDB::bind_method(D_METHOD("get_trail_color_modifier"), &ParticlesMaterial::get_trail_color_modifier);
 
 	ClassDB::bind_method(D_METHOD("get_gravity"), &ParticlesMaterial::get_gravity);
 	ClassDB::bind_method(D_METHOD("set_gravity", "accel_vec"), &ParticlesMaterial::set_gravity);

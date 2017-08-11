@@ -168,7 +168,7 @@ void Container::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_child_minsize_changed"), &Container::_child_minsize_changed);
 
 	ClassDB::bind_method(D_METHOD("queue_sort"), &Container::queue_sort);
-	ClassDB::bind_method(D_METHOD("fit_child_in_rect", "child:Control", "rect"), &Container::fit_child_in_rect);
+	ClassDB::bind_method(D_METHOD("fit_child_in_rect", "child", "rect"), &Container::fit_child_in_rect);
 
 	BIND_CONSTANT(NOTIFICATION_SORT_CHILDREN);
 	ADD_SIGNAL(MethodInfo("sort_children"));

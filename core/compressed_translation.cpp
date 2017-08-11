@@ -306,7 +306,7 @@ void PHashTranslation::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 void PHashTranslation::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("generate", "from:Translation"), &PHashTranslation::generate);
+	ClassDB::bind_method(D_METHOD("generate", "from"), &PHashTranslation::generate);
 }
 
 PHashTranslation::PHashTranslation() {

@@ -556,8 +556,8 @@ void Camera::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_v_offset"), &Camera::get_v_offset);
 	ClassDB::bind_method(D_METHOD("set_cull_mask", "mask"), &Camera::set_cull_mask);
 	ClassDB::bind_method(D_METHOD("get_cull_mask"), &Camera::get_cull_mask);
-	ClassDB::bind_method(D_METHOD("set_environment", "env:Environment"), &Camera::set_environment);
-	ClassDB::bind_method(D_METHOD("get_environment:Environment"), &Camera::get_environment);
+	ClassDB::bind_method(D_METHOD("set_environment", "env"), &Camera::set_environment);
+	ClassDB::bind_method(D_METHOD("get_environment"), &Camera::get_environment);
 	ClassDB::bind_method(D_METHOD("set_keep_aspect_mode", "mode"), &Camera::set_keep_aspect_mode);
 	ClassDB::bind_method(D_METHOD("get_keep_aspect_mode"), &Camera::get_keep_aspect_mode);
 	ClassDB::bind_method(D_METHOD("set_doppler_tracking", "mode"), &Camera::set_doppler_tracking);

@@ -224,11 +224,11 @@ Color StyleBoxTexture::get_modulate() const {
 
 void StyleBoxTexture::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_texture", "texture:Texture"), &StyleBoxTexture::set_texture);
-	ClassDB::bind_method(D_METHOD("get_texture:Texture"), &StyleBoxTexture::get_texture);
+	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &StyleBoxTexture::set_texture);
+	ClassDB::bind_method(D_METHOD("get_texture"), &StyleBoxTexture::get_texture);
 
-	ClassDB::bind_method(D_METHOD("set_normal_map", "normal_map:Texture"), &StyleBoxTexture::set_normal_map);
-	ClassDB::bind_method(D_METHOD("get_normal_map:Texture"), &StyleBoxTexture::get_normal_map);
+	ClassDB::bind_method(D_METHOD("set_normal_map", "normal_map"), &StyleBoxTexture::set_normal_map);
+	ClassDB::bind_method(D_METHOD("get_normal_map"), &StyleBoxTexture::get_normal_map);
 
 	ClassDB::bind_method(D_METHOD("set_margin_size", "margin", "size"), &StyleBoxTexture::set_margin_size);
 	ClassDB::bind_method(D_METHOD("get_margin_size", "margin"), &StyleBoxTexture::get_margin_size);

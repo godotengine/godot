@@ -100,8 +100,8 @@ RID PanoramaSky::get_rid() const {
 
 void PanoramaSky::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_panorama", "texture:Texture"), &PanoramaSky::set_panorama);
-	ClassDB::bind_method(D_METHOD("get_panorama:Texture"), &PanoramaSky::get_panorama);
+	ClassDB::bind_method(D_METHOD("set_panorama", "texture"), &PanoramaSky::set_panorama);
+	ClassDB::bind_method(D_METHOD("get_panorama"), &PanoramaSky::get_panorama);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "panorama", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_panorama", "get_panorama");
 }

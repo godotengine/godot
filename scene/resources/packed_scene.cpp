@@ -1670,11 +1670,11 @@ void SceneState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_node_owner_path", "idx"), &SceneState::get_node_owner_path);
 	ClassDB::bind_method(D_METHOD("is_node_instance_placeholder", "idx"), &SceneState::is_node_instance_placeholder);
 	ClassDB::bind_method(D_METHOD("get_node_instance_placeholder", "idx"), &SceneState::get_node_instance_placeholder);
-	ClassDB::bind_method(D_METHOD("get_node_instance:PackedScene", "idx"), &SceneState::get_node_instance);
+	ClassDB::bind_method(D_METHOD("get_node_instance", "idx"), &SceneState::get_node_instance);
 	ClassDB::bind_method(D_METHOD("get_node_groups", "idx"), &SceneState::_get_node_groups);
 	ClassDB::bind_method(D_METHOD("get_node_property_count", "idx"), &SceneState::get_node_property_count);
 	ClassDB::bind_method(D_METHOD("get_node_property_name", "idx", "prop_idx"), &SceneState::get_node_property_name);
-	ClassDB::bind_method(D_METHOD("get_node_property_value:Variant", "idx", "prop_idx"), &SceneState::get_node_property_value);
+	ClassDB::bind_method(D_METHOD("get_node_property_value", "idx", "prop_idx"), &SceneState::get_node_property_value);
 	ClassDB::bind_method(D_METHOD("get_connection_count"), &SceneState::get_connection_count);
 	ClassDB::bind_method(D_METHOD("get_connection_source", "idx"), &SceneState::get_connection_source);
 	ClassDB::bind_method(D_METHOD("get_connection_signal", "idx"), &SceneState::get_connection_signal);
@@ -1777,12 +1777,12 @@ void PackedScene::set_path(const String &p_path, bool p_take_over) {
 
 void PackedScene::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("pack", "path:Node"), &PackedScene::pack);
-	ClassDB::bind_method(D_METHOD("instance:Node", "edit_state"), &PackedScene::instance, DEFVAL(GEN_EDIT_STATE_DISABLED));
+	ClassDB::bind_method(D_METHOD("pack", "path"), &PackedScene::pack);
+	ClassDB::bind_method(D_METHOD("instance", "edit_state"), &PackedScene::instance, DEFVAL(GEN_EDIT_STATE_DISABLED));
 	ClassDB::bind_method(D_METHOD("can_instance"), &PackedScene::can_instance);
 	ClassDB::bind_method(D_METHOD("_set_bundled_scene"), &PackedScene::_set_bundled_scene);
 	ClassDB::bind_method(D_METHOD("_get_bundled_scene"), &PackedScene::_get_bundled_scene);
-	ClassDB::bind_method(D_METHOD("get_state:SceneState"), &PackedScene::get_state);
+	ClassDB::bind_method(D_METHOD("get_state"), &PackedScene::get_state);
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_bundled"), "_set_bundled_scene", "_get_bundled_scene");
 

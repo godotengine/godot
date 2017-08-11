@@ -83,8 +83,8 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("warp_mouse_pos", "to"), &Input::warp_mouse_pos);
 	ClassDB::bind_method(D_METHOD("action_press", "action"), &Input::action_press);
 	ClassDB::bind_method(D_METHOD("action_release", "action"), &Input::action_release);
-	ClassDB::bind_method(D_METHOD("set_custom_mouse_cursor", "image:Texture", "hotspot"), &Input::set_custom_mouse_cursor, DEFVAL(Vector2()));
-	ClassDB::bind_method(D_METHOD("parse_input_event", "event:InputEvent"), &Input::parse_input_event);
+	ClassDB::bind_method(D_METHOD("set_custom_mouse_cursor", "image", "hotspot"), &Input::set_custom_mouse_cursor, DEFVAL(Vector2()));
+	ClassDB::bind_method(D_METHOD("parse_input_event", "event"), &Input::parse_input_event);
 
 	BIND_CONSTANT(MOUSE_MODE_VISIBLE);
 	BIND_CONSTANT(MOUSE_MODE_HIDDEN);

@@ -679,8 +679,8 @@ void Camera2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_zoom", "zoom"), &Camera2D::set_zoom);
 	ClassDB::bind_method(D_METHOD("get_zoom"), &Camera2D::get_zoom);
 
-	ClassDB::bind_method(D_METHOD("set_custom_viewport", "viewport:Viewport"), &Camera2D::set_custom_viewport);
-	ClassDB::bind_method(D_METHOD("get_custom_viewport:Viewport"), &Camera2D::get_custom_viewport);
+	ClassDB::bind_method(D_METHOD("set_custom_viewport", "viewport"), &Camera2D::set_custom_viewport);
+	ClassDB::bind_method(D_METHOD("get_custom_viewport"), &Camera2D::get_custom_viewport);
 
 	ClassDB::bind_method(D_METHOD("set_follow_smoothing", "follow_smoothing"), &Camera2D::set_follow_smoothing);
 	ClassDB::bind_method(D_METHOD("get_follow_smoothing"), &Camera2D::get_follow_smoothing);

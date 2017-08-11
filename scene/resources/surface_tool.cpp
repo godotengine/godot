@@ -865,13 +865,13 @@ void SurfaceTool::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("add_to_format", "flags"), &SurfaceTool::add_to_format);
 
-	ClassDB::bind_method(D_METHOD("set_material", "material:Material"), &SurfaceTool::set_material);
+	ClassDB::bind_method(D_METHOD("set_material", "material"), &SurfaceTool::set_material);
 
 	ClassDB::bind_method(D_METHOD("clear"), &SurfaceTool::clear);
 
-	ClassDB::bind_method(D_METHOD("create_from", "existing:Mesh", "surface"), &SurfaceTool::create_from);
-	ClassDB::bind_method(D_METHOD("append_from", "existing:Mesh", "surface", "transform"), &SurfaceTool::append_from);
-	ClassDB::bind_method(D_METHOD("commit:Mesh", "existing:Mesh"), &SurfaceTool::commit, DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("create_from", "existing", "surface"), &SurfaceTool::create_from);
+	ClassDB::bind_method(D_METHOD("append_from", "existing", "surface", "transform"), &SurfaceTool::append_from);
+	ClassDB::bind_method(D_METHOD("commit", "existing"), &SurfaceTool::commit, DEFVAL(Variant()));
 }
 
 SurfaceTool::SurfaceTool() {

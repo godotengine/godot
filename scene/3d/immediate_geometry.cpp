@@ -143,7 +143,7 @@ void ImmediateGeometry::add_sphere(int p_lats, int p_lons, float p_radius, bool 
 
 void ImmediateGeometry::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("begin", "primitive", "texture:Texture"), &ImmediateGeometry::begin, DEFVAL(Ref<Texture>()));
+	ClassDB::bind_method(D_METHOD("begin", "primitive", "texture"), &ImmediateGeometry::begin, DEFVAL(Ref<Texture>()));
 	ClassDB::bind_method(D_METHOD("set_normal", "normal"), &ImmediateGeometry::set_normal);
 	ClassDB::bind_method(D_METHOD("set_tangent", "tangent"), &ImmediateGeometry::set_tangent);
 	ClassDB::bind_method(D_METHOD("set_color", "color"), &ImmediateGeometry::set_color);

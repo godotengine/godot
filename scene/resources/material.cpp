@@ -54,8 +54,8 @@ RID Material::get_rid() const {
 
 void Material::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_next_pass", "next_pass:Material"), &Material::set_next_pass);
-	ClassDB::bind_method(D_METHOD("get_next_pass:Material"), &Material::get_next_pass);
+	ClassDB::bind_method(D_METHOD("set_next_pass", "next_pass"), &Material::set_next_pass);
+	ClassDB::bind_method(D_METHOD("get_next_pass"), &Material::get_next_pass);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "next_pass", PROPERTY_HINT_RESOURCE_TYPE, "Material"), "set_next_pass", "get_next_pass");
 }
@@ -160,10 +160,10 @@ Variant ShaderMaterial::get_shader_param(const StringName &p_param) const {
 
 void ShaderMaterial::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_shader", "shader:Shader"), &ShaderMaterial::set_shader);
-	ClassDB::bind_method(D_METHOD("get_shader:Shader"), &ShaderMaterial::get_shader);
+	ClassDB::bind_method(D_METHOD("set_shader", "shader"), &ShaderMaterial::set_shader);
+	ClassDB::bind_method(D_METHOD("get_shader"), &ShaderMaterial::get_shader);
 	ClassDB::bind_method(D_METHOD("set_shader_param", "param", "value"), &ShaderMaterial::set_shader_param);
-	ClassDB::bind_method(D_METHOD("get_shader_param:Variant", "param"), &ShaderMaterial::get_shader_param);
+	ClassDB::bind_method(D_METHOD("get_shader_param", "param"), &ShaderMaterial::get_shader_param);
 }
 
 void ShaderMaterial::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
@@ -1534,8 +1534,8 @@ void SpatialMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_feature", "feature", "enable"), &SpatialMaterial::set_feature);
 	ClassDB::bind_method(D_METHOD("get_feature", "feature"), &SpatialMaterial::get_feature);
 
-	ClassDB::bind_method(D_METHOD("set_texture", "param", "texture:Texture"), &SpatialMaterial::set_texture);
-	ClassDB::bind_method(D_METHOD("get_texture:Texture", "param"), &SpatialMaterial::get_texture);
+	ClassDB::bind_method(D_METHOD("set_texture", "param", "texture"), &SpatialMaterial::set_texture);
+	ClassDB::bind_method(D_METHOD("get_texture", "param"), &SpatialMaterial::get_texture);
 
 	ClassDB::bind_method(D_METHOD("set_detail_blend_mode", "detail_blend_mode"), &SpatialMaterial::set_detail_blend_mode);
 	ClassDB::bind_method(D_METHOD("get_detail_blend_mode"), &SpatialMaterial::get_detail_blend_mode);

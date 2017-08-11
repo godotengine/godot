@@ -234,7 +234,7 @@ void Range::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_exp_ratio", "enabled"), &Range::set_exp_ratio);
 	ClassDB::bind_method(D_METHOD("is_ratio_exp"), &Range::is_ratio_exp);
 
-	ClassDB::bind_method(D_METHOD("share", "with:Node"), &Range::_share);
+	ClassDB::bind_method(D_METHOD("share", "with"), &Range::_share);
 	ClassDB::bind_method(D_METHOD("unshare"), &Range::unshare);
 
 	ADD_SIGNAL(MethodInfo("value_changed", PropertyInfo(Variant::REAL, "value")));

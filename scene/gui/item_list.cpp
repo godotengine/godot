@@ -1277,14 +1277,14 @@ bool ItemList::has_auto_height() const {
 
 void ItemList::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("add_item", "text", "icon:Texture", "selectable"), &ItemList::add_item, DEFVAL(Variant()), DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("add_icon_item", "icon:Texture", "selectable"), &ItemList::add_icon_item, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("add_item", "text", "icon", "selectable"), &ItemList::add_item, DEFVAL(Variant()), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("add_icon_item", "icon", "selectable"), &ItemList::add_icon_item, DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("set_item_text", "idx", "text"), &ItemList::set_item_text);
 	ClassDB::bind_method(D_METHOD("get_item_text", "idx"), &ItemList::get_item_text);
 
-	ClassDB::bind_method(D_METHOD("set_item_icon", "idx", "icon:Texture"), &ItemList::set_item_icon);
-	ClassDB::bind_method(D_METHOD("get_item_icon:Texture", "idx"), &ItemList::get_item_icon);
+	ClassDB::bind_method(D_METHOD("set_item_icon", "idx", "icon"), &ItemList::set_item_icon);
+	ClassDB::bind_method(D_METHOD("get_item_icon", "idx"), &ItemList::get_item_icon);
 
 	ClassDB::bind_method(D_METHOD("set_item_icon_region", "idx", "rect"), &ItemList::set_item_icon_region);
 	ClassDB::bind_method(D_METHOD("get_item_icon_region", "idx"), &ItemList::get_item_icon_region);
@@ -1296,7 +1296,7 @@ void ItemList::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_item_disabled", "idx"), &ItemList::is_item_disabled);
 
 	ClassDB::bind_method(D_METHOD("set_item_metadata", "idx", "metadata"), &ItemList::set_item_metadata);
-	ClassDB::bind_method(D_METHOD("get_item_metadata:Variant", "idx"), &ItemList::get_item_metadata);
+	ClassDB::bind_method(D_METHOD("get_item_metadata", "idx"), &ItemList::get_item_metadata);
 
 	ClassDB::bind_method(D_METHOD("set_item_custom_bg_color", "idx", "custom_bg_color"), &ItemList::set_item_custom_bg_color);
 	ClassDB::bind_method(D_METHOD("get_item_custom_bg_color", "idx"), &ItemList::get_item_custom_bg_color);
@@ -1352,7 +1352,7 @@ void ItemList::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("ensure_current_is_visible"), &ItemList::ensure_current_is_visible);
 
-	ClassDB::bind_method(D_METHOD("get_v_scroll:VScrollBar"), &ItemList::get_v_scroll);
+	ClassDB::bind_method(D_METHOD("get_v_scroll"), &ItemList::get_v_scroll);
 
 	ClassDB::bind_method(D_METHOD("_scroll_changed"), &ItemList::_scroll_changed);
 	ClassDB::bind_method(D_METHOD("_gui_input"), &ItemList::_gui_input);

@@ -352,13 +352,13 @@ void MeshInstance::create_debug_tangents() {
 
 void MeshInstance::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_mesh", "mesh:Mesh"), &MeshInstance::set_mesh);
-	ClassDB::bind_method(D_METHOD("get_mesh:Mesh"), &MeshInstance::get_mesh);
-	ClassDB::bind_method(D_METHOD("set_skeleton_path", "skeleton_path:NodePath"), &MeshInstance::set_skeleton_path);
-	ClassDB::bind_method(D_METHOD("get_skeleton_path:NodePath"), &MeshInstance::get_skeleton_path);
+	ClassDB::bind_method(D_METHOD("set_mesh", "mesh"), &MeshInstance::set_mesh);
+	ClassDB::bind_method(D_METHOD("get_mesh"), &MeshInstance::get_mesh);
+	ClassDB::bind_method(D_METHOD("set_skeleton_path", "skeleton_path"), &MeshInstance::set_skeleton_path);
+	ClassDB::bind_method(D_METHOD("get_skeleton_path"), &MeshInstance::get_skeleton_path);
 
-	ClassDB::bind_method(D_METHOD("set_surface_material", "surface", "material:Material"), &MeshInstance::set_surface_material);
-	ClassDB::bind_method(D_METHOD("get_surface_material:Material", "surface"), &MeshInstance::get_surface_material);
+	ClassDB::bind_method(D_METHOD("set_surface_material", "surface", "material"), &MeshInstance::set_surface_material);
+	ClassDB::bind_method(D_METHOD("get_surface_material", "surface"), &MeshInstance::get_surface_material);
 
 	ClassDB::bind_method(D_METHOD("create_trimesh_collision"), &MeshInstance::create_trimesh_collision);
 	ClassDB::set_method_flags("MeshInstance", "create_trimesh_collision", METHOD_FLAGS_DEFAULT);

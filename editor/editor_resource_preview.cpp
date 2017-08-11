@@ -362,10 +362,10 @@ void EditorResourcePreview::_bind_methods() {
 
 	ClassDB::bind_method("_preview_ready", &EditorResourcePreview::_preview_ready);
 
-	ClassDB::bind_method(D_METHOD("queue_resource_preview", "path", "receiver", "receiver_func", "userdata:Variant"), &EditorResourcePreview::queue_resource_preview);
-	ClassDB::bind_method(D_METHOD("queue_edited_resource_preview", "resource:Resource", "receiver", "receiver_func", "userdata:Variant"), &EditorResourcePreview::queue_edited_resource_preview);
-	ClassDB::bind_method(D_METHOD("add_preview_generator", "generator:EditorResourcePreviewGenerator"), &EditorResourcePreview::add_preview_generator);
-	ClassDB::bind_method(D_METHOD("remove_preview_generator", "generator:EditorResourcePreviewGenerator"), &EditorResourcePreview::remove_preview_generator);
+	ClassDB::bind_method(D_METHOD("queue_resource_preview", "path", "receiver", "receiver_func", "userdata"), &EditorResourcePreview::queue_resource_preview);
+	ClassDB::bind_method(D_METHOD("queue_edited_resource_preview", "resource", "receiver", "receiver_func", "userdata"), &EditorResourcePreview::queue_edited_resource_preview);
+	ClassDB::bind_method(D_METHOD("add_preview_generator", "generator"), &EditorResourcePreview::add_preview_generator);
+	ClassDB::bind_method(D_METHOD("remove_preview_generator", "generator"), &EditorResourcePreview::remove_preview_generator);
 	ClassDB::bind_method(D_METHOD("check_for_invalidation", "path"), &EditorResourcePreview::check_for_invalidation);
 
 	ADD_SIGNAL(MethodInfo("preview_invalidated", PropertyInfo(Variant::STRING, "path")));

@@ -763,7 +763,7 @@ Object *Navigation2D::get_closest_point_owner(const Vector2 &p_point) {
 
 void Navigation2D::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("navpoly_create", "mesh:NavigationPolygon", "xform", "owner"), &Navigation2D::navpoly_create, DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("navpoly_create", "mesh", "xform", "owner"), &Navigation2D::navpoly_create, DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("navpoly_set_transform", "id", "xform"), &Navigation2D::navpoly_set_transform);
 	ClassDB::bind_method(D_METHOD("navpoly_remove", "id"), &Navigation2D::navpoly_remove);
 

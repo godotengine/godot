@@ -84,7 +84,7 @@ void ResourceLoader::get_recognized_extensions_for_type(const String &p_type, Li
 
 void ResourceInteractiveLoader::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("get_resource:Resource"), &ResourceInteractiveLoader::get_resource);
+	ClassDB::bind_method(D_METHOD("get_resource"), &ResourceInteractiveLoader::get_resource);
 	ClassDB::bind_method(D_METHOD("poll"), &ResourceInteractiveLoader::poll);
 	ClassDB::bind_method(D_METHOD("wait"), &ResourceInteractiveLoader::wait);
 	ClassDB::bind_method(D_METHOD("get_stage"), &ResourceInteractiveLoader::get_stage);

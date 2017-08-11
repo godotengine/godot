@@ -1496,7 +1496,7 @@ void RegEx::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("clear"), &RegEx::clear);
 	ClassDB::bind_method(D_METHOD("compile", "pattern"), &RegEx::compile);
-	ClassDB::bind_method(D_METHOD("search:RegExMatch", "text", "start", "end"), &RegEx::search, DEFVAL(0), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("search", "text", "start", "end"), &RegEx::search, DEFVAL(0), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("sub", "text", "replacement", "all", "start", "end"), &RegEx::sub, DEFVAL(false), DEFVAL(0), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("is_valid"), &RegEx::is_valid);
 	ClassDB::bind_method(D_METHOD("get_pattern"), &RegEx::get_pattern);

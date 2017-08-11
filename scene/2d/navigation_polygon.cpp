@@ -459,8 +459,8 @@ String NavigationPolygonInstance::get_configuration_warning() const {
 
 void NavigationPolygonInstance::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_navigation_polygon", "navpoly:NavigationPolygon"), &NavigationPolygonInstance::set_navigation_polygon);
-	ClassDB::bind_method(D_METHOD("get_navigation_polygon:NavigationPolygon"), &NavigationPolygonInstance::get_navigation_polygon);
+	ClassDB::bind_method(D_METHOD("set_navigation_polygon", "navpoly"), &NavigationPolygonInstance::set_navigation_polygon);
+	ClassDB::bind_method(D_METHOD("get_navigation_polygon"), &NavigationPolygonInstance::get_navigation_polygon);
 
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &NavigationPolygonInstance::set_enabled);
 	ClassDB::bind_method(D_METHOD("is_enabled"), &NavigationPolygonInstance::is_enabled);

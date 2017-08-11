@@ -78,8 +78,8 @@ Ref<Curve3D> Path::get_curve() const {
 
 void Path::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_curve", "curve:Curve3D"), &Path::set_curve);
-	ClassDB::bind_method(D_METHOD("get_curve:Curve3D", "curve"), &Path::get_curve);
+	ClassDB::bind_method(D_METHOD("set_curve", "curve"), &Path::set_curve);
+	ClassDB::bind_method(D_METHOD("get_curve"), &Path::get_curve);
 	ClassDB::bind_method(D_METHOD("_curve_changed"), &Path::_curve_changed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve3D"), "set_curve", "get_curve");

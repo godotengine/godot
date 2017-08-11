@@ -807,7 +807,7 @@ AudioStreamPlayer3D::DopplerTracking AudioStreamPlayer3D::get_doppler_tracking()
 
 void AudioStreamPlayer3D::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_stream", "stream:AudioStream"), &AudioStreamPlayer3D::set_stream);
+	ClassDB::bind_method(D_METHOD("set_stream", "stream"), &AudioStreamPlayer3D::set_stream);
 	ClassDB::bind_method(D_METHOD("get_stream"), &AudioStreamPlayer3D::get_stream);
 
 	ClassDB::bind_method(D_METHOD("set_unit_db", "unit_db"), &AudioStreamPlayer3D::set_unit_db);

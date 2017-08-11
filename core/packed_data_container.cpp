@@ -368,7 +368,7 @@ void PackedDataContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_iter_init"), &PackedDataContainer::_iter_init);
 	ClassDB::bind_method(D_METHOD("_iter_get"), &PackedDataContainer::_iter_get);
 	ClassDB::bind_method(D_METHOD("_iter_next"), &PackedDataContainer::_iter_next);
-	ClassDB::bind_method(D_METHOD("pack:Error", "value"), &PackedDataContainer::pack);
+	ClassDB::bind_method(D_METHOD("pack", "value"), &PackedDataContainer::pack);
 	ClassDB::bind_method(D_METHOD("size"), &PackedDataContainer::size);
 
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_BYTE_ARRAY, "__data__"), "_set_data", "_get_data");

@@ -262,10 +262,10 @@ void CanvasLayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_scale", "scale"), &CanvasLayer::set_scale);
 	ClassDB::bind_method(D_METHOD("get_scale"), &CanvasLayer::get_scale);
 
-	ClassDB::bind_method(D_METHOD("set_custom_viewport", "viewport:Viewport"), &CanvasLayer::set_custom_viewport);
-	ClassDB::bind_method(D_METHOD("get_custom_viewport:Viewport"), &CanvasLayer::get_custom_viewport);
+	ClassDB::bind_method(D_METHOD("set_custom_viewport", "viewport"), &CanvasLayer::set_custom_viewport);
+	ClassDB::bind_method(D_METHOD("get_custom_viewport"), &CanvasLayer::get_custom_viewport);
 
-	ClassDB::bind_method(D_METHOD("get_world_2d:World2D"), &CanvasLayer::get_world_2d);
+	ClassDB::bind_method(D_METHOD("get_world_2d"), &CanvasLayer::get_world_2d);
 	//ClassDB::bind_method(D_METHOD("get_viewport"),&CanvasLayer::get_viewport);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layer", PROPERTY_HINT_RANGE, "-128,128,1"), "set_layer", "get_layer");

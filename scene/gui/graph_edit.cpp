@@ -1157,7 +1157,7 @@ void GraphEdit::_snap_value_changed(double) {
 
 void GraphEdit::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("connect_node:Error", "from", "from_port", "to", "to_port"), &GraphEdit::connect_node);
+	ClassDB::bind_method(D_METHOD("connect_node", "from", "from_port", "to", "to_port"), &GraphEdit::connect_node);
 	ClassDB::bind_method(D_METHOD("is_node_connected", "from", "from_port", "to", "to_port"), &GraphEdit::is_node_connected);
 	ClassDB::bind_method(D_METHOD("disconnect_node", "from", "from_port", "to", "to_port"), &GraphEdit::disconnect_node);
 	ClassDB::bind_method(D_METHOD("get_connection_list"), &GraphEdit::_get_connection_list);
@@ -1192,7 +1192,7 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_scroll_offset"), &GraphEdit::_update_scroll_offset);
 	ClassDB::bind_method(D_METHOD("_connections_layer_draw"), &GraphEdit::_connections_layer_draw);
 
-	ClassDB::bind_method(D_METHOD("set_selected", "node:Node"), &GraphEdit::set_selected);
+	ClassDB::bind_method(D_METHOD("set_selected", "node"), &GraphEdit::set_selected);
 
 	ADD_SIGNAL(MethodInfo("connection_request", PropertyInfo(Variant::STRING, "from"), PropertyInfo(Variant::INT, "from_slot"), PropertyInfo(Variant::STRING, "to"), PropertyInfo(Variant::INT, "to_slot")));
 	ADD_SIGNAL(MethodInfo("disconnection_request", PropertyInfo(Variant::STRING, "from"), PropertyInfo(Variant::INT, "from_slot"), PropertyInfo(Variant::STRING, "to"), PropertyInfo(Variant::INT, "to_slot")));

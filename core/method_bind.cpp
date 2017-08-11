@@ -38,12 +38,16 @@ PropertyInfo MethodBind::get_argument_info(int p_argument) const {
 
 	if (p_argument >= 0) {
 
-		String name = (p_argument < arg_names.size()) ? String(arg_names[p_argument]) : String("arg" + itos(p_argument));
+		String name = p_argument < arg_names.size() ? String(arg_names[p_argument]) : String("arg" + itos(p_argument));
 		PropertyInfo pi(get_argument_type(p_argument), name);
-		if ((pi.type == Variant::OBJECT) && name.find(":") != -1) {
-			pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
-			pi.hint_string = name.get_slicec(':', 1);
-			pi.name = name.get_slicec(':', 0);
+
+		if (!is_vararg() && pi.type == Variant::OBJECT) {
+			StringName type_hint = arg_type_hints[p_argument];
+
+			if (type_hint != StringName()) {
+				pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
+				pi.hint_string = type_hint.operator String();
+			}
 		}
 		return pi;
 
@@ -87,6 +91,16 @@ Vector<StringName> MethodBind::get_argument_names() const {
 	return arg_names;
 }
 
+void MethodBind::set_argument_type_hints(const Vector<StringName> &p_type_hints) {
+
+	arg_type_hints = p_type_hints;
+}
+
+Vector<StringName> MethodBind::get_argument_type_hints() const {
+
+	return arg_type_hints;
+}
+
 #endif
 
 void MethodBind::set_default_arguments(const Vector<Variant> &p_defargs) {
@@ -98,11 +112,19 @@ void MethodBind::set_default_arguments(const Vector<Variant> &p_defargs) {
 void MethodBind::_generate_argument_types(int p_count) {
 
 	set_argument_count(p_count);
+
 	Variant::Type *argt = memnew_arr(Variant::Type, p_count + 1);
-	argt[0] = _gen_argument_type(-1);
+
+	arg_type_hints.resize(p_count);
+
+	argt[0] = _gen_argument_type(-1); // return type
+	set_return_type(_gen_argument_type_hint(-1));
+
 	for (int i = 0; i < p_count; i++) {
 		argt[i + 1] = _gen_argument_type(i);
+		arg_type_hints[i] = _gen_argument_type_hint(i);
 	}
+
 	set_argument_types(argt);
 }
 

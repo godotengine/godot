@@ -112,8 +112,8 @@ bool _ResourceLoader::has(const String &p_path) {
 
 void _ResourceLoader::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("load_interactive:ResourceInteractiveLoader", "path", "type_hint"), &_ResourceLoader::load_interactive, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("load:Resource", "path", "type_hint", "p_no_cache"), &_ResourceLoader::load, DEFVAL(""), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("load_interactive", "path", "type_hint"), &_ResourceLoader::load_interactive, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("load", "path", "type_hint", "p_no_cache"), &_ResourceLoader::load, DEFVAL(""), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_recognized_extensions_for_type", "type"), &_ResourceLoader::get_recognized_extensions_for_type);
 	ClassDB::bind_method(D_METHOD("set_abort_on_missing_resources", "abort"), &_ResourceLoader::set_abort_on_missing_resources);
 	ClassDB::bind_method(D_METHOD("get_dependencies", "path"), &_ResourceLoader::get_dependencies);
@@ -148,8 +148,8 @@ _ResourceSaver *_ResourceSaver::singleton = NULL;
 
 void _ResourceSaver::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("save", "path", "resource:Resource", "flags"), &_ResourceSaver::save, DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("get_recognized_extensions", "type:Resource"), &_ResourceSaver::get_recognized_extensions);
+	ClassDB::bind_method(D_METHOD("save", "path", "resource", "flags"), &_ResourceSaver::save, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_recognized_extensions", "type"), &_ResourceSaver::get_recognized_extensions);
 
 	BIND_CONSTANT(FLAG_RELATIVE_PATHS);
 	BIND_CONSTANT(FLAG_BUNDLE_RESOURCES);
@@ -1038,7 +1038,7 @@ void _OS::_bind_methods() {
 			&_OS::get_unix_time_from_datetime);
 	ClassDB::bind_method(D_METHOD("get_system_time_secs"), &_OS::get_system_time_secs);
 
-	ClassDB::bind_method(D_METHOD("set_icon", "icon:Image"), &_OS::set_icon);
+	ClassDB::bind_method(D_METHOD("set_icon", "icon"), &_OS::set_icon);
 
 	ClassDB::bind_method(D_METHOD("get_exit_code"), &_OS::get_exit_code);
 	ClassDB::bind_method(D_METHOD("set_exit_code", "code"), &_OS::set_exit_code);
@@ -1750,7 +1750,7 @@ void _File::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_sha256", "path"), &_File::get_sha256);
 	ClassDB::bind_method(D_METHOD("get_endian_swap"), &_File::get_endian_swap);
 	ClassDB::bind_method(D_METHOD("set_endian_swap", "enable"), &_File::set_endian_swap);
-	ClassDB::bind_method(D_METHOD("get_error:Error"), &_File::get_error);
+	ClassDB::bind_method(D_METHOD("get_error"), &_File::get_error);
 	ClassDB::bind_method(D_METHOD("get_var"), &_File::get_var);
 	ClassDB::bind_method(D_METHOD("get_csv_line", "delim"), &_File::get_csv_line, DEFVAL(","));
 
@@ -1954,7 +1954,7 @@ Error _Directory::remove(String p_name) {
 
 void _Directory::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("open:Error", "path"), &_Directory::open);
+	ClassDB::bind_method(D_METHOD("open", "path"), &_Directory::open);
 	ClassDB::bind_method(D_METHOD("list_dir_begin", "skip_navigational", "skip_hidden"), &_Directory::list_dir_begin, DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_next"), &_Directory::get_next);
 	ClassDB::bind_method(D_METHOD("current_is_dir"), &_Directory::current_is_dir);
@@ -1962,17 +1962,17 @@ void _Directory::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_drive_count"), &_Directory::get_drive_count);
 	ClassDB::bind_method(D_METHOD("get_drive", "idx"), &_Directory::get_drive);
 	ClassDB::bind_method(D_METHOD("get_current_drive"), &_Directory::get_current_drive);
-	ClassDB::bind_method(D_METHOD("change_dir:Error", "todir"), &_Directory::change_dir);
+	ClassDB::bind_method(D_METHOD("change_dir", "todir"), &_Directory::change_dir);
 	ClassDB::bind_method(D_METHOD("get_current_dir"), &_Directory::get_current_dir);
-	ClassDB::bind_method(D_METHOD("make_dir:Error", "path"), &_Directory::make_dir);
-	ClassDB::bind_method(D_METHOD("make_dir_recursive:Error", "path"), &_Directory::make_dir_recursive);
+	ClassDB::bind_method(D_METHOD("make_dir", "path"), &_Directory::make_dir);
+	ClassDB::bind_method(D_METHOD("make_dir_recursive", "path"), &_Directory::make_dir_recursive);
 	ClassDB::bind_method(D_METHOD("file_exists", "path"), &_Directory::file_exists);
 	ClassDB::bind_method(D_METHOD("dir_exists", "path"), &_Directory::dir_exists);
 	//ClassDB::bind_method(D_METHOD("get_modified_time","file"),&_Directory::get_modified_time);
 	ClassDB::bind_method(D_METHOD("get_space_left"), &_Directory::get_space_left);
-	ClassDB::bind_method(D_METHOD("copy:Error", "from", "to"), &_Directory::copy);
-	ClassDB::bind_method(D_METHOD("rename:Error", "from", "to"), &_Directory::rename);
-	ClassDB::bind_method(D_METHOD("remove:Error", "path"), &_Directory::remove);
+	ClassDB::bind_method(D_METHOD("copy", "from", "to"), &_Directory::copy);
+	ClassDB::bind_method(D_METHOD("rename", "from", "to"), &_Directory::rename);
+	ClassDB::bind_method(D_METHOD("remove", "path"), &_Directory::remove);
 }
 
 _Directory::_Directory() {
@@ -2109,14 +2109,14 @@ String _Marshalls::base64_to_utf8(const String &p_str) {
 
 void _Marshalls::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("variant_to_base64:String", "variant"), &_Marshalls::variant_to_base64);
-	ClassDB::bind_method(D_METHOD("base64_to_variant:Variant", "base64_str"), &_Marshalls::base64_to_variant);
+	ClassDB::bind_method(D_METHOD("variant_to_base64", "variant"), &_Marshalls::variant_to_base64);
+	ClassDB::bind_method(D_METHOD("base64_to_variant", "base64_str"), &_Marshalls::base64_to_variant);
 
-	ClassDB::bind_method(D_METHOD("raw_to_base64:String", "array"), &_Marshalls::raw_to_base64);
-	ClassDB::bind_method(D_METHOD("base64_to_raw:PoolByteArray", "base64_str"), &_Marshalls::base64_to_raw);
+	ClassDB::bind_method(D_METHOD("raw_to_base64", "array"), &_Marshalls::raw_to_base64);
+	ClassDB::bind_method(D_METHOD("base64_to_raw", "base64_str"), &_Marshalls::base64_to_raw);
 
-	ClassDB::bind_method(D_METHOD("utf8_to_base64:String", "utf8_str"), &_Marshalls::utf8_to_base64);
-	ClassDB::bind_method(D_METHOD("base64_to_utf8:String", "base64_str"), &_Marshalls::base64_to_utf8);
+	ClassDB::bind_method(D_METHOD("utf8_to_base64", "utf8_str"), &_Marshalls::utf8_to_base64);
+	ClassDB::bind_method(D_METHOD("base64_to_utf8", "base64_str"), &_Marshalls::base64_to_utf8);
 };
 
 ////////////////
@@ -2133,8 +2133,8 @@ Error _Semaphore::post() {
 
 void _Semaphore::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("wait:Error"), &_Semaphore::wait);
-	ClassDB::bind_method(D_METHOD("post:Error"), &_Semaphore::post);
+	ClassDB::bind_method(D_METHOD("wait"), &_Semaphore::wait);
+	ClassDB::bind_method(D_METHOD("post"), &_Semaphore::post);
 }
 
 _Semaphore::_Semaphore() {
@@ -2167,7 +2167,7 @@ void _Mutex::unlock() {
 void _Mutex::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("lock"), &_Mutex::lock);
-	ClassDB::bind_method(D_METHOD("try_lock:Error"), &_Mutex::try_lock);
+	ClassDB::bind_method(D_METHOD("try_lock"), &_Mutex::try_lock);
 	ClassDB::bind_method(D_METHOD("unlock"), &_Mutex::unlock);
 }
 
@@ -2280,10 +2280,10 @@ Variant _Thread::wait_to_finish() {
 
 void _Thread::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("start:Error", "instance", "method", "userdata", "priority"), &_Thread::start, DEFVAL(Variant()), DEFVAL(PRIORITY_NORMAL));
+	ClassDB::bind_method(D_METHOD("start", "instance", "method", "userdata", "priority"), &_Thread::start, DEFVAL(Variant()), DEFVAL(PRIORITY_NORMAL));
 	ClassDB::bind_method(D_METHOD("get_id"), &_Thread::get_id);
 	ClassDB::bind_method(D_METHOD("is_active"), &_Thread::is_active);
-	ClassDB::bind_method(D_METHOD("wait_to_finish:Variant"), &_Thread::wait_to_finish);
+	ClassDB::bind_method(D_METHOD("wait_to_finish"), &_Thread::wait_to_finish);
 
 	BIND_CONSTANT(PRIORITY_LOW);
 	BIND_CONSTANT(PRIORITY_NORMAL);
@@ -2483,15 +2483,15 @@ void _ClassDB::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("class_exists", "class"), &_ClassDB::class_exists);
 	ClassDB::bind_method(D_METHOD("is_parent_class", "class", "inherits"), &_ClassDB::is_parent_class);
 	ClassDB::bind_method(D_METHOD("can_instance", "class"), &_ClassDB::can_instance);
-	ClassDB::bind_method(D_METHOD("instance:Variant", "class"), &_ClassDB::instance);
+	ClassDB::bind_method(D_METHOD("instance", "class"), &_ClassDB::instance);
 
 	ClassDB::bind_method(D_METHOD("class_has_signal", "class", "signal"), &_ClassDB::has_signal);
 	ClassDB::bind_method(D_METHOD("class_get_signal", "class", "signal"), &_ClassDB::get_signal);
 	ClassDB::bind_method(D_METHOD("class_get_signal_list", "class", "no_inheritance"), &_ClassDB::get_signal_list, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("class_get_property_list", "class", "no_inheritance"), &_ClassDB::get_property_list, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("class_get_property:Variant", "object", "property"), &_ClassDB::get_property);
-	ClassDB::bind_method(D_METHOD("class_set_property:Error", "object", "property", "value"), &_ClassDB::set_property);
+	ClassDB::bind_method(D_METHOD("class_get_property", "object", "property"), &_ClassDB::get_property);
+	ClassDB::bind_method(D_METHOD("class_set_property", "object", "property", "value"), &_ClassDB::set_property);
 
 	ClassDB::bind_method(D_METHOD("class_has_method", "class", "method", "no_inheritance"), &_ClassDB::has_method, DEFVAL(false));
 
@@ -2583,7 +2583,7 @@ void _Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_frames_drawn"), &_Engine::get_frames_drawn);
 	ClassDB::bind_method(D_METHOD("get_frames_per_second"), &_Engine::get_frames_per_second);
 
-	ClassDB::bind_method(D_METHOD("get_main_loop:MainLoop"), &_Engine::get_main_loop);
+	ClassDB::bind_method(D_METHOD("get_main_loop"), &_Engine::get_main_loop);
 
 	ClassDB::bind_method(D_METHOD("get_version_info"), &_Engine::get_version_info);
 

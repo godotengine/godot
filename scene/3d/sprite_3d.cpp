@@ -562,8 +562,8 @@ void Sprite3D::_validate_property(PropertyInfo &property) const {
 
 void Sprite3D::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_texture", "texture:Texture"), &Sprite3D::set_texture);
-	ClassDB::bind_method(D_METHOD("get_texture:Texture"), &Sprite3D::get_texture);
+	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &Sprite3D::set_texture);
+	ClassDB::bind_method(D_METHOD("get_texture"), &Sprite3D::get_texture);
 
 	ClassDB::bind_method(D_METHOD("set_region", "enabled"), &Sprite3D::set_region);
 	ClassDB::bind_method(D_METHOD("is_region"), &Sprite3D::is_region);
@@ -724,8 +724,8 @@ void AnimatedSprite3D::_draw() {
 
 void AnimatedSprite3D::_bind_methods(){
 
-	ClassDB::bind_method(D_METHOD("set_sprite_frames","sprite_frames:SpriteFrames"),&AnimatedSprite3D::set_sprite_frames);
-	ClassDB::bind_method(D_METHOD("get_sprite_frames:Texture"),&AnimatedSprite3D::get_sprite_frames);
+	ClassDB::bind_method(D_METHOD("set_sprite_frames","sprite_frames"),&AnimatedSprite3D::set_sprite_frames);
+	ClassDB::bind_method(D_METHOD("get_sprite_frames"),&AnimatedSprite3D::get_sprite_frames);
 	ClassDB::bind_method(D_METHOD("set_frame","frame"),&AnimatedSprite3D::set_frame);
 	ClassDB::bind_method(D_METHOD("get_frame"),&AnimatedSprite3D::get_frame);
 
@@ -1246,8 +1246,8 @@ String AnimatedSprite3D::get_configuration_warning() const {
 
 void AnimatedSprite3D::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_sprite_frames", "sprite_frames:SpriteFrames"), &AnimatedSprite3D::set_sprite_frames);
-	ClassDB::bind_method(D_METHOD("get_sprite_frames:SpriteFrames"), &AnimatedSprite3D::get_sprite_frames);
+	ClassDB::bind_method(D_METHOD("set_sprite_frames", "sprite_frames"), &AnimatedSprite3D::set_sprite_frames);
+	ClassDB::bind_method(D_METHOD("get_sprite_frames"), &AnimatedSprite3D::get_sprite_frames);
 
 	ClassDB::bind_method(D_METHOD("set_animation", "animation"), &AnimatedSprite3D::set_animation);
 	ClassDB::bind_method(D_METHOD("get_animation"), &AnimatedSprite3D::get_animation);

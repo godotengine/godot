@@ -517,32 +517,32 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_tile", "id"), &TileSet::create_tile);
 	ClassDB::bind_method(D_METHOD("tile_set_name", "id", "name"), &TileSet::tile_set_name);
 	ClassDB::bind_method(D_METHOD("tile_get_name", "id"), &TileSet::tile_get_name);
-	ClassDB::bind_method(D_METHOD("tile_set_texture", "id", "texture:Texture"), &TileSet::tile_set_texture);
-	ClassDB::bind_method(D_METHOD("tile_get_texture:Texture", "id"), &TileSet::tile_get_texture);
-	ClassDB::bind_method(D_METHOD("tile_set_normal_map", "id", "normal_map:Texture"), &TileSet::tile_set_normal_map);
-	ClassDB::bind_method(D_METHOD("tile_get_normal_map:Texture", "id"), &TileSet::tile_get_normal_map);
-	ClassDB::bind_method(D_METHOD("tile_set_material", "id", "material:ShaderMaterial"), &TileSet::tile_set_material);
-	ClassDB::bind_method(D_METHOD("tile_get_material:ShaderMaterial", "id"), &TileSet::tile_get_material);
+	ClassDB::bind_method(D_METHOD("tile_set_texture", "id", "texture"), &TileSet::tile_set_texture);
+	ClassDB::bind_method(D_METHOD("tile_get_texture", "id"), &TileSet::tile_get_texture);
+	ClassDB::bind_method(D_METHOD("tile_set_normal_map", "id", "normal_map"), &TileSet::tile_set_normal_map);
+	ClassDB::bind_method(D_METHOD("tile_get_normal_map", "id"), &TileSet::tile_get_normal_map);
+	ClassDB::bind_method(D_METHOD("tile_set_material", "id", "material"), &TileSet::tile_set_material);
+	ClassDB::bind_method(D_METHOD("tile_get_material", "id"), &TileSet::tile_get_material);
 	ClassDB::bind_method(D_METHOD("tile_set_texture_offset", "id", "texture_offset"), &TileSet::tile_set_texture_offset);
 	ClassDB::bind_method(D_METHOD("tile_get_texture_offset", "id"), &TileSet::tile_get_texture_offset);
 	ClassDB::bind_method(D_METHOD("tile_set_region", "id", "region"), &TileSet::tile_set_region);
 	ClassDB::bind_method(D_METHOD("tile_get_region", "id"), &TileSet::tile_get_region);
-	ClassDB::bind_method(D_METHOD("tile_set_shape", "id", "shape_id", "shape:Shape2D"), &TileSet::tile_set_shape);
-	ClassDB::bind_method(D_METHOD("tile_get_shape:Shape2D", "id", "shape_id"), &TileSet::tile_get_shape);
+	ClassDB::bind_method(D_METHOD("tile_set_shape", "id", "shape_id", "shape"), &TileSet::tile_set_shape);
+	ClassDB::bind_method(D_METHOD("tile_get_shape", "id", "shape_id"), &TileSet::tile_get_shape);
 	ClassDB::bind_method(D_METHOD("tile_set_shape_transform", "id", "shape_id", "shape_transform"), &TileSet::tile_set_shape_transform);
 	ClassDB::bind_method(D_METHOD("tile_get_shape_transform", "id", "shape_id"), &TileSet::tile_get_shape_transform);
 	ClassDB::bind_method(D_METHOD("tile_set_shape_one_way", "id", "shape_id", "one_way"), &TileSet::tile_set_shape_one_way);
 	ClassDB::bind_method(D_METHOD("tile_get_shape_one_way", "id", "shape_id"), &TileSet::tile_get_shape_one_way);
-	ClassDB::bind_method(D_METHOD("tile_add_shape", "id", "shape:Shape2D", "shape_transform", "one_way"), &TileSet::tile_add_shape, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("tile_add_shape", "id", "shape", "shape_transform", "one_way"), &TileSet::tile_add_shape, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("tile_get_shape_count", "id"), &TileSet::tile_get_shape_count);
 	ClassDB::bind_method(D_METHOD("tile_set_shapes", "id", "shapes"), &TileSet::_tile_set_shapes);
 	ClassDB::bind_method(D_METHOD("tile_get_shapes", "id"), &TileSet::_tile_get_shapes);
-	ClassDB::bind_method(D_METHOD("tile_set_navigation_polygon", "id", "navigation_polygon:NavigationPolygon"), &TileSet::tile_set_navigation_polygon);
-	ClassDB::bind_method(D_METHOD("tile_get_navigation_polygon:NavigationPolygon", "id"), &TileSet::tile_get_navigation_polygon);
+	ClassDB::bind_method(D_METHOD("tile_set_navigation_polygon", "id", "navigation_polygon"), &TileSet::tile_set_navigation_polygon);
+	ClassDB::bind_method(D_METHOD("tile_get_navigation_polygon", "id"), &TileSet::tile_get_navigation_polygon);
 	ClassDB::bind_method(D_METHOD("tile_set_navigation_polygon_offset", "id", "navigation_polygon_offset"), &TileSet::tile_set_navigation_polygon_offset);
 	ClassDB::bind_method(D_METHOD("tile_get_navigation_polygon_offset", "id"), &TileSet::tile_get_navigation_polygon_offset);
-	ClassDB::bind_method(D_METHOD("tile_set_light_occluder", "id", "light_occluder:OccluderPolygon2D"), &TileSet::tile_set_light_occluder);
-	ClassDB::bind_method(D_METHOD("tile_get_light_occluder:OccluderPolygon2D", "id"), &TileSet::tile_get_light_occluder);
+	ClassDB::bind_method(D_METHOD("tile_set_light_occluder", "id", "light_occluder"), &TileSet::tile_set_light_occluder);
+	ClassDB::bind_method(D_METHOD("tile_get_light_occluder", "id"), &TileSet::tile_get_light_occluder);
 	ClassDB::bind_method(D_METHOD("tile_set_occluder_offset", "id", "occluder_offset"), &TileSet::tile_set_occluder_offset);
 	ClassDB::bind_method(D_METHOD("tile_get_occluder_offset", "id"), &TileSet::tile_get_occluder_offset);
 
@@ -550,7 +550,7 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &TileSet::clear);
 	ClassDB::bind_method(D_METHOD("get_last_unused_tile_id"), &TileSet::get_last_unused_tile_id);
 	ClassDB::bind_method(D_METHOD("find_tile_by_name", "name"), &TileSet::find_tile_by_name);
-	ClassDB::bind_method(D_METHOD("get_tiles_ids", "name"), &TileSet::_get_tiles_ids);
+	ClassDB::bind_method(D_METHOD("get_tiles_ids"), &TileSet::_get_tiles_ids);
 }
 
 TileSet::TileSet() {

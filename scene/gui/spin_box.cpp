@@ -253,7 +253,7 @@ void SpinBox::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_editable", "editable"), &SpinBox::set_editable);
 	ClassDB::bind_method(D_METHOD("is_editable"), &SpinBox::is_editable);
 	ClassDB::bind_method(D_METHOD("_line_edit_focus_exit"), &SpinBox::_line_edit_focus_exit);
-	ClassDB::bind_method(D_METHOD("get_line_edit:LineEdit"), &SpinBox::get_line_edit);
+	ClassDB::bind_method(D_METHOD("get_line_edit"), &SpinBox::get_line_edit);
 	ClassDB::bind_method(D_METHOD("_line_edit_input"), &SpinBox::_line_edit_input);
 	ClassDB::bind_method(D_METHOD("_range_click_timeout"), &SpinBox::_range_click_timeout);
 

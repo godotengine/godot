@@ -55,11 +55,11 @@
 ////// Script stuff
 
 void NativeScript::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_class_name", "class_name:String"), &NativeScript::set_class_name);
-	ClassDB::bind_method(D_METHOD("get_class_name:String"), &NativeScript::get_class_name);
+	ClassDB::bind_method(D_METHOD("set_class_name", "class_name"), &NativeScript::set_class_name);
+	ClassDB::bind_method(D_METHOD("get_class_name"), &NativeScript::get_class_name);
 
-	ClassDB::bind_method(D_METHOD("set_library", "library:GDNativeLibrary"), &NativeScript::set_library);
-	ClassDB::bind_method(D_METHOD("get_library:GDNativeLibrary"), &NativeScript::get_library);
+	ClassDB::bind_method(D_METHOD("set_library", "library"), &NativeScript::set_library);
+	ClassDB::bind_method(D_METHOD("get_library"), &NativeScript::get_library);
 
 	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "class_name"), "set_class_name", "get_class_name");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "library", PROPERTY_HINT_RESOURCE_TYPE, "GDNativeLibrary"), "set_library", "get_library");

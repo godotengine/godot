@@ -41,11 +41,11 @@ void InputMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_action", "action"), &InputMap::add_action);
 	ClassDB::bind_method(D_METHOD("erase_action", "action"), &InputMap::erase_action);
 
-	ClassDB::bind_method(D_METHOD("action_add_event", "action", "event:InputEvent"), &InputMap::action_add_event);
-	ClassDB::bind_method(D_METHOD("action_has_event", "action", "event:InputEvent"), &InputMap::action_has_event);
-	ClassDB::bind_method(D_METHOD("action_erase_event", "action", "event:InputEvent"), &InputMap::action_erase_event);
+	ClassDB::bind_method(D_METHOD("action_add_event", "action", "event"), &InputMap::action_add_event);
+	ClassDB::bind_method(D_METHOD("action_has_event", "action", "event"), &InputMap::action_has_event);
+	ClassDB::bind_method(D_METHOD("action_erase_event", "action", "event"), &InputMap::action_erase_event);
 	ClassDB::bind_method(D_METHOD("get_action_list", "action"), &InputMap::_get_action_list);
-	ClassDB::bind_method(D_METHOD("event_is_action", "event:InputEvent", "action"), &InputMap::event_is_action);
+	ClassDB::bind_method(D_METHOD("event_is_action", "event", "action"), &InputMap::event_is_action);
 	ClassDB::bind_method(D_METHOD("load_from_globals"), &InputMap::load_from_globals);
 }
 

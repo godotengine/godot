@@ -128,15 +128,15 @@ void CollisionObject::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_capture_input_on_drag", "enable"), &CollisionObject::set_capture_input_on_drag);
 	ClassDB::bind_method(D_METHOD("get_capture_input_on_drag"), &CollisionObject::get_capture_input_on_drag);
 	ClassDB::bind_method(D_METHOD("get_rid"), &CollisionObject::get_rid);
-	ClassDB::bind_method(D_METHOD("create_shape_owner", "owner:Object"), &CollisionObject::create_shape_owner);
+	ClassDB::bind_method(D_METHOD("create_shape_owner", "owner"), &CollisionObject::create_shape_owner);
 	ClassDB::bind_method(D_METHOD("remove_shape_owner", "owner_id"), &CollisionObject::remove_shape_owner);
 	ClassDB::bind_method(D_METHOD("get_shape_owners"), &CollisionObject::_get_shape_owners);
-	ClassDB::bind_method(D_METHOD("shape_owner_set_transform", "owner_id", "transform:Transform"), &CollisionObject::shape_owner_set_transform);
+	ClassDB::bind_method(D_METHOD("shape_owner_set_transform", "owner_id", "transform"), &CollisionObject::shape_owner_set_transform);
 	ClassDB::bind_method(D_METHOD("shape_owner_get_transform", "owner_id"), &CollisionObject::shape_owner_get_transform);
 	ClassDB::bind_method(D_METHOD("shape_owner_get_owner", "owner_id"), &CollisionObject::shape_owner_get_owner);
 	ClassDB::bind_method(D_METHOD("shape_owner_set_disabled", "owner_id", "disabled"), &CollisionObject::shape_owner_set_disabled);
 	ClassDB::bind_method(D_METHOD("is_shape_owner_disabled", "owner_id"), &CollisionObject::is_shape_owner_disabled);
-	ClassDB::bind_method(D_METHOD("shape_owner_add_shape", "owner_id", "shape:Shape"), &CollisionObject::shape_owner_add_shape);
+	ClassDB::bind_method(D_METHOD("shape_owner_add_shape", "owner_id", "shape"), &CollisionObject::shape_owner_add_shape);
 	ClassDB::bind_method(D_METHOD("shape_owner_get_shape_count", "owner_id"), &CollisionObject::shape_owner_get_shape_count);
 	ClassDB::bind_method(D_METHOD("shape_owner_get_shape", "owner_id", "shape_id"), &CollisionObject::shape_owner_get_shape);
 	ClassDB::bind_method(D_METHOD("shape_owner_get_shape_index", "owner_id", "shape_id"), &CollisionObject::shape_owner_get_shape_index);

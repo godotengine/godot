@@ -132,7 +132,7 @@ void InterpolatedCamera::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_target_path", "target_path"), &InterpolatedCamera::set_target_path);
 	ClassDB::bind_method(D_METHOD("get_target_path"), &InterpolatedCamera::get_target_path);
-	ClassDB::bind_method(D_METHOD("set_target", "target:Camera"), &InterpolatedCamera::_set_target);
+	ClassDB::bind_method(D_METHOD("set_target", "target"), &InterpolatedCamera::_set_target);
 
 	ClassDB::bind_method(D_METHOD("set_speed", "speed"), &InterpolatedCamera::set_speed);
 	ClassDB::bind_method(D_METHOD("get_speed"), &InterpolatedCamera::get_speed);
