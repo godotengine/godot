@@ -141,6 +141,7 @@ public:
 			float fog_height_min;
 			float fog_height_max;
 			float fog_height_curve;
+			uint8_t padding[8];
 
 		} ubo_data;
 
@@ -150,6 +151,7 @@ public:
 
 			float transform[16];
 			float ambient_contribution;
+			uint8_t padding[12];
 
 		} env_radiance_data;
 

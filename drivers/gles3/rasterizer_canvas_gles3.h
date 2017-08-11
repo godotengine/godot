@@ -42,6 +42,7 @@ public:
 
 		float projection_matrix[16];
 		float time;
+		uint8_t padding[12];
 	};
 
 	RasterizerSceneGLES3 *scene_render;
@@ -102,6 +103,7 @@ public:
 			float light_height;
 			float light_outside_alpha;
 			float shadow_distance_mult;
+			uint8_t padding[4];
 		} ubo_data;
 
 		GLuint ubo;
