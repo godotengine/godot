@@ -84,8 +84,13 @@ public:
 	void set_rotation_euler(const Vector3 &p_euler);
 	void set_rotation_axis_angle(const Vector3 &p_axis, real_t p_angle);
 
-	Vector3 get_euler() const;
-	void set_euler(const Vector3 &p_euler);
+	Vector3 get_euler_xyz() const;
+	void set_euler_xyz(const Vector3 &p_euler);
+	Vector3 get_euler_yxz() const;
+	void set_euler_yxz(const Vector3 &p_euler);
+
+	Vector3 get_euler() const { return get_euler_yxz(); };
+	void set_euler(const Vector3 &p_euler) { set_euler_yxz(p_euler); };
 
 	void get_axis_angle(Vector3 &r_axis, real_t &r_angle) const;
 	void set_axis_angle(const Vector3 &p_axis, real_t p_phi);

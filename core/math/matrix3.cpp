@@ -338,7 +338,7 @@ void Basis::set_rotation_axis_angle(const Vector3 &p_axis, real_t p_angle) {
 	rotate(p_axis, p_angle);
 }
 
-// get_euler returns a vector containing the Euler angles in the format
+// get_euler_xyz returns a vector containing the Euler angles in the format
 // (a1,a2,a3), where a3 is the angle of the first rotation, and a1 is the last
 // (following the convention they are commonly defined in the literature).
 //
@@ -348,7 +348,7 @@ void Basis::set_rotation_axis_angle(const Vector3 &p_axis, real_t p_angle) {
 // And thus, assuming the matrix is a rotation matrix, this function returns
 // the angles in the decomposition R = X(a1).Y(a2).Z(a3) where Z(a) rotates
 // around the z-axis by a and so on.
-Vector3 Basis::get_euler() const {
+Vector3 Basis::get_euler_xyz() const {
 
 	// Euler angles in XYZ convention.
 	// See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
@@ -366,6 +366,9 @@ Vector3 Basis::get_euler() const {
 		if (euler.y > -Math_PI * 0.5) {
 			//if rotation is Y-only, return a proper -pi,pi range like in x or z for the same case.
 			if (elements[1][0] == 0.0 && elements[0][1] == 0.0 && elements[0][0] < 0.0) {
+				euler.x = 0;
+				euler.z = 0;
+
 				if (euler.y > 0.0)
 					euler.y = Math_PI - euler.y;
 				else
@@ -389,10 +392,11 @@ Vector3 Basis::get_euler() const {
 	return euler;
 }
 
-// set_euler expects a vector containing the Euler angles in the format
-// (c,b,a), where a is the angle of the first rotation, and c is the last.
+// set_euler_xyz expects a vector containing the Euler angles in the format
+// (ax,ay,az), where ax is the angle of rotation around x axis,
+// and similar for other axes.
 // The current implementation uses XYZ convention (Z is the first rotation).
-void Basis::set_euler(const Vector3 &p_euler) {
+void Basis::set_euler_xyz(const Vector3 &p_euler) {
 
 	real_t c, s;
 
@@ -410,6 +414,78 @@ void Basis::set_euler(const Vector3 &p_euler) {
 
 	//optimizer will optimize away all this anyway
 	*this = xmat * (ymat * zmat);
+}
+
+// get_euler_yxz returns a vector containing the Euler angles in the YXZ convention,
+// as in first-Z, then-X, last-Y. The angles for X, Y, and Z rotations are returned
+// as the x, y, and z components of a Vector3 respectively.
+Vector3 Basis::get_euler_yxz() const {
+
+	// Euler angles in YXZ convention.
+	// See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
+	//
+	// rot =  cy*cz+sy*sx*sz    cz*sy*sx-cy*sz        cx*sy
+	//        cx*sz             cx*cz                 -sx
+	//        cy*sx*sz-cz*sy    cy*cz*sx+sy*sz        cy*cx
+
+	Vector3 euler;
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_V(is_rotation() == false, euler);
+#endif
+	real_t m12 = elements[1][2];
+
+	if (m12 < 1) {
+		if (m12 > -1) {
+			if (elements[1][0] == 0 && elements[0][1] == 0 && elements[2][2] < 0) { // use pure x rotation
+				real_t x = asin(-m12);
+				euler.y = 0;
+				euler.z = 0;
+
+				if (x > 0.0)
+					euler.x = Math_PI - x;
+				else
+					euler.x = -(Math_PI + x);
+			} else {
+				euler.x = asin(-m12);
+				euler.y = atan2(elements[0][2], elements[2][2]);
+				euler.z = atan2(elements[1][0], elements[1][1]);
+			}
+		} else { // m12 == -1
+			euler.x = Math_PI * 0.5;
+			euler.y = -atan2(-elements[0][1], elements[0][0]);
+			euler.z = 0;
+		}
+	} else { // m12 == 1
+		euler.x = -Math_PI * 0.5;
+		euler.y = -atan2(-elements[0][1], elements[0][0]);
+		euler.z = 0;
+	}
+
+	return euler;
+}
+
+// set_euler_yxz expects a vector containing the Euler angles in the format
+// (ax,ay,az), where ax is the angle of rotation around x axis,
+// and similar for other axes.
+// The current implementation uses YXZ convention (Z is the first rotation).
+void Basis::set_euler_yxz(const Vector3 &p_euler) {
+
+	real_t c, s;
+
+	c = Math::cos(p_euler.x);
+	s = Math::sin(p_euler.x);
+	Basis xmat(1.0, 0.0, 0.0, 0.0, c, -s, 0.0, s, c);
+
+	c = Math::cos(p_euler.y);
+	s = Math::sin(p_euler.y);
+	Basis ymat(c, 0.0, s, 0.0, 1.0, 0.0, -s, 0.0, c);
+
+	c = Math::cos(p_euler.z);
+	s = Math::sin(p_euler.z);
+	Basis zmat(c, -s, 0.0, s, c, 0.0, 0.0, 0.0, 1.0);
+
+	//optimizer will optimize away all this anyway
+	*this = ymat * xmat * zmat;
 }
 
 bool Basis::is_equal_approx(const Basis &a, const Basis &b) const {
