@@ -862,6 +862,10 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			List<String> names;
 			names.push_back(TTR("Assign"));
 			names.push_back(TTR("Clear"));
+
+			if (owner->is_class("Node") && (v.get_type() == Variant::NODE_PATH) && owner->cast_to<Node>()->has_node(v))
+				names.push_back(TTR("Select Node"));
+
 			config_action_buttons(names);
 
 		} break;
@@ -1269,7 +1273,18 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 				v = NodePath();
 				emit_signal("variant_changed");
 				hide();
+			} else if (p_which == 2) {
+
+				if (owner->is_class("Node") && (v.get_type() == Variant::NODE_PATH) && owner->cast_to<Node>()->has_node(v)) {
+
+					Node *target_node = owner->cast_to<Node>()->get_node(v);
+					EditorNode::get_singleton()->get_editor_selection()->clear();
+					EditorNode::get_singleton()->get_scene_tree_dock()->set_selected(target_node);
+				}
+
+				hide();
 			}
+
 		} break;
 		case Variant::OBJECT: {
 
