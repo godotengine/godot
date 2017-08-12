@@ -859,6 +859,7 @@ void ProjectManager::_load_recent_projects() {
 
 		VBoxContainer *vb = memnew(VBoxContainer);
 		vb->set_name("project");
+		vb->set_h_size_flags(SIZE_EXPAND_FILL);
 		hb->add_child(vb);
 		Control *ec = memnew(Control);
 		ec->set_custom_minimum_size(Size2(0, 1));
@@ -866,12 +867,14 @@ void ProjectManager::_load_recent_projects() {
 		Label *title = memnew(Label(project_name));
 		title->add_font_override("font", get_font("large", "Fonts"));
 		title->add_color_override("font_color", font_color);
+		title->set_clip_text(true);
 		vb->add_child(title);
 		Label *fpath = memnew(Label(path));
 		fpath->set_name("path");
 		vb->add_child(fpath);
 		fpath->set_opacity(0.5);
 		fpath->add_color_override("font_color", font_color);
+		fpath->set_clip_text(true);
 
 		scroll_childs->add_child(hb);
 	}
