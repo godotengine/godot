@@ -319,10 +319,10 @@ void PlaceHolderScriptInstance::get_property_list(List<PropertyInfo> *p_properti
 
 	for (const List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
 		PropertyInfo pinfo = E->get();
-		if (!values.has(pinfo.name)) {
+		if (!values.has(pinfo.name) && !(pinfo.usage & PROPERTY_USAGE_GROUP)) {
 			pinfo.usage |= PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE;
 		}
-		p_properties->push_back(E->get());
+		p_properties->push_back(pinfo);
 	}
 }
 

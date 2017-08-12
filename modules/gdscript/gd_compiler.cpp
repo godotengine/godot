@@ -1770,7 +1770,7 @@ Error GDCompiler::_parse_class(GDScript *p_script, GDScript *p_owner, const GDPa
 			return ERR_ALREADY_EXISTS;
 		}
 
-		if (p_class->variables[i]._export.type != Variant::NIL) {
+		if (p_class->variables[i]._export.type != Variant::NIL || p_class->variables[i]._export.usage & PROPERTY_USAGE_GROUP) {
 
 			p_script->member_info[name] = p_class->variables[i]._export;
 #ifdef TOOLS_ENABLED

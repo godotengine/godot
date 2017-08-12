@@ -102,6 +102,7 @@ public:
 
 		Vector<ClassNode *> subclasses;
 		Vector<Member> variables;
+		Vector<Member> categorized_variables; // Seperate vector, so that they would go after normal variables
 		Vector<Constant> constant_expressions;
 		Vector<FunctionNode *> functions;
 		Vector<FunctionNode *> static_functions;
@@ -507,6 +508,7 @@ private:
 
 	void _parse_block(BlockNode *p_block, bool p_static);
 	void _parse_extends(ClassNode *p_class);
+	bool _parse_member_variable(ClassNode *p_class, bool categorized = false);
 	void _parse_class(ClassNode *p_class);
 	bool _end_statement();
 
