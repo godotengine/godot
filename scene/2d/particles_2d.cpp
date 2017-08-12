@@ -55,6 +55,8 @@ void Particles2D::set_one_shot(bool p_enable) {
 
 	one_shot = p_enable;
 	VS::get_singleton()->particles_set_one_shot(particles, one_shot);
+	if (!one_shot && emitting)
+		VisualServer::get_singleton()->particles_restart(particles);
 }
 void Particles2D::set_pre_process_time(float p_time) {
 
