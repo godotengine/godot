@@ -982,11 +982,12 @@ Dictionary KinematicBody2D::_move(const Vector2 &p_motion) {
 	if (move(p_motion, col)) {
 		Dictionary d;
 		d["position"] = col.collision;
-		d["normal"] = col.collision;
+		d["normal"] = col.normal;
 		d["local_shape"] = col.local_shape;
 		d["travel"] = col.travel;
 		d["remainder"] = col.remainder;
 		d["collider_id"] = col.collider;
+		d["collider_velocity"] = col.collider_vel;
 		if (col.collider) {
 			d["collider"] = ObjectDB::get_instance(col.collider);
 		} else {
