@@ -233,7 +233,14 @@ void ScrollBar::_notification(int p_what) {
 		Ref<Texture> decr = highlight == HIGHLIGHT_DECR ? get_icon("decrement_highlight") : get_icon("decrement");
 		Ref<Texture> incr = highlight == HIGHLIGHT_INCR ? get_icon("increment_highlight") : get_icon("increment");
 		Ref<StyleBox> bg = has_focus() ? get_stylebox("scroll_focus") : get_stylebox("scroll");
-		Ref<StyleBox> grabber = (drag.active || highlight == HIGHLIGHT_RANGE) ? get_stylebox("grabber_highlight") : get_stylebox("grabber");
+
+		Ref<StyleBox> grabber;
+		if (drag.active)
+			grabber = get_stylebox("grabber_pressed");
+		else if (highlight == HIGHLIGHT_RANGE)
+			grabber = get_stylebox("grabber_highlight");
+		else
+			grabber = get_stylebox("grabber");
 
 		Point2 ofs;
 
