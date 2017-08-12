@@ -56,8 +56,8 @@ public:
 	/* intersections */
 
 	bool intersect_3(const Plane &p_plane1, const Plane &p_plane2, Vector3 *r_result = 0) const;
-	bool intersects_ray(Vector3 p_from, Vector3 p_dir, Vector3 *p_intersection) const;
-	bool intersects_segment(Vector3 p_begin, Vector3 p_end, Vector3 *p_intersection) const;
+	bool intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 *p_intersection) const;
+	bool intersects_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 *p_intersection) const;
 
 	_FORCE_INLINE_ Vector3 project(const Vector3 &p_point) const {
 

@@ -49,7 +49,7 @@ protected:
 public:
 	void set_blocking_mode(bool p_enable);
 
-	virtual Error listen(int p_port, IP_Address p_bind_address = IP_Address("*"), int p_recv_buffer_size = 65536) = 0;
+	virtual Error listen(int p_port, const IP_Address &p_bind_address = IP_Address("*"), int p_recv_buffer_size = 65536) = 0;
 	virtual void close() = 0;
 	virtual Error wait() = 0;
 	virtual bool is_listening() const = 0;

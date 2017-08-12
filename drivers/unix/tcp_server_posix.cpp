@@ -69,7 +69,7 @@ void TCPServerPosix::make_default() {
 	TCP_Server::_create = TCPServerPosix::_create;
 };
 
-Error TCPServerPosix::listen(uint16_t p_port, const IP_Address p_bind_address) {
+Error TCPServerPosix::listen(uint16_t p_port, const IP_Address &p_bind_address) {
 
 	ERR_FAIL_COND_V(listen_sockfd != -1, ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(!p_bind_address.is_valid() && !p_bind_address.is_wildcard(), ERR_INVALID_PARAMETER);

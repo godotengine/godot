@@ -171,7 +171,7 @@ class AppxPackager {
 	}
 
 	Vector<uint8_t> make_file_header(FileMeta p_file_meta);
-	void store_central_dir_header(const FileMeta p_file, bool p_do_hash = true);
+	void store_central_dir_header(const FileMeta &p_file, bool p_do_hash = true);
 	Vector<uint8_t> make_end_of_central_record();
 
 	String content_type(String p_extension);
@@ -329,7 +329,7 @@ Vector<uint8_t> AppxPackager::make_file_header(FileMeta p_file_meta) {
 	return buf;
 }
 
-void AppxPackager::store_central_dir_header(const FileMeta p_file, bool p_do_hash) {
+void AppxPackager::store_central_dir_header(const FileMeta &p_file, bool p_do_hash) {
 
 	Vector<uint8_t> &buf = central_dir_data;
 	int offs = buf.size();

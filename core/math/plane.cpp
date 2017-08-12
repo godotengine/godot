@@ -103,7 +103,7 @@ bool Plane::intersect_3(const Plane &p_plane1, const Plane &p_plane2, Vector3 *r
 	return true;
 }
 
-bool Plane::intersects_ray(Vector3 p_from, Vector3 p_dir, Vector3 *p_intersection) const {
+bool Plane::intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 *p_intersection) const {
 
 	Vector3 segment = p_dir;
 	real_t den = normal.dot(segment);
@@ -128,7 +128,7 @@ bool Plane::intersects_ray(Vector3 p_from, Vector3 p_dir, Vector3 *p_intersectio
 	return true;
 }
 
-bool Plane::intersects_segment(Vector3 p_begin, Vector3 p_end, Vector3 *p_intersection) const {
+bool Plane::intersects_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 *p_intersection) const {
 
 	Vector3 segment = p_begin - p_end;
 	real_t den = normal.dot(segment);
