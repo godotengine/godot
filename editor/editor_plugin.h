@@ -134,7 +134,7 @@ public:
 	virtual void make_visible(bool p_visible);
 	virtual void selected_notify() {} //notify that it was raised by the user, not the editor
 	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_node) const;
+	virtual bool handles(Object *p_object) const;
 	virtual Dictionary get_state() const; //save editor state so it can't be reloaded when reloading scene
 	virtual void set_state(const Dictionary &p_state); //restore editor state (likely was saved with the scene)
 	virtual void clear(); // clear any temporary data in te editor, reset it (likely new scene or load another scene)

@@ -106,7 +106,7 @@ class DependencyErrorDialog : public ConfirmationDialog {
 	void custom_action(const String &);
 
 public:
-	void show(const String &p_for, const Vector<String> &report);
+	void show(const String &p_for_file, const Vector<String> &report);
 	DependencyErrorDialog();
 };
 

@@ -145,7 +145,7 @@ public:
 
 	void add_property_hint(const PropertyInfo &p_hint);
 
-	void set_favorite_dirs(const Vector<String> &p_favorite_dirs);
+	void set_favorite_dirs(const Vector<String> &p_favorites_dirs);
 	Vector<String> get_favorite_dirs() const;
 
 	void set_recent_dirs(const Vector<String> &p_recent_dirs);

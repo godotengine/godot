@@ -92,7 +92,7 @@ class ShaderEditor : public VBoxContainer {
 
 	ShaderTextEditor *shader_editor;
 
-	void _menu_option(int p_optin);
+	void _menu_option(int p_option);
 	void _params_changed();
 	mutable Ref<Shader> shader;
 
@@ -130,8 +130,8 @@ class ShaderEditorPlugin : public EditorPlugin {
 public:
 	virtual String get_name() const { return "Shader"; }
 	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_node);
-	virtual bool handles(Object *p_node) const;
+	virtual void edit(Object *p_object);
+	virtual bool handles(Object *p_object) const;
 	virtual void make_visible(bool p_visible);
 	virtual void selected_notify();
 

@@ -70,7 +70,7 @@ private:
 	MethodInfo method_cache;
 	void _update_method_cache();
 
-	void _set_argument_cache(const Dictionary &p_args);
+	void _set_argument_cache(const Dictionary &p_cache);
 	Dictionary _get_argument_cache() const;
 
 protected:

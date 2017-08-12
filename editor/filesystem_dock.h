@@ -158,7 +158,7 @@ private:
 
 	void _favorites_pressed();
 	void _open_pressed();
-	void _dir_rmb_pressed(const Vector2 &local_mouse_pos);
+	void _dir_rmb_pressed(const Vector2 &p_pos);
 	void _search_changed(const String &p_text);
 
 	void _files_list_rmb_select(int p_item, const Vector2 &p_pos);

@@ -110,7 +110,7 @@ class EditorAssetLibraryItemDescription : public ConfirmationDialog {
 	Ref<Texture> icon;
 
 	void _link_click(const String &p_url);
-	void _preview_click(int p_index);
+	void _preview_click(int p_id);
 
 protected:
 	static void _bind_methods();

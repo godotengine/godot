@@ -1233,10 +1233,10 @@ int GDFunction::get_default_argument_count() const {
 
 	return default_arguments.size();
 }
-int GDFunction::get_default_argument_addr(int p_arg) const {
+int GDFunction::get_default_argument_addr(int p_idx) const {
 
-	ERR_FAIL_INDEX_V(p_arg, default_arguments.size(), -1);
-	return default_arguments[p_arg];
+	ERR_FAIL_INDEX_V(p_idx, default_arguments.size(), -1);
+	return default_arguments[p_idx];
 }
 
 StringName GDFunction::get_name() const {

@@ -1049,21 +1049,21 @@ void GridMap::_update_area_instances() {
 	}
 }
 
-Error GridMap::create_area(int p_id, const Rect3 &p_bounds) {
+Error GridMap::create_area(int p_id, const Rect3 &p_area) {
 
 	ERR_FAIL_COND_V(area_map.has(p_id), ERR_ALREADY_EXISTS);
 	ERR_EXPLAIN("ID 0 is taken as global area, start from 1");
 	ERR_FAIL_COND_V(p_id == 0, ERR_INVALID_PARAMETER);
-	ERR_FAIL_COND_V(p_bounds.has_no_area(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_area.has_no_area(), ERR_INVALID_PARAMETER);
 
 	// FIRST VALIDATE AREA
 	IndexKey from, to;
-	from.x = p_bounds.position.x;
-	from.y = p_bounds.position.y;
-	from.z = p_bounds.position.z;
-	to.x = p_bounds.position.x + p_bounds.size.x;
-	to.y = p_bounds.position.y + p_bounds.size.y;
-	to.z = p_bounds.position.z + p_bounds.size.z;
+	from.x = p_area.position.x;
+	from.y = p_area.position.y;
+	from.z = p_area.position.z;
+	to.x = p_area.position.x + p_area.size.x;
+	to.y = p_area.position.y + p_area.size.y;
+	to.z = p_area.position.z + p_area.size.z;
 
 	for (Map<int, Area *>::Element *E = area_map.front(); E; E = E->next()) {
 		//this should somehow be faster...

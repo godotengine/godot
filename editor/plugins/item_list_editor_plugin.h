@@ -243,8 +243,8 @@ class ItemListEditorPlugin : public EditorPlugin {
 public:
 	virtual String get_name() const { return "ItemList"; }
 	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_node);
-	virtual bool handles(Object *p_node) const;
+	virtual void edit(Object *p_object);
+	virtual bool handles(Object *p_object) const;
 	virtual void make_visible(bool p_visible);
 
 	ItemListEditorPlugin(EditorNode *p_node);

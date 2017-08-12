@@ -73,7 +73,7 @@ class ResourcesDock : public VBoxContainer {
 	bool block_add;
 	int current_action;
 
-	void _file_action(const String &p_action);
+	void _file_action(const String &p_path);
 
 	void _delete(Object *p_item, int p_column, int p_id);
 	void _resource_selected();

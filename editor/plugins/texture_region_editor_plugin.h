@@ -139,8 +139,8 @@ class TextureRegionEditorPlugin : public EditorPlugin {
 public:
 	virtual String get_name() const { return "TextureRegion"; }
 	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_node);
-	virtual bool handles(Object *p_node) const;
+	virtual void edit(Object *p_object);
+	virtual bool handles(Object *p_object) const;
 	virtual void make_visible(bool p_visible);
 	void set_state(const Dictionary &p_state);
 	Dictionary get_state() const;

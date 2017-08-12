@@ -613,7 +613,7 @@ private: // private stuff
 	void _parse_curve_geometry(XMLParser &parser, String p_id, String p_name);
 
 	void _parse_skin_controller(XMLParser &parser, String p_id);
-	void _parse_morph_controller(XMLParser &parser, String id);
+	void _parse_morph_controller(XMLParser &parser, String p_id);
 	void _parse_controller(XMLParser &parser);
 
 	Node *_parse_visual_instance_geometry(XMLParser &parser);

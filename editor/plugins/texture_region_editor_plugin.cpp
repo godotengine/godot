@@ -898,12 +898,12 @@ TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
 	edit_draw->set_clip_contents(true);
 }
 
-void TextureRegionEditorPlugin::edit(Object *p_node) {
-	region_editor->edit(p_node);
+void TextureRegionEditorPlugin::edit(Object *p_object) {
+	region_editor->edit(p_object);
 }
 
-bool TextureRegionEditorPlugin::handles(Object *p_obj) const {
-	return p_obj->is_class("Sprite") || p_obj->is_class("Patch9Rect") || p_obj->is_class("StyleBoxTexture") || p_obj->is_class("AtlasTexture");
+bool TextureRegionEditorPlugin::handles(Object *p_object) const {
+	return p_object->is_class("Sprite") || p_object->is_class("Patch9Rect") || p_object->is_class("StyleBoxTexture") || p_object->is_class("AtlasTexture");
 }
 
 void TextureRegionEditorPlugin::make_visible(bool p_visible) {

@@ -1208,6 +1208,7 @@ void VisualScriptPreload::set_preload(const Ref<Resource> &p_preload) {
 	preload = p_preload;
 	ports_changed_notify();
 }
+
 Ref<Resource> VisualScriptPreload::get_preload() const {
 
 	return preload;

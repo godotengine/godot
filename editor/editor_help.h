@@ -137,7 +137,7 @@ class EditorHelp : public VBoxContainer {
 
 	void _help_callback(const String &p_topic);
 
-	void _add_text(const String &p_text);
+	void _add_text(const String &p_bbcode);
 	bool scroll_locked;
 
 	//void _button_pressed(int p_idx);
@@ -189,7 +189,7 @@ class EditorHelpBit : public Panel {
 
 	RichTextLabel *rich_text;
 	void _go_to_help(String p_what);
-	void _meta_clicked(String p_what);
+	void _meta_clicked(String p_select);
 
 protected:
 	static void _bind_methods();

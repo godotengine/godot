@@ -278,7 +278,7 @@ public:
 	virtual void commit_handle(int p_idx, const Variant &p_restore, bool p_cancel = false);
 
 	void redraw();
-	ReflectionProbeGizmo(ReflectionProbe *p_notifier = NULL);
+	ReflectionProbeGizmo(ReflectionProbe *p_probe = NULL);
 };
 
 class GIProbeGizmo : public EditorSpatialGizmo {
@@ -294,7 +294,7 @@ public:
 	virtual void commit_handle(int p_idx, const Variant &p_restore, bool p_cancel = false);
 
 	void redraw();
-	GIProbeGizmo(GIProbe *p_notifier = NULL);
+	GIProbeGizmo(GIProbe *p_probe = NULL);
 };
 
 class CollisionShapeSpatialGizmo : public EditorSpatialGizmo {

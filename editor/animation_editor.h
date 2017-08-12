@@ -278,7 +278,7 @@ class AnimationKeyEditor : public VBoxContainer {
 	void _track_name_changed(const String &p_name);
 	void _track_menu_selected(int p_idx);
 	void _confirm_insert_list();
-	int _confirm_insert(InsertData p_id, int p_at_track = -1);
+	int _confirm_insert(InsertData p_id, int p_last_track = -1);
 	void _query_insert(const InsertData &p_id);
 	void _update_menu();
 	bool insert_queue;

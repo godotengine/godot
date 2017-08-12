@@ -585,12 +585,12 @@ void CollisionShape2DEditorPlugin::make_visible(bool visible) {
 	}
 }
 
-CollisionShape2DEditorPlugin::CollisionShape2DEditorPlugin(EditorNode *p_node) {
+CollisionShape2DEditorPlugin::CollisionShape2DEditorPlugin(EditorNode *p_editor) {
 
-	editor = p_node;
+	editor = p_editor;
 
-	collision_shape_2d_editor = memnew(CollisionShape2DEditor(p_node));
-	p_node->get_gui_base()->add_child(collision_shape_2d_editor);
+	collision_shape_2d_editor = memnew(CollisionShape2DEditor(p_editor));
+	p_editor->get_gui_base()->add_child(collision_shape_2d_editor);
 }
 
 CollisionShape2DEditorPlugin::~CollisionShape2DEditorPlugin() {

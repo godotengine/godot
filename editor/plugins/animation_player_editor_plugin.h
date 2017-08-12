@@ -155,7 +155,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _animation_player_changed(Object *p_pl);
 
 	void _animation_key_editor_seek(float p_pos, bool p_drag);
-	void _animation_key_editor_anim_len_changed(float p_new);
+	void _animation_key_editor_anim_len_changed(float p_len);
 	void _animation_key_editor_anim_step_changed(float p_len);
 
 	void _unhandled_key_input(const Ref<InputEvent> &p_ev);
@@ -198,8 +198,8 @@ public:
 
 	virtual String get_name() const { return "Anim"; }
 	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_node);
-	virtual bool handles(Object *p_node) const;
+	virtual void edit(Object *p_object);
+	virtual bool handles(Object *p_object) const;
 	virtual void make_visible(bool p_visible);
 
 	AnimationPlayerEditorPlugin(EditorNode *p_node);

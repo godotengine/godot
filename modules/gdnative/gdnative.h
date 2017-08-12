@@ -137,7 +137,7 @@ public:
 	bool initialize();
 	bool terminate();
 
-	Variant call_native(StringName p_call_type, StringName p_procedure_name, Array p_arguments = Array());
+	Variant call_native(StringName p_native_call_type, StringName p_procedure_name, Array p_arguments = Array());
 	void call_native_raw(StringName p_raw_call_type, StringName p_procedure_name, void *data, int num_args, void **args, void *r_return);
 };
 

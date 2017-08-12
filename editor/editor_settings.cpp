@@ -843,9 +843,9 @@ void EditorSettings::add_property_hint(const PropertyInfo &p_hint) {
 	hints[p_hint.name] = p_hint;
 }
 
-void EditorSettings::set_favorite_dirs(const Vector<String> &p_favorites) {
+void EditorSettings::set_favorite_dirs(const Vector<String> &p_favorites_dirs) {
 
-	favorite_dirs = p_favorites;
+	favorite_dirs = p_favorites_dirs;
 	FileAccess *f = FileAccess::open(get_project_settings_path().plus_file("favorite_dirs"), FileAccess::WRITE);
 	if (f) {
 		for (int i = 0; i < favorite_dirs.size(); i++)
@@ -859,9 +859,9 @@ Vector<String> EditorSettings::get_favorite_dirs() const {
 	return favorite_dirs;
 }
 
-void EditorSettings::set_recent_dirs(const Vector<String> &p_recent) {
+void EditorSettings::set_recent_dirs(const Vector<String> &p_recent_dirs) {
 
-	recent_dirs = p_recent;
+	recent_dirs = p_recent_dirs;
 	FileAccess *f = FileAccess::open(get_project_settings_path().plus_file("recent_dirs"), FileAccess::WRITE);
 	if (f) {
 		for (int i = 0; i < recent_dirs.size(); i++)

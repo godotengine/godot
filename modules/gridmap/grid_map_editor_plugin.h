@@ -239,8 +239,8 @@ public:
 	virtual bool forward_spatial_input_event(Camera *p_camera, const Ref<InputEvent> &p_event) { return gridmap_editor->forward_spatial_input_event(p_camera, p_event); }
 	virtual String get_name() const { return "GridMap"; }
 	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_node);
-	virtual bool handles(Object *p_node) const;
+	virtual void edit(Object *p_object);
+	virtual bool handles(Object *p_object) const;
 	virtual void make_visible(bool p_visible);
 
 	GridMapEditorPlugin(EditorNode *p_node);
