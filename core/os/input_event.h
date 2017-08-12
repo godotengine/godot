@@ -348,6 +348,7 @@ public:
 	void set_axis_value(float p_value);
 	float get_axis_value() const;
 
+	virtual bool is_pressed() const;
 	virtual bool action_match(const Ref<InputEvent> &p_event) const;
 
 	virtual bool is_action_type() const { return true; }

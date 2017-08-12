@@ -595,6 +595,11 @@ float InputEventJoypadMotion::get_axis_value() const {
 	return axis_value;
 }
 
+bool InputEventJoypadMotion::is_pressed() const {
+
+	return Math::abs(axis_value) > 0.5f;
+}
+
 bool InputEventJoypadMotion::action_match(const Ref<InputEvent> &p_event) const {
 
 	Ref<InputEventJoypadMotion> jm = p_event;
