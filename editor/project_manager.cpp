@@ -969,7 +969,6 @@ void ProjectManager::_run_project_confirm() {
 			return;
 		}
 
-
 		const String &selected = E->key();
 		String path = EditorSettings::get_singleton()->get("projects/" + selected);
 
@@ -1278,7 +1277,7 @@ ProjectManager::ProjectManager() {
 
 	scroll = memnew(ScrollContainer);
 	pc->add_child(scroll);
-	scroll->set_enable_h_scroll(false);
+	scroll->set_enable_h_scroll(true);
 
 	VBoxContainer *tree_vb = memnew(VBoxContainer);
 	tree_hb->add_child(tree_vb);
