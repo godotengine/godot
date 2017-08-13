@@ -285,11 +285,11 @@ ObjectID SpatialEditorViewport::_select_ray(const Point2 &p_pos, bool p_append, 
 
 			Node *subscene_candidate = spat;
 
-			while (subscene_candidate->get_owner() != editor->get_edited_scene())
+			while ((subscene_candidate->get_owner() != NULL) && (subscene_candidate->get_owner() != editor->get_edited_scene()))
 				subscene_candidate = subscene_candidate->get_owner();
 
 			spat = subscene_candidate->cast_to<Spatial>();
-			if (spat && (spat->get_filename() != ""))
+			if (spat && (spat->get_filename() != "") && (subscene_candidate->get_owner() != NULL))
 				subscenes.push_back(spat);
 
 			continue;
