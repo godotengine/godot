@@ -315,7 +315,7 @@ void NativeScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
 bool NativeScript::get_property_default_value(const StringName &p_property, Variant &r_value) const {
 	NativeScriptDesc *script_data = get_script_desc();
 
-	Map<StringName, NativeScriptDesc::Property>::Element *P = NULL;
+	OrderedHashMap<StringName, NativeScriptDesc::Property>::Element P;
 	while (!P && script_data) {
 		P = script_data->properties.find(p_property);
 		script_data = script_data->base_data;
@@ -323,7 +323,7 @@ bool NativeScript::get_property_default_value(const StringName &p_property, Vari
 	if (!P)
 		return false;
 
-	r_value = P->get().default_value;
+	r_value = P.get().default_value;
 	return true;
 }
 
@@ -355,22 +355,19 @@ void NativeScript::get_script_method_list(List<MethodInfo> *p_list) const {
 void NativeScript::get_script_property_list(List<PropertyInfo> *p_list) const {
 	NativeScriptDesc *script_data = get_script_desc();
 
-	if (!script_data)
-		return;
-
-	Set<PropertyInfo> properties;
-
+	Set<StringName> existing_properties;
 	while (script_data) {
+		List<PropertyInfo>::Element *insert_position = p_list->front();
+		bool insert_before = true;
 
-		for (Map<StringName, NativeScriptDesc::Property>::Element *E = script_data->properties.front(); E; E = E->next()) {
-			properties.insert(E->get().info);
+		for (OrderedHashMap<StringName, NativeScriptDesc::Property>::Element E = script_data->properties.front(); E; E = E.next()) {
+			if (!existing_properties.has(E.key())) {
+				insert_position = insert_before ? p_list->insert_before(insert_position, E.get().info) : p_list->insert_after(insert_position, E.get().info);
+				insert_before = false;
+				existing_properties.insert(E.key());
+			}
 		}
-
 		script_data = script_data->base_data;
-	}
-
-	for (Set<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
-		p_list->push_back(E->get());
 	}
 }
 
@@ -461,10 +458,10 @@ bool NativeScriptInstance::set(const StringName &p_name, const Variant &p_value)
 	NativeScriptDesc *script_data = GET_SCRIPT_DESC();
 
 	while (script_data) {
-		Map<StringName, NativeScriptDesc::Property>::Element *P = script_data->properties.find(p_name);
+		OrderedHashMap<StringName, NativeScriptDesc::Property>::Element P = script_data->properties.find(p_name);
 		if (P) {
-			P->get().setter.set_func((godot_object *)owner,
-					P->get().setter.method_data,
+			P.get().setter.set_func((godot_object *)owner,
+					P.get().setter.method_data,
 					userdata,
 					(godot_variant *)&p_value);
 			return true;
@@ -491,11 +488,11 @@ bool NativeScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 	NativeScriptDesc *script_data = GET_SCRIPT_DESC();
 
 	while (script_data) {
-		Map<StringName, NativeScriptDesc::Property>::Element *P = script_data->properties.find(p_name);
+		OrderedHashMap<StringName, NativeScriptDesc::Property>::Element P = script_data->properties.find(p_name);
 		if (P) {
 			godot_variant value;
-			value = P->get().getter.get_func((godot_object *)owner,
-					P->get().getter.method_data,
+			value = P.get().getter.get_func((godot_object *)owner,
+					P.get().getter.method_data,
 					userdata);
 			r_ret = *(Variant *)&value;
 			godot_variant_destroy(&value);
@@ -592,10 +589,10 @@ Variant::Type NativeScriptInstance::get_property_type(const StringName &p_name, 
 
 	while (script_data) {
 
-		Map<StringName, NativeScriptDesc::Property>::Element *P = script_data->properties.find(p_name);
+		OrderedHashMap<StringName, NativeScriptDesc::Property>::Element P = script_data->properties.find(p_name);
 		if (P) {
 			*r_is_valid = true;
-			return P->get().info.type;
+			return P.get().info.type;
 		}
 
 		script_data = script_data->base_data;
@@ -706,9 +703,9 @@ NativeScriptInstance::RPCMode NativeScriptInstance::get_rset_mode(const StringNa
 
 	while (script_data) {
 
-		Map<StringName, NativeScriptDesc::Property>::Element *E = script_data->properties.find(p_variable);
+		OrderedHashMap<StringName, NativeScriptDesc::Property>::Element E = script_data->properties.find(p_variable);
 		if (E) {
-			switch (E->get().rset_mode) {
+			switch (E.get().rset_mode) {
 				case GODOT_METHOD_RPC_MODE_DISABLED:
 					return RPC_MODE_DISABLED;
 				case GODOT_METHOD_RPC_MODE_REMOTE:
@@ -796,12 +793,12 @@ void NativeScriptLanguage::_unload_stuff() {
 		for (Map<StringName, NativeScriptDesc>::Element *C = L->get().front(); C; C = C->next()) {
 
 			// free property stuff first
-			for (Map<StringName, NativeScriptDesc::Property>::Element *P = C->get().properties.front(); P; P = P->next()) {
-				if (P->get().getter.free_func)
-					P->get().getter.free_func(P->get().getter.method_data);
+			for (OrderedHashMap<StringName, NativeScriptDesc::Property>::Element P = C->get().properties.front(); P; P = P.next()) {
+				if (P.get().getter.free_func)
+					P.get().getter.free_func(P.get().getter.method_data);
 
-				if (P->get().setter.free_func)
-					P->get().setter.free_func(P->get().setter.method_data);
+				if (P.get().setter.free_func)
+					P.get().setter.free_func(P.get().setter.method_data);
 			}
 
 			// free method stuff

@@ -32,6 +32,7 @@
 
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
+#include "ordered_hash_map.h"
 #include "os/thread_safe.h"
 #include "resource.h"
 #include "scene/main/node.h"
@@ -65,7 +66,7 @@ struct NativeScriptDesc {
 	};
 
 	Map<StringName, Method> methods;
-	Map<StringName, Property> properties;
+	OrderedHashMap<StringName, Property> properties;
 	Map<StringName, Signal> signals_; // QtCreator doesn't like the name signals
 	StringName base;
 	StringName base_native_type;
