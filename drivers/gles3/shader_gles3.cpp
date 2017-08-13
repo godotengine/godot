@@ -273,6 +273,9 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 	//vertex precision is high
 	strings.push_back("precision highp float;\n");
 	strings.push_back("precision highp int;\n");
+	strings.push_back("precision highp sampler2D;\n");
+	strings.push_back("precision highp samplerCube;\n");
+	strings.push_back("precision highp sampler2DArray;\n");
 
 #if 0
 	if (cc) {
@@ -371,6 +374,9 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 	//fragment precision is medium
 	strings.push_back("precision highp float;\n");
 	strings.push_back("precision highp int;\n");
+	strings.push_back("precision highp sampler2D;\n");
+	strings.push_back("precision highp samplerCube;\n");
+	strings.push_back("precision highp sampler2DArray;\n");
 
 #if 0
 	if (cc) {
