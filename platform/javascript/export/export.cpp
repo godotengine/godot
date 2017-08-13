@@ -100,8 +100,8 @@ void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t> &p_html, const Re
 	for (int i = 0; i < lines.size(); i++) {
 
 		String current_line = lines[i];
-		current_line = current_line.replace("$GODOT_TMEM", itos(memory_mb * 1024 * 1024));
-		current_line = current_line.replace("$GODOT_BASE", p_name);
+		current_line = current_line.replace("$GODOT_TOTAL_MEMORY", itos(memory_mb * 1024 * 1024));
+		current_line = current_line.replace("$GODOT_BASENAME", p_name);
 		current_line = current_line.replace("$GODOT_HEAD_INCLUDE", p_preset->get("html/head_include"));
 		current_line = current_line.replace("$GODOT_DEBUG_ENABLED", p_debug ? "true" : "false");
 		str_export += current_line + "\n";
@@ -111,28 +111,6 @@ void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t> &p_html, const Re
 	p_html.resize(cs.length());
 	for (int i = 0; i < cs.length(); i++) {
 		p_html[i] = cs[i];
-	}
-}
-
-void EditorExportPlatformJavaScript::_fix_fsloader_js(Vector<uint8_t> &p_js, const String &p_pack_name, uint64_t p_pack_size) {
-
-	String str_template = String::utf8(reinterpret_cast<const char *>(p_js.ptr()), p_js.size());
-	String str_export;
-	Vector<String> lines = str_template.split("\n");
-	for (int i = 0; i < lines.size(); i++) {
-		if (lines[i].find("$GODOT_PACK_NAME") != -1) {
-			str_export += lines[i].replace("$GODOT_PACK_NAME", p_pack_name);
-		} else if (lines[i].find("$GODOT_PACK_SIZE") != -1) {
-			str_export += lines[i].replace("$GODOT_PACK_SIZE", itos(p_pack_size));
-		} else {
-			str_export += lines[i] + "\n";
-		}
-	}
-
-	CharString cs = str_export.utf8();
-	p_js.resize(cs.length());
-	for (int i = 0; i < cs.length(); i++) {
-		p_js[i] = cs[i];
 	}
 }
 
@@ -286,10 +264,6 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 
 			_fix_html(data, p_preset, p_path.get_file().get_basename(), p_debug);
 			file = p_path.get_file();
-		} else if (file == "godotfs.js") {
-
-			_fix_fsloader_js(data, pck_path.get_file(), pack_size);
-			file = p_path.get_file().get_basename() + "fs.js";
 		} else if (file == "godot.js") {
 
 			file = p_path.get_file().get_basename() + ".js";
