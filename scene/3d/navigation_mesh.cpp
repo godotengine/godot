@@ -208,6 +208,8 @@ void NavigationMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_polygon", "idx"), &NavigationMesh::get_polygon);
 	ClassDB::bind_method(D_METHOD("clear_polygons"), &NavigationMesh::clear_polygons);
 
+	ClassDB::bind_method(D_METHOD("create_from_mesh", "mesh"), &NavigationMesh::create_from_mesh);
+
 	ClassDB::bind_method(D_METHOD("_set_polygons", "polygons"), &NavigationMesh::_set_polygons);
 	ClassDB::bind_method(D_METHOD("_get_polygons"), &NavigationMesh::_get_polygons);
 
