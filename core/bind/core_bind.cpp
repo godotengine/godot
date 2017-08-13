@@ -2568,6 +2568,16 @@ bool _Engine::is_in_fixed_frame() const {
 	return Engine::get_singleton()->is_in_fixed_frame();
 }
 
+void _Engine::set_editor_hint(bool p_enabled) {
+
+	Engine::get_singleton()->set_editor_hint(p_enabled);
+}
+
+bool _Engine::is_editor_hint() const {
+
+	return Engine::get_singleton()->is_editor_hint();
+}
+
 void _Engine::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_iterations_per_second", "iterations_per_second"), &_Engine::set_iterations_per_second);
@@ -2588,6 +2598,9 @@ void _Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_version_info"), &_Engine::get_version_info);
 
 	ClassDB::bind_method(D_METHOD("is_in_fixed_frame"), &_Engine::is_in_fixed_frame);
+
+	ClassDB::bind_method(D_METHOD("set_editor_hint", "enabled"), &_Engine::set_editor_hint);
+	ClassDB::bind_method(D_METHOD("is_editor_hint"), &_Engine::is_editor_hint);
 }
 
 _Engine *_Engine::singleton = NULL;
