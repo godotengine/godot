@@ -208,6 +208,8 @@ void NavigationMesh::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_polygon", "idx"), &NavigationMesh::get_polygon);
 	ObjectTypeDB::bind_method(_MD("clear_polygons"), &NavigationMesh::clear_polygons);
 
+	ObjectTypeDB::bind_method(_MD("create_from_mesh", "mesh"), &NavigationMesh::create_from_mesh);
+
 	ObjectTypeDB::bind_method(_MD("_set_polygons", "polygons"), &NavigationMesh::_set_polygons);
 	ObjectTypeDB::bind_method(_MD("_get_polygons"), &NavigationMesh::_get_polygons);
 
