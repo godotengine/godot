@@ -48,6 +48,8 @@ class PacketPeer : public Reference {
 
 	mutable Error last_get_error;
 
+	bool allow_object_decoding;
+
 public:
 	virtual int get_available_packet_count() const = 0;
 	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) const = 0; ///< buffer is GONE after next get_packet
@@ -62,6 +64,9 @@ public:
 
 	virtual Error get_var(Variant &r_variant) const;
 	virtual Error put_var(const Variant &p_packet);
+
+	void set_allow_object_decoding(bool p_enable);
+	bool is_object_decoding_allowed() const;
 
 	PacketPeer();
 	~PacketPeer() {}

@@ -183,7 +183,7 @@ static inline double decode_double(const uint8_t *p_arr) {
 	return md.d;
 }
 
-Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int *r_len = NULL);
+Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int *r_len = NULL, bool p_allow_objects=true);
 Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len);
 
 #endif
