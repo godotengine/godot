@@ -1135,6 +1135,8 @@ void Environment::_bind_methods() {
 
 Environment::Environment() {
 
+	environment = VS::get_singleton()->environment_create();
+
 	bg_mode = BG_CLEAR_COLOR;
 	bg_sky_scale = 1.0;
 	bg_energy = 1.0;
@@ -1159,8 +1161,6 @@ Environment::Environment() {
 	adjustment_brightness = 1.0;
 
 	set_adjustment_enable(adjustment_enabled); //update
-
-	environment = VS::get_singleton()->environment_create();
 
 	ssr_enabled = false;
 	ssr_max_steps = 64;
