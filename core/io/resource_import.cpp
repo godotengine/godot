@@ -199,6 +199,52 @@ String ResourceFormatImporter::get_internal_resource_path(const String &p_path) 
 	return pat.path;
 }
 
+void ResourceFormatImporter::get_internal_resource_path_list(const String &p_path, List<String> *r_paths) {
+
+	Error err;
+	FileAccess *f = FileAccess::open(p_path + ".import", FileAccess::READ, &err);
+
+	if (!f)
+		return;
+
+	VariantParser::StreamFile stream;
+	stream.f = f;
+
+	String assign;
+	Variant value;
+	VariantParser::Tag next_tag;
+
+	int lines = 0;
+	String error_text;
+	while (true) {
+
+		assign = Variant();
+		next_tag.fields.clear();
+		next_tag.name = String();
+
+		err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, NULL, true);
+		if (err == ERR_FILE_EOF) {
+			memdelete(f);
+			return;
+		} else if (err != OK) {
+			ERR_PRINTS("ResourceFormatImporter::get_internal_resource_path_list - " + p_path + ".import:" + itos(lines) + " error: " + error_text);
+			memdelete(f);
+			return;
+		}
+
+		if (assign != String()) {
+			if (assign.begins_with("path.")) {
+				r_paths->push_back(value);
+			} else if (assign == "path") {
+				r_paths->push_back(value);
+			}
+		} else if (next_tag.name != "remap") {
+			break;
+		}
+	}
+	memdelete(f);
+}
+
 String ResourceFormatImporter::get_resource_type(const String &p_path) const {
 
 	PathAndType pat;
