@@ -1048,7 +1048,7 @@ bool Main::start() {
 	String script;
 	String test;
 	String screen;
-	String _export_platform;
+	String _export_preset;
 	String _import;
 	String _import_script;
 	bool noquit = false;
@@ -1083,10 +1083,10 @@ bool Main::start() {
 				test = args[i + 1];
 			} else if (args[i] == "-export") {
 				editor = true; //needs editor
-				_export_platform = args[i + 1];
+				_export_preset = args[i + 1];
 			} else if (args[i] == "-export_debug") {
 				editor = true; //needs editor
-				_export_platform = args[i + 1];
+				_export_preset = args[i + 1];
 				export_debug = true;
 			} else if (args[i] == "-import") {
 				editor = true; //needs editor
@@ -1136,7 +1136,7 @@ bool Main::start() {
 
 #endif
 
-	if (_export_platform != "") {
+	if (_export_preset != "") {
 		if (game_path == "") {
 			String err = "Command line param ";
 			err += export_debug ? "-export_debug" : "-export";
@@ -1243,9 +1243,9 @@ bool Main::start() {
 			//root_node->set_editor(editor);
 			//startup editor
 
-			if (_export_platform != "") {
+			if (_export_preset != "") {
 
-				editor_node->export_platform(_export_platform, game_path, export_debug, "", true);
+				editor_node->export_preset(_export_preset, game_path, export_debug, "", true);
 				game_path = ""; //no load anything
 			}
 		}
