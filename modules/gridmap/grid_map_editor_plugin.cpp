@@ -1203,7 +1203,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	edit_mode = memnew(OptionButton);
 	edit_mode->set_area_as_parent_rect();
 	edit_mode->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_BEGIN, 24);
-	edit_mode->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 14);
+	edit_mode->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, -14);
 	edit_mode->add_item("Tiles");
 	edit_mode->add_item("Areas");
 	hb->add_child(edit_mode);

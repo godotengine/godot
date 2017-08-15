@@ -381,7 +381,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	populate_amount = memnew(SpinBox);
 	populate_amount->set_anchor(MARGIN_RIGHT, ANCHOR_END);
 	populate_amount->set_begin(Point2(20, 232));
-	populate_amount->set_end(Point2(5, 237));
+	populate_amount->set_end(Point2(-5, 237));
 	populate_amount->set_min(1);
 	populate_amount->set_max(65536);
 	populate_amount->set_value(128);

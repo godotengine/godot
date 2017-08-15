@@ -278,7 +278,7 @@ public:
 
 		richtext->set_position(Point2(600, 210));
 		richtext->set_size(Point2(180, 250));
-		richtext->set_anchor_and_margin(MARGIN_RIGHT, Control::ANCHOR_END, 20);
+		richtext->set_anchor_and_margin(MARGIN_RIGHT, Control::ANCHOR_END, -20);
 
 		frame->add_child(richtext);
 
@@ -318,8 +318,6 @@ public:
 		//richtext->push_meta("http://www.scrollingcapabilities.xz");
 		///richtext->add_text("Hello!\n");
 		//richtext->pop();
-
-		richtext->set_anchor(MARGIN_RIGHT, Control::ANCHOR_END);
 
 		TabContainer *tabc = memnew(TabContainer);
 

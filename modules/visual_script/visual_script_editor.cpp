@@ -3271,7 +3271,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	graph->set_area_as_parent_rect();
 
 	hint_text = memnew(Label);
-	hint_text->set_anchor_and_margin(MARGIN_TOP, ANCHOR_END, 100);
+	hint_text->set_anchor_and_margin(MARGIN_TOP, ANCHOR_END, -100);
 	hint_text->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 0);
 	hint_text->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 0);
 	hint_text->set_align(Label::ALIGN_CENTER);

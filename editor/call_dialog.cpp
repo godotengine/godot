@@ -253,8 +253,8 @@ CallDialog::CallDialog() {
 	call->set_anchor( MARGIN_TOP, ANCHOR_END );
 	call->set_anchor( MARGIN_RIGHT, ANCHOR_END );
 	call->set_anchor( MARGIN_BOTTOM, ANCHOR_END );
-	call->set_begin( Point2( 70, 29 ) );
-	call->set_end( Point2( 15, 15 ) );
+	call->set_begin( Point2( -70, -29 ) );
+	call->set_end( Point2( -15, -15 ) );
 	call->set_text(TTR("Call"));
 
 	add_child(call);
@@ -262,8 +262,8 @@ CallDialog::CallDialog() {
 	cancel = memnew( Button );
 	cancel->set_anchor( MARGIN_TOP, ANCHOR_END );
 	cancel->set_anchor( MARGIN_BOTTOM, ANCHOR_END );
-	cancel->set_begin( Point2( 15, 29 ) );
-	cancel->set_end( Point2( 70, 15 ) );
+	cancel->set_begin( Point2( -15, 29 ) );
+	cancel->set_end( Point2( 70, -15 ) );
 	cancel->set_text(TTR("Close"));
 
 	add_child(cancel);
@@ -272,7 +272,7 @@ CallDialog::CallDialog() {
 
 	tree->set_anchor( MARGIN_BOTTOM, ANCHOR_END );
 	tree->set_begin( Point2( 20,50 ) );
-	tree->set_margin(MARGIN_BOTTOM, 44 );
+	tree->set_margin(MARGIN_BOTTOM, -44 );
 	tree->set_margin(MARGIN_RIGHT, 0.5 );
 	tree->set_select_mode( Tree::SELECT_ROW );
 	add_child(tree);
@@ -282,10 +282,10 @@ CallDialog::CallDialog() {
 
 	property_editor = memnew( PropertyEditor );
 
-	property_editor->set_anchor_and_margin( MARGIN_RIGHT, ANCHOR_END, 15 );
+	property_editor->set_anchor_and_margin( MARGIN_RIGHT, ANCHOR_END, -15 );
 	property_editor->set_anchor_and_margin( MARGIN_TOP, ANCHOR_BEGIN, 50 );
 	//property_editor->set_anchor_and_margin( MARGIN_LEFT, ANCHOR_RATIO, 0.55 );
-	property_editor->set_anchor_and_margin( MARGIN_BOTTOM, ANCHOR_END, 90 );
+	property_editor->set_anchor_and_margin( MARGIN_BOTTOM, ANCHOR_END, -90 );
 	property_editor->get_scene_tree()->set_hide_root( true );
 	property_editor->hide_top_label();
 
@@ -305,15 +305,15 @@ CallDialog::CallDialog() {
 
 	return_label = memnew( Label );
 	//return_label->set_anchor_and_margin( MARGIN_LEFT, ANCHOR_RATIO, 0.53 );
-	return_label->set_anchor_and_margin( MARGIN_TOP, ANCHOR_END, 85 );
+	return_label->set_anchor_and_margin( MARGIN_TOP, ANCHOR_END, -85 );
 	return_label->set_text(TTR("Return:"));
 
 	add_child(return_label);
 
 	return_value = memnew( LineEdit );
 	//return_value->set_anchor_and_margin( MARGIN_LEFT, ANCHOR_RATIO, 0.55 );
-	return_value->set_anchor_and_margin( MARGIN_RIGHT, ANCHOR_END, 15 );
-	return_value->set_anchor_and_margin( MARGIN_TOP, ANCHOR_END, 65 );
+	return_value->set_anchor_and_margin( MARGIN_RIGHT, ANCHOR_END, -15 );
+	return_value->set_anchor_and_margin( MARGIN_TOP, ANCHOR_END, -65 );
 
 	add_child(return_value);
 

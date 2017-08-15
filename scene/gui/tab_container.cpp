@@ -371,8 +371,10 @@ void TabContainer::add_child_notify(Node *p_child) {
 	if (tabs_visible)
 		c->set_margin(MARGIN_TOP, _get_top_margin());
 	Ref<StyleBox> sb = get_stylebox("panel");
-	for (int i = 0; i < 4; i++)
-		c->set_margin(Margin(i), c->get_margin(Margin(i)) + sb->get_margin(Margin(i)));
+	c->set_margin(Margin(MARGIN_TOP), c->get_margin(Margin(MARGIN_TOP)) + sb->get_margin(Margin(MARGIN_TOP)));
+	c->set_margin(Margin(MARGIN_LEFT), c->get_margin(Margin(MARGIN_LEFT)) + sb->get_margin(Margin(MARGIN_LEFT)));
+	c->set_margin(Margin(MARGIN_RIGHT), c->get_margin(Margin(MARGIN_RIGHT)) - sb->get_margin(Margin(MARGIN_RIGHT)));
+	c->set_margin(Margin(MARGIN_BOTTOM), c->get_margin(Margin(MARGIN_BOTTOM)) - sb->get_margin(Margin(MARGIN_BOTTOM)));
 
 	update();
 	p_child->connect("renamed", this, "_child_renamed_callback");
@@ -402,8 +404,10 @@ void TabContainer::set_current_tab(int p_current) {
 			c->set_area_as_parent_rect();
 			if (tabs_visible)
 				c->set_margin(MARGIN_TOP, _get_top_margin());
-			for (int i = 0; i < 4; i++)
-				c->set_margin(Margin(i), c->get_margin(Margin(i)) + sb->get_margin(Margin(i)));
+			c->set_margin(Margin(MARGIN_TOP), c->get_margin(Margin(MARGIN_TOP)) + sb->get_margin(Margin(MARGIN_TOP)));
+			c->set_margin(Margin(MARGIN_LEFT), c->get_margin(Margin(MARGIN_LEFT)) + sb->get_margin(Margin(MARGIN_LEFT)));
+			c->set_margin(Margin(MARGIN_RIGHT), c->get_margin(Margin(MARGIN_RIGHT)) - sb->get_margin(Margin(MARGIN_RIGHT)));
+			c->set_margin(Margin(MARGIN_BOTTOM), c->get_margin(Margin(MARGIN_BOTTOM)) - sb->get_margin(Margin(MARGIN_BOTTOM)));
 
 		} else
 			c->hide();

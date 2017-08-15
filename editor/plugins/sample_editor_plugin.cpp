@@ -366,14 +366,14 @@ SampleEditor::SampleEditor() {
 	sample_texframe = memnew( TextureRect );
 	add_child(sample_texframe);
 	sample_texframe->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_BEGIN,5);
-	sample_texframe->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_END,5);
+	sample_texframe->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_END,-5);
 	sample_texframe->set_anchor_and_margin(MARGIN_TOP,ANCHOR_BEGIN,30);
-	sample_texframe->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_END,5);
+	sample_texframe->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_END,-5);
 
 	info_label = memnew( Label );
 	sample_texframe->add_child(info_label);
 	info_label->set_area_as_parent_rect();
-	info_label->set_anchor_and_margin(MARGIN_TOP,ANCHOR_END,15);
+	info_label->set_anchor_and_margin(MARGIN_TOP,ANCHOR_END,-15);
 	info_label->set_margin(MARGIN_BOTTOM,4);
 	info_label->set_margin(MARGIN_RIGHT,4);
 	info_label->set_align(Label::ALIGN_RIGHT);

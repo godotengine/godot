@@ -70,7 +70,7 @@ GotoLineDialog::GotoLineDialog() {
 	line = memnew(LineEdit);
 	line->set_anchor(MARGIN_RIGHT, ANCHOR_END);
 	line->set_begin(Point2(15, 22));
-	line->set_end(Point2(15, 35));
+	line->set_end(Point2(-15, 35));
 	add_child(line);
 	register_text_enter(line);
 	text_editor = NULL;
@@ -887,7 +887,7 @@ FindReplaceDialog::FindReplaceDialog() {
 	replace_text = memnew(LineEdit);
 	replace_text->set_anchor(MARGIN_RIGHT, ANCHOR_END);
 	replace_text->set_begin(Point2(15, 132));
-	replace_text->set_end(Point2(15, 135));
+	replace_text->set_end(Point2(-15, 135));
 	//replace_text->set_self_opacity(0.7);
 	replace_mc->add_child(replace_text);
 
@@ -937,8 +937,8 @@ FindReplaceDialog::FindReplaceDialog() {
 	skip->set_anchor(MARGIN_TOP, ANCHOR_END);
 	skip->set_anchor(MARGIN_RIGHT, ANCHOR_END);
 	skip->set_anchor(MARGIN_BOTTOM, ANCHOR_END);
-	skip->set_begin(Point2(70, button_margin));
-	skip->set_end(Point2(10, margin));
+	skip->set_begin(Point2(-70, -button_margin));
+	skip->set_end(Point2(-10, -margin));
 	skip->set_text(TTR("Skip"));
 	add_child(skip);
 	skip->connect("pressed", this, "_skip_pressed");

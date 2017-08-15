@@ -736,10 +736,10 @@ void ItemList::_notification(int p_what) {
 		Ref<StyleBox> bg = get_stylebox("bg");
 
 		int mw = scroll_bar->get_minimum_size().x;
-		scroll_bar->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_END, mw + bg->get_margin(MARGIN_RIGHT));
-		scroll_bar->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, bg->get_margin(MARGIN_RIGHT));
+		scroll_bar->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_END, -mw + bg->get_margin(MARGIN_RIGHT));
+		scroll_bar->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, -bg->get_margin(MARGIN_RIGHT));
 		scroll_bar->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, bg->get_margin(MARGIN_TOP));
-		scroll_bar->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, bg->get_margin(MARGIN_BOTTOM));
+		scroll_bar->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, -bg->get_margin(MARGIN_BOTTOM));
 
 		Size2 size = get_size();
 

@@ -57,6 +57,7 @@ public:
 	float prev_rot;
 	Rect2 prev_rect;
 	Vector2 prev_pivot;
+	float prev_anchors[4];
 
 	CanvasItemEditorSelectedItem() { prev_rot = 0; }
 };
@@ -143,11 +144,15 @@ class CanvasItemEditor : public VBoxContainer {
 		DRAG_BOTTOM_RIGHT,
 		DRAG_BOTTOM,
 		DRAG_BOTTOM_LEFT,
+		DRAG_ANCHOR_TOP_LEFT,
+		DRAG_ANCHOR_TOP_RIGHT,
+		DRAG_ANCHOR_BOTTOM_RIGHT,
+		DRAG_ANCHOR_BOTTOM_LEFT,
+		DRAG_ANCHOR_ALL,
 		DRAG_ALL,
 		DRAG_ROTATE,
 		DRAG_PIVOT,
 		DRAG_NODE_2D,
-
 	};
 
 	enum KeyMoveMODE {
@@ -300,6 +305,7 @@ class CanvasItemEditor : public VBoxContainer {
 #endif
 	Ref<StyleBoxTexture> select_sb;
 	Ref<Texture> select_handle;
+	Ref<Texture> anchor_handle;
 
 	int handle_len;
 	bool _is_part_of_subscene(CanvasItem *p_item);
@@ -325,8 +331,13 @@ class CanvasItemEditor : public VBoxContainer {
 	void _key_move(const Vector2 &p_dir, bool p_snap, KeyMoveMODE p_move_mode);
 	void _list_select(const Ref<InputEventMouseButton> &b);
 
-	DragType _find_drag_type(const Point2 &p_click, Vector2 &r_point);
+	DragType _get_resize_handle_drag_type(const Point2 &p_click, Vector2 &r_point);
 	void _prepare_drag(const Point2 &p_click_pos);
+	DragType _get_anchor_handle_drag_type(const Point2 &p_click, Vector2 &r_point);
+
+	float _anchor_snap(float anchor, bool *snapped = NULL, float p_opposite_anchor = -1);
+	Vector2 _anchor_to_position(Control *p_control, Vector2 anchor);
+	Vector2 _position_to_anchor(Control *p_control, Vector2 position);
 
 	void _popup_callback(int p_op);
 	bool updating_scroll;
@@ -355,12 +366,14 @@ class CanvasItemEditor : public VBoxContainer {
 
 	void _unhandled_key_input(const Ref<InputEvent> &p_ev);
 
+	void _draw_percentage_at_position(float p_value, Point2 p_position, Margin p_side);
+
 	void _viewport_gui_input(const Ref<InputEvent> &p_event);
 	void _viewport_draw();
 
 	void _focus_selection(int p_op);
 
-	void _set_anchor(Control::AnchorType p_left, Control::AnchorType p_top, Control::AnchorType p_right, Control::AnchorType p_bottom);
+	void _set_anchors_preset(Control::LayoutPreset p_preset);
 	void _set_full_rect();
 
 	HSplitContainer *palette_split;

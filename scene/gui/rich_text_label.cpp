@@ -594,7 +594,7 @@ void RichTextLabel::_update_scroll() {
 			main->first_invalid_line = 0;
 			scroll_w = vscroll->get_combined_minimum_size().width;
 			vscroll->show();
-			vscroll->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_END, scroll_w);
+			vscroll->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_END, -scroll_w);
 			_validate_line_caches(main);
 
 		} else {

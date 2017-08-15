@@ -87,6 +87,6 @@ EditorNameDialog::EditorNameDialog() {
 	makevb->add_child(name);
 	name->set_margin(MARGIN_TOP, 5);
 	name->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 5);
-	name->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 5);
+	name->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, -5);
 	name->connect("gui_input", this, "_line_gui_input");
 }

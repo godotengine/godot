@@ -108,13 +108,10 @@ void Popup::set_as_minsize() {
 
 			float margin_begin = c->get_margin(m_beg);
 			float margin_end = c->get_margin(m_end);
-			AnchorType anchor_begin = c->get_anchor(m_beg);
-			AnchorType anchor_end = c->get_anchor(m_end);
+			float anchor_begin = c->get_anchor(m_beg);
+			float anchor_end = c->get_anchor(m_end);
 
-			if (anchor_begin == ANCHOR_BEGIN)
-				minsize[j] += margin_begin;
-			if (anchor_end == ANCHOR_END)
-				minsize[j] += margin_end;
+			minsize[j] += margin_begin * (ANCHOR_END - anchor_begin) + margin_end * anchor_end;
 		}
 
 		total_minsize.width = MAX(total_minsize.width, minsize.width);
@@ -145,13 +142,10 @@ void Popup::popup_centered_minsize(const Size2 &p_minsize) {
 
 			float margin_begin = c->get_margin(m_beg);
 			float margin_end = c->get_margin(m_end);
-			AnchorType anchor_begin = c->get_anchor(m_beg);
-			AnchorType anchor_end = c->get_anchor(m_end);
+			float anchor_begin = c->get_anchor(m_beg);
+			float anchor_end = c->get_anchor(m_end);
 
-			if (anchor_begin == ANCHOR_BEGIN)
-				minsize[j] += margin_begin;
-			if (anchor_end == ANCHOR_END)
-				minsize[j] += margin_end;
+			minsize[j] += margin_begin * (ANCHOR_END - anchor_begin) + margin_end * anchor_end;
 		}
 
 		total_minsize.width = MAX(total_minsize.width, minsize.width);
