@@ -1932,8 +1932,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 			Control *top = gui.modal_stack.back()->get();
 			if (over != top && !top->is_a_parent_of(over)) {
-
-				return; // don't send motion event to anything below modal stack top
+				over = NULL; //nothing can be found outside the modal stack
 			}
 		}
 
