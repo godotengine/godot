@@ -1299,7 +1299,7 @@ void AnimationKeyEditor::_track_editor_draw() {
 		Object *obj = NULL;
 
 		RES res;
-		Node *node = root->get_node_and_resource(animation->track_get_path(idx), res);
+		Node *node = root ? root->get_node_and_resource(animation->track_get_path(idx), res) : (Node *)NULL;
 
 		if (res.is_valid()) {
 			obj = res.ptr();
@@ -1324,7 +1324,7 @@ void AnimationKeyEditor::_track_editor_draw() {
 
 		te->draw_texture(type_icon[animation->track_get_type(idx)], ofs + Point2(0, y + (h - type_icon[0]->get_height()) / 2).floor());
 		NodePath np = animation->track_get_path(idx);
-		Node *n = root->get_node(np);
+		Node *n = root ? root->get_node(np) : (Node *)NULL;
 		Color ncol = color;
 		if (n && editor_selection->is_selected(n))
 			ncol = track_select_color;
