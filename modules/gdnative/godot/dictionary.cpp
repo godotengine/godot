@@ -30,7 +30,7 @@
 #include <godot/dictionary.h>
 
 #include "core/variant.h"
-
+// core/variant.h before to avoid compile errors with MSVC
 #include "core/dictionary.h"
 #include "core/io/json.h"
 
