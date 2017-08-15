@@ -59,6 +59,7 @@ public:
 	virtual bool can_be_imported(const String &p_path) const;
 
 	String get_internal_resource_path(const String &p_path) const;
+	void get_internal_resource_path_list(const String &p_path, List<String> *r_paths);
 
 	void add_importer(const Ref<ResourceImporter> &p_importer) { importers.insert(p_importer); }
 	void remove_importer(const Ref<ResourceImporter> &p_importer) { importers.erase(p_importer); }

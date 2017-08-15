@@ -168,6 +168,8 @@ class EditorFileSystem : public Node {
 
 	void _scan_fs_changes(EditorFileSystemDirectory *p_dir, const ScanProgress &p_progress);
 
+	void _delete_internal_files(String p_file);
+
 	Set<String> valid_extensions;
 	Set<String> import_extensions;
 

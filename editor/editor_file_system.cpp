@@ -339,6 +339,7 @@ bool EditorFileSystem::_update_scan_actions() {
 
 				int idx = ia.dir->find_file_index(ia.file);
 				ERR_CONTINUE(idx == -1);
+				_delete_internal_files(ia.dir->files[idx]->file);
 				memdelete(ia.dir->files[idx]);
 				ia.dir->files.remove(idx);
 
@@ -838,6 +839,19 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 	}
 }
 
+void EditorFileSystem::_delete_internal_files(String p_file) {
+	if (FileAccess::exists(p_file + ".import")) {
+		List<String> paths;
+		ResourceFormatImporter::get_singleton()->get_internal_resource_path_list(p_file, &paths);
+		DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		for (List<String>::Element *E = paths.front(); E; E = E->next()) {
+			da->remove(E->get());
+		}
+		da->remove(p_file + ".import");
+		memdelete(da);
+	}
+}
+
 void EditorFileSystem::_thread_func_sources(void *_userdata) {
 
 	EditorFileSystem *efs = (EditorFileSystem *)_userdata;
@@ -1192,6 +1206,7 @@ void EditorFileSystem::update_file(const String &p_file) {
 
 	if (!FileAccess::exists(p_file)) {
 		//was removed
+		_delete_internal_files(p_file);
 		memdelete(fs->files[cpos]);
 		fs->files.remove(cpos);
 		call_deferred("emit_signal", "filesystem_changed"); //update later
