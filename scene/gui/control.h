@@ -51,9 +51,11 @@ class Control : public CanvasItem {
 	OBJ_CATEGORY("GUI Nodes");
 
 public:
-	static const float ANCHOR_BEGIN = 0.0f;
-	static const float ANCHOR_CENTER = 0.5f;
-	static const float ANCHOR_END = 1.0f;
+	enum Anchor {
+
+		ANCHOR_BEGIN = 0,
+		ANCHOR_END = 1
+	};
 
 	enum GrowDirection {
 		GROW_DIRECTION_BEGIN,
@@ -449,5 +451,6 @@ VARIANT_ENUM_CAST(Control::CursorShape);
 VARIANT_ENUM_CAST(Control::LayoutPreset);
 VARIANT_ENUM_CAST(Control::MouseFilter);
 VARIANT_ENUM_CAST(Control::GrowDirection);
+VARIANT_ENUM_CAST(Control::Anchor);
 
 #endif

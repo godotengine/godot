@@ -1363,7 +1363,7 @@ void Control::set_anchors_preset(LayoutPreset p_preset, bool p_keep_margin) {
 		case PRESET_CENTER_BOTTOM:
 		case PRESET_CENTER:
 		case PRESET_VCENTER_WIDE:
-			set_anchor(MARGIN_LEFT, ANCHOR_CENTER, p_keep_margin);
+			set_anchor(MARGIN_LEFT, 0.5, p_keep_margin);
 			break;
 
 		case PRESET_TOP_RIGHT:
@@ -1391,7 +1391,7 @@ void Control::set_anchors_preset(LayoutPreset p_preset, bool p_keep_margin) {
 		case PRESET_CENTER_RIGHT:
 		case PRESET_CENTER:
 		case PRESET_HCENTER_WIDE:
-			set_anchor(MARGIN_TOP, ANCHOR_CENTER, p_keep_margin);
+			set_anchor(MARGIN_TOP, 0.5, p_keep_margin);
 			break;
 
 		case PRESET_BOTTOM_LEFT:
@@ -1415,7 +1415,7 @@ void Control::set_anchors_preset(LayoutPreset p_preset, bool p_keep_margin) {
 		case PRESET_CENTER_BOTTOM:
 		case PRESET_CENTER:
 		case PRESET_VCENTER_WIDE:
-			set_anchor(MARGIN_RIGHT, ANCHOR_CENTER, p_keep_margin);
+			set_anchor(MARGIN_RIGHT, 0.5, p_keep_margin);
 			break;
 
 		case PRESET_TOP_RIGHT:
@@ -1443,7 +1443,7 @@ void Control::set_anchors_preset(LayoutPreset p_preset, bool p_keep_margin) {
 		case PRESET_CENTER_RIGHT:
 		case PRESET_CENTER:
 		case PRESET_HCENTER_WIDE:
-			set_anchor(MARGIN_BOTTOM, ANCHOR_CENTER, p_keep_margin);
+			set_anchor(MARGIN_BOTTOM, 0.5, p_keep_margin);
 			break;
 
 		case PRESET_BOTTOM_LEFT:
@@ -2693,6 +2693,9 @@ void Control::_bind_methods() {
 
 	BIND_CONSTANT(GROW_DIRECTION_BEGIN);
 	BIND_CONSTANT(GROW_DIRECTION_END);
+
+	BIND_CONSTANT(ANCHOR_BEGIN);
+	BIND_CONSTANT(ANCHOR_END);
 
 	ADD_SIGNAL(MethodInfo("resized"));
 	ADD_SIGNAL(MethodInfo("gui_input", PropertyInfo(Variant::OBJECT, "ev", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));

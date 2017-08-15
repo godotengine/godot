@@ -779,7 +779,7 @@ float CanvasItemEditor::_anchor_snap(float p_anchor, bool *p_snapped, float p_op
 	bool snapped = false;
 	float dist, dist_min = 0.0;
 	float radius = 0.05 / zoom;
-	float basic_anchors[3] = { ANCHOR_BEGIN, ANCHOR_CENTER, ANCHOR_END };
+	float basic_anchors[3] = { 0.0, 0.5, 1.0 };
 	for (int i = 0; i < 3; i++) {
 		if ((dist = fabs(p_anchor - basic_anchors[i])) < radius) {
 			if (!snapped || dist <= dist_min) {
