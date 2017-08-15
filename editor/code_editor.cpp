@@ -30,6 +30,7 @@
 #include "code_editor.h"
 
 #include "editor/editor_scale.h"
+#include "editor_node.h"
 #include "editor_settings.h"
 #include "os/keyboard.h"
 #include "scene/gui/margin_container.h"
@@ -544,9 +545,7 @@ FindReplaceBar::FindReplaceBar() {
 
 	error_label = memnew(Label);
 	search_options->add_child(error_label);
-	error_label->add_color_override("font_color", Color(1, 1, 0, 1));
-	error_label->add_color_override("font_color_shadow", Color(0, 0, 0, 1));
-	error_label->add_constant_override("shadow_as_outline", 1);
+	error_label->add_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor"));
 
 	search_options->add_spacer();
 
@@ -875,7 +874,6 @@ FindReplaceDialog::FindReplaceDialog() {
 	search_text = memnew(LineEdit);
 	vb->add_margin_child(TTR("Search"), search_text);
 	search_text->connect("text_entered", this, "_search_text_entered");
-	//search_text->set_self_opacity(0.7);
 
 	replace_label = memnew(Label);
 	replace_label->set_text(TTR("Replace By"));
@@ -887,7 +885,7 @@ FindReplaceDialog::FindReplaceDialog() {
 	replace_text->set_anchor(MARGIN_RIGHT, ANCHOR_END);
 	replace_text->set_begin(Point2(15, 132));
 	replace_text->set_end(Point2(-15, 135));
-	//replace_text->set_self_opacity(0.7);
+
 	replace_mc->add_child(replace_text);
 
 	replace_text->connect("text_entered", this, "_replace_text_entered");
@@ -944,9 +942,7 @@ FindReplaceDialog::FindReplaceDialog() {
 
 	error_label = memnew(Label);
 	error_label->set_align(Label::ALIGN_CENTER);
-	error_label->add_color_override("font_color", Color(1, 0.4, 0.3));
-	error_label->add_color_override("font_color_shadow", Color(0, 0, 0, 0.2));
-	error_label->add_constant_override("shadow_as_outline", 1);
+	error_label->add_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor"));
 
 	vb->add_child(error_label);
 
@@ -1220,7 +1216,7 @@ CodeTextEditor::CodeTextEditor() {
 	status_bar->add_child(error);
 	error->set_clip_text(true); //do not change, or else very long errors can push the whole container to the right
 	error->set_valign(Label::VALIGN_CENTER);
-	error->add_color_override("font_color", Color(1, 0.7, 0.6, 0.9));
+	error->add_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor"));
 	error->set_h_size_flags(SIZE_EXPAND_FILL); //required for it to display, given now it's clipping contents, do not touch
 
 	Label *line_txt = memnew(Label);
