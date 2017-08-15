@@ -164,21 +164,11 @@ protected:
 	};
 	Map<ProcessID, ProcessInfo> *process_map;
 
-	struct MonitorInfo {
-		HMONITOR hMonitor;
-		HDC hdcMonitor;
-		Rect2 rect;
-		int dpi;
-	};
-
 	bool pre_fs_valid;
 	RECT pre_fs_rect;
-	Vector<MonitorInfo> monitor_info;
 	bool maximized;
 	bool minimized;
 	bool borderless;
-
-	static BOOL CALLBACK MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData);
 
 public:
 	LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);

@@ -889,23 +889,6 @@ static int QueryDpiForMonitor(HMONITOR hmon, _MonitorDpiType dpiType = MDT_Defau
 	return (dpiX + dpiY) / 2;
 }
 
-BOOL CALLBACK OS_Windows::MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
-	OS_Windows *self = (OS_Windows *)OS::get_singleton();
-	MonitorInfo minfo;
-	minfo.hMonitor = hMonitor;
-	minfo.hdcMonitor = hdcMonitor;
-	minfo.rect.position.x = lprcMonitor->left;
-	minfo.rect.position.y = lprcMonitor->top;
-	minfo.rect.size.x = lprcMonitor->right - lprcMonitor->left;
-	minfo.rect.size.y = lprcMonitor->bottom - lprcMonitor->top;
-
-	minfo.dpi = QueryDpiForMonitor(hMonitor);
-
-	self->monitor_info.push_back(minfo);
-
-	return TRUE;
-}
-
 void OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
 	main_loop = NULL;
@@ -941,9 +924,6 @@ void OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int 
 		return; // Return
 	}
 
-	EnumDisplayMonitors(NULL, NULL, MonitorEnumProc, 0);
-
-	print_line("DETECTED MONITORS: " + itos(monitor_info.size()));
 	pre_fs_valid = true;
 	if (video_mode.fullscreen) {
 
@@ -1217,8 +1197,6 @@ void OS_Windows::finalize() {
 
 	physics_2d_server->finish();
 	memdelete(physics_2d_server);
-
-	monitor_info.clear();
 }
 
 void OS_Windows::finalize_core() {
@@ -1344,51 +1322,131 @@ OS::VideoMode OS_Windows::get_video_mode(int p_screen) const {
 void OS_Windows::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) const {
 }
 
+static BOOL CALLBACK _MonitorEnumProcCount(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
+
+	int *data = (int *)dwData;
+	(*data)++;
+	return TRUE;
+}
+
 int OS_Windows::get_screen_count() const {
 
-	return monitor_info.size();
+	int data = 0;
+	EnumDisplayMonitors(NULL, NULL, _MonitorEnumProcCount, (LPARAM)&data);
+	return data;
 }
-int OS_Windows::get_current_screen() const {
 
-	HMONITOR monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTONEAREST);
-	for (int i = 0; i < monitor_info.size(); i++) {
-		if (monitor_info[i].hMonitor == monitor)
-			return i;
+typedef struct {
+	int count;
+	int screen;
+	HMONITOR monitor;
+} EnumScreenData;
+
+static BOOL CALLBACK _MonitorEnumProcScreen(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
+
+	EnumScreenData *data = (EnumScreenData *)dwData;
+	if (data->monitor == hMonitor) {
+		data->screen = data->count;
 	}
 
-	return 0;
+	data->count++;
+	return TRUE;
 }
-void OS_Windows::set_current_screen(int p_screen) {
 
-	ERR_FAIL_INDEX(p_screen, monitor_info.size());
+int OS_Windows::get_current_screen() const {
+
+	EnumScreenData data = { 0, 0, MonitorFromWindow(hWnd, MONITOR_DEFAULTTONEAREST) };
+	EnumDisplayMonitors(NULL, NULL, _MonitorEnumProcScreen, (LPARAM)&data);
+	return data.screen;
+}
+
+void OS_Windows::set_current_screen(int p_screen) {
 
 	Vector2 ofs = get_window_position() - get_screen_position(get_current_screen());
 	set_window_position(ofs + get_screen_position(p_screen));
 }
 
+typedef struct {
+	int count;
+	int screen;
+	Point2 pos;
+} EnumPosData;
+
+static BOOL CALLBACK _MonitorEnumProcPos(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
+
+	EnumPosData *data = (EnumPosData *)dwData;
+	if (data->count == data->screen) {
+		data->pos.x = lprcMonitor->left;
+		data->pos.y = lprcMonitor->top;
+	}
+
+	data->count++;
+	return TRUE;
+}
+
 Point2 OS_Windows::get_screen_position(int p_screen) const {
 
-	ERR_FAIL_INDEX_V(p_screen, monitor_info.size(), Point2());
-	return Vector2(monitor_info[p_screen].rect.position);
+	EnumPosData data = { 0, p_screen, Point2() };
+	EnumDisplayMonitors(NULL, NULL, _MonitorEnumProcPos, (LPARAM)&data);
+	return data.pos;
 }
+
+typedef struct {
+	int count;
+	int screen;
+	Size2 size;
+} EnumSizeData;
+
+static BOOL CALLBACK _MonitorEnumProcSize(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
+
+	EnumSizeData *data = (EnumSizeData *)dwData;
+	if (data->count == data->screen) {
+		data->size.x = lprcMonitor->right - lprcMonitor->left;
+		data->size.y = lprcMonitor->bottom - lprcMonitor->top;
+	}
+
+	data->count++;
+	return TRUE;
+}
+
 Size2 OS_Windows::get_screen_size(int p_screen) const {
 
-	ERR_FAIL_INDEX_V(p_screen, monitor_info.size(), Point2());
-	return Vector2(monitor_info[p_screen].rect.size);
+	EnumSizeData data = { 0, p_screen, Size2() };
+	EnumDisplayMonitors(NULL, NULL, _MonitorEnumProcSize, (LPARAM)&data);
+	return data.size;
+}
+
+typedef struct {
+	int count;
+	int screen;
+	int dpi;
+} EnumDpiData;
+
+static BOOL CALLBACK _MonitorEnumProcDpi(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
+
+	EnumDpiData *data = (EnumDpiData *)dwData;
+	if (data->count == data->screen) {
+		data->dpi = QueryDpiForMonitor(hMonitor);
+	}
+
+	data->count++;
+	return TRUE;
 }
 
 int OS_Windows::get_screen_dpi(int p_screen) const {
 
-	ERR_FAIL_INDEX_V(p_screen, monitor_info.size(), 72);
-	UINT dpix, dpiy;
-	return monitor_info[p_screen].dpi;
+	EnumDpiData data = { 0, p_screen, 72 };
+	EnumDisplayMonitors(NULL, NULL, _MonitorEnumProcDpi, (LPARAM)&data);
+	return data.dpi;
 }
+
 Point2 OS_Windows::get_window_position() const {
 
 	RECT r;
 	GetWindowRect(hWnd, &r);
 	return Point2(r.left, r.top);
 }
+
 void OS_Windows::set_window_position(const Point2 &p_position) {
 
 	if (video_mode.fullscreen) return;
