@@ -4907,13 +4907,19 @@ void EditorNode::dim_editor(bool p_dimming) {
 	static int dim_count = 0;
 	bool dim_ui = EditorSettings::get_singleton()->get("interface/dim_editor_on_dialog_popup");
 	if (p_dimming) {
-		if (dim_ui && dim_count == 0)
-			_start_dimming(true);
-		dim_count++;
+		if (dim_ui) {
+			if (dim_count == 0) {
+				_start_dimming(true);
+			}
+			dim_count++;
+		}
 	} else {
-		dim_count--;
-		if (dim_count < 1)
+		if (dim_count == 1) {
 			_start_dimming(false);
+			dim_count = 0;
+		} else if (dim_ui && dim_count > 0) {
+			dim_count--;
+		}
 	}
 }
 
