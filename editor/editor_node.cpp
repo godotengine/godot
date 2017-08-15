@@ -364,10 +364,28 @@ void EditorNode::_fs_changed() {
 		E->get()->invalidate();
 	}
 
-	if (export_defer.platform != "") {
+	if (export_defer.preset != "") {
+		Ref<EditorExportPreset> preset;
+		for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); ++i) {
+			preset = EditorExport::get_singleton()->get_export_preset(i);
+			if (preset->get_name() == export_defer.preset) {
+				break;
+			}
+		}
+		if (preset.is_null()) {
+			String err = "Unknown export preset: " + export_defer.preset;
+			ERR_PRINT(err.utf8().get_data());
+		} else {
+			Ref<EditorExportPlatform> platform = preset->get_platform();
+			if (platform.is_null()) {
+				String err = "Preset \"" + export_defer.preset + "\" doesn't have a platform.";
+				ERR_PRINT(err.utf8().get_data());
+			} else {
+				platform->export_project(preset, export_defer.debug, export_defer.path, /*p_flags*/ 0);
+			}
+		}
 
-		//project_export_settings->export_platform(export_defer.platform,export_defer.path,export_defer.debug,export_defer.password,true);
-		export_defer.platform = "";
+		export_defer.preset = "";
 	}
 
 	{
@@ -3844,9 +3862,9 @@ void EditorNode::_editor_file_dialog_unregister(EditorFileDialog *p_dialog) {
 
 Vector<EditorNodeInitCallback> EditorNode::_init_callbacks;
 
-Error EditorNode::export_platform(const String &p_platform, const String &p_path, bool p_debug, const String &p_password, bool p_quit_after) {
+Error EditorNode::export_preset(const String &preset, const String &p_path, bool p_debug, const String &p_password, bool p_quit_after) {
 
-	export_defer.platform = p_platform;
+	export_defer.preset = preset;
 	export_defer.path = p_path;
 	export_defer.debug = p_debug;
 	export_defer.password = p_password;
