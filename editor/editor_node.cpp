@@ -1246,7 +1246,7 @@ void EditorNode::_dialog_action(String p_file) {
 				}
 
 			} else {
-				ml.instance();
+				ml = Ref<TileSet>(memnew(TileSet));
 			}
 
 			TileSetEditor::update_library_file(editor_data.get_edited_scene_root(), ml, true);

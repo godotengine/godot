@@ -598,6 +598,10 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 				fi->type = fc->type;
 				fi->modified_time = fc->modification_time;
 				fi->import_modified_time = fc->import_modification_time;
+				if (fc->type == String()) {
+					fi->type = ResourceLoader::get_resource_type(path);
+					//there is also the chance that file type changed due to reimport, must probably check this somehow here (or kind of note it for next time in another file?)
+				}
 
 			} else {
 
@@ -615,6 +619,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 				}
 
 				fi->type = ResourceFormatImporter::get_singleton()->get_resource_type(path);
+				print_line("import extension tried resource type for " + path + " and its " + fi->type);
 				fi->modified_time = 0;
 				fi->import_modified_time = 0;
 
@@ -633,6 +638,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 				fi->import_modified_time = 0;
 			} else {
 				fi->type = ResourceLoader::get_resource_type(path);
+				print_line("regular import tried resource type for " + path + " and its " + fi->type);
 				fi->modified_time = mt;
 				fi->import_modified_time = 0;
 			}

@@ -2474,11 +2474,14 @@ bool PropertyEditor::_is_drop_valid(const Dictionary &p_drag_data, const Diction
 
 			String allowed_type = d["hint_text"];
 
+			print_line("allowed type " + allowed_type);
+
 			Dictionary drag_data = p_drag_data;
 			if (drag_data.has("type") && String(drag_data["type"]) == "resource") {
 				Ref<Resource> res = drag_data["resource"];
 				for (int i = 0; i < allowed_type.get_slice_count(","); i++) {
 					String at = allowed_type.get_slice(",", i).strip_edges();
+					print_line("RES vs " + at);
 					if (res.is_valid() && ClassDB::is_parent_class(res->get_class(), at)) {
 						return true;
 					}
@@ -2489,13 +2492,18 @@ bool PropertyEditor::_is_drop_valid(const Dictionary &p_drag_data, const Diction
 
 				Vector<String> files = drag_data["files"];
 
+				print_line("fileS: " + String(Variant(files)));
 				if (files.size() == 1) {
 					String file = files[0];
 					String ftype = EditorFileSystem::get_singleton()->get_file_type(file);
+
+					print_line("file: " + file);
+					print_line("type: " + ftype);
 					if (ftype != "") {
 
 						for (int i = 0; i < allowed_type.get_slice_count(","); i++) {
 							String at = allowed_type.get_slice(",", i).strip_edges();
+							print_line("FILE vs " + at);
 							if (ClassDB::is_parent_class(ftype, at)) {
 								return true;
 							}
