@@ -89,6 +89,8 @@ class EditorAssetLibraryItemDescription : public ConfirmationDialog {
 	RichTextLabel *description;
 	ScrollContainer *previews;
 	HBoxContainer *preview_hb;
+	PanelContainer *previews_bg;
+	PanelContainer *desc_bg;
 
 	struct Preview {
 		int id;
@@ -113,6 +115,7 @@ class EditorAssetLibraryItemDescription : public ConfirmationDialog {
 	void _preview_click(int p_index);
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
@@ -179,6 +182,7 @@ class EditorAssetLibrary : public PanelContainer {
 	void _asset_open();
 	void _asset_file_selected(const String &p_file);
 
+	PanelContainer *library_scroll_bg;
 	ScrollContainer *library_scroll;
 	VBoxContainer *library_vb;
 	LineEdit *filter;

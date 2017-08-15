@@ -1246,7 +1246,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 	set_focus_mode(FOCUS_ALL);
 
 	player = NULL;
-	add_style_override("panel", get_stylebox("panel", "Panel"));
+	add_style_override("panel", editor->get_gui_base()->get_stylebox("panel", "Panel"));
 
 	Label *l;
 

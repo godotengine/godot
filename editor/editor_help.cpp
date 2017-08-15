@@ -1788,7 +1788,7 @@ void EditorHelpBit::_bind_methods() {
 void EditorHelpBit::_notification(int p_what) {
 
 	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
-		add_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_stylebox("ScriptPanel", "EditorStyles"));
+		add_style_override("panel", get_stylebox("ScriptPanel", "EditorStyles"));
 	}
 }
 
