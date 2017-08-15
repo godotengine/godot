@@ -390,7 +390,7 @@ Error ColladaImport::_create_material(const String &p_target) {
 			}
 		}
 	} else {
-		//material->set_parameter(SpatialMaterial::PARAM_DIFFUSE,effect.diffuse.color);
+		material->set_albedo(effect.diffuse.color);
 	}
 
 	// SPECULAR

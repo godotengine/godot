@@ -1214,7 +1214,7 @@ void EditorNode::_dialog_action(String p_file) {
 				ml = Ref<MeshLibrary>(memnew(MeshLibrary));
 			}
 
-			//MeshLibraryEditor::update_library_file(editor_data.get_edited_scene_root(),ml,true);
+			MeshLibraryEditor::update_library_file(editor_data.get_edited_scene_root(), ml, true);
 
 			Error err = ResourceSaver::save(p_file, ml);
 			if (err) {
@@ -1246,7 +1246,7 @@ void EditorNode::_dialog_action(String p_file) {
 				}
 
 			} else {
-				ml = Ref<TileSet>(memnew(TileSet));
+				ml.instance();
 			}
 
 			TileSetEditor::update_library_file(editor_data.get_edited_scene_root(), ml, true);
@@ -6058,7 +6058,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(MultiMeshEditorPlugin(this)));
 	add_editor_plugin(memnew(MeshInstanceEditorPlugin(this)));
 	add_editor_plugin(memnew(AnimationTreeEditorPlugin(this)));
-	//add_editor_plugin( memnew( MeshLibraryEditorPlugin(this) ) );
+	add_editor_plugin(memnew(MeshLibraryEditorPlugin(this)));
 	add_editor_plugin(memnew(StyleBoxEditorPlugin(this)));
 	add_editor_plugin(memnew(ParticlesEditorPlugin(this)));
 	add_editor_plugin(memnew(ResourcePreloaderEditorPlugin(this)));
