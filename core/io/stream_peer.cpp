@@ -210,7 +210,7 @@ void StreamPeer::put_double(double p_val) {
 void StreamPeer::put_utf8_string(const String &p_string) {
 
 	CharString cs = p_string.utf8();
-	put_u32(p_string.length());
+	put_u32(cs.length());
 	put_data((const uint8_t *)cs.get_data(), cs.length());
 }
 void StreamPeer::put_var(const Variant &p_variant) {
