@@ -1266,9 +1266,8 @@ int ParticlesMaterial::get_emission_point_count() const {
 
 void ParticlesMaterial::set_trail_divisor(int p_divisor) {
 
-	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->trail_divisor, p_divisor);
 	trail_divisor = p_divisor;
-	_change_notify();
+	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->trail_divisor, p_divisor);
 }
 
 int ParticlesMaterial::get_trail_divisor() const {
