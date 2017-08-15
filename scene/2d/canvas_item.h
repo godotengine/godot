@@ -291,10 +291,10 @@ public:
 	RID get_canvas() const;
 	Ref<World2D> get_world_2d() const;
 
-	void set_material(const Ref<Material> &p_material);
+	virtual void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
 
-	void set_use_parent_material(bool p_use_parent_material);
+	virtual void set_use_parent_material(bool p_use_parent_material);
 	bool get_use_parent_material() const;
 
 	Ref<InputEvent> make_input_local(const Ref<InputEvent> &pevent) const;
