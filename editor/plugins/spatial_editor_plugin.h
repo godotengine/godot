@@ -245,7 +245,7 @@ private:
 	void _draw();
 
 	void _smouseenter();
-	void _sinput(const Ref<InputEvent> &p_ie);
+	void _sinput(const Ref<InputEvent> &p_event);
 	void _update_freelook(real_t delta);
 	SpatialEditor *spatial_editor;
 

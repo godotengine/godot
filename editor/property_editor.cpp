@@ -4191,9 +4191,9 @@ void PropertyEditor::set_keying(bool p_active) {
 	update_tree();
 }
 
-void PropertyEditor::_draw_flags(Object *t, const Rect2 &p_rect) {
+void PropertyEditor::_draw_flags(Object *p_object, const Rect2 &p_rect) {
 
-	TreeItem *ti = t->cast_to<TreeItem>();
+	TreeItem *ti = p_object->cast_to<TreeItem>();
 	if (!ti)
 		return;
 

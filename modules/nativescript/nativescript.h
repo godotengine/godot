@@ -120,7 +120,7 @@ public:
 	void set_class_name(String p_class_name);
 	String get_class_name() const;
 
-	void set_library(Ref<GDNativeLibrary> library);
+	void set_library(Ref<GDNativeLibrary> p_library);
 	Ref<GDNativeLibrary> get_library() const;
 
 	virtual bool can_instance() const;

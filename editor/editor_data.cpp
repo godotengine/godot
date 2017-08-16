@@ -633,13 +633,13 @@ Vector<EditorData::EditedScene> EditorData::get_edited_scenes() const {
 	return out_edited_scenes_list;
 }
 
-void EditorData::set_edited_scene_version(uint64_t version, int scene_idx) {
+void EditorData::set_edited_scene_version(uint64_t version, int p_scene_idx) {
 	ERR_FAIL_INDEX(current_edited_scene, edited_scene.size());
-	if (scene_idx < 0) {
+	if (p_scene_idx < 0) {
 		edited_scene[current_edited_scene].version = version;
 	} else {
-		ERR_FAIL_INDEX(scene_idx, edited_scene.size());
-		edited_scene[scene_idx].version = version;
+		ERR_FAIL_INDEX(p_scene_idx, edited_scene.size());
+		edited_scene[p_scene_idx].version = version;
 	}
 }
 

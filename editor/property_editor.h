@@ -217,8 +217,8 @@ class PropertyEditor : public Control {
 
 	TreeItem *find_item(TreeItem *p_item, const String &p_name);
 
-	virtual void _changed_callback(Object *p_changed, const char *p_what);
-	virtual void _changed_callbacks(Object *p_changed, const String &p_callback);
+	virtual void _changed_callback(Object *p_changed, const char *p_prop);
+	virtual void _changed_callbacks(Object *p_changed, const String &p_prop);
 
 	void _check_reload_status(const String &p_name, TreeItem *item);
 
@@ -228,7 +228,7 @@ class PropertyEditor : public Control {
 
 	friend class ProjectExportDialog;
 	void _edit_set(const String &p_name, const Variant &p_value, bool p_refresh_all = false, const String &p_changed_field = "");
-	void _draw_flags(Object *ti, const Rect2 &p_rect);
+	void _draw_flags(Object *p_object, const Rect2 &p_rect);
 
 	bool _might_be_in_instance();
 	bool _get_instanced_node_original_property(const StringName &p_prop, Variant &value);

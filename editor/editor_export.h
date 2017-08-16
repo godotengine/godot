@@ -294,7 +294,7 @@ public:
 	void set_name(const String &p_name);
 	void set_os_name(const String &p_name);
 
-	void set_logo(const Ref<Texture> &p_loco);
+	void set_logo(const Ref<Texture> &p_logo);
 
 	void set_release_64(const String &p_file);
 	void set_release_32(const String &p_file);

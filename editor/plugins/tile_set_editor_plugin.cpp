@@ -147,12 +147,12 @@ void TileSetEditor::_import_node(Node *p_node, Ref<TileSet> p_library) {
 	}
 }
 
-void TileSetEditor::_import_scene(Node *scene, Ref<TileSet> p_library, bool p_merge) {
+void TileSetEditor::_import_scene(Node *p_scene, Ref<TileSet> p_library, bool p_merge) {
 
 	if (!p_merge)
 		p_library->clear();
 
-	_import_node(scene, p_library);
+	_import_node(p_scene, p_library);
 }
 
 void TileSetEditor::_menu_confirm() {

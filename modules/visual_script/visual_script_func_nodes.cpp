@@ -341,12 +341,12 @@ String VisualScriptFunctionCall::get_base_script() const {
 	return base_script;
 }
 
-void VisualScriptFunctionCall::set_singleton(const StringName &p_path) {
+void VisualScriptFunctionCall::set_singleton(const StringName &p_type) {
 
-	if (singleton == p_path)
+	if (singleton == p_type)
 		return;
 
-	singleton = p_path;
+	singleton = p_type;
 	Object *obj = ProjectSettings::get_singleton()->get_singleton_object(singleton);
 	if (obj) {
 		base_type = obj->get_class();

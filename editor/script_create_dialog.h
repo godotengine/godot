@@ -74,7 +74,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	void _path_changed(const String &p_path = String());
 	void _lang_changed(int l = 0);
 	void _built_in_pressed();
-	bool _validate(const String &p_strin);
+	bool _validate(const String &p_string);
 	void _class_name_changed(const String &p_name);
 	void _parent_name_changed(const String &p_parent);
 	void _template_changed(int p_template = 0);

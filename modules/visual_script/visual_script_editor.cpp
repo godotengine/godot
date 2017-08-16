@@ -2450,17 +2450,17 @@ void VisualScriptEditor::_graph_connect_to_empty(const String &p_from, int p_fro
 	port_action_popup->popup();
 }
 
-VisualScriptNode::TypeGuess VisualScriptEditor::_guess_output_type(int p_node, int p_output, Set<int> &visited_nodes) {
+VisualScriptNode::TypeGuess VisualScriptEditor::_guess_output_type(int p_port_action_node, int p_port_action_output, Set<int> &visited_nodes) {
 
 	VisualScriptNode::TypeGuess tg;
 	tg.type = Variant::NIL;
 
-	if (visited_nodes.has(p_node))
+	if (visited_nodes.has(p_port_action_node))
 		return tg; //no loop
 
-	visited_nodes.insert(p_node);
+	visited_nodes.insert(p_port_action_node);
 
-	Ref<VisualScriptNode> node = script->get_node(edited_func, p_node);
+	Ref<VisualScriptNode> node = script->get_node(edited_func, p_port_action_node);
 
 	if (!node.is_valid()) {
 
@@ -2479,7 +2479,7 @@ VisualScriptNode::TypeGuess VisualScriptEditor::_guess_output_type(int p_node, i
 			int from_node;
 			int from_port;
 
-			if (script->get_input_value_port_connection_source(edited_func, p_node, i, &from_node, &from_port)) {
+			if (script->get_input_value_port_connection_source(edited_func, p_port_action_node, i, &from_node, &from_port)) {
 
 				g = _guess_output_type(from_node, from_port, visited_nodes);
 			} else {
@@ -2501,7 +2501,7 @@ VisualScriptNode::TypeGuess VisualScriptEditor::_guess_output_type(int p_node, i
 		in_guesses.push_back(g);
 	}
 
-	return node->guess_output_type(in_guesses.ptr(), p_output);
+	return node->guess_output_type(in_guesses.ptr(), p_port_action_output);
 }
 
 void VisualScriptEditor::_port_action_menu(int p_option) {

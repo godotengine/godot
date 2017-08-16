@@ -719,34 +719,34 @@ void EditorNode::_set_scene_metadata(const String &p_file, int p_idx) {
 	ERR_FAIL_COND(err != OK);
 }
 
-bool EditorNode::_find_and_save_resource(RES res, Map<RES, bool> &processed, int32_t flags) {
+bool EditorNode::_find_and_save_resource(RES p_res, Map<RES, bool> &processed, int32_t flags) {
 
-	if (res.is_null())
+	if (p_res.is_null())
 		return false;
 
-	if (processed.has(res)) {
+	if (processed.has(p_res)) {
 
-		return processed[res];
+		return processed[p_res];
 	}
 
-	bool changed = res->is_edited();
-	res->set_edited(false);
+	bool changed = p_res->is_edited();
+	p_res->set_edited(false);
 
-	bool subchanged = _find_and_save_edited_subresources(res.ptr(), processed, flags);
+	bool subchanged = _find_and_save_edited_subresources(p_res.ptr(), processed, flags);
 
-	//print_line("checking if edited: "+res->get_type()+" :: "+res->get_name()+" :: "+res->get_path()+" :: "+itos(changed)+" :: SR "+itos(subchanged));
+	//print_line("checking if edited: "+p_res->get_type()+" :: "+p_res->get_name()+" :: "+p_res->get_path()+" :: "+itos(changed)+" :: SR "+itos(subchanged));
 
-	if (res->get_path().is_resource_file()) {
+	if (p_res->get_path().is_resource_file()) {
 		if (changed || subchanged) {
 			//save
-			print_line("Also saving modified external resource: " + res->get_path());
-			ResourceSaver::save(res->get_path(), res, flags);
+			print_line("Also saving modified external resource: " + p_res->get_path());
+			ResourceSaver::save(p_res->get_path(), p_res, flags);
 		}
-		processed[res] = false; //because it's a file
+		processed[p_res] = false; //because it's a file
 		return false;
 	} else {
 
-		processed[res] = changed;
+		processed[p_res] = changed;
 		return changed;
 	}
 }
@@ -3792,9 +3792,9 @@ void EditorNode::progress_add_task(const String &p_task, const String &p_label, 
 	singleton->progress_dialog->add_task(p_task, p_label, p_steps);
 }
 
-void EditorNode::progress_task_step(const String &p_task, const String &p_state, int p_step, bool p_force_redraw) {
+void EditorNode::progress_task_step(const String &p_task, const String &p_state, int p_step, bool p_force_refresh) {
 
-	singleton->progress_dialog->task_step(p_task, p_state, p_step, p_force_redraw);
+	singleton->progress_dialog->task_step(p_task, p_state, p_step, p_force_refresh);
 }
 
 void EditorNode::progress_end_task(const String &p_task) {

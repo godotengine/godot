@@ -112,19 +112,19 @@ void EditorDirDialog::_notification(int p_what) {
 	}
 }
 
-void EditorDirDialog::_item_collapsed(Object *_p_item) {
+void EditorDirDialog::_item_collapsed(Object *p_item) {
 
-	TreeItem *p_item = _p_item->cast_to<TreeItem>();
+	TreeItem *item = p_item->cast_to<TreeItem>();
 
-	if (updating || p_item->is_collapsed())
+	if (updating || item->is_collapsed())
 		return;
 
-	TreeItem *ci = p_item->get_children();
+	TreeItem *ci = item->get_children();
 	while (ci) {
 
 		String p = ci->get_metadata(0);
 		if (p == "") {
-			String pp = p_item->get_metadata(0);
+			String pp = item->get_metadata(0);
 			ci->set_metadata(0, pp.plus_file(ci->get_text(0)));
 			_update_dir(ci);
 		}

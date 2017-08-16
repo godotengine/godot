@@ -196,7 +196,7 @@ public:
 	virtual String get_text() const;
 	virtual String get_category() const { return "data"; }
 
-	void set_variable(StringName p_var);
+	void set_variable(StringName p_variable);
 	StringName get_variable() const;
 
 	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance);
@@ -230,7 +230,7 @@ public:
 	virtual String get_text() const;
 	virtual String get_category() const { return "data"; }
 
-	void set_variable(StringName p_var);
+	void set_variable(StringName p_variable);
 	StringName get_variable() const;
 
 	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance);
@@ -301,7 +301,7 @@ public:
 	virtual String get_text() const;
 	virtual String get_category() const { return "data"; }
 
-	void set_preload(const Ref<Resource> &p_value);
+	void set_preload(const Ref<Resource> &p_preload);
 	Ref<Resource> get_preload() const;
 
 	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance);

@@ -115,8 +115,8 @@ public:
 	static EditorResourcePreview *get_singleton();
 
 	//callback function is callback(String p_path,Ref<Texture> preview,Variant udata) preview null if could not load
-	void queue_resource_preview(const String &p_res, Object *p_receiver, const StringName &p_receiver_func, const Variant &p_userdata);
-	void queue_edited_resource_preview(const Ref<Resource> &p_path, Object *p_receiver, const StringName &p_receiver_func, const Variant &p_userdata);
+	void queue_resource_preview(const String &p_path, Object *p_receiver, const StringName &p_receiver_func, const Variant &p_userdata);
+	void queue_edited_resource_preview(const Ref<Resource> &p_res, Object *p_receiver, const StringName &p_receiver_func, const Variant &p_userdata);
 
 	void add_preview_generator(const Ref<EditorResourcePreviewGenerator> &p_generator);
 	void remove_preview_generator(const Ref<EditorResourcePreviewGenerator> &p_generator);

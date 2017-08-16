@@ -581,7 +581,7 @@ private:
 	void _update_top_menu_visibility();
 
 	void _update_layouts_menu();
-	void _layout_menu_option(int p_idx);
+	void _layout_menu_option(int p_id);
 
 	void _toggle_search_bar(bool p_pressed);
 	void _clear_search_box();

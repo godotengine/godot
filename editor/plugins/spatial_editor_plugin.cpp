@@ -414,7 +414,7 @@ void SpatialEditorViewport::_find_items_at_pos(const Point2 &p_pos, bool &r_incl
 	results.sort();
 }
 
-Vector3 SpatialEditorViewport::_get_screen_to_space(const Vector3 &p_pos) {
+Vector3 SpatialEditorViewport::_get_screen_to_space(const Vector3 &p_vector3) {
 
 	CameraMatrix cm;
 	cm.set_perspective(get_fov(), get_size().aspect(), get_znear(), get_zfar());
@@ -427,7 +427,7 @@ Vector3 SpatialEditorViewport::_get_screen_to_space(const Vector3 &p_pos) {
 	camera_transform.basis.rotate(Vector3(0, 1, 0), -cursor.y_rot);
 	camera_transform.translate(0, 0, cursor.distance);
 
-	return camera_transform.xform(Vector3(((p_pos.x / get_size().width) * 2.0 - 1.0) * screen_w, ((1.0 - (p_pos.y / get_size().height)) * 2.0 - 1.0) * screen_h, -get_znear()));
+	return camera_transform.xform(Vector3(((p_vector3.x / get_size().width) * 2.0 - 1.0) * screen_w, ((1.0 - (p_vector3.y / get_size().height)) * 2.0 - 1.0) * screen_h, -get_znear()));
 }
 
 void SpatialEditorViewport::_select_region() {

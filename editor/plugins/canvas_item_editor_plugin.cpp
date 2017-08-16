@@ -947,9 +947,9 @@ void CanvasItemEditor::incend(float &beg, float &end, float inc, float minsize, 
 	}
 }
 
-void CanvasItemEditor::_append_canvas_item(CanvasItem *c) {
+void CanvasItemEditor::_append_canvas_item(CanvasItem *p_item) {
 
-	editor_selection->add_node(c);
+	editor_selection->add_node(p_item);
 }
 
 void CanvasItemEditor::_snap_changed() {

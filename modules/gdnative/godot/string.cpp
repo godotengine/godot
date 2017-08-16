@@ -63,13 +63,13 @@ void GDAPI godot_string_new_unicode_data(godot_string *r_dest, const wchar_t *p_
 	memnew_placement(dest, String(p_contents, p_size));
 }
 
-void GDAPI godot_string_get_data(const godot_string *p_self, char *r_dest, int *p_size) {
+void GDAPI godot_string_get_data(const godot_string *p_self, char *p_dest, int *p_size) {
 	String *self = (String *)p_self;
 	if (p_size != NULL) {
 		*p_size = self->utf8().length();
 	}
-	if (r_dest != NULL) {
-		memcpy(r_dest, self->utf8().get_data(), *p_size);
+	if (p_dest != NULL) {
+		memcpy(p_dest, self->utf8().get_data(), *p_size);
 	}
 }
 
@@ -277,11 +277,11 @@ godot_int GDAPI godot_string_hex_to_int_without_prefix(const godot_string *p_sel
 	return self->hex_to_int(true);
 }
 
-godot_string GDAPI godot_string_insert(const godot_string *p_self, godot_int at_pos, godot_string p_content) {
+godot_string GDAPI godot_string_insert(const godot_string *p_self, godot_int p_at_pos, godot_string p_string) {
 	const String *self = (const String *)p_self;
-	String *content = (String *)&p_content;
+	String *content = (String *)&p_string;
 	godot_string result;
-	memnew_placement(&result, String(self->insert(at_pos, *content)));
+	memnew_placement(&result, String(self->insert(p_at_pos, *content)));
 
 	return result;
 }

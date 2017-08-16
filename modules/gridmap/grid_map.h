@@ -242,7 +242,7 @@ public:
 	void set_center_z(bool p_enable);
 	bool get_center_z() const;
 
-	void set_cell_item(int p_x, int p_y, int p_z, int p_item, int p_orientation = 0);
+	void set_cell_item(int p_x, int p_y, int p_z, int p_item, int p_rot = 0);
 	int get_cell_item(int p_x, int p_y, int p_z) const;
 	int get_cell_item_orientation(int p_x, int p_y, int p_z) const;
 

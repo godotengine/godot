@@ -65,7 +65,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void popup(const Vector<String> &p_base, bool p_dontclear = false);
+	void popup(const Vector<String> &p_functions, bool p_dontclear = false);
 	ScriptEditorQuickOpen();
 };
 
@@ -223,14 +223,14 @@ class ScriptEditor : public PanelContainer {
 	EditorHelpIndex *help_index;
 
 	void _tab_changed(int p_which);
-	void _menu_option(int p_optin);
+	void _menu_option(int p_option);
 
 	Tree *disk_changed_list;
 	ConfirmationDialog *disk_changed;
 
 	bool restoring_layout;
 
-	String _get_debug_tooltip(const String &p_text, Node *_ste);
+	String _get_debug_tooltip(const String &p_text, Node *_se);
 
 	void _resave_scripts(const String &p_str);
 	void _reload_scripts();
@@ -392,8 +392,8 @@ class ScriptEditorPlugin : public EditorPlugin {
 public:
 	virtual String get_name() const { return "Script"; }
 	bool has_main_screen() const { return true; }
-	virtual void edit(Object *p_node);
-	virtual bool handles(Object *p_node) const;
+	virtual void edit(Object *p_object);
+	virtual bool handles(Object *p_object) const;
 	virtual void make_visible(bool p_visible);
 	virtual void selected_notify();
 

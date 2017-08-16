@@ -676,16 +676,16 @@ AnimationTreeEditor::ClickType AnimationTreeEditor::_locate_click(const Point2 &
 	return CLICK_NONE;
 }
 
-Point2 AnimationTreeEditor::_get_slot_pos(const StringName &p_node, bool p_input, int p_slot) {
+Point2 AnimationTreeEditor::_get_slot_pos(const StringName &p_node_id, bool p_input, int p_slot) {
 
 	Ref<StyleBox> style = get_stylebox("panel", "PopupMenu");
 	Ref<Font> font = get_font("font", "PopupMenu");
 	Ref<Texture> slot_icon = get_icon("NodeRealSlot", "EditorIcons");
 
-	Size2 size = get_node_size(p_node);
-	Point2 pos = anim_tree->node_get_pos(p_node);
+	Size2 size = get_node_size(p_node_id);
+	Point2 pos = anim_tree->node_get_pos(p_node_id);
 
-	if (click_type == CLICK_NODE && click_node == p_node) {
+	if (click_type == CLICK_NODE && click_node == p_node_id) {
 
 		pos += click_motion - click_pos;
 		if (pos.x < 5)

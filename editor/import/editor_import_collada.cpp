@@ -87,8 +87,8 @@ struct ColladaImport {
 	Error _create_scene_skeletons(Collada::Node *p_node);
 	Error _create_scene(Collada::Node *p_node, Spatial *p_parent);
 	Error _create_resources(Collada::Node *p_node);
-	Error _create_material(const String &p_material);
-	Error _create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_mesh, const Map<String, Collada::NodeGeometry::Material> &p_material_map, const Collada::MeshData &meshdata, const Transform &p_local_xform, const Vector<int> &bone_remap, const Collada::SkinControllerData *p_skin_data, const Collada::MorphControllerData *p_morph_data, Vector<Ref<ArrayMesh> > p_morph_meshes = Vector<Ref<ArrayMesh> >(), bool p_for_morph = false, bool p_use_mesh_material = false);
+	Error _create_material(const String &p_target);
+	Error _create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_mesh, const Map<String, Collada::NodeGeometry::Material> &p_material_map, const Collada::MeshData &meshdata, const Transform &p_local_xform, const Vector<int> &bone_remap, const Collada::SkinControllerData *p_skin_controller, const Collada::MorphControllerData *p_morph_data, Vector<Ref<ArrayMesh> > p_morph_meshes = Vector<Ref<ArrayMesh> >(), bool p_for_morph = false, bool p_use_mesh_material = false);
 	Error load(const String &p_path, int p_flags, bool p_force_make_tangents = false);
 	void _fix_param_animation_tracks();
 	void create_animation(int p_clip, bool p_make_tracks_in_all_bones, bool p_import_value_tracks);
@@ -591,7 +591,7 @@ static void _generate_tangents_and_binormals(const PoolVector<int> &p_indices, c
 	}
 }
 
-Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_mesh, const Map<String, Collada::NodeGeometry::Material> &p_material_map, const Collada::MeshData &meshdata, const Transform &p_local_xform, const Vector<int> &bone_remap, const Collada::SkinControllerData *skin_controller, const Collada::MorphControllerData *p_morph_data, Vector<Ref<ArrayMesh> > p_morph_meshes, bool p_for_morph, bool p_use_mesh_material) {
+Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_mesh, const Map<String, Collada::NodeGeometry::Material> &p_material_map, const Collada::MeshData &meshdata, const Transform &p_local_xform, const Vector<int> &bone_remap, const Collada::SkinControllerData *p_skin_controller, const Collada::MorphControllerData *p_morph_data, Vector<Ref<ArrayMesh> > p_morph_meshes, bool p_for_morph, bool p_use_mesh_material) {
 
 	bool local_xform_mirror = p_local_xform.basis.determinant() < 0;
 
@@ -714,35 +714,35 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 
 		bool has_weights = false;
 
-		if (skin_controller) {
+		if (p_skin_controller) {
 
 			const Collada::SkinControllerData::Source *weight_src = NULL;
 			int weight_ofs = 0;
 
-			if (skin_controller->weights.sources.has("WEIGHT")) {
+			if (p_skin_controller->weights.sources.has("WEIGHT")) {
 
-				String weight_id = skin_controller->weights.sources["WEIGHT"].source;
-				weight_ofs = skin_controller->weights.sources["WEIGHT"].offset;
-				if (skin_controller->sources.has(weight_id)) {
+				String weight_id = p_skin_controller->weights.sources["WEIGHT"].source;
+				weight_ofs = p_skin_controller->weights.sources["WEIGHT"].offset;
+				if (p_skin_controller->sources.has(weight_id)) {
 
-					weight_src = &skin_controller->sources[weight_id];
+					weight_src = &p_skin_controller->sources[weight_id];
 				}
 			}
 
 			int joint_ofs = 0;
 
-			if (skin_controller->weights.sources.has("JOINT")) {
+			if (p_skin_controller->weights.sources.has("JOINT")) {
 
-				joint_ofs = skin_controller->weights.sources["JOINT"].offset;
+				joint_ofs = p_skin_controller->weights.sources["JOINT"].offset;
 			}
 
 			//should be OK, given this was pre-checked.
 
 			int index_ofs = 0;
-			int wstride = skin_controller->weights.sources.size();
-			for (int w_i = 0; w_i < skin_controller->weights.sets.size(); w_i++) {
+			int wstride = p_skin_controller->weights.sources.size();
+			for (int w_i = 0; w_i < p_skin_controller->weights.sets.size(); w_i++) {
 
-				int amount = skin_controller->weights.sets[w_i];
+				int amount = p_skin_controller->weights.sets[w_i];
 
 				Vector<Collada::Vertex::Weight> weights;
 
@@ -751,13 +751,13 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 					Collada::Vertex::Weight w;
 
 					int read_from = index_ofs + a_i * wstride;
-					ERR_FAIL_INDEX_V(read_from + wstride - 1, skin_controller->weights.indices.size(), ERR_INVALID_DATA);
-					int weight_index = skin_controller->weights.indices[read_from + weight_ofs];
+					ERR_FAIL_INDEX_V(read_from + wstride - 1, p_skin_controller->weights.indices.size(), ERR_INVALID_DATA);
+					int weight_index = p_skin_controller->weights.indices[read_from + weight_ofs];
 					ERR_FAIL_INDEX_V(weight_index, weight_src->array.size(), ERR_INVALID_DATA);
 
 					w.weight = weight_src->array[weight_index];
 
-					int bone_index = skin_controller->weights.indices[read_from + joint_ofs];
+					int bone_index = p_skin_controller->weights.indices[read_from + joint_ofs];
 					if (bone_index == -1)
 						continue; //ignore this weight (refers to bind shape)
 					ERR_FAIL_INDEX_V(bone_index, bone_remap.size(), ERR_INVALID_DATA);
