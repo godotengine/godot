@@ -59,7 +59,7 @@ void Button::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_TRANSLATION_CHANGED) {
 
-		xl_text = XL_MESSAGE(text);
+		xl_text = localize(text);
 		minimum_size_changed();
 		update();
 	}
@@ -172,7 +172,7 @@ void Button::set_text(const String &p_text) {
 	if (text == p_text)
 		return;
 	text = p_text;
-	xl_text = XL_MESSAGE(p_text);
+	xl_text = localize(p_text);
 	update();
 	_change_notify("text");
 	minimum_size_changed();

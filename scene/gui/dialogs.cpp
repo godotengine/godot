@@ -271,7 +271,7 @@ int WindowDialog::_drag_hit_test(const Point2 &pos) const {
 
 void WindowDialog::set_title(const String &p_title) {
 
-	title = XL_MESSAGE(p_title);
+	title = localize(p_title);
 	update();
 }
 String WindowDialog::get_title() const {
