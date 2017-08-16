@@ -1301,8 +1301,9 @@ String Node::_generate_serial_child_name(Node *p_child) {
 		}
 	}
 
+	int num_places = nums.length();
 	for (;;) {
-		String attempt = (name + (num > 0 || explicit_zero ? nnsep + itos(num) : "")).strip_edges();
+		String attempt = (name + (num > 0 || explicit_zero ? nnsep + itos(num).pad_zeros(num_places) : "")).strip_edges();
 		bool found = false;
 		for (int i = 0; i < data.children.size(); i++) {
 			if (data.children[i] == p_child)
