@@ -2324,13 +2324,10 @@ void CanvasItemEditor::_notification(int p_what) {
 			}
 		}
 
-		bool show_anchor = all_control && has_control;
-		if (show_anchor != anchor_menu->is_visible()) {
-			if (show_anchor)
-				anchor_menu->show();
-			else
-				anchor_menu->hide();
-		}
+		if (all_control && has_control)
+			anchor_menu->show();
+		else
+			anchor_menu->hide();
 
 		for (Map<ObjectID, BoneList>::Element *E = bone_list.front(); E; E = E->next()) {
 
