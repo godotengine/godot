@@ -488,6 +488,7 @@ void fill_default_theme(Ref<Theme> &t, const Ref<Font> &default_font, const Ref<
 	t->set_stylebox("scroll_focus", "HScrollBar", make_stylebox(scroll_bg_png, 5, 5, 5, 5, 0, 0, 0, 0));
 	t->set_stylebox("grabber", "HScrollBar", make_stylebox(scroll_grabber_png, 5, 5, 5, 5, 2, 2, 2, 2));
 	t->set_stylebox("grabber_highlight", "HScrollBar", make_stylebox(scroll_grabber_hl_png, 5, 5, 5, 5, 2, 2, 2, 2));
+	t->set_stylebox("grabber_pressed", "HScrollBar", make_stylebox(scroll_grabber_pressed_png, 5, 5, 5, 5, 2, 2, 2, 2));
 
 	t->set_icon("increment", "HScrollBar", empty_icon);
 	t->set_icon("increment_highlight", "HScrollBar", empty_icon);
@@ -500,6 +501,7 @@ void fill_default_theme(Ref<Theme> &t, const Ref<Font> &default_font, const Ref<
 	t->set_stylebox("scroll_focus", "VScrollBar", make_stylebox(scroll_bg_png, 5, 5, 5, 5, 0, 0, 0, 0));
 	t->set_stylebox("grabber", "VScrollBar", make_stylebox(scroll_grabber_png, 5, 5, 5, 5, 2, 2, 2, 2));
 	t->set_stylebox("grabber_highlight", "VScrollBar", make_stylebox(scroll_grabber_hl_png, 5, 5, 5, 5, 2, 2, 2, 2));
+	t->set_stylebox("grabber_pressed", "VScrollBar", make_stylebox(scroll_grabber_pressed_png, 5, 5, 5, 5, 2, 2, 2, 2));
 
 	t->set_icon("increment", "VScrollBar", empty_icon);
 	t->set_icon("increment_highlight", "VScrollBar", empty_icon);
