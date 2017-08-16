@@ -97,6 +97,7 @@ class TileMapEditor : public VBoxContainer {
 
 	bool selection_active;
 	bool mouse_over;
+	bool show_tile_info;
 
 	bool flip_h;
 	bool flip_v;
