@@ -351,7 +351,7 @@ private:
 	};
 
 	void _cull_convex(Octant *p_octant, _CullConvexData *p_cull);
-	void _cull_AABB(Octant *p_octant, const Rect3 &p_aabb, T **p_result_array, int *p_result_idx, int p_result_max, int *p_subindex_array, uint32_t p_mask);
+	void _cull_aabb(Octant *p_octant, const Rect3 &p_aabb, T **p_result_array, int *p_result_idx, int p_result_max, int *p_subindex_array, uint32_t p_mask);
 	void _cull_segment(Octant *p_octant, const Vector3 &p_from, const Vector3 &p_to, T **p_result_array, int *p_result_idx, int p_result_max, int *p_subindex_array, uint32_t p_mask);
 	void _cull_point(Octant *p_octant, const Vector3 &p_point, T **p_result_array, int *p_result_idx, int p_result_max, int *p_subindex_array, uint32_t p_mask);
 
@@ -380,7 +380,7 @@ public:
 	int get_subindex(OctreeElementID p_id) const;
 
 	int cull_convex(const Vector<Plane> &p_convex, T **p_result_array, int p_result_max, uint32_t p_mask = 0xFFFFFFFF);
-	int cull_AABB(const Rect3 &p_aabb, T **p_result_array, int p_result_max, int *p_subindex_array = NULL, uint32_t p_mask = 0xFFFFFFFF);
+	int cull_aabb(const Rect3 &p_aabb, T **p_result_array, int p_result_max, int *p_subindex_array = NULL, uint32_t p_mask = 0xFFFFFFFF);
 	int cull_segment(const Vector3 &p_from, const Vector3 &p_to, T **p_result_array, int p_result_max, int *p_subindex_array = NULL, uint32_t p_mask = 0xFFFFFFFF);
 
 	int cull_point(const Vector3 &p_point, T **p_result_array, int p_result_max, int *p_subindex_array = NULL, uint32_t p_mask = 0xFFFFFFFF);
@@ -1095,7 +1095,7 @@ void Octree<T, use_pairs, AL>::_cull_convex(Octant *p_octant, _CullConvexData *p
 }
 
 template <class T, bool use_pairs, class AL>
-void Octree<T, use_pairs, AL>::_cull_AABB(Octant *p_octant, const Rect3 &p_aabb, T **p_result_array, int *p_result_idx, int p_result_max, int *p_subindex_array, uint32_t p_mask) {
+void Octree<T, use_pairs, AL>::_cull_aabb(Octant *p_octant, const Rect3 &p_aabb, T **p_result_array, int *p_result_idx, int p_result_max, int *p_subindex_array, uint32_t p_mask) {
 
 	if (*p_result_idx == p_result_max)
 		return; //pointless
@@ -1160,7 +1160,7 @@ void Octree<T, use_pairs, AL>::_cull_AABB(Octant *p_octant, const Rect3 &p_aabb,
 	for (int i = 0; i < 8; i++) {
 
 		if (p_octant->children[i] && p_octant->children[i]->aabb.intersects_inclusive(p_aabb)) {
-			_cull_AABB(p_octant->children[i], p_aabb, p_result_array, p_result_idx, p_result_max, p_subindex_array, p_mask);
+			_cull_aabb(p_octant->children[i], p_aabb, p_result_array, p_result_idx, p_result_max, p_subindex_array, p_mask);
 		}
 	}
 }
@@ -1336,14 +1336,14 @@ int Octree<T, use_pairs, AL>::cull_convex(const Vector<Plane> &p_convex, T **p_r
 }
 
 template <class T, bool use_pairs, class AL>
-int Octree<T, use_pairs, AL>::cull_AABB(const Rect3 &p_aabb, T **p_result_array, int p_result_max, int *p_subindex_array, uint32_t p_mask) {
+int Octree<T, use_pairs, AL>::cull_aabb(const Rect3 &p_aabb, T **p_result_array, int p_result_max, int *p_subindex_array, uint32_t p_mask) {
 
 	if (!root)
 		return 0;
 
 	int result_count = 0;
 	pass++;
-	_cull_AABB(root, p_aabb, p_result_array, &result_count, p_result_max, p_subindex_array, p_mask);
+	_cull_aabb(root, p_aabb, p_result_array, &result_count, p_result_max, p_subindex_array, p_mask);
 
 	return result_count;
 }

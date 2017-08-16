@@ -78,7 +78,7 @@ int BroadPhaseOctree::cull_segment(const Vector3 &p_from, const Vector3 &p_to, C
 
 int BroadPhaseOctree::cull_aabb(const Rect3 &p_aabb, CollisionObjectSW **p_results, int p_max_results, int *p_result_indices) {
 
-	return octree.cull_AABB(p_aabb, p_results, p_max_results, p_result_indices);
+	return octree.cull_aabb(p_aabb, p_results, p_max_results, p_result_indices);
 }
 
 void *BroadPhaseOctree::_pair_callback(void *self, OctreeElementID p_A, CollisionObjectSW *p_object_A, int subindex_A, OctreeElementID p_B, CollisionObjectSW *p_object_B, int subindex_B) {

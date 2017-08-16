@@ -910,7 +910,7 @@ Vector<ObjectID> VisualServerScene::instances_cull_aabb(const Rect3 &p_aabb, RID
 
 	int culled = 0;
 	Instance *cull[1024];
-	culled = scenario->octree.cull_AABB(p_aabb, cull, 1024);
+	culled = scenario->octree.cull_aabb(p_aabb, cull, 1024);
 
 	for (int i = 0; i < culled; i++) {
 
