@@ -367,6 +367,7 @@ ImportDock::ImportDock() {
 
 	imported = memnew(LineEdit);
 	imported->set_editable(false);
+	imported->add_style_override("focus", memnew(StyleBoxEmpty));
 	add_child(imported);
 	HBoxContainer *hb = memnew(HBoxContainer);
 	add_margin_child(TTR("Import As:"), hb);
