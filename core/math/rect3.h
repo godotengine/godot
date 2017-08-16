@@ -72,9 +72,9 @@ public:
 	Rect3 intersection(const Rect3 &p_aabb) const; ///get box where two intersect, empty if no intersection occurs
 	bool intersects_segment(const Vector3 &p_from, const Vector3 &p_to, Vector3 *r_clip = NULL, Vector3 *r_normal = NULL) const;
 	bool intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 *r_clip = NULL, Vector3 *r_normal = NULL) const;
-	_FORCE_INLINE_ bool smits_intersect_ray(const Vector3 &from, const Vector3 &p_dir, real_t t0, real_t t1) const;
+	_FORCE_INLINE_ bool smits_intersect_ray(const Vector3 &p_from, const Vector3 &p_dir, real_t t0, real_t t1) const;
 
-	_FORCE_INLINE_ bool intersects_convex_shape(const Plane *p_plane, int p_plane_count) const;
+	_FORCE_INLINE_ bool intersects_convex_shape(const Plane *p_planes, int p_plane_count) const;
 	bool intersects_plane(const Plane &p_plane) const;
 
 	_FORCE_INLINE_ bool has_point(const Vector3 &p_point) const;
@@ -326,27 +326,27 @@ inline real_t Rect3::get_shortest_axis_size() const {
 	return max_size;
 }
 
-bool Rect3::smits_intersect_ray(const Vector3 &from, const Vector3 &dir, real_t t0, real_t t1) const {
+bool Rect3::smits_intersect_ray(const Vector3 &p_from, const Vector3 &p_dir, real_t t0, real_t t1) const {
 
-	real_t divx = 1.0 / dir.x;
-	real_t divy = 1.0 / dir.y;
-	real_t divz = 1.0 / dir.z;
+	real_t divx = 1.0 / p_dir.x;
+	real_t divy = 1.0 / p_dir.y;
+	real_t divz = 1.0 / p_dir.z;
 
 	Vector3 upbound = position + size;
 	real_t tmin, tmax, tymin, tymax, tzmin, tzmax;
-	if (dir.x >= 0) {
-		tmin = (position.x - from.x) * divx;
-		tmax = (upbound.x - from.x) * divx;
+	if (p_dir.x >= 0) {
+		tmin = (position.x - p_from.x) * divx;
+		tmax = (upbound.x - p_from.x) * divx;
 	} else {
-		tmin = (upbound.x - from.x) * divx;
-		tmax = (position.x - from.x) * divx;
+		tmin = (upbound.x - p_from.x) * divx;
+		tmax = (position.x - p_from.x) * divx;
 	}
-	if (dir.y >= 0) {
-		tymin = (position.y - from.y) * divy;
-		tymax = (upbound.y - from.y) * divy;
+	if (p_dir.y >= 0) {
+		tymin = (position.y - p_from.y) * divy;
+		tymax = (upbound.y - p_from.y) * divy;
 	} else {
-		tymin = (upbound.y - from.y) * divy;
-		tymax = (position.y - from.y) * divy;
+		tymin = (upbound.y - p_from.y) * divy;
+		tymax = (position.y - p_from.y) * divy;
 	}
 	if ((tmin > tymax) || (tymin > tmax))
 		return false;
@@ -354,12 +354,12 @@ bool Rect3::smits_intersect_ray(const Vector3 &from, const Vector3 &dir, real_t 
 		tmin = tymin;
 	if (tymax < tmax)
 		tmax = tymax;
-	if (dir.z >= 0) {
-		tzmin = (position.z - from.z) * divz;
-		tzmax = (upbound.z - from.z) * divz;
+	if (p_dir.z >= 0) {
+		tzmin = (position.z - p_from.z) * divz;
+		tzmax = (upbound.z - p_from.z) * divz;
 	} else {
-		tzmin = (upbound.z - from.z) * divz;
-		tzmax = (position.z - from.z) * divz;
+		tzmin = (upbound.z - p_from.z) * divz;
+		tzmax = (position.z - p_from.z) * divz;
 	}
 	if ((tmin > tzmax) || (tzmin > tmax))
 		return false;

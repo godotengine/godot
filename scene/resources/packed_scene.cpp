@@ -1127,26 +1127,26 @@ bool SceneState::is_connection(int p_node, const StringName &p_signal, int p_to_
 	return false;
 }
 
-void SceneState::set_bundled_scene(const Dictionary &d) {
+void SceneState::set_bundled_scene(const Dictionary &p_dictionary) {
 
-	ERR_FAIL_COND(!d.has("names"));
-	ERR_FAIL_COND(!d.has("variants"));
-	ERR_FAIL_COND(!d.has("node_count"));
-	ERR_FAIL_COND(!d.has("nodes"));
-	ERR_FAIL_COND(!d.has("conn_count"));
-	ERR_FAIL_COND(!d.has("conns"));
-	//ERR_FAIL_COND( !d.has("path"));
+	ERR_FAIL_COND(!p_dictionary.has("names"));
+	ERR_FAIL_COND(!p_dictionary.has("variants"));
+	ERR_FAIL_COND(!p_dictionary.has("node_count"));
+	ERR_FAIL_COND(!p_dictionary.has("nodes"));
+	ERR_FAIL_COND(!p_dictionary.has("conn_count"));
+	ERR_FAIL_COND(!p_dictionary.has("conns"));
+	//ERR_FAIL_COND( !p_dictionary.has("path"));
 
 	int version = 1;
-	if (d.has("version"))
-		version = d["version"];
+	if (p_dictionary.has("version"))
+		version = p_dictionary["version"];
 
 	if (version > PACK_VERSION) {
 		ERR_EXPLAIN("Save format version too new!");
 		ERR_FAIL();
 	}
 
-	PoolVector<String> snames = d["names"];
+	PoolVector<String> snames = p_dictionary["names"];
 	if (snames.size()) {
 
 		int namecount = snames.size();
@@ -1156,7 +1156,7 @@ void SceneState::set_bundled_scene(const Dictionary &d) {
 			names[i] = r[i];
 	}
 
-	Array svariants = d["variants"];
+	Array svariants = p_dictionary["variants"];
 
 	if (svariants.size()) {
 		int varcount = svariants.size();
@@ -1170,10 +1170,10 @@ void SceneState::set_bundled_scene(const Dictionary &d) {
 		variants.clear();
 	}
 
-	nodes.resize(d["node_count"]);
+	nodes.resize(p_dictionary["node_count"]);
 	int nc = nodes.size();
 	if (nc) {
-		PoolVector<int> snodes = d["nodes"];
+		PoolVector<int> snodes = p_dictionary["nodes"];
 		PoolVector<int>::Read r = snodes.read();
 		int idx = 0;
 		for (int i = 0; i < nc; i++) {
@@ -1197,12 +1197,12 @@ void SceneState::set_bundled_scene(const Dictionary &d) {
 		}
 	}
 
-	connections.resize(d["conn_count"]);
+	connections.resize(p_dictionary["conn_count"]);
 	int cc = connections.size();
 
 	if (cc) {
 
-		PoolVector<int> sconns = d["conns"];
+		PoolVector<int> sconns = p_dictionary["conns"];
 		PoolVector<int>::Read r = sconns.read();
 		int idx = 0;
 		for (int i = 0; i < cc; i++) {
@@ -1222,8 +1222,8 @@ void SceneState::set_bundled_scene(const Dictionary &d) {
 	}
 
 	Array np;
-	if (d.has("node_paths")) {
-		np = d["node_paths"];
+	if (p_dictionary.has("node_paths")) {
+		np = p_dictionary["node_paths"];
 	}
 	node_paths.resize(np.size());
 	for (int i = 0; i < np.size(); i++) {
@@ -1231,12 +1231,12 @@ void SceneState::set_bundled_scene(const Dictionary &d) {
 	}
 
 	Array ei;
-	if (d.has("editable_instances")) {
-		ei = d["editable_instances"];
+	if (p_dictionary.has("editable_instances")) {
+		ei = p_dictionary["editable_instances"];
 	}
 
-	if (d.has("base_scene")) {
-		base_scene_idx = d["base_scene"];
+	if (p_dictionary.has("base_scene")) {
+		base_scene_idx = p_dictionary["base_scene"];
 	}
 
 	editable_instances.resize(ei.size());
@@ -1244,7 +1244,7 @@ void SceneState::set_bundled_scene(const Dictionary &d) {
 		editable_instances[i] = ei[i];
 	}
 
-	//path=d["path"];
+	//path=p_dictionary["path"];
 }
 
 Dictionary SceneState::get_bundled_scene() const {
@@ -1696,9 +1696,9 @@ SceneState::SceneState() {
 
 ////////////////
 
-void PackedScene::_set_bundled_scene(const Dictionary &d) {
+void PackedScene::_set_bundled_scene(const Dictionary &p_scene) {
 
-	state->set_bundled_scene(d);
+	state->set_bundled_scene(p_scene);
 }
 
 Dictionary PackedScene::_get_bundled_scene() const {

@@ -2933,7 +2933,7 @@ void TextEdit::_base_remove_text(int p_from_line, int p_from_column, int p_to_li
 	}
 }
 
-void TextEdit::_insert_text(int p_line, int p_char, const String &p_text, int *r_end_line, int *r_end_column) {
+void TextEdit::_insert_text(int p_line, int p_char, const String &p_text, int *r_end_line, int *r_end_char) {
 
 	if (!setting_text)
 		idle_detect->start();
@@ -2946,8 +2946,8 @@ void TextEdit::_insert_text(int p_line, int p_char, const String &p_text, int *r
 	_base_insert_text(p_line, p_char, p_text, retline, retchar);
 	if (r_end_line)
 		*r_end_line = retline;
-	if (r_end_column)
-		*r_end_column = retchar;
+	if (r_end_char)
+		*r_end_char = retchar;
 
 	if (!undo_enabled)
 		return;

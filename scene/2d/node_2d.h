@@ -49,7 +49,7 @@ class Node2D : public CanvasItem {
 	void _update_transform();
 
 	// Deprecated, should be removed in a future version.
-	void _set_rotd(float p_angle);
+	void _set_rotd(float p_degrees);
 	float _get_rotd() const;
 
 	void _update_xform_values();

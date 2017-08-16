@@ -54,7 +54,7 @@ private:
 	bool tabs_visible;
 	bool buttons_visible_cache;
 	TabAlign align;
-	Control *_get_tab(int idx) const;
+	Control *_get_tab(int p_idx) const;
 	int _get_top_margin() const;
 	Popup *popup;
 

@@ -127,7 +127,7 @@ public:
 	virtual void area_set_param(RID p_area, AreaParameter p_param, const Variant &p_value);
 	virtual void area_set_transform(RID p_area, const Transform &p_transform);
 
-	virtual Variant area_get_param(RID p_parea, AreaParameter p_param) const;
+	virtual Variant area_get_param(RID p_area, AreaParameter p_param) const;
 	virtual Transform area_get_transform(RID p_area) const;
 
 	virtual void area_set_ray_pickable(RID p_area, bool p_enable);

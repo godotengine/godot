@@ -312,7 +312,7 @@ private:
 	Map<StringName, NodeBase *> node_map;
 
 	// return time left to finish animation
-	float _process_node(const StringName &p_node, AnimationNode **r_prev_anim, float p_step, bool p_seek = false, float p_fallback_weight = 1.0, HashMap<NodePath, float> *p_weights = NULL);
+	float _process_node(const StringName &p_node, AnimationNode **r_prev_anim, float p_time, bool p_seek = false, float p_fallback_weight = 1.0, HashMap<NodePath, float> *p_weights = NULL);
 	void _process_animation(float p_delta);
 	bool reset_request;
 
@@ -367,7 +367,7 @@ public:
 	float oneshot_node_get_autorestart_delay(const StringName &p_node) const;
 	float oneshot_node_get_autorestart_random_delay(const StringName &p_node) const;
 
-	void oneshot_node_set_mix_mode(const StringName &p_node, bool p_enabled);
+	void oneshot_node_set_mix_mode(const StringName &p_node, bool p_mix);
 	bool oneshot_node_get_mix_mode(const StringName &p_node) const;
 
 	void oneshot_node_start(const StringName &p_node);
@@ -428,8 +428,8 @@ public:
 	void remove_node(const StringName &p_node);
 
 	Error connect_nodes(const StringName &p_src_node, const StringName &p_dst_node, int p_dst_input);
-	bool are_nodes_connected(const StringName &p_src_node, const StringName &p_dst_node, int p_input) const;
-	void disconnect_nodes(const StringName &p_src_node, int p_input);
+	bool are_nodes_connected(const StringName &p_src_node, const StringName &p_dst_node, int p_dst_input) const;
+	void disconnect_nodes(const StringName &p_node, int p_input);
 
 	void set_base_path(const NodePath &p_path);
 	NodePath get_base_path() const;

@@ -893,9 +893,9 @@ real_t VehicleBody::get_friction() const {
 	return friction;
 }
 
-void VehicleBody::set_engine_force(float p_force) {
+void VehicleBody::set_engine_force(float p_engine_force) {
 
-	engine_force = p_force;
+	engine_force = p_engine_force;
 }
 
 float VehicleBody::get_engine_force() const {

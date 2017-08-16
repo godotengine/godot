@@ -81,7 +81,7 @@ public:
 	virtual bool eof_reached() const;
 
 	virtual uint8_t get_8() const;
-	virtual int get_buffer(uint8_t *p_dst, int p_length) const; ///< get an array of bytes
+	virtual int get_buffer(uint8_t *p_dest, int p_length) const; ///< get an array of bytes
 
 	virtual bool is_open() const;
 

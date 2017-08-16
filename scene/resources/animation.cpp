@@ -733,7 +733,7 @@ int Animation::track_find_key(int p_track, float p_time, bool p_exact) const {
 	return -1;
 }
 
-void Animation::track_insert_key(int p_track, float p_time, const Variant &p_value, float p_transition) {
+void Animation::track_insert_key(int p_track, float p_time, const Variant &p_key, float p_transition) {
 
 	ERR_FAIL_INDEX(p_track, tracks.size());
 	Track *t = tracks[p_track];
@@ -742,7 +742,7 @@ void Animation::track_insert_key(int p_track, float p_time, const Variant &p_val
 
 		case TYPE_TRANSFORM: {
 
-			Dictionary d = p_value;
+			Dictionary d = p_key;
 			Vector3 loc;
 			if (d.has("loc"))
 				loc = d["loc"];
@@ -766,7 +766,7 @@ void Animation::track_insert_key(int p_track, float p_time, const Variant &p_val
 			TKey<Variant> k;
 			k.time = p_time;
 			k.transition = p_transition;
-			k.value = p_value;
+			k.value = p_key;
 			_insert(p_time, vt->values, k);
 
 		} break;
@@ -774,9 +774,9 @@ void Animation::track_insert_key(int p_track, float p_time, const Variant &p_val
 
 			MethodTrack *mt = static_cast<MethodTrack *>(t);
 
-			ERR_FAIL_COND(p_value.get_type() != Variant::DICTIONARY);
+			ERR_FAIL_COND(p_key.get_type() != Variant::DICTIONARY);
 
-			Dictionary d = p_value;
+			Dictionary d = p_key;
 			ERR_FAIL_COND(!d.has("method") || d["method"].get_type() != Variant::STRING);
 			ERR_FAIL_COND(!d.has("args") || !d["args"].is_array());
 
@@ -1871,7 +1871,7 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 	return erase;
 }
 
-void Animation::_transform_track_optimize(int p_idx, float p_alowed_linear_err, float p_alowed_angular_err, float p_max_optimizable_angle) {
+void Animation::_transform_track_optimize(int p_idx, float p_allowed_linear_err, float p_allowed_angular_err, float p_max_optimizable_angle) {
 
 	ERR_FAIL_INDEX(p_idx, tracks.size());
 	ERR_FAIL_COND(tracks[p_idx]->type != TYPE_TRANSFORM);
@@ -1887,12 +1887,12 @@ void Animation::_transform_track_optimize(int p_idx, float p_alowed_linear_err, 
 		TKey<TransformKey> &t1 = tt->transforms[i];
 		TKey<TransformKey> &t2 = tt->transforms[i + 1];
 
-		bool erase = _transform_track_optimize_key(t0, t1, t2, p_alowed_linear_err, p_alowed_angular_err, p_max_optimizable_angle, norm);
+		bool erase = _transform_track_optimize_key(t0, t1, t2, p_allowed_linear_err, p_allowed_angular_err, p_max_optimizable_angle, norm);
 		if (erase && !prev_erased) {
 			norm = (t2.value.loc - t1.value.loc).normalized();
 		}
 
-		if (prev_erased && !_transform_track_optimize_key(t0, first_erased, t2, p_alowed_linear_err, p_alowed_angular_err, p_max_optimizable_angle, norm)) {
+		if (prev_erased && !_transform_track_optimize_key(t0, first_erased, t2, p_allowed_linear_err, p_allowed_angular_err, p_max_optimizable_angle, norm)) {
 			//avoid error to go beyond first erased key
 			erase = false;
 		}
@@ -1914,12 +1914,12 @@ void Animation::_transform_track_optimize(int p_idx, float p_alowed_linear_err, 
 	}
 }
 
-void Animation::optimize(float p_allowed_linear_err, float p_allowed_angular_err, float p_angle_max) {
+void Animation::optimize(float p_allowed_linear_err, float p_allowed_angular_err, float p_max_optimizable_angle) {
 
 	for (int i = 0; i < tracks.size(); i++) {
 
 		if (tracks[i]->type == TYPE_TRANSFORM)
-			_transform_track_optimize(i, p_allowed_linear_err, p_allowed_angular_err, p_angle_max);
+			_transform_track_optimize(i, p_allowed_linear_err, p_allowed_angular_err, p_max_optimizable_angle);
 	}
 }
 

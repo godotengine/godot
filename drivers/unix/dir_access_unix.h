@@ -75,8 +75,8 @@ public:
 
 	virtual uint64_t get_modified_time(String p_file);
 
-	virtual Error rename(String p_from, String p_to);
-	virtual Error remove(String p_name);
+	virtual Error rename(String p_path, String p_new_path);
+	virtual Error remove(String p_path);
 
 	virtual size_t get_space_left();
 

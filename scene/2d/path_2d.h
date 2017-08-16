@@ -96,7 +96,7 @@ public:
 	void set_loop(bool p_loop);
 	bool has_loop() const;
 
-	void set_rotate(bool p_enabled);
+	void set_rotate(bool p_rotate);
 	bool is_rotating() const;
 
 	void set_cubic_interpolation(bool p_enable);

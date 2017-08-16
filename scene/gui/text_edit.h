@@ -152,7 +152,7 @@ class TextEdit : public Control {
 		int get_line_width(int p_line) const;
 		int get_max_width() const;
 		const Map<int, ColorRegionInfo> &get_color_region_info(int p_line);
-		void set(int p_line, const String &p_string);
+		void set(int p_line, const String &p_text);
 		void set_marked(int p_line, bool p_marked) { text[p_line].marked = p_marked; }
 		bool is_marked(int p_line) const { return text[p_line].marked; }
 		void set_breakpoint(int p_line, bool p_breakpoint) { text[p_line].breakpoint = p_breakpoint; }
@@ -288,8 +288,8 @@ class TextEdit : public Control {
 
 	int get_char_count();
 
-	int get_char_pos_for(int p_px, String p_pos) const;
-	int get_column_x_offset(int p_column, String p_pos);
+	int get_char_pos_for(int p_px, String p_str) const;
+	int get_column_x_offset(int p_char, String p_str);
 
 	void adjust_viewport_to_cursor();
 	void _scroll_moved(double);
@@ -320,7 +320,7 @@ class TextEdit : public Control {
 
 	/* super internal api, undo/redo builds on it */
 
-	void _base_insert_text(int p_line, int p_column, const String &p_text, int &r_end_line, int &r_end_column);
+	void _base_insert_text(int p_line, int p_char, const String &p_text, int &r_end_line, int &r_end_column);
 	String _base_get_text(int p_from_line, int p_from_column, int p_to_line, int p_to_column) const;
 	void _base_remove_text(int p_from_line, int p_from_column, int p_to_line, int p_to_column);
 
@@ -339,10 +339,10 @@ class TextEdit : public Control {
 protected:
 	virtual String get_tooltip(const Point2 &p_pos) const;
 
-	void _insert_text(int p_line, int p_column, const String &p_text, int *r_end_line = NULL, int *r_end_char = NULL);
+	void _insert_text(int p_line, int p_char, const String &p_text, int *r_end_line = NULL, int *r_end_char = NULL);
 	void _remove_text(int p_from_line, int p_from_column, int p_to_line, int p_to_column);
 	void _insert_text_at_cursor(const String &p_text);
-	void _gui_input(const Ref<InputEvent> &p_input);
+	void _gui_input(const Ref<InputEvent> &p_gui_input);
 	void _notification(int p_what);
 
 	void _consume_pair_symbol(CharType ch);

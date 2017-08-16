@@ -264,8 +264,8 @@ public:
 
 	virtual PhysicsServer::JointType get_type() const { return PhysicsServer::JOINT_6DOF; }
 
-	virtual bool setup(real_t p_step);
-	virtual void solve(real_t p_step);
+	virtual bool setup(real_t p_timestep);
+	virtual void solve(real_t p_timestep);
 
 	//! Calcs global transform of the offsets
 	/*!

@@ -80,22 +80,22 @@ private:
 
 	static void joy_thread_func(void *p_user);
 
-	int get_joy_from_path(String path) const;
+	int get_joy_from_path(String p_path) const;
 
 	void setup_joypad_properties(int p_id);
 	void close_joypad(int p_id = -1);
 #ifdef UDEV_ENABLED
-	void enumerate_joypads(struct udev *_udev);
-	void monitor_joypads(struct udev *_udev);
+	void enumerate_joypads(struct udev *p_udev);
+	void monitor_joypads(struct udev *p_udev);
 #endif
 	void monitor_joypads();
 	void run_joypad_thread();
-	void open_joypad(const char *path);
+	void open_joypad(const char *p_path);
 
 	void joypad_vibration_start(int p_id, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp);
 	void joypad_vibration_stop(int p_id, uint64_t p_timestamp);
 
-	InputDefault::JoyAxis axis_correct(const input_absinfo *abs, int value) const;
+	InputDefault::JoyAxis axis_correct(const input_absinfo *p_abs, int p_value) const;
 };
 
 #endif

@@ -81,10 +81,10 @@ private:
 	void _sample_draw();
 	void _hsv_draw(int p_which, Control *c);
 
-	void _uv_input(const Ref<InputEvent> &p_input);
-	void _w_input(const Ref<InputEvent> &p_input);
-	void _preset_input(const Ref<InputEvent> &p_input);
-	void _screen_input(const Ref<InputEvent> &p_input);
+	void _uv_input(const Ref<InputEvent> &p_event);
+	void _w_input(const Ref<InputEvent> &p_event);
+	void _preset_input(const Ref<InputEvent> &p_event);
+	void _screen_input(const Ref<InputEvent> &p_event);
 	void _add_preset_pressed();
 	void _screen_pick_pressed();
 

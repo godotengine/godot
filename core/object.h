@@ -443,7 +443,7 @@ private:
 	mutable StringName _class_name;
 	mutable const StringName *_class_ptr;
 
-	void _add_user_signal(const String &p_name, const Array &p_pargs = Array());
+	void _add_user_signal(const String &p_name, const Array &p_args = Array());
 	bool _has_user_signal(const StringName &p_name) const;
 	Variant _emit_signal(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
 	Array _get_signal_list() const;

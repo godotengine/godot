@@ -552,11 +552,11 @@ float Camera2D::get_h_offset() const {
 	return h_ofs;
 }
 
-void Camera2D::_set_old_smoothing(float p_val) {
+void Camera2D::_set_old_smoothing(float p_enable) {
 	//compatibility
-	if (p_val > 0) {
+	if (p_enable > 0) {
 		smoothing_enabled = true;
-		set_follow_smoothing(p_val);
+		set_follow_smoothing(p_enable);
 	}
 }
 

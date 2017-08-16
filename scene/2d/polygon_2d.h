@@ -84,10 +84,10 @@ public:
 	void set_texture_scale(const Size2 &p_scale);
 	Size2 get_texture_scale() const;
 
-	void set_invert(bool p_rot);
+	void set_invert(bool p_invert);
 	bool get_invert() const;
 
-	void set_invert_border(float p_border);
+	void set_invert_border(float p_invert_border);
 	float get_invert_border() const;
 
 	void set_offset(const Vector2 &p_offset);

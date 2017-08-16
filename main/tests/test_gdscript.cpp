@@ -911,7 +911,7 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 	}
 }
 
-MainLoop *test(TestType p_test) {
+MainLoop *test(TestType p_type) {
 
 	List<String> cmdlargs = OS::get_singleton()->get_cmdline_args();
 
@@ -950,7 +950,7 @@ MainLoop *test(TestType p_test) {
 		}
 	}
 
-	if (p_test == TEST_TOKENIZER) {
+	if (p_type == TEST_TOKENIZER) {
 
 		GDTokenizerText tk;
 		tk.set_code(code);
@@ -993,7 +993,7 @@ MainLoop *test(TestType p_test) {
 		}
 	}
 
-	if (p_test == TEST_PARSER) {
+	if (p_type == TEST_PARSER) {
 
 		GDParser parser;
 		Error err = parser.parse(code);
@@ -1010,7 +1010,7 @@ MainLoop *test(TestType p_test) {
 		_parser_show_class(cnode, 0, lines);
 	}
 
-	if (p_test == TEST_COMPILER) {
+	if (p_type == TEST_COMPILER) {
 
 		GDParser parser;
 
@@ -1044,7 +1044,7 @@ MainLoop *test(TestType p_test) {
 			current = current->get_base();
 		}
 
-	} else if (p_test == TEST_BYTECODE) {
+	} else if (p_type == TEST_BYTECODE) {
 
 		Vector<uint8_t> buf = GDTokenizerBuffer::parse_code_string(code);
 		String dst = test.get_basename() + ".gdc";
@@ -1073,7 +1073,7 @@ MainLoop *test(TestType p_test) {
 
 namespace TestGDScript {
 
-MainLoop *test(TestType p_test) {
+MainLoop *test(TestType p_type) {
 
 	return NULL;
 }

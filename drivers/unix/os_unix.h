@@ -69,7 +69,7 @@ public:
 	virtual void print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type = ERR_ERROR);
 
 	virtual void print(const char *p_format, ...);
-	virtual void vprint(const char *p_format, va_list p_list, bool p_stderr = false);
+	virtual void vprint(const char *p_format, va_list p_list, bool p_stder = false);
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
 	virtual String get_stdin_string(bool p_block);
 

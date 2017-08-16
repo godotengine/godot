@@ -185,21 +185,21 @@ void OptionButton::clear() {
 	current = -1;
 }
 
-void OptionButton::_select(int p_idx, bool p_emit) {
+void OptionButton::_select(int p_which, bool p_emit) {
 
-	if (p_idx < 0)
+	if (p_which < 0)
 		return;
-	if (p_idx == current)
+	if (p_which == current)
 		return;
 
-	ERR_FAIL_INDEX(p_idx, popup->get_item_count());
+	ERR_FAIL_INDEX(p_which, popup->get_item_count());
 
 	for (int i = 0; i < popup->get_item_count(); i++) {
 
-		popup->set_item_checked(i, i == p_idx);
+		popup->set_item_checked(i, i == p_which);
 	}
 
-	current = p_idx;
+	current = p_which;
 	set_text(popup->get_item_text(current));
 	set_icon(popup->get_item_icon(current));
 

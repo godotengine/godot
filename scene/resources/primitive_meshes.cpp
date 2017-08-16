@@ -618,8 +618,8 @@ Vector3 CubeMesh::get_size() const {
 	return size;
 }
 
-void CubeMesh::set_subdivide_width(const int p_subdivide) {
-	subdivide_w = p_subdivide > 0 ? p_subdivide : 0;
+void CubeMesh::set_subdivide_width(const int p_divisions) {
+	subdivide_w = p_divisions > 0 ? p_divisions : 0;
 	_request_update();
 }
 
@@ -627,8 +627,8 @@ int CubeMesh::get_subdivide_width() const {
 	return subdivide_w;
 }
 
-void CubeMesh::set_subdivide_height(const int p_subdivide) {
-	subdivide_h = p_subdivide > 0 ? p_subdivide : 0;
+void CubeMesh::set_subdivide_height(const int p_divisions) {
+	subdivide_h = p_divisions > 0 ? p_divisions : 0;
 	_request_update();
 }
 
@@ -636,8 +636,8 @@ int CubeMesh::get_subdivide_height() const {
 	return subdivide_h;
 }
 
-void CubeMesh::set_subdivide_depth(const int p_subdivide) {
-	subdivide_d = p_subdivide > 0 ? p_subdivide : 0;
+void CubeMesh::set_subdivide_depth(const int p_divisions) {
+	subdivide_d = p_divisions > 0 ? p_divisions : 0;
 	_request_update();
 }
 
@@ -957,8 +957,8 @@ Size2 PlaneMesh::get_size() const {
 	return size;
 }
 
-void PlaneMesh::set_subdivide_width(const int p_subdivide) {
-	subdivide_w = p_subdivide > 0 ? p_subdivide : 0;
+void PlaneMesh::set_subdivide_width(const int p_divisions) {
+	subdivide_w = p_divisions > 0 ? p_divisions : 0;
 	_request_update();
 }
 
@@ -966,8 +966,8 @@ int PlaneMesh::get_subdivide_width() const {
 	return subdivide_w;
 }
 
-void PlaneMesh::set_subdivide_depth(const int p_subdivide) {
-	subdivide_d = p_subdivide > 0 ? p_subdivide : 0;
+void PlaneMesh::set_subdivide_depth(const int p_divisions) {
+	subdivide_d = p_divisions > 0 ? p_divisions : 0;
 	_request_update();
 }
 

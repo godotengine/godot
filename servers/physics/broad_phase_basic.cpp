@@ -169,10 +169,10 @@ void BroadPhaseBasic::set_pair_callback(PairCallback p_pair_callback, void *p_us
 	pair_userdata = p_userdata;
 	pair_callback = p_pair_callback;
 }
-void BroadPhaseBasic::set_unpair_callback(UnpairCallback p_pair_callback, void *p_userdata) {
+void BroadPhaseBasic::set_unpair_callback(UnpairCallback p_unpair_callback, void *p_userdata) {
 
 	unpair_userdata = p_userdata;
-	unpair_callback = p_pair_callback;
+	unpair_callback = p_unpair_callback;
 }
 
 void BroadPhaseBasic::update() {

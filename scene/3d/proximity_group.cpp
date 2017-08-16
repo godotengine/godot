@@ -116,9 +116,9 @@ void ProximityGroup::set_group_name(String p_group_name) {
 	group_name = p_group_name;
 };
 
-void ProximityGroup::_notification(int what) {
+void ProximityGroup::_notification(int p_what) {
 
-	switch (what) {
+	switch (p_what) {
 
 		case NOTIFICATION_EXIT_TREE:
 			++group_version;
