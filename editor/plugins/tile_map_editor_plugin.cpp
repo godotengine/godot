@@ -917,7 +917,13 @@ bool TileMapEditor::forward_input_event(const InputEvent &p_event) {
 
 			if (node->get_tileset()->has_tile(tile_under))
 				tile_name = node->get_tileset()->tile_get_name(tile_under);
-			tile_info->set_text(String::num(over_tile.x) + ", " + String::num(over_tile.y) + " [" + tile_name + "]");
+			if (bool(EDITOR_DEF("tile_map/show_tile_info_under_cursor", true))) {
+				tile_info->set_text(String::num(over_tile.x) + ", " + String::num(over_tile.y) + " [" + tile_name + "]");
+				tile_info->show();
+			}
+			else {
+				tile_info->hide();
+			}
 
 			if (tool == TOOL_PAINTING) {
 
@@ -1604,6 +1610,7 @@ TileMapEditorPlugin::TileMapEditorPlugin(EditorNode *p_node) {
 	EDITOR_DEF("tile_map/show_tile_ids", true);
 	EDITOR_DEF("tile_map/sort_tiles_by_name", false);
 	EDITOR_DEF("tile_map/bucket_fill_preview", true);
+	EDITOR_DEF("tile_map/show_tile_info_under_cursor", true);
 
 	tile_map_editor = memnew(TileMapEditor(p_node));
 	add_control_to_container(CONTAINER_CANVAS_EDITOR_SIDE, tile_map_editor);
