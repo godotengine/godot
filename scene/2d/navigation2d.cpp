@@ -646,7 +646,8 @@ debug path
 					break;
 			}
 
-			path.push_back(begin_point);
+			if (path[path.size() - 1].distance_to(begin_point) > CMP_EPSILON)
+				path.push_back(begin_point);
 
 			path.invert();
 		}
