@@ -117,7 +117,7 @@ public:
 	}
 	_FORCE_INLINE_ bool empty() const { return _ptr == 0; }
 	Error resize(int p_size);
-	bool push_back(T p_elem);
+	bool push_back(const T &p_elem);
 
 	void remove(int p_index);
 	void erase(const T &p_val) {
@@ -129,7 +129,7 @@ public:
 	template <class T_val>
 	int find(const T_val &p_val, int p_from = 0) const;
 
-	void set(int p_index, T p_elem);
+	void set(int p_index, const T &p_elem);
 	T get(int p_index) const;
 
 	inline T &operator[](int p_index) {
@@ -336,7 +336,7 @@ void Vector<T>::invert() {
 }
 
 template <class T>
-void Vector<T>::set(int p_index, T p_elem) {
+void Vector<T>::set(int p_index, const T &p_elem) {
 
 	operator[](p_index) = p_elem;
 }
@@ -348,7 +348,7 @@ T Vector<T>::get(int p_index) const {
 }
 
 template <class T>
-bool Vector<T>::push_back(T p_elem) {
+bool Vector<T>::push_back(const T &p_elem) {
 
 	Error err = resize(size() + 1);
 	ERR_FAIL_COND_V(err, true)

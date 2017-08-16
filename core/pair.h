@@ -37,7 +37,7 @@ struct Pair {
 	S second;
 
 	Pair() {}
-	Pair(F p_first, S p_second)
+	Pair(F p_first, const S &p_second)
 		: first(p_first),
 		  second(p_second) {
 	}

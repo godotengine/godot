@@ -45,7 +45,7 @@ struct ParamHint {
 	String hint_text;
 	Variant default_val;
 
-	ParamHint(const String &p_name = "", PropertyHint p_hint = PROPERTY_HINT_NONE, const String &p_hint_text = "", Variant p_default_val = Variant())
+	ParamHint(const String &p_name = "", PropertyHint p_hint = PROPERTY_HINT_NONE, const String &p_hint_text = "", const Variant &p_default_val = Variant())
 		: name(p_name),
 		  hint(p_hint),
 		  hint_text(p_hint_text),

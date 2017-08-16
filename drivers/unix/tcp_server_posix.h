@@ -41,7 +41,7 @@ class TCPServerPosix : public TCP_Server {
 	static TCP_Server *_create();
 
 public:
-	virtual Error listen(uint16_t p_port, IP_Address p_bind_address = IP_Address("*"));
+	virtual Error listen(uint16_t p_port, const IP_Address &p_bind_address = IP_Address("*"));
 	virtual bool is_connection_available() const;
 	virtual Ref<StreamPeerTCP> take_connection();
 

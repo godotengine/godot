@@ -80,6 +80,26 @@ struct PtrToArg {
 		}                                                                         \
 	}
 
+#define MAKE_PTRARG_BY_REFERENCE(m_type)                                      \
+	template <>                                                               \
+	struct PtrToArg<m_type> {                                                 \
+		_FORCE_INLINE_ static m_type convert(const void *p_ptr) {             \
+			return *reinterpret_cast<const m_type *>(p_ptr);                  \
+		}                                                                     \
+		_FORCE_INLINE_ static void encode(const m_type &p_val, void *p_ptr) { \
+			*((m_type *)p_ptr) = p_val;                                       \
+		}                                                                     \
+	};                                                                        \
+	template <>                                                               \
+	struct PtrToArg<const m_type &> {                                         \
+		_FORCE_INLINE_ static m_type convert(const void *p_ptr) {             \
+			return *reinterpret_cast<const m_type *>(p_ptr);                  \
+		}                                                                     \
+		_FORCE_INLINE_ static void encode(const m_type &p_val, void *p_ptr) { \
+			*((m_type *)p_ptr) = p_val;                                       \
+		}                                                                     \
+	}
+
 MAKE_PTRARG(bool);
 MAKE_PTRARGCONV(uint8_t, int64_t);
 MAKE_PTRARGCONV(int8_t, int64_t);
@@ -95,14 +115,14 @@ MAKE_PTRARG(double);
 MAKE_PTRARG(String);
 MAKE_PTRARG(Vector2);
 MAKE_PTRARG(Rect2);
-MAKE_PTRARG(Vector3);
+MAKE_PTRARG_BY_REFERENCE(Vector3);
 MAKE_PTRARG(Transform2D);
-MAKE_PTRARG(Plane);
+MAKE_PTRARG_BY_REFERENCE(Plane);
 MAKE_PTRARG(Quat);
-MAKE_PTRARG(Rect3);
-MAKE_PTRARG(Basis);
-MAKE_PTRARG(Transform);
-MAKE_PTRARG(Color);
+MAKE_PTRARG_BY_REFERENCE(Rect3);
+MAKE_PTRARG_BY_REFERENCE(Basis);
+MAKE_PTRARG_BY_REFERENCE(Transform);
+MAKE_PTRARG_BY_REFERENCE(Color);
 MAKE_PTRARG(NodePath);
 MAKE_PTRARG(RID);
 MAKE_PTRARG(Dictionary);
@@ -114,7 +134,7 @@ MAKE_PTRARG(PoolStringArray);
 MAKE_PTRARG(PoolVector2Array);
 MAKE_PTRARG(PoolVector3Array);
 MAKE_PTRARG(PoolColorArray);
-MAKE_PTRARG(Variant);
+MAKE_PTRARG_BY_REFERENCE(Variant);
 
 //this is for Object
 
@@ -311,8 +331,29 @@ MAKE_DVECARR(Plane);
 		}                                                              \
 	}
 
+#define MAKE_STRINGCONV_BY_REFERENCE(m_type)                                  \
+	template <>                                                               \
+	struct PtrToArg<m_type> {                                                 \
+		_FORCE_INLINE_ static m_type convert(const void *p_ptr) {             \
+			m_type s = *reinterpret_cast<const String *>(p_ptr);              \
+			return s;                                                         \
+		}                                                                     \
+		_FORCE_INLINE_ static void encode(const m_type &p_vec, void *p_ptr) { \
+			String *arr = reinterpret_cast<String *>(p_ptr);                  \
+			*arr = p_vec;                                                     \
+		}                                                                     \
+	};                                                                        \
+                                                                              \
+	template <>                                                               \
+	struct PtrToArg<const m_type &> {                                         \
+		_FORCE_INLINE_ static m_type convert(const void *p_ptr) {             \
+			m_type s = *reinterpret_cast<const String *>(p_ptr);              \
+			return s;                                                         \
+		}                                                                     \
+	}
+
 MAKE_STRINGCONV(StringName);
-MAKE_STRINGCONV(IP_Address);
+MAKE_STRINGCONV_BY_REFERENCE(IP_Address);
 
 template <>
 struct PtrToArg<PoolVector<Face3> > {
