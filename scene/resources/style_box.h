@@ -77,6 +77,14 @@ class StyleBoxTexture : public StyleBox {
 
 	GDCLASS(StyleBoxTexture, StyleBox);
 
+public:
+	enum AxisStretchMode {
+		AXIS_STRETCH_MODE_STRETCH,
+		AXIS_STRETCH_MODE_TILE,
+		AXIS_STRETCH_MODE_TILE_FIT,
+	};
+
+private:
 	float expand_margin[4];
 	float margin[4];
 	Rect2 region_rect;
@@ -84,6 +92,8 @@ class StyleBoxTexture : public StyleBox {
 	Ref<Texture> normal_map;
 	bool draw_center;
 	Color modulate;
+	AxisStretchMode axis_h;
+	AxisStretchMode axis_v;
 
 protected:
 	virtual float get_style_margin(Margin p_margin) const;
@@ -109,6 +119,12 @@ public:
 	bool get_draw_center() const;
 	virtual Size2 get_center_size() const;
 
+	void set_h_axis_stretch_mode(AxisStretchMode p_mode);
+	AxisStretchMode get_h_axis_stretch_mode() const;
+
+	void set_v_axis_stretch_mode(AxisStretchMode p_mode);
+	AxisStretchMode get_v_axis_stretch_mode() const;
+
 	void set_modulate(const Color &p_modulate);
 	Color get_modulate() const;
 
@@ -117,6 +133,8 @@ public:
 	StyleBoxTexture();
 	~StyleBoxTexture();
 };
+
+VARIANT_ENUM_CAST(StyleBoxTexture::AxisStretchMode)
 
 class StyleBoxFlat : public StyleBox {
 

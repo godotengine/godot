@@ -162,7 +162,7 @@ void StyleBoxTexture::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 	if (normal_map.is_valid())
 		normal_rid = normal_map->get_rid();
 
-	VisualServer::get_singleton()->canvas_item_add_nine_patch(p_canvas_item, rect, src_rect, texture->get_rid(), Vector2(margin[MARGIN_LEFT], margin[MARGIN_TOP]), Vector2(margin[MARGIN_RIGHT], margin[MARGIN_BOTTOM]), VS::NINE_PATCH_STRETCH, VS::NINE_PATCH_STRETCH, draw_center, modulate, normal_rid);
+	VisualServer::get_singleton()->canvas_item_add_nine_patch(p_canvas_item, rect, src_rect, texture->get_rid(), Vector2(margin[MARGIN_LEFT], margin[MARGIN_TOP]), Vector2(margin[MARGIN_RIGHT], margin[MARGIN_BOTTOM]), VS::NinePatchAxisMode(axis_h), VS::NinePatchAxisMode(axis_v), draw_center, modulate, normal_rid);
 }
 
 void StyleBoxTexture::set_draw_center(bool p_draw) {
@@ -211,6 +211,28 @@ Rect2 StyleBoxTexture::get_region_rect() const {
 	return region_rect;
 }
 
+void StyleBoxTexture::set_h_axis_stretch_mode(AxisStretchMode p_mode) {
+
+	axis_h = p_mode;
+	emit_changed();
+}
+
+StyleBoxTexture::AxisStretchMode StyleBoxTexture::get_h_axis_stretch_mode() const {
+
+	return axis_h;
+}
+
+void StyleBoxTexture::set_v_axis_stretch_mode(AxisStretchMode p_mode) {
+
+	axis_v = p_mode;
+	emit_changed();
+}
+
+StyleBoxTexture::AxisStretchMode StyleBoxTexture::get_v_axis_stretch_mode() const {
+
+	return axis_v;
+}
+
 void StyleBoxTexture::set_modulate(const Color &p_modulate) {
 	if (modulate == p_modulate)
 		return;
@@ -246,6 +268,12 @@ void StyleBoxTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_modulate", "color"), &StyleBoxTexture::set_modulate);
 	ClassDB::bind_method(D_METHOD("get_modulate"), &StyleBoxTexture::get_modulate);
 
+	ClassDB::bind_method(D_METHOD("set_h_axis_stretch_mode", "mode"), &StyleBoxTexture::set_h_axis_stretch_mode);
+	ClassDB::bind_method(D_METHOD("get_h_axis_stretch_mode"), &StyleBoxTexture::get_h_axis_stretch_mode);
+
+	ClassDB::bind_method(D_METHOD("set_v_axis_stretch_mode", "mode"), &StyleBoxTexture::set_v_axis_stretch_mode);
+	ClassDB::bind_method(D_METHOD("get_v_axis_stretch_mode"), &StyleBoxTexture::get_v_axis_stretch_mode);
+
 	ADD_SIGNAL(MethodInfo("texture_changed"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
@@ -261,9 +289,16 @@ void StyleBoxTexture::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "expand_margin_right", PROPERTY_HINT_RANGE, "0,2048,1"), "set_expand_margin_size", "get_expand_margin_size", MARGIN_RIGHT);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "expand_margin_top", PROPERTY_HINT_RANGE, "0,2048,1"), "set_expand_margin_size", "get_expand_margin_size", MARGIN_TOP);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "expand_margin_bottom", PROPERTY_HINT_RANGE, "0,2048,1"), "set_expand_margin_size", "get_expand_margin_size", MARGIN_BOTTOM);
+	ADD_GROUP("Axis Stretch", "axis_stretch_");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "axis_stretch_horizontal", PROPERTY_HINT_ENUM, "Stretch,Tile,Tile Fit"), "set_h_axis_stretch_mode", "get_h_axis_stretch_mode");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "axis_stretch_vertical", PROPERTY_HINT_ENUM, "Stretch,Tile,Tile Fit"), "set_v_axis_stretch_mode", "get_v_axis_stretch_mode");
 	ADD_GROUP("Modulate", "modulate_");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate_color"), "set_modulate", "get_modulate");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_center"), "set_draw_center", "get_draw_center");
+
+	BIND_CONSTANT(AXIS_STRETCH_MODE_STRETCH);
+	BIND_CONSTANT(AXIS_STRETCH_MODE_TILE);
+	BIND_CONSTANT(AXIS_STRETCH_MODE_TILE_FIT);
 }
 
 StyleBoxTexture::StyleBoxTexture() {
@@ -274,6 +309,9 @@ StyleBoxTexture::StyleBoxTexture() {
 	}
 	draw_center = true;
 	modulate = Color(1, 1, 1, 1);
+
+	axis_h = AXIS_STRETCH_MODE_STRETCH;
+	axis_v = AXIS_STRETCH_MODE_STRETCH;
 }
 StyleBoxTexture::~StyleBoxTexture() {
 }
