@@ -89,13 +89,6 @@ void CollisionShape::_notification(int p_what) {
 				parent->shape_owner_set_transform(owner_id, get_transform());
 			}
 		} break;
-		case NOTIFICATION_EXIT_TREE: {
-			if (parent) {
-				parent->remove_shape_owner(owner_id);
-			}
-			owner_id = 0;
-			parent = NULL;
-		} break;
 		case NOTIFICATION_UNPARENTED: {
 			if (parent) {
 				parent->remove_shape_owner(owner_id);
