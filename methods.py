@@ -1496,9 +1496,9 @@ def no_verbose(sys, env):
 def detect_visual_c_compiler_version(tools_env):
     # tools_env is the variable scons uses to call tools that execute tasks, SCons's env['ENV'] that executes tasks...
     # (see the SCons documentation for more information on what it does)...
-    # in order for this function to be well encapsulated i choose to force it to recieve SCons's TOOLS env (env['ENV']
+    # in order for this function to be well encapsulated i choose to force it to receive SCons's TOOLS env (env['ENV']
     # and not scons setup environment (env)... so make sure you call the right environment on it or it will fail to detect
-    # the propper vc version that will be called
+    # the proper vc version that will be called
 
     # These is no flag to give to visual c compilers to set the architecture, ie scons bits argument (32,64,ARM etc)
     # There are many different cl.exe files that are run, and each one compiles & links to a different architecture
@@ -1519,42 +1519,76 @@ def detect_visual_c_compiler_version(tools_env):
     vc_chosen_compiler_index = -1
     vc_chosen_compiler_str = ""
 
-    # find() works with -1 so big ifs bellow are needed... the simplest solution, in fact
-    # First test if amd64 and amd64_x86 compilers are present in the path
-    vc_amd64_compiler_detection_index =  tools_env["PATH"].find(tools_env["VCINSTALLDIR"]+"BIN\\amd64;")
-    if(vc_amd64_compiler_detection_index > -1):
+    # Start with Pre VS 2017 checks which uses VCINSTALLDIR:
+    if 'VCINSTALLDIR' in tools_env:
+        # print "Checking VCINSTALLDIR"
+
+        # find() works with -1 so big ifs bellow are needed... the simplest solution, in fact
+        # First test if amd64 and amd64_x86 compilers are present in the path
+        vc_amd64_compiler_detection_index = tools_env["PATH"].find(tools_env["VCINSTALLDIR"] + "BIN\\amd64;")
+        if(vc_amd64_compiler_detection_index > -1):
             vc_chosen_compiler_index = vc_amd64_compiler_detection_index
             vc_chosen_compiler_str = "amd64"
 
-    vc_amd64_x86_compiler_detection_index = tools_env["PATH"].find(tools_env["VCINSTALLDIR"]+"BIN\\amd64_x86;")
-    if(vc_amd64_x86_compiler_detection_index > -1
-       and (vc_chosen_compiler_index == -1
-            or vc_chosen_compiler_index > vc_amd64_x86_compiler_detection_index)):
+        vc_amd64_x86_compiler_detection_index = tools_env["PATH"].find(tools_env["VCINSTALLDIR"] + "BIN\\amd64_x86;")
+        if(vc_amd64_x86_compiler_detection_index > -1
+           and (vc_chosen_compiler_index == -1
+                or vc_chosen_compiler_index > vc_amd64_x86_compiler_detection_index)):
             vc_chosen_compiler_index = vc_amd64_x86_compiler_detection_index
             vc_chosen_compiler_str = "amd64_x86"
 
-
-    # Now check the 32 bit compilers
-    vc_x86_compiler_detection_index =  tools_env["PATH"].find(tools_env["VCINSTALLDIR"]+"BIN;")
-    if(vc_x86_compiler_detection_index > -1
-       and (vc_chosen_compiler_index == -1
-            or vc_chosen_compiler_index > vc_x86_compiler_detection_index)):
+        # Now check the 32 bit compilers
+        vc_x86_compiler_detection_index = tools_env["PATH"].find(tools_env["VCINSTALLDIR"] + "BIN;")
+        if(vc_x86_compiler_detection_index > -1
+           and (vc_chosen_compiler_index == -1
+                or vc_chosen_compiler_index > vc_x86_compiler_detection_index)):
             vc_chosen_compiler_index = vc_x86_compiler_detection_index
             vc_chosen_compiler_str = "x86"
 
-    vc_x86_amd64_compiler_detection_index = tools_env["PATH"].find(tools_env['VCINSTALLDIR']+"BIN\\x86_amd64;")
-    if(vc_x86_amd64_compiler_detection_index > -1
-       and (vc_chosen_compiler_index == -1
-            or vc_chosen_compiler_index > vc_x86_amd64_compiler_detection_index)):
+        vc_x86_amd64_compiler_detection_index = tools_env["PATH"].find(tools_env['VCINSTALLDIR'] + "BIN\\x86_amd64;")
+        if(vc_x86_amd64_compiler_detection_index > -1
+           and (vc_chosen_compiler_index == -1
+                or vc_chosen_compiler_index > vc_x86_amd64_compiler_detection_index)):
+            vc_chosen_compiler_index = vc_x86_amd64_compiler_detection_index
+            vc_chosen_compiler_str = "x86_amd64"
+
+    # and for VS 2017 and newer we check VCTOOLSINSTALLDIR:
+    if 'VCTOOLSINSTALLDIR' in tools_env:
+        # print "Checking VCTOOLSINSTALLDIR"
+
+        # Newer versions have a different path available
+        vc_amd64_compiler_detection_index = tools_env["PATH"].upper().find(tools_env['VCTOOLSINSTALLDIR'].upper() + "BIN\\HOSTX64\\X64;")
+        if(vc_amd64_compiler_detection_index > -1):
+            vc_chosen_compiler_index = vc_amd64_compiler_detection_index
+            vc_chosen_compiler_str = "amd64"
+
+        vc_amd64_x86_compiler_detection_index = tools_env["PATH"].upper().find(tools_env['VCTOOLSINSTALLDIR'].upper() + "BIN\\HOSTX64\\X86;")
+        if(vc_amd64_x86_compiler_detection_index > -1
+           and (vc_chosen_compiler_index == -1
+                or vc_chosen_compiler_index > vc_amd64_x86_compiler_detection_index)):
+            vc_chosen_compiler_index = vc_amd64_x86_compiler_detection_index
+            vc_chosen_compiler_str = "amd64_x86"
+
+        vc_x86_compiler_detection_index = tools_env["PATH"].upper().find(tools_env['VCTOOLSINSTALLDIR'].upper() + "BIN\\HOSTX86\\X86;")
+        if(vc_x86_compiler_detection_index > -1
+           and (vc_chosen_compiler_index == -1
+                or vc_chosen_compiler_index > vc_x86_compiler_detection_index)):
+            vc_chosen_compiler_index = vc_x86_compiler_detection_index
+            vc_chosen_compiler_str = "x86"
+
+        vc_x86_amd64_compiler_detection_index = tools_env["PATH"].upper().find(tools_env['VCTOOLSINSTALLDIR'].upper() + "BIN\\HOSTX86\\X64;")
+        if(vc_x86_amd64_compiler_detection_index > -1
+           and (vc_chosen_compiler_index == -1
+                or vc_chosen_compiler_index > vc_x86_amd64_compiler_detection_index)):
             vc_chosen_compiler_index = vc_x86_amd64_compiler_detection_index
             vc_chosen_compiler_str = "x86_amd64"
 
     # debug help
-    #print vc_amd64_compiler_detection_index
-    #print vc_amd64_x86_compiler_detection_index
-    #print vc_x86_compiler_detection_index
-    #print vc_x86_amd64_compiler_detection_index
-    #print "chosen "+str(vc_chosen_compiler_index)+ " | "+str(vc_chosen_compiler_str)
+    # print vc_amd64_compiler_detection_index
+    # print vc_amd64_x86_compiler_detection_index
+    # print vc_x86_compiler_detection_index
+    # print vc_x86_amd64_compiler_detection_index
+    # print "chosen "+str(vc_chosen_compiler_index)+ " | "+str(vc_chosen_compiler_str)
 
     return vc_chosen_compiler_str
 
