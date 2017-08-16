@@ -678,25 +678,21 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 					}
 				}
 
-				if (col_obj->get_type() == CollisionObject2DSW::TYPE_BODY) {
+				if (col_obj->is_shape_set_as_one_way_collision(j)) {
 
-					const Body2DSW *body = static_cast<const Body2DSW *>(col_obj);
-					if (col_obj->is_shape_set_as_one_way_collision(j)) {
+					Vector2 cd[2];
+					Physics2DServerSW::CollCbkData cbk;
+					cbk.max = 1;
+					cbk.amount = 0;
+					cbk.ptr = cd;
+					cbk.valid_dir = body_shape_xform.get_axis(1).normalized();
+					;
+					cbk.valid_depth = 10e20;
 
-						Vector2 cd[2];
-						Physics2DServerSW::CollCbkData cbk;
-						cbk.max = 1;
-						cbk.amount = 0;
-						cbk.ptr = cd;
-						cbk.valid_dir = body_shape_xform.get_axis(1).normalized();
-						;
-						cbk.valid_depth = 10e20;
-
-						Vector2 sep = mnormal; //important optimization for this to work fast enough
-						bool collided = CollisionSolver2DSW::solve(body_shape, body_shape_xform, p_motion * (hi + contact_max_allowed_penetration), col_obj->get_shape(shape_idx), col_obj_xform, Vector2(), Physics2DServerSW::_shape_col_cbk, &cbk, &sep, 0);
-						if (!collided || cbk.amount == 0) {
-							continue;
-						}
+					Vector2 sep = mnormal; //important optimization for this to work fast enough
+					bool collided = CollisionSolver2DSW::solve(body_shape, body_shape_xform, p_motion * (hi + contact_max_allowed_penetration), col_obj->get_shape(shape_idx), col_obj_xform, Vector2(), Physics2DServerSW::_shape_col_cbk, &cbk, &sep, 0);
+					if (!collided || cbk.amount == 0) {
+						continue;
 					}
 				}
 
