@@ -4774,12 +4774,11 @@ double PropertyValueEvaluator::eval(const String &p_text) {
 		return _default_eval(p_text);
 	}
 
-	ScriptInstance *script_instance = script->instance_create(this);
+	ScriptInstance *script_instance = script->instance_create(obj);
 	if (!script_instance)
 		return _default_eval(p_text);
 
 	Variant::CallError call_err;
-	script_instance->call("set_this", obj);
 	double result = script_instance->call("e", NULL, 0, call_err);
 	if (call_err.error == Variant::CallError::CALL_OK) {
 		return result;
@@ -4796,7 +4795,7 @@ void PropertyValueEvaluator::edit(Object *p_obj) {
 }
 
 String PropertyValueEvaluator::_build_script(const String &p_text) {
-	String script_text = "tool\nvar this\nfunc set_this(p_this):\n\tthis=p_this\nfunc e():\n\treturn ";
+	String script_text = "tool\nextends Object\nfunc e():\n\treturn ";
 	script_text += p_text.strip_edges();
 	script_text += "\n";
 	return script_text;

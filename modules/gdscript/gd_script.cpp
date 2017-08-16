@@ -615,7 +615,7 @@ Error GDScript::reload(bool p_keep_state) {
 	if (basedir != "")
 		basedir = basedir.get_base_dir();
 
-	if (basedir.find("res://") == -1 && basedir.find("user://") == -1) {
+	if (basedir != "" && basedir.find("res://") == -1 && basedir.find("user://") == -1) {
 		//loading a template, don't parse
 		return OK;
 	}
