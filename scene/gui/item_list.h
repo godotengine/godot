@@ -169,7 +169,7 @@ public:
 	int get_fixed_column_width() const;
 
 	void set_same_column_width(bool p_enable);
-	int is_same_column_width() const;
+	bool is_same_column_width() const;
 
 	void set_max_text_lines(int p_lines);
 	int get_max_text_lines() const;
