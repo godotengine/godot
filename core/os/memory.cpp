@@ -77,6 +77,7 @@ void *Memory::alloc_static(size_t p_bytes, bool p_pad_align) {
 #endif
 		return s8 + PAD_ALIGN;
 	} else {
+		// cppcheck-suppress memleak
 		return mem;
 	}
 }

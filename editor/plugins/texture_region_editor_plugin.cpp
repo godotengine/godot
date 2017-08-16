@@ -406,7 +406,7 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 		} else if (drag) {
 
 			if (edited_margin >= 0) {
-				float new_margin;
+				float new_margin = 0.0;
 				if (edited_margin == 0)
 					new_margin = prev_margin + (mm->get_position().y - drag_from.y) / draw_zoom;
 				else if (edited_margin == 1)

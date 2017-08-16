@@ -822,6 +822,7 @@ void EditorAssetLibrary::_request_image(ObjectID p_for, String p_image_url, Imag
 	iq.image_index = p_image_index;
 	iq.image_type = p_type;
 	iq.request = memnew(HTTPRequest);
+	id.asset_id = 0;
 
 	iq.target = p_for;
 	iq.queue_id = ++last_queue_id;

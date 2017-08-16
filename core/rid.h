@@ -117,7 +117,6 @@ protected:
 
 		p_rid._data->_owner = NULL;
 	}
-#
 #endif
 
 public:
