@@ -1901,27 +1901,38 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void CanvasItemEditor::_draw_percentage_at_position(float p_value, Point2 p_position, Margin p_side) {
+void CanvasItemEditor::_draw_text_at_position(Point2 p_position, String p_string, Margin p_side) {
+	Color color = Color(0.8, 0.8, 0.8, 0.5);
+	Ref<Font> font = get_font("font", "Label");
+	Size2 text_size = font->get_string_size(p_string);
+	switch (p_side) {
+		case MARGIN_LEFT:
+			p_position += Vector2(-text_size.x - 5, text_size.y / 2);
+			break;
+		case MARGIN_TOP:
+			p_position += Vector2(-text_size.x / 2, -5);
+			break;
+		case MARGIN_RIGHT:
+			p_position += Vector2(5, text_size.y / 2);
+			break;
+		case MARGIN_BOTTOM:
+			p_position += Vector2(-text_size.x / 2, text_size.y + 5);
+			break;
+	}
+	viewport->draw_string(font, p_position, p_string, color);
+}
+
+void CanvasItemEditor::_draw_margin_at_position(int p_value, Point2 p_position, Margin p_side) {
+	String str = vformat("%d px", p_value);
 	if (p_value != 0) {
-		Color color = Color(0.8, 0.8, 0.8, 0.5);
-		Ref<Font> font = get_font("font", "Label");
-		String str = vformat("%.1f %%", p_value * 100.0);
-		Size2 text_size = font->get_string_size(str);
-		switch (p_side) {
-			case MARGIN_LEFT:
-				p_position += Vector2(-text_size.x - 5, text_size.y / 2);
-				break;
-			case MARGIN_TOP:
-				p_position += Vector2(-text_size.x / 2, -5);
-				break;
-			case MARGIN_RIGHT:
-				p_position += Vector2(5, text_size.y / 2);
-				break;
-			case MARGIN_BOTTOM:
-				p_position += Vector2(-text_size.x / 2, text_size.y + 5);
-				break;
-		}
-		viewport->draw_string(font, p_position, str, color);
+		_draw_text_at_position(p_position, str, p_side);
+	}
+}
+
+void CanvasItemEditor::_draw_percentage_at_position(float p_value, Point2 p_position, Margin p_side) {
+	String str = vformat("%.1f %%", p_value * 100.0);
+	if (p_value != 0) {
+		_draw_text_at_position(p_position, str, p_side);
 	}
 }
 
@@ -2036,9 +2047,9 @@ void CanvasItemEditor::_viewport_draw() {
 
 		if (single && (tool == TOOL_SELECT || tool == TOOL_MOVE || tool == TOOL_ROTATE || tool == TOOL_EDIT_PIVOT)) { //kind of sucks
 
-			if (Object::cast_to<Node2D>(canvas_item)) {
-
-				if (Object::cast_to<Node2D>(canvas_item)->edit_has_pivot()) {
+			Node2D *node2d = Object::cast_to<Node2D>(canvas_item);
+			if (node2d) {
+				if (node2d->edit_has_pivot()) {
 					viewport->draw_texture(pivot, xform.get_origin() + (-pivot->get_size() / 2).floor());
 					can_move_pivot = true;
 					pivot_found = true;
@@ -2055,6 +2066,8 @@ void CanvasItemEditor::_viewport_draw() {
 				pivot_found = true;
 
 				if (tool == TOOL_SELECT) {
+					Color color_base = Color(0.8, 0.8, 0.8, 0.5);
+
 					float anchors_values[4];
 					anchors_values[0] = control->get_anchor(MARGIN_LEFT);
 					anchors_values[1] = control->get_anchor(MARGIN_TOP);
@@ -2091,7 +2104,6 @@ void CanvasItemEditor::_viewport_draw() {
 						// Draw the 4 lines when dragged
 						bool snapped;
 						Color color_snapped = Color(0.64, 0.93, 0.67, 0.5);
-						Color color_base = Color(0.8, 0.8, 0.8, 0.5);
 
 						Vector2 corners_pos[4];
 						for (int i = 0; i < 4; i++) {
@@ -2135,6 +2147,60 @@ void CanvasItemEditor::_viewport_draw() {
 
 					for (int i = 0; i < 4; i++) {
 						anchor_handle->draw_rect(ci, anchor_rects[i]);
+					}
+
+					// Draw the margin values when dragging control side
+					float ratio = 0.33;
+					Transform2D parent_transform = xform * control->get_transform().affine_inverse();
+					float node_pos_in_parent[4];
+					node_pos_in_parent[0] = control->get_anchor(MARGIN_LEFT) * control->get_parent_area_size().width + control->get_margin(MARGIN_LEFT);
+					node_pos_in_parent[1] = control->get_anchor(MARGIN_TOP) * control->get_parent_area_size().height + control->get_margin(MARGIN_TOP);
+					node_pos_in_parent[2] = control->get_anchor(MARGIN_RIGHT) * control->get_parent_area_size().width + control->get_margin(MARGIN_RIGHT);
+					node_pos_in_parent[3] = control->get_anchor(MARGIN_BOTTOM) * control->get_parent_area_size().height + control->get_margin(MARGIN_BOTTOM);
+
+					switch (drag) {
+						case DRAG_LEFT:
+						case DRAG_TOP_LEFT:
+						case DRAG_BOTTOM_LEFT:
+						case DRAG_ALL:
+							Point2 start = Vector2(node_pos_in_parent[0], Math::lerp(node_pos_in_parent[1], node_pos_in_parent[3], ratio));
+							Point2 end = start - Vector2(control->get_margin(MARGIN_LEFT), 0);
+							_draw_margin_at_position(control->get_margin(MARGIN_LEFT), parent_transform.xform((start + end) / 2), MARGIN_TOP);
+							viewport->draw_line(parent_transform.xform(start), parent_transform.xform(end), color_base, 1);
+							break;
+					}
+					switch (drag) {
+						case DRAG_RIGHT:
+						case DRAG_TOP_RIGHT:
+						case DRAG_BOTTOM_RIGHT:
+						case DRAG_ALL:
+							Point2 start = Vector2(node_pos_in_parent[2], Math::lerp(node_pos_in_parent[3], node_pos_in_parent[1], ratio));
+							Point2 end = start - Vector2(control->get_margin(MARGIN_RIGHT), 0);
+							_draw_margin_at_position(control->get_margin(MARGIN_RIGHT), parent_transform.xform((start + end) / 2), MARGIN_BOTTOM);
+							viewport->draw_line(parent_transform.xform(start), parent_transform.xform(end), color_base, 1);
+							break;
+					}
+					switch (drag) {
+						case DRAG_TOP:
+						case DRAG_TOP_LEFT:
+						case DRAG_TOP_RIGHT:
+						case DRAG_ALL:
+							Point2 start = Vector2(Math::lerp(node_pos_in_parent[0], node_pos_in_parent[2], ratio), node_pos_in_parent[1]);
+							Point2 end = start - Vector2(0, control->get_margin(MARGIN_TOP));
+							_draw_margin_at_position(control->get_margin(MARGIN_TOP), parent_transform.xform((start + end) / 2), MARGIN_LEFT);
+							viewport->draw_line(parent_transform.xform(start), parent_transform.xform(end), color_base, 1);
+							break;
+					}
+					switch (drag) {
+						case DRAG_BOTTOM:
+						case DRAG_BOTTOM_LEFT:
+						case DRAG_BOTTOM_RIGHT:
+						case DRAG_ALL:
+							Point2 start = Vector2(Math::lerp(node_pos_in_parent[2], node_pos_in_parent[0], ratio), node_pos_in_parent[3]);
+							Point2 end = start - Vector2(0, control->get_margin(MARGIN_BOTTOM));
+							_draw_margin_at_position(control->get_margin(MARGIN_BOTTOM), parent_transform.xform((start + end) / 2), MARGIN_RIGHT);
+							viewport->draw_line(parent_transform.xform(start), parent_transform.xform(end), color_base, 1);
+							break;
 					}
 				}
 			}
