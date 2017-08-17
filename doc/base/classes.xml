@@ -26019,7 +26019,7 @@
 	<description>
 	</description>
 	<methods>
-		<method name="get_draw_center" qualifiers="const">
+		<method name="is_filled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
@@ -26057,8 +26057,8 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_draw_center">
-			<argument index="0" name="draw_center" type="bool">
+		<method name="set_filled">
+			<argument index="0" name="filled" type="bool">
 			</argument>
 			<description>
 			</description>
@@ -26101,7 +26101,7 @@
 		</member>
 		<member name="axis_stretch_vertical" type="int" setter="set_v_axis_stretch_mode" getter="get_v_axis_stretch_mode" brief="">
 		</member>
-		<member name="draw_center" type="bool" setter="set_draw_center" getter="get_draw_center" brief="">
+		<member name="filled" type="bool" setter="set_filled" getter="is_filled" brief="">
 		</member>
 		<member name="patch_margin_bottom" type="int" setter="set_patch_margin" getter="get_patch_margin" brief="">
 		</member>
@@ -44543,7 +44543,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_draw_center" qualifiers="const">
+		<method name="is_filled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
@@ -44579,7 +44579,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_draw_center">
+		<method name="set_filled">
 			<argument index="0" name="size" type="bool">
 			</argument>
 			<description>
@@ -44601,7 +44601,7 @@
 		</member>
 		<member name="dark_color" type="Color" setter="set_dark_color" getter="get_dark_color" brief="">
 		</member>
-		<member name="draw_bg" type="bool" setter="set_draw_center" getter="get_draw_center" brief="">
+		<member name="draw_bg" type="bool" setter="is_filled" getter="get_filled" brief="">
 		</member>
 		<member name="light_color" type="Color" setter="set_light_color" getter="get_light_color" brief="">
 		</member>
@@ -44617,7 +44617,7 @@
 		Texture Based 3x3 scale style. This stylebox performs a 3x3 scaling of a texture, where only the center cell is fully stretched. This allows for the easy creation of bordered styles.
 	</description>
 	<methods>
-		<method name="get_draw_center" qualifiers="const">
+		<method name="is_filled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
@@ -44663,7 +44663,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_draw_center">
+		<method name="is_filled">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
@@ -44711,7 +44711,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="draw_center" type="bool" setter="set_draw_center" getter="get_draw_center" brief="">
+		<member name="filled" type="bool" setter="set_filled" getter="is_filled" brief="">
 		</member>
 		<member name="expand_margin_bottom" type="float" setter="set_expand_margin_size" getter="get_expand_margin_size" brief="">
 		</member>

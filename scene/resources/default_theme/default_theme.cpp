@@ -44,7 +44,7 @@ static TexCacheMap *tex_cache;
 static float scale = 1;
 
 template <class T>
-static Ref<StyleBoxTexture> make_stylebox(T p_src, float p_left, float p_top, float p_right, float p_botton, float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_botton = -1, bool p_draw_center = true) {
+static Ref<StyleBoxTexture> make_stylebox(T p_src, float p_left, float p_top, float p_right, float p_botton, float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_botton = -1, bool p_filled = true) {
 
 	Ref<ImageTexture> texture;
 
@@ -83,7 +83,7 @@ static Ref<StyleBoxTexture> make_stylebox(T p_src, float p_left, float p_top, fl
 	style->set_default_margin(MARGIN_RIGHT, p_margin_right * scale);
 	style->set_default_margin(MARGIN_BOTTOM, p_margin_botton * scale);
 	style->set_default_margin(MARGIN_TOP, p_margin_top * scale);
-	style->set_draw_center(p_draw_center);
+	style->set_filled(p_filled);
 
 	return style;
 }
@@ -865,7 +865,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// ReferenceRect
 
 	Ref<StyleBoxTexture> ttnc = make_stylebox(full_panel_bg_png, 8, 8, 8, 8);
-	ttnc->set_draw_center(false);
+	ttnc->set_filled(false);
 
 	theme->set_stylebox("border", "ReferenceRect", make_stylebox(reference_border_png, 4, 4, 4, 4));
 	theme->set_stylebox("panelnc", "Panel", ttnc);

@@ -591,7 +591,7 @@ void VisualServerCanvas::canvas_item_add_texture_rect_region(RID p_item, const R
 	canvas_item->commands.push_back(rect);
 }
 
-void VisualServerCanvas::canvas_item_add_nine_patch(RID p_item, const Rect2 &p_rect, const Rect2 &p_source, RID p_texture, const Vector2 &p_topleft, const Vector2 &p_bottomright, VS::NinePatchAxisMode p_x_axis_mode, VS::NinePatchAxisMode p_y_axis_mode, bool p_draw_center, const Color &p_modulate, RID p_normal_map) {
+void VisualServerCanvas::canvas_item_add_nine_patch(RID p_item, const Rect2 &p_rect, const Rect2 &p_source, RID p_texture, const Vector2 &p_topleft, const Vector2 &p_bottomright, VS::NinePatchAxisMode p_x_axis_mode, VS::NinePatchAxisMode p_y_axis_mode, bool p_filled, const Color &p_modulate, RID p_normal_map) {
 
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
@@ -602,7 +602,7 @@ void VisualServerCanvas::canvas_item_add_nine_patch(RID p_item, const Rect2 &p_r
 	style->normal_map = p_normal_map;
 	style->rect = p_rect;
 	style->source = p_source;
-	style->draw_center = p_draw_center;
+	style->filled = p_filled;
 	style->color = p_modulate;
 	style->margin[MARGIN_LEFT] = p_topleft.x;
 	style->margin[MARGIN_TOP] = p_topleft.y;
