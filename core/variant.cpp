@@ -2270,12 +2270,19 @@ Variant::Variant(const RID &p_rid) {
 	memnew_placement(_data._mem, RID(p_rid));
 }
 
-Variant::Variant(const Object *p_object) {
+Variant::Variant(Object *p_object) {
 
 	type = OBJECT;
 
 	memnew_placement(_data._mem, ObjData);
 	_get_obj().obj = const_cast<Object *>(p_object);
+
+	Reference *r;
+	if (p_object && (r = p_object->cast_to<Reference>())
+		&& r->is_referenced()) {
+
+		_get_obj().ref = REF(r).get_ref_ptr();
+	}
 }
 
 Variant::Variant(const Dictionary &p_dictionary) {

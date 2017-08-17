@@ -262,7 +262,7 @@ public:
 	Variant(const NodePath &p_path);
 	Variant(const RefPtr &p_resource);
 	Variant(const RID &p_rid);
-	Variant(const Object *p_object);
+	Variant(Object *p_object);
 	Variant(const Dictionary &p_dictionary);
 
 	Variant(const Array &p_array);
