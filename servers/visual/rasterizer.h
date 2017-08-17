@@ -1047,6 +1047,8 @@ public:
 
 	virtual bool is_canvas_light_occluder(const RID &p_rid) const = 0;
 
+	virtual void set_time_scale(float p_scale) = 0;
+
 	virtual void free(const RID &p_rid) = 0;
 
 	virtual void init() = 0;

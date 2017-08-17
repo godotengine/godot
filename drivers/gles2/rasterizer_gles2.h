@@ -1251,6 +1251,7 @@ class RasterizerGLES2 : public Rasterizer {
 	Size2 window_size;
 	VS::ViewportRect viewport;
 	double last_time;
+	double scaled_time;
 	double time_delta;
 	uint64_t frame;
 	uint64_t scene_pass;
@@ -1259,6 +1260,7 @@ class RasterizerGLES2 : public Rasterizer {
 	VS::ScenarioDebugMode current_debug;
 	RID overdraw_material;
 	float shader_time_rollback;
+	float time_scale;
 
 	mutable MaterialShaderGLES2 material_shader;
 	mutable CanvasShaderGLES2 canvas_shader;
@@ -1652,6 +1654,8 @@ public:
 	virtual bool is_shader(const RID &p_rid) const;
 
 	virtual bool is_canvas_light_occluder(const RID &p_rid) const;
+
+	virtual void set_time_scale(float p_scale);
 
 	virtual void free(const RID &p_rid);
 

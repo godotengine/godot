@@ -537,6 +537,8 @@ void VisualServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_default_clear_color"), &VisualServer::set_default_clear_color);
 	ObjectTypeDB::bind_method(_MD("get_default_clear_color"), &VisualServer::get_default_clear_color);
 
+	ObjectTypeDB::bind_method(_MD("set_time_scale"), &VisualServer::set_time_scale);
+
 	ObjectTypeDB::bind_method(_MD("get_render_info"), &VisualServer::get_render_info);
 
 	BIND_CONSTANT(NO_INDEX_ARRAY);

@@ -3951,7 +3951,12 @@ void RasterizerGLES2::begin_frame() {
 
 	double time = (OS::get_singleton()->get_ticks_usec() / 1000); // get msec
 	time /= 1000.0; // make secs
-	time_delta = time - last_time;
+	if (frame != 0) {
+		time_delta = time_scale * (time - last_time);
+	} else {
+		time_delta = 0.0f;
+	}
+	scaled_time += time_delta;
 	last_time = time;
 	frame++;
 
@@ -4966,7 +4971,7 @@ bool RasterizerGLES2::_setup_material(const Geometry *p_geometry, const Material
 		DEBUG_TEST_ERROR("Material arameters");
 
 		if (p_material->shader_cache->uses_time) {
-			material_shader.set_uniform(MaterialShaderGLES2::TIME, Math::fmod(last_time, shader_time_rollback));
+			material_shader.set_uniform(MaterialShaderGLES2::TIME, Math::fmod(scaled_time, shader_time_rollback));
 			draw_next_frame = true;
 		}
 		//if uses TIME - draw_next_frame=true
@@ -5009,7 +5014,7 @@ bool RasterizerGLES2::_setup_material(const Geometry *p_geometry, const Material
 		material_shader.set_uniform(MaterialShaderGLES2::FOG_COLOR_END, Vector3(col_end.r, col_end.g, col_end.b));
 	}
 
-	//material_shader.set_uniform(MaterialShaderGLES2::TIME,Math::fmod(last_time,300.0));
+	//material_shader.set_uniform(MaterialShaderGLES2::TIME,Math::fmod(scaled_time,300.0));
 	//if uses TIME - draw_next_frame=true
 
 	return rebind;
@@ -8794,7 +8799,7 @@ void RasterizerGLES2::_canvas_item_setup_shader_uniforms(CanvasItemMaterial *mat
 	}
 
 	if (shader->uses_time) {
-		canvas_shader.set_uniform(CanvasShaderGLES2::TIME, Math::fmod(last_time, shader_time_rollback));
+		canvas_shader.set_uniform(CanvasShaderGLES2::TIME, Math::fmod(scaled_time, shader_time_rollback));
 		draw_next_frame = true;
 	}
 	//if uses TIME - draw_next_frame=true
@@ -9369,6 +9374,11 @@ bool RasterizerGLES2::is_shader(const RID &p_rid) const {
 bool RasterizerGLES2::is_canvas_light_occluder(const RID &p_rid) const {
 
 	return false;
+}
+
+void RasterizerGLES2::set_time_scale(float p_scale) {
+
+	time_scale = p_scale;
 }
 
 void RasterizerGLES2::free(const RID &p_rid) {
@@ -10405,6 +10415,7 @@ void RasterizerGLES2::init() {
 #endif
 
 	shader_time_rollback = GLOBAL_DEF("rasterizer/shader_time_rollback", 300);
+	time_scale = 1.0f;
 
 	using_canvas_bg = false;
 	_update_framebuffer();
@@ -10737,6 +10748,7 @@ RasterizerGLES2::RasterizerGLES2(bool p_compress_arrays, bool p_keep_ram_copy, b
 
 	base_framebuffer = 0;
 	frame = 0;
+	scaled_time = 0.0;
 	draw_next_frame = false;
 	use_framebuffers = true;
 	framebuffer.active = false;
