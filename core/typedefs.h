@@ -162,9 +162,9 @@ inline void __swap_tmpl(T &x, T &y) {
 #define _add_overflow __builtin_add_overflow
 #endif
 
-/** Function to find the nearest (bigger) power of 2 to an integer */
+/** Function to find the next power of 2 to an integer */
 
-static _FORCE_INLINE_ unsigned int nearest_power_of_2(unsigned int x) {
+static _FORCE_INLINE_ unsigned int next_power_of_2(unsigned int x) {
 
 	--x;
 	x |= x >> 1;
@@ -174,6 +174,23 @@ static _FORCE_INLINE_ unsigned int nearest_power_of_2(unsigned int x) {
 	x |= x >> 16;
 
 	return ++x;
+}
+
+static _FORCE_INLINE_ unsigned int previous_power_of_2(unsigned int x) {
+
+	x |= x >> 1;
+	x |= x >> 2;
+	x |= x >> 4;
+	x |= x >> 8;
+	x |= x >> 16;
+	return x - (x >> 1);
+}
+
+static _FORCE_INLINE_ unsigned int closest_power_of_2(unsigned int x) {
+
+	unsigned int nx = next_power_of_2(x);
+	unsigned int px = previous_power_of_2(x);
+	return (nx - x) > (x - px) ? px : nx;
 }
 
 // We need this definition inside the function below.

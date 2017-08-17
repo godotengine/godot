@@ -857,8 +857,8 @@ void RasterizerGLES2::texture_allocate(RID p_texture, int p_width, int p_height,
 	GLenum internal_format;
 	bool compressed;
 
-	int po2_width = nearest_power_of_2(p_width);
-	int po2_height = nearest_power_of_2(p_height);
+	int po2_width = next_power_of_2(p_width);
+	int po2_height = next_power_of_2(p_height);
 
 	if (p_flags & VS::TEXTURE_FLAG_VIDEO_SURFACE) {
 		p_flags &= ~VS::TEXTURE_FLAG_MIPMAPS; // no mipies for video
@@ -977,7 +977,7 @@ void RasterizerGLES2::texture_set_data(RID p_texture, const Image &p_image, VS::
 		glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // raw Filtering
 	}
 
-	bool force_clamp_to_edge = !(texture->flags & VS::TEXTURE_FLAG_MIPMAPS && !texture->ignore_mipmaps) && (nearest_power_of_2(texture->alloc_height) != texture->alloc_height || nearest_power_of_2(texture->alloc_width) != texture->alloc_width);
+	bool force_clamp_to_edge = !(texture->flags & VS::TEXTURE_FLAG_MIPMAPS && !texture->ignore_mipmaps) && (next_power_of_2(texture->alloc_height) != texture->alloc_height || next_power_of_2(texture->alloc_width) != texture->alloc_width);
 
 	if (!force_clamp_to_edge && (texture->flags & VS::TEXTURE_FLAG_REPEAT || texture->flags & VS::TEXTURE_FLAG_MIRRORED_REPEAT) && texture->target != GL_TEXTURE_CUBE_MAP) {
 
@@ -1234,7 +1234,7 @@ void RasterizerGLES2::texture_set_flags(RID p_texture, uint32_t p_flags) {
 	uint32_t cube = texture->flags & VS::TEXTURE_FLAG_CUBEMAP;
 	texture->flags = p_flags | cube; // can't remove a cube from being a cube
 
-	bool force_clamp_to_edge = !(p_flags & VS::TEXTURE_FLAG_MIPMAPS && !texture->ignore_mipmaps) && (nearest_power_of_2(texture->alloc_height) != texture->alloc_height || nearest_power_of_2(texture->alloc_width) != texture->alloc_width);
+	bool force_clamp_to_edge = !(p_flags & VS::TEXTURE_FLAG_MIPMAPS && !texture->ignore_mipmaps) && (next_power_of_2(texture->alloc_height) != texture->alloc_height || next_power_of_2(texture->alloc_width) != texture->alloc_width);
 
 	if (!force_clamp_to_edge && (texture->flags & VS::TEXTURE_FLAG_REPEAT || texture->flags & VS::TEXTURE_FLAG_MIRRORED_REPEAT) && texture->target != GL_TEXTURE_CUBE_MAP) {
 
@@ -2701,7 +2701,7 @@ void RasterizerGLES2::multimesh_set_instance_count(RID p_multimesh, int p_count)
 
 	if (use_texture_instancing) {
 
-		if (nearest_power_of_2(p_count) != nearest_power_of_2(multimesh->elements.size())) {
+		if (next_power_of_2(p_count) != next_power_of_2(multimesh->elements.size())) {
 			if (multimesh->tex_id) {
 				glDeleteTextures(1, &multimesh->tex_id);
 				multimesh->tex_id = 0;
@@ -2709,7 +2709,7 @@ void RasterizerGLES2::multimesh_set_instance_count(RID p_multimesh, int p_count)
 
 			if (p_count) {
 
-				uint32_t po2 = nearest_power_of_2(p_count);
+				uint32_t po2 = next_power_of_2(p_count);
 				if (po2 & 0xAAAAAAAA) {
 					//half width
 
@@ -3333,7 +3333,7 @@ void RasterizerGLES2::skeleton_resize(RID p_skeleton, int p_bones) {
 	};
 	if (use_hw_skeleton_xform) {
 
-		if (nearest_power_of_2(p_bones) != nearest_power_of_2(skeleton->bones.size())) {
+		if (next_power_of_2(p_bones) != next_power_of_2(skeleton->bones.size())) {
 			if (skeleton->tex_id) {
 				glDeleteTextures(1, &skeleton->tex_id);
 				skeleton->tex_id = 0;
@@ -3344,7 +3344,7 @@ void RasterizerGLES2::skeleton_resize(RID p_skeleton, int p_bones) {
 				glGenTextures(1, &skeleton->tex_id);
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D, skeleton->tex_id);
-				int ps = nearest_power_of_2(p_bones * 3);
+				int ps = next_power_of_2(p_bones * 3);
 #ifdef GLEW_ENABLED
 				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, ps, 1, 0, GL_RGBA, GL_FLOAT, skel_default.ptr());
 #else
@@ -3998,7 +3998,7 @@ void RasterizerGLES2::begin_frame() {
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, s->tex_id);
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, nearest_power_of_2(s->bones.size() * 3), 1, GL_RGBA, GL_FLOAT, sk_float);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, next_power_of_2(s->bones.size() * 3), 1, GL_RGBA, GL_FLOAT, sk_float);
 		_skeleton_dirty_list.remove(_skeleton_dirty_list.first());
 	}
 

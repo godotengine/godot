@@ -1076,8 +1076,8 @@ void Geometry::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_resu
 
 	for (int i = 0; i < results.size(); i++) {
 
-		real_t h = nearest_power_of_2(results[i].max_h);
-		real_t w = nearest_power_of_2(results[i].max_w);
+		real_t h = next_power_of_2(results[i].max_h);
+		real_t w = next_power_of_2(results[i].max_w);
 		real_t aspect = h > w ? h / w : w / h;
 		if (aspect < best_aspect) {
 			best = i;
