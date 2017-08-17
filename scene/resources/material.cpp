@@ -226,8 +226,8 @@ void SpatialMaterial::init_shaders() {
 	shader_names->uv1_blend_sharpness = "uv1_blend_sharpness";
 	shader_names->uv2_blend_sharpness = "uv2_blend_sharpness";
 
-	shader_names->particle_h_frames = "particle_h_frames";
-	shader_names->particle_v_frames = "particle_v_frames";
+	shader_names->particles_anim_h_frames = "particles_anim_h_frames";
+	shader_names->particles_anim_v_frames = "particles_anim_v_frames";
 	shader_names->particles_anim_loop = "particles_anim_loop";
 	shader_names->depth_min_layers = "depth_min_layers";
 	shader_names->depth_max_layers = "depth_max_layers";
@@ -502,8 +502,8 @@ void SpatialMaterial::_update_shader() {
 			code += "\tint particle_total_frames = particles_anim_h_frames * particles_anim_v_frames;\n";
 			code += "\tint particle_frame = int(INSTANCE_CUSTOM.y * float(particle_total_frames));\n";
 			code += "\tif (particles_anim_loop) particle_frame=clamp(particle_frame,0,particle_total_frames-1); else particle_frame=abs(particle_frame)%particle_total_frames;\n";
-			//code += "\tUV /= vec2(float(particles_anim_h_frames),float(particles_anim_v_frames));\n";
-			//code += "\tUV+= UV * vec2(float(particle_frame % particles_anim_h_frames),float(particle_frame / particles_anim_v_frames));\n";
+			code += "\tUV /= vec2(float(particles_anim_h_frames),float(particles_anim_v_frames));\n";
+			code += "\tUV += vec2(float(particle_frame % particles_anim_h_frames) / float(particles_anim_h_frames),float(particle_frame / particles_anim_h_frames) / float(particles_anim_v_frames));\n";
 			//handle rotation
 			//	code += "\tmat4 rotation = mat4("
 		} break;
@@ -1280,7 +1280,7 @@ SpatialMaterial::BillboardMode SpatialMaterial::get_billboard_mode() const {
 void SpatialMaterial::set_particles_anim_h_frames(int p_frames) {
 
 	particles_anim_h_frames = p_frames;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->particle_h_frames, p_frames);
+	VS::get_singleton()->material_set_param(_get_material(), shader_names->particles_anim_h_frames, p_frames);
 }
 
 int SpatialMaterial::get_particles_anim_h_frames() const {
@@ -1290,7 +1290,7 @@ int SpatialMaterial::get_particles_anim_h_frames() const {
 void SpatialMaterial::set_particles_anim_v_frames(int p_frames) {
 
 	particles_anim_v_frames = p_frames;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->particle_v_frames, p_frames);
+	VS::get_singleton()->material_set_param(_get_material(), shader_names->particles_anim_v_frames, p_frames);
 }
 
 int SpatialMaterial::get_particles_anim_v_frames() const {
