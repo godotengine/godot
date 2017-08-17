@@ -231,7 +231,7 @@ void TabContainer::_notification(int p_what) {
 
 				// Draw the tab contents.
 				Control *control = tabs[i + first_tab_cache]->cast_to<Control>();
-				String text = control->has_meta("_tab_name") ? String(XL_MESSAGE(String(control->get_meta("_tab_name")))) : String(control->get_name());
+				String text = control->has_meta("_tab_name") ? String(localize(String(control->get_meta("_tab_name")))) : String(control->get_name());
 
 				int x_content = tab_rect.position.x + tab_style->get_margin(MARGIN_LEFT);
 				int top_margin = tab_style->get_margin(MARGIN_TOP);
@@ -299,7 +299,7 @@ int TabContainer::_get_tab_width(int p_index) const {
 
 	// Get the width of the text displayed on the tab.
 	Ref<Font> font = get_font("font");
-	String text = control->has_meta("_tab_name") ? String(XL_MESSAGE(String(control->get_meta("_tab_name")))) : String(control->get_name());
+	String text = control->has_meta("_tab_name") ? String(localize(String(control->get_meta("_tab_name")))) : String(control->get_name());
 	int width = font->get_string_size(text).width;
 
 	// Add space for a tab icon.

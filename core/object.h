@@ -678,13 +678,12 @@ public:
 
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
 
-	StringName XL_MESSAGE(const StringName &p_message) const; //translate message (internationalization)
-	StringName tr(const StringName &p_message) const; //translate message (alternative)
+	StringName localize(const StringName &p_message) const; //translate message (internationalization)
 
 	bool _is_queued_for_deletion; // set to true by SceneTree::queue_delete()
 	bool is_queued_for_deletion() const;
 
-	_FORCE_INLINE_ void set_message_translation(bool p_enable) { _can_translate = p_enable; }
+	_FORCE_INLINE_ void set_message_localization(bool p_enable) { _can_translate = p_enable; }
 	_FORCE_INLINE_ bool can_translate_messages() const { return _can_translate; }
 
 #ifdef TOOLS_ENABLED
