@@ -155,9 +155,10 @@ void ProgressDialog::_popup() {
 
 	Ref<StyleBox> style = get_stylebox("panel", "PopupMenu");
 	ms += style->get_minimum_size();
-	for (int i = 0; i < 4; i++) {
-		main->set_margin(Margin(i), style->get_margin(Margin(i)));
-	}
+	main->set_margin(MARGIN_LEFT, style->get_margin(MARGIN_LEFT));
+	main->set_margin(MARGIN_RIGHT, -style->get_margin(MARGIN_RIGHT));
+	main->set_margin(MARGIN_TOP, style->get_margin(MARGIN_TOP));
+	main->set_margin(MARGIN_BOTTOM, -style->get_margin(MARGIN_BOTTOM));
 
 	popup_centered(ms);
 }
