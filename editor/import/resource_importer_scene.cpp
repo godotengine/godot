@@ -104,7 +104,7 @@ bool ResourceImporterScene::get_option_visibility(const String &p_option, const 
 		}
 	}
 
-	if (p_option == "materials/keep_files" && int(p_options["materials/storage"]) == 0) {
+	if (p_option == "materials/keep_on_reimport" && int(p_options["materials/storage"]) == 0) {
 		return false;
 	}
 
@@ -1103,7 +1103,7 @@ void ResourceImporterScene::get_import_options(List<ImportOption> *r_options, in
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "nodes/storage", PROPERTY_HINT_ENUM, "Single Scene,Instanced Sub-Scenes"), scenes_out ? 1 : 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "materials/location", PROPERTY_HINT_ENUM, "Node,Mesh"), meshes_out ? 1 : 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "materials/storage", PROPERTY_HINT_ENUM, "Built-In,Files", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), materials_out ? 1 : 0));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "materials/keep_files"), materials_out ? true : false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "materials/keep_on_reimport"), materials_out ? true : false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "geometry/compress"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "geometry/ensure_tangents"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "geometry/storage", PROPERTY_HINT_ENUM, "Built-In,Files"), meshes_out ? true : false));
@@ -1272,7 +1272,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		Map<Ref<Material>, Ref<Material> > mat_map;
 		Map<Ref<ArrayMesh>, Ref<ArrayMesh> > mesh_map;
 
-		bool keep_materials = bool(p_options["materials/keep_files"]);
+		bool keep_materials = bool(p_options["materials/keep_on_reimport"]);
 
 		_make_external_resources(scene, base_path, external_materials, keep_materials, external_meshes, mat_map, mesh_map);
 	}

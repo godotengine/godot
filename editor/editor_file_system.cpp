@@ -230,6 +230,28 @@ void EditorFileSystem::_scan_filesystem() {
 		memdelete(f);
 	}
 
+	String update_cache = EditorSettings::get_singleton()->get_project_settings_path().plus_file("filesystem_update2");
+
+	print_line("try to see fs update2");
+	if (FileAccess::exists(update_cache)) {
+
+		print_line("it exists");
+
+		{
+			FileAccessRef f = FileAccess::open(update_cache, FileAccess::READ);
+			String l = f->get_line().strip_edges();
+			while (l != String()) {
+
+				print_line("erased cache for: " + l + " " + itos(file_cache.has(l)));
+				file_cache.erase(l); //erase cache for this, so it gets updated
+				l = f->get_line().strip_edges();
+			}
+		}
+
+		DirAccessRef d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		d->remove(update_cache); //bye bye update cache
+	}
+
 	EditorProgressBG scan_progress("efs", "ScanFS", 1000);
 
 	ScanProgress sp;
@@ -597,11 +619,13 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 			if (fc && fc->modification_time == mt && fc->import_modification_time == import_mt && _check_missing_imported_files(path)) {
 
 				fi->type = fc->type;
+				fi->deps = fc->deps;
 				fi->modified_time = fc->modification_time;
 				fi->import_modified_time = fc->import_modification_time;
 				if (fc->type == String()) {
 					fi->type = ResourceLoader::get_resource_type(path);
 					//there is also the chance that file type changed due to reimport, must probably check this somehow here (or kind of note it for next time in another file?)
+					//note: I think this should not happen any longer..
 				}
 
 			} else {
@@ -620,6 +644,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 				}
 
 				fi->type = ResourceFormatImporter::get_singleton()->get_resource_type(path);
+				//fi->deps = ResourceLoader::get_dependencies(path); pointless because it will be reimported, but..
 				print_line("import extension tried resource type for " + path + " and its " + fi->type);
 				fi->modified_time = 0;
 				fi->import_modified_time = 0;
@@ -631,14 +656,17 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 				scan_actions.push_back(ia);
 			}
 		} else {
-			//not imported, so just update type if changed
-			if (fc && fc->modification_time == mt) {
 
+			if (fc && fc->modification_time == mt) {
+				//not imported, so just update type if changed
 				fi->type = fc->type;
 				fi->modified_time = fc->modification_time;
+				fi->deps = fc->deps;
 				fi->import_modified_time = 0;
 			} else {
+				//new or modified time
 				fi->type = ResourceLoader::get_resource_type(path);
+				fi->deps = _get_dependencies(path);
 				print_line("regular import tried resource type for " + path + " and its " + fi->type);
 				fi->modified_time = mt;
 				fi->import_modified_time = 0;
@@ -1187,10 +1215,32 @@ EditorFileSystemDirectory *EditorFileSystem::get_filesystem_path(const String &p
 	return fs;
 }
 
+void EditorFileSystem::_save_late_updated_files() {
+	//files that already existed, and were modified, need re-scanning for dependencies upon project restart. This is done via saving this special file
+	String fscache = EditorSettings::get_singleton()->get_project_settings_path().plus_file("filesystem_update2");
+	FileAccessRef f = FileAccess::open(fscache, FileAccess::WRITE);
+	for (Set<String>::Element *E = late_update_files.front(); E; E = E->next()) {
+		f->store_line(E->get());
+	}
+}
+
 void EditorFileSystem::_resource_saved(const String &p_path) {
 
 	//print_line("resource saved: "+p_path);
 	EditorFileSystem::get_singleton()->update_file(p_path);
+}
+
+Vector<String> EditorFileSystem::_get_dependencies(const String &p_path) {
+
+	List<String> deps;
+	ResourceLoader::get_dependencies(p_path, &deps);
+
+	Vector<String> ret;
+	for (List<String>::Element *E = deps.front(); E; E = E->next()) {
+		ret.push_back(E->get());
+	}
+
+	return ret;
 }
 
 void EditorFileSystem::update_file(const String &p_file) {
@@ -1217,6 +1267,9 @@ void EditorFileSystem::update_file(const String &p_file) {
 
 	if (cpos == -1) {
 
+		//the file did not exist, it was added
+
+		late_added_files.insert(p_file); //remember that it was added. This mean it will be scanned and imported on editor restart
 		int idx = 0;
 
 		for (int i = 0; i < fs->files.size(); i++) {
@@ -1236,11 +1289,18 @@ void EditorFileSystem::update_file(const String &p_file) {
 			fs->files.insert(idx, fi);
 		}
 		cpos = idx;
+	} else {
+
+		//the file exists and it was updated, and was not added in this step.
+		//this means we must force upon next restart to scan it again, to get proper type and dependencies
+		late_update_files.insert(p_file);
+		_save_late_updated_files(); //files need to be updated in the re-scan
 	}
 
 	//print_line("UPDATING: "+p_file);
 	fs->files[cpos]->type = type;
 	fs->files[cpos]->modified_time = FileAccess::get_modified_time(p_file);
+	fs->files[cpos]->deps = _get_dependencies(p_file);
 	//if (FileAccess::exists(p_file+".import")) {
 	//	fs->files[cpos]->import_modified_time=FileAccess::get_modified_time(p_file+".import");
 	//}
@@ -1276,6 +1336,9 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 			}
 			importer_name = cf->get_value("remap", "importer");
 		}
+
+	} else {
+		late_added_files.insert(p_file); //imported files do not call update_file(), but just in case..
 	}
 
 	Ref<ResourceImporter> importer;
@@ -1357,6 +1420,7 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 	}
 
 	f->store_line("");
+
 	if (gen_files.size()) {
 		f->store_line("[gen]");
 		Array genf;
@@ -1389,6 +1453,8 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 	//update modified times, to avoid reimport
 	fs->files[cpos]->modified_time = FileAccess::get_modified_time(p_file);
 	fs->files[cpos]->import_modified_time = FileAccess::get_modified_time(p_file + ".import");
+	fs->files[cpos]->deps = _get_dependencies(p_file);
+	fs->files[cpos]->type = importer->get_resource_type();
 
 	//if file is currently up, maybe the source it was loaded from changed, so import math must be updated for it
 	//to reload properly
