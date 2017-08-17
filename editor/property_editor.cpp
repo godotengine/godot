@@ -4774,18 +4774,19 @@ double PropertyValueEvaluator::eval(const String &p_text) {
 		return _default_eval(p_text);
 	}
 
-	ScriptInstance *script_instance = script->instance_create(obj);
+	Object dummy;
+	ScriptInstance *script_instance = script->instance_create(&dummy);
 	if (!script_instance)
 		return _default_eval(p_text);
 
 	Variant::CallError call_err;
-	double result = script_instance->call("e", NULL, 0, call_err);
+	Variant arg = obj;
+	const Variant *args[] = { &arg };
+	double result = script_instance->call("eval", args, 1, call_err);
 	if (call_err.error == Variant::CallError::CALL_OK) {
 		return result;
 	}
 	print_line("[PropertyValueEvaluator]: Error eval! Error code: " + itos(call_err.error));
-
-	memdelete(script_instance);
 
 	return _default_eval(p_text);
 }
@@ -4795,9 +4796,8 @@ void PropertyValueEvaluator::edit(Object *p_obj) {
 }
 
 String PropertyValueEvaluator::_build_script(const String &p_text) {
-	String script_text = "tool\nextends Object\nfunc e():\n\treturn ";
-	script_text += p_text.strip_edges();
-	script_text += "\n";
+	String script_text =
+			"tool\nextends Object\nfunc eval(s):\n\tself = s\n\treturn " + p_text.strip_edges() + "\n";
 	return script_text;
 }
 
