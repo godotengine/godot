@@ -83,6 +83,19 @@ static int ctxErrorHandler(Display *dpy, XErrorEvent *ev) {
 	return 0;
 }
 
+static void set_class_hint(Display *p_display, Window p_window) {
+	XClassHint *classHint;
+
+	/* set the name and class hints for the window manager to use */
+	classHint = XAllocClassHint();
+	if (classHint) {
+		classHint->res_name = (char *)"Godot_Engine";
+		classHint->res_class = (char *)"Godot";
+	}
+	XSetClassHint(p_display, p_window, classHint);
+	XFree(classHint);
+}
+
 Error ContextGL_X11::initialize() {
 
 	GLXCREATECONTEXTATTRIBSARBPROC glXCreateContextAttribsARB = NULL;
@@ -127,6 +140,7 @@ Error ContextGL_X11::initialize() {
 	*/
 	x11_window = XCreateWindow(x11_display, RootWindow(x11_display, vi->screen), 0, 0, OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height, 0, vi->depth, InputOutput, vi->visual, CWBorderPixel | CWColormap | CWEventMask, &swa);
 	ERR_FAIL_COND_V(!x11_window, ERR_UNCONFIGURED);
+	set_class_hint(x11_display, x11_window);
 	XMapWindow(x11_display, x11_window);
 	//};
 
