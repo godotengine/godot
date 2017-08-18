@@ -318,6 +318,7 @@ class ScriptEditor : public PanelContainer {
 	void _update_script_colors();
 	void _update_modified_scripts_for_external_editor(Ref<Script> p_for_script = Ref<Script>());
 
+	void _script_changed();
 	int file_dialog_option;
 	void _file_dialog_action(String p_file);
 

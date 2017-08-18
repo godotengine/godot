@@ -59,6 +59,8 @@ public:
 	void show_groups();
 	void show_connections();
 
+	void update_lists();
+
 	NodeDock();
 };
 
