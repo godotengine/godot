@@ -126,6 +126,8 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 
 	Vector<FrameData> profile_frame_data;
 
+	void _put_variable(const String &p_name, const Variant &p_variable);
+
 public:
 	struct ResourceUsage {
 

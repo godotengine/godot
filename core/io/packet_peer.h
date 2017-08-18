@@ -98,7 +98,9 @@ public:
 
 	void set_stream_peer(const Ref<StreamPeer> &p_peer);
 	void set_input_buffer_max_size(int p_max_size);
+	int get_input_buffer_max_size() const;
 	void set_output_buffer_max_size(int p_max_size);
+	int get_output_buffer_max_size() const;
 	PacketPeerStream();
 };
 

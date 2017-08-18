@@ -92,7 +92,7 @@ Error PacketPeer::get_var(Variant &r_variant) const {
 Error PacketPeer::put_var(const Variant &p_packet) {
 
 	int len;
-	Error err = encode_variant(p_packet, NULL, len); // compute len first
+	Error err = encode_variant(p_packet, NULL, len, !allow_object_decoding); // compute len first
 	if (err)
 		return err;
 
@@ -101,7 +101,7 @@ Error PacketPeer::put_var(const Variant &p_packet) {
 
 	uint8_t *buf = (uint8_t *)alloca(len);
 	ERR_FAIL_COND_V(!buf, ERR_OUT_OF_MEMORY);
-	err = encode_variant(p_packet, buf, len);
+	err = encode_variant(p_packet, buf, len, !allow_object_decoding);
 	ERR_FAIL_COND_V(err, err);
 
 	return put_packet(buf, len);
@@ -155,6 +155,8 @@ void PacketPeerStream::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_stream_peer", "peer"), &PacketPeerStream::_set_stream_peer);
 	ClassDB::bind_method(D_METHOD("set_input_buffer_max_size", "max_size_bytes"), &PacketPeerStream::set_input_buffer_max_size);
 	ClassDB::bind_method(D_METHOD("set_output_buffer_max_size", "max_size_bytes"), &PacketPeerStream::set_output_buffer_max_size);
+	ClassDB::bind_method(D_METHOD("get_input_buffer_max_size"), &PacketPeerStream::get_input_buffer_max_size);
+	ClassDB::bind_method(D_METHOD("get_output_buffer_max_size"), &PacketPeerStream::get_output_buffer_max_size);
 }
 
 Error PacketPeerStream::_poll_buffer() const {
@@ -268,9 +270,19 @@ void PacketPeerStream::set_input_buffer_max_size(int p_max_size) {
 	input_buffer.resize(next_power_of_2(p_max_size + 4));
 }
 
+int PacketPeerStream::get_input_buffer_max_size() const {
+
+	return input_buffer.size() - 4;
+}
+
 void PacketPeerStream::set_output_buffer_max_size(int p_max_size) {
 
 	output_buffer.resize(next_power_of_2(p_max_size + 4));
+}
+
+int PacketPeerStream::get_output_buffer_max_size() const {
+
+	return output_buffer.size() - 4;
 }
 
 PacketPeerStream::PacketPeerStream() {

@@ -30,10 +30,10 @@
 #include "script_debugger_remote.h"
 
 #include "io/ip.h"
+#include "io/marshalls.h"
 #include "os/input.h"
 #include "os/os.h"
 #include "project_settings.h"
-
 void ScriptDebuggerRemote::_send_video_memory() {
 
 	List<ResourceUsage> usage;
@@ -117,6 +117,18 @@ static ObjectID safe_get_instance_id(const Variant &p_v) {
 			ObjectDB::debug_objects(_ScriptDebuggerRemote_debug_func);
 			return _ScriptDebuggerRemote_found_id;
 		}
+	}
+}
+
+void ScriptDebuggerRemote::_put_variable(const String &p_name, const Variant &p_variable) {
+
+	packet_peer_stream->put_var(p_name);
+	int len = 0;
+	Error err = encode_variant(p_variable, NULL, len);
+	if (len > packet_peer_stream->get_output_buffer_max_size()) { //limit to max size
+		packet_peer_stream->put_var(Variant());
+	} else {
+		packet_peer_stream->put_var(p_variable);
 	}
 }
 
@@ -210,14 +222,7 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue) 
 
 					while (E) {
 
-						if (F->get().get_type() == Variant::OBJECT) {
-							packet_peer_stream->put_var("*" + E->get());
-							String pretty_print = F->get().operator String();
-							packet_peer_stream->put_var(pretty_print.ascii().get_data());
-						} else {
-							packet_peer_stream->put_var(E->get());
-							packet_peer_stream->put_var(F->get());
-						}
+						_put_variable(E->get(), F->get());
 
 						E = E->next();
 						F = F->next();
@@ -231,15 +236,7 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue) 
 					List<Variant>::Element *F = local_vals.front();
 
 					while (E) {
-
-						if (F->get().get_type() == Variant::OBJECT) {
-							packet_peer_stream->put_var("*" + E->get());
-							String pretty_print = F->get().operator String();
-							packet_peer_stream->put_var(pretty_print.ascii().get_data());
-						} else {
-							packet_peer_stream->put_var(E->get());
-							packet_peer_stream->put_var(F->get());
-						}
+						_put_variable(E->get(), F->get());
 
 						E = E->next();
 						F = F->next();
@@ -566,30 +563,19 @@ void ScriptDebuggerRemote::_send_object_id(ObjectID p_id) {
 			}
 
 			Variant var = obj->get(E->get().name);
+			packet_peer_stream->put_var(E->get().type);
+			//only send information that can be sent..
 
-			if (E->get().type == Variant::OBJECT || var.get_type() == Variant::OBJECT) {
+			int len = 0; //test how big is this to encode
+			encode_variant(var, NULL, len);
 
-				ObjectID id2;
-				Object *obj = var;
-				if (obj) {
-					id2 = obj->get_instance_id();
-				} else {
-					id2 = 0;
-				}
-
-				packet_peer_stream->put_var(Variant::INT); //hint string
-				packet_peer_stream->put_var(PROPERTY_HINT_OBJECT_ID); //hint
-				packet_peer_stream->put_var(E->get().hint_string); //hint string
-				packet_peer_stream->put_var(id2); //value
+			if (len > packet_peer_stream->get_output_buffer_max_size()) { //limit to max size
+				packet_peer_stream->put_var(PROPERTY_HINT_OBJECT_TOO_BIG);
+				packet_peer_stream->put_var("");
+				packet_peer_stream->put_var(Variant());
 			} else {
-				packet_peer_stream->put_var(E->get().type);
 				packet_peer_stream->put_var(E->get().hint);
 				packet_peer_stream->put_var(E->get().hint_string);
-				//only send information that can be sent..
-
-				if (var.get_type() >= Variant::DICTIONARY) {
-					var = Array(); //send none for now, may be to big
-				}
 				packet_peer_stream->put_var(var);
 			}
 		}

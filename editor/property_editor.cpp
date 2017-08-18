@@ -38,6 +38,7 @@
 #include "editor_node.h"
 #include "editor_settings.h"
 #include "io/image_loader.h"
+#include "io/marshalls.h"
 #include "io/resource_loader.h"
 #include "multi_node_edit.h"
 #include "os/input.h"
@@ -2320,7 +2321,15 @@ void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String &p
 		} break;
 		case Variant::OBJECT: {
 
-			if (obj->get(p_name).get_type() == Variant::NIL || obj->get(p_name).operator RefPtr().is_null()) {
+			Ref<EncodedObjectAsID> encoded = obj->get(p_name); //for debugger and remote tools
+
+			if (encoded.is_valid()) {
+
+				p_item->set_text(1, "Object: " + itos(encoded->get_object_id()));
+				p_item->set_icon(1, Ref<Texture>());
+				p_item->set_custom_as_button(1, true);
+
+			} else if (obj->get(p_name).get_type() == Variant::NIL || obj->get(p_name).operator RefPtr().is_null()) {
 				p_item->set_text(1, "<null>");
 				p_item->set_icon(1, Ref<Texture>());
 				p_item->set_custom_as_button(1, false);
@@ -3610,7 +3619,16 @@ void PropertyEditor::update_tree() {
 
 				RES res = obj->get(p.name).operator RefPtr();
 
-				if (obj->get(p.name).get_type() == Variant::NIL || res.is_null()) {
+				Ref<EncodedObjectAsID> encoded = obj->get(p.name); //for debugger and remote tools
+
+				if (encoded.is_valid()) {
+
+					item->set_text(1, "Object: " + itos(encoded->get_object_id()));
+					item->set_icon(1, Ref<Texture>());
+					item->set_custom_as_button(1, true);
+					item->set_editable(1, true);
+
+				} else if (obj->get(p.name).get_type() == Variant::NIL || res.is_null()) {
 					item->set_text(1, "<null>");
 					item->set_icon(1, Ref<Texture>());
 					item->set_custom_as_button(1, false);
@@ -3938,6 +3956,13 @@ void PropertyEditor::_item_edited() {
 		case Variant::OBJECT: {
 			if (!item->is_custom_set_as_button(1))
 				break;
+
+			Ref<EncodedObjectAsID> encoded = obj->get(name); //for debugger and remote tools
+
+			if (encoded.is_valid()) {
+
+				emit_signal("object_id_selected", encoded->get_object_id());
+			}
 
 			RES res = obj->get(name);
 			if (res.is_valid()) {

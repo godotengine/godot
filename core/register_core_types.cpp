@@ -39,6 +39,7 @@
 #include "input_map.h"
 #include "io/config_file.h"
 #include "io/http_client.h"
+#include "io/marshalls.h"
 #include "io/packet_peer.h"
 #include "io/packet_peer_udp.h"
 #include "io/pck_packer.h"
@@ -56,7 +57,6 @@
 #include "project_settings.h"
 #include "translation.h"
 #include "undo_redo.h"
-
 static ResourceFormatSaverBinary *resource_saver_binary = NULL;
 static ResourceFormatLoaderBinary *resource_loader_binary = NULL;
 static ResourceFormatImporter *resource_format_importer = NULL;
@@ -157,6 +157,7 @@ void register_core_types() {
 	ClassDB::register_class<PackedDataContainer>();
 	ClassDB::register_virtual_class<PackedDataContainerRef>();
 	ClassDB::register_class<AStar>();
+	ClassDB::register_class<EncodedObjectAsID>();
 
 	ip = IP::create();
 

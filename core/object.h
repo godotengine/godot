@@ -83,6 +83,7 @@ enum PropertyHint {
 	PROPERTY_HINT_PROPERTY_OF_BASE_TYPE, ///< a property of a base type
 	PROPERTY_HINT_PROPERTY_OF_INSTANCE, ///< a property of an instance
 	PROPERTY_HINT_PROPERTY_OF_SCRIPT, ///< a property of a script & base
+	PROPERTY_HINT_OBJECT_TOO_BIG, ///< object is too big to send
 	PROPERTY_HINT_MAX,
 };
 

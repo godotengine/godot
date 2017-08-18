@@ -372,7 +372,13 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			if (has_icon(p_data[i + 2], "EditorIcons"))
 				it->set_icon(0, get_icon(p_data[i + 2], "EditorIcons"));
 			it->set_metadata(0, id);
+
 			if (id == inspected_object_id) {
+				TreeItem *cti = it->get_parent(); //ensure selected is always uncollapsed
+				while (cti) {
+					cti->set_collapsed(false);
+					cti = cti->get_parent();
+				}
 				it->select(0);
 			}
 
@@ -385,6 +391,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 					it->set_collapsed(true);
 				}
 			}
+
 			lv[level] = it;
 		}
 		updating_scene_tree = false;
@@ -439,11 +446,8 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 		inspected_object->last_edited_id = id;
 
-		if (tabs->get_current_tab() == 2) {
-			inspect_properties->edit(inspected_object);
-		} else {
-			editor->push_item(inspected_object);
-		}
+		tabs->set_current_tab(inspect_info->get_index());
+		inspect_properties->edit(inspected_object);
 
 	} else if (p_msg == "message:video_mem") {
 
