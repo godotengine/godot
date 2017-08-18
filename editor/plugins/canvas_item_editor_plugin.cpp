@@ -2202,6 +2202,24 @@ void CanvasItemEditor::_viewport_draw() {
 							viewport->draw_line(parent_transform.xform(start), parent_transform.xform(end), color_base, 1);
 							break;
 					}
+
+					switch (drag) {
+						//Draw the ghost rect if the node if rotated/scaled
+						case DRAG_LEFT:
+						case DRAG_TOP_LEFT:
+						case DRAG_TOP:
+						case DRAG_TOP_RIGHT:
+						case DRAG_RIGHT:
+						case DRAG_BOTTOM_RIGHT:
+						case DRAG_BOTTOM:
+						case DRAG_BOTTOM_LEFT:
+						case DRAG_ALL:
+							if (control->get_rotation() != 0.0 || control->get_scale() != Vector2(1, 1)) {
+								Rect2 rect = Rect2(Vector2(node_pos_in_parent[0], node_pos_in_parent[1]), control->get_size());
+								viewport->draw_rect(parent_transform.xform(rect), color_base, false);
+							}
+							break;
+					}
 				}
 			}
 
