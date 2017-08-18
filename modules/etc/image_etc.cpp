@@ -118,7 +118,7 @@ static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_f
 	}
 
 	int imgw = p_img->get_width(), imgh = p_img->get_height();
-	ERR_FAIL_COND(nearest_power_of_2(imgw) != imgw || nearest_power_of_2(imgh) != imgh);
+	ERR_FAIL_COND(next_power_of_2(imgw) != imgw || next_power_of_2(imgh) != imgh);
 
 	Image::Format etc_format = force_etc1_format ? Image::FORMAT_ETC : _get_etc2_mode(detected_channels);
 

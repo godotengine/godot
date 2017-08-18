@@ -1280,8 +1280,8 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 		int atlas_w=dst_size.width;
 		int atlas_h=dst_size.height;
 		if (blit_to_po2) {
-			atlas_w=nearest_power_of_2(dst_size.width);
-			atlas_h=nearest_power_of_2(dst_size.height);
+			atlas_w=next_power_of_2(dst_size.width);
+			atlas_h=next_power_of_2(dst_size.height);
 		}
 		Image atlas;
 		atlas.create(atlas_w,atlas_h,0,alpha?Image::FORMAT_RGBA8:Image::FORMAT_RGB8);

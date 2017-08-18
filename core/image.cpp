@@ -676,8 +676,8 @@ void Image::resize_to_po2(bool p_square) {
 		ERR_FAIL();
 	}
 
-	int w = nearest_power_of_2(width);
-	int h = nearest_power_of_2(height);
+	int w = next_power_of_2(width);
+	int h = next_power_of_2(height);
 
 	if (w == width && h == height) {
 
@@ -1060,7 +1060,7 @@ Error Image::generate_mipmaps() {
 
 	PoolVector<uint8_t>::Write wp = data.write();
 
-	if (nearest_power_of_2(width) == uint32_t(width) && nearest_power_of_2(height) == uint32_t(height)) {
+	if (next_power_of_2(width) == uint32_t(width) && next_power_of_2(height) == uint32_t(height)) {
 		//use fast code for powers of 2
 		int prev_ofs = 0;
 		int prev_h = height;

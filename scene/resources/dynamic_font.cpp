@@ -524,7 +524,7 @@ void DynamicFontAtSize::_update_char(CharType p_char) {
 		if (mh > texsize)
 			texsize = mh; //special case, adapt to it?
 
-		texsize = nearest_power_of_2(texsize);
+		texsize = next_power_of_2(texsize);
 
 		texsize = MIN(texsize, 4096);
 

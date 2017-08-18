@@ -1460,7 +1460,7 @@ void BakedLightBaker::_make_octree_texture() {
 		} else {
 
 			baked_light_texture_w=otex_w;
-			baked_light_texture_h=nearest_power_of_2(row);
+			baked_light_texture_h=next_power_of_2(row);
 			print_line("w: "+itos(otex_w));
 			print_line("h: "+itos(row));
 			break;
@@ -1558,7 +1558,7 @@ void BakedLightBaker::_make_octree_texture() {
 	}
 
 
-	baked_octree_texture_h=nearest_power_of_2(baked_octree_texture_h);
+	baked_octree_texture_h=next_power_of_2(baked_octree_texture_h);
 	print_line("RESULT! "+itos(baked_octree_texture_w)+","+itos(baked_octree_texture_h));
 
 }

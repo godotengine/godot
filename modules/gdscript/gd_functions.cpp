@@ -446,7 +446,7 @@ void GDFunctions::call(Function p_func, const Variant **p_args, int p_arg_count,
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
 			int64_t num = *p_args[0];
-			r_ret = nearest_power_of_2(num);
+			r_ret = next_power_of_2(num);
 		} break;
 		case OBJ_WEAKREF: {
 			VALIDATE_ARG_COUNT(1);

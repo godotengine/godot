@@ -118,7 +118,7 @@ Error AudioDriverRtAudio::init() {
 
 	int latency = GLOBAL_DEF("audio/output_latency", 25);
 	// calculate desired buffer_size, taking the desired numberOfBuffers into account (latency depends on numberOfBuffers*buffer_size)
-	unsigned int buffer_size = nearest_power_of_2(latency * mix_rate / 1000 / target_number_of_buffers);
+	unsigned int buffer_size = closest_power_of_2(latency * mix_rate / 1000 / target_number_of_buffers);
 
 	if (OS::get_singleton()->is_stdout_verbose()) {
 		print_line("audio buffer size: " + itos(buffer_size));

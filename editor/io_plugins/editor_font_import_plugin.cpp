@@ -1536,8 +1536,8 @@ Ref<BitmapFont> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMe
 	Vector<Point2i> res;
 	Size2i res_size;
 	EditorAtlas::fit(sizes,res,res_size);
-	res_size.x=nearest_power_of_2(res_size.x);
-	res_size.y=nearest_power_of_2(res_size.y);
+	res_size.x=next_power_of_2(res_size.x);
+	res_size.y=next_power_of_2(res_size.y);
 	print_line("Atlas size: "+res_size);
 
 	Image atlas(res_size.x,res_size.y,0,Image::FORMAT_RGBA8);

@@ -1001,11 +1001,11 @@ void VisualServerCanvas::canvas_light_set_shadow_buffer_size(RID p_light, int p_
 	RasterizerCanvas::Light *clight = canvas_light_owner.get(p_light);
 	ERR_FAIL_COND(!clight);
 
-	int new_size = nearest_power_of_2(p_size);
+	int new_size = next_power_of_2(p_size);
 	if (new_size == clight->shadow_buffer_size)
 		return;
 
-	clight->shadow_buffer_size = nearest_power_of_2(p_size);
+	clight->shadow_buffer_size = next_power_of_2(p_size);
 
 	if (clight->shadow_buffer.is_valid()) {
 		VSG::storage->free(clight->shadow_buffer);

@@ -43,7 +43,7 @@ Error AudioDriverMediaKit::init() {
 	channels = 2;
 
 	int latency = GLOBAL_DEF("audio/output_latency", 25);
-	buffer_size = nearest_power_of_2(latency * mix_rate / 1000);
+	buffer_size = next_power_of_2(latency * mix_rate / 1000);
 	samples_in = memnew_arr(int32_t, buffer_size * channels);
 
 	media_raw_audio_format format;
