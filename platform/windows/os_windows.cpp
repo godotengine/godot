@@ -63,11 +63,10 @@ __attribute__((visibility("default"))) DWORD NvOptimusEnablement = 0x00000001;
 #endif
 }
 
-#ifndef WM_MOUSEHWHEEL
-#define WM_MOUSEHWHEEL 0x020e
+// Workaround mingw-w64 < 4.0 bug
+#ifndef WM_TOUCH
+#define WM_TOUCH 576
 #endif
-
-//#define STDOUT_FILE
 
 extern HINSTANCE godot_hinstance;
 
