@@ -202,6 +202,10 @@ extern int ZEXPORT unzClose OF((unzFile file));
     these files MUST be closed with unzipCloseCurrentFile before call unzipClose.
   return UNZ_OK if there is no problem. */
 
+/* GODOT start */
+extern void* unzGetOpaque(unzFile file);
+/* GODOT end */
+
 extern int ZEXPORT unzGetGlobalInfo OF((unzFile file,
                                         unz_global_info *pglobal_info));
 
@@ -389,6 +393,13 @@ extern int ZEXPORT unzReadCurrentFile OF((unzFile file,
   return <0 with error code if there is an error
     (UNZ_ERRNO for IO error, or zLib error for uncompress error)
 */
+
+/* GODOT start */
+extern int ZEXPORT unzSeekCurrentFile(unzFile file, int pos);
+/*
+  Seek to position in uncompressed data
+*/
+/* GODOT end */
 
 extern z_off_t ZEXPORT unztell OF((unzFile file));
 
