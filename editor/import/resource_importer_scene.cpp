@@ -986,6 +986,8 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 
 	List<PropertyInfo> pi;
 
+	print_line("node: " + String(p_node->get_name()));
+
 	p_node->get_property_list(&pi);
 
 	for (List<PropertyInfo>::Element *E = pi.front(); E; E = E->next()) {
@@ -993,6 +995,7 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 		if (E->get().type == Variant::OBJECT) {
 
 			Ref<Material> mat = p_node->get(E->get().name);
+
 			if (p_make_materials && mat.is_valid() && mat->get_name() != "") {
 
 				if (!p_materials.has(mat)) {
@@ -1045,7 +1048,8 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 
 								if (!p_materials.has(mat)) {
 
-									String ext_name = p_base_path + "." + _make_extname(mat->get_name()) + ".material";
+									String ext_name = p_base_path.plus_file(_make_extname(mat->get_name()) + ".material");
+									;
 									if (FileAccess::exists(ext_name)) {
 										//if exists, use it
 										Ref<Material> existing = ResourceLoader::load(ext_name);
@@ -1104,9 +1108,9 @@ void ResourceImporterScene::get_import_options(List<ImportOption> *r_options, in
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "materials/location", PROPERTY_HINT_ENUM, "Node,Mesh"), meshes_out ? 1 : 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "materials/storage", PROPERTY_HINT_ENUM, "Built-In,Files", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), materials_out ? 1 : 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "materials/keep_on_reimport"), materials_out ? true : false));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "geometry/compress"), true));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "geometry/ensure_tangents"), true));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "geometry/storage", PROPERTY_HINT_ENUM, "Built-In,Files"), meshes_out ? true : false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/compress"), true));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/ensure_tangents"), true));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/storage", PROPERTY_HINT_ENUM, "Built-In,Files"), meshes_out ? true : false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "external_files/store_in_subdir"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/import", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "animation/fps", PROPERTY_HINT_RANGE, "1,120,1"), 15));
@@ -1176,7 +1180,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	if (bool(p_options["animation/import"]))
 		import_flags |= EditorSceneImporter::IMPORT_ANIMATION;
 
-	if (bool(p_options["geometry/ensure_tangents"]))
+	if (bool(p_options["meshes/ensure_tangents"]))
 		import_flags |= EditorSceneImporter::IMPORT_GENERATE_TANGENT_ARRAYS;
 
 	if (int(p_options["materials/location"]) == 0)
@@ -1250,7 +1254,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	}
 
 	bool external_materials = p_options["materials/storage"];
-	bool external_meshes = p_options["geometry/storage"];
+	bool external_meshes = p_options["meshes/storage"];
 	bool external_scenes = int(p_options["nodes/storage"]) == 1;
 
 	String base_path = p_source_file.get_base_dir();

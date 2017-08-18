@@ -242,7 +242,8 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 											value = local_dupe;
 										}
 
-										res->setup_local_to_scene();
+										//this here may reference nodes not iniialized so this line is commented and used after loading all nodes
+										//res->setup_local_to_scene();
 									}
 									//must make a copy, because this res is local to scene
 								}
@@ -291,6 +292,11 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 			NodePath n = ret_nodes[0]->get_path_to(node);
 			node_path_cache[n] = i;
 		}
+	}
+
+	for (Map<Ref<Resource>, Ref<Resource> >::Element *E = resources_local_to_scene.front(); E; E = E->next()) {
+
+		E->get()->setup_local_to_scene();
 	}
 
 	//do connections
