@@ -1455,7 +1455,7 @@ void Animation::value_track_get_key_indices(int p_track, float p_time, float p_d
 
 		if (from_time>to_time) {
 			// handle loop by splitting
-			_value_track_get_key_indices_in_range(vt,length-from_time,length,p_indices);
+			_value_track_get_key_indices_in_range(vt,from_time,length,p_indices);
 			_value_track_get_key_indices_in_range(vt,0,to_time,p_indices);
 			return;
 		}
