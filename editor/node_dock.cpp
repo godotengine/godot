@@ -63,6 +63,11 @@ void NodeDock::_notification(int p_what) {
 
 NodeDock *NodeDock::singleton = NULL;
 
+void NodeDock::update_lists() {
+
+	connections->update_tree();
+}
+
 void NodeDock::set_node(Node *p_node) {
 
 	connections->set_node(p_node);

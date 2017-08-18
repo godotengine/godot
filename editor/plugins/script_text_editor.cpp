@@ -524,6 +524,7 @@ void ScriptTextEditor::_validate_script() {
 	}
 
 	emit_signal("name_changed");
+	emit_signal("script_changed");
 }
 
 static Node *_find_node_for_script(Node *p_base, Node *p_current, const Ref<Script> &p_script) {

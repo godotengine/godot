@@ -103,8 +103,6 @@ class ConnectionsDock : public VBoxContainer {
 	ConfirmationDialog *remove_confirm;
 	ConnectDialog *connect_dialog;
 
-	void update_tree();
-
 	void _close();
 	void _connect();
 	void _something_selected();
@@ -121,6 +119,7 @@ public:
 
 	void set_node(Node *p_node);
 	String get_selected_type();
+	void update_tree();
 
 	ConnectionsDock(EditorNode *p_editor = NULL);
 	~ConnectionsDock();

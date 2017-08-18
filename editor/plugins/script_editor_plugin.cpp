@@ -34,18 +34,19 @@
 #include "editor/script_editor_debugger.h"
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
+#include "node_dock.h"
 #include "os/file_access.h"
 #include "os/input.h"
 #include "os/keyboard.h"
 #include "os/os.h"
 #include "project_settings.h"
 #include "scene/main/viewport.h"
-
 /*** SCRIPT EDITOR ****/
 
 void ScriptEditorBase::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("name_changed"));
+	ADD_SIGNAL(MethodInfo("script_changed"));
 	ADD_SIGNAL(MethodInfo("request_help_search", PropertyInfo(Variant::STRING, "topic")));
 	ADD_SIGNAL(MethodInfo("request_help_index"));
 	ADD_SIGNAL(MethodInfo("request_open_script_at_line", PropertyInfo(Variant::OBJECT, "script"), PropertyInfo(Variant::INT, "line")));
@@ -1714,6 +1715,7 @@ bool ScriptEditor::edit(const Ref<Script> &p_script, int p_line, int p_col, bool
 	_update_script_names();
 	_save_layout();
 	se->connect("name_changed", this, "_update_script_names");
+	se->connect("script_changed", this, "_script_changed");
 	se->connect("request_help_search", this, "_help_search");
 	se->connect("request_open_script_at_line", this, "_goto_script_line");
 	se->connect("go_to_help", this, "_help_class_goto");
@@ -2200,6 +2202,11 @@ void ScriptEditor::register_create_script_editor_function(CreateScriptEditorFunc
 	script_editor_funcs[script_editor_func_count++] = p_func;
 }
 
+void ScriptEditor::_script_changed() {
+
+	NodeDock::singleton->update_lists();
+}
+
 void ScriptEditor::_bind_methods() {
 
 	ClassDB::bind_method("_file_dialog_action", &ScriptEditor::_file_dialog_action);
@@ -2241,6 +2248,7 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_history_back", &ScriptEditor::_history_back);
 	ClassDB::bind_method("_live_auto_reload_running_scripts", &ScriptEditor::_live_auto_reload_running_scripts);
 	ClassDB::bind_method("_unhandled_input", &ScriptEditor::_unhandled_input);
+	ClassDB::bind_method("_script_changed", &ScriptEditor::_script_changed);
 
 	ClassDB::bind_method(D_METHOD("get_current_script"), &ScriptEditor::_get_current_script);
 	ClassDB::bind_method(D_METHOD("get_open_scripts"), &ScriptEditor::_get_open_scripts);
