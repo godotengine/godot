@@ -6,7 +6,7 @@
          Modifications for Zip64 support
          Copyright (C) 2009-2010 Mathias Svensson ( http://result42.com )
 
-         For more info read LICENSE-MiniZip.txt
+         For more info read MiniZip_info.txt
 
 */
 
@@ -68,11 +68,8 @@ void fill_zlib_filefunc64_32_def_from_filefunc32(zlib_filefunc64_32_def* p_filef
     p_filefunc64_32->zfile_func64.opaque = p_filefunc32->opaque;
     p_filefunc64_32->zseek32_file = p_filefunc32->zseek_file;
     p_filefunc64_32->ztell32_file = p_filefunc32->ztell_file;
-    p_filefunc64_32->zfile_func64.alloc_mem = p_filefunc32->alloc_mem;
-    p_filefunc64_32->zfile_func64.free_mem = p_filefunc32->free_mem;
 }
 
-/*
 
 
 static voidpf  ZCALLBACK fopen_file_func OF((voidpf opaque, const char* filename, int mode));
@@ -119,6 +116,7 @@ static voidpf ZCALLBACK fopen64_file_func (voidpf opaque, const void* filename, 
     return file;
 }
 
+
 static uLong ZCALLBACK fread_file_func (voidpf opaque, voidpf stream, void* buf, uLong size)
 {
     uLong ret;
@@ -139,6 +137,7 @@ static long ZCALLBACK ftell_file_func (voidpf opaque, voidpf stream)
     ret = ftell((FILE *)stream);
     return ret;
 }
+
 
 static ZPOS64_T ZCALLBACK ftell64_file_func (voidpf opaque, voidpf stream)
 {
@@ -234,4 +233,3 @@ void fill_fopen64_filefunc (zlib_filefunc64_def*  pzlib_filefunc_def)
     pzlib_filefunc_def->zerror_file = ferror_file_func;
     pzlib_filefunc_def->opaque = NULL;
 }
-*/
