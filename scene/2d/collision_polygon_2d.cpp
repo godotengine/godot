@@ -30,6 +30,7 @@
 #include "collision_polygon_2d.h"
 
 #include "collision_object_2d.h"
+#include "engine.h"
 #include "scene/resources/concave_polygon_shape_2d.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
 
@@ -134,7 +135,7 @@ void CollisionPolygon2D::_notification(int p_what) {
 				parent->shape_owner_set_one_way_collision(owner_id, one_way_collision);
 			}
 
-			/*if (get_tree()->is_editor_hint()) {
+			/*if (Engine::get_singleton()->is_editor_hint()) {
 				//display above all else
 				set_z_as_relative(false);
 				set_z(VS::CANVAS_ITEM_Z_MAX - 1);
@@ -158,7 +159,7 @@ void CollisionPolygon2D::_notification(int p_what) {
 
 		case NOTIFICATION_DRAW: {
 
-			if (!get_tree()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
+			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
 				break;
 			}
 

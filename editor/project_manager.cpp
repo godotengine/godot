@@ -466,7 +466,6 @@ void ProjectManager::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
 		Engine::get_singleton()->set_editor_hint(true);
-		get_tree()->set_editor_hint(true);
 
 	} else if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 

@@ -281,7 +281,6 @@ void EditorNode::_notification(int p_what) {
 
 		get_tree()->get_root()->set_disable_3d(true);
 		//MessageQueue::get_singleton()->push_call(this,"_get_scene_metadata");
-		get_tree()->set_editor_hint(true);
 		get_tree()->get_root()->set_as_audio_listener(false);
 		get_tree()->get_root()->set_as_audio_listener_2d(false);
 		get_tree()->set_auto_accept_quit(false);

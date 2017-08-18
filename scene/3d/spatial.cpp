@@ -29,6 +29,7 @@
 /*************************************************************************/
 #include "spatial.h"
 
+#include "engine.h"
 #include "message_queue.h"
 #include "scene/main/viewport.h"
 #include "scene/scene_string_names.h"
@@ -134,7 +135,7 @@ void Spatial::_notification(int p_what) {
 			else
 				data.C = NULL;
 
-			if (data.toplevel && !get_tree()->is_editor_hint()) {
+			if (data.toplevel && !Engine::get_singleton()->is_editor_hint()) {
 
 				if (data.parent) {
 					data.local_transform = data.parent->get_global_transform() * get_transform();
@@ -178,7 +179,7 @@ void Spatial::_notification(int p_what) {
 				get_script_instance()->call_multilevel(SceneStringNames::get_singleton()->_enter_world, NULL, 0);
 			}
 #ifdef TOOLS_ENABLED
-			if (get_tree()->is_editor_hint()) {
+			if (Engine::get_singleton()->is_editor_hint()) {
 
 				//get_scene()->call_group(SceneMainLoop::GROUP_CALL_REALTIME,SceneStringNames::get_singleton()->_spatial_editor_group,SceneStringNames::get_singleton()->_request_gizmo,this);
 				get_tree()->call_group_flags(0, SceneStringNames::get_singleton()->_spatial_editor_group, SceneStringNames::get_singleton()->_request_gizmo, this);
@@ -492,7 +493,7 @@ void Spatial::set_as_toplevel(bool p_enabled) {
 
 	if (data.toplevel == p_enabled)
 		return;
-	if (is_inside_tree() && !get_tree()->is_editor_hint()) {
+	if (is_inside_tree() && !Engine::get_singleton()->is_editor_hint()) {
 
 		if (p_enabled)
 			set_transform(get_global_transform());

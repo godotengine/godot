@@ -1164,7 +1164,7 @@ void VisualScriptPropertySet::_update_cache() {
 	if (!OS::get_singleton()->get_main_loop()->cast_to<SceneTree>())
 		return;
 
-	if (!OS::get_singleton()->get_main_loop()->cast_to<SceneTree>()->is_editor_hint()) //only update cache if editor exists, it's pointless otherwise
+	if (!Engine::get_singleton()->is_editor_hint()) //only update cache if editor exists, it's pointless otherwise
 		return;
 
 	if (call_mode == CALL_MODE_BASIC_TYPE) {

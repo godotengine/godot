@@ -29,13 +29,15 @@
 /*************************************************************************/
 #include "reference_rect.h"
 
+#include "engine.h"
+
 void ReferenceRect::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW) {
 
 		if (!is_inside_tree())
 			return;
-		if (get_tree()->is_editor_hint())
+		if (Engine::get_singleton()->is_editor_hint())
 			draw_style_box(get_stylebox("border"), Rect2(Point2(), get_size()));
 	}
 }

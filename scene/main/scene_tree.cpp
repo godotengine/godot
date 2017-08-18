@@ -382,7 +382,7 @@ bool SceneTree::is_input_handled() {
 
 void SceneTree::input_event(const Ref<InputEvent> &p_event) {
 
-	if (is_editor_hint() && (p_event->cast_to<InputEventJoypadButton>() || p_event->cast_to<InputEventJoypadMotion>()))
+	if (Engine::get_singleton()->is_editor_hint() && (p_event->cast_to<InputEventJoypadButton>() || p_event->cast_to<InputEventJoypadMotion>()))
 		return; //avoid joy input on editor
 
 	root_lock++;
@@ -616,7 +616,7 @@ bool SceneTree::idle(float p_time) {
 
 #ifdef TOOLS_ENABLED
 
-	if (is_editor_hint()) {
+	if (Engine::get_singleton()->is_editor_hint()) {
 		//simple hack to reload fallback environment if it changed from editor
 		String env_path = ProjectSettings::get_singleton()->get("rendering/environment/default_environment");
 		env_path = env_path.strip_edges(); //user may have added a space or two
@@ -691,7 +691,7 @@ void SceneTree::_notification(int p_notification) {
 			get_root()->propagate_notification(p_notification);
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			if (!is_editor_hint()) {
+			if (!Engine::get_singleton()->is_editor_hint()) {
 				get_root()->propagate_notification(Node::NOTIFICATION_TRANSLATION_CHANGED);
 			}
 		} break;
@@ -717,19 +717,10 @@ void SceneTree::set_quit_on_go_back(bool p_enable) {
 }
 
 #ifdef TOOLS_ENABLED
-void SceneTree::set_editor_hint(bool p_enabled) {
-
-	editor_hint = p_enabled;
-}
 
 bool SceneTree::is_node_being_edited(const Node *p_node) const {
 
-	return editor_hint && edited_scene_root && edited_scene_root->is_a_parent_of(p_node);
-}
-
-bool SceneTree::is_editor_hint() const {
-
-	return editor_hint;
+	return Engine::get_singleton()->is_editor_hint() && edited_scene_root && edited_scene_root->is_a_parent_of(p_node);
 }
 #endif
 
@@ -2189,8 +2180,6 @@ void SceneTree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_auto_accept_quit", "enabled"), &SceneTree::set_auto_accept_quit);
 
-	ClassDB::bind_method(D_METHOD("set_editor_hint", "enable"), &SceneTree::set_editor_hint);
-	ClassDB::bind_method(D_METHOD("is_editor_hint"), &SceneTree::is_editor_hint);
 	ClassDB::bind_method(D_METHOD("set_debug_collisions_hint", "enable"), &SceneTree::set_debug_collisions_hint);
 	ClassDB::bind_method(D_METHOD("is_debugging_collisions_hint"), &SceneTree::is_debugging_collisions_hint);
 	ClassDB::bind_method(D_METHOD("set_debug_navigation_hint", "enable"), &SceneTree::set_debug_navigation_hint);
@@ -2315,9 +2304,6 @@ SceneTree::SceneTree() {
 	accept_quit = true;
 	quit_on_go_back = true;
 	initialized = false;
-#ifdef TOOLS_ENABLED
-	editor_hint = false;
-#endif
 #ifdef DEBUG_ENABLED
 	debug_collisions_hint = false;
 	debug_navigation_hint = false;
@@ -2387,7 +2373,7 @@ SceneTree::SceneTree() {
 			if (env.is_valid()) {
 				root->get_world()->set_fallback_environment(env);
 			} else {
-				if (is_editor_hint()) {
+				if (Engine::get_singleton()->is_editor_hint()) {
 					//file was erased, clear the field.
 					ProjectSettings::get_singleton()->set("rendering/environment/default_environment", "");
 				} else {

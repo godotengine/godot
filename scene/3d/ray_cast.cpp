@@ -30,12 +30,14 @@
 #include "ray_cast.h"
 
 #include "collision_object.h"
+#include "engine.h"
 #include "mesh_instance.h"
 #include "servers/physics_server.h"
+
 void RayCast::set_cast_to(const Vector3 &p_point) {
 
 	cast_to = p_point;
-	if (is_inside_tree() && (get_tree()->is_editor_hint() || get_tree()->is_debugging_collisions_hint()))
+	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_collisions_hint()))
 		update_gizmo();
 	if (is_inside_tree() && get_tree()->is_debugging_collisions_hint())
 		_update_debug_shape();
@@ -94,7 +96,7 @@ Vector3 RayCast::get_collision_normal() const {
 void RayCast::set_enabled(bool p_enabled) {
 
 	enabled = p_enabled;
-	if (is_inside_tree() && !get_tree()->is_editor_hint())
+	if (is_inside_tree() && !Engine::get_singleton()->is_editor_hint())
 		set_fixed_process(p_enabled);
 	if (!p_enabled)
 		collided = false;
@@ -118,7 +120,7 @@ void RayCast::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 
-			if (enabled && !get_tree()->is_editor_hint()) {
+			if (enabled && !Engine::get_singleton()->is_editor_hint()) {
 				set_fixed_process(true);
 
 				if (get_tree()->is_debugging_collisions_hint())

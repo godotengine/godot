@@ -35,6 +35,7 @@
 #ifdef TOOLS_ENABLED
 #include "editor/editor_file_system.h"
 #include "editor/editor_settings.h"
+#include "engine.h"
 #endif
 
 void GDScriptLanguage::get_comment_delimiters(List<String> *p_delimiters) const {
@@ -2371,7 +2372,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 
 String GDScriptLanguage::_get_indentation() const {
 #ifdef TOOLS_ENABLED
-	if (SceneTree::get_singleton()->is_editor_hint()) {
+	if (Engine::get_singleton()->is_editor_hint()) {
 		bool use_space_indentation = EDITOR_DEF("text_editor/indent/type", 0);
 
 		if (use_space_indentation) {

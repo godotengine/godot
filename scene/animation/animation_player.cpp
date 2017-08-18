@@ -29,6 +29,7 @@
 /*************************************************************************/
 #include "animation_player.h"
 
+#include "engine.h"
 #include "message_queue.h"
 #include "scene/scene_string_names.h"
 
@@ -199,7 +200,7 @@ void AnimationPlayer::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_READY: {
 
-			if (!get_tree()->is_editor_hint() && animation_set.has(autoplay)) {
+			if (!Engine::get_singleton()->is_editor_hint() && animation_set.has(autoplay)) {
 				play(autoplay);
 				set_autoplay(""); //this line is the fix for autoplay issues with animatio
 				_animation_process(0);
@@ -344,7 +345,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 	ERR_FAIL_COND(p_anim->node_cache.size() != p_anim->animation->get_track_count());
 
 	Animation *a = p_anim->animation.operator->();
-	bool can_call = is_inside_tree() && !get_tree()->is_editor_hint();
+	bool can_call = is_inside_tree() && !Engine::get_singleton()->is_editor_hint();
 
 	for (int i = 0; i < a->get_track_count(); i++) {
 
@@ -955,7 +956,7 @@ void AnimationPlayer::play(const StringName &p_name, float p_custom_blend, float
 
 	emit_signal(SceneStringNames::get_singleton()->animation_started, c.assigned);
 
-	if (is_inside_tree() && get_tree()->is_editor_hint())
+	if (is_inside_tree() && Engine::get_singleton()->is_editor_hint())
 		return; // no next in this case
 
 	StringName next = animation_get_next(p_name);

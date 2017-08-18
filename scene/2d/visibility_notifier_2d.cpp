@@ -29,12 +29,12 @@
 /*************************************************************************/
 #include "visibility_notifier_2d.h"
 
+#include "engine.h"
 #include "particles_2d.h"
 #include "scene/2d/animated_sprite.h"
 #include "scene/2d/physics_body_2d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/main/viewport.h"
-#include "scene/scene_string_names.h"
 #include "scene/scene_string_names.h"
 
 void VisibilityNotifier2D::_enter_viewport(Viewport *p_viewport) {
@@ -42,7 +42,7 @@ void VisibilityNotifier2D::_enter_viewport(Viewport *p_viewport) {
 	ERR_FAIL_COND(viewports.has(p_viewport));
 	viewports.insert(p_viewport);
 
-	if (is_inside_tree() && get_tree()->is_editor_hint())
+	if (is_inside_tree() && Engine::get_singleton()->is_editor_hint())
 		return;
 
 	if (viewports.size() == 1) {
@@ -58,7 +58,7 @@ void VisibilityNotifier2D::_exit_viewport(Viewport *p_viewport) {
 	ERR_FAIL_COND(!viewports.has(p_viewport));
 	viewports.erase(p_viewport);
 
-	if (is_inside_tree() && get_tree()->is_editor_hint())
+	if (is_inside_tree() && Engine::get_singleton()->is_editor_hint())
 		return;
 
 	emit_signal(SceneStringNames::get_singleton()->viewport_exited, p_viewport);
@@ -74,7 +74,7 @@ void VisibilityNotifier2D::set_rect(const Rect2 &p_rect) {
 	rect = p_rect;
 	if (is_inside_tree()) {
 		get_world_2d()->_update_notifier(this, get_global_transform().xform(rect));
-		if (get_tree()->is_editor_hint()) {
+		if (Engine::get_singleton()->is_editor_hint()) {
 			update();
 			item_rect_changed();
 		}
@@ -108,7 +108,7 @@ void VisibilityNotifier2D::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_DRAW: {
 
-			if (get_tree()->is_editor_hint()) {
+			if (Engine::get_singleton()->is_editor_hint()) {
 
 				draw_rect(rect, Color(1, 0.5, 1, 0.2));
 			}
@@ -236,7 +236,7 @@ void VisibilityEnabler2D::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		if (get_tree()->is_editor_hint())
+		if (Engine::get_singleton()->is_editor_hint())
 			return;
 
 		Node *from = this;
@@ -254,7 +254,7 @@ void VisibilityEnabler2D::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 
-		if (get_tree()->is_editor_hint())
+		if (Engine::get_singleton()->is_editor_hint())
 			return;
 
 		for (Map<Node *, Variant>::Element *E = nodes.front(); E; E = E->next()) {

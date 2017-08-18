@@ -29,6 +29,8 @@
 /*************************************************************************/
 #include "audio_player.h"
 
+#include "engine.h"
+
 void AudioStreamPlayer::_mix_audio() {
 
 	if (!stream_playback.is_valid()) {
@@ -100,7 +102,7 @@ void AudioStreamPlayer::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
 		AudioServer::get_singleton()->add_callback(_mix_audios, this);
-		if (autoplay && !get_tree()->is_editor_hint()) {
+		if (autoplay && !Engine::get_singleton()->is_editor_hint()) {
 			play();
 		}
 	}
