@@ -128,7 +128,7 @@ void ProceduralSky::_radiance_changed() {
 	VS::get_singleton()->sky_set_texture(sky, texture, size[get_radiance_size()]);
 }
 
-void ProceduralSky::_update_sky() {
+Ref<Image> ProceduralSky::_generate_sky() {
 
 	update_queued = false;
 
@@ -215,9 +215,7 @@ void ProceduralSky::_update_sky() {
 	image.instance();
 	image->create(w, h, false, Image::FORMAT_RGBE9995, imgdata);
 
-	VS::get_singleton()->texture_allocate(texture, w, h, Image::FORMAT_RGBE9995, VS::TEXTURE_FLAG_FILTER | VS::TEXTURE_FLAG_REPEAT);
-	VS::get_singleton()->texture_set_data(texture, image);
-	_radiance_changed();
+	return image;
 }
 
 void ProceduralSky::set_sky_top_color(const Color &p_sky_top) {
@@ -385,6 +383,33 @@ RID ProceduralSky::get_rid() const {
 	return sky;
 }
 
+void ProceduralSky::_update_sky() {
+
+	bool use_thread = true;
+	if (first_time) {
+		use_thread = false;
+		first_time = false;
+	}
+#ifdef NO_THREADS
+	use_thread = false;
+#endif
+	if (use_thread) {
+
+		if (!sky_thread) {
+			sky_thread = Thread::create(_thread_function, this);
+			regen_queued = false;
+		} else {
+			regen_queued = true;
+		}
+
+	} else {
+		Ref<Image> image = _generate_sky();
+		VS::get_singleton()->texture_allocate(texture, image->get_width(), image->get_height(), Image::FORMAT_RGBE9995, VS::TEXTURE_FLAG_FILTER | VS::TEXTURE_FLAG_REPEAT);
+		VS::get_singleton()->texture_set_data(texture, image);
+		_radiance_changed();
+	}
+}
+
 void ProceduralSky::_queue_update() {
 
 	if (update_queued)
@@ -392,6 +417,26 @@ void ProceduralSky::_queue_update() {
 
 	update_queued = true;
 	call_deferred("_update_sky");
+}
+
+void ProceduralSky::_thread_done(const Ref<Image> &image) {
+
+	VS::get_singleton()->texture_allocate(texture, image->get_width(), image->get_height(), Image::FORMAT_RGBE9995, VS::TEXTURE_FLAG_FILTER | VS::TEXTURE_FLAG_REPEAT);
+	VS::get_singleton()->texture_set_data(texture, image);
+	_radiance_changed();
+	Thread::wait_to_finish(sky_thread);
+	memdelete(sky_thread);
+	sky_thread = NULL;
+	if (regen_queued) {
+		sky_thread = Thread::create(_thread_function, this);
+		regen_queued = false;
+	}
+}
+
+void ProceduralSky::_thread_function(void *p_ud) {
+
+	ProceduralSky *psky = (ProceduralSky *)p_ud;
+	psky->call_deferred("_thread_done", psky->_generate_sky());
 }
 
 void ProceduralSky::_bind_methods() {
@@ -445,6 +490,8 @@ void ProceduralSky::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_texture_size", "size"), &ProceduralSky::set_texture_size);
 	ClassDB::bind_method(D_METHOD("get_texture_size"), &ProceduralSky::get_texture_size);
+
+	ClassDB::bind_method(D_METHOD("_thread_done", "image"), &ProceduralSky::_thread_done);
 
 	ADD_GROUP("Sky", "sky_");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "sky_top_color"), "set_sky_top_color", "get_sky_top_color");
@@ -503,12 +550,20 @@ ProceduralSky::ProceduralSky() {
 	sun_energy = 16;
 
 	texture_size = TEXTURE_SIZE_1024;
+	sky_thread = NULL;
+	regen_queued = false;
+	first_time = true;
 
 	_queue_update();
 }
 
 ProceduralSky::~ProceduralSky() {
 
+	if (sky_thread) {
+		Thread::wait_to_finish(sky_thread);
+		memdelete(sky_thread);
+		sky_thread = NULL;
+	}
 	VS::get_singleton()->free(sky);
 	VS::get_singleton()->free(texture);
 }

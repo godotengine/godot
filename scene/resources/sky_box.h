@@ -30,8 +30,8 @@
 #ifndef Sky_H
 #define Sky_H
 
+#include "os/thread.h"
 #include "scene/resources/texture.h"
-
 class Sky : public Resource {
 	GDCLASS(Sky, Resource);
 
@@ -97,6 +97,7 @@ public:
 	};
 
 private:
+	Thread *sky_thread;
 	Color sky_top_color;
 	Color sky_horizon_color;
 	float sky_curve;
@@ -121,12 +122,20 @@ private:
 	RID texture;
 
 	bool update_queued;
+	bool regen_queued;
+
+	bool first_time;
+
+	void _thread_done(const Ref<Image> &p_image);
+	static void _thread_function(void *p_ud);
 
 protected:
 	static void _bind_methods();
 	virtual void _radiance_changed();
 
+	Ref<Image> _generate_sky();
 	void _update_sky();
+
 	void _queue_update();
 
 public:
