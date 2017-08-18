@@ -1048,8 +1048,9 @@ void VisualServerScene::_update_instance(Instance *p_instance) {
 		VSG::storage->particles_set_emission_transform(p_instance->base, p_instance->transform);
 	}
 
-	if (p_instance->aabb.has_no_surface())
+	if (p_instance->aabb.has_no_area()) {
 		return;
+	}
 
 #if 0
 	if (p_instance->base_type == VS::INSTANCE_PARTICLES) {
@@ -3278,8 +3279,9 @@ void VisualServerScene::render_probes() {
 
 void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 
-	if (p_instance->update_aabb)
+	if (p_instance->update_aabb) {
 		_update_instance_aabb(p_instance);
+	}
 
 	if (p_instance->update_materials) {
 

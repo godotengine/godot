@@ -222,8 +222,10 @@ void PathSpatialGizmo::redraw() {
 		//v3p.push_back(r[i]+Vector3(0,0.2,0));
 	}
 
-	add_lines(v3p, PathEditorPlugin::singleton->path_material);
-	add_collision_segments(v3p);
+	if (v3p.size() > 1) {
+		add_lines(v3p, PathEditorPlugin::singleton->path_material);
+		add_collision_segments(v3p);
+	}
 
 	if (PathEditorPlugin::singleton->get_edited_path() == path) {
 		v3p.clear();
@@ -247,9 +249,15 @@ void PathSpatialGizmo::redraw() {
 			}
 		}
 
-		add_lines(v3p, PathEditorPlugin::singleton->path_thin_material);
-		add_handles(handles);
-		add_handles(sec_handles, false, true);
+		if (v3p.size() > 1) {
+			add_lines(v3p, PathEditorPlugin::singleton->path_thin_material);
+		}
+		if (handles.size()) {
+			add_handles(handles);
+		}
+		if (sec_handles.size()) {
+			add_handles(sec_handles, false, true);
+		}
 	}
 }
 

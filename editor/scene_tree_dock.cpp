@@ -2030,6 +2030,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	tb->set_tooltip(TTR("Attach a new or existing script for the selected node."));
 	tb->set_shortcut(ED_GET_SHORTCUT("scene_tree/attach_script"));
 	filter_hbc->add_child(tb);
+	tb->hide();
 	button_create_script = tb;
 
 	tb = memnew(ToolButton);
@@ -2038,6 +2039,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	tb->set_shortcut(ED_GET_SHORTCUT("scene_tree/clear_script"));
 	filter_hbc->add_child(tb);
 	button_clear_script = tb;
+	tb->hide();
 
 	scene_tree = memnew(SceneTreeEditor(false, true, true));
 	vbc->add_child(scene_tree);

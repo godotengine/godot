@@ -339,7 +339,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 							if (i == 0) {
 
-								aabb = Rect2(src[i], Vector2());
+								aabb = Rect2(src[i], Vector2(0.00001, 0.00001)); //must have a bit of size
 							} else {
 
 								aabb.expand_to(src[i]);
@@ -355,7 +355,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 							if (i == 0) {
 
-								aabb = Rect2(src[i], Vector2());
+								aabb = Rect2(src[i], Vector2(0.00001, 0.00001)); //must have a bit of size
 							} else {
 
 								aabb.expand_to(src[i]);
@@ -385,7 +385,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 							if (i == 0) {
 
-								aabb = Rect3(src[i], Vector3());
+								aabb = Rect3(src[i], Vector3(0.00001, 0.00001, 0.00001));
 							} else {
 
 								aabb.expand_to(src[i]);
@@ -401,7 +401,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 							if (i == 0) {
 
-								aabb = Rect3(src[i], Vector3());
+								aabb = Rect3(src[i], Vector3(0.00001, 0.00001, 0.00001));
 							} else {
 
 								aabb.expand_to(src[i]);
@@ -735,6 +735,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 						//first
 						bptr[idx] = Rect3();
 						bptr[idx].position = v;
+						bptr[idx].size = Vector3(0.00001, 0.00001, 0.00001); //must have at least a bit of size
 						any_valid = true;
 					} else {
 						bptr[idx].expand_to(v);

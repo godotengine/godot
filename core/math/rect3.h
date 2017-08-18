@@ -47,12 +47,12 @@ public:
 	real_t get_area() const; /// get area
 	_FORCE_INLINE_ bool has_no_area() const {
 
-		return (size.x <= CMP_EPSILON || size.y <= CMP_EPSILON || size.z <= CMP_EPSILON);
+		return (size.x <= 0 || size.y <= 0 || size.z <= 0);
 	}
 
 	_FORCE_INLINE_ bool has_no_surface() const {
 
-		return (size.x <= CMP_EPSILON && size.y <= CMP_EPSILON && size.z <= CMP_EPSILON);
+		return (size.x <= 0 && size.y <= 0 && size.z <= 0);
 	}
 
 	const Vector3 &get_position() const { return position; }
