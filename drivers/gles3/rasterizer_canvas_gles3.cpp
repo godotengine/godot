@@ -574,6 +574,7 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 
 					Size2 texpixel_size(1.0 / texture->width, 1.0 / texture->height);
 					Rect2 src_rect = (rect->flags & CANVAS_RECT_REGION) ? Rect2(rect->source.position * texpixel_size, rect->source.size * texpixel_size) : Rect2(0, 0, 1, 1);
+					Rect2 dst_rect = Rect2(rect->rect.position, rect->rect.size);
 
 					if (rect->flags & CANVAS_RECT_FLIP_H) {
 						src_rect.size.x *= -1;
@@ -584,12 +585,12 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 					}
 
 					if (rect->flags & CANVAS_RECT_TRANSPOSE) {
-						//err..
+						dst_rect.size.x *= -1; // Encoding in the dst_rect.z uniform
 					}
 
 					state.canvas_shader.set_uniform(CanvasShaderGLES3::COLOR_TEXPIXEL_SIZE, texpixel_size);
 
-					state.canvas_shader.set_uniform(CanvasShaderGLES3::DST_RECT, Color(rect->rect.position.x, rect->rect.position.y, rect->rect.size.x, rect->rect.size.y));
+					state.canvas_shader.set_uniform(CanvasShaderGLES3::DST_RECT, Color(dst_rect.position.x, dst_rect.position.y, dst_rect.size.x, dst_rect.size.y));
 					state.canvas_shader.set_uniform(CanvasShaderGLES3::SRC_RECT, Color(src_rect.position.x, src_rect.position.y, src_rect.size.x, src_rect.size.y));
 					state.canvas_shader.set_uniform(CanvasShaderGLES3::CLIP_RECT_UV, (rect->flags & CANVAS_RECT_CLIP_UV) ? true : false);
 
@@ -1207,11 +1208,7 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 			last_blend_mode = blend_mode;
 		}
 
-		state.canvas_item_modulate = unshaded ? ci->final_modulate : Color(
-																			 ci->final_modulate.r * p_modulate.r,
-																			 ci->final_modulate.g * p_modulate.g,
-																			 ci->final_modulate.b * p_modulate.b,
-																			 ci->final_modulate.a * p_modulate.a);
+		state.canvas_item_modulate = unshaded ? ci->final_modulate : Color(ci->final_modulate.r * p_modulate.r, ci->final_modulate.g * p_modulate.g, ci->final_modulate.b * p_modulate.b, ci->final_modulate.a * p_modulate.a);
 
 		state.final_transform = ci->final_transform;
 		state.extra_matrix = Transform2D();

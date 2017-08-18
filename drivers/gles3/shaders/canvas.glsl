@@ -116,9 +116,12 @@ void main() {
 
 #ifdef USE_TEXTURE_RECT
 
-
-	uv_interp = src_rect.xy + abs(src_rect.zw) * vertex;
-	highp vec4 outvec = vec4(dst_rect.xy + dst_rect.zw * mix(vertex,vec2(1.0,1.0)-vertex,lessThan(src_rect.zw,vec2(0.0,0.0))),0.0,1.0);
+	if (dst_rect.z < 0) { // Transpose is encoded as negative dst_rect.z
+		uv_interp = src_rect.xy + abs(src_rect.zw) * vertex.yx;
+	} else {
+		uv_interp = src_rect.xy + abs(src_rect.zw) * vertex;
+	}
+	highp vec4 outvec = vec4(dst_rect.xy + abs(dst_rect.zw) * mix(vertex,vec2(1.0,1.0)-vertex,lessThan(src_rect.zw,vec2(0.0,0.0))),0.0,1.0);
 
 #else
 	uv_interp = uv_attrib;
