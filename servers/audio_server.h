@@ -125,6 +125,8 @@ private:
 		bool mute;
 		bool bypass;
 
+		bool soloed;
+
 		//Each channel is a stereo pair.
 		struct Channel {
 			bool used;

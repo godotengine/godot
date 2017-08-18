@@ -1455,7 +1455,7 @@ void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_c
 
 		if (select_mode == SELECT_ROW) {
 
-			if (p_selected == p_current && !c.selected) {
+			if (p_selected == p_current && (!c.selected || allow_reselect)) {
 				c.selected = true;
 				selected_item = p_selected;
 				selected_col = 0;
@@ -1478,7 +1478,7 @@ void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_c
 
 			if (!r_in_range && &selected_cell == &c) {
 
-				if (!selected_cell.selected || force_select_on_already_selected) {
+				if (!selected_cell.selected || allow_reselect) {
 
 					selected_cell.selected = true;
 
@@ -1743,7 +1743,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 
 		/* editing */
 
-		bool bring_up_editor = force_select_on_already_selected ? (c.selected && already_selected) : c.selected;
+		bool bring_up_editor = allow_reselect ? (c.selected && already_selected) : c.selected;
 		String editor_text = c.text;
 
 		switch (c.mode) {
@@ -3557,16 +3557,6 @@ int Tree::get_drop_mode_flags() const {
 	return drop_mode_flags;
 }
 
-void Tree::set_single_select_cell_editing_only_when_already_selected(bool p_enable) {
-
-	force_select_on_already_selected = p_enable;
-}
-
-bool Tree::get_single_select_cell_editing_only_when_already_selected() const {
-
-	return force_select_on_already_selected;
-}
-
 void Tree::set_edit_checkbox_cell_only_when_checkbox_is_pressed(bool p_enable) {
 
 	force_edit_checkbox_only_on_checkbox = p_enable;
@@ -3585,6 +3575,15 @@ void Tree::set_allow_rmb_select(bool p_allow) {
 bool Tree::get_allow_rmb_select() const {
 
 	return allow_rmb_select;
+}
+
+void Tree::set_allow_reselect(bool p_allow) {
+	allow_reselect = p_allow;
+}
+
+bool Tree::get_allow_reselect() const {
+
+	return allow_reselect;
 }
 
 void Tree::_bind_methods() {
@@ -3640,8 +3639,8 @@ void Tree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_allow_rmb_select", "allow"), &Tree::set_allow_rmb_select);
 	ClassDB::bind_method(D_METHOD("get_allow_rmb_select"), &Tree::get_allow_rmb_select);
 
-	ClassDB::bind_method(D_METHOD("set_single_select_cell_editing_only_when_already_selected", "enable"), &Tree::set_single_select_cell_editing_only_when_already_selected);
-	ClassDB::bind_method(D_METHOD("get_single_select_cell_editing_only_when_already_selected"), &Tree::get_single_select_cell_editing_only_when_already_selected);
+	ClassDB::bind_method(D_METHOD("set_allow_reselect", "allow"), &Tree::set_allow_reselect);
+	ClassDB::bind_method(D_METHOD("get_allow_reselect"), &Tree::get_allow_reselect);
 
 	ADD_SIGNAL(MethodInfo("item_selected"));
 	ADD_SIGNAL(MethodInfo("cell_selected"));
@@ -3751,7 +3750,6 @@ Tree::Tree() {
 	drop_mode_over = NULL;
 	drop_mode_section = 0;
 	single_select_defer = NULL;
-	force_select_on_already_selected = false;
 
 	allow_rmb_select = false;
 	force_edit_checkbox_only_on_checkbox = false;
@@ -3760,6 +3758,8 @@ Tree::Tree() {
 
 	cache.hover_item = NULL;
 	cache.hover_cell = -1;
+
+	allow_reselect = false;
 }
 
 Tree::~Tree() {

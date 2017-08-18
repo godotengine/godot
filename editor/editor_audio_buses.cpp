@@ -705,8 +705,8 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses) {
 	effects->set_drag_forwarding(this);
 	effects->connect("item_rmb_selected", this, "_effect_rmb");
 	effects->set_allow_rmb_select(true);
-	effects->set_single_select_cell_editing_only_when_already_selected(true);
 	effects->set_focus_mode(FOCUS_CLICK);
+	effects->set_allow_reselect(true);
 
 	send = memnew(OptionButton);
 	send->set_clip_text(true);

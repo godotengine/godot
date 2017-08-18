@@ -3234,7 +3234,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	members->connect("button_pressed", this, "_member_button");
 	members->connect("item_edited", this, "_member_edited");
 	members->connect("cell_selected", this, "_member_selected", varray(), CONNECT_DEFERRED);
-	members->set_single_select_cell_editing_only_when_already_selected(true);
+	members->set_allow_reselect(true);
 	members->set_hide_folding(true);
 	members->set_drag_forwarding(this);
 

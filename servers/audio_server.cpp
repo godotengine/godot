@@ -159,12 +159,41 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 
 void AudioServer::_mix_step() {
 
+	bool solo_mode = false;
+
 	for (int i = 0; i < buses.size(); i++) {
 		Bus *bus = buses[i];
 		bus->index_cache = i; //might be moved around by editor, so..
 		for (int k = 0; k < bus->channels.size(); k++) {
 
 			bus->channels[k].used = false;
+		}
+
+		if (bus->solo) {
+			//solo chain
+			solo_mode = true;
+			bus->soloed = true;
+			do {
+
+				if (bus != buses[0]) {
+					//everything has a send save for master bus
+					if (!bus_map.has(bus->send)) {
+						bus = buses[0]; //send to master
+					} else {
+						bus = bus_map[bus->send];
+						if (bus->index_cache >= bus->index_cache) { //invalid, send to master
+							bus = buses[0];
+						}
+					}
+
+					bus->soloed = true;
+				} else {
+					bus = NULL;
+				}
+
+			} while (bus);
+		} else {
+			bus->soloed = false;
 		}
 	}
 
@@ -192,24 +221,26 @@ void AudioServer::_mix_step() {
 		}
 
 		//process effects
-		for (int j = 0; j < bus->effects.size(); j++) {
+		if (!bus->bypass) {
+			for (int j = 0; j < bus->effects.size(); j++) {
 
-			if (!bus->effects[j].enabled)
-				continue;
-
-			for (int k = 0; k < bus->channels.size(); k++) {
-
-				if (!bus->channels[k].active)
+				if (!bus->effects[j].enabled)
 					continue;
-				bus->channels[k].effect_instances[j]->process(bus->channels[k].buffer.ptr(), temp_buffer[k].ptr(), buffer_size);
-			}
 
-			//swap buffers, so internal buffer always has the right data
-			for (int k = 0; k < bus->channels.size(); k++) {
+				for (int k = 0; k < bus->channels.size(); k++) {
 
-				if (!buses[i]->channels[k].active)
-					continue;
-				SWAP(bus->channels[k].buffer, temp_buffer[k]);
+					if (!bus->channels[k].active)
+						continue;
+					bus->channels[k].effect_instances[j]->process(bus->channels[k].buffer.ptr(), temp_buffer[k].ptr(), buffer_size);
+				}
+
+				//swap buffers, so internal buffer always has the right data
+				for (int k = 0; k < bus->channels.size(); k++) {
+
+					if (!buses[i]->channels[k].active)
+						continue;
+					SWAP(bus->channels[k].buffer, temp_buffer[k]);
+				}
 			}
 		}
 
@@ -237,7 +268,24 @@ void AudioServer::_mix_step() {
 			AudioFrame *buf = bus->channels[k].buffer.ptr();
 
 			AudioFrame peak = AudioFrame(0, 0);
+
+			float volume = Math::db2linear(bus->volume_db);
+
+			if (solo_mode) {
+				if (!bus->soloed) {
+					volume = 0.0;
+				}
+			} else {
+				if (bus->mute) {
+					volume = 0.0;
+				}
+			}
+
+			//apply volume and compute peak
 			for (uint32_t j = 0; j < buffer_size; j++) {
+
+				buf[j] *= volume;
+
 				float l = ABS(buf[j].l);
 				if (l > peak.l) {
 					peak.l = l;

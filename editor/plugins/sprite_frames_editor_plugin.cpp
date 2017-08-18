@@ -747,7 +747,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	animations->set_hide_root(true);
 	animations->connect("cell_selected", this, "_animation_select");
 	animations->connect("item_edited", this, "_animation_name_edited");
-	animations->set_single_select_cell_editing_only_when_already_selected(true);
+	animations->set_allow_reselect(true);
 
 	anim_speed = memnew(SpinBox);
 	vbc_animlist->add_margin_child(TTR("Speed (FPS):"), anim_speed);

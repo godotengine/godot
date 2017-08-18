@@ -580,7 +580,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	tree = memnew(Tree);
 	tree->set_hide_root(true);
 	tree->set_select_mode(Tree::SELECT_MULTI);
-	tree->set_single_select_cell_editing_only_when_already_selected(true);
+	tree->set_allow_reselect(true);
 
 	tree->set_drag_forwarding(this);
 
