@@ -1150,7 +1150,7 @@ CameraSpatialGizmo::CameraSpatialGizmo(Camera *p_camera) {
 
 void MeshInstanceSpatialGizmo::redraw() {
 
-	Ref<ArrayMesh> m = mesh->get_mesh();
+	Ref<Mesh> m = mesh->get_mesh();
 	if (!m.is_valid())
 		return; //none
 
