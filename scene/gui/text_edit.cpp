@@ -2037,6 +2037,13 @@ void TextEdit::_input_event(const InputEvent &p_input_event) {
 #endif
 						bool prev_char = false;
 						int cc = cursor.column;
+
+						if (cc == 0 && cursor.line > 0) {
+							cursor_set_line(cursor.line - 1);
+							cursor_set_column(text[cursor.line].length());
+							break;
+						}
+
 						while (cc > 0) {
 
 							bool ischar = _is_text_char(text[cursor.line][cc - 1]);
@@ -2094,6 +2101,13 @@ void TextEdit::_input_event(const InputEvent &p_input_event) {
 #endif
 						bool prev_char = false;
 						int cc = cursor.column;
+
+						if (cc == text[cursor.line].length() && cursor.line < text.size() - 1) {
+							cursor_set_line(cursor.line + 1);
+							cursor_set_column(0);
+							break;
+						}
+
 						while (cc < text[cursor.line].length()) {
 
 							bool ischar = _is_text_char(text[cursor.line][cc]);
