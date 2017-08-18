@@ -111,8 +111,10 @@ def configure(env):
 
     env.Append(CPPPATH=['#platform/windows'])
 
-    # Targeted Windows version: Vista (and later)
-    winver = "0x0600" # Windows Vista is the minimum target for windows builds
+    # Targeted Windows version: 7 (and later), minimum supported version
+    # XP support dropped after EOL due to missing API for IPv6 and other issues
+    # Vista support dropped after EOL due to GH-10243
+    winver = "0x0601"
 
     if (os.name == "nt" and os.getenv("VCINSTALLDIR")): # MSVC
 
