@@ -54,7 +54,7 @@ Error AudioDriverPulseAudio::init() {
 	spec.rate = mix_rate;
 
 	int latency = GLOBAL_DEF("audio/output_latency", 25);
-	buffer_size = nearest_power_of_2(latency * mix_rate / 1000);
+	buffer_size = closest_power_of_2(latency * mix_rate / 1000);
 
 	pa_buffer_attr attr;
 	// set to appropriate buffer size from global settings

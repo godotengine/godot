@@ -44,9 +44,11 @@ class AudioDriverOSX : public AudioDriverSW {
 	bool active;
 	Mutex *mutex;
 
+	int mix_rate;
 	int channels;
-	int32_t *samples_in;
 	int buffer_frames;
+
+	Vector<int32_t> samples_in;
 
 	static OSStatus output_callback(void *inRefCon,
 			AudioUnitRenderActionFlags *ioActionFlags,

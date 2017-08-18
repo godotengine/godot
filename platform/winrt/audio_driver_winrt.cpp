@@ -54,7 +54,7 @@ Error AudioDriverWinRT::init() {
 	channels = 2;
 
 	int latency = GLOBAL_DEF("audio/output_latency", 25);
-	buffer_size = nearest_power_of_2(latency * mix_rate / 1000);
+	buffer_size = closest_power_of_2(latency * mix_rate / 1000);
 
 	samples_in = memnew_arr(int32_t, buffer_size * channels);
 	for (int i = 0; i < AUDIO_BUFFERS; i++) {
