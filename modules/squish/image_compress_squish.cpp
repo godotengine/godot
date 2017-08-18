@@ -89,8 +89,8 @@ void image_compress_squish(Image *p_image) {
 		ERR_FAIL_COND(!w || w % 4 != 0);
 		ERR_FAIL_COND(!h || h % 4 != 0);
 	} else {
-		ERR_FAIL_COND(!w || w != nearest_power_of_2(w));
-		ERR_FAIL_COND(!h || h != nearest_power_of_2(h));
+		ERR_FAIL_COND(!w || w != next_power_of_2(w));
+		ERR_FAIL_COND(!h || h != next_power_of_2(h));
 	};
 
 	if (p_image->get_format() >= Image::FORMAT_BC1)
