@@ -63,7 +63,7 @@ void Label::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_TRANSLATION_CHANGED) {
 
-		String new_text = localize(text);
+		String new_text = tr(text);
 		if (new_text == xl_text)
 			return; //nothing new
 		xl_text = new_text;
@@ -526,7 +526,7 @@ void Label::set_text(const String &p_string) {
 	if (text == p_string)
 		return;
 	text = p_string;
-	xl_text = localize(p_string);
+	xl_text = tr(p_string);
 	word_cache_dirty = true;
 	if (percent_visible < 1)
 		visible_chars = get_total_character_count() * percent_visible;

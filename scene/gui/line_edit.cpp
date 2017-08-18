@@ -991,7 +991,7 @@ String LineEdit::get_text() const {
 
 void LineEdit::set_placeholder(String p_text) {
 
-	placeholder = localize(p_text);
+	placeholder = tr(p_text);
 	update();
 }
 

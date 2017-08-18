@@ -1560,7 +1560,7 @@ void Object::initialize_class() {
 	initialized = true;
 }
 
-StringName Object::localize(const StringName &p_message) const {
+StringName Object::tr(const StringName &p_message) const {
 
 	if (!_can_translate || !TranslationServer::get_singleton())
 		return p_message;
@@ -1707,11 +1707,11 @@ void Object::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_block_signals", "enable"), &Object::set_block_signals);
 	ClassDB::bind_method(D_METHOD("is_blocking_signals"), &Object::is_blocking_signals);
-	ClassDB::bind_method(D_METHOD("set_message_localization", "enable"), &Object::set_message_localization);
-	ClassDB::bind_method(D_METHOD("can_translate_messages"), &Object::can_translate_messages);
 	ClassDB::bind_method(D_METHOD("property_list_changed_notify"), &Object::property_list_changed_notify);
 
-	ClassDB::bind_method(D_METHOD("localize", "message"), &Object::localize);
+	ClassDB::bind_method(D_METHOD("set_message_translation", "enable"), &Object::set_message_translation);
+	ClassDB::bind_method(D_METHOD("can_translate_messages"), &Object::can_translate_messages);
+	ClassDB::bind_method(D_METHOD("tr", "message"), &Object::tr);
 
 	ClassDB::bind_method(D_METHOD("is_queued_for_deletion"), &Object::is_queued_for_deletion);
 

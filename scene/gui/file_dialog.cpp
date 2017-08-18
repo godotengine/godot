@@ -464,7 +464,7 @@ void FileDialog::update_filters() {
 		String flt = filters[i].get_slice(";", 0).strip_edges();
 		String desc = filters[i].get_slice(";", 1).strip_edges();
 		if (desc.length())
-			filter->add_item(String(localize(desc)) + " ( " + flt + " )");
+			filter->add_item(String(tr(desc)) + " ( " + flt + " )");
 		else
 			filter->add_item("( " + flt + " )");
 	}

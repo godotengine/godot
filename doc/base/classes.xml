@@ -28259,15 +28259,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="localize" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="message" type="String">
-			</argument>
-			<description>
-				Localize (translate) a message. Only works if message localization is enabled (which it is by default). See [method set_message_localization].
-			</description>
-		</method>
 		<method name="notification">
 			<argument index="0" name="what" type="int">
 			</argument>
@@ -28297,11 +28288,11 @@
 				If set to true, signal emission is blocked.
 			</description>
 		</method>
-		<method name="set_message_localization">
+		<method name="set_message_translation">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Define whether this object can localize strings (with calls to [code]localize[/code]). Default is true.
+				Define whether this object can translate strings (with calls to [method tr]). Default is true.
 			</description>
 		</method>
 		<method name="set_meta">
@@ -28318,6 +28309,15 @@
 			</argument>
 			<description>
 				Set a script into the object, scripts extend the object functionality.
+			</description>
+		</method>
+		<method name="tr" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="message" type="String">
+			</argument>
+			<description>
+				Translate a message. Only works if message translation is enabled (which it is by default). See [method set_message_translation].
 			</description>
 		</method>
 	</methods>
