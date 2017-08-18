@@ -89,7 +89,7 @@ public class GodotPaymentV3 extends Godot.SingletonBase {
 	}
 
 	public void callbackSuccess(String ticket, String signature, String sku) {
-		GodotLib.callobject(purchaseCallbackId, "purchase_success", new Object[]{ticket, signature, sku});
+		GodotLib.calldeferred(purchaseCallbackId, "purchase_success", new Object[]{ticket, signature, sku});
 	}
 
 	public void callbackSuccessProductMassConsumed(String ticket, String signature, String sku) {

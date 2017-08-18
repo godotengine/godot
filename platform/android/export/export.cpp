@@ -468,11 +468,36 @@ class EditorExportAndroid : public EditorExportPlatform {
 		return zipfi;
 	}
 
-	static Error save_apk_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total) {
+	static Set<String> get_abis() {
+		Set<String> abis;
+		abis.insert("armeabi");
+		abis.insert("armeabi-v7a");
+		abis.insert("arm64-v8a");
+		abis.insert("x86");
+		abis.insert("x86_64");
+		abis.insert("mips");
+		abis.insert("mips64");
+		return abis;
+	}
 
+	static Error save_apk_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total) {
 		APKExportData *ed = (APKExportData *)p_userdata;
 		String dst_path = p_path;
-		dst_path = dst_path.replace_first("res://", "assets/");
+		static Set<String> android_abis = get_abis();
+
+		if (dst_path.ends_with(".so")) {
+			String abi = dst_path.get_base_dir().get_file().strip_edges(); // parent dir name
+			if (android_abis.has(abi)) {
+				dst_path = "lib/" + abi + "/" + dst_path.get_file();
+			} else {
+				String err = "Dynamic libraries must be located in the folder named after Android ABI they were compiled for. " +
+							 p_path + " does not follow this convention.";
+				ERR_PRINT(err.utf8().get_data());
+				return ERR_FILE_BAD_PATH;
+			}
+		} else {
+			dst_path = dst_path.replace_first("res://", "assets/");
+		}
 
 		zip_fileinfo zipfi = get_zip_fileinfo();
 
@@ -1375,15 +1400,15 @@ public:
 				}
 			}
 
-			if (file == "lib/x86/libgodot_android.so" && !export_x86) {
+			if (file == "lib/x86/*.so" && !export_x86) {
 				skip = true;
 			}
 
-			if (file.match("lib/armeabi*/libgodot_android.so") && !export_arm) {
+			if (file.match("lib/armeabi*/*.so") && !export_arm) {
 				skip = true;
 			}
 
-			if (file.match("lib/arm64*/libgodot_android.so") && !export_arm64) {
+			if (file.match("lib/arm64*/*.so") && !export_arm64) {
 				skip = true;
 			}
 

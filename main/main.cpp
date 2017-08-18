@@ -1098,10 +1098,20 @@ bool Main::start() {
 				test = args[i + 1];
 			} else if (args[i] == "--export") {
 				editor = true; //needs editor
-				_export_preset = args[i + 1];
+				if (i + 1 < args.size()) {
+					_export_preset = args[i + 1];
+				} else {
+					ERR_PRINT("Export preset name not specified");
+					return false;
+				}
 			} else if (args[i] == "--export-debug") {
 				editor = true; //needs editor
-				_export_preset = args[i + 1];
+				if (i + 1 < args.size()) {
+					_export_preset = args[i + 1];
+				} else {
+					ERR_PRINT("Export preset name not specified");
+					return false;
+				}
 				export_debug = true;
 			} else {
 				// The parameter does not match anything known, don't skip the next argument

@@ -37,7 +37,7 @@ extern "C" {
 #include <stdint.h>
 #include <wchar.h>
 
-#define GODOT_STRING_SIZE 8
+#define GODOT_STRING_SIZE sizeof(void *)
 
 #ifndef GODOT_CORE_API_GODOT_STRING_TYPE_DEFINED
 #define GODOT_CORE_API_GODOT_STRING_TYPE_DEFINED

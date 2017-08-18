@@ -994,6 +994,8 @@ void NativeScriptLanguage::init_library(const Ref<GDNativeLibrary> &lib) {
 #endif
 	// See if this library was "registered" already.
 	const String &lib_path = lib->get_active_library_path();
+	ERR_EXPLAIN(lib->get_name() + " does not have a library for the current platform");
+	ERR_FAIL_COND(lib_path.length() == 0);
 	Map<String, Ref<GDNative> >::Element *E = library_gdnatives.find(lib_path);
 
 	if (!E) {

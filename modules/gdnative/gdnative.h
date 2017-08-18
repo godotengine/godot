@@ -48,11 +48,17 @@ class GDNativeLibrary : public Resource {
 		// NOTE(karroffel): I heard OSX 32 bit is dead, so 64 only
 		OSX,
 
-		// TODO(karroffel): all different android versions and archs
+		// Android .so files must be located in directories corresponding to Android ABI names:
+		// https://developer.android.com/ndk/guides/abis.html
+		// Android runtime will select the matching library depending on the device.
+		// The value here must simply point to the .so name, for example:
+		// "res://libmy_gdnative.so" or "libmy_gdnative.so",
+		// while in the project the actual paths can be "lib/android/armeabi-v7a/libmy_gdnative.so",
+		// "lib/android/arm64-v8a/libmy_gdnative.so".
 		ANDROID,
 
-		// TODO(karroffe): all different iOS versions and archs
-		IOS,
+		IOS_32BIT,
+		IOS_64BIT,
 
 		// TODO(karroffel): figure out how to deal with web stuff at all...
 		WASM,
@@ -64,10 +70,9 @@ class GDNativeLibrary : public Resource {
 
 	};
 
-	static String platform_names[NUM_PLATFORMS];
-	static String platform_lib_ext[NUM_PLATFORMS];
+	static String platform_names[NUM_PLATFORMS + 1];
+	static String platform_lib_ext[NUM_PLATFORMS + 1];
 
-	// TODO(karroffel): make this actually do something lol.
 	static Platform current_platform;
 
 	String library_paths[NUM_PLATFORMS];

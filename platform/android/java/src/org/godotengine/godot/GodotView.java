@@ -208,8 +208,9 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 	@Override public void onInputDeviceAdded(int deviceId) {
 		joystick joy = new joystick();
 		joy.device_id = deviceId;
-		int id = joy_devices.size();
+		final int id = joy_devices.size();
 		InputDevice device = mInputManager.getInputDevice(deviceId);
+		final String name = device.getName();
 		joy.name = device.getName();
 		joy.axes = new ArrayList<InputDevice.MotionRange>();
 		joy.hats = new ArrayList<InputDevice.MotionRange>();
@@ -224,19 +225,29 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 			}
 		}
 		joy_devices.add(joy);
-		GodotLib.joyconnectionchanged(id, true, joy.name);
+		queueEvent(new Runnable() {
+			@Override
+			public void run() {
+				GodotLib.joyconnectionchanged(id, true, name);
+			}
+		});
   }
 
 	@Override public void onInputDeviceRemoved(int deviceId) {
-		int id = find_joy_device(deviceId);
+		final int id = find_joy_device(deviceId);
 		joy_devices.remove(id);
-		GodotLib.joyconnectionchanged(id, false, "");
+		queueEvent(new Runnable() {
+			@Override
+			public void run() {
+				GodotLib.joyconnectionchanged(id, false, "");
+			}
+		});
 	}
 
 	@Override public void onInputDeviceChanged(int deviceId) {
 
 	}
-	@Override public boolean onKeyUp(int keyCode, KeyEvent event) {
+	@Override public boolean onKeyUp(final int keyCode, KeyEvent event) {
 
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
 			return true;
@@ -249,22 +260,38 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 		int source = event.getSource();
 		if ((source & InputDevice.SOURCE_JOYSTICK) != 0 || (source & InputDevice.SOURCE_DPAD) != 0 || (source & InputDevice.SOURCE_GAMEPAD) != 0) {
 
-			int button = get_godot_button(keyCode);
-			int device = find_joy_device(event.getDeviceId());
+			final int button = get_godot_button(keyCode);
+			final int device = find_joy_device(event.getDeviceId());
 
-			GodotLib.joybutton(device, button, false);
+			queueEvent(new Runnable() {
+				@Override
+				public void run() {
+					GodotLib.joybutton(device, button, false);
+				}
+			});
 			return true;
 		} else {
-
-			GodotLib.key(keyCode, event.getUnicodeChar(0), false);
+			final int chr = event.getUnicodeChar(0);
+			queueEvent(new Runnable() {
+				@Override
+				public void run() {
+					GodotLib.key(keyCode, chr, false);
+				}
+			});
 		};
 		return super.onKeyUp(keyCode, event);
 	};
 
-	@Override public boolean onKeyDown(int keyCode, KeyEvent event) {
+	@Override public boolean onKeyDown(final int keyCode, KeyEvent event) {
 
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
-			GodotLib.back();
+			queueEvent(new Runnable() {
+				@Override
+				public void run() {
+					GodotLib.back();
+				}
+			});
+
 			// press 'back' button should not terminate program
 			//normal handle 'back' event in game logic
 			return true;
@@ -281,16 +308,26 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 
 			if (event.getRepeatCount() > 0) // ignore key echo
 				return true;
-			int button = get_godot_button(keyCode);
-			int device = find_joy_device(event.getDeviceId());
+			final int button = get_godot_button(keyCode);
+			final int device = find_joy_device(event.getDeviceId());
 
 			//Log.e(TAG, String.format("joy button down! button %x, %d, device %d", keyCode, button, device));
-
-			GodotLib.joybutton(device, button, true);
+			queueEvent(new Runnable() {
+				@Override
+				public void run() {
+					GodotLib.joybutton(device, button, true);
+				}
+			});
 			return true;
 
 		} else {
-			GodotLib.key(keyCode, event.getUnicodeChar(0), true);
+			final int chr = event.getUnicodeChar(0);
+			queueEvent(new Runnable() {
+				@Override
+				public void run() {
+					GodotLib.key(keyCode, chr, true);
+				}
+			});
 		};
 		return super.onKeyDown(keyCode, event);
 	}
@@ -299,21 +336,32 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 
 		if ((event.getSource() & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK && event.getAction() == MotionEvent.ACTION_MOVE) {
 
-			int device_id = find_joy_device(event.getDeviceId());
+			final int device_id = find_joy_device(event.getDeviceId());
 			joystick joy = joy_devices.get(device_id);
 
 			for (int i = 0; i < joy.axes.size(); i++) {
 				InputDevice.MotionRange range = joy.axes.get(i);
-				float value = (event.getAxisValue(range.getAxis()) - range.getMin() ) / range.getRange() * 2.0f - 1.0f;
+				final float value = (event.getAxisValue(range.getAxis()) - range.getMin() ) / range.getRange() * 2.0f - 1.0f;
 				//Log.e(TAG, String.format("axis event: %d, value %f", i, value));
-				GodotLib.joyaxis(device_id, i, value);
+				final int idx = i;
+				queueEvent(new Runnable() {
+					@Override
+					public void run() {
+						GodotLib.joyaxis(device_id, idx, value);
+					}
+				});
 			}
 
 			for (int i = 0; i < joy.hats.size(); i+=2) {
-				int hatX = Math.round(event.getAxisValue(joy.hats.get(i).getAxis()));
-				int hatY = Math.round(event.getAxisValue(joy.hats.get(i+1).getAxis()));
+				final int hatX = Math.round(event.getAxisValue(joy.hats.get(i).getAxis()));
+				final int hatY = Math.round(event.getAxisValue(joy.hats.get(i+1).getAxis()));
 				//Log.e(TAG, String.format("HAT EVENT %d, %d", hatX, hatY));
-				GodotLib.joyhat(device_id, hatX, hatY);
+				queueEvent(new Runnable() {
+					@Override
+					public void run() {
+						GodotLib.joyhat(device_id, hatX, hatY);
+					}
+				});
 			}
 			return true;
 		};
