@@ -1756,7 +1756,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		reason->set_text("");
 		reason->set_editable(false);
 		hbc->add_child(reason);
-		reason->add_color_override("font_color", Color(0.1, 0.9, 0.8, 0.9));
+		reason->add_color_override("font_color", Color(1, 0.4, 0.0, 0.8));
 		reason->set_h_size_flags(SIZE_EXPAND_FILL);
 		//reason->set_clip_text(true);
 
