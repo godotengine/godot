@@ -298,6 +298,8 @@ public:
 
 	void propagate_notification(int p_notification);
 
+	void propagate_call(const StringName &p_method, const Array &p_args = Array(), const bool p_parent_first = false);
+
 	/* PROCESSING */
 	void set_fixed_process(bool p_process);
 	float get_fixed_process_delta_time() const;

@@ -26549,6 +26549,17 @@
 				Notify the current node and all its children recursively by calling notification() in all of them.
 			</description>
 		</method>
+		<method name="propagate_call">
+			<argument index="0" name="method" type="String">
+			</argument>
+			<argument index="1" name="args" type="Array" default="[]">
+			</argument>
+			<argument index="2" name="parent_first" type="bool" default="false">
+			</argument>
+			<description>
+				Calls the method (if present) with the arguments given in "args" on this Node and recursively on all children. If the parent_first argument is true then the method will be called on the current [Node] first, then on all children. If it is false then the children will get called first.
+			</description>
+		</method>
 		<method name="queue_free">
 			<description>
 			</description>
