@@ -172,7 +172,7 @@ void GDAPI godot_string_utf8(godot_string *p_self, char *result);
 godot_bool GDAPI godot_string_parse_utf8(godot_string *p_self, const char *p_utf8);
 godot_bool GDAPI godot_string_parse_utf8_with_len(godot_string *p_self, const char *p_utf8, godot_int p_len);
 godot_string GDAPI godot_string_chars_to_utf8(const char *p_utf8);
-godot_string GDAPI godot_string_chars_utf8_with_len(const char *p_utf8, godot_int p_len);
+godot_string GDAPI godot_string_chars_to_utf8_with_len(const char *p_utf8, godot_int p_len);
 
 uint32_t GDAPI godot_string_hash(const godot_string *p_self);
 uint64_t GDAPI godot_string_hash64(const godot_string *p_self);
