@@ -351,19 +351,8 @@ void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 
 	XChangeWindowAttributes(x11_display, x11_window, CWEventMask, &new_attr);
 
-	XClassHint *classHint;
-
 	/* set the titlebar name */
 	XStoreName(x11_display, x11_window, "Godot");
-
-	/* set the name and class hints for the window manager to use */
-	classHint = XAllocClassHint();
-	if (classHint) {
-		classHint->res_name = (char *)"Godot_Engine";
-		classHint->res_class = (char *)"Godot";
-	}
-	XSetClassHint(x11_display, x11_window, classHint);
-	XFree(classHint);
 
 	wm_delete = XInternAtom(x11_display, "WM_DELETE_WINDOW", true);
 	XSetWMProtocols(x11_display, x11_window, &wm_delete, 1);
