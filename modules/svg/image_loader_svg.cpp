@@ -47,7 +47,7 @@ SVGRasterizer::~SVGRasterizer() {
 
 SVGRasterizer ImageLoaderSVG::rasterizer;
 
-Error ImageLoaderSVG::_create_image(Ref<Image> p_image, const PoolVector<uint8_t> *p_data, float p_scale) {
+Error ImageLoaderSVG::_create_image(Ref<Image> p_image, const PoolVector<uint8_t> *p_data, float p_scale, bool upsample) {
 	NSVGimage *svg_image;
 	PoolVector<uint8_t>::Read src_r = p_data->read();
 	svg_image = nsvgParse((char *)src_r.ptr(), "px", 96);
@@ -55,15 +55,18 @@ Error ImageLoaderSVG::_create_image(Ref<Image> p_image, const PoolVector<uint8_t
 		ERR_PRINT("SVG Corrupted");
 		return ERR_FILE_CORRUPT;
 	}
-	int w = (int)(svg_image->width * p_scale);
-	int h = (int)(svg_image->height * p_scale);
+
+	float upscale = upsample ? 2.0 : 1.0;
+
+	int w = (int)(svg_image->width * p_scale * upscale);
+	int h = (int)(svg_image->height * p_scale * upscale);
 
 	PoolVector<uint8_t> dst_image;
 	dst_image.resize(w * h * 4);
 
 	PoolVector<uint8_t>::Write dw = dst_image.write();
 
-	rasterizer.rasterize(svg_image, 0, 0, p_scale, (unsigned char *)dw.ptr(), w, h, w * 4);
+	rasterizer.rasterize(svg_image, 0, 0, p_scale * upscale, (unsigned char *)dw.ptr(), w, h, w * 4);
 
 	dw = PoolVector<uint8_t>::Write();
 	p_image->create(w, h, false, Image::FORMAT_RGBA8, dst_image);
@@ -75,7 +78,7 @@ Error ImageLoaderSVG::_create_image(Ref<Image> p_image, const PoolVector<uint8_t
 	return OK;
 }
 
-Error ImageLoaderSVG::create_image_from_string(Ref<Image> p_image, const char *svg_str, float p_scale) {
+Error ImageLoaderSVG::create_image_from_string(Ref<Image> p_image, const char *svg_str, float p_scale, bool upsample) {
 
 	size_t str_len = strlen(svg_str);
 	PoolVector<uint8_t> src_data;
@@ -83,7 +86,7 @@ Error ImageLoaderSVG::create_image_from_string(Ref<Image> p_image, const char *s
 	PoolVector<uint8_t>::Write src_w = src_data.write();
 	memcpy(src_w.ptr(), svg_str, str_len);
 
-	return _create_image(p_image, &src_data, p_scale);
+	return _create_image(p_image, &src_data, p_scale, upsample);
 }
 
 Error ImageLoaderSVG::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale) {
@@ -94,7 +97,7 @@ Error ImageLoaderSVG::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 	PoolVector<uint8_t>::Write src_w = src_image.write();
 	f->get_buffer(src_w.ptr(), size);
 
-	return _create_image(p_image, &src_image, p_scale);
+	return _create_image(p_image, &src_image, p_scale, 1.0);
 }
 
 void ImageLoaderSVG::get_recognized_extensions(List<String> *p_extensions) const {

@@ -106,7 +106,7 @@ Ref<ImageTexture> editor_generate_icon(int p_index, bool dark_theme = true) {
 	Ref<ImageTexture> icon = memnew(ImageTexture);
 	Ref<Image> img = memnew(Image);
 
-	ImageLoaderSVG::create_image_from_string(img, dark_theme ? editor_icons_sources[p_index] : editor_icons_sources_dark[p_index], EDSCALE);
+	ImageLoaderSVG::create_image_from_string(img, dark_theme ? editor_icons_sources[p_index] : editor_icons_sources_dark[p_index], EDSCALE, true);
 	if ((EDSCALE - (float)((int)EDSCALE)) > 0.0)
 		icon->create_from_image(img); // in this case filter really helps
 	else
@@ -193,7 +193,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Color separator_color = dark_theme ? Color(1, 1, 1, 0.1) : Color(0, 0, 0, 0.1);
 
 	// the resolution or the dark theme parameter has not changed, so we do not regenerate the icons
-	if (p_theme != NULL && (p_theme->get_constant("scale", "Editor") - EDSCALE) < 0.00001 && p_theme->get_constant("dark_theme", "Editor") == dark_theme) {
+	if (p_theme != NULL && fabs(p_theme->get_constant("scale", "Editor") - EDSCALE) < 0.00001 && p_theme->get_constant("dark_theme", "Editor") == dark_theme) {
 		for (int i = 0; i < editor_icons_count; i++) {
 			theme->set_icon(editor_icons_names[i], "EditorIcons", p_theme->get_icon(editor_icons_names[i], "EditorIcons"));
 		}

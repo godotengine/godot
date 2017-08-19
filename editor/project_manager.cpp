@@ -1449,7 +1449,7 @@ void ProjectListFilter::_filter_option_selected(int p_idx) {
 void ProjectListFilter::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			clear_search_button->set_icon(get_icon("CloseHover", "EditorIcons"));
+			clear_search_button->set_icon(get_icon("Close", "EditorIcons"));
 		} break;
 	}
 }

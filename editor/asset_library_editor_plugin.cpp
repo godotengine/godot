@@ -535,7 +535,7 @@ void EditorAssetLibrary::_notification(int p_what) {
 
 			TextureRect *tf = memnew(TextureRect);
 			tf->set_texture(get_icon("Error", "EditorIcons"));
-			reverse->set_icon(get_icon("Updown", "EditorIcons"));
+			reverse->set_icon(get_icon("Sort", "EditorIcons"));
 
 			error_hb->add_child(tf);
 			error_label->raise();
