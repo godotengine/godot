@@ -232,13 +232,12 @@ void CanvasItemEditor::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
 	if (k->get_control())
 		return;
 
-	if (k->is_pressed() && !k->is_echo() && k->get_scancode() == KEY_V && drag == DRAG_NONE && can_move_pivot) {
-
-		if (k->get_shift()) {
-			//move drag pivot
-			drag = DRAG_PIVOT;
-		} else if (!Input::get_singleton()->is_mouse_button_pressed(0)) {
-
+	if (k->is_pressed() && !k->is_echo() && drag_pivot_shortcut.is_valid() && drag_pivot_shortcut->is_shortcut(p_ev) && drag == DRAG_NONE && can_move_pivot) {
+		//move drag pivot
+		drag = DRAG_PIVOT;
+	}
+	if (k->is_pressed() && !k->is_echo() && set_pivot_shortcut.is_valid() && set_pivot_shortcut->is_shortcut(p_ev) && drag == DRAG_NONE && can_move_pivot) {
+		if (!Input::get_singleton()->is_mouse_button_pressed(0)) {
 			List<Node *> &selection = editor_selection->get_selected_node_list();
 			Vector2 mouse_pos = viewport->get_local_mouse_pos();
 			if (selection.size() && viewport->get_rect().has_point(mouse_pos)) {
@@ -3601,6 +3600,9 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	selection_menu->set_custom_minimum_size(Vector2(100, 0));
 	selection_menu->connect("id_pressed", this, "_selection_result_pressed");
 	selection_menu->connect("popup_hide", this, "_selection_menu_hide");
+
+	drag_pivot_shortcut = ED_SHORTCUT("canvas_item_editor/drag_pivot", TTR("Drag pivot from mouse position"), KEY_MASK_SHIFT | KEY_V);
+	set_pivot_shortcut = ED_SHORTCUT("canvas_item_editor/set_pivot", TTR("Set pivot at mouse position"), KEY_V);
 
 	key_pos = true;
 	key_rot = true;

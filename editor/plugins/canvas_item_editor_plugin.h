@@ -292,6 +292,9 @@ class CanvasItemEditor : public VBoxContainer {
 	Ref<Texture> select_handle;
 	Ref<Texture> anchor_handle;
 
+	Ref<ShortCut> drag_pivot_shortcut;
+	Ref<ShortCut> set_pivot_shortcut;
+
 	int handle_len;
 	bool _is_part_of_subscene(CanvasItem *p_item);
 	void _find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform, Vector<_SelectResult> &r_items, int limit = 0);
