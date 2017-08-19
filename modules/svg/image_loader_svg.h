@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  image_loader_jpegd.h                                                 */
+/*  image_loader_svg.h                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,20 +27,41 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef IMAGE_LOADER_HDR_H
-#define IMAGE_LOADER_HDR_H
+#ifndef IMAGE_LOADER_SVG_H
+#define IMAGE_LOADER_SVG_H
 
 #include "io/image_loader.h"
+#include "ustring.h"
+
+#include <nanosvg.h>
+#include <nanosvgrast.h>
 
 /**
-	@author Juan Linietsky <reduzio@gmail.com>
+	@author Daniel Ramirez <djrmuv@gmail.com>
 */
-class ImageLoaderHDR : public ImageFormatLoader {
+
+class SVGRasterizer {
+
+	NSVGrasterizer *rasterizer;
 
 public:
+	void rasterize(NSVGimage *p_image, float p_tx, float p_ty, float p_scale, unsigned char *p_dst, int p_w, int p_h, int p_stride);
+
+	SVGRasterizer();
+	~SVGRasterizer();
+};
+
+class ImageLoaderSVG : public ImageFormatLoader {
+
+	static SVGRasterizer rasterizer;
+	static Error _create_image(Ref<Image> p_image, const PoolVector<uint8_t> *p_data, float p_scale);
+
+public:
+	static Error create_image_from_string(Ref<Image> p_image, const char *p_svg_str, float p_scale);
+
 	virtual Error load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	ImageLoaderHDR();
+	ImageLoaderSVG();
 };
 
 #endif

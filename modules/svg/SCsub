@@ -1,0 +1,34 @@
+#!/usr/bin/env python
+
+Import('env')
+
+# Thirdparty source files
+thirdparty_dir = "#thirdparty/nanosvg/src/"
+thirdparty_sources = [
+		"nanosvg.cc"
+]
+thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+
+# env.add_source_files(env.modules_sources, thirdparty_sources)
+
+lib = env.Library("svg_builtin", thirdparty_sources)
+# Needs to be appended to arrive after libscene in the linker call,
+# but we don't want it to arrive *after* system libs, so manual hack
+# LIBS contains first SCons Library objects ("SCons.Node.FS.File object")
+# and then plain strings for system library. We insert between the two.
+inserted = False
+for idx, linklib in enumerate(env["LIBS"]):
+    if isinstance(linklib, basestring): # first system lib such as "X11", otherwise SCons lib object
+        env["LIBS"].insert(idx, lib)
+        inserted = True
+        break
+if not inserted:
+    env.Append(LIBS=[lib])
+
+env.Append(CPPPATH=[thirdparty_dir])
+env.Append(CCFLAGS=["-DSVG_ENABLED"])
+
+# Godot's own source files
+env.add_source_files(env.modules_sources, "*.cpp")
+
+Export('env')

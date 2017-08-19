@@ -45,8 +45,6 @@ void ResourceImporterTexture::_texture_reimport_srgb(const Ref<StreamTexture> &p
 
 	singleton->make_flags[path] |= MAKE_SRGB_FLAG;
 
-	print_line("requesting srgb for " + String(path));
-
 	singleton->mutex->unlock();
 }
 
@@ -61,8 +59,6 @@ void ResourceImporterTexture::_texture_reimport_3d(const Ref<StreamTexture> &p_t
 
 	singleton->make_flags[path] |= MAKE_3D_FLAG;
 
-	print_line("requesting 3d for " + String(path));
-
 	singleton->mutex->unlock();
 }
 
@@ -76,8 +72,6 @@ void ResourceImporterTexture::_texture_reimport_normal(const Ref<StreamTexture> 
 	}
 
 	singleton->make_flags[path] |= MAKE_NORMAL_FLAG;
-
-	print_line("requesting normalfor " + String(path));
 
 	singleton->mutex->unlock();
 }
@@ -96,8 +90,6 @@ void ResourceImporterTexture::update_imports() {
 
 	Vector<String> to_reimport;
 	for (Map<StringName, int>::Element *E = make_flags.front(); E; E = E->next()) {
-
-		print_line("checking for reimport " + String(E->key()));
 
 		Ref<ConfigFile> cf;
 		cf.instance();
@@ -207,11 +199,11 @@ void ResourceImporterTexture::get_import_options(List<ImportOption> *r_options, 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "stream"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "size_limit", PROPERTY_HINT_RANGE, "0,4096,1"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "detect_3d"), p_preset == PRESET_DETECT));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "scale", PROPERTY_HINT_RANGE, "0.001,100,0.1"), 1.0));
 }
 
 void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String &p_to_path, int p_compress_mode, float p_lossy_quality, Image::CompressMode p_vram_compression, bool p_mipmaps, int p_texture_flags, bool p_streamable, bool p_detect_3d, bool p_detect_srgb, bool p_force_rgbe, bool p_detect_normal, bool p_force_normal) {
 
-	print_line("saving: " + p_to_path);
 	FileAccess *f = FileAccess::open(p_to_path, FileAccess::WRITE);
 	f->store_8('G');
 	f->store_8('D');
@@ -365,10 +357,11 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 	bool force_rgbe = int(p_options["compress/hdr_mode"]) == 1;
 	bool hdr_as_srgb = p_options["process/HDR_as_SRGB"];
 	int normal = p_options["compress/normal_map"];
+	float scale = p_options["scale"];
 
 	Ref<Image> image;
 	image.instance();
-	Error err = ImageLoader::load_image(p_source_file, image, NULL, hdr_as_srgb);
+	Error err = ImageLoader::load_image(p_source_file, image, NULL, hdr_as_srgb, scale);
 	if (err != OK)
 		return err;
 

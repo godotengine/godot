@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  image_loader_jpegd.h                                                 */
+/*  register_types.cpp                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,20 +27,19 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef IMAGE_LOADER_HDR_H
-#define IMAGE_LOADER_HDR_H
+#include "register_types.h"
 
-#include "io/image_loader.h"
+#include "image_loader_svg.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-class ImageLoaderHDR : public ImageFormatLoader {
+static ImageLoaderSVG *image_loader_svg = NULL;
 
-public:
-	virtual Error load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale);
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	ImageLoaderHDR();
-};
+void register_svg_types() {
 
-#endif
+	image_loader_svg = memnew(ImageLoaderSVG);
+	ImageLoader::add_image_format_loader(image_loader_svg);
+}
+
+void unregister_svg_types() {
+
+	memdelete(image_loader_svg);
+}

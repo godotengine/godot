@@ -43,7 +43,7 @@ bool ImageFormatLoader::recognize(const String &p_extension) const {
 	return false;
 }
 
-Error ImageLoader::load_image(String p_file, Ref<Image> p_image, FileAccess *p_custom, bool p_force_linear) {
+Error ImageLoader::load_image(String p_file, Ref<Image> p_image, FileAccess *p_custom, bool p_force_linear, float p_scale) {
 	ERR_FAIL_COND_V(p_image.is_null(), ERR_INVALID_PARAMETER);
 
 	FileAccess *f = p_custom;
@@ -62,7 +62,7 @@ Error ImageLoader::load_image(String p_file, Ref<Image> p_image, FileAccess *p_c
 
 		if (!loader[i]->recognize(extension))
 			continue;
-		Error err = loader[i]->load_image(p_image, f, p_force_linear);
+		Error err = loader[i]->load_image(p_image, f, p_force_linear, p_scale);
 
 		if (err != ERR_FILE_UNRECOGNIZED) {
 
