@@ -969,7 +969,6 @@ void ProjectManager::_run_project_confirm() {
 			return;
 		}
 
-
 		const String &selected = E->key();
 		String path = EditorSettings::get_singleton()->get("projects/" + selected);
 
@@ -1220,7 +1219,7 @@ ProjectManager::ProjectManager() {
 	panel->add_child(vb);
 	vb->set_area_as_parent_rect(20 * EDSCALE);
 	vb->set_margin(MARGIN_TOP, 4 * EDSCALE);
-	vb->set_margin(MARGIN_BOTTOM, 4 * EDSCALE);
+	vb->set_margin(MARGIN_BOTTOM, -4 * EDSCALE);
 	vb->add_constant_override("separation", 15 * EDSCALE);
 
 	String cp;

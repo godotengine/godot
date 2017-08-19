@@ -3268,7 +3268,6 @@ VisualScriptEditor::VisualScriptEditor() {
 	select_func_text->set_valign(Label::VALIGN_CENTER);
 	select_func_text->set_h_size_flags(SIZE_EXPAND_FILL);
 	add_child(select_func_text);
-	graph->set_area_as_parent_rect();
 
 	hint_text = memnew(Label);
 	hint_text->set_anchor_and_margin(MARGIN_TOP, ANCHOR_END, -100);

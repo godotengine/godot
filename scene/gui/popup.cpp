@@ -276,9 +276,10 @@ void PopupPanel::set_child_rect(Control *p_child) {
 
 	Ref<StyleBox> p = get_stylebox("panel");
 	p_child->set_area_as_parent_rect();
-	for (int i = 0; i < 4; i++) {
-		p_child->set_margin(Margin(i), p->get_margin(Margin(i)));
-	}
+	p_child->set_margin(MARGIN_LEFT, p->get_margin(MARGIN_LEFT));
+	p_child->set_margin(MARGIN_RIGHT, -p->get_margin(MARGIN_RIGHT));
+	p_child->set_margin(MARGIN_TOP, p->get_margin(MARGIN_TOP));
+	p_child->set_margin(MARGIN_BOTTOM, -p->get_margin(MARGIN_BOTTOM));
 }
 
 void PopupPanel::_notification(int p_what) {
