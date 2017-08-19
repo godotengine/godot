@@ -371,6 +371,7 @@ void EditorNode::_fs_changed() {
 			if (preset->get_name() == export_defer.preset) {
 				break;
 			}
+			preset.unref();
 		}
 		if (preset.is_null()) {
 			String err = "Unknown export preset: " + export_defer.preset;
@@ -385,7 +386,7 @@ void EditorNode::_fs_changed() {
 			}
 		}
 
-		export_defer.preset = "";
+		get_tree()->quit();
 	}
 
 	{
