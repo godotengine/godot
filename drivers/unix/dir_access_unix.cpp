@@ -253,6 +253,8 @@ Error DirAccessUnix::change_dir(String p_dir) {
 		return ERR_INVALID_PARAMETER;
 	}
 
+	chdir(prev_dir.utf8().get_data());
+
 	return OK;
 }
 
