@@ -1222,10 +1222,11 @@ CodeTextEditor::CodeTextEditor() {
 	error = memnew(Label);
 	status_bar->add_child(error);
 	error->hide();
+	error->set_clip_text(true); //do not change, or else very long errors can push the whole container to the right
 	error->set_valign(Label::VALIGN_CENTER);
 	error->add_color_override("font_color", Color(1, 0.7, 0.6, 0.9));
-
-	status_bar->add_spacer();
+	error->set_h_size_flags(SIZE_EXPAND_FILL); //required for it to display, given now it's clipping contents, do not touch
+	//status_bar->add_spacer();
 
 	Label *line_txt = memnew(Label);
 	status_bar->add_child(line_txt);
@@ -1238,7 +1239,8 @@ CodeTextEditor::CodeTextEditor() {
 	status_bar->add_child(line_nb);
 	line_nb->set_valign(Label::VALIGN_CENTER);
 	line_nb->set_v_size_flags(SIZE_FILL);
-	line_nb->set_autowrap(true); // workaround to prevent resizing the label on each change
+	line_nb->set_autowrap(true); // workaround to prevent resizing the label on each change, do not touch
+	line_nb->set_clip_text(true); // workaround to prevent resizing the label on each change, do not touch
 	line_nb->set_custom_minimum_size(Size2(40, 1) * EDSCALE);
 
 	Label *col_txt = memnew(Label);
@@ -1252,7 +1254,8 @@ CodeTextEditor::CodeTextEditor() {
 	status_bar->add_child(col_nb);
 	col_nb->set_valign(Label::VALIGN_CENTER);
 	col_nb->set_v_size_flags(SIZE_FILL);
-	col_nb->set_autowrap(true); // workaround to prevent resizing the label on each change
+	col_nb->set_autowrap(true); // workaround to prevent resizing the label on each change, do not touch
+	col_nb->set_clip_text(true); // workaround to prevent resizing the label on each change, do not touch
 	col_nb->set_custom_minimum_size(Size2(40, 1) * EDSCALE);
 
 	text_editor->connect("gui_input", this, "_text_editor_gui_input");

@@ -493,7 +493,10 @@ void Label::regenerate_word_cache() {
 		minsize.height = (font->get_height() * line_count) + (line_spacing * (line_count - 1));
 	}
 
-	minimum_size_changed();
+	if (!autowrap || !clip) {
+		//helps speed up some labels that may change a lot, as no resizing is requested. Do not change.
+		minimum_size_changed();
+	}
 	word_cache_dirty = false;
 }
 
