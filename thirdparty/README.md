@@ -180,7 +180,8 @@ Files extracted from the upstream source:
 - contrib/minizip/{crypt.h,ioapi.{c,h},zip.{c,h},unzip.{c,h}}
 
 Important: Some files have Godot-made changes for use in core/io.
-TODO: Properly sync with version 1.2.4 and document changes.
+They are marked with `/* GODOT start */` and `/* GODOT end */`
+comments and a patch is provided in the minizip/ folder.
 
 
 ## misc
