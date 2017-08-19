@@ -1048,7 +1048,7 @@ void VisualServerScene::_update_instance(Instance *p_instance) {
 		VSG::storage->particles_set_emission_transform(p_instance->base, p_instance->transform);
 	}
 
-	if (p_instance->aabb.has_no_area()) {
+	if (p_instance->aabb.has_no_surface()) {
 		return;
 	}
 

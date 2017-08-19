@@ -298,6 +298,9 @@ RID VisualServer::get_white_texture() {
 	return white_texture;
 }
 
+#define SMALL_VEC2 Vector2(0.00001, 0.00001)
+#define SMALL_VEC3 Vector3(0.00001, 0.00001, 0.00001)
+
 Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_t *p_offsets, uint32_t p_stride, PoolVector<uint8_t> &r_vertex_array, int p_vertex_array_len, PoolVector<uint8_t> &r_index_array, int p_index_array_len, Rect3 &r_aabb, Vector<Rect3> r_bone_aabb) {
 
 	PoolVector<uint8_t>::Write vw = r_vertex_array.write();
@@ -339,7 +342,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 							if (i == 0) {
 
-								aabb = Rect2(src[i], Vector2(0.00001, 0.00001)); //must have a bit of size
+								aabb = Rect2(src[i], SMALL_VEC2); //must have a bit of size
 							} else {
 
 								aabb.expand_to(src[i]);
@@ -355,7 +358,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 							if (i == 0) {
 
-								aabb = Rect2(src[i], Vector2(0.00001, 0.00001)); //must have a bit of size
+								aabb = Rect2(src[i], SMALL_VEC2); //must have a bit of size
 							} else {
 
 								aabb.expand_to(src[i]);
@@ -385,7 +388,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 							if (i == 0) {
 
-								aabb = Rect3(src[i], Vector3(0.00001, 0.00001, 0.00001));
+								aabb = Rect3(src[i], SMALL_VEC3);
 							} else {
 
 								aabb.expand_to(src[i]);
@@ -401,7 +404,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 							if (i == 0) {
 
-								aabb = Rect3(src[i], Vector3(0.00001, 0.00001, 0.00001));
+								aabb = Rect3(src[i], SMALL_VEC3);
 							} else {
 
 								aabb.expand_to(src[i]);
@@ -733,9 +736,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 					if (bptr->size.x < 0) {
 						//first
-						bptr[idx] = Rect3();
-						bptr[idx].position = v;
-						bptr[idx].size = Vector3(0.00001, 0.00001, 0.00001); //must have at least a bit of size
+						bptr[idx] = Rect3(v, SMALL_VEC3);
 						any_valid = true;
 					} else {
 						bptr[idx].expand_to(v);
