@@ -1,0 +1,7 @@
+<svg width="16" height="16" version="1.1" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+<g transform="translate(0 -1036.4)" fill="#fc9c9c" fill-opacity=".99608">
+<path transform="translate(0 1036.4)" d="m8 3c-2.5567 0-5.7907 1.9477-6.9551 5.7051a1.0001 1.0001 0 0 0 -0.0058594 0.57031c1.1244 3.9354 4.4609 5.7246 6.9609 5.7246 1.4907 0 3.2717-0.65207 4.7109-2h-0.71094-2v-0.54102a4 4 0 0 1 -2 0.54102 4 4 0 0 1 -4 -4 4 4 0 0 1 4 -4 4 4 0 0 1 2 0.54102v-2.1816c-0.68312-0.23834-1.3644-0.35938-2-0.35938zm0 4a2 2 0 0 0 -2 2 2 2 0 0 0 2 2 2 2 0 0 0 2 -2 2 2 0 0 0 -2 -2z" color="#000000" color-rendering="auto" fill-rule="evenodd" image-rendering="auto" shape-rendering="auto" solid-color="#000000" style="block-progression:tb;isolation:auto;mix-blend-mode:normal;text-decoration-color:#000000;text-decoration-line:none;text-decoration-style:solid;text-indent:0;text-transform:none;white-space:normal"/>
+<rect x="12" y="1037.4" width="2" height="6"/>
+<rect transform="scale(1,-1)" x="12" y="-1047.4" width="2" height="2"/>
+</g>
+</svg>

@@ -1,0 +1,8 @@
+<svg width="16" height="16" version="1.1" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+<g transform="translate(0 -1036.4)" fill="#4f4f4f">
+<path d="m8.9999 1048.4v-8l-7 4z" fill-rule="evenodd" stroke="#4f4f4f" stroke-linejoin="round" stroke-width="2"/>
+<path d="m13 1039.4c-0.55226 1e-4 -0.99994 0.4477-1 1v8c5.5e-5 0.5523 0.44774 0.9999 1 1h1v-1h1v-8h-1v-1z" color="#000000" color-rendering="auto" fill-rule="evenodd" image-rendering="auto" shape-rendering="auto" solid-color="#000000" style="block-progression:tb;isolation:auto;mix-blend-mode:normal;text-decoration-color:#000000;text-decoration-line:none;text-decoration-style:solid;text-indent:0;text-transform:none;white-space:normal"/>
+<circle cx="14" cy="1040.4" r="1"/>
+<circle cx="14" cy="1048.4" r="1"/>
+</g>
+</svg>

@@ -1,0 +1,13 @@
+<svg width="16" height="16" version="1.1" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<defs>
+<linearGradient id="a" x1="8" x2="8" y1="1" y2="15" gradientUnits="userSpaceOnUse">
+<stop stop-color="#ff4040" offset="0"/>
+<stop stop-color="#d6cf4b" offset=".5"/>
+<stop stop-color="#00f010" offset="1"/>
+</linearGradient>
+</defs>
+<g transform="translate(0 -1036.4)" shape-rendering="auto">
+<path d="m10.023 1044.4c-0.56139-0.013-1.0235 0.4264-1.0234 0.9724v5.0542c6.911e-4 0.7482 0.83361 1.2154 1.5 0.8414l4-2.5262c0.66694-0.3743 0.66694-1.3104 0-1.6847l-4-2.5261c-0.14505-0.082-0.30893-0.1269-0.47656-0.131z" color="#000000" color-rendering="auto" dominant-baseline="auto" fill="#6d90ff" image-rendering="auto" solid-color="#000000" style="font-feature-settings:normal;font-variant-alternates:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-variant-numeric:normal;font-variant-position:normal;isolation:auto;mix-blend-mode:normal;shape-padding:0;text-decoration-color:#000000;text-decoration-line:none;text-decoration-style:solid;text-indent:0;text-orientation:mixed;text-transform:none;white-space:normal"/>
+<path transform="translate(0 1036.4)" d="m11.971 1.002a1.0001 1.0001 0 0 0 -0.24609 0.037109l-7 2a1.0001 1.0001 0 0 0 -0.72461 0.96094v5.5508a2.5 2.5 0 0 0 -0.5 -0.050781 2.5 2.5 0 0 0 -2.5 2.5 2.5 2.5 0 0 0 2.5 2.5 2.5 2.5 0 0 0 2.4961 -2.4121 1.0001 1.0001 0 0 0 0.0039062 -0.087891v-7.2441l5-1.4277v3.1719l2-1v-3.5a1.0001 1.0001 0 0 0 -1.0293 -0.99805z" color="#000000" color-rendering="auto" dominant-baseline="auto" fill="url(#a)" image-rendering="auto" solid-color="#000000" style="font-feature-settings:normal;font-variant-alternates:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-variant-numeric:normal;font-variant-position:normal;isolation:auto;mix-blend-mode:normal;shape-padding:0;text-decoration-color:#000000;text-decoration-line:none;text-decoration-style:solid;text-indent:0;text-orientation:mixed;text-transform:none;white-space:normal"/>
+</g>
+</svg>
