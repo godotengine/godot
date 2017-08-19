@@ -14960,6 +14960,13 @@
 	<description>
 	</description>
 	<methods>
+		<method name="get_custom_level" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns the value of the commandline argument "-level".
+			</description>
+		</method>
 		<method name="get_frames_drawn">
 			<return type="int">
 			</return>

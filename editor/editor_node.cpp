@@ -1850,6 +1850,47 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 	_playing_edited = p_current;
 }
 
+void EditorNode::_cleanup_scene() {
+
+#if 0
+	Node *scene = editor_data.get_edited_scene_root();
+	editor_selection->clear();
+	editor_data.clear_editor_states();
+	editor_history.clear();
+	_hide_top_editors();
+	animation_editor->cleanup();
+	property_editor->edit(NULL);
+	resources_dock->cleanup();
+	scene_import_metadata.unref();
+	//set_edited_scene(NULL);
+	if (scene) {
+		if (scene->get_filename()!="") {
+			previous_scenes.push_back(scene->get_filename());
+		}
+
+		memdelete(scene);
+	}
+	editor_data.get_undo_redo().clear_history();
+	saved_version=editor_data.get_undo_redo().get_version();
+	run_settings_dialog->set_run_mode(0);
+	run_settings_dialog->set_custom_arguments("-l $scene");
+
+	List<Ref<Resource> > cached;
+	ResourceCache::get_cached_resources(&cached);
+
+	for(List<Ref<Resource> >::Element *E=cached.front();E;E=E->next()) {
+
+		String path = E->get()->get_path();
+		if (path.is_resource_file()) {
+			ERR_PRINT(("Stray resource not cleaned:"+path).utf8().get_data());
+		}
+
+	}
+
+	_update_title();
+#endif
+}
+
 void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 	//print_line("option "+itos(p_option)+" confirm "+itos(p_confirmed));
@@ -1872,6 +1913,8 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			int idx = editor_data.add_edited_scene(-1);
 			_scene_tab_changed(idx);
 			editor_data.clear_editor_states();
+
+			//_cleanup_scene();
 
 		} break;
 		case FILE_NEW_INHERITED_SCENE:
@@ -2693,6 +2736,8 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 				import_reload_fn = scene->get_filename();
 				_save_scene(import_reload_fn);
+				_cleanup_scene();
+
 
 			}
 
@@ -2778,9 +2823,9 @@ void EditorNode::_discard_changes(const String &p_str) {
 			String exec = OS::get_singleton()->get_executable_path();
 
 			List<String> args;
-			args.push_back("--path");
+			args.push_back("-path");
 			args.push_back(exec.get_base_dir());
-			args.push_back("--project-manager");
+			args.push_back("-pm");
 
 			OS::ProcessID pid = 0;
 			Error err = OS::get_singleton()->execute(exec, args, false, &pid);
@@ -3281,6 +3326,8 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 	} else {
 		_scene_tab_changed(idx);
 	}
+
+	//_cleanup_scene(); // i'm sorry but this MUST happen to avoid modified resources to not be reloaded.
 
 	dependency_errors.clear();
 
