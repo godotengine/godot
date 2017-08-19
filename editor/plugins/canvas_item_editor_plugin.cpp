@@ -304,6 +304,7 @@ Dictionary CanvasItemEditor::get_state() const {
 	state["snap_rotation_step"] = snap_rotation_step;
 	state["snap_grid"] = snap_grid;
 	state["snap_show_grid"] = snap_show_grid;
+	state["show_helpers"] = show_helpers;
 	state["snap_rotation"] = snap_rotation;
 	state["snap_relative"] = snap_relative;
 	state["snap_pixel"] = snap_pixel;
@@ -350,6 +351,12 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 		snap_show_grid = state["snap_show_grid"];
 		int idx = edit_menu->get_popup()->get_item_index(SNAP_SHOW_GRID);
 		edit_menu->get_popup()->set_item_checked(idx, snap_show_grid);
+	}
+
+	if (state.has("show_helpers")) {
+		show_helpers = state["show_helpers"];
+		int idx = view_menu->get_popup()->get_item_index(SHOW_HELPERS);
+		view_menu->get_popup()->set_item_checked(idx, show_helpers);
 	}
 
 	if (state.has("snap_rotation")) {
@@ -924,24 +931,6 @@ void CanvasItemEditor::_snap_changed() {
 	viewport->update();
 }
 
-void CanvasItemEditor::_dialog_value_changed(double) {
-
-	if (updating_value_dialog)
-		return;
-
-	switch (last_option) {
-
-		case ZOOM_SET: {
-
-			zoom = dialog_val->get_value() / 100.0;
-			_update_scroll(0);
-			viewport->update();
-
-		} break;
-		default: {}
-	}
-}
-
 void CanvasItemEditor::_selection_result_pressed(int p_result) {
 
 	if (selection_results.size() <= p_result)
@@ -1440,7 +1429,8 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 				}
 
 				// Drag anchor handles
-				if (Object::cast_to<Control>(canvas_item)) {
+				Control *control = Object::cast_to<Control>(canvas_item);
+				if (control && show_helpers && !Object::cast_to<Container>(control->get_parent())) {
 					drag = _get_anchor_handle_drag_type(click, drag_point_from);
 					if (drag != DRAG_NONE) {
 						drag_from = transform.affine_inverse().xform(click);
@@ -2065,7 +2055,8 @@ void CanvasItemEditor::_viewport_draw() {
 				can_move_pivot = true;
 				pivot_found = true;
 
-				if (tool == TOOL_SELECT) {
+				if (tool == TOOL_SELECT && show_helpers && !Object::cast_to<Container>(control->get_parent())) {
+					// Draw the helpers
 					Color color_base = Color(0.8, 0.8, 0.8, 0.5);
 
 					float anchors_values[4];
@@ -2487,6 +2478,10 @@ void CanvasItemEditor::_notification(int p_what) {
 		ungroup_button->set_icon(get_icon("Ungroup", "EditorIcons"));
 		key_insert_button->set_icon(get_icon("Key", "EditorIcons"));
 
+		zoom_minus->set_icon(get_icon("ZoomLess", "EditorIcons"));
+		zoom_reset->set_icon(get_icon("ZoomReset", "EditorIcons"));
+		zoom_plus->set_icon(get_icon("ZoomMore", "EditorIcons"));
+
 		anchor_menu->set_icon(get_icon("Anchor", "EditorIcons"));
 		PopupMenu *p = anchor_menu->get_popup();
 
@@ -2772,6 +2767,30 @@ void CanvasItemEditor::_set_full_rect() {
 	undo_redo->commit_action();
 }
 
+void CanvasItemEditor::_zoom_minus() {
+	if (zoom < MIN_ZOOM)
+		return;
+	zoom /= 2.0;
+
+	_update_scroll(0);
+	viewport->update();
+}
+
+void CanvasItemEditor::_zoom_reset() {
+	zoom = 1;
+	_update_scroll(0);
+	viewport->update();
+}
+
+void CanvasItemEditor::_zoom_plus() {
+	if (zoom > MAX_ZOOM)
+		return;
+
+	zoom *= 2.0;
+	_update_scroll(0);
+	viewport->update();
+}
+
 void CanvasItemEditor::_popup_callback(int p_op) {
 
 	last_option = MenuOption(p_op);
@@ -2815,45 +2834,13 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			skeleton_menu->set_item_checked(idx, skeleton_show_bones);
 			viewport->update();
 		} break;
-		case ZOOM_IN: {
-			if (zoom > MAX_ZOOM)
-				return;
-			zoom = zoom * (1.0 / 0.5);
-			_update_scroll(0);
+		case SHOW_HELPERS: {
+			show_helpers = !show_helpers;
+			int idx = view_menu->get_popup()->get_item_index(SHOW_HELPERS);
+			view_menu->get_popup()->set_item_checked(idx, show_helpers);
 			viewport->update();
-			return;
 		} break;
-		case ZOOM_OUT: {
-			if (zoom < MIN_ZOOM)
-				return;
 
-			zoom = zoom * 0.5;
-			_update_scroll(0);
-			viewport->update();
-			return;
-
-		} break;
-		case ZOOM_RESET: {
-
-			zoom = 1;
-			_update_scroll(0);
-			viewport->update();
-			return;
-
-		} break;
-		case ZOOM_SET: {
-
-			updating_value_dialog = true;
-
-			dialog_label->set_text(TTR("Zoom (%):"));
-			dialog_val->set_min(0.1);
-			dialog_val->set_step(0.1);
-			dialog_val->set_max(800);
-			dialog_val->set_value(zoom * 100);
-			value_dialog->popup_centered(Size2(200, 85));
-			updating_value_dialog = false;
-
-		} break;
 		case LOCK_SELECTED: {
 
 			List<Node *> &selection = editor_selection->get_selected_node_list();
@@ -3322,9 +3309,11 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 
 void CanvasItemEditor::_bind_methods() {
 
+	ClassDB::bind_method("_zoom_minus", &CanvasItemEditor::_zoom_minus);
+	ClassDB::bind_method("_zoom_reset", &CanvasItemEditor::_zoom_reset);
+	ClassDB::bind_method("_zoom_plus", &CanvasItemEditor::_zoom_plus);
 	ClassDB::bind_method("_update_scroll", &CanvasItemEditor::_update_scroll);
 	ClassDB::bind_method("_popup_callback", &CanvasItemEditor::_popup_callback);
-	ClassDB::bind_method("_dialog_value_changed", &CanvasItemEditor::_dialog_value_changed);
 	ClassDB::bind_method("_get_editor_data", &CanvasItemEditor::_get_editor_data);
 	ClassDB::bind_method("_tool_select", &CanvasItemEditor::_tool_select);
 	ClassDB::bind_method("_keying_changed", &CanvasItemEditor::_keying_changed);
@@ -3372,20 +3361,20 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	hb->set_area_as_parent_rect();
 
 	bottom_split = memnew(VSplitContainer);
-	bottom_split->set_v_size_flags(SIZE_EXPAND_FILL);
 	add_child(bottom_split);
+	bottom_split->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	palette_split = memnew(HSplitContainer);
-	palette_split->set_v_size_flags(SIZE_EXPAND_FILL);
 	bottom_split->add_child(palette_split);
+	palette_split->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	Control *vp_base = memnew(Control);
-	vp_base->set_v_size_flags(SIZE_EXPAND_FILL);
 	palette_split->add_child(vp_base);
+	vp_base->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	ViewportContainer *vp = memnew(ViewportContainer);
-	vp->set_stretch(true);
 	vp_base->add_child(vp);
+	vp->set_stretch(true);
 	vp->set_area_as_parent_rect();
 	vp->add_child(p_editor->get_scene_root());
 
@@ -3393,43 +3382,61 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	vp_base->add_child(viewport);
 	viewport->set_area_as_parent_rect();
 	viewport->set_clip_contents(true);
-
-	h_scroll = memnew(HScrollBar);
-	v_scroll = memnew(VScrollBar);
-
-	viewport->add_child(h_scroll);
-	viewport->add_child(v_scroll);
+	viewport->set_focus_mode(FOCUS_ALL);
 	viewport->connect("draw", this, "_viewport_draw");
 	viewport->connect("gui_input", this, "_viewport_gui_input");
 
+	h_scroll = memnew(HScrollBar);
+	viewport->add_child(h_scroll);
 	h_scroll->connect("value_changed", this, "_update_scroll", Vector<Variant>(), Object::CONNECT_DEFERRED);
-	v_scroll->connect("value_changed", this, "_update_scroll", Vector<Variant>(), Object::CONNECT_DEFERRED);
-
 	h_scroll->hide();
+
+	v_scroll = memnew(VScrollBar);
+	viewport->add_child(v_scroll);
+	v_scroll->connect("value_changed", this, "_update_scroll", Vector<Variant>(), Object::CONNECT_DEFERRED);
 	v_scroll->hide();
+
+	HBoxContainer *zoom_hb = memnew(HBoxContainer);
+	vp_base->add_child(zoom_hb);
+	zoom_hb->set_begin(Point2(5, 5));
+
+	zoom_minus = memnew(ToolButton);
+	zoom_hb->add_child(zoom_minus);
+	zoom_minus->connect("pressed", this, "_zoom_minus");
+	zoom_minus->set_focus_mode(FOCUS_NONE);
+
+	zoom_reset = memnew(ToolButton);
+	zoom_hb->add_child(zoom_reset);
+	zoom_reset->connect("pressed", this, "_zoom_reset");
+	zoom_reset->set_focus_mode(FOCUS_NONE);
+
+	zoom_plus = memnew(ToolButton);
+	zoom_hb->add_child(zoom_plus);
+	zoom_plus->connect("pressed", this, "_zoom_plus");
+	zoom_plus->set_focus_mode(FOCUS_NONE);
+
 	updating_scroll = false;
-	viewport->set_focus_mode(FOCUS_ALL);
 	handle_len = 10;
 	first_update = true;
 
 	select_button = memnew(ToolButton);
-	select_button->set_toggle_mode(true);
 	hb->add_child(select_button);
+	select_button->set_toggle_mode(true);
 	select_button->connect("pressed", this, "_tool_select", make_binds(TOOL_SELECT));
 	select_button->set_pressed(true);
 	select_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/select_mode", TTR("Select Mode"), KEY_Q));
 	select_button->set_tooltip(TTR("Select Mode") + " $sc\n" + keycode_get_string(KEY_MASK_CMD) + TTR("Drag: Rotate") + "\n" + TTR("Alt+Drag: Move") + "\n" + TTR("Press 'v' to Change Pivot, 'Shift+v' to Drag Pivot (while moving).") + "\n" + TTR("Alt+RMB: Depth list selection"));
 
 	move_button = memnew(ToolButton);
-	move_button->set_toggle_mode(true);
 	hb->add_child(move_button);
+	move_button->set_toggle_mode(true);
 	move_button->connect("pressed", this, "_tool_select", make_binds(TOOL_MOVE));
 	move_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/move_mode", TTR("Move Mode"), KEY_W));
 	move_button->set_tooltip(TTR("Move Mode"));
 
 	rotate_button = memnew(ToolButton);
-	rotate_button->set_toggle_mode(true);
 	hb->add_child(rotate_button);
+	rotate_button->set_toggle_mode(true);
 	rotate_button->connect("pressed", this, "_tool_select", make_binds(TOOL_ROTATE));
 	rotate_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/rotate_mode", TTR("Rotate Mode"), KEY_E));
 	rotate_button->set_tooltip(TTR("Rotate Mode"));
@@ -3437,20 +3444,20 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	hb->add_child(memnew(VSeparator));
 
 	list_select_button = memnew(ToolButton);
-	list_select_button->set_toggle_mode(true);
 	hb->add_child(list_select_button);
+	list_select_button->set_toggle_mode(true);
 	list_select_button->connect("pressed", this, "_tool_select", make_binds(TOOL_LIST_SELECT));
 	list_select_button->set_tooltip(TTR("Show a list of all objects at the position clicked\n(same as Alt+RMB in select mode)."));
 
 	pivot_button = memnew(ToolButton);
-	pivot_button->set_toggle_mode(true);
 	hb->add_child(pivot_button);
+	pivot_button->set_toggle_mode(true);
 	pivot_button->connect("pressed", this, "_tool_select", make_binds(TOOL_EDIT_PIVOT));
 	pivot_button->set_tooltip(TTR("Click to change object's rotation pivot."));
 
 	pan_button = memnew(ToolButton);
-	pan_button->set_toggle_mode(true);
 	hb->add_child(pan_button);
+	pan_button->set_toggle_mode(true);
 	pan_button->connect("pressed", this, "_tool_select", make_binds(TOOL_PAN));
 	pan_button->set_tooltip(TTR("Pan Mode"));
 
@@ -3516,10 +3523,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 
 	p = view_menu->get_popup();
 
-	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/zoom_in", TTR("Zoom In")), ZOOM_IN);
-	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/zoom_out", TTR("Zoom Out")), ZOOM_OUT);
-	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/zoom_reset", TTR("Zoom Reset")), ZOOM_RESET);
-	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/zoom_set", TTR("Zoom Set..")), ZOOM_SET);
+	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_helpers", TTR("Show helpers")), SHOW_HELPERS);
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/center_selection", TTR("Center Selection"), KEY_F), VIEW_CENTER_TO_SELECTION);
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/frame_selection", TTR("Frame Selection"), KEY_MASK_SHIFT | KEY_F), VIEW_FRAME_TO_SELECTION);
@@ -3590,23 +3594,6 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	snap_dialog->connect("confirmed", this, "_snap_changed");
 	add_child(snap_dialog);
 
-	value_dialog = memnew(AcceptDialog);
-	value_dialog->set_title(TTR("Set a Value"));
-	value_dialog->get_ok()->set_text(TTR("Close"));
-	add_child(value_dialog);
-
-	Label *l = memnew(Label);
-	l->set_text(TTR("Snap (Pixels):"));
-	l->set_position(Point2(5, 5));
-	value_dialog->add_child(l);
-	dialog_label = l;
-
-	dialog_val = memnew(SpinBox);
-	dialog_val->set_anchor(MARGIN_RIGHT, ANCHOR_END);
-	dialog_val->set_begin(Point2(15, 25));
-	dialog_val->set_end(Point2(-10, 25));
-	value_dialog->add_child(dialog_val);
-	dialog_val->connect("value_changed", this, "_dialog_value_changed");
 	select_sb = Ref<StyleBoxTexture>(memnew(StyleBoxTexture));
 
 	selection_menu = memnew(PopupMenu);
@@ -3619,6 +3606,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	key_rot = true;
 	key_scale = false;
 
+	show_helpers = false;
 	zoom = 1;
 	snap_offset = Vector2(0, 0);
 	snap_step = Vector2(10, 10);
@@ -3630,7 +3618,6 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	snap_pixel = false;
 	skeleton_show_bones = true;
 	skeleton_menu->set_item_checked(skeleton_menu->get_item_index(SKELETON_SHOW_BONES), true);
-	updating_value_dialog = false;
 	box_selecting = false;
 	//zoom=0.5;
 	singleton = this;
@@ -4066,41 +4053,39 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasIte
 	editor_data = editor->get_scene_tree_dock()->get_editor_data();
 	canvas = p_canvas;
 	preview_node = memnew(Node2D);
+
 	accept = memnew(AcceptDialog);
 	editor->get_gui_base()->add_child(accept);
 
 	selector = memnew(AcceptDialog);
+	editor->get_gui_base()->add_child(selector);
 	selector->set_title(TTR("Change default type"));
+	selector->connect("confirmed", this, "_on_change_type");
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
+	selector->add_child(vbc);
 	vbc->set_h_size_flags(SIZE_EXPAND_FILL);
 	vbc->set_v_size_flags(SIZE_EXPAND_FILL);
 	vbc->set_custom_minimum_size(Size2(200, 260) * EDSCALE);
 
 	selector_label = memnew(Label);
+	vbc->add_child(selector_label);
 	selector_label->set_align(Label::ALIGN_CENTER);
 	selector_label->set_valign(Label::VALIGN_BOTTOM);
 	selector_label->set_custom_minimum_size(Size2(0, 30) * EDSCALE);
-	vbc->add_child(selector_label);
-
-	button_group.instance();
 
 	btn_group = memnew(VBoxContainer);
+	vbc->add_child(btn_group);
 	btn_group->set_h_size_flags(0);
 
+	button_group.instance();
 	for (int i = 0; i < types.size(); i++) {
 		CheckBox *check = memnew(CheckBox);
+		btn_group->add_child(check);
 		check->set_text(types[i]);
 		check->connect("button_down", this, "_on_select_type", varray(check));
-		btn_group->add_child(check);
 		check->set_button_group(button_group);
 	}
-	vbc->add_child(btn_group);
-
-	selector->connect("confirmed", this, "_on_change_type");
-
-	selector->add_child(vbc);
-	editor->get_gui_base()->add_child(selector);
 
 	label = memnew(Label);
 	label->add_color_override("font_color_shadow", Color(0, 0, 0, 1));
