@@ -717,7 +717,7 @@ void StyleBoxFlat::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_bg_color"), &StyleBoxFlat::get_bg_color);
 
 	ClassDB::bind_method(D_METHOD("set_border_color", "color"), &StyleBoxFlat::set_border_color_all);
-	ClassDB::bind_method(D_METHOD("get_border_color", "color"), &StyleBoxFlat::get_border_color_all);
+	ClassDB::bind_method(D_METHOD("get_border_color"), &StyleBoxFlat::get_border_color_all);
 
 	ClassDB::bind_method(D_METHOD("set_border_width_all", "width"), &StyleBoxFlat::set_border_width_all);
 	ClassDB::bind_method(D_METHOD("get_border_width_min"), &StyleBoxFlat::get_border_width_min);
