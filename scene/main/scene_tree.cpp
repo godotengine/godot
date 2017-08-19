@@ -392,85 +392,10 @@ void SceneTree::input_event(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEvent> ev = p_event;
 	ev->set_id(++last_id); //this should work better
-#if 0
-	switch(ev.type) {
-
-		case InputEvent::MOUSE_BUTTON: {
-
-			Matrix32 ai = root->get_final_transform().affine_inverse();
-			Vector2 g = ai.xform(Vector2(ev.mouse_button.global_x,ev.mouse_button.global_y));
-			Vector2 l = ai.xform(Vector2(ev->get_pos().x,ev->get_pos().y));
-			ev->get_pos().x=l.x;
-			ev->get_pos().y=l.y;
-			ev.mouse_button.global_x=g.x;
-			ev.mouse_button.global_y=g.y;
-
-		} break;
-		case InputEvent::MOUSE_MOTION: {
-
-			Matrix32 ai = root->get_final_transform().affine_inverse();
-			Vector2 g = ai.xform(Vector2(ev.mouse_motion.global_x,ev.mouse_motion.global_y));
-			Vector2 l = ai.xform(Vector2(ev.mouse_motion.x,ev.mouse_motion.y));
-			Vector2 r = ai.xform(Vector2(ev->get_relative().x,ev->get_relative().y));
-			ev.mouse_motion.x=l.x;
-			ev.mouse_motion.y=l.y;
-			ev.mouse_motion.global_x=g.x;
-			ev.mouse_motion.global_y=g.y;
-			ev->get_relative().x=r.x;
-			ev->get_relative().y=r.y;
-
-		} break;
-		case InputEvent::SCREEN_TOUCH: {
-
-			Matrix32 ai = root->get_final_transform().affine_inverse();
-			Vector2 t = ai.xform(Vector2(ev.screen_touch.x,ev.screen_touch.y));
-			ev.screen_touch.x=t.x;
-			ev.screen_touch.y=t.y;
-
-		} break;
-		case InputEvent::SCREEN_DRAG: {
-
-			Matrix32 ai = root->get_final_transform().affine_inverse();
-			Vector2 t = ai.xform(Vector2(ev.screen_drag.x,ev.screen_drag.y));
-			Vector2 r = ai.xform(Vector2(ev.screen_drag.relative_x,ev.screen_drag.relative_y));
-			Vector2 s = ai.xform(Vector2(ev.screen_drag.speed_x,ev.screen_drag.speed_y));
-			ev.screen_drag.x=t.x;
-			ev.screen_drag.y=t.y;
-			ev.screen_drag.relative_x=r.x;
-			ev.screen_drag.relative_y=r.y;
-			ev.screen_drag.speed_x=s.x;
-			ev.screen_drag.speed_y=s.y;
-		} break;
-	}
-
-#endif
 
 	MainLoop::input_event(ev);
-#if 0
-	_call_input_pause("input","_input",ev);
-
-	call_group(GROUP_CALL_REVERSE|GROUP_CALL_REALTIME|GROUP_CALL_MULIILEVEL,"_gui_input","_gui_input",p_event); //special one for GUI, as controls use their own process check
-
-	//call_group(GROUP_CALL_REVERSE|GROUP_CALL_REALTIME|GROUP_CALL_MULIILEVEL,"input","_input",ev);
-
-	/*
-	if (ev.type==InputEvent::KEY && ev->is_pressed() && !ev->is_echo() && ev->get_scancode()==KEY_F12) {
-
-		print_line("RAM: "+itos(Memory::get_static_mem_usage()));
-		print_line("DRAM: "+itos(Memory::get_dynamic_mem_usage()));
-	}
-	if (ev.type==InputEvent::KEY && ev->is_pressed() && !ev->is_echo() && ev->get_scancode()==KEY_F11) {
-
-		Memory::dump_static_mem_to_file("memdump.txt");
-	}
-	*/
-
-	//transform for the rest
-#else
 
 	call_group_flags(GROUP_CALL_REALTIME, "_viewports", "_vp_input", ev); //special one for GUI, as controls use their own process check
-
-#endif
 
 	if (ScriptDebugger::get_singleton() && ScriptDebugger::get_singleton()->is_remote()) {
 		//quit from game window using F8
@@ -482,7 +407,7 @@ void SceneTree::input_event(const Ref<InputEvent> &p_event) {
 
 	_flush_ugc();
 	root_lock--;
-	MessageQueue::get_singleton()->flush(); //small little hack
+	//MessageQueue::get_singleton()->flush(); //flushing here causes UI and other places slowness
 
 	root_lock++;
 
@@ -503,7 +428,7 @@ void SceneTree::input_event(const Ref<InputEvent> &p_event) {
 		input_handled = true;
 		_flush_ugc();
 		root_lock--;
-		MessageQueue::get_singleton()->flush(); //small little hack
+		//MessageQueue::get_singleton()->flush(); //flushing here causes UI and other places slowness
 	} else {
 		input_handled = true;
 		root_lock--;
