@@ -39,7 +39,6 @@ class Engine {
 
 	friend class Main;
 
-	String _custom_level;
 	uint64_t frames_drawn;
 	uint32_t _frame_delay;
 	uint64_t _frame_ticks;
@@ -66,8 +65,6 @@ public:
 	virtual float get_target_fps() const;
 
 	virtual float get_frames_per_second() const { return _fps; }
-
-	String get_custom_level() const { return _custom_level; }
 
 	uint64_t get_frames_drawn();
 

@@ -2534,11 +2534,6 @@ float _Engine::get_frames_per_second() const {
 	return Engine::get_singleton()->get_frames_per_second();
 }
 
-String _Engine::get_custom_level() const {
-
-	return Engine::get_singleton()->get_custom_level();
-}
-
 void _Engine::set_time_scale(float p_scale) {
 	Engine::get_singleton()->set_time_scale(p_scale);
 }
@@ -2577,8 +2572,6 @@ void _Engine::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_time_scale", "time_scale"), &_Engine::set_time_scale);
 	ClassDB::bind_method(D_METHOD("get_time_scale"), &_Engine::get_time_scale);
-
-	ClassDB::bind_method(D_METHOD("get_custom_level"), &_Engine::get_custom_level);
 
 	ClassDB::bind_method(D_METHOD("get_frames_drawn"), &_Engine::get_frames_drawn);
 	ClassDB::bind_method(D_METHOD("get_frames_per_second"), &_Engine::get_frames_per_second);
