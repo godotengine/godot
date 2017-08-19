@@ -33,7 +33,7 @@
 
 bool Reference::init_ref() {
 
-	if (refcount.ref()) {
+	if (reference()) {
 
 		// this may fail in the scenario of two threads assigning the pointer for the FIRST TIME
 		// at the same time, which is never likely to happen (would be crazy to do)
@@ -41,7 +41,7 @@ bool Reference::init_ref() {
 
 		if (refcount_init.get() > 0) {
 			refcount_init.unref();
-			refcount.unref(); // first referencing is already 1, so compensate for the ref above
+			unreference(); // first referencing is already 1, so compensate for the ref above
 		}
 
 		return true;
@@ -62,13 +62,16 @@ int Reference::reference_get_count() const {
 	return refcount.get();
 }
 
-void Reference::reference() {
+bool Reference::reference() {
+	bool success = refcount.ref();
 
-	refcount.ref();
-	if (get_script_instance()) {
+	if (success && get_script_instance()) {
 		get_script_instance()->refcount_incremented();
 	}
+
+	return success;
 }
+
 bool Reference::unreference() {
 
 	bool die = refcount.unref();
