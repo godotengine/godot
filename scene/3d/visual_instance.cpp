@@ -231,14 +231,6 @@ void GeometryInstance::_notification(int p_what) {
 void GeometryInstance::set_flag(Flags p_flag, bool p_value) {
 
 	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
-	if (p_flag == FLAG_CAST_SHADOW) {
-		if (p_value == true) {
-			set_cast_shadows_setting(SHADOW_CASTING_SETTING_ON);
-		} else {
-			set_cast_shadows_setting(SHADOW_CASTING_SETTING_OFF);
-		}
-	}
-
 	if (flags[p_flag] == p_value)
 		return;
 
@@ -251,14 +243,6 @@ void GeometryInstance::set_flag(Flags p_flag, bool p_value) {
 bool GeometryInstance::get_flag(Flags p_flag) const {
 
 	ERR_FAIL_INDEX_V(p_flag, FLAG_MAX, false);
-
-	if (p_flag == FLAG_CAST_SHADOW) {
-		if (shadow_casting_setting == SHADOW_CASTING_SETTING_OFF) {
-			return false;
-		} else {
-			return true;
-		}
-	}
 
 	return flags[p_flag];
 }
@@ -330,7 +314,6 @@ void GeometryInstance::_bind_methods() {
 
 	//ADD_SIGNAL( MethodInfo("visibility_changed"));
 
-	BIND_CONSTANT(FLAG_CAST_SHADOW);
 	BIND_CONSTANT(FLAG_VISIBLE_IN_ALL_ROOMS);
 	BIND_CONSTANT(FLAG_MAX);
 
@@ -349,8 +332,6 @@ GeometryInstance::GeometryInstance() {
 	for (int i = 0; i < FLAG_MAX; i++) {
 		flags[i] = false;
 	}
-
-	flags[FLAG_CAST_SHADOW] = true;
 
 	shadow_casting_setting = SHADOW_CASTING_SETTING_ON;
 	extra_cull_margin = 0;

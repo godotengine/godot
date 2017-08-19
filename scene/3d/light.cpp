@@ -106,6 +106,16 @@ Color Light::get_shadow_color() const {
 	return shadow_color;
 }
 
+void Light::set_shadow_reverse_cull_face(bool p_enable) {
+	reverse_cull = p_enable;
+	VS::get_singleton()->light_set_reverse_cull_face_mode(light, reverse_cull);
+}
+
+bool Light::get_shadow_reverse_cull_face() const {
+
+	return reverse_cull;
+}
+
 Rect3 Light::get_aabb() const {
 
 	if (type == VisualServer::LIGHT_DIRECTIONAL) {
@@ -202,6 +212,9 @@ void Light::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_color", "color"), &Light::set_color);
 	ClassDB::bind_method(D_METHOD("get_color"), &Light::get_color);
 
+	ClassDB::bind_method(D_METHOD("set_shadow_reverse_cull_face", "enable"), &Light::set_shadow_reverse_cull_face);
+	ClassDB::bind_method(D_METHOD("get_shadow_reverse_cull_face"), &Light::get_shadow_reverse_cull_face);
+
 	ClassDB::bind_method(D_METHOD("set_shadow_color", "shadow_color"), &Light::set_shadow_color);
 	ClassDB::bind_method(D_METHOD("get_shadow_color"), &Light::get_shadow_color);
 
@@ -217,6 +230,7 @@ void Light::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "shadow_bias", PROPERTY_HINT_RANGE, "-16,16,0.01"), "set_param", "get_param", PARAM_SHADOW_BIAS);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "shadow_contact", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_param", "get_param", PARAM_CONTACT_SHADOW_SIZE);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "shadow_max_distance", PROPERTY_HINT_RANGE, "0,65536,0.1"), "set_param", "get_param", PARAM_SHADOW_MAX_DISTANCE);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shadow_reverse_cull_face"), "set_shadow_reverse_cull_face", "get_shadow_reverse_cull_face");
 	ADD_GROUP("Editor", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_only"), "set_editor_only", "is_editor_only");
 	ADD_GROUP("", "");
@@ -243,6 +257,8 @@ Light::Light(VisualServer::LightType p_type) {
 	type = p_type;
 	light = VisualServer::get_singleton()->light_create(p_type);
 	VS::get_singleton()->instance_set_base(get_instance(), light);
+
+	reverse_cull = false;
 
 	editor_only = false;
 	set_color(Color(1, 1, 1, 1));

@@ -4451,7 +4451,7 @@ RID RasterizerStorageGLES3::light_create(VS::LightType p_type) {
 	light->omni_shadow_mode = VS::LIGHT_OMNI_SHADOW_DUAL_PARABOLOID;
 	light->omni_shadow_detail = VS::LIGHT_OMNI_SHADOW_DETAIL_VERTICAL;
 	light->directional_blend_splits = false;
-
+	light->reverse_cull = false;
 	light->version = 0;
 
 	return light_owner.make_rid(light);
@@ -4528,6 +4528,14 @@ void RasterizerStorageGLES3::light_set_cull_mask(RID p_light, uint32_t p_mask) {
 
 	light->version++;
 	light->instance_change_notify();
+}
+
+void RasterizerStorageGLES3::light_set_reverse_cull_face_mode(RID p_light, bool p_enabled) {
+
+	Light *light = light_owner.getornull(p_light);
+	ERR_FAIL_COND(!light);
+
+	light->reverse_cull = p_enabled;
 }
 
 void RasterizerStorageGLES3::light_omni_set_shadow_mode(RID p_light, VS::LightOmniShadowMode p_mode) {

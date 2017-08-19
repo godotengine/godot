@@ -225,6 +225,7 @@ public:
 	FUNC2(light_set_projector, RID, RID)
 	FUNC2(light_set_negative, RID, bool)
 	FUNC2(light_set_cull_mask, RID, uint32_t)
+	FUNC2(light_set_reverse_cull_face_mode, RID, bool)
 
 	FUNC2(light_omni_set_shadow_mode, RID, LightOmniShadowMode)
 	FUNC2(light_omni_set_shadow_detail, RID, LightOmniShadowDetail)

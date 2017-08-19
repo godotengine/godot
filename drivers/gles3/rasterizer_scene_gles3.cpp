@@ -1088,11 +1088,12 @@ void RasterizerSceneGLES3::gi_probe_instance_set_bounds(RID p_probe, const Vecto
 
 bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material *p_material, bool p_alpha_pass) {
 
+	/* this is handled outside
 	if (p_material->shader->spatial.cull_mode == RasterizerStorageGLES3::Shader::Spatial::CULL_MODE_DISABLED) {
 		glDisable(GL_CULL_FACE);
 	} else {
 		glEnable(GL_CULL_FACE);
-	}
+	} */
 
 	if (state.current_line_width != p_material->line_width) {
 		//glLineWidth(MAX(p_material->line_width,1.0));
@@ -1857,11 +1858,20 @@ void RasterizerSceneGLES3::_setup_light(RenderList::Element *e, const Transform 
 	}
 }
 
-void RasterizerSceneGLES3::_set_cull(bool p_front, bool p_reverse_cull) {
+void RasterizerSceneGLES3::_set_cull(bool p_front, bool p_disabled, bool p_reverse_cull) {
 
 	bool front = p_front;
 	if (p_reverse_cull)
 		front = !front;
+
+	if (p_disabled != state.cull_disabled) {
+		if (p_disabled)
+			glDisable(GL_CULL_FACE);
+		else
+			glEnable(GL_CULL_FACE);
+
+		state.cull_disabled = p_disabled;
+	}
 
 	if (front != state.cull_front) {
 
@@ -1900,7 +1910,9 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 	}
 
 	state.cull_front = false;
+	state.cull_disabled = false;
 	glCullFace(GL_BACK);
+	glEnable(GL_CULL_FACE);
 
 	state.current_depth_test = true;
 	glEnable(GL_DEPTH_TEST);
@@ -2101,7 +2113,7 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 			storage->info.render.surface_switch_count++;
 		}
 
-		_set_cull(e->sort_key & RenderList::SORT_KEY_MIRROR_FLAG, p_reverse_cull);
+		_set_cull(e->sort_key & RenderList::SORT_KEY_MIRROR_FLAG, e->sort_key & RenderList::SORT_KEY_CULL_DISABLED_FLAG, p_reverse_cull);
 
 		state.scene_shader.set_uniform(SceneShaderGLES3::NORMAL_MULT, e->instance->mirror ? -1.0 : 1.0);
 		state.scene_shader.set_uniform(SceneShaderGLES3::WORLD_TRANSFORM, e->instance->transform);
@@ -2188,8 +2200,12 @@ void RasterizerSceneGLES3::_add_geometry_with_material(RasterizerStorageGLES3::G
 	bool shadow = false;
 
 	bool mirror = p_instance->mirror;
+	bool no_cull = false;
 
-	if (p_material->shader->spatial.cull_mode == RasterizerStorageGLES3::Shader::Spatial::CULL_MODE_FRONT) {
+	if (p_material->shader->spatial.cull_mode == RasterizerStorageGLES3::Shader::Spatial::CULL_MODE_DISABLED) {
+		no_cull = true;
+		mirror = false;
+	} else if (p_material->shader->spatial.cull_mode == RasterizerStorageGLES3::Shader::Spatial::CULL_MODE_FRONT) {
 		mirror = !mirror;
 	}
 
@@ -2208,10 +2224,13 @@ void RasterizerSceneGLES3::_add_geometry_with_material(RasterizerStorageGLES3::G
 
 		if (!p_material->shader->spatial.uses_alpha_scissor && !p_material->shader->spatial.writes_modelview_or_projection && !p_material->shader->spatial.uses_vertex && !p_material->shader->spatial.uses_discard && p_material->shader->spatial.depth_draw_mode != RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS) {
 			//shader does not use discard and does not write a vertex position, use generic material
-			if (p_instance->cast_shadows == VS::SHADOW_CASTING_SETTING_DOUBLE_SIDED)
+			if (p_instance->cast_shadows == VS::SHADOW_CASTING_SETTING_DOUBLE_SIDED) {
 				p_material = storage->material_owner.getptr(default_material_twosided);
-			else
+				no_cull = true;
+				mirror = false;
+			} else {
 				p_material = storage->material_owner.getptr(default_material);
+			}
 		}
 
 		has_alpha = false;
@@ -2273,6 +2292,10 @@ void RasterizerSceneGLES3::_add_geometry_with_material(RasterizerStorageGLES3::G
 
 	if (mirror) {
 		e->sort_key |= RenderList::SORT_KEY_MIRROR_FLAG;
+	}
+
+	if (no_cull) {
+		e->sort_key |= RenderList::SORT_KEY_CULL_DISABLED_FLAG;
 	}
 
 	//e->light_type=0xFF; // no lights!
@@ -4535,6 +4558,9 @@ void RasterizerSceneGLES3::render_shadow(RID p_light, RID p_shadow_atlas, int p_
 
 	state.scene_shader.set_conditional(SceneShaderGLES3::RENDER_DEPTH, true);
 
+	if (light->reverse_cull) {
+		flip_facing = !flip_facing;
+	}
 	_render_list(render_list.elements, render_list.element_count, light_transform, light_projection, 0, flip_facing, false, true, false, false);
 
 	state.scene_shader.set_conditional(SceneShaderGLES3::RENDER_DEPTH, false);

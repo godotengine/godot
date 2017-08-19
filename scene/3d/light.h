@@ -69,6 +69,7 @@ private:
 	Color shadow_color;
 	bool shadow;
 	bool negative;
+	bool reverse_cull;
 	uint32_t cull_mask;
 	VS::LightType type;
 	bool editor_only;
@@ -109,6 +110,9 @@ public:
 
 	void set_shadow_color(const Color &p_shadow_color);
 	Color get_shadow_color() const;
+
+	void set_shadow_reverse_cull_face(bool p_enable);
+	bool get_shadow_reverse_cull_face() const;
 
 	virtual Rect3 get_aabb() const;
 	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;

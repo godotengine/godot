@@ -978,16 +978,6 @@ void VisualServerScene::instance_geometry_set_flag(RID p_instance, VS::InstanceF
 
 	switch (p_flags) {
 
-		case VS::INSTANCE_FLAG_CAST_SHADOW: {
-			if (p_enabled == true) {
-				instance->cast_shadows = VS::SHADOW_CASTING_SETTING_ON;
-			} else {
-				instance->cast_shadows = VS::SHADOW_CASTING_SETTING_OFF;
-			}
-
-			instance->base_material_changed(); // to actually compute if shadows are visible or not
-
-		} break;
 		case VS::INSTANCE_FLAG_VISIBLE_IN_ALL_ROOMS: {
 
 			instance->visible_in_all_rooms = p_enabled;
@@ -1001,6 +991,12 @@ void VisualServerScene::instance_geometry_set_flag(RID p_instance, VS::InstanceF
 	}
 }
 void VisualServerScene::instance_geometry_set_cast_shadows_setting(RID p_instance, VS::ShadowCastingSetting p_shadow_casting_setting) {
+
+	Instance *instance = instance_owner.get(p_instance);
+	ERR_FAIL_COND(!instance);
+
+	instance->cast_shadows = p_shadow_casting_setting;
+	instance->base_material_changed(); // to actually compute if shadows are visible or not
 }
 void VisualServerScene::instance_geometry_set_material_override(RID p_instance, RID p_material) {
 

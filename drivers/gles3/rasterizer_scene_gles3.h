@@ -187,6 +187,7 @@ public:
 		int reflection_probe_count;
 
 		bool cull_front;
+		bool cull_disabled;
 		bool used_sss;
 		bool used_screen_texture;
 		bool using_contact_shadows;
@@ -654,6 +655,7 @@ public:
 			SORT_KEY_MATERIAL_INDEX_SHIFT = 40,
 			SORT_KEY_GEOMETRY_INDEX_SHIFT = 20,
 			SORT_KEY_GEOMETRY_TYPE_SHIFT = 15,
+			SORT_KEY_CULL_DISABLED_FLAG = 4,
 			SORT_KEY_SKELETON_FLAG = 2,
 			SORT_KEY_MIRROR_FLAG = 1
 
@@ -779,7 +781,7 @@ public:
 
 	RenderList render_list;
 
-	_FORCE_INLINE_ void _set_cull(bool p_front, bool p_reverse_cull);
+	_FORCE_INLINE_ void _set_cull(bool p_front, bool p_disabled, bool p_reverse_cull);
 
 	_FORCE_INLINE_ bool _setup_material(RasterizerStorageGLES3::Material *p_material, bool p_alpha_pass);
 	_FORCE_INLINE_ void _setup_geometry(RenderList::Element *e, const Transform &p_view_transform);
