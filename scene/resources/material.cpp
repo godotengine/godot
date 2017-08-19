@@ -418,7 +418,7 @@ void SpatialMaterial::_update_shader() {
 
 	if (features[FEATURE_EMISSION]) {
 
-		code += "uniform sampler2D texture_emission : hint_black_albedo;\n";
+		code += "uniform sampler2D texture_emission : hint_white_albedo;\n";
 		code += "uniform vec4 emission : hint_color;\n";
 		code += "uniform float emission_energy;\n";
 	}
@@ -708,7 +708,7 @@ void SpatialMaterial::_update_shader() {
 		} else {
 			code += "\tvec3 emission_tex = texture(texture_emission,base_uv).rgb;\n";
 		}
-		code += "\tEMISSION = (emission.rgb+emission_tex)*emission_energy;\n";
+		code += "\tEMISSION = emission.rgb*emission_tex*emission_energy;\n";
 	}
 
 	if (features[FEATURE_REFRACTION] && !flags[FLAG_UV1_USE_TRIPLANAR]) { //refraction not supported with triplanar
