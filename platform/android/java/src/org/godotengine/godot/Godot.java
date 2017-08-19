@@ -387,7 +387,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 				new_cmdline = new String[ 2 ];
 			}
 
-			new_cmdline[cll]="-main_pack";
+			new_cmdline[cll]="--main_pack";
 			new_cmdline[cll+1]=expansion_pack_path;
 			command_line=new_cmdline;
 		}
@@ -452,9 +452,9 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 			for(int i=0;i<command_line.length;i++) {
 
 				boolean has_extra = i< command_line.length -1;
-				if (command_line[i].equals("-use_depth_32")) {
+				if (command_line[i].equals("--use_depth_32")) {
 					use_32_bits=true;
-				} else if (command_line[i].equals("-use_immersive")) {
+				} else if (command_line[i].equals("--use_immersive")) {
 					use_immersive=true;
 					if(Build.VERSION.SDK_INT >= 19.0){ // check if the application runs on an android 4.4+
 						window.getDecorView().setSystemUiVisibility(
@@ -467,12 +467,12 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 
 						UiChangeListener();
 					}
-				} else if (command_line[i].equals("-use_apk_expansion")) {
+				} else if (command_line[i].equals("--use_apk_expansion")) {
 					use_apk_expansion=true;
-				} else if (has_extra && command_line[i].equals("-apk_expansion_md5")) {
+				} else if (has_extra && command_line[i].equals("--apk_expansion_md5")) {
 					main_pack_md5=command_line[i+1];
 					i++;
-				} else if (has_extra && command_line[i].equals("-apk_expansion_key")) {
+				} else if (has_extra && command_line[i].equals("--apk_expansion_key")) {
 					main_pack_key=command_line[i+1];
 					SharedPreferences prefs = getSharedPreferences("app_data_keys", MODE_PRIVATE);
 					Editor editor = prefs.edit();

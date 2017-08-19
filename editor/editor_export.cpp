@@ -229,17 +229,17 @@ void EditorExportPlatform::gen_debug_flags(Vector<String> &r_flags, int p_flags)
 	if (p_flags & DEBUG_FLAG_DUMB_CLIENT) {
 		int port = EditorSettings::get_singleton()->get("filesystem/file_server/port");
 		String passwd = EditorSettings::get_singleton()->get("filesystem/file_server/password");
-		r_flags.push_back("-rfs");
+		r_flags.push_back("--remote-fs");
 		r_flags.push_back(host + ":" + itos(port));
 		if (passwd != "") {
-			r_flags.push_back("-rfs_pass");
+			r_flags.push_back("--remote-fs-password");
 			r_flags.push_back(passwd);
 		}
 	}
 
 	if (p_flags & DEBUG_FLAG_REMOTE_DEBUG) {
 
-		r_flags.push_back("-rdebug");
+		r_flags.push_back("--remote-debug");
 
 		r_flags.push_back(host + ":" + String::num(remote_port));
 
@@ -248,7 +248,7 @@ void EditorExportPlatform::gen_debug_flags(Vector<String> &r_flags, int p_flags)
 
 		if (breakpoints.size()) {
 
-			r_flags.push_back("-bp");
+			r_flags.push_back("--breakpoints");
 			String bpoints;
 			for (const List<String>::Element *E = breakpoints.front(); E; E = E->next()) {
 
@@ -263,12 +263,12 @@ void EditorExportPlatform::gen_debug_flags(Vector<String> &r_flags, int p_flags)
 
 	if (p_flags & DEBUG_FLAG_VIEW_COLLISONS) {
 
-		r_flags.push_back("-debugcol");
+		r_flags.push_back("--debug-collisions");
 	}
 
 	if (p_flags & DEBUG_FLAG_VIEW_NAVIGATION) {
 
-		r_flags.push_back("-debugnav");
+		r_flags.push_back("--debug-navigation");
 	}
 }
 
@@ -714,17 +714,17 @@ void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags
 	if (p_flags & DEBUG_FLAG_DUMB_CLIENT) {
 		int port = EditorSettings::get_singleton()->get("filesystem/file_server/port");
 		String passwd = EditorSettings::get_singleton()->get("filesystem/file_server/password");
-		r_flags.push_back("-rfs");
+		r_flags.push_back("--remote-fs");
 		r_flags.push_back(host + ":" + itos(port));
 		if (passwd != "") {
-			r_flags.push_back("-rfs_pass");
+			r_flags.push_back("--remote-fs-password");
 			r_flags.push_back(passwd);
 		}
 	}
 
 	if (p_flags & DEBUG_FLAG_REMOTE_DEBUG) {
 
-		r_flags.push_back("-rdebug");
+		r_flags.push_back("--remote-debug");
 
 		r_flags.push_back(host + ":" + String::num(remote_port));
 
@@ -733,7 +733,7 @@ void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags
 
 		if (breakpoints.size()) {
 
-			r_flags.push_back("-bp");
+			r_flags.push_back("--breakpoints");
 			String bpoints;
 			for (const List<String>::Element *E = breakpoints.front(); E; E = E->next()) {
 
@@ -748,12 +748,12 @@ void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags
 
 	if (p_flags & DEBUG_FLAG_VIEW_COLLISONS) {
 
-		r_flags.push_back("-debugcol");
+		r_flags.push_back("--debug-collisions");
 	}
 
 	if (p_flags & DEBUG_FLAG_VIEW_NAVIGATION) {
 
-		r_flags.push_back("-debugnav");
+		r_flags.push_back("--debug-navigation");
 	}
 }
 EditorExportPlatform::EditorExportPlatform() {
@@ -2231,17 +2231,17 @@ void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags
 	if (p_flags&EXPORT_DUMB_CLIENT) {
 		int port = EditorSettings::get_singleton()->get("filesystem/file_server/port");
 		String passwd = EditorSettings::get_singleton()->get("filesystem/file_server/password");
-		r_flags.push_back("-rfs");
+		r_flags.push_back("--remote-fs");
 		r_flags.push_back(host+":"+itos(port));
 		if (passwd!="") {
-			r_flags.push_back("-rfs_pass");
+			r_flags.push_back("--remote-fs-password");
 			r_flags.push_back(passwd);
 		}
 	}
 
 	if (p_flags&EXPORT_REMOTE_DEBUG) {
 
-		r_flags.push_back("-rdebug");
+		r_flags.push_back("--remote-debug");
 
 		r_flags.push_back(host+":"+String::num(remote_port));
 
@@ -2251,7 +2251,7 @@ void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags
 
 		if (breakpoints.size()) {
 
-			r_flags.push_back("-bp");
+			r_flags.push_back("--breakpoints");
 			String bpoints;
 			for(const List<String>::Element *E=breakpoints.front();E;E=E->next()) {
 
@@ -2267,12 +2267,12 @@ void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags
 
 	if (p_flags&EXPORT_VIEW_COLLISONS) {
 
-		r_flags.push_back("-debugcol");
+		r_flags.push_back("--debug-collisions");
 	}
 
 	if (p_flags&EXPORT_VIEW_NAVIGATION) {
 
-		r_flags.push_back("-debugnav");
+		r_flags.push_back("--debug-navigation");
 	}
 
 
