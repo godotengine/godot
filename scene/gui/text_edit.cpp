@@ -1028,6 +1028,8 @@ void TextEdit::_notification(int p_what) {
 
 					if (cursor.column == j && cursor.line == line && block_caret && draw_caret && !insert_mode) {
 						color = cache.caret_background_color;
+					} else if (!syntax_coloring && block_caret) {
+						color = cache.font_color;
 					}
 
 					if (str[j] >= 32) {
