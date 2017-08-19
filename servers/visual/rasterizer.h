@@ -712,6 +712,7 @@ public:
 			RID texture;
 			RID normal_map;
 			int count;
+			bool antialiased;
 
 			CommandPolygon() {
 				type = TYPE_POLYGON;

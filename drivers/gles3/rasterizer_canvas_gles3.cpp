@@ -691,6 +691,13 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 					state.canvas_shader.set_uniform(CanvasShaderGLES3::COLOR_TEXPIXEL_SIZE, texpixel_size);
 				}
 				_draw_polygon(polygon->indices.ptr(), polygon->count, polygon->points.size(), polygon->points.ptr(), polygon->uvs.ptr(), polygon->colors.ptr(), polygon->colors.size() == 1);
+#ifdef GLES_OVER_GL
+				if (polygon->antialiased) {
+					glEnable(GL_LINE_SMOOTH);
+					_draw_generic(GL_LINE_LOOP, polygon->points.size(), polygon->points.ptr(), polygon->uvs.ptr(), polygon->colors.ptr(), polygon->colors.size() == 1);
+					glDisable(GL_LINE_SMOOTH);
+				}
+#endif
 
 			} break;
 			case Item::Command::TYPE_PARTICLES: {
