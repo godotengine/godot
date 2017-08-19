@@ -83,6 +83,10 @@ class ScrollBar : public Range {
 	bool drag_slave_touching_deaccel;
 	bool click_handled;
 
+	bool scrolling;
+	double target_scroll;
+	bool smooth_scroll_enabled;
+
 	void _drag_slave_exit();
 	void _drag_slave_input(const Ref<InputEvent> &p_input);
 
@@ -99,6 +103,9 @@ public:
 
 	void set_drag_slave(const NodePath &p_path);
 	NodePath get_drag_slave() const;
+
+	void set_smooth_scroll_enabled(bool p_enable);
+	bool is_smooth_scroll_enabled() const;
 
 	virtual Size2 get_minimum_size() const;
 	ScrollBar(Orientation p_orientation = VERTICAL);

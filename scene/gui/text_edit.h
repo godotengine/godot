@@ -256,6 +256,10 @@ class TextEdit : public Control {
 	bool insert_mode;
 	bool select_identifiers_enabled;
 
+	bool smooth_scroll_enabled;
+	bool scrolling;
+	float target_v_scroll;
+
 	bool raised_from_completion;
 
 	String highlighted_word;
@@ -486,6 +490,9 @@ public:
 
 	int get_h_scroll() const;
 	void set_h_scroll(int p_scroll);
+
+	void set_smooth_scroll_enabled(bool p_enable);
+	bool is_smooth_scroll_enabled() const;
 
 	uint32_t get_version() const;
 	uint32_t get_saved_version() const;
