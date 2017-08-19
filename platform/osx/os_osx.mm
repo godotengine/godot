@@ -1127,11 +1127,6 @@ void OS_OSX::print_error(const char *p_function, const char *p_file, int p_line,
 			print("\E[1;35mSCRIPT ERROR: %s: \E[0m\E[1m%s\n", p_function, err_details);
 			print("\E[0;35m   At: %s:%i.\E[0m\n", p_file, p_line);
 			break;
-		case ERR_SHADER:
-			os_log_error(OS_LOG_DEFAULT, "SHADER ERROR: %{public}s: %{public}s\nAt: %{public}s:%i.", p_function, err_details, p_file, p_line);
-			print("\E[1;36mSHADER ERROR: %s: \E[0m\E[1m%s\n", p_function, err_details);
-			print("\E[0;36m   At: %s:%i.\E[0m\n", p_file, p_line);
-			break;
 	}
 #else
 	OS_Unix::print_error(p_function, p_file, p_line, p_code, p_rationale, p_type);
