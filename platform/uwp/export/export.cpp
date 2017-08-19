@@ -1330,7 +1330,7 @@ public:
 		}
 
 		if (!(p_flags & DEBUG_FLAG_DUMB_CLIENT)) {
-			cl.push_back("-path");
+			cl.push_back("--path");
 			cl.push_back("game");
 		}
 

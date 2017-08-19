@@ -512,7 +512,7 @@ void App::UpdateWindowSize(Size size) {
 
 char **App::get_command_line(unsigned int *out_argc) {
 
-	static char *fail_cl[] = { "-path", "game", NULL };
+	static char *fail_cl[] = { "--path", "game", NULL };
 	*out_argc = 2;
 
 	FILE *f = _wfopen(L"__cl__.cl", L"rb");

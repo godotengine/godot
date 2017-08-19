@@ -88,7 +88,5 @@ RunSettingsDialog::RunSettingsDialog() {
 	get_ok()->set_text(TTR("Close"));
 	//get_cancel()->set_text("Close");
 
-	arguments->set_text("-l $scene");
-
 	set_title(TTR("Scene Run Settings"));
 }
