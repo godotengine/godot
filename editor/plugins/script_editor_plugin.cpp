@@ -1126,10 +1126,6 @@ void ScriptEditor::_notification(int p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 
 			tab_container->add_style_override("panel", editor->get_gui_base()->get_stylebox("ScriptPanel", "EditorStyles"));
-
-			Ref<StyleBox> sb = editor->get_gui_base()->get_stylebox("panel", "TabContainer")->duplicate();
-			sb->set_default_margin(MARGIN_TOP, 0);
-			add_style_override("panel", sb);
 		} break;
 
 		default:
@@ -2269,9 +2265,6 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	members_overview_enabled = true;
 	editor = p_editor;
 
-	Ref<StyleBox> sb = p_editor->get_gui_base()->get_stylebox("panel", "TabContainer")->duplicate();
-	sb->set_default_margin(MARGIN_TOP, 0);
-	add_style_override("panel", sb);
 	VBoxContainer *main_container = memnew(VBoxContainer);
 	add_child(main_container);
 
