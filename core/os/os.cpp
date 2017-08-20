@@ -373,8 +373,14 @@ OS::ScreenOrientation OS::get_screen_orientation() const {
 void OS::_ensure_data_dir() {
 
 	String dd = get_data_dir();
-	DirAccess *da = DirAccess::open(dd);
+	DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	String current_dir = da->get_current_dir();
+
+	memdelete(da);
+
+	da = DirAccess::open(dd);
 	if (da) {
+		da->change_dir(current_dir);
 		memdelete(da);
 		return;
 	}
@@ -385,6 +391,8 @@ void OS::_ensure_data_dir() {
 		ERR_EXPLAIN("Error attempting to create data dir: " + dd);
 	}
 	ERR_FAIL_COND(err != OK);
+
+	da->change_dir(current_dir);
 
 	memdelete(da);
 }
