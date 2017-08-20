@@ -101,6 +101,7 @@ public:
 	/** specific to AR **/
 	virtual bool get_anchor_detection_is_enabled() const;
 	virtual void set_anchor_detection_is_enabled(bool p_enable);
+	virtual int get_camera_feed_id();
 
 	/** rendering and internal **/
 

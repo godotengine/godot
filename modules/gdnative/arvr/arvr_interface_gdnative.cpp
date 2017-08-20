@@ -115,6 +115,17 @@ void ARVRInterfaceGDNative::set_anchor_detection_is_enabled(bool p_enable) {
 	interface->set_anchor_detection_is_enabled(data, p_enable);
 }
 
+int ARVRInterfaceGDNative::get_camera_feed_id() {
+
+	ERR_FAIL_COND_V(interface == NULL, 0);
+
+	if ((interface->version.major > 1) || ((interface->version.major) == 1 && (interface->version.minor >= 1))) {
+		return (unsigned int)interface->get_camera_feed_id(data);
+	} else {
+		return 0;
+	}
+}
+
 bool ARVRInterfaceGDNative::is_stereo() {
 	bool stereo;
 

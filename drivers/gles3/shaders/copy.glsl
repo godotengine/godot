@@ -18,9 +18,18 @@ out vec2 uv_interp;
 
 out vec2 uv2_interp;
 
+// These definitions are here because the shader-wrapper builder does
+// not understand `#elif defined()`
+#ifdef USE_DISPLAY_TRANSFORM
+#endif
+
 #ifdef USE_COPY_SECTION
 
 uniform vec4 copy_section;
+
+#elif defined(USE_DISPLAY_TRANSFORM)
+
+uniform highp mat4 display_transform;
 
 #endif
 
@@ -44,6 +53,9 @@ void main() {
 
 	uv_interp = copy_section.xy + uv_interp * copy_section.zw;
 	gl_Position.xy = (copy_section.xy + (gl_Position.xy * 0.5 + 0.5) * copy_section.zw) * 2.0 - 1.0;
+#elif defined(USE_DISPLAY_TRANSFORM)
+
+	uv_interp = (display_transform * vec4(uv_in, 1.0, 1.0)).xy;
 #endif
 }
 
@@ -73,6 +85,8 @@ uniform highp vec4 asym_proj;
 #endif
 #ifdef USE_TEXTURE2DARRAY
 #endif
+#ifdef YCBCR_TO_SRGB
+#endif
 
 #ifdef USE_CUBEMAP
 uniform samplerCube source_cube; //texunit:0
@@ -82,6 +96,10 @@ uniform sampler3D source_3d; //texunit:0
 uniform sampler2DArray source_2d_array; //texunit:0
 #else
 uniform sampler2D source; //texunit:0
+#endif
+
+#ifdef SEP_CBCR_TEXTURE
+uniform sampler2D CbCr; //texunit:1
 #endif
 
 /* clang-format on */
@@ -166,14 +184,30 @@ void main() {
 	vec4 color = textureLod(source_3d, vec3(uv_interp, layer), 0.0);
 #elif defined(USE_TEXTURE2DARRAY)
 	vec4 color = textureLod(source_2d_array, vec3(uv_interp, layer), 0.0);
+#elif defined(SEP_CBCR_TEXTURE)
+	vec4 color;
+	color.r = textureLod(source, uv_interp, 0.0).r;
+	color.gb = textureLod(CbCr, uv_interp, 0.0).rg - vec2(0.5, 0.5);
+	color.a = 1.0;
 #else
 	vec4 color = textureLod(source, uv_interp, 0.0);
 #endif
 
 #ifdef LINEAR_TO_SRGB
-	//regular Linear -> SRGB conversion
+	// regular Linear -> SRGB conversion
 	vec3 a = vec3(0.055);
 	color.rgb = mix((vec3(1.0) + a) * pow(color.rgb, vec3(1.0 / 2.4)) - a, 12.92 * color.rgb, lessThan(color.rgb, vec3(0.0031308)));
+
+#elif defined(YCBCR_TO_SRGB)
+
+	// YCbCr -> SRGB conversion
+	// Using BT.709 which is the standard for HDTV
+	color.rgb = mat3(
+						vec3(1.00000, 1.00000, 1.00000),
+						vec3(0.00000, -0.18732, 1.85560),
+						vec3(1.57481, -0.46813, 0.00000)) *
+				color.rgb;
+
 #endif
 
 #ifdef SRGB_TO_LINEAR

@@ -1542,6 +1542,8 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	visual_server->init();
 	AudioDriverManager::initialize(p_audio_driver);
 
+	camera_server = memnew(CameraOSX);
+
 	input = memnew(InputDefault);
 	joypad_osx = memnew(JoypadOSX);
 
@@ -1572,6 +1574,11 @@ void OS_OSX::finalize() {
 	CGDisplayRemoveReconfigurationCallback(displays_arrangement_changed, NULL);
 
 	delete_main_loop();
+
+	if (camera_server) {
+		memdelete(camera_server);
+		camera_server = NULL;
+	}
 
 	memdelete(joypad_osx);
 	memdelete(input);

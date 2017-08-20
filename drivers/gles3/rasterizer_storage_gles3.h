@@ -358,6 +358,7 @@ public:
 	virtual uint32_t texture_get_height(RID p_texture) const;
 	virtual uint32_t texture_get_depth(RID p_texture) const;
 	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height, int p_depth);
+	virtual void texture_bind(RID p_texture, uint32_t p_texture_no);
 
 	virtual void texture_set_path(RID p_texture, const String &p_path);
 	virtual String texture_get_path(RID p_texture) const;
