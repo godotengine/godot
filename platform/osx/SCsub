@@ -13,6 +13,7 @@ files = [
     'dir_access_osx.mm',
     'joypad_osx.cpp',
     'power_osx.cpp',
+    'camera_osx.mm',
 ]
 
 prog = env.add_program('#bin/godot', files)

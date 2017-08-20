@@ -10,6 +10,13 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_camera_feed_id">
+			<return type="int">
+			</return>
+			<description>
+				If this is an AR interface that requires displaying a camera feed as the background, this method returns the feed id in the [CameraServer] for this interface.
+			</description>
+		</method>
 		<method name="get_capabilities" qualifiers="const">
 			<return type="int">
 			</return>

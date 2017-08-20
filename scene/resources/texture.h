@@ -39,6 +39,7 @@
 #include "core/resource.h"
 #include "scene/resources/curve.h"
 #include "scene/resources/gradient.h"
+#include "servers/camera_server.h"
 #include "servers/visual_server.h"
 
 /**
@@ -738,6 +739,40 @@ public:
 
 	AnimatedTexture();
 	~AnimatedTexture();
+};
+
+class CameraTexture : public Texture {
+	GDCLASS(CameraTexture, Texture)
+
+private:
+	int camera_feed_id;
+	CameraServer::FeedImage which_feed;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual int get_width() const;
+	virtual int get_height() const;
+	virtual RID get_rid() const;
+	virtual bool has_alpha() const;
+
+	virtual void set_flags(uint32_t p_flags);
+	virtual uint32_t get_flags() const;
+
+	virtual Ref<Image> get_data() const;
+
+	void set_camera_feed_id(int p_new_id);
+	int get_camera_feed_id() const;
+
+	void set_which_feed(CameraServer::FeedImage p_which);
+	CameraServer::FeedImage get_which_feed() const;
+
+	void set_camera_active(bool p_active);
+	bool get_camera_active() const;
+
+	CameraTexture();
+	~CameraTexture();
 };
 
 #endif

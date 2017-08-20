@@ -144,6 +144,7 @@ def configure(env):
                           '-framework', 'CoreAudio',
                           '-framework', 'CoreGraphics',
                           '-framework', 'CoreMedia',
+                          '-framework', 'CoreVideo',
                           '-framework', 'CoreMotion',
                           '-framework', 'Foundation',
                           '-framework', 'GameController',

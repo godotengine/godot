@@ -3359,6 +3359,17 @@
 			<description>
 			</description>
 		</method>
+		<method name="texture_bind">
+			<return type="void">
+			</return>
+			<argument index="0" name="texture" type="RID">
+			</argument>
+			<argument index="1" name="number" type="int">
+			</argument>
+			<description>
+				Binds the texture to a texture slot.
+			</description>
+		</method>
 		<method name="texture_create">
 			<return type="RID">
 			</return>
@@ -4427,7 +4438,7 @@
 		</constant>
 		<constant name="ENV_BG_KEEP" value="5" enum="EnvironmentBG">
 		</constant>
-		<constant name="ENV_BG_MAX" value="6" enum="EnvironmentBG">
+		<constant name="ENV_BG_MAX" value="7" enum="EnvironmentBG">
 		</constant>
 		<constant name="ENV_DOF_BLUR_QUALITY_LOW" value="0" enum="EnvironmentDOFBlurQuality">
 		</constant>

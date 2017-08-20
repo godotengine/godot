@@ -31,6 +31,7 @@
 #ifndef OS_OSX_H
 #define OS_OSX_H
 
+#include "camera_osx.h"
 #include "core/os/input.h"
 #include "crash_handler_osx.h"
 #include "drivers/coreaudio/audio_driver_coreaudio.h"
@@ -72,6 +73,8 @@ public:
 	//  rasterizer seems to no longer be given to visual server, its using GLES3 directly?
 	//Rasterizer *rasterizer;
 	VisualServer *visual_server;
+
+	CameraServer *camera_server;
 
 	List<String> args;
 	MainLoop *main_loop;

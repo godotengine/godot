@@ -956,6 +956,8 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	VisualServer *visual_server = memnew(VisualServerRaster());
 	input = memnew(InputDefault);
 
+	camera_server = memnew(CameraServer);
+
 	EMSCRIPTEN_RESULT result;
 #define EM_CHECK(ev)                         \
 	if (result != EMSCRIPTEN_RESULT_SUCCESS) \
@@ -1090,6 +1092,7 @@ void OS_JavaScript::delete_main_loop() {
 
 void OS_JavaScript::finalize() {
 
+	memdelete(camera_server);
 	memdelete(input);
 }
 

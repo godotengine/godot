@@ -968,6 +968,15 @@ uint32_t RasterizerStorageGLES2::texture_get_texid(RID p_texture) const {
 	return texture->tex_id;
 }
 
+void RasterizerStorageGLES2::texture_bind(RID p_texture, uint32_t p_texture_no) {
+	Texture *texture = texture_owner.getornull(p_texture);
+
+	ERR_FAIL_COND(!texture);
+
+	glActiveTexture(GL_TEXTURE0 + p_texture_no);
+	glBindTexture(texture->target, texture->tex_id);
+}
+
 uint32_t RasterizerStorageGLES2::texture_get_width(RID p_texture) const {
 	Texture *texture = texture_owner.getornull(p_texture);
 

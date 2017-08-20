@@ -176,6 +176,9 @@ Error OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int
 	input = memnew(InputDefault);
 	input->set_fallback_mapping("Default Android Gamepad");
 
+	///@TODO implement a subclass for Android and instantiate that instead
+	camera_server = memnew(CameraServer);
+
 	//power_manager = memnew(PowerAndroid);
 
 	return OK;
@@ -193,6 +196,9 @@ void OS_Android::delete_main_loop() {
 }
 
 void OS_Android::finalize() {
+
+	memdelete(camera_server);
+
 	memdelete(input);
 }
 

@@ -61,6 +61,7 @@ public:
 	void environment_set_bg_energy(RID p_env, float p_energy) {}
 	void environment_set_canvas_max_layer(RID p_env, int p_max_layer) {}
 	void environment_set_ambient_light(RID p_env, const Color &p_color, float p_energy = 1.0, float p_sky_contribution = 0.0) {}
+	void environment_set_camera_feed_id(RID p_env, int p_camera_feed_id){};
 
 	void environment_set_dof_blur_near(RID p_env, bool p_enable, float p_distance, float p_transition, float p_far_amount, VS::EnvironmentDOFBlurQuality p_quality) {}
 	void environment_set_dof_blur_far(RID p_env, bool p_enable, float p_distance, float p_transition, float p_far_amount, VS::EnvironmentDOFBlurQuality p_quality) {}
@@ -216,6 +217,7 @@ public:
 	uint32_t texture_get_height(RID p_texture) const { return 0; }
 	uint32_t texture_get_depth(RID p_texture) const { return 0; }
 	void texture_set_size_override(RID p_texture, int p_width, int p_height, int p_depth_3d) {}
+	void texture_bind(RID p_texture, uint32_t p_texture_no) {}
 
 	void texture_set_path(RID p_texture, const String &p_path) {
 		DummyTexture *t = texture_owner.getornull(p_texture);
