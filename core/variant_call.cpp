@@ -747,6 +747,7 @@ struct _VariantCall {
 	VCALL_PTR1R(Transform, translated);
 	VCALL_PTR0R(Transform, orthonormalized);
 	VCALL_PTR2R(Transform, looking_at);
+	VCALL_PTR2R(Transform, interpolate_with);
 
 	static void _call_Transform_xform(Variant &r_ret, Variant &p_self, const Variant **p_args) {
 
@@ -1691,7 +1692,7 @@ void register_variant_methods() {
 	ADDFUNC1(TRANSFORM2D, TRANSFORM2D, Transform2D, xform_inv, NIL, "v", varray());
 	ADDFUNC1(TRANSFORM2D, TRANSFORM2D, Transform2D, basis_xform, NIL, "v", varray());
 	ADDFUNC1(TRANSFORM2D, TRANSFORM2D, Transform2D, basis_xform_inv, NIL, "v", varray());
-	ADDFUNC2(TRANSFORM2D, TRANSFORM2D, Transform2D, interpolate_with, TRANSFORM2D, "m", REAL, "c", varray());
+	ADDFUNC2(TRANSFORM2D, TRANSFORM2D, Transform2D, interpolate_with, TRANSFORM2D, "transform", REAL, "weight", varray());
 
 	ADDFUNC0(BASIS, BASIS, Basis, inverse, varray());
 	ADDFUNC0(BASIS, BASIS, Basis, transposed, varray());
@@ -1718,6 +1719,7 @@ void register_variant_methods() {
 	ADDFUNC1(TRANSFORM, TRANSFORM, Transform, scaled, VECTOR3, "scale", varray());
 	ADDFUNC1(TRANSFORM, TRANSFORM, Transform, translated, VECTOR3, "ofs", varray());
 	ADDFUNC2(TRANSFORM, TRANSFORM, Transform, looking_at, VECTOR3, "target", VECTOR3, "up", varray());
+	ADDFUNC2(TRANSFORM, TRANSFORM, Transform, interpolate_with, TRANSFORM, "transform", REAL, "weight", varray());
 	ADDFUNC1(TRANSFORM, NIL, Transform, xform, NIL, "v", varray());
 	ADDFUNC1(TRANSFORM, NIL, Transform, xform_inv, NIL, "v", varray());
 
