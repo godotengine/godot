@@ -14,6 +14,7 @@ def make_debug_mingw(target, source, env):
     os.system(mingw_prefix + 'objcopy --add-gnu-debuglink=%s.debugsymbols %s' % (target[0], target[0]))
 
 common_win = [
+    "camera_win.cpp",
     "context_gl_win.cpp",
     "crash_handler_win.cpp",
     "os_windows.cpp",

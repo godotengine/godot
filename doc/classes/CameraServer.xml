@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CameraServer" inherits="Object" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="feed_is_active" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+				Returns true if the feed with this id is active.
+			</description>
+		</method>
+		<method name="feed_set_active">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="active" type="bool">
+			</argument>
+			<description>
+				Activates or deactivates the feed with the given id.
+			</description>
+		</method>
+		<method name="feeds" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+				Returns an array of available feeds.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="camera_feed_added">
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+				Signal to alert a new feed is available
+			</description>
+		</signal>
+		<signal name="camera_feed_removed">
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+				Signal to alert a feed was removed (say USB camera was unplugged or another program took ownership of a camera)
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>

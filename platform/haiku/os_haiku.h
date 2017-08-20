@@ -39,6 +39,7 @@
 #include "main/input_default.h"
 #include "power_haiku.h"
 #include "servers/audio_server.h"
+#include "servers/camera_server.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
 
@@ -51,6 +52,7 @@ private:
 	Rasterizer *rasterizer;
 	VisualServer *visual_server;
 	VideoMode current_video_mode;
+	CameraServer *camera_server;
 	PowerHaiku *power_manager;
 
 #ifdef MEDIA_KIT_ENABLED

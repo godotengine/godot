@@ -38,6 +38,7 @@
 #include "os/main_loop.h"
 #include "power_javascript.h"
 #include "servers/audio_server.h"
+#include "servers/camera_server.h"
 #include "servers/visual/rasterizer.h"
 
 #include <emscripten/html5.h>
@@ -51,6 +52,7 @@ class OS_JavaScript : public OS_Unix {
 	int64_t last_sync_time;
 
 	VisualServer *visual_server;
+	CameraServer *camera_server;
 	AudioDriverJavaScript audio_driver_javascript;
 
 	InputDefault *input;

@@ -33,6 +33,7 @@
 #include "os/os.h"
 #include "project_settings.h"
 #include "rasterizer_canvas_gles3.h"
+#include "servers/camera_server.h"
 #include "servers/visual/visual_server_raster.h"
 
 #ifndef GLES_OVER_GL
@@ -840,6 +841,24 @@ void RasterizerSceneGLES3::environment_set_ambient_light(RID p_env, const Color 
 	env->ambient_color = p_color;
 	env->ambient_energy = p_energy;
 	env->ambient_sky_contribution = p_sky_contribution;
+}
+void RasterizerSceneGLES3::environment_set_camera_feed_id(RID p_env, int p_camera_feed_id) {
+	Environment *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND(!env);
+
+	env->camera_feed_id = p_camera_feed_id;
+}
+void RasterizerSceneGLES3::environment_set_camera_feed_h_flip(RID p_env, bool p_camera_feed_h_flip) {
+	Environment *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND(!env);
+
+	env->camera_feed_h_flip = p_camera_feed_h_flip;
+}
+void RasterizerSceneGLES3::environment_set_camera_feed_v_flip(RID p_env, bool p_camera_feed_v_flip) {
+	Environment *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND(!env);
+
+	env->camera_feed_v_flip = p_camera_feed_v_flip;
 }
 
 void RasterizerSceneGLES3::environment_set_dof_blur_far(RID p_env, bool p_enable, float p_distance, float p_transition, float p_amount, VS::EnvironmentDOFBlurQuality p_quality) {
@@ -4209,6 +4228,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 	Color clear_color(0, 0, 0, 0);
 
 	RasterizerStorageGLES3::Sky *sky = NULL;
+	CameraFeed *feed = NULL;
 	GLuint env_radiance_tex = 0;
 
 	if (state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_OVERDRAW) {
@@ -4246,6 +4266,9 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 			clear_color = env->bg_color.to_linear();
 		}
 
+	} else if (env->bg_mode == VS::ENV_BG_CAMERA_FEED) {
+		feed = CameraServer::get_singleton()->get_feed(env->camera_feed_id);
+		storage->frame.clear_request = false;
 	} else {
 		storage->frame.clear_request = false;
 	}
@@ -4282,6 +4305,61 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 		glDepthMask(GL_TRUE);
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_CULL_FACE);
+	} else if (env && env->bg_mode == VS::ENV_BG_CAMERA_FEED) {
+		if (feed == NULL) {
+			// don't have a feed, just show greenscreen :)
+			clear_color = Color(0.0, 1.0, 0.0, 1.0);
+		} else {
+			// copy our camera feed to our background
+
+			glDisable(GL_BLEND);
+			glDepthMask(GL_FALSE);
+			glDisable(GL_DEPTH_TEST);
+			glDisable(GL_CULL_FACE);
+
+			if (feed->get_datatype() == CameraFeed::FEED_RGB) {
+				RID camera_texture = feed->get_texture(0);
+
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, VS::get_singleton()->texture_get_texid(camera_texture));
+
+				storage->shaders.copy.set_conditional(CopyShaderGLES3::DISABLE_ALPHA, true);
+				storage->shaders.copy.set_conditional(CopyShaderGLES3::SRGB_TO_LINEAR, true);
+
+				///@TODO implement h and v flip, we don't have any RGB based cameras yet so some day....
+
+				storage->shaders.copy.bind();
+
+				_copy_screen(true, true);
+
+				//turn off everything used
+				storage->shaders.copy.set_conditional(CopyShaderGLES3::SRGB_TO_LINEAR, false);
+				storage->shaders.copy.set_conditional(CopyShaderGLES3::DISABLE_ALPHA, false);
+			} else if (feed->get_datatype() == CameraFeed::FEED_YCbCr) {
+				RID camera_Y = feed->get_texture(0);
+				RID camera_CbCr = feed->get_texture(1);
+
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, VS::get_singleton()->texture_get_texid(camera_Y));
+				glActiveTexture(GL_TEXTURE1);
+				glBindTexture(GL_TEXTURE_2D, VS::get_singleton()->texture_get_texid(camera_CbCr));
+
+				storage->shaders.ycbcr.set_conditional(YcbcrShaderGLES3::H_FLIP, env->camera_feed_h_flip);
+				storage->shaders.ycbcr.set_conditional(YcbcrShaderGLES3::V_FLIP, env->camera_feed_v_flip);
+				storage->shaders.ycbcr.bind();
+
+				_copy_screen(true, true);
+
+				storage->shaders.ycbcr.set_conditional(YcbcrShaderGLES3::H_FLIP, false);
+				storage->shaders.ycbcr.set_conditional(YcbcrShaderGLES3::V_FLIP, false);
+			};
+
+			//restore
+			glEnable(GL_BLEND);
+			glDepthMask(GL_TRUE);
+			glEnable(GL_DEPTH_TEST);
+			glEnable(GL_CULL_FACE);
+		}
 	}
 
 	state.texscreen_copied = false;

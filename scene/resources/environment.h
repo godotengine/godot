@@ -49,6 +49,7 @@ public:
 		BG_COLOR_SKY,
 		BG_CANVAS,
 		BG_KEEP,
+		BG_CAMERA_FEED,
 		BG_MAX
 	};
 
@@ -97,6 +98,9 @@ private:
 	Color ambient_color;
 	float ambient_energy;
 	float ambient_sky_contribution;
+	int camera_feed_id;
+	bool camera_feed_h_flip;
+	bool camera_feed_v_flip;
 
 	ToneMapper tone_mapper;
 	float tonemap_exposure;
@@ -185,6 +189,9 @@ public:
 	void set_ambient_light_color(const Color &p_color);
 	void set_ambient_light_energy(float p_energy);
 	void set_ambient_light_sky_contribution(float p_energy);
+	void set_camera_feed_id(int p_camera_feed_id);
+	void set_camera_feed_h_flip(bool p_camera_feed_h_flip);
+	void set_camera_feed_v_flip(bool p_camera_feed_v_flip);
 
 	BGMode get_background() const;
 	Ref<Sky> get_sky() const;
@@ -195,6 +202,9 @@ public:
 	Color get_ambient_light_color() const;
 	float get_ambient_light_energy() const;
 	float get_ambient_light_sky_contribution() const;
+	int get_camera_feed_id(void) const;
+	bool get_camera_feed_h_flip(void) const;
+	bool get_camera_feed_v_flip(void) const;
 
 	void set_tonemapper(ToneMapper p_tone_mapper);
 	ToneMapper get_tonemapper() const;

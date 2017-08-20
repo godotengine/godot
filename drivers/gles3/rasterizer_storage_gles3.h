@@ -41,6 +41,7 @@
 #include "shaders/copy.glsl.gen.h"
 #include "shaders/cubemap_filter.glsl.gen.h"
 #include "shaders/particles.glsl.gen.h"
+#include "shaders/ycbcr.glsl.gen.h"
 
 class RasterizerCanvasGLES3;
 class RasterizerSceneGLES3;
@@ -102,6 +103,7 @@ public:
 	mutable struct Shaders {
 
 		CopyShaderGLES3 copy;
+		YcbcrShaderGLES3 ycbcr;
 
 		ShaderCompilerGLES3 compiler;
 

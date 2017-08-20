@@ -128,6 +128,8 @@ Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p
 
 	input = memnew(InputDefault);
 
+	camera_server = memnew(CameraIOS);
+
 #ifdef GAME_CENTER_ENABLED
 	game_center = memnew(GameCenter);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("GameCenter", game_center));
@@ -358,6 +360,8 @@ void OSIPhone::finalize() {
 	visual_server->finish();
 	memdelete(visual_server);
 	//	memdelete(rasterizer);
+
+	memdelete(camera_server);
 
 	memdelete(input);
 };
