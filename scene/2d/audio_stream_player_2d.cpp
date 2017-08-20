@@ -1,7 +1,10 @@
 
 #include "audio_stream_player_2d.h"
+
+#include "engine.h"
 #include "scene/2d/area_2d.h"
 #include "scene/main/viewport.h"
+
 void AudioStreamPlayer2D::_mix_audio() {
 
 	if (!stream_playback.is_valid()) {
@@ -120,7 +123,7 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
 		AudioServer::get_singleton()->add_callback(_mix_audios, this);
-		if (autoplay && !get_tree()->is_editor_hint()) {
+		if (autoplay && !Engine::get_singleton()->is_editor_hint()) {
 			play();
 		}
 	}

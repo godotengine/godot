@@ -29,10 +29,10 @@
 /*************************************************************************/
 #include "visibility_notifier.h"
 
+#include "engine.h"
 #include "scene/3d/camera.h"
 #include "scene/3d/physics_body.h"
 #include "scene/animation/animation_player.h"
-#include "scene/scene_string_names.h"
 #include "scene/scene_string_names.h"
 
 void VisibilityNotifier::_enter_camera(Camera *p_camera) {
@@ -187,7 +187,7 @@ void VisibilityEnabler::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		if (get_tree()->is_editor_hint())
+		if (Engine::get_singleton()->is_editor_hint())
 			return;
 
 		Node *from = this;
@@ -200,7 +200,7 @@ void VisibilityEnabler::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 
-		if (get_tree()->is_editor_hint())
+		if (Engine::get_singleton()->is_editor_hint())
 			return;
 
 		for (Map<Node *, Variant>::Element *E = nodes.front(); E; E = E->next()) {

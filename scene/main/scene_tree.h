@@ -111,9 +111,6 @@ private:
 	bool quit_on_go_back;
 	uint32_t last_id;
 
-#ifdef TOOLS_ENABLED
-	bool editor_hint;
-#endif
 #ifdef DEBUG_ENABLED
 	bool debug_collisions_hint;
 	bool debug_navigation_hint;
@@ -363,14 +360,8 @@ public:
 	_FORCE_INLINE_ float get_idle_process_time() const { return idle_process_time; }
 
 #ifdef TOOLS_ENABLED
-	void set_editor_hint(bool p_enabled);
-
-	bool is_editor_hint() const;
 	bool is_node_being_edited(const Node *p_node) const;
 #else
-	void set_editor_hint(bool p_enabled) {}
-
-	bool is_editor_hint() const { return false; }
 	bool is_node_being_edited(const Node *p_node) const { return false; }
 #endif
 

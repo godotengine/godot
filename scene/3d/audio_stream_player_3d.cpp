@@ -215,7 +215,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 		velocity_tracker->reset(get_global_transform().origin);
 		AudioServer::get_singleton()->add_callback(_mix_audios, this);
-		if (autoplay && !get_tree()->is_editor_hint()) {
+		if (autoplay && !Engine::get_singleton()->is_editor_hint()) {
 			play();
 		}
 	}

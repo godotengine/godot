@@ -29,6 +29,8 @@
 /*************************************************************************/
 #include "light_occluder_2d.h"
 
+#include "engine.h"
+
 void OccluderPolygon2D::set_polygon(const PoolVector<Vector2> &p_polygon) {
 
 	polygon = p_polygon;
@@ -130,7 +132,7 @@ void LightOccluder2D::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW) {
 
-		if (get_tree()->is_editor_hint()) {
+		if (Engine::get_singleton()->is_editor_hint()) {
 
 			if (occluder_polygon.is_valid()) {
 

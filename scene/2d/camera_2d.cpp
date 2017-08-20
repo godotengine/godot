@@ -38,7 +38,7 @@ void Camera2D::_update_scroll() {
 	if (!is_inside_tree())
 		return;
 
-	if (get_tree()->is_editor_hint()) {
+	if (Engine::get_singleton()->is_editor_hint()) {
 		update(); //will just be drawn
 		return;
 	}
@@ -85,7 +85,7 @@ Transform2D Camera2D::get_camera_transform() {
 
 		if (anchor_mode == ANCHOR_MODE_DRAG_CENTER) {
 
-			if (h_drag_enabled && !get_tree()->is_editor_hint()) {
+			if (h_drag_enabled && !Engine::get_singleton()->is_editor_hint()) {
 				camera_pos.x = MIN(camera_pos.x, (new_camera_pos.x + screen_size.x * 0.5 * drag_margin[MARGIN_RIGHT]));
 				camera_pos.x = MAX(camera_pos.x, (new_camera_pos.x - screen_size.x * 0.5 * drag_margin[MARGIN_LEFT]));
 			} else {
@@ -97,7 +97,7 @@ Transform2D Camera2D::get_camera_transform() {
 				}
 			}
 
-			if (v_drag_enabled && !get_tree()->is_editor_hint()) {
+			if (v_drag_enabled && !Engine::get_singleton()->is_editor_hint()) {
 
 				camera_pos.y = MIN(camera_pos.y, (new_camera_pos.y + screen_size.y * 0.5 * drag_margin[MARGIN_BOTTOM]));
 				camera_pos.y = MAX(camera_pos.y, (new_camera_pos.y - screen_size.y * 0.5 * drag_margin[MARGIN_TOP]));
@@ -136,7 +136,7 @@ Transform2D Camera2D::get_camera_transform() {
 				camera_pos.y -= screen_rect.position.y - limit[MARGIN_TOP];
 		}
 
-		if (smoothing_enabled && !get_tree()->is_editor_hint()) {
+		if (smoothing_enabled && !Engine::get_singleton()->is_editor_hint()) {
 
 			float c = smoothing * get_fixed_process_delta_time();
 			smoothed_camera_pos = ((camera_pos - smoothed_camera_pos) * c) + smoothed_camera_pos;
@@ -240,7 +240,7 @@ void Camera2D::_notification(int p_what) {
 			add_to_group(group_name);
 			add_to_group(canvas_group_name);
 
-			if (get_tree()->is_editor_hint()) {
+			if (Engine::get_singleton()->is_editor_hint()) {
 				set_fixed_process(false);
 			}
 
@@ -262,7 +262,7 @@ void Camera2D::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_DRAW: {
 
-			if (!is_inside_tree() || !get_tree()->is_editor_hint())
+			if (!is_inside_tree() || !Engine::get_singleton()->is_editor_hint())
 				break;
 
 			if (screen_drawing_enabled) {
@@ -497,7 +497,7 @@ void Camera2D::align() {
 void Camera2D::set_follow_smoothing(float p_speed) {
 
 	smoothing = p_speed;
-	if (smoothing > 0 && !(is_inside_tree() && get_tree()->is_editor_hint()))
+	if (smoothing > 0 && !(is_inside_tree() && Engine::get_singleton()->is_editor_hint()))
 		set_fixed_process(true);
 	else
 		set_fixed_process(false);

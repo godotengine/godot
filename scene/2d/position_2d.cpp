@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "position_2d.h"
+
+#include "engine.h"
 #include "scene/resources/texture.h"
 
 void Position2D::_draw_cross() {
@@ -52,7 +54,7 @@ void Position2D::_notification(int p_what) {
 		case NOTIFICATION_DRAW: {
 			if (!is_inside_tree())
 				break;
-			if (get_tree()->is_editor_hint())
+			if (Engine::get_singleton()->is_editor_hint())
 				_draw_cross();
 
 		} break;

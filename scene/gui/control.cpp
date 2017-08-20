@@ -1329,7 +1329,7 @@ void Control::set_anchor(Margin p_margin, float p_anchor, bool p_keep_margin, bo
 
 void Control::_set_anchor(Margin p_margin, float p_anchor) {
 #ifdef TOOLS_ENABLED
-	if (is_inside_tree() && get_tree()->is_editor_hint()) {
+	if (is_inside_tree() && Engine::get_singleton()->is_editor_hint()) {
 		set_anchor(p_margin, p_anchor, EDITOR_DEF("editors/2d/keep_margins_when_changing_anchors", false));
 	} else {
 		set_anchor(p_margin, p_anchor, false);

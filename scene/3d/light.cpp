@@ -29,6 +29,7 @@
 /*************************************************************************/
 #include "light.h"
 
+#include "engine.h"
 #include "project_settings.h"
 #include "scene/resources/surface_tool.h"
 
@@ -150,7 +151,7 @@ void Light::_update_visibility() {
 
 #ifdef TOOLS_ENABLED
 	if (editor_only) {
-		if (!get_tree()->is_editor_hint()) {
+		if (!Engine::get_singleton()->is_editor_hint()) {
 			editor_ok = false;
 		} else {
 			editor_ok = (get_tree()->get_edited_scene_root() && (this == get_tree()->get_edited_scene_root() || get_owner() == get_tree()->get_edited_scene_root()));

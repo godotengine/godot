@@ -121,4 +121,5 @@ Engine::Engine() {
 	_in_fixed = false;
 	_frame_ticks = 0;
 	_frame_step = 0;
+	editor_hint = false;
 }

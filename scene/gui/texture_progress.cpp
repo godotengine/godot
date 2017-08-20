@@ -29,6 +29,8 @@
 /*************************************************************************/
 #include "texture_progress.h"
 
+#include "engine.h"
+
 void TextureProgress::set_under_texture(const Ref<Texture> &p_texture) {
 
 	under = p_texture;
@@ -179,7 +181,7 @@ void TextureProgress::_notification(int p_what) {
 							}
 							draw_polygon(points, Vector<Color>(), uvs, progress);
 						}
-						if (get_tree()->is_editor_hint()) {
+						if (Engine::get_singleton()->is_editor_hint()) {
 							Point2 p = progress->get_size();
 							p.x *= get_relative_center().x;
 							p.y *= get_relative_center().y;

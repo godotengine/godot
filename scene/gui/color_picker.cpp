@@ -204,7 +204,7 @@ void ColorPicker::_update_presets() {
 }
 
 void ColorPicker::_text_type_toggled() {
-	if (!get_tree()->is_editor_hint())
+	if (!Engine::get_singleton()->is_editor_hint())
 		return;
 	text_is_constructor = !text_is_constructor;
 	if (text_is_constructor) {

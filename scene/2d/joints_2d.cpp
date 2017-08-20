@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "joints_2d.h"
+
+#include "engine.h"
 #include "physics_body_2d.h"
 #include "servers/physics_2d_server.h"
 
@@ -152,7 +154,7 @@ void PinJoint2D::_notification(int p_what) {
 			if (!is_inside_tree())
 				break;
 
-			if (!get_tree()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
+			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
 				break;
 			}
 
@@ -227,7 +229,7 @@ void GrooveJoint2D::_notification(int p_what) {
 			if (!is_inside_tree())
 				break;
 
-			if (!get_tree()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
+			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
 				break;
 			}
 
@@ -317,7 +319,7 @@ void DampedSpringJoint2D::_notification(int p_what) {
 			if (!is_inside_tree())
 				break;
 
-			if (!get_tree()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
+			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
 				break;
 			}
 

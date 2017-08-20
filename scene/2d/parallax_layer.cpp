@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "parallax_layer.h"
+
+#include "engine.h"
 #include "parallax_background.h"
 
 void ParallaxLayer::set_motion_scale(const Size2 &p_scale) {
@@ -111,7 +113,7 @@ void ParallaxLayer::set_base_offset_and_scale(const Point2 &p_offset, float p_sc
 
 	if (!is_inside_tree())
 		return;
-	if (get_tree()->is_editor_hint())
+	if (Engine::get_singleton()->is_editor_hint())
 		return;
 	Point2 new_ofs = ((orig_offset + p_offset) * motion_scale) * p_scale + motion_offset;
 

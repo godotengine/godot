@@ -1354,7 +1354,7 @@ void Viewport::_vp_input(const Ref<InputEvent> &p_ev) {
 		return;
 
 #ifdef TOOLS_ENABLED
-	if (get_tree()->is_editor_hint() && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->is_a_parent_of(this)) {
+	if (Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->is_a_parent_of(this)) {
 		return;
 	}
 #endif
@@ -1374,7 +1374,7 @@ void Viewport::_vp_unhandled_input(const Ref<InputEvent> &p_ev) {
 	if (disable_input)
 		return;
 #ifdef TOOLS_ENABLED
-	if (get_tree()->is_editor_hint() && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->is_a_parent_of(this)) {
+	if (Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->is_a_parent_of(this)) {
 		return;
 	}
 #endif

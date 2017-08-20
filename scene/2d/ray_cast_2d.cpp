@@ -28,14 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "ray_cast_2d.h"
+
 #include "collision_object_2d.h"
+#include "engine.h"
 #include "physics_body_2d.h"
 #include "servers/physics_2d_server.h"
 
 void RayCast2D::set_cast_to(const Vector2 &p_point) {
 
 	cast_to = p_point;
-	if (is_inside_tree() && (get_tree()->is_editor_hint() || get_tree()->is_debugging_collisions_hint()))
+	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_collisions_hint()))
 		update();
 }
 
@@ -92,7 +94,7 @@ Vector2 RayCast2D::get_collision_normal() const {
 void RayCast2D::set_enabled(bool p_enabled) {
 
 	enabled = p_enabled;
-	if (is_inside_tree() && !get_tree()->is_editor_hint())
+	if (is_inside_tree() && !Engine::get_singleton()->is_editor_hint())
 		set_fixed_process(p_enabled);
 	if (!p_enabled)
 		collided = false;
@@ -132,7 +134,7 @@ void RayCast2D::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 
-			if (enabled && !get_tree()->is_editor_hint())
+			if (enabled && !Engine::get_singleton()->is_editor_hint())
 				set_fixed_process(true);
 			else
 				set_fixed_process(false);
@@ -153,7 +155,7 @@ void RayCast2D::_notification(int p_what) {
 
 		case NOTIFICATION_DRAW: {
 
-			if (!get_tree()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint())
+			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint())
 				break;
 			Transform2D xf;
 			xf.rotate(cast_to.angle());

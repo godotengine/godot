@@ -212,7 +212,7 @@ void AnimationTreeEditor::_edit_dialog_animation_changed() {
 
 void AnimationTreeEditor::_edit_dialog_edit_animation() {
 
-	if (get_tree()->is_editor_hint()) {
+	if (Engine::get_singleton()->is_editor_hint()) {
 		get_tree()->get_root()->get_child(0)->call("_resource_selected", property_editor->get_variant().operator RefPtr());
 	};
 };

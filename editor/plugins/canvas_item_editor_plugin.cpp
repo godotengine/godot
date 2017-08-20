@@ -561,7 +561,7 @@ bool CanvasItemEditor::_select_click_on_item(CanvasItem *item, Point2 p_click_po
 			editor_selection->clear();
 			editor_selection->add_node(item);
 			// Reselect
-			if (get_tree()->is_editor_hint()) {
+			if (Engine::get_singleton()->is_editor_hint()) {
 				editor->call("edit_node", item);
 			}
 		}
