@@ -487,7 +487,7 @@ void TextEdit::_notification(int p_what) {
 
 			int ascent = cache.font->get_ascent();
 
-			int visible_rows = get_visible_rows();
+			int visible_rows = get_visible_rows() + 1;
 
 			int tab_w = cache.font->get_char_size(' ').width * indent_size;
 
@@ -3153,7 +3153,7 @@ int TextEdit::get_visible_rows() const {
 	int total = cache.size.height;
 	total -= cache.style_normal->get_minimum_size().height;
 	total /= get_row_height();
-	return total + 1;
+	return total;
 }
 void TextEdit::adjust_viewport_to_cursor() {
 
@@ -3172,7 +3172,7 @@ void TextEdit::adjust_viewport_to_cursor() {
 		visible_rows -= ((h_scroll->get_combined_minimum_size().height - 1) / get_row_height());
 
 	if (cursor.line >= (cursor.line_ofs + visible_rows))
-		cursor.line_ofs = cursor.line - visible_rows + 1;
+		cursor.line_ofs = cursor.line - visible_rows;
 	if (cursor.line < cursor.line_ofs)
 		cursor.line_ofs = cursor.line;
 
