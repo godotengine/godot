@@ -1931,7 +1931,8 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, OperatorNode *p
 		}
 
 		if (!fail) {
-			p_func->return_cache = pfunc->return_type;
+			if (r_ret_type)
+				*r_ret_type = pfunc->return_type;
 			return true;
 		}
 	}
@@ -3150,6 +3151,11 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Dat
 					assign->op = OP_ASSIGN;
 					p_block->statements.push_back(assign);
 					tk = _get_token();
+
+					if (!_validate_operator(assign)) {
+						_set_error("Invalid assignment of '" + get_datatype_name(n->get_datatype()) + "' to '" + get_datatype_name(type) + "'");
+						return ERR_PARSE_ERROR;
+					}
 				}
 
 				if (tk.type == TK_COMMA) {
