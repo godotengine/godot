@@ -124,7 +124,7 @@ public:
 	virtual VideoMode get_video_mode(int p_screen = 0) const;
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen = 0) const;
 
-	virtual Size2 get_screen_size(int p_screen = 0) const;
+	virtual Size2 get_screen_size(int p_screen = -1) const;
 
 	virtual void set_window_size(const Size2);
 	virtual Size2 get_window_size() const;
