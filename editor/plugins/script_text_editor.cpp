@@ -867,6 +867,21 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			//tx->deselect();
 
 		} break;
+		case EDIT_DELETE_LINE: {
+
+			TextEdit *tx = code_editor->get_text_edit();
+			Ref<Script> scr = get_edited_script();
+			if (scr.is_null())
+				return;
+
+			tx->begin_complex_operation();
+			int line = tx->cursor_get_line();
+			tx->set_line(tx->cursor_get_line(), "");
+			tx->backspace_at_cursor();
+			tx->cursor_set_line(line);
+			tx->end_complex_operation();
+
+		} break;
 		case EDIT_CLONE_DOWN: {
 
 			TextEdit *tx = code_editor->get_text_edit();
@@ -1392,6 +1407,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/move_down"), EDIT_MOVE_LINE_DOWN);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/indent_left"), EDIT_INDENT_LEFT);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/indent_right"), EDIT_INDENT_RIGHT);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/delete_line"), EDIT_DELETE_LINE);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/clone_down"), EDIT_CLONE_DOWN);
 	edit_menu->get_popup()->add_separator();
@@ -1466,6 +1482,7 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/select_all", TTR("Select All"), KEY_MASK_CMD | KEY_A);
 	ED_SHORTCUT("script_text_editor/move_up", TTR("Move Up"), KEY_MASK_ALT | KEY_UP);
 	ED_SHORTCUT("script_text_editor/move_down", TTR("Move Down"), KEY_MASK_ALT | KEY_DOWN);
+	ED_SHORTCUT("script_text_editor/delete_line", TTR("Delete Line"), KEY_MASK_CTRL | KEY_MASK_SHIFT | KEY_K);
 
 	//leave these at zero, same can be accomplished with tab/shift-tab, including selection
 	//the next/previous in history shortcut in this case makes a lot more sene.
