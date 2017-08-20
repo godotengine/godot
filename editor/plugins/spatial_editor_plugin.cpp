@@ -1453,8 +1453,12 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 			case NAVIGATION_ORBIT: {
 				Point2i relative = _get_warped_mouse_motion(m);
-				cursor.x_rot += relative.y / 80.0;
-				cursor.y_rot += relative.x / 80.0;
+
+				real_t degrees_per_pixel = EditorSettings::get_singleton()->get("editors/3d/orbit_sensitivity");
+				real_t radians_per_pixel = Math::deg2rad(degrees_per_pixel);
+
+				cursor.x_rot += relative.y * radians_per_pixel;
+				cursor.y_rot += relative.x * radians_per_pixel;
 				if (cursor.x_rot > Math_PI / 2.0)
 					cursor.x_rot = Math_PI / 2.0;
 				if (cursor.x_rot < -Math_PI / 2.0)
@@ -1468,8 +1472,12 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				// It technically works too in ortho, but it's awful for a user due to fov being near zero
 				if (!orthogonal) {
 					Point2i relative = _get_warped_mouse_motion(m);
-					cursor.x_rot += relative.y / 120.0;
-					cursor.y_rot += relative.x / 120.0;
+
+					real_t degrees_per_pixel = EditorSettings::get_singleton()->get("editors/3d/orbit_sensitivity");
+					real_t radians_per_pixel = Math::deg2rad(degrees_per_pixel);
+
+					cursor.x_rot += relative.y * radians_per_pixel;
+					cursor.y_rot += relative.x * radians_per_pixel;
 					if (cursor.x_rot > Math_PI / 2.0)
 						cursor.x_rot = Math_PI / 2.0;
 					if (cursor.x_rot < -Math_PI / 2.0)
