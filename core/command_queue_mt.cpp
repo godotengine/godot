@@ -54,6 +54,7 @@ CommandQueueMT::SyncSemaphore *CommandQueueMT::_alloc_sync_sem() {
 
 	while (true) {
 
+		lock();
 		for (int i = 0; i < SYNC_SEMAPHORES; i++) {
 
 			if (!sync_sems[i].in_use) {
@@ -62,6 +63,7 @@ CommandQueueMT::SyncSemaphore *CommandQueueMT::_alloc_sync_sem() {
 				break;
 			}
 		}
+		unlock();
 
 		if (idx == -1) {
 			wait_for_flush();
