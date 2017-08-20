@@ -296,9 +296,9 @@ void StyleBoxTexture::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate_color"), "set_modulate", "get_modulate");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_center"), "set_draw_center", "get_draw_center");
 
-	BIND_CONSTANT(AXIS_STRETCH_MODE_STRETCH);
-	BIND_CONSTANT(AXIS_STRETCH_MODE_TILE);
-	BIND_CONSTANT(AXIS_STRETCH_MODE_TILE_FIT);
+	BIND_ENUM_CONSTANT(AXIS_STRETCH_MODE_STRETCH);
+	BIND_ENUM_CONSTANT(AXIS_STRETCH_MODE_TILE);
+	BIND_ENUM_CONSTANT(AXIS_STRETCH_MODE_TILE_FIT);
 }
 
 StyleBoxTexture::StyleBoxTexture() {

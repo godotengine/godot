@@ -35,7 +35,6 @@
 #include "scene/animation/animation_player.h"
 #include "scene/main/viewport.h"
 #include "scene/scene_string_names.h"
-#include "scene/scene_string_names.h"
 
 void VisibilityNotifier2D::_enter_viewport(Viewport *p_viewport) {
 
@@ -341,13 +340,13 @@ void VisibilityEnabler2D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "process_parent"), "set_enabler", "is_enabler_enabled", ENABLER_PARENT_PROCESS);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "fixed_process_parent"), "set_enabler", "is_enabler_enabled", ENABLER_PARENT_FIXED_PROCESS);
 
-	BIND_CONSTANT(ENABLER_FREEZE_BODIES);
-	BIND_CONSTANT(ENABLER_PAUSE_ANIMATIONS);
-	BIND_CONSTANT(ENABLER_PAUSE_PARTICLES);
-	BIND_CONSTANT(ENABLER_PAUSE_ANIMATED_SPRITES);
-	BIND_CONSTANT(ENABLER_PARENT_PROCESS);
-	BIND_CONSTANT(ENABLER_PARENT_FIXED_PROCESS);
-	BIND_CONSTANT(ENABLER_MAX);
+	BIND_ENUM_CONSTANT(ENABLER_FREEZE_BODIES);
+	BIND_ENUM_CONSTANT(ENABLER_PAUSE_ANIMATIONS);
+	BIND_ENUM_CONSTANT(ENABLER_PAUSE_PARTICLES);
+	BIND_ENUM_CONSTANT(ENABLER_PAUSE_ANIMATED_SPRITES);
+	BIND_ENUM_CONSTANT(ENABLER_PARENT_PROCESS);
+	BIND_ENUM_CONSTANT(ENABLER_PARENT_FIXED_PROCESS);
+	BIND_ENUM_CONSTANT(ENABLER_MAX);
 }
 
 void VisibilityEnabler2D::set_enabler(Enabler p_enabler, bool p_enable) {

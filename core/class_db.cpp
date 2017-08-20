@@ -583,7 +583,7 @@ MethodBind *ClassDB::get_method(StringName p_class, StringName p_name) {
 	return NULL;
 }
 
-void ClassDB::bind_integer_constant(const StringName &p_class, const StringName &p_name, int p_constant) {
+void ClassDB::bind_integer_constant(const StringName &p_class, const StringName &p_enum, const StringName &p_name, int p_constant) {
 
 	OBJTYPE_WLOCK;
 
@@ -600,6 +600,16 @@ void ClassDB::bind_integer_constant(const StringName &p_class, const StringName 
 
 	type->constant_map[p_name] = p_constant;
 #ifdef DEBUG_METHODS_ENABLED
+	List<StringName> *constants_list = type->enum_map.getptr(p_enum);
+
+	if (constants_list) {
+		constants_list->push_back(p_name);
+	} else {
+		List<StringName> new_list;
+		new_list.push_back(p_name);
+		type->enum_map[p_enum] = new_list;
+	}
+
 	type->constant_order.push_back(p_name);
 #endif
 }
@@ -654,6 +664,77 @@ int ClassDB::get_integer_constant(const StringName &p_class, const StringName &p
 
 	return 0;
 }
+
+#ifdef DEBUG_METHODS_ENABLED
+StringName ClassDB::get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) {
+
+	OBJTYPE_RLOCK;
+
+	ClassInfo *type = classes.getptr(p_class);
+
+	while (type) {
+
+		const StringName *k = NULL;
+		while ((k = type->enum_map.next(k))) {
+
+			List<StringName> &constants_list = type->enum_map.get(*k);
+			const List<StringName>::Element *found = constants_list.find(p_name);
+			if (found)
+				return found->get();
+		}
+
+		if (p_no_inheritance)
+			break;
+
+		type = type->inherits_ptr;
+	}
+
+	return StringName();
+}
+
+void ClassDB::get_enum_list(const StringName &p_class, List<StringName> *p_enums, bool p_no_inheritance) {
+
+	OBJTYPE_RLOCK;
+
+	ClassInfo *type = classes.getptr(p_class);
+
+	while (type) {
+
+		const StringName *k = NULL;
+		while ((k = type->enum_map.next(k))) {
+			p_enums->push_back(*k);
+		}
+
+		if (p_no_inheritance)
+			break;
+
+		type = type->inherits_ptr;
+	}
+}
+
+void ClassDB::get_enum_constants(const StringName &p_class, const StringName &p_enum, List<StringName> *p_constants, bool p_no_inheritance) {
+
+	OBJTYPE_RLOCK;
+
+	ClassInfo *type = classes.getptr(p_class);
+
+	while (type) {
+
+		const List<StringName> *constants = type->enum_map.getptr(p_enum);
+
+		if (constants) {
+			for (const List<StringName>::Element *E = constants->front(); E; E = E->next()) {
+				p_constants->push_back(E->get());
+			}
+		}
+
+		if (p_no_inheritance)
+			break;
+
+		type = type->inherits_ptr;
+	}
+}
+#endif
 
 void ClassDB::add_signal(StringName p_class, const MethodInfo &p_signal) {
 

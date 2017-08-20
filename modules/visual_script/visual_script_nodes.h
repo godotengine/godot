@@ -727,6 +727,8 @@ public:
 	VisualScriptCustomNode();
 };
 
+VARIANT_ENUM_CAST(VisualScriptCustomNode::StartMode);
+
 class VisualScriptSubCall : public VisualScriptNode {
 
 	GDCLASS(VisualScriptSubCall, VisualScriptNode)

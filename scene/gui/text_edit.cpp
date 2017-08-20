@@ -4704,9 +4704,9 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_click_selection_held"), &TextEdit::_click_selection_held);
 	ClassDB::bind_method(D_METHOD("_toggle_draw_caret"), &TextEdit::_toggle_draw_caret);
 
-	BIND_CONSTANT(SEARCH_MATCH_CASE);
-	BIND_CONSTANT(SEARCH_WHOLE_WORDS);
-	BIND_CONSTANT(SEARCH_BACKWARDS);
+	BIND_ENUM_CONSTANT(SEARCH_MATCH_CASE);
+	BIND_ENUM_CONSTANT(SEARCH_WHOLE_WORDS);
+	BIND_ENUM_CONSTANT(SEARCH_BACKWARDS);
 
 	/*
     ClassDB::bind_method(D_METHOD("delete_char"),&TextEdit::delete_char);
@@ -4789,13 +4789,13 @@ void TextEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("breakpoint_toggled", PropertyInfo(Variant::INT, "row")));
 	ADD_SIGNAL(MethodInfo("symbol_lookup", PropertyInfo(Variant::STRING, "symbol"), PropertyInfo(Variant::INT, "row"), PropertyInfo(Variant::INT, "column")));
 
-	BIND_CONSTANT(MENU_CUT);
-	BIND_CONSTANT(MENU_COPY);
-	BIND_CONSTANT(MENU_PASTE);
-	BIND_CONSTANT(MENU_CLEAR);
-	BIND_CONSTANT(MENU_SELECT_ALL);
-	BIND_CONSTANT(MENU_UNDO);
-	BIND_CONSTANT(MENU_MAX);
+	BIND_ENUM_CONSTANT(MENU_CUT);
+	BIND_ENUM_CONSTANT(MENU_COPY);
+	BIND_ENUM_CONSTANT(MENU_PASTE);
+	BIND_ENUM_CONSTANT(MENU_CLEAR);
+	BIND_ENUM_CONSTANT(MENU_SELECT_ALL);
+	BIND_ENUM_CONSTANT(MENU_UNDO);
+	BIND_ENUM_CONSTANT(MENU_MAX);
 
 	GLOBAL_DEF("gui/timers/text_edit_idle_detect_sec", 3);
 }

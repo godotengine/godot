@@ -504,7 +504,7 @@ void UndoRedo::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_current_action_name"), &UndoRedo::get_current_action_name);
 	ClassDB::bind_method(D_METHOD("get_version"), &UndoRedo::get_version);
 
-	BIND_CONSTANT(MERGE_DISABLE);
-	BIND_CONSTANT(MERGE_ENDS);
-	BIND_CONSTANT(MERGE_ALL);
+	BIND_ENUM_CONSTANT(MERGE_DISABLE);
+	BIND_ENUM_CONSTANT(MERGE_ENDS);
+	BIND_ENUM_CONSTANT(MERGE_ALL);
 }

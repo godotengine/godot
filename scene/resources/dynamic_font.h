@@ -236,6 +236,8 @@ public:
 	~DynamicFont();
 };
 
+VARIANT_ENUM_CAST(DynamicFont::SpacingType);
+
 /////////////
 
 class ResourceFormatLoaderDynamicFont : public ResourceFormatLoader {

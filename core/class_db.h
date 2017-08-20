@@ -138,6 +138,7 @@ public:
 		HashMap<StringName, MethodInfo, StringNameHasher> signal_map;
 		List<PropertyInfo> property_list;
 #ifdef DEBUG_METHODS_ENABLED
+		HashMap<StringName, List<StringName> > enum_map;
 		List<StringName> constant_order;
 		List<StringName> method_order;
 		Set<StringName> methods_in_properties;
@@ -488,9 +489,16 @@ public:
 	static void add_virtual_method(const StringName &p_class, const MethodInfo &p_method, bool p_virtual = true);
 	static void get_virtual_methods(const StringName &p_class, List<MethodInfo> *p_methods, bool p_no_inheritance = false);
 
-	static void bind_integer_constant(const StringName &p_class, const StringName &p_name, int p_constant);
+	static void bind_integer_constant(const StringName &p_class, const StringName &p_enum, const StringName &p_name, int p_constant);
 	static void get_integer_constant_list(const StringName &p_class, List<String> *p_constants, bool p_no_inheritance = false);
 	static int get_integer_constant(const StringName &p_class, const StringName &p_name, bool *p_success = NULL);
+
+#ifdef DEBUG_METHODS_ENABLED
+	static StringName get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);
+	static void get_enum_list(const StringName &p_class, List<StringName> *p_enums, bool p_no_inheritance = false);
+	static void get_enum_constants(const StringName &p_class, const StringName &p_enum, List<StringName> *p_constants, bool p_no_inheritance = false);
+#endif
+
 	static StringName get_category(const StringName &p_node);
 
 	static bool get_setter_and_type_for_property(const StringName &p_class, const StringName &p_prop, StringName &r_class, StringName &r_setter);
@@ -509,8 +517,23 @@ public:
 	static void cleanup();
 };
 
+#ifdef DEBUG_METHODS_ENABLED
+
 #define BIND_CONSTANT(m_constant) \
-	ClassDB::bind_integer_constant(get_class_static(), #m_constant, m_constant);
+	ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
+
+#define BIND_ENUM_CONSTANT(m_constant) \
+	ClassDB::bind_integer_constant(get_class_static(), __constant_get_enum_name(m_constant, #m_constant), #m_constant, m_constant);
+
+#else
+
+#define BIND_CONSTANT(m_constant) \
+	ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
+
+#define BIND_ENUM_CONSTANT(m_constant) \
+	ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
+
+#endif
 
 #ifdef TOOLS_ENABLED
 

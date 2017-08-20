@@ -412,6 +412,8 @@ public:
 	~Node();
 };
 
+VARIANT_ENUM_CAST(Node::DuplicateFlags);
+
 typedef Set<Node *, Node::Comparator> NodeSet;
 
 #endif

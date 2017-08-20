@@ -89,4 +89,6 @@ private:
 	Point2 get_relative_center();
 };
 
+VARIANT_ENUM_CAST(TextureProgress::FillMode);
+
 #endif // TEXTURE_PROGRESS_H

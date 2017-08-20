@@ -1689,9 +1689,9 @@ void SceneState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_connection_flags", "idx"), &SceneState::get_connection_flags);
 	ClassDB::bind_method(D_METHOD("get_connection_binds", "idx"), &SceneState::get_connection_binds);
 
-	BIND_CONSTANT(GEN_EDIT_STATE_DISABLED);
-	BIND_CONSTANT(GEN_EDIT_STATE_INSTANCE);
-	BIND_CONSTANT(GEN_EDIT_STATE_MAIN);
+	BIND_ENUM_CONSTANT(GEN_EDIT_STATE_DISABLED);
+	BIND_ENUM_CONSTANT(GEN_EDIT_STATE_INSTANCE);
+	BIND_ENUM_CONSTANT(GEN_EDIT_STATE_MAIN);
 }
 
 SceneState::SceneState() {
@@ -1792,9 +1792,9 @@ void PackedScene::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_bundled"), "_set_bundled_scene", "_get_bundled_scene");
 
-	BIND_CONSTANT(GEN_EDIT_STATE_DISABLED);
-	BIND_CONSTANT(GEN_EDIT_STATE_INSTANCE);
-	BIND_CONSTANT(GEN_EDIT_STATE_MAIN);
+	BIND_ENUM_CONSTANT(GEN_EDIT_STATE_DISABLED);
+	BIND_ENUM_CONSTANT(GEN_EDIT_STATE_INSTANCE);
+	BIND_ENUM_CONSTANT(GEN_EDIT_STATE_MAIN);
 }
 
 PackedScene::PackedScene() {

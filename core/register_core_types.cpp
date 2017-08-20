@@ -75,6 +75,8 @@ static _Geometry *_geometry = NULL;
 
 extern Mutex *_global_mutex;
 
+extern void register_global_constants();
+extern void unregister_global_constants();
 extern void register_variant_methods();
 extern void unregister_variant_methods();
 
@@ -88,6 +90,7 @@ void register_core_types() {
 
 	StringName::setup();
 
+	register_global_constants();
 	register_variant_methods();
 
 	CoreStringNames::create();
@@ -218,6 +221,7 @@ void unregister_core_types() {
 	ObjectDB::cleanup();
 
 	unregister_variant_methods();
+	unregister_global_constants();
 
 	ClassDB::cleanup();
 	ResourceCache::clear();

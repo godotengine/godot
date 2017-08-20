@@ -535,4 +535,7 @@ public:
 	~TextEdit();
 };
 
+VARIANT_ENUM_CAST(TextEdit::MenuItems);
+VARIANT_ENUM_CAST(TextEdit::SearchFlags);
+
 #endif // TEXT_EDIT_H

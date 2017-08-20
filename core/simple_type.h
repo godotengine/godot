@@ -33,21 +33,9 @@
 /* Batch of specializations to obtain the actual simple type */
 
 template <class T>
-struct GetSimpleType {
-
-	T type;
-};
-
-template <class T>
 struct GetSimpleTypeT {
 
 	typedef T type_t;
-};
-
-template <class T>
-struct GetSimpleType<T &> {
-
-	T type;
 };
 
 template <class T>
@@ -57,71 +45,9 @@ struct GetSimpleTypeT<T &> {
 };
 
 template <class T>
-struct GetSimpleType<T const> {
-
-	T type;
-	_FORCE_INLINE_ GetSimpleType() {}
-};
-
-template <class T>
 struct GetSimpleTypeT<T const> {
 
 	typedef T type_t;
 };
-
-template <class T>
-struct GetSimpleType<const T &> {
-
-	T type;
-	_FORCE_INLINE_ GetSimpleType() {}
-};
-
-template <class T>
-struct GetSimpleType<T *> {
-
-	T *type;
-	_FORCE_INLINE_ GetSimpleType() { type = NULL; }
-};
-
-template <class T>
-struct GetSimpleType<const T *> {
-
-	T *type;
-	_FORCE_INLINE_ GetSimpleType() { type = NULL; }
-};
-
-#define SIMPLE_NUMERIC_TYPE(m_type)                          \
-	template <>                                              \
-	struct GetSimpleType<m_type> {                           \
-		m_type type;                                         \
-		_FORCE_INLINE_ GetSimpleType() { type = (m_type)0; } \
-	};                                                       \
-	template <>                                              \
-	struct GetSimpleType<m_type const> {                     \
-		m_type type;                                         \
-		_FORCE_INLINE_ GetSimpleType() { type = (m_type)0; } \
-	};                                                       \
-	template <>                                              \
-	struct GetSimpleType<m_type &> {                         \
-		m_type type;                                         \
-		_FORCE_INLINE_ GetSimpleType() { type = (m_type)0; } \
-	};                                                       \
-	template <>                                              \
-	struct GetSimpleType<const m_type &> {                   \
-		m_type type;                                         \
-		_FORCE_INLINE_ GetSimpleType() { type = (m_type)0; } \
-	};
-
-SIMPLE_NUMERIC_TYPE(bool);
-SIMPLE_NUMERIC_TYPE(uint8_t);
-SIMPLE_NUMERIC_TYPE(int8_t);
-SIMPLE_NUMERIC_TYPE(uint16_t);
-SIMPLE_NUMERIC_TYPE(int16_t);
-SIMPLE_NUMERIC_TYPE(uint32_t);
-SIMPLE_NUMERIC_TYPE(int32_t);
-SIMPLE_NUMERIC_TYPE(int64_t);
-SIMPLE_NUMERIC_TYPE(uint64_t);
-SIMPLE_NUMERIC_TYPE(float);
-SIMPLE_NUMERIC_TYPE(double);
 
 #endif
