@@ -1090,9 +1090,6 @@ void ScriptEditorDebugger::stop() {
 	EditorNode::get_singleton()->get_pause_button()->set_pressed(false);
 	EditorNode::get_singleton()->get_pause_button()->set_disabled(true);
 
-	//avoid confusion when stopped debugging but an object is still edited
-	EditorNode::get_singleton()->push_item(NULL);
-
 	if (hide_on_stop) {
 		if (is_visible_in_tree())
 			EditorNode::get_singleton()->hide_bottom_panel();
