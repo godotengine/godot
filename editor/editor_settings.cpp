@@ -664,7 +664,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set("editors/3d/emulate_3_button_mouse", false);
 	set("editors/3d/warped_mouse_panning", true);
 
-	set("editors/3d/orbit_sensitivity", 0.7);
+	set("editors/3d/orbit_sensitivity", 0.4);
 
 	set("editors/3d/freelook_base_speed", 1);
 
