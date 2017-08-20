@@ -92,7 +92,7 @@ Error EditorRun::run(const String &p_scene, const String p_custom_args, const Li
 	int window_placement = EditorSettings::get_singleton()->get("game_window_placement/rect");
 
 	switch (window_placement) {
-		case 0: { // default
+		case 0: { // top left
 
 			args.push_back("-p");
 			args.push_back(itos(screen_rect.pos.x) + "x" + itos(screen_rect.pos.y));
