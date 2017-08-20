@@ -294,7 +294,6 @@ TileSetEditorPlugin::TileSetEditorPlugin(EditorNode *p_node) {
 
 	p_node->get_viewport()->add_child(tileset_editor);
 	tileset_editor->set_area_as_parent_rect();
-	tileset_editor->set_anchor(MARGIN_RIGHT, Control::ANCHOR_END);
 	tileset_editor->set_anchor(MARGIN_BOTTOM, Control::ANCHOR_BEGIN);
 	tileset_editor->set_end(Point2(0, 22));
 	tileset_editor->hide();

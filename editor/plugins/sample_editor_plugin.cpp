@@ -374,8 +374,8 @@ SampleEditor::SampleEditor() {
 	sample_texframe->add_child(info_label);
 	info_label->set_area_as_parent_rect();
 	info_label->set_anchor_and_margin(MARGIN_TOP,ANCHOR_END,-15);
-	info_label->set_margin(MARGIN_BOTTOM,4);
-	info_label->set_margin(MARGIN_RIGHT,4);
+	info_label->set_margin(MARGIN_BOTTOM,-4);
+	info_label->set_margin(MARGIN_RIGHT,-4);
 	info_label->set_align(Label::ALIGN_RIGHT);
 
 

@@ -1939,10 +1939,8 @@ CustomPropertyEditor::CustomPropertyEditor() {
 
 	text_edit = memnew(TextEdit);
 	add_child(text_edit);
-	text_edit->set_area_as_parent_rect();
-	for (int i = 0; i < 4; i++)
-		text_edit->set_margin((Margin)i, 5);
-	text_edit->set_margin(MARGIN_BOTTOM, 30);
+	text_edit->set_area_as_parent_rect(5);
+	text_edit->set_margin(MARGIN_BOTTOM, -30);
 
 	text_edit->hide();
 	text_edit->connect("text_changed", this, "_text_edit_changed");
