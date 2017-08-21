@@ -192,7 +192,7 @@ void SpinBox::_notification(int p_what) {
 
 		int w = updown->get_width();
 		if (w != last_w) {
-			line_edit->set_margin(MARGIN_RIGHT, w);
+			line_edit->set_margin(MARGIN_RIGHT, -w);
 			last_w = w;
 		}
 
