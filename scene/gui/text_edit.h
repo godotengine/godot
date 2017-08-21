@@ -259,6 +259,7 @@ class TextEdit : public Control {
 	bool smooth_scroll_enabled;
 	bool scrolling;
 	float target_v_scroll;
+	float v_scroll_speed;
 
 	bool raised_from_completion;
 
@@ -493,6 +494,9 @@ public:
 
 	void set_smooth_scroll_enabled(bool p_enable);
 	bool is_smooth_scroll_enabled() const;
+
+	void set_v_scroll_speed(float p_speed);
+	float get_v_scroll_speed() const;
 
 	uint32_t get_version() const;
 	uint32_t get_saved_version() const;
