@@ -429,7 +429,7 @@ void TextEdit::_notification(int p_what) {
 			if (scrolling && v_scroll->get_value() != target_v_scroll) {
 				double target_y = target_v_scroll - v_scroll->get_value();
 				double dist = sqrt(target_y * target_y);
-				double vel = ((target_y / dist) * 50) * get_fixed_process_delta_time();
+				double vel = ((target_y / dist) * v_scroll_speed) * get_fixed_process_delta_time();
 
 				if (vel >= dist) {
 					v_scroll->set_value(target_v_scroll);
@@ -4264,6 +4264,14 @@ bool TextEdit::is_smooth_scroll_enabled() const {
 	return smooth_scroll_enabled;
 }
 
+void TextEdit::set_v_scroll_speed(float p_speed) {
+	v_scroll_speed = p_speed;
+}
+
+float TextEdit::get_v_scroll_speed() const {
+	return v_scroll_speed;
+}
+
 void TextEdit::set_completion(bool p_enabled, const Vector<String> &p_prefixes) {
 
 	completion_prefixes.clear();
@@ -4766,6 +4774,8 @@ void TextEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_smooth_scroll_enable", "enable"), &TextEdit::set_smooth_scroll_enabled);
 	ClassDB::bind_method(D_METHOD("is_smooth_scroll_enabled"), &TextEdit::is_smooth_scroll_enabled);
+	ClassDB::bind_method(D_METHOD("set_v_scroll_speed", "speed"), &TextEdit::set_v_scroll_speed);
+	ClassDB::bind_method(D_METHOD("get_v_scroll_speed"), &TextEdit::get_v_scroll_speed);
 
 	ClassDB::bind_method(D_METHOD("add_keyword_color", "keyword", "color"), &TextEdit::add_keyword_color);
 	ClassDB::bind_method(D_METHOD("add_color_region", "begin_key", "end_key", "color", "line_only"), &TextEdit::add_color_region, DEFVAL(false));
@@ -4777,6 +4787,7 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_line_numbers"), "set_show_line_numbers", "is_show_line_numbers_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "highlight_all_occurrences"), "set_highlight_all_occurrences", "is_highlight_all_occurrences_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smooth_scrolling"), "set_smooth_scroll_enable", "is_smooth_scroll_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "v_scroll_speed"), "set_v_scroll_speed", "get_v_scroll_speed");
 
 	ADD_GROUP("Caret", "caret_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_block_mode"), "cursor_set_block_mode", "cursor_is_block_mode");
@@ -4916,6 +4927,7 @@ TextEdit::TextEdit() {
 	smooth_scroll_enabled = false;
 	scrolling = false;
 	target_v_scroll = 0;
+	v_scroll_speed = 80;
 
 	raised_from_completion = false;
 
