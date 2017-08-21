@@ -365,14 +365,10 @@ Vector3 Basis::get_euler_xyz() const {
 	if (euler.y < Math_PI * 0.5) {
 		if (euler.y > -Math_PI * 0.5) {
 			//if rotation is Y-only, return a proper -pi,pi range like in x or z for the same case.
-			if (elements[1][0] == 0.0 && elements[0][1] == 0.0 && elements[0][0] < 0.0) {
+			if (elements[1][0] == 0.0 && elements[0][1] == 0.0 && elements[1][2] == 0 && elements[2][1] == 0 && elements[1][1] == 1) {
 				euler.x = 0;
+				euler.y = atan2(elements[0][2], elements[0][0]);
 				euler.z = 0;
-
-				if (euler.y > 0.0)
-					euler.y = Math_PI - euler.y;
-				else
-					euler.y = -(Math_PI + euler.y);
 			} else {
 				euler.x = Math::atan2(-elements[1][2], elements[2][2]);
 				euler.z = Math::atan2(-elements[0][1], elements[0][0]);
@@ -436,15 +432,10 @@ Vector3 Basis::get_euler_yxz() const {
 
 	if (m12 < 1) {
 		if (m12 > -1) {
-			if (elements[1][0] == 0 && elements[0][1] == 0 && elements[2][2] < 0) { // use pure x rotation
-				real_t x = asin(-m12);
+			if (elements[1][0] == 0 && elements[0][1] == 0 && elements[0][2] == 0 && elements[2][0] == 0 && elements[0][0] == 1) { // use pure x rotation
+				euler.x = atan2(-m12, elements[1][1]);
 				euler.y = 0;
 				euler.z = 0;
-
-				if (x > 0.0)
-					euler.x = Math_PI - x;
-				else
-					euler.x = -(Math_PI + x);
 			} else {
 				euler.x = asin(-m12);
 				euler.y = atan2(elements[0][2], elements[2][2]);
