@@ -191,8 +191,7 @@ void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 
 		::XIMStyles *xim_styles = NULL;
 		xim_style = 0L;
-		char *imvalret = NULL;
-		imvalret = XGetIMValues(xim, XNQueryInputStyle, &xim_styles, NULL);
+		char *imvalret = XGetIMValues(xim, XNQueryInputStyle, &xim_styles, NULL);
 		if (imvalret != NULL || xim_styles == NULL) {
 			fprintf(stderr, "Input method doesn't support any styles\n");
 		}
@@ -2140,8 +2139,7 @@ bool OS_X11::is_vsync_enabled() const {
 
 void OS_X11::set_context(int p_context) {
 
-	XClassHint *classHint = NULL;
-	classHint = XAllocClassHint();
+	XClassHint *classHint = XAllocClassHint();
 	if (classHint) {
 
 		if (p_context == CONTEXT_EDITOR)

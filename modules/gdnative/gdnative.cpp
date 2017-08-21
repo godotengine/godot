@@ -247,9 +247,8 @@ bool GDNative::terminate() {
 		return false;
 	}
 
-	Error error = OK;
 	void *library_terminate;
-	error = OS::get_singleton()->get_dynamic_library_symbol_handle(
+	Error error = OS::get_singleton()->get_dynamic_library_symbol_handle(
 			native_handle,
 			terminate_symbol,
 			library_terminate);

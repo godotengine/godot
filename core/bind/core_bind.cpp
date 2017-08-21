@@ -1406,11 +1406,10 @@ Error _File::open_encrypted_pass(const String &p_path, int p_mode_flags, const S
 Error _File::open_compressed(const String &p_path, int p_mode_flags, int p_compress_mode) {
 
 	FileAccessCompressed *fac = memnew(FileAccessCompressed);
-	Error err = OK;
 
 	fac->configure("GCPF", (Compression::Mode)p_compress_mode);
 
-	err = fac->_open(p_path, p_mode_flags);
+	Error err = fac->_open(p_path, p_mode_flags);
 
 	if (err) {
 		memdelete(fac);

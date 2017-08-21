@@ -1016,13 +1016,9 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 	for (j = 0; j <= (subdivide_h + 1); j++) {
 		float scale = (y - start_pos.y) / size.y;
 		float scaled_size_x = size.x * scale;
-		float start_x = start_pos.x;
-		float offset_front = 0.0;
-		float offset_back = 0.0;
-
-		start_x += (1.0 - scale) * size.x * left_to_right;
-		offset_front += (1.0 - scale) * onethird * left_to_right;
-		offset_back = (1.0 - scale) * onethird * (1.0 - left_to_right);
+		float start_x = start_pos.x + (1.0 - scale) * size.x * left_to_right;
+		float offset_front = (1.0 - scale) * onethird * left_to_right;
+		float offset_back = (1.0 - scale) * onethird * (1.0 - left_to_right);
 
 		x = 0.0;
 		for (i = 0; i <= (subdivide_w + 1); i++) {

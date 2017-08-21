@@ -80,7 +80,6 @@ Error AudioDriverAndroid::init() {
 	int mix_rate = GLOBAL_DEF("audio/mix_rate", 44100);
 
 	int latency = GLOBAL_DEF("audio/output_latency", 25);
-	latency = 50;
 	unsigned int buffer_size = next_power_of_2(latency * mix_rate / 1000);
 	if (OS::get_singleton()->is_stdout_verbose()) {
 		print_line("audio buffer size: " + itos(buffer_size));

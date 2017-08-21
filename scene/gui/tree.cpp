@@ -1459,7 +1459,6 @@ void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_c
 				c.selected = true;
 				selected_item = p_selected;
 				selected_col = 0;
-				selected_item = p_selected;
 				if (!emitted_row) {
 					emit_signal("item_selected");
 					emitted_row = true;

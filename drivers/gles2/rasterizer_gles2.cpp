@@ -654,7 +654,6 @@ Ref<Image> RasterizerGLES2::_get_gl_image_and_format(const Ref<Image> &p_image, 
 
 			} else {
 
-				r_gl_internal_format = _EXT_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG;
 				r_gl_internal_format = (srgb_supported && p_flags & VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) ? _EXT_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV1_EXT : _EXT_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG;
 				r_gl_components = 1; //doesn't matter much
 				r_compressed = true;

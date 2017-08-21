@@ -399,7 +399,6 @@ VideoPlayer::VideoPlayer() {
 	paused = false;
 	autoplay = false;
 	expand = true;
-	loops = false;
 
 	audio_track = 0;
 

@@ -100,7 +100,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 		//get filename
 		unz_file_info info;
 		char fname[16384];
-		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, NULL, 0, NULL, 0);
+		unzGetCurrentFileInfo(pkg, &info, fname, 16384, NULL, 0, NULL, 0);
 
 		String name = fname;
 		files_sorted.insert(name);

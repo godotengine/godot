@@ -195,7 +195,7 @@ void ExportTemplateManager::_install_from_file(const String &p_file) {
 			data.resize(info.uncompressed_size);
 
 			//read
-			ret = unzOpenCurrentFile(pkg);
+			unzOpenCurrentFile(pkg);
 			ret = unzReadCurrentFile(pkg, data.ptr(), data.size());
 			unzCloseCurrentFile(pkg);
 
@@ -257,7 +257,7 @@ void ExportTemplateManager::_install_from_file(const String &p_file) {
 		//get filename
 		unz_file_info info;
 		char fname[16384];
-		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, NULL, 0, NULL, 0);
+		unzGetCurrentFileInfo(pkg, &info, fname, 16384, NULL, 0, NULL, 0);
 
 		String file = fname;
 
@@ -265,8 +265,8 @@ void ExportTemplateManager::_install_from_file(const String &p_file) {
 		data.resize(info.uncompressed_size);
 
 		//read
-		ret = unzOpenCurrentFile(pkg);
-		ret = unzReadCurrentFile(pkg, data.ptr(), data.size());
+		unzOpenCurrentFile(pkg);
+		unzReadCurrentFile(pkg, data.ptr(), data.size());
 		unzCloseCurrentFile(pkg);
 
 		print_line(fname);

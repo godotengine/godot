@@ -143,9 +143,7 @@ void Polygon2D::_notification(int p_what) {
 
 				Transform2D texmat(tex_rot, tex_ofs);
 				texmat.scale(tex_scale);
-				Size2 tex_size = Vector2(1, 1);
-
-				tex_size = texture->get_size();
+				Size2 tex_size = texture->get_size();
 				uvs.resize(points.size());
 
 				if (points.size() == uv.size()) {

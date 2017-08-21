@@ -46,10 +46,8 @@ Error AudioDriverIphone::init() {
 	strdesc.mBytesPerPacket =
 			strdesc.mBytesPerFrame * strdesc.mFramesPerPacket;
 
-	OSStatus result = noErr;
 	AURenderCallbackStruct callback;
 	AudioComponentDescription desc;
-	AudioComponent comp = NULL;
 	const AudioUnitElement output_bus = 0;
 	const AudioUnitElement bus = output_bus;
 	const AudioUnitScope scope = kAudioUnitScope_Input;
@@ -57,10 +55,10 @@ Error AudioDriverIphone::init() {
 	zeromem(&desc, sizeof(desc));
 	desc.componentType = kAudioUnitType_Output;
 	desc.componentSubType = kAudioUnitSubType_RemoteIO; /* !!! FIXME: ? */
-	comp = AudioComponentFindNext(NULL, &desc);
+	AudioComponent comp = AudioComponentFindNext(NULL, &desc);
 	desc.componentManufacturer = kAudioUnitManufacturer_Apple;
 
-	result = AudioComponentInstanceNew(comp, &audio_unit);
+	OSStatus result = AudioComponentInstanceNew(comp, &audio_unit);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 	ERR_FAIL_COND_V(comp == NULL, FAILED);
 

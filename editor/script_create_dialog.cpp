@@ -531,28 +531,19 @@ void ScriptCreateDialog::_bind_methods() {
 
 ScriptCreateDialog::ScriptCreateDialog() {
 
-	GridContainer *gc = memnew(GridContainer);
-	VBoxContainer *vb = memnew(VBoxContainer);
-	HBoxContainer *hb = memnew(HBoxContainer);
-	Label *l = memnew(Label);
-	Control *empty = memnew(Control);
-	Control *empty_h = memnew(Control);
-	Control *empty_v = memnew(Control);
-	PanelContainer *pc = memnew(PanelContainer);
-
 	/* DIALOG */
 
 	/* Main Controls */
 
-	gc = memnew(GridContainer);
+	GridContainer *gc = memnew(GridContainer);
 	gc->set_columns(2);
 
 	/* Error Messages Field */
 
-	vb = memnew(VBoxContainer);
+	VBoxContainer *vb = memnew(VBoxContainer);
 
-	hb = memnew(HBoxContainer);
-	l = memnew(Label);
+	HBoxContainer *hb = memnew(HBoxContainer);
+	Label *l = memnew(Label);
 	l->set_text(" - ");
 	hb->add_child(l);
 	error_label = memnew(Label);
@@ -571,19 +562,19 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	hb->add_child(path_error_label);
 	vb->add_child(hb);
 
-	pc = memnew(PanelContainer);
+	PanelContainer *pc = memnew(PanelContainer);
 	pc->set_h_size_flags(Control::SIZE_FILL);
 	pc->add_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_stylebox("bg", "Tree"));
 	pc->add_child(vb);
 
 	/* Margins */
 
-	empty_h = memnew(Control);
+	Control *empty_h = memnew(Control);
 	empty_h->set_name("empty_h"); //duplicate() doesn't like nodes without a name
 	empty_h->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	empty_h->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	empty_h->set_custom_minimum_size(Size2(0, 10 * EDSCALE));
-	empty_v = memnew(Control);
+	Control *empty_v = memnew(Control);
 	empty_v->set_name("empty_v");
 	empty_v->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	empty_v->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -684,7 +675,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	internal = memnew(CheckButton);
 	internal->connect("pressed", this, "_built_in_pressed");
 	hb = memnew(HBoxContainer);
-	empty = memnew(Control);
+	Control *empty = memnew(Control);
 	hb->add_child(internal);
 	hb->add_child(empty);
 	l = memnew(Label);

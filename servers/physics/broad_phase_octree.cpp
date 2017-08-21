@@ -124,6 +124,5 @@ BroadPhaseOctree::BroadPhaseOctree() {
 	octree.set_unpair_callback(_unpair_callback, this);
 	pair_callback = NULL;
 	pair_userdata = NULL;
-	pair_callback = NULL;
 	unpair_userdata = NULL;
 }

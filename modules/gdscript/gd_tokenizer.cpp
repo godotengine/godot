@@ -1187,9 +1187,7 @@ Error GDTokenizerBuffer::set_code_buffer(const Vector<uint8_t> &p_buffer) {
 	int line_count = decode_uint32(&buf[16]);
 	int token_count = decode_uint32(&buf[20]);
 
-	const uint8_t *b = buf;
-
-	b = &buf[24];
+	const uint8_t *b = &buf[24];
 	total_len -= 24;
 
 	identifiers.resize(identifier_count);

@@ -155,10 +155,9 @@ List<ClassAPI> generate_c_api_classes() {
 		class_api.is_instanciable = !class_api.is_singleton && ClassDB::can_instance(class_name);
 
 		{
-			bool is_reference = false;
 			List<StringName> inheriters;
 			ClassDB::get_inheriters_from_class("Reference", &inheriters);
-			is_reference = !!inheriters.find(class_name);
+			bool is_reference = !!inheriters.find(class_name);
 			// @Unclear
 			class_api.is_reference = !class_api.is_singleton && is_reference;
 		}

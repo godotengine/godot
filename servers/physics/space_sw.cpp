@@ -474,8 +474,7 @@ bool PhysicsDirectSpaceStateSW::rest_info(RID p_shape, const Transform &p_shape_
 
 Vector3 PhysicsDirectSpaceStateSW::get_closest_point_to_object_volume(RID p_object, const Vector3 p_point) const {
 
-	CollisionObjectSW *obj = NULL;
-	obj = PhysicsServerSW::singleton->area_owner.getornull(p_object);
+	CollisionObjectSW *obj = PhysicsServerSW::singleton->area_owner.getornull(p_object);
 	if (!obj) {
 		obj = PhysicsServerSW::singleton->body_owner.getornull(p_object);
 	}
@@ -598,11 +597,8 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Ve
 			cbk.amount = 0;
 			cbk.ptr = sr;
 
-			CollisionSolverSW::CallbackResult cbkres = NULL;
-
-			PhysicsServerSW::CollCbkData *cbkptr = NULL;
-			cbkptr = &cbk;
-			cbkres = PhysicsServerSW::_shape_col_cbk;
+			PhysicsServerSW::CollCbkData *cbkptr = &cbk;
+			CollisionSolverSW::CallbackResult cbkres = PhysicsServerSW::_shape_col_cbk;
 
 			bool collided = false;
 
