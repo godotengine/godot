@@ -84,19 +84,6 @@ static Ref<StyleBoxFlat> change_border_color(Ref<StyleBoxFlat> p_style, Color p_
 	return style;
 }
 
-static Ref<StyleBoxFlat> add_additional_border(Ref<StyleBoxFlat> p_style, int p_left, int p_top, int p_right, int p_bottom) {
-	Ref<StyleBoxFlat> style = p_style->duplicate();
-	style->set_border_width(MARGIN_LEFT, p_left * EDSCALE + style->get_border_width(MARGIN_LEFT));
-	style->set_border_width(MARGIN_RIGHT, p_right * EDSCALE + style->get_border_width(MARGIN_RIGHT));
-	style->set_border_width(MARGIN_TOP, p_top * EDSCALE + style->get_border_width(MARGIN_TOP));
-	style->set_border_width(MARGIN_BOTTOM, p_bottom * EDSCALE + style->get_border_width(MARGIN_BOTTOM));
-	style->set_expand_margin_size(MARGIN_LEFT, p_left * EDSCALE);
-	style->set_expand_margin_size(MARGIN_RIGHT, p_right * EDSCALE);
-	style->set_expand_margin_size(MARGIN_TOP, p_top * EDSCALE);
-	style->set_expand_margin_size(MARGIN_BOTTOM, p_bottom * EDSCALE);
-	return style;
-}
-
 #define HIGHLIGHT_COLOR_LIGHT highlight_color.linear_interpolate(Color(1, 1, 1, 1), 0.3)
 #define HIGHLIGHT_COLOR_DARK highlight_color.linear_interpolate(Color(0, 0, 0, 1), 0.5)
 
@@ -491,7 +478,8 @@ Ref<Theme> create_editor_theme() {
 	// PopupPanel
 	Ref<StyleBoxFlat> style_dock_select = make_flat_stylebox(base_color);
 	style_dock_select->set_border_color_all(light_color_1);
-	style_dock_select = add_additional_border(style_dock_select, 2, 2, 2, 2);
+	style_dock_select->set_expand_margin_size_all(2);
+	style_dock_select->set_border_width_all(2);
 	theme->set_stylebox("panel", "PopupPanel", style_dock_select);
 
 	// SpinBox
