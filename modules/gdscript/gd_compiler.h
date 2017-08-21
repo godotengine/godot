@@ -91,8 +91,8 @@ class GDCompiler {
 		}
 
 		//int get_identifier_pos(const StringName& p_dentifier) const;
-		HashMap<Variant, int, VariantHasher> constant_map;
-		Map<StringName, int> name_map;
+		HashMap<Variant,int,VariantHasher,VariantComparator> constant_map;
+		Map<StringName,int> name_map;
 
 		int get_name_map_pos(const StringName &p_identifier) {
 			int ret;
