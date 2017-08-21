@@ -2960,11 +2960,7 @@ public:
 		//export_temp
 		ep.step("Exporting APK", 0);
 
-		bool use_adb_over_usb = bool(EDITOR_DEF("export/android/use_remote_debug_over_adb", true));
-
-		if (use_adb_over_usb) {
-			p_debug_flags |= DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST;
-		}
+		p_debug_flags |= DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST;
 
 		String export_to = EditorSettings::get_singleton()->get_settings_path() + "/tmp/tmpexport.apk";
 		Error err = export_project(p_preset, true, export_to, p_debug_flags);
@@ -3017,7 +3013,7 @@ public:
 			return ERR_CANT_CREATE;
 		}
 
-		if (use_adb_over_usb) {
+		if (p_debug_flags & DEBUG_FLAG_REMOTE_DEBUG) {
 
 			args.clear();
 			args.push_back("-s");
@@ -3036,6 +3032,9 @@ public:
 
 			err = OS::get_singleton()->execute(adb, args, true, NULL, NULL, &rv);
 			print_line("Reverse result: " + itos(rv));
+		}
+
+		if (p_debug_flags & DEBUG_FLAG_DUMB_CLIENT) {
 
 			int fs_port = EditorSettings::get_singleton()->get("filesystem/file_server/port");
 
@@ -3618,7 +3617,6 @@ void register_android_exporter() {
 	EDITOR_DEF("export/android/force_system_user", false);
 
 	EDITOR_DEF("export/android/timestamping_authority_url", "");
-	EDITOR_DEF("export/android/use_remote_debug_over_adb", false);
 	EDITOR_DEF("export/android/shutdown_adb_on_exit", true);
 
 	Ref<EditorExportAndroid> exporter = Ref<EditorExportAndroid>(memnew(EditorExportAndroid));
