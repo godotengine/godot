@@ -1465,10 +1465,9 @@ void FileSystemDock::_files_list_rmb_select(int p_item, const Vector2 &p_pos) {
 			return;
 		}
 
-		EditorFileSystemDirectory *efsd = NULL;
 		int pos;
 
-		efsd = EditorFileSystem::get_singleton()->find_file(path, &pos);
+		EditorFileSystemDirectory *efsd = EditorFileSystem::get_singleton()->find_file(path, &pos);
 
 		if (efsd) {
 

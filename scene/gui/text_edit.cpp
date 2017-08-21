@@ -3898,10 +3898,8 @@ bool TextEdit::search(const String &p_key, uint32_t p_search_flags, int p_from_l
 
 	//search through the whole documment, but start by current line
 
-	int line = -1;
+	int line = p_from_line;
 	int pos = -1;
-
-	line = p_from_line;
 
 	for (int i = 0; i < text.size() + 1; i++) {
 		//backwards is broken...

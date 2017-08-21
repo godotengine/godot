@@ -258,7 +258,6 @@ void FindReplaceBar::_get_search_from(int &r_line, int &r_col) {
 			int selection_from_col = text_edit->get_selection_from_column();
 
 			if (r_col >= selection_from_col && r_col <= text_edit->get_selection_to_column()) {
-				r_col = selection_line;
 				r_col = selection_from_col;
 			}
 		}

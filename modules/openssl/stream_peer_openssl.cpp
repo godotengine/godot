@@ -41,27 +41,22 @@ bool StreamPeerOpenSSL::_match_host_name(const char *name, const char *hostname)
 
 Error StreamPeerOpenSSL::_match_common_name(const char *hostname, const X509 *server_cert) {
 
-	int common_name_loc = -1;
-	X509_NAME_ENTRY *common_name_entry = NULL;
-	ASN1_STRING *common_name_asn1 = NULL;
-	char *common_name_str = NULL;
-
 	// Find the position of the CN field in the Subject field of the certificate
-	common_name_loc = X509_NAME_get_index_by_NID(X509_get_subject_name((X509 *)server_cert), NID_commonName, -1);
+	int common_name_loc = X509_NAME_get_index_by_NID(X509_get_subject_name((X509 *)server_cert), NID_commonName, -1);
 
 	ERR_FAIL_COND_V(common_name_loc < 0, ERR_INVALID_PARAMETER);
 
 	// Extract the CN field
-	common_name_entry = X509_NAME_get_entry(X509_get_subject_name((X509 *)server_cert), common_name_loc);
+	X509_NAME_ENTRY *common_name_entry = X509_NAME_get_entry(X509_get_subject_name((X509 *)server_cert), common_name_loc);
 
 	ERR_FAIL_COND_V(common_name_entry == NULL, ERR_INVALID_PARAMETER);
 
 	// Convert the CN field to a C string
-	common_name_asn1 = X509_NAME_ENTRY_get_data(common_name_entry);
+	ASN1_STRING *common_name_asn1 = X509_NAME_ENTRY_get_data(common_name_entry);
 
 	ERR_FAIL_COND_V(common_name_asn1 == NULL, ERR_INVALID_PARAMETER);
 
-	common_name_str = (char *)ASN1_STRING_data(common_name_asn1);
+	char *common_name_str = (char *)ASN1_STRING_data(common_name_asn1);
 
 	// Make sure there isn't an embedded NUL character in the CN
 	bool malformed_certificate = (size_t)ASN1_STRING_length(common_name_asn1) != strlen(common_name_str);

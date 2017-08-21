@@ -904,9 +904,10 @@ Error Main::setup2() {
 
 	MAIN_PRINT("Main: Setup Logo");
 
-	bool show_logo = true;
 #ifdef JAVASCRIPT_ENABLED
-	show_logo = false;
+	bool show_logo = false;
+#else
+	bool show_logo = true;
 #endif
 
 	if (init_screen != -1) {

@@ -3024,7 +3024,7 @@ public:
 			args.push_back(devices[p_device].id);
 			args.push_back("reverse");
 			args.push_back("--remove-all");
-			err = OS::get_singleton()->execute(adb, args, true, NULL, NULL, &rv);
+			OS::get_singleton()->execute(adb, args, true, NULL, NULL, &rv);
 
 			int dbg_port = EditorSettings::get_singleton()->get("network/debug/remote_port");
 			args.clear();
@@ -3034,7 +3034,7 @@ public:
 			args.push_back("tcp:" + itos(dbg_port));
 			args.push_back("tcp:" + itos(dbg_port));
 
-			err = OS::get_singleton()->execute(adb, args, true, NULL, NULL, &rv);
+			OS::get_singleton()->execute(adb, args, true, NULL, NULL, &rv);
 			print_line("Reverse result: " + itos(rv));
 
 			int fs_port = EditorSettings::get_singleton()->get("filesystem/file_server/port");

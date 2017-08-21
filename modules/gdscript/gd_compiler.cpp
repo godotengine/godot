@@ -1451,15 +1451,13 @@ Error GDCompiler::_parse_function(GDScript *p_script, const GDParser::ClassNode 
 
 	codegen.opcodes.push_back(GDFunction::OPCODE_END);
 
-	GDFunction *gdfunc = NULL;
-
 	/*
 	if (String(p_func->name)=="") { //initializer func
 		gdfunc = &p_script->initializer;
 	*/
 	//} else { //regular func
 	p_script->member_functions[func_name] = memnew(GDFunction);
-	gdfunc = p_script->member_functions[func_name];
+	GDFunction *gdfunc = p_script->member_functions[func_name];
 	//}
 
 	if (p_func) {

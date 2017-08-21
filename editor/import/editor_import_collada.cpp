@@ -1584,14 +1584,12 @@ Error ColladaImport::_create_resources(Collada::Node *p_node) {
 						apply_xform = Transform();
 					}
 
-					Collada::SkinControllerData::Source *joint_src = NULL;
-
 					ERR_FAIL_COND_V(!skin->weights.sources.has("JOINT"), ERR_INVALID_DATA);
 
 					String joint_id = skin->weights.sources["JOINT"].source;
 					ERR_FAIL_COND_V(!skin->sources.has(joint_id), ERR_INVALID_DATA);
 
-					joint_src = &skin->sources[joint_id];
+					Collada::SkinControllerData::Source *joint_src = &skin->sources[joint_id];
 
 					bone_remap.resize(joint_src->sarray.size());
 
@@ -2317,7 +2315,6 @@ Ref<Animation> EditorSceneImporterCollada::import_animation(const String &p_path
 	if (state.animations.size() == 0)
 		return Ref<Animation>();
 	Ref<Animation> anim = state.animations[0];
-	anim = state.animations[0];
 	print_line("Anim Load OK");
 	String base = p_path.get_basename().to_lower();
 	if (p_flags & IMPORT_ANIMATION_DETECT_LOOP) {

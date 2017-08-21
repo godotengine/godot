@@ -532,11 +532,8 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 			cbk.amount = 0;
 			cbk.ptr = sr;
 
-			CollisionSolver2DSW::CallbackResult cbkres = NULL;
-
-			Physics2DServerSW::CollCbkData *cbkptr = NULL;
-			cbkptr = &cbk;
-			cbkres = Physics2DServerSW::_shape_col_cbk;
+			Physics2DServerSW::CollCbkData *cbkptr = &cbk;
+			CollisionSolver2DSW::CallbackResult cbkres = Physics2DServerSW::_shape_col_cbk;
 
 			bool collided = false;
 

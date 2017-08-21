@@ -2381,9 +2381,7 @@ void GDParser::_parse_block(BlockNode *p_block, bool p_static) {
 				if (tokenizer->get_token() == GDTokenizer::TK_OP_ASSIGN) {
 
 					tokenizer->advance();
-					Node *subexpr = NULL;
-
-					subexpr = _parse_and_reduce_expression(p_block, p_static);
+					Node *subexpr = _parse_and_reduce_expression(p_block, p_static);
 					if (!subexpr) {
 						if (_recover_from_completion()) {
 							break;
@@ -3135,9 +3133,7 @@ void GDParser::_parse_class(ClassNode *p_class) {
 						if (tokenizer->get_token() == GDTokenizer::TK_OP_ASSIGN) {
 							defaulting = true;
 							tokenizer->advance(1);
-							Node *defval = NULL;
-
-							defval = _parse_and_reduce_expression(p_class, _static);
+							Node *defval = _parse_and_reduce_expression(p_class, _static);
 							if (!defval || error_set)
 								return;
 
@@ -3875,9 +3871,7 @@ void GDParser::_parse_class(ClassNode *p_class) {
 #endif
 					tokenizer->advance();
 
-					Node *subexpr = NULL;
-
-					subexpr = _parse_and_reduce_expression(p_class, false, autoexport);
+					Node *subexpr = _parse_and_reduce_expression(p_class, false, autoexport);
 					if (!subexpr) {
 						if (_recover_from_completion()) {
 							break;
@@ -4035,9 +4029,7 @@ void GDParser::_parse_class(ClassNode *p_class) {
 
 				tokenizer->advance();
 
-				Node *subexpr = NULL;
-
-				subexpr = _parse_and_reduce_expression(p_class, true, true);
+				Node *subexpr = _parse_and_reduce_expression(p_class, true, true);
 				if (!subexpr) {
 					if (_recover_from_completion()) {
 						break;
@@ -4103,9 +4095,7 @@ void GDParser::_parse_class(ClassNode *p_class) {
 						if (tokenizer->get_token() == GDTokenizer::TK_OP_ASSIGN) {
 							tokenizer->advance();
 
-							Node *subexpr = NULL;
-
-							subexpr = _parse_and_reduce_expression(p_class, true, true);
+							Node *subexpr = _parse_and_reduce_expression(p_class, true, true);
 							if (!subexpr) {
 								if (_recover_from_completion()) {
 									break;
