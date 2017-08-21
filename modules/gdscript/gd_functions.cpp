@@ -70,6 +70,8 @@ const char *GDFunctions::get_func_name(Function p_func) {
 		"decimals",
 		"stepify",
 		"lerp",
+		"inverse_lerp",
+		"range_lerp",
 		"dectime",
 		"randomize",
 		"randi",
@@ -325,6 +327,22 @@ void GDFunctions::call(Function p_func, const Variant **p_args, int p_arg_count,
 			VALIDATE_ARG_NUM(1);
 			VALIDATE_ARG_NUM(2);
 			r_ret = Math::lerp((double)*p_args[0], (double)*p_args[1], (double)*p_args[2]);
+		} break;
+		case MATH_INVERSE_LERP: {
+			VALIDATE_ARG_COUNT(3);
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			VALIDATE_ARG_NUM(2);
+			r_ret = Math::inverse_lerp((double)*p_args[0], (double)*p_args[1], (double)*p_args[2]);
+		} break;
+		case MATH_RANGE_LERP: {
+			VALIDATE_ARG_COUNT(5);
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			VALIDATE_ARG_NUM(2);
+			VALIDATE_ARG_NUM(3);
+			VALIDATE_ARG_NUM(4);
+			r_ret = Math::range_lerp((double)*p_args[0], (double)*p_args[1], (double)*p_args[2], (double)*p_args[3], (double)*p_args[4]);
 		} break;
 		case MATH_DECTIME: {
 			VALIDATE_ARG_COUNT(3);
@@ -1252,6 +1270,8 @@ bool GDFunctions::is_deterministic(Function p_func) {
 		case MATH_DECIMALS:
 		case MATH_STEPIFY:
 		case MATH_LERP:
+		case MATH_INVERSE_LERP:
+		case MATH_RANGE_LERP:
 		case MATH_DECTIME:
 		case MATH_DEG2RAD:
 		case MATH_RAD2DEG:
@@ -1417,6 +1437,16 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 		} break;
 		case MATH_LERP: {
 			MethodInfo mi("lerp", PropertyInfo(Variant::REAL, "from"), PropertyInfo(Variant::REAL, "to"), PropertyInfo(Variant::REAL, "weight"));
+			mi.return_val.type = Variant::REAL;
+			return mi;
+		} break;
+		case MATH_INVERSE_LERP: {
+			MethodInfo mi("inverse_lerp", PropertyInfo(Variant::REAL, "from"), PropertyInfo(Variant::REAL, "to"), PropertyInfo(Variant::REAL, "value"));
+			mi.return_val.type = Variant::REAL;
+			return mi;
+		} break;
+		case MATH_RANGE_LERP: {
+			MethodInfo mi("range_lerp", PropertyInfo(Variant::REAL, "value"), PropertyInfo(Variant::REAL, "istart"), PropertyInfo(Variant::REAL, "istop"), PropertyInfo(Variant::REAL, "ostart"), PropertyInfo(Variant::REAL, "ostop"));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
