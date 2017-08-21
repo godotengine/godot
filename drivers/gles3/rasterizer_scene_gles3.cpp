@@ -2309,6 +2309,16 @@ void RasterizerSceneGLES3::_add_geometry_with_material(RasterizerStorageGLES3::G
 
 		e->sort_key |= SORT_KEY_VERTEX_LIT_FLAG;
 	}
+
+	if (!shadow && has_alpha && p_material->shader->spatial.depth_draw_mode == RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS) {
+		//depth prepass for alpha
+		RenderList::Element *eo = render_list.add_element();
+
+		eo->instance = e->instance;
+		eo->geometry = e->geometry;
+		eo->material = e->material;
+		eo->sort_key = e->sort_key;
+	}
 }
 
 void RasterizerSceneGLES3::_draw_sky(RasterizerStorageGLES3::Sky *p_sky, const CameraMatrix &p_projection, const Transform &p_transform, bool p_vflip, float p_scale, float p_energy) {
