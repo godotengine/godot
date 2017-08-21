@@ -1517,6 +1517,9 @@
 		<constant name="BUTTON_WHEEL_RIGHT" value="7">
 			Mouse wheel right button
 		</constant>
+		<constant name="GESTURE_MAGNIFY" value="8">
+			Touch pad pinch gesture
+		</constant>
 		<constant name="BUTTON_MASK_LEFT" value="1">
 		</constant>
 		<constant name="BUTTON_MASK_RIGHT" value="2">

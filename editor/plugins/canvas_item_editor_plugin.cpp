@@ -1082,6 +1082,28 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 	if (b.is_valid()) {
 		// Button event
 
+		if (b->get_button_index() == GESTURE_MAGNIFY) {
+			if (zoom < MIN_ZOOM) {
+				zoom = MIN_ZOOM;
+			} else if (zoom > MAX_ZOOM) {
+				zoom = MAX_ZOOM;
+			}
+
+			float prev_zoom = zoom;
+			zoom = fmin(fmax(zoom + b->get_factor(), MIN_ZOOM), MAX_ZOOM);
+
+			{
+				Point2 ofs = b->get_position();
+				ofs = ofs / prev_zoom - ofs / zoom;
+				h_scroll->set_value(h_scroll->get_value() + ofs.x);
+				v_scroll->set_value(v_scroll->get_value() + ofs.y);
+			}
+
+			_update_scroll(0);
+			viewport->update();
+			return;
+		}
+
 		if (b->get_button_index() == BUTTON_WHEEL_DOWN) {
 			// Scroll or pan down
 			if (bool(EditorSettings::get_singleton()->get("editors/2d/scroll_to_pan"))) {
