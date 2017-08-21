@@ -9,88 +9,84 @@ def make_editor_icons_action(target, source, env):
     import cStringIO
 
     dst = target[0].srcnode().abspath
-    pixmaps = source
+    svg_icons = source
+
+    whites = cStringIO.StringIO()
+    darks = cStringIO.StringIO()
+
+    for f in svg_icons:
+
+        fname = str(f)
+
+        whites.write('\t"')
+        darks.write('\t"')
+
+        with open(fname, 'rb') as svgf:
+            b = svgf.read(1)
+            while(len(b) == 1):
+                whites.write("\\" + str(hex(ord(b)))[1:])
+                b = svgf.read(1)
+        try:
+            with open(os.path.dirname(fname) + "/dark/" + os.path.basename(fname), 'rb') as svgf:
+                b = svgf.read(1)
+                while(len(b) == 1):
+                    darks.write("\\" + str(hex(ord(b)))[1:])
+                    b = svgf.read(1)
+        except IOError:
+            with open(fname, 'rb') as svgf:
+                b = svgf.read(1)
+                while(len(b) == 1):
+                    darks.write("\\" + str(hex(ord(b)))[1:])
+                    b = svgf.read(1)
+
+
+        whites.write('"')
+        darks.write('"')
+        if fname != svg_icons[-1]:
+            whites.write(",")
+            darks.write(",")
+        whites.write('\n')
+        darks.write('\n')
 
     s = cStringIO.StringIO()
+    s.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
+    s.write("#ifndef _EDITOR_ICONS_H\n")
+    s.write("#define _EDITOR_ICONS_H\n")
+    s.write("static const int editor_icons_count = %s;\n" % len(svg_icons))
+    s.write("static const char *editor_icons_sources[] = {\n")
+    s.write(whites.getvalue())
+    s.write('};\n\n')
+    s.write("static const char *editor_icons_sources_dark[] = {\n")
+    s.write(darks.getvalue())
+    s.write('};\n\n')
+    s.write("static const char *editor_icons_names[] = {\n")
+    for f in svg_icons:
 
-    s.write("#include \"editor_icons.h\"\n\n")
-    s.write("#include \"editor_scale.h\"\n\n")
-    s.write("#include \"scene/resources/theme.h\"\n\n")
+        fname = str(f)
 
-    hidpi_list = []
+        icon_name = os.path.basename(fname)[5:-4].title().replace("_", "")
 
-    for x in pixmaps:
+        s.write('\t"%s"' % icon_name)
 
-        x = str(x)
-        var_str = os.path.basename(x)[:-4] + "_png"
-        # print(var_str)
+        if fname != svg_icons[-1]:
+            s.write(",")
+        s.write('\n')
+    s.write('};\n')
+    s.write("#endif\n")
 
-        s.write("static const unsigned char " + var_str + "[]={\n")
-
-        pngf = open(x, "rb")
-
-        b = pngf.read(1)
-        while(len(b) == 1):
-            s.write(hex(ord(b)))
-            b = pngf.read(1)
-            if (len(b) == 1):
-                s.write(",")
-
-        s.write("\n};\n\n")
-
-        pngf.close()
-        var_str = os.path.basename(x)[:-4] + "_hidpi_png"
-        try:
-
-            pngf = open(os.path.dirname(x) + "/2x/" + os.path.basename(x), "rb")
-
-            s.write("static const unsigned char " + var_str + "[]={\n")
-
-            b = pngf.read(1)
-            while(len(b) == 1):
-                s.write(hex(ord(b)))
-                b = pngf.read(1)
-                if (len(b) == 1):
-                    s.write(",")
-
-            s.write("\n};\n\n\n")
-            hidpi_list.append(x)
-
-        except:
-            s.write("static const unsigned char* " + var_str + "=NULL;\n\n\n")
-
-    s.write("static Ref<ImageTexture> make_icon(const uint8_t* p_png,const uint8_t* p_hidpi_png) {\n")
-    s.write("\tRef<ImageTexture> texture( memnew( ImageTexture ) );\n")
-    s.write("\tbool use_hidpi_image=(editor_get_scale()>1.0&&p_hidpi_png);\n")
-    s.write("\tRef<Image> img = memnew(Image(use_hidpi_image?p_hidpi_png:p_png));\n")
-    s.write("\tif (editor_get_scale()>1.0 && !p_hidpi_png) { img->convert(Image::FORMAT_RGBA8); img->expand_x2_hq2x(); use_hidpi_image=true;}\n")
-    s.write("\timg->resize(img->get_width()*EDSCALE/(use_hidpi_image?2:1),img->get_height()*EDSCALE/(use_hidpi_image?2:1));\n")
-    s.write("\ttexture->create_from_image( img,ImageTexture::FLAG_FILTER );\n")
-    s.write("\treturn texture;\n")
-    s.write("}\n\n")
-
-    s.write("void editor_register_icons(Ref<Theme> p_theme) {\n\n")
-
-    for x in pixmaps:
-
-        x = os.path.basename(str(x))
-        type = x[5:-4].title().replace("_", "")
-        var_str = x[:-4] + "_png"
-        var_str_hidpi = x[:-4] + "_hidpi_png"
-        s.write("\tp_theme->set_icon(\"" + type + "\",\"EditorIcons\",make_icon(" + var_str + "," + var_str_hidpi + "));\n")
-
-    s.write("\n\n}\n\n")
 
     f = open(dst, "wb")
     f.write(s.getvalue())
     f.close()
     s.close()
+    whites.close()
+    darks.close()
 
 make_editor_icons_builder = Builder(action=make_editor_icons_action,
-                                    suffix='.cpp',
-                                    src_suffix='.png')
+                                    suffix='.h',
+                                    src_suffix='.svg')
 env['BUILDERS']['MakeEditorIconsBuilder'] = make_editor_icons_builder
-env.Alias('editor_icons', [env.MakeEditorIconsBuilder('#editor/editor_icons.gen.cpp', Glob("*.png"))])
+env.Alias('editor_icons', [env.MakeEditorIconsBuilder('#editor/editor_icons.gen.h', Glob("*.svg"))])
 
-env.editor_sources.append("#editor/editor_icons.gen.cpp")
+env.editor_sources.append("#editor/editor_icons.gen.h")
 Export('env')

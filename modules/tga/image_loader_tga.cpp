@@ -203,7 +203,7 @@ Error ImageLoaderTGA::convert_to_image(Ref<Image> p_image, const uint8_t *p_buff
 	return OK;
 }
 
-Error ImageLoaderTGA::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear) {
+Error ImageLoaderTGA::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale) {
 
 	PoolVector<uint8_t> src_image;
 	int src_image_len = f->get_len();
