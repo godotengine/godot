@@ -46114,6 +46114,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_nine_patch_stretch">
+			<return type="bool">
+			</return>
+			<description>
+				Returns true if textures are stretched as nine-patches or false otherwise.
+			</description>
+		</method>
 		<method name="get_over_texture" qualifiers="const">
 			<return type="Object">
 			</return>
@@ -46138,6 +46145,15 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_stretch_margin" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="margin" type="int">
+			</argument>
+			<description>
+				Return nine-patch texture offset for a given margin (MARGIN_LEFT, MARGIN_TOP, MARGIN_RIGHT, MARGIN_BOTTOM).
+			</description>
+		</method>
 		<method name="get_under_texture" qualifiers="const">
 			<return type="Object">
 			</return>
@@ -46154,6 +46170,13 @@
 			<argument index="0" name="mode" type="int">
 			</argument>
 			<description>
+			</description>
+		</method>
+		<method name="set_nine_patch_stretch">
+			<argument index="0" name="stretch" type="bool">
+			</argument>
+			<description>
+				Set if textures should be stretched as nine-patches.
 			</description>
 		</method>
 		<method name="set_over_texture">
@@ -46180,6 +46203,15 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_stretch_margin">
+			<argument index="0" name="margin" type="int">
+			</argument>
+			<argument index="1" name="size" type="int">
+			</argument>
+			<description>
+				Set nine-patch texture offset for a given margin (MARGIN_LEFT, MARGIN_TOP, MARGIN_RIGHT, MARGIN_BOTTOM).
+			</description>
+		</method>
 		<method name="set_under_texture">
 			<argument index="0" name="tex" type="Object">
 			</argument>
@@ -46201,6 +46233,16 @@
 		<member name="texture_progress" type="Texture" setter="set_progress_texture" getter="get_progress_texture" brief="">
 		</member>
 		<member name="texture_under" type="Texture" setter="set_under_texture" getter="get_under_texture" brief="">
+		</member>
+		<member name="nine_patch_stretch" type="bool" setter="set_nine_patch_stretch" getter="get_nine_patch_stretch" brief="">
+		</member>
+		<member name="stretch_margin_left" type="int" setter="set_stretch_margin" getter="get_stretch_margin" brief="">
+		</member>
+		<member name="stretch_margin_top" type="int" setter="set_stretch_margin" getter="get_stretch_margin" brief="">
+		</member>
+		<member name="stretch_margin_right" type="int" setter="set_stretch_margin" getter="get_stretch_margin" brief="">
+		</member>
+		<member name="stretch_margin_bottom" type="int" setter="set_stretch_margin" getter="get_stretch_margin" brief="">
 		</member>
 	</members>
 	<constants>
