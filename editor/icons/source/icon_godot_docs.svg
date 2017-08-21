@@ -18,7 +18,7 @@
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_collision_shape_2d.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90"
-   sodipodi:docname="icon_godot.svg">
+   sodipodi:docname="icon_godot_docs.svg">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -29,7 +29,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="22.627417"
-     inkscape:cx="17.612754"
+     inkscape:cx="18.673414"
      inkscape:cy="10.896798"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
@@ -60,7 +60,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -154,5 +154,23 @@
            d="m 0,0 c 0,-7.994 6.477,-14.473 14.471,-14.473 8.002,0 14.479,6.479 14.479,14.473 0,7.994 -6.477,14.479 -14.479,14.479 C 6.477,14.479 0,7.994 0,0" />
       </g>
     </g>
+    <path
+       style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:6;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0.44162436"
+       d="m 4,1041.3622 a 3,3 0 0 0 -3,3 3,3 0 0 0 3,3 3,3 0 0 0 3,-3 3,3 0 0 0 -3,-3 z m 0,1 a 2.0000174,2.0000174 0 0 1 2,2 2.0000174,2.0000174 0 0 1 -2,2 2.0000174,2.0000174 0 0 1 -2,-2 2.0000174,2.0000174 0 0 1 2,-2 z"
+       id="path4151"
+       inkscape:connector-curvature="0" />
+    <path
+       inkscape:connector-curvature="0"
+       id="path4156"
+       d="m 12,1041.3622 a 3,3 0 0 0 -3,3 3,3 0 0 0 3,3 3,3 0 0 0 3,-3 3,3 0 0 0 -3,-3 z m 0,1 a 2.0000174,2.0000174 0 0 1 2,2 2.0000174,2.0000174 0 0 1 -2,2 2.0000174,2.0000174 0 0 1 -2,-2 2.0000174,2.0000174 0 0 1 2,-2 z"
+       style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:6;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0.44162436" />
+    <rect
+       style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:6;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0.44162436"
+       id="rect4160"
+       width="4"
+       height="1"
+       x="6"
+       y="1043.3622"
+       ry="0" />
   </g>
 </svg>
