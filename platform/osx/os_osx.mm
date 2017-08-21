@@ -1514,9 +1514,14 @@ Point2 OS_OSX::get_window_position() const {
 
 void OS_OSX::set_window_position(const Point2 &p_position) {
 
-	Point2 size = p_position;
-	size /= display_scale;
-	[window_object setFrame:NSMakeRect(size.x, size.y, [window_object frame].size.width, [window_object frame].size.height) display:YES];
+	Size2 scr = get_screen_size();
+	NSPoint pos;
+
+	pos.x = p_position.x / display_scale;
+	// For OS X the y starts at the bottom
+	pos.y = (scr.height - p_position.y) / display_scale;
+
+	[window_object setFrameTopLeftPoint:pos];
 
 	_update_window();
 };
