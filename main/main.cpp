@@ -110,6 +110,8 @@ static int init_screen = -1;
 static bool use_vsync = true;
 static bool editor = false;
 
+static OS::ProcessID allow_focus_steal_pid = 0;
+
 static String unescape_cmdline(const String &p_str) {
 
 	return p_str.replace("%20", " ");
@@ -527,11 +529,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			} else {
 				goto error;
 			}
-		} else if (I->get() == "-epid") {
+		} else if (I->get() == "-allow_focus_steal_pid") {
 			if (I->next()) {
 
-				int editor_pid = I->next()->get().to_int();
-				Globals::get_singleton()->set("editor_pid", editor_pid);
+				allow_focus_steal_pid = I->next()->get().to_int64();
 				N = I->next()->next();
 			} else {
 				goto error;
@@ -957,6 +958,10 @@ Error Main::setup2() {
 #ifdef TOOLS_ENABLED
 	EditorNode::register_editor_types();
 #endif
+
+	if (allow_focus_steal_pid) {
+		OS::get_singleton()->enable_for_stealing_focus(allow_focus_steal_pid);
+	}
 
 	MAIN_PRINT("Main: Load Scripts, Modules, Drivers");
 
