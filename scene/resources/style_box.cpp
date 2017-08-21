@@ -191,6 +191,22 @@ void StyleBoxTexture::set_expand_margin_size(Margin p_expand_margin, float p_siz
 	emit_changed();
 }
 
+void StyleBoxTexture::set_expand_margin_size_individual(float p_left, float p_top, float p_right, float p_bottom) {
+	expand_margin[MARGIN_LEFT] = p_left;
+	expand_margin[MARGIN_TOP] = p_top;
+	expand_margin[MARGIN_RIGHT] = p_right;
+	expand_margin[MARGIN_BOTTOM] = p_bottom;
+	emit_changed();
+}
+
+void StyleBoxTexture::set_expand_margin_size_all(float p_expand_margin_size) {
+	for (int i = 0; i < 4; i++) {
+
+		expand_margin[i] = p_expand_margin_size;
+	}
+	emit_changed();
+}
+
 float StyleBoxTexture::get_expand_margin_size(Margin p_expand_margin) const {
 
 	ERR_FAIL_INDEX_V(p_expand_margin, 4, 0);
@@ -257,6 +273,8 @@ void StyleBoxTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_margin_size", "margin"), &StyleBoxTexture::get_margin_size);
 
 	ClassDB::bind_method(D_METHOD("set_expand_margin_size", "margin", "size"), &StyleBoxTexture::set_expand_margin_size);
+	ClassDB::bind_method(D_METHOD("set_expand_margin_all", "size"), &StyleBoxFlat::set_expand_margin_size_all);
+	ClassDB::bind_method(D_METHOD("set_expand_margin_individual", "size_left", "size_top", "size_right", "size_bottom"), &StyleBoxFlat::set_expand_margin_size_individual);
 	ClassDB::bind_method(D_METHOD("get_expand_margin_size", "margin"), &StyleBoxTexture::get_expand_margin_size);
 
 	ClassDB::bind_method(D_METHOD("set_region_rect", "region"), &StyleBoxTexture::set_region_rect);
@@ -421,7 +439,25 @@ void StyleBoxFlat::set_expand_margin_size(Margin p_expand_margin, float p_size) 
 	expand_margin[p_expand_margin] = p_size;
 	emit_changed();
 }
+
+void StyleBoxFlat::set_expand_margin_size_individual(float p_left, float p_top, float p_right, float p_bottom) {
+	expand_margin[MARGIN_LEFT] = p_left;
+	expand_margin[MARGIN_TOP] = p_top;
+	expand_margin[MARGIN_RIGHT] = p_right;
+	expand_margin[MARGIN_BOTTOM] = p_bottom;
+	emit_changed();
+}
+
+void StyleBoxFlat::set_expand_margin_size_all(float p_expand_margin_size) {
+	for (int i = 0; i < 4; i++) {
+
+		expand_margin[i] = p_expand_margin_size;
+	}
+	emit_changed();
+}
+
 float StyleBoxFlat::get_expand_margin_size(Margin p_expand_margin) const {
+
 	return expand_margin[p_expand_margin];
 }
 void StyleBoxFlat::set_filled(bool p_filled) {
@@ -736,6 +772,8 @@ void StyleBoxFlat::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_corner_radius", "corner"), &StyleBoxFlat::get_corner_radius);
 
 	ClassDB::bind_method(D_METHOD("set_expand_margin", "margin", "size"), &StyleBoxFlat::set_expand_margin_size);
+	ClassDB::bind_method(D_METHOD("set_expand_margin_all", "size"), &StyleBoxFlat::set_expand_margin_size_all);
+	ClassDB::bind_method(D_METHOD("set_expand_margin_individual", "size_left", "size_top", "size_right", "size_bottom"), &StyleBoxFlat::set_expand_margin_size_individual);
 	ClassDB::bind_method(D_METHOD("get_expand_margin", "margin"), &StyleBoxFlat::get_expand_margin_size);
 
 	ClassDB::bind_method(D_METHOD("set_filled", "filled"), &StyleBoxFlat::set_filled);
