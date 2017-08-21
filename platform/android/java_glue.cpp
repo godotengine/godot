@@ -844,7 +844,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 				} else {
 					//__android_log_print(ANDROID_LOG_INFO,"godot","cmdline arg %i is: %s\n",i,rawString);
 
-					if (strcmp(rawString, "-main_pack") == 0)
+					if (strcmp(rawString, "--main_pack") == 0)
 						use_apk_expansion = true;
 				}
 
@@ -867,7 +867,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 	__android_log_print(ANDROID_LOG_INFO, "godot", "**SETUP");
 
 #if 0
-	char *args[]={"-test","render",NULL};
+	char *args[]={"--test","render",NULL};
 	__android_log_print(ANDROID_LOG_INFO,"godot","pre asdasd setup...");
 	Error err  = Main::setup("apk",2,args,false);
 #else

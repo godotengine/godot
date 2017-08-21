@@ -42,7 +42,7 @@ int add_path(int p_argc, char **p_args) {
 	if (!str)
 		return p_argc;
 
-	p_args[p_argc++] = "-path";
+	p_args[p_argc++] = "--path";
 	[str retain]; // memory leak lol (maybe make it static here and delete it in ViewController destructor? @todo
 	p_args[p_argc++] = (char *)[str cString];
 	p_args[p_argc] = NULL;

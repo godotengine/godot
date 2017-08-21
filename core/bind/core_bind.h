@@ -639,8 +639,6 @@ public:
 	void set_time_scale(float p_scale);
 	float get_time_scale();
 
-	String get_custom_level() const;
-
 	MainLoop *get_main_loop() const;
 
 	Dictionary get_version_info() const;
