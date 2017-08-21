@@ -1456,6 +1456,10 @@ void Viewport::_gui_show_tooltip() {
 		gui.tooltip_popup = NULL;
 	}
 
+	if (!gui.tooltip) {
+		return;
+	}
+
 	Control *rp = gui.tooltip->get_root_parent_control();
 	if (!rp)
 		return;
