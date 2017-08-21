@@ -204,8 +204,8 @@ void Timer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_shot"), "set_one_shot", "is_one_shot");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autostart"), "set_autostart", "has_autostart");
 
-	BIND_CONSTANT(TIMER_PROCESS_FIXED);
-	BIND_CONSTANT(TIMER_PROCESS_IDLE);
+	BIND_ENUM_CONSTANT(TIMER_PROCESS_FIXED);
+	BIND_ENUM_CONSTANT(TIMER_PROCESS_IDLE);
 }
 
 Timer::Timer() {

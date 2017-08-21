@@ -439,10 +439,10 @@ void Light2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "shadow_filter_smooth", PROPERTY_HINT_RANGE, "0,64,0.1"), "set_shadow_smooth", "get_shadow_smooth");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadow_item_cull_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_item_shadow_cull_mask", "get_item_shadow_cull_mask");
 
-	BIND_CONSTANT(MODE_ADD);
-	BIND_CONSTANT(MODE_SUB);
-	BIND_CONSTANT(MODE_MIX);
-	BIND_CONSTANT(MODE_MASK);
+	BIND_ENUM_CONSTANT(MODE_ADD);
+	BIND_ENUM_CONSTANT(MODE_SUB);
+	BIND_ENUM_CONSTANT(MODE_MIX);
+	BIND_ENUM_CONSTANT(MODE_MASK);
 }
 
 Light2D::Light2D() {

@@ -51,9 +51,9 @@ void ARVRInterface::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "primary"), "set_is_primary", "is_primary");
 
-	BIND_CONSTANT(EYE_MONO);
-	BIND_CONSTANT(EYE_LEFT);
-	BIND_CONSTANT(EYE_RIGHT);
+	BIND_ENUM_CONSTANT(EYE_MONO);
+	BIND_ENUM_CONSTANT(EYE_LEFT);
+	BIND_ENUM_CONSTANT(EYE_RIGHT);
 };
 
 StringName ARVRInterface::get_name() const {

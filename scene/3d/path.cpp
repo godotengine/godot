@@ -283,10 +283,10 @@ void PathFollow::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_loop", "loop"), &PathFollow::set_loop);
 	ClassDB::bind_method(D_METHOD("has_loop"), &PathFollow::has_loop);
 
-	BIND_CONSTANT(ROTATION_NONE);
-	BIND_CONSTANT(ROTATION_Y);
-	BIND_CONSTANT(ROTATION_XY);
-	BIND_CONSTANT(ROTATION_XYZ);
+	BIND_ENUM_CONSTANT(ROTATION_NONE);
+	BIND_ENUM_CONSTANT(ROTATION_Y);
+	BIND_ENUM_CONSTANT(ROTATION_XY);
+	BIND_ENUM_CONSTANT(ROTATION_XYZ);
 }
 
 void PathFollow::set_offset(float p_offset) {

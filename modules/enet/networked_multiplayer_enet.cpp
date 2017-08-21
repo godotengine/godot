@@ -658,11 +658,11 @@ void NetworkedMultiplayerENet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_compression_mode"), &NetworkedMultiplayerENet::get_compression_mode);
 	ClassDB::bind_method(D_METHOD("set_bind_ip", "ip"), &NetworkedMultiplayerENet::set_bind_ip);
 
-	BIND_CONSTANT(COMPRESS_NONE);
-	BIND_CONSTANT(COMPRESS_RANGE_CODER);
-	BIND_CONSTANT(COMPRESS_FASTLZ);
-	BIND_CONSTANT(COMPRESS_ZLIB);
-	BIND_CONSTANT(COMPRESS_ZSTD);
+	BIND_ENUM_CONSTANT(COMPRESS_NONE);
+	BIND_ENUM_CONSTANT(COMPRESS_RANGE_CODER);
+	BIND_ENUM_CONSTANT(COMPRESS_FASTLZ);
+	BIND_ENUM_CONSTANT(COMPRESS_ZLIB);
+	BIND_ENUM_CONSTANT(COMPRESS_ZSTD);
 }
 
 NetworkedMultiplayerENet::NetworkedMultiplayerENet() {

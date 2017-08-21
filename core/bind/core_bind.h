@@ -85,6 +85,8 @@ public:
 	_ResourceSaver();
 };
 
+VARIANT_ENUM_CAST(_ResourceSaver::SaverFlags);
+
 class MainLoop;
 
 class _OS : public Object {
@@ -310,6 +312,8 @@ public:
 	_OS();
 };
 
+VARIANT_ENUM_CAST(_OS::Weekday);
+VARIANT_ENUM_CAST(_OS::Month);
 VARIANT_ENUM_CAST(_OS::SystemDir);
 VARIANT_ENUM_CAST(_OS::ScreenOrientation);
 
@@ -447,6 +451,9 @@ public:
 	virtual ~_File();
 };
 
+VARIANT_ENUM_CAST(_File::ModeFlags);
+VARIANT_ENUM_CAST(_File::CompressionMode);
+
 class _Directory : public Reference {
 
 	GDCLASS(_Directory, Reference);
@@ -577,6 +584,8 @@ public:
 	_Thread();
 	~_Thread();
 };
+
+VARIANT_ENUM_CAST(_Thread::Priority);
 
 class _ClassDB : public Object {
 

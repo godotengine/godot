@@ -124,6 +124,9 @@ struct VariantCaster<const T &> {
 
 #endif
 
+// Object enum casts must go here
+VARIANT_ENUM_CAST(Object::ConnectFlags);
+
 #define CHECK_ARG(m_arg)                                                            \
 	if ((m_arg - 1) < p_arg_count) {                                                \
 		Variant::Type argtype = get_argument_type(m_arg - 1);                       \
@@ -148,13 +151,34 @@ struct VariantCaster<const T &> {
 VARIANT_ENUM_CAST(Vector3::Axis);
 
 VARIANT_ENUM_CAST(Error);
-VARIANT_ENUM_CAST(wchar_t);
 VARIANT_ENUM_CAST(Margin);
 VARIANT_ENUM_CAST(Corner);
 VARIANT_ENUM_CAST(Orientation);
 VARIANT_ENUM_CAST(HAlign);
+VARIANT_ENUM_CAST(VAlign);
+VARIANT_ENUM_CAST(PropertyHint);
+VARIANT_ENUM_CAST(PropertyUsageFlags);
+VARIANT_ENUM_CAST(MethodFlags);
 VARIANT_ENUM_CAST(Variant::Type);
 VARIANT_ENUM_CAST(Variant::Operator);
+
+template <>
+struct VariantCaster<wchar_t> {
+	static _FORCE_INLINE_ wchar_t cast(const Variant &p_variant) {
+		return (wchar_t)p_variant.operator int();
+	}
+};
+#ifdef PTRCALL_ENABLED
+template <>
+struct PtrToArg<wchar_t> {
+	_FORCE_INLINE_ static wchar_t convert(const void *p_ptr) {
+		return wchar_t(*reinterpret_cast<const int *>(p_ptr));
+	}
+	_FORCE_INLINE_ static void encode(wchar_t p_val, const void *p_ptr) {
+		*(int *)p_ptr = p_val;
+	}
+};
+#endif
 
 class MethodBind {
 

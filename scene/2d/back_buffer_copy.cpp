@@ -85,9 +85,9 @@ void BackBufferCopy::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "copy_mode", PROPERTY_HINT_ENUM, "Disabled,Rect,Viewport"), "set_copy_mode", "get_copy_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "rect"), "set_rect", "get_rect");
 
-	BIND_CONSTANT(COPY_MODE_DISABLED);
-	BIND_CONSTANT(COPY_MODE_RECT);
-	BIND_CONSTANT(COPY_MODE_VIEWPORT);
+	BIND_ENUM_CONSTANT(COPY_MODE_DISABLED);
+	BIND_ENUM_CONSTANT(COPY_MODE_RECT);
+	BIND_ENUM_CONSTANT(COPY_MODE_VIEWPORT);
 }
 
 BackBufferCopy::BackBufferCopy() {

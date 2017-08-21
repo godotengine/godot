@@ -201,6 +201,8 @@ public:
 	PhysicsDirectSpaceState();
 };
 
+VARIANT_ENUM_CAST(PhysicsDirectSpaceState::ObjectTypeMask);
+
 class PhysicsShapeQueryResult : public Reference {
 
 	GDCLASS(PhysicsShapeQueryResult, Reference);

@@ -710,9 +710,9 @@ void GraphNode::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("close_request"));
 	ADD_SIGNAL(MethodInfo("resize_request", PropertyInfo(Variant::VECTOR2, "new_minsize")));
 
-	BIND_CONSTANT(OVERLAY_DISABLED);
-	BIND_CONSTANT(OVERLAY_BREAKPOINT);
-	BIND_CONSTANT(OVERLAY_POSITION);
+	BIND_ENUM_CONSTANT(OVERLAY_DISABLED);
+	BIND_ENUM_CONSTANT(OVERLAY_BREAKPOINT);
+	BIND_ENUM_CONSTANT(OVERLAY_POSITION);
 }
 
 GraphNode::GraphNode() {

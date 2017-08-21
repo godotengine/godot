@@ -456,5 +456,6 @@ public:
 
 VARIANT_ENUM_CAST(SceneTree::StretchMode);
 VARIANT_ENUM_CAST(SceneTree::StretchAspect);
+VARIANT_ENUM_CAST(SceneTree::CallGroupFlags);
 
 #endif

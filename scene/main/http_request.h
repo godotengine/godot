@@ -137,4 +137,6 @@ public:
 	~HTTPRequest();
 };
 
+VARIANT_ENUM_CAST(HTTPRequest::Result);
+
 #endif // HTTPREQUEST_H

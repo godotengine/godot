@@ -89,9 +89,9 @@ void OccluderPolygon2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cull_mode", PROPERTY_HINT_ENUM, "Disabled,ClockWise,CounterClockWise"), "set_cull_mode", "get_cull_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
 
-	BIND_CONSTANT(CULL_DISABLED);
-	BIND_CONSTANT(CULL_CLOCKWISE);
-	BIND_CONSTANT(CULL_COUNTER_CLOCKWISE);
+	BIND_ENUM_CONSTANT(CULL_DISABLED);
+	BIND_ENUM_CONSTANT(CULL_CLOCKWISE);
+	BIND_ENUM_CONSTANT(CULL_COUNTER_CLOCKWISE);
 }
 
 OccluderPolygon2D::OccluderPolygon2D() {

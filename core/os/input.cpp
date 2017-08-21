@@ -86,10 +86,10 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_custom_mouse_cursor", "image", "hotspot"), &Input::set_custom_mouse_cursor, DEFVAL(Vector2()));
 	ClassDB::bind_method(D_METHOD("parse_input_event", "event"), &Input::parse_input_event);
 
-	BIND_CONSTANT(MOUSE_MODE_VISIBLE);
-	BIND_CONSTANT(MOUSE_MODE_HIDDEN);
-	BIND_CONSTANT(MOUSE_MODE_CAPTURED);
-	BIND_CONSTANT(MOUSE_MODE_CONFINED);
+	BIND_ENUM_CONSTANT(MOUSE_MODE_VISIBLE);
+	BIND_ENUM_CONSTANT(MOUSE_MODE_HIDDEN);
+	BIND_ENUM_CONSTANT(MOUSE_MODE_CAPTURED);
+	BIND_ENUM_CONSTANT(MOUSE_MODE_CONFINED);
 
 	ADD_SIGNAL(MethodInfo("joy_connection_changed", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::BOOL, "connected")));
 }

@@ -747,10 +747,10 @@ void VisualScriptFunctionCall::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "validate"), "set_validate", "get_validate");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rpc_call_mode", PROPERTY_HINT_ENUM, "Disabled,Reliable,Unreliable,ReliableToID,UnreliableToID"), "set_rpc_call_mode", "get_rpc_call_mode"); //when set, if loaded properly, will override argument count.
 
-	BIND_CONSTANT(CALL_MODE_SELF);
-	BIND_CONSTANT(CALL_MODE_NODE_PATH);
-	BIND_CONSTANT(CALL_MODE_INSTANCE);
-	BIND_CONSTANT(CALL_MODE_BASIC_TYPE);
+	BIND_ENUM_CONSTANT(CALL_MODE_SELF);
+	BIND_ENUM_CONSTANT(CALL_MODE_NODE_PATH);
+	BIND_ENUM_CONSTANT(CALL_MODE_INSTANCE);
+	BIND_ENUM_CONSTANT(CALL_MODE_BASIC_TYPE);
 }
 
 class VisualScriptNodeInstanceFunctionCall : public VisualScriptNodeInstance {
@@ -1490,9 +1490,10 @@ void VisualScriptPropertySet::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "property"), "set_property", "get_property");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "index"), "set_index", "get_index");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "assign_op", PROPERTY_HINT_ENUM, "Assign,Add,Sub,Mul,Div,Mod,ShiftLeft,ShiftRight,BitAnd,BitOr,Bitxor"), "set_assign_op", "get_assign_op");
-	BIND_CONSTANT(CALL_MODE_SELF);
-	BIND_CONSTANT(CALL_MODE_NODE_PATH);
-	BIND_CONSTANT(CALL_MODE_INSTANCE);
+
+	BIND_ENUM_CONSTANT(CALL_MODE_SELF);
+	BIND_ENUM_CONSTANT(CALL_MODE_NODE_PATH);
+	BIND_ENUM_CONSTANT(CALL_MODE_INSTANCE);
 }
 
 class VisualScriptNodeInstancePropertySet : public VisualScriptNodeInstance {
@@ -2202,9 +2203,9 @@ void VisualScriptPropertyGet::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "property"), "set_property", "get_property");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "index", PROPERTY_HINT_ENUM), "set_index", "get_index");
 
-	BIND_CONSTANT(CALL_MODE_SELF);
-	BIND_CONSTANT(CALL_MODE_NODE_PATH);
-	BIND_CONSTANT(CALL_MODE_INSTANCE);
+	BIND_ENUM_CONSTANT(CALL_MODE_SELF);
+	BIND_ENUM_CONSTANT(CALL_MODE_NODE_PATH);
+	BIND_ENUM_CONSTANT(CALL_MODE_INSTANCE);
 }
 
 class VisualScriptNodeInstancePropertyGet : public VisualScriptNodeInstance {

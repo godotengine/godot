@@ -189,9 +189,9 @@ void VisualScriptYield::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Frame,FixedFrame,Time", PROPERTY_USAGE_NOEDITOR), "set_yield_mode", "get_yield_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "wait_time"), "set_wait_time", "get_wait_time");
 
-	BIND_CONSTANT(YIELD_FRAME);
-	BIND_CONSTANT(YIELD_FIXED_FRAME);
-	BIND_CONSTANT(YIELD_WAIT);
+	BIND_ENUM_CONSTANT(YIELD_FRAME);
+	BIND_ENUM_CONSTANT(YIELD_FIXED_FRAME);
+	BIND_ENUM_CONSTANT(YIELD_WAIT);
 }
 
 VisualScriptYield::VisualScriptYield() {
@@ -493,9 +493,9 @@ void VisualScriptYieldSignal::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "node_path", PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE), "set_base_path", "get_base_path");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "signal"), "set_signal", "get_signal");
 
-	BIND_CONSTANT(CALL_MODE_SELF);
-	BIND_CONSTANT(CALL_MODE_NODE_PATH);
-	BIND_CONSTANT(CALL_MODE_INSTANCE);
+	BIND_ENUM_CONSTANT(CALL_MODE_SELF);
+	BIND_ENUM_CONSTANT(CALL_MODE_NODE_PATH);
+	BIND_ENUM_CONSTANT(CALL_MODE_INSTANCE);
 }
 
 class VisualScriptNodeInstanceYieldSignal : public VisualScriptNodeInstance {

@@ -1374,10 +1374,11 @@ void ItemList::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "icon_mode", PROPERTY_HINT_ENUM, "Top,Left"), "set_icon_mode", "get_icon_mode");
 	ADD_PROPERTYNO(PropertyInfo(Variant::REAL, "icon_scale"), "set_icon_scale", "get_icon_scale");
 
-	BIND_CONSTANT(ICON_MODE_TOP);
-	BIND_CONSTANT(ICON_MODE_LEFT);
-	BIND_CONSTANT(SELECT_SINGLE);
-	BIND_CONSTANT(SELECT_MULTI);
+	BIND_ENUM_CONSTANT(ICON_MODE_TOP);
+	BIND_ENUM_CONSTANT(ICON_MODE_LEFT);
+
+	BIND_ENUM_CONSTANT(SELECT_SINGLE);
+	BIND_ENUM_CONSTANT(SELECT_MULTI);
 
 	ADD_SIGNAL(MethodInfo("item_selected", PropertyInfo(Variant::INT, "index")));
 	ADD_SIGNAL(MethodInfo("item_rmb_selected", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::VECTOR2, "atpos")));

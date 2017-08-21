@@ -186,5 +186,6 @@ public:
 };
 
 VARIANT_ENUM_CAST(LineEdit::Align);
+VARIANT_ENUM_CAST(LineEdit::MenuItems);
 
 #endif
