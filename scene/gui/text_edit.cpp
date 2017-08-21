@@ -459,7 +459,7 @@ void TextEdit::_notification(int p_what) {
 			int line_number_char_count = 0;
 
 			{
-				int lc = text.size() + 1;
+				int lc = text.size();
 				cache.line_number_w = 0;
 				while (lc) {
 					cache.line_number_w += 1;
