@@ -142,8 +142,6 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue) 
 		ERR_FAIL();
 	}
 
-	OS::get_singleton()->enable_for_stealing_focus(ProjectSettings::get_singleton()->get("editor_pid"));
-
 	packet_peer_stream->put_var("debug_enter");
 	packet_peer_stream->put_var(2);
 	packet_peer_stream->put_var(p_can_continue);

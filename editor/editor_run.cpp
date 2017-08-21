@@ -54,8 +54,8 @@ Error EditorRun::run(const String &p_scene, const String p_custom_args, const Li
 		args.push_back(remote_host + ":" + String::num(remote_port));
 	}
 
-	args.push_back("-epid");
-	args.push_back(String::num(OS::get_singleton()->get_process_id()));
+	args.push_back("-allow_focus_steal_pid");
+	args.push_back(itos(OS::get_singleton()->get_process_id()));
 
 	if (debug_collisions) {
 		args.push_back("-debugcol");
