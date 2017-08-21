@@ -99,6 +99,7 @@ const char *GDTokenizer::token_names[TK_MAX] = {
 	"const",
 	"var",
 	"enum",
+	"category",
 	"preload",
 	"assert",
 	"yield",
@@ -200,6 +201,7 @@ static const _kws _keyword_list[] = {
 	{ GDTokenizer::TK_PR_SYNC, "sync" },
 	{ GDTokenizer::TK_PR_CONST, "const" },
 	{ GDTokenizer::TK_PR_ENUM, "enum" },
+	{ GDTokenizer::TK_PR_GROUP, "category" },
 	//controlflow
 	{ GDTokenizer::TK_CF_IF, "if" },
 	{ GDTokenizer::TK_CF_ELIF, "elif" },
@@ -257,6 +259,7 @@ bool GDTokenizer::is_token_literal(int p_offset, bool variable_safe) const {
 		case TK_PR_CLASS:
 		case TK_PR_CONST:
 		case TK_PR_ENUM:
+		case TK_PR_GROUP:
 		case TK_PR_PRELOAD:
 		case TK_PR_FUNCTION:
 		case TK_PR_EXTENDS:

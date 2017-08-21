@@ -518,7 +518,7 @@ bool GDScript::_update_exports() {
 			member_default_values_cache.clear();
 
 			for (int i = 0; i < c->variables.size(); i++) {
-				if (c->variables[i]._export.type == Variant::NIL)
+				if (c->variables[i]._export.type == Variant::NIL && !(c->variables[i]._export.usage & PROPERTY_USAGE_GROUP))
 					continue;
 
 				members_cache.push_back(c->variables[i]._export);
@@ -1098,7 +1098,7 @@ void GDInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 
 				if (ret.get_type() != Variant::ARRAY) {
 
-					ERR_EXPLAIN("Wrong type for _get_property list, must be an array of dictionaries.");
+					ERR_EXPLAIN("Wrong type for _get_property_list, must be an array of dictionaries.");
 					ERR_FAIL();
 				}
 				Array arr = ret;
@@ -1827,6 +1827,7 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		// var
 		"const",
 		"enum",
+		"category",
 		"export",
 		"onready",
 		"static",
