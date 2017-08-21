@@ -137,6 +137,11 @@ static bool mouse_down_control = false;
 	//_GodotInputMonitorChange();
 }
 
+- (void)showAbout:(id)sender {
+	if (OS_OSX::singleton->get_main_loop())
+		OS_OSX::singleton->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_ABOUT);
+}
+
 @end
 
 @interface GodotWindowDelegate : NSObject {
@@ -1902,7 +1907,7 @@ OS_OSX::OS_OSX() {
 	// Setup Apple menu
 	NSMenu *apple_menu = [[NSMenu alloc] initWithTitle:@""];
 	title = [NSString stringWithFormat:NSLocalizedString(@"About %@", nil), nsappname];
-	[apple_menu addItemWithTitle:title action:@selector(orderFrontStandardAboutPanel:) keyEquivalent:@""];
+	[apple_menu addItemWithTitle:title action:@selector(showAbout:) keyEquivalent:@""];
 
 	[apple_menu addItem:[NSMenuItem separatorItem]];
 

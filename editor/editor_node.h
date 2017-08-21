@@ -684,6 +684,8 @@ public:
 
 	void merge_from_scene() { _menu_option_confirm(FILE_IMPORT_SUBSCENE, false); }
 
+	void show_about() { _menu_option_confirm(HELP_ABOUT, false); }
+
 	static bool has_unsaved_changes() { return singleton->unsaved_cache; }
 
 	static HBoxContainer *get_menu_hb() { return singleton->menu_hb; }

@@ -38,6 +38,7 @@
 #include <stdio.h>
 //#include "servers/spatial_sound_2d_server.h"
 
+#include "editor/editor_node.h"
 #include "io/marshalls.h"
 #include "io/resource_loader.h"
 #include "scene/resources/material.h"
@@ -624,6 +625,19 @@ void SceneTree::_notification(int p_notification) {
 
 			notify_group_flags(GROUP_CALL_REALTIME | GROUP_CALL_MULTILEVEL, "input", NOTIFICATION_WM_UNFOCUS_REQUEST);
 
+		} break;
+
+		case NOTIFICATION_WM_ABOUT: {
+
+#ifdef TOOLS_ENABLED
+			if (is_editor_hint()) {
+				EditorNode::get_singleton()->show_about();
+			} else {
+#endif
+				get_root()->propagate_notification(p_notification);
+#ifdef TOOLS_ENABLED
+			}
+#endif
 		} break;
 
 		default:
