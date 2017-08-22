@@ -559,8 +559,9 @@ bool GDScript::_update_exports() {
 
 	return changed;
 
-#endif
+#else
 	return false;
+#endif
 }
 
 void GDScript::update_exports() {
