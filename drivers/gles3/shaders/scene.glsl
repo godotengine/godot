@@ -1694,6 +1694,7 @@ FRAGMENT_SHADER_CODE
 	if (gl_FragCoord.w > shadow_split_offsets.w) {
 
 	vec3 pssm_coord;
+	float pssm_fade=0.0;
 
 #ifdef LIGHT_USE_PSSM_BLEND
 	float pssm_blend;
@@ -1751,6 +1752,7 @@ FRAGMENT_SHADER_CODE
 		} else {
 			highp vec4 splane=(shadow_matrix4 * vec4(vertex,1.0));
 			pssm_coord=splane.xyz/splane.w;
+			pssm_fade = smoothstep(shadow_split_offsets.z,shadow_split_offsets.w,gl_FragCoord.w);
 
 #if defined(LIGHT_USE_PSSM_BLEND)
 			use_blend=false;
@@ -1782,6 +1784,7 @@ FRAGMENT_SHADER_CODE
 	} else {
 		highp vec4 splane=(shadow_matrix2 * vec4(vertex,1.0));
 		pssm_coord=splane.xyz/splane.w;
+		pssm_fade = smoothstep(shadow_split_offsets.x,shadow_split_offsets.y,gl_FragCoord.w);
 #if defined(LIGHT_USE_PSSM_BLEND)
 		use_blend=false;
 
@@ -1818,7 +1821,7 @@ FRAGMENT_SHADER_CODE
 
 	}
 #endif
-	light_attenuation=mix(shadow_color_contact.rgb,vec3(1.0),shadow);
+	light_attenuation=mix(mix(shadow_color_contact.rgb,vec3(1.0),shadow),vec3(1.0),pssm_fade);
 
 
 	}
