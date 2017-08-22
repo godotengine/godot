@@ -2349,7 +2349,6 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	debug_menu = memnew(MenuButton);
 	menu_hb->add_child(debug_menu);
 	debug_menu->set_text(TTR("Debug"));
-	debug_menu->get_popup()->add_separator();
 	debug_menu->get_popup()->add_shortcut(ED_SHORTCUT("debugger/step_over", TTR("Step Over"), KEY_F10), DEBUG_NEXT);
 	debug_menu->get_popup()->add_shortcut(ED_SHORTCUT("debugger/step_into", TTR("Step Into"), KEY_F11), DEBUG_STEP);
 	debug_menu->get_popup()->add_separator();
