@@ -1839,8 +1839,6 @@ Control *Control::find_prev_valid_focus() const {
 	}
 
 	return NULL;
-
-	return NULL;
 }
 
 Control::FocusMode Control::get_focus_mode() const {

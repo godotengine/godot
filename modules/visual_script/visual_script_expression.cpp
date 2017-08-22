@@ -585,7 +585,6 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 								r_token.type = TK_BASIC_TYPE;
 								r_token.value = i;
 								return OK;
-								break;
 							}
 						}
 

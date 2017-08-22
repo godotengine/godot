@@ -56,8 +56,6 @@ static String _mktab(int p_level) {
 static String _typestr(SL::DataType p_type) {
 
 	return ShaderLanguage::get_datatype_name(p_type);
-
-	return "";
 }
 
 static String _prestr(SL::DataPrecision p_pres) {
