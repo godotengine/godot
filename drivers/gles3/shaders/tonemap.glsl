@@ -170,7 +170,7 @@ vec3 tonemap_aces(vec3 color) {
 	return color = clamp((color*(a*color+b))/(color*(c*color+d)+e),vec3(0.0),vec3(1.0));
 }
 
-vec3 tonemap_reindhart(vec3 color,vec3 white) {
+vec3 tonemap_reindhart(vec3 color,float white) {
 
 	return ( color * ( 1.0 + ( color / ( white) ) ) ) / ( 1.0 + color );
 }
