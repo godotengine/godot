@@ -17,36 +17,36 @@ void main() {
 
 //#define QUALIFIER uniform // some guy on the interweb says it may be faster with this
 #define QUALIFIER const
-
 #ifdef USE_25_SAMPLES
 
 const int kernel_size=25;
-QUALIFIER vec4 kernel[25] = vec4[] (
-    vec4(0.530605, 0.613514, 0.739601, 0.0),
-    vec4(0.000973794, 1.11862e-005, 9.43437e-007, -3.0),
-    vec4(0.00333804, 7.85443e-005, 1.2945e-005, -2.52083),
-    vec4(0.00500364, 0.00020094, 5.28848e-005, -2.08333),
-    vec4(0.00700976, 0.00049366, 0.000151938, -1.6875),
-    vec4(0.0094389, 0.00139119, 0.000416598, -1.33333),
-    vec4(0.0128496, 0.00356329, 0.00132016, -1.02083),
-    vec4(0.017924, 0.00711691, 0.00347194, -0.75),
-    vec4(0.0263642, 0.0119715, 0.00684598, -0.520833),
-    vec4(0.0410172, 0.0199899, 0.0118481, -0.333333),
-    vec4(0.0493588, 0.0367726, 0.0219485, -0.1875),
-    vec4(0.0402784, 0.0657244, 0.04631, -0.0833333),
-    vec4(0.0211412, 0.0459286, 0.0378196, -0.0208333),
-    vec4(0.0211412, 0.0459286, 0.0378196, 0.0208333),
-    vec4(0.0402784, 0.0657244, 0.04631, 0.0833333),
-    vec4(0.0493588, 0.0367726, 0.0219485, 0.1875),
-    vec4(0.0410172, 0.0199899, 0.0118481, 0.333333),
-    vec4(0.0263642, 0.0119715, 0.00684598, 0.520833),
-    vec4(0.017924, 0.00711691, 0.00347194, 0.75),
-    vec4(0.0128496, 0.00356329, 0.00132016, 1.02083),
-    vec4(0.0094389, 0.00139119, 0.000416598, 1.33333),
-    vec4(0.00700976, 0.00049366, 0.000151938, 1.6875),
-    vec4(0.00500364, 0.00020094, 5.28848e-005, 2.08333),
-    vec4(0.00333804, 7.85443e-005, 1.2945e-005, 2.52083),
-    vec4(0.000973794, 1.11862e-005, 9.43437e-007, 3.0)
+
+QUALIFIER vec2 kernel[25] = vec2[] (
+vec2(0.099654,0.0),
+vec2(0.001133,-3.0),
+vec2(0.002316,-2.52083),
+vec2(0.00445,-2.08333),
+vec2(0.008033,-1.6875),
+vec2(0.013627,-1.33333),
+vec2(0.021724,-1.02083),
+vec2(0.032542,-0.75),
+vec2(0.04581,-0.520833),
+vec2(0.0606,-0.333333),
+vec2(0.075333,-0.1875),
+vec2(0.088001,-0.0833333),
+vec2(0.096603,-0.0208333),
+vec2(0.096603,0.0208333),
+vec2(0.088001,0.0833333),
+vec2(0.075333,0.1875),
+vec2(0.0606,0.333333),
+vec2(0.04581,0.520833),
+vec2(0.032542,0.75),
+vec2(0.021724,1.02083),
+vec2(0.013627,1.33333),
+vec2(0.008033,1.6875),
+vec2(0.00445,2.08333),
+vec2(0.002316,2.52),
+vec2(0.001133,3.0)
 );
 
 #endif //USE_25_SAMPLES
@@ -55,24 +55,24 @@ QUALIFIER vec4 kernel[25] = vec4[] (
 
 const int kernel_size=17;
 
-QUALIFIER vec4 kernel[17] = vec4[](
-    vec4(0.536343, 0.624624, 0.748867, 0.0),
-    vec4(0.00317394, 0.000134823, 3.77269e-005, -2.0),
-    vec4(0.0100386, 0.000914679, 0.000275702, -1.53125),
-    vec4(0.0144609, 0.00317269, 0.00106399, -1.125),
-    vec4(0.0216301, 0.00794618, 0.00376991, -0.78125),
-    vec4(0.0347317, 0.0151085, 0.00871983, -0.5),
-    vec4(0.0571056, 0.0287432, 0.0172844, -0.28125),
-    vec4(0.0582416, 0.0659959, 0.0411329, -0.125),
-    vec4(0.0324462, 0.0656718, 0.0532821, -0.03125),
-    vec4(0.0324462, 0.0656718, 0.0532821, 0.03125),
-    vec4(0.0582416, 0.0659959, 0.0411329, 0.125),
-    vec4(0.0571056, 0.0287432, 0.0172844, 0.28125),
-    vec4(0.0347317, 0.0151085, 0.00871983, 0.5),
-    vec4(0.0216301, 0.00794618, 0.00376991, 0.78125),
-    vec4(0.0144609, 0.00317269, 0.00106399, 1.125),
-    vec4(0.0100386, 0.000914679, 0.000275702, 1.53125),
-    vec4(0.00317394, 0.000134823, 3.77269e-005, 2.0)
+QUALIFIER vec2 kernel[17] = vec2[](
+vec2(0.197417,0.0),
+vec2(0.000078,-2.0),
+vec2(0.000489,-1.53125),
+vec2(0.002403,-1.125),
+vec2(0.009245,-0.78125),
+vec2(0.027835,-0.5),
+vec2(0.065592,-0.28125),
+vec2(0.12098,-0.125),
+vec2(0.17467,-0.03125),
+vec2(0.17467,0.03125),
+vec2(0.12098,0.125),
+vec2(0.065592,0.28125),
+vec2(0.027835,0.5),
+vec2(0.009245,0.78125),
+vec2(0.002403,1.125),
+vec2(0.000489,1.53125),
+vec2(0.000078,2.0)
 );
 
 #endif //USE_17_SAMPLES
@@ -82,27 +82,27 @@ QUALIFIER vec4 kernel[17] = vec4[](
 
 const int kernel_size=11;
 
-QUALIFIER vec4 kernel[11] = vec4[](
-    vec4(0.560479, 0.669086, 0.784728, 0.0),
-    vec4(0.00471691, 0.000184771, 5.07566e-005, -2.0),
-    vec4(0.0192831, 0.00282018, 0.00084214, -1.28),
-    vec4(0.03639, 0.0130999, 0.00643685, -0.72),
-    vec4(0.0821904, 0.0358608, 0.0209261, -0.32),
-    vec4(0.0771802, 0.113491, 0.0793803, -0.08),
-    vec4(0.0771802, 0.113491, 0.0793803, 0.08),
-    vec4(0.0821904, 0.0358608, 0.0209261, 0.32),
-    vec4(0.03639, 0.0130999, 0.00643685, 0.72),
-    vec4(0.0192831, 0.00282018, 0.00084214, 1.28),
-    vec4(0.00471691, 0.000184771, 5.07565e-005, 2.0)
+QUALIFIER vec2 kernel[kernel_size] = vec2[](
+vec2(0.198596,0.0),
+vec2(0.0093,-2.0),
+vec2(0.028002,-1.28),
+vec2(0.065984,-0.72),
+vec2(0.121703,-0.32),
+vec2(0.175713,-0.08),
+vec2(0.175713,0.08),
+vec2(0.121703,0.32),
+vec2(0.065984,0.72),
+vec2(0.028002,1.28),
+vec2(0.0093,2.0)
 );
 
 #endif //USE_11_SAMPLES
 
 
 uniform float max_radius;
-uniform float fovy;
 uniform float camera_z_far;
 uniform float camera_z_near;
+uniform float unit_size;
 uniform vec2 dir;
 in vec2 uv_interp;
 
@@ -120,19 +120,17 @@ void main() {
 	// Fetch color of current pixel:
 	vec4 base_color = texture(source_diffuse, uv_interp);
 
+
 	if (strength>0.0) {
 
 
 		// Fetch linear depth of current pixel:
 		float depth = texture(source_depth, uv_interp).r * 2.0 - 1.0;
 		depth = 2.0 * camera_z_near * camera_z_far / (camera_z_far + camera_z_near - depth * (camera_z_far - camera_z_near));
-		depth=-depth;
 
 
-		// Calculate the radius scale (1.0 for a unit plane sitting on the
-		// projection window):
-		float distance = 1.0 / tan(0.5 * fovy);
-		float scale = distance / -depth; //remember depth is negative by default in OpenGL
+
+		float scale = unit_size / depth; //remember depth is negative by default in OpenGL
 
 		// Calculate the final step to fetch the surrounding pixels:
 		vec2 step = max_radius * scale * dir;
@@ -141,19 +139,21 @@ void main() {
 
 		// Accumulate the center sample:
 		vec3 color_accum = base_color.rgb;
-		color_accum *= kernel[0].rgb;
+		color_accum *= kernel[0].x;
+#ifdef ENABLE_STRENGTH_WEIGHTING
+		float color_weight = kernel[0].x;
+#endif
 
 		// Accumulate the other samples:
 		for (int i = 1; i < kernel_size; i++) {
 			// Fetch color and depth for current sample:
-			vec2 offset = uv_interp + kernel[i].a * step;
+			vec2 offset = uv_interp + kernel[i].y * step;
 			vec3 color = texture(source_diffuse, offset).rgb;
 
 #ifdef ENABLE_FOLLOW_SURFACE
 			// If the difference in depth is huge, we lerp color back to "colorM":
 			float depth_cmp = texture(source_depth, offset).r *2.0 - 1.0;
 			depth_cmp = 2.0 * camera_z_near * camera_z_far / (camera_z_far + camera_z_near - depth_cmp * (camera_z_far - camera_z_near));
-			depth_cmp=-depth_cmp;
 
 			float s = clamp(300.0f * distance *
 					       max_radius * abs(depth - depth_cmp),0.0,1.0);
@@ -161,9 +161,20 @@ void main() {
 #endif
 
 			// Accumulate:
-			color_accum += kernel[i].rgb * color;
+			color*=kernel[i].x;
+
+#ifdef ENABLE_STRENGTH_WEIGHTING
+			float color_s = texture(source_sss, offset).r;
+			color_weight+=color_s * kernel[i].x;
+			color*=color_s;
+#endif
+			color_accum += color;
+
 		}
 
+#ifdef ENABLE_STRENGTH_WEIGHTING
+		color_accum/=color_weight;
+#endif
 		frag_color = vec4(color_accum,base_color.a); //keep alpha (used for SSAO)
 	} else {
 		frag_color = base_color;

@@ -6253,7 +6253,7 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 				glBindFramebuffer(GL_FRAMEBUFFER, mm.fbo);
 				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->effects.mip_maps[i].color, j);
 				bool used_depth = false;
-				if (j == 0 && i == 0 && rt->buffers.active == false && !rt->flags[RENDER_TARGET_NO_3D]) { //will use this one for rendering 3D
+				if (j == 0 && i == 0) { //use always
 					glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rt->depth, 0);
 					used_depth = true;
 				}

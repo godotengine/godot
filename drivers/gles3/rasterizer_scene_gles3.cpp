@@ -3302,6 +3302,10 @@ void RasterizerSceneGLES3::_render_mrts(Environment *env, const CameraMatrix &p_
 	if (state.used_sss) { //sss enabled
 		//copy diffuse while performing sss
 
+		Plane p = p_cam_projection.xform4(Plane(1, 0, -1, 1));
+		p.normal /= p.d;
+		float unit_size = p.normal.x;
+
 		//copy normal and roughness to effect buffer
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, storage->frame.current_rt->buffers.fbo);
 		glReadBuffer(GL_COLOR_ATTACHMENT3);
@@ -3312,9 +3316,10 @@ void RasterizerSceneGLES3::_render_mrts(Environment *env, const CameraMatrix &p_
 		state.sss_shader.set_conditional(SubsurfScatteringShaderGLES3::USE_17_SAMPLES, subsurface_scatter_quality == SSS_QUALITY_MEDIUM);
 		state.sss_shader.set_conditional(SubsurfScatteringShaderGLES3::USE_25_SAMPLES, subsurface_scatter_quality == SSS_QUALITY_HIGH);
 		state.sss_shader.set_conditional(SubsurfScatteringShaderGLES3::ENABLE_FOLLOW_SURFACE, subsurface_scatter_follow_surface);
+		state.sss_shader.set_conditional(SubsurfScatteringShaderGLES3::ENABLE_STRENGTH_WEIGHTING, subsurface_scatter_weight_samples);
 		state.sss_shader.bind();
 		state.sss_shader.set_uniform(SubsurfScatteringShaderGLES3::MAX_RADIUS, subsurface_scatter_size);
-		state.sss_shader.set_uniform(SubsurfScatteringShaderGLES3::FOVY, p_cam_projection.get_fov());
+		state.sss_shader.set_uniform(SubsurfScatteringShaderGLES3::UNIT_SIZE, unit_size);
 		state.sss_shader.set_uniform(SubsurfScatteringShaderGLES3::CAMERA_Z_NEAR, p_cam_projection.get_z_near());
 		state.sss_shader.set_uniform(SubsurfScatteringShaderGLES3::CAMERA_Z_FAR, p_cam_projection.get_z_far());
 		state.sss_shader.set_uniform(SubsurfScatteringShaderGLES3::DIR, Vector2(1, 0));
@@ -3329,14 +3334,13 @@ void RasterizerSceneGLES3::_render_mrts(Environment *env, const CameraMatrix &p_
 		glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->effects.ssao.blur_red[0]);
 		glActiveTexture(GL_TEXTURE2);
 		glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->depth);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->fbo); //copy to front first
 
 		_copy_screen(true);
 
 		glActiveTexture(GL_TEXTURE0);
-
 		glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->color);
 		state.sss_shader.set_uniform(SubsurfScatteringShaderGLES3::DIR, Vector2(0, 1));
 		glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->effects.mip_maps[0].sizes[0].fbo); // copy to base level
@@ -4955,6 +4959,7 @@ void RasterizerSceneGLES3::initialize() {
 		GLOBAL_DEF("rendering/quality/subsurface_scattering/scale", 1.0);
 		ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/subsurface_scattering/scale", PropertyInfo(Variant::INT, "rendering/quality/subsurface_scattering/scale", PROPERTY_HINT_RANGE, "0.01,8,0.01"));
 		GLOBAL_DEF("rendering/quality/subsurface_scattering/follow_surface", false);
+		GLOBAL_DEF("rendering/quality/subsurface_scattering/weight_samples", true);
 
 		GLOBAL_DEF("rendering/quality/voxel_cone_tracing/high_quality", true);
 	}
@@ -4997,6 +5002,7 @@ void RasterizerSceneGLES3::iteration() {
 
 	shadow_filter_mode = ShadowFilterMode(int(ProjectSettings::get_singleton()->get("rendering/quality/shadows/filter_mode")));
 	subsurface_scatter_follow_surface = ProjectSettings::get_singleton()->get("rendering/quality/subsurface_scattering/follow_surface");
+	subsurface_scatter_weight_samples = ProjectSettings::get_singleton()->get("rendering/quality/subsurface_scattering/weight_samples");
 	subsurface_scatter_quality = SubSurfaceScatterQuality(int(ProjectSettings::get_singleton()->get("rendering/quality/subsurface_scattering/quality")));
 	subsurface_scatter_size = ProjectSettings::get_singleton()->get("rendering/quality/subsurface_scattering/scale");
 

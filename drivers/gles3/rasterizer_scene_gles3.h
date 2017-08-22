@@ -66,6 +66,7 @@ public:
 	SubSurfaceScatterQuality subsurface_scatter_quality;
 	float subsurface_scatter_size;
 	bool subsurface_scatter_follow_surface;
+	bool subsurface_scatter_weight_samples;
 
 	uint64_t render_pass;
 	uint64_t scene_pass;
