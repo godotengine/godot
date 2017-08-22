@@ -101,6 +101,8 @@ protected:
 
 public:
 	void set_expand_margin_size(Margin p_expand_margin, float p_size);
+	void set_expand_margin_size_all(float p_expand_margin_size);
+	void set_expand_margin_size_individual(float p_left, float p_top, float p_right, float p_bottom);
 	float get_expand_margin_size(Margin p_expand_margin) const;
 
 	void set_margin_size(Margin p_margin, float p_size);
@@ -196,6 +198,8 @@ public:
 
 	//EXPANDS
 	void set_expand_margin_size(Margin p_expand_margin, float p_size);
+	void set_expand_margin_size_all(float p_expand_margin_size);
+	void set_expand_margin_size_individual(float p_left, float p_top, float p_right, float p_bottom);
 	float get_expand_margin_size(Margin p_expand_margin) const;
 
 	//FILLED
