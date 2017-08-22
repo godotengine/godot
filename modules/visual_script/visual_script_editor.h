@@ -176,6 +176,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	int port_action_new_node;
 	void _port_action_menu(int p_option);
 	void _selected_connect_node_method_or_setget(const String &p_text);
+	void _cancel_connect_node_method_or_setget();
 
 	int error_line;
 
