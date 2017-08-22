@@ -2186,7 +2186,7 @@ void RasterizerSceneGLES3::_add_geometry(RasterizerStorageGLES3::Geometry *p_geo
 
 	while (m->next_pass.is_valid()) {
 		m = storage->material_owner.getornull(m->next_pass);
-		if (!m)
+		if (!m || !m->shader || !m->shader->valid)
 			break;
 		_add_geometry_with_material(p_geometry, p_instance, p_owner, m, p_shadow);
 	}
