@@ -27,13 +27,13 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "variant.h"
+#include "core/variant.h"
 
-#include "core_string_names.h"
-#include "io/compression.h"
-#include "object.h"
-#include "os/os.h"
-#include "script_language.h"
+#include "core/core_string_names.h"
+#include "core/io/compression.h"
+#include "core/object.h"
+#include "core/os/os.h"
+#include "core/script_language.h"
 
 typedef void (*VariantFunc)(Variant &r_ret, Variant &p_self, const Variant **p_args);
 typedef void (*VariantConstructFunc)(Variant &r_ret, const Variant **p_args);

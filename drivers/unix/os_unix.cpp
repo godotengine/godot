@@ -53,7 +53,7 @@
 #if defined(__FreeBSD__) || defined(__OpenBSD__)
 #include <sys/param.h>
 #endif
-#include "project_settings.h"
+#include "core/project_settings.h"
 #include <assert.h>
 #include <dlfcn.h>
 #include <errno.h>

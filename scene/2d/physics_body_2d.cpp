@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "physics_body_2d.h"
 
-#include "engine.h"
+#include "core/engine.h"
 #include "scene/scene_string_names.h"
 
 void PhysicsBody2D::_notification(int p_what) {

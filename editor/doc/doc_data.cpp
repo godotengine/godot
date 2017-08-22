@@ -29,13 +29,13 @@
 /*************************************************************************/
 #include "doc_data.h"
 
-#include "global_constants.h"
-#include "io/compression.h"
-#include "io/marshalls.h"
-#include "project_settings.h"
+#include "core/global_constants.h"
+#include "core/io/compression.h"
+#include "core/io/marshalls.h"
+#include "core/project_settings.h"
+#include "core/script_language.h"
+#include "core/version.h"
 #include "scene/resources/theme.h"
-#include "script_language.h"
-#include "version.h"
 
 void DocData::merge_from(const DocData &p_data) {
 

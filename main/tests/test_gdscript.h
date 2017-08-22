@@ -30,7 +30,7 @@
 #ifndef TEST_GDSCRIPT_H
 #define TEST_GDSCRIPT_H
 
-#include "os/main_loop.h"
+#include "core/os/main_loop.h"
 
 namespace TestGDScript {
 

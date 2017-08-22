@@ -30,7 +30,7 @@
 #ifndef DOC_DUMP_H
 #define DOC_DUMP_H
 
-#include "class_db.h"
+#include "core/class_db.h"
 
 class DocDump {
 public:

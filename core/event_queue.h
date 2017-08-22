@@ -30,7 +30,7 @@
 #ifndef EVENT_QUEUE_H
 #define EVENT_QUEUE_H
 
-#include "object.h"
+#include "core/object.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */

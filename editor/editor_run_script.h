@@ -30,7 +30,7 @@
 #ifndef EDITOR_RUN_SCRIPT_H
 #define EDITOR_RUN_SCRIPT_H
 
-#include "reference.h"
+#include "core/reference.h"
 
 class EditorNode;
 class EditorScript : public Reference {

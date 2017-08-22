@@ -27,10 +27,10 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "dictionary.h"
+#include "core/dictionary.h"
 
-#include "safe_refcount.h"
-#include "variant.h"
+#include "core/safe_refcount.h"
+#include "core/variant.h"
 
 struct _DictionaryVariantHash {
 

@@ -35,11 +35,11 @@
 #include "editor/property_editor.h"
 #include "scene/gui/file_dialog.h"
 //#include "scene/resources/sample.h"
-#include "compressed_translation.h"
+#include "core/compressed_translation.h"
+#include "core/io/resource_saver.h"
+#include "core/os/file_access.h"
+#include "core/translation.h"
 #include "editor/project_settings.h"
-#include "io/resource_saver.h"
-#include "os/file_access.h"
-#include "translation.h"
 
 
 class EditorTranslationImportDialog : public ConfirmationDialog {

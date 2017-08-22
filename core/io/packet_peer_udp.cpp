@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "packet_peer_udp.h"
-#include "io/ip.h"
+#include "core/io/ip.h"
 
 PacketPeerUDP *(*PacketPeerUDP::_create)() = NULL;
 

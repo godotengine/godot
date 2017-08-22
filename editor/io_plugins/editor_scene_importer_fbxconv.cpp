@@ -29,9 +29,9 @@
 /*************************************************************************/
 #include "editor_scene_importer_fbxconv.h"
 
+#include "core/os/file_access.h"
+#include "core/os/os.h"
 #include "editor/editor_settings.h"
-#include "os/file_access.h"
-#include "os/os.h"
 #include "scene/3d/mesh_instance.h"
 #include "scene/animation/animation_player.h"
 

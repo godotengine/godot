@@ -27,7 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "triangulate.h"
+#include "core/math/triangulate.h"
 
 real_t Triangulate::get_area(const Vector<Vector2> &contour) {
 

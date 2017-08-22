@@ -30,7 +30,7 @@
 #include "rich_text_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
-#include "os/file_access.h"
+#include "core/os/file_access.h"
 
 void RichTextEditor::_notification(int p_what) {
 

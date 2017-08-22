@@ -36,8 +36,8 @@
 
 #ifdef WINDOWS_ENABLED
 
-#include "os/thread.h"
-#include "script_language.h"
+#include "core/os/thread.h"
+#include "core/script_language.h"
 #include <windows.h>
 
 class ThreadWindows : public Thread {

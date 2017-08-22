@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "base_button.h"
-#include "os/keyboard.h"
-#include "print_string.h"
+#include "core/os/keyboard.h"
+#include "core/print_string.h"
 #include "scene/main/viewport.h"
 #include "scene/scene_string_names.h"
 

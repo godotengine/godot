@@ -32,7 +32,7 @@
 
 #include "area_2d_sw.h"
 #include "collision_object_2d_sw.h"
-#include "vset.h"
+#include "core/vset.h"
 
 class Constraint2DSW;
 

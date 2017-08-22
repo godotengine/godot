@@ -30,10 +30,10 @@
 #ifndef IMAGE_LOADER_H
 #define IMAGE_LOADER_H
 
-#include "image.h"
-#include "list.h"
-#include "os/file_access.h"
-#include "ustring.h"
+#include "core/image.h"
+#include "core/list.h"
+#include "core/os/file_access.h"
+#include "core/ustring.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */

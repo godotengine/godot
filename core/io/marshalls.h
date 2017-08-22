@@ -30,10 +30,10 @@
 #ifndef MARSHALLS_H
 #define MARSHALLS_H
 
-#include "typedefs.h"
+#include "core/typedefs.h"
 
-#include "reference.h"
-#include "variant.h"
+#include "core/reference.h"
+#include "core/variant.h"
 /**
   * Miscellaneous helpers for marshalling data types, and encoding
   * in an endian independent way

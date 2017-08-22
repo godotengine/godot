@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "file_access_android.h"
-#include "print_string.h"
+#include "core/print_string.h"
 
 AAssetManager *FileAccessAndroid::asset_manager = NULL;
 

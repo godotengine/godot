@@ -30,10 +30,10 @@
 #ifndef VECTOR3_H
 #define VECTOR3_H
 
-#include "math_defs.h"
-#include "math_funcs.h"
-#include "typedefs.h"
-#include "ustring.h"
+#include "core/math/math_defs.h"
+#include "core/math/math_funcs.h"
+#include "core/typedefs.h"
+#include "core/ustring.h"
 
 class Basis;
 
@@ -151,7 +151,7 @@ struct Vector3 {
 
 #else
 
-#include "matrix3.h"
+#include "core/math/matrix3.h"
 
 Vector3 Vector3::cross(const Vector3 &p_b) const {
 

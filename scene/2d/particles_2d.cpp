@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "particles_2d.h"
 
-#include "engine.h"
+#include "core/engine.h"
 #include "scene/3d/particles.h"
 #include "scene/scene_string_names.h"
 

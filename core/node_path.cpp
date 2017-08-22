@@ -27,9 +27,9 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "node_path.h"
+#include "core/node_path.h"
 
-#include "print_string.h"
+#include "core/print_string.h"
 
 uint32_t NodePath::hash() const {
 

@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "button.h"
-#include "print_string.h"
+#include "core/print_string.h"
+#include "core/translation.h"
 #include "servers/visual_server.h"
-#include "translation.h"
 
 Size2 Button::get_minimum_size() const {
 

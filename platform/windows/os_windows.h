@@ -31,9 +31,9 @@
 #define OS_WINDOWS_H
 
 #include "context_gl_win.h"
+#include "core/os/input.h"
+#include "core/os/os.h"
 #include "drivers/rtaudio/audio_driver_rtaudio.h"
-#include "os/input.h"
-#include "os/os.h"
 #include "power_windows.h"
 #include "servers/audio_server.h"
 #include "servers/physics/physics_server_sw.h"

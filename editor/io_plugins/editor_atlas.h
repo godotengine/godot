@@ -30,8 +30,8 @@
 #ifndef EDITOR_ATLAS_H
 #define EDITOR_ATLAS_H
 
-#include "math_2d.h"
-#include "vector.h"
+#include "core/math/math_2d.h"
+#include "core/vector.h"
 
 class EditorAtlas {
 public:

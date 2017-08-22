@@ -30,10 +30,10 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
 
+#include "core/io/resource_loader.h"
+#include "core/math/math_2d.h"
+#include "core/resource.h"
 #include "curve.h"
-#include "io/resource_loader.h"
-#include "math_2d.h"
-#include "resource.h"
 #include "scene/resources/color_ramp.h"
 #include "servers/visual_server.h"
 

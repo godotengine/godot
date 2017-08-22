@@ -30,7 +30,7 @@
 #ifndef SHELL_WINDOWS_H
 #define SHELL_WINDOWS_H
 
-#include "os/shell.h"
+#include "core/os/shell.h"
 
 #ifdef WINDOWS_ENABLED
 /**

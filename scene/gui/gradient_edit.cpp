@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "gradient_edit.h"
-#include "os/keyboard.h"
+#include "core/os/keyboard.h"
 
 GradientEdit::GradientEdit() {
 	grabbed = -1;

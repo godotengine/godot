@@ -30,7 +30,7 @@
 #include "shader_gles2.h"
 
 #ifdef GLES2_ENABLED
-#include "print_string.h"
+#include "core/print_string.h"
 
 //#define DEBUG_OPENGL
 

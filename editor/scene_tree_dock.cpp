@@ -31,6 +31,8 @@
 
 #include "animation_editor.h"
 #include "core/io/resource_saver.h"
+#include "core/os/keyboard.h"
+#include "core/project_settings.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
@@ -38,8 +40,6 @@
 #include "editor_node.h"
 #include "editor_settings.h"
 #include "multi_node_edit.h"
-#include "os/keyboard.h"
-#include "project_settings.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/packed_scene.h"
 #include "script_editor_debugger.h"

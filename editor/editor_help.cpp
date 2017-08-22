@@ -29,11 +29,11 @@
 /*************************************************************************/
 #include "editor_help.h"
 
+#include "core/os/keyboard.h"
 #include "doc_data_compressed.gen.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor_node.h"
 #include "editor_settings.h"
-#include "os/keyboard.h"
 
 void EditorHelpSearch::popup() {
 

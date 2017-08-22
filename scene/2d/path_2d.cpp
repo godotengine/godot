@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "path_2d.h"
 
-#include "engine.h"
+#include "core/engine.h"
 #include "scene/scene_string_names.h"
 
 void Path2D::_notification(int p_what) {

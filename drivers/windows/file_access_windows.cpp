@@ -33,7 +33,7 @@
 #include "shlwapi.h"
 #include <windows.h>
 
-#include "print_string.h"
+#include "core/print_string.h"
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <tchar.h>

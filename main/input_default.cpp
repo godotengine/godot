@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "input_default.h"
-#include "input_map.h"
-#include "os/os.h"
+#include "core/input_map.h"
+#include "core/os/os.h"
 #include "scene/resources/texture.h"
 #include "servers/visual_server.h"
 

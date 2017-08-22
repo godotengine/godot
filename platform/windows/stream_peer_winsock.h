@@ -32,7 +32,7 @@
 #ifndef STREAM_PEER_WINSOCK_H
 #define STREAM_PEER_WINSOCK_H
 
-#include "error_list.h"
+#include "core/error_list.h"
 
 #include "core/io/ip_address.h"
 #include "core/io/stream_peer_tcp.h"

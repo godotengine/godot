@@ -30,8 +30,8 @@
 #ifndef LINE_BUILDER_H
 #define LINE_BUILDER_H
 
-#include "color.h"
-#include "math_2d.h"
+#include "core/color.h"
+#include "core/math/math_2d.h"
 #include "scene/resources/color_ramp.h"
 
 enum LineJointMode {

@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "bitmap_loader_pbm.h"
-#include "os/file_access.h"
+#include "core/os/file_access.h"
 #include "scene/resources/bit_mask.h"
 
 static bool _get_token(FileAccessRef &f, uint8_t &saved, PoolVector<uint8_t> &r_token, bool p_binary = false, bool p_single_chunk = false) {

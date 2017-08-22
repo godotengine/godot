@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "slider.h"
-#include "os/keyboard.h"
+#include "core/os/keyboard.h"
 
 Size2 Slider::get_minimum_size() const {
 

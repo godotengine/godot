@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "bit_mask.h"
-#include "io/image_loader.h"
+#include "core/io/image_loader.h"
 
 void BitMap::create(const Size2 &p_size) {
 

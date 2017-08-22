@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "input_action.h"
-#include "os/keyboard.h"
+#include "core/os/keyboard.h"
 
 void ShortCut::set_shortcut(const Ref<InputEvent> &p_shortcut) {
 

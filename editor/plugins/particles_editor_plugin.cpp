@@ -29,8 +29,8 @@
 /*************************************************************************/
 
 #include "particles_editor_plugin.h"
+#include "core/io/resource_loader.h"
 #include "editor/plugins/spatial_editor_plugin.h"
-#include "io/resource_loader.h"
 
 void ParticlesEditor::_node_removed(Node *p_node) {
 

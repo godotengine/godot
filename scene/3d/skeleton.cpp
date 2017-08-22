@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "skeleton.h"
 
-#include "message_queue.h"
+#include "core/message_queue.h"
 
 #include "core/project_settings.h"
 #include "scene/resources/surface_tool.h"

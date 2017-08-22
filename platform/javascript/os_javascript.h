@@ -32,11 +32,11 @@
 
 #include "audio_driver_javascript.h"
 #include "audio_server_javascript.h"
+#include "core/os/input.h"
+#include "core/os/main_loop.h"
 #include "drivers/unix/os_unix.h"
 #include "javascript_eval.h"
 #include "main/input_default.h"
-#include "os/input.h"
-#include "os/main_loop.h"
 #include "power_javascript.h"
 #include "servers/audio_server.h"
 #include "servers/physics/physics_server_sw.h"

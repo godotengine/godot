@@ -29,8 +29,8 @@
 /*************************************************************************/
 #include "spatial_editor_gizmos.h"
 
-#include "geometry.h"
-#include "quick_hull.h"
+#include "core/math/geometry.h"
+#include "core/math/quick_hull.h"
 #include "scene/3d/camera.h"
 #include "scene/resources/box_shape.h"
 #include "scene/resources/capsule_shape.h"

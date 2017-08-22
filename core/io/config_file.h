@@ -30,7 +30,7 @@
 #ifndef CONFIG_FILE_H
 #define CONFIG_FILE_H
 
-#include "reference.h"
+#include "core/reference.h"
 
 class ConfigFile : public Reference {
 

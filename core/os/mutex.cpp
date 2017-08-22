@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "mutex.h"
-#include "error_macros.h"
+#include "core/error_macros.h"
 #include <stddef.h>
 
 Mutex *(*Mutex::create_func)(bool) = 0;

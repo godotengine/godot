@@ -27,8 +27,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "list.h"
-#include "os/main_loop.h"
+#include "core/list.h"
+#include "core/os/main_loop.h"
 
 #ifdef DEBUG_ENABLED
 

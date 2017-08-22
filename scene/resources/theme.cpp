@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "theme.h"
-#include "os/file_access.h"
-#include "print_string.h"
+#include "core/os/file_access.h"
+#include "core/print_string.h"
 
 Ref<Theme> Theme::default_theme;
 

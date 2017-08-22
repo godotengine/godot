@@ -30,7 +30,7 @@
 //#include "servers/visual/visual_server_raster.h"
 //#include "servers/visual/rasterizer_dummy.h"
 #include "os_server.h"
-#include "print_string.h"
+#include "core/print_string.h"
 #include "servers/physics/physics_server_sw.h"
 #include <stdio.h>
 #include <stdlib.h>

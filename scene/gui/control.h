@@ -30,8 +30,8 @@
 #ifndef CONTROL_H
 #define CONTROL_H
 
-#include "math_2d.h"
-#include "rid.h"
+#include "core/math/math_2d.h"
+#include "core/rid.h"
 #include "scene/2d/canvas_item.h"
 #include "scene/gui/input_action.h"
 #include "scene/main/node.h"

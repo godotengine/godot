@@ -30,11 +30,11 @@
 #ifndef GD_PARSER_H
 #define GD_PARSER_H
 
+#include "core/map.h"
+#include "core/object.h"
+#include "core/script_language.h"
 #include "gd_functions.h"
 #include "gd_tokenizer.h"
-#include "map.h"
-#include "object.h"
-#include "script_language.h"
 
 class GDParser {
 public:

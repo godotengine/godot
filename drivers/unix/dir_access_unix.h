@@ -37,7 +37,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "os/dir_access.h"
+#include "core/os/dir_access.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>

@@ -29,9 +29,9 @@
 /*************************************************************************/
 #include "editor_log.h"
 
+#include "core/version.h"
 #include "editor_node.h"
 #include "scene/gui/center_container.h"
-#include "version.h"
 
 void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, ErrorHandlerType p_type) {
 

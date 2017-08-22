@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "register_scene_types.h"
-#include "os/os.h"
-#include "project_settings.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 #include "scene/io/resource_format_image.h"
 #include "scene/io/resource_format_wav.h"
 
 //#include "scene/io/scene_format_script.h"
-#include "class_db.h"
+#include "core/class_db.h"
 #include "resources/default_theme/default_theme.h"
 #include "scene/2d/light_2d.h"
 #include "scene/2d/light_occluder_2d.h"

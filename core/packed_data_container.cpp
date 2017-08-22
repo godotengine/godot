@@ -27,10 +27,10 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "packed_data_container.h"
+#include "core/packed_data_container.h"
 
-#include "core_string_names.h"
-#include "io/marshalls.h"
+#include "core/core_string_names.h"
+#include "core/io/marshalls.h"
 
 Variant PackedDataContainer::getvar(const Variant &p_key, bool *r_valid) const {
 

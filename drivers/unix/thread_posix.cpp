@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "thread_posix.h"
-#include "script_language.h"
+#include "core/script_language.h"
 
 #if defined(UNIX_ENABLED) || defined(PTHREAD_ENABLED)
 
@@ -36,7 +36,7 @@
 #include <pthread_np.h>
 #endif
 
-#include "os/memory.h"
+#include "core/os/memory.h"
 
 Thread::ID ThreadPosix::get_id() const {
 

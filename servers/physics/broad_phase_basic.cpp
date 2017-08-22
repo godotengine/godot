@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "broad_phase_basic.h"
-#include "list.h"
-#include "print_string.h"
+#include "core/list.h"
+#include "core/print_string.h"
 BroadPhaseSW::ID BroadPhaseBasic::create(CollisionObjectSW *p_object_, int p_subindex) {
 
 	if (p_object_ == NULL) {

@@ -30,9 +30,9 @@
 #ifdef GLES2_ENABLED
 
 #include "rasterizer_gles2.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 #include "gl_context/context_gl.h"
-#include "os/os.h"
-#include "project_settings.h"
 #include "servers/visual/particle_system_sw.h"
 #include "servers/visual/shader_language.h"
 #include <stdio.h>

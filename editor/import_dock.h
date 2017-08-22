@@ -30,8 +30,8 @@
 #ifndef IMPORTDOCK_H
 #define IMPORTDOCK_H
 
+#include "core/io/resource_import.h"
 #include "editor_file_system.h"
-#include "io/resource_import.h"
 #include "property_editor.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/option_button.h"

@@ -27,8 +27,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "visual_server_wrap_mt.h"
-#include "os/os.h"
-#include "project_settings.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 
 void VisualServerWrapMT::thread_exit() {
 

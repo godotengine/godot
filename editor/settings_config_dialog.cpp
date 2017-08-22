@@ -29,11 +29,11 @@
 /*************************************************************************/
 #include "settings_config_dialog.h"
 
+#include "core/os/keyboard.h"
+#include "core/project_settings.h"
 #include "editor_file_system.h"
 #include "editor_node.h"
 #include "editor_settings.h"
-#include "os/keyboard.h"
-#include "project_settings.h"
 #include "scene/gui/margin_container.h"
 
 void EditorSettingsDialog::ok_pressed() {

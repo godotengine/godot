@@ -31,7 +31,7 @@
 
 #if defined(UNIX_ENABLED) || defined(PTHREAD_ENABLED)
 
-#include "os/memory.h"
+#include "core/os/memory.h"
 #include <errno.h>
 #include <stdio.h>
 

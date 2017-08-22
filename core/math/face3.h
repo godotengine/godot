@@ -30,10 +30,10 @@
 #ifndef FACE3_H
 #define FACE3_H
 
-#include "plane.h"
-#include "rect3.h"
-#include "transform.h"
-#include "vector3.h"
+#include "core/math/plane.h"
+#include "core/math/rect3.h"
+#include "core/math/transform.h"
+#include "core/math/vector3.h"
 
 class Face3 {
 public:

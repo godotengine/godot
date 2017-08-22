@@ -31,7 +31,7 @@
 #include "arvr_server.h"
 #include "arvr/arvr_interface.h"
 #include "arvr/arvr_positional_tracker.h"
-#include "project_settings.h"
+#include "core/project_settings.h"
 
 ARVRServer *ARVRServer::singleton = NULL;
 

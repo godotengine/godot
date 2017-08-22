@@ -32,7 +32,7 @@
 
 #include "servers/audio_server.h"
 
-#include "os/mutex.h"
+#include "core/os/mutex.h"
 
 class AudioDriverJavaScript : public AudioDriver {
 public:

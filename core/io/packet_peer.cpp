@@ -29,8 +29,8 @@
 /*************************************************************************/
 #include "packet_peer.h"
 
-#include "io/marshalls.h"
-#include "project_settings.h"
+#include "core/io/marshalls.h"
+#include "core/project_settings.h"
 /* helpers / binders */
 
 PacketPeer::PacketPeer() {

@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "menu_button.h"
-#include "os/keyboard.h"
+#include "core/os/keyboard.h"
 #include "scene/main/viewport.h"
 
 void MenuButton::_unhandled_key_input(Ref<InputEvent> p_event) {

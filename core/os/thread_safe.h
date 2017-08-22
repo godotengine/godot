@@ -30,7 +30,7 @@
 #ifndef THREAD_SAFE_H
 #define THREAD_SAFE_H
 
-#include "os/mutex.h"
+#include "core/os/mutex.h"
 
 class ThreadSafe {
 

@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "os_uwp.h"
+#include "core/io/marshalls.h"
+#include "core/project_settings.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "drivers/unix/ip_unix.h"
 #include "drivers/windows/dir_access_windows.h"
@@ -35,12 +37,10 @@
 #include "drivers/windows/mutex_windows.h"
 #include "drivers/windows/rw_lock_windows.h"
 #include "drivers/windows/semaphore_windows.h"
-#include "io/marshalls.h"
 #include "main/main.h"
 #include "platform/windows/packet_peer_udp_winsock.h"
 #include "platform/windows/stream_peer_winsock.h"
 #include "platform/windows/tcp_server_winsock.h"
-#include "project_settings.h"
 #include "servers/audio_server.h"
 #include "servers/visual/visual_server_raster.h"
 #include "thread_uwp.h"

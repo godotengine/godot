@@ -27,12 +27,12 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "color.h"
+#include "core/color.h"
 
 #include "color_names.inc"
-#include "map.h"
-#include "math_funcs.h"
-#include "print_string.h"
+#include "core/map.h"
+#include "core/math/math_funcs.h"
+#include "core/print_string.h"
 
 uint32_t Color::to_ARGB32() const {
 

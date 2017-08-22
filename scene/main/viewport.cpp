@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "viewport.h"
-#include "os/input.h"
-#include "os/os.h"
+#include "core/os/input.h"
+#include "core/os/os.h"
 #include "scene/3d/spatial.h"
 #include "servers/physics_2d_server.h"
 //#include "scene/3d/camera.h"
@@ -48,7 +48,7 @@
 #include "scene/main/timer.h"
 #include "scene/scene_string_names.h"
 
-#include "project_settings.h"
+#include "core/project_settings.h"
 #include "scene/3d/scenario_fx.h"
 
 void ViewportTexture::setup_local_to_scene() {

@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "shader_language.h"
-#include "os/os.h"
-#include "print_string.h"
+#include "core/os/os.h"
+#include "core/print_string.h"
 static bool _is_text_char(CharType c) {
 
 	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_';

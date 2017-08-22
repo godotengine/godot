@@ -27,7 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "script_language.h"
+#include "core/script_language.h"
 
 ScriptLanguage *ScriptServer::_languages[MAX_LANGUAGES];
 int ScriptServer::_language_count = 0;

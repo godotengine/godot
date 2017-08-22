@@ -30,13 +30,13 @@
 #ifndef VISUAL_SERVER_H
 #define VISUAL_SERVER_H
 
-#include "bsp_tree.h"
-#include "geometry.h"
-#include "image.h"
-#include "math_2d.h"
-#include "object.h"
-#include "rid.h"
-#include "variant.h"
+#include "core/image.h"
+#include "core/math/bsp_tree.h"
+#include "core/math/geometry.h"
+#include "core/math/math_2d.h"
+#include "core/object.h"
+#include "core/rid.h"
+#include "core/variant.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>

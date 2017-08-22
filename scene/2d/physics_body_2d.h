@@ -30,9 +30,9 @@
 #ifndef PHYSICS_BODY_2D_H
 #define PHYSICS_BODY_2D_H
 
+#include "core/vset.h"
 #include "scene/2d/collision_object_2d.h"
 #include "servers/physics_2d_server.h"
-#include "vset.h"
 
 class PhysicsBody2D : public CollisionObject2D {
 

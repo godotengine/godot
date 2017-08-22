@@ -27,11 +27,11 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "variant_parser.h"
+#include "core/variant_parser.h"
 
-#include "io/resource_loader.h"
-#include "os/input_event.h"
-#include "os/keyboard.h"
+#include "core/io/resource_loader.h"
+#include "core/os/input_event.h"
+#include "core/os/keyboard.h"
 
 CharType VariantParser::StreamFile::get_char() {
 

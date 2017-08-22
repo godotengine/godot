@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "mutex_windows.h"
-#include "os/memory.h"
+#include "core/os/memory.h"
 
 #ifdef WINDOWS_ENABLED
 

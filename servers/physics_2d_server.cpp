@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "physics_2d_server.h"
-#include "print_string.h"
+#include "core/print_string.h"
 Physics2DServer *Physics2DServer::singleton = NULL;
 
 void Physics2DDirectBodyState::integrate_forces() {

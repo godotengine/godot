@@ -30,9 +30,9 @@
 #ifndef HASHFUNCS_H
 #define HASHFUNCS_H
 
-#include "math_defs.h"
-#include "math_funcs.h"
-#include "typedefs.h"
+#include "core/math/math_defs.h"
+#include "core/math/math_funcs.h"
+#include "core/typedefs.h"
 
 /**
  * Hashing functions

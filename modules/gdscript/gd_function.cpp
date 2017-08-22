@@ -29,9 +29,9 @@
 /*************************************************************************/
 #include "gd_function.h"
 
+#include "core/os/os.h"
 #include "gd_functions.h"
 #include "gd_script.h"
-#include "os/os.h"
 
 Variant *GDFunction::_get_variant(int p_address, GDInstance *p_instance, GDScript *p_script, Variant &self, Variant *p_stack, String &r_error) const {
 

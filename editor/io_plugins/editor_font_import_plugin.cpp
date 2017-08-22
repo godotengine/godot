@@ -29,12 +29,12 @@
 /*************************************************************************/
 #include "editor_font_import_plugin.h"
 #if 0
+#include "core/io/image_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/os/file_access.h"
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
 #include "editor_atlas.h"
-#include "io/image_loader.h"
-#include "io/resource_saver.h"
-#include "os/file_access.h"
 #include "scene/gui/dialogs.h"
 
 #ifdef FREETYPE_ENABLED

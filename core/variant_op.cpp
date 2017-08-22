@@ -27,11 +27,11 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "variant.h"
+#include "core/variant.h"
 
-#include "core_string_names.h"
-#include "object.h"
-#include "script_language.h"
+#include "core/core_string_names.h"
+#include "core/object.h"
+#include "core/script_language.h"
 
 Variant::operator bool() const {
 

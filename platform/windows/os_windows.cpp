@@ -30,6 +30,8 @@
 
 #include "os_windows.h"
 
+#include "core/io/marshalls.h"
+#include "core/project_settings.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "drivers/windows/dir_access_windows.h"
 #include "drivers/windows/file_access_windows.h"
@@ -37,12 +39,10 @@
 #include "drivers/windows/rw_lock_windows.h"
 #include "drivers/windows/semaphore_windows.h"
 #include "drivers/windows/thread_windows.h"
-#include "io/marshalls.h"
 #include "joypad.h"
 #include "lang_table.h"
 #include "main/main.h"
 #include "packet_peer_udp_winsock.h"
-#include "project_settings.h"
 #include "servers/audio_server.h"
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"

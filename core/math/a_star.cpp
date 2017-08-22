@@ -27,10 +27,10 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "a_star.h"
-#include "geometry.h"
+#include "core/math/a_star.h"
+#include "core/math/geometry.h"
+#include "core/script_language.h"
 #include "scene/scene_string_names.h"
-#include "script_language.h"
 
 int AStar::get_available_point_id() const {
 

@@ -30,8 +30,8 @@
 #ifndef MATH_2D_H
 #define MATH_2D_H
 
-#include "math_funcs.h"
-#include "ustring.h"
+#include "core/math/math_funcs.h"
+#include "core/ustring.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */

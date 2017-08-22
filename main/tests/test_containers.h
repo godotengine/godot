@@ -30,7 +30,7 @@
 #ifndef TEST_CONTAINERS_H
 #define TEST_CONTAINERS_H
 
-#include "os/main_loop.h"
+#include "core/os/main_loop.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */

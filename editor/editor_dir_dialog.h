@@ -30,7 +30,7 @@
 #ifndef EDITOR_DIR_DIALOG_H
 #define EDITOR_DIR_DIALOG_H
 
-#include "os/dir_access.h"
+#include "core/os/dir_access.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
 

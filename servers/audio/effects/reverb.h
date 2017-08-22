@@ -33,9 +33,9 @@
 #ifndef REVERB_H
 #define REVERB_H
 
-#include "audio_frame.h"
-#include "os/memory.h"
-#include "typedefs.h"
+#include "core/math/audio_frame.h"
+#include "core/os/memory.h"
+#include "core/typedefs.h"
 
 class Reverb {
 public:

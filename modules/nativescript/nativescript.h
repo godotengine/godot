@@ -30,19 +30,19 @@
 #ifndef NATIVE_SCRIPT_H
 #define NATIVE_SCRIPT_H
 
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
-#include "os/thread_safe.h"
-#include "resource.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/os/thread_safe.h"
+#include "core/resource.h"
+#include "core/script_language.h"
+#include "core/self_list.h"
 #include "scene/main/node.h"
-#include "script_language.h"
-#include "self_list.h"
 
 #include "godot_nativescript.h"
 #include "modules/gdnative/gdnative.h"
 
 #ifndef NO_THREADS
-#include "os/mutex.h"
+#include "core/os/mutex.h"
 #endif
 
 struct NativeScriptDesc {

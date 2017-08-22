@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "resource_format_binary.h"
-#include "image.h"
-#include "io/file_access_compressed.h"
-#include "io/marshalls.h"
-#include "os/dir_access.h"
-#include "project_settings.h"
-#include "version.h"
+#include "core/image.h"
+#include "core/io/file_access_compressed.h"
+#include "core/io/marshalls.h"
+#include "core/os/dir_access.h"
+#include "core/project_settings.h"
+#include "core/version.h"
 //#define print_bl(m_what) print_line(m_what)
 #define print_bl(m_what)
 

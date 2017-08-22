@@ -30,9 +30,9 @@
 #ifndef CLASS_DB_H
 #define CLASS_DB_H
 
-#include "method_bind.h"
-#include "object.h"
-#include "print_string.h"
+#include "core/method_bind.h"
+#include "core/object.h"
+#include "core/print_string.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>

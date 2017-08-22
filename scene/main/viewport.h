@@ -30,7 +30,7 @@
 #ifndef VIEWPORT_H
 #define VIEWPORT_H
 
-#include "math_2d.h"
+#include "core/math/math_2d.h"
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
 #include "scene/resources/world_2d.h"

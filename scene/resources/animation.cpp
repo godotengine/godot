@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "animation.h"
-#include "geometry.h"
+#include "core/math/geometry.h"
 
 bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 

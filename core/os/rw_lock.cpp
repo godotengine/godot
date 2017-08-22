@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "rw_lock.h"
 
-#include "error_macros.h"
+#include "core/error_macros.h"
 
 #include <stddef.h>
 

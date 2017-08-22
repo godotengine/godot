@@ -30,7 +30,7 @@
 #ifndef BITMAP_LOADER_PBM_H
 #define BITMAP_LOADER_PBM_H
 
-#include "io/resource_loader.h"
+#include "core/io/resource_loader.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>

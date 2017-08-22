@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "file_access_pack.h"
-#include "version.h"
+#include "core/version.h"
 
 #include <stdio.h>
 

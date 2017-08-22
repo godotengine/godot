@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "line_edit.h"
+#include "core/os/keyboard.h"
+#include "core/os/os.h"
+#include "core/print_string.h"
+#include "core/translation.h"
 #include "label.h"
-#include "os/keyboard.h"
-#include "os/os.h"
-#include "print_string.h"
-#include "translation.h"
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
 #endif

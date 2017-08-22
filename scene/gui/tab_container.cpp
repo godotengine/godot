@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "tab_container.h"
 
-#include "message_queue.h"
+#include "core/message_queue.h"
 
 int TabContainer::_get_top_margin() const {
 

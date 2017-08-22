@@ -31,7 +31,7 @@
 #ifndef PLATFORM_JAVASCRIPT_POWER_JAVASCRIPT_H_
 #define PLATFORM_JAVASCRIPT_POWER_JAVASCRIPT_H_
 
-#include "os/power.h"
+#include "core/os/power.h"
 
 class PowerJavascript {
 private:

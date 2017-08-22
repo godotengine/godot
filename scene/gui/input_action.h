@@ -30,8 +30,8 @@
 #ifndef INPUTACTION_H
 #define INPUTACTION_H
 
-#include "os/input_event.h"
-#include "resource.h"
+#include "core/os/input_event.h"
+#include "core/resource.h"
 
 class ShortCut : public Resource {
 

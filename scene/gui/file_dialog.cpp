@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "file_dialog.h"
-#include "os/keyboard.h"
-#include "print_string.h"
+#include "core/os/keyboard.h"
+#include "core/print_string.h"
 #include "scene/gui/label.h"
 
 FileDialog::GetIconFunc FileDialog::get_icon_func = NULL;

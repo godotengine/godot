@@ -30,11 +30,11 @@
 #ifndef GROUPS_EDITOR_H
 #define GROUPS_EDITOR_H
 
+#include "core/undo_redo.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/tree.h"
-#include "undo_redo.h"
 
 /**
 @author Juan Linietsky <reduzio@gmail.com>

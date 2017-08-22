@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "graph_edit.h"
-#include "os/input.h"
-#include "os/keyboard.h"
+#include "core/os/input.h"
+#include "core/os/keyboard.h"
 #include "scene/gui/box_container.h"
 
 #define ZOOM_SCALE 1.2

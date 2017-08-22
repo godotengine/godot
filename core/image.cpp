@@ -27,12 +27,12 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "image.h"
+#include "core/image.h"
 
+#include "core/hash_map.h"
 #include "core/io/image_loader.h"
 #include "core/os/copymem.h"
-#include "hash_map.h"
-#include "print_string.h"
+#include "core/print_string.h"
 
 #include "thirdparty/misc/hq2x.h"
 

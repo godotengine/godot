@@ -35,10 +35,10 @@
  * @author Juan Linietsky
  * Vector container. Regular Vector Container. Use with care and for smaller arrays when possible. Use PoolVector for large arrays.
 */
-#include "error_macros.h"
-#include "os/memory.h"
-#include "safe_refcount.h"
-#include "sort.h"
+#include "core/error_macros.h"
+#include "core/os/memory.h"
+#include "core/safe_refcount.h"
+#include "core/sort.h"
 
 template <class T>
 class Vector {

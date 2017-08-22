@@ -30,7 +30,7 @@
 #ifndef SHAPE_H
 #define SHAPE_H
 
-#include "resource.h"
+#include "core/resource.h"
 class ArrayMesh;
 
 class Shape : public Resource {

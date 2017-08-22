@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "networked_multiplayer_enet.h"
-#include "io/marshalls.h"
-#include "os/os.h"
+#include "core/io/marshalls.h"
+#include "core/os/os.h"
 
 void NetworkedMultiplayerENet::set_transfer_mode(TransferMode p_mode) {
 

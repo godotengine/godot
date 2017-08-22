@@ -31,8 +31,8 @@
 #define DYNAMIC_FONT_H
 
 #ifdef FREETYPE_ENABLED
-#include "io/resource_loader.h"
-#include "os/thread_safe.h"
+#include "core/io/resource_loader.h"
+#include "core/os/thread_safe.h"
 #include "scene/resources/font.h"
 
 #include <ft2build.h>

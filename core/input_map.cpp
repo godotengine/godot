@@ -27,10 +27,10 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "input_map.h"
+#include "core/input_map.h"
 
-#include "os/keyboard.h"
-#include "project_settings.h"
+#include "core/os/keyboard.h"
+#include "core/project_settings.h"
 
 InputMap *InputMap::singleton = NULL;
 

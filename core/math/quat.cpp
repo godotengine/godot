@@ -27,9 +27,9 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "quat.h"
-#include "matrix3.h"
-#include "print_string.h"
+#include "core/math/quat.h"
+#include "core/math/matrix3.h"
+#include "core/print_string.h"
 
 // set_euler_xyz expects a vector containing the Euler angles in the format
 // (ax,ay,az), where ax is the angle of rotation around x axis,

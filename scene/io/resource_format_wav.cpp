@@ -29,7 +29,7 @@
 /*************************************************************************/
 #if 0
 #include "resource_format_wav.h"
-#include "os/file_access.h"
+#include "core/os/file_access.h"
 #include "scene/resources/sample.h"
 
 

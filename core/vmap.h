@@ -30,8 +30,8 @@
 #ifndef VMAP_H
 #define VMAP_H
 
-#include "typedefs.h"
-#include "vector.h"
+#include "core/typedefs.h"
+#include "core/vector.h"
 
 template <class T, class V>
 class VMap {

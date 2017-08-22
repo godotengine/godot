@@ -30,9 +30,9 @@
 #ifndef SCRIPT_LANGUAGE_H
 #define SCRIPT_LANGUAGE_H
 
-#include "map.h"
-#include "pair.h"
-#include "resource.h"
+#include "core/map.h"
+#include "core/pair.h"
+#include "core/resource.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */

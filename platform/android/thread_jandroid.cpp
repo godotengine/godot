@@ -29,8 +29,8 @@
 /*************************************************************************/
 #include "thread_jandroid.h"
 
-#include "os/memory.h"
-#include "script_language.h"
+#include "core/os/memory.h"
+#include "core/script_language.h"
 
 Thread::ID ThreadAndroid::get_id() const {
 

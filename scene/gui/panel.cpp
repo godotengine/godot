@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "panel.h"
-#include "print_string.h"
+#include "core/print_string.h"
 
 void Panel::_notification(int p_what) {
 

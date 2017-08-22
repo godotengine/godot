@@ -30,13 +30,13 @@
 #include "editor_texture_import_plugin.h"
 
 #if 0
+#include "core/io/image_loader.h"
+#include "core/io/marshalls.h"
+#include "core/io/resource_saver.h"
+#include "core/project_settings.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor_atlas.h"
-#include "io/image_loader.h"
-#include "io/marshalls.h"
-#include "io/resource_saver.h"
-#include "project_settings.h"
 #include "scene/gui/button_group.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/margin_container.h"

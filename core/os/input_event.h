@@ -30,11 +30,11 @@
 #ifndef INPUT_EVENT_H
 #define INPUT_EVENT_H
 
-#include "math_2d.h"
-#include "os/copymem.h"
-#include "resource.h"
-#include "typedefs.h"
-#include "ustring.h"
+#include "core/math/math_2d.h"
+#include "core/os/copymem.h"
+#include "core/resource.h"
+#include "core/typedefs.h"
+#include "core/ustring.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */

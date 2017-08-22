@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "sprite_3d.h"
-#include "core_string_names.h"
+#include "core/core_string_names.h"
 #include "scene/scene_string_names.h"
 
 Color SpriteBase3D::_get_color_accum() {
