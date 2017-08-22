@@ -36,6 +36,7 @@
 #include "os/thread.h"
 #include "ring_buffer.h"
 #include "scene/resources/video_stream.h"
+#include "servers/audio_server.h"
 
 #include <theora/theoradec.h>
 #include <vorbis/codec.h>
