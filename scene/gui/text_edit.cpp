@@ -3656,9 +3656,6 @@ void TextEdit::cut() {
 
 void TextEdit::copy() {
 
-	if (!selection.active)
-		return;
-
 	if (!selection.active) {
 		String clipboard = _base_get_text(cursor.line, 0, cursor.line, text[cursor.line].length());
 		OS::get_singleton()->set_clipboard(clipboard);
