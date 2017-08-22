@@ -630,7 +630,7 @@ void SceneTree::_notification(int p_notification) {
 		case NOTIFICATION_WM_ABOUT: {
 
 #ifdef TOOLS_ENABLED
-			if (Engine::get_singleton()->is_editor_hint()) {
+			if (EditorNode::get_singleton()) {
 				EditorNode::get_singleton()->show_about();
 			} else {
 #endif
