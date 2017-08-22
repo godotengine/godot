@@ -88,5 +88,4 @@ make_editor_icons_builder = Builder(action=make_editor_icons_action,
 env['BUILDERS']['MakeEditorIconsBuilder'] = make_editor_icons_builder
 env.Alias('editor_icons', [env.MakeEditorIconsBuilder('#editor/editor_icons.gen.h', Glob("*.svg"))])
 
-env.editor_sources.append("#editor/editor_icons.gen.h")
 Export('env')
