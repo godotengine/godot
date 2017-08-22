@@ -2072,7 +2072,10 @@ void ScriptEditor::_update_selected_editor_menu() {
 		}
 	}
 
-	EditorHelp *eh = tab_container->get_current_tab_control()->cast_to<EditorHelp>();
+	EditorHelp *eh = NULL;
+	if (tab_container->get_current_tab_control())
+		eh = tab_container->get_current_tab_control()->cast_to<EditorHelp>();
+
 	if (eh) {
 		script_search_menu->show();
 	} else {
