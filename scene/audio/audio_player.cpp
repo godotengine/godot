@@ -66,29 +66,27 @@ void AudioStreamPlayer::_mix_audio() {
 	//set volume for next mix
 	mix_volume_db = volume_db;
 
-	AudioFrame *targets[3] = { NULL, NULL, NULL };
+	AudioFrame *targets[4] = { NULL, NULL, NULL, NULL };
 
 	if (AudioServer::get_singleton()->get_speaker_mode() == AudioServer::SPEAKER_MODE_STEREO) {
 		targets[0] = AudioServer::get_singleton()->thread_get_channel_mix_buffer(bus_index, 0);
 	} else {
 		switch (mix_target) {
 			case MIX_TARGET_STEREO: {
-				targets[0] = AudioServer::get_singleton()->thread_get_channel_mix_buffer(bus_index, 1);
+				targets[0] = AudioServer::get_singleton()->thread_get_channel_mix_buffer(bus_index, 0);
 			} break;
 			case MIX_TARGET_SURROUND: {
-				targets[0] = AudioServer::get_singleton()->thread_get_channel_mix_buffer(bus_index, 1);
-				targets[1] = AudioServer::get_singleton()->thread_get_channel_mix_buffer(bus_index, 2);
-				if (AudioServer::get_singleton()->get_speaker_mode() == AudioServer::SPEAKER_SURROUND_71) {
-					targets[2] = AudioServer::get_singleton()->thread_get_channel_mix_buffer(bus_index, 3);
+				for (int i = 0; i < AudioServer::get_singleton()->get_channel_count(); i++) {
+					targets[i] = AudioServer::get_singleton()->thread_get_channel_mix_buffer(bus_index, i);
 				}
 			} break;
 			case MIX_TARGET_CENTER: {
-				targets[0] = AudioServer::get_singleton()->thread_get_channel_mix_buffer(bus_index, 0);
+				targets[0] = AudioServer::get_singleton()->thread_get_channel_mix_buffer(bus_index, 1);
 			} break;
 		}
 	}
 
-	for (int c = 0; c < 3; c++) {
+	for (int c = 0; c < 4; c++) {
 		if (!targets[c])
 			break;
 		for (int i = 0; i < buffer_size; i++) {

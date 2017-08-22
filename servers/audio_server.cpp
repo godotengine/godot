@@ -77,6 +77,28 @@ double AudioDriver::get_mix_time() const {
 	return total;
 }
 
+AudioDriver::SpeakerMode AudioDriver::get_speaker_mode_by_total_channels(int p_channels) const {
+	switch (p_channels) {
+		case 4: return SPEAKER_SURROUND_31;
+		case 6: return SPEAKER_SURROUND_51;
+		case 8: return SPEAKER_SURROUND_71;
+	}
+
+	// Default to STEREO
+	return SPEAKER_MODE_STEREO;
+}
+
+int AudioDriver::get_total_channels_by_speaker_mode(AudioDriver::SpeakerMode p_mode) const {
+	switch (p_mode) {
+		case SPEAKER_MODE_STEREO: return 2;
+		case SPEAKER_SURROUND_31: return 4;
+		case SPEAKER_SURROUND_51: return 6;
+		case SPEAKER_SURROUND_71: return 8;
+	}
+
+	ERR_FAIL_V(2);
+}
+
 AudioDriver::AudioDriver() {
 
 	_last_mix_time = 0;
@@ -424,8 +446,8 @@ void AudioServer::set_bus_count(int p_count) {
 		}
 
 		buses[i] = memnew(Bus);
-		buses[i]->channels.resize(_get_channel_count());
-		for (int j = 0; j < _get_channel_count(); j++) {
+		buses[i]->channels.resize(get_channel_count());
+		for (int j = 0; j < get_channel_count(); j++) {
 			buses[i]->channels[j].buffer.resize(buffer_size);
 		}
 		buses[i]->name = attempt;
@@ -494,8 +516,8 @@ void AudioServer::add_bus(int p_at_pos) {
 	}
 
 	Bus *bus = memnew(Bus);
-	bus->channels.resize(_get_channel_count());
-	for (int j = 0; j < _get_channel_count(); j++) {
+	bus->channels.resize(get_channel_count());
+	for (int j = 0; j < get_channel_count(); j++) {
 		bus->channels[j].buffer.resize(buffer_size);
 	}
 	bus->name = attempt;
@@ -798,17 +820,8 @@ void AudioServer::init() {
 	channel_disable_threshold_db = GLOBAL_DEF("audio/channel_disable_threshold_db", -60.0);
 	channel_disable_frames = float(GLOBAL_DEF("audio/channel_disable_time", 2.0)) * get_mix_rate();
 	buffer_size = 1024; //harcoded for now
-	switch (get_speaker_mode()) {
-		case SPEAKER_MODE_STEREO: {
-			temp_buffer.resize(1);
-		} break;
-		case SPEAKER_SURROUND_51: {
-			temp_buffer.resize(3);
-		} break;
-		case SPEAKER_SURROUND_71: {
-			temp_buffer.resize(4);
-		} break;
-	}
+
+	temp_buffer.resize(get_channel_count());
 
 	for (int i = 0; i < temp_buffer.size(); i++) {
 		temp_buffer[i].resize(buffer_size);
@@ -816,11 +829,11 @@ void AudioServer::init() {
 
 	mix_count = 0;
 	set_bus_count(1);
-	;
 	set_bus_name(0, "Master");
 
 	if (AudioDriver::get_singleton())
 		AudioDriver::get_singleton()->start();
+
 #ifdef TOOLS_ENABLED
 	set_edited(false); //avoid editors from thinking this was edited
 #endif
@@ -992,8 +1005,8 @@ void AudioServer::set_bus_layout(const Ref<AudioBusLayout> &p_bus_layout) {
 		bus_map[bus->name] = bus;
 		buses[i] = bus;
 
-		buses[i]->channels.resize(_get_channel_count());
-		for (int j = 0; j < _get_channel_count(); j++) {
+		buses[i]->channels.resize(get_channel_count());
+		for (int j = 0; j < get_channel_count(); j++) {
 			buses[i]->channels[j].buffer.resize(buffer_size);
 		}
 		_update_bus_effects(i);
