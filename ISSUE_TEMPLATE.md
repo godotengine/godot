@@ -1,4 +1,4 @@
-**Operating system or device - Godot version:**
+**Operating system or device, Godot version, GPU Model and driver (if graphics related):**
 
 
 **Issue description:**
