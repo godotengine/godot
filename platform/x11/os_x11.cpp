@@ -761,6 +761,10 @@ void OS_X11::set_current_screen(int p_screen) {
 }
 
 Point2 OS_X11::get_screen_position(int p_screen) const {
+	if (p_screen == -1) {
+		p_screen = get_current_screen();
+	}
+
 	// Using Xinerama Extension
 	int event_base, error_base;
 	const Bool ext_okay = XineramaQueryExtension(x11_display, &event_base, &error_base);
@@ -782,6 +786,10 @@ Point2 OS_X11::get_screen_position(int p_screen) const {
 }
 
 Size2 OS_X11::get_screen_size(int p_screen) const {
+	if (p_screen == -1) {
+		p_screen = get_current_screen();
+	}
+
 	// Using Xinerama Extension
 	int event_base, error_base;
 	const Bool ext_okay = XineramaQueryExtension(x11_display, &event_base, &error_base);
@@ -797,6 +805,9 @@ Size2 OS_X11::get_screen_size(int p_screen) const {
 }
 
 int OS_X11::get_screen_dpi(int p_screen) const {
+	if (p_screen == -1) {
+		p_screen = get_current_screen();
+	}
 
 	//invalid screen?
 	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), 0);

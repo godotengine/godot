@@ -1384,7 +1384,7 @@ static BOOL CALLBACK _MonitorEnumProcPos(HMONITOR hMonitor, HDC hdcMonitor, LPRE
 
 Point2 OS_Windows::get_screen_position(int p_screen) const {
 
-	EnumPosData data = { 0, p_screen, Point2() };
+	EnumPosData data = { 0, p_screen == -1 ? get_current_screen() : p_screen, Point2() };
 	EnumDisplayMonitors(NULL, NULL, _MonitorEnumProcPos, (LPARAM)&data);
 	return data.pos;
 }
@@ -1409,7 +1409,7 @@ static BOOL CALLBACK _MonitorEnumProcSize(HMONITOR hMonitor, HDC hdcMonitor, LPR
 
 Size2 OS_Windows::get_screen_size(int p_screen) const {
 
-	EnumSizeData data = { 0, p_screen, Size2() };
+	EnumSizeData data = { 0, p_screen == -1 ? get_current_screen() : p_screen, Size2() };
 	EnumDisplayMonitors(NULL, NULL, _MonitorEnumProcSize, (LPARAM)&data);
 	return data.size;
 }
@@ -1433,7 +1433,7 @@ static BOOL CALLBACK _MonitorEnumProcDpi(HMONITOR hMonitor, HDC hdcMonitor, LPRE
 
 int OS_Windows::get_screen_dpi(int p_screen) const {
 
-	EnumDpiData data = { 0, p_screen, 72 };
+	EnumDpiData data = { 0, p_screen == -1 ? get_current_screen() : p_screen, 72 };
 	EnumDisplayMonitors(NULL, NULL, _MonitorEnumProcDpi, (LPARAM)&data);
 	return data.dpi;
 }
