@@ -299,6 +299,7 @@ class TextEdit : public Control {
 	void adjust_viewport_to_cursor();
 	void _scroll_moved(double);
 	void _update_scrollbars();
+	void _v_scroll_input();
 	void _click_selection_held();
 
 	void _pre_shift_selection();

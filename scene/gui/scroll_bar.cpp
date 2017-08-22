@@ -40,6 +40,11 @@ void ScrollBar::set_can_focus_by_default(bool p_can_focus) {
 
 void ScrollBar::_gui_input(Ref<InputEvent> p_event) {
 
+	Ref<InputEventMouseMotion> m = p_event;
+	if (!m.is_valid() || drag.active) {
+		emit_signal("scrolling");
+	}
+
 	Ref<InputEventMouseButton> b = p_event;
 
 	if (b.is_valid()) {
@@ -142,8 +147,6 @@ void ScrollBar::_gui_input(Ref<InputEvent> p_event) {
 			update();
 		}
 	}
-
-	Ref<InputEventMouseMotion> m = p_event;
 
 	if (m.is_valid()) {
 
@@ -822,6 +825,8 @@ void ScrollBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_custom_step"), &ScrollBar::get_custom_step);
 	ClassDB::bind_method(D_METHOD("_drag_slave_input"), &ScrollBar::_drag_slave_input);
 	ClassDB::bind_method(D_METHOD("_drag_slave_exit"), &ScrollBar::_drag_slave_exit);
+
+	ADD_SIGNAL(MethodInfo("scrolling"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "custom_step", PROPERTY_HINT_RANGE, "-1,4096"), "set_custom_step", "get_custom_step");
 }
