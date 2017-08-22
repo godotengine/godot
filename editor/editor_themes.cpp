@@ -424,6 +424,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("SceneTabFG", "EditorStyles", make_flat_stylebox(title_color_hl, 10, 5, 10, 5));
 	theme->set_stylebox("SceneTabBG", "EditorStyles", make_empty_stylebox(6, 5, 6, 5));
 	theme->set_icon("close", "Tabs", theme->get_icon("GuiClose", "EditorIcons"));
+	theme->set_stylebox("button_pressed", "Tabs", style_menu);
+	theme->set_stylebox("button", "Tabs", style_menu);
 
 	// Separators (no separators)
 	theme->set_stylebox("separator", "HSeparator", make_line_stylebox(separator_color, border_width));
