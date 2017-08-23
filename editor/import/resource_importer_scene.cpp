@@ -1287,7 +1287,6 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	Ref<EditorScenePostImport> post_import_script;
 
 	if (post_import_script_path != "") {
-		post_import_script_path = post_import_script_path; // FIXME: is there a good reason for this?
 		Ref<Script> scr = ResourceLoader::load(post_import_script_path);
 		if (!scr.is_valid()) {
 			EditorNode::add_io_error(TTR("Couldn't load post-import script:") + " " + post_import_script_path);
