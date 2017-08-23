@@ -1756,7 +1756,11 @@ void SpatialEditorViewport::_notification(int p_what) {
 
 			Transform t = sp->get_global_transform();
 			t.translate(se->aabb.position);
-			t.basis.scale(se->aabb.size);
+
+			// apply AABB scaling before item's global transform
+			Basis aabb_s;
+			aabb_s.scale(se->aabb.size);
+			t.basis = t.basis * aabb_s;
 
 			exist = true;
 			if (se->last_xform == t)
