@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  av_stream_webm.cpp.cpp                                              */
+/*  register_types.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,97 +27,5 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "io/resource_loader.h"
-#include "scene/resources/video_stream.h"
-
-class WebMFrame;
-class WebMDemuxer;
-class VPXDecoder;
-class OpusVorbisDecoder;
-
-class VideoStreamPlaybackWebm : public VideoStreamPlayback {
-
-	GDCLASS(VideoStreamPlaybackWebm, VideoStreamPlayback)
-
-	String file_name;
-	int audio_track;
-
-	WebMDemuxer *webm;
-	VPXDecoder *video;
-	OpusVorbisDecoder *audio;
-
-	WebMFrame **video_frames, *audio_frame;
-	int video_frames_pos, video_frames_capacity;
-
-	int num_decoded_samples, samples_offset;
-	AudioMixCallback mix_callback;
-	void *mix_udata;
-
-	bool playing, paused;
-	double delay_compensation;
-	double time, video_frame_delay, video_pos;
-
-	PoolVector<uint8_t> frame_data;
-	Ref<ImageTexture> texture;
-
-	int16_t *pcm;
-
-public:
-	VideoStreamPlaybackWebm();
-	~VideoStreamPlaybackWebm();
-
-	bool open_file(const String &p_file);
-
-	virtual void stop();
-	virtual void play();
-
-	virtual bool is_playing() const;
-
-	virtual void set_paused(bool p_paused);
-	virtual bool is_paused(bool p_paused) const;
-
-	virtual void set_loop(bool p_enable);
-	virtual bool has_loop() const;
-
-	virtual float get_length() const;
-
-	virtual float get_pos() const;
-	virtual void seek_pos(float p_time);
-
-	virtual void set_audio_track(int p_idx);
-
-	virtual Ref<Texture> get_texture();
-	virtual void update(float p_delta);
-
-	virtual void set_mix_callback(AudioMixCallback p_callback, void *p_userdata);
-	virtual int get_channels() const;
-	virtual int get_mix_rate() const;
-
-private:
-	inline bool has_enough_video_frames() const;
-
-	void delete_pointers();
-};
-
-/**/
-
-class VideoStreamWebm : public VideoStream {
-
-	GDCLASS(VideoStreamWebm, VideoStream);
-	RES_BASE_EXTENSION("webmstr");
-
-	String file;
-	int audio_track;
-protected:
-	static void _bind_methods();
-
-public:
-	VideoStreamWebm();
-
-	virtual Ref<VideoStreamPlayback> instance_playback();
-
-	virtual void set_file(const String &p_file);
-	String get_file();
-	virtual void set_audio_track(int p_track);
-};
-
+void register_opus_types();
+void unregister_opus_types();

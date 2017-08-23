@@ -39,6 +39,8 @@
 
 #include "thirdparty/misc/yuv2rgb.h"
 
+#include "servers/audio_server.h"
+
 #include <string.h>
 
 class MkvReader : public mkvparser::IMkvReader {
@@ -47,6 +49,8 @@ public:
 	MkvReader(const String &p_file) {
 
 		file = FileAccess::open(p_file, FileAccess::READ);
+
+		ERR_EXPLAIN("Failed loading resource: '" + p_file+"';");
 		ERR_FAIL_COND(!file);
 	}
 	~MkvReader() {
@@ -319,7 +323,10 @@ void VideoStreamPlaybackWebm::update(float p_delta) {
 							}
 
 							if (converted)
-								texture->set_data(Image(image.w, image.h, 0, Image::FORMAT_RGBA8, frame_data)); //Zero copy send to visual server
+							{
+								Ref<Image> img = memnew(Image(image.w, image.h, 0, Image::FORMAT_RGBA8, frame_data));
+								texture->set_data(img); //Zero copy send to visual server
+							}
 						}
 
 						break;
@@ -395,34 +402,6 @@ void VideoStreamPlaybackWebm::delete_pointers() {
 
 /**/
 
-RES ResourceFormatLoaderVideoStreamWebm::load(const String &p_path, const String &p_original_path, Error *r_error) {
-
-	Ref<VideoStreamWebm> stream = memnew(VideoStreamWebm);
-	stream->set_file(p_path);
-	if (r_error)
-		*r_error = OK;
-	return stream;
-}
-
-void ResourceFormatLoaderVideoStreamWebm::get_recognized_extensions(List<String> *p_extensions) const {
-
-	p_extensions->push_back("webm");
-}
-bool ResourceFormatLoaderVideoStreamWebm::handles_type(const String &p_type) const {
-
-	return (p_type == "VideoStream" || p_type == "VideoStreamWebm");
-}
-
-String ResourceFormatLoaderVideoStreamWebm::get_resource_type(const String &p_path) const {
-
-	const String exl = p_path.get_extension().to_lower();
-	if (exl == "webm")
-		return "VideoStreamWebm";
-	return "";
-}
-
-/**/
-
 VideoStreamWebm::VideoStreamWebm()
 	: audio_track(0) {}
 
@@ -439,6 +418,22 @@ void VideoStreamWebm::set_file(const String &p_file) {
 
 	file = p_file;
 }
+String VideoStreamWebm::get_file() {
+
+	return file;
+}
+
+
+void VideoStreamWebm::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_file", "file"), &VideoStreamWebm::set_file);
+	ClassDB::bind_method(D_METHOD("get_file"), &VideoStreamWebm::get_file);
+
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "file", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_file", "get_file");
+
+}
+
 void VideoStreamWebm::set_audio_track(int p_track) {
 
 	audio_track = p_track;

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  av_stream_webm.cpp.cpp                                              */
+/*  resource_importer_ogg_vorbis.cpp                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,97 +27,68 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "io/resource_loader.h"
-#include "scene/resources/video_stream.h"
+#include "resource_importer_webm.h"
+#include "video_stream_webm.h"
+#include "io/resource_saver.h"
+#include "os/file_access.h"
+#include "scene/resources/texture.h"
 
-class WebMFrame;
-class WebMDemuxer;
-class VPXDecoder;
-class OpusVorbisDecoder;
+String ResourceImporterWebm::get_importer_name() const {
 
-class VideoStreamPlaybackWebm : public VideoStreamPlayback {
+	return "Webm";
+}
 
-	GDCLASS(VideoStreamPlaybackWebm, VideoStreamPlayback)
+String ResourceImporterWebm::get_visible_name() const {
 
-	String file_name;
-	int audio_track;
+	return "Webm";
+}
+void ResourceImporterWebm::get_recognized_extensions(List<String> *p_extensions) const {
 
-	WebMDemuxer *webm;
-	VPXDecoder *video;
-	OpusVorbisDecoder *audio;
+	p_extensions->push_back("webm");
+}
 
-	WebMFrame **video_frames, *audio_frame;
-	int video_frames_pos, video_frames_capacity;
+String ResourceImporterWebm::get_save_extension() const {
+	return "webmstr";
+}
 
-	int num_decoded_samples, samples_offset;
-	AudioMixCallback mix_callback;
-	void *mix_udata;
+String ResourceImporterWebm::get_resource_type() const {
 
-	bool playing, paused;
-	double delay_compensation;
-	double time, video_frame_delay, video_pos;
+	return "VideoStreamWebm";
+}
 
-	PoolVector<uint8_t> frame_data;
-	Ref<ImageTexture> texture;
+bool ResourceImporterWebm::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
 
-	int16_t *pcm;
+	return true;
+}
 
-public:
-	VideoStreamPlaybackWebm();
-	~VideoStreamPlaybackWebm();
+int ResourceImporterWebm::get_preset_count() const {
+	return 0;
+}
+String ResourceImporterWebm::get_preset_name(int p_idx) const {
 
-	bool open_file(const String &p_file);
+	return String();
+}
 
-	virtual void stop();
-	virtual void play();
+void ResourceImporterWebm::get_import_options(List<ImportOption> *r_options, int p_preset) const {
 
-	virtual bool is_playing() const;
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "loop"), true));
+}
 
-	virtual void set_paused(bool p_paused);
-	virtual bool is_paused(bool p_paused) const;
+Error ResourceImporterWebm::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files) {
 
-	virtual void set_loop(bool p_enable);
-	virtual bool has_loop() const;
+	FileAccess *f = FileAccess::open(p_source_file, FileAccess::READ);
+	if (!f) {
+		ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
+	}
+	memdelete(f);
 
-	virtual float get_length() const;
+	VideoStreamWebm *stream = memnew(VideoStreamWebm);
+	stream->set_file(p_source_file);
 
-	virtual float get_pos() const;
-	virtual void seek_pos(float p_time);
+	Ref<VideoStreamWebm> webm_stream = Ref<VideoStreamWebm>(stream);
 
-	virtual void set_audio_track(int p_idx);
+	return ResourceSaver::save(p_save_path + ".webmstr", webm_stream);
+}
 
-	virtual Ref<Texture> get_texture();
-	virtual void update(float p_delta);
-
-	virtual void set_mix_callback(AudioMixCallback p_callback, void *p_userdata);
-	virtual int get_channels() const;
-	virtual int get_mix_rate() const;
-
-private:
-	inline bool has_enough_video_frames() const;
-
-	void delete_pointers();
-};
-
-/**/
-
-class VideoStreamWebm : public VideoStream {
-
-	GDCLASS(VideoStreamWebm, VideoStream);
-	RES_BASE_EXTENSION("webmstr");
-
-	String file;
-	int audio_track;
-protected:
-	static void _bind_methods();
-
-public:
-	VideoStreamWebm();
-
-	virtual Ref<VideoStreamPlayback> instance_playback();
-
-	virtual void set_file(const String &p_file);
-	String get_file();
-	virtual void set_audio_track(int p_track);
-};
-
+ResourceImporterWebm::ResourceImporterWebm() {
+}
