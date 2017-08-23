@@ -457,7 +457,7 @@ public:
 		}
 		type->method_map[p_name] = bind;
 #ifdef DEBUG_METHODS_ENABLED
-		bind->set_return_type("Variant");
+//		bind->set_return_type("Variant");
 		type->method_order.push_back(p_name);
 #endif
 

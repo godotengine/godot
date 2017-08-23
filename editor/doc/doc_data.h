@@ -40,6 +40,7 @@ public:
 
 		String name;
 		String type;
+		String enumeration;
 		String default_value;
 	};
 
@@ -47,6 +48,7 @@ public:
 
 		String name;
 		String return_type;
+		String return_enum;
 		String qualifiers;
 		String description;
 		Vector<ArgumentDoc> arguments;
@@ -59,6 +61,7 @@ public:
 
 		String name;
 		String value;
+		String enumeration;
 		String description;
 	};
 
@@ -66,6 +69,7 @@ public:
 
 		String name;
 		String type;
+		String enumeration;
 		String brief_description;
 		String description;
 		String setter, getter;

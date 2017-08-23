@@ -65,6 +65,7 @@ PropertyInfo::operator Dictionary() const {
 
 	Dictionary d;
 	d["name"] = name;
+	d["class_name"] = class_name;
 	d["type"] = type;
 	d["hint"] = hint;
 	d["hint_string"] = hint_string;
@@ -81,6 +82,9 @@ PropertyInfo PropertyInfo::from_dict(const Dictionary &p_dict) {
 
 	if (p_dict.has("name"))
 		pi.name = p_dict["name"];
+
+	if (p_dict.has("class_name"))
+		pi.class_name = p_dict["class_name"];
 
 	if (p_dict.has("hint"))
 		pi.hint = PropertyHint(int(p_dict["hint"]));

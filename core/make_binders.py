@@ -16,12 +16,11 @@ public:
 		$
 		return Variant::NIL;
 	}
-	virtual StringName _gen_argument_type_name(int p_arg) const { return _gen_argument_type_hint(p_arg); }
-	StringName _gen_argument_type_hint(int p_argument) const {
-		$ifret if (p_argument==-1) return GetTypeInfo<R>::get_class_name();$
-		$arg if (p_argument==(@-1)) return GetTypeInfo<P@>::get_class_name();
+	virtual PropertyInfo _gen_argument_type_info(int p_argument) const {
+		$ifret if (p_argument==-1) return GetTypeInfo<R>::get_class_info();$
+		$arg if (p_argument==(@-1)) return GetTypeInfo<P@>::get_class_info();
 		$
-		return StringName();
+		return PropertyInfo();
 	}
 #endif
 	virtual String get_instance_class() const {
@@ -106,12 +105,13 @@ public:
 
 	virtual StringName _gen_argument_type_name(int p_arg) const { return _gen_argument_type_hint(p_arg); }
 
-	StringName _gen_argument_type_hint(int p_argument) const {
-		$ifret if (p_argument==-1) return GetTypeInfo<R>::get_class_name();$
-		$arg if (p_argument==(@-1)) return GetTypeInfo<P@>::get_class_name();
+	virtual PropertyInfo _gen_argument_type_info(int p_argument) const {
+		$ifret if (p_argument==-1) return GetTypeInfo<R>::get_class_info();$
+		$arg if (p_argument==(@-1)) return GetTypeInfo<P@>::get_class_info();
 		$
-		return StringName();
+		return PropertyInfo();
 	}
+
 #endif
 	virtual String get_instance_class() const {
 		return type_name;

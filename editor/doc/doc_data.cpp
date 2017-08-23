@@ -196,10 +196,40 @@ void DocData::generate(bool p_basic_types) {
 			prop.name = E->get().name;
 			prop.setter = setter;
 			prop.getter = getter;
-			if (E->get().type == Variant::OBJECT && E->get().hint == PROPERTY_HINT_RESOURCE_TYPE)
-				prop.type = E->get().hint_string;
-			else
-				prop.type = Variant::get_type_name(E->get().type);
+
+			bool found_type = false;
+			if (getter != StringName()) {
+				MethodBind *mb = ClassDB::get_method(name, getter);
+				if (mb) {
+					PropertyInfo retinfo = mb->get_return_info();
+
+					found_type = true;
+					if (retinfo.type == Variant::INT && retinfo.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
+						prop.enumeration = retinfo.class_name;
+						prop.type = "int";
+					} else if (retinfo.class_name != StringName()) {
+						prop.type = retinfo.class_name;
+					} else if (retinfo.hint == PROPERTY_HINT_RESOURCE_TYPE) {
+
+						prop.type = retinfo.hint_string;
+					} else if (retinfo.type == Variant::NIL && retinfo.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
+
+						prop.type = "Variant";
+					} else if (retinfo.type == Variant::NIL) {
+						prop.type = "void";
+					} else {
+						prop.type = Variant::get_type_name(retinfo.type);
+					}
+				}
+			}
+
+			if (!found_type) {
+
+				if (E->get().type == Variant::OBJECT && E->get().hint == PROPERTY_HINT_RESOURCE_TYPE)
+					prop.type = E->get().hint_string;
+				else
+					prop.type = Variant::get_type_name(E->get().type);
+			}
 
 			c.properties.push_back(prop);
 		}
@@ -217,8 +247,6 @@ void DocData::generate(bool p_basic_types) {
 
 			method.name = E->get().name;
 
-			MethodBind *m = ClassDB::get_method(name, E->get().name);
-
 			if (E->get().flags & METHOD_FLAG_VIRTUAL)
 				method.qualifiers = "virtual";
 			if (E->get().flags & METHOD_FLAG_CONST) {
@@ -234,122 +262,59 @@ void DocData::generate(bool p_basic_types) {
 
 			for (int i = -1; i < E->get().arguments.size(); i++) {
 
-				PropertyInfo arginfo;
-
 				if (i == -1) {
 
-					arginfo = E->get().return_val;
 #ifdef DEBUG_METHODS_ENABLED
-					if (m && m->get_return_type() != StringName())
-						method.return_type = m->get_return_type();
-					else if (method.name.find(":") != -1) {
-						method.return_type = method.name.get_slice(":", 1);
-						method.name = method.name.get_slice(":", 0);
 
-					} else if (arginfo.type != Variant::NIL) // {
+					PropertyInfo retinfo = E->get().return_val;
+
+					if (retinfo.type == Variant::INT && retinfo.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
+						method.return_enum = retinfo.class_name;
+						method.return_type = "int";
+					} else if (retinfo.class_name != StringName()) {
+						method.return_type = retinfo.class_name;
+					} else if (retinfo.hint == PROPERTY_HINT_RESOURCE_TYPE) {
+
+						method.return_type = retinfo.hint_string;
+					} else if (retinfo.type == Variant::NIL && retinfo.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
+
+						method.return_type = "Variant";
+					} else if (retinfo.type == Variant::NIL) {
+						method.return_type = "void";
+					} else {
+						method.return_type = Variant::get_type_name(retinfo.type);
+					}
 #endif
-						method.return_type = (arginfo.hint == PROPERTY_HINT_RESOURCE_TYPE) ? arginfo.hint_string : Variant::get_type_name(arginfo.type);
-					//}
 
 				} else {
 
 					ArgumentDoc argument;
 
-					arginfo = E->get().arguments[i];
+					PropertyInfo arginfo = E->get().arguments[i];
 
-					String type_name;
-
-					if (arginfo.name.find(":") != -1) {
-						type_name = arginfo.name.get_slice(":", 1);
-						arginfo.name = arginfo.name.get_slice(":", 0);
-
+					if (arginfo.type == Variant::INT && arginfo.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
+						argument.enumeration = arginfo.class_name;
+						argument.type = "int";
+					} else if (arginfo.class_name != StringName()) {
+						argument.type = arginfo.class_name;
 					} else if (arginfo.hint == PROPERTY_HINT_RESOURCE_TYPE) {
-						type_name = arginfo.hint_string;
-					} else if (arginfo.type == Variant::NIL)
-						type_name = "Variant";
-					else
-						type_name = Variant::get_type_name(arginfo.type);
 
-					if (arginfo.type == Variant::OBJECT) {
+						argument.type = arginfo.hint_string;
+					} else if (arginfo.type == Variant::NIL && arginfo.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
 
-						//print_line("validate: "+cname+"::"+method.name);
-					}
-
-					if (m && m->has_default_argument(i)) {
-						Variant default_arg = m->get_default_argument(i);
-						String default_arg_text = m->get_default_argument(i);
-
-						switch (default_arg.get_type()) {
-
-							case Variant::NIL:
-								default_arg_text = "NULL";
-								break;
-							// atomic types
-							case Variant::BOOL:
-								if (bool(default_arg))
-									default_arg_text = "true";
-								else
-									default_arg_text = "false";
-								break;
-							case Variant::INT:
-							case Variant::REAL:
-								//keep it
-								break;
-							case Variant::STRING:
-							case Variant::NODE_PATH:
-								default_arg_text = "\"" + default_arg_text + "\"";
-								break;
-							case Variant::TRANSFORM:
-								if (default_arg.operator Transform() == Transform()) {
-									default_arg_text = "";
-								}
-
-								default_arg_text = Variant::get_type_name(default_arg.get_type()) + "(" + default_arg_text + ")";
-								break;
-
-							case Variant::RECT3:
-							case Variant::COLOR:
-							case Variant::PLANE:
-							case Variant::POOL_BYTE_ARRAY:
-							case Variant::POOL_INT_ARRAY:
-							case Variant::POOL_REAL_ARRAY:
-							case Variant::POOL_STRING_ARRAY:
-							case Variant::POOL_VECTOR2_ARRAY:
-							case Variant::POOL_VECTOR3_ARRAY:
-							case Variant::POOL_COLOR_ARRAY:
-								default_arg_text = Variant::get_type_name(default_arg.get_type()) + "(" + default_arg_text + ")";
-								break;
-							case Variant::VECTOR2:
-							case Variant::RECT2:
-							case Variant::VECTOR3:
-							case Variant::QUAT:
-							case Variant::BASIS:
-								default_arg_text = Variant::get_type_name(default_arg.get_type()) + default_arg_text;
-								break;
-							case Variant::OBJECT:
-								if (default_arg.is_zero()) {
-									default_arg_text = "NULL";
-									break;
-								}
-							case Variant::DICTIONARY: // 20
-							case Variant::ARRAY:
-							case Variant::_RID:
-
-							default: {}
-						}
-
-						argument.type = type_name;
-						argument.name = arginfo.name;
-						argument.default_value = default_arg_text;
+						argument.type = "Variant";
+					} else if (arginfo.type == Variant::NIL) {
+						method.return_type = "void";
 					} else {
-
-						argument.type = type_name;
-						argument.name = arginfo.name;
+						argument.type = Variant::get_type_name(arginfo.type);
 					}
 
-					if (arginfo.type == Variant::OBJECT) {
+					argument.name = E->get().arguments[i].name;
+					int darg_idx = i - (E->get().arguments.size() - E->get().default_arguments.size());
 
-						//print_line("validate: "+cname+"::"+method.name);
+					if (darg_idx >= 0) {
+						Variant default_arg = E->get().default_arguments[darg_idx];
+						argument.default_value = default_arg.get_construct_string();
 					}
 
 					method.arguments.push_back(argument);
@@ -404,6 +369,7 @@ void DocData::generate(bool p_basic_types) {
 			ConstantDoc constant;
 			constant.name = E->get();
 			constant.value = itos(ClassDB::get_integer_constant(name, E->get()));
+			constant.enumeration = ClassDB::get_integer_constant_enum(name, E->get());
 			c.constants.push_back(constant);
 		}
 
@@ -565,6 +531,7 @@ void DocData::generate(bool p_basic_types) {
 			ConstantDoc cd;
 			cd.name = GlobalConstants::get_global_constant_name(i);
 			cd.value = itos(GlobalConstants::get_global_constant_value(i));
+			cd.enumeration = GlobalConstants::get_global_constant_enum(i);
 			c.constants.push_back(cd);
 		}
 
@@ -680,6 +647,9 @@ static Error _parse_methods(Ref<XMLParser> &parser, Vector<DocData::MethodDoc> &
 							argument.name = parser->get_attribute_value("name");
 							ERR_FAIL_COND_V(!parser->has_attribute("type"), ERR_FILE_CORRUPT);
 							argument.type = parser->get_attribute_value("type");
+							if (parser->has_attribute("enum")) {
+								argument.enumeration = parser->get_attribute_value("enum");
+							}
 
 							method.arguments.push_back(argument);
 
@@ -803,7 +773,8 @@ Error DocData::_load(Ref<XMLParser> parser) {
 									prop.getter = parser->get_attribute_value("getter");
 								if (parser->has_attribute("brief"))
 									prop.brief_description = parser->get_attribute_value("brief").xml_unescape();
-
+								if (parser->has_attribute("enum"))
+									prop.enumeration = parser->get_attribute_value("enum");
 								parser->read();
 								if (parser->get_node_type() == XMLParser::NODE_TEXT)
 									prop.description = parser->get_node_data().strip_edges();
@@ -861,6 +832,9 @@ Error DocData::_load(Ref<XMLParser> parser) {
 								constant.name = parser->get_attribute_value("name");
 								ERR_FAIL_COND_V(!parser->has_attribute("value"), ERR_FILE_CORRUPT);
 								constant.value = parser->get_attribute_value("value");
+								if (parser->has_attribute("enum")) {
+									constant.enumeration = parser->get_attribute_value("enum");
+								}
 								parser->read();
 								if (parser->get_node_type() == XMLParser::NODE_TEXT)
 									constant.description = parser->get_node_data().strip_edges();
@@ -955,10 +929,16 @@ Error DocData::save(const String &p_path) {
 			for (int j = 0; j < m.arguments.size(); j++) {
 
 				ArgumentDoc &a = m.arguments[j];
+
+				String enum_text;
+				if (a.enumeration != String()) {
+					enum_text = "enum=\"" + a.enumeration + "\"";
+				}
+
 				if (a.default_value != "")
-					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\" default=\"" + a.default_value.xml_escape(true) + "\">");
+					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\" " + enum_text + " default=\"" + a.default_value.xml_escape(true) + "\">");
 				else
-					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\">");
+					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\" " + enum_text + ">");
 
 				_write_string(f, 3, "</argument>");
 			}
@@ -980,8 +960,12 @@ Error DocData::save(const String &p_path) {
 
 			for (int i = 0; i < c.properties.size(); i++) {
 
+				String enum_text;
+				if (c.properties[i].enumeration != String()) {
+					enum_text = "enum=\"" + c.properties[i].enumeration + "\"";
+				}
 				PropertyDoc &p = c.properties[i];
-				_write_string(f, 2, "<member name=\"" + p.name + "\" type=\"" + p.type + "\" setter=\"" + p.setter + "\" getter=\"" + p.getter + "\" brief=\"" + p.brief_description.xml_escape(true) + "\">");
+				_write_string(f, 2, "<member name=\"" + p.name + "\" type=\"" + p.type + "\" setter=\"" + p.setter + "\" getter=\"" + p.getter + "\" brief=\"" + p.brief_description.xml_escape(true) + "\" " + enum_text + " >");
 				if (p.description != "")
 					_write_string(f, 3, p.description.xml_escape());
 				_write_string(f, 2, "</member>");
@@ -1021,7 +1005,11 @@ Error DocData::save(const String &p_path) {
 		for (int i = 0; i < c.constants.size(); i++) {
 
 			ConstantDoc &k = c.constants[i];
-			_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\">");
+			if (k.enumeration != String()) {
+				_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\">");
+			} else {
+				_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\" enum=\"" + k.enumeration + "\">");
+			}
 			if (k.description != "")
 				_write_string(f, 3, k.description.xml_escape());
 			_write_string(f, 2, "</constant>");

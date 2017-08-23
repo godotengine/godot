@@ -36,31 +36,16 @@
 #ifdef DEBUG_METHODS_ENABLED
 PropertyInfo MethodBind::get_argument_info(int p_argument) const {
 
-	if (p_argument >= 0) {
+	ERR_FAIL_INDEX_V(p_argument, get_argument_count(), PropertyInfo());
 
-		String name = p_argument < arg_names.size() ? String(arg_names[p_argument]) : String("arg" + itos(p_argument));
-		PropertyInfo pi(get_argument_type(p_argument), name);
+	PropertyInfo info = _gen_argument_type_info(p_argument);
+	info.name = p_argument < arg_names.size() ? String(arg_names[p_argument]) : String("arg" + itos(p_argument));
+	return info;
+}
 
-		if (!is_vararg() && pi.type == Variant::OBJECT) {
-			StringName type_hint = arg_type_hints[p_argument];
+PropertyInfo MethodBind::get_return_info() const {
 
-			if (type_hint != StringName()) {
-				pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
-				pi.hint_string = type_hint.operator String();
-			}
-		}
-		return pi;
-
-	} else {
-
-		Variant::Type at = get_argument_type(-1);
-		if (at == Variant::OBJECT && ret_type)
-			return PropertyInfo(at, "ret", PROPERTY_HINT_RESOURCE_TYPE, ret_type);
-		else
-			return PropertyInfo(at, "ret");
-	}
-
-	return PropertyInfo();
+	return _gen_argument_type_info(-1);
 }
 
 #endif
@@ -91,16 +76,6 @@ Vector<StringName> MethodBind::get_argument_names() const {
 	return arg_names;
 }
 
-void MethodBind::set_argument_type_hints(const Vector<StringName> &p_type_hints) {
-
-	arg_type_hints = p_type_hints;
-}
-
-Vector<StringName> MethodBind::get_argument_type_hints() const {
-
-	return arg_type_hints;
-}
-
 #endif
 
 void MethodBind::set_default_arguments(const Vector<Variant> &p_defargs) {
@@ -114,18 +89,13 @@ void MethodBind::_generate_argument_types(int p_count) {
 	set_argument_count(p_count);
 
 	Variant::Type *argt = memnew_arr(Variant::Type, p_count + 1);
-
-	arg_type_hints.resize(p_count);
-
 	argt[0] = _gen_argument_type(-1); // return type
-	set_return_type(_gen_argument_type_hint(-1));
 
 	for (int i = 0; i < p_count; i++) {
 		argt[i + 1] = _gen_argument_type(i);
-		arg_type_hints[i] = _gen_argument_type_hint(i);
 	}
 
-	set_argument_types(argt);
+	argument_types = argt;
 }
 
 #endif

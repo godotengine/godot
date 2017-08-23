@@ -382,8 +382,8 @@ template <class T>
 struct GetTypeInfo<Ref<T> > {
 	enum { VARIANT_TYPE = Variant::OBJECT };
 
-	static inline StringName get_class_name() {
-		return T::get_class_static();
+	static inline PropertyInfo get_class_info() {
+		return PropertyInfo(Variant::OBJECT, String(), PROPERTY_HINT_RESOURCE_TYPE, T::get_class_static());
 	}
 };
 
@@ -391,8 +391,8 @@ template <class T>
 struct GetTypeInfo<const Ref<T> &> {
 	enum { VARIANT_TYPE = Variant::OBJECT };
 
-	static inline StringName get_class_name() {
-		return T::get_class_static();
+	static inline PropertyInfo get_class_info() {
+		return PropertyInfo(Variant::OBJECT, String(), PROPERTY_HINT_RESOURCE_TYPE, T::get_class_static());
 	}
 };
 

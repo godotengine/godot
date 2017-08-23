@@ -1041,11 +1041,11 @@ static bool _guess_identifier_type(GDCompletionContext &context, int p_line, con
 
 						PropertyInfo arg = E->get().arguments[argindex];
 
-						int scp = arg.name.find(":");
+						int scp = String(arg.name).find(":");
 						if (scp != -1) {
 
 							r_type.type = Variant::OBJECT;
-							r_type.obj_type = arg.name.substr(scp + 1, arg.name.length());
+							r_type.obj_type = String(arg.name).substr(scp + 1, String(arg.name).length());
 							return true;
 
 						} else {
@@ -1271,7 +1271,7 @@ static void _find_identifiers_in_class(GDCompletionContext &context, bool p_stat
 				for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
 					if (E->get().usage & (PROPERTY_USAGE_GROUP | PROPERTY_USAGE_CATEGORY))
 						continue;
-					if (E->get().name.find("/") != -1)
+					if (String(E->get().name).find("/") != -1)
 						continue;
 					result.insert(E->get().name);
 				}
@@ -2111,7 +2111,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 						for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
 							if (E->get().usage & (PROPERTY_USAGE_GROUP | PROPERTY_USAGE_CATEGORY))
 								continue;
-							if (E->get().name.find("/") != -1)
+							if (String(E->get().name).find("/") != -1)
 								continue;
 							options.insert(E->get().name);
 						}
@@ -2245,7 +2245,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 						for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
 							if (E->get().usage & (PROPERTY_USAGE_GROUP | PROPERTY_USAGE_CATEGORY))
 								continue;
-							if (E->get().name.find("/") != -1)
+							if (String(E->get().name).find("/") != -1)
 								continue;
 							r_options->push_back(E->get().name);
 						}
@@ -2277,7 +2277,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 							t.value.get_property_list(&pl);
 							for (List<PropertyInfo>::Element *E = pl.front(); E; E = E->next()) {
 
-								if (E->get().name.find("/") == -1)
+								if (String(E->get().name).find("/") == -1)
 									options.insert(E->get().name);
 							}
 						}

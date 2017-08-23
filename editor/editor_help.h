@@ -123,6 +123,7 @@ class EditorHelp : public VBoxContainer {
 	Map<String, int> property_line;
 	Map<String, int> theme_property_line;
 	Map<String, int> constant_line;
+	Map<String, int> enum_line;
 	int description_line;
 
 	RichTextLabel *class_desc;
@@ -141,7 +142,7 @@ class EditorHelp : public VBoxContainer {
 	bool scroll_locked;
 
 	//void _button_pressed(int p_idx);
-	void _add_type(const String &p_type);
+	void _add_type(const String &p_type, const String &p_enum = String());
 
 	void _class_list_select(const String &p_select);
 	void _class_desc_select(const String &p_select);

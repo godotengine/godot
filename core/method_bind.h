@@ -188,23 +188,22 @@ class MethodBind {
 	Vector<Variant> default_arguments;
 	int default_argument_count;
 	int argument_count;
-#ifdef DEBUG_METHODS_ENABLED
-	Vector<StringName> arg_names;
-	Vector<StringName> arg_type_hints;
-	Variant::Type *argument_types;
-	StringName ret_type;
-#endif
+
 	bool _const;
 	bool _returns;
 
 protected:
+#ifdef DEBUG_METHODS_ENABLED
+	Variant::Type *argument_types;
+	Vector<StringName> arg_names;
+#endif
 	void _set_const(bool p_const);
 	void _set_returns(bool p_returns);
 #ifdef DEBUG_METHODS_ENABLED
 	virtual Variant::Type _gen_argument_type(int p_arg) const = 0;
-	virtual StringName _gen_argument_type_hint(int p_arg) const = 0;
+	virtual PropertyInfo _gen_argument_type_info(int p_arg) const = 0;
 	void _generate_argument_types(int p_count);
-	void set_argument_types(Variant::Type *p_types) { argument_types = p_types; }
+
 #endif
 	void set_argument_count(int p_count) { argument_count = p_count; }
 
@@ -234,9 +233,6 @@ public:
 
 #ifdef DEBUG_METHODS_ENABLED
 
-	_FORCE_INLINE_ void set_return_type(const StringName &p_type) { ret_type = p_type; }
-	_FORCE_INLINE_ StringName get_return_type() const { return ret_type; }
-
 	_FORCE_INLINE_ Variant::Type get_argument_type(int p_argument) const {
 
 		ERR_FAIL_COND_V(p_argument < -1 || p_argument > argument_count, Variant::NIL);
@@ -244,12 +240,11 @@ public:
 	}
 
 	PropertyInfo get_argument_info(int p_argument) const;
+	PropertyInfo get_return_info() const;
 
-	void set_argument_names(const Vector<StringName> &p_names);
+	void set_argument_names(const Vector<StringName> &p_names); //set by class, db, cant be inferred otherwise
 	Vector<StringName> get_argument_names() const;
 
-	void set_argument_type_hints(const Vector<StringName> &p_type_hints);
-	Vector<StringName> get_argument_type_hints() const;
 #endif
 	void set_hint_flags(uint32_t p_hint) { hint_flags = p_hint; }
 	uint32_t get_hint_flags() const { return hint_flags | (is_const() ? METHOD_FLAG_CONST : 0) | (is_vararg() ? METHOD_FLAG_VARARG : 0); }
@@ -305,18 +300,36 @@ public:
 
 protected:
 	NativeCall call_method;
+#ifdef DEBUG_METHODS_ENABLED
 
+	MethodInfo arguments;
+
+#endif
 public:
-	virtual Variant::Type _gen_argument_type(int p_arg) const {
+#ifdef DEBUG_METHODS_ENABLED
 
+	virtual PropertyInfo _gen_argument_type_info(int p_arg) const {
+
+		if (p_arg < 0) {
+			return arguments.return_val;
+		} else if (p_arg < arguments.arguments.size()) {
+			return arguments.arguments[p_arg];
+		} else {
+			return PropertyInfo(Variant::NIL, "arg_" + itos(p_arg), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT);
+		}
+	}
+
+	virtual Variant::Type _gen_argument_type(int p_arg) const {
+		return _gen_argument_type_info(p_arg).type;
+	}
+
+#else
+
+	virtual Variant::Type _gen_argument_type(int p_arg) const {
 		return Variant::NIL;
 	}
 
-	virtual StringName _gen_argument_type_hint(int p_arg) const {
-
-		return "Variant";
-	}
-
+#endif
 	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Variant::CallError &r_error) {
 
 		T *instance = static_cast<T *>(p_object);
@@ -341,7 +354,8 @@ public:
 
 			set_argument_names(names);
 		}
-		set_argument_types(at);
+		argument_types = at;
+		arguments = p_info;
 #endif
 	}
 

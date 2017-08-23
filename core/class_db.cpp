@@ -538,9 +538,7 @@ void ClassDB::get_method_list(StringName p_class, List<MethodInfo> *p_methods, b
 				minfo.arguments.push_back(method->get_argument_info(i));
 			}
 
-			if (method->get_argument_type(-1) != Variant::NIL) {
-				minfo.return_val = method->get_argument_info(-1);
-			}
+			minfo.return_val = method->get_return_info();
 
 			minfo.flags = method->get_hint_flags();
 			p_methods->push_back(minfo);
@@ -680,7 +678,7 @@ StringName ClassDB::get_integer_constant_enum(const StringName &p_class, const S
 			List<StringName> &constants_list = type->enum_map.get(*k);
 			const List<StringName>::Element *found = constants_list.find(p_name);
 			if (found)
-				return found->get();
+				return *k;
 		}
 
 		if (p_no_inheritance)

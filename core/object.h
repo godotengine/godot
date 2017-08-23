@@ -107,6 +107,8 @@ enum PropertyUsageFlags {
 	PROPERTY_USAGE_ANIMATE_AS_TRIGGER = 32768,
 	PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED = 65536,
 	PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE = 1 << 17,
+	PROPERTY_USAGE_CLASS_IS_ENUM = 1 << 18,
+	PROPERTY_USAGE_NIL_IS_VARIANT = 1 << 19,
 
 	PROPERTY_USAGE_DEFAULT = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_NETWORK,
 	PROPERTY_USAGE_DEFAULT_INTL = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_NETWORK | PROPERTY_USAGE_INTERNATIONALIZED,
@@ -126,6 +128,7 @@ struct PropertyInfo {
 
 	Variant::Type type;
 	String name;
+	StringName class_name; //for classes
 	PropertyHint hint;
 	String hint_string;
 	uint32_t usage;
@@ -145,13 +148,27 @@ struct PropertyInfo {
 		  hint(PROPERTY_HINT_NONE),
 		  usage(PROPERTY_USAGE_DEFAULT) {
 	}
-	PropertyInfo(Variant::Type p_type, const String p_name, PropertyHint p_hint = PROPERTY_HINT_NONE, const String &p_hint_string = "", uint32_t p_usage = PROPERTY_USAGE_DEFAULT)
+	PropertyInfo(Variant::Type p_type, const String p_name, PropertyHint p_hint = PROPERTY_HINT_NONE, const String &p_hint_string = "", uint32_t p_usage = PROPERTY_USAGE_DEFAULT, const StringName &p_class_name = StringName())
 		: type(p_type),
 		  name(p_name),
 		  hint(p_hint),
 		  hint_string(p_hint_string),
 		  usage(p_usage) {
+
+		if (hint == PROPERTY_HINT_RESOURCE_TYPE) {
+			class_name = hint_string;
+		} else {
+			class_name = p_class_name;
+		}
 	}
+	PropertyInfo(const StringName &p_class_name)
+		: type(Variant::OBJECT),
+		  hint(PROPERTY_HINT_NONE),
+		  usage(PROPERTY_USAGE_DEFAULT) {
+
+		class_name = p_class_name;
+	}
+
 	bool operator<(const PropertyInfo &p_info) const {
 		return name < p_info.name;
 	}
