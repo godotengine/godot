@@ -60,7 +60,7 @@ class VideoStreamPlaybackWebm : public VideoStreamPlayback {
 	PoolVector<uint8_t> frame_data;
 	Ref<ImageTexture> texture;
 
-	int16_t *pcm;
+	float *pcm;
 
 public:
 	VideoStreamPlaybackWebm();

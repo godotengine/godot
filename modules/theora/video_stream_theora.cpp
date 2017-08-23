@@ -555,7 +555,7 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 
 				const int AUXBUF_LEN = 4096;
 				int to_read = ret;
-				int16_t aux_buffer[AUXBUF_LEN];
+				float aux_buffer[AUXBUF_LEN];
 
 				while (to_read) {
 
@@ -565,16 +565,12 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 
 					for (int j = 0; j < m; j++) {
 						for (int i = 0; i < vi.channels; i++) {
-
-							int val = Math::fast_ftoi(pcm[i][j] * 32767.f);
-							if (val > 32767) val = 32767;
-							if (val < -32768) val = -32768;
-							aux_buffer[count++] = val;
+							aux_buffer[count++] = pcm[i][j];
 						}
 					}
 
 					if (mix_callback) {
-						int mixed = mix_callback(mix_udata, aux_buffer, m);
+						int mixed = mix_callback(mix_udata, (AudioFrame*) aux_buffer, m);
 						to_read -= mixed;
 						if (mixed != m) { //could mix no more
 							buffer_full = true;

@@ -32,6 +32,7 @@
 
 #include "audio_stream_resampled.h"
 #include "scene/resources/texture.h"
+#include "core/math/audio_frame.h"
 
 class VideoStreamPlayback : public Resource {
 
@@ -41,7 +42,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	typedef int (*AudioMixCallback)(void *p_udata, const int16_t *p_data, int p_frames);
+	typedef int (*AudioMixCallback)(void *p_udata, const AudioFrame *p_data, int p_frames);
 
 	virtual void stop() = 0;
 	virtual void play() = 0;

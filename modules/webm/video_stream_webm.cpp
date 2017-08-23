@@ -124,7 +124,7 @@ bool VideoStreamPlaybackWebm::open_file(const String &p_file) {
 			if (audio->isOpen()) {
 
 				audio_frame = memnew(WebMFrame);
-				pcm = (int16_t *)memalloc(sizeof(int16_t) * audio->getBufferSamples() * webm->getChannels());
+				pcm = (float *)memalloc(sizeof(float) * audio->getBufferSamples() * webm->getChannels());
 			} else {
 
 				memdelete(audio);
@@ -237,7 +237,7 @@ void VideoStreamPlaybackWebm::update(float p_delta) {
 
 		//Mix remaining samples
 		const int to_read = num_decoded_samples - samples_offset;
-		const int mixed = mix_callback(mix_udata, pcm + samples_offset * webm->getChannels(), to_read);
+		const int mixed = mix_callback(mix_udata, (AudioFrame*)  pcm + samples_offset * webm->getChannels(), to_read);
 		if (mixed != to_read) {
 
 			samples_offset += mixed;
@@ -251,9 +251,9 @@ void VideoStreamPlaybackWebm::update(float p_delta) {
 	const bool hasAudio = (audio && mix_callback);
 	while ((hasAudio && (!audio_buffer_full || !has_enough_video_frames())) || (!hasAudio && video_frames_pos == 0)) {
 
-		if (hasAudio && !audio_buffer_full && audio_frame->isValid() && audio->getPCMS16(*audio_frame, pcm, num_decoded_samples) && num_decoded_samples > 0) {
+		if (hasAudio && !audio_buffer_full && audio_frame->isValid() && audio->getPCMS(*audio_frame, pcm, num_decoded_samples) && num_decoded_samples > 0) {
 
-			const int mixed = mix_callback(mix_udata, pcm, num_decoded_samples);
+			const int mixed = mix_callback(mix_udata, (AudioFrame*)  pcm, num_decoded_samples);
 			if (mixed != num_decoded_samples) {
 
 				samples_offset = mixed;
