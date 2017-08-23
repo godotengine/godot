@@ -143,7 +143,6 @@ class EditorHelp : public VBoxContainer {
 	//void _button_pressed(int p_idx);
 	void _add_type(const String &p_type);
 
-	void _scroll_changed(double p_scroll);
 	void _class_list_select(const String &p_select);
 	void _class_desc_select(const String &p_select);
 	void _class_desc_input(const Ref<InputEvent> &p_input);
