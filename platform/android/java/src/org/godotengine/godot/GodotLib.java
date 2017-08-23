@@ -48,7 +48,7 @@ public class GodotLib {
      public static native void initialize(Godot p_instance,boolean need_reload_hook,String[] p_cmdline,Object p_asset_manager);
      public static native void resize(int width, int height,boolean reload);
      public static native void newcontext(boolean p_32_bits);
-     public static native void quit();
+     public static native void back();
      public static native void step();
      public static native void touch(int what,int pointer,int howmany, int[] arr);
      public static native void accelerometer(float x, float y, float z);
