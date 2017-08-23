@@ -82,9 +82,9 @@ Error ImageLoaderSVG::create_image_from_string(Ref<Image> p_image, const char *s
 
 	size_t str_len = strlen(svg_str);
 	PoolVector<uint8_t> src_data;
-	src_data.resize(str_len);
+	src_data.resize(str_len + 1);
 	PoolVector<uint8_t>::Write src_w = src_data.write();
-	memcpy(src_w.ptr(), svg_str, str_len);
+	memcpy(src_w.ptr(), svg_str, str_len + 1);
 
 	return _create_image(p_image, &src_data, p_scale, upsample);
 }
@@ -93,9 +93,10 @@ Error ImageLoaderSVG::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 
 	uint32_t size = f->get_len();
 	PoolVector<uint8_t> src_image;
-	src_image.resize(size);
+	src_image.resize(size + 1);
 	PoolVector<uint8_t>::Write src_w = src_image.write();
 	f->get_buffer(src_w.ptr(), size);
+	src_w.ptr()[size] = '\0';
 
 	return _create_image(p_image, &src_image, p_scale, 1.0);
 }

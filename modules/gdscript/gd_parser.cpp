@@ -1894,7 +1894,26 @@ GDParser::PatternNode *GDParser::_parse_pattern(bool p_static) {
 				return NULL;
 			}
 
-			if (value->type != Node::TYPE_IDENTIFIER && value->type != Node::TYPE_CONSTANT) {
+			if (value->type == Node::TYPE_OPERATOR) {
+				// Maybe it's SomeEnum.VALUE
+				Node *current_value = value;
+
+				while (current_value->type == Node::TYPE_OPERATOR) {
+					OperatorNode *op_node = static_cast<OperatorNode *>(current_value);
+
+					if (op_node->op != OperatorNode::OP_INDEX_NAMED) {
+						_set_error("Invalid operator in pattern. Only index (`A.B`) is allowed");
+						return NULL;
+					}
+					current_value = op_node->arguments[0];
+				}
+
+				if (current_value->type != Node::TYPE_IDENTIFIER) {
+					_set_error("Only constant expression or variables allowed in a pattern");
+					return NULL;
+				}
+
+			} else if (value->type != Node::TYPE_IDENTIFIER && value->type != Node::TYPE_CONSTANT) {
 				_set_error("Only constant expressions or variables allowed in a pattern");
 				return NULL;
 			}

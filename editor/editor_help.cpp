@@ -630,17 +630,6 @@ void EditorHelp::_add_type(const String &p_type) {
 	class_desc->pop();
 }
 
-void EditorHelp::_scroll_changed(double p_scroll) {
-
-	if (scroll_locked)
-		return;
-
-	if (!class_desc->get_v_scroll()->is_visible())
-		p_scroll = 0;
-
-	//history[p].scroll=p_scroll;
-}
-
 Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 
 	//ERR_FAIL_COND(!doc->class_list.has(p_class));
@@ -1681,7 +1670,6 @@ void EditorHelp::_bind_methods() {
 	ClassDB::bind_method("_class_desc_select", &EditorHelp::_class_desc_select);
 	ClassDB::bind_method("_class_desc_input", &EditorHelp::_class_desc_input);
 	//ClassDB::bind_method("_button_pressed",&EditorHelp::_button_pressed);
-	ClassDB::bind_method("_scroll_changed", &EditorHelp::_scroll_changed);
 	ClassDB::bind_method("_request_help", &EditorHelp::_request_help);
 	ClassDB::bind_method("_unhandled_key_input", &EditorHelp::_unhandled_key_input);
 	ClassDB::bind_method("_search", &EditorHelp::_search);
@@ -1714,7 +1702,6 @@ EditorHelp::EditorHelp() {
 		class_desc->connect("gui_input", this, "_class_desc_input");
 	}
 
-	class_desc->get_v_scroll()->connect("value_changed", this, "_scroll_changed");
 	class_desc->set_selection_enabled(true);
 
 	scroll_locked = false;

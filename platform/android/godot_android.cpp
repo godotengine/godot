@@ -833,7 +833,6 @@ void android_main(struct android_app *app) {
 			if (engine.requested_quit) {
 				engine_term_display(&engine);
 				exit(0);
-				return;
 			}
 
 			//     LOGI("end\n");
