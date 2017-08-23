@@ -32,7 +32,7 @@
 #if 0
 
 #include "canvas_item_editor_plugin.h"
-#include "os/keyboard.h"
+#include "core/os/keyboard.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"

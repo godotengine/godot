@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "input.h"
-#include "input_map.h"
-#include "os/os.h"
-#include "project_settings.h"
+#include "core/input_map.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 Input *Input::singleton = NULL;
 
 Input *Input::get_singleton() {

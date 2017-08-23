@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "rich_text_label.h"
-#include "os/keyboard.h"
-#include "os/os.h"
+#include "core/os/keyboard.h"
+#include "core/os/os.h"
 #include "scene/scene_string_names.h"
 RichTextLabel::Item *RichTextLabel::_get_next_item(Item *p_item, bool p_free) {
 

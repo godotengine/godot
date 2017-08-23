@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "scroll_bar.h"
-#include "os/keyboard.h"
-#include "os/os.h"
-#include "print_string.h"
+#include "core/os/keyboard.h"
+#include "core/os/os.h"
+#include "core/print_string.h"
 bool ScrollBar::focus_by_default = false;
 
 void ScrollBar::set_can_focus_by_default(bool p_can_focus) {

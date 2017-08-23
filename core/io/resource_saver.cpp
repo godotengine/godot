@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "resource_saver.h"
-#include "os/file_access.h"
-#include "project_settings.h"
+#include "core/os/file_access.h"
+#include "core/project_settings.h"
+#include "core/script_language.h"
 #include "resource_loader.h"
-#include "script_language.h"
 
 ResourceFormatSaver *ResourceSaver::saver[MAX_SAVERS];
 

@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "tree.h"
-#include "os/input.h"
-#include "os/keyboard.h"
-#include "os/os.h"
-#include "print_string.h"
-#include "project_settings.h"
+#include "core/os/input.h"
+#include "core/os/keyboard.h"
+#include "core/os/os.h"
+#include "core/print_string.h"
+#include "core/project_settings.h"
 #include "scene/main/viewport.h"
 
 void TreeItem::move_to_top() {

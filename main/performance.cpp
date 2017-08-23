@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "performance.h"
-#include "message_queue.h"
-#include "os/os.h"
+#include "core/message_queue.h"
+#include "core/os/os.h"
 #include "scene/main/scene_tree.h"
 #include "servers/physics_2d_server.h"
 #include "servers/physics_server.h"

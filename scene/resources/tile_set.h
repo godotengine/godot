@@ -30,7 +30,7 @@
 #ifndef TILE_SET_H
 #define TILE_SET_H
 
-#include "resource.h"
+#include "core/resource.h"
 #include "scene/2d/light_occluder_2d.h"
 #include "scene/2d/navigation_polygon.h"
 #include "scene/resources/shape_2d.h"

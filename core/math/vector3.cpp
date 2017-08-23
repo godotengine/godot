@@ -27,8 +27,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "vector3.h"
-#include "matrix3.h"
+#include "core/math/vector3.h"
+#include "core/math/matrix3.h"
 
 void Vector3::rotate(const Vector3 &p_axis, real_t p_phi) {
 

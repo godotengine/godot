@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "gd_parser.h"
+#include "core/io/resource_loader.h"
+#include "core/os/file_access.h"
+#include "core/print_string.h"
+#include "core/script_language.h"
 #include "gd_script.h"
-#include "io/resource_loader.h"
-#include "os/file_access.h"
-#include "print_string.h"
-#include "script_language.h"
 
 template <class T>
 T *GDParser::alloc_node() {

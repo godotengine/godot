@@ -37,8 +37,8 @@
 
 #if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED)
 
+#include "core/os/os.h"
 #include "drivers/gl_context/context_gl.h"
-#include "os/os.h"
 #include <X11/Xlib.h>
 
 struct ContextGL_X11_Private;

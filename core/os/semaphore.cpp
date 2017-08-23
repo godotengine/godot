@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "semaphore.h"
-#include "error_macros.h"
+#include "core/error_macros.h"
 
 Semaphore *(*Semaphore::create_func)() = 0;
 

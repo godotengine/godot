@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "test_sound.h"
-#include "math_funcs.h"
-#include "os/main_loop.h"
+#include "core/math/math_funcs.h"
+#include "core/os/main_loop.h"
 #include "servers/visual_server.h"
 
-#include "io/resource_loader.h"
-#include "os/os.h"
-#include "print_string.h"
+#include "core/io/resource_loader.h"
+#include "core/os/os.h"
+#include "core/print_string.h"
 #include "servers/audio_server.h"
 
 #if 0

@@ -30,9 +30,9 @@
 #ifndef DICTIONARY_H
 #define DICTIONARY_H
 
-#include "array.h"
-#include "list.h"
-#include "ustring.h"
+#include "core/array.h"
+#include "core/list.h"
+#include "core/ustring.h"
 class Variant;
 
 struct DictionaryPrivate;

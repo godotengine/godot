@@ -30,13 +30,13 @@
 #ifndef PROJECT_SETTINGS_H
 #define PROJECT_SETTINGS_H
 
+#include "core/undo_redo.h"
 #include "editor_autoload_settings.h"
 #include "editor_data.h"
 #include "editor_plugin_settings.h"
 #include "property_editor.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tab_container.h"
-#include "undo_redo.h"
 
 //#include "project_export_settings.h"
 

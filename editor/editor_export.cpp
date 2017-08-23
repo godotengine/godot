@@ -29,18 +29,18 @@
 /*************************************************************************/
 #include "editor_export.h"
 
+#include "core/io/config_file.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/io/zip_io.h"
+#include "core/os/file_access.h"
+#include "core/project_settings.h"
+#include "core/script_language.h"
+#include "core/version.h"
 #include "editor/editor_file_system.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor_node.h"
 #include "editor_settings.h"
-#include "io/config_file.h"
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
-#include "io/zip_io.h"
-#include "os/file_access.h"
-#include "project_settings.h"
-#include "script_language.h"
-#include "version.h"
 
 #include "thirdparty/misc/md5.h"
 
@@ -1173,21 +1173,21 @@ EditorExportPlatformPC::EditorExportPlatformPC() {
 ////////
 
 #if 0
+#include "core/io/config_file.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/io/zip_io.h"
+#include "core/os/dir_access.h"
+#include "core/os/file_access.h"
+#include "core/project_settings.h"
+#include "core/script_language.h"
+#include "core/version.h"
 #include "editor/editor_file_system.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor_node.h"
 #include "editor_settings.h"
-#include "io/config_file.h"
 #include "io/md5.h"
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
-#include "io/zip_io.h"
 #include "io_plugins/editor_texture_import_plugin.h"
-#include "os/dir_access.h"
-#include "os/file_access.h"
-#include "project_settings.h"
-#include "script_language.h"
-#include "version.h"
 
 
 String EditorImportPlugin::validate_source_path(const String& p_path) {

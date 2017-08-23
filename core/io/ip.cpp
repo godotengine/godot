@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "ip.h"
-#include "hash_map.h"
-#include "os/semaphore.h"
-#include "os/thread.h"
+#include "core/hash_map.h"
+#include "core/os/semaphore.h"
+#include "core/os/thread.h"
 
 VARIANT_ENUM_CAST(IP::ResolverStatus);
 

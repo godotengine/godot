@@ -30,6 +30,7 @@
 #ifndef SCRIPT_EDITOR_PLUGIN_H
 #define SCRIPT_EDITOR_PLUGIN_H
 
+#include "core/script_language.h"
 #include "editor/code_editor.h"
 #include "editor/editor_help.h"
 #include "editor/editor_plugin.h"
@@ -42,7 +43,6 @@
 #include "scene/gui/tool_button.h"
 #include "scene/gui/tree.h"
 #include "scene/main/timer.h"
-#include "script_language.h"
 
 class ScriptEditorQuickOpen : public ConfirmationDialog {
 

@@ -30,7 +30,7 @@
 #ifndef GD_FUNCTIONS_H
 #define GD_FUNCTIONS_H
 
-#include "variant.h"
+#include "core/variant.h"
 
 class GDFunctions {
 public:

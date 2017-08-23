@@ -31,9 +31,9 @@
 #ifndef X11_POWER_H_
 #define X11_POWER_H_
 
-#include "os/dir_access.h"
-#include "os/file_access.h"
-#include "os/power.h"
+#include "core/os/dir_access.h"
+#include "core/os/file_access.h"
+#include "core/os/power.h"
 
 class PowerX11 {
 

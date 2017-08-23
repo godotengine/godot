@@ -36,14 +36,14 @@
 
 #ifdef GLES2_ENABLED
 
-#include "camera_matrix.h"
-#include "image.h"
-#include "list.h"
-#include "map.h"
-#include "rid.h"
-#include "self_list.h"
+#include "core/image.h"
+#include "core/list.h"
+#include "core/map.h"
+#include "core/math/camera_matrix.h"
+#include "core/rid.h"
+#include "core/self_list.h"
+#include "core/sort.h"
 #include "servers/visual_server.h"
-#include "sort.h"
 
 #include "platform_config.h"
 #ifndef GLES2_INCLUDE_H

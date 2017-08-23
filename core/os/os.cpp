@@ -29,10 +29,10 @@
 /*************************************************************************/
 #include "os.h"
 
+#include "core/os/file_access.h"
+#include "core/project_settings.h"
 #include "dir_access.h"
 #include "input.h"
-#include "os/file_access.h"
-#include "project_settings.h"
 
 #include <stdarg.h>
 

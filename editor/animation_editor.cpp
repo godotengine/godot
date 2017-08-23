@@ -29,13 +29,13 @@
 /*************************************************************************/
 #include "animation_editor.h"
 
+#include "core/io/resource_saver.h"
+#include "core/os/keyboard.h"
+#include "core/os/os.h"
+#include "core/pair.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor_node.h"
 #include "editor_settings.h"
-#include "io/resource_saver.h"
-#include "os/keyboard.h"
-#include "os/os.h"
-#include "pair.h"
 #include "scene/gui/separator.h"
 #include "scene/main/viewport.h"
 /* Missing to fix:

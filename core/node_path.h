@@ -30,8 +30,8 @@
 #ifndef NODE_PATH_H
 #define NODE_PATH_H
 
-#include "string_db.h"
-#include "ustring.h"
+#include "core/string_db.h"
+#include "core/ustring.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */

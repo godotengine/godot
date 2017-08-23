@@ -27,11 +27,11 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "translation.h"
+#include "core/translation.h"
 
-#include "io/resource_loader.h"
-#include "os/os.h"
-#include "project_settings.h"
+#include "core/io/resource_loader.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 
 static const char *locale_list[] = {
 	"aa", //  Afar

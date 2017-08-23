@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "marshalls.h"
-#include "os/keyboard.h"
-#include "print_string.h"
-#include "reference.h"
+#include "core/os/keyboard.h"
+#include "core/print_string.h"
+#include "core/reference.h"
 #include <stdio.h>
 
 void EncodedObjectAsID::_bind_methods() {

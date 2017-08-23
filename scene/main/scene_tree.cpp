@@ -29,18 +29,18 @@
 /*************************************************************************/
 #include "scene_tree.h"
 
-#include "message_queue.h"
+#include "core/message_queue.h"
+#include "core/os/keyboard.h"
+#include "core/os/os.h"
+#include "core/print_string.h"
+#include "core/project_settings.h"
 #include "node.h"
-#include "os/keyboard.h"
-#include "os/os.h"
-#include "print_string.h"
-#include "project_settings.h"
 #include <stdio.h>
 //#include "servers/spatial_sound_2d_server.h"
 
+#include "core/io/marshalls.h"
+#include "core/io/resource_loader.h"
 #include "editor/editor_node.h"
-#include "io/marshalls.h"
-#include "io/resource_loader.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/packed_scene.h"

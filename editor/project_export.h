@@ -30,9 +30,9 @@
 #ifndef PROJECT_EXPORT_SETTINGS_H
 #define PROJECT_EXPORT_SETTINGS_H
 
+#include "core/os/dir_access.h"
+#include "core/os/thread.h"
 #include "editor/editor_file_dialog.h"
-#include "os/dir_access.h"
-#include "os/thread.h"
 #include "scene/gui/button.h"
 #include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"

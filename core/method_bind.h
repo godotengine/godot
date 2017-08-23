@@ -30,10 +30,10 @@
 #ifndef METHOD_BIND_H
 #define METHOD_BIND_H
 
-#include "list.h"
-#include "method_ptrcall.h"
-#include "object.h"
-#include "variant.h"
+#include "core/list.h"
+#include "core/method_ptrcall.h"
+#include "core/object.h"
+#include "core/variant.h"
 #include <stdio.h>
 
 /**
@@ -44,7 +44,7 @@
 #define DEBUG_METHODS_ENABLED
 #endif
 
-#include "type_info.h"
+#include "core/type_info.h"
 
 enum MethodFlags {
 

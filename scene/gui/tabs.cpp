@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "tabs.h"
 
-#include "message_queue.h"
+#include "core/message_queue.h"
 
 Size2 Tabs::get_minimum_size() const {
 

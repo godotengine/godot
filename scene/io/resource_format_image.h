@@ -32,8 +32,8 @@
 
 #if 0
 
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */

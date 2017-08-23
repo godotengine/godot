@@ -30,7 +30,7 @@
 #ifndef TEST_GUI_H
 #define TEST_GUI_H
 
-#include "os/main_loop.h"
+#include "core/os/main_loop.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>

@@ -27,9 +27,9 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "plane.h"
+#include "core/math/plane.h"
 
-#include "math_funcs.h"
+#include "core/math/math_funcs.h"
 
 #define _PLANE_EQ_DOT_EPSILON 0.999
 #define _PLANE_EQ_D_EPSILON 0.0001

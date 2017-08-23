@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "image_compress_squish.h"
 
-#include "print_string.h"
+#include "core/print_string.h"
 
 #if defined(__SSE2__)
 #define SQUISH_USE_SSE 2

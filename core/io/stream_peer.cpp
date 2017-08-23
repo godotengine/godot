@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "stream_peer.h"
-#include "io/marshalls.h"
+#include "core/io/marshalls.h"
 
 Error StreamPeer::_put_data(const PoolVector<uint8_t> &p_data) {
 

@@ -27,13 +27,13 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "script_debugger_remote.h"
+#include "core/script_debugger_remote.h"
 
-#include "io/ip.h"
-#include "io/marshalls.h"
-#include "os/input.h"
-#include "os/os.h"
-#include "project_settings.h"
+#include "core/io/ip.h"
+#include "core/io/marshalls.h"
+#include "core/os/input.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 void ScriptDebuggerRemote::_send_video_memory() {
 
 	List<ResourceUsage> usage;

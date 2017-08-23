@@ -30,10 +30,10 @@
 #ifndef GDNATIVE_H
 #define GDNATIVE_H
 
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
-#include "os/thread_safe.h"
-#include "resource.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/os/thread_safe.h"
+#include "core/resource.h"
 
 #include <godot/gdnative.h>
 

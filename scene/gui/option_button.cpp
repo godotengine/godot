@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "option_button.h"
-#include "print_string.h"
+#include "core/print_string.h"
 
 Size2 OptionButton::get_minimum_size() const {
 

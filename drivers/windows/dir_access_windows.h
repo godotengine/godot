@@ -32,7 +32,7 @@
 
 #ifdef WINDOWS_ENABLED
 
-#include "os/dir_access.h"
+#include "core/os/dir_access.h"
 
 /**
 	@author Juan Linietsky <reduz@gmail.com>

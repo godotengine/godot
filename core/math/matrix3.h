@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "vector3.h"
+#include "core/math/vector3.h"
 
 #ifndef MATRIX3_H
 #define MATRIX3_H
 
-#include "quat.h"
+#include "core/math/quat.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>

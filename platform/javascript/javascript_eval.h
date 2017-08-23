@@ -32,7 +32,7 @@
 #ifndef JAVASCRIPT_EVAL_H
 #define JAVASCRIPT_EVAL_H
 
-#include "object.h"
+#include "core/object.h"
 
 class JavaScript : public Object {
 private:

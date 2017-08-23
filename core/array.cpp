@@ -27,12 +27,12 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "array.h"
+#include "core/array.h"
 
-#include "hashfuncs.h"
-#include "object.h"
-#include "variant.h"
-#include "vector.h"
+#include "core/hashfuncs.h"
+#include "core/object.h"
+#include "core/variant.h"
+#include "core/vector.h"
 
 struct ArrayPrivate {
 

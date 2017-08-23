@@ -27,8 +27,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "quick_hull.h"
-#include "map.h"
+#include "core/math/quick_hull.h"
+#include "core/map.h"
 
 uint32_t QuickHull::debug_stop_after = 0xFFFFFFFF;
 

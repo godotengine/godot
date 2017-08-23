@@ -30,9 +30,9 @@
 #ifndef RSTRING_H
 #define RSTRING_H
 
-#include "array.h"
-#include "typedefs.h"
-#include "vector.h"
+#include "core/array.h"
+#include "core/typedefs.h"
+#include "core/vector.h"
 
 /**
 	@author red <red@killy>

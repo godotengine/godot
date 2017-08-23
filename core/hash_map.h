@@ -30,12 +30,12 @@
 #ifndef HASH_MAP_H
 #define HASH_MAP_H
 
-#include "error_macros.h"
-#include "hashfuncs.h"
-#include "list.h"
-#include "math_funcs.h"
-#include "os/memory.h"
-#include "ustring.h"
+#include "core/error_macros.h"
+#include "core/hashfuncs.h"
+#include "core/list.h"
+#include "core/math/math_funcs.h"
+#include "core/os/memory.h"
+#include "core/ustring.h"
 
 struct HashMapHasherDefault {
 	static _FORCE_INLINE_ uint32_t hash(const String &p_string) { return p_string.hash(); }

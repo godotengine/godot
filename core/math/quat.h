@@ -28,14 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "vector3.h"
+#include "core/math/vector3.h"
 
 #ifndef QUAT_H
 #define QUAT_H
 
-#include "math_defs.h"
-#include "math_funcs.h"
-#include "ustring.h"
+#include "core/math/math_defs.h"
+#include "core/math/math_funcs.h"
+#include "core/ustring.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>

@@ -29,8 +29,8 @@
 /*************************************************************************/
 #include "physics_body.h"
 
-#include "engine.h"
-#include "method_bind_ext.gen.inc"
+#include "core/engine.h"
+#include "core/method_bind_ext.gen.inc"
 #include "scene/scene_string_names.h"
 
 void PhysicsBody::_notification(int p_what) {

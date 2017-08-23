@@ -27,9 +27,9 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "rect3.h"
+#include "core/math/rect3.h"
 
-#include "print_string.h"
+#include "core/print_string.h"
 
 real_t Rect3::get_area() const {
 

@@ -29,12 +29,12 @@
 /*************************************************************************/
 
 #include "text_edit.h"
-#include "os/input.h"
-#include "os/keyboard.h"
-#include "os/os.h"
+#include "core/os/input.h"
+#include "core/os/keyboard.h"
+#include "core/os/os.h"
 
-#include "message_queue.h"
-#include "project_settings.h"
+#include "core/message_queue.h"
+#include "core/project_settings.h"
 #include "scene/main/viewport.h"
 
 #define TAB_PIXELS

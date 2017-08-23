@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "shader_compiler_gles2.h"
-#include "print_string.h"
+#include "core/print_string.h"
 
 #include "stdio.h"
 

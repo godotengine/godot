@@ -27,10 +27,10 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "class_db.h"
+#include "core/class_db.h"
 
-#include "os/mutex.h"
-#include "version.h"
+#include "core/os/mutex.h"
+#include "core/version.h"
 
 #ifdef NO_THREADS
 

@@ -27,15 +27,15 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+#include "core/os/file_access.h"
+#include "core/project_settings.h"
 #include "editor/editor_settings.h"
 #include "gd_compiler.h"
 #include "gd_script.h"
-#include "os/file_access.h"
-#include "project_settings.h"
 #ifdef TOOLS_ENABLED
+#include "core/engine.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_settings.h"
-#include "engine.h"
 #endif
 
 void GDScriptLanguage::get_comment_delimiters(List<String> *p_delimiters) const {

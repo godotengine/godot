@@ -31,7 +31,7 @@
 #define RESOURCE_FORMAT_WAV_H
 
 #if 0
-#include "io/resource_loader.h"
+#include "core/io/resource_loader.h"
 
 class ResourceFormatLoaderWAV : public ResourceFormatLoader {
 public:

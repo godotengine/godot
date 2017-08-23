@@ -30,7 +30,7 @@
 #ifndef FILE_ACCESS_ENCRYPTED_H
 #define FILE_ACCESS_ENCRYPTED_H
 
-#include "os/file_access.h"
+#include "core/os/file_access.h"
 
 class FileAccessEncrypted : public FileAccess {
 public:

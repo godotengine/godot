@@ -30,7 +30,7 @@
 #ifndef CORE_STRING_NAMES_H
 #define CORE_STRING_NAMES_H
 
-#include "string_db.h"
+#include "core/string_db.h"
 
 class CoreStringNames {
 

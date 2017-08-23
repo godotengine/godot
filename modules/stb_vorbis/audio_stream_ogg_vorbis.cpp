@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "audio_stream_ogg_vorbis.h"
 
-#include "os/file_access.h"
+#include "core/os/file_access.h"
 
 #include "thirdparty/misc/stb_vorbis.c"
 

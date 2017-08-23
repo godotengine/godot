@@ -29,13 +29,13 @@
 /*************************************************************************/
 #include <godot/gdnative.h>
 
-#include "class_db.h"
-#include "error_macros.h"
+#include "core/class_db.h"
+#include "core/error_macros.h"
+#include "core/global_constants.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
+#include "core/variant.h"
 #include "gdnative.h"
-#include "global_constants.h"
-#include "os/os.h"
-#include "project_settings.h"
-#include "variant.h"
 
 #ifdef __cplusplus
 extern "C" {

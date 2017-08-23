@@ -30,8 +30,8 @@
 #ifdef OSX_ENABLED
 
 #include "audio_driver_osx.h"
+#include "core/os/os.h"
 #include "core/project_settings.h"
-#include "os/os.h"
 
 #define kOutputBus 0
 

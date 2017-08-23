@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "check_button.h"
 
-#include "print_string.h"
+#include "core/print_string.h"
 #include "servers/visual_server.h"
 
 void CheckButton::_notification(int p_what) {

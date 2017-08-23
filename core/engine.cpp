@@ -27,10 +27,10 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "engine.h"
+#include "core/engine.h"
 
-#include "version.h"
-#include "version_hash.gen.h"
+#include "core/version.h"
+#include "core/version_hash.gen.h"
 
 void Engine::set_iterations_per_second(int p_ips) {
 

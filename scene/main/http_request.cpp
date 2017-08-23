@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "http_request.h"
 
-#include "version.h"
+#include "core/version.h"
 
 void HTTPRequest::_redirect_request(const String &p_new_url) {
 }

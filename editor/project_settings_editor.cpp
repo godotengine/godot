@@ -29,13 +29,13 @@
 /*************************************************************************/
 #include "project_settings_editor.h"
 
+#include "core/global_constants.h"
+#include "core/os/keyboard.h"
+#include "core/project_settings.h"
+#include "core/translation.h"
 #include "editor_node.h"
-#include "global_constants.h"
-#include "os/keyboard.h"
-#include "project_settings.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/tab_container.h"
-#include "translation.h"
 
 ProjectSettingsEditor *ProjectSettingsEditor::singleton = NULL;
 

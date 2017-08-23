@@ -27,7 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "io/resource_loader.h"
+#include "core/io/resource_loader.h"
 #include "scene/resources/video_stream.h"
 
 class WebMFrame;

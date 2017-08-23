@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "gd_tokenizer.h"
+#include "core/io/marshalls.h"
+#include "core/map.h"
+#include "core/print_string.h"
 #include "gd_functions.h"
-#include "io/marshalls.h"
-#include "map.h"
-#include "print_string.h"
 
 const char *GDTokenizer::token_names[TK_MAX] = {
 	"Empty",

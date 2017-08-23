@@ -30,7 +30,7 @@
 #ifndef CURVE_H
 #define CURVE_H
 
-#include "resource.h"
+#include "core/resource.h"
 #if 0
 class Curve2D : public Resource {
 

@@ -36,9 +36,9 @@
 #include "editor/editor_node.h"
 #include "editor/property_editor.h"
 //#include "scene/resources/sample.h"
-#include "io/marshalls.h"
-#include "io/resource_saver.h"
-#include "os/file_access.h"
+#include "core/io/marshalls.h"
+#include "core/io/resource_saver.h"
+#include "core/os/file_access.h"
 #include "scene/resources/surface_tool.h"
 
 class _EditorMeshImportOptions : public Object {

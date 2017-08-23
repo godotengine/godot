@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "reverb_sw.h"
-#include "print_string.h"
+#include "core/print_string.h"
 #include "stdlib.h"
 #define SETMIN(x, y) (x) = MIN((x), (y))
 #define rangeloop(c, min, max) \

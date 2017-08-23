@@ -30,9 +30,9 @@
 #include "sample_editor_plugin.h"
 
 #if 0
+#include "core/io/resource_loader.h"
+#include "core/project_settings.h"
 #include "editor/editor_settings.h"
-#include "io/resource_loader.h"
-#include "project_settings.h"
 
 
 

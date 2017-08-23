@@ -30,10 +30,10 @@
 #ifndef GD_SCRIPT_H
 #define GD_SCRIPT_H
 
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/script_language.h"
 #include "gd_function.h"
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
-#include "script_language.h"
 class GDNativeClass : public Reference {
 
 	GDCLASS(GDNativeClass, Reference);

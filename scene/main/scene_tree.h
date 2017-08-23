@@ -30,13 +30,13 @@
 #ifndef SCENE_MAIN_LOOP_H
 #define SCENE_MAIN_LOOP_H
 
-#include "io/networked_multiplayer_peer.h"
-#include "os/main_loop.h"
-#include "os/thread_safe.h"
+#include "core/io/networked_multiplayer_peer.h"
+#include "core/os/main_loop.h"
+#include "core/os/thread_safe.h"
+#include "core/self_list.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/world.h"
 #include "scene/resources/world_2d.h"
-#include "self_list.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>

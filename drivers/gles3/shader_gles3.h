@@ -39,10 +39,10 @@
 #include GLES3_INCLUDE_H
 #endif
 
-#include "camera_matrix.h"
-#include "hash_map.h"
-#include "map.h"
-#include "variant.h"
+#include "core/hash_map.h"
+#include "core/map.h"
+#include "core/math/camera_matrix.h"
+#include "core/variant.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>

@@ -29,8 +29,8 @@
 /*************************************************************************/
 #include <InterfaceDefs.h>
 
+#include "core/os/keyboard.h"
 #include "key_mapping_haiku.h"
-#include "os/keyboard.h"
 
 struct _HaikuTranslatePair {
 	unsigned int keysym;

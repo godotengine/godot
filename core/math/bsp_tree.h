@@ -30,13 +30,13 @@
 #ifndef BSP_TREE_H
 #define BSP_TREE_H
 
-#include "dvector.h"
-#include "face3.h"
-#include "method_ptrcall.h"
-#include "plane.h"
-#include "rect3.h"
-#include "variant.h"
-#include "vector.h"
+#include "core/dvector.h"
+#include "core/math/face3.h"
+#include "core/math/plane.h"
+#include "core/math/rect3.h"
+#include "core/method_ptrcall.h"
+#include "core/variant.h"
+#include "core/vector.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */

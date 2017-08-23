@@ -30,11 +30,11 @@
 #ifndef SAFE_REFCOUNT_H
 #define SAFE_REFCOUNT_H
 
-#include "os/mutex.h"
+#include "core/os/mutex.h"
 /* x86/x86_64 GCC */
 
+#include "core/typedefs.h"
 #include "platform_config.h"
-#include "typedefs.h"
 
 uint32_t atomic_conditional_increment(register uint32_t *counter);
 uint32_t atomic_decrement(register uint32_t *pw);

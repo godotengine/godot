@@ -30,8 +30,8 @@
 #ifndef SHELL_H
 #define SHELL_H
 
-#include "typedefs.h"
-#include "ustring.h"
+#include "core/typedefs.h"
+#include "core/ustring.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>

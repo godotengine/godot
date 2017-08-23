@@ -30,7 +30,7 @@
 #ifndef COMPRESSED_TRANSLATION_H
 #define COMPRESSED_TRANSLATION_H
 
-#include "translation.h"
+#include "core/translation.h"
 
 class PHashTranslation : public Translation {
 

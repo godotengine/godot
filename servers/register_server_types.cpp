@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "register_server_types.h"
-#include "project_settings.h"
+#include "core/project_settings.h"
 
 #include "arvr/arvr_interface.h"
 #include "arvr/arvr_positional_tracker.h"
@@ -50,9 +50,9 @@
 #include "audio/effects/audio_effect_reverb.h"
 #include "audio/effects/audio_effect_stereo_enhance.h"
 #include "audio_server.h"
+#include "core/script_debugger_remote.h"
 #include "physics_2d_server.h"
 #include "physics_server.h"
-#include "script_debugger_remote.h"
 #include "visual/shader_types.h"
 #include "visual_server.h"
 

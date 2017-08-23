@@ -27,14 +27,14 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "ustring.h"
+#include "core/ustring.h"
 
-#include "color.h"
-#include "math_funcs.h"
-#include "os/memory.h"
-#include "print_string.h"
-#include "ucaps.h"
-#include "variant.h"
+#include "core/color.h"
+#include "core/math/math_funcs.h"
+#include "core/os/memory.h"
+#include "core/print_string.h"
+#include "core/ucaps.h"
+#include "core/variant.h"
 
 #include "thirdparty/misc/md5.h"
 #include "thirdparty/misc/sha256.h"
@@ -4239,7 +4239,7 @@ String String::sprintf(const Array &values, bool *error) const {
 	return formatted;
 }
 
-#include "translation.h"
+#include "core/translation.h"
 
 #ifdef TOOLS_ENABLED
 String TTR(const String &p_text) {

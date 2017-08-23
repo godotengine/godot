@@ -29,15 +29,15 @@
 /*************************************************************************/
 #include "test_containers.h"
 
-#include "dvector.h"
-#include "math_funcs.h"
-#include "print_string.h"
+#include "core/dvector.h"
+#include "core/math/math_funcs.h"
+#include "core/print_string.h"
+#include "core/set.h"
 #include "servers/visual/default_mouse_cursor.xpm"
-#include "set.h"
 
-#include "image.h"
-#include "list.h"
-#include "variant.h"
+#include "core/image.h"
+#include "core/list.h"
+#include "core/variant.h"
 
 namespace TestContainers {
 

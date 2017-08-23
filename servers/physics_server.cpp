@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "physics_server.h"
-#include "print_string.h"
+#include "core/print_string.h"
 PhysicsServer *PhysicsServer::singleton = NULL;
 
 void PhysicsDirectBodyState::integrate_forces() {

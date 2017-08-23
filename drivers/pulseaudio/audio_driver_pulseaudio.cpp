@@ -33,7 +33,7 @@
 
 #include <pulse/error.h>
 
-#include "project_settings.h"
+#include "core/project_settings.h"
 
 Error AudioDriverPulseAudio::init() {
 

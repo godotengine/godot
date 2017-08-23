@@ -32,7 +32,7 @@
 
 #include "stream_peer.h"
 
-#include "io/ip.h"
+#include "core/io/ip.h"
 #include "ip_address.h"
 
 class StreamPeerTCP : public StreamPeer {

@@ -32,8 +32,8 @@
 #include "editor/plugins/spatial_editor_plugin.h"
 #include "scene/3d/camera.h"
 
-#include "geometry.h"
-#include "os/keyboard.h"
+#include "core/math/geometry.h"
+#include "core/os/keyboard.h"
 
 void GridMapEditor::_node_removed(Node *p_node) {
 

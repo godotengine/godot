@@ -30,7 +30,7 @@
 #ifndef SELF_LIST_H
 #define SELF_LIST_H
 
-#include "typedefs.h"
+#include "core/typedefs.h"
 
 template <class T>
 class SelfList {

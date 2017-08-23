@@ -30,12 +30,12 @@
 #ifndef EDITOR_PLUGIN_H
 #define EDITOR_PLUGIN_H
 
+#include "core/io/config_file.h"
+#include "core/undo_redo.h"
 #include "editor/import/editor_import_plugin.h"
-#include "io/config_file.h"
 #include "scene/gui/tool_button.h"
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
-#include "undo_redo.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>

@@ -30,10 +30,10 @@
 #ifndef EDITORPLUGINSETTINGS_H
 #define EDITORPLUGINSETTINGS_H
 
+#include "core/undo_redo.h"
 #include "editor_data.h"
 #include "property_editor.h"
 #include "scene/gui/dialogs.h"
-#include "undo_redo.h"
 
 class EditorPluginSettings : public VBoxContainer {
 

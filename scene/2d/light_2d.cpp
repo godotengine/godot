@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "light_2d.h"
 
-#include "engine.h"
+#include "core/engine.h"
 #include "servers/visual_server.h"
 
 void Light2D::edit_set_pivot(const Point2 &p_pivot) {

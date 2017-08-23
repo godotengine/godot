@@ -27,7 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "event_queue.h"
+#include "core/event_queue.h"
 
 Error EventQueue::push_call(uint32_t p_instance_ID, const StringName &p_method, VARIANT_ARG_DECLARE) {
 

@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "camera.h"
 
-#include "camera_matrix.h"
+#include "core/math/camera_matrix.h"
 #include "scene/resources/material.h"
 #include "scene/resources/surface_tool.h"
 

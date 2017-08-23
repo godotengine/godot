@@ -30,8 +30,8 @@
 #include "call_dialog.h"
 
 #if 0
-#include "class_db.h"
-#include "print_string.h"
+#include "core/class_db.h"
+#include "core/print_string.h"
 #include "scene/gui/label.h"
 
 

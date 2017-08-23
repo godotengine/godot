@@ -30,11 +30,11 @@
 #ifndef GD_TOKENIZER_H
 #define GD_TOKENIZER_H
 
+#include "core/string_db.h"
+#include "core/ustring.h"
+#include "core/variant.h"
+#include "core/vmap.h"
 #include "gd_functions.h"
-#include "string_db.h"
-#include "ustring.h"
-#include "variant.h"
-#include "vmap.h"
 
 class GDTokenizer {
 public:

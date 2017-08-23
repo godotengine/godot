@@ -31,9 +31,9 @@
 #if 0
 #include "sample_library_editor_plugin.h"
 
+#include "core/io/resource_loader.h"
+#include "core/project_settings.h"
 #include "editor/editor_settings.h"
-#include "io/resource_loader.h"
-#include "project_settings.h"
 #include "sample_editor_plugin.h"
 #include "scene/main/viewport.h"
 

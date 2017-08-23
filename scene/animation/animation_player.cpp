@@ -29,8 +29,8 @@
 /*************************************************************************/
 #include "animation_player.h"
 
-#include "engine.h"
-#include "message_queue.h"
+#include "core/engine.h"
+#include "core/message_queue.h"
 #include "scene/scene_string_names.h"
 
 bool AnimationPlayer::_set(const StringName &p_name, const Variant &p_value) {

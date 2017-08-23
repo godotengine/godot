@@ -30,7 +30,7 @@
 #ifndef TRIANGULATE_H
 #define TRIANGULATE_H
 
-#include "math_2d.h"
+#include "core/math/math_2d.h"
 
 /*
 http://www.flipcode.com/archives/Efficient_Polygon_Triangulation.shtml

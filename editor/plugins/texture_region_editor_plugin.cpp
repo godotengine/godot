@@ -32,8 +32,8 @@
 #include "texture_region_editor_plugin.h"
 
 #include "core/core_string_names.h"
-#include "os/input.h"
-#include "os/keyboard.h"
+#include "core/os/input.h"
+#include "core/os/keyboard.h"
 #include "scene/gui/check_box.h"
 
 void draw_margin_line(Control *edit_draw, Vector2 from, Vector2 to) {

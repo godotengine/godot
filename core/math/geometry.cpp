@@ -27,8 +27,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "geometry.h"
-#include "print_string.h"
+#include "core/math/geometry.h"
+#include "core/print_string.h"
 
 void Geometry::MeshData::optimize_vertices() {
 

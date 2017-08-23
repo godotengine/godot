@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "main_loop.h"
-#include "script_language.h"
+#include "core/script_language.h"
 
 void MainLoop::_bind_methods() {
 

@@ -30,7 +30,7 @@
 #ifndef TEST_SOUND_H
 #define TEST_SOUND_H
 
-#include "os/main_loop.h"
+#include "core/os/main_loop.h"
 
 namespace TestSound {
 

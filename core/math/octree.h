@@ -30,12 +30,12 @@
 #ifndef OCTREE_H
 #define OCTREE_H
 
-#include "list.h"
-#include "map.h"
-#include "print_string.h"
-#include "rect3.h"
-#include "variant.h"
-#include "vector3.h"
+#include "core/list.h"
+#include "core/map.h"
+#include "core/math/rect3.h"
+#include "core/math/vector3.h"
+#include "core/print_string.h"
+#include "core/variant.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>

@@ -31,10 +31,10 @@
 #ifndef ARVR_SERVER_H
 #define ARVR_SERVER_H
 
-#include "os/thread_safe.h"
-#include "reference.h"
-#include "rid.h"
-#include "variant.h"
+#include "core/os/thread_safe.h"
+#include "core/reference.h"
+#include "core/rid.h"
+#include "core/variant.h"
 
 class ARVRInterface;
 class ARVRPositionalTracker;

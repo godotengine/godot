@@ -30,7 +30,7 @@
 #ifndef AUDIO_DRIVER_OPENSL_H
 #define AUDIO_DRIVER_OPENSL_H
 
-#include "os/mutex.h"
+#include "core/os/mutex.h"
 #include "servers/audio_server.h"
 
 #include <SLES/OpenSLES.h>

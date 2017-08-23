@@ -30,9 +30,9 @@
 #include "editor_about.h"
 
 #include "authors.gen.h"
+#include "core/version.h"
+#include "core/version_hash.gen.h"
 #include "license.gen.h"
-#include "version.h"
-#include "version_hash.gen.h"
 
 void EditorAbout::_license_tree_selected() {
 

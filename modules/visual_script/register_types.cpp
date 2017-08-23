@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "register_types.h"
 
-#include "io/resource_loader.h"
+#include "core/io/resource_loader.h"
 #include "visual_script.h"
 #include "visual_script_builtin_funcs.h"
 #include "visual_script_editor.h"

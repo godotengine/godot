@@ -30,29 +30,29 @@
 #include "main.h"
 
 #include "app_icon.gen.h"
+#include "core/message_queue.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 #include "core/register_core_types.h"
+#include "core/script_debugger_local.h"
+#include "core/script_debugger_remote.h"
 #include "drivers/register_driver_types.h"
-#include "message_queue.h"
 #include "modules/register_module_types.h"
-#include "os/os.h"
-#include "project_settings.h"
 #include "scene/register_scene_types.h"
-#include "script_debugger_local.h"
-#include "script_debugger_remote.h"
 #include "servers/register_server_types.h"
 #include "splash.gen.h"
 
-#include "input_map.h"
-#include "io/resource_loader.h"
+#include "core/input_map.h"
+#include "core/io/resource_loader.h"
 #include "scene/main/scene_tree.h"
 #include "servers/audio_server.h"
 
-#include "io/resource_loader.h"
-#include "script_language.h"
+#include "core/io/resource_loader.h"
+#include "core/script_language.h"
 
 #include "core/io/ip.h"
+#include "core/os/dir_access.h"
 #include "main/tests/test_main.h"
-#include "os/dir_access.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/packed_scene.h"
 
@@ -62,7 +62,7 @@
 #include "editor/project_manager.h"
 #endif
 
-#include "io/file_access_network.h"
+#include "core/io/file_access_network.h"
 #include "servers/physics_2d_server.h"
 
 #include "core/io/file_access_pack.h"
@@ -70,10 +70,10 @@
 #include "core/io/stream_peer_ssl.h"
 #include "core/io/stream_peer_tcp.h"
 #include "core/os/thread.h"
+#include "core/translation.h"
+#include "core/version.h"
 #include "main/input_default.h"
 #include "performance.h"
-#include "translation.h"
-#include "version.h"
 
 static ProjectSettings *globals = NULL;
 static Engine *engine = NULL;

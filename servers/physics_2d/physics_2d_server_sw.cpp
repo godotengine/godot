@@ -31,9 +31,9 @@
 #include "broad_phase_2d_basic.h"
 #include "broad_phase_2d_hash_grid.h"
 #include "collision_solver_2d_sw.h"
-#include "os/os.h"
-#include "project_settings.h"
-#include "script_language.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
+#include "core/script_language.h"
 
 RID Physics2DServerSW::shape_create(ShapeType p_shape) {
 

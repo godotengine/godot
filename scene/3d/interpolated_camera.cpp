@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "interpolated_camera.h"
 
-#include "engine.h"
+#include "core/engine.h"
 
 void InterpolatedCamera::_notification(int p_what) {
 

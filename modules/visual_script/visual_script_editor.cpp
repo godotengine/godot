@@ -29,10 +29,10 @@
 /*************************************************************************/
 #include "visual_script_editor.h"
 
+#include "core/os/input.h"
+#include "core/os/keyboard.h"
 #include "editor/editor_node.h"
 #include "editor/editor_resource_preview.h"
-#include "os/input.h"
-#include "os/keyboard.h"
 #include "visual_script_expression.h"
 #include "visual_script_flow_control.h"
 #include "visual_script_func_nodes.h"

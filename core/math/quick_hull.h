@@ -30,10 +30,10 @@
 #ifndef QUICK_HULL_H
 #define QUICK_HULL_H
 
-#include "geometry.h"
-#include "list.h"
-#include "rect3.h"
-#include "set.h"
+#include "core/list.h"
+#include "core/math/geometry.h"
+#include "core/math/rect3.h"
+#include "core/set.h"
 
 class QuickHull {
 
