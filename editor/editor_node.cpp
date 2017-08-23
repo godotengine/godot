@@ -913,7 +913,7 @@ void EditorNode::_save_scene(String p_file, int idx) {
 		current_option = -1;
 		//accept->get_cancel()->hide();
 		accept->get_ok()->set_text(TTR("I see.."));
-		accept->set_text("This operation can't be done without a tree root.");
+		accept->set_text(TTR("This operation can't be done without a tree root."));
 		accept->popup_centered_minsize();
 		return;
 	}
@@ -1967,7 +1967,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				current_option = -1;
 				//confirmation->get_cancel()->hide();
 				accept->get_ok()->set_text(TTR("I see.."));
-				accept->set_text("This operation can't be done without a tree root.");
+				accept->set_text(TTR("This operation can't be done without a tree root."));
 				accept->popup_centered_minsize();
 				break;
 			}
@@ -2073,7 +2073,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				current_option = -1;
 				//confirmation->get_cancel()->hide();
 				accept->get_ok()->set_text(TTR("I see.."));
-				accept->set_text("This operation can't be done without a scene.");
+				accept->set_text(TTR("This operation can't be done without a scene."));
 				accept->popup_centered_minsize();
 				break;
 			}
@@ -2118,7 +2118,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				current_option = -1;
 				//accept->get_cancel()->hide();
 				accept->get_ok()->set_text(TTR("I see.."));
-				accept->set_text("This operation can't be done without a selected node.");
+				accept->set_text(TTR("This operation can't be done without a selected node."));
 				accept->popup_centered_minsize();
 				break;
 			}
@@ -2944,12 +2944,12 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled)
 	String addon_path = "res://addons/" + p_addon + "/plugin.cfg";
 	Error err = cf->load(addon_path);
 	if (err != OK) {
-		show_warning("Unable to enable addon plugin at: '" + addon_path + "' parsing of config failed.");
+		show_warning(TTR("Unable to enable addon plugin at: '") + addon_path + TTR("' parsing of config failed."));
 		return;
 	}
 
 	if (!cf->has_section_key("plugin", "script")) {
-		show_warning("Unable to find script field for addon plugin at: 'res://addons/" + p_addon + "''.");
+		show_warning(TTR("Unable to find script field for addon plugin at: 'res://addons/") + p_addon + "''.");
 		return;
 	}
 
@@ -2959,18 +2959,18 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled)
 	Ref<Script> script = ResourceLoader::load(path);
 
 	if (script.is_null()) {
-		show_warning("Unable to load addon script from path: '" + path + "'.");
+		show_warning(TTR("Unable to load addon script from path: '") + path + "'.");
 		return;
 	}
 
 	//could check inheritance..
 	if (String(script->get_instance_base_type()) != "EditorPlugin") {
-		show_warning("Unable to load addon script from path: '" + path + "' Base type is not EditorPlugin.");
+		show_warning(TTR("Unable to load addon script from path: '") + path + "' Base type is not EditorPlugin.");
 		return;
 	}
 
 	if (!script->is_tool()) {
-		show_warning("Unable to load addon script from path: '" + path + "' Script is not in tool mode.");
+		show_warning(TTR("Unable to load addon script from path: '") + path + "' Script is not in tool mode.");
 		return;
 	}
 
@@ -6128,7 +6128,7 @@ EditorNode::EditorNode() {
 
 	open_imported = memnew(ConfirmationDialog);
 	open_imported->get_ok()->set_text(TTR("Open Anyway"));
-	new_inherited_button = open_imported->add_button("New Inherited", !OS::get_singleton()->get_swap_ok_cancel(), "inherit");
+	new_inherited_button = open_imported->add_button(TTR("New Inherited"), !OS::get_singleton()->get_swap_ok_cancel(), "inherit");
 	open_imported->connect("confirmed", this, "_open_imported");
 	open_imported->connect("custom_action", this, "_inherit_imported");
 	gui_base->add_child(open_imported);
@@ -6184,7 +6184,7 @@ EditorNode::EditorNode() {
 
 	pick_main_scene = memnew(ConfirmationDialog);
 	gui_base->add_child(pick_main_scene);
-	pick_main_scene->get_ok()->set_text("Select");
+	pick_main_scene->get_ok()->set_text(TTR("Select"));
 	pick_main_scene->connect("confirmed", this, "_menu_option", varray(SETTINGS_PICK_MAIN_SCENE));
 
 	//Ref<ImageTexture> it = gui_base->get_icon("logo","Icons");

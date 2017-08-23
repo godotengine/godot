@@ -800,7 +800,7 @@ ConnectionsDock::ConnectionsDock(EditorNode *p_editor) {
 	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	connect_button = memnew(Button);
-	connect_button->set_text("Connect");
+	connect_button->set_text(TTR("Connect"));
 	HBoxContainer *hb = memnew(HBoxContainer);
 	vbc->add_child(hb);
 	hb->add_spacer();

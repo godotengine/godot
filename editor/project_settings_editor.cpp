@@ -763,7 +763,7 @@ void ProjectSettingsEditor::_item_add() {
 
 	String name = catname != "" ? catname + "/" + propname : propname;
 
-	undo_redo->create_action("Add Global Property");
+	undo_redo->create_action(TTR("Add Global Property"));
 
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), name, value);
 

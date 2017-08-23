@@ -128,7 +128,7 @@ void EditorAudioBus::update_send() {
 	send->clear();
 	if (get_index() == 0) {
 		send->set_disabled(true);
-		send->set_text("Speakers");
+		send->set_text(TTR("Speakers"));
 	} else {
 		send->set_disabled(false);
 		StringName current_send = AudioServer::get_singleton()->get_bus_send(get_index());
@@ -183,7 +183,7 @@ void EditorAudioBus::update_bus() {
 	add->set_cell_mode(0, TreeItem::CELL_MODE_CUSTOM);
 	add->set_editable(0, true);
 	add->set_selectable(0, false);
-	add->set_text(0, "Add Effect");
+	add->set_text(0, TTR("Add Effect"));
 
 	update_send();
 
@@ -221,7 +221,7 @@ void EditorAudioBus::_name_changed(const String &p_new_name) {
 	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 
 	StringName current = AudioServer::get_singleton()->get_bus_name(get_index());
-	ur->create_action("Rename Audio Bus");
+	ur->create_action(TTR("Rename Audio Bus"));
 	ur->add_do_method(AudioServer::get_singleton(), "set_bus_name", get_index(), attempt);
 	ur->add_undo_method(AudioServer::get_singleton(), "set_bus_name", get_index(), current);
 
@@ -264,7 +264,7 @@ void EditorAudioBus::_solo_toggled() {
 	updating_bus = true;
 
 	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action("Toggle Audio Bus Solo");
+	ur->create_action(TTR("Toggle Audio Bus Solo"));
 	ur->add_do_method(AudioServer::get_singleton(), "set_bus_solo", get_index(), solo->is_pressed());
 	ur->add_undo_method(AudioServer::get_singleton(), "set_bus_solo", get_index(), AudioServer::get_singleton()->is_bus_solo(get_index()));
 	ur->add_do_method(buses, "_update_bus", get_index());
@@ -278,7 +278,7 @@ void EditorAudioBus::_mute_toggled() {
 	updating_bus = true;
 
 	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action("Toggle Audio Bus Mute");
+	ur->create_action(TTR("Toggle Audio Bus Mute"));
 	ur->add_do_method(AudioServer::get_singleton(), "set_bus_mute", get_index(), mute->is_pressed());
 	ur->add_undo_method(AudioServer::get_singleton(), "set_bus_mute", get_index(), AudioServer::get_singleton()->is_bus_mute(get_index()));
 	ur->add_do_method(buses, "_update_bus", get_index());
@@ -292,7 +292,7 @@ void EditorAudioBus::_bypass_toggled() {
 	updating_bus = true;
 
 	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action("Toggle Audio Bus Bypass Effects");
+	ur->create_action(TTR("Toggle Audio Bus Bypass Effects"));
 	ur->add_do_method(AudioServer::get_singleton(), "set_bus_bypass_effects", get_index(), bypass->is_pressed());
 	ur->add_undo_method(AudioServer::get_singleton(), "set_bus_bypass_effects", get_index(), AudioServer::get_singleton()->is_bus_bypassing_effects(get_index()));
 	ur->add_do_method(buses, "_update_bus", get_index());
@@ -356,7 +356,7 @@ void EditorAudioBus::_effect_edited() {
 		updating_bus = true;
 
 		UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
-		ur->create_action("Select Audio Bus Send");
+		ur->create_action(TTR("Select Audio Bus Send"));
 		ur->add_do_method(AudioServer::get_singleton(), "set_bus_effect_enabled", get_index(), index, effect->is_checked(0));
 		ur->add_undo_method(AudioServer::get_singleton(), "set_bus_effect_enabled", get_index(), index, AudioServer::get_singleton()->is_bus_effect_enabled(get_index(), index));
 		ur->add_do_method(buses, "_update_bus", get_index());
@@ -383,7 +383,7 @@ void EditorAudioBus::_effect_add(int p_which) {
 	afxr->set_name(effect_options->get_item_text(p_which));
 
 	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action("Add Audio Bus Effect");
+	ur->create_action(TTR("Add Audio Bus Effect"));
 	ur->add_do_method(AudioServer::get_singleton(), "add_bus_effect", get_index(), afxr, -1);
 	ur->add_undo_method(AudioServer::get_singleton(), "remove_bus_effect", get_index(), AudioServer::get_singleton()->get_bus_effect_count(get_index()));
 	ur->add_do_method(buses, "_update_bus", get_index());
@@ -526,7 +526,7 @@ void EditorAudioBus::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 	bool enabled = AudioServer::get_singleton()->is_bus_effect_enabled(bus, effect);
 
 	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action("Move Bus Effect");
+	ur->create_action(TTR("Move Bus Effect"));
 	ur->add_do_method(AudioServer::get_singleton(), "remove_bus_effect", bus, effect);
 	ur->add_do_method(AudioServer::get_singleton(), "add_bus_effect", get_index(), AudioServer::get_singleton()->get_bus_effect(bus, effect), paste_at);
 
@@ -567,7 +567,7 @@ void EditorAudioBus::_delete_effect_pressed(int p_option) {
 	int index = item->get_metadata(0);
 
 	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action("Delete Bus Effect");
+	ur->create_action(TTR("Delete Bus Effect"));
 	ur->add_do_method(AudioServer::get_singleton(), "remove_bus_effect", get_index(), index);
 	ur->add_undo_method(AudioServer::get_singleton(), "add_bus_effect", get_index(), AudioServer::get_singleton()->get_bus_effect(get_index(), index), index);
 	ur->add_undo_method(AudioServer::get_singleton(), "set_bus_effect_enabled", get_index(), index, AudioServer::get_singleton()->is_bus_effect_enabled(get_index(), index));
@@ -736,13 +736,13 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses) {
 	}
 
 	delete_popup = bus_options->get_popup();
-	delete_popup->add_item("Duplicate");
-	delete_popup->add_item("Delete");
+	delete_popup->add_item(TTR("Duplicate"));
+	delete_popup->add_item(TTR("Delete"));
 	add_child(delete_popup);
 	delete_popup->connect("index_pressed", this, "_delete_pressed");
 
 	delete_effect_popup = memnew(PopupMenu);
-	delete_effect_popup->add_item("Delete Effect");
+	delete_effect_popup->add_item(TTR("Delete Effect"));
 	add_child(delete_effect_popup);
 	delete_effect_popup->connect("index_pressed", this, "_delete_effect_pressed");
 }
@@ -840,7 +840,7 @@ void EditorAudioBuses::_add_bus() {
 	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 
 	//need to simulate new name, so we can undi :(
-	ur->create_action("Add Audio Bus");
+	ur->create_action(TTR("Add Audio Bus"));
 	ur->add_do_method(AudioServer::get_singleton(), "set_bus_count", AudioServer::get_singleton()->get_bus_count() + 1);
 	ur->add_undo_method(AudioServer::get_singleton(), "set_bus_count", AudioServer::get_singleton()->get_bus_count());
 	ur->add_do_method(this, "_update_buses");
@@ -868,13 +868,13 @@ void EditorAudioBuses::_delete_bus(Object *p_which) {
 	EditorAudioBus *bus = Object::cast_to<EditorAudioBus>(p_which);
 	int index = bus->get_index();
 	if (index == 0) {
-		EditorNode::get_singleton()->show_warning("Master bus can't be deleted!");
+		EditorNode::get_singleton()->show_warning(TTR("Master bus can't be deleted!"));
 		return;
 	}
 
 	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 
-	ur->create_action("Delete Audio Bus");
+	ur->create_action(TTR("Delete Audio Bus"));
 	ur->add_do_method(AudioServer::get_singleton(), "remove_bus", index);
 	ur->add_undo_method(AudioServer::get_singleton(), "add_bus", index);
 	ur->add_undo_method(AudioServer::get_singleton(), "set_bus_name", index, AudioServer::get_singleton()->get_bus_name(index));
@@ -897,7 +897,7 @@ void EditorAudioBuses::_duplicate_bus(int p_which) {
 
 	int add_at_pos = p_which + 1;
 	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action("Duplicate Audio Bus");
+	ur->create_action(TTR("Duplicate Audio Bus"));
 	ur->add_do_method(AudioServer::get_singleton(), "add_bus", add_at_pos);
 	ur->add_do_method(AudioServer::get_singleton(), "set_bus_name", add_at_pos, AudioServer::get_singleton()->get_bus_name(p_which) + " Copy");
 	ur->add_do_method(AudioServer::get_singleton(), "set_bus_volume_db", add_at_pos, AudioServer::get_singleton()->get_bus_volume_db(p_which));
@@ -932,7 +932,7 @@ void EditorAudioBuses::_drop_at_index(int p_bus, int p_index) {
 	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 
 	//need to simulate new name, so we can undi :(
-	ur->create_action("Move Audio Bus");
+	ur->create_action(TTR("Move Audio Bus"));
 	ur->add_do_method(AudioServer::get_singleton(), "move_bus", p_bus, p_index);
 	int final_pos;
 	if (p_index == p_bus) {
@@ -993,7 +993,7 @@ void EditorAudioBuses::_load_default_layout() {
 
 	Ref<AudioBusLayout> state = ResourceLoader::load("res://default_bus_layout.tres");
 	if (state.is_null()) {
-		EditorNode::get_singleton()->show_warning("There is no 'res://default_bus_layout.tres' file.");
+		EditorNode::get_singleton()->show_warning(TTR("There is no 'res://default_bus_layout.tres' file."));
 		return;
 	}
 
@@ -1010,7 +1010,7 @@ void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
 	if (file_dialog->get_mode() == EditorFileDialog::MODE_OPEN_FILE) {
 		Ref<AudioBusLayout> state = ResourceLoader::load(p_string);
 		if (state.is_null()) {
-			EditorNode::get_singleton()->show_warning("Invalid file, not an audio bus layout.");
+			EditorNode::get_singleton()->show_warning(TTR("Invalid file, not an audio bus layout."));
 			return;
 		}
 
@@ -1144,7 +1144,7 @@ void EditorAudioBuses::open_layout(const String &p_path) {
 
 	Ref<AudioBusLayout> state = ResourceLoader::load(p_path);
 	if (state.is_null()) {
-		EditorNode::get_singleton()->show_warning("Invalid file, not an audio bus layout.");
+		EditorNode::get_singleton()->show_warning(TTR("Invalid file, not an audio bus layout."));
 		return;
 	}
 

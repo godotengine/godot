@@ -73,7 +73,7 @@ protected:
 			if (argc == new_argc)
 				return true;
 
-			undo_redo->create_action("Change Signal Arguments");
+			undo_redo->create_action(TTR("Change Signal Arguments"));
 
 			if (new_argc < argc) {
 				for (int i = new_argc; i < argc; i++) {
@@ -104,7 +104,7 @@ protected:
 
 				int old_type = script->custom_signal_get_argument_type(sig, idx);
 				int new_type = p_value;
-				undo_redo->create_action("Change Argument Type");
+				undo_redo->create_action(TTR("Change Argument Type"));
 				undo_redo->add_do_method(script.ptr(), "custom_signal_set_argument_type", sig, idx, new_type);
 				undo_redo->add_undo_method(script.ptr(), "custom_signal_set_argument_type", sig, idx, old_type);
 				undo_redo->commit_action();
@@ -116,7 +116,7 @@ protected:
 
 				String old_name = script->custom_signal_get_argument_name(sig, idx);
 				String new_name = p_value;
-				undo_redo->create_action("Change Argument name");
+				undo_redo->create_action(TTR("Change Argument name"));
 				undo_redo->add_do_method(script.ptr(), "custom_signal_set_argument_name", sig, idx, new_name);
 				undo_redo->add_undo_method(script.ptr(), "custom_signal_set_argument_name", sig, idx, old_name);
 				undo_redo->commit_action();
@@ -213,7 +213,7 @@ protected:
 			return false;
 
 		if (String(p_name) == "value") {
-			undo_redo->create_action("Set Variable Default Value");
+			undo_redo->create_action(TTR("Set Variable Default Value"));
 			Variant current = script->get_variable_default_value(var);
 			undo_redo->add_do_method(script.ptr(), "set_variable_default_value", var, p_value);
 			undo_redo->add_undo_method(script.ptr(), "set_variable_default_value", var, current);
@@ -229,7 +229,7 @@ protected:
 
 			Dictionary dc = d.copy();
 			dc["type"] = p_value;
-			undo_redo->create_action("Set Variable Type");
+			undo_redo->create_action(TTR("Set Variable Type"));
 			undo_redo->add_do_method(script.ptr(), "set_variable_info", var, dc);
 			undo_redo->add_undo_method(script.ptr(), "set_variable_info", var, d);
 			undo_redo->add_do_method(this, "_var_changed");
@@ -242,7 +242,7 @@ protected:
 
 			Dictionary dc = d.copy();
 			dc["hint"] = p_value;
-			undo_redo->create_action("Set Variable Type");
+			undo_redo->create_action(TTR("Set Variable Type"));
 			undo_redo->add_do_method(script.ptr(), "set_variable_info", var, dc);
 			undo_redo->add_undo_method(script.ptr(), "set_variable_info", var, d);
 			undo_redo->add_do_method(this, "_var_changed");
@@ -255,7 +255,7 @@ protected:
 
 			Dictionary dc = d.copy();
 			dc["hint_string"] = p_value;
-			undo_redo->create_action("Set Variable Type");
+			undo_redo->create_action(TTR("Set Variable Type"));
 			undo_redo->add_do_method(script.ptr(), "set_variable_info", var, dc);
 			undo_redo->add_undo_method(script.ptr(), "set_variable_info", var, d);
 			undo_redo->add_do_method(this, "_var_changed");
@@ -1264,7 +1264,7 @@ void VisualScriptEditor::_on_nodes_delete() {
 	if (to_erase.empty())
 		return;
 
-	undo_redo->create_action("Remove VisualScript Nodes");
+	undo_redo->create_action(TTR("Remove VisualScript Nodes"));
 
 	for (List<int>::Element *F = to_erase.front(); F; F = F->next()) {
 
@@ -1313,7 +1313,7 @@ void VisualScriptEditor::_on_nodes_duplicate() {
 	if (to_duplicate.empty())
 		return;
 
-	undo_redo->create_action("Duplicate VisualScript Nodes");
+	undo_redo->create_action(TTR("Duplicate VisualScript Nodes"));
 	int idc = script->get_available_id() + 1;
 
 	Set<int> to_select;
@@ -2208,7 +2208,7 @@ void VisualScriptEditor::_change_base_type_callback() {
 	String bt = select_base_type->get_selected_type();
 
 	ERR_FAIL_COND(bt == String());
-	undo_redo->create_action("Change Base Type");
+	undo_redo->create_action(TTR("Change Base Type"));
 	undo_redo->add_do_method(script.ptr(), "set_instance_base_type", bt);
 	undo_redo->add_undo_method(script.ptr(), "set_instance_base_type", script->get_instance_base_type());
 	undo_redo->add_do_method(this, "_update_members");
@@ -2256,7 +2256,7 @@ static bool _get_in_slot(const Ref<VisualScriptNode> &p_node, int p_slot, int &r
 
 void VisualScriptEditor::_begin_node_move() {
 
-	undo_redo->create_action("Move Node(s)");
+	undo_redo->create_action(TTR("Move Node(s)"));
 }
 
 void VisualScriptEditor::_end_node_move() {
@@ -2282,7 +2282,7 @@ void VisualScriptEditor::_node_moved(Vector2 p_from, Vector2 p_to, int p_id) {
 
 void VisualScriptEditor::_remove_node(int p_id) {
 
-	undo_redo->create_action("Remove VisualScript Node");
+	undo_redo->create_action(TTR("Remove VisualScript Node"));
 
 	undo_redo->add_do_method(script.ptr(), "remove_node", edited_func, p_id);
 	undo_redo->add_undo_method(script.ptr(), "add_node", edited_func, p_id, script->get_node(edited_func, p_id), script->get_node_pos(edited_func, p_id));
@@ -2343,7 +2343,7 @@ void VisualScriptEditor::_graph_connected(const String &p_from, int p_from_slot,
 
 	ERR_FAIL_COND(from_seq != to_seq);
 
-	undo_redo->create_action("Connect Nodes");
+	undo_redo->create_action(TTR("Connect Nodes"));
 
 	if (from_seq) {
 		undo_redo->add_do_method(script.ptr(), "sequence_connect", edited_func, p_from.to_int(), from_port, p_to.to_int());
@@ -2396,7 +2396,7 @@ void VisualScriptEditor::_graph_disconnected(const String &p_from, int p_from_sl
 
 	ERR_FAIL_COND(from_seq != to_seq);
 
-	undo_redo->create_action("Connect Nodes");
+	undo_redo->create_action(TTR("Connect Nodes"));
 
 	if (from_seq) {
 		undo_redo->add_do_method(script.ptr(), "sequence_disconnect", edited_func, p_from.to_int(), from_port, p_to.to_int());
@@ -2723,7 +2723,7 @@ void VisualScriptEditor::_default_value_changed() {
 	if (vsn.is_null())
 		return;
 
-	undo_redo->create_action("Change Input Value");
+	undo_redo->create_action(TTR("Change Input Value"));
 	undo_redo->add_do_method(vsn.ptr(), "set_default_input_value", editing_input, default_value_edit->get_variant());
 	undo_redo->add_undo_method(vsn.ptr(), "set_default_input_value", editing_input, vsn->get_default_input_value(editing_input));
 
@@ -2886,7 +2886,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 						int id = String(gn->get_name()).to_int();
 						Ref<VisualScriptNode> node = script->get_node(edited_func, id);
 						if (Object::cast_to<VisualScriptFunction>(*node)) {
-							EditorNode::get_singleton()->show_warning("Can't copy the function node.");
+							EditorNode::get_singleton()->show_warning(TTR("Can't copy the function node."));
 							return;
 						}
 						if (node.is_valid()) {
@@ -2934,13 +2934,13 @@ void VisualScriptEditor::_menu_option(int p_what) {
 				break;
 
 			if (clipboard->nodes.empty()) {
-				EditorNode::get_singleton()->show_warning("Clipboard is empty!");
+				EditorNode::get_singleton()->show_warning(TTR("Clipboard is empty!"));
 				break;
 			}
 
 			Map<int, int> remap;
 
-			undo_redo->create_action("Paste VisualScript Nodes");
+			undo_redo->create_action(TTR("Paste VisualScript Nodes"));
 			int idc = script->get_available_id() + 1;
 
 			Set<int> to_select;

@@ -1125,7 +1125,7 @@ void CustomPropertyEditor::_node_path_selected(NodePath p_path) {
 
 		Node *to_node = get_node(p_path);
 		if (!Object::cast_to<Viewport>(to_node)) {
-			EditorNode::get_singleton()->show_warning("Selected node is not a Viewport!");
+			EditorNode::get_singleton()->show_warning(TTR("Selected node is not a Viewport!"));
 			return;
 		}
 

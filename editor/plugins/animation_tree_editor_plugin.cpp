@@ -285,7 +285,7 @@ void AnimationTreeEditor::_popup_edit_dialog() {
 
 					AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(anim_tree->get_node(anim_tree->get_master_player()));
 					master_anim_popup->clear();
-					master_anim_popup->add_item("Edit Filters");
+					master_anim_popup->add_item(TTR("Edit Filters"));
 					master_anim_popup->add_separator();
 					List<StringName> sn;
 					ap->get_animation_list(&sn);

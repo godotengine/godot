@@ -354,7 +354,7 @@ Particles2DEditorPlugin::Particles2DEditorPlugin(EditorNode *p_node) {
 	menu->get_popup()->add_separator();
 	menu->get_popup()->add_item(TTR("Load Emission Mask"), MENU_LOAD_EMISSION_MASK);
 	//	menu->get_popup()->add_item(TTR("Clear Emission Mask"), MENU_CLEAR_EMISSION_MASK);
-	menu->set_text("Particles");
+	menu->set_text(TTR("Particles"));
 	toolbar->add_child(menu);
 
 	file = memnew(EditorFileDialog);

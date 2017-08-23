@@ -403,7 +403,7 @@ void GridMapEditor::_delete_selection() {
 	if (!selection.active)
 		return;
 
-	undo_redo->create_action("GridMap Delete Selection");
+	undo_redo->create_action(TTR("GridMap Delete Selection"));
 	for (int i = selection.begin.x; i <= selection.end.x; i++) {
 
 		for (int j = selection.begin.y; j <= selection.end.y; j++) {
@@ -487,7 +487,7 @@ void GridMapEditor::_duplicate_paste() {
 
 	Vector3 ofs = selection.current - selection.click;
 	if (items.size()) {
-		undo_redo->create_action("GridMap Duplicate Selection");
+		undo_redo->create_action(TTR("GridMap Duplicate Selection"));
 		for (List<__Item>::Element *E = items.front(); E; E = E->next()) {
 			__Item &it = E->get();
 			Vector3 pos = it.pos + ofs;
@@ -568,7 +568,7 @@ bool GridMapEditor::forward_spatial_input_event(Camera *p_camera, const Ref<Inpu
 						(mb->get_button_index() == BUTTON_LEFT && input_action == INPUT_PAINT)) {
 
 					if (set_items.size()) {
-						undo_redo->create_action("GridMap Paint");
+						undo_redo->create_action(TTR("GridMap Paint"));
 						for (List<SetItem>::Element *E = set_items.front(); E; E = E->next()) {
 
 							const SetItem &si = E->get();
@@ -1142,45 +1142,45 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	spatial_editor_hb->hide();
 
 	options->set_text("Grid");
-	options->get_popup()->add_check_item("Snap View", MENU_OPTION_LOCK_VIEW);
+	options->get_popup()->add_check_item(TTR("Snap View"), MENU_OPTION_LOCK_VIEW);
 	options->get_popup()->add_separator();
-	options->get_popup()->add_item("Prev Level (" + keycode_get_string(KEY_MASK_CMD) + "Down Wheel)", MENU_OPTION_PREV_LEVEL);
-	options->get_popup()->add_item("Next Level (" + keycode_get_string(KEY_MASK_CMD) + "Up Wheel)", MENU_OPTION_NEXT_LEVEL);
+	options->get_popup()->add_item(TTR("Prev Level (") + keycode_get_string(KEY_MASK_CMD) + TTR("Down Wheel)"), MENU_OPTION_PREV_LEVEL);
+	options->get_popup()->add_item(TTR("Next Level (") + keycode_get_string(KEY_MASK_CMD) + TTR("Up Wheel)"), MENU_OPTION_NEXT_LEVEL);
 	options->get_popup()->add_separator();
-	options->get_popup()->add_check_item("Clip Disabled", MENU_OPTION_CLIP_DISABLED);
+	options->get_popup()->add_check_item(TTR("Clip Disabled"), MENU_OPTION_CLIP_DISABLED);
 	options->get_popup()->set_item_checked(options->get_popup()->get_item_index(MENU_OPTION_CLIP_DISABLED), true);
-	options->get_popup()->add_check_item("Clip Above", MENU_OPTION_CLIP_ABOVE);
-	options->get_popup()->add_check_item("Clip Below", MENU_OPTION_CLIP_BELOW);
+	options->get_popup()->add_check_item(TTR("Clip Above"), MENU_OPTION_CLIP_ABOVE);
+	options->get_popup()->add_check_item(TTR("Clip Below"), MENU_OPTION_CLIP_BELOW);
 	options->get_popup()->add_separator();
-	options->get_popup()->add_check_item("Edit X Axis", MENU_OPTION_X_AXIS, KEY_Z);
-	options->get_popup()->add_check_item("Edit Y Axis", MENU_OPTION_Y_AXIS, KEY_X);
-	options->get_popup()->add_check_item("Edit Z Axis", MENU_OPTION_Z_AXIS, KEY_C);
+	options->get_popup()->add_check_item(TTR("Edit X Axis"), MENU_OPTION_X_AXIS, KEY_Z);
+	options->get_popup()->add_check_item(TTR("Edit Y Axis"), MENU_OPTION_Y_AXIS, KEY_X);
+	options->get_popup()->add_check_item(TTR("Edit Z Axis"), MENU_OPTION_Z_AXIS, KEY_C);
 	options->get_popup()->set_item_checked(options->get_popup()->get_item_index(MENU_OPTION_Y_AXIS), true);
 	options->get_popup()->add_separator();
-	options->get_popup()->add_item("Cursor Rotate X", MENU_OPTION_CURSOR_ROTATE_X, KEY_A);
-	options->get_popup()->add_item("Cursor Rotate Y", MENU_OPTION_CURSOR_ROTATE_Y, KEY_S);
-	options->get_popup()->add_item("Cursor Rotate Z", MENU_OPTION_CURSOR_ROTATE_Z, KEY_D);
-	options->get_popup()->add_item("Cursor Back Rotate X", MENU_OPTION_CURSOR_BACK_ROTATE_X, KEY_MASK_SHIFT + KEY_A);
-	options->get_popup()->add_item("Cursor Back Rotate Y", MENU_OPTION_CURSOR_BACK_ROTATE_Y, KEY_MASK_SHIFT + KEY_S);
-	options->get_popup()->add_item("Cursor Back Rotate Z", MENU_OPTION_CURSOR_BACK_ROTATE_Z, KEY_MASK_SHIFT + KEY_D);
-	options->get_popup()->add_item("Cursor Clear Rotation", MENU_OPTION_CURSOR_CLEAR_ROTATION, KEY_W);
+	options->get_popup()->add_item(TTR("Cursor Rotate X"), MENU_OPTION_CURSOR_ROTATE_X, KEY_A);
+	options->get_popup()->add_item(TTR("Cursor Rotate Y"), MENU_OPTION_CURSOR_ROTATE_Y, KEY_S);
+	options->get_popup()->add_item(TTR("Cursor Rotate Z"), MENU_OPTION_CURSOR_ROTATE_Z, KEY_D);
+	options->get_popup()->add_item(TTR("Cursor Back Rotate X"), MENU_OPTION_CURSOR_BACK_ROTATE_X, KEY_MASK_SHIFT + KEY_A);
+	options->get_popup()->add_item(TTR("Cursor Back Rotate Y"), MENU_OPTION_CURSOR_BACK_ROTATE_Y, KEY_MASK_SHIFT + KEY_S);
+	options->get_popup()->add_item(TTR("Cursor Back Rotate Z"), MENU_OPTION_CURSOR_BACK_ROTATE_Z, KEY_MASK_SHIFT + KEY_D);
+	options->get_popup()->add_item(TTR("Cursor Clear Rotation"), MENU_OPTION_CURSOR_CLEAR_ROTATION, KEY_W);
 	options->get_popup()->add_separator();
 	options->get_popup()->add_check_item("Duplicate Selects", MENU_OPTION_DUPLICATE_SELECTS);
 	options->get_popup()->add_separator();
-	options->get_popup()->add_item("Create Area", MENU_OPTION_SELECTION_MAKE_AREA, KEY_CONTROL + KEY_C);
-	options->get_popup()->add_item("Create Exterior Connector", MENU_OPTION_SELECTION_MAKE_EXTERIOR_CONNECTOR);
-	options->get_popup()->add_item("Erase Area", MENU_OPTION_REMOVE_AREA);
+	options->get_popup()->add_item(TTR("Create Area"), MENU_OPTION_SELECTION_MAKE_AREA, KEY_CONTROL + KEY_C);
+	options->get_popup()->add_item(TTR("Create Exterior Connector"), MENU_OPTION_SELECTION_MAKE_EXTERIOR_CONNECTOR);
+	options->get_popup()->add_item(TTR("Erase Area"), MENU_OPTION_REMOVE_AREA);
 	options->get_popup()->add_separator();
-	options->get_popup()->add_item("Selection -> Duplicate", MENU_OPTION_SELECTION_DUPLICATE, KEY_MASK_SHIFT + KEY_INSERT);
-	options->get_popup()->add_item("Selection -> Clear", MENU_OPTION_SELECTION_CLEAR, KEY_MASK_SHIFT + KEY_DELETE);
+	options->get_popup()->add_item(TTR("Selection -> Duplicate"), MENU_OPTION_SELECTION_DUPLICATE, KEY_MASK_SHIFT + KEY_INSERT);
+	options->get_popup()->add_item(TTR("Selection -> Clear"), MENU_OPTION_SELECTION_CLEAR, KEY_MASK_SHIFT + KEY_DELETE);
 	//options->get_popup()->add_separator();
 	//options->get_popup()->add_item("Configure",MENU_OPTION_CONFIGURE);
 
 	options->get_popup()->add_separator();
-	options->get_popup()->add_item("Settings", MENU_OPTION_GRIDMAP_SETTINGS);
+	options->get_popup()->add_item(TTR("Settings"), MENU_OPTION_GRIDMAP_SETTINGS);
 
 	settings_dialog = memnew(ConfirmationDialog);
-	settings_dialog->set_title("GridMap Settings");
+	settings_dialog->set_title(TTR("GridMap Settings"));
 	add_child(settings_dialog);
 	settings_vbc = memnew(VBoxContainer);
 	settings_vbc->set_custom_minimum_size(Size2(200, 0));
@@ -1191,7 +1191,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	settings_pick_distance->set_min(500.0f);
 	settings_pick_distance->set_step(1.0f);
 	settings_pick_distance->set_value(EDITOR_DEF("editors/grid_map/pick_distance", 5000.0));
-	settings_vbc->add_margin_child("Pick Distance:", settings_pick_distance);
+	settings_vbc->add_margin_child(TTR("Pick Distance:"), settings_pick_distance);
 
 	clip_mode = CLIP_DISABLED;
 	options->get_popup()->connect("id_pressed", this, "_menu_option");
@@ -1204,8 +1204,8 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	edit_mode->set_area_as_parent_rect();
 	edit_mode->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_BEGIN, 24);
 	edit_mode->set_margin(MARGIN_RIGHT, -14);
-	edit_mode->add_item("Tiles");
-	edit_mode->add_item("Areas");
+	edit_mode->add_item(TTR("Tiles"));
+	edit_mode->add_item(TTR("Areas"));
 	hb->add_child(edit_mode);
 	edit_mode->set_h_size_flags(SIZE_EXPAND_FILL);
 

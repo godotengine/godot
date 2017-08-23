@@ -80,7 +80,7 @@ void EditorRunNative::_notification(int p_what) {
 				} else {
 					mb->get_popup()->clear();
 					mb->show();
-					mb->set_tooltip("Select device from the list");
+					mb->set_tooltip(TTR("Select device from the list"));
 					for (int i = 0; i < dc; i++) {
 						mb->get_popup()->add_icon_item(get_icon("Play", "EditorIcons"), eep->get_device_name(i));
 						mb->get_popup()->set_item_tooltip(mb->get_popup()->get_item_count() - 1, eep->get_device_info(i).strip_edges());
@@ -118,7 +118,7 @@ void EditorRunNative::_run_native(int p_idx, int p_platform) {
 	}
 
 	if (preset.is_null()) {
-		EditorNode::get_singleton()->show_warning("No runnable export preset found for this platform.\nPlease add a runnable preset in the export menu.");
+		EditorNode::get_singleton()->show_warning(TTR("No runnable export preset found for this platform.\nPlease add a runnable preset in the export menu."));
 		return;
 	}
 

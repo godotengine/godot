@@ -218,7 +218,7 @@ private:
 				unzFile pkg = unzOpen2(zip_path.utf8().get_data(), &io);
 				if (!pkg) {
 
-					dialog_error->set_text("Error opening package file, not in zip format.");
+					dialog_error->set_text(TTR("Error opening package file, not in zip format."));
 					return;
 				}
 
@@ -1388,9 +1388,6 @@ ProjectManager::ProjectManager() {
 	if (EditorSettings::get_singleton()->get("filesystem/directories/autoscan_project_path")) {
 		_scan_begin(EditorSettings::get_singleton()->get("filesystem/directories/autoscan_project_path"));
 	}
-
-	//get_ok()->set_text("Open");
-	//get_ok()->set_text("Exit");
 
 	last_clicked = "";
 
