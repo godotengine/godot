@@ -11,6 +11,7 @@ void main() {
 
 [fragment]
 
+#define TWO_PI 6.283185307179586476925286766559
 
 #define NUM_SAMPLES (15)
 
@@ -205,7 +206,7 @@ void main() {
 
 
 	// Hash function used in the HPG12 AlchemyAO paper
-	float randomPatternRotationAngle = float((3 * ssC.x ^ ssC.y + ssC.x * ssC.y) * 10);
+	float randomPatternRotationAngle = mod(float((3 * ssC.x ^ ssC.y + ssC.x * ssC.y) * 10), TWO_PI);
 
 	// Reconstruct normals from positions. These will lead to 1-pixel black lines
 	// at depth discontinuities, however the blur will wipe those out so they are not visible
@@ -225,7 +226,7 @@ void main() {
 #ifdef ENABLE_RADIUS2
 
 	//go again for radius2
-	randomPatternRotationAngle = float((5 * ssC.x ^ ssC.y + ssC.x * ssC.y) * 11);
+	randomPatternRotationAngle = mod(float((5 * ssC.x ^ ssC.y + ssC.x * ssC.y) * 11), TWO_PI);
 
 	// Reconstruct normals from positions. These will lead to 1-pixel black lines
 	// at depth discontinuities, however the blur will wipe those out so they are not visible
