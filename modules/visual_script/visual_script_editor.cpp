@@ -2716,6 +2716,12 @@ void VisualScriptEditor::_selected_connect_node_method_or_setget(const String &p
 	_update_graph_connections();
 }
 
+void VisualScriptEditor::_cancel_connect_node_method_or_setget() {
+
+	script->remove_node(edited_func, port_action_new_node);
+	_update_graph();
+}
+
 void VisualScriptEditor::_default_value_changed() {
 
 	Ref<VisualScriptNode> vsn = script->get_node(edited_func, editing_id);
@@ -3167,6 +3173,7 @@ void VisualScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_button_resource_previewed", &VisualScriptEditor::_button_resource_previewed);
 	ClassDB::bind_method("_port_action_menu", &VisualScriptEditor::_port_action_menu);
 	ClassDB::bind_method("_selected_connect_node_method_or_setget", &VisualScriptEditor::_selected_connect_node_method_or_setget);
+	ClassDB::bind_method("_cancel_connect_node_method_or_setget", &VisualScriptEditor::_cancel_connect_node_method_or_setget);
 	ClassDB::bind_method("_expression_text_changed", &VisualScriptEditor::_expression_text_changed);
 
 	ClassDB::bind_method("get_drag_data_fw", &VisualScriptEditor::get_drag_data_fw);
@@ -3364,6 +3371,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	new_connect_node_select = memnew(PropertySelector);
 	add_child(new_connect_node_select);
 	new_connect_node_select->connect("selected", this, "_selected_connect_node_method_or_setget");
+	new_connect_node_select->get_cancel()->connect("pressed", this, "_cancel_connect_node_method_or_setget");
 
 	port_action_popup = memnew(PopupMenu);
 	add_child(port_action_popup);
