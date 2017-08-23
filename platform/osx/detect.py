@@ -65,10 +65,14 @@ def configure(env):
 
     else: # osxcross build
         root = os.environ.get("OSXCROSS_ROOT", 0)
-        if env["bits"] == "64":
+        if env["bits"] == "fat":
             basecmd = root + "/target/bin/x86_64-apple-" + env["osxcross_sdk"] + "-"
-        else:
+            env.Append(CCFLAGS=['-arch', 'i386', '-arch', 'x86_64'])
+            env.Append(LINKFLAGS=['-arch', 'i386', '-arch', 'x86_64'])
+        elif env["bits"] == "32":
             basecmd = root + "/target/bin/i386-apple-" + env["osxcross_sdk"] + "-"
+        else: # 64-bit, default
+            basecmd = root + "/target/bin/x86_64-apple-" + env["osxcross_sdk"] + "-"
 
         env['CC'] = basecmd + "cc"
         env['CXX'] = basecmd + "c++"
