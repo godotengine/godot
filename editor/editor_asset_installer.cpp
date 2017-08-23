@@ -89,7 +89,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 	unzFile pkg = unzOpen2(p_path.utf8().get_data(), &io);
 	if (!pkg) {
 
-		error->set_text("Error opening package file, not in zip format.");
+		error->set_text(TTR("Error opening package file, not in zip format."));
 		return;
 	}
 
@@ -221,7 +221,7 @@ void EditorAssetInstaller::ok_pressed() {
 	unzFile pkg = unzOpen2(package_path.utf8().get_data(), &io);
 	if (!pkg) {
 
-		error->set_text("Error opening package file, not in zip format.");
+		error->set_text(TTR("Error opening package file, not in zip format."));
 		return;
 	}
 
@@ -229,7 +229,7 @@ void EditorAssetInstaller::ok_pressed() {
 
 	Vector<String> failed_files;
 
-	ProgressDialog::get_singleton()->add_task("uncompress", "Uncompressing Assets", status_map.size());
+	ProgressDialog::get_singleton()->add_task("uncompress", TTR("Uncompressing Assets"), status_map.size());
 
 	int idx = 0;
 	while (ret == UNZ_OK) {
@@ -304,7 +304,7 @@ void EditorAssetInstaller::ok_pressed() {
 			EditorNode::get_singleton()->show_warning(msg);
 	} else {
 		if (EditorNode::get_singleton() != NULL)
-			EditorNode::get_singleton()->show_warning("Package Installed Successfully!", "Success!");
+			EditorNode::get_singleton()->show_warning(TTR("Package Installed Successfully!"), TTR("Success!"));
 	}
 	EditorFileSystem::get_singleton()->scan_changes();
 }
@@ -325,8 +325,8 @@ EditorAssetInstaller::EditorAssetInstaller() {
 
 	error = memnew(AcceptDialog);
 	add_child(error);
-	get_ok()->set_text("Install");
-	set_title("Package Installer");
+	get_ok()->set_text(TTR("Install"));
+	set_title(TTR("Package Installer"));
 
 	updating = false;
 

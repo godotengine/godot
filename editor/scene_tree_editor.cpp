@@ -1004,7 +1004,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 
 	warning = memnew(AcceptDialog);
 	add_child(warning);
-	warning->set_title("Node Configuration Warning!");
+	warning->set_title(TTR("Node Configuration Warning!"));
 
 	show_enabled_subscene = false;
 
