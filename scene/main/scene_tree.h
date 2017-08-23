@@ -199,6 +199,8 @@ private:
 	void _connection_failed();
 	void _server_disconnected();
 
+	int rpc_sender_id;
+
 	//path sent caches
 	struct PathSentCache {
 		Map<int, bool> confirmed_peers;
@@ -445,6 +447,7 @@ public:
 	bool has_network_peer() const;
 	int get_network_unique_id() const;
 	Vector<int> get_network_connected_peers() const;
+	int get_rpc_sender_id() const;
 
 	void set_refuse_new_network_connections(bool p_refuse);
 	bool is_refusing_new_network_connections() const;

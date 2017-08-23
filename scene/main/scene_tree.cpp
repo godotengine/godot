@@ -1708,6 +1708,11 @@ Vector<int> SceneTree::get_network_connected_peers() const {
 
 	return ret;
 }
+
+int SceneTree::get_rpc_sender_id() const {
+	return rpc_sender_id;
+}
+
 void SceneTree::set_refuse_new_network_connections(bool p_refuse) {
 	ERR_FAIL_COND(!network_peer.is_valid());
 	network_peer->set_refuse_new_connections(p_refuse);
@@ -2102,7 +2107,9 @@ void SceneTree::_network_poll() {
 			ERR_PRINT("Error getting packet!");
 		}
 
+		rpc_sender_id = sender;
 		_network_process_packet(sender, packet, len);
+		rpc_sender_id = 0;
 
 		if (!network_peer.is_valid()) {
 			break; //it's also possible that a packet or RPC caused a disconnection, so also check here
@@ -2182,6 +2189,7 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_network_peer"), &SceneTree::has_network_peer);
 	ClassDB::bind_method(D_METHOD("get_network_connected_peers"), &SceneTree::get_network_connected_peers);
 	ClassDB::bind_method(D_METHOD("get_network_unique_id"), &SceneTree::get_network_unique_id);
+	ClassDB::bind_method(D_METHOD("get_rpc_sender_id"), &SceneTree::get_rpc_sender_id);
 	ClassDB::bind_method(D_METHOD("set_refuse_new_network_connections", "refuse"), &SceneTree::set_refuse_new_network_connections);
 	ClassDB::bind_method(D_METHOD("is_refusing_new_network_connections"), &SceneTree::is_refusing_new_network_connections);
 	ClassDB::bind_method(D_METHOD("_network_peer_connected"), &SceneTree::_network_peer_connected);
@@ -2266,6 +2274,7 @@ SceneTree::SceneTree() {
 	call_lock = 0;
 	root_lock = 0;
 	node_count = 0;
+	rpc_sender_id = 0;
 
 	//create with mainloop
 
