@@ -2880,6 +2880,8 @@ void TextEdit::_post_shift_selection() {
 }
 
 void TextEdit::_scroll_lines_up() {
+	scrolling = false;
+
 	// adjust the vertical scroll
 	if (get_v_scroll() > 0) {
 		set_v_scroll(get_v_scroll() - 1);
@@ -2892,6 +2894,8 @@ void TextEdit::_scroll_lines_up() {
 }
 
 void TextEdit::_scroll_lines_down() {
+	scrolling = false;
+
 	// calculate the maximum vertical scroll position
 	int max_v_scroll = get_line_count() - 1;
 	if (!scroll_past_end_of_file_enabled) {
@@ -3156,6 +3160,7 @@ int TextEdit::get_visible_rows() const {
 	return total;
 }
 void TextEdit::adjust_viewport_to_cursor() {
+	scrolling = false;
 
 	if (cursor.line_ofs > cursor.line)
 		cursor.line_ofs = cursor.line;
@@ -3195,6 +3200,7 @@ void TextEdit::adjust_viewport_to_cursor() {
 }
 
 void TextEdit::center_viewport_to_cursor() {
+	scrolling = false;
 
 	if (cursor.line_ofs > cursor.line)
 		cursor.line_ofs = cursor.line;
@@ -3311,6 +3317,10 @@ void TextEdit::cursor_set_block_mode(const bool p_enable) {
 
 bool TextEdit::cursor_is_block_mode() const {
 	return block_caret;
+}
+
+void TextEdit::_v_scroll_input() {
+	scrolling = false;
 }
 
 void TextEdit::_scroll_moved(double p_to_val) {
@@ -4706,6 +4716,7 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_push_current_op"), &TextEdit::_push_current_op);
 	ClassDB::bind_method(D_METHOD("_click_selection_held"), &TextEdit::_click_selection_held);
 	ClassDB::bind_method(D_METHOD("_toggle_draw_caret"), &TextEdit::_toggle_draw_caret);
+	ClassDB::bind_method(D_METHOD("_v_scroll_input"), &TextEdit::_v_scroll_input);
 
 	BIND_ENUM_CONSTANT(SEARCH_MATCH_CASE);
 	BIND_ENUM_CONSTANT(SEARCH_WHOLE_WORDS);
@@ -4842,6 +4853,8 @@ TextEdit::TextEdit() {
 
 	h_scroll->connect("value_changed", this, "_scroll_moved");
 	v_scroll->connect("value_changed", this, "_scroll_moved");
+
+	v_scroll->connect("scrolling", this, "_v_scroll_input");
 
 	cursor_changed_dirty = false;
 	text_changed_dirty = false;
