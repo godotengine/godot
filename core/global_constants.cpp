@@ -45,15 +45,15 @@ struct _GlobalConstant {
 	_GlobalConstant() {}
 
 #ifdef DEBUG_METHODS_ENABLED
-	_GlobalConstant(const StringName &p_enum_name, const char *p_name, int p_value) {
-		enum_name = p_enum_name;
-		name = p_name;
-		value = p_value;
+	_GlobalConstant(const StringName &p_enum_name, const char *p_name, int p_value)
+		: enum_name(p_enum_name),
+		  name(p_name),
+		  value(p_value) {
 	}
 #else
-	_GlobalConstant(const char *p_name, int p_value) {
-		name = p_name;
-		value = p_value;
+	_GlobalConstant(const char *p_name, int p_value)
+		: name(p_name),
+		  value(p_value) {
 	}
 #endif
 };
