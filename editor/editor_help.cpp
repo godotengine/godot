@@ -294,7 +294,6 @@ EditorHelpSearch::EditorHelpSearch() {
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
 
-	HBoxContainer *sb_hb = memnew(HBoxContainer);
 	search_box = memnew(LineEdit);
 	vbc->add_child(search_box);
 	search_box->connect("text_changed", this, "_text_changed");

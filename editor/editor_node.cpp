@@ -5645,21 +5645,7 @@ EditorNode::EditorNode() {
 	progress_hb = memnew(BackgroundProgress);
 	//menu_hb->add_child(progress_hb);
 
-	{
-		Control *sp = memnew(Control);
-		sp->set_custom_minimum_size(Size2(30, 0) * EDSCALE);
-		//menu_hb->add_child(sp);
-	}
-
-	{
-		Control *sp = memnew(Control);
-		sp->set_custom_minimum_size(Size2(30, 0) * EDSCALE);
-		//menu_hb->add_child(sp);
-	}
-
-	top_region = memnew(PanelContainer);
 	HBoxContainer *right_menu_hb = memnew(HBoxContainer);
-	//top_region->add_child(right_menu_hb);
 	menu_hb->add_child(right_menu_hb);
 
 	layout_dialog = memnew(EditorNameDialog);
@@ -6242,6 +6228,7 @@ EditorNode::~EditorNode() {
 	memdelete(editor_plugins_over);
 	memdelete(editor_plugins_force_input_forwarding);
 	memdelete(file_server);
+	memdelete(progress_hb);
 	EditorSettings::destroy();
 }
 

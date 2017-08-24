@@ -591,6 +591,9 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	hb->add_child(vb);
 	hb->add_child(empty_v->duplicate());
 
+	memdelete(empty_h);
+	memdelete(empty_v);
+
 	add_child(hb);
 
 	/* Language */
