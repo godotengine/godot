@@ -1679,6 +1679,10 @@ void RasterizerDummy::custom_shade_model_get_param_info(int p_model, List<Proper
 
 };
 
+void RasterizerDummy::set_time_scale(float p_scale) {
+    
+}
+
 void RasterizerDummy::init() {
 }
 
