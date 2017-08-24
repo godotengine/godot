@@ -50,12 +50,12 @@ void TileMap::_notification(int p_what) {
 			Node2D *c = this;
 			while (c) {
 
-				navigation = c->cast_to<Navigation2D>();
+				navigation = Object::cast_to<Navigation2D>(c);
 				if (navigation) {
 					break;
 				}
 
-				c = c->get_parent()->cast_to<Node2D>();
+				c = Object::cast_to<Node2D>(c->get_parent());
 			}
 
 			pending_update = true;

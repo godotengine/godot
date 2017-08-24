@@ -50,9 +50,8 @@ void CollisionShape::make_convex_from_brothers() {
 	for (int i = 0; i < p->get_child_count(); i++) {
 
 		Node *n = p->get_child(i);
-		if (n->cast_to<MeshInstance>()) {
+		if (MeshInstance *mi = Object::cast_to<MeshInstance>(n)) {
 
-			MeshInstance *mi = n->cast_to<MeshInstance>();
 			Ref<Mesh> m = mi->get_mesh();
 			if (m.is_valid()) {
 
@@ -68,7 +67,7 @@ void CollisionShape::_notification(int p_what) {
 	switch (p_what) {
 
 		case NOTIFICATION_PARENTED: {
-			parent = get_parent()->cast_to<CollisionObject>();
+			parent = Object::cast_to<CollisionObject>(get_parent());
 			if (parent) {
 				owner_id = parent->create_shape_owner(this);
 				if (shape.is_valid()) {
@@ -106,7 +105,7 @@ void CollisionShape::resource_changed(RES res) {
 
 String CollisionShape::get_configuration_warning() const {
 
-	if (!get_parent()->cast_to<CollisionObject>()) {
+	if (!Object::cast_to<CollisionObject>(get_parent())) {
 		return TTR("CollisionShape only serves to provide a collision shape to a CollisionObject derived node. Please only use it as a child of Area, StaticBody, RigidBody, KinematicBody, etc. to give them a shape.");
 	}
 

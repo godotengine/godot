@@ -100,7 +100,7 @@ StreamEditor::StreamEditor() {
 
 void StreamEditorPlugin::edit(Object *p_object) {
 
-	stream_editor->edit(p_object->cast_to<Node>());
+	stream_editor->edit(Object::cast_to<Node>(p_object));
 }
 
 bool StreamEditorPlugin::handles(Object *p_object) const {

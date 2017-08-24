@@ -73,7 +73,7 @@ Variant GDNativeClass::_new() {
 		ERR_FAIL_COND_V(!o, Variant());
 	}
 
-	Reference *ref = o->cast_to<Reference>();
+	Reference *ref = Object::cast_to<Reference>(o);
 	if (ref) {
 		return REF(ref);
 	} else {
@@ -161,7 +161,7 @@ Variant GDScript::_new(const Variant **p_args, int p_argcount, Variant::CallErro
 		owner = memnew(Reference); //by default, no base means use reference
 	}
 
-	Reference *r = owner->cast_to<Reference>();
+	Reference *r = Object::cast_to<Reference>(owner);
 	if (r) {
 		ref = REF(r);
 	}
@@ -397,7 +397,7 @@ ScriptInstance *GDScript::instance_create(Object *p_this) {
 	}
 
 	Variant::CallError unchecked_error;
-	return _create_instance(NULL, 0, p_this, p_this->cast_to<Reference>(), unchecked_error);
+	return _create_instance(NULL, 0, p_this, Object::cast_to<Reference>(p_this), unchecked_error);
 }
 bool GDScript::instance_has(const Object *p_this) const {
 
@@ -575,9 +575,7 @@ void GDScript::update_exports() {
 	//print_line("update exports for "+get_path()+" ic: "+itos(copy.size()));
 	for (Set<ObjectID>::Element *E = copy.front(); E; E = E->next()) {
 		Object *id = ObjectDB::get_instance(E->get());
-		if (!id)
-			continue;
-		GDScript *s = id->cast_to<GDScript>();
+		GDScript *s = Object::cast_to<GDScript>(id);
 		if (!s)
 			continue;
 		s->update_exports();
@@ -2006,11 +2004,11 @@ Error ResourceFormatSaverGDScript::save(const String &p_path, const RES &p_resou
 
 void ResourceFormatSaverGDScript::get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const {
 
-	if (p_resource->cast_to<GDScript>()) {
+	if (Object::cast_to<GDScript>(*p_resource)) {
 		p_extensions->push_back("gd");
 	}
 }
 bool ResourceFormatSaverGDScript::recognize(const RES &p_resource) const {
 
-	return p_resource->cast_to<GDScript>() != NULL;
+	return Object::cast_to<GDScript>(*p_resource) != NULL;
 }

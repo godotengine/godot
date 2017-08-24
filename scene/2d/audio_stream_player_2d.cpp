@@ -157,10 +157,8 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 			int areas = space_state->intersect_point(global_pos, sr, MAX_INTERSECT_AREAS, Set<RID>(), area_mask, Physics2DDirectSpaceState::TYPE_MASK_AREA);
 
 			for (int i = 0; i < areas; i++) {
-				if (!sr[i].collider)
-					continue;
 
-				Area2D *area2d = sr[i].collider->cast_to<Area2D>();
+				Area2D *area2d = Object::cast_to<Area2D>(sr[i].collider);
 				if (!area2d)
 					continue;
 

@@ -660,7 +660,7 @@ void LightSpatialGizmo::set_handle(int p_idx, Camera *p_camera, const Point2 &p_
 	Vector3 s[2] = { gi.xform(ray_from), gi.xform(ray_from + ray_dir * 4096) };
 	if (p_idx == 0) {
 
-		if (light->cast_to<SpotLight>()) {
+		if (Object::cast_to<SpotLight>(light)) {
 			Vector3 ra, rb;
 			Geometry::get_closest_points_between_segments(Vector3(), Vector3(0, 0, -4096), s[0], s[1], ra, rb);
 
@@ -669,7 +669,7 @@ void LightSpatialGizmo::set_handle(int p_idx, Camera *p_camera, const Point2 &p_
 				d = 0;
 
 			light->set_param(Light::PARAM_RANGE, d);
-		} else if (light->cast_to<OmniLight>()) {
+		} else if (Object::cast_to<OmniLight>(light)) {
 
 			Plane cp = Plane(gt.origin, p_camera->get_transform().basis.get_axis(2));
 
@@ -713,7 +713,7 @@ void LightSpatialGizmo::commit_handle(int p_idx, const Variant &p_restore, bool 
 
 void LightSpatialGizmo::redraw() {
 
-	if (light->cast_to<DirectionalLight>()) {
+	if (Object::cast_to<DirectionalLight>(light)) {
 
 		const int arrow_points = 5;
 		Vector3 arrow[arrow_points] = {
@@ -751,11 +751,11 @@ void LightSpatialGizmo::redraw() {
 		add_unscaled_billboard(SpatialEditorGizmos::singleton->light_material_directional_icon, 0.05);
 	}
 
-	if (light->cast_to<OmniLight>()) {
+	if (Object::cast_to<OmniLight>(light)) {
 
 		clear();
 
-		OmniLight *on = light->cast_to<OmniLight>();
+		OmniLight *on = Object::cast_to<OmniLight>(light);
 
 		float r = on->get_param(Light::PARAM_RANGE);
 
@@ -786,12 +786,12 @@ void LightSpatialGizmo::redraw() {
 		add_handles(handles, true);
 	}
 
-	if (light->cast_to<SpotLight>()) {
+	if (Object::cast_to<SpotLight>(light)) {
 
 		clear();
 
 		Vector<Vector3> points;
-		SpotLight *on = light->cast_to<SpotLight>();
+		SpotLight *on = Object::cast_to<SpotLight>(light);
 
 		float r = on->get_param(Light::PARAM_RANGE);
 		float w = r * Math::sin(Math::deg2rad(on->get_param(Light::PARAM_SPOT_ANGLE)));
@@ -1568,22 +1568,22 @@ String CollisionShapeSpatialGizmo::get_handle_name(int p_idx) const {
 	if (s.is_null())
 		return "";
 
-	if (s->cast_to<SphereShape>()) {
+	if (Object::cast_to<SphereShape>(*s)) {
 
 		return "Radius";
 	}
 
-	if (s->cast_to<BoxShape>()) {
+	if (Object::cast_to<BoxShape>(*s)) {
 
 		return "Extents";
 	}
 
-	if (s->cast_to<CapsuleShape>()) {
+	if (Object::cast_to<CapsuleShape>(*s)) {
 
 		return p_idx == 0 ? "Radius" : "Height";
 	}
 
-	if (s->cast_to<RayShape>()) {
+	if (Object::cast_to<RayShape>(*s)) {
 
 		return "Length";
 	}
@@ -1596,25 +1596,25 @@ Variant CollisionShapeSpatialGizmo::get_handle_value(int p_idx) const {
 	if (s.is_null())
 		return Variant();
 
-	if (s->cast_to<SphereShape>()) {
+	if (Object::cast_to<SphereShape>(*s)) {
 
 		Ref<SphereShape> ss = s;
 		return ss->get_radius();
 	}
 
-	if (s->cast_to<BoxShape>()) {
+	if (Object::cast_to<BoxShape>(*s)) {
 
 		Ref<BoxShape> bs = s;
 		return bs->get_extents();
 	}
 
-	if (s->cast_to<CapsuleShape>()) {
+	if (Object::cast_to<CapsuleShape>(*s)) {
 
 		Ref<CapsuleShape> cs = s;
 		return p_idx == 0 ? cs->get_radius() : cs->get_height();
 	}
 
-	if (s->cast_to<RayShape>()) {
+	if (Object::cast_to<RayShape>(*s)) {
 
 		Ref<RayShape> cs = s;
 		return cs->get_length();
@@ -1636,7 +1636,7 @@ void CollisionShapeSpatialGizmo::set_handle(int p_idx, Camera *p_camera, const P
 
 	Vector3 sg[2] = { gi.xform(ray_from), gi.xform(ray_from + ray_dir * 4096) };
 
-	if (s->cast_to<SphereShape>()) {
+	if (Object::cast_to<SphereShape>(*s)) {
 
 		Ref<SphereShape> ss = s;
 		Vector3 ra, rb;
@@ -1648,7 +1648,7 @@ void CollisionShapeSpatialGizmo::set_handle(int p_idx, Camera *p_camera, const P
 		ss->set_radius(d);
 	}
 
-	if (s->cast_to<RayShape>()) {
+	if (Object::cast_to<RayShape>(*s)) {
 
 		Ref<RayShape> rs = s;
 		Vector3 ra, rb;
@@ -1660,7 +1660,7 @@ void CollisionShapeSpatialGizmo::set_handle(int p_idx, Camera *p_camera, const P
 		rs->set_length(d);
 	}
 
-	if (s->cast_to<BoxShape>()) {
+	if (Object::cast_to<BoxShape>(*s)) {
 
 		Vector3 axis;
 		axis[p_idx] = 1.0;
@@ -1676,7 +1676,7 @@ void CollisionShapeSpatialGizmo::set_handle(int p_idx, Camera *p_camera, const P
 		bs->set_extents(he);
 	}
 
-	if (s->cast_to<CapsuleShape>()) {
+	if (Object::cast_to<CapsuleShape>(*s)) {
 
 		Vector3 axis;
 		axis[p_idx == 0 ? 0 : 2] = 1.0;
@@ -1700,7 +1700,7 @@ void CollisionShapeSpatialGizmo::commit_handle(int p_idx, const Variant &p_resto
 	if (s.is_null())
 		return;
 
-	if (s->cast_to<SphereShape>()) {
+	if (Object::cast_to<SphereShape>(*s)) {
 
 		Ref<SphereShape> ss = s;
 		if (p_cancel) {
@@ -1715,7 +1715,7 @@ void CollisionShapeSpatialGizmo::commit_handle(int p_idx, const Variant &p_resto
 		ur->commit_action();
 	}
 
-	if (s->cast_to<BoxShape>()) {
+	if (Object::cast_to<BoxShape>(*s)) {
 
 		Ref<BoxShape> ss = s;
 		if (p_cancel) {
@@ -1730,7 +1730,7 @@ void CollisionShapeSpatialGizmo::commit_handle(int p_idx, const Variant &p_resto
 		ur->commit_action();
 	}
 
-	if (s->cast_to<CapsuleShape>()) {
+	if (Object::cast_to<CapsuleShape>(*s)) {
 
 		Ref<CapsuleShape> ss = s;
 		if (p_cancel) {
@@ -1755,7 +1755,7 @@ void CollisionShapeSpatialGizmo::commit_handle(int p_idx, const Variant &p_resto
 		ur->commit_action();
 	}
 
-	if (s->cast_to<RayShape>()) {
+	if (Object::cast_to<RayShape>(*s)) {
 
 		Ref<RayShape> ss = s;
 		if (p_cancel) {
@@ -1778,7 +1778,7 @@ void CollisionShapeSpatialGizmo::redraw() {
 	if (s.is_null())
 		return;
 
-	if (s->cast_to<SphereShape>()) {
+	if (Object::cast_to<SphereShape>(*s)) {
 
 		Ref<SphereShape> sp = s;
 		float r = sp->get_radius();
@@ -1824,7 +1824,7 @@ void CollisionShapeSpatialGizmo::redraw() {
 		add_handles(handles);
 	}
 
-	if (s->cast_to<BoxShape>()) {
+	if (Object::cast_to<BoxShape>(*s)) {
 
 		Ref<BoxShape> bs = s;
 		Vector<Vector3> lines;
@@ -1853,7 +1853,7 @@ void CollisionShapeSpatialGizmo::redraw() {
 		add_handles(handles);
 	}
 
-	if (s->cast_to<CapsuleShape>()) {
+	if (Object::cast_to<CapsuleShape>(*s)) {
 
 		Ref<CapsuleShape> cs = s;
 		float radius = cs->get_radius();
@@ -1928,7 +1928,7 @@ void CollisionShapeSpatialGizmo::redraw() {
 		add_handles(handles);
 	}
 
-	if (s->cast_to<PlaneShape>()) {
+	if (Object::cast_to<PlaneShape>(*s)) {
 
 		Ref<PlaneShape> ps = s;
 		Plane p = ps->get_plane();
@@ -1959,9 +1959,9 @@ void CollisionShapeSpatialGizmo::redraw() {
 		add_collision_segments(points);
 	}
 
-	if (s->cast_to<ConvexPolygonShape>()) {
+	if (Object::cast_to<ConvexPolygonShape>(*s)) {
 
-		PoolVector<Vector3> points = s->cast_to<ConvexPolygonShape>()->get_points();
+		PoolVector<Vector3> points = Object::cast_to<ConvexPolygonShape>(*s)->get_points();
 
 		if (points.size() > 3) {
 
@@ -1983,7 +1983,7 @@ void CollisionShapeSpatialGizmo::redraw() {
 		}
 	}
 
-	if (s->cast_to<RayShape>()) {
+	if (Object::cast_to<RayShape>(*s)) {
 
 		Ref<RayShape> rs = s;
 
@@ -3098,133 +3098,133 @@ SpatialEditorGizmos *SpatialEditorGizmos::singleton = NULL;
 
 Ref<SpatialEditorGizmo> SpatialEditorGizmos::get_gizmo(Spatial *p_spatial) {
 
-	if (p_spatial->cast_to<Light>()) {
+	if (Object::cast_to<Light>(p_spatial)) {
 
-		Ref<LightSpatialGizmo> lsg = memnew(LightSpatialGizmo(p_spatial->cast_to<Light>()));
+		Ref<LightSpatialGizmo> lsg = memnew(LightSpatialGizmo(Object::cast_to<Light>(p_spatial)));
 		return lsg;
 	}
 
-	if (p_spatial->cast_to<Camera>()) {
+	if (Object::cast_to<Camera>(p_spatial)) {
 
-		Ref<CameraSpatialGizmo> lsg = memnew(CameraSpatialGizmo(p_spatial->cast_to<Camera>()));
+		Ref<CameraSpatialGizmo> lsg = memnew(CameraSpatialGizmo(Object::cast_to<Camera>(p_spatial)));
 		return lsg;
 	}
 
-	if (p_spatial->cast_to<Skeleton>()) {
+	if (Object::cast_to<Skeleton>(p_spatial)) {
 
-		Ref<SkeletonSpatialGizmo> lsg = memnew(SkeletonSpatialGizmo(p_spatial->cast_to<Skeleton>()));
+		Ref<SkeletonSpatialGizmo> lsg = memnew(SkeletonSpatialGizmo(Object::cast_to<Skeleton>(p_spatial)));
 		return lsg;
 	}
 
-	if (p_spatial->cast_to<Position3D>()) {
+	if (Object::cast_to<Position3D>(p_spatial)) {
 
-		Ref<Position3DSpatialGizmo> lsg = memnew(Position3DSpatialGizmo(p_spatial->cast_to<Position3D>()));
+		Ref<Position3DSpatialGizmo> lsg = memnew(Position3DSpatialGizmo(Object::cast_to<Position3D>(p_spatial)));
 		return lsg;
 	}
 
-	if (p_spatial->cast_to<MeshInstance>()) {
+	if (Object::cast_to<MeshInstance>(p_spatial)) {
 
-		Ref<MeshInstanceSpatialGizmo> misg = memnew(MeshInstanceSpatialGizmo(p_spatial->cast_to<MeshInstance>()));
+		Ref<MeshInstanceSpatialGizmo> misg = memnew(MeshInstanceSpatialGizmo(Object::cast_to<MeshInstance>(p_spatial)));
 		return misg;
 	}
 
-	if (p_spatial->cast_to<Room>()) {
+	if (Object::cast_to<Room>(p_spatial)) {
 
-		Ref<RoomSpatialGizmo> misg = memnew(RoomSpatialGizmo(p_spatial->cast_to<Room>()));
+		Ref<RoomSpatialGizmo> misg = memnew(RoomSpatialGizmo(Object::cast_to<Room>(p_spatial)));
 		return misg;
 	}
 
-	if (p_spatial->cast_to<NavigationMeshInstance>()) {
+	if (Object::cast_to<NavigationMeshInstance>(p_spatial)) {
 
-		Ref<NavigationMeshSpatialGizmo> misg = memnew(NavigationMeshSpatialGizmo(p_spatial->cast_to<NavigationMeshInstance>()));
+		Ref<NavigationMeshSpatialGizmo> misg = memnew(NavigationMeshSpatialGizmo(Object::cast_to<NavigationMeshInstance>(p_spatial)));
 		return misg;
 	}
 
-	if (p_spatial->cast_to<RayCast>()) {
+	if (Object::cast_to<RayCast>(p_spatial)) {
 
-		Ref<RayCastSpatialGizmo> misg = memnew(RayCastSpatialGizmo(p_spatial->cast_to<RayCast>()));
+		Ref<RayCastSpatialGizmo> misg = memnew(RayCastSpatialGizmo(Object::cast_to<RayCast>(p_spatial)));
 		return misg;
 	}
 
-	if (p_spatial->cast_to<Portal>()) {
+	if (Object::cast_to<Portal>(p_spatial)) {
 
-		Ref<PortalSpatialGizmo> misg = memnew(PortalSpatialGizmo(p_spatial->cast_to<Portal>()));
+		Ref<PortalSpatialGizmo> misg = memnew(PortalSpatialGizmo(Object::cast_to<Portal>(p_spatial)));
 		return misg;
 	}
 
-	if (p_spatial->cast_to<CollisionShape>()) {
+	if (Object::cast_to<CollisionShape>(p_spatial)) {
 
-		Ref<CollisionShapeSpatialGizmo> misg = memnew(CollisionShapeSpatialGizmo(p_spatial->cast_to<CollisionShape>()));
+		Ref<CollisionShapeSpatialGizmo> misg = memnew(CollisionShapeSpatialGizmo(Object::cast_to<CollisionShape>(p_spatial)));
 		return misg;
 	}
 
-	if (p_spatial->cast_to<VisibilityNotifier>()) {
+	if (Object::cast_to<VisibilityNotifier>(p_spatial)) {
 
-		Ref<VisibilityNotifierGizmo> misg = memnew(VisibilityNotifierGizmo(p_spatial->cast_to<VisibilityNotifier>()));
+		Ref<VisibilityNotifierGizmo> misg = memnew(VisibilityNotifierGizmo(Object::cast_to<VisibilityNotifier>(p_spatial)));
 		return misg;
 	}
 
-	if (p_spatial->cast_to<Particles>()) {
+	if (Object::cast_to<Particles>(p_spatial)) {
 
-		Ref<ParticlesGizmo> misg = memnew(ParticlesGizmo(p_spatial->cast_to<Particles>()));
+		Ref<ParticlesGizmo> misg = memnew(ParticlesGizmo(Object::cast_to<Particles>(p_spatial)));
 		return misg;
 	}
 
-	if (p_spatial->cast_to<ReflectionProbe>()) {
+	if (Object::cast_to<ReflectionProbe>(p_spatial)) {
 
-		Ref<ReflectionProbeGizmo> misg = memnew(ReflectionProbeGizmo(p_spatial->cast_to<ReflectionProbe>()));
+		Ref<ReflectionProbeGizmo> misg = memnew(ReflectionProbeGizmo(Object::cast_to<ReflectionProbe>(p_spatial)));
 		return misg;
 	}
-	if (p_spatial->cast_to<GIProbe>()) {
+	if (Object::cast_to<GIProbe>(p_spatial)) {
 
-		Ref<GIProbeGizmo> misg = memnew(GIProbeGizmo(p_spatial->cast_to<GIProbe>()));
-		return misg;
-	}
-
-	if (p_spatial->cast_to<VehicleWheel>()) {
-
-		Ref<VehicleWheelSpatialGizmo> misg = memnew(VehicleWheelSpatialGizmo(p_spatial->cast_to<VehicleWheel>()));
-		return misg;
-	}
-	if (p_spatial->cast_to<PinJoint>()) {
-
-		Ref<PinJointSpatialGizmo> misg = memnew(PinJointSpatialGizmo(p_spatial->cast_to<PinJoint>()));
+		Ref<GIProbeGizmo> misg = memnew(GIProbeGizmo(Object::cast_to<GIProbe>(p_spatial)));
 		return misg;
 	}
 
-	if (p_spatial->cast_to<HingeJoint>()) {
+	if (Object::cast_to<VehicleWheel>(p_spatial)) {
 
-		Ref<HingeJointSpatialGizmo> misg = memnew(HingeJointSpatialGizmo(p_spatial->cast_to<HingeJoint>()));
+		Ref<VehicleWheelSpatialGizmo> misg = memnew(VehicleWheelSpatialGizmo(Object::cast_to<VehicleWheel>(p_spatial)));
+		return misg;
+	}
+	if (Object::cast_to<PinJoint>(p_spatial)) {
+
+		Ref<PinJointSpatialGizmo> misg = memnew(PinJointSpatialGizmo(Object::cast_to<PinJoint>(p_spatial)));
 		return misg;
 	}
 
-	if (p_spatial->cast_to<SliderJoint>()) {
+	if (Object::cast_to<HingeJoint>(p_spatial)) {
 
-		Ref<SliderJointSpatialGizmo> misg = memnew(SliderJointSpatialGizmo(p_spatial->cast_to<SliderJoint>()));
+		Ref<HingeJointSpatialGizmo> misg = memnew(HingeJointSpatialGizmo(Object::cast_to<HingeJoint>(p_spatial)));
 		return misg;
 	}
 
-	if (p_spatial->cast_to<ConeTwistJoint>()) {
+	if (Object::cast_to<SliderJoint>(p_spatial)) {
 
-		Ref<ConeTwistJointSpatialGizmo> misg = memnew(ConeTwistJointSpatialGizmo(p_spatial->cast_to<ConeTwistJoint>()));
+		Ref<SliderJointSpatialGizmo> misg = memnew(SliderJointSpatialGizmo(Object::cast_to<SliderJoint>(p_spatial)));
 		return misg;
 	}
 
-	if (p_spatial->cast_to<Generic6DOFJoint>()) {
+	if (Object::cast_to<ConeTwistJoint>(p_spatial)) {
 
-		Ref<Generic6DOFJointSpatialGizmo> misg = memnew(Generic6DOFJointSpatialGizmo(p_spatial->cast_to<Generic6DOFJoint>()));
+		Ref<ConeTwistJointSpatialGizmo> misg = memnew(ConeTwistJointSpatialGizmo(Object::cast_to<ConeTwistJoint>(p_spatial)));
 		return misg;
 	}
 
-	if (p_spatial->cast_to<CollisionPolygon>()) {
+	if (Object::cast_to<Generic6DOFJoint>(p_spatial)) {
 
-		Ref<CollisionPolygonSpatialGizmo> misg = memnew(CollisionPolygonSpatialGizmo(p_spatial->cast_to<CollisionPolygon>()));
+		Ref<Generic6DOFJointSpatialGizmo> misg = memnew(Generic6DOFJointSpatialGizmo(Object::cast_to<Generic6DOFJoint>(p_spatial)));
 		return misg;
 	}
 
-	if (p_spatial->cast_to<AudioStreamPlayer3D>()) {
+	if (Object::cast_to<CollisionPolygon>(p_spatial)) {
 
-		Ref<AudioStreamPlayer3DSpatialGizmo> misg = memnew(AudioStreamPlayer3DSpatialGizmo(p_spatial->cast_to<AudioStreamPlayer3D>()));
+		Ref<CollisionPolygonSpatialGizmo> misg = memnew(CollisionPolygonSpatialGizmo(Object::cast_to<CollisionPolygon>(p_spatial)));
+		return misg;
+	}
+
+	if (Object::cast_to<AudioStreamPlayer3D>(p_spatial)) {
+
+		Ref<AudioStreamPlayer3DSpatialGizmo> misg = memnew(AudioStreamPlayer3DSpatialGizmo(Object::cast_to<AudioStreamPlayer3D>(p_spatial)));
 		return misg;
 	}
 

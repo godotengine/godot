@@ -120,7 +120,7 @@ void AnimationCache::_update_cache() {
 				StringName property = np.get_property();
 				String ps = property;
 
-				Spatial *sp = node->cast_to<Spatial>();
+				Spatial *sp = Object::cast_to<Spatial>(node);
 
 				if (!sp) {
 
@@ -131,7 +131,7 @@ void AnimationCache::_update_cache() {
 
 				if (ps != "") {
 
-					Skeleton *sk = node->cast_to<Skeleton>();
+					Skeleton *sk = Object::cast_to<Skeleton>(node);
 					if (!sk) {
 
 						path_cache.push_back(Path());

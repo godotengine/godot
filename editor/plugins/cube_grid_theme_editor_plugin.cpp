@@ -72,10 +72,10 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 
 		Node *child = p_scene->get_child(i);
 
-		if (!child->cast_to<MeshInstance>()) {
+		if (!Object::cast_to<MeshInstance>(child)) {
 			if (child->get_child_count() > 0) {
 				child = child->get_child(0);
-				if (!child->cast_to<MeshInstance>()) {
+				if (!Object::cast_to<MeshInstance>(child)) {
 					continue;
 				}
 
@@ -83,7 +83,7 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 				continue;
 		}
 
-		MeshInstance *mi = child->cast_to<MeshInstance>();
+		MeshInstance *mi = Object::cast_to<MeshInstance>(child);
 		Ref<Mesh> mesh = mi->get_mesh();
 		if (mesh.is_null())
 			continue;
@@ -103,10 +103,10 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 		for (int j = 0; j < mi->get_child_count(); j++) {
 
 			Node *child2 = mi->get_child(j);
-			if (!child2->cast_to<StaticBody>())
+			if (!Object::cast_to<StaticBody>(child2))
 				continue;
 
-			StaticBody *sb = child2->cast_to<StaticBody>();
+			StaticBody *sb = Object::cast_to<StaticBody>(child2);
 			List<uint32_t> shapes;
 			sb->get_shape_owners(&shapes);
 
@@ -140,9 +140,9 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 		Ref<NavigationMesh> navmesh;
 		for (int j = 0; j < mi->get_child_count(); j++) {
 			Node *child2 = mi->get_child(j);
-			if (!child2->cast_to<NavigationMeshInstance>())
+			if (!Object::cast_to<NavigationMeshInstance>(child2))
 				continue;
-			NavigationMeshInstance *sb = child2->cast_to<NavigationMeshInstance>();
+			NavigationMeshInstance *sb = Object::cast_to<NavigationMeshInstance>(child2);
 			navmesh = sb->get_navigation_mesh();
 			if (!navmesh.is_null())
 				break;
@@ -341,8 +341,8 @@ MeshLibraryEditor::MeshLibraryEditor(EditorNode *p_editor) {
 
 void MeshLibraryEditorPlugin::edit(Object *p_node) {
 
-	if (p_node && p_node->cast_to<MeshLibrary>()) {
-		theme_editor->edit(p_node->cast_to<MeshLibrary>());
+	if (Object::cast_to<MeshLibrary>(p_node)) {
+		theme_editor->edit(Object::cast_to<MeshLibrary>(p_node));
 		theme_editor->show();
 	} else
 		theme_editor->hide();

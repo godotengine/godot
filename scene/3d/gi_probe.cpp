@@ -1091,7 +1091,7 @@ void GIProbe::_plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, Baker *p_b
 
 void GIProbe::_find_meshes(Node *p_at_node, Baker *p_baker) {
 
-	MeshInstance *mi = p_at_node->cast_to<MeshInstance>();
+	MeshInstance *mi = Object::cast_to<MeshInstance>(p_at_node);
 	if (mi && mi->get_flag(GeometryInstance::FLAG_USE_BAKED_LIGHT)) {
 		Ref<Mesh> mesh = mi->get_mesh();
 		if (mesh.is_valid()) {
@@ -1113,9 +1113,8 @@ void GIProbe::_find_meshes(Node *p_at_node, Baker *p_baker) {
 		}
 	}
 
-	if (p_at_node->cast_to<Spatial>()) {
+	if (Spatial *s = Object::cast_to<Spatial>(p_at_node)) {
 
-		Spatial *s = p_at_node->cast_to<Spatial>();
 		Array meshes = p_at_node->call("get_meshes");
 		for (int i = 0; i < meshes.size(); i += 2) {
 

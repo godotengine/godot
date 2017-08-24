@@ -407,7 +407,7 @@ Error EditorSceneImporterFBXConv::_parse_nodes(State& state,const Array &p_nodes
 			print_line("IS SKELETON! ");
 		} else if (state.bones.has(id)) {
 			if (p_base)
-				node=p_base->cast_to<Spatial>();
+				node=Object::cast_to<Spatial>(p_base);
 			if (!state.bones[id].has_anim_chan) {
 				print_line("no has anim "+id);
 			}

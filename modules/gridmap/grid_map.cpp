@@ -715,12 +715,12 @@ void GridMap::_notification(int p_what) {
 
 			Spatial *c = this;
 			while (c) {
-				navigation = c->cast_to<Navigation>();
+				navigation = Object::cast_to<Navigation>(c);
 				if (navigation) {
 					break;
 				}
 
-				c = c->get_parent()->cast_to<Spatial>();
+				c = Object::cast_to<Spatial>(c->get_parent());
 			}
 
 			if (navigation) {

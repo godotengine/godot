@@ -371,7 +371,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				Object *obj_A = *a;
 				Object *obj_B = *b;
 
-				GDScript *scr_B = obj_B->cast_to<GDScript>();
+				GDScript *scr_B = Object::cast_to<GDScript>(obj_B);
 
 				bool extends_ok = false;
 
@@ -397,7 +397,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 				} else {
 
-					GDNativeClass *nc = obj_B->cast_to<GDNativeClass>();
+					GDNativeClass *nc = Object::cast_to<GDNativeClass>(obj_B);
 
 					if (!nc) {
 
@@ -1434,7 +1434,7 @@ Variant GDFunctionState::_signal_callback(const Variant **p_args, int p_argcount
 	// If the return value is a GDFunctionState reference,
 	// then the function did yield again after resuming.
 	if (ret.is_ref()) {
-		GDFunctionState *gdfs = ret.operator Object *()->cast_to<GDFunctionState>();
+		GDFunctionState *gdfs = Object::cast_to<GDFunctionState>((Object *)&ret);
 		if (gdfs && gdfs->function == function)
 			completed = false;
 	}
@@ -1490,7 +1490,7 @@ Variant GDFunctionState::resume(const Variant &p_arg) {
 	// If the return value is a GDFunctionState reference,
 	// then the function did yield again after resuming.
 	if (ret.is_ref()) {
-		GDFunctionState *gdfs = ret.operator Object *()->cast_to<GDFunctionState>();
+		GDFunctionState *gdfs = Object::cast_to<GDFunctionState>((Object *)&ret);
 		if (gdfs && gdfs->function == function)
 			completed = false;
 	}

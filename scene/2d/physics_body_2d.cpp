@@ -143,7 +143,7 @@ PhysicsBody2D::PhysicsBody2D(Physics2DServer::BodyMode p_mode)
 void PhysicsBody2D::add_collision_exception_with(Node *p_node) {
 
 	ERR_FAIL_NULL(p_node);
-	PhysicsBody2D *physics_body = p_node->cast_to<PhysicsBody2D>();
+	PhysicsBody2D *physics_body = Object::cast_to<PhysicsBody2D>(p_node);
 	if (!physics_body) {
 		ERR_EXPLAIN("Collision exception only works between two objects of PhysicsBody type");
 	}
@@ -154,7 +154,7 @@ void PhysicsBody2D::add_collision_exception_with(Node *p_node) {
 void PhysicsBody2D::remove_collision_exception_with(Node *p_node) {
 
 	ERR_FAIL_NULL(p_node);
-	PhysicsBody2D *physics_body = p_node->cast_to<PhysicsBody2D>();
+	PhysicsBody2D *physics_body = Object::cast_to<PhysicsBody2D>(p_node);
 	if (!physics_body) {
 		ERR_EXPLAIN("Collision exception only works between two objects of PhysicsBody type");
 	}
@@ -262,7 +262,7 @@ StaticBody2D::~StaticBody2D() {
 void RigidBody2D::_body_enter_tree(ObjectID p_id) {
 
 	Object *obj = ObjectDB::get_instance(p_id);
-	Node *node = obj ? obj->cast_to<Node>() : NULL;
+	Node *node = Object::cast_to<Node>(obj);
 	ERR_FAIL_COND(!node);
 
 	Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.find(p_id);
@@ -285,7 +285,7 @@ void RigidBody2D::_body_enter_tree(ObjectID p_id) {
 void RigidBody2D::_body_exit_tree(ObjectID p_id) {
 
 	Object *obj = ObjectDB::get_instance(p_id);
-	Node *node = obj ? obj->cast_to<Node>() : NULL;
+	Node *node = Object::cast_to<Node>(obj);
 	ERR_FAIL_COND(!node);
 	Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.find(p_id);
 	ERR_FAIL_COND(!E);
@@ -310,7 +310,7 @@ void RigidBody2D::_body_inout(int p_status, ObjectID p_instance, int p_body_shap
 	ObjectID objid = p_instance;
 
 	Object *obj = ObjectDB::get_instance(objid);
-	Node *node = obj ? obj->cast_to<Node>() : NULL;
+	Node *node = Object::cast_to<Node>(obj);
 
 	Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.find(objid);
 
@@ -393,7 +393,7 @@ void RigidBody2D::_direct_state_changed(Object *p_state) {
 //eh.. fuck
 #ifdef DEBUG_ENABLED
 
-	state = p_state->cast_to<Physics2DDirectBodyState>();
+	state = Object::cast_to<Physics2DDirectBodyState>(p_state);
 #else
 	state = (Physics2DDirectBodyState *)p_state; //trust it
 #endif
@@ -1171,12 +1171,10 @@ ObjectID KinematicBody2D::get_collision_collider_id(int p_collision) const {
 Object *KinematicBody2D::get_collision_collider_shape(int p_collision) const {
 	ERR_FAIL_INDEX_V(p_collision, colliders.size(), NULL);
 	Object *collider = get_collision_collider(p_collision);
-	if (collider) {
-		CollisionObject2D *obj2d = collider->cast_to<CollisionObject2D>();
-		if (obj2d) {
-			uint32_t owner = shape_find_owner(colliders[p_collision].collider_shape);
-			return obj2d->shape_owner_get_owner(owner);
-		}
+	CollisionObject2D *obj2d = Object::cast_to<CollisionObject2D>(collider);
+	if (obj2d) {
+		uint32_t owner = shape_find_owner(colliders[p_collision].collider_shape);
+		return obj2d->shape_owner_get_owner(owner);
 	}
 
 	return NULL;

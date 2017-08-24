@@ -334,14 +334,14 @@ static void _find_anim_sprites(Node *p_node, List<Node *> *r_nodes, Ref<SpriteFr
 		return;
 
 	{
-		AnimatedSprite *as = p_node->cast_to<AnimatedSprite>();
+		AnimatedSprite *as = Object::cast_to<AnimatedSprite>(p_node);
 		if (as && as->get_sprite_frames() == p_sfames) {
 			r_nodes->push_back(p_node);
 		}
 	}
 
 	{
-		AnimatedSprite3D *as = p_node->cast_to<AnimatedSprite3D>();
+		AnimatedSprite3D *as = Object::cast_to<AnimatedSprite3D>(p_node);
 		if (as && as->get_sprite_frames() == p_sfames) {
 			r_nodes->push_back(p_node);
 		}
@@ -842,7 +842,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 void SpriteFramesEditorPlugin::edit(Object *p_object) {
 
 	frames_editor->set_undo_redo(&get_undo_redo());
-	SpriteFrames *s = p_object->cast_to<SpriteFrames>();
+	SpriteFrames *s = Object::cast_to<SpriteFrames>(p_object);
 	if (!s)
 		return;
 

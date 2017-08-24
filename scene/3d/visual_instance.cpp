@@ -57,16 +57,16 @@ void VisualInstance::_notification(int p_what) {
 			// CHECK ROOM
 			Spatial *parent = get_parent_spatial();
 			Room *room = NULL;
-			bool is_geom = cast_to<GeometryInstance>();
+			bool is_geom = Object::cast_to<GeometryInstance>(this);
 
 			/*	while(parent) {
 
-				room = parent->cast_to<Room>();
+				room = Object::cast_to<Room>(parent);
 				if (room)
 					break;
 
-				if (is_geom && parent->cast_to<BakedLightSampler>()) {
-					VS::get_singleton()->instance_geometry_set_baked_light_sampler(get_instance(),parent->cast_to<BakedLightSampler>()->get_instance());
+				if (is_geom && Object::cast_to<BakedLightSampler>(parent)) {
+					VS::get_singleton()->instance_geometry_set_baked_light_sampler(get_instance(),Object::cast_to<BakedLightSampler>(parent)->get_instance());
 					break;
 				}
 
@@ -79,7 +79,7 @@ void VisualInstance::_notification(int p_what) {
 			}
 			// CHECK SKELETON => moving skeleton attaching logic to MeshInstance
 			/*
-			Skeleton *skeleton=get_parent()?get_parent()->cast_to<Skeleton>():NULL;
+			Skeleton *skeleton=Object::cast_to<Skeleton>(get_parent());
 			if (skeleton)
 				VisualServer::get_singleton()->instance_attach_skeleton( instance, skeleton->get_skeleton() );
 			*/

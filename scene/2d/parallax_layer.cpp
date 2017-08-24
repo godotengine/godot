@@ -36,11 +36,8 @@ void ParallaxLayer::set_motion_scale(const Size2 &p_scale) {
 
 	motion_scale = p_scale;
 
-	if (!get_parent())
-		return;
-
-	ParallaxBackground *pb = get_parent()->cast_to<ParallaxBackground>();
-	if (is_inside_tree() && pb) {
+	ParallaxBackground *pb = Object::cast_to<ParallaxBackground>(get_parent());
+	if (pb && is_inside_tree()) {
 		Vector2 ofs = pb->get_final_offset();
 		float scale = pb->get_scroll_scale();
 		set_base_offset_and_scale(ofs, scale);
@@ -56,11 +53,8 @@ void ParallaxLayer::set_motion_offset(const Size2 &p_offset) {
 
 	motion_offset = p_offset;
 
-	if (!get_parent())
-		return;
-
-	ParallaxBackground *pb = get_parent()->cast_to<ParallaxBackground>();
-	if (is_inside_tree() && pb) {
+	ParallaxBackground *pb = Object::cast_to<ParallaxBackground>(get_parent());
+	if (pb && is_inside_tree()) {
 		Vector2 ofs = pb->get_final_offset();
 		float scale = pb->get_scroll_scale();
 		set_base_offset_and_scale(ofs, scale);
@@ -74,10 +68,7 @@ Size2 ParallaxLayer::get_motion_offset() const {
 
 void ParallaxLayer::_update_mirroring() {
 
-	if (!get_parent())
-		return;
-
-	ParallaxBackground *pb = get_parent()->cast_to<ParallaxBackground>();
+	ParallaxBackground *pb = Object::cast_to<ParallaxBackground>(get_parent());
 	if (pb) {
 
 		RID c = pb->get_world_2d()->get_canvas();
@@ -139,7 +130,7 @@ void ParallaxLayer::set_base_offset_and_scale(const Point2 &p_offset, float p_sc
 
 String ParallaxLayer::get_configuration_warning() const {
 
-	if (!get_parent() || !get_parent()->cast_to<ParallaxBackground>()) {
+	if (!Object::cast_to<ParallaxBackground>(get_parent())) {
 		return TTR("ParallaxLayer node only works when set as child of a ParallaxBackground node.");
 	}
 

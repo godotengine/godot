@@ -279,7 +279,7 @@ void ResourcesDock::_resource_selected() {
 
 void ResourcesDock::_delete(Object *p_item, int p_column, int p_id) {
 
-	TreeItem *ti = p_item->cast_to<TreeItem>();
+	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
 	ERR_FAIL_COND(!ti);
 
 	call_deferred("remove_resource", ti->get_metadata(0));
@@ -290,7 +290,7 @@ void ResourcesDock::_create() {
 	Object *c = create_dialog->instance_selected();
 
 	ERR_FAIL_COND(!c);
-	Resource *r = c->cast_to<Resource>();
+	Resource *r = Object::cast_to<Resource>(c);
 	ERR_FAIL_COND(!r);
 
 	REF res(r);

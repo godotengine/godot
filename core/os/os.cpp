@@ -171,7 +171,7 @@ static FileAccess *_OSPRF = NULL;
 
 static void _OS_printres(Object *p_obj) {
 
-	Resource *res = p_obj->cast_to<Resource>();
+	Resource *res = Object::cast_to<Resource>(p_obj);
 	if (!res)
 		return;
 

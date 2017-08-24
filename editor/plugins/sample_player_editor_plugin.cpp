@@ -152,7 +152,7 @@ SamplePlayerEditor::SamplePlayerEditor() {
 
 void SamplePlayerEditorPlugin::edit(Object *p_object) {
 
-	sample_player_editor->edit(p_object->cast_to<Node>());
+	sample_player_editor->edit(Object::cast_to<Node>(p_object));
 }
 
 bool SamplePlayerEditorPlugin::handles(Object *p_object) const {

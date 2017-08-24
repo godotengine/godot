@@ -786,24 +786,24 @@ void CurveEditorPlugin::edit(Object *p_object) {
 	Ref<Curve> curve_ref;
 
 	if (_current_ref.is_valid()) {
-		CurveTexture *ct = _current_ref->cast_to<CurveTexture>();
+		CurveTexture *ct = Object::cast_to<CurveTexture>(*_current_ref);
 		if (ct)
 			ct->disconnect(CoreStringNames::get_singleton()->changed, this, "_curve_texture_changed");
 	}
 
 	if (p_object) {
-		Resource *res = p_object->cast_to<Resource>();
+		Resource *res = Object::cast_to<Resource>(p_object);
 		ERR_FAIL_COND(res == NULL);
 		ERR_FAIL_COND(!handles(p_object));
 
-		_current_ref = Ref<Resource>(p_object->cast_to<Resource>());
+		_current_ref = Ref<Resource>(Object::cast_to<Resource>(p_object));
 
 		if (_current_ref.is_valid()) {
-			Curve *curve = _current_ref->cast_to<Curve>();
+			Curve *curve = Object::cast_to<Curve>(*_current_ref);
 			if (curve)
 				curve_ref = Ref<Curve>(curve);
 			else {
-				CurveTexture *ct = _current_ref->cast_to<CurveTexture>();
+				CurveTexture *ct = Object::cast_to<CurveTexture>(*_current_ref);
 				if (ct) {
 					ct->connect(CoreStringNames::get_singleton()->changed, this, "_curve_texture_changed");
 					curve_ref = ct->get_curve();
@@ -820,7 +820,7 @@ void CurveEditorPlugin::edit(Object *p_object) {
 
 bool CurveEditorPlugin::handles(Object *p_object) const {
 	// Both handled so that we can keep the curve editor open
-	return p_object->cast_to<Curve>() || p_object->cast_to<CurveTexture>();
+	return Object::cast_to<Curve>(p_object) || Object::cast_to<CurveTexture>(p_object);
 }
 
 void CurveEditorPlugin::make_visible(bool p_visible) {
@@ -837,7 +837,7 @@ void CurveEditorPlugin::make_visible(bool p_visible) {
 void CurveEditorPlugin::_curve_texture_changed() {
 	// If the curve is shown indirectly as a CurveTexture is edited,
 	// we need to monitor when the curve property gets assigned
-	CurveTexture *ct = _current_ref->cast_to<CurveTexture>();
+	CurveTexture *ct = Object::cast_to<CurveTexture>(*_current_ref);
 	if (ct) {
 		_view->set_curve(ct->get_curve());
 	}

@@ -399,7 +399,7 @@ void ViewportSprite::_notification(int p_what) {
 
 				Node *n = get_node(viewport_path);
 				ERR_FAIL_COND(!n);
-				Viewport *vp=n->cast_to<Viewport>();
+				Viewport *vp=Object::cast_to<Viewport>(n);
 				ERR_FAIL_COND(!vp);
 
 				Ref<RenderTargetTexture> rtt = vp->get_render_target_texture();
@@ -467,7 +467,7 @@ void ViewportSprite::set_viewport_path(const NodePath& p_viewport) {
 
 	Node *n = get_node(viewport_path);
 	ERR_FAIL_COND(!n);
-	Viewport *vp=n->cast_to<Viewport>();
+	Viewport *vp=Object::cast_to<Viewport>(n);
 	ERR_FAIL_COND(!vp);
 
 	Ref<RenderTargetTexture> rtt = vp->get_render_target_texture();
@@ -544,13 +544,13 @@ Rect2 ViewportSprite::get_item_rect() const {
 
 String ViewportSprite::get_configuration_warning() const {
 
-	if (!has_node(viewport_path) || !get_node(viewport_path) || !get_node(viewport_path)->cast_to<Viewport>()) {
+	if (!has_node(viewport_path) || !Object::cast_to<Viewport>(get_node(viewport_path))) {
 		return TTR("Path property must point to a valid Viewport node to work. Such Viewport must be set to 'render target' mode.");
 	} else {
 
 		Node *n = get_node(viewport_path);
 		if (n) {
-			Viewport *vp = n->cast_to<Viewport>();
+			Viewport *vp = Object::cast_to<Viewport>(n);
 			if (!vp->is_set_as_render_target()) {
 
 				return TTR("The Viewport set in the path property must be set as 'render target' in order for this sprite to work.");

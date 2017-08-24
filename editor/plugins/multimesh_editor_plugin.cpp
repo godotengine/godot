@@ -77,7 +77,7 @@ void MultiMeshEditor::_populate() {
 			return;
 		}
 
-		MeshInstance *ms_instance = ms_node->cast_to<MeshInstance>();
+		MeshInstance *ms_instance = Object::cast_to<MeshInstance>(ms_node);
 
 		if (!ms_instance) {
 
@@ -112,7 +112,7 @@ void MultiMeshEditor::_populate() {
 		return;
 	}
 
-	GeometryInstance *ss_instance = ss_node->cast_to<MeshInstance>();
+	GeometryInstance *ss_instance = Object::cast_to<MeshInstance>(ss_node);
 
 	if (!ss_instance) {
 
@@ -155,7 +155,7 @@ void MultiMeshEditor::_populate() {
 	ERR_EXPLAIN("Multimesh not present.");
 	ERR_FAIL_COND(multimesh.is_null());
 
-	VisualInstance *vi = get_parent()->cast_to<VisualInstance>();
+	VisualInstance *vi = Object::cast_to<VisualInstance>(get_parent());
 	ERR_EXPLAIN("Parent is not of type VisualInstance, can't be populated.");
 	ERR_FAIL_COND(!vi);
 
@@ -402,7 +402,7 @@ MultiMeshEditor::MultiMeshEditor() {
 
 void MultiMeshEditorPlugin::edit(Object *p_object) {
 
-	multimesh_editor->edit(p_object->cast_to<MultiMeshInstance>());
+	multimesh_editor->edit(Object::cast_to<MultiMeshInstance>(p_object));
 }
 
 bool MultiMeshEditorPlugin::handles(Object *p_object) const {

@@ -151,18 +151,18 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 			//print_line("created");
 			//node belongs to this scene and must be created
 			Object *obj = ClassDB::instance(snames[n.type]);
-			if (!obj || !obj->cast_to<Node>()) {
+			if (!Object::cast_to<Node>(obj)) {
 				if (obj) {
 					memdelete(obj);
 					obj = NULL;
 				}
 				WARN_PRINT(String("Warning node of type " + snames[n.type].operator String() + " does not exist.").ascii().get_data());
 				if (n.parent >= 0 && n.parent < nc && ret_nodes[n.parent]) {
-					if (ret_nodes[n.parent]->cast_to<Spatial>()) {
+					if (Object::cast_to<Spatial>(ret_nodes[n.parent])) {
 						obj = memnew(Spatial);
-					} else if (ret_nodes[n.parent]->cast_to<Control>()) {
+					} else if (Object::cast_to<Control>(ret_nodes[n.parent])) {
 						obj = memnew(Control);
-					} else if (ret_nodes[n.parent]->cast_to<Node2D>()) {
+					} else if (Object::cast_to<Node2D>(ret_nodes[n.parent])) {
 						obj = memnew(Node2D);
 					}
 				}
@@ -172,7 +172,7 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 				}
 			}
 
-			node = obj->cast_to<Node>();
+			node = Object::cast_to<Node>(obj);
 
 		} else {
 			print_line("wtf class is disabled for: " + itos(n.type));
@@ -754,7 +754,7 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, Map<StringName
 			// only connections that originate or end into main saved scene are saved
 			// everything else is discarded
 
-			Node *target = c.target->cast_to<Node>();
+			Node *target = Object::cast_to<Node>(c.target);
 
 			if (!target) {
 				continue;

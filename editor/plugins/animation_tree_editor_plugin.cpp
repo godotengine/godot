@@ -281,9 +281,9 @@ void AnimationTreeEditor::_popup_edit_dialog() {
 
 			case AnimationTreePlayer::NODE_ANIMATION:
 
-				if (anim_tree->get_master_player() != NodePath() && anim_tree->has_node(anim_tree->get_master_player()) && anim_tree->get_node(anim_tree->get_master_player())->cast_to<AnimationPlayer>()) {
+				if (anim_tree->get_master_player() != NodePath() && anim_tree->has_node(anim_tree->get_master_player()) && Object::cast_to<AnimationPlayer>(anim_tree->get_node(anim_tree->get_master_player()))) {
 
-					AnimationPlayer *ap = anim_tree->get_node(anim_tree->get_master_player())->cast_to<AnimationPlayer>();
+					AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(anim_tree->get_node(anim_tree->get_master_player()));
 					master_anim_popup->clear();
 					master_anim_popup->add_item("Edit Filters");
 					master_anim_popup->add_separator();
@@ -1233,7 +1233,7 @@ void AnimationTreeEditor::_edit_filters() {
 
 			if (np.get_property() != StringName()) {
 				Node *n = base->get_node(np);
-				Skeleton *s = n->cast_to<Skeleton>();
+				Skeleton *s = Object::cast_to<Skeleton>(n);
 				if (s) {
 
 					String skelbase = E->get().substr(0, E->get().find(":"));
@@ -1439,7 +1439,7 @@ AnimationTreeEditor::AnimationTreeEditor() {
 
 void AnimationTreeEditorPlugin::edit(Object *p_object) {
 
-	anim_tree_editor->edit(p_object->cast_to<AnimationTreePlayer>());
+	anim_tree_editor->edit(Object::cast_to<AnimationTreePlayer>(p_object));
 }
 
 bool AnimationTreeEditorPlugin::handles(Object *p_object) const {

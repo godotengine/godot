@@ -72,8 +72,8 @@ StyleBoxEditor::StyleBoxEditor() {
 
 void StyleBoxEditorPlugin::edit(Object *p_node) {
 
-	if (p_node && p_node->cast_to<StyleBox>()) {
-		stylebox_editor->edit(p_node->cast_to<StyleBox>());
+	if (Object::cast_to<StyleBox>(p_node)) {
+		stylebox_editor->edit(Object::cast_to<StyleBox>(p_node));
 		stylebox_editor->show();
 	} else
 		stylebox_editor->hide();

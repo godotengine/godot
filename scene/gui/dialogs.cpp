@@ -60,13 +60,13 @@ void WindowDialog::_fix_size() {
 	float right = 0;
 	// Check validity, because the theme could contain a different type of StyleBox
 	if (panel->get_class() == "StyleBoxTexture") {
-		Ref<StyleBoxTexture> panel_texture = panel->cast_to<StyleBoxTexture>();
+		Ref<StyleBoxTexture> panel_texture = Object::cast_to<StyleBoxTexture>(*panel);
 		top = panel_texture->get_expand_margin_size(MARGIN_TOP);
 		left = panel_texture->get_expand_margin_size(MARGIN_LEFT);
 		bottom = panel_texture->get_expand_margin_size(MARGIN_BOTTOM);
 		right = panel_texture->get_expand_margin_size(MARGIN_RIGHT);
 	} else if (panel->get_class() == "StyleBoxFlat") {
-		Ref<StyleBoxFlat> panel_flat = panel->cast_to<StyleBoxFlat>();
+		Ref<StyleBoxFlat> panel_flat = Object::cast_to<StyleBoxFlat>(*panel);
 		top = panel_flat->get_expand_margin_size(MARGIN_TOP);
 		left = panel_flat->get_expand_margin_size(MARGIN_LEFT);
 		bottom = panel_flat->get_expand_margin_size(MARGIN_BOTTOM);
@@ -424,7 +424,7 @@ void AcceptDialog::_update_child_rects() {
 	Vector2 csize(size.x - margin * 2, size.y - margin * 3 - hminsize.y - label_size.height);
 
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = get_child(i)->cast_to<Control>();
+		Control *c = Object::cast_to<Control>(get_child(i));
 		if (!c)
 			continue;
 
@@ -448,7 +448,7 @@ Size2 AcceptDialog::get_minimum_size() const {
 	Size2 minsize = label->get_combined_minimum_size();
 
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = get_child(i)->cast_to<Control>();
+		Control *c = Object::cast_to<Control>(get_child(i));
 		if (!c)
 			continue;
 

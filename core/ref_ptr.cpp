@@ -69,7 +69,7 @@ RID RefPtr::get_rid() const {
 	Ref<Reference> *ref = reinterpret_cast<Ref<Reference> *>(&data[0]);
 	if (ref->is_null())
 		return RID();
-	Resource *res = (*ref)->cast_to<Resource>();
+	Resource *res = Object::cast_to<Resource>(ref->ptr());
 	if (res)
 		return res->get_rid();
 	return RID();

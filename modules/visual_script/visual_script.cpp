@@ -273,7 +273,9 @@ void VisualScript::_node_ports_changed(int p_id) {
 	Function &func = functions[function];
 	Ref<VisualScriptNode> vsn = func.nodes[p_id].node;
 
-	if (OS::get_singleton()->get_main_loop() && OS::get_singleton()->get_main_loop()->cast_to<SceneTree>() && Engine::get_singleton()->is_editor_hint()) {
+	if (OS::get_singleton()->get_main_loop() &&
+			Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop()) &&
+			Engine::get_singleton()->is_editor_hint()) {
 		vsn->validate_input_default_values(); //force validate default values when editing on editor
 	}
 
@@ -336,7 +338,7 @@ void VisualScript::add_node(const StringName &p_func, int p_id, const Ref<Visual
 
 	Function &func = functions[p_func];
 
-	if (p_node->cast_to<VisualScriptFunction>()) {
+	if (Object::cast_to<VisualScriptFunction>(*p_node)) {
 		//the function indeed
 		ERR_EXPLAIN("A function node already has been set here.");
 		ERR_FAIL_COND(func.function_id >= 0);
@@ -393,7 +395,7 @@ void VisualScript::remove_node(const StringName &p_func, int p_id) {
 		}
 	}
 
-	if (func.nodes[p_id].node->cast_to<VisualScriptFunction>()) {
+	if (Object::cast_to<VisualScriptFunction>(func.nodes[p_id].node.ptr())) {
 		func.function_id = -1; //revert to invalid
 	}
 
@@ -1086,7 +1088,7 @@ int VisualScript::get_member_line(const StringName &p_member) const {
 #ifdef TOOLS_ENABLED
 	if (has_function(p_member)) {
 		for (Map<int, Function::NodeData>::Element *E = functions[p_member].nodes.front(); E; E = E->next()) {
-			if (E->get().node->cast_to<VisualScriptFunction>())
+			if (Object::cast_to<VisualScriptFunction>(E->get().node.ptr()))
 				return E->key();
 		}
 	}
@@ -2001,9 +2003,9 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 	max_input_args = 0;
 	max_output_args = 0;
 
-	if (p_owner->cast_to<Node>()) {
+	if (Object::cast_to<Node>(p_owner)) {
 		//turn on these if they exist and base is a node
-		Node *node = p_owner->cast_to<Node>();
+		Node *node = Object::cast_to<Node>(p_owner);
 		if (p_script->functions.has("_process"))
 			node->set_process(true);
 		if (p_script->functions.has("_fixed_process"))
@@ -2094,16 +2096,16 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 				}
 			}
 
-			if (node->cast_to<VisualScriptLocalVar>() || node->cast_to<VisualScriptLocalVarSet>()) {
+			if (Object::cast_to<VisualScriptLocalVar>(node.ptr()) || Object::cast_to<VisualScriptLocalVarSet>(*node)) {
 				//working memory is shared only for this node, for the same variables
 				Ref<VisualScriptLocalVar> vslv = node;
 
 				StringName var_name;
 
-				if (node->cast_to<VisualScriptLocalVar>())
-					var_name = String(node->cast_to<VisualScriptLocalVar>()->get_var_name()).strip_edges();
+				if (Object::cast_to<VisualScriptLocalVar>(*node))
+					var_name = String(Object::cast_to<VisualScriptLocalVar>(*node)->get_var_name()).strip_edges();
 				else
-					var_name = String(node->cast_to<VisualScriptLocalVarSet>()->get_var_name()).strip_edges();
+					var_name = String(Object::cast_to<VisualScriptLocalVarSet>(*node)->get_var_name()).strip_edges();
 
 				if (!local_var_indices.has(var_name)) {
 					local_var_indices[var_name] = function.max_stack;

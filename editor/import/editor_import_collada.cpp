@@ -320,7 +320,7 @@ Error ColladaImport::_create_scene(Collada::Node *p_node, Spatial *p_parent) {
 			} else {
 				//mesh since nothing else
 				node = memnew(MeshInstance);
-				node->cast_to<MeshInstance>()->set_flag(GeometryInstance::FLAG_USE_BAKED_LIGHT, true);
+				Object::cast_to<MeshInstance>(node)->set_flag(GeometryInstance::FLAG_USE_BAKED_LIGHT, true);
 			}
 		} break;
 		case Collada::Node::TYPE_SKELETON: {
@@ -1448,9 +1448,9 @@ Error ColladaImport::_create_resources(Collada::Node *p_node) {
 		Spatial *node = node_map[p_node->id].node;
 		Collada::NodeGeometry *ng = static_cast<Collada::NodeGeometry *>(p_node);
 
-		if (node->cast_to<Path>()) {
+		if (Object::cast_to<Path>(node)) {
 
-			Path *path = node->cast_to<Path>();
+			Path *path = Object::cast_to<Path>(node);
 
 			String curve = ng->source;
 
@@ -1523,11 +1523,11 @@ Error ColladaImport::_create_resources(Collada::Node *p_node) {
 			}
 		}
 
-		if (node->cast_to<MeshInstance>()) {
+		if (Object::cast_to<MeshInstance>(node)) {
 
 			Collada::NodeGeometry *ng = static_cast<Collada::NodeGeometry *>(p_node);
 
-			MeshInstance *mi = node->cast_to<MeshInstance>();
+			MeshInstance *mi = Object::cast_to<MeshInstance>(node);
 
 			ERR_FAIL_COND_V(!mi, ERR_BUG);
 
@@ -1561,7 +1561,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node) {
 					}
 					ERR_FAIL_COND_V(!node_map.has(skname), ERR_INVALID_DATA);
 					NodeMap nmsk = node_map[skname];
-					Skeleton *sk = nmsk.node->cast_to<Skeleton>();
+					Skeleton *sk = Object::cast_to<Skeleton>(nmsk.node);
 					ERR_FAIL_COND_V(!sk, ERR_INVALID_DATA);
 					ERR_FAIL_COND_V(!skeleton_bone_map.has(sk), ERR_INVALID_DATA);
 					Map<String, int> &bone_remap_map = skeleton_bone_map[sk];
@@ -2092,7 +2092,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 
 			if (nm.bone >= 0) {
 				//make bone transform relative to rest (in case of skeleton)
-				Skeleton *sk = nm.node->cast_to<Skeleton>();
+				Skeleton *sk = Object::cast_to<Skeleton>(nm.node);
 				if (sk) {
 
 					xform = sk->get_bone_rest(nm.bone).affine_inverse() * xform;

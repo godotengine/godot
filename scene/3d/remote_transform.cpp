@@ -51,11 +51,7 @@ void RemoteTransform::_update_remote() {
 	if (!cache)
 		return;
 
-	Object *obj = ObjectDB::get_instance(cache);
-	if (!obj)
-		return;
-
-	Spatial *n = obj->cast_to<Spatial>();
+	Spatial *n = Object::cast_to<Spatial>(ObjectDB::get_instance(cache));
 	if (!n)
 		return;
 
@@ -177,7 +173,7 @@ bool RemoteTransform::get_update_scale() const {
 
 String RemoteTransform::get_configuration_warning() const {
 
-	if (!has_node(remote_node) || !get_node(remote_node) || !get_node(remote_node)->cast_to<Spatial>()) {
+	if (!has_node(remote_node) || !Object::cast_to<Spatial>(get_node(remote_node))) {
 		return TTR("Path property must point to a valid Spatial node to work.");
 	}
 

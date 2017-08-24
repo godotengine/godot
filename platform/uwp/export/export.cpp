@@ -869,19 +869,19 @@ class EditorExportUWP : public EditorExportPlatform {
 		StreamTexture *image;
 
 		if (p_path.find("StoreLogo") != -1) {
-			image = p_preset->get("images/store_logo").is_zero() ? NULL : ((Object *)p_preset->get("images/store_logo"))->cast_to<StreamTexture>();
+			image = p_preset->get("images/store_logo").is_zero() ? NULL : Object::cast_to<StreamTexture>(((Object *)p_preset->get("images/store_logo")));
 		} else if (p_path.find("Square44x44Logo") != -1) {
-			image = p_preset->get("images/square44x44_logo").is_zero() ? NULL : ((Object *)p_preset->get("images/square44x44_logo"))->cast_to<StreamTexture>();
+			image = p_preset->get("images/square44x44_logo").is_zero() ? NULL : Object::cast_to<StreamTexture>(((Object *)p_preset->get("images/square44x44_logo")));
 		} else if (p_path.find("Square71x71Logo") != -1) {
-			image = p_preset->get("images/square71x71_logo").is_zero() ? NULL : ((Object *)p_preset->get("images/square71x71_logo"))->cast_to<StreamTexture>();
+			image = p_preset->get("images/square71x71_logo").is_zero() ? NULL : Object::cast_to<StreamTexture>(((Object *)p_preset->get("images/square71x71_logo")));
 		} else if (p_path.find("Square150x150Logo") != -1) {
-			image = p_preset->get("images/square150x150_logo").is_zero() ? NULL : ((Object *)p_preset->get("images/square150x150_logo"))->cast_to<StreamTexture>();
+			image = p_preset->get("images/square150x150_logo").is_zero() ? NULL : Object::cast_to<StreamTexture>(((Object *)p_preset->get("images/square150x150_logo")));
 		} else if (p_path.find("Square310x310Logo") != -1) {
-			image = p_preset->get("images/square310x310_logo").is_zero() ? NULL : ((Object *)p_preset->get("images/square310x310_logo"))->cast_to<StreamTexture>();
+			image = p_preset->get("images/square310x310_logo").is_zero() ? NULL : Object::cast_to<StreamTexture>(((Object *)p_preset->get("images/square310x310_logo")));
 		} else if (p_path.find("Wide310x150Logo") != -1) {
-			image = p_preset->get("images/wide310x150_logo").is_zero() ? NULL : ((Object *)p_preset->get("images/wide310x150_logo"))->cast_to<StreamTexture>();
+			image = p_preset->get("images/wide310x150_logo").is_zero() ? NULL : Object::cast_to<StreamTexture>(((Object *)p_preset->get("images/wide310x150_logo")));
 		} else if (p_path.find("SplashScreen") != -1) {
-			image = p_preset->get("images/splash_screen").is_zero() ? NULL : ((Object *)p_preset->get("images/splash_screen"))->cast_to<StreamTexture>();
+			image = p_preset->get("images/splash_screen").is_zero() ? NULL : Object::cast_to<StreamTexture>(((Object *)p_preset->get("images/splash_screen")));
 		}
 
 		if (!image) return data;
@@ -1162,37 +1162,37 @@ public:
 			err += "\nInvalid background color.";
 		}
 
-		if (!p_preset->get("images/store_logo").is_zero() && !_valid_image(((Object *)p_preset->get("images/store_logo"))->cast_to<StreamTexture>(), 50, 50)) {
+		if (!p_preset->get("images/store_logo").is_zero() && !_valid_image((Object::cast_to<StreamTexture>((Object *)p_preset->get("images/store_logo"))), 50, 50)) {
 			valid = false;
 			err += "\nInvalid Store Logo image dimensions (should be 50x50).";
 		}
 
-		if (!p_preset->get("images/square44x44_logo").is_zero() && !_valid_image(((Object *)p_preset->get("images/square44x44_logo"))->cast_to<StreamTexture>(), 44, 44)) {
+		if (!p_preset->get("images/square44x44_logo").is_zero() && !_valid_image((Object::cast_to<StreamTexture>((Object *)p_preset->get("images/square44x44_logo"))), 44, 44)) {
 			valid = false;
 			err += "\nInvalid square 44x44 logo image dimensions (should be 44x44).";
 		}
 
-		if (!p_preset->get("images/square71x71_logo").is_zero() && !_valid_image(((Object *)p_preset->get("images/square71x71_logo"))->cast_to<StreamTexture>(), 71, 71)) {
+		if (!p_preset->get("images/square71x71_logo").is_zero() && !_valid_image((Object::cast_to<StreamTexture>((Object *)p_preset->get("images/square71x71_logo"))), 71, 71)) {
 			valid = false;
 			err += "\nInvalid square 71x71 logo image dimensions (should be 71x71).";
 		}
 
-		if (!p_preset->get("images/square150x150_logo").is_zero() && !_valid_image(((Object *)p_preset->get("images/square150x150_logo"))->cast_to<StreamTexture>(), 150, 0)) {
+		if (!p_preset->get("images/square150x150_logo").is_zero() && !_valid_image((Object::cast_to<StreamTexture>((Object *)p_preset->get("images/square150x150_logo"))), 150, 0)) {
 			valid = false;
 			err += "\nInvalid square 150x150 logo image dimensions (should be 150x150).";
 		}
 
-		if (!p_preset->get("images/square310x310_logo").is_zero() && !_valid_image(((Object *)p_preset->get("images/square310x310_logo"))->cast_to<StreamTexture>(), 310, 310)) {
+		if (!p_preset->get("images/square310x310_logo").is_zero() && !_valid_image((Object::cast_to<StreamTexture>((Object *)p_preset->get("images/square310x310_logo"))), 310, 310)) {
 			valid = false;
 			err += "\nInvalid square 310x310 logo image dimensions (should be 310x310).";
 		}
 
-		if (!p_preset->get("images/wide310x150_logo").is_zero() && !_valid_image(((Object *)p_preset->get("images/wide310x150_logo"))->cast_to<StreamTexture>(), 310, 150)) {
+		if (!p_preset->get("images/wide310x150_logo").is_zero() && !_valid_image((Object::cast_to<StreamTexture>((Object *)p_preset->get("images/wide310x150_logo"))), 310, 150)) {
 			valid = false;
 			err += "\nInvalid wide 310x150 logo image dimensions (should be 310x150).";
 		}
 
-		if (!p_preset->get("images/splash_screen").is_zero() && !_valid_image(((Object *)p_preset->get("images/splash_screen"))->cast_to<StreamTexture>(), 620, 300)) {
+		if (!p_preset->get("images/splash_screen").is_zero() && !_valid_image((Object::cast_to<StreamTexture>((Object *)p_preset->get("images/splash_screen"))), 620, 300)) {
 			valid = false;
 			err += "\nInvalid splash screen image dimensions (should be 620x300).";
 		}

@@ -65,7 +65,7 @@ void GroupsEditor::_remove_group(Object *p_item, int p_column, int p_id) {
 	if (!node)
 		return;
 
-	TreeItem *ti = p_item->cast_to<TreeItem>();
+	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
 	if (!ti)
 		return;
 

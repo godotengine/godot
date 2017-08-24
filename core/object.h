@@ -598,46 +598,6 @@ public:
 #endif
 	}
 
-// TODO: ensure 'this' is never NULL since it's UB, but by now, avoid warning flood
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wundefined-bool-conversion"
-#endif
-
-	template <class T>
-	T *cast_to() {
-
-#ifndef NO_SAFE_CAST
-		return SAFE_CAST<T *>(this);
-#else
-		if (!this)
-			return NULL;
-		if (is_class_ptr(T::get_class_ptr_static()))
-			return static_cast<T *>(this);
-		else
-			return NULL;
-#endif
-	}
-
-	template <class T>
-	const T *cast_to() const {
-
-#ifndef NO_SAFE_CAST
-		return SAFE_CAST<const T *>(this);
-#else
-		if (!this)
-			return NULL;
-		if (is_class_ptr(T::get_class_ptr_static()))
-			return static_cast<const T *>(this);
-		else
-			return NULL;
-#endif
-	}
-
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
-
 	enum {
 
 		NOTIFICATION_POSTINITIALIZE = 0,

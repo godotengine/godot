@@ -383,7 +383,7 @@ bool SceneTree::is_input_handled() {
 
 void SceneTree::input_event(const Ref<InputEvent> &p_event) {
 
-	if (Engine::get_singleton()->is_editor_hint() && (p_event->cast_to<InputEventJoypadButton>() || p_event->cast_to<InputEventJoypadMotion>()))
+	if (Engine::get_singleton()->is_editor_hint() && (Object::cast_to<InputEventJoypadButton>(p_event.ptr()) || Object::cast_to<InputEventJoypadMotion>(*p_event)))
 		return; //avoid joy input on editor
 
 	root_lock++;
@@ -1400,10 +1400,7 @@ void SceneTree::_live_edit_create_node_func(const NodePath &p_parent, const Stri
 			continue;
 		Node *n2 = n->get_node(p_parent);
 
-		Object *o = ClassDB::instance(p_type);
-		if (!o)
-			continue;
-		Node *no = o->cast_to<Node>();
+		Node *no = Object::cast_to<Node>(ClassDB::instance(p_type));
 		no->set_name(p_name);
 
 		n2->add_child(no);

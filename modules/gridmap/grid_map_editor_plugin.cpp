@@ -806,7 +806,7 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 	_update_selection_transform();
 	_update_duplicate_indicator();
 
-	spatial_editor = editor->get_editor_plugin_screen()->cast_to<SpatialEditorPlugin>();
+	spatial_editor = Object::cast_to<SpatialEditorPlugin>(editor->get_editor_plugin_screen());
 
 	if (!node) {
 		set_process(false);
@@ -978,14 +978,14 @@ void GridMapEditor::_notification(int p_what) {
 
 		if (lock_view) {
 
-			EditorNode *editor = get_tree()->get_root()->get_child(0)->cast_to<EditorNode>();
+			EditorNode *editor = Object::cast_to<EditorNode>(get_tree()->get_root()->get_child(0));
 
 			Plane p;
 			p.normal[edit_axis] = 1.0;
 			p.d = edit_floor[edit_axis] * node->get_cell_size();
 			p = node->get_transform().xform(p); // plane to snap
 
-			SpatialEditorPlugin *sep = editor->get_editor_plugin_screen()->cast_to<SpatialEditorPlugin>();
+			SpatialEditorPlugin *sep = Object::cast_to<SpatialEditorPlugin>(editor->get_editor_plugin_screen());
 			if (sep)
 				sep->snap_cursor_to_plane(p);
 			//editor->get_editor_plugin_screen()->call("snap_cursor_to_plane",p);
@@ -1371,7 +1371,7 @@ GridMapEditor::~GridMapEditor() {
 
 void GridMapEditorPlugin::edit(Object *p_object) {
 
-	gridmap_editor->edit(p_object ? p_object->cast_to<GridMap>() : NULL);
+	gridmap_editor->edit(Object::cast_to<GridMap>(p_object));
 }
 
 bool GridMapEditorPlugin::handles(Object *p_object) const {

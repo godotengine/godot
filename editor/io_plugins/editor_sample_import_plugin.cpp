@@ -679,7 +679,7 @@ Error EditorSampleImportPlugin::import(const String& p_path, const Ref<ResourceI
 
 	if (ResourceCache::has(p_path)) {
 
-		target = Ref<Sample>( ResourceCache::get(p_path)->cast_to<Sample>() );
+		target = Ref<Sample>( Object::cast_to<Sample>(ResourceCache::get(p_path)) );
 	} else {
 
 		target = smp;

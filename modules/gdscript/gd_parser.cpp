@@ -3957,7 +3957,7 @@ void GDParser::_parse_class(ClassNode *p_class) {
 							member._export.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
 							if (cn->value.get_type() == Variant::OBJECT) {
 								Object *obj = cn->value;
-								Resource *res = obj->cast_to<Resource>();
+								Resource *res = Object::cast_to<Resource>(obj);
 								if (res == NULL) {
 									_set_error("Exported constant not a type or resource.");
 									return;

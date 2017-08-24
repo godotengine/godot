@@ -172,8 +172,8 @@ RID PinJoint2D::_configure_joint() {
 	if (!node_a && !node_b)
 		return RID();
 
-	PhysicsBody2D *body_a = node_a ? node_a->cast_to<PhysicsBody2D>() : (PhysicsBody2D *)NULL;
-	PhysicsBody2D *body_b = node_b ? node_b->cast_to<PhysicsBody2D>() : (PhysicsBody2D *)NULL;
+	PhysicsBody2D *body_a = Object::cast_to<PhysicsBody2D>(node_a);
+	PhysicsBody2D *body_b = Object::cast_to<PhysicsBody2D>(node_b);
 
 	if (!body_a && !body_b)
 		return RID();
@@ -249,8 +249,8 @@ RID GrooveJoint2D::_configure_joint() {
 	if (!node_a || !node_b)
 		return RID();
 
-	PhysicsBody2D *body_a = node_a->cast_to<PhysicsBody2D>();
-	PhysicsBody2D *body_b = node_b->cast_to<PhysicsBody2D>();
+	PhysicsBody2D *body_a = Object::cast_to<PhysicsBody2D>(node_a);
+	PhysicsBody2D *body_b = Object::cast_to<PhysicsBody2D>(node_b);
 
 	if (!body_a || !body_b)
 		return RID();
@@ -338,8 +338,8 @@ RID DampedSpringJoint2D::_configure_joint() {
 	if (!node_a || !node_b)
 		return RID();
 
-	PhysicsBody2D *body_a = node_a->cast_to<PhysicsBody2D>();
-	PhysicsBody2D *body_b = node_b->cast_to<PhysicsBody2D>();
+	PhysicsBody2D *body_a = Object::cast_to<PhysicsBody2D>(node_a);
+	PhysicsBody2D *body_b = Object::cast_to<PhysicsBody2D>(node_b);
 
 	if (!body_a || !body_b)
 		return RID();

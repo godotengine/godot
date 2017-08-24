@@ -50,7 +50,7 @@ void DependencyEditor::_searched(const String &p_path) {
 
 void DependencyEditor::_load_pressed(Object *p_item, int p_cell, int p_button) {
 
-	TreeItem *ti = p_item->cast_to<TreeItem>();
+	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
 	String fname = ti->get_text(0);
 	replacing = ti->get_text(1);
 
@@ -626,7 +626,7 @@ void OrphanResourcesDialog::_delete_confirm() {
 
 void OrphanResourcesDialog::_button_pressed(Object *p_item, int p_column, int p_id) {
 
-	TreeItem *ti = p_item->cast_to<TreeItem>();
+	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
 
 	String path = ti->get_metadata(0);
 	dep_edit->edit(path);

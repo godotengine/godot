@@ -70,13 +70,9 @@ void SpriteBase3D::_notification(int p_what) {
 		if (!pending_update)
 			_im_update();
 
-		Node *parent = get_parent();
-		if (parent) {
-
-			parent_sprite = parent->cast_to<SpriteBase3D>();
-			if (parent_sprite) {
-				pI = parent_sprite->children.push_back(this);
-			}
+		parent_sprite = Object::cast_to<SpriteBase3D>(get_parent());
+		if (parent_sprite) {
+			pI = parent_sprite->children.push_back(this);
 		}
 	}
 

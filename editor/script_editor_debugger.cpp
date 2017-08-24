@@ -215,7 +215,7 @@ void ScriptEditorDebugger::_scene_tree_folded(Object *obj) {
 
 		return;
 	}
-	TreeItem *item = obj->cast_to<TreeItem>();
+	TreeItem *item = Object::cast_to<TreeItem>(obj);
 
 	if (!item)
 		return;
@@ -1221,7 +1221,7 @@ void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_n
 	if (!p_base || !live_debug || !connection.is_valid() || !editor->get_edited_scene())
 		return;
 
-	Node *node = p_base->cast_to<Node>();
+	Node *node = Object::cast_to<Node>(p_base);
 
 	VARIANT_ARGPTRS
 
@@ -1249,7 +1249,7 @@ void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_n
 		return;
 	}
 
-	Resource *res = p_base->cast_to<Resource>();
+	Resource *res = Object::cast_to<Resource>(p_base);
 
 	if (res && res->get_path() != String()) {
 
@@ -1277,7 +1277,7 @@ void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p
 	if (!p_base || !live_debug || !connection.is_valid() || !editor->get_edited_scene())
 		return;
 
-	Node *node = p_base->cast_to<Node>();
+	Node *node = Object::cast_to<Node>(p_base);
 
 	if (node) {
 
@@ -1308,7 +1308,7 @@ void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p
 		return;
 	}
 
-	Resource *res = p_base->cast_to<Resource>();
+	Resource *res = Object::cast_to<Resource>(p_base);
 
 	if (res && res->get_path() != String()) {
 

@@ -98,10 +98,10 @@ void PropertySelector::_update_search() {
 		} else {
 
 			Object *obj = ObjectDB::get_instance(script);
-			if (obj && obj->cast_to<Script>()) {
+			if (Object::cast_to<Script>(obj)) {
 
 				props.push_back(PropertyInfo(Variant::NIL, "Script Variables", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_CATEGORY));
-				obj->cast_to<Script>()->get_script_property_list(&props);
+				Object::cast_to<Script>(obj)->get_script_property_list(&props);
 			}
 
 			StringName base = base_type;
@@ -200,10 +200,10 @@ void PropertySelector::_update_search() {
 		} else {
 
 			Object *obj = ObjectDB::get_instance(script);
-			if (obj && obj->cast_to<Script>()) {
+			if (Object::cast_to<Script>(obj)) {
 
 				methods.push_back(MethodInfo("*Script Methods"));
-				obj->cast_to<Script>()->get_script_method_list(&methods);
+				Object::cast_to<Script>(obj)->get_script_method_list(&methods);
 			}
 
 			StringName base = base_type;

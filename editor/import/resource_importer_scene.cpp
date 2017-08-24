@@ -172,9 +172,9 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 		return NULL;
 	}
 #if 0
-	if (p_node->cast_to<MeshInstance>()) {
+	if (Object::cast_to<MeshInstance>(p_node)) {
 
-		MeshInstance *mi = p_node->cast_to<MeshInstance>();
+		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
 
 		bool bb = false;
 
@@ -203,9 +203,9 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 		}
 	}
 #endif
-	if (p_node->cast_to<MeshInstance>()) {
+	if (Object::cast_to<MeshInstance>(p_node)) {
 
-		MeshInstance *mi = p_node->cast_to<MeshInstance>();
+		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
 
 		Ref<ArrayMesh> m = mi->get_mesh();
 
@@ -232,9 +232,9 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 		}
 	}
 
-	if (p_node->cast_to<AnimationPlayer>()) {
+	if (Object::cast_to<AnimationPlayer>(p_node)) {
 		//remove animations referencing non-importable nodes
-		AnimationPlayer *ap = p_node->cast_to<AnimationPlayer>();
+		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
 
 		List<StringName> anims;
 		ap->get_animation_list(&anims);
@@ -257,9 +257,9 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 		}
 	}
 #if 0
-	if (p_node->cast_to<MeshInstance>()) {
+	if (Object::cast_to<MeshInstance>(p_node)) {
 
-		MeshInstance *mi = p_node->cast_to<MeshInstance>();
+		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
 
 		String str;
 
@@ -269,9 +269,9 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 			str = mi->get_mesh()->get_name();
 		}
 
-		if (p_node->get_parent() && p_node->get_parent()->cast_to<MeshInstance>()) {
-			MeshInstance *mi = p_node->cast_to<MeshInstance>();
-			MeshInstance *mip = p_node->get_parent()->cast_to<MeshInstance>();
+		if (Object::cast_to<MeshInstance>(p_node->get_parent())) {
+			MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
+			MeshInstance *mip = Object::cast_to<MeshInstance>(p_node->get_parent());
 			String d = str.substr(str.find("imp") + 3, str.length());
 			if (d != "") {
 				if ((d[0] < '0' || d[0] > '9'))
@@ -307,9 +307,9 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 
 #endif
 #if 0
-    if (p_flags&SCENE_FLAG_CREATE_LODS && p_node->cast_to<MeshInstance>()) {
+    if (p_flags&SCENE_FLAG_CREATE_LODS && Object::cast_to<MeshInstance>(p_node)) {
 
-	MeshInstance *mi = p_node->cast_to<MeshInstance>();
+	MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
 
 	String str;
 
@@ -321,9 +321,9 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 	}
 
 
-	if (p_node->get_parent() && p_node->get_parent()->cast_to<MeshInstance>()) {
-	    MeshInstance *mi = p_node->cast_to<MeshInstance>();
-	    MeshInstance *mip = p_node->get_parent()->cast_to<MeshInstance>();
+	if (Object::cast_to<MeshInstance>(p_node->get_parent())) {
+	    MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
+	    MeshInstance *mip = Object::cast_to<MeshInstance>(p_node->get_parent());
 	    String d=str.substr(str.find("lod")+3,str.length());
 	    if (d!="") {
 		if ((d[0]<'0' || d[0]>'9'))
@@ -356,9 +356,9 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
     }
 
 
-	if (p_flags&SCENE_FLAG_DETECT_LIGHTMAP_LAYER && _teststr(name,"lm") && p_node->cast_to<MeshInstance>()) {
+	if (p_flags&SCENE_FLAG_DETECT_LIGHTMAP_LAYER && _teststr(name,"lm") && Object::cast_to<MeshInstance>(p_node)) {
 
-		MeshInstance *mi = p_node->cast_to<MeshInstance>();
+		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
 
 		String str=name;
 		int layer = str.substr(str.find("lm")+3,str.length()).to_int();
@@ -370,19 +370,18 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 		if (isroot)
 			return p_node;
 
-		if (p_node->cast_to<MeshInstance>()) {
-			MeshInstance *mi = p_node->cast_to<MeshInstance>();
+		if (MeshInstance *mi = Object::cast_to<MeshInstance>(p_node)) {
 			Node *col = mi->create_trimesh_collision_node();
 			ERR_FAIL_COND_V(!col, NULL);
 
 			col->set_name(_fixstr(name, "colonly"));
-			col->cast_to<Spatial>()->set_transform(mi->get_transform());
+			Object::cast_to<Spatial>(col)->set_transform(mi->get_transform());
 			p_node->replace_by(col);
 			memdelete(p_node);
 			p_node = col;
 
-			StaticBody *sb = col->cast_to<StaticBody>();
-			CollisionShape *colshape = sb->get_child(0)->cast_to<CollisionShape>();
+			StaticBody *sb = Object::cast_to<StaticBody>(col);
+			CollisionShape *colshape = Object::cast_to<CollisionShape>(sb->get_child(0));
 			colshape->set_name("shape");
 			colshape->set_owner(p_node->get_owner());
 		} else if (p_node->has_meta("empty_draw_type")) {
@@ -390,7 +389,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 			print_line(empty_draw_type);
 			StaticBody *sb = memnew(StaticBody);
 			sb->set_name(_fixstr(name, "colonly"));
-			sb->cast_to<Spatial>()->set_transform(p_node->cast_to<Spatial>()->get_transform());
+			Object::cast_to<Spatial>(sb)->set_transform(Object::cast_to<Spatial>(p_node)->get_transform());
 			p_node->replace_by(sb);
 			memdelete(p_node);
 			CollisionShape *colshape = memnew(CollisionShape);
@@ -404,7 +403,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 				rayShape->set_length(1);
 				colshape->set_shape(rayShape);
 				colshape->set_name("RayShape");
-				sb->cast_to<Spatial>()->rotate_x(Math_PI / 2);
+				Object::cast_to<Spatial>(sb)->rotate_x(Math_PI / 2);
 			} else if (empty_draw_type == "IMAGE") {
 				PlaneShape *planeShape = memnew(PlaneShape);
 				colshape->set_shape(planeShape);
@@ -419,13 +418,13 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 			colshape->set_owner(sb->get_owner());
 		}
 
-	} else if (_teststr(name, "rigid") && p_node->cast_to<MeshInstance>()) {
+	} else if (_teststr(name, "rigid") && Object::cast_to<MeshInstance>(p_node)) {
 
 		if (isroot)
 			return p_node;
 
 		// get mesh instance and bounding box
-		MeshInstance *mi = p_node->cast_to<MeshInstance>();
+		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
 		Rect3 aabb = mi->get_aabb();
 
 		// create a new rigid body collision node
@@ -436,12 +435,12 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 		// remove node name postfix
 		col->set_name(_fixstr(name, "rigid"));
 		// get mesh instance xform matrix to the rigid body collision node
-		col->cast_to<Spatial>()->set_transform(mi->get_transform());
+		Object::cast_to<Spatial>(col)->set_transform(mi->get_transform());
 		// save original node by duplicating it into a new instance and correcting the name
 		Node *mesh = p_node->duplicate();
 		mesh->set_name(_fixstr(name, "rigid"));
 		// reset the xform matrix of the duplicated node so it can inherit parent node xform
-		mesh->cast_to<Spatial>()->set_transform(Transform(Basis()));
+		Object::cast_to<Spatial>(mesh)->set_transform(Transform(Basis()));
 		// reparent the new mesh node to the rigid body collision node
 		p_node->add_child(mesh);
 		mesh->set_owner(p_node->get_owner());
@@ -451,7 +450,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 		p_node = col;
 
 		// create an alias for the rigid body collision node
-		RigidBody *rb = col->cast_to<RigidBody>();
+		RigidBody *rb = Object::cast_to<RigidBody>(col);
 		// create a new Box collision shape and set the right extents
 		Ref<BoxShape> shape = memnew(BoxShape);
 		shape->set_extents(aabb.get_size() * 0.5);
@@ -462,9 +461,9 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 		rb->add_child(colshape);
 		colshape->set_owner(p_node->get_owner());
 
-	} else if (_teststr(name, "col") && p_node->cast_to<MeshInstance>()) {
+	} else if (_teststr(name, "col") && Object::cast_to<MeshInstance>(p_node)) {
 
-		MeshInstance *mi = p_node->cast_to<MeshInstance>();
+		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
 
 		mi->set_name(_fixstr(name, "col"));
 		Node *col = mi->create_trimesh_collision_node();
@@ -473,19 +472,19 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 		col->set_name("col");
 		p_node->add_child(col);
 
-		StaticBody *sb = col->cast_to<StaticBody>();
-		CollisionShape *colshape = sb->get_child(0)->cast_to<CollisionShape>();
+		StaticBody *sb = Object::cast_to<StaticBody>(col);
+		CollisionShape *colshape = Object::cast_to<CollisionShape>(sb->get_child(0));
 		colshape->set_name("shape");
 		col->add_child(colshape);
 		colshape->set_owner(p_node->get_owner());
 		sb->set_owner(p_node->get_owner());
 
-	} else if (_teststr(name, "navmesh") && p_node->cast_to<MeshInstance>()) {
+	} else if (_teststr(name, "navmesh") && Object::cast_to<MeshInstance>(p_node)) {
 
 		if (isroot)
 			return p_node;
 
-		MeshInstance *mi = p_node->cast_to<MeshInstance>();
+		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
 
 		Ref<ArrayMesh> mesh = mi->get_mesh();
 		ERR_FAIL_COND_V(mesh.is_null(), NULL);
@@ -495,7 +494,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 		Ref<NavigationMesh> nmesh = memnew(NavigationMesh);
 		nmesh->create_from_mesh(mesh);
 		nmi->set_navigation_mesh(nmesh);
-		nmi->cast_to<Spatial>()->set_transform(mi->get_transform());
+		Object::cast_to<Spatial>(nmi)->set_transform(mi->get_transform());
 		p_node->replace_by(nmi);
 		memdelete(p_node);
 		p_node = nmi;
@@ -505,7 +504,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 			return p_node;
 
 		Node *owner = p_node->get_owner();
-		Spatial *s = p_node->cast_to<Spatial>();
+		Spatial *s = Object::cast_to<Spatial>(p_node);
 		VehicleBody *bv = memnew(VehicleBody);
 		String n = _fixstr(p_node->get_name(), "vehicle");
 		bv->set_name(n);
@@ -525,7 +524,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 			return p_node;
 
 		Node *owner = p_node->get_owner();
-		Spatial *s = p_node->cast_to<Spatial>();
+		Spatial *s = Object::cast_to<Spatial>(p_node);
 		VehicleWheel *bv = memnew(VehicleWheel);
 		String n = _fixstr(p_node->get_name(), "wheel");
 		bv->set_name(n);
@@ -539,12 +538,12 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 
 		p_node = bv;
 
-	} else if (_teststr(name, "room") && p_node->cast_to<MeshInstance>()) {
+	} else if (_teststr(name, "room") && Object::cast_to<MeshInstance>(p_node)) {
 
 		if (isroot)
 			return p_node;
 
-		MeshInstance *mi = p_node->cast_to<MeshInstance>();
+		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
 		PoolVector<Face3> faces = mi->get_faces(VisualInstance::FACES_SOLID);
 
 		BSP_Tree bsptree(faces);
@@ -567,7 +566,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 		if (isroot)
 			return p_node;
 
-		Spatial *dummy = p_node->cast_to<Spatial>();
+		Spatial *dummy = Object::cast_to<Spatial>(p_node);
 		ERR_FAIL_COND_V(!dummy, NULL);
 
 		Room *room = memnew(Room);
@@ -580,12 +579,12 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 
 		//room->compute_room_from_subtree();
 
-	} else if (_teststr(name, "portal") && p_node->cast_to<MeshInstance>()) {
+	} else if (_teststr(name, "portal") && Object::cast_to<MeshInstance>(p_node)) {
 
 		if (isroot)
 			return p_node;
 
-		MeshInstance *mi = p_node->cast_to<MeshInstance>();
+		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
 		PoolVector<Face3> faces = mi->get_faces(VisualInstance::FACES_SOLID);
 
 		ERR_FAIL_COND_V(faces.size() == 0, NULL);
@@ -659,11 +658,11 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 		memdelete(p_node);
 		p_node = portal;
 
-	} else if (p_node->cast_to<MeshInstance>()) {
+	} else if (Object::cast_to<MeshInstance>(p_node)) {
 
 		//last attempt, maybe collision insde the mesh data
 
-		MeshInstance *mi = p_node->cast_to<MeshInstance>();
+		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
 
 		Ref<ArrayMesh> mesh = mi->get_mesh();
 		if (!mesh.is_null()) {
@@ -728,7 +727,7 @@ void ResourceImporterScene::_create_clips(Node *scene, const Array &p_clips, boo
 
 	Node *n = scene->get_node(String("AnimationPlayer"));
 	ERR_FAIL_COND(!n);
-	AnimationPlayer *anim = n->cast_to<AnimationPlayer>();
+	AnimationPlayer *anim = Object::cast_to<AnimationPlayer>(n);
 	ERR_FAIL_COND(!anim);
 
 	if (!anim->has_animation("default"))
@@ -847,7 +846,7 @@ void ResourceImporterScene::_filter_tracks(Node *scene, const String &p_text) {
 		return;
 	Node *n = scene->get_node(String("AnimationPlayer"));
 	ERR_FAIL_COND(!n);
-	AnimationPlayer *anim = n->cast_to<AnimationPlayer>();
+	AnimationPlayer *anim = Object::cast_to<AnimationPlayer>(n);
 	ERR_FAIL_COND(!anim);
 
 	Vector<String> strings = p_text.split("\n");
@@ -954,7 +953,7 @@ void ResourceImporterScene::_optimize_animations(Node *scene, float p_max_lin_er
 		return;
 	Node *n = scene->get_node(String("AnimationPlayer"));
 	ERR_FAIL_COND(!n);
-	AnimationPlayer *anim = n->cast_to<AnimationPlayer>();
+	AnimationPlayer *anim = Object::cast_to<AnimationPlayer>(n);
 	ERR_FAIL_COND(!anim);
 
 	List<StringName> anim_names;
@@ -1196,10 +1195,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	String root_type = p_options["nodes/root_type"];
 
 	if (scene->get_class() != root_type) {
-		Object *base = ClassDB::instance(root_type);
-		Node *base_node = NULL;
-		if (base)
-			base_node = base->cast_to<Node>();
+		Node *base_node = base_node = Object::cast_to<Node>(ClassDB::instance(root_type));
 
 		if (base_node) {
 

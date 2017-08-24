@@ -191,7 +191,7 @@ void EditorSettingsDialog::_update_shortcuts() {
 
 void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column, int p_idx) {
 
-	TreeItem *ti = p_item->cast_to<TreeItem>();
+	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
 	ERR_FAIL_COND(!ti);
 
 	String item = ti->get_metadata(0);

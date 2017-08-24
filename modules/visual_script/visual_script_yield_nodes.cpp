@@ -105,7 +105,7 @@ public:
 		} else {
 			//yield
 
-			SceneTree *tree = OS::get_singleton()->get_main_loop()->cast_to<SceneTree>();
+			SceneTree *tree = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
 			if (!tree) {
 				r_error_str = "Main Loop is not SceneTree";
 				r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
@@ -252,10 +252,7 @@ Node *VisualScriptYieldSignal::_get_base_node() const {
 		return NULL;
 
 	MainLoop *main_loop = OS::get_singleton()->get_main_loop();
-	if (!main_loop)
-		return NULL;
-
-	SceneTree *scene_tree = main_loop->cast_to<SceneTree>();
+	SceneTree *scene_tree = Object::cast_to<SceneTree>(main_loop);
 
 	if (!scene_tree)
 		return NULL;
@@ -530,7 +527,7 @@ public:
 				} break;
 				case VisualScriptYieldSignal::CALL_MODE_NODE_PATH: {
 
-					Node *node = instance->get_owner_ptr()->cast_to<Node>();
+					Node *node = Object::cast_to<Node>(instance->get_owner_ptr());
 					if (!node) {
 						r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
 						r_error_str = "Base object is not a Node!";

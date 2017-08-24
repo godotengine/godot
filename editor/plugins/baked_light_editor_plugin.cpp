@@ -337,7 +337,7 @@ BakedLightEditor::~BakedLightEditor() {
 
 void BakedLightEditorPlugin::edit(Object *p_object) {
 
-	baked_light_editor->edit(p_object->cast_to<BakedLightInstance>());
+	baked_light_editor->edit(Object::cast_to<BakedLightInstance>(p_object));
 }
 
 bool BakedLightEditorPlugin::handles(Object *p_object) const {

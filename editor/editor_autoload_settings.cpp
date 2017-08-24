@@ -238,7 +238,7 @@ void EditorAutoloadSettings::_autoload_edited() {
 
 void EditorAutoloadSettings::_autoload_button_pressed(Object *p_item, int p_column, int p_button) {
 
-	TreeItem *ti = p_item->cast_to<TreeItem>();
+	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
 
 	String name = "autoload/" + ti->get_text(0);
 

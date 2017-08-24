@@ -155,7 +155,7 @@ void EditorPlugin::add_tool_menu_item(const String &p_name, Object *p_handler, c
 void EditorPlugin::add_tool_submenu_item(const String &p_name, Object *p_submenu) {
 
 	ERR_FAIL_NULL(p_submenu);
-	PopupMenu *submenu = p_submenu->cast_to<PopupMenu>();
+	PopupMenu *submenu = Object::cast_to<PopupMenu>(p_submenu);
 	ERR_FAIL_NULL(submenu);
 	//EditorNode::get_singleton()->add_tool_submenu_item(p_name, submenu);
 }

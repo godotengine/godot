@@ -115,11 +115,11 @@ void RayCast2D::set_exclude_parent_body(bool p_exclude_parent_body) {
 	if (!is_inside_tree())
 		return;
 
-	if (get_parent()->cast_to<PhysicsBody2D>()) {
+	if (Object::cast_to<PhysicsBody2D>(get_parent())) {
 		if (exclude_parent_body)
-			exclude.insert(get_parent()->cast_to<PhysicsBody2D>()->get_rid());
+			exclude.insert(Object::cast_to<PhysicsBody2D>(get_parent())->get_rid());
 		else
-			exclude.erase(get_parent()->cast_to<PhysicsBody2D>()->get_rid());
+			exclude.erase(Object::cast_to<PhysicsBody2D>(get_parent())->get_rid());
 	}
 }
 
@@ -139,11 +139,11 @@ void RayCast2D::_notification(int p_what) {
 			else
 				set_fixed_process(false);
 
-			if (get_parent()->cast_to<PhysicsBody2D>()) {
+			if (Object::cast_to<PhysicsBody2D>(get_parent())) {
 				if (exclude_parent_body)
-					exclude.insert(get_parent()->cast_to<PhysicsBody2D>()->get_rid());
+					exclude.insert(Object::cast_to<PhysicsBody2D>(get_parent())->get_rid());
 				else
-					exclude.erase(get_parent()->cast_to<PhysicsBody2D>()->get_rid());
+					exclude.erase(Object::cast_to<PhysicsBody2D>(get_parent())->get_rid());
 			}
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
@@ -227,7 +227,7 @@ void RayCast2D::add_exception_rid(const RID &p_rid) {
 void RayCast2D::add_exception(const Object *p_object) {
 
 	ERR_FAIL_NULL(p_object);
-	CollisionObject2D *co = ((Object *)p_object)->cast_to<CollisionObject2D>();
+	const CollisionObject2D *co = Object::cast_to<CollisionObject2D>(p_object);
 	if (!co)
 		return;
 	add_exception_rid(co->get_rid());
@@ -241,7 +241,7 @@ void RayCast2D::remove_exception_rid(const RID &p_rid) {
 void RayCast2D::remove_exception(const Object *p_object) {
 
 	ERR_FAIL_NULL(p_object);
-	CollisionObject2D *co = ((Object *)p_object)->cast_to<CollisionObject2D>();
+	const CollisionObject2D *co = Object::cast_to<CollisionObject2D>(p_object);
 	if (!co)
 		return;
 	remove_exception_rid(co->get_rid());

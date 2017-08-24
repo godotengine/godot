@@ -93,7 +93,7 @@ class EditorSpatialGizmo : public SpatialEditorGizmo {
 	Vector<Instance> instances;
 	Spatial *spatial_node;
 
-	void _set_spatial_node(Node *p_node) { set_spatial_node(p_node->cast_to<Spatial>()); }
+	void _set_spatial_node(Node *p_node) { set_spatial_node(Object::cast_to<Spatial>(p_node)); }
 
 protected:
 	void add_lines(const Vector<Vector3> &p_lines, const Ref<Material> &p_material, bool p_billboard = false);

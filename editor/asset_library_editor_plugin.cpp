@@ -595,7 +595,7 @@ void EditorAssetLibrary::_install_asset() {
 
 	for (int i = 0; i < downloads_hb->get_child_count(); i++) {
 
-		EditorAssetLibraryItemDownload *d = downloads_hb->get_child(i)->cast_to<EditorAssetLibraryItemDownload>();
+		EditorAssetLibraryItemDownload *d = Object::cast_to<EditorAssetLibraryItemDownload>(downloads_hb->get_child(i));
 		if (d && d->get_asset_id() == description->get_asset_id()) {
 
 			if (EditorNode::get_singleton() != NULL)
