@@ -34,6 +34,9 @@ platform/android/java/assets
 .deps/*
 .dirstamp
 
+# Gprof output
+gmon.out
+
 # Vim temp files
 *.swo
 *.swp
