@@ -44,6 +44,10 @@ platform/android/java/assets
 *.files
 *.includes
 
+# Eclipse CDT files
+.cproject
+.settings/
+
 # Misc
 .DS_Store
 
