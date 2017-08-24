@@ -558,6 +558,46 @@ public:
 	void add_change_receptor(Object *p_receptor);
 	void remove_change_receptor(Object *p_receptor);
 
+	template <class T>
+	static T *cast_to(Object *p_object) {
+#ifdef DEBUG_ENABLED
+		// TODO there are some legitimate reasons to pass NULL as p_object.
+		// we need to figure out how to deal with that in debug mode.
+		// This code will return NULL for a NULL input in release mode also.
+		ERR_FAIL_COND_V(p_object == NULL, NULL);
+#endif
+#ifndef NO_SAFE_CAST
+		return dynamic_cast<T *>(p_object);
+#else
+		if (!p_object)
+			return NULL;
+		if (p_pobject->is_class_ptr(T::get_class_ptr_static()))
+			return static_cast<T *>(p_pobject);
+		else
+			return NULL;
+#endif
+	}
+
+	template <class T>
+	static const T *cast_to(const Object *p_object) {
+#ifdef DEBUG_ENABLED
+		// TODO there are some legitimate reasons to pass NULL as p_object.
+		// we need to figure out how to deal with that in debug mode.
+		// This code will return NULL for a NULL input in release mode also.
+		ERR_FAIL_COND_V(p_object == NULL, NULL);
+#endif
+#ifndef NO_SAFE_CAST
+		return dynamic_cast<const T *>(p_object);
+#else
+		if (!p_object)
+			return NULL;
+		if (p_pobject->is_class_ptr(T::get_class_ptr_static()))
+			return static_cast<const T *>(p_object);
+		else
+			return NULL;
+#endif
+	}
+
 // TODO: ensure 'this' is never NULL since it's UB, but by now, avoid warning flood
 #ifdef __clang__
 #pragma clang diagnostic push
