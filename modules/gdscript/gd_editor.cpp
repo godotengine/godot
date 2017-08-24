@@ -2485,7 +2485,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 
 #else
 
-Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base_path, Object *p_owner, List<String> *r_options, String &r_call_hint) {
+Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base_path, Object *p_owner, List<String> *r_options, bool &r_forced, String &r_call_hint) {
 	return OK;
 }
 
