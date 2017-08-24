@@ -2736,6 +2736,15 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				else
 					undo();
 			} break;
+			case KEY_Y: {
+
+				if (!k->get_command()) {
+					scancode_handled = false;
+					break;
+				}
+
+				redo();
+			} break;
 			case KEY_V: {
 				if (readonly) {
 					break;
