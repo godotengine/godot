@@ -50,11 +50,10 @@ class VideoPlayer : public Control {
 	//	InternalStream internal_stream;
 	Ref<VideoStreamPlayback> playback;
 	Ref<VideoStream> stream;
+	Vector<AudioFrame> mix_buffer;
 
 	int sp_get_channel_count() const;
 	void sp_set_mix_rate(int p_rate); //notify the stream of the mix rate
-	bool sp_mix(int32_t *p_buffer, int p_frames);
-	void sp_update();
 
 	RID stream_rid;
 
@@ -73,7 +72,7 @@ class VideoPlayer : public Control {
 	int server_mix_rate;
 	int audio_track;
 
-	static int _audio_mix_callback(void *p_udata, const int16_t *p_data, int p_frames);
+	static int _audio_mix_callback(void *p_udata, const AudioFrame *p_data, int p_frames);
 
 protected:
 	static void _bind_methods();

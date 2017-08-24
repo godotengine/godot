@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  resource_importer_theora.h                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,26 +27,30 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "register_types.h"
-#include "resource_importer_theora.h"
+#ifndef RESOURCEIMPORTEROGGTHEORA_H
+#define RESOURCEIMPORTEROGGTHEORA_H
+
 #include "video_stream_theora.h"
+#include "io/resource_import.h"
 
-// static ResourceFormatLoaderVideoStreamTheora *theora_stream_loader = NULL;
+class ResourceImporterTheora : public ResourceImporter {
+	GDCLASS(ResourceImporterTheora, ResourceImporter)
+public:
+	virtual String get_importer_name() const;
+	virtual String get_visible_name() const;
+	virtual void get_recognized_extensions(List<String> *p_extensions) const;
+	virtual String get_save_extension() const;
+	virtual String get_resource_type() const;
 
-void register_theora_types() {
+	virtual int get_preset_count() const;
+	virtual String get_preset_name(int p_idx) const;
 
-	#ifdef TOOLS_ENABLED
-	Ref<ResourceImporterTheora> theora_import;
-	theora_import.instance();
-	ResourceFormatImporter::get_singleton()->add_importer(theora_import);
-	#endif
+	virtual void get_import_options(List<ImportOption> *r_options, int p_preset = 0) const;
+	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const;
 
-	// theora_stream_loader = memnew(ResourceFormatLoaderVideoStreamTheora);
-	// ResourceLoader::add_resource_format_loader(theora_stream_loader);
-	ClassDB::register_class<VideoStreamTheora>();
-}
+	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = NULL);
 
-void unregister_theora_types() {
+	ResourceImporterTheora();
+};
 
-	// memdelete(theora_stream_loader);
-}
+#endif // RESOURCEIMPORTEROGGTHEORA_H

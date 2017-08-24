@@ -28,25 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "register_types.h"
-#include "resource_importer_theora.h"
-#include "video_stream_theora.h"
 
-// static ResourceFormatLoaderVideoStreamTheora *theora_stream_loader = NULL;
+// Dummy module as libvorbis is needed by other modules (theora ...)
 
-void register_theora_types() {
+void register_opus_types() {}
 
-	#ifdef TOOLS_ENABLED
-	Ref<ResourceImporterTheora> theora_import;
-	theora_import.instance();
-	ResourceFormatImporter::get_singleton()->add_importer(theora_import);
-	#endif
-
-	// theora_stream_loader = memnew(ResourceFormatLoaderVideoStreamTheora);
-	// ResourceLoader::add_resource_format_loader(theora_stream_loader);
-	ClassDB::register_class<VideoStreamTheora>();
-}
-
-void unregister_theora_types() {
-
-	// memdelete(theora_stream_loader);
-}
+void unregister_opus_types() {}

@@ -555,7 +555,7 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 
 				const int AUXBUF_LEN = 4096;
 				int to_read = ret;
-				int16_t aux_buffer[AUXBUF_LEN];
+				float aux_buffer[AUXBUF_LEN];
 
 				while (to_read) {
 
@@ -565,16 +565,12 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 
 					for (int j = 0; j < m; j++) {
 						for (int i = 0; i < vi.channels; i++) {
-
-							int val = Math::fast_ftoi(pcm[i][j] * 32767.f);
-							if (val > 32767) val = 32767;
-							if (val < -32768) val = -32768;
-							aux_buffer[count++] = val;
+							aux_buffer[count++] = pcm[i][j];
 						}
 					}
 
 					if (mix_callback) {
-						int mixed = mix_callback(mix_udata, aux_buffer, m);
+						int mixed = mix_callback(mix_udata, (AudioFrame*) aux_buffer, m);
 						to_read -= mixed;
 						if (mixed != m) { //could mix no more
 							buffer_full = true;
@@ -881,32 +877,13 @@ VideoStreamPlaybackTheora::~VideoStreamPlaybackTheora() {
 		memdelete(file);
 };
 
-RES ResourceFormatLoaderVideoStreamTheora::load(const String &p_path, const String &p_original_path, Error *r_error) {
-	if (r_error)
-		*r_error = ERR_FILE_CANT_OPEN;
+void VideoStreamTheora::_bind_methods() {
 
-	VideoStreamTheora *stream = memnew(VideoStreamTheora);
-	stream->set_file(p_path);
+	ClassDB::bind_method(D_METHOD("set_file", "file"), &VideoStreamTheora::set_file);
+	ClassDB::bind_method(D_METHOD("get_file"), &VideoStreamTheora::get_file);
 
-	if (r_error)
-		*r_error = OK;
 
-	return Ref<VideoStreamTheora>(stream);
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "file", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_file", "get_file");
+
 }
 
-void ResourceFormatLoaderVideoStreamTheora::get_recognized_extensions(List<String> *p_extensions) const {
-
-	p_extensions->push_back("ogm");
-	p_extensions->push_back("ogv");
-}
-bool ResourceFormatLoaderVideoStreamTheora::handles_type(const String &p_type) const {
-	return (p_type == "VideoStream" || p_type == "VideoStreamTheora");
-}
-
-String ResourceFormatLoaderVideoStreamTheora::get_resource_type(const String &p_path) const {
-
-	String exl = p_path.get_extension().to_lower();
-	if (exl == "ogm" || exl == "ogv")
-		return "VideoStreamTheora";
-	return "";
-}

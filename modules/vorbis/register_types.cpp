@@ -29,18 +29,8 @@
 /*************************************************************************/
 #include "register_types.h"
 
-#include "audio_stream_ogg_vorbis.h"
+// Dummy module as libvorbis is needed by other modules (theora ...)
 
-static ResourceFormatLoaderAudioStreamOGGVorbis *vorbis_stream_loader = NULL;
+void register_vorbis_types() {}
 
-void register_vorbis_types() {
-
-	vorbis_stream_loader = memnew(ResourceFormatLoaderAudioStreamOGGVorbis);
-	ResourceLoader::add_resource_format_loader(vorbis_stream_loader);
-	ClassDB::register_class<AudioStreamOGGVorbis>();
-}
-
-void unregister_vorbis_types() {
-
-	memdelete(vorbis_stream_loader);
-}
+void unregister_vorbis_types() {}

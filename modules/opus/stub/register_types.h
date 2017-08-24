@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  register_types.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,26 +27,5 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "register_types.h"
-#include "resource_importer_theora.h"
-#include "video_stream_theora.h"
-
-// static ResourceFormatLoaderVideoStreamTheora *theora_stream_loader = NULL;
-
-void register_theora_types() {
-
-	#ifdef TOOLS_ENABLED
-	Ref<ResourceImporterTheora> theora_import;
-	theora_import.instance();
-	ResourceFormatImporter::get_singleton()->add_importer(theora_import);
-	#endif
-
-	// theora_stream_loader = memnew(ResourceFormatLoaderVideoStreamTheora);
-	// ResourceLoader::add_resource_format_loader(theora_stream_loader);
-	ClassDB::register_class<VideoStreamTheora>();
-}
-
-void unregister_theora_types() {
-
-	// memdelete(theora_stream_loader);
-}
+void register_opus_types();
+void unregister_opus_types();

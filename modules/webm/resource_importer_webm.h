@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  resource_importer_theora.h                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,26 +27,30 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "register_types.h"
-#include "resource_importer_theora.h"
-#include "video_stream_theora.h"
+#ifndef RESOURCEIMPORTERWEBM_H
+#define RESOURCEIMPORTERWEBM_H
 
-// static ResourceFormatLoaderVideoStreamTheora *theora_stream_loader = NULL;
 
-void register_theora_types() {
+#include "io/resource_import.h"
 
-	#ifdef TOOLS_ENABLED
-	Ref<ResourceImporterTheora> theora_import;
-	theora_import.instance();
-	ResourceFormatImporter::get_singleton()->add_importer(theora_import);
-	#endif
+class ResourceImporterWebm : public ResourceImporter {
+	GDCLASS(ResourceImporterWebm, ResourceImporter)
+public:
+	virtual String get_importer_name() const;
+	virtual String get_visible_name() const;
+	virtual void get_recognized_extensions(List<String> *p_extensions) const;
+	virtual String get_save_extension() const;
+	virtual String get_resource_type() const;
 
-	// theora_stream_loader = memnew(ResourceFormatLoaderVideoStreamTheora);
-	// ResourceLoader::add_resource_format_loader(theora_stream_loader);
-	ClassDB::register_class<VideoStreamTheora>();
-}
+	virtual int get_preset_count() const;
+	virtual String get_preset_name(int p_idx) const;
 
-void unregister_theora_types() {
+	virtual void get_import_options(List<ImportOption> *r_options, int p_preset = 0) const;
+	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const;
 
-	// memdelete(theora_stream_loader);
-}
+	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = NULL);
+
+	ResourceImporterWebm();
+};
+
+#endif // RESOURCEIMPORTERWEBM_H

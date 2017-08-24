@@ -60,54 +60,63 @@ void VideoPlayer::sp_set_mix_rate(int p_rate) {
 	server_mix_rate = p_rate;
 }
 
-bool VideoPlayer::sp_mix(int32_t *p_buffer, int p_frames) {
 
-	if (resampler.is_ready()) {
-		return resampler.mix(p_buffer, p_frames);
-	}
-
-	return false;
-}
-
-void VideoPlayer::sp_update() {
-#if 0
-	_THREAD_SAFE_METHOD_
-	//update is unused
-	if (!paused && playback.is_valid()) {
-
-		if (!playback->is_playing()) {
-			//stream depleted data, but there's still audio in the ringbuffer
-			//check that all this audio has been flushed before stopping the stream
-			int to_mix = resampler.get_total() - resampler.get_todo();
-			if (to_mix==0) {
-				stop();
-				return;
-			}
-
-			return;
-		}
-
-		int todo =resampler.get_todo();
-		int wrote = playback->mix(resampler.get_write_buffer(),todo);
-		resampler.write(wrote);
-	}
-#endif
-}
-
-int VideoPlayer::_audio_mix_callback(void *p_udata, const int16_t *p_data, int p_frames) {
+int VideoPlayer::_audio_mix_callback(void *p_udata, const AudioFrame *p_data, int p_frames) {
 
 	VideoPlayer *vp = (VideoPlayer *)p_udata;
 
-	int todo = MIN(vp->resampler.get_todo(), p_frames);
+	AudioFrame vol = AudioFrame(vp->get_volume(),vp->get_volume());
 
-	int16_t *wb = vp->resampler.get_write_buffer();
-	int c = vp->resampler.get_channel_count();
+	int bus_index = AudioServer::get_singleton()->thread_find_bus_index("Master");
 
-	for (int i = 0; i < todo * c; i++) {
-		wb[i] = p_data[i];
+
+	int buffer_size = vp->mix_buffer.size();
+
+	switch (AudioServer::get_singleton()->get_speaker_mode()) {
+
+		case AudioServer::SPEAKER_MODE_STEREO: {
+			AudioFrame *target = AudioServer::get_singleton()->thread_get_channel_mix_buffer(bus_index, 0);
+
+			for (int j = 0; j < buffer_size && j < p_frames; j++) {
+
+				target[j] += p_data[j] * vol;
+			}
+
+		} break;
+		case AudioServer::SPEAKER_SURROUND_51: {
+
+			AudioFrame *targets[2] = {
+				AudioServer::get_singleton()->thread_get_channel_mix_buffer(bus_index, 1),
+				AudioServer::get_singleton()->thread_get_channel_mix_buffer(bus_index, 2),
+			};
+
+			for (int j = 0; j < buffer_size && j < p_frames; j++) {
+
+				AudioFrame frame = p_data[j] * vol;
+				targets[0][j] += frame;
+				targets[1][j] += frame;
+			}
+
+		} break;
+		case AudioServer::SPEAKER_SURROUND_71: {
+
+			AudioFrame *targets[3] = {
+				AudioServer::get_singleton()->thread_get_channel_mix_buffer(bus_index, 1),
+				AudioServer::get_singleton()->thread_get_channel_mix_buffer(bus_index, 2),
+				AudioServer::get_singleton()->thread_get_channel_mix_buffer(bus_index, 3)
+			};
+
+			for (int j = 0; j < buffer_size && j < p_frames; j++) {
+
+				AudioFrame frame = p_data[j] * vol;
+				targets[0][j] += frame;
+				targets[1][j] += frame;
+				targets[2][j] += frame;
+			}
+
+		} break;
 	}
-	vp->resampler.write(todo);
-	return todo;
+	return p_frames;
 }
 
 void VideoPlayer::_notification(int p_notification) {
@@ -178,7 +187,7 @@ bool VideoPlayer::has_expand() const {
 void VideoPlayer::set_stream(const Ref<VideoStream> &p_stream) {
 
 	stop();
-
+	mix_buffer.resize(AudioServer::get_singleton()->thread_get_mix_buffer_size());
 	stream = p_stream;
 	if (stream.is_valid()) {
 		stream->set_audio_track(audio_track);
