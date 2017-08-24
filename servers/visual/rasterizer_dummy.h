@@ -735,6 +735,7 @@ public:
 	virtual void custom_shade_model_set_param_info(int p_model, const List<PropertyInfo> &p_info);
 	virtual void custom_shade_model_get_param_info(int p_model, List<PropertyInfo> *p_info) const;
 
+	virtual void set_time_scale(float p_scale);
 	virtual void init();
 	virtual void finish();
 
