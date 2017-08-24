@@ -307,6 +307,7 @@ public:
 	virtual bool action_match(const Ref<InputEvent> &p_event) const;
 
 	virtual bool is_action_type() const { return true; }
+	virtual String as_text() const;
 
 	InputEventMouseButton();
 };
@@ -328,6 +329,7 @@ public:
 	Vector2 get_speed() const;
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
+	virtual String as_text() const;
 
 	InputEventMouseMotion();
 };
@@ -352,6 +354,7 @@ public:
 	virtual bool action_match(const Ref<InputEvent> &p_event) const;
 
 	virtual bool is_action_type() const { return true; }
+	virtual String as_text() const;
 
 	InputEventJoypadMotion();
 };
@@ -378,6 +381,7 @@ public:
 	virtual bool action_match(const Ref<InputEvent> &p_event) const;
 
 	virtual bool is_action_type() const { return true; }
+	virtual String as_text() const;
 
 	InputEventJoypadButton();
 };
@@ -402,6 +406,7 @@ public:
 	virtual bool is_pressed() const;
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
+	virtual String as_text() const;
 
 	InputEventScreenTouch();
 };
@@ -431,6 +436,7 @@ public:
 	Vector2 get_speed() const;
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
+	virtual String as_text() const;
 
 	InputEventScreenDrag();
 };
@@ -455,6 +461,7 @@ public:
 	virtual bool is_action(const StringName &p_action) const;
 
 	virtual bool is_action_type() const { return true; }
+	virtual String as_text() const;
 
 	InputEventAction();
 };
