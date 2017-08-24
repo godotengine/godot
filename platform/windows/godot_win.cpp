@@ -136,8 +136,13 @@ int widechar_main(int argc, wchar_t **argv) {
 
 	Error err = Main::setup(argv_utf8[0], argc - 1, &argv_utf8[1]);
 
-	if (err != OK)
+	if (err != OK) {
+		for (int i = 0; i < argc; ++i) {
+			delete[] argv_utf8[i];
+		}
+		delete[] argv_utf8;
 		return 255;
+	}
 
 	if (Main::start())
 		os.run();
