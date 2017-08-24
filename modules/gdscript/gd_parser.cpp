@@ -1044,6 +1044,7 @@ GDParser::Node *GDParser::_parse_expression(Node *p_parent, bool p_static, bool 
 		return NULL;                      \
 	}                                     \
 	p_allow_assign = false;
+
 		switch (tokenizer->get_token()) { //see operator
 
 			case GDTokenizer::TK_OP_IN: op = OperatorNode::OP_IN; break;
@@ -1065,7 +1066,22 @@ GDParser::Node *GDParser::_parse_expression(Node *p_parent, bool p_static, bool 
 			//case GDTokenizer::TK_OP_NEG: op=OperatorNode::OP_NEG ; break;
 			case GDTokenizer::TK_OP_SHIFT_LEFT: op = OperatorNode::OP_SHIFT_LEFT; break;
 			case GDTokenizer::TK_OP_SHIFT_RIGHT: op = OperatorNode::OP_SHIFT_RIGHT; break;
-			case GDTokenizer::TK_OP_ASSIGN: _VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN; break;
+			case GDTokenizer::TK_OP_ASSIGN: {
+				_VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN;
+
+				if (tokenizer->get_token(1) == GDTokenizer::TK_CURSOR) {
+					//code complete assignment
+					completion_type = COMPLETION_ASSIGN;
+					completion_node = expr;
+					completion_class = current_class;
+					completion_function = current_function;
+					completion_line = tokenizer->get_token_line();
+					completion_block = current_block;
+					completion_found = true;
+					tokenizer->advance();
+				}
+
+			} break;
 			case GDTokenizer::TK_OP_ASSIGN_ADD: _VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_ADD; break;
 			case GDTokenizer::TK_OP_ASSIGN_SUB: _VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_SUB; break;
 			case GDTokenizer::TK_OP_ASSIGN_MUL: _VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_MUL; break;

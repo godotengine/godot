@@ -1036,8 +1036,9 @@ void CodeTextEditor::_complete_request() {
 	List<String> entries;
 	String ctext = text_editor->get_text_for_completion();
 	_code_complete_script(ctext, &entries);
+	bool forced = false;
 	if (code_complete_func) {
-		code_complete_func(code_complete_ud, ctext, &entries);
+		code_complete_func(code_complete_ud, ctext, &entries, forced);
 	}
 	// print_line("COMPLETE: "+p_request);
 	if (entries.size() == 0)
@@ -1050,7 +1051,7 @@ void CodeTextEditor::_complete_request() {
 		strs[i++] = E->get();
 	}
 
-	text_editor->code_complete(strs);
+	text_editor->code_complete(strs, forced);
 }
 
 void CodeTextEditor::_font_resize_timeout() {
@@ -1267,6 +1268,7 @@ CodeTextEditor::CodeTextEditor() {
 	cs.push_back(".");
 	cs.push_back(",");
 	cs.push_back("(");
+	cs.push_back("=");
 	cs.push_back("$");
 	text_editor->set_completion(true, cs);
 	idle->connect("timeout", this, "_text_changed_idle_timeout");

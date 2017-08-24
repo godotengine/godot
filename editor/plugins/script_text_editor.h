@@ -94,12 +94,12 @@ class ScriptTextEditor : public ScriptEditorBase {
 	};
 
 protected:
-	static void _code_complete_scripts(void *p_ud, const String &p_code, List<String> *r_options);
+	static void _code_complete_scripts(void *p_ud, const String &p_code, List<String> *r_options, bool &r_force);
 	void _breakpoint_toggled(int p_row);
 
 	//no longer virtual
 	void _validate_script();
-	void _code_complete_script(const String &p_code, List<String> *r_options);
+	void _code_complete_script(const String &p_code, List<String> *r_options, bool &r_force);
 	void _load_theme_settings();
 
 	void _notification(int p_what);

@@ -4319,6 +4319,7 @@ void TextEdit::_cancel_completion() {
 		return;
 
 	completion_active = false;
+	completion_forced = false;
 	update();
 }
 
@@ -4386,13 +4387,19 @@ void TextEdit::_update_completion_candidates() {
 		}
 	}
 
-	if (cursor.column > 0 && l[cursor.column - 1] == '(' && !pre_keyword && !completion_strings[0].begins_with("\"")) {
+	if (cursor.column > 0 && l[cursor.column - 1] == '(' && !pre_keyword && !completion_forced) {
 		cancel = true;
 	}
 
 	update();
 
-	if (cancel || (!pre_keyword && s == "" && (cofs == 0 || !completion_prefixes.has(String::chr(l[cofs - 1]))))) {
+	bool prev_is_prefix = false;
+	if (cofs > 0 && completion_prefixes.has(String::chr(l[cofs - 1])))
+		prev_is_prefix = true;
+	if (cofs > 1 && l[cofs - 1] == ' ' && completion_prefixes.has(String::chr(l[cofs - 2]))) //check with one space before prefix, to allow indent
+		prev_is_prefix = true;
+
+	if (cancel || (!pre_keyword && s == "" && (cofs == 0 || !prev_is_prefix))) {
 		//none to complete, cancel
 		_cancel_completion();
 		return;
@@ -4481,6 +4488,8 @@ void TextEdit::query_code_comple() {
 
 	if (ofs > 0 && (inquote || _is_completable(l[ofs - 1]) || completion_prefixes.has(String::chr(l[ofs - 1]))))
 		emit_signal("request_completion");
+	else if (ofs > 1 && l[ofs - 1] == ' ' && completion_prefixes.has(String::chr(l[ofs - 2]))) //make it work with a space too, it's good enough
+		emit_signal("request_completion");
 }
 
 void TextEdit::set_code_hint(const String &p_hint) {
@@ -4492,12 +4501,13 @@ void TextEdit::set_code_hint(const String &p_hint) {
 	update();
 }
 
-void TextEdit::code_complete(const Vector<String> &p_strings) {
+void TextEdit::code_complete(const Vector<String> &p_strings, bool p_forced) {
 
 	VisualServer::get_singleton()->canvas_item_set_z(get_canvas_item(), 1);
 	raised_from_completion = true;
 	completion_strings = p_strings;
 	completion_active = true;
+	completion_forced = p_forced;
 	completion_current = "";
 	completion_index = 0;
 	_update_completion_candidates();
