@@ -18896,6 +18896,12 @@
 				Return the point in space where the body is touching another. If there is no collision, this method will return (0,0), so collisions must be checked first with [method is_colliding].
 			</description>
 		</method>
+		<method name="get_move_and_slide_colliders" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_travel" qualifiers="const">
 			<return type="Vector2">
 			</return>
@@ -18910,6 +18916,24 @@
 				Return whether the body is colliding with another.
 			</description>
 		</method>
+		<method name="is_move_and_slide_on_ceiling" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_move_and_slide_on_floor" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_move_and_slide_on_wall" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="move">
 			<return type="Vector2">
 			</return>
@@ -18917,6 +18941,20 @@
 			</argument>
 			<description>
 				Move the body in the given direction, stopping if there is an obstacle. The returned vector is how much movement was remaining before being stopped.
+			</description>
+		</method>
+		<method name="move_and_slide">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="linear_velocity" type="Vector2">
+			</argument>
+			<argument index="1" name="floor_normal" type="Vector2" default="Vector2(0, 0)">
+			</argument>
+			<argument index="2" name="slope_stop_min_velocity" type="float" default="5">
+			</argument>
+			<argument index="3" name="max_bounces" type="int" default="4">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="move_to">
@@ -38013,7 +38051,9 @@
 		</constant>
 		<constant name="FLAG_DOUBLE_SIDED" value="2">
 		</constant>
-		<constant name="FLAG_MAX" value="3">
+		<constant name="FLAG_ONTOP" value="3">
+		</constant>
+		<constant name="FLAG_MAX" value="4">
 		</constant>
 		<constant name="ALPHA_CUT_DISABLED" value="0">
 		</constant>
@@ -38533,6 +38573,62 @@
 			</argument>
 			<description>
 				Set this [StreamPeer] to use big-endian format. Default is false.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="StreamPeerBuffer" inherits="StreamPeer" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="clear">
+			<description>
+			</description>
+		</method>
+		<method name="duplicate" qualifiers="const">
+			<return type="Object">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_data_array" qualifiers="const">
+			<return type="RawArray">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_pos" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_size" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="resize">
+			<argument index="0" name="size" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="seek">
+			<argument index="0" name="pos" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_data_array">
+			<argument index="0" name="data" type="RawArray">
+			</argument>
+			<description>
 			</description>
 		</method>
 	</methods>
@@ -40048,6 +40144,12 @@
 				Specify a Tangent for the next Vertex to use.
 			</description>
 		</method>
+		<method name="add_to_format">
+			<argument index="0" name="flags" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="add_triangle_fan">
 			<argument index="0" name="vertexes" type="Vector3Array">
 			</argument>
@@ -40093,6 +40195,16 @@
 				Specify weight value for next Vertex to use.
 			</description>
 		</method>
+		<method name="append_from">
+			<argument index="0" name="existing" type="Mesh">
+			</argument>
+			<argument index="1" name="surface" type="int">
+			</argument>
+			<argument index="2" name="transform" type="Transform">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="begin">
 			<argument index="0" name="primitive" type="int">
 			</argument>
@@ -40114,6 +40226,14 @@
 				Returns a constructed [Mesh] from current information passed in. If an existing [Mesh] is passed in as an argument, will add an extra surface to the existing [Mesh].
 			</description>
 		</method>
+		<method name="create_from">
+			<argument index="0" name="existing" type="Mesh">
+			</argument>
+			<argument index="1" name="surface" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="deindex">
 			<description>
 				Removes index array by expanding Vertex array.
@@ -40122,6 +40242,10 @@
 		<method name="generate_normals">
 			<description>
 				Generates normals from Vertices so you do not have to do it manually.
+			</description>
+		</method>
+		<method name="generate_tangents">
+			<description>
 			</description>
 		</method>
 		<method name="index">
@@ -41945,6 +42069,14 @@
 			</return>
 			<description>
 				Return an array of all cells containing a tile from the tileset (i.e. a tile index different from -1).
+			</description>
+		</method>
+		<method name="get_used_cells_by_id" qualifiers="const">
+			<return type="Array">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="get_used_rect">
@@ -47611,6 +47743,12 @@
 		</method>
 		<method name="set_default_clear_color">
 			<argument index="0" name="arg0" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_time_scale">
+			<argument index="0" name="arg0" type="float">
 			</argument>
 			<description>
 			</description>
