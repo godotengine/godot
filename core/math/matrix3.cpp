@@ -107,6 +107,13 @@ bool Basis::is_orthogonal() const {
 	return is_equal_approx(id, m);
 }
 
+bool Basis::is_diagonal() const {
+	return (
+			Math::is_equal_approx(elements[0][1], 0) && Math::is_equal_approx(elements[0][2], 0) &&
+			Math::is_equal_approx(elements[1][0], 0) && Math::is_equal_approx(elements[1][2], 0) &&
+			Math::is_equal_approx(elements[2][0], 0) && Math::is_equal_approx(elements[2][1], 0));
+}
+
 bool Basis::is_rotation() const {
 	return Math::is_equal_approx(determinant(), 1) && is_orthogonal();
 }
@@ -241,17 +248,38 @@ Vector3 Basis::get_scale() const {
 	// This may lead to confusion for some users though.
 	//
 	// The convention we use here is to absorb the sign flip into the scaling matrix.
-	// The same convention is also used in other similar functions such as set_scale,
-	// get_rotation_axis_angle, get_rotation, set_rotation_axis_angle, set_rotation_euler, ...
+	// The same convention is also used in other similar functions such as get_rotation_axis_angle, get_rotation, ...
 	//
 	// A proper way to get rid of this issue would be to store the scaling values (or at least their signs)
 	// as a part of Basis. However, if we go that path, we need to disable direct (write) access to the
 	// matrix elements.
+	//
+	// The rotation part of this decomposition is returned by get_rotation* functions.
 	real_t det_sign = determinant() > 0 ? 1 : -1;
 	return det_sign * Vector3(
 							  Vector3(elements[0][0], elements[1][0], elements[2][0]).length(),
 							  Vector3(elements[0][1], elements[1][1], elements[2][1]).length(),
 							  Vector3(elements[0][2], elements[1][2], elements[2][2]).length());
+}
+
+// Decomposes a Basis into a rotation-reflection matrix (an element of the group O(3)) and a positive scaling matrix as B = O.S.
+// Returns the rotation-reflection matrix via reference argument, and scaling information is returned as a Vector3.
+// This (internal) function is too specıfıc and named too ugly to expose to users, and probably there's no need to do so.
+Vector3 Basis::rotref_posscale_decomposition(Basis &rotref) const {
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_V(determinant() == 0, Vector3());
+
+	Basis m = transposed() * (*this);
+	ERR_FAIL_COND_V(m.is_diagonal() == false, Vector3());
+#endif
+	Vector3 scale = get_scale();
+	Basis inv_scale = Basis().scaled(scale.inverse()); // this will also absorb the sign of scale
+	rotref = (*this) * inv_scale;
+
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_V(rotref.is_orthogonal() == false, Vector3());
+#endif
+	return scale.abs();
 }
 
 // Multiplies the matrix from left by the rotation matrix: M -> R.M
@@ -331,8 +359,9 @@ Vector3 Basis::get_euler_xyz() const {
 	euler.y = Math::asin(elements[0][2]);
 	if (euler.y < Math_PI * 0.5) {
 		if (euler.y > -Math_PI * 0.5) {
-			//if rotation is Y-only, return a proper -pi,pi range like in x or z for the same case.
+			// is this a pure Y rotation?
 			if (elements[1][0] == 0.0 && elements[0][1] == 0.0 && elements[1][2] == 0 && elements[2][1] == 0 && elements[1][1] == 1) {
+				// return the simplest form
 				euler.x = 0;
 				euler.y = atan2(elements[0][2], elements[0][0]);
 				euler.z = 0;
@@ -399,7 +428,9 @@ Vector3 Basis::get_euler_yxz() const {
 
 	if (m12 < 1) {
 		if (m12 > -1) {
-			if (elements[1][0] == 0 && elements[0][1] == 0 && elements[0][2] == 0 && elements[2][0] == 0 && elements[0][0] == 1) { // use pure x rotation
+			// is this a pure X rotation?
+			if (elements[1][0] == 0 && elements[0][1] == 0 && elements[0][2] == 0 && elements[2][0] == 0 && elements[0][0] == 1) {
+				// return the simplest form
 				euler.x = atan2(-m12, elements[1][1]);
 				euler.y = 0;
 				euler.z = 0;
