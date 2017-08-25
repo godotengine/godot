@@ -1144,8 +1144,8 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	options->set_text("Grid");
 	options->get_popup()->add_check_item(TTR("Snap View"), MENU_OPTION_LOCK_VIEW);
 	options->get_popup()->add_separator();
-	options->get_popup()->add_item(TTR("Prev Level (") + keycode_get_string(KEY_MASK_CMD) + TTR("Down Wheel)"), MENU_OPTION_PREV_LEVEL);
-	options->get_popup()->add_item(TTR("Next Level (") + keycode_get_string(KEY_MASK_CMD) + TTR("Up Wheel)"), MENU_OPTION_NEXT_LEVEL);
+	options->get_popup()->add_item(vformat(TTR("Prev Level (%sDown Wheel)"), keycode_get_string(KEY_MASK_CMD)), MENU_OPTION_PREV_LEVEL);
+	options->get_popup()->add_item(vformat(TTR("Next Level (%sUp Wheel)"), keycode_get_string(KEY_MASK_CMD)), MENU_OPTION_NEXT_LEVEL);
 	options->get_popup()->add_separator();
 	options->get_popup()->add_check_item(TTR("Clip Disabled"), MENU_OPTION_CLIP_DISABLED);
 	options->get_popup()->set_item_checked(options->get_popup()->get_item_index(MENU_OPTION_CLIP_DISABLED), true);
@@ -1173,8 +1173,6 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Selection -> Duplicate"), MENU_OPTION_SELECTION_DUPLICATE, KEY_MASK_SHIFT + KEY_INSERT);
 	options->get_popup()->add_item(TTR("Selection -> Clear"), MENU_OPTION_SELECTION_CLEAR, KEY_MASK_SHIFT + KEY_DELETE);
-	//options->get_popup()->add_separator();
-	//options->get_popup()->add_item("Configure",MENU_OPTION_CONFIGURE);
 
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Settings"), MENU_OPTION_GRIDMAP_SETTINGS);

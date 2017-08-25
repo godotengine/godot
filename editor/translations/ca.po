@@ -7237,19 +7237,11 @@ msgid "Snap View"
 msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Prev Level ("
+msgid "Prev Level (%sDown Wheel)"
 msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Down Wheel)"
-msgstr ""
-
-#: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Next Level ("
-msgstr ""
-
-#: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Up Wheel)"
+msgid "Next Level (%sUp Wheel)"
 msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
