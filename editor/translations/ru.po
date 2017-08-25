@@ -151,7 +151,8 @@ msgstr "Перейти к следующему шагу"
 msgid "Goto Prev Step"
 msgstr "Перейти к предыдущему шагу"
 
-#: editor/animation_editor.cpp editor/property_editor.cpp
+#: editor/animation_editor.cpp editor/plugins/curve_editor_plugin.cpp
+#: editor/property_editor.cpp
 msgid "Linear"
 msgstr "Линейный"
 
@@ -383,7 +384,8 @@ msgstr "Просмотр Файлов"
 msgid "Description:"
 msgstr "Описание:"
 
-#: editor/asset_library_editor_plugin.cpp editor/project_manager.cpp
+#: editor/asset_library_editor_plugin.cpp editor/editor_asset_installer.cpp
+#: editor/project_manager.cpp
 msgid "Install"
 msgstr "Установить"
 
@@ -394,9 +396,9 @@ msgstr "Установить"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/sample_library_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_settings.cpp
-#: editor/property_editor.cpp editor/run_settings_dialog.cpp
-#: editor/settings_config_dialog.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#: editor/project_settings_editor.cpp editor/property_editor.cpp
+#: editor/run_settings_dialog.cpp editor/settings_config_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Close"
 msgstr "Закрыть"
@@ -469,7 +471,7 @@ msgstr "Не удалось проверить sha256 хэш"
 msgid "Asset Download Error:"
 msgstr "Ошибка Загрузки Шаблона:"
 
-#: editor/asset_library_editor_plugin.cpp
+#: editor/asset_library_editor_plugin.cpp editor/editor_asset_installer.cpp
 msgid "Success!"
 msgstr "Успех!"
 
@@ -530,17 +532,16 @@ msgid "All"
 msgstr "Все"
 
 #: editor/asset_library_editor_plugin.cpp editor/create_dialog.cpp
-#: editor/editor_help.cpp editor/editor_node.cpp
-#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
-#: editor/quick_open.cpp editor/settings_config_dialog.cpp
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/settings_config_dialog.cpp
 msgid "Search:"
 msgstr "Поиск:"
 
 #: editor/asset_library_editor_plugin.cpp editor/code_editor.cpp
-#: editor/editor_help.cpp editor/editor_node.cpp
-#: editor/plugins/script_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/project_settings.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/project_settings_editor.cpp
 msgid "Search"
 msgstr "Поиск"
 
@@ -556,7 +557,7 @@ msgstr "Поиск"
 msgid "Import"
 msgstr "Импорт"
 
-#: editor/asset_library_editor_plugin.cpp editor/project_settings.cpp
+#: editor/asset_library_editor_plugin.cpp editor/project_settings_editor.cpp
 msgid "Plugins"
 msgstr "Плагины"
 
@@ -568,7 +569,7 @@ msgstr "Сортировать:"
 msgid "Reverse"
 msgstr "Обратно"
 
-#: editor/asset_library_editor_plugin.cpp editor/project_settings.cpp
+#: editor/asset_library_editor_plugin.cpp editor/project_settings_editor.cpp
 msgid "Category:"
 msgstr "Категория:"
 
@@ -722,14 +723,14 @@ msgstr "Присоединить к узлу:"
 
 #: editor/connections_dialog.cpp editor/editor_autoload_settings.cpp
 #: editor/groups_editor.cpp editor/plugins/item_list_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp editor/project_settings.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
 msgid "Add"
 msgstr "Добавить"
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Remove"
 msgstr "Удалить"
 
@@ -838,7 +839,7 @@ msgid "Resource"
 msgstr "Ресурс"
 
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
-#: editor/project_manager.cpp editor/project_settings.cpp
+#: editor/project_manager.cpp editor/project_settings_editor.cpp
 #: editor/script_create_dialog.cpp
 msgid "Path"
 msgstr "Путь"
@@ -920,11 +921,195 @@ msgstr "Обзор подключённых ресурсов"
 msgid "Delete selected files?"
 msgstr "Удалить выбранные файлы?"
 
-#: editor/dependency_editor.cpp editor/editor_node.cpp
-#: editor/filesystem_dock.cpp editor/plugins/item_list_editor_plugin.cpp
-#: editor/project_export.cpp editor/scene_tree_dock.cpp
+#: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
+#: editor/editor_node.cpp editor/filesystem_dock.cpp
+#: editor/plugins/item_list_editor_plugin.cpp editor/project_export.cpp
+#: editor/project_settings_editor.cpp editor/scene_tree_dock.cpp
 msgid "Delete"
 msgstr "Удалить"
+
+#: editor/editor_about.cpp
+msgid "Thanks from the Godot community!"
+msgstr "Спасибо от сообщества Godot!"
+
+#: editor/editor_about.cpp
+msgid "Thanks!"
+msgstr "Спасибо!"
+
+#: editor/editor_about.cpp
+msgid "Godot Engine contributors"
+msgstr "Авторы Движка Godot"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Authors"
+msgstr "Автор:"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Project Founders"
+msgstr "Менеджер проектов"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Lead Developer"
+msgstr "Разработчики"
+
+#: editor/editor_about.cpp editor/project_manager.cpp
+msgid "Project Manager"
+msgstr "Менеджер проектов"
+
+#: editor/editor_about.cpp
+msgid "Developers"
+msgstr "Разработчики"
+
+#: editor/editor_about.cpp
+msgid "License"
+msgstr ""
+
+#: editor/editor_about.cpp
+msgid "Thirdparty License"
+msgstr ""
+
+#: editor/editor_about.cpp
+msgid ""
+"Godot Engine relies on a number of thirdparty free and open source "
+"libraries, all compatible with the terms of its MIT license. The following "
+"is an exhaustive list of all such thirdparty components with their "
+"respective copyright statements and license terms."
+msgstr ""
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "All Components"
+msgstr "Содержание:"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Components"
+msgstr "Содержание:"
+
+#: editor/editor_about.cpp
+msgid "Licenses"
+msgstr ""
+
+#: editor/editor_asset_installer.cpp editor/project_manager.cpp
+msgid "Error opening package file, not in zip format."
+msgstr ""
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "Uncompressing Assets"
+msgstr "Несжатый"
+
+#: editor/editor_asset_installer.cpp editor/project_manager.cpp
+msgid "Package Installed Successfully!"
+msgstr "Пакет успешно установлен!"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "Package Installer"
+msgstr "Пакет успешно установлен!"
+
+#: editor/editor_audio_buses.cpp
+msgid "Speakers"
+msgstr ""
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Add Effect"
+msgstr "Добавить событие"
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Rename Audio Bus"
+msgstr "Открыть раскладку звуковой шины"
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Toggle Audio Bus Solo"
+msgstr "Открыть раскладку звуковой шины"
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Toggle Audio Bus Mute"
+msgstr "Открыть раскладку звуковой шины"
+
+#: editor/editor_audio_buses.cpp
+msgid "Toggle Audio Bus Bypass Effects"
+msgstr ""
+
+#: editor/editor_audio_buses.cpp
+msgid "Select Audio Bus Send"
+msgstr ""
+
+#: editor/editor_audio_buses.cpp
+msgid "Add Audio Bus Effect"
+msgstr ""
+
+#: editor/editor_audio_buses.cpp
+msgid "Move Bus Effect"
+msgstr ""
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Delete Bus Effect"
+msgstr "Удалить выделенное"
+
+#: editor/editor_audio_buses.cpp
+msgid "Audio Bus, Drag and Drop to rearrange."
+msgstr ""
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Bus options"
+msgstr "Опции вложенной сцены"
+
+#: editor/editor_audio_buses.cpp
+msgid "Solo"
+msgstr ""
+
+#: editor/editor_audio_buses.cpp
+msgid "Mute"
+msgstr ""
+
+#: editor/editor_audio_buses.cpp
+msgid "Bypass"
+msgstr ""
+
+#: editor/editor_audio_buses.cpp editor/plugins/tile_map_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp
+msgid "Duplicate"
+msgstr "Дублировать"
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Delete Effect"
+msgstr "Удалить выделенное"
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Add Audio Bus"
+msgstr "Добавить"
+
+#: editor/editor_audio_buses.cpp
+msgid "Master bus can't be deleted!"
+msgstr ""
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Delete Audio Bus"
+msgstr "Удалить макет"
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Duplicate Audio Bus"
+msgstr "Дублировать анимацию"
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Move Audio Bus"
+msgstr "Переместить действие"
 
 #: editor/editor_audio_buses.cpp
 msgid "Save Audio Bus Layout As.."
@@ -939,22 +1124,52 @@ msgid "Open Audio Bus Layout"
 msgstr "Открыть раскладку звуковой шины"
 
 #: editor/editor_audio_buses.cpp
+msgid "There is no 'res://default_bus_layout.tres' file."
+msgstr ""
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Invalid file, not an audio bus layout."
+msgstr ""
+"Недопустимое расширение файла.\n"
+"Пожалуйста, используйте .font."
+
+#: editor/editor_audio_buses.cpp
 msgid "Add Bus"
 msgstr "Добавить"
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Create a new Bus Layout."
+msgstr "Создать новый ресурс"
 
 #: editor/editor_audio_buses.cpp editor/script_create_dialog.cpp
 msgid "Load"
 msgstr "Загрузить"
 
 #: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Load an existing Bus Layout."
+msgstr "Загрузить существующий ресурс с диска и редактировать его."
+
+#: editor/editor_audio_buses.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save As"
 msgstr "Сохранить как"
 
-#: editor/editor_audio_buses.cpp editor/editor_node.cpp editor/import_dock.cpp
-#: editor/script_create_dialog.cpp
-msgid "Default"
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Save this Bus Layout to a file."
+msgstr "Сохранить раскладку звуковой шины как.."
+
+#: editor/editor_audio_buses.cpp editor/import_dock.cpp
+#, fuzzy
+msgid "Load Default"
 msgstr "По-умолчанию"
+
+#: editor/editor_audio_buses.cpp
+msgid "Load the default Bus Layout."
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
@@ -1062,6 +1277,11 @@ msgid "Updating scene.."
 msgstr "Обновление сцены.."
 
 #: editor/editor_dir_dialog.cpp
+#, fuzzy
+msgid "Please select a base directory first"
+msgstr "Пожалуйста сначала сохраните сцену."
+
+#: editor/editor_dir_dialog.cpp
 msgid "Choose a Directory"
 msgstr "Выбрать каталог"
 
@@ -1138,6 +1358,22 @@ msgstr "Все файлы (*)"
 #: editor/property_selector.cpp editor/quick_open.cpp scene/gui/file_dialog.cpp
 msgid "Open"
 msgstr "Открыть"
+
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+msgid "Open a File"
+msgstr "Открыть файл"
+
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+msgid "Open File(s)"
+msgstr "Открыть файл(ы)"
+
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+msgid "Open a Directory"
+msgstr "Открыть каталог"
+
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+msgid "Open a File or Directory"
+msgstr "Открыть каталог или файл"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
@@ -1264,6 +1500,15 @@ msgid "Signals:"
 msgstr "Сигналы:"
 
 #: editor/editor_help.cpp
+#, fuzzy
+msgid "Enumerations:"
+msgstr "Анимации"
+
+#: editor/editor_help.cpp
+msgid "enum  "
+msgstr ""
+
+#: editor/editor_help.cpp
 msgid "Constants:"
 msgstr "Константы:"
 
@@ -1280,7 +1525,8 @@ msgid "Search Text"
 msgstr "Искать текст"
 
 #: editor/editor_log.cpp
-msgid " Output:"
+#, fuzzy
+msgid "Output:"
 msgstr " Вывод:"
 
 #: editor/editor_log.cpp editor/plugins/animation_tree_editor_plugin.cpp
@@ -1328,6 +1574,11 @@ msgstr "Анализ"
 #: editor/editor_node.cpp
 msgid "Creating Thumbnail"
 msgstr "Создание эскизов"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "This operation can't be done without a tree root."
+msgstr "Эта операция не может быть выполнена без сцены."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1459,12 +1710,13 @@ msgid "Quick Open Script.."
 msgstr "Быстро открыть скрипт.."
 
 #: editor/editor_node.cpp
-msgid "Yes"
-msgstr "Да"
+#, fuzzy
+msgid "Save & Close"
+msgstr "Сохранить файл"
 
 #: editor/editor_node.cpp
-msgid "Close scene? (Unsaved changes will be lost)"
-msgstr "Закрыть сцену? (Несохранённые изменения будут потеряны.)"
+msgid "Save changes to '%s' before closing?"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Save Scene As.."
@@ -1475,8 +1727,16 @@ msgid "No"
 msgstr "Нет"
 
 #: editor/editor_node.cpp
+msgid "Yes"
+msgstr "Да"
+
+#: editor/editor_node.cpp
 msgid "This scene has never been saved. Save before running?"
 msgstr "Эта сцена никогда не была сохранена. Сохранить перед запуском?"
+
+#: editor/editor_node.cpp editor/scene_tree_dock.cpp
+msgid "This operation can't be done without a scene."
+msgstr "Эта операция не может быть выполнена без сцены."
 
 #: editor/editor_node.cpp
 msgid "Export Mesh Library"
@@ -1487,12 +1747,9 @@ msgid "Export Tile Set"
 msgstr "Экспортировать набор тайлов"
 
 #: editor/editor_node.cpp
-msgid "Quit"
-msgstr "Выйти"
-
-#: editor/editor_node.cpp
-msgid "Exit the editor?"
-msgstr "Выйти из редактора?"
+#, fuzzy
+msgid "This operation can't be done without a selected node."
+msgstr "Эта операция не может быть выполнена без сцены."
 
 #: editor/editor_node.cpp
 msgid "Current scene not saved. Open anyway?"
@@ -1515,16 +1772,50 @@ msgid "Quick Run Scene.."
 msgstr "Быстро запустить сцену.."
 
 #: editor/editor_node.cpp
-msgid ""
-"Open Project Manager? \n"
-"(Unsaved changes will be lost)"
+msgid "Quit"
+msgstr "Выйти"
+
+#: editor/editor_node.cpp
+msgid "Exit the editor?"
+msgstr "Выйти из редактора?"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Open Project Manager?"
+msgstr "Менеджер проектов"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Save & Quit"
+msgstr "Сохранить файл"
+
+#: editor/editor_node.cpp
+msgid "Save changes to the following scene(s) before quitting?"
 msgstr ""
-"Открыть менеджер проектов? \n"
-"(Несохранённые изменения будут потеряны.)"
+
+#: editor/editor_node.cpp
+msgid "Save changes the following scene(s) before opening Project Manager?"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Pick a Main Scene"
 msgstr "Выберите главную сцену"
+
+#: editor/editor_node.cpp
+msgid "Unable to enable addon plugin at: '"
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "' parsing of config failed."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Unable to find script field for addon plugin at: 'res://addons/"
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Unable to load addon script from path: '"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1565,6 +1856,11 @@ msgstr "Сохранить макет"
 msgid "Delete Layout"
 msgstr "Удалить макет"
 
+#: editor/editor_node.cpp editor/import_dock.cpp
+#: editor/script_create_dialog.cpp
+msgid "Default"
+msgstr "По-умолчанию"
+
 #: editor/editor_node.cpp
 msgid "Switch Scene Tab"
 msgstr "Смена вкладки со сценой"
@@ -1579,6 +1875,11 @@ msgstr "Ещё %d файла(ов) или папка(ок)"
 
 #: editor/editor_node.cpp
 msgid "Distraction Free Mode"
+msgstr "Свободный режим"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Toggle distraction-free mode."
 msgstr "Свободный режим"
 
 #: editor/editor_node.cpp editor/io_plugins/editor_scene_import_plugin.cpp
@@ -1628,10 +1929,6 @@ msgstr "Сохранить все сцены"
 #: editor/editor_node.cpp
 msgid "Close Scene"
 msgstr "Закрыть сцену"
-
-#: editor/editor_node.cpp
-msgid "Close Goto Prev. Scene"
-msgstr "Закрыть и перейти к предыдущей сцене"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Open Recent"
@@ -1931,6 +2228,10 @@ msgstr "Узел"
 msgid "Output"
 msgstr "Вывод"
 
+#: editor/editor_node.cpp
+msgid "Don't Save"
+msgstr ""
+
 #: editor/editor_node.cpp editor/editor_reimport_dialog.cpp
 msgid "Re-Import"
 msgstr "Переимпортировать"
@@ -1940,26 +2241,10 @@ msgid "Update"
 msgstr "Обновление"
 
 #: editor/editor_node.cpp
-msgid "Thanks from the Godot community!"
-msgstr "Спасибо от сообщества Godot!"
-
-#: editor/editor_node.cpp
-msgid "Thanks!"
-msgstr "Спасибо!"
-
-#: editor/editor_node.cpp
-msgid "Godot Engine contributors"
-msgstr "Авторы Движка Godot"
-
-#: editor/editor_node.cpp
-msgid "Developers"
-msgstr "Разработчики"
-
-#: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
 msgstr "Импортировать шаблоны из ZIP файла"
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
 msgstr "Экспортировать проект"
 
@@ -1980,8 +2265,17 @@ msgid "Open & Run a Script"
 msgstr "Открыть и запустить скрипт"
 
 #: editor/editor_node.cpp
+#, fuzzy
+msgid "New Inherited"
+msgstr "Новая унаследованная Сцена.."
+
+#: editor/editor_node.cpp
 msgid "Load Errors"
 msgstr "Ошибки загрузки"
+
+#: editor/editor_node.cpp editor/plugins/tile_map_editor_plugin.cpp
+msgid "Select"
+msgstr "Выделение"
 
 #: editor/editor_node.cpp
 msgid "Open 2D Editor"
@@ -2082,6 +2376,16 @@ msgstr "Переимпортировать"
 #: editor/editor_reimport_dialog.cpp
 msgid "Re-Import Changed Resources"
 msgstr "Переимпортировать изменённые ресурсы"
+
+#: editor/editor_run_native.cpp
+msgid "Select device from the list"
+msgstr ""
+
+#: editor/editor_run_native.cpp
+msgid ""
+"No runnable export preset found for this platform.\n"
+"Please add a runnable preset in the export menu."
+msgstr ""
 
 #: editor/editor_run_script.cpp
 msgid "Write your logic in the _run() method."
@@ -2222,8 +2526,26 @@ msgid "Cannot navigate to '"
 msgstr "Не удалось перейти к '"
 
 #: editor/filesystem_dock.cpp
+#, fuzzy
+msgid ""
+"\n"
+"Status: Needs Re-Import"
+msgstr "Сохранить и переимпортировать"
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid ""
+"\n"
+"Source: "
+msgstr "Источник:"
+
+#: editor/filesystem_dock.cpp
 msgid "Same source and destination files, doing nothing."
 msgstr "Файл назначения и исходный файлы совпадают, нечего делать."
+
+#: editor/filesystem_dock.cpp
+msgid "Target file exists, can't overwrite. Delete first."
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Same source and destination paths, doing nothing."
@@ -2232,6 +2554,20 @@ msgstr "Путь назначения и исходный пути совпад�
 #: editor/filesystem_dock.cpp
 msgid "Can't move directories to within themselves."
 msgstr "Невозможно переместить каталоги внутрь себя."
+
+#: editor/filesystem_dock.cpp
+msgid "Can't rename deps for:\n"
+msgstr ""
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Error moving file:\n"
+msgstr "Ошибка при загрузке изображения:"
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Error moving dir:\n"
+msgstr "Ошибка импортирования:"
 
 #: editor/filesystem_dock.cpp
 msgid "Can't operate on '..'"
@@ -2310,6 +2646,12 @@ msgid "Instance the selected scene(s) as child of the selected node."
 msgstr "Добавить выбранную сцену(ы), в качестве потомка выбранного узла."
 
 #: editor/filesystem_dock.cpp
+msgid ""
+"Scanning Files,\n"
+"Please Wait.."
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid "Move"
 msgstr "Переместить"
 
@@ -2321,10 +2663,31 @@ msgstr "Добавить в группу"
 msgid "Remove from Group"
 msgstr "Удалить из группы"
 
-#: editor/import/resource_importer_obj.cpp
-#: editor/io_plugins/editor_mesh_import_plugin.cpp
-msgid "Surface %d"
-msgstr "Поверхностей %d"
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Import as Single Scene"
+msgstr "Импортирование сцены.."
+
+#: editor/import/resource_importer_scene.cpp
+msgid "Import with Separate Materials"
+msgstr ""
+
+#: editor/import/resource_importer_scene.cpp
+msgid "Import with Separate Objects"
+msgstr ""
+
+#: editor/import/resource_importer_scene.cpp
+msgid "Import with Separate Objects+Materials"
+msgstr ""
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Import as Multiple Scenes"
+msgstr "Импорт 3D сцены"
+
+#: editor/import/resource_importer_scene.cpp
+msgid "Import as Multiple Scenes+Materials"
+msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 #: editor/io_plugins/editor_scene_import_plugin.cpp
@@ -2361,6 +2724,14 @@ msgstr "Ошибка запуска пост-импорт скрипта:"
 #: editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Saving.."
 msgstr "Сохранение.."
+
+#: editor/import_dock.cpp
+msgid "Set as Default for '%s'"
+msgstr ""
+
+#: editor/import_dock.cpp
+msgid "Clear Default for '%s'"
+msgstr ""
 
 #: editor/import_dock.cpp
 msgid " Files"
@@ -2554,6 +2925,10 @@ msgstr "Исходная полисетка(и):"
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh"
 msgstr "Полисетка"
+
+#: editor/io_plugins/editor_mesh_import_plugin.cpp
+msgid "Surface %d"
+msgstr "Поверхностей %d"
 
 #: editor/io_plugins/editor_sample_import_plugin.cpp
 msgid "No samples to import!"
@@ -3143,6 +3518,11 @@ msgid "New name:"
 msgstr "Новое имя:"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Filters"
+msgstr "Редактировать фильтры узла"
+
+#: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Scale:"
 msgstr "Масштаб:"
@@ -3458,6 +3838,7 @@ msgstr "Восстанавливает возможность выбора по�
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit"
 msgstr "Редактировать"
@@ -3488,10 +3869,6 @@ msgstr "Настроить привязку.."
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Pixel Snap"
 msgstr "Использовать попиксельную привязку"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Expand to Parent"
-msgstr "Растянуть до размера родителей"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Skeleton.."
@@ -3602,11 +3979,6 @@ msgstr "Эта операция требует одного выбранного
 msgid "Change default type"
 msgstr "Изменить тип по умолчанию"
 
-#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
-#: editor/script_create_dialog.cpp scene/gui/dialogs.cpp
-msgid "OK"
-msgstr "Ок"
-
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
 "Drag & drop + Shift : Add node as sibling\n"
@@ -3645,6 +4017,14 @@ msgstr "Удалена точка полигона"
 #: editor/plugins/navigation_polygon_editor_plugin.cpp
 msgid "Create a new polygon from scratch."
 msgstr "Создать новый полигон с нуля."
+
+#: editor/plugins/collision_polygon_2d_editor_plugin.cpp
+msgid ""
+"Edit existing polygon:\n"
+"LMB: Move Point.\n"
+"Ctrl+LMB: Split Segment.\n"
+"RMB: Erase Point."
+msgstr ""
 
 #: editor/plugins/collision_polygon_editor_plugin.cpp
 msgid "Create Poly3D"
@@ -3685,6 +4065,21 @@ msgid "Update from Scene"
 msgstr "Обновить из сцены"
 
 #: editor/plugins/curve_editor_plugin.cpp
+#, fuzzy
+msgid "Modify Curve Point"
+msgstr "Изменить кривую"
+
+#: editor/plugins/curve_editor_plugin.cpp
+#, fuzzy
+msgid "Modify Curve Tangent"
+msgstr "Изменена карта кривой"
+
+#: editor/plugins/curve_editor_plugin.cpp
+#, fuzzy
+msgid "Load Curve Preset"
+msgstr "Загрузить заготовку"
+
+#: editor/plugins/curve_editor_plugin.cpp
 msgid "Add point"
 msgstr "Добавить точку"
 
@@ -3693,12 +4088,31 @@ msgid "Remove point"
 msgstr "Удалить точку"
 
 #: editor/plugins/curve_editor_plugin.cpp
+#, fuzzy
+msgid "Left linear"
+msgstr "Линейный"
+
+#: editor/plugins/curve_editor_plugin.cpp
+#, fuzzy
+msgid "Right linear"
+msgstr "Вид справа"
+
+#: editor/plugins/curve_editor_plugin.cpp
 msgid "Load preset"
 msgstr "Загрузить заготовку"
 
 #: editor/plugins/curve_editor_plugin.cpp
-msgid "Modify Curve"
-msgstr "Изменить кривую"
+#, fuzzy
+msgid "Remove Curve Point"
+msgstr "Удалить точку пути"
+
+#: editor/plugins/curve_editor_plugin.cpp
+msgid "Toggle Curve Linear Tangent"
+msgstr ""
+
+#: editor/plugins/curve_editor_plugin.cpp
+msgid "Hold Shift to edit tangents individually"
+msgstr ""
 
 #: editor/plugins/gradient_editor_plugin.cpp
 msgid "Add/Remove Color Ramp Point"
@@ -3720,6 +4134,12 @@ msgstr "Элементы"
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "Item List Editor"
 msgstr "Редактор списка элементов"
+
+#: editor/plugins/light_occluder_2d_editor_plugin.cpp
+msgid ""
+"No OccluderPolygon2D resource on this node.\n"
+"Create and assign one?"
+msgstr ""
 
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
 msgid "Create Occluder Polygon"
@@ -4009,6 +4429,12 @@ msgstr "Создать область видимости"
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Load Emission Mask"
 msgstr "Маска выброса загружена"
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
+msgid "Particles"
+msgstr "Вершины"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generated Point Count:"
@@ -4331,6 +4757,12 @@ msgid "Clear Recent Files"
 msgstr "Очистить недавние файлы"
 
 #: editor/plugins/script_editor_plugin.cpp
+msgid ""
+"Close and save changes?\n"
+"\""
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
 msgid "Error while saving theme"
 msgstr "Ошибка во время сохранения темы"
 
@@ -4353,6 +4785,10 @@ msgstr "Импортировать тему"
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme As.."
 msgstr "Сохранить тему как.."
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid " Class Reference"
+msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Next script"
@@ -4407,6 +4843,11 @@ msgid "Close All"
 msgstr "Закрыть всё"
 
 #: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Toggle Scripts Panel"
+msgstr "Добавить в избранное"
+
+#: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Find.."
@@ -4437,6 +4878,11 @@ msgstr "Продолжить"
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Keep Debugger Open"
 msgstr "Оставить отладчик открытым"
+
+#: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Debug with external editor"
+msgstr "Открыть следующий редактор"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Window"
@@ -4506,6 +4952,10 @@ msgstr ""
 "принадлежат, загружена"
 
 #: editor/plugins/script_text_editor.cpp
+msgid "Only resources from filesystem can be dropped."
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
 msgid "Pick Color"
 msgstr "Выбрать цвет"
 
@@ -4550,6 +5000,11 @@ msgstr "Переместить вверх"
 #: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
 msgid "Move Down"
 msgstr "Переместить вниз"
+
+#: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Delete Line"
+msgstr "Удалить точку"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Indent Left"
@@ -4856,34 +5311,6 @@ msgid "Animation Key Inserted."
 msgstr "Ключ анимации вставлен."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Freelook Left"
-msgstr "Обзор налево"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Freelook Right"
-msgstr "Обзор направо"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Freelook Forward"
-msgstr "Обзор вперёд"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Freelook Backwards"
-msgstr "Обзор назад"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Freelook Up"
-msgstr "Обзор вверх"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Freelook Down"
-msgstr "Обзор вниз"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Freelook Speed Modifier"
-msgstr "Обзор модификатор скорости"
-
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
 msgstr "Нарисовано обьектов"
 
@@ -4944,8 +5371,59 @@ msgid "Audio Listener"
 msgstr "Прослушиватель звука"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Doppler Enable"
+msgstr "Включить"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Freelook Left"
+msgstr "Обзор налево"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Freelook Right"
+msgstr "Обзор направо"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Freelook Forward"
+msgstr "Обзор вперёд"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Freelook Backwards"
+msgstr "Обзор назад"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Freelook Up"
+msgstr "Обзор вверх"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Freelook Down"
+msgstr "Обзор вниз"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Freelook Speed Modifier"
+msgstr "Обзор модификатор скорости"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "preview"
+msgstr "Предпросмотр"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
 msgstr "XForm диалоговое окно"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Select Mode (Q)\n"
+msgstr "Режим выделения"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Drag: Rotate\n"
+"Alt+Drag: Move\n"
+"Alt+RMB: Depth list selection"
+msgstr "Alt+ПКМ: Список выбора глубины"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Move Mode (W)"
@@ -5064,6 +5542,7 @@ msgid "View Grid"
 msgstr "Отображать сетку"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Settings"
 msgstr "Настройки"
 
@@ -5192,6 +5671,11 @@ msgid "StyleBox Preview:"
 msgstr "StyleBox предпросмотр:"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
+#, fuzzy
+msgid "Set Region Rect"
+msgstr "Установить прямоугольник региона"
+
+#: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
 msgstr "Режим привязки:"
 
@@ -5247,6 +5731,16 @@ msgstr "Добавить все"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Remove Item"
 msgstr "Удалить элемент"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Remove All Items"
+msgstr "Удалить элемент класса"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Remove All"
+msgstr "Удалить"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme"
@@ -5316,7 +5810,7 @@ msgstr "Вкладка 2"
 msgid "Tab 3"
 msgstr "Вкладка 3"
 
-#: editor/plugins/theme_editor_plugin.cpp editor/project_settings.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
 #: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
 msgid "Type:"
 msgstr "Тип:"
@@ -5338,12 +5832,27 @@ msgid "Color"
 msgstr "Цвет"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid "Erase Selection"
+msgstr "Очистить выделенное"
+
+#: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint TileMap"
 msgstr "Рисовать карту тайлов"
 
-#: editor/plugins/tile_map_editor_plugin.cpp editor/scene_tree_dock.cpp
-msgid "Duplicate"
-msgstr "Дублировать"
+#: editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid "Line Draw"
+msgstr "Линейный"
+
+#: editor/plugins/tile_map_editor_plugin.cpp
+msgid "Rectangle Paint"
+msgstr ""
+
+#: editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid "Bucket Fill"
+msgstr "Заливка"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase TileMap"
@@ -5376,10 +5885,6 @@ msgstr "Заливка"
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Pick Tile"
 msgstr "Выбрать тайл"
-
-#: editor/plugins/tile_map_editor_plugin.cpp
-msgid "Select"
-msgstr "Выделение"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Rotate 0 degrees"
@@ -5441,7 +5946,7 @@ msgstr "Удалить '%s'?"
 msgid "Presets"
 msgstr "Предустановки"
 
-#: editor/project_export.cpp editor/project_settings.cpp
+#: editor/project_export.cpp editor/project_settings_editor.cpp
 msgid "Add.."
 msgstr "Добавить.."
 
@@ -5490,6 +5995,24 @@ msgid "Make Patch"
 msgstr "Создать латку"
 
 #: editor/project_export.cpp
+#, fuzzy
+msgid "Features"
+msgstr "Текстура"
+
+#: editor/project_export.cpp
+msgid "Custom (comma-separated):"
+msgstr ""
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Feature List:"
+msgstr "Список методов:"
+
+#: editor/project_export.cpp
+msgid "Export PCK/Zip"
+msgstr "Экспортировать PCK/Zip"
+
+#: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
 msgstr "Шаблоны экспорта для этой платформы отсутствуют:"
 
@@ -5524,10 +6047,6 @@ msgstr "Не удалось создать project.godot в папке прое�
 #: editor/project_manager.cpp
 msgid "The following files failed extraction from package:"
 msgstr "Следующие файлы не удалось извлечения из пакета:"
-
-#: editor/project_manager.cpp
-msgid "Package Installed Successfully!"
-msgstr "Пакет успешно установлен!"
 
 #: editor/project_manager.cpp
 msgid "Import Existing Project"
@@ -5574,6 +6093,23 @@ msgid "Are you sure to open more than one project?"
 msgstr "Вы уверены, что хотите открыть более одного проекта?"
 
 #: editor/project_manager.cpp
+#, fuzzy
+msgid ""
+"Can't run project: no main scene defined.\n"
+"Please edit the project and set the main scene in \"Project Settings\" under "
+"the \"Application\" category."
+msgstr ""
+"Не назначена главная сцена. Хотите выбрать?\n"
+"Позже вы можете указать её в параметре \"main_scene\" расположенном\n"
+"в \"Настройки проекта - Основное - application\"."
+
+#: editor/project_manager.cpp
+msgid ""
+"Can't run project: Assets need to be imported.\n"
+"Please edit the project to trigger the initial import."
+msgstr ""
+
+#: editor/project_manager.cpp
 msgid "Are you sure to run more than one project?"
 msgstr "Вы уверены, что хотите запустить более одного проекта?"
 
@@ -5588,10 +6124,6 @@ msgid ""
 msgstr ""
 "Вы собираетесь сканировать %s папки для существующих проектов Godot. "
 "Подтверждаете?"
-
-#: editor/project_manager.cpp
-msgid "Project Manager"
-msgstr "Менеджер проектов"
 
 #: editor/project_manager.cpp
 msgid "Project List"
@@ -5621,254 +6153,288 @@ msgstr "Шаблоны"
 msgid "Exit"
 msgstr "Выход"
 
-#: editor/project_settings.cpp
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Can't run project"
+msgstr "Не удается подключиться."
+
+#: editor/project_settings_editor.cpp
 msgid "Key "
 msgstr "Кнопка "
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Joy Button"
 msgstr "Кнопка геймпада"
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Joy Axis"
 msgstr "Ось геймпада"
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Mouse Button"
 msgstr "Кнопка мыши"
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Invalid action (anything goes but '/' or ':')."
 msgstr "Недопустимое название действия (подойдёт всё кроме '/' или ':')."
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Action '%s' already exists!"
 msgstr "Действие '%s' уже существует!"
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Rename Input Action Event"
 msgstr "Переименовать действие"
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Add Input Action Event"
 msgstr "Добавить действие"
 
-#: editor/project_settings.cpp editor/settings_config_dialog.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 #: scene/gui/input_action.cpp
 msgid "Meta+"
 msgstr "Meta+"
 
-#: editor/project_settings.cpp editor/settings_config_dialog.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 #: scene/gui/input_action.cpp
 msgid "Shift+"
 msgstr "Shift+"
 
-#: editor/project_settings.cpp editor/settings_config_dialog.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 #: scene/gui/input_action.cpp
 msgid "Alt+"
 msgstr "Alt+"
 
-#: editor/project_settings.cpp editor/settings_config_dialog.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "Control+"
 msgstr "Control+"
 
-#: editor/project_settings.cpp editor/settings_config_dialog.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "Press a Key.."
 msgstr "Нажмите любую клавишу..."
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Mouse Button Index:"
 msgstr "Индекс клавиши мыши:"
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Left Button"
 msgstr "Левая кнопка мыши"
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Right Button"
 msgstr "Правая кнопка мыши"
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Middle Button"
 msgstr "Средняя кнопка мыши"
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Wheel Up Button"
 msgstr "Колёсико вверх"
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Wheel Down Button"
 msgstr "Колёсико вниз"
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Button 6"
 msgstr "Кнопка 6"
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Button 7"
 msgstr "Кнопка 7"
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Button 8"
 msgstr "Кнопка 8"
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Button 9"
 msgstr "Кнопка 9"
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Change"
+msgstr "Изменить"
+
+#: editor/project_settings_editor.cpp
 msgid "Joypad Axis Index:"
 msgstr "Индекс оси джойстика:"
 
-#: editor/project_settings.cpp scene/gui/input_action.cpp
+#: editor/project_settings_editor.cpp scene/gui/input_action.cpp
 msgid "Axis"
 msgstr "Ось"
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Joypad Button Index:"
 msgstr "Индекс кнопки джойстика:"
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Add Input Action"
 msgstr "Добавить действие"
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Erase Input Action Event"
 msgstr "Удалить действие"
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Add Event"
 msgstr "Добавить событие"
 
-#: editor/project_settings.cpp scene/gui/input_action.cpp
+#: editor/project_settings_editor.cpp scene/gui/input_action.cpp
 msgid "Device"
 msgstr "Устройство"
 
-#: editor/project_settings.cpp scene/gui/input_action.cpp
+#: editor/project_settings_editor.cpp scene/gui/input_action.cpp
 msgid "Button"
 msgstr "Кнопка"
 
-#: editor/project_settings.cpp scene/gui/input_action.cpp
+#: editor/project_settings_editor.cpp scene/gui/input_action.cpp
 msgid "Left Button."
 msgstr "Левая кнопка."
 
-#: editor/project_settings.cpp scene/gui/input_action.cpp
+#: editor/project_settings_editor.cpp scene/gui/input_action.cpp
 msgid "Right Button."
 msgstr "Правая кнопка."
 
-#: editor/project_settings.cpp scene/gui/input_action.cpp
+#: editor/project_settings_editor.cpp scene/gui/input_action.cpp
 msgid "Middle Button."
 msgstr "Средняя кнопка."
 
-#: editor/project_settings.cpp scene/gui/input_action.cpp
+#: editor/project_settings_editor.cpp scene/gui/input_action.cpp
 msgid "Wheel Up."
 msgstr "Колёсико вверх."
 
-#: editor/project_settings.cpp scene/gui/input_action.cpp
+#: editor/project_settings_editor.cpp scene/gui/input_action.cpp
 msgid "Wheel Down."
 msgstr "Колёсико вниз."
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Add Global Property"
+msgstr "Добавить получающее свойство"
+
+#: editor/project_settings_editor.cpp
+msgid "Select an setting item first!"
+msgstr ""
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "No property '"
+msgstr "Параметр:"
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Setting '"
+msgstr "Настройки"
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Delete Item"
+msgstr "Удалить вход"
+
+#: editor/project_settings_editor.cpp
 msgid "Error saving settings."
 msgstr "Ошибка сохранения настроек."
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Settings saved OK."
 msgstr "Настройки сохранены нормально."
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
+msgid "Override for Feature"
+msgstr ""
+
+#: editor/project_settings_editor.cpp
 msgid "Add Translation"
 msgstr "Добавлен перевод"
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Remove Translation"
 msgstr "Перевод удалён"
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Add Remapped Path"
 msgstr "Добавлен путь перенаправления"
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Resource Remap Add Remap"
 msgstr "Перенаправлен ресурс перенаправления"
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Change Resource Remap Language"
 msgstr "Изменён язык перенаправления"
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Remove Resource Remap"
 msgstr "Удалён ресурс перенаправления"
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Remove Resource Remap Option"
 msgstr "Удалён параметр ресурса перенаправления"
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Project Settings (project.godot)"
 msgstr "Настройки проекта (project.godot)"
 
-#: editor/project_settings.cpp editor/settings_config_dialog.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "General"
 msgstr "Основное"
 
-#: editor/project_settings.cpp editor/property_editor.cpp
+#: editor/project_settings_editor.cpp editor/property_editor.cpp
 msgid "Property:"
 msgstr "Параметр:"
 
-#: editor/project_settings.cpp
-msgid "Del"
-msgstr "Удалить"
+#: editor/project_settings_editor.cpp
+msgid "Override For.."
+msgstr ""
 
-#: editor/project_settings.cpp
-msgid "Copy To Platform.."
-msgstr "Скопировать на платформу.."
-
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Input Map"
 msgstr "Список действий"
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Action:"
 msgstr "Действие:"
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Device:"
 msgstr "Девайс:"
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Index:"
 msgstr "Индекс:"
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Localization"
 msgstr "Локализация"
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Translations"
 msgstr "Переводы"
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Translations:"
 msgstr "Переводы:"
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Remaps"
 msgstr "Переназначения"
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Resources:"
 msgstr "Ресурсы:"
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Remaps by Locale:"
 msgstr "Заменить на язык:"
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "Locale"
 msgstr "Язык"
 
-#: editor/project_settings.cpp
+#: editor/project_settings_editor.cpp
 msgid "AutoLoad"
 msgstr "Автозагрузка"
 
@@ -5909,6 +6475,11 @@ msgid "Assign"
 msgstr "Назначить"
 
 #: editor/property_editor.cpp
+#, fuzzy
+msgid "Select Node"
+msgstr "Выбрать узел"
+
+#: editor/property_editor.cpp
 msgid "New Script"
 msgstr "Новый скрипт"
 
@@ -5919,6 +6490,11 @@ msgstr "Показать в файловой системе"
 #: editor/property_editor.cpp
 msgid "Error loading file: Not a resource!"
 msgstr "Ошибка загрузки файла: Это не ресурс!"
+
+#: editor/property_editor.cpp
+#, fuzzy
+msgid "Selected node is not a Viewport!"
+msgstr "Выберите Узел(узлы) для импорта"
 
 #: editor/property_editor.cpp
 msgid "Pick a Node"
@@ -6018,6 +6594,11 @@ msgstr "Аргументы главной сцены:"
 msgid "Scene Run Settings"
 msgstr "Параметры запуска сцены"
 
+#: editor/scene_tree_dock.cpp editor/script_create_dialog.cpp
+#: scene/gui/dialogs.cpp
+msgid "OK"
+msgstr "Ок"
+
 #: editor/scene_tree_dock.cpp
 msgid "No parent to instance the scenes at."
 msgstr "Нет родителя для добавления сюда сцены."
@@ -6063,10 +6644,6 @@ msgid "Delete Node(s)?"
 msgstr "Удалить узел(узлы)?"
 
 #: editor/scene_tree_dock.cpp
-msgid "This operation can't be done without a scene."
-msgstr "Эта операция не может быть выполнена без сцены."
-
-#: editor/scene_tree_dock.cpp
 msgid "Can not perform with the root node."
 msgstr "Невозможно выполнить с корнем."
 
@@ -6077,6 +6654,18 @@ msgstr "Эта операция не может быть сделана на р�
 #: editor/scene_tree_dock.cpp
 msgid "Save New Scene As.."
 msgstr "Сохранить новую Сцену как.."
+
+#: editor/scene_tree_dock.cpp
+msgid "Editable Children"
+msgstr "Редактируемые потомки"
+
+#: editor/scene_tree_dock.cpp
+msgid "Load As Placeholder"
+msgstr "Загрузить как заполнитель"
+
+#: editor/scene_tree_dock.cpp
+msgid "Discard Instancing"
+msgstr "Отбросить инстансинг"
 
 #: editor/scene_tree_dock.cpp
 msgid "Makes Sense!"
@@ -6121,6 +6710,14 @@ msgstr "Редактировать группы"
 #: editor/scene_tree_dock.cpp
 msgid "Edit Connections"
 msgstr "Редактировать связи"
+
+#: editor/scene_tree_dock.cpp
+msgid "Clear Inheritance"
+msgstr "Очистить наследование"
+
+#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
+msgid "Open in Editor"
+msgstr "Открыть в редакторе"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)"
@@ -6175,12 +6772,25 @@ msgstr ""
 "не существует."
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Filter nodes"
+msgstr "Фильтры"
+
+#: editor/scene_tree_dock.cpp
 msgid "Attach a new or existing script for the selected node."
 msgstr "Прикрепить новый или существующий скрипт к выбранному узлу."
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear a script for the selected node."
 msgstr "Убрать скрипт у выбранного узла."
+
+#: editor/scene_tree_dock.cpp
+msgid "Clear Inheritance? (No Undo!)"
+msgstr "Очистить наследование? (Нельзя отменить!)"
+
+#: editor/scene_tree_dock.cpp
+msgid "Clear!"
+msgstr "Очистить!"
 
 #: editor/scene_tree_editor.cpp
 msgid "Toggle Spatial Visible"
@@ -6217,10 +6827,6 @@ msgid ""
 msgstr ""
 "Узел принадлежит к группе.\n"
 "Нажмите, чтобы показать панель групп."
-
-#: editor/scene_tree_editor.cpp
-msgid "Subscene options"
-msgstr "Опции вложенной сцены"
 
 #: editor/scene_tree_editor.cpp
 msgid "Instance:"
@@ -6263,36 +6869,18 @@ msgid "Scene Tree (Nodes):"
 msgstr "Дерево сцены (Узлы):"
 
 #: editor/scene_tree_editor.cpp
-msgid "Editable Children"
-msgstr "Редактируемые потомки"
-
-#: editor/scene_tree_editor.cpp
-msgid "Load As Placeholder"
-msgstr "Загрузить как заполнитель"
-
-#: editor/scene_tree_editor.cpp
-msgid "Discard Instancing"
-msgstr "Отбросить инстансинг"
-
-#: editor/scene_tree_editor.cpp
-msgid "Open in Editor"
-msgstr "Открыть в редакторе"
-
-#: editor/scene_tree_editor.cpp
-msgid "Clear Inheritance"
-msgstr "Очистить наследование"
-
-#: editor/scene_tree_editor.cpp
-msgid "Clear Inheritance? (No Undo!)"
-msgstr "Очистить наследование? (Нельзя отменить!)"
-
-#: editor/scene_tree_editor.cpp
-msgid "Clear!"
-msgstr "Очистить!"
+#, fuzzy
+msgid "Node Configuration Warning!"
+msgstr "Конфигурации узла, предупреждение:"
 
 #: editor/scene_tree_editor.cpp
 msgid "Select a Node"
 msgstr "Выбрать узел"
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Error loading template '%s'"
+msgstr "Ошибка при загрузке изображения:"
 
 #: editor/script_create_dialog.cpp
 msgid "Error - Could not create script in filesystem."
@@ -6301,6 +6889,10 @@ msgstr "Ошибка - Не удалось создать скрипт в фай
 #: editor/script_create_dialog.cpp
 msgid "Error loading script from %s"
 msgstr "Ошибка при загрузке скрипта из %s"
+
+#: editor/script_create_dialog.cpp
+msgid "N/A"
+msgstr "Н/Д"
 
 #: editor/script_create_dialog.cpp
 msgid "Path is empty"
@@ -6341,10 +6933,6 @@ msgstr "Скрипт корректен"
 #: editor/script_create_dialog.cpp
 msgid "Allowed: a-z, A-Z, 0-9 and _"
 msgstr "Допускаются: a-z, A-Z, 0-9 и _"
-
-#: editor/script_create_dialog.cpp
-msgid "N/A"
-msgstr "Н/Д"
 
 #: editor/script_create_dialog.cpp
 msgid "Built-in script (into scene file)"
@@ -6511,6 +7099,10 @@ msgid "Change Light Radius"
 msgstr "Изменён радиус света"
 
 #: editor/spatial_editor_gizmos.cpp
+msgid "Change AudioStreamPlayer3D Emission Angle"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp
 msgid "Change Camera FOV"
 msgstr "Изменён FOV камеры"
 
@@ -6593,6 +7185,145 @@ msgstr "Недопустимый формат экземпляра словар�
 msgid "Invalid instance dictionary (invalid subclasses)"
 msgstr "Недопустимый экземпляр словаря (неверные подклассы)"
 
+#: modules/gdscript/gd_functions.cpp
+msgid "Object can't provide a length."
+msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "GridMap Delete Selection"
+msgstr "Удалить выделенное"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "GridMap Duplicate Selection"
+msgstr "Дублировать выделенное"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "GridMap Paint"
+msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Snap View"
+msgstr "Вид сверху"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Prev Level ("
+msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Down Wheel)"
+msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Next Level ("
+msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Up Wheel)"
+msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Clip Disabled"
+msgstr "Отключено"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Clip Above"
+msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Clip Below"
+msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Edit X Axis"
+msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Edit Y Axis"
+msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Edit Z Axis"
+msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Cursor Rotate X"
+msgstr "Ctrl: Поворот"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Cursor Rotate Y"
+msgstr "Ctrl: Поворот"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Cursor Rotate Z"
+msgstr "Ctrl: Поворот"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Cursor Back Rotate X"
+msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Cursor Back Rotate Y"
+msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Cursor Back Rotate Z"
+msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Cursor Clear Rotation"
+msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Create Area"
+msgstr "Создать новый"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Create Exterior Connector"
+msgstr "Создать новый проект"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Erase Area"
+msgstr "Стирать карту тайлов"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Selection -> Duplicate"
+msgstr "Только выделять"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Selection -> Clear"
+msgstr "Только выделять"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "GridMap Settings"
+msgstr "Параметры привязки"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Pick Distance:"
+msgstr "Экземпляр:"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Tiles"
+msgstr " Файлы"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Areas"
+msgstr ""
+
 #: modules/visual_script/visual_script.cpp
 msgid ""
 "A node yielded without working memory, please read the docs on how to yield "
@@ -6628,6 +7359,31 @@ msgstr ""
 #: modules/visual_script/visual_script.cpp
 msgid "Stack overflow with stack depth: "
 msgstr "Переполнение стека с глубиной стека: "
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Signal Arguments"
+msgstr "Редактирование аргументов сигнала:"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Argument Type"
+msgstr "Изменение типа значения массива"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Argument name"
+msgstr "Изменено входное имя"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Set Variable Default Value"
+msgstr "Изменено стандартное значение"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Set Variable Type"
+msgstr "Редактировать переменную:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Functions:"
@@ -6670,32 +7426,22 @@ msgid "Add Signal"
 msgstr "Добавить сигнал"
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Remove Function"
-msgstr "Удалить функцию"
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Remove Variable"
-msgstr "Удалить переменную"
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Editing Variable:"
-msgstr "Редактирование переменной:"
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Remove Signal"
-msgstr "Удалить сигнал"
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Editing Signal:"
-msgstr "Редактирование сигнала:"
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Change Expression"
 msgstr "Изменить выражение"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node"
 msgstr "Добавить узел"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Remove VisualScript Nodes"
+msgstr "Удалить недопустимые ключи"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Duplicate VisualScript Nodes"
+msgstr "Граф(ы) дублированы"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Meta to drop a Getter. Hold Shift to drop a generic signature."
@@ -6742,6 +7488,26 @@ msgid "Add Setter Property"
 msgstr "Добавить устанавливающее свойство"
 
 #: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Base Type"
+msgstr "Изменить тип"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Move Node(s)"
+msgstr "Удалить узел(узлы)"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Remove VisualScript Node"
+msgstr "Удалён граф шейдера"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Connect Nodes"
+msgstr "Присоединить к узлу:"
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Condition"
 msgstr "Условие"
 
@@ -6770,6 +7536,56 @@ msgid "Get"
 msgstr "Получить"
 
 #: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Input Value"
+msgstr "Изменено входное имя"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Can't copy the function node."
+msgstr "Невозможно работать с '..'"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Clipboard is empty!"
+msgstr "Нет ресурса в буфере обмена!"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Paste VisualScript Nodes"
+msgstr "Вставить узлы"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Remove Function"
+msgstr "Удалить функцию"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Edit Variable"
+msgstr "Редактировать переменную:"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Remove Variable"
+msgstr "Удалить переменную"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Edit Signal"
+msgstr "Редактирование сигнала:"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Remove Signal"
+msgstr "Удалить сигнал"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Editing Variable:"
+msgstr "Редактирование переменной:"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Editing Signal:"
+msgstr "Редактирование сигнала:"
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Base Type:"
 msgstr "Базовый тип:"
 
@@ -6788,10 +7604,6 @@ msgstr "Редактирование аргументов сигнала:"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit Variable:"
 msgstr "Редактировать переменную:"
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Change"
-msgstr "Изменить"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Delete Selected"
@@ -6870,14 +7682,6 @@ msgstr ""
 "Недопустимое значение, возвращаемое _step(), должно быть целое число(seq "
 "out) или строка (error)."
 
-#: modules/visual_script/visual_script_nodes.cpp
-msgid "just pressed"
-msgstr "просто нажата"
-
-#: modules/visual_script/visual_script_nodes.cpp
-msgid "just released"
-msgstr "просто отпущена"
-
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"
 msgstr "Запустить в браузере"
@@ -6897,79 +7701,6 @@ msgstr "Не удалось прочитать файл:\n"
 #: platform/javascript/export/export.cpp
 msgid "Could not open template for export:\n"
 msgstr "Не удалось открыть шаблон для экспорта:\n"
-
-#: platform/uwp/export/export.cpp
-msgid ""
-"Couldn't read the certificate file. Are the path and password both correct?"
-msgstr "Не могу прочитать файл сертификата. Уверены, что путь и пароль верны?"
-
-#: platform/uwp/export/export.cpp
-msgid "Error creating the signature object."
-msgstr "Ошибка при создании объекта подписи."
-
-#: platform/uwp/export/export.cpp
-msgid "Error creating the package signature."
-msgstr "Ошибка при создании подписи пакета."
-
-#: platform/uwp/export/export.cpp
-msgid ""
-"No export templates found.\n"
-"Download and install export templates."
-msgstr ""
-"Шаблоны экспорта не найдены.\n"
-"Скачайте и установите шаблоны экспорта."
-
-#: platform/uwp/export/export.cpp
-msgid "Custom debug package not found."
-msgstr "Пользовательский отладочный пакет не найден."
-
-#: platform/uwp/export/export.cpp
-msgid "Custom release package not found."
-msgstr "Пользовательский релизный пакет не найден."
-
-#: platform/uwp/export/export.cpp
-msgid "Invalid unique name."
-msgstr "Неверное уникальное имя."
-
-#: platform/uwp/export/export.cpp
-msgid "Invalid product GUID."
-msgstr "Неверный GUID продукта."
-
-#: platform/uwp/export/export.cpp
-msgid "Invalid publisher GUID."
-msgstr "Неверный GUID издателя."
-
-#: platform/uwp/export/export.cpp
-msgid "Invalid background color."
-msgstr "Недопустимый цвет фона."
-
-#: platform/uwp/export/export.cpp
-msgid "Invalid Store Logo image dimensions (should be 50x50)."
-msgstr "Неверные размеры логотипа для магазина (должны быть 50х50)."
-
-#: platform/uwp/export/export.cpp
-msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
-msgstr "Неверные размеры квадратного логотипа 44x44 (должны быть 44x44)."
-
-#: platform/uwp/export/export.cpp
-msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
-msgstr "Неверные размеры квадратного логотипа 71x71 (должны быть 71x71)."
-
-#: platform/uwp/export/export.cpp
-msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
-msgstr "Неверные размеры квадратного логотипа 150x150 (должны быть 150x150)."
-
-#: platform/uwp/export/export.cpp
-msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
-msgstr "Неверные размеры квадратного логотипа 310x310 (должны быть 310x310)."
-
-#: platform/uwp/export/export.cpp
-msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
-msgstr "Неверные размеры широкого логотипа 310x150 (должны быть 310x150)."
-
-#: platform/uwp/export/export.cpp
-msgid "Invalid splash screen image dimensions (should be 620x300)."
-msgstr "Неверные размеры заставки (должны быть 620x300)."
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -7076,6 +7807,13 @@ msgstr ""
 "PathFollow2D работает только при установке его в качестве дочернего узла "
 "Path2D."
 
+#: scene/2d/physics_body_2d.cpp
+msgid ""
+"Size changes to RigidBody2D (in character or rigid modes) will be overriden "
+"by the physics engine when running.\n"
+"Change the size in children collision shapes instead."
+msgstr ""
+
 #: scene/2d/remote_transform_2d.cpp
 msgid "Path property must point to a valid Node2D node to work."
 msgstr ""
@@ -7106,23 +7844,33 @@ msgstr ""
 "VisibilityEnable2D работает наилучшим образом при использовании корня "
 "редактируемой сцены, как прямого родителя."
 
-#: scene/3d/body_shape.cpp
-msgid ""
-"CollisionShape only serves to provide a collision shape to a CollisionObject "
-"derived node. Please only use it as a child of Area, StaticBody, RigidBody, "
-"KinematicBody, etc. to give them a shape."
+#: scene/3d/arvr_nodes.cpp
+msgid "ARVRCamera must have an ARVROrigin node as its parent"
 msgstr ""
-"CollisionShape служит только для обеспечения столкновений фигурам типа "
-"CollisionObject. Пожалуйста использовать его только в качестве дочернего для "
-"Area, StaticBody, RigidBody, KinematicBody и др. чтобы придать им форму."
 
-#: scene/3d/body_shape.cpp
-msgid ""
-"A shape must be provided for CollisionShape to function. Please create a "
-"shape resource for it!"
+#: scene/3d/arvr_nodes.cpp
+msgid "ARVRController must have an ARVROrigin node as its parent"
 msgstr ""
-"Shape должен быть предусмотрен для функций CollisionShape. Пожалуйста, "
-"создайте shape-ресурс для этого!"
+
+#: scene/3d/arvr_nodes.cpp
+msgid ""
+"The controller id must not be 0 or this controller will not be bound to an "
+"actual controller"
+msgstr ""
+
+#: scene/3d/arvr_nodes.cpp
+msgid "ARVRAnchor must have an ARVROrigin node as its parent"
+msgstr ""
+
+#: scene/3d/arvr_nodes.cpp
+msgid ""
+"The anchor id must not be 0 or this anchor will not be bound to an actual "
+"anchor"
+msgstr ""
+
+#: scene/3d/arvr_nodes.cpp
+msgid "ARVROrigin requires an ARVRCamera child node"
+msgstr ""
 
 #: scene/3d/collision_polygon.cpp
 msgid ""
@@ -7137,6 +7885,24 @@ msgstr ""
 #: scene/3d/collision_polygon.cpp
 msgid "An empty CollisionPolygon has no effect on collision."
 msgstr "Пустой CollisionPolygon не влияет на столкновения."
+
+#: scene/3d/collision_shape.cpp
+msgid ""
+"CollisionShape only serves to provide a collision shape to a CollisionObject "
+"derived node. Please only use it as a child of Area, StaticBody, RigidBody, "
+"KinematicBody, etc. to give them a shape."
+msgstr ""
+"CollisionShape служит только для обеспечения столкновений фигурам типа "
+"CollisionObject. Пожалуйста использовать его только в качестве дочернего для "
+"Area, StaticBody, RigidBody, KinematicBody и др. чтобы придать им форму."
+
+#: scene/3d/collision_shape.cpp
+msgid ""
+"A shape must be provided for CollisionShape to function. Please create a "
+"shape resource for it!"
+msgstr ""
+"Shape должен быть предусмотрен для функций CollisionShape. Пожалуйста, "
+"создайте shape-ресурс для этого!"
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
@@ -7155,6 +7921,13 @@ msgstr ""
 msgid ""
 "Nothing is visible because meshes have not been assigned to draw passes."
 msgstr "Ничего не видно, потому что полисетки не были назначены на отрисовку."
+
+#: scene/3d/physics_body.cpp
+msgid ""
+"Size changes to RigidBody (in character or rigid modes) will be overriden by "
+"the physics engine when running.\n"
+"Change the size in children collision shapes instead."
+msgstr ""
 
 #: scene/3d/remote_transform.cpp
 msgid "Path property must point to a valid Spatial node to work."
@@ -7176,8 +7949,9 @@ msgstr ""
 "ресурс SpriteFrames в параметре 'Frames'."
 
 #: scene/gui/color_picker.cpp
-msgid "RAW Mode"
-msgstr "Грубый режим"
+#, fuzzy
+msgid "Raw Mode"
+msgstr "Режим осмотра"
 
 #: scene/gui/color_picker.cpp
 msgid "Add current color as a preset"
@@ -7190,22 +7964,6 @@ msgstr "Внимание!"
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
 msgstr "Подтверждение..."
-
-#: scene/gui/file_dialog.cpp
-msgid "Open a File"
-msgstr "Открыть файл"
-
-#: scene/gui/file_dialog.cpp
-msgid "Open File(s)"
-msgstr "Открыть файл(ы)"
-
-#: scene/gui/file_dialog.cpp
-msgid "Open a Directory"
-msgstr "Открыть каталог"
-
-#: scene/gui/file_dialog.cpp
-msgid "Open a File or Directory"
-msgstr "Открыть каталог или файл"
 
 #: scene/gui/input_action.cpp
 msgid "Ctrl+"
@@ -7232,7 +7990,7 @@ msgstr ""
 "установите\n"
 "минимальный размер вручную."
 
-#: scene/main/scene_main_loop.cpp
+#: scene/main/scene_tree.cpp
 msgid ""
 "Default Environment as specified in Project Setings (Rendering -> Viewport -"
 "> Default Environment) could not be loaded."
@@ -7252,6 +8010,97 @@ msgstr ""
 "его потомком Control'а, чтобы он мог получить размер. В противном случае, "
 "сделайте его  целью рендеринга и передайте его внутренние текстуры какому-то "
 "другому узлу для отображения."
+
+#~ msgid "Close scene? (Unsaved changes will be lost)"
+#~ msgstr "Закрыть сцену? (Несохранённые изменения будут потеряны.)"
+
+#~ msgid ""
+#~ "Open Project Manager? \n"
+#~ "(Unsaved changes will be lost)"
+#~ msgstr ""
+#~ "Открыть менеджер проектов? \n"
+#~ "(Несохранённые изменения будут потеряны.)"
+
+#~ msgid "Close Goto Prev. Scene"
+#~ msgstr "Закрыть и перейти к предыдущей сцене"
+
+#~ msgid "Expand to Parent"
+#~ msgstr "Растянуть до размера родителей"
+
+#~ msgid "Del"
+#~ msgstr "Удалить"
+
+#~ msgid "Copy To Platform.."
+#~ msgstr "Скопировать на платформу.."
+
+#~ msgid "just pressed"
+#~ msgstr "просто нажата"
+
+#~ msgid "just released"
+#~ msgstr "просто отпущена"
+
+#~ msgid ""
+#~ "Couldn't read the certificate file. Are the path and password both "
+#~ "correct?"
+#~ msgstr ""
+#~ "Не могу прочитать файл сертификата. Уверены, что путь и пароль верны?"
+
+#~ msgid "Error creating the signature object."
+#~ msgstr "Ошибка при создании объекта подписи."
+
+#~ msgid "Error creating the package signature."
+#~ msgstr "Ошибка при создании подписи пакета."
+
+#~ msgid ""
+#~ "No export templates found.\n"
+#~ "Download and install export templates."
+#~ msgstr ""
+#~ "Шаблоны экспорта не найдены.\n"
+#~ "Скачайте и установите шаблоны экспорта."
+
+#~ msgid "Custom debug package not found."
+#~ msgstr "Пользовательский отладочный пакет не найден."
+
+#~ msgid "Custom release package not found."
+#~ msgstr "Пользовательский релизный пакет не найден."
+
+#~ msgid "Invalid unique name."
+#~ msgstr "Неверное уникальное имя."
+
+#~ msgid "Invalid product GUID."
+#~ msgstr "Неверный GUID продукта."
+
+#~ msgid "Invalid publisher GUID."
+#~ msgstr "Неверный GUID издателя."
+
+#~ msgid "Invalid background color."
+#~ msgstr "Недопустимый цвет фона."
+
+#~ msgid "Invalid Store Logo image dimensions (should be 50x50)."
+#~ msgstr "Неверные размеры логотипа для магазина (должны быть 50х50)."
+
+#~ msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
+#~ msgstr "Неверные размеры квадратного логотипа 44x44 (должны быть 44x44)."
+
+#~ msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
+#~ msgstr "Неверные размеры квадратного логотипа 71x71 (должны быть 71x71)."
+
+#~ msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
+#~ msgstr ""
+#~ "Неверные размеры квадратного логотипа 150x150 (должны быть 150x150)."
+
+#~ msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
+#~ msgstr ""
+#~ "Неверные размеры квадратного логотипа 310x310 (должны быть 310x310)."
+
+#~ msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
+#~ msgstr "Неверные размеры широкого логотипа 310x150 (должны быть 310x150)."
+
+#~ msgid "Invalid splash screen image dimensions (should be 620x300)."
+#~ msgstr "Неверные размеры заставки (должны быть 620x300)."
+
+#~ msgid "RAW Mode"
+#~ msgstr "Грубый режим"
 
 #~ msgid "Node From Scene"
 #~ msgstr "Узел со сцены"
@@ -7337,9 +8186,6 @@ msgstr ""
 
 #~ msgid "Replaced %d Ocurrence(s)."
 #~ msgstr "Заменено %d совпадений."
-
-#~ msgid "Please save the scene first."
-#~ msgstr "Пожалуйста сначала сохраните сцену."
 
 #~ msgid "Save Translatable Strings"
 #~ msgstr "Сохранить переводимые строки"
@@ -7552,9 +8398,6 @@ msgstr ""
 #~ msgid "Script Encryption Key (256-bits as hex):"
 #~ msgstr "Ключ шифрования скрипта (256-бит, а в шестнадцатеричном виде):"
 
-#~ msgid "Export PCK/Zip"
-#~ msgstr "Экспортировать PCK/Zip"
-
 #~ msgid "Export Project PCK"
 #~ msgstr "Экспортировать PCK проекта"
 
@@ -7702,9 +8545,6 @@ msgstr ""
 
 #~ msgid "Node Group(s)"
 #~ msgstr "Группа(ы) нода"
-
-#~ msgid "Set region_rect"
-#~ msgstr "Установить прямоугольник региона"
 
 #~ msgid "Plugin List:"
 #~ msgstr "Список плагинов:"
