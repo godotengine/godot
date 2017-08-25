@@ -3766,7 +3766,7 @@ bool CanvasItemEditorViewport::_cyclical_dependency_exists(const String &p_targe
 
 void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &path, const Point2 &p_point) {
 	child->set_name(path.get_file().get_basename());
-	Ref<Texture> texture = Object::cast_to<Texture>(Ref<Texture>(ResourceCache::get(path)).ptr());
+	Ref<Texture> texture = Ref<Texture>(Object::cast_to<Texture>(ResourceCache::get(path)));
 	Size2 texture_size = texture->get_size();
 
 	editor_data->get_undo_redo().add_do_method(parent, "add_child", child);

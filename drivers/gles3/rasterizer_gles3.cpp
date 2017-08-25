@@ -247,11 +247,8 @@ void RasterizerGLES3::set_current_render_target(RID p_render_target) {
 
 	if (p_render_target.is_valid()) {
 		RasterizerStorageGLES3::RenderTarget *rt = storage->render_target_owner.getornull(p_render_target);
-		if (!rt) {
-			storage->frame.current_rt = NULL;
-		}
-		ERR_FAIL_COND(!rt);
 		storage->frame.current_rt = rt;
+		ERR_FAIL_COND(!rt);
 		storage->frame.clear_request = false;
 
 		glViewport(0, 0, rt->width, rt->height);

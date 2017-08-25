@@ -58,6 +58,7 @@ Adapted from corresponding SDL 2.0 code.
 #include <stdio.h>
 #include <unistd.h>
 
+#include "core/error_macros.h"
 #include <dirent.h>
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -254,9 +255,9 @@ bool PowerX11::GetPowerInfo_Linux_proc_acpi() {
 	this->power_state = POWERSTATE_UNKNOWN;
 
 	dirp->change_dir(proc_acpi_battery_path);
-	dirp->list_dir_begin();
+	Error err = dirp->list_dir_begin();
 
-	if (dirp == NULL) {
+	if (err != OK) {
 		return false; /* can't use this interface. */
 	} else {
 		node = dirp->get_next();
@@ -268,8 +269,8 @@ bool PowerX11::GetPowerInfo_Linux_proc_acpi() {
 	}
 
 	dirp->change_dir(proc_acpi_ac_adapter_path);
-	dirp->list_dir_begin();
-	if (dirp == NULL) {
+	err = dirp->list_dir_begin();
+	if (err != OK) {
 		return false; /* can't use this interface. */
 	} else {
 		node = dirp->get_next();
@@ -438,9 +439,9 @@ bool PowerX11::GetPowerInfo_Linux_sys_class_power_supply(/*PowerState *state, in
 
 	DirAccess *dirp = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	dirp->change_dir(base);
-	dirp->list_dir_begin();
+	Error err = dirp->list_dir_begin();
 
-	if (!dirp) {
+	if (err != OK) {
 		return false;
 	}
 

@@ -822,7 +822,7 @@ public:
 				}
 
 				Node *another = node->get_node(node_path);
-				if (!node) {
+				if (!another) {
 					r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
 					r_error_str = "Path does not lead Node!";
 					return 0;
@@ -1596,7 +1596,7 @@ public:
 				}
 
 				Node *another = node->get_node(node_path);
-				if (!node) {
+				if (!another) {
 					r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
 					r_error_str = "Path does not lead Node!";
 					return 0;
@@ -2241,7 +2241,7 @@ public:
 				}
 
 				Node *another = node->get_node(node_path);
-				if (!node) {
+				if (!another) {
 					r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
 					r_error_str = RTR("Path does not lead Node!");
 					return 0;

@@ -253,8 +253,8 @@ static void _create_script_templates(const String &p_path) {
 	dir->change_dir(p_path);
 	for (int i = 0; i < keys.size(); i++) {
 		if (!dir->file_exists(keys[i])) {
-			file->reopen(p_path.plus_file((String)keys[i]), FileAccess::WRITE);
-			ERR_FAIL_COND(!file);
+			Error err = file->reopen(p_path.plus_file((String)keys[i]), FileAccess::WRITE);
+			ERR_FAIL_COND(err != OK);
 			file->store_string(templates[keys[i]]);
 			file->close();
 		}

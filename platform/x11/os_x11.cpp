@@ -116,24 +116,22 @@ void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 	/** XLIB INITIALIZATION **/
 	x11_display = XOpenDisplay(NULL);
 
+	char *modifiers = NULL;
 	Bool xkb_dar = False;
 	if (x11_display) {
 		XAutoRepeatOn(x11_display);
 		xkb_dar = XkbSetDetectableAutoRepeat(x11_display, True, NULL);
-	}
 
-	char *modifiers = NULL;
-
-	// Try to support IME if detectable auto-repeat is supported
-
-	if (xkb_dar == True) {
+		// Try to support IME if detectable auto-repeat is supported
+		if (xkb_dar == True) {
 
 // Xutf8LookupString will be used later instead of XmbLookupString before
 // the multibyte sequences can be converted to unicode string.
 
 #ifdef X_HAVE_UTF8_STRING
-		modifiers = XSetLocaleModifiers("");
+			modifiers = XSetLocaleModifiers("");
 #endif
+		}
 	}
 
 	if (modifiers == NULL) {
@@ -141,8 +139,6 @@ void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 			WARN_PRINT("IME is disabled");
 		}
 		modifiers = XSetLocaleModifiers("@im=none");
-	}
-	if (modifiers == NULL) {
 		WARN_PRINT("Error setting locale modifiers");
 	}
 
