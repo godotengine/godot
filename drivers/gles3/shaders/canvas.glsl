@@ -572,13 +572,11 @@ FRAGMENT_SHADER_CODE
 
 #ifdef SHADOW_FILTER_PCF5
 
-		SHADOW_TEST(su+shadowpixel_size*3.0);
 		SHADOW_TEST(su+shadowpixel_size*2.0);
 		SHADOW_TEST(su+shadowpixel_size);
 		SHADOW_TEST(su);
 		SHADOW_TEST(su-shadowpixel_size);
 		SHADOW_TEST(su-shadowpixel_size*2.0);
-		SHADOW_TEST(su-shadowpixel_size*3.0);
 		shadow_attenuation/=5.0;
 
 #endif
@@ -635,4 +633,3 @@ FRAGMENT_SHADER_CODE
 	frag_color = color;
 
 }
-
