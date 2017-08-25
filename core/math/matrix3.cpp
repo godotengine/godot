@@ -248,10 +248,7 @@ Vector3 Basis::get_scale() const {
 	// as a part of Basis. However, if we go that path, we need to disable direct (write) access to the
 	// matrix elements.
 	real_t det_sign = determinant() > 0 ? 1 : -1;
-	return det_sign * Vector3(
-							  Vector3(elements[0][0], elements[1][0], elements[2][0]).length(),
-							  Vector3(elements[0][1], elements[1][1], elements[2][1]).length(),
-							  Vector3(elements[0][2], elements[1][2], elements[2][2]).length());
+	return det_sign * Vector3(elements[0].length(), elements[1].length(), elements[2].length());
 }
 
 // Sets scaling while preserving rotation.
@@ -364,8 +361,9 @@ Vector3 Basis::get_euler_xyz() const {
 	euler.y = Math::asin(elements[0][2]);
 	if (euler.y < Math_PI * 0.5) {
 		if (euler.y > -Math_PI * 0.5) {
-			//if rotation is Y-only, return a proper -pi,pi range like in x or z for the same case.
+			// is this a pure Y rotation?
 			if (elements[1][0] == 0.0 && elements[0][1] == 0.0 && elements[1][2] == 0 && elements[2][1] == 0 && elements[1][1] == 1) {
+				// return the simplest form
 				euler.x = 0;
 				euler.y = atan2(elements[0][2], elements[0][0]);
 				euler.z = 0;
@@ -432,7 +430,9 @@ Vector3 Basis::get_euler_yxz() const {
 
 	if (m12 < 1) {
 		if (m12 > -1) {
-			if (elements[1][0] == 0 && elements[0][1] == 0 && elements[0][2] == 0 && elements[2][0] == 0 && elements[0][0] == 1) { // use pure x rotation
+			// is this a pure X rotation?
+			if (elements[1][0] == 0 && elements[0][1] == 0 && elements[0][2] == 0 && elements[2][0] == 0 && elements[0][0] == 1) {
+				// return the simplest form
 				euler.x = atan2(-m12, elements[1][1]);
 				euler.y = 0;
 				euler.z = 0;
