@@ -106,7 +106,7 @@ void TileMapEditor::_menu_option(int p_option) {
 			if (!selection_active)
 				return;
 
-			undo_redo->create_action("Erase Selection");
+			undo_redo->create_action(TTR("Erase Selection"));
 			for (int i = rectangle.position.y; i <= rectangle.position.y + rectangle.size.y; i++) {
 				for (int j = rectangle.position.x; j <= rectangle.position.x + rectangle.size.x; j++) {
 
@@ -730,7 +730,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 						if (id != TileMap::INVALID_CELL) {
 
-							undo_redo->create_action("Line Draw");
+							undo_redo->create_action(TTR("Line Draw"));
 							for (Map<Point2i, CellOp>::Element *E = paint_undo.front(); E; E = E->next()) {
 
 								_set_cell(E->key(), id, flip_h, flip_v, transpose, true);
@@ -747,7 +747,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 						if (id != TileMap::INVALID_CELL) {
 
-							undo_redo->create_action("Rectangle Paint");
+							undo_redo->create_action(TTR("Rectangle Paint"));
 							for (int i = rectangle.position.y; i <= rectangle.position.y + rectangle.size.y; i++) {
 								for (int j = rectangle.position.x; j <= rectangle.position.x + rectangle.size.x; j++) {
 
@@ -796,7 +796,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 						op["flip_v"] = flip_v;
 						op["transpose"] = transpose;
 
-						undo_redo->create_action("Bucket Fill");
+						undo_redo->create_action(TTR("Bucket Fill"));
 
 						undo_redo->add_do_method(this, "_fill_points", points, op);
 						undo_redo->add_undo_method(this, "_fill_points", points, pop);

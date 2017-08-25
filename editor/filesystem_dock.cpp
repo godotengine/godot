@@ -525,15 +525,15 @@ void FileSystemDock::_update_files(bool p_keep_selection) {
 			type_icon = get_icon("DependencyOk", "EditorIcons");
 		} else if (E->get().import_status == 2) {
 			type_icon = get_icon("DependencyChanged", "EditorIcons");
-			tooltip + "\nStatus: Needs Re-Import";
+			tooltip += TTR("\nStatus: Needs Re-Import");
 		} else if (E->get().import_status == 3) {
 			type_icon = get_icon("ImportFail", "EditorIcons");
-			tooltip + "\nStatus: Missing Dependencies";
+			tooltip += ("\nStatus: Missing Dependencies");
 		}
 
 		if (E->get().sources.size()) {
 			for (int i = 0; i < E->get().sources.size(); i++) {
-				tooltip += "\nSource: " + E->get().sources[i];
+				tooltip += TTR("\nSource: ") + E->get().sources[i];
 			}
 		}
 
@@ -729,7 +729,7 @@ void FileSystemDock::_rename_operation(const String &p_to_path) {
 		return;
 	}
 	if (FileAccess::exists(p_to_path)) {
-		EditorNode::get_singleton()->show_warning("Target file exists, can't overwrite. Delete first.");
+		EditorNode::get_singleton()->show_warning(TTR("Target file exists, can't overwrite. Delete first."));
 		return;
 	}
 
@@ -818,7 +818,7 @@ void FileSystemDock::_move_operation(const String &p_to_path) {
 		print_line("remapping: " + E->get());
 
 		if (err != OK) {
-			EditorNode::get_singleton()->add_io_error("Can't rename deps for:\n" + E->get() + "\n");
+			EditorNode::get_singleton()->add_io_error(TTR("Can't rename deps for:\n") + E->get() + "\n");
 		}
 	}
 
@@ -832,7 +832,7 @@ void FileSystemDock::_move_operation(const String &p_to_path) {
 		Error err = da->rename(move_files[i], to);
 		print_line("moving file " + move_files[i] + " to " + to);
 		if (err != OK) {
-			EditorNode::get_singleton()->add_io_error("Error moving file:\n" + move_files[i] + "\n");
+			EditorNode::get_singleton()->add_io_error(TTR("Error moving file:\n") + move_files[i] + "\n");
 		}
 	}
 
@@ -850,7 +850,7 @@ void FileSystemDock::_move_operation(const String &p_to_path) {
 		Error err = da->rename(mdir, to);
 		print_line("moving dir " + mdir + " to " + to);
 		if (err != OK) {
-			EditorNode::get_singleton()->add_io_error("Error moving dir:\n" + move_dirs[i] + "\n");
+			EditorNode::get_singleton()->add_io_error(TTR("Error moving dir:\n") + move_dirs[i] + "\n");
 		}
 	}
 
@@ -1755,7 +1755,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 
 	scanning_vb = memnew(VBoxContainer);
 	Label *slabel = memnew(Label);
-	slabel->set_text("Scanning Files,\nPlease Wait..");
+	slabel->set_text(TTR("Scanning Files,\nPlease Wait.."));
 	slabel->set_align(Label::ALIGN_CENTER);
 	scanning_vb->add_child(slabel);
 	scanning_progress = memnew(ProgressBar);

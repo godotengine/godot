@@ -707,7 +707,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 					ERR_FAIL_COND(node->get_filename() == String());
 
-					undo_redo->create_action("Discard Instancing");
+					undo_redo->create_action(TTR("Discard Instancing"));
 					undo_redo->add_do_method(node, "set_filename", "");
 					undo_redo->add_undo_method(node, "set_filename", node->get_filename());
 					_node_replace_owner(node, node, root);

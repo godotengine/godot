@@ -1395,7 +1395,6 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 
 	error_dialog = memnew(ConfirmationDialog);
 	error_dialog->get_ok()->set_text(TTR("Close"));
-	//error_dialog->get_cancel()->set_text("Close");
 	error_dialog->set_text(TTR("Error!"));
 	add_child(error_dialog);
 

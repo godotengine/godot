@@ -913,8 +913,8 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	updating = false;
 
-	get_ok()->set_text("Export PCK/Zip");
-	export_button = add_button("Export Project", !OS::get_singleton()->get_swap_ok_cancel(), "export");
+	get_ok()->set_text(TTR("Export PCK/Zip"));
+	export_button = add_button(TTR("Export Project"), !OS::get_singleton()->get_swap_ok_cancel(), "export");
 
 	export_pck_zip = memnew(FileDialog);
 	export_pck_zip->add_filter("*.zip ; ZIP File");

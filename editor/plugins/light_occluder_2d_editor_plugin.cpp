@@ -106,7 +106,7 @@ bool LightOccluder2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 	if (node->get_occluder_polygon().is_null()) {
 		Ref<InputEventMouseButton> mb = p_event;
 		if (mb.is_valid() && mb->get_button_index() == 1 && mb->is_pressed()) {
-			create_poly->set_text("No OccluderPolygon2D resource on this node.\nCreate and assign one?");
+			create_poly->set_text(TTR("No OccluderPolygon2D resource on this node.\nCreate and assign one?"));
 			create_poly->popup_centered_minsize();
 		}
 		return (mb.is_valid() && mb->get_button_index() == 1);
