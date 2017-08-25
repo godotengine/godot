@@ -1969,6 +1969,14 @@ FRAGMENT_SHADER_CODE
 
 #ifdef USE_MULTIPLE_RENDER_TARGETS
 
+
+#ifdef SHADELESS
+	frag_color=vec4(albedo,alpha);
+	diffuse_buffer=vec4(albedo.rgb,0.0);
+	specular_buffer=vec4(0.0);
+
+#else
+
 #if defined(ENABLE_AO)
 
 	float ambient_scale=0.0; // AO is supplied by material
@@ -1984,12 +1992,14 @@ FRAGMENT_SHADER_CODE
 	diffuse_buffer=vec4(emission+diffuse_light+ambient_light,ambient_scale);
 	specular_buffer=vec4(specular_light,metallic);
 
+#endif //SHADELESS
 
 	normal_mr_buffer=vec4(normalize(normal)*0.5+0.5,roughness);
 
 #if defined (ENABLE_SSS)
 	sss_buffer = sss_strength;
 #endif
+
 
 #else //USE_MULTIPLE_RENDER_TARGETS
 
