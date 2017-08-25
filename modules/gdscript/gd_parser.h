@@ -146,10 +146,13 @@ public:
 		Vector<StringName> variables;
 		Vector<int> variable_lines;
 
+		Node *if_condition; //tiny hack to improve code completion on if () blocks
+
 		//the following is useful for code completion
 		List<BlockNode *> sub_blocks;
 		int end_line;
 		BlockNode() {
+			if_condition = NULL;
 			type = TYPE_BLOCK;
 			end_line = -1;
 			parent_block = NULL;

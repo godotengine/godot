@@ -930,6 +930,20 @@ static bool _guess_expression_type(GDCompletionContext &context, const GDParser:
 
 static bool _guess_identifier_type_in_block(GDCompletionContext &context, int p_line, const StringName &p_identifier, GDCompletionIdentifier &r_type) {
 
+	if (context.block->if_condition && context.block->if_condition->type == GDParser::Node::TYPE_OPERATOR && static_cast<const GDParser::OperatorNode *>(context.block->if_condition)->op == GDParser::OperatorNode::OP_IS) {
+		//is used, check if identifier is in there! this helps resolve in blocks that are (if (identifier is value)): which are very common..
+		//super dirty hack, but very useful
+		//credit: Zylann
+		//TODO: this could be hacked to detect ANDed conditions too..
+		const GDParser::OperatorNode *op = static_cast<const GDParser::OperatorNode *>(context.block->if_condition);
+		if (op->arguments[0]->type == GDParser::Node::TYPE_IDENTIFIER && static_cast<const GDParser::IdentifierNode *>(op->arguments[0])->name == p_identifier) {
+			//bingo
+			if (_guess_expression_type(context, op->arguments[1], op->line, r_type)) {
+				return true;
+			}
+		}
+	}
+
 	GDCompletionIdentifier gdi = _get_native_class(context);
 	if (gdi.obj_type != StringName()) {
 		bool valid;

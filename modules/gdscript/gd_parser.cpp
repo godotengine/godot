@@ -2470,6 +2470,8 @@ void GDParser::_parse_block(BlockNode *p_block, bool p_static) {
 
 				cf_if->body = alloc_node<BlockNode>();
 				cf_if->body->parent_block = p_block;
+				cf_if->body->if_condition = condition; //helps code completion
+
 				p_block->sub_blocks.push_back(cf_if->body);
 
 				if (!_enter_indent_block(cf_if->body)) {
