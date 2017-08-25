@@ -370,15 +370,13 @@ void TileMap::_update_dirty_quadrants() {
 				s = tex->get_size();
 			else {
 				s = r.size;
-				r.position.x += fp_adjust;
-				r.position.y += fp_adjust;
-				r.size.x -= fp_adjust * 2.0;
-				r.size.y -= fp_adjust * 2.0;
 			}
 
 			Rect2 rect;
 			rect.position = offset.floor();
 			rect.size = s;
+			rect.size.x += fp_adjust;
+			rect.size.y += fp_adjust;
 
 			if (rect.size.y > rect.size.x) {
 				if ((c.flip_h && (c.flip_v || c.transpose)) || (c.flip_v && !c.transpose))
