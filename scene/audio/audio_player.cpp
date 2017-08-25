@@ -107,6 +107,15 @@ void AudioStreamPlayer::_notification(int p_what) {
 		}
 	}
 
+	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
+
+		if (!active || (setseek < 0 && !stream_playback->is_playing())) {
+			active = false;
+			emit_signal("finished");
+			set_process_internal(false);
+		}
+	}
+
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 
 		AudioServer::get_singleton()->remove_callback(_mix_audios, this);
@@ -158,6 +167,7 @@ void AudioStreamPlayer::play(float p_from_pos) {
 		mix_volume_db = volume_db; //reset volume ramp
 		setseek = p_from_pos;
 		active = true;
+		set_process_internal(true);
 	}
 }
 
@@ -172,6 +182,7 @@ void AudioStreamPlayer::stop() {
 
 	if (stream_playback.is_valid()) {
 		active = false;
+		set_process_internal(false);
 	}
 }
 
@@ -297,6 +308,8 @@ void AudioStreamPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoplay"), "set_autoplay", "is_autoplay_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mix_target", PROPERTY_HINT_ENUM, "Stereo,Surround,Center"), "set_mix_target", "get_mix_target");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
+
+	ADD_SIGNAL(MethodInfo("finished"));
 }
 
 AudioStreamPlayer::AudioStreamPlayer() {

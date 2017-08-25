@@ -533,6 +533,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 		if (!active) {
 			set_fixed_process_internal(false);
 			_change_notify("playing"); //update property in editor
+			emit_signal("finished");
 		}
 	}
 }
@@ -898,6 +899,8 @@ void AudioStreamPlayer3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_DISABLED);
 	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_IDLE_STEP);
 	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_FIXED_STEP);
+
+	ADD_SIGNAL(MethodInfo("finished"));
 }
 
 AudioStreamPlayer3D::AudioStreamPlayer3D() {
