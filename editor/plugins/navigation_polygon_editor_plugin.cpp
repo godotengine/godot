@@ -69,6 +69,7 @@ void NavigationPolygonEditor::_create_nav() {
 	undo_redo->add_do_method(node, "set_navigation_polygon", Ref<NavigationPolygon>(memnew(NavigationPolygon)));
 	undo_redo->add_undo_method(node, "set_navigation_polygon", Variant(REF()));
 	undo_redo->commit_action();
+	_menu_option(MODE_CREATE);
 }
 
 void NavigationPolygonEditor::_menu_option(int p_option) {
@@ -423,6 +424,11 @@ void NavigationPolygonEditor::edit(Node *p_collision_polygon) {
 	if (p_collision_polygon) {
 
 		node = Object::cast_to<NavigationPolygonInstance>(p_collision_polygon);
+		//Enable the pencil tool if the polygon is empty
+		if (!node->get_navigation_polygon().is_null()) {
+			if (node->get_navigation_polygon()->get_polygon_count() == 0)
+				_menu_option(MODE_CREATE);
+		}
 		if (!canvas_item_editor->get_viewport_control()->is_connected("draw", this, "_canvas_draw"))
 			canvas_item_editor->get_viewport_control()->connect("draw", this, "_canvas_draw");
 		wip.clear();

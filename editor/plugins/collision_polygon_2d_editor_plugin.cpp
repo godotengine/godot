@@ -344,6 +344,10 @@ void CollisionPolygon2DEditor::edit(Node *p_collision_polygon) {
 	if (p_collision_polygon) {
 
 		node = Object::cast_to<CollisionPolygon2D>(p_collision_polygon);
+		//Enable the pencil tool if the polygon is empty
+		if (node->get_polygon().size() == 0) {
+			_menu_option(MODE_CREATE);
+		}
 		if (!canvas_item_editor->get_viewport_control()->is_connected("draw", this, "_canvas_draw"))
 			canvas_item_editor->get_viewport_control()->connect("draw", this, "_canvas_draw");
 		wip.clear();
