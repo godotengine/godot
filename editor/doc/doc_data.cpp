@@ -249,11 +249,11 @@ void DocData::generate(bool p_basic_types) {
 
 			if (E->get().flags & METHOD_FLAG_VIRTUAL)
 				method.qualifiers = "virtual";
+
 			if (E->get().flags & METHOD_FLAG_CONST) {
 				if (method.qualifiers != "")
 					method.qualifiers += " ";
 				method.qualifiers += "const";
-
 			} else if (E->get().flags & METHOD_FLAG_VARARG) {
 				if (method.qualifiers != "")
 					method.qualifiers += " ";
@@ -303,8 +303,6 @@ void DocData::generate(bool p_basic_types) {
 					} else if (arginfo.type == Variant::NIL && arginfo.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
 
 						argument.type = "Variant";
-					} else if (arginfo.type == Variant::NIL) {
-						method.return_type = "void";
 					} else {
 						argument.type = Variant::get_type_name(arginfo.type);
 					}
@@ -932,13 +930,13 @@ Error DocData::save(const String &p_path) {
 
 				String enum_text;
 				if (a.enumeration != String()) {
-					enum_text = "enum=\"" + a.enumeration + "\"";
+					enum_text = " enum=\"" + a.enumeration + "\"";
 				}
 
 				if (a.default_value != "")
-					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\" " + enum_text + " default=\"" + a.default_value.xml_escape(true) + "\">");
+					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\"" + enum_text + " default=\"" + a.default_value.xml_escape(true) + "\">");
 				else
-					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\" " + enum_text + ">");
+					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\"" + enum_text + ">");
 
 				_write_string(f, 3, "</argument>");
 			}
@@ -962,10 +960,10 @@ Error DocData::save(const String &p_path) {
 
 				String enum_text;
 				if (c.properties[i].enumeration != String()) {
-					enum_text = "enum=\"" + c.properties[i].enumeration + "\"";
+					enum_text = " enum=\"" + c.properties[i].enumeration + "\"";
 				}
 				PropertyDoc &p = c.properties[i];
-				_write_string(f, 2, "<member name=\"" + p.name + "\" type=\"" + p.type + "\" setter=\"" + p.setter + "\" getter=\"" + p.getter + "\" brief=\"" + p.brief_description.xml_escape(true) + "\" " + enum_text + " >");
+				_write_string(f, 2, "<member name=\"" + p.name + "\" type=\"" + p.type + "\" setter=\"" + p.setter + "\" getter=\"" + p.getter + "\" brief=\"" + p.brief_description.xml_escape(true) + "\"" + enum_text + ">");
 				if (p.description != "")
 					_write_string(f, 3, p.description.xml_escape());
 				_write_string(f, 2, "</member>");
