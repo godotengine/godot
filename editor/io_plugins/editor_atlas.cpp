@@ -47,21 +47,15 @@ struct _EditorAtlasWorkRectResult {
 
 void EditorAtlas::fit(const Vector<Size2i> &p_rects, Vector<Point2i> &r_result, Size2i &r_size) {
 
-	//super simple, almost brute force scanline stacking fitter
-	//it's pretty basic for now, but it tries to make sure that the aspect ratio of the
-	//resulting atlas is somehow square. This is necesary because video cards have limits
-	//on texture size (usually 2048 or 4096), so the more square a texture, the more chances
-	//it will work in every hardware.
-	// for example, it will prioritize a 1024x1024 atlas (works everywhere) instead of a
-	// 256x8192 atlas (won't work anywhere).
-
 	ERR_FAIL_COND(p_rects.size() == 0);
 
 	Vector<_EditorAtlasWorkRect> wrects;
 	wrects.resize(p_rects.size());
+	long total_area = 0;
 	for (int i = 0; i < p_rects.size(); i++) {
 		wrects[i].s = p_rects[i];
 		wrects[i].idx = i;
+		total_area += p_rects[i].width * p_rects[i].height;
 	}
 	wrects.sort();
 	int widest = wrects[0].s.width;
@@ -76,37 +70,59 @@ void EditorAtlas::fit(const Vector<Size2i> &p_rects, Vector<Point2i> &r_result, 
 		if (w < widest)
 			continue;
 
-		Vector<int> hmax;
-		hmax.resize(w);
-		for (int j = 0; j < w; j++)
-			hmax[j] = 0;
-
-		//place them
-		int ofs = 0;
+		Vector<int> wmax;
+		wmax.resize(total_area / w);
+		for (int j = 0; j < wmax.size(); j++)
+			wmax[j] = 0;
 
 		for (int j = 0; j < wrects.size(); j++) {
 
-			if (ofs + wrects[j].s.width > w) {
+			int new_x = 0;
+			int new_y = 0;
 
-				ofs = 0;
-			}
+			int piece_w = wrects[j].s.width;
+			int piece_h = wrects[j].s.height;
 
-			int from_y = 0;
-			for (int k = 0; k < wrects[j].s.width; k++) {
+			bool found_place;
 
-				if (hmax[ofs + k] > from_y)
-					from_y = hmax[ofs + k];
-			}
+			do {
+				found_place = true;
+				new_x = 0;
+				if (wmax.size() <= new_y + piece_h) {
+					int prevS = wmax.size();
+					wmax.resize(new_y + piece_h + 128);
+					for (int k = prevS; k < wmax.size(); k++)
+						wmax[k] = 0;
+				}
+				for (int k = 0; k < piece_h; k++) {
+					if (new_x < wmax[new_y + k]) new_x = wmax[new_y + k];
+					if (new_x + piece_w > w) {
+						new_y += k + 1;
+						found_place = false;
+						break;
+					}
+				}
+				if (found_place) {
+					// one more check is calculating lost space of atlas
+					long lost_area = 0;
+					for (int k = 0; k < piece_h; k++) {
+						lost_area += new_x - wmax[new_y + k];
+					}
+					if (lost_area >= piece_w * piece_h / 2) {
+						found_place = false;
+						new_y++;
+					}
+				}
+			} while (!found_place);
 
-			wrects[j].p.x = ofs;
-			wrects[j].p.y = from_y;
+			wrects[j].p.x = new_x;
+			wrects[j].p.y = new_y;
 
-			int end_h = from_y + wrects[j].s.height;
-			int end_w = ofs + wrects[j].s.width;
+			int end_h = new_y + piece_h;
+			int end_w = new_x + piece_w;
 
-			for (int k = 0; k < wrects[j].s.width; k++) {
-
-				hmax[ofs + k] = end_h;
+			for (int k = 0; k < piece_h; k++) {
+				wmax[new_y + k] = end_w;
 			}
 
 			if (end_h > max_h)
@@ -114,8 +130,6 @@ void EditorAtlas::fit(const Vector<Size2i> &p_rects, Vector<Point2i> &r_result, 
 
 			if (end_w > max_w)
 				max_w = end_w;
-
-			ofs += wrects[j].s.width;
 		}
 
 		_EditorAtlasWorkRectResult result;
@@ -123,21 +137,23 @@ void EditorAtlas::fit(const Vector<Size2i> &p_rects, Vector<Point2i> &r_result, 
 		result.max_h = max_h;
 		result.max_w = max_w;
 		results.push_back(result);
+		float efficiency = float(max_w * max_h) / float(next_power_of_2(max_w) * next_power_of_2(max_h));
+		print_line("Processing atlas: width " + itos(w) + " ,height " + itos(max_h) + " ,efficiency " + rtos(efficiency));
 	}
 
-	//find the result with the best aspect ratio
+	//find the result with the most efficiency
 
 	int best = -1;
-	float best_aspect = 1e20;
+	float max_eff = 0;
 
 	for (int i = 0; i < results.size(); i++) {
 
 		float h = results[i].max_h;
 		float w = results[i].max_w;
-		float aspect = h > w ? h / w : w / h;
-		if (aspect < best_aspect) {
+		float efficiency = float(w * h) / float(next_power_of_2(w) * next_power_of_2(h));
+		if (efficiency > max_eff) {
 			best = i;
-			best_aspect = aspect;
+			max_eff = efficiency;
 		}
 	}
 
