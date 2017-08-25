@@ -425,6 +425,21 @@ void Polygon2DEditor::_canvas_draw() {
 	Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 	Ref<Texture> handle = get_icon("EditorHandle", "EditorIcons");
 
+
+	if (edited_point >= 0 && !wip_active) {
+		Vector<Vector2> points;
+
+		for (int i = 0; i < poly.size(); i++) {
+
+			Vector2 p;
+			p = i == edited_point ? edited_point_pos : (poly[i] + node->get_offset());
+			Vector2 point = xform.xform(p);
+			points.insert(points.size(), point);
+		}
+
+		vpc->draw_colored_polygon(points, Color(0.0, 0.0, 0.0, 0.3));
+	}
+
 	for (int i = 0; i < poly.size(); i++) {
 
 		Vector2 p, p2;
