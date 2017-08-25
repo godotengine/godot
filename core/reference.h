@@ -180,7 +180,7 @@ public:
 			return;
 		}
 		Ref r;
-		r.reference = refb->cast_to<T>();
+		r.reference = Object::cast_to<T>(refb);
 		ref(r);
 		r.reference = NULL;
 	}
@@ -194,7 +194,7 @@ public:
 			return;
 		}
 		Ref r;
-		r.reference = refb->cast_to<T>();
+		r.reference = Object::cast_to<T>(refb);
 		ref(r);
 		r.reference = NULL;
 	}
@@ -209,7 +209,7 @@ public:
 			return;
 		}
 		Ref r;
-		r.reference = refb->cast_to<T>();
+		r.reference = Object::cast_to<T>(refb);
 		ref(r);
 		r.reference = NULL;
 	}
@@ -230,7 +230,7 @@ public:
 			return;
 		}
 		Ref r;
-		r.reference = refb->cast_to<T>();
+		r.reference = Object::cast_to<T>(refb);
 		ref(r);
 		r.reference = NULL;
 	}
@@ -254,7 +254,7 @@ public:
 			return;
 		}
 		Ref r;
-		r.reference = refb->cast_to<T>();
+		r.reference = Object::cast_to<T>(refb);
 		ref(r);
 		r.reference = NULL;
 	}
@@ -269,7 +269,7 @@ public:
 			return;
 		}
 		Ref r;
-		r.reference = refb->cast_to<T>();
+		r.reference = Object::cast_to<T>(refb);
 		ref(r);
 		r.reference = NULL;
 	}

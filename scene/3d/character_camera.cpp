@@ -369,7 +369,7 @@ void CharacterCamera::_notification(int p_what) {
 
 			Node* parent = get_parent();
 			while (parent) {
-				PhysicsBody* p = parent->cast_to<PhysicsBody>();
+				PhysicsBody* p = Object::cast_to<PhysicsBody>(parent);
 				if (p) {
 					target_body = p->get_body();
 					break;

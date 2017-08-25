@@ -51,9 +51,7 @@ bool BoneAttachment::_set(const StringName &p_name, const Variant &p_value) {
 }
 void BoneAttachment::_get_property_list(List<PropertyInfo> *p_list) const {
 
-	Skeleton *parent = NULL;
-	if (get_parent())
-		parent = get_parent()->cast_to<Skeleton>();
+	Skeleton *parent = Object::cast_to<Skeleton>(get_parent());
 
 	if (parent) {
 
@@ -73,8 +71,8 @@ void BoneAttachment::_get_property_list(List<PropertyInfo> *p_list) const {
 
 void BoneAttachment::_check_bind() {
 
-	if (get_parent() && get_parent()->cast_to<Skeleton>()) {
-		Skeleton *sk = get_parent()->cast_to<Skeleton>();
+	if (Skeleton *sk = Object::cast_to<Skeleton>(get_parent())) {
+
 		int idx = sk->find_bone(bone_name);
 		if (idx != -1) {
 			sk->bind_child_node_to_bone(idx, this);
@@ -88,8 +86,8 @@ void BoneAttachment::_check_unbind() {
 
 	if (bound) {
 
-		if (get_parent() && get_parent()->cast_to<Skeleton>()) {
-			Skeleton *sk = get_parent()->cast_to<Skeleton>();
+		if (Skeleton *sk = Object::cast_to<Skeleton>(get_parent())) {
+
 			int idx = sk->find_bone(bone_name);
 			if (idx != -1) {
 				sk->unbind_child_node_from_bone(idx, this);

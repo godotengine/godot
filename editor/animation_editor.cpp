@@ -3249,9 +3249,9 @@ void AnimationKeyEditor::insert_value_key(const String &p_property, const Varian
 	//let's build a node path
 	ERR_FAIL_COND(history->get_path_size() == 0);
 	Object *obj = ObjectDB::get_instance(history->get_path_object(0));
-	ERR_FAIL_COND(!obj || !obj->cast_to<Node>());
+	ERR_FAIL_COND(!Object::cast_to<Node>(obj));
 
-	Node *node = obj->cast_to<Node>();
+	Node *node = Object::cast_to<Node>(obj);
 
 	String path = root->get_path_to(node);
 

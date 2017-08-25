@@ -236,10 +236,7 @@ public:
 	T *get_node_editor_data(Node *p_node) {
 		if (!selection.has(p_node))
 			return NULL;
-		Object *obj = selection[p_node];
-		if (!obj)
-			return NULL;
-		return obj->cast_to<T>();
+		return Object::cast_to<T>(selection[p_node]);
 	}
 
 	void add_editor_plugin(Object *p_object);

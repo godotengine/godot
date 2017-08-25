@@ -29,7 +29,7 @@ public:
 
 	virtual Variant call(Object* p_object,const Variant** p_args,int p_arg_count, Variant::CallError& r_error) {
 
-		T *instance=p_object->cast_to<T>();
+		T *instance=Object::cast_to<T>(p_object);
 		r_error.error=Variant::CallError::CALL_OK;
 #ifdef DEBUG_METHODS_ENABLED
 
@@ -57,7 +57,7 @@ public:
 #ifdef PTRCALL_ENABLED
 	virtual void ptrcall(Object*p_object,const void** p_args,void *r_ret) {
 
-		T *instance=p_object->cast_to<T>();
+		T *instance=Object::cast_to<T>(p_object);
 		$ifret PtrToArg<R>::encode( $ (instance->*method)($arg, PtrToArg<P@>::convert(p_args[@-1])$) $ifret ,r_ret)$ ;
 	}
 #endif

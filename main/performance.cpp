@@ -125,9 +125,7 @@ float Performance::get_monitor(Monitor p_monitor) const {
 		case OBJECT_NODE_COUNT: {
 
 			MainLoop *ml = OS::get_singleton()->get_main_loop();
-			if (!ml)
-				return 0;
-			SceneTree *sml = ml->cast_to<SceneTree>();
+			SceneTree *sml = Object::cast_to<SceneTree>(ml);
 			if (!sml)
 				return 0;
 			return sml->get_node_count();

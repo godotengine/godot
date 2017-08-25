@@ -74,7 +74,7 @@ Ref<ArrayMesh> Shape::get_debug_mesh() {
 		arr.resize(Mesh::ARRAY_MAX);
 		arr[Mesh::ARRAY_VERTEX] = array;
 
-		SceneTree *st = OS::get_singleton()->get_main_loop()->cast_to<SceneTree>();
+		SceneTree *st = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
 
 		debug_mesh_cache->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, arr);
 

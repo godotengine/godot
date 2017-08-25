@@ -51,7 +51,7 @@ void ParticlesEditor::_node_selected(const NodePath &p_path) {
 	if (!sel)
 		return;
 
-	VisualInstance *vi = sel->cast_to<VisualInstance>();
+	VisualInstance *vi = Object::cast_to<VisualInstance>(sel);
 	if (!vi) {
 
 		err_dialog->set_text(TTR("Node does not contain geometry."));
@@ -135,7 +135,7 @@ void ParticlesEditor::_menu_option(int p_option) {
 			/*
 			Node *root = get_scene()->get_root_node();
 			ERR_FAIL_COND(!root);
-			EditorNode *en = root->cast_to<EditorNode>();
+			EditorNode *en = Object::cast_to<EditorNode>(root);
 			ERR_FAIL_COND(!en);
 			Node * node = en->get_edited_scene();
 */
@@ -461,7 +461,7 @@ ParticlesEditor::ParticlesEditor() {
 
 void ParticlesEditorPlugin::edit(Object *p_object) {
 
-	particles_editor->edit(p_object->cast_to<Particles>());
+	particles_editor->edit(Object::cast_to<Particles>(p_object));
 }
 
 bool ParticlesEditorPlugin::handles(Object *p_object) const {

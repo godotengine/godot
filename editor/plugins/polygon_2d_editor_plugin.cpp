@@ -697,7 +697,7 @@ void Polygon2DEditor::edit(Node *p_collision_polygon) {
 
 	if (p_collision_polygon) {
 
-		node = p_collision_polygon->cast_to<Polygon2D>();
+		node = Object::cast_to<Polygon2D>(p_collision_polygon);
 		if (!canvas_item_editor->get_viewport_control()->is_connected("draw", this, "_canvas_draw"))
 			canvas_item_editor->get_viewport_control()->connect("draw", this, "_canvas_draw");
 
@@ -925,7 +925,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) {
 
 void Polygon2DEditorPlugin::edit(Object *p_object) {
 
-	collision_polygon_editor->edit(p_object->cast_to<Node>());
+	collision_polygon_editor->edit(Object::cast_to<Node>(p_object));
 }
 
 bool Polygon2DEditorPlugin::handles(Object *p_object) const {

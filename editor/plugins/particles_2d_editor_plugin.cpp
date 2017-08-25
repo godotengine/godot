@@ -33,13 +33,10 @@
 #include "io/image_loader.h"
 #include "scene/3d/particles.h"
 #include "scene/gui/separator.h"
+
 void Particles2DEditorPlugin::edit(Object *p_object) {
 
-	if (p_object) {
-		particles = p_object->cast_to<Particles2D>();
-	} else {
-		particles = NULL;
-	}
+	particles = Object::cast_to<Particles2D>(p_object);
 }
 
 bool Particles2DEditorPlugin::handles(Object *p_object) const {

@@ -46,7 +46,7 @@ GradientEditorPlugin::GradientEditorPlugin(EditorNode *p_node) {
 
 void GradientEditorPlugin::edit(Object *p_object) {
 
-	Gradient *gradient = p_object->cast_to<Gradient>();
+	Gradient *gradient = Object::cast_to<Gradient>(p_object);
 	if (!gradient)
 		return;
 	gradient_ref = Ref<Gradient>(gradient);

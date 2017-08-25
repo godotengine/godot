@@ -534,7 +534,7 @@ void Path2DEditor::edit(Node *p_path2d) {
 
 	if (p_path2d) {
 
-		node = p_path2d->cast_to<Path2D>();
+		node = Object::cast_to<Path2D>(p_path2d);
 		if (!canvas_item_editor->get_viewport_control()->is_connected("draw", this, "_canvas_draw"))
 			canvas_item_editor->get_viewport_control()->connect("draw", this, "_canvas_draw");
 		if (!node->is_connected("visibility_changed", this, "_node_visibility_changed"))
@@ -676,7 +676,7 @@ Path2DEditor::Path2DEditor(EditorNode *p_editor) {
 
 void Path2DEditorPlugin::edit(Object *p_object) {
 
-	path2d_editor->edit(p_object->cast_to<Node>());
+	path2d_editor->edit(Object::cast_to<Node>(p_object));
 }
 
 bool Path2DEditorPlugin::handles(Object *p_object) const {

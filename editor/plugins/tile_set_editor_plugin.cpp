@@ -43,7 +43,7 @@ void TileSetEditor::_import_node(Node *p_node, Ref<TileSet> p_library) {
 
 		Node *child = p_node->get_child(i);
 
-		if (!child->cast_to<Sprite>()) {
+		if (!Object::cast_to<Sprite>(child)) {
 			if (child->get_child_count() > 0) {
 				_import_node(child, p_library);
 			}
@@ -51,7 +51,7 @@ void TileSetEditor::_import_node(Node *p_node, Ref<TileSet> p_library) {
 			continue;
 		}
 
-		Sprite *mi = child->cast_to<Sprite>();
+		Sprite *mi = Object::cast_to<Sprite>(child);
 		Ref<Texture> texture = mi->get_texture();
 		Ref<Texture> normal_map = mi->get_normal_map();
 		Ref<ShaderMaterial> material = mi->get_material();
@@ -99,18 +99,18 @@ void TileSetEditor::_import_node(Node *p_node, Ref<TileSet> p_library) {
 
 			Node *child2 = mi->get_child(j);
 
-			if (child2->cast_to<NavigationPolygonInstance>())
-				nav_poly = child2->cast_to<NavigationPolygonInstance>()->get_navigation_polygon();
+			if (Object::cast_to<NavigationPolygonInstance>(child2))
+				nav_poly = Object::cast_to<NavigationPolygonInstance>(child2)->get_navigation_polygon();
 
-			if (child2->cast_to<LightOccluder2D>())
-				occluder = child2->cast_to<LightOccluder2D>()->get_occluder_polygon();
+			if (Object::cast_to<LightOccluder2D>(child2))
+				occluder = Object::cast_to<LightOccluder2D>(child2)->get_occluder_polygon();
 
-			if (!child2->cast_to<StaticBody2D>())
+			if (!Object::cast_to<StaticBody2D>(child2))
 				continue;
 
 			found_collisions = true;
 
-			StaticBody2D *sb = child2->cast_to<StaticBody2D>();
+			StaticBody2D *sb = Object::cast_to<StaticBody2D>(child2);
 
 			List<uint32_t> shapes;
 			sb->get_shape_owners(&shapes);
@@ -268,8 +268,8 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 
 void TileSetEditorPlugin::edit(Object *p_node) {
 
-	if (p_node && p_node->cast_to<TileSet>()) {
-		tileset_editor->edit(p_node->cast_to<TileSet>());
+	if (Object::cast_to<TileSet>(p_node)) {
+		tileset_editor->edit(Object::cast_to<TileSet>(p_node));
 		tileset_editor->show();
 	} else
 		tileset_editor->hide();

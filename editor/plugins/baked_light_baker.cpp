@@ -301,16 +301,13 @@ void BakedLightBaker::_add_mesh(const Ref<Mesh>& p_mesh,const Ref<Material>& p_m
 
 void BakedLightBaker::_parse_geometry(Node* p_node) {
 
-	if (p_node->cast_to<MeshInstance>()) {
+	if (MeshInstance *meshi=Object::cast_to<MeshInstance>(p_node)) {
 
-		MeshInstance *meshi=p_node->cast_to<MeshInstance>();
 		Ref<Mesh> mesh=meshi->get_mesh();
 		if (mesh.is_valid()) {
 			_add_mesh(mesh,meshi->get_material_override(),base_inv * meshi->get_global_transform(),meshi->get_baked_light_texture_id());
 		}
-	} else if (p_node->cast_to<Light>()) {
-
-		Light *dl=p_node->cast_to<Light>();
+	} else if (Light *dl=Object::cast_to<Light>(p_node)) {
 
 		if (dl->get_bake_mode()!=Light::BAKE_MODE_DISABLED) {
 
@@ -340,9 +337,7 @@ void BakedLightBaker::_parse_geometry(Node* p_node) {
 			lights.push_back(dirl);
 		}
 
-	} else if (p_node->cast_to<Spatial>()){
-
-		Spatial *sp = p_node->cast_to<Spatial>();
+	} else if (Spatial *sp = Object::cast_to<Spatial>(p_node)){
 
 		Array arr = p_node->call("_get_baked_light_meshes");
 		for(int i=0;i<arr.size();i+=2) {
@@ -1741,7 +1736,7 @@ void BakedLightBaker::bake(const Ref<BakedLight> &p_light, Node* p_node) {
 		return;
 	cell_count=0;
 
-	base_inv=p_node->cast_to<Spatial>()->get_global_transform().affine_inverse();
+	base_inv=Object::cast_to<Spatial>(p_node)->get_global_transform().affine_inverse();
 	EditorProgress ep("bake",TTR("Light Baker Setup:"),5);
 	baked_light=p_light;
 	lattice_size=baked_light->get_initial_lattice_subdiv();

@@ -422,7 +422,7 @@ void NavigationPolygonEditor::edit(Node *p_collision_polygon) {
 
 	if (p_collision_polygon) {
 
-		node = p_collision_polygon->cast_to<NavigationPolygonInstance>();
+		node = Object::cast_to<NavigationPolygonInstance>(p_collision_polygon);
 		if (!canvas_item_editor->get_viewport_control()->is_connected("draw", this, "_canvas_draw"))
 			canvas_item_editor->get_viewport_control()->connect("draw", this, "_canvas_draw");
 		wip.clear();
@@ -486,7 +486,7 @@ NavigationPolygonEditor::NavigationPolygonEditor(EditorNode *p_editor) {
 
 void NavigationPolygonEditorPlugin::edit(Object *p_object) {
 
-	collision_polygon_editor->edit(p_object->cast_to<Node>());
+	collision_polygon_editor->edit(Object::cast_to<Node>(p_object));
 }
 
 bool NavigationPolygonEditorPlugin::handles(Object *p_object) const {

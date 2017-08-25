@@ -703,7 +703,7 @@ EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* 
 	VBoxContainer *source_vb=memnew(VBoxContainer);
 	MarginContainer *source_mc = vbc->add_margin_child(TTR("Source Texture(s):"),source_vb);
 
-	source_label = vbc->get_child(source_mc->get_index()-1)->cast_to<Label>();
+	source_label = Object::cast_to<Label>(vbc->get_child(source_mc->get_index()-1));
 
 	HBoxContainer *hbc = memnew( HBoxContainer );
 	source_vb->add_child(hbc);
@@ -733,7 +733,7 @@ EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* 
 
 	size->set_value(256);
 	size_mc=vbc->add_margin_child(TTR("Cell Size:"),size);
-	size_label=vbc->get_child(size_mc->get_index()-1)->cast_to<Label>();
+	size_label=Object::cast_to<Label>(vbc->get_child(size_mc->get_index()-1));
 
 
 	save_path = memnew( LineEdit );
@@ -1326,7 +1326,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 
 				if (ResourceCache::has(apath)) {
 
-					at = Ref<AtlasTexture>( ResourceCache::get(apath)->cast_to<AtlasTexture>() );
+					at = Ref<AtlasTexture>( Object::cast_to<AtlasTexture>(ResourceCache::get(apath)) );
 				} else {
 
 					at = Ref<AtlasTexture>( memnew( AtlasTexture ) );
@@ -1340,7 +1340,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 			}
 		}
 		if (ResourceCache::has(p_path)) {
-			texture = Ref<ImageTexture> ( ResourceCache::get(p_path)->cast_to<ImageTexture>() );
+			texture = Ref<ImageTexture> ( Object::cast_to<ImageTexture>(ResourceCache::get(p_path)) );
 		} else {
 			texture = Ref<ImageTexture>( memnew( ImageTexture ) );
 		}
@@ -1354,7 +1354,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 		if (ResourceCache::has(p_path)) {
 			Resource *r = ResourceCache::get(p_path);
 
-			texture = Ref<ImageTexture> ( r->cast_to<ImageTexture>() );
+			texture = Ref<ImageTexture> ( Object::cast_to<ImageTexture>(r) );
 
 			Image img;
 			Error err = img.load(src_path);

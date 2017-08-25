@@ -50,7 +50,7 @@ void CollisionShape2D::_notification(int p_what) {
 
 		case NOTIFICATION_PARENTED: {
 
-			parent = get_parent()->cast_to<CollisionObject2D>();
+			parent = Object::cast_to<CollisionObject2D>(get_parent());
 			if (parent) {
 				owner_id = parent->create_shape_owner(this);
 				if (shape.is_valid()) {
@@ -165,7 +165,7 @@ Rect2 CollisionShape2D::get_item_rect() const {
 
 String CollisionShape2D::get_configuration_warning() const {
 
-	if (!get_parent()->cast_to<CollisionObject2D>()) {
+	if (!Object::cast_to<CollisionObject2D>(get_parent())) {
 		return TTR("CollisionShape2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape.");
 	}
 

@@ -464,7 +464,7 @@ void CollisionPolygonEditor::edit(Node *p_collision_polygon) {
 
 	if (p_collision_polygon) {
 
-		node = p_collision_polygon->cast_to<CollisionPolygon>();
+		node = Object::cast_to<CollisionPolygon>(p_collision_polygon);
 		wip.clear();
 		wip_active = false;
 		edited_point = -1;
@@ -555,7 +555,7 @@ CollisionPolygonEditor::~CollisionPolygonEditor() {
 
 void CollisionPolygonEditorPlugin::edit(Object *p_object) {
 
-	collision_polygon_editor->edit(p_object->cast_to<Node>());
+	collision_polygon_editor->edit(Object::cast_to<Node>(p_object));
 }
 
 bool CollisionPolygonEditorPlugin::handles(Object *p_object) const {

@@ -408,7 +408,7 @@ SampleEditor::SampleEditor() {
 
 void SampleEditorPlugin::edit(Object *p_object) {
 
-	Sample * s = p_object->cast_to<Sample>();
+	Sample * s = Object::cast_to<Sample>(p_object);
 	if (!s)
 		return;
 

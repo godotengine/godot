@@ -1603,7 +1603,7 @@ Ref<BitmapFont> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMe
 
 	if (p_existing!=String() && ResourceCache::has(p_existing)) {
 
-		font = Ref<BitmapFont>( ResourceCache::get(p_existing)->cast_to<BitmapFont>());
+		font = Ref<BitmapFont>( Object::cast_to<BitmapFont>(ResourceCache::get(p_existing)));
 	}
 
 	if (font.is_null()) {

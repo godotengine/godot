@@ -56,11 +56,10 @@ void ColorPicker::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			if (get_parent()) {
-				Popup *p = get_parent()->cast_to<Popup>();
-				if (p)
-					p->set_size(Size2(get_combined_minimum_size().width + get_constant("margin") * 2, get_combined_minimum_size().height + get_constant("margin") * 2));
-			}
+
+			Popup *p = Object::cast_to<Popup>(get_parent());
+			if (p)
+				p->set_size(Size2(get_combined_minimum_size().width + get_constant("margin") * 2, get_combined_minimum_size().height + get_constant("margin") * 2));
 		} break;
 
 		case MainLoop::NOTIFICATION_WM_QUIT_REQUEST: {

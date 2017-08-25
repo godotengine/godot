@@ -367,7 +367,7 @@ void LightOccluder2DEditor::edit(Node *p_collision_polygon) {
 
 	if (p_collision_polygon) {
 
-		node = p_collision_polygon->cast_to<LightOccluder2D>();
+		node = Object::cast_to<LightOccluder2D>(p_collision_polygon);
 		if (!canvas_item_editor->get_viewport_control()->is_connected("draw", this, "_canvas_draw"))
 			canvas_item_editor->get_viewport_control()->connect("draw", this, "_canvas_draw");
 		wip.clear();
@@ -441,7 +441,7 @@ LightOccluder2DEditor::LightOccluder2DEditor(EditorNode *p_editor) {
 
 void LightOccluder2DEditorPlugin::edit(Object *p_object) {
 
-	collision_polygon_editor->edit(p_object->cast_to<Node>());
+	collision_polygon_editor->edit(Object::cast_to<Node>(p_object));
 }
 
 bool LightOccluder2DEditorPlugin::handles(Object *p_object) const {

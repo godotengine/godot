@@ -111,7 +111,7 @@ bool Skeleton::_get(const StringName &p_path, Variant &r_ret) const {
 
 			Object *obj = ObjectDB::get_instance(E->get());
 			ERR_CONTINUE(!obj);
-			Node *node = obj->cast_to<Node>();
+			Node *node = Object::cast_to<Node>(obj);
 			ERR_CONTINUE(!node);
 			NodePath path = get_path_to(node);
 			children.push_back(path);
@@ -245,7 +245,7 @@ void Skeleton::_notification(int p_what) {
 
 					Object *obj = ObjectDB::get_instance(E->get());
 					ERR_CONTINUE(!obj);
-					Spatial *sp = obj->cast_to<Spatial>();
+					Spatial *sp = Object::cast_to<Spatial>(obj);
 					ERR_CONTINUE(!sp);
 					sp->set_transform(b.pose_global);
 				}
@@ -433,7 +433,7 @@ void Skeleton::get_bound_child_nodes_to_bone(int p_bone, List<Node *> *p_bound) 
 
 		Object *obj = ObjectDB::get_instance(E->get());
 		ERR_CONTINUE(!obj);
-		p_bound->push_back(obj->cast_to<Node>());
+		p_bound->push_back(Object::cast_to<Node>(obj));
 	}
 }
 

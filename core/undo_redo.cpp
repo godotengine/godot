@@ -111,8 +111,8 @@ void UndoRedo::add_do_method(Object *p_object, const String &p_method, VARIANT_A
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 	Operation do_op;
 	do_op.object = p_object->get_instance_id();
-	if (p_object->cast_to<Resource>())
-		do_op.resref = Ref<Resource>(p_object->cast_to<Resource>());
+	if (Object::cast_to<Resource>(p_object))
+		do_op.resref = Ref<Resource>(Object::cast_to<Resource>(p_object));
 
 	do_op.type = Operation::TYPE_METHOD;
 	do_op.name = p_method;
@@ -135,8 +135,8 @@ void UndoRedo::add_undo_method(Object *p_object, const String &p_method, VARIANT
 
 	Operation undo_op;
 	undo_op.object = p_object->get_instance_id();
-	if (p_object->cast_to<Resource>())
-		undo_op.resref = Ref<Resource>(p_object->cast_to<Resource>());
+	if (Object::cast_to<Resource>(p_object))
+		undo_op.resref = Ref<Resource>(Object::cast_to<Resource>(p_object));
 
 	undo_op.type = Operation::TYPE_METHOD;
 	undo_op.name = p_method;
@@ -152,8 +152,8 @@ void UndoRedo::add_do_property(Object *p_object, const String &p_property, const
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 	Operation do_op;
 	do_op.object = p_object->get_instance_id();
-	if (p_object->cast_to<Resource>())
-		do_op.resref = Ref<Resource>(p_object->cast_to<Resource>());
+	if (Object::cast_to<Resource>(p_object))
+		do_op.resref = Ref<Resource>(Object::cast_to<Resource>(p_object));
 
 	do_op.type = Operation::TYPE_PROPERTY;
 	do_op.name = p_property;
@@ -171,8 +171,8 @@ void UndoRedo::add_undo_property(Object *p_object, const String &p_property, con
 
 	Operation undo_op;
 	undo_op.object = p_object->get_instance_id();
-	if (p_object->cast_to<Resource>())
-		undo_op.resref = Ref<Resource>(p_object->cast_to<Resource>());
+	if (Object::cast_to<Resource>(p_object))
+		undo_op.resref = Ref<Resource>(Object::cast_to<Resource>(p_object));
 
 	undo_op.type = Operation::TYPE_PROPERTY;
 	undo_op.name = p_property;
@@ -185,8 +185,8 @@ void UndoRedo::add_do_reference(Object *p_object) {
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 	Operation do_op;
 	do_op.object = p_object->get_instance_id();
-	if (p_object->cast_to<Resource>())
-		do_op.resref = Ref<Resource>(p_object->cast_to<Resource>());
+	if (Object::cast_to<Resource>(p_object))
+		do_op.resref = Ref<Resource>(Object::cast_to<Resource>(p_object));
 
 	do_op.type = Operation::TYPE_REFERENCE;
 	actions[current_action + 1].do_ops.push_back(do_op);
@@ -202,8 +202,8 @@ void UndoRedo::add_undo_reference(Object *p_object) {
 
 	Operation undo_op;
 	undo_op.object = p_object->get_instance_id();
-	if (p_object->cast_to<Resource>())
-		undo_op.resref = Ref<Resource>(p_object->cast_to<Resource>());
+	if (Object::cast_to<Resource>(p_object))
+		undo_op.resref = Ref<Resource>(Object::cast_to<Resource>(p_object));
 
 	undo_op.type = Operation::TYPE_REFERENCE;
 	actions[current_action + 1].undo_ops.push_back(undo_op);
@@ -270,7 +270,7 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
 
 				obj->call(op.name, VARIANT_ARGS_FROM_ARRAY(op.args));
 #ifdef TOOLS_ENABLED
-				Resource *res = obj->cast_to<Resource>();
+				Resource *res = Object::cast_to<Resource>(obj);
 				if (res)
 					res->set_edited(true);
 
@@ -284,7 +284,7 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
 
 				obj->set(op.name, op.args[0]);
 #ifdef TOOLS_ENABLED
-				Resource *res = obj->cast_to<Resource>();
+				Resource *res = Object::cast_to<Resource>(obj);
 				if (res)
 					res->set_edited(true);
 #endif

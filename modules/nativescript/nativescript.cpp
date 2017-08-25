@@ -399,7 +399,7 @@ Variant NativeScript::_new(const Variant **p_args, int p_argcount, Variant::Call
 		owner = memnew(Reference);
 	}
 
-	Reference *r = owner->cast_to<Reference>();
+	Reference *r = Object::cast_to<Reference>(owner);
 	if (r) {
 		ref = REF(r);
 	}
@@ -1203,11 +1203,11 @@ Error ResourceFormatSaverNativeScript::save(const String &p_path, const RES &p_r
 }
 
 bool ResourceFormatSaverNativeScript::recognize(const RES &p_resource) const {
-	return p_resource->cast_to<NativeScript>() != NULL;
+	return Object::cast_to<NativeScript>(*p_resource) != NULL;
 }
 
 void ResourceFormatSaverNativeScript::get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const {
-	if (p_resource->cast_to<NativeScript>()) {
+	if (Object::cast_to<NativeScript>(*p_resource)) {
 		p_extensions->push_back("gdns");
 	}
 }

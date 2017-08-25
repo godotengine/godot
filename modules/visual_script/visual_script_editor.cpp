@@ -422,7 +422,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 
 		for (int i = 0; i < graph->get_child_count(); i++) {
 
-			if (graph->get_child(i)->cast_to<GraphNode>()) {
+			if (Object::cast_to<GraphNode>(graph->get_child(i))) {
 				memdelete(graph->get_child(i));
 				i--;
 			}
@@ -506,7 +506,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 			gnode->set_show_close_button(true);
 		}
 
-		if (node->cast_to<VisualScriptExpression>()) {
+		if (Object::cast_to<VisualScriptExpression>(*node)) {
 
 			LineEdit *line_edit = memnew(LineEdit);
 			line_edit->set_text(node->get_text());
@@ -520,7 +520,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 			gnode->add_child(text);
 		}
 
-		if (node->cast_to<VisualScriptComment>()) {
+		if (Object::cast_to<VisualScriptExpression>(*node)) {
 			Ref<VisualScriptComment> vsc = node;
 			gnode->set_comment(true);
 			gnode->set_resizeable(true);
@@ -970,7 +970,7 @@ void VisualScriptEditor::_override_pressed(int p_id) {
 
 void VisualScriptEditor::_member_button(Object *p_item, int p_column, int p_button) {
 
-	TreeItem *ti = p_item->cast_to<TreeItem>();
+	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
 
 	TreeItem *root = members->get_root();
 
@@ -1117,8 +1117,8 @@ void VisualScriptEditor::_expression_text_changed(const String &p_text, int p_id
 	undo_redo->commit_action();
 
 	Node *node = graph->get_node(itos(p_id));
-	if (node->cast_to<Control>())
-		node->cast_to<Control>()->set_size(Vector2(1, 1)); //shrink if text is smaller
+	if (Object::cast_to<Control>(node))
+		Object::cast_to<Control>(node)->set_size(Vector2(1, 1)); //shrink if text is smaller
 
 	updating_graph = false;
 }
@@ -1253,7 +1253,7 @@ void VisualScriptEditor::_on_nodes_delete() {
 	List<int> to_erase;
 
 	for (int i = 0; i < graph->get_child_count(); i++) {
-		GraphNode *gn = graph->get_child(i)->cast_to<GraphNode>();
+		GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
 		if (gn) {
 			if (gn->is_selected() && gn->is_close_button_visible()) {
 				to_erase.push_back(gn->get_name().operator String().to_int());
@@ -1302,7 +1302,7 @@ void VisualScriptEditor::_on_nodes_duplicate() {
 	List<int> to_duplicate;
 
 	for (int i = 0; i < graph->get_child_count(); i++) {
-		GraphNode *gn = graph->get_child(i)->cast_to<GraphNode>();
+		GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
 		if (gn) {
 			if (gn->is_selected() && gn->is_close_button_visible()) {
 				to_duplicate.push_back(gn->get_name().operator String().to_int());
@@ -1335,7 +1335,7 @@ void VisualScriptEditor::_on_nodes_duplicate() {
 	undo_redo->commit_action();
 
 	for (int i = 0; i < graph->get_child_count(); i++) {
-		GraphNode *gn = graph->get_child(i)->cast_to<GraphNode>();
+		GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
 		if (gn) {
 			int id = gn->get_name().operator String().to_int();
 			gn->set_selected(to_select.has(id));
@@ -1799,7 +1799,7 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 			if (!obj)
 				return;
 
-			Node *node = obj->cast_to<Node>();
+			Node *node = Object::cast_to<Node>(obj);
 			Vector2 ofs = graph->get_scroll_ofs() + p_point;
 
 			if (graph->is_using_snap()) {
@@ -1918,7 +1918,7 @@ void VisualScriptEditor::_selected_method(const String &p_method) {
 
 void VisualScriptEditor::_draw_color_over_button(Object *obj, Color p_color) {
 
-	Button *button = obj->cast_to<Button>();
+	Button *button = Object::cast_to<Button>(obj);
 	if (!button)
 		return;
 
@@ -1937,7 +1937,7 @@ void VisualScriptEditor::_button_resource_previewed(const String &p_path, const 
 	if (!obj)
 		return;
 
-	Button *b = obj->cast_to<Button>();
+	Button *b = Object::cast_to<Button>(obj);
 	ERR_FAIL_COND(!b);
 
 	if (p_preview.is_null()) {
@@ -2050,9 +2050,7 @@ void VisualScriptEditor::set_edit_state(const Variant &p_state) {
 void VisualScriptEditor::_center_on_node(int p_id) {
 
 	Node *n = graph->get_node(itos(p_id));
-	if (!n)
-		return;
-	GraphNode *gn = n->cast_to<GraphNode>();
+	GraphNode *gn = Object::cast_to<GraphNode>(n);
 	if (gn) {
 		gn->set_selected(true);
 		Vector2 new_scroll = gn->get_offset() - graph->get_size() * 0.5 + gn->get_size() * 0.5;
@@ -2270,8 +2268,8 @@ void VisualScriptEditor::_move_node(String func, int p_id, const Vector2 &p_to) 
 
 	if (func == String(edited_func)) {
 		Node *node = graph->get_node(itos(p_id));
-		if (node && node->cast_to<GraphNode>())
-			node->cast_to<GraphNode>()->set_offset(p_to);
+		if (Object::cast_to<GraphNode>(node))
+			Object::cast_to<GraphNode>(node)->set_offset(p_to);
 	}
 	script->set_node_pos(edited_func, p_id, p_to / EDSCALE);
 }
@@ -2421,10 +2419,7 @@ void VisualScriptEditor::_graph_disconnected(const String &p_from, int p_from_sl
 void VisualScriptEditor::_graph_connect_to_empty(const String &p_from, int p_from_slot, const Vector2 &p_release_pos) {
 
 	Node *node = graph->get_node(p_from);
-	if (!node)
-		return;
-
-	GraphNode *gn = node->cast_to<GraphNode>();
+	GraphNode *gn = Object::cast_to<GraphNode>(node);
 	if (!gn)
 		return;
 
@@ -2691,21 +2686,21 @@ void VisualScriptEditor::_selected_connect_node_method_or_setget(const String &p
 
 	Ref<VisualScriptNode> vsn = script->get_node(edited_func, port_action_new_node);
 
-	if (vsn->cast_to<VisualScriptFunctionCall>()) {
+	if (Object::cast_to<VisualScriptFunctionCall>(*vsn)) {
 
 		Ref<VisualScriptFunctionCall> vsfc = vsn;
 		vsfc->set_function(p_text);
 		script->data_connect(edited_func, port_action_node, port_action_output, port_action_new_node, 0);
 	}
 
-	if (vsn->cast_to<VisualScriptPropertySet>()) {
+	if (Object::cast_to<VisualScriptPropertySet>(*vsn)) {
 
 		Ref<VisualScriptPropertySet> vsp = vsn;
 		vsp->set_property(p_text);
 		script->data_connect(edited_func, port_action_node, port_action_output, port_action_new_node, 0);
 	}
 
-	if (vsn->cast_to<VisualScriptPropertyGet>()) {
+	if (Object::cast_to<VisualScriptPropertyGet>(*vsn)) {
 
 		Ref<VisualScriptPropertyGet> vsp = vsn;
 		vsp->set_property(p_text);
@@ -2752,7 +2747,7 @@ void VisualScriptEditor::_default_value_edited(Node *p_button, int p_id, int p_i
 		existing = Variant::construct(pinfo.type, &existingp, 1, ce, false);
 	}
 
-	default_value_edit->set_position(p_button->cast_to<Control>()->get_global_position() + Vector2(0, p_button->cast_to<Control>()->get_size().y));
+	default_value_edit->set_position(Object::cast_to<Control>(p_button)->get_global_position() + Vector2(0, Object::cast_to<Control>(p_button)->get_size().y));
 	default_value_edit->set_size(Size2(1, 1));
 	if (default_value_edit->edit(NULL, pinfo.name, pinfo.type, existing, pinfo.hint, pinfo.hint_string)) {
 		if (pinfo.hint == PROPERTY_HINT_MULTILINE_TEXT)
@@ -2818,9 +2813,7 @@ void VisualScriptEditor::_comment_node_resized(const Vector2 &p_new_size, int p_
 		return;
 
 	Node *node = graph->get_node(itos(p_node));
-	if (!node)
-		return;
-	GraphNode *gn = node->cast_to<GraphNode>();
+	GraphNode *gn = Object::cast_to<GraphNode>(node);
 	if (!gn)
 		return;
 
@@ -2849,7 +2842,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 
 			List<String> reselect;
 			for (int i = 0; i < graph->get_child_count(); i++) {
-				GraphNode *gn = graph->get_child(i)->cast_to<GraphNode>();
+				GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
 				if (gn) {
 					if (gn->is_selected()) {
 						int id = String(gn->get_name()).to_int();
@@ -2865,7 +2858,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 			_update_graph();
 
 			for (List<String>::Element *E = reselect.front(); E; E = E->next()) {
-				GraphNode *gn = graph->get_node(E->get())->cast_to<GraphNode>();
+				GraphNode *gn = Object::cast_to<GraphNode>(graph->get_node(E->get()));
 				gn->set_selected(true);
 			}
 
@@ -2886,13 +2879,13 @@ void VisualScriptEditor::_menu_option(int p_what) {
 			clipboard->sequence_connections.clear();
 
 			for (int i = 0; i < graph->get_child_count(); i++) {
-				GraphNode *gn = graph->get_child(i)->cast_to<GraphNode>();
+				GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
 				if (gn) {
 					if (gn->is_selected()) {
 
 						int id = String(gn->get_name()).to_int();
 						Ref<VisualScriptNode> node = script->get_node(edited_func, id);
-						if (node->cast_to<VisualScriptFunction>()) {
+						if (Object::cast_to<VisualScriptFunction>(*node)) {
 							EditorNode::get_singleton()->show_warning("Can't copy the function node.");
 							return;
 						}
@@ -3000,7 +2993,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 			undo_redo->commit_action();
 
 			for (int i = 0; i < graph->get_child_count(); i++) {
-				GraphNode *gn = graph->get_child(i)->cast_to<GraphNode>();
+				GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
 				if (gn) {
 					int id = gn->get_name().operator String().to_int();
 					gn->set_selected(to_select.has(id));
@@ -3393,7 +3386,7 @@ VisualScriptEditor::~VisualScriptEditor() {
 
 static ScriptEditorBase *create_editor(const Ref<Script> &p_script) {
 
-	if (p_script->cast_to<VisualScript>()) {
+	if (Object::cast_to<VisualScript>(*p_script)) {
 		return memnew(VisualScriptEditor);
 	}
 

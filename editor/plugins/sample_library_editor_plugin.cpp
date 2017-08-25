@@ -47,7 +47,7 @@ void SampleLibraryEditor::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_PROCESS) {
 		if (is_playing && !player->is_active()) {
-			TreeItem *tl=last_sample_playing->cast_to<TreeItem>();
+			TreeItem *tl=Object::cast_to<TreeItem>(last_sample_playing);
 			tl->set_button(0,0,get_icon("Play","EditorIcons"));
 			is_playing = false;
 			set_process(false);
@@ -109,7 +109,7 @@ void SampleLibraryEditor::_load_pressed() {
 
 void SampleLibraryEditor::_button_pressed(Object *p_item,int p_column, int p_id) {
 
-	TreeItem *ti=p_item->cast_to<TreeItem>();
+	TreeItem *ti=Object::cast_to<TreeItem>(p_item);
 	String name = ti->get_text(0);
 
 	if (p_column==0) { // Play/Stop
@@ -124,7 +124,7 @@ void SampleLibraryEditor::_button_pressed(Object *p_item,int p_column, int p_id)
 		} else {
 			player->stop_all();
 			if(last_sample_playing != p_item){
-				TreeItem *tl=last_sample_playing->cast_to<TreeItem>();
+				TreeItem *tl=Object::cast_to<TreeItem>(last_sample_playing);
 				tl->set_button(p_column,0,get_icon("Play","EditorIcons"));
 				btn_type = TTR("Stop");
 				player->play(name,true);
@@ -491,7 +491,7 @@ SampleLibraryEditor::SampleLibraryEditor() {
 void SampleLibraryEditorPlugin::edit(Object *p_object) {
 
 	sample_library_editor->set_undo_redo(&get_undo_redo());
-	SampleLibrary * s = p_object->cast_to<SampleLibrary>();
+	SampleLibrary * s = Object::cast_to<SampleLibrary>(p_object);
 	if (!s)
 		return;
 

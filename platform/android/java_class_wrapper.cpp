@@ -112,7 +112,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 
 						Ref<Reference> ref = *p_args[i];
 						if (!ref.is_null()) {
-							if (ref->cast_to<JavaObject>()) {
+							if (Object::cast_to<JavaObject>(ref)) {
 
 								Ref<JavaObject> jo = ref;
 								//could be faster

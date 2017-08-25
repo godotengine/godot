@@ -187,7 +187,7 @@ MeshEditor::MeshEditor() {
 
 void MeshEditorPlugin::edit(Object *p_object) {
 
-	Mesh *s = p_object->cast_to<Mesh>();
+	Mesh *s = Object::cast_to<Mesh>(p_object);
 	if (!s)
 		return;
 

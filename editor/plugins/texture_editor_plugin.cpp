@@ -70,7 +70,7 @@ void TextureEditor::_notification(int p_what) {
 		int ofs_x = (size.width - tex_width) / 2;
 		int ofs_y = (size.height - tex_height) / 2;
 
-		if (texture->cast_to<CurveTexture>()) {
+		if (Object::cast_to<CurveTexture>(*texture)) {
 			// In the case of CurveTextures we know they are 1 in height, so fill the preview to see the gradient
 			ofs_y = 0;
 			tex_height = size.height;
@@ -81,10 +81,10 @@ void TextureEditor::_notification(int p_what) {
 		Ref<Font> font = get_font("font", "Label");
 
 		String format;
-		if (texture->cast_to<ImageTexture>()) {
-			format = Image::get_format_name(texture->cast_to<ImageTexture>()->get_format());
-		} else if (texture->cast_to<StreamTexture>()) {
-			format = Image::get_format_name(texture->cast_to<StreamTexture>()->get_format());
+		if (Object::cast_to<ImageTexture>(*texture)) {
+			format = Image::get_format_name(Object::cast_to<ImageTexture>(*texture)->get_format());
+		} else if (Object::cast_to<StreamTexture>(*texture)) {
+			format = Image::get_format_name(Object::cast_to<StreamTexture>(*texture)->get_format());
 		} else {
 			format = texture->get_class();
 		}
@@ -136,7 +136,7 @@ TextureEditor::TextureEditor() {
 
 void TextureEditorPlugin::edit(Object *p_object) {
 
-	Texture *s = p_object->cast_to<Texture>();
+	Texture *s = Object::cast_to<Texture>(p_object);
 	if (!s)
 		return;
 

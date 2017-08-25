@@ -288,7 +288,7 @@ Dictionary ShaderEditor::get_state() const {
 
 	for(int i=0;i<tab_container->get_child_count();i++) {
 
-		ShaderTextEditor *ste = tab_container->get_child(i)->cast_to<ShaderTextEditor>();
+		ShaderTextEditor *ste = tab_container->Object::cast_to<ShaderTextEditor>(get_child(i));
 		if (!ste)
 			continue;
 
@@ -397,7 +397,7 @@ void ShaderEditor::ensure_select_current() {
 	/*
 	if (tab_container->get_child_count() && tab_container->get_current_tab()>=0) {
 
-		ShaderTextEditor *ste = tab_container->get_child(tab_container->get_current_tab())->cast_to<ShaderTextEditor>();
+		ShaderTextEditor *ste = Object::cast_to<ShaderTextEditor>(tab_container->get_child(tab_container->get_current_tab()));
 		if (!ste)
 			return;
 		Ref<Shader> shader = ste->get_edited_shader();
@@ -486,16 +486,16 @@ ShaderEditor::ShaderEditor() {
 
 void ShaderEditorPlugin::edit(Object *p_object) {
 
-	Shader *s = p_object->cast_to<Shader>();
+	Shader *s = Object::cast_to<Shader>(p_object);
 	shader_editor->edit(s);
 }
 
 bool ShaderEditorPlugin::handles(Object *p_object) const {
 
 	bool handles = true;
-	Shader *shader = p_object->cast_to<Shader>();
+	Shader *shader = Object::cast_to<Shader>(p_object);
 	/*
-	if (!shader || shader->cast_to<ShaderGraph>()) // Don't handle ShaderGraph's
+	if (Object::cast_to<ShaderGraph>(shader)) // Don't handle ShaderGraph's
 		handles = false;
 	*/
 

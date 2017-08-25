@@ -315,7 +315,7 @@ void ScrollBar::_notification(int p_what) {
 
 		if (has_node(drag_slave_path)) {
 			Node *n = get_node(drag_slave_path);
-			drag_slave = n->cast_to<Control>();
+			drag_slave = Object::cast_to<Control>(n);
 		}
 
 		if (drag_slave) {
@@ -663,7 +663,7 @@ void ScrollBar::set_drag_slave(const NodePath &p_path) {
 
 		if (has_node(p_path)) {
 			Node *n = get_node(p_path);
-			drag_slave = n->cast_to<Control>();
+			drag_slave = Object::cast_to<Control>(n);
 		}
 
 		if (drag_slave) {

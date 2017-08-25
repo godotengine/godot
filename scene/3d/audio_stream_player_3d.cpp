@@ -266,7 +266,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 				if (!sr[i].collider)
 					continue;
 
-				Area *tarea = sr[i].collider->cast_to<Area>();
+				Area *tarea = Object::cast_to<Area>(sr[i].collider);
 				if (!tarea)
 					continue;
 

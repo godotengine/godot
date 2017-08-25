@@ -410,7 +410,7 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 void ResourcePreloaderEditorPlugin::edit(Object *p_object) {
 
 	preloader_editor->set_undo_redo(&get_undo_redo());
-	ResourcePreloader *s = p_object->cast_to<ResourcePreloader>();
+	ResourcePreloader *s = Object::cast_to<ResourcePreloader>(p_object);
 	if (!s)
 		return;
 

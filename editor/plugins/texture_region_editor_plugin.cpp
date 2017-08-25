@@ -626,12 +626,12 @@ void TextureRegionEditor::edit(Object *p_obj) {
 	if (atlas_tex.is_valid())
 		atlas_tex->remove_change_receptor(this);
 	if (p_obj) {
-		node_sprite = p_obj->cast_to<Sprite>();
-		node_patch9 = p_obj->cast_to<NinePatchRect>();
-		if (p_obj->cast_to<StyleBoxTexture>())
-			obj_styleBox = Ref<StyleBoxTexture>(p_obj->cast_to<StyleBoxTexture>());
-		if (p_obj->cast_to<AtlasTexture>())
-			atlas_tex = Ref<AtlasTexture>(p_obj->cast_to<AtlasTexture>());
+		node_sprite = Object::cast_to<Sprite>(p_obj);
+		node_patch9 = Object::cast_to<NinePatchRect>(p_obj);
+		if (Object::cast_to<StyleBoxTexture>(p_obj))
+			obj_styleBox = Ref<StyleBoxTexture>(Object::cast_to<StyleBoxTexture>(p_obj));
+		if (Object::cast_to<AtlasTexture>(p_obj))
+			atlas_tex = Ref<AtlasTexture>(Object::cast_to<AtlasTexture>(p_obj));
 		p_obj->add_change_receptor(this);
 		_edit_region();
 	} else {

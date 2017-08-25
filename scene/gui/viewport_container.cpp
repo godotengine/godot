@@ -38,7 +38,7 @@ Size2 ViewportContainer::get_minimum_size() const {
 	Size2 ms;
 	for (int i = 0; i < get_child_count(); i++) {
 
-		Viewport *c = get_child(i)->cast_to<Viewport>();
+		Viewport *c = Object::cast_to<Viewport>(get_child(i));
 		if (!c)
 			continue;
 
@@ -71,7 +71,7 @@ void ViewportContainer::_notification(int p_what) {
 
 		for (int i = 0; i < get_child_count(); i++) {
 
-			Viewport *c = get_child(i)->cast_to<Viewport>();
+			Viewport *c = Object::cast_to<Viewport>(get_child(i));
 			if (!c)
 				continue;
 
@@ -83,7 +83,7 @@ void ViewportContainer::_notification(int p_what) {
 
 		for (int i = 0; i < get_child_count(); i++) {
 
-			Viewport *c = get_child(i)->cast_to<Viewport>();
+			Viewport *c = Object::cast_to<Viewport>(get_child(i));
 			if (!c)
 				continue;
 
@@ -98,7 +98,7 @@ void ViewportContainer::_notification(int p_what) {
 
 		for (int i = 0; i < get_child_count(); i++) {
 
-			Viewport *c = get_child(i)->cast_to<Viewport>();
+			Viewport *c = Object::cast_to<Viewport>(get_child(i));
 			if (!c)
 				continue;
 

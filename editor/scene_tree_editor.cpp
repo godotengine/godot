@@ -46,7 +46,7 @@ Node *SceneTreeEditor::get_scene_node() {
 
 void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_id) {
 
-	TreeItem *item = p_item->cast_to<TreeItem>();
+	TreeItem *item = Object::cast_to<TreeItem>(p_item);
 	ERR_FAIL_COND(!item);
 
 	NodePath np = item->get_metadata(0);
@@ -475,7 +475,7 @@ void SceneTreeEditor::_selected_changed() {
 
 void SceneTreeEditor::_cell_multi_selected(Object *p_object, int p_cell, bool p_selected) {
 
-	TreeItem *item = p_object->cast_to<TreeItem>();
+	TreeItem *item = Object::cast_to<TreeItem>(p_object);
 	ERR_FAIL_COND(!item);
 
 	NodePath np = item->get_metadata(0);
@@ -584,7 +584,7 @@ void SceneTreeEditor::_rename_node(ObjectID p_node, const String &p_name) {
 
 	Object *o = ObjectDB::get_instance(p_node);
 	ERR_FAIL_COND(!o);
-	Node *n = o->cast_to<Node>();
+	Node *n = Object::cast_to<Node>(o);
 	ERR_FAIL_COND(!n);
 	TreeItem *item = _find(tree->get_root(), n->get_path());
 	ERR_FAIL_COND(!item);
@@ -732,7 +732,7 @@ void SceneTreeEditor::_cell_collapsed(Object *p_obj) {
 	if (!can_rename)
 		return;
 
-	TreeItem *ti = p_obj->cast_to<TreeItem>();
+	TreeItem *ti = Object::cast_to<TreeItem>(p_obj);
 	if (!ti)
 		return;
 

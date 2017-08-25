@@ -1409,7 +1409,7 @@ void EditorSceneImportPlugin::_find_resources(const Variant& p_var, Map<Ref<Imag
 					for(List<PropertyInfo>::Element *E=pl.front();E;E=E->next()) {
 
 						if (E->get().type==Variant::OBJECT || E->get().type==Variant::ARRAY || E->get().type==Variant::DICTIONARY) {
-							if (E->get().type==Variant::OBJECT && res->cast_to<SpatialMaterial>() && (E->get().name=="textures/diffuse" || E->get().name=="textures/detail" || E->get().name=="textures/emission")) {
+							if (E->get().type==Variant::OBJECT && Object::cast_to<SpatialMaterial>(*res) && (E->get().name=="textures/diffuse" || E->get().name=="textures/detail" || E->get().name=="textures/emission")) {
 
 								Ref<ImageTexture> tex =res->get(E->get().name);
 								if (tex.is_valid()) {
@@ -1417,7 +1417,7 @@ void EditorSceneImportPlugin::_find_resources(const Variant& p_var, Map<Ref<Imag
 									image_map.insert(tex,TEXTURE_ROLE_DIFFUSE);
 								}
 
-							} else if (E->get().type==Variant::OBJECT && res->cast_to<SpatialMaterial>() && (E->get().name=="textures/normal")) {
+							} else if (E->get().type==Variant::OBJECT && Object::cast_to<SpatialMaterial>(*res) && (E->get().name=="textures/normal")) {
 
 								Ref<ImageTexture> tex =res->get(E->get().name);
 								if (tex.is_valid()) {
@@ -1425,7 +1425,7 @@ void EditorSceneImportPlugin::_find_resources(const Variant& p_var, Map<Ref<Imag
 									image_map.insert(tex,TEXTURE_ROLE_NORMALMAP);
 									/*
 									if (p_flags&SCENE_FLAG_CONVERT_NORMALMAPS_TO_XY)
-										res->cast_to<SpatialMaterial>()->set_fixed_flag(SpatialMaterial::FLAG_USE_XY_NORMALMAP,true);
+										Object::cast_to<SpatialMaterial>(*res)->set_fixed_flag(SpatialMaterial::FLAG_USE_XY_NORMALMAP,true);
 									*/
 								}
 
@@ -1513,9 +1513,9 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 
 
 
-	if (p_flags&SCENE_FLAG_CREATE_BILLBOARDS && p_node->cast_to<MeshInstance>()) {
+	if (p_flags&SCENE_FLAG_CREATE_BILLBOARDS && Object::cast_to<MeshInstance>(p_node)) {
 
-		MeshInstance *mi = p_node->cast_to<MeshInstance>();
+		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
 
 		bool bb=false;
 
@@ -1546,9 +1546,9 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 	}
 
 
-	if (p_flags&(SCENE_FLAG_DETECT_ALPHA|SCENE_FLAG_DETECT_VCOLOR|SCENE_FLAG_SET_LIGHTMAP_TO_UV2_IF_EXISTS) && p_node->cast_to<MeshInstance>()) {
+	if (p_flags&(SCENE_FLAG_DETECT_ALPHA|SCENE_FLAG_DETECT_VCOLOR|SCENE_FLAG_SET_LIGHTMAP_TO_UV2_IF_EXISTS) && Object::cast_to<MeshInstance>(p_node)) {
 
-		MeshInstance *mi = p_node->cast_to<MeshInstance>();
+		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
 
 		Ref<Mesh> m = mi->get_mesh();
 
@@ -1579,9 +1579,9 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 		}
 	}
 
-	if (p_flags&SCENE_FLAG_REMOVE_NOIMP && p_node->cast_to<AnimationPlayer>()) {
+	if (p_flags&SCENE_FLAG_REMOVE_NOIMP && Object::cast_to<AnimationPlayer>(p_node)) {
 		//remove animations referencing non-importable nodes
-		AnimationPlayer *ap = p_node->cast_to<AnimationPlayer>();
+		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
 
 		List<StringName> anims;
 		ap->get_animation_list(&anims);
@@ -1606,9 +1606,9 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 	}
 
 
-	if (p_flags&SCENE_FLAG_CREATE_IMPOSTORS && p_node->cast_to<MeshInstance>()) {
+	if (p_flags&SCENE_FLAG_CREATE_IMPOSTORS && Object::cast_to<MeshInstance>(p_node)) {
 
-		MeshInstance *mi = p_node->cast_to<MeshInstance>();
+		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
 
 		String str;
 
@@ -1620,9 +1620,9 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 		}
 
 
-		if (p_node->get_parent() && p_node->get_parent()->cast_to<MeshInstance>()) {
-			MeshInstance *mi = p_node->cast_to<MeshInstance>();
-			MeshInstance *mip = p_node->get_parent()->cast_to<MeshInstance>();
+		if (Object::cast_to<MeshInstance>(p_node->get_parent())) {
+			MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
+			MeshInstance *mip = Object::cast_to<MeshInstance>(p_node->get_parent());
 			String d=str.substr(str.find("imp")+3,str.length());
 			if (d!="") {
 				if ((d[0]<'0' || d[0]>'9'))
@@ -1656,9 +1656,9 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 		}
 	}
 
-    if (p_flags&SCENE_FLAG_CREATE_LODS && p_node->cast_to<MeshInstance>()) {
+    if (p_flags&SCENE_FLAG_CREATE_LODS && Object::cast_to<MeshInstance>(p_node)) {
 
-	MeshInstance *mi = p_node->cast_to<MeshInstance>();
+	MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
 
 	String str;
 
@@ -1670,9 +1670,9 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 	}
 
 
-	if (p_node->get_parent() && p_node->get_parent()->cast_to<MeshInstance>()) {
-	    MeshInstance *mi = p_node->cast_to<MeshInstance>();
-	    MeshInstance *mip = p_node->get_parent()->cast_to<MeshInstance>();
+	if (Object::cast_to<MeshInstance>(p_node->get_parent())) {
+	    MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
+	    MeshInstance *mip = Object::cast_to<MeshInstance>(p_node->get_parent());
 	    String d=str.substr(str.find("lod")+3,str.length());
 	    if (d!="") {
 		if ((d[0]<'0' || d[0]>'9'))
@@ -1705,9 +1705,9 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
     }
 
 
-	if (p_flags&SCENE_FLAG_DETECT_LIGHTMAP_LAYER && _teststr(name,"lm") && p_node->cast_to<MeshInstance>()) {
+	if (p_flags&SCENE_FLAG_DETECT_LIGHTMAP_LAYER && _teststr(name,"lm") && Object::cast_to<MeshInstance>(p_node)) {
 
-		MeshInstance *mi = p_node->cast_to<MeshInstance>();
+		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
 
 		String str=name;
 		int layer = str.substr(str.find("lm")+3,str.length()).to_int();
@@ -1721,18 +1721,18 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 		if (isroot)
 			return p_node;
 
-		if (p_node->cast_to<MeshInstance>() && !is_rigid) {
-			MeshInstance *mi = p_node->cast_to<MeshInstance>();
+		if (Object::cast_to<MeshInstance>(p_node) && !is_rigid) {
+			MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
 			Node * col = mi->create_trimesh_collision_node();
 			ERR_FAIL_COND_V(!col,NULL);
 
 			col->set_name(_fixstr(name,"colonly"));
-			col->cast_to<Spatial>()->set_transform(mi->get_transform());
+			Object::cast_to<Spatial>(col)->set_transform(mi->get_transform());
 			p_node->replace_by(col);
 			memdelete(p_node);
 			p_node=col;
 
-			StaticBody *sb = col->cast_to<StaticBody>();
+			StaticBody *sb = Object::cast_to<StaticBody>(col);
 			CollisionShape *colshape = memnew( CollisionShape);
 			colshape->set_shape(sb->get_shape(0));
 			colshape->set_name("shape");
@@ -1749,7 +1749,7 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 				pb = memnew(StaticBody);
 				pb->set_name(_fixstr(name, "colonly"));
 			}
-			pb->cast_to<Spatial>()->set_transform(p_node->cast_to<Spatial>()->get_transform());
+			Object::cast_to<Spatial>(pb)->set_transform(Object::cast_to<Spatial>(p_node)->get_transform());
 			p_node->replace_by(pb);
 			memdelete(p_node);
 			CollisionShape *colshape = memnew( CollisionShape);
@@ -1763,7 +1763,7 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 				rayShape->set_length(1);
 				colshape->set_shape(rayShape);
 				colshape->set_name("RayShape");
-				pb->cast_to<Spatial>()->rotate_x(Math_PI / 2);
+				Object::cast_to<Spatial>(pb)->rotate_x(Math_PI / 2);
 			} else if (empty_draw_type == "IMAGE") {
 				PlaneShape *planeShape = memnew( PlaneShape);
 				colshape->set_shape(planeShape);
@@ -1778,13 +1778,13 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 			colshape->set_owner(pb->get_owner());
 		}
 
-	} else if (p_flags&SCENE_FLAG_CREATE_COLLISIONS && _teststr(name,"rigid") && p_node->cast_to<MeshInstance>()) {
+	} else if (p_flags&SCENE_FLAG_CREATE_COLLISIONS && _teststr(name,"rigid") && Object::cast_to<MeshInstance>(p_node)) {
 
 		if (isroot)
 			return p_node;
 
 		// get mesh instance and bounding box
-		MeshInstance *mi = p_node->cast_to<MeshInstance>();
+		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
 		Rect3 aabb = mi->get_aabb();
 
 		// create a new rigid body collision node
@@ -1795,12 +1795,12 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 		// remove node name postfix
 		col->set_name(_fixstr(name,"rigid"));
 		// get mesh instance xform matrix to the rigid body collision node
-		col->cast_to<Spatial>()->set_transform(mi->get_transform());
+		Object::cast_to<Spatial>(col)->set_transform(mi->get_transform());
 		// save original node by duplicating it into a new instance and correcting the name
 		Node * mesh = p_node->duplicate();
 		mesh->set_name(_fixstr(name,"rigid"));
 		// reset the xform matrix of the duplicated node so it can inherit parent node xform
-		mesh->cast_to<Spatial>()->set_transform(Transform(Basis()));
+		Object::cast_to<Spatial>(mesh)->set_transform(Transform(Basis()));
 		// reparent the new mesh node to the rigid body collision node
 		p_node->add_child(mesh);
 		mesh->set_owner(p_node->get_owner());
@@ -1810,7 +1810,7 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 		p_node=col;
 
 		// create an alias for the rigid body collision node
-		RigidBody *rb = col->cast_to<RigidBody>();
+		RigidBody *rb = Object::cast_to<RigidBody>(col);
 		// create a new Box collision shape and set the right extents
 		Ref<BoxShape> shape = memnew( BoxShape );
 		shape->set_extents(aabb.get_size() * 0.5);
@@ -1821,10 +1821,10 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 		rb->add_child(colshape);
 		colshape->set_owner(p_node->get_owner());
 
-	} else if (p_flags&SCENE_FLAG_CREATE_COLLISIONS &&_teststr(name,"col") && p_node->cast_to<MeshInstance>()) {
+	} else if (p_flags&SCENE_FLAG_CREATE_COLLISIONS &&_teststr(name,"col") && Object::cast_to<MeshInstance>(p_node)) {
 
 
-		MeshInstance *mi = p_node->cast_to<MeshInstance>();
+		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
 
 		mi->set_name(_fixstr(name,"col"));
 		Node *col= mi->create_trimesh_collision_node();
@@ -1833,7 +1833,7 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 		col->set_name("col");
 		p_node->add_child(col);
 
-		StaticBody *sb=col->cast_to<StaticBody>();
+		StaticBody *sb=Object::cast_to<StaticBody>(col);
 		CollisionShape *colshape = memnew( CollisionShape);
 		colshape->set_shape(sb->get_shape(0));
 		colshape->set_name("shape");
@@ -1841,12 +1841,12 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 		colshape->set_owner(p_node->get_owner());
 		sb->set_owner(p_node->get_owner());
 
-	} else if (p_flags&SCENE_FLAG_CREATE_NAVMESH &&_teststr(name,"navmesh") && p_node->cast_to<MeshInstance>()) {
+	} else if (p_flags&SCENE_FLAG_CREATE_NAVMESH &&_teststr(name,"navmesh") && Object::cast_to<MeshInstance>(p_node)) {
 
 		if (isroot)
 			return p_node;
 
-		MeshInstance *mi = p_node->cast_to<MeshInstance>();
+		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
 
 		Ref<Mesh> mesh=mi->get_mesh();
 		ERR_FAIL_COND_V(mesh.is_null(),NULL);
@@ -1857,7 +1857,7 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 		Ref<NavigationMesh> nmesh = memnew( NavigationMesh);
 		nmesh->create_from_mesh(mesh);
 		nmi->set_navigation_mesh(nmesh);
-		nmi->cast_to<Spatial>()->set_transform(mi->get_transform());
+		Object::cast_to<Spatial>(nmi)->set_transform(mi->get_transform());
 		p_node->replace_by(nmi);
 		memdelete(p_node);
 		p_node=nmi;
@@ -1867,7 +1867,7 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 			return p_node;
 
 		Node *owner = p_node->get_owner();
-		Spatial *s = p_node->cast_to<Spatial>();
+		Spatial *s = Object::cast_to<Spatial>(p_node);
 		VehicleBody *bv = memnew( VehicleBody );
 		String n = _fixstr(p_node->get_name(),"vehicle");
 		bv->set_name(n);
@@ -1888,7 +1888,7 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 			return p_node;
 
 		Node *owner = p_node->get_owner();
-		Spatial *s = p_node->cast_to<Spatial>();
+		Spatial *s = Object::cast_to<Spatial>(p_node);
 		VehicleWheel *bv = memnew( VehicleWheel );
 		String n = _fixstr(p_node->get_name(),"wheel");
 		bv->set_name(n);
@@ -1902,13 +1902,13 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 
 		p_node=bv;
 
-	} else if (p_flags&SCENE_FLAG_CREATE_ROOMS && _teststr(name,"room") && p_node->cast_to<MeshInstance>()) {
+	} else if (p_flags&SCENE_FLAG_CREATE_ROOMS && _teststr(name,"room") && Object::cast_to<MeshInstance>(p_node)) {
 
 
 		if (isroot)
 			return p_node;
 
-		MeshInstance *mi = p_node->cast_to<MeshInstance>();
+		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
 		PoolVector<Face3> faces = mi->get_faces(VisualInstance::FACES_SOLID);
 
 
@@ -1933,7 +1933,7 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 		if (isroot)
 			return p_node;
 
-		Spatial *dummy = p_node->cast_to<Spatial>();
+		Spatial *dummy = Object::cast_to<Spatial>(p_node);
 		ERR_FAIL_COND_V(!dummy,NULL);
 
 		Room * room = memnew( Room );
@@ -1946,12 +1946,12 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 
 		//room->compute_room_from_subtree();
 
-	} else if (p_flags&SCENE_FLAG_CREATE_PORTALS &&_teststr(name,"portal") && p_node->cast_to<MeshInstance>()) {
+	} else if (p_flags&SCENE_FLAG_CREATE_PORTALS &&_teststr(name,"portal") && Object::cast_to<MeshInstance>(p_node)) {
 
 		if (isroot)
 			return p_node;
 
-		MeshInstance *mi = p_node->cast_to<MeshInstance>();
+		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
 		PoolVector<Face3> faces = mi->get_faces(VisualInstance::FACES_SOLID);
 
 		ERR_FAIL_COND_V(faces.size()==0,NULL);
@@ -2027,11 +2027,11 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 		memdelete(p_node);
 		p_node=portal;
 
-	} else if (p_node->cast_to<MeshInstance>()) {
+	} else if (Object::cast_to<MeshInstance>(p_node)) {
 
 		//last attempt, maybe collision insde the mesh data
 
-		MeshInstance *mi = p_node->cast_to<MeshInstance>();
+		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
 
 		Ref<Mesh> mesh = mi->get_mesh();
 		if (!mesh.is_null()) {
@@ -2111,7 +2111,7 @@ void EditorSceneImportPlugin::_tag_import_paths(Node *p_scene,Node *p_node) {
 	NodePath path = p_scene->get_path_to(p_node);
 	p_node->set_import_path( path );
 
-	Spatial *snode=p_node->cast_to<Spatial>();
+	Spatial *snode=Object::cast_to<Spatial>(p_node);
 
 	if (snode) {
 
@@ -2200,10 +2200,7 @@ Error EditorSceneImportPlugin::import1(const Ref<ResourceImportMetadata>& p_from
 
 	if (from->has_option("root_type")) {
 		String type = from->get_option("root_type");
-		Object *base = ClassDB::instance(type);
-		Node *base_node = NULL;
-		if (base)
-			base_node=base->cast_to<Node>();
+		Node *base_node = Object::cast_to<Node>(ClassDB::instance(type));
 
 		if (base_node) {
 
@@ -2228,7 +2225,7 @@ void EditorSceneImportPlugin::_create_clips(Node *scene, const Array& p_clips,bo
 
 	Node* n = scene->get_node(String("AnimationPlayer"));
 	ERR_FAIL_COND(!n);
-	AnimationPlayer *anim = n->cast_to<AnimationPlayer>();
+	AnimationPlayer *anim = Object::cast_to<AnimationPlayer>(n);
 	ERR_FAIL_COND(!anim);
 
 	if (!anim->has_animation("default"))
@@ -2357,7 +2354,7 @@ void EditorSceneImportPlugin::_filter_tracks(Node *scene, const String& p_text) 
 		return;
 	Node* n = scene->get_node(String("AnimationPlayer"));
 	ERR_FAIL_COND(!n);
-	AnimationPlayer *anim = n->cast_to<AnimationPlayer>();
+	AnimationPlayer *anim = Object::cast_to<AnimationPlayer>(n);
 	ERR_FAIL_COND(!anim);
 
 	Vector<String> strings = p_text.split("\n");
@@ -2475,7 +2472,7 @@ void EditorSceneImportPlugin::_optimize_animations(Node *scene, float p_max_lin_
 		return;
 	Node* n = scene->get_node(String("AnimationPlayer"));
 	ERR_FAIL_COND(!n);
-	AnimationPlayer *anim = n->cast_to<AnimationPlayer>();
+	AnimationPlayer *anim = Object::cast_to<AnimationPlayer>(n);
 	ERR_FAIL_COND(!anim);
 
 
@@ -2496,9 +2493,9 @@ void EditorSceneImportPlugin::_find_resources_to_merge(Node *scene, Node *node, 
 
 	String path = scene->get_path_to(node);
 
-	if (p_merge_anims && node->cast_to<AnimationPlayer>()) {
+	if (p_merge_anims && Object::cast_to<AnimationPlayer>(node)) {
 
-		AnimationPlayer *ap = node->cast_to<AnimationPlayer>();
+		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(node);
 		List<StringName> anims;
 		ap->get_animation_list(&anims);
 		for (List<StringName>::Element *E=anims.front();E;E=E->next()) {
@@ -2532,8 +2529,8 @@ void EditorSceneImportPlugin::_find_resources_to_merge(Node *scene, Node *node, 
 
 
 
-	if (p_merge_material && node->cast_to<MeshInstance>()) {
-		MeshInstance *mi=node->cast_to<MeshInstance>();
+	if (p_merge_material && Object::cast_to<MeshInstance>(node)) {
+		MeshInstance *mi=Object::cast_to<MeshInstance>(node);
 		Ref<Mesh> mesh = mi->get_mesh();
 		if (mesh.is_valid() && mesh->get_name()!=String() && !tested_meshes.has(mesh)) {
 
@@ -2596,9 +2593,8 @@ void EditorSceneImportPlugin::_merge_found_resources(Node *scene, Node *node, bo
 
 	print_line("at path: "+path);
 
-	if (node->cast_to<AnimationPlayer>()) {
+	if (AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(node)) {
 
-		AnimationPlayer *ap = node->cast_to<AnimationPlayer>();
 		List<StringName> anims;
 		ap->get_animation_list(&anims);
 		for (List<StringName>::Element *E=anims.front();E;E=E->next()) {
@@ -2630,8 +2626,8 @@ void EditorSceneImportPlugin::_merge_found_resources(Node *scene, Node *node, bo
 
 
 
-	if (node->cast_to<MeshInstance>()) {
-		MeshInstance *mi=node->cast_to<MeshInstance>();
+	if (MeshInstance *mi=Object::cast_to<MeshInstance>(node)) {
+
 		Ref<Mesh> mesh = mi->get_mesh();
 		if (mesh.is_valid() && mesh->get_name()!=String() && !tested_meshes.has(mesh)) {
 

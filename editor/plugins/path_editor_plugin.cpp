@@ -269,9 +269,9 @@ PathSpatialGizmo::PathSpatialGizmo(Path *p_path) {
 
 Ref<SpatialEditorGizmo> PathEditorPlugin::create_spatial_gizmo(Spatial *p_spatial) {
 
-	if (p_spatial->cast_to<Path>()) {
+	if (Object::cast_to<Path>(p_spatial)) {
 
-		return memnew(PathSpatialGizmo(p_spatial->cast_to<Path>()));
+		return memnew(PathSpatialGizmo(Object::cast_to<Path>(p_spatial)));
 	}
 
 	return Ref<SpatialEditorGizmo>();
@@ -433,7 +433,7 @@ bool PathEditorPlugin::forward_spatial_gui_input(Camera *p_camera, const Ref<Inp
 void PathEditorPlugin::edit(Object *p_object) {
 
 	if (p_object) {
-		path = p_object->cast_to<Path>();
+		path = Object::cast_to<Path>(p_object);
 		if (path) {
 
 			if (path->get_curve().is_valid()) {
@@ -447,7 +447,7 @@ void PathEditorPlugin::edit(Object *p_object) {
 			pre->get_curve()->emit_signal("changed");
 		}
 	}
-	//collision_polygon_editor->edit(p_object->cast_to<Node>());
+	//collision_polygon_editor->edit(Object::cast_to<Node>(p_object));
 }
 
 bool PathEditorPlugin::handles(Object *p_object) const {

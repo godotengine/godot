@@ -46,7 +46,7 @@ void InterpolatedCamera::_notification(int p_what) {
 				break;
 			if (has_node(target)) {
 
-				Spatial *node = get_node(target)->cast_to<Spatial>();
+				Spatial *node = Object::cast_to<Spatial>(get_node(target));
 				if (!node)
 					break;
 
@@ -56,8 +56,8 @@ void InterpolatedCamera::_notification(int p_what) {
 				local_transform = local_transform.interpolate_with(target_xform, delta);
 				set_global_transform(local_transform);
 
-				if (node->cast_to<Camera>()) {
-					Camera *cam = node->cast_to<Camera>();
+				if (Camera *cam = Object::cast_to<Camera>(node)) {
+
 					if (cam->get_projection() == get_projection()) {
 
 						float new_near = Math::lerp(get_znear(), cam->get_znear(), delta);
@@ -83,7 +83,7 @@ void InterpolatedCamera::_notification(int p_what) {
 void InterpolatedCamera::_set_target(const Object *p_target) {
 
 	ERR_FAIL_NULL(p_target);
-	set_target(p_target->cast_to<Spatial>());
+	set_target(Object::cast_to<Spatial>(p_target));
 }
 
 void InterpolatedCamera::set_target(const Spatial *p_target) {

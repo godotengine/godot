@@ -139,9 +139,9 @@ void EditorPath::_notification(int p_what) {
 					if (left < 0)
 						continue;
 					String name;
-					if (obj->cast_to<Resource>()) {
+					if (Object::cast_to<Resource>(obj)) {
 
-						Resource *r = obj->cast_to<Resource>();
+						Resource *r = Object::cast_to<Resource>(obj);
 						if (r->get_path().is_resource_file())
 							name = r->get_path().get_file();
 						else
@@ -149,11 +149,11 @@ void EditorPath::_notification(int p_what) {
 
 						if (name == "")
 							name = r->get_class();
-					} else if (obj->cast_to<Node>()) {
+					} else if (Object::cast_to<Node>(obj)) {
 
-						name = obj->cast_to<Node>()->get_name();
-					} else if (obj->cast_to<Resource>() && obj->cast_to<Resource>()->get_name() != "") {
-						name = obj->cast_to<Resource>()->get_name();
+						name = Object::cast_to<Node>(obj)->get_name();
+					} else if (Object::cast_to<Resource>(obj) && Object::cast_to<Resource>(obj)->get_name() != "") {
+						name = Object::cast_to<Resource>(obj)->get_name();
 					} else {
 						name = obj->get_class();
 					}

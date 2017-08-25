@@ -40,14 +40,14 @@ void ARVRCamera::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			// need to find our ARVROrigin parent and let it know we're it's camera!
-			ARVROrigin *origin = get_parent()->cast_to<ARVROrigin>();
+			ARVROrigin *origin = Object::cast_to<ARVROrigin>(get_parent());
 			if (origin != NULL) {
 				origin->set_tracked_camera(this);
 			}
 		}; break;
 		case NOTIFICATION_EXIT_TREE: {
 			// need to find our ARVROrigin parent and let it know we're no longer it's camera!
-			ARVROrigin *origin = get_parent()->cast_to<ARVROrigin>();
+			ARVROrigin *origin = Object::cast_to<ARVROrigin>(get_parent());
 			if (origin != NULL) {
 				origin->clear_tracked_camera_if(this);
 			}
@@ -60,7 +60,7 @@ String ARVRCamera::get_configuration_warning() const {
 		return String();
 
 	// must be child node of ARVROrigin!
-	ARVROrigin *origin = get_parent()->cast_to<ARVROrigin>();
+	ARVROrigin *origin = Object::cast_to<ARVROrigin>(get_parent());
 	if (origin == NULL) {
 		return TTR("ARVRCamera must have an ARVROrigin node as its parent");
 	};
@@ -209,7 +209,7 @@ String ARVRController::get_configuration_warning() const {
 		return String();
 
 	// must be child node of ARVROrigin!
-	ARVROrigin *origin = get_parent()->cast_to<ARVROrigin>();
+	ARVROrigin *origin = Object::cast_to<ARVROrigin>(get_parent());
 	if (origin == NULL) {
 		return TTR("ARVRController must have an ARVROrigin node as its parent");
 	};
@@ -321,7 +321,7 @@ String ARVRAnchor::get_configuration_warning() const {
 		return String();
 
 	// must be child node of ARVROrigin!
-	ARVROrigin *origin = get_parent()->cast_to<ARVROrigin>();
+	ARVROrigin *origin = Object::cast_to<ARVROrigin>(get_parent());
 	if (origin == NULL) {
 		return TTR("ARVRAnchor must have an ARVROrigin node as its parent");
 	};

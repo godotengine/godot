@@ -393,21 +393,21 @@ void CollisionShape2DEditor::_get_current_shape_type() {
 		return;
 	}
 
-	if (s->cast_to<CapsuleShape2D>()) {
+	if (Object::cast_to<CapsuleShape2D>(*s)) {
 		shape_type = CAPSULE_SHAPE;
-	} else if (s->cast_to<CircleShape2D>()) {
+	} else if (Object::cast_to<CircleShape2D>(*s)) {
 		shape_type = CIRCLE_SHAPE;
-	} else if (s->cast_to<ConcavePolygonShape2D>()) {
+	} else if (Object::cast_to<ConcavePolygonShape2D>(*s)) {
 		shape_type = CONCAVE_POLYGON_SHAPE;
-	} else if (s->cast_to<ConvexPolygonShape2D>()) {
+	} else if (Object::cast_to<ConvexPolygonShape2D>(*s)) {
 		shape_type = CONVEX_POLYGON_SHAPE;
-	} else if (s->cast_to<LineShape2D>()) {
+	} else if (Object::cast_to<LineShape2D>(*s)) {
 		shape_type = LINE_SHAPE;
-	} else if (s->cast_to<RayShape2D>()) {
+	} else if (Object::cast_to<RayShape2D>(*s)) {
 		shape_type = RAY_SHAPE;
-	} else if (s->cast_to<RectangleShape2D>()) {
+	} else if (Object::cast_to<RectangleShape2D>(*s)) {
 		shape_type = RECTANGLE_SHAPE;
-	} else if (s->cast_to<SegmentShape2D>()) {
+	} else if (Object::cast_to<SegmentShape2D>(*s)) {
 		shape_type = SEGMENT_SHAPE;
 	} else {
 		shape_type = -1;
@@ -530,7 +530,7 @@ void CollisionShape2DEditor::edit(Node *p_node) {
 	}
 
 	if (p_node) {
-		node = p_node->cast_to<CollisionShape2D>();
+		node = Object::cast_to<CollisionShape2D>(p_node);
 
 		if (!canvas_item_editor->get_viewport_control()->is_connected("draw", this, "_canvas_draw"))
 			canvas_item_editor->get_viewport_control()->connect("draw", this, "_canvas_draw");
@@ -570,7 +570,7 @@ CollisionShape2DEditor::CollisionShape2DEditor(EditorNode *p_editor) {
 
 void CollisionShape2DEditorPlugin::edit(Object *p_obj) {
 
-	collision_shape_2d_editor->edit(p_obj->cast_to<Node>());
+	collision_shape_2d_editor->edit(Object::cast_to<Node>(p_obj));
 }
 
 bool CollisionShape2DEditorPlugin::handles(Object *p_obj) const {
