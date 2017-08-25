@@ -34,7 +34,6 @@
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
 
-#include <mmreg.h>
 #include <mmsystem.h>
 #include <windows.h>
 #include <wrl/client.h>
