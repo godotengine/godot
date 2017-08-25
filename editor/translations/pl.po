@@ -4,7 +4,7 @@
 #
 # 8-bit Pixel <dawdejw@gmail.com>, 2016.
 # Adrian Węcławski <weclawskiadrian@gmail.com>, 2016.
-# Daniel Lewan <vision360.daniel@gmail.com>, 2016.
+# Daniel Lewan <vision360.daniel@gmail.com>, 2016-2017.
 # Kajetan Kuszczyński <kajetanek99@gmail.com>, 2016.
 # Kamil Lewan <lewan.kamil@gmail.com>, 2016.
 # Karol Walasek <coreconviction@gmail.com>, 2016.
@@ -16,7 +16,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-06-23 19:32+0000\n"
+"PO-Revision-Date: 2017-06-26 08:24+0000\n"
 "Last-Translator: Daniel Lewan <vision360.daniel@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
@@ -1502,9 +1502,8 @@ msgid "Save Scene As.."
 msgstr "Zapisz scenę jako.."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "No"
-msgstr "Węzeł"
+msgstr "Nie"
 
 #: editor/editor_node.cpp
 msgid "This scene has never been saved. Save before running?"
@@ -1706,7 +1705,7 @@ msgstr ""
 #: editor/editor_node.cpp
 #, fuzzy
 msgid "Project"
-msgstr "Nowy projekt"
+msgstr "Projekt"
 
 #: editor/editor_node.cpp
 msgid "Project Settings"
@@ -1817,9 +1816,8 @@ msgstr ""
 "użyciem sieciowych systemów plików."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Editor"
-msgstr "Edycja"
+msgstr "Edytor"
 
 #: editor/editor_node.cpp editor/settings_config_dialog.cpp
 msgid "Editor Settings"
@@ -1848,9 +1846,8 @@ msgid "Classes"
 msgstr "Klasy"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Online Docs"
-msgstr "Zamknij pliki pomocy"
+msgstr "Dokumentacja online"
 
 #: editor/editor_node.cpp
 msgid "Q&A"
@@ -5735,7 +5732,7 @@ msgstr "Nowy projekt"
 #: editor/project_manager.cpp
 #, fuzzy
 msgid "Templates"
-msgstr "Usuń element"
+msgstr "Szablony"
 
 #: editor/project_manager.cpp
 msgid "Exit"
@@ -6507,7 +6504,7 @@ msgstr "Nazwa klasy:"
 #: editor/script_create_dialog.cpp
 #, fuzzy
 msgid "Template"
-msgstr "Usuń element"
+msgstr "Szablon"
 
 #: editor/script_create_dialog.cpp
 #, fuzzy

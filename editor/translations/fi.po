@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-04-16 13:21+0000\n"
+"PO-Revision-Date: 2017-08-25 14:41+0000\n"
 "Last-Translator: ekeimaja <ekeimaja@gmail.com>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.14-dev\n"
+"X-Generator: Weblate 2.17-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -7152,7 +7152,7 @@ msgstr "Kääntötila"
 
 #: scene/gui/color_picker.cpp
 msgid "Add current color as a preset"
-msgstr ""
+msgstr "Lisää nykyinen väri esiasetukseksi"
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"

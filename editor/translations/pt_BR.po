@@ -5,16 +5,18 @@
 # Allyson Souza <allyson_as@outlook.com>, 2017.
 # António Sarmento <antonio.luis.sarmento@gmail.com>, 2016.
 # George Marques <george@gmarqu.es>, 2016.
+# Guilherme Felipe C G Silva <guilhermefelipecgs@gmail.com>, 2017.
 # Joaquim Ferreira <joaquimferreira1996@bol.com.br>, 2016.
 # jonathan railarem <railarem@gmail.com>, 2017.
 # Mailson Silva Marins <mailsons335@gmail.com>, 2016.
+# Michael Alexsander Silva Dias <michael.a.s.dias@gmail.com>, 2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2017-03-27 19:34+0000\n"
-"Last-Translator: jonathan railarem <railarem@gmail.com>\n"
+"PO-Revision-Date: 2017-08-15 19:47+0000\n"
+"Last-Translator: Michael Alexsander Silva Dias <michael.a.s.dias@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -22,7 +24,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2.13-dev\n"
+"X-Generator: Weblate 2.17-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -313,7 +315,7 @@ msgstr "Otimizar"
 
 #: editor/animation_editor.cpp
 msgid "Select an AnimationPlayer from the Scene Tree to edit animations."
-msgstr ""
+msgstr "Selecione um AnimationPlayer da Árvore de Cena para editar animações."
 
 #: editor/animation_editor.cpp
 msgid "Key"
@@ -365,21 +367,19 @@ msgstr "Alterar Valor do Vetor"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Free"
-msgstr ""
+msgstr "Livrar"
 
 #: editor/asset_library_editor_plugin.cpp editor/editor_plugin_settings.cpp
 msgid "Version:"
 msgstr "Versão:"
 
 #: editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Contents:"
-msgstr "Constantes:"
+msgstr "Conteúdo:"
 
 #: editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "View Files"
-msgstr "Arquivo"
+msgstr "Ver Arquivos"
 
 #: editor/asset_library_editor_plugin.cpp editor/create_dialog.cpp
 #: editor/editor_help.cpp editor/property_selector.cpp
@@ -418,9 +418,8 @@ msgid "Connection error, please try again."
 msgstr ""
 
 #: editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Can't connect."
-msgstr "Conectar..."
+msgstr "Não é possível conectar..."
 
 #: editor/asset_library_editor_plugin.cpp
 #, fuzzy
@@ -433,7 +432,7 @@ msgstr ""
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "No response."
-msgstr ""
+msgstr "Sem resposta."
 
 #: editor/asset_library_editor_plugin.cpp
 #, fuzzy
@@ -442,7 +441,7 @@ msgstr "Formato de arquivo requisitado desconhecido:"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Req. Failed."
-msgstr ""
+msgstr "Sol. Falhou."
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Request failed, too many redirects"
@@ -454,7 +453,7 @@ msgstr ""
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Failed:"
-msgstr ""
+msgstr "Falhou:"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Bad download hash, assuming file has been tampered with."
@@ -478,7 +477,7 @@ msgstr ""
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Success!"
-msgstr ""
+msgstr "Sucesso!"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Fetching:"
@@ -490,14 +489,12 @@ msgid "Resolving.."
 msgstr "Salvando..."
 
 #: editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Connecting.."
-msgstr "Conectar..."
+msgstr "Conectando..."
 
 #: editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Requesting.."
-msgstr "Em teste"
+msgstr "Solicitando..."
 
 #: editor/asset_library_editor_plugin.cpp
 #, fuzzy
@@ -523,7 +520,7 @@ msgstr ""
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "first"
-msgstr ""
+msgstr "primeiro"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "prev"
@@ -1105,7 +1102,7 @@ msgstr "Empacotando"
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:\n"
-msgstr ""
+msgstr "Arquivo de modelo não encontrado:\n"
 
 #: editor/editor_export.cpp
 msgid "Added:"
@@ -1279,9 +1276,8 @@ msgid "Constants:"
 msgstr "Constantes:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Property Description:"
-msgstr "Descrição breve:"
+msgstr "Descrição da Propriedade:"
 
 #: editor/editor_help.cpp
 msgid "Method Description:"
@@ -1484,9 +1480,8 @@ msgid "Save Scene As.."
 msgstr "Salvar Cena Como..."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "No"
-msgstr "Nó"
+msgstr "Não"
 
 #: editor/editor_node.cpp
 msgid "This scene has never been saved. Save before running?"
@@ -1545,6 +1540,8 @@ msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""
+"A cena '%s' foi importada automaticamente, não podendo ser modificada.\n"
+"Para fazer alterações, uma nova cena herdada pode ser criada."
 
 #: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp
@@ -1608,9 +1605,8 @@ msgid "Previous tab"
 msgstr "Guia anterior"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Filter Files.."
-msgstr "Filtrar Arquivos Rapidamente..."
+msgstr "Filtrar Arquivos.."
 
 #: editor/editor_node.cpp
 msgid "Operations with scene files."
@@ -1680,9 +1676,8 @@ msgid "Miscellaneous project or scene-wide tools."
 msgstr "Ferramentas diversas atuantes no projeto ou cena."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Project"
-msgstr "Novo Projeto"
+msgstr "Projeto"
 
 #: editor/editor_node.cpp
 msgid "Project Settings"
@@ -1796,9 +1791,8 @@ msgstr ""
 "sistema de arquivos via rede."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Editor"
-msgstr "Editar"
+msgstr "Editor"
 
 #: editor/editor_node.cpp editor/settings_config_dialog.cpp
 msgid "Editor Settings"
@@ -1814,9 +1808,8 @@ msgid "Toggle Fullscreen"
 msgstr "Modo Tela-Cheia"
 
 #: editor/editor_node.cpp editor/project_export.cpp
-#, fuzzy
 msgid "Manage Export Templates"
-msgstr "Carregando Modelos de Exportação"
+msgstr "Gerenciar Modelos de Exportação"
 
 #: editor/editor_node.cpp
 msgid "Help"
@@ -1827,9 +1820,8 @@ msgid "Classes"
 msgstr "Classes"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Online Docs"
-msgstr "Fechar Docs"
+msgstr "Docs Online"
 
 #: editor/editor_node.cpp
 msgid "Q&A"
@@ -1965,11 +1957,11 @@ msgstr "Obrigado!"
 
 #: editor/editor_node.cpp
 msgid "Godot Engine contributors"
-msgstr ""
+msgstr "Contribuidores da Godot Engine"
 
 #: editor/editor_node.cpp
 msgid "Developers"
-msgstr ""
+msgstr "Desenvolvedores"
 
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
@@ -2000,19 +1992,16 @@ msgid "Load Errors"
 msgstr "Erros de Carregamento"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open 2D Editor"
-msgstr "Abrir no Editor"
+msgstr "Abrir Editor 2D"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open 3D Editor"
-msgstr "Abrir no Editor"
+msgstr "Abrir Editor 3D"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open Script Editor"
-msgstr "Abrir no Editor"
+msgstr "Abrir Editor de Scripts"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -2020,14 +2009,12 @@ msgid "Open Asset Library"
 msgstr "Exportar Biblioteca"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open the next Editor"
-msgstr "Abrir no Editor"
+msgstr "Abrir o próximo Editor"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open the previous Editor"
-msgstr "Abrir no Editor"
+msgstr "Abrir o Editor anterior"
 
 #: editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
@@ -2151,14 +2138,12 @@ msgid "Re-Download"
 msgstr "Recarregar"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Uninstall"
-msgstr "Instalar"
+msgstr "Desinstalar"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "(Installed)"
-msgstr "Instalar"
+msgstr "(Instalado)"
 
 #: editor/export_template_manager.cpp
 #, fuzzy
@@ -2167,12 +2152,11 @@ msgstr "Abaixo"
 
 #: editor/export_template_manager.cpp
 msgid "(Missing)"
-msgstr ""
+msgstr "(Faltando)"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "(Current)"
-msgstr "Atual:"
+msgstr "(Atual)"
 
 #: editor/export_template_manager.cpp
 msgid "Remove template version '%s'?"
@@ -2197,14 +2181,12 @@ msgid "No version.txt found inside templates."
 msgstr ""
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Error creating path for templates:\n"
-msgstr "Erro ao salvar atlas:"
+msgstr "Erro ao criar caminho para modelos:\n"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Extracting Export Templates"
-msgstr "Carregando Modelos de Exportação"
+msgstr "Extraindo Modelos de Exportação"
 
 #: editor/export_template_manager.cpp
 msgid "Importing:"
@@ -2215,34 +2197,28 @@ msgid "Loading Export Templates"
 msgstr "Carregando Modelos de Exportação"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Current Version:"
-msgstr "Cena Atual"
+msgstr "Versão Atual:"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Installed Versions:"
-msgstr "Plugins Instalados:"
+msgstr "Versões Instaladas:"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Install From File"
-msgstr "Instalar Projeto:"
+msgstr "Instalar a partir do arquivo"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Remove Template"
-msgstr "Remover Item"
+msgstr "Remover Modelo"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Select template file"
-msgstr "Excluir os arquivos selecionados?"
+msgstr "Selecione o arquivo de modelo"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Export Template Manager"
-msgstr "Carregando Modelos de Exportação"
+msgstr "Gerenciador de Modelos de Exportação"
 
 #: editor/file_type_cache.cpp
 msgid "Can't open file_type_cache.cch for writing, not saving file type cache!"
@@ -2252,7 +2228,7 @@ msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot navigate to '"
-msgstr ""
+msgstr "Não é possível navegar para '"
 
 #: editor/filesystem_dock.cpp
 msgid "Same source and destination files, doing nothing."
@@ -2279,13 +2255,12 @@ msgid "No files selected!"
 msgstr "Nenhum arquivo selecionado!"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Expand all"
-msgstr "Expandir para Pai"
+msgstr "Expandir tudo"
 
 #: editor/filesystem_dock.cpp
 msgid "Collapse all"
-msgstr ""
+msgstr "Recolher tudo"
 
 #: editor/filesystem_dock.cpp
 msgid "Show In File Manager"
@@ -2397,14 +2372,12 @@ msgid "Saving.."
 msgstr "Salvando..."
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid " Files"
-msgstr "Arquivo"
+msgstr " Arquivos"
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "Import As:"
-msgstr "Importar"
+msgstr "Importar Como:"
 
 #: editor/import_dock.cpp editor/property_editor.cpp
 msgid "Preset.."
@@ -2486,13 +2459,12 @@ msgid "No target font resource!"
 msgstr "Falta recurso de fonte destino!"
 
 #: editor/io_plugins/editor_font_import_plugin.cpp
-#, fuzzy
 msgid ""
 "Invalid file extension.\n"
 "Please use .font."
 msgstr ""
 "Extensão de arquivo inválida.\n"
-"Por favor use .fnt."
+"Por favor use .font."
 
 #: editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Can't load/process source font."
@@ -2711,9 +2683,8 @@ msgid "Auto"
 msgstr "Auto"
 
 #: editor/io_plugins/editor_scene_import_plugin.cpp
-#, fuzzy
 msgid "Root Node Name:"
-msgstr "Nome do Nó:"
+msgstr "Nome do Nó Raíz:"
 
 #: editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "The Following Files are Missing:"
@@ -2973,9 +2944,8 @@ msgid "Compress"
 msgstr "Comprimir"
 
 #: editor/io_plugins/editor_translation_import_plugin.cpp
-#, fuzzy
 msgid "Add to Project (project.godot)"
-msgstr "Adicionar ao Projeto (engine.cfg)"
+msgstr "Adicionar ao Projeto (project.godot)"
 
 #: editor/io_plugins/editor_translation_import_plugin.cpp
 msgid "Import Languages:"
@@ -3014,9 +2984,8 @@ msgid "Change Animation Name:"
 msgstr "Alterar Nome da Animação:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Delete Animation?"
-msgstr "Duplicar Animação"
+msgstr "Excluir Animação?"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -3431,9 +3400,8 @@ msgid "Paste Pose"
 msgstr "Colar Pose"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Select Mode"
-msgstr "Modo de Seleção (Q)"
+msgstr "Modo de Seleção"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Drag: Rotate"
@@ -7004,13 +6972,12 @@ msgid "just released"
 msgstr ""
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Run in Browser"
-msgstr "Navegar"
+msgstr "Rodar no Navegador"
 
 #: platform/javascript/export/export.cpp
 msgid "Run exported HTML in the system's default browser."
-msgstr ""
+msgstr "Rodar HTML exportado no navegador padrão do sistema."
 
 #: platform/javascript/export/export.cpp
 #, fuzzy
@@ -7018,9 +6985,8 @@ msgid "Could not write file:\n"
 msgstr "Não se pôde achar tile:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read file:\n"
-msgstr "Não se pôde achar tile:"
+msgstr "Não foi possível ler o arquivo:\n"
 
 #: platform/javascript/export/export.cpp
 #, fuzzy
@@ -7031,6 +6997,8 @@ msgstr "Não foi possível criar a pasta."
 msgid ""
 "Couldn't read the certificate file. Are the path and password both correct?"
 msgstr ""
+"Não foi possível ler o arquivo de certificado. Ambos o caminho e senha estão "
+"corretos?"
 
 #: platform/uwp/export/export.cpp
 #, fuzzy
@@ -7056,9 +7024,8 @@ msgid "Custom release package not found."
 msgstr ""
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid unique name."
-msgstr "Nome Inválido."
+msgstr "Nome único inválido."
 
 #: platform/uwp/export/export.cpp
 #, fuzzy
@@ -7071,9 +7038,8 @@ msgid "Invalid publisher GUID."
 msgstr "Caminho base inválido"
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid background color."
-msgstr "Origem personalizada da fonte inválida."
+msgstr "Cor de fundo inválida."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid Store Logo image dimensions (should be 50x50)."
@@ -7309,11 +7275,11 @@ msgstr ""
 #: scene/gui/color_picker.cpp
 #, fuzzy
 msgid "RAW Mode"
-msgstr "Modo de Início:"
+msgstr "Modo RAW"
 
 #: scene/gui/color_picker.cpp
 msgid "Add current color as a preset"
-msgstr ""
+msgstr "Adicionar cor atual como uma predefinição"
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"

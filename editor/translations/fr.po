@@ -2,6 +2,7 @@
 # Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
+# Antoine Carrier <ac.g392@gmail.com>, 2017.
 # Brice <bbric@free.fr>, 2016.
 # Chenebel Dorian <LoubiTek54@gmail.com>, 2016-2017.
 # derderder77 <derderder77380@gmail.com>, 2016.
@@ -22,8 +23,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2017-05-25 09:31+0000\n"
-"Last-Translator: Nathan Lovato <nathan.lovato.art@gmail.com>\n"
+"PO-Revision-Date: 2017-07-03 19:36+0000\n"
+"Last-Translator: Gilles Roudiere <gilles.roudiere@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -31,7 +32,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2.14.1\n"
+"X-Generator: Weblate 2.16-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -98,9 +99,8 @@ msgid "Anim Track Change Value Mode"
 msgstr "Modifier le mode de valeur de la piste d'animation"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Anim Track Change Wrap Mode"
-msgstr "Modifier le mode de valeur de la piste d'animation"
+msgstr "Piste d'Animation Changer Mode de Conclusion"
 
 #: editor/animation_editor.cpp
 msgid "Edit Node Curve"
@@ -376,21 +376,19 @@ msgstr "Modifier valeur du tableau"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Free"
-msgstr ""
+msgstr "Libérer"
 
 #: editor/asset_library_editor_plugin.cpp editor/editor_plugin_settings.cpp
 msgid "Version:"
 msgstr "Version :"
 
 #: editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Contents:"
-msgstr "Constantes :"
+msgstr "Contenu:"
 
 #: editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "View Files"
-msgstr "Fichier"
+msgstr "Voir Fichiers"
 
 #: editor/asset_library_editor_plugin.cpp editor/create_dialog.cpp
 #: editor/editor_help.cpp editor/property_selector.cpp
@@ -418,97 +416,91 @@ msgstr "Fermer"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Can't resolve hostname:"
-msgstr ""
+msgstr "Impossible de résoudre le nom de l'hôte:"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Can't resolve."
-msgstr ""
+msgstr "Impossible à résoudre."
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Connection error, please try again."
-msgstr ""
+msgstr "Erreur de connection, veuillez essayer à nouveau."
 
 #: editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Can't connect."
-msgstr "Connecter…"
+msgstr "Connection impossible."
 
 #: editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Can't connect to host:"
-msgstr "Connecter au nœud :"
+msgstr "Connection à l'hôte impossible:"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "No response from host:"
-msgstr ""
+msgstr "Pas de réponse de l'hôte:"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "No response."
-msgstr ""
+msgstr "Pas de réponse."
 
 #: editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Request failed, return code:"
-msgstr "Format de fichier demandé inconnu :"
+msgstr "La requête a échoué, code retourné:"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Req. Failed."
-msgstr ""
+msgstr "Req. a Échoué."
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Request failed, too many redirects"
-msgstr ""
+msgstr "La requête a échoué, trop de redirections"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Redirect Loop."
-msgstr ""
+msgstr "Boucle de Redirection."
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Failed:"
-msgstr ""
+msgstr "Échec:"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Bad download hash, assuming file has been tampered with."
-msgstr ""
+msgstr "Vérification du téléchargement échouée, le fichier a été altéré."
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Expected:"
-msgstr ""
+msgstr "Attendu:"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Got:"
-msgstr ""
+msgstr "A:"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Failed sha256 hash check"
-msgstr ""
+msgstr "Vérification de brouillage sha256 échouée"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Asset Download Error:"
-msgstr ""
+msgstr "Erreur dans le téléchargement d'une ressource:"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Success!"
-msgstr ""
+msgstr "Succès!"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Fetching:"
-msgstr ""
+msgstr "Récupération:"
 
 #: editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Resolving.."
-msgstr "Enregistrement…"
+msgstr "Résolution.."
 
 #: editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Connecting.."
-msgstr "Connecter…"
+msgstr "Connexion en cours.."
 
 #: editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Requesting.."
-msgstr "En test"
+msgstr "Envoi d'une requête.."
 
 #: editor/asset_library_editor_plugin.cpp
 #, fuzzy
@@ -517,11 +509,11 @@ msgstr "Erreur d'enregistrement de la ressource !"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Idle"
-msgstr ""
+msgstr "Inactif"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Retry"
-msgstr ""
+msgstr "Réessayer"
 
 #: editor/asset_library_editor_plugin.cpp
 #, fuzzy
@@ -530,23 +522,24 @@ msgstr "Télécharger"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Download for this asset is already in progress!"
-msgstr ""
+msgstr "Le téléchargement de cette ressource est déjà en cours!"
 
 #: editor/asset_library_editor_plugin.cpp
+#, fuzzy
 msgid "first"
-msgstr ""
+msgstr "prem"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "prev"
-msgstr ""
+msgstr "préc"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "next"
-msgstr ""
+msgstr "suiv"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "last"
-msgstr ""
+msgstr "dern"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "All"
@@ -1635,7 +1628,7 @@ msgstr "Onglet precedent"
 
 #: editor/editor_node.cpp
 msgid "Filter Files.."
-msgstr "Filtrer des fichiers…"
+msgstr "Filtrer Fichiers.."
 
 #: editor/editor_node.cpp
 msgid "Operations with scene files."
@@ -1705,9 +1698,8 @@ msgid "Miscellaneous project or scene-wide tools."
 msgstr "Outils divers liés au projet ou à la scène."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Project"
-msgstr "Nouveau projet"
+msgstr "Projet"
 
 #: editor/editor_node.cpp
 msgid "Project Settings"
@@ -1857,12 +1849,14 @@ msgid "Online Docs"
 msgstr "Fermer les documentations"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "Q&A"
-msgstr ""
+msgstr "Questions et Réponses"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "Issue Tracker"
-msgstr ""
+msgstr "Traqueur de problèmes"
 
 #: editor/editor_node.cpp
 msgid "About"
@@ -1990,11 +1984,11 @@ msgstr "Merci !"
 
 #: editor/editor_node.cpp
 msgid "Godot Engine contributors"
-msgstr ""
+msgstr "Contributeurs Godot Engine"
 
 #: editor/editor_node.cpp
 msgid "Developers"
-msgstr ""
+msgstr "Développeurs"
 
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
@@ -2104,9 +2098,8 @@ msgid "Inclusive"
 msgstr "Inclusif"
 
 #: editor/editor_profiler.cpp
-#, fuzzy
 msgid "Self"
-msgstr "Soi-même"
+msgstr "Soi"
 
 #: editor/editor_profiler.cpp
 #, fuzzy
@@ -2194,9 +2187,8 @@ msgid "(Missing)"
 msgstr "(Manquant)"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "(Current)"
-msgstr "Actuel :"
+msgstr "(Actuel)"
 
 #: editor/export_template_manager.cpp
 msgid "Remove template version '%s'?"
@@ -4067,21 +4059,20 @@ msgstr "Peupler"
 
 #: editor/plugins/navigation_polygon_editor_plugin.cpp
 msgid "Create Navigation Polygon"
-msgstr "Créer un polygone de navigation"
+msgstr "Créer Polygone de Navigation"
 
 #: editor/plugins/navigation_polygon_editor_plugin.cpp
 msgid "Remove Poly And Point"
-msgstr "Supprimer le polygone et le point"
+msgstr "Retirer Polygone et Point"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Clear Emission Mask"
-msgstr "Effacer le masque d'émission"
+msgstr "Effacer Masque d'Émission"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "Generating AABB"
-msgstr "Générer un AABB"
+msgstr "Générer AABB"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Can only set point into a ParticlesMaterial process material"
@@ -4089,11 +4080,11 @@ msgstr ""
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Error loading image:"
-msgstr "Erreur de chargement de l'image :"
+msgstr "Erreur de chargement d'image :"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "No pixels with transparency > 128 in image.."
-msgstr "Pas de pixels avec une transparence > 128 dans l'image…"
+msgstr "Pas de pixels avec transparence > 128 dans l'image.."
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Set Emission Mask"
@@ -4101,21 +4092,20 @@ msgstr "Définir le masque d'émission"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generate Visibility Rect"
-msgstr ""
+msgstr "Générer Rect de Visibilité"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Load Emission Mask"
-msgstr "Charger le masque d'émission"
+msgstr "Charger Masque d'Émission"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generated Point Count:"
-msgstr "Compte de points générés :"
+msgstr "Compte de Points Générés :"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "Generation Time (sec):"
-msgstr "Temps moyen (seconde)"
+msgstr "Temps de Génération (sec):"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #, fuzzy
@@ -4123,88 +4113,83 @@ msgid "Emission Mask"
 msgstr "Définir le masque d'émission"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Capture from Pixel"
-msgstr "Créer depuis la scène"
+msgstr "Capturer depuis Pixel"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Emission Colors"
-msgstr "Positions d'émission :"
+msgstr "Couleurs d'Émission"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Node does not contain geometry."
-msgstr "Le nœud ne contient pas de géométrie."
+msgstr "Nœud ne contient pas de géométrie."
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Node does not contain geometry (faces)."
-msgstr "Le nœud ne contient pas de géométrie (faces)."
+msgstr "Nœud ne contient pas de géométrie (faces)."
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
 msgid "A processor material of type 'ParticlesMaterial' is required."
-msgstr ""
+msgstr "Un matériel processeur de type 'ParticlesMaterial' est requis."
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
 msgid "Faces contain no area!"
-msgstr "Les faces n'ont pas de surface !"
+msgstr "Faces ne contiennent pas de zone!"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "No faces!"
-msgstr "Pas de faces !"
+msgstr "Pas de faces!"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generate AABB"
-msgstr "Générer un AABB"
+msgstr "Générer AABB"
 
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "Create Emission Points From Mesh"
-msgstr "Créer un émetteur à partir d'un maillage"
+msgstr "Créer Points d'Émission depuis Maillage"
 
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "Create Emission Points From Node"
-msgstr "Créer un émetteur à partir d'un nœud"
+msgstr "Créer Points d'Émission Depuis Noeud"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Clear Emitter"
-msgstr "Effacer l'émetteur"
+msgstr "Effacer l'Émetteur"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emitter"
-msgstr "Créer un émetteur"
+msgstr "Créer Émetteur"
 
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "Emission Points:"
-msgstr "Positions d'émission :"
+msgstr "Points d'Émission:"
+
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Surface Points"
+msgstr "Points de Surface"
 
 #: editor/plugins/particles_editor_plugin.cpp
 #, fuzzy
-msgid "Surface Points"
-msgstr "Surface %d"
-
-#: editor/plugins/particles_editor_plugin.cpp
 msgid "Surface Points+Normal (Directed)"
-msgstr ""
+msgstr "Points de Surface+Normale (Dirigée)"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Volume"
 msgstr "Volume"
 
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "Emission Source: "
-msgstr "Remplissage d'émission :"
+msgstr "Source d'Émission: "
 
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "Generate Visibility AABB"
-msgstr "Générer un AABB"
+msgstr "Générer AABB de Visibilité"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
-msgstr "Supprimer le point d'une courbe"
+msgstr "Supprimer Point de la Courbe"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #, fuzzy
@@ -5268,8 +5253,9 @@ msgid "Resource clipboard is empty or not a texture!"
 msgstr "Le presse-papiers des ressources est vide ou n'est pas une texture !"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
 msgid "Paste Frame"
-msgstr "Coller une image"
+msgstr "Coller Frame"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Empty"
@@ -7313,8 +7299,8 @@ msgid ""
 "A shape must be provided for CollisionShape to function. Please create a "
 "shape resource for it!"
 msgstr ""
-"Afin qu'une CollisionShape fonctionne, il lui faut une forme. Créez une "
-"ressource de forme pour cette CollisionShape !"
+"Une CollisionShape nécessite une forme pour fonctionner. Créez une ressource "
+"de forme pour cette CollisionShape !"
 
 #: scene/3d/collision_polygon.cpp
 msgid ""

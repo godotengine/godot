@@ -5,21 +5,22 @@
 # Aprın Çor Tigin <kabusturk38@gmail.com>, 2016-2017.
 # Ceyhun Can Ulker <ceyhuncanu@gmail.com>, 2016.
 # Enes Kaya Öcal <ekayaocal@hotmail.com>, 2016.
+# hubbyist <hub@legrud.net>, 2017.
 # M. Yavuz Uzun <myavuzuzun@yandex.com>, 2016.
 # Orkun Turan <holygatestudio@yandex.com>, 2016-2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-01-22 12:30+0000\n"
-"Last-Translator: Aprın Çor Tigin <kabusturk38@gmail.com>\n"
+"PO-Revision-Date: 2017-07-19 09:38+0000\n"
+"Last-Translator: hubbyist <hub@legrud.net>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2.11-dev\n"
+"X-Generator: Weblate 2.16-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -86,9 +87,8 @@ msgid "Anim Track Change Value Mode"
 msgstr "Canln İzi Değer Değiştir Biçimi"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Anim Track Change Wrap Mode"
-msgstr "Canln İzi Değer Değiştir Biçimi"
+msgstr "Canlandırma İzi Hizalama Modunu Değiştir"
 
 #: editor/animation_editor.cpp
 msgid "Edit Node Curve"
@@ -364,21 +364,19 @@ msgstr "Dizi Değerini Değiştir"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Free"
-msgstr ""
+msgstr "Özgür"
 
 #: editor/asset_library_editor_plugin.cpp editor/editor_plugin_settings.cpp
 msgid "Version:"
 msgstr "Sürüm:"
 
 #: editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Contents:"
-msgstr "Sabitler:"
+msgstr "İçerikler:"
 
 #: editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "View Files"
-msgstr "Dizeç"
+msgstr "Dosyaları Görüntüle"
 
 #: editor/asset_library_editor_plugin.cpp editor/create_dialog.cpp
 #: editor/editor_help.cpp editor/property_selector.cpp
@@ -406,46 +404,43 @@ msgstr "Kapat"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Can't resolve hostname:"
-msgstr ""
+msgstr "Ana makine adı çözümlenemedi:"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Can't resolve."
-msgstr ""
+msgstr "Çözümlenemedi."
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Connection error, please try again."
-msgstr ""
+msgstr "Bağlantı hatası, lütfen tekrar deneyiniz."
 
 #: editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Can't connect."
-msgstr "Bağlan..."
+msgstr "Bağlanamadı."
 
 #: editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Can't connect to host:"
-msgstr "Düğüme Bağlan:"
+msgstr "Ana makineye bağlanılamadı:"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "No response from host:"
-msgstr ""
+msgstr "Ana makineden cevap yok:"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "No response."
-msgstr ""
+msgstr "Cevap yok."
 
 #: editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Request failed, return code:"
-msgstr "İstenilen dizeç formatı bilinmiyor:"
+msgstr "İstem başarısız, dönen kod:"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Req. Failed."
-msgstr ""
+msgstr "İstem Başarısız."
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Request failed, too many redirects"
-msgstr ""
+msgstr "İstem Başarısız, çok fazla yönlendirme"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Redirect Loop."

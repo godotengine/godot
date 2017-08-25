@@ -3,21 +3,22 @@
 # This file is distributed under the same license as the Godot source code.
 #
 # Allen H <w84miracle@gmail.com>, 2017.
+# Chao Yu <casd82@gmail.com>, 2017.
 # popcade <popcade@gmail.com>, 2016.
 # Sam Pan <sampan66@gmail.com>, 2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-05-12 07:06+0000\n"
-"Last-Translator: Allen H. <w84miracle@gmail.com>\n"
+"PO-Revision-Date: 2017-07-31 15:51+0000\n"
+"Last-Translator: Chao Yu <casd82@gmail.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
 "Language: zh_TW\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2.14-dev\n"
+"X-Generator: Weblate 2.16-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -37,7 +38,7 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transform"
-msgstr ""
+msgstr "動畫更改座標"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Value"
@@ -6369,7 +6370,7 @@ msgstr ""
 
 #: editor/script_editor_debugger.cpp
 msgid "Value"
-msgstr ""
+msgstr "數值"
 
 #: editor/script_editor_debugger.cpp
 #, fuzzy
@@ -7066,19 +7067,19 @@ msgstr ""
 
 #: scene/gui/file_dialog.cpp
 msgid "Open File(s)"
-msgstr ""
+msgstr "開啟檔案"
 
 #: scene/gui/file_dialog.cpp
 msgid "Open a Directory"
-msgstr ""
+msgstr "開啟資料夾"
 
 #: scene/gui/file_dialog.cpp
 msgid "Open a File or Directory"
-msgstr ""
+msgstr "開啟檔案或資料夾"
 
 #: scene/gui/input_action.cpp
 msgid "Ctrl+"
-msgstr ""
+msgstr "Ctrl+"
 
 #: scene/gui/popup.cpp
 msgid ""

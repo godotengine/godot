@@ -17,7 +17,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2017-06-22 20:49+0800\n"
+"PO-Revision-Date: 2017-07-08 15:27+0800\n"
 "Last-Translator: Geequlim <geequlim@gmail.com>\n"
 "Language-Team: 汉语 <geequlim@gmail.com>\n"
 "Language: zh_CN\n"
@@ -374,14 +374,12 @@ msgid "Version:"
 msgstr "版本:"
 
 #: editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Contents:"
-msgstr "常量:"
+msgstr "内容:"
 
 #: editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "View Files"
-msgstr "文件"
+msgstr "查看文件"
 
 #: editor/asset_library_editor_plugin.cpp editor/create_dialog.cpp
 #: editor/editor_help.cpp editor/property_selector.cpp
@@ -417,30 +415,27 @@ msgstr ""
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Connection error, please try again."
-msgstr ""
+msgstr "连接错误，请重试。"
 
 #: editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Can't connect."
-msgstr "连接事件。"
+msgstr "无法连接。"
 
 #: editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Can't connect to host:"
-msgstr "连接到节点:"
+msgstr "无法连接到服务器:"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "No response from host:"
-msgstr ""
+msgstr "服务器无响应:"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "No response."
-msgstr ""
+msgstr "无响应。"
 
 #: editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Request failed, return code:"
-msgstr "未知的文件类型请求:"
+msgstr "请求失败，错误代码:"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Req. Failed."
@@ -456,7 +451,7 @@ msgstr ""
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Failed:"
-msgstr ""
+msgstr "失败:"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Bad download hash, assuming file has been tampered with."
@@ -476,35 +471,31 @@ msgstr ""
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Asset Download Error:"
-msgstr ""
+msgstr "资源下载出错:"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Success!"
-msgstr ""
+msgstr "完成！"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Fetching:"
-msgstr ""
+msgstr "获取:"
 
 #: editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Resolving.."
-msgstr "保存中..."
+msgstr "解析中.."
 
 #: editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Connecting.."
-msgstr "连接事件。"
+msgstr "连接中.."
 
 #: editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Requesting.."
-msgstr "测试"
+msgstr "正在请求.."
 
 #: editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Error making request"
-msgstr "保存资源出错！"
+msgstr "请求错误"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Idle"
@@ -512,16 +503,15 @@ msgstr ""
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Retry"
-msgstr ""
+msgstr "重试"
 
 #: editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Download Error"
-msgstr "下载"
+msgstr "下载错误"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Download for this asset is already in progress!"
-msgstr ""
+msgstr "此资源文件正在下载中！"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "first"
@@ -1403,14 +1393,13 @@ msgid "There is no defined scene to run."
 msgstr "没有设置要执行的场景。"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "No main scene has ever been defined, select one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
-"尚未定义主场景。\n"
-"请在项目设置的application分类下设置选择主场景。"
+"尚未定义主场景, 现在选择一个吗?\n"
+"你也可以稍后在项目设置的application分类下修改。"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1467,9 +1456,8 @@ msgid "Save Scene As.."
 msgstr "场景另存为.."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "No"
-msgstr "节点"
+msgstr "否"
 
 #: editor/editor_node.cpp
 msgid "This scene has never been saved. Save before running?"
@@ -1663,9 +1651,8 @@ msgid "Miscellaneous project or scene-wide tools."
 msgstr "其他工程或全场景工具。"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Project"
-msgstr "新建"
+msgstr "项目"
 
 #: editor/editor_node.cpp
 msgid "Project Settings"
@@ -1769,9 +1756,8 @@ msgstr ""
 "当使用远程设备调试时，使用网络文件系统能有效提高编辑效率。"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Editor"
-msgstr "编辑"
+msgstr "编辑器"
 
 #: editor/editor_node.cpp editor/settings_config_dialog.cpp
 msgid "Editor Settings"
@@ -1798,13 +1784,12 @@ msgid "Classes"
 msgstr "类型"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Online Docs"
-msgstr "关闭文档"
+msgstr "在线文档"
 
 #: editor/editor_node.cpp
 msgid "Q&A"
-msgstr ""
+msgstr "问答"
 
 #: editor/editor_node.cpp
 msgid "Issue Tracker"
@@ -1936,11 +1921,11 @@ msgstr "谢谢！"
 
 #: editor/editor_node.cpp
 msgid "Godot Engine contributors"
-msgstr ""
+msgstr "Godot引擎贡献者"
 
 #: editor/editor_node.cpp
 msgid "Developers"
-msgstr ""
+msgstr "开发者"
 
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
@@ -1971,34 +1956,28 @@ msgid "Load Errors"
 msgstr "加载错误"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open 2D Editor"
-msgstr "在编辑器中打开"
+msgstr "打开2D编辑器"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open 3D Editor"
-msgstr "在编辑器中打开"
+msgstr "打开3D编辑器"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open Script Editor"
-msgstr "在编辑器中打开"
+msgstr "打开脚本编辑器"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open Asset Library"
-msgstr "导出库"
+msgstr "打开资源商店"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open the next Editor"
-msgstr "在编辑器中打开"
+msgstr "打开下一个编辑器"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open the previous Editor"
-msgstr "在编辑器中打开"
+msgstr "打开上一个编辑器"
 
 #: editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
@@ -2438,13 +2417,12 @@ msgid "No target font resource!"
 msgstr "请设置目标字体资源！"
 
 #: editor/io_plugins/editor_font_import_plugin.cpp
-#, fuzzy
 msgid ""
 "Invalid file extension.\n"
 "Please use .font."
 msgstr ""
 "文件扩展名不合法\n"
-"请使用.fnt文件。"
+"请使用.font文件。"
 
 #: editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Can't load/process source font."
@@ -2921,9 +2899,8 @@ msgid "Compress"
 msgstr "压缩"
 
 #: editor/io_plugins/editor_translation_import_plugin.cpp
-#, fuzzy
 msgid "Add to Project (project.godot)"
-msgstr "添加到项目 (godot.cfg)"
+msgstr "添加到项目 (project.godot)"
 
 #: editor/io_plugins/editor_translation_import_plugin.cpp
 msgid "Import Languages:"
@@ -3664,19 +3641,16 @@ msgid "Update from Scene"
 msgstr "从场景中更新"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Add point"
-msgstr "添加输入事件"
+msgstr "添加顶点"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Remove point"
-msgstr "移除路径顶点"
+msgstr "移除顶点"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Load preset"
-msgstr "加载资源"
+msgstr "加载预设"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Modify Curve"
@@ -3965,9 +3939,8 @@ msgstr "清除Emission Mask（发射屏蔽）"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "Generating AABB"
-msgstr "生成AABB"
+msgstr "正在生成AABB"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Can only set point into a ParticlesMaterial process material"
@@ -3999,24 +3972,20 @@ msgstr "生成顶点计数:"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "Generation Time (sec):"
-msgstr "平均帧时间（秒）"
+msgstr "生成时间（秒）"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Emission Mask"
-msgstr "设置Emission Mask（发射屏蔽）"
+msgstr ""
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Capture from Pixel"
-msgstr "从场景中创建"
+msgstr ""
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Emission Colors"
-msgstr "发射位置:"
+msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Node does not contain geometry."
@@ -4079,21 +4048,18 @@ msgid "Emission Source: "
 msgstr "发射源："
 
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "Generate Visibility AABB"
-msgstr "生成AABB"
+msgstr ""
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
 msgstr "从曲线中移除顶点"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Out-Control from Curve"
-msgstr "移动曲线外控制点"
+msgstr "移除曲线外控制点"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Remove In-Control from Curve"
 msgstr "从曲线中移除顶点"
 
@@ -4153,14 +4119,12 @@ msgid "Remove Path Point"
 msgstr "移除路径顶点"
 
 #: editor/plugins/path_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Out-Control Point"
-msgstr "移动曲线外控制点"
+msgstr "移除曲线外控制点"
 
 #: editor/plugins/path_editor_plugin.cpp
-#, fuzzy
 msgid "Remove In-Control Point"
-msgstr "移动曲线内控制点"
+msgstr "移除曲线内控制点"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create UV Map"
@@ -4315,9 +4279,8 @@ msgid "Pitch"
 msgstr "音调"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Clear Recent Files"
-msgstr "清除骨骼"
+msgstr "清理当前文件"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error while saving theme"
@@ -4440,9 +4403,8 @@ msgid "Move Right"
 msgstr "向右移动"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Open Godot online documentation"
-msgstr "搜索文档。"
+msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search the class hierarchy."
@@ -4498,21 +4460,20 @@ msgid "Pick Color"
 msgstr "拾取颜色"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Convert Case"
-msgstr "正在转换图片"
+msgstr "转换大小写"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Uppercase"
-msgstr ""
+msgstr "大写"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Lowercase"
-msgstr ""
+msgstr "小写"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Capitalize"
-msgstr ""
+msgstr "首字母大写"
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp scene/gui/line_edit.cpp
@@ -4566,11 +4527,11 @@ msgstr "修剪行后空白"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Convert Indent To Spaces"
-msgstr ""
+msgstr "将缩进转为空格"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Convert Indent To Tabs"
-msgstr ""
+msgstr "将缩进转为Tab"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Auto Indent"
@@ -4594,14 +4555,12 @@ msgid "Goto Previous Breakpoint"
 msgstr "前往上一个断点"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Convert To Uppercase"
-msgstr "转换为.."
+msgstr "转换为大写"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Convert To Lowercase"
-msgstr "转换为.."
+msgstr "转换为小写"
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp
@@ -4628,7 +4587,7 @@ msgstr "搜索光标位置"
 
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Shader"
-msgstr ""
+msgstr "着色器"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Scalar Constant"
@@ -4855,23 +4814,20 @@ msgid "Freelook Right"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Freelook Forward"
-msgstr "前进"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Freelook Backwards"
-msgstr "向后"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Up"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Freelook Down"
-msgstr "滚轮向下滚动。"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Speed Modifier"
@@ -4882,26 +4838,22 @@ msgid "Objects Drawn"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Material Changes"
-msgstr "有更改时更新UI"
+msgstr "材质变更"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Shader Changes"
-msgstr "有更改时更新UI"
+msgstr "着色器变更"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Surface Changes"
-msgstr "有更改时更新UI"
+msgstr "表面变更"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Draw Calls"
-msgstr ""
+msgstr "Draw Calls"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Vertices"
 msgstr "顶点"
 
@@ -4922,14 +4874,12 @@ msgid "Display Overdraw"
 msgstr "显示过度绘制"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Display Unshaded"
-msgstr "显示无阴影"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "View Environment"
-msgstr "环境"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
@@ -5505,14 +5455,12 @@ msgid "Invalid project path, the path must exist!"
 msgstr "项目目录不存在！"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Invalid project path, project.godot must not exist."
-msgstr "项目目录下不能包含godot.cfg文件。"
+msgstr "项目目录下不能包含project.godot文件。"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Invalid project path, project.godot must exist."
-msgstr "项目目录下必须包含godot.cfg文件。"
+msgstr "项目目录下必须包含project.godot文件。"
 
 #: editor/project_manager.cpp
 msgid "Imported Project"
@@ -5523,9 +5471,8 @@ msgid "Invalid project path (changed anything?)."
 msgstr "项目路径非法（被外部修改？）。"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Couldn't create project.godot in project path."
-msgstr "无法在项目目录下创建godot.cfg文件。"
+msgstr "无法在项目目录下创建project.godot文件。"
 
 #: editor/project_manager.cpp
 msgid "The following files failed extraction from package:"
@@ -5618,9 +5565,8 @@ msgid "New Project"
 msgstr "新建"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Templates"
-msgstr "移除模板"
+msgstr "模板"
 
 #: editor/project_manager.cpp
 msgid "Exit"
@@ -5742,9 +5688,8 @@ msgid "Erase Input Action Event"
 msgstr "移除输入事件"
 
 #: editor/project_settings.cpp
-#, fuzzy
 msgid "Add Event"
-msgstr "添加空白帧"
+msgstr "添加事件"
 
 #: editor/project_settings.cpp scene/gui/input_action.cpp
 msgid "Device"
@@ -5811,9 +5756,8 @@ msgid "Remove Resource Remap Option"
 msgstr "移除资源重定向选项"
 
 #: editor/project_settings.cpp
-#, fuzzy
 msgid "Project Settings (project.godot)"
-msgstr "项目设置（godot.cfg）"
+msgstr "项目设置（project.godot）"
 
 #: editor/project_settings.cpp editor/settings_config_dialog.cpp
 msgid "General"
@@ -6112,9 +6056,8 @@ msgid "Error duplicating scene to save it."
 msgstr "复制场景出错。"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Sub-Resources:"
-msgstr "资源:"
+msgstr "子资源:"
 
 #: editor/scene_tree_dock.cpp
 msgid "Edit Groups"
@@ -6192,7 +6135,7 @@ msgstr "切换CanvasItem可见"
 
 #: editor/scene_tree_editor.cpp
 msgid "Node configuration warning:"
-msgstr ""
+msgstr "节点配置警告:"
 
 #: editor/scene_tree_editor.cpp
 msgid ""
@@ -6205,32 +6148,36 @@ msgid ""
 "Node has connections.\n"
 "Click to show signals dock."
 msgstr ""
+"节点有信号连接。\n"
+"单击查看信号栏。"
 
 #: editor/scene_tree_editor.cpp
 msgid ""
 "Node is in group(s).\n"
 "Click to show groups dock."
 msgstr ""
+"分组中的节点。\n"
+"单击显示分组栏。"
 
 #: editor/scene_tree_editor.cpp
-#, fuzzy
 msgid "Subscene options"
-msgstr "调试选项"
+msgstr "子场景选项"
 
 #: editor/scene_tree_editor.cpp
 msgid "Instance:"
 msgstr "实例:"
 
 #: editor/scene_tree_editor.cpp
-#, fuzzy
 msgid "Open script"
-msgstr "下一个脚本"
+msgstr "打开脚本"
 
 #: editor/scene_tree_editor.cpp
 msgid ""
 "Node is locked.\n"
 "Click to unlock"
 msgstr ""
+"节点已锁定\n"
+"点击可解锁"
 
 #: editor/scene_tree_editor.cpp
 msgid ""
@@ -6239,9 +6186,8 @@ msgid ""
 msgstr ""
 
 #: editor/scene_tree_editor.cpp
-#, fuzzy
 msgid "Toggle Visibility"
-msgstr "切换Spatial可见"
+msgstr "切换 隐藏/可见"
 
 #: editor/scene_tree_editor.cpp
 msgid "Invalid node name, the following characters are not allowed:"
@@ -6288,9 +6234,8 @@ msgid "Select a Node"
 msgstr "选择一个节点"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Error - Could not create script in filesystem."
-msgstr "无法创建脚本。"
+msgstr "错误：无法创建脚本文件。"
 
 #: editor/script_create_dialog.cpp
 msgid "Error loading script from %s"
@@ -6314,30 +6259,27 @@ msgstr "扩展名非法"
 
 #: editor/script_create_dialog.cpp
 msgid "Wrong extension chosen"
-msgstr ""
+msgstr "选择了错误的扩展名"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Invalid Path"
-msgstr "路径非法。"
+msgstr "路径非法"
 
 #: editor/script_create_dialog.cpp
 msgid "Invalid class name"
 msgstr "类名非法"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Invalid inherited parent name or path"
-msgstr "属性名称非法。"
+msgstr "非法的基类名称或脚本路径"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Script valid"
-msgstr "脚本"
+msgstr "脚本可用"
 
 #: editor/script_create_dialog.cpp
 msgid "Allowed: a-z, A-Z, 0-9 and _"
-msgstr ""
+msgstr "仅允许使用: a-z, A-Z, 0-9 或 _"
 
 #: editor/script_create_dialog.cpp
 msgid "N/A"
@@ -6345,35 +6287,29 @@ msgstr "N/A"
 
 #: editor/script_create_dialog.cpp
 msgid "Built-in script (into scene file)"
-msgstr ""
+msgstr "内置脚本(保存在场景文件中)"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Create new script file"
 msgstr "创建新脚本"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Load existing script file"
 msgstr "加载现有脚本"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Inherits"
-msgstr "基类:"
+msgstr "继承自"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Class Name"
-msgstr "类名:"
+msgstr "类名"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Template"
-msgstr "移除模板"
+msgstr "模板"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Built-in Script"
 msgstr "内置脚本"
 
@@ -6547,7 +6483,7 @@ msgstr "更改通知器级别"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Particles AABB"
-msgstr ""
+msgstr "修改粒子AABB"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Probe Extents"
@@ -7140,13 +7076,12 @@ msgstr ""
 "动画帧。"
 
 #: scene/gui/color_picker.cpp
-#, fuzzy
 msgid "RAW Mode"
-msgstr "运行模式:"
+msgstr "RAW模式"
 
 #: scene/gui/color_picker.cpp
 msgid "Add current color as a preset"
-msgstr ""
+msgstr "将当前颜色添加为预设"
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
