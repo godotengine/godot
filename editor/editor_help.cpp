@@ -893,6 +893,8 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 
 		for (int i = 0; i < methods.size(); i++) {
 
+			bool is_vararg = methods[i].qualifiers.find("vararg") != -1;
+
 			class_desc->push_cell();
 
 			method_line[methods[i].name] = class_desc->get_line_count() - 2; //gets overridden if description
@@ -916,7 +918,7 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 			if (methods[i].description != "")
 				class_desc->pop();
 			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/symbol_color"));
-			class_desc->add_text(methods[i].arguments.size() ? "( " : "(");
+			class_desc->add_text(methods[i].arguments.size() || is_vararg ? "( " : "(");
 			class_desc->pop();
 			for (int j = 0; j < methods[i].arguments.size(); j++) {
 				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/text_color"));
@@ -936,17 +938,18 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 				class_desc->pop();
 			}
 
-			if (methods[i].qualifiers.find("vararg") != -1) {
+			if (is_vararg) {
 				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/text_color"));
-				class_desc->add_text(",");
+				if (methods[i].arguments.size())
+					class_desc->add_text(", ");
 				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/symbol_color"));
-				class_desc->add_text(" ... ");
+				class_desc->add_text("...");
 				class_desc->pop();
 				class_desc->pop();
 			}
 
 			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/symbol_color"));
-			class_desc->add_text(methods[i].arguments.size() ? " )" : ")");
+			class_desc->add_text(methods[i].arguments.size() || is_vararg ? " )" : ")");
 			class_desc->pop();
 			if (methods[i].qualifiers != "") {
 
@@ -1313,6 +1316,8 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 
 		for (int i = 0; i < methods.size(); i++) {
 
+			bool is_vararg = methods[i].qualifiers.find("vararg") != -1;
+
 			method_line[methods[i].name] = class_desc->get_line_count() - 2;
 
 			class_desc->push_font(doc_code_font);
@@ -1323,7 +1328,7 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 			_add_text(methods[i].name);
 			class_desc->pop();
 			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/symbol_color"));
-			class_desc->add_text(methods[i].arguments.size() ? "( " : "(");
+			class_desc->add_text(methods[i].arguments.size() || is_vararg ? "( " : "(");
 			class_desc->pop();
 			for (int j = 0; j < methods[i].arguments.size(); j++) {
 				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/text_color"));
@@ -1343,8 +1348,18 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 				class_desc->pop();
 			}
 
+			if (is_vararg) {
+				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/text_color"));
+				if (methods[i].arguments.size())
+					class_desc->add_text(", ");
+				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/symbol_color"));
+				class_desc->add_text("...");
+				class_desc->pop();
+				class_desc->pop();
+			}
+
 			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/symbol_color"));
-			class_desc->add_text(methods[i].arguments.size() ? " )" : ")");
+			class_desc->add_text(methods[i].arguments.size() || is_vararg ? " )" : ")");
 			class_desc->pop();
 			if (methods[i].qualifiers != "") {
 
