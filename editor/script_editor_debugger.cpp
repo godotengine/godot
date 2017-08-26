@@ -789,14 +789,17 @@ void ScriptEditorDebugger::_performance_draw() {
 			which.push_back(i);
 	}
 
-	if (which.empty())
-		return;
-
-	Ref<StyleBox> graph_sb = get_stylebox("normal", "TextEdit");
 	Ref<Font> graph_font = get_font("font", "TextEdit");
 
+	if (which.empty()) {
+		perf_draw->draw_string(graph_font, Point2(0, graph_font->get_ascent()), TTR("Pick one or more items from the list to display the graph."), get_color("font_color", "Label"), perf_draw->get_size().x);
+		return;
+	}
+
+	Ref<StyleBox> graph_sb = get_stylebox("normal", "TextEdit");
+
 	int cols = Math::ceil(Math::sqrt((float)which.size()));
-	int rows = (which.size() + 1) / cols;
+	int rows = Math::ceil((float)which.size() / cols);
 	if (which.size() == 1)
 		rows = 1;
 
