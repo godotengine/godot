@@ -37,6 +37,124 @@
 #include "scene/3d/camera.h"
 #include "scene/gui/popup_menu.h"
 
+Control *EditorInterface::get_editor_viewport() {
+
+	return EditorNode::get_singleton()->get_viewport();
+}
+
+void EditorInterface::edit_resource(const Ref<Resource> &p_resource) {
+
+	EditorNode::get_singleton()->edit_resource(p_resource);
+}
+
+void EditorInterface::open_scene_from_path(const String &scene_path) {
+
+	if (EditorNode::get_singleton()->is_changing_scene()) {
+		return;
+	}
+
+	EditorNode::get_singleton()->open_request(scene_path);
+}
+
+void EditorInterface::reload_scene_from_path(const String &scene_path) {
+
+	if (EditorNode::get_singleton()->is_changing_scene()) {
+		return;
+	}
+
+	EditorNode::get_singleton()->reload_scene(scene_path);
+}
+
+Node *EditorInterface::get_edited_scene_root() {
+	return EditorNode::get_singleton()->get_edited_scene();
+}
+
+Array EditorInterface::get_open_scenes() const {
+
+	Array ret;
+	Vector<EditorData::EditedScene> scenes = EditorNode::get_singleton()->get_editor_data().get_edited_scenes();
+
+	int scns_amount = scenes.size();
+	for (int idx_scn = 0; idx_scn < scns_amount; idx_scn++) {
+		if (scenes[idx_scn].root == NULL)
+			continue;
+		ret.push_back(scenes[idx_scn].root->get_filename());
+	}
+	return ret;
+}
+
+ScriptEditor *EditorInterface::get_script_editor() {
+	return ScriptEditor::get_singleton();
+}
+
+void EditorInterface::inspect_object(Object *p_obj, const String &p_for_property) {
+
+	EditorNode::get_singleton()->push_item(p_obj, p_for_property);
+}
+
+EditorFileSystem *EditorInterface::get_resource_file_system() {
+	return EditorFileSystem::get_singleton();
+}
+
+EditorSelection *EditorInterface::get_selection() {
+	return EditorNode::get_singleton()->get_editor_selection();
+}
+
+EditorSettings *EditorInterface::get_editor_settings() {
+	return EditorSettings::get_singleton();
+}
+
+EditorResourcePreview *EditorInterface::get_resource_previewer() {
+	return EditorResourcePreview::get_singleton();
+}
+
+Control *EditorInterface::get_base_control() {
+
+	return EditorNode::get_singleton()->get_gui_base();
+}
+
+Error EditorInterface::save_scene() {
+	if (!get_edited_scene_root())
+		return ERR_CANT_CREATE;
+	if (get_edited_scene_root()->get_filename() == String())
+		return ERR_CANT_CREATE;
+
+	save_scene_as(get_edited_scene_root()->get_filename());
+	return OK;
+}
+
+void EditorInterface::save_scene_as(const String &p_scene, bool p_with_preview) {
+
+	EditorNode::get_singleton()->save_scene_to_path(p_scene, p_with_preview);
+}
+
+EditorInterface *EditorInterface::singleton = NULL;
+
+void EditorInterface::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("inspect_object", "object", "for_property"), &EditorInterface::inspect_object, DEFVAL(String()));
+	ClassDB::bind_method(D_METHOD("get_selection"), &EditorInterface::get_selection);
+	ClassDB::bind_method(D_METHOD("get_editor_settings"), &EditorInterface::get_editor_settings);
+	ClassDB::bind_method(D_METHOD("get_script_editor"), &EditorInterface::get_script_editor);
+	ClassDB::bind_method(D_METHOD("get_base_control"), &EditorInterface::get_base_control);
+	ClassDB::bind_method(D_METHOD("edit_resource", "resource"), &EditorInterface::edit_resource);
+	ClassDB::bind_method(D_METHOD("open_scene_from_path", "scene_filepath"), &EditorInterface::open_scene_from_path);
+	ClassDB::bind_method(D_METHOD("reload_scene_from_path", "scene_filepath"), &EditorInterface::reload_scene_from_path);
+	ClassDB::bind_method(D_METHOD("get_open_scenes"), &EditorInterface::get_open_scenes);
+	ClassDB::bind_method(D_METHOD("get_edited_scene_root"), &EditorInterface::get_edited_scene_root);
+	ClassDB::bind_method(D_METHOD("get_resource_previewer"), &EditorInterface::get_resource_previewer);
+	ClassDB::bind_method(D_METHOD("get_resource_filesystem"), &EditorInterface::get_resource_file_system);
+	ClassDB::bind_method(D_METHOD("get_editor_viewport"), &EditorInterface::get_editor_viewport);
+
+	ClassDB::bind_method(D_METHOD("save_scene"), &EditorInterface::save_scene);
+	ClassDB::bind_method(D_METHOD("save_scene_as", "path", "with_preview"), &EditorInterface::save_scene_as, DEFVAL(true));
+}
+
+EditorInterface::EditorInterface() {
+	singleton = this;
+}
+
+///////////////////////////////////////////
 void EditorPlugin::add_custom_type(const String &p_type, const String &p_base, const Ref<Script> &p_script, const Ref<Texture> &p_icon) {
 
 	EditorNode::get_editor_data().add_custom_type(p_type, p_base, p_script, p_icon);
@@ -68,34 +186,6 @@ void EditorPlugin::remove_control_from_bottom_panel(Control *p_control) {
 
 	ERR_FAIL_NULL(p_control);
 	EditorNode::get_singleton()->remove_bottom_panel_item(p_control);
-}
-
-Control *EditorPlugin::get_editor_viewport() {
-
-	return EditorNode::get_singleton()->get_viewport();
-}
-
-void EditorPlugin::edit_resource(const Ref<Resource> &p_resource) {
-
-	EditorNode::get_singleton()->edit_resource(p_resource);
-}
-
-void EditorPlugin::open_scene_from_path(const String &scene_path) {
-
-	if (EditorNode::get_singleton()->is_changing_scene()) {
-		return;
-	}
-
-	EditorNode::get_singleton()->open_request(scene_path);
-}
-
-void EditorPlugin::reload_scene_from_path(const String &scene_path) {
-
-	if (EditorNode::get_singleton()->is_changing_scene()) {
-		return;
-	}
-
-	EditorNode::get_singleton()->reload_scene(scene_path);
 }
 
 void EditorPlugin::add_control_to_container(CustomControlContainer p_location, Control *p_control) {
@@ -169,28 +259,6 @@ void EditorPlugin::set_input_event_forwarding_always_enabled() {
 	input_event_forwarding_always_enabled = true;
 	EditorPluginList *always_input_forwarding_list = EditorNode::get_singleton()->get_editor_plugins_force_input_forwarding();
 	always_input_forwarding_list->add_plugin(this);
-}
-
-Node *EditorPlugin::get_edited_scene_root() {
-	return EditorNode::get_singleton()->get_edited_scene();
-}
-
-Array EditorPlugin::get_open_scenes() const {
-
-	Array ret;
-	Vector<EditorData::EditedScene> scenes = EditorNode::get_singleton()->get_editor_data().get_edited_scenes();
-
-	int scns_amount = scenes.size();
-	for (int idx_scn = 0; idx_scn < scns_amount; idx_scn++) {
-		if (scenes[idx_scn].root == NULL)
-			continue;
-		ret.push_back(scenes[idx_scn].root->get_filename());
-	}
-	return ret;
-}
-
-ScriptEditor *EditorPlugin::get_script_editor() {
-	return ScriptEditor::get_singleton();
 }
 
 void EditorPlugin::notify_scene_changed(const Node *scn_root) {
@@ -369,23 +437,6 @@ void EditorPlugin::queue_save_layout() const {
 	EditorNode::get_singleton()->save_layout();
 }
 
-EditorSelection *EditorPlugin::get_selection() {
-	return EditorNode::get_singleton()->get_editor_selection();
-}
-
-EditorSettings *EditorPlugin::get_editor_settings() {
-	return EditorSettings::get_singleton();
-}
-
-EditorResourcePreview *EditorPlugin::get_resource_previewer() {
-	return EditorResourcePreview::get_singleton();
-}
-
-Control *EditorPlugin::get_base_control() {
-
-	return EditorNode::get_singleton()->get_gui_base();
-}
-
 void EditorPlugin::make_bottom_panel_item_visible(Control *p_item) {
 
 	EditorNode::get_singleton()->make_bottom_panel_item_visible(p_item);
@@ -396,13 +447,8 @@ void EditorPlugin::hide_bottom_panel() {
 	EditorNode::get_singleton()->hide_bottom_panel();
 }
 
-void EditorPlugin::inspect_object(Object *p_obj, const String &p_for_property) {
-
-	EditorNode::get_singleton()->push_item(p_obj, p_for_property);
-}
-
-EditorFileSystem *EditorPlugin::get_resource_file_system() {
-	return EditorFileSystem::get_singleton();
+EditorInterface *EditorPlugin::get_editor_interface() {
+	return EditorInterface::get_singleton();
 }
 
 void EditorPlugin::_bind_methods() {
@@ -417,31 +463,19 @@ void EditorPlugin::_bind_methods() {
 	//ClassDB::bind_method(D_METHOD("remove_tool_menu_item", "name"),&EditorPlugin::remove_tool_menu_item);
 	ClassDB::bind_method(D_METHOD("add_custom_type", "type", "base", "script", "icon"), &EditorPlugin::add_custom_type);
 	ClassDB::bind_method(D_METHOD("remove_custom_type", "type"), &EditorPlugin::remove_custom_type);
-	ClassDB::bind_method(D_METHOD("get_editor_viewport"), &EditorPlugin::get_editor_viewport);
 
-	ClassDB::bind_method(D_METHOD("get_resource_previewer"), &EditorPlugin::get_resource_previewer);
-	ClassDB::bind_method(D_METHOD("get_resource_filesystem"), &EditorPlugin::get_resource_file_system);
-
-	ClassDB::bind_method(D_METHOD("inspect_object", "object", "for_property"), &EditorPlugin::inspect_object, DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("update_canvas"), &EditorPlugin::update_canvas);
 
 	ClassDB::bind_method(D_METHOD("make_bottom_panel_item_visible", "item"), &EditorPlugin::make_bottom_panel_item_visible);
 	ClassDB::bind_method(D_METHOD("hide_bottom_panel"), &EditorPlugin::hide_bottom_panel);
 
-	ClassDB::bind_method(D_METHOD("get_base_control"), &EditorPlugin::get_base_control);
 	ClassDB::bind_method(D_METHOD("get_undo_redo"), &EditorPlugin::_get_undo_redo);
-	ClassDB::bind_method(D_METHOD("get_selection"), &EditorPlugin::get_selection);
-	ClassDB::bind_method(D_METHOD("get_editor_settings"), &EditorPlugin::get_editor_settings);
-	ClassDB::bind_method(D_METHOD("get_script_editor"), &EditorPlugin::get_script_editor);
 	ClassDB::bind_method(D_METHOD("queue_save_layout"), &EditorPlugin::queue_save_layout);
-	ClassDB::bind_method(D_METHOD("edit_resource", "resource"), &EditorPlugin::edit_resource);
-	ClassDB::bind_method(D_METHOD("open_scene_from_path", "scene_filepath"), &EditorPlugin::open_scene_from_path);
-	ClassDB::bind_method(D_METHOD("reload_scene_from_path", "scene_filepath"), &EditorPlugin::reload_scene_from_path);
 	ClassDB::bind_method(D_METHOD("add_import_plugin", "importer"), &EditorPlugin::add_import_plugin);
 	ClassDB::bind_method(D_METHOD("remove_import_plugin", "importer"), &EditorPlugin::remove_import_plugin);
 	ClassDB::bind_method(D_METHOD("set_input_event_forwarding_always_enabled"), &EditorPlugin::set_input_event_forwarding_always_enabled);
-	ClassDB::bind_method(D_METHOD("get_open_scenes"), &EditorPlugin::get_open_scenes);
-	ClassDB::bind_method(D_METHOD("get_edited_scene_root"), &EditorPlugin::get_edited_scene_root);
+
+	ClassDB::bind_method(D_METHOD("get_editor_interface"), &EditorPlugin::get_editor_interface);
 
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "forward_canvas_gui_input", PropertyInfo(Variant::TRANSFORM2D, "canvas_xform"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("forward_draw_over_canvas", PropertyInfo(Variant::TRANSFORM2D, "canvas_xform"), PropertyInfo(Variant::OBJECT, "canvas:Control")));

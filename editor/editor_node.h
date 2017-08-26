@@ -420,6 +420,8 @@ private:
 	HBoxContainer *bottom_panel_hb;
 	VBoxContainer *bottom_panel_vb;
 
+	EditorInterface *editor_interface;
+
 	void _bottom_panel_switch(bool p_enable, int p_idx);
 
 	String external_file;
@@ -762,7 +764,12 @@ public:
 	static void progress_task_step_bg(const String &p_task, int p_step = -1);
 	static void progress_end_task_bg(const String &p_task);
 
-	void save_scene(String p_file) { _save_scene(p_file); }
+	void save_scene_to_path(String p_file, bool p_with_preview = true) {
+		if (p_with_preview)
+			_save_scene_with_preview(p_file);
+		else
+			_save_scene(p_file);
+	}
 
 	bool is_scene_in_use(const String &p_path);
 

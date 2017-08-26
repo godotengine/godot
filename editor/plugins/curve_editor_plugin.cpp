@@ -775,7 +775,7 @@ CurveEditorPlugin::CurveEditorPlugin(EditorNode *p_node) {
 	_toggle_button = _editor_node->add_bottom_panel_item(get_name(), _view);
 	_toggle_button->hide();
 
-	get_resource_previewer()->add_preview_generator(memnew(CurvePreviewGenerator));
+	get_editor_interface()->get_resource_previewer()->add_preview_generator(memnew(CurvePreviewGenerator));
 }
 
 CurveEditorPlugin::~CurveEditorPlugin() {

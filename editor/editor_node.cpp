@@ -989,11 +989,7 @@ void EditorNode::_save_all_scenes() {
 		Node *scene = editor_data.get_edited_scene_root(i);
 		if (scene && scene->get_filename() != "") {
 			// save in background if in the script editor
-			if (i != editor_data.get_edited_scene() || _get_current_main_editor() == EDITOR_SCRIPT) {
-				_save_scene(scene->get_filename(), i);
-			} else {
-				_save_scene_with_preview(scene->get_filename());
-			}
+			_save_scene_with_preview(scene->get_filename());
 		} // else: ignore new scenes
 	}
 
@@ -1192,10 +1188,7 @@ void EditorNode::_dialog_action(String p_file) {
 
 				//_save_scene(p_file);
 				_save_default_environment();
-				if (scene_idx != editor_data.get_edited_scene() || _get_current_main_editor() == EDITOR_SCRIPT)
-					_save_scene(p_file, scene_idx);
-				else
-					_save_scene_with_preview(p_file);
+				_save_scene_with_preview(p_file);
 
 				if (scene_idx != -1)
 					_discard_changes();
@@ -1944,11 +1937,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			if (scene && scene->get_filename() != "") {
 
 				// save in background if in the script editor
-				if (scene_idx != editor_data.get_edited_scene() || _get_current_main_editor() == EDITOR_SCRIPT) {
-					_save_scene(scene->get_filename(), scene_idx);
-				} else {
-					_save_scene_with_preview(scene->get_filename());
-				}
+				_save_scene_with_preview(scene->get_filename());
 
 				if (scene_idx != -1)
 					_discard_changes();
@@ -2864,7 +2853,7 @@ void EditorNode::add_editor_plugin(EditorPlugin *p_editor) {
 		tb->set_toggle_mode(true);
 		tb->connect("pressed", singleton, "_editor_select", varray(singleton->main_editor_buttons.size()));
 		tb->set_text(p_editor->get_name());
-		tb->set_icon(p_editor->get_base_control()->get_icon(p_editor->get_name(), "EditorIcons"));
+		tb->set_icon(singleton->gui_base->get_icon(p_editor->get_name(), "EditorIcons"));
 		tb->set_name(p_editor->get_name());
 		singleton->main_editor_buttons.push_back(tb);
 		singleton->main_editor_button_vb->add_child(tb);
@@ -3727,6 +3716,7 @@ void EditorNode::register_editor_types() {
 	ClassDB::register_class<EditorFileSystem>();
 	ClassDB::register_class<EditorFileSystemDirectory>();
 	ClassDB::register_virtual_class<ScriptEditor>();
+	ClassDB::register_virtual_class<EditorInterface>();
 
 	//ClassDB::register_type<EditorImporter>();
 	//ClassDB::register_type<EditorPostImport>();
@@ -6027,6 +6017,12 @@ EditorNode::EditorNode() {
 	} else {
 		WARN_PRINT("Asset Library not available, as it requires SSL to work.");
 	}
+
+	//add interface before adding plugins
+
+	editor_interface = memnew(EditorInterface);
+	add_child(editor_interface);
+
 	//more visually meaningful to have this later
 	raise_bottom_panel_item(AnimationPlayerEditor::singleton);
 
