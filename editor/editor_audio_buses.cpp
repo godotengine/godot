@@ -403,12 +403,13 @@ void EditorAudioBus::_gui_input(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid() && mb->get_button_index() == 2 && mb->is_pressed()) {
 
 		Vector2 pos = Vector2(mb->get_position().x, mb->get_position().y);
-		delete_popup->set_position(get_global_position() + pos);
-		delete_popup->popup();
+		bus_popup->set_position(get_global_position() + pos);
+		bus_popup->set_item_disabled(1, get_index() == 0);
+		bus_popup->popup();
 	}
 }
 
-void EditorAudioBus::_delete_pressed(int p_option) {
+void EditorAudioBus::_bus_popup_pressed(int p_option) {
 
 	if (p_option == 1) {
 		emit_signal("delete_request");
@@ -604,7 +605,7 @@ void EditorAudioBus::_bind_methods() {
 	ClassDB::bind_method("_effect_selected", &EditorAudioBus::_effect_selected);
 	ClassDB::bind_method("_effect_add", &EditorAudioBus::_effect_add);
 	ClassDB::bind_method("_gui_input", &EditorAudioBus::_gui_input);
-	ClassDB::bind_method("_delete_pressed", &EditorAudioBus::_delete_pressed);
+	ClassDB::bind_method("_bus_popup_pressed", &EditorAudioBus::_bus_popup_pressed);
 	ClassDB::bind_method("get_drag_data_fw", &EditorAudioBus::get_drag_data_fw);
 	ClassDB::bind_method("can_drop_data_fw", &EditorAudioBus::can_drop_data_fw);
 	ClassDB::bind_method("drop_data_fw", &EditorAudioBus::drop_data_fw);
@@ -735,11 +736,11 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses) {
 		effect_options->set_item_icon(effect_options->get_item_count() - 1, icon);
 	}
 
-	delete_popup = bus_options->get_popup();
-	delete_popup->add_item(TTR("Duplicate"));
-	delete_popup->add_item(TTR("Delete"));
-	add_child(delete_popup);
-	delete_popup->connect("index_pressed", this, "_delete_pressed");
+	bus_popup = bus_options->get_popup();
+	bus_popup->add_item(TTR("Duplicate"));
+	bus_popup->add_item(TTR("Delete"));
+	add_child(bus_popup);
+	bus_popup->connect("index_pressed", this, "_bus_popup_pressed");
 
 	delete_effect_popup = memnew(PopupMenu);
 	delete_effect_popup->add_item(TTR("Delete Effect"));

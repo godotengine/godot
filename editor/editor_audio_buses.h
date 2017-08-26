@@ -66,7 +66,7 @@ class EditorAudioBus : public PanelContainer {
 	OptionButton *send;
 
 	PopupMenu *effect_options;
-	PopupMenu *delete_popup;
+	PopupMenu *bus_popup;
 	PopupMenu *delete_effect_popup;
 
 	Button *solo;
@@ -78,7 +78,7 @@ class EditorAudioBus : public PanelContainer {
 	bool updating_bus;
 
 	void _gui_input(const Ref<InputEvent> &p_event);
-	void _delete_pressed(int p_option);
+	void _bus_popup_pressed(int p_option);
 
 	void _name_changed(const String &p_new_name);
 	void _name_focus_exit() { _name_changed(track_name->get_text()); }
