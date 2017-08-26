@@ -97,6 +97,7 @@ public:
 	EditorScriptPreviewPlugin();
 };
 
+// FIXME: Needs to be rewritten for AudioStream in Godot 3.0+
 #if 0
 class EditorSamplePreviewPlugin : public EditorResourcePreviewGenerator {
 public:
@@ -106,8 +107,8 @@ public:
 
 	EditorSamplePreviewPlugin();
 };
-
 #endif
+
 class EditorMeshPreviewPlugin : public EditorResourcePreviewGenerator {
 
 	GDCLASS(EditorMeshPreviewPlugin, EditorResourcePreviewGenerator)

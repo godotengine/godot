@@ -2095,14 +2095,6 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 	return p_node;
 }
 
-#if 0
-
-Error EditorImport::import_scene(const String& p_path,const String& p_dest_path,const String& p_resource_path,uint32_t p_flags,ImageFormat p_image_format,ImageCompression p_image_compression,uint32_t p_image_flags,float p_quality,uint32_t animation_flags,Node **r_scene,Ref<EditorPostImport> p_post_import) {
-
-
-}
-#endif
-
 void EditorSceneImportPlugin::_tag_import_paths(Node *p_scene,Node *p_node) {
 
 	if (p_scene!=p_node && p_node->get_owner()!=p_scene)

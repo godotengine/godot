@@ -30,6 +30,10 @@
 #ifndef MATERIAL_EDITOR_PLUGIN_H
 #define MATERIAL_EDITOR_PLUGIN_H
 
+// FIXME: Disabled as (according to reduz) users were complaining that it gets in the way
+// Waiting for PropertyEditor rewrite (planned for 3.1) to be refactored.
+#if 0
+
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/3d/camera.h"
@@ -37,7 +41,6 @@
 #include "scene/3d/mesh_instance.h"
 #include "scene/resources/material.h"
 
-#if 0
 class MaterialEditor : public Control {
 
 	GDCLASS(MaterialEditor, Control);
@@ -97,5 +100,5 @@ public:
 
 };
 
-#endif // MATERIAL_EDITOR_PLUGIN_H
 #endif
+#endif // MATERIAL_EDITOR_PLUGIN_H

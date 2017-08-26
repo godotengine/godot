@@ -30,6 +30,10 @@
 #ifndef SHADER_GRAPH_EDITOR_PLUGIN_H
 #define SHADER_GRAPH_EDITOR_PLUGIN_H
 
+// FIXME: Godot 3.0 broke compatibility with ShaderGraphEditorPlugin,
+// it needs to be ported to the new shader language.
+#if 0
+
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "editor/property_editor.h"
@@ -39,11 +43,11 @@
 #include "scene/gui/tree.h"
 #include "scene/resources/shader.h"
 #include "scene/resources/shader_graph.h"
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-#if 0
 class GraphColorRampEdit : public Control {
 
 	GDCLASS(GraphColorRampEdit,Control);
@@ -238,5 +242,6 @@ public:
 	~ShaderGraphEditorPlugin();
 
 };
+
 #endif
-#endif
+#endif // SHADER_GRAPH_EDITOR_PLUGIN_H

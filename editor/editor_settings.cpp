@@ -29,23 +29,23 @@
 /*************************************************************************/
 #include "editor_settings.h"
 
-#include "editor_node.h"
-#include "io/compression.h"
-#include "io/config_file.h"
-#include "io/file_access_memory.h"
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
-#include "io/translation_loader_po.h"
-#include "os/dir_access.h"
-#include "os/file_access.h"
-#include "os/keyboard.h"
-#include "os/os.h"
-#include "project_settings.h"
+#include "core/io/compression.h"
+#include "core/io/config_file.h"
+#include "core/io/file_access_memory.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/io/translation_loader_po.h"
+#include "core/os/dir_access.h"
+#include "core/os/file_access.h"
+#include "core/os/keyboard.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
+#include "core/version.h"
+#include "editor/editor_node.h"
+#include "editor/translations.gen.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/viewport.h"
-#include "translations.gen.h"
-#include "version.h"
 
 Ref<EditorSettings> EditorSettings::singleton = NULL;
 
@@ -93,6 +93,7 @@ bool EditorSettings::_set(const StringName &p_name, const Variant &p_value) {
 	emit_signal("settings_changed");
 	return true;
 }
+
 bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 
 	_THREAD_SAFE_METHOD_
@@ -272,7 +273,6 @@ void EditorSettings::create() {
 
 	String config_path;
 	String config_dir;
-	//String config_file="editor_settings.xml";
 	Ref<ConfigFile> extra_config = memnew(ConfigFile);
 
 	String exe_path = OS::get_singleton()->get_executable_path().get_base_dir();
@@ -644,7 +644,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set("text_editor/files/maximum_recent_files", 20);
 	hints["text_editor/files/maximum_recent_files"] = PropertyInfo(Variant::INT, "text_editor/files/maximum_recent_files", PROPERTY_HINT_RANGE, "1, 200, 0");
 
-	//set("docks/scene_tree/display_old_action_buttons",false);
 	set("docks/scene_tree/start_create_dialog_fully_expanded", false);
 	set("docks/scene_tree/draw_relationship_lines", false);
 	set("docks/scene_tree/relationship_line_color", Color::html("464646"));
@@ -705,8 +704,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	set("filesystem/on_save/compress_binary_resources", true);
 	set("filesystem/on_save/save_modified_external_resources", true);
-	//set("filesystem/on_save/save_paths_as_relative",false);
-	//set("filesystem/on_save/save_paths_without_extension",false);
 
 	set("text_editor/tools/create_signal_callbacks", true);
 
@@ -1151,7 +1148,6 @@ void EditorSettings::_bind_methods() {
 
 EditorSettings::EditorSettings() {
 
-	//singleton=this;
 	last_order = 0;
 	optimize_save = true;
 	save_changed_setting = true;
@@ -1181,8 +1177,6 @@ EditorSettings::EditorSettings() {
 }
 
 EditorSettings::~EditorSettings() {
-
-	//singleton=NULL;
 }
 
 Ref<ShortCut> ED_GET_SHORTCUT(const String &p_path) {

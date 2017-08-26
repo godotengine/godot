@@ -31,6 +31,7 @@
 #define PROPERTY_EDITOR_H
 
 #include "editor/editor_file_dialog.h"
+#include "editor/scene_tree_editor.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
@@ -43,7 +44,6 @@
 #include "scene/gui/text_edit.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
-#include "scene_tree_editor.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -66,9 +66,8 @@ class CustomPropertyEditor : public Popup {
 		OBJ_MENU_MAKE_UNIQUE = 3,
 		OBJ_MENU_COPY = 4,
 		OBJ_MENU_PASTE = 5,
-		OBJ_MENU_REIMPORT = 6,
-		OBJ_MENU_NEW_SCRIPT = 7,
-		OBJ_MENU_SHOW_IN_FILE_SYSTEM = 8,
+		OBJ_MENU_NEW_SCRIPT = 6,
+		OBJ_MENU_SHOW_IN_FILE_SYSTEM = 7,
 		TYPE_BASE_ID = 100
 	};
 
@@ -120,7 +119,6 @@ class CustomPropertyEditor : public Popup {
 
 	void _text_edit_changed();
 	void _file_selected(String p_file);
-	void _scroll_modified(double p_value);
 	void _modified(String p_string);
 	void _range_modified(double p_value);
 	void _focus_enter();
@@ -168,7 +166,6 @@ class PropertyEditor : public Control {
 
 	Tree *tree;
 	Label *top_label;
-	//Object *object;
 	LineEdit *search_box;
 
 	PropertyValueEvaluator *evaluator;

@@ -29,18 +29,19 @@
 /*************************************************************************/
 #include "script_editor_plugin.h"
 
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/os/file_access.h"
+#include "core/os/input.h"
+#include "core/os/keyboard.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/node_dock.h"
 #include "editor/script_editor_debugger.h"
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
-#include "node_dock.h"
-#include "os/file_access.h"
-#include "os/input.h"
-#include "os/keyboard.h"
-#include "os/os.h"
-#include "project_settings.h"
 #include "scene/main/viewport.h"
+
 /*** SCRIPT EDITOR ****/
 
 void ScriptEditorBase::_bind_methods() {

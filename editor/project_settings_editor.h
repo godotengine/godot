@@ -30,17 +30,16 @@
 #ifndef PROJECT_SETTINGS_H
 #define PROJECT_SETTINGS_H
 
-#include "editor_autoload_settings.h"
-#include "editor_data.h"
-#include "editor_plugin_settings.h"
-#include "property_editor.h"
+#include "core/undo_redo.h"
+#include "editor/editor_autoload_settings.h"
+#include "editor/editor_data.h"
+#include "editor/editor_plugin_settings.h"
+#include "editor/property_editor.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tab_container.h"
-#include "undo_redo.h"
-
-//#include "project_export_settings.h"
 
 class ProjectSettingsEditor : public AcceptDialog {
+
 	GDCLASS(ProjectSettingsEditor, AcceptDialog);
 
 	enum InputType {
@@ -122,10 +121,8 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _press_a_key_confirm();
 	void _show_last_added(const Ref<InputEvent> &p_event, const String &p_name);
 
-	void _settings_prop_edited(const String &p_name);
 	void _settings_changed();
 
-	//ProjectExportSettings *export_settings;
 	void _copy_to_platform(int p_which);
 
 	void _translation_file_open();

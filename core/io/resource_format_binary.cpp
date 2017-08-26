@@ -28,12 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "resource_format_binary.h"
-#include "image.h"
-#include "io/file_access_compressed.h"
-#include "io/marshalls.h"
-#include "os/dir_access.h"
-#include "project_settings.h"
-#include "version.h"
+
+#include "core/image.h"
+#include "core/io/file_access_compressed.h"
+#include "core/io/marshalls.h"
+#include "core/os/dir_access.h"
+#include "core/project_settings.h"
+#include "core/version.h"
+
 //#define print_bl(m_what) print_line(m_what)
 #define print_bl(m_what)
 
@@ -1798,7 +1800,6 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 	}
 
 	ERR_FAIL_COND_V(err, err);
-	FileAccessRef _fref(f);
 
 	relative_paths = p_flags & ResourceSaver::FLAG_RELATIVE_PATHS;
 	skip_editor = p_flags & ResourceSaver::FLAG_OMIT_EDITOR_PROPERTIES;
@@ -1810,7 +1811,6 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 		takeover_paths = false;
 
 	local_path = p_path.get_base_dir();
-	//bin_meta_idx = get_string_index("__bin_meta__"); //is often used, so create
 
 	_find_resources(p_resource, true);
 
@@ -1836,7 +1836,6 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 		return ERR_CANT_CREATE;
 	}
 
-	//f->store_32(saved_resources.size()+external_resources.size()); // load steps -not needed
 	save_unicode_string(p_resource->get_class());
 	uint64_t md_at = f->get_pos();
 	f->store_64(0); //offset to impoty metadata
@@ -1875,7 +1874,6 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 
 	f->store_32(strings.size()); //string table size
 	for (int i = 0; i < strings.size(); i++) {
-		//print_bl("saving string: "+strings[i]);
 		save_unicode_string(strings[i]);
 	}
 
@@ -1944,9 +1942,8 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 	}
 
 	Vector<uint64_t> ofs_table;
-	//int saved_idx=0;
-	//now actually save the resources
 
+	//now actually save the resources
 	for (List<ResourceData>::Element *E = resources.front(); E; E = E->next()) {
 
 		ResourceData &rd = E->get();
