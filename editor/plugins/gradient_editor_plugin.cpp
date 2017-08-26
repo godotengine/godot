@@ -30,18 +30,21 @@
 #include "gradient_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
+#include "editor/resource_preview.h"
 #include "spatial_editor_plugin.h"
 
 GradientEditorPlugin::GradientEditorPlugin(EditorNode *p_node) {
 
 	editor = p_node;
+
 	ramp_editor = memnew(GradientEdit);
-
-	add_control_to_container(CONTAINER_PROPERTY_EDITOR_BOTTOM, ramp_editor);
-
 	ramp_editor->set_custom_minimum_size(Size2(100, 48));
-	ramp_editor->hide();
 	ramp_editor->connect("ramp_changed", this, "ramp_changed");
+
+	resource_preview = memnew(ResourcePreview);
+	resource_preview->add_child(ramp_editor);
+	add_control_to_container(CONTAINER_PROPERTY_EDITOR_BOTTOM, resource_preview);
+	resource_preview->hide();
 }
 
 void GradientEditorPlugin::edit(Object *p_object) {
@@ -61,9 +64,9 @@ bool GradientEditorPlugin::handles(Object *p_object) const {
 void GradientEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
-		ramp_editor->show();
+		resource_preview->show();
 	} else {
-		ramp_editor->hide();
+		resource_preview->hide();
 	}
 }
 

@@ -58,7 +58,7 @@ class TextureEditorPlugin : public EditorPlugin {
 
 	TextureEditor *texture_editor;
 	EditorNode *editor;
-	ResourcePreview *preview_dock;
+	ResourcePreview *resource_preview;
 
 public:
 	virtual String get_name() const { return "Texture"; }

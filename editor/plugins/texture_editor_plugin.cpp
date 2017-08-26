@@ -152,23 +152,22 @@ bool TextureEditorPlugin::handles(Object *p_object) const {
 void TextureEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
-		preview_dock->show();
+		resource_preview->show();
 	} else {
-		preview_dock->hide();
+		resource_preview->hide();
 	}
 }
 
 TextureEditorPlugin::TextureEditorPlugin(EditorNode *p_node) {
 
 	editor = p_node;
+
 	texture_editor = memnew(TextureEditor);
 
-	preview_dock = memnew(ResourcePreview);
-
-	preview_dock->add_child(texture_editor);
-
-	add_control_to_container(CONTAINER_PROPERTY_EDITOR_BOTTOM, preview_dock);
-	preview_dock->hide();
+	resource_preview = memnew(ResourcePreview);
+	resource_preview->add_child(texture_editor);
+	add_control_to_container(CONTAINER_PROPERTY_EDITOR_BOTTOM, resource_preview);
+	resource_preview->hide();
 }
 
 TextureEditorPlugin::~TextureEditorPlugin() {

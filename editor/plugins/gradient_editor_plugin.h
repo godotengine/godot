@@ -32,6 +32,7 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
+#include "editor/resource_preview.h"
 #include "scene/gui/gradient_edit.h"
 
 class GradientEditorPlugin : public EditorPlugin {
@@ -41,6 +42,7 @@ class GradientEditorPlugin : public EditorPlugin {
 	Ref<Gradient> gradient_ref;
 	GradientEdit *ramp_editor;
 	EditorNode *editor;
+	ResourcePreview *resource_preview;
 
 protected:
 	static void _bind_methods();
