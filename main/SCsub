@@ -18,7 +18,7 @@ def make_splash(target, source, env):
     g.write("static const Color boot_splash_bg_color = Color(1,1,1,1);\n");
     g.write("static const unsigned char boot_splash_png[] = {\n")
     for i in range(len(buf)):
-	g.write(str(ord(buf[i])) + ",\n")
+        g.write(str(ord(buf[i])) + ",\n")
     g.write("};\n")
     g.write("#endif")
 
@@ -37,7 +37,7 @@ def make_app_icon(target, source, env):
     g.write("#define APP_ICON_H\n")
     g.write("static const unsigned char app_icon_png[] = {\n")
     for i in range(len(buf)):
-	g.write(str(ord(buf[i])) + ",\n")
+        g.write(str(ord(buf[i])) + ",\n")
     g.write("};\n")
     g.write("#endif")
 
