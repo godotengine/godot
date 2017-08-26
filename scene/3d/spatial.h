@@ -47,6 +47,7 @@ public:
 	virtual void clear() = 0;
 	virtual void redraw() = 0;
 	virtual void free() = 0;
+	virtual bool can_draw() const = 0;
 
 	SpatialGizmo();
 };

@@ -156,58 +156,6 @@ void *VisualServerScene::_instance_pair(void *p_self, OctreeElementID, Instance 
 		return gi_probe->lights.insert(A);
 	}
 
-#if 0
-	if (A->base_type==INSTANCE_PORTAL) {
-
-		ERR_FAIL_COND_V( B->base_type!=INSTANCE_PORTAL,NULL );
-
-		A->portal_info->candidate_set.insert(B);
-		B->portal_info->candidate_set.insert(A);
-
-		self->_portal_attempt_connect(A);
-		//attempt to conncet portal A (will go through B anyway)
-		//this is a little hackish, but works fine in practice
-
-	} else if (A->base_type==INSTANCE_GI_PROBE || B->base_type==INSTANCE_GI_PROBE) {
-
-		if (B->base_type==INSTANCE_GI_PROBE) {
-			SWAP(A,B);
-		}
-
-		ERR_FAIL_COND_V(B->base_type!=INSTANCE_GI_PROBE_SAMPLER,NULL);
-		B->gi_probe_sampler_info->gi_probes.insert(A);
-
-	} else if (A->base_type==INSTANCE_ROOM || B->base_type==INSTANCE_ROOM) {
-
-		if (B->base_type==INSTANCE_ROOM)
-			SWAP(A,B);
-
-		ERR_FAIL_COND_V(! ((1<<B->base_type)&INSTANCE_GEOMETRY_MASK ),NULL);
-
-		B->auto_rooms.insert(A);
-		A->room_info->owned_autoroom_geometry.insert(B);
-
-		self->_instance_validate_autorooms(B);
-
-
-	} else {
-
-		if (B->base_type==INSTANCE_LIGHT) {
-
-			SWAP(A,B);
-		} else if (A->base_type!=INSTANCE_LIGHT) {
-			return NULL;
-		}
-
-
-		A->light_info->affected.insert(B);
-		B->lights.insert(A);
-		B->light_cache_dirty=true;
-
-
-	}
-#endif
-
 	return NULL;
 }
 void VisualServerScene::_instance_unpair(void *p_self, OctreeElementID, Instance *p_A, int, OctreeElementID, Instance *p_B, int, void *udata) {
@@ -269,57 +217,6 @@ void VisualServerScene::_instance_unpair(void *p_self, OctreeElementID, Instance
 
 		gi_probe->lights.erase(E);
 	}
-#if 0
-	if (A->base_type==INSTANCE_PORTAL) {
-
-		ERR_FAIL_COND( B->base_type!=INSTANCE_PORTAL );
-
-
-		A->portal_info->candidate_set.erase(B);
-		B->portal_info->candidate_set.erase(A);
-
-		//after disconnecting them, see if they can connect again
-		self->_portal_attempt_connect(A);
-		self->_portal_attempt_connect(B);
-
-	} else if (A->base_type==INSTANCE_GI_PROBE || B->base_type==INSTANCE_GI_PROBE) {
-
-		if (B->base_type==INSTANCE_GI_PROBE) {
-			SWAP(A,B);
-		}
-
-		ERR_FAIL_COND(B->base_type!=INSTANCE_GI_PROBE_SAMPLER);
-		B->gi_probe_sampler_info->gi_probes.erase(A);
-
-	} else if (A->base_type==INSTANCE_ROOM || B->base_type==INSTANCE_ROOM) {
-
-		if (B->base_type==INSTANCE_ROOM)
-			SWAP(A,B);
-
-		ERR_FAIL_COND(! ((1<<B->base_type)&INSTANCE_GEOMETRY_MASK ));
-
-		B->auto_rooms.erase(A);
-		B->valid_auto_rooms.erase(A);
-		A->room_info->owned_autoroom_geometry.erase(B);
-
-	}else {
-
-
-
-	if (B->base_type==INSTANCE_LIGHT) {
-
-			SWAP(A,B);
-		} else if (A->base_type!=INSTANCE_LIGHT) {
-			return;
-		}
-
-
-		A->light_info->affected.erase(B);
-		B->lights.erase(A);
-		B->light_cache_dirty=true;
-
-	}
-#endif
 }
 
 RID VisualServerScene::scenario_create() {
@@ -467,125 +364,6 @@ void VisualServerScene::instance_set_base(RID p_instance, RID p_base) {
 			}
 		}
 		instance->materials.clear();
-
-#if 0
-		if (instance->light_info) {
-
-			if (instance->scenario && instance->light_info->D)
-				instance->scenario->directional_lights.erase( instance->light_info->D );
-			rasterizer->free(instance->light_info->instance);
-			memdelete(instance->light_info);
-			instance->light_info=NULL;
-		}
-
-
-
-		if ( instance->room ) {
-
-			instance_set_room(p_instance,RID());
-			/*
-			if((1<<instance->base_type)&INSTANCE_GEOMETRY_MASK)
-				instance->room->room_info->owned_geometry_instances.erase(instance->RE);
-			else if (instance->base_type==INSTANCE_PORTAL) {
-				print_line("freeing portal, is it there? "+itos(instance->room->room_info->owned_portal_instances.(instance->RE)));
-				instance->room->room_info->owned_portal_instances.erase(instance->RE);
-			} else if (instance->base_type==INSTANCE_ROOM)
-				instance->room->room_info->owned_room_instances.erase(instance->RE);
-			else if (instance->base_type==INSTANCE_LIGHT)
-				instance->room->room_info->owned_light_instances.erase(instance->RE);
-
-			instance->RE=NULL;*/
-		}
-
-
-
-
-
-
-		if (instance->portal_info) {
-
-			_portal_disconnect(instance,true);
-			memdelete(instance->portal_info);
-			instance->portal_info=NULL;
-
-		}
-
-		if (instance->gi_probe_info) {
-
-			while(instance->gi_probe_info->owned_instances.size()) {
-
-				Instance *owned=instance->gi_probe_info->owned_instances.front()->get();
-				owned->gi_probe=NULL;
-				owned->data.gi_probe=NULL;
-				owned->data.gi_probe_octree_xform=NULL;
-				owned->BLE=NULL;
-				instance->gi_probe_info->owned_instances.pop_front();
-			}
-
-			memdelete(instance->gi_probe_info);
-			instance->gi_probe_info=NULL;
-
-		}
-
-		if (instance->scenario && instance->octree_id) {
-			instance->scenario->octree.erase( instance->octree_id );
-			instance->octree_id=0;
-		}
-
-
-		if (instance->room_info) {
-
-			for(List<Instance*>::Element *E=instance->room_info->owned_geometry_instances.front();E;E=E->next()) {
-
-				Instance *owned = E->get();
-				owned->room=NULL;
-				owned->RE=NULL;
-			}
-			for(List<Instance*>::Element *E=instance->room_info->owned_portal_instances.front();E;E=E->next()) {
-
-				_portal_disconnect(E->get(),true);
-				Instance *owned = E->get();
-				owned->room=NULL;
-				owned->RE=NULL;
-			}
-
-			for(List<Instance*>::Element *E=instance->room_info->owned_room_instances.front();E;E=E->next()) {
-
-				Instance *owned = E->get();
-				owned->room=NULL;
-				owned->RE=NULL;
-			}
-
-			if (instance->room_info->disconnected_child_portals.size()) {
-				ERR_PRINT("BUG: Disconnected portals remain!");
-			}
-			memdelete(instance->room_info);
-			instance->room_info=NULL;
-
-		}
-
-		if (instance->particles_info) {
-
-			rasterizer->free( instance->particles_info->instance );
-			memdelete(instance->particles_info);
-			instance->particles_info=NULL;
-
-		}
-
-		if (instance->gi_probe_sampler_info) {
-
-			while (instance->gi_probe_sampler_info->owned_instances.size()) {
-
-				instance_geometry_set_gi_probe_sampler(instance->gi_probe_sampler_info->owned_instances.front()->get()->self,RID());
-			}
-
-			if (instance->gi_probe_sampler_info->sampled_light.is_valid()) {
-				rasterizer->free(instance->gi_probe_sampler_info->sampled_light);
-			}
-			memdelete( instance->gi_probe_sampler_info );
-			instance->gi_probe_sampler_info=NULL;
-		}
-#endif
 	}
 
 	instance->base_type = VS::INSTANCE_NONE;
@@ -646,64 +424,6 @@ void VisualServerScene::instance_set_base(RID p_instance, RID p_base) {
 
 		if (scenario)
 			_instance_queue_update(instance, true, true);
-
-#if 0
-		if (rasterizer->is_mesh(p_base)) {
-			instance->base_type=INSTANCE_MESH;
-			instance->data.morph_values.resize( rasterizer->mesh_get_morph_target_count(p_base));
-			instance->data.materials.resize( rasterizer->mesh_get_surface_count(p_base));
-		} else if (rasterizer->is_multimesh(p_base)) {
-			instance->base_type=INSTANCE_MULTIMESH;
-		} else if (rasterizer->is_immediate(p_base)) {
-			instance->base_type=INSTANCE_IMMEDIATE;
-		} else if (rasterizer->is_particles(p_base)) {
-			instance->base_type=INSTANCE_PARTICLES;
-			instance->particles_info=memnew( Instance::ParticlesInfo );
-			instance->particles_info->instance = rasterizer->particles_instance_create( p_base );
-		} else if (rasterizer->is_light(p_base)) {
-
-			instance->base_type=INSTANCE_LIGHT;
-			instance->light_info = memnew( Instance::LightInfo );
-			instance->light_info->instance = rasterizer->light_instance_create(p_base);
-			if (instance->scenario && rasterizer->light_get_type(p_base)==LIGHT_DIRECTIONAL) {
-
-				instance->light_info->D = instance->scenario->directional_lights.push_back(instance->self);
-			}
-
-		} else if (room_owner.owns(p_base)) {
-			instance->base_type=INSTANCE_ROOM;
-			instance->room_info  = memnew( Instance::RoomInfo );
-			instance->room_info->room=room_owner.get(p_base);
-		} else if (portal_owner.owns(p_base)) {
-
-			instance->base_type=INSTANCE_PORTAL;
-			instance->portal_info = memnew(Instance::PortalInfo);
-			instance->portal_info->portal=portal_owner.get(p_base);
-		} else if (gi_probe_owner.owns(p_base)) {
-
-			instance->base_type=INSTANCE_GI_PROBE;
-			instance->gi_probe_info=memnew(Instance::BakedLightInfo);
-			instance->gi_probe_info->gi_probe=gi_probe_owner.get(p_base);
-
-			//instance->portal_info = memnew(Instance::PortalInfo);
-			//instance->portal_info->portal=portal_owner.get(p_base);
-		} else if (gi_probe_sampler_owner.owns(p_base)) {
-
-
-			instance->base_type=INSTANCE_GI_PROBE_SAMPLER;
-			instance->gi_probe_sampler_info=memnew( Instance::BakedLightSamplerInfo);
-			instance->gi_probe_sampler_info->sampler=gi_probe_sampler_owner.get(p_base);
-
-			//instance->portal_info = memnew(Instance::PortalInfo);
-			//instance->portal_info->portal=portal_owner.get(p_base);
-
-		} else {
-			ERR_EXPLAIN("Invalid base RID for instance!")
-			ERR_FAIL();
-		}
-
-		instance_dependency_map[ p_base ].insert( instance->self );
-#endif
 	}
 }
 void VisualServerScene::instance_set_scenario(RID p_instance, RID p_scenario) {
@@ -894,8 +614,6 @@ void VisualServerScene::instance_attach_skeleton(RID p_instance, RID p_skeleton)
 
 void VisualServerScene::instance_set_exterior(RID p_instance, bool p_enabled) {
 }
-void VisualServerScene::instance_set_room(RID p_instance, RID p_room) {
-}
 
 void VisualServerScene::instance_set_extra_visibility_margin(RID p_instance, real_t p_margin) {
 }
@@ -978,11 +696,6 @@ void VisualServerScene::instance_geometry_set_flag(RID p_instance, VS::InstanceF
 
 	switch (p_flags) {
 
-		case VS::INSTANCE_FLAG_VISIBLE_IN_ALL_ROOMS: {
-
-			instance->visible_in_all_rooms = p_enabled;
-
-		} break;
 		case VS::INSTANCE_FLAG_USE_BAKED_LIGHT: {
 
 			instance->baked_light = p_enabled;
@@ -1067,58 +780,12 @@ void VisualServerScene::_update_instance(Instance *p_instance) {
 			}
 		}
 	}
-#if 0
-	else if (p_instance->base_type == INSTANCE_ROOM) {
-
-		p_instance->room_info->affine_inverse=p_instance->data.transform.affine_inverse();
-	} else if (p_instance->base_type == INSTANCE_GI_PROBE) {
-
-		Transform scale;
-		scale.basis.scale(p_instance->gi_probe_info->gi_probe->octree_aabb.size);
-		scale.origin=p_instance->gi_probe_info->gi_probe->octree_aabb.pos;
-		//print_line("scale: "+scale);
-		p_instance->gi_probe_info->affine_inverse=(p_instance->data.transform*scale).affine_inverse();
-	}
-
-#endif
 
 	p_instance->mirror = p_instance->transform.basis.determinant() < 0.0;
 
 	Rect3 new_aabb;
-#if 0
-	if (p_instance->base_type==INSTANCE_PORTAL) {
 
-		//portals need to be transformed in a special way, so they don't become too wide if they have scale..
-		Transform portal_xform = p_instance->data.transform;
-		portal_xform.basis.set_axis(2,portal_xform.basis.get_axis(2).normalized());
-
-		p_instance->portal_info->plane_cache=Plane( p_instance->data.transform.origin, portal_xform.basis.get_axis(2));
-		int point_count=p_instance->portal_info->portal->shape.size();
-		p_instance->portal_info->transformed_point_cache.resize(point_count);
-
-		AABB portal_aabb;
-
-		for(int i=0;i<point_count;i++) {
-
-			Point2 src = p_instance->portal_info->portal->shape[i];
-			Vector3 point = portal_xform.xform(Vector3(src.x,src.y,0));
-			p_instance->portal_info->transformed_point_cache[i]=point;
-			if (i==0)
-				portal_aabb.pos=point;
-			else
-				portal_aabb.expand_to(point);
-		}
-
-		portal_aabb.grow_by(p_instance->portal_info->portal->connect_range);
-
-		new_aabb = portal_aabb;
-
-	} else {
-#endif
 	new_aabb = p_instance->transform.xform(p_instance->aabb);
-#if 0
-	}
-#endif
 
 	p_instance->transformed_aabb = new_aabb;
 
@@ -1145,33 +812,6 @@ void VisualServerScene::_update_instance(Instance *p_instance) {
 			pairable = true;
 		}
 
-#if 0
-
-		if (p_instance->base_type == VS::INSTANCE_PORTAL) {
-
-			pairable_mask=(1<<INSTANCE_PORTAL);
-			pairable=true;
-		}
-
-		if (p_instance->base_type == VS::INSTANCE_GI_PROBE_SAMPLER) {
-
-			pairable_mask=(1<<INSTANCE_GI_PROBE);
-			pairable=true;
-		}
-
-
-		if (!p_instance->room && (1<<p_instance->base_type)&VS::INSTANCE_GEOMETRY_MASK) {
-
-			base_type|=VS::INSTANCE_ROOMLESS_MASK;
-		}
-
-		if (p_instance->base_type == VS::INSTANCE_ROOM) {
-
-			pairable_mask=INSTANCE_ROOMLESS_MASK;
-			pairable=true;
-		}
-#endif
-
 		// not inside octree
 		p_instance->octree_id = p_instance->scenario->octree.create(p_instance, new_aabb, 0, pairable, base_type, pairable_mask);
 
@@ -1184,23 +824,6 @@ void VisualServerScene::_update_instance(Instance *p_instance) {
 
 		p_instance->scenario->octree.move(p_instance->octree_id, new_aabb);
 	}
-#if 0
-	if (p_instance->base_type==INSTANCE_PORTAL) {
-
-		_portal_attempt_connect(p_instance);
-	}
-
-	if (!p_instance->room && (1<<p_instance->base_type)&INSTANCE_GEOMETRY_MASK) {
-
-		_instance_validate_autorooms(p_instance);
-	}
-
-	if (p_instance->base_type == INSTANCE_ROOM) {
-
-		for(Set<Instance*>::Element *E=p_instance->room_info->owned_autoroom_geometry.front();E;E=E->next())
-			_instance_validate_autorooms(E->get());
-	}
-#endif
 }
 
 void VisualServerScene::_update_instance_aabb(Instance *p_instance) {
@@ -1235,15 +858,6 @@ void VisualServerScene::_update_instance_aabb(Instance *p_instance) {
 			new_aabb = VSG::storage->particles_get_aabb(p_instance->base);
 
 		} break;
-#if 0
-
-		case VisualServer::INSTANCE_PARTICLES: {
-
-			new_aabb = rasterizer->particles_get_aabb(p_instance->base);
-
-
-		} break;
-#endif
 		case VisualServer::INSTANCE_LIGHT: {
 
 			new_aabb = VSG::storage->light_get_aabb(p_instance->base);
@@ -1260,49 +874,6 @@ void VisualServerScene::_update_instance_aabb(Instance *p_instance) {
 
 		} break;
 
-#if 0
-		case VisualServer::INSTANCE_ROOM: {
-
-			Room *room = room_owner.get( p_instance->base );
-			ERR_FAIL_COND(!room);
-			new_aabb=room->bounds.get_aabb();
-
-		} break;
-		case VisualServer::INSTANCE_PORTAL: {
-
-			Portal *portal = portal_owner.get( p_instance->base );
-			ERR_FAIL_COND(!portal);
-			for (int i=0;i<portal->shape.size();i++) {
-
-				Vector3 point( portal->shape[i].x, portal->shape[i].y, 0 );
-				if (i==0) {
-
-					new_aabb.pos=point;
-					new_aabb.size.z=0.01; // make it not flat for octree
-				} else {
-
-					new_aabb.expand_to(point);
-				}
-			}
-
-		} break;
-		case VisualServer::INSTANCE_GI_PROBE: {
-
-			BakedLight *gi_probe = gi_probe_owner.get( p_instance->base );
-			ERR_FAIL_COND(!gi_probe);
-			new_aabb=gi_probe->octree_aabb;
-
-		} break;
-		case VisualServer::INSTANCE_GI_PROBE_SAMPLER: {
-
-			BakedLightSampler *gi_probe_sampler = gi_probe_sampler_owner.get( p_instance->base );
-			ERR_FAIL_COND(!gi_probe_sampler);
-			float radius = gi_probe_sampler->params[VS::BAKED_LIGHT_SAMPLER_RADIUS];
-
-			new_aabb=AABB(Vector3(-radius,-radius,-radius),Vector3(radius*2,radius*2,radius*2));
-
-		} break;
-#endif
 		default: {}
 	}
 
@@ -1736,98 +1307,17 @@ void VisualServerScene::_render_scene(const Transform p_cam_transform, const Cam
 
 	reflection_probe_cull_count = 0;
 
-//light_samplers_culled=0;
+	//light_samplers_culled=0;
 
-/*	print_line("OT: "+rtos( (OS::get_singleton()->get_ticks_usec()-t)/1000.0));
+	/*	print_line("OT: "+rtos( (OS::get_singleton()->get_ticks_usec()-t)/1000.0));
 	print_line("OTO: "+itos(p_scenario->octree.get_octant_count()));
 	//print_line("OTE: "+itos(p_scenario->octree.get_elem_count()));
 	print_line("OTP: "+itos(p_scenario->octree.get_pair_count()));
 */
 
-/* STEP 3 - PROCESS PORTALS, VALIDATE ROOMS */
+	/* STEP 3 - PROCESS PORTALS, VALIDATE ROOMS */
+	//removed, will replace with culling
 
-// compute portals
-#if 0
-	exterior_visited=false;
-	exterior_portal_cull_count=0;
-
-	if (room_cull_enabled) {
-		for(int i=0;i<cull_count;i++) {
-
-			Instance *ins = instance_cull_result[i];
-			ins->last_render_pass=render_pass;
-
-			if (ins->base_type!=INSTANCE_PORTAL)
-				continue;
-
-			if (ins->room)
-				continue;
-
-			ERR_CONTINUE(exterior_portal_cull_count>=MAX_EXTERIOR_PORTALS);
-			exterior_portal_cull_result[exterior_portal_cull_count++]=ins;
-
-		}
-
-		room_cull_count = p_scenario->octree.cull_point(camera->transform.origin,room_cull_result,MAX_ROOM_CULL,NULL,(1<<INSTANCE_ROOM)|(1<<INSTANCE_PORTAL));
-
-
-		Set<Instance*> current_rooms;
-		Set<Instance*> portal_rooms;
-		//add to set
-		for(int i=0;i<room_cull_count;i++) {
-
-			if (room_cull_result[i]->base_type==INSTANCE_ROOM) {
-				current_rooms.insert(room_cull_result[i]);
-			}
-			if (room_cull_result[i]->base_type==INSTANCE_PORTAL) {
-				//assume inside that room if also inside the portal..
-				if (room_cull_result[i]->room) {
-					portal_rooms.insert(room_cull_result[i]->room);
-				}
-
-				SWAP(room_cull_result[i],room_cull_result[room_cull_count-1]);
-				room_cull_count--;
-				i--;
-			}
-		}
-
-		//remove from set if it has a parent room or BSP doesn't contain
-		for(int i=0;i<room_cull_count;i++) {
-			Instance *r = room_cull_result[i];
-
-			//check inside BSP
-			Vector3 room_local_point = r->room_info->affine_inverse.xform( camera->transform.origin );
-
-			if (!portal_rooms.has(r) && !r->room_info->room->bounds.point_is_inside(room_local_point)) {
-
-				current_rooms.erase(r);
-				continue;
-			}
-
-			//check parent
-			while (r->room) {// has parent room
-
-				current_rooms.erase(r);
-				r=r->room;
-			}
-
-		}
-
-		if (current_rooms.size()) {
-			//camera is inside a room
-			// go through rooms
-			for(Set<Instance*>::Element *E=current_rooms.front();E;E=E->next()) {
-				_cull_room(camera,E->get());
-			}
-
-		} else {
-			//start from exterior
-			_cull_room(camera,NULL);
-
-		}
-	}
-
-#endif
 	/* STEP 4 - REMOVE FURTHER CULLED OBJECTS, ADD LIGHTS */
 
 	for (int i = 0; i < cull_count; i++) {
@@ -1895,71 +1385,6 @@ void VisualServerScene::_render_scene(const Transform p_cam_transform, const Cam
 		} else if ((1 << ins->base_type) & VS::INSTANCE_GEOMETRY_MASK && ins->visible && ins->cast_shadows != VS::SHADOW_CASTING_SETTING_SHADOWS_ONLY) {
 
 			keep = true;
-#if 0
-			bool discarded=false;
-
-			if (ins->draw_range_end>0) {
-
-				float d = cull_range.nearp.distance_to(ins->data.transform.origin);
-				if (d<0)
-					d=0;
-				discarded=(d<ins->draw_range_begin || d>=ins->draw_range_end);
-
-
-			}
-
-			if (!discarded) {
-
-				// test if this geometry should be visible
-
-				if (room_cull_enabled) {
-
-
-					if (ins->visible_in_all_rooms) {
-						keep=true;
-					} else if (ins->room) {
-
-						if (ins->room->room_info->last_visited_pass==render_pass)
-							keep=true;
-					} else if (ins->auto_rooms.size()) {
-
-
-						for(Set<Instance*>::Element *E=ins->auto_rooms.front();E;E=E->next()) {
-
-							if (E->get()->room_info->last_visited_pass==render_pass) {
-								keep=true;
-								break;
-							}
-						}
-					} else if(exterior_visited)
-						keep=true;
-				} else {
-
-					keep=true;
-				}
-
-
-			}
-
-
-			if (keep) {
-				// update cull range
-				float min,max;
-				ins->transformed_aabb.project_range_in_plane(cull_range.nearp,min,max);
-
-				if (min<cull_range.min)
-					cull_range.min=min;
-				if (max>cull_range.max)
-					cull_range.max=max;
-
-				if (ins->sampled_light && ins->sampled_light->gi_probe_sampler_info->last_pass!=render_pass) {
-					if (light_samplers_culled<MAX_LIGHT_SAMPLERS) {
-						light_sampler_cull_result[light_samplers_culled++]=ins->sampled_light;
-						ins->sampled_light->gi_probe_sampler_info->last_pass=render_pass;
-					}
-				}
-			}
-#endif
 
 			InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(ins->base_data);
 
@@ -3467,7 +2892,6 @@ bool VisualServerScene::free(RID p_rid) {
 
 		Instance *instance = instance_owner.get(p_rid);
 
-		instance_set_room(p_rid, RID());
 		instance_set_scenario(p_rid, RID());
 		instance_set_base(p_rid, RID());
 		instance_geometry_set_material_override(p_rid, RID());

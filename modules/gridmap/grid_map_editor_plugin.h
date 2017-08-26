@@ -75,7 +75,6 @@ class GridMapEditor : public VBoxContainer {
 	Panel *panel;
 	MenuButton *options;
 	SpinBox *floor;
-	OptionButton *edit_mode;
 	ToolButton *mode_thumbnail;
 	ToolButton *mode_list;
 	HBoxContainer *spatial_editor_hb;
@@ -137,7 +136,6 @@ class GridMapEditor : public VBoxContainer {
 
 	int display_mode;
 	int selected_pallete;
-	int selected_area;
 	int cursor_rot;
 
 	enum Menu {
@@ -177,18 +175,12 @@ class GridMapEditor : public VBoxContainer {
 		RID instance;
 	};
 
-	Vector<AreaDisplay> areas;
-
-	void _update_areas_display();
-	void _clear_areas();
-
 	void update_grid();
 	void _configure();
 	void _menu_option(int);
 	void update_pallete();
 	void _set_display_mode(int p_mode);
 	ItemList *theme_pallete;
-	Tree *area_list;
 	void _item_selected_cbk(int idx);
 	void _update_cursor_transform();
 	void _update_cursor_instance();
@@ -199,14 +191,9 @@ class GridMapEditor : public VBoxContainer {
 	void _update_selection_transform();
 	void _validate_selection();
 
-	void _edit_mode_changed(int p_what);
-	void _area_renamed();
-	void _area_selected();
-
 	void _floor_changed(float p_value);
 
 	void _delete_selection();
-	void update_areas();
 
 	EditorNode *editor;
 	bool do_input_action(Camera *p_camera, const Point2 &p_point, bool p_click);

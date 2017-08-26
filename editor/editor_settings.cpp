@@ -216,6 +216,12 @@ Variant _EDITOR_DEF(const String &p_var, const Variant &p_default) {
 	return p_default;
 }
 
+Variant _EDITOR_GET(const String &p_var) {
+
+	ERR_FAIL_COND_V(!EditorSettings::get_singleton()->has(p_var), Variant())
+	return EditorSettings::get_singleton()->get(p_var);
+}
+
 static Dictionary _get_builtin_script_templates() {
 	Dictionary templates;
 

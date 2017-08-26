@@ -30,7 +30,7 @@
 #include "room.h"
 
 #include "servers/visual_server.h"
-
+#if 0
 RID RoomBounds::get_rid() const {
 
 	return area;
@@ -64,3 +64,4 @@ RoomBounds::~RoomBounds() {
 
 	VisualServer::get_singleton()->free(area);
 }
+#endif

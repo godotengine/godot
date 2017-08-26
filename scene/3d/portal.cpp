@@ -32,6 +32,7 @@
 #include "scene/resources/surface_tool.h"
 #include "servers/visual_server.h"
 
+#if 0
 bool Portal::_set(const StringName &p_name, const Variant &p_value) {
 
 	if (p_name == "shape") {
@@ -226,3 +227,4 @@ Portal::~Portal() {
 
 	VisualServer::get_singleton()->free(portal);
 }
+#endif

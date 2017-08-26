@@ -167,7 +167,7 @@
 #include "scene/3d/audio_stream_player_3d.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
-#include "scene/resources/room.h"
+
 #include "scene/resources/sky_box.h"
 #include "scene/resources/texture.h"
 
@@ -424,7 +424,7 @@ void register_scene_types() {
 	ClassDB::register_class<GIProbe>();
 	ClassDB::register_class<GIProbeData>();
 	ClassDB::register_class<AnimationTreePlayer>();
-	ClassDB::register_class<Portal>();
+	//ClassDB::register_class<Portal>();
 	ClassDB::register_class<Particles>();
 	ClassDB::register_class<Position3D>();
 	ClassDB::register_class<NavigationMeshInstance>();
@@ -446,7 +446,7 @@ void register_scene_types() {
 	ClassDB::register_class<CollisionPolygon>();
 	ClassDB::register_class<RayCast>();
 	ClassDB::register_class<MultiMeshInstance>();
-	ClassDB::register_class<Room>();
+
 	ClassDB::register_class<Curve3D>();
 	ClassDB::register_class<Path>();
 	ClassDB::register_class<PathFollow>();
@@ -546,7 +546,6 @@ void register_scene_types() {
 	ParticlesMaterial::init_shaders();
 
 	//ClassDB::register_type<ShaderMaterial>();
-	ClassDB::register_class<RoomBounds>();
 	ClassDB::register_class<MultiMesh>();
 	ClassDB::register_class<MeshLibrary>();
 

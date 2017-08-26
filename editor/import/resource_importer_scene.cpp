@@ -537,7 +537,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 		s->set_transform(Transform());
 
 		p_node = bv;
-
+#if 0
 	} else if (_teststr(name, "room") && Object::cast_to<MeshInstance>(p_node)) {
 
 		if (isroot)
@@ -657,7 +657,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 		p_node->replace_by(portal);
 		memdelete(p_node);
 		p_node = portal;
-
+#endif
 	} else if (Object::cast_to<MeshInstance>(p_node)) {
 
 		//last attempt, maybe collision insde the mesh data

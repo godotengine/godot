@@ -811,23 +811,6 @@ public:
 	BIND2(reflection_probe_set_enable_shadows, RID, bool)
 	BIND2(reflection_probe_set_cull_mask, RID, uint32_t)
 
-	/* ROOM API */
-
-	BIND0R(RID, room_create)
-	BIND4(room_add_bounds, RID, const PoolVector<Vector2> &, float, const Transform &)
-	BIND1(room_clear_bounds, RID)
-
-	/* PORTAL API */
-
-	// portals are only (x/y) points, forming a convex shape, which its clockwise
-	// order points outside. (z is 0);
-
-	BIND0R(RID, portal_create)
-	BIND2(portal_set_shape, RID, const Vector<Point2> &)
-	BIND2(portal_set_enabled, RID, bool)
-	BIND2(portal_set_disable_distance, RID, float)
-	BIND2(portal_set_disabled_color, RID, const Color &)
-
 	/* BAKED LIGHT API */
 
 	BIND0R(RID, gi_probe_create)
@@ -1011,7 +994,6 @@ public:
 
 	BIND2(instance_attach_skeleton, RID, RID)
 	BIND2(instance_set_exterior, RID, bool)
-	BIND2(instance_set_room, RID, RID)
 
 	BIND2(instance_set_extra_visibility_margin, RID, real_t)
 

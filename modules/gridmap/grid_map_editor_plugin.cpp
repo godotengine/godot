@@ -178,30 +178,6 @@ void GridMapEditor::_menu_option(int p_option) {
 			int idx = options->get_popup()->get_item_index(MENU_OPTION_DUPLICATE_SELECTS);
 			options->get_popup()->set_item_checked(idx, !options->get_popup()->is_item_checked(idx));
 		} break;
-		case MENU_OPTION_SELECTION_MAKE_AREA:
-		case MENU_OPTION_SELECTION_MAKE_EXTERIOR_CONNECTOR: {
-
-			if (!selection.active)
-				break;
-			int area = node->get_unused_area_id();
-			Error err = node->create_area(area, Rect3(selection.begin, selection.end - selection.begin + Vector3(1, 1, 1)));
-			if (err != OK) {
-			}
-			if (p_option == MENU_OPTION_SELECTION_MAKE_EXTERIOR_CONNECTOR) {
-
-				node->area_set_exterior_portal(area, true);
-			}
-			_update_areas_display();
-			update_areas();
-
-		} break;
-		case MENU_OPTION_REMOVE_AREA: {
-			if (selected_area < 1)
-				return;
-			node->erase_area(selected_area);
-			_update_areas_display();
-			update_areas();
-		} break;
 		case MENU_OPTION_SELECTION_DUPLICATE:
 			if (!(selection.active && input_action == INPUT_NONE))
 				return;
@@ -513,146 +489,96 @@ bool GridMapEditor::forward_spatial_input_event(Camera *p_camera, const Ref<Inpu
 		return false;
 	}
 
-	if (edit_mode->get_selected() == 0) { // regular click
+	Ref<InputEventMouseButton> mb = p_event;
 
-		Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid()) {
 
-		if (mb.is_valid()) {
+		if (mb->get_button_index() == BUTTON_WHEEL_UP && (mb->get_command() || mb->get_shift())) {
+			if (mb->is_pressed())
+				floor->set_value(floor->get_value() + mb->get_factor());
 
-			if (mb->get_button_index() == BUTTON_WHEEL_UP && (mb->get_command() || mb->get_shift())) {
-				if (mb->is_pressed())
-					floor->set_value(floor->get_value() + mb->get_factor());
+			return true; //eaten
+		} else if (mb->get_button_index() == BUTTON_WHEEL_DOWN && (mb->get_command() || mb->get_shift())) {
+			if (mb->is_pressed())
+				floor->set_value(floor->get_value() - mb->get_factor());
+			return true;
+		}
 
-				return true; //eaten
-			} else if (mb->get_button_index() == BUTTON_WHEEL_DOWN && (mb->get_command() || mb->get_shift())) {
-				if (mb->is_pressed())
-					floor->set_value(floor->get_value() - mb->get_factor());
+		if (mb->is_pressed()) {
+
+			if (mb->get_button_index() == BUTTON_LEFT) {
+
+				if (input_action == INPUT_DUPLICATE) {
+
+					//paste
+					_duplicate_paste();
+					input_action = INPUT_NONE;
+					_update_duplicate_indicator();
+				} else if (mb->get_shift()) {
+					input_action = INPUT_SELECT;
+				} else if (mb->get_command())
+					input_action = INPUT_COPY;
+				else {
+					input_action = INPUT_PAINT;
+					set_items.clear();
+				}
+			} else if (mb->get_button_index() == BUTTON_RIGHT)
+				if (input_action == INPUT_DUPLICATE) {
+
+					input_action = INPUT_NONE;
+					_update_duplicate_indicator();
+				} else {
+					input_action = INPUT_ERASE;
+					set_items.clear();
+				}
+			else
+				return false;
+
+			return do_input_action(p_camera, Point2(mb->get_position().x, mb->get_position().y), true);
+		} else {
+
+			if (
+					(mb->get_button_index() == BUTTON_RIGHT && input_action == INPUT_ERASE) ||
+					(mb->get_button_index() == BUTTON_LEFT && input_action == INPUT_PAINT)) {
+
+				if (set_items.size()) {
+					undo_redo->create_action("GridMap Paint");
+					for (List<SetItem>::Element *E = set_items.front(); E; E = E->next()) {
+
+						const SetItem &si = E->get();
+						undo_redo->add_do_method(node, "set_cell_item", si.pos.x, si.pos.y, si.pos.z, si.new_value, si.new_orientation);
+					}
+					for (List<SetItem>::Element *E = set_items.back(); E; E = E->prev()) {
+
+						const SetItem &si = E->get();
+						undo_redo->add_undo_method(node, "set_cell_item", si.pos.x, si.pos.y, si.pos.z, si.old_value, si.old_orientation);
+					}
+
+					undo_redo->commit_action();
+				}
+				set_items.clear();
+				input_action = INPUT_NONE;
 				return true;
 			}
 
-			if (mb->is_pressed()) {
+			if (mb->get_button_index() == BUTTON_LEFT && input_action != INPUT_NONE) {
 
-				if (mb->get_button_index() == BUTTON_LEFT) {
-
-					if (input_action == INPUT_DUPLICATE) {
-
-						//paste
-						_duplicate_paste();
-						input_action = INPUT_NONE;
-						_update_duplicate_indicator();
-					} else if (mb->get_shift()) {
-						input_action = INPUT_SELECT;
-					} else if (mb->get_command())
-						input_action = INPUT_COPY;
-					else {
-						input_action = INPUT_PAINT;
-						set_items.clear();
-					}
-				} else if (mb->get_button_index() == BUTTON_RIGHT)
-					if (input_action == INPUT_DUPLICATE) {
-
-						input_action = INPUT_NONE;
-						_update_duplicate_indicator();
-					} else {
-						input_action = INPUT_ERASE;
-						set_items.clear();
-					}
-				else
-					return false;
-
-				return do_input_action(p_camera, Point2(mb->get_position().x, mb->get_position().y), true);
-			} else {
-
-				if (
-						(mb->get_button_index() == BUTTON_RIGHT && input_action == INPUT_ERASE) ||
-						(mb->get_button_index() == BUTTON_LEFT && input_action == INPUT_PAINT)) {
-
-					if (set_items.size()) {
-						undo_redo->create_action(TTR("GridMap Paint"));
-						for (List<SetItem>::Element *E = set_items.front(); E; E = E->next()) {
-
-							const SetItem &si = E->get();
-							undo_redo->add_do_method(node, "set_cell_item", si.pos.x, si.pos.y, si.pos.z, si.new_value, si.new_orientation);
-						}
-						for (List<SetItem>::Element *E = set_items.back(); E; E = E->prev()) {
-
-							const SetItem &si = E->get();
-							undo_redo->add_undo_method(node, "set_cell_item", si.pos.x, si.pos.y, si.pos.z, si.old_value, si.old_orientation);
-						}
-
-						undo_redo->commit_action();
-					}
-					set_items.clear();
-					input_action = INPUT_NONE;
-					return true;
-				}
-
-				if (mb->get_button_index() == BUTTON_LEFT && input_action != INPUT_NONE) {
-
-					set_items.clear();
-					input_action = INPUT_NONE;
-					return true;
-				}
-				if (mb->get_button_index() == BUTTON_RIGHT && (input_action == INPUT_ERASE || input_action == INPUT_DUPLICATE)) {
-					input_action = INPUT_NONE;
-					return true;
-				}
+				set_items.clear();
+				input_action = INPUT_NONE;
+				return true;
+			}
+			if (mb->get_button_index() == BUTTON_RIGHT && (input_action == INPUT_ERASE || input_action == INPUT_DUPLICATE)) {
+				input_action = INPUT_NONE;
+				return true;
 			}
 		}
+	}
 
-		Ref<InputEventMouseMotion> mm = p_event;
+	Ref<InputEventMouseMotion> mm = p_event;
 
-		if (mm.is_valid()) {
+	if (mm.is_valid()) {
 
-			return do_input_action(p_camera, mm->get_position(), false);
-		}
-
-	} else if (edit_mode->get_selected() == 1) {
-		//area mode, select an area
-
-		Ref<InputEventMouseButton> mb = p_event;
-
-		if (mb.is_valid()) {
-
-			if (mb->get_button_index() == BUTTON_LEFT && mb->is_pressed()) {
-
-				Point2 point = mb->get_position();
-
-				Camera *camera = p_camera;
-				Vector3 from = camera->project_ray_origin(point);
-				Vector3 normal = camera->project_ray_normal(point);
-				Transform local_xform = node->get_global_transform().affine_inverse();
-				from = local_xform.xform(from);
-				normal = local_xform.basis.xform(normal).normalized();
-
-				List<int> areas;
-				node->get_area_list(&areas);
-
-				float min_d = 1e10;
-				int min_area = -1;
-
-				for (List<int>::Element *E = areas.front(); E; E = E->next()) {
-
-					int area = E->get();
-					Rect3 aabb = node->area_get_bounds(area);
-					aabb.position *= node->get_cell_size();
-					aabb.size *= node->get_cell_size();
-
-					Vector3 rclip, rnormal;
-					if (!aabb.intersects_segment(from, from + normal * 10000, &rclip, &rnormal))
-						continue;
-
-					float d = normal.dot(rclip);
-					if (d < min_d) {
-						min_d = d;
-						min_area = area;
-					}
-				}
-
-				selected_area = min_area;
-				update_areas();
-			}
-		}
+		return do_input_action(p_camera, mm->get_position(), false);
 	}
 
 	return false;
@@ -749,52 +675,6 @@ void GridMapEditor::update_pallete() {
 	last_theme = theme.operator->();
 }
 
-void GridMapEditor::_area_renamed() {
-
-	TreeItem *it = area_list->get_selected();
-	int area = it->get_metadata(0);
-	if (area < 1)
-		return;
-	node->area_set_name(area, it->get_text(0));
-}
-
-void GridMapEditor::_area_selected() {
-
-	TreeItem *it = area_list->get_selected();
-	int area = it->get_metadata(0);
-	if (area < 1)
-		return;
-	selected_area = area;
-}
-
-void GridMapEditor::update_areas() {
-
-	area_list->clear();
-
-	List<int> areas;
-	node->get_area_list(&areas);
-
-	TreeItem *root = area_list->create_item(NULL);
-	area_list->set_hide_root(true);
-	TreeItem *selected = NULL;
-
-	for (List<int>::Element *E = areas.front(); E; E = E->next()) {
-
-		int area = E->get();
-		TreeItem *ti = area_list->create_item(root);
-		String name = node->area_get_name(area);
-
-		ti->set_metadata(0, area);
-		ti->set_text(0, name);
-		ti->set_editable(0, true);
-		if (area == selected_area)
-			selected = ti;
-	}
-
-	if (selected)
-		selected->select(0);
-}
-
 void GridMapEditor::edit(GridMap *p_gridmap) {
 
 	node = p_gridmap;
@@ -816,13 +696,10 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 
 		VisualServer::get_singleton()->instance_set_visible(cursor_instance, false);
 
-		_clear_areas();
-
 		return;
 	}
 
 	update_pallete();
-	update_areas();
 
 	set_process(true);
 
@@ -894,7 +771,6 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 
 	update_grid();
 	_update_clip();
-	_update_areas_display();
 }
 
 void GridMapEditor::_update_clip() {
@@ -931,9 +807,6 @@ void GridMapEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
 		theme_pallete->connect("item_selected", this, "_item_selected_cbk");
-		edit_mode->connect("item_selected", this, "_edit_mode_changed");
-		area_list->connect("item_edited", this, "_area_renamed");
-		area_list->connect("item_selected", this, "_area_selected");
 		for (int i = 0; i < 3; i++) {
 
 			grid[i] = VS::get_singleton()->mesh_create();
@@ -1021,85 +894,6 @@ void GridMapEditor::_item_selected_cbk(int idx) {
 	_update_cursor_instance();
 }
 
-void GridMapEditor::_clear_areas() {
-
-	for (int i = 0; i < areas.size(); i++) {
-
-		VisualServer::get_singleton()->free(areas[i].instance);
-		VisualServer::get_singleton()->free(areas[i].mesh);
-	}
-
-	areas.clear();
-}
-
-void GridMapEditor::_update_areas_display() {
-	if (!node) {
-		return;
-	}
-#if 0
-	_clear_areas();
-	List<int> areas;
-	node->get_area_list(&areas);
-
-	Transform global_xf = node->get_global_transform();
-
-	for(List<int>::Element *E=areas.front();E;E=E->next()) {
-
-		int area = E->get();
-		Color color;
-		if (node->area_is_exterior_portal(area))
-			color=Color(1,1,1,0.2);
-		else
-			color.set_hsv(Math::fmod(area*0.37,1),Math::fmod(area*0.75,1),1.0,0.2);
-
-
-		RID material = VisualServer::get_singleton()->fixed_material_create();
-		VisualServer::get_singleton()->fixed_material_set_param( material, VS::FIXED_MATERIAL_PARAM_DIFFUSE,color );
-		VisualServer::get_singleton()->fixed_material_set_param( material, VS::FIXED_MATERIAL_PARAM_EMISSION,0.5 );
-		VisualServer::get_singleton()->fixed_material_set_flag( material, VisualServer::FIXED_MATERIAL_FLAG_USE_ALPHA, true );
-
-
-		RID mesh = VisualServer::get_singleton()->mesh_create();
-
-		PoolVector<Plane> planes;
-		for(int i=0;i<3;i++) {
-
-			Vector3 axis;
-			axis[i]=1.0;
-			planes.push_back(Plane(axis,1));
-			planes.push_back(Plane(-axis,0));
-		}
-
-		VisualServer::get_singleton()->mesh_add_surface_from_planes(mesh,planes);
-		VisualServer::get_singleton()->mesh_surface_set_material(mesh,0,material,true);
-
-		AreaDisplay ad;
-		ad.mesh=mesh;
-		ad.instance = VisualServer::get_singleton()->instance_create2(mesh,node->get_world()->get_scenario());
-		Transform xform;
-		Rect3 aabb = node->area_get_bounds(area);
-		xform.origin=aabb.pos * node->get_cell_size();
-		xform.basis.scale(aabb.size * node->get_cell_size());
-		VisualServer::get_singleton()->instance_set_transform(ad.instance,global_xf * xform);
-		this->areas.push_back(ad);
-
-	}
-#endif
-}
-
-void GridMapEditor::_edit_mode_changed(int p_what) {
-
-	if (p_what == 0) {
-
-		theme_pallete->show();
-		area_list->hide();
-	} else {
-
-		theme_pallete->hide();
-		area_list->show();
-	}
-}
-
 void GridMapEditor::_floor_changed(float p_value) {
 
 	if (updating)
@@ -1116,9 +910,6 @@ void GridMapEditor::_bind_methods() {
 	ClassDB::bind_method("_menu_option", &GridMapEditor::_menu_option);
 	ClassDB::bind_method("_configure", &GridMapEditor::_configure);
 	ClassDB::bind_method("_item_selected_cbk", &GridMapEditor::_item_selected_cbk);
-	ClassDB::bind_method("_edit_mode_changed", &GridMapEditor::_edit_mode_changed);
-	ClassDB::bind_method("_area_renamed", &GridMapEditor::_area_renamed);
-	ClassDB::bind_method("_area_selected", &GridMapEditor::_area_selected);
 	ClassDB::bind_method("_floor_changed", &GridMapEditor::_floor_changed);
 
 	ClassDB::bind_method(D_METHOD("_set_display_mode", "mode"), &GridMapEditor::_set_display_mode);
@@ -1198,15 +989,6 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	add_child(hb);
 	hb->set_h_size_flags(SIZE_EXPAND_FILL);
 
-	edit_mode = memnew(OptionButton);
-	edit_mode->set_area_as_parent_rect();
-	edit_mode->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_BEGIN, 24);
-	edit_mode->set_margin(MARGIN_RIGHT, -14);
-	edit_mode->add_item(TTR("Tiles"));
-	edit_mode->add_item(TTR("Areas"));
-	hb->add_child(edit_mode);
-	edit_mode->set_h_size_flags(SIZE_EXPAND_FILL);
-
 	mode_thumbnail = memnew(ToolButton);
 	mode_thumbnail->set_toggle_mode(true);
 	mode_thumbnail->set_pressed(true);
@@ -1224,16 +1006,10 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	EDITOR_DEF("editors/grid_map/preview_size", 64);
 
 	display_mode = DISPLAY_THUMBNAIL;
-	selected_area = -1;
 
 	theme_pallete = memnew(ItemList);
 	add_child(theme_pallete);
 	theme_pallete->set_v_size_flags(SIZE_EXPAND_FILL);
-
-	area_list = memnew(Tree);
-	add_child(area_list);
-	area_list->set_v_size_flags(SIZE_EXPAND_FILL);
-	area_list->hide();
 
 	spatial_editor_hb->add_child(memnew(VSeparator));
 	Label *fl = memnew(Label);
@@ -1363,8 +1139,6 @@ GridMapEditor::~GridMapEditor() {
 	VisualServer::get_singleton()->free(duplicate_mesh);
 	if (duplicate_instance.is_valid())
 		VisualServer::get_singleton()->free(duplicate_instance);
-
-	_clear_areas();
 }
 
 void GridMapEditorPlugin::edit(Object *p_object) {

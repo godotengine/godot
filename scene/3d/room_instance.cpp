@@ -31,6 +31,7 @@
 
 #include "servers/visual_server.h"
 
+#if 0
 #include "geometry.h"
 #include "project_settings.h"
 #include "scene/resources/surface_tool.h"
@@ -158,3 +159,4 @@ Room::Room() {
 
 Room::~Room() {
 }
+#endif

@@ -376,23 +376,6 @@ public:
 	virtual float reflection_probe_get_origin_max_distance(RID p_probe) const = 0;
 	virtual bool reflection_probe_renders_shadows(RID p_probe) const = 0;
 
-	/* ROOM API */
-
-	virtual RID room_create() = 0;
-	virtual void room_add_bounds(RID p_room, const PoolVector<Vector2> &p_convex_polygon, float p_height, const Transform &p_transform) = 0;
-	virtual void room_clear_bounds(RID p_room) = 0;
-
-	/* PORTAL API */
-
-	// portals are only (x/y) points, forming a convex shape, which its clockwise
-	// order points outside. (z is 0)=0;
-
-	virtual RID portal_create() = 0;
-	virtual void portal_set_shape(RID p_portal, const Vector<Point2> &p_shape) = 0;
-	virtual void portal_set_enabled(RID p_portal, bool p_enabled) = 0;
-	virtual void portal_set_disable_distance(RID p_portal, float p_distance) = 0;
-	virtual void portal_set_disabled_color(RID p_portal, const Color &p_color) = 0;
-
 	virtual void instance_add_skeleton(RID p_skeleton, RasterizerScene::InstanceBase *p_instance) = 0;
 	virtual void instance_remove_skeleton(RID p_skeleton, RasterizerScene::InstanceBase *p_instance) = 0;
 

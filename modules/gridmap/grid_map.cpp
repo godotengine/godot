@@ -96,25 +96,6 @@ bool GridMap::_set(const StringName &p_name, const Variant &p_value) {
 		}
 		_recreate_octant_data();
 
-	} else if (name.begins_with("areas/")) {
-		int which = name.get_slicec('/', 1).to_int();
-		String what = name.get_slicec('/', 2);
-		if (what == "bounds") {
-			ERR_FAIL_COND_V(area_map.has(which), false);
-			create_area(which, p_value);
-			return true;
-		}
-
-		ERR_FAIL_COND_V(!area_map.has(which), false);
-
-		if (what == "name")
-			area_set_name(which, p_value);
-		else if (what == "disable_distance")
-			area_set_portal_disable_distance(which, p_value);
-		else if (what == "exterior_portal")
-			area_set_portal_disable_color(which, p_value);
-		else
-			return false;
 	} else
 		return false;
 
@@ -158,19 +139,6 @@ bool GridMap::_get(const StringName &p_name, Variant &r_ret) const {
 		d["cells"] = cells;
 
 		r_ret = d;
-	} else if (name.begins_with("areas/")) {
-		int which = name.get_slicec('/', 1).to_int();
-		String what = name.get_slicec('/', 2);
-		if (what == "bounds")
-			r_ret = area_get_bounds(which);
-		else if (what == "name")
-			r_ret = area_get_name(which);
-		else if (what == "disable_distance")
-			r_ret = area_get_portal_disable_distance(which);
-		else if (what == "exterior_portal")
-			r_ret = area_is_exterior_portal(which);
-		else
-			return false;
 	} else
 		return false;
 
@@ -189,16 +157,6 @@ void GridMap::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::REAL, "cell_scale"));
 
 	p_list->push_back(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-
-	for (const Map<int, Area *>::Element *E = area_map.front(); E; E = E->next()) {
-
-		String base = "areas/" + itos(E->key()) + "/";
-		p_list->push_back(PropertyInfo(Variant::RECT3, base + "bounds", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-		p_list->push_back(PropertyInfo(Variant::STRING, base + "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-		p_list->push_back(PropertyInfo(Variant::REAL, base + "disable_distance", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-		p_list->push_back(PropertyInfo(Variant::COLOR, base + "disable_color", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-		p_list->push_back(PropertyInfo(Variant::BOOL, base + "exterior_portal", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-	}
 }
 
 void GridMap::set_theme(const Ref<MeshLibrary> &p_theme) {
@@ -268,20 +226,6 @@ bool GridMap::get_center_z() const {
 	return center_z;
 }
 
-int GridMap::_find_area(const IndexKey &p_pos) const {
-
-	for (const Map<int, Area *>::Element *E = area_map.front(); E; E = E->next()) {
-		//this should somehow be faster...
-		const Area &a = *E->get();
-		if (p_pos.x >= a.from.x && p_pos.x < a.to.x &&
-				p_pos.y >= a.from.y && p_pos.y < a.to.y &&
-				p_pos.z >= a.from.z && p_pos.z < a.to.z) {
-			return E->key();
-		}
-	}
-
-	return 0;
-}
 void GridMap::set_cell_item(int p_x, int p_y, int p_z, int p_item, int p_rot) {
 
 	ERR_FAIL_INDEX(ABS(p_x), 1 << 20);
@@ -297,7 +241,6 @@ void GridMap::set_cell_item(int p_x, int p_y, int p_z, int p_item, int p_rot) {
 	ok.x = p_x / octant_size;
 	ok.y = p_y / octant_size;
 	ok.z = p_z / octant_size;
-	ok.area = _find_area(key);
 
 	if (cell_map.has(key)) {
 
@@ -485,19 +428,12 @@ void GridMap::_octant_enter_world(const OctantKey &p_key) {
 	if (g.collision_debug_instance.is_valid()) {
 		VS::get_singleton()->instance_set_scenario(g.collision_debug_instance, get_world()->get_scenario());
 		VS::get_singleton()->instance_set_transform(g.collision_debug_instance, get_global_transform());
-		if (area_map.has(p_key.area)) {
-			VS::get_singleton()->instance_set_room(g.collision_debug_instance, area_map[p_key.area]->instance);
-		}
 	}
 	for (Map<int, Octant::ItemInstances>::Element *E = g.items.front(); E; E = E->next()) {
 
 		VS::get_singleton()->instance_set_scenario(E->get().multimesh_instance, get_world()->get_scenario());
 		VS::get_singleton()->instance_set_transform(E->get().multimesh_instance, get_global_transform());
 		//print_line("INSTANCEPOS: "+get_global_transform());
-
-		if (area_map.has(p_key.area)) {
-			VS::get_singleton()->instance_set_room(E->get().multimesh_instance, area_map[p_key.area]->instance);
-		}
 	}
 }
 
@@ -655,7 +591,6 @@ void GridMap::_octant_exit_world(const OctantKey &p_key) {
 
 	if (g.collision_debug_instance.is_valid()) {
 
-		VS::get_singleton()->instance_set_room(g.collision_debug_instance, RID());
 		VS::get_singleton()->instance_set_scenario(g.collision_debug_instance, RID());
 	}
 
@@ -663,7 +598,6 @@ void GridMap::_octant_exit_world(const OctantKey &p_key) {
 
 		VS::get_singleton()->instance_set_scenario(E->get().multimesh_instance, RID());
 		//VS::get_singleton()->instance_set_transform(E->get().multimesh_instance,get_global_transform());
-		VS::get_singleton()->instance_set_room(E->get().multimesh_instance, RID());
 	}
 }
 
@@ -672,8 +606,6 @@ void GridMap::_notification(int p_what) {
 	switch (p_what) {
 
 		case NOTIFICATION_ENTER_WORLD: {
-
-			_update_area_instances();
 
 			for (Map<OctantKey, Octant *>::Element *E = octant_map.front(); E; E = E->next()) {
 				//IndexKey ik;
@@ -761,14 +693,14 @@ void GridMap::_queue_dirty_map() {
 void GridMap::_recreate_octant_data() {
 
 	Map<IndexKey, Cell> cell_copy = cell_map;
-	_clear_internal(true);
+	_clear_internal();
 	for (Map<IndexKey, Cell>::Element *E = cell_copy.front(); E; E = E->next()) {
 
 		set_cell_item(E->key().x, E->key().y, E->key().z, E->get().item, E->get().rot);
 	}
 }
 
-void GridMap::_clear_internal(bool p_keep_areas) {
+void GridMap::_clear_internal() {
 
 	for (Map<OctantKey, Octant *>::Element *E = octant_map.front(); E; E = E->next()) {
 		if (is_inside_world())
@@ -790,20 +722,6 @@ void GridMap::_clear_internal(bool p_keep_areas) {
 
 	octant_map.clear();
 	cell_map.clear();
-
-	if (p_keep_areas)
-		return;
-
-	for (Map<int, Area *>::Element *E = area_map.front(); E; E = E->next()) {
-
-		VS::get_singleton()->free(E->get()->base_portal);
-		VS::get_singleton()->free(E->get()->instance);
-		for (int i = 0; i < E->get()->portals.size(); i++) {
-			VS::get_singleton()->free(E->get()->portals[i].instance);
-		}
-
-		memdelete(E->get());
-	}
 }
 
 void GridMap::clear() {
@@ -856,19 +774,6 @@ void GridMap::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_clip", "enabled", "clipabove", "floor", "axis"), &GridMap::set_clip, DEFVAL(true), DEFVAL(0), DEFVAL(Vector3::AXIS_X));
 
-	ClassDB::bind_method(D_METHOD("create_area", "id", "area"), &GridMap::create_area);
-	ClassDB::bind_method(D_METHOD("area_get_bounds", "area"), &GridMap::area_get_bounds);
-	ClassDB::bind_method(D_METHOD("area_set_exterior_portal", "area", "enable"), &GridMap::area_set_exterior_portal);
-	ClassDB::bind_method(D_METHOD("area_set_name", "area", "name"), &GridMap::area_set_name);
-	ClassDB::bind_method(D_METHOD("area_get_name", "area"), &GridMap::area_get_name);
-	ClassDB::bind_method(D_METHOD("area_is_exterior_portal", "area"), &GridMap::area_is_exterior_portal);
-	ClassDB::bind_method(D_METHOD("area_set_portal_disable_distance", "area", "distance"), &GridMap::area_set_portal_disable_distance);
-	ClassDB::bind_method(D_METHOD("area_get_portal_disable_distance", "area"), &GridMap::area_get_portal_disable_distance);
-	ClassDB::bind_method(D_METHOD("area_set_portal_disable_color", "area", "color"), &GridMap::area_set_portal_disable_color);
-	ClassDB::bind_method(D_METHOD("area_get_portal_disable_color", "area"), &GridMap::area_get_portal_disable_color);
-	ClassDB::bind_method(D_METHOD("erase_area", "area"), &GridMap::erase_area);
-	ClassDB::bind_method(D_METHOD("get_unused_area_id"), &GridMap::get_unused_area_id);
-
 	ClassDB::bind_method(D_METHOD("clear"), &GridMap::clear);
 
 	ClassDB::bind_method(D_METHOD("get_meshes"), &GridMap::get_meshes);
@@ -896,334 +801,6 @@ void GridMap::set_clip(bool p_enabled, bool p_clip_above, int p_floor, Vector3::
 	}
 	awaiting_update = true;
 	_update_dirty_map_callback();
-}
-
-void GridMap::_update_areas() {
-
-	//clear the portals
-	for (Map<int, Area *>::Element *E = area_map.front(); E; E = E->next()) {
-		//this should somehow be faster...
-		Area &a = *E->get();
-		a.portals.clear();
-		if (a.instance.is_valid()) {
-			VisualServer::get_singleton()->free(a.instance);
-			a.instance = RID();
-		}
-	}
-
-	//test all areas against all areas and create portals - this sucks (slow :( )
-	for (Map<int, Area *>::Element *E = area_map.front(); E; E = E->next()) {
-		Area &a = *E->get();
-		if (a.exterior_portal) //that's pretty much all it does... yes it is
-			continue;
-		Vector3 from_a(a.from.x, a.from.y, a.from.z);
-		Vector3 to_a(a.to.x, a.to.y, a.to.z);
-
-		for (Map<int, Area *>::Element *F = area_map.front(); F; F = F->next()) {
-
-			Area &b = *F->get();
-			Vector3 from_b(b.from.x, b.from.y, b.from.z);
-			Vector3 to_b(b.to.x, b.to.y, b.to.z);
-
-			// initially test intersection and discards
-			int axis = -1;
-			float sign = 0;
-			bool valid = true;
-			Vector3 axmin, axmax;
-
-			for (int i = 0; i < 3; i++) {
-
-				if (from_a[i] == to_b[i]) {
-
-					if (axis != -1) {
-						valid = false;
-						break;
-					}
-
-					axis = i;
-					sign = -1;
-				} else if (from_b[i] == to_a[i]) {
-
-					if (axis != -1) {
-						valid = false;
-						break;
-					}
-					axis = i;
-					sign = +1;
-				}
-
-				if (from_a[i] > to_b[i] || to_a[i] < from_b[i]) {
-					valid = false;
-					break;
-				} else {
-
-					axmin[i] = (from_a[i] > from_b[i]) ? from_a[i] : from_b[i];
-					axmax[i] = (to_a[i] < to_b[i]) ? to_a[i] : to_b[i];
-				}
-			}
-
-			if (axis == -1 || !valid)
-				continue;
-
-			Transform xf;
-
-			for (int i = 0; i < 3; i++) {
-
-				int ax = (axis + i) % 3;
-				Vector3 axis_vec;
-				float scale = (i == 0) ? sign : ((axmax[ax] - axmin[ax]) * cell_size);
-				axis_vec[ax] = scale;
-				xf.basis.set_axis((2 + i) % 3, axis_vec);
-				xf.origin[i] = axmin[i] * cell_size;
-			}
-
-			Area::Portal portal;
-			portal.xform = xf;
-			a.portals.push_back(portal);
-		}
-	}
-
-	_update_area_instances();
-}
-
-void GridMap::_update_area_instances() {
-
-	Transform base_xform;
-	if (_in_tree)
-		base_xform = get_global_transform();
-
-	for (Map<int, Area *>::Element *E = area_map.front(); E; E = E->next()) {
-		//this should somehow be faster...
-		Area &a = *E->get();
-		if (a.instance.is_valid() != _in_tree) {
-
-			if (!_in_tree) {
-
-				for (int i = 0; i < a.portals.size(); i++) {
-
-					Area::Portal &p = a.portals[i];
-					ERR_CONTINUE(!p.instance.is_valid());
-					VisualServer::get_singleton()->free(p.instance);
-					p.instance = RID();
-				}
-
-				VisualServer::get_singleton()->free(a.instance);
-				a.instance = RID();
-
-			} else {
-
-				//a.instance = VisualServer::get_singleton()->instance_create2(base_room,get_world()->get_scenario());
-				for (int i = 0; i < a.portals.size(); i++) {
-
-					Area::Portal &p = a.portals[i];
-					ERR_CONTINUE(p.instance.is_valid());
-					p.instance = VisualServer::get_singleton()->instance_create2(a.base_portal, get_world()->get_scenario());
-					VisualServer::get_singleton()->instance_set_room(p.instance, a.instance);
-				}
-			}
-		}
-
-		if (a.instance.is_valid()) {
-			Transform xform;
-
-			Vector3 from_a(a.from.x, a.from.y, a.from.z);
-			Vector3 to_a(a.to.x, a.to.y, a.to.z);
-
-			for (int i = 0; i < 3; i++) {
-				xform.origin[i] = from_a[i] * cell_size;
-				Vector3 s;
-				s[i] = (to_a[i] - from_a[i]) * cell_size;
-				xform.basis.set_axis(i, s);
-			}
-
-			VisualServer::get_singleton()->instance_set_transform(a.instance, base_xform * xform);
-
-			for (int i = 0; i < a.portals.size(); i++) {
-
-				Area::Portal &p = a.portals[i];
-				ERR_CONTINUE(!p.instance.is_valid());
-
-				VisualServer::get_singleton()->instance_set_transform(p.instance, base_xform * xform);
-			}
-		}
-	}
-}
-
-Error GridMap::create_area(int p_id, const Rect3 &p_area) {
-
-	ERR_FAIL_COND_V(area_map.has(p_id), ERR_ALREADY_EXISTS);
-	ERR_EXPLAIN("ID 0 is taken as global area, start from 1");
-	ERR_FAIL_COND_V(p_id == 0, ERR_INVALID_PARAMETER);
-	ERR_FAIL_COND_V(p_area.has_no_area(), ERR_INVALID_PARAMETER);
-
-	// FIRST VALIDATE AREA
-	IndexKey from, to;
-	from.x = p_area.position.x;
-	from.y = p_area.position.y;
-	from.z = p_area.position.z;
-	to.x = p_area.position.x + p_area.size.x;
-	to.y = p_area.position.y + p_area.size.y;
-	to.z = p_area.position.z + p_area.size.z;
-
-	for (Map<int, Area *>::Element *E = area_map.front(); E; E = E->next()) {
-		//this should somehow be faster...
-		Area &a = *E->get();
-
-		//does it interset with anything else?
-
-		if (from.x >= a.to.x ||
-				to.x <= a.from.x ||
-				from.y >= a.to.y ||
-				to.y <= a.from.y ||
-				from.z >= a.to.z ||
-				to.z <= a.from.z) {
-
-			// all good
-		} else {
-
-			return ERR_INVALID_PARAMETER;
-		}
-	}
-
-	Area *area = memnew(Area);
-	area->from = from;
-	area->to = to;
-	area->portal_disable_distance = 0;
-	area->exterior_portal = false;
-	area->name = "Area " + itos(p_id);
-	area_map[p_id] = area;
-	_recreate_octant_data();
-	return OK;
-}
-
-Rect3 GridMap::area_get_bounds(int p_area) const {
-
-	ERR_FAIL_COND_V(!area_map.has(p_area), Rect3());
-
-	const Area *a = area_map[p_area];
-	Rect3 aabb;
-	aabb.position = Vector3(a->from.x, a->from.y, a->from.z);
-	aabb.size = Vector3(a->to.x, a->to.y, a->to.z) - aabb.position;
-
-	return aabb;
-}
-
-void GridMap::area_set_name(int p_area, const String &p_name) {
-
-	ERR_FAIL_COND(!area_map.has(p_area));
-
-	Area *a = area_map[p_area];
-	a->name = p_name;
-}
-
-String GridMap::area_get_name(int p_area) const {
-
-	ERR_FAIL_COND_V(!area_map.has(p_area), "");
-
-	const Area *a = area_map[p_area];
-	return a->name;
-}
-
-void GridMap::area_set_exterior_portal(int p_area, bool p_enable) {
-
-	ERR_FAIL_COND(!area_map.has(p_area));
-
-	Area *a = area_map[p_area];
-	if (a->exterior_portal == p_enable)
-		return;
-	a->exterior_portal = p_enable;
-
-	_recreate_octant_data();
-}
-
-bool GridMap::area_is_exterior_portal(int p_area) const {
-
-	ERR_FAIL_COND_V(!area_map.has(p_area), false);
-
-	const Area *a = area_map[p_area];
-	return a->exterior_portal;
-}
-
-void GridMap::area_set_portal_disable_distance(int p_area, float p_distance) {
-
-	ERR_FAIL_COND(!area_map.has(p_area));
-
-	Area *a = area_map[p_area];
-	a->portal_disable_distance = p_distance;
-}
-
-float GridMap::area_get_portal_disable_distance(int p_area) const {
-
-	ERR_FAIL_COND_V(!area_map.has(p_area), 0);
-
-	const Area *a = area_map[p_area];
-	return a->portal_disable_distance;
-}
-
-void GridMap::area_set_portal_disable_color(int p_area, Color p_color) {
-
-	ERR_FAIL_COND(!area_map.has(p_area));
-
-	Area *a = area_map[p_area];
-	a->portal_disable_color = p_color;
-}
-
-Color GridMap::area_get_portal_disable_color(int p_area) const {
-
-	ERR_FAIL_COND_V(!area_map.has(p_area), Color());
-
-	const Area *a = area_map[p_area];
-	return a->portal_disable_color;
-}
-
-void GridMap::get_area_list(List<int> *p_areas) const {
-
-	for (const Map<int, Area *>::Element *E = area_map.front(); E; E = E->next()) {
-
-		p_areas->push_back(E->key());
-	}
-}
-
-GridMap::Area::Portal::~Portal() {
-
-	if (instance.is_valid())
-		VisualServer::get_singleton()->free(instance);
-}
-
-GridMap::Area::Area() {
-
-	base_portal = VisualServer::get_singleton()->portal_create();
-	Vector<Point2> points;
-	points.push_back(Point2(0, 1));
-	points.push_back(Point2(1, 1));
-	points.push_back(Point2(1, 0));
-	points.push_back(Point2(0, 0));
-	VisualServer::get_singleton()->portal_set_shape(base_portal, points);
-}
-
-GridMap::Area::~Area() {
-
-	if (instance.is_valid())
-		VisualServer::get_singleton()->free(instance);
-	VisualServer::get_singleton()->free(base_portal);
-}
-
-void GridMap::erase_area(int p_area) {
-
-	ERR_FAIL_COND(!area_map.has(p_area));
-
-	Area *a = area_map[p_area];
-	memdelete(a);
-	area_map.erase(p_area);
-	_recreate_octant_data();
-}
-
-int GridMap::get_unused_area_id() const {
-
-	if (area_map.empty())
-		return 1;
-	else
-		return area_map.back()->key() + 1;
 }
 
 void GridMap::set_cell_scale(float p_scale) {

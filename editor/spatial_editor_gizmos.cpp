@@ -45,6 +45,24 @@
 
 #define HANDLE_HALF_SIZE 0.05
 
+bool EditorSpatialGizmo::can_draw() const {
+	return is_editable();
+}
+bool EditorSpatialGizmo::is_editable() const {
+
+	ERR_FAIL_COND_V(!spatial_node, false);
+	Node *edited_root = spatial_node->get_tree()->get_edited_scene_root();
+	if (spatial_node == edited_root)
+		return true;
+	if (spatial_node->get_owner() == edited_root)
+		return true;
+
+	if (edited_root->is_editable_instance(spatial_node->get_owner()))
+		return true;
+
+	return false;
+}
+
 void EditorSpatialGizmo::clear() {
 
 	for (int i = 0; i < instances.size(); i++) {
@@ -211,7 +229,7 @@ void EditorSpatialGizmo::add_handles(const Vector<Vector3> &p_handles, bool p_bi
 
 	billboard_handle = p_billboard;
 
-	if (!is_selected())
+	if (!is_selected() || !is_editable())
 		return;
 
 	ERR_FAIL_COND(!spatial_node);
@@ -560,6 +578,94 @@ void EditorSpatialGizmo::free() {
 	valid = false;
 }
 
+Ref<SpatialMaterial> EditorSpatialGizmo::create_material(const String &p_name, const Color &p_color, bool p_billboard, bool p_on_top, bool p_use_vertex_color) {
+
+	String name = p_name;
+
+	if (!is_editable()) {
+		name += "@readonly";
+	} else if (is_selected()) {
+		name += "@selected";
+	}
+
+	if (SpatialEditorGizmos::singleton->material_cache.has(name)) {
+		return SpatialEditorGizmos::singleton->material_cache[name];
+	}
+
+	Color color = p_color;
+
+	if (!is_editable()) {
+		color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/instanced");
+	} else if (!is_selected()) {
+		color.a *= 0.5;
+	}
+
+	Ref<SpatialMaterial> line_material;
+	line_material.instance();
+	line_material->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
+	line_material->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
+	if (p_use_vertex_color) {
+		line_material->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+		line_material->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
+	}
+
+	if (p_billboard) {
+		line_material->set_billboard_mode(SpatialMaterial::BILLBOARD_ENABLED);
+	}
+
+	if (p_on_top && is_selected()) {
+		line_material->set_flag(SpatialMaterial::FLAG_ONTOP, true);
+	}
+
+	line_material->set_albedo(color);
+
+	SpatialEditorGizmos::singleton->material_cache[name] = line_material;
+
+	return line_material;
+}
+
+Ref<SpatialMaterial> EditorSpatialGizmo::create_icon_material(const String &p_name, const Ref<Texture> &p_texture, bool p_on_top, const Color &p_albedo) {
+
+	String name = p_name;
+
+	if (!is_editable()) {
+		name += "@readonly";
+	} else if (is_selected()) {
+		name += "@selected";
+	}
+
+	if (SpatialEditorGizmos::singleton->material_cache.has(name)) {
+		return SpatialEditorGizmos::singleton->material_cache[name];
+	}
+
+	Color color = p_albedo;
+
+	if (!is_editable()) {
+		color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/instanced");
+	} else if (!is_selected()) {
+		color.a *= 0.5;
+	}
+
+	Ref<SpatialMaterial> icon;
+	icon.instance();
+	icon->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
+	icon->set_cull_mode(SpatialMaterial::CULL_DISABLED);
+	icon->set_depth_draw_mode(SpatialMaterial::DEPTH_DRAW_DISABLED);
+	icon->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
+	icon->set_albedo(color);
+	icon->set_texture(SpatialMaterial::TEXTURE_ALBEDO, p_texture);
+	icon->set_flag(SpatialMaterial::FLAG_FIXED_SIZE, true);
+	icon->set_billboard_mode(SpatialMaterial::BILLBOARD_ENABLED);
+
+	if (p_on_top && is_selected()) {
+		icon->set_flag(SpatialMaterial::FLAG_ONTOP, true);
+	}
+
+	SpatialEditorGizmos::singleton->material_cache[name] = icon;
+
+	return icon;
+}
+
 void EditorSpatialGizmo::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("add_lines", "lines", "material", "billboard"), &EditorSpatialGizmo::add_lines, DEFVAL(false));
@@ -713,7 +819,12 @@ void LightSpatialGizmo::commit_handle(int p_idx, const Variant &p_restore, bool 
 
 void LightSpatialGizmo::redraw() {
 
+	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/light");
+
 	if (Object::cast_to<DirectionalLight>(light)) {
+
+		Ref<Material> material = create_material("light_directional_material", gizmo_color);
+		Ref<Material> icon = create_icon_material("light_directional_icon", SpatialEditor::get_singleton()->get_icon("GizmoDirectionalLight", "EditorIcons"));
 
 		const int arrow_points = 5;
 		Vector3 arrow[arrow_points] = {
@@ -746,13 +857,15 @@ void LightSpatialGizmo::redraw() {
 			}
 		}
 
-		add_lines(lines, SpatialEditorGizmos::singleton->light_material);
+		add_lines(lines, material);
 		add_collision_segments(lines);
-		add_unscaled_billboard(SpatialEditorGizmos::singleton->light_material_directional_icon, 0.05);
+		add_unscaled_billboard(icon, 0.05);
 	}
 
 	if (Object::cast_to<OmniLight>(light)) {
 
+		Ref<Material> material = create_material("light_omni_material", gizmo_color, true);
+		Ref<Material> icon = create_icon_material("light_omni_icon", SpatialEditor::get_singleton()->get_icon("GizmoLight", "EditorIcons"));
 		clear();
 
 		OmniLight *on = Object::cast_to<OmniLight>(light);
@@ -776,10 +889,10 @@ void LightSpatialGizmo::redraw() {
 			points.push_back(Vector3(b.x, b.y, 0));
 		}
 
-		add_lines(points, SpatialEditorGizmos::singleton->light_material_omni, true);
+		add_lines(points, material, true);
 		add_collision_segments(points);
 
-		add_unscaled_billboard(SpatialEditorGizmos::singleton->light_material_omni_icon, 0.05);
+		add_unscaled_billboard(icon, 0.05);
 
 		Vector<Vector3> handles;
 		handles.push_back(Vector3(r, 0, 0));
@@ -787,6 +900,9 @@ void LightSpatialGizmo::redraw() {
 	}
 
 	if (Object::cast_to<SpotLight>(light)) {
+
+		Ref<Material> material = create_material("light_spot_material", gizmo_color, true);
+		Ref<Material> icon = create_icon_material("light_spot_icon", SpatialEditor::get_singleton()->get_icon("GizmoLight", "EditorIcons"));
 
 		clear();
 
@@ -821,7 +937,7 @@ void LightSpatialGizmo::redraw() {
 		points.push_back(Vector3(0, 0, -r));
 		points.push_back(Vector3());
 
-		add_lines(points, SpatialEditorGizmos::singleton->light_material);
+		add_lines(points, material);
 
 		Vector<Vector3> handles;
 		handles.push_back(Vector3(0, 0, -r));
@@ -855,7 +971,7 @@ void LightSpatialGizmo::redraw() {
 
 		add_handles(handles);
 		add_collision_segments(collision_segments);
-		add_unscaled_billboard(SpatialEditorGizmos::singleton->light_material_omni_icon, 0.05);
+		add_unscaled_billboard(icon, 0.05);
 	}
 }
 
@@ -937,7 +1053,13 @@ void AudioStreamPlayer3DSpatialGizmo::redraw() {
 
 	clear();
 
+	Ref<Material> icon = create_icon_material("stream_player_3d_material", SpatialEditor::get_singleton()->get_icon("GizmoSpatialSamplePlayer", "EditorIcons"));
+
 	if (player->is_emission_angle_enabled()) {
+
+		Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/stream_player_3d");
+		Ref<Material> material = create_material("stream_player_3d_material", gizmo_color);
+
 		float pc = player->get_emission_angle();
 
 		Vector<Vector3> points;
@@ -968,7 +1090,7 @@ void AudioStreamPlayer3DSpatialGizmo::redraw() {
 			points[200 + i * 2 + 1] = Vector3();
 		}
 
-		add_lines(points, SpatialEditorGizmos::singleton->car_wheel_material);
+		add_lines(points, material);
 		add_collision_segments(points);
 
 		Vector<Vector3> handles;
@@ -977,7 +1099,7 @@ void AudioStreamPlayer3DSpatialGizmo::redraw() {
 		add_handles(handles);
 	}
 
-	add_unscaled_billboard(SpatialEditorGizmos::singleton->sample_player_icon, 0.05);
+	add_unscaled_billboard(icon, 0.05);
 }
 
 AudioStreamPlayer3DSpatialGizmo::AudioStreamPlayer3DSpatialGizmo(AudioStreamPlayer3D *p_player) {
@@ -1068,6 +1190,9 @@ void CameraSpatialGizmo::redraw() {
 	Vector<Vector3> lines;
 	Vector<Vector3> handles;
 
+	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/camera");
+	Ref<Material> material = create_material("camera_material", gizmo_color);
+
 	switch (camera->get_projection()) {
 
 		case Camera::PROJECTION_PERSPECTIVE: {
@@ -1135,7 +1260,7 @@ void CameraSpatialGizmo::redraw() {
 		} break;
 	}
 
-	add_lines(lines, SpatialEditorGizmos::singleton->camera_material);
+	add_lines(lines, material);
 	add_collision_segments(lines);
 	add_handles(handles);
 }
@@ -1148,6 +1273,9 @@ CameraSpatialGizmo::CameraSpatialGizmo(Camera *p_camera) {
 
 //////
 
+bool MeshInstanceSpatialGizmo::can_draw() const {
+	return true; //mesh can always draw (even though nothing is displayed)
+}
 void MeshInstanceSpatialGizmo::redraw() {
 
 	Ref<Mesh> m = mesh->get_mesh();
@@ -1194,10 +1322,13 @@ void SkeletonSpatialGizmo::redraw() {
 
 	clear();
 
+	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/skeleton");
+	Ref<Material> material = create_material("skeleton_material", gizmo_color);
+
 	Ref<SurfaceTool> surface_tool(memnew(SurfaceTool));
 
 	surface_tool->begin(Mesh::PRIMITIVE_LINES);
-	surface_tool->set_material(SpatialEditorGizmos::singleton->skeleton_material);
+	surface_tool->set_material(material);
 	Vector<Transform> grests;
 	grests.resize(skel->get_bone_count());
 
@@ -1378,7 +1509,7 @@ SkeletonSpatialGizmo::SkeletonSpatialGizmo(Skeleton *p_skel) {
 	skel = p_skel;
 	set_spatial_node(p_skel);
 }
-
+#if 0
 void RoomSpatialGizmo::redraw() {
 
 	clear();
@@ -1481,6 +1612,7 @@ PortalSpatialGizmo::PortalSpatialGizmo(Portal *p_portal) {
 	portal = p_portal;
 }
 
+#endif
 /////
 
 void RayCastSpatialGizmo::redraw() {
@@ -1492,7 +1624,10 @@ void RayCastSpatialGizmo::redraw() {
 	lines.push_back(Vector3());
 	lines.push_back(raycast->get_cast_to());
 
-	add_lines(lines, SpatialEditorGizmos::singleton->raycast_material);
+	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/shape");
+	Ref<Material> material = create_material("shape_material", gizmo_color);
+
+	add_lines(lines, material);
 	add_collision_segments(lines);
 }
 
@@ -1550,7 +1685,10 @@ void VehicleWheelSpatialGizmo::redraw() {
 	points.push_back(Vector3(0, -r, r * 2));
 	points.push_back(Vector3(-r * 2 * 0.2, -r, r * 2 * 0.8));
 
-	add_lines(points, SpatialEditorGizmos::singleton->car_wheel_material);
+	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/shape");
+	Ref<Material> material = create_material("shape_material", gizmo_color);
+
+	add_lines(points, material);
 	add_collision_segments(points);
 }
 
@@ -1778,6 +1916,9 @@ void CollisionShapeSpatialGizmo::redraw() {
 	if (s.is_null())
 		return;
 
+	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/shape");
+	Ref<Material> material = create_material("shape_material", gizmo_color);
+
 	if (Object::cast_to<SphereShape>(*s)) {
 
 		Ref<SphereShape> sp = s;
@@ -1817,7 +1958,7 @@ void CollisionShapeSpatialGizmo::redraw() {
 			collision_segments.push_back(Vector3(b.x, b.y, 0));
 		}
 
-		add_lines(points, SpatialEditorGizmos::singleton->shape_material);
+		add_lines(points, material);
 		add_collision_segments(collision_segments);
 		Vector<Vector3> handles;
 		handles.push_back(Vector3(r, 0, 0));
@@ -1848,7 +1989,7 @@ void CollisionShapeSpatialGizmo::redraw() {
 			handles.push_back(ax);
 		}
 
-		add_lines(lines, SpatialEditorGizmos::singleton->shape_material);
+		add_lines(lines, material);
 		add_collision_segments(lines);
 		add_handles(handles);
 	}
@@ -1889,7 +2030,7 @@ void CollisionShapeSpatialGizmo::redraw() {
 			points.push_back(Vector3(b.y, 0, b.x) + dud);
 		}
 
-		add_lines(points, SpatialEditorGizmos::singleton->shape_material);
+		add_lines(points, material);
 
 		Vector<Vector3> collision_segments;
 
@@ -1955,7 +2096,7 @@ void CollisionShapeSpatialGizmo::redraw() {
 		points.push_back(p.normal * p.d);
 		points.push_back(p.normal * p.d + p.normal * 3);
 
-		add_lines(points, SpatialEditorGizmos::singleton->shape_material);
+		add_lines(points, material);
 		add_collision_segments(points);
 	}
 
@@ -1977,7 +2118,7 @@ void CollisionShapeSpatialGizmo::redraw() {
 					points[i * 2 + 1] = md.vertices[md.edges[i].b];
 				}
 
-				add_lines(points, SpatialEditorGizmos::singleton->shape_material);
+				add_lines(points, material);
 				add_collision_segments(points);
 			}
 		}
@@ -1990,7 +2131,7 @@ void CollisionShapeSpatialGizmo::redraw() {
 		Vector<Vector3> points;
 		points.push_back(Vector3());
 		points.push_back(Vector3(0, 0, rs->get_length()));
-		add_lines(points, SpatialEditorGizmos::singleton->shape_material);
+		add_lines(points, material);
 		add_collision_segments(points);
 		Vector<Vector3> handles;
 		handles.push_back(Vector3(0, 0, rs->get_length()));
@@ -2024,7 +2165,10 @@ void CollisionPolygonSpatialGizmo::redraw() {
 		lines.push_back(Vector3(points[i].x, points[i].y, -depth));
 	}
 
-	add_lines(lines, SpatialEditorGizmos::singleton->shape_material);
+	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/shape");
+	Ref<Material> material = create_material("shape_material", gizmo_color);
+
+	add_lines(lines, material);
 	add_collision_segments(lines);
 }
 
@@ -2092,6 +2236,9 @@ void VisibilityNotifierGizmo::commit_handle(int p_idx, const Variant &p_restore,
 
 void VisibilityNotifierGizmo::redraw() {
 
+	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/visibility_notifier");
+	Ref<Material> material = create_material("visibility_notifier_material", gizmo_color);
+
 	clear();
 
 	Vector<Vector3> lines;
@@ -2113,7 +2260,7 @@ void VisibilityNotifierGizmo::redraw() {
 		handles.push_back(ax);
 	}
 
-	add_lines(lines, SpatialEditorGizmos::singleton->visibility_notifier_material);
+	add_lines(lines, material);
 	//add_unscaled_billboard(SpatialEditorGizmos::singleton->visi,0.05);
 	add_collision_segments(lines);
 	add_handles(handles);
@@ -2238,7 +2385,10 @@ void ParticlesGizmo::redraw() {
 		lines.push_back(center + ax);
 	}
 
-	add_lines(lines, SpatialEditorGizmos::singleton->particles_material);
+	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/particles");
+	Ref<Material> material = create_material("particles_material", gizmo_color);
+
+	add_lines(lines, material);
 	add_collision_segments(lines);
 	//add_unscaled_billboard(SpatialEditorGizmos::singleton->visi,0.05);
 	add_handles(handles);
@@ -2384,8 +2534,15 @@ void ReflectionProbeGizmo::redraw() {
 		lines.push_back(orig_handle);
 	}
 
-	add_lines(lines, SpatialEditorGizmos::singleton->reflection_probe_material);
-	add_lines(internal_lines, SpatialEditorGizmos::singleton->reflection_probe_material_internal);
+	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/reflection_probe");
+	Ref<Material> material = create_material("reflection_probe_material", gizmo_color);
+
+	Color gizmo_color_internal = gizmo_color;
+	gizmo_color_internal.a = 0.5;
+	Ref<Material> material_internal = create_material("reflection_internal_material", gizmo_color_internal);
+
+	add_lines(lines, material);
+	add_lines(internal_lines, material_internal);
 	//add_unscaled_billboard(SpatialEditorGizmos::singleton->visi,0.05);
 	add_collision_segments(lines);
 	add_handles(handles);
@@ -2458,6 +2615,12 @@ void GIProbeGizmo::commit_handle(int p_idx, const Variant &p_restore, bool p_can
 
 void GIProbeGizmo::redraw() {
 
+	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/gi_probe");
+	Ref<Material> material = create_material("gi_probe_material", gizmo_color);
+	Color gizmo_color_internal = gizmo_color;
+	gizmo_color_internal.a = 0.1;
+	Ref<Material> material_internal = create_material("gi_probe_internal_material", gizmo_color_internal);
+
 	clear();
 
 	Vector<Vector3> lines;
@@ -2476,7 +2639,7 @@ void GIProbeGizmo::redraw() {
 		lines.push_back(b);
 	}
 
-	add_lines(lines, SpatialEditorGizmos::singleton->gi_probe_material);
+	add_lines(lines, material);
 	add_collision_segments(lines);
 
 	lines.clear();
@@ -2521,7 +2684,7 @@ void GIProbeGizmo::redraw() {
 		}
 	}
 
-	add_lines(lines, SpatialEditorGizmos::singleton->gi_probe_material_internal);
+	add_lines(lines, material_internal);
 
 	Vector<Vector3> handles;
 
@@ -2543,6 +2706,11 @@ GIProbeGizmo::GIProbeGizmo(GIProbe *p_probe) {
 ////////
 
 void NavigationMeshSpatialGizmo::redraw() {
+
+	Ref<Material> edge_material = create_material("navigation_material", EDITOR_GET("editors/3d_gizmos/gizmo_colors/navigation_edge"));
+	Ref<Material> edge_material_disabled = create_material("navigation_material", EDITOR_GET("editors/3d_gizmos/gizmo_colors/navigation_edge_disabled"));
+	Ref<Material> solid_material = create_material("navigation_material", EDITOR_GET("editors/3d_gizmos/gizmo_colors/navigation_solid"));
+	Ref<Material> solid_material_disabled = create_material("navigation_material", EDITOR_GET("editors/3d_gizmos/gizmo_colors/navigation_solid_disabled"));
 
 	clear();
 	Ref<NavigationMesh> navmeshie = navmesh->get_navigation_mesh();
@@ -2616,14 +2784,14 @@ void NavigationMeshSpatialGizmo::redraw() {
 	tmesh->create(tmeshfaces);
 
 	if (lines.size())
-		add_lines(lines, navmesh->is_enabled() ? SpatialEditorGizmos::singleton->navmesh_edge_material : SpatialEditorGizmos::singleton->navmesh_edge_material_disabled);
+		add_lines(lines, navmesh->is_enabled() ? edge_material : edge_material_disabled);
 	add_collision_triangles(tmesh);
 	Ref<ArrayMesh> m = memnew(ArrayMesh);
 	Array a;
 	a.resize(Mesh::ARRAY_MAX);
 	a[0] = tmeshfaces;
 	m->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, a);
-	m->surface_set_material(0, navmesh->is_enabled() ? SpatialEditorGizmos::singleton->navmesh_solid_material : SpatialEditorGizmos::singleton->navmesh_solid_material_disabled);
+	m->surface_set_material(0, navmesh->is_enabled() ? solid_material : solid_material_disabled);
 	add_mesh(m);
 	add_collision_segments(lines);
 }
@@ -2650,7 +2818,10 @@ void PinJointSpatialGizmo::redraw() {
 	cursor_points.push_back(Vector3(0, 0, +cs));
 	cursor_points.push_back(Vector3(0, 0, -cs));
 	add_collision_segments(cursor_points);
-	add_lines(cursor_points, SpatialEditorGizmos::singleton->joint_material);
+
+	Ref<Material> material = create_material("joint_material", EDITOR_GET("editors/3d_gizmos/gizmo_colors/joint"));
+
+	add_lines(cursor_points, material);
 }
 
 PinJointSpatialGizmo::PinJointSpatialGizmo(PinJoint *p_p3d) {
@@ -2720,8 +2891,11 @@ void HingeJointSpatialGizmo::redraw() {
 			cursor_points.push_back(to);
 		}
 	}
+
+	Ref<Material> material = create_material("joint_material", EDITOR_GET("editors/3d_gizmos/gizmo_colors/joint"));
+
 	add_collision_segments(cursor_points);
-	add_lines(cursor_points, SpatialEditorGizmos::singleton->joint_material);
+	add_lines(cursor_points, material);
 }
 
 HingeJointSpatialGizmo::HingeJointSpatialGizmo(HingeJoint *p_p3d) {
@@ -2824,8 +2998,11 @@ void SliderJointSpatialGizmo::redraw() {
 			cursor_points.push_back(to);
 		}
 	}
+
+	Ref<Material> material = create_material("joint_material", EDITOR_GET("editors/3d_gizmos/gizmo_colors/joint"));
+
 	add_collision_segments(cursor_points);
-	add_lines(cursor_points, SpatialEditorGizmos::singleton->joint_material);
+	add_lines(cursor_points, material);
 }
 
 SliderJointSpatialGizmo::SliderJointSpatialGizmo(SliderJoint *p_p3d) {
@@ -2896,8 +3073,9 @@ void ConeTwistJointSpatialGizmo::redraw() {
 		points.push_back(Vector3(cn, b.x, b.y));
 	}
 
+	Ref<Material> material = create_material("joint_material", EDITOR_GET("editors/3d_gizmos/gizmo_colors/joint"));
 	add_collision_segments(points);
-	add_lines(points, SpatialEditorGizmos::singleton->joint_material);
+	add_lines(points, material);
 }
 
 ConeTwistJointSpatialGizmo::ConeTwistJointSpatialGizmo(ConeTwistJoint *p_p3d) {
@@ -3080,8 +3258,9 @@ void Generic6DOFJointSpatialGizmo::redraw() {
 #undef ADD_VTX
 #undef SET_VTX
 
+	Ref<Material> material = create_material("joint_material", EDITOR_GET("editors/3d_gizmos/gizmo_colors/joint"));
 	add_collision_segments(cursor_points);
-	add_lines(cursor_points, SpatialEditorGizmos::singleton->joint_material);
+	add_lines(cursor_points, material);
 }
 
 Generic6DOFJointSpatialGizmo::Generic6DOFJointSpatialGizmo(Generic6DOFJoint *p_p3d) {
@@ -3128,11 +3307,11 @@ Ref<SpatialEditorGizmo> SpatialEditorGizmos::get_gizmo(Spatial *p_spatial) {
 		return misg;
 	}
 
-	if (Object::cast_to<Room>(p_spatial)) {
+	/*if (Object::cast_to<Room>(p_spatial)) {
 
 		Ref<RoomSpatialGizmo> misg = memnew(RoomSpatialGizmo(Object::cast_to<Room>(p_spatial)));
 		return misg;
-	}
+	}*/
 
 	if (Object::cast_to<NavigationMeshInstance>(p_spatial)) {
 
@@ -3145,13 +3324,13 @@ Ref<SpatialEditorGizmo> SpatialEditorGizmos::get_gizmo(Spatial *p_spatial) {
 		Ref<RayCastSpatialGizmo> misg = memnew(RayCastSpatialGizmo(Object::cast_to<RayCast>(p_spatial)));
 		return misg;
 	}
-
+	/*
 	if (Object::cast_to<Portal>(p_spatial)) {
 
 		Ref<PortalSpatialGizmo> misg = memnew(PortalSpatialGizmo(Object::cast_to<Portal>(p_spatial)));
 		return misg;
 	}
-
+*/
 	if (Object::cast_to<CollisionShape>(p_spatial)) {
 
 		Ref<CollisionShapeSpatialGizmo> misg = memnew(CollisionShapeSpatialGizmo(Object::cast_to<CollisionShape>(p_spatial)));
@@ -3231,35 +3410,13 @@ Ref<SpatialEditorGizmo> SpatialEditorGizmos::get_gizmo(Spatial *p_spatial) {
 	return Ref<SpatialEditorGizmo>();
 }
 
-Ref<SpatialMaterial> SpatialEditorGizmos::create_line_material(const Color &p_base_color) {
-
-	Ref<SpatialMaterial> line_material = Ref<SpatialMaterial>(memnew(SpatialMaterial));
-	line_material->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-	line_material->set_line_width(3.0);
-	line_material->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-	//line_material->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-	//->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
-	line_material->set_albedo(p_base_color);
-
-	return line_material;
-}
-
-Ref<SpatialMaterial> SpatialEditorGizmos::create_solid_material(const Color &p_base_color) {
-
-	Ref<SpatialMaterial> line_material = Ref<SpatialMaterial>(memnew(SpatialMaterial));
-	line_material->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-	line_material->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-	line_material->set_albedo(p_base_color);
-
-	return line_material;
-}
-
 SpatialEditorGizmos::SpatialEditorGizmos() {
 
 	singleton = this;
 
 	handle_material = Ref<SpatialMaterial>(memnew(SpatialMaterial));
 	handle_material->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
+	handle_material->set_flag(SpatialMaterial::FLAG_ONTOP, true);
 	handle_material->set_albedo(Color(0.8, 0.8, 0.8));
 	handle_material_billboard = handle_material->duplicate();
 	handle_material_billboard->set_billboard_mode(SpatialMaterial::BILLBOARD_ENABLED);
@@ -3274,9 +3431,29 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 	handle2_material->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
 	handle2_material->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	handle2_material->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
+	handle2_material->set_flag(SpatialMaterial::FLAG_ONTOP, true);
 	handle2_material_billboard = handle2_material->duplicate();
 	handle2_material_billboard->set_billboard_mode(SpatialMaterial::BILLBOARD_ENABLED);
+	handle2_material_billboard->set_billboard_mode(SpatialMaterial::BILLBOARD_ENABLED);
+	handle2_material_billboard->set_flag(SpatialMaterial::FLAG_ONTOP, true);
 
+	EDITOR_DEF("editors/3d_gizmos/gizmo_colors/light", Color(1, 1, 0.2));
+	EDITOR_DEF("editors/3d_gizmos/gizmo_colors/stream_player_3d", Color(0.4, 0.8, 1));
+	EDITOR_DEF("editors/3d_gizmos/gizmo_colors/camera", Color(0.8, 0.4, 0.8));
+	EDITOR_DEF("editors/3d_gizmos/gizmo_colors/skeleton", Color(1, 0.8, 0.4));
+	EDITOR_DEF("editors/3d_gizmos/gizmo_colors/visibility_notifier", Color(0.8, 0.5, 0.7));
+	EDITOR_DEF("editors/3d_gizmos/gizmo_colors/particles", Color(0.8, 0.7, 0.4));
+	EDITOR_DEF("editors/3d_gizmos/gizmo_colors/reflection_probe", Color(0.6, 1, 0.5));
+	EDITOR_DEF("editors/3d_gizmos/gizmo_colors/gi_probe", Color(0.5, 1, 0.6));
+	EDITOR_DEF("editors/3d_gizmos/gizmo_colors/shape", Color(0.5, 0.7, 1));
+	EDITOR_DEF("editors/3d_gizmos/gizmo_colors/joint", Color(0.5, 0.8, 1));
+	EDITOR_DEF("editors/3d_gizmos/gizmo_colors/navigation_edge", Color(0.5, 1, 1));
+	EDITOR_DEF("editors/3d_gizmos/gizmo_colors/navigation_edge_disabled", Color(0.7, 0.7, 0.7));
+	EDITOR_DEF("editors/3d_gizmos/gizmo_colors/navigation_solid", Color(0.5, 1, 1, 0.4));
+	EDITOR_DEF("editors/3d_gizmos/gizmo_colors/navigation_solid_disabled", Color(0.7, 0.7, 0.7, 0.4));
+	EDITOR_DEF("editors/3d_gizmos/gizmo_colors/instanced", Color(0.7, 0.7, 0.7, 0.5));
+
+#if 0
 	light_material = create_line_material(Color(1, 1, 0.2));
 	light_material_omni = create_line_material(Color(1, 1, 0.2));
 	light_material_omni->set_billboard_mode(SpatialMaterial::BILLBOARD_ENABLED);
@@ -3289,6 +3466,7 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 	light_material_omni_icon->set_albedo(Color(1, 1, 1, 0.9));
 	light_material_omni_icon->set_texture(SpatialMaterial::TEXTURE_ALBEDO, SpatialEditor::get_singleton()->get_icon("GizmoLight", "EditorIcons"));
 	light_material_omni_icon->set_flag(SpatialMaterial::FLAG_FIXED_SIZE, true);
+	light_material_omni_icon->set_billboard_mode(SpatialMaterial::BILLBOARD_ENABLED);
 
 	light_material_directional_icon = Ref<SpatialMaterial>(memnew(SpatialMaterial));
 	light_material_directional_icon->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
@@ -3297,6 +3475,8 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 	light_material_directional_icon->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
 	light_material_directional_icon->set_albedo(Color(1, 1, 1, 0.9));
 	light_material_directional_icon->set_texture(SpatialMaterial::TEXTURE_ALBEDO, SpatialEditor::get_singleton()->get_icon("GizmoDirectionalLight", "EditorIcons"));
+	light_material_directional_icon->set_billboard_mode(SpatialMaterial::BILLBOARD_ENABLED);
+	light_material_directional_icon->set_depth_scale(1);
 
 	camera_material = create_line_material(Color(1.0, 0.5, 1.0));
 
@@ -3463,4 +3643,62 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 	}
 
 	shape_material = create_line_material(Color(0.2, 1, 1.0));
+#endif
+
+	pos3d_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
+	{
+
+		PoolVector<Vector3> cursor_points;
+		PoolVector<Color> cursor_colors;
+		float cs = 0.25;
+		cursor_points.push_back(Vector3(+cs, 0, 0));
+		cursor_points.push_back(Vector3(-cs, 0, 0));
+		cursor_points.push_back(Vector3(0, +cs, 0));
+		cursor_points.push_back(Vector3(0, -cs, 0));
+		cursor_points.push_back(Vector3(0, 0, +cs));
+		cursor_points.push_back(Vector3(0, 0, -cs));
+		cursor_colors.push_back(Color(1, 0.5, 0.5, 0.7));
+		cursor_colors.push_back(Color(1, 0.5, 0.5, 0.7));
+		cursor_colors.push_back(Color(0.5, 1, 0.5, 0.7));
+		cursor_colors.push_back(Color(0.5, 1, 0.5, 0.7));
+		cursor_colors.push_back(Color(0.5, 0.5, 1, 0.7));
+		cursor_colors.push_back(Color(0.5, 0.5, 1, 0.7));
+
+		Ref<SpatialMaterial> mat = memnew(SpatialMaterial);
+		mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
+		mat->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+		mat->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
+		mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
+		mat->set_line_width(3);
+		Array d;
+		d.resize(VS::ARRAY_MAX);
+		d[Mesh::ARRAY_VERTEX] = cursor_points;
+		d[Mesh::ARRAY_COLOR] = cursor_colors;
+		pos3d_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, d);
+		pos3d_mesh->surface_set_material(0, mat);
+	}
+
+	listener_line_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
+	{
+
+		PoolVector<Vector3> cursor_points;
+		PoolVector<Color> cursor_colors;
+		cursor_points.push_back(Vector3(0, 0, 0));
+		cursor_points.push_back(Vector3(0, 0, -1.0));
+		cursor_colors.push_back(Color(0.5, 0.5, 0.5, 0.7));
+		cursor_colors.push_back(Color(0.5, 0.5, 0.5, 0.7));
+
+		Ref<SpatialMaterial> mat = memnew(SpatialMaterial);
+		mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
+		mat->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+		mat->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
+		mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
+		mat->set_line_width(3);
+		Array d;
+		d.resize(VS::ARRAY_MAX);
+		d[Mesh::ARRAY_VERTEX] = cursor_points;
+		d[Mesh::ARRAY_COLOR] = cursor_colors;
+		listener_line_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, d);
+		listener_line_mesh->surface_set_material(0, mat);
+	}
 }

@@ -36,6 +36,9 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
+//left for reference but will be removed when portals are reimplemented using Area
+#if 0
+
 class RoomBounds : public Resource {
 
 	GDCLASS(RoomBounds, Resource);
@@ -57,4 +60,5 @@ public:
 	~RoomBounds();
 };
 
+#endif
 #endif // ROOM_H

@@ -44,6 +44,9 @@
 
 */
 
+//this will be removed, left for reference
+#if 0
+
 class Room : public VisualInstance {
 
 	GDCLASS(Room, VisualInstance);
@@ -77,5 +80,5 @@ public:
 	Room();
 	~Room();
 };
-
+#endif
 #endif // ROOM_INSTANCE_H

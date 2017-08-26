@@ -107,6 +107,9 @@ protected:
 
 	static void _bind_methods();
 
+	Ref<SpatialMaterial> create_material(const String &p_name, const Color &p_color, bool p_billboard = false, bool p_on_top = false, bool p_use_vertex_color = false);
+	Ref<SpatialMaterial> create_icon_material(const String &p_name, const Ref<Texture> &p_texture, bool p_on_top = false, const Color &p_albedo = Color(1, 1, 1, 1));
+
 public:
 	virtual Vector3 get_handle_pos(int p_idx) const;
 	virtual bool intersect_frustum(const Camera *p_camera, const Vector<Plane> &p_frustum);
@@ -117,6 +120,8 @@ public:
 	void transform();
 	virtual void redraw();
 	void free();
+	virtual bool is_editable() const;
+	virtual bool can_draw() const;
 
 	EditorSpatialGizmo();
 	~EditorSpatialGizmo();
@@ -177,6 +182,7 @@ class MeshInstanceSpatialGizmo : public EditorSpatialGizmo {
 	MeshInstance *mesh;
 
 public:
+	virtual bool can_draw() const;
 	void redraw();
 	MeshInstanceSpatialGizmo(MeshInstance *p_mesh = NULL);
 };
@@ -203,25 +209,7 @@ public:
 	SkeletonSpatialGizmo(Skeleton *p_skel = NULL);
 };
 
-class RoomSpatialGizmo : public EditorSpatialGizmo {
-
-	GDCLASS(RoomSpatialGizmo, EditorSpatialGizmo);
-
-	struct _EdgeKey {
-
-		Vector3 from;
-		Vector3 to;
-
-		bool operator<(const _EdgeKey &p_with) const { return from == p_with.from ? to < p_with.to : from < p_with.from; }
-	};
-
-	Room *room;
-
-public:
-	void redraw();
-	RoomSpatialGizmo(Room *p_room = NULL);
-};
-
+#if 0
 class PortalSpatialGizmo : public EditorSpatialGizmo {
 
 	GDCLASS(PortalSpatialGizmo, EditorSpatialGizmo);
@@ -232,6 +220,7 @@ public:
 	void redraw();
 	PortalSpatialGizmo(Portal *p_portal = NULL);
 };
+#endif
 
 class VisibilityNotifierGizmo : public EditorSpatialGizmo {
 
@@ -420,50 +409,18 @@ public:
 };
 
 class SpatialEditorGizmos {
+
 public:
-	Ref<SpatialMaterial> create_line_material(const Color &p_base_color);
-	Ref<SpatialMaterial> create_solid_material(const Color &p_base_color);
+	HashMap<String, Ref<SpatialMaterial> > material_cache;
+
 	Ref<SpatialMaterial> handle2_material;
 	Ref<SpatialMaterial> handle2_material_billboard;
 	Ref<SpatialMaterial> handle_material;
 	Ref<SpatialMaterial> handle_material_billboard;
-	Ref<SpatialMaterial> light_material;
-	Ref<SpatialMaterial> light_material_omni;
-	Ref<SpatialMaterial> light_material_omni_icon;
-	Ref<SpatialMaterial> light_material_directional_icon;
-	Ref<SpatialMaterial> camera_material;
-	Ref<SpatialMaterial> skeleton_material;
-	Ref<SpatialMaterial> reflection_probe_material;
-	Ref<SpatialMaterial> reflection_probe_material_internal;
-	Ref<SpatialMaterial> gi_probe_material;
-	Ref<SpatialMaterial> gi_probe_material_internal;
-	Ref<SpatialMaterial> room_material;
-	Ref<SpatialMaterial> portal_material;
-	Ref<SpatialMaterial> raycast_material;
-	Ref<SpatialMaterial> visibility_notifier_material;
-	Ref<SpatialMaterial> particles_material;
-	Ref<SpatialMaterial> car_wheel_material;
-	Ref<SpatialMaterial> joint_material;
-
-	Ref<SpatialMaterial> navmesh_edge_material;
-	Ref<SpatialMaterial> navmesh_solid_material;
-	Ref<SpatialMaterial> navmesh_edge_material_disabled;
-	Ref<SpatialMaterial> navmesh_solid_material_disabled;
-
-	Ref<SpatialMaterial> listener_icon;
-
-	Ref<SpatialMaterial> sample_player_icon;
-	Ref<SpatialMaterial> stream_player_icon;
-	Ref<SpatialMaterial> visibility_notifier_icon;
-
-	Ref<SpatialMaterial> shape_material;
 	Ref<Texture> handle_t;
-
 	Ref<ArrayMesh> pos3d_mesh;
 	Ref<ArrayMesh> listener_line_mesh;
 	static SpatialEditorGizmos *singleton;
-
-	Ref<TriangleMesh> test_cube_tm;
 
 	Ref<SpatialEditorGizmo> get_gizmo(Spatial *p_spatial);
 

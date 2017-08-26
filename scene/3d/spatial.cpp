@@ -185,8 +185,13 @@ void Spatial::_notification(int p_what) {
 				get_tree()->call_group_flags(0, SceneStringNames::get_singleton()->_spatial_editor_group, SceneStringNames::get_singleton()->_request_gizmo, this);
 				if (!data.gizmo_disabled) {
 
-					if (data.gizmo.is_valid())
+					if (data.gizmo.is_valid()) {
 						data.gizmo->create();
+						if (data.gizmo->can_draw()) {
+							data.gizmo->redraw();
+						}
+						data.gizmo->transform();
+					}
 				}
 			}
 #endif
@@ -449,7 +454,9 @@ void Spatial::set_gizmo(const Ref<SpatialGizmo> &p_gizmo) {
 	if (data.gizmo.is_valid() && is_inside_world()) {
 
 		data.gizmo->create();
-		data.gizmo->redraw();
+		if (data.gizmo->can_draw()) {
+			data.gizmo->redraw();
+		}
 		data.gizmo->transform();
 	}
 
@@ -471,12 +478,16 @@ Ref<SpatialGizmo> Spatial::get_gizmo() const {
 
 void Spatial::_update_gizmo() {
 
+	if (!is_inside_world())
+		return;
 	data.gizmo_dirty = false;
 	if (data.gizmo.is_valid()) {
-		if (is_visible_in_tree())
-			data.gizmo->redraw();
-		else
-			data.gizmo->clear();
+		if (data.gizmo->can_draw()) {
+			if (is_visible_in_tree())
+				data.gizmo->redraw();
+			else
+				data.gizmo->clear();
+		}
 	}
 }
 
