@@ -571,8 +571,8 @@ public:
 #else
 		if (!p_object)
 			return NULL;
-		if (p_pobject->is_class_ptr(T::get_class_ptr_static()))
-			return static_cast<T *>(p_pobject);
+		if (p_object->is_class_ptr(T::get_class_ptr_static()))
+			return static_cast<T *>(p_object);
 		else
 			return NULL;
 #endif
@@ -591,7 +591,7 @@ public:
 #else
 		if (!p_object)
 			return NULL;
-		if (p_pobject->is_class_ptr(T::get_class_ptr_static()))
+		if (p_object->is_class_ptr(T::get_class_ptr_static()))
 			return static_cast<const T *>(p_object);
 		else
 			return NULL;
