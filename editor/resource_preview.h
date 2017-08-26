@@ -1,12 +1,11 @@
 /*************************************************************************/
-/*  texture_editor_plugin.h                                              */
+/*  resource_preview.h                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,48 +26,24 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef TEXTURE_EDITOR_PLUGIN_H
-#define TEXTURE_EDITOR_PLUGIN_H
+#ifndef PREVIEW_PANE_H
+#define PREVIEW_PANE_H
 
 #include "editor/editor_node.h"
-#include "editor/editor_plugin.h"
-#include "editor/resource_preview.h"
-#include "scene/resources/texture.h"
 
-class TextureEditor : public Control {
+class ResourcePreview : public VBoxContainer {
+	GDCLASS(ResourcePreview, VBoxContainer);
 
-	GDCLASS(TextureEditor, Control);
-
-	Ref<Texture> texture;
+	TextureButton *collapse_button;
 
 protected:
 	void _notification(int p_what);
-	void _gui_input(Ref<InputEvent> p_event);
-	void _changed_callback(Object *p_changed, const char *p_prop);
+	void toggle_preview(bool visible);
 	static void _bind_methods();
 
 public:
-	void edit(Ref<Texture> p_texture);
-	TextureEditor();
+	ResourcePreview();
+	~ResourcePreview();
 };
 
-class TextureEditorPlugin : public EditorPlugin {
-
-	GDCLASS(TextureEditorPlugin, EditorPlugin);
-
-	TextureEditor *texture_editor;
-	EditorNode *editor;
-	ResourcePreview *preview_dock;
-
-public:
-	virtual String get_name() const { return "Texture"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
-
-	TextureEditorPlugin(EditorNode *p_node);
-	~TextureEditorPlugin();
-};
-
-#endif // TEXTURE_EDITOR_PLUGIN_H
+#endif // PREVIEW_PANE_H
