@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  resource_preview.cpp                                            */
+/*  resource_preview.cpp                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -45,15 +45,12 @@ void ResourcePreview::toggle_preview(bool hidden) {
 		}
 		collapse_button->set_normal_texture(get_icon("PanelExpand", "EditorIcons"));
 	}
-	collapse_button->set_modulate(Color(0, 0, 0, 0));
+	collapse_button->set_modulate(Color(1, 1, 1, 0.5));
 }
 
 void ResourcePreview::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		collapse_button->set_normal_texture(get_icon("PanelCollapse", "EditorIcons"));
-		collapse_button->connect("toggled", this, "toggle_preview");
-		collapse_button->connect("mouse_entered", collapse_button, "set_modulate", varray(Color(1, 1, 1, 1)));
-		collapse_button->connect("mouse_exited", collapse_button, "set_modulate", varray(Color(0, 0, 0, 0)));
 	}
 }
 
@@ -65,9 +62,12 @@ ResourcePreview::ResourcePreview() {
 	collapse_button->set_expand(true);
 	collapse_button->set_stretch_mode(TextureButton::STRETCH_KEEP_CENTERED);
 	collapse_button->set_margin(MARGIN_RIGHT, 0);
-	collapse_button->set_modulate(Color(0, 0, 0, 0));
-	collapse_button->set_default_cursor_shape(CURSOR_VSIZE);
+	collapse_button->set_modulate(Color(1, 1, 1, 0.5));
 	collapse_button->set_toggle_mode(true);
+
+	collapse_button->connect("toggled", this, "toggle_preview");
+	collapse_button->connect("mouse_entered", collapse_button, "set_modulate", varray(Color(1, 1, 1, 1)));
+	collapse_button->connect("mouse_exited", collapse_button, "set_modulate", varray(Color(1, 1, 1, 0.5)));
 
 	add_child(collapse_button);
 }
