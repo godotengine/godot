@@ -107,6 +107,10 @@ class Polygon2DEditor : public HBoxContainer {
 	Vector<Vector2> wip;
 	bool wip_active;
 
+	Ref<Texture> pre_move_texture;
+	PoolVector<Color> pre_move_vertex_colors;
+	Color pre_move_color;
+
 	bool use_snap;
 	bool snap_show_grid;
 	Vector2 snap_offset;
@@ -133,6 +137,7 @@ protected:
 	static void _bind_methods();
 
 	Vector2 snap_point(Vector2 p_target) const;
+	void start_editing();
 
 public:
 	bool forward_gui_input(const Ref<InputEvent> &p_event);

@@ -302,7 +302,7 @@ bool Polygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 							if (closest_idx >= 0) {
 
-								pre_move_edit = poly;
+								start_editing();
 								poly.insert(closest_idx + 1, xform.affine_inverse().xform(closest_pos) - node->get_offset());
 								edited_point = closest_idx + 1;
 								edited_point_pos = xform.affine_inverse().xform(closest_pos);
@@ -331,7 +331,7 @@ bool Polygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 							if (closest_idx >= 0) {
 
-								pre_move_edit = poly;
+								start_editing();
 								edited_point = closest_idx;
 								edited_point_pos = xform.affine_inverse().xform(closest_pos);
 								canvas_item_editor->get_viewport_control()->update();
@@ -352,6 +352,10 @@ bool Polygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 							undo_redo->add_do_method(canvas_item_editor->get_viewport_control(), "update");
 							undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(), "update");
 							undo_redo->commit_action();
+
+							node->set_texture(pre_move_texture);
+							node->set_vertex_colors(pre_move_vertex_colors);
+							node->set_color(pre_move_color);
 
 							edited_point = -1;
 							return true;
@@ -402,6 +406,11 @@ bool Polygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 			cpoint = canvas_item_editor->snap_point(cpoint);
 			edited_point_pos = node->get_global_transform().affine_inverse().xform(cpoint);
 
+			Vector<Vector2> poly = Variant(node->get_polygon());
+			ERR_FAIL_INDEX_V(edited_point, poly.size(), false);
+			poly[edited_point] = edited_point_pos - node->get_offset();
+			node->set_polygon(Variant(poly));
+
 			canvas_item_editor->get_viewport_control()->update();
 		}
 	}
@@ -424,6 +433,24 @@ void Polygon2DEditor::_canvas_draw() {
 
 	Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 	Ref<Texture> handle = get_icon("EditorHandle", "EditorIcons");
+
+	if (edited_point >= 0 && pre_move_edit.size() > 0) {
+		Vector<Vector2> points;
+
+		for (int i = 0; i < pre_move_edit.size(); i++) {
+
+			Vector2 p, p2;
+			p = pre_move_edit[i] + node->get_offset();
+			p2 = pre_move_edit[(i + 1) % pre_move_edit.size()] + node->get_offset();
+
+			Vector2 point = xform.xform(p);
+			Vector2 next_point = xform.xform(p2);
+
+			points.push_back(point);
+			Color col = Color(0.5, 0.5, 0.5, 0.5);
+			vpc->draw_line(point, next_point, col, 2);
+		}
+	}
 
 	for (int i = 0; i < poly.size(); i++) {
 
@@ -742,6 +769,18 @@ Vector2 Polygon2DEditor::snap_point(Vector2 p_target) const {
 	}
 
 	return p_target;
+}
+
+void Polygon2DEditor::start_editing() {
+	Vector<Vector2> poly = Variant(node->get_polygon());
+	const int n = poly.size();
+	pre_move_edit = Vector<Vector2>();
+	for (int i = 0; i < n; i++)
+		pre_move_edit.push_back(poly[i]);
+	Color color = node->get_color();
+	pre_move_texture = node->get_texture();
+	pre_move_vertex_colors = node->get_vertex_colors();
+	pre_move_color = color;
 }
 
 Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) {
