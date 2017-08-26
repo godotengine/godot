@@ -739,7 +739,6 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses) {
 	bus_popup = bus_options->get_popup();
 	bus_popup->add_item(TTR("Duplicate"));
 	bus_popup->add_item(TTR("Delete"));
-	add_child(bus_popup);
 	bus_popup->connect("index_pressed", this, "_bus_popup_pressed");
 
 	delete_effect_popup = memnew(PopupMenu);

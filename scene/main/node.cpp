@@ -1353,20 +1353,24 @@ void Node::_add_child_nocheck(Node *p_child, const StringName &p_name) {
 void Node::add_child(Node *p_child, bool p_legible_unique_name) {
 
 	ERR_FAIL_NULL(p_child);
-	/* Fail if node has a parent */
+
 	if (p_child == this) {
-		ERR_EXPLAIN("Can't add child " + p_child->get_name() + " to itself.")
+		ERR_EXPLAIN("Can't add child '" + p_child->get_name() + "' to itself.")
 		ERR_FAIL_COND(p_child == this); // adding to itself!
 	}
-	ERR_EXPLAIN("Can't add child, already has a parent");
-	ERR_FAIL_COND(p_child->data.parent);
+
+	/* Fail if node has a parent */
+	if (p_child->data.parent) {
+		ERR_EXPLAIN("Can't add child '" + p_child->get_name() + "' to '" + get_name() + "', already has a parent '" + p_child->data.parent->get_name() + "'.");
+		ERR_FAIL_COND(p_child->data.parent);
+	}
 
 	if (data.blocked > 0) {
-		ERR_EXPLAIN("Parent node is busy setting up children, add_node() failed. Consider using call_deferred(\"add_child\",child) instead.");
+		ERR_EXPLAIN("Parent node is busy setting up children, add_node() failed. Consider using call_deferred(\"add_child\", child) instead.");
 		ERR_FAIL_COND(data.blocked > 0);
 	}
 
-	ERR_EXPLAIN("Can't add child while a notification is happening");
+	ERR_EXPLAIN("Can't add child while a notification is happening.");
 	ERR_FAIL_COND(data.blocked > 0);
 
 	/* Validate name */
@@ -1381,7 +1385,7 @@ void Node::add_child_below_node(Node *p_node, Node *p_child, bool p_legible_uniq
 	if (is_a_parent_of(p_node)) {
 		move_child(p_child, p_node->get_position_in_parent() + 1);
 	} else {
-		WARN_PRINTS("Cannot move under node " + p_node->get_name() + " as " + p_child->get_name() + " does not share a parent")
+		WARN_PRINTS("Cannot move under node " + p_node->get_name() + " as " + p_child->get_name() + " does not share a parent.")
 	}
 }
 
