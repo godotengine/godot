@@ -2,7 +2,7 @@
 
 Import('env')
 
-if env['BUILDERS'].has_key('GLSL120GLES'):
+if 'GLSL120GLES' in env['BUILDERS']:
     env.GLSL120GLES('material.glsl')
     env.GLSL120GLES('canvas.glsl')
     env.GLSL120GLES('canvas_shadow.glsl')

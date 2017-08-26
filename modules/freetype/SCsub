@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 Import('env')
+from compat import isbasestring
 
 # Not building in a separate env as scene needs it
 
@@ -74,7 +75,7 @@ if (env['builtin_freetype'] != 'no'):
     # and then plain strings for system library. We insert between the two.
     inserted = False
     for idx, linklib in enumerate(env["LIBS"]):
-        if isinstance(linklib, basestring): # first system lib such as "X11", otherwise SCons lib object
+        if isbasestring(linklib): # first system lib such as "X11", otherwise SCons lib object
             env["LIBS"].insert(idx, lib)
             inserted = True
             break

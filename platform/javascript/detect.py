@@ -12,11 +12,7 @@ def get_name():
 
 
 def can_build():
-
-    import os
-    if (not os.environ.has_key("EMSCRIPTEN_ROOT")):
-        return False
-    return True
+    return ("EMSCRIPTEN_ROOT" in os.environ)
 
 
 def get_opts():
