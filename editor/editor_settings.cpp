@@ -686,6 +686,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set("editors/2d/pan_speed", 20);
 
 	set("editors/poly_editor/point_grab_radius", 8);
+	set("editors/poly_editor/show_previous_outline", true);
 
 	set("run/window_placement/rect", 1);
 	hints["run/window_placement/rect"] = PropertyInfo(Variant::INT, "run/window_placement/rect", PROPERTY_HINT_ENUM, "Top Left,Centered,Custom Position,Force Maximized,Force Fullscreen");
