@@ -1546,7 +1546,9 @@ static void _find_type_arguments(GDCompletionContext &context, const GDParser::N
 							scr = NULL;
 					}
 				} else {
-					on_script = obj->get_script();
+					if (obj) {
+						on_script = obj->get_script();
+					}
 				}
 			}
 
@@ -2237,7 +2239,9 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 									scr = NULL;
 							}
 						} else {
-							on_script = obj->get_script();
+							if (obj) {
+								on_script = obj->get_script();
+							}
 						}
 					}
 
