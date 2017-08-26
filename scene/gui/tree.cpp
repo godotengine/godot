@@ -2473,22 +2473,24 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 
 				Point2 pos = b->get_position() - bg->get_offset();
 				cache.click_type = Cache::CLICK_NONE;
-				if (show_column_titles && b->get_button_index() == BUTTON_LEFT) {
+				if (show_column_titles) {
 					pos.y -= _get_title_button_height();
 
 					if (pos.y < 0) {
-						pos.x += cache.offset.x;
-						int len = 0;
-						for (int i = 0; i < columns.size(); i++) {
+						if (b->get_button_index() == BUTTON_LEFT) {
+							pos.x += cache.offset.x;
+							int len = 0;
+							for (int i = 0; i < columns.size(); i++) {
 
-							len += get_column_width(i);
-							if (pos.x < len) {
+								len += get_column_width(i);
+								if (pos.x < len) {
 
-								cache.click_type = Cache::CLICK_TITLE;
-								cache.click_index = i;
-								//cache.click_id=;
-								update();
-								break;
+									cache.click_type = Cache::CLICK_TITLE;
+									cache.click_index = i;
+									//cache.click_id=;
+									update();
+									break;
+								}
 							}
 						}
 						break;
