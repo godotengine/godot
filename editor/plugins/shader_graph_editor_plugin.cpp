@@ -27,9 +27,11 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "shader_graph_editor_plugin.h"
 
+// FIXME: Godot 3.0 broke compatibility with ShaderGraphEditorPlugin,
+// it needs to be ported to the new shader language.
 #if 0
+#include "shader_graph_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
 #include "os/keyboard.h"

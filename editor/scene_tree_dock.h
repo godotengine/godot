@@ -30,12 +30,13 @@
 #ifndef SCENE_TREE_DOCK_H
 #define SCENE_TREE_DOCK_H
 
-#include "connections_dialog.h"
-#include "create_dialog.h"
-#include "editor_data.h"
-#include "editor_sub_scene.h"
-#include "groups_editor.h"
-#include "reparent_dialog.h"
+#include "editor/connections_dialog.h"
+#include "editor/create_dialog.h"
+#include "editor/editor_data.h"
+#include "editor/editor_sub_scene.h"
+#include "editor/groups_editor.h"
+#include "editor/reparent_dialog.h"
+#include "editor/script_create_dialog.h"
 #include "scene/animation/animation_player.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
@@ -45,7 +46,7 @@
 #include "scene/gui/tool_button.h"
 #include "scene/gui/tree.h"
 #include "scene_tree_editor.h"
-#include "script_create_dialog.h"
+
 class EditorNode;
 
 class SceneTreeDock : public VBoxContainer {
@@ -57,8 +58,6 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_NEW,
 		TOOL_INSTANCE,
 		TOOL_REPLACE,
-		TOOL_CONNECT,
-		TOOL_GROUP,
 		TOOL_ATTACH_SCRIPT,
 		TOOL_CLEAR_SCRIPT,
 		TOOL_MOVE_UP,
@@ -104,8 +103,6 @@ class SceneTreeDock : public VBoxContainer {
 	EditorData *editor_data;
 	EditorSelection *editor_selection;
 
-	//GroupsEditor *groups_editor;
-	//ConnectionsDialog *connect_dialog;
 	ScriptCreateDialog *script_create_dialog;
 	AcceptDialog *accept;
 	ConfirmationDialog *delete_dialog;

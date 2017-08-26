@@ -1228,7 +1228,6 @@ CodeTextEditor::CodeTextEditor() {
 	error->set_valign(Label::VALIGN_CENTER);
 	error->add_color_override("font_color", Color(1, 0.7, 0.6, 0.9));
 	error->set_h_size_flags(SIZE_EXPAND_FILL); //required for it to display, given now it's clipping contents, do not touch
-	//status_bar->add_spacer();
 
 	Label *line_txt = memnew(Label);
 	status_bar->add_child(line_txt);

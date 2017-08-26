@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "material.h"
+
 #include "scene/scene_string_names.h"
 
 void Material::set_next_pass(const Ref<Material> &p_pass) {

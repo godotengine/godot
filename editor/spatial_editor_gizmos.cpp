@@ -3557,14 +3557,6 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 		listener_line_mesh->surface_set_material(0, mat);
 	}
 
-	sample_player_icon = Ref<SpatialMaterial>(memnew(SpatialMaterial));
-	sample_player_icon->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-	sample_player_icon->set_cull_mode(SpatialMaterial::CULL_DISABLED);
-	sample_player_icon->set_depth_draw_mode(SpatialMaterial::DEPTH_DRAW_DISABLED);
-	sample_player_icon->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-	sample_player_icon->set_albedo(Color(1, 1, 1, 0.9));
-	sample_player_icon->set_texture(SpatialMaterial::TEXTURE_ALBEDO, SpatialEditor::get_singleton()->get_icon("GizmoSpatialSamplePlayer", "EditorIcons"));
-
 	room_material = create_line_material(Color(1.0, 0.6, 0.9));
 	portal_material = create_line_material(Color(1.0, 0.8, 0.6));
 	raycast_material = create_line_material(Color(1.0, 0.8, 0.6));

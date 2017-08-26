@@ -29,20 +29,17 @@
 /*************************************************************************/
 #include "shader_editor_plugin.h"
 
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/os/keyboard.h"
+#include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/property_editor.h"
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
-#include "os/keyboard.h"
-#include "os/os.h"
 #include "scene/resources/shader_graph.h"
 #include "servers/visual/shader_types.h"
-#include "spatial_editor_plugin.h"
 
-/*** SETTINGS EDITOR ****/
-
-/*** SCRIPT EDITOR ****/
+/*** SHADER SCRIPT EDITOR ****/
 
 Ref<Shader> ShaderTextEditor::get_edited_shader() const {
 
