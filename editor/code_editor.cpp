@@ -1093,12 +1093,7 @@ void CodeTextEditor::update_editor_settings() {
 
 void CodeTextEditor::set_error(const String &p_error) {
 
-	if (p_error != "") {
-		error->set_text(p_error);
-		error->show();
-	} else {
-		error->hide();
-	}
+	error->set_text(p_error);
 }
 
 void CodeTextEditor::_update_font() {
@@ -1223,12 +1218,10 @@ CodeTextEditor::CodeTextEditor() {
 
 	error = memnew(Label);
 	status_bar->add_child(error);
-	error->hide();
 	error->set_clip_text(true); //do not change, or else very long errors can push the whole container to the right
 	error->set_valign(Label::VALIGN_CENTER);
 	error->add_color_override("font_color", Color(1, 0.7, 0.6, 0.9));
 	error->set_h_size_flags(SIZE_EXPAND_FILL); //required for it to display, given now it's clipping contents, do not touch
-	//status_bar->add_spacer();
 
 	Label *line_txt = memnew(Label);
 	status_bar->add_child(line_txt);
