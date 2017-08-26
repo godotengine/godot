@@ -790,7 +790,7 @@ void ProjectSettingsEditor::_item_del() {
 
 	String path = globals_editor->get_property_editor()->get_selected_path();
 	if (path == String()) {
-		EditorNode::get_singleton()->show_warning(TTR("Select an setting item first!"));
+		EditorNode::get_singleton()->show_warning(TTR("Select a setting item first!"));
 		return;
 	}
 
