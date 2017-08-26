@@ -1608,8 +1608,10 @@ Point2i SpatialEditorViewport::_get_warped_mouse_motion(const Ref<InputEventMous
 
 void SpatialEditorViewport::_update_freelook(real_t delta) {
 
-	if (!is_freelook_active())
+	if (!is_freelook_active()) {
+		freelook_velocity = Vector3();
 		return;
+	}
 
 	Vector3 forward = camera->get_transform().basis.xform(Vector3(0, 0, -1));
 	Vector3 right = camera->get_transform().basis.xform(Vector3(1, 0, 0));
@@ -1623,53 +1625,61 @@ void SpatialEditorViewport::_update_freelook(real_t delta) {
 	int key_down = Object::cast_to<InputEventKey>(ED_GET_SHORTCUT("spatial_editor/freelook_down")->get_shortcut().ptr())->get_scancode();
 	int key_speed_modifier = Object::cast_to<InputEventKey>(ED_GET_SHORTCUT("spatial_editor/freelook_speed_modifier")->get_shortcut().ptr())->get_scancode();
 
-	Vector3 velocity;
+	Vector3 direction;
 	bool pressed = false;
 	bool speed_modifier = false;
 
 	const Input &input = *Input::get_singleton();
 
 	if (input.is_key_pressed(key_left)) {
-		velocity -= right;
+		direction -= right;
 		pressed = true;
 	}
 	if (input.is_key_pressed(key_right)) {
-		velocity += right;
+		direction += right;
 		pressed = true;
 	}
 	if (input.is_key_pressed(key_forward)) {
-		velocity += forward;
+		direction += forward;
 		pressed = true;
 	}
 	if (input.is_key_pressed(key_backwards)) {
-		velocity -= forward;
+		direction -= forward;
 		pressed = true;
 	}
 	if (input.is_key_pressed(key_up)) {
-		velocity += up;
+		direction += up;
 		pressed = true;
 	}
 	if (input.is_key_pressed(key_down)) {
-		velocity -= up;
+		direction -= up;
 		pressed = true;
 	}
 	if (input.is_key_pressed(key_speed_modifier)) {
 		speed_modifier = true;
 	}
 
-	if (pressed) {
-		const EditorSettings &s = *EditorSettings::get_singleton();
-		const real_t base_speed = s.get("editors/3d/freelook_base_speed");
-		const real_t modifier_speed_factor = s.get("editors/3d/freelook_modifier_speed_factor");
+	const EditorSettings &s = *EditorSettings::get_singleton();
+	real_t inertia = s.get("editors/3d/freelook_inertia");
+	if (inertia < 0)
+		inertia = 0;
 
-		real_t speed = base_speed * cursor.distance;
-		if (speed_modifier)
-			speed *= modifier_speed_factor;
+	const real_t base_speed = s.get("editors/3d/freelook_base_speed");
+	const real_t modifier_speed_factor = s.get("editors/3d/freelook_modifier_speed_factor");
 
-		velocity.normalize();
+	real_t speed = base_speed * cursor.distance;
+	if (speed_modifier)
+		speed *= modifier_speed_factor;
 
-		cursor.pos += velocity * (speed * delta);
-	}
+	Vector3 instant_velocity = direction * speed;
+
+	// Higher inertia should increase "lag" (lerp with factor between 0 and 1)
+	// Inertia of zero should produce instant movement (lerp with factor of 1)
+	// Takes reference of 60fps for units, so that inertia of 1 gives approximate lerp factor of 0.5
+	real_t factor = 1.0 / (1.0 + inertia * delta * 60.f);
+	freelook_velocity = freelook_velocity.linear_interpolate(instant_velocity, CLAMP(factor, 0, 1));
+
+	cursor.pos += freelook_velocity * delta;
 }
 
 void SpatialEditorViewport::set_message(String p_message, float p_time) {

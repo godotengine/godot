@@ -122,6 +122,7 @@ private:
 	float gizmo_scale;
 
 	bool freelook_active;
+	Vector3 freelook_velocity;
 
 	PanelContainer *info;
 	Label *info_label;
