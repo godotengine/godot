@@ -74,7 +74,9 @@ void SpatialEditorViewport::_update_camera(float p_interp_delta) {
 	Transform old_transform = camera->get_global_transform();
 	Transform transform;
 
-	if (p_interp_delta && Input::get_singleton()->get_mouse_button_mask() == 0) {
+	bool disable_interp = (Input::get_singleton()->get_mouse_button_mask() & (2 | 4)) || Input::get_singleton()->is_key_pressed(KEY_SHIFT) || Input::get_singleton()->is_key_pressed(KEY_ALT) || Input::get_singleton()->is_key_pressed(KEY_CONTROL);
+
+	if (p_interp_delta && !disable_interp) {
 		//interpolate
 		float interp_speed = 14; //maybe should be made configuration
 		transform = old_transform.interpolate_with(new_transform, MIN(1.0, p_interp_delta * interp_speed));
