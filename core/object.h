@@ -185,6 +185,7 @@ struct MethodInfo {
 	uint32_t flags;
 	int id;
 
+	inline bool operator==(const MethodInfo &p_method) const { return id == p_method.id; }
 	inline bool operator<(const MethodInfo &p_method) const { return id == p_method.id ? (name < p_method.name) : (id < p_method.id); }
 
 	operator Dictionary() const;
