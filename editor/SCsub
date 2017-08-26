@@ -4,6 +4,7 @@ Import('env')
 env.editor_sources = []
 
 import os
+from compat import encode_utf8, byte_to_str, open_utf8
 
 
 def make_certs_header(target, source, env):
@@ -11,7 +12,7 @@ def make_certs_header(target, source, env):
     src = source[0].srcnode().abspath
     dst = target[0].srcnode().abspath
     f = open(src, "rb")
-    g = open(dst, "wb")
+    g = open_utf8(dst, "w")
     buf = f.read()
     decomp_size = len(buf)
     import zlib
@@ -24,7 +25,7 @@ def make_certs_header(target, source, env):
     g.write("static const int _certs_uncompressed_size=" + str(decomp_size) + ";\n")
     g.write("static const unsigned char _certs_compressed[]={\n")
     for i in range(len(buf)):
-        g.write(str(ord(buf[i])) + ",\n")
+        g.write(byte_to_str(buf[i]) + ",\n")
     g.write("};\n")
     g.write("#endif")
 
@@ -32,20 +33,20 @@ def make_certs_header(target, source, env):
 def make_doc_header(target, source, env):
 
     dst = target[0].srcnode().abspath
-    g = open(dst, "wb")
+    g = open_utf8(dst, "w")
     buf = ""
     docbegin = ""
     docend = ""
     for s in source:
         src = s.srcnode().abspath
-        f = open(src, "rb")
+        f = open_utf8(src, "r")
         content = f.read()
         buf += content[content.find("<class"): content.rfind("</doc>")]
         if len(docbegin) == 0:
             docbegin = content[0: content.find("<class")]
         if len(docend) == 0:
             docend = content[content.rfind("</doc>"): len(buf)]
-    buf = docbegin + buf + docend
+    buf = encode_utf8(docbegin + buf + docend)
     decomp_size = len(buf)
     import zlib
     buf = zlib.compress(buf)
@@ -57,7 +58,7 @@ def make_doc_header(target, source, env):
     g.write("static const int _doc_data_uncompressed_size=" + str(decomp_size) + ";\n")
     g.write("static const unsigned char _doc_data_compressed[]={\n")
     for i in range(len(buf)):
-        g.write(str(ord(buf[i])) + ",\n")
+        g.write(byte_to_str(buf[i]) + ",\n")
     g.write("};\n")
     g.write("#endif")
 
@@ -66,7 +67,7 @@ def make_fonts_header(target, source, env):
 
     dst = target[0].srcnode().abspath
 
-    g = open(dst, "wb")
+    g = open_utf8(dst, "w")
 
     g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
     g.write("#ifndef _EDITOR_FONTS_H\n")
@@ -84,7 +85,7 @@ def make_fonts_header(target, source, env):
         g.write("static const int _font_" + name + "_size=" + str(len(buf)) + ";\n")
         g.write("static const unsigned char _font_" + name + "[]={\n")
         for i in range(len(buf)):
-            g.write(str(ord(buf[i])) + ",\n")
+            g.write(byte_to_str(buf[i]) + ",\n")
 
         g.write("};\n")
 
@@ -95,7 +96,7 @@ def make_translations_header(target, source, env):
 
     dst = target[0].srcnode().abspath
 
-    g = open(dst, "wb")
+    g = open_utf8(dst, "w")
 
     g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
     g.write("#ifndef _EDITOR_TRANSLATIONS_H\n")
@@ -119,7 +120,7 @@ def make_translations_header(target, source, env):
         #g.write("static const int _translation_"+name+"_uncompressed_size="+str(decomp_size)+";\n")
         g.write("static const unsigned char _translation_" + name + "_compressed[]={\n")
         for i in range(len(buf)):
-            g.write(str(ord(buf[i])) + ",\n")
+            g.write(byte_to_str(buf[i]) + ",\n")
 
         g.write("};\n")
 
@@ -146,8 +147,8 @@ def make_authors_header(target, source, env):
 
     src = source[0].srcnode().abspath
     dst = target[0].srcnode().abspath
-    f = open(src, "rb")
-    g = open(dst, "wb")
+    f = open_utf8(src, "r")
+    g = open_utf8(dst, "w")
 
     g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
     g.write("#ifndef _EDITOR_AUTHORS_H\n")
@@ -188,9 +189,9 @@ def make_license_header(target, source, env):
     src_copyright = source[0].srcnode().abspath
     src_license = source[1].srcnode().abspath
     dst = target[0].srcnode().abspath
-    f = open(src_license, "rb")
-    fc = open(src_copyright, "rb")
-    g = open(dst, "wb")
+    f = open_utf8(src_license, "r")
+    fc = open_utf8(src_copyright, "r")
+    g = open_utf8(dst, "w")
 
     g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
     g.write("#ifndef _EDITOR_LICENSE_H\n")
@@ -354,7 +355,7 @@ if (env["tools"] == "yes"):
         reg_exporters += '\tregister_' + e + '_exporter();\n'
         reg_exporters_inc += '#include "platform/' + e + '/export/export.h"\n'
     reg_exporters += '}\n'
-    f = open("register_exporters.gen.cpp", "wb")
+    f = open_utf8("register_exporters.gen.cpp", "w")
     f.write(reg_exporters_inc)
     f.write(reg_exporters)
     f.close()

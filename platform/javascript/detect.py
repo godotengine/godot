@@ -13,7 +13,7 @@ def get_name():
 
 def can_build():
 
-    return (os.environ.has_key("EMSCRIPTEN_ROOT"))
+    return ("EMSCRIPTEN_ROOT" in os.environ)
 
 
 def get_opts():

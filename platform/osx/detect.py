@@ -12,7 +12,7 @@ def get_name():
 
 def can_build():
 
-    if (sys.platform == "darwin" or os.environ.has_key("OSXCROSS_ROOT")):
+    if (sys.platform == "darwin" or ("OSXCROSS_ROOT" in os.environ)):
         return True
 
     return False
