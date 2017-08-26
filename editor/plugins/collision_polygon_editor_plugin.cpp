@@ -48,6 +48,9 @@ void CollisionPolygonEditor::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_PROCESS: {
+			if (!node) {
+				return;
+			}
 
 			if (node->get_depth() != prev_depth) {
 				_polygon_draw();
