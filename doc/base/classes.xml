@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<doc version="2.1.4.beta.custom_build" name="Engine Types">
+<doc version="2.1.4.stable.custom_build" name="Engine Types">
 <class name="@GDScript" category="Core">
 	<brief_description>
 		Built-in GDScript functions.
@@ -21894,6 +21894,12 @@
 			</description>
 		</method>
 		<method name="clear_polygons">
+			<description>
+			</description>
+		</method>
+		<method name="create_from_mesh">
+			<argument index="0" name="mesh" type="Object">
+			</argument>
 			<description>
 			</description>
 		</method>
