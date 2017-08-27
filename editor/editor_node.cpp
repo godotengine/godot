@@ -2218,16 +2218,21 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			update_menu->get_popup()->set_item_checked(0, true);
 			update_menu->get_popup()->set_item_checked(1, false);
 			OS::get_singleton()->set_low_processor_usage_mode(false);
+			EditorSettings::get_singleton()->set_project_metadata("editor_options", "update_mode", SETTINGS_UPDATE_ALWAYS);
 		} break;
 		case SETTINGS_UPDATE_CHANGES: {
 
 			update_menu->get_popup()->set_item_checked(0, false);
 			update_menu->get_popup()->set_item_checked(1, true);
 			OS::get_singleton()->set_low_processor_usage_mode(true);
+			EditorSettings::get_singleton()->set_project_metadata("editor_options", "update_mode", SETTINGS_UPDATE_CHANGES);
 		} break;
 		case SETTINGS_UPDATE_SPINNER_HIDE: {
+
 			update_menu->set_icon(gui_base->get_icon("Collapse", "EditorIcons"));
 			update_menu->get_popup()->toggle_item_checked(3);
+			bool checked = update_menu->get_popup()->is_item_checked(3);
+			EditorSettings::get_singleton()->set_project_metadata("editor_options", "update_spinner_hide", checked);
 		} break;
 		case SETTINGS_PREFERENCES: {
 
@@ -4980,7 +4985,12 @@ EditorNode::EditorNode() {
 	p->add_check_item(TTR("Update Changes"), SETTINGS_UPDATE_CHANGES);
 	p->add_separator();
 	p->add_check_item(TTR("Disable Update Spinner"), SETTINGS_UPDATE_SPINNER_HIDE);
-	p->set_item_checked(1, true);
+	int update_mode = EditorSettings::get_singleton()->get_project_metadata("editor_options", "update_mode", SETTINGS_UPDATE_CHANGES);
+	int hide_spinner = EditorSettings::get_singleton()->get_project_metadata("editor_options", "update_spinner_hide", false);
+	_menu_option(update_mode);
+	if (hide_spinner) {
+		_menu_option(SETTINGS_UPDATE_SPINNER_HIDE);
+	}
 
 	scene_tree_dock = memnew(SceneTreeDock(this, scene_root, editor_selection, editor_data));
 	scene_tree_dock->set_name(TTR("Scene"));
@@ -5367,7 +5377,6 @@ EditorNode::EditorNode() {
 	save_external_resources_mem = true;
 
 	set_process(true);
-	OS::get_singleton()->set_low_processor_usage_mode(true);
 
 	open_imported = memnew(ConfirmationDialog);
 	open_imported->get_ok()->set_text(TTR("Open Anyway"));
