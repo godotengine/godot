@@ -1401,8 +1401,11 @@ void SceneTree::_live_edit_create_node_func(const NodePath &p_parent, const Stri
 		Node *n2 = n->get_node(p_parent);
 
 		Node *no = Object::cast_to<Node>(ClassDB::instance(p_type));
-		no->set_name(p_name);
+		if (!no) {
+			continue;
+		}
 
+		no->set_name(p_name);
 		n2->add_child(no);
 	}
 }
