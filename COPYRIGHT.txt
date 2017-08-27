@@ -43,7 +43,7 @@ Source: https://github.com/godotengine/godot
 Files: *
 Comment: Godot Engine
 Copyright: 2007-2017, Juan Linietsky, Ariel Manzur.
-  2014-2017, Godot Engine contributors (cf. AUTHORS.md)
+  2014-2017, Godot Engine contributors.
 License: Expat
 
 Files: ./icon.png
@@ -51,7 +51,7 @@ Files: ./icon.png
  ./logo.png
  ./logo.svg
 Comment: Godot Engine logo
-Copyright: Andrea Calabró
+Copyright: 2014, Andrea Calabró
 License: CC-BY-3.0
 
 Files: ./platform/android/android_native_app_glue.c
@@ -95,7 +95,7 @@ Files: ./platform/uwp/export/export.cpp
 Comment: fb-util-for-appx
 Copyright: 2016, Facebook, Inc. All rights reserved.
   2007-2017, Juan Linietsky, Ariel Manzur.
-  2014-2017, Godot Engine contributors (cf. AUTHORS.md)
+  2014-2017, Godot Engine contributors.
 License: BSD-3-clause and Expat
 
 Files: ./servers/physics/gjk_epa.cpp
@@ -111,7 +111,7 @@ Files: ./servers/physics/gjk_epa.cpp
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2003-2008, Erwin Coumans
   2007-2017, Juan Linietsky, Ariel Manzur.
-  2014-2017, Godot Engine contributors (cf. AUTHORS.md)
+  2014-2017, Godot Engine contributors.
 License: Expat and Zlib
 
 Files: ./servers/physics/joints/cone_twist_joint_sw.cpp
@@ -119,7 +119,7 @@ Files: ./servers/physics/joints/cone_twist_joint_sw.cpp
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2007, Starbreeze Studios
   2007-2017, Juan Linietsky, Ariel Manzur.
-  2014-2017, Godot Engine contributors (cf. AUTHORS.md)
+  2014-2017, Godot Engine contributors.
 License: Expat and Zlib
 
 Files: ./thirdparty/b2d_convexdecomp/
@@ -133,11 +133,6 @@ Comment: FIXME
 Copyright: FIXME
 License: FIXME
 
-Files: ./thirdparty/enet/
-Comment: ENet
-Copyright: 2002-2016, Lee Salzman
-License: Expat
-
 Files: ./thirdparty/fonts/DroidSans*.ttf
 Comment: DroidSans font
 Copyright: 2008, The Android Open Source Project
@@ -150,7 +145,7 @@ License: OFL-1.1
 
 Files: ./thirdparty/freetype/
 Comment: The FreeType Project
-Copyright: 1996-2016, David Turner, Robert Wilhelm, and Werner Lemberg.
+Copyright: 1996-2017, David Turner, Robert Wilhelm, and Werner Lemberg.
 License: FTL
 
 Files: ./thirdparty/glew/
@@ -190,11 +185,6 @@ License: BSD-3-clause
 Files: ./thirdparty/libvorbis/
 Comment: OggVorbis
 Copyright: 2002-2015, Xiph.org Foundation
-License: BSD-3-clause
-
-Files: ./thirdparty/libvpx/
-Comment: The WebM Project
-Copyright: 2010, The WebM Project authors.
 License: BSD-3-clause
 
 Files: ./thirdparty/libwebp/
@@ -260,9 +250,8 @@ Copyright: 2006-2009, Salvatore Sanfilippo
 License: BSD-3-clause
 
 Files: ./thirdparty/misc/stb_truetype.h
- ./thirdparty/misc/stb_vorbis.c
 Comment: stb libraries
-Copyright: 2007-2015, Sean Barrett
+Copyright: 2007-2017, Sean Barrett
 License: public-domain
 
 Files: ./thirdparty/misc/triangulator.cpp
@@ -293,6 +282,11 @@ Files: ./thirdparty/pvrtccompressor/
 Comment: PvrTcCompressor
 Copyright: 2014, Jeffrey Lim.
 License: BSD-3-clause
+
+Files: ./thirdparty/rg-etc1/
+Comment: rg-etc1
+Copyright: 2012, Rich Geldreich
+License: Zlib
 
 Files: ./thirdparty/rtaudio/
 Comment: RtAudio
@@ -371,9 +365,9 @@ License: BSD-3-clause
     notice, this list of conditions and the following disclaimer in the
     documentation and/or other materials provided with the distribution.
  .
- 3. Neither the name of the University nor the names of its contributors
-    may be used to endorse or promote products derived from this software
-    without specific prior written permission.
+ 3. Neither the name of the copyright holder nor the names of its
+    contributors may be used to endorse or promote products derived from
+    this software without specific prior written permission.
  .
  THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
