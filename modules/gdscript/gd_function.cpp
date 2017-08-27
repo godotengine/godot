@@ -1418,7 +1418,7 @@ Variant GDFunctionState::_signal_callback(const Variant **p_args, int p_argcount
 	// If the return value is a GDFunctionState reference,
 	// then the function did yield again after resuming.
 	if (ret.is_ref()) {
-		GDFunctionState *gdfs = Object::cast_to<GDFunctionState>((Object *)&ret);
+		GDFunctionState *gdfs = Object::cast_to<GDFunctionState>(ret);
 		if (gdfs && gdfs->function == function)
 			completed = false;
 	}
@@ -1474,7 +1474,7 @@ Variant GDFunctionState::resume(const Variant &p_arg) {
 	// If the return value is a GDFunctionState reference,
 	// then the function did yield again after resuming.
 	if (ret.is_ref()) {
-		GDFunctionState *gdfs = Object::cast_to<GDFunctionState>((Object *)&ret);
+		GDFunctionState *gdfs = Object::cast_to<GDFunctionState>(ret);
 		if (gdfs && gdfs->function == function)
 			completed = false;
 	}
