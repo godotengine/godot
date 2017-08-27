@@ -75,7 +75,6 @@ def make_fonts_header(target, source, env):
     # saving uncompressed, since freetype will reference from memory pointer
     xl_names = []
     for i in range(len(source)):
-        print("Appending font: " + source[i].srcnode().abspath)
         f = open(source[i].srcnode().abspath, "rb")
         buf = f.read()
         import os.path
@@ -110,7 +109,6 @@ def make_translations_header(target, source, env):
 
     xl_names = []
     for i in range(len(sorted_paths)):
-        print("Appending translation: " + sorted_paths[i])
         f = open(sorted_paths[i], "rb")
         buf = f.read()
         decomp_size = len(buf)
@@ -381,14 +379,12 @@ if (env["tools"] == "yes"):
 
     # Translations
     tlist = glob.glob(path + "/translations/*.po")
-    print("translations: ", tlist)
     env.Depends('#editor/translations.gen.h', tlist)
     env.Command('#editor/translations.gen.h', tlist, make_translations_header)
 
     # Fonts
     flist = glob.glob(path + "/../thirdparty/fonts/*.ttf")
     flist.append(glob.glob(path + "/../thirdparty/fonts/*.otf"))
-    print("fonts: ", flist)
     env.Depends('#editor/builtin_fonts.gen.h', flist)
     env.Command('#editor/builtin_fonts.gen.h', flist, make_fonts_header)
 
