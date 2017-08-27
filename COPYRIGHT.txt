@@ -300,6 +300,11 @@ Copyright: 2001-2011, Xiph.Org, Skype Limited, Octasic,
  Erik de Castro Lopo
 License: BSD-3-clause
 
+Files: ./thirdparty/nanosvg/
+Comment: NanoSVG
+Copyright: 2013-2014, Mikko Mononen
+License: Zlib
+
 Files: ./thirdparty/pvrtccompressor/
 Comment: PvrTcCompressor
 Copyright: 2014, Jeffrey Lim.

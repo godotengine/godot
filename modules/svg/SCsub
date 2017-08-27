@@ -3,7 +3,7 @@
 Import('env')
 
 # Thirdparty source files
-thirdparty_dir = "#thirdparty/nanosvg/src/"
+thirdparty_dir = "#thirdparty/nanosvg/"
 thirdparty_sources = [
 		"nanosvg.cc"
 ]

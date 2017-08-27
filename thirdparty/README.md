@@ -268,6 +268,18 @@ Collection of single-file libraries used in Godot components.
   * License: Public Domain (Unlicense) or MIT
 
 
+## nanosvg
+
+- Upstream: https://github.com/memononen/nanosvg
+- Version: 9a74da4 (git)
+- License: zlib
+
+Files extracted from the upstream source:
+
+- All .h files in `src/`
+- LICENSE.txt
+
+
 ## openssl
 
 - Upstream: https://www.openssl.org
