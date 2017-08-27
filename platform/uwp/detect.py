@@ -145,8 +145,8 @@ def configure(env):
     env.Append(CPPFLAGS=['/AI', vc_base_path + 'lib/store/references'])
     env.Append(CPPFLAGS=['/AI', vc_base_path + 'lib/x86/store/references'])
 
-    env.Append(CCFLAGS=string.split('/FS /MP /GS /wd"4453" /wd"28204" /wd"4291" /Zc:wchar_t /Gm- /fp:precise /D "_UNICODE" /D "UNICODE" /D "WINAPI_FAMILY=WINAPI_FAMILY_APP" /errorReport:prompt /WX- /Zc:forScope /Gd /EHsc /nologo'))
-    env.Append(CXXFLAGS=string.split('/ZW /FS'))
+    env.Append(CCFLAGS='/FS /MP /GS /wd"4453" /wd"28204" /wd"4291" /Zc:wchar_t /Gm- /fp:precise /D "_UNICODE" /D "UNICODE" /D "WINAPI_FAMILY=WINAPI_FAMILY_APP" /errorReport:prompt /WX- /Zc:forScope /Gd /EHsc /nologo'.split())
+    env.Append(CXXFLAGS='/ZW /FS'.split())
     env.Append(CCFLAGS=['/AI', vc_base_path + '\\vcpackages', '/AI', os.environ['WINDOWSSDKDIR'] + '\\References\\CommonConfiguration\\Neutral'])
 
     ## Link flags

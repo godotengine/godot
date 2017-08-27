@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import shutil
+from compat import open_utf8
 
 Import('env')
 
@@ -40,8 +41,8 @@ prog = None
 abspath = env.Dir(".").abspath
 
 
-gradle_basein = open(abspath + "/build.gradle.template", "rb")
-gradle_baseout = open(abspath + "/java/build.gradle", "wb")
+gradle_basein = open_utf8(abspath + "/build.gradle.template", "r")
+gradle_baseout = open_utf8(abspath + "/java/build.gradle", "w")
 
 gradle_text = gradle_basein.read()
 
@@ -124,8 +125,8 @@ gradle_baseout.write(gradle_text)
 gradle_baseout.close()
 
 
-pp_basein = open(abspath + "/AndroidManifest.xml.template", "rb")
-pp_baseout = open(abspath + "/java/AndroidManifest.xml", "wb")
+pp_basein = open_utf8(abspath + "/AndroidManifest.xml.template", "r")
+pp_baseout = open_utf8(abspath + "/java/AndroidManifest.xml", "w")
 manifest = pp_basein.read()
 manifest = manifest.replace("$$ADD_APPLICATION_CHUNKS$$", env.android_manifest_chunk)
 manifest = manifest.replace("$$ADD_PERMISSION_CHUNKS$$", env.android_permission_chunk)
@@ -146,7 +147,7 @@ elif env['android_arch'] == 'arm64v8':
 elif env['android_arch'] == 'x86':
     lib_arch_dir = 'x86'
 else:
-    print 'WARN: Architecture not suitable for embedding into APK; keeping .so at \\bin'
+    print('WARN: Architecture not suitable for embedding into APK; keeping .so at \\bin')
 
 if lib_arch_dir != '':
     if env['target'] == 'release':

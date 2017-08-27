@@ -1,18 +1,17 @@
 #!/usr/bin/env python
 
 Import('env')
-
+from compat import StringIO
 
 def make_editor_icons_action(target, source, env):
 
     import os
-    import cStringIO
 
     dst = target[0].srcnode().abspath
     svg_icons = source
 
-    whites = cStringIO.StringIO()
-    darks = cStringIO.StringIO()
+    whites = StringIO()
+    darks = StringIO()
 
     for f in svg_icons:
 
@@ -48,7 +47,7 @@ def make_editor_icons_action(target, source, env):
         whites.write('\n')
         darks.write('\n')
 
-    s = cStringIO.StringIO()
+    s = StringIO()
     s.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
     s.write("#ifndef _EDITOR_ICONS_H\n")
     s.write("#define _EDITOR_ICONS_H\n")
@@ -75,7 +74,7 @@ def make_editor_icons_action(target, source, env):
     s.write("#endif\n")
 
 
-    f = open(dst, "wb")
+    f = open(dst, "w")
     f.write(s.getvalue())
     f.close()
     s.close()

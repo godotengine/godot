@@ -18,7 +18,7 @@ gd_cpp = '#include "project_settings.h"\n'
 gd_cpp += gd_inc
 gd_cpp += "void ProjectSettings::register_global_defaults() {\n" + gd_call + "\n}\n"
 
-f = open("global_defaults.gen.cpp", "wb")
+f = open("global_defaults.gen.cpp", "w")
 f.write(gd_cpp)
 f.close()
 
@@ -47,7 +47,7 @@ if ("SCRIPT_AES256_ENCRYPTION_KEY" in os.environ):
         txt = "0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0"
         print("Invalid AES256 encryption key, not 64 bits hex: " + e)
 
-f = open("script_encryption_key.gen.cpp", "wb")
+f = open("script_encryption_key.gen.cpp", "w")
 f.write("#include \"project_settings.h\"\nuint8_t script_encryption_key[32]={" + txt + "};\n")
 f.close()
 

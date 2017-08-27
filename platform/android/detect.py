@@ -14,7 +14,7 @@ def get_name():
 
 def can_build():
 
-    return (os.environ.has_key("ANDROID_NDK_ROOT"))
+    return ("ANDROID_NDK_ROOT" in os.environ)
 
 
 def get_opts():
@@ -55,7 +55,7 @@ def configure(env):
         import subprocess
 
         def mySubProcess(cmdline, env):
-            # print "SPAWNED : " + cmdline
+            # print("SPAWNED : " + cmdline)
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             proc = subprocess.Popen(cmdline, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
@@ -63,9 +63,9 @@ def configure(env):
             data, err = proc.communicate()
             rv = proc.wait()
             if rv:
-                print "====="
-                print err
-                print "====="
+                print("=====")
+                print(err)
+                print("=====")
             return rv
 
         def mySpawn(sh, escape, cmd, args, env):
@@ -183,8 +183,8 @@ def configure(env):
     ## Compile flags
 
     env.Append(CPPFLAGS=["-isystem", sysroot + "/usr/include"])
-    env.Append(CPPFLAGS=string.split('-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -fvisibility=hidden -fno-strict-aliasing'))
-    env.Append(CPPFLAGS=string.split('-DNO_STATVFS -DGLES2_ENABLED'))
+    env.Append(CPPFLAGS='-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -fvisibility=hidden -fno-strict-aliasing'.split())
+    env.Append(CPPFLAGS='-DNO_STATVFS -DGLES2_ENABLED'.split())
 
     env['neon_enabled'] = False
     if env['android_arch'] == 'x86':
@@ -194,11 +194,11 @@ def configure(env):
 
     elif env["android_arch"] == "armv6":
         target_opts = ['-target', 'armv6-none-linux-androideabi']
-        env.Append(CPPFLAGS=string.split('-D__ARM_ARCH_6__ -march=armv6 -mfpu=vfp -mfloat-abi=softfp'))
+        env.Append(CPPFLAGS='-D__ARM_ARCH_6__ -march=armv6 -mfpu=vfp -mfloat-abi=softfp'.split())
 
     elif env["android_arch"] == "armv7":
         target_opts = ['-target', 'armv7-none-linux-androideabi']
-        env.Append(CPPFLAGS=string.split('-D__ARM_ARCH_7__ -D__ARM_ARCH_7A__ -march=armv7-a -mfloat-abi=softfp'))
+        env.Append(CPPFLAGS='-D__ARM_ARCH_7__ -D__ARM_ARCH_7A__ -march=armv7-a -mfloat-abi=softfp'.split())
         if env['android_neon'] == 'yes':
             env['neon_enabled'] = True
             env.Append(CPPFLAGS=['-mfpu=neon', '-D__ARM_NEON__'])
@@ -225,9 +225,9 @@ def configure(env):
 
     env['LINKFLAGS'] = ['-shared', '--sysroot=' + sysroot, '-Wl,--warn-shared-textrel']
     if env["android_arch"] == "armv7":
-        env.Append(LINKFLAGS=string.split('-Wl,--fix-cortex-a8'))
-    env.Append(LINKFLAGS=string.split('-Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now'))
-    env.Append(LINKFLAGS=string.split('-Wl,-soname,libgodot_android.so -Wl,--gc-sections'))
+        env.Append(LINKFLAGS='-Wl,--fix-cortex-a8'.split())
+    env.Append(LINKFLAGS='-Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now'.split())
+    env.Append(LINKFLAGS='-Wl,-soname,libgodot_android.so -Wl,--gc-sections'.split())
     if mt_link:
         env.Append(LINKFLAGS=['-Wl,--threads'])
     env.Append(LINKFLAGS=target_opts)

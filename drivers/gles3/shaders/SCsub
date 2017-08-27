@@ -2,7 +2,7 @@
 
 Import('env')
 
-if env['BUILDERS'].has_key('GLES3_GLSL'):
+if 'GLES3_GLSL' in env['BUILDERS']:
     env.GLES3_GLSL('copy.glsl');
     env.GLES3_GLSL('resolve.glsl');
     env.GLES3_GLSL('canvas.glsl');

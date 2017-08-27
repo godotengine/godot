@@ -1,4 +1,5 @@
 import os
+from compat import iteritems
 
 
 def add_source_files(self, sources, filetype, lib_env=None, shared=False):
@@ -21,7 +22,7 @@ def add_source_files(self, sources, filetype, lib_env=None, shared=False):
 def build_shader_header(target, source, env):
 
     for x in source:
-        print x
+        print(x)
 
         name = str(x)
         name = name[name.rfind("/") + 1:]
@@ -704,11 +705,11 @@ def include_file_in_legacygl_header(filename, header_data, depth):
             if (not included_file in header_data.vertex_included_files and header_data.reading == "vertex"):
                 header_data.vertex_included_files += [included_file]
                 if(include_file_in_legacygl_header(included_file, header_data, depth + 1) == None):
-                    print "Error in file '" + filename + "': #include " + includeline + "could not be found!"
+                    print("Error in file '" + filename + "': #include " + includeline + "could not be found!")
             elif (not included_file in header_data.fragment_included_files and header_data.reading == "fragment"):
                 header_data.fragment_included_files += [included_file]
                 if(include_file_in_legacygl_header(included_file, header_data, depth + 1) == None):
-                    print "Error in file '" + filename + "': #include " + includeline + "could not be found!"
+                    print("Error in file '" + filename + "': #include " + includeline + "could not be found!")
 
             line = fs.readline()
 
@@ -1160,7 +1161,7 @@ def update_version():
         print("Using custom revision: " + rev)
     import version
 
-    f = open("core/version_generated.gen.h", "wb")
+    f = open("core/version_generated.gen.h", "w")
     f.write("#define VERSION_SHORT_NAME " + str(version.short_name) + "\n")
     f.write("#define VERSION_NAME " + str(version.name) + "\n")
     f.write("#define VERSION_MAJOR " + str(version.major) + "\n")
@@ -1173,14 +1174,14 @@ def update_version():
     f.write("#define VERSION_YEAR " + str(datetime.datetime.now().year) + "\n")
     f.close()
 
-    fhash = open("core/version_hash.gen.h", "wb")
+    fhash = open("core/version_hash.gen.h", "w")
     githash = ""
     if os.path.isfile(".git/HEAD"):
-        head = open(".git/HEAD", "rb").readline().strip()
+        head = open(".git/HEAD", "r").readline().strip()
         if head.startswith("ref: "):
             head = ".git/" + head[5:]
             if os.path.isfile(head):
-                githash = open(head, "rb").readline().strip()
+                githash = open(head, "r").readline().strip()
         else:
             githash = head
     fhash.write("#define VERSION_HASH \"" + githash + "\"")
@@ -1308,7 +1309,7 @@ void unregister_module_types() {
 
 """
 
-    f = open("modules/register_module_types.gen.cpp", "wb")
+    f = open("modules/register_module_types.gen.cpp", "w")
     f.write(modules_cpp)
 
     return module_list
@@ -1328,9 +1329,9 @@ def win32_spawn(sh, escape, cmd, args, env):
     data, err = proc.communicate()
     rv = proc.wait()
     if rv:
-        print "====="
-        print err
-        print "====="
+        print("=====")
+        print(err)
+        print("=====")
     return rv
 
 """
@@ -1404,17 +1405,17 @@ def android_add_default_config(self, config):
 
 def android_add_to_manifest(self, file):
     base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + file
-    f = open(base_path, "rb")
+    f = open(base_path, "r")
     self.android_manifest_chunk += f.read()
 
 def android_add_to_permissions(self, file):
     base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + file
-    f = open(base_path, "rb")
+    f = open(base_path, "r")
     self.android_permission_chunk += f.read()
 
 def android_add_to_attributes(self, file):
     base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + file
-    f = open(base_path, "rb")
+    f = open(base_path, "r")
     self.android_appattributes_chunk += f.read()
 
 def disable_module(self):
@@ -1449,9 +1450,9 @@ def use_windows_spawn_fix(self, platform=None):
         data, err = proc.communicate()
         rv = proc.wait()
         if rv:
-            print "====="
-            print err
-            print "====="
+            print("=====")
+            print(err)
+            print("=====")
         return rv
 
     def mySpawn(sh, escape, cmd, args, env):
@@ -1460,7 +1461,7 @@ def use_windows_spawn_fix(self, platform=None):
         cmdline = cmd + " " + newargs
 
         rv = 0
-        env = {str(key): str(value) for key, value in env.iteritems()}
+        env = {str(key): str(value) for key, value in iteritems(env)}
         if len(cmdline) > 32000 and cmd.endswith("ar"):
             cmdline = cmd + " " + args[1] + " " + args[2] + " "
             for i in range(3, len(args)):
@@ -1540,7 +1541,7 @@ def save_active_platforms(apnames, ap):
             str += "};\n"
 
             wf = x + "/" + name + ".gen.h"
-            pngw = open(wf, "wb")
+            pngw = open(wf, "w")
             pngw.write(str)
 
 
@@ -1608,7 +1609,7 @@ def detect_visual_c_compiler_version(tools_env):
 
     # Start with Pre VS 2017 checks which uses VCINSTALLDIR:
     if 'VCINSTALLDIR' in tools_env:
-        # print "Checking VCINSTALLDIR"
+        # print("Checking VCINSTALLDIR")
 
         # find() works with -1 so big ifs bellow are needed... the simplest solution, in fact
         # First test if amd64 and amd64_x86 compilers are present in the path
@@ -1641,7 +1642,7 @@ def detect_visual_c_compiler_version(tools_env):
 
     # and for VS 2017 and newer we check VCTOOLSINSTALLDIR:
     if 'VCTOOLSINSTALLDIR' in tools_env:
-        # print "Checking VCTOOLSINSTALLDIR"
+        # print("Checking VCTOOLSINSTALLDIR")
 
         # Newer versions have a different path available
         vc_amd64_compiler_detection_index = tools_env["PATH"].upper().find(tools_env['VCTOOLSINSTALLDIR'].upper() + "BIN\\HOSTX64\\X64;")
@@ -1671,11 +1672,11 @@ def detect_visual_c_compiler_version(tools_env):
             vc_chosen_compiler_str = "x86_amd64"
 
     # debug help
-    # print vc_amd64_compiler_detection_index
-    # print vc_amd64_x86_compiler_detection_index
-    # print vc_x86_compiler_detection_index
-    # print vc_x86_amd64_compiler_detection_index
-    # print "chosen "+str(vc_chosen_compiler_index)+ " | "+str(vc_chosen_compiler_str)
+    # print(vc_amd64_compiler_detection_index)
+    # print(vc_amd64_x86_compiler_detection_index)
+    # print(vc_x86_compiler_detection_index)
+    # print(vc_x86_amd64_compiler_detection_index)
+    # print("chosen "+str(vc_chosen_compiler_index)+ " | "+str(vc_chosen_compiler_str))
 
     return vc_chosen_compiler_str
 

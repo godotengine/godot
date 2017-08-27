@@ -265,17 +265,17 @@ if selected_platform in platform_list:
     CCFLAGS = env.get('CCFLAGS', '')
     env['CCFLAGS'] = ''
 
-    env.Append(CCFLAGS=string.split(str(CCFLAGS)))
+    env.Append(CCFLAGS=str(CCFLAGS).split())
 
     CFLAGS = env.get('CFLAGS', '')
     env['CFLAGS'] = ''
 
-    env.Append(CFLAGS=string.split(str(CFLAGS)))
+    env.Append(CFLAGS=str(CFLAGS).split())
 
     LINKFLAGS = env.get('LINKFLAGS', '')
     env['LINKFLAGS'] = ''
 
-    env.Append(LINKFLAGS=string.split(str(LINKFLAGS)))
+    env.Append(LINKFLAGS=str(LINKFLAGS).split())
 
     flag_list = platform_flags[selected_platform]
     for f in flag_list:
