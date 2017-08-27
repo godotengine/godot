@@ -27,12 +27,14 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+#include "gd_script.h"
+
 #include "editor/editor_settings.h"
 #include "gd_compiler.h"
-#include "gd_script.h"
 #include "global_constants.h"
 #include "os/file_access.h"
 #include "project_settings.h"
+
 #ifdef TOOLS_ENABLED
 #include "editor/editor_file_system.h"
 #include "editor/editor_settings.h"
@@ -1672,21 +1674,6 @@ static void _find_type_arguments(GDCompletionContext &context, const GDParser::N
 									return; //found
 								}
 							}
-#if 0
-							//use class directly, no code was found
-							if (!isfunction) {
-								for (const Map<StringName,Variant>::Element *E=scr->get_constants().front();E;E=E->next()) {
-									options.insert(E->key());
-								}
-							}
-							for (const Map<StringName,GDFunction>::Element *E=scr->get_member_functions().front();E;E=E->next()) {
-								options.insert(String(E->key())+"(");
-							}
-
-							for (const Set<StringName>::Element *E=scr->get_members().front();E;E=E->next()) {
-								options.insert(E->get());
-							}
-#endif
 						}
 
 						if (scr->get_base().is_valid())
@@ -2027,99 +2014,6 @@ static void _find_call_arguments(GDCompletionContext &context, const GDParser::N
 			}
 		}
 	}
-#if 0
-	bool _static=context.function->_static;
-
-
-
-
-	for(int i=0;i<context._class->static_functions.size();i++) {
-		if (context._class->static_functions[i]->arguments.size())
-			result.insert(context._class->static_functions[i]->name.operator String()+"(");
-		else
-			result.insert(context._class->static_functions[i]->name.operator String()+"()");
-	}
-
-	if (!p_static) {
-
-		for(int i=0;i<context._class->functions.size();i++) {
-			if (context._class->functions[i]->arguments.size())
-				result.insert(context._class->functions[i]->name.operator String()+"(");
-			else
-				result.insert(context._class->functions[i]->name.operator String()+"()");
-		}
-	}
-
-	Ref<Reference> base = _get_parent_class(context);
-
-	while(true) {
-
-		Ref<GDScript> script = base;
-		Ref<GDNativeClass> nc = base;
-		if (script.is_valid()) {
-
-			if (!p_static && !p_only_functions) {
-				for (const Set<StringName>::Element *E=script->get_members().front();E;E=E->next()) {
-					result.insert(E->get().operator String());
-				}
-			}
-
-			if (!p_only_functions) {
-				for (const Map<StringName,Variant>::Element *E=script->get_constants().front();E;E=E->next()) {
-					result.insert(E->key().operator String());
-				}
-			}
-
-			for (const Map<StringName,GDFunction>::Element *E=script->get_member_functions().front();E;E=E->next()) {
-				if (!p_static || E->get().is_static()) {
-					if (E->get().get_argument_count())
-						result.insert(E->key().operator String()+"(");
-					else
-						result.insert(E->key().operator String()+"()");
-				}
-			}
-
-			if (!p_only_functions)	{
-				for (const Map<StringName,Ref<GDScript> >::Element *E=script->get_subclasses().front();E;E=E->next()) {
-					result.insert(E->key().operator String());
-				}
-			}
-
-			base=script->get_base();
-			if (base.is_null())
-				base=script->get_native();
-		} else if (nc.is_valid()) {
-
-			if (!p_only_functions) {
-
-				StringName type = nc->get_name();
-				List<String> constants;
-				ClassDB::get_integer_constant_list(type,&constants);
-				for(List<String>::Element *E=constants.front();E;E=E->next()) {
-					result.insert(E->get());
-				}
-
-				List<MethodInfo> methods;
-				ClassDB::get_method_list(type,&methods);
-				for(List<MethodInfo>::Element *E=methods.front();E;E=E->next()) {
-					if (E->get().arguments.size())
-						result.insert(E->get().name+"(");
-					else
-						result.insert(E->get().name+"()");
-				}
-			}
-			break;
-		} else
-			break;
-
-	}
-
-	for(int i=0;i<GDFunctions::FUNC_MAX;i++) {
-
-		result.insert(GDFunctions::get_func_name(GDFunctions::Function(i)));
-	}
-
-#endif
 }
 
 Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base_path, Object *p_owner, List<String> *r_options, bool &r_forced, String &r_call_hint) {
@@ -2852,18 +2746,6 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 						}
 					}
 				}
-#if 0
-				GDCompletionIdentifier identifier;
-				if (_guess_identifier_type(context,p.get_completion_line(),p_symbol,identifier)) {
-
-					print_line("var type: "+Variant::get_type_name(identifier.type));
-					if (identifier.script.is_valid()) {
-						print_line("var script: "+identifier.script->get_path());
-					}
-					print_line("obj type: "+String(identifier.obj_type));
-					print_line("value: "+String(identifier.value));
-				}
-#endif
 			}
 
 		} break;

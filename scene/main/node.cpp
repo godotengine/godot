@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "node.h"
+
 #include "instance_placeholder.h"
 #include "io/resource_loader.h"
 #include "message_queue.h"
@@ -360,18 +361,6 @@ void Node::add_child_notify(Node *p_child) {
 	// to be used when not wanted
 }
 
-/*
-void Node::remove_and_delete_child(Node *p_child) {
-
-	ERR_FAIL_NULL( p_child );
-	ERR_FAIL_COND( p_child->get_parent()!=this );
-
-	remove_child(p_child);
-	memdelete(p_child);
-
-}
-*/
-
 void Node::remove_child_notify(Node *p_child) {
 
 	// to be used when not wanted
@@ -675,31 +664,6 @@ Variant Node::_rpc_unreliable_id_bind(const Variant **p_args, int p_argcount, Va
 	return Variant();
 }
 
-#if 0
-Variant Node::_rpc_bind(const Variant** p_args, int p_argcount, Variant::CallError& r_error) {
-
-	if (p_argcount<1) {
-		r_error.error=Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-		r_error.argument=1;
-		return Variant();
-	}
-
-	if (p_args[0]->get_type()!=Variant::STRING) {
-		r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
-		r_error.argument=0;
-		r_error.expected=Variant::STRING;
-		return Variant();
-	}
-
-	StringName method = *p_args[0];
-
-	rpcp(method,&p_args[1],p_argcount-1);
-
-	r_error.error=Variant::CallError::CALL_OK;
-	return Variant();
-}
-
-#endif
 void Node::rpcp(int p_peer_id, bool p_unreliable, const StringName &p_method, const Variant **p_arg, int p_argcount) {
 
 	ERR_FAIL_COND(!is_inside_tree());
@@ -2070,59 +2034,6 @@ HashMap<NodePath, int> Node::get_editable_instances() const {
 	return data.editable_instances;
 }
 
-#if 0
-
-void Node::generate_instance_state() {
-
-	List<PropertyInfo> properties;
-	get_property_list(&properties);
-
-	data.instance_state.clear();
-
-	for( List<PropertyInfo>::Element *E=properties.front();E;E=E->next() ) {
-
-		PropertyInfo &pi=E->get();
-		if ((pi.usage&PROPERTY_USAGE_NO_INSTANCE_STATE) || !(pi.usage&PROPERTY_USAGE_EDITOR) || !(pi.usage&PROPERTY_USAGE_STORAGE))
-			continue;
-
-		data.instance_state[pi.name]=get(pi.name);
-	}
-
-	List<GroupInfo> groups;
-	get_groups(&groups);
-	for(List<GroupInfo>::Element *E=groups.front();E;E=E->next()) {
-
-		if (!E->get().persistent)
-			continue;
-		data.instance_groups.push_back(E->get().name);
-	}
-
-	List<MethodInfo> signal_list;
-
-	get_signal_list(&signal_list);
-
-	for(List<MethodInfo>::Element *E=signal_list.front();E;E=E->next()) {
-
-		StringName name = E->get().name;
-		List<Connection> connections;
-		get_signal_connection_list(name,&connections);
-
-		for(List<Connection>::Element *F=connections.front();F;F=F->next()) {
-
-			if (F->get().flags&CONNECT_PERSIST)
-				data.instance_connections.push_back(F->get());
-		}
-
-	}
-}
-
-Dictionary Node::get_instance_state() const {
-
-	return data.instance_state;
-}
-
-#endif
-
 void Node::set_scene_instance_state(const Ref<SceneState> &p_state) {
 
 	data.instance_state = p_state;
@@ -2752,7 +2663,6 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_name"), &Node::get_name);
 	ClassDB::bind_method(D_METHOD("add_child", "node", "legible_unique_name"), &Node::add_child, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_child", "node"), &Node::remove_child);
-	//ClassDB::bind_method(D_METHOD("remove_and_delete_child","node"),&Node::remove_and_delete_child);
 	ClassDB::bind_method(D_METHOD("get_child_count"), &Node::get_child_count);
 	ClassDB::bind_method(D_METHOD("get_children"), &Node::_get_children);
 	ClassDB::bind_method(D_METHOD("get_child", "idx"), &Node::get_child);
@@ -2864,7 +2774,6 @@ void Node::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_ENTER_TREE);
 	BIND_CONSTANT(NOTIFICATION_EXIT_TREE);
 	BIND_CONSTANT(NOTIFICATION_MOVED_IN_PARENT);
-	//BIND_CONSTANT( NOTIFICATION_PARENT_DECONFIGURED );
 	BIND_CONSTANT(NOTIFICATION_READY);
 	BIND_CONSTANT(NOTIFICATION_FIXED_PROCESS);
 	BIND_CONSTANT(NOTIFICATION_PROCESS);

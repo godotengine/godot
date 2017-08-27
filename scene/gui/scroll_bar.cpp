@@ -28,9 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "scroll_bar.h"
+
 #include "os/keyboard.h"
 #include "os/os.h"
 #include "print_string.h"
+
 bool ScrollBar::focus_by_default = false;
 
 void ScrollBar::set_can_focus_by_default(bool p_can_focus) {
@@ -685,138 +687,6 @@ void ScrollBar::set_smooth_scroll_enabled(bool p_enable) {
 bool ScrollBar::is_smooth_scroll_enabled() const {
 	return smooth_scroll_enabled;
 }
-
-#if 0
-
-void ScrollBar::mouse_button(const Point2& p_pos, int b->get_button_index(),bool b->is_pressed(),int p_modifier_mask) {
-
-	// wheel!
-
-	if (b->get_button_index()==BUTTON_WHEEL_UP && b->is_pressed()) {
-
-		if (orientation==VERTICAL)
-			set_val( get_val() - get_page() / 4.0 );
-		else
-			set_val( get_val() + get_page() / 4.0 );
-
-	}
-	if (b->get_button_index()==BUTTON_WHEEL_DOWN && b->is_pressed()) {
-
-		if (orientation==HORIZONTAL)
-			set_val( get_val() - get_page() / 4.0 );
-		else
-			set_val( get_val() + get_page() / 4.0  );
-	}
-
-	if (b->get_button_index()!=BUTTON_LEFT)
-		return;
-
-	if (b->is_pressed()) {
-
-		int ofs = orientation==VERTICAL ? p_pos.y : p_pos.x ;
-		int grabber_ofs = get_grabber_offset();
-		int grabber_size = get_grabber_size();
-
-		if ( ofs < grabber_ofs ) {
-
-			set_val( get_val() - get_page() );
-
-		} else if (ofs > grabber_ofs + grabber_size ) {
-
-			set_val( get_val() + get_page() );
-
-		} else {
-
-
-			drag.active=true;
-			drag.pos_at_click=get_click_pos(p_pos);
-			drag.value_at_click=get_unit_value();
-		}
-
-
-	} else {
-
-		drag.active=false;
-	}
-
-}
-void ScrollBar::mouse_motion(const Point2& p_pos, const Point2& p_rel, int b->get_button_index()_mask) {
-
-	if (!drag.active)
-		return;
-
-	double value_ofs=drag.value_at_click+(get_click_pos(p_pos)-drag.pos_at_click);
-
-
-	value_ofs=value_ofs*( get_max() - get_min() );
-	if (value_ofs<get_min())
-		value_ofs=get_min();
-	if (value_ofs>(get_max()-get_page()))
-		value_ofs=get_max()-get_page();
-	if (get_val()==value_ofs)
-		return; //don't bother if the value is the same
-
-	set_val( value_ofs );
-
-}
-
-bool ScrollBar::key(unsigned long p_unicode, unsigned long p_scan_code,bool b->is_pressed(),bool p_repeat,int p_modifier_mask) {
-
-	if (!b->is_pressed())
-		return false;
-
-	switch (p_scan_code) {
-
-	case KEY_LEFT: {
-
-		if (orientation!=HORIZONTAL)
-			return false;
-		set_val( get_val() - get_step() );
-
-	} break;
-	case KEY_RIGHT: {
-
-		if (orientation!=HORIZONTAL)
-			return false;
-		set_val( get_val() + get_step() );
-
-	} break;
-	case KEY_UP: {
-
-		if (orientation!=VERTICAL)
-			return false;
-
-		set_val( get_val() - get_step() );
-
-
-	} break;
-	case KEY_DOWN: {
-
-		if (orientation!=VERTICAL)
-			return false;
-		set_val( get_val() + get_step() );
-
-	} break;
-	case KEY_HOME: {
-
-		set_val( get_min() );
-
-	} break;
-	case KEY_END: {
-
-		set_val( get_max() );
-
-	} break;
-
-	default:
-		return false;
-
-	}
-
-	return true;
-}
-
-#endif
 
 void ScrollBar::_bind_methods() {
 

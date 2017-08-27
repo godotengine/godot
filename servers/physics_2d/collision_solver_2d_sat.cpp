@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "collision_solver_2d_sat.h"
+
 #include "geometry.h"
 
 struct _CollectorCallback2D {
@@ -89,124 +90,6 @@ _FORCE_INLINE_ static void _generate_contacts_edge_edge(const Vector2 *p_points_
 	ERR_FAIL_COND(p_point_count_B != 2); // circle is actually a 4x3 matrix
 #endif
 
-#if 0
-	Vector2 rel_A=p_points_A[1]-p_points_A[0];
-	Vector2 rel_B=p_points_B[1]-p_points_B[0];
-
-	Vector2 t = p_collector->normal.tangent();
-
-	print_line("tangent: "+t);
-
-	real_t dA[2]={t.dot(p_points_A[0]),t.dot(p_points_A[1])};
-	Vector2 pA[2]={p_points_A[0],p_points_A[1]};
-
-	if (dA[0]>dA[1]) {
-		SWAP(dA[0],dA[1]);
-		SWAP(pA[0],pA[1]);
-	}
-
-	real_t dB[2]={t.dot(p_points_B[0]),t.dot(p_points_B[1])};
-	Vector2 pB[2]={p_points_B[0],p_points_B[1]};
-	if (dB[0]>dB[1]) {
-		SWAP(dB[0],dB[1]);
-		SWAP(pB[0],pB[1]);
-	}
-
-
-	if (dA[0]<dB[0]) {
-
-		Vector2 n = (p_points_A[1]-p_points_A[0]).normalized().tangent();
-		real_t d = n.dot(p_points_A[1]);
-
-		if (dA[1]>dB[1]) {
-			//A contains B
-			for(int i=0;i<2;i++) {
-
-				Vector2 b = p_points_B[i];
-				Vector2 a = n.plane_project(d,b);
-				if (p_collector->normal.dot(a) > p_collector->normal.dot(b)-CMP_EPSILON)
-					continue;
-				p_collector->call(a,b);
-
-			}
-		} else {
-
-			// B0,A1 containment
-
-			Vector2 n_B = (p_points_B[1]-p_points_B[0]).normalized().tangent();
-			real_t d_B = n_B.dot(p_points_B[1]);
-
-			// first, B on A
-
-			{
-				Vector2 b = p_points_B[0];
-				Vector2 a = n.plane_project(d,b);
-				if (p_collector->normal.dot(a) < p_collector->normal.dot(b)-CMP_EPSILON)
-					p_collector->call(a,b);
-			}
-
-			// second, A on B
-
-			{
-				Vector2 a = p_points_A[1];
-				Vector2 b = n_B.plane_project(d_B,a);
-				if (p_collector->normal.dot(a) < p_collector->normal.dot(b)-CMP_EPSILON)
-					p_collector->call(a,b);
-			}
-
-
-
-		}
-
-
-	} else {
-
-		Vector2 n = (p_points_B[1]-p_points_B[0]).normalized().tangent();
-		real_t d = n.dot(p_points_B[1]);
-
-		if (dB[1]>dA[1]) {
-			//B contains A
-			for(int i=0;i<2;i++) {
-
-				Vector2 a = p_points_A[i];
-				Vector2 b = n.plane_project(d,a);
-				if (p_collector->normal.dot(a) > p_collector->normal.dot(b)-CMP_EPSILON)
-					continue;
-				p_collector->call(a,b);
-			}
-		} else {
-
-			// A0,B1 containment
-			Vector2 n_A = (p_points_A[1]-p_points_A[0]).normalized().tangent();
-			real_t d_A = n_A.dot(p_points_A[1]);
-
-			// first A on B
-
-			{
-				Vector2 a = p_points_A[0];
-				Vector2 b = n.plane_project(d,a);
-				if (p_collector->normal.dot(a) < p_collector->normal.dot(b)-CMP_EPSILON)
-					p_collector->call(a,b);
-
-			}
-
-			//second, B on A
-
-			{
-
-				Vector2 b = p_points_B[1];
-				Vector2 a = n_A.plane_project(d_A,b);
-				if (p_collector->normal.dot(a) < p_collector->normal.dot(b)-CMP_EPSILON)
-					p_collector->call(a,b);
-			}
-
-		}
-	}
-
-#endif
-
-#if 1
-
 	Vector2 n = p_collector->normal;
 	Vector2 t = n.tangent();
 	real_t dA = n.dot(p_points_A[0]);
@@ -246,38 +129,6 @@ _FORCE_INLINE_ static void _generate_contacts_edge_edge(const Vector2 *p_points_
 			p_collector->call(a, b);
 		}
 	}
-
-#elif 0
-	Vector2 axis = rel_A.normalized(); //make an axis
-	Vector2 axis_B = rel_B.normalized();
-	if (axis.dot(axis_B) < 0)
-		axis_B = -axis_B;
-	axis = (axis + axis_B) * 0.5;
-	Vector2 base_A = p_points_A[0] - axis * axis.dot(p_points_A[0]);
-	Vector2 base_B = p_points_B[0] - axis * axis.dot(p_points_B[0]);
-
-	//sort all 4 points in axis
-	real_t dvec[4] = { axis.dot(p_points_A[0]), axis.dot(p_points_A[1]), axis.dot(p_points_B[0]), axis.dot(p_points_B[1]) };
-
-	//todo , find max/min and then use 2 central points
-	SortArray<real_t> sa;
-	sa.sort(dvec, 4);
-
-	//use the middle ones as contacts
-	for (int i = 1; i <= 2; i++) {
-
-		Vector2 a = base_A + axis * dvec[i];
-		Vector2 b = base_B + axis * dvec[i];
-		if (p_collector->normal.dot(a) > p_collector->normal.dot(b) - 0.01) {
-			print_line("fail a: " + a);
-			print_line("fail b: " + b);
-			continue;
-		}
-		print_line("res a: " + a);
-		print_line("res b: " + b);
-		p_collector->call(a, b);
-	}
-#endif
 }
 
 static void _generate_contacts_from_supports(const Vector2 *p_points_A, int p_point_count_A, const Vector2 *p_points_B, int p_point_count_B, _CollectorCallback2D *p_collector) {
@@ -504,37 +355,11 @@ public:
 			}
 		}
 
-		/*
-
-
-		print_line("**************************");
-		printf("CBK: %p\n",callback->userdata);
-		print_line("type A: "+itos(shape_A->get_type()));
-		print_line("type B: "+itos(shape_B->get_type()));
-		print_line("xform A: "+*transform_A);
-		print_line("xform B: "+*transform_B);
-		print_line("normal: "+best_axis);
-		print_line("depth: "+rtos(best_depth));
-		print_line("index: "+itos(best_axis_index));
-
-		for(int i=0;i<support_count_A;i++) {
-
-			print_line("A-"+itos(i)+": "+supports_A[i]);
-		}
-
-		for(int i=0;i<support_count_B;i++) {
-
-			print_line("B-"+itos(i)+": "+supports_B[i]);
-		}
-//*/
-
 		callback->normal = best_axis;
 		_generate_contacts_from_supports(supports_A, support_count_A, supports_B, support_count_B, callback);
 
 		if (callback && callback->sep_axis && *callback->sep_axis != Vector2())
 			*callback->sep_axis = Vector2(); //invalidate previous axis (no test)
-		//CollisionSolver2DSW::CallbackResult cbk=NULL;
-		//cbk(Vector2(),Vector2(),NULL);
 	}
 
 	_FORCE_INLINE_ SeparatorAxisTest2D(const ShapeA *p_shape_A, const Transform2D &p_transform_a, const ShapeB *p_shape_B, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_A = Vector2(), const Vector2 &p_motion_B = Vector2(), real_t p_margin_A = 0, real_t p_margin_B = 0) {
@@ -558,9 +383,6 @@ public:
 };
 
 /****** SAT TESTS *******/
-/****** SAT TESTS *******/
-/****** SAT TESTS *******/
-/****** SAT TESTS *******/
 
 #define TEST_POINT(m_a, m_b)                                                                \
 	((!separator.test_axis(((m_a) - (m_b)).normalized())) ||                                \
@@ -581,11 +403,6 @@ static void _collision_segment_segment(const Shape2DSW *p_a, const Transform2D &
 	if (!separator.test_previous_axis())
 		return;
 	//this collision is kind of pointless
-
-	/*
-	if (!separator.test_previous_axis())
-		return;
-	*/
 
 	if (!separator.test_cast())
 		return;

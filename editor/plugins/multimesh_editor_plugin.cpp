@@ -144,22 +144,7 @@ void MultiMeshEditor::_populate() {
 	}
 
 	w = PoolVector<Face3>::Write();
-#if 0
-	node->get_multimesh()->set_instance_count(populate_amount->get_val());
-	node->populate_parent(populate_rotate_random->get_val(),populate_tilt_random->get_val(),populate_scale_random->get_val(),populate_scale->get_val());
 
-
-	ERR_EXPLAIN("Parent is not of type VisualInstance.");
-	ERR_FAIL_COND(!get_parent() || !get_parent()->is_type("VisualInstance"));
-
-	ERR_EXPLAIN("Multimesh not present.");
-	ERR_FAIL_COND(multimesh.is_null());
-
-	VisualInstance *vi = Object::cast_to<VisualInstance>(get_parent());
-	ERR_EXPLAIN("Parent is not of type VisualInstance, can't be populated.");
-	ERR_FAIL_COND(!vi);
-
-#endif
 	PoolVector<Face3> faces = geometry;
 	ERR_EXPLAIN(TTR("Parent has no solid faces to populate."));
 	int facecount = faces.size();

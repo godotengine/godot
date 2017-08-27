@@ -1145,12 +1145,6 @@ def build_legacygl_headers(target, source, env):
     return 0
 
 
-def build_gles2_headers(target, source, env):
-
-    for x in source:
-        build_legacygl_header(str(x), include="drivers/gles2/shader_gles2.h", class_suffix="GLES2", output_attribs=True)
-
-
 def build_gles3_headers(target, source, env):
 
     for x in source:

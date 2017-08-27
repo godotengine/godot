@@ -30,6 +30,7 @@
 #ifndef SHADER_GRAPH_H
 #define SHADER_GRAPH_H
 
+// FIXME: Needs to be ported to the new 3.0 shader API
 #if 0
 #include "map.h"
 #include "scene/resources/shader.h"

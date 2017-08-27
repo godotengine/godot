@@ -125,51 +125,6 @@ Vector3 Vector3::cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, c
 	return out;
 }
 
-#if 0
-Vector3 Vector3::cubic_interpolate(const Vector3& p_b,const Vector3& p_pre_a, const Vector3& p_post_b,real_t p_t) const {
-
-	Vector3 p0=p_pre_a;
-	Vector3 p1=*this;
-	Vector3 p2=p_b;
-	Vector3 p3=p_post_b;
-
-	if (true) {
-
-		real_t ab = p0.distance_to(p1);
-		real_t bc = p1.distance_to(p2);
-		real_t cd = p2.distance_to(p3);
-
-		//if (ab>bc) {
-		if (ab>0)
-			p0 = p1+(p0-p1)*(bc/ab);
-		//}
-
-		//if (cd>bc) {
-		if (cd>0)
-			p3 = p2+(p3-p2)*(bc/cd);
-		//}
-	}
-
-	real_t t = p_t;
-	real_t t2 = t * t;
-	real_t t3 = t2 * t;
-
-	Vector3 out;
-	out.x = 0.5 * ( ( 2.0 * p1.x ) +
-	( -p0.x + p2.x ) * t +
-	( 2.0 * p0.x - 5.0 * p1.x + 4 * p2.x - p3.x ) * t2 +
-	( -p0.x + 3.0 * p1.x - 3.0 * p2.x + p3.x ) * t3 );
-	out.y = 0.5 * ( ( 2.0 * p1.y ) +
-	( -p0.y + p2.y ) * t +
-	( 2.0 * p0.y - 5.0 * p1.y + 4 * p2.y - p3.y ) * t2 +
-	( -p0.y + 3.0 * p1.y - 3.0 * p2.y + p3.y ) * t3 );
-	out.z = 0.5 * ( ( 2.0 * p1.z ) +
-	( -p0.z + p2.z ) * t +
-	( 2.0 * p0.z - 5.0 * p1.z + 4 * p2.z - p3.z ) * t2 +
-	( -p0.z + 3.0 * p1.z - 3.0 * p2.z + p3.z ) * t3 );
-	return out;
-}
-#endif
 Vector3::operator String() const {
 
 	return (rtos(x) + ", " + rtos(y) + ", " + rtos(z));

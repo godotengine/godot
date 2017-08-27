@@ -28,8 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "shader_graph.h"
+
 #include "scene/scene_string_names.h"
 
+// FIXME: Needs to be ported to the new 3.0 shader API
 #if 0
 Array ShaderGraph::_get_node_list(ShaderType p_type) const {
 
@@ -397,79 +399,6 @@ void ShaderGraph::_bind_methods() {
 	BIND_ENUM_CONSTANT( VEC_MAX_FUNC );
 
 	ADD_SIGNAL(MethodInfo("updated"));
-
-#if 0
-	ClassDB::bind_method(D_METHOD("node_add"),&ShaderGraph::node_add );
-	ClassDB::bind_method(D_METHOD("node_remove"),&ShaderGraph::node_remove );
-	ClassDB::bind_method(D_METHOD("node_set_param"),&ShaderGraph::node_set_param );
-	ClassDB::bind_method(D_METHOD("node_set_pos"),&ShaderGraph::node_set_pos );
-
-	ClassDB::bind_method(D_METHOD("node_get_pos"),&ShaderGraph::node_get_pos );
-	ClassDB::bind_method(D_METHOD("node_get_param"),&ShaderGraph::node_get_param);
-	ClassDB::bind_method(D_METHOD("node_get_type"),&ShaderGraph::node_get_type);
-
-	ClassDB::bind_method(D_METHOD("connect"),&ShaderGraph::connect );
-	ClassDB::bind_method(D_METHOD("disconnect"),&ShaderGraph::disconnect );
-
-	ClassDB::bind_method(D_METHOD("get_connections"),&ShaderGraph::_get_connections_helper );
-
-	ClassDB::bind_method(D_METHOD("clear"),&ShaderGraph::clear );
-
-	BIND_ENUM_CONSTANT( NODE_IN ); ///< param 0: name
-	BIND_ENUM_CONSTANT( NODE_OUT ); ///< param 0: name
-	BIND_ENUM_CONSTANT( NODE_CONSTANT ); ///< param 0: value
-	BIND_ENUM_CONSTANT( NODE_PARAMETER ); ///< param 0: name
-	BIND_ENUM_CONSTANT( NODE_ADD );
-	BIND_ENUM_CONSTANT( NODE_SUB );
-	BIND_ENUM_CONSTANT( NODE_MUL );
-	BIND_ENUM_CONSTANT( NODE_DIV );
-	BIND_ENUM_CONSTANT( NODE_MOD );
-	BIND_ENUM_CONSTANT( NODE_SIN );
-	BIND_ENUM_CONSTANT( NODE_COS );
-	BIND_ENUM_CONSTANT( NODE_TAN );
-	BIND_ENUM_CONSTANT( NODE_ARCSIN );
-	BIND_ENUM_CONSTANT( NODE_ARCCOS );
-	BIND_ENUM_CONSTANT( NODE_ARCTAN );
-	BIND_ENUM_CONSTANT( NODE_POW );
-	BIND_ENUM_CONSTANT( NODE_LOG );
-	BIND_ENUM_CONSTANT( NODE_MAX );
-	BIND_ENUM_CONSTANT( NODE_MIN );
-	BIND_ENUM_CONSTANT( NODE_COMPARE );
-	BIND_ENUM_CONSTANT( NODE_TEXTURE ); ///< param  0: texture
-	BIND_ENUM_CONSTANT( NODE_TIME ); ///< param  0: interval length
-	BIND_ENUM_CONSTANT( NODE_NOISE );
-	BIND_ENUM_CONSTANT( NODE_PASS );
-	BIND_ENUM_CONSTANT( NODE_VEC_IN ); ///< param 0: name
-	BIND_ENUM_CONSTANT( NODE_VEC_OUT ); ///< param 0: name
-	BIND_ENUM_CONSTANT( NODE_VEC_CONSTANT ); ///< param  0: value
-	BIND_ENUM_CONSTANT( NODE_VEC_PARAMETER ); ///< param  0: name
-	BIND_ENUM_CONSTANT( NODE_VEC_ADD );
-	BIND_ENUM_CONSTANT( NODE_VEC_SUB );
-	BIND_ENUM_CONSTANT( NODE_VEC_MUL );
-	BIND_ENUM_CONSTANT( NODE_VEC_DIV );
-	BIND_ENUM_CONSTANT( NODE_VEC_MOD );
-	BIND_ENUM_CONSTANT( NODE_VEC_CROSS );
-	BIND_ENUM_CONSTANT( NODE_VEC_DOT );
-	BIND_ENUM_CONSTANT( NODE_VEC_POW );
-	BIND_ENUM_CONSTANT( NODE_VEC_NORMALIZE );
-	BIND_ENUM_CONSTANT( NODE_VEC_TRANSFORM3 );
-	BIND_ENUM_CONSTANT( NODE_VEC_TRANSFORM4 );
-	BIND_ENUM_CONSTANT( NODE_VEC_COMPARE );
-	BIND_ENUM_CONSTANT( NODE_VEC_TEXTURE_2D );
-	BIND_ENUM_CONSTANT( NODE_VEC_TEXTURE_CUBE );
-	BIND_ENUM_CONSTANT( NODE_VEC_NOISE );
-	BIND_ENUM_CONSTANT( NODE_VEC_0 );
-	BIND_ENUM_CONSTANT( NODE_VEC_1 );
-	BIND_ENUM_CONSTANT( NODE_VEC_2 );
-	BIND_ENUM_CONSTANT( NODE_VEC_BUILD );
-	BIND_ENUM_CONSTANT( NODE_VEC_PASS );
-	BIND_ENUM_CONSTANT( NODE_COLOR_CONSTANT );
-	BIND_ENUM_CONSTANT( NODE_COLOR_PARAMETER );
-	BIND_ENUM_CONSTANT( NODE_TEXTURE_PARAMETER );
-	BIND_ENUM_CONSTANT( NODE_TEXTURE_2D_PARAMETER );
-	BIND_ENUM_CONSTANT( NODE_TEXTURE_CUBE_PARAMETER );
-	BIND_ENUM_CONSTANT( NODE_TYPE_MAX );
-#endif
 }
 
 

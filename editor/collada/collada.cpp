@@ -31,7 +31,7 @@
 
 #include "collada.h"
 
-#include "stdio.h"
+#include <stdio.h>
 
 //#define DEBUG_DEFAULT_ANIMATION
 //#define DEBUG_COLLADA
@@ -671,15 +671,7 @@ void Collada::_parse_effect_material(XMLParser &parser, Effect &effect, String &
 							}
 
 						} else if (what == "shininess") {
-#if 1
 							effect.shininess = _parse_param(parser);
-#else
-
-							parser.read();
-							float shininess = parser.get_node_data().to_double();
-							effect.shininess = shininess;
-							COLLADA_PRINT("shininess: " + rtos(shininess));
-#endif
 						}
 					} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && (parser.get_node_name() == "constant" ||
 																								parser.get_node_name() == "lambert" ||
@@ -2505,7 +2497,7 @@ void Collada::_optimize() {
 		for (int i = 0; i < vs.root_nodes.size(); i++) {
 			_create_skeletons(&vs.root_nodes[i]);
 		}
-#if 1
+
 		for (int i = 0; i < vs.root_nodes.size(); i++) {
 			_merge_skeletons(&vs, vs.root_nodes[i]);
 		}
@@ -2531,7 +2523,7 @@ void Collada::_optimize() {
 				mgeom.pop_front();
 			}
 		}
-#endif
+
 		for (int i = 0; i < vs.root_nodes.size(); i++) {
 			_find_morph_nodes(&vs, vs.root_nodes[i]);
 		}

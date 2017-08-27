@@ -33,24 +33,6 @@
 #include "scene/scene_string_names.h"
 
 void Path::_notification(int p_what) {
-#if 0
-	if (p_what==NOTIFICATION_DRAW && curve.is_valid() && is_inside_scene() && Engine::get_singleton()->is_editor_hint()) {
-		//draw the curve!!
-
-		for(int i=0;i<curve->get_point_count();i++) {
-
-			Vector2 prev_p=curve->get_point_pos(i);
-
-			for(int j=1;j<=8;j++) {
-
-				real_t frac = j/8.0;
-				Vector2 p = curve->interpolate(i,frac);
-				draw_line(prev_p,p,Color(0.5,0.6,1.0,0.7),2);
-				prev_p=p;
-			}
-		}
-	}
-#endif
 }
 
 void Path::_curve_changed() {

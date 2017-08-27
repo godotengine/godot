@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "shape_2d_sw.h"
+
 #include "geometry.h"
 #include "sort.h"
 

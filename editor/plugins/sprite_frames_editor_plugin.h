@@ -76,11 +76,9 @@ class SpriteFramesEditor : public PanelContainer {
 	void _empty_pressed();
 	void _empty2_pressed();
 	void _delete_pressed();
-	void _delete_confirm_pressed();
 	void _up_pressed();
 	void _down_pressed();
 	void _update_library(bool p_skip_selector = false);
-	void _item_edited();
 
 	void _animation_select();
 	void _animation_name_edited();

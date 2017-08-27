@@ -1053,16 +1053,6 @@ MainLoop *test(TestType p_type) {
 		memdelete(fw);
 	}
 
-#if 0
-	Parser parser;
-	Error err = parser.parse(code);
-	if (err) {
-		print_line("error:"+itos(parser.get_error_line())+":"+itos(parser.get_error_column())+":"+parser.get_error());
-	} else {
-		print_line("Parse O-K!");
-	}
-#endif
-
 	memdelete(fa);
 
 	return NULL;

@@ -41,6 +41,7 @@
 #include "scene/animation/animation_player.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/packed_scene.h"
+
 #include <iostream>
 
 struct ColladaImport {
@@ -1238,173 +1239,10 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 
 			Array mr;
 
-////////////////////////////
-// THEN THE MORPH TARGETS //
-////////////////////////////
-#if 0
-			if (p_morph_data) {
+			////////////////////////////
+			// THEN THE MORPH TARGETS //
+			////////////////////////////
 
-				//add morphie target
-				ERR_FAIL_COND_V( !p_morph_data->targets.has("MORPH_TARGET"), ERR_INVALID_DATA );
-				String mt = p_morph_data->targets["MORPH_TARGET"];
-				ERR_FAIL_COND_V( !p_morph_data->sources.has(mt), ERR_INVALID_DATA);
-				int morph_targets = p_morph_data->sources[mt].sarray.size();
-				mr.resize(morph_targets);
-
-				for(int j=0;j<morph_targets;j++) {
-
-					Array mrt;
-					mrt.resize(VS::ARRAY_MAX);
-
-					String target = p_morph_data->sources[mt].sarray[j];
-					ERR_FAIL_COND_V( !collada.state.mesh_data_map.has(target), ERR_INVALID_DATA );
-					String name = collada.state.mesh_data_map[target].name;
-					Collada::MeshData &md = collada.state.mesh_data_map[target];
-
-					// collada in itself supports morphing everything. However, the spec is unclear and no examples or exporters that
-					// morph anything but "POSITIONS" seem to exit. Because of this, normals and binormals/tangents have to be regenerated here,
-					// which may result in inaccurate (but most of the time good enough) results.
-
-					PoolVector<Vector3> vertices;
-					vertices.resize(vlen);
-
-					ERR_FAIL_COND_V( md.vertices.size() != 1, ERR_INVALID_DATA);
-					String vertex_src_id=md.vertices.front()->key();
-					ERR_FAIL_COND_V(!md.vertices[vertex_src_id].sources.has("POSITION"),ERR_INVALID_DATA);
-					String position_src_id = md.vertices[vertex_src_id].sources["POSITION"];
-
-					ERR_FAIL_COND_V(!md.sources.has(position_src_id),ERR_INVALID_DATA);
-
-					const Collada::MeshData::Source *m=&md.sources[position_src_id];
-
-					ERR_FAIL_COND_V( m->array.size() != vertex_src->array.size(), ERR_INVALID_DATA);
-					int stride=m->stride;
-					if (stride==0)
-						stride=3;
-
-
-					//read vertices from morph target
-					PoolVector<Vector3>::Write vertw = vertices.write();
-
-					for(int m_i=0;m_i<m->array.size()/stride;m_i++) {
-
-						int pos = m_i*stride;
-						Vector3 vtx( m->array[pos+0], m->array[pos+1], m->array[pos+2] );
-
-#ifndef NO_UP_AXIS_SWAP
-						if (collada.state.up_axis==Vector3::AXIS_Z) {
-
-							SWAP( vtx.z, vtx.y );
-							vtx.z = -vtx.z;
-
-						}
-#endif
-
-						Collada::Vertex vertex;
-						vertex.vertex=vtx;
-						vertex.fix_unit_scale(collada);
-						vtx=vertex.vertex;
-
-						vtx = p_local_xform.xform(vtx);
-
-
-						if (vertex_map.has(m_i)) { //vertex may no longer be here, don't bother converting
-
-
-							for (Set<int> ::Element *E=vertex_map[m_i].front() ; E; E=E->next() ) {
-
-								vertw[E->get()]=vtx;
-							}
-						}
-					}
-
-
-					//vertices are in place, now generate everything else
-					vertw = PoolVector<Vector3>::Write();
-					PoolVector<Vector3> normals;
-					PoolVector<float> tangents;
-					print_line("vertex source id: "+vertex_src_id);
-					if(md.vertices[vertex_src_id].sources.has("NORMAL")){
-						//has normals
-						normals.resize(vlen);
-						//std::cout << "has normals" << std::endl;
-						String normal_src_id = md.vertices[vertex_src_id].sources["NORMAL"];
-						//std::cout << "normals source: "<< normal_src_id.utf8().get_data() <<std::endl;
-						ERR_FAIL_COND_V(!md.sources.has(normal_src_id),ERR_INVALID_DATA);
-
-						const Collada::MeshData::Source *m=&md.sources[normal_src_id];
-
-						ERR_FAIL_COND_V( m->array.size() != vertex_src->array.size(), ERR_INVALID_DATA);
-						int stride=m->stride;
-						if (stride==0)
-							stride=3;
-
-
-						//read normals from morph target
-						PoolVector<Vector3>::Write vertw = normals.write();
-
-						for(int m_i=0;m_i<m->array.size()/stride;m_i++) {
-
-							int pos = m_i*stride;
-							Vector3 vtx( m->array[pos+0], m->array[pos+1], m->array[pos+2] );
-
-#ifndef NO_UP_AXIS_SWAP
-							if (collada.state.up_axis==Vector3::AXIS_Z) {
-
-								SWAP( vtx.z, vtx.y );
-								vtx.z = -vtx.z;
-
-							}
-#endif
-
-							Collada::Vertex vertex;
-							vertex.vertex=vtx;
-							vertex.fix_unit_scale(collada);
-							vtx=vertex.vertex;
-
-							vtx = p_local_xform.xform(vtx);
-
-
-							if (vertex_map.has(m_i)) { //vertex may no longer be here, don't bother converting
-
-
-								for (Set<int> ::Element *E=vertex_map[m_i].front() ; E; E=E->next() ) {
-
-									vertw[E->get()]=vtx;
-								}
-							}
-						}
-
-						print_line("using built-in normals");
-					}else{
-						print_line("generating normals");
-						_generate_normals(index_array,vertices,normals);//no normals
-					}
-					if (final_tangent_array.size() && final_uv_array.size()) {
-
-						_generate_tangents_and_binormals(index_array,vertices,final_uv_array,normals,tangents);
-
-					}
-
-					mrt[Mesh::ARRAY_VERTEX]=vertices;
-
-					mrt[Mesh::ARRAY_NORMAL]=normals;
-					if (tangents.size())
-						mrt[Mesh::ARRAY_TANGENT]=tangents;
-					if (final_uv_array.size())
-						mrt[Mesh::ARRAY_TEX_UV]=final_uv_array;
-					if (final_uv2_array.size())
-						mrt[Mesh::ARRAY_TEX_UV2]=final_uv2_array;
-					if (final_color_array.size())
-						mrt[Mesh::ARRAY_COLOR]=final_color_array;
-
-					mr[j]=mrt;
-
-				}
-
-			}
-
-#endif
 			for (int mi = 0; mi < p_morph_meshes.size(); mi++) {
 
 				//print_line("want surface "+itos(mi)+" has "+itos(p_morph_meshes[mi]->get_surface_count()));

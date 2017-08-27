@@ -530,49 +530,6 @@ void EditorHelp::_search(const String &) {
 	prev_search = stext;
 }
 
-#if 0
-void EditorHelp::_button_pressed(int p_idx) {
-
-	if (p_idx==PAGE_CLASS_LIST) {
-
-		//edited_class->set_pressed(false);
-		//class_list_button->set_pressed(true);
-		//tabs->set_current_tab(PAGE_CLASS_LIST);
-
-	} else if (p_idx==PAGE_CLASS_DESC) {
-
-		//edited_class->set_pressed(true);
-		//class_list_button->set_pressed(false);
-		//tabs->set_current_tab(PAGE_CLASS_DESC);
-
-	} else if (p_idx==PAGE_CLASS_PREV) {
-
-		if (history_pos<2)
-			return;
-		history_pos--;
-		ERR_FAIL_INDEX(history_pos-1,history.size());
-		_goto_desc(history[history_pos-1].c,false,history[history_pos-1].scroll);
-		_update_history_buttons();
-
-
-	} else if (p_idx==PAGE_CLASS_NEXT) {
-
-		if (history_pos>=history.size())
-			return;
-
-		history_pos++;
-		ERR_FAIL_INDEX(history_pos-1,history.size());
-		_goto_desc(history[history_pos-1].c,false,history[history_pos-1].scroll);
-		_update_history_buttons();
-
-	} else if (p_idx==PAGE_SEARCH) {
-
-		_search("");
-	}
-}
-
-#endif
-
 void EditorHelp::_class_list_select(const String &p_select) {
 
 	_goto_desc(p_select);

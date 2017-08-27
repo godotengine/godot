@@ -264,18 +264,6 @@ public:
 	virtual void joint_set_solver_priority(RID p_joint, int p_priority);
 	virtual int joint_get_solver_priority(RID p_joint) const;
 
-#if 0
-	virtual void joint_set_param(RID p_joint, JointParam p_param, real_t p_value);
-	virtual real_t joint_get_param(RID p_joint,JointParam p_param) const;
-
-	virtual RID pin_joint_create(const Vector3& p_pos,RID p_body_a,RID p_body_b=RID());
-	virtual RID groove_joint_create(const Vector3& p_a_groove1,const Vector3& p_a_groove2, const Vector3& p_b_anchor, RID p_body_a,RID p_body_b);
-	virtual RID damped_spring_joint_create(const Vector3& p_anchor_a,const Vector3& p_anchor_b,RID p_body_a,RID p_body_b=RID());
-	virtual void damped_string_joint_set_param(RID p_joint, DampedStringParam p_param, real_t p_value);
-	virtual real_t damped_string_joint_get_param(RID p_joint, DampedStringParam p_param) const;
-
-	virtual JointType joint_get_type(RID p_joint) const;
-#endif
 	/* MISC */
 
 	virtual void free(RID p_rid);

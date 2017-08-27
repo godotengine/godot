@@ -139,48 +139,6 @@ Quat Quat::inverse() const {
 
 Quat Quat::slerp(const Quat &q, const real_t &t) const {
 
-#if 0
-
-
-	Quat dst=q;
-	Quat src=*this;
-
-	src.normalize();
-	dst.normalize();
-
-	real_t cosine = dst.dot(src);
-
-	if (cosine < 0 && true) {
-		cosine = -cosine;
-		dst = -dst;
-	} else {
-		dst = dst;
-	}
-
-	if (Math::abs(cosine) < 1 - CMP_EPSILON) {
-		// Standard case (slerp)
-		real_t sine = Math::sqrt(1 - cosine*cosine);
-		real_t angle = Math::atan2(sine, cosine);
-		real_t inv_sine = 1.0 / sine;
-		real_t coeff_0 = Math::sin((1.0 - t) * angle) * inv_sine;
-		real_t coeff_1 = Math::sin(t * angle) * inv_sine;
-		Quat ret=  src * coeff_0 + dst * coeff_1;
-
-		return ret;
-	} else {
-		// There are two situations:
-		// 1. "rkP" and "q" are very close (cosine ~= +1), so we can do a linear
-		//    interpolation safely.
-		// 2. "rkP" and "q" are almost invedste of each other (cosine ~= -1), there
-		//    are an infinite number of possibilities interpolation. but we haven't
-		//    have method to fix this case, so just use linear interpolation here.
-		Quat ret =  src * (1.0 - t) + dst *t;
-		// taking the complement requires renormalisation
-		ret.normalize();
-		return ret;
-	}
-#else
-
 	Quat to1;
 	real_t omega, cosom, sinom, scale0, scale1;
 
@@ -221,7 +179,6 @@ Quat Quat::slerp(const Quat &q, const real_t &t) const {
 			scale0 * y + scale1 * to1.y,
 			scale0 * z + scale1 * to1.z,
 			scale0 * w + scale1 * to1.w);
-#endif
 }
 
 Quat Quat::slerpni(const Quat &q, const real_t &t) const {
@@ -241,53 +198,6 @@ Quat Quat::slerpni(const Quat &q, const real_t &t) const {
 			invFactor * from.y + newFactor * q.y,
 			invFactor * from.z + newFactor * q.z,
 			invFactor * from.w + newFactor * q.w);
-
-#if 0
-	real_t         to1[4];
-	real_t        omega, cosom, sinom, scale0, scale1;
-
-
-	// calc cosine
-	cosom = x * q.x + y * q.y + z * q.z
-			+ w * q.w;
-
-
-	// adjust signs (if necessary)
-	if ( cosom <0.0 && false) {
-		cosom = -cosom;to1[0] = - q.x;
-		to1[1] = - q.y;
-		to1[2] = - q.z;
-		to1[3] = - q.w;
-	} else  {
-		to1[0] = q.x;
-		to1[1] = q.y;
-		to1[2] = q.z;
-		to1[3] = q.w;
-	}
-
-
-	// calculate coefficients
-
-	if ( (1.0 - cosom) > CMP_EPSILON ) {
-		// standard case (slerp)
-		omega = Math::acos(cosom);
-		sinom = Math::sin(omega);
-		scale0 = Math::sin((1.0 - t) * omega) / sinom;
-		scale1 = Math::sin(t * omega) / sinom;
-	} else {
-		// "from" and "to" quaternions are very close
-		//  ... so we can do a linear interpolation
-		scale0 = 1.0 - t;
-		scale1 = t;
-	}
-	// calculate final values
-	return Quat(
-		scale0 * x + scale1 * to1[0],
-		scale0 * y + scale1 * to1[1],
-		scale0 * z + scale1 * to1[2],
-		scale0 * w + scale1 * to1[3]
-	);
-#endif
 }
 
 Quat Quat::cubic_slerp(const Quat &q, const Quat &prep, const Quat &postq, const real_t &t) const {

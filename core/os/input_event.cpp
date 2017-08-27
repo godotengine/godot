@@ -28,11 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "input_event.h"
+
 #include "input_map.h"
 #include "os/keyboard.h"
-/**
- *
- */
 
 void InputEvent::set_id(uint32_t p_id) {
 	id = p_id;
@@ -98,25 +96,6 @@ bool InputEvent::is_action_type() const {
 
 	return false;
 }
-
-#if 0
-if (String(p_method) == "is_action" && p_argidx == 0) {
-
-	List<PropertyInfo> pinfo;
-	ProjectSettings::get_singleton()->get_property_list(&pinfo);
-
-	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-		const PropertyInfo &pi = E->get();
-
-		if (!pi.name.begins_with("input/"))
-			continue;
-
-		String name = pi.name.substr(pi.name.find("/") + 1, pi.name.length());
-		result.insert("\"" + name + "\"");
-	}
-
-} else
-#endif
 
 void InputEvent::_bind_methods() {
 

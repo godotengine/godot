@@ -1192,117 +1192,6 @@ static const Node *_find_node_with_script(const Node *p_node, const RefPtr &p_sc
 	return NULL;
 }
 
-Dictionary ScriptEditor::get_state() const {
-
-	//apply_scripts();
-
-	Dictionary state;
-#if 0
-	Array paths;
-	int open=-1;
-
-	for(int i=0;i<tab_container->get_child_count();i++) {
-
-		ScriptTextEditor *se = Object::cast_to<ScriptTextEditor>(tab_container->get_child(i));
-		if (!se)
-			continue;
-
-
-		Ref<Script> script = se->get_edited_script();
-		if (script->get_path()!="" && script->get_path().find("local://")==-1 && script->get_path().find("::")==-1) {
-
-			paths.push_back(script->get_path());
-		} else {
-
-
-			const Node *owner = _find_node_with_script(get_tree()->get_root(),script.get_ref_ptr());
-			if (owner)
-				paths.push_back(owner->get_path());
-
-		}
-
-		if (i==tab_container->get_current_tab())
-			open=i;
-	}
-
-	if (paths.size())
-		state["sources"]=paths;
-	if (open!=-1)
-		state["current"]=open;
-
-#endif
-	return state;
-}
-void ScriptEditor::set_state(const Dictionary &p_state) {
-
-#if 0
-	print_line("attempt set state: "+String(Variant(p_state)));
-
-	if (!p_state.has("sources"))
-		return; //bleh
-
-	Array sources = p_state["sources"];
-	for(int i=0;i<sources.size();i++) {
-
-		Variant source=sources[i];
-
-		Ref<Script> script;
-
-		if (source.get_type()==Variant::NODE_PATH) {
-
-
-			Node *owner=get_tree()->get_root()->get_node(source);
-			if (!owner)
-				continue;
-
-			script = owner->get_script();
-		} else if (source.get_type()==Variant::STRING) {
-
-
-			script = ResourceLoader::load(source,"Script");
-		}
-
-
-		if (script.is_null()) //ah well..
-			continue;
-
-		editor->call("_resource_selected",script);
-	}
-
-	if (p_state.has("current")) {
-		tab_container->set_current_tab(p_state["current"]);
-	}
-#endif
-}
-void ScriptEditor::clear() {
-#if 0
-	List<ScriptTextEditor*> stes;
-	for(int i=0;i<tab_container->get_child_count();i++) {
-
-		ScriptTextEditor *se = Object::cast_to<ScriptTextEditor>(tab_container->get_child(i));
-		if (!se)
-			continue;
-		stes.push_back(se);
-
-	}
-
-	while(stes.size()) {
-
-		memdelete(stes.front()->get());
-		stes.pop_front();
-	}
-
-	int idx = tab_container->get_current_tab();
-	if (idx>=tab_container->get_child_count())
-		idx=tab_container->get_child_count()-1;
-	if (idx>=0) {
-		tab_container->set_current_tab(idx);
-		script_list->select( script_list->find_metadata(idx) );
-	}
-
-#endif
-}
-
 void ScriptEditor::get_breakpoints(List<String> *p_breakpoints) {
 
 	for (int i = 0; i < tab_container->get_child_count(); i++) {
@@ -2361,19 +2250,6 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	debug_menu->get_popup()->set_item_disabled(debug_menu->get_popup()->get_item_index(DEBUG_BREAK), true);
 	debug_menu->get_popup()->set_item_disabled(debug_menu->get_popup()->get_item_index(DEBUG_CONTINUE), true);
 
-#if 0
-	window_menu = memnew( MenuButton );
-	menu_hb->add_child(window_menu);
-	window_menu->set_text(TTR("Window"));
-	window_menu->get_popup()->add_item(TTR("Close"),WINDOW_CLOSE,KEY_MASK_CMD|KEY_W);
-	window_menu->get_popup()->add_separator();
-	window_menu->get_popup()->add_item(TTR("Move Left"),WINDOW_MOVE_LEFT,KEY_MASK_CMD|KEY_LEFT);
-	window_menu->get_popup()->add_item(TTR("Move Right"),WINDOW_MOVE_RIGHT,KEY_MASK_CMD|KEY_RIGHT);
-	window_menu->get_popup()->add_separator();
-	window_menu->get_popup()->connect("id_pressed", this,"_menu_option");
-
-#endif
-
 	menu_hb->add_spacer();
 
 	script_icon = memnew(TextureRect);
@@ -2540,20 +2416,6 @@ void ScriptEditorPlugin::make_visible(bool p_visible) {
 void ScriptEditorPlugin::selected_notify() {
 
 	script_editor->ensure_select_current();
-}
-
-Dictionary ScriptEditorPlugin::get_state() const {
-
-	return script_editor->get_state();
-}
-
-void ScriptEditorPlugin::set_state(const Dictionary &p_state) {
-
-	script_editor->set_state(p_state);
-}
-void ScriptEditorPlugin::clear() {
-
-	script_editor->clear();
 }
 
 void ScriptEditorPlugin::save_external_data() {

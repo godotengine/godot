@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "animation.h"
+
 #include "geometry.h"
 
 bool Animation::_set(const StringName &p_name, const Variant &p_value) {
@@ -83,44 +84,6 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 				TransformTrack *tt = static_cast<TransformTrack *>(tracks[track]);
 				PoolVector<float> values = p_value;
 				int vcount = values.size();
-
-#if 0 // old compatibility hack
-				if ((vcount%11) == 0) {
-
-
-					PoolVector<float>::Read r = values.read();
-
-					tt->transforms.resize(vcount/11);
-
-
-					for(int i=0;i<(vcount/11);i++) {
-
-
-						TKey<TransformKey> &tk=tt->transforms[i];
-						const float *ofs=&r[i*11];
-						tk.time=ofs[0];
-
-						tk.value.loc.x=ofs[1];
-						tk.value.loc.y=ofs[2];
-						tk.value.loc.z=ofs[3];
-
-						tk.value.rot.x=ofs[4];
-						tk.value.rot.y=ofs[5];
-						tk.value.rot.z=ofs[6];
-						tk.value.rot.w=ofs[7];
-
-						tk.value.scale.x=ofs[8];
-						tk.value.scale.y=ofs[9];
-						tk.value.scale.z=ofs[10];
-
-
-					}
-					return true;
-
-
-
-				}
-#endif
 				ERR_FAIL_COND_V(vcount % 12, false); // shuld be multiple of 11
 
 				PoolVector<float>::Read r = values.read();

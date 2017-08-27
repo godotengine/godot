@@ -181,37 +181,6 @@ public:
 	//~Sprite3D();
 };
 
-#if 0
-class AnimatedSprite3D : public SpriteBase3D {
-
-	GDCLASS(AnimatedSprite3D,SpriteBase3D);
-	Ref<SpriteFrames> frames;
-
-
-	StringName animation;
-	int frame;
-
-protected:
-	virtual void _draw();
-	static void _bind_methods();
-public:
-
-
-
-	void set_sprite_frames(const Ref<SpriteFrames>& p_sprite_frames);
-	Ref<SpriteFrames> get_sprite_frames() const;
-
-	void set_frame(int p_frame);
-	int get_frame() const;
-
-
-	virtual Rect2 get_item_rect() const;
-
-	AnimatedSprite3D();
-	//~AnimatedSprite3D();
-};
-#endif
-
 class AnimatedSprite3D : public SpriteBase3D {
 
 	GDCLASS(AnimatedSprite3D, SpriteBase3D);

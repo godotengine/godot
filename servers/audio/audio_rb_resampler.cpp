@@ -173,44 +173,7 @@ bool AudioRBResampler::mix(int32_t *p_dest, int p_frames) {
 	}
 
 	int todo = MIN(((int64_t(rb_todo) << MIX_FRAC_BITS) / increment) + 1, p_frames);
-#if 0
-	if (int(src_mix_rate)==target_mix_rate) {
 
-
-		if (channels==6) {
-
-			for(int i=0;i<p_frames;i++) {
-
-				int from = ((rb_read_pos+i)&rb_mask)*6;
-				int to = i*6;
-
-				p_dest[from+0]=int32_t(rb[to+0])<<16;
-				p_dest[from+1]=int32_t(rb[to+1])<<16;
-				p_dest[from+2]=int32_t(rb[to+2])<<16;
-				p_dest[from+3]=int32_t(rb[to+3])<<16;
-				p_dest[from+4]=int32_t(rb[to+4])<<16;
-				p_dest[from+5]=int32_t(rb[to+5])<<16;
-			}
-
-		} else {
-			int len=p_frames*channels;
-			int from=rb_read_pos*channels;
-			int mask=0;
-			switch(channels) {
-				case 1: mask=rb_len-1; break;
-				case 2: mask=(rb_len*2)-1; break;
-				case 4: mask=(rb_len*4)-1; break;
-			}
-
-			for(int i=0;i<len;i++) {
-
-				p_dest[i]=int32_t(rb[(from+i)&mask])<<16;
-			}
-		}
-
-		rb_read_pos = (rb_read_pos+p_frames)&rb_mask;
-	} else
-#endif
 	{
 
 		uint32_t read = 0;
@@ -220,7 +183,7 @@ bool AudioRBResampler::mix(int32_t *p_dest, int p_frames) {
 			case 4: read = _resample<4>(p_dest, todo, increment); break;
 			case 6: read = _resample<6>(p_dest, todo, increment); break;
 		}
-#if 1
+
 		//end of stream, fadeout
 		int remaining = p_frames - todo;
 		if (remaining && todo > 0) {
@@ -237,23 +200,6 @@ bool AudioRBResampler::mix(int32_t *p_dest, int p_frames) {
 				}
 			}
 		}
-
-#else
-		int remaining = p_frames - todo;
-		if (remaining && todo > 0) {
-
-			for (int c = 0; c < channels; c++) {
-
-				int32_t from = p_dest[(todo - 1) * channels + c] >> 8;
-
-				for (int i = 0; i < remaining; i++) {
-
-					uint32_t mul = (remaining - i) * 256 / remaining;
-					p_dest[(todo + i) * channels + c] = from * mul;
-				}
-			}
-		}
-#endif
 
 		//zero out what remains there to avoid glitches
 		for (int i = todo * channels; i < int(p_frames) * channels; i++) {

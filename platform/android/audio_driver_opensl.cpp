@@ -75,29 +75,10 @@ void AudioDriverOpenSL::_buffer_callback(
 	}
 
 	(*queueItf)->Enqueue(queueItf, ptr, 4 * buffer_size);
-
-#if 0
-	SLresult res;
-	CallbackCntxt *pCntxt = (CallbackCntxt*)pContext;
-	if(pCntxt->pData < (pCntxt->pDataBase + pCntxt->size))
-	{
-	    res = (*queueItf)->Enqueue(queueItf, (void*) pCntxt->pData,
-				       2 * AUDIO_DATA_BUFFER_SIZE, SL_BOOLEAN_FALSE); /* Size given
-    in bytes. */
-	    CheckErr(res);
-	    /* Increase data pointer by buffer size */
-	    pCntxt->pData += AUDIO_DATA_BUFFER_SIZE;
-	}
-    }
-#endif
 }
 
 void AudioDriverOpenSL::_buffer_callbacks(
 		SLAndroidSimpleBufferQueueItf queueItf,
-		/*SLuint32 eventFlags,
-    const void * pBuffer,
-    SLuint32 bufferSize,
-    SLuint32 dataUsed,*/
 		void *pContext) {
 
 	AudioDriverOpenSL *ad = (AudioDriverOpenSL *)pContext;
@@ -113,65 +94,6 @@ const char *AudioDriverOpenSL::get_name() const {
 	return "Android";
 }
 
-#if 0
-int AudioDriverOpenSL::thread_func(SceSize args, void *argp) {
-
-	AudioDriverOpenSL* ad = s_ad;
-	sceAudioOutput2Reserve(AUDIO_OUTPUT_SAMPLE);
-
-	int half=0;
-	while(!ad->exit_thread) {
-
-		int16_t *ptr = &ad->outbuff[AUDIO_OUTPUT_SAMPLE*2*half];
-
-
-
-		if (!ad->active) {
-
-			for(int i=0;i<AUDIO_OUTPUT_SAMPLE*2;i++) {
-				ptr[i]=0;
-			}
-
-		} else {
-
-		//printf("samples: %i\n",AUDIO_OUTPUT_SAMPLE);
-			ad->lock();
-
-			ad->audio_server_process(AUDIO_OUTPUT_SAMPLE,ad->outbuff_32);
-
-			ad->unlock();
-
-			const int32_t* src_buff=ad->outbuff_32;
-
-			for(int i=0;i<AUDIO_OUTPUT_SAMPLE*2;i++) {
-
-				ptr[i]=src_buff[i]>>16;
-			}
-		}
-
-
-		/* Output 16-bit PCM STEREO data that is in pcmBuf without changing the volume */
-		sceAudioOutput2OutputBlocking(
-			   SCE_AUDIO_VOLUME_0dB*3, //0db at 0x8000, that's obvious
-			 ptr
-		);
-
-		if (half)
-			half=0;
-		else
-			half=1;
-
-	}
-
-	sceAudioOutput2Release();
-
-	sceKernelExitThread(SCE_KERNEL_EXIT_SUCCESS);
-	ad->thread_exited=true;
-	return SCE_KERNEL_EXIT_SUCCESS;
-
-}
-
-#endif
 Error AudioDriverOpenSL::init() {
 
 	SLresult
@@ -228,29 +150,12 @@ void AudioDriverOpenSL::start() {
 	SLboolean required[MAX_NUMBER_INTERFACES];
 	SLInterfaceID iidArray[MAX_NUMBER_INTERFACES];
 
-#if 0
-
-	for (int i=0; i<MAX_NUMBER_INTERFACES; i++)
-	{
-	    required[i] = SL_BOOLEAN_FALSE;
-	    iidArray[i] = SL_IID_NULL;
-	}
-    // Set arrays required[] and iidArray[] for VOLUME interface
-	required[0] = SL_BOOLEAN_TRUE;
-	iidArray[0] = SL_IID_VOLUME;
-
-    // Create Output Mix object to be used by player
-	res = (*EngineItf)->CreateOutputMix(EngineItf, &OutputMix, 1,
-					    iidArray, required);
-#else
-
 	{
 		const SLInterfaceID ids[1] = { SL_IID_ENVIRONMENTALREVERB };
 		const SLboolean req[1] = { SL_BOOLEAN_FALSE };
 		res = (*EngineItf)->CreateOutputMix(EngineItf, &OutputMix, 0, ids, req);
 	}
 
-#endif
 	ERR_FAIL_COND(res != SL_RESULT_SUCCESS);
 	// Realizing the Output Mix object in synchronous mode.
 	res = (*OutputMix)->Realize(OutputMix, SL_BOOLEAN_FALSE);
@@ -308,43 +213,17 @@ void AudioDriverOpenSL::start() {
 	/* Setup to receive buffer queue event callbacks */
 	res = (*bufferQueueItf)->RegisterCallback(bufferQueueItf, _buffer_callbacks, this);
 	ERR_FAIL_COND(res != SL_RESULT_SUCCESS);
-/* Before we start set volume to -3dB (-300mB) */
-#if 0
-	res = (*OutputMix)->GetInterface(OutputMix, SL_IID_VOLUME,
-					 (void*)&volumeItf);
-	ERR_FAIL_COND( res !=SL_RESULT_SUCCESS );
-	/* Setup the data source structure for the buffer queue */
 
-	res = (*volumeItf)->SetVolumeLevel(volumeItf, -300);
-	ERR_FAIL_COND( res !=SL_RESULT_SUCCESS );
-#endif
 	last_free = 0;
-#if 1
+
 	//fill up buffers
 	for (int i = 0; i < BUFFER_COUNT; i++) {
 		/* Enqueue a few buffers to get the ball rolling */
 		res = (*bufferQueueItf)->Enqueue(bufferQueueItf, buffers[i], 4 * buffer_size); /* Size given in */
 	}
-#endif
 
 	res = (*playItf)->SetPlayState(playItf, SL_PLAYSTATE_PLAYING);
 	ERR_FAIL_COND(res != SL_RESULT_SUCCESS);
-
-#if 0
-	res = (*bufferQueueItf)->GetState(bufferQueueItf, &state);
-	ERR_FAIL_COND( res !=SL_RESULT_SUCCESS );
-	while(state.count)
-	{
-	    (*bufferQueueItf)->GetState(bufferQueueItf, &state);
-	}
-	/* Make sure player is stopped */
-	res = (*playItf)->SetPlayState(playItf, SL_PLAYSTATE_STOPPED);
-	CheckErr(res);
-	/* Destroy the player */
-	(*player)->Destroy(player);
-	/* Destroy Output Mix object */
-	(*OutputMix)->Destroy(OutputMix);
-#endif
 
 	active = true;
 }

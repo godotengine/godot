@@ -605,15 +605,6 @@ void AnimationTreeEditor::_draw_node(const StringName &p_node) {
 	}
 }
 
-#if 0
-void AnimationTreeEditor::_node_param_changed() {
-
-	//anim_tree->node_set_param( click_node,property_editor->get_variant() );
-	//update();
-	//_write_anim_tree_graph();
-}
-#endif
-
 AnimationTreeEditor::ClickType AnimationTreeEditor::_locate_click(const Point2 &p_click, StringName *p_node_id, int *p_slot_index) const {
 
 	Ref<StyleBox> style = get_stylebox("panel", "PopupMenu");
@@ -713,32 +704,6 @@ Point2 AnimationTreeEditor::_get_slot_pos(const StringName &p_node_id, bool p_in
 
 	return pos;
 }
-
-#if 0
-void AnimationTreeEditor::_node_edit_property(const StringName& p_node) {
-
-	Ref<StyleBox> style = get_stylebox("panel","PopupMenu");
-	Size2 size = get_node_size(p_node);
-	Point2 pos = Point2( anim_tree->node_get_pos_x(p_node), anim_tree->node_get_pos_y(p_node) )-offset;
-
-	VisualServer::AnimationTreeNodeType type=anim_tree->node_get_type(p_node);
-
-	PropertyInfo ph = VisualServer::get_singleton()->anim_tree_node_get_type_info(type);
-	if (ph.type==Variant::NIL)
-		return;
-	if (ph.type==Variant::_RID)
-		ph.type=Variant::RESOURCE;
-
-	property_editor->edit(NULL,ph.name,ph.type,anim_tree->node_get_param(p_node),ph.hint,ph.hint_string);
-
-	Point2 popup_pos=Point2( pos.x+(size.width-property_editor->get_size().width)/2.0,pos.y+(size.y-style->get_margin(MARGIN_BOTTOM))).floor();
-	popup_pos+=get_global_position();
-	property_editor->set_position(popup_pos);
-
-	property_editor->popup();
-
-}
-#endif
 
 void AnimationTreeEditor::_gui_input(Ref<InputEvent> p_event) {
 

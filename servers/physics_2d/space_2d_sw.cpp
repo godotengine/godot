@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "space_2d_sw.h"
+
 #include "collision_solver_2d_sw.h"
 #include "physics_2d_server_sw.h"
 
@@ -575,21 +576,6 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 
 				Vector2 a = sr[i * 2 + 0];
 				Vector2 b = sr[i * 2 + 1];
-
-#if 0
-				Vector2 rel = b-a;
-				real_t d = rel.length();
-				if (d==0)
-					continue;
-
-				Vector2 n = rel/d;
-				real_t traveled = n.dot(recover_motion);
-				a+=n*traveled;
-
-				real_t d = a.distance_to(b);
-				if (d<margin)
-					continue;
-#endif
 				recover_motion += (b - a) * 0.4;
 			}
 

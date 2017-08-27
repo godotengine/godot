@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "world.h"
+
 #include "camera_matrix.h"
 #include "octree.h"
 #include "scene/3d/camera.h"
-#include "scene/3d/spatial_indexer.h"
 #include "scene/3d/visibility_notifier.h"
 #include "scene/scene_string_names.h"
 

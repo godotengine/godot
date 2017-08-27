@@ -404,7 +404,6 @@ if (env["tools"] == "yes"):
     SConscript('fileserver/SCsub')
     SConscript('icons/SCsub')
     SConscript('import/SCsub')
-    SConscript('io_plugins/SCsub')
     SConscript('plugins/SCsub')
 
     lib = env.Library("editor", env.editor_sources)

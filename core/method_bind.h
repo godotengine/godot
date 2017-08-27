@@ -252,28 +252,6 @@ public:
 
 	_FORCE_INLINE_ int get_argument_count() const { return argument_count; };
 
-#if 0
-	_FORCE_INLINE_ Variant call_safe(const Variant** p_args,int p_arg_count, Variant::CallError& r_error) {
-
-		r_error.error=Variant::CallError::CALL_OK;
-		check_call( p_args, &errorarg );
-		if (!err)
-			return call(p_object, VARIANT_ARG_PASS );
-
-		VARIANT_ARGPTRS
-		String errstr;
-		String methodname = get_instance_type()+"::"+name;
-		if (err==CALL_ERROR_ARGUMENT_TYPE) {
-			errstr="Invalid Argument to call: '"+methodname+"'. Cannot convert argument "+itos(errorarg+1)+" from "+Variant::get_type_name(get_argument_type(errorarg))+" to "+Variant::get_type_name(argptr[errorarg]->get_type())+".";
-		}
-		if (err==CALL_ERROR_EXTRA_ARGUMENT) {
-			errstr="Invalid call. Member function '"+methodname+"' takes "+itos(get_argument_count())+" argument, but argument "+itos(errorarg+1)+" was received.";
-		}
-
-		ERR_PRINT(errstr.ascii().get_data());
-		return Variant();
-	}
-#endif
 	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Variant::CallError &r_error) = 0;
 
 #ifdef PTRCALL_ENABLED

@@ -339,15 +339,8 @@ Vector3 Camera::project_local_ray_normal(const Point2 &p_pos) const {
 		ERR_FAIL_COND_V(!is_inside_tree(), Vector3());
 	}
 
-#if 0
-	Size2 viewport_size = get_viewport()->get_visible_rect().size;
-	Vector2 cpos = p_pos;
-#else
-
 	Size2 viewport_size = get_viewport()->get_camera_rect_size();
 	Vector2 cpos = get_viewport()->get_camera_coords(p_pos);
-#endif
-
 	Vector3 ray;
 
 	if (mode == PROJECTION_ORTHOGONAL) {
@@ -371,17 +364,9 @@ Vector3 Camera::project_ray_origin(const Point2 &p_pos) const {
 		ERR_FAIL_COND_V(!is_inside_tree(), Vector3());
 	}
 
-#if 0
-	Size2 viewport_size = get_viewport()->get_visible_rect().size;
-	Vector2 cpos = p_pos;
-#else
-
 	Size2 viewport_size = get_viewport()->get_camera_rect_size();
 	Vector2 cpos = get_viewport()->get_camera_coords(p_pos);
-#endif
-
 	ERR_FAIL_COND_V(viewport_size.y == 0, Vector3());
-	//float aspect = viewport_size.x / viewport_size.y;
 
 	if (mode == PROJECTION_PERSPECTIVE) {
 

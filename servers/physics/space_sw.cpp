@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "space_sw.h"
+
 #include "collision_solver_sw.h"
 #include "physics_server_sw.h"
 #include "project_settings.h"
@@ -267,20 +268,13 @@ bool PhysicsDirectSpaceStateSW::cast_motion(const RID &p_shape, const Transform 
 			continue;
 		}
 
-//test initial overlap
-#if 0
-		if (CollisionSolverSW::solve_static(shape,p_xform,col_obj->get_shape(shape_idx),col_obj_xform,NULL,NULL,&sep_axis)) {
-			print_line("failed initial cast (collision at beginning)");
-			return false;
-		}
-#else
+		//test initial overlap
 		sep_axis = p_motion.normalized();
 
 		if (!CollisionSolverSW::solve_distance(shape, p_xform, col_obj->get_shape(shape_idx), col_obj_xform, point_A, point_B, aabb, &sep_axis)) {
 			//print_line("failed motion cast (no collision)");
 			return false;
 		}
-#endif
 
 		//just do kinematic solving
 		real_t low = 0;
@@ -631,21 +625,6 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Ve
 
 				Vector3 a = sr[i * 2 + 0];
 				Vector3 b = sr[i * 2 + 1];
-
-#if 0
-				Vector3 rel = b-a;
-				real_t d = rel.length();
-				if (d==0)
-					continue;
-
-				Vector3 n = rel/d;
-				real_t traveled = n.dot(recover_motion);
-				a+=n*traveled;
-
-				real_t d = a.distance_to(b);
-				if (d<margin)
-					continue;
-#endif
 				recover_motion += (b - a) * 0.4;
 			}
 

@@ -541,22 +541,7 @@ void GraphCurveMapEdit::_plot_curve(const Vector2& p_a,const Vector2& p_b,const 
 		newy = CLAMP ((Math::round (y)), 0, ymax);
 
 		/* if this point is different than the last one...then draw it */
-		if ((lastx != newx) || (lasty != newy))
-		{
-#if 0
-			if(fix255)
-			{
-				/* use fixed array size (for the curve graph) */
-				cd->curve[cd->outline][newx] = newy;
-			}
-			else
-			{
-				/* use dynamic allocated curve_ptr (for the real curve) */
-				cd->curve_ptr[cd->outline][newx] = newy;
-
-				if(gb_debug) printf("outline: %d  cX: %d cY: %d\n", (int)cd->outline, (int)newx, (int)newy);
-			}
-#endif
+		if ((lastx != newx) || (lasty != newy)) {
 			draw_line(Vector2(lastx,ymax-lasty),Vector2(newx,ymax-newy),Color(0.8,0.8,0.8,0.8),2.0);
 		}
 

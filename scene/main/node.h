@@ -192,7 +192,6 @@ protected:
 	virtual void add_child_notify(Node *p_child);
 	virtual void remove_child_notify(Node *p_child);
 	virtual void move_child_notify(Node *p_child);
-	//void remove_and_delete_child(Node *p_child);
 
 	void _propagate_replace_owner(Node *p_owner, Node *p_by_owner);
 
@@ -212,7 +211,6 @@ public:
 		NOTIFICATION_EXIT_TREE = 11,
 		NOTIFICATION_MOVED_IN_PARENT = 12,
 		NOTIFICATION_READY = 13,
-		//NOTIFICATION_PARENT_DECONFIGURED =15, - it's confusing, it's going away
 		NOTIFICATION_PAUSED = 14,
 		NOTIFICATION_UNPAUSED = 15,
 		NOTIFICATION_FIXED_PROCESS = 16,

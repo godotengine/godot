@@ -31,6 +31,7 @@
 
 #include "servers/visual_server.h"
 
+// FIXME: Will be removed, kept as reference for new implementation
 #if 0
 #include "geometry.h"
 #include "project_settings.h"

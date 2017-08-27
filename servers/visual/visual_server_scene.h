@@ -54,6 +54,8 @@ public:
 	uint64_t render_pass;
 
 	static VisualServerScene *singleton;
+
+// FIXME: Kept as reference for future implementation
 #if 0
 	struct Portal {
 

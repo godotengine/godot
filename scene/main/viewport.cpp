@@ -28,28 +28,23 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "viewport.h"
+
 #include "os/input.h"
 #include "os/os.h"
-#include "scene/3d/spatial.h"
-#include "servers/physics_2d_server.h"
-//#include "scene/3d/camera.h"
-
+#include "project_settings.h"
+#include "scene/2d/collision_object_2d.h"
 #include "scene/3d/camera.h"
 #include "scene/3d/collision_object.h"
 #include "scene/3d/listener.h"
-#include "scene/3d/spatial_indexer.h"
+#include "scene/3d/scenario_fx.h"
+#include "scene/3d/spatial.h"
 #include "scene/gui/control.h"
-#include "scene/resources/mesh.h"
-
-#include "scene/2d/collision_object_2d.h"
-
 #include "scene/gui/label.h"
 #include "scene/gui/panel.h"
 #include "scene/main/timer.h"
+#include "scene/resources/mesh.h"
 #include "scene/scene_string_names.h"
-
-#include "project_settings.h"
-#include "scene/3d/scenario_fx.h"
+#include "servers/physics_2d_server.h"
 
 void ViewportTexture::setup_local_to_scene() {
 
@@ -1180,44 +1175,7 @@ bool Viewport::is_size_override_stretch_enabled() const {
 
 	return size_override_stretch;
 }
-#if 0
-void Viewport::set_as_render_target(bool p_enable){
 
-/*	if (render_target==p_enable)
-		return;
-
-	render_target=p_enable;
-
-	VS::get_singleton()->viewport_set_as_render_target(viewport,p_enable);
-	if (is_inside_tree()) {
-
-		if (p_enable)
-			_vp_exit_tree();
-		else
-			_vp_enter_tree();
-	}
-
-	if (p_enable) {
-
-		texture_rid = VS::get_singleton()->viewport_get_texture(viewport);
-	} else {
-
-		texture_rid=RID();
-	}
-
-	texture->set_flags(texture->flags);
-	texture->emit_changed();
-
-	update_configuration_warning();
-	*/
-}
-
-bool Viewport::is_set_as_render_target() const{
-
-	return render_target;
-
-}
-#endif
 void Viewport::set_update_mode(UpdateMode p_mode) {
 
 	update_mode = p_mode;
@@ -1227,7 +1185,6 @@ Viewport::UpdateMode Viewport::get_update_mode() const {
 
 	return update_mode;
 }
-//RID get_texture() const;
 
 Ref<ViewportTexture> Viewport::get_texture() const {
 

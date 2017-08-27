@@ -37,7 +37,6 @@
 #include "scene/gui/control.h"
 #include "scene/gui/text_edit.h"
 #include "servers/visual/shader_language.h"
-//#include "drivers/gles2/shader_compiler_gles2.h"
 
 typedef ShaderLanguage SL;
 

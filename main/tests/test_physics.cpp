@@ -71,7 +71,6 @@ class TestPhysicsMainLoop : public MainLoop {
 		PhysicsDirectBodyState *state = (PhysicsDirectBodyState *)p_state;
 		VisualServer *vs = VisualServer::get_singleton();
 		Transform t = state->get_transform();
-		//t.basis.scale( Vector3(1.0,0.5,0.2) );
 		vs->instance_set_transform(p_visual_instance, t);
 	}
 
@@ -208,7 +207,6 @@ protected:
 		d[VS::ARRAY_VERTEX] = p_faces;
 		d[VS::ARRAY_NORMAL] = normals;
 		vs->mesh_add_surface_from_arrays(trimesh_mesh, VS::PRIMITIVE_TRIANGLES, d);
-		//vs->material_set_flag( trimesh_mat, VisualServer::MATERIAL_FLAG_UNSHADED,true);
 
 		RID triins = vs->instance_create2(trimesh_mesh, scenario);
 
@@ -219,9 +217,6 @@ protected:
 		Transform tritrans = p_xform;
 		ps->body_set_state(tribody, PhysicsServer::BODY_STATE_TRANSFORM, tritrans);
 		vs->instance_set_transform(triins, tritrans);
-		//RID trimesh_material = vs->fixed_material_create();
-		//vs->material_generate( trimesh_material, Color(0.2,0.4,0.6) );
-		//vs->mesh_surface_set_material( trimesh_mesh, 0, trimesh_material );
 	}
 
 	void make_grid(int p_width, int p_height, float p_cellsize, float p_cellheight, const Transform &p_xform = Transform()) {
@@ -305,7 +300,6 @@ public:
 
 		/* LIGHT */
 		RID lightaux = vs->light_create(VisualServer::LIGHT_DIRECTIONAL);
-		//vs->light_set_color( lightaux, VisualServer::LIGHT_COLOR_AMBIENT, Color(0.0,0.0,0.0) );
 		scenario = vs->scenario_create();
 		vs->light_set_shadow(lightaux, true);
 		light = vs->instance_create2(lightaux, scenario);
@@ -327,100 +321,14 @@ public:
 
 		vs->camera_set_perspective(camera, 60, 0.1, 40.0);
 		vs->camera_set_transform(camera, Transform(Basis(), Vector3(0, 9, 12)));
-		//vs->scenario_set_debug(scenario,VS::SCENARIO_DEBUG_WIREFRAME);
 
 		Transform gxf;
 		gxf.basis.scale(Vector3(1.4, 0.4, 1.4));
 		gxf.origin = Vector3(-2, 1, -2);
 		make_grid(5, 5, 2.5, 1, gxf);
-		//create_body(PhysicsServer::SHAPE_BOX,PhysicsServer::BODY_MODE_STATIC,gxf);
-		//create_static_plane( Plane( Vector3(0,1,0), -2) );
-		//test_joint();
 		test_fall();
-		//test_joint();
-
-		/*
-		Vector<Vector3> faces;
-		faces.push_back( Vector3(10,0,-5) );
-		faces.push_back( Vector3(0,0,10) );
-		faces.push_back( Vector3(-10,-0.2,-5) );
-		make_trimesh(faces);
-*/
-		/* Make Trimesh */
 		quit = false;
 		return;
-
-#if 0
-#define GRID_SIZE 5
-
-		float grid[GRID_SIZE][GRID_SIZE];
-
-		for (int i=0;i<GRID_SIZE;i++) {
-
-			for (int j=0;j<GRID_SIZE;j++) {
-
-				grid[j][i]=Math::random(0.0, 1.0 );
-			}
-		}
-
-		Vector<Vector3> faces;
-
-		for (int i=1;i<GRID_SIZE;i++) {
-
-			for (int j=1;j<GRID_SIZE;j++) {
-
-#define MAKE_VERTEX(m_x, m_z) \
-	faces.push_back(Vector3(m_x - GRID_SIZE / 2.0, grid[m_x][m_z], m_z - GRID_SIZE / 2.0) * 3.0)
-
-				MAKE_VERTEX(i,j-1);
-				MAKE_VERTEX(i,j);
-				MAKE_VERTEX(i-1,j);
-
-				MAKE_VERTEX(i-1,j-1);
-				MAKE_VERTEX(i,j-1);
-				MAKE_VERTEX(i-1,j);
-
-			}
-		}
-		/*
-		faces.clear();
-		faces.push_back( Vector3(0,0,-5) );
-		faces.push_back( Vector3(1,0,-1) );
-		faces.push_back( Vector3(-1,-0,-1) );
-		*/
-
-		RID trimesh_shape = ps->shape_create();
-		ps->shape_set_data(trimesh_shape, PhysicsServer::SHAPE_CONCAVE_POLYGON,faces);
-		faces=ps->shape_get_shape(trimesh_shape, 0);
-		Vector<Vector3> normals; // for drawing
-		for (int i=0;i<faces.size()/3;i++) {
-
-			Plane p( faces[i*3+0],faces[i*3+1], faces[i*3+2] );
-			normals.push_back(p.normal);
-			normals.push_back(p.normal);
-			normals.push_back(p.normal);
-		}
-
-		RID trimesh_mesh = vs->mesh_create();
-		vs->mesh_add_surface(trimesh_mesh, VS::PRIMITIVE_TRIANGLES, VS::ARRAY_FORMAT_VERTEX|VS::ARRAY_FORMAT_NORMAL, faces.size() );
-		vs->mesh_surface_set_array(trimesh_mesh,0,VS::ARRAY_VERTEX, faces );
-		vs->mesh_surface_set_array(trimesh_mesh,0,VS::ARRAY_NORMAL, normals );
-		RID trimesh_mat = vs->fixed_material_create();
-		vs->material_generate( trimesh_mat, Color(1.0,0.5,0.3) );
-		vs->mesh_surface_set_material( trimesh_mesh, 0, trimesh_mat );
-
-		RID triins = vs->instance_create2(trimesh_mesh);
-
-
-
-		RID tribody = ps->body_create( PhysicsServer::BODY_MODE_STATIC, trimesh_shape);
-		Transform tritrans = Transform( Basis(), Vector3(0,0,-2) );
-		ps->body_set_state( tribody, PhysicsServer::BODY_STATE_TRANSFORM, tritrans );
-		vs->instance_set_transform( triins, tritrans );
-		RID trimesh_material = vs->fixed_material_create();
-		vs->material_generate( trimesh_material, Color(0.2,0.4,0.6) );
-		vs->mesh_surface_set_material( trimesh_mesh, 0, trimesh_material );
-#endif
 	}
 	virtual bool iteration(float p_time) {
 
@@ -445,58 +353,9 @@ public:
 	}
 
 	void test_joint() {
-#if 0
-		PhysicsServer * ps = PhysicsServer::get_singleton();
-
-		mover = create_body(PhysicsServer::SHAPE_BOX,PhysicsServer::BODY_MODE_STATIC,Transform(Basis(),Vector3(0,0,-24)));
-		RID b = create_body(PhysicsServer::SHAPE_CAPSULE,PhysicsServer::BODY_MODE_RIGID,Transform());
-
-		ps->joint_create_double_pin(b,Vector3(0,0,1.0),mover,Vector3(0,0,0));
-		ps->body_add_collision_exception(mover,b);
-
-
-		List<String> cmdline = OS::get_singleton()->get_cmdline_args();
-		int link_count = LINK_COUNT;
-		if (cmdline.size() > 0 && cmdline[cmdline.size()-1].to_int()) {
-			link_count = cmdline[cmdline.size()-1].to_int();
-		};
-
-		for(int i=0;i<link_count;i++) {
-
-			RID c = create_body(PhysicsServer::SHAPE_CAPSULE,PhysicsServer::BODY_MODE_RIGID,Transform());
-			ps->joint_create_double_pin(b,Vector3(0,0,-0.7),c,Vector3(0,0,0.7));
-			ps->body_add_collision_exception(c,b);
-			b=c;
-		}
-
-
-		create_static_plane(Plane(Vector3(0,1,0),-8));
-#endif
 	}
 
 	void test_hinge() {
-#if 0
-		PhysicsServer * ps = PhysicsServer::get_singleton();
-
-
-		mover = create_body(PhysicsServer::SHAPE_BOX,PhysicsServer::BODY_MODE_STATIC,Transform(Basis(),Vector3(0,0,-24)));
-		RID b = create_body(PhysicsServer::SHAPE_BOX,PhysicsServer::BODY_MODE_RIGID,Transform());
-
-		ps->joint_create_double_hinge(b,Transform(Basis(),Vector3(1,1,1.0)),mover,Transform(Basis(),Vector3(0,0,0)));
-		ps->body_add_collision_exception(mover,b);
-
-/*
-		for(int i=0;i<20;i++) {
-
-			RID c = create_body(PhysicsServer::SHAPE_CAPSULE,PhysicsServer::BODY_MODE_RIGID,Transform());
-			ps->joint_create_double_hinge(b,Transform(Basis(),Vector3(0,0,-0.7)),c,Transform(Basis(),Vector3(0,0,0.7)));
-			ps->body_add_collision_exception(c,b);
-			b=c;
-		}
-
-*/
-		//create_static_plane(Plane(Vector3(0,1,0),-8));
-#endif
 	}
 
 	void test_character() {
@@ -544,35 +403,21 @@ public:
 			};
 
 			PhysicsServer::ShapeType type = shape_idx[i % 4];
-			//type=PhysicsServer::SHAPE_CONVEX_POLYGON;
 
 			Transform t;
 
 			t.origin = Vector3(0.0 * i, 3.5 + 1.1 * i, 0.7 + 0.0 * i);
-			//t.origin=Vector3(-0.7+0.0*i,0.5+4.1*i,0);
 			t.basis.rotate(Vector3(0.2, -1, 0), Math_PI / 2 * 0.6);
-			//t.basis.rotate(Vector3(0,-1,0),Math_PI/4*i);
-			//t.basis.rotate(Vector3(0,-1,0),Math_PI/4*i);
-			//t.basis.rotate(Vector3(-1,0,0),Math_PI/4*i);
 
 			create_body(type, PhysicsServer::BODY_MODE_RIGID, t);
-			//RID b = create_body(type,i==0?PhysicsServer::BODY_MODE_STATIC:PhysicsServer::BODY_MODE_RIGID,t);
 		}
 
 		create_static_plane(Plane(Vector3(0, 1, 0), -1));
-
-		/*
-		create_static_plane( Plane( Vector3(1,0,0), -2) );
-		create_static_plane( Plane( Vector3(-1,0,0), -2) );
-		create_static_plane( Plane( Vector3(0,0,1), -2) );
-		create_static_plane( Plane( Vector3(0,0,-1), -2) );
-*/
 	}
 
 	void test_activate() {
 
 		create_body(PhysicsServer::SHAPE_BOX, PhysicsServer::BODY_MODE_RIGID, Transform(Basis(), Vector3(0, 2, 0)), true);
-		//create_body(PhysicsServer::SHAPE_SPHERE,PhysicsServer::BODY_MODE_RIGID,Transform(Basis(),Vector3(0,6,0)),true);
 		create_static_plane(Plane(Vector3(0, 1, 0), -1));
 	}
 

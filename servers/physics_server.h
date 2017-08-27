@@ -96,6 +96,7 @@ class PhysicsShapeQueryParameters : public Reference {
 
 	GDCLASS(PhysicsShapeQueryParameters, Reference);
 	friend class PhysicsDirectSpaceState;
+
 	RID shape;
 	Transform transform;
 	float margin;
@@ -133,8 +134,6 @@ class PhysicsDirectSpaceState : public Object {
 
 	GDCLASS(PhysicsDirectSpaceState, Object);
 
-	//Variant _intersect_ray(const Vector3& p_from, const Vector3& p_to,const Vector<RID>& p_exclude=Vector<RID>(),uint32_t p_collision_mask=0);
-	//Variant _intersect_shape(const RID& p_shape, const Transform& p_xform,int p_result_max=64,const Vector<RID>& p_exclude=Vector<RID>(),uint32_t p_collision_mask=0);
 public:
 	enum ObjectTypeMask {
 		TYPE_MASK_STATIC_BODY = 1 << 0,
@@ -625,37 +624,6 @@ public:
 	virtual void generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag, bool p_enable) = 0;
 	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag) = 0;
 
-#if 0
-	enum JointType {
-
-		JOINT_PIN,
-		JOINT_GROOVE,
-		JOINT_DAMPED_SPRING
-	};
-
-	enum JointParam {
-		JOINT_PARAM_BIAS,
-		JOINT_PARAM_MAX_BIAS,
-		JOINT_PARAM_MAX_FORCE,
-	};
-
-	virtual void joint_set_param(RID p_joint, JointParam p_param, real_t p_value)=0;
-	virtual real_t joint_get_param(RID p_joint,JointParam p_param) const=0;
-
-	virtual RID pin_joint_create(const Vector3& p_anchor,RID p_body_a,RID p_body_b=RID())=0;
-	virtual RID groove_joint_create(const Vector3& p_a_groove1,const Vector3& p_a_groove2, const Vector3& p_b_anchor, RID p_body_a,RID p_body_b)=0;
-	virtual RID damped_spring_joint_create(const Vector3& p_anchor_a,const Vector3& p_anchor_b,RID p_body_a,RID p_body_b=RID())=0;
-
-	enum DampedStringParam {
-		DAMPED_STRING_REST_LENGTH,
-		DAMPED_STRING_STIFFNESS,
-		DAMPED_STRING_DAMPING
-	};
-	virtual void damped_string_joint_set_param(RID p_joint, DampedStringParam p_param, real_t p_value)=0;
-	virtual real_t damped_string_joint_get_param(RID p_joint, DampedStringParam p_param) const=0;
-
-	virtual JointType joint_get_type(RID p_joint) const=0;
-#endif
 	/* QUERY API */
 
 	enum AreaBodyStatus {
@@ -703,7 +671,6 @@ VARIANT_ENUM_CAST(PhysicsServer::SliderJointParam);
 VARIANT_ENUM_CAST(PhysicsServer::ConeTwistJointParam);
 VARIANT_ENUM_CAST(PhysicsServer::G6DOFJointAxisParam);
 VARIANT_ENUM_CAST(PhysicsServer::G6DOFJointAxisFlag);
-//VARIANT_ENUM_CAST( PhysicsServer::ObjectType );
 VARIANT_ENUM_CAST(PhysicsServer::AreaBodyStatus);
 VARIANT_ENUM_CAST(PhysicsServer::ProcessInfo);
 

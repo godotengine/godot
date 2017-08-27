@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "joints_2d_sw.h"
+
 #include "space_2d_sw.h"
 
 //based on chipmunk joint constraints
@@ -87,127 +88,12 @@ normal_relative_velocity(Body2DSW *a, Body2DSW *b, Vector2 rA, Vector2 rB, Vecto
 	return relative_velocity(a, b, rA, rB).dot(n);
 }
 
-#if 0
-
-bool PinJoint2DSW::setup(real_t p_step) {
-
-	Space2DSW *space = A->get_space();
-	ERR_FAIL_COND_V(!space,false;)
-	rA = A->get_transform().basis_xform(anchor_A);
-	rB = B?B->get_transform().basis_xform(anchor_B):anchor_B;
-
-	Vector2 gA = A->get_transform().get_origin();
-	Vector2 gB = B?B->get_transform().get_origin():Vector2();
-
-	Vector2 delta = gB - gA;
-	delta = (delta+rB) -rA;
-
-	real_t jdist = delta.length();
-	correct=false;
-	if (jdist==0)
-		return false; // do not correct
-
-	correct=true;
-
-	n = delta / jdist;
-
-	// calculate mass normal
-	mass_normal = 1.0f/k_scalar(A, B, rA, rB, n);
-
-	// calculate bias velocity
-	//real_t maxBias = joint->constraint.maxBias;
-	bias = -(get_bias()==0?space->get_constraint_bias():get_bias())*(1.0/p_step)*(jdist-dist);
-	bias = CLAMP(bias, -get_max_bias(), +get_max_bias());
-
-	// compute max impulse
-	jn_max = get_max_force() * p_step;
-
-	// apply accumulated impulse
-	Vector2 j = n * jn_acc;
-	A->apply_impulse(rA,-j);
-	if (B)
-		B->apply_impulse(rB,j);
-
-	print_line("setup");
-	return true;
-}
-
-
-
-void PinJoint2DSW::solve(real_t p_step){
-
-	if (!correct)
-		return;
-
-	Vector2 ln = n;
-
-	// compute relative velocity
-	real_t vrn = normal_relative_velocity(A,B, rA, rB, ln);
-
-	// compute normal impulse
-	real_t jn = (bias - vrn)*mass_normal;
-	real_t jnOld = jn_acc;
-	jn_acc = CLAMP(jnOld + jn,-jn_max,jn_max); //cpfclamp(jnOld + jn, -joint->jnMax, joint->jnMax);
-	jn = jn_acc - jnOld;
-	print_line("jn_acc: "+rtos(jn_acc));
-	Vector2 j = jn*ln;
-
-	A->apply_impulse(rA,-j);
-	if (B)
-		B->apply_impulse(rB,j);
-
-}
-
-
-PinJoint2DSW::PinJoint2DSW(const Vector2& p_pos,Body2DSW* p_body_a,Body2DSW* p_body_b) : Joint2DSW(_arr,p_body_b?2:1) {
-
-	A=p_body_a;
-	B=p_body_b;
-	anchor_A = p_body_a->get_inv_transform().xform(p_pos);
-	anchor_B = p_body_b?p_body_b->get_inv_transform().xform(p_pos):p_pos;
-
-	jn_acc=0;
-	dist=0;
-
-	p_body_a->add_constraint(this,0);
-	if (p_body_b)
-		p_body_b->add_constraint(this,1);
-
-}
-
-PinJoint2DSW::~PinJoint2DSW() {
-
-	if (A)
-		A->remove_constraint(this);
-	if (B)
-		B->remove_constraint(this);
-
-}
-
-#else
-
 bool PinJoint2DSW::setup(real_t p_step) {
 
 	Space2DSW *space = A->get_space();
 	ERR_FAIL_COND_V(!space, false;)
 	rA = A->get_transform().basis_xform(anchor_A);
 	rB = B ? B->get_transform().basis_xform(anchor_B) : anchor_B;
-#if 0
-	Vector2 gA = rA+A->get_transform().get_origin();
-	Vector2 gB = B?rB+B->get_transform().get_origin():rB;
-
-	VectorB delta = gB - gA;
-
-	real_t jdist = delta.length();
-	correct=false;
-	if (jdist==0)
-		return false; // do not correct
-#endif
-
-	// deltaV = deltaV0 + K * impulse
-	// invM = [(1/m1 + 1/m2) * eye(2) - skew(rA) * invI1 * skew(rA) - skew(rB) * invI2 * skew(rB)]
-	//      = [1/m1+1/m2     0    ] + invI1 * [rA.y*rA.y -rA.x*rA.y] + invI2 * [rA.y*rA.y -rA.x*rA.y]
-	//        [    0     1/m1+1/m2]           [-rA.x*rA.y rA.x*rA.x]           [-rA.x*rA.y rA.x*rA.x]
 
 	real_t B_inv_mass = B ? B->get_inv_mass() : 0.0;
 
@@ -314,8 +200,6 @@ PinJoint2DSW::~PinJoint2DSW() {
 	if (B)
 		B->remove_constraint(this);
 }
-
-#endif
 
 //////////////////////////////////////////////
 //////////////////////////////////////////////
