@@ -231,6 +231,7 @@ void AudioDriverRtAudio::finish() {
 
 AudioDriverRtAudio::AudioDriverRtAudio() {
 
+	active = false;
 	mutex = NULL;
 	dac = NULL;
 	mix_rate = 44100;
