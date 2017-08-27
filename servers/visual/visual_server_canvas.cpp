@@ -37,10 +37,8 @@ void VisualServerCanvas::_render_canvas_item_tree(Item *p_canvas_item, const Tra
 	RasterizerCanvas::Item *z_list[z_range];
 	RasterizerCanvas::Item *z_last_list[z_range];
 
-	for (int i = 0; i < z_range; i++) {
-		z_list[i] = NULL;
-		z_last_list[i] = NULL;
-	}
+	memset(z_list, 0, z_range * sizeof(RasterizerCanvas::Item *));
+	memset(z_last_list, 0, z_range * sizeof(RasterizerCanvas::Item *));
 
 	_render_canvas_item(p_canvas_item, p_transform, p_clip_rect, Color(1, 1, 1, 1), 0, z_list, z_last_list, NULL, NULL);
 
@@ -200,10 +198,9 @@ void VisualServerCanvas::render_canvas(Canvas *p_canvas, const Transform2D &p_tr
 		RasterizerCanvas::Item *z_list[z_range];
 		RasterizerCanvas::Item *z_last_list[z_range];
 
-		for (int i = 0; i < z_range; i++) {
-			z_list[i] = NULL;
-			z_last_list[i] = NULL;
-		}
+		memset(z_list, 0, z_range * sizeof(RasterizerCanvas::Item *));
+		memset(z_last_list, 0, z_range * sizeof(RasterizerCanvas::Item *));
+
 		for (int i = 0; i < l; i++) {
 			_render_canvas_item(ci[i].item, p_transform, p_clip_rect, Color(1, 1, 1, 1), 0, z_list, z_last_list, NULL, NULL);
 		}
