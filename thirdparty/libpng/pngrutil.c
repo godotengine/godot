@@ -1,7 +1,7 @@
 
 /* pngrutil.c - utilities to read a PNG file
  *
- * Last changed in libpng 1.6.31 [(PENDING RELEASE)]
+ * Last changed in libpng 1.6.32 [August 24, 2017]
  * Copyright (c) 1998-2002,2004,2006-2017 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
@@ -180,6 +180,9 @@ png_read_chunk_header(png_structrp png_ptr)
 
    /* Check to see if chunk name is valid. */
    png_check_chunk_name(png_ptr, png_ptr->chunk_name);
+
+   /* Check for too-large chunk length */
+   png_check_chunk_length(png_ptr, length);
 
 #ifdef PNG_IO_STATE_SUPPORTED
    png_ptr->io_state = PNG_IO_READING | PNG_IO_CHUNK_DATA;
@@ -1377,11 +1380,13 @@ png_handle_iCCP(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
     * chunk is just ignored, so does not invalidate the color space.  An
     * alternative is to set the 'invalid' flags at the start of this routine
     * and only clear them in they were not set before and all the tests pass.
-    * The minimum 'deflate' stream is assumed to be just the 2 byte header and
-    * 4 byte checksum.  The keyword must be at least one character and there is
-    * a terminator (0) byte and the compression method.
     */
-   if (length < 9)
+
+   /* The keyword must be at least one character and there is a
+    * terminator (0) byte and the compression method byte, and the
+    * 'zlib' datastream is at least 11 bytes.
+    */
+   if (length < 14)
    {
       png_crc_finish(png_ptr, length);
       png_chunk_benign_error(png_ptr, "too short");
@@ -1413,6 +1418,16 @@ png_handle_iCCP(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
       png_crc_read(png_ptr, (png_bytep)keyword, read_length);
       length -= read_length;
 
+      /* The minimum 'zlib' stream is assumed to be just the 2 byte header,
+       * 5 bytes minimum 'deflate' stream, and the 4 byte checksum.
+       */
+      if (length < 11)
+      {
+         png_crc_finish(png_ptr, length);
+         png_chunk_benign_error(png_ptr, "too short");
+         return;
+      }
+
       keyword_length = 0;
       while (keyword_length < 80 && keyword_length < read_length &&
          keyword[keyword_length] != 0)
@@ -1431,7 +1446,7 @@ png_handle_iCCP(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
 
             if (png_inflate_claim(png_ptr, png_iCCP) == Z_OK)
             {
-               Byte profile_header[132];
+               Byte profile_header[132]={0};
                Byte local_buffer[PNG_INFLATE_BUF_SIZE];
                png_alloc_size_t size = (sizeof profile_header);
 
@@ -2014,36 +2029,61 @@ void /* PRIVATE */
 png_handle_eXIf(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
 {
    unsigned int i;
-   png_bytep eXIf_buf;
 
    png_debug(1, "in png_handle_eXIf");
 
    if ((png_ptr->mode & PNG_HAVE_IHDR) == 0)
       png_chunk_error(png_ptr, "missing IHDR");
 
-   else if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_eXIf) != 0)
+   if (length < 2)
+   {
+      png_crc_finish(png_ptr, length);
+      png_chunk_benign_error(png_ptr, "too short");
+      return;
+   }
+
+   else if (info_ptr == NULL || (info_ptr->valid & PNG_INFO_eXIf) != 0)
    {
       png_crc_finish(png_ptr, length);
       png_chunk_benign_error(png_ptr, "duplicate");
       return;
    }
 
-   eXIf_buf = png_voidcast(png_bytep,
+   info_ptr->free_me |= PNG_FREE_EXIF;
+
+   info_ptr->eXIf_buf = png_voidcast(png_bytep,
              png_malloc_warn(png_ptr, length));
+
+   if (info_ptr->eXIf_buf == NULL)
+   {
+      png_crc_finish(png_ptr, length);
+      png_chunk_benign_error(png_ptr, "out of memory");
+      return;
+   }
 
    for (i = 0; i < length; i++)
    {
       png_byte buf[1];
       png_crc_read(png_ptr, buf, 1);
-      eXIf_buf[i] = buf[0];
+      info_ptr->eXIf_buf[i] = buf[0];
+      if (i == 1 && buf[0] != 'M' && buf[0] != 'I'
+                 && info_ptr->eXIf_buf[0] != buf[0])
+      {
+         png_crc_finish(png_ptr, length);
+         png_chunk_benign_error(png_ptr, "incorrect byte-order specifier");
+         png_free(png_ptr, info_ptr->eXIf_buf);
+         info_ptr->eXIf_buf = NULL;
+         return;
+      }
    }
 
    if (png_crc_finish(png_ptr, 0) != 0)
       return;
 
-   info_ptr->num_exif = length;
+   png_set_eXIf_1(png_ptr, info_ptr, length, info_ptr->eXIf_buf);
 
-   png_set_eXIf(png_ptr, info_ptr, eXIf_buf);
+   png_free(png_ptr, info_ptr->eXIf_buf);
+   info_ptr->eXIf_buf = NULL;
 }
 #endif
 
@@ -2624,23 +2664,28 @@ png_handle_zTXt(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
       {
          png_text text;
 
-         /* It worked; png_ptr->read_buffer now looks like a tEXt chunk except
-          * for the extra compression type byte and the fact that it isn't
-          * necessarily '\0' terminated.
-          */
-         buffer = png_ptr->read_buffer;
-         buffer[uncompressed_length+(keyword_length+2)] = 0;
+         if (png_ptr->read_buffer == NULL)
+           errmsg="Read failure in png_handle_zTXt";
+         else
+         {
+            /* It worked; png_ptr->read_buffer now looks like a tEXt chunk
+             * except for the extra compression type byte and the fact that
+             * it isn't necessarily '\0' terminated.
+             */
+            buffer = png_ptr->read_buffer;
+            buffer[uncompressed_length+(keyword_length+2)] = 0;
 
-         text.compression = PNG_TEXT_COMPRESSION_zTXt;
-         text.key = (png_charp)buffer;
-         text.text = (png_charp)(buffer + keyword_length+2);
-         text.text_length = uncompressed_length;
-         text.itxt_length = 0;
-         text.lang = NULL;
-         text.lang_key = NULL;
+            text.compression = PNG_TEXT_COMPRESSION_zTXt;
+            text.key = (png_charp)buffer;
+            text.text = (png_charp)(buffer + keyword_length+2);
+            text.text_length = uncompressed_length;
+            text.itxt_length = 0;
+            text.lang = NULL;
+            text.lang_key = NULL;
 
-         if (png_set_text_2(png_ptr, info_ptr, &text, 1) != 0)
-            errmsg = "insufficient memory";
+            if (png_set_text_2(png_ptr, info_ptr, &text, 1) != 0)
+               errmsg = "insufficient memory";
+         }
       }
 
       else
@@ -3076,20 +3121,58 @@ png_handle_unknown(png_structrp png_ptr, png_inforp info_ptr,
  */
 
 void /* PRIVATE */
-png_check_chunk_name(png_structrp png_ptr, png_uint_32 chunk_name)
+png_check_chunk_name(png_const_structrp png_ptr, const png_uint_32 chunk_name)
 {
    int i;
+   png_uint_32 cn=chunk_name;
 
    png_debug(1, "in png_check_chunk_name");
 
    for (i=1; i<=4; ++i)
    {
-      int c = chunk_name & 0xff;
+      int c = cn & 0xff;
 
       if (c < 65 || c > 122 || (c > 90 && c < 97))
          png_chunk_error(png_ptr, "invalid chunk type");
 
-      chunk_name >>= 8;
+      cn >>= 8;
+   }
+}
+
+void /* PRIVATE */
+png_check_chunk_length(png_const_structrp png_ptr, const png_uint_32 length)
+{
+   png_alloc_size_t limit = PNG_UINT_31_MAX;
+
+   if (png_ptr->chunk_name != png_IDAT)
+   {
+# ifdef PNG_SET_USER_LIMITS_SUPPORTED
+      if (png_ptr->user_chunk_malloc_max > 0 &&
+          png_ptr->user_chunk_malloc_max < limit)
+         limit = png_ptr->user_chunk_malloc_max;
+# elif PNG_USER_CHUNK_MALLOC_MAX > 0
+      if (PNG_USER_CHUNK_MALLOC_MAX < limit)
+         limit = PNG_USER_CHUNK_MALLOC_MAX;
+# endif
+   }
+   else
+   {
+      size_t row_factor =
+         (png_ptr->width * png_ptr->channels * (png_ptr->bit_depth > 8? 2: 1)
+          + 1 + (png_ptr->interlaced? 6: 0));
+      if (png_ptr->height > PNG_UINT_32_MAX/row_factor)
+         limit=PNG_UINT_31_MAX;
+      else
+         limit = png_ptr->height * row_factor;
+      limit += 6 + 5*(limit/32566+1); /* zlib+deflate overhead */
+      limit=limit < PNG_UINT_31_MAX? limit : PNG_UINT_31_MAX;
+   }
+
+   if (length > limit)
+   {
+      png_debug2(0," length = %lu, limit = %lu",
+         (unsigned long)length,(unsigned long)limit);
+      png_chunk_error(png_ptr, "chunk data is too large");
    }
 }
 

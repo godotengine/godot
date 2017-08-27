@@ -1,8 +1,8 @@
 
 /* pngwutil.c - utilities to write a PNG file
  *
- * Last changed in libpng 1.6.26 [October 20, 2016]
- * Copyright (c) 1998-2002,2004,2006-2016 Glenn Randers-Pehrson
+ * Last changed in libpng 1.6.32 [August 24, 2017]
+ * Copyright (c) 1998-2002,2004,2006-2017 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
  *
@@ -1479,24 +1479,15 @@ void /* PRIVATE */
 png_write_eXIf(png_structrp png_ptr, png_bytep exif, int num_exif)
 {
    int i;
-   png_byte buf[3];
+   png_byte buf[1];
 
    png_debug(1, "in png_write_eXIf");
-
-   if (num_exif > (int)png_ptr->num_exif)
-   {
-      png_debug2(3, "num_exif = %d, png_ptr->num_exif = %d", num_exif,
-          png_ptr->num_exif);
-
-      png_warning(png_ptr, "Invalid number of exif bytes specified");
-      return;
-   }
 
    png_write_chunk_header(png_ptr, png_eXIf, (png_uint_32)(num_exif));
 
    for (i = 0; i < num_exif; i++)
    {
-      buf[i] = exif[i];
+      buf[0] = exif[i];
       png_write_chunk_data(png_ptr, buf, (png_size_t)1);
    }
 
