@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  input_action.h                                                       */
+/*  shortcut.h                                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,8 +27,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef INPUTACTION_H
-#define INPUTACTION_H
+#ifndef SHORTCUT_H
+#define SHORTCUT_H
 
 #include "os/input_event.h"
 #include "resource.h"
@@ -53,4 +53,4 @@ public:
 	ShortCut();
 };
 
-#endif // INPUTACTION_H
+#endif // SHORTCUT_H

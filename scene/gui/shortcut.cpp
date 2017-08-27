@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  test_containers.h                                                    */
+/*  shortcut.cpp                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,17 +27,51 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef TEST_CONTAINERS_H
-#define TEST_CONTAINERS_H
+#include "shortcut.h"
 
-#include "os/main_loop.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
+#include "os/keyboard.h"
 
-namespace TestContainers {
+void ShortCut::set_shortcut(const Ref<InputEvent> &p_shortcut) {
 
-MainLoop *test();
+	shortcut = p_shortcut;
+	emit_changed();
 }
 
-#endif
+Ref<InputEvent> ShortCut::get_shortcut() const {
+
+	return shortcut;
+}
+
+bool ShortCut::is_shortcut(const Ref<InputEvent> &p_event) const {
+
+	return shortcut.is_valid() && shortcut->shortcut_match(p_event);
+}
+
+String ShortCut::get_as_text() const {
+
+	if (shortcut.is_valid())
+		return shortcut->as_text();
+	else
+		return "None";
+}
+
+bool ShortCut::is_valid() const {
+
+	return shortcut.is_valid();
+}
+
+void ShortCut::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_shortcut", "event"), &ShortCut::set_shortcut);
+	ClassDB::bind_method(D_METHOD("get_shortcut"), &ShortCut::get_shortcut);
+
+	ClassDB::bind_method(D_METHOD("is_valid"), &ShortCut::is_valid);
+
+	ClassDB::bind_method(D_METHOD("is_shortcut", "event"), &ShortCut::is_shortcut);
+	ClassDB::bind_method(D_METHOD("get_as_text"), &ShortCut::get_as_text);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), "set_shortcut", "get_shortcut");
+}
+
+ShortCut::ShortCut() {
+}

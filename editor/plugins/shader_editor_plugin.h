@@ -77,7 +77,6 @@ class ShaderEditor : public VBoxContainer {
 		SEARCH_FIND_NEXT,
 		SEARCH_FIND_PREV,
 		SEARCH_REPLACE,
-		//SEARCH_LOCATE_SYMBOL,
 		SEARCH_GOTO_LINE,
 
 	};
@@ -108,10 +107,6 @@ public:
 	void ensure_select_current();
 	void edit(const Ref<Shader> &p_shader);
 
-	Dictionary get_state() const;
-	void set_state(const Dictionary &p_state);
-	void clear();
-
 	virtual Size2 get_minimum_size() const { return Size2(0, 200); }
 	void save_external_data();
 
@@ -134,10 +129,6 @@ public:
 	virtual bool handles(Object *p_object) const;
 	virtual void make_visible(bool p_visible);
 	virtual void selected_notify();
-
-	Dictionary get_state() const;
-	virtual void set_state(const Dictionary &p_state);
-	virtual void clear();
 
 	virtual void save_external_data();
 	virtual void apply_changes();

@@ -238,7 +238,6 @@ void EditorSpatialGizmo::add_handles(const Vector<Vector3> &p_handles, bool p_bi
 	Instance ins;
 
 	Ref<ArrayMesh> mesh = memnew(ArrayMesh);
-#if 1
 
 	Array a;
 	a.resize(VS::ARRAY_MAX);
@@ -273,61 +272,6 @@ void EditorSpatialGizmo::add_handles(const Vector<Vector3> &p_handles, bool p_bi
 		}
 	}
 
-#else
-	for (int ih = 0; ih < p_handles.size(); ih++) {
-
-		Vector<Vector3> vertices;
-		Vector<Vector3> normals;
-
-		int vtx_idx = 0;
-
-#define ADD_VTX(m_idx)                                                           \
-	vertices.push_back((face_points[m_idx] * HANDLE_HALF_SIZE + p_handles[ih])); \
-	normals.push_back(normal_points[m_idx]);                                     \
-	vtx_idx++;
-
-		for (int i = 0; i < 6; i++) {
-
-			Vector3 face_points[4];
-			Vector3 normal_points[4];
-			float uv_points[8] = { 0, 0, 0, 1, 1, 1, 1, 0 };
-
-			for (int j = 0; j < 4; j++) {
-
-				float v[3];
-				v[0] = 1.0;
-				v[1] = 1 - 2 * ((j >> 1) & 1);
-				v[2] = v[1] * (1 - 2 * (j & 1));
-
-				for (int k = 0; k < 3; k++) {
-
-					if (i < 3)
-						face_points[j][(i + k) % 3] = v[k] * (i >= 3 ? -1 : 1);
-					else
-						face_points[3 - j][(i + k) % 3] = v[k] * (i >= 3 ? -1 : 1);
-				}
-				normal_points[j] = Vector3();
-				normal_points[j][i % 3] = (i >= 3 ? -1 : 1);
-			}
-			//tri 1
-			ADD_VTX(0);
-			ADD_VTX(1);
-			ADD_VTX(2);
-			//tri 2
-			ADD_VTX(2);
-			ADD_VTX(3);
-			ADD_VTX(0);
-		}
-
-		Array d;
-		d.resize(VS::ARRAY_MAX);
-		d[VisualServer::ARRAY_NORMAL] = normals;
-		d[VisualServer::ARRAY_VERTEX] = vertices;
-
-		mesh->add_surface(Mesh::PRIMITIVE_TRIANGLES, d);
-		mesh->surface_set_material(ih, SpatialEditorGizmos::singleton->handle_material);
-	}
-#endif
 	ins.mesh = mesh;
 	ins.billboard = p_billboard;
 	ins.extra_margin = true;

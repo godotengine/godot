@@ -851,28 +851,6 @@ void Octree<T, use_pairs, AL>::move(OctreeElementID p_id, const Rect3 &p_aabb) {
 	ERR_FAIL_COND(!E);
 	Element &e = E->get();
 
-#if 0
-
-	pass++;
-	if (!e.aabb.has_no_surface()) {
-		_remove_element(&e);
-	}
-
-	e.aabb=p_aabb;
-
-	if (!e.aabb.has_no_surface()) {
-		_ensure_valid_root(p_aabb);
-
-		_insert_element(&e,root);
-		if (use_pairs)
-			_element_check_pairs(&e);
-
-	}
-
-	_optimize();
-
-#else
-
 	bool old_has_surf = !e.aabb.has_no_surface();
 	bool new_has_surf = !p_aabb.has_no_surface();
 
@@ -979,7 +957,6 @@ void Octree<T, use_pairs, AL>::move(OctreeElementID p_id, const Rect3 &p_aabb) {
 	}
 
 	_optimize();
-#endif
 }
 
 template <class T, bool use_pairs, class AL>

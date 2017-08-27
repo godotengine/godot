@@ -194,21 +194,9 @@ Error DirAccessUnix::make_dir(String p_dir) {
 
 	p_dir = fix_path(p_dir);
 
-#if 1
-
 	bool success = (mkdir(p_dir.utf8().get_data(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == 0);
 	int err = errno;
 
-#else
-	char real_current_dir_name[2048];
-	getcwd(real_current_dir_name, 2048);
-	chdir(current_dir.utf8().get_data()); //ascii since this may be unicode or wathever the host os wants
-
-	bool success = (mkdir(p_dir.utf8().get_data(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == 0);
-	int err = errno;
-
-	chdir(real_current_dir_name);
-#endif
 	if (success) {
 		return OK;
 	};

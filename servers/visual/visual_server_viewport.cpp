@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "visual_server_viewport.h"
+
 #include "project_settings.h"
 #include "visual_server_canvas.h"
 #include "visual_server_global.h"
@@ -51,36 +52,6 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 	}
 
 	bool can_draw_3d = !p_viewport->disable_3d && !p_viewport->disable_3d_by_usage && VSG::scene->camera_owner.owns(p_viewport->camera);
-#if 0
-
-
-
-	if (scenario_draw_canvas_bg) {
-
-		rasterizer->begin_canvas_bg();
-	}
-
-	if (!scenario_draw_canvas_bg && can_draw_3d) {
-
-		_draw_viewport_camera(p_viewport,false);
-
-	} else if (true /*|| !p_viewport->canvas_list.empty()*/){
-
-		//clear the viewport black because of no camera? i seriously should..
-		if (p_viewport->render_target_clear_on_new_frame || p_viewport->render_target_clear) {
-			if (p_viewport->transparent_bg) {
-				rasterizer->clear_viewport(Color(0,0,0,0));
-			}
-			else {
-				Color cc=clear_color;
-				if (scenario_draw_canvas_bg)
-					cc.a=0;
-				rasterizer->clear_viewport(cc);
-			}
-			p_viewport->render_target_clear=false;
-		}
-	}
-#endif
 
 	if (p_viewport->clear_mode != VS::VIEWPORT_CLEAR_NEVER) {
 		VSG::rasterizer->clear_render_target(clear_color);

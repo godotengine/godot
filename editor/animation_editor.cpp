@@ -38,6 +38,7 @@
 #include "pair.h"
 #include "scene/gui/separator.h"
 #include "scene/main/viewport.h"
+
 /* Missing to fix:
 
   *Set
@@ -2684,17 +2685,6 @@ void AnimationKeyEditor::_track_editor_gui_input(const Ref<InputEvent> &p_input)
 			Point2 mpos = mm->get_position() - ofs;
 
 			if (mpos.y < h) {
-#if 0
-				//seek
-				//int zoomw = settings_limit-name_limit;
-				float scale = _get_zoom_scale();
-				float pos = h_scroll->get_val() + (mpos.y-name_limit) / scale;
-				if (pos<0 )
-					pos=0;
-				if (pos>=animation->get_length())
-					pos=animation->get_length();
-				timeline->set_val(pos);
-#endif
 				return;
 			}
 

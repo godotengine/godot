@@ -205,33 +205,6 @@ Vector2 Vector2::clamped(real_t p_len) const {
 	return v;
 }
 
-Vector2 Vector2::cubic_interpolate_soft(const Vector2 &p_b, const Vector2 &p_pre_a, const Vector2 &p_post_b, real_t p_t) const {
-#if 0
-	k[0] = ((*this) (vi[0] + 1, vi[1], vi[2])) - ((*this) (vi[0],
-	vi[1],vi[2])); //fk = a0
-	k[1] = (((*this) (vi[0] + 1, vi[1], vi[2])) - ((*this) ((int) (v(0) -
-	1), vi[1],vi[2])))*0.5; //dk = a1
-	k[2] = (((*this) ((int) (v(0) + 2), vi[1], vi[2])) - ((*this) (vi[0],
-	vi[1],vi[2])))*0.5; //dk+1
-	k[3] = k[0]*3 - k[1]*2 - k[2];//a2
-	k[4] = k[1] + k[2] - k[0]*2;//a3
-
-	//ip = a3(t-tk)³ + a2(t-tk)² + a1(t-tk) + a0
-	//
-	//a3 = dk + dk+1 - Dk
-	//a2 = 3Dk - 2dk - dk+1
-	//a1 = dk
-	//a0 = fk
-	//
-	//dk = (fk+1 - fk-1)*0.5
-	//Dk = (fk+1 - fk)
-
-	real_t dk =
-#endif
-
-	return Vector2();
-}
-
 Vector2 Vector2::cubic_interpolate(const Vector2 &p_b, const Vector2 &p_pre_a, const Vector2 &p_post_b, real_t p_t) const {
 
 	Vector2 p0 = p_pre_a;

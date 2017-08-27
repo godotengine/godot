@@ -33,6 +33,7 @@
 #include "object.h"
 #include "os/mutex.h"
 #include "os/thread_safe.h"
+
 class MessageQueue {
 
 	_THREAD_SAFE_CLASS_
@@ -85,7 +86,6 @@ public:
 	Error push_notification(Object *p_object, int p_notification);
 	Error push_set(Object *p_object, const StringName &p_prop, const Variant &p_value);
 
-	bool print();
 	void statistics();
 	void flush();
 

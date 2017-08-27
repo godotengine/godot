@@ -35,7 +35,6 @@
 #include "io/image_loader.h"
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
-#include "io_plugins/editor_texture_import_plugin.h"
 #include "os/dir_access.h"
 #include "os/file_access.h"
 #include "os/os.h"

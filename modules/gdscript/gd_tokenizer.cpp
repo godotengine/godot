@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "gd_tokenizer.h"
+
 #include "gd_functions.h"
 #include "io/marshalls.h"
 #include "map.h"
@@ -504,7 +505,6 @@ void GDTokenizerText::_advance() {
 				_make_newline(i);
 				return;
 			}
-#if 1 //py style tokenizer
 			case '#': { // line comment skip
 
 				while (GETCHAR(0) != '\n') {
@@ -526,57 +526,9 @@ void GDTokenizerText::_advance() {
 				return;
 
 			} break;
-#endif
 			case '/': {
 
 				switch (GETCHAR(1)) {
-#if 0 // c style tokenizer
-					case '*': { // block comment
-						int pos = code_pos+2;
-						int new_line=line;
-						int new_col=column+2;
-
-						while(true) {
-							if (_code[pos]=='0') {
-								_make_error("Unterminated Comment");
-								code_pos=pos;
-								return;
-							}
-							if (_code[pos]=='*' && _code[pos+1]=='/') {
-								new_col+=2;
-								pos+=2; //compensate
-								break;
-							} else if (_code[pos]=='\n') {
-								new_line++;
-								new_col=1;
-							} else {
-								new_col++;
-							}
-							pos++;
-						}
-
-						column=new_col;
-						line=new_line;
-						code_pos=pos;
-						continue;
-
-					} break;
-					case '/': { // line comment skip
-
-						while(GETCHAR(0)!='\n') {
-							code_pos++;
-							if (GETCHAR(0)==0) { //end of file
-								_make_error("Unterminated Comment");
-								return;
-							}
-						}
-						INCPOS(1);
-						column=1;
-						line++;
-						continue;
-
-					} break;
-#endif
 					case '=': { // diveq
 
 						_make_token(TK_OP_ASSIGN_DIV);

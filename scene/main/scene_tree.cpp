@@ -29,18 +29,15 @@
 /*************************************************************************/
 #include "scene_tree.h"
 
+#include "editor/editor_node.h"
+#include "io/marshalls.h"
+#include "io/resource_loader.h"
 #include "message_queue.h"
 #include "node.h"
 #include "os/keyboard.h"
 #include "os/os.h"
 #include "print_string.h"
 #include "project_settings.h"
-#include <stdio.h>
-//#include "servers/spatial_sound_2d_server.h"
-
-#include "editor/editor_node.h"
-#include "io/marshalls.h"
-#include "io/resource_loader.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/packed_scene.h"
@@ -48,6 +45,8 @@
 #include "servers/physics_2d_server.h"
 #include "servers/physics_server.h"
 #include "viewport.h"
+
+#include <stdio.h>
 
 void SceneTreeTimer::_bind_methods() {
 
@@ -413,19 +412,7 @@ void SceneTree::input_event(const Ref<InputEvent> &p_event) {
 	root_lock++;
 
 	if (!input_handled) {
-
-#if 0
-		_call_input_pause("unhandled_input","_unhandled_input",ev);
-		//call_group(GROUP_CALL_REVERSE|GROUP_CALL_REALTIME|GROUP_CALL_MULIILEVEL,"unhandled_input","_unhandled_input",ev);
-		if (!input_handled && ev.type==InputEvent::KEY) {
-			_call_input_pause("unhandled_key_input","_unhandled_key_input",ev);
-			//call_group(GROUP_CALL_REVERSE|GROUP_CALL_REALTIME|GROUP_CALL_MULIILEVEL,"unhandled_key_input","_unhandled_key_input",ev);
-		}
-#else
-
 		call_group_flags(GROUP_CALL_REALTIME, "_viewports", "_vp_unhandled_input", ev); //special one for GUI, as controls use their own process check
-
-#endif
 		input_handled = true;
 		_flush_ugc();
 		root_lock--;

@@ -70,32 +70,6 @@ public:
 
 		SceneTree::init();
 
-#if 0
-
-
-		Viewport *vp = memnew( Viewport );
-		vp->set_world( Ref<World>( memnew( World )));
-		get_root()->add_child(vp);
-
-		vp->set_rect(Rect2(0,0,256,256));
-		vp->set_as_render_target(true);
-		vp->set_render_target_update_mode(Viewport::RENDER_TARGET_UPDATE_ALWAYS);
-
-
-		Camera *camera = memnew( Camera );
-		vp->add_child(camera);
-		camera->make_current();
-
-		Sprite *sp = memnew( Sprite );
-		sp->set_texture( vp->get_render_target_texture() );
-		//sp->set_texture( ResourceLoader::load("res://ball.png") );
-		sp->set_position(Point2(300,300));
-		get_root()->add_child(sp);
-
-
-		return;
-#endif
-
 		Panel *frame = memnew(Panel);
 		frame->set_anchor(MARGIN_RIGHT, Control::ANCHOR_END);
 		frame->set_anchor(MARGIN_BOTTOM, Control::ANCHOR_END);
@@ -111,7 +85,6 @@ public:
 		label->set_position(Point2(80, 90));
 		label->set_size(Point2(170, 80));
 		label->set_align(Label::ALIGN_FILL);
-		//label->set_text("There");
 		label->set_text("There was once upon a time a beautiful unicorn that loved to play with little girls...");
 
 		frame->add_child(label);
@@ -123,25 +96,6 @@ public:
 		button->set_text("This is a biggie button");
 
 		frame->add_child(button);
-
-#if 0
-		Sprite *tf = memnew( Sprite );
-		frame->add_child(tf);
-		Image img;
-		ImageLoader::load_image("LarvoClub.png",&img);
-
-		img.resize(512,512);
-		img.generate_mipmaps();
-		img.compress(Image::COMPRESS_PVRTC4);
-		Ref<ImageTexture> tt = memnew( ImageTexture );
-		tt->create_from_image(img);
-		tf->set_texture(tt);
-		tf->set_position(Point2(50,50));
-		//tf->set_scale(Point2(0.3,0.3));
-
-
-		return;
-#endif
 
 		Tree *tree = memnew(Tree);
 		tree->set_columns(2);
@@ -181,9 +135,6 @@ public:
 		item->set_text(0, "Gershwin!");
 
 		frame->add_child(tree);
-
-		//control = memnew( Control );
-		//root->add_child( control );
 
 		LineEdit *line_edit = memnew(LineEdit);
 
@@ -244,36 +195,6 @@ public:
 
 		frame->add_child(options);
 
-		/*
-		Tree * tree = memnew( Tree );
-		tree->set_columns(2);
-
-		tree->set_position( Point2( 230,210 ) );
-		tree->set_size( Point2( 150,250 ) );
-
-
-		TreeItem *item = tree->create_item();
-		item->set_editable(0,true);
-		item->set_text(0,"root");
-		item = tree->create_item( tree->get_root() );
-		item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-		item->set_editable(0,true);
-		item->set_text(0,"check");
-		item = tree->create_item( tree->get_root() );
-		item->set_cell_mode(0, TreeItem::CELL_MODE_RANGE);
-		item->set_editable(0,true);
-		item->set_range_config(0,0,20,0.1);
-		item->set_range(0,2);
-		item->add_button(0,Theme::get_default()->get_icon("folder","FileDialog"));
-		item = tree->create_item( tree->get_root() );
-		item->set_cell_mode(0, TreeItem::CELL_MODE_RANGE);
-		item->set_editable(0,true);
-		item->set_text(0,"Have,Many,Several,Options!");
-		item->set_range(0,2);
-
-		frame->add_child(tree);
-*/
-
 		RichTextLabel *richtext = memnew(RichTextLabel);
 
 		richtext->set_position(Point2(600, 210));
@@ -306,18 +227,10 @@ public:
 		richtext->add_text("keep writing a lot of text");
 		richtext->pop();
 		richtext->add_text(" so the label control overflows and the scrollbar appears.\n");
-		//richtext->push_indent(1);
-		//richtext->add_text("By the way, testing indent levels! Yohohoho! Everything should appear to the right sightly here!\n");
-		//richtext->pop();
 		richtext->push_meta("http://www.scrollingcapabilities.xz");
 		richtext->add_text("This allows to test for the scrolling capabilities ");
 		richtext->pop();
 		richtext->add_text("of the rich text label for huge text (not like this text will really be huge but, you know).\nAs long as it is so long that it will work nicely for a test/demo, then it's welcomed in my book...\nChanging subject, the day is cloudy today and I'm wondering if I'll get che chance to travel somewhere nice. Sometimes, watching the clouds from satellite images may give a nice insight about how pressure zones in our planet work, althogh it also makes it pretty obvious to see why most weather forecasts get it wrong so often.\nClouds are so difficult to predict!\nBut it's pretty cool how our civilization has adapted to having water falling from the sky each time it rains...");
-		//richtext->add_text("Hello!\nGorgeous..");
-
-		//richtext->push_meta("http://www.scrollingcapabilities.xz");
-		///richtext->add_text("Hello!\n");
-		//richtext->pop();
 
 		TabContainer *tabc = memnew(TabContainer);
 
@@ -346,21 +259,6 @@ public:
 
 		tabc->set_position(Point2(400, 210));
 		tabc->set_size(Point2(180, 250));
-
-		/*Ref<ImageTexture> text = memnew( ImageTexture );
-		text->load("test_data/concave.png");
-
-		Sprite* sprite = memnew(Sprite);
-		sprite->set_texture(text);
-		sprite->set_position(Point2(300, 300));
-		frame->add_child(sprite);
-		sprite->show();
-
-		Sprite* sprite2 = memnew(Sprite);
-		sprite->set_texture(text);
-		sprite->add_child(sprite2);
-		sprite2->set_position(Point2(50, 50));
-		sprite2->show();*/
 	}
 };
 

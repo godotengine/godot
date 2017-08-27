@@ -200,17 +200,6 @@ uint32_t Dictionary::hash() const {
 
 Array Dictionary::keys() const {
 
-#if 0
-	Array karr;
-	karr.resize(size());
-	const Variant *K = NULL;
-	int idx = 0;
-	while ((K = next(K))) {
-		karr[idx++] = (*K);
-	}
-	return karr;
-#else
-
 	Array varr;
 	varr.resize(size());
 	if (_p->variant_map.empty())
@@ -228,7 +217,6 @@ Array Dictionary::keys() const {
 	}
 
 	return varr;
-#endif
 }
 
 Array Dictionary::values() const {

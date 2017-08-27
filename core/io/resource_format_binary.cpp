@@ -1717,54 +1717,6 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 		default: {}
 	}
 }
-#if 0
-Error ResourceFormatSaverBinary::_save_obj(const Object *p_object,SavedObject *so) {
-
-	//use classic way
-	List<PropertyInfo> property_list;
-	p_object->get_property_list( &property_list );
-
-	for(List<PropertyInfo>::Element *E=property_list.front();E;E=E->next()) {
-
-		if (skip_editor && E->get().name.begins_with("__editor"))
-			continue;
-		if (E->get().usage&PROPERTY_USAGE_STORAGE || (bundle_resources && E->get().usage&PROPERTY_USAGE_BUNDLE)) {
-
-			SavedObject::SavedProperty sp;
-			sp.name_idx=get_string_index(E->get().name);
-			sp.value = p_object->get(E->get().name);
-			_find_resources(sp.value);
-			so->properties.push_back(sp);
-		}
-	}
-
-	return OK;
-
-}
-
-
-
-Error ResourceFormatSaverBinary::save(const Object *p_object,const Variant &p_meta) {
-
-	ERR_FAIL_COND_V(!f,ERR_UNCONFIGURED);
-	ERR_EXPLAIN("write_object should supply either an object, a meta, or both");
-	ERR_FAIL_COND_V(!p_object && p_meta.get_type()==Variant::NIL, ERR_INVALID_PARAMETER);
-
-	SavedObject *so = memnew( SavedObject );
-
-	if (p_object)
-		so->type=p_object->get_type();
-
-	_find_resources(p_meta);
-	so->meta=p_meta;
-	Error err = _save_obj(p_object,so);
-	ERR_FAIL_COND_V( err, ERR_INVALID_DATA );
-
-	saved_objects.push_back(so);
-
-	return OK;
-}
-#endif
 
 void ResourceFormatSaverBinaryInstance::save_unicode_string(const String &p_string) {
 

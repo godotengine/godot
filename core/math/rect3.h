@@ -189,8 +189,6 @@ Vector3 Rect3::get_endpoint(int p_point) const {
 
 bool Rect3::intersects_convex_shape(const Plane *p_planes, int p_plane_count) const {
 
-#if 1
-
 	Vector3 half_extents = size * 0.5;
 	Vector3 ofs = position + half_extents;
 
@@ -206,42 +204,6 @@ bool Rect3::intersects_convex_shape(const Plane *p_planes, int p_plane_count) co
 	}
 
 	return true;
-#else
-	//cache all points to check against!
-	// #warning should be easy to optimize, just use the same as when taking the support and use only that point
-	Vector3 points[8] = {
-		Vector3(position.x, position.y, position.z),
-		Vector3(position.x, position.y, position.z + size.z),
-		Vector3(position.x, position.y + size.y, position.z),
-		Vector3(position.x, position.y + size.y, position.z + size.z),
-		Vector3(position.x + size.x, position.y, position.z),
-		Vector3(position.x + size.x, position.y, position.z + size.z),
-		Vector3(position.x + size.x, position.y + size.y, position.z),
-		Vector3(position.x + size.x, position.y + size.y, position.z + size.z),
-	};
-
-	for (int i = 0; i < p_plane_count; i++) { //for each plane
-
-		const Plane &plane = p_planes[i];
-		bool all_points_over = true;
-		//test if it has all points over!
-
-		for (int j = 0; j < 8; j++) {
-
-			if (!plane.is_point_over(points[j])) {
-
-				all_points_over = false;
-				break;
-			}
-		}
-
-		if (all_points_over) {
-
-			return false;
-		}
-	}
-	return true;
-#endif
 }
 
 bool Rect3::has_point(const Vector3 &p_point) const {

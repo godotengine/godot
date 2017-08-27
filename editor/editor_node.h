@@ -30,7 +30,6 @@
 #ifndef EDITOR_NODE_H
 #define EDITOR_NODE_H
 
-#include "editor/call_dialog.h"
 #include "editor/connections_dialog.h"
 #include "editor/create_dialog.h"
 #include "editor/editor_about.h"
@@ -40,7 +39,6 @@
 #include "editor/editor_name_dialog.h"
 #include "editor/editor_path.h"
 #include "editor/editor_plugin.h"
-#include "editor/editor_reimport_dialog.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_run.h"
 #include "editor/editor_run_native.h"

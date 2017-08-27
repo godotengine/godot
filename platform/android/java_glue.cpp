@@ -866,13 +866,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 
 	__android_log_print(ANDROID_LOG_INFO, "godot", "**SETUP");
 
-#if 0
-	char *args[]={"--test","render",NULL};
-	__android_log_print(ANDROID_LOG_INFO,"godot","pre asdasd setup...");
-	Error err  = Main::setup("apk",2,args,false);
-#else
 	Error err = Main::setup("apk", cmdlen, (char **)cmdline, false);
-#endif
 
 	if (err != OK) {
 		__android_log_print(ANDROID_LOG_INFO, "godot", "*****UNABLE TO SETUP");

@@ -27,13 +27,12 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-
 #include "text_edit.h"
+
+#include "message_queue.h"
 #include "os/input.h"
 #include "os/keyboard.h"
 #include "os/os.h"
-
-#include "message_queue.h"
 #include "project_settings.h"
 #include "scene/main/viewport.h"
 
@@ -4466,18 +4465,6 @@ void TextEdit::_update_completion_candidates() {
 
 	// The top of the list is the best match
 	completion_current = completion_options[0];
-
-#if 0 // even there's only one option, user still get the chance to choose using it or not
-	if (completion_options.size()==1) {
-		//one option to complete, just complete it automagically
-		_confirm_completion();
-		//insert_text_at_cursor(completion_options[0].substr(s.length(),completion_options[0].length()-s.length()));
-		_cancel_completion();
-		return;
-
-	}
-#endif
-
 	completion_enabled = true;
 }
 
@@ -4903,24 +4890,6 @@ TextEdit::TextEdit() {
 	add_child(click_select_held);
 	click_select_held->set_wait_time(0.05);
 	click_select_held->connect("timeout", this, "_click_selection_held");
-
-#if 0
-	syntax_coloring=true;
-	keywords["void"]=Color(0.3,0.0,0.1);
-	keywords["int"]=Color(0.3,0.0,0.1);
-	keywords["function"]=Color(0.3,0.0,0.1);
-	keywords["class"]=Color(0.3,0.0,0.1);
-	keywords["extends"]=Color(0.3,0.0,0.1);
-	keywords["constructor"]=Color(0.3,0.0,0.1);
-	symbol_color=Color(0.1,0.0,0.3,1.0);
-
-	color_regions.push_back(ColorRegion("/*","*/",Color(0.4,0.6,0,4)));
-	color_regions.push_back(ColorRegion("//","",Color(0.6,0.6,0.4)));
-	color_regions.push_back(ColorRegion("\"","\"",Color(0.4,0.7,0.7)));
-	color_regions.push_back(ColorRegion("'","'",Color(0.4,0.8,0.8)));
-	color_regions.push_back(ColorRegion("#","",Color(0.2,1.0,0.2)));
-
-#endif
 
 	current_op.type = TextOperation::TYPE_NONE;
 	undo_enabled = true;

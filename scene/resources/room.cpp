@@ -30,6 +30,8 @@
 #include "room.h"
 
 #include "servers/visual_server.h"
+
+// FIXME: Left for reference for reimplementation using Area
 #if 0
 RID RoomBounds::get_rid() const {
 

@@ -35,7 +35,7 @@
 #include "core/io/config_file.h"
 #include "os/thread_safe.h"
 #include "resource.h"
-#include "scene/gui/input_action.h"
+#include "scene/gui/shortcut.h"
 #include "translation.h"
 
 class EditorPlugin;

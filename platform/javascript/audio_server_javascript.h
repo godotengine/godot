@@ -29,6 +29,8 @@
 /*************************************************************************/
 #ifndef AUDIO_SERVER_JAVASCRIPT_H
 #define AUDIO_SERVER_JAVASCRIPT_H
+
+// FIXME: Needs to be ported to the new AudioServer API in 3.0
 #if 0
 #include "servers/audio_server.h"
 

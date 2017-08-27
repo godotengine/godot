@@ -28,15 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "stream_peer_openssl.h"
-//hostname matching code from curl
 
-//#include <openssl/applink.c> // To prevent crashing (see the OpenSSL FAQ)
+//hostname matching code from curl
 
 bool StreamPeerOpenSSL::_match_host_name(const char *name, const char *hostname) {
 
 	return Tool_Curl_cert_hostcheck(name, hostname) == CURL_HOST_MATCH;
-	//print_line("MATCH: "+String(name)+" vs "+String(hostname));
-	//return true;
 }
 
 Error StreamPeerOpenSSL::_match_common_name(const char *hostname, const X509 *server_cert) {
@@ -298,20 +295,6 @@ Error StreamPeerOpenSSL::connect_to_stream(Ref<StreamPeer> p_base, bool p_valida
 
 				X509_STORE_add_cert(store, certs[i]);
 			}
-#if 0
-			const unsigned char *in=(const unsigned char *)certs.ptr();
-			X509 *Cert = d2i_X509(NULL, &in, certs.size()-1);
-			if (!Cert) {
-				print_line(String(ERR_error_string(ERR_get_error(),NULL)));
-			}
-			ERR_FAIL_COND_V(!Cert,ERR_PARSE_ERROR);
-
-			X509_STORE *store = SSL_CTX_get_cert_store(ctx);
-			X509_STORE_add_cert(store,Cert);
-
-			//char *str = X509_NAME_oneline(X509_get_subject_name(Cert),0,0);
-			//printf ("subject: %s\n", str); /* [1] */
-#endif
 		}
 
 		//used for testing

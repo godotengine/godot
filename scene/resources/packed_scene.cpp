@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "packed_scene.h"
+
 #include "core/core_string_names.h"
 #include "io/resource_loader.h"
 #include "project_settings.h"
@@ -35,6 +36,7 @@
 #include "scene/3d/spatial.h"
 #include "scene/gui/control.h"
 #include "scene/main/instance_placeholder.h"
+
 #define PACK_VERSION 2
 
 bool SceneState::can_instance() const {
@@ -451,60 +453,6 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 		}
 	}
 
-#if 0
-
-	Ref<SceneState> base_scene = p_node->get_scene_inherited_state(); //for inheritance
-	Ref<SceneState> instance_state;
-	int instance_state_node=-1;
-
-	if (base_scene.is_valid() && (p_node==p_owner || p_node->get_owner()==p_owner)) {
-		//scene inheritance in use, see if this node is actually inherited
-		NodePath path = p_owner->get_path_to(p_node);
-		instance_state_node = base_scene->find_node_by_path(path);
-		if (instance_state_node>=0) {
-			instance_state=base_scene;
-		}
-	}
-
-	// check that this is a directly instanced scene from the scene being packed, if so
-	// this information must be saved. Of course, if using scene instancing and this node
-	// does belong to base scene, ignore.
-
-	if (instance_state.is_null() && p_node!=p_owner && p_node->get_owner()==p_owner && p_node->get_filename()!="") {
-
-		//instanced, only direct sub-scnes are supported of course
-		Ref<PackedScene> instance = ResourceLoader::load(p_node->get_filename());
-		if (!instance.is_valid()) {
-			return ERR_CANT_OPEN;
-		}
-
-		nd.instance=_vm_get_variant(instance,variant_map);
-
-	} else {
-
-		nd.instance=-1;
-	}
-
-	// finally, if this does not belong to scene inheritance, check
-	// if it belongs to scene instancing
-
-	if (instance_state.is_null() && p_node!=p_owner) {
-		//if not affected by scene inheritance, this may be
-		if (p_node->get_owner()==p_owner && p_node->get_filename()!=String()) {
-			instance_state=p_node->get_scene_instance_state();
-			if (instance_state.is_valid()) {
-				instance_state_node=instance_state->find_node_by_path(p_node->get_path_to(p_node));
-			}
-
-		} else if (p_node->get_owner()!=p_owner && p_owner->is_editable_instance(p_node->get_owner())) {
-			instance_state=p_node->get_owner()->get_scene_instance_state();
-			if (instance_state.is_valid()) {
-				instance_state_node=instance_state->find_node_by_path(p_node->get_owner()->get_path_to(p_node));
-			}
-		}
-	}
-#endif
-
 	// all setup, we then proceed to check all properties for the node
 	// and save the ones that are worth saving
 
@@ -641,27 +589,6 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 	} else {
 
 		nd.owner = -1;
-#if 0
-		// this is pointless, if this was instanced by something else,
-		// the owner will already be set.
-
-		if (node_map.has(p_node->get_owner())) {
-			//maybe an existing saved node
-			nd.owner=node_map[p_node->get_owner()];
-		} else {
-			//not saved, use nodepath map
-			int sidx;
-			if (nodepath_map.has(p_node->get_owner())) {
-				sidx=nodepath_map[p_node->get_owner()];
-			} else {
-				sidx=nodepath_map.size();
-				nodepath_map[p_node->get_owner()]=sidx;
-			}
-
-			nd.owner=FLAG_ID_IS_PATH|sidx;
-
-		}
-#endif
 	}
 
 	// Save the right type. If this node was created by an instance

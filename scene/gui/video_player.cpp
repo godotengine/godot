@@ -28,27 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "video_player.h"
+
 #include "os/os.h"
 #include "servers/audio_server.h"
-/*
-
-int VideoPlayer::InternalStream::get_channel_count() const {
-
-	return player->sp_get_channel_count();
-}
-void VideoPlayer::InternalStream::set_mix_rate(int p_rate){
-
-	return player->sp_set_mix_rate(p_rate);
-}
-bool VideoPlayer::InternalStream::mix(int32_t *p_buffer,int p_frames){
-
-	return player->sp_mix(p_buffer,p_frames);
-}
-void VideoPlayer::InternalStream::update(){
-
-	player->sp_update();
-}
-*/
 
 int VideoPlayer::sp_get_channel_count() const {
 
@@ -67,31 +49,6 @@ bool VideoPlayer::sp_mix(int32_t *p_buffer, int p_frames) {
 	}
 
 	return false;
-}
-
-void VideoPlayer::sp_update() {
-#if 0
-	_THREAD_SAFE_METHOD_
-	//update is unused
-	if (!paused && playback.is_valid()) {
-
-		if (!playback->is_playing()) {
-			//stream depleted data, but there's still audio in the ringbuffer
-			//check that all this audio has been flushed before stopping the stream
-			int to_mix = resampler.get_total() - resampler.get_todo();
-			if (to_mix==0) {
-				stop();
-				return;
-			}
-
-			return;
-		}
-
-		int todo =resampler.get_todo();
-		int wrote = playback->mix(resampler.get_write_buffer(),todo);
-		resampler.write(wrote);
-	}
-#endif
 }
 
 int VideoPlayer::_audio_mix_callback(void *p_udata, const int16_t *p_data, int p_frames) {

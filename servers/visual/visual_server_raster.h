@@ -73,6 +73,7 @@ class VisualServerRaster : public VisualServer {
 
 	List<FrameDrawnCallbacks> frame_drawn_callbacks;
 
+// FIXME: Kept as reference for future implementation
 #if 0
 	struct Room {
 

@@ -33,6 +33,7 @@
 #include "editor/editor_settings.h"
 #include "os/file_access.h"
 #include "os/keyboard.h"
+
 void Path2DEditor::_notification(int p_what) {
 
 	switch (p_what) {
@@ -228,200 +229,6 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 			return true;
 		}
-
-#if 0
-		switch(mode) {
-
-
-			case MODE_CREATE: {
-
-				if (mb->get_button_index()==BUTTON_LEFT && mb->is_pressed()) {
-
-
-					if (!wip_active) {
-
-						wip.clear();
-						wip.push_back( canvas_item_editor->snap_point(cpoint) );
-						wip_active=true;
-						edited_point_pos=canvas_item_editor->snap_point(cpoint);
-						canvas_item_editor->update();
-						edited_point=1;
-						return true;
-					} else {
-						if (wip.size()>1 && xform.xform(wip[0]).distance_to(gpoint)<grab_threshold) {
-							//wip closed
-							_wip_close();
-
-
-							return true;
-						} else {
-
-							wip.push_back( canvas_item_editor->snap_point(cpoint) );
-							edited_point=wip.size();
-							canvas_item_editor->update();
-							return true;
-
-							//add wip point
-						}
-					}
-				} else if (mb->get_button_index()==BUTTON_RIGHT && mb->is_pressed() && wip_active) {
-					_wip_close();
-				}
-
-			} break;
-
-			case MODE_EDIT: {
-
-				if (mb->get_button_index()==BUTTON_LEFT) {
-					if (mb->is_pressed()) {
-
-						if (mb->get_control()) {
-
-
-							if (poly.size() < 3) {
-
-								undo_redo->create_action(TTR("Edit Poly"));
-								undo_redo->add_undo_method(node,"set_polygon",poly);
-								poly.push_back(cpoint);
-								undo_redo->add_do_method(node,"set_polygon",poly);
-								undo_redo->add_do_method(canvas_item_editor->get_viewport_control(),"update");
-								undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(),"update");
-								undo_redo->commit_action();
-								return true;
-							}
-
-							//search edges
-							int closest_idx=-1;
-							Vector2 closest_pos;
-							real_t closest_dist=1e10;
-							for(int i=0;i<poly.size();i++) {
-
-									if (d<closest_dist && d<grab_threshold) {
-										closest_dist=d;
-										closest_pos=cp;
-										closest_idx=i;
-									}
-
-								Vector2 cp = Geometry::get_closest_point_to_segment_2d(gpoint,points);
-								if (cp.distance_squared_to(points[0])<CMP_EPSILON2 || cp.distance_squared_to(points[1])<CMP_EPSILON2)
-									continue; //not valid to reuse point
-
-								real_t d = cp.distance_to(gpoint);
-								if (d<closest_dist && d<grab_threshold) {
-									closest_dist=d;
-									closest_pos=cp;
-									closest_idx=i;
-								}
-
-
-							}
-
-							if (closest_idx>=0) {
-
-								pre_move_edit=poly;
-								poly.insert(closest_idx+1,canvas_item_editor->snap_point(xform.affine_inverse().xform(closest_pos)));
-								edited_point=closest_idx+1;
-								edited_point_pos=canvas_item_editor->snap_point(xform.affine_inverse().xform(closest_pos));
-								node->set_polygon(poly);
-								canvas_item_editor->update();
-								return true;
-							}
-						} else {
-
-									real_t d = cp.distance_to(gpoint);
-									if (d<closest_dist && d<grab_threshold) {
-										closest_dist=d;
-										closest_pos=cp;
-										closest_idx=i;
-									}
-
-							int closest_idx=-1;
-							Vector2 closest_pos;
-							real_t closest_dist=1e10;
-							for(int i=0;i<poly.size();i++) {
-
-								Vector2 cp =xform.xform(poly[i]);
-
-								real_t d = cp.distance_to(gpoint);
-								if (d<closest_dist && d<grab_threshold) {
-									closest_dist=d;
-									closest_pos=cp;
-									closest_idx=i;
-								}
-
-							}
-
-							if (closest_idx>=0) {
-
-								pre_move_edit=poly;
-								edited_point=closest_idx;
-								edited_point_pos=xform.affine_inverse().xform(closest_pos);
-								canvas_item_editor->update();
-								return true;
-							}
-						}
-					} else {
-
-						if (edited_point!=-1) {
-
-							//apply
-
-							ERR_FAIL_INDEX_V(edited_point,poly.size(),false);
-							poly[edited_point]=edited_point_pos;
-							undo_redo->create_action(TTR("Edit Poly"));
-							undo_redo->add_do_method(node,"set_polygon",poly);
-							undo_redo->add_undo_method(node,"set_polygon",pre_move_edit);
-							undo_redo->add_do_method(canvas_item_editor->get_viewport_control(),"update");
-							undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(),"update");
-							undo_redo->commit_action();
-
-							edited_point=-1;
-							return true;
-						}
-					}
-				} if (mb->get_button_index()==BUTTON_RIGHT && mb->is_pressed() && edited_point==-1) {
-
-							real_t d = cp.distance_to(gpoint);
-							if (d<closest_dist && d<grab_threshold) {
-								closest_dist=d;
-								closest_pos=cp;
-								closest_idx=i;
-							}
-
-					int closest_idx=-1;
-					Vector2 closest_pos;
-					real_t closest_dist=1e10;
-					for(int i=0;i<poly.size();i++) {
-
-						Vector2 cp =xform.xform(poly[i]);
-
-						real_t d = cp.distance_to(gpoint);
-						if (d<closest_dist && d<grab_threshold) {
-							closest_dist=d;
-							closest_pos=cp;
-							closest_idx=i;
-						}
-
-					}
-
-					if (closest_idx>=0) {
-
-
-						undo_redo->create_action(TTR("Edit Poly (Remove Point)"));
-						undo_redo->add_undo_method(node,"set_polygon",poly);
-						poly.remove(closest_idx);
-						undo_redo->add_do_method(node,"set_polygon",poly);
-						undo_redo->add_do_method(canvas_item_editor->get_viewport_control(),"update");
-						undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(),"update");
-						undo_redo->commit_action();
-						return true;
-					}
-
-				}
-
-			} break;
-		}
-#endif
 	}
 
 	Ref<InputEventMouseMotion> mm = p_event;
@@ -463,19 +270,6 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 			canvas_item_editor->get_viewport_control()->update();
 			return true;
 		}
-
-#if 0
-		if (edited_point!=-1 && (wip_active || mm->get_button_mask()&BUTTON_MASK_LEFT)) {
-
-
-			Matrix32 xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
-
-			Vector2 gpoint = Point2(mm.x,mm.y);
-			edited_point_pos = canvas_item_editor->snap_point(xform.affine_inverse().xform(gpoint));
-			canvas_item_editor->update();
-
-		}
-#endif
 	}
 
 	return false;
@@ -619,16 +413,7 @@ Path2DEditor::Path2DEditor(EditorNode *p_editor) {
 	undo_redo = editor->get_undo_redo();
 
 	mode = MODE_EDIT;
-
 	action = ACTION_NONE;
-#if 0
-	options = memnew( MenuButton );
-	add_child(options);
-	options->set_area_as_parent_rect();
-	options->set_text("Polygon");
-	//options->get_popup()->add_item("Parse BBCode",PARSE_BBCODE);
-	options->get_popup()->connect("id_pressed", this,"_menu_option");
-#endif
 
 	base_hb = memnew(HBoxContainer);
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(base_hb);

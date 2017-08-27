@@ -1601,8 +1601,7 @@ void OS_X11::process_xevents() {
 				Point2i pos(event.xmotion.x, event.xmotion.y);
 
 				if (mouse_mode == MOUSE_MODE_CAPTURED) {
-#if 1
-					//Vector2 c = Point2i(current_videomode.width/2,current_videomode.height/2);
+
 					if (pos == Point2i(current_videomode.width / 2, current_videomode.height / 2)) {
 						//this sucks, it's a hack, etc and is a little inaccurate, etc.
 						//but nothing I can do, X11 sucks.
@@ -1615,17 +1614,6 @@ void OS_X11::process_xevents() {
 					pos = last_mouse_pos + (pos - center);
 					center = new_center;
 					do_mouse_warp = window_has_focus; // warp the cursor if we're focused in
-#else
-					//Dear X11, thanks for making my life miserable
-
-					center.x = current_videomode.width / 2;
-					center.y = current_videomode.height / 2;
-					pos = last_mouse_pos + (pos - center);
-					if (pos == last_mouse_pos)
-						break;
-					XWarpPointer(x11_display, None, x11_window,
-							0, 0, 0, 0, (int)center.x, (int)center.y);
-#endif
 				}
 
 				if (!last_mouse_pos_valid) {

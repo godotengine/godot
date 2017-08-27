@@ -286,37 +286,6 @@ Transform Spatial::get_global_transform() const {
 
 	return data.global_transform;
 }
-#if 0
-void Spatial::add_child_notify(Node *p_child) {
-/*
-	Spatial *s=Object::cast_to<Spatial>(p_child);
-	if (!s)
-		return;
-
-	ERR_FAIL_COND(data.children_lock>0);
-
-	s->data.dirty=DIRTY_GLOBAL; // don't allow global transform to be valid
-	s->data.parent=this;
-	data.children.push_back(s);
-	s->data.C=data.children.back();
-*/
-}
-
-void Spatial::remove_child_notify(Node *p_child) {
-/*
-	Spatial *s=Object::cast_to<Spatial>(p_child);
-	if (!s)
-		return;
-
-	ERR_FAIL_COND(data.children_lock>0);
-
-	if (s->data.C)
-		data.children.erase(s->data.C);
-	s->data.parent=NULL;
-	s->data.C=NULL;
-*/
-}
-#endif
 
 Spatial *Spatial::get_parent_spatial() const {
 

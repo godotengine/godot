@@ -146,7 +146,6 @@ void OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int 
 
 	physics_server = memnew(PhysicsServerSW);
 	physics_server->init();
-	//physics_2d_server = memnew( Physics2DServerSW );
 	physics_2d_server = Physics2DServerWrapMT::init_server<Physics2DServerSW>();
 	physics_2d_server->init();
 
@@ -160,43 +159,6 @@ void OS_Android::set_main_loop(MainLoop *p_main_loop) {
 
 	main_loop = p_main_loop;
 	input->set_main_loop(p_main_loop);
-#if 0
-
-	print_line("preGS");
-	FileAccess *f=memnew( FileAccessAndroid );
-	print("made f %p\n",f);
-	Error err = f->open("AndroidManifest.xml",FileAccess::READ);
-	if (err) {
-
-		print("************NO FILE!!\n");
-	} else {
-		print("************YES FILE!!\n");
-	}
-	f->close();
-	print_line("end");
-
-
-	AAssetDir* aad = AAssetManager_openDir(FileAccessAndroid::asset_manager,".");
-
-	if (aad) {
-
-		print_line("DIR OPEN OK");
-
-		const char *fn= AAssetDir_getNextFileName(aad);
-
-		while(fn) {
-
-			print_line("FNAME: "+String(fn));
-			fn= AAssetDir_getNextFileName(aad);
-		}
-
-		AAssetDir_close(aad);
-	} else {
-
-		print_line("DIR NO OPEN");
-	}
-
-#endif
 }
 
 void OS_Android::delete_main_loop() {

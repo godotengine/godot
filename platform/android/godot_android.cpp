@@ -565,20 +565,6 @@ static void engine_handle_cmd(struct android_app *app, int32_t cmd) {
 		case APP_CMD_CONFIG_CHANGED:
 		case APP_CMD_WINDOW_RESIZED: {
 
-#if 0
-// android blows
-		if (engine->display_active) {
-
-			EGLint w,h;
-			eglQuerySurface(engine->display, engine->surface, EGL_WIDTH, &w);
-			eglQuerySurface(engine->display, engine->surface, EGL_HEIGHT, &h);
-			engine->os->init_video_mode(w,h);
-			//print_line("RESIZED VIDEO MODE: "+itos(w)+","+itos(h));
-			engine_draw_frame(engine);
-
-		}
-#else
-
 			if (engine->display_active) {
 
 				EGLint w, h;
@@ -594,17 +580,6 @@ static void engine_handle_cmd(struct android_app *app, int32_t cmd) {
 			engine_draw_frame(engine);
 			engine->animating = 1;
 
-/*
-			    EGLint w,h;
-			    eglQuerySurface(engine->display, engine->surface, EGL_WIDTH, &w);
-			    eglQuerySurface(engine->display, engine->surface, EGL_HEIGHT, &h);
-			    engine->os->init_video_mode(w,h);
-			    //print_line("RESIZED VIDEO MODE: "+itos(w)+","+itos(h));
-
-		    }*/
-
-#endif
-
 		} break;
 		case APP_CMD_INIT_WINDOW:
 			//The window is being shown, get it ready.
@@ -617,9 +592,7 @@ static void engine_handle_cmd(struct android_app *app, int32_t cmd) {
 					engine->os = new OS_Android(_gfx_init, engine);
 
 					__android_log_print(ANDROID_LOG_INFO, "godot", "pre asdasd setup...");
-#if 0
-				Error err  = Main::setup("apk",2,args);
-#else
+
 					Error err = Main::setup("apk", 0, NULL);
 
 					String modules = ProjectSettings::get_singleton()->get("android/modules");
@@ -668,8 +641,6 @@ static void engine_handle_cmd(struct android_app *app, int32_t cmd) {
 							jobject gob = engine->jni->NewGlobalRef(obj);
 						}
 					}
-
-#endif
 
 					if (!Main::start())
 						return; //should exit instead and print the error

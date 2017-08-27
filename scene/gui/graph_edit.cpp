@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "graph_edit.h"
+
 #include "os/input.h"
 #include "os/keyboard.h"
 #include "scene/gui/box_container.h"
@@ -593,8 +594,6 @@ void GraphEdit::_bake_segment2d(Vector<Vector2> &points, Vector<Color> &colors, 
 
 void GraphEdit::_draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color) {
 
-#if 1
-
 	//cubic bezier code
 	float diff = p_to.x - p_from.x;
 	float cp_offset;
@@ -621,84 +620,53 @@ void GraphEdit::_draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const
 	colors.push_back(p_to_color);
 
 	p_where->draw_polyline_colors(points, colors, 2, true);
-
-#else
-
-	static const int steps = 20;
-
-	//old cosine code
-	Rect2 r;
-	r.pos = p_from;
-	r.expand_to(p_to);
-	Vector2 sign = Vector2((p_from.x < p_to.x) ? 1 : -1, (p_from.y < p_to.y) ? 1 : -1);
-	bool flip = sign.x * sign.y < 0;
-
-	Vector2 prev;
-	for (int i = 0; i <= steps; i++) {
-
-		float d = i / float(steps);
-		float c = -Math::cos(d * Math_PI) * 0.5 + 0.5;
-		if (flip)
-			c = 1.0 - c;
-		Vector2 p = r.pos + Vector2(d * r.size.width, c * r.size.height);
-
-		if (i > 0) {
-
-			p_where->draw_line(prev, p, p_color.linear_interpolate(p_to_color, d), 2);
-		}
-
-		prev = p;
-	}
-#endif
 }
 
 void GraphEdit::_connections_layer_draw() {
 
-	{
-		//draw connections
-		List<List<Connection>::Element *> to_erase;
-		for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
+	//draw connections
+	List<List<Connection>::Element *> to_erase;
+	for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
 
-			NodePath fromnp(E->get().from);
+		NodePath fromnp(E->get().from);
 
-			Node *from = get_node(fromnp);
-			if (!from) {
-				to_erase.push_back(E);
-				continue;
-			}
-
-			GraphNode *gfrom = Object::cast_to<GraphNode>(from);
-
-			if (!gfrom) {
-				to_erase.push_back(E);
-				continue;
-			}
-
-			NodePath tonp(E->get().to);
-			Node *to = get_node(tonp);
-			if (!to) {
-				to_erase.push_back(E);
-				continue;
-			}
-
-			GraphNode *gto = Object::cast_to<GraphNode>(to);
-
-			if (!gto) {
-				to_erase.push_back(E);
-				continue;
-			}
-
-			Vector2 frompos = gfrom->get_connection_output_pos(E->get().from_port) + gfrom->get_offset() * zoom;
-			Color color = gfrom->get_connection_output_color(E->get().from_port);
-			Vector2 topos = gto->get_connection_input_pos(E->get().to_port) + gto->get_offset() * zoom;
-			Color tocolor = gto->get_connection_input_color(E->get().to_port);
-			_draw_cos_line(connections_layer, frompos, topos, color, tocolor);
+		Node *from = get_node(fromnp);
+		if (!from) {
+			to_erase.push_back(E);
+			continue;
 		}
 
-		while (to_erase.size()) {
-			connections.erase(to_erase.front()->get());
-			to_erase.pop_front();
+		GraphNode *gfrom = Object::cast_to<GraphNode>(from);
+
+		if (!gfrom) {
+			to_erase.push_back(E);
+			continue;
 		}
+
+		NodePath tonp(E->get().to);
+		Node *to = get_node(tonp);
+		if (!to) {
+			to_erase.push_back(E);
+			continue;
+		}
+
+		GraphNode *gto = Object::cast_to<GraphNode>(to);
+
+		if (!gto) {
+			to_erase.push_back(E);
+			continue;
+		}
+
+		Vector2 frompos = gfrom->get_connection_output_pos(E->get().from_port) + gfrom->get_offset() * zoom;
+		Color color = gfrom->get_connection_output_color(E->get().from_port);
+		Vector2 topos = gto->get_connection_input_pos(E->get().to_port) + gto->get_offset() * zoom;
+		Color tocolor = gto->get_connection_input_color(E->get().to_port);
+		_draw_cos_line(connections_layer, frompos, topos, color, tocolor);
+	}
+
+	while (to_erase.size()) {
+		connections.erase(to_erase.front()->get());
+		to_erase.pop_front();
 	}
 }
 

@@ -3585,21 +3585,6 @@ void SpatialEditor::_unhandled_key_input(Ref<InputEvent> p_event) {
 	if (!is_visible_in_tree() || get_viewport()->gui_has_modal_stack())
 		return;
 
-#if 0
-//i don't remember this being used, why was it here?
-	{
-
-		EditorNode *en = editor;
-		EditorPluginList *over_plugin_list = en->get_editor_plugins_over();
-
-		if (!over_plugin_list->empty() && over_plugin_list->forward_gui_input(p_event)) {
-
-			return; //ate the over input event
-		}
-
-	}
-#endif
-
 	Ref<InputEventKey> k = p_event;
 
 	if (k.is_valid()) {

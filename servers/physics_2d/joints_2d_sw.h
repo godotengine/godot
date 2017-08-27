@@ -56,46 +56,6 @@ public:
 		max_force = max_bias = 3.40282e+38;
 	};
 };
-#if 0
-
-class PinJoint2DSW : public Joint2DSW {
-
-	union {
-		struct {
-			Body2DSW *A;
-			Body2DSW *B;
-		};
-
-		Body2DSW *_arr[2];
-	};
-
-	Vector2 anchor_A;
-	Vector2 anchor_B;
-	real_t dist;
-	real_t jn_acc;
-	real_t jn_max;
-	real_t max_distance;
-	real_t mass_normal;
-	real_t bias;
-
-	Vector2 rA,rB;
-	Vector2 n; //normal
-	bool correct;
-
-
-public:
-
-	virtual Physics2DServer::JointType get_type() const { return Physics2DServer::JOINT_PIN; }
-
-	virtual bool setup(real_t p_step);
-	virtual void solve(real_t p_step);
-
-
-	PinJoint2DSW(const Vector2& p_pos,Body2DSW* p_body_a,Body2DSW* p_body_b=NULL);
-	~PinJoint2DSW();
-};
-
-#else
 
 class PinJoint2DSW : public Joint2DSW {
 
@@ -129,7 +89,6 @@ public:
 	~PinJoint2DSW();
 };
 
-#endif
 class GrooveJoint2DSW : public Joint2DSW {
 
 	union {

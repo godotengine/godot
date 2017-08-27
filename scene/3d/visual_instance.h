@@ -76,8 +76,6 @@ public:
 	~VisualInstance();
 };
 
-class BakedLight;
-
 class GeometryInstance : public VisualInstance {
 
 	GDCLASS(GeometryInstance, VisualInstance);

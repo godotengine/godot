@@ -180,19 +180,7 @@ void CameraMatrix::set_orthogonal(real_t p_size, real_t p_aspect, real_t p_znear
 }
 
 void CameraMatrix::set_frustum(real_t p_left, real_t p_right, real_t p_bottom, real_t p_top, real_t p_near, real_t p_far) {
-#if 0
-	///@TODO, give a check to this. I'm not sure if it's working.
-	set_identity();
 
-	matrix[0][0]=(2*p_near) / (p_right-p_left);
-	matrix[0][2]=(p_right+p_left) / (p_right-p_left);
-	matrix[1][1]=(2*p_near) / (p_top-p_bottom);
-	matrix[1][2]=(p_top+p_bottom) / (p_top-p_bottom);
-	matrix[2][2]=-(p_far+p_near) / ( p_far-p_near);
-	matrix[2][3]=-(2*p_far*p_near) / (p_far-p_near);
-	matrix[3][2]=-1;
-	matrix[3][3]=0;
-#else
 	real_t *te = &matrix[0][0];
 	real_t x = 2 * p_near / (p_right - p_left);
 	real_t y = 2 * p_near / (p_top - p_bottom);
@@ -218,8 +206,6 @@ void CameraMatrix::set_frustum(real_t p_left, real_t p_right, real_t p_bottom, r
 	te[13] = 0;
 	te[14] = d;
 	te[15] = 0;
-
-#endif
 }
 
 real_t CameraMatrix::get_z_far() const {

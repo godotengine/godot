@@ -205,54 +205,12 @@ class GetClassAndNamespace {
 								case 'r':
 									res = 13;
 									break;
-								/* too much, not needed for now
-								case 'u': {
-									//hexnumbarh - oct is deprecated
-
-
-									for(int j=0;j<4;j++) {
-										CharType c = code[idx+j+1];
-										if (c==0) {
-											r_err_str="Unterminated String";
-											return ERR_PARSE_ERROR;
-										}
-										if (!((c>='0' && c<='9') || (c>='a' && c<='f') || (c>='A' && c<='F'))) {
-
-											r_err_str="Malformed hex constant in string";
-											return ERR_PARSE_ERROR;
-										}
-										CharType v;
-										if (c>='0' && c<='9') {
-											v=c-'0';
-										} else if (c>='a' && c<='f') {
-											v=c-'a';
-											v+=10;
-										} else if (c>='A' && c<='F') {
-											v=c-'A';
-											v+=10;
-										} else {
-											ERR_PRINT("BUG");
-											v=0;
-										}
-
-										res<<=4;
-										res|=v;
-
-
-									}
-									idx+=4; //will add at the end anyway
-
-
-								} break;*/
 								case '\"': res = '\"'; break;
 								case '\\':
 									res = '\\';
 									break;
-								//case '/': res='/'; break;
 								default: {
 									res = next;
-									//r_err_str="Invalid escape sequence";
-									//return ERR_PARSE_ERROR;
 								} break;
 							}
 
@@ -413,23 +371,6 @@ void test_vec(Plane p_vec) {
 	print_line("out: " + v0);
 	v0.normal.z = (v0.d / 100.0 * 2.0 - 1.0) * v0.d;
 	print_line("out_F: " + v0);
-
-	/*v0: 0, 0, -0.1, 0.1
-v1: 0, 0, 0, 0.1
-fix: 0, 0, 0, 0.1
-v0: 0, 0, 1.302803, 1.5
-v1: 0, 0, 1.401401, 1.5
-fix: 0, 0, 1.401401, 1.5
-v0: 0, 0, 25.851850, 26
-v1: 0, 0, 25.925926, 26
-fix: 0, 0, 25.925924, 26
-v0: 0, 0, 49.899902, 50
-v1: 0, 0, 49.949947, 50
-fix: 0, 0, 49.949951, 50
-v0: 0, 0, 100, 100
-v1: 0, 0, 100, 100
-fix: 0, 0, 100, 100
-*/
 }
 
 uint32_t ihash(uint32_t a) {
@@ -469,18 +410,15 @@ MainLoop *test() {
 
 		const float pow2to9 = 512.0f;
 		const float B = 15.0f;
-		//const float Emax = 31.0f;
 		const float N = 9.0f;
 
-		float sharedexp = 65408.000f; //(( pow2to9  - 1.0f)/ pow2to9)*powf( 2.0f, 31.0f - 15.0f);
+		float sharedexp = 65408.000f;
 
 		float cRed = MAX(0.0f, MIN(sharedexp, r));
 		float cGreen = MAX(0.0f, MIN(sharedexp, g));
 		float cBlue = MAX(0.0f, MIN(sharedexp, b));
 
 		float cMax = MAX(cRed, MAX(cGreen, cBlue));
-
-		// expp = MAX(-B - 1, log2(maxc)) + 1 + B
 
 		float expp = MAX(-B - 1.0f, floor(Math::log(cMax) / Math_LN2)) + 1.0f + B;
 
@@ -591,8 +529,6 @@ MainLoop *test() {
 			hashes.push_back(hashes.size());
 		}
 
-		//hashes.resize(50);
-
 		for (int i = nearest_shift(hashes.size()); i < 20; i++) {
 
 			bool success = true;
@@ -625,7 +561,6 @@ MainLoop *test() {
 	}
 	{
 
-		//print_line("NUM: "+itos(237641278346127));
 		print_line("NUM: " + itos(-128));
 		return NULL;
 	}
@@ -635,14 +570,12 @@ MainLoop *test() {
 		v.normalize();
 		float a = 0.3;
 
-		//Quat q(v,a);
 		Basis m(v, a);
 
 		Vector3 v2(7, 3, 1);
 		v2.normalize();
 		float a2 = 0.8;
 
-		//Quat q(v,a);
 		Basis m2(v2, a2);
 
 		Quat q = m;
@@ -749,86 +682,6 @@ MainLoop *test() {
 		print_line("scalar /=: " + v);
 	}
 
-#if 0
-	print_line(String("C:\\momo\\.\\popo\\..\\gongo").simplify_path());
-	print_line(String("res://../popo/..//gongo").simplify_path());
-	print_line(String("res://..").simplify_path());
-
-
-	PoolVector<uint8_t> a;
-	PoolVector<uint8_t> b;
-
-	a.resize(20);
-	b=a;
-	b.resize(30);
-	a=b;
-#endif
-
-#if 0
-	String za = String::utf8("á");
-	printf("unicode: %x\n",za[0]);
-	CharString cs=za.utf8();
-	for(int i=0;i<cs.size();i++) {
-		uint32_t v = uint8_t(cs[i]);
-		printf("%i - %x\n",i,v);
-	}
-	return NULL;
-
-	print_line(String("C:\\window\\system\\momo").path_to("C:\\window\\momonga"));
-	print_line(String("res://momo/sampler").path_to("res://pindonga"));
-	print_line(String("/margarito/terere").path_to("/margarito/pilates"));
-	print_line(String("/algo").path_to("/algo"));
-	print_line(String("c:").path_to("c:\\"));
-	print_line(String("/").path_to("/"));
-
-
-	print_line(itos(sizeof(Variant)));
-	return NULL;
-
-	Vector<StringName> path;
-	path.push_back("three");
-	path.push_back("two");
-	path.push_back("one");
-	path.push_back("comeon");
-	path.revert();
-
-	NodePath np(path,true);
-
-	print_line(np);
-
-
-	return NULL;
-
-	bool a=2;
-
-	print_line(Variant(a));
-
-
-	Transform2D mat2_1;
-	mat2_1.rotate(0.5);
-	Transform2D mat2_2;
-	mat2_2.translate(Vector2(1,2));
-	Transform2D mat2_3 = mat2_1 * mat2_2;
-	mat2_3.affine_invert();
-
-	print_line(mat2_3.elements[0]);
-	print_line(mat2_3.elements[1]);
-	print_line(mat2_3.elements[2]);
-
-
-
-	Transform mat3_1;
-	mat3_1.basis.rotate(Vector3(0,0,1),0.5);
-	Transform mat3_2;
-	mat3_2.translate(Vector3(1,2,0));
-	Transform mat3_3 = mat3_1 * mat3_2;
-	mat3_3.affine_invert();
-
-	print_line(mat3_3.basis.get_axis(0));
-	print_line(mat3_3.basis.get_axis(1));
-	print_line(mat3_3.origin);
-
-#endif
 	return NULL;
 }
 }

@@ -1319,22 +1319,6 @@ void GDFunction::debug_get_stack_member_state(int p_line, List<Pair<StringName, 
 	}
 }
 
-#if 0
-void GDFunction::clear() {
-
-	name=StringName();
-	constants.clear();
-	_stack_size=0;
-	code.clear();
-	_constants_ptr=NULL;
-	_constant_count=0;
-	_global_names_ptr=NULL;
-	_global_names_count=0;
-	_code_ptr=NULL;
-	_code_size=0;
-
-}
-#endif
 GDFunction::GDFunction()
 	: function_list(this) {
 

@@ -110,11 +110,8 @@ private:
 
 	mutable String data_dir_cache;
 
-#if 0
-	AudioDriverAndroid audio_driver_android;
-#else
+	//AudioDriverAndroid audio_driver_android;
 	AudioDriverOpenSL audio_driver_android;
-#endif
 
 	const char *gl_extensions;
 

@@ -153,9 +153,7 @@ class Navigation2D : public Node2D {
 	float cell_size;
 	Map<int, NavMesh> navpoly_map;
 	int last_id;
-#if 0
-	void _clip_path(Vector<Vector2>& path,Polygon *from_poly, const Vector2& p_to_point, Polygon* p_to_poly);
-#endif
+
 protected:
 	static void _bind_methods();
 

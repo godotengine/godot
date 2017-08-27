@@ -761,13 +761,6 @@ void VisualServerScene::_update_instance(Instance *p_instance) {
 		return;
 	}
 
-#if 0
-	if (p_instance->base_type == VS::INSTANCE_PARTICLES) {
-
-		rasterizer->particles_instance_set_transform( p_instance->particles_info->instance, p_instance->data.transform );
-	}
-
-#endif
 	if ((1 << p_instance->base_type) & VS::INSTANCE_GEOMETRY_MASK) {
 
 		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(p_instance->base_data);
@@ -1606,20 +1599,7 @@ void VisualServerScene::_render_scene(const Transform p_cam_transform, const Cam
 	else
 		environment = scenario->fallback_environment;
 
-#if 0
-	/* STEP 6 - SAMPLE BAKED LIGHT */
-
-	bool islinear =false;
-	if (environment.is_valid()) {
-		islinear = rasterizer->environment_is_fx_enabled(environment,VS::ENV_FX_SRGB);
-	}
-
-	for(int i=0;i<light_samplers_culled;i++) {
-
-		_process_sampled_light(camera->transform,light_sampler_cull_result[i],islinear);
-	}
-#endif
-	/* STEP 7 - PROCESS GEOMETRY AND DRAW SCENE*/
+	/* STEP 6 - PROCESS GEOMETRY AND DRAW SCENE*/
 
 	VSG::scene_render->render_scene(p_cam_transform, p_cam_projection, p_cam_orthogonal, (RasterizerScene::InstanceBase **)instance_cull_result, cull_count, light_instance_cull_result, light_cull_count + directional_light_count, reflection_probe_instance_cull_result, reflection_probe_cull_count, environment, p_shadow_atlas, scenario->reflection_atlas, p_reflection_probe, p_reflection_probe_pass);
 }

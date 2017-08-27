@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "body_pair_sw.h"
+
 #include "collision_solver_sw.h"
 #include "os/os.h"
 #include "space_sw.h"
@@ -296,17 +297,7 @@ bool BodyPairSW::setup(real_t p_step) {
 		c.rA = global_A - A->get_center_of_mass();
 		c.rB = global_B - B->get_center_of_mass() - offset_B;
 
-// contact query reporting...
-#if 0
-		if (A->get_body_type() == PhysicsServer::BODY_CHARACTER)
-			static_cast<CharacterBodySW*>(A)->report_character_contact( global_A, global_B, B );
-		if (B->get_body_type() == PhysicsServer::BODY_CHARACTER)
-			static_cast<CharacterBodySW*>(B)->report_character_contact( global_B, global_A, A );
-		if (A->has_contact_query())
-			A->report_contact( global_A, global_B, B );
-		if (B->has_contact_query())
-			B->report_contact( global_B, global_A, A );
-#endif
+		// contact query reporting...
 
 		if (A->can_report_contacts()) {
 			Vector3 crA = A->get_angular_velocity().cross(c.rA) + A->get_linear_velocity();
@@ -327,18 +318,7 @@ bool BodyPairSW::setup(real_t p_step) {
 		kNormal += c.normal.dot(inertia_A.cross(c.rA)) + c.normal.dot(inertia_B.cross(c.rB));
 		c.mass_normal = 1.0f / kNormal;
 
-#if 1
 		c.bias = -bias * inv_dt * MIN(0.0f, -depth + max_penetration);
-
-#else
-		if (depth > max_penetration) {
-			c.bias = (depth - max_penetration) * (1.0 / (p_step * (1.0 / RELAXATION_TIMESTEPS)));
-		} else {
-			real_t approach = -0.1 * (depth - max_penetration) / (CMP_EPSILON + max_penetration);
-			approach = CLAMP(approach, CMP_EPSILON, 1.0);
-			c.bias = approach * (depth - max_penetration) * (1.0 / p_step);
-		}
-#endif
 		c.depth = depth;
 
 		Vector3 j_vec = c.normal * c.acc_normal_impulse + c.acc_tangent_impulse;

@@ -733,46 +733,6 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 	}
 
 	return OK;
-
-#if 0
-	Error err = file->open(dst_file,FileAccess::WRITE);
-	if (err) {
-		memdelete(file);
-		ERR_EXPLAIN("Couldn't save project.godot");
-		ERR_FAIL_COND_V(err,err)
-	}
-
-
-	for(Map<String,List<String> >::Element *E=props.front();E;E=E->next()) {
-
-		if (E!=props.front())
-			file->store_string("\n");
-
-		if (E->key()!="")
-			file->store_string("["+E->key()+"]\n\n");
-		for(List<String>::Element *F=E->get().front();F;F=F->next()) {
-
-			String key = F->get();
-			if (E->key()!="")
-				key=E->key()+"/"+key;
-			Variant value;
-
-			if (p_custom.has(key))
-				value=p_custom[key];
-			else
-				value = get(key);
-
-			file->store_string(F->get()+"="+_encode_variant(value)+"\n");
-
-		}
-	}
-
-	file->close();
-	memdelete(file);
-
-
-	return OK;
-#endif
 }
 
 Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default) {

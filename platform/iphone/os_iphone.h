@@ -47,7 +47,6 @@
 #include "servers/visual_server.h"
 
 class AudioDriverIphone;
-// class RasterizerGLES2;
 
 class OSIPhone : public OS_Unix {
 
@@ -66,9 +65,6 @@ private:
 	};
 
 	uint8_t supported_orientations;
-
-	//	Rasterizer *rasterizer;
-	//	RasterizerGLES2* rasterizer_gles22;
 
 	VisualServer *visual_server;
 	PhysicsServer *physics_server;

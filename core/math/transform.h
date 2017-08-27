@@ -154,8 +154,7 @@ _FORCE_INLINE_ Plane Transform::xform_inv(const Plane &p_plane) const {
 }
 
 _FORCE_INLINE_ Rect3 Transform::xform(const Rect3 &p_aabb) const {
-/* define vertices */
-#if 1
+	/* define vertices */
 	Vector3 x = basis.get_axis(0) * p_aabb.size.x;
 	Vector3 y = basis.get_axis(1) * p_aabb.size.y;
 	Vector3 z = basis.get_axis(2) * p_aabb.size.z;
@@ -171,31 +170,8 @@ _FORCE_INLINE_ Rect3 Transform::xform(const Rect3 &p_aabb) const {
 	new_aabb.expand_to(pos + y + z);
 	new_aabb.expand_to(pos + x + y + z);
 	return new_aabb;
-#else
-
-	Vector3 vertices[8] = {
-		Vector3(p_aabb.position.x + p_aabb.size.x, p_aabb.position.y + p_aabb.size.y, p_aabb.position.z + p_aabb.size.z),
-		Vector3(p_aabb.position.x + p_aabb.size.x, p_aabb.position.y + p_aabb.size.y, p_aabb.position.z),
-		Vector3(p_aabb.position.x + p_aabb.size.x, p_aabb.position.y, p_aabb.position.z + p_aabb.size.z),
-		Vector3(p_aabb.position.x + p_aabb.size.x, p_aabb.position.y, p_aabb.position.z),
-		Vector3(p_aabb.position.x, p_aabb.position.y + p_aabb.size.y, p_aabb.position.z + p_aabb.size.z),
-		Vector3(p_aabb.position.x, p_aabb.position.y + p_aabb.size.y, p_aabb.position.z),
-		Vector3(p_aabb.position.x, p_aabb.position.y, p_aabb.position.z + p_aabb.size.z),
-		Vector3(p_aabb.position.x, p_aabb.position.y, p_aabb.position.z)
-	};
-
-	AABB ret;
-
-	ret.pos = xform(vertices[0]);
-
-	for (int i = 1; i < 8; i++) {
-
-		ret.expand_to(xform(vertices[i]));
-	}
-
-	return ret;
-#endif
 }
+
 _FORCE_INLINE_ Rect3 Transform::xform_inv(const Rect3 &p_aabb) const {
 
 	/* define vertices */
@@ -222,4 +198,4 @@ _FORCE_INLINE_ Rect3 Transform::xform_inv(const Rect3 &p_aabb) const {
 	return ret;
 }
 
-#endif
+#endif // TRANSFORM_H

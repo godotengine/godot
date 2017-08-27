@@ -108,8 +108,6 @@
 #include "scene/gui/tree.h"
 #include "scene/gui/video_player.h"
 #include "scene/gui/viewport_container.h"
-#include "scene/io/resource_format_image.h"
-#include "scene/io/resource_format_wav.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/http_request.h"
 #include "scene/main/instance_placeholder.h"

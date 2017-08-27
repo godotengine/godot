@@ -171,38 +171,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 		memdelete(p_node);
 		return NULL;
 	}
-#if 0
-	if (Object::cast_to<MeshInstance>(p_node)) {
 
-		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
-
-		bool bb = false;
-
-		if ((_teststr(name, "bb"))) {
-			bb = true;
-		} else if (mi->get_mesh().is_valid() && (_teststr(mi->get_mesh()->get_name(), "bb"))) {
-			bb = true;
-		}
-
-		if (bb) {
-			mi->set_flag(GeometryInstance::FLAG_BILLBOARD, true);
-			if (mi->get_mesh().is_valid()) {
-
-				Ref<ArrayMesh> m = mi->get_mesh();
-				for (int i = 0; i < m->get_surface_count(); i++) {
-
-					Ref<SpatialMaterial> fm = m->surface_get_material(i);
-					if (fm.is_valid()) {
-						//fm->set_flag(Material::FLAG_UNSHADED,true);
-						//fm->set_flag(Material::FLAG_DOUBLE_SIDED,true);
-						//fm->set_depth_draw_mode(Material::DEPTH_DRAW_NEVER);
-						//fm->set_fixed_flag(SpatialMaterial::FLAG_USE_ALPHA,true);
-					}
-				}
-			}
-		}
-	}
-#endif
 	if (Object::cast_to<MeshInstance>(p_node)) {
 
 		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
@@ -256,115 +225,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 			}
 		}
 	}
-#if 0
-	if (Object::cast_to<MeshInstance>(p_node)) {
 
-		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
-
-		String str;
-
-		if ((_teststr(name, "imp"))) {
-			str = name;
-		} else if (mi->get_mesh().is_valid() && (_teststr(mi->get_mesh()->get_name(), "imp"))) {
-			str = mi->get_mesh()->get_name();
-		}
-
-		if (Object::cast_to<MeshInstance>(p_node->get_parent())) {
-			MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
-			MeshInstance *mip = Object::cast_to<MeshInstance>(p_node->get_parent());
-			String d = str.substr(str.find("imp") + 3, str.length());
-			if (d != "") {
-				if ((d[0] < '0' || d[0] > '9'))
-					d = d.substr(1, d.length());
-				if (d.length() && d[0] >= '0' && d[0] <= '9') {
-					float dist = d.to_double();
-					mi->set_flag(GeometryInstance::FLAG_BILLBOARD, true);
-					mi->set_flag(GeometryInstance::FLAG_BILLBOARD_FIX_Y, true);
-					//mi->set_draw_range_begin(dist);
-					//mi->set_draw_range_end(100000);
-
-					//mip->set_draw_range_begin(0);
-					//mip->set_draw_range_end(dist);
-
-					if (mi->get_mesh().is_valid()) {
-
-						Ref<ArrayMesh> m = mi->get_mesh();
-						for (int i = 0; i < m->get_surface_count(); i++) {
-
-							Ref<SpatialMaterial> fm = m->surface_get_material(i);
-							if (fm.is_valid()) {
-								//fm->set_flag(Material::FLAG_UNSHADED,true);
-								//fm->set_flag(Material::FLAG_DOUBLE_SIDED,true);
-								//fm->set_depth_draw_mode(Material::DEPTH_DRAW_NEVER);
-								//fm->set_fixed_flag(SpatialMaterial::FLAG_USE_ALPHA,true);
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-
-#endif
-#if 0
-    if (p_flags&SCENE_FLAG_CREATE_LODS && Object::cast_to<MeshInstance>(p_node)) {
-
-	MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
-
-	String str;
-
-	if ((_teststr(name,"lod"))) {
-	    str=name;
-	} else if (mi->get_mesh().is_valid() && (_teststr(mi->get_mesh()->get_name(),"lod"))) {
-	    str=mi->get_mesh()->get_name();
-
-	}
-
-
-	if (Object::cast_to<MeshInstance>(p_node->get_parent())) {
-	    MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
-	    MeshInstance *mip = Object::cast_to<MeshInstance>(p_node->get_parent());
-	    String d=str.substr(str.find("lod")+3,str.length());
-	    if (d!="") {
-		if ((d[0]<'0' || d[0]>'9'))
-		    d=d.substr(1,d.length());
-		if (d.length() && d[0]>='0' && d[0]<='9') {
-		    float dist = d.to_double();
-		  ///  mi->set_draw_range_begin(dist);
-		  //  mi->set_draw_range_end(100000);
-
-		  //  mip->set_draw_range_begin(0);
-		  //  mip->set_draw_range_end(dist);
-
-		    /*if (mi->get_mesh().is_valid()) {
-
-			Ref<ArrayMesh> m = mi->get_mesh();
-			for(int i=0;i<m->get_surface_count();i++) {
-
-			    Ref<SpatialMaterial> fm = m->surface_get_material(i);
-			    if (fm.is_valid()) {
-				fm->set_flag(Material::FLAG_UNSHADED,true);
-				fm->set_flag(Material::FLAG_DOUBLE_SIDED,true);
-				fm->set_hint(Material::HINT_NO_DEPTH_DRAW,true);
-				fm->set_fixed_flag(SpatialMaterial::FLAG_USE_ALPHA,true);
-			    }
-			}
-		    }*/
-		}
-	    }
-	}
-    }
-
-
-	if (p_flags&SCENE_FLAG_DETECT_LIGHTMAP_LAYER && _teststr(name,"lm") && Object::cast_to<MeshInstance>(p_node)) {
-
-		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
-
-		String str=name;
-		int layer = str.substr(str.find("lm")+3,str.length()).to_int();
-		//mi->set_baked_light_texture_id(layer);
-	}
-#endif
 	if (_teststr(name, "colonly")) {
 
 		if (isroot)
@@ -680,38 +541,6 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 					shape = mesh->create_trimesh_shape();
 					if (!shape.is_null())
 						collision_map[mesh] = shape;
-				}
-
-				if (!shape.is_null()) {
-#if 0
-					StaticBody* static_body = memnew( StaticBody );
-					ERR_FAIL_COND_V(!static_body,NULL);
-					static_body->set_name( String(mesh->get_name()) + "_col" );
-					shape->set_name(static_body->get_name());
-					static_body->add_shape(shape);
-
-					mi->add_child(static_body);
-					if (mi->get_owner())
-						static_body->set_owner( mi->get_owner() );
-#endif
-				}
-			}
-
-			for (int i = 0; i < mesh->get_surface_count(); i++) {
-
-				Ref<SpatialMaterial> fm = mesh->surface_get_material(i);
-				if (fm.is_valid()) {
-					String name = fm->get_name();
-					/*	if (_teststr(name,"alpha")) {
-						fm->set_fixed_flag(SpatialMaterial::FLAG_USE_ALPHA,true);
-						name=_fixstr(name,"alpha");
-					}
-
-					if (_teststr(name,"vcol")) {
-						fm->set_fixed_flag(SpatialMaterial::FLAG_USE_COLOR_ARRAY,true);
-						name=_fixstr(name,"vcol");
-					}*/
-					fm->set_name(name);
 				}
 			}
 		}

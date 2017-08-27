@@ -240,47 +240,6 @@ void MessageQueue::statistics() {
 	}
 }
 
-bool MessageQueue::print() {
-#if 0
-	uint32_t read_pos=0;
-	while (read_pos < buffer_end ) {
-		Message *message = (Message*)&buffer[ read_pos ];
-
-		Object *target = ObjectDB::get_instance(message->instance_ID);
-		String cname;
-		String cfunc;
-
-		if (target==NULL) {
-			//object was deleted
-			//WARN_PRINT("Object was deleted while awaiting a callback")
-			//should it print a warning?
-		} else if (message->notification>=0) {
-
-			// messages don't expect a return value
-			cfunc="notification # "+itos(message->notification);
-			cname=target->get_type();
-
-		} else if (!message->target.empty()) {
-
-			cfunc="property:  "+message->target;
-			cname=target->get_type();
-
-
-		} else if (message->target) {
-
-			cfunc=String(message->target)+"()";
-			cname=target->get_type();
-		}
-
-
-		read_pos+=sizeof(Message);
-		if (message->type!=TYPE_NOTIFICATION)
-			read_pos+=sizeof(Variant)*message->args;
-	}
-#endif
-	return false;
-}
-
 int MessageQueue::get_max_buffer_usage() const {
 
 	return buffer_max_used;

@@ -344,13 +344,7 @@ public:
 	_FORCE_INLINE_ bool edit(const Ref<Script> &p_script, bool p_grab_focus = true) { return edit(p_script, -1, 0, p_grab_focus); }
 	bool edit(const Ref<Script> &p_script, int p_line, int p_col, bool p_grab_focus = true);
 
-	Dictionary get_state() const;
-	void set_state(const Dictionary &p_state);
-	void clear();
-
 	void get_breakpoints(List<String> *p_breakpoints);
-
-	//void swap_lines(TextEdit *tx, int line1, int line2);
 
 	void save_all_scripts();
 
@@ -397,10 +391,6 @@ public:
 	virtual bool handles(Object *p_object) const;
 	virtual void make_visible(bool p_visible);
 	virtual void selected_notify();
-
-	Dictionary get_state() const;
-	virtual void set_state(const Dictionary &p_state);
-	virtual void clear();
 
 	virtual void save_external_data();
 	virtual void apply_changes();

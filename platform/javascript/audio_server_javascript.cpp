@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "audio_server_javascript.h"
+
+// FIXME: Needs to be ported to the new AudioServer API in 3.0
 #if 0
 #include "emscripten.h"
 

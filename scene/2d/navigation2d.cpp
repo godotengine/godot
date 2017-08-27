@@ -236,42 +236,6 @@ void Navigation2D::navpoly_remove(int p_id) {
 	_navpoly_unlink(p_id);
 	navpoly_map.erase(p_id);
 }
-#if 0
-void Navigation2D::_clip_path(Vector<Vector2>& path, Polygon *from_poly, const Vector2& p_to_point, Polygon* p_to_poly) {
-
-	Vector2 from = path[path.size()-1];
-
-	if (from.distance_to(p_to_point)<CMP_EPSILON)
-		return;
-	Plane cut_plane;
-	cut_plane.normal = (from-p_to_point).cross(up);
-	if (cut_plane.normal==Vector2())
-		return;
-	cut_plane.normal.normalize();
-	cut_plane.d = cut_plane.normal.dot(from);
-
-
-	while(from_poly!=p_to_poly) {
-
-		int pe = from_poly->prev_edge;
-		Vector2 a = _get_vertex(from_poly->edges[pe].point);
-		Vector2 b = _get_vertex(from_poly->edges[(pe+1)%from_poly->edges.size()].point);
-
-		from_poly=from_poly->edges[pe].C;
-		ERR_FAIL_COND(!from_poly);
-
-		if (a.distance_to(b)>CMP_EPSILON) {
-
-			Vector2 inters;
-			if (cut_plane.intersects_segment(a,b,&inters)) {
-				if (inters.distance_to(p_to_point)>CMP_EPSILON && inters.distance_to(path[path.size()-1])>CMP_EPSILON) {
-					path.push_back(inters);
-				}
-			}
-		}
-	}
-}
-#endif
 
 Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vector2 &p_end, bool p_optimize) {
 
@@ -498,29 +462,7 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 
 		open_list.erase(least_cost_poly);
 	}
-#if 0
-debug path
-	{
-		       Polygon *p=end_poly;
-		       int idx=0;
 
-		       while(true) {
-			   int prev = p->prev_edge;
-			   int prev_n = (p->prev_edge+1)%p->edges.size();
-			   Vector2 point = (_get_vertex(p->edges[prev].point) + _get_vertex(p->edges[prev_n].point))*0.5;
-			   String points;
-			   for(int i=0;i<p->edges.size();i++) {
-				   if (i>0)
-					   points+=", ";
-				   points+=_get_vertex(p->edges[i].point);
-			   }
-			   //print_line("poly "+itos(idx++)+" - "+points);
-			   p = p->edges[prev].C;
-			   if (p==begin_poly)
-			       break;
-		       }
-		   }
-#endif
 	if (found_route) {
 
 		Vector<Vector2> path;

@@ -382,54 +382,15 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 void CanvasItemEditor::_add_canvas_item(CanvasItem *p_canvas_item) {
 
 	editor_selection->add_node(p_canvas_item);
-#if 0
-	if (canvas_items.has(p_canvas_item))
-		return;
-
-	canvas_items.insert(p_canvas_item,p_info);
-	p_canvas_item->connect("hide",this,"_visibility_changed",varray(p_canvas_item->get_instance_id()),CONNECT_ONESHOT);
-#endif
 }
 
 void CanvasItemEditor::_remove_canvas_item(CanvasItem *p_canvas_item) {
 
 	editor_selection->remove_node(p_canvas_item);
-#if 0
-	p_canvas_item->disconnect("hide",this,"_visibility_changed");
-	canvas_items.erase(p_canvas_item);
-#endif
 }
 void CanvasItemEditor::_clear_canvas_items() {
 
 	editor_selection->clear();
-#if 0
-	while(canvas_items.size())
-		_remove_canvas_item(canvas_items.front()->key());
-#endif
-}
-
-void CanvasItemEditor::_visibility_changed(ObjectID p_canvas_item) {
-#if 0
-	Object *c = ObjectDB::get_instance(p_canvas_item);
-	if (!c)
-		return;
-	CanvasItem *ct = Object::cast_to<CanvasItem>(c);
-	if (!ct)
-		return;
-	canvas_items.erase(ct);
-	//_remove_canvas_item(ct);
-	update();
-#endif
-}
-
-void CanvasItemEditor::_node_removed(Node *p_node) {
-#if 0
-	CanvasItem *canvas_item = (CanvasItem*)p_node; //not a good cast, but safe
-	if (canvas_items.has(canvas_item))
-		_remove_canvas_item(canvas_item);
-
-	update();
-#endif
 }
 
 void CanvasItemEditor::_keying_changed() {
@@ -991,11 +952,6 @@ void CanvasItemEditor::_selection_menu_hide() {
 	selection_results.clear();
 	selection_menu->clear();
 	selection_menu->set_size(Vector2(0, 0));
-}
-
-bool CanvasItemEditor::get_remove_list(List<Node *> *p_list) {
-
-	return false; //!p_list->empty();
 }
 
 void CanvasItemEditor::_list_select(const Ref<InputEventMouseButton> &b) {
@@ -2392,14 +2348,6 @@ void CanvasItemEditor::_notification(int p_what) {
 		AnimationPlayerEditor::singleton->get_key_editor()->connect("visibility_changed", this, "_keying_changed");
 		_keying_changed();
 	}
-
-	if (p_what == NOTIFICATION_READY) {
-
-		get_tree()->connect("node_removed", this, "_node_removed");
-	}
-
-	if (p_what == NOTIFICATION_DRAW) {
-	}
 }
 
 void CanvasItemEditor::edit(CanvasItem *p_canvas_item) {
@@ -2774,50 +2722,6 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			viewport->update();
 
 		} break;
-
-		case ALIGN_VERTICAL: {
-#if 0
-			if ( ref_item && canvas_items.size() > 1 ) {
-				Vector2 ref_pos = ref_item->get_global_transform().elements[2];
-				Rect2 ref_r = ref_item->get_item_rect();
-				for ( CanvasItemMap::Element *E = canvas_items.front(); E; E = E->next() ) {
-					CanvasItem *it_curr = E->key();
-					if ( it_curr == ref_item ) continue;
-					Vector2 v = it_curr->get_global_transform().elements[2];
-					Rect2 r = it_curr->get_item_rect();
-					r.pos.x = ( ref_pos.x + ref_r.size.x / 2 ) - ( v.x + r.size.x / 2 );
-					it_curr->edit_set_rect( r );
-				}
-				viewport->update();
-			}
-#endif
-		} break;
-
-		case ALIGN_HORIZONTAL: {
-#if 0
-			if ( ref_item && canvas_items.size() > 1 ) {
-				Vector2 ref_pos = ref_item->get_global_transform().elements[2];
-				Rect2 ref_r = ref_item->get_item_rect();
-				for ( CanvasItemMap::Element *E = canvas_items.front(); E; E = E->next() ) {
-					CanvasItem *it_curr = E->key();
-					if ( it_curr == ref_item ) continue;
-					Vector2 v = it_curr->get_global_transform().elements[2];
-					Rect2 r = it_curr->get_item_rect();
-					r.pos.y = ( ref_pos.y + ref_r.size.y / 2 ) - ( v.y + r.size.y / 2 );
-					it_curr->edit_set_rect( r );
-				}
-				viewport->update();
-			}
-#endif
-		} break;
-
-		case SPACE_HORIZONTAL: {
-			//space_selected_items< proj_vector2_x, compare_items_x >();
-		} break;
-
-		case SPACE_VERTICAL: {
-			//space_selected_items< proj_vector2_y, compare_items_y >();
-		} break;
 		case ANCHOR_ALIGN_TOP_LEFT: {
 			_set_anchors_preset(PRESET_TOP_LEFT);
 		} break;
@@ -3154,34 +3058,6 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 		} break;
 	}
 }
-#if 0
-template< class P, class C > void CanvasItemEditor::space_selected_items() {
-	P p;
-	if ( canvas_items.size() > 2 ) {
-		Vector< CanvasItem * > items;
-		for ( CanvasItemMap::Element *E = canvas_items.front(); E; E = E->next() ) {
-			CanvasItem *it_curr = E->key();
-			items.push_back( it_curr );
-		}
-		items.sort_custom< C >();
-
-		float width_s = p.get( items[0]->get_item_rect().size );
-		float width_e = p.get( items[ items.size() - 1 ]->get_item_rect().size );
-		float start_x = p.get( items[0]->get_global_transform().elements[2] ) + ( width_s / 2 );
-		float end_x = p.get( items[ items.size() - 1 ]->get_global_transform().elements[2] ) + ( width_e / 2 );
-		float sp = ( end_x - start_x ) / ( items.size() - 1 );
-
-		for ( int i = 0; i < items.size(); i++ ) {
-			CanvasItem *it_curr = items[i];
-			Vector2 v = it_curr->get_global_transform().elements[2];
-			Rect2 r = it_curr->get_item_rect();
-			p.set( r.pos, ( start_x + sp * i ) - ( p.get( v ) + p.get( r.size ) / 2 ) );
-			it_curr->edit_set_rect( r );
-		}
-		viewport->update();
-	}
-}
-#endif
 
 void CanvasItemEditor::_focus_selection(int p_op) {
 	Vector2 center(0.f, 0.f);
@@ -3238,10 +3114,8 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 
 void CanvasItemEditor::_bind_methods() {
 
-	ClassDB::bind_method("_node_removed", &CanvasItemEditor::_node_removed);
 	ClassDB::bind_method("_update_scroll", &CanvasItemEditor::_update_scroll);
 	ClassDB::bind_method("_popup_callback", &CanvasItemEditor::_popup_callback);
-	ClassDB::bind_method("_visibility_changed", &CanvasItemEditor::_visibility_changed);
 	ClassDB::bind_method("_dialog_value_changed", &CanvasItemEditor::_dialog_value_changed);
 	ClassDB::bind_method("_get_editor_data", &CanvasItemEditor::_get_editor_data);
 	ClassDB::bind_method("_tool_select", &CanvasItemEditor::_tool_select);
@@ -3256,74 +3130,6 @@ void CanvasItemEditor::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("item_lock_status_changed"));
 	ADD_SIGNAL(MethodInfo("item_group_status_changed"));
 }
-
-#if 0
-void CanvasItemEditor::end_drag() {
-	print_line( "end drag" );
-
-	if (undo_redo) {
-
-		undo_redo->create_action("Edit CanvasItem");
-		for(CanvasItemMap::Element *E=canvas_items.front();E;E=E->next()) {
-			CanvasItem *canvas_item = E->key();
-			Variant state=canvas_item->edit_get_state();
-			undo_redo->add_do_method(canvas_item,"edit_set_state",state);
-			undo_redo->add_undo_method(canvas_item,"edit_set_state",E->get().undo_state);
-		}
-		undo_redo->commit_action();
-	}
-
-	drag=DRAG_NONE;
-	viewport->update();
-}
-
-void CanvasItemEditor::box_selection_start( Point2 &click ) {
-	print_line( "box selection start" );
-
-	drag_from=transform.affine_inverse().xform(click);
-
-	box_selecting=true;
-	box_selecting_to=drag_from;
-	viewport->update();
-}
-
-bool CanvasItemEditor::box_selection_end() {
-	print_line( "box selection end" );
-
-	Node* scene = Object::cast_to<EditorNode>(get_scene()->get_root_node())->get_edited_scene();
-	if (scene) {
-
-		List<CanvasItem*> selitems;
-
-		Point2 bsfrom = transform.xform(drag_from);
-		Point2 bsto= transform.xform(box_selecting_to);
-		if (bsfrom.x>bsto.x)
-			SWAP(bsfrom.x,bsto.x);
-		if (bsfrom.y>bsto.y)
-			SWAP(bsfrom.y,bsto.y);
-
-		if ( bsfrom.distance_to( bsto ) < 3 ) {
-			print_line( "box selection too small" );
-			box_selecting=false;
-			viewport->update();
-			return false;
-		}
-
-		_find_canvas_items_at_rect(Rect2(bsfrom,bsto-bsfrom),scene,transform,&selitems);
-
-		for(List<CanvasItem*>::Element *E=selitems.front();E;E=E->next()) {
-
-			_append_canvas_item(E->get());
-		}
-
-	}
-
-	box_selecting=false;
-	viewport->update();
-
-	return true;
-}
-#endif
 
 void CanvasItemEditor::add_control_to_menu_panel(Control *p_control) {
 
@@ -3494,12 +3300,6 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	skeleton_menu->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_clear_ik_chain", TTR("Clear IK Chain")), SKELETON_CLEAR_IK_CHAIN);
 	skeleton_menu->set_hide_on_checkable_item_selection(false);
 	skeleton_menu->connect("id_pressed", this, "_popup_callback");
-
-	/*
-	p->add_item("Align Horizontal",ALIGN_HORIZONTAL);
-	p->add_item("Align Vertical",ALIGN_VERTICAL);
-	p->add_item("Space Horizontal",SPACE_HORIZONTAL);
-	p->add_item("Space Vertical",SPACE_VERTICAL);*/
 
 	view_menu = memnew(MenuButton);
 	view_menu->set_text(TTR("View"));

@@ -38,8 +38,6 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-class BakedLight;
-
 class Light : public VisualInstance {
 
 	GDCLASS(Light, VisualInstance);

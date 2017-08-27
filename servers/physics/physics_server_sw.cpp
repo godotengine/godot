@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "physics_server_sw.h"
+
 #include "broad_phase_basic.h"
 #include "broad_phase_octree.h"
 #include "joints/cone_twist_joint_sw.h"
@@ -1205,117 +1206,6 @@ bool PhysicsServerSW::generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis p_a
 	Generic6DOFJointSW *generic_6dof_joint = static_cast<Generic6DOFJointSW *>(joint);
 	return generic_6dof_joint->get_flag(p_axis, p_flag);
 }
-
-#if 0
-void PhysicsServerSW::joint_set_param(RID p_joint, JointParam p_param, real_t p_value) {
-
-	JointSW *joint = joint_owner.get(p_joint);
-	ERR_FAIL_COND(!joint);
-
-	switch(p_param) {
-		case JOINT_PARAM_BIAS: joint->set_bias(p_value); break;
-		case JOINT_PARAM_MAX_BIAS: joint->set_max_bias(p_value); break;
-		case JOINT_PARAM_MAX_FORCE: joint->set_max_force(p_value); break;
-	}
-
-
-}
-
-real_t PhysicsServerSW::joint_get_param(RID p_joint,JointParam p_param) const {
-
-	const JointSW *joint = joint_owner.get(p_joint);
-	ERR_FAIL_COND_V(!joint,-1);
-
-	switch(p_param) {
-		case JOINT_PARAM_BIAS: return joint->get_bias(); break;
-		case JOINT_PARAM_MAX_BIAS: return joint->get_max_bias(); break;
-		case JOINT_PARAM_MAX_FORCE: return joint->get_max_force(); break;
-	}
-
-	return 0;
-}
-
-
-RID PhysicsServerSW::pin_joint_create(const Vector3& p_pos,RID p_body_a,RID p_body_b) {
-
-	BodySW *A=body_owner.get(p_body_a);
-	ERR_FAIL_COND_V(!A,RID());
-	BodySW *B=NULL;
-	if (body_owner.owns(p_body_b)) {
-		B=body_owner.get(p_body_b);
-		ERR_FAIL_COND_V(!B,RID());
-	}
-
-	JointSW *joint = memnew( PinJointSW(p_pos,A,B) );
-	RID self = joint_owner.make_rid(joint);
-	joint->set_self(self);
-
-	return self;
-}
-
-RID PhysicsServerSW::groove_joint_create(const Vector3& p_a_groove1,const Vector3& p_a_groove2, const Vector3& p_b_anchor, RID p_body_a,RID p_body_b) {
-
-
-	BodySW *A=body_owner.get(p_body_a);
-	ERR_FAIL_COND_V(!A,RID());
-
-	BodySW *B=body_owner.get(p_body_b);
-	ERR_FAIL_COND_V(!B,RID());
-
-	JointSW *joint = memnew( GrooveJointSW(p_a_groove1,p_a_groove2,p_b_anchor,A,B) );
-	RID self = joint_owner.make_rid(joint);
-	joint->set_self(self);
-	return self;
-
-
-}
-
-RID PhysicsServerSW::damped_spring_joint_create(const Vector3& p_anchor_a,const Vector3& p_anchor_b,RID p_body_a,RID p_body_b) {
-
-	BodySW *A=body_owner.get(p_body_a);
-	ERR_FAIL_COND_V(!A,RID());
-
-	BodySW *B=body_owner.get(p_body_b);
-	ERR_FAIL_COND_V(!B,RID());
-
-	JointSW *joint = memnew( DampedSpringJointSW(p_anchor_a,p_anchor_b,A,B) );
-	RID self = joint_owner.make_rid(joint);
-	joint->set_self(self);
-	return self;
-
-}
-
-void PhysicsServerSW::damped_string_joint_set_param(RID p_joint, DampedStringParam p_param, real_t p_value) {
-
-
-	JointSW *j = joint_owner.get(p_joint);
-	ERR_FAIL_COND(!j);
-	ERR_FAIL_COND(j->get_type()!=JOINT_DAMPED_SPRING);
-
-	DampedSpringJointSW *dsj = static_cast<DampedSpringJointSW*>(j);
-	dsj->set_param(p_param,p_value);
-}
-
-real_t PhysicsServerSW::damped_string_joint_get_param(RID p_joint, DampedStringParam p_param) const {
-
-	JointSW *j = joint_owner.get(p_joint);
-	ERR_FAIL_COND_V(!j,0);
-	ERR_FAIL_COND_V(j->get_type()!=JOINT_DAMPED_SPRING,0);
-
-	DampedSpringJointSW *dsj = static_cast<DampedSpringJointSW*>(j);
-	return dsj->get_param(p_param);
-}
-
-PhysicsServer::JointType PhysicsServerSW::joint_get_type(RID p_joint) const {
-
-
-	JointSW *joint = joint_owner.get(p_joint);
-	ERR_FAIL_COND_V(!joint,JOINT_PIN);
-
-	return joint->get_type();
-}
-
-#endif
 
 void PhysicsServerSW::free(RID p_rid) {
 

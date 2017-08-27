@@ -30,7 +30,6 @@
 #ifndef VIDEO_STREAM_H
 #define VIDEO_STREAM_H
 
-#include "audio_stream_resampled.h"
 #include "scene/resources/texture.h"
 
 class VideoStreamPlayback : public Resource {
