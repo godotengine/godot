@@ -835,6 +835,9 @@ void GridMapEditor::_notification(int p_what) {
 		duplicate_instance = RID();
 
 	} else if (p_what == NOTIFICATION_PROCESS) {
+		if (!node) {
+			return;
+		}
 
 		Transform xf = node->get_global_transform();
 
