@@ -538,6 +538,8 @@ void OS_X11::finalize() {
 	physics_2d_server->finish();
 	memdelete(physics_2d_server);
 
+	memdelete(power_manager);
+
 	if (xrandr_handle)
 		dlclose(xrandr_handle);
 

@@ -5484,6 +5484,7 @@ EditorNode::~EditorNode() {
 	memdelete(editor_plugins_over);
 	memdelete(editor_plugins_force_input_forwarding);
 	memdelete(file_server);
+	memdelete(progress_hb);
 	EditorSettings::destroy();
 }
 

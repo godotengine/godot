@@ -4102,3 +4102,7 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasIte
 	label_desc->hide();
 	editor->get_gui_base()->add_child(label_desc);
 }
+
+CanvasItemEditorViewport::~CanvasItemEditorViewport() {
+	memdelete(preview);
+}

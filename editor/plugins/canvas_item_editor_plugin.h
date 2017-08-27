@@ -512,6 +512,7 @@ public:
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data);
 
 	CanvasItemEditorViewport(EditorNode *p_node, CanvasItemEditor *p_canvas);
+	~CanvasItemEditorViewport();
 };
 
 #endif

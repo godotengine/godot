@@ -260,6 +260,7 @@ static void _create_script_templates(const String &p_path) {
 		}
 	}
 
+	memdelete(dir);
 	memdelete(file);
 }
 
@@ -286,6 +287,7 @@ void EditorSettings::create() {
 		self_contained = true;
 		extra_config->load(exe_path + "/_sc_");
 	}
+	memdelete(d);
 
 	if (self_contained) {
 		// editor is self contained
