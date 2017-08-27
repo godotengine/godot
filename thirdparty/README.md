@@ -17,9 +17,23 @@ TODO.
 
 ## fonts
 
+### Noto Sans UI Regular
+
+- Upstream: https://github.com/googlei18n/noto-fonts
+- Version: 1.06
+- License: OFL-1.1
+
+#### What’s the difference between the UI and non-UI versions?
+The UI fonts were initially prepared for use in Android’s UI. They have tighter vertical metrics, and some glyphs that would be clipped are redrawn to fit within the constrained space. They can be used anywhere that has limited vertical space. There are no UI verions of scripts that do not need such adjustment, and the non-UI versions should be preferred for use in body text.
+https://github.com/googlei18n/noto-fonts/blob/master/FAQ.md#whats-the-difference-between-the-ui-and-non-ui-versions
+
+### Adobe Source Code Pro Regular
+
 - Upstream: ?
 
-TODO.
+### DroidSans*.ttf
+
+- Upstream: ?
 
 
 ## freetype

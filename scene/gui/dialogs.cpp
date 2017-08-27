@@ -85,7 +85,7 @@ void WindowDialog::_notification(int p_what) {
 			Ref<Font> font = get_font("title_font", "WindowDialog");
 			int ofs = (s.width - font->get_string_size(title).width) / 2;
 			//int ofs = st->get_margin(MARGIN_LEFT);
-			draw_string(font, Point2(ofs, -th + font->get_ascent()), title, tc, s.width - st->get_minimum_size().width);
+			draw_string(font, Point2(ofs, -th + font->get_ascent() - Math::round(font->get_descent() / 2)), title, tc, s.width - st->get_minimum_size().width);
 
 		} break;
 		case NOTIFICATION_THEME_CHANGED:

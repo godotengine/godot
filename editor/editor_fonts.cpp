@@ -71,20 +71,20 @@ static Ref<BitmapFont> make_font(int p_height, int p_ascent, int p_valign, int p
 	m_name->add_fallback(DroidSansHebrew);   \
 	m_name->add_fallback(DroidSansThai);
 
-#define MAKE_DROID_SANS(m_name, m_size) \
-	Ref<DynamicFont> m_name;            \
-	m_name.instance();                  \
-	m_name->set_size(m_size);           \
-	m_name->set_font_data(DroidSans);   \
+#define MAKE_DEFAULT_FONT(m_name, m_size) \
+	Ref<DynamicFont> m_name;              \
+	m_name.instance();                    \
+	m_name->set_size(m_size);             \
+	m_name->set_font_data(DefaultFont);   \
 	MAKE_FALLBACKS(m_name);
 
 void editor_register_fonts(Ref<Theme> p_theme) {
 	/* Droid Sans */
 
-	Ref<DynamicFontData> DroidSans;
-	DroidSans.instance();
-	DroidSans->set_font_ptr(_font_DroidSans, _font_DroidSans_size);
-	DroidSans->set_force_autohinter(true); //just looks better..i think?
+	Ref<DynamicFontData> DefaultFont;
+	DefaultFont.instance();
+	DefaultFont->set_font_ptr(_font_NotoSansUI_Regular, _font_NotoSansUI_Regular_size);
+	DefaultFont->set_force_autohinter(true); //just looks better..i think?
 
 	Ref<DynamicFontData> DroidSansFallback;
 	DroidSansFallback.instance();
@@ -118,7 +118,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	dfmono->set_font_ptr(_font_source_code_pro, _font_source_code_pro_size);
 	//dfd->set_force_autohinter(true); //just looks better..i think?
 
-	MAKE_DROID_SANS(df, int(EditorSettings::get_singleton()->get("global/font_size")) * EDSCALE);
+	MAKE_DEFAULT_FONT(df, int(EditorSettings::get_singleton()->get("global/font_size")) * EDSCALE);
 
 	p_theme->set_default_theme_font(df);
 
@@ -126,9 +126,9 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	//	Ref<BitmapFont> doc_title_font = make_font(_bi_font_doc_title_font_height,_bi_font_doc_title_font_ascent,0,_bi_font_doc_title_font_charcount,_bi_font_doc_title_font_characters,p_theme->get_icon("DocTitleFont","EditorIcons"));
 	//	Ref<BitmapFont> doc_code_font = make_font(_bi_font_doc_code_font_height,_bi_font_doc_code_font_ascent,0,_bi_font_doc_code_font_charcount,_bi_font_doc_code_font_characters,p_theme->get_icon("DocCodeFont","EditorIcons"));
 
-	MAKE_DROID_SANS(df_title, int(EDITOR_DEF("help/help_title_font_size", 18)) * EDSCALE);
+	MAKE_DEFAULT_FONT(df_title, int(EDITOR_DEF("help/help_title_font_size", 18)) * EDSCALE);
 
-	MAKE_DROID_SANS(df_doc, int(EDITOR_DEF("help/help_font_size", 16)) * EDSCALE);
+	MAKE_DEFAULT_FONT(df_doc, int(EDITOR_DEF("help/help_font_size", 16)) * EDSCALE);
 
 	p_theme->set_font("doc", "EditorFonts", df_doc);
 	p_theme->set_font("doc_title", "EditorFonts", df_title);
