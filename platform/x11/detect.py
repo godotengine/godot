@@ -90,6 +90,16 @@ def configure(env):
             env["LD"] = "clang++"
         env.Append(CPPFLAGS=['-DTYPED_METHOD_BIND'])
         env.extra_suffix = ".llvm"
+    elif (os.system("gcc --version > /dev/null 2>&1") == 0): # GCC
+        # Hack to prevent building this branch with GCC 6+, which trigger segfaults due to UB when dereferencing pointers in Object::cast_to
+        # This is fixed in the master branch, for 2.1 we just prevent using too recent GCC versions.
+        import subprocess
+        gcc_major = subprocess.check_output(['gcc', '-dumpversion'])[0].split()[0]
+        if (int(gcc_major) > 5):
+            print("Your configured compiler appears to be GCC %s, which triggers issues in release builds for this version of Godot (fixed in Godot 3.0+)." % gcc_major)
+            print("You can use the Clang compiler instead with the `use_llvm=yes` option, or configure another compiler such as GCC 5 using the CC, CXX and LD flags.")
+            print("Aborting..")
+            sys.exit(255)
 
     if (env["use_sanitizer"] == "yes"):
         env.Append(CCFLAGS=['-fsanitize=address', '-fno-omit-frame-pointer'])
