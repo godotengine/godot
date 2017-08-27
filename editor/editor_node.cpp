@@ -56,7 +56,6 @@
 #include "editor/editor_help.h"
 #include "editor/editor_initialize_ssl.h"
 #include "editor/editor_settings.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_themes.h"
 #include "editor/import/editor_import_collada.h"
 #include "editor/import/editor_scene_importer_gltf.h"
@@ -972,26 +971,6 @@ void EditorNode::_dialog_action(String p_file) {
 			//would be nice to show the project manager opened with the highlighted field..
 			_run(false, ""); // automatically run the project
 		} break;
-		case FILE_RUN_SCRIPT: {
-
-			Ref<Script> scr = ResourceLoader::load(p_file, "Script", true);
-			if (scr.is_null()) {
-				add_io_error("Script Failed to Load:\n" + p_file);
-				return;
-			}
-			if (!scr->is_tool()) {
-
-				add_io_error("Script is not tool, will not be able to run:\n" + p_file);
-				return;
-			}
-
-			Ref<EditorScript> es = memnew(EditorScript);
-			es->set_script(scr.get_ref_ptr());
-			es->set_editor(this);
-			es->_run();
-
-			get_undo_redo()->clear_history();
-		} break;
 		case FILE_CLOSE:
 		case FILE_CLOSE_ALL_AND_QUIT:
 		case FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER:
@@ -1651,10 +1630,6 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			quick_open->popup("Script", true);
 			quick_open->set_title(TTR("Quick Open Script.."));
 
-		} break;
-		case FILE_RUN_SCRIPT: {
-
-			file_script->popup_centered_ratio();
 		} break;
 		case FILE_OPEN_PREV: {
 
@@ -4806,7 +4781,7 @@ EditorNode::EditorNode() {
 	p->add_item(TTR("Project Settings"), RUN_SETTINGS);
 	p->add_separator();
 	p->connect("id_pressed", this, "_menu_option");
-	p->add_item(TTR("Run Script"), FILE_RUN_SCRIPT, KEY_MASK_SHIFT + KEY_MASK_CMD + KEY_R);
+	//p->add_item(TTR("Run Script"), FILE_RUN_SCRIPT, KEY_MASK_SHIFT + KEY_MASK_CMD + KEY_R);
 	p->add_item(TTR("Export"), FILE_EXPORT_PROJECT);
 
 	PopupMenu *tool_menu = memnew(PopupMenu);

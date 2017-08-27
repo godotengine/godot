@@ -965,7 +965,33 @@ void ScriptEditor::_menu_option(int p_option) {
 				current->reload(p_option == FILE_TOOL_RELOAD_SOFT);
 
 			} break;
+			case FILE_RUN: {
 
+				Ref<Script> scr = current->get_edited_script();
+				if (scr.is_null()) {
+					EditorNode::get_singleton()->show_warning("Can't obtain the script for running");
+					break;
+				}
+				if (!scr->is_tool()) {
+
+					EditorNode::get_singleton()->show_warning("Script is not in tool mode, will not be able to run");
+					return;
+				}
+
+				if (!ClassDB::is_parent_class(scr->get_instance_base_type(), "EditorScript")) {
+
+					EditorNode::get_singleton()->show_warning("To run this script, it must inherit EditorScript and be set to tool mode");
+					return;
+				}
+
+				Ref<EditorScript> es = memnew(EditorScript);
+				es->set_script(scr.get_ref_ptr());
+				es->set_editor(EditorNode::get_singleton());
+
+				es->_run();
+
+				EditorNode::get_undo_redo()->clear_history();
+			} break;
 			case FILE_CLOSE: {
 				if (current->is_unsaved()) {
 					_ask_close_current_unsaved_tab(current);
@@ -2219,6 +2245,8 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_docs", TTR("Close Docs")), CLOSE_DOCS);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_file", TTR("Close"), KEY_MASK_CMD | KEY_W), FILE_CLOSE);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_all", TTR("Close All")), CLOSE_ALL);
+	file_menu->get_popup()->add_separator();
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/run_file", TTR("Run"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_X), FILE_RUN);
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/toggle_scripts_panel", TTR("Toggle Scripts Panel"), KEY_MASK_CMD | KEY_BACKSLASH), TOGGLE_SCRIPTS_PANEL);
 	file_menu->get_popup()->connect("id_pressed", this, "_menu_option");

@@ -131,6 +131,7 @@ class ScriptEditor : public PanelContainer {
 		FILE_RELOAD_THEME,
 		FILE_SAVE_THEME,
 		FILE_SAVE_THEME_AS,
+		FILE_RUN,
 		FILE_CLOSE,
 		CLOSE_DOCS,
 		CLOSE_ALL,

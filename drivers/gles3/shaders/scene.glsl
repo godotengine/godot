@@ -1971,7 +1971,6 @@ FRAGMENT_SHADER_CODE
 
 
 #ifdef SHADELESS
-	frag_color=vec4(albedo,alpha);
 	diffuse_buffer=vec4(albedo.rgb,0.0);
 	specular_buffer=vec4(0.0);
 

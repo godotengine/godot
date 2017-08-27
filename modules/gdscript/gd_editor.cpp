@@ -365,7 +365,7 @@ struct GDCompletionIdentifier {
 	Variant value; //im case there is a value, also return it
 };
 
-static GDCompletionIdentifier _get_type_from_variant(const Variant &p_variant) {
+static GDCompletionIdentifier _get_type_from_variant(const Variant &p_variant, bool p_allow_gdnative_class = false) {
 
 	GDCompletionIdentifier t;
 	t.type = p_variant.get_type();
@@ -373,14 +373,14 @@ static GDCompletionIdentifier _get_type_from_variant(const Variant &p_variant) {
 	if (p_variant.get_type() == Variant::OBJECT) {
 		Object *obj = p_variant;
 		if (obj) {
-			/*
-			if (Object::cast_to<GDNativeClass>(obj)) {
-				t.obj_type=Object::cast_to<GDNativeClass>(obj)->get_name();
-				t.value=Variant();
+
+			if (p_allow_gdnative_class && Object::cast_to<GDNativeClass>(obj)) {
+				t.obj_type = Object::cast_to<GDNativeClass>(obj)->get_name();
+				t.value = Variant();
 			} else {
-			*/
-			t.obj_type = obj->get_class();
-			//}
+
+				t.obj_type = obj->get_class();
+			}
 		}
 	}
 	return t;
@@ -513,9 +513,9 @@ static GDCompletionIdentifier _get_native_class(GDCompletionContext &context) {
 	return id;
 }
 
-static bool _guess_identifier_type(GDCompletionContext &context, int p_line, const StringName &p_identifier, GDCompletionIdentifier &r_type);
+static bool _guess_identifier_type(GDCompletionContext &context, int p_line, const StringName &p_identifier, GDCompletionIdentifier &r_type, bool p_for_indexing);
 
-static bool _guess_expression_type(GDCompletionContext &context, const GDParser::Node *p_node, int p_line, GDCompletionIdentifier &r_type) {
+static bool _guess_expression_type(GDCompletionContext &context, const GDParser::Node *p_node, int p_line, GDCompletionIdentifier &r_type, bool p_for_indexing = false) {
 
 	if (p_node->type == GDParser::Node::TYPE_CONSTANT) {
 
@@ -566,7 +566,7 @@ static bool _guess_expression_type(GDCompletionContext &context, const GDParser:
 		return true;
 	} else if (p_node->type == GDParser::Node::TYPE_IDENTIFIER) {
 
-		return _guess_identifier_type(context, p_line - 1, static_cast<const GDParser::IdentifierNode *>(p_node)->name, r_type);
+		return _guess_identifier_type(context, p_line - 1, static_cast<const GDParser::IdentifierNode *>(p_node)->name, r_type, p_for_indexing);
 	} else if (p_node->type == GDParser::Node::TYPE_SELF) {
 		//eeh...
 
@@ -812,23 +812,38 @@ static bool _guess_expression_type(GDCompletionContext &context, const GDParser:
 
 				if (p1.value.get_type() == Variant::OBJECT) {
 					//??
+
 					if (p1.obj_type != StringName() && p2.type == Variant::STRING) {
+
+						StringName base_type = p1.obj_type;
+
+						if (p1.obj_type == "GDNativeClass") {
+							//native enum
+							Ref<GDNativeClass> gdn = p1.value;
+							if (gdn.is_valid()) {
+
+								base_type = gdn->get_name();
+							}
+						}
 						StringName index = p2.value;
 						bool valid;
-						Variant::Type t = ClassDB::get_property_type(p1.obj_type, index, &valid);
+						Variant::Type t = ClassDB::get_property_type(base_type, index, &valid);
 						if (t != Variant::NIL && valid) {
 							r_type.type = t;
-							if (t == Variant::INT) {
+							if (t == Variant::INT || t == Variant::OBJECT) {
 //check for enum!
 #if defined(DEBUG_METHODS_ENABLED) && defined(TOOLS_ENABLED)
 
-								StringName getter = ClassDB::get_property_getter(p1.obj_type, index);
+								StringName getter = ClassDB::get_property_getter(base_type, index);
 								if (getter != StringName()) {
-									MethodBind *mb = ClassDB::get_method(p1.obj_type, getter);
+									MethodBind *mb = ClassDB::get_method(base_type, getter);
 									if (mb) {
 										PropertyInfo rt = mb->get_return_info();
-										if (rt.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
+										if (rt.usage & PROPERTY_USAGE_CLASS_IS_ENUM && t == Variant::INT) {
 											r_type.enumeration = rt.class_name;
+										} else if (t == Variant::OBJECT) {
+
+											r_type.obj_type = rt.class_name;
 										}
 									}
 								}
@@ -1056,7 +1071,7 @@ static bool _guess_identifier_from_assignment_in_function(GDCompletionContext &c
 	return false;
 }
 
-static bool _guess_identifier_type(GDCompletionContext &context, int p_line, const StringName &p_identifier, GDCompletionIdentifier &r_type) {
+static bool _guess_identifier_type(GDCompletionContext &context, int p_line, const StringName &p_identifier, GDCompletionIdentifier &r_type, bool p_for_indexing) {
 
 	//go to block first
 
@@ -1210,7 +1225,7 @@ static bool _guess_identifier_type(GDCompletionContext &context, int p_line, con
 	for (Map<StringName, int>::Element *E = GDScriptLanguage::get_singleton()->get_global_map().front(); E; E = E->next()) {
 		if (E->key() == p_identifier) {
 
-			r_type = _get_type_from_variant(GDScriptLanguage::get_singleton()->get_global_array()[E->get()]);
+			r_type = _get_type_from_variant(GDScriptLanguage::get_singleton()->get_global_array()[E->get()], !p_for_indexing);
 			return true;
 		}
 	}
@@ -2082,7 +2097,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 				break;
 
 			GDCompletionIdentifier t;
-			if (_guess_expression_type(context, static_cast<const GDParser::OperatorNode *>(node)->arguments[0], p.get_completion_line(), t)) {
+			if (_guess_expression_type(context, static_cast<const GDParser::OperatorNode *>(node)->arguments[0], p.get_completion_line(), t, true)) {
 
 				if (t.type == Variant::OBJECT && t.obj_type == "GDNativeClass") {
 					//native enum
