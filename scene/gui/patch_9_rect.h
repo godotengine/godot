@@ -45,7 +45,7 @@ public:
 		AXIS_STRETCH_MODE_TILE_FIT,
 	};
 
-	bool draw_center;
+	bool filled;
 	int margin[4];
 	Rect2 region_rect;
 	Ref<Texture> texture;
@@ -67,8 +67,8 @@ public:
 	void set_region_rect(const Rect2 &p_region_rect);
 	Rect2 get_region_rect() const;
 
-	void set_draw_center(bool p_draw);
-	bool get_draw_center() const;
+	void set_filled(bool p_draw);
+	bool is_filled() const;
 
 	void set_h_axis_stretch_mode(AxisStretchMode p_mode);
 	AxisStretchMode get_h_axis_stretch_mode() const;

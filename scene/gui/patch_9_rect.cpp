@@ -44,7 +44,7 @@ void NinePatchRect::_notification(int p_what) {
 		texture->get_rect_region(rect, src_rect, rect, src_rect);
 
 		RID ci = get_canvas_item();
-		VS::get_singleton()->canvas_item_add_nine_patch(ci, rect, src_rect, texture->get_rid(), Vector2(margin[MARGIN_LEFT], margin[MARGIN_TOP]), Vector2(margin[MARGIN_RIGHT], margin[MARGIN_BOTTOM]), VS::NinePatchAxisMode(axis_h), VS::NinePatchAxisMode(axis_v), draw_center);
+		VS::get_singleton()->canvas_item_add_nine_patch(ci, rect, src_rect, texture->get_rid(), Vector2(margin[MARGIN_LEFT], margin[MARGIN_TOP]), Vector2(margin[MARGIN_RIGHT], margin[MARGIN_BOTTOM]), VS::NinePatchAxisMode(axis_h), VS::NinePatchAxisMode(axis_v), filled);
 	}
 }
 
@@ -60,8 +60,8 @@ void NinePatchRect::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_patch_margin", "margin"), &NinePatchRect::get_patch_margin);
 	ClassDB::bind_method(D_METHOD("set_region_rect", "rect"), &NinePatchRect::set_region_rect);
 	ClassDB::bind_method(D_METHOD("get_region_rect"), &NinePatchRect::get_region_rect);
-	ClassDB::bind_method(D_METHOD("set_draw_center", "draw_center"), &NinePatchRect::set_draw_center);
-	ClassDB::bind_method(D_METHOD("get_draw_center"), &NinePatchRect::get_draw_center);
+	ClassDB::bind_method(D_METHOD("set_filled", "filled"), &NinePatchRect::set_filled);
+	ClassDB::bind_method(D_METHOD("is_filled"), &NinePatchRect::is_filled);
 	ClassDB::bind_method(D_METHOD("set_h_axis_stretch_mode", "mode"), &NinePatchRect::set_h_axis_stretch_mode);
 	ClassDB::bind_method(D_METHOD("get_h_axis_stretch_mode"), &NinePatchRect::get_h_axis_stretch_mode);
 	ClassDB::bind_method(D_METHOD("set_v_axis_stretch_mode", "mode"), &NinePatchRect::set_v_axis_stretch_mode);
@@ -70,7 +70,7 @@ void NinePatchRect::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("texture_changed"));
 
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
-	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL, "draw_center"), "set_draw_center", "get_draw_center");
+	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL, "filled"), "set_filled", "is_filled");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::RECT2, "region_rect"), "set_region_rect", "get_region_rect");
 
 	ADD_GROUP("Patch Margin", "patch_margin_");
@@ -151,15 +151,15 @@ Rect2 NinePatchRect::get_region_rect() const {
 	return region_rect;
 }
 
-void NinePatchRect::set_draw_center(bool p_draw) {
+void NinePatchRect::set_filled(bool p_draw) {
 
-	draw_center = p_draw;
+	filled = p_draw;
 	update();
 }
 
-bool NinePatchRect::get_draw_center() const {
+bool NinePatchRect::is_filled() const {
 
-	return draw_center;
+	return filled;
 }
 
 void NinePatchRect::set_h_axis_stretch_mode(AxisStretchMode p_mode) {
@@ -190,7 +190,7 @@ NinePatchRect::NinePatchRect() {
 	margin[MARGIN_TOP] = 0;
 
 	set_mouse_filter(MOUSE_FILTER_IGNORE);
-	draw_center = true;
+	filled = true;
 
 	axis_h = AXIS_STRETCH_MODE_STRETCH;
 	axis_v = AXIS_STRETCH_MODE_STRETCH;

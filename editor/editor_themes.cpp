@@ -37,7 +37,7 @@
 #include "modules/svg/image_loader_svg.h"
 #include "time.h"
 
-static Ref<StyleBoxTexture> make_stylebox(Ref<Texture> texture, float p_left, float p_top, float p_right, float p_botton, float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_botton = -1, bool p_draw_center = true) {
+static Ref<StyleBoxTexture> make_stylebox(Ref<Texture> texture, float p_left, float p_top, float p_right, float p_botton, float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_botton = -1, bool p_filled = true) {
 	Ref<StyleBoxTexture> style(memnew(StyleBoxTexture));
 	style->set_texture(texture);
 	style->set_margin_size(MARGIN_LEFT, p_left * EDSCALE);
@@ -48,7 +48,7 @@ static Ref<StyleBoxTexture> make_stylebox(Ref<Texture> texture, float p_left, fl
 	style->set_default_margin(MARGIN_RIGHT, p_margin_right * EDSCALE);
 	style->set_default_margin(MARGIN_BOTTOM, p_margin_botton * EDSCALE);
 	style->set_default_margin(MARGIN_TOP, p_margin_top * EDSCALE);
-	style->set_draw_center(p_draw_center);
+	style->set_filled(p_filled);
 	return style;
 }
 

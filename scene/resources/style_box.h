@@ -90,7 +90,7 @@ private:
 	Rect2 region_rect;
 	Ref<Texture> texture;
 	Ref<Texture> normal_map;
-	bool draw_center;
+	bool filled;
 	Color modulate;
 	AxisStretchMode axis_h;
 	AxisStretchMode axis_v;
@@ -117,8 +117,8 @@ public:
 	void set_normal_map(RES p_normal_map);
 	RES get_normal_map() const;
 
-	void set_draw_center(bool p_draw);
-	bool get_draw_center() const;
+	void set_filled(bool p_draw);
+	bool is_filled() const;
 	virtual Size2 get_center_size() const;
 
 	void set_h_axis_stretch_mode(AxisStretchMode p_mode);

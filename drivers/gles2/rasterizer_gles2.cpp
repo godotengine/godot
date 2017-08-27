@@ -7890,7 +7890,7 @@ void RasterizerGLES2::canvas_draw_rect(const Rect2 &p_rect, int p_flags, const R
 	_rinfo.ci_draw_commands++;
 }
 
-void RasterizerGLES2::canvas_draw_style_box(const Rect2 &p_rect, const Rect2 &p_src_region, RID p_texture, const float *p_margins, bool p_draw_center, const Color &p_modulate) {
+void RasterizerGLES2::canvas_draw_style_box(const Rect2 &p_rect, const Rect2 &p_src_region, RID p_texture, const float *p_margins, bool p_filled, const Color &p_modulate) {
 
 	Color m = p_modulate;
 	m.a *= canvas_opacity;
@@ -7949,7 +7949,7 @@ void RasterizerGLES2::canvas_draw_style_box(const Rect2 &p_rect, const Rect2 &p_
 			Rect2(Point2(src_center.pos.x + src_center.size.width, region.pos.y + p_margins[MARGIN_TOP]), Size2(p_margins[MARGIN_RIGHT], src_center.size.height)),
 			Size2(texture->width, texture->height));
 
-	if (p_draw_center) {
+	if (p_filled) {
 
 		_draw_textured_quad(
 				rect_center,
@@ -8599,7 +8599,7 @@ void RasterizerGLES2::_canvas_item_render_commands(CanvasItem *p_item, CanvasIte
 				CanvasItem::CommandStyle *style = static_cast<CanvasItem::CommandStyle *>(c);
 				if (use_normalmap)
 					_canvas_normal_set_flip(Vector2(1, 1));
-				canvas_draw_style_box(style->rect, style->source, style->texture, style->margin, style->draw_center, style->color);
+				canvas_draw_style_box(style->rect, style->source, style->texture, style->margin, style->filled, style->color);
 
 			} break;
 			case CanvasItem::Command::TYPE_PRIMITIVE: {
