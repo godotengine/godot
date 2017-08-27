@@ -3,4 +3,4 @@ name = "Godot Engine"
 major = 2
 minor = 1
 patch = 4
-status = "rc"
+status = "stable"
