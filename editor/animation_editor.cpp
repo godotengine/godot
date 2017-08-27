@@ -1646,7 +1646,7 @@ PropertyInfo AnimationKeyEditor::_find_hint_for_track(int p_idx, NodePath &r_bas
 	List<PropertyInfo> pinfo;
 	if (res.is_valid())
 		res->get_property_list(&pinfo);
-	else
+	else if (node)
 		node->get_property_list(&pinfo);
 
 	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {

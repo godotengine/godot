@@ -2870,8 +2870,8 @@ TreeItem *Tree::create_item(TreeItem *p_parent) {
 
 	TreeItem *ti = memnew(TreeItem(this));
 
-	ti->cells.resize(columns.size());
 	ERR_FAIL_COND_V(!ti, NULL);
+	ti->cells.resize(columns.size());
 
 	if (p_parent) {
 

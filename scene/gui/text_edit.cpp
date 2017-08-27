@@ -215,8 +215,8 @@ void TextEdit::Text::_update_line_cache(int p_line) const {
 
 const Map<int, TextEdit::Text::ColorRegionInfo> &TextEdit::Text::get_color_region_info(int p_line) {
 
-	Map<int, ColorRegionInfo> *cri = NULL;
-	ERR_FAIL_INDEX_V(p_line, text.size(), *cri); //enjoy your crash
+	static Map<int, ColorRegionInfo> cri;
+	ERR_FAIL_INDEX_V(p_line, text.size(), cri);
 
 	if (text[p_line].width_cache == -1) {
 		_update_line_cache(p_line);

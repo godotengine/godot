@@ -1482,11 +1482,10 @@ void VisualServerScene::_render_scene(const Transform p_cam_transform, const Cam
 
 			if (light && p_shadow_atlas.is_valid() && VSG::storage->light_has_shadow(E->get()->base)) {
 				lights_with_shadow[directional_shadow_count++] = E->get();
+
+				//add to list
+				directional_light_ptr[directional_light_count++] = light->instance;
 			}
-
-			//add to list
-
-			directional_light_ptr[directional_light_count++] = light->instance;
 		}
 
 		VSG::scene_render->set_directional_shadow_count(directional_shadow_count);
