@@ -1020,8 +1020,12 @@ void CodeTextEditor::_line_col_changed() {
 
 void CodeTextEditor::_text_changed() {
 
-	code_complete_timer->start();
-	idle->start();
+	String next_char = text_editor->get_line(text_editor->cursor_get_line()).substr(text_editor->cursor_get_column(), 1);
+
+	if (next_char.empty() || next_char == " ") {
+		code_complete_timer->start();
+		idle->start();
+	}
 }
 
 void CodeTextEditor::_code_complete_timer_timeout() {
