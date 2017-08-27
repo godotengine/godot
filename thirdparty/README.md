@@ -369,13 +369,14 @@ Files extracted from upstream source:
 
 - all .c and .h files
 
+
 ## zstd
 
 - Upstream: https://github.com/facebook/zstd
-- Version: 1.3.0
+- Version: 1.3.1
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
 
-- all .c and .h under lib/
-- README.md, LICENSE, PATENTS
+- lib/{common/,compress/,decompress/,zstd.h}
+- README.md, LICENSE

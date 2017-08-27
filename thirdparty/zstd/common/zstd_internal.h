@@ -1,55 +1,28 @@
-/**
+/*
  * Copyright (c) 2016-present, Yann Collet, Facebook, Inc.
  * All rights reserved.
  *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
+ * This source code is licensed under both the BSD-style license (found in the
+ * LICENSE file in the root directory of this source tree) and the GPLv2 (found
+ * in the COPYING file in the root directory of this source tree).
  */
 
 #ifndef ZSTD_CCOMMON_H_MODULE
 #define ZSTD_CCOMMON_H_MODULE
 
-/*-*******************************************************
-*  Compiler specifics
-*********************************************************/
-#ifdef _MSC_VER    /* Visual Studio */
-#  define FORCE_INLINE static __forceinline
-#  include <intrin.h>                    /* For Visual 2005 */
-#  pragma warning(disable : 4100)        /* disable: C4100: unreferenced formal parameter */
-#  pragma warning(disable : 4127)        /* disable: C4127: conditional expression is constant */
-#  pragma warning(disable : 4204)        /* disable: C4204: non-constant aggregate initializer */
-#  pragma warning(disable : 4324)        /* disable: C4324: padded structure */
-#else
-#  if defined (__cplusplus) || defined (__STDC_VERSION__) && __STDC_VERSION__ >= 199901L   /* C99 */
-#    ifdef __GNUC__
-#      define FORCE_INLINE static inline __attribute__((always_inline))
-#    else
-#      define FORCE_INLINE static inline
-#    endif
-#  else
-#    define FORCE_INLINE static
-#  endif /* __STDC_VERSION__ */
-#endif
-
-#ifdef _MSC_VER
-#  define FORCE_NOINLINE static __declspec(noinline)
-#else
-#  ifdef __GNUC__
-#    define FORCE_NOINLINE static __attribute__((__noinline__))
-#  else
-#    define FORCE_NOINLINE static
-#  endif
-#endif
-
 
 /*-*************************************
 *  Dependencies
 ***************************************/
+#include "compiler.h"
 #include "mem.h"
 #include "error_private.h"
 #define ZSTD_STATIC_LINKING_ONLY
 #include "zstd.h"
+#define FSE_STATIC_LINKING_ONLY
+#include "fse.h"
+#define HUF_STATIC_LINKING_ONLY
+#include "huf.h"
 #ifndef XXH_STATIC_LINKING_ONLY
 #  define XXH_STATIC_LINKING_ONLY  /* XXH64_state_t */
 #endif
@@ -211,20 +184,6 @@ MEM_STATIC void ZSTD_wildcopy_e(void* dst, const void* src, void* dstEnd)   /* s
 *********************************************/
 typedef struct ZSTD_stats_s ZSTD_stats_t;
 
-typedef struct {
-    U32 off;
-    U32 len;
-} ZSTD_match_t;
-
-typedef struct {
-    U32 price;
-    U32 off;
-    U32 mlen;
-    U32 litlen;
-    U32 rep[ZSTD_REP_NUM];
-} ZSTD_optimal_t;
-
-
 typedef struct seqDef_s {
     U32 offset;
     U16 litLength;
@@ -242,13 +201,31 @@ typedef struct {
     BYTE* ofCode;
     U32   longLengthID;   /* 0 == no longLength; 1 == Lit.longLength; 2 == Match.longLength; */
     U32   longLengthPos;
-    /* opt */
-    ZSTD_optimal_t* priceTable;
-    ZSTD_match_t* matchTable;
-    U32* matchLengthFreq;
-    U32* litLengthFreq;
+    U32   rep[ZSTD_REP_NUM];
+    U32   repToConfirm[ZSTD_REP_NUM];
+} seqStore_t;
+
+typedef struct {
+    U32 off;
+    U32 len;
+} ZSTD_match_t;
+
+typedef struct {
+    U32 price;
+    U32 off;
+    U32 mlen;
+    U32 litlen;
+    U32 rep[ZSTD_REP_NUM];
+} ZSTD_optimal_t;
+
+typedef struct {
     U32* litFreq;
+    U32* litLengthFreq;
+    U32* matchLengthFreq;
     U32* offCodeFreq;
+    ZSTD_match_t* matchTable;
+    ZSTD_optimal_t* priceTable;
+
     U32  matchLengthSum;
     U32  matchSum;
     U32  litLengthSum;
@@ -264,7 +241,19 @@ typedef struct {
     U32  cachedPrice;
     U32  cachedLitLength;
     const BYTE* cachedLiterals;
-} seqStore_t;
+} optState_t;
+
+typedef struct {
+    U32 hufCTable[HUF_CTABLE_SIZE_U32(255)];
+    FSE_CTable offcodeCTable[FSE_CTABLE_SIZE_U32(OffFSELog, MaxOff)];
+    FSE_CTable matchlengthCTable[FSE_CTABLE_SIZE_U32(MLFSELog, MaxML)];
+    FSE_CTable litlengthCTable[FSE_CTABLE_SIZE_U32(LLFSELog, MaxLL)];
+    U32 workspace[HUF_WORKSPACE_SIZE_U32];
+    HUF_repeat hufCTable_repeatMode;
+    FSE_repeat offcode_repeatMode;
+    FSE_repeat matchlength_repeatMode;
+    FSE_repeat litlength_repeatMode;
+} ZSTD_entropyCTables_t;
 
 const seqStore_t* ZSTD_getSeqStore(const ZSTD_CCtx* ctx);
 void ZSTD_seqToCodes(const seqStore_t* seqStorePtr);
@@ -338,9 +327,9 @@ typedef struct {
 } blockProperties_t;
 
 /*! ZSTD_getcBlockSize() :
- *   Provides the size of compressed block from block header `src` */
- size_t ZSTD_getcBlockSize(const void* src, size_t srcSize,
-                           blockProperties_t* bpPtr);
+*   Provides the size of compressed block from block header `src` */
+size_t ZSTD_getcBlockSize(const void* src, size_t srcSize,
+                          blockProperties_t* bpPtr);
 
 
 #endif   /* ZSTD_CCOMMON_H_MODULE */

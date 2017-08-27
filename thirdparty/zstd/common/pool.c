@@ -1,10 +1,10 @@
-/**
- * Copyright (c) 2016-present, Facebook, Inc.
+/*
+ * Copyright (c) 2016-present, Yann Collet, Facebook, Inc.
  * All rights reserved.
  *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
+ * This source code is licensed under both the BSD-style license (found in the
+ * LICENSE file in the root directory of this source tree) and the GPLv2 (found
+ * in the COPYING file in the root directory of this source tree).
  */
 
 
@@ -39,6 +39,12 @@ struct POOL_ctx_s {
     size_t queueHead;
     size_t queueTail;
     size_t queueSize;
+
+    /* The number of threads working on jobs */
+    size_t numThreadsBusy;
+    /* Indicates if the queue is empty */
+    int queueEmpty;
+
     /* The mutex protects the queue */
     pthread_mutex_t queueMutex;
     /* Condition variable for pushers to wait on when the queue is full */
@@ -60,30 +66,41 @@ static void* POOL_thread(void* opaque) {
     for (;;) {
         /* Lock the mutex and wait for a non-empty queue or until shutdown */
         pthread_mutex_lock(&ctx->queueMutex);
-        while (ctx->queueHead == ctx->queueTail && !ctx->shutdown) {
+
+        while (ctx->queueEmpty && !ctx->shutdown) {
             pthread_cond_wait(&ctx->queuePopCond, &ctx->queueMutex);
         }
         /* empty => shutting down: so stop */
-        if (ctx->queueHead == ctx->queueTail) {
+        if (ctx->queueEmpty) {
             pthread_mutex_unlock(&ctx->queueMutex);
             return opaque;
         }
         /* Pop a job off the queue */
         {   POOL_job const job = ctx->queue[ctx->queueHead];
             ctx->queueHead = (ctx->queueHead + 1) % ctx->queueSize;
+            ctx->numThreadsBusy++;
+            ctx->queueEmpty = ctx->queueHead == ctx->queueTail;
             /* Unlock the mutex, signal a pusher, and run the job */
             pthread_mutex_unlock(&ctx->queueMutex);
             pthread_cond_signal(&ctx->queuePushCond);
+
             job.function(job.opaque);
-        }
-    }
+
+            /* If the intended queue size was 0, signal after finishing job */
+            if (ctx->queueSize == 1) {
+                pthread_mutex_lock(&ctx->queueMutex);
+                ctx->numThreadsBusy--;
+                pthread_mutex_unlock(&ctx->queueMutex);
+                pthread_cond_signal(&ctx->queuePushCond);
+        }   }
+    }  /* for (;;) */
     /* Unreachable */
 }
 
 POOL_ctx *POOL_create(size_t numThreads, size_t queueSize) {
     POOL_ctx *ctx;
     /* Check the parameters */
-    if (!numThreads || !queueSize) { return NULL; }
+    if (!numThreads) { return NULL; }
     /* Allocate the context and zero initialize */
     ctx = (POOL_ctx *)calloc(1, sizeof(POOL_ctx));
     if (!ctx) { return NULL; }
@@ -92,15 +109,17 @@ POOL_ctx *POOL_create(size_t numThreads, size_t queueSize) {
      * and full queues.
      */
     ctx->queueSize = queueSize + 1;
-    ctx->queue = (POOL_job *)malloc(ctx->queueSize * sizeof(POOL_job));
+    ctx->queue = (POOL_job*) malloc(ctx->queueSize * sizeof(POOL_job));
     ctx->queueHead = 0;
     ctx->queueTail = 0;
-    pthread_mutex_init(&ctx->queueMutex, NULL);
-    pthread_cond_init(&ctx->queuePushCond, NULL);
-    pthread_cond_init(&ctx->queuePopCond, NULL);
+    ctx->numThreadsBusy = 0;
+    ctx->queueEmpty = 1;
+    (void)pthread_mutex_init(&ctx->queueMutex, NULL);
+    (void)pthread_cond_init(&ctx->queuePushCond, NULL);
+    (void)pthread_cond_init(&ctx->queuePopCond, NULL);
     ctx->shutdown = 0;
     /* Allocate space for the thread handles */
-    ctx->threads = (pthread_t *)malloc(numThreads * sizeof(pthread_t));
+    ctx->threads = (pthread_t*)malloc(numThreads * sizeof(pthread_t));
     ctx->numThreads = 0;
     /* Check for errors */
     if (!ctx->threads || !ctx->queue) { POOL_free(ctx); return NULL; }
@@ -153,22 +172,37 @@ size_t POOL_sizeof(POOL_ctx *ctx) {
         + ctx->numThreads * sizeof(pthread_t);
 }
 
-void POOL_add(void *ctxVoid, POOL_function function, void *opaque) {
-    POOL_ctx *ctx = (POOL_ctx *)ctxVoid;
+/**
+ * Returns 1 if the queue is full and 0 otherwise.
+ *
+ * If the queueSize is 1 (the pool was created with an intended queueSize of 0),
+ * then a queue is empty if there is a thread free and no job is waiting.
+ */
+static int isQueueFull(POOL_ctx const* ctx) {
+    if (ctx->queueSize > 1) {
+        return ctx->queueHead == ((ctx->queueTail + 1) % ctx->queueSize);
+    } else {
+        return ctx->numThreadsBusy == ctx->numThreads ||
+               !ctx->queueEmpty;
+    }
+}
+
+void POOL_add(void* ctxVoid, POOL_function function, void *opaque) {
+    POOL_ctx* const ctx = (POOL_ctx*)ctxVoid;
     if (!ctx) { return; }
 
     pthread_mutex_lock(&ctx->queueMutex);
     {   POOL_job const job = {function, opaque};
+
         /* Wait until there is space in the queue for the new job */
-        size_t newTail = (ctx->queueTail + 1) % ctx->queueSize;
-        while (ctx->queueHead == newTail && !ctx->shutdown) {
+        while (isQueueFull(ctx) && !ctx->shutdown) {
           pthread_cond_wait(&ctx->queuePushCond, &ctx->queueMutex);
-          newTail = (ctx->queueTail + 1) % ctx->queueSize;
         }
         /* The queue is still going => there is space */
         if (!ctx->shutdown) {
+            ctx->queueEmpty = 0;
             ctx->queue[ctx->queueTail] = job;
-            ctx->queueTail = newTail;
+            ctx->queueTail = (ctx->queueTail + 1) % ctx->queueSize;
         }
     }
     pthread_mutex_unlock(&ctx->queueMutex);
@@ -183,22 +217,22 @@ struct POOL_ctx_s {
   int data;
 };
 
-POOL_ctx *POOL_create(size_t numThreads, size_t queueSize) {
+POOL_ctx* POOL_create(size_t numThreads, size_t queueSize) {
   (void)numThreads;
   (void)queueSize;
-  return (POOL_ctx *)malloc(sizeof(POOL_ctx));
+  return (POOL_ctx*)malloc(sizeof(POOL_ctx));
 }
 
-void POOL_free(POOL_ctx *ctx) {
-  if (ctx) free(ctx);
+void POOL_free(POOL_ctx* ctx) {
+    free(ctx);
 }
 
-void POOL_add(void *ctx, POOL_function function, void *opaque) {
+void POOL_add(void* ctx, POOL_function function, void* opaque) {
   (void)ctx;
   function(opaque);
 }
 
-size_t POOL_sizeof(POOL_ctx *ctx) {
+size_t POOL_sizeof(POOL_ctx* ctx) {
     if (ctx==NULL) return 0;  /* supports sizeof NULL */
     return sizeof(*ctx);
 }

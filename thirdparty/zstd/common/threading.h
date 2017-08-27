@@ -1,4 +1,3 @@
-
 /**
  * Copyright (c) 2016 Tino Reichardt
  * All rights reserved.
@@ -42,14 +41,14 @@ extern "C" {
 
 /* mutex */
 #define pthread_mutex_t           CRITICAL_SECTION
-#define pthread_mutex_init(a,b)   InitializeCriticalSection((a))
+#define pthread_mutex_init(a,b)   (InitializeCriticalSection((a)), 0)
 #define pthread_mutex_destroy(a)  DeleteCriticalSection((a))
 #define pthread_mutex_lock(a)     EnterCriticalSection((a))
 #define pthread_mutex_unlock(a)   LeaveCriticalSection((a))
 
 /* condition variable */
 #define pthread_cond_t             CONDITION_VARIABLE
-#define pthread_cond_init(a, b)    InitializeConditionVariable((a))
+#define pthread_cond_init(a, b)    (InitializeConditionVariable((a)), 0)
 #define pthread_cond_destroy(a)    /* No delete */
 #define pthread_cond_wait(a, b)    SleepConditionVariableCS((a), (b), INFINITE)
 #define pthread_cond_signal(a)     WakeConditionVariable((a))
@@ -80,14 +79,14 @@ int _pthread_join(pthread_t* thread, void** value_ptr);
 #else  /* ZSTD_MULTITHREAD not defined */
 /* No multithreading support */
 
-#define pthread_mutex_t int   /* #define rather than typedef, as sometimes pthread support is implicit, resulting in duplicated symbols */
-#define pthread_mutex_init(a,b)
+#define pthread_mutex_t int   /* #define rather than typedef, because sometimes pthread support is implicit, resulting in duplicated symbols */
+#define pthread_mutex_init(a,b)    ((void)a, 0)
 #define pthread_mutex_destroy(a)
 #define pthread_mutex_lock(a)
 #define pthread_mutex_unlock(a)
 
 #define pthread_cond_t int
-#define pthread_cond_init(a,b)
+#define pthread_cond_init(a,b)     ((void)a, 0)
 #define pthread_cond_destroy(a)
 #define pthread_cond_wait(a,b)
 #define pthread_cond_signal(a)

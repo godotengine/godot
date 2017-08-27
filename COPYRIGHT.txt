@@ -321,6 +321,11 @@ Comment: zlib
 Copyright: 1995-2017, Jean-loup Gailly and Mark Adler
 License: Zlib
 
+Files: ./thirdparty/zstd/
+Comment: Zstandard
+Copyright: 2016-2017, Facebook, Inc.
+License: BSD-3-Clause
+
 
 
 License: Apache-2.0
@@ -372,9 +377,9 @@ License: BSD-3-clause
     notice, this list of conditions and the following disclaimer in the
     documentation and/or other materials provided with the distribution.
  .
- 3. Neither the name of the University nor the names of its contributors
-    may be used to endorse or promote products derived from this software
-    without specific prior written permission.
+ 3. Neither the name of the copyright holder nor the names of its
+    contributors may be used to endorse or promote products derived from
+    this software without specific prior written permission.
  .
  THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
