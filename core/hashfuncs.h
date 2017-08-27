@@ -30,8 +30,8 @@
 #ifndef HASHFUNCS_H
 #define HASHFUNCS_H
 
-#include "math_funcs.h"
 #include "math_defs.h"
+#include "math_funcs.h"
 #include "typedefs.h"
 
 /**
@@ -71,14 +71,14 @@ static inline uint32_t hash_djb2_one_32(uint32_t p_in, uint32_t p_prev = 5381) {
 }
 
 static inline uint32_t hash_one_uint64(const uint64_t p_int) {
-	uint64_t v=p_int;
+	uint64_t v = p_int;
 	v = (~v) + (v << 18); // v = (v << 18) - v - 1;
 	v = v ^ (v >> 31);
 	v = v * 21; // v = (v + (v << 2)) + (v << 4);
 	v = v ^ (v >> 11);
 	v = v + (v << 6);
 	v = v ^ (v >> 22);
-	return (int) v;
+	return (int)v;
 }
 
 static inline uint32_t hash_djb2_one_float(double p_in, uint32_t p_prev = 5381) {
@@ -88,17 +88,17 @@ static inline uint32_t hash_djb2_one_float(double p_in, uint32_t p_prev = 5381) 
 	} u;
 
 	// Normalize +/- 0.0 and NaN values so they hash the same.
-	if (p_in==0.0f)
-		u.d=0.0;
+	if (p_in == 0.0f)
+		u.d = 0.0;
 	else if (Math::is_nan(p_in))
-		u.d=NAN;
+		u.d = NAN;
 	else
-		u.d=p_in;
+		u.d = p_in;
 
-	return ((p_prev<<5)+p_prev) + hash_one_uint64(u.i);
+	return ((p_prev << 5) + p_prev) + hash_one_uint64(u.i);
 }
 
-template<class T>
+template <class T>
 static inline uint32_t make_uint32_t(T p_in) {
 
 	union {

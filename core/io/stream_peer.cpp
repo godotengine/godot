@@ -412,10 +412,10 @@ void StreamPeerBuffer::_bind_methods() {
 Error StreamPeerBuffer::put_data(const uint8_t *p_data, int p_bytes) {
 
 	if (p_bytes <= 0)
-	  return OK;
+		return OK;
 
 	if (pointer + p_bytes > data.size()) {
-	  data.resize(pointer + p_bytes);
+		data.resize(pointer + p_bytes);
 	}
 
 	DVector<uint8_t>::Write w = data.write();
@@ -436,20 +436,20 @@ Error StreamPeerBuffer::get_data(uint8_t *p_buffer, int p_bytes) {
 	int recv;
 	get_partial_data(p_buffer, p_bytes, recv);
 	if (recv != p_bytes)
-	  return ERR_INVALID_PARAMETER;
+		return ERR_INVALID_PARAMETER;
 
 	return OK;
 }
 Error StreamPeerBuffer::get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received) {
 
 	if (pointer + p_bytes > data.size()) {
-	  r_received = data.size() - pointer;
-	  if (r_received <= 0) {
-	    r_received = 0;
-	    return OK; //you got 0
-	  }
+		r_received = data.size() - pointer;
+		if (r_received <= 0) {
+			r_received = 0;
+			return OK; //you got 0
+		}
 	} else {
-	  r_received = p_bytes;
+		r_received = p_bytes;
 	}
 
 	DVector<uint8_t>::Read r = data.read();

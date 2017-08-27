@@ -173,7 +173,7 @@ RES ResourceFormatLoaderWAV::load(const String &p_path, const String &p_original
 					// 8 bit samples are UNSIGNED
 
 					uint8_t s = file->get_8();
-					data_ptr8[i] = (int8_t)(s-128);
+					data_ptr8[i] = (int8_t)(s - 128);
 				}
 			} else if (format_bits == 32 && compression_code == 3) {
 				int16_t *data_ptr16 = (int16_t *)data_ptr;

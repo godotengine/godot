@@ -401,7 +401,7 @@ public:
 	bool operator<(const Variant &p_variant) const;
 	uint32_t hash() const;
 
-	bool hash_compare(const Variant& p_variant) const;
+	bool hash_compare(const Variant &p_variant) const;
 	bool booleanize(bool &valid) const;
 
 	void static_assign(const Variant &p_variant);
@@ -441,7 +441,7 @@ struct VariantHasher {
 
 struct VariantComparator {
 
-	static _FORCE_INLINE_ bool compare(const Variant &p_lhs, const Variant &p_rhs)  { return p_lhs.hash_compare(p_rhs); }
+	static _FORCE_INLINE_ bool compare(const Variant &p_lhs, const Variant &p_rhs) { return p_lhs.hash_compare(p_rhs); }
 };
 
 Variant::ObjData &Variant::_get_obj() {
