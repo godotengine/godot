@@ -3189,6 +3189,11 @@ void TextEdit::adjust_viewport_to_cursor() {
 	if (cursor.line < cursor.line_ofs)
 		cursor.line_ofs = cursor.line;
 
+	if (cursor.line_ofs + visible_rows > text.size() && !scroll_past_end_of_file_enabled) {
+		cursor.line_ofs = text.size() - visible_rows;
+		v_scroll->set_value(text.size() - visible_rows);
+	}
+
 	int cursor_x = get_column_x_offset(cursor.column, text[cursor.line]);
 
 	if (cursor_x > (cursor.x_ofs + visible_width))
@@ -3661,10 +3666,10 @@ void TextEdit::cut() {
 		String clipboard = _base_get_text(selection.from_line, selection.from_column, selection.to_line, selection.to_column);
 		OS::get_singleton()->set_clipboard(clipboard);
 
-		cursor_set_line(selection.from_line);
+		_remove_text(selection.from_line, selection.from_column, selection.to_line, selection.to_column);
+		cursor_set_line(selection.from_line); // set afterwards else it causes the view to be offset
 		cursor_set_column(selection.from_column);
 
-		_remove_text(selection.from_line, selection.from_column, selection.to_line, selection.to_column);
 		selection.active = false;
 		selection.selecting_mode = Selection::MODE_NONE;
 		update();
