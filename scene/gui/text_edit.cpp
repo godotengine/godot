@@ -2115,14 +2115,14 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				//keep indentation
 				int space_count = 0;
 				for (int i = 0; i < text[cursor.line].length(); i++) {
-					if (text[cursor.line][i] == '\t') {
+					if (text[cursor.line][i] == '\t' && cursor.column > 0) {
 						if (indent_using_spaces) {
 							ins += space_indent;
 						} else {
 							ins += "\t";
 						}
 						space_count = 0;
-					} else if (text[cursor.line][i] == ' ') {
+					} else if (text[cursor.line][i] == ' ' && cursor.column > 0) {
 						space_count++;
 
 						if (space_count == indent_size) {
