@@ -98,7 +98,7 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 
 		p_library->set_item_mesh(id, mesh);
 
-		Ref<Shape> collision;
+		Vector<MeshLibrary::ShapeData> collisions;
 
 		for (int j = 0; j < mi->get_child_count(); j++) {
 
@@ -119,24 +119,19 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 
 				for (int k = 0; k < sb->shape_owner_get_shape_count(E->get()); k++) {
 
-					collision = sb->shape_owner_get_shape(E->get(), k);
+					Ref<Shape> collision = sb->shape_owner_get_shape(E->get(), k);
 					if (collision.is_valid())
-						break;
-					/*					TileSet::ShapeData shape_data;
-					shape_data.shape = shape;
-					shape_data.shape_transform = shape_transform;
-					shape_data.one_way_collision = one_way;
-					collisions.push_back(shape_data);*/
+						continue;
+					MeshLibrary::ShapeData shape_data;
+					shape_data.shape = collision;
+					shape_data.local_transform = sb->shape_owner_get_transform(E->get());
+					collisions.push_back(shape_data);
 				}
-				if (collision.is_valid())
-					break;
 			}
 		}
 
-		if (!collision.is_null()) {
+		p_library->set_item_shapes(id, collisions);
 
-			p_library->set_item_shape(id, collision);
-		}
 		Ref<NavigationMesh> navmesh;
 		for (int j = 0; j < mi->get_child_count(); j++) {
 			Node *child2 = mi->get_child(j);

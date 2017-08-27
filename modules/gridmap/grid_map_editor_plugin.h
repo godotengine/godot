@@ -109,12 +109,15 @@ class GridMapEditor : public VBoxContainer {
 	RID cursor_instance;
 	RID selection_mesh;
 	RID selection_instance;
+	RID selection_level_mesh[3];
+	RID selection_level_instance[3];
 	RID duplicate_mesh;
 	RID duplicate_instance;
 
 	Ref<SpatialMaterial> indicator_mat;
 	Ref<SpatialMaterial> inner_mat;
 	Ref<SpatialMaterial> outer_mat;
+	Ref<SpatialMaterial> selection_floor_mat;
 
 	bool updating;
 
@@ -223,7 +226,7 @@ class GridMapEditorPlugin : public EditorPlugin {
 	EditorNode *editor;
 
 public:
-	virtual bool forward_spatial_input_event(Camera *p_camera, const Ref<InputEvent> &p_event) { return gridmap_editor->forward_spatial_input_event(p_camera, p_event); }
+	virtual bool forward_spatial_gui_input(Camera *p_camera, const Ref<InputEvent> &p_event) { return gridmap_editor->forward_spatial_input_event(p_camera, p_event); }
 	virtual String get_name() const { return "GridMap"; }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_object);

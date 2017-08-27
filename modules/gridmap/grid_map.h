@@ -96,21 +96,25 @@ class GridMap : public Spatial {
 			Transform xform;
 		};
 
-		struct ItemInstances {
-			Set<IndexKey> cells;
-			Ref<Mesh> mesh;
-			Ref<Shape> shape;
-			Ref<MultiMesh> multimesh;
-			RID multimesh_instance;
-			Ref<NavigationMesh> navmesh;
+		struct MultimeshInstance {
+			RID instance;
+			RID multimesh;
+			struct Item {
+				int index;
+				Transform transform;
+				IndexKey key;
+			};
+
+			Vector<Item> items; //tools only, for changing visibility
 		};
 
+		Vector<MultimeshInstance> multimesh_instances;
+		Set<IndexKey> cells;
 		RID collision_debug;
 		RID collision_debug_instance;
 
 		bool dirty;
 		RID static_body;
-		Map<int, ItemInstances> items;
 		Map<IndexKey, NavMesh> navmesh_ids;
 	};
 
@@ -137,7 +141,7 @@ class GridMap : public Spatial {
 	Transform last_transform;
 
 	bool _in_tree;
-	float cell_size;
+	Vector3 cell_size;
 	int octant_size;
 	bool center_x, center_y, center_z;
 	float cell_scale;
@@ -169,15 +173,14 @@ class GridMap : public Spatial {
 	}
 
 	void _octant_enter_world(const OctantKey &p_key);
-	void _octant_enter_tree(const OctantKey &p_key);
 	void _octant_exit_world(const OctantKey &p_key);
-	void _octant_update(const OctantKey &p_key);
+	bool _octant_update(const OctantKey &p_key);
+	void _octant_clean_up(const OctantKey &p_key);
 	void _octant_transform(const OctantKey &p_key);
-	void _octant_clear_navmesh(const GridMap::OctantKey &);
 	bool awaiting_update;
 
-	void _queue_dirty_map();
-	void _update_dirty_map_callback();
+	void _queue_octants_dirty();
+	void _update_octants_callback();
 
 	void resource_changed(const RES &p_res);
 
@@ -199,8 +202,8 @@ public:
 	void set_theme(const Ref<MeshLibrary> &p_theme);
 	Ref<MeshLibrary> get_theme() const;
 
-	void set_cell_size(float p_size);
-	float get_cell_size() const;
+	void set_cell_size(const Vector3 &p_size);
+	Vector3 get_cell_size() const;
 
 	void set_octant_size(int p_size);
 	int get_octant_size() const;

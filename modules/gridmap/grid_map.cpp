@@ -46,7 +46,13 @@ bool GridMap::_set(const StringName &p_name, const Variant &p_value) {
 
 		set_theme(p_value);
 	} else if (name == "cell_size") {
-		set_cell_size(p_value);
+		if (p_value.get_type() == Variant::INT || p_value.get_type() == Variant::REAL) {
+			//compatibility
+			float cs = p_value;
+			set_cell_size(Vector3(cs, cs, cs));
+		} else {
+			set_cell_size(p_value);
+		}
 	} else if (name == "cell_octant_size") {
 		set_octant_size(p_value);
 	} else if (name == "cell_center_x") {
@@ -176,12 +182,12 @@ Ref<MeshLibrary> GridMap::get_theme() const {
 	return theme;
 }
 
-void GridMap::set_cell_size(float p_size) {
+void GridMap::set_cell_size(const Vector3 &p_size) {
 
 	cell_size = p_size;
 	_recreate_octant_data();
 }
-float GridMap::get_cell_size() const {
+Vector3 GridMap::get_cell_size() const {
 
 	return cell_size;
 }
@@ -242,56 +248,29 @@ void GridMap::set_cell_item(int p_x, int p_y, int p_z, int p_item, int p_rot) {
 	ok.y = p_y / octant_size;
 	ok.z = p_z / octant_size;
 
-	if (cell_map.has(key)) {
+	if (p_item < 0) {
+		//erase
+		if (cell_map.has(key)) {
+			OctantKey octantkey = ok;
 
-		int prev_item = cell_map[key].item;
-
-		OctantKey octantkey = ok;
-
-		ERR_FAIL_COND(!octant_map.has(octantkey));
-		Octant &g = *octant_map[octantkey];
-		ERR_FAIL_COND(!g.items.has(prev_item));
-		ERR_FAIL_COND(!g.items[prev_item].cells.has(key));
-
-		g.items[prev_item].cells.erase(key);
-		if (g.items[prev_item].cells.size() == 0) {
-			VS::get_singleton()->free(g.items[prev_item].multimesh_instance);
-			g.items.erase(prev_item);
-		}
-		if (g.items.empty()) {
-
-			PhysicsServer::get_singleton()->free(g.static_body);
-			if (g.collision_debug.is_valid()) {
-				PhysicsServer::get_singleton()->free(g.collision_debug);
-				PhysicsServer::get_singleton()->free(g.collision_debug_instance);
-			}
-
-			memdelete(&g);
-			octant_map.erase(octantkey);
-		} else {
-
+			ERR_FAIL_COND(!octant_map.has(octantkey));
+			Octant &g = *octant_map[octantkey];
+			g.cells.erase(key);
 			g.dirty = true;
+			cell_map.erase(key);
+			_queue_octants_dirty();
 		}
-		cell_map.erase(key);
-
-		_queue_dirty_map();
-	}
-
-	if (p_item < 0)
 		return;
+	}
 
 	OctantKey octantkey = ok;
 
-	//add later
 	if (!octant_map.has(octantkey)) {
-
+		//create octant because it does not exist
 		Octant *g = memnew(Octant);
 		g->dirty = true;
 		g->static_body = PhysicsServer::get_singleton()->body_create(PhysicsServer::BODY_MODE_STATIC);
 		PhysicsServer::get_singleton()->body_attach_object_instance_id(g->static_body, get_instance_id());
-		if (is_inside_world())
-			PhysicsServer::get_singleton()->body_set_space(g->static_body, get_world()->get_space());
-
 		SceneTree *st = SceneTree::get_singleton();
 
 		if (st && st->is_debugging_collisions_hint()) {
@@ -299,45 +278,26 @@ void GridMap::set_cell_item(int p_x, int p_y, int p_z, int p_item, int p_rot) {
 			g->collision_debug = VisualServer::get_singleton()->mesh_create();
 			g->collision_debug_instance = VisualServer::get_singleton()->instance_create();
 			VisualServer::get_singleton()->instance_set_base(g->collision_debug_instance, g->collision_debug);
-			if (is_inside_world()) {
-				VisualServer::get_singleton()->instance_set_scenario(g->collision_debug_instance, get_world()->get_scenario());
-				VisualServer::get_singleton()->instance_set_transform(g->collision_debug_instance, get_global_transform());
-			}
 		}
 
 		octant_map[octantkey] = g;
+
+		if (is_inside_world()) {
+			_octant_enter_world(octantkey);
+			_octant_transform(octantkey);
+		}
 	}
 
 	Octant &g = *octant_map[octantkey];
-	if (!g.items.has(p_item)) {
-
-		Octant::ItemInstances ii;
-		if (theme.is_valid() && theme->has_item(p_item)) {
-			ii.mesh = theme->get_item_mesh(p_item);
-			ii.shape = theme->get_item_shape(p_item);
-			ii.navmesh = theme->get_item_navmesh(p_item);
-		}
-		ii.multimesh = Ref<MultiMesh>(memnew(MultiMesh));
-		ii.multimesh->set_color_format(MultiMesh::COLOR_NONE);
-		ii.multimesh->set_transform_format(MultiMesh::TRANSFORM_3D);
-		ii.multimesh->set_mesh(ii.mesh);
-		ii.multimesh_instance = VS::get_singleton()->instance_create();
-		VS::get_singleton()->instance_set_base(ii.multimesh_instance, ii.multimesh->get_rid());
-		VS::get_singleton()->instance_geometry_set_flag(ii.multimesh_instance, VS::INSTANCE_FLAG_USE_BAKED_LIGHT, true);
-
-		g.items[p_item] = ii;
-	}
-
-	Octant::ItemInstances &ii = g.items[p_item];
-	ii.cells.insert(key);
+	g.cells.insert(key);
 	g.dirty = true;
+	_queue_octants_dirty();
 
-	_queue_dirty_map();
-
-	cell_map[key] = Cell();
-	Cell &c = cell_map[key];
+	Cell c;
 	c.item = p_item;
 	c.rot = p_rot;
+
+	cell_map[key] = c;
 }
 
 int GridMap::get_cell_item(int p_x, int p_y, int p_z) const {
@@ -372,71 +332,6 @@ int GridMap::get_cell_item_orientation(int p_x, int p_y, int p_z) const {
 	return cell_map[key].rot;
 }
 
-void GridMap::_octant_enter_tree(const OctantKey &p_key) {
-	ERR_FAIL_COND(!octant_map.has(p_key));
-	if (navigation) {
-		Octant &g = *octant_map[p_key];
-
-		Vector3 ofs(cell_size * 0.5 * int(center_x), cell_size * 0.5 * int(center_y), cell_size * 0.5 * int(center_z));
-		_octant_clear_navmesh(p_key);
-
-		for (Map<int, Octant::ItemInstances>::Element *E = g.items.front(); E; E = E->next()) {
-			Octant::ItemInstances &ii = E->get();
-
-			for (Set<IndexKey>::Element *F = ii.cells.front(); F; F = F->next()) {
-
-				IndexKey ik = F->get();
-				Map<IndexKey, Cell>::Element *C = cell_map.find(ik);
-				ERR_CONTINUE(!C);
-
-				Vector3 cellpos = Vector3(ik.x, ik.y, ik.z);
-
-				Transform xform;
-
-				if (clip && ((clip_above && cellpos[clip_axis] > clip_floor) || (!clip_above && cellpos[clip_axis] < clip_floor))) {
-
-					xform.basis.set_zero();
-
-				} else {
-
-					xform.basis.set_orthogonal_index(C->get().rot);
-				}
-
-				xform.set_origin(cellpos * cell_size + ofs);
-				xform.basis.scale(Vector3(cell_scale, cell_scale, cell_scale));
-				// add the item's navmesh at given xform to GridMap's Navigation ancestor
-				if (ii.navmesh.is_valid()) {
-					int nm_id = navigation->navmesh_create(ii.navmesh, xform, this);
-					Octant::NavMesh nm;
-					nm.id = nm_id;
-					nm.xform = xform;
-					g.navmesh_ids[ik] = nm;
-				}
-			}
-		}
-	}
-}
-
-void GridMap::_octant_enter_world(const OctantKey &p_key) {
-
-	ERR_FAIL_COND(!octant_map.has(p_key));
-	Octant &g = *octant_map[p_key];
-	PhysicsServer::get_singleton()->body_set_state(g.static_body, PhysicsServer::BODY_STATE_TRANSFORM, get_global_transform());
-	PhysicsServer::get_singleton()->body_set_space(g.static_body, get_world()->get_space());
-	//print_line("BODYPOS: "+get_global_transform());
-
-	if (g.collision_debug_instance.is_valid()) {
-		VS::get_singleton()->instance_set_scenario(g.collision_debug_instance, get_world()->get_scenario());
-		VS::get_singleton()->instance_set_transform(g.collision_debug_instance, get_global_transform());
-	}
-	for (Map<int, Octant::ItemInstances>::Element *E = g.items.front(); E; E = E->next()) {
-
-		VS::get_singleton()->instance_set_scenario(E->get().multimesh_instance, get_world()->get_scenario());
-		VS::get_singleton()->instance_set_transform(E->get().multimesh_instance, get_global_transform());
-		//print_line("INSTANCEPOS: "+get_global_transform());
-	}
-}
-
 void GridMap::_octant_transform(const OctantKey &p_key) {
 
 	ERR_FAIL_COND(!octant_map.has(p_key));
@@ -447,40 +342,47 @@ void GridMap::_octant_transform(const OctantKey &p_key) {
 		VS::get_singleton()->instance_set_transform(g.collision_debug_instance, get_global_transform());
 	}
 
-	for (Map<int, Octant::ItemInstances>::Element *E = g.items.front(); E; E = E->next()) {
-
-		VS::get_singleton()->instance_set_transform(E->get().multimesh_instance, get_global_transform());
-		//print_line("UPDATEPOS: "+get_global_transform());
+	for (int i = 0; i < g.multimesh_instances.size(); i++) {
+		VS::get_singleton()->instance_set_transform(g.multimesh_instances[i].instance, get_global_transform());
 	}
 }
 
-void GridMap::_octant_clear_navmesh(const OctantKey &p_key) {
-	Octant &g = *octant_map[p_key];
-	if (navigation) {
-		for (Map<IndexKey, Octant::NavMesh>::Element *E = g.navmesh_ids.front(); E; E = E->next()) {
-			Octant::NavMesh *nvm = &E->get();
-			if (nvm && nvm->id) {
-				navigation->navmesh_remove(E->get().id);
-			}
-		}
-		g.navmesh_ids.clear();
-	}
-}
-
-void GridMap::_octant_update(const OctantKey &p_key) {
-	ERR_FAIL_COND(!octant_map.has(p_key));
+bool GridMap::_octant_update(const OctantKey &p_key) {
+	ERR_FAIL_COND_V(!octant_map.has(p_key), false);
 	Octant &g = *octant_map[p_key];
 	if (!g.dirty)
-		return;
+		return false;
 
-	Ref<Mesh> mesh;
-
-	_octant_clear_navmesh(p_key);
+	//erase body shapes
 	PhysicsServer::get_singleton()->body_clear_shapes(g.static_body);
 
+	//erase body shapes debug
 	if (g.collision_debug.is_valid()) {
 
 		VS::get_singleton()->mesh_clear(g.collision_debug);
+	}
+
+	//erase navigation
+	if (navigation) {
+		for (Map<IndexKey, Octant::NavMesh>::Element *E = g.navmesh_ids.front(); E; E = E->next()) {
+			navigation->navmesh_remove(E->get().id);
+		}
+		g.navmesh_ids.clear();
+	}
+
+	//erase multimeshes
+
+	for (int i = 0; i < g.multimesh_instances.size(); i++) {
+
+		VS::get_singleton()->free(g.multimesh_instances[i].instance);
+		VS::get_singleton()->free(g.multimesh_instances[i].multimesh);
+	}
+	g.multimesh_instances.clear();
+
+	if (g.cells.size() == 0) {
+		//octant no longer needed
+		_octant_clean_up(p_key);
+		return true;
 	}
 
 	PoolVector<Vector3> col_debug;
@@ -490,80 +392,111 @@ void GridMap::_octant_update(const OctantKey &p_key) {
 	 * set item's multimesh's instance count to number of cells which have this item
 	 * and set said multimesh bounding box to one containing all cells which have this item
 	 */
-	for (Map<int, Octant::ItemInstances>::Element *E = g.items.front(); E; E = E->next()) {
 
-		Octant::ItemInstances &ii = E->get();
+	Map<int, List<Pair<Transform, IndexKey> > > multimesh_items;
 
-		ii.multimesh->set_instance_count(ii.cells.size());
+	print_line("updating octant " + itos(p_key.x) + ", " + itos(p_key.y) + ", " + itos(p_key.z) + " cells: " + itos(g.cells.size()));
 
-		Rect3 aabb;
-		Rect3 mesh_aabb = ii.mesh.is_null() ? Rect3() : ii.mesh->get_aabb();
+	for (Set<IndexKey>::Element *E = g.cells.front(); E; E = E->next()) {
 
-		Vector3 ofs(cell_size * 0.5 * int(center_x), cell_size * 0.5 * int(center_y), cell_size * 0.5 * int(center_z));
+		ERR_CONTINUE(!cell_map.has(E->get()));
+		const Cell &c = cell_map[E->get()];
+
+		if (!theme.is_valid() || !theme->has_item(c.item))
+			continue;
 
 		//print_line("OCTANT, CELLS: "+itos(ii.cells.size()));
-		int idx = 0;
-		// foreach cell containing this item type
-		for (Set<IndexKey>::Element *F = ii.cells.front(); F; F = F->next()) {
-			IndexKey ik = F->get();
-			Map<IndexKey, Cell>::Element *C = cell_map.find(ik);
-			ERR_CONTINUE(!C);
 
-			Vector3 cellpos = Vector3(ik.x, ik.y, ik.z);
+		Vector3 cellpos = Vector3(E->get().x, E->get().y, E->get().z);
+		Vector3 ofs(cell_size.x * 0.5 * int(center_x), cell_size.y * 0.5 * int(center_y), cell_size.z * 0.5 * int(center_z));
 
-			Transform xform;
+		Transform xform;
 
-			if (clip && ((clip_above && cellpos[clip_axis] > clip_floor) || (!clip_above && cellpos[clip_axis] < clip_floor))) {
+		if (clip && ((clip_above && cellpos[clip_axis] > clip_floor) || (!clip_above && cellpos[clip_axis] < clip_floor))) {
 
-				xform.basis.set_zero();
+		} else {
+		}
 
-			} else {
+		xform.basis.set_orthogonal_index(c.rot);
+		xform.set_origin(cellpos * cell_size + ofs);
+		xform.basis.scale(Vector3(cell_scale, cell_scale, cell_scale));
 
-				xform.basis.set_orthogonal_index(C->get().rot);
+		if (theme->get_item_mesh(c.item).is_valid()) {
+			if (!multimesh_items.has(c.item)) {
+				multimesh_items[c.item] = List<Pair<Transform, IndexKey> >();
 			}
 
-			xform.set_origin(cellpos * cell_size + ofs);
-			xform.basis.scale(Vector3(cell_scale, cell_scale, cell_scale));
+			Pair<Transform, IndexKey> p;
+			p.first = xform;
+			p.second = E->get();
+			multimesh_items[c.item].push_back(p);
+		}
 
-			ii.multimesh->set_instance_transform(idx, xform);
-			//ii.multimesh->set_instance_transform(idx,Transform()	);
-			//ii.multimesh->set_instance_color(idx,Color(1,1,1,1));
-			//print_line("MMINST: "+xform);
-
-			if (idx == 0) {
-
-				aabb = xform.xform(mesh_aabb);
-			} else {
-
-				aabb.merge_with(xform.xform(mesh_aabb));
+		Vector<MeshLibrary::ShapeData> shapes = theme->get_item_shapes(c.item);
+		// add the item's shape at given xform to octant's static_body
+		for (int i = 0; i < shapes.size(); i++) {
+			// add the item's shape
+			if (!shapes[i].shape.is_valid())
+				continue;
+			PhysicsServer::get_singleton()->body_add_shape(g.static_body, shapes[i].shape->get_rid(), xform * shapes[i].local_transform);
+			if (g.collision_debug.is_valid()) {
+				shapes[i].shape->add_vertices_to_array(col_debug, xform * shapes[i].local_transform);
 			}
 
-			// add the item's shape at given xform to octant's static_body
-			if (ii.shape.is_valid()) {
-				// add the item's shape
-				PhysicsServer::get_singleton()->body_add_shape(g.static_body, ii.shape->get_rid(), xform);
-				if (g.collision_debug.is_valid()) {
-					ii.shape->add_vertices_to_array(col_debug, xform);
-				}
+			//print_line("PHIS x: "+xform);
+		}
 
-				//print_line("PHIS x: "+xform);
-			}
+		// add the item's navmesh at given xform to GridMap's Navigation ancestor
+		Ref<NavigationMesh> navmesh = theme->get_item_navmesh(c.item);
+		if (navmesh.is_valid()) {
+			Octant::NavMesh nm;
+			nm.xform = xform;
 
-			// add the item's navmesh at given xform to GridMap's Navigation ancestor
 			if (navigation) {
-				if (ii.navmesh.is_valid()) {
-					int nm_id = navigation->navmesh_create(ii.navmesh, xform, this);
-					Octant::NavMesh nm;
-					nm.id = nm_id;
-					nm.xform = xform;
-					g.navmesh_ids[ik] = nm;
-				}
+				nm.id = navigation->navmesh_create(navmesh, xform, this);
+			} else {
+				nm.id = -1;
 			}
+			g.navmesh_ids[E->get()] = nm;
+		}
+	}
+
+	//update multimeshes
+	for (Map<int, List<Pair<Transform, IndexKey> > >::Element *E = multimesh_items.front(); E; E = E->next()) {
+		print_line("multimesh item " + itos(E->key()) + " transforms " + itos(E->get().size()));
+		Octant::MultimeshInstance mmi;
+
+		RID mm = VS::get_singleton()->multimesh_create();
+		VS::get_singleton()->multimesh_allocate(mm, E->get().size(), VS::MULTIMESH_TRANSFORM_3D, VS::MULTIMESH_COLOR_NONE);
+		VS::get_singleton()->multimesh_set_mesh(mm, theme->get_item_mesh(E->key())->get_rid());
+
+		int idx = 0;
+		for (List<Pair<Transform, IndexKey> >::Element *F = E->get().front(); F; F = F->next()) {
+			VS::get_singleton()->multimesh_instance_set_transform(mm, idx, F->get().first);
+#ifdef TOOLS_ENABLED
+
+			Octant::MultimeshInstance::Item it;
+			it.index = idx;
+			it.transform = F->get().first;
+			it.key = F->get().second;
+			mmi.items.push_back(it);
+#endif
 
 			idx++;
 		}
 
-		//ii.multimesh->set_aabb(aabb);
+		RID instance = VS::get_singleton()->instance_create();
+		VS::get_singleton()->instance_set_base(instance, mm);
+
+		if (is_inside_tree()) {
+			VS::get_singleton()->instance_set_scenario(instance, get_world()->get_scenario());
+			VS::get_singleton()->instance_set_transform(instance, get_global_transform());
+		}
+
+		mmi.multimesh = mm;
+		mmi.instance = instance;
+
+		g.multimesh_instances.push_back(mmi);
 	}
 
 	if (col_debug.size()) {
@@ -580,6 +513,39 @@ void GridMap::_octant_update(const OctantKey &p_key) {
 	}
 
 	g.dirty = false;
+
+	return false;
+}
+
+void GridMap::_octant_enter_world(const OctantKey &p_key) {
+
+	ERR_FAIL_COND(!octant_map.has(p_key));
+	Octant &g = *octant_map[p_key];
+	PhysicsServer::get_singleton()->body_set_state(g.static_body, PhysicsServer::BODY_STATE_TRANSFORM, get_global_transform());
+	PhysicsServer::get_singleton()->body_set_space(g.static_body, get_world()->get_space());
+	//print_line("BODYPOS: "+get_global_transform());
+
+	if (g.collision_debug_instance.is_valid()) {
+		VS::get_singleton()->instance_set_scenario(g.collision_debug_instance, get_world()->get_scenario());
+		VS::get_singleton()->instance_set_transform(g.collision_debug_instance, get_global_transform());
+	}
+
+	for (int i = 0; i < g.multimesh_instances.size(); i++) {
+		VS::get_singleton()->instance_set_scenario(g.multimesh_instances[i].instance, get_world()->get_scenario());
+		VS::get_singleton()->instance_set_transform(g.multimesh_instances[i].instance, get_global_transform());
+	}
+
+	if (navigation && theme.is_valid()) {
+		for (Map<IndexKey, Octant::NavMesh>::Element *F = g.navmesh_ids.front(); F; F = F->next()) {
+
+			if (cell_map.has(F->key()) && F->get().id < 0) {
+				Ref<NavigationMesh> nm = theme->get_item_navmesh(cell_map[F->key()].item);
+				if (nm.is_valid()) {
+					F->get().id = navigation->navmesh_create(nm, F->get().xform, this);
+				}
+			}
+		}
+	}
 }
 
 void GridMap::_octant_exit_world(const OctantKey &p_key) {
@@ -594,11 +560,49 @@ void GridMap::_octant_exit_world(const OctantKey &p_key) {
 		VS::get_singleton()->instance_set_scenario(g.collision_debug_instance, RID());
 	}
 
-	for (Map<int, Octant::ItemInstances>::Element *E = g.items.front(); E; E = E->next()) {
-
-		VS::get_singleton()->instance_set_scenario(E->get().multimesh_instance, RID());
-		//VS::get_singleton()->instance_set_transform(E->get().multimesh_instance,get_global_transform());
+	for (int i = 0; i < g.multimesh_instances.size(); i++) {
+		VS::get_singleton()->instance_set_scenario(g.multimesh_instances[i].instance, RID());
 	}
+
+	if (navigation) {
+		for (Map<IndexKey, Octant::NavMesh>::Element *F = g.navmesh_ids.front(); F; F = F->next()) {
+
+			if (F->get().id >= 0) {
+				navigation->navmesh_remove(F->get().id);
+				F->get().id = -1;
+			}
+		}
+	}
+}
+
+void GridMap::_octant_clean_up(const OctantKey &p_key) {
+
+	ERR_FAIL_COND(!octant_map.has(p_key));
+	Octant &g = *octant_map[p_key];
+
+	if (g.collision_debug.is_valid())
+		VS::get_singleton()->free(g.collision_debug);
+	if (g.collision_debug_instance.is_valid())
+		VS::get_singleton()->free(g.collision_debug_instance);
+
+	PhysicsServer::get_singleton()->free(g.static_body);
+
+	//erase navigation
+	if (navigation) {
+		for (Map<IndexKey, Octant::NavMesh>::Element *E = g.navmesh_ids.front(); E; E = E->next()) {
+			navigation->navmesh_remove(E->get().id);
+		}
+		g.navmesh_ids.clear();
+	}
+
+	//erase multimeshes
+
+	for (int i = 0; i < g.multimesh_instances.size(); i++) {
+
+		VS::get_singleton()->free(g.multimesh_instances[i].instance);
+		VS::get_singleton()->free(g.multimesh_instances[i].multimesh);
+	}
+	g.multimesh_instances.clear();
 }
 
 void GridMap::_notification(int p_what) {
@@ -607,16 +611,21 @@ void GridMap::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_WORLD: {
 
-			for (Map<OctantKey, Octant *>::Element *E = octant_map.front(); E; E = E->next()) {
-				//IndexKey ik;
-				//ik.key = E->key().indexkey;
-				_octant_enter_world(E->key());
-				_octant_update(E->key());
+			Spatial *c = this;
+			while (c) {
+				navigation = Object::cast_to<Navigation>(c);
+				if (navigation) {
+					break;
+				}
+
+				c = Object::cast_to<Spatial>(c->get_parent());
 			}
 
-			awaiting_update = false;
-
 			last_transform = get_global_transform();
+
+			for (Map<OctantKey, Octant *>::Element *E = octant_map.front(); E; E = E->next()) {
+				_octant_enter_world(E->key());
+			}
 
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
@@ -638,56 +647,23 @@ void GridMap::_notification(int p_what) {
 				_octant_exit_world(E->key());
 			}
 
-			//_queue_dirty_map(MAP_DIRTY_INSTANCES|MAP_DIRTY_TRANSFORMS);
-			//_update_dirty_map_callback();
-			//_update_area_instances();
-
-		} break;
-		case NOTIFICATION_ENTER_TREE: {
-
-			Spatial *c = this;
-			while (c) {
-				navigation = Object::cast_to<Navigation>(c);
-				if (navigation) {
-					break;
-				}
-
-				c = Object::cast_to<Spatial>(c->get_parent());
-			}
-
-			if (navigation) {
-				for (Map<OctantKey, Octant *>::Element *E = octant_map.front(); E; E = E->next()) {
-					if (navigation) {
-						_octant_enter_tree(E->key());
-					}
-				}
-			}
-
-			_queue_dirty_map();
-		} break;
-		case NOTIFICATION_EXIT_TREE: {
-			for (Map<OctantKey, Octant *>::Element *E = octant_map.front(); E; E = E->next()) {
-				if (navigation) {
-					_octant_clear_navmesh(E->key());
-				}
-			}
-
 			navigation = NULL;
+
+			//_queue_octants_dirty(MAP_DIRTY_INSTANCES|MAP_DIRTY_TRANSFORMS);
+			//_update_octants_callback();
+			//_update_area_instances();
 
 		} break;
 	}
 }
 
-void GridMap::_queue_dirty_map() {
+void GridMap::_queue_octants_dirty() {
 
 	if (awaiting_update)
 		return;
 
-	if (is_inside_world()) {
-
-		MessageQueue::get_singleton()->push_call(this, "_update_dirty_map_callback");
-		awaiting_update = true;
-	}
+	MessageQueue::get_singleton()->push_call(this, "_update_octants_callback");
+	awaiting_update = true;
 }
 
 void GridMap::_recreate_octant_data() {
@@ -706,17 +682,7 @@ void GridMap::_clear_internal() {
 		if (is_inside_world())
 			_octant_exit_world(E->key());
 
-		for (Map<int, Octant::ItemInstances>::Element *F = E->get()->items.front(); F; F = F->next()) {
-
-			VS::get_singleton()->free(F->get().multimesh_instance);
-		}
-
-		if (E->get()->collision_debug.is_valid())
-			VS::get_singleton()->free(E->get()->collision_debug);
-		if (E->get()->collision_debug_instance.is_valid())
-			VS::get_singleton()->free(E->get()->collision_debug_instance);
-
-		PhysicsServer::get_singleton()->free(E->get()->static_body);
+		_octant_clean_up(E->key());
 		memdelete(E->get());
 	}
 
@@ -734,13 +700,23 @@ void GridMap::resource_changed(const RES &p_res) {
 	_recreate_octant_data();
 }
 
-void GridMap::_update_dirty_map_callback() {
+void GridMap::_update_octants_callback() {
 
 	if (!awaiting_update)
 		return;
 
+	List<OctantKey> to_delete;
 	for (Map<OctantKey, Octant *>::Element *E = octant_map.front(); E; E = E->next()) {
-		_octant_update(E->key());
+
+		if (_octant_update(E->key())) {
+			to_delete.push_back(E->key());
+		}
+	}
+
+	while (to_delete.front()) {
+		memdelete(octant_map[to_delete.front()->get()]);
+		octant_map.erase(to_delete.front()->get());
+		to_delete.pop_back();
 	}
 
 	awaiting_update = false;
@@ -762,7 +738,7 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_cell_item_orientation", "x", "y", "z"), &GridMap::get_cell_item_orientation);
 
 	//ClassDB::bind_method(D_METHOD("_recreate_octants"),&GridMap::_recreate_octants);
-	ClassDB::bind_method(D_METHOD("_update_dirty_map_callback"), &GridMap::_update_dirty_map_callback);
+	ClassDB::bind_method(D_METHOD("_update_octants_callback"), &GridMap::_update_octants_callback);
 	ClassDB::bind_method(D_METHOD("resource_changed", "resource"), &GridMap::resource_changed);
 
 	ClassDB::bind_method(D_METHOD("set_center_x", "enable"), &GridMap::set_center_x);
@@ -800,13 +776,13 @@ void GridMap::set_clip(bool p_enabled, bool p_clip_above, int p_floor, Vector3::
 		g->dirty = true;
 	}
 	awaiting_update = true;
-	_update_dirty_map_callback();
+	_update_octants_callback();
 }
 
 void GridMap::set_cell_scale(float p_scale) {
 
 	cell_scale = p_scale;
-	_queue_dirty_map();
+	_queue_octants_dirty();
 }
 
 float GridMap::get_cell_scale() const {
@@ -819,7 +795,7 @@ Array GridMap::get_meshes() {
 	if (theme.is_null())
 		return Array();
 
-	Vector3 ofs(cell_size * 0.5 * int(center_x), cell_size * 0.5 * int(center_y), cell_size * 0.5 * int(center_z));
+	Vector3 ofs(cell_size.x * 0.5 * int(center_x), cell_size.y * 0.5 * int(center_y), cell_size.z * 0.5 * int(center_z));
 	Array meshes;
 
 	for (Map<IndexKey, Cell>::Element *E = cell_map.front(); E; E = E->next()) {
@@ -851,7 +827,7 @@ Array GridMap::get_meshes() {
 
 GridMap::GridMap() {
 
-	cell_size = 2;
+	cell_size = Vector3(2, 2, 2);
 	octant_size = 4;
 	awaiting_update = false;
 	_in_tree = false;
