@@ -83,9 +83,7 @@ Error ResourceImporterCSVTranslation::import(const String &p_source_file, const 
 	ERR_FAIL_COND_V(!f, ERR_INVALID_PARAMETER);
 
 	Vector<String> line = f->get_csv_line();
-	if (line.size() <= 1) {
-		return ERR_PARSE_ERROR;
-	}
+	ERR_FAIL_COND_V(line.size() <= 1, ERR_PARSE_ERROR);
 
 	Vector<String> locales;
 	Vector<Ref<Translation> > translations;
@@ -93,9 +91,8 @@ Error ResourceImporterCSVTranslation::import(const String &p_source_file, const 
 	for (int i = 1; i < line.size(); i++) {
 
 		String locale = line[i];
-		if (!TranslationServer::is_locale_valid(locale)) {
-			return ERR_PARSE_ERROR;
-		}
+		ERR_EXPLAIN("Error importing CSV translation: '" + locale + "' is not a valid locale");
+		ERR_FAIL_COND_V(!TranslationServer::is_locale_valid(locale), ERR_PARSE_ERROR);
 
 		locales.push_back(locale);
 		Ref<Translation> translation;
