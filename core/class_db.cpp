@@ -600,9 +600,9 @@ void ClassDB::bind_integer_constant(const StringName &p_class, const StringName 
 #ifdef DEBUG_METHODS_ENABLED
 
 	String enum_name = p_enum;
-	if (enum_name!=String()) {
-		if (enum_name.find(".")!=-1) {
-			enum_name=enum_name.get_slicec('.',1);
+	if (enum_name != String()) {
+		if (enum_name.find(".") != -1) {
+			enum_name = enum_name.get_slicec('.', 1);
 		}
 
 		List<StringName> *constants_list = type->enum_map.getptr(enum_name);
@@ -614,7 +614,6 @@ void ClassDB::bind_integer_constant(const StringName &p_class, const StringName 
 			new_list.push_back(p_name);
 			type->enum_map[enum_name] = new_list;
 		}
-
 	}
 
 	type->constant_order.push_back(p_name);
