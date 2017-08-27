@@ -43,7 +43,7 @@ Source: https://github.com/godotengine/godot
 Files: *
 Comment: Godot Engine
 Copyright: 2007-2017, Juan Linietsky, Ariel Manzur.
-  2014-2017, Godot Engine contributors (cf. AUTHORS.md)
+  2014-2017, Godot Engine contributors.
 License: Expat
 
 Files: ./icon.png
@@ -51,7 +51,7 @@ Files: ./icon.png
  ./logo.png
  ./logo.svg
 Comment: Godot Engine logo
-Copyright: Andrea Calabró
+Copyright: 2017, Andrea Calabró
 License: CC-BY-3.0
 
 Files: ./platform/android/android_native_app_glue.c
@@ -92,7 +92,7 @@ Files: ./platform/android/power_android.cpp
 Comment: Simple DirectMedia Layer
 Copyright: 1997-2017, Sam Lantinga
   2007-2017, Juan Linietsky, Ariel Manzur.
-  2014-2017, Godot Engine contributors (cf. AUTHORS.md)
+  2014-2017, Godot Engine contributors.
 License: Expat and Zlib
 
 Files: ./servers/physics/gjk_epa.cpp
@@ -108,7 +108,7 @@ Files: ./servers/physics/gjk_epa.cpp
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2003-2008, Erwin Coumans
   2007-2017, Juan Linietsky, Ariel Manzur.
-  2014-2017, Godot Engine contributors (cf. AUTHORS.md)
+  2014-2017, Godot Engine contributors.
 License: Expat and Zlib
 
 Files: ./servers/physics/joints/cone_twist_joint_sw.cpp
@@ -116,7 +116,7 @@ Files: ./servers/physics/joints/cone_twist_joint_sw.cpp
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2007, Starbreeze Studios
   2007-2017, Juan Linietsky, Ariel Manzur.
-  2014-2017, Godot Engine contributors (cf. AUTHORS.md)
+  2014-2017, Godot Engine contributors.
 License: Expat and Zlib
 
 Files: ./thirdparty/b2d_convexdecomp/
@@ -135,6 +135,11 @@ Comment: ENet
 Copyright: 2002-2016, Lee Salzman
 License: Expat
 
+Files: ./thirdparty/etc2comp/
+Comment: Etc2Comp
+Copyright: 2015, Etc2Comp Authors
+License: Apache-2.0
+
 Files: ./thirdparty/fonts/DroidSans*.ttf
 Comment: DroidSans font
 Copyright: 2008, The Android Open Source Project
@@ -147,7 +152,7 @@ License: OFL-1.1
 
 Files: ./thirdparty/freetype/
 Comment: The FreeType Project
-Copyright: 1996-2016, David Turner, Robert Wilhelm, and Werner Lemberg.
+Copyright: 1996-2017, David Turner, Robert Wilhelm, and Werner Lemberg.
 License: FTL
 
 Files: ./thirdparty/glad/
@@ -268,7 +273,7 @@ License: BSD-3-clause
 Files: ./thirdparty/misc/stb_truetype.h
  ./thirdparty/misc/stb_vorbis.c
 Comment: stb libraries
-Copyright: 2007-2015, Sean Barrett
+Copyright: 2007-2017, Sean Barrett
 License: public-domain
 
 Files: ./thirdparty/misc/triangulator.cpp

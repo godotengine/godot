@@ -129,6 +129,19 @@ Files extracted from upstream source:
 TODO.
 
 
+## libtheora
+
+- Upstream: https://www.theora.org
+- Version: 1.1.1
+- License: BSD-3-Clause
+
+Files extracted from upstream source:
+
+- all .c, .h in lib/
+- all .h files in include/theora/ as theora/
+- COPYING and LICENSE
+
+
 ## libvorbis
 
 - Upstream: https://www.xiph.org/vorbis
@@ -329,19 +342,6 @@ Files extracted from upstream source:
 Files extracted from upstream source:
 
 - all .cpp, .h and .inl files
-
-
-## theora
-
-- Upstream: https://www.theora.org
-- Version: 1.1.1
-- License: BSD-3-Clause
-
-Files extracted from upstream source:
-
-- all .c, .h in lib/
-- all .h files in include/theora/ as theora/
-- COPYING and LICENSE
 
 
 ## tinyexr
