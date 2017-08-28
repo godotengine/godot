@@ -206,18 +206,6 @@ class CanvasItemEditor : public VBoxContainer {
 
 	Vector<_SelectResult> selection_results;
 
-	struct LockList {
-		Point2 pos;
-		bool lock;
-		bool group;
-		LockList() {
-			lock = false;
-			group = false;
-		}
-	};
-
-	List<LockList> lock_list;
-
 	struct BoneList {
 
 		Transform2D xform;
@@ -339,7 +327,9 @@ class CanvasItemEditor : public VBoxContainer {
 
 	Point2 _find_topleftmost_point();
 
-	void _find_canvas_items_span(Node *p_node, Rect2 &r_rect, const Transform2D &p_xform);
+	void _build_bones_list(Node *p_node);
+
+	void _get_encompassing_rect(Node *p_node, Rect2 &r_rect, const Transform2D &p_xform);
 
 	Object *_get_editor_data(Object *p_what);
 
@@ -353,8 +343,15 @@ class CanvasItemEditor : public VBoxContainer {
 	void _draw_margin_at_position(int p_value, Point2 p_position, Margin p_side);
 	void _draw_percentage_at_position(float p_value, Point2 p_position, Margin p_side);
 
+	void _draw_focus();
+	void _draw_grid();
+	void _draw_selection();
+	void _draw_axis();
+	void _draw_bones();
+	void _draw_locks_and_groups(Node *p_node, const Transform2D &p_xform);
+
 	void _viewport_gui_input(const Ref<InputEvent> &p_event);
-	void _viewport_draw();
+	void _draw_viewport();
 
 	void _focus_selection(int p_op);
 
