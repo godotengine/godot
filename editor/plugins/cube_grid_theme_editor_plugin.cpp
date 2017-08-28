@@ -150,91 +150,17 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 	//generate previews!
 
 	if (1) {
+
+		Vector<Ref<Mesh> > meshes;
 		Vector<int> ids = p_library->get_item_list();
-		RID vp = VS::get_singleton()->viewport_create();
-		int size = EditorSettings::get_singleton()->get("editors/grid_map/preview_size");
-
-		RID scenario = VS::get_singleton()->scenario_create();
-
-		RID viewport = VS::get_singleton()->viewport_create();
-		VS::get_singleton()->viewport_set_update_mode(viewport, VS::VIEWPORT_UPDATE_ALWAYS);
-		VS::get_singleton()->viewport_set_vflip(viewport, true);
-		VS::get_singleton()->viewport_set_scenario(viewport, scenario);
-		VS::get_singleton()->viewport_set_size(viewport, size, size);
-		VS::get_singleton()->viewport_set_transparent_background(viewport, true);
-		VS::get_singleton()->viewport_set_active(viewport, true);
-		RID viewport_texture = VS::get_singleton()->viewport_get_texture(viewport);
-
-		RID camera = VS::get_singleton()->camera_create();
-		VS::get_singleton()->viewport_attach_camera(viewport, camera);
-		VS::get_singleton()->camera_set_transform(camera, Transform(Basis(), Vector3(0, 0, 3)));
-		//VS::get_singleton()->camera_set_perspective(camera,45,0.1,10);
-		VS::get_singleton()->camera_set_orthogonal(camera, 1.0, 0.01, 1000.0);
-
-		RID light = VS::get_singleton()->light_create(VS::LIGHT_DIRECTIONAL);
-		RID light_instance = VS::get_singleton()->instance_create2(light, scenario);
-		VS::get_singleton()->instance_set_transform(light_instance, Transform().looking_at(Vector3(-1, -1, -1), Vector3(0, 1, 0)));
-
-		RID light2 = VS::get_singleton()->light_create(VS::LIGHT_DIRECTIONAL);
-		VS::get_singleton()->light_set_color(light2, Color(0.7, 0.7, 0.7));
-		//VS::get_singleton()->light_set_color(light2, VS::LIGHT_COLOR_SPECULAR, Color(0.0, 0.0, 0.0));
-		RID light_instance2 = VS::get_singleton()->instance_create2(light2, scenario);
-
-		VS::get_singleton()->instance_set_transform(light_instance2, Transform().looking_at(Vector3(0, 1, 0), Vector3(0, 0, 1)));
-
-		//sphere = VS::get_singleton()->mesh_create();
-		RID mesh_instance = VS::get_singleton()->instance_create();
-		VS::get_singleton()->instance_set_scenario(mesh_instance, scenario);
-
-		EditorProgress ep("mlib", TTR("Creating Mesh Library"), ids.size());
-
 		for (int i = 0; i < ids.size(); i++) {
-
-			int id = ids[i];
-			Ref<Mesh> mesh = p_library->get_item_mesh(id);
-			if (!mesh.is_valid())
-				continue;
-			Rect3 aabb = mesh->get_aabb();
-			print_line("aabb: " + aabb);
-			Vector3 ofs = aabb.position + aabb.size * 0.5;
-			aabb.position -= ofs;
-			Transform xform;
-			xform.basis = Basis().rotated(Vector3(0, 1, 0), -Math_PI * 0.25);
-			xform.basis = Basis().rotated(Vector3(1, 0, 0), Math_PI * 0.25) * xform.basis;
-			Rect3 rot_aabb = xform.xform(aabb);
-			print_line("rot_aabb: " + rot_aabb);
-			float m = MAX(rot_aabb.size.x, rot_aabb.size.y) * 0.5;
-			if (m == 0)
-				continue;
-			m = 1.0 / m;
-			m *= 0.5;
-			print_line("scale: " + rtos(m));
-			xform.basis.scale(Vector3(m, m, m));
-			xform.origin = -xform.basis.xform(ofs); //-ofs*m;
-			xform.origin.z -= rot_aabb.size.z * 2;
-			RID inst = VS::get_singleton()->instance_create2(mesh->get_rid(), scenario);
-			VS::get_singleton()->instance_set_transform(inst, xform);
-			ep.step(TTR("Thumbnail.."), i);
-			Main::iteration();
-			Main::iteration();
-			Ref<Image> img = VS::get_singleton()->texture_get_data(viewport_texture);
-			ERR_CONTINUE(!img.is_valid() || img->empty());
-			Ref<ImageTexture> it(memnew(ImageTexture));
-			it->create_from_image(img);
-			p_library->set_item_preview(id, it);
-
-			//print_line("loaded image, size: "+rtos(m)+" dist: "+rtos(dist)+" empty?"+itos(img.empty())+" w: "+itos(it->get_width())+" h: "+itos(it->get_height()));
-			VS::get_singleton()->free(inst);
+			meshes.push_back(p_library->get_item_mesh(ids[i]));
 		}
 
-		VS::get_singleton()->free(mesh_instance);
-		VS::get_singleton()->free(viewport);
-		VS::get_singleton()->free(light);
-		VS::get_singleton()->free(light_instance);
-		VS::get_singleton()->free(light2);
-		VS::get_singleton()->free(light_instance2);
-		VS::get_singleton()->free(camera);
-		VS::get_singleton()->free(scenario);
+		Vector<Ref<Texture> > textures = EditorInterface::get_singleton()->make_mesh_previews(meshes, EditorSettings::get_singleton()->get("editors/grid_map/preview_size"));
+		for (int i = 0; i < ids.size(); i++) {
+			p_library->set_item_preview(ids[i], textures[i]);
+		}
 	}
 }
 

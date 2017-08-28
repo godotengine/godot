@@ -61,6 +61,8 @@ protected:
 	static void _bind_methods();
 	static EditorInterface *singleton;
 
+	Array _make_mesh_previews(const Array &p_meshes, int p_preview_size);
+
 public:
 	static EditorInterface *get_singleton() { return singleton; }
 
@@ -85,6 +87,8 @@ public:
 
 	Error save_scene();
 	void save_scene_as(const String &p_scene, bool p_with_preview = true);
+
+	Vector<Ref<Texture> > make_mesh_previews(const Vector<Ref<Mesh> > &p_meshes, int p_preview_size);
 
 	EditorInterface();
 };

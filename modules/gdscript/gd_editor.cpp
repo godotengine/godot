@@ -577,6 +577,7 @@ static bool _guess_expression_type(GDCompletionContext &context, const GDParser:
 
 		const GDParser::OperatorNode *op = static_cast<const GDParser::OperatorNode *>(p_node);
 		if (op->op == GDParser::OperatorNode::OP_CALL) {
+
 			if (op->arguments[0]->type == GDParser::Node::TYPE_TYPE) {
 
 				const GDParser::TypeNode *tn = static_cast<const GDParser::TypeNode *>(op->arguments[0]);
@@ -589,21 +590,45 @@ static bool _guess_expression_type(GDCompletionContext &context, const GDParser:
 
 			} else if (op->arguments.size() > 1 && op->arguments[1]->type == GDParser::Node::TYPE_IDENTIFIER) {
 
+				StringName id = static_cast<const GDParser::IdentifierNode *>(op->arguments[1])->name;
+
+				if (op->arguments[0]->type == GDParser::Node::TYPE_IDENTIFIER && String(id) == "new") {
+
+					//shortcut
+					StringName identifier = static_cast<const GDParser::IdentifierNode *>(op->arguments[0])->name;
+
+					if (ClassDB::class_exists(identifier)) {
+						r_type.type = Variant::OBJECT;
+						r_type.value = Variant();
+						r_type.obj_type = identifier;
+						return true;
+					}
+				}
+
 				GDCompletionIdentifier base;
 				if (!_guess_expression_type(context, op->arguments[0], p_line, base))
 					return false;
 
-				StringName id = static_cast<const GDParser::IdentifierNode *>(op->arguments[1])->name;
-
 				if (base.type == Variant::OBJECT) {
 
 					if (id.operator String() == "new" && base.value.get_type() == Variant::OBJECT) {
+
 						Object *obj = base.value;
-						if (GDNativeClass *gdnc = Object::cast_to<GDNativeClass>(obj)) {
+						if (obj && Object::cast_to<GDNativeClass>(obj)) {
+							GDNativeClass *gdnc = Object::cast_to<GDNativeClass>(obj);
 							r_type.type = Variant::OBJECT;
 							r_type.value = Variant();
 							r_type.obj_type = gdnc->get_name();
 							return true;
+						} else {
+
+							if (base.obj_type != StringName()) {
+
+								r_type.type = Variant::OBJECT;
+								r_type.value = Variant();
+								r_type.obj_type = base.obj_type;
+								return true;
+							}
 						}
 					}
 

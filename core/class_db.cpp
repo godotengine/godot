@@ -864,7 +864,7 @@ void ClassDB::add_property(StringName p_class, const PropertyInfo &p_pinfo, cons
 	MethodBind *mb_get = NULL;
 	if (p_getter) {
 
-		MethodBind *mb_get = get_method(p_class, p_getter);
+		mb_get = get_method(p_class, p_getter);
 #ifdef DEBUG_METHODS_ENABLED
 
 		if (!mb_get) {
