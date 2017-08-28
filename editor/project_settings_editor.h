@@ -121,6 +121,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _press_a_key_confirm();
 	void _show_last_added(const Ref<InputEvent> &p_event, const String &p_name);
 
+	void _settings_prop_edited(const String &p_name);
 	void _settings_changed();
 
 	void _copy_to_platform(int p_which);

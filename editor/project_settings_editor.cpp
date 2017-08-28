@@ -866,6 +866,12 @@ void ProjectSettingsEditor::_save() {
 	message->popup_centered(Size2(300, 100) * EDSCALE);
 }
 
+void ProjectSettingsEditor::_settings_prop_edited(const String &p_name) {
+
+	// Method needed to discard the mandatory argument of the property_edited signal
+	_settings_changed();
+}
+
 void ProjectSettingsEditor::_settings_changed() {
 
 	timer->start();
@@ -1334,6 +1340,7 @@ void ProjectSettingsEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_add_item"), &ProjectSettingsEditor::_add_item, DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("_device_input_add"), &ProjectSettingsEditor::_device_input_add);
 	ClassDB::bind_method(D_METHOD("_press_a_key_confirm"), &ProjectSettingsEditor::_press_a_key_confirm);
+	ClassDB::bind_method(D_METHOD("_settings_prop_edited"), &ProjectSettingsEditor::_settings_prop_edited);
 	ClassDB::bind_method(D_METHOD("_copy_to_platform"), &ProjectSettingsEditor::_copy_to_platform);
 	ClassDB::bind_method(D_METHOD("_update_translations"), &ProjectSettingsEditor::_update_translations);
 	ClassDB::bind_method(D_METHOD("_translation_delete"), &ProjectSettingsEditor::_translation_delete);
@@ -1448,7 +1455,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	globals_editor->register_search_box(search_box);
 	globals_editor->get_property_editor()->get_scene_tree()->connect("cell_selected", this, "_item_selected");
 	globals_editor->get_property_editor()->connect("property_toggled", this, "_item_checked", varray(), CONNECT_DEFERRED);
-	globals_editor->get_property_editor()->connect("property_edited", this, "_settings_changed");
+	globals_editor->get_property_editor()->connect("property_edited", this, "_settings_prop_edited");
 
 	Button *del = memnew(Button);
 	hbc->add_child(del);
