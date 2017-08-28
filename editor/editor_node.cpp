@@ -2183,14 +2183,19 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			update_menu->get_popup()->set_item_checked(0, true);
 			update_menu->get_popup()->set_item_checked(1, false);
 			OS::get_singleton()->set_low_processor_usage_mode(false);
-			EditorSettings::get_singleton()->set_project_metadata("editor_options", "update_mode", SETTINGS_UPDATE_ALWAYS);
+			EditorSettings::get_singleton()->set_project_metadata("editor_options", "update_always", true);
+
+			current_option = -1;
+			accept->get_ok()->set_text(TTR("I see.."));
+			accept->set_text(TTR("This option is deprecated. Situations where refresh must be forced are now considered a bug. Please report."));
+			accept->popup_centered_minsize();
 		} break;
 		case SETTINGS_UPDATE_CHANGES: {
 
 			update_menu->get_popup()->set_item_checked(0, false);
 			update_menu->get_popup()->set_item_checked(1, true);
 			OS::get_singleton()->set_low_processor_usage_mode(true);
-			EditorSettings::get_singleton()->set_project_metadata("editor_options", "update_mode", SETTINGS_UPDATE_CHANGES);
+			EditorSettings::get_singleton()->set_project_metadata("editor_options", "update_always", false);
 		} break;
 		case SETTINGS_UPDATE_SPINNER_HIDE: {
 
@@ -4950,9 +4955,9 @@ EditorNode::EditorNode() {
 	p->add_check_item(TTR("Update Changes"), SETTINGS_UPDATE_CHANGES);
 	p->add_separator();
 	p->add_check_item(TTR("Disable Update Spinner"), SETTINGS_UPDATE_SPINNER_HIDE);
-	int update_mode = EditorSettings::get_singleton()->get_project_metadata("editor_options", "update_mode", SETTINGS_UPDATE_CHANGES);
+	int update_always = EditorSettings::get_singleton()->get_project_metadata("editor_options", "update_always", false);
 	int hide_spinner = EditorSettings::get_singleton()->get_project_metadata("editor_options", "update_spinner_hide", false);
-	_menu_option(update_mode);
+	_menu_option(update_always ? SETTINGS_UPDATE_ALWAYS : SETTINGS_UPDATE_CHANGES);
 	if (hide_spinner) {
 		_menu_option(SETTINGS_UPDATE_SPINNER_HIDE);
 	}
