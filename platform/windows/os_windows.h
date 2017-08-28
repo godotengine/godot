@@ -32,6 +32,7 @@
 
 #include "context_gl_win.h"
 #include "drivers/rtaudio/audio_driver_rtaudio.h"
+#include "drivers/wasapi/audio_driver_wasapi.h"
 #include "os/input.h"
 #include "os/os.h"
 #include "power_windows.h"
@@ -123,6 +124,9 @@ class OS_Windows : public OS {
 
 	PowerWindows *power_manager;
 
+#ifdef WASAPI_ENABLED
+	AudioDriverWASAPI driver_wasapi;
+#endif
 #ifdef RTAUDIO_ENABLED
 	AudioDriverRtAudio driver_rtaudio;
 #endif
