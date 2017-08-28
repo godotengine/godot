@@ -908,8 +908,10 @@ void EditorNode::_save_all_scenes() {
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
 		Node *scene = editor_data.get_edited_scene_root(i);
 		if (scene && scene->get_filename() != "") {
-			// save in background if in the script editor
-			_save_scene_with_preview(scene->get_filename());
+			if (i != editor_data.get_edited_scene())
+				_save_scene(scene->get_filename(), i);
+			else
+				_save_scene_with_preview(scene->get_filename());
 		} // else: ignore new scenes
 	}
 
@@ -983,7 +985,10 @@ void EditorNode::_dialog_action(String p_file) {
 			if (file->get_mode() == EditorFileDialog::MODE_SAVE_FILE) {
 
 				_save_default_environment();
-				_save_scene_with_preview(p_file);
+				if (scene_idx != editor_data.get_edited_scene())
+					_save_scene(p_file, scene_idx);
+				else
+					_save_scene_with_preview(p_file);
 
 				if (scene_idx != -1)
 					_discard_changes();
@@ -1660,8 +1665,10 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			Node *scene = editor_data.get_edited_scene_root(scene_idx);
 			if (scene && scene->get_filename() != "") {
 
-				// save in background if in the script editor
-				_save_scene_with_preview(scene->get_filename());
+				if (scene_idx != editor_data.get_edited_scene())
+					_save_scene(scene->get_filename(), scene_idx);
+				else
+					_save_scene_with_preview(scene->get_filename());
 
 				if (scene_idx != -1)
 					_discard_changes();
