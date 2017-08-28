@@ -698,6 +698,7 @@ void VisualServerCanvas::canvas_item_add_triangle_array(RID p_item, const Vector
 	polygon->colors = p_colors;
 	polygon->indices = indices;
 	polygon->count = count;
+	polygon->antialiased = false;
 	canvas_item->rect_dirty = true;
 
 	canvas_item->commands.push_back(polygon);
