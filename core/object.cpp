@@ -964,6 +964,18 @@ struct _ObjectSignalDisconnectData {
 	StringName method;
 };
 
+bool Object::has_signal_connection(const StringName &p_name) {
+
+	if (_block_signals)
+		return false;
+
+	Signal *s = signal_map.getptr(p_name);
+	if (!s)
+		return false;
+
+	return s->slot_map.size() > 0;
+}
+
 Variant Object::_emit_signal(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
 
 	r_error.error = Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
