@@ -36,6 +36,7 @@
 #include "scene/resources/capsule_shape.h"
 #include "scene/resources/convex_polygon_shape.h"
 #include "scene/resources/plane_shape.h"
+#include "scene/resources/primitive_meshes.h"
 #include "scene/resources/ray_shape.h"
 #include "scene/resources/sphere_shape.h"
 #include "scene/resources/surface_tool.h"
@@ -294,6 +295,15 @@ void EditorSpatialGizmo::add_handles(const Vector<Vector3> &p_handles, bool p_bi
 			secondary_handles[i + chs] = p_handles[i];
 		}
 	}
+}
+
+void EditorSpatialGizmo::add_solid_box(Ref<Material> &p_material, Vector3 size) {
+	CubeMesh cubem;
+	cubem.set_size(size);
+	Ref<ArrayMesh> m = memnew(ArrayMesh);
+	m->add_surface_from_arrays(cubem.surface_get_primitive_type(0), cubem.surface_get_arrays(0));
+	m->surface_set_material(0, p_material);
+	add_mesh(m);
 }
 
 void EditorSpatialGizmo::set_spatial_node(Spatial *p_node) {
@@ -2334,6 +2344,14 @@ void ParticlesGizmo::redraw() {
 
 	add_lines(lines, material);
 	add_collision_segments(lines);
+
+	if (is_selected()) {
+
+		gizmo_color.a = 0.1;
+		Ref<Material> solid_material = create_material("particles_solid_material", gizmo_color);
+		add_solid_box(solid_material, aabb.get_size());
+	}
+
 	//add_unscaled_billboard(SpatialEditorGizmos::singleton->visi,0.05);
 	add_handles(handles);
 }
@@ -2487,6 +2505,14 @@ void ReflectionProbeGizmo::redraw() {
 
 	add_lines(lines, material);
 	add_lines(internal_lines, material_internal);
+
+	if (is_selected()) {
+
+		gizmo_color.a = 0.1;
+		Ref<Material> solid_material = create_material("reflection_probe_solid_material", gizmo_color);
+		add_solid_box(solid_material, probe->get_extents() * 2.0);
+	}
+
 	//add_unscaled_billboard(SpatialEditorGizmos::singleton->visi,0.05);
 	add_collision_segments(lines);
 	add_handles(handles);
@@ -2637,6 +2663,13 @@ void GIProbeGizmo::redraw() {
 		Vector3 ax;
 		ax[i] = aabb.position[i] + aabb.size[i];
 		handles.push_back(ax);
+	}
+
+	if (is_selected()) {
+
+		gizmo_color.a = 0.1;
+		Ref<Material> solid_material = create_material("gi_probe_solid_material", gizmo_color);
+		add_solid_box(solid_material, aabb.get_size());
 	}
 
 	add_handles(handles);
