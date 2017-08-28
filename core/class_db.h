@@ -38,29 +38,6 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-struct ParamHint {
-
-	String name;
-	PropertyHint hint;
-	String hint_text;
-	Variant default_val;
-
-	ParamHint(const String &p_name = "", PropertyHint p_hint = PROPERTY_HINT_NONE, const String &p_hint_text = "", const Variant &p_default_val = Variant())
-		: name(p_name),
-		  hint(p_hint),
-		  hint_text(p_hint_text),
-		  default_val(p_default_val) {
-	}
-};
-
-struct ParamDef {
-	bool used;
-	Variant val;
-	_FORCE_INLINE_ ParamDef() { used = false; }
-	ParamDef(const Variant &p_variant);
-};
-
-//#define DEFVAL( m_defval ) ParamDef(m_defval)
 #define DEFVAL(m_defval) (m_defval)
 
 //#define SIMPLE_METHODDEF
