@@ -176,10 +176,10 @@ void EditorSpatialGizmo::add_unscaled_billboard(const Ref<Material> &p_material,
 	vs.push_back(Vector3(p_scale, -p_scale, 0));
 	vs.push_back(Vector3(-p_scale, -p_scale, 0));
 
-	uv.push_back(Vector2(1, 0));
 	uv.push_back(Vector2(0, 0));
-	uv.push_back(Vector2(0, 1));
+	uv.push_back(Vector2(1, 0));
 	uv.push_back(Vector2(1, 1));
+	uv.push_back(Vector2(0, 1));
 
 	Ref<ArrayMesh> mesh = memnew(ArrayMesh);
 	Array a;
@@ -855,7 +855,7 @@ void LightSpatialGizmo::redraw() {
 	if (Object::cast_to<SpotLight>(light)) {
 
 		Ref<Material> material = create_material("light_spot_material", gizmo_color, true);
-		Ref<Material> icon = create_icon_material("light_spot_icon", SpatialEditor::get_singleton()->get_icon("GizmoLight", "EditorIcons"));
+		Ref<Material> icon = create_icon_material("light_spot_icon", SpatialEditor::get_singleton()->get_icon("GizmoSpotLight", "EditorIcons"));
 
 		clear();
 
@@ -1145,6 +1145,7 @@ void CameraSpatialGizmo::redraw() {
 
 	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/camera");
 	Ref<Material> material = create_material("camera_material", gizmo_color);
+	Ref<Material> icon = create_icon_material("camera_icon", SpatialEditor::get_singleton()->get_icon("GizmoCamera", "EditorIcons"));
 
 	switch (camera->get_projection()) {
 
@@ -1215,6 +1216,7 @@ void CameraSpatialGizmo::redraw() {
 
 	add_lines(lines, material);
 	add_collision_segments(lines);
+	add_unscaled_billboard(icon, 0.05);
 	add_handles(handles);
 }
 
@@ -2340,6 +2342,7 @@ void ParticlesGizmo::redraw() {
 
 	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/particles");
 	Ref<Material> material = create_material("particles_material", gizmo_color);
+	Ref<Material> icon = create_icon_material("particles_icon", SpatialEditor::get_singleton()->get_icon("GizmoParticles", "EditorIcons"));
 
 	add_lines(lines, material);
 	add_collision_segments(lines);
@@ -2352,6 +2355,7 @@ void ParticlesGizmo::redraw() {
 	}
 
 	//add_unscaled_billboard(SpatialEditorGizmos::singleton->visi,0.05);
+	add_unscaled_billboard(icon, 0.05);
 	add_handles(handles);
 }
 ParticlesGizmo::ParticlesGizmo(Particles *p_particles) {
@@ -2497,6 +2501,7 @@ void ReflectionProbeGizmo::redraw() {
 
 	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/reflection_probe");
 	Ref<Material> material = create_material("reflection_probe_material", gizmo_color);
+	Ref<Material> icon = create_icon_material("reflection_probe_icon", SpatialEditor::get_singleton()->get_icon("GizmoReflectionProbe", "EditorIcons"));
 
 	Color gizmo_color_internal = gizmo_color;
 	gizmo_color_internal.a = 0.5;
@@ -2513,6 +2518,7 @@ void ReflectionProbeGizmo::redraw() {
 	}
 
 	//add_unscaled_billboard(SpatialEditorGizmos::singleton->visi,0.05);
+	add_unscaled_billboard(icon, 0.05);
 	add_collision_segments(lines);
 	add_handles(handles);
 }
@@ -2586,6 +2592,7 @@ void GIProbeGizmo::redraw() {
 
 	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/gi_probe");
 	Ref<Material> material = create_material("gi_probe_material", gizmo_color);
+	Ref<Material> icon = create_icon_material("gi_probe_icon", SpatialEditor::get_singleton()->get_icon("GizmoGIProbe", "EditorIcons"));
 	Color gizmo_color_internal = gizmo_color;
 	gizmo_color_internal.a = 0.1;
 	Ref<Material> material_internal = create_material("gi_probe_internal_material", gizmo_color_internal);
@@ -2671,6 +2678,7 @@ void GIProbeGizmo::redraw() {
 		add_solid_box(solid_material, aabb.get_size());
 	}
 
+	add_unscaled_billboard(icon, 0.05);
 	add_handles(handles);
 }
 GIProbeGizmo::GIProbeGizmo(GIProbe *p_probe) {

@@ -93,8 +93,11 @@ Ref<ImageTexture> editor_generate_icon(int p_index, bool dark_theme = true) {
 	Ref<ImageTexture> icon = memnew(ImageTexture);
 	Ref<Image> img = memnew(Image);
 
+	// dumb gizmo check
+	bool is_gizmo = String(editor_icons_names[p_index]).begins_with("Gizmo");
+
 	ImageLoaderSVG::create_image_from_string(img, dark_theme ? editor_icons_sources[p_index] : editor_icons_sources_dark[p_index], EDSCALE, true);
-	if ((EDSCALE - (float)((int)EDSCALE)) > 0.0)
+	if ((EDSCALE - (float)((int)EDSCALE)) > 0.0 || is_gizmo)
 		icon->create_from_image(img); // in this case filter really helps
 	else
 		icon->create_from_image(img, 0);
