@@ -131,9 +131,9 @@ void EditorSpatialGizmo::add_lines(const Vector<Vector3> &p_lines, const Ref<Mat
 		PoolVector<Color>::Write w = color.write();
 		for (int i = 0; i < p_lines.size(); i++) {
 			if (is_selected())
-				w[i] = Color(1, 1, 1, 0.6);
+				w[i] = Color(1, 1, 1, 0.8);
 			else
-				w[i] = Color(1, 1, 1, 0.25);
+				w[i] = Color(1, 1, 1, 0.2);
 		}
 	}
 
@@ -550,8 +550,9 @@ Ref<SpatialMaterial> EditorSpatialGizmo::create_material(const String &p_name, c
 
 	if (!is_editable()) {
 		color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/instanced");
-	} else if (!is_selected()) {
-		color.a *= 0.5;
+	}
+	if (!is_selected()) {
+		color.a *= 0.3;
 	}
 
 	Ref<SpatialMaterial> line_material;
@@ -597,7 +598,7 @@ Ref<SpatialMaterial> EditorSpatialGizmo::create_icon_material(const String &p_na
 	if (!is_editable()) {
 		color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/instanced");
 	} else if (!is_selected()) {
-		color.a *= 0.5;
+		color.a *= 0.3;
 	}
 
 	Ref<SpatialMaterial> icon;
@@ -780,34 +781,32 @@ void LightSpatialGizmo::redraw() {
 		Ref<Material> material = create_material("light_directional_material", gizmo_color);
 		Ref<Material> icon = create_icon_material("light_directional_icon", SpatialEditor::get_singleton()->get_icon("GizmoDirectionalLight", "EditorIcons"));
 
-		const int arrow_points = 5;
+		const int arrow_points = 7;
+		const float arrow_length = 1.5;
+
 		Vector3 arrow[arrow_points] = {
-			Vector3(0, 0, 2),
-			Vector3(1, 1, 2),
-			Vector3(1, 1, -1),
-			Vector3(2, 2, -1),
-			Vector3(0, 0, -3)
+			Vector3(0, 0, -1),
+			Vector3(0, 0.8, 0),
+			Vector3(0, 0.3, 0),
+			Vector3(0, 0.3, arrow_length),
+			Vector3(0, -0.3, arrow_length),
+			Vector3(0, -0.3, 0),
+			Vector3(0, -0.8, 0)
 		};
 
-		int arrow_sides = 4;
+		int arrow_sides = 2;
 
 		Vector<Vector3> lines;
 
 		for (int i = 0; i < arrow_sides; i++) {
+			for (int j = 0; j < arrow_points; j++) {
+				Basis ma(Vector3(0, 0, 1), Math_PI * i / arrow_sides);
 
-			Basis ma(Vector3(0, 0, 1), Math_PI * 2 * float(i) / arrow_sides);
-			Basis mb(Vector3(0, 0, 1), Math_PI * 2 * float(i + 1) / arrow_sides);
+				Vector3 v1 = arrow[j] - Vector3(0, 0, arrow_length);
+				Vector3 v2 = arrow[(j + 1) % arrow_points] - Vector3(0, 0, arrow_length);
 
-			for (int j = 1; j < arrow_points - 1; j++) {
-
-				if (j != 2) {
-					lines.push_back(ma.xform(arrow[j]));
-					lines.push_back(ma.xform(arrow[j + 1]));
-				}
-				if (j < arrow_points - 1) {
-					lines.push_back(ma.xform(arrow[j]));
-					lines.push_back(mb.xform(arrow[j]));
-				}
+				lines.push_back(ma.xform(v1));
+				lines.push_back(ma.xform(v2));
 			}
 		}
 
