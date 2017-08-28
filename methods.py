@@ -1680,6 +1680,59 @@ def detect_visual_c_compiler_version(tools_env):
 
     return vc_chosen_compiler_str
 
+def find_visual_c_batch_file(env):
+    from  SCons.Tool.MSCommon.vc import get_default_version, get_host_target, find_batch_file
+
+    version = get_default_version(env)
+    (host_platform, target_platform,req_target_platform) = get_host_target(env)
+    return find_batch_file(env, version, host_platform, target_platform)[0]
+
+
+def generate_vs_project(env, num_jobs):
+    batch_file = find_visual_c_batch_file(env)
+    if batch_file:
+        def build_commandline(commands):
+            common_build_prefix = ['cmd /V /C set "plat=$(PlatformTarget)"',
+                                    '(if "$(PlatformTarget)"=="x64" (set "plat=x86_amd64"))',
+                                    'set "tools=yes"',
+                                    '(if "$(Configuration)"=="release" (set "tools=no"))',
+                                    'call "' + batch_file + '" !plat!']
+
+            result = " ^& ".join(common_build_prefix + [commands])
+            # print("Building commandline: ", result)
+            return result
+
+        env.AddToVSProject(env.core_sources)
+        env.AddToVSProject(env.main_sources)
+        env.AddToVSProject(env.modules_sources)
+        env.AddToVSProject(env.scene_sources)
+        env.AddToVSProject(env.servers_sources)
+        env.AddToVSProject(env.editor_sources)
+
+        env['MSVSBUILDCOM'] = build_commandline('scons platform=windows target=$(Configuration) tools=!tools! -j' + str(num_jobs))
+        env['MSVSREBUILDCOM'] = build_commandline('scons platform=windows target=$(Configuration) tools=!tools! vsproj=yes -j' + str(num_jobs))
+        env['MSVSCLEANCOM'] = build_commandline('scons --clean platform=windows target=$(Configuration) tools=!tools! -j' + str(num_jobs))
+
+        # This version information (Win32, x64, Debug, Release, Release_Debug seems to be
+        # required for Visual Studio to understand that it needs to generate an NMAKE
+        # project. Do not modify without knowing what you are doing.
+        debug_variants = ['debug|Win32'] + ['debug|x64']
+        release_variants = ['release|Win32'] + ['release|x64']
+        release_debug_variants = ['release_debug|Win32'] + ['release_debug|x64']
+        variants = debug_variants + release_variants + release_debug_variants
+        debug_targets = ['bin\\godot.windows.tools.32.exe'] + ['bin\\godot.windows.tools.64.exe']
+        release_targets = ['bin\\godot.windows.opt.32.exe'] + ['bin\\godot.windows.opt.64.exe']
+        release_debug_targets = ['bin\\godot.windows.opt.tools.32.exe'] + ['bin\\godot.windows.opt.tools.64.exe']
+        targets = debug_targets + release_targets + release_debug_targets
+        msvproj = env.MSVSProject(target=['#godot' + env['MSVSPROJECTSUFFIX']],
+                                    incs=env.vs_incs,
+                                    srcs=env.vs_srcs,
+                                    runfile=targets,
+                                    buildtarget=targets,
+                                    auto_build_solution=1,
+                                    variant=variants)
+    else:
+        print("Could not locate Visual Studio batch file for setting up the build environment. Not generating VS project.")
 
 def precious_program(env, program, sources, **args):
     program = env.ProgramOriginal(program, sources, **args)
