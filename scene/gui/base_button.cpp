@@ -87,14 +87,14 @@ void BaseButton::_gui_input(Ref<InputEvent> p_event) {
 
 					status.pressed = !status.pressed;
 					pressed();
-					if (get_script_instance()) {
-						Variant::CallError ce;
-						get_script_instance()->call(SceneStringNames::get_singleton()->_pressed, NULL, 0, ce);
-					}
+
 					emit_signal("pressed");
 					_unpress_group();
 
 					toggled(status.pressed);
+					if (get_script_instance()) {
+						get_script_instance()->call(SceneStringNames::get_singleton()->_toggled, status.pressed);
+					}
 					emit_signal("toggled", status.pressed);
 				}
 
@@ -143,10 +143,10 @@ void BaseButton::_gui_input(Ref<InputEvent> p_event) {
 					emit_signal("pressed");
 
 					toggled(status.pressed);
-					emit_signal("toggled", status.pressed);
 					if (get_script_instance()) {
 						get_script_instance()->call(SceneStringNames::get_singleton()->_toggled, status.pressed);
 					}
+					emit_signal("toggled", status.pressed);
 				}
 
 				_unpress_group();
