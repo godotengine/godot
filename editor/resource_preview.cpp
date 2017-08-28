@@ -1,12 +1,11 @@
 /*************************************************************************/
-/*  color_ramp_editor_plugin.h                                           */
+/*  resource_preview.cpp                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
+/*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,37 +26,55 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef TOOLS_EDITOR_PLUGINS_COLOR_RAMP_EDITOR_PLUGIN_H_
-#define TOOLS_EDITOR_PLUGINS_COLOR_RAMP_EDITOR_PLUGIN_H_
+#include "resource_preview.h"
 
-#include "editor/editor_node.h"
-#include "editor/editor_plugin.h"
-#include "editor/resource_preview.h"
-#include "scene/gui/gradient_edit.h"
+void ResourcePreview::toggle_preview(bool hidden) {
+	int child_count = get_child_count();
 
-class GradientEditorPlugin : public EditorPlugin {
+	if (!hidden) {
+		for (int i = 1; i < child_count; i++) {
+			Control *control = Object::cast_to<Control>(get_child(i));
 
-	GDCLASS(GradientEditorPlugin, EditorPlugin);
+			control->show();
+		}
+		collapse_button->set_normal_texture(get_icon("PanelCollapse", "EditorIcons"));
+	} else {
+		for (int i = 1; i < child_count; i++) {
+			Control *control = Object::cast_to<Control>(get_child(i));
+			control->hide();
+		}
+		collapse_button->set_normal_texture(get_icon("PanelExpand", "EditorIcons"));
+	}
+	collapse_button->set_modulate(Color(1, 1, 1, 0.5));
+}
 
-	Ref<Gradient> gradient_ref;
-	GradientEdit *ramp_editor;
-	EditorNode *editor;
-	ResourcePreview *resource_preview;
+void ResourcePreview::_notification(int p_what) {
+	if (p_what == NOTIFICATION_ENTER_TREE) {
+		collapse_button->set_normal_texture(get_icon("PanelCollapse", "EditorIcons"));
+	}
+}
 
-protected:
-	static void _bind_methods();
-	void _ramp_changed();
-	void _undo_redo_gradient(const Vector<float> &offsets, const Vector<Color> &colors);
+ResourcePreview::ResourcePreview() {
+	this->set_area_as_parent_rect();
+	collapse_button = memnew(TextureButton);
+	collapse_button->set_custom_minimum_size(Vector2(36, 12));
+	collapse_button->set_anchors_preset(PRESET_TOP_WIDE, true);
+	collapse_button->set_expand(true);
+	collapse_button->set_stretch_mode(TextureButton::STRETCH_KEEP_CENTERED);
+	collapse_button->set_margin(MARGIN_RIGHT, 0);
+	collapse_button->set_modulate(Color(1, 1, 1, 0.5));
+	collapse_button->set_toggle_mode(true);
 
-public:
-	virtual String get_name() const { return "ColorRamp"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
+	collapse_button->connect("toggled", this, "toggle_preview");
+	collapse_button->connect("mouse_entered", collapse_button, "set_modulate", varray(Color(1, 1, 1, 1)));
+	collapse_button->connect("mouse_exited", collapse_button, "set_modulate", varray(Color(1, 1, 1, 0.5)));
 
-	GradientEditorPlugin(EditorNode *p_node);
-	~GradientEditorPlugin();
-};
+	add_child(collapse_button);
+}
 
-#endif /* TOOLS_EDITOR_PLUGINS_COLOR_RAMP_EDITOR_PLUGIN_H_ */
+void ResourcePreview::_bind_methods() {
+	ClassDB::bind_method("toggle_preview", &ResourcePreview::toggle_preview);
+}
+
+ResourcePreview::~ResourcePreview() {
+}

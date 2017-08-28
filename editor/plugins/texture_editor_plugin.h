@@ -32,6 +32,7 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
+#include "editor/resource_preview.h"
 #include "scene/resources/texture.h"
 
 class TextureEditor : public Control {
@@ -57,6 +58,7 @@ class TextureEditorPlugin : public EditorPlugin {
 
 	TextureEditor *texture_editor;
 	EditorNode *editor;
+	ResourcePreview *resource_preview;
 
 public:
 	virtual String get_name() const { return "Texture"; }

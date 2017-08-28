@@ -1,12 +1,11 @@
 /*************************************************************************/
-/*  color_ramp_editor_plugin.h                                           */
+/*  resource_preview.h                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
+/*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,37 +26,24 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef TOOLS_EDITOR_PLUGINS_COLOR_RAMP_EDITOR_PLUGIN_H_
-#define TOOLS_EDITOR_PLUGINS_COLOR_RAMP_EDITOR_PLUGIN_H_
+#ifndef PREVIEW_PANE_H
+#define PREVIEW_PANE_H
 
 #include "editor/editor_node.h"
-#include "editor/editor_plugin.h"
-#include "editor/resource_preview.h"
-#include "scene/gui/gradient_edit.h"
 
-class GradientEditorPlugin : public EditorPlugin {
+class ResourcePreview : public VBoxContainer {
+	GDCLASS(ResourcePreview, VBoxContainer);
 
-	GDCLASS(GradientEditorPlugin, EditorPlugin);
-
-	Ref<Gradient> gradient_ref;
-	GradientEdit *ramp_editor;
-	EditorNode *editor;
-	ResourcePreview *resource_preview;
+	TextureButton *collapse_button;
 
 protected:
+	void _notification(int p_what);
+	void toggle_preview(bool visible);
 	static void _bind_methods();
-	void _ramp_changed();
-	void _undo_redo_gradient(const Vector<float> &offsets, const Vector<Color> &colors);
 
 public:
-	virtual String get_name() const { return "ColorRamp"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
-
-	GradientEditorPlugin(EditorNode *p_node);
-	~GradientEditorPlugin();
+	ResourcePreview();
+	~ResourcePreview();
 };
 
-#endif /* TOOLS_EDITOR_PLUGINS_COLOR_RAMP_EDITOR_PLUGIN_H_ */
+#endif // PREVIEW_PANE_H

@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "mesh_editor_plugin.h"
+#include "editor/resource_preview.h"
 
 void MeshEditor::_gui_input(Ref<InputEvent> p_event) {
 
@@ -202,11 +203,11 @@ bool MeshEditorPlugin::handles(Object *p_object) const {
 void MeshEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
-		mesh_editor->show();
+		resource_preview->show();
 		//mesh_editor->set_process(true);
 	} else {
 
-		mesh_editor->hide();
+		resource_preview->hide();
 		//mesh_editor->set_process(false);
 	}
 }
@@ -214,9 +215,13 @@ void MeshEditorPlugin::make_visible(bool p_visible) {
 MeshEditorPlugin::MeshEditorPlugin(EditorNode *p_node) {
 
 	editor = p_node;
+
 	mesh_editor = memnew(MeshEditor);
-	add_control_to_container(CONTAINER_PROPERTY_EDITOR_BOTTOM, mesh_editor);
-	mesh_editor->hide();
+
+	resource_preview = memnew(ResourcePreview);
+	resource_preview->add_child(mesh_editor);
+	add_control_to_container(CONTAINER_PROPERTY_EDITOR_BOTTOM, resource_preview);
+	resource_preview->hide();
 }
 
 MeshEditorPlugin::~MeshEditorPlugin() {
