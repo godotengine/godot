@@ -36,7 +36,17 @@
 #include <pthread_np.h>
 #endif
 
+#include "core/safe_refcount.h"
 #include "os/memory.h"
+
+static pthread_key_t _create_thread_id_key() {
+	pthread_key_t key;
+	pthread_key_create(&key, NULL);
+	return key;
+}
+
+pthread_key_t ThreadPosix::thread_id_key = _create_thread_id_key();
+Thread::ID ThreadPosix::next_thread_id = 0;
 
 Thread::ID ThreadPosix::get_id() const {
 
@@ -51,7 +61,8 @@ Thread *ThreadPosix::create_thread_posix() {
 void *ThreadPosix::thread_callback(void *userdata) {
 
 	ThreadPosix *t = reinterpret_cast<ThreadPosix *>(userdata);
-	t->id = (ID)pthread_self();
+	t->id = atomic_increment(&next_thread_id);
+	pthread_setspecific(thread_id_key, (void *)t->id);
 
 	ScriptServer::thread_enter(); //scripts may need to attach a stack
 
@@ -77,7 +88,7 @@ Thread *ThreadPosix::create_func_posix(ThreadCreateCallback p_callback, void *p_
 }
 Thread::ID ThreadPosix::get_thread_id_func_posix() {
 
-	return (ID)pthread_self();
+	return (ID)pthread_getspecific(thread_id_key);
 }
 void ThreadPosix::wait_to_finish_func_posix(Thread *p_thread) {
 
