@@ -36,6 +36,7 @@
 #include "scene/resources/capsule_shape.h"
 #include "scene/resources/convex_polygon_shape.h"
 #include "scene/resources/plane_shape.h"
+#include "scene/resources/primitive_meshes.h"
 #include "scene/resources/ray_shape.h"
 #include "scene/resources/sphere_shape.h"
 #include "scene/resources/surface_tool.h"
@@ -130,9 +131,9 @@ void EditorSpatialGizmo::add_lines(const Vector<Vector3> &p_lines, const Ref<Mat
 		PoolVector<Color>::Write w = color.write();
 		for (int i = 0; i < p_lines.size(); i++) {
 			if (is_selected())
-				w[i] = Color(1, 1, 1, 0.6);
+				w[i] = Color(1, 1, 1, 0.8);
 			else
-				w[i] = Color(1, 1, 1, 0.25);
+				w[i] = Color(1, 1, 1, 0.2);
 		}
 	}
 
@@ -294,6 +295,15 @@ void EditorSpatialGizmo::add_handles(const Vector<Vector3> &p_handles, bool p_bi
 			secondary_handles[i + chs] = p_handles[i];
 		}
 	}
+}
+
+void EditorSpatialGizmo::add_solid_box(Ref<Material> &p_material, Vector3 size) {
+	CubeMesh cubem;
+	cubem.set_size(size);
+	Ref<ArrayMesh> m = memnew(ArrayMesh);
+	m->add_surface_from_arrays(cubem.surface_get_primitive_type(0), cubem.surface_get_arrays(0));
+	m->surface_set_material(0, p_material);
+	add_mesh(m);
 }
 
 void EditorSpatialGizmo::set_spatial_node(Spatial *p_node) {
@@ -540,8 +550,9 @@ Ref<SpatialMaterial> EditorSpatialGizmo::create_material(const String &p_name, c
 
 	if (!is_editable()) {
 		color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/instanced");
-	} else if (!is_selected()) {
-		color.a *= 0.5;
+	}
+	if (!is_selected()) {
+		color.a *= 0.3;
 	}
 
 	Ref<SpatialMaterial> line_material;
@@ -587,7 +598,7 @@ Ref<SpatialMaterial> EditorSpatialGizmo::create_icon_material(const String &p_na
 	if (!is_editable()) {
 		color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/instanced");
 	} else if (!is_selected()) {
-		color.a *= 0.5;
+		color.a *= 0.3;
 	}
 
 	Ref<SpatialMaterial> icon;
@@ -770,34 +781,32 @@ void LightSpatialGizmo::redraw() {
 		Ref<Material> material = create_material("light_directional_material", gizmo_color);
 		Ref<Material> icon = create_icon_material("light_directional_icon", SpatialEditor::get_singleton()->get_icon("GizmoDirectionalLight", "EditorIcons"));
 
-		const int arrow_points = 5;
+		const int arrow_points = 7;
+		const float arrow_length = 1.5;
+
 		Vector3 arrow[arrow_points] = {
-			Vector3(0, 0, 2),
-			Vector3(1, 1, 2),
-			Vector3(1, 1, -1),
-			Vector3(2, 2, -1),
-			Vector3(0, 0, -3)
+			Vector3(0, 0, -1),
+			Vector3(0, 0.8, 0),
+			Vector3(0, 0.3, 0),
+			Vector3(0, 0.3, arrow_length),
+			Vector3(0, -0.3, arrow_length),
+			Vector3(0, -0.3, 0),
+			Vector3(0, -0.8, 0)
 		};
 
-		int arrow_sides = 4;
+		int arrow_sides = 2;
 
 		Vector<Vector3> lines;
 
 		for (int i = 0; i < arrow_sides; i++) {
+			for (int j = 0; j < arrow_points; j++) {
+				Basis ma(Vector3(0, 0, 1), Math_PI * i / arrow_sides);
 
-			Basis ma(Vector3(0, 0, 1), Math_PI * 2 * float(i) / arrow_sides);
-			Basis mb(Vector3(0, 0, 1), Math_PI * 2 * float(i + 1) / arrow_sides);
+				Vector3 v1 = arrow[j] - Vector3(0, 0, arrow_length);
+				Vector3 v2 = arrow[(j + 1) % arrow_points] - Vector3(0, 0, arrow_length);
 
-			for (int j = 1; j < arrow_points - 1; j++) {
-
-				if (j != 2) {
-					lines.push_back(ma.xform(arrow[j]));
-					lines.push_back(ma.xform(arrow[j + 1]));
-				}
-				if (j < arrow_points - 1) {
-					lines.push_back(ma.xform(arrow[j]));
-					lines.push_back(mb.xform(arrow[j]));
-				}
+				lines.push_back(ma.xform(v1));
+				lines.push_back(ma.xform(v2));
 			}
 		}
 
@@ -2334,6 +2343,14 @@ void ParticlesGizmo::redraw() {
 
 	add_lines(lines, material);
 	add_collision_segments(lines);
+
+	if (is_selected()) {
+
+		gizmo_color.a = 0.1;
+		Ref<Material> solid_material = create_material("particles_solid_material", gizmo_color);
+		add_solid_box(solid_material, aabb.get_size());
+	}
+
 	//add_unscaled_billboard(SpatialEditorGizmos::singleton->visi,0.05);
 	add_handles(handles);
 }
@@ -2487,6 +2504,14 @@ void ReflectionProbeGizmo::redraw() {
 
 	add_lines(lines, material);
 	add_lines(internal_lines, material_internal);
+
+	if (is_selected()) {
+
+		gizmo_color.a = 0.1;
+		Ref<Material> solid_material = create_material("reflection_probe_solid_material", gizmo_color);
+		add_solid_box(solid_material, probe->get_extents() * 2.0);
+	}
+
 	//add_unscaled_billboard(SpatialEditorGizmos::singleton->visi,0.05);
 	add_collision_segments(lines);
 	add_handles(handles);
@@ -2637,6 +2662,13 @@ void GIProbeGizmo::redraw() {
 		Vector3 ax;
 		ax[i] = aabb.position[i] + aabb.size[i];
 		handles.push_back(ax);
+	}
+
+	if (is_selected()) {
+
+		gizmo_color.a = 0.1;
+		Ref<Material> solid_material = create_material("gi_probe_solid_material", gizmo_color);
+		add_solid_box(solid_material, aabb.get_size());
 	}
 
 	add_handles(handles);

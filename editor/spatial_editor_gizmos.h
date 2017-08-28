@@ -102,6 +102,7 @@ protected:
 	void add_collision_triangles(const Ref<TriangleMesh> &p_tmesh);
 	void add_unscaled_billboard(const Ref<Material> &p_material, float p_scale = 1);
 	void add_handles(const Vector<Vector3> &p_handles, bool p_billboard = false, bool p_secondary = false);
+	void add_solid_box(Ref<Material> &p_material, Vector3 size);
 
 	void set_spatial_node(Spatial *p_node);
 
