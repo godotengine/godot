@@ -104,21 +104,14 @@ Error AudioDriverRtAudio::init() {
 	RtAudio::StreamOptions options;
 
 	// set the desired numberOfBuffers
-	unsigned int target_number_of_buffers = 4;
-	options.numberOfBuffers = target_number_of_buffers;
-
-	//options.
-	//RtAudioStreamFlags flags;      /*!< A bit-mask of stream flags (RTAUDIO_NONINTERLEAVED, RTAUDIO_MINIMIZE_LATENCY, RTAUDIO_HOG_DEVICE). *///
-	//unsigned int numberOfBuffers;  /*!< Number of stream buffers. */
-	//std::string streamName;        /*!< A stream name (currently used only in Jack). */
-	//int priority;                  /*!< Scheduling priority of callback thread (only used with flag RTAUDIO_SCHEDULE_REALTIME). */
+	options.numberOfBuffers = 4;
 
 	parameters.firstChannel = 0;
 	mix_rate = GLOBAL_DEF("audio/mix_rate", 44100);
 
 	int latency = GLOBAL_DEF("audio/output_latency", 25);
-	// calculate desired buffer_size, taking the desired numberOfBuffers into account (latency depends on numberOfBuffers*buffer_size)
-	unsigned int buffer_size = closest_power_of_2(latency * mix_rate / 1000 / target_number_of_buffers);
+	// calculate desired buffer_size
+	unsigned int buffer_size = closest_power_of_2(latency * mix_rate / 1000);
 
 	if (OS::get_singleton()->is_stdout_verbose()) {
 		print_line("audio buffer size: " + itos(buffer_size));
@@ -126,56 +119,28 @@ Error AudioDriverRtAudio::init() {
 
 	short int tries = 2;
 
-	while (true) {
-		while (true) {
-			switch (speaker_mode) {
-				case SPEAKER_MODE_STEREO: parameters.nChannels = 2; break;
-				case SPEAKER_SURROUND_51: parameters.nChannels = 6; break;
-				case SPEAKER_SURROUND_71: parameters.nChannels = 8; break;
-			};
+	while (tries >= 0) {
+		switch (speaker_mode) {
+			case SPEAKER_MODE_STEREO: parameters.nChannels = 2; break;
+			case SPEAKER_SURROUND_51: parameters.nChannels = 6; break;
+			case SPEAKER_SURROUND_71: parameters.nChannels = 8; break;
+		};
 
-			try {
-				dac->openStream(&parameters, NULL, RTAUDIO_SINT32, mix_rate, &buffer_size, &callback, this, &options);
-				active = true;
+		try {
+			dac->openStream(&parameters, NULL, RTAUDIO_SINT32, mix_rate, &buffer_size, &callback, this, &options);
+			active = true;
 
-				break;
-			} catch (RtAudioError &e) {
-				// try with less channels
-				ERR_PRINT("Unable to open audio, retrying with fewer channels..");
-
-				switch (speaker_mode) {
-					case SPEAKER_MODE_STEREO: speaker_mode = SPEAKER_MODE_STEREO; break;
-					case SPEAKER_SURROUND_51: speaker_mode = SPEAKER_SURROUND_51; break;
-					case SPEAKER_SURROUND_71: speaker_mode = SPEAKER_SURROUND_71; break;
-				};
-			}
-		}
-
-		// compare actual numberOfBuffers with the desired one. If not equal, close and reopen the stream with adjusted buffer size, so the desired output_latency is still correct
-		if (target_number_of_buffers != options.numberOfBuffers) {
-			if (tries <= 0) {
-				ERR_EXPLAIN("RtAudio: Unable to set correct number of buffers.");
-				ERR_FAIL_V(ERR_UNAVAILABLE);
-				break;
-			}
-
-			try {
-				dac->closeStream();
-				active = false;
-			} catch (RtAudioError &e) {
-				ERR_PRINT(e.what());
-				ERR_FAIL_V(ERR_UNAVAILABLE);
-				break;
-			}
-			if (OS::get_singleton()->is_stdout_verbose())
-				print_line("RtAudio: Desired number of buffers (" + itos(target_number_of_buffers) + ") not available. Using " + itos(options.numberOfBuffers) + " instead. Reopening stream with adjusted buffer_size.");
-
-			// new buffer size dependent on the ratio between set and actual numberOfBuffers
-			buffer_size = buffer_size / (options.numberOfBuffers / target_number_of_buffers);
-			target_number_of_buffers = options.numberOfBuffers;
-			tries--;
-		} else {
 			break;
+		} catch (RtAudioError &e) {
+			// try with less channels
+			ERR_PRINT("Unable to open audio, retrying with fewer channels..");
+
+			switch (speaker_mode) {
+				case SPEAKER_SURROUND_51: speaker_mode = SPEAKER_MODE_STEREO; break;
+				case SPEAKER_SURROUND_71: speaker_mode = SPEAKER_SURROUND_51; break;
+			}
+
+			tries--;
 		}
 	}
 
