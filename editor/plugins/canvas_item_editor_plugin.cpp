@@ -2254,8 +2254,9 @@ void CanvasItemEditor::_draw_axis() {
 	Color y_axis_color(0.4, 1.0, 0.4, 0.6);
 	Color area_axis_color(0.4, 0.4, 1.0, 0.4);
 
-	VisualServer::get_singleton()->canvas_item_add_line(ci, Point2(h_scroll->get_min(), 0) + transform.get_origin(), Point2(h_scroll->get_max(), 0) + transform.get_origin(), x_axis_color);
-	VisualServer::get_singleton()->canvas_item_add_line(ci, Point2(0, v_scroll->get_min()) + transform.get_origin(), Point2(0, v_scroll->get_max()) + transform.get_origin(), y_axis_color);
+	Point2 origin = transform.get_origin();
+	VisualServer::get_singleton()->canvas_item_add_line(ci, Point2(0, origin.y), Point2(viewport->get_size().x, origin.y), x_axis_color);
+	VisualServer::get_singleton()->canvas_item_add_line(ci, Point2(origin.x, 0), Point2(origin.x, viewport->get_size().y), y_axis_color);
 
 	Size2 screen_size = Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height"));
 
