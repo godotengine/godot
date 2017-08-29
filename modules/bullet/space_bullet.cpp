@@ -52,11 +52,15 @@ bool GodotFilterCallback::test_collision_filters(uint32_t body0_collision_layer,
 }
 
 bool GodotFilterCallback::needBroadphaseCollision(btBroadphaseProxy *proxy0, btBroadphaseProxy *proxy1) const {
+	/// This is used to assert that the area doesn't check collision with static objects
+	const btCollisionObject *const btBody0 = static_cast<btCollisionObject *>(proxy0->m_clientObject);
+	const btCollisionObject *const btBody1 = static_cast<btCollisionObject *>(proxy1->m_clientObject);
+	if (btBody0->isStaticObject() && btBody1->isStaticObject()) {
+		return false;
+	}
 	// Even if you think I'm crazy, I'm not.
 	// This gBody0 == gBody1 is required because the kinematic actor use the ghost, and in this case I don't want collide with it
-	void *gBody0 = static_cast<btCollisionObject *>(proxy0->m_clientObject)->getUserPointer();
-	void *gBody1 = static_cast<btCollisionObject *>(proxy1->m_clientObject)->getUserPointer();
-	if (gBody0 == gBody1) {
+	if (btBody0->getUserPointer() == btBody1->getUserPointer()) {
 		return false;
 	}
 
@@ -696,14 +700,6 @@ void SpaceBullet::update_gravity() {
 	G_TO_B(gravityDirection * gravityMagnitude, btGravity);
 	dynamicsWorld->setGravity(btGravity);
 }
-
-class HackBtCompoundShape : public btCompoundShape {
-public:
-	void get_local_half_extents(btVector3 &local_half_extents) {
-		// This function is required since localAabb data are protected
-		local_half_extents = btScalar(0.5) * (m_localAabbMax - m_localAabbMin);
-	}
-};
 
 /// IMPORTANT: Please don't turn it ON this is not managed correctly!!
 /// I'm leaving this here just for future tests.

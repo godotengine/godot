@@ -38,14 +38,13 @@
 #include "space_bullet.h"
 
 AreaBullet::AreaBullet()
-	: CollisionObjectBullet(CollisionObjectBullet::TYPE_AREA), space(NULL), monitorable(true), isScratched(false)
-
-	  ,
+	: CollisionObjectBullet(CollisionObjectBullet::TYPE_AREA), space(NULL), monitorable(true), isScratched(false),
 	  spOv_mode(PhysicsServer::AREA_SPACE_OVERRIDE_DISABLED), spOv_gravityPoint(false), spOv_gravityPointDistanceScale(0), spOv_gravityPointAttenuation(1), spOv_gravityVec(0, -1, 0), spOv_gravityMag(10), spOv_linearDump(0.1), spOv_angularDump(1), spOv_priority(0) {
 	btGhost = bulletnew(btGhostObject);
 	btGhost->setCollisionShape(compoundShape);
 	setupCollisionObject(btGhost);
-	// Collision objects with a callback still have collision response with dynamic rigid bodies. In order to use collision objects as trigger, you have to disable the collision response.
+	/// Collision objects with a callback still have collision response with dynamic rigid bodies.
+	/// In order to use collision objects as trigger, you have to disable the collision response.
 	set_collision_enabled(false);
 
 	for (int i = 0; i < 5; ++i)
@@ -97,8 +96,7 @@ void AreaBullet::call_event(CollisionObjectBullet *p_otherObject, PhysicsServer:
 	call_event_res[4] = 0; // self_shape ID
 
 	Variant::CallError outResp;
-	areaGodoObject->call(
-			event.event_callback_method, (const Variant **)call_event_res_ptr, 5, outResp);
+	areaGodoObject->call(event.event_callback_method, (const Variant **)call_event_res_ptr, 5, outResp);
 }
 
 void AreaBullet::scratch() {
