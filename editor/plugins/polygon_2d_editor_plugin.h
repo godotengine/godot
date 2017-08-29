@@ -30,22 +30,15 @@
 #ifndef POLYGON_2D_EDITOR_PLUGIN_H
 #define POLYGON_2D_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
-#include "editor/editor_plugin.h"
-#include "scene/2d/polygon_2d.h"
-#include "scene/gui/button_group.h"
-#include "scene/gui/tool_button.h"
+#include "editor/plugins/abstract_polygon_2d_editor.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
-class CanvasItemEditor;
+class Polygon2DEditor : public AbstractPolygon2DEditor {
 
-class Polygon2DEditor : public HBoxContainer {
+	GDCLASS(Polygon2DEditor, AbstractPolygon2DEditor);
 
-	GDCLASS(Polygon2DEditor, HBoxContainer);
-
-	UndoRedo *undo_redo;
 	enum Mode {
 
 		MODE_CREATE,
@@ -95,17 +88,7 @@ class Polygon2DEditor : public HBoxContainer {
 	ToolButton *button_edit;
 	ToolButton *button_uv;
 
-	CanvasItemEditor *canvas_item_editor;
-	EditorNode *editor;
-	Panel *panel;
 	Polygon2D *node;
-	MenuButton *options;
-
-	int edited_point;
-	Vector2 edited_point_pos;
-	Vector<Vector2> pre_move_edit;
-	Vector<Vector2> wip;
-	bool wip_active;
 
 	bool use_snap;
 	bool snap_show_grid;
@@ -128,15 +111,26 @@ class Polygon2DEditor : public HBoxContainer {
 	void _set_snap_step_y(float p_val);
 
 protected:
+	virtual void _enter_edit_mode();
+	virtual bool _is_in_create_mode() const;
+	virtual bool _is_in_edit_mode() const;
+
+	virtual Node2D *_get_node() const;
+	virtual void _set_node(Node *p_node);
+
+	virtual int _get_polygon_count() const;
+	virtual Vector<Vector2> _get_polygon(int p_polygon) const;
+	virtual void _set_polygon(int p_polygon, const Vector<Vector2> &p_points) const;
+	virtual Vector2 _get_offset() const;
+
+	virtual Color _get_previous_outline_color() const;
+
 	void _notification(int p_what);
-	void _node_removed(Node *p_node);
 	static void _bind_methods();
 
 	Vector2 snap_point(Vector2 p_target) const;
 
 public:
-	bool forward_gui_input(const Ref<InputEvent> &p_event);
-	void edit(Node *p_collision_polygon);
 	Polygon2DEditor(EditorNode *p_editor);
 };
 

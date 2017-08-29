@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  navigation_polygon_editor_plugin.h                                   */
+/*  abstract_polygon_2d_editor.cpp                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,87 +27,72 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef NAVIGATIONPOLYGONEDITORPLUGIN_H
-#define NAVIGATIONPOLYGONEDITORPLUGIN_H
+#ifndef ABSTRACT_POLYGON_2D_EDITOR_H
+#define ABSTRACT_POLYGON_2D_EDITOR_H
 
-#include "editor/plugins/abstract_polygon_2d_editor.h"
-#include "scene/2d/navigation_polygon.h"
+#include "editor/editor_node.h"
+#include "editor/editor_plugin.h"
+#include "scene/2d/polygon_2d.h"
+#include "scene/gui/button_group.h"
+#include "scene/gui/tool_button.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
-class NavigationPolygonEditor : public AbstractPolygon2DEditor {
+class CanvasItemEditor;
 
-	GDCLASS(NavigationPolygonEditor, AbstractPolygon2DEditor);
+class AbstractPolygon2DEditor : public HBoxContainer {
 
-	enum Mode {
+	GDCLASS(AbstractPolygon2DEditor, HBoxContainer);
 
-		MODE_CREATE,
-		MODE_EDIT,
-
-	};
-
-	Mode mode;
-
-	ToolButton *button_create;
-	ToolButton *button_edit;
-
-	ConfirmationDialog *create_nav;
-
-	NavigationPolygonInstance *node;
-
-	void _create_nav();
-
-	void _menu_option(int p_option);
+	int edited_polygon;
+	int edited_point;
+	Vector2 edited_point_pos;
+	Vector<Vector2> pre_move_edit;
+	Vector<Vector2> wip;
+	bool wip_active;
 
 protected:
-	virtual void _enter_edit_mode();
-	virtual bool _is_in_create_mode() const;
-	virtual bool _is_in_edit_mode() const;
+	UndoRedo *undo_redo;
 
-	virtual Node2D *_get_node() const;
-	virtual void _set_node(Node *p_node);
+	CanvasItemEditor *canvas_item_editor;
+	EditorNode *editor;
+	Panel *panel;
 
-	virtual int _get_polygon_count() const;
-	virtual Vector<Vector2> _get_polygon(int p_polygon) const;
-	virtual void _set_polygon(int p_polygon, const Vector<Vector2> &p_points) const;
-	virtual Vector2 _get_offset() const;
+	void _wip_close();
+	void _canvas_draw();
+
+	void _notification(int p_what);
+	void _node_removed(Node *p_node);
+	static void _bind_methods();
+
+	virtual void _enter_edit_mode() = 0;
+	virtual bool _is_in_create_mode() const = 0;
+	virtual bool _is_in_edit_mode() const = 0;
+
+	virtual Node2D *_get_node() const = 0;
+	virtual void _set_node(Node *p_node) = 0;
+
+	virtual int _get_polygon_count() const = 0;
+	virtual Vector<Vector2> _get_polygon(int p_polygon) const = 0;
+	virtual void _set_polygon(int p_polygon, const Vector<Vector2> &p_points) const = 0;
+	virtual Vector2 _get_offset() const = 0;
 
 	virtual bool _is_wip_destructive() const;
 	virtual void _create_wip_close_action(const Vector<Vector2> &p_wip);
 	virtual void _create_edit_poly_action(int p_polygon, const Vector<Vector2> &p_before, const Vector<Vector2> &p_after);
 	virtual void _create_remove_point_action(int p_polygon, int p_point);
 
+	virtual Color _get_current_outline_color() const;
 	virtual Color _get_previous_outline_color() const;
 
 	virtual bool _can_input(const Ref<InputEvent> &p_event, bool &p_ret) const;
 	virtual bool _can_draw() const;
 
-	void _notification(int p_what);
-	static void _bind_methods();
-
 public:
-	NavigationPolygonEditor(EditorNode *p_editor);
+	bool forward_gui_input(const Ref<InputEvent> &p_event);
+	void edit(Node *p_polygon);
+	AbstractPolygon2DEditor(EditorNode *p_editor);
 };
 
-class NavigationPolygonEditorPlugin : public EditorPlugin {
-
-	GDCLASS(NavigationPolygonEditorPlugin, EditorPlugin);
-
-	NavigationPolygonEditor *collision_polygon_editor;
-	EditorNode *editor;
-
-public:
-	virtual bool forward_canvas_gui_input(const Transform2D &p_canvas_xform, const Ref<InputEvent> &p_event) { return collision_polygon_editor->forward_gui_input(p_event); }
-
-	virtual String get_name() const { return "NavigationPolygonInstance"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
-
-	NavigationPolygonEditorPlugin(EditorNode *p_node);
-	~NavigationPolygonEditorPlugin();
-};
-
-#endif // NAVIGATIONPOLYGONEDITORPLUGIN_H
+#endif // ABSTRACT_POLYGON_2D_EDITOR_H
