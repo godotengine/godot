@@ -1572,43 +1572,49 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 		} break;
 		case TEXT_STR: {
 
-			MethodInfo mi("str", PropertyInfo(Variant::NIL, "what"), PropertyInfo(Variant::NIL, "..."));
+			MethodInfo mi("str");
 			mi.return_val.type = Variant::STRING;
+			mi.flags |= METHOD_FLAG_VARARG;
 			return mi;
 
 		} break;
 		case TEXT_PRINT: {
 
-			MethodInfo mi("print", PropertyInfo(Variant::NIL, "what"), PropertyInfo(Variant::NIL, "..."));
+			MethodInfo mi("print");
 			mi.return_val.type = Variant::NIL;
+			mi.flags |= METHOD_FLAG_VARARG;
 			return mi;
 
 		} break;
 		case TEXT_PRINT_TABBED: {
 
-			MethodInfo mi("printt", PropertyInfo(Variant::NIL, "what"), PropertyInfo(Variant::NIL, "..."));
+			MethodInfo mi("printt");
 			mi.return_val.type = Variant::NIL;
+			mi.flags |= METHOD_FLAG_VARARG;
 			return mi;
 
 		} break;
 		case TEXT_PRINT_SPACED: {
 
-			MethodInfo mi("prints", PropertyInfo(Variant::NIL, "what"), PropertyInfo(Variant::NIL, "..."));
+			MethodInfo mi("prints");
 			mi.return_val.type = Variant::NIL;
+			mi.flags |= METHOD_FLAG_VARARG;
 			return mi;
 
 		} break;
 		case TEXT_PRINTERR: {
 
-			MethodInfo mi("printerr", PropertyInfo(Variant::NIL, "what"), PropertyInfo(Variant::NIL, "..."));
+			MethodInfo mi("printerr");
 			mi.return_val.type = Variant::NIL;
+			mi.flags |= METHOD_FLAG_VARARG;
 			return mi;
 
 		} break;
 		case TEXT_PRINTRAW: {
 
-			MethodInfo mi("printraw", PropertyInfo(Variant::NIL, "what"), PropertyInfo(Variant::NIL, "..."));
+			MethodInfo mi("printraw");
 			mi.return_val.type = Variant::NIL;
+			mi.flags |= METHOD_FLAG_VARARG;
 			return mi;
 
 		} break;
@@ -1640,8 +1646,9 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 		} break;
 		case GEN_RANGE: {
 
-			MethodInfo mi("range", PropertyInfo(Variant::NIL, "..."));
+			MethodInfo mi("range");
 			mi.return_val.type = Variant::ARRAY;
+			mi.flags |= METHOD_FLAG_VARARG;
 			return mi;
 		} break;
 		case RESOURCE_LOAD: {

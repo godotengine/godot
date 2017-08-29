@@ -1863,11 +1863,11 @@ static void _find_call_arguments(GDCompletionContext &context, const GDParser::N
 				arghint += ", ";
 			else
 				arghint += " ";
-			if (i == p_argidx) {
+			if (i == p_argidx || (mi.flags & METHOD_FLAG_VARARG && i > p_argidx)) {
 				arghint += String::chr(0xFFFF);
 			}
 			arghint += _get_visual_datatype(mi.arguments[i]) + " " + mi.arguments[i].name;
-			if (i == p_argidx) {
+			if (i == p_argidx || (mi.flags & METHOD_FLAG_VARARG && i > p_argidx)) {
 				arghint += String::chr(0xFFFF);
 			}
 		}

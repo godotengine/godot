@@ -576,6 +576,12 @@ void DocData::generate(bool p_basic_types) {
 				MethodDoc md;
 				md.name = mi.name;
 
+				if (mi.flags & METHOD_FLAG_VARARG) {
+					if (md.qualifiers != "")
+						md.qualifiers += " ";
+					md.qualifiers += "vararg";
+				}
+
 				return_doc_from_retinfo(md, mi.return_val);
 
 				for (int i = 0; i < mi.arguments.size(); i++) {
