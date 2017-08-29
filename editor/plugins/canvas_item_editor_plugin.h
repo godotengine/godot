@@ -88,6 +88,7 @@ class CanvasItemEditor : public VBoxContainer {
 		SNAP_CONFIGURE,
 		SNAP_USE_PIXEL,
 		SHOW_HELPERS,
+		SHOW_RULERS,
 		LOCK_SELECTED,
 		UNLOCK_SELECTED,
 		GROUP_SELECTED,
@@ -160,6 +161,8 @@ class CanvasItemEditor : public VBoxContainer {
 	Tool tool;
 	bool first_update;
 	Control *viewport;
+	Control *viewport_base;
+	Control *viewport_scrollable;
 
 	bool can_move_pivot;
 
@@ -172,10 +175,13 @@ class CanvasItemEditor : public VBoxContainer {
 	ToolButton *zoom_plus;
 
 	Transform2D transform;
+	bool show_rulers;
 	bool show_helpers;
 	float zoom;
-	Vector2 snap_offset;
-	Vector2 snap_step;
+
+	Point2 grid_offset;
+	Point2 grid_step;
+
 	float snap_rotation_step;
 	float snap_rotation_offset;
 	bool snap_grid;
@@ -268,6 +274,9 @@ class CanvasItemEditor : public VBoxContainer {
 
 	PopupMenu *selection_menu;
 
+	Control *top_ruler;
+	Control *left_ruler;
+
 	//PopupMenu *popup;
 	DragType drag;
 	Point2 drag_from;
@@ -343,6 +352,7 @@ class CanvasItemEditor : public VBoxContainer {
 	void _draw_margin_at_position(int p_value, Point2 p_position, Margin p_side);
 	void _draw_percentage_at_position(float p_value, Point2 p_position, Margin p_side);
 
+	void _draw_rulers();
 	void _draw_focus();
 	void _draw_grid();
 	void _draw_selection();
@@ -350,8 +360,10 @@ class CanvasItemEditor : public VBoxContainer {
 	void _draw_bones();
 	void _draw_locks_and_groups(Node *p_node, const Transform2D &p_xform);
 
-	void _viewport_gui_input(const Ref<InputEvent> &p_event);
 	void _draw_viewport();
+
+	void _viewport_base_gui_input(const Ref<InputEvent> &p_event);
+	void _draw_viewport_base();
 
 	void _focus_selection(int p_op);
 
