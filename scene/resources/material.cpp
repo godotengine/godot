@@ -417,8 +417,11 @@ void SpatialMaterial::_update_shader() {
 	}
 
 	if (features[FEATURE_EMISSION]) {
-
-		code += "uniform sampler2D texture_emission : hint_white_albedo;\n";
+		if (flags[FLAG_EMISSION_MULTIPLY]) {
+			code += "uniform sampler2D texture_emission : hint_white_albedo;\n";
+		} else {
+			code += "uniform sampler2D texture_emission : hint_black_albedo;\n";
+		}
 		code += "uniform vec4 emission : hint_color;\n";
 		code += "uniform float emission_energy;\n";
 	}
@@ -708,7 +711,11 @@ void SpatialMaterial::_update_shader() {
 		} else {
 			code += "\tvec3 emission_tex = texture(texture_emission,base_uv).rgb;\n";
 		}
-		code += "\tEMISSION = emission.rgb*emission_tex*emission_energy;\n";
+		if (flags[FLAG_EMISSION_MULTIPLY]) {
+			code += "\tEMISSION = emission.rgb*emission_tex*emission_energy;\n";
+		} else {
+			code += "\tEMISSION = (emission.rgb+emission_tex)*emission_energy;\n";
+		}
 	}
 
 	if (features[FEATURE_REFRACTION] && !flags[FLAG_UV1_USE_TRIPLANAR]) { //refraction not supported with triplanar
@@ -1722,6 +1729,7 @@ void SpatialMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "emission", PROPERTY_HINT_COLOR_NO_ALPHA), "set_emission", "get_emission");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "emission_energy", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_emission_energy", "get_emission_energy");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "emission_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture", TEXTURE_EMISSION);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "emission_multiply"), "set_flag", "get_flag", FLAG_EMISSION_MULTIPLY);
 
 	ADD_GROUP("NormalMap", "normal_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "normal_enabled"), "set_feature", "get_feature", FEATURE_NORMAL_MAPPING);
@@ -1856,6 +1864,7 @@ void SpatialMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_AO_ON_UV2);
 	BIND_ENUM_CONSTANT(FLAG_USE_ALPHA_SCISSOR);
 	BIND_ENUM_CONSTANT(FLAG_TRIPLANAR_USE_WORLD);
+	BIND_ENUM_CONSTANT(FLAG_EMISSION_MULTIPLY);
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(DIFFUSE_LAMBERT);
