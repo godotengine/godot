@@ -47,7 +47,7 @@
 void ScriptEditorBase::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("name_changed"));
-	ADD_SIGNAL(MethodInfo("script_changed"));
+	ADD_SIGNAL(MethodInfo("edited_script_changed"));
 	ADD_SIGNAL(MethodInfo("request_help_search", PropertyInfo(Variant::STRING, "topic")));
 	ADD_SIGNAL(MethodInfo("request_help_index"));
 	ADD_SIGNAL(MethodInfo("request_open_script_at_line", PropertyInfo(Variant::OBJECT, "script"), PropertyInfo(Variant::INT, "line")));
@@ -1622,7 +1622,7 @@ bool ScriptEditor::edit(const Ref<Script> &p_script, int p_line, int p_col, bool
 	_update_script_names();
 	_save_layout();
 	se->connect("name_changed", this, "_update_script_names");
-	se->connect("script_changed", this, "_script_changed");
+	se->connect("edited_script_changed", this, "_script_changed");
 	se->connect("request_help_search", this, "_help_search");
 	se->connect("request_open_script_at_line", this, "_goto_script_line");
 	se->connect("go_to_help", this, "_help_class_goto");

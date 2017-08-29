@@ -886,8 +886,8 @@ void VisualScriptEditor::_member_edited() {
 		undo_redo->add_undo_method(this, "_update_members");
 		undo_redo->add_do_method(this, "_update_graph");
 		undo_redo->add_undo_method(this, "_update_graph");
-		undo_redo->add_do_method(this, "emit_signal", "script_changed");
-		undo_redo->add_undo_method(this, "emit_signal", "script_changed");
+		undo_redo->add_do_method(this, "emit_signal", "edited_script_changed");
+		undo_redo->add_undo_method(this, "emit_signal", "edited_script_changed");
 		undo_redo->commit_action();
 
 		//		_update_graph();
@@ -903,8 +903,8 @@ void VisualScriptEditor::_member_edited() {
 		undo_redo->add_undo_method(script.ptr(), "rename_variable", new_name, name);
 		undo_redo->add_do_method(this, "_update_members");
 		undo_redo->add_undo_method(this, "_update_members");
-		undo_redo->add_do_method(this, "emit_signal", "script_changed");
-		undo_redo->add_undo_method(this, "emit_signal", "script_changed");
+		undo_redo->add_do_method(this, "emit_signal", "edited_script_changed");
+		undo_redo->add_undo_method(this, "emit_signal", "edited_script_changed");
 		undo_redo->commit_action();
 
 		return; //or crash because it will become invalid
@@ -918,8 +918,8 @@ void VisualScriptEditor::_member_edited() {
 		undo_redo->add_undo_method(script.ptr(), "rename_custom_signal", new_name, name);
 		undo_redo->add_do_method(this, "_update_members");
 		undo_redo->add_undo_method(this, "_update_members");
-		undo_redo->add_do_method(this, "emit_signal", "script_changed");
-		undo_redo->add_undo_method(this, "emit_signal", "script_changed");
+		undo_redo->add_do_method(this, "emit_signal", "edited_script_changed");
+		undo_redo->add_undo_method(this, "emit_signal", "edited_script_changed");
 		undo_redo->commit_action();
 
 		return; //or crash because it will become invalid
@@ -1057,8 +1057,8 @@ void VisualScriptEditor::_member_button(Object *p_item, int p_column, int p_butt
 				undo_redo->add_undo_method(this, "_update_members");
 				undo_redo->add_do_method(this, "_update_graph");
 				undo_redo->add_undo_method(this, "_update_graph");
-				undo_redo->add_do_method(this, "emit_signal", "script_changed");
-				undo_redo->add_undo_method(this, "emit_signal", "script_changed");
+				undo_redo->add_do_method(this, "emit_signal", "edited_script_changed");
+				undo_redo->add_undo_method(this, "emit_signal", "edited_script_changed");
 				undo_redo->commit_action();
 
 				_update_graph();
@@ -1077,8 +1077,8 @@ void VisualScriptEditor::_member_button(Object *p_item, int p_column, int p_butt
 			undo_redo->add_undo_method(script.ptr(), "remove_variable", name);
 			undo_redo->add_do_method(this, "_update_members");
 			undo_redo->add_undo_method(this, "_update_members");
-			undo_redo->add_do_method(this, "emit_signal", "script_changed");
-			undo_redo->add_undo_method(this, "emit_signal", "script_changed");
+			undo_redo->add_do_method(this, "emit_signal", "edited_script_changed");
+			undo_redo->add_undo_method(this, "emit_signal", "edited_script_changed");
 			undo_redo->commit_action();
 			return; //or crash because it will become invalid
 		}
@@ -1093,8 +1093,8 @@ void VisualScriptEditor::_member_button(Object *p_item, int p_column, int p_butt
 			undo_redo->add_undo_method(script.ptr(), "remove_custom_signal", name);
 			undo_redo->add_do_method(this, "_update_members");
 			undo_redo->add_undo_method(this, "_update_members");
-			undo_redo->add_do_method(this, "emit_signal", "script_changed");
-			undo_redo->add_undo_method(this, "emit_signal", "script_changed");
+			undo_redo->add_do_method(this, "emit_signal", "edited_script_changed");
+			undo_redo->add_undo_method(this, "emit_signal", "edited_script_changed");
 			undo_redo->commit_action();
 			return; //or crash because it will become invalid
 		}
