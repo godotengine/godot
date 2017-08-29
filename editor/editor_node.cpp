@@ -559,7 +559,7 @@ void EditorNode::_menu_confirm_current() {
 	_menu_option_confirm(current_option, true);
 }
 
-void EditorNode::_dialog_display_file_error(String p_file, Error p_error) {
+void EditorNode::_dialog_display_save_error(String p_file, Error p_error) {
 
 	if (p_error) {
 
@@ -579,6 +579,41 @@ void EditorNode::_dialog_display_file_error(String p_file, Error p_error) {
 			default: {
 
 				accept->set_text(TTR("Error while saving."));
+			} break;
+		}
+
+		accept->popup_centered_minsize();
+	}
+}
+
+void EditorNode::_dialog_display_load_error(String p_file, Error p_error) {
+
+	if (p_error) {
+
+		current_option = -1;
+		accept->get_ok()->set_text(TTR("I see.."));
+
+		switch (p_error) {
+
+			case ERR_CANT_OPEN: {
+
+				accept->set_text(vformat(TTR("Can't open '%s'."), p_file.get_file()));
+			} break;
+			case ERR_PARSE_ERROR: {
+
+				accept->set_text(vformat(TTR("Error while parsing '%s'."), p_file.get_file()));
+			} break;
+			case ERR_FILE_CORRUPT: {
+
+				accept->set_text(vformat(TTR("Unexpected end of file '%s'."), p_file.get_file()));
+			} break;
+			case ERR_FILE_NOT_FOUND: {
+
+				accept->set_text(vformat(TTR("Missing '%s' or its dependencies."), p_file.get_file()));
+			} break;
+			default: {
+
+				accept->set_text(vformat(TTR("Error while loading '%s'."), p_file.get_file()));
 			} break;
 		}
 
@@ -899,7 +934,7 @@ void EditorNode::_save_scene(String p_file, int idx) {
 		_update_scene_tabs();
 	} else {
 
-		_dialog_display_file_error(p_file, err);
+		_dialog_display_save_error(p_file, err);
 	}
 }
 
@@ -2785,13 +2820,11 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 
 	dependency_errors.clear();
 
-	Ref<PackedScene> sdata = ResourceLoader::load(lpath, "", true);
+	Error err;
+	Ref<PackedScene> sdata = ResourceLoader::load(lpath, "", true, &err);
 	if (!sdata.is_valid()) {
 
-		current_option = -1;
-		accept->get_ok()->set_text(TTR("Ugh"));
-		accept->set_text(TTR("Error loading scene."));
-		accept->popup_centered_minsize();
+		_dialog_display_load_error(lpath, err);
 		opening_prev = false;
 
 		if (prev != -1) {
@@ -2848,10 +2881,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 	if (!new_scene) {
 
 		sdata.unref();
-		current_option = -1;
-		accept->get_ok()->set_text(TTR("Ugh"));
-		accept->set_text(TTR("Error loading scene."));
-		accept->popup_centered_minsize();
+		_dialog_display_load_error(lpath, ERR_FILE_NOT_FOUND);
 		opening_prev = false;
 		if (prev != -1) {
 			set_current_scene(prev);

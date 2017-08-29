@@ -404,7 +404,8 @@ private:
 	void _dialog_action(String p_file);
 
 	void _edit_current();
-	void _dialog_display_file_error(String p_file, Error p_error);
+	void _dialog_display_save_error(String p_file, Error p_error);
+	void _dialog_display_load_error(String p_file, Error p_error);
 
 	int current_option;
 	void _resource_created();
