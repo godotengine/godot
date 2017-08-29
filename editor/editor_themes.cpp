@@ -232,14 +232,15 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Color dark_color_2 = base_color.linear_interpolate(Color(0, 0, 0, 1), contrast * 1.5);
 	Color dark_color_3 = base_color.linear_interpolate(Color(0, 0, 0, 1), contrast * 2);
 
-	Color light_color_1 = base_color.linear_interpolate(Color(1, 1, 1, 1), contrast);
-	Color light_color_2 = base_color.linear_interpolate(Color(1, 1, 1, 1), contrast * 1.5);
+	Color contrast_color_1 = base_color.linear_interpolate((dark_theme ? Color(1, 1, 1, 1) : Color(0, 0, 0, 1)), 0.3);
+	Color contrast_color_2 = base_color.linear_interpolate((dark_theme ? Color(1, 1, 1, 1) : Color(0, 0, 0, 1)), 0.5);
 
 	Color font_color = dark_theme ? Color(1, 1, 1) : Color(0, 0, 0);
 	Color font_color_disabled = dark_theme ? Color(0.6, 0.6, 0.6) : Color(0.45, 0.45, 0.45);
 
 	Color separator_color = dark_theme ? Color(1, 1, 1, 0.1) : Color(0, 0, 0, 0.1);
 
+	Color tab_color = highlight_tabs ? base_color.linear_interpolate(font_color, contrast) : base_color;
 	const int border_width = CLAMP(border_size, 0, 3) * EDSCALE;
 
 	theme->set_color("highlight_color", "Editor", highlight_color);
@@ -247,8 +248,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("dark_color_1", "Editor", dark_color_1);
 	theme->set_color("dark_color_2", "Editor", dark_color_2);
 	theme->set_color("dark_color_3", "Editor", dark_color_3);
-	theme->set_color("light_color_1", "Editor", light_color_1);
-	theme->set_color("light_color_2", "Editor", light_color_2);
+	theme->set_color("contrast_color_1", "Editor", contrast_color_1);
+	theme->set_color("contrast_color_2", "Editor", contrast_color_2);
 
 	Color success_color = highlight_color.linear_interpolate(Color(.6, 1, .6), 0.8);
 	Color warning_color = highlight_color.linear_interpolate(Color(1, 1, .2), 0.8);
@@ -279,10 +280,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("Background", "EditorStyles", style_panel);
 
 	// Focus
-	Ref<StyleBoxFlat> focus_sbt = make_flat_stylebox(light_color_1, 4, 4, 4, 4);
+	Ref<StyleBoxFlat> focus_sbt = make_flat_stylebox(contrast_color_1, 4, 4, 4, 4);
 	focus_sbt->set_filled(false);
 	focus_sbt->set_border_width_all(1 * EDSCALE);
-	focus_sbt = change_border_color(focus_sbt, light_color_2);
+	focus_sbt = change_border_color(focus_sbt, contrast_color_2);
 	theme->set_stylebox("Focus", "EditorStyles", focus_sbt);
 
 	// Menu
@@ -291,20 +292,23 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("MenuPanel", "EditorStyles", style_menu);
 
 	// Play button group
-	theme->set_stylebox("PlayButtonPanel", "EditorStyles", make_stylebox(theme->get_icon("GuiPlayButtonGroup", "EditorIcons"), 16, 16, 16, 16, 8, 4, 8, 4));
+	theme->set_stylebox("PlayButtonPanel", "EditorStyles", make_empty_stylebox(8, 4, 8, 4)); //make_stylebox(theme->get_icon("GuiPlayButtonGroup", "EditorIcons"), 16, 16, 16, 16, 8, 4, 8, 4));
 
+	//MenuButton
 	Ref<StyleBoxFlat> style_menu_hover_border = make_flat_stylebox(highlight_color, 4, 4, 4, 4);
 	Ref<StyleBoxFlat> style_menu_hover_bg = make_flat_stylebox(dark_color_2, 4, 4, 4, 4);
 
 	style_menu_hover_border->set_filled(false);
 	style_menu_hover_border->set_border_width(MARGIN_BOTTOM, border_width);
+	style_menu_hover_border->set_border_color_all(highlight_color);
 	style_menu_hover_border->set_expand_margin_size(MARGIN_BOTTOM, border_width);
 
 	theme->set_stylebox("normal", "MenuButton", style_menu);
-	theme->set_stylebox("hover", "MenuButton", style_menu);
+	theme->set_stylebox("hover", "MenuButton", style_menu_hover_border);
 	theme->set_stylebox("pressed", "MenuButton", style_menu);
 	theme->set_stylebox("focus", "MenuButton", style_menu);
 	theme->set_stylebox("disabled", "MenuButton", style_menu);
+
 	theme->set_stylebox("normal", "PopupMenu", style_menu);
 	theme->set_stylebox("hover", "PopupMenu", style_menu_hover_bg);
 	theme->set_stylebox("pressed", "PopupMenu", style_menu);
@@ -338,11 +342,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Ref<StyleBoxFlat> style_button_type = make_flat_stylebox(dark_color_1, 6, 4, 6, 4);
 	style_button_type->set_filled(true);
 	style_button_type->set_border_width_all(border_width);
-	style_button_type->set_border_color_all(light_color_1);
+	style_button_type->set_border_color_all(contrast_color_2);
 
-	Ref<StyleBoxFlat> style_button_type_disabled = change_border_color(style_button_type, dark_color_2);
+	Ref<StyleBoxFlat> style_button_type_disabled = change_border_color(style_button_type, contrast_color_1);
 
-	Color button_font_color = light_color_1.linear_interpolate(font_color, .6);
+	Color button_font_color = contrast_color_1.linear_interpolate(font_color, .6);
 
 	// Button
 	theme->set_stylebox("normal", "Button", style_button_type);
@@ -361,9 +365,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// OptionButton
 	Ref<StyleBoxFlat> style_option_button = make_flat_stylebox(dark_color_1, 4, 4, 4, 4);
 	style_option_button->set_border_width_all(border_width);
-	style_option_button->set_border_color_all(light_color_1);
-	theme->set_stylebox("hover", "OptionButton", change_border_color(style_button_type, HIGHLIGHT_COLOR_FONT));
-	theme->set_stylebox("pressed", "OptionButton", change_border_color(style_button_type, highlight_color));
+	theme->set_stylebox("hover", "OptionButton", change_border_color(style_button_type, contrast_color_1));
+	theme->set_stylebox("pressed", "OptionButton", change_border_color(style_button_type, HIGHLIGHT_COLOR_FONT));
 	theme->set_stylebox("focus", "OptionButton", change_border_color(style_button_type, highlight_color));
 	theme->set_stylebox("disabled", "OptionButton", style_button_type_disabled);
 	theme->set_stylebox("normal", "OptionButton", style_button_type);
@@ -400,11 +403,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// PopupMenu
 	Ref<StyleBoxFlat> style_popup_menu = make_flat_stylebox(dark_color_1, 8, 8, 8, 8);
 	style_popup_menu->set_border_width_all(MAX(EDSCALE, border_width));
-	style_popup_menu->set_border_color_all(light_color_1);
+	style_popup_menu->set_border_color_all(contrast_color_1);
 	theme->set_stylebox("panel", "PopupMenu", style_popup_menu);
 	theme->set_stylebox("separator", "PopupMenu", make_line_stylebox(separator_color, MAX(EDSCALE, border_width), 8 - MAX(EDSCALE, border_width)));
 	theme->set_color("font_color", "PopupMenu", font_color);
-	theme->set_color("font_color_hover", "PopupMenu", font_color_disabled);
+	theme->set_color("font_color_hover", "PopupMenu", HIGHLIGHT_COLOR_FONT);
 	theme->set_color("font_color_accel", "PopupMenu", font_color);
 	theme->set_color("font_color_disabled", "PopupMenu", font_color_disabled);
 	theme->set_icon("checked", "PopupMenu", theme->get_icon("GuiChecked", "EditorIcons"));
@@ -417,6 +420,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_tree_bg->set_border_width_all(border_width);
 	style_tree_bg->set_border_color_all(dark_color_3);
 	theme->set_stylebox("bg", "Tree", style_tree_bg);
+
 	// Script background
 	Ref<StyleBoxFlat> style_script_bg = make_flat_stylebox(dark_color_1, 0, 0, 0, 0);
 	style_script_bg->set_border_width_all(border_width);
@@ -437,7 +441,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_color", "Tree", font_color_disabled);
 	theme->set_color("font_color_selected", "Tree", font_color);
 
-	Ref<StyleBox> style_tree_btn = make_flat_stylebox(light_color_1, 2, 4, 2, 4);
+	Ref<StyleBox> style_tree_btn = make_flat_stylebox(contrast_color_1, 2, 4, 2, 4);
 	theme->set_stylebox("button_pressed", "Tree", style_tree_btn);
 
 	Ref<StyleBoxFlat> style_tree_focus = make_flat_stylebox(HIGHLIGHT_COLOR_BG, 2, 2, 2, 2);
@@ -449,7 +453,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Ref<StyleBoxFlat> style_tree_cursor = make_flat_stylebox(HIGHLIGHT_COLOR_BG, 4, 4, 4, 4);
 	style_tree_cursor->set_filled(false);
 	style_tree_cursor->set_border_width_all(border_width);
-	style_tree_cursor->set_border_color_all(light_color_1);
+	style_tree_cursor->set_border_color_all(contrast_color_1);
 
 	Ref<StyleBoxFlat> style_tree_title = make_flat_stylebox(dark_color_3, 4, 4, 4, 4);
 	theme->set_stylebox("cursor", "Tree", style_tree_cursor);
@@ -486,8 +490,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("vseparation", "ItemList", 5 * EDSCALE);
 	theme->set_color("font_color", "ItemList", font_color);
 
-	Ref<StyleBoxFlat> style_tab_fg = make_flat_stylebox(base_color, 15, 5, 15, 5);
-	Ref<StyleBoxFlat> style_tab_bg = make_flat_stylebox(base_color, 15, 5, 15, 5);
+	Ref<StyleBoxFlat> style_tab_fg = make_flat_stylebox(tab_color, 15, 5, 15, 5);
+	Ref<StyleBoxFlat> style_tab_bg = make_flat_stylebox(tab_color, 15, 5, 15, 5);
 	style_tab_bg->set_filled(false);
 
 	// Tabs & TabContainer
@@ -523,8 +527,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("DebuggerTabBG", "EditorStyles", style_tab_bg_debugger);
 
 	// LineEdit
-	Ref<StyleBoxFlat> style_line_edit = make_flat_stylebox(dark_color_2, 6, 4, 6, 4);
-	style_line_edit = change_border_color(style_line_edit, light_color_1);
+	Ref<StyleBoxFlat> style_line_edit = make_flat_stylebox(dark_color_1, 6, 4, 6, 4);
+	style_line_edit = change_border_color(style_line_edit, contrast_color_1);
 	Ref<StyleBoxFlat> style_line_edit_disabled = change_border_color(style_line_edit, dark_color_1);
 	style_line_edit_disabled->set_bg_color(Color(0, 0, 0, .1));
 	Ref<StyleBoxFlat> style_line_edit_focus = change_border_color(style_line_edit, highlight_color);
@@ -533,6 +537,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("read_only", "LineEdit", style_line_edit_disabled);
 	theme->set_color("read_only", "LineEdit", font_color_disabled);
 	theme->set_color("font_color", "LineEdit", font_color);
+	theme->set_color("cursor_color", "LineEdit", font_color);
 
 	// TextEdit
 	Ref<StyleBoxFlat> style_textedit_normal(memnew(StyleBoxFlat));
@@ -624,7 +629,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// PopupPanel
 	Ref<StyleBoxFlat> style_dock_select = make_flat_stylebox(base_color);
-	style_dock_select->set_border_color_all(light_color_1);
+	style_dock_select->set_border_color_all(contrast_color_1);
 	style_dock_select->set_expand_margin_size_all(2);
 	style_dock_select->set_border_width_all(2);
 	theme->set_stylebox("panel", "PopupPanel", style_dock_select);
@@ -668,7 +673,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("commentfocus", "GraphNode", graphsbcommentselected);
 
 	// FileDialog
-	Color disable_color = light_color_2;
+	Color disable_color = contrast_color_2;
 	disable_color.a = 0.7;
 	theme->set_color("files_disabled", "FileDialog", disable_color);
 
