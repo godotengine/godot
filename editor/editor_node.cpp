@@ -296,6 +296,35 @@ void EditorNode::_notification(int p_what) {
 			scene_tabs->set_min_width(0);
 		}
 		_update_scene_tabs();
+
+		//_update_icons
+		for (int i = 0; i < singleton->main_editor_buttons.size(); i++) {
+			main_editor_buttons[i]->set_icon(gui_base->get_icon(singleton->main_editor_buttons[i]->get_name(), "EditorIcons"));
+		}
+		play_button->set_icon(gui_base->get_icon("MainPlay", "EditorIcons"));
+		play_scene_button->set_icon(gui_base->get_icon("PlayScene", "EditorIcons"));
+		play_custom_scene_button->set_icon(gui_base->get_icon("PlayCustom", "EditorIcons"));
+		pause_button->set_icon(gui_base->get_icon("Pause", "EditorIcons"));
+		stop_button->set_icon(gui_base->get_icon("Stop", "EditorIcons"));
+
+		prev_scene->set_icon(gui_base->get_icon("PrevScene", "EditorIcons"));
+		distraction_free->set_icon(gui_base->get_icon("DistractionFree", "EditorIcons"));
+
+		resource_new_button->set_icon(gui_base->get_icon("New", "EditorIcons"));
+		resource_load_button->set_icon(gui_base->get_icon("Load", "EditorIcons"));
+		resource_save_button->set_icon(gui_base->get_icon("Save", "EditorIcons"));
+
+		property_back->set_icon(gui_base->get_icon("Back", "EditorIcons"));
+		property_forward->set_icon(gui_base->get_icon("Forward", "EditorIcons"));
+		editor_history_menu->set_icon(gui_base->get_icon("History", "EditorIcons"));
+
+		search_button->set_icon(gui_base->get_icon("Search", "EditorIcons"));
+		object_menu->set_icon(gui_base->get_icon("Tools", "EditorIcons"));
+		// clear_button->set_icon(gui_base->get_icon("Close", "EditorIcons")); dont have access to that node. needs to become a class property
+		update_menu->set_icon(gui_base->get_icon("Collapse", "EditorIcons"));
+		dock_tab_move_left->set_icon(theme->get_icon("Back", "EditorIcons"));
+		dock_tab_move_right->set_icon(theme->get_icon("Forward", "EditorIcons"));
+		update_menu->set_icon(gui_base->get_icon("Progress1", "EditorIcons"));
 	}
 }
 
@@ -4917,7 +4946,7 @@ EditorNode::EditorNode() {
 	play_cc->set_margin(MARGIN_TOP, 5);
 
 	play_button_panel = memnew(PanelContainer);
-	play_button_panel->add_style_override("panel", gui_base->get_stylebox("PlayButtonPanel", "EditorStyles"));
+	// play_button_panel->add_style_override("panel", gui_base->get_stylebox("PlayButtonPanel", "EditorStyles"));
 	play_cc->add_child(play_button_panel);
 
 	HBoxContainer *play_hb = memnew(HBoxContainer);

@@ -58,6 +58,9 @@ void NodeDock::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		connections_button->set_icon(get_icon("Connect", "EditorIcons"));
 		groups_button->set_icon(get_icon("Groups", "EditorIcons"));
+	} else if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
+		connections_button->set_icon(get_icon("Connect", "EditorIcons"));
+		groups_button->set_icon(get_icon("Groups", "EditorIcons"));
 	}
 }
 

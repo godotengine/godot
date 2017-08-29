@@ -92,6 +92,13 @@ void FindReplaceBar::_notification(int p_what) {
 	} else if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 
 		set_process_unhandled_input(is_visible_in_tree());
+	} else if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
+
+		find_prev->set_icon(get_icon("MoveUp", "EditorIcons"));
+		find_next->set_icon(get_icon("MoveDown", "EditorIcons"));
+		hide_button->set_normal_texture(get_icon("Close", "EditorIcons"));
+		hide_button->set_hover_texture(get_icon("CloseHover", "EditorIcons"));
+		hide_button->set_pressed_texture(get_icon("Close", "EditorIcons"));
 	}
 }
 
