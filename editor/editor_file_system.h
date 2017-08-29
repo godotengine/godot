@@ -54,6 +54,7 @@ class EditorFileSystemDirectory : public Object {
 		StringName type;
 		uint64_t modified_time;
 		uint64_t import_modified_time;
+		bool import_valid;
 		Vector<String> deps;
 		bool verified; //used for checking changes
 	};
@@ -153,6 +154,7 @@ class EditorFileSystem : public Node {
 		uint64_t modification_time;
 		uint64_t import_modification_time;
 		Vector<String> deps;
+		bool import_valid;
 	};
 
 	HashMap<String, FileCache> file_cache;

@@ -40,7 +40,7 @@ class ResourceFormatImporter : public ResourceFormatLoader {
 		String type;
 	};
 
-	Error _get_path_and_type(const String &p_path, PathAndType &r_path_and_type) const;
+	Error _get_path_and_type(const String &p_path, PathAndType &r_path_and_type, bool *r_valid = NULL) const;
 
 	static ResourceFormatImporter *singleton;
 
@@ -54,6 +54,7 @@ public:
 	virtual bool recognize_path(const String &p_path, const String &p_for_type = String()) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
+	virtual bool is_import_valid(const String &p_path) const;
 	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
 
 	virtual bool can_be_imported(const String &p_path) const;

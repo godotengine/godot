@@ -66,6 +66,7 @@ public:
 	virtual String get_resource_type(const String &p_path) const = 0;
 	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
 	virtual Error rename_dependencies(const String &p_path, const Map<String, String> &p_map) { return OK; }
+	virtual bool is_import_valid(const String &p_path) const { return true; }
 
 	virtual ~ResourceFormatLoader() {}
 };
@@ -104,6 +105,7 @@ public:
 	static String get_resource_type(const String &p_path);
 	static void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
 	static Error rename_dependencies(const String &p_path, const Map<String, String> &p_map);
+	static bool is_import_valid(const String &p_path);
 
 	static void set_timestamp_on_load(bool p_timestamp) { timestamp_on_load = p_timestamp; }
 

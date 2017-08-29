@@ -32,13 +32,17 @@
 #include "os/os.h"
 #include "variant_parser.h"
 
-Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndType &r_path_and_type) const {
+Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndType &r_path_and_type, bool *r_valid) const {
 
 	Error err;
 	FileAccess *f = FileAccess::open(p_path + ".import", FileAccess::READ, &err);
 
-	if (!f)
+	if (!f) {
+		if (r_valid) {
+			*r_valid = false;
+		}
 		return err;
+	}
 
 	VariantParser::StreamFile stream;
 	stream.f = f;
@@ -46,6 +50,10 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 	String assign;
 	Variant value;
 	VariantParser::Tag next_tag;
+
+	if (r_valid) {
+		*r_valid = true;
+	}
 
 	int lines = 0;
 	String error_text;
@@ -79,6 +87,10 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 				path_found = true; //first match must have priority
 			} else if (assign == "type") {
 				r_path_and_type.type = value;
+			} else if (assign == "valid") {
+				if (r_valid) {
+					*r_valid = value;
+				}
 			}
 
 		} else if (next_tag.name != "remap") {
@@ -243,6 +255,14 @@ void ResourceFormatImporter::get_internal_resource_path_list(const String &p_pat
 		}
 	}
 	memdelete(f);
+}
+
+bool ResourceFormatImporter::is_import_valid(const String &p_path) const {
+
+	bool valid = true;
+	PathAndType pat;
+	_get_path_and_type(p_path, pat, &valid);
+	return valid;
 }
 
 String ResourceFormatImporter::get_resource_type(const String &p_path) const {
