@@ -29,7 +29,9 @@ https://github.com/googlei18n/noto-fonts/blob/master/FAQ.md#whats-the-difference
 
 ### Adobe Source Code Pro Regular
 
-- Upstream: ?
+- Upstream: https://github.com/adobe-fonts/source-code-pro
+- Version: 2.030
+- License: OFL-1.1
 
 ### DroidSans*.ttf
 
