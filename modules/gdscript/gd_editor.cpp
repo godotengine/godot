@@ -297,23 +297,25 @@ void GDScriptLanguage::get_public_functions(List<MethodInfo> *p_functions) const
 	//not really "functions", but..
 	{
 		MethodInfo mi;
-		mi.name = "preload:Resource";
+		mi.name = "preload";
 		mi.arguments.push_back(PropertyInfo(Variant::STRING, "path"));
 		mi.return_val = PropertyInfo(Variant::OBJECT, "", PROPERTY_HINT_RESOURCE_TYPE, "Resource");
 		p_functions->push_back(mi);
 	}
 	{
 		MethodInfo mi;
-		mi.name = "yield:GDFunctionState";
+		mi.name = "yield";
 		mi.arguments.push_back(PropertyInfo(Variant::OBJECT, "object"));
 		mi.arguments.push_back(PropertyInfo(Variant::STRING, "signal"));
 		mi.default_arguments.push_back(Variant::NIL);
 		mi.default_arguments.push_back(Variant::STRING);
+		mi.return_val = PropertyInfo(Variant::OBJECT, "", PROPERTY_HINT_RESOURCE_TYPE, "GDFunctionState");
 		p_functions->push_back(mi);
 	}
 	{
 		MethodInfo mi;
 		mi.name = "assert";
+		mi.return_val.type = Variant::NIL;
 		mi.arguments.push_back(PropertyInfo(Variant::BOOL, "condition"));
 		p_functions->push_back(mi);
 	}

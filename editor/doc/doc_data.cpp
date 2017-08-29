@@ -163,6 +163,43 @@ void DocData::remove_from(const DocData &p_data) {
 	}
 }
 
+static void return_doc_from_retinfo(DocData::MethodDoc &p_method, const PropertyInfo &p_retinfo) {
+
+	if (p_retinfo.type == Variant::INT && p_retinfo.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
+		p_method.return_enum = p_retinfo.class_name;
+		p_method.return_type = "int";
+	} else if (p_retinfo.class_name != StringName()) {
+		p_method.return_type = p_retinfo.class_name;
+	} else if (p_retinfo.hint == PROPERTY_HINT_RESOURCE_TYPE) {
+		p_method.return_type = p_retinfo.hint_string;
+	} else if (p_retinfo.type == Variant::NIL && p_retinfo.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
+		p_method.return_type = "Variant";
+	} else if (p_retinfo.type == Variant::NIL) {
+		p_method.return_type = "void";
+	} else {
+		p_method.return_type = Variant::get_type_name(p_retinfo.type);
+	}
+}
+
+static void argument_doc_from_arginfo(DocData::ArgumentDoc &p_argument, const PropertyInfo &p_arginfo) {
+
+	p_argument.name = p_arginfo.name;
+
+	if (p_arginfo.type == Variant::INT && p_arginfo.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
+		p_argument.enumeration = p_arginfo.class_name;
+		p_argument.type = "int";
+	} else if (p_arginfo.class_name != StringName()) {
+		p_argument.type = p_arginfo.class_name;
+	} else if (p_arginfo.hint == PROPERTY_HINT_RESOURCE_TYPE) {
+		p_argument.type = p_arginfo.hint_string;
+	} else if (p_arginfo.type == Variant::NIL) {
+		// Parameters cannot be void, so PROPERTY_USAGE_NIL_IS_VARIANT is not necessary
+		p_argument.type = "Variant";
+	} else {
+		p_argument.type = Variant::get_type_name(p_arginfo.type);
+	}
+}
+
 void DocData::generate(bool p_basic_types) {
 
 	List<StringName> classes;
@@ -263,51 +300,17 @@ void DocData::generate(bool p_basic_types) {
 			for (int i = -1; i < E->get().arguments.size(); i++) {
 
 				if (i == -1) {
-
 #ifdef DEBUG_METHODS_ENABLED
-
-					PropertyInfo retinfo = E->get().return_val;
-
-					if (retinfo.type == Variant::INT && retinfo.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
-						method.return_enum = retinfo.class_name;
-						method.return_type = "int";
-					} else if (retinfo.class_name != StringName()) {
-						method.return_type = retinfo.class_name;
-					} else if (retinfo.hint == PROPERTY_HINT_RESOURCE_TYPE) {
-
-						method.return_type = retinfo.hint_string;
-					} else if (retinfo.type == Variant::NIL && retinfo.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
-
-						method.return_type = "Variant";
-					} else if (retinfo.type == Variant::NIL) {
-						method.return_type = "void";
-					} else {
-						method.return_type = Variant::get_type_name(retinfo.type);
-					}
+					return_doc_from_retinfo(method, E->get().return_val);
 #endif
-
 				} else {
+
+					const PropertyInfo &arginfo = E->get().arguments[i];
 
 					ArgumentDoc argument;
 
-					PropertyInfo arginfo = E->get().arguments[i];
+					argument_doc_from_arginfo(argument, arginfo);
 
-					if (arginfo.type == Variant::INT && arginfo.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
-						argument.enumeration = arginfo.class_name;
-						argument.type = "int";
-					} else if (arginfo.class_name != StringName()) {
-						argument.type = arginfo.class_name;
-					} else if (arginfo.hint == PROPERTY_HINT_RESOURCE_TYPE) {
-
-						argument.type = arginfo.hint_string;
-					} else if (arginfo.type == Variant::NIL && arginfo.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
-
-						argument.type = "Variant";
-					} else {
-						argument.type = Variant::get_type_name(arginfo.type);
-					}
-
-					argument.name = E->get().arguments[i].name;
 					int darg_idx = i - (E->get().arguments.size() - E->get().default_arguments.size());
 
 					if (darg_idx >= 0) {
@@ -464,26 +467,26 @@ void DocData::generate(bool p_basic_types) {
 
 			for (int i = 0; i < mi.arguments.size(); i++) {
 
-				ArgumentDoc arg;
-				PropertyInfo pi = mi.arguments[i];
+				PropertyInfo arginfo = mi.arguments[i];
 
-				arg.name = pi.name;
-				//print_line("arg name: "+arg.name);
-				if (pi.type == Variant::NIL)
-					arg.type = "var";
+				ArgumentDoc ad;
+				ad.name = arginfo.name;
+
+				if (arginfo.type == Variant::NIL)
+					ad.type = "var";
 				else
-					arg.type = Variant::get_type_name(pi.type);
+					ad.type = Variant::get_type_name(arginfo.type);
+
 				int defarg = mi.default_arguments.size() - mi.arguments.size() + i;
 				if (defarg >= 0)
-					arg.default_value = mi.default_arguments[defarg];
+					ad.default_value = mi.default_arguments[defarg];
 
-				method.arguments.push_back(arg);
+				method.arguments.push_back(ad);
 			}
 
 			if (mi.return_val.type == Variant::NIL) {
 				if (mi.return_val.name != "")
 					method.return_type = "var";
-
 			} else {
 				method.return_type = Variant::get_type_name(mi.return_val.type);
 			}
@@ -572,26 +575,13 @@ void DocData::generate(bool p_basic_types) {
 				MethodInfo &mi = E->get();
 				MethodDoc md;
 				md.name = mi.name;
-				if (mi.return_val.name != "")
-					md.return_type = mi.return_val.name;
-				else if (mi.name.find(":") != -1) {
-					md.return_type = mi.name.get_slice(":", 1);
-					md.name = mi.name.get_slice(":", 0);
-				} else
-					md.return_type = Variant::get_type_name(mi.return_val.type);
+
+				return_doc_from_retinfo(md, mi.return_val);
 
 				for (int i = 0; i < mi.arguments.size(); i++) {
 
-					PropertyInfo &pi = mi.arguments[i];
-
 					ArgumentDoc ad;
-					ad.name = pi.name;
-
-					if (pi.type == Variant::NIL)
-						ad.type = "Variant";
-					else
-						ad.type = Variant::get_type_name(pi.type);
-
+					argument_doc_from_arginfo(ad, mi.arguments[i]);
 					md.arguments.push_back(ad);
 				}
 

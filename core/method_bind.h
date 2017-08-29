@@ -334,6 +334,7 @@ public:
 		}
 		argument_types = at;
 		arguments = p_info;
+		arguments.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 #endif
 	}
 
