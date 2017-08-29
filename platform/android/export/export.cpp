@@ -1293,7 +1293,7 @@ public:
 		bool export_arm = p_preset->get("architecture/arm");
 		bool export_arm64 = p_preset->get("architecture/arm64");
 
-		bool use_32_fb = p_preset->get("screen/use_32_bits_view");
+		bool use_32_fb = p_preset->get("graphics/32_bits_framebuffer");
 		bool immersive = p_preset->get("screen/immersive_mode");
 
 		bool _signed = p_preset->get("package/signed");
