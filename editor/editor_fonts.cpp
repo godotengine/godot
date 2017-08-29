@@ -64,12 +64,12 @@ static Ref<BitmapFont> make_font(int p_height, int p_ascent, int p_valign, int p
 	return font;
 }
 
-#define MAKE_FALLBACKS(m_name)               \
-	m_name->add_fallback(DroidSansFallback); \
-	m_name->add_fallback(DroidSansJapanese); \
-	m_name->add_fallback(DroidSansArabic);   \
-	m_name->add_fallback(DroidSansHebrew);   \
-	m_name->add_fallback(DroidSansThai);
+#define MAKE_FALLBACKS(m_name)          \
+	m_name->add_fallback(FontArabic);   \
+	m_name->add_fallback(FontHebrew);   \
+	m_name->add_fallback(FontThai);     \
+	m_name->add_fallback(FontJapanese); \
+	m_name->add_fallback(FontFallback);
 
 #define MAKE_DEFAULT_FONT(m_name, m_size) \
 	Ref<DynamicFont> m_name;              \
@@ -86,30 +86,30 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	DefaultFont->set_font_ptr(_font_NotoSansUI_Regular, _font_NotoSansUI_Regular_size);
 	DefaultFont->set_force_autohinter(true); //just looks better..i think?
 
-	Ref<DynamicFontData> DroidSansFallback;
-	DroidSansFallback.instance();
-	DroidSansFallback->set_font_ptr(_font_DroidSansFallback, _font_DroidSansFallback_size);
-	DroidSansFallback->set_force_autohinter(true); //just looks better..i think?
+	Ref<DynamicFontData> FontFallback;
+	FontFallback.instance();
+	FontFallback->set_font_ptr(_font_DroidSansFallback, _font_DroidSansFallback_size);
+	FontFallback->set_force_autohinter(true); //just looks better..i think?
 
-	Ref<DynamicFontData> DroidSansJapanese;
-	DroidSansJapanese.instance();
-	DroidSansJapanese->set_font_ptr(_font_DroidSansJapanese, _font_DroidSansJapanese_size);
-	DroidSansJapanese->set_force_autohinter(true); //just looks better..i think?
+	Ref<DynamicFontData> FontJapanese;
+	FontJapanese.instance();
+	FontJapanese->set_font_ptr(_font_DroidSansJapanese, _font_DroidSansJapanese_size);
+	FontJapanese->set_force_autohinter(true); //just looks better..i think?
 
-	Ref<DynamicFontData> DroidSansArabic;
-	DroidSansArabic.instance();
-	DroidSansArabic->set_font_ptr(_font_DroidSansArabic, _font_DroidSansArabic_size);
-	DroidSansArabic->set_force_autohinter(true); //just looks better..i think?
+	Ref<DynamicFontData> FontArabic;
+	FontArabic.instance();
+	FontArabic->set_font_ptr(_font_NotoNaskhArabicUI_Regular, _font_NotoNaskhArabicUI_Regular_size);
+	FontArabic->set_force_autohinter(true); //just looks better..i think?
 
-	Ref<DynamicFontData> DroidSansHebrew;
-	DroidSansHebrew.instance();
-	DroidSansHebrew->set_font_ptr(_font_DroidSansHebrew, _font_DroidSansHebrew_size);
-	DroidSansHebrew->set_force_autohinter(true); //just looks better..i think?
+	Ref<DynamicFontData> FontHebrew;
+	FontHebrew.instance();
+	FontHebrew->set_font_ptr(_font_NotoSansHebrew_Regular, _font_NotoSansHebrew_Regular_size);
+	FontHebrew->set_force_autohinter(true); //just looks better..i think?
 
-	Ref<DynamicFontData> DroidSansThai;
-	DroidSansThai.instance();
-	DroidSansThai->set_font_ptr(_font_DroidSansThai, _font_DroidSansThai_size);
-	DroidSansThai->set_force_autohinter(true); //just looks better..i think?
+	Ref<DynamicFontData> FontThai;
+	FontThai.instance();
+	FontThai->set_font_ptr(_font_NotoSansThaiUI_Regular, _font_NotoSansThaiUI_Regular_size);
+	FontThai->set_force_autohinter(true); //just looks better..i think?
 
 	/* Source Code Pro */
 
