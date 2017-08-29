@@ -50,6 +50,9 @@
 #define GIZMO_RING_HALF_WIDTH 0.1
 //#define GIZMO_SCALE_DEFAULT 0.28
 #define GIZMO_SCALE_DEFAULT 0.15
+#define GIZMO_PLANE_SIZE 0.2
+#define GIZMO_PLANE_DST 0.3
+#define GIZMO_CIRCLE_SIZE 0.9
 
 #define ZOOM_MIN_DISTANCE 0.001
 #define ZOOM_MULTIPLIER 1.08
@@ -588,6 +591,7 @@ bool SpatialEditorViewport::_gizmo_select(const Vector2 &p_screenpos, bool p_hig
 			float grabber_radius = gs * GIZMO_ARROW_SIZE;
 
 			Vector3 r;
+
 			if (Geometry::segment_intersects_sphere(ray_pos, ray_pos + ray * 10000.0, grabber_pos, grabber_radius, &r)) {
 				float d = r.distance_to(ray_pos);
 				if (d < col_d) {
@@ -597,17 +601,49 @@ bool SpatialEditorViewport::_gizmo_select(const Vector2 &p_screenpos, bool p_hig
 			}
 		}
 
+		bool is_plane_translate = false;
+		// second try
+		if (col_axis == -1) {
+			col_d = 1e20;
+
+			for (int i = 0; i < 3; i++) {
+
+				Vector3 ivec2 = gt.basis.get_axis((i + 1) % 3).normalized();
+				Vector3 ivec3 = gt.basis.get_axis((i + 2) % 3).normalized();
+
+				Vector3 grabber_pos = gt.origin + (ivec2 + ivec3) * gs * (GIZMO_PLANE_SIZE + GIZMO_PLANE_DST);
+
+				Vector3 r;
+				Plane plane(gt.origin, gt.basis.get_axis(i).normalized());
+
+				if (plane.intersects_ray(ray_pos, ray, &r)) {
+
+					float dist = r.distance_to(grabber_pos);
+					if (dist < (gs * GIZMO_PLANE_SIZE)) {
+
+						float d = ray_pos.distance_to(r);
+						if (d < col_d) {
+							col_d = d;
+							col_axis = i;
+
+							is_plane_translate = true;
+						}
+					}
+				}
+			}
+		}
+
 		if (col_axis != -1) {
 
 			if (p_highlight_only) {
 
-				spatial_editor->select_gizmo_highlight_axis(col_axis);
+				spatial_editor->select_gizmo_highlight_axis(col_axis + (is_plane_translate ? 6 : 0));
 
 			} else {
-				//handle rotate
+				//handle plane translate
 				_edit.mode = TRANSFORM_TRANSLATE;
 				_compute_edit(Point2(p_screenpos.x, p_screenpos.y));
-				_edit.plane = TransformPlane(TRANSFORM_X_AXIS + col_axis);
+				_edit.plane = TransformPlane(TRANSFORM_X_AXIS + col_axis + (is_plane_translate ? 3 : 0));
 			}
 			return true;
 		}
@@ -627,7 +663,7 @@ bool SpatialEditorViewport::_gizmo_select(const Vector2 &p_screenpos, bool p_hig
 
 			float dist = r.distance_to(gt.origin);
 
-			if (dist > gs * (1 - GIZMO_RING_HALF_WIDTH) && dist < gs * (1 + GIZMO_RING_HALF_WIDTH)) {
+			if (dist > gs * (GIZMO_CIRCLE_SIZE - GIZMO_RING_HALF_WIDTH) && dist < gs * (GIZMO_CIRCLE_SIZE + GIZMO_RING_HALF_WIDTH)) {
 
 				float d = ray_pos.distance_to(r);
 				if (d < col_d) {
@@ -921,7 +957,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 						if (get_selected_count() == 0)
 							break; //bye
-						//handle rotate
+						//handle translate
 						_edit.mode = TRANSFORM_TRANSLATE;
 						_compute_edit(b->get_position());
 						break;
@@ -1175,6 +1211,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 						Vector3 motion_mask;
 						Plane plane;
+						bool plane_mv;
 
 						switch (_edit.plane) {
 							case TRANSFORM_VIEW:
@@ -1193,6 +1230,21 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(2);
 								plane = Plane(_edit.center, motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized());
 								break;
+							case TRANSFORM_YZ:
+								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(2) + spatial_editor->get_gizmo_transform().basis.get_axis(1);
+								plane = Plane(_edit.center, spatial_editor->get_gizmo_transform().basis.get_axis(0));
+								plane_mv = true;
+								break;
+							case TRANSFORM_XZ:
+								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(2) + spatial_editor->get_gizmo_transform().basis.get_axis(0);
+								plane = Plane(_edit.center, spatial_editor->get_gizmo_transform().basis.get_axis(1));
+								plane_mv = true;
+								break;
+							case TRANSFORM_XY:
+								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(0) + spatial_editor->get_gizmo_transform().basis.get_axis(1);
+								plane = Plane(_edit.center, spatial_editor->get_gizmo_transform().basis.get_axis(2));
+								plane_mv = true;
+								break;
 						}
 
 						Vector3 intersection;
@@ -1206,7 +1258,10 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						//_validate_selection();
 						Vector3 motion = intersection - click;
 						if (motion_mask != Vector3()) {
-							motion = motion_mask.dot(motion) * motion_mask;
+							if (plane_mv)
+								motion *= motion_mask;
+							else
+								motion = motion_mask.dot(motion) * motion_mask;
 						}
 
 						//set_message("Translating: "+motion);
@@ -2185,6 +2240,14 @@ void SpatialEditorViewport::_init_gizmo_instance(int p_idx) {
 		VS::get_singleton()->instance_geometry_set_cast_shadows_setting(move_gizmo_instance[i], VS::SHADOW_CASTING_SETTING_OFF);
 		VS::get_singleton()->instance_set_layer_mask(move_gizmo_instance[i], layer);
 
+		move_plane_gizmo_instance[i] = VS::get_singleton()->instance_create();
+		VS::get_singleton()->instance_set_base(move_plane_gizmo_instance[i], spatial_editor->get_move_plane_gizmo(i)->get_rid());
+		VS::get_singleton()->instance_set_scenario(move_plane_gizmo_instance[i], get_tree()->get_root()->get_world()->get_scenario());
+		VS::get_singleton()->instance_set_visible(move_plane_gizmo_instance[i], false);
+		//VS::get_singleton()->instance_geometry_set_flag(move_plane_gizmo_instance[i],VS::INSTANCE_FLAG_DEPH_SCALE,true);
+		VS::get_singleton()->instance_geometry_set_cast_shadows_setting(move_plane_gizmo_instance[i], VS::SHADOW_CASTING_SETTING_OFF);
+		VS::get_singleton()->instance_set_layer_mask(move_plane_gizmo_instance[i], layer);
+
 		rotate_gizmo_instance[i] = VS::get_singleton()->instance_create();
 		VS::get_singleton()->instance_set_base(rotate_gizmo_instance[i], spatial_editor->get_rotate_gizmo(i)->get_rid());
 		VS::get_singleton()->instance_set_scenario(rotate_gizmo_instance[i], get_tree()->get_root()->get_world()->get_scenario());
@@ -2199,6 +2262,7 @@ void SpatialEditorViewport::_finish_gizmo_instances() {
 
 	for (int i = 0; i < 3; i++) {
 		VS::get_singleton()->free(move_gizmo_instance[i]);
+		VS::get_singleton()->free(move_plane_gizmo_instance[i]);
 		VS::get_singleton()->free(rotate_gizmo_instance[i]);
 	}
 }
@@ -2290,6 +2354,8 @@ void SpatialEditorViewport::update_transform_gizmo_view() {
 	for (int i = 0; i < 3; i++) {
 		VisualServer::get_singleton()->instance_set_transform(move_gizmo_instance[i], xform);
 		VisualServer::get_singleton()->instance_set_visible(move_gizmo_instance[i], spatial_editor->is_gizmo_visible() && (spatial_editor->get_tool_mode() == SpatialEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == SpatialEditor::TOOL_MODE_MOVE));
+		VisualServer::get_singleton()->instance_set_transform(move_plane_gizmo_instance[i], xform);
+		VisualServer::get_singleton()->instance_set_visible(move_plane_gizmo_instance[i], spatial_editor->is_gizmo_visible() && (spatial_editor->get_tool_mode() == SpatialEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == SpatialEditor::TOOL_MODE_MOVE));
 		VisualServer::get_singleton()->instance_set_transform(rotate_gizmo_instance[i], xform);
 		VisualServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[i], spatial_editor->is_gizmo_visible() && (spatial_editor->get_tool_mode() == SpatialEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == SpatialEditor::TOOL_MODE_ROTATE));
 	}
@@ -2848,6 +2914,7 @@ void SpatialEditor::select_gizmo_highlight_axis(int p_axis) {
 	for (int i = 0; i < 3; i++) {
 
 		move_gizmo[i]->surface_set_material(0, i == p_axis ? gizmo_hl : gizmo_color[i]);
+		move_plane_gizmo[i]->surface_set_material(0, (i + 6) == p_axis ? gizmo_hl : plane_gizmo_color[i]);
 		rotate_gizmo[i]->surface_set_material(0, (i + 3) == p_axis ? gizmo_hl : gizmo_color[i]);
 	}
 }
@@ -3441,10 +3508,12 @@ void SpatialEditor::_init_indicators() {
 		gizmo_hl->set_flag(SpatialMaterial::FLAG_ONTOP, true);
 		gizmo_hl->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
 		gizmo_hl->set_albedo(Color(1, 1, 1, gizmo_alph + 0.2f));
+		gizmo_hl->set_cull_mode(SpatialMaterial::CULL_DISABLED);
 
 		for (int i = 0; i < 3; i++) {
 
 			move_gizmo[i] = Ref<ArrayMesh>(memnew(ArrayMesh));
+			move_plane_gizmo[i] = Ref<ArrayMesh>(memnew(ArrayMesh));
 			rotate_gizmo[i] = Ref<ArrayMesh>(memnew(ArrayMesh));
 
 			Ref<SpatialMaterial> mat = memnew(SpatialMaterial);
@@ -3455,6 +3524,7 @@ void SpatialEditor::_init_indicators() {
 			col[i] = 1.0;
 			col.a = gizmo_alph;
 			mat->set_albedo(col);
+
 			gizmo_color[i] = mat;
 
 			Vector3 ivec;
@@ -3512,17 +3582,60 @@ void SpatialEditor::_init_indicators() {
 				surftool->commit(move_gizmo[i]);
 			}
 
+			// plane translation
+			{
+				Ref<SurfaceTool> surftool = memnew(SurfaceTool);
+				surftool->begin(Mesh::PRIMITIVE_TRIANGLES);
+
+				Vector3 vec = ivec2 - ivec3;
+				Vector3 plane[4] = {
+					vec * GIZMO_PLANE_DST,
+					vec * GIZMO_PLANE_DST + ivec2 * GIZMO_PLANE_SIZE,
+					vec * (GIZMO_PLANE_DST + GIZMO_PLANE_SIZE),
+					vec * GIZMO_PLANE_DST - ivec3 * GIZMO_PLANE_SIZE
+				};
+
+				Basis ma(ivec, Math_PI / 2);
+
+				Vector3 points[4] = {
+					ma.xform(plane[0]),
+					ma.xform(plane[1]),
+					ma.xform(plane[2]),
+					ma.xform(plane[3]),
+				};
+				surftool->add_vertex(points[0]);
+				surftool->add_vertex(points[1]);
+				surftool->add_vertex(points[2]);
+
+				surftool->add_vertex(points[0]);
+				surftool->add_vertex(points[2]);
+				surftool->add_vertex(points[3]);
+
+				Ref<SpatialMaterial> plane_mat = memnew(SpatialMaterial);
+				plane_mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
+				plane_mat->set_flag(SpatialMaterial::FLAG_ONTOP, true);
+				plane_mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
+				plane_mat->set_cull_mode(SpatialMaterial::CULL_DISABLED);
+				Color col;
+				col[i] = 1.0;
+				col.a = gizmo_alph;
+				plane_mat->set_albedo(col);
+				plane_gizmo_color[i] = plane_mat; // needed, so we can draw planes from both sides
+				surftool->set_material(plane_mat);
+				surftool->commit(move_plane_gizmo[i]);
+			}
+
 			{
 
 				Ref<SurfaceTool> surftool = memnew(SurfaceTool);
 				surftool->begin(Mesh::PRIMITIVE_TRIANGLES);
 
 				Vector3 circle[5] = {
-					ivec * 0.02 + ivec2 * 0.02 + ivec2 * 1.0,
-					ivec * -0.02 + ivec2 * 0.02 + ivec2 * 1.0,
-					ivec * -0.02 + ivec2 * -0.02 + ivec2 * 1.0,
-					ivec * 0.02 + ivec2 * -0.02 + ivec2 * 1.0,
-					ivec * 0.02 + ivec2 * 0.02 + ivec2 * 1.0,
+					ivec * 0.02 + ivec2 * 0.02 + ivec2 * GIZMO_CIRCLE_SIZE,
+					ivec * -0.02 + ivec2 * 0.02 + ivec2 * GIZMO_CIRCLE_SIZE,
+					ivec * -0.02 + ivec2 * -0.02 + ivec2 * GIZMO_CIRCLE_SIZE,
+					ivec * 0.02 + ivec2 * -0.02 + ivec2 * GIZMO_CIRCLE_SIZE,
+					ivec * 0.02 + ivec2 * 0.02 + ivec2 * GIZMO_CIRCLE_SIZE,
 				};
 
 				for (int k = 0; k < 33; k++) {
