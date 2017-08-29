@@ -56,7 +56,6 @@
 #include "editor/editor_help.h"
 #include "editor/editor_initialize_ssl.h"
 #include "editor/editor_settings.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_themes.h"
 #include "editor/import/editor_import_collada.h"
 #include "editor/import/editor_scene_importer_gltf.h"
@@ -1017,7 +1016,6 @@ void EditorNode::_dialog_action(String p_file) {
 
 				_save_default_environment();
 				_save_scene_with_preview(p_file);
-				_call_build();
 				_run(true);
 			}
 		} break;
@@ -1567,6 +1565,9 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 		editor_data.save_editor_external_data();
 	}
 
+	if (!_call_build())
+		return;
+
 	if (bool(EDITOR_DEF("run/output/always_clear_output_on_play", true))) {
 		log->clear();
 	}
@@ -2028,7 +2029,6 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case RUN_PLAY: {
 			_menu_option_confirm(RUN_STOP, true);
-			_call_build();
 			_run(false);
 
 		} break;
@@ -2073,7 +2073,6 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 			_save_default_environment();
 			_menu_option_confirm(RUN_STOP, true);
-			_call_build();
 			_run(true);
 
 		} break;
@@ -2085,7 +2084,10 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			}
 			if (run_native->is_deploy_debug_remote_enabled()) {
 				_menu_option_confirm(RUN_STOP, true);
-				_call_build();
+
+				if (!_call_build())
+					break; // build failed
+
 				emit_signal("play_pressed");
 				editor_run.run_native_notify();
 			}
@@ -3039,7 +3041,6 @@ void EditorNode::_quick_opened() {
 
 void EditorNode::_quick_run() {
 
-	_call_build();
 	_run(false, quick_run->get_selected());
 }
 
@@ -4215,13 +4216,16 @@ void EditorNode::add_build_callback(EditorBuildCallback p_callback) {
 	build_callbacks[build_callback_count++] = p_callback;
 }
 
-EditorPluginInitializeCallback EditorNode::build_callbacks[EditorNode::MAX_BUILD_CALLBACKS];
+EditorBuildCallback EditorNode::build_callbacks[EditorNode::MAX_BUILD_CALLBACKS];
 
-void EditorNode::_call_build() {
+bool EditorNode::_call_build() {
 
 	for (int i = 0; i < build_callback_count; i++) {
-		build_callbacks[i]();
+		if (!build_callbacks[i]())
+			return false;
 	}
+
+	return true;
 }
 
 void EditorNode::_inherit_imported(const String &p_action) {
