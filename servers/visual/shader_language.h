@@ -118,6 +118,7 @@ public:
 		TK_CF_BREAK,
 		TK_CF_CONTINUE,
 		TK_CF_RETURN,
+		TK_CF_DISCARD,
 		TK_BRACKET_OPEN,
 		TK_BRACKET_CLOSE,
 		TK_CURLY_BRACKET_OPEN,
@@ -244,7 +245,8 @@ public:
 		FLOW_OP_DO,
 		FLOW_OP_BREAK,
 		FLOW_OP_SWITCH,
-		FLOW_OP_CONTINUE
+		FLOW_OP_CONTINUE,
+		FLOW_OP_DISCARD
 
 	};
 
@@ -387,10 +389,12 @@ public:
 		DataPrecision return_precision;
 		Vector<Argument> arguments;
 		BlockNode *body;
+		bool can_discard;
 
 		FunctionNode() {
 			type = TYPE_FUNCTION;
 			return_precision = PRECISION_DEFAULT;
+			can_discard = false;
 		}
 	};
 
@@ -499,6 +503,11 @@ public:
 	static void get_keyword_list(List<String> *r_keywords);
 	static void get_builtin_funcs(List<String> *r_keywords);
 
+	struct FunctionInfo {
+		Map<StringName, DataType> built_ins;
+		bool can_discard;
+	};
+
 private:
 	struct KeyWord {
 		TokenType token;
@@ -591,7 +600,7 @@ private:
 
 	Error _parse_block(BlockNode *p_block, const Map<StringName, DataType> &p_builtin_types, bool p_just_one = false, bool p_can_break = false, bool p_can_continue = false);
 
-	Error _parse_shader(const Map<StringName, Map<StringName, DataType> > &p_functions, const Set<String> &p_render_modes, const Set<String> &p_shader_types);
+	Error _parse_shader(const Map<StringName, FunctionInfo> &p_functions, const Set<String> &p_render_modes, const Set<String> &p_shader_types);
 
 public:
 	//static void get_keyword_list(ShaderType p_type,List<String> *p_keywords);
@@ -599,8 +608,8 @@ public:
 	void clear();
 
 	static String get_shader_type(const String &p_code);
-	Error compile(const String &p_code, const Map<StringName, Map<StringName, DataType> > &p_functions, const Set<String> &p_render_modes, const Set<String> &p_shader_types);
-	Error complete(const String &p_code, const Map<StringName, Map<StringName, DataType> > &p_functions, const Set<String> &p_render_modes, const Set<String> &p_shader_types, List<String> *r_options, String &r_call_hint);
+	Error compile(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Set<String> &p_render_modes, const Set<String> &p_shader_types);
+	Error complete(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Set<String> &p_render_modes, const Set<String> &p_shader_types, List<String> *r_options, String &r_call_hint);
 
 	String get_error_text();
 	int get_error_line();

@@ -165,6 +165,7 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 	"CF_BREAK",
 	"CF_CONTINUE",
 	"CF_RETURN",
+	"CF_DISCARD",
 	"BRACKET_OPEN",
 	"BRACKET_CLOSE",
 	"CURLY_BRACKET_OPEN",
@@ -3297,6 +3298,34 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Dat
 			}
 
 			p_block->statements.push_back(flow);
+		} else if (tk.type == TK_CF_DISCARD) {
+
+			//check return type
+			BlockNode *b = p_block;
+			while (b && !b->parent_function) {
+				b = b->parent_block;
+			}
+			if (!b) {
+				_set_error("Bug");
+				return ERR_BUG;
+			}
+
+			if (!b->parent_function->can_discard) {
+				_set_error("Use of 'discard' is not allowed here.");
+				return ERR_PARSE_ERROR;
+			}
+
+			ControlFlowNode *flow = alloc_node<ControlFlowNode>();
+			flow->flow_op = FLOW_OP_DISCARD;
+
+			pos = _get_tkpos();
+			tk = _get_token();
+			if (tk.type != TK_SEMICOLON) {
+				//all is good
+				_set_error("Expected ';' after discard");
+			}
+
+			p_block->statements.push_back(flow);
 
 		} else {
 
@@ -3321,7 +3350,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Dat
 	return OK;
 }
 
-Error ShaderLanguage::_parse_shader(const Map<StringName, Map<StringName, DataType> > &p_functions, const Set<String> &p_render_modes, const Set<String> &p_shader_types) {
+Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_functions, const Set<String> &p_render_modes, const Set<String> &p_shader_types) {
 
 	Token tk = _get_token();
 
@@ -3658,7 +3687,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, Map<StringName, DataTy
 
 				Map<StringName, DataType> builtin_types;
 				if (p_functions.has(name)) {
-					builtin_types = p_functions[name];
+					builtin_types = p_functions[name].built_ins;
 				}
 
 				ShaderNode::Function function;
@@ -3822,7 +3851,7 @@ String ShaderLanguage::get_shader_type(const String &p_code) {
 	return String();
 }
 
-Error ShaderLanguage::compile(const String &p_code, const Map<StringName, Map<StringName, DataType> > &p_functions, const Set<String> &p_render_modes, const Set<String> &p_shader_types) {
+Error ShaderLanguage::compile(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Set<String> &p_render_modes, const Set<String> &p_shader_types) {
 
 	clear();
 
@@ -3839,7 +3868,7 @@ Error ShaderLanguage::compile(const String &p_code, const Map<StringName, Map<St
 	return OK;
 }
 
-Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Map<StringName, DataType> > &p_functions, const Set<String> &p_render_modes, const Set<String> &p_shader_types, List<String> *r_options, String &r_call_hint) {
+Error ShaderLanguage::complete(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Set<String> &p_render_modes, const Set<String> &p_shader_types, List<String> *r_options, String &r_call_hint) {
 
 	clear();
 
@@ -3866,7 +3895,7 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Map<S
 		} break;
 		case COMPLETION_MAIN_FUNCTION: {
 
-			for (const Map<StringName, Map<StringName, DataType> >::Element *E = p_functions.front(); E; E = E->next()) {
+			for (const Map<StringName, FunctionInfo>::Element *E = p_functions.front(); E; E = E->next()) {
 
 				r_options->push_back(E->key());
 			}
@@ -3907,7 +3936,7 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Map<S
 
 			if (comp_ident && skip_function != StringName() && p_functions.has(skip_function)) {
 
-				for (Map<StringName, DataType>::Element *E = p_functions[skip_function].front(); E; E = E->next()) {
+				for (Map<StringName, DataType>::Element *E = p_functions[skip_function].built_ins.front(); E; E = E->next()) {
 					matches.insert(E->key());
 				}
 			}

@@ -608,6 +608,9 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				} else {
 					code = "return;";
 				}
+			} else if (cfnode->flow_op == SL::FLOW_OP_DISCARD) {
+
+				code = "discard;";
 			}
 
 		} break;
@@ -752,7 +755,6 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_SPATIAL].renames["SSS_STRENGTH"] = "sss_strength";
 	actions[VS::SHADER_SPATIAL].renames["AO"] = "ao";
 	actions[VS::SHADER_SPATIAL].renames["EMISSION"] = "emission";
-	actions[VS::SHADER_SPATIAL].renames["DISCARD"] = "_discard";
 	//actions[VS::SHADER_SPATIAL].renames["SCREEN_UV"]=ShaderLanguage::TYPE_VEC2;
 	actions[VS::SHADER_SPATIAL].renames["POINT_COORD"] = "gl_PointCoord";
 	actions[VS::SHADER_SPATIAL].renames["INSTANCE_CUSTOM"] = "instance_custom";

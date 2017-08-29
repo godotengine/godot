@@ -1559,10 +1559,6 @@ void main() {
 	vec2 screen_uv = gl_FragCoord.xy*screen_pixel_size;
 #endif
 
-#if defined(ENABLE_DISCARD)
-	bool discard_=false;
-#endif
-
 #if defined (ENABLE_SSS)
 	float sss_strength=0.0;
 #endif
@@ -1601,13 +1597,6 @@ FRAGMENT_SHADER_CODE
 		binormal = normalize(rot * vec3(-anisotropy_flow.y,anisotropy_flow.x,0.0));
 	}
 
-#endif
-
-#if defined(ENABLE_DISCARD)
-	if (discard_) {
-	//easy to eliminate dead code
-		discard;
-	}
 #endif
 
 #ifdef ENABLE_CLIP_ALPHA

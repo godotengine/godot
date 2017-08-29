@@ -93,9 +93,9 @@ void ShaderTextEditor::_load_theme_settings() {
 
 	if (shader.is_valid()) {
 
-		for (const Map<StringName, Map<StringName, ShaderLanguage::DataType> >::Element *E = ShaderTypes::get_singleton()->get_functions(VisualServer::ShaderMode(shader->get_mode())).front(); E; E = E->next()) {
+		for (const Map<StringName, ShaderLanguage::FunctionInfo>::Element *E = ShaderTypes::get_singleton()->get_functions(VisualServer::ShaderMode(shader->get_mode())).front(); E; E = E->next()) {
 
-			for (const Map<StringName, ShaderLanguage::DataType>::Element *F = E->get().front(); F; F = F->next()) {
+			for (const Map<StringName, ShaderLanguage::DataType>::Element *F = E->get().built_ins.front(); F; F = F->next()) {
 				keywords.push_back(F->key());
 			}
 		}

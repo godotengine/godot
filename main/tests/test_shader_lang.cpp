@@ -316,8 +316,9 @@ MainLoop *test() {
 	SL sl;
 	print_line("tokens:\n\n" + sl.token_debug(code));
 
-	Map<StringName, Map<StringName, SL::DataType> > dt;
-	dt["fragment"]["ALBEDO"] = SL::TYPE_VEC3;
+	Map<StringName, SL::FunctionInfo> dt;
+	dt["fragment"].built_ins["ALBEDO"] = SL::TYPE_VEC3;
+	dt["fragment"].can_discard = true;
 
 	Set<String> rm;
 	rm.insert("popo");
