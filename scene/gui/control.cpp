@@ -2703,7 +2703,7 @@ void Control::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("minimum_size_changed"));
 	ADD_SIGNAL(MethodInfo("modal_closed"));
 
-	BIND_VMETHOD(MethodInfo("has_point:bool", PropertyInfo(Variant::VECTOR2, "point")));
+	BIND_VMETHOD(MethodInfo(Variant::BOOL, "has_point", PropertyInfo(Variant::VECTOR2, "point")));
 }
 Control::Control() {
 

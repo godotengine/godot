@@ -1572,43 +1572,49 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 		} break;
 		case TEXT_STR: {
 
-			MethodInfo mi("str", PropertyInfo(Variant::NIL, "what"), PropertyInfo(Variant::NIL, "..."));
+			MethodInfo mi("str");
 			mi.return_val.type = Variant::STRING;
+			mi.flags |= METHOD_FLAG_VARARG;
 			return mi;
 
 		} break;
 		case TEXT_PRINT: {
 
-			MethodInfo mi("print", PropertyInfo(Variant::NIL, "what"), PropertyInfo(Variant::NIL, "..."));
+			MethodInfo mi("print");
 			mi.return_val.type = Variant::NIL;
+			mi.flags |= METHOD_FLAG_VARARG;
 			return mi;
 
 		} break;
 		case TEXT_PRINT_TABBED: {
 
-			MethodInfo mi("printt", PropertyInfo(Variant::NIL, "what"), PropertyInfo(Variant::NIL, "..."));
+			MethodInfo mi("printt");
 			mi.return_val.type = Variant::NIL;
+			mi.flags |= METHOD_FLAG_VARARG;
 			return mi;
 
 		} break;
 		case TEXT_PRINT_SPACED: {
 
-			MethodInfo mi("prints", PropertyInfo(Variant::NIL, "what"), PropertyInfo(Variant::NIL, "..."));
+			MethodInfo mi("prints");
 			mi.return_val.type = Variant::NIL;
+			mi.flags |= METHOD_FLAG_VARARG;
 			return mi;
 
 		} break;
 		case TEXT_PRINTERR: {
 
-			MethodInfo mi("printerr", PropertyInfo(Variant::NIL, "what"), PropertyInfo(Variant::NIL, "..."));
+			MethodInfo mi("printerr");
 			mi.return_val.type = Variant::NIL;
+			mi.flags |= METHOD_FLAG_VARARG;
 			return mi;
 
 		} break;
 		case TEXT_PRINTRAW: {
 
-			MethodInfo mi("printraw", PropertyInfo(Variant::NIL, "what"), PropertyInfo(Variant::NIL, "..."));
+			MethodInfo mi("printraw");
 			mi.return_val.type = Variant::NIL;
+			mi.flags |= METHOD_FLAG_VARARG;
 			return mi;
 
 		} break;
@@ -1620,8 +1626,9 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 		} break;
 		case STR_TO_VAR: {
 
-			MethodInfo mi("str2var:Variant", PropertyInfo(Variant::STRING, "string"));
+			MethodInfo mi(Variant::NIL, "str2var", PropertyInfo(Variant::STRING, "string"));
 			mi.return_val.type = Variant::NIL;
+			mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 			return mi;
 		} break;
 		case VAR_TO_BYTES: {
@@ -1632,14 +1639,16 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 		} break;
 		case BYTES_TO_VAR: {
 
-			MethodInfo mi("bytes2var:Variant", PropertyInfo(Variant::POOL_BYTE_ARRAY, "bytes"));
+			MethodInfo mi(Variant::NIL, "bytes2var", PropertyInfo(Variant::POOL_BYTE_ARRAY, "bytes"));
 			mi.return_val.type = Variant::NIL;
+			mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 			return mi;
 		} break;
 		case GEN_RANGE: {
 
-			MethodInfo mi("range", PropertyInfo(Variant::NIL, "..."));
+			MethodInfo mi("range");
 			mi.return_val.type = Variant::ARRAY;
+			mi.flags |= METHOD_FLAG_VARARG;
 			return mi;
 		} break;
 		case RESOURCE_LOAD: {
@@ -1663,14 +1672,15 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 		} break;
 		case VALIDATE_JSON: {
 
-			MethodInfo mi("validate_json:Variant", PropertyInfo(Variant::STRING, "json"));
+			MethodInfo mi("validate_json", PropertyInfo(Variant::STRING, "json"));
 			mi.return_val.type = Variant::STRING;
 			return mi;
 		} break;
 		case PARSE_JSON: {
 
-			MethodInfo mi("parse_json:Variant", PropertyInfo(Variant::STRING, "json"));
+			MethodInfo mi(Variant::NIL, "parse_json", PropertyInfo(Variant::STRING, "json"));
 			mi.return_val.type = Variant::NIL;
+			mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 			return mi;
 		} break;
 		case TO_JSON: {

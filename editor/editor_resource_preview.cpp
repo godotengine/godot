@@ -69,8 +69,8 @@ Ref<Texture> EditorResourcePreviewGenerator::generate_from_path(const String &p_
 void EditorResourcePreviewGenerator::_bind_methods() {
 
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "handles", PropertyInfo(Variant::STRING, "type")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::OBJECT, "generate:Texture", PropertyInfo(Variant::OBJECT, "from", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::OBJECT, "generate_from_path:Texture", PropertyInfo(Variant::STRING, "path", PROPERTY_HINT_FILE)));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(CLASS_INFO(Texture), "generate", PropertyInfo(Variant::OBJECT, "from", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(CLASS_INFO(Texture), "generate_from_path", PropertyInfo(Variant::STRING, "path", PROPERTY_HINT_FILE)));
 }
 
 EditorResourcePreviewGenerator::EditorResourcePreviewGenerator() {

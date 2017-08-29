@@ -274,6 +274,63 @@ MethodInfo::MethodInfo(Variant::Type ret, const String &p_name, const PropertyIn
 	arguments.push_back(p_param5);
 }
 
+MethodInfo::MethodInfo(const PropertyInfo &p_ret, const String &p_name)
+	: name(p_name),
+	  flags(METHOD_FLAG_NORMAL),
+	  id(0) {
+	return_val = p_ret;
+}
+
+MethodInfo::MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1)
+	: name(p_name),
+	  flags(METHOD_FLAG_NORMAL),
+	  id(0) {
+	return_val = p_ret;
+	arguments.push_back(p_param1);
+}
+
+MethodInfo::MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2)
+	: name(p_name),
+	  flags(METHOD_FLAG_NORMAL),
+	  id(0) {
+	return_val = p_ret;
+	arguments.push_back(p_param1);
+	arguments.push_back(p_param2);
+}
+
+MethodInfo::MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3)
+	: name(p_name),
+	  flags(METHOD_FLAG_NORMAL),
+	  id(0) {
+	return_val = p_ret;
+	arguments.push_back(p_param1);
+	arguments.push_back(p_param2);
+	arguments.push_back(p_param3);
+}
+
+MethodInfo::MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4)
+	: name(p_name),
+	  flags(METHOD_FLAG_NORMAL),
+	  id(0) {
+	return_val = p_ret;
+	arguments.push_back(p_param1);
+	arguments.push_back(p_param2);
+	arguments.push_back(p_param3);
+	arguments.push_back(p_param4);
+}
+
+MethodInfo::MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4, const PropertyInfo &p_param5)
+	: name(p_name),
+	  flags(METHOD_FLAG_NORMAL),
+	  id(0) {
+	return_val = p_ret;
+	arguments.push_back(p_param1);
+	arguments.push_back(p_param2);
+	arguments.push_back(p_param3);
+	arguments.push_back(p_param4);
+	arguments.push_back(p_param5);
+}
+
 Object::Connection::operator Variant() const {
 
 	Dictionary d;
@@ -1529,7 +1586,7 @@ void Object::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("script_changed"));
 
 	BIND_VMETHOD(MethodInfo("_notification", PropertyInfo(Variant::INT, "what")));
-	BIND_VMETHOD(MethodInfo("_set:bool", PropertyInfo(Variant::STRING, "property"), PropertyInfo(Variant::NIL, "value")));
+	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_set", PropertyInfo(Variant::STRING, "property"), PropertyInfo(Variant::NIL, "value")));
 #ifdef TOOLS_ENABLED
 	MethodInfo miget("_get", PropertyInfo(Variant::STRING, "property"));
 	miget.return_val.name = "Variant";
