@@ -54,6 +54,12 @@ void Script::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_source_code"), &Script::get_source_code);
 	ClassDB::bind_method(D_METHOD("set_source_code", "source"), &Script::set_source_code);
 	ClassDB::bind_method(D_METHOD("reload", "keep_state"), &Script::reload, DEFVAL(false));
+
+	ClassDB::bind_method(D_METHOD("has_method", "method_name"), &Script::has_method);
+	ClassDB::bind_method(D_METHOD("has_script_signal", "signal_name"), &Script::has_script_signal);
+
+	ClassDB::bind_method(D_METHOD("is_tool"), &Script::is_tool);
+	ClassDB::bind_method(D_METHOD("get_node_type"), &Script::get_node_type);
 }
 
 void ScriptServer::set_scripting_enabled(bool p_enabled) {
