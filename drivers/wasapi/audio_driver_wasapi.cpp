@@ -65,6 +65,18 @@ Error AudioDriverWASAPI::init_device() {
 	format_tag = pwfex->wFormatTag;
 	bits_per_sample = pwfex->wBitsPerSample;
 
+	switch (channels) {
+		case 2: // Stereo
+		case 6: // Surround 5.1
+		case 8: // Surround 7.1
+			break;
+
+		default:
+			ERR_PRINT("WASAPI: Unsupported number of channels");
+			ERR_FAIL_V(ERR_CANT_OPEN);
+			break;
+	}
+
 	if (format_tag == WAVE_FORMAT_EXTENSIBLE) {
 		WAVEFORMATEXTENSIBLE *wfex = (WAVEFORMATEXTENSIBLE *)pwfex;
 
@@ -83,13 +95,6 @@ Error AudioDriverWASAPI::init_device() {
 		}
 	}
 
-	int latency = GLOBAL_DEF("audio/output_latency", 25);
-	buffer_size = closest_power_of_2(latency * mix_rate / 1000);
-
-	if (OS::get_singleton()->is_stdout_verbose()) {
-		print_line("audio buffer size: " + itos(buffer_size));
-	}
-
 	hr = audio_client->Initialize(AUDCLNT_SHAREMODE_SHARED, AUDCLNT_STREAMFLAGS_EVENTCALLBACK, 0, 0, pwfex, NULL);
 	ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
 
@@ -102,11 +107,20 @@ Error AudioDriverWASAPI::init_device() {
 	hr = audio_client->GetService(IID_IAudioRenderClient, (void **)&render_client);
 	ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
 
+	UINT32 max_frames;
 	hr = audio_client->GetBufferSize(&max_frames);
 	ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
 
+	// Due to WASAPI Shared Mode we have no control of the buffer size
+	buffer_frames = max_frames;
+
+	// Sample rate is independent of channels (ref: https://stackoverflow.com/questions/11048825/audio-sample-frequency-rely-on-channels)
+	buffer_size = buffer_frames * channels;
 	samples_in.resize(buffer_size);
-	buffer_frames = buffer_size / channels;
+
+	if (OS::get_singleton()->is_stdout_verbose()) {
+		print_line("audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
+	}
 
 	return OK;
 }
@@ -200,7 +214,7 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 			HRESULT hr = ad->audio_client->GetCurrentPadding(&cur_frames);
 			if (hr == S_OK) {
 				// Check how much frames are available on the WASAPI buffer
-				UINT32 avail_frames = ad->max_frames - cur_frames;
+				UINT32 avail_frames = ad->buffer_frames - cur_frames;
 				UINT32 write_frames = avail_frames > left_frames ? left_frames : avail_frames;
 
 				BYTE *buffer = NULL;
@@ -332,7 +346,6 @@ AudioDriverWASAPI::AudioDriverWASAPI() {
 	mutex = NULL;
 	thread = NULL;
 
-	max_frames = 0;
 	format_tag = 0;
 	bits_per_sample = 0;
 

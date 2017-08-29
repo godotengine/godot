@@ -45,8 +45,9 @@ class AudioDriverOSX : public AudioDriver {
 	Mutex *mutex;
 
 	int mix_rate;
-	int channels;
-	int buffer_frames;
+	unsigned int channels;
+	unsigned int buffer_frames;
+	unsigned int buffer_size;
 
 	Vector<int32_t> samples_in;
 

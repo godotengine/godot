@@ -33,6 +33,7 @@
 
 #include <pulse/error.h>
 
+#include "os/os.h"
 #include "project_settings.h"
 
 Error AudioDriverPulseAudio::init() {
@@ -44,7 +45,7 @@ Error AudioDriverPulseAudio::init() {
 	samples_in = NULL;
 	samples_out = NULL;
 
-	mix_rate = GLOBAL_DEF("audio/mix_rate", 44100);
+	mix_rate = GLOBAL_DEF("audio/mix_rate", DEFAULT_MIX_RATE);
 	speaker_mode = SPEAKER_MODE_STEREO;
 	channels = 2;
 
@@ -53,12 +54,17 @@ Error AudioDriverPulseAudio::init() {
 	spec.channels = channels;
 	spec.rate = mix_rate;
 
-	int latency = GLOBAL_DEF("audio/output_latency", 25);
-	buffer_size = closest_power_of_2(latency * mix_rate / 1000);
+	int latency = GLOBAL_DEF("audio/output_latency", DEFAULT_OUTPUT_LATENCY);
+	buffer_frames = closest_power_of_2(latency * mix_rate / 1000);
+	buffer_size = buffer_frames * channels;
+
+	if (OS::get_singleton()->is_stdout_verbose()) {
+		print_line("audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
+	}
 
 	pa_buffer_attr attr;
-	// set to appropriate buffer size from global settings
-	attr.tlength = buffer_size;
+	// set to appropriate buffer length (in bytes) from global settings
+	attr.tlength = buffer_size * sizeof(int16_t);
 	// set them to be automatically chosen
 	attr.prebuf = (uint32_t)-1;
 	attr.maxlength = (uint32_t)-1;
@@ -80,8 +86,8 @@ Error AudioDriverPulseAudio::init() {
 		ERR_FAIL_COND_V(pulse == NULL, ERR_CANT_OPEN);
 	}
 
-	samples_in = memnew_arr(int32_t, buffer_size * channels);
-	samples_out = memnew_arr(int16_t, buffer_size * channels);
+	samples_in = memnew_arr(int32_t, buffer_size);
+	samples_out = memnew_arr(int16_t, buffer_size);
 
 	mutex = Mutex::create();
 	thread = Thread::create(AudioDriverPulseAudio::thread_func, this);
@@ -106,18 +112,18 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 
 	while (!ad->exit_thread) {
 		if (!ad->active) {
-			for (unsigned int i = 0; i < ad->buffer_size * ad->channels; i++) {
+			for (unsigned int i = 0; i < ad->buffer_size; i++) {
 				ad->samples_out[i] = 0;
 			}
 
 		} else {
 			ad->lock();
 
-			ad->audio_server_process(ad->buffer_size, ad->samples_in);
+			ad->audio_server_process(ad->buffer_frames, ad->samples_in);
 
 			ad->unlock();
 
-			for (unsigned int i = 0; i < ad->buffer_size * ad->channels; i++) {
+			for (unsigned int i = 0; i < ad->buffer_size; i++) {
 				ad->samples_out[i] = ad->samples_in[i] >> 16;
 			}
 		}
@@ -125,7 +131,7 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 		// pa_simple_write always consumes the entire buffer
 
 		int error_code;
-		int byte_size = ad->buffer_size * sizeof(int16_t) * ad->channels;
+		int byte_size = ad->buffer_size * sizeof(int16_t);
 		if (pa_simple_write(ad->pulse, ad->samples_out, byte_size, &error_code) < 0) {
 			// can't recover here
 			fprintf(stderr, "PulseAudio failed and can't recover: %s\n", pa_strerror(error_code));
@@ -175,13 +181,20 @@ void AudioDriverPulseAudio::finish() {
 	exit_thread = true;
 	Thread::wait_to_finish(thread);
 
-	if (pulse)
+	if (pulse) {
 		pa_simple_free(pulse);
+		pulse = NULL;
+	}
 
 	if (samples_in) {
 		memdelete_arr(samples_in);
+		samples_in = NULL;
+	}
+
+	if (samples_out) {
 		memdelete_arr(samples_out);
-	};
+		samples_out = NULL;
+	}
 
 	memdelete(thread);
 	if (mutex) {
@@ -194,10 +207,15 @@ void AudioDriverPulseAudio::finish() {
 
 AudioDriverPulseAudio::AudioDriverPulseAudio() {
 
+	samples_in = NULL;
+	samples_out = NULL;
 	mutex = NULL;
 	thread = NULL;
 	pulse = NULL;
 	latency = 0;
+	buffer_frames = 0;
+	buffer_size = 0;
+	channels = 0;
 }
 
 AudioDriverPulseAudio::~AudioDriverPulseAudio() {

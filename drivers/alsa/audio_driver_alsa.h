@@ -51,6 +51,7 @@ class AudioDriverALSA : public AudioDriver {
 	unsigned int mix_rate;
 	SpeakerMode speaker_mode;
 
+	snd_pcm_uframes_t buffer_frames;
 	snd_pcm_uframes_t buffer_size;
 	snd_pcm_uframes_t period_size;
 	int channels;

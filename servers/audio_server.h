@@ -54,6 +54,9 @@ public:
 		SPEAKER_SURROUND_71,
 	};
 
+	static const int DEFAULT_MIX_RATE = 44100;
+	static const int DEFAULT_OUTPUT_LATENCY = 15;
+
 	static AudioDriver *get_singleton();
 	void set_singleton();
 
