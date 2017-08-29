@@ -367,6 +367,7 @@ void FileSystemDock::_search(EditorFileSystemDirectory *p_path, List<FileInfo> *
 			fi.name = file;
 			fi.type = p_path->get_file_type(i);
 			fi.path = p_path->get_file_path(i);
+			fi.import_broken = !p_path->get_file_import_is_valid(i);
 			fi.import_status = 0;
 
 			matches->push_back(fi);
@@ -401,6 +402,7 @@ void FileSystemDock::_update_files(bool p_keep_selection) {
 	thumbnail_size *= EDSCALE;
 	Ref<Texture> folder_thumbnail;
 	Ref<Texture> file_thumbnail;
+	Ref<Texture> file_thumbnail_broken;
 
 	bool use_thumbnails = (display_mode == DISPLAY_THUMBNAILS);
 	bool use_folders = search_box->get_text().length() == 0 && split_mode;
@@ -434,8 +436,18 @@ void FileSystemDock::_update_files(bool p_keep_selection) {
 			Theme::get_default()->set_icon("ResizedFile", "EditorIcons", resized_file);
 		}
 
+		if (!has_icon("ResizedFileBroken", "EditorIcons")) {
+			Ref<ImageTexture> file = get_icon("FileBigBroken", "EditorIcons");
+			Ref<Image> img = file->get_data();
+			img->resize(thumbnail_size, thumbnail_size);
+			Ref<ImageTexture> resized_file = Ref<ImageTexture>(memnew(ImageTexture));
+			resized_file->create_from_image(img, 0);
+			Theme::get_default()->set_icon("ResizedFileBroken", "EditorIcons", resized_file);
+		}
+
 		file_thumbnail = get_icon("ResizedFile", "EditorIcons");
 
+		file_thumbnail_broken = get_icon("ResizedFileBroken", "EditorIcons");
 	} else {
 
 		files->set_icon_mode(ItemList::ICON_MODE_LEFT);
@@ -496,6 +508,7 @@ void FileSystemDock::_update_files(bool p_keep_selection) {
 			fi.name = efd->get_file(i);
 			fi.path = path.plus_file(fi.name);
 			fi.type = efd->get_file_type(i);
+			fi.import_broken = !efd->get_file_import_is_valid(i);
 			fi.import_status = 0;
 
 			filelist.push_back(fi);
@@ -511,24 +524,21 @@ void FileSystemDock::_update_files(bool p_keep_selection) {
 		StringName type = E->get().type;
 
 		Ref<Texture> type_icon;
+		Ref<Texture> big_icon = file_thumbnail;
 
 		String tooltip = fname;
 
-		if (E->get().import_status == 0) {
+		if (!E->get().import_broken) {
 
 			if (has_icon(type, ei)) {
 				type_icon = get_icon(type, ei);
 			} else {
 				type_icon = get_icon(oi, ei);
 			}
-		} else if (E->get().import_status == 1) {
-			type_icon = get_icon("DependencyOk", "EditorIcons");
-		} else if (E->get().import_status == 2) {
-			type_icon = get_icon("DependencyChanged", "EditorIcons");
-			tooltip += TTR("\nStatus: Needs Re-Import");
-		} else if (E->get().import_status == 3) {
+		} else {
 			type_icon = get_icon("ImportFail", "EditorIcons");
-			tooltip += ("\nStatus: Missing Dependencies");
+			big_icon = file_thumbnail_broken;
+			tooltip += TTR("\nStatus: Import of file failed. Please fix file and reimport manually.");
 		}
 
 		if (E->get().sources.size()) {
@@ -538,14 +548,16 @@ void FileSystemDock::_update_files(bool p_keep_selection) {
 		}
 
 		if (use_thumbnails) {
-			files->add_item(fname, file_thumbnail, true);
+			files->add_item(fname, big_icon, true);
 			files->set_item_metadata(files->get_item_count() - 1, fp);
 			files->set_item_tag_icon(files->get_item_count() - 1, type_icon);
 			Array udata;
 			udata.resize(2);
 			udata[0] = files->get_item_count() - 1;
 			udata[1] = fname;
-			EditorResourcePreview::get_singleton()->queue_resource_preview(fp, this, "_thumbnail_done", udata);
+			if (!E->get().import_broken) {
+				EditorResourcePreview::get_singleton()->queue_resource_preview(fp, this, "_thumbnail_done", udata);
+			}
 		} else {
 			files->add_item(fname, type_icon, true);
 			files->set_item_metadata(files->get_item_count() - 1, fp);

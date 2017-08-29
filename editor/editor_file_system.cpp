@@ -118,6 +118,12 @@ Vector<String> EditorFileSystemDirectory::get_file_deps(int p_idx) const {
 	return files[p_idx]->deps;
 }
 
+bool EditorFileSystemDirectory::get_file_import_is_valid(int p_idx) const {
+
+	ERR_FAIL_INDEX_V(p_idx, files.size(), false);
+	return files[p_idx]->import_valid;
+}
+
 StringName EditorFileSystemDirectory::get_file_type(int p_idx) const {
 
 	ERR_FAIL_INDEX_V(p_idx, files.size(), "");
@@ -142,6 +148,7 @@ void EditorFileSystemDirectory::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_file", "idx"), &EditorFileSystemDirectory::get_file);
 	ClassDB::bind_method(D_METHOD("get_file_path", "idx"), &EditorFileSystemDirectory::get_file_path);
 	ClassDB::bind_method(D_METHOD("get_file_type", "idx"), &EditorFileSystemDirectory::get_file_type);
+	ClassDB::bind_method(D_METHOD("get_file_import_is_valid", "idx"), &EditorFileSystemDirectory::get_file_import_is_valid);
 	ClassDB::bind_method(D_METHOD("get_name"), &EditorFileSystemDirectory::get_name);
 	ClassDB::bind_method(D_METHOD("get_path"), &EditorFileSystemDirectory::get_path);
 	ClassDB::bind_method(D_METHOD("get_parent"), &EditorFileSystemDirectory::get_parent);

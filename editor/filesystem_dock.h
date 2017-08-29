@@ -169,6 +169,7 @@ private:
 		StringName type;
 		int import_status; //0 not imported, 1 - ok, 2- must reimport, 3- broken
 		Vector<String> sources;
+		bool import_broken;
 
 		bool operator<(const FileInfo &fi) const {
 			return name < fi.name;
