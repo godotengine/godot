@@ -160,6 +160,8 @@ public:
 
 	virtual MainLoop *get_main_loop() const;
 
+	virtual String get_system_dir(SystemDir p_dir) const;
+
 	virtual bool can_draw() const;
 
 	virtual void set_clipboard(const String &p_text);
