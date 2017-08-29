@@ -108,7 +108,7 @@ public:
 		TonemapShaderGLES3 tonemap_shader;
 
 		struct SceneDataUBO {
-
+			//this is a std140 compatible struct. Please read the OpenGL 3.3 Specificaiton spec before doing any changes
 			float projection_matrix[16];
 			float camera_inverse_matrix[16];
 			float camera_matrix[16];
@@ -133,12 +133,12 @@ public:
 			float subsurface_scatter_width;
 			float ambient_occlusion_affect_light;
 
-			bool fog_depth_enabled;
+			uint32_t fog_depth_enabled;
 			float fog_depth_begin;
 			float fog_depth_curve;
-			bool fog_transmit_enabled;
+			uint32_t fog_transmit_enabled;
 			float fog_transmit_curve;
-			bool fog_height_enabled;
+			uint32_t fog_height_enabled;
 			float fog_height_min;
 			float fog_height_max;
 			float fog_height_curve;
