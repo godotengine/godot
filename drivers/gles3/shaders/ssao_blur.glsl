@@ -56,6 +56,8 @@ uniform ivec2       axis;
 uniform float camera_z_far;
 uniform float camera_z_near;
 
+uniform ivec2 screen_size;
+
 void main() {
 
 	ivec2 ssC = ivec2(gl_FragCoord.xy);
@@ -83,6 +85,7 @@ void main() {
 	float totalWeight = BASE;
 	sum *= totalWeight;
 
+	ivec2 clamp_limit = screen_size - ivec2(1);
 
 	for (int r = -R; r <= R; ++r) {
 		// We already handled the zero case above.  This loop should be unrolled and the static branch optimized out,
@@ -90,8 +93,8 @@ void main() {
 		if (r != 0) {
 
 			ivec2 ppos = ssC + axis * (r * SCALE);
-			float value = texelFetch(source_ssao, ppos, 0).r;
-			float temp_depth = texelFetch(source_depth, ssC, 0).r;
+			float value = texelFetch(source_ssao, clamp(ppos,ivec2(0),clamp_limit), 0).r;
+			float temp_depth = texelFetch(source_depth, clamp(ssC,ivec2(0),clamp_limit), 0).r;
 
 			temp_depth = temp_depth * 2.0 - 1.0;
 			temp_depth = 2.0 * camera_z_near * camera_z_far / (camera_z_far + camera_z_near - temp_depth * (camera_z_far - camera_z_near));
