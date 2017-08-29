@@ -691,6 +691,17 @@ void SurfaceTool::mikktGetTexCoord(const SMikkTSpaceContext *pContext, float fvT
 	fvTexcOut[1] = v.y;
 	//fvTexcOut[1]=1.0-v.y;
 }
+
+void SurfaceTool::mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, const float fvTangent[], const float fvBiTangent[], const float fMagS, const float fMagT,
+		const tbool bIsOrientationPreserving, const int iFace, const int iVert) {
+
+	Vector<List<Vertex>::Element *> &varr = *((Vector<List<Vertex>::Element *> *)pContext->m_pUserData);
+	Vertex *vtx = &varr[iFace * 3 + iVert]->get();
+
+	vtx->tangent = Vector3(fvTangent[0], fvTangent[1], fvTangent[2]);
+	vtx->binormal = Vector3(fvBiTangent[0], fvBiTangent[1], fvBiTangent[2]);
+}
+
 void SurfaceTool::mikktSetTSpaceBasic(const SMikkTSpaceContext *pContext, const float fvTangent[], const float fSign, const int iFace, const int iVert) {
 
 	Vector<List<Vertex>::Element *> &varr = *((Vector<List<Vertex>::Element *> *)pContext->m_pUserData);
@@ -715,8 +726,8 @@ void SurfaceTool::generate_tangents() {
 	mkif.m_getNumVerticesOfFace = mikktGetNumVerticesOfFace;
 	mkif.m_getPosition = mikktGetPosition;
 	mkif.m_getTexCoord = mikktGetTexCoord;
-	mkif.m_setTSpaceBasic = mikktSetTSpaceBasic;
-	mkif.m_setTSpace = NULL;
+	mkif.m_setTSpace = mikktSetTSpaceDefault;
+	mkif.m_setTSpaceBasic = NULL;
 
 	SMikkTSpaceContext msc;
 	msc.m_pInterface = &mkif;

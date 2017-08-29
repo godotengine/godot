@@ -155,7 +155,7 @@ void GridMap::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	p_list->push_back(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "MeshLibrary"));
 	p_list->push_back(PropertyInfo(Variant::NIL, "Cell", PROPERTY_HINT_NONE, "cell_", PROPERTY_USAGE_GROUP));
-	p_list->push_back(PropertyInfo(Variant::REAL, "cell_size", PROPERTY_HINT_RANGE, "0.01,16384,0.01"));
+	p_list->push_back(PropertyInfo(Variant::VECTOR3, "cell_size"));
 	p_list->push_back(PropertyInfo(Variant::INT, "cell_octant_size", PROPERTY_HINT_RANGE, "1,1024,1"));
 	p_list->push_back(PropertyInfo(Variant::BOOL, "cell_center_x"));
 	p_list->push_back(PropertyInfo(Variant::BOOL, "cell_center_y"));
@@ -184,6 +184,7 @@ Ref<MeshLibrary> GridMap::get_theme() const {
 
 void GridMap::set_cell_size(const Vector3 &p_size) {
 
+	ERR_FAIL_COND(p_size.x < 0.001 || p_size.y < 0.001 || p_size.z < 0.001);
 	cell_size = p_size;
 	_recreate_octant_data();
 }
