@@ -866,7 +866,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			if (!RES(v).is_null()) {
 
 				menu->add_icon_item(get_icon("Edit", "EditorIcons"), "Edit", OBJ_MENU_EDIT);
-				menu->add_icon_item(get_icon("Del", "EditorIcons"), "Clear", OBJ_MENU_CLEAR);
+				menu->add_icon_item(get_icon("Clear", "EditorIcons"), "Clear", OBJ_MENU_CLEAR);
 				menu->add_icon_item(get_icon("Duplicate", "EditorIcons"), "Make Unique", OBJ_MENU_MAKE_UNIQUE);
 				RES r = v;
 				if (r.is_valid() && r->get_path().is_resource_file()) {
