@@ -44,12 +44,34 @@ class btCollisionShape;
 
 class CollisionObjectBullet : public ShapeOwnerBullet {
 protected:
-	class HackedBasis : public Basis {
+	class EnhancedBasis : public Basis {
 	public:
 		void get_ABS_scale(Vector3 &out_vec) const {
 			out_vec[0] = Vector3(elements[0][0], elements[1][0], elements[2][0]).length();
 			out_vec[1] = Vector3(elements[0][1], elements[1][1], elements[2][1]).length();
 			out_vec[2] = Vector3(elements[0][2], elements[1][2], elements[2][2]).length();
+		}
+
+		real_t get_uniform_scale() const {
+			Vector3 scale;
+			get_ABS_scale(scale);
+			real_t uniform_scale = get_biggest_axis(scale);
+			if (uniform_scale != scale[0]) {
+				WARN_PRINT("The submitted basis has not an uniform scale, this scale is ignored by physics engine and will be used the biggest axis as uniform scale value.");
+			}
+			return uniform_scale;
+		}
+
+	private:
+		real_t get_biggest_axis(const Vector3 &vec) const {
+			real_t biggest = vec[0];
+			if (biggest < vec[1]) {
+				biggest = vec[1];
+			}
+			if (biggest < vec[2]) {
+				biggest = vec[2];
+			}
+			return biggest;
 		}
 	};
 
@@ -62,11 +84,8 @@ public:
 	struct ShapeWrapper {
 		ShapeBullet *shape;
 		btCollisionShape *bt_shape;
-		Transform transform;
+		btTransform transform;
 		bool active;
-
-		btTransform cache_transform;
-		btVector3 cache_shape_scale;
 
 		ShapeWrapper()
 			: shape(NULL), bt_shape(NULL), active(true) {}
@@ -106,7 +125,7 @@ protected:
 	bool m_isStatic;
 	bool ray_pickable;
 	btCollisionObject *collisionObject;
-	Vector3 global_scale;
+	real_t body_scale;
 
 	/// This is required to combine some shapes together.
 	/// Since Godot allow to have multiple shapes for each body with custom relative location,
@@ -141,7 +160,7 @@ public:
 	_FORCE_INLINE_ void set_ray_pickable(bool p_enable) { ray_pickable = p_enable; }
 	_FORCE_INLINE_ bool is_ray_pickable() const { return ray_pickable; }
 
-	void set_global_ABS_scale(const Vector3 &p_new_scale);
+	void set_body_scale(real_t p_new_scale);
 
 	void add_collision_exception(const CollisionObjectBullet *p_ignoreCollisionObject);
 	void remove_collision_exception(const CollisionObjectBullet *p_ignoreCollisionObject);

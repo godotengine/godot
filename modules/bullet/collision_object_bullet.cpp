@@ -45,14 +45,14 @@ CollisionObjectBullet::ShapeWrapper::~ShapeWrapper() {
 }
 
 void CollisionObjectBullet::ShapeWrapper::set_transform(const Transform &p_transform) {
-	transform = p_transform;
+	G_TO_B(p_transform, transform);
 }
 void CollisionObjectBullet::ShapeWrapper::set_transform(const btTransform &p_transform) {
-	B_TO_G(p_transform, transform);
+	transform = p_transform;
 }
 
 CollisionObjectBullet::CollisionObjectBullet(Type p_type)
-	: ShapeOwnerBullet(), type(p_type), collisionsEnabled(true), m_isStatic(false), collisionObject(NULL), global_scale(1., 1., 1.), compoundShape(bulletnew(btCompoundShape(enableDynamicAabbTree, initialChildCapacity))) {}
+	: ShapeOwnerBullet(), type(p_type), collisionsEnabled(true), m_isStatic(false), collisionObject(NULL), body_scale(1.), compoundShape(bulletnew(btCompoundShape(enableDynamicAabbTree, initialChildCapacity))) {}
 
 CollisionObjectBullet::~CollisionObjectBullet() {
 	// Remove all overlapping
@@ -69,9 +69,9 @@ CollisionObjectBullet::~CollisionObjectBullet() {
 	bulletdelete(compoundShape);
 }
 
-void CollisionObjectBullet::set_global_ABS_scale(const Vector3 &p_new_scale) {
-	if (p_new_scale != global_scale) {
-		global_scale = p_new_scale;
+void CollisionObjectBullet::set_body_scale(real_t p_new_scale) {
+	if (Math::abs(p_new_scale - body_scale) > 0.001f) {
+		body_scale = p_new_scale;
 		on_shapes_changed();
 	}
 }
@@ -187,7 +187,9 @@ btCollisionShape *CollisionObjectBullet::get_bt_shape(int p_index) const {
 }
 
 Transform CollisionObjectBullet::get_shape_transform(int p_index) const {
-	return shapes[p_index].transform;
+	Transform trs;
+	B_TO_G(shapes[p_index].transform, trs);
+	return trs;
 }
 
 void CollisionObjectBullet::on_shape_changed(const ShapeBullet *const p_shape) {
@@ -208,9 +210,6 @@ void CollisionObjectBullet::on_shapes_changed() {
 	}
 
 	// Insert all shapes
-	btVector3 bt_global_scale;
-	G_TO_B(global_scale, bt_global_scale);
-
 	ShapeWrapper *shpWrapper;
 	const int size = shapes.size();
 	for (i = 0; i < size; ++i) {
@@ -219,25 +218,13 @@ void CollisionObjectBullet::on_shapes_changed() {
 			shpWrapper->bt_shape = shpWrapper->shape->create_bt_shape();
 		}
 		if (shpWrapper->active) {
-			Transform local_xform(shpWrapper->transform);
-			local_xform.scale(global_scale);
-
-			G_TO_B(local_xform.get_basis().get_scale(), shpWrapper->cache_shape_scale);
-
-			local_xform.basis.orthonormalize();
-
-			G_TO_B(local_xform, shpWrapper->cache_transform);
-
-			shpWrapper->bt_shape->setLocalScaling(shpWrapper->cache_shape_scale);
-
-			compoundShape->addChildShape(shpWrapper->cache_transform, shpWrapper->bt_shape);
+			compoundShape->addChildShape(shpWrapper->transform, shpWrapper->bt_shape);
 		} else {
-			shpWrapper->cache_transform.setIdentity();
-			shpWrapper->cache_shape_scale.setZero();
-			compoundShape->addChildShape(shpWrapper->cache_transform, BulletPhysicsServer::get_empty_shape());
+			compoundShape->addChildShape(shpWrapper->transform, BulletPhysicsServer::get_empty_shape());
 		}
 	}
 
+	compoundShape->setLocalScaling(btVector3(body_scale, body_scale, body_scale));
 	compoundShape->recalculateLocalAabb();
 }
 

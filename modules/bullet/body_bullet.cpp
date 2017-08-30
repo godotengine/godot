@@ -204,42 +204,41 @@ void BodyBullet::KinematicUtilities::copyAllOwnerShapes() {
 	just_delete_shapes(shapes_count);
 
 	const CollisionObjectBullet::ShapeWrapper *shape_wrapper;
-	ShapeBullet *godot_shape;
 
 	for (int i = shapes_count - 1; 0 <= i; --i) {
 		shape_wrapper = &shapes_wrappers[i];
 		if (!shape_wrapper->active) {
 			continue;
 		}
-		m_shapes[i].transform = shape_wrapper->cache_transform;
-		godot_shape = shape_wrapper->shape;
+		m_shapes[i].transform = shape_wrapper->transform;
 
 		btConvexShape *&kin_shape_ref = m_shapes[i].shape;
 
-		switch (godot_shape->get_type()) {
+		switch (shape_wrapper->shape->get_type()) {
 			case PhysicsServer::SHAPE_SPHERE: {
-				SphereShapeBullet *sphere = static_cast<SphereShapeBullet *>(godot_shape);
-				kin_shape_ref = ShapeBullet::create_shape_sphere(sphere->get_radius());
+				SphereShapeBullet *sphere = static_cast<SphereShapeBullet *>(shape_wrapper->shape);
+				kin_shape_ref = ShapeBullet::create_shape_sphere(sphere->get_radius() * m_owner->body_scale + m_margin);
 				break;
 			}
 			case PhysicsServer::SHAPE_BOX: {
-				BoxShapeBullet *box = static_cast<BoxShapeBullet *>(godot_shape);
-				kin_shape_ref = ShapeBullet::create_shape_box(box->get_half_extents());
+				BoxShapeBullet *box = static_cast<BoxShapeBullet *>(shape_wrapper->shape);
+				kin_shape_ref = ShapeBullet::create_shape_box((box->get_half_extents() * m_owner->body_scale) + btVector3(m_margin, m_margin, m_margin));
 				break;
 			}
 			case PhysicsServer::SHAPE_CAPSULE: {
-				CapsuleShapeBullet *capsule = static_cast<CapsuleShapeBullet *>(godot_shape);
-				kin_shape_ref = ShapeBullet::create_shape_capsule(capsule->get_radius(), capsule->get_height());
+				CapsuleShapeBullet *capsule = static_cast<CapsuleShapeBullet *>(shape_wrapper->shape);
+				kin_shape_ref = ShapeBullet::create_shape_capsule(capsule->get_radius() * m_owner->body_scale + m_margin, capsule->get_height() * m_owner->body_scale + m_margin);
 				break;
 			}
 			case PhysicsServer::SHAPE_CONVEX_POLYGON: {
-				ConvexPolygonShapeBullet *godot_convex = static_cast<ConvexPolygonShapeBullet *>(godot_shape);
+				ConvexPolygonShapeBullet *godot_convex = static_cast<ConvexPolygonShapeBullet *>(shape_wrapper->shape);
 				kin_shape_ref = ShapeBullet::create_shape_convex(godot_convex->vertices);
+				kin_shape_ref->setLocalScaling(btVector3(m_owner->body_scale + m_margin, m_owner->body_scale + m_margin, m_owner->body_scale + m_margin));
 				break;
 			}
 			case PhysicsServer::SHAPE_RAY: {
-				RayShapeBullet *godot_ray = static_cast<RayShapeBullet *>(godot_shape);
-				kin_shape_ref = ShapeBullet::create_shape_ray(godot_ray->length);
+				RayShapeBullet *godot_ray = static_cast<RayShapeBullet *>(shape_wrapper->shape);
+				kin_shape_ref = ShapeBullet::create_shape_ray(godot_ray->length * m_owner->body_scale + m_margin);
 				break;
 			}
 			case PhysicsServer::SHAPE_HEIGHTMAP:
@@ -247,13 +246,6 @@ void BodyBullet::KinematicUtilities::copyAllOwnerShapes() {
 			case PhysicsServer::SHAPE_PLANE:
 				WARN_PRINT("This shape is not supported to be kinematic!");
 				kin_shape_ref = NULL;
-		}
-		if (kin_shape_ref) {
-			btVector3 ghost_scale(shape_wrapper->cache_shape_scale);
-			ghost_scale[0] += m_margin;
-			ghost_scale[1] += m_margin;
-			ghost_scale[2] += m_margin;
-			kin_shape_ref->setLocalScaling(ghost_scale);
 		}
 	}
 }
@@ -761,12 +753,10 @@ Vector3 BodyBullet::get_angular_velocity() const {
 
 void BodyBullet::set_transform(const Transform &p_global_transform) {
 	btTransform btTrans;
+	/// Ortonormalize returns a transform that is different from the real transform if the original basis is scaled or sheared
+	/// In this case the editor will alert the developer.
 	G_TO_B(p_global_transform.orthonormalized(), btTrans);
-
-	Vector3 global_ABS_scale;
-	static_cast<const CollisionObjectBullet::HackedBasis &>(p_global_transform.get_basis()).get_ABS_scale(global_ABS_scale);
-	set_global_ABS_scale(global_ABS_scale);
-
+	set_body_scale(static_cast<const CollisionObjectBullet::EnhancedBasis &>(p_global_transform.get_basis()).get_uniform_scale());
 	if (mode == PhysicsServer::BODY_MODE_KINEMATIC) {
 		// The kinematic use MotionState class
 		godotMotionState->moveBody(btTrans);
