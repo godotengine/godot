@@ -74,7 +74,9 @@ def configure(env):
     ## Build type
 
     if (env["target"] == "release"):
-        env.Prepend(CCFLAGS=['-Ofast'])
+        # -O3 -ffast-math is identical to -Ofast. We need to split it out so we can selectively disable
+        # -ffast-math in code for which it generates wrong results.
+        env.Prepend(CCFLAGS=['-O3', '-ffast-math'])
         if (env["debug_release"] == "yes"):
             env.Prepend(CCFLAGS=['-g2'])
 
