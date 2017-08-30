@@ -2504,6 +2504,36 @@ void CanvasItemEditor::_draw_viewport_base() {
 }
 
 void CanvasItemEditor::_draw_viewport() {
+
+	// hide/show buttons depending on the selection
+	bool all_locked = true;
+	bool all_group = true;
+	List<Node *> &selection = editor_selection->get_selected_node_list();
+	if (selection.empty()) {
+		all_locked = false;
+		all_group = false;
+	} else {
+		for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
+			if (Object::cast_to<Control>(E->get()) && !Object::cast_to<Control>(E->get())->has_meta("_edit_lock_")) {
+				all_locked = false;
+				break;
+			}
+		}
+		for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
+			if (Object::cast_to<Control>(E->get()) && !Object::cast_to<Control>(E->get())->has_meta("_edit_group_")) {
+				all_group = false;
+				break;
+			}
+		}
+	}
+
+	lock_button->set_visible(!all_locked);
+	lock_button->set_disabled(selection.empty());
+	unlock_button->set_visible(all_locked);
+	group_button->set_visible(!all_group);
+	group_button->set_disabled(selection.empty());
+	ungroup_button->set_visible(all_group);
+
 	_update_scrollbars();
 
 	_draw_grid();
@@ -2709,6 +2739,7 @@ void CanvasItemEditor::edit(CanvasItem *p_canvas_item) {
 
 	drag = DRAG_NONE;
 
+	// Clear the selection
 	editor_selection->clear(); //_clear_canvas_items();
 	editor_selection->add_node(p_canvas_item);
 	//_add_canvas_item(p_canvas_item);
