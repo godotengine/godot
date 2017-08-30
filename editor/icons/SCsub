@@ -10,42 +10,25 @@ def make_editor_icons_action(target, source, env):
     dst = target[0].srcnode().abspath
     svg_icons = source
 
-    whites = StringIO()
-    darks = StringIO()
+    icons_string = StringIO()
 
     for f in svg_icons:
 
         fname = str(f)
 
-        whites.write('\t"')
-        darks.write('\t"')
+        icons_string.write('\t"')
 
         with open(fname, 'rb') as svgf:
             b = svgf.read(1)
             while(len(b) == 1):
-                whites.write("\\" + str(hex(ord(b)))[1:])
+                icons_string.write("\\" + str(hex(ord(b)))[1:])
                 b = svgf.read(1)
-        try:
-            with open(os.path.dirname(fname) + "/dark/" + os.path.basename(fname), 'rb') as svgf:
-                b = svgf.read(1)
-                while(len(b) == 1):
-                    darks.write("\\" + str(hex(ord(b)))[1:])
-                    b = svgf.read(1)
-        except IOError:
-            with open(fname, 'rb') as svgf:
-                b = svgf.read(1)
-                while(len(b) == 1):
-                    darks.write("\\" + str(hex(ord(b)))[1:])
-                    b = svgf.read(1)
 
 
-        whites.write('"')
-        darks.write('"')
+        icons_string.write('"')
         if fname != svg_icons[-1]:
-            whites.write(",")
-            darks.write(",")
-        whites.write('\n')
-        darks.write('\n')
+            icons_string.write(",")
+        icons_string.write('\n')
 
     s = StringIO()
     s.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
@@ -53,10 +36,7 @@ def make_editor_icons_action(target, source, env):
     s.write("#define _EDITOR_ICONS_H\n")
     s.write("static const int editor_icons_count = %s;\n" % len(svg_icons))
     s.write("static const char *editor_icons_sources[] = {\n")
-    s.write(whites.getvalue())
-    s.write('};\n\n')
-    s.write("static const char *editor_icons_sources_dark[] = {\n")
-    s.write(darks.getvalue())
+    s.write(icons_string.getvalue())
     s.write('};\n\n')
     s.write("static const char *editor_icons_names[] = {\n")
     for f in svg_icons:
@@ -78,8 +58,7 @@ def make_editor_icons_action(target, source, env):
     f.write(s.getvalue())
     f.close()
     s.close()
-    whites.close()
-    darks.close()
+    icons_string.close()
 
 make_editor_icons_builder = Builder(action=make_editor_icons_action,
                                     suffix='.h',

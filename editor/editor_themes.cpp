@@ -89,14 +89,16 @@ static Ref<StyleBoxFlat> change_border_color(Ref<StyleBoxFlat> p_style, Color p_
 #define HIGHLIGHT_COLOR_LIGHT highlight_color.linear_interpolate(Color(1, 1, 1, 1), 0.3)
 #define HIGHLIGHT_COLOR_DARK highlight_color.linear_interpolate(Color(0, 0, 0, 1), 0.5)
 
-Ref<ImageTexture> editor_generate_icon(int p_index, bool dark_theme = true) {
+Ref<ImageTexture> editor_generate_icon(int p_index, bool dark_theme = true, Dictionary *p_colors = NULL) {
+
 	Ref<ImageTexture> icon = memnew(ImageTexture);
 	Ref<Image> img = memnew(Image);
 
 	// dumb gizmo check
 	bool is_gizmo = String(editor_icons_names[p_index]).begins_with("Gizmo");
 
-	ImageLoaderSVG::create_image_from_string(img, dark_theme ? editor_icons_sources[p_index] : editor_icons_sources_dark[p_index], EDSCALE, true);
+	ImageLoaderSVG::create_image_from_string(img, editor_icons_sources[p_index], EDSCALE, true, dark_theme ? NULL : p_colors);
+
 	if ((EDSCALE - (float)((int)EDSCALE)) > 0.0 || is_gizmo)
 		icon->create_from_image(img); // in this case filter really helps
 	else
@@ -105,19 +107,74 @@ Ref<ImageTexture> editor_generate_icon(int p_index, bool dark_theme = true) {
 	return icon;
 }
 
-void editor_register_icons(Ref<Theme> p_theme, bool dark_theme = true) {
+#ifndef ADD_CONVERT_COLOR
+#define ADD_CONVERT_COLOR(dictionary, old_color, new_color) dictionary[Color::html(old_color)] = Color::html(new_color)
+#endif
+
+void editor_register_and_generate_icons(Ref<Theme> p_theme, bool dark_theme = true) {
 
 #ifdef SVG_ENABLED
-	print_line(rtos(EDSCALE));
+
+	Dictionary dark_icon_color_dictionary;
+	//convert color:                              FROM       TO
+	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#e0e0e0", "#4f4f4f"); // common icon color
+	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ffffff", "#000000"); // white
+	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#b4b4b4", "#000000"); // script darker color
+
+	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#cea4f1", "#bb6dff"); // animation
+	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#fc9c9c", "#ff5f5f"); // spatial
+	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#a5b7f3", "#6d90ff"); // 2d
+	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#708cea", "#0843ff"); // 2d dark
+	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#a5efac", "#29d739"); // control
+
+	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ff8484", "#ff3333"); // error
+	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#84ffb1", "#00db50"); // success
+	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ffd684", "#ffad07"); // warning
+
+	// rainbow
+	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ff7070", "#ff2929"); // red
+	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ffeb70", "#ffe337"); // yellow
+	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#9dff70", "#74ff34"); // green
+	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#70ffb9", "#2cff98"); // aqua
+	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#70deff", "#22ccff"); // blue
+	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#9f70ff", "#702aff"); // purple
+	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ff70ac", "#ff2781"); // pink
+
+	// audio gradient
+	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ff8484", "#ff4040"); // red
+	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#e1dc7a", "#d6cf4b"); // yellow
+	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#84ffb1", "#00f010"); // green
+
+	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ffd684", "#fea900"); // mesh (orange)
+	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#40a2ff", "#68b6ff"); // shape (blue)
+
+	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#84c2ff", "#5caeff"); // selection (blue)
+
+	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ea686c", "#e3383d"); // key xform (red)
+
+	List<String> exceptions;
+	exceptions.push_back("EditorPivot");
+	exceptions.push_back("EditorHandle");
+	exceptions.push_back("Editor3DHandle");
+	exceptions.push_back("Godot");
+	exceptions.push_back("PanoramaSky");
+	exceptions.push_back("ProceduralSky");
+	exceptions.push_back("EditorControlAnchor");
+	exceptions.push_back("DefaultProjectIcon");
 
 	clock_t begin_time = clock();
 
 	for (int i = 0; i < editor_icons_count; i++) {
-
-		Ref<ImageTexture> icon = editor_generate_icon(i, dark_theme);
+		List<String>::Element *is_exception = exceptions.find(editor_icons_names[i]);
+		if (is_exception) {
+			exceptions.erase(is_exception);
+		}
+		Ref<ImageTexture> icon = editor_generate_icon(i, dark_theme, is_exception ? NULL : &dark_icon_color_dictionary);
 		p_theme->set_icon(editor_icons_names[i], "EditorIcons", icon);
 	}
+
 	clock_t end_time = clock();
+
 	double time_d = (double)(end_time - begin_time) / CLOCKS_PER_SEC;
 	print_line("SVG_GENERATION TIME: " + rtos(time_d));
 #else
