@@ -476,7 +476,6 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 			Polygon *left_poly = end_poly;
 			Polygon *right_poly = end_poly;
 			Polygon *p = end_poly;
-			path.push_back(end_point);
 
 			while (p) {
 
@@ -534,7 +533,7 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 						left_poly = p;
 						portal_left = apex_point;
 						portal_right = apex_point;
-						if (path[path.size() - 1].distance_to(apex_point) > CMP_EPSILON)
+						if (!path.size() || path[path.size() - 1].distance_to(apex_point) > CMP_EPSILON)
 							path.push_back(apex_point);
 						skip = true;
 						//print_line("addpoint left");
@@ -555,7 +554,7 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 						right_poly = p;
 						portal_right = apex_point;
 						portal_left = apex_point;
-						if (path[path.size() - 1].distance_to(apex_point) > CMP_EPSILON)
+						if (!path.size() || path[path.size() - 1].distance_to(apex_point) > CMP_EPSILON)
 							path.push_back(apex_point);
 						//print_line("addpoint right");
 						//print_line("***CLIP RIGHT");
@@ -568,16 +567,10 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 					p = NULL;
 			}
 
-			if (path[path.size() - 1].distance_to(begin_point) > CMP_EPSILON)
-				path.push_back(begin_point);
-
-			path.invert();
-
 		} else {
 			//midpoints
 			Polygon *p = end_poly;
 
-			path.push_back(end_point);
 			while (true) {
 				int prev = p->prev_edge;
 				int prev_n = (p->prev_edge + 1) % p->edges.size();
@@ -587,11 +580,20 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 				if (p == begin_poly)
 					break;
 			}
+		}
 
-			if (path[path.size() - 1].distance_to(begin_point) > CMP_EPSILON)
-				path.push_back(begin_point);
+		if (!path.size() || path[path.size() - 1].distance_squared_to(begin_point) > CMP_EPSILON) {
+			path.push_back(begin_point); // Add the begin point
+		} else {
+			path[path.size() - 1] = begin_point; // Replace first midpoint by the exact begin point
+		}
 
-			path.invert();
+		path.invert();
+
+		if (path.size() <= 1 || path[path.size() - 1].distance_squared_to(end_point) > CMP_EPSILON) {
+			path.push_back(end_point); // Add the end point
+		} else {
+			path[path.size() - 1] = end_point; // Replace last midpoint by the exact end point
 		}
 
 		return path;
