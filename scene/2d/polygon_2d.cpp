@@ -384,6 +384,74 @@ void Polygon2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "invert_border", PROPERTY_HINT_RANGE, "0.1,16384,0.1"), "set_invert_border", "get_invert_border");
 }
 
+int Polygon2D::edit_get_polygon_count() const {
+
+	return 1;
+}
+
+Vector<Vector2> Polygon2D::edit_get_polygon(int p_polygon) const {
+
+	return Variant(polygon);
+}
+
+void Polygon2D::edit_set_polygon(int p_polygon, const Vector<Vector2> &p_points) {
+
+	set_polygon(Variant(p_points));
+}
+
+Vector2 Polygon2D::edit_get_offset() {
+
+	return get_offset();
+}
+
+PoolVector<Vector2> Polygon2D::edit_get_uv() const {
+
+	return get_uv();
+}
+
+void Polygon2D::edit_set_uv(const PoolVector<Vector2> &p_uv) {
+
+	set_uv(p_uv);
+}
+
+Ref<Texture> Polygon2D::edit_get_texture() const {
+
+	return get_texture();
+}
+
+bool Polygon2D::edit_is_wip_destructive() const {
+
+	return true;
+}
+
+void Polygon2D::edit_create_wip_close_action(UndoRedo *undo_redo, const Vector<Vector2> &p_wip) {
+
+	undo_redo->create_action(TTR("Create Poly"));
+	undo_redo->add_undo_method(this, "set_polygon", polygon);
+	undo_redo->add_do_method(this, "set_polygon", p_wip);
+}
+
+void Polygon2D::edit_create_edit_poly_action(UndoRedo *undo_redo, int p_polygon, const Vector<Vector2> &p_before, const Vector<Vector2> &p_after) {
+
+	undo_redo->create_action(TTR("Edit Poly"));
+	undo_redo->add_do_method(this, "set_polygon", p_after);
+	undo_redo->add_undo_method(this, "set_polygon", p_before);
+}
+
+void Polygon2D::edit_create_remove_point_action(UndoRedo *undo_redo, int p_polygon, int p_point) {
+
+	PoolVector<Vector2> poly = polygon;
+	undo_redo->create_action(TTR("Edit Poly (Remove Point)"));
+	undo_redo->add_undo_method(this, "set_polygon", poly);
+	poly.remove(p_point);
+	undo_redo->add_do_method(this, "set_polygon", poly);
+}
+
+Color Polygon2D::edit_get_previous_outline_color() const {
+
+	return get_color().contrasted();
+}
+
 Polygon2D::Polygon2D() {
 
 	invert = 0;

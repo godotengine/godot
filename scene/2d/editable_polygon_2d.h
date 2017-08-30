@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  navigation_polygon_editor_plugin.cpp                                 */
+/*  editable_polygon_2d.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,37 +27,29 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "navigation_polygon_editor_plugin.h"
+#ifndef EDITABLEPOLYGON2D_H
+#define EDITABLEPOLYGON2D_H
 
-#include "canvas_item_editor_plugin.h"
-#include "editor/editor_settings.h"
-#include "os/file_access.h"
+#include "core/undo_redo.h"
+#include "scene/resources/texture.h"
 
-EditablePolygon2D *NavigationPolygonEditor::_get_editable(Node *p_node) const {
+class EditablePolygon2D {
+public:
+	virtual int edit_get_polygon_count() const = 0;
+	virtual Vector<Vector2> edit_get_polygon(int p_polygon) const = 0;
+	virtual void edit_set_polygon(int p_polygon, const Vector<Vector2> &p_points) = 0;
 
-	return Object::cast_to<NavigationPolygonInstance>(p_node)->get_navigation_polygon().ptr();
-}
+	virtual PoolVector<Vector2> edit_get_uv() const;
+	virtual void edit_set_uv(const PoolVector<Vector2> &p_uv);
+	virtual Ref<Texture> edit_get_texture() const;
+	virtual Vector2 edit_get_offset();
 
-void NavigationPolygonEditor::_create_res() {
+	virtual bool edit_is_wip_destructive() const = 0;
+	virtual Color edit_get_previous_outline_color() const = 0;
 
-	if (!node)
-		return;
+	virtual void edit_create_wip_close_action(UndoRedo *undo_redo, const Vector<Vector2> &p_wip) = 0;
+	virtual void edit_create_edit_poly_action(UndoRedo *undo_redo, int p_polygon, const Vector<Vector2> &p_before, const Vector<Vector2> &p_after) = 0;
+	virtual void edit_create_remove_point_action(UndoRedo *undo_redo, int p_polygon, int p_point) = 0;
+};
 
-	undo_redo->create_action(TTR("Create Navigation Polygon"));
-	undo_redo->add_do_method(node, "set_navigation_polygon", Ref<NavigationPolygon>(memnew(NavigationPolygon)));
-	undo_redo->add_undo_method(node, "set_navigation_polygon", Variant(REF()));
-	undo_redo->commit_action();
-
-	editable = _get_editable(node);
-}
-
-NavigationPolygonEditor::NavigationPolygonEditor(EditorNode *p_editor) : AbstractPolygon2DEditor(p_editor) {
-
-}
-
-NavigationPolygonEditorPlugin::NavigationPolygonEditorPlugin(EditorNode *p_node) :
-
-	AbstractPolygon2DEditorPlugin(p_node, memnew(NavigationPolygonEditor(p_node)), "NavigationPolygonInstance") {
-
-}
-
+#endif // EDITABLEPOLYGON2D_H

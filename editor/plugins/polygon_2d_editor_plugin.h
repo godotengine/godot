@@ -41,9 +41,7 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 
 	enum Mode {
 
-		MODE_CREATE,
-		MODE_EDIT,
-		MODE_EDIT_UV,
+		MODE_EDIT_UV = MODE_CONT,
 		UVEDIT_POLYGON_TO_UV,
 		UVEDIT_UV_TO_POLYGON,
 		UVEDIT_UV_CLEAR
@@ -57,8 +55,6 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 		UV_MODE_SCALE,
 		UV_MODE_MAX
 	};
-
-	Mode mode;
 
 	UVMode uv_mode;
 	AcceptDialog *uv_edit;
@@ -84,11 +80,7 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 
 	AcceptDialog *error;
 
-	ToolButton *button_create;
-	ToolButton *button_edit;
 	ToolButton *button_uv;
-
-	Polygon2D *node;
 
 	bool use_snap;
 	bool snap_show_grid;
@@ -111,19 +103,7 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	void _set_snap_step_y(float p_val);
 
 protected:
-	virtual void _enter_edit_mode();
-	virtual bool _is_in_create_mode() const;
-	virtual bool _is_in_edit_mode() const;
-
-	virtual Node2D *_get_node() const;
-	virtual void _set_node(Node *p_node);
-
-	virtual int _get_polygon_count() const;
-	virtual Vector<Vector2> _get_polygon(int p_polygon) const;
-	virtual void _set_polygon(int p_polygon, const Vector<Vector2> &p_points) const;
-	virtual Vector2 _get_offset() const;
-
-	virtual Color _get_previous_outline_color() const;
+	virtual EditablePolygon2D *_get_editable(Node *p_node) const;
 
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -134,24 +114,12 @@ public:
 	Polygon2DEditor(EditorNode *p_editor);
 };
 
-class Polygon2DEditorPlugin : public EditorPlugin {
+class Polygon2DEditorPlugin : public AbstractPolygon2DEditorPlugin {
 
-	GDCLASS(Polygon2DEditorPlugin, EditorPlugin);
-
-	Polygon2DEditor *collision_polygon_editor;
-	EditorNode *editor;
+	GDCLASS(Polygon2DEditorPlugin, AbstractPolygon2DEditorPlugin);
 
 public:
-	virtual bool forward_canvas_gui_input(const Transform2D &p_canvas_xform, const Ref<InputEvent> &p_event) { return collision_polygon_editor->forward_gui_input(p_event); }
-
-	virtual String get_name() const { return "Polygon2D"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
-
 	Polygon2DEditorPlugin(EditorNode *p_node);
-	~Polygon2DEditorPlugin();
 };
 
 #endif // POLYGON_2D_EDITOR_PLUGIN_H

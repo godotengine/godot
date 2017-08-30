@@ -32,10 +32,11 @@
 
 #include "scene/2d/node_2d.h"
 #include "scene/resources/shape_2d.h"
+#include "scene/2d/editable_polygon_2d.h"
 
 class CollisionObject2D;
 
-class CollisionPolygon2D : public Node2D {
+class CollisionPolygon2D : public Node2D, public EditablePolygon2D {
 
 	GDCLASS(CollisionPolygon2D, Node2D);
 
@@ -78,6 +79,15 @@ public:
 
 	void set_one_way_collision(bool p_enable);
 	bool is_one_way_collision_enabled() const;
+
+	virtual int edit_get_polygon_count() const;
+	virtual Vector<Vector2> edit_get_polygon(int p_polygon) const;
+	virtual void edit_set_polygon(int p_polygon, const Vector<Vector2> &p_points);
+	virtual bool edit_is_wip_destructive() const;
+	virtual void edit_create_wip_close_action(UndoRedo *undo_redo, const Vector<Vector2> &p_wip);
+	virtual void edit_create_edit_poly_action(UndoRedo *undo_redo, int p_polygon, const Vector<Vector2> &p_before, const Vector<Vector2> &p_after);
+	virtual void edit_create_remove_point_action(UndoRedo *undo_redo, int p_polygon, int p_point);
+	virtual Color edit_get_previous_outline_color() const;
 
 	CollisionPolygon2D();
 };

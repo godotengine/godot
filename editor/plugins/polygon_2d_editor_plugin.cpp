@@ -35,57 +35,9 @@
 #include "os/input.h"
 #include "os/keyboard.h"
 
+EditablePolygon2D *Polygon2DEditor::_get_editable(Node *p_node) const {
 
-void Polygon2DEditor::_enter_edit_mode() {
-
-	mode = MODE_EDIT;
-	button_edit->set_pressed(true);
-	button_create->set_pressed(false);
-}
-
-bool Polygon2DEditor::_is_in_create_mode() const {
-
-	return mode == MODE_CREATE;
-}
-
-bool Polygon2DEditor::_is_in_edit_mode() const {
-
-	return mode == MODE_EDIT;
-}
-
-Node2D *Polygon2DEditor::_get_node() const {
-
-	return node;
-}
-
-void Polygon2DEditor::_set_node(Node *p_node) {
-
-	node = Object::cast_to<Polygon2D>(p_node);
-}
-
-int Polygon2DEditor::_get_polygon_count() const {
-
-	return 1;
-}
-
-Vector<Vector2> Polygon2DEditor::_get_polygon(int p_polygon) const {
-
-	return Variant(node->get_polygon());
-}
-
-void Polygon2DEditor::_set_polygon(int p_polygon, const Vector<Vector2> &p_points) const {
-
-	node->set_polygon(Variant(p_points));
-}
-
-Vector2 Polygon2DEditor::_get_offset() const {
-
-	return node->get_offset();
-}
-
-Color Polygon2DEditor::_get_previous_outline_color() const {
-
-	return node->get_color().contrasted();
+	return Object::cast_to<Polygon2D>(p_node);
 }
 
 void Polygon2DEditor::_notification(int p_what) {
@@ -94,9 +46,6 @@ void Polygon2DEditor::_notification(int p_what) {
 
 		case NOTIFICATION_READY: {
 
-			button_create->set_icon(get_icon("Edit", "EditorIcons"));
-			button_edit->set_icon(get_icon("MovePoint", "EditorIcons"));
-			button_edit->set_pressed(true);
 			button_uv->set_icon(get_icon("Uv", "EditorIcons"));
 
 			uv_button[UV_MODE_EDIT_POINT]->set_icon(get_icon("ToolSelect", "EditorIcons"));
@@ -119,29 +68,17 @@ void Polygon2DEditor::_menu_option(int p_option) {
 
 	switch (p_option) {
 
-		case MODE_CREATE: {
-
-			mode = MODE_CREATE;
-			button_create->set_pressed(true);
-			button_edit->set_pressed(false);
-		} break;
-		case MODE_EDIT: {
-
-			mode = MODE_EDIT;
-			button_create->set_pressed(false);
-			button_edit->set_pressed(true);
-		} break;
 		case MODE_EDIT_UV: {
 
-			if (node->get_texture().is_null()) {
+			if (editable->edit_get_texture().is_null()) {
 
 				error->set_text("No texture in this polygon.\nSet a texture to be able to edit UV.");
 				error->popup_centered_minsize();
 				return;
 			}
 
-			PoolVector<Vector2> points = node->get_polygon();
-			PoolVector<Vector2> uvs = node->get_uv();
+			PoolVector<Vector2> points = Variant(editable->edit_get_polygon(0));
+			PoolVector<Vector2> uvs = editable->edit_get_uv();
 			if (uvs.size() != points.size()) {
 				undo_redo->create_action(TTR("Create UV Map"));
 				undo_redo->add_do_method(node, "set_uv", points);
@@ -155,10 +92,10 @@ void Polygon2DEditor::_menu_option(int p_option) {
 		} break;
 		case UVEDIT_POLYGON_TO_UV: {
 
-			PoolVector<Vector2> points = node->get_polygon();
+			PoolVector<Vector2> points = Variant(editable->edit_get_polygon(0));
 			if (points.size() == 0)
 				break;
-			PoolVector<Vector2> uvs = node->get_uv();
+			PoolVector<Vector2> uvs = editable->edit_get_uv();
 			undo_redo->create_action(TTR("Create UV Map"));
 			undo_redo->add_do_method(node, "set_uv", points);
 			undo_redo->add_undo_method(node, "set_uv", uvs);
@@ -169,8 +106,8 @@ void Polygon2DEditor::_menu_option(int p_option) {
 		} break;
 		case UVEDIT_UV_TO_POLYGON: {
 
-			PoolVector<Vector2> points = node->get_polygon();
-			PoolVector<Vector2> uvs = node->get_uv();
+			PoolVector<Vector2> points = Variant(editable->edit_get_polygon(0));
+			PoolVector<Vector2> uvs = editable->edit_get_uv();
 			if (uvs.size() == 0)
 				break;
 
@@ -184,7 +121,7 @@ void Polygon2DEditor::_menu_option(int p_option) {
 		} break;
 		case UVEDIT_UV_CLEAR: {
 
-			PoolVector<Vector2> uvs = node->get_uv();
+			PoolVector<Vector2> uvs = editable->edit_get_uv();
 			if (uvs.size() == 0)
 				break;
 			undo_redo->create_action(TTR("Create UV Map"));
@@ -251,7 +188,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 				uv_drag_from = Vector2(mb->get_position().x, mb->get_position().y);
 				uv_drag = true;
-				uv_prev = node->get_uv();
+				uv_prev = editable->edit_get_uv();
 				uv_move_current = uv_mode;
 				if (uv_move_current == UV_MODE_EDIT_POINT) {
 
@@ -282,7 +219,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 			} else if (uv_drag) {
 
 				undo_redo->create_action(TTR("Transform UV Map"));
-				undo_redo->add_do_method(node, "set_uv", node->get_uv());
+				undo_redo->add_do_method(node, "set_uv", editable->edit_get_uv());
 				undo_redo->add_undo_method(node, "set_uv", uv_prev);
 				undo_redo->add_do_method(uv_edit_draw, "update");
 				undo_redo->add_undo_method(uv_edit_draw, "update");
@@ -296,7 +233,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 			if (uv_drag) {
 
 				uv_drag = false;
-				node->set_uv(uv_prev);
+				editable->edit_set_uv(uv_prev);
 				uv_edit_draw->update();
 			}
 
@@ -330,7 +267,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 					PoolVector<Vector2> uv_new = uv_prev;
 					uv_new.set(uv_drag_index, uv_new[uv_drag_index] + drag);
-					node->set_uv(uv_new);
+					editable->edit_set_uv(uv_new);
 				} break;
 				case UV_MODE_MOVE: {
 
@@ -338,7 +275,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 					for (int i = 0; i < uv_new.size(); i++)
 						uv_new.set(i, uv_new[i] + drag);
 
-					node->set_uv(uv_new);
+					editable->edit_set_uv(uv_new);
 
 				} break;
 				case UV_MODE_ROTATE: {
@@ -358,7 +295,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 						uv_new.set(i, center + rel);
 					}
 
-					node->set_uv(uv_new);
+					editable->edit_set_uv(uv_new);
 
 				} break;
 				case UV_MODE_SCALE: {
@@ -383,7 +320,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 						uv_new.set(i, center + rel);
 					}
 
-					node->set_uv(uv_new);
+					editable->edit_set_uv(uv_new);
 				} break;
 			}
 			uv_edit_draw->update();
@@ -404,7 +341,7 @@ void Polygon2DEditor::_uv_scroll_changed(float) {
 
 void Polygon2DEditor::_uv_draw() {
 
-	Ref<Texture> base_tex = node->get_texture();
+	Ref<Texture> base_tex = editable->edit_get_texture();
 	if (base_tex.is_null())
 		return;
 
@@ -443,7 +380,7 @@ void Polygon2DEditor::_uv_draw() {
 		}
 	}
 
-	PoolVector<Vector2> uvs = node->get_uv();
+	PoolVector<Vector2> uvs = editable->edit_get_uv();
 	Ref<Texture> handle = get_icon("EditorHandle", "EditorIcons");
 
 	Rect2 rect(Point2(), mtx.basis_xform(base_tex->get_size()));
@@ -503,28 +440,13 @@ Vector2 Polygon2DEditor::snap_point(Vector2 p_target) const {
 
 Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) : AbstractPolygon2DEditor(p_editor) {
 
-	node = NULL;
-
 	snap_step = Vector2(10, 10);
 	use_snap = false;
 	snap_show_grid = false;
 
-	add_child(memnew(VSeparator));
-	button_create = memnew(ToolButton);
-	add_child(button_create);
-	button_create->connect("pressed", this, "_menu_option", varray(MODE_CREATE));
-	button_create->set_toggle_mode(true);
-
-	button_edit = memnew(ToolButton);
-	add_child(button_edit);
-	button_edit->connect("pressed", this, "_menu_option", varray(MODE_EDIT));
-	button_edit->set_toggle_mode(true);
-
 	button_uv = memnew(ToolButton);
 	add_child(button_uv);
 	button_uv->connect("pressed", this, "_menu_option", varray(MODE_EDIT_UV));
-
-	mode = MODE_EDIT;
 
 	uv_mode = UV_MODE_EDIT_POINT;
 	uv_edit = memnew(AcceptDialog);
@@ -665,35 +587,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) : AbstractPolygon2DEditor
 	uv_edit_draw->set_clip_contents(true);
 }
 
-void Polygon2DEditorPlugin::edit(Object *p_object) {
+Polygon2DEditorPlugin::Polygon2DEditorPlugin(EditorNode *p_node) :
+	AbstractPolygon2DEditorPlugin(p_node, memnew(Polygon2DEditor(p_node)), "Polygon2D") {
 
-	collision_polygon_editor->edit(Object::cast_to<Node>(p_object));
-}
-
-bool Polygon2DEditorPlugin::handles(Object *p_object) const {
-
-	return p_object->is_class("Polygon2D");
-}
-
-void Polygon2DEditorPlugin::make_visible(bool p_visible) {
-
-	if (p_visible) {
-		collision_polygon_editor->show();
-	} else {
-
-		collision_polygon_editor->hide();
-		collision_polygon_editor->edit(NULL);
-	}
-}
-
-Polygon2DEditorPlugin::Polygon2DEditorPlugin(EditorNode *p_node) {
-
-	editor = p_node;
-	collision_polygon_editor = memnew(Polygon2DEditor(p_node));
-	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(collision_polygon_editor);
-
-	collision_polygon_editor->hide();
-}
-
-Polygon2DEditorPlugin::~Polygon2DEditorPlugin() {
 }

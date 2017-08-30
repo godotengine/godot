@@ -304,6 +304,54 @@ void CollisionPolygon2D::_bind_methods() {
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "one_way_collision"), "set_one_way_collision", "is_one_way_collision_enabled");
 }
 
+int CollisionPolygon2D::edit_get_polygon_count() const {
+
+	return 1;
+}
+
+Vector<Vector2> CollisionPolygon2D::edit_get_polygon(int p_polygon) const {
+
+	return Variant(polygon);
+}
+
+void CollisionPolygon2D::edit_set_polygon(int p_polygon, const Vector<Vector2> &p_points) {
+
+	set_polygon(Variant(p_points));
+}
+
+bool CollisionPolygon2D::edit_is_wip_destructive() const {
+
+	return true;
+}
+
+void CollisionPolygon2D::edit_create_wip_close_action(UndoRedo *undo_redo, const Vector<Vector2> &p_wip) {
+
+	undo_redo->create_action(TTR("Create Poly"));
+	undo_redo->add_undo_method(this, "set_polygon", polygon);
+	undo_redo->add_do_method(this, "set_polygon", p_wip);
+}
+
+void CollisionPolygon2D::edit_create_edit_poly_action(UndoRedo *undo_redo, int p_polygon, const Vector<Vector2> &p_before, const Vector<Vector2> &p_after) {
+
+	undo_redo->create_action(TTR("Edit Poly"));
+	undo_redo->add_do_method(this, "set_polygon", p_after);
+	undo_redo->add_undo_method(this, "set_polygon", p_before);
+}
+
+void CollisionPolygon2D::edit_create_remove_point_action(UndoRedo *undo_redo, int p_polygon, int p_point) {
+
+	Vector<Vector2> poly = polygon;
+	undo_redo->create_action(TTR("Edit Poly (Remove Point)"));
+	undo_redo->add_undo_method(this, "set_polygon", poly);
+	poly.remove(p_point);
+	undo_redo->add_do_method(this, "set_polygon", poly);
+}
+
+Color CollisionPolygon2D::edit_get_previous_outline_color() const {
+
+	return Color(0.5, 0.5, 0.5, 0.8);
+}
+
 CollisionPolygon2D::CollisionPolygon2D() {
 
 	aabb = Rect2(-10, -10, 20, 20);

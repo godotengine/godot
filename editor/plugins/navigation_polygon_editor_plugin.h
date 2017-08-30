@@ -40,74 +40,20 @@ class NavigationPolygonEditor : public AbstractPolygon2DEditor {
 
 	GDCLASS(NavigationPolygonEditor, AbstractPolygon2DEditor);
 
-	enum Mode {
-
-		MODE_CREATE,
-		MODE_EDIT,
-
-	};
-
-	Mode mode;
-
-	ToolButton *button_create;
-	ToolButton *button_edit;
-
-	ConfirmationDialog *create_nav;
-
-	NavigationPolygonInstance *node;
-
-	void _create_nav();
-
-	void _menu_option(int p_option);
-
 protected:
-	virtual void _enter_edit_mode();
-	virtual bool _is_in_create_mode() const;
-	virtual bool _is_in_edit_mode() const;
-
-	virtual Node2D *_get_node() const;
-	virtual void _set_node(Node *p_node);
-
-	virtual int _get_polygon_count() const;
-	virtual Vector<Vector2> _get_polygon(int p_polygon) const;
-	virtual void _set_polygon(int p_polygon, const Vector<Vector2> &p_points) const;
-	virtual Vector2 _get_offset() const;
-
-	virtual bool _is_wip_destructive() const;
-	virtual void _create_wip_close_action(const Vector<Vector2> &p_wip);
-	virtual void _create_edit_poly_action(int p_polygon, const Vector<Vector2> &p_before, const Vector<Vector2> &p_after);
-	virtual void _create_remove_point_action(int p_polygon, int p_point);
-
-	virtual Color _get_previous_outline_color() const;
-
-	virtual bool _can_input(const Ref<InputEvent> &p_event, bool &p_ret) const;
-	virtual bool _can_draw() const;
-
-	void _notification(int p_what);
-	static void _bind_methods();
+	virtual EditablePolygon2D *_get_editable(Node *p_node) const;
+	virtual void _create_res();
 
 public:
 	NavigationPolygonEditor(EditorNode *p_editor);
 };
 
-class NavigationPolygonEditorPlugin : public EditorPlugin {
+class NavigationPolygonEditorPlugin : public AbstractPolygon2DEditorPlugin {
 
-	GDCLASS(NavigationPolygonEditorPlugin, EditorPlugin);
-
-	NavigationPolygonEditor *collision_polygon_editor;
-	EditorNode *editor;
+	GDCLASS(NavigationPolygonEditorPlugin, AbstractPolygon2DEditorPlugin);
 
 public:
-	virtual bool forward_canvas_gui_input(const Transform2D &p_canvas_xform, const Ref<InputEvent> &p_event) { return collision_polygon_editor->forward_gui_input(p_event); }
-
-	virtual String get_name() const { return "NavigationPolygonInstance"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
-
 	NavigationPolygonEditorPlugin(EditorNode *p_node);
-	~NavigationPolygonEditorPlugin();
 };
 
 #endif // NAVIGATIONPOLYGONEDITORPLUGIN_H

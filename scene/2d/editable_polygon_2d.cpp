@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  navigation_polygon_editor_plugin.cpp                                 */
+/*  editable_polygon_2d.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,37 +27,24 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "navigation_polygon_editor_plugin.h"
+#include "editable_polygon_2d.h"
 
-#include "canvas_item_editor_plugin.h"
-#include "editor/editor_settings.h"
-#include "os/file_access.h"
+Vector2 EditablePolygon2D::edit_get_offset() {
 
-EditablePolygon2D *NavigationPolygonEditor::_get_editable(Node *p_node) const {
-
-	return Object::cast_to<NavigationPolygonInstance>(p_node)->get_navigation_polygon().ptr();
+	return Vector2(0, 0);
 }
 
-void NavigationPolygonEditor::_create_res() {
+PoolVector<Vector2> EditablePolygon2D::edit_get_uv() const {
 
-	if (!node)
-		return;
-
-	undo_redo->create_action(TTR("Create Navigation Polygon"));
-	undo_redo->add_do_method(node, "set_navigation_polygon", Ref<NavigationPolygon>(memnew(NavigationPolygon)));
-	undo_redo->add_undo_method(node, "set_navigation_polygon", Variant(REF()));
-	undo_redo->commit_action();
-
-	editable = _get_editable(node);
+	return PoolVector<Vector2>();
 }
 
-NavigationPolygonEditor::NavigationPolygonEditor(EditorNode *p_editor) : AbstractPolygon2DEditor(p_editor) {
+void EditablePolygon2D::edit_set_uv(const PoolVector<Vector2> &p_uv) {
 
+	// nothing
 }
 
-NavigationPolygonEditorPlugin::NavigationPolygonEditorPlugin(EditorNode *p_node) :
+Ref<Texture> EditablePolygon2D::edit_get_texture() const {
 
-	AbstractPolygon2DEditorPlugin(p_node, memnew(NavigationPolygonEditor(p_node)), "NavigationPolygonInstance") {
-
+	return Ref<Texture>();
 }
-

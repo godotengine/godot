@@ -31,8 +31,9 @@
 #define POLYGON_2D_H
 
 #include "scene/2d/node_2d.h"
+#include "scene/2d/editable_polygon_2d.h"
 
-class Polygon2D : public Node2D {
+class Polygon2D : public Node2D, public EditablePolygon2D {
 
 	GDCLASS(Polygon2D, Node2D);
 
@@ -104,6 +105,19 @@ public:
 	virtual bool edit_has_pivot() const;
 
 	virtual Rect2 get_item_rect() const;
+
+	virtual int edit_get_polygon_count() const;
+	virtual Vector<Vector2> edit_get_polygon(int p_polygon) const;
+	virtual void edit_set_polygon(int p_polygon, const Vector<Vector2> &p_points);
+	virtual Vector2 edit_get_offset();
+	virtual PoolVector<Vector2> edit_get_uv() const;
+	virtual void edit_set_uv(const PoolVector<Vector2> &p_uv);
+	virtual Ref<Texture> edit_get_texture() const;
+	virtual bool edit_is_wip_destructive() const;
+	virtual void edit_create_wip_close_action(UndoRedo *undo_redo, const Vector<Vector2> &p_wip);
+	virtual void edit_create_edit_poly_action(UndoRedo *undo_redo, int p_polygon, const Vector<Vector2> &p_before, const Vector<Vector2> &p_after);
+	virtual void edit_create_remove_point_action(UndoRedo *undo_redo, int p_polygon, int p_point);
+	virtual Color edit_get_previous_outline_color() const;
 
 	Polygon2D();
 };
