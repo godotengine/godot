@@ -194,6 +194,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	float contrast = EDITOR_DEF("interface/theme/contrast", default_contrast);
 
 	int preset = EDITOR_DEF("interface/theme/preset", 0);
+	int icon_font_color_setting = EDITOR_DEF("interface/theme/icon_and_font_color", 0);
 	bool highlight_tabs = EDITOR_DEF("interface/theme/highlight_tabs", false);
 	int border_size = EDITOR_DEF("interface/theme/border_size", 1);
 
@@ -226,7 +227,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	}
 
 	//Colors
-	bool dark_theme = ((base_color.r + base_color.g + base_color.b) / 3.0) < 0.5;
+	int AUTO_COLOR = 0;
+	int LIGHT_COLOR = 2;
+	bool dark_theme = (icon_font_color_setting == AUTO_COLOR && ((base_color.r + base_color.g + base_color.b) / 3.0) < 0.5) || icon_font_color_setting == LIGHT_COLOR;
 
 	Color dark_color_1 = base_color.linear_interpolate(Color(0, 0, 0, 1), contrast);
 	Color dark_color_2 = base_color.linear_interpolate(Color(0, 0, 0, 1), contrast * 1.5);
