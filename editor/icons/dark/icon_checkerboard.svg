@@ -1,6 +1,0 @@
-<svg width="64" height="64" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-<g transform="translate(0 -988.36)" fill="#000000" stroke-linecap="round" stroke-linejoin="round">
-<rect y="988.36" width="64" height="64" fill-opacity=".19608" stroke-width="2"/>
-<path transform="translate(0 988.36)" d="m0 0v16h16v-16h-16zm16 16v16h16v-16h-16zm16 0h16v-16h-16v16zm16 0v16h16v-16h-16zm0 16h-16v16h16v-16zm0 16v16h16v-16h-16zm-16 0h-16v16h16v-16zm-16 0v-16h-16v16h16z" fill-opacity=".39216" stroke-width="8"/>
-</g>
-</svg>
