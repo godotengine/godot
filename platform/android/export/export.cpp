@@ -1596,7 +1596,11 @@ Error EditorExportPlatformAndroid::run(int p_device, int p_flags) {
 	//export_temp
 	ep.step("Exporting APK", 0);
 
-	p_flags |= EXPORT_REMOTE_DEBUG_LOCALHOST; // Needed for adb reverse
+	const bool use_remote = (p_flags & EXPORT_REMOTE_DEBUG) || (p_flags & EXPORT_DUMB_CLIENT);
+	const bool use_reverse = devices[p_device].api_level >= 21;
+
+	if (use_reverse)
+		p_flags |= EXPORT_REMOTE_DEBUG_LOCALHOST;
 
 	String export_to = EditorSettings::get_singleton()->get_settings_path() + "/tmp/tmpexport.apk";
 	Error err = export_project(export_to, true, p_flags);
@@ -1645,40 +1649,54 @@ Error EditorExportPlatformAndroid::run(int p_device, int p_flags) {
 		return ERR_CANT_CREATE;
 	}
 
-	args.clear();
-	args.push_back("-s");
-	args.push_back(devices[p_device].id);
-	args.push_back("reverse");
-	args.push_back("--remove-all");
-	err = OS::get_singleton()->execute(adb, args, true, NULL, NULL, &rv);
+	if (use_remote) {
+		if (use_reverse) {
 
-	if (p_flags & EXPORT_REMOTE_DEBUG) {
+			static const char *const msg = "** Device API >= 21; debugging over USB **";
+			EditorNode::get_singleton()->get_log()->add_message(msg);
+			print_line(String(msg).to_upper());
 
-		int dbg_port = (int)EditorSettings::get_singleton()->get("network/debug_port");
-		args.clear();
-		args.push_back("-s");
-		args.push_back(devices[p_device].id);
-		args.push_back("reverse");
-		args.push_back("tcp:" + itos(dbg_port));
-		args.push_back("tcp:" + itos(dbg_port));
+			args.clear();
+			args.push_back("-s");
+			args.push_back(devices[p_device].id);
+			args.push_back("reverse");
+			args.push_back("--remove-all");
+			err = OS::get_singleton()->execute(adb, args, true, NULL, NULL, &rv);
 
-		err = OS::get_singleton()->execute(adb, args, true, NULL, NULL, &rv);
-		print_line("Reverse result: " + itos(rv));
-	}
+			if (p_flags & EXPORT_REMOTE_DEBUG) {
 
-	if (p_flags & EXPORT_DUMB_CLIENT) {
+				int dbg_port = (int)EditorSettings::get_singleton()->get("network/debug_port");
+				args.clear();
+				args.push_back("-s");
+				args.push_back(devices[p_device].id);
+				args.push_back("reverse");
+				args.push_back("tcp:" + itos(dbg_port));
+				args.push_back("tcp:" + itos(dbg_port));
 
-		int fs_port = EditorSettings::get_singleton()->get("file_server/port");
+				err = OS::get_singleton()->execute(adb, args, true, NULL, NULL, &rv);
+				print_line("Reverse result: " + itos(rv));
+			}
 
-		args.clear();
-		args.push_back("-s");
-		args.push_back(devices[p_device].id);
-		args.push_back("reverse");
-		args.push_back("tcp:" + itos(fs_port));
-		args.push_back("tcp:" + itos(fs_port));
+			if (p_flags & EXPORT_DUMB_CLIENT) {
 
-		err = OS::get_singleton()->execute(adb, args, true, NULL, NULL, &rv);
-		print_line("Reverse result2: " + itos(rv));
+				int fs_port = EditorSettings::get_singleton()->get("file_server/port");
+
+				args.clear();
+				args.push_back("-s");
+				args.push_back(devices[p_device].id);
+				args.push_back("reverse");
+				args.push_back("tcp:" + itos(fs_port));
+				args.push_back("tcp:" + itos(fs_port));
+
+				err = OS::get_singleton()->execute(adb, args, true, NULL, NULL, &rv);
+				print_line("Reverse result2: " + itos(rv));
+			}
+		} else {
+
+			static const char *const msg = "** Device API < 21; debugging over Wi-Fi **";
+			EditorNode::get_singleton()->get_log()->add_message(msg);
+			print_line(String(msg).to_upper());
+		}
 	}
 
 	ep.step("Running on Device..", 3);
