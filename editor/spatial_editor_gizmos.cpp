@@ -298,12 +298,23 @@ void EditorSpatialGizmo::add_handles(const Vector<Vector3> &p_handles, bool p_bi
 }
 
 void EditorSpatialGizmo::add_solid_box(Ref<Material> &p_material, Vector3 size) {
+	ERR_FAIL_COND(!spatial_node);
+
 	CubeMesh cubem;
 	cubem.set_size(size);
 	Ref<ArrayMesh> m = memnew(ArrayMesh);
 	m->add_surface_from_arrays(cubem.surface_get_primitive_type(0), cubem.surface_get_arrays(0));
 	m->surface_set_material(0, p_material);
 	add_mesh(m);
+
+	Instance ins;
+	ins.mesh = m;
+	if (valid) {
+		ins.create_instance(spatial_node);
+		VS::get_singleton()->instance_set_transform(ins.instance, spatial_node->get_global_transform());
+	}
+
+	instances.push_back(ins);
 }
 
 void EditorSpatialGizmo::set_spatial_node(Spatial *p_node) {
@@ -877,10 +888,6 @@ void LightSpatialGizmo::redraw() {
 			Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * w;
 			Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * w;
 
-			/*points.push_back(Vector3(a.x,0,a.y));
-			points.push_back(Vector3(b.x,0,b.y));
-			points.push_back(Vector3(0,a.x,a.y));
-			points.push_back(Vector3(0,b.x,b.y));*/
 			points.push_back(Vector3(a.x, a.y, -d));
 			points.push_back(Vector3(b.x, b.y, -d));
 
