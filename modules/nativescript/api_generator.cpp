@@ -33,6 +33,7 @@
 
 #include "class_db.h"
 #include "core/global_constants.h"
+#include "core/pair.h"
 #include "core/project_settings.h"
 #include "os/file_access.h"
 
@@ -93,6 +94,11 @@ struct SignalAPI {
 	Map<int, Variant> default_arguments;
 };
 
+struct EnumAPI {
+	String name;
+	List<Pair<int, String> > values;
+};
+
 struct ClassAPI {
 	String class_name;
 	String super_class_name;
@@ -109,7 +115,27 @@ struct ClassAPI {
 	List<PropertyAPI> properties;
 	List<ConstantAPI> constants;
 	List<SignalAPI> signals_;
+	List<EnumAPI> enums;
 };
+
+static String get_type_name(const PropertyInfo &info) {
+	if (info.type == Variant::INT && (info.usage & PROPERTY_USAGE_CLASS_IS_ENUM)) {
+		return String("enum.") + String(info.class_name).replace(".", "::");
+	}
+	if (info.class_name != StringName()) {
+		return info.class_name;
+	}
+	if (info.hint == PROPERTY_HINT_RESOURCE_TYPE) {
+		return info.hint_string;
+	}
+	if (info.type == Variant::NIL && (info.usage & PROPERTY_USAGE_NIL_IS_VARIANT)) {
+		return "Variant";
+	}
+	if (info.type == Variant::NIL) {
+		return "void";
+	}
+	return Variant::get_type_name(info.type);
+}
 
 /*
  * Reads the entire Godot API to a list
@@ -194,12 +220,8 @@ List<ClassAPI> generate_c_api_classes() {
 					if (argument.name.find(":") != -1) {
 						type = argument.name.get_slice(":", 1);
 						name = argument.name.get_slice(":", 0);
-					} else if (argument.hint == PROPERTY_HINT_RESOURCE_TYPE) {
-						type = argument.hint_string;
-					} else if (argument.type == Variant::NIL) {
-						type = "Variant";
 					} else {
-						type = Variant::get_type_name(argument.type);
+						type = get_type_name(argument);
 					}
 
 					signal.argument_names.push_back(name);
@@ -233,12 +255,8 @@ List<ClassAPI> generate_c_api_classes() {
 				if (p->get().name.find(":") != -1) {
 					property_api.type = p->get().name.get_slice(":", 1);
 					property_api.name = p->get().name.get_slice(":", 0);
-				} else if (p->get().hint == PROPERTY_HINT_RESOURCE_TYPE) {
-					property_api.type = p->get().hint_string;
-				} else if (p->get().type == Variant::NIL) {
-					property_api.type = "Variant";
 				} else {
-					property_api.type = Variant::get_type_name(p->get().type);
+					property_api.type = get_type_name(p->get());
 				}
 
 				if (!property_api.setter.empty() || !property_api.getter.empty()) {
@@ -260,17 +278,11 @@ List<ClassAPI> generate_c_api_classes() {
 				//method name
 				method_api.method_name = m->get().name;
 				//method return type
-				if (method_bind && method_bind->get_return_type() != StringName()) {
-					method_api.return_type = method_bind->get_return_type();
-				} else if (method_api.method_name.find(":") != -1) {
+				if (method_api.method_name.find(":") != -1) {
 					method_api.return_type = method_api.method_name.get_slice(":", 1);
 					method_api.method_name = method_api.method_name.get_slice(":", 0);
-				} else if (m->get().return_val.type != Variant::NIL) {
-					method_api.return_type = m->get().return_val.hint == PROPERTY_HINT_RESOURCE_TYPE ? m->get().return_val.hint_string : Variant::get_type_name(m->get().return_val.type);
-				} else if (m->get().return_val.name != "") {
-					method_api.return_type = m->get().return_val.name;
 				} else {
-					method_api.return_type = "void";
+					method_api.return_type = get_type_name(m->get().return_val);
 				}
 
 				method_api.argument_count = method_info.arguments.size();
@@ -318,6 +330,25 @@ List<ClassAPI> generate_c_api_classes() {
 				}
 
 				class_api.methods.push_back(method_api);
+			}
+		}
+
+		// enums
+		{
+			List<EnumAPI> enums;
+			List<StringName> enum_names;
+			ClassDB::get_enum_list(class_name, &enum_names, true);
+			for (List<StringName>::Element *E = enum_names.front(); E; E = E->next()) {
+				List<StringName> value_names;
+				EnumAPI enum_api;
+				enum_api.name = E->get();
+				ClassDB::get_enum_constants(class_name, E->get(), &value_names, true);
+				for (List<StringName>::Element *val_e = value_names.front(); val_e; val_e = val_e->next()) {
+					int int_val = ClassDB::get_integer_constant(class_name, val_e->get(), NULL);
+					enum_api.values.push_back(Pair<int, String>(int_val, val_e->get()));
+				}
+				enum_api.values.sort_custom<PairSort<int, String> >();
+				class_api.enums.push_back(enum_api);
 			}
 		}
 
@@ -410,11 +441,24 @@ static List<String> generate_c_api_json(const List<ClassAPI> &p_api) {
 			source.push_back("\t\t\t\t]\n");
 			source.push_back(String("\t\t\t}") + (e->next() ? "," : "") + "\n");
 		}
+		source.push_back("\t\t],\n");
+
+		source.push_back("\t\t\"enums\": [\n");
+		for (List<EnumAPI>::Element *e = api.enums.front(); e; e = e->next()) {
+			source.push_back("\t\t\t{\n");
+			source.push_back("\t\t\t\t\"name\": \"" + e->get().name + "\",\n");
+			source.push_back("\t\t\t\t\"values\": {\n");
+			for (List<Pair<int, String> >::Element *val_e = e->get().values.front(); val_e; val_e = val_e->next()) {
+				source.push_back("\t\t\t\t\t\"" + val_e->get().second + "\": " + itos(val_e->get().first));
+				source.push_back(String((val_e->next() ? "," : "")) + "\n");
+			}
+			source.push_back("\t\t\t\t}\n");
+			source.push_back(String("\t\t\t}") + (e->next() ? "," : "") + "\n");
+		}
 		source.push_back("\t\t]\n");
 
 		source.push_back(String("\t}") + (c->next() ? "," : "") + "\n");
 	}
-
 	source.push_back("]");
 
 	return source;
