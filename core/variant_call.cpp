@@ -729,9 +729,6 @@ struct _VariantCall {
 	VCALL_PTR1R(Basis, scaled);
 	VCALL_PTR0R(Basis, get_scale);
 	VCALL_PTR0R(Basis, get_euler);
-	VCALL_PTR1(Basis, set_scale);
-	VCALL_PTR1(Basis, set_rotation_euler);
-	VCALL_PTR2(Basis, set_rotation_axis_angle);
 	VCALL_PTR1R(Basis, tdotx);
 	VCALL_PTR1R(Basis, tdoty);
 	VCALL_PTR1R(Basis, tdotz);
@@ -1700,9 +1697,6 @@ void register_variant_methods() {
 	ADDFUNC0(BASIS, REAL, Basis, determinant, varray());
 	ADDFUNC2(BASIS, BASIS, Basis, rotated, VECTOR3, "axis", REAL, "phi", varray());
 	ADDFUNC1(BASIS, BASIS, Basis, scaled, VECTOR3, "scale", varray());
-	ADDFUNC1(BASIS, NIL, Basis, set_scale, VECTOR3, "scale", varray());
-	ADDFUNC1(BASIS, NIL, Basis, set_rotation_euler, VECTOR3, "euler", varray());
-	ADDFUNC2(BASIS, NIL, Basis, set_rotation_axis_angle, VECTOR3, "axis", REAL, "angle", varray());
 	ADDFUNC0(BASIS, VECTOR3, Basis, get_scale, varray());
 	ADDFUNC0(BASIS, VECTOR3, Basis, get_euler, varray());
 	ADDFUNC1(BASIS, REAL, Basis, tdotx, VECTOR3, "with", varray());
