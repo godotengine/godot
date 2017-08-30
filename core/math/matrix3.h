@@ -81,6 +81,8 @@ public:
 	Vector3 get_rotation() const;
 	void get_rotation_axis_angle(Vector3 &p_axis, real_t &p_angle) const;
 
+	Vector3 rotref_posscale_decomposition(Basis &rotref) const;
+
 	Vector3 get_euler_xyz() const;
 	void set_euler_xyz(const Vector3 &p_euler);
 	Vector3 get_euler_yxz() const;
@@ -128,6 +130,7 @@ public:
 	void set_orthogonal_index(int p_index);
 
 	bool is_orthogonal() const;
+	bool is_diagonal() const;
 	bool is_rotation() const;
 
 	operator String() const;
