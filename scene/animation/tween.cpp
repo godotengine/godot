@@ -560,12 +560,16 @@ void Tween::_tween_process(float p_delta) {
 
 		switch (data.type) {
 			case INTER_PROPERTY:
-			case INTER_METHOD:
-				break;
+			case INTER_METHOD: {
+				Variant result = _run_equation(data);
+				emit_signal("tween_step", object, data.key, data.elapsed, result);
+				_apply_tween_value(data, result);
+				if (data.finish)
+					_apply_tween_value(data, data.final_val);
+			} break;
+
 			case INTER_CALLBACK:
 				if (data.finish) {
-
-					Variant::CallError error;
 					if (data.call_deferred) {
 
 						switch (data.args) {
@@ -588,8 +592,8 @@ void Tween::_tween_process(float p_delta) {
 								object->call_deferred(data.key, data.arg[0], data.arg[1], data.arg[2], data.arg[3], data.arg[4]);
 								break;
 						}
-
 					} else {
+						Variant::CallError error;
 						Variant *arg[5] = {
 							&data.arg[0],
 							&data.arg[1],
@@ -599,19 +603,11 @@ void Tween::_tween_process(float p_delta) {
 						};
 						object->call(data.key, (const Variant **)arg, data.args, error);
 					}
-					if (!repeat)
-						call_deferred("_remove", object, data.key, true);
 				}
-				continue;
+				break;
 		}
 
-		Variant result = _run_equation(data);
-		emit_signal("tween_step", object, data.key, data.elapsed, result);
-
-		_apply_tween_value(data, result);
-
 		if (data.finish) {
-			_apply_tween_value(data, data.final_val);
 			emit_signal("tween_completed", object, data.key);
 			// not repeat mode, remove completed action
 			if (!repeat)
