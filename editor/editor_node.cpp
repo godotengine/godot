@@ -4773,6 +4773,38 @@ EditorNode::EditorNode() {
 	prev_scene->set_position(Point2(3, 24));
 	prev_scene->hide();
 
+	accept = memnew(AcceptDialog);
+	gui_base->add_child(accept);
+	accept->connect("confirmed", this, "_menu_confirm_current");
+
+	project_export = memnew(ProjectExportDialog);
+	gui_base->add_child(project_export);
+
+	dependency_error = memnew(DependencyErrorDialog);
+	gui_base->add_child(dependency_error);
+
+	dependency_fixer = memnew(DependencyEditor);
+	gui_base->add_child(dependency_fixer);
+
+	settings_config_dialog = memnew(EditorSettingsDialog);
+	gui_base->add_child(settings_config_dialog);
+
+	project_settings = memnew(ProjectSettingsEditor(&editor_data));
+	gui_base->add_child(project_settings);
+
+	run_settings_dialog = memnew(RunSettingsDialog);
+	gui_base->add_child(run_settings_dialog);
+
+	export_template_manager = memnew(ExportTemplateManager);
+	gui_base->add_child(export_template_manager);
+
+	about = memnew(EditorAbout);
+	about->get_logo()->set_texture(gui_base->get_icon("Logo", "EditorIcons"));
+	gui_base->add_child(about);
+
+	warning = memnew(AcceptDialog);
+	gui_base->add_child(warning);
+
 	ED_SHORTCUT("editor/next_tab", TTR("Next tab"), KEY_MASK_CMD + KEY_TAB);
 	ED_SHORTCUT("editor/prev_tab", TTR("Previous tab"), KEY_MASK_CMD + KEY_MASK_SHIFT + KEY_TAB);
 	ED_SHORTCUT("editor/filter_files", TTR("Filter Files.."), KEY_MASK_ALT + KEY_MASK_CMD + KEY_P);
@@ -5196,38 +5228,6 @@ EditorNode::EditorNode() {
 	gui_base->add_child(save_confirmation);
 	save_confirmation->connect("confirmed", this, "_menu_confirm_current");
 	save_confirmation->connect("custom_action", this, "_discard_changes");
-
-	accept = memnew(AcceptDialog);
-	gui_base->add_child(accept);
-	accept->connect("confirmed", this, "_menu_confirm_current");
-
-	project_export = memnew(ProjectExportDialog);
-	gui_base->add_child(project_export);
-
-	dependency_error = memnew(DependencyErrorDialog);
-	gui_base->add_child(dependency_error);
-
-	dependency_fixer = memnew(DependencyEditor);
-	gui_base->add_child(dependency_fixer);
-
-	settings_config_dialog = memnew(EditorSettingsDialog);
-	gui_base->add_child(settings_config_dialog);
-
-	project_settings = memnew(ProjectSettingsEditor(&editor_data));
-	gui_base->add_child(project_settings);
-
-	run_settings_dialog = memnew(RunSettingsDialog);
-	gui_base->add_child(run_settings_dialog);
-
-	export_template_manager = memnew(ExportTemplateManager);
-	gui_base->add_child(export_template_manager);
-
-	about = memnew(EditorAbout);
-	about->get_logo()->set_texture(gui_base->get_icon("Logo", "EditorIcons"));
-	gui_base->add_child(about);
-
-	warning = memnew(AcceptDialog);
-	gui_base->add_child(warning);
 
 	file_templates = memnew(FileDialog);
 	file_templates->set_title(TTR("Import Templates From ZIP File"));
