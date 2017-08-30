@@ -409,44 +409,7 @@ if selected_platform in platform_list:
 
     # Microsoft Visual Studio Project Generation
     if (env['vsproj']) == "yes":
-
-        AddToVSProject(env.core_sources)
-        AddToVSProject(env.main_sources)
-        AddToVSProject(env.modules_sources)
-        AddToVSProject(env.scene_sources)
-        AddToVSProject(env.servers_sources)
-        AddToVSProject(env.editor_sources)
-
-        # this env flag won't work, it needs to be set in env_base=Environment(MSVC_VERSION='9.0')
-        # Even then, SCons still seems to ignore it and builds with the latest MSVC...
-        # That said, it's not needed to be set so far but I'm leaving it here so that this comment
-        # has a purpose.
-        # env['MSVS_VERSION']='9.0'
-
-        # Calls a CMD with /C(lose) and /V(delayed environment variable expansion) options.
-        # And runs vcvarsall bat for the proper architecture and scons for proper configuration
-        env['MSVSBUILDCOM'] = 'cmd /V /C set "plat=$(PlatformTarget)" ^& (if "$(PlatformTarget)"=="x64" (set "plat=x86_amd64")) ^& set "tools=yes" ^& (if "$(Configuration)"=="release" (set "tools=no")) ^& call "$(VCInstallDir)vcvarsall.bat" !plat! ^& scons platform=windows target=$(Configuration) tools=!tools! -j2'
-        env['MSVSREBUILDCOM'] = 'cmd /V /C set "plat=$(PlatformTarget)" ^& (if "$(PlatformTarget)"=="x64" (set "plat=x86_amd64")) ^& set "tools=yes" ^& (if "$(Configuration)"=="release" (set "tools=no")) & call "$(VCInstallDir)vcvarsall.bat" !plat! ^& scons platform=windows target=$(Configuration) tools=!tools! vsproj=yes -j2'
-        env['MSVSCLEANCOM'] = 'cmd /V /C set "plat=$(PlatformTarget)" ^& (if "$(PlatformTarget)"=="x64" (set "plat=x86_amd64")) ^& set "tools=yes" ^& (if "$(Configuration)"=="release" (set "tools=no")) ^& call "$(VCInstallDir)vcvarsall.bat" !plat! ^& scons --clean platform=windows target=$(Configuration) tools=!tools! -j2'
-
-        # This version information (Win32, x64, Debug, Release, Release_Debug seems to be
-        # required for Visual Studio to understand that it needs to generate an NMAKE
-        # project. Do not modify without knowing what you are doing.
-        debug_variants = ['debug|Win32'] + ['debug|x64']
-        release_variants = ['release|Win32'] + ['release|x64']
-        release_debug_variants = ['release_debug|Win32'] + ['release_debug|x64']
-        variants = debug_variants + release_variants + release_debug_variants
-        debug_targets = ['bin\\godot.windows.tools.32.exe'] + ['bin\\godot.windows.tools.64.exe']
-        release_targets = ['bin\\godot.windows.opt.32.exe'] + ['bin\\godot.windows.opt.64.exe']
-        release_debug_targets = ['bin\\godot.windows.opt.tools.32.exe'] + ['bin\\godot.windows.opt.tools.64.exe']
-        targets = debug_targets + release_targets + release_debug_targets
-        msvproj = env.MSVSProject(target=['#godot' + env['MSVSPROJECTSUFFIX']],
-                                  incs=env.vs_incs,
-                                  srcs=env.vs_srcs,
-                                  runfile=targets,
-                                  buildtarget=targets,
-                                  auto_build_solution=1,
-                                  variant=variants)
+        methods.generate_vs_project(env, GetOption("num_jobs"))
 
 else:
 
