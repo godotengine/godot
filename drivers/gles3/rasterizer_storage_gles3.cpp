@@ -4448,6 +4448,7 @@ RID RasterizerStorageGLES3::light_create(VS::LightType p_type) {
 	light->param[VS::LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET] = 0.3;
 	light->param[VS::LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET] = 0.6;
 	light->param[VS::LIGHT_PARAM_SHADOW_NORMAL_BIAS] = 0.1;
+	light->param[VS::LIGHT_PARAM_SHADOW_BIAS_SPLIT_SCALE] = 0.1;
 
 	light->color = Color(1, 1, 1, 1);
 	light->shadow = false;

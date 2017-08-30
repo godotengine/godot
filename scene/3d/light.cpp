@@ -334,6 +334,7 @@ void DirectionalLight::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "directional_shadow_split_3", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_param", "get_param", PARAM_SHADOW_SPLIT_3_OFFSET);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "directional_shadow_blend_splits"), "set_blend_splits", "is_blend_splits_enabled");
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "directional_shadow_normal_bias", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_param", "get_param", PARAM_SHADOW_NORMAL_BIAS);
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "directional_shadow_bias_split_scale", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param", "get_param", PARAM_SHADOW_BIAS_SPLIT_SCALE);
 
 	BIND_ENUM_CONSTANT(SHADOW_ORTHOGONAL);
 	BIND_ENUM_CONSTANT(SHADOW_PARALLEL_2_SPLITS);
@@ -343,9 +344,10 @@ void DirectionalLight::_bind_methods() {
 DirectionalLight::DirectionalLight()
 	: Light(VisualServer::LIGHT_DIRECTIONAL) {
 
-	set_param(PARAM_SHADOW_NORMAL_BIAS, 0.2);
-	set_param(PARAM_SHADOW_BIAS, 1.0);
+	set_param(PARAM_SHADOW_NORMAL_BIAS, 0.8);
+	set_param(PARAM_SHADOW_BIAS, 0.1);
 	set_param(PARAM_SHADOW_MAX_DISTANCE, 200);
+	set_param(PARAM_SHADOW_BIAS_SPLIT_SCALE, 0.25);
 	set_shadow_mode(SHADOW_PARALLEL_4_SPLITS);
 
 	blend_splits = false;
