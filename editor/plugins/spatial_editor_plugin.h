@@ -196,6 +196,9 @@ private:
 		TRANSFORM_X_AXIS,
 		TRANSFORM_Y_AXIS,
 		TRANSFORM_Z_AXIS,
+		TRANSFORM_YZ,
+		TRANSFORM_XZ,
+		TRANSFORM_XY,
 	};
 
 	struct EditData {
@@ -233,7 +236,7 @@ private:
 
 	real_t zoom_indicator_delay;
 
-	RID move_gizmo_instance[3], rotate_gizmo_instance[3];
+	RID move_gizmo_instance[3], move_plane_gizmo_instance[3], rotate_gizmo_instance[3];
 
 	String last_message;
 	String message;
@@ -378,8 +381,9 @@ private:
 	bool grid_enable[3]; //should be always visible if true
 	bool grid_enabled;
 
-	Ref<ArrayMesh> move_gizmo[3], rotate_gizmo[3];
+	Ref<ArrayMesh> move_gizmo[3], move_plane_gizmo[3], rotate_gizmo[3];
 	Ref<SpatialMaterial> gizmo_color[3];
+	Ref<SpatialMaterial> plane_gizmo_color[3];
 	Ref<SpatialMaterial> gizmo_hl;
 
 	int over_gizmo_handle;
@@ -519,6 +523,7 @@ public:
 	bool are_local_coords_enabled() const { return transform_menu->get_popup()->is_item_checked(transform_menu->get_popup()->get_item_index(SpatialEditor::MENU_TRANSFORM_LOCAL_COORDS)); }
 
 	Ref<ArrayMesh> get_move_gizmo(int idx) const { return move_gizmo[idx]; }
+	Ref<ArrayMesh> get_move_plane_gizmo(int idx) const { return move_plane_gizmo[idx]; }
 	Ref<ArrayMesh> get_rotate_gizmo(int idx) const { return rotate_gizmo[idx]; }
 
 	void update_transform_gizmo();
