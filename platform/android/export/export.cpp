@@ -204,7 +204,7 @@ class EditorExportAndroid : public EditorExportPlatform {
 		String id;
 		String name;
 		String description;
-		int release;
+		int api_level;
 	};
 
 	struct APKExportData {
@@ -278,7 +278,7 @@ class EditorExportAndroid : public EditorExportPlatform {
 							if (ea->devices[j].id == ldevices[i]) {
 								d.description = ea->devices[j].description;
 								d.name = ea->devices[j].name;
-								d.release = ea->devices[j].release;
+								d.api_level = ea->devices[j].api_level;
 							}
 						}
 
@@ -299,7 +299,7 @@ class EditorExportAndroid : public EditorExportPlatform {
 							String vendor;
 							String device;
 							d.description + "Device ID: " + d.id + "\n";
-							d.release = 0;
+							d.api_level = 0;
 							for (int j = 0; j < props.size(); j++) {
 
 								String p = props[j];
@@ -310,9 +310,9 @@ class EditorExportAndroid : public EditorExportPlatform {
 								} else if (p.begins_with("ro.build.display.id=")) {
 									d.description += "Build: " + p.get_slice("=", 1).strip_edges() + "\n";
 								} else if (p.begins_with("ro.build.version.release=")) {
-									const String release_str = p.get_slice("=", 1).strip_edges();
-									d.description += "Release: " + release_str + "\n";
-									d.release = release_str.to_int();
+									d.description += "Release: " + p.get_slice("=", 1).strip_edges() + "\n";
+								} else if (p.begins_with("ro.build.version.sdk=")) {
+									d.api_level = p.get_slice("=", 1).to_int();
 								} else if (p.begins_with("ro.product.cpu.abi=")) {
 									d.description += "CPU: " + p.get_slice("=", 1).strip_edges() + "\n";
 								} else if (p.begins_with("ro.product.manufacturer=")) {
@@ -1162,7 +1162,7 @@ public:
 		args.push_back("shell");
 		args.push_back("am");
 		args.push_back("start");
-		if ((bool)EditorSettings::get_singleton()->get("export/android/force_system_user") && devices[p_device].release >= 17) { // Multi-user introduced in Android 17
+		if ((bool)EditorSettings::get_singleton()->get("export/android/force_system_user") && devices[p_device].api_level >= 17) { // Multi-user introduced in Android 17
 			args.push_back("--user");
 			args.push_back("0");
 		}
