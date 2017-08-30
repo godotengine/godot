@@ -264,7 +264,7 @@ void ARVRAnchor::_notification(int p_what) {
 				// our basis is scaled to the size of the plane the anchor is tracking
 				// extract the size from our basis and reset the scale
 				size = transform.basis.get_scale() * world_scale;
-				transform.basis.set_scale(Vector3(1.0, 1.0, 1.0));
+				transform.basis.orthonormalize();
 
 				// apply our reference frame and set our transform
 				set_transform(arvr_server->get_reference_frame() * transform);

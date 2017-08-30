@@ -7741,29 +7741,6 @@
 				Introduce an additional scaling specified by the given 3D scaling factor. Only relevant when the matrix is being used as a part of [Transform].
 			</description>
 		</method>
-		<method name="set_rotation_axis_angle">
-			<argument index="0" name="axis" type="Vector3">
-			</argument>
-			<argument index="1" name="angle" type="float">
-			</argument>
-			<description>
-				Changes only the rotation part of the [Basis] to a rotation around given axis by phi, while preserving the scaling part (as determined by get_scale).
-			</description>
-		</method>
-		<method name="set_rotation_euler">
-			<argument index="0" name="euler" type="Vector3">
-			</argument>
-			<description>
-				Changes only the rotation part of the [Basis] to a rotation corresponding to given Euler angles, while preserving the scaling part (as determined by get_scale).
-			</description>
-		</method>
-		<method name="set_scale">
-			<argument index="0" name="scale" type="Vector3">
-			</argument>
-			<description>
-				Changes only the scaling part of the Basis to the specified scaling, while preserving the rotation part (as determined by get_rotation).
-			</description>
-		</method>
 		<method name="tdotx">
 			<return type="float">
 			</return>

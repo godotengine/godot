@@ -254,17 +254,6 @@ Vector3 Basis::get_scale() const {
 							  Vector3(elements[0][2], elements[1][2], elements[2][2]).length());
 }
 
-// Sets scaling while preserving rotation.
-// This requires some care when working with matrices with negative determinant,
-// since we're using a particular convention for "polar" decomposition in get_scale and get_rotation.
-// For details, see the explanation in get_scale.
-void Basis::set_scale(const Vector3 &p_scale) {
-	Vector3 e = get_euler();
-	Basis(); // reset to identity
-	scale(p_scale);
-	rotate(e);
-}
-
 // Multiplies the matrix from left by the rotation matrix: M -> R.M
 // Note that this does *not* rotate the matrix itself.
 //
@@ -314,28 +303,6 @@ void Basis::get_rotation_axis_angle(Vector3 &p_axis, real_t &p_angle) const {
 	}
 
 	m.get_axis_angle(p_axis, p_angle);
-}
-
-// Sets rotation while preserving scaling.
-// This requires some care when working with matrices with negative determinant,
-// since we're using a particular convention for "polar" decomposition in get_scale and get_rotation.
-// For details, see the explanation in get_scale.
-void Basis::set_rotation_euler(const Vector3 &p_euler) {
-	Vector3 s = get_scale();
-	Basis(); // reset to identity
-	scale(s);
-	rotate(p_euler);
-}
-
-// Sets rotation while preserving scaling.
-// This requires some care when working with matrices with negative determinant,
-// since we're using a particular convention for "polar" decomposition in get_scale and get_rotation.
-// For details, see the explanation in get_scale.
-void Basis::set_rotation_axis_angle(const Vector3 &p_axis, real_t p_angle) {
-	Vector3 s = get_scale();
-	Basis(); // reset to identity
-	scale(s);
-	rotate(p_axis, p_angle);
 }
 
 // get_euler_xyz returns a vector containing the Euler angles in the format
