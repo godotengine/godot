@@ -47,6 +47,18 @@ uint32_t Color::to_ARGB32() const {
 	return c;
 }
 
+uint32_t Color::to_ABGR32() const {
+	uint32_t c = (uint8_t)(a * 255);
+	c <<= 8;
+	c |= (uint8_t)(b * 255);
+	c <<= 8;
+	c |= (uint8_t)(g * 255);
+	c <<= 8;
+	c |= (uint8_t)(r * 255);
+
+	return c;
+}
+
 uint32_t Color::to_32() const {
 
 	uint32_t c = (uint8_t)(a * 255);

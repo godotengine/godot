@@ -53,6 +53,7 @@ struct Color {
 
 	uint32_t to_32() const;
 	uint32_t to_ARGB32() const;
+	uint32_t to_ABGR32() const;
 	float gray() const;
 	float get_h() const;
 	float get_s() const;
@@ -148,8 +149,7 @@ struct Color {
 				b < 0.0031308 ? 12.92 * b : (1.0 + 0.055) * Math::pow(b, 1.0f / 2.4f) - 0.055, a);
 	}
 
-	static Color
-	hex(uint32_t p_hex);
+	static Color hex(uint32_t p_hex);
 	static Color html(const String &p_color);
 	static bool html_is_valid(const String &p_color);
 	static Color named(const String &p_name);
