@@ -508,6 +508,22 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 		OS_OSX::singleton->input->set_mouse_in_window(true);
 }
 
+- (void)magnifyWithEvent:(NSEvent *)event {
+	InputEvent ev;
+	ev.type = InputEvent::MOUSE_BUTTON;
+	ev.mouse_button.button_index = GESTURE_MAGNIFY;
+	ev.mouse_button.factor = [event magnification];
+	ev.mouse_button.x = mouse_x;
+	ev.mouse_button.y = mouse_y;
+	ev.mouse_button.global_x = mouse_x;
+	ev.mouse_button.global_y = mouse_y;
+	ev.mouse_button.button_mask = button_mask;
+	ev.mouse_button.pressed = true;
+	OS_OSX::singleton->push_input(ev);
+	ev.mouse_button.pressed = false;
+	OS_OSX::singleton->push_input(ev);
+}
+
 - (void)viewDidChangeBackingProperties {
 	/*
 	const NSRect contentRect = [window->ns.view frame];
