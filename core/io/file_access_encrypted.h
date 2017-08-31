@@ -48,7 +48,7 @@ private:
 	size_t base;
 	size_t length;
 	Vector<uint8_t> data;
-	mutable size_t pos;
+	mutable int pos;
 	mutable bool eofed;
 
 public:

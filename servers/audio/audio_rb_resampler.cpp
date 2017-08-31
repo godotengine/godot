@@ -176,7 +176,7 @@ bool AudioRBResampler::mix(int32_t *p_dest, int p_frames) {
 
 	{
 
-		uint32_t read = 0;
+		int read = 0;
 		switch (channels) {
 			case 1: read = _resample<1>(p_dest, todo, increment); break;
 			case 2: read = _resample<2>(p_dest, todo, increment); break;
@@ -189,7 +189,7 @@ bool AudioRBResampler::mix(int32_t *p_dest, int p_frames) {
 		if (remaining && todo > 0) {
 
 			//print_line("fadeout");
-			for (int c = 0; c < channels; c++) {
+			for (uint32_t c = 0; c < channels; c++) {
 
 				for (int i = 0; i < todo; i++) {
 
@@ -202,7 +202,7 @@ bool AudioRBResampler::mix(int32_t *p_dest, int p_frames) {
 		}
 
 		//zero out what remains there to avoid glitches
-		for (int i = todo * channels; i < int(p_frames) * channels; i++) {
+		for (uint32_t i = todo * channels; i < int(p_frames) * channels; i++) {
 
 			p_dest[i] = 0;
 		}
@@ -250,7 +250,7 @@ Error AudioRBResampler::setup(int p_channels, int p_src_mix_rate, int p_target_m
 	rb_write_pos = 0;
 
 	//avoid maybe strange noises upon load
-	for (int i = 0; i < (rb_len * channels); i++) {
+	for (unsigned int i = 0; i < (rb_len * channels); i++) {
 
 		rb[i] = 0;
 		read_buf[i] = 0;

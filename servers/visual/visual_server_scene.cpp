@@ -1687,7 +1687,7 @@ bool VisualServerScene::_render_reflection_probe_step(Instance *p_instance, int 
 
 void VisualServerScene::_gi_probe_fill_local_data(int p_idx, int p_level, int p_x, int p_y, int p_z, const GIProbeDataCell *p_cell, const GIProbeDataHeader *p_header, InstanceGIProbeData::LocalData *p_local_data, Vector<uint32_t> *prev_cell) {
 
-	if (p_level == p_header->cell_subdiv - 1) {
+	if ((uint32_t)p_level == p_header->cell_subdiv - 1) {
 
 		Vector3 emission;
 		emission.x = (p_cell[p_idx].emission >> 24) / 255.0;
@@ -1798,9 +1798,9 @@ void VisualServerScene::_setup_gi_probe(Instance *p_instance) {
 	}
 	for (int i = 0; i < (int)header->cell_subdiv; i++) {
 
-		uint32_t x = header->width >> i;
-		uint32_t y = header->height >> i;
-		uint32_t z = header->depth >> i;
+		int x = header->width >> i;
+		int y = header->height >> i;
+		int z = header->depth >> i;
 
 		//create and clear mipmap
 		PoolVector<uint8_t> mipmap;
@@ -1896,7 +1896,7 @@ void VisualServerScene::_setup_gi_probe(Instance *p_instance) {
 
 				uint8_t alpha_block[4][4] = { { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 } };
 
-				for (int j = 0; j < k.source_count; j++) {
+				for (uint32_t j = 0; j < k.source_count; j++) {
 
 					int alpha = (cells[k.sources[j]].level_alpha >> 8) & 0xFF;
 					if (alpha < min_alpha)
@@ -2389,7 +2389,7 @@ void VisualServerScene::_bake_gi_probe(Instance *p_gi_probe) {
 
 				Vector3 colors[16];
 
-				for (int j = 0; j < b.source_count; j++) {
+				for (uint32_t j = 0; j < b.source_count; j++) {
 
 					colors[j].x = (local_data[b.sources[j]].energy[0] / float(probe_data->dynamic.bake_dynamic_range)) / 1024.0;
 					colors[j].y = (local_data[b.sources[j]].energy[1] / float(probe_data->dynamic.bake_dynamic_range)) / 1024.0;
@@ -2403,8 +2403,8 @@ void VisualServerScene::_bake_gi_probe(Instance *p_gi_probe) {
 				if (b.source_count == 16) {
 					//all cells are used so, find minmax between them
 					int further_apart[2] = { 0, 0 };
-					for (int j = 0; j < b.source_count; j++) {
-						for (int k = j + 1; k < b.source_count; k++) {
+					for (uint32_t j = 0; j < b.source_count; j++) {
+						for (uint32_t k = j + 1; k < b.source_count; k++) {
 							float d = colors[j].distance_squared_to(colors[k]);
 							if (d > distance) {
 								distance = d;
@@ -2424,12 +2424,12 @@ void VisualServerScene::_bake_gi_probe(Instance *p_gi_probe) {
 					//average all colors first
 					Vector3 average;
 
-					for (int j = 0; j < b.source_count; j++) {
+					for (uint32_t j = 0; j < b.source_count; j++) {
 						average += colors[j];
 					}
 					average.normalize();
 					//find max distance in normal from average
-					for (int j = 0; j < b.source_count; j++) {
+					for (uint32_t j = 0; j < b.source_count; j++) {
 						float d = average.dot(colors[j]);
 						distance = MAX(d, distance);
 					}
@@ -2459,7 +2459,7 @@ void VisualServerScene::_bake_gi_probe(Instance *p_gi_probe) {
 
 					Vector3 dir = (to - from).normalized();
 
-					for (int j = 0; j < b.source_count; j++) {
+					for (uint32_t j = 0; j < b.source_count; j++) {
 
 						float d = (colors[j] - from).dot(dir) / distance;
 						indices[j] = int(d * 3 + 0.5);
@@ -2469,7 +2469,7 @@ void VisualServerScene::_bake_gi_probe(Instance *p_gi_probe) {
 						indices[j] = index_swap[CLAMP(indices[j], 0, 3)];
 					}
 				} else {
-					for (int j = 0; j < b.source_count; j++) {
+					for (uint32_t j = 0; j < b.source_count; j++) {
 						indices[j] = 0;
 					}
 				}
@@ -2478,7 +2478,7 @@ void VisualServerScene::_bake_gi_probe(Instance *p_gi_probe) {
 
 				uint32_t index_block[16] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 
-				for (int j = 0; j < b.source_count; j++) {
+				for (uint32_t j = 0; j < b.source_count; j++) {
 
 					int x = local_data[b.sources[j]].pos[0] % 4;
 					int y = local_data[b.sources[j]].pos[1] % 4;

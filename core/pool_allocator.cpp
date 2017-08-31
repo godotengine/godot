@@ -339,9 +339,9 @@ Error PoolAllocator::resize(ID p_mem, int p_new_size) {
 		ERR_FAIL_COND_V(e->lock, ERR_ALREADY_IN_USE);
 	}
 
-	int alloc_size = aligned(p_new_size);
+	uint32_t alloc_size = aligned(p_new_size);
 
-	if (aligned(e->len) == alloc_size) {
+	if ((uint32_t)aligned(e->len) == alloc_size) {
 
 		e->len = p_new_size;
 		mt_unlock();
@@ -374,7 +374,7 @@ Error PoolAllocator::resize(ID p_mem, int p_new_size) {
 	}
 
 	//no need to move stuff around, it fits before the next block
-	int next_pos;
+	uint32_t next_pos;
 	if (entry_indices_pos + 1 == entry_count) {
 		next_pos = pool_size; // - static_area_size;
 	} else {

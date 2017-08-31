@@ -244,14 +244,14 @@ FileAccessNetworkClient::~FileAccessNetworkClient() {
 	memdelete(sem);
 }
 
-void FileAccessNetwork::_set_block(size_t p_offset, const Vector<uint8_t> &p_block) {
+void FileAccessNetwork::_set_block(int p_offset, const Vector<uint8_t> &p_block) {
 
 	int page = p_offset / page_size;
 	ERR_FAIL_INDEX(page, pages.size());
 	if (page < pages.size() - 1) {
 		ERR_FAIL_COND(p_block.size() != page_size);
 	} else {
-		ERR_FAIL_COND((p_block.size() != (total_size % page_size)));
+		ERR_FAIL_COND((p_block.size() != (int)(total_size % page_size)));
 	}
 
 	buffer_mutex->lock();

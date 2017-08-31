@@ -309,7 +309,7 @@ Ref<RegExMatch> RegEx::search(const String &p_subject, int p_offset, int p_end) 
 	_pattern_info(PCRE2_INFO_NAMETABLE, &table);
 	_pattern_info(PCRE2_INFO_NAMEENTRYSIZE, &entry_size);
 
-	for (int i = 0; i < count; i++) {
+	for (uint32_t i = 0; i < count; i++) {
 
 		CharType id = table[i * entry_size];
 		if (result->data[id].start == -1)
@@ -338,7 +338,7 @@ String RegEx::sub(const String &p_subject, const String &p_replacement, bool p_a
 	PCRE2_SIZE olength = output.length();
 
 	PCRE2_SIZE length = p_subject.length();
-	if (p_end >= 0 && p_end < length)
+	if (p_end >= 0 && (uint32_t)p_end < length)
 		length = p_end;
 
 	if (sizeof(CharType) == 2) {
@@ -430,7 +430,7 @@ Array RegEx::get_names() const {
 	_pattern_info(PCRE2_INFO_NAMETABLE, &table);
 	_pattern_info(PCRE2_INFO_NAMEENTRYSIZE, &entry_size);
 
-	for (int i = 0; i < count; i++) {
+	for (uint32_t i = 0; i < count; i++) {
 
 		String name = &table[i * entry_size + 1];
 		if (result.find(name) < 0) {

@@ -65,7 +65,7 @@ void GDAPI godot_pool_byte_array_new_with_array(godot_pool_byte_array *r_dest, c
 	memnew_placement(dest, PoolVector<uint8_t>);
 
 	dest->resize(a->size());
-	for (size_t i = 0; i < a->size(); i++) {
+	for (int i = 0; i < a->size(); i++) {
 		dest->set(i, (*a)[i]);
 	}
 }
@@ -144,7 +144,7 @@ void GDAPI godot_pool_int_array_new_with_array(godot_pool_int_array *r_dest, con
 	memnew_placement(dest, PoolVector<godot_int>);
 
 	dest->resize(a->size());
-	for (size_t i = 0; i < a->size(); i++) {
+	for (int i = 0; i < a->size(); i++) {
 		dest->set(i, (*a)[i]);
 	}
 }
@@ -223,7 +223,7 @@ void GDAPI godot_pool_real_array_new_with_array(godot_pool_real_array *r_dest, c
 	memnew_placement(dest, PoolVector<godot_real>);
 
 	dest->resize(a->size());
-	for (size_t i = 0; i < a->size(); i++) {
+	for (int i = 0; i < a->size(); i++) {
 		dest->set(i, (*a)[i]);
 	}
 }
@@ -302,7 +302,7 @@ void GDAPI godot_pool_string_array_new_with_array(godot_pool_string_array *r_des
 	memnew_placement(dest, PoolVector<String>);
 
 	dest->resize(a->size());
-	for (size_t i = 0; i < a->size(); i++) {
+	for (int i = 0; i < a->size(); i++) {
 		dest->set(i, (*a)[i]);
 	}
 }
@@ -389,7 +389,7 @@ void GDAPI godot_pool_vector2_array_new_with_array(godot_pool_vector2_array *r_d
 	memnew_placement(dest, PoolVector<Vector2>);
 
 	dest->resize(a->size());
-	for (size_t i = 0; i < a->size(); i++) {
+	for (int i = 0; i < a->size(); i++) {
 		dest->set(i, (*a)[i]);
 	}
 }
@@ -475,7 +475,7 @@ void GDAPI godot_pool_vector3_array_new_with_array(godot_pool_vector3_array *r_d
 	memnew_placement(dest, PoolVector<Vector3>);
 
 	dest->resize(a->size());
-	for (size_t i = 0; i < a->size(); i++) {
+	for (int i = 0; i < a->size(); i++) {
 		dest->set(i, (*a)[i]);
 	}
 }
@@ -561,7 +561,7 @@ void GDAPI godot_pool_color_array_new_with_array(godot_pool_color_array *r_dest,
 	memnew_placement(dest, PoolVector<Color>);
 
 	dest->resize(a->size());
-	for (size_t i = 0; i < a->size(); i++) {
+	for (int i = 0; i < a->size(); i++) {
 		dest->set(i, (*a)[i]);
 	}
 }

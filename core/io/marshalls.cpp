@@ -333,14 +333,14 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				len -= 12;
 				buf += 12;
 
-				int total = namecount + subnamecount;
+				uint32_t total = namecount + subnamecount;
 				if (flags & 2)
 					total++;
 
 				if (r_len)
 					(*r_len) += 12;
 
-				for (int i = 0; i < total; i++) {
+				for (uint32_t i = 0; i < total; i++) {
 
 					ERR_FAIL_COND_V((int)len < 4, ERR_INVALID_DATA);
 					strlen = decode_uint32(buf);
@@ -566,7 +566,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			if (count) {
 				data.resize(count);
 				PoolVector<uint8_t>::Write w = data.write();
-				for (int i = 0; i < count; i++) {
+				for (uint32_t i = 0; i < count; i++) {
 
 					w[i] = buf[i];
 				}
@@ -597,7 +597,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				//const int*rbuf=(const int*)buf;
 				data.resize(count);
 				PoolVector<int>::Write w = data.write();
-				for (int i = 0; i < count; i++) {
+				for (uint32_t i = 0; i < count; i++) {
 
 					w[i] = decode_uint32(&buf[i * 4]);
 				}
@@ -624,7 +624,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				//const float*rbuf=(const float*)buf;
 				data.resize(count);
 				PoolVector<float>::Write w = data.write();
-				for (int i = 0; i < count; i++) {
+				for (uint32_t i = 0; i < count; i++) {
 
 					w[i] = decode_float(&buf[i * 4]);
 				}

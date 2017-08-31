@@ -474,7 +474,7 @@ Error EditorSceneImporterGLTF::_decode_buffer_view(GLTFState &state, int p_buffe
 	int buffer_end = (stride * (count - 1)) + element_size;
 	ERR_FAIL_COND_V(buffer_end > bv.byte_length, ERR_PARSE_ERROR);
 
-	ERR_FAIL_COND_V((offset + buffer_end) > buffer.size(), ERR_PARSE_ERROR);
+	ERR_FAIL_COND_V((int)(offset + buffer_end) > buffer.size(), ERR_PARSE_ERROR);
 
 	//fill everything as doubles
 

@@ -385,7 +385,7 @@ void XMLParser::_bind_methods() {
 Error XMLParser::read() {
 
 	// if not end reached, parse the node
-	if (P && (P - data) < length - 1 && *P != 0) {
+	if (P && (P - data) < (int64_t)length - 1 && *P != 0) {
 		_parse_current_node();
 		return OK;
 	}

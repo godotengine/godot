@@ -53,19 +53,19 @@ Error ImageLoaderTGA::decode_tga_rle(const uint8_t *p_compressed_buffer, size_t 
 		count = (c & 0x7f) + 1;
 
 		if (c & 0x80) {
-			for (int i = 0; i < p_pixel_size; i++) {
+			for (size_t i = 0; i < p_pixel_size; i++) {
 				pixels_w.ptr()[i] = p_compressed_buffer[compressed_pos];
 				compressed_pos += 1;
 			}
-			for (int i = 0; i < count; i++) {
-				for (int j = 0; j < p_pixel_size; j++) {
+			for (size_t i = 0; i < count; i++) {
+				for (size_t j = 0; j < p_pixel_size; j++) {
 					p_uncompressed_buffer[output_pos + j] = pixels_w.ptr()[j];
 				}
 				output_pos += p_pixel_size;
 			}
 		} else {
 			count *= p_pixel_size;
-			for (int i = 0; i < count; i++) {
+			for (size_t i = 0; i < count; i++) {
 				p_uncompressed_buffer[output_pos] = p_compressed_buffer[compressed_pos];
 				compressed_pos += 1;
 				output_pos += 1;
@@ -208,7 +208,7 @@ Error ImageLoaderTGA::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 	PoolVector<uint8_t> src_image;
 	int src_image_len = f->get_len();
 	ERR_FAIL_COND_V(src_image_len == 0, ERR_FILE_CORRUPT);
-	ERR_FAIL_COND_V(src_image_len < sizeof(tga_header_s), ERR_FILE_CORRUPT);
+	ERR_FAIL_COND_V(src_image_len < (int)sizeof(tga_header_s), ERR_FILE_CORRUPT);
 	src_image.resize(src_image_len);
 
 	Error err = OK;
