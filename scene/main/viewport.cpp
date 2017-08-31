@@ -1202,15 +1202,15 @@ bool Viewport::get_vflip() const {
 	return vflip;
 }
 
-void Viewport::set_clear_on_new_frame(bool p_enable) {
+void Viewport::set_clear_mode(ClearMode p_mode) {
 
-	clear_on_new_frame = p_enable;
-	//VisualServer::get_singleton()->viewport_set_clear_on_new_frame(viewport,p_enable);
+	clear_mode = p_mode;
+	VS::get_singleton()->viewport_set_clear_mode(viewport, VS::ViewportClearMode(p_mode));
 }
 
-bool Viewport::get_clear_on_new_frame() const {
+Viewport::ClearMode Viewport::get_clear_mode() const {
 
-	return clear_on_new_frame;
+	return clear_mode;
 }
 
 void Viewport::set_shadow_atlas_size(int p_size) {
@@ -1244,12 +1244,6 @@ Viewport::ShadowAtlasQuadrantSubdiv Viewport::get_shadow_atlas_quadrant_subdiv(i
 
 	ERR_FAIL_INDEX_V(p_quadrant, 4, SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED);
 	return shadow_atlas_quadrant_subdiv[p_quadrant];
-}
-
-void Viewport::clear() {
-
-	//clear=true;
-	//VisualServer::get_singleton()->viewport_clear(viewport);
 }
 
 Transform2D Viewport::_get_input_pre_xform() const {
@@ -2625,10 +2619,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_vflip", "enable"), &Viewport::set_vflip);
 	ClassDB::bind_method(D_METHOD("get_vflip"), &Viewport::get_vflip);
 
-	ClassDB::bind_method(D_METHOD("set_clear_on_new_frame", "enable"), &Viewport::set_clear_on_new_frame);
-	ClassDB::bind_method(D_METHOD("get_clear_on_new_frame"), &Viewport::get_clear_on_new_frame);
+	ClassDB::bind_method(D_METHOD("set_clear_mode", "mode"), &Viewport::set_clear_mode);
+	ClassDB::bind_method(D_METHOD("get_clear_mode"), &Viewport::get_clear_mode);
 
-	ClassDB::bind_method(D_METHOD("clear"), &Viewport::clear);
 	ClassDB::bind_method(D_METHOD("set_update_mode", "mode"), &Viewport::set_update_mode);
 	ClassDB::bind_method(D_METHOD("get_update_mode"), &Viewport::get_update_mode);
 
@@ -2705,7 +2698,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "debug_draw", PROPERTY_HINT_ENUM, "Disabled,Unshaded,Overdraw,Wireframe"), "set_debug_draw", "get_debug_draw");
 	ADD_GROUP("Render Target", "render_target_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "render_target_v_flip"), "set_vflip", "get_vflip");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "render_target_clear_on_new_frame"), "set_clear_on_new_frame", "get_clear_on_new_frame");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "render_target_clear_mode", PROPERTY_HINT_ENUM, "Always,Never,NextFrame"), "set_clear_mode", "get_clear_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_target_update_mode", PROPERTY_HINT_ENUM, "Disabled,Once,When Visible,Always"), "set_update_mode", "get_update_mode");
 	ADD_GROUP("Audio Listener", "audio_listener_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "audio_listener_enable_2d"), "set_as_audio_listener_2d", "is_audio_listener_2d");
@@ -2784,7 +2777,7 @@ Viewport::Viewport() {
 	gen_mipmaps = false;
 
 	vflip = false;
-	clear_on_new_frame = true;
+
 	//clear=true;
 	update_mode = UPDATE_WHEN_VISIBLE;
 
@@ -2828,6 +2821,7 @@ Viewport::Viewport() {
 
 	usage = USAGE_3D;
 	debug_draw = DEBUG_DRAW_DISABLED;
+	clear_mode = CLEAR_MODE_ALWAYS;
 }
 
 Viewport::~Viewport() {
