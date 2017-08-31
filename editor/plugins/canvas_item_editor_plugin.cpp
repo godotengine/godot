@@ -1611,6 +1611,36 @@ void CanvasItemEditor::_viewport_base_gui_input(const Ref<InputEvent> &p_event) 
 				continue;
 			}
 
+			bool uniform = m->get_shift();
+			bool symmetric = m->get_alt();
+
+			switch (drag) {
+				case DRAG_ALL:
+				case DRAG_NODE_2D:
+					dto -= drag_from - drag_point_from;
+					if (uniform) {
+						if (ABS(dto.x - drag_point_from.x) > ABS(dto.y - drag_point_from.y)) {
+							dto.y = drag_point_from.y;
+						} else {
+							dto.x = drag_point_from.x;
+						}
+					}
+					break;
+				case DRAG_ANCHOR_TOP_LEFT:
+				case DRAG_ANCHOR_TOP_RIGHT:
+				case DRAG_ANCHOR_BOTTOM_RIGHT:
+				case DRAG_ANCHOR_BOTTOM_LEFT:
+				case DRAG_ANCHOR_ALL:
+					if (uniform) {
+						if (ABS(dto.x - drag_from.x) > ABS(dto.y - drag_from.y)) {
+							dto.y = drag_from.y;
+						} else {
+							dto.x = drag_from.x;
+						}
+					}
+					break;
+			}
+
 			Control *control = Object::cast_to<Control>(canvas_item);
 			if (control) {
 				// Drag and snap the anchor
@@ -1618,46 +1648,32 @@ void CanvasItemEditor::_viewport_base_gui_input(const Ref<InputEvent> &p_event) 
 
 				switch (drag) {
 					case DRAG_ANCHOR_TOP_LEFT:
-						control->set_anchor(MARGIN_LEFT, _anchor_snap(anchor.x, NULL, control->get_anchor(MARGIN_RIGHT)), false, false);
-						control->set_anchor(MARGIN_TOP, _anchor_snap(anchor.y, NULL, control->get_anchor(MARGIN_BOTTOM)), false, false);
+						control->set_anchor(MARGIN_LEFT, (uniform) ? anchor.x : _anchor_snap(anchor.x, NULL, control->get_anchor(MARGIN_RIGHT)), false, false);
+						control->set_anchor(MARGIN_TOP, (uniform) ? anchor.y : _anchor_snap(anchor.y, NULL, control->get_anchor(MARGIN_BOTTOM)), false, false);
 						continue;
 						break;
 					case DRAG_ANCHOR_TOP_RIGHT:
-						control->set_anchor(MARGIN_RIGHT, _anchor_snap(anchor.x, NULL, control->get_anchor(MARGIN_LEFT)), false, false);
-						control->set_anchor(MARGIN_TOP, _anchor_snap(anchor.y, NULL, control->get_anchor(MARGIN_BOTTOM)), false, false);
+						control->set_anchor(MARGIN_RIGHT, (uniform) ? anchor.x : _anchor_snap(anchor.x, NULL, control->get_anchor(MARGIN_LEFT)), false, false);
+						control->set_anchor(MARGIN_TOP, (uniform) ? anchor.y : _anchor_snap(anchor.y, NULL, control->get_anchor(MARGIN_BOTTOM)), false, false);
 						continue;
 						break;
 					case DRAG_ANCHOR_BOTTOM_RIGHT:
-						control->set_anchor(MARGIN_RIGHT, _anchor_snap(anchor.x, NULL, control->get_anchor(MARGIN_LEFT)), false, false);
-						control->set_anchor(MARGIN_BOTTOM, _anchor_snap(anchor.y, NULL, control->get_anchor(MARGIN_TOP)), false, false);
+						control->set_anchor(MARGIN_RIGHT, (uniform) ? anchor.x : _anchor_snap(anchor.x, NULL, control->get_anchor(MARGIN_LEFT)), false, false);
+						control->set_anchor(MARGIN_BOTTOM, (uniform) ? anchor.y : _anchor_snap(anchor.y, NULL, control->get_anchor(MARGIN_TOP)), false, false);
 						continue;
 						break;
 					case DRAG_ANCHOR_BOTTOM_LEFT:
-						control->set_anchor(MARGIN_LEFT, _anchor_snap(anchor.x, NULL, control->get_anchor(MARGIN_RIGHT)), false, false);
-						control->set_anchor(MARGIN_BOTTOM, _anchor_snap(anchor.y, NULL, control->get_anchor(MARGIN_TOP)), false, false);
+						control->set_anchor(MARGIN_LEFT, (uniform) ? anchor.x : _anchor_snap(anchor.x, NULL, control->get_anchor(MARGIN_RIGHT)), false, false);
+						control->set_anchor(MARGIN_BOTTOM, (uniform) ? anchor.y : _anchor_snap(anchor.y, NULL, control->get_anchor(MARGIN_TOP)), false, false);
 						continue;
 						break;
 					case DRAG_ANCHOR_ALL:
-						control->set_anchor(MARGIN_LEFT, _anchor_snap(anchor.x));
-						control->set_anchor(MARGIN_RIGHT, _anchor_snap(anchor.x));
-						control->set_anchor(MARGIN_TOP, _anchor_snap(anchor.y));
-						control->set_anchor(MARGIN_BOTTOM, _anchor_snap(anchor.y));
+						control->set_anchor(MARGIN_LEFT, (uniform) ? anchor.x : _anchor_snap(anchor.x));
+						control->set_anchor(MARGIN_RIGHT, (uniform) ? anchor.x : _anchor_snap(anchor.x));
+						control->set_anchor(MARGIN_TOP, (uniform) ? anchor.y : _anchor_snap(anchor.y));
+						control->set_anchor(MARGIN_BOTTOM, (uniform) ? anchor.y : _anchor_snap(anchor.y));
 						continue;
 						break;
-				}
-			}
-
-			bool uniform = m->get_shift();
-			bool symmetric = m->get_alt();
-
-			if (drag == DRAG_ALL || drag == DRAG_NODE_2D)
-				dto -= drag_from - drag_point_from;
-
-			if (uniform && (drag == DRAG_ALL || drag == DRAG_NODE_2D)) {
-				if (ABS(dto.x - drag_point_from.x) > ABS(dto.y - drag_point_from.y)) {
-					dto.y = drag_point_from.y;
-				} else {
-					dto.x = drag_point_from.x;
 				}
 			}
 
