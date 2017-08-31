@@ -265,16 +265,14 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 
 void ImportDock::_preset_selected(int p_idx) {
 
-	switch (p_idx) {
+	int item_id = preset->get_popup()->get_item_id(p_idx);
+
+	switch (item_id) {
 		case ITEM_SET_AS_DEFAULT: {
-			List<ResourceImporter::ImportOption> options;
-
-			params->importer->get_import_options(&options, p_idx);
-
 			Dictionary d;
-			for (List<ResourceImporter::ImportOption>::Element *E = options.front(); E; E = E->next()) {
 
-				d[E->get().option.name] = E->get().default_value;
+			for (const List<PropertyInfo>::Element *E = params->properties.front(); E; E = E->next()) {
+				d[E->get().name] = params->values[E->get().name];
 			}
 
 			ProjectSettings::get_singleton()->set("importer_defaults/" + params->importer->get_importer_name(), d);
