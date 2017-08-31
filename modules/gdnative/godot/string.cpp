@@ -232,7 +232,7 @@ godot_int GDAPI godot_string_findn_from(const godot_string *p_self, godot_string
 	return self->findn(*what, p_from);
 }
 
-godot_int GDAPI find_last(const godot_string *p_self, godot_string p_what) {
+godot_int GDAPI godot_string_find_last(const godot_string *p_self, godot_string p_what) {
 	const String *self = (const String *)p_self;
 	String *what = (String *)&p_what;
 
