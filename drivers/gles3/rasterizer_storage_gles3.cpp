@@ -3963,13 +3963,15 @@ Color RasterizerStorageGLES3::multimesh_instance_get_color(RID p_multimesh, int 
 	ERR_FAIL_COND_V(multimesh->color_format == VS::MULTIMESH_COLOR_NONE, Color());
 
 	int stride = multimesh->color_floats + multimesh->xform_floats;
-	float *dataptr = &multimesh->data[stride * p_index + multimesh->color_floats];
+	float *dataptr = &multimesh->data[stride * p_index + multimesh->xform_floats];
 
 	if (multimesh->color_format == VS::MULTIMESH_COLOR_8BIT) {
 		union {
 			uint32_t colu;
 			float colf;
 		} cu;
+
+		cu.colf = dataptr[0];
 
 		return Color::hex(BSWAP32(cu.colu));
 
