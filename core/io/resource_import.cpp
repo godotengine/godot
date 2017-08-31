@@ -119,7 +119,7 @@ RES ResourceFormatImporter::load(const String &p_path, const String &p_original_
 		return RES();
 	}
 
-	RES res = ResourceLoader::load(pat.path, pat.type, false, r_error);
+	RES res = ResourceLoader::_load(pat.path, p_path, pat.type, false, r_error);
 
 #ifdef TOOLS_ENABLED
 	if (res.is_valid()) {

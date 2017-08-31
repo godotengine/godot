@@ -1005,7 +1005,7 @@ ResourceInteractiveLoaderBinary::~ResourceInteractiveLoaderBinary() {
 		memdelete(f);
 }
 
-Ref<ResourceInteractiveLoader> ResourceFormatLoaderBinary::load_interactive(const String &p_path, Error *r_error) {
+Ref<ResourceInteractiveLoader> ResourceFormatLoaderBinary::load_interactive(const String &p_path, const String &p_original_path, Error *r_error) {
 
 	if (r_error)
 		*r_error = ERR_FILE_CANT_OPEN;
@@ -1019,7 +1019,8 @@ Ref<ResourceInteractiveLoader> ResourceFormatLoaderBinary::load_interactive(cons
 	}
 
 	Ref<ResourceInteractiveLoaderBinary> ria = memnew(ResourceInteractiveLoaderBinary);
-	ria->local_path = ProjectSettings::get_singleton()->localize_path(p_path);
+	String path = p_original_path != "" ? p_original_path : p_path;
+	ria->local_path = ProjectSettings::get_singleton()->localize_path(path);
 	ria->res_path = ria->local_path;
 	//ria->set_local_path( Globals::get_singleton()->localize_path(p_path) );
 	ria->open(f);

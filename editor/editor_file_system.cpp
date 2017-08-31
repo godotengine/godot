@@ -1509,6 +1509,8 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 	if (!is_scanning()) {
 		emit_signal("filesystem_changed");
 	}
+
+	emit_signal("resources_reimported", p_files);
 }
 
 void EditorFileSystem::_bind_methods() {
@@ -1524,6 +1526,7 @@ void EditorFileSystem::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("filesystem_changed"));
 	ADD_SIGNAL(MethodInfo("sources_changed", PropertyInfo(Variant::BOOL, "exist")));
+	ADD_SIGNAL(MethodInfo("resources_reimported", PropertyInfo(Variant::POOL_STRING_ARRAY, "resources")));
 }
 
 void EditorFileSystem::_update_extensions() {

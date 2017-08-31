@@ -382,20 +382,23 @@ void EditorNode::_fs_changed() {
 				continue;
 
 			if (E->get()->get_import_path() != String()) {
-				//imported resource
+//this is an imported resource, will be reloaded if reimported via the _resources_reimported() callback
+//imported resource
+#if 0
 				uint64_t mt = FileAccess::get_modified_time(E->get()->get_import_path());
 
 				if (mt != E->get()->get_import_last_modified_time()) {
 					print_line("success");
 					changed.push_back(E->get());
 				}
+#endif
+				continue;
+			}
 
-			} else {
-				uint64_t mt = FileAccess::get_modified_time(E->get()->get_path());
+			uint64_t mt = FileAccess::get_modified_time(E->get()->get_path());
 
-				if (mt != E->get()->get_last_modified_time()) {
-					changed.push_back(E->get());
-				}
+			if (mt != E->get()->get_last_modified_time()) {
+				changed.push_back(E->get());
 			}
 		}
 
@@ -408,6 +411,33 @@ void EditorNode::_fs_changed() {
 	}
 
 	_mark_unsaved_scenes();
+}
+
+void EditorNode::_resources_reimported(const Vector<String> &p_resources) {
+	print_line("reimporting");
+	List<String> scenes; //will load later
+
+	for (int i = 0; i < p_resources.size(); i++) {
+		String file_type = ResourceLoader::get_resource_type(p_resources[i]);
+		if (file_type == "PackedScene") {
+			scenes.push_back(p_resources[i]);
+			//reload later if needed, first go with normal resources
+			continue;
+		}
+
+		if (!ResourceCache::has(p_resources[i])) {
+			continue; //not loaded, no need to reload
+		}
+		//reload normally
+		Resource *resource = ResourceCache::get(p_resources[i]);
+		if (resource) {
+			resource->reload_from_file();
+		}
+	}
+
+	for (List<String>::Element *E = scenes.front(); E; E = E->next()) {
+		reload_scene(E->get());
+	}
 }
 
 void EditorNode::_sources_changed(bool p_exist) {
@@ -2857,6 +2887,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 
 	dependency_errors.clear();
 
+	print_line("actually loading it");
 	Error err;
 	Ref<PackedScene> sdata = ResourceLoader::load(lpath, "", true, &err);
 	if (!sdata.is_valid()) {
@@ -4179,30 +4210,25 @@ void EditorNode::_file_access_close_error_notify(const String &p_str) {
 
 void EditorNode::reload_scene(const String &p_path) {
 
-	//first of all, reload textures as they might have changed on disk
+	//first of all, reload internal textures, materials, meshes, etc. as they might have changed on disk
 
+	print_line("reloading: " + p_path);
 	List<Ref<Resource> > cached;
 	ResourceCache::get_cached_resources(&cached);
 	List<Ref<Resource> > to_clear; //clear internal resources from previous scene from being used
 	for (List<Ref<Resource> >::Element *E = cached.front(); E; E = E->next()) {
 
-		if (E->get()->get_path().begins_with(p_path + "::")) //subresources of existing scene
+		if (E->get()->get_path().find("::") != -1) {
+			print_line(E->get()->get_path());
+		}
+		if (E->get()->get_path().begins_with(p_path + "::")) { //subresources of existing scene
 			to_clear.push_back(E->get());
-
-		if (!cast_to<Texture>(E->get().ptr()))
-			continue;
-		if (!E->get()->get_path().is_resource_file() && !E->get()->get_path().is_abs_path())
-			continue;
-		if (!FileAccess::exists(E->get()->get_path()))
-			continue;
-		uint64_t mt = FileAccess::get_modified_time(E->get()->get_path());
-		if (mt != E->get()->get_last_modified_time()) {
-			E->get()->reload_from_file();
 		}
 	}
 
 	//so reload reloads everything, clear subresources of previous scene
 	while (to_clear.front()) {
+		print_line("bye bye: " + to_clear.front()->get()->get_path());
 		to_clear.front()->get()->set_path("");
 		to_clear.pop_front();
 	}
@@ -4234,7 +4260,8 @@ void EditorNode::reload_scene(const String &p_path) {
 	//remove scene
 	_remove_scene(scene_idx);
 	//reload scene
-	load_scene(p_path);
+
+	load_scene(p_path, true, false, true, true);
 	//adjust index so tab is back a the previous position
 	editor_data.move_edited_scene_to_index(scene_idx);
 	get_undo_redo()->clear_history();
@@ -4425,6 +4452,8 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_inherit_imported"), &EditorNode::_inherit_imported);
 	ClassDB::bind_method(D_METHOD("_dim_timeout"), &EditorNode::_dim_timeout);
 	ClassDB::bind_method(D_METHOD("_check_gui_base_size"), &EditorNode::_check_gui_base_size);
+
+	ClassDB::bind_method(D_METHOD("_resources_reimported"), &EditorNode::_resources_reimported);
 
 	ADD_SIGNAL(MethodInfo("play_pressed"));
 	ADD_SIGNAL(MethodInfo("pause_pressed"));
@@ -5454,6 +5483,7 @@ EditorNode::EditorNode() {
 
 	EditorFileSystem::get_singleton()->connect("sources_changed", this, "_sources_changed");
 	EditorFileSystem::get_singleton()->connect("filesystem_changed", this, "_fs_changed");
+	EditorFileSystem::get_singleton()->connect("resources_reimported", this, "_resources_reimported");
 
 	{
 		List<StringName> tl;

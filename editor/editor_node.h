@@ -422,6 +422,7 @@ private:
 	void _prepare_history();
 
 	void _fs_changed();
+	void _resources_reimported(const Vector<String> &p_resources);
 	void _sources_changed(bool p_exist);
 
 	void _node_renamed();
