@@ -92,7 +92,7 @@ import android.os.SystemClock;
 
 
 public class Godot extends Activity implements SensorEventListener, IDownloaderClient
-{	
+{
 
 	static final int MAX_SINGLETONS = 64;
 	private IStub mDownloaderClientStub;
@@ -139,9 +139,9 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
         	com.godot.game.R.string.text_button_pause;
         mPauseButton.setText(stringResourceID);
     }
-    
+
 	static public class SingletonBase {
-        
+
 		protected void registerClass(String p_name, String[] p_methods) {
 
 			GodotLib.singleton(p_name,this);
@@ -210,6 +210,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 */
 
 	private String[] command_line;
+	private boolean use_apk_expansion;
 
 	public GodotView mView;
 	private boolean godot_initialized=false;
@@ -264,27 +265,40 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		layout = new FrameLayout(this);
 		layout.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT));
 		setContentView(layout);
-		
+
 		// GodotEditText layout
-		GodotEditText edittext = new GodotEditText(this); 
+		GodotEditText edittext = new GodotEditText(this);
 		   edittext.setLayoutParams(new ViewGroup.LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.WRAP_CONTENT));
         // ...add to FrameLayout
 		   layout.addView(edittext);
-		
+
 		mView = new GodotView(getApplication(),io,use_gl2,use_32_bits, this);
 		layout.addView(mView,new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT));
-		setKeepScreenOn(GodotLib.getGlobal("display/driver/keep_screen_on").equals("True"));
-		
-        edittext.setView(mView);
-        io.setEdit(edittext);
-		
+		edittext.setView(mView);
+		io.setEdit(edittext);
+
 		// Ad layout
 		adLayout = new RelativeLayout(this);
 		adLayout.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT));
 		layout.addView(adLayout);
-		
+
+		final String[] current_command_line = command_line;
+		final GodotView view = mView;
+		mView.queueEvent(new Runnable() {
+			@Override
+			public void run() {
+				GodotLib.setup(current_command_line);
+				runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						view.setKeepScreenOn("True".equals(GodotLib.getGlobal("display/driver/keep_screen_on")));
+					}
+				});
+			}
+		});
+
 	}
-	
+
 	public void setKeepScreenOn(final boolean p_enabled) {
 		keep_screen_on = p_enabled;
 		if (mView != null){
@@ -315,13 +329,13 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 			}
 		});
 	}
-	
+
 	private static Godot _self;
-	
+
 	public static Godot getInstance(){
 		return Godot._self;
 	}
-	
+
 
 	private String[] getCommandLine() {
             InputStream is;
@@ -402,7 +416,6 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		        Log.d("GODOT","   " + command_line[w]);
 		    }
 		}*/
-		GodotLib.initialize(this,io.needsReloadHooks(),command_line,getAssets());
 		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_GAME);
@@ -411,9 +424,12 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		mGyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
 		mSensorManager.registerListener(this, mGyroscope, SensorManager.SENSOR_DELAY_GAME);
 
+		GodotLib.initialize(this, io.needsReloadHooks(), getAssets(), use_apk_expansion);
+
 		result_callback = null;
 
 		mPaymentsManager = PaymentsManager.createManager(this).initService();
+
 		godot_initialized=true;
 
 	}
@@ -426,7 +442,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 
 
 
-	@Override 
+	@Override
 	protected void onCreate(Bundle icicle) {
 
 		Log.d("GODOT", "** GODOT ACTIVITY CREATED HERE ***\n");
@@ -437,12 +453,10 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		//window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
 
-
 		//check for apk expansion API
 		if (true) {
 		        boolean md5mismatch = false;
 			command_line = getCommandLine();
-			boolean use_apk_expansion=false;
 			String main_pack_md5=null;
 			String main_pack_key=null;
 
@@ -528,23 +542,23 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 
 				if (!pack_valid) {
 					Log.d("GODOT", "Pack Invalid, try re-downloading.");
-					
+
 					Intent notifierIntent = new Intent(this, this.getClass());
 					notifierIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
 			                                Intent.FLAG_ACTIVITY_CLEAR_TOP);
-			        
+
                                                 PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
 			                notifierIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-					
+
 			        int startResult;
 					try {
 						Log.d("GODOT", "INITIALIZING DOWNLOAD");
 						startResult = DownloaderClientMarshaller.startDownloadServiceIfRequired(
-								getApplicationContext(), 
-								pendingIntent, 
+								getApplicationContext(),
+								pendingIntent,
 								GodotDownloaderService.class);
 						Log.d("GODOT", "DOWNLOAD SERVICE FINISHED:" + startResult);
-					
+
 			        if (startResult != DownloaderClientMarshaller.NO_DOWNLOAD_REQUIRED) {
 						Log.d("GODOT", "DOWNLOAD REQUIRED");
 			            // This is where you do set up to display the download
@@ -563,7 +577,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 			            mCellMessage = findViewById(com.godot.game.R.id.approveCellular);
 			            mPauseButton = (Button) findViewById(com.godot.game.R.id.pauseButton);
 			            mWiFiSettingsButton = (Button) findViewById(com.godot.game.R.id.wifiSettingsButton);
-			        	
+
 			            return;
 			        } else{
 			        	Log.d("GODOT", "NO DOWNLOAD REQUIRED");
@@ -582,7 +596,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 
 		initializeGodot();
 
-		
+
 		//instanceSingleton( new GodotFacebook(this) );
 
 
@@ -590,14 +604,14 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 
 
 	@Override protected void onDestroy(){
-		
+
 		if(mPaymentsManager != null ) mPaymentsManager.destroy();
 		for(int i=0;i<singleton_count;i++) {
 			singletons[i].onMainDestroy();
 		}
 		super.onDestroy();
 	}
-	
+
 	@Override protected void onPause() {
 		super.onPause();
 		if (!godot_initialized){
@@ -607,8 +621,13 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 			return;
 		}
 		mView.onPause();
+		mView.queueEvent(new Runnable() {
+			@Override
+			public void run() {
+				GodotLib.focusout();
+			}
+		});
 		mSensorManager.unregisterListener(this);
-		GodotLib.focusout();
 
 		for(int i=0;i<singleton_count;i++) {
 			singletons[i].onMainPause();
@@ -625,10 +644,16 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		}
 
 		mView.onResume();
+		mView.queueEvent(new Runnable() {
+			@Override
+			public void run() {
+				GodotLib.focusin();
+			}
+		});
 		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_GAME);
 		mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_GAME);
 		mSensorManager.registerListener(this, mGyroscope, SensorManager.SENSOR_DELAY_GAME);
-		GodotLib.focusin();
+
 		if(use_immersive && Build.VERSION.SDK_INT >= 19.0){ // check if the application runs on an android 4.4+
 			Window window = getWindow();
 			window.getDecorView().setSystemUiVisibility(
@@ -644,8 +669,8 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 
 			singletons[i].onMainResume();
 		}
-		
-		
+
+
 
 	}
 
@@ -670,32 +695,39 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 	@Override public void onSensorChanged(SensorEvent event) {
 		Display display = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
 		int displayRotation = display.getRotation();
-		
+
 		float[] adjustedValues = new float[3];
 		final int axisSwap[][] = {
-		{  1,  -1,  0,  1  },     // ROTATION_0 
-		{-1,  -1,  1,  0  },     // ROTATION_90 
-		{-1,    1,  0,  1  },     // ROTATION_180 
-		{  1,    1,  1,  0  }  }; // ROTATION_270 
+		{  1,  -1,  0,  1  },     // ROTATION_0
+		{-1,  -1,  1,  0  },     // ROTATION_90
+		{-1,    1,  0,  1  },     // ROTATION_180
+		{  1,    1,  1,  0  }  }; // ROTATION_270
 
-		final int[] as = axisSwap[displayRotation]; 
-		adjustedValues[0]  =  (float)as[0] * event.values[ as[2] ]; 
-		adjustedValues[1]  =  (float)as[1] * event.values[ as[3] ]; 
+		final int[] as = axisSwap[displayRotation];
+		adjustedValues[0]  =  (float)as[0] * event.values[ as[2] ];
+		adjustedValues[1]  =  (float)as[1] * event.values[ as[3] ];
 		adjustedValues[2]  =  event.values[2];
-		
-		float x = adjustedValues[0];
-		float y = adjustedValues[1];
-		float z = adjustedValues[2];
 
-		int typeOfSensor = event.sensor.getType();
-		if (typeOfSensor == event.sensor.TYPE_ACCELEROMETER) {
-			GodotLib.accelerometer(x,y,z);
-		}
-		if (typeOfSensor == event.sensor.TYPE_MAGNETIC_FIELD) {
-			GodotLib.magnetometer(x,y,z);
-		}
-		if (typeOfSensor == event.sensor.TYPE_GYROSCOPE) {
-			GodotLib.gyroscope(x,y,z);
+		final float x = adjustedValues[0];
+		final float y = adjustedValues[1];
+		final float z = adjustedValues[2];
+
+		final int typeOfSensor = event.sensor.getType();
+		if (mView != null) {
+			mView.queueEvent(new Runnable() {
+				@Override
+				public void run() {
+					if (typeOfSensor == Sensor.TYPE_ACCELEROMETER) {
+						GodotLib.accelerometer(x,y,z);
+					}
+					if (typeOfSensor == Sensor.TYPE_MAGNETIC_FIELD) {
+						GodotLib.magnetometer(x,y,z);
+					}
+					if (typeOfSensor == Sensor.TYPE_GYROSCOPE) {
+						GodotLib.gyroscope(x,y,z);
+					}
+				}
+			});
 		}
 	}
 
@@ -722,7 +754,14 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 	@Override public void onBackPressed() {
 
 		System.out.printf("** BACK REQUEST!\n");
-		//GodotLib.back();
+		if (mView != null) {
+			mView.queueEvent(new Runnable() {
+				@Override
+				public void run() {
+					GodotLib.back();
+				}
+			});
+		}
 	}
 
 	public void forceQuit() {
@@ -733,7 +772,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 
 
 	private boolean obbIsCorrupted(String f, String main_pack_md5){
-	
+
 		    try {
 
 			    InputStream fis =  new FileInputStream(f);
@@ -780,58 +819,64 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 	}
 
 	//@Override public boolean dispatchTouchEvent (MotionEvent event) {
-	public boolean gotTouchEvent(MotionEvent event) {
+	public boolean gotTouchEvent(final MotionEvent event) {
 
 		super.onTouchEvent(event);
-		int evcount=event.getPointerCount();
+		final int evcount=event.getPointerCount();
 		if (evcount==0)
 			return true;
 
-		int[] arr = new int[event.getPointerCount()*3];
+		if (mView != null) {
+			final int[] arr = new int[event.getPointerCount()*3];
 
-		for(int i=0;i<event.getPointerCount();i++) {
+			for(int i=0;i<event.getPointerCount();i++) {
 
-			arr[i*3+0]=(int)event.getPointerId(i);
-			arr[i*3+1]=(int)event.getX(i);
-			arr[i*3+2]=(int)event.getY(i);
-		}
+				arr[i*3+0]=(int)event.getPointerId(i);
+				arr[i*3+1]=(int)event.getX(i);
+				arr[i*3+2]=(int)event.getY(i);
+			}
 
-		//System.out.printf("gaction: %d\n",event.getAction());
-		switch(event.getAction()&MotionEvent.ACTION_MASK) {
-
-			case MotionEvent.ACTION_DOWN: {
-				GodotLib.touch(0,0,evcount,arr);
-				//System.out.printf("action down at: %f,%f\n", event.getX(),event.getY());
-			} break;
-			case MotionEvent.ACTION_MOVE: {
-				GodotLib.touch(1,0,evcount,arr);
-				/*
-				for(int i=0;i<event.getPointerCount();i++) {
-					System.out.printf("%d - moved to: %f,%f\n",i, event.getX(i),event.getY(i));
+			//System.out.printf("gaction: %d\n",event.getAction());
+			final int action = event.getAction() & MotionEvent.ACTION_MASK;
+			mView.queueEvent(new Runnable() {
+				@Override
+				public void run() {
+					switch(action) {
+						case MotionEvent.ACTION_DOWN: {
+							GodotLib.touch(0,0,evcount,arr);
+							//System.out.printf("action down at: %f,%f\n", event.getX(),event.getY());
+						} break;
+						case MotionEvent.ACTION_MOVE: {
+							GodotLib.touch(1,0,evcount,arr);
+							/*
+							for(int i=0;i<event.getPointerCount();i++) {
+								System.out.printf("%d - moved to: %f,%f\n",i, event.getX(i),event.getY(i));
+							}
+							*/
+						} break;
+						case MotionEvent.ACTION_POINTER_UP: {
+							final int indexPointUp = event.getActionIndex();
+							final int pointer_idx = event.getPointerId(indexPointUp);
+							GodotLib.touch(4,pointer_idx,evcount,arr);
+							//System.out.printf("%d - s.up at: %f,%f\n",pointer_idx, event.getX(pointer_idx),event.getY(pointer_idx));
+						} break;
+						case MotionEvent.ACTION_POINTER_DOWN: {
+							int pointer_idx = event.getActionIndex();
+							GodotLib.touch(3,pointer_idx,evcount,arr);
+							//System.out.printf("%d - s.down at: %f,%f\n",pointer_idx, event.getX(pointer_idx),event.getY(pointer_idx));
+						} break;
+						case MotionEvent.ACTION_CANCEL:
+						case MotionEvent.ACTION_UP: {
+							GodotLib.touch(2,0,evcount,arr);
+							/*
+							for(int i=0;i<event.getPointerCount();i++) {
+								System.out.printf("%d - up! %f,%f\n",i, event.getX(i),event.getY(i));
+							}
+							*/
+						} break;
+					}
 				}
-				*/
-			} break;
-			case MotionEvent.ACTION_POINTER_UP: {
-				final int indexPointUp = event.getActionIndex();
-				final int pointer_idx = event.getPointerId(indexPointUp); 
-				GodotLib.touch(4,pointer_idx,evcount,arr);
-				//System.out.printf("%d - s.up at: %f,%f\n",pointer_idx, event.getX(pointer_idx),event.getY(pointer_idx));
-			} break;
-			case MotionEvent.ACTION_POINTER_DOWN: {
-				int pointer_idx = event.getActionIndex();
-				GodotLib.touch(3,pointer_idx,evcount,arr);
-				//System.out.printf("%d - s.down at: %f,%f\n",pointer_idx, event.getX(pointer_idx),event.getY(pointer_idx));
-			} break;
-			case MotionEvent.ACTION_CANCEL:
-			case MotionEvent.ACTION_UP: {
-				GodotLib.touch(2,0,evcount,arr);
-				/*
-				for(int i=0;i<event.getPointerCount();i++) {
-					System.out.printf("%d - up! %f,%f\n",i, event.getX(i),event.getY(i));
-				}
-				*/
-			} break;
-
+			});
 		}
 		return true;
 	}
@@ -864,7 +909,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 
 	private void queueEvent(Runnable runnable) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	public PaymentsManager getPaymentsManager() {
@@ -988,7 +1033,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
         mProgressFraction.setText(Helpers.getDownloadProgressString
                 (progress.mOverallProgress,
                         progress.mOverallTotal));
-		
+
 	}
-    
+
 }

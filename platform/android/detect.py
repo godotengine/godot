@@ -240,7 +240,7 @@ def configure(env):
 
     env.Append(CPPPATH=['#platform/android'])
     env.Append(CPPFLAGS=['-DANDROID_ENABLED', '-DUNIX_ENABLED', '-DNO_FCNTL', '-DMPC_FIXED_POINT'])
-    env.Append(LIBS=['OpenSLES', 'EGL', 'GLESv3', 'android', 'log', 'z'])
+    env.Append(LIBS=['OpenSLES', 'EGL', 'GLESv3', 'android', 'log', 'z', 'dl'])
 
     # TODO: Move that to opus module's config
     if("module_opus_enabled" in env and env["module_opus_enabled"] != "no"):

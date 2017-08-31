@@ -40,7 +40,7 @@
 const String init_symbol = "godot_gdnative_init";
 const String terminate_symbol = "godot_gdnative_terminate";
 
-String GDNativeLibrary::platform_names[NUM_PLATFORMS] = {
+String GDNativeLibrary::platform_names[NUM_PLATFORMS + 1] = {
 	"X11_32bit",
 	"X11_64bit",
 	"Windows_32bit",
@@ -48,11 +48,15 @@ String GDNativeLibrary::platform_names[NUM_PLATFORMS] = {
 	"OSX",
 
 	"Android",
-	"iOS",
 
-	"WebAssembly"
+	"iOS_32bit",
+	"iOS_64bit",
+
+	"WebAssembly",
+
+	""
 };
-String GDNativeLibrary::platform_lib_ext[NUM_PLATFORMS] = {
+String GDNativeLibrary::platform_lib_ext[NUM_PLATFORMS + 1] = {
 	"so",
 	"so",
 	"dll",
@@ -60,21 +64,30 @@ String GDNativeLibrary::platform_lib_ext[NUM_PLATFORMS] = {
 	"dylib",
 
 	"so",
+
+	"dylib",
 	"dylib",
 
-	"wasm"
+	"wasm",
+
+	""
 };
 
-// TODO(karroffel): make this actually do the right thing.
 GDNativeLibrary::Platform GDNativeLibrary::current_platform =
 #if defined(X11_ENABLED)
-		X11_64BIT;
+		(sizeof(void *) == 8 ? X11_64BIT : X11_32BIT);
 #elif defined(WINDOWS_ENABLED)
-		WINDOWS_64BIT;
+		(sizeof(void *) == 8 ? WINDOWS_64BIT : WINDOWS_32BIT);
 #elif defined(OSX_ENABLED)
 		OSX;
+#elif defined(IPHONE_ENABLED)
+		(sizeof(void *) == 8 ? IOS_64BIT : IOS_32BIT);
+#elif defined(ANDROID_ENABLED)
+		ANDROID;
+#elif defined(JAVASCRIPT_ENABLED)
+		WASM;
 #else
-		X11_64BIT; // need a sensible default..
+		NUM_PLATFORMS;
 #endif
 
 GDNativeLibrary::GDNativeLibrary()
@@ -151,7 +164,10 @@ String GDNativeLibrary::get_library_path(StringName p_platform) const {
 }
 
 String GDNativeLibrary::get_active_library_path() const {
-	return library_paths[GDNativeLibrary::current_platform];
+	if (GDNativeLibrary::current_platform != NUM_PLATFORMS) {
+		return library_paths[GDNativeLibrary::current_platform];
+	}
+	return "";
 }
 
 GDNative::GDNative() {
