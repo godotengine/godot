@@ -1079,6 +1079,7 @@ void CodeTextEditor::update_editor_settings() {
 	text_editor->set_scroll_pass_end_of_file(EditorSettings::get_singleton()->get("text_editor/cursor/scroll_past_end_of_file"));
 	text_editor->set_indent_using_spaces(EditorSettings::get_singleton()->get("text_editor/indent/type"));
 	text_editor->set_indent_size(EditorSettings::get_singleton()->get("text_editor/indent/size"));
+	text_editor->set_auto_indent(EditorSettings::get_singleton()->get("text_editor/indent/auto_indent"));
 	text_editor->set_draw_tabs(EditorSettings::get_singleton()->get("text_editor/indent/draw_tabs"));
 	text_editor->set_show_line_numbers(EditorSettings::get_singleton()->get("text_editor/line_numbers/show_line_numbers"));
 	text_editor->set_line_numbers_zero_padded(EditorSettings::get_singleton()->get("text_editor/line_numbers/line_numbers_zero_padded"));
