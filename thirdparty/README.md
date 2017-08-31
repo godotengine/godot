@@ -55,6 +55,12 @@ Files extracted from upstream source:
 
 TODO.
 
+### Adobe Source Code Pro Regular
+
+- Upstream: https://github.com/adobe-fonts/source-code-pro
+- Version: 2.030
+- License: OFL-1.1
+
 
 ## freetype
 
