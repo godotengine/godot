@@ -33,32 +33,8 @@
 #include "editor/editor_settings.h"
 #include "os/file_access.h"
 
-EditablePolygon2D *NavigationPolygonEditor::_get_editable(Node *p_node) const {
-
-	return Object::cast_to<NavigationPolygonInstance>(p_node)->get_navigation_polygon().ptr();
-}
-
-void NavigationPolygonEditor::_create_res() {
-
-	if (!node)
-		return;
-
-	undo_redo->create_action(TTR("Create Navigation Polygon"));
-	undo_redo->add_do_method(node, "set_navigation_polygon", Ref<NavigationPolygon>(memnew(NavigationPolygon)));
-	undo_redo->add_undo_method(node, "set_navigation_polygon", Variant(REF()));
-	undo_redo->commit_action();
-	_menu_option(MODE_CREATE);
-
-	editable = _get_editable(node);
-}
-
-NavigationPolygonEditor::NavigationPolygonEditor(EditorNode *p_editor) : AbstractPolygon2DEditor(p_editor) {
-
-}
-
 NavigationPolygonEditorPlugin::NavigationPolygonEditorPlugin(EditorNode *p_node) :
 
-	AbstractPolygon2DEditorPlugin(p_node, memnew(NavigationPolygonEditor(p_node)), "NavigationPolygonInstance") {
+	AbstractPolygon2DEditorPlugin(p_node, memnew(AbstractPolygon2DEditor(p_node, false)), "NavigationPolygonInstance") {
 
 }
-

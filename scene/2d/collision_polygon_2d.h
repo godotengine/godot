@@ -36,9 +36,17 @@
 
 class CollisionObject2D;
 
-class CollisionPolygon2D : public Node2D, public EditablePolygon2D {
+class CollisionPolygon2D : public AbstractPolygon2D {
 
-	GDCLASS(CollisionPolygon2D, Node2D);
+	GDCLASS(CollisionPolygon2D, AbstractPolygon2D);
+
+public:
+	Vector<Vector<Vector2> > _decompose_in_convex();
+};
+
+class CollisionPolygon2DInstance : public EditablePolygonNode2D {
+
+	GDCLASS(CollisionPolygon2DInstance, EditablePolygonNode2D);
 
 public:
 	enum BuildMode {
@@ -47,32 +55,26 @@ public:
 	};
 
 protected:
-	Rect2 aabb;
-	BuildMode build_mode;
-	Vector<Point2> polygon;
-	uint32_t owner_id;
+	Ref<CollisionPolygon2D> polygon;
 	CollisionObject2D *parent;
+	uint32_t owner_id;
+	BuildMode build_mode;
 	bool disabled;
 	bool one_way_collision;
 
-	Vector<Vector<Vector2> > _decompose_in_convex();
-
 	void _build_polygon();
+	void _polygon_changed();
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
+	void set_polygon(Ref<CollisionPolygon2D> p_polygon);
+	Ref<CollisionPolygon2D> get_polygon() const;
+
 	void set_build_mode(BuildMode p_mode);
 	BuildMode get_build_mode() const;
-
-	void set_polygon(const Vector<Point2> &p_polygon);
-	Vector<Point2> get_polygon() const;
-
-	virtual Rect2 get_item_rect() const;
-
-	virtual String get_configuration_warning() const;
 
 	void set_disabled(bool p_disabled);
 	bool is_disabled() const;
@@ -80,18 +82,23 @@ public:
 	void set_one_way_collision(bool p_enable);
 	bool is_one_way_collision_enabled() const;
 
-	virtual int edit_get_polygon_count() const;
-	virtual Vector<Vector2> edit_get_polygon(int p_polygon) const;
-	virtual void edit_set_polygon(int p_polygon, const Vector<Vector2> &p_points);
-	virtual bool edit_is_wip_destructive() const;
-	virtual void edit_create_wip_close_action(UndoRedo *undo_redo, const Vector<Vector2> &p_wip);
-	virtual void edit_create_edit_poly_action(UndoRedo *undo_redo, int p_polygon, const Vector<Vector2> &p_before, const Vector<Vector2> &p_after);
-	virtual void edit_create_remove_point_action(UndoRedo *undo_redo, int p_polygon, int p_point);
-	virtual Color edit_get_previous_outline_color() const;
+	virtual bool _has_resource() const;
+	virtual void _create_resource(UndoRedo *undo_redo);
 
-	CollisionPolygon2D();
+	virtual int get_polygon_count() const;
+	virtual Ref<AbstractPolygon2D> get_nth_polygon(int p_idx) const;
+
+	virtual void append_polygon(const Vector<Point2> &p_vertices);
+	virtual void add_polygon_at_index(int p_idx, Ref<AbstractPolygon2D> p_polygon);
+	virtual void set_vertices(int p_idx, const Vector<Point2> &p_vertices);
+	virtual void remove_polygon(int p_idx);
+
+	virtual String get_configuration_warning() const;
+	virtual Rect2 get_item_rect() const;
+
+	CollisionPolygon2DInstance();
 };
 
-VARIANT_ENUM_CAST(CollisionPolygon2D::BuildMode);
+VARIANT_ENUM_CAST(CollisionPolygon2DInstance::BuildMode);
 
 #endif // COLLISION_POLYGON_2D_H

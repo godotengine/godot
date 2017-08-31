@@ -31,27 +31,59 @@
 #define EDITABLEPOLYGON2D_H
 
 #include "core/undo_redo.h"
+#include "core/resource.h"
 #include "scene/resources/texture.h"
+#include "scene/2d/node_2d.h"
 
-class EditablePolygon2D {
+class AbstractPolygon2D : public Resource {
+
+	GDCLASS(AbstractPolygon2D, Resource);
+
+protected:
+	PoolVector<Point2> vertices;
+
+	mutable bool rect_cache_dirty;
+	mutable Rect2 item_rect;
+
+protected:
+	static void _bind_methods();
+
 public:
-	virtual int edit_get_polygon_count() const = 0;
-	virtual Vector<Vector2> edit_get_polygon(int p_polygon) const = 0;
-	virtual void edit_set_polygon(int p_polygon, const Vector<Vector2> &p_points) = 0;
-
-	virtual PoolVector<Vector2> edit_get_uv() const;
-	virtual void edit_set_uv(const PoolVector<Vector2> &p_uv);
-	virtual Ref<Texture> edit_get_texture() const;
-	virtual Vector2 edit_get_offset();
-
-	virtual bool edit_is_wip_destructive() const = 0;
-	virtual Color edit_get_previous_outline_color() const = 0;
-
-	virtual void edit_create_wip_close_action(UndoRedo *undo_redo, const Vector<Vector2> &p_wip) = 0;
-	virtual void edit_create_edit_poly_action(UndoRedo *undo_redo, int p_polygon, const Vector<Vector2> &p_before, const Vector<Vector2> &p_after) = 0;
-	virtual void edit_create_remove_point_action(UndoRedo *undo_redo, int p_polygon, int p_point) = 0;
+	Vector<Point2> get_vertices() const;
+	void set_vertices(const Vector<Point2> &p_vertices);
 
 	bool is_empty() const;
+	Rect2 get_item_rect() const;
+
+	virtual Vector2 get_offset() const;
+	virtual Color get_outline_color() const;
+
+	AbstractPolygon2D();
+};
+
+class Outline2D : public AbstractPolygon2D {
+
+	GDCLASS(Outline2D, AbstractPolygon2D);
+};
+
+class EditablePolygonNode2D : public Node2D {
+
+	GDCLASS(EditablePolygonNode2D, Node2D);
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual bool _has_resource() const = 0;
+	virtual void _create_resource(UndoRedo *undo_redo) = 0;
+
+	virtual int get_polygon_count() const = 0;
+	virtual Ref<AbstractPolygon2D> get_nth_polygon(int p_idx) const = 0;
+
+	virtual void append_polygon(const Vector<Point2> &p_vertices) = 0;
+	virtual void add_polygon_at_index(int p_idx, Ref<AbstractPolygon2D> p_polygon) = 0;
+	virtual void set_vertices(int p_idx, const Vector<Point2> &p_vertices) = 0;
+	virtual void remove_polygon(int p_idx) = 0;
 };
 
 #endif // EDITABLEPOLYGON2D_H

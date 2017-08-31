@@ -36,17 +36,6 @@
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
-class CollisionPolygon2DEditor : public AbstractPolygon2DEditor {
-
-	GDCLASS(CollisionPolygon2DEditor, AbstractPolygon2DEditor);
-
-protected:
-	virtual EditablePolygon2D *_get_editable(Node *p_node) const;
-
-public:
-	CollisionPolygon2DEditor(EditorNode *p_editor);
-};
-
 class CollisionPolygon2DEditorPlugin : public AbstractPolygon2DEditorPlugin {
 
 	GDCLASS(CollisionPolygon2DEditorPlugin, AbstractPolygon2DEditorPlugin);

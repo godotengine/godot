@@ -4624,7 +4624,7 @@ EditorNode::EditorNode() {
 
 	ClassDB::set_class_enabled("CollisionShape", true);
 	ClassDB::set_class_enabled("CollisionShape2D", true);
-	ClassDB::set_class_enabled("CollisionPolygon2D", true);
+	ClassDB::set_class_enabled("CollisionPolygon2DInstance", true);
 
 	theme_base = memnew(Control);
 	add_child(theme_base);

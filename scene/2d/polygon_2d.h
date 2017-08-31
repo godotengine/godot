@@ -33,11 +33,10 @@
 #include "scene/2d/node_2d.h"
 #include "scene/2d/editable_polygon_2d.h"
 
-class Polygon2D : public Node2D, public EditablePolygon2D {
+class Polygon2D : public AbstractPolygon2D {
 
-	GDCLASS(Polygon2D, Node2D);
+	GDCLASS(Polygon2D, AbstractPolygon2D);
 
-	PoolVector<Vector2> polygon;
 	PoolVector<Vector2> uv;
 	PoolVector<Color> vertex_colors;
 	Color color;
@@ -51,20 +50,14 @@ class Polygon2D : public Node2D, public EditablePolygon2D {
 	bool antialiased;
 
 	Vector2 offset;
-	mutable bool rect_cache_dirty;
-	mutable Rect2 item_rect;
 
 	void _set_texture_rotationd(float p_rot);
 	float _get_texture_rotationd() const;
 
 protected:
-	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	void set_polygon(const PoolVector<Vector2> &p_polygon);
-	PoolVector<Vector2> get_polygon() const;
-
 	void set_uv(const PoolVector<Vector2> &p_uv);
 	PoolVector<Vector2> get_uv() const;
 
@@ -98,28 +91,52 @@ public:
 	void set_offset(const Vector2 &p_offset);
 	Vector2 get_offset() const;
 
+	void draw(RID p_canvas_item);
+
 	//editor stuff
 
 	virtual void edit_set_pivot(const Point2 &p_pivot);
 	virtual Point2 edit_get_pivot() const;
 	virtual bool edit_has_pivot() const;
 
-	virtual Rect2 get_item_rect() const;
-
-	virtual int edit_get_polygon_count() const;
-	virtual Vector<Vector2> edit_get_polygon(int p_polygon) const;
-	virtual void edit_set_polygon(int p_polygon, const Vector<Vector2> &p_points);
-	virtual Vector2 edit_get_offset();
 	virtual PoolVector<Vector2> edit_get_uv() const;
 	virtual void edit_set_uv(const PoolVector<Vector2> &p_uv);
 	virtual Ref<Texture> edit_get_texture() const;
-	virtual bool edit_is_wip_destructive() const;
-	virtual void edit_create_wip_close_action(UndoRedo *undo_redo, const Vector<Vector2> &p_wip);
-	virtual void edit_create_edit_poly_action(UndoRedo *undo_redo, int p_polygon, const Vector<Vector2> &p_before, const Vector<Vector2> &p_after);
-	virtual void edit_create_remove_point_action(UndoRedo *undo_redo, int p_polygon, int p_point);
-	virtual Color edit_get_previous_outline_color() const;
 
 	Polygon2D();
+};
+
+class Polygon2DInstance : public EditablePolygonNode2D {
+
+	GDCLASS(Polygon2DInstance, EditablePolygonNode2D);
+
+	Ref<Polygon2D> polygon;
+
+	void _polygon_changed();
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	void set_polygon(const Ref<Polygon2D> &p_polygon);
+	Ref<Polygon2D> get_polygon() const;
+
+	virtual bool _has_resource() const;
+	virtual void _create_resource(UndoRedo *undo_redo);
+
+	virtual int get_polygon_count() const;
+	virtual Ref<AbstractPolygon2D> get_nth_polygon(int p_idx) const;
+
+	virtual void append_polygon(const Vector<Point2> &p_vertices);
+	virtual void add_polygon_at_index(int p_idx, Ref<AbstractPolygon2D> p_polygon);
+	virtual void set_vertices(int p_idx, const Vector<Point2> &p_vertices);
+	virtual void remove_polygon(int p_idx);
+
+	virtual String get_configuration_warning() const;
+	virtual Rect2 get_item_rect() const;
+
+	Polygon2DInstance();
 };
 
 #endif // POLYGON_2D_H

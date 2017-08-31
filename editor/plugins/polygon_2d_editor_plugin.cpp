@@ -35,11 +35,6 @@
 #include "os/input.h"
 #include "os/keyboard.h"
 
-EditablePolygon2D *Polygon2DEditor::_get_editable(Node *p_node) const {
-
-	return Object::cast_to<Polygon2D>(p_node);
-}
-
 void Polygon2DEditor::_notification(int p_what) {
 
 	switch (p_what) {
@@ -70,15 +65,17 @@ void Polygon2DEditor::_menu_option(int p_option) {
 
 		case MODE_EDIT_UV: {
 
-			if (editable->edit_get_texture().is_null()) {
+			Ref<Polygon2D> polygon = node->get_nth_polygon(0);
+
+			if (polygon->edit_get_texture().is_null()) {
 
 				error->set_text("No texture in this polygon.\nSet a texture to be able to edit UV.");
 				error->popup_centered_minsize();
 				return;
 			}
 
-			PoolVector<Vector2> points = Variant(editable->edit_get_polygon(0));
-			PoolVector<Vector2> uvs = editable->edit_get_uv();
+			PoolVector<Vector2> points = Variant(polygon->get_vertices());
+			PoolVector<Vector2> uvs = polygon->edit_get_uv();
 			if (uvs.size() != points.size()) {
 				undo_redo->create_action(TTR("Create UV Map"));
 				undo_redo->add_do_method(node, "set_uv", points);
@@ -92,10 +89,11 @@ void Polygon2DEditor::_menu_option(int p_option) {
 		} break;
 		case UVEDIT_POLYGON_TO_UV: {
 
-			PoolVector<Vector2> points = Variant(editable->edit_get_polygon(0));
+			Ref<Polygon2D> polygon = node->get_nth_polygon(0);
+			PoolVector<Vector2> points = Variant(polygon->get_vertices());
 			if (points.size() == 0)
 				break;
-			PoolVector<Vector2> uvs = editable->edit_get_uv();
+			PoolVector<Vector2> uvs = polygon->edit_get_uv();
 			undo_redo->create_action(TTR("Create UV Map"));
 			undo_redo->add_do_method(node, "set_uv", points);
 			undo_redo->add_undo_method(node, "set_uv", uvs);
@@ -106,8 +104,9 @@ void Polygon2DEditor::_menu_option(int p_option) {
 		} break;
 		case UVEDIT_UV_TO_POLYGON: {
 
-			PoolVector<Vector2> points = Variant(editable->edit_get_polygon(0));
-			PoolVector<Vector2> uvs = editable->edit_get_uv();
+			Ref<Polygon2D> polygon = node->get_nth_polygon(0);
+			PoolVector<Vector2> points = Variant(polygon->get_vertices());
+			PoolVector<Vector2> uvs = polygon->edit_get_uv();
 			if (uvs.size() == 0)
 				break;
 
@@ -121,7 +120,8 @@ void Polygon2DEditor::_menu_option(int p_option) {
 		} break;
 		case UVEDIT_UV_CLEAR: {
 
-			PoolVector<Vector2> uvs = editable->edit_get_uv();
+			Ref<Polygon2D> polygon = node->get_nth_polygon(0);
+			PoolVector<Vector2> uvs = polygon->edit_get_uv();
 			if (uvs.size() == 0)
 				break;
 			undo_redo->create_action(TTR("Create UV Map"));
@@ -186,9 +186,11 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 			if (mb->is_pressed()) {
 
+				Ref<Polygon2D> polygon = node->get_nth_polygon(0);
+
 				uv_drag_from = Vector2(mb->get_position().x, mb->get_position().y);
 				uv_drag = true;
-				uv_prev = editable->edit_get_uv();
+				uv_prev = polygon->edit_get_uv();
 				uv_move_current = uv_mode;
 				if (uv_move_current == UV_MODE_EDIT_POINT) {
 
@@ -218,8 +220,10 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 				}
 			} else if (uv_drag) {
 
+				Ref<Polygon2D> polygon = node->get_nth_polygon(0);
+
 				undo_redo->create_action(TTR("Transform UV Map"));
-				undo_redo->add_do_method(node, "set_uv", editable->edit_get_uv());
+				undo_redo->add_do_method(node, "set_uv", polygon->edit_get_uv());
 				undo_redo->add_undo_method(node, "set_uv", uv_prev);
 				undo_redo->add_do_method(uv_edit_draw, "update");
 				undo_redo->add_undo_method(uv_edit_draw, "update");
@@ -232,8 +236,9 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 			if (uv_drag) {
 
+				Ref<Polygon2D> polygon = node->get_nth_polygon(0);
 				uv_drag = false;
-				editable->edit_set_uv(uv_prev);
+				polygon->edit_set_uv(uv_prev);
 				uv_edit_draw->update();
 			}
 
@@ -265,9 +270,10 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 				case UV_MODE_EDIT_POINT: {
 
+					Ref<Polygon2D> polygon = node->get_nth_polygon(0);
 					PoolVector<Vector2> uv_new = uv_prev;
 					uv_new.set(uv_drag_index, uv_new[uv_drag_index] + drag);
-					editable->edit_set_uv(uv_new);
+					polygon->edit_set_uv(uv_new);
 				} break;
 				case UV_MODE_MOVE: {
 
@@ -275,7 +281,8 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 					for (int i = 0; i < uv_new.size(); i++)
 						uv_new.set(i, uv_new[i] + drag);
 
-					editable->edit_set_uv(uv_new);
+					Ref<Polygon2D> polygon = node->get_nth_polygon(0);
+					polygon->edit_set_uv(uv_new);
 
 				} break;
 				case UV_MODE_ROTATE: {
@@ -295,7 +302,8 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 						uv_new.set(i, center + rel);
 					}
 
-					editable->edit_set_uv(uv_new);
+					Ref<Polygon2D> polygon = node->get_nth_polygon(0);
+					polygon->edit_set_uv(uv_new);
 
 				} break;
 				case UV_MODE_SCALE: {
@@ -320,7 +328,8 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 						uv_new.set(i, center + rel);
 					}
 
-					editable->edit_set_uv(uv_new);
+					Ref<Polygon2D> polygon = node->get_nth_polygon(0);
+					polygon->edit_set_uv(uv_new);
 				} break;
 			}
 			uv_edit_draw->update();
@@ -341,7 +350,9 @@ void Polygon2DEditor::_uv_scroll_changed(float) {
 
 void Polygon2DEditor::_uv_draw() {
 
-	Ref<Texture> base_tex = editable->edit_get_texture();
+	Ref<Polygon2D> polygon = node->get_nth_polygon(0);
+
+	Ref<Texture> base_tex = polygon->edit_get_texture();
 	if (base_tex.is_null())
 		return;
 
@@ -380,7 +391,7 @@ void Polygon2DEditor::_uv_draw() {
 		}
 	}
 
-	PoolVector<Vector2> uvs = editable->edit_get_uv();
+	PoolVector<Vector2> uvs = polygon->edit_get_uv();
 	Ref<Texture> handle = get_icon("EditorHandle", "EditorIcons");
 
 	Rect2 rect(Point2(), mtx.basis_xform(base_tex->get_size()));
@@ -588,6 +599,6 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) : AbstractPolygon2DEditor
 }
 
 Polygon2DEditorPlugin::Polygon2DEditorPlugin(EditorNode *p_node) :
-	AbstractPolygon2DEditorPlugin(p_node, memnew(Polygon2DEditor(p_node)), "Polygon2D") {
+	AbstractPolygon2DEditorPlugin(p_node, memnew(Polygon2DEditor(p_node)), "Polygon2DInstance") {
 
 }

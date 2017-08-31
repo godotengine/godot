@@ -36,18 +36,6 @@
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
-class NavigationPolygonEditor : public AbstractPolygon2DEditor {
-
-	GDCLASS(NavigationPolygonEditor, AbstractPolygon2DEditor);
-
-protected:
-	virtual EditablePolygon2D *_get_editable(Node *p_node) const;
-	virtual void _create_res();
-
-public:
-	NavigationPolygonEditor(EditorNode *p_editor);
-};
-
 class NavigationPolygonEditorPlugin : public AbstractPolygon2DEditorPlugin {
 
 	GDCLASS(NavigationPolygonEditorPlugin, AbstractPolygon2DEditorPlugin);

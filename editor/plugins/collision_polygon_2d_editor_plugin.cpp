@@ -33,16 +33,7 @@
 #include "editor/editor_settings.h"
 #include "os/file_access.h"
 
-EditablePolygon2D *CollisionPolygon2DEditor::_get_editable(Node *p_node) const {
-
-	return Object::cast_to<CollisionPolygon2D>(p_node);
-}
-
-CollisionPolygon2DEditor::CollisionPolygon2DEditor(EditorNode *p_editor) : AbstractPolygon2DEditor(p_editor) {
-
-}
-
 CollisionPolygon2DEditorPlugin::CollisionPolygon2DEditorPlugin(EditorNode *p_node) :
-	AbstractPolygon2DEditorPlugin(p_node, memnew(CollisionPolygon2DEditor(p_node)), "CollisionPolygon2D") {
+	AbstractPolygon2DEditorPlugin(p_node, memnew(AbstractPolygon2DEditor(p_node)), "CollisionPolygon2DInstance") {
 
 }

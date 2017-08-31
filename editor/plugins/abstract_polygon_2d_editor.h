@@ -55,6 +55,7 @@ class AbstractPolygon2DEditor : public HBoxContainer {
 	Vector<Vector2> pre_move_edit;
 	Vector<Vector2> wip;
 	bool wip_active;
+	bool wip_destructive;
 
 protected:
 	enum {
@@ -74,8 +75,7 @@ protected:
 	Panel *panel;
 	ConfirmationDialog *create_res;
 
-	EditablePolygon2D *editable;
-	Node2D *node;
+	EditablePolygonNode2D *node;
 
 	void _menu_option(int p_option);
 	void _wip_close();
@@ -85,13 +85,13 @@ protected:
 	void _node_removed(Node *p_node);
 	static void _bind_methods();
 
-	virtual EditablePolygon2D *_get_editable(Node *p_node) const = 0;
-	virtual void _create_res();
+	void _create_resource();
+	bool _is_empty() const;
 
 public:
 	bool forward_gui_input(const Ref<InputEvent> &p_event);
 	void edit(Node *p_polygon);
-	AbstractPolygon2DEditor(EditorNode *p_editor);
+	AbstractPolygon2DEditor(EditorNode *p_editor, bool p_wip_destructive = true);
 };
 
 class AbstractPolygon2DEditorPlugin : public EditorPlugin {

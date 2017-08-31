@@ -29,25 +29,8 @@
 /*************************************************************************/
 #include "polygon_2d.h"
 
-Rect2 Polygon2D::get_item_rect() const {
-
-	if (rect_cache_dirty) {
-		int l = polygon.size();
-		PoolVector<Vector2>::Read r = polygon.read();
-		item_rect = Rect2();
-		for (int i = 0; i < l; i++) {
-			Vector2 pos = r[i] + offset;
-			if (i == 0)
-				item_rect.position = pos;
-			else
-				item_rect.expand_to(pos);
-		}
-		item_rect = item_rect.grow(20);
-		rect_cache_dirty = false;
-	}
-
-	return item_rect;
-}
+#include "core_string_names.h"
+#include "engine.h"
 
 void Polygon2D::edit_set_pivot(const Point2 &p_pivot) {
 
@@ -63,141 +46,123 @@ bool Polygon2D::edit_has_pivot() const {
 	return true;
 }
 
-void Polygon2D::_notification(int p_what) {
+void Polygon2D::draw(RID p_canvas_item) {
 
-	switch (p_what) {
+	if (vertices.size() < 3)
+		return;
 
-		case NOTIFICATION_DRAW: {
+	Vector<Vector2> points;
+	Vector<Vector2> uvs;
 
-			if (polygon.size() < 3)
-				return;
+	points.resize(vertices.size());
 
-			Vector<Vector2> points;
-			Vector<Vector2> uvs;
+	int len = points.size();
+	{
 
-			points.resize(polygon.size());
-
-			int len = points.size();
-			{
-
-				PoolVector<Vector2>::Read polyr = polygon.read();
-				for (int i = 0; i < len; i++) {
-					points[i] = polyr[i] + offset;
-				}
-			}
-
-			if (invert) {
-
-				Rect2 bounds;
-				int highest_idx = -1;
-				float highest_y = -1e20;
-				float sum = 0;
-
-				for (int i = 0; i < len; i++) {
-					if (i == 0)
-						bounds.position = points[i];
-					else
-						bounds.expand_to(points[i]);
-					if (points[i].y > highest_y) {
-						highest_idx = i;
-						highest_y = points[i].y;
-					}
-					int ni = (i + 1) % len;
-					sum += (points[ni].x - points[i].x) * (points[ni].y + points[i].y);
-				}
-
-				bounds = bounds.grow(invert_border);
-
-				Vector2 ep[7] = {
-					Vector2(points[highest_idx].x, points[highest_idx].y + invert_border),
-					Vector2(bounds.position + bounds.size),
-					Vector2(bounds.position + Vector2(bounds.size.x, 0)),
-					Vector2(bounds.position),
-					Vector2(bounds.position + Vector2(0, bounds.size.y)),
-					Vector2(points[highest_idx].x - CMP_EPSILON, points[highest_idx].y + invert_border),
-					Vector2(points[highest_idx].x - CMP_EPSILON, points[highest_idx].y),
-				};
-
-				if (sum > 0) {
-					SWAP(ep[1], ep[4]);
-					SWAP(ep[2], ep[3]);
-					SWAP(ep[5], ep[0]);
-					SWAP(ep[6], points[highest_idx]);
-				}
-
-				points.resize(points.size() + 7);
-				for (int i = points.size() - 1; i >= highest_idx + 7; i--) {
-
-					points[i] = points[i - 7];
-				}
-
-				for (int i = 0; i < 7; i++) {
-
-					points[highest_idx + i + 1] = ep[i];
-				}
-
-				len = points.size();
-			}
-
-			if (texture.is_valid()) {
-
-				Transform2D texmat(tex_rot, tex_ofs);
-				texmat.scale(tex_scale);
-				Size2 tex_size = texture->get_size();
-				uvs.resize(points.size());
-
-				if (points.size() == uv.size()) {
-
-					PoolVector<Vector2>::Read uvr = uv.read();
-
-					for (int i = 0; i < len; i++) {
-						uvs[i] = texmat.xform(uvr[i]) / tex_size;
-					}
-
-				} else {
-					for (int i = 0; i < len; i++) {
-						uvs[i] = texmat.xform(points[i]) / tex_size;
-					}
-				}
-			}
-
-			Vector<Color> colors;
-			int color_len = vertex_colors.size();
-			colors.resize(len);
-			{
-				PoolVector<Color>::Read color_r = vertex_colors.read();
-				for (int i = 0; i < color_len && i < len; i++) {
-					colors[i] = color_r[i];
-				}
-				for (int i = color_len; i < len; i++) {
-					colors[i] = color;
-				}
-			}
-
-			//			Vector<int> indices = Geometry::triangulate_polygon(points);
-			//			VS::get_singleton()->canvas_item_add_triangle_array(get_canvas_item(), indices, points, colors, uvs, texture.is_valid() ? texture->get_rid() : RID());
-
-			VS::get_singleton()->canvas_item_add_polygon(get_canvas_item(), points, colors, uvs, texture.is_valid() ? texture->get_rid() : RID(), RID(), antialiased);
-
-		} break;
+		PoolVector<Vector2>::Read polyr = vertices.read();
+		for (int i = 0; i < len; i++) {
+			points[i] = polyr[i] + offset;
+		}
 	}
-}
 
-void Polygon2D::set_polygon(const PoolVector<Vector2> &p_polygon) {
-	polygon = p_polygon;
-	rect_cache_dirty = true;
-	update();
-}
+	if (invert) {
 
-PoolVector<Vector2> Polygon2D::get_polygon() const {
+		Rect2 bounds;
+		int highest_idx = -1;
+		float highest_y = -1e20;
+		float sum = 0;
 
-	return polygon;
+		for (int i = 0; i < len; i++) {
+			if (i == 0)
+				bounds.position = points[i];
+			else
+				bounds.expand_to(points[i]);
+			if (points[i].y > highest_y) {
+				highest_idx = i;
+				highest_y = points[i].y;
+			}
+			int ni = (i + 1) % len;
+			sum += (points[ni].x - points[i].x) * (points[ni].y + points[i].y);
+		}
+
+		bounds = bounds.grow(invert_border);
+
+		Vector2 ep[7] = {
+			Vector2(points[highest_idx].x, points[highest_idx].y + invert_border),
+			Vector2(bounds.position + bounds.size),
+			Vector2(bounds.position + Vector2(bounds.size.x, 0)),
+			Vector2(bounds.position),
+			Vector2(bounds.position + Vector2(0, bounds.size.y)),
+			Vector2(points[highest_idx].x - CMP_EPSILON, points[highest_idx].y + invert_border),
+			Vector2(points[highest_idx].x - CMP_EPSILON, points[highest_idx].y),
+		};
+
+		if (sum > 0) {
+			SWAP(ep[1], ep[4]);
+			SWAP(ep[2], ep[3]);
+			SWAP(ep[5], ep[0]);
+			SWAP(ep[6], points[highest_idx]);
+		}
+
+		points.resize(points.size() + 7);
+		for (int i = points.size() - 1; i >= highest_idx + 7; i--) {
+
+			points[i] = points[i - 7];
+		}
+
+		for (int i = 0; i < 7; i++) {
+
+			points[highest_idx + i + 1] = ep[i];
+		}
+
+		len = points.size();
+	}
+
+	if (texture.is_valid()) {
+
+		Transform2D texmat(tex_rot, tex_ofs);
+		texmat.scale(tex_scale);
+		Size2 tex_size = texture->get_size();
+		uvs.resize(points.size());
+
+		if (points.size() == uv.size()) {
+
+			PoolVector<Vector2>::Read uvr = uv.read();
+
+			for (int i = 0; i < len; i++) {
+				uvs[i] = texmat.xform(uvr[i]) / tex_size;
+			}
+
+		} else {
+			for (int i = 0; i < len; i++) {
+				uvs[i] = texmat.xform(points[i]) / tex_size;
+			}
+		}
+	}
+
+	Vector<Color> colors;
+	int color_len = vertex_colors.size();
+	colors.resize(len);
+	{
+		PoolVector<Color>::Read color_r = vertex_colors.read();
+		for (int i = 0; i < color_len && i < len; i++) {
+			colors[i] = color_r[i];
+		}
+		for (int i = color_len; i < len; i++) {
+			colors[i] = color;
+		}
+	}
+
+	//			Vector<int> indices = Geometry::triangulate_polygon(points);
+	//			VS::get_singleton()->canvas_item_add_triangle_array(get_canvas_item(), indices, points, colors, uvs, texture.is_valid() ? texture->get_rid() : RID());
+
+	VS::get_singleton()->canvas_item_add_polygon(p_canvas_item, points, colors, uvs, texture.is_valid() ? texture->get_rid() : RID(), RID(), antialiased);
 }
 
 void Polygon2D::set_uv(const PoolVector<Vector2> &p_uv) {
 
 	uv = p_uv;
-	update();
+	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 
 PoolVector<Vector2> Polygon2D::get_uv() const {
@@ -208,7 +173,7 @@ PoolVector<Vector2> Polygon2D::get_uv() const {
 void Polygon2D::set_color(const Color &p_color) {
 
 	color = p_color;
-	update();
+	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 Color Polygon2D::get_color() const {
 
@@ -218,7 +183,7 @@ Color Polygon2D::get_color() const {
 void Polygon2D::set_vertex_colors(const PoolVector<Color> &p_colors) {
 
 	vertex_colors = p_colors;
-	update();
+	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 PoolVector<Color> Polygon2D::get_vertex_colors() const {
 
@@ -237,7 +202,7 @@ void Polygon2D::set_texture(const Ref<Texture> &p_texture) {
 
 		texture->set_flags(flags);
 	}*/
-	update();
+	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 Ref<Texture> Polygon2D::get_texture() const {
 
@@ -247,7 +212,7 @@ Ref<Texture> Polygon2D::get_texture() const {
 void Polygon2D::set_texture_offset(const Vector2 &p_offset) {
 
 	tex_ofs = p_offset;
-	update();
+	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 Vector2 Polygon2D::get_texture_offset() const {
 
@@ -257,7 +222,7 @@ Vector2 Polygon2D::get_texture_offset() const {
 void Polygon2D::set_texture_rotation(float p_rot) {
 
 	tex_rot = p_rot;
-	update();
+	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 float Polygon2D::get_texture_rotation() const {
 
@@ -276,7 +241,7 @@ float Polygon2D::_get_texture_rotationd() const {
 void Polygon2D::set_texture_scale(const Size2 &p_scale) {
 
 	tex_scale = p_scale;
-	update();
+	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 Size2 Polygon2D::get_texture_scale() const {
 
@@ -286,7 +251,7 @@ Size2 Polygon2D::get_texture_scale() const {
 void Polygon2D::set_invert(bool p_invert) {
 
 	invert = p_invert;
-	update();
+	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 bool Polygon2D::get_invert() const {
 
@@ -296,7 +261,7 @@ bool Polygon2D::get_invert() const {
 void Polygon2D::set_antialiased(bool p_antialiased) {
 
 	antialiased = p_antialiased;
-	update();
+	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 bool Polygon2D::get_antialiased() const {
 
@@ -306,7 +271,7 @@ bool Polygon2D::get_antialiased() const {
 void Polygon2D::set_invert_border(float p_invert_border) {
 
 	invert_border = p_invert_border;
-	update();
+	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 float Polygon2D::get_invert_border() const {
 
@@ -316,8 +281,7 @@ float Polygon2D::get_invert_border() const {
 void Polygon2D::set_offset(const Vector2 &p_offset) {
 
 	offset = p_offset;
-	rect_cache_dirty = true;
-	update();
+	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 
 Vector2 Polygon2D::get_offset() const {
@@ -326,9 +290,6 @@ Vector2 Polygon2D::get_offset() const {
 }
 
 void Polygon2D::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("set_polygon", "polygon"), &Polygon2D::set_polygon);
-	ClassDB::bind_method(D_METHOD("get_polygon"), &Polygon2D::get_polygon);
 
 	ClassDB::bind_method(D_METHOD("set_uv", "uv"), &Polygon2D::set_uv);
 	ClassDB::bind_method(D_METHOD("get_uv"), &Polygon2D::get_uv);
@@ -366,7 +327,6 @@ void Polygon2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_offset", "offset"), &Polygon2D::set_offset);
 	ClassDB::bind_method(D_METHOD("get_offset"), &Polygon2D::get_offset);
 
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "uv"), "set_uv", "get_uv");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_COLOR_ARRAY, "vertex_colors"), "set_vertex_colors", "get_vertex_colors");
@@ -384,26 +344,6 @@ void Polygon2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "invert_border", PROPERTY_HINT_RANGE, "0.1,16384,0.1"), "set_invert_border", "get_invert_border");
 }
 
-int Polygon2D::edit_get_polygon_count() const {
-
-	return 1;
-}
-
-Vector<Vector2> Polygon2D::edit_get_polygon(int p_polygon) const {
-
-	return Variant(polygon);
-}
-
-void Polygon2D::edit_set_polygon(int p_polygon, const Vector<Vector2> &p_points) {
-
-	set_polygon(Variant(p_points));
-}
-
-Vector2 Polygon2D::edit_get_offset() {
-
-	return get_offset();
-}
-
 PoolVector<Vector2> Polygon2D::edit_get_uv() const {
 
 	return get_uv();
@@ -419,39 +359,6 @@ Ref<Texture> Polygon2D::edit_get_texture() const {
 	return get_texture();
 }
 
-bool Polygon2D::edit_is_wip_destructive() const {
-
-	return true;
-}
-
-void Polygon2D::edit_create_wip_close_action(UndoRedo *undo_redo, const Vector<Vector2> &p_wip) {
-
-	undo_redo->create_action(TTR("Create Poly"));
-	undo_redo->add_undo_method(this, "set_polygon", polygon);
-	undo_redo->add_do_method(this, "set_polygon", p_wip);
-}
-
-void Polygon2D::edit_create_edit_poly_action(UndoRedo *undo_redo, int p_polygon, const Vector<Vector2> &p_before, const Vector<Vector2> &p_after) {
-
-	undo_redo->create_action(TTR("Edit Poly"));
-	undo_redo->add_do_method(this, "set_polygon", p_after);
-	undo_redo->add_undo_method(this, "set_polygon", p_before);
-}
-
-void Polygon2D::edit_create_remove_point_action(UndoRedo *undo_redo, int p_polygon, int p_point) {
-
-	PoolVector<Vector2> poly = polygon;
-	undo_redo->create_action(TTR("Edit Poly (Remove Point)"));
-	undo_redo->add_undo_method(this, "set_polygon", poly);
-	poly.remove(p_point);
-	undo_redo->add_do_method(this, "set_polygon", poly);
-}
-
-Color Polygon2D::edit_get_previous_outline_color() const {
-
-	return get_color().contrasted();
-}
-
 Polygon2D::Polygon2D() {
 
 	invert = 0;
@@ -461,5 +368,127 @@ Polygon2D::Polygon2D() {
 	tex_tile = true;
 	tex_scale = Vector2(1, 1);
 	color = Color(1, 1, 1);
-	rect_cache_dirty = true;
+}
+
+void Polygon2DInstance::_notification(int p_what) {
+
+	switch (p_what) {
+		case NOTIFICATION_DRAW: {
+
+			if (polygon.is_valid()) {
+
+				polygon->draw(get_canvas_item());
+			}
+
+		} break;
+	}
+}
+
+void Polygon2DInstance::set_polygon(const Ref<Polygon2D> &p_polygon) {
+
+	if (p_polygon == polygon)
+		return;
+
+	if (polygon.is_valid()) {
+		polygon->disconnect(CoreStringNames::get_singleton()->changed, this, "_polygon_changed");
+	}
+	polygon = p_polygon;
+
+	if (polygon.is_valid()) {
+		polygon->connect(CoreStringNames::get_singleton()->changed, this, "_polygon_changed");
+	}
+
+	_polygon_changed();
+	_change_notify("polygon");
+	update_configuration_warning();
+}
+
+Ref<Polygon2D> Polygon2DInstance::get_polygon() const {
+
+	return polygon;
+}
+
+void Polygon2DInstance::_polygon_changed() {
+
+	if (is_inside_tree())
+		update();
+}
+
+String Polygon2DInstance::get_configuration_warning() const {
+
+	if (!is_visible_in_tree() || !is_inside_tree())
+		return String();
+
+	if (!polygon.is_valid()) {
+		return TTR("A Polygon2D resource must be set or created for this node to work. Please set a property or draw a polygon.");
+	}
+
+	return String();
+}
+
+Rect2 Polygon2DInstance::get_item_rect() const {
+
+	if (polygon.is_valid())
+		return polygon->get_item_rect();
+	else
+		return Rect2();
+}
+
+void Polygon2DInstance::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_polygon", "polygon"), &Polygon2DInstance::set_polygon);
+	ClassDB::bind_method(D_METHOD("get_polygon"), &Polygon2DInstance::get_polygon);
+
+	ClassDB::bind_method(D_METHOD("_polygon_changed"), &Polygon2DInstance::_polygon_changed);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "polygon", PROPERTY_HINT_RESOURCE_TYPE, "Polygon2D"), "set_polygon", "get_polygon");
+}
+
+bool Polygon2DInstance::_has_resource() const {
+
+	return polygon.is_valid();
+}
+
+void Polygon2DInstance::_create_resource(UndoRedo *undo_redo) {
+
+	undo_redo->create_action(TTR("Create Polygon2D"));
+	undo_redo->add_do_method(this, "set_polygon", Ref<Polygon2D>(memnew(Polygon2D)));
+	undo_redo->add_undo_method(this, "set_polygon", Variant(REF()));
+	undo_redo->commit_action();
+}
+
+int Polygon2DInstance::get_polygon_count() const {
+
+	return polygon.is_valid() ? 1 : 0;
+}
+
+Ref<AbstractPolygon2D> Polygon2DInstance::get_nth_polygon(int p_idx) const {
+
+	return polygon;
+}
+
+void Polygon2DInstance::append_polygon(const Vector<Point2> &p_vertices) {
+
+	Ref<Polygon2D> polygon = Ref<Polygon2D>(memnew(Polygon2D));
+	polygon->set_vertices(p_vertices);
+	set_polygon(polygon);
+}
+
+void Polygon2DInstance::add_polygon_at_index(int p_idx, Ref<AbstractPolygon2D> p_polygon) {
+
+	set_polygon(p_polygon);
+}
+
+void Polygon2DInstance::set_vertices(int p_idx, const Vector<Point2> &p_vertices) {
+
+	if (polygon.is_valid())
+		polygon->set_vertices(p_vertices);
+}
+
+void Polygon2DInstance::remove_polygon(int p_idx) {
+
+	set_polygon(Ref<Polygon2D>());
+}
+
+Polygon2DInstance::Polygon2DInstance() {
 }

@@ -103,8 +103,6 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	void _set_snap_step_y(float p_val);
 
 protected:
-	virtual EditablePolygon2D *_get_editable(Node *p_node) const;
-
 	void _notification(int p_what);
 	static void _bind_methods();
 

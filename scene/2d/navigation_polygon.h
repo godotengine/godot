@@ -33,7 +33,7 @@
 #include "scene/2d/node_2d.h"
 #include "scene/2d/editable_polygon_2d.h"
 
-class NavigationPolygon : public Resource, public EditablePolygon2D {
+class NavigationPolygon : public Resource {
 
 	GDCLASS(NavigationPolygon, Resource);
 
@@ -42,7 +42,7 @@ class NavigationPolygon : public Resource, public EditablePolygon2D {
 		Vector<int> indices;
 	};
 	Vector<Polygon> polygons;
-	Vector<PoolVector<Vector2> > outlines;
+	Vector<Ref<Outline2D> > outlines;
 
 protected:
 	static void _bind_methods();
@@ -60,10 +60,10 @@ public:
 	void add_polygon(const Vector<int> &p_polygon);
 	int get_polygon_count() const;
 
-	void add_outline(const PoolVector<Vector2> &p_outline);
-	void add_outline_at_index(const PoolVector<Vector2> &p_outline, int p_index);
-	void set_outline(int p_idx, const PoolVector<Vector2> &p_outline);
-	PoolVector<Vector2> get_outline(int p_idx) const;
+	void add_outline(const Ref<Outline2D> &p_outline);
+	void add_outline_at_index(const Ref<Outline2D> &p_outline, int p_index);
+	void set_outline(int p_idx, const Ref<Outline2D> &p_outline);
+	Ref<Outline2D> get_outline(int p_idx) const;
 	void remove_outline(int p_idx);
 	int get_outline_count() const;
 
@@ -73,23 +73,14 @@ public:
 	Vector<int> get_polygon(int p_idx);
 	void clear_polygons();
 
-	virtual int edit_get_polygon_count() const;
-	virtual Vector<Vector2> edit_get_polygon(int p_polygon) const;
-	virtual void edit_set_polygon(int p_polygon, const Vector<Vector2> &p_points);
-	virtual bool edit_is_wip_destructive() const;
-	virtual void edit_create_wip_close_action(UndoRedo *undo_redo, const Vector<Vector2> &p_wip);
-	virtual void edit_create_edit_poly_action(UndoRedo *undo_redo, int p_polygon, const Vector<Vector2> &p_before, const Vector<Vector2> &p_after);
-	virtual void edit_create_remove_point_action(UndoRedo *undo_redo, int p_polygon, int p_point);
-	virtual Color edit_get_previous_outline_color() const;
-
 	NavigationPolygon();
 };
 
 class Navigation2D;
 
-class NavigationPolygonInstance : public Node2D {
+class NavigationPolygonInstance : public EditablePolygonNode2D {
 
-	GDCLASS(NavigationPolygonInstance, Node2D);
+	GDCLASS(NavigationPolygonInstance, EditablePolygonNode2D);
 
 	bool enabled;
 	int nav_id;
@@ -110,6 +101,17 @@ public:
 	Ref<NavigationPolygon> get_navigation_polygon() const;
 
 	String get_configuration_warning() const;
+
+	virtual bool _has_resource() const;
+	virtual void _create_resource(UndoRedo *undo_redo);
+
+	virtual int get_polygon_count() const;
+	virtual Ref<AbstractPolygon2D> get_nth_polygon(int p_idx) const;
+
+	virtual void append_polygon(const Vector<Point2> &p_vertices);
+	virtual void add_polygon_at_index(int p_idx, Ref<AbstractPolygon2D> p_polygon);
+	virtual void set_vertices(int p_idx, const Vector<Point2> &p_vertices);
+	virtual void remove_polygon(int p_idx);
 
 	NavigationPolygonInstance();
 };

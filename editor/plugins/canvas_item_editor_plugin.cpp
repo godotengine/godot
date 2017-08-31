@@ -3676,7 +3676,7 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 		if (E->get().name == "config/texture") { // Particles2D
 			property = "config/texture";
 			break;
-		} else if (E->get().name == "texture/texture") { // Polygon2D
+		} else if (E->get().name == "texture/texture") { // Polygon2DInstance
 			property = "texture/texture";
 			break;
 		} else if (E->get().name == "normal") { // TouchScreenButton
@@ -3689,7 +3689,7 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 	// make visible for certain node type
 	if (default_type == "Patch9Rect") {
 		editor_data->get_undo_redo().add_do_property(child, "rect/size", texture_size);
-	} else if (default_type == "Polygon2D") {
+	} else if (default_type == "Polygon2DInstance") {
 		PoolVector<Vector2> list;
 		list.push_back(Vector2(0, 0));
 		list.push_back(Vector2(texture_size.width, 0));
@@ -3705,7 +3705,7 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 	}
 	Transform2D trans = canvas->get_canvas_transform();
 	Point2 target_pos = (p_point - trans.get_origin()) / trans.get_scale().x - pos;
-	if (default_type == "Polygon2D" || default_type == "TouchScreenButton" || default_type == "TextureRect" || default_type == "Patch9Rect") {
+	if (default_type == "Polygon2DInstance" || default_type == "TouchScreenButton" || default_type == "TextureRect" || default_type == "Patch9Rect") {
 		target_pos -= texture_size / 2;
 	}
 	// there's nothing to be used as source position so snapping will work as absolute if enabled
@@ -3784,8 +3784,8 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 				child = memnew(Light2D);
 			else if (default_type == "Particles2D")
 				child = memnew(Particles2D);
-			else if (default_type == "Polygon2D")
-				child = memnew(Polygon2D);
+			else if (default_type == "Polygon2DInstance")
+				child = memnew(Polygon2DInstance);
 			else if (default_type == "TouchScreenButton")
 				child = memnew(TouchScreenButton);
 			else if (default_type == "TextureRect")
@@ -3934,7 +3934,7 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasIte
 	types.push_back("Sprite");
 	types.push_back("Light2D");
 	types.push_back("Particles2D");
-	types.push_back("Polygon2D");
+	types.push_back("Polygon2DInstance");
 	types.push_back("TouchScreenButton");
 	// Control
 	types.push_back("TextureRect");
