@@ -138,6 +138,11 @@ Comment: DroidSans font
 Copyright: 2008, The Android Open Source Project
 License: Apache-2.0
 
+Files: ./thirdparty/fonts/NotoSansUI_Regular.ttf
+Comment: Noto Sans UI Regular font
+Copyright: 2012, Google Inc.
+License: OFL-1.1
+
 Files: ./thirdparty/fonts/source_code_pro.otf
 Comment: Source Code Pro font
 Copyright: 2010, 2012, Adobe Systems Incorporated
