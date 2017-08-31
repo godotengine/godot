@@ -138,6 +138,9 @@ public:
 	static void reload_translation_remaps();
 	static void load_translation_remaps();
 	static void clear_translation_remaps();
+
+	static String get_remapped_type(const String &p_path);
+	static String get_remapped_path(const String &p_path);
 };
 
 #endif
