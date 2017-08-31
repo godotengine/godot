@@ -1,6 +1,0 @@
-<svg width="14" height="14" version="1.1" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">
-<g transform="translate(0 -1038.4)">
-<path transform="translate(0 1038.4)" d="m2 0c-1.1046 0-2 0.89543-2 2v10c0 1.1046 0.89543 2 2 2h10c1.1046 0 2-0.89543 2-2v-10c0-1.1046-0.89543-2-2-2zm6 0 3 3-3 3v-2h-5v-2h5zm-3.6562 5.6289 0.51367 0.85742 2.1426 3.5703 2.1426-3.5703 0.51367-0.85742l1.7148 1.0293-0.51367 0.85742-3 5c-0.3885 0.64706-1.3263 0.64706-1.7148 0l-3-5-0.51367-0.85742z" fill="#b8ea68"/>
-<path transform="translate(0 1038.4)" d="m23 0v2h-5v2h5v2l3-3zm-3.6562 5.6289-1.7148 1.0293 0.51367 0.85742 3 5c0.3885 0.64706 1.3263 0.64706 1.7148 0l3-5 0.51367-0.85742-1.7148-1.0293-0.51367 0.85742-2.1426 3.5703-2.1426-3.5703z" color="#000000" color-rendering="auto" fill-rule="evenodd" image-rendering="auto" shape-rendering="auto" solid-color="#000000" style="block-progression:tb;isolation:auto;mix-blend-mode:normal;text-decoration-color:#000000;text-decoration-line:none;text-decoration-style:solid;text-indent:0;text-transform:none;white-space:normal"/>
-</g>
-</svg>

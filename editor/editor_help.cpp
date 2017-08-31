@@ -263,19 +263,22 @@ void EditorHelpSearch::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
+		//_update_icons
 		search_box->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
 
 		connect("confirmed", this, "_confirmed");
 		_update_search();
-	}
-
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
+	} else if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 
 		if (is_visible_in_tree()) {
 
 			search_box->call_deferred("grab_focus"); // still not visible
 			search_box->select_all();
 		}
+	} else if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
+
+		//_update_icons
+		search_box->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
 	}
 }
 
@@ -385,6 +388,7 @@ void EditorHelpIndex::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
+		//_update_icons
 		search_box->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
 		_update_class_list();
 
@@ -393,6 +397,10 @@ void EditorHelpIndex::_notification(int p_what) {
 	} else if (p_what == NOTIFICATION_POST_POPUP) {
 
 		search_box->call_deferred("grab_focus");
+	} else if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
+
+		//_update_icons
+		search_box->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
 	}
 }
 

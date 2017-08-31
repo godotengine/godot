@@ -53,6 +53,7 @@ void EditorFileDialog::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
+		//_update_icons
 		mode_thumbnails->set_icon(get_icon("FileThumbnail", "EditorIcons"));
 		mode_list->set_icon(get_icon("FileList", "EditorIcons"));
 		dir_prev->set_icon(get_icon("ArrowLeft", "EditorIcons"));
@@ -92,6 +93,23 @@ void EditorFileDialog::_notification(int p_what) {
 		if (show_hidden_files != show_hidden)
 			set_show_hidden_files(show_hidden);
 		set_display_mode((DisplayMode)EditorSettings::get_singleton()->get("filesystem/file_dialog/display_mode").operator int());
+
+		//_update_icons
+		mode_thumbnails->set_icon(get_icon("FileThumbnail", "EditorIcons"));
+		mode_list->set_icon(get_icon("FileList", "EditorIcons"));
+		dir_prev->set_icon(get_icon("ArrowLeft", "EditorIcons"));
+		dir_next->set_icon(get_icon("ArrowRight", "EditorIcons"));
+		dir_up->set_icon(get_icon("ArrowUp", "EditorIcons"));
+		refresh->set_icon(get_icon("Reload", "EditorIcons"));
+		favorite->set_icon(get_icon("Favorites", "EditorIcons"));
+
+		fav_up->set_icon(get_icon("MoveUp", "EditorIcons"));
+		fav_down->set_icon(get_icon("MoveDown", "EditorIcons"));
+		fav_rm->set_icon(get_icon("RemoveSmall", "EditorIcons"));
+
+		Theme::get_default()->clear_icon("ResizedFile", "EditorIcons");
+		Theme::get_default()->clear_icon("ResizedFolder", "EditorIcons");
+		update_file_list();
 	}
 }
 

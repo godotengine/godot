@@ -199,11 +199,33 @@ void FileSystemDock::_notification(int p_what) {
 
 			int new_mode = int(EditorSettings::get_singleton()->get("docks/filesystem/display_mode"));
 
+			//_update_icons
+
+			button_reload->set_icon(get_icon("Reload", "EditorIcons"));
+			button_favorite->set_icon(get_icon("Favorites", "EditorIcons"));
+			button_back->set_icon(get_icon("Filesystem", "EditorIcons"));
+			if (display_mode == DISPLAY_THUMBNAILS) {
+				button_display_mode->set_icon(get_icon("FileList", "EditorIcons"));
+			} else {
+				button_display_mode->set_icon(get_icon("FileThumbnail", "EditorIcons"));
+			}
+
+			search_box->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
+
+			button_hist_next->set_icon(get_icon("Forward", "EditorIcons"));
+			button_hist_prev->set_icon(get_icon("Back", "EditorIcons"));
+
+			Theme::get_default()->clear_icon("ResizedFolder", "EditorIcons");
+			Theme::get_default()->clear_icon("ResizedFile", "EditorIcons");
+
 			if (new_mode != display_mode) {
 				set_display_mode(new_mode);
 			} else {
 				_update_files(true);
 			}
+
+			_update_tree();
+
 		} break;
 	}
 }

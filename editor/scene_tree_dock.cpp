@@ -736,6 +736,14 @@ void SceneTreeDock::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 			clear_inherit_confirm->disconnect("confirmed", this, "_tool_selected");
 		} break;
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			button_add->set_icon(get_icon("Add", "EditorIcons"));
+			button_instance->set_icon(get_icon("Instance", "EditorIcons"));
+			button_create_script->set_icon(get_icon("ScriptCreate", "EditorIcons"));
+			button_clear_script->set_icon(get_icon("ScriptRemove", "EditorIcons"));
+
+			filter->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
+		} break;
 	}
 }
 

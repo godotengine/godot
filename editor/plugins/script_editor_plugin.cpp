@@ -1150,6 +1150,13 @@ void ScriptEditor::_notification(int p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 
 			tab_container->add_style_override("panel", editor->get_gui_base()->get_stylebox("ScriptPanel", "EditorStyles"));
+
+			help_search->set_icon(get_icon("HelpSearch", "EditorIcons"));
+			site_search->set_icon(get_icon("Instance", "EditorIcons"));
+			class_search->set_icon(get_icon("ClassList", "EditorIcons"));
+
+			script_forward->set_icon(get_icon("Forward", "EditorIcons"));
+			script_back->set_icon(get_icon("Back", "EditorIcons"));
 		} break;
 
 		default:

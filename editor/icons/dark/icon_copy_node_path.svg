@@ -1,6 +1,0 @@
-<svg width="16" height="16" version="1.1" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-<g transform="translate(0 -1036.4)" fill="#4f4f4f">
-<circle cx="3" cy="1048.4" rx="1" ry="1"/>
-<path transform="translate(0 1036.4)" d="m2 1c-0.55226 1e-4 -0.99994 0.4477-1 1v12c5.52e-5 0.5523 0.44774 0.9999 1 1h12c0.55226-1e-4 0.99994-0.4477 1-1v-8l-5-5h-8zm1 2h6v3c0 0.554 0.44599 1 1 1h3v6h-10v-10zm3 5l-2 4h2l2-4h-2zm4 0l-2 4h2l2-4h-2z" fill-opacity=".78431"/>
-</g>
-</svg>

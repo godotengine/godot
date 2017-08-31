@@ -160,7 +160,7 @@ void EditorPath::_notification(int p_what) {
 
 					set_tooltip(obj->get_class());
 
-					label_font->draw(ci, Point2i(ofs, (size.height - label_font->get_height()) / 2 + label_font->get_ascent()), name, Color(1, 1, 1), left);
+					label_font->draw(ci, Point2i(ofs, (size.height - label_font->get_height()) / 2 + label_font->get_ascent()), name, get_color("font_color", "Label"), left);
 				} else {
 					//add arrow
 
