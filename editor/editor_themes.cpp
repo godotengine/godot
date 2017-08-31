@@ -284,7 +284,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// Focus
 	Ref<StyleBoxFlat> focus_sbt = make_flat_stylebox(contrast_color_1, 4, 4, 4, 4);
-	focus_sbt->set_filled(false);
+	focus_sbt->set_draw_center(false);
 	focus_sbt->set_border_width_all(1 * EDSCALE);
 	focus_sbt = change_border_color(focus_sbt, contrast_color_2);
 	theme->set_stylebox("Focus", "EditorStyles", focus_sbt);
@@ -301,7 +301,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Ref<StyleBoxFlat> style_menu_hover_border = make_flat_stylebox(highlight_color, 4, 4, 4, 4);
 	Ref<StyleBoxFlat> style_menu_hover_bg = make_flat_stylebox(dark_color_2, 4, 4, 4, 4);
 
-	style_menu_hover_border->set_filled(false);
+	style_menu_hover_border->set_draw_center(false);
 	style_menu_hover_border->set_border_width(MARGIN_BOTTOM, border_width);
 	style_menu_hover_border->set_border_color_all(highlight_color);
 	style_menu_hover_border->set_expand_margin_size(MARGIN_BOTTOM, border_width);
@@ -343,7 +343,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("Content", "EditorStyles", style_content_panel_vp);
 
 	Ref<StyleBoxFlat> style_button_type = make_flat_stylebox(dark_color_1, 6, 4, 6, 4);
-	style_button_type->set_filled(true);
+	style_button_type->set_draw_center(true);
 	style_button_type->set_border_width_all(border_width);
 	style_button_type->set_border_color_all(contrast_color_2);
 
@@ -454,7 +454,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("selected", "Tree", style_tree_selected);
 
 	Ref<StyleBoxFlat> style_tree_cursor = make_flat_stylebox(HIGHLIGHT_COLOR_BG, 4, 4, 4, 4);
-	style_tree_cursor->set_filled(false);
+	style_tree_cursor->set_draw_center(false);
 	style_tree_cursor->set_border_width_all(border_width);
 	style_tree_cursor->set_border_color_all(contrast_color_1);
 
@@ -481,7 +481,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_itemlist_bg->set_border_color_all(dark_color_3);
 
 	Ref<StyleBoxFlat> style_itemlist_cursor = make_flat_stylebox(highlight_color, 0, 0, 0, 0);
-	style_itemlist_cursor->set_filled(false);
+	style_itemlist_cursor->set_draw_center(false);
 	style_itemlist_cursor->set_border_width_all(border_width);
 	style_itemlist_cursor->set_border_color_all(HIGHLIGHT_COLOR_BG);
 	theme->set_stylebox("cursor", "ItemList", style_itemlist_cursor);
@@ -495,7 +495,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	Ref<StyleBoxFlat> style_tab_fg = make_flat_stylebox(tab_color, 15, 5, 15, 5);
 	Ref<StyleBoxFlat> style_tab_bg = make_flat_stylebox(tab_color, 15, 5, 15, 5);
-	style_tab_bg->set_filled(false);
+	style_tab_bg->set_draw_center(false);
 
 	// Tabs & TabContainer
 	theme->set_stylebox("tab_fg", "TabContainer", style_tab_fg);
@@ -524,7 +524,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	Ref<StyleBoxFlat> style_tab_fg_debugger = make_flat_stylebox(dark_color_2, 10, 5, 10, 5);
 	Ref<StyleBoxFlat> style_tab_bg_debugger = make_flat_stylebox(dark_color_2, 10, 5, 10, 5);
-	style_tab_bg_debugger->set_filled(false);
+	style_tab_bg_debugger->set_draw_center(false);
 
 	theme->set_stylebox("DebuggerTabFG", "EditorStyles", style_tab_fg_debugger);
 	theme->set_stylebox("DebuggerTabBG", "EditorStyles", style_tab_bg_debugger);

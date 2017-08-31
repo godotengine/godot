@@ -117,8 +117,8 @@ public:
 	void set_normal_map(RES p_normal_map);
 	RES get_normal_map() const;
 
-	void set_draw_center(bool p_draw);
-	bool get_draw_center() const;
+	void set_draw_center(bool p_enabled);
+	bool is_draw_center_enabled() const;
 	virtual Size2 get_center_size() const;
 
 	void set_h_axis_stretch_mode(AxisStretchMode p_mode);
@@ -150,7 +150,7 @@ class StyleBoxFlat : public StyleBox {
 	int expand_margin[4];
 	int corner_radius[4];
 
-	bool filled;
+	bool draw_center;
 	bool blend_border;
 	bool anti_aliased;
 
@@ -202,9 +202,9 @@ public:
 	void set_expand_margin_size_individual(float p_left, float p_top, float p_right, float p_bottom);
 	float get_expand_margin_size(Margin p_expand_margin) const;
 
-	//FILLED
-	void set_filled(bool p_draw);
-	bool is_filled() const;
+	//DRAW CENTER
+	void set_draw_center(bool p_enabled);
+	bool is_draw_center_enabled() const;
 
 	//SHADOW
 	void set_shadow_color(const Color &p_color);

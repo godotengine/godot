@@ -165,13 +165,13 @@ void StyleBoxTexture::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 	VisualServer::get_singleton()->canvas_item_add_nine_patch(p_canvas_item, rect, src_rect, texture->get_rid(), Vector2(margin[MARGIN_LEFT], margin[MARGIN_TOP]), Vector2(margin[MARGIN_RIGHT], margin[MARGIN_BOTTOM]), VS::NinePatchAxisMode(axis_h), VS::NinePatchAxisMode(axis_v), draw_center, modulate, normal_rid);
 }
 
-void StyleBoxTexture::set_draw_center(bool p_draw) {
+void StyleBoxTexture::set_draw_center(bool p_enabled) {
 
-	draw_center = p_draw;
+	draw_center = p_enabled;
 	emit_changed();
 }
 
-bool StyleBoxTexture::get_draw_center() const {
+bool StyleBoxTexture::is_draw_center_enabled() const {
 
 	return draw_center;
 }
@@ -281,7 +281,7 @@ void StyleBoxTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_region_rect"), &StyleBoxTexture::get_region_rect);
 
 	ClassDB::bind_method(D_METHOD("set_draw_center", "enable"), &StyleBoxTexture::set_draw_center);
-	ClassDB::bind_method(D_METHOD("get_draw_center"), &StyleBoxTexture::get_draw_center);
+	ClassDB::bind_method(D_METHOD("is_draw_center_enabled"), &StyleBoxTexture::is_draw_center_enabled);
 
 	ClassDB::bind_method(D_METHOD("set_modulate", "color"), &StyleBoxTexture::set_modulate);
 	ClassDB::bind_method(D_METHOD("get_modulate"), &StyleBoxTexture::get_modulate);
@@ -312,7 +312,7 @@ void StyleBoxTexture::_bind_methods() {
 	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "axis_stretch_vertical", PROPERTY_HINT_ENUM, "Stretch,Tile,Tile Fit"), "set_v_axis_stretch_mode", "get_v_axis_stretch_mode");
 	ADD_GROUP("Modulate", "modulate_");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate_color"), "set_modulate", "get_modulate");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_center"), "set_draw_center", "get_draw_center");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_center"), "set_draw_center", "is_draw_center_enabled");
 
 	BIND_ENUM_CONSTANT(AXIS_STRETCH_MODE_STRETCH);
 	BIND_ENUM_CONSTANT(AXIS_STRETCH_MODE_TILE);
@@ -460,14 +460,14 @@ float StyleBoxFlat::get_expand_margin_size(Margin p_expand_margin) const {
 
 	return expand_margin[p_expand_margin];
 }
-void StyleBoxFlat::set_filled(bool p_filled) {
+void StyleBoxFlat::set_draw_center(bool p_enabled) {
 
-	filled = p_filled;
+	draw_center = p_enabled;
 	emit_changed();
 }
-bool StyleBoxFlat::is_filled() const {
+bool StyleBoxFlat::is_draw_center_enabled() const {
 
-	return filled;
+	return draw_center;
 }
 
 void StyleBoxFlat::set_shadow_color(const Color &p_color) {
@@ -691,7 +691,7 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 			style_rect, adapted_border, inner_color, border_color.read().ptr(), corner_detail);
 
 	//DRAW INFILL
-	if (filled) {
+	if (draw_center) {
 		int temp_vert_offset = verts.size();
 		int no_border[4] = { 0, 0, 0, 0 };
 		draw_ring(verts, indices, colors, style_rect, adapted_corner,
@@ -724,7 +724,7 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 
 		int aa_border_width[4] = { aa_size, aa_size, aa_size, aa_size };
 
-		if (filled) {
+		if (draw_center) {
 			if (!blend_border) {
 				//INFILL AA
 				draw_ring(verts, indices, colors, style_rect, adapted_corner,
@@ -776,8 +776,8 @@ void StyleBoxFlat::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_expand_margin_individual", "size_left", "size_top", "size_right", "size_bottom"), &StyleBoxFlat::set_expand_margin_size_individual);
 	ClassDB::bind_method(D_METHOD("get_expand_margin", "margin"), &StyleBoxFlat::get_expand_margin_size);
 
-	ClassDB::bind_method(D_METHOD("set_filled", "filled"), &StyleBoxFlat::set_filled);
-	ClassDB::bind_method(D_METHOD("is_filled"), &StyleBoxFlat::is_filled);
+	ClassDB::bind_method(D_METHOD("set_draw_center", "draw_center"), &StyleBoxFlat::set_draw_center);
+	ClassDB::bind_method(D_METHOD("is_draw_center_enabled"), &StyleBoxFlat::is_draw_center_enabled);
 
 	ClassDB::bind_method(D_METHOD("set_shadow_color", "color"), &StyleBoxFlat::set_shadow_color);
 	ClassDB::bind_method(D_METHOD("get_shadow_color"), &StyleBoxFlat::get_shadow_color);
@@ -796,7 +796,7 @@ void StyleBoxFlat::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "bg_color"), "set_bg_color", "get_bg_color");
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filled"), "set_filled", "is_filled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_center"), "set_draw_center", "is_draw_center_enabled");
 
 	ADD_GROUP("Border Width", "border_width_");
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "border_width_left", PROPERTY_HINT_RANGE, "0,1024,1"), "set_border_width", "get_border_width", MARGIN_LEFT);
@@ -843,7 +843,7 @@ StyleBoxFlat::StyleBoxFlat() {
 	border_color.append(Color(0.8, 0.8, 0.8));
 
 	blend_border = false;
-	filled = true;
+	draw_center = true;
 	anti_aliased = true;
 
 	shadow_size = 0;

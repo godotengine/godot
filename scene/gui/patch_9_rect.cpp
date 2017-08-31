@@ -61,7 +61,7 @@ void NinePatchRect::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_region_rect", "rect"), &NinePatchRect::set_region_rect);
 	ClassDB::bind_method(D_METHOD("get_region_rect"), &NinePatchRect::get_region_rect);
 	ClassDB::bind_method(D_METHOD("set_draw_center", "draw_center"), &NinePatchRect::set_draw_center);
-	ClassDB::bind_method(D_METHOD("get_draw_center"), &NinePatchRect::get_draw_center);
+	ClassDB::bind_method(D_METHOD("is_draw_center_enabled"), &NinePatchRect::is_draw_center_enabled);
 	ClassDB::bind_method(D_METHOD("set_h_axis_stretch_mode", "mode"), &NinePatchRect::set_h_axis_stretch_mode);
 	ClassDB::bind_method(D_METHOD("get_h_axis_stretch_mode"), &NinePatchRect::get_h_axis_stretch_mode);
 	ClassDB::bind_method(D_METHOD("set_v_axis_stretch_mode", "mode"), &NinePatchRect::set_v_axis_stretch_mode);
@@ -70,7 +70,7 @@ void NinePatchRect::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("texture_changed"));
 
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
-	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL, "draw_center"), "set_draw_center", "get_draw_center");
+	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL, "draw_center"), "set_draw_center", "is_draw_center_enabled");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::RECT2, "region_rect"), "set_region_rect", "get_region_rect");
 
 	ADD_GROUP("Patch Margin", "patch_margin_");
@@ -151,13 +151,13 @@ Rect2 NinePatchRect::get_region_rect() const {
 	return region_rect;
 }
 
-void NinePatchRect::set_draw_center(bool p_draw) {
+void NinePatchRect::set_draw_center(bool p_enabled) {
 
-	draw_center = p_draw;
+	draw_center = p_enabled;
 	update();
 }
 
-bool NinePatchRect::get_draw_center() const {
+bool NinePatchRect::is_draw_center_enabled() const {
 
 	return draw_center;
 }
