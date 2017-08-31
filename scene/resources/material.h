@@ -283,8 +283,8 @@ private:
 		StringName uv1_offset;
 		StringName uv2_scale;
 		StringName uv2_offset;
-		StringName particle_h_frames;
-		StringName particle_v_frames;
+		StringName particles_anim_h_frames;
+		StringName particles_anim_v_frames;
 		StringName particles_anim_loop;
 		StringName depth_min_layers;
 		StringName depth_max_layers;
