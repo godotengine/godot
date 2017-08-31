@@ -530,7 +530,7 @@ void SpatialMaterial::_update_shader() {
 	}
 
 	if (detail_uv == DETAIL_UV_2 && !flags[FLAG_UV2_USE_TRIPLANAR]) {
-		code += "\tUV2=UV2*uv2_scale+uv2_offset;\n";
+		code += "\tUV2=UV2*uv2_scale.xy+uv2_offset.xy;\n";
 	}
 	if (flags[FLAG_UV1_USE_TRIPLANAR] || flags[FLAG_UV2_USE_TRIPLANAR]) {
 		//generate tangent and binormal in world space
