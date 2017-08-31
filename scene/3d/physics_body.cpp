@@ -918,7 +918,7 @@ Dictionary KinematicBody::_move(const Vector3 &p_motion) {
 	if (move(p_motion, col)) {
 		Dictionary d;
 		d["position"] = col.collision;
-		d["normal"] = col.collision;
+		d["normal"] = col.normal;
 		d["local_shape"] = col.local_shape;
 		d["travel"] = col.travel;
 		d["remainder"] = col.remainder;
@@ -929,6 +929,7 @@ Dictionary KinematicBody::_move(const Vector3 &p_motion) {
 			d["collider"] = Variant();
 		}
 
+		d["collider_velocity"] = col.collider_vel;
 		d["collider_shape_index"] = col.collider_shape;
 		d["collider_metadata"] = col.collider_metadata;
 
