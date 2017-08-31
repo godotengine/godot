@@ -32449,7 +32449,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_principal_inetria_axes" qualifiers="const">
+		<method name="get_principal_inertia_axes" qualifiers="const">
 			<return type="Basis">
 			</return>
 			<description>
