@@ -232,21 +232,34 @@ void CanvasItemEditor::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
 	if (k->get_control())
 		return;
 
-	if (k->is_pressed() && !k->is_echo() && drag_pivot_shortcut.is_valid() && drag_pivot_shortcut->is_shortcut(p_ev) && drag == DRAG_NONE && can_move_pivot) {
-		//move drag pivot
-		drag = DRAG_PIVOT;
-	}
-	if (k->is_pressed() && !k->is_echo() && set_pivot_shortcut.is_valid() && set_pivot_shortcut->is_shortcut(p_ev) && drag == DRAG_NONE && can_move_pivot) {
-		if (!Input::get_singleton()->is_mouse_button_pressed(0)) {
-			List<Node *> &selection = editor_selection->get_selected_node_list();
-			Vector2 mouse_pos = viewport->get_local_mouse_pos();
-			if (selection.size() && viewport->get_rect().has_point(mouse_pos)) {
-				//just in case, make it work if over viewport
-				mouse_pos = transform.affine_inverse().xform(mouse_pos);
-				mouse_pos = snap_point(mouse_pos);
+	if (k->is_pressed() && !k->is_echo()) {
+		if (drag_pivot_shortcut.is_valid() && drag_pivot_shortcut->is_shortcut(p_ev) && drag == DRAG_NONE && can_move_pivot) {
+			//move drag pivot
+			drag = DRAG_PIVOT;
+		} else if (set_pivot_shortcut.is_valid() && set_pivot_shortcut->is_shortcut(p_ev) && drag == DRAG_NONE && can_move_pivot) {
+			if (!Input::get_singleton()->is_mouse_button_pressed(0)) {
+				List<Node *> &selection = editor_selection->get_selected_node_list();
+				Vector2 mouse_pos = viewport->get_local_mouse_pos();
+				if (selection.size() && viewport->get_rect().has_point(mouse_pos)) {
+					//just in case, make it work if over viewport
+					mouse_pos = transform.affine_inverse().xform(mouse_pos);
+					mouse_pos = snap_point(mouse_pos);
 
-				_edit_set_pivot(mouse_pos);
+					_edit_set_pivot(mouse_pos);
+				}
 			}
+		} else if ((snap_grid || snap_show_grid) && multiply_grid_step_shortcut.is_valid() && multiply_grid_step_shortcut->is_shortcut(p_ev)) {
+			// Multiply the grid size
+			grid_step_multiplier = MIN(grid_step_multiplier + 1, 12);
+			viewport_base->update();
+			viewport->update();
+		} else if ((snap_grid || snap_show_grid) && divide_grid_step_shortcut.is_valid() && divide_grid_step_shortcut->is_shortcut(p_ev)) {
+			// Divide the grid size
+			Point2 new_grid_step = grid_step * Math::pow(2.0, grid_step_multiplier - 1);
+			if (new_grid_step.x >= 1.0 && new_grid_step.y >= 1.0)
+				grid_step_multiplier--;
+			viewport_base->update();
+			viewport->update();
 		}
 	}
 }
@@ -278,8 +291,8 @@ inline float _snap_scalar(float p_offset, float p_step, bool p_snap_relative, fl
 
 Vector2 CanvasItemEditor::snap_point(Vector2 p_target, Vector2 p_start) const {
 	if (snap_grid) {
-		p_target.x = _snap_scalar(grid_offset.x, grid_step.x, snap_relative, p_target.x, p_start.x);
-		p_target.y = _snap_scalar(grid_offset.y, grid_step.y, snap_relative, p_target.y, p_start.y);
+		p_target.x = _snap_scalar(grid_offset.x, grid_step.x * Math::pow(2.0, grid_step_multiplier), snap_relative, p_target.x, p_start.x);
+		p_target.y = _snap_scalar(grid_offset.y, grid_step.y * Math::pow(2.0, grid_step_multiplier), snap_relative, p_target.y, p_start.y);
 	}
 	if (snap_pixel)
 		p_target = p_target.snapped(Size2(1, 1));
@@ -330,7 +343,7 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 	}
 
 	if (state.has("grid_step")) {
-		grid_offset = state["grid_step"];
+		grid_step = state["grid_step"];
 	}
 
 	if (state.has("snap_rotation_step")) {
@@ -581,7 +594,7 @@ void CanvasItemEditor::_key_move(const Vector2 &p_dir, bool p_snap, KeyMoveMODE 
 
 		Vector2 drag = p_dir;
 		if (p_snap)
-			drag *= grid_step;
+			drag *= grid_step * Math::pow(2.0, grid_step_multiplier);
 
 		undo_redo->add_undo_method(canvas_item, "edit_set_state", canvas_item->edit_get_state());
 
@@ -936,6 +949,8 @@ void CanvasItemEditor::_append_canvas_item(CanvasItem *p_item) {
 
 void CanvasItemEditor::_snap_changed() {
 	((SnapDialog *)snap_dialog)->get_fields(grid_offset, grid_step, snap_rotation_offset, snap_rotation_step);
+	grid_step_multiplier = 0;
+	viewport_base->update();
 	viewport->update();
 }
 
@@ -1946,10 +1961,10 @@ void CanvasItemEditor::_draw_rulers() {
 		ruler_transform = Transform2D();
 		if (snap_relative && get_item_count() > 0) {
 			ruler_transform.translate(_find_topleftmost_point());
-			ruler_transform.scale_basis(grid_step);
+			ruler_transform.scale_basis(grid_step * Math::pow(2.0, grid_step_multiplier));
 		} else {
 			ruler_transform.translate(grid_offset);
-			ruler_transform.scale_basis(grid_step);
+			ruler_transform.scale_basis(grid_step * Math::pow(2.0, grid_step_multiplier));
 		}
 		while ((transform * ruler_transform).get_scale().x < 50 || (transform * ruler_transform).get_scale().y < 50) {
 
@@ -2032,15 +2047,15 @@ void CanvasItemEditor::_draw_grid() {
 		Vector2 real_grid_offset;
 		if (snap_relative && get_item_count() > 0) {
 			Vector2 topleft = _find_topleftmost_point();
-			real_grid_offset.x = fmod(topleft.x, grid_step.x);
-			real_grid_offset.y = fmod(topleft.y, grid_step.y);
+			real_grid_offset.x = fmod(topleft.x, grid_step.x * Math::pow(2.0, grid_step_multiplier));
+			real_grid_offset.y = fmod(topleft.y, grid_step.y * Math::pow(2.0, grid_step_multiplier));
 		} else {
 			real_grid_offset = grid_offset;
 		}
 
 		if (grid_step.x != 0) {
 			for (int i = 0; i < s.width; i++) {
-				int cell = Math::fast_ftoi(Math::floor((xform.xform(Vector2(i, 0)).x - real_grid_offset.x) / grid_step.x));
+				int cell = Math::fast_ftoi(Math::floor((xform.xform(Vector2(i, 0)).x - real_grid_offset.x) / (grid_step.x * Math::pow(2.0, grid_step_multiplier))));
 				if (i == 0)
 					last_cell = cell;
 				if (last_cell != cell)
@@ -2051,7 +2066,7 @@ void CanvasItemEditor::_draw_grid() {
 
 		if (grid_step.y != 0) {
 			for (int i = 0; i < s.height; i++) {
-				int cell = Math::fast_ftoi(Math::floor((xform.xform(Vector2(0, i)).y - real_grid_offset.y) / grid_step.y));
+				int cell = Math::fast_ftoi(Math::floor((xform.xform(Vector2(0, i)).y - real_grid_offset.y) / (grid_step.y * Math::pow(2.0, grid_step_multiplier))));
 				if (i == 0)
 					last_cell = cell;
 				if (last_cell != cell)
@@ -3770,6 +3785,9 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	drag_pivot_shortcut = ED_SHORTCUT("canvas_item_editor/drag_pivot", TTR("Drag pivot from mouse position"), KEY_MASK_SHIFT | KEY_V);
 	set_pivot_shortcut = ED_SHORTCUT("canvas_item_editor/set_pivot", TTR("Set pivot at mouse position"), KEY_V);
 
+	multiply_grid_step_shortcut = ED_SHORTCUT("canvas_item_editor/multiply_grid_step", TTR("Multiply grid step by 2"), KEY_KP_MULTIPLY);
+	divide_grid_step_shortcut = ED_SHORTCUT("canvas_item_editor/divide_grid_step", TTR("Divide grid step by 2"), KEY_KP_DIVIDE);
+
 	key_pos = true;
 	key_rot = true;
 	key_scale = false;
@@ -3779,6 +3797,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	zoom = 1;
 	grid_offset = Point2();
 	grid_step = Point2(10, 10);
+	grid_step_multiplier = 0;
 	snap_rotation_offset = 0;
 	snap_rotation_step = 15 / (180 / Math_PI);
 	snap_grid = false;

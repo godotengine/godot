@@ -181,6 +181,7 @@ class CanvasItemEditor : public VBoxContainer {
 
 	Point2 grid_offset;
 	Point2 grid_step;
+	int grid_step_multiplier;
 
 	float snap_rotation_step;
 	float snap_rotation_offset;
@@ -291,6 +292,8 @@ class CanvasItemEditor : public VBoxContainer {
 
 	Ref<ShortCut> drag_pivot_shortcut;
 	Ref<ShortCut> set_pivot_shortcut;
+	Ref<ShortCut> multiply_grid_step_shortcut;
+	Ref<ShortCut> divide_grid_step_shortcut;
 
 	int handle_len;
 	bool _is_part_of_subscene(CanvasItem *p_item);
