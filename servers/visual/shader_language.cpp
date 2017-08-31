@@ -1042,12 +1042,6 @@ bool ShaderLanguage::_validate_operator(OperatorNode *p_op, DataType *r_ret_type
 			}
 		} break;
 		case OP_ASSIGN: {
-
-			if (p_op->arguments[0]->type != Node::TYPE_MEMBER && p_op->arguments[0]->type != Node::TYPE_VARIABLE) {
-				valid = false;
-				break;
-			}
-
 			DataType na = p_op->arguments[0]->get_datatype();
 			DataType nb = p_op->arguments[1]->get_datatype();
 			valid = na == nb;
