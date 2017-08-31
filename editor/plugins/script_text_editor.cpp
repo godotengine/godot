@@ -953,13 +953,26 @@ void ScriptTextEditor::_edit_option(int p_op) {
 				if (tx->get_selection_to_column() == 0)
 					end -= 1;
 
+				// Check if all lines in the selected block are commented
+				bool is_commented = true;
+				for (int i = begin; i <= end; i++) {
+					if (!tx->get_line(i).begins_with("#")) {
+						is_commented = false;
+						break;
+					}
+				}
 				for (int i = begin; i <= end; i++) {
 					String line_text = tx->get_line(i);
 
-					if (line_text.begins_with("#"))
-						line_text = line_text.substr(1, line_text.length());
-					else
-						line_text = "#" + line_text;
+					if (line_text.strip_edges().empty()) {
+						line_text = "#";
+					} else {
+						if (is_commented) {
+							line_text = line_text.substr(1, line_text.length());
+						} else {
+							line_text = "#" + line_text;
+						}
+					}
 					tx->set_line(i, line_text);
 				}
 			} else {
