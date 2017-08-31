@@ -1422,6 +1422,7 @@ Array VisualServer::mesh_surface_get_arrays(RID p_mesh, int p_surface) const {
 
 void VisualServer::_bind_methods() {
 
+	ClassDB::bind_method(D_METHOD("force_draw"), &VisualServer::draw);
 	ClassDB::bind_method(D_METHOD("texture_create"), &VisualServer::texture_create);
 	ClassDB::bind_method(D_METHOD("texture_create_from_image", "image", "flags"), &VisualServer::texture_create_from_image, DEFVAL(TEXTURE_FLAGS_DEFAULT));
 	//ClassDB::bind_method(D_METHOD("texture_allocate"),&VisualServer::texture_allocate,DEFVAL( TEXTURE_FLAGS_DEFAULT ) );
