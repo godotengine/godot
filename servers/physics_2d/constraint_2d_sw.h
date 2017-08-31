@@ -68,6 +68,8 @@ public:
 	virtual bool setup(real_t p_step) = 0;
 	virtual void solve(real_t p_step) = 0;
 
+	virtual void shift_shape_indices(const CollisionObject2DSW *p_object, int p_removed_index) {}
+
 	virtual ~Constraint2DSW() {}
 };
 

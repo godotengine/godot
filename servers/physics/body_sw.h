@@ -146,6 +146,9 @@ class BodySW : public CollisionObjectSW {
 
 	friend class PhysicsDirectBodyStateSW; // i give up, too many functions to expose
 
+protected:
+	virtual void _shape_index_removed(int p_index);
+
 public:
 	void set_force_integration_callback(ObjectID p_id, const StringName &p_method, const Variant &p_udata = Variant());
 

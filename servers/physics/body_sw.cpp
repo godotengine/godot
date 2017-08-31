@@ -277,6 +277,13 @@ void BodySW::_shapes_changed() {
 	_update_inertia();
 }
 
+void BodySW::_shape_index_removed(int p_index) {
+
+	for (Map<ConstraintSW *, int>::Element *E = constraint_map.front(); E; E = E->next()) {
+		E->key()->shift_shape_indices(this, p_index);
+	}
+}
+
 void BodySW::set_state(PhysicsServer::BodyState p_state, const Variant &p_variant) {
 
 	switch (p_state) {

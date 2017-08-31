@@ -105,6 +105,9 @@ class AreaSW : public CollisionObjectSW {
 	virtual void _shapes_changed();
 	void _queue_monitor_update();
 
+protected:
+	virtual void _shape_index_removed(int p_index);
+
 public:
 	//_FORCE_INLINE_ const Transform& get_inverse_transform() const { return inverse_transform; }
 	//_FORCE_INLINE_ SpaceSW* get_owner() { return owner; }
