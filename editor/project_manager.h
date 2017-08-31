@@ -37,7 +37,7 @@
 #include "scene/gui/tool_button.h"
 #include "scene/gui/tree.h"
 
-class NewProjectDialog;
+class ProjectDialog;
 class ProjectListFilter;
 
 class ProjectManager : public Control {
@@ -60,7 +60,7 @@ class ProjectManager : public Control {
 	ConfirmationDialog *multi_scan_ask;
 	AcceptDialog *run_error_diag;
 	AcceptDialog *dialog_error;
-	NewProjectDialog *npdialog;
+	ProjectDialog *npdialog;
 	ScrollContainer *scroll;
 	VBoxContainer *scroll_childs;
 	Map<String, String> selected_list; // name -> main_scene
