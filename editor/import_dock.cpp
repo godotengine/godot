@@ -351,6 +351,15 @@ void ImportDock::_reimport() {
 	EditorFileSystem::get_singleton()->emit_signal("filesystem_changed"); //it changed, so force emitting the signal
 }
 
+void ImportDock::_notification(int p_what) {
+	switch (p_what) {
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+
+			imported->add_style_override("normal", get_stylebox("normal", "LineEdit"));
+		} break;
+	}
+}
 void ImportDock::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_reimport"), &ImportDock::_reimport);
