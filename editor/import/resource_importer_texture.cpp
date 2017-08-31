@@ -357,7 +357,7 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 	bool force_rgbe = int(p_options["compress/hdr_mode"]) == 1;
 	bool hdr_as_srgb = p_options["process/HDR_as_SRGB"];
 	int normal = p_options["compress/normal_map"];
-	float scale = p_options["scale"];
+	float scale = p_options["svg/scale"];
 
 	Ref<Image> image;
 	image.instance();
