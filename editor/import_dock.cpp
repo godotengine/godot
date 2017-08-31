@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "import_dock.h"
+#include "editor_node.h"
 
 class ImportDockParameters : public Object {
 	GDCLASS(ImportDockParameters, Object)
@@ -365,8 +366,8 @@ void ImportDock::initialize_import_options() const {
 
 ImportDock::ImportDock() {
 
-	imported = memnew(LineEdit);
-	imported->set_editable(false);
+	imported = memnew(Label);
+	imported->add_style_override("normal", EditorNode::get_singleton()->get_gui_base()->get_stylebox("normal", "LineEdit"));
 	add_child(imported);
 	HBoxContainer *hb = memnew(HBoxContainer);
 	add_margin_child(TTR("Import As:"), hb);

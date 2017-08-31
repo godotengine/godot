@@ -85,13 +85,15 @@ void Label::_notification(int p_what) {
 
 		Size2 string_size;
 		Size2 size = get_size();
-
+		Ref<StyleBox> style = get_stylebox("normal");
 		Ref<Font> font = get_font("font");
 		Color font_color = get_color("font_color");
 		Color font_color_shadow = get_color("font_color_shadow");
 		bool use_outline = get_constant("shadow_as_outline");
 		Point2 shadow_ofs(get_constant("shadow_offset_x"), get_constant("shadow_offset_y"));
 		int line_spacing = get_constant("line_spacing");
+
+		style->draw(ci, Rect2(Point2(0, 0), get_size()));
 
 		VisualServer::get_singleton()->canvas_item_set_distance_field_mode(get_canvas_item(), font.is_valid() && font->is_distance_field_hint());
 
@@ -193,21 +195,20 @@ void Label::_notification(int p_what) {
 				case ALIGN_FILL:
 				case ALIGN_LEFT: {
 
-					x_ofs = 0;
+					x_ofs = style->get_offset().x;
 				} break;
 				case ALIGN_CENTER: {
 
 					x_ofs = int(size.width - (taken + spaces * space_w)) / 2;
-
 				} break;
 				case ALIGN_RIGHT: {
 
-					x_ofs = int(size.width - (taken + spaces * space_w));
-
+					x_ofs = int(size.width - style->get_margin(MARGIN_RIGHT) - (taken + spaces * space_w));
 				} break;
 			}
 
-			int y_ofs = (line - lines_skipped) * font_h + font->get_ascent();
+			int y_ofs = style->get_offset().y;
+			y_ofs += (line - lines_skipped) * font_h + font->get_ascent();
 			y_ofs += vbegin + line * vsep;
 
 			while (from != to) {
@@ -288,8 +289,10 @@ void Label::_notification(int p_what) {
 
 Size2 Label::get_minimum_size() const {
 
+	Size2 min_style = get_stylebox("normal")->get_minimum_size();
+
 	if (autowrap)
-		return Size2(1, clip ? 1 : minsize.height);
+		return Size2(1, clip ? 1 : minsize.height) + min_style;
 	else {
 
 		// don't want to mutable everything
@@ -299,7 +302,7 @@ Size2 Label::get_minimum_size() const {
 		Size2 ms = minsize;
 		if (clip)
 			ms.width = 1;
-		return ms;
+		return ms + min_style;
 	}
 }
 
@@ -350,7 +353,7 @@ int Label::get_visible_line_count() const {
 
 	int line_spacing = get_constant("line_spacing");
 	int font_h = get_font("font")->get_height() + line_spacing;
-	int lines_visible = (get_size().y + line_spacing) / font_h;
+	int lines_visible = (get_size().height - get_stylebox("normal")->get_minimum_size().height + line_spacing) / font_h;
 
 	if (lines_visible > line_count)
 		lines_visible = line_count;
@@ -370,7 +373,8 @@ void Label::regenerate_word_cache() {
 		memdelete(current);
 	}
 
-	int width = autowrap ? get_size().width : get_longest_line_width();
+	Ref<StyleBox> style = get_stylebox("normal");
+	int width = autowrap ? (get_size().width - style->get_minimum_size().width) : get_longest_line_width();
 	Ref<Font> font = get_font("font");
 
 	int current_word_size = 0;

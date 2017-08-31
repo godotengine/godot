@@ -408,6 +408,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// Label
 
+	theme->set_stylebox("normal", "Label", memnew(StyleBoxEmpty));
 	theme->set_font("font", "Label", default_font);
 
 	theme->set_color("font_color", "Label", Color(1, 1, 1));
