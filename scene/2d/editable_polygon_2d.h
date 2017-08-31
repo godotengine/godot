@@ -50,6 +50,8 @@ public:
 	virtual void edit_create_wip_close_action(UndoRedo *undo_redo, const Vector<Vector2> &p_wip) = 0;
 	virtual void edit_create_edit_poly_action(UndoRedo *undo_redo, int p_polygon, const Vector<Vector2> &p_before, const Vector<Vector2> &p_after) = 0;
 	virtual void edit_create_remove_point_action(UndoRedo *undo_redo, int p_polygon, int p_point) = 0;
+
+	bool is_empty() const;
 };
 
 #endif // EDITABLEPOLYGON2D_H

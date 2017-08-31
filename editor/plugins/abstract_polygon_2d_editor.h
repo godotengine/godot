@@ -49,8 +49,6 @@ class AbstractPolygon2DEditor : public HBoxContainer {
 	ToolButton *button_create;
 	ToolButton *button_edit;
 
-	void _menu_option(int p_option);
-
 	int edited_polygon;
 	int edited_point;
 	Vector2 edited_point_pos;
@@ -79,6 +77,7 @@ protected:
 	EditablePolygon2D *editable;
 	Node2D *node;
 
+	void _menu_option(int p_option);
 	void _wip_close();
 	void _canvas_draw();
 

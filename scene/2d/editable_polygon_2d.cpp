@@ -48,3 +48,16 @@ Ref<Texture> EditablePolygon2D::edit_get_texture() const {
 
 	return Ref<Texture>();
 }
+
+bool EditablePolygon2D::is_empty() const {
+
+	const int n_polygons = edit_get_polygon_count();
+
+	for (int j = 0; j < n_polygons; j++) {
+
+		if (edit_get_polygon(j).size() != 0)
+			return false;
+	}
+
+	return true;
+}

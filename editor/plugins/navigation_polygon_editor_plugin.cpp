@@ -47,6 +47,7 @@ void NavigationPolygonEditor::_create_res() {
 	undo_redo->add_do_method(node, "set_navigation_polygon", Ref<NavigationPolygon>(memnew(NavigationPolygon)));
 	undo_redo->add_undo_method(node, "set_navigation_polygon", Variant(REF()));
 	undo_redo->commit_action();
+	_menu_option(MODE_CREATE);
 
 	editable = _get_editable(node);
 }

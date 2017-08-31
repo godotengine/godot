@@ -325,6 +325,8 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 					undo_redo->add_do_method(canvas_item_editor->get_viewport_control(), "update");
 					undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(), "update");
 					undo_redo->commit_action();
+					if (editable->is_empty())
+						_menu_option(MODE_CREATE);
 					return true;
 				}
 			}
@@ -434,6 +436,10 @@ void AbstractPolygon2DEditor::edit(Node *p_polygon) {
 
 		node = Object::cast_to<Node2D>(p_polygon);
 		editable = _get_editable(p_polygon);
+
+		//Enable the pencil tool if the polygon is empty
+		if (editable->is_empty())
+			_menu_option(MODE_CREATE);
 
 		if (!canvas_item_editor->get_viewport_control()->is_connected("draw", this, "_canvas_draw"))
 			canvas_item_editor->get_viewport_control()->connect("draw", this, "_canvas_draw");
