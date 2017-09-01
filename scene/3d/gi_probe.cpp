@@ -548,8 +548,8 @@ void GIProbe::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, cons
 		//plot the face by guessing it's albedo and emission value
 
 		//find best axis to map to, for scanning values
-		int closest_axis;
-		float closest_dot;
+		int closest_axis = 0;
+		float closest_dot = 0;
 
 		Plane plane = Plane(p_vtx[0], p_vtx[1], p_vtx[2]);
 		Vector3 normal = plane.normal;

@@ -410,8 +410,8 @@ struct	GJK
 			if(l>GJK_SIMPLEX3_EPS)
 			{
 				real_t	mindist=-1;
-				real_t	subw[2];
-				U			subm;
+				real_t	subw[2] = { 0 , 0};
+				U 		subm = 0;
 				for(U i=0;i<3;++i)
 				{
 					if(vec3_dot(*vt[i],vec3_cross(dl[i],n))>0)
@@ -458,7 +458,7 @@ struct	GJK
 			{
 				real_t	mindist=-1;
 				real_t	subw[3];
-				U			subm;
+				U		subm=0;
 				for(U i=0;i<3;++i)
 				{
 					const U			j=imd3[i];

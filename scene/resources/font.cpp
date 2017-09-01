@@ -40,7 +40,7 @@ void Font::draw_halign(RID p_canvas_item, const Point2 &p_pos, HAlign p_align, f
 		return;
 	}
 
-	float ofs;
+	float ofs = 0.f;
 	switch (p_align) {
 		case HALIGN_LEFT: {
 			ofs = 0;
@@ -50,6 +50,9 @@ void Font::draw_halign(RID p_canvas_item, const Point2 &p_pos, HAlign p_align, f
 		} break;
 		case HALIGN_RIGHT: {
 			ofs = p_width - length;
+		} break;
+		default: {
+			ERR_PRINT("Unknown halignment type");
 		} break;
 	}
 	draw(p_canvas_item, p_pos + Point2(ofs, 0), p_text, p_modulate, p_width);

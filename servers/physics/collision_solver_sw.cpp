@@ -271,7 +271,7 @@ bool CollisionSolverSW::solve_distance_plane(const ShapeSW *p_shape_A, const Tra
 
 	bool collided = false;
 	Vector3 closest;
-	real_t closest_d;
+	real_t closest_d = 0;
 
 	for (int i = 0; i < support_count; i++) {
 

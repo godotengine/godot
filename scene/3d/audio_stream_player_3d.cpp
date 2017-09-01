@@ -183,7 +183,7 @@ void AudioStreamPlayer3D::_mix_audio() {
 
 float AudioStreamPlayer3D::_get_attenuation_db(float p_distance) const {
 
-	float att;
+	float att = 0;
 	switch (attenuation_model) {
 		case ATTENUATION_INVERSE_DISTANCE: {
 			att = Math::linear2db(1.0 / ((p_distance / unit_size) + 000001));
@@ -196,6 +196,10 @@ float AudioStreamPlayer3D::_get_attenuation_db(float p_distance) const {
 		case ATTENUATION_LOGARITHMIC: {
 			att = -20 * Math::log(p_distance / unit_size + 000001);
 		} break;
+		default: {
+			ERR_PRINT("Unknown attenuation type");
+			break;
+		}
 	}
 
 	att += unit_db;

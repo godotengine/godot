@@ -296,7 +296,7 @@ void Face3::get_support(const Vector3 &p_normal, const Transform &p_transform, V
 	/** FIND SUPPORT VERTEX **/
 
 	int vert_support_idx = -1;
-	real_t support_max;
+	real_t support_max = 0;
 
 	for (int i = 0; i < 3; i++) {
 

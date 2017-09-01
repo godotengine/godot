@@ -516,7 +516,7 @@ public:
 		} else {
 			//yield
 
-			Object *object;
+			Object *object = NULL;
 
 			switch (call_mode) {
 

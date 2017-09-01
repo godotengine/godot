@@ -91,7 +91,7 @@ void image_compress_squish(Image *p_image, Image::CompressSource p_source) {
 	if (p_image->get_format() <= Image::FORMAT_RGBA8) {
 
 		int squish_comp = squish::kColourRangeFit;
-		Image::Format target_format;
+		Image::Format target_format = Image::FORMAT_RGBA8;
 
 		Image::DetectChannels dc = p_image->get_detected_channels();
 
@@ -140,6 +140,10 @@ void image_compress_squish(Image *p_image, Image::CompressSource p_source) {
 				squish_comp |= squish::kDxt5;
 
 			} break;
+			default: {
+				ERR_PRINT("Unknown image format, defaulting to RGBA8");
+				break;
+			}
 		}
 
 		PoolVector<uint8_t> data;

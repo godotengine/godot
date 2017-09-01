@@ -970,7 +970,12 @@ int Animation::_find(const Vector<K> &p_keys, float p_time) const {
 
 	int low = 0;
 	int high = len - 1;
-	int middle;
+	int middle = 0;
+
+#if DEBUG_ENABLED
+	if (low > high)
+		ERR_PRINT("low > high, this may be a bug");
+#endif
 
 	const K *keys = &p_keys[0];
 
@@ -1289,7 +1294,7 @@ Error Animation::transform_track_interpolate(int p_track, float p_time, Vector3 
 
 	TransformTrack *tt = static_cast<TransformTrack *>(t);
 
-	bool ok;
+	bool ok = false;
 
 	TransformKey tk = _interpolate(tt->transforms, p_time, tt->interpolation, tt->loop_wrap, &ok);
 
@@ -1315,7 +1320,7 @@ Variant Animation::value_track_interpolate(int p_track, float p_time) const {
 	ERR_FAIL_COND_V(t->type != TYPE_VALUE, Variant());
 	ValueTrack *vt = static_cast<ValueTrack *>(t);
 
-	bool ok;
+	bool ok = false;
 
 	Variant res = _interpolate(vt->values, p_time, vt->update_mode == UPDATE_CONTINUOUS ? vt->interpolation : INTERPOLATION_NEAREST, vt->loop_wrap, &ok);
 

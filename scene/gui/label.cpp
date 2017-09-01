@@ -401,7 +401,7 @@ void Label::regenerate_word_cache() {
 		bool separatable = (current >= 0x2E08 && current <= 0xFAFF) || (current >= 0xFE30 && current <= 0xFE4F);
 		//current>=33 && (current < 65||current >90) && (current<97||current>122) && (current<48||current>57);
 		bool insert_newline = false;
-		int char_width;
+		int char_width = 0;
 
 		if (current < 33) {
 

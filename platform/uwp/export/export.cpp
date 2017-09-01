@@ -866,7 +866,7 @@ class EditorExportUWP : public EditorExportPlatform {
 	Vector<uint8_t> _get_image_data(const Ref<EditorExportPreset> &p_preset, const String &p_path) {
 
 		Vector<uint8_t> data;
-		StreamTexture *image;
+		StreamTexture *image = NULL;
 
 		if (p_path.find("StoreLogo") != -1) {
 			image = p_preset->get("images/store_logo").is_zero() ? NULL : Object::cast_to<StreamTexture>(((Object *)p_preset->get("images/store_logo")));
@@ -882,6 +882,8 @@ class EditorExportUWP : public EditorExportPlatform {
 			image = p_preset->get("images/wide310x150_logo").is_zero() ? NULL : Object::cast_to<StreamTexture>(((Object *)p_preset->get("images/wide310x150_logo")));
 		} else if (p_path.find("SplashScreen") != -1) {
 			image = p_preset->get("images/splash_screen").is_zero() ? NULL : Object::cast_to<StreamTexture>(((Object *)p_preset->get("images/splash_screen")));
+		} else {
+			ERR_PRINT("Unable to load logo");
 		}
 
 		if (!image) return data;

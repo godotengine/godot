@@ -67,7 +67,7 @@ void TextureRegionEditor::_region_draw() {
 
 	if (snap_mode == SNAP_GRID) {
 		Size2 s = edit_draw->get_size();
-		int last_cell;
+		int last_cell = 0;
 
 		if (snap_step.x != 0) {
 			if (snap_separation.x == 0)
@@ -406,7 +406,7 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 		} else if (drag) {
 
 			if (edited_margin >= 0) {
-				float new_margin;
+				float new_margin = 0;
 				if (edited_margin == 0)
 					new_margin = prev_margin + (mm->get_position().y - drag_from.y) / draw_zoom;
 				else if (edited_margin == 1)
@@ -415,6 +415,9 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 					new_margin = prev_margin + (mm->get_position().x - drag_from.x) / draw_zoom;
 				else if (edited_margin == 3)
 					new_margin = prev_margin - (mm->get_position().x - drag_from.x) / draw_zoom;
+				else
+					ERR_PRINT("Unexpected edited_margin");
+
 				if (new_margin < 0)
 					new_margin = 0;
 				static Margin m[4] = { MARGIN_TOP, MARGIN_BOTTOM, MARGIN_LEFT, MARGIN_RIGHT };

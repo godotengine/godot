@@ -734,7 +734,7 @@ Vector3 ConvexPolygonShapeSW::get_support(const Vector3 &p_normal) const {
 	Vector3 n = p_normal;
 
 	int vert_support_idx = -1;
-	real_t support_max;
+	real_t support_max = 0;
 
 	int vertex_count = mesh.vertices.size();
 	if (vertex_count == 0)
@@ -767,8 +767,8 @@ void ConvexPolygonShapeSW::get_supports(const Vector3 &p_normal, int p_max, Vect
 	int vc = mesh.vertices.size();
 
 	//find vertex first
-	real_t max;
-	int vtx;
+	real_t max = 0;
+	int vtx = 0;
 
 	for (int i = 0; i < vc; i++) {
 
@@ -1000,7 +1000,7 @@ void FaceShapeSW::project_range(const Vector3 &p_normal, const Transform &p_tran
 Vector3 FaceShapeSW::get_support(const Vector3 &p_normal) const {
 
 	int vert_support_idx = -1;
-	real_t support_max;
+	real_t support_max = 0;
 
 	for (int i = 0; i < 3; i++) {
 
@@ -1154,7 +1154,7 @@ Vector3 ConcavePolygonShapeSW::get_support(const Vector3 &p_normal) const {
 	Vector3 n = p_normal;
 
 	int vert_support_idx = -1;
-	real_t support_max;
+	real_t support_max = 0;
 
 	for (int i = 0; i < count; i++) {
 

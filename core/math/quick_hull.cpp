@@ -76,7 +76,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 	int simplex[4];
 
 	{
-		real_t max, min;
+		real_t max = 0, min = 0;
 
 		for (int i = 0; i < p_points.size(); i++) {
 
@@ -99,7 +99,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 	//third vertex is one most further away from the line
 
 	{
-		real_t maxd;
+		real_t maxd = 0;
 		Vector3 rel12 = p_points[simplex[0]] - p_points[simplex[1]];
 
 		for (int i = 0; i < p_points.size(); i++) {
@@ -121,7 +121,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 	//fourth vertex is the one  most further away from the plane
 
 	{
-		real_t maxd;
+		real_t maxd = 0;
 		Plane p(p_points[simplex[0]], p_points[simplex[1]], p_points[simplex[2]]);
 
 		for (int i = 0; i < p_points.size(); i++) {

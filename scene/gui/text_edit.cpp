@@ -4531,7 +4531,7 @@ String TextEdit::get_word_at_pos(const Vector2 &p_pos) const {
 		bool symbol = beg < s.length() && _is_symbol(s[beg]); //not sure if right but most editors behave like this
 
 		bool inside_quotes = false;
-		int qbegin, qend;
+		int qbegin = 0, qend = 0;
 		for (int i = 0; i < s.length(); i++) {
 			if (s[i] == '"') {
 				if (inside_quotes) {

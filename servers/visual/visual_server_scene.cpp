@@ -948,13 +948,13 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 				Vector3 z_vec = transform.basis.get_axis(Vector3::AXIS_Z).normalized();
 				//z_vec points agsint the camera, like in default opengl
 
-				float x_min, x_max;
-				float y_min, y_max;
-				float z_min, z_max;
+				float x_min = 0.f, x_max = 0.f;
+				float y_min = 0.f, y_max = 0.f;
+				float z_min = 0.f, z_max = 0.f;
 
-				float x_min_cam, x_max_cam;
-				float y_min_cam, y_max_cam;
-				float z_min_cam, z_max_cam;
+				float x_min_cam = 0.f, x_max_cam = 0.f;
+				float y_min_cam = 0.f, y_max_cam = 0.f;
+				float z_min_cam = 0.f, z_max_cam = 0.f;
 
 				float bias_scale = 1.0;
 
@@ -1503,7 +1503,7 @@ void VisualServerScene::_render_scene(const Transform p_cam_transform, const Cam
 
 			InstanceLightData *light = static_cast<InstanceLightData *>(ins->base_data);
 
-			float coverage;
+			float coverage = 0.f;
 
 			{ //compute coverage
 

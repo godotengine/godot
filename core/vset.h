@@ -46,8 +46,13 @@ class VSet {
 
 		int low = 0;
 		int high = _data.size() - 1;
-		int middle;
 		const T *a = &_data[0];
+		int middle = 0;
+
+#if DEBUG_ENABLED
+		if (low > high)
+			ERR_PRINT("low > high, this may be a bug");
+#endif
 
 		while (low <= high) {
 			middle = (low + high) / 2;

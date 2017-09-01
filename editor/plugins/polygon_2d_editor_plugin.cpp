@@ -659,7 +659,7 @@ void Polygon2DEditor::_uv_draw() {
 
 	if (snap_show_grid) {
 		Size2 s = uv_edit_draw->get_size();
-		int last_cell;
+		int last_cell = 0;
 
 		if (snap_step.x != 0) {
 			for (int i = 0; i < s.width; i++) {

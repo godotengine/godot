@@ -2586,7 +2586,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				}
 
 				bool index_valid = false;
-				DataType member_type;
+				DataType member_type = TYPE_VOID;
 
 				switch (expr->get_datatype()) {
 					case TYPE_BVEC2:

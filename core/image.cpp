@@ -1256,9 +1256,9 @@ void Image::create(const char **p_xpm) {
 
 					if (*line_ptr == '#') {
 						line_ptr++;
-						uint8_t col_r;
-						uint8_t col_g;
-						uint8_t col_b;
+						uint8_t col_r = 0;
+						uint8_t col_g = 0;
+						uint8_t col_b = 0;
 						//uint8_t col_a=255;
 
 						for (int i = 0; i < 6; i++) {
