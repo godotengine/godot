@@ -1002,7 +1002,7 @@ void AnimationTreePlayer::animation_node_set_master_animation(const StringName &
 		_update_sources();
 }
 
-void AnimationTreePlayer::animation_node_set_filter_path(const StringName &p_node, const NodePath &p_track_path, bool p_filter) {
+void AnimationTreePlayer::animation_node_set_filter_path(const StringName &p_node, const NodePath &p_track_path, bool p_track_path) {
 
 	GET_NODE(NODE_ANIMATION, AnimationNode);
 
