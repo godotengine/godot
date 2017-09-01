@@ -112,8 +112,8 @@ float AudioStreamPlaybackOGGVorbis::get_length() const {
 
 AudioStreamPlaybackOGGVorbis::~AudioStreamPlaybackOGGVorbis() {
 	if (ogg_alloc.alloc_buffer) {
-		AudioServer::get_singleton()->audio_data_free(ogg_alloc.alloc_buffer);
 		stb_vorbis_close(ogg_stream);
+		AudioServer::get_singleton()->audio_data_free(ogg_alloc.alloc_buffer);
 	}
 }
 
