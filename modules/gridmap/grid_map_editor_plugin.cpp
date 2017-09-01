@@ -1159,14 +1159,14 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 
 		outer_mat.instance();
 		outer_mat->set_albedo(Color(0.7, 0.7, 1.0, 0.8));
-		outer_mat->set_flag(SpatialMaterial::FLAG_ONTOP, true);
+		outer_mat->set_on_top_of_alpha();
 		outer_mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
 		outer_mat->set_line_width(3.0);
 		outer_mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
 
 		selection_floor_mat.instance();
 		selection_floor_mat->set_albedo(Color(0.80, 0.80, 1.0, 1));
-		selection_floor_mat->set_flag(SpatialMaterial::FLAG_ONTOP, true);
+		selection_floor_mat->set_on_top_of_alpha();
 		selection_floor_mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
 		selection_floor_mat->set_line_width(3.0);
 		//selection_floor_mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);

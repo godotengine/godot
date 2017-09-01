@@ -128,6 +128,7 @@ public:
 	FUNC3(material_set_param, RID, const StringName &, const Variant &)
 	FUNC2RC(Variant, material_get_param, RID, const StringName &)
 
+	FUNC2(material_set_render_priority, RID, int)
 	FUNC2(material_set_line_width, RID, float)
 	FUNC2(material_set_next_pass, RID, RID)
 

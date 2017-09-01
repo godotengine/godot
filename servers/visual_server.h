@@ -166,6 +166,11 @@ public:
 
 	/* COMMON MATERIAL API */
 
+	enum {
+		MATERIAL_RENDER_PRIORITY_MIN = -128,
+		MATERIAL_RENDER_PRIORITY_MAX = 127,
+
+	};
 	virtual RID material_create() = 0;
 
 	virtual void material_set_shader(RID p_shader_material, RID p_shader) = 0;
@@ -173,6 +178,8 @@ public:
 
 	virtual void material_set_param(RID p_material, const StringName &p_param, const Variant &p_value) = 0;
 	virtual Variant material_get_param(RID p_material, const StringName &p_param) const = 0;
+
+	virtual void material_set_render_priority(RID p_material, int priority) = 0;
 
 	virtual void material_set_line_width(RID p_material, float p_width) = 0;
 	virtual void material_set_next_pass(RID p_material, RID p_next_material) = 0;

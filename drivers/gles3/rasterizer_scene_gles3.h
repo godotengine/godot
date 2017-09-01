@@ -645,17 +645,25 @@ public:
 			MAX_LIGHTS = 4096,
 			MAX_REFLECTIONS = 1024,
 
-			SORT_KEY_DEPTH_LAYER_SHIFT = 60,
+			SORT_KEY_PRIORITY_SHIFT = 56,
+			SORT_KEY_PRIORITY_MASK = 0xFF,
+			//depth layer for opaque (56-52)
+			SORT_KEY_OPAQUE_DEPTH_LAYER_SHIFT = 52,
+			SORT_KEY_OPAQUE_DEPTH_LAYER_MASK = 0xF,
 //64 bits unsupported in MSVC
-#define SORT_KEY_UNSHADED_FLAG (uint64_t(1) << 59)
-#define SORT_KEY_NO_DIRECTIONAL_FLAG (uint64_t(1) << 58)
-#define SORT_KEY_GI_PROBES_FLAG (uint64_t(1) << 57)
-#define SORT_KEY_VERTEX_LIT_FLAG (uint64_t(1) << 56)
-			SORT_KEY_SHADING_SHIFT = 56,
+#define SORT_KEY_UNSHADED_FLAG (uint64_t(1) << 51)
+#define SORT_KEY_NO_DIRECTIONAL_FLAG (uint64_t(1) << 50)
+#define SORT_KEY_GI_PROBES_FLAG (uint64_t(1) << 49)
+#define SORT_KEY_VERTEX_LIT_FLAG (uint64_t(1) << 48)
+			SORT_KEY_SHADING_SHIFT = 48,
 			SORT_KEY_SHADING_MASK = 15,
-			SORT_KEY_MATERIAL_INDEX_SHIFT = 40,
-			SORT_KEY_GEOMETRY_INDEX_SHIFT = 20,
-			SORT_KEY_GEOMETRY_TYPE_SHIFT = 15,
+			//48-32 material index
+			SORT_KEY_MATERIAL_INDEX_SHIFT = 32,
+			//32-12 geometry index
+			SORT_KEY_GEOMETRY_INDEX_SHIFT = 12,
+			//bits 12-8 geometry type
+			SORT_KEY_GEOMETRY_TYPE_SHIFT = 8,
+			//bits 0-7 for flags
 			SORT_KEY_CULL_DISABLED_FLAG = 4,
 			SORT_KEY_SKELETON_FLAG = 2,
 			SORT_KEY_MIRROR_FLAG = 1
@@ -721,16 +729,22 @@ public:
 			}
 		}
 
-		struct SortByReverseDepth {
+		struct SortByReverseDepthAndPriority {
 
 			_FORCE_INLINE_ bool operator()(const Element *A, const Element *B) const {
-				return A->instance->depth > B->instance->depth;
+				uint32_t layer_A = uint32_t(A->sort_key >> SORT_KEY_PRIORITY_SHIFT);
+				uint32_t layer_B = uint32_t(B->sort_key >> SORT_KEY_PRIORITY_SHIFT);
+				if (layer_A == layer_B) {
+					return A->instance->depth > B->instance->depth;
+				} else {
+					return layer_A < layer_B;
+				}
 			}
 		};
 
-		void sort_by_reverse_depth(bool p_alpha) { //used for alpha
+		void sort_by_reverse_depth_and_priority(bool p_alpha) { //used for alpha
 
-			SortArray<Element *, SortByReverseDepth> sorter;
+			SortArray<Element *, SortByReverseDepthAndPriority> sorter;
 			if (p_alpha) {
 				sorter.sort(&elements[max_elements - alpha_element_count], alpha_element_count);
 			} else {

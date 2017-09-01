@@ -3505,7 +3505,7 @@ void SpatialEditor::_init_indicators() {
 
 		gizmo_hl = Ref<SpatialMaterial>(memnew(SpatialMaterial));
 		gizmo_hl->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-		gizmo_hl->set_flag(SpatialMaterial::FLAG_ONTOP, true);
+		gizmo_hl->set_on_top_of_alpha();
 		gizmo_hl->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
 		gizmo_hl->set_albedo(Color(1, 1, 1, gizmo_alph + 0.2f));
 		gizmo_hl->set_cull_mode(SpatialMaterial::CULL_DISABLED);
@@ -3518,7 +3518,7 @@ void SpatialEditor::_init_indicators() {
 
 			Ref<SpatialMaterial> mat = memnew(SpatialMaterial);
 			mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-			mat->set_flag(SpatialMaterial::FLAG_ONTOP, true);
+			mat->set_on_top_of_alpha();
 			mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
 			Color col;
 			col[i] = 1.0;
@@ -3613,7 +3613,7 @@ void SpatialEditor::_init_indicators() {
 
 				Ref<SpatialMaterial> plane_mat = memnew(SpatialMaterial);
 				plane_mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-				plane_mat->set_flag(SpatialMaterial::FLAG_ONTOP, true);
+				plane_mat->set_on_top_of_alpha();
 				plane_mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
 				plane_mat->set_cull_mode(SpatialMaterial::CULL_DISABLED);
 				Color col;

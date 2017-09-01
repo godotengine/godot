@@ -1434,7 +1434,7 @@ void VisualServerScene::_render_scene(const Transform p_cam_transform, const Cam
 			}
 
 			ins->depth = near_plane.distance_to(ins->transform.origin);
-			ins->depth_layer = CLAMP(int(ins->depth * 8 / z_far), 0, 7);
+			ins->depth_layer = CLAMP(int(ins->depth * 16 / z_far), 0, 15);
 		}
 
 		if (!keep) {

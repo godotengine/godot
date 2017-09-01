@@ -128,12 +128,13 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("depth_draw_never");
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("depth_draw_alpha_prepass");
 
+	shader_modes[VS::SHADER_SPATIAL].modes.insert("depth_test_disable");
+
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("cull_front");
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("cull_back");
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("cull_disabled");
 
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("unshaded");
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("ontop");
 
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("diffuse_lambert");
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("diffuse_half_lambert");

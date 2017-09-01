@@ -580,7 +580,7 @@ Ref<SpatialMaterial> EditorSpatialGizmo::create_material(const String &p_name, c
 	}
 
 	if (p_on_top && is_selected()) {
-		line_material->set_flag(SpatialMaterial::FLAG_ONTOP, true);
+		line_material->set_on_top_of_alpha();
 	}
 
 	line_material->set_albedo(color);
@@ -624,7 +624,7 @@ Ref<SpatialMaterial> EditorSpatialGizmo::create_icon_material(const String &p_na
 	icon->set_billboard_mode(SpatialMaterial::BILLBOARD_ENABLED);
 
 	if (p_on_top && is_selected()) {
-		icon->set_flag(SpatialMaterial::FLAG_ONTOP, true);
+		icon->set_on_top_of_alpha();
 	}
 
 	SpatialEditorGizmos::singleton->material_cache[name] = icon;
@@ -3411,7 +3411,7 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 
 	handle_material = Ref<SpatialMaterial>(memnew(SpatialMaterial));
 	handle_material->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-	handle_material->set_flag(SpatialMaterial::FLAG_ONTOP, true);
+	handle_material->set_on_top_of_alpha();
 	handle_material->set_albedo(Color(0.8, 0.8, 0.8));
 	handle_material_billboard = handle_material->duplicate();
 	handle_material_billboard->set_billboard_mode(SpatialMaterial::BILLBOARD_ENABLED);
@@ -3426,11 +3426,11 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 	handle2_material->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
 	handle2_material->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	handle2_material->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
-	handle2_material->set_flag(SpatialMaterial::FLAG_ONTOP, true);
+	handle2_material->set_on_top_of_alpha();
 	handle2_material_billboard = handle2_material->duplicate();
 	handle2_material_billboard->set_billboard_mode(SpatialMaterial::BILLBOARD_ENABLED);
 	handle2_material_billboard->set_billboard_mode(SpatialMaterial::BILLBOARD_ENABLED);
-	handle2_material_billboard->set_flag(SpatialMaterial::FLAG_ONTOP, true);
+	handle2_material_billboard->set_on_top_of_alpha();
 
 	EDITOR_DEF("editors/3d_gizmos/gizmo_colors/light", Color(1, 1, 0.2));
 	EDITOR_DEF("editors/3d_gizmos/gizmo_colors/stream_player_3d", Color(0.4, 0.8, 1));
@@ -3490,7 +3490,7 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 	skeleton_material = create_line_material(Color(0.6, 1.0, 0.3));
 	skeleton_material->set_cull_mode(SpatialMaterial::CULL_DISABLED);
 	skeleton_material->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-	skeleton_material->set_flag(SpatialMaterial::FLAG_ONTOP, true);
+	skeleton_material->set_on_top_of_alpha();
 	skeleton_material->set_depth_draw_mode(SpatialMaterial::DEPTH_DRAW_DISABLED);
 
 	//position 3D Shared mesh

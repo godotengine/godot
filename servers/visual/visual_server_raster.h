@@ -690,6 +690,7 @@ public:
 	BIND3(material_set_param, RID, const StringName &, const Variant &)
 	BIND2RC(Variant, material_get_param, RID, const StringName &)
 
+	BIND2(material_set_render_priority, RID, int)
 	BIND2(material_set_line_width, RID, float)
 	BIND2(material_set_next_pass, RID, RID)
 

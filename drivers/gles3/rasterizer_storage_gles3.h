@@ -444,7 +444,7 @@ public:
 			bool uses_alpha;
 			bool uses_alpha_scissor;
 			bool unshaded;
-			bool ontop;
+			bool no_depth_test;
 			bool uses_vertex;
 			bool uses_discard;
 			bool uses_sss;
@@ -502,6 +502,7 @@ public:
 		SelfList<Material> dirty_list;
 		Vector<RID> textures;
 		float line_width;
+		int render_priority;
 
 		RID next_pass;
 
@@ -523,6 +524,7 @@ public:
 			ubo_id = 0;
 			ubo_size = 0;
 			last_pass = 0;
+			render_priority = 0;
 		}
 	};
 
@@ -549,6 +551,8 @@ public:
 
 	virtual void material_add_instance_owner(RID p_material, RasterizerScene::InstanceBase *p_instance);
 	virtual void material_remove_instance_owner(RID p_material, RasterizerScene::InstanceBase *p_instance);
+
+	virtual void material_set_render_priority(RID p_material, int priority);
 
 	void _update_material(Material *material);
 

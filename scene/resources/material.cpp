@@ -48,6 +48,19 @@ Ref<Material> Material::get_next_pass() const {
 	return next_pass;
 }
 
+void Material::set_render_priority(int p_priority) {
+
+	ERR_FAIL_COND(p_priority < RENDER_PRIORITY_MIN);
+	ERR_FAIL_COND(p_priority > RENDER_PRIORITY_MAX);
+	render_priority = p_priority;
+	VS::get_singleton()->material_set_render_priority(material, p_priority);
+}
+
+int Material::get_render_priority() const {
+
+	return render_priority;
+}
+
 RID Material::get_rid() const {
 
 	return material;
@@ -58,12 +71,20 @@ void Material::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_next_pass", "next_pass"), &Material::set_next_pass);
 	ClassDB::bind_method(D_METHOD("get_next_pass"), &Material::get_next_pass);
 
+	ClassDB::bind_method(D_METHOD("set_render_priority", "priority"), &Material::set_render_priority);
+	ClassDB::bind_method(D_METHOD("get_render_priority"), &Material::get_render_priority);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "render_priority", PROPERTY_HINT_RANGE, itos(RENDER_PRIORITY_MIN) + "," + itos(RENDER_PRIORITY_MAX) + ",1"), "set_render_priority", "get_render_priority");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "next_pass", PROPERTY_HINT_RESOURCE_TYPE, "Material"), "set_next_pass", "get_next_pass");
+
+	BIND_CONSTANT(RENDER_PRIORITY_MAX);
+	BIND_CONSTANT(RENDER_PRIORITY_MIN);
 }
 
 Material::Material() {
 
 	material = VisualServer::get_singleton()->material_create();
+	render_priority = 0;
 }
 
 Material::~Material() {
@@ -347,8 +368,8 @@ void SpatialMaterial::_update_shader() {
 	if (flags[FLAG_UNSHADED]) {
 		code += ",unshaded";
 	}
-	if (flags[FLAG_ONTOP]) {
-		code += ",ontop";
+	if (flags[FLAG_DISABLE_DEPTH_TEST]) {
+		code += ",depth_test_disable";
 	}
 	if (flags[FLAG_USE_VERTEX_LIGHTING]) {
 		code += ",vertex_lighting";
@@ -1459,6 +1480,12 @@ RID SpatialMaterial::get_material_rid_for_2d(bool p_shaded, bool p_transparent, 
 	return materials_for_2d[version]->get_rid();
 }
 
+void SpatialMaterial::set_on_top_of_alpha() {
+	set_feature(FEATURE_TRANSPARENT, true);
+	set_render_priority(RENDER_PRIORITY_MAX);
+	set_flag(FLAG_DISABLE_DEPTH_TEST, true);
+}
+
 void SpatialMaterial::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_albedo", "albedo"), &SpatialMaterial::set_albedo);
@@ -1606,7 +1633,7 @@ void SpatialMaterial::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_transparent"), "set_feature", "get_feature", FEATURE_TRANSPARENT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_unshaded"), "set_flag", "get_flag", FLAG_UNSHADED);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_vertex_lighting"), "set_flag", "get_flag", FLAG_USE_VERTEX_LIGHTING);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_on_top"), "set_flag", "get_flag", FLAG_ONTOP);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_no_depth_test"), "set_flag", "get_flag", FLAG_DISABLE_DEPTH_TEST);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_use_point_size"), "set_flag", "get_flag", FLAG_USE_POINT_SIZE);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_fixed_size"), "set_flag", "get_flag", FLAG_FIXED_SIZE);
 	ADD_GROUP("Vertex Color", "vertex_color");
@@ -1768,7 +1795,7 @@ void SpatialMaterial::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(FLAG_UNSHADED);
 	BIND_ENUM_CONSTANT(FLAG_USE_VERTEX_LIGHTING);
-	BIND_ENUM_CONSTANT(FLAG_ONTOP);
+	BIND_ENUM_CONSTANT(FLAG_DISABLE_DEPTH_TEST);
 	BIND_ENUM_CONSTANT(FLAG_ALBEDO_FROM_VERTEX_COLOR);
 	BIND_ENUM_CONSTANT(FLAG_SRGB_VERTEX_COLOR);
 	BIND_ENUM_CONSTANT(FLAG_USE_POINT_SIZE);
