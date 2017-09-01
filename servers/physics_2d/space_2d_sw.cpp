@@ -30,8 +30,8 @@
 #include "space_2d_sw.h"
 
 #include "collision_solver_2d_sw.h"
+#include "pair.h"
 #include "physics_2d_server_sw.h"
-
 _FORCE_INLINE_ static bool _match_object_type_query(CollisionObject2DSW *p_object, uint32_t p_collision_layer, uint32_t p_type_mask) {
 
 	if ((p_object->get_collision_layer() & p_collision_layer) == 0)
@@ -517,6 +517,10 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 	body_aabb = p_from.xform(p_body->get_inv_transform().xform(body_aabb));
 	body_aabb = body_aabb.grow(p_margin);
 
+	static const int max_excluded_shape_pairs = 32;
+	Pair<Shape2DSW *, Shape2DSW *> excluded_shape_pairs[max_excluded_shape_pairs];
+	int excluded_shape_pair_count = 0;
+
 	Transform2D body_transform = p_from;
 
 	{
@@ -532,6 +536,8 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 			cbk.max = max_results;
 			cbk.amount = 0;
 			cbk.ptr = sr;
+			cbk.invalid_by_dir = 0;
+			excluded_shape_pair_count = 0; //last step is the one valid
 
 			Physics2DServerSW::CollCbkData *cbkptr = &cbk;
 			CollisionSolver2DSW::CallbackResult cbkres = Physics2DServerSW::_shape_col_cbk;
@@ -555,13 +561,24 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 
 						cbk.valid_dir = body_shape_xform.get_axis(1).normalized();
 						cbk.valid_depth = p_margin; //only valid depth is the collision margin
+						cbk.invalid_by_dir = 0;
+
 					} else {
 						cbk.valid_dir = Vector2();
 						cbk.valid_depth = 0;
+						cbk.invalid_by_dir = 0;
 					}
 
-					if (CollisionSolver2DSW::solve(body_shape, body_shape_xform, Vector2(), col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), Vector2(), cbkres, cbkptr, NULL, p_margin)) {
+					Shape2DSW *against_shape = col_obj->get_shape(shape_idx);
+					if (CollisionSolver2DSW::solve(body_shape, body_shape_xform, Vector2(), against_shape, col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), Vector2(), cbkres, cbkptr, NULL, p_margin)) {
 						collided = cbk.amount > 0;
+					}
+
+					if (!collided && cbk.invalid_by_dir > 0) {
+						//this shape must be excluded
+						if (excluded_shape_pair_count < max_excluded_shape_pairs) {
+							excluded_shape_pairs[excluded_shape_pair_count++] = Pair<Shape2DSW *, Shape2DSW *>(body_shape, against_shape);
+						}
 					}
 				}
 			}
@@ -622,15 +639,31 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 
 				const CollisionObject2DSW *col_obj = intersection_query_results[i];
 				int shape_idx = intersection_query_subindex_results[i];
+				Shape2DSW *against_shape = col_obj->get_shape(shape_idx);
+
+				bool excluded = false;
+
+				for (int k = 0; k < excluded_shape_pair_count; k++) {
+
+					if (excluded_shape_pairs[k].first == body_shape && excluded_shape_pairs[k].second == against_shape) {
+						excluded = true;
+						break;
+					}
+				}
+
+				if (excluded) {
+
+					continue;
+				}
 
 				Transform2D col_obj_xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 				//test initial overlap, does it collide if going all the way?
-				if (!CollisionSolver2DSW::solve(body_shape, body_shape_xform, p_motion, col_obj->get_shape(shape_idx), col_obj_xform, Vector2(), NULL, NULL, NULL, 0)) {
+				if (!CollisionSolver2DSW::solve(body_shape, body_shape_xform, p_motion, against_shape, col_obj_xform, Vector2(), NULL, NULL, NULL, 0)) {
 					continue;
 				}
 
 				//test initial overlap
-				if (CollisionSolver2DSW::solve(body_shape, body_shape_xform, Vector2(), col_obj->get_shape(shape_idx), col_obj_xform, Vector2(), NULL, NULL, NULL, 0)) {
+				if (CollisionSolver2DSW::solve(body_shape, body_shape_xform, Vector2(), against_shape, col_obj_xform, Vector2(), NULL, NULL, NULL, 0)) {
 
 					if (col_obj->is_shape_set_as_one_way_collision(j)) {
 						continue;
@@ -650,7 +683,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 					real_t ofs = (low + hi) * 0.5;
 
 					Vector2 sep = mnormal; //important optimization for this to work fast enough
-					bool collided = CollisionSolver2DSW::solve(body_shape, body_shape_xform, p_motion * ofs, col_obj->get_shape(shape_idx), col_obj_xform, Vector2(), NULL, NULL, &sep, 0);
+					bool collided = CollisionSolver2DSW::solve(body_shape, body_shape_xform, p_motion * ofs, against_shape, col_obj_xform, Vector2(), NULL, NULL, &sep, 0);
 
 					if (collided) {
 
@@ -669,7 +702,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 					cbk.amount = 0;
 					cbk.ptr = cd;
 					cbk.valid_dir = body_shape_xform.get_axis(1).normalized();
-					;
+
 					cbk.valid_depth = 10e20;
 
 					Vector2 sep = mnormal; //important optimization for this to work fast enough
@@ -738,6 +771,19 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 			const CollisionObject2DSW *col_obj = intersection_query_results[i];
 			int shape_idx = intersection_query_subindex_results[i];
 
+			Shape2DSW *against_shape = col_obj->get_shape(shape_idx);
+
+			bool excluded = false;
+			for (int k = 0; k < excluded_shape_pair_count; k++) {
+
+				if (excluded_shape_pairs[k].first == body_shape && excluded_shape_pairs[k].second == against_shape) {
+					excluded = true;
+					break;
+				}
+			}
+			if (excluded)
+				continue;
+
 			if (col_obj->is_shape_set_as_one_way_collision(shape_idx)) {
 
 				rcd.valid_dir = body_shape_xform.get_axis(1).normalized();
@@ -749,7 +795,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 
 			rcd.object = col_obj;
 			rcd.shape = shape_idx;
-			bool sc = CollisionSolver2DSW::solve(body_shape, body_shape_xform, Vector2(), col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), Vector2(), _rest_cbk_result, &rcd, NULL, p_margin);
+			bool sc = CollisionSolver2DSW::solve(body_shape, body_shape_xform, Vector2(), against_shape, col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), Vector2(), _rest_cbk_result, &rcd, NULL, p_margin);
 			if (!sc)
 				continue;
 		}

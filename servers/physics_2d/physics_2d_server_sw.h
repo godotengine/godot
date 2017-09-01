@@ -74,6 +74,7 @@ public:
 		real_t valid_depth;
 		int max;
 		int amount;
+		int invalid_by_dir;
 		Vector2 *ptr;
 	};
 
