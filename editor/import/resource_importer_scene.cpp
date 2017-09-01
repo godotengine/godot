@@ -49,13 +49,13 @@
 
 void EditorScenePostImport::_bind_methods() {
 
-	BIND_VMETHOD(MethodInfo("post_import", PropertyInfo(Variant::OBJECT, "scene")));
+	BIND_VMETHOD(MethodInfo("_post_import", PropertyInfo(Variant::OBJECT, "scene")));
 }
 
 Node *EditorScenePostImport::post_import(Node *p_scene) {
 
 	if (get_script_instance())
-		return get_script_instance()->call("post_import", p_scene);
+		return get_script_instance()->call("_post_import", p_scene);
 
 	return p_scene;
 }

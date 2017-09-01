@@ -39,16 +39,16 @@
 
 bool EditorResourcePreviewGenerator::handles(const String &p_type) const {
 
-	if (get_script_instance() && get_script_instance()->has_method("handles")) {
-		return get_script_instance()->call("handles", p_type);
+	if (get_script_instance() && get_script_instance()->has_method("_handles")) {
+		return get_script_instance()->call("_handles", p_type);
 	}
 	ERR_EXPLAIN("EditorResourcePreviewGenerator::handles needs to be overridden");
 	ERR_FAIL_V(false);
 }
 Ref<Texture> EditorResourcePreviewGenerator::generate(const RES &p_from) {
 
-	if (get_script_instance() && get_script_instance()->has_method("generate")) {
-		return get_script_instance()->call("generate", p_from);
+	if (get_script_instance() && get_script_instance()->has_method("_generate")) {
+		return get_script_instance()->call("_generate", p_from);
 	}
 	ERR_EXPLAIN("EditorResourcePreviewGenerator::generate needs to be overridden");
 	ERR_FAIL_V(Ref<Texture>());
@@ -56,8 +56,8 @@ Ref<Texture> EditorResourcePreviewGenerator::generate(const RES &p_from) {
 
 Ref<Texture> EditorResourcePreviewGenerator::generate_from_path(const String &p_path) {
 
-	if (get_script_instance() && get_script_instance()->has_method("generate_from_path")) {
-		return get_script_instance()->call("generate_from_path", p_path);
+	if (get_script_instance() && get_script_instance()->has_method("_generate_from_path")) {
+		return get_script_instance()->call("_generate_from_path", p_path);
 	}
 
 	RES res = ResourceLoader::load(p_path);
@@ -68,9 +68,9 @@ Ref<Texture> EditorResourcePreviewGenerator::generate_from_path(const String &p_
 
 void EditorResourcePreviewGenerator::_bind_methods() {
 
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "handles", PropertyInfo(Variant::STRING, "type")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(CLASS_INFO(Texture), "generate", PropertyInfo(Variant::OBJECT, "from", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(CLASS_INFO(Texture), "generate_from_path", PropertyInfo(Variant::STRING, "path", PROPERTY_HINT_FILE)));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "_handles", PropertyInfo(Variant::STRING, "type")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(CLASS_INFO(Texture), "_generate", PropertyInfo(Variant::OBJECT, "from", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(CLASS_INFO(Texture), "_generate_from_path", PropertyInfo(Variant::STRING, "path", PROPERTY_HINT_FILE)));
 }
 
 EditorResourcePreviewGenerator::EditorResourcePreviewGenerator() {

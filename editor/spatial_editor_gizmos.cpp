@@ -82,8 +82,8 @@ void EditorSpatialGizmo::clear() {
 
 void EditorSpatialGizmo::redraw() {
 
-	if (get_script_instance() && get_script_instance()->has_method("redraw"))
-		get_script_instance()->call("redraw");
+	if (get_script_instance() && get_script_instance()->has_method("_redraw"))
+		get_script_instance()->call("_redraw");
 }
 
 void EditorSpatialGizmo::Instance::create_instance(Spatial *p_base) {
@@ -643,14 +643,14 @@ void EditorSpatialGizmo::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_spatial_node", "node"), &EditorSpatialGizmo::_set_spatial_node);
 	ClassDB::bind_method(D_METHOD("clear"), &EditorSpatialGizmo::clear);
 
-	BIND_VMETHOD(MethodInfo("redraw"));
+	BIND_VMETHOD(MethodInfo("_redraw"));
 	BIND_VMETHOD(MethodInfo(Variant::STRING, "get_handle_name", PropertyInfo(Variant::INT, "index")));
 
 	MethodInfo hvget(Variant::NIL, "get_handle_value", PropertyInfo(Variant::INT, "index"));
 	hvget.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 	BIND_VMETHOD(hvget);
 
-	BIND_VMETHOD(MethodInfo("set_handle", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::OBJECT, "camera", PROPERTY_HINT_RESOURCE_TYPE, "Camera"), PropertyInfo(Variant::VECTOR2, "point")));
+	BIND_VMETHOD(MethodInfo("_set_handle", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::OBJECT, "camera", PROPERTY_HINT_RESOURCE_TYPE, "Camera"), PropertyInfo(Variant::VECTOR2, "point")));
 	MethodInfo cm = MethodInfo("commit_handle", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::NIL, "restore"), PropertyInfo(Variant::BOOL, "cancel"));
 	cm.default_arguments.push_back(false);
 	BIND_VMETHOD(cm);

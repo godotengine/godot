@@ -393,8 +393,8 @@ void EditorPlugin::notify_scene_closed(const String &scene_filepath) {
 
 Ref<SpatialEditorGizmo> EditorPlugin::create_spatial_gizmo(Spatial *p_spatial) {
 	//??
-	if (get_script_instance() && get_script_instance()->has_method("create_spatial_gizmo")) {
-		return get_script_instance()->call("create_spatial_gizmo", p_spatial);
+	if (get_script_instance() && get_script_instance()->has_method("_create_spatial_gizmo")) {
+		return get_script_instance()->call("_create_spatial_gizmo", p_spatial);
 	}
 
 	return Ref<SpatialEditorGizmo>();
@@ -402,16 +402,16 @@ Ref<SpatialEditorGizmo> EditorPlugin::create_spatial_gizmo(Spatial *p_spatial) {
 
 bool EditorPlugin::forward_canvas_gui_input(const Transform2D &p_canvas_xform, const Ref<InputEvent> &p_event) {
 
-	if (get_script_instance() && get_script_instance()->has_method("forward_canvas_gui_input")) {
-		return get_script_instance()->call("forward_canvas_gui_input", p_canvas_xform, p_event);
+	if (get_script_instance() && get_script_instance()->has_method("_forward_canvas_gui_input")) {
+		return get_script_instance()->call("_forward_canvas_gui_input", p_canvas_xform, p_event);
 	}
 	return false;
 }
 
 void EditorPlugin::forward_draw_over_canvas(const Transform2D &p_canvas_xform, Control *p_canvas) {
 
-	if (get_script_instance() && get_script_instance()->has_method("forward_draw_over_canvas")) {
-		get_script_instance()->call("forward_draw_over_canvas", p_canvas_xform, p_canvas);
+	if (get_script_instance() && get_script_instance()->has_method("_forward_draw_over_canvas")) {
+		get_script_instance()->call("_forward_draw_over_canvas", p_canvas_xform, p_canvas);
 	}
 }
 
@@ -421,54 +421,54 @@ void EditorPlugin::update_canvas() {
 
 bool EditorPlugin::forward_spatial_gui_input(Camera *p_camera, const Ref<InputEvent> &p_event) {
 
-	if (get_script_instance() && get_script_instance()->has_method("forward_spatial_gui_input")) {
-		return get_script_instance()->call("forward_spatial_gui_input", p_camera, p_event);
+	if (get_script_instance() && get_script_instance()->has_method("_forward_spatial_gui_input")) {
+		return get_script_instance()->call("_forward_spatial_gui_input", p_camera, p_event);
 	}
 
 	return false;
 }
 String EditorPlugin::get_name() const {
 
-	if (get_script_instance() && get_script_instance()->has_method("get_plugin_name")) {
-		return get_script_instance()->call("get_plugin_name");
+	if (get_script_instance() && get_script_instance()->has_method("_get_plugin_name")) {
+		return get_script_instance()->call("_get_plugin_name");
 	}
 
 	return String();
 }
 bool EditorPlugin::has_main_screen() const {
 
-	if (get_script_instance() && get_script_instance()->has_method("has_main_screen")) {
-		return get_script_instance()->call("has_main_screen");
+	if (get_script_instance() && get_script_instance()->has_method("_has_main_screen")) {
+		return get_script_instance()->call("_has_main_screen");
 	}
 
 	return false;
 }
 void EditorPlugin::make_visible(bool p_visible) {
 
-	if (get_script_instance() && get_script_instance()->has_method("make_visible")) {
-		get_script_instance()->call("make_visible", p_visible);
+	if (get_script_instance() && get_script_instance()->has_method("_make_visible")) {
+		get_script_instance()->call("_make_visible", p_visible);
 	}
 }
 
 void EditorPlugin::edit(Object *p_object) {
 
-	if (get_script_instance() && get_script_instance()->has_method("edit")) {
-		get_script_instance()->call("edit", p_object);
+	if (get_script_instance() && get_script_instance()->has_method("_edit")) {
+		get_script_instance()->call("_edit", p_object);
 	}
 }
 
 bool EditorPlugin::handles(Object *p_object) const {
 
-	if (get_script_instance() && get_script_instance()->has_method("handles")) {
-		return get_script_instance()->call("handles", p_object);
+	if (get_script_instance() && get_script_instance()->has_method("_handles")) {
+		return get_script_instance()->call("_handles", p_object);
 	}
 
 	return false;
 }
 Dictionary EditorPlugin::get_state() const {
 
-	if (get_script_instance() && get_script_instance()->has_method("get_state")) {
-		return get_script_instance()->call("get_state");
+	if (get_script_instance() && get_script_instance()->has_method("_get_state")) {
+		return get_script_instance()->call("_get_state");
 	}
 
 	return Dictionary();
@@ -476,38 +476,38 @@ Dictionary EditorPlugin::get_state() const {
 
 void EditorPlugin::set_state(const Dictionary &p_state) {
 
-	if (get_script_instance() && get_script_instance()->has_method("set_state")) {
-		get_script_instance()->call("set_state", p_state);
+	if (get_script_instance() && get_script_instance()->has_method("_set_state")) {
+		get_script_instance()->call("_set_state", p_state);
 	}
 }
 
 void EditorPlugin::clear() {
 
-	if (get_script_instance() && get_script_instance()->has_method("clear")) {
-		get_script_instance()->call("clear");
+	if (get_script_instance() && get_script_instance()->has_method("_clear")) {
+		get_script_instance()->call("_clear");
 	}
 }
 
 // if editor references external resources/scenes, save them
 void EditorPlugin::save_external_data() {
 
-	if (get_script_instance() && get_script_instance()->has_method("save_external_data")) {
-		get_script_instance()->call("save_external_data");
+	if (get_script_instance() && get_script_instance()->has_method("_save_external_data")) {
+		get_script_instance()->call("_save_external_data");
 	}
 }
 
 // if changes are pending in editor, apply them
 void EditorPlugin::apply_changes() {
 
-	if (get_script_instance() && get_script_instance()->has_method("apply_changes")) {
-		get_script_instance()->call("apply_changes");
+	if (get_script_instance() && get_script_instance()->has_method("_apply_changes")) {
+		get_script_instance()->call("_apply_changes");
 	}
 }
 
 void EditorPlugin::get_breakpoints(List<String> *p_breakpoints) {
 
-	if (get_script_instance() && get_script_instance()->has_method("get_breakpoints")) {
-		PoolStringArray arr = get_script_instance()->call("get_breakpoints");
+	if (get_script_instance() && get_script_instance()->has_method("_get_breakpoints")) {
+		PoolStringArray arr = get_script_instance()->call("_get_breakpoints");
 		for (int i = 0; i < arr.size(); i++)
 			p_breakpoints->push_back(arr[i]);
 	}
@@ -532,15 +532,15 @@ void EditorPlugin::remove_import_plugin(const Ref<EditorImportPlugin> &p_importe
 
 void EditorPlugin::set_window_layout(Ref<ConfigFile> p_layout) {
 
-	if (get_script_instance() && get_script_instance()->has_method("set_window_layout")) {
-		get_script_instance()->call("set_window_layout", p_layout);
+	if (get_script_instance() && get_script_instance()->has_method("_set_window_layout")) {
+		get_script_instance()->call("_set_window_layout", p_layout);
 	}
 }
 
 void EditorPlugin::get_window_layout(Ref<ConfigFile> p_layout) {
 
-	if (get_script_instance() && get_script_instance()->has_method("get_window_layout")) {
-		get_script_instance()->call("get_window_layout", p_layout);
+	if (get_script_instance() && get_script_instance()->has_method("_get_window_layout")) {
+		get_script_instance()->call("_get_window_layout", p_layout);
 	}
 }
 
@@ -589,26 +589,26 @@ void EditorPlugin::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_editor_interface"), &EditorPlugin::get_editor_interface);
 
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "forward_canvas_gui_input", PropertyInfo(Variant::TRANSFORM2D, "canvas_xform"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("forward_draw_over_canvas", PropertyInfo(Variant::TRANSFORM2D, "canvas_xform"), PropertyInfo(Variant::OBJECT, "canvas", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "forward_spatial_gui_input", PropertyInfo(Variant::OBJECT, "camera", PROPERTY_HINT_RESOURCE_TYPE, "Camera"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
-	MethodInfo gizmo = MethodInfo(Variant::OBJECT, "create_spatial_gizmo", PropertyInfo(Variant::OBJECT, "for_spatial", PROPERTY_HINT_RESOURCE_TYPE, "Spatial"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "_forward_canvas_gui_input", PropertyInfo(Variant::TRANSFORM2D, "canvas_xform"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_forward_draw_over_canvas", PropertyInfo(Variant::TRANSFORM2D, "canvas_xform"), PropertyInfo(Variant::OBJECT, "canvas", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "_forward_spatial_gui_input", PropertyInfo(Variant::OBJECT, "camera", PROPERTY_HINT_RESOURCE_TYPE, "Camera"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
+	MethodInfo gizmo = MethodInfo(Variant::OBJECT, "_create_spatial_gizmo", PropertyInfo(Variant::OBJECT, "for_spatial", PROPERTY_HINT_RESOURCE_TYPE, "Spatial"));
 	gizmo.return_val.hint = PROPERTY_HINT_RESOURCE_TYPE;
 	gizmo.return_val.hint_string = "EditorSpatialGizmo";
 	ClassDB::add_virtual_method(get_class_static(), gizmo);
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::STRING, "get_plugin_name"));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "has_main_screen"));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("make_visible", PropertyInfo(Variant::BOOL, "visible")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("edit", PropertyInfo(Variant::OBJECT, "object")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "handles", PropertyInfo(Variant::OBJECT, "object")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::DICTIONARY, "get_state"));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("set_state", PropertyInfo(Variant::DICTIONARY, "state")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("clear"));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("save_external_data"));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("apply_changes"));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::POOL_STRING_ARRAY, "get_breakpoints"));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("set_window_layout", PropertyInfo(Variant::OBJECT, "layout", PROPERTY_HINT_RESOURCE_TYPE, "ConfigFile")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("get_window_layout", PropertyInfo(Variant::OBJECT, "layout", PROPERTY_HINT_RESOURCE_TYPE, "ConfigFile")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::STRING, "_get_plugin_name"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "_has_main_screen"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_make_visible", PropertyInfo(Variant::BOOL, "visible")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_edit", PropertyInfo(Variant::OBJECT, "object")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "_handles", PropertyInfo(Variant::OBJECT, "object")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::DICTIONARY, "_get_state"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_set_state", PropertyInfo(Variant::DICTIONARY, "state")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_clear"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_save_external_data"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_apply_changes"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::POOL_STRING_ARRAY, "_get_breakpoints"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_set_window_layout", PropertyInfo(Variant::OBJECT, "layout", PROPERTY_HINT_RESOURCE_TYPE, "ConfigFile")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_get_window_layout", PropertyInfo(Variant::OBJECT, "layout", PROPERTY_HINT_RESOURCE_TYPE, "ConfigFile")));
 
 	ADD_SIGNAL(MethodInfo("scene_changed", PropertyInfo(Variant::OBJECT, "scene_root", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("scene_closed", PropertyInfo(Variant::STRING, "filepath")));
