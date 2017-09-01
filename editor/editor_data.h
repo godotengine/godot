@@ -74,7 +74,7 @@ class EditorHistory {
 	void _add_object(ObjectID p_object, const String &p_property, int p_level_change);
 
 public:
-	bool is_at_begining() const;
+	bool is_at_beginning() const;
 	bool is_at_end() const;
 
 	void add_object(ObjectID p_object);

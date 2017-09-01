@@ -3349,7 +3349,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 	Token tk = _get_token();
 
 	if (tk.type != TK_SHADER_TYPE) {
-		_set_error("Expected 'shader_type' at the begining of shader.");
+		_set_error("Expected 'shader_type' at the beginning of shader.");
 		return ERR_PARSE_ERROR;
 	}
 
