@@ -352,9 +352,16 @@ void ScriptCreateDialog::_path_changed(const String &p_path) {
 	/* Does file already exist */
 
 	DirAccess *f = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	if (f->file_exists(p) && !(f->current_is_dir())) {
+	if (f->dir_exists(p)) {
+		is_new_script_created = false;
+		is_path_valid = false;
+		_msg_path_valid(false, TTR("Directory of the same name exists"));
+	} else if (f->file_exists(p)) {
 		is_new_script_created = false;
 		is_path_valid = true;
+		_msg_path_valid(true, TTR("File exists, will be reused"));
+	} else {
+		path_error_label->set_text("");
 	}
 	memdelete(f);
 	_update_dialog();
