@@ -141,7 +141,7 @@ ObjectID EditorHistory::get_history_obj(int p_obj) const {
 	return history[p_obj].path[history[p_obj].level].object;
 }
 
-bool EditorHistory::is_at_begining() const {
+bool EditorHistory::is_at_beginning() const {
 	return current <= 0;
 }
 bool EditorHistory::is_at_end() const {

@@ -1373,7 +1373,7 @@ void EditorNode::_edit_current() {
 	uint32_t current = editor_history.get_current();
 	Object *current_obj = current > 0 ? ObjectDB::get_instance(current) : NULL;
 
-	property_back->set_disabled(editor_history.is_at_begining());
+	property_back->set_disabled(editor_history.is_at_beginning());
 	property_forward->set_disabled(editor_history.is_at_end());
 
 	this->current = current_obj;
