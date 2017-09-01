@@ -216,8 +216,8 @@ void ImageLoaderPNG::get_recognized_extensions(List<String> *p_extensions) const
 
 struct PNGReadStatus {
 
-	int offset;
-	int size;
+	uint32_t offset;
+	uint32_t size;
 	const unsigned char *image;
 };
 

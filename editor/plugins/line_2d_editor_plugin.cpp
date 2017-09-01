@@ -211,7 +211,7 @@ void Line2DEditor::_bind_methods() {
 }
 
 void Line2DEditor::_mode_selected(int p_mode) {
-	for (unsigned int i = 0; i < _MODE_COUNT; ++i) {
+	for (int i = 0; i < _MODE_COUNT; ++i) {
 		toolbar_buttons[i]->set_pressed(i == p_mode);
 	}
 	mode = Mode(p_mode);

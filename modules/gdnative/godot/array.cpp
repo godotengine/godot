@@ -61,7 +61,7 @@ void GDAPI godot_array_new_pool_color_array(godot_array *r_dest, const godot_poo
 	memnew_placement(dest, Array);
 	dest->resize(pca->size());
 
-	for (size_t i = 0; i < dest->size(); i++) {
+	for (int i = 0; i < dest->size(); i++) {
 		Variant v = pca->operator[](i);
 		dest->operator[](i) = v;
 	}
@@ -73,7 +73,7 @@ void GDAPI godot_array_new_pool_vector3_array(godot_array *r_dest, const godot_p
 	memnew_placement(dest, Array);
 	dest->resize(pca->size());
 
-	for (size_t i = 0; i < dest->size(); i++) {
+	for (int i = 0; i < dest->size(); i++) {
 		Variant v = pca->operator[](i);
 		dest->operator[](i) = v;
 	}
@@ -85,7 +85,7 @@ void GDAPI godot_array_new_pool_vector2_array(godot_array *r_dest, const godot_p
 	memnew_placement(dest, Array);
 	dest->resize(pca->size());
 
-	for (size_t i = 0; i < dest->size(); i++) {
+	for (int i = 0; i < dest->size(); i++) {
 		Variant v = pca->operator[](i);
 		dest->operator[](i) = v;
 	}
@@ -97,7 +97,7 @@ void GDAPI godot_array_new_pool_string_array(godot_array *r_dest, const godot_po
 	memnew_placement(dest, Array);
 	dest->resize(pca->size());
 
-	for (size_t i = 0; i < dest->size(); i++) {
+	for (int i = 0; i < dest->size(); i++) {
 		Variant v = pca->operator[](i);
 		dest->operator[](i) = v;
 	}
@@ -109,7 +109,7 @@ void GDAPI godot_array_new_pool_real_array(godot_array *r_dest, const godot_pool
 	memnew_placement(dest, Array);
 	dest->resize(pca->size());
 
-	for (size_t i = 0; i < dest->size(); i++) {
+	for (int i = 0; i < dest->size(); i++) {
 		Variant v = pca->operator[](i);
 		dest->operator[](i) = v;
 	}
@@ -121,7 +121,7 @@ void GDAPI godot_array_new_pool_int_array(godot_array *r_dest, const godot_pool_
 	memnew_placement(dest, Array);
 	dest->resize(pca->size());
 
-	for (size_t i = 0; i < dest->size(); i++) {
+	for (int i = 0; i < dest->size(); i++) {
 		Variant v = pca->operator[](i);
 		dest->operator[](i) = v;
 	}
@@ -133,7 +133,7 @@ void GDAPI godot_array_new_pool_byte_array(godot_array *r_dest, const godot_pool
 	memnew_placement(dest, Array);
 	dest->resize(pca->size());
 
-	for (size_t i = 0; i < dest->size(); i++) {
+	for (int i = 0; i < dest->size(); i++) {
 		Variant v = pca->operator[](i);
 		dest->operator[](i) = v;
 	}

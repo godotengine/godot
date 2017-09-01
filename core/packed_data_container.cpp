@@ -61,7 +61,7 @@ Variant PackedDataContainer::_iter_init_ofs(const Array &p_iter, uint32_t p_offs
 Variant PackedDataContainer::_iter_next_ofs(const Array &p_iter, uint32_t p_offset) {
 
 	Array ref = p_iter;
-	uint32_t size = _size(p_offset);
+	int size = _size(p_offset);
 	if (ref.size() != 1)
 		return false;
 	int pos = ref[0];
@@ -74,7 +74,7 @@ Variant PackedDataContainer::_iter_next_ofs(const Array &p_iter, uint32_t p_offs
 
 Variant PackedDataContainer::_iter_get_ofs(const Variant &p_iter, uint32_t p_offset) {
 
-	uint32_t size = _size(p_offset);
+	int size = _size(p_offset);
 	int pos = p_iter;
 	if (pos < 0 || pos >= size)
 		return Variant();
@@ -164,7 +164,7 @@ Variant PackedDataContainer::_key_at_ofs(uint32_t p_ofs, const Variant &p_key, b
 		if (p_key.is_num()) {
 
 			int idx = p_key;
-			uint32_t len = decode_uint32(r + 4);
+			int len = decode_uint32(r + 4);
 			if (idx < 0 || idx >= len) {
 				err = true;
 				return Variant();
@@ -183,7 +183,7 @@ Variant PackedDataContainer::_key_at_ofs(uint32_t p_ofs, const Variant &p_key, b
 		uint32_t len = decode_uint32(r + 4);
 
 		bool found = false;
-		for (int i = 0; i < len; i++) {
+		for (uint32_t i = 0; i < len; i++) {
 			uint32_t khash = decode_uint32(r + 8 + i * 12 + 0);
 			if (khash == hash) {
 				Variant key = _get_at_ofs(decode_uint32(r + 8 + i * 12 + 4), rd.ptr(), err);

@@ -389,8 +389,8 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 
 		for (int i = 0; i < f.indices.size(); i++) {
 
-			uint32_t a = E->get().indices[i];
-			uint32_t b = E->get().indices[(i + 1) % f.indices.size()];
+			int a = E->get().indices[i];
+			int b = E->get().indices[(i + 1) % f.indices.size()];
 			Edge e(a, b);
 
 			Map<Edge, RetFaceConnect>::Element *F = ret_edges.find(e);

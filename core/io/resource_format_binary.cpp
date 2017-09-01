@@ -102,7 +102,7 @@ StringName ResourceInteractiveLoaderBinary::_get_string() {
 
 	uint32_t id = f->get_32();
 	if (id & 0x80000000) {
-		uint32_t len = id & 0x7FFFFFFF;
+		int len = id & 0x7FFFFFFF;
 		if (len > str_buf.size()) {
 			str_buf.resize(len);
 		}
@@ -336,9 +336,9 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 				} break;
 				case OBJECT_EXTERNAL_RESOURCE_INDEX: {
 					//new file format, just refers to an index in the external list
-					uint32_t erindex = f->get_32();
+					int erindex = f->get_32();
 
-					if (erindex >= external_resources.size()) {
+					if (erindex < 0 || erindex >= external_resources.size()) {
 						WARN_PRINT("Broken external resource! (index out of size");
 						r_v = Variant();
 					} else {

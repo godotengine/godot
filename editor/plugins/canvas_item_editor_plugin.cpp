@@ -409,7 +409,7 @@ bool CanvasItemEditor::_is_part_of_subscene(CanvasItem *p_item) {
 	return item_owner && item_owner != scene_node && p_item != scene_node && item_owner->get_filename() != "";
 }
 
-void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform, Vector<_SelectResult> &r_items, unsigned int limit) {
+void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform, Vector<_SelectResult> &r_items, int limit) {
 	if (!p_node)
 		return;
 	if (Object::cast_to<Viewport>(p_node))

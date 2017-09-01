@@ -588,7 +588,7 @@ String String::camelcase_to_underscore(bool lowercase) const {
 	const char a = 'a', z = 'z';
 	int start_index = 0;
 
-	for (size_t i = 1; i < this->size(); i++) {
+	for (int i = 1; i < this->size(); i++) {
 		bool is_upper = cstr[i] >= A && cstr[i] <= Z;
 		bool is_number = cstr[i] >= '0' && cstr[i] <= '9';
 		bool are_next_2_lower = false;

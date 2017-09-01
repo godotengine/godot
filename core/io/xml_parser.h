@@ -67,7 +67,7 @@ public:
 private:
 	char *data;
 	char *P;
-	int length;
+	uint64_t length;
 	void unescape(String &p_str);
 	Vector<String> special_characters;
 	String node_name;

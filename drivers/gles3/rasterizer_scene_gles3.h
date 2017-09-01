@@ -244,7 +244,7 @@ public:
 
 		GLuint fbo_id[6];
 		GLuint cubemap;
-		int size;
+		uint32_t size;
 	};
 
 	Vector<ShadowCubeMap> shadow_cubemaps;
