@@ -700,6 +700,8 @@ void ProjectSettingsEditor::_update_actions() {
 			action->set_meta("__input", ie);
 		}
 	}
+
+	_action_check(action_name->get_text());
 }
 
 void ProjectSettingsEditor::popup_project_settings() {
@@ -809,28 +811,41 @@ void ProjectSettingsEditor::_item_del() {
 	undo_redo->commit_action();
 }
 
+void ProjectSettingsEditor::_action_check(String p_action) {
+
+	if (p_action == "") {
+
+		action_add->set_disabled(true);
+	} else {
+
+		if (p_action.find("/") != -1 || p_action.find(":") != -1) {
+			action_add->set_text(TTR("Can't contain '/' or ':'"));
+			action_add->set_disabled(true);
+			return;
+		}
+		if (ProjectSettings::get_singleton()->has("input/" + p_action)) {
+			action_add->set_text(TTR("Already existing"));
+			action_add->set_disabled(true);
+			return;
+		}
+
+		action_add->set_disabled(false);
+	}
+
+	action_add->set_text(TTR("Add"));
+}
+
 void ProjectSettingsEditor::_action_adds(String) {
 
-	_action_add();
+	if (!action_add->is_disabled()) {
+		_action_add();
+	}
 }
 
 void ProjectSettingsEditor::_action_add() {
 
-	String action = action_name->get_text();
-	if (action.find("/") != -1 || action.find(":") != -1 || action == "") {
-		message->set_text(TTR("Invalid action (anything goes but '/' or ':')."));
-		message->popup_centered(Size2(300, 100) * EDSCALE);
-		return;
-	}
-
-	if (ProjectSettings::get_singleton()->has("input/" + action)) {
-		message->set_text(vformat(TTR("Action '%s' already exists!"), action));
-		message->popup_centered(Size2(300, 100) * EDSCALE);
-		return;
-	}
-
 	Array va;
-	String name = "input/" + action;
+	String name = "input/" + action_name->get_text();
 	undo_redo->create_action(TTR("Add Input Action Event"));
 	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, va);
 	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "clear", name);
@@ -854,6 +869,7 @@ void ProjectSettingsEditor::_action_add() {
 		return;
 	r->select(0);
 	input_editor->ensure_cursor_is_visible();
+	action_add->set_text(TTR("Add"));
 }
 
 void ProjectSettingsEditor::_item_checked(const String &p_item, bool p_check) {
@@ -1331,6 +1347,7 @@ void ProjectSettingsEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_save"), &ProjectSettingsEditor::_save);
 	ClassDB::bind_method(D_METHOD("_action_add"), &ProjectSettingsEditor::_action_add);
 	ClassDB::bind_method(D_METHOD("_action_adds"), &ProjectSettingsEditor::_action_adds);
+	ClassDB::bind_method(D_METHOD("_action_check"), &ProjectSettingsEditor::_action_check);
 	ClassDB::bind_method(D_METHOD("_action_selected"), &ProjectSettingsEditor::_action_selected);
 	ClassDB::bind_method(D_METHOD("_action_edited"), &ProjectSettingsEditor::_action_edited);
 	ClassDB::bind_method(D_METHOD("_action_activated"), &ProjectSettingsEditor::_action_activated);
@@ -1475,9 +1492,8 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	get_ok()->set_text(TTR("Close"));
 	set_hide_on_ok(true);
 
-	message = memnew(ConfirmationDialog);
+	message = memnew(AcceptDialog);
 	add_child(message);
-	message->set_hide_on_ok(true);
 
 	Control *input_base = memnew(Control);
 	input_base->set_name(TTR("Input Map"));
@@ -1493,7 +1509,6 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	l = memnew(Label);
 	vbc->add_child(l);
-	l->set_position(Point2(6, 5) * EDSCALE);
 	l->set_text(TTR("Action:"));
 
 	hbc = memnew(HBoxContainer);
@@ -1503,12 +1518,15 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	action_name->set_h_size_flags(SIZE_EXPAND_FILL);
 	hbc->add_child(action_name);
 	action_name->connect("text_entered", this, "_action_adds");
+	action_name->connect("text_changed", this, "_action_check");
 
 	add = memnew(Button);
 	hbc->add_child(add);
 	add->set_custom_minimum_size(Size2(150, 0) * EDSCALE);
 	add->set_text(TTR("Add"));
+	add->set_disabled(true);
 	add->connect("pressed", this, "_action_add");
+	action_add = add;
 
 	input_editor = memnew(Tree);
 	vbc->add_child(input_editor);
