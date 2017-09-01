@@ -269,6 +269,7 @@ BodyBullet::BodyBullet()
 	btRigidBody::btRigidBodyConstructionInfo cInfo(mass, godotMotionState, compoundShape, localInertia);
 
 	btBody = bulletnew(btRigidBody(cInfo));
+	btBody->setUserIndex2(CollisionObjectBullet::TYPE_BODY);
 	setupCollisionObject(btBody);
 
 	areasWhereIam.resize(maxAreasWhereIam);

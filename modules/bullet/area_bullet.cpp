@@ -42,6 +42,7 @@ AreaBullet::AreaBullet()
 	  spOv_mode(PhysicsServer::AREA_SPACE_OVERRIDE_DISABLED), spOv_gravityPoint(false), spOv_gravityPointDistanceScale(0), spOv_gravityPointAttenuation(1), spOv_gravityVec(0, -1, 0), spOv_gravityMag(10), spOv_linearDump(0.1), spOv_angularDump(1), spOv_priority(0) {
 	btGhost = bulletnew(btGhostObject);
 	btGhost->setCollisionShape(compoundShape);
+	btGhost->setUserIndex2(CollisionObjectBullet::TYPE_AREA);
 	setupCollisionObject(btGhost);
 	/// Collision objects with a callback still have collision response with dynamic rigid bodies.
 	/// In order to use collision objects as trigger, you have to disable the collision response.

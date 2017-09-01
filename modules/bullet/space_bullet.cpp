@@ -55,8 +55,10 @@ bool GodotFilterCallback::needBroadphaseCollision(btBroadphaseProxy *proxy0, btB
 	/// This is used to assert that the area doesn't check collision with static objects
 	const btCollisionObject *const btBody0 = static_cast<btCollisionObject *>(proxy0->m_clientObject);
 	const btCollisionObject *const btBody1 = static_cast<btCollisionObject *>(proxy1->m_clientObject);
-	if (btBody0->isStaticObject() && btBody1->isStaticObject()) {
-		return false;
+	if (!(btBody0->getUserIndex2() == CollisionObjectBullet::TYPE_AREA && btBody1->getUserIndex2() == CollisionObjectBullet::TYPE_AREA)) {
+		if (btBody0->isStaticObject() && btBody1->isStaticObject()) {
+			return false;
+		}
 	}
 	// Even if you think I'm crazy, I'm not.
 	// This gBody0 == gBody1 is required because the kinematic actor use the ghost, and in this case I don't want collide with it
