@@ -1,9 +1,9 @@
 /*************************************************************************/
-/*  pair.h                                                               */
+/*  test_ordered_hash_map.h                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
+/*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
@@ -27,38 +27,12 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef PAIR_H
-#define PAIR_H
+#ifndef TEST_ORDERED_HASH_MAP_H
+#define TEST_ORDERED_HASH_MAP_H
 
-template <class F, class S>
-struct Pair {
+namespace TestOrderedHashMap {
 
-	F first;
-	S second;
-
-	Pair() {}
-	Pair(F p_first, const S &p_second)
-		: first(p_first),
-		  second(p_second) {
-	}
-};
-
-template <class F, class S>
-bool operator==(const Pair<F, S> &pair, const Pair<F, S> &other) {
-	return (pair.first == other.first) && (pair.second == other.second);
+MainLoop *test();
 }
 
-template <class F, class S>
-bool operator!=(const Pair<F, S> &pair, const Pair<F, S> &other) {
-	return (pair.first != other.first) || (pair.second != other.second);
-}
-
-template <class F, class S>
-struct PairSort {
-
-	bool operator()(const Pair<F, S> &A, const Pair<F, S> &B) const {
-		return A.first < B.first;
-	}
-};
-
-#endif // PAIR_H
+#endif

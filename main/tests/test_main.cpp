@@ -37,6 +37,7 @@
 #include "test_image.h"
 #include "test_io.h"
 #include "test_math.h"
+#include "test_ordered_hash_map.h"
 #include "test_physics.h"
 #include "test_physics_2d.h"
 #include "test_render.h"
@@ -128,6 +129,11 @@ MainLoop *test_main(String p_test, const List<String> &p_args) {
 	if (p_test == "image") {
 
 		return TestImage::test();
+	}
+
+	if (p_test == "ordered_hash_map") {
+
+		return TestOrderedHashMap::test();
 	}
 
 	return NULL;
