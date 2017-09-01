@@ -51,6 +51,7 @@ class AudioDriverPulseAudio : public AudioDriver {
 	unsigned int mix_rate;
 	SpeakerMode speaker_mode;
 
+	unsigned int buffer_frames;
 	unsigned int buffer_size;
 	int channels;
 
