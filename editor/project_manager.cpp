@@ -568,7 +568,6 @@ public:
 		l->set_text(TTR("Project Path:"));
 		vb->add_child(l);
 
-
 		MarginContainer *mc = memnew(MarginContainer);
 		vb->add_child(mc);
 		project_path = memnew(LineEdit);
