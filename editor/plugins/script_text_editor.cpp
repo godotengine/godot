@@ -120,17 +120,29 @@ void ScriptTextEditor::_load_theme_settings() {
 	//colorize core types
 	Color basetype_color = EDITOR_DEF("text_editor/highlighting/base_type_color", Color(0.3, 0.3, 0.0));
 
+	text_edit->add_keyword_color("String", basetype_color);
 	text_edit->add_keyword_color("Vector2", basetype_color);
-	text_edit->add_keyword_color("Vector3", basetype_color);
-	text_edit->add_keyword_color("Plane", basetype_color);
-	text_edit->add_keyword_color("Quat", basetype_color);
-	text_edit->add_keyword_color("AABB", basetype_color);
-	text_edit->add_keyword_color("Matrix3", basetype_color);
-	text_edit->add_keyword_color("Transform", basetype_color);
-	text_edit->add_keyword_color("Color", basetype_color);
-	text_edit->add_keyword_color("Image", basetype_color);
 	text_edit->add_keyword_color("Rect2", basetype_color);
+	text_edit->add_keyword_color("Transform2D", basetype_color);
+	text_edit->add_keyword_color("Vector3", basetype_color);
+	text_edit->add_keyword_color("Rect3", basetype_color);
+	text_edit->add_keyword_color("Basis", basetype_color);
+	text_edit->add_keyword_color("Plane", basetype_color);
+	text_edit->add_keyword_color("Transform", basetype_color);
+	text_edit->add_keyword_color("Quat", basetype_color);
+	text_edit->add_keyword_color("Color", basetype_color);
+	text_edit->add_keyword_color("Object", basetype_color);
 	text_edit->add_keyword_color("NodePath", basetype_color);
+	text_edit->add_keyword_color("RID", basetype_color);
+	text_edit->add_keyword_color("Dictionary", basetype_color);
+	text_edit->add_keyword_color("Array", basetype_color);
+	text_edit->add_keyword_color("PoolByteArray", basetype_color);
+	text_edit->add_keyword_color("PoolIntArray", basetype_color);
+	text_edit->add_keyword_color("PoolRealArray", basetype_color);
+	text_edit->add_keyword_color("PoolStringArray", basetype_color);
+	text_edit->add_keyword_color("PoolVector2Array", basetype_color);
+	text_edit->add_keyword_color("PoolVector3Array", basetype_color);
+	text_edit->add_keyword_color("PoolColorArray", basetype_color);
 
 	//colorize engine types
 	Color type_color = EDITOR_DEF("text_editor/highlighting/engine_type_color", Color(0.0, 0.2, 0.4));
