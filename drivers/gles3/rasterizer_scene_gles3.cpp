@@ -257,7 +257,7 @@ bool RasterizerSceneGLES3::_shadow_atlas_find_shadow(ShadowAtlas *shadow_atlas, 
 
 		int found_free_idx = -1; //found a free one
 		int found_used_idx = -1; //found existing one, must steal it
-		uint64_t min_pass; // pass of the existing one, try to use the least recently used one (LRU fashion)
+		uint64_t min_pass = 0; // pass of the existing one, try to use the least recently used one (LRU fashion)
 
 		for (int j = 0; j < sc; j++) {
 			if (!sarr[j].owner.is_valid()) {

@@ -165,7 +165,7 @@ Ref<StreamPeerTCP> TCPServerPosix::take_connection() {
 	Ref<StreamPeerTCPPosix> conn = memnew(StreamPeerTCPPosix);
 	IP_Address ip;
 
-	int port;
+	int port = 0;
 	_set_ip_addr_port(ip, port, &their_addr);
 
 	conn->set_socket(fd, ip, port, sock_type);

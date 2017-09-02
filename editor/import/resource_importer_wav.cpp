@@ -129,7 +129,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 	int format_freq = 0;
 	int loop_begin = 0;
 	int loop_end = 0;
-	int frames;
+	int frames = 0;
 
 	Vector<float> data;
 

@@ -73,8 +73,8 @@ Error PacketPeerUDPPosix::get_packet(const uint8_t **r_buffer, int &r_buffer_siz
 	if (queue_count == 0)
 		return ERR_UNAVAILABLE;
 
-	uint32_t size;
-	uint8_t type;
+	uint32_t size = 0;
+	uint8_t type = IP::TYPE_NONE;
 	rb.read(&type, 1, true);
 	if (type == IP::TYPE_IPV4) {
 		uint8_t ip[4];

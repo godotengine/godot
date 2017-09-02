@@ -3655,12 +3655,12 @@ String String::sprintf(const Array &values, bool *error) const {
 	CharType *self = (CharType *)c_str();
 	bool in_format = false;
 	int value_index = 0;
-	int min_chars;
-	int min_decimals;
-	bool in_decimals;
-	bool pad_with_zeroes;
-	bool left_justified;
-	bool show_sign;
+	int min_chars = 0;
+	int min_decimals = 0;
+	bool in_decimals = false;
+	bool pad_with_zeroes = false;
+	bool left_justified = false;
+	bool show_sign = false;
 
 	*error = true;
 
@@ -3687,12 +3687,12 @@ String String::sprintf(const Array &values, bool *error) const {
 					}
 
 					int64_t value = values[value_index];
-					int base;
+					int base = 16;
 					bool capitalize = false;
 					switch (c) {
 						case 'd': base = 10; break;
 						case 'o': base = 8; break;
-						case 'x': base = 16; break;
+						case 'x': break;
 						case 'X':
 							base = 16;
 							capitalize = true;
@@ -3842,7 +3842,7 @@ String String::sprintf(const Array &values, bool *error) const {
 					}
 					break;
 				}
-				case '.': { // Float separtor.
+				case '.': { // Float separator.
 					if (in_decimals) {
 						return "too many decimal points in format";
 					}
@@ -3851,7 +3851,7 @@ String String::sprintf(const Array &values, bool *error) const {
 					break;
 				}
 
-				case '*': { // Dyanmic width, based on value.
+				case '*': { // Dynamic width, based on value.
 					if (value_index >= values.size()) {
 						return "not enough arguments for format string";
 					}

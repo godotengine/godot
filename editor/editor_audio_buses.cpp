@@ -70,11 +70,14 @@ void EditorAudioBus::_notification(int p_what) {
 		float real_peak[2] = { -100, -100 };
 		bool activity_found = false;
 
-		int cc;
+		int cc = 0;
 		switch (AudioServer::get_singleton()->get_speaker_mode()) {
 			case AudioServer::SPEAKER_MODE_STEREO: cc = 1; break;
 			case AudioServer::SPEAKER_SURROUND_51: cc = 4; break;
 			case AudioServer::SPEAKER_SURROUND_71: cc = 5; break;
+			default:
+				ERR_PRINT("Unknown speaker_mode");
+				break;
 		}
 
 		for (int i = 0; i < cc; i++) {

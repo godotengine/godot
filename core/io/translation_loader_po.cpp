@@ -51,8 +51,8 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error, const S
 
 	Ref<Translation> translation = Ref<Translation>(memnew(Translation));
 	int line = 1;
-	bool skip_this;
-	bool skip_next;
+	bool skip_this = false;
+	bool skip_next = false;
 
 	while (true) {
 

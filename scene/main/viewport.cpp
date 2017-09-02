@@ -491,7 +491,7 @@ void Viewport::_notification(int p_what) {
 			if (physics_object_picking && (to_screen_rect == Rect2() || Input::get_singleton()->get_mouse_mode() != Input::MOUSE_MODE_CAPTURED)) {
 
 				Vector2 last_pos(1e20, 1e20);
-				CollisionObject *last_object;
+				CollisionObject *last_object = NULL;
 				ObjectID last_id = 0;
 				PhysicsDirectSpaceState::RayResult result;
 				Physics2DDirectSpaceState *ss2d = Physics2DServer::get_singleton()->space_get_direct_state(find_world_2d()->get_space());
@@ -604,7 +604,7 @@ void Viewport::_notification(int p_what) {
 					} else if (pos == last_pos) {
 
 						if (last_id) {
-							if (ObjectDB::get_instance(last_id)) {
+							if (ObjectDB::get_instance(last_id) && last_object) {
 								//good, exists
 								last_object->_input_event(camera, ev, result.position, result.normal, result.shape);
 								if (last_object->get_capture_input_on_drag() && mb.is_valid() && mb->get_button_index() == 1 && mb->is_pressed()) {

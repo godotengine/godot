@@ -540,14 +540,14 @@ class EditorExportAndroid : public EditorExportPlatform {
 
 		//print_line("FILESIZE: "+itos(filesize)+" ACTUAL: "+itos(p_manifest.size()));
 
-		uint32_t string_count;
-		uint32_t styles_count;
-		uint32_t string_flags;
-		uint32_t string_data_offset;
+		uint32_t string_count = 0;
+		uint32_t styles_count = 0;
+		uint32_t string_flags = 0;
+		uint32_t string_data_offset = 0;
 
-		uint32_t styles_offset;
-		uint32_t string_table_begins;
-		uint32_t string_table_ends;
+		uint32_t styles_offset = 0;
+		uint32_t string_table_begins = 0;
+		uint32_t string_table_ends = 0;
 		Vector<uint8_t> stable_extra;
 
 		String version_name = p_preset->get("version/name");
