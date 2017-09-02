@@ -1434,6 +1434,8 @@ Error EditorSceneImporterGLTF::_parse_cameras(GLTFState &state) {
 	}
 
 	print_line("total cameras: " + itos(state.cameras.size()));
+
+	return OK;
 }
 
 Error EditorSceneImporterGLTF::_parse_animations(GLTFState &state) {
