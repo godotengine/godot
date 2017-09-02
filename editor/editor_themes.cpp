@@ -436,7 +436,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("custom_button_pressed", "Tree", make_empty_stylebox());
 	theme->set_stylebox("custom_button_hover", "Tree", style_button_type);
 	theme->set_color("custom_button_font_highlight", "Tree", HIGHLIGHT_COLOR_FONT);
-	theme->set_color("font_color", "Tree", font_color_disabled);
+	theme->set_color("font_color", "Tree", font_color);
 	theme->set_color("font_color_selected", "Tree", font_color);
 
 	Ref<StyleBox> style_tree_btn = make_flat_stylebox(contrast_color_1, 2, 4, 2, 4);
