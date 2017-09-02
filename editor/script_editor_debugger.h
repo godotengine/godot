@@ -67,8 +67,6 @@ class ScriptEditorDebugger : public Control {
 	Button *le_clear;
 
 	Tree *inspect_scene_tree;
-	HSplitContainer *inspect_info;
-	PropertyEditor *inspect_properties;
 	float inspect_scene_tree_timeout;
 	float inspect_edited_object_timeout;
 	ObjectID inspected_object_id;

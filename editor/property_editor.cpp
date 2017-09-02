@@ -3618,8 +3618,10 @@ void PropertyEditor::edit(Object *p_object) {
 
 		obj->remove_change_receptor(this);
 
-		if (obj->is_type("ScriptEditorDebuggerInspectedObject"))
+		if (obj->is_type("ScriptEditorDebuggerInspectedObject")) {
 			set_enable_capitalize_paths(false);
+			emit_signal("object_id_selected", obj->call("get_remote_object_id"));
+		}
 	}
 
 	evaluator->edit(p_object);
