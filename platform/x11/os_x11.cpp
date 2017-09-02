@@ -1237,7 +1237,7 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 
 	unsigned int keycode = KeyMappingX11::get_keycode(keysym_keycode);
 
-	/* Phase 3, obtain an unicode character from the keysym */
+	/* Phase 3, obtain a unicode character from the keysym */
 
 	// KeyMappingX11 also translates keysym to unicode.
 	// It does a binary search on a table to translate

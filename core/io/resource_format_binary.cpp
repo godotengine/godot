@@ -878,7 +878,7 @@ void ResourceInteractiveLoaderBinary::open(FileAccess *p_f) {
 	if (ver_format > FORMAT_VERSION || ver_major > VERSION_MAJOR) {
 
 		f->close();
-		ERR_EXPLAIN("File Format '" + itos(FORMAT_VERSION) + "." + itos(ver_major) + "." + itos(ver_minor) + "' is too new! Please upgrade to a a new engine version: " + local_path);
+		ERR_EXPLAIN("File Format '" + itos(FORMAT_VERSION) + "." + itos(ver_major) + "." + itos(ver_minor) + "' is too new! Please upgrade to a new engine version: " + local_path);
 		ERR_FAIL();
 	}
 
@@ -1178,7 +1178,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 
 		memdelete(f);
 		memdelete(fw);
-		ERR_EXPLAIN("File Format '" + itos(FORMAT_VERSION) + "." + itos(ver_major) + "." + itos(ver_minor) + "' is too new! Please upgrade to a a new engine version: " + local_path);
+		ERR_EXPLAIN("File Format '" + itos(FORMAT_VERSION) + "." + itos(ver_major) + "." + itos(ver_minor) + "' is too new! Please upgrade to a new engine version: " + local_path);
 		ERR_FAIL_V(ERR_FILE_UNRECOGNIZED);
 	}
 

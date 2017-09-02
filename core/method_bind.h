@@ -369,7 +369,7 @@ MethodBind *create_vararg_method_bind(Variant (T::*p_method)(const Variant **, i
 
 // tale of an amazing hack.. //
 
-// if you declare an nonexistent class..
+// if you declare a nonexistent class..
 class __UnexistingClass;
 
 #include "method_bind.gen.inc"

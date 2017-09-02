@@ -4829,7 +4829,7 @@
 			<argument index="0" name="priority" type="float">
 			</argument>
 			<description>
-				Set the order in which the area is processed. Greater values mean the area gets processed first. This is useful for areas which have an space override different from AREA_SPACE_OVERRIDE_DISABLED or AREA_SPACE_OVERRIDE_COMBINE, as they replace values, and are thus order-dependent.
+				Set the order in which the area is processed. Greater values mean the area gets processed first. This is useful for areas which have a space override different from AREA_SPACE_OVERRIDE_DISABLED or AREA_SPACE_OVERRIDE_COMBINE, as they replace values, and are thus order-dependent.
 				Areas with the same priority value get evaluated in an unpredictable order, and should be differentiated if evaluation order is to be important.
 			</description>
 		</method>
@@ -5297,7 +5297,7 @@
 			<argument index="0" name="priority" type="float">
 			</argument>
 			<description>
-				Set the order in which the area is processed. Greater values mean the area gets processed first. This is useful for areas which have an space override different from AREA_SPACE_OVERRIDE_DISABLED or AREA_SPACE_OVERRIDE_COMBINE, as they replace values, and are thus order-dependent.
+				Set the order in which the area is processed. Greater values mean the area gets processed first. This is useful for areas which have a space override different from AREA_SPACE_OVERRIDE_DISABLED or AREA_SPACE_OVERRIDE_COMBINE, as they replace values, and are thus order-dependent.
 				Areas with the same priority value get evaluated in an unpredictable order, and should be differentiated if evaluation order is to be important.
 			</description>
 		</method>
@@ -16763,7 +16763,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Get the specific project settings path. Projects all have an unique sub-directory inside the settings path where project specific settings are saved.
+				Get the specific project settings path. Projects all have a unique sub-directory inside the settings path where project specific settings are saved.
 			</description>
 		</method>
 		<method name="get_recent_dirs" qualifiers="const">
@@ -18893,7 +18893,7 @@
 		Internationalized font and text drawing support.
 	</brief_description>
 	<description>
-		Font contains an unicode compatible character set, as well as the ability to draw it with variable width, ascent, descent and kerning. For creating fonts from TTF files (or other font formats), see the editor support for fonts. TODO check wikipedia for graph of ascent/baseline/descent/height/etc.
+		Font contains a unicode compatible character set, as well as the ability to draw it with variable width, ascent, descent and kerning. For creating fonts from TTF files (or other font formats), see the editor support for fonts. TODO check wikipedia for graph of ascent/baseline/descent/height/etc.
 	</description>
 	<methods>
 		<method name="draw" qualifiers="const">
@@ -20406,7 +20406,7 @@
 		GraphEdit is an area capable of showing various GraphNodes. It manages connection events between them.
 	</brief_description>
 	<description>
-		GraphEdit manages the showing of GraphNodes it contains, as well as connections an disconnections between them. Signals are sent for each of these two events. Disconnection between GraphNodes slots is disabled by default.
+		GraphEdit manages the showing of GraphNodes it contains, as well as connections and disconnections between them. Signals are sent for each of these two events. Disconnection between GraphNodes slots is disabled by default.
 		It is greatly advised to enable low processor usage mode (see [method OS.set_low_processor_usage_mode]) when using GraphEdits.
 	</description>
 	<methods>
@@ -22722,7 +22722,7 @@
 			<argument index="3" name="add_uv" type="bool" default="null">
 			</argument>
 			<description>
-				Simple helper to draw an uvsphere, with given latitudes, longitude and radius.
+				Simple helper to draw a uvsphere, with given latitudes, longitude and radius.
 			</description>
 		</method>
 		<method name="add_vertex">
@@ -47999,7 +47999,7 @@
 			<argument index="0" name="bytes" type="int">
 			</argument>
 			<description>
-				Get an utf8 string with byte-length "bytes" from the stream (this decodes the string sent as utf8).
+				Get a utf8 string with byte-length "bytes" from the stream (this decodes the string sent as utf8).
 			</description>
 		</method>
 		<method name="get_var">
@@ -48726,7 +48726,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Convert a string containing an hexadecimal number into an int.
+				Convert a string containing a hexadecimal number into an int.
 			</description>
 		</method>
 		<method name="insert">
@@ -52300,7 +52300,7 @@
 			<argument index="0" name="half_offset" type="int" enum="TileMap.HalfOffset">
 			</argument>
 			<description>
-				Set an half offset on the X coordinate, Y coordinate, or none (use HALF_OFFSET_* constants as argument).
+				Set a half offset on the X coordinate, Y coordinate, or none (use HALF_OFFSET_* constants as argument).
 				Half offset sets every other tile off by a half tile size in the specified direction.
 			</description>
 		</method>
@@ -55065,7 +55065,7 @@
 			Means that the animation is interpolated with a quadratic (to the power of 2) function.
 		</constant>
 		<constant name="TRANS_EXPO" value="5">
-			Means that the animation is interpolated with a exponential (some number to the power of x) function.
+			Means that the animation is interpolated with an exponential (some number to the power of x) function.
 		</constant>
 		<constant name="TRANS_ELASTIC" value="6">
 			Means that the animation is interpolated with elasticity, wiggling around the edges.

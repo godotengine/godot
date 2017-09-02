@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# git pre-commit hook that runs an clang-format stylecheck.
+# git pre-commit hook that runs a clang-format stylecheck.
 # Features:
 #  - abort commit when commit does not comply with the style guidelines
 #  - create a patch of the proposed style changes
@@ -97,7 +97,7 @@ do
     # The sed call is necessary to transform the patch from
     #    --- $file timestamp
     #    +++ - timestamp
-    # to both lines working on the same file and having a a/ and b/ prefix.
+    # to both lines working on the same file and having a/ and b/ prefix.
     # Else it can not be applied with 'git apply'.
     "$CLANG_FORMAT" -style=file "$file" | \
         diff -u "$file" - | \
