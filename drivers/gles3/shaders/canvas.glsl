@@ -585,6 +585,20 @@ FRAGMENT_SHADER_CODE
 #endif
 
 
+#ifdef SHADOW_FILTER_PCF7
+
+		SHADOW_TEST(su+shadowpixel_size*3.0);
+		SHADOW_TEST(su+shadowpixel_size*2.0);
+		SHADOW_TEST(su+shadowpixel_size);
+		SHADOW_TEST(su);
+		SHADOW_TEST(su-shadowpixel_size);
+		SHADOW_TEST(su-shadowpixel_size*2.0);
+		SHADOW_TEST(su-shadowpixel_size*3.0);
+		shadow_attenuation/=7.0;
+
+#endif
+
+
 #ifdef SHADOW_FILTER_PCF9
 
 		SHADOW_TEST(su+shadowpixel_size*4.0);
