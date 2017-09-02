@@ -250,6 +250,10 @@ void ScriptEditorDebugger::debug_continue() {
 	ppeer->put_var(msg);
 }
 
+bool ScriptEditorDebugger::is_connected() const {
+	return connection.is_valid() && connection->is_connected();
+}
+
 void ScriptEditorDebugger::_scene_tree_folded(Object *obj) {
 
 	if (updating_scene_tree) {

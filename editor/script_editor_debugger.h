@@ -185,6 +185,8 @@ public:
 	void debug_break();
 	void debug_continue();
 
+	bool is_connected() const;
+
 	String get_var_value(const String &p_var) const;
 
 	void set_live_debugging(bool p_enable);
