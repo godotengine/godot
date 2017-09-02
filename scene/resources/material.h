@@ -171,6 +171,7 @@ public:
 		FLAG_FIXED_SIZE,
 		FLAG_UV1_USE_TRIPLANAR,
 		FLAG_UV2_USE_TRIPLANAR,
+		FLAG_TRIPLANAR_USE_WORLD,
 		FLAG_AO_ON_UV2,
 		FLAG_USE_ALPHA_SCISSOR,
 		FLAG_MAX
@@ -216,7 +217,7 @@ private:
 			uint64_t blend_mode : 2;
 			uint64_t depth_draw_mode : 2;
 			uint64_t cull_mode : 2;
-			uint64_t flags : 11;
+			uint64_t flags : 12;
 			uint64_t detail_blend_mode : 2;
 			uint64_t diffuse_mode : 3;
 			uint64_t specular_mode : 2;
