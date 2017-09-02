@@ -430,7 +430,7 @@ void TextEdit::_notification(int p_what) {
 				double dist = sqrt(target_y * target_y);
 				double vel = ((target_y / dist) * v_scroll_speed) * get_fixed_process_delta_time();
 
-				if (vel >= dist) {
+				if (Math::abs(vel) >= dist) {
 					v_scroll->set_value(target_v_scroll);
 					scrolling = false;
 					set_fixed_process(false);
