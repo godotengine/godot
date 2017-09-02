@@ -276,6 +276,8 @@ private:
 	void _gui_input(Ref<InputEvent> p_event);
 	Item *_get_next_item(Item *p_item, bool p_free = false);
 
+	Rect2 _get_text_rect();
+
 	bool use_bbcode;
 	String bbcode;
 
