@@ -24991,13 +24991,13 @@
 			</return>
 			<argument index="0" name="linear_velocity" type="Vector3">
 			</argument>
-			<argument index="1" name="floor_normal" type="Vector3" default="4">
+			<argument index="1" name="floor_normal" type="Vector3" default="Vector3( 0, 0, 0 )">
 			</argument>
 			<argument index="2" name="slope_stop_min_velocity" type="float" default="0.05">
 			</argument>
-			<argument index="3" name="max_bounces" type="int" default="Vector3( 0, 0, 0 )">
+			<argument index="3" name="max_bounces" type="int" default="4">
 			</argument>
-			<argument index="4" name="floor_max_angle" type="float" default="null">
+			<argument index="4" name="floor_max_angle" type="float" default="0.7854">
 			</argument>
 			<description>
 			</description>
@@ -25186,13 +25186,13 @@
 			</return>
 			<argument index="0" name="linear_velocity" type="Vector2">
 			</argument>
-			<argument index="1" name="floor_normal" type="Vector2" default="4">
+			<argument index="1" name="floor_normal" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<argument index="2" name="slope_stop_min_velocity" type="float" default="5">
 			</argument>
-			<argument index="3" name="max_bounces" type="int" default="Vector2( 0, 0 )">
+			<argument index="3" name="max_bounces" type="int" default="4">
 			</argument>
-			<argument index="4" name="floor_max_angle" type="float" default="null">
+			<argument index="4" name="floor_max_angle" type="float" default="0.7854">
 			</argument>
 			<description>
 			</description>
