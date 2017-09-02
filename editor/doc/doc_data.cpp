@@ -634,6 +634,9 @@ static Error _parse_methods(Ref<XMLParser> &parser, Vector<DocData::MethodDoc> &
 
 							ERR_FAIL_COND_V(!parser->has_attribute("type"), ERR_FILE_CORRUPT);
 							method.return_type = parser->get_attribute_value("type");
+							if (parser->has_attribute("enum")) {
+								method.return_enum = parser->get_attribute_value("enum");
+							}
 						} else if (name == "argument") {
 
 							DocData::ArgumentDoc argument;
@@ -916,7 +919,11 @@ Error DocData::save(const String &p_path) {
 
 			if (m.return_type != "") {
 
-				_write_string(f, 3, "<return type=\"" + m.return_type + "\">");
+				String enum_text;
+				if (m.return_enum != String()) {
+					enum_text = " enum=\"" + m.return_enum + "\"";
+				}
+				_write_string(f, 3, "<return type=\"" + m.return_type + "\"" + enum_text + ">");
 				_write_string(f, 3, "</return>");
 			}
 
