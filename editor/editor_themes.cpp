@@ -369,6 +369,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// Tabs
 	Ref<StyleBoxFlat> style_tab_selected = style_default->duplicate();
+	style_tab_selected->set_border_width_all(border_width);
+	style_tab_selected->set_border_width(MARGIN_BOTTOM, 0);
+	style_tab_selected->set_border_color_all(dark_color_3);
+	style_tab_selected->set_expand_margin_size(MARGIN_BOTTOM, border_width);
 	style_tab_selected->set_default_margin(MARGIN_LEFT, 10 * EDSCALE);
 	style_tab_selected->set_default_margin(MARGIN_RIGHT, 10 * EDSCALE);
 	style_tab_selected->set_bg_color(tab_color);
@@ -434,19 +438,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_color_pressed", "ToolButton", accent_color);
 
 	theme->set_stylebox("MenuHover", "EditorStyles", style_menu_hover_border);
-
-	// Content of each tab
-	Ref<StyleBoxFlat> style_content_panel = style_default->duplicate();
-	style_content_panel->set_border_color_all(base_color);
-
-	// this is the stylebox used in 3d and 2d viewports (no borders)
-	Ref<StyleBoxFlat> style_content_panel_vp = style_content_panel->duplicate();
-	style_content_panel_vp->set_default_margin(MARGIN_LEFT, border_width);
-	style_content_panel_vp->set_default_margin(MARGIN_TOP, default_margin_size);
-	style_content_panel_vp->set_default_margin(MARGIN_RIGHT, border_width);
-	style_content_panel_vp->set_default_margin(MARGIN_BOTTOM, border_width);
-	theme->set_stylebox("panel", "TabContainer", style_content_panel);
-	theme->set_stylebox("Content", "EditorStyles", style_content_panel_vp);
 
 	// Buttons
 	theme->set_stylebox("normal", "Button", style_widget);
@@ -607,6 +598,20 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("close", "Tabs", theme->get_icon("GuiClose", "EditorIcons"));
 	theme->set_stylebox("button_pressed", "Tabs", style_menu);
 	theme->set_stylebox("button", "Tabs", style_menu);
+
+	// Content of each tab
+	Ref<StyleBoxFlat> style_content_panel = style_default->duplicate();
+	style_content_panel->set_border_color_all(dark_color_3);
+	style_content_panel->set_border_width_all(border_width);
+
+	// this is the stylebox used in 3d and 2d viewports (no borders)
+	Ref<StyleBoxFlat> style_content_panel_vp = style_content_panel->duplicate();
+	style_content_panel_vp->set_default_margin(MARGIN_LEFT, border_width);
+	style_content_panel_vp->set_default_margin(MARGIN_TOP, default_margin_size);
+	style_content_panel_vp->set_default_margin(MARGIN_LEFT, border_width);
+	style_content_panel_vp->set_default_margin(MARGIN_BOTTOM, border_width);
+	theme->set_stylebox("panel", "TabContainer", style_content_panel);
+	theme->set_stylebox("Content", "EditorStyles", style_content_panel_vp);
 
 	// Separators (no separators)
 	theme->set_stylebox("separator", "HSeparator", make_line_stylebox(separator_color, border_width));
