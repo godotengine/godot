@@ -154,13 +154,6 @@ bool ImageTexture::_get(const StringName &p_name, Variant &r_ret) const {
 
 void ImageTexture::_get_property_list(List<PropertyInfo> *p_list) const {
 
-	PropertyHint img_hint = PROPERTY_HINT_NONE;
-	if (storage == STORAGE_COMPRESS_LOSSY) {
-		img_hint = PROPERTY_HINT_IMAGE_COMPRESS_LOSSY;
-	} else if (storage == STORAGE_COMPRESS_LOSSLESS) {
-		img_hint = PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS;
-	}
-
 	p_list->push_back(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Mipmaps,Repeat,Filter,Anisotropic,sRGB,Mirrored Repeat"));
 	p_list->push_back(PropertyInfo(Variant::OBJECT, "image", PROPERTY_HINT_RESOURCE_TYPE, "Image"));
 	p_list->push_back(PropertyInfo(Variant::VECTOR2, "size", PROPERTY_HINT_NONE, ""));
@@ -1133,7 +1126,6 @@ void LargeTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile
 
 	Size2 scale = p_rect.size / size;
 
-	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
 	for (int i = 0; i < pieces.size(); i++) {
 
 		// TODO
@@ -1148,7 +1140,6 @@ void LargeTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, cons
 
 	Size2 scale = p_rect.size / p_src_rect.size;
 
-	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
 	for (int i = 0; i < pieces.size(); i++) {
 
 		// TODO
@@ -1303,13 +1294,6 @@ bool CubeMap::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void CubeMap::_get_property_list(List<PropertyInfo> *p_list) const {
-
-	PropertyHint img_hint = PROPERTY_HINT_NONE;
-	if (storage == STORAGE_COMPRESS_LOSSY) {
-		img_hint = PROPERTY_HINT_IMAGE_COMPRESS_LOSSY;
-	} else if (storage == STORAGE_COMPRESS_LOSSLESS) {
-		img_hint = PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS;
-	}
 
 	p_list->push_back(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Mipmaps,Repeat,Filter"));
 	p_list->push_back(PropertyInfo(Variant::OBJECT, "side/left", PROPERTY_HINT_RESOURCE_TYPE, "Image"));

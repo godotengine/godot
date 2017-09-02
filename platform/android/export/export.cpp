@@ -541,11 +541,8 @@ class EditorExportAndroid : public EditorExportPlatform {
 		//print_line("FILESIZE: "+itos(filesize)+" ACTUAL: "+itos(p_manifest.size()));
 
 		uint32_t string_count = 0;
-		uint32_t styles_count = 0;
 		uint32_t string_flags = 0;
-		uint32_t string_data_offset = 0;
 
-		uint32_t styles_offset = 0;
 		uint32_t string_table_begins = 0;
 		uint32_t string_table_ends = 0;
 		Vector<uint8_t> stable_extra;
@@ -591,16 +588,8 @@ class EditorExportAndroid : public EditorExportPlatform {
 					int iofs = ofs + 8;
 
 					string_count = decode_uint32(&p_manifest[iofs]);
-					styles_count = decode_uint32(&p_manifest[iofs + 4]);
 					string_flags = decode_uint32(&p_manifest[iofs + 8]);
-					string_data_offset = decode_uint32(&p_manifest[iofs + 12]);
-					styles_offset = decode_uint32(&p_manifest[iofs + 16]);
-					/*
-					printf("string count: %i\n",string_count);
-					printf("flags: %i\n",string_flags);
-					printf("sdata ofs: %i\n",string_data_offset);
-					printf("styles ofs: %i\n",styles_offset);
-	*/
+
 					uint32_t st_offset = iofs + 20;
 					string_table.resize(string_count);
 					uint32_t string_end = 0;

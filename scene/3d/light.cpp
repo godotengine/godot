@@ -147,23 +147,6 @@ void Light::_update_visibility() {
 	if (!is_inside_tree())
 		return;
 
-	bool editor_ok = true;
-
-#ifdef TOOLS_ENABLED
-	if (editor_only) {
-		if (!Engine::get_singleton()->is_editor_hint()) {
-			editor_ok = false;
-		} else {
-			editor_ok = (get_tree()->get_edited_scene_root() && (this == get_tree()->get_edited_scene_root() || get_owner() == get_tree()->get_edited_scene_root()));
-		}
-	}
-#else
-	if (editor_only) {
-		editor_ok = false;
-	}
-#endif
-
-	//VS::get_singleton()->instance_light_set_enabled(get_instance(),is_visible_in_tree() && editor_ok);
 	_change_notify("geometry/visible");
 }
 

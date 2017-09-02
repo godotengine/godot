@@ -954,7 +954,7 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 				float x_min_cam = 0.f, x_max_cam = 0.f;
 				float y_min_cam = 0.f, y_max_cam = 0.f;
-				float z_min_cam = 0.f, z_max_cam = 0.f;
+				float z_min_cam = 0.f; //, z_max_cam = 0.f;
 
 				float bias_scale = 1.0;
 
@@ -1018,7 +1018,7 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 					x_min_cam = x_vec.dot(center) - radius;
 					y_max_cam = y_vec.dot(center) + radius;
 					y_min_cam = y_vec.dot(center) - radius;
-					z_max_cam = z_vec.dot(center) + radius;
+					// z_max_cam = z_vec.dot(center) + radius;
 					z_min_cam = z_vec.dot(center) - radius;
 
 					float unit = radius * 2.0 / texture_size;

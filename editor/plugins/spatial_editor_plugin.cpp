@@ -1681,34 +1681,27 @@ void SpatialEditorViewport::_update_freelook(real_t delta) {
 	int key_speed_modifier = Object::cast_to<InputEventKey>(ED_GET_SHORTCUT("spatial_editor/freelook_speed_modifier")->get_shortcut().ptr())->get_scancode();
 
 	Vector3 direction;
-	bool pressed = false;
 	bool speed_modifier = false;
 
 	const Input &input = *Input::get_singleton();
 
 	if (input.is_key_pressed(key_left)) {
 		direction -= right;
-		pressed = true;
 	}
 	if (input.is_key_pressed(key_right)) {
 		direction += right;
-		pressed = true;
 	}
 	if (input.is_key_pressed(key_forward)) {
 		direction += forward;
-		pressed = true;
 	}
 	if (input.is_key_pressed(key_backwards)) {
 		direction -= forward;
-		pressed = true;
 	}
 	if (input.is_key_pressed(key_up)) {
 		direction += up;
-		pressed = true;
 	}
 	if (input.is_key_pressed(key_down)) {
 		direction -= up;
-		pressed = true;
 	}
 	if (input.is_key_pressed(key_speed_modifier)) {
 		speed_modifier = true;

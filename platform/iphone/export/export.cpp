@@ -279,12 +279,14 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 			f->close();
 			memdelete(f);
 
-#ifdef OSX_ENABLED
 			if (is_execute) {
+#ifdef OSX_ENABLED
 				// we need execute rights on this file
 				chmod(file.utf8().get_data(), 0755);
-			}
+#else
+				ERR_PRINT("Binary can't be made executable on this platform.");
 #endif
+			}
 		}
 
 		ret = unzGoToNextFile(src_pkg_zip);

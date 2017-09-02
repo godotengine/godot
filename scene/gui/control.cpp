@@ -1305,14 +1305,12 @@ float Control::_a2s(float p_val, float p_anchor, float p_range) const {
 }
 
 void Control::set_anchor(Margin p_margin, float p_anchor, bool p_keep_margin, bool p_push_opposite_anchor) {
-	bool pushed = false;
 	data.anchor[p_margin] = CLAMP(p_anchor, 0.0, 1.0);
 
 	if (((p_margin == MARGIN_LEFT || p_margin == MARGIN_TOP) && data.anchor[p_margin] > data.anchor[(p_margin + 2) % 4]) ||
 			((p_margin == MARGIN_RIGHT || p_margin == MARGIN_BOTTOM) && data.anchor[p_margin] < data.anchor[(p_margin + 2) % 4])) {
 		if (p_push_opposite_anchor) {
 			data.anchor[(p_margin + 2) % 4] = data.anchor[p_margin];
-			pushed = true;
 		} else {
 			data.anchor[p_margin] = data.anchor[(p_margin + 2) % 4];
 		}
