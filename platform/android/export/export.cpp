@@ -520,25 +520,21 @@ class EditorExportAndroid : public EditorExportPlatform {
 
 	void _fix_manifest(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &p_manifest, bool p_give_internet) {
 
-		const int CHUNK_AXML_FILE = 0x00080003;
-		const int CHUNK_RESOURCEIDS = 0x00080180;
+		// Leaving the unused types commented because looking these constants up
+		// again later would be annoying
+		// const int CHUNK_AXML_FILE = 0x00080003;
+		// const int CHUNK_RESOURCEIDS = 0x00080180;
 		const int CHUNK_STRINGS = 0x001C0001;
-		const int CHUNK_XML_END_NAMESPACE = 0x00100101;
-		const int CHUNK_XML_END_TAG = 0x00100103;
-		const int CHUNK_XML_START_NAMESPACE = 0x00100100;
+		// const int CHUNK_XML_END_NAMESPACE = 0x00100101;
+		// const int CHUNK_XML_END_TAG = 0x00100103;
+		// const int CHUNK_XML_START_NAMESPACE = 0x00100100;
 		const int CHUNK_XML_START_TAG = 0x00100102;
-		const int CHUNK_XML_TEXT = 0x00100104;
+		// const int CHUNK_XML_TEXT = 0x00100104;
 		const int UTF8_FLAG = 0x00000100;
 
 		Vector<String> string_table;
 
-		uint32_t ofs = 0;
-
-		uint32_t header = decode_uint32(&p_manifest[ofs]);
-		uint32_t filesize = decode_uint32(&p_manifest[ofs + 4]);
-		ofs += 8;
-
-		//print_line("FILESIZE: "+itos(filesize)+" ACTUAL: "+itos(p_manifest.size()));
+		uint32_t ofs = 8;
 
 		uint32_t string_count = 0;
 		uint32_t styles_count = 0;
@@ -646,24 +642,16 @@ class EditorExportAndroid : public EditorExportPlatform {
 				case CHUNK_XML_START_TAG: {
 
 					int iofs = ofs + 8;
-					uint32_t line = decode_uint32(&p_manifest[iofs]);
-					uint32_t nspace = decode_uint32(&p_manifest[iofs + 8]);
 					uint32_t name = decode_uint32(&p_manifest[iofs + 12]);
-					uint32_t check = decode_uint32(&p_manifest[iofs + 16]);
 
 					String tname = string_table[name];
-
-					//printf("NSPACE: %i\n",nspace);
-					//printf("NAME: %i (%s)\n",name,tname.utf8().get_data());
-					//printf("CHECK: %x\n",check);
 					uint32_t attrcount = decode_uint32(&p_manifest[iofs + 20]);
 					iofs += 28;
-					//printf("ATTRCOUNT: %x\n",attrcount);
+
 					for (uint32_t i = 0; i < attrcount; i++) {
 						uint32_t attr_nspace = decode_uint32(&p_manifest[iofs]);
 						uint32_t attr_name = decode_uint32(&p_manifest[iofs + 4]);
 						uint32_t attr_value = decode_uint32(&p_manifest[iofs + 8]);
-						uint32_t attr_flags = decode_uint32(&p_manifest[iofs + 12]);
 						uint32_t attr_resid = decode_uint32(&p_manifest[iofs + 16]);
 
 						String value;
@@ -678,12 +666,6 @@ class EditorExportAndroid : public EditorExportPlatform {
 						else
 							nspace = "";
 
-						//printf("ATTR %i NSPACE: %i\n",i,attr_nspace);
-						//printf("ATTR %i NAME: %i (%s)\n",i,attr_name,attrname.utf8().get_data());
-						//printf("ATTR %i VALUE: %i (%s)\n",i,attr_value,value.utf8().get_data());
-						//printf("ATTR %i FLAGS: %x\n",i,attr_flags);
-						//printf("ATTR %i RESID: %x\n",i,attr_resid);
-
 						//replace project information
 						if (tname == "manifest" && attrname == "package") {
 
@@ -691,9 +673,6 @@ class EditorExportAndroid : public EditorExportPlatform {
 							string_table[attr_value] = get_package_name(package_name);
 						}
 
-						//print_line("tname: "+tname);
-						//print_line("nspace: "+nspace);
-						//print_line("attrname: "+attrname);
 						if (tname == "manifest" && /*nspace=="android" &&*/ attrname == "versionCode") {
 
 							print_line("FOUND versionCode");
@@ -712,13 +691,6 @@ class EditorExportAndroid : public EditorExportPlatform {
 						if (tname == "activity" && /*nspace=="android" &&*/ attrname == "screenOrientation") {
 
 							encode_uint32(orientation == 0 ? 0 : 1, &p_manifest[iofs + 16]);
-							/*
-							print_line("FOUND screen orientation");
-							if (attr_value==0xFFFFFFFF) {
-								WARN_PRINT("Version name in a resource, should be plaintext")
-							} else {
-								string_table[attr_value]=(orientation==0?"landscape":"portrait");
-							}*/
 						}
 
 						if (tname == "uses-feature" && /*nspace=="android" &&*/ attrname == "glEsVersion") {
@@ -771,12 +743,9 @@ class EditorExportAndroid : public EditorExportPlatform {
 
 				} break;
 			}
-			//printf("chunk %x: size: %d\n",chunk,size);
 
 			ofs += size;
 		}
-
-		//printf("end\n");
 
 		//create new andriodmanifest binary
 
@@ -876,8 +845,6 @@ class EditorExportAndroid : public EditorExportPlatform {
 		const int UTF8_FLAG = 0x00000100;
 		print_line("*******************GORRRGLE***********************");
 
-		uint32_t header = decode_uint32(&p_manifest[0]);
-		uint32_t filesize = decode_uint32(&p_manifest[4]);
 		uint32_t string_block_len = decode_uint32(&p_manifest[16]);
 		uint32_t string_count = decode_uint32(&p_manifest[20]);
 		uint32_t string_flags = decode_uint32(&p_manifest[28]);
@@ -886,10 +853,6 @@ class EditorExportAndroid : public EditorExportPlatform {
 		Vector<String> string_table;
 
 		String package_name = p_preset->get("package/name");
-
-		//printf("stirng block len: %i\n",string_block_len);
-		//printf("stirng count: %i\n",string_count);
-		//printf("flags: %x\n",string_flags);
 
 		for (uint32_t i = 0; i < string_count; i++) {
 

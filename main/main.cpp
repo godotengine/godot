@@ -1325,7 +1325,6 @@ bool Main::start() {
 			int shadow_atlas_q2_subdiv = GLOBAL_GET("rendering/quality/shadow_atlas/quadrant_2_subdiv");
 			int shadow_atlas_q3_subdiv = GLOBAL_GET("rendering/quality/shadow_atlas/quadrant_3_subdiv");
 
-
 			sml->get_root()->set_shadow_atlas_size(shadow_atlas_size);
 			sml->get_root()->set_shadow_atlas_quadrant_subdiv(0, Viewport::ShadowAtlasQuadrantSubdiv(shadow_atlas_q0_subdiv));
 			sml->get_root()->set_shadow_atlas_quadrant_subdiv(1, Viewport::ShadowAtlasQuadrantSubdiv(shadow_atlas_q1_subdiv));
@@ -1347,7 +1346,6 @@ bool Main::start() {
 			sml->set_auto_accept_quit(GLOBAL_DEF("application/config/auto_accept_quit", true));
 			sml->set_quit_on_go_back(GLOBAL_DEF("application/config/quit_on_go_back", true));
 			GLOBAL_DEF("gui/common/snap_controls_to_pixels", true);
-
 		}
 
 		String local_game_path;
@@ -1389,6 +1387,8 @@ bool Main::start() {
 			if (editor) {
 
 				Error serr = editor_node->load_scene(local_game_path);
+				if (serr != OK)
+					ERR_PRINT("Failed to load scene");
 				OS::get_singleton()->set_context(OS::CONTEXT_EDITOR);
 			}
 #endif

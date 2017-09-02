@@ -2275,19 +2275,6 @@ void PropertyEditor::_check_reload_status(const String &p_name, TreeItem *item) 
 		}
 	}
 
-	if (_might_be_in_instance()) {
-
-		Variant vorig;
-		Dictionary d = item->get_metadata(0);
-		int usage = d.has("usage") ? int(int(d["usage"]) & (PROPERTY_USAGE_STORE_IF_NONONE | PROPERTY_USAGE_STORE_IF_NONZERO)) : 0;
-
-		if (_get_instanced_node_original_property(p_name, vorig) || usage) {
-			Variant v = obj->get(p_name);
-
-			bool has_reload = _is_property_different(v, vorig, usage);
-		}
-	}
-
 	if (obj->call("property_can_revert", p_name).operator bool()) {
 
 		has_reload = true;

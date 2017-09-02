@@ -151,8 +151,6 @@ void *VisualServerScene::_instance_pair(void *p_self, OctreeElementID, Instance 
 	} else if (B->base_type == VS::INSTANCE_GI_PROBE && A->base_type == VS::INSTANCE_LIGHT) {
 
 		InstanceGIProbeData *gi_probe = static_cast<InstanceGIProbeData *>(B->base_data);
-		InstanceLightData *light = static_cast<InstanceLightData *>(A->base_data);
-
 		return gi_probe->lights.insert(A);
 	}
 
@@ -211,8 +209,6 @@ void VisualServerScene::_instance_unpair(void *p_self, OctreeElementID, Instance
 	} else if (B->base_type == VS::INSTANCE_GI_PROBE && A->base_type == VS::INSTANCE_LIGHT) {
 
 		InstanceGIProbeData *gi_probe = static_cast<InstanceGIProbeData *>(B->base_data);
-		InstanceLightData *light = static_cast<InstanceLightData *>(A->base_data);
-
 		Set<Instance *>::Element *E = reinterpret_cast<Set<Instance *>::Element *>(udata);
 
 		gi_probe->lights.erase(E);
@@ -890,49 +886,47 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 				max_distance = MIN(shadow_max, max_distance);
 			}
 			max_distance = MAX(max_distance, p_cam_projection.get_z_near() + 0.001);
-			float min_distance = MIN(p_cam_projection.get_z_near(),max_distance);
+			float min_distance = MIN(p_cam_projection.get_z_near(), max_distance);
 
 			VS::LightDirectionalShadowDepthRangeMode depth_range_mode = VSG::storage->light_directional_get_shadow_depth_range_mode(p_instance->base);
 
-				if (depth_range_mode==VS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_OPTIMIZED) {
+			if (depth_range_mode == VS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_OPTIMIZED) {
 				//optimize min/max
 				Vector<Plane> planes = p_cam_projection.get_projection_planes(p_cam_transform);
 				int cull_count = p_scenario->octree.cull_convex(planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, VS::INSTANCE_GEOMETRY_MASK);
-				Plane base(p_cam_transform.origin,-p_cam_transform.basis.get_axis(2));
+				Plane base(p_cam_transform.origin, -p_cam_transform.basis.get_axis(2));
 				//check distance max and min
 
-				bool found_items=false;
-				float z_max=-1e20;
-				float z_min=1e20;
+				bool found_items = false;
+				float z_max = -1e20;
+				float z_min = 1e20;
 
-				for(int i=0;i<cull_count;i++) {
+				for (int i = 0; i < cull_count; i++) {
 
 					Instance *instance = instance_shadow_cull_result[i];
 					if (!instance->visible || !((1 << instance->base_type) & VS::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData *>(instance->base_data)->can_cast_shadows) {
 						continue;
 					}
 
-					float max,min;
+					float max, min;
 					instance->transformed_aabb.project_range_in_plane(base, min, max);
 
-					if (max>z_max) {
-						z_max=max;
+					if (max > z_max) {
+						z_max = max;
 					}
 
-					if (min<z_min) {
-						z_min=min;
+					if (min < z_min) {
+						z_min = min;
 					}
 
-					found_items=true;
+					found_items = true;
 				}
 
 				if (found_items) {
-					min_distance=MAX(min_distance,z_min);
-					max_distance=MIN(max_distance,z_max);
+					min_distance = MAX(min_distance, z_min);
+					max_distance = MIN(max_distance, z_max);
 				}
-
 			}
-
 
 			float range = max_distance - min_distance;
 
@@ -1062,7 +1056,7 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 					z_max_cam = z_vec.dot(center) + radius;
 					z_min_cam = z_vec.dot(center) - radius;
 
-					if (depth_range_mode==VS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_STABLE) {
+					if (depth_range_mode == VS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_STABLE) {
 						//this trick here is what stabilizes the shadow (make potential jaggies to not move)
 						//at the cost of some wasted resolution. Still the quality increase is very well worth it
 
@@ -1073,8 +1067,6 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 						y_max_cam = Math::stepify(y_max_cam, unit);
 						y_min_cam = Math::stepify(y_min_cam, unit);
 					}
-
-
 				}
 
 				//now that we now all ranges, we can proceed to make the light frustum planes, for culling octree
@@ -1117,7 +1109,6 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 				}
 
 				{
-
 
 					CameraMatrix ortho_camera;
 					real_t half_x = (x_max_cam - x_min_cam) * 0.5;
@@ -2135,7 +2126,7 @@ void VisualServerScene::_bake_gi_probe_light(const GIProbeDataHeader *header, co
 
 			int success_count = 0;
 
-			uint64_t us = OS::get_singleton()->get_ticks_usec();
+			// uint64_t us = OS::get_singleton()->get_ticks_usec();
 
 			for (int i = 0; i < p_leaf_count; i++) {
 
@@ -2188,14 +2179,15 @@ void VisualServerScene::_bake_gi_probe_light(const GIProbeDataHeader *header, co
 					success_count++;
 				}
 			}
-			//print_line("BAKE TIME: " + rtos((OS::get_singleton()->get_ticks_usec() - us) / 1000000.0));
-			//print_line("valid cells: " + itos(success_count));
+
+			// print_line("BAKE TIME: " + rtos((OS::get_singleton()->get_ticks_usec() - us) / 1000000.0));
+			// print_line("valid cells: " + itos(success_count));
 
 		} break;
 		case VS::LIGHT_OMNI:
 		case VS::LIGHT_SPOT: {
 
-			uint64_t us = OS::get_singleton()->get_ticks_usec();
+			// uint64_t us = OS::get_singleton()->get_ticks_usec();
 
 			Vector3 light_pos = light_cache.transform.origin;
 			Vector3 spot_axis = -light_cache.transform.basis.get_axis(2).normalized();
@@ -2294,8 +2286,7 @@ void VisualServerScene::_bake_gi_probe_light(const GIProbeDataHeader *header, co
 					light->energy[2] += int32_t(light_b * att * ((cell->albedo) & 0xFF) / 255.0);
 				}
 			}
-			//print_line("BAKE TIME: " + rtos((OS::get_singleton()->get_ticks_usec() - us) / 1000000.0));
-
+			// print_line("BAKE TIME: " + rtos((OS::get_singleton()->get_ticks_usec() - us) / 1000000.0));
 		} break;
 	}
 }
@@ -2707,18 +2698,17 @@ void VisualServerScene::render_probes() {
 				} break;
 				case GI_UPDATE_STAGE_UPLOADING: {
 
-					uint64_t us = OS::get_singleton()->get_ticks_usec();
+					// uint64_t us = OS::get_singleton()->get_ticks_usec();
 
 					for (int i = 0; i < (int)probe->dynamic.mipmaps_3d.size(); i++) {
 
-						int mmsize = probe->dynamic.mipmaps_3d[i].size();
 						PoolVector<uint8_t>::Read r = probe->dynamic.mipmaps_3d[i].read();
 						VSG::storage->gi_probe_dynamic_data_update(probe->dynamic.probe_data, 0, probe->dynamic.grid_size[2] >> i, i, r.ptr());
 					}
 
 					probe->dynamic.updating_stage = GI_UPDATE_STAGE_CHECK;
 
-					//print_line("UPLOAD TIME: "+rtos((OS::get_singleton()->get_ticks_usec()-us)/1000000.0));
+					// print_line("UPLOAD TIME: " + rtos((OS::get_singleton()->get_ticks_usec() - us) / 1000000.0));
 				} break;
 			}
 		}

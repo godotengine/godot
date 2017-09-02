@@ -130,7 +130,6 @@ void ARVRServer::request_reference_frame(bool p_ignore_tilt, bool p_keep_height)
 void ARVRServer::add_interface(const Ref<ARVRInterface> &p_interface) {
 	ERR_FAIL_COND(p_interface.is_null());
 
-	int idx = -1;
 	for (int i = 0; i < interfaces.size(); i++) {
 
 		if (interfaces[i] == p_interface) {

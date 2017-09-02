@@ -37,7 +37,7 @@
 #include "core/version.h"
 
 //#define print_bl(m_what) print_line(m_what)
-#define print_bl(m_what)
+#define print_bl(m_what) (void)(m_what)
 
 enum {
 
@@ -854,12 +854,6 @@ void ResourceInteractiveLoaderBinary::open(FileAccess *p_f) {
 	}
 
 	bool big_endian = f->get_32();
-#ifdef BIG_ENDIAN_ENABLED
-	endian_swap = !big_endian;
-#else
-	bool endian_swap = big_endian;
-#endif
-
 	bool use_real64 = f->get_32();
 
 	f->set_endian_swap(big_endian != 0); //read big endian if saved as big endian
@@ -869,7 +863,11 @@ void ResourceInteractiveLoaderBinary::open(FileAccess *p_f) {
 	uint32_t ver_format = f->get_32();
 
 	print_bl("big endian: " + itos(big_endian));
-	print_bl("endian swap: " + itos(endian_swap));
+#ifdef BIG_ENDIAN_ENABLED
+	print_bl("endian swap: " + itos(!big_endian));
+#else
+	print_bl("endian swap: " + itos(big_endian));
+#endif
 	print_bl("real64: " + itos(use_real64));
 	print_bl("major: " + itos(ver_major));
 	print_bl("minor: " + itos(ver_minor));
@@ -964,18 +962,12 @@ String ResourceInteractiveLoaderBinary::recognize(FileAccess *p_f) {
 	}
 
 	bool big_endian = f->get_32();
-#ifdef BIG_ENDIAN_ENABLED
-	endian_swap = !big_endian;
-#else
-	bool endian_swap = big_endian;
-#endif
-
-	bool use_real64 = f->get_32();
+	f->get_32(); // use_real64
 
 	f->set_endian_swap(big_endian != 0); //read big endian if saved as big endian
 
 	uint32_t ver_major = f->get_32();
-	uint32_t ver_minor = f->get_32();
+	f->get_32(); // ver_minor
 	uint32_t ver_format = f->get_32();
 
 	if (ver_format > FORMAT_VERSION || ver_major > VERSION_MAJOR) {
@@ -993,8 +985,6 @@ ResourceInteractiveLoaderBinary::ResourceInteractiveLoaderBinary() {
 
 	f = NULL;
 	stage = 0;
-	endian_swap = false;
-	use_real64 = false;
 	error = OK;
 	translation_remapped = false;
 }
@@ -1123,16 +1113,14 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 	}
 
 	bool big_endian = f->get_32();
-#ifdef BIG_ENDIAN_ENABLED
-	endian_swap = !big_endian;
-#else
-	bool endian_swap = big_endian;
-#endif
-
 	bool use_real64 = f->get_32();
 
 	f->set_endian_swap(big_endian != 0); //read big endian if saved as big endian
-	fw->store_32(endian_swap);
+#ifdef BIG_ENDIAN_ENABLED
+	fw->store_32(!big_endian);
+#else
+	fw->store_32(big_endian);
+#endif
 	fw->set_endian_swap(big_endian != 0);
 	fw->store_32(use_real64); //use real64
 
@@ -1793,8 +1781,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 	}
 
 	save_unicode_string(p_resource->get_class());
-	uint64_t md_at = f->get_pos();
-	f->store_64(0); //offset to impoty metadata
+	f->store_64(0); //offset to import metadata
 	for (int i = 0; i < 14; i++)
 		f->store_32(0); // reserved
 

@@ -31,18 +31,13 @@
 
 void AudioEffectLimiterInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
 
-	float thresh = Math::db2linear(base->threshold);
 	float threshdb = base->threshold;
 	float ceiling = Math::db2linear(base->ceiling);
 	float ceildb = base->ceiling;
 	float makeup = Math::db2linear(ceildb - threshdb);
-	float makeupdb = ceildb - threshdb;
 	float sc = -base->soft_clip;
 	float scv = Math::db2linear(sc);
-	float sccomp = Math::db2linear(-sc);
 	float peakdb = ceildb + 25;
-	float peaklvl = Math::db2linear(peakdb);
-	float scratio = base->soft_clip_ratio;
 	float scmult = Math::abs((ceildb - sc) / (peakdb - sc));
 
 	for (int i = 0; i < p_frame_count; i++) {

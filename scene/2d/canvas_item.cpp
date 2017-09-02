@@ -338,7 +338,6 @@ void CanvasItem::_update_callback() {
 		notification(NOTIFICATION_DRAW);
 		emit_signal(SceneStringNames::get_singleton()->draw);
 		if (get_script_instance()) {
-			Variant::CallError err;
 			get_script_instance()->call_multilevel_reversed(SceneStringNames::get_singleton()->_draw, NULL, 0);
 		}
 		drawing = false;

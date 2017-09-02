@@ -595,7 +595,6 @@ RID RasterizerStorageGLES3::texture_create() {
 
 void RasterizerStorageGLES3::texture_allocate(RID p_texture, int p_width, int p_height, Image::Format p_format, uint32_t p_flags) {
 
-	int components;
 	GLenum format;
 	GLenum internal_format;
 	GLenum type;
@@ -777,8 +776,6 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture, const Ref<Image> &p
 
 	int tsize = 0;
 
-	int block = Image::get_format_block_size(img->get_format());
-
 	for (int i = 0; i < mipmaps; i++) {
 
 		int size, ofs;
@@ -788,10 +785,6 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture, const Ref<Image> &p
 
 		if (texture->compressed) {
 			glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-
-			//this is not needed, as compressed takes the regular size, even if blocks extend it
-			//int bw = (w % block != 0) ? w + (block - w % block) : w;
-			//int bh = (h % block != 0) ? h + (block - h % block) : h;
 
 			int bw = w;
 			int bh = h;
@@ -4631,7 +4624,7 @@ void RasterizerStorageGLES3::light_directional_set_shadow_depth_range_mode(RID p
 	Light *light = light_owner.getornull(p_light);
 	ERR_FAIL_COND(!light);
 
-	light->directional_range_mode=p_range_mode;
+	light->directional_range_mode = p_range_mode;
 }
 
 VS::LightDirectionalShadowDepthRangeMode RasterizerStorageGLES3::light_directional_get_shadow_depth_range_mode(RID p_light) const {

@@ -103,7 +103,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 	}
 
 	/* GET FILESIZE */
-	uint32_t filesize = file->get_32();
+	file->get_32(); // filesize
 
 	/* CHECK WAVE */
 

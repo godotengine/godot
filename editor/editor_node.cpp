@@ -412,7 +412,6 @@ void EditorNode::_fs_changed() {
 		}
 
 		if (changed.size()) {
-			int idx = 0;
 			for (List<Ref<Resource> >::Element *E = changed.front(); E; E = E->next()) {
 				E->get()->reload_from_file();
 			}
@@ -1997,6 +1996,8 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			int cur_idx = editor_data.get_edited_scene();
 			_remove_edited_scene();
 			Error err = load_scene(filename);
+			if (err != OK)
+				ERR_PRINT("Failed to load scene");
 			editor_data.move_edited_scene_to_index(cur_idx);
 			get_undo_redo()->clear_history();
 			scene_tabs->set_current_tab(cur_idx);
@@ -3605,13 +3606,6 @@ void EditorNode::_update_dock_slots_visibility() {
 		left_r_vsplit,
 		right_l_vsplit,
 		right_r_vsplit,
-	};
-
-	HSplitContainer *h_splits[4] = {
-		left_l_hsplit,
-		left_r_hsplit,
-		main_hsplit,
-		right_hsplit,
 	};
 
 	if (!docks_visible) {

@@ -732,6 +732,8 @@ void ProjectExportDialog::_export_project_to_path(const String &p_path) {
 	ERR_FAIL_COND(platform.is_null());
 
 	Error err = platform->export_project(current, export_debug->is_pressed(), p_path, 0);
+	if (err != OK)
+		ERR_PRINT("Failed to export project");
 }
 
 void ProjectExportDialog::_bind_methods() {

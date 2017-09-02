@@ -64,7 +64,6 @@ static size_t _set_sockaddr(struct sockaddr_storage *p_addr, const IP_Address &p
 		// IPv4 socket with IPv6 address
 		ERR_FAIL_COND_V(!p_ip.is_ipv4(), 0);
 
-		uint32_t ipv4 = *((uint32_t *)p_ip.get_ipv4());
 		struct sockaddr_in *addr4 = (struct sockaddr_in *)p_addr;
 		addr4->sin_family = AF_INET;
 		addr4->sin_port = htons(p_port); // short, network byte order

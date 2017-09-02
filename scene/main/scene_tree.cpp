@@ -870,7 +870,6 @@ void SceneTree::_call_input_pause(const StringName &p_group, const StringName &p
 		if (!n->can_process())
 			continue;
 
-		Variant::CallError ce;
 		n->call_multilevel(p_method, (const Variant **)v, 1);
 		//ERR_FAIL_COND(node_count != g.nodes.size());
 	}

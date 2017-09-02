@@ -175,7 +175,6 @@ void Spatial::_notification(int p_what) {
 
 			if (get_script_instance()) {
 
-				Variant::CallError err;
 				get_script_instance()->call_multilevel(SceneStringNames::get_singleton()->_enter_world, NULL, 0);
 			}
 #ifdef TOOLS_ENABLED
@@ -207,7 +206,6 @@ void Spatial::_notification(int p_what) {
 
 			if (get_script_instance()) {
 
-				Variant::CallError err;
 				get_script_instance()->call_multilevel(SceneStringNames::get_singleton()->_exit_world, NULL, 0);
 			}
 

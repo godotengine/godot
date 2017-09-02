@@ -74,15 +74,11 @@ RES ResourceFormatPVR::load(const String &p_path, const String &p_original_path,
 	uint32_t mipmaps = f->get_32();
 	uint32_t flags = f->get_32();
 	uint32_t surfsize = f->get_32();
-	uint32_t bpp = f->get_32();
-	uint32_t rmask = f->get_32();
-	uint32_t gmask = f->get_32();
-	uint32_t bmask = f->get_32();
-	uint32_t amask = f->get_32();
+	f->seek(f->get_pos() + 20); // bpp, rmask, gmask, bmask, amask
 	uint8_t pvrid[5] = { 0, 0, 0, 0, 0 };
 	f->get_buffer(pvrid, 4);
 	ERR_FAIL_COND_V(String((char *)pvrid) != "PVR!", RES());
-	uint32_t surfcount = f->get_32();
+	f->get_32(); // surfcount
 
 	/*
 	print_line("height: "+itos(height));

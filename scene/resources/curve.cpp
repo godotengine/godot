@@ -84,15 +84,6 @@ int Curve::add_point(Vector2 p_pos, real_t left_tangent, real_t right_tangent, T
 
 		int i = get_index(p_pos.x);
 
-		int nearest_index = i;
-		if (i + 1 < _points.size()) {
-			real_t diff0 = p_pos.x - _points[i].pos.x;
-			real_t diff1 = _points[i + 1].pos.x - p_pos.x;
-
-			if (diff1 < diff0)
-				nearest_index = i + 1;
-		}
-
 		if (i == 0 && p_pos.x < _points[0].pos.x) {
 			// Insert before anything else
 			_points.insert(0, Point(p_pos, left_tangent, right_tangent, left_mode, right_mode));

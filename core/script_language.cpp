@@ -184,7 +184,6 @@ void ScriptInstance::call_multilevel(const StringName &p_method, VARIANT_ARG_DEC
 		argc++;
 	}
 
-	Variant::CallError error;
 	call_multilevel(p_method, argptr, argc);
 }
 

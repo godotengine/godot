@@ -1026,9 +1026,6 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs):
             fd.write("\t\t\t{" + x["set_mask"] + "," + x["clear_mask"] + "},\n")
 
         fd.write("\t\t};\n\n")
-    else:
-        fd.write("\t\tstatic const Enum *_enums=NULL;\n")
-        fd.write("\t\tstatic const EnumValue *_enum_values=NULL;\n")
 
     conditionals_found = []
     if (len(header_data.conditionals)):
