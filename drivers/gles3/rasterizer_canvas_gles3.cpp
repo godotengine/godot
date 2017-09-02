@@ -576,6 +576,15 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 					Rect2 src_rect = (rect->flags & CANVAS_RECT_REGION) ? Rect2(rect->source.position * texpixel_size, rect->source.size * texpixel_size) : Rect2(0, 0, 1, 1);
 					Rect2 dst_rect = Rect2(rect->rect.position, rect->rect.size);
 
+					if (dst_rect.size.width < 0) {
+						dst_rect.position.x += dst_rect.size.width;
+						dst_rect.size.width *= -1;
+					}
+					if (dst_rect.size.height < 0) {
+						dst_rect.position.y += dst_rect.size.height;
+						dst_rect.size.height *= -1;
+					}
+
 					if (rect->flags & CANVAS_RECT_FLIP_H) {
 						src_rect.size.x *= -1;
 					}
@@ -602,8 +611,18 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 					}
 
 				} else {
+					Rect2 dst_rect = Rect2(rect->rect.position, rect->rect.size);
 
-					state.canvas_shader.set_uniform(CanvasShaderGLES3::DST_RECT, Color(rect->rect.position.x, rect->rect.position.y, rect->rect.size.x, rect->rect.size.y));
+					if (dst_rect.size.width < 0) {
+						dst_rect.position.x += dst_rect.size.width;
+						dst_rect.size.width *= -1;
+					}
+					if (dst_rect.size.height < 0) {
+						dst_rect.position.y += dst_rect.size.height;
+						dst_rect.size.height *= -1;
+					}
+
+					state.canvas_shader.set_uniform(CanvasShaderGLES3::DST_RECT, Color(dst_rect.position.x, dst_rect.position.y, dst_rect.size.x, dst_rect.size.y));
 					state.canvas_shader.set_uniform(CanvasShaderGLES3::SRC_RECT, Color(0, 0, 1, 1));
 					state.canvas_shader.set_uniform(CanvasShaderGLES3::CLIP_RECT_UV, false);
 					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
