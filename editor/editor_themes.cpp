@@ -303,12 +303,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Ref<StyleBoxFlat> style_menu_hover_bg = make_flat_stylebox(dark_color_2, 4, 4, 4, 4);
 
 	style_menu_hover_border->set_draw_center(false);
-	style_menu_hover_border->set_border_width(MARGIN_BOTTOM, border_width);
+	style_menu_hover_border->set_border_width(MARGIN_BOTTOM, 2 * EDSCALE);
 	style_menu_hover_border->set_border_color_all(highlight_color);
-	style_menu_hover_border->set_expand_margin_size(MARGIN_BOTTOM, border_width);
 
 	theme->set_stylebox("normal", "MenuButton", style_menu);
-	theme->set_stylebox("hover", "MenuButton", style_menu_hover_border);
+	theme->set_stylebox("hover", "MenuButton", style_menu);
 	theme->set_stylebox("pressed", "MenuButton", style_menu);
 	theme->set_stylebox("focus", "MenuButton", style_menu);
 	theme->set_stylebox("disabled", "MenuButton", style_menu);
