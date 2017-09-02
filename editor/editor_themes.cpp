@@ -237,8 +237,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Color dark_color_2 = base_color.linear_interpolate(Color(0, 0, 0, 1), contrast * 1.5);
 	Color dark_color_3 = base_color.linear_interpolate(Color(0, 0, 0, 1), contrast * 2);
 
-	Color contrast_color_1 = base_color.linear_interpolate((dark_theme ? Color(1, 1, 1, 1) : Color(0, 0, 0, 1)), 0.3);
-	Color contrast_color_2 = base_color.linear_interpolate((dark_theme ? Color(1, 1, 1, 1) : Color(0, 0, 0, 1)), 0.5);
+	Color contrast_color_1 = base_color.linear_interpolate((dark_theme ? Color(1, 1, 1, 1) : Color(0, 0, 0, 1)), MAX(contrast, default_contrast));
+	Color contrast_color_2 = base_color.linear_interpolate((dark_theme ? Color(1, 1, 1, 1) : Color(0, 0, 0, 1)), MAX(contrast * 1.5, default_contrast * 1.5));
 
 	Color font_color = dark_theme ? Color(1, 1, 1) : Color(0, 0, 0);
 	Color font_color_disabled = dark_theme ? Color(0.6, 0.6, 0.6) : Color(0.45, 0.45, 0.45);
@@ -358,6 +358,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("pressed", "Button", change_border_color(style_button_type, highlight_color));
 	theme->set_stylebox("focus", "Button", change_border_color(style_button_type, highlight_color));
 	theme->set_stylebox("disabled", "Button", style_button_type_disabled);
+
 	theme->set_color("font_color", "Button", button_font_color);
 	theme->set_color("font_color_hover", "Button", HIGHLIGHT_COLOR_FONT);
 	theme->set_color("font_color_pressed", "Button", highlight_color);
@@ -367,13 +368,12 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("icon_color_pressed", "Button", Color(highlight_color.r * 1.15, highlight_color.g * 1.15, highlight_color.b * 1.15, highlight_color.a));
 
 	// OptionButton
-	Ref<StyleBoxFlat> style_option_button = make_flat_stylebox(dark_color_1, 4, 4, 4, 4);
-	style_option_button->set_border_width_all(border_width);
+	theme->set_stylebox("normal", "OptionButton", style_button_type);
 	theme->set_stylebox("hover", "OptionButton", change_border_color(style_button_type, contrast_color_1));
 	theme->set_stylebox("pressed", "OptionButton", change_border_color(style_button_type, HIGHLIGHT_COLOR_FONT));
 	theme->set_stylebox("focus", "OptionButton", change_border_color(style_button_type, highlight_color));
 	theme->set_stylebox("disabled", "OptionButton", style_button_type_disabled);
-	theme->set_stylebox("normal", "OptionButton", style_button_type);
+
 	theme->set_color("font_color", "OptionButton", button_font_color);
 	theme->set_color("font_color_hover", "OptionButton", HIGHLIGHT_COLOR_FONT);
 	theme->set_color("font_color_pressed", "OptionButton", highlight_color);
@@ -386,6 +386,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// CheckButton
 	theme->set_icon("on", "CheckButton", theme->get_icon("GuiToggleOn", "EditorIcons"));
 	theme->set_icon("off", "CheckButton", theme->get_icon("GuiToggleOff", "EditorIcons"));
+
 	theme->set_color("font_color", "CheckButton", button_font_color);
 	theme->set_color("font_color_hover", "CheckButton", HIGHLIGHT_COLOR_FONT);
 	theme->set_color("font_color_pressed", "CheckButton", highlight_color);
@@ -526,6 +527,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// LineEdit
 	Ref<StyleBoxFlat> style_line_edit = make_flat_stylebox(dark_color_1, 6, 4, 6, 4);
+	style_line_edit->set_border_width_all(border_width);
 	style_line_edit = change_border_color(style_line_edit, contrast_color_1);
 	Ref<StyleBoxFlat> style_line_edit_disabled = change_border_color(style_line_edit, dark_color_1);
 	style_line_edit_disabled->set_bg_color(Color(0, 0, 0, .1));
