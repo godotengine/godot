@@ -1026,7 +1026,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 			}
 			case OPCODE_ITERATE_BEGIN: {
 
-				CHECK_SPACE(8); //space for this an regular iterate
+				CHECK_SPACE(8); //space for this a regular iterate
 
 				GET_VARIANT_PTR(counter, 1);
 				GET_VARIANT_PTR(container, 2);

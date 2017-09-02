@@ -54,7 +54,7 @@ public:
 		CELL_MODE_CHECK, ///< string + check
 		CELL_MODE_RANGE, ///< Contains a range
 		CELL_MODE_RANGE_EXPRESSION, ///< Contains a range
-		CELL_MODE_ICON, ///< Contains a icon, not editable
+		CELL_MODE_ICON, ///< Contains an icon, not editable
 		CELL_MODE_CUSTOM, ///< Contains a custom value, show a string, and an edit button
 	};
 

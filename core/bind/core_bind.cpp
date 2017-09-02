@@ -568,7 +568,7 @@ Dictionary _OS::get_time(bool utc) const {
 }
 
 /**
- *  Get a epoch time value from a dictionary of time values
+ *  Get an epoch time value from a dictionary of time values
  *  @p datetime must be populated with the following keys:
  *    day, hour, minute, month, second, year. (dst is ignored).
  *

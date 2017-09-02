@@ -655,7 +655,7 @@ if (env['builtin_openssl'] != 'no'):
 
     env_openssl.add_source_files(env.modules_sources, thirdparty_sources)
 
-    # FIXME: Clone the environment to make a env_openssl and not pollute the modules env
+    # FIXME: Clone the environment to make env_openssl and not pollute the modules env
     thirdparty_include_paths = [
         "",
         "crypto",

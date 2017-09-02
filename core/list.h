@@ -180,7 +180,7 @@ private:
 
 public:
 	/**
-	* return an const iterator to the beginning of the list.
+	* return a const iterator to the beginning of the list.
 	*/
 	_FORCE_INLINE_ const Element *front() const {
 
@@ -195,7 +195,7 @@ public:
 	};
 
 	/**
- 	* return an const iterator to the last member of the list.
+ 	* return a const iterator to the last member of the list.
 	*/
 	_FORCE_INLINE_ const Element *back() const {
 
