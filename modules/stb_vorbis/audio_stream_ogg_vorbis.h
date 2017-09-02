@@ -34,6 +34,7 @@
 #include "servers/audio/audio_stream.h"
 
 #define STB_VORBIS_HEADER_ONLY
+#pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #include "thirdparty/misc/stb_vorbis.c"
 #pragma GCC diagnostic pop
