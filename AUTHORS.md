@@ -47,11 +47,13 @@ name is available.
     Geequlim
     Gen (dbsGen)
     George Marques (vnen)
+    Gilles Roudiere (groud)
     Guilherme Felipe (guilhermefelipecgs)
     Hein-Pieter van Braam (hpvb)
     Hubert Jarosz (Marqin)
     Hugo Locurcio (Calinou)
     Ignacio Etcheverry (neikeq)
+    Indah Sylvia (ISylvox)
     J08nY
     Jakub Grzesik (kubecz3k)
     Johan Manuel (29jm)
@@ -77,18 +79,21 @@ name is available.
     Ramesh Ravone (RameshRavone)
     Ray Koopa (RayKoopa)
     Rémi Verschelde (akien-mga)
+    Ruslan Mustakov (endragor)
+    Saniko (sanikoyes)
     SaracenOne
     Theo Hallenius (TheoXD)
     Thomas Herzog (karroffel)
     Timo (toger5)
     V. Vamsi Krishna (vkbsb)
     Vinzenz Feenstra (vinzenz)
+    Wilson E. Alvarez (Rubonnek)
     Zher Huei Lee (leezh)
     ZuBsPaCe
     박한얼 (volzhs)
+    bruvzg
     est31
     marynate
     mrezai
     romulox-x
-    sanikoyes
     yg2f (SuperUserNameMan)
