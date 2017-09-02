@@ -1149,8 +1149,6 @@ void ScriptEditor::_notification(int p_what) {
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 
-			tab_container->add_style_override("panel", editor->get_gui_base()->get_stylebox("ScriptPanel", "EditorStyles"));
-
 			help_search->set_icon(get_icon("HelpSearch", "EditorIcons"));
 			site_search->set_icon(get_icon("Instance", "EditorIcons"));
 			class_search->set_icon(get_icon("ClassList", "EditorIcons"));
@@ -2210,7 +2208,6 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	members_overview->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	tab_container = memnew(TabContainer);
-	tab_container->add_style_override("panel", p_editor->get_gui_base()->get_stylebox("ScriptPanel", "EditorStyles"));
 	tab_container->set_tabs_visible(false);
 	script_split->add_child(tab_container);
 

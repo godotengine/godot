@@ -198,6 +198,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	bool highlight_tabs = EDITOR_DEF("interface/theme/highlight_tabs", false);
 	int border_size = EDITOR_DEF("interface/theme/border_size", 1);
 
+	Color script_bg_color = EDITOR_DEF("text_editor/highlighting/background_color", Color(0, 0, 0, 0));
+
 	switch (preset) {
 		case 0: { // Default
 			highlight_color = Color::html("#699ce8");
@@ -279,8 +281,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	editor_register_fonts(theme);
 
 	// Editor background
-	Ref<StyleBoxFlat> style_panel = make_flat_stylebox(dark_color_2, 4, 4, 4, 4);
-	theme->set_stylebox("Background", "EditorStyles", style_panel);
+	theme->set_stylebox("Background", "EditorStyles", make_flat_stylebox(dark_color_2, 4, 4, 4, 4));
 
 	// Focus
 	Ref<StyleBoxFlat> focus_sbt = make_flat_stylebox(contrast_color_1, 4, 4, 4, 4);
@@ -423,12 +424,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_tree_bg->set_border_width_all(border_width);
 	style_tree_bg->set_border_color_all(dark_color_3);
 	theme->set_stylebox("bg", "Tree", style_tree_bg);
-
-	// Script background
-	Ref<StyleBoxFlat> style_script_bg = make_flat_stylebox(dark_color_1, 0, 0, 0, 0);
-	style_script_bg->set_border_width_all(border_width);
-	style_script_bg->set_border_color_all(dark_color_3);
-	theme->set_stylebox("ScriptPanel", "EditorStyles", style_script_bg);
 
 	// Tree
 	theme->set_icon("checked", "Tree", theme->get_icon("GuiChecked", "EditorIcons"));
@@ -614,11 +609,14 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("grabber_highlight", "VSlider", theme->get_icon("GuiSliderGrabberHl", "EditorIcons"));
 
 	//RichTextLabel
-	theme->set_color("font_color", "RichTextLabel", font_color);
+	Color rtl_combined_bg_color = dark_color_1.linear_interpolate(script_bg_color, script_bg_color.a);
+	Color rtl_font_color = (rtl_combined_bg_color.r + rtl_combined_bg_color.g + rtl_combined_bg_color.b > 0.5 * 3) ? Color(0, 0, 0) : Color(1, 1, 1);
+	theme->set_color("default_color", "RichTextLabel", rtl_font_color);
 	theme->set_stylebox("focus", "RichTextLabel", make_empty_stylebox());
+	theme->set_stylebox("normal", "RichTextLabel", make_flat_stylebox(script_bg_color, 6, 6, 6, 6));
 
 	// Panel
-	theme->set_stylebox("panel", "Panel", style_panel);
+	theme->set_stylebox("panel", "Panel", make_flat_stylebox(dark_color_1, 6, 4, 6, 4));
 
 	// Label
 	theme->set_color("font_color", "Label", font_color);

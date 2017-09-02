@@ -1711,12 +1711,6 @@ void EditorHelp::_notification(int p_what) {
 			_update_doc();
 		} break;
 
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			Ref<StyleBoxFlat> style(memnew(StyleBoxFlat));
-			style->set_bg_color(EditorSettings::get_singleton()->get("text_editor/highlighting/background_color"));
-			background_panel->add_style_override("panel", style);
-		} break;
-
 		default: break;
 	}
 }
@@ -1786,14 +1780,11 @@ EditorHelp::EditorHelp() {
 
 	{
 		background_panel = memnew(Panel);
-		Ref<StyleBoxFlat> style(memnew(StyleBoxFlat));
-		style->set_bg_color(EditorSettings::get_singleton()->get("text_editor/highlighting/background_color"));
 		background_panel->set_v_size_flags(SIZE_EXPAND_FILL);
-		background_panel->add_style_override("panel", style); //get_stylebox("normal","TextEdit"));
 		vbc->add_child(background_panel);
 		class_desc = memnew(RichTextLabel);
 		background_panel->add_child(class_desc);
-		class_desc->set_area_as_parent_rect(8);
+		class_desc->set_area_as_parent_rect();
 		class_desc->connect("meta_clicked", this, "_class_desc_select");
 		class_desc->connect("gui_input", this, "_class_desc_input");
 	}
@@ -1881,10 +1872,6 @@ void EditorHelpBit::_bind_methods() {
 }
 
 void EditorHelpBit::_notification(int p_what) {
-
-	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
-		add_style_override("panel", get_stylebox("ScriptPanel", "EditorStyles"));
-	}
 }
 
 void EditorHelpBit::set_text(const String &p_text) {
@@ -1897,8 +1884,7 @@ EditorHelpBit::EditorHelpBit() {
 
 	rich_text = memnew(RichTextLabel);
 	add_child(rich_text);
-	rich_text->set_area_as_parent_rect(8 * EDSCALE);
+	rich_text->set_area_as_parent_rect();
 	rich_text->connect("meta_clicked", this, "_meta_clicked");
 	set_custom_minimum_size(Size2(0, 70 * EDSCALE));
-	add_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_stylebox("ScriptPanel", "EditorStyles"));
 }
