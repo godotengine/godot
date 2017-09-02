@@ -49,6 +49,7 @@ class EditorQuickOpen : public ConfirmationDialog {
 
 	void _sbox_input(const Ref<InputEvent> &p_ie);
 	void _parse_fs(EditorFileSystemDirectory *efsd, Vector<Pair<String, Ref<Texture> > > &list);
+	Vector<Pair<String, Ref<Texture> > > _sort_fs(Vector<Pair<String, Ref<Texture> > > &list);
 	float _path_cmp(String search, String path) const;
 
 	void _confirmed();
