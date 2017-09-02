@@ -3521,29 +3521,31 @@ void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) cons
 				Sprite *sprite = memnew(Sprite);
 				sprite->set_texture(texture);
 				sprite->set_modulate(Color(1, 1, 1, 0.7f));
-				preview->add_child(sprite);
+				preview_node->add_child(sprite);
 				label->show();
 				label_desc->show();
 			} else {
 				if (scene.is_valid()) {
 					Node *instance = scene->instance();
 					if (instance) {
-						preview->add_child(instance);
+						preview_node->add_child(instance);
 					}
 				}
 			}
-			editor->get_scene_root()->add_child(preview);
+			editor->get_scene_root()->add_child(preview_node);
 		}
 	}
 }
 
 void CanvasItemEditorViewport::_remove_preview() {
-	if (preview->get_parent()) {
-		editor->get_scene_root()->remove_child(preview);
-		for (int i = preview->get_child_count() - 1; i >= 0; i--) {
-			Node *node = preview->get_child(i);
-			memdelete(node);
+	if (preview_node->get_parent()) {
+		for (int i = preview_node->get_child_count() - 1; i >= 0; i--) {
+			Node *node = preview_node->get_child(i);
+			node->queue_delete();
+			preview_node->remove_child(node);
 		}
+		editor->get_scene_root()->remove_child(preview_node);
+
 		label->hide();
 		label_desc->hide();
 	}
@@ -3753,11 +3755,11 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 				break;
 			}
 			if (can_instance) {
-				if (!preview->get_parent()) { // create preview only once
+				if (!preview_node->get_parent()) { // create preview only once
 					_create_preview(files);
 				}
 				Transform2D trans = canvas->get_canvas_transform();
-				preview->set_position((p_point - trans.get_origin()) / trans.get_scale().x);
+				preview_node->set_position((p_point - trans.get_origin()) / trans.get_scale().x);
 				label->set_text(vformat(TTR("Adding %s..."), default_type));
 			}
 			return can_instance;
@@ -3779,11 +3781,16 @@ void CanvasItemEditorViewport::drop_data(const Point2 &p_point, const Variant &p
 
 	List<Node *> list = editor->get_editor_selection()->get_selected_node_list();
 	if (list.size() == 0) {
-		accept->get_ok()->set_text(TTR("OK :("));
-		accept->set_text(TTR("No parent to instance a child at."));
-		accept->popup_centered_minsize();
-		_remove_preview();
-		return;
+		Node *root_node = editor->get_edited_scene();
+		if (root_node) {
+			list.push_back(root_node);
+		} else {
+			accept->get_ok()->set_text(TTR("OK :("));
+			accept->set_text(TTR("No parent to instance a child at."));
+			accept->popup_centered_minsize();
+			_remove_preview();
+			return;
+		}
 	}
 	if (list.size() != 1) {
 		accept->get_ok()->set_text(TTR("I see.."));
@@ -3850,7 +3857,7 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasIte
 	editor = p_node;
 	editor_data = editor->get_scene_tree_dock()->get_editor_data();
 	canvas = p_canvas;
-	preview = memnew(Node2D);
+	preview_node = memnew(Node2D);
 	accept = memnew(AcceptDialog);
 	editor->get_gui_base()->add_child(accept);
 
@@ -3904,5 +3911,5 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasIte
 }
 
 CanvasItemEditorViewport::~CanvasItemEditorViewport() {
-	memdelete(preview);
+	memdelete(preview_node);
 }

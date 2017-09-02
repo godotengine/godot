@@ -459,7 +459,7 @@ class CanvasItemEditorViewport : public Control {
 	EditorNode *editor;
 	EditorData *editor_data;
 	CanvasItemEditor *canvas;
-	Node2D *preview;
+	Node2D *preview_node;
 	AcceptDialog *accept;
 	WindowDialog *selector;
 	Label *selector_label;
