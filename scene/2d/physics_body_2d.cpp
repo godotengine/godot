@@ -242,21 +242,23 @@ void RigidBody2D::_body_enter_tree(ObjectID p_id) {
 	Node *node = Object::cast_to<Node>(obj);
 	ERR_FAIL_COND(!node);
 
-	Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.find(p_id);
-	ERR_FAIL_COND(!E);
-	ERR_FAIL_COND(E->get().in_scene);
+	if (contact_monitor) {
+		Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.find(p_id);
+		ERR_FAIL_COND(!E);
+		ERR_FAIL_COND(E->get().in_scene);
 
-	contact_monitor->locked = true;
+		contact_monitor->locked = true;
 
-	E->get().in_scene = true;
-	emit_signal(SceneStringNames::get_singleton()->body_entered, node);
+		E->get().in_scene = true;
+		emit_signal(SceneStringNames::get_singleton()->body_entered, node);
 
-	for (int i = 0; i < E->get().shapes.size(); i++) {
+		for (int i = 0; i < E->get().shapes.size(); i++) {
 
-		emit_signal(SceneStringNames::get_singleton()->body_shape_entered, p_id, node, E->get().shapes[i].body_shape, E->get().shapes[i].local_shape);
+			emit_signal(SceneStringNames::get_singleton()->body_shape_entered, p_id, node, E->get().shapes[i].body_shape, E->get().shapes[i].local_shape);
+		}
+
+		contact_monitor->locked = false;
 	}
-
-	contact_monitor->locked = false;
 }
 
 void RigidBody2D::_body_exit_tree(ObjectID p_id) {
@@ -264,21 +266,24 @@ void RigidBody2D::_body_exit_tree(ObjectID p_id) {
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = Object::cast_to<Node>(obj);
 	ERR_FAIL_COND(!node);
-	Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.find(p_id);
-	ERR_FAIL_COND(!E);
-	ERR_FAIL_COND(!E->get().in_scene);
-	E->get().in_scene = false;
 
-	contact_monitor->locked = true;
+	if (contact_monitor) {
+		Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.find(p_id);
+		ERR_FAIL_COND(!E);
+		ERR_FAIL_COND(!E->get().in_scene);
+		E->get().in_scene = false;
 
-	emit_signal(SceneStringNames::get_singleton()->body_exited, node);
+		contact_monitor->locked = true;
 
-	for (int i = 0; i < E->get().shapes.size(); i++) {
+		emit_signal(SceneStringNames::get_singleton()->body_exited, node);
 
-		emit_signal(SceneStringNames::get_singleton()->body_shape_exited, p_id, node, E->get().shapes[i].body_shape, E->get().shapes[i].local_shape);
+		for (int i = 0; i < E->get().shapes.size(); i++) {
+
+			emit_signal(SceneStringNames::get_singleton()->body_shape_exited, p_id, node, E->get().shapes[i].body_shape, E->get().shapes[i].local_shape);
+		}
+
+		contact_monitor->locked = false;
 	}
-
-	contact_monitor->locked = false;
 }
 
 void RigidBody2D::_body_inout(int p_status, ObjectID p_instance, int p_body_shape, int p_local_shape) {
