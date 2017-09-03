@@ -497,7 +497,6 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		}
 
 		inspected_object_id = id;
-		debugObj->update();
 		editor->push_item(debugObj, "");
 
 	} else if (p_msg == "message:video_mem") {
@@ -1000,12 +999,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 					if (inspect_scene_tree->is_visible())
 						_scene_tree_request();
 
-					bool need_query_instance = inspected_object_id != 0;
-					need_query_instance = need_query_instance && editor->get_property_editor()->is_visible();
-					need_query_instance = need_query_instance && (editor->get_property_editor()->obj != NULL);
-					need_query_instance = need_query_instance && editor->get_property_editor()->obj->is_type("ScriptEditorDebuggerInspectedObject");
-					need_query_instance = need_query_instance && ((ObjectID)editor->get_property_editor()->obj->call("get_remote_object_id") != 0);
-					if (need_query_instance) {
+					if (inspected_object_id != 0 && editor->get_property_editor()->is_visible() && (editor->get_property_editor()->obj != NULL) && editor->get_property_editor()->obj->is_type("ScriptEditorDebuggerInspectedObject") && ((ObjectID)editor->get_property_editor()->obj->call("get_remote_object_id") != 0)) {
 						Array msg;
 						msg.push_back("inspect_object");
 						msg.push_back(inspected_object_id);

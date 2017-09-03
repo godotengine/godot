@@ -3618,6 +3618,7 @@ void PropertyEditor::edit(Object *p_object) {
 
 	if (obj) {
 
+		set_enable_capitalize_paths(true);
 		obj->remove_change_receptor(this);
 
 		if (obj->is_type("ScriptEditorDebuggerInspectedObject")) {
