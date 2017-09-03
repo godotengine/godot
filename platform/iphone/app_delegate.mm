@@ -52,6 +52,10 @@
 
 #import "GameController/GameController.h"
 
+#ifndef __IPHONE_9_0
+#define __IPHONE_9_0 90000
+#endif
+
 #define kFilteringFactor 0.1
 #define kRenderingFrequency 60
 #define kAccelerometerFrequency 100.0 // Hz
@@ -94,6 +98,7 @@ static ViewController *mainViewController = nil;
 
 NSMutableDictionary *ios_joysticks = nil;
 
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_9_0
 - (GCControllerPlayerIndex)getFreePlayerIndex {
 	bool have_player_1 = false;
 	bool have_player_2 = false;
@@ -128,6 +133,7 @@ NSMutableDictionary *ios_joysticks = nil;
 		return GCControllerPlayerIndexUnset;
 	};
 };
+#endif
 
 - (void)controllerWasConnected:(NSNotification *)notification {
 	// create our dictionary if we don't have one yet
@@ -145,10 +151,12 @@ NSMutableDictionary *ios_joysticks = nil;
 		// get a new id for our controller
 		int joy_id = OSIPhone::get_singleton()->get_unused_joy_id();
 		if (joy_id != -1) {
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_9_0
 			// assign our player index
 			if (controller.playerIndex == GCControllerPlayerIndexUnset) {
 				controller.playerIndex = [self getFreePlayerIndex];
 			};
+#endif
 
 			// tell Godot about our new controller
 			OSIPhone::get_singleton()->joy_connection_changed(
