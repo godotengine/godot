@@ -35,7 +35,7 @@
 #include "os/thread_safe.h"
 #include "resource.h"
 
-#include <godot/gdnative.h>
+#include "gdnative/gdnative.h"
 
 class GDNativeLibrary : public Resource {
 	GDCLASS(GDNativeLibrary, Resource)

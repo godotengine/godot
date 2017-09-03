@@ -28,10 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "register_types.h"
+#include "gdnative/gdnative.h"
+
 #include "gdnative.h"
 
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
+
+#include "nativescript/register_types.h"
 
 #include "core/os/os.h"
 
@@ -72,9 +76,14 @@ void register_gdnative_types() {
 	GDNativeCallRegistry::singleton = memnew(GDNativeCallRegistry);
 
 	GDNativeCallRegistry::singleton->register_native_call_type("standard_varcall", cb_standard_varcall);
+
+	register_nativescript_types();
 }
 
 void unregister_gdnative_types() {
+
+	unregister_nativescript_types();
+
 	memdelete(GDNativeCallRegistry::singleton);
 
 	// This is for printing out the sizes of the core types
