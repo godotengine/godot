@@ -100,6 +100,11 @@ GDNativeLibrary::~GDNativeLibrary() {
 void GDNativeLibrary::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_library_path", "platform", "path"), &GDNativeLibrary::set_library_path);
 	ClassDB::bind_method(D_METHOD("get_library_path", "platform"), &GDNativeLibrary::get_library_path);
+
+	ClassDB::bind_method(D_METHOD("is_singleton_gdnative"), &GDNativeLibrary::is_singleton_gdnative);
+	ClassDB::bind_method(D_METHOD("set_singleton_gdnative", "singleton"), &GDNativeLibrary::set_singleton_gdnative);
+
+	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "singleton_gdnative"), "set_singleton_gdnative", "is_singleton_gdnative");
 }
 
 bool GDNativeLibrary::_set(const StringName &p_name, const Variant &p_value) {
@@ -175,7 +180,6 @@ GDNative::GDNative() {
 }
 
 GDNative::~GDNative() {
-	// TODO(karroffel): implement ALL the things!
 }
 
 extern "C" void _api_anchor();
