@@ -60,6 +60,9 @@ public:
 	};
 
 private:
+	ObjectID physics_object_capture;
+	ObjectID physics_object_over;
+
 	bool force_change;
 	bool current;
 
@@ -77,7 +80,10 @@ private:
 
 	//String camera_group;
 
-	uint32_t layers;
+	uint32_t visible_layers;
+	uint32_t raycast_layers;
+	int32_t depth;
+	bool room_cull_enabled;
 
 	Ref<Environment> environment;
 
@@ -136,6 +142,12 @@ public:
 	void set_cull_mask(uint32_t p_layers);
 	uint32_t get_cull_mask() const;
 
+	void set_raycast_layers(uint32_t p_layers);
+	uint32_t get_raycast_layers() const;
+
+	void set_depth(int32_t p_depth);
+	int8_t get_depth() const;
+
 	Vector<Plane> get_frustum() const;
 
 	void set_environment(const Ref<Environment> &p_environment);
@@ -154,6 +166,8 @@ public:
 	DopplerTracking get_doppler_tracking() const;
 
 	Vector3 get_doppler_tracked_velocity() const;
+	void set_room_cull_enabled(bool p_room_cull_enabled);
+	bool is_room_cull_enabled() const;
 
 	Camera();
 	~Camera();

@@ -74,6 +74,14 @@ void VisualServerScene::camera_set_cull_mask(RID p_camera, uint32_t p_layers) {
 	camera->visible_layers = p_layers;
 }
 
+void VisualServerScene::camera_set_depth(RID p_camera, int32_t p_depth) {
+
+	Camera *camera = camera_owner.get(p_camera);
+	ERR_FAIL_COND(!camera);
+
+	camera->depth = p_depth;
+}
+
 void VisualServerScene::camera_set_environment(RID p_camera, RID p_env) {
 
 	Camera *camera = camera_owner.get(p_camera);
@@ -86,6 +94,12 @@ void VisualServerScene::camera_set_use_vertical_aspect(RID p_camera, bool p_enab
 	Camera *camera = camera_owner.get(p_camera);
 	ERR_FAIL_COND(!camera);
 	camera->vaspect = p_enable;
+}
+
+void VisualServerScene::camera_set_room_cull_enabled(RID p_camera, bool p_enabled) {
+	Camera *camera = camera_owner.get(p_camera);
+	ERR_FAIL_COND(!camera);
+	camera->room_cull_enabled = p_enabled;
 }
 
 /* SCENARIO API */

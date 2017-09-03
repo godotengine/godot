@@ -51,7 +51,7 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 		}
 	}
 
-	bool can_draw_3d = !p_viewport->disable_3d && !p_viewport->disable_3d_by_usage && VSG::scene->camera_owner.owns(p_viewport->camera);
+	bool can_draw_3d = !p_viewport->disable_3d && !p_viewport->disable_3d_by_usage;
 
 	if (p_viewport->clear_mode != VS::VIEWPORT_CLEAR_NEVER) {
 		VSG::rasterizer->clear_render_target(clear_color);
@@ -64,9 +64,11 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 		Ref<ARVRInterface> arvr_interface = ARVRServer::get_singleton()->get_primary_interface();
 
 		if (p_viewport->use_arvr && arvr_interface.is_valid()) {
-			VSG::scene->render_camera(arvr_interface, p_eye, p_viewport->camera, p_viewport->scenario, p_viewport->size, p_viewport->shadow_atlas);
+			for (int i = 0; i < p_viewport->active_cameras.size(); i++)
+				VSG::scene->render_camera(arvr_interface, p_eye, p_viewport->active_cameras[i], p_viewport->scenario, p_viewport->size, p_viewport->shadow_atlas);
 		} else {
-			VSG::scene->render_camera(p_viewport->camera, p_viewport->scenario, p_viewport->size, p_viewport->shadow_atlas);
+			for (int i = 0; i < p_viewport->active_cameras.size(); i++)
+				VSG::scene->render_camera(p_viewport->active_cameras[i], p_viewport->scenario, p_viewport->size, p_viewport->shadow_atlas);
 		}
 	}
 
@@ -179,7 +181,8 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 		if (scenario_draw_canvas_bg && canvas_map.front() && canvas_map.front()->key().layer > scenario_canvas_max_layer) {
 
 			if (can_draw_3d) {
-				VSG::scene->render_camera(p_viewport->camera, p_viewport->scenario, p_viewport->size, p_viewport->shadow_atlas);
+				for (int i = 0; i < p_viewport->active_cameras.size(); i++)
+					VSG::scene->render_camera(p_viewport->active_cameras[i], p_viewport->scenario, p_viewport->size, p_viewport->shadow_atlas);
 			} else {
 				VSG::scene->render_empty_scene(p_viewport->scenario, p_viewport->shadow_atlas);
 			}
@@ -211,7 +214,8 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 			if (scenario_draw_canvas_bg && E->key().layer >= scenario_canvas_max_layer) {
 
 				if (can_draw_3d) {
-					VSG::scene->render_camera(p_viewport->camera, p_viewport->scenario, p_viewport->size, p_viewport->shadow_atlas);
+					for (int i = 0; i < p_viewport->active_cameras.size(); i++)
+						VSG::scene->render_camera(p_viewport->active_cameras[i], p_viewport->scenario, p_viewport->size, p_viewport->shadow_atlas);
 				} else {
 					VSG::scene->render_empty_scene(p_viewport->scenario, p_viewport->shadow_atlas);
 				}
@@ -223,7 +227,8 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 		if (scenario_draw_canvas_bg) {
 
 			if (can_draw_3d) {
-				VSG::scene->render_camera(p_viewport->camera, p_viewport->scenario, p_viewport->size, p_viewport->shadow_atlas);
+				for (int i = 0; i < p_viewport->active_cameras.size(); i++)
+					VSG::scene->render_camera(p_viewport->active_cameras[i], p_viewport->scenario, p_viewport->size, p_viewport->shadow_atlas);
 			} else {
 				VSG::scene->render_empty_scene(p_viewport->scenario, p_viewport->shadow_atlas);
 			}
@@ -451,11 +456,34 @@ void VisualServerViewport::viewport_set_disable_3d(RID p_viewport, bool p_disabl
 }
 
 void VisualServerViewport::viewport_attach_camera(RID p_viewport, RID p_camera) {
-
 	Viewport *viewport = viewport_owner.getornull(p_viewport);
 	ERR_FAIL_COND(!viewport);
 
-	viewport->camera = p_camera;
+	if (p_camera.is_valid()) {
+		ERR_FAIL_COND(!VSG::scene->camera_owner.owns(p_camera));
+		VisualServerScene::Camera *camera = camera = VSG::scene->camera_owner.get(p_camera);
+		// a camera
+		int i;
+		int cameras_size = viewport->active_cameras.size();
+		for (i = 0; i < cameras_size; i++) {
+			if (camera->depth < VSG::scene->camera_owner.get(viewport->active_cameras.get(i))->depth) {
+				break;
+			};
+		};
+		viewport->active_cameras.insert(i, p_camera);
+	}
+}
+
+void VisualServerViewport::viewport_detach_camera(RID p_viewport, RID p_camera) {
+	Viewport *viewport = viewport_owner.getornull(p_viewport);
+	ERR_FAIL_COND(!viewport);
+
+	if (p_camera.is_valid()) {
+		int index = viewport->active_cameras.find(p_camera);
+		if (index != -1) {
+			viewport->active_cameras.remove(index);
+		}
+	}
 }
 void VisualServerViewport::viewport_set_scenario(RID p_viewport, RID p_scenario) {
 

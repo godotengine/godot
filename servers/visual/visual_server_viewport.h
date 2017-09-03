@@ -48,7 +48,7 @@ public:
 		bool use_arvr; /* use arvr interface to override camera positioning and projection matrices and control output */
 
 		Size2i size;
-		RID camera;
+		Vector<RID> active_cameras;
 		RID scenario;
 
 		VS::ViewportUpdateMode update_mode;
@@ -162,6 +162,7 @@ public:
 	void viewport_set_disable_3d(RID p_viewport, bool p_disable);
 
 	void viewport_attach_camera(RID p_viewport, RID p_camera);
+	void viewport_detach_camera(RID p_viewport, RID p_camera);
 	void viewport_set_scenario(RID p_viewport, RID p_scenario);
 	void viewport_attach_canvas(RID p_viewport, RID p_canvas);
 	void viewport_remove_canvas(RID p_viewport, RID p_canvas);

@@ -889,8 +889,10 @@ public:
 	BIND4(camera_set_orthogonal, RID, float, float, float)
 	BIND2(camera_set_transform, RID, const Transform &)
 	BIND2(camera_set_cull_mask, RID, uint32_t)
+	BIND2(camera_set_depth, RID, int32_t)
 	BIND2(camera_set_environment, RID, RID)
 	BIND2(camera_set_use_vertical_aspect, RID, bool)
+	BIND2(camera_set_room_cull_enabled, RID, bool)
 
 #undef BINDBASE
 //from now on, calls forwarded to this singleton
@@ -922,6 +924,7 @@ public:
 	BIND2(viewport_set_disable_3d, RID, bool)
 
 	BIND2(viewport_attach_camera, RID, RID)
+	BIND2(viewport_detach_camera, RID, RID)
 	BIND2(viewport_set_scenario, RID, RID)
 	BIND2(viewport_attach_canvas, RID, RID)
 
