@@ -111,13 +111,13 @@ public:
 		label->set_h_size_flags(SIZE_EXPAND_FILL);
 
 		grid_step_x = memnew(SpinBox);
-		grid_step_x->set_min(-SPIN_BOX_GRID_RANGE);
+		grid_step_x->set_min(0.01);
 		grid_step_x->set_max(SPIN_BOX_GRID_RANGE);
 		grid_step_x->set_suffix("px");
 		child_container->add_child(grid_step_x);
 
 		grid_step_y = memnew(SpinBox);
-		grid_step_y->set_min(-SPIN_BOX_GRID_RANGE);
+		grid_step_y->set_min(0.01);
 		grid_step_y->set_max(SPIN_BOX_GRID_RANGE);
 		grid_step_y->set_suffix("px");
 		child_container->add_child(grid_step_y);
