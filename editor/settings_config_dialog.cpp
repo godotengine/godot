@@ -165,7 +165,7 @@ void EditorSettingsDialog::_update_shortcuts() {
 			section->set_custom_bg_color(1, get_color("prop_subsection", "Editor"));
 		}
 
-		if (shortcut_filter.is_subsequence_ofi(sc->get_name())) {
+		if (shortcut_filter.is_subsequence_ofi(sc->get_name()) || shortcut_filter.is_subsequence_ofi(sc->get_as_text())) {
 			TreeItem *item = shortcuts->create_item(section);
 
 			item->set_text(0, sc->get_name());
