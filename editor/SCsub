@@ -155,31 +155,71 @@ def make_authors_header(target, source, env):
     g.write("#define _EDITOR_AUTHORS_H\n")
 
     current_section = ""
-    name_count = -1
+    reading = False
 
     def close_section():
         g.write("\t0\n")
         g.write("};\n")
-        g.write("#define " + current_section.upper() + "_COUNT " + str(name_count) + "\n")
 
     for line in f:
-        if name_count >= 0:
+        if reading:
             if line.startswith("    "):
                 g.write("\t\"" + line.strip() + "\",\n")
-                name_count += 1
                 continue
         if line.startswith("## "):
-            if name_count >= 0:
+            if reading:
                 close_section()
-                name_count = -1
+                reading = False
             for i in range(len(sections)):
                 if line.strip().endswith(sections[i]):
                     current_section = sections_id[i]
-                    name_count = 0
+                    reading = True
                     g.write("static const char *" + current_section + "[] = {\n")
                     break
 
-    if name_count >= 0:
+    if reading:
+        close_section()
+
+    g.write("#endif\n")
+
+def make_donors_header(target, source, env):
+
+    sections = ["Platinum sponsors", "Gold sponsors", "Mini sponsors", "Gold donors", "Silver donors", "Bronze donors"]
+    sections_id = ["donor_s_plat", "donor_s_gold", "donor_s_mini", "donor_gold", "donor_silver", "donor_bronze"]
+
+    src = source[0].srcnode().abspath
+    dst = target[0].srcnode().abspath
+    f = open_utf8(src, "r")
+    g = open_utf8(dst, "w")
+
+    g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
+    g.write("#ifndef _EDITOR_DONORS_H\n")
+    g.write("#define _EDITOR_DONORS_H\n")
+
+    current_section = ""
+    reading = False
+
+    def close_section():
+        g.write("\t0\n")
+        g.write("};\n")
+
+    for line in f:
+        if reading >= 0:
+            if line.startswith("    "):
+                g.write("\t\"" + line.strip() + "\",\n")
+                continue
+        if line.startswith("## "):
+            if reading:
+                close_section()
+                reading = False
+            for i in range(len(sections)):
+                if line.strip().endswith(sections[i]):
+                    current_section = sections_id[i]
+                    reading = True
+                    g.write("static const char *" + current_section + "[] = {\n")
+                    break
+
+    if reading:
         close_section()
 
     g.write("#endif\n")
@@ -392,6 +432,10 @@ if (env["tools"] == "yes"):
     # Authors
     env.Depends('#editor/authors.gen.h', "../AUTHORS.md")
     env.Command('#editor/authors.gen.h', "../AUTHORS.md", make_authors_header)
+
+    # Donors
+    env.Depends('#editor/donors.gen.h', "../DONORS.md")
+    env.Command('#editor/donors.gen.h', "../DONORS.md", make_donors_header)
 
     # License
     env.Depends('#editor/license.gen.h', ["../COPYRIGHT.txt", "../LICENSE.txt"])
