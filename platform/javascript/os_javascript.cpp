@@ -521,21 +521,6 @@ void OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, i
 #undef SET_EM_CALLBACK
 #undef EM_CHECK
 
-	/* clang-format off */
-	EM_ASM_ARGS({
-		const send_notification = Module.cwrap('send_notification', null, ['number']);
-		const notifs = arguments;
-		(['mouseover', 'mouseleave', 'focus', 'blur']).forEach(function(event, i) {
-			Module.canvas.addEventListener(event, send_notification.bind(this, notifs[i]));
-		});
-	},
-		MainLoop::NOTIFICATION_WM_MOUSE_ENTER,
-		MainLoop::NOTIFICATION_WM_MOUSE_EXIT,
-		MainLoop::NOTIFICATION_WM_FOCUS_IN,
-		MainLoop::NOTIFICATION_WM_FOCUS_OUT
-	);
-/* clang-format on */
-
 #ifdef JAVASCRIPT_EVAL_ENABLED
 	javascript_eval = memnew(JavaScript);
 	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton("JavaScript", javascript_eval));
@@ -818,7 +803,23 @@ void OS_JavaScript::main_loop_begin() {
 
 	if (main_loop)
 		main_loop->init();
+
+	/* clang-format off */
+	EM_ASM_ARGS({
+		const send_notification = Module.cwrap('send_notification', null, ['number']);
+		const notifs = arguments;
+		(['mouseover', 'mouseleave', 'focus', 'blur']).forEach(function(event, i) {
+			Module.canvas.addEventListener(event, send_notification.bind(null, notifs[i]));
+		});
+	},
+		MainLoop::NOTIFICATION_WM_MOUSE_ENTER,
+		MainLoop::NOTIFICATION_WM_MOUSE_EXIT,
+		MainLoop::NOTIFICATION_WM_FOCUS_IN,
+		MainLoop::NOTIFICATION_WM_FOCUS_OUT
+	);
+	/* clang-format on */
 }
+
 bool OS_JavaScript::main_loop_iterate() {
 
 	if (!main_loop)
