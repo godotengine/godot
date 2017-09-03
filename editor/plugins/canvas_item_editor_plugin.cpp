@@ -1019,6 +1019,51 @@ void CanvasItemEditor::_list_select(const Ref<InputEventMouseButton> &b) {
 	}
 }
 
+void CanvasItemEditor::_update_cursor() {
+
+	CursorShape c = CURSOR_ARROW;
+	switch (drag) {
+		case DRAG_NONE:
+			if (Input::get_singleton()->is_mouse_button_pressed(BUTTON_MIDDLE) || Input::get_singleton()->is_key_pressed(KEY_SPACE)) {
+				c = CURSOR_DRAG;
+			} else {
+				switch (tool) {
+					case TOOL_MOVE:
+						c = CURSOR_MOVE;
+						break;
+					case TOOL_EDIT_PIVOT:
+						c = CURSOR_CROSS;
+						break;
+					case TOOL_PAN:
+						c = CURSOR_DRAG;
+						break;
+				}
+			}
+			break;
+		case DRAG_LEFT:
+		case DRAG_RIGHT:
+			c = CURSOR_HSIZE;
+			break;
+		case DRAG_TOP:
+		case DRAG_BOTTOM:
+			c = CURSOR_VSIZE;
+			break;
+		case DRAG_TOP_LEFT:
+		case DRAG_BOTTOM_RIGHT:
+			c = CURSOR_FDIAGSIZE;
+			break;
+		case DRAG_TOP_RIGHT:
+		case DRAG_BOTTOM_LEFT:
+			c = CURSOR_BDIAGSIZE;
+			break;
+		case DRAG_ALL:
+		case DRAG_NODE_2D:
+			c = CURSOR_MOVE;
+			break;
+	}
+	viewport->set_default_cursor_shape(c);
+}
+
 void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 
 	{
@@ -1457,6 +1502,7 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> m = p_event;
 	if (m.is_valid()) {
 		// Mouse motion event
+		_update_cursor();
 
 		if (!viewport->has_focus() && (!get_focus_owner() || !get_focus_owner()->is_text_field()))
 			viewport->call_deferred("grab_focus");
