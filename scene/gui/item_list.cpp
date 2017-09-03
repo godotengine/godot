@@ -151,6 +151,20 @@ Color ItemList::get_item_custom_bg_color(int p_idx) const {
 	return items[p_idx].custom_bg;
 }
 
+void ItemList::set_item_custom_fg_color(int p_idx, const Color &p_custom_fg_color) {
+
+	ERR_FAIL_INDEX(p_idx, items.size());
+
+	items[p_idx].custom_fg = p_custom_fg_color;
+}
+
+Color ItemList::get_item_custom_fg_color(int p_idx) const {
+
+	ERR_FAIL_INDEX_V(p_idx, items.size(), Color());
+
+	return items[p_idx].custom_fg;
+}
+
 void ItemList::set_item_tag_icon(int p_idx, const Ref<Texture> &p_tag_icon) {
 
 	ERR_FAIL_INDEX(p_idx, items.size());
@@ -1021,7 +1035,7 @@ void ItemList::_notification(int p_what) {
 				else
 					max_len = size.x;
 
-				Color modulate = items[i].selected ? font_color_selected : font_color;
+				Color modulate = items[i].selected ? font_color_selected : (items[i].custom_fg != Color() ? items[i].custom_fg : font_color);
 				if (items[i].disabled)
 					modulate.a *= 0.5;
 
