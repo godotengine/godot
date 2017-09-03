@@ -72,11 +72,14 @@ static Ref<BitmapFont> make_font(int p_height, int p_ascent, int p_valign, int p
 	m_name->add_fallback(FontJapanese); \
 	m_name->add_fallback(FontFallback);
 
-#define MAKE_DEFAULT_FONT(m_name, m_size) \
-	Ref<DynamicFont> m_name;              \
-	m_name.instance();                    \
-	m_name->set_size(m_size);             \
-	m_name->set_font_data(DefaultFont);   \
+// the custom spacings might only work with Noto Sans
+#define MAKE_DEFAULT_FONT(m_name, m_size)                 \
+	Ref<DynamicFont> m_name;                              \
+	m_name.instance();                                    \
+	m_name->set_size(m_size);                             \
+	m_name->set_font_data(DefaultFont);                   \
+	m_name->set_spacing(DynamicFont::SPACING_TOP, -1);    \
+	m_name->set_spacing(DynamicFont::SPACING_BOTTOM, -1); \
 	MAKE_FALLBACKS(m_name);
 
 void editor_register_fonts(Ref<Theme> p_theme) {
