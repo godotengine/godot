@@ -2274,7 +2274,7 @@
 			</description>
 		</method>
 		<method name="get_type" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="ARVRServer.TrackerType">
 			</return>
 			<description>
 			</description>
@@ -2553,7 +2553,7 @@
 			</argument>
 			<argument index="1" name="pos" type="Vector3">
 			</argument>
-			<argument index="2" name="weight_scale" type="float" default="null">
+			<argument index="2" name="weight_scale" type="float" default="1.0">
 			</argument>
 			<description>
 				Add a new point at the given position [code]pos[/code] with the given identifier [code]id[/code]. The [code]weight_scale[/code] has to be 1 or larger.
@@ -2584,7 +2584,7 @@
 			</argument>
 			<argument index="1" name="to_id" type="int">
 			</argument>
-			<argument index="2" name="bidirectional" type="bool" default="null">
+			<argument index="2" name="bidirectional" type="bool" default="true">
 			</argument>
 			<description>
 				Create a segment between points [code]id[/code] and [code]to_id[/code].
@@ -2702,7 +2702,7 @@
 			</argument>
 			<argument index="1" name="right" type="bool" default="false">
 			</argument>
-			<argument index="2" name="action" type="String" default="null">
+			<argument index="2" name="action" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
 				Add custom button to the dialog and return the created button.
@@ -3086,7 +3086,7 @@
 			</return>
 			<argument index="0" name="type" type="int" enum="Animation.TrackType">
 			</argument>
-			<argument index="1" name="at_pos" type="int" default="null">
+			<argument index="1" name="at_pos" type="int" default="-1">
 			</argument>
 			<description>
 				Add a track to the Animation. The track type must be specified as any of the values in the TYPE_* enumeration.
@@ -3214,7 +3214,7 @@
 			</argument>
 			<argument index="1" name="time" type="float">
 			</argument>
-			<argument index="2" name="exact" type="bool" default="null">
+			<argument index="2" name="exact" type="bool" default="false">
 			</argument>
 			<description>
 				Find the key index by time in a given track. Optionally, only find it if the exact time is given.
@@ -3229,7 +3229,7 @@
 			</description>
 		</method>
 		<method name="track_get_interpolation_type" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Animation.InterpolationType">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
@@ -3289,7 +3289,7 @@
 			</description>
 		</method>
 		<method name="track_get_type" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Animation.TrackType">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
@@ -3306,7 +3306,7 @@
 			</argument>
 			<argument index="2" name="key" type="Variant">
 			</argument>
-			<argument index="3" name="transition" type="float" default="null">
+			<argument index="3" name="transition" type="float" default="1">
 			</argument>
 			<description>
 				Insert a generic key in a given track.
@@ -3472,7 +3472,7 @@
 			</description>
 		</method>
 		<method name="value_track_get_update_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Animation.UpdateMode">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
@@ -3526,7 +3526,7 @@
 	</description>
 	<methods>
 		<method name="add_animation">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="name" type="String">
 			</argument>
@@ -3603,7 +3603,7 @@
 			</description>
 		</method>
 		<method name="get_animation_process_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="AnimationPlayer.AnimationProcessMode">
 			</return>
 			<description>
 				Return the mode in which the animation player processes. See [method set_animation_process_mode].
@@ -3702,13 +3702,13 @@
 		<method name="play">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String" default="false">
+			<argument index="0" name="name" type="String" default="&quot;&quot;">
 			</argument>
-			<argument index="1" name="custom_blend" type="float" default="1.0">
+			<argument index="1" name="custom_blend" type="float" default="-1">
 			</argument>
-			<argument index="2" name="custom_speed" type="float" default="-1">
+			<argument index="2" name="custom_speed" type="float" default="1.0">
 			</argument>
-			<argument index="3" name="from_end" type="bool" default="&quot;&quot;">
+			<argument index="3" name="from_end" type="bool" default="false">
 			</argument>
 			<description>
 				Play a given animation by the animation name. Custom speed and blend times can be set. If custom speed is negative (-1), 'from_end' being true can play the animation backwards.
@@ -3717,9 +3717,9 @@
 		<method name="play_backwards">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String" default="-1">
+			<argument index="0" name="name" type="String" default="&quot;&quot;">
 			</argument>
-			<argument index="1" name="custom_blend" type="float" default="&quot;&quot;">
+			<argument index="1" name="custom_blend" type="float" default="-1">
 			</argument>
 			<description>
 				Play a given animation by the animation name in reverse.
@@ -3759,7 +3759,7 @@
 			</return>
 			<argument index="0" name="pos_sec" type="float">
 			</argument>
-			<argument index="1" name="update" type="bool" default="null">
+			<argument index="1" name="update" type="bool" default="false">
 			</argument>
 			<description>
 				Seek the animation to a given position in time (in seconds). If 'update' is true, the animation will be updated too, otherwise it will be updated at process time.
@@ -4055,7 +4055,7 @@
 			</description>
 		</method>
 		<method name="connect_nodes">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="id" type="String">
 			</argument>
@@ -4077,7 +4077,7 @@
 			</description>
 		</method>
 		<method name="get_animation_process_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="AnimationTreePlayer.AnimationProcessMode">
 			</return>
 			<description>
 			</description>
@@ -4162,7 +4162,7 @@
 			</description>
 		</method>
 		<method name="node_get_type" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="AnimationTreePlayer.NodeType">
 			</return>
 			<argument index="0" name="id" type="String">
 			</argument>
@@ -4171,7 +4171,7 @@
 			</description>
 		</method>
 		<method name="node_rename">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="node" type="String">
 			</argument>
@@ -4632,7 +4632,7 @@
 			</description>
 		</method>
 		<method name="get_space_override_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Area.SpaceOverride">
 			</return>
 			<description>
 				Return the space override mode.
@@ -5106,7 +5106,7 @@
 			</description>
 		</method>
 		<method name="get_space_override_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Area2D.SpaceOverride">
 			</return>
 			<description>
 				Return the space override mode.
@@ -5698,9 +5698,9 @@
 			</argument>
 			<argument index="1" name="arrays" type="Array">
 			</argument>
-			<argument index="2" name="blend_shapes" type="Array" default="null">
+			<argument index="2" name="blend_shapes" type="Array" default="[  ]">
 			</argument>
-			<argument index="3" name="compress_flags" type="int" default="null">
+			<argument index="3" name="compress_flags" type="int" default="97792">
 			</argument>
 			<description>
 				Create a new surface ([method get_surface_count] that will become surf_idx for this.
@@ -5726,7 +5726,7 @@
 			</description>
 		</method>
 		<method name="get_blend_shape_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Mesh.BlendShapeMode">
 			</return>
 			<description>
 			</description>
@@ -5819,7 +5819,7 @@
 			</description>
 		</method>
 		<method name="surface_get_primitive_type" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Mesh.PrimitiveType">
 			</return>
 			<argument index="0" name="surf_idx" type="int">
 			</argument>
@@ -6630,7 +6630,7 @@
 			</description>
 		</method>
 		<method name="get_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="AudioEffectDistortion.Mode">
 			</return>
 			<description>
 			</description>
@@ -6780,7 +6780,7 @@
 			</description>
 		</method>
 		<method name="get_db" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="AudioEffectFilter.FilterDB">
 			</return>
 			<description>
 			</description>
@@ -7340,7 +7340,7 @@
 			</argument>
 			<argument index="1" name="effect" type="AudioEffect">
 			</argument>
-			<argument index="2" name="at_pos" type="int" default="null">
+			<argument index="2" name="at_pos" type="int" default="-1">
 			</argument>
 			<description>
 			</description>
@@ -7434,7 +7434,7 @@
 			</description>
 		</method>
 		<method name="get_speaker_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="AudioServer.SpeakerMode">
 			</return>
 			<description>
 			</description>
@@ -7720,7 +7720,7 @@
 			</description>
 		</method>
 		<method name="get_mix_target" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="AudioStreamPlayer.MixTarget">
 			</return>
 			<description>
 			</description>
@@ -8032,7 +8032,7 @@
 			</description>
 		</method>
 		<method name="get_attenuation_model" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="AudioStreamPlayer3D.AttenuationModel">
 			</return>
 			<description>
 			</description>
@@ -8044,7 +8044,7 @@
 			</description>
 		</method>
 		<method name="get_doppler_tracking" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="AudioStreamPlayer3D.DopplerTracking">
 			</return>
 			<description>
 			</description>
@@ -8074,7 +8074,7 @@
 			</description>
 		</method>
 		<method name="get_out_of_range_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="AudioStreamPlayer3D.OutOfRangeMode">
 			</return>
 			<description>
 			</description>
@@ -8390,7 +8390,7 @@
 			</description>
 		</method>
 		<method name="get_format" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="AudioStreamSample.Format">
 			</return>
 			<description>
 			</description>
@@ -8408,7 +8408,7 @@
 			</description>
 		</method>
 		<method name="get_loop_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="AudioStreamSample.LoopMode">
 			</return>
 			<description>
 			</description>
@@ -8510,7 +8510,7 @@
 	</description>
 	<methods>
 		<method name="get_copy_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="BackBufferCopy.CopyMode">
 			</return>
 			<description>
 				Return the copy mode currently applied to the BackBufferCopy (refer to constants section).
@@ -8585,7 +8585,7 @@
 			</description>
 		</method>
 		<method name="get_action_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="BaseButton.ActionMode">
 			</return>
 			<description>
 				Return the current mode of action (see [method set_action_mode]) (one of the ACTION_MODE_* constants).
@@ -8598,14 +8598,14 @@
 			</description>
 		</method>
 		<method name="get_draw_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="BaseButton.DrawMode">
 			</return>
 			<description>
 				Return the visual state used to draw the button. This is useful mainly when implementing your own draw code by either overriding _draw() or connecting to "draw" signal. The visual state of the button is defined by the DRAW_* enum.
 			</description>
 		</method>
 		<method name="get_enabled_focus_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Control.FocusMode">
 			</return>
 			<description>
 				Returns focus access mode used when switching between enabled/disabled (see [method Control.set_focus_mode] and [method set_disabled]).
@@ -9030,9 +9030,9 @@
 			</argument>
 			<argument index="2" name="rect" type="Rect2">
 			</argument>
-			<argument index="3" name="align" type="Vector2" default="null">
+			<argument index="3" name="align" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
-			<argument index="4" name="advance" type="float" default="null">
+			<argument index="4" name="advance" type="float" default="-1">
 			</argument>
 			<description>
 				Add a character to the font, where [i]character[/i] is the unicode value, [i]texture[/i] is the texture index, [i]rect[/i] is the region in the texture (in pixels!), [i]align[/i] is the (optional) alignment for the character and [i]advance[/i] is the (optional) advance.
@@ -9068,7 +9068,7 @@
 			</description>
 		</method>
 		<method name="create_from_fnt">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
@@ -9080,7 +9080,7 @@
 			</return>
 			<argument index="0" name="char" type="int">
 			</argument>
-			<argument index="1" name="next" type="int" default="null">
+			<argument index="1" name="next" type="int" default="0">
 			</argument>
 			<description>
 				Return the size of a character, optionally taking kerning into account if the next character is provided.
@@ -9216,7 +9216,7 @@
 			</description>
 		</method>
 		<method name="get_alignment" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="BoxContainer.AlignMode">
 			</return>
 			<description>
 				Return the alignment of children in the container.
@@ -9310,7 +9310,7 @@
 			</description>
 		</method>
 		<method name="get_text_align" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Button.TextAlign">
 			</return>
 			<description>
 				Return the text alignment policy.
@@ -9468,7 +9468,7 @@
 			</description>
 		</method>
 		<method name="get_doppler_tracking" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Camera.DopplerTracking">
 			</return>
 			<description>
 			</description>
@@ -9492,13 +9492,13 @@
 			</description>
 		</method>
 		<method name="get_keep_aspect_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Camera.KeepAspect">
 			</return>
 			<description>
 			</description>
 		</method>
 		<method name="get_projection" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Camera.Projection">
 			</return>
 			<description>
 			</description>
@@ -9716,7 +9716,7 @@
 			</description>
 		</method>
 		<method name="get_anchor_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Camera2D.AnchorMode">
 			</return>
 			<description>
 			</description>
@@ -10086,7 +10086,7 @@
 			</argument>
 			<argument index="3" name="next" type="String">
 			</argument>
-			<argument index="4" name="modulate" type="Color" default="null">
+			<argument index="4" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
 			</argument>
 			<description>
 				Draw a string character using a custom font. Returns the advance, depending on the char width and kerning with an optional next char.
@@ -10112,13 +10112,13 @@
 			</argument>
 			<argument index="1" name="color" type="Color">
 			</argument>
-			<argument index="2" name="uvs" type="PoolVector2Array" default="null">
+			<argument index="2" name="uvs" type="PoolVector2Array" default="PoolVector2Array(  )">
 			</argument>
-			<argument index="3" name="texture" type="Texture" default="PoolVector2Array(  )">
+			<argument index="3" name="texture" type="Texture" default="null">
 			</argument>
 			<argument index="4" name="normal_map" type="Texture" default="null">
 			</argument>
-			<argument index="5" name="antialiased" type="bool" default="null">
+			<argument index="5" name="antialiased" type="bool" default="false">
 			</argument>
 			<description>
 				Draw a colored polygon of any amount of points, convex or concave.
@@ -10133,9 +10133,9 @@
 			</argument>
 			<argument index="2" name="color" type="Color">
 			</argument>
-			<argument index="3" name="width" type="float" default="null">
+			<argument index="3" name="width" type="float" default="1.0">
 			</argument>
-			<argument index="4" name="antialiased" type="bool" default="null">
+			<argument index="4" name="antialiased" type="bool" default="false">
 			</argument>
 			<description>
 				Draw a line from a 2D point to another, with a given color and width. It can be optionally antialiased.
@@ -10148,13 +10148,13 @@
 			</argument>
 			<argument index="1" name="colors" type="PoolColorArray">
 			</argument>
-			<argument index="2" name="uvs" type="PoolVector2Array" default="null">
+			<argument index="2" name="uvs" type="PoolVector2Array" default="PoolVector2Array(  )">
 			</argument>
-			<argument index="3" name="texture" type="Texture" default="PoolVector2Array(  )">
+			<argument index="3" name="texture" type="Texture" default="null">
 			</argument>
 			<argument index="4" name="normal_map" type="Texture" default="null">
 			</argument>
-			<argument index="5" name="antialiased" type="bool" default="null">
+			<argument index="5" name="antialiased" type="bool" default="false">
 			</argument>
 			<description>
 				Draw a polygon of any amount of points, convex or concave.
@@ -10167,9 +10167,9 @@
 			</argument>
 			<argument index="1" name="color" type="Color">
 			</argument>
-			<argument index="2" name="width" type="float" default="null">
+			<argument index="2" name="width" type="float" default="1.0">
 			</argument>
-			<argument index="3" name="antialiased" type="bool" default="null">
+			<argument index="3" name="antialiased" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -10181,9 +10181,9 @@
 			</argument>
 			<argument index="1" name="colors" type="PoolColorArray">
 			</argument>
-			<argument index="2" name="width" type="float" default="null">
+			<argument index="2" name="width" type="float" default="1.0">
 			</argument>
-			<argument index="3" name="antialiased" type="bool" default="null">
+			<argument index="3" name="antialiased" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -10199,7 +10199,7 @@
 			</argument>
 			<argument index="3" name="texture" type="Texture" default="null">
 			</argument>
-			<argument index="4" name="width" type="float" default="null">
+			<argument index="4" name="width" type="float" default="1.0">
 			</argument>
 			<argument index="5" name="normal_map" type="Texture" default="null">
 			</argument>
@@ -10214,7 +10214,7 @@
 			</argument>
 			<argument index="1" name="color" type="Color">
 			</argument>
-			<argument index="2" name="filled" type="bool" default="null">
+			<argument index="2" name="filled" type="bool" default="true">
 			</argument>
 			<description>
 				Draw a colored rectangle.
@@ -10250,9 +10250,9 @@
 			</argument>
 			<argument index="2" name="text" type="String">
 			</argument>
-			<argument index="3" name="modulate" type="Color" default="null">
+			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
 			</argument>
-			<argument index="4" name="clip_w" type="int" default="null">
+			<argument index="4" name="clip_w" type="int" default="-1">
 			</argument>
 			<description>
 				Draw a string using a custom font.
@@ -10276,7 +10276,7 @@
 			</argument>
 			<argument index="1" name="pos" type="Vector2">
 			</argument>
-			<argument index="2" name="modulate" type="Color" default="null">
+			<argument index="2" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
 			</argument>
 			<argument index="3" name="normal_map" type="Texture" default="null">
 			</argument>
@@ -10293,9 +10293,9 @@
 			</argument>
 			<argument index="2" name="tile" type="bool">
 			</argument>
-			<argument index="3" name="modulate" type="Color" default="null">
+			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
 			</argument>
-			<argument index="4" name="transpose" type="bool" default="null">
+			<argument index="4" name="transpose" type="bool" default="false">
 			</argument>
 			<argument index="5" name="normal_map" type="Texture" default="null">
 			</argument>
@@ -10314,11 +10314,11 @@
 			</argument>
 			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
 			</argument>
-			<argument index="4" name="transpose" type="bool" default="null">
+			<argument index="4" name="transpose" type="bool" default="false">
 			</argument>
 			<argument index="5" name="normal_map" type="Texture" default="null">
 			</argument>
-			<argument index="6" name="clip_uv" type="bool" default="null">
+			<argument index="6" name="clip_uv" type="bool" default="true">
 			</argument>
 			<description>
 				Draw a textured rectangle region at a given position, optionally modulated by a color. Transpose swaps the x and y coordinates when reading the texture.
@@ -10729,13 +10729,13 @@
 	</description>
 	<methods>
 		<method name="get_blend_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="CanvasItemMaterial.BlendMode">
 			</return>
 			<description>
 			</description>
 		</method>
 		<method name="get_light_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="CanvasItemMaterial.LightMode">
 			</return>
 			<description>
 			</description>
@@ -11326,7 +11326,7 @@
 			</return>
 			<argument index="0" name="class" type="String">
 			</argument>
-			<argument index="1" name="no_inheritance" type="bool" default="null">
+			<argument index="1" name="no_inheritance" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -11336,7 +11336,7 @@
 			</return>
 			<argument index="0" name="class" type="String">
 			</argument>
-			<argument index="1" name="no_inheritance" type="bool" default="null">
+			<argument index="1" name="no_inheritance" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -11356,7 +11356,7 @@
 			</return>
 			<argument index="0" name="class" type="String">
 			</argument>
-			<argument index="1" name="no_inheritance" type="bool" default="null">
+			<argument index="1" name="no_inheritance" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -11376,7 +11376,7 @@
 			</return>
 			<argument index="0" name="class" type="String">
 			</argument>
-			<argument index="1" name="no_inheritance" type="bool" default="null">
+			<argument index="1" name="no_inheritance" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -11398,7 +11398,7 @@
 			</argument>
 			<argument index="1" name="method" type="String">
 			</argument>
-			<argument index="2" name="no_inheritance" type="bool" default="null">
+			<argument index="2" name="no_inheritance" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -11414,7 +11414,7 @@
 			</description>
 		</method>
 		<method name="class_set_property" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
@@ -12001,7 +12001,7 @@
 	</description>
 	<methods>
 		<method name="get_build_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="CollisionPolygon2D.BuildMode">
 			</return>
 			<description>
 				Return whether the polygon is a [ConvexPolygonShape2D] ([code]build_mode==0[/code]), or a [ConcavePolygonShape2D] ([code]build_mode==1[/code]).
@@ -12759,7 +12759,7 @@
 			</description>
 		</method>
 		<method name="load">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
@@ -12768,7 +12768,7 @@
 			</description>
 		</method>
 		<method name="save">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
@@ -13004,7 +13004,7 @@
 			</return>
 			<argument index="0" name="name" type="String">
 			</argument>
-			<argument index="1" name="type" type="String" default="null">
+			<argument index="1" name="type" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
 			</description>
@@ -13020,13 +13020,13 @@
 			</return>
 			<argument index="0" name="name" type="String">
 			</argument>
-			<argument index="1" name="type" type="String" default="null">
+			<argument index="1" name="type" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="get_cursor_shape" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Control.CursorShape">
 			</return>
 			<argument index="0" name="pos" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
@@ -13041,7 +13041,7 @@
 			</description>
 		</method>
 		<method name="get_default_cursor_shape" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Control.CursorShape">
 			</return>
 			<description>
 				Return the default cursor shape for this control. See enum CURSOR_* for the list of shapes.
@@ -13063,7 +13063,7 @@
 			</description>
 		</method>
 		<method name="get_focus_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Control.FocusMode">
 			</return>
 			<description>
 				Returns the focus access mode for the control (FOCUS_NONE, FOCUS_CLICK, FOCUS_ALL) (see [method set_focus_mode]).
@@ -13090,7 +13090,7 @@
 			</return>
 			<argument index="0" name="name" type="String">
 			</argument>
-			<argument index="1" name="type" type="String" default="null">
+			<argument index="1" name="type" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
 			</description>
@@ -13110,7 +13110,7 @@
 			</description>
 		</method>
 		<method name="get_h_grow_direction" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Control.GrowDirection">
 			</return>
 			<description>
 			</description>
@@ -13127,7 +13127,7 @@
 			</return>
 			<argument index="0" name="name" type="String">
 			</argument>
-			<argument index="1" name="type" type="String" default="null">
+			<argument index="1" name="type" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
 			</description>
@@ -13149,7 +13149,7 @@
 			</description>
 		</method>
 		<method name="get_mouse_filter" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Control.MouseFilter">
 			</return>
 			<description>
 				Return when the control is ignoring mouse events (even touchpad events send mouse events).
@@ -13226,7 +13226,7 @@
 			</return>
 			<argument index="0" name="name" type="String">
 			</argument>
-			<argument index="1" name="type" type="String" default="null">
+			<argument index="1" name="type" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
 			</description>
@@ -13248,7 +13248,7 @@
 			</description>
 		</method>
 		<method name="get_v_grow_direction" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Control.GrowDirection">
 			</return>
 			<description>
 			</description>
@@ -13278,7 +13278,7 @@
 			</return>
 			<argument index="0" name="name" type="String">
 			</argument>
-			<argument index="1" name="type" type="String" default="null">
+			<argument index="1" name="type" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
 			</description>
@@ -13296,7 +13296,7 @@
 			</return>
 			<argument index="0" name="name" type="String">
 			</argument>
-			<argument index="1" name="type" type="String" default="null">
+			<argument index="1" name="type" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
 			</description>
@@ -13321,7 +13321,7 @@
 			</return>
 			<argument index="0" name="name" type="String">
 			</argument>
-			<argument index="1" name="type" type="String" default="null">
+			<argument index="1" name="type" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
 			</description>
@@ -13339,7 +13339,7 @@
 			</return>
 			<argument index="0" name="name" type="String">
 			</argument>
-			<argument index="1" name="type" type="String" default="null">
+			<argument index="1" name="type" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
 			</description>
@@ -13365,7 +13365,7 @@
 			</return>
 			<argument index="0" name="name" type="String">
 			</argument>
-			<argument index="1" name="type" type="String" default="null">
+			<argument index="1" name="type" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
 			</description>
@@ -13404,9 +13404,9 @@
 			</argument>
 			<argument index="1" name="anchor" type="float">
 			</argument>
-			<argument index="2" name="keep_margin" type="bool" default="null">
+			<argument index="2" name="keep_margin" type="bool" default="false">
 			</argument>
-			<argument index="3" name="push_opposite_anchor" type="bool" default="null">
+			<argument index="3" name="push_opposite_anchor" type="bool" default="true">
 			</argument>
 			<description>
 			</description>
@@ -13420,7 +13420,7 @@
 			</argument>
 			<argument index="2" name="offset" type="float">
 			</argument>
-			<argument index="3" name="push_opposite_anchor" type="bool" default="null">
+			<argument index="3" name="push_opposite_anchor" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -13430,7 +13430,7 @@
 			</return>
 			<argument index="0" name="preset" type="int" enum="Control.LayoutPreset">
 			</argument>
-			<argument index="1" name="keep_margin" type="bool" default="null">
+			<argument index="1" name="keep_margin" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -14016,7 +14016,7 @@
 			</description>
 		</method>
 		<method name="get_storage" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="CubeMap.Storage">
 			</return>
 			<description>
 			</description>
@@ -14184,7 +14184,7 @@
 			</argument>
 			<argument index="3" name="left_mode" type="int" enum="Curve.TangentMode" default="0">
 			</argument>
-			<argument index="4" name="right_mode" type="int" enum="Curve.TangentMode" default="null">
+			<argument index="4" name="right_mode" type="int" enum="Curve.TangentMode" default="0">
 			</argument>
 			<description>
 			</description>
@@ -14226,7 +14226,7 @@
 			</description>
 		</method>
 		<method name="get_point_left_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Curve.TangentMode">
 			</return>
 			<argument index="0" name="index" type="int">
 			</argument>
@@ -14250,7 +14250,7 @@
 			</description>
 		</method>
 		<method name="get_point_right_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Curve.TangentMode">
 			</return>
 			<argument index="0" name="index" type="int">
 			</argument>
@@ -14411,7 +14411,7 @@
 			</argument>
 			<argument index="2" name="out" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
-			<argument index="3" name="atpos" type="int" default="null">
+			<argument index="3" name="atpos" type="int" default="-1">
 			</argument>
 			<description>
 				Adds a point to a curve, at position "pos", with control points "in" and "out".
@@ -14496,7 +14496,7 @@
 			</return>
 			<argument index="0" name="offset" type="float">
 			</argument>
-			<argument index="1" name="cubic" type="bool" default="null">
+			<argument index="1" name="cubic" type="bool" default="false">
 			</argument>
 			<description>
 				Returns a point within the curve at position "offset", where "offset" is measured as a pixel distance along the curve.
@@ -14567,9 +14567,9 @@
 		<method name="tessellate" qualifiers="const">
 			<return type="PoolVector2Array">
 			</return>
-			<argument index="0" name="max_stages" type="int" default="4">
+			<argument index="0" name="max_stages" type="int" default="5">
 			</argument>
-			<argument index="1" name="tolerance_degrees" type="float" default="5">
+			<argument index="1" name="tolerance_degrees" type="float" default="4">
 			</argument>
 			<description>
 				Returns a list of points along the curve, with a curvature controlled point density. That is, the curvier parts will have more points than the straighter parts.
@@ -14606,7 +14606,7 @@
 			</argument>
 			<argument index="2" name="out" type="Vector3" default="Vector3( 0, 0, 0 )">
 			</argument>
-			<argument index="3" name="atpos" type="int" default="null">
+			<argument index="3" name="atpos" type="int" default="-1">
 			</argument>
 			<description>
 				Adds a point to a curve, at position "pos", with control points "in" and "out".
@@ -14707,7 +14707,7 @@
 			</return>
 			<argument index="0" name="offset" type="float">
 			</argument>
-			<argument index="1" name="cubic" type="bool" default="null">
+			<argument index="1" name="cubic" type="bool" default="false">
 			</argument>
 			<description>
 				Returns a point within the curve at position "offset", where "offset" is measured as a distance in 3D units along the curve.
@@ -14790,9 +14790,9 @@
 		<method name="tessellate" qualifiers="const">
 			<return type="PoolVector3Array">
 			</return>
-			<argument index="0" name="max_stages" type="int" default="4">
+			<argument index="0" name="max_stages" type="int" default="5">
 			</argument>
-			<argument index="1" name="tolerance_degrees" type="float" default="5">
+			<argument index="1" name="tolerance_degrees" type="float" default="4">
 			</argument>
 			<description>
 				Returns a list of points along the curve, with a curvature controlled point density. That is, the curvier parts will have more points than the straighter parts.
@@ -15113,7 +15113,7 @@
 	</description>
 	<methods>
 		<method name="get_shadow_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="DirectionalLight.ShadowMode">
 			</return>
 			<description>
 			</description>
@@ -15191,7 +15191,7 @@
 	</description>
 	<methods>
 		<method name="change_dir">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="todir" type="String">
 			</argument>
@@ -15201,7 +15201,7 @@
 			</description>
 		</method>
 		<method name="copy">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="from" type="String">
 			</argument>
@@ -15282,7 +15282,7 @@
 			</description>
 		</method>
 		<method name="list_dir_begin">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="skip_navigational" type="bool" default="false">
 			</argument>
@@ -15302,7 +15302,7 @@
 			</description>
 		</method>
 		<method name="make_dir">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
@@ -15312,7 +15312,7 @@
 			</description>
 		</method>
 		<method name="make_dir_recursive">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
@@ -15322,7 +15322,7 @@
 			</description>
 		</method>
 		<method name="open">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
@@ -15332,7 +15332,7 @@
 			</description>
 		</method>
 		<method name="remove">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
@@ -15342,7 +15342,7 @@
 			</description>
 		</method>
 		<method name="rename">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="from" type="String">
 			</argument>
@@ -15556,7 +15556,7 @@
 			</description>
 		</method>
 		<method name="get_access" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="EditorFileDialog.Access">
 			</return>
 			<description>
 			</description>
@@ -15580,13 +15580,13 @@
 			</description>
 		</method>
 		<method name="get_display_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="EditorFileDialog.DisplayMode">
 			</return>
 			<description>
 			</description>
 		</method>
 		<method name="get_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="EditorFileDialog.Mode">
 			</return>
 			<description>
 			</description>
@@ -16070,7 +16070,7 @@
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="for_property" type="String" default="null">
+			<argument index="1" name="for_property" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
 			</description>
@@ -16102,7 +16102,7 @@
 			</description>
 		</method>
 		<method name="save_scene">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<description>
 			</description>
@@ -16112,7 +16112,7 @@
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
-			<argument index="1" name="with_preview" type="bool" default="null">
+			<argument index="1" name="with_preview" type="bool" default="true">
 			</argument>
 			<description>
 			</description>
@@ -16842,7 +16842,7 @@
 			</argument>
 			<argument index="1" name="billboard" type="bool" default="false">
 			</argument>
-			<argument index="2" name="secondary" type="bool" default="null">
+			<argument index="2" name="secondary" type="bool" default="false">
 			</argument>
 			<description>
 				Add a list of handles (points) which can be used to deform the object being edited.
@@ -16856,7 +16856,7 @@
 			</argument>
 			<argument index="1" name="material" type="Material">
 			</argument>
-			<argument index="2" name="billboard" type="bool" default="null">
+			<argument index="2" name="billboard" type="bool" default="false">
 			</argument>
 			<description>
 				Add lines to the gizmo (as sets of 2 points), with a given material. The lines are used for visualizing the gizmo. Call this function during [method redraw].
@@ -16869,7 +16869,7 @@
 			</argument>
 			<argument index="1" name="billboard" type="bool" default="false">
 			</argument>
-			<argument index="2" name="skeleton" type="RID" default="null">
+			<argument index="2" name="skeleton" type="RID">
 			</argument>
 			<description>
 			</description>
@@ -16879,7 +16879,7 @@
 			</return>
 			<argument index="0" name="material" type="Material">
 			</argument>
-			<argument index="1" name="default_scale" type="float" default="null">
+			<argument index="1" name="default_scale" type="float" default="1">
 			</argument>
 			<description>
 				Add an unscaled billboard for visualization. Call this function during [method redraw].
@@ -17139,7 +17139,7 @@
 			</description>
 		</method>
 		<method name="get_background" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Environment.BGMode">
 			</return>
 			<description>
 			</description>
@@ -17175,7 +17175,7 @@
 			</description>
 		</method>
 		<method name="get_dof_blur_far_quality" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Environment.DOFBlurQuality">
 			</return>
 			<description>
 			</description>
@@ -17199,7 +17199,7 @@
 			</description>
 		</method>
 		<method name="get_dof_blur_near_quality" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Environment.DOFBlurQuality">
 			</return>
 			<description>
 			</description>
@@ -17265,7 +17265,7 @@
 			</description>
 		</method>
 		<method name="get_glow_blend_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Environment.GlowBlendMode">
 			</return>
 			<description>
 			</description>
@@ -17421,7 +17421,7 @@
 			</description>
 		</method>
 		<method name="get_tonemapper" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Environment.ToneMapper">
 			</return>
 			<description>
 			</description>
@@ -18370,7 +18370,7 @@
 			</description>
 		</method>
 		<method name="get_error" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<description>
 				Get the last error that happened when trying to perform operations. Compare with the [code]ERR_FILE_*[/code] constants from [@Global Scope].
@@ -18459,7 +18459,7 @@
 			</description>
 		</method>
 		<method name="open">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
@@ -18470,20 +18470,20 @@
 			</description>
 		</method>
 		<method name="open_compressed">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
 			<argument index="1" name="mode_flags" type="int">
 			</argument>
-			<argument index="2" name="compression_mode" type="int" default="null">
+			<argument index="2" name="compression_mode" type="int" default="0">
 			</argument>
 			<description>
 				Open a compressed file for reading or writing. The compression_mode can be set as one of the COMPRESSION_* constants.
 			</description>
 		</method>
 		<method name="open_encrypted">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
@@ -18496,7 +18496,7 @@
 			</description>
 		</method>
 		<method name="open_encrypted_with_pass">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
@@ -18696,7 +18696,7 @@
 			</description>
 		</method>
 		<method name="get_access" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="FileDialog.Access">
 			</return>
 			<description>
 				Return the file access permission of the dialog.
@@ -18730,7 +18730,7 @@
 			</description>
 		</method>
 		<method name="get_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="FileDialog.Mode">
 			</return>
 			<description>
 				Get the file dialog mode from the MODE_* enum.
@@ -18905,9 +18905,9 @@
 			</argument>
 			<argument index="2" name="string" type="String">
 			</argument>
-			<argument index="3" name="modulate" type="Color" default="null">
+			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
 			</argument>
-			<argument index="4" name="clip_w" type="int" default="null">
+			<argument index="4" name="clip_w" type="int" default="-1">
 			</argument>
 			<description>
 				Draw "string" into a canvas item using the font at a given "pos" position, with "modulate" color, and optionally clipping the width. "pos" specifies the baseline, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis.
@@ -18922,9 +18922,9 @@
 			</argument>
 			<argument index="2" name="char" type="int">
 			</argument>
-			<argument index="3" name="next" type="int" default="null">
+			<argument index="3" name="next" type="int" default="-1">
 			</argument>
-			<argument index="4" name="modulate" type="Color" default="null">
+			<argument index="4" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
 			</argument>
 			<description>
 				Draw character "char" into a canvas item using the font at a given "pos" position, with "modulate" color, and optionally kerning if "next" is passed. clipping the width. "pos" specifies the baseline, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis. The width used by the character is returned, making this function useful for drawing strings character by character.
@@ -19182,9 +19182,9 @@
 		<method name="bake">
 			<return type="void">
 			</return>
-			<argument index="0" name="from_node" type="Node" default="false">
+			<argument index="0" name="from_node" type="Node" default="null">
 			</argument>
-			<argument index="1" name="create_visual_debug" type="bool" default="null">
+			<argument index="1" name="create_visual_debug" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -19238,7 +19238,7 @@
 			</description>
 		</method>
 		<method name="get_subdiv" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="GIProbe.Subdiv">
 			</return>
 			<description>
 			</description>
@@ -19842,7 +19842,7 @@
 			</argument>
 			<argument index="3" name="lats" type="int">
 			</argument>
-			<argument index="4" name="axis" type="int" enum="Vector3.Axis" default="null">
+			<argument index="4" name="axis" type="int" enum="Vector3.Axis" default="2">
 			</argument>
 			<description>
 			</description>
@@ -19856,7 +19856,7 @@
 			</argument>
 			<argument index="2" name="sides" type="int">
 			</argument>
-			<argument index="3" name="axis" type="int" enum="Vector3.Axis" default="null">
+			<argument index="3" name="axis" type="int" enum="Vector3.Axis" default="2">
 			</argument>
 			<description>
 			</description>
@@ -20088,7 +20088,7 @@
 	</description>
 	<methods>
 		<method name="get_cast_shadows_setting" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="GeometryInstance.ShadowCastingSetting">
 			</return>
 			<description>
 			</description>
@@ -20411,7 +20411,7 @@
 	</description>
 	<methods>
 		<method name="connect_node">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="from" type="String">
 			</argument>
@@ -20746,7 +20746,7 @@
 			</description>
 		</method>
 		<method name="get_overlay" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="GraphNode.Overlay">
 			</return>
 			<description>
 			</description>
@@ -21141,7 +21141,7 @@
 			</argument>
 			<argument index="3" name="item" type="int">
 			</argument>
-			<argument index="4" name="orientation" type="int" default="null">
+			<argument index="4" name="orientation" type="int" default="0">
 			</argument>
 			<description>
 			</description>
@@ -21183,11 +21183,11 @@
 			</return>
 			<argument index="0" name="enabled" type="bool">
 			</argument>
-			<argument index="1" name="clipabove" type="bool" default="0">
+			<argument index="1" name="clipabove" type="bool" default="true">
 			</argument>
-			<argument index="2" name="floor" type="int" default="true">
+			<argument index="2" name="floor" type="int" default="0">
 			</argument>
-			<argument index="3" name="axis" type="int" enum="Vector3.Axis" default="null">
+			<argument index="3" name="axis" type="int" enum="Vector3.Axis" default="0">
 			</argument>
 			<description>
 			</description>
@@ -21399,15 +21399,15 @@
 			</description>
 		</method>
 		<method name="connect_to_host">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="host" type="String">
 			</argument>
 			<argument index="1" name="port" type="int">
 			</argument>
-			<argument index="2" name="use_ssl" type="bool" default="null">
+			<argument index="2" name="use_ssl" type="bool" default="false">
 			</argument>
-			<argument index="3" name="verify_host" type="bool" default="null">
+			<argument index="3" name="verify_host" type="bool" default="true">
 			</argument>
 			<description>
 				Connect to a host. This needs to be done before any requests are sent.
@@ -21453,7 +21453,7 @@
 			</description>
 		</method>
 		<method name="get_status" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="HTTPClient.Status">
 			</return>
 			<description>
 				Returns a STATUS_* enum constant. Need to call [method poll] in order to get status updates.
@@ -21481,7 +21481,7 @@
 			</description>
 		</method>
 		<method name="poll">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<description>
 				This needs to be called in order to have any request processed. Check results with [method get_status]
@@ -21509,7 +21509,7 @@
 			</description>
 		</method>
 		<method name="request">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="method" type="int" enum="HTTPClient.Method">
 			</argument>
@@ -21517,7 +21517,7 @@
 			</argument>
 			<argument index="2" name="headers" type="PoolStringArray">
 			</argument>
-			<argument index="3" name="body" type="String" default="null">
+			<argument index="3" name="body" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
 				Sends a request to the connected host. The url is what is normally behind the hostname, i.e. in [code]http://somehost.com/index.php[/code], url would be "index.php".
@@ -21532,7 +21532,7 @@
 			</description>
 		</method>
 		<method name="request_raw">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="method" type="int" enum="HTTPClient.Method">
 			</argument>
@@ -21549,7 +21549,7 @@
 			</description>
 		</method>
 		<method name="send_body_data">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="body" type="PoolByteArray">
 			</argument>
@@ -21558,7 +21558,7 @@
 			</description>
 		</method>
 		<method name="send_body_text">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="body" type="String">
 			</argument>
@@ -21778,7 +21778,7 @@
 			</description>
 		</method>
 		<method name="get_http_client_status" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="HTTPClient.Status">
 			</return>
 			<description>
 				Return the current status of the underlying [HTTPClient].
@@ -21799,17 +21799,17 @@
 			</description>
 		</method>
 		<method name="request">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="url" type="String">
 			</argument>
-			<argument index="1" name="custom_headers" type="PoolStringArray" default="0">
+			<argument index="1" name="custom_headers" type="PoolStringArray" default="PoolStringArray(  )">
 			</argument>
 			<argument index="2" name="ssl_validate_domain" type="bool" default="true">
 			</argument>
-			<argument index="3" name="method" type="int" enum="HTTPClient.Method" default="PoolStringArray(  )">
+			<argument index="3" name="method" type="int" enum="HTTPClient.Method" default="0">
 			</argument>
-			<argument index="4" name="request_data" type="String" default="null">
+			<argument index="4" name="request_data" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
 			</description>
@@ -22045,7 +22045,7 @@
 			</description>
 		</method>
 		<method name="get_resolve_item_status" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="IP.ResolverStatus">
 			</return>
 			<argument index="0" name="id" type="int">
 			</argument>
@@ -22058,7 +22058,7 @@
 			</return>
 			<argument index="0" name="host" type="String">
 			</argument>
-			<argument index="1" name="ip_type" type="int" enum="IP.Type" default="null">
+			<argument index="1" name="ip_type" type="int" enum="IP.Type" default="3">
 			</argument>
 			<description>
 				Resolve a given hostname, blocking. Resolved hostname is returned as an IPv4 or IPv6 depending on "ip_type".
@@ -22069,7 +22069,7 @@
 			</return>
 			<argument index="0" name="host" type="String">
 			</argument>
-			<argument index="1" name="ip_type" type="int" enum="IP.Type" default="null">
+			<argument index="1" name="ip_type" type="int" enum="IP.Type" default="3">
 			</argument>
 			<description>
 				Create a queue item for resolving a given hostname to an IPv4 or IPv6 depending on "ip_type". The queue ID is returned, or RESOLVER_INVALID_ID on error.
@@ -22180,7 +22180,7 @@
 			</description>
 		</method>
 		<method name="compress">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="mode" type="int" enum="Image.CompressMode">
 			</argument>
@@ -22249,13 +22249,13 @@
 			</description>
 		</method>
 		<method name="decompress">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<description>
 			</description>
 		</method>
 		<method name="detect_alpha" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Image.AlphaMode">
 			</return>
 			<description>
 			</description>
@@ -22294,7 +22294,7 @@
 			</description>
 		</method>
 		<method name="generate_mipmaps">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<description>
 			</description>
@@ -22307,7 +22307,7 @@
 			</description>
 		</method>
 		<method name="get_format" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Image.Format">
 			</return>
 			<description>
 				Return the format of the [Image], one of [Image].FORMAT_*.
@@ -22392,7 +22392,7 @@
 			</description>
 		</method>
 		<method name="load">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
@@ -22425,7 +22425,7 @@
 			</argument>
 			<argument index="1" name="height" type="int">
 			</argument>
-			<argument index="2" name="interpolation" type="int" enum="Image.Interpolation" default="null">
+			<argument index="2" name="interpolation" type="int" enum="Image.Interpolation" default="1">
 			</argument>
 			<description>
 			</description>
@@ -22439,7 +22439,7 @@
 			</description>
 		</method>
 		<method name="save_png" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
@@ -22606,7 +22606,7 @@
 			</argument>
 			<argument index="2" name="format" type="int" enum="Image.Format">
 			</argument>
-			<argument index="3" name="flags" type="int" default="null">
+			<argument index="3" name="flags" type="int" default="7">
 			</argument>
 			<description>
 				Create a new [ImageTexture] with "width" and "height".
@@ -22619,14 +22619,14 @@
 			</return>
 			<argument index="0" name="image" type="Image">
 			</argument>
-			<argument index="1" name="flags" type="int" default="null">
+			<argument index="1" name="flags" type="int" default="7">
 			</argument>
 			<description>
 				Create a new [ImageTexture] from an [Image] with "flags" from [Texture].FLAG_*.
 			</description>
 		</method>
 		<method name="get_format" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Image.Format">
 			</return>
 			<description>
 				Return the format of the [ImageTexture], one of [Image].FORMAT_*.
@@ -22640,7 +22640,7 @@
 			</description>
 		</method>
 		<method name="get_storage" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="ImageTexture.Storage">
 			</return>
 			<description>
 				Return the storage type. One of [ImageTexture].STORAGE_*.
@@ -22719,7 +22719,7 @@
 			</argument>
 			<argument index="2" name="radius" type="float">
 			</argument>
-			<argument index="3" name="add_uv" type="bool" default="null">
+			<argument index="3" name="add_uv" type="bool" default="true">
 			</argument>
 			<description>
 				Simple helper to draw a uvsphere, with given latitudes, longitude and radius.
@@ -22840,7 +22840,7 @@
 			</return>
 			<argument index="0" name="mapping" type="String">
 			</argument>
-			<argument index="1" name="update_existing" type="bool" default="null">
+			<argument index="1" name="update_existing" type="bool" default="false">
 			</argument>
 			<description>
 				Add a new mapping entry (in SDL2 format) to the mapping database. Optionally update already connected devices.
@@ -22974,7 +22974,7 @@
 			</description>
 		</method>
 		<method name="get_mouse_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Input.MouseMode">
 			</return>
 			<description>
 				Return the mouse mode. See the constants for more information.
@@ -23065,7 +23065,7 @@
 			</return>
 			<argument index="0" name="image" type="Resource">
 			</argument>
-			<argument index="1" name="hotspot" type="Vector2" default="null">
+			<argument index="1" name="hotspot" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
 			</description>
@@ -23088,7 +23088,7 @@
 			</argument>
 			<argument index="2" name="strong_magnitude" type="float">
 			</argument>
-			<argument index="3" name="duration" type="float" default="null">
+			<argument index="3" name="duration" type="float" default="0">
 			</argument>
 			<description>
 				Starts to vibrate the joypad. Joypads usually come with two rumble motors, a strong and a weak one. weak_magnitude is the strength of the weak motor (between 0 and 1) and strong_magnitude is the strength of the strong motor (between 0 and 1). duration is the duration of the effect in seconds (a duration of 0 will try to play the vibration indefinitely).
@@ -23259,7 +23259,7 @@
 			</return>
 			<argument index="0" name="xform" type="Transform2D">
 			</argument>
-			<argument index="1" name="local_ofs" type="Vector2" default="null">
+			<argument index="1" name="local_ofs" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
 			</description>
@@ -24139,7 +24139,7 @@
 			</return>
 			<argument index="0" name="icon" type="Texture">
 			</argument>
-			<argument index="1" name="selectable" type="bool" default="null">
+			<argument index="1" name="selectable" type="bool" default="true">
 			</argument>
 			<description>
 				Adds an item to the item list with no text, only an icon.
@@ -24152,7 +24152,7 @@
 			</argument>
 			<argument index="1" name="icon" type="Texture" default="null">
 			</argument>
-			<argument index="2" name="selectable" type="bool" default="null">
+			<argument index="2" name="selectable" type="bool" default="true">
 			</argument>
 			<description>
 				Adds an item to the item list with specified text.  Specify an icon of null for a list item with no icon.
@@ -24194,7 +24194,7 @@
 			</description>
 		</method>
 		<method name="get_icon_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="ItemList.IconMode">
 			</return>
 			<description>
 			</description>
@@ -24210,7 +24210,7 @@
 			</return>
 			<argument index="0" name="pos" type="Vector2">
 			</argument>
-			<argument index="1" name="exact" type="bool" default="null">
+			<argument index="1" name="exact" type="bool" default="false">
 			</argument>
 			<description>
 				Given a position within the control return the item (if any) at that point.
@@ -24288,7 +24288,7 @@
 			</description>
 		</method>
 		<method name="get_select_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="ItemList.SelectMode">
 			</return>
 			<description>
 			</description>
@@ -24370,7 +24370,7 @@
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
-			<argument index="1" name="single" type="bool" default="null">
+			<argument index="1" name="single" type="bool" default="true">
 			</argument>
 			<description>
 				Select the item at the specified index.
@@ -24991,13 +24991,13 @@
 			</return>
 			<argument index="0" name="linear_velocity" type="Vector3">
 			</argument>
-			<argument index="1" name="floor_normal" type="Vector3" default="4">
+			<argument index="1" name="floor_normal" type="Vector3" default="Vector3( 0, 0, 0 )">
 			</argument>
 			<argument index="2" name="slope_stop_min_velocity" type="float" default="0.05">
 			</argument>
-			<argument index="3" name="max_bounces" type="int" default="Vector3( 0, 0, 0 )">
+			<argument index="3" name="max_bounces" type="int" default="4">
 			</argument>
-			<argument index="4" name="floor_max_angle" type="float" default="null">
+			<argument index="4" name="floor_max_angle" type="float" default="0.785398">
 			</argument>
 			<description>
 			</description>
@@ -25186,13 +25186,13 @@
 			</return>
 			<argument index="0" name="linear_velocity" type="Vector2">
 			</argument>
-			<argument index="1" name="floor_normal" type="Vector2" default="4">
+			<argument index="1" name="floor_normal" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<argument index="2" name="slope_stop_min_velocity" type="float" default="5">
 			</argument>
-			<argument index="3" name="max_bounces" type="int" default="Vector2( 0, 0 )">
+			<argument index="3" name="max_bounces" type="int" default="4">
 			</argument>
-			<argument index="4" name="floor_max_angle" type="float" default="null">
+			<argument index="4" name="floor_max_angle" type="float" default="0.785398">
 			</argument>
 			<description>
 			</description>
@@ -25233,7 +25233,7 @@
 	</description>
 	<methods>
 		<method name="get_align" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Label.Align">
 			</return>
 			<description>
 				Return the alignment mode (any of the ALIGN_* enumeration values).
@@ -25289,7 +25289,7 @@
 			</description>
 		</method>
 		<method name="get_valign" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Label.VAlign">
 			</return>
 			<description>
 				Return the vertical alignment mode (any of the VALIGN_* enumeration values).
@@ -25814,7 +25814,7 @@
 			</description>
 		</method>
 		<method name="get_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Light2D.Mode">
 			</return>
 			<description>
 				Return the current mode set to the Light2D.
@@ -25835,7 +25835,7 @@
 			</description>
 		</method>
 		<method name="get_shadow_filter" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Light2D.ShadowFilter">
 			</return>
 			<description>
 			</description>
@@ -26217,7 +26217,7 @@
 			</description>
 		</method>
 		<method name="get_begin_cap_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="LineCapMode">
 			</return>
 			<description>
 			</description>
@@ -26229,7 +26229,7 @@
 			</description>
 		</method>
 		<method name="get_end_cap_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="LineCapMode">
 			</return>
 			<description>
 			</description>
@@ -26241,7 +26241,7 @@
 			</description>
 		</method>
 		<method name="get_joint_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="LineJointMode">
 			</return>
 			<description>
 			</description>
@@ -26285,7 +26285,7 @@
 			</description>
 		</method>
 		<method name="get_texture_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="LineTextureMode">
 			</return>
 			<description>
 			</description>
@@ -26503,7 +26503,7 @@
 			</description>
 		</method>
 		<method name="get_align" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="LineEdit.Align">
 			</return>
 			<description>
 			</description>
@@ -26578,9 +26578,9 @@
 		<method name="select">
 			<return type="void">
 			</return>
-			<argument index="0" name="from" type="int" default="-1">
+			<argument index="0" name="from" type="int" default="0">
 			</argument>
-			<argument index="1" name="to" type="int" default="0">
+			<argument index="1" name="to" type="int" default="-1">
 			</argument>
 			<description>
 			</description>
@@ -26821,7 +26821,7 @@
 			</description>
 		</method>
 		<method name="get_underline_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="LinkButton.UnderlineMode">
 			</return>
 			<description>
 				Returns the underline mode for this button.
@@ -27299,7 +27299,7 @@
 			</description>
 		</method>
 		<method name="commit_to_surface">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="mesh" type="ArrayMesh">
 			</argument>
@@ -27307,7 +27307,7 @@
 			</description>
 		</method>
 		<method name="create_from_surface">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="mesh" type="ArrayMesh">
 			</argument>
@@ -27867,7 +27867,7 @@
 			</description>
 		</method>
 		<method name="get_color_format" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="MultiMesh.ColorFormat">
 			</return>
 			<description>
 			</description>
@@ -27905,7 +27905,7 @@
 			</description>
 		</method>
 		<method name="get_transform_format" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="MultiMesh.TransformFormat">
 			</return>
 			<description>
 			</description>
@@ -28042,7 +28042,7 @@
 			</description>
 		</method>
 		<method name="try_lock">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<description>
 				Try locking this [Mutex], does not block. Returns [OK] on success else [ERR_BUSY].
@@ -28146,7 +28146,7 @@
 			</argument>
 			<argument index="1" name="end" type="Vector3">
 			</argument>
-			<argument index="2" name="use_collision" type="bool" default="null">
+			<argument index="2" name="use_collision" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -28158,7 +28158,7 @@
 			</argument>
 			<argument index="1" name="end" type="Vector3">
 			</argument>
-			<argument index="2" name="optimize" type="bool" default="null">
+			<argument index="2" name="optimize" type="bool" default="true">
 			</argument>
 			<description>
 			</description>
@@ -28244,7 +28244,7 @@
 			</argument>
 			<argument index="1" name="end" type="Vector2">
 			</argument>
-			<argument index="2" name="optimize" type="bool" default="null">
+			<argument index="2" name="optimize" type="bool" default="true">
 			</argument>
 			<description>
 			</description>
@@ -28574,35 +28574,35 @@
 			</description>
 		</method>
 		<method name="create_client">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="ip" type="String">
 			</argument>
 			<argument index="1" name="port" type="int">
 			</argument>
-			<argument index="2" name="in_bandwidth" type="int" default="null">
+			<argument index="2" name="in_bandwidth" type="int" default="0">
 			</argument>
-			<argument index="3" name="out_bandwidth" type="int" default="null">
+			<argument index="3" name="out_bandwidth" type="int" default="0">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="create_server">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="port" type="int">
 			</argument>
-			<argument index="1" name="max_clients" type="int" default="0">
+			<argument index="1" name="max_clients" type="int" default="32">
 			</argument>
-			<argument index="2" name="in_bandwidth" type="int" default="32">
+			<argument index="2" name="in_bandwidth" type="int" default="0">
 			</argument>
-			<argument index="3" name="out_bandwidth" type="int" default="null">
+			<argument index="3" name="out_bandwidth" type="int" default="0">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="get_compression_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="NetworkedMultiplayerENet.CompressionMode">
 			</return>
 			<description>
 			</description>
@@ -28644,7 +28644,7 @@
 	</description>
 	<methods>
 		<method name="get_connection_status" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="NetworkedMultiplayerPeer.ConnectionStatus">
 			</return>
 			<description>
 			</description>
@@ -28916,7 +28916,7 @@
 	</description>
 	<methods>
 		<method name="get_h_axis_stretch_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="NinePatchRect.AxisStretchMode">
 			</return>
 			<description>
 			</description>
@@ -28942,7 +28942,7 @@
 			</description>
 		</method>
 		<method name="get_v_axis_stretch_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="NinePatchRect.AxisStretchMode">
 			</return>
 			<description>
 			</description>
@@ -29131,7 +29131,7 @@
 			</return>
 			<argument index="0" name="node" type="Node">
 			</argument>
-			<argument index="1" name="legible_unique_name" type="bool" default="null">
+			<argument index="1" name="legible_unique_name" type="bool" default="false">
 			</argument>
 			<description>
 				Add a child [Node]. Nodes can have as many children as they want, but every child must have a unique name. Children nodes are automatically deleted when the parent node is deleted, so deleting a whole scene is performed by deleting its topmost node.
@@ -29143,7 +29143,7 @@
 			</return>
 			<argument index="0" name="group" type="String">
 			</argument>
-			<argument index="1" name="persistent" type="bool" default="null">
+			<argument index="1" name="persistent" type="bool" default="false">
 			</argument>
 			<description>
 				Add a node to a group. Groups are helpers to name and organize a subset of nodes, like for example "enemies" or "collectables". A [Node] can be in any number of groups. Nodes can be assigned a group at any time, but will not be added to it until they are inside the scene tree (see [method is_inside_tree]).
@@ -29173,7 +29173,7 @@
 			</argument>
 			<argument index="1" name="recursive" type="bool" default="true">
 			</argument>
-			<argument index="2" name="owned" type="bool" default="null">
+			<argument index="2" name="owned" type="bool" default="true">
 			</argument>
 			<description>
 				Find a descendant of this node whose name matches [code]mask[/code] as in [method String.match] (i.e. case sensitive, but '*' matches zero or more characters and '?' matches any single character except '.'). Note that it does not match against the full path, just against individual node names.
@@ -29310,7 +29310,7 @@
 			</description>
 		</method>
 		<method name="get_pause_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Node.PauseMode">
 			</return>
 			<description>
 			</description>
@@ -29483,7 +29483,7 @@
 			</argument>
 			<argument index="1" name="args" type="Array" default="[  ]">
 			</argument>
-			<argument index="2" name="parent_first" type="bool" default="null">
+			<argument index="2" name="parent_first" type="bool" default="false">
 			</argument>
 			<description>
 				Calls the method (if present) with the arguments given in "args" on this Node and recursively on all children. If the parent_first argument is true then the method will be called on the current [Node] first, then on all children. If it is false then the children will get called first.
@@ -29541,7 +29541,7 @@
 			</return>
 			<argument index="0" name="node" type="Node">
 			</argument>
-			<argument index="1" name="keep_data" type="bool" default="null">
+			<argument index="1" name="keep_data" type="bool" default="false">
 			</argument>
 			<description>
 				Replace a node in a scene by a given one. Subscriptions that pass through this node will be lost.
@@ -29711,7 +29711,7 @@
 			</return>
 			<argument index="0" name="id" type="int">
 			</argument>
-			<argument index="1" name="recursive" type="bool" default="null">
+			<argument index="1" name="recursive" type="bool" default="true">
 			</argument>
 			<description>
 			</description>
@@ -30009,7 +30009,7 @@
 			</return>
 			<argument index="0" name="delta" type="float">
 			</argument>
-			<argument index="1" name="scaled" type="bool" default="null">
+			<argument index="1" name="scaled" type="bool" default="false">
 			</argument>
 			<description>
 				Apply a local translation on X axis to the 2D node according to the 'delta' of the process. If 'scaled' is false, the movement is normalized.
@@ -30020,7 +30020,7 @@
 			</return>
 			<argument index="0" name="delta" type="float">
 			</argument>
-			<argument index="1" name="scaled" type="bool" default="null">
+			<argument index="1" name="scaled" type="bool" default="false">
 			</argument>
 			<description>
 				Apply a local translation on Y axis to the 2D node according to the 'delta' of the process. If 'scaled' is false, the movement is normalized.
@@ -30287,7 +30287,7 @@
 			</return>
 			<argument index="0" name="text" type="String">
 			</argument>
-			<argument index="1" name="title" type="String" default="null">
+			<argument index="1" name="title" type="String" default="&quot;Alert!&quot;">
 			</argument>
 			<description>
 				Displays a modal dialog box utilizing the host OS.
@@ -30355,7 +30355,7 @@
 			</argument>
 			<argument index="2" name="blocking" type="bool">
 			</argument>
-			<argument index="3" name="output" type="Array" default="null">
+			<argument index="3" name="output" type="Array" default="[  ]">
 			</argument>
 			<description>
 				Execute the binary file in given path, optionally blocking until it returns. A process ID is returned.
@@ -30504,7 +30504,7 @@
 			</description>
 		</method>
 		<method name="get_power_state">
-			<return type="int">
+			<return type="int" enum="PowerState">
 			</return>
 			<description>
 			</description>
@@ -30557,7 +30557,7 @@
 			</description>
 		</method>
 		<method name="get_screen_orientation" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="_OS.ScreenOrientation">
 			</return>
 			<description>
 				Returns the current screen orientation, the return value will be one of the SCREEN_ORIENTATION constants in this class.
@@ -30778,7 +30778,7 @@
 			</description>
 		</method>
 		<method name="kill">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="pid" type="int">
 			</argument>
@@ -30799,7 +30799,7 @@
 			</description>
 		</method>
 		<method name="native_video_play">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
@@ -30938,7 +30938,7 @@
 			</description>
 		</method>
 		<method name="set_thread_name">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="name" type="String">
 			</argument>
@@ -31025,7 +31025,7 @@
 			</description>
 		</method>
 		<method name="shell_open">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="uri" type="String">
 			</argument>
@@ -31182,7 +31182,7 @@
 			</return>
 			<argument index="0" name="signal" type="String">
 			</argument>
-			<argument index="1" name="arguments" type="Array" default="null">
+			<argument index="1" name="arguments" type="Array" default="[  ]">
 			</argument>
 			<description>
 				Add a user signal (can be added anytime). Arguments are optional, but can be added as an array of dictionaries, each containing "name" and "type" (from [@Global Scope] TYPE_*).
@@ -31222,7 +31222,7 @@
 			</description>
 		</method>
 		<method name="connect">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="signal" type="String">
 			</argument>
@@ -31230,9 +31230,9 @@
 			</argument>
 			<argument index="2" name="method" type="String">
 			</argument>
-			<argument index="3" name="binds" type="Array" default="null">
+			<argument index="3" name="binds" type="Array" default="[  ]">
 			</argument>
-			<argument index="4" name="flags" type="int" default="null">
+			<argument index="4" name="flags" type="int" default="0">
 			</argument>
 			<description>
 				Connect a signal to a method at a target (member function). Binds are optional and are passed as extra arguments to the call. Flags specify optional deferred or one shot connections, see enum CONNECT_*. A signal can only be connected once to a method, and it will throw an error if already connected. If you want to avoid this, use [method is_connected] to check.
@@ -31415,7 +31415,7 @@
 			</return>
 			<argument index="0" name="what" type="int">
 			</argument>
-			<argument index="1" name="reversed" type="bool" default="null">
+			<argument index="1" name="reversed" type="bool" default="false">
 			</argument>
 			<description>
 				Notify the object of something.
@@ -31517,7 +31517,7 @@
 	</description>
 	<methods>
 		<method name="get_cull_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="OccluderPolygon2D.CullMode">
 			</return>
 			<description>
 			</description>
@@ -31585,13 +31585,13 @@
 	</description>
 	<methods>
 		<method name="get_shadow_detail" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="OmniLight.ShadowDetail">
 			</return>
 			<description>
 			</description>
 		</method>
 		<method name="get_shadow_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="OmniLight.ShadowMode">
 			</return>
 			<description>
 			</description>
@@ -31652,7 +31652,7 @@
 			</return>
 			<argument index="0" name="label" type="String">
 			</argument>
-			<argument index="1" name="id" type="int" default="null">
+			<argument index="1" name="id" type="int" default="-1">
 			</argument>
 			<description>
 				Add an item, with text "label" and (optionally) id. If no "id" is passed, "id" becomes the item index. New items are appended at the end.
@@ -31865,7 +31865,7 @@
 	</description>
 	<methods>
 		<method name="add_file">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="pck_path" type="String">
 			</argument>
@@ -31875,7 +31875,7 @@
 			</description>
 		</method>
 		<method name="flush">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="verbose" type="bool">
 			</argument>
@@ -31883,7 +31883,7 @@
 			</description>
 		</method>
 		<method name="pck_start">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="pck_name" type="String">
 			</argument>
@@ -31923,7 +31923,7 @@
 	</description>
 	<methods>
 		<method name="pack">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="value" type="Variant">
 			</argument>
@@ -31988,7 +31988,7 @@
 			</description>
 		</method>
 		<method name="pack">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="path" type="Node">
 			</argument>
@@ -32033,7 +32033,7 @@
 			</description>
 		</method>
 		<method name="get_packet_error" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<description>
 				Return the error state of the last packet received (via [method get_packet] and [method get_var]).
@@ -32053,7 +32053,7 @@
 			</description>
 		</method>
 		<method name="put_packet">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="buffer" type="PoolByteArray">
 			</argument>
@@ -32062,7 +32062,7 @@
 			</description>
 		</method>
 		<method name="put_var">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="var" type="Variant">
 			</argument>
@@ -32168,13 +32168,13 @@
 			</description>
 		</method>
 		<method name="listen">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="port" type="int">
 			</argument>
 			<argument index="1" name="bind_address" type="String" default="&quot;*&quot;">
 			</argument>
-			<argument index="2" name="recv_buf_size" type="int" default="null">
+			<argument index="2" name="recv_buf_size" type="int" default="65536">
 			</argument>
 			<description>
 				Make this [PacketPeerUDP] listen on the "port" binding to "bind_address" with a buffer size "recv_buf_size".
@@ -32184,7 +32184,7 @@
 			</description>
 		</method>
 		<method name="set_dest_address">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="host" type="String">
 			</argument>
@@ -32195,7 +32195,7 @@
 			</description>
 		</method>
 		<method name="wait">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<description>
 				Wait for a packet to arrive on the listening port, see [method listen].
@@ -32474,7 +32474,7 @@
 			</description>
 		</method>
 		<method name="get_draw_order" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Particles.DrawOrder">
 			</return>
 			<description>
 			</description>
@@ -32775,7 +32775,7 @@
 			</description>
 		</method>
 		<method name="get_draw_order" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Particles2D.DrawOrder">
 			</return>
 			<description>
 			</description>
@@ -33127,7 +33127,7 @@
 			</description>
 		</method>
 		<method name="get_emission_shape" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="ParticlesMaterial.EmissionShape">
 			</return>
 			<description>
 			</description>
@@ -33617,7 +33617,7 @@
 			</description>
 		</method>
 		<method name="get_rotation_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="PathFollow.RotationMode">
 			</return>
 			<description>
 				Returns the rotation mode. The constants below list which axes are allowed to rotate for each mode.
@@ -34192,7 +34192,7 @@
 			</return>
 			<argument index="0" name="shape" type="Physics2DShapeQueryParameters">
 			</argument>
-			<argument index="1" name="max_results" type="int" default="null">
+			<argument index="1" name="max_results" type="int" default="32">
 			</argument>
 			<description>
 				Check the intersections of a shape, given through a [Physics2DShapeQueryParameters] object, against the space. The resulting array contains a list of points where the shape intersects another. Like with [method intersect_shape], the number of returned results can be limited to save processing time.
@@ -34221,13 +34221,13 @@
 			</return>
 			<argument index="0" name="point" type="Vector2">
 			</argument>
-			<argument index="1" name="max_results" type="int" default="2147483647">
+			<argument index="1" name="max_results" type="int" default="32">
 			</argument>
 			<argument index="2" name="exclude" type="Array" default="[  ]">
 			</argument>
-			<argument index="3" name="collision_layer" type="int" default="32">
+			<argument index="3" name="collision_layer" type="int" default="2147483647">
 			</argument>
-			<argument index="4" name="type_mask" type="int" default="null">
+			<argument index="4" name="type_mask" type="int" default="15">
 			</argument>
 			<description>
 				Check whether a point is inside any shape. The shapes the point is inside of are returned in an array containing dictionaries with the following fields:
@@ -34248,9 +34248,9 @@
 			</argument>
 			<argument index="2" name="exclude" type="Array" default="[  ]">
 			</argument>
-			<argument index="3" name="collision_layer" type="int" default="null">
+			<argument index="3" name="collision_layer" type="int" default="2147483647">
 			</argument>
-			<argument index="4" name="type_mask" type="int" default="null">
+			<argument index="4" name="type_mask" type="int" default="15">
 			</argument>
 			<description>
 				Intersect a ray in a given space. The returned object is a dictionary with the following fields:
@@ -34270,7 +34270,7 @@
 			</return>
 			<argument index="0" name="shape" type="Physics2DShapeQueryParameters">
 			</argument>
-			<argument index="1" name="max_results" type="int" default="null">
+			<argument index="1" name="max_results" type="int" default="32">
 			</argument>
 			<description>
 				Check the intersections of a shape, given through a [Physics2DShapeQueryParameters] object, against the space. The intersected shapes are returned in an array containing dictionaries with the following fields:
@@ -34319,7 +34319,7 @@
 			</argument>
 			<argument index="1" name="shape" type="RID">
 			</argument>
-			<argument index="2" name="transform" type="Transform2D" default="null">
+			<argument index="2" name="transform" type="Transform2D" default="Transform2D( 1, 0, 0, 1, 0, 0 )">
 			</argument>
 			<description>
 				Add a shape to the area, along with a transform matrix. Shapes are usually referenced by their index, so you should track which shape has a given index.
@@ -34413,7 +34413,7 @@
 			</description>
 		</method>
 		<method name="area_get_space_override_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Physics2DServer.AreaSpaceOverrideMode">
 			</return>
 			<argument index="0" name="area" type="RID">
 			</argument>
@@ -34596,7 +34596,7 @@
 			</argument>
 			<argument index="1" name="shape" type="RID">
 			</argument>
-			<argument index="2" name="transform" type="Transform2D" default="null">
+			<argument index="2" name="transform" type="Transform2D" default="Transform2D( 1, 0, 0, 1, 0, 0 )">
 			</argument>
 			<description>
 				Add a shape to the body, along with a transform matrix. Shapes are usually referenced by their index, so you should track which shape has a given index.
@@ -34638,9 +34638,9 @@
 		<method name="body_create">
 			<return type="RID">
 			</return>
-			<argument index="0" name="mode" type="int" enum="Physics2DServer.BodyMode" default="false">
+			<argument index="0" name="mode" type="int" enum="Physics2DServer.BodyMode" default="2">
 			</argument>
-			<argument index="1" name="init_sleeping" type="bool" default="2">
+			<argument index="1" name="init_sleeping" type="bool" default="false">
 			</argument>
 			<description>
 				Create a physics body. The first parameter can be any value from constants BODY_MODE*, for the type of body created. Additionally, the body can be created in sleeping state to save processing time.
@@ -34665,7 +34665,7 @@
 			</description>
 		</method>
 		<method name="body_get_continuous_collision_detection_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Physics2DServer.CCDMode">
 			</return>
 			<argument index="0" name="body" type="RID">
 			</argument>
@@ -34683,7 +34683,7 @@
 			</description>
 		</method>
 		<method name="body_get_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Physics2DServer.BodyMode">
 			</return>
 			<argument index="0" name="body" type="RID">
 			</argument>
@@ -35006,7 +35006,7 @@
 			</argument>
 			<argument index="2" name="motion" type="Vector2">
 			</argument>
-			<argument index="3" name="margin" type="float" default="null">
+			<argument index="3" name="margin" type="float" default="0.08">
 			</argument>
 			<argument index="4" name="result" type="Physics2DTestMotionResult" default="null">
 			</argument>
@@ -35023,7 +35023,7 @@
 			</argument>
 			<argument index="2" name="body_a" type="RID">
 			</argument>
-			<argument index="3" name="body_b" type="RID" default="null">
+			<argument index="3" name="body_b" type="RID">
 			</argument>
 			<description>
 				Create a damped spring joint between two bodies. If not specified, the second body is assumed to be the joint itself.
@@ -35080,9 +35080,9 @@
 			</argument>
 			<argument index="2" name="anchor_b" type="Vector2">
 			</argument>
-			<argument index="3" name="body_a" type="RID" default="null">
+			<argument index="3" name="body_a" type="RID">
 			</argument>
-			<argument index="4" name="body_b" type="RID" default="null">
+			<argument index="4" name="body_b" type="RID">
 			</argument>
 			<description>
 				Create a groove joint between two bodies. If not specified, the bodyies are assumed to be the joint itself.
@@ -35100,7 +35100,7 @@
 			</description>
 		</method>
 		<method name="joint_get_type" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Physics2DServer.JointType">
 			</return>
 			<argument index="0" name="joint" type="RID">
 			</argument>
@@ -35128,7 +35128,7 @@
 			</argument>
 			<argument index="1" name="body_a" type="RID">
 			</argument>
-			<argument index="2" name="body_b" type="RID" default="null">
+			<argument index="2" name="body_b" type="RID">
 			</argument>
 			<description>
 				Create a pin joint between two bodies. If not specified, the second body is assumed to be the joint itself.
@@ -35162,7 +35162,7 @@
 			</description>
 		</method>
 		<method name="shape_get_type" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Physics2DServer.ShapeType">
 			</return>
 			<argument index="0" name="shape" type="RID">
 			</argument>
@@ -36150,7 +36150,7 @@
 			</return>
 			<argument index="0" name="shape" type="PhysicsShapeQueryParameters">
 			</argument>
-			<argument index="1" name="max_results" type="int" default="null">
+			<argument index="1" name="max_results" type="int" default="32">
 			</argument>
 			<description>
 			</description>
@@ -36172,9 +36172,9 @@
 			</argument>
 			<argument index="2" name="exclude" type="Array" default="[  ]">
 			</argument>
-			<argument index="3" name="collision_layer" type="int" default="null">
+			<argument index="3" name="collision_layer" type="int" default="2147483647">
 			</argument>
-			<argument index="4" name="type_mask" type="int" default="null">
+			<argument index="4" name="type_mask" type="int" default="15">
 			</argument>
 			<description>
 			</description>
@@ -36184,7 +36184,7 @@
 			</return>
 			<argument index="0" name="shape" type="PhysicsShapeQueryParameters">
 			</argument>
-			<argument index="1" name="max_results" type="int" default="null">
+			<argument index="1" name="max_results" type="int" default="32">
 			</argument>
 			<description>
 			</description>
@@ -36218,7 +36218,7 @@
 			</argument>
 			<argument index="1" name="shape" type="RID">
 			</argument>
-			<argument index="2" name="transform" type="Transform" default="null">
+			<argument index="2" name="transform" type="Transform" default="Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
 			</argument>
 			<description>
 			</description>
@@ -36302,7 +36302,7 @@
 			</description>
 		</method>
 		<method name="area_get_space_override_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="PhysicsServer.AreaSpaceOverrideMode">
 			</return>
 			<argument index="0" name="area" type="RID">
 			</argument>
@@ -36460,7 +36460,7 @@
 			</argument>
 			<argument index="1" name="shape" type="RID">
 			</argument>
-			<argument index="2" name="transform" type="Transform" default="null">
+			<argument index="2" name="transform" type="Transform" default="Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
 			</argument>
 			<description>
 			</description>
@@ -36508,15 +36508,15 @@
 		<method name="body_create">
 			<return type="RID">
 			</return>
-			<argument index="0" name="mode" type="int" enum="PhysicsServer.BodyMode" default="false">
+			<argument index="0" name="mode" type="int" enum="PhysicsServer.BodyMode" default="2">
 			</argument>
-			<argument index="1" name="init_sleeping" type="bool" default="2">
+			<argument index="1" name="init_sleeping" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="body_get_axis_lock" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="PhysicsServer.BodyAxisLock">
 			</return>
 			<argument index="0" name="body" type="RID">
 			</argument>
@@ -36548,7 +36548,7 @@
 			</description>
 		</method>
 		<method name="body_get_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="PhysicsServer.BodyMode">
 			</return>
 			<argument index="0" name="body" type="RID">
 			</argument>
@@ -37038,7 +37038,7 @@
 			</description>
 		</method>
 		<method name="joint_get_type" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="PhysicsServer.JointType">
 			</return>
 			<argument index="0" name="joint" type="RID">
 			</argument>
@@ -37138,7 +37138,7 @@
 			</description>
 		</method>
 		<method name="shape_get_type" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="PhysicsServer.ShapeType">
 			</return>
 			<argument index="0" name="shape" type="RID">
 			</argument>
@@ -39021,7 +39021,7 @@
 			</argument>
 			<argument index="1" name="id" type="int" default="-1">
 			</argument>
-			<argument index="2" name="accel" type="int" default="null">
+			<argument index="2" name="accel" type="int" default="0">
 			</argument>
 			<description>
 				Add a new checkable item with text "label". An id can optionally be provided, as well as an accelerator. If no id is provided, one will be created from the index. Note that checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually.
@@ -39034,7 +39034,7 @@
 			</argument>
 			<argument index="1" name="id" type="int" default="-1">
 			</argument>
-			<argument index="2" name="global" type="bool" default="null">
+			<argument index="2" name="global" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -39046,9 +39046,9 @@
 			</argument>
 			<argument index="1" name="label" type="String">
 			</argument>
-			<argument index="2" name="id" type="int" default="null">
+			<argument index="2" name="id" type="int" default="-1">
 			</argument>
-			<argument index="3" name="accel" type="int" default="null">
+			<argument index="3" name="accel" type="int" default="0">
 			</argument>
 			<description>
 				Add a new checkable item with text "label" and icon "texture". An id can optionally be provided, as well as an accelerator. If no id is provided, one will be
@@ -39062,9 +39062,9 @@
 			</argument>
 			<argument index="1" name="shortcut" type="ShortCut">
 			</argument>
-			<argument index="2" name="id" type="int" default="null">
+			<argument index="2" name="id" type="int" default="-1">
 			</argument>
-			<argument index="3" name="global" type="bool" default="null">
+			<argument index="3" name="global" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -39076,9 +39076,9 @@
 			</argument>
 			<argument index="1" name="label" type="String">
 			</argument>
-			<argument index="2" name="id" type="int" default="null">
+			<argument index="2" name="id" type="int" default="-1">
 			</argument>
-			<argument index="3" name="accel" type="int" default="null">
+			<argument index="3" name="accel" type="int" default="0">
 			</argument>
 			<description>
 				Add a new item with text "label" and icon "texture". An id can optionally be provided, as well as an accelerator keybinding. If no id is provided, one will be created from the index.
@@ -39091,9 +39091,9 @@
 			</argument>
 			<argument index="1" name="shortcut" type="ShortCut">
 			</argument>
-			<argument index="2" name="id" type="int" default="null">
+			<argument index="2" name="id" type="int" default="-1">
 			</argument>
-			<argument index="3" name="global" type="bool" default="null">
+			<argument index="3" name="global" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -39105,7 +39105,7 @@
 			</argument>
 			<argument index="1" name="id" type="int" default="-1">
 			</argument>
-			<argument index="2" name="accel" type="int" default="null">
+			<argument index="2" name="accel" type="int" default="0">
 			</argument>
 			<description>
 				Add a new item with text "label". An id can optionally be provided, as well as an accelerator keybinding. If no id is provided, one will be created from the index.
@@ -39125,7 +39125,7 @@
 			</argument>
 			<argument index="1" name="id" type="int" default="-1">
 			</argument>
-			<argument index="2" name="global" type="bool" default="null">
+			<argument index="2" name="global" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -39137,7 +39137,7 @@
 			</argument>
 			<argument index="1" name="submenu" type="String">
 			</argument>
-			<argument index="2" name="id" type="int" default="null">
+			<argument index="2" name="id" type="int" default="-1">
 			</argument>
 			<description>
 				Adds an item with a submenu. The submenu is the name of a child PopupMenu node that would be shown when the item is clicked. An id can optionally be provided, but if is isn't provided, one will be created from the index.
@@ -39407,7 +39407,7 @@
 			</argument>
 			<argument index="1" name="shortcut" type="ShortCut">
 			</argument>
-			<argument index="2" name="global" type="bool" default="null">
+			<argument index="2" name="global" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -39767,7 +39767,7 @@
 			</description>
 		</method>
 		<method name="get_texture_size" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="ProceduralSky.TextureSize">
 			</return>
 			<description>
 			</description>
@@ -40108,13 +40108,13 @@
 			</description>
 		</method>
 		<method name="save">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<description>
 			</description>
 		</method>
 		<method name="save_custom">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="file" type="String">
 			</argument>
@@ -41486,7 +41486,7 @@
 			</description>
 		</method>
 		<method name="get_update_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="ReflectionProbe.UpdateMode">
 			</return>
 			<description>
 			</description>
@@ -41672,7 +41672,7 @@
 			</description>
 		</method>
 		<method name="compile">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="pattern" type="String">
 			</argument>
@@ -41715,7 +41715,7 @@
 			</argument>
 			<argument index="1" name="offset" type="int" default="0">
 			</argument>
-			<argument index="2" name="end" type="int" default="null">
+			<argument index="2" name="end" type="int" default="-1">
 			</argument>
 			<description>
 				Searches the text for the compiled pattern. Returns a [RegExMatch] container of the first matching reult if found, otherwise null. The region to search within can be specified without modifying where the start and end anchor would be.
@@ -41730,9 +41730,9 @@
 			</argument>
 			<argument index="2" name="all" type="bool" default="false">
 			</argument>
-			<argument index="3" name="offset" type="int" default="null">
+			<argument index="3" name="offset" type="int" default="0">
 			</argument>
-			<argument index="4" name="end" type="int" default="null">
+			<argument index="4" name="end" type="int" default="-1">
 			</argument>
 			<description>
 				Searches the text for the compiled pattern and replaces it with the specified string. Escapes and backreferences such as [code]\1[/code] and [code]\g&lt;name&gt;[/code] expanded and resolved. By default only the first instance is replaced but it can be changed for all instances (global replacement). The region to search within can be specified without modifying where the start and end anchor would be.
@@ -42153,14 +42153,14 @@
 			</description>
 		</method>
 		<method name="poll">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<description>
 				Poll the load. If OK is returned, this means poll will have to be called again. If ERR_FILE_EOF is returned, them the load has finished and the resource can be obtained by calling [method get_resource].
 			</description>
 		</method>
 		<method name="wait">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<description>
 			</description>
@@ -42209,7 +42209,7 @@
 			</argument>
 			<argument index="1" name="type_hint" type="String" default="&quot;&quot;">
 			</argument>
-			<argument index="2" name="p_no_cache" type="bool" default="null">
+			<argument index="2" name="p_no_cache" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -42219,7 +42219,7 @@
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
-			<argument index="1" name="type_hint" type="String" default="null">
+			<argument index="1" name="type_hint" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
 				Load a resource interactively, the returned object allows to load with high granularity.
@@ -42327,13 +42327,13 @@
 			</description>
 		</method>
 		<method name="save">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
 			<argument index="1" name="resource" type="Resource">
 			</argument>
-			<argument index="2" name="flags" type="int" default="null">
+			<argument index="2" name="flags" type="int" default="0">
 			</argument>
 			<description>
 				Save a resource to disk, to a given path.
@@ -42380,7 +42380,7 @@
 			</description>
 		</method>
 		<method name="append_bbcode">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="bbcode" type="String">
 			</argument>
@@ -42474,7 +42474,7 @@
 			</description>
 		</method>
 		<method name="parse_bbcode">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="bbcode" type="String">
 			</argument>
@@ -42791,7 +42791,7 @@
 			</description>
 		</method>
 		<method name="get_axis_lock" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="RigidBody.AxisLock">
 			</return>
 			<description>
 				Return the current axis lock of the body. One of AXIS_LOCK_* enum.
@@ -42854,7 +42854,7 @@
 			</description>
 		</method>
 		<method name="get_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="RigidBody.Mode">
 			</return>
 			<description>
 				Return the current body mode, see [method set_mode].
@@ -43251,7 +43251,7 @@
 			</description>
 		</method>
 		<method name="get_continuous_collision_detection_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="RigidBody2D.CCDMode">
 			</return>
 			<description>
 				Return whether this body is using continuous collision detection.
@@ -43307,7 +43307,7 @@
 			</description>
 		</method>
 		<method name="get_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="RigidBody2D.Mode">
 			</return>
 			<description>
 				Return the current body mode, see [method set_mode].
@@ -43762,7 +43762,7 @@
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
-			<argument index="1" name="for_parent" type="bool" default="null">
+			<argument index="1" name="for_parent" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -43850,7 +43850,7 @@
 			</description>
 		</method>
 		<method name="change_scene">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
@@ -43858,7 +43858,7 @@
 			</description>
 		</method>
 		<method name="change_scene_to">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="packed_scene" type="PackedScene">
 			</argument>
@@ -43870,7 +43870,7 @@
 			</return>
 			<argument index="0" name="time_sec" type="float">
 			</argument>
-			<argument index="1" name="pause_mode_process" type="bool" default="null">
+			<argument index="1" name="pause_mode_process" type="bool" default="true">
 			</argument>
 			<description>
 			</description>
@@ -44020,7 +44020,7 @@
 			</description>
 		</method>
 		<method name="reload_current_scene">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<description>
 			</description>
@@ -44131,7 +44131,7 @@
 			</argument>
 			<argument index="2" name="minsize" type="Vector2">
 			</argument>
-			<argument index="3" name="shrink" type="int" default="null">
+			<argument index="3" name="shrink" type="int" default="1">
 			</argument>
 			<description>
 			</description>
@@ -44313,7 +44313,7 @@
 			</description>
 		</method>
 		<method name="reload">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="keep_state" type="bool" default="false">
 			</argument>
@@ -44550,14 +44550,14 @@
 	</description>
 	<methods>
 		<method name="post">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<description>
 				Lowers the [Semaphore], allowing one more thread in.
 			</description>
 		</method>
 		<method name="wait">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<description>
 				Tries to wait for the [Semaphore], if its value is zero, blocks until non-zero.
@@ -44602,7 +44602,7 @@
 			</description>
 		</method>
 		<method name="get_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Shader.Mode">
 			</return>
 			<description>
 			</description>
@@ -45067,7 +45067,7 @@
 	</description>
 	<methods>
 		<method name="get_radiance_size" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Sky.RadianceSize">
 			</return>
 			<description>
 			</description>
@@ -45687,19 +45687,19 @@
 			</description>
 		</method>
 		<method name="get_ao_texture_channel" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="SpatialMaterial.TextureChannel">
 			</return>
 			<description>
 			</description>
 		</method>
 		<method name="get_billboard_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="SpatialMaterial.BillboardMode">
 			</return>
 			<description>
 			</description>
 		</method>
 		<method name="get_blend_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="SpatialMaterial.BlendMode">
 			</return>
 			<description>
 			</description>
@@ -45717,7 +45717,7 @@
 			</description>
 		</method>
 		<method name="get_cull_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="SpatialMaterial.CullMode">
 			</return>
 			<description>
 			</description>
@@ -45735,7 +45735,7 @@
 			</description>
 		</method>
 		<method name="get_depth_draw_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="SpatialMaterial.DepthDrawMode">
 			</return>
 			<description>
 			</description>
@@ -45747,19 +45747,19 @@
 			</description>
 		</method>
 		<method name="get_detail_blend_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="SpatialMaterial.BlendMode">
 			</return>
 			<description>
 			</description>
 		</method>
 		<method name="get_detail_uv" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="SpatialMaterial.DetailUV">
 			</return>
 			<description>
 			</description>
 		</method>
 		<method name="get_diffuse_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="SpatialMaterial.DiffuseMode">
 			</return>
 			<description>
 			</description>
@@ -45811,7 +45811,7 @@
 			</description>
 		</method>
 		<method name="get_metallic_texture_channel" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="SpatialMaterial.TextureChannel">
 			</return>
 			<description>
 			</description>
@@ -45853,7 +45853,7 @@
 			</description>
 		</method>
 		<method name="get_refraction_texture_channel" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="SpatialMaterial.TextureChannel">
 			</return>
 			<description>
 			</description>
@@ -45877,7 +45877,7 @@
 			</description>
 		</method>
 		<method name="get_roughness_texture_channel" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="SpatialMaterial.TextureChannel">
 			</return>
 			<description>
 			</description>
@@ -45889,7 +45889,7 @@
 			</description>
 		</method>
 		<method name="get_specular_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="SpatialMaterial.SpecularMode">
 			</return>
 			<description>
 			</description>
@@ -46410,6 +46410,8 @@
 		</member>
 		<member name="flags_vertex_lighting" type="bool" setter="set_flag" getter="get_flag" brief="">
 		</member>
+		<member name="flags_world_triplanar" type="bool" setter="set_flag" getter="get_flag" brief="">
+		</member>
 		<member name="metallic" type="float" setter="set_metallic" getter="get_metallic" brief="">
 		</member>
 		<member name="metallic_specular" type="float" setter="set_specular" getter="get_specular" brief="">
@@ -46604,11 +46606,13 @@
 		</constant>
 		<constant name="FLAG_UV2_USE_TRIPLANAR" value="8">
 		</constant>
-		<constant name="FLAG_AO_ON_UV2" value="9">
+		<constant name="FLAG_AO_ON_UV2" value="10">
 		</constant>
-		<constant name="FLAG_USE_ALPHA_SCISSOR" value="10">
+		<constant name="FLAG_USE_ALPHA_SCISSOR" value="11">
 		</constant>
-		<constant name="FLAG_MAX" value="11">
+		<constant name="FLAG_TRIPLANAR_USE_WORLD" value="9">
+		</constant>
+		<constant name="FLAG_MAX" value="12">
 		</constant>
 		<constant name="DIFFUSE_LAMBERT" value="0">
 		</constant>
@@ -46902,7 +46906,7 @@
 	</description>
 	<methods>
 		<method name="get_dragger_visibility" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="SplitContainer.DraggerVisibility">
 			</return>
 			<description>
 				Return visibility of the split dragger (one of [DRAGGER_VISIBLE], [DRAGGER_HIDDEN] or [DRAGGER_HIDDEN_COLLAPSED]).
@@ -47358,13 +47362,13 @@
 	</description>
 	<methods>
 		<method name="get_alpha_cut_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="SpriteBase3D.AlphaCutMode">
 			</return>
 			<description>
 			</description>
 		</method>
 		<method name="get_axis" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Vector3.Axis">
 			</return>
 			<description>
 			</description>
@@ -47574,7 +47578,7 @@
 			</argument>
 			<argument index="1" name="frame" type="Texture">
 			</argument>
-			<argument index="2" name="atpos" type="int" default="null">
+			<argument index="2" name="atpos" type="int" default="-1">
 			</argument>
 			<description>
 			</description>
@@ -48053,7 +48057,7 @@
 			</description>
 		</method>
 		<method name="put_data">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="data" type="PoolByteArray">
 			</argument>
@@ -48228,7 +48232,7 @@
 	</description>
 	<methods>
 		<method name="accept_stream">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="stream" type="StreamPeer">
 			</argument>
@@ -48236,13 +48240,13 @@
 			</description>
 		</method>
 		<method name="connect_to_stream">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="stream" type="StreamPeer">
 			</argument>
 			<argument index="1" name="validate_certs" type="bool" default="false">
 			</argument>
-			<argument index="2" name="for_hostname" type="String" default="null">
+			<argument index="2" name="for_hostname" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
 				Connect to a peer using an underlying [StreamPeer] "stream", when "validate_certs" is true, [StreamPeerSSL] will validate that the certificate presented by the peer matches the "for_hostname".
@@ -48256,7 +48260,7 @@
 			</description>
 		</method>
 		<method name="get_status" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="StreamPeerSSL.Status">
 			</return>
 			<description>
 				Return the status of the connection, one of STATUS_* enum.
@@ -48287,7 +48291,7 @@
 	</description>
 	<methods>
 		<method name="connect_to_host">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="host" type="String">
 			</argument>
@@ -48319,7 +48323,7 @@
 			</description>
 		</method>
 		<method name="get_status" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="StreamPeerTCP.Status">
 			</return>
 			<description>
 				Return the status of the connection, one of STATUS_* enum.
@@ -48360,7 +48364,7 @@
 			</description>
 		</method>
 		<method name="load">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
@@ -49515,7 +49519,7 @@
 			</description>
 		</method>
 		<method name="get_h_axis_stretch_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="StyleBoxTexture.AxisStretchMode">
 			</return>
 			<description>
 			</description>
@@ -49553,7 +49557,7 @@
 			</description>
 		</method>
 		<method name="get_v_axis_stretch_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="StyleBoxTexture.AxisStretchMode">
 			</return>
 			<description>
 			</description>
@@ -49794,15 +49798,15 @@
 			</return>
 			<argument index="0" name="vertexes" type="PoolVector3Array">
 			</argument>
-			<argument index="1" name="uvs" type="PoolVector2Array" default="PoolVector3Array(  )">
+			<argument index="1" name="uvs" type="PoolVector2Array" default="PoolVector2Array(  )">
 			</argument>
-			<argument index="2" name="colors" type="PoolColorArray" default="PoolVector2Array(  )">
+			<argument index="2" name="colors" type="PoolColorArray" default="PoolColorArray(  )">
 			</argument>
-			<argument index="3" name="uv2s" type="PoolVector2Array" default="PoolColorArray(  )">
+			<argument index="3" name="uv2s" type="PoolVector2Array" default="PoolVector2Array(  )">
 			</argument>
-			<argument index="4" name="normals" type="PoolVector3Array" default="PoolVector2Array(  )">
+			<argument index="4" name="normals" type="PoolVector3Array" default="PoolVector3Array(  )">
 			</argument>
-			<argument index="5" name="tangents" type="Array" default="null">
+			<argument index="5" name="tangents" type="Array" default="[  ]">
 			</argument>
 			<description>
 				Insert a triangle fan made of array data into [Mesh] being constructed.
@@ -49947,11 +49951,11 @@
 			</description>
 		</method>
 		<method name="listen">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="port" type="int">
 			</argument>
-			<argument index="1" name="bind_address" type="String" default="null">
+			<argument index="1" name="bind_address" type="String" default="&quot;*&quot;">
 			</argument>
 			<description>
 				Listen on the "port" binding to "bind_address".
@@ -50021,7 +50025,7 @@
 			</description>
 		</method>
 		<method name="get_tab_align" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="TabContainer.TabAlign">
 			</return>
 			<description>
 				Return tab alignment, from the ALIGN_* enum.
@@ -50216,9 +50220,9 @@
 		<method name="add_tab">
 			<return type="void">
 			</return>
-			<argument index="0" name="title" type="String" default="null">
+			<argument index="0" name="title" type="String" default="&quot;&quot;">
 			</argument>
-			<argument index="1" name="icon" type="Texture" default="&quot;&quot;">
+			<argument index="1" name="icon" type="Texture" default="null">
 			</argument>
 			<description>
 			</description>
@@ -50238,13 +50242,13 @@
 			</description>
 		</method>
 		<method name="get_tab_align" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Tabs.TabAlign">
 			</return>
 			<description>
 			</description>
 		</method>
 		<method name="get_tab_close_display_policy" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Tabs.CloseButtonDisplayPolicy">
 			</return>
 			<description>
 			</description>
@@ -50480,7 +50484,7 @@
 			</argument>
 			<argument index="2" name="color" type="Color">
 			</argument>
-			<argument index="3" name="line_only" type="bool" default="null">
+			<argument index="3" name="line_only" type="bool" default="false">
 			</argument>
 			<description>
 				Add color region (given the delimiters) and its colors.
@@ -50585,7 +50589,7 @@
 			</return>
 			<argument index="0" name="column" type="int">
 			</argument>
-			<argument index="1" name="adjust_viewport" type="bool" default="null">
+			<argument index="1" name="adjust_viewport" type="bool" default="true">
 			</argument>
 			<description>
 			</description>
@@ -50595,7 +50599,7 @@
 			</return>
 			<argument index="0" name="line" type="int">
 			</argument>
-			<argument index="1" name="adjust_viewport" type="bool" default="null">
+			<argument index="1" name="adjust_viewport" type="bool" default="true">
 			</argument>
 			<description>
 			</description>
@@ -51028,7 +51032,7 @@
 			</argument>
 			<argument index="2" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
 			</argument>
-			<argument index="3" name="transpose" type="bool" default="null">
+			<argument index="3" name="transpose" type="bool" default="false">
 			</argument>
 			<argument index="4" name="normal_map" type="Texture" default="null">
 			</argument>
@@ -51044,9 +51048,9 @@
 			</argument>
 			<argument index="2" name="tile" type="bool">
 			</argument>
-			<argument index="3" name="modulate" type="Color" default="null">
+			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
 			</argument>
-			<argument index="4" name="transpose" type="bool" default="null">
+			<argument index="4" name="transpose" type="bool" default="false">
 			</argument>
 			<argument index="5" name="normal_map" type="Texture" default="null">
 			</argument>
@@ -51064,11 +51068,11 @@
 			</argument>
 			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
 			</argument>
-			<argument index="4" name="transpose" type="bool" default="null">
+			<argument index="4" name="transpose" type="bool" default="false">
 			</argument>
 			<argument index="5" name="normal_map" type="Texture" default="null">
 			</argument>
-			<argument index="6" name="clip_uv" type="bool" default="null">
+			<argument index="6" name="clip_uv" type="bool" default="true">
 			</argument>
 			<description>
 			</description>
@@ -51199,7 +51203,7 @@
 			</description>
 		</method>
 		<method name="get_stretch_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="TextureButton.StretchMode">
 			</return>
 			<description>
 			</description>
@@ -51497,7 +51501,7 @@
 	</description>
 	<methods>
 		<method name="get_stretch_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="TextureRect.StretchMode">
 			</return>
 			<description>
 			</description>
@@ -51890,7 +51894,7 @@
 			</description>
 		</method>
 		<method name="start">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="instance" type="Object">
 			</argument>
@@ -51898,7 +51902,7 @@
 			</argument>
 			<argument index="2" name="userdata" type="Variant" default="null">
 			</argument>
-			<argument index="3" name="priority" type="int" default="null">
+			<argument index="3" name="priority" type="int" default="1">
 			</argument>
 			<description>
 				Start a new [Thread], it will run "method" on object "instance" using "userdata" as an argument and running with "priority", one of PRIORITY_* enum.
@@ -52038,14 +52042,14 @@
 			</description>
 		</method>
 		<method name="get_half_offset" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="TileMap.HalfOffset">
 			</return>
 			<description>
 				Return the current half offset configuration.
 			</description>
 		</method>
 		<method name="get_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="TileMap.Mode">
 			</return>
 			<description>
 				Return the orientation mode.
@@ -52065,7 +52069,7 @@
 			</description>
 		</method>
 		<method name="get_tile_origin" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="TileMap.TileOrigin">
 			</return>
 			<description>
 				Return the tile origin configuration.
@@ -52144,7 +52148,7 @@
 			</return>
 			<argument index="0" name="mappos" type="Vector2">
 			</argument>
-			<argument index="1" name="ignore_half_ofs" type="bool" default="null">
+			<argument index="1" name="ignore_half_ofs" type="bool" default="false">
 			</argument>
 			<description>
 				Return the absolute world position corresponding to the tilemap (grid-based) coordinates given as an argument.
@@ -52160,11 +52164,11 @@
 			</argument>
 			<argument index="2" name="tile" type="int">
 			</argument>
-			<argument index="3" name="flip_x" type="bool" default="null">
+			<argument index="3" name="flip_x" type="bool" default="false">
 			</argument>
-			<argument index="4" name="flip_y" type="bool" default="null">
+			<argument index="4" name="flip_y" type="bool" default="false">
 			</argument>
-			<argument index="5" name="transpose" type="bool" default="null">
+			<argument index="5" name="transpose" type="bool" default="false">
 			</argument>
 			<description>
 				Set the tile index for the cell referenced by its grid-based X and Y coordinates.
@@ -52190,9 +52194,9 @@
 			</argument>
 			<argument index="2" name="flip_x" type="bool" default="false">
 			</argument>
-			<argument index="3" name="flip_y" type="bool" default="null">
+			<argument index="3" name="flip_y" type="bool" default="false">
 			</argument>
-			<argument index="4" name="transpose" type="bool" default="null">
+			<argument index="4" name="transpose" type="bool" default="false">
 			</argument>
 			<description>
 				Set the tile index for the cell referenced by a Vector2 of grid-based coordinates.
@@ -52506,7 +52510,7 @@
 			</argument>
 			<argument index="2" name="shape_transform" type="Transform2D">
 			</argument>
-			<argument index="3" name="one_way" type="bool" default="null">
+			<argument index="3" name="one_way" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -52823,7 +52827,7 @@
 			</description>
 		</method>
 		<method name="get_timer_process_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Timer.TimerProcessMode">
 			</return>
 			<description>
 				Return the timer's processing mode.
@@ -53020,7 +53024,7 @@
 			</description>
 		</method>
 		<method name="get_visibility_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="TouchScreenButton.VisibilityMode">
 			</return>
 			<description>
 			</description>
@@ -53731,7 +53735,7 @@
 			</return>
 			<argument index="0" name="item" type="Object">
 			</argument>
-			<argument index="1" name="column" type="int" default="null">
+			<argument index="1" name="column" type="int" default="-1">
 			</argument>
 			<description>
 				Get the rectangle area of the the specified item. If column is specified, only get the position and size of that column, otherwise get the rectangle containing all columns.
@@ -54099,9 +54103,9 @@
 			</argument>
 			<argument index="2" name="button_idx" type="int" default="-1">
 			</argument>
-			<argument index="3" name="disabled" type="bool" default="null">
+			<argument index="3" name="disabled" type="bool" default="false">
 			</argument>
-			<argument index="4" name="tooltip" type="String" default="null">
+			<argument index="4" name="tooltip" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
 			</description>
@@ -54159,7 +54163,7 @@
 			</description>
 		</method>
 		<method name="get_cell_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="TreeItem.TreeCellMode">
 			</return>
 			<argument index="0" name="column" type="int">
 			</argument>
@@ -54275,7 +54279,7 @@
 			</description>
 		</method>
 		<method name="get_text_align" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="TreeItem.TextAlign">
 			</return>
 			<argument index="0" name="column" type="int">
 			</argument>
@@ -54437,7 +54441,7 @@
 			</argument>
 			<argument index="1" name="color" type="Color">
 			</argument>
-			<argument index="2" name="just_outline" type="bool" default="null">
+			<argument index="2" name="just_outline" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -54553,7 +54557,7 @@
 			</argument>
 			<argument index="3" name="step" type="float">
 			</argument>
-			<argument index="4" name="expr" type="bool" default="null">
+			<argument index="4" name="expr" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -54659,7 +54663,7 @@
 			</argument>
 			<argument index="7" name="ease_type" type="int" enum="Tween.EaseType">
 			</argument>
-			<argument index="8" name="delay" type="float" default="null">
+			<argument index="8" name="delay" type="float" default="0">
 			</argument>
 			<description>
 				Follow [code]method[/code] of [code]object[/code] and apply the returned value on [code]target_method[/code] of [code]target[/code], beginning from [code]initial_val[/code] for [code]duration[/code] seconds, [code]delay[/code] later. Methods are animated by calling them with consequitive values.
@@ -54685,7 +54689,7 @@
 			</argument>
 			<argument index="7" name="ease_type" type="int" enum="Tween.EaseType">
 			</argument>
-			<argument index="8" name="delay" type="float" default="null">
+			<argument index="8" name="delay" type="float" default="0">
 			</argument>
 			<description>
 				Follow [code]property[/code] of [code]object[/code] and apply it on [code]target_property[/code] of [code]target[/code], beginning from [code]initial_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later. Note that [code]target:target_property[/code] would equal [code]object:property[/code] at the end of the tween.
@@ -54707,7 +54711,7 @@
 			</description>
 		</method>
 		<method name="get_tween_process_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Tween.TweenProcessMode">
 			</return>
 			<description>
 				Returns the process mode that has been set from editor GUI or [method set_tween_process_mode]
@@ -54776,7 +54780,7 @@
 			</argument>
 			<argument index="6" name="ease_type" type="int" enum="Tween.EaseType">
 			</argument>
-			<argument index="7" name="delay" type="float" default="null">
+			<argument index="7" name="delay" type="float" default="0">
 			</argument>
 			<description>
 				Animate [code]method[/code] of [code]object[/code] from [code]initial_val[/code] to [code]final_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later. Methods are animated by calling them with consecuitive values.
@@ -54800,7 +54804,7 @@
 			</argument>
 			<argument index="6" name="ease_type" type="int" enum="Tween.EaseType">
 			</argument>
-			<argument index="7" name="delay" type="float" default="null">
+			<argument index="7" name="delay" type="float" default="0">
 			</argument>
 			<description>
 				Animate [code]property[/code] of [code]object[/code] from [code]initial_val[/code] to [code]final_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later.
@@ -54826,7 +54830,7 @@
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="key" type="String" default="null">
+			<argument index="1" name="key" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
 				Stop animating and completely remove a tween, given its object and property/method pair. Passing empty String as key will remove all tweens for given object.
@@ -54844,7 +54848,7 @@
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="key" type="String" default="null">
+			<argument index="1" name="key" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
 				Resets a tween to the initial value (the one given, not the one before the tween), given its object and property/method pair. Passing empty String as key will reset all tweens for given object.
@@ -54862,7 +54866,7 @@
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="key" type="String" default="null">
+			<argument index="1" name="key" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
 				Continue animating a stopped tween, given its object and property/method pair. Passing empty String as key will resume all tweens for given object.
@@ -54932,7 +54936,7 @@
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="key" type="String" default="null">
+			<argument index="1" name="key" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
 				Stop animating a tween, given its object and property/method pair. Passing empty String as key will stop all tweens for given object.
@@ -54964,7 +54968,7 @@
 			</argument>
 			<argument index="7" name="ease_type" type="int" enum="Tween.EaseType">
 			</argument>
-			<argument index="8" name="delay" type="float" default="null">
+			<argument index="8" name="delay" type="float" default="0">
 			</argument>
 			<description>
 				Animate [code]method[/code] of [code]object[/code] from the value returned by [code]initial.initial_method[/code] to [code]final_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later. Methods are animated by calling them with consecuitive values.
@@ -54990,7 +54994,7 @@
 			</argument>
 			<argument index="7" name="ease_type" type="int" enum="Tween.EaseType">
 			</argument>
-			<argument index="8" name="delay" type="float" default="null">
+			<argument index="8" name="delay" type="float" default="0">
 			</argument>
 			<description>
 				Animate [code]property[/code] of [code]object[/code] from the current value of the [code]initial_val[/code] property of [code]initial[/code] to [code]final_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later.
@@ -55188,7 +55192,7 @@
 			</return>
 			<argument index="0" name="name" type="String">
 			</argument>
-			<argument index="1" name="merge_mode" type="int" enum="UndoRedo.MergeMode" default="null">
+			<argument index="1" name="merge_mode" type="int" enum="UndoRedo.MergeMode" default="0">
 			</argument>
 			<description>
 				Create a new action. After this is called, do all your calls to [method add_do_method], [method add_undo_method], [method add_do_property] and [method add_undo_property].
@@ -56361,13 +56365,13 @@
 			</description>
 		</method>
 		<method name="get_clear_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Viewport.ClearMode">
 			</return>
 			<description>
 			</description>
 		</method>
 		<method name="get_debug_draw" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Viewport.DebugDraw">
 			</return>
 			<description>
 			</description>
@@ -56401,7 +56405,7 @@
 			</description>
 		</method>
 		<method name="get_msaa" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Viewport.MSAA">
 			</return>
 			<description>
 			</description>
@@ -56422,7 +56426,7 @@
 			</description>
 		</method>
 		<method name="get_shadow_atlas_quadrant_subdiv" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Viewport.ShadowAtlasQuadrantSubdiv">
 			</return>
 			<argument index="0" name="quadrant" type="int">
 			</argument>
@@ -56457,14 +56461,14 @@
 			</description>
 		</method>
 		<method name="get_update_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Viewport.UpdateMode">
 			</return>
 			<description>
 				Get when the viewport would be updated, will be one of the [code]UPDATE_*[/code] constants.
 			</description>
 		</method>
 		<method name="get_usage" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Viewport.Usage">
 			</return>
 			<description>
 			</description>
@@ -56717,7 +56721,7 @@
 			</argument>
 			<argument index="1" name="size" type="Vector2" default="Vector2( -1, -1 )">
 			</argument>
-			<argument index="2" name="margin" type="Vector2" default="null">
+			<argument index="2" name="margin" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
 				Set the size override of the viewport. If the enable parameter is true, it would use the override, otherwise it would use the default size. If the size parameter is equal to [code](-1, -1)[/code], it won't update the size.
@@ -57323,7 +57327,7 @@
 			</argument>
 			<argument index="2" name="node" type="VisualScriptNode">
 			</argument>
-			<argument index="3" name="pos" type="Vector2" default="null">
+			<argument index="3" name="pos" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
 			</description>
@@ -57335,7 +57339,7 @@
 			</argument>
 			<argument index="1" name="default_value" type="Variant" default="null">
 			</argument>
-			<argument index="2" name="export" type="bool" default="null">
+			<argument index="2" name="export" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -57349,7 +57353,7 @@
 			</argument>
 			<argument index="2" name="argname" type="String">
 			</argument>
-			<argument index="3" name="index" type="int" default="null">
+			<argument index="3" name="index" type="int" default="-1">
 			</argument>
 			<description>
 			</description>
@@ -57373,7 +57377,7 @@
 			</description>
 		</method>
 		<method name="custom_signal_get_argument_type" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Variant.Type">
 			</return>
 			<argument index="0" name="name" type="String">
 			</argument>
@@ -57761,7 +57765,7 @@
 	</description>
 	<methods>
 		<method name="get_basic_type" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Variant.Type">
 			</return>
 			<description>
 			</description>
@@ -57805,7 +57809,7 @@
 	</description>
 	<methods>
 		<method name="get_func">
-			<return type="int">
+			<return type="int" enum="VisualScriptBuiltinFunc.BuiltinFunc">
 			</return>
 			<description>
 			</description>
@@ -57947,7 +57951,7 @@
 	</description>
 	<methods>
 		<method name="get_constant_type" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Variant.Type">
 			</return>
 			<description>
 			</description>
@@ -57997,7 +58001,7 @@
 			</description>
 		</method>
 		<method name="get_constructor_type" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Variant.Type">
 			</return>
 			<description>
 			</description>
@@ -58163,7 +58167,7 @@
 	</description>
 	<methods>
 		<method name="get_deconstruct_type" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Variant.Type">
 			</return>
 			<description>
 			</description>
@@ -58287,13 +58291,13 @@
 			</description>
 		</method>
 		<method name="get_basic_type" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Variant.Type">
 			</return>
 			<description>
 			</description>
 		</method>
 		<method name="get_call_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="VisualScriptFunctionCall.CallMode">
 			</return>
 			<description>
 			</description>
@@ -58305,7 +58309,7 @@
 			</description>
 		</method>
 		<method name="get_rpc_call_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="VisualScriptFunctionCall.RPCCallMode">
 			</return>
 			<description>
 			</description>
@@ -58535,7 +58539,7 @@
 	</description>
 	<methods>
 		<method name="get_action_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="VisualScriptInputAction.Mode">
 			</return>
 			<description>
 			</description>
@@ -58595,7 +58599,7 @@
 			</description>
 		</method>
 		<method name="get_var_type" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Variant.Type">
 			</return>
 			<description>
 			</description>
@@ -58639,7 +58643,7 @@
 			</description>
 		</method>
 		<method name="get_var_type" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Variant.Type">
 			</return>
 			<description>
 			</description>
@@ -58677,7 +58681,7 @@
 	</description>
 	<methods>
 		<method name="get_math_constant">
-			<return type="int">
+			<return type="int" enum="VisualScriptMathConstant.MathConstant">
 			</return>
 			<description>
 			</description>
@@ -58749,13 +58753,13 @@
 	</description>
 	<methods>
 		<method name="get_operator" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Variant.Operator">
 			</return>
 			<description>
 			</description>
 		</method>
 		<method name="get_typed" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Variant.Type">
 			</return>
 			<description>
 			</description>
@@ -58839,13 +58843,13 @@
 			</description>
 		</method>
 		<method name="get_basic_type" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Variant.Type">
 			</return>
 			<description>
 			</description>
 		</method>
 		<method name="get_call_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="VisualScriptPropertyGet.CallMode">
 			</return>
 			<description>
 			</description>
@@ -58953,7 +58957,7 @@
 	</description>
 	<methods>
 		<method name="get_assign_op" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="VisualScriptPropertySet.AssignOp">
 			</return>
 			<description>
 			</description>
@@ -58977,13 +58981,13 @@
 			</description>
 		</method>
 		<method name="get_basic_type" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Variant.Type">
 			</return>
 			<description>
 			</description>
 		</method>
 		<method name="get_call_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="VisualScriptPropertySet.CallMode">
 			</return>
 			<description>
 			</description>
@@ -59129,7 +59133,7 @@
 	</description>
 	<methods>
 		<method name="get_return_type" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Variant.Type">
 			</return>
 			<description>
 			</description>
@@ -59211,7 +59215,7 @@
 	</description>
 	<methods>
 		<method name="get_typed" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="Variant.Type">
 			</return>
 			<description>
 			</description>
@@ -59421,7 +59425,7 @@
 			</description>
 		</method>
 		<method name="get_yield_mode">
-			<return type="int">
+			<return type="int" enum="VisualScriptYield.YieldMode">
 			</return>
 			<description>
 			</description>
@@ -59477,7 +59481,7 @@
 			</description>
 		</method>
 		<method name="get_call_mode" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="VisualScriptYieldSignal.CallMode">
 			</return>
 			<description>
 			</description>
@@ -59566,7 +59570,7 @@
 			</return>
 			<argument index="0" name="image" type="Image">
 			</argument>
-			<argument index="1" name="flags" type="int" default="null">
+			<argument index="1" name="flags" type="int" default="7">
 			</argument>
 			<description>
 			</description>
@@ -59920,7 +59924,7 @@
 			</description>
 		</method>
 		<method name="get_node_type">
-			<return type="int">
+			<return type="int" enum="XMLParser.NodeType">
 			</return>
 			<description>
 				Get the type of the current node. Compare with [code]NODE_*[/code] constants.
@@ -59943,7 +59947,7 @@
 			</description>
 		</method>
 		<method name="open">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="file" type="String">
 			</argument>
@@ -59952,7 +59956,7 @@
 			</description>
 		</method>
 		<method name="open_buffer">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="buffer" type="PoolByteArray">
 			</argument>
@@ -59961,14 +59965,14 @@
 			</description>
 		</method>
 		<method name="read">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<description>
 				Read the next node of the file. This returns an error code.
 			</description>
 		</method>
 		<method name="seek">
-			<return type="int">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="pos" type="int">
 			</argument>
