@@ -34,7 +34,9 @@ bool AreaPair2DSW::setup(real_t p_step) {
 
 	bool result = false;
 
-	if (area->is_shape_set_as_disabled(area_shape) || body->is_shape_set_as_disabled(body_shape)) {
+	if (area_shape == -1 || body_shape == -1) {
+		result = false;
+	} else if (area->is_shape_set_as_disabled(area_shape) || body->is_shape_set_as_disabled(body_shape)) {
 		result = false;
 	} else if (area->test_collision_mask(body) && CollisionSolver2DSW::solve(body->get_shape(body_shape), body->get_transform() * body->get_shape_transform(body_shape), Vector2(), area->get_shape(area_shape), area->get_transform() * area->get_shape_transform(area_shape), Vector2(), NULL, this)) {
 		result = true;
@@ -64,6 +66,21 @@ bool AreaPair2DSW::setup(real_t p_step) {
 }
 
 void AreaPair2DSW::solve(real_t p_step) {
+}
+
+void AreaPair2DSW::shift_shape_indices(const CollisionObject2DSW *p_object, int p_removed_index) {
+
+	if (p_object == body) {
+		if (body_shape == p_removed_index)
+			body_shape = -1;
+		else if (body_shape > p_removed_index)
+			body_shape--;
+	} else if (p_object == area) {
+		if (area_shape == p_removed_index)
+			area_shape = -1;
+		else if (area_shape > p_removed_index)
+			area_shape--;
+	}
 }
 
 AreaPair2DSW::AreaPair2DSW(Body2DSW *p_body, int p_body_shape, Area2DSW *p_area, int p_area_shape) {
@@ -97,7 +114,10 @@ AreaPair2DSW::~AreaPair2DSW() {
 bool Area2Pair2DSW::setup(real_t p_step) {
 
 	bool result = false;
-	if (area_a->is_shape_set_as_disabled(shape_a) || area_b->is_shape_set_as_disabled(shape_b)) {
+
+	if (shape_a == -1 || shape_b == -1) {
+		result = false;
+	} else if (area_a->is_shape_set_as_disabled(shape_a) || area_b->is_shape_set_as_disabled(shape_b)) {
 		result = false;
 	} else if (area_a->test_collision_mask(area_b) && CollisionSolver2DSW::solve(area_a->get_shape(shape_a), area_a->get_transform() * area_a->get_shape_transform(shape_a), Vector2(), area_b->get_shape(shape_b), area_b->get_transform() * area_b->get_shape_transform(shape_b), Vector2(), NULL, this)) {
 		result = true;
@@ -129,6 +149,21 @@ bool Area2Pair2DSW::setup(real_t p_step) {
 }
 
 void Area2Pair2DSW::solve(real_t p_step) {
+}
+
+void Area2Pair2DSW::shift_shape_indices(const CollisionObject2DSW *p_object, int p_removed_index) {
+
+	if (p_object == area_a) {
+		if (shape_a == p_removed_index)
+			shape_a = -1;
+		else if (shape_a > p_removed_index)
+			shape_a--;
+	} else if (p_object == area_b) {
+		if (shape_b == p_removed_index)
+			shape_b = -1;
+		else if (shape_b > p_removed_index)
+			shape_b--;
+	}
 }
 
 Area2Pair2DSW::Area2Pair2DSW(Area2DSW *p_area_a, int p_shape_a, Area2DSW *p_area_b, int p_shape_b) {
