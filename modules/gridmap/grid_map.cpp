@@ -396,8 +396,6 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 
 	Map<int, List<Pair<Transform, IndexKey> > > multimesh_items;
 
-	print_line("updating octant " + itos(p_key.x) + ", " + itos(p_key.y) + ", " + itos(p_key.z) + " cells: " + itos(g.cells.size()));
-
 	for (Set<IndexKey>::Element *E = g.cells.front(); E; E = E->next()) {
 
 		ERR_CONTINUE(!cell_map.has(E->get()));
@@ -464,7 +462,6 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 
 	//update multimeshes
 	for (Map<int, List<Pair<Transform, IndexKey> > >::Element *E = multimesh_items.front(); E; E = E->next()) {
-		print_line("multimesh item " + itos(E->key()) + " transforms " + itos(E->get().size()));
 		Octant::MultimeshInstance mmi;
 
 		RID mm = VS::get_singleton()->multimesh_create();

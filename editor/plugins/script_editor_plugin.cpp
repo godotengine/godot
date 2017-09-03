@@ -972,6 +972,14 @@ void ScriptEditor::_menu_option(int p_option) {
 					EditorNode::get_singleton()->show_warning("Can't obtain the script for running");
 					break;
 				}
+
+				current->apply_code();
+				Error err = scr->reload(false); //hard reload script before running always
+
+				if (err != OK) {
+					EditorNode::get_singleton()->show_warning("Script failed reloading, check console for errors.");
+					return;
+				}
 				if (!scr->is_tool()) {
 
 					EditorNode::get_singleton()->show_warning("Script is not in tool mode, will not be able to run");

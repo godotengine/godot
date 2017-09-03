@@ -763,6 +763,8 @@ void PhysicsServerSW::body_apply_impulse(RID p_body, const Vector3 &p_pos, const
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
+	_update_shapes();
+
 	body->apply_impulse(p_pos, p_impulse);
 	body->wakeup();
 };
@@ -772,6 +774,8 @@ void PhysicsServerSW::body_apply_torque_impulse(RID p_body, const Vector3 &p_imp
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
+	_update_shapes();
+
 	body->apply_torque_impulse(p_impulse);
 	body->wakeup();
 };
@@ -780,6 +784,8 @@ void PhysicsServerSW::body_set_axis_velocity(RID p_body, const Vector3 &p_axis_v
 
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
+
+	_update_shapes();
 
 	Vector3 v = body->get_linear_velocity();
 	Vector3 axis = p_axis_velocity.normalized();
@@ -793,6 +799,7 @@ void PhysicsServerSW::body_set_axis_lock(RID p_body, BodyAxisLock p_lock) {
 
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
+
 	body->set_axis_lock(p_lock);
 	body->wakeup();
 }
@@ -901,6 +908,8 @@ bool PhysicsServerSW::body_test_motion(RID p_body, const Transform &p_from, cons
 	ERR_FAIL_COND_V(!body, false);
 	ERR_FAIL_COND_V(!body->get_space(), false);
 	ERR_FAIL_COND_V(body->get_space()->is_locked(), false);
+
+	_update_shapes();
 
 	return body->get_space()->test_body_motion(body, p_from, p_motion, p_margin, r_result);
 }
@@ -1209,6 +1218,8 @@ bool PhysicsServerSW::generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis p_a
 
 void PhysicsServerSW::free(RID p_rid) {
 
+	_update_shapes(); //just in case
+
 	if (shape_owner.owns(p_rid)) {
 
 		ShapeSW *shape = shape_owner.get(p_rid);
@@ -1312,6 +1323,8 @@ void PhysicsServerSW::step(real_t p_step) {
 	if (!active)
 		return;
 
+	_update_shapes();
+
 	doing_sync = false;
 
 	last_step = p_step;
@@ -1407,6 +1420,14 @@ int PhysicsServerSW::get_process_info(ProcessInfo p_info) {
 	}
 
 	return 0;
+}
+
+void PhysicsServerSW::_update_shapes() {
+
+	while (pending_shape_update_list.first()) {
+		pending_shape_update_list.first()->self()->_shape_changed();
+		pending_shape_update_list.remove(pending_shape_update_list.first());
+	}
 }
 
 void PhysicsServerSW::_shape_col_cbk(const Vector3 &p_point_A, const Vector3 &p_point_B, void *p_userdata) {

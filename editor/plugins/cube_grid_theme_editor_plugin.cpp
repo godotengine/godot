@@ -88,7 +88,7 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 		if (mesh.is_null())
 			continue;
 
-		int id = p_library->find_item_name(mi->get_name());
+		int id = p_library->find_item_by_name(mi->get_name());
 		if (id < 0) {
 
 			id = p_library->get_last_unused_item_id();
