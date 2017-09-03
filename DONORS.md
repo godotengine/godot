@@ -129,11 +129,11 @@ None so far, but your company could be the first! :)
     Sasori Olkof
     Sootstone
     Tavo Tell
-    Thomas Herzog
     Tom Larrow
     Trent McPheron
     Troy Bonneau
     UltyX
+    Xananax & karroffel
 
 ## Bronze donors
 
