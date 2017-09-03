@@ -112,6 +112,7 @@ public:
 		TEXTURE_AMBIENT_OCCLUSION,
 		TEXTURE_DEPTH,
 		TEXTURE_SUBSURFACE_SCATTERING,
+		TEXTURE_TRANSMISSION,
 		TEXTURE_REFRACTION,
 		TEXTURE_DETAIL_MASK,
 		TEXTURE_DETAIL_ALBEDO,
@@ -135,6 +136,7 @@ public:
 		FEATURE_AMBIENT_OCCLUSION,
 		FEATURE_DEPTH_MAPPING,
 		FEATURE_SUBSURACE_SCATTERING,
+		FEATURE_TRANSMISSION,
 		FEATURE_REFRACTION,
 		FEATURE_DETAIL,
 		FEATURE_MAX
@@ -179,7 +181,7 @@ public:
 
 	enum DiffuseMode {
 		DIFFUSE_LAMBERT,
-		DIFFUSE_HALF_LAMBERT,
+		DIFFUSE_LAMBERT_WRAP,
 		DIFFUSE_OREN_NAYAR,
 		DIFFUSE_BURLEY,
 		DIFFUSE_TOON,
@@ -212,7 +214,7 @@ private:
 	union MaterialKey {
 
 		struct {
-			uint64_t feature_mask : 11;
+			uint64_t feature_mask : 12;
 			uint64_t detail_uv : 1;
 			uint64_t blend_mode : 2;
 			uint64_t depth_draw_mode : 2;
@@ -286,6 +288,7 @@ private:
 		StringName anisotropy;
 		StringName depth_scale;
 		StringName subsurface_scattering_strength;
+		StringName transmission;
 		StringName refraction;
 		StringName point_size;
 		StringName uv1_scale;
@@ -337,6 +340,7 @@ private:
 	float anisotropy;
 	float depth_scale;
 	float subsurface_scattering_strength;
+	Color transmission;
 	float refraction;
 	float line_width;
 	float point_size;
@@ -442,6 +446,9 @@ public:
 
 	void set_subsurface_scattering_strength(float p_subsurface_scattering_strength);
 	float get_subsurface_scattering_strength() const;
+
+	void set_transmission(const Color &p_transmission);
+	Color get_transmission() const;
 
 	void set_refraction(float p_refraction);
 	float get_refraction() const;

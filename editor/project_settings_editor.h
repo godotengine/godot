@@ -159,6 +159,8 @@ public:
 	void popup_project_settings();
 	void set_plugins_page();
 
+	TabContainer *get_tabs();
+
 	void queue_save();
 
 	ProjectSettingsEditor(EditorData *p_data);

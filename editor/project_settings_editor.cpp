@@ -1321,6 +1321,11 @@ void ProjectSettingsEditor::set_plugins_page() {
 	tab_container->set_current_tab(plugin_settings->get_index());
 }
 
+TabContainer *ProjectSettingsEditor::get_tabs() {
+
+	return tab_container;
+}
+
 void ProjectSettingsEditor::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_item_selected"), &ProjectSettingsEditor::_item_selected);
@@ -1361,6 +1366,8 @@ void ProjectSettingsEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_toggle_search_bar"), &ProjectSettingsEditor::_toggle_search_bar);
 
 	ClassDB::bind_method(D_METHOD("_copy_to_platform_about_to_show"), &ProjectSettingsEditor::_copy_to_platform_about_to_show);
+
+	ClassDB::bind_method(D_METHOD("get_tabs"), &ProjectSettingsEditor::get_tabs);
 }
 
 ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {

@@ -239,6 +239,7 @@ void SpatialMaterial::init_shaders() {
 	shader_names->anisotropy = "anisotropy_ratio";
 	shader_names->depth_scale = "depth_scale";
 	shader_names->subsurface_scattering_strength = "subsurface_scattering_strength";
+	shader_names->transmission = "transmission";
 	shader_names->refraction = "refraction";
 	shader_names->point_size = "point_size";
 	shader_names->uv1_scale = "uv1_scale";
@@ -276,6 +277,7 @@ void SpatialMaterial::init_shaders() {
 	shader_names->texture_names[TEXTURE_AMBIENT_OCCLUSION] = "texture_ambient_occlusion";
 	shader_names->texture_names[TEXTURE_DEPTH] = "texture_depth";
 	shader_names->texture_names[TEXTURE_SUBSURFACE_SCATTERING] = "texture_subsurface_scattering";
+	shader_names->texture_names[TEXTURE_TRANSMISSION] = "texture_transmission";
 	shader_names->texture_names[TEXTURE_REFRACTION] = "texture_refraction";
 	shader_names->texture_names[TEXTURE_DETAIL_MASK] = "texture_detail_mask";
 	shader_names->texture_names[TEXTURE_DETAIL_ALBEDO] = "texture_detail_albedo";
@@ -352,7 +354,7 @@ void SpatialMaterial::_update_shader() {
 	}
 	switch (diffuse_mode) {
 		case DIFFUSE_LAMBERT: code += ",diffuse_lambert"; break;
-		case DIFFUSE_HALF_LAMBERT: code += ",diffuse_half_lambert"; break;
+		case DIFFUSE_LAMBERT_WRAP: code += ",diffuse_lambert_wrap"; break;
 		case DIFFUSE_OREN_NAYAR: code += ",diffuse_oren_nayar"; break;
 		case DIFFUSE_BURLEY: code += ",diffuse_burley"; break;
 		case DIFFUSE_TOON: code += ",diffuse_toon"; break;
@@ -449,6 +451,12 @@ void SpatialMaterial::_update_shader() {
 
 		code += "uniform float subsurface_scattering_strength : hint_range(0,1);\n";
 		code += "uniform sampler2D texture_subsurface_scattering : hint_white;\n";
+	}
+
+	if (features[FEATURE_TRANSMISSION]) {
+
+		code += "uniform vec4 transmission : hint_color;\n";
+		code += "uniform sampler2D texture_transmission : hint_black;\n";
 	}
 
 	if (features[FEATURE_DEPTH_MAPPING]) {
@@ -766,6 +774,15 @@ void SpatialMaterial::_update_shader() {
 		code += "\tSSS_STRENGTH=subsurface_scattering_strength*sss_tex;\n";
 	}
 
+	if (features[FEATURE_TRANSMISSION]) {
+		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
+			code += "\tvec3 transmission_tex = triplanar_texture(texture_transmission,uv1_power_normal,uv1_triplanar_pos).rgb;\n";
+		} else {
+			code += "\tvec3 transmission_tex = texture(texture_transmission,base_uv).rgb;\n";
+		}
+		code += "\tTRANSMISSION = (transmission.rgb+transmission_tex);\n";
+	}
+
 	if (features[FEATURE_DETAIL]) {
 
 		bool triplanar = (flags[FLAG_UV1_USE_TRIPLANAR] && detail_uv == DETAIL_UV_1) || (flags[FLAG_UV2_USE_TRIPLANAR] && detail_uv == DETAIL_UV_2);
@@ -1015,6 +1032,17 @@ float SpatialMaterial::get_subsurface_scattering_strength() const {
 	return subsurface_scattering_strength;
 }
 
+void SpatialMaterial::set_transmission(const Color &p_transmission) {
+
+	transmission = p_transmission;
+	VS::get_singleton()->material_set_param(_get_material(), shader_names->transmission, transmission);
+}
+
+Color SpatialMaterial::get_transmission() const {
+
+	return transmission;
+}
+
 void SpatialMaterial::set_refraction(float p_refraction) {
 
 	refraction = p_refraction;
@@ -1180,6 +1208,7 @@ void SpatialMaterial::_validate_property(PropertyInfo &property) const {
 	_validate_feature("ao", FEATURE_AMBIENT_OCCLUSION, property);
 	_validate_feature("depth", FEATURE_DEPTH_MAPPING, property);
 	_validate_feature("subsurf_scatter", FEATURE_SUBSURACE_SCATTERING, property);
+	_validate_feature("transmission", FEATURE_TRANSMISSION, property);
 	_validate_feature("refraction", FEATURE_REFRACTION, property);
 	_validate_feature("detail", FEATURE_DETAIL, property);
 
@@ -1530,6 +1559,9 @@ void SpatialMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_subsurface_scattering_strength", "strength"), &SpatialMaterial::set_subsurface_scattering_strength);
 	ClassDB::bind_method(D_METHOD("get_subsurface_scattering_strength"), &SpatialMaterial::get_subsurface_scattering_strength);
 
+	ClassDB::bind_method(D_METHOD("set_transmission", "transmission"), &SpatialMaterial::set_transmission);
+	ClassDB::bind_method(D_METHOD("get_transmission"), &SpatialMaterial::get_transmission);
+
 	ClassDB::bind_method(D_METHOD("set_refraction", "refraction"), &SpatialMaterial::set_refraction);
 	ClassDB::bind_method(D_METHOD("get_refraction"), &SpatialMaterial::get_refraction);
 
@@ -1721,6 +1753,11 @@ void SpatialMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "subsurf_scatter_strength", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_subsurface_scattering_strength", "get_subsurface_scattering_strength");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "subsurf_scatter_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture", TEXTURE_SUBSURFACE_SCATTERING);
 
+	ADD_GROUP("Transmission", "transmission_");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "transmission_enabled"), "set_feature", "get_feature", FEATURE_TRANSMISSION);
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "transmission", PROPERTY_HINT_COLOR_NO_ALPHA), "set_transmission", "get_transmission");
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "transmission_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture", TEXTURE_TRANSMISSION);
+
 	ADD_GROUP("Refraction", "refraction_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "refraction_enabled"), "set_feature", "get_feature", FEATURE_REFRACTION);
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "refraction_scale", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_refraction", "get_refraction");
@@ -1758,6 +1795,7 @@ void SpatialMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(TEXTURE_AMBIENT_OCCLUSION);
 	BIND_ENUM_CONSTANT(TEXTURE_DEPTH);
 	BIND_ENUM_CONSTANT(TEXTURE_SUBSURFACE_SCATTERING);
+	BIND_ENUM_CONSTANT(TEXTURE_TRANSMISSION);
 	BIND_ENUM_CONSTANT(TEXTURE_REFRACTION);
 	BIND_ENUM_CONSTANT(TEXTURE_DETAIL_MASK);
 	BIND_ENUM_CONSTANT(TEXTURE_DETAIL_ALBEDO);
@@ -1776,6 +1814,7 @@ void SpatialMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_AMBIENT_OCCLUSION);
 	BIND_ENUM_CONSTANT(FEATURE_DEPTH_MAPPING);
 	BIND_ENUM_CONSTANT(FEATURE_SUBSURACE_SCATTERING);
+	BIND_ENUM_CONSTANT(FEATURE_TRANSMISSION);
 	BIND_ENUM_CONSTANT(FEATURE_REFRACTION);
 	BIND_ENUM_CONSTANT(FEATURE_DETAIL);
 	BIND_ENUM_CONSTANT(FEATURE_MAX);
@@ -1809,7 +1848,7 @@ void SpatialMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(DIFFUSE_LAMBERT);
-	BIND_ENUM_CONSTANT(DIFFUSE_HALF_LAMBERT);
+	BIND_ENUM_CONSTANT(DIFFUSE_LAMBERT_WRAP);
 	BIND_ENUM_CONSTANT(DIFFUSE_OREN_NAYAR);
 	BIND_ENUM_CONSTANT(DIFFUSE_BURLEY);
 	BIND_ENUM_CONSTANT(DIFFUSE_TOON);
@@ -1850,6 +1889,7 @@ SpatialMaterial::SpatialMaterial()
 	set_anisotropy(0);
 	set_depth_scale(0.05);
 	set_subsurface_scattering_strength(0);
+	set_transmission(Color(0, 0, 0));
 	set_refraction(0.05);
 	set_line_width(1);
 	set_point_size(1);
