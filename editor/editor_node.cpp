@@ -1368,6 +1368,16 @@ void EditorNode::_set_editing_top_editors(Object *p_current_object) {
 	editor_plugins_over->edit(p_current_object);
 }
 
+static bool overrides_external_editor(Object *p_object) {
+
+	Script *script = Object::cast_to<Script>(p_object);
+
+	if (!script)
+		return false;
+
+	return script->get_language()->overrides_external_editor();
+}
+
 void EditorNode::_edit_current() {
 
 	uint32_t current = editor_history.get_current();
@@ -1434,7 +1444,7 @@ void EditorNode::_edit_current() {
 	if (main_plugin) {
 
 		// special case if use of external editor is true
-		if (main_plugin->get_name() == "Script" && bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor"))) {
+		if (main_plugin->get_name() == "Script" && (bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor")) || overrides_external_editor(current_obj))) {
 			main_plugin->edit(current_obj);
 		}
 
@@ -1442,6 +1452,7 @@ void EditorNode::_edit_current() {
 			// update screen main_plugin
 
 			if (!changing_scene) {
+
 				if (editor_plugin_screen)
 					editor_plugin_screen->make_visible(false);
 				editor_plugin_screen = main_plugin;
