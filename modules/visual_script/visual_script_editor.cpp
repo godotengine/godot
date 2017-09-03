@@ -523,7 +523,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 		if (Object::cast_to<VisualScriptExpression>(*node)) {
 			Ref<VisualScriptComment> vsc = node;
 			gnode->set_comment(true);
-			gnode->set_resizeable(true);
+			gnode->set_resizable(true);
 			gnode->set_custom_minimum_size(vsc->get_size() * EDSCALE);
 			gnode->connect("resize_request", this, "_comment_node_resized", varray(E->get()));
 		}
