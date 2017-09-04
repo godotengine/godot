@@ -35,7 +35,7 @@
 #include "os/thread_safe.h"
 #include "resource.h"
 
-#include <godot/gdnative.h>
+#include "gdnative/gdnative.h"
 
 class GDNativeLibrary : public Resource {
 	GDCLASS(GDNativeLibrary, Resource)
@@ -77,6 +77,8 @@ class GDNativeLibrary : public Resource {
 
 	String library_paths[NUM_PLATFORMS];
 
+	bool singleton_gdnative = false;
+
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -92,6 +94,9 @@ public:
 	String get_library_path(StringName p_platform) const;
 
 	String get_active_library_path() const;
+
+	_FORCE_INLINE_ bool is_singleton_gdnative() const { return singleton_gdnative; }
+	_FORCE_INLINE_ void set_singleton_gdnative(bool p_singleton) { singleton_gdnative = p_singleton; }
 };
 
 typedef godot_variant (*native_call_cb)(void *, godot_string *, godot_array *);
