@@ -425,9 +425,10 @@ void ProjectExportDialog::_delete_preset_confirm() {
 
 	int idx = presets->get_current();
 	parameters->edit(NULL); //to avoid crash
+	_edit_preset(-1);
 	EditorExport::get_singleton()->remove_export_preset(idx);
 	_update_presets();
-	_edit_preset(-1);
+	_edit_preset(presets->get_current());
 }
 
 Variant ProjectExportDialog::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
