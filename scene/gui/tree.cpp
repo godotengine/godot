@@ -1022,7 +1022,8 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 					cache.selected->draw(ci, r);
 				}
 				if (text_editor->is_visible()) {
-					text_editor->set_pos(get_global_pos() + r.pos);
+					Vector2 ofs(0, (text_editor->get_size().height - r.size.height) / 2);
+					text_editor->set_pos(get_global_pos() + r.pos - ofs);
 				}
 			}
 
@@ -2385,8 +2386,8 @@ bool Tree::edit_selected() {
 		return true;
 
 	} else if (c.mode == TreeItem::CELL_MODE_STRING || c.mode == TreeItem::CELL_MODE_RANGE || c.mode == TreeItem::CELL_MODE_RANGE_EXPRESSION) {
-
-		Point2i textedpos = get_global_pos() + rect.pos;
+		Vector2 ofs(0, (text_editor->get_size().height - rect.size.height) / 2);
+		Point2i textedpos = get_global_pos() + rect.pos - ofs;
 		text_editor->set_pos(textedpos);
 		text_editor->set_size(rect.size);
 		text_editor->clear();
