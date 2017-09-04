@@ -116,7 +116,7 @@ void main() {
 
 #ifdef USE_TEXTURE_RECT
 
-	if (dst_rect.z < 0) { // Transpose is encoded as negative dst_rect.z
+	if (dst_rect.z < 0.0) { // Transpose is encoded as negative dst_rect.z
 		uv_interp = src_rect.xy + abs(src_rect.zw) * vertex.yx;
 	} else {
 		uv_interp = src_rect.xy + abs(src_rect.zw) * vertex;
