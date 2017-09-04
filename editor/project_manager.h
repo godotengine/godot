@@ -38,6 +38,7 @@
 #include "scene/gui/tree.h"
 
 class NewProjectDialog;
+class RenameProjectDialog;
 class ProjectListFilter;
 
 class ProjectManager : public Control {
@@ -45,6 +46,7 @@ class ProjectManager : public Control {
 
 	Button *erase_btn;
 	Button *open_btn;
+	Button *rename_btn;
 	Button *run_btn;
 
 	FileDialog *scan_dir;
@@ -59,6 +61,7 @@ class ProjectManager : public Control {
 	ConfirmationDialog *multi_scan_ask;
 	AcceptDialog *run_error_diag;
 	NewProjectDialog *npdialog;
+	RenameProjectDialog *rpdialog;
 	ScrollContainer *scroll;
 	VBoxContainer *scroll_childs;
 	Map<String, String> selected_list; // name -> main_scene
@@ -78,6 +81,7 @@ class ProjectManager : public Control {
 	void _open_project_confirm();
 	void _import_project();
 	void _new_project();
+	void _rename_project();
 	void _erase_project();
 	void _erase_project_confirm();
 	void _update_project_buttons();
@@ -85,6 +89,7 @@ class ProjectManager : public Control {
 	void _scan_begin(const String &p_base);
 
 	void _load_recent_projects();
+	void _on_project_renamed();
 	void _on_project_created(const String &dir);
 	void _update_scroll_pos(const String &dir);
 	void _scan_dir(DirAccess *da, float pos, float total, List<String> *r_projects);

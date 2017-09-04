@@ -443,6 +443,159 @@ public:
 	}
 };
 
+class RenameProjectDialog : public ConfirmationDialog {
+
+	GDCLASS(RenameProjectDialog, ConfirmationDialog);
+
+private:
+	Label *error;
+	LineEdit *project_path;
+	LineEdit *project_name;
+
+	String _test_path() {
+
+		error->set_text("");
+		get_ok()->set_disabled(true);
+		DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		String valid_path;
+		if (d->change_dir(project_path->get_text()) == OK) {
+			valid_path = project_path->get_text();
+		} else if (d->change_dir(project_path->get_text().strip_edges()) == OK) {
+			valid_path = project_path->get_text().strip_edges();
+		}
+
+		if (valid_path == "") {
+			error->set_text(TTR("Invalid project path, the path must exist!"));
+			memdelete(d);
+			return "";
+		}
+
+		if (valid_path != "" && !d->file_exists("project.godot")) {
+
+			error->set_text(TTR("Invalid project path, project.godot must exist."));
+			memdelete(d);
+			return "";
+		}
+
+		memdelete(d);
+		get_ok()->set_disabled(false);
+		return valid_path;
+	}
+
+	void _text_changed(const String &p_text) {
+
+		error->set_text("");
+		if (p_text == "") {
+
+			error->set_text(TTR("Name cannot be empty"));
+			get_ok()->set_disabled(true);
+			return;
+		}
+		get_ok()->set_disabled(false);
+	}
+
+	void ok_pressed() {
+
+		String dir = _test_path();
+		if (dir == "") {
+			error->set_text(TTR("Invalid project path (changed anything?)."));
+			return;
+		}
+
+		ProjectSettings *current = memnew(ProjectSettings);
+		current->add_singleton(ProjectSettings::Singleton("Current"));
+
+		if (current->setup(dir, "")) {
+			error->set_text(TTR("Couldn't get project.godot in project path."));
+		} else {
+			ProjectSettings::CustomMap edited_settings;
+			edited_settings["application/config/name"] = project_name->get_text();
+
+			if (current->save_custom(dir.plus_file("/project.godot"), edited_settings, Vector<String>(), true)) {
+				error->set_text(TTR("Couldn't edit project.godot in project path."));
+			}
+		}
+
+		emit_signal("project_renamed");
+	}
+
+protected:
+	static void _bind_methods() {
+
+		ClassDB::bind_method("_text_changed", &RenameProjectDialog::_text_changed);
+		ADD_SIGNAL(MethodInfo("project_renamed"));
+	}
+
+public:
+
+	void set_project_path(const String &p_path) {
+		project_path->set_text(p_path);
+	}
+
+	void show_dialog() {
+
+		set_title(TTR("Rename Project"));
+		get_ok()->set_text(TTR("Rename"));
+
+		String dir = _test_path();
+		if (dir == "") {
+			error->set_text(TTR("Invalid project path (changed anything?)."));
+			return;
+		}
+		ProjectSettings *current = memnew(ProjectSettings);
+		current->add_singleton(ProjectSettings::Singleton("Current"));
+
+		if (current->setup(dir, "")) {
+			error->set_text(TTR("Couldn't get project.godot in project path."));
+		} else {
+			if (current->has("application/config/name")) {
+				String appname = current->get("application/config/name");
+				project_name->set_text(appname);
+			}
+		}
+
+		popup_centered(Size2(500, 125) * EDSCALE);
+		project_name->grab_focus();
+
+	}
+
+	RenameProjectDialog() {
+
+		VBoxContainer *vb = memnew(VBoxContainer);
+		add_child(vb);
+
+		Label *l = memnew(Label);
+		l->set_text(TTR("Project Path:"));
+		vb->add_child(l);
+
+		MarginContainer *mc = memnew(MarginContainer);
+		vb->add_child(mc);
+		project_path = memnew(LineEdit);
+		project_path->set_editable(false);
+		mc->add_child(project_path);
+
+		l = memnew(Label);
+		l->set_text(TTR("Project Name:"));
+		l->set_position(Point2(5, 50));
+		vb->add_child(l);
+
+		project_name = memnew(LineEdit);
+		mc = memnew(MarginContainer);
+		vb->add_child(mc);
+		mc->add_child(project_name);
+
+		l = memnew(Label);
+		l->set_text(TTR("That's a BINGO!"));
+		vb->add_child(l);
+		error = l;
+		l->add_color_override("font_color", Color(1, 0.4, 0.3, 0.8));
+		l->set_align(Label::ALIGN_CENTER);
+
+		project_name->connect("text_changed", this, "_text_changed");
+	}
+
+};
+
 struct ProjectItem {
 	String project;
 	String path;
@@ -493,6 +646,7 @@ void ProjectManager::_update_project_buttons() {
 
 	erase_btn->set_disabled(selected_list.size() < 1);
 	open_btn->set_disabled(selected_list.size() < 1);
+	rename_btn->set_disabled(selected_list.size() < 1);
 }
 
 void ProjectManager::_panel_input(const Ref<InputEvent> &p_ev, Node *p_hb) {
@@ -883,6 +1037,11 @@ void ProjectManager::_load_recent_projects() {
 	tabs->set_current_tab(0);
 }
 
+void ProjectManager::_on_project_renamed() {
+
+	_load_recent_projects();
+}
+
 void ProjectManager::_on_project_created(const String &dir) {
 	bool has_already = false;
 	for (int i = 0; i < scroll_childs->get_child_count(); i++) {
@@ -1070,6 +1229,19 @@ void ProjectManager::_import_project() {
 	npdialog->show_dialog();
 }
 
+void ProjectManager::_rename_project() {
+
+	if (selected_list.size() < 1) {
+		return;
+	}
+	for (Map<String, String>::Element *E = selected_list.front(); E; E = E->next()) {
+		const String &selected = E->key();
+		String path = EditorSettings::get_singleton()->get("projects/" + selected);
+		rpdialog->set_project_path(path);
+	}
+	rpdialog->show_dialog();
+}
+
 void ProjectManager::_erase_project_confirm() {
 
 	if (selected_list.size() == 0) {
@@ -1163,11 +1335,13 @@ void ProjectManager::_bind_methods() {
 	ClassDB::bind_method("_scan_projects", &ProjectManager::_scan_projects);
 	ClassDB::bind_method("_scan_begin", &ProjectManager::_scan_begin);
 	ClassDB::bind_method("_import_project", &ProjectManager::_import_project);
+	ClassDB::bind_method("_rename_project", &ProjectManager::_rename_project);
 	ClassDB::bind_method("_new_project", &ProjectManager::_new_project);
 	ClassDB::bind_method("_erase_project", &ProjectManager::_erase_project);
 	ClassDB::bind_method("_erase_project_confirm", &ProjectManager::_erase_project_confirm);
 	ClassDB::bind_method("_exit_dialog", &ProjectManager::_exit_dialog);
 	ClassDB::bind_method("_load_recent_projects", &ProjectManager::_load_recent_projects);
+	ClassDB::bind_method("_on_project_renamed", &ProjectManager::_on_project_renamed);
 	ClassDB::bind_method("_on_project_created", &ProjectManager::_on_project_created);
 	ClassDB::bind_method("_update_scroll_pos", &ProjectManager::_update_scroll_pos);
 	ClassDB::bind_method("_panel_draw", &ProjectManager::_panel_draw);
@@ -1328,6 +1502,12 @@ ProjectManager::ProjectManager() {
 	tree_vb->add_child(import);
 	import->connect("pressed", this, "_import_project");
 
+	Button *rename = memnew(Button);
+	rename->set_text(TTR("Rename"));
+	tree_vb->add_child(rename);
+	rename->connect("pressed", this, "_rename_project");
+	rename_btn = rename;
+
 	Button *erase = memnew(Button);
 	erase->set_text(TTR("Remove"));
 	tree_vb->add_child(erase);
@@ -1384,6 +1564,12 @@ ProjectManager::ProjectManager() {
 	gui_base->add_child(npdialog);
 
 	npdialog->connect("project_created", this, "_on_project_created");
+
+	rpdialog = memnew(RenameProjectDialog);
+	gui_base->add_child(rpdialog);
+
+	rpdialog->connect("project_renamed", this, "_on_project_renamed");
+
 	_load_recent_projects();
 
 	if (EditorSettings::get_singleton()->get("filesystem/directories/autoscan_project_path")) {
