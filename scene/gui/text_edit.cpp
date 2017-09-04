@@ -2136,14 +2136,24 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 						break;
 					}
 				}
-				if (auto_indent) {
-					// indent once again if previous line will end with ':'
-					// (i.e. colon precedes current cursor position)
-					if (cursor.column > 0 && text[cursor.line][cursor.column - 1] == ':') {
+
+				bool brace_indent = false;
+
+				// no need to indent if we are going upwards.
+				if (auto_indent && !(k->get_command() && k->get_shift())) {
+					// indent once again if previous line will end with ':' or '{'
+					// (i.e. colon/brace precedes current cursor position)
+					if (cursor.column > 0 && (text[cursor.line][cursor.column - 1] == ':' || text[cursor.line][cursor.column - 1] == '{')) {
 						if (indent_using_spaces) {
 							ins += space_indent;
 						} else {
 							ins += "\t";
+						}
+
+						// no need to move the brace below if we are not taking the text with us.
+						if (text[cursor.line][cursor.column] == '}' && !k->get_command()) {
+							brace_indent = true;
+							ins += "\n" + ins.substr(1, ins.length() - 2);
 						}
 					}
 				}
@@ -2168,6 +2178,9 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 				if (first_line) {
 					cursor_set_line(0);
+				} else if (brace_indent) {
+					cursor_set_line(cursor.line - 1);
+					cursor_set_column(text[cursor.line].length());
 				}
 
 			} break;
