@@ -106,7 +106,16 @@ private:
 	void _menu_option(int p_option);
 	Size2 prev_size;
 
+	Spatial *preview_node;
+	Rect3 *preview_bounds;
+	Vector<String> selected_files;
+	AcceptDialog *accept;
+
+	Node *target_node;
+	Point2 drop_pos;
+
 	EditorNode *editor;
+	EditorData *editor_data;
 	EditorSelection *editor_selection;
 	UndoRedo *undo_redo;
 
@@ -143,7 +152,7 @@ private:
 	ObjectID _select_ray(const Point2 &p_pos, bool p_append, bool &r_includes_current, int *r_gizmo_handle = NULL, bool p_alt_select = false);
 	void _find_items_at_pos(const Point2 &p_pos, bool &r_includes_current, Vector<_RayResult> &results, bool p_alt_select = false);
 	Vector3 _get_ray_pos(const Vector2 &p_pos) const;
-	Vector3 _get_ray(const Vector2 &p_pos);
+	Vector3 _get_ray(const Vector2 &p_pos) const;
 	Point2 _point_to_screen(const Vector3 &p_point);
 	Transform _get_camera_transform() const;
 	int get_selected_count() const;
@@ -250,6 +259,7 @@ private:
 	void _draw();
 
 	void _smouseenter();
+	void _smouseexit();
 	void _sinput(const Ref<InputEvent> &p_event);
 	void _update_freelook(real_t delta);
 	SpatialEditor *spatial_editor;
@@ -266,6 +276,17 @@ private:
 	void _list_select(Ref<InputEventMouseButton> b);
 	Point2i _get_warped_mouse_motion(const Ref<InputEventMouseMotion> &p_ev_mouse_motion) const;
 
+	Vector3 _get_instance_position(const Point2 &p_pos) const;
+	static Rect3 _calculate_spatial_bounds(const Spatial *p_parent, const Rect3 p_bounds);
+	void _create_preview(const Vector<String> &files) const;
+	void _remove_preview();
+	bool _cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node);
+	bool _create_instance(Node *parent, String &path, const Point2 &p_point);
+	void _perform_drop_data();
+
+	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -280,6 +301,11 @@ public:
 	bool is_freelook_active() const { return freelook_active; }
 
 	void focus_selection();
+
+	void assign_pending_data_pointers(
+			Spatial *p_preview_node,
+			Rect3 *p_preview_bounds,
+			AcceptDialog *p_accept);
 
 	Viewport *get_viewport_node() { return viewport; }
 
@@ -396,6 +422,10 @@ private:
 	Ref<SpatialMaterial> indicator_mat;
 	Ref<SpatialMaterial> cursor_material;
 
+	// Scene drag and drop support
+	Spatial *preview_node;
+	Rect3 preview_bounds;
+
 	/*
 	struct Selected {
 		AABB aabb;
@@ -441,6 +471,8 @@ private:
 
 	MenuButton *transform_menu;
 	MenuButton *view_menu;
+
+	AcceptDialog *accept;
 
 	ConfirmationDialog *snap_dialog;
 	ConfirmationDialog *xform_dialog;
@@ -559,6 +591,7 @@ public:
 	Camera *get_camera() { return NULL; }
 	void edit(Spatial *p_spatial);
 	void clear();
+
 	SpatialEditor(EditorNode *p_editor);
 	~SpatialEditor();
 };
