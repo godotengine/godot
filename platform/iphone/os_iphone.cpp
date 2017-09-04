@@ -553,6 +553,10 @@ void OSIPhone::native_video_stop() {
 		_stop_video();
 }
 
+bool OSIPhone::use_imported_paths() const {
+	return true;
+}
+
 bool OSIPhone::_check_internal_feature_support(const String &p_feature) {
 
 	return p_feature == "mobile" || p_feature == "etc" || p_feature == "pvrtc" || p_feature == "etc2";

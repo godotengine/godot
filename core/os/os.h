@@ -414,6 +414,8 @@ public:
 	virtual int get_power_seconds_left();
 	virtual int get_power_percent_left();
 
+	virtual bool use_imported_paths() const;
+
 	bool check_feature_support(const String &p_feature);
 
 	/**

@@ -495,6 +495,10 @@ int OS::get_power_percent_left() {
 	return -1;
 }
 
+bool OS::use_imported_paths() const {
+	return false;
+}
+
 bool OS::check_feature_support(const String &p_feature) {
 
 	if (p_feature == get_name())

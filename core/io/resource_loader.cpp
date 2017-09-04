@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "resource_loader.h"
+#include "io/config_file.h"
 #include "io/resource_import.h"
 #include "os/file_access.h"
 #include "os/os.h"
@@ -195,6 +196,11 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p
 		local_path = "res://" + p_path;
 	else
 		local_path = ProjectSettings::get_singleton()->localize_path(p_path);
+
+	String remapped_type = get_remapped_type(local_path);
+	local_path = get_remapped_path(local_path);
+	if (remapped_type == "")
+		remapped_type = p_type_hint;
 
 	bool xl_remapped = false;
 	String path = _path_remap(local_path, &xl_remapped);
@@ -488,6 +494,40 @@ void ResourceLoader::load_translation_remaps() {
 
 void ResourceLoader::clear_translation_remaps() {
 	translation_remaps.clear();
+}
+
+String ResourceLoader::get_remapped_type(const String &p_path) {
+	if (OS::get_singleton()->use_imported_paths()) {
+		if (FileAccess::exists(p_path + ".import")) {
+			Ref<ConfigFile> config;
+			config.instance();
+			Error err = config->load(p_path + ".import");
+			if (err == OK) {
+				String remapped_type = config->get_value("remap", "type");
+				if (remapped_type != "") {
+					return remapped_type;
+				}
+			}
+		}
+	}
+	return "";
+}
+
+String ResourceLoader::get_remapped_path(const String &p_path) {
+	if (OS::get_singleton()->use_imported_paths()) {
+		if (FileAccess::exists(p_path + ".import")) {
+			Ref<ConfigFile> config;
+			config.instance();
+			Error err = config->load(p_path + ".import");
+			if (err == OK) {
+				String remapped_path = config->get_value("remap", "path");
+				if (remapped_path != "") {
+					return remapped_path;
+				}
+			}
+		}
+	}
+	return p_path;
 }
 
 ResourceLoadErrorNotify ResourceLoader::err_notify = NULL;
