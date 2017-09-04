@@ -92,6 +92,8 @@ bool Camera::_set(const StringName &p_name, const Variant &p_value) {
 		}
 	} else if (p_name == "cull_mask") {
 		set_cull_mask(p_value);
+	} else if (p_name == "raycast_layers") {
+		set_raycast_layers(p_value);
 	} else if (p_name == "environment") {
 		set_environment(p_value);
 	} else if (p_name == "doppler/tracking") {
@@ -127,6 +129,8 @@ bool Camera::_get(const StringName &p_name, Variant &r_ret) const {
 		}
 	} else if (p_name == "cull_mask") {
 		r_ret = get_cull_mask();
+	} else if (p_name == "raycast_layers") {
+		r_ret = get_raycast_layers();
 	} else if (p_name == "h_offset") {
 		r_ret = get_h_offset();
 	} else if (p_name == "v_offset") {
@@ -172,6 +176,7 @@ void Camera::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::INT, "keep_aspect", PROPERTY_HINT_ENUM, "Keep Width,Keep Height"));
 	p_list->push_back(PropertyInfo(Variant::BOOL, "current"));
 	p_list->push_back(PropertyInfo(Variant::INT, "cull_mask", PROPERTY_HINT_LAYERS_3D_RENDER));
+	p_list->push_back(PropertyInfo(Variant::INT, "raycast_layers", PROPERTY_HINT_LAYERS_3D_RENDER));
 	p_list->push_back(PropertyInfo(Variant::OBJECT, "environment", PROPERTY_HINT_RESOURCE_TYPE, "Environment"));
 	p_list->push_back(PropertyInfo(Variant::REAL, "h_offset"));
 	p_list->push_back(PropertyInfo(Variant::REAL, "v_offset"));
@@ -541,6 +546,8 @@ void Camera::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_v_offset"), &Camera::get_v_offset);
 	ClassDB::bind_method(D_METHOD("set_cull_mask", "mask"), &Camera::set_cull_mask);
 	ClassDB::bind_method(D_METHOD("get_cull_mask"), &Camera::get_cull_mask);
+	ClassDB::bind_method(D_METHOD("set_raycast_layers", "mask"), &Camera::set_raycast_layers);
+	ClassDB::bind_method(D_METHOD("get_raycast_layers"), &Camera::get_raycast_layers);
 	ClassDB::bind_method(D_METHOD("set_environment", "env"), &Camera::set_environment);
 	ClassDB::bind_method(D_METHOD("get_environment"), &Camera::get_environment);
 	ClassDB::bind_method(D_METHOD("set_keep_aspect_mode", "mode"), &Camera::set_keep_aspect_mode);
@@ -587,13 +594,23 @@ Camera::Projection Camera::get_projection() const {
 
 void Camera::set_cull_mask(uint32_t p_layers) {
 
-	layers = p_layers;
-	VisualServer::get_singleton()->camera_set_cull_mask(camera, layers);
+	visible_layers = p_layers;
+	VisualServer::get_singleton()->camera_set_cull_mask(camera, visible_layers);
 }
 
 uint32_t Camera::get_cull_mask() const {
 
-	return layers;
+	return visible_layers;
+}
+
+void Camera::set_raycast_layers(uint32_t p_layers) {
+
+	raycast_layers = p_layers;
+}
+
+uint32_t Camera::get_raycast_layers() const {
+
+	return raycast_layers;
 }
 
 Vector<Plane> Camera::get_frustum() const {
@@ -651,10 +668,11 @@ Camera::Camera() {
 	mode = PROJECTION_PERSPECTIVE;
 	set_perspective(65.0, 0.1, 100.0);
 	keep_aspect = KEEP_HEIGHT;
-	layers = 0xfffff;
+	visible_layers = 0xfffff;
+	raycast_layers = 0xfffff;
 	v_offset = 0;
 	h_offset = 0;
-	VisualServer::get_singleton()->camera_set_cull_mask(camera, layers);
+	VisualServer::get_singleton()->camera_set_cull_mask(camera, visible_layers);
 	//active=false;
 	velocity_tracker.instance();
 	doppler_tracking = DOPPLER_TRACKING_DISABLED;

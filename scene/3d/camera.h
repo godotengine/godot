@@ -77,7 +77,8 @@ private:
 
 	//String camera_group;
 
-	uint32_t layers;
+	uint32_t visible_layers;
+	uint32_t raycast_layers;
 
 	Ref<Environment> environment;
 
@@ -135,6 +136,9 @@ public:
 
 	void set_cull_mask(uint32_t p_layers);
 	uint32_t get_cull_mask() const;
+
+	void set_raycast_layers(uint32_t p_layers);
+	uint32_t get_raycast_layers() const;
 
 	Vector<Plane> get_frustum() const;
 
