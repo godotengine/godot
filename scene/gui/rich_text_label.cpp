@@ -799,7 +799,7 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 	Ref<InputEventKey> k = p_event;
 
 	if (k.is_valid()) {
-		if (k->is_pressed() && !k->get_alt() && !k->get_shift() && !k->get_metakey()) {
+		if (k->is_pressed() && !k->get_alt() && !k->get_shift()) {
 			bool handled = true;
 			switch (k->get_scancode()) {
 				case KEY_PAGEUP: {
