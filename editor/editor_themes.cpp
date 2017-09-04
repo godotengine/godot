@@ -334,10 +334,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("MenuHover", "EditorStyles", style_menu_hover_border);
 
 	// Content of each tab
-	Ref<StyleBoxFlat> style_content_panel = make_flat_stylebox(base_color, 4, 5, 4, 4);
+	Ref<StyleBoxFlat> style_content_panel = make_flat_stylebox(base_color, 4, 4, 4, 4);
 	style_content_panel->set_border_color_all(base_color);
 	style_content_panel->set_border_width_all(border_width);
-	Ref<StyleBoxFlat> style_content_panel_vp = make_flat_stylebox(base_color, border_width, 5, border_width, border_width);
+	Ref<StyleBoxFlat> style_content_panel_vp = make_flat_stylebox(base_color, border_width, 4, border_width, border_width);
 	style_content_panel_vp->set_border_color_all(base_color);
 	style_content_panel_vp->set_border_width_all(border_width);
 	theme->set_stylebox("panel", "TabContainer", style_content_panel);

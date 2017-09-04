@@ -1839,7 +1839,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 
 	path = "res://";
 
-	add_constant_override("separation", 3);
+	add_constant_override("separation", 4);
 }
 
 FileSystemDock::~FileSystemDock() {
