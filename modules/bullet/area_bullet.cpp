@@ -191,11 +191,14 @@ void AreaBullet::put_overlap_as_inside(int p_index) {
 }
 
 void AreaBullet::set_transform(const Transform &p_global_transform) {
+	Basis decomposed_basis;
+	Vector3 decomposed_scale = p_global_transform.get_basis().rotref_posscale_decomposition(decomposed_basis);
+	set_body_scale(decomposed_scale);
+
 	btTransform btTrans;
-	/// Ortonormalize returns a transform that is different from the real transform if the original basis is scaled or sheared
-	/// In this case the editor will alert the developer.
-	G_TO_B(p_global_transform.orthonormalized(), btTrans);
-	set_body_scale(static_cast<const CollisionObjectBullet::EnhancedBasis &>(p_global_transform.get_basis()).get_uniform_scale());
+	G_TO_B(p_global_transform.get_origin(), btTrans.getOrigin());
+	G_TO_B(decomposed_basis, btTrans.getBasis());
+
 	btGhost->setWorldTransform(btTrans);
 }
 

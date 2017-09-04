@@ -52,7 +52,7 @@ void CollisionObjectBullet::ShapeWrapper::set_transform(const btTransform &p_tra
 }
 
 CollisionObjectBullet::CollisionObjectBullet(Type p_type)
-	: ShapeOwnerBullet(), type(p_type), collisionsEnabled(true), m_isStatic(false), collisionObject(NULL), body_scale(1.), compoundShape(bulletnew(btCompoundShape(enableDynamicAabbTree, initialChildCapacity))) {}
+	: ShapeOwnerBullet(), type(p_type), collisionsEnabled(true), m_isStatic(false), collisionObject(NULL), body_scale(1., 1., 1.), compoundShape(bulletnew(btCompoundShape(enableDynamicAabbTree, initialChildCapacity))) {}
 
 CollisionObjectBullet::~CollisionObjectBullet() {
 	// Remove all overlapping
@@ -69,9 +69,13 @@ CollisionObjectBullet::~CollisionObjectBullet() {
 	bulletdelete(compoundShape);
 }
 
-void CollisionObjectBullet::set_body_scale(real_t p_new_scale) {
-	if (Math::abs(p_new_scale - body_scale) > 0.001f) {
-		body_scale = p_new_scale;
+bool equal(real_t first, real_t second) {
+	return Math::abs(first - second) <= 0.001f;
+}
+
+void CollisionObjectBullet::set_body_scale(const Vector3 &p_new_scale) {
+	if (!equal(p_new_scale[0], body_scale[0]) || !equal(p_new_scale[1], body_scale[1]) || !equal(p_new_scale[2], body_scale[2])) {
+		G_TO_B(p_new_scale, body_scale);
 		on_shapes_changed();
 	}
 }
@@ -224,7 +228,7 @@ void CollisionObjectBullet::on_shapes_changed() {
 		}
 	}
 
-	compoundShape->setLocalScaling(btVector3(body_scale, body_scale, body_scale));
+	compoundShape->setLocalScaling(body_scale);
 	compoundShape->recalculateLocalAabb();
 }
 

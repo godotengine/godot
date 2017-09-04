@@ -125,7 +125,7 @@ protected:
 	bool m_isStatic;
 	bool ray_pickable;
 	btCollisionObject *collisionObject;
-	real_t body_scale;
+	btVector3 body_scale;
 
 	/// This is required to combine some shapes together.
 	/// Since Godot allow to have multiple shapes for each body with custom relative location,
@@ -160,7 +160,7 @@ public:
 	_FORCE_INLINE_ void set_ray_pickable(bool p_enable) { ray_pickable = p_enable; }
 	_FORCE_INLINE_ bool is_ray_pickable() const { return ray_pickable; }
 
-	void set_body_scale(real_t p_new_scale);
+	void set_body_scale(const Vector3 &p_new_scale);
 
 	void add_collision_exception(const CollisionObjectBullet *p_ignoreCollisionObject);
 	void remove_collision_exception(const CollisionObjectBullet *p_ignoreCollisionObject);

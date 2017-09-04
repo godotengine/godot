@@ -217,7 +217,7 @@ void BodyBullet::KinematicUtilities::copyAllOwnerShapes() {
 		switch (shape_wrapper->shape->get_type()) {
 			case PhysicsServer::SHAPE_SPHERE: {
 				SphereShapeBullet *sphere = static_cast<SphereShapeBullet *>(shape_wrapper->shape);
-				kin_shape_ref = ShapeBullet::create_shape_sphere(sphere->get_radius() * m_owner->body_scale + m_margin);
+				kin_shape_ref = ShapeBullet::create_shape_sphere(sphere->get_radius() * m_owner->body_scale[0] + m_margin);
 				break;
 			}
 			case PhysicsServer::SHAPE_BOX: {
@@ -227,18 +227,18 @@ void BodyBullet::KinematicUtilities::copyAllOwnerShapes() {
 			}
 			case PhysicsServer::SHAPE_CAPSULE: {
 				CapsuleShapeBullet *capsule = static_cast<CapsuleShapeBullet *>(shape_wrapper->shape);
-				kin_shape_ref = ShapeBullet::create_shape_capsule(capsule->get_radius() * m_owner->body_scale + m_margin, capsule->get_height() * m_owner->body_scale + m_margin);
+				kin_shape_ref = ShapeBullet::create_shape_capsule(capsule->get_radius() * m_owner->body_scale[0] + m_margin, capsule->get_height() * m_owner->body_scale[1] + m_margin);
 				break;
 			}
 			case PhysicsServer::SHAPE_CONVEX_POLYGON: {
 				ConvexPolygonShapeBullet *godot_convex = static_cast<ConvexPolygonShapeBullet *>(shape_wrapper->shape);
 				kin_shape_ref = ShapeBullet::create_shape_convex(godot_convex->vertices);
-				kin_shape_ref->setLocalScaling(btVector3(m_owner->body_scale + m_margin, m_owner->body_scale + m_margin, m_owner->body_scale + m_margin));
+				kin_shape_ref->setLocalScaling(m_owner->body_scale + btVector3(m_margin, m_margin, m_margin));
 				break;
 			}
 			case PhysicsServer::SHAPE_RAY: {
 				RayShapeBullet *godot_ray = static_cast<RayShapeBullet *>(shape_wrapper->shape);
-				kin_shape_ref = ShapeBullet::create_shape_ray(godot_ray->length * m_owner->body_scale + m_margin);
+				kin_shape_ref = ShapeBullet::create_shape_ray(godot_ray->length * m_owner->body_scale[1] + m_margin);
 				break;
 			}
 			case PhysicsServer::SHAPE_HEIGHTMAP:
@@ -753,11 +753,14 @@ Vector3 BodyBullet::get_angular_velocity() const {
 }
 
 void BodyBullet::set_transform(const Transform &p_global_transform) {
+	Basis decomposed_basis;
+	Vector3 decomposed_scale = p_global_transform.get_basis().rotref_posscale_decomposition(decomposed_basis);
+	set_body_scale(decomposed_scale);
+
 	btTransform btTrans;
-	/// Ortonormalize returns a transform that is different from the real transform if the original basis is scaled or sheared
-	/// In this case the editor will alert the developer.
-	G_TO_B(p_global_transform.orthonormalized(), btTrans);
-	set_body_scale(static_cast<const CollisionObjectBullet::EnhancedBasis &>(p_global_transform.get_basis()).get_uniform_scale());
+	G_TO_B(p_global_transform.get_origin(), btTrans.getOrigin());
+	G_TO_B(decomposed_basis, btTrans.getBasis());
+
 	if (mode == PhysicsServer::BODY_MODE_KINEMATIC) {
 		// The kinematic use MotionState class
 		godotMotionState->moveBody(btTrans);
