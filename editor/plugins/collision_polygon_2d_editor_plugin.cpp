@@ -33,7 +33,9 @@
 #include "editor/editor_settings.h"
 #include "os/file_access.h"
 
+
+
 CollisionPolygon2DEditorPlugin::CollisionPolygon2DEditorPlugin(EditorNode *p_node) :
-	AbstractPolygon2DEditorPlugin(p_node, memnew(AbstractPolygon2DEditor(p_node)), "CollisionPolygon2DInstance") {
+	AbstractPolygon2DEditorPlugin(p_node, memnew(AbstractPolygon2DEditor(p_node)), "CollisionPolygon2D") {
 
 }

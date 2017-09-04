@@ -32,21 +32,13 @@
 
 #include "scene/2d/node_2d.h"
 #include "scene/resources/shape_2d.h"
-#include "scene/2d/editable_polygon_2d.h"
+#include "scene/2d/polygon_node_2d.h"
 
 class CollisionObject2D;
 
-class CollisionPolygon2D : public AbstractPolygon2D {
+class CollisionPolygon2D : public PolygonNode2D {
 
-	GDCLASS(CollisionPolygon2D, AbstractPolygon2D);
-
-public:
-	Vector<Vector<Vector2> > _decompose_in_convex();
-};
-
-class CollisionPolygon2DInstance : public EditablePolygonNode2D {
-
-	GDCLASS(CollisionPolygon2DInstance, EditablePolygonNode2D);
+	GDCLASS(CollisionPolygon2D, PolygonNode2D);
 
 public:
 	enum BuildMode {
@@ -55,7 +47,7 @@ public:
 	};
 
 protected:
-	Ref<CollisionPolygon2D> polygon;
+	Ref<Ring2D> ring;
 	CollisionObject2D *parent;
 	uint32_t owner_id;
 	BuildMode build_mode;
@@ -64,14 +56,15 @@ protected:
 
 	void _build_polygon();
 	void _polygon_changed();
+	Vector<Vector<Vector2> > _decompose_in_convex();
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	void set_polygon(Ref<CollisionPolygon2D> p_polygon);
-	Ref<CollisionPolygon2D> get_polygon() const;
+	void set_ring(Ref<Ring2D> p_polygon);
+	Ref<Ring2D> get_ring() const;
 
 	void set_build_mode(BuildMode p_mode);
 	BuildMode get_build_mode() const;
@@ -82,23 +75,21 @@ public:
 	void set_one_way_collision(bool p_enable);
 	bool is_one_way_collision_enabled() const;
 
-	virtual bool _has_resource() const;
-	virtual void _create_resource(UndoRedo *undo_redo);
-
 	virtual int get_polygon_count() const;
-	virtual Ref<AbstractPolygon2D> get_nth_polygon(int p_idx) const;
+	virtual Ref<Resource> get_nth_polygon(int p_idx) const;
+	virtual int get_ring_count(Ref<Resource> p_polygon) const;
+	virtual Ref<Ring2D> get_nth_ring(Ref<Resource> p_polygon, int p_idx) const;
 
-	virtual void append_polygon(const Vector<Point2> &p_vertices);
-	virtual void add_polygon_at_index(int p_idx, Ref<AbstractPolygon2D> p_polygon);
-	virtual void set_vertices(int p_idx, const Vector<Point2> &p_vertices);
+	virtual Ref<Resource> new_polygon(const Ref<Ring2D> &p_ring) const;
+	virtual void add_polygon_at_index(Ref<Resource> p_polygon, int p_idx);
 	virtual void remove_polygon(int p_idx);
 
 	virtual String get_configuration_warning() const;
 	virtual Rect2 get_item_rect() const;
 
-	CollisionPolygon2DInstance();
+	CollisionPolygon2D();
 };
 
-VARIANT_ENUM_CAST(CollisionPolygon2DInstance::BuildMode);
+VARIANT_ENUM_CAST(CollisionPolygon2D::BuildMode);
 
 #endif // COLLISION_POLYGON_2D_H

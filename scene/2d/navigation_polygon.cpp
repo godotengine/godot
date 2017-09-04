@@ -90,9 +90,11 @@ void NavigationPolygon::add_polygon(const Vector<int> &p_polygon) {
 	polygons.push_back(polygon);
 }
 
-void NavigationPolygon::add_outline_at_index(const Ref<Outline2D> &p_outline, int p_index) {
+void NavigationPolygon::add_outline_at_index(const Ref<Ring2D> &p_ring, int p_index) {
 
-	outlines.insert(p_index, p_outline);
+	outlines.insert(p_index, p_ring);
+	Ref<Ring2D> ring = p_ring;
+	ring->connect(CoreStringNames::get_singleton()->changed, this, "make_polygons_from_outlines");
 }
 
 int NavigationPolygon::get_polygon_count() const {
@@ -109,9 +111,11 @@ void NavigationPolygon::clear_polygons() {
 	polygons.clear();
 }
 
-void NavigationPolygon::add_outline(const Ref<Outline2D> &p_outline) {
+void NavigationPolygon::add_outline(const Ref<Ring2D> &p_ring) {
 
-	outlines.push_back(p_outline);
+	outlines.push_back(p_ring);
+	Ref<Ring2D> ring = p_ring;
+	ring->connect(CoreStringNames::get_singleton()->changed, this, "make_polygons_from_outlines");
 }
 
 int NavigationPolygon::get_outline_count() const {
@@ -119,19 +123,22 @@ int NavigationPolygon::get_outline_count() const {
 	return outlines.size();
 }
 
-void NavigationPolygon::set_outline(int p_idx, const Ref<Outline2D> &p_outline) {
+void NavigationPolygon::set_outline(int p_idx, const Ref<Ring2D> &p_ring) {
 	ERR_FAIL_INDEX(p_idx, outlines.size());
-	outlines[p_idx] = p_outline;
+	outlines[p_idx]->disconnect(CoreStringNames::get_singleton()->changed, this, "make_polygons_from_outlines");
+	outlines[p_idx] = p_ring;
+	outlines[p_idx]->connect(CoreStringNames::get_singleton()->changed, this, "make_polygons_from_outlines");
 }
 
 void NavigationPolygon::remove_outline(int p_idx) {
 
 	ERR_FAIL_INDEX(p_idx, outlines.size());
+	outlines[p_idx]->disconnect(CoreStringNames::get_singleton()->changed, this, "make_polygons_from_outlines");
 	outlines.remove(p_idx);
 }
 
-Ref<Outline2D> NavigationPolygon::get_outline(int p_idx) const {
-	ERR_FAIL_INDEX_V(p_idx, outlines.size(), Ref<Outline2D>());
+Ref<Ring2D> NavigationPolygon::get_outline(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, outlines.size(), Ref<Ring2D>());
 	return outlines[p_idx];
 }
 
@@ -472,54 +479,50 @@ void NavigationPolygonInstance::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
 }
 
-bool NavigationPolygonInstance::_has_resource() const {
-
-	return navpoly.is_valid();
-}
-
-void NavigationPolygonInstance::_create_resource(UndoRedo *undo_redo) {
-
-	undo_redo->create_action(TTR("Create Navigation Polygon"));
-	undo_redo->add_do_method(this, "set_navigation_polygon", Ref<NavigationPolygon>(memnew(NavigationPolygon)));
-	undo_redo->add_undo_method(this, "set_navigation_polygon", Variant(REF()));
-	undo_redo->commit_action();
-}
-
 int NavigationPolygonInstance::get_polygon_count() const {
 
 	return navpoly.is_valid() ? navpoly->get_outline_count() : 0;
 }
 
-Ref<AbstractPolygon2D> NavigationPolygonInstance::get_nth_polygon(int p_idx) const {
+Ref<Resource> NavigationPolygonInstance::get_nth_polygon(int p_idx) const {
 
 	if (navpoly.is_valid())
 		return navpoly->get_outline(p_idx);
 	else
-		return Ref<AbstractPolygon2D>();
+		return Ref<Resource>();
 }
 
-void NavigationPolygonInstance::append_polygon(const Vector<Point2> &p_vertices) {
+int NavigationPolygonInstance::get_ring_count(Ref<Resource> p_polygon) const {
 
-	// FIXME
-	// make_polygons_from_outlines()
+	return 1;
 }
 
-void NavigationPolygonInstance::add_polygon_at_index(int p_idx, Ref<AbstractPolygon2D> p_polygon) {
+Ref<Ring2D> NavigationPolygonInstance::get_nth_ring(Ref<Resource> p_polygon, int p_idx) const {
 
-	// FIXME
-	// make_polygons_from_outlines()
+	return Ref<Ring2D>(p_polygon);
 }
 
-void NavigationPolygonInstance::set_vertices(int p_idx, const Vector<Point2> &p_vertices) {
+Ref<Resource> NavigationPolygonInstance::new_polygon(const Ref<Ring2D> &p_ring) const {
 
-	// FIXME
-	// make_polygons_from_outlines()
+	return p_ring;
+}
+
+void NavigationPolygonInstance::add_polygon_at_index(Ref<Resource> p_polygon, int p_idx) {
+
+	if (!navpoly.is_valid())
+		set_navigation_polygon(Ref<NavigationPolygon>(memnew(NavigationPolygon)));
+
+	navpoly->add_outline_at_index(p_polygon, p_idx);
+	navpoly->make_polygons_from_outlines();
 }
 
 void NavigationPolygonInstance::remove_polygon(int p_idx) {
 
-	// FIXME
-	// make_polygons_from_outlines()
+	if (navpoly.is_valid()) {
+
+		navpoly->remove_outline(p_idx);
+		navpoly->make_polygons_from_outlines();
+	}
 }
 
 NavigationPolygonInstance::NavigationPolygonInstance() {

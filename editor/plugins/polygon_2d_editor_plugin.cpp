@@ -74,7 +74,7 @@ void Polygon2DEditor::_menu_option(int p_option) {
 				return;
 			}
 
-			PoolVector<Vector2> points = Variant(polygon->get_vertices());
+			PoolVector<Vector2> points = Variant(polygon->get_ring()->get_vertices());
 			PoolVector<Vector2> uvs = polygon->edit_get_uv();
 			if (uvs.size() != points.size()) {
 				undo_redo->create_action(TTR("Create UV Map"));
@@ -90,7 +90,7 @@ void Polygon2DEditor::_menu_option(int p_option) {
 		case UVEDIT_POLYGON_TO_UV: {
 
 			Ref<Polygon2D> polygon = node->get_nth_polygon(0);
-			PoolVector<Vector2> points = Variant(polygon->get_vertices());
+			PoolVector<Vector2> points = Variant(polygon->get_ring()->get_vertices());
 			if (points.size() == 0)
 				break;
 			PoolVector<Vector2> uvs = polygon->edit_get_uv();
@@ -105,7 +105,7 @@ void Polygon2DEditor::_menu_option(int p_option) {
 		case UVEDIT_UV_TO_POLYGON: {
 
 			Ref<Polygon2D> polygon = node->get_nth_polygon(0);
-			PoolVector<Vector2> points = Variant(polygon->get_vertices());
+			PoolVector<Vector2> points = Variant(polygon->get_ring()->get_vertices());
 			PoolVector<Vector2> uvs = polygon->edit_get_uv();
 			if (uvs.size() == 0)
 				break;

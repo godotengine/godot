@@ -27,63 +27,82 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef EDITABLEPOLYGON2D_H
-#define EDITABLEPOLYGON2D_H
+#include "ring_2d.h"
+#include "core_string_names.h"
 
-#include "core/undo_redo.h"
-#include "core/resource.h"
-#include "scene/resources/texture.h"
-#include "scene/2d/node_2d.h"
+void Ring2D::_bind_methods() {
 
-class AbstractPolygon2D : public Resource {
+	ClassDB::bind_method(D_METHOD("set_vertices", "vertices"), &Ring2D::set_vertices);
+	ClassDB::bind_method(D_METHOD("get_vertices"), &Ring2D::get_vertices);
 
-	GDCLASS(AbstractPolygon2D, Resource);
+	ClassDB::bind_method(D_METHOD("set_offset", "vertices"), &Ring2D::set_offset);
+	ClassDB::bind_method(D_METHOD("get_offset"), &Ring2D::get_offset);
 
-protected:
-	PoolVector<Point2> vertices;
+	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "vertices"), "set_vertices", "get_vertices");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
+}
 
-	mutable bool rect_cache_dirty;
-	mutable Rect2 item_rect;
+void Ring2D::set_vertices(const Vector<Point2> &p_polygon) {
 
-protected:
-	static void _bind_methods();
+	vertices = Variant(p_polygon);
+	rect_cache_dirty = true;
+	emit_signal(CoreStringNames::get_singleton()->changed);
+}
 
-public:
-	Vector<Point2> get_vertices() const;
-	void set_vertices(const Vector<Point2> &p_vertices);
+Vector<Point2> Ring2D::get_vertices() const {
 
-	bool is_empty() const;
-	Rect2 get_item_rect() const;
+	return Variant(vertices);
+}
 
-	virtual Vector2 get_offset() const;
-	virtual Color get_outline_color() const;
+bool Ring2D::is_empty() const {
 
-	AbstractPolygon2D();
-};
+	return vertices.size() == 0;
+}
 
-class Outline2D : public AbstractPolygon2D {
+Rect2 Ring2D::get_item_rect() const {
 
-	GDCLASS(Outline2D, AbstractPolygon2D);
-};
+	if (rect_cache_dirty) {
 
-class EditablePolygonNode2D : public Node2D {
+		int l = vertices.size();
+		PoolVector<Vector2>::Read r = vertices.read();
+		item_rect = Rect2();
+		for (int i = 0; i < l; i++) {
+			Vector2 pos = r[i];
+			if (i == 0)
+				item_rect.position = pos;
+			else
+				item_rect.expand_to(pos);
+		}
 
-	GDCLASS(EditablePolygonNode2D, Node2D);
+		// FIXME collision polygon aabb
+		/*if (aabb == Rect2()) {
 
-protected:
-	static void _bind_methods();
+			aabb = Rect2(-10, -10, 20, 20);
+		} else {
+			aabb.position -= aabb.size * 0.3;
+			aabb.size += aabb.size * 0.6(
+		}*/
 
-public:
-	virtual bool _has_resource() const = 0;
-	virtual void _create_resource(UndoRedo *undo_redo) = 0;
+		item_rect = item_rect.grow(20);
+		rect_cache_dirty = false;
+	}
 
-	virtual int get_polygon_count() const = 0;
-	virtual Ref<AbstractPolygon2D> get_nth_polygon(int p_idx) const = 0;
+	return Rect2(item_rect.position + get_offset(), item_rect.size);
+}
 
-	virtual void append_polygon(const Vector<Point2> &p_vertices) = 0;
-	virtual void add_polygon_at_index(int p_idx, Ref<AbstractPolygon2D> p_polygon) = 0;
-	virtual void set_vertices(int p_idx, const Vector<Point2> &p_vertices) = 0;
-	virtual void remove_polygon(int p_idx) = 0;
-};
+void Ring2D::set_offset(const Vector2 &p_offset) {
 
-#endif // EDITABLEPOLYGON2D_H
+	offset = p_offset;
+	emit_signal(CoreStringNames::get_singleton()->changed);
+}
+
+Vector2 Ring2D::get_offset() const {
+
+	return offset;
+}
+
+Ring2D::Ring2D() {
+
+	rect_cache_dirty = true;
+	offset = Vector2(0, 0);
+}

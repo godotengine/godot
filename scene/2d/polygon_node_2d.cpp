@@ -27,84 +27,21 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "editable_polygon_2d.h"
+#include "polygon_node_2d.h"
 #include "core_string_names.h"
 
-void AbstractPolygon2D::_bind_methods() {
+void PolygonNode2D::add_polygon(const Vector<Point2> &p_vertices) {
 
-	ClassDB::bind_method(D_METHOD("set_vertices", "vertices"), &AbstractPolygon2D::set_vertices);
-	ClassDB::bind_method(D_METHOD("get_vertices"), &AbstractPolygon2D::get_vertices);
-
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "vertices"), "set_vertices", "get_vertices");
+	Ref<Ring2D> ring = memnew(Ring2D);
+	ring->set_vertices(p_vertices);
+	Ref<Resource> polygon = new_polygon(ring);
+	add_polygon_at_index(polygon, get_polygon_count());
 }
 
-void AbstractPolygon2D::set_vertices(const Vector<Point2> &p_polygon) {
+void PolygonNode2D::_bind_methods() {
 
-	vertices = Variant(p_polygon);
-	rect_cache_dirty = true;
-	emit_signal(CoreStringNames::get_singleton()->changed);
-}
-
-Vector<Point2> AbstractPolygon2D::get_vertices() const {
-
-	return Variant(vertices);
-}
-
-bool AbstractPolygon2D::is_empty() const {
-
-	return vertices.size() == 0;
-}
-
-Rect2 AbstractPolygon2D::get_item_rect() const {
-
-	if (rect_cache_dirty) {
-
-		int l = vertices.size();
-		PoolVector<Vector2>::Read r = vertices.read();
-		item_rect = Rect2();
-		for (int i = 0; i < l; i++) {
-			Vector2 pos = r[i];
-			if (i == 0)
-				item_rect.position = pos;
-			else
-				item_rect.expand_to(pos);
-		}
-
-		// FIXME collision polygon aabb
-		/*if (aabb == Rect2()) {
-
-			aabb = Rect2(-10, -10, 20, 20);
-		} else {
-			aabb.position -= aabb.size * 0.3;
-			aabb.size += aabb.size * 0.6(
-		}*/
-
-		item_rect = item_rect.grow(20);
-		rect_cache_dirty = false;
-	}
-
-	return Rect2(item_rect.position + get_offset(), item_rect.size);
-}
-
-Vector2 AbstractPolygon2D::get_offset() const {
-
-	return Vector2(0, 0);
-}
-
-Color AbstractPolygon2D::get_outline_color() const {
-
-	return Color(0.5, 0.5, 0.5);
-}
-
-AbstractPolygon2D::AbstractPolygon2D() {
-
-	rect_cache_dirty = true;
-}
-
-void EditablePolygonNode2D::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("append_polygon", "vertices"), &EditablePolygonNode2D::append_polygon);
-	ClassDB::bind_method(D_METHOD("add_polygon_at_index", "index", "polygon"), &EditablePolygonNode2D::add_polygon_at_index);
-	ClassDB::bind_method(D_METHOD("set_vertices", "index", "vertices"), &EditablePolygonNode2D::set_vertices);
-	ClassDB::bind_method(D_METHOD("remove_polygon", "index"), &EditablePolygonNode2D::remove_polygon);
+	ClassDB::bind_method(D_METHOD("new_polygon"), &PolygonNode2D::new_polygon);
+	ClassDB::bind_method(D_METHOD("add_polygon", "vertices"), &PolygonNode2D::add_polygon);
+	ClassDB::bind_method(D_METHOD("add_polygon_at_index", "index", "polygon"), &PolygonNode2D::add_polygon_at_index);
+	ClassDB::bind_method(D_METHOD("remove_polygon", "index"), &PolygonNode2D::remove_polygon);
 }

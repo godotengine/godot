@@ -31,12 +31,13 @@
 #define POLYGON_2D_H
 
 #include "scene/2d/node_2d.h"
-#include "scene/2d/editable_polygon_2d.h"
+#include "scene/2d/polygon_node_2d.h"
 
-class Polygon2D : public AbstractPolygon2D {
+class Polygon2D : public Resource { // FIXME really a SimplePolygon2D with one exterior ring
 
-	GDCLASS(Polygon2D, AbstractPolygon2D);
+	GDCLASS(Polygon2D, Resource);
 
+	Ref<Ring2D> ring;
 	PoolVector<Vector2> uv;
 	PoolVector<Color> vertex_colors;
 	Color color;
@@ -49,15 +50,17 @@ class Polygon2D : public AbstractPolygon2D {
 	float invert_border;
 	bool antialiased;
 
-	Vector2 offset;
-
 	void _set_texture_rotationd(float p_rot);
 	float _get_texture_rotationd() const;
 
 protected:
 	static void _bind_methods();
+	void _outline_changed();
 
 public:
+	void set_ring(const Ref<Ring2D> &p_outline);
+	Ref<Ring2D> get_ring() const;
+
 	void set_uv(const PoolVector<Vector2> &p_uv);
 	PoolVector<Vector2> get_uv() const;
 
@@ -88,9 +91,6 @@ public:
 	void set_invert_border(float p_invert_border);
 	float get_invert_border() const;
 
-	void set_offset(const Vector2 &p_offset);
-	Vector2 get_offset() const;
-
 	void draw(RID p_canvas_item);
 
 	//editor stuff
@@ -106,9 +106,9 @@ public:
 	Polygon2D();
 };
 
-class Polygon2DInstance : public EditablePolygonNode2D {
+class Polygon2DInstance : public PolygonNode2D {
 
-	GDCLASS(Polygon2DInstance, EditablePolygonNode2D);
+	GDCLASS(Polygon2DInstance, PolygonNode2D);
 
 	Ref<Polygon2D> polygon;
 
@@ -122,15 +122,13 @@ public:
 	void set_polygon(const Ref<Polygon2D> &p_polygon);
 	Ref<Polygon2D> get_polygon() const;
 
-	virtual bool _has_resource() const;
-	virtual void _create_resource(UndoRedo *undo_redo);
-
 	virtual int get_polygon_count() const;
-	virtual Ref<AbstractPolygon2D> get_nth_polygon(int p_idx) const;
+	virtual Ref<Resource> get_nth_polygon(int p_idx) const;
+	virtual int get_ring_count(Ref<Resource> p_polygon) const;
+	virtual Ref<Ring2D> get_nth_ring(Ref<Resource> p_polygon, int p_idx) const;
 
-	virtual void append_polygon(const Vector<Point2> &p_vertices);
-	virtual void add_polygon_at_index(int p_idx, Ref<AbstractPolygon2D> p_polygon);
-	virtual void set_vertices(int p_idx, const Vector<Point2> &p_vertices);
+	virtual Ref<Resource> new_polygon(const Ref<Ring2D> &p_ring) const;
+	virtual void add_polygon_at_index(Ref<Resource> p_polygon, int p_idx);
 	virtual void remove_polygon(int p_idx);
 
 	virtual String get_configuration_warning() const;

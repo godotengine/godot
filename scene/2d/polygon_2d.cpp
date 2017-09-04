@@ -34,12 +34,15 @@
 
 void Polygon2D::edit_set_pivot(const Point2 &p_pivot) {
 
-	set_offset(p_pivot);
+	get_ring()->set_offset(p_pivot);
 }
 
 Point2 Polygon2D::edit_get_pivot() const {
 
-	return get_offset();
+	if (get_ring().is_valid())
+		return get_ring()->get_offset();
+	else
+		return Point2(0, 0);
 }
 bool Polygon2D::edit_has_pivot() const {
 
@@ -48,6 +51,11 @@ bool Polygon2D::edit_has_pivot() const {
 
 void Polygon2D::draw(RID p_canvas_item) {
 
+	if (!get_ring().is_valid())
+		return;
+
+	PoolVector<Vector2> vertices = Variant(get_ring()->get_vertices());
+
 	if (vertices.size() < 3)
 		return;
 
@@ -55,6 +63,8 @@ void Polygon2D::draw(RID p_canvas_item) {
 	Vector<Vector2> uvs;
 
 	points.resize(vertices.size());
+
+	Vector2 offset = get_ring()->get_offset();
 
 	int len = points.size();
 	{
@@ -157,6 +167,28 @@ void Polygon2D::draw(RID p_canvas_item) {
 	//			VS::get_singleton()->canvas_item_add_triangle_array(get_canvas_item(), indices, points, colors, uvs, texture.is_valid() ? texture->get_rid() : RID());
 
 	VS::get_singleton()->canvas_item_add_polygon(p_canvas_item, points, colors, uvs, texture.is_valid() ? texture->get_rid() : RID(), RID(), antialiased);
+}
+
+void Polygon2D::_outline_changed() {
+	
+	emit_signal(CoreStringNames::get_singleton()->changed);
+}
+
+void Polygon2D::set_ring(const Ref<Ring2D> &p_ring) {
+
+	if (ring.is_valid()) {
+		ring->disconnect(CoreStringNames::get_singleton()->changed, this, "_outline_changed");
+	}
+	ring = p_ring;	
+	if (ring.is_valid()) {
+		ring->connect(CoreStringNames::get_singleton()->changed, this, "_outline_changed");
+	}
+	emit_signal(CoreStringNames::get_singleton()->changed);
+}
+
+Ref<Ring2D> Polygon2D::get_ring() const {
+
+	return ring;
 }
 
 void Polygon2D::set_uv(const PoolVector<Vector2> &p_uv) {
@@ -278,18 +310,12 @@ float Polygon2D::get_invert_border() const {
 	return invert_border;
 }
 
-void Polygon2D::set_offset(const Vector2 &p_offset) {
-
-	offset = p_offset;
-	emit_signal(CoreStringNames::get_singleton()->changed);
-}
-
-Vector2 Polygon2D::get_offset() const {
-
-	return offset;
-}
-
 void Polygon2D::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("_outline_changed"), &Polygon2D::_outline_changed);
+
+	ClassDB::bind_method(D_METHOD("set_ring", "ring"), &Polygon2D::set_ring);
+	ClassDB::bind_method(D_METHOD("get_ring"), &Polygon2D::get_ring);
 
 	ClassDB::bind_method(D_METHOD("set_uv", "uv"), &Polygon2D::set_uv);
 	ClassDB::bind_method(D_METHOD("get_uv"), &Polygon2D::get_uv);
@@ -324,13 +350,10 @@ void Polygon2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_invert_border", "invert_border"), &Polygon2D::set_invert_border);
 	ClassDB::bind_method(D_METHOD("get_invert_border"), &Polygon2D::get_invert_border);
 
-	ClassDB::bind_method(D_METHOD("set_offset", "offset"), &Polygon2D::set_offset);
-	ClassDB::bind_method(D_METHOD("get_offset"), &Polygon2D::get_offset);
-
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "ring", PROPERTY_HINT_RESOURCE_TYPE, "Ring2D"), "set_ring", "get_ring");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "uv"), "set_uv", "get_uv");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_COLOR_ARRAY, "vertex_colors"), "set_vertex_colors", "get_vertex_colors");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "antialiased"), "set_antialiased", "get_antialiased");
 	ADD_GROUP("Texture", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
@@ -428,8 +451,8 @@ String Polygon2DInstance::get_configuration_warning() const {
 
 Rect2 Polygon2DInstance::get_item_rect() const {
 
-	if (polygon.is_valid())
-		return polygon->get_item_rect();
+	if (polygon.is_valid() && polygon->get_ring().is_valid())
+		return polygon->get_ring()->get_item_rect();
 	else
 		return Rect2();
 }
@@ -444,45 +467,37 @@ void Polygon2DInstance::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "polygon", PROPERTY_HINT_RESOURCE_TYPE, "Polygon2D"), "set_polygon", "get_polygon");
 }
 
-bool Polygon2DInstance::_has_resource() const {
-
-	return polygon.is_valid();
-}
-
-void Polygon2DInstance::_create_resource(UndoRedo *undo_redo) {
-
-	undo_redo->create_action(TTR("Create Polygon2D"));
-	undo_redo->add_do_method(this, "set_polygon", Ref<Polygon2D>(memnew(Polygon2D)));
-	undo_redo->add_undo_method(this, "set_polygon", Variant(REF()));
-	undo_redo->commit_action();
-}
-
 int Polygon2DInstance::get_polygon_count() const {
 
 	return polygon.is_valid() ? 1 : 0;
 }
 
-Ref<AbstractPolygon2D> Polygon2DInstance::get_nth_polygon(int p_idx) const {
+Ref<Resource> Polygon2DInstance::get_nth_polygon(int p_idx) const {
 
 	return polygon;
 }
 
-void Polygon2DInstance::append_polygon(const Vector<Point2> &p_vertices) {
+int Polygon2DInstance::get_ring_count(Ref<Resource> p_polygon) const {
+
+	return 1;
+}
+
+Ref<Ring2D> Polygon2DInstance::get_nth_ring(Ref<Resource> p_polygon, int p_idx) const {
+
+	Ref<Polygon2D> polygon = p_polygon;
+	return polygon->get_ring();
+}
+
+Ref<Resource> Polygon2DInstance::new_polygon(const Ref<Ring2D> &p_ring) const {
 
 	Ref<Polygon2D> polygon = Ref<Polygon2D>(memnew(Polygon2D));
-	polygon->set_vertices(p_vertices);
-	set_polygon(polygon);
+	polygon->set_ring(p_ring);
+	return polygon;
 }
 
-void Polygon2DInstance::add_polygon_at_index(int p_idx, Ref<AbstractPolygon2D> p_polygon) {
+void Polygon2DInstance::add_polygon_at_index(Ref<Resource> p_polygon, int p_idx) {
 
 	set_polygon(p_polygon);
-}
-
-void Polygon2DInstance::set_vertices(int p_idx, const Vector<Point2> &p_vertices) {
-
-	if (polygon.is_valid())
-		polygon->set_vertices(p_vertices);
 }
 
 void Polygon2DInstance::remove_polygon(int p_idx) {

@@ -433,7 +433,6 @@ void register_scene_types() {
 	ClassDB::register_class<KinematicBody2D>();
 	ClassDB::register_class<Area2D>();
 	ClassDB::register_class<CollisionShape2D>();
-	ClassDB::register_class<CollisionPolygon2DInstance>();
 	ClassDB::register_class<CollisionPolygon2D>();
 	ClassDB::register_class<RayCast2D>();
 	ClassDB::register_class<VisibilityNotifier2D>();

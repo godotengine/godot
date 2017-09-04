@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  abstract_polygon_2d_editor.cpp                                       */
+/*  editable_polygon_2d.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,91 +27,34 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef ABSTRACT_POLYGON_2D_EDITOR_H
-#define ABSTRACT_POLYGON_2D_EDITOR_H
+#ifndef RING2D_H
+#define RING2D_H
 
-#include "editor/editor_node.h"
-#include "editor/editor_plugin.h"
-#include "scene/2d/polygon_2d.h"
-#include "scene/2d/polygon_node_2d.h"
-#include "scene/gui/button_group.h"
-#include "scene/gui/tool_button.h"
+#include "core/resource.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-class CanvasItemEditor;
+class Ring2D : public Resource {
 
-class AbstractPolygon2DEditor : public HBoxContainer {
+	GDCLASS(Ring2D, Resource);
 
-	GDCLASS(AbstractPolygon2DEditor, HBoxContainer);
-
-	ToolButton *button_create;
-	ToolButton *button_edit;
-
-	int edited_polygon;
-	int edited_point;
-	Vector2 edited_point_pos;
-	Vector<Vector2> pre_move_edit;
-	Vector<Vector2> wip;
-	bool wip_active;
-	bool wip_destructive;
+	PoolVector<Point2> vertices;
+	Vector2 offset;
+	mutable Rect2 item_rect;
+	mutable bool rect_cache_dirty;
 
 protected:
-	enum {
-
-		MODE_CREATE,
-		MODE_EDIT,
-		MODE_CONT,
-
-	};
-
-	int mode;
-
-	UndoRedo *undo_redo;
-
-	CanvasItemEditor *canvas_item_editor;
-	EditorNode *editor;
-	Panel *panel;
-	ConfirmationDialog *create_res;
-
-	PolygonNode2D *node;
-
-	void _menu_option(int p_option);
-	void _wip_close();
-	void _canvas_draw();
-
-	void _notification(int p_what);
-	void _node_removed(Node *p_node);
 	static void _bind_methods();
 
-	bool _is_empty() const;
-
 public:
-	bool forward_gui_input(const Ref<InputEvent> &p_event);
-	void edit(Node *p_polygon);
-	AbstractPolygon2DEditor(EditorNode *p_editor, bool p_wip_destructive = true);
+	Vector<Point2> get_vertices() const;
+	void set_vertices(const Vector<Point2> &p_vertices);
+
+	bool is_empty() const;
+	Rect2 get_item_rect() const;
+
+	void set_offset(const Vector2 &p_offset);
+	Vector2 get_offset() const;
+
+	Ring2D();
 };
 
-class AbstractPolygon2DEditorPlugin : public EditorPlugin {
-
-	GDCLASS(AbstractPolygon2DEditorPlugin, EditorPlugin);
-
-	AbstractPolygon2DEditor *polygon_editor;
-	EditorNode *editor;
-	String klass;
-
-public:
-	virtual bool forward_canvas_gui_input(const Transform2D &p_canvas_xform, const Ref<InputEvent> &p_event) { return polygon_editor->forward_gui_input(p_event); }
-
-	bool has_main_screen() const { return false; }
-	virtual String get_name() const { return klass; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
-
-	AbstractPolygon2DEditorPlugin(EditorNode *p_node, AbstractPolygon2DEditor *p_polygon_editor, String p_class);
-	~AbstractPolygon2DEditorPlugin();
-};
-
-#endif // ABSTRACT_POLYGON_2D_EDITOR_H
+#endif // RING2D_H
