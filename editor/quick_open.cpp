@@ -171,24 +171,7 @@ void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd, Vector<Pair<Str
 			Pair<String, Ref<Texture> > pair;
 			pair.first = file;
 			pair.second = get_icon((has_icon(efsd->get_file_type(i), ei) ? efsd->get_file_type(i) : ot), ei);
-
-			if (search_text != String() && list.size() > 0) {
-
-				float this_sim = _path_cmp(search_text, file);
-				float other_sim = _path_cmp(list[0].first, file);
-				int pos = 1;
-
-				while (pos < list.size() && this_sim <= other_sim) {
-					other_sim = _path_cmp(list[pos++].first, file);
-				}
-
-				pos = this_sim >= other_sim ? pos - 1 : pos;
-				list.insert(pos, pair);
-
-			} else {
-
-				list.push_back(pair);
-			}
+			list.push_back(pair);
 		}
 	}
 
@@ -200,6 +183,40 @@ void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd, Vector<Pair<Str
 	}
 }
 
+Vector<Pair<String, Ref<Texture> > > EditorQuickOpen::_sort_fs(Vector<Pair<String, Ref<Texture> > > &list) {
+
+	String search_text = search_box->get_text();
+	Vector<Pair<String, Ref<Texture> > > sorted_list;
+
+	if (search_text == String() || list.size() == 0)
+		return sorted_list;
+
+	Vector<float> scores;
+	scores.resize(list.size());
+	for (int i = 0; i < list.size(); i++)
+		scores[i] = _path_cmp(search_text, list[i].first);
+
+	while (list.size() > 0) {
+
+		float best_score = 0.0f;
+		int best_idx = 0;
+
+		for (int i = 0; i < list.size(); i++) {
+			float current_score = scores[i];
+			if (current_score > best_score) {
+				best_score = current_score;
+				best_idx = i;
+			}
+		}
+
+		sorted_list.push_back(list[best_idx]);
+		list.remove(best_idx);
+		scores.remove(best_idx);
+	}
+
+	return sorted_list;
+}
+
 void EditorQuickOpen::_update_search() {
 
 	search_options->clear();
@@ -208,6 +225,7 @@ void EditorQuickOpen::_update_search() {
 	Vector<Pair<String, Ref<Texture> > > list;
 
 	_parse_fs(efsd, list);
+	list = _sort_fs(list);
 
 	for (int i = 0; i < list.size(); i++) {
 		TreeItem *ti = search_options->create_item(root);
