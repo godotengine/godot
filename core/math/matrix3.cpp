@@ -234,7 +234,22 @@ Basis Basis::scaled(const Vector3 &p_scale) const {
 	return m;
 }
 
+void Basis::set_scale(const Vector3 &p_scale) {
+
+	set_axis(0, get_axis(0).normalized() * p_scale.x);
+	set_axis(1, get_axis(1).normalized() * p_scale.y);
+	set_axis(2, get_axis(2).normalized() * p_scale.z);
+}
+
 Vector3 Basis::get_scale() const {
+
+	return Vector3(
+			Vector3(elements[0][0], elements[1][0], elements[2][0]).length(),
+			Vector3(elements[0][1], elements[1][1], elements[2][1]).length(),
+			Vector3(elements[0][2], elements[1][2], elements[2][2]).length());
+}
+
+Vector3 Basis::get_signed_scale() const {
 	// FIXME: We are assuming M = R.S (R is rotation and S is scaling), and use polar decomposition to extract R and S.
 	// A polar decomposition is M = O.P, where O is an orthogonal matrix (meaning rotation and reflection) and
 	// P is a positive semi-definite matrix (meaning it contains absolute values of scaling along its diagonal).

@@ -97,7 +97,9 @@ public:
 	void scale(const Vector3 &p_scale);
 	Basis scaled(const Vector3 &p_scale) const;
 
+	void set_scale(const Vector3 &p_scale);
 	Vector3 get_scale() const;
+	Vector3 get_signed_scale() const;
 
 	// transposed dot products
 	_FORCE_INLINE_ real_t tdotx(const Vector3 &v) const {
