@@ -2732,6 +2732,14 @@ Dictionary EditorNode::_get_main_scene_state() {
 	state["property_edit_offset"] = get_property_editor()->get_scene_tree()->get_vscroll_bar()->get_value();
 	state["saved_version"] = saved_version;
 	state["node_filter"] = scene_tree_dock->get_filter();
+	int current = -1;
+	for (int i = 0; i < editor_table.size(); i++) {
+		if (editor_plugin_screen == editor_table[i]) {
+			current = i;
+			break;
+		}
+	}
+	state["editor_index"] = current;
 	return state;
 }
 
@@ -2742,8 +2750,9 @@ void EditorNode::_set_main_scene_state(Dictionary p_state, Node *p_for_scene) {
 
 	changing_scene = false;
 
-	if (get_edited_scene()) {
+	if (p_state.has("editor_index")) {
 
+		int index = p_state["editor_index"];
 		int current = -1;
 		for (int i = 0; i < editor_table.size(); i++) {
 			if (editor_plugin_screen == editor_table[i]) {
@@ -2752,15 +2761,18 @@ void EditorNode::_set_main_scene_state(Dictionary p_state, Node *p_for_scene) {
 			}
 		}
 
-		if (current < 2) {
-			//use heuristic instead
-
-			int n2d = 0, n3d = 0;
-			_find_node_types(get_edited_scene(), n2d, n3d);
-			if (n2d > n3d) {
-				_editor_select(EDITOR_2D);
-			} else if (n3d > n2d) {
-				_editor_select(EDITOR_3D);
+		if (current < 2) { //if currently in spatial/2d, only switch to spatial/2d. if curently in script, stay there
+			if (index < 2 || !get_edited_scene()) {
+				_editor_select(index);
+			} else {
+				//use heuristic instead
+				int n2d = 0, n3d = 0;
+				_find_node_types(get_edited_scene(), n2d, n3d);
+				if (n2d > n3d) {
+					_editor_select(EDITOR_2D);
+				} else if (n3d > n2d) {
+					_editor_select(EDITOR_3D);
+				}
 			}
 		}
 	}
