@@ -1423,7 +1423,7 @@ void ScriptEditor::_update_script_colors() {
 			int non_zero_hist_size = (hist_size == 0) ? 1 : hist_size;
 			float v = Math::ease((edit_pass - pass) / float(non_zero_hist_size), 0.4);
 
-			script_list->set_item_custom_bg_color(i, hot_color.linear_interpolate(cold_color, v));
+			script_list->set_item_custom_fg_color(i, hot_color.linear_interpolate(cold_color, v));
 		}
 	}
 }
@@ -2517,9 +2517,9 @@ ScriptEditorPlugin::ScriptEditorPlugin(EditorNode *p_node) {
 	EDITOR_DEF("text_editor/open_scripts/script_temperature_enabled", true);
 	EDITOR_DEF("text_editor/open_scripts/highlight_current_script", true);
 	EDITOR_DEF("text_editor/open_scripts/script_temperature_history_size", 15);
-	EDITOR_DEF("text_editor/open_scripts/script_temperature_hot_color", Color(1, 0, 0, 0.3));
-	EDITOR_DEF("text_editor/open_scripts/script_temperature_cold_color", Color(0, 0, 1, 0.3));
-	EDITOR_DEF("text_editor/open_scripts/current_script_background_color", Color(0.81, 0.81, 0.14, 0.63));
+	EDITOR_DEF("text_editor/open_scripts/script_temperature_hot_color", Color::html("ed5e5e"));
+	EDITOR_DEF("text_editor/open_scripts/script_temperature_cold_color", Color(1, 1, 1, 0.3));
+	EDITOR_DEF("text_editor/open_scripts/current_script_background_color", Color(1, 1, 1, 0.5));
 	EDITOR_DEF("text_editor/open_scripts/group_help_pages", true);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "text_editor/open_scripts/sort_scripts_by", PROPERTY_HINT_ENUM, "Name,Path"));
 	EDITOR_DEF("text_editor/open_scripts/sort_scripts_by", 0);

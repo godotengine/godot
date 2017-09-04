@@ -61,6 +61,7 @@ private:
 		bool tooltip_enabled;
 		Variant metadata;
 		String tooltip;
+		Color custom_fg;
 		Color custom_bg;
 
 		Rect2 rect_cache;
@@ -149,6 +150,9 @@ public:
 
 	void set_item_custom_bg_color(int p_idx, const Color &p_custom_bg_color);
 	Color get_item_custom_bg_color(int p_idx) const;
+
+	void set_item_custom_fg_color(int p_idx, const Color &p_custom_fg_color);
+	Color get_item_custom_fg_color(int p_idx) const;
 
 	void select(int p_idx, bool p_single = true);
 	void unselect(int p_idx);
