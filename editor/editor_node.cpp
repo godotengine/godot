@@ -283,13 +283,22 @@ void EditorNode::_notification(int p_what) {
 		scene_tabs->set_tab_close_display_policy((bool(EDITOR_DEF("interface/always_show_close_button_in_scene_tabs", false)) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY));
 		property_editor->set_enable_capitalize_paths(bool(EDITOR_DEF("interface/capitalize_properties", true)));
 		Ref<Theme> theme = create_editor_theme(theme_base->get_theme());
+
 		theme_base->set_theme(theme);
+
 		gui_base->add_style_override("panel", gui_base->get_stylebox("Background", "EditorStyles"));
 		play_button_panel->add_style_override("panel", gui_base->get_stylebox("PlayButtonPanel", "EditorStyles"));
 		scene_root_parent->add_style_override("panel", gui_base->get_stylebox("Content", "EditorStyles"));
 		bottom_panel->add_style_override("panel", gui_base->get_stylebox("panel", "TabContainer"));
 		scene_tabs->add_style_override("tab_fg", gui_base->get_stylebox("SceneTabFG", "EditorStyles"));
 		scene_tabs->add_style_override("tab_bg", gui_base->get_stylebox("SceneTabBG", "EditorStyles"));
+
+		file_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
+		project_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
+		debug_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
+		settings_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
+		help_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
+
 		if (bool(EDITOR_DEF("interface/scene_tabs/resize_if_many_tabs", true))) {
 			scene_tabs->set_min_width(int(EDITOR_DEF("interface/scene_tabs/minimum_width", 50)) * EDSCALE);
 		} else {
@@ -4841,9 +4850,10 @@ EditorNode::EditorNode() {
 	}
 
 	file_menu = memnew(MenuButton);
+	file_menu->set_flat(false);
 	file_menu->set_text(TTR("Scene"));
-	left_menu_hb->add_child(file_menu);
 	file_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
+	left_menu_hb->add_child(file_menu);
 
 	prev_scene = memnew(ToolButton);
 	prev_scene->set_icon(gui_base->get_icon("PrevScene", "EditorIcons"));
@@ -4931,6 +4941,7 @@ EditorNode::EditorNode() {
 	p->add_item(TTR("Quit"), FILE_QUIT, KEY_MASK_CMD + KEY_Q);
 
 	project_menu = memnew(MenuButton);
+	project_menu->set_flat(false);
 	project_menu->set_tooltip(TTR("Miscellaneous project or scene-wide tools."));
 	project_menu->set_text(TTR("Project"));
 	project_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
@@ -4964,9 +4975,11 @@ EditorNode::EditorNode() {
 	menu_hb->add_child(editor_region);
 
 	debug_menu = memnew(MenuButton);
+	debug_menu->set_flat(false);
 	debug_menu->set_text(TTR("Debug"));
 	debug_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
 	left_menu_hb->add_child(debug_menu);
+
 	p = debug_menu->get_popup();
 	p->set_hide_on_item_selection(false);
 	p->add_check_item(TTR("Deploy with Remote Debug"), RUN_DEPLOY_REMOTE_DEBUG);
@@ -4988,9 +5001,10 @@ EditorNode::EditorNode() {
 	menu_hb->add_spacer();
 
 	settings_menu = memnew(MenuButton);
-	left_menu_hb->add_child(settings_menu);
+	settings_menu->set_flat(false);
 	settings_menu->set_text(TTR("Editor"));
 	settings_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
+	left_menu_hb->add_child(settings_menu);
 	p = settings_menu->get_popup();
 
 	p->add_item(TTR("Editor Settings"), SETTINGS_PREFERENCES);
@@ -5005,10 +5019,12 @@ EditorNode::EditorNode() {
 	p->add_item(TTR("Manage Export Templates"), SETTINGS_MANAGE_EXPORT_TEMPLATES);
 
 	// Help Menu
-	MenuButton *help_menu = memnew(MenuButton);
-	left_menu_hb->add_child(help_menu);
+	help_menu = memnew(MenuButton);
+	help_menu->set_flat(false);
 	help_menu->set_text(TTR("Help"));
 	help_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
+	left_menu_hb->add_child(help_menu);
+
 	p = help_menu->get_popup();
 	p->connect("id_pressed", this, "_menu_option");
 	p->add_icon_item(gui_base->get_icon("ClassList", "EditorIcons"), TTR("Classes"), HELP_CLASSES);

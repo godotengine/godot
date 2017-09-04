@@ -236,11 +236,12 @@ private:
 	MenuButton *file_menu;
 	MenuButton *project_menu;
 	MenuButton *debug_menu;
+	MenuButton *settings_menu;
+	MenuButton *help_menu;
 	PopupMenu *tool_menu;
 	ToolButton *export_button;
 	ToolButton *prev_scene;
 	MenuButton *object_menu;
-	MenuButton *settings_menu;
 	ToolButton *play_button;
 	MenuButton *native_play_button;
 	ToolButton *pause_button;
