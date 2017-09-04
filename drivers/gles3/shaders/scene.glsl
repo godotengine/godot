@@ -1590,6 +1590,12 @@ FRAGMENT_SHADER_CODE
 	}
 #endif
 
+#ifdef USE_OPAQUE_PREPASS
+
+	if (alpha<0.99) {
+		discard;
+	}
+#endif
 
 #if defined(ENABLE_NORMALMAP)
 
