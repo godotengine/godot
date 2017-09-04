@@ -36,12 +36,17 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#if defined(UNIX_ENABLED)
+#include <unistd.h>
+#endif
+
 #ifndef ANDROID_ENABLED
 #include <sys/statvfs.h>
 #endif
 
 #ifdef MSVC
 #define S_ISREG(m) ((m)&_S_IFREG)
+#include <io.h>
 #endif
 #ifndef S_ISREG
 #define S_ISREG(m) ((m)&S_IFREG)
@@ -85,13 +90,19 @@ Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
 
 	//printf("opening %s as %s\n", p_path.utf8().get_data(), path.utf8().get_data());
 	struct stat st;
-	if (stat(path.utf8().get_data(), &st) == 0) {
+	int err = stat(path.utf8().get_data(), &st);
+	if (err)
+		return ERR_FILE_CANT_OPEN;
 
-		if (!S_ISREG(st.st_mode))
+	switch (st.st_mode & S_IFMT) {
+		case S_IFLNK:
+		case S_IFREG:
+			break;
+		default:
 			return ERR_FILE_CANT_OPEN;
-	};
+	}
 
-	if (is_backup_save_enabled() && p_mode_flags & WRITE && !(p_mode_flags & READ)) {
+	if (is_backup_save_enabled() && (p_mode_flags & WRITE) && !(p_mode_flags & READ)) {
 		save_path = path;
 		path = path + ".tmp";
 		//print_line("saving instead to "+path);
@@ -108,15 +119,19 @@ Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
 		return OK;
 	}
 }
+
 void FileAccessUnix::close() {
 
 	if (!f)
 		return;
+
 	fclose(f);
 	f = NULL;
+
 	if (close_notification_func) {
 		close_notification_func(path, flags);
 	}
+
 	if (save_path != "") {
 
 		//unlink(save_path.utf8().get_data());
@@ -131,10 +146,12 @@ void FileAccessUnix::close() {
 		ERR_FAIL_COND(rename_error != 0);
 	}
 }
+
 bool FileAccessUnix::is_open() const {
 
 	return (f != NULL);
 }
+
 void FileAccessUnix::seek(size_t p_position) {
 
 	ERR_FAIL_COND(!f);
@@ -143,29 +160,39 @@ void FileAccessUnix::seek(size_t p_position) {
 	if (fseek(f, p_position, SEEK_SET))
 		check_errors();
 }
+
 void FileAccessUnix::seek_end(int64_t p_position) {
 
 	ERR_FAIL_COND(!f);
+
+	last_error = OK;
 	if (fseek(f, p_position, SEEK_END))
 		check_errors();
 }
+
 size_t FileAccessUnix::get_pos() const {
 
-	size_t aux_position = 0;
-	if (!(aux_position = ftell(f))) {
+	ERR_FAIL_COND_V(!f, 0);
+
+	last_error = OK;
+	int pos = ftell(f);
+	if (pos < 0) {
 		check_errors();
-	};
-	return aux_position;
+		ERR_FAIL_V(0);
+	}
+	return pos;
 }
+
 size_t FileAccessUnix::get_len() const {
 
 	ERR_FAIL_COND_V(!f, 0);
 
-	FileAccessUnix *fau = const_cast<FileAccessUnix *>(this);
-	int pos = fau->get_pos();
-	fau->seek_end();
-	int size = fau->get_pos();
-	fau->seek(pos);
+	int pos = ftell(f);
+	ERR_FAIL_COND_V(pos < 0, 0);
+	ERR_FAIL_COND_V(fseek(f, 0, SEEK_END), 0);
+	int size = ftell(f);
+	ERR_FAIL_COND_V(size < 0, 0);
+	ERR_FAIL_COND_V(fseek(f, pos, SEEK_SET), 0);
 
 	return size;
 }
@@ -202,22 +229,36 @@ Error FileAccessUnix::get_error() const {
 void FileAccessUnix::store_8(uint8_t p_dest) {
 
 	ERR_FAIL_COND(!f);
-	fwrite(&p_dest, 1, 1, f);
+	ERR_FAIL_COND(fwrite(&p_dest, 1, 1, f) != 1);
 }
 
 bool FileAccessUnix::file_exists(const String &p_path) {
 
-	FILE *g;
-	//printf("opening file %s\n", p_fname.c_str());
+	int err;
+	struct stat st;
 	String filename = fix_path(p_path);
-	g = fopen(filename.utf8().get_data(), "rb");
-	if (g == NULL) {
 
+	// Does the name exist at all?
+	err = stat(filename.utf8().get_data(), &st);
+	if (err)
 		return false;
-	} else {
 
-		fclose(g);
-		return true;
+#ifdef UNIX_ENABLED
+	// See if we have access to the file
+	if (access(filename.utf8().get_data(), F_OK))
+		return false;
+#else
+	if (_access(filename.utf8().get_data(), 4) == -1)
+		return false;
+#endif
+
+	// See if this is a regular file
+	switch (st.st_mode & S_IFMT) {
+		case S_IFLNK:
+		case S_IFREG:
+			return true;
+		default:
+			return false;
 	}
 }
 
@@ -225,9 +266,9 @@ uint64_t FileAccessUnix::_get_modified_time(const String &p_file) {
 
 	String file = fix_path(p_file);
 	struct stat flags;
-	bool success = (stat(file.utf8().get_data(), &flags) == 0);
+	int err = stat(file.utf8().get_data(), &flags);
 
-	if (success) {
+	if (!err) {
 		return flags.st_mtime;
 	} else {
 		print_line("ERROR IN: " + p_file);
@@ -249,6 +290,7 @@ FileAccessUnix::FileAccessUnix() {
 	flags = 0;
 	last_error = OK;
 }
+
 FileAccessUnix::~FileAccessUnix() {
 
 	close();
