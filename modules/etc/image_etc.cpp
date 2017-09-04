@@ -37,7 +37,6 @@
 
 static Image::Format _get_etc2_mode(Image::DetectChannels format) {
 	switch (format) {
-		case Image::DETECTED_L:
 		case Image::DETECTED_R:
 			return Image::FORMAT_ETC2_R11;
 
@@ -47,7 +46,7 @@ static Image::Format _get_etc2_mode(Image::DetectChannels format) {
 		case Image::DETECTED_RGB:
 			return Image::FORMAT_ETC2_RGB8;
 
-		case Image::DETECTED_RGBA:
+		default:
 			return Image::FORMAT_ETC2_RGBA8;
 
 			// TODO: would be nice if we could use FORMAT_ETC2_RGB8A1 for FORMAT_RGBA5551
