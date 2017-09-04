@@ -91,15 +91,14 @@ Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
 	//printf("opening %s as %s\n", p_path.utf8().get_data(), path.utf8().get_data());
 	struct stat st;
 	int err = stat(path.utf8().get_data(), &st);
-	if (err)
-		return ERR_FILE_CANT_OPEN;
-
-	switch (st.st_mode & S_IFMT) {
-		case S_IFLNK:
-		case S_IFREG:
-			break;
-		default:
-			return ERR_FILE_CANT_OPEN;
+	if (!err) {
+		switch (st.st_mode & S_IFMT) {
+			case S_IFLNK:
+			case S_IFREG:
+				break;
+			default:
+				return ERR_FILE_CANT_OPEN;
+		}
 	}
 
 	if (is_backup_save_enabled() && (p_mode_flags & WRITE) && !(p_mode_flags & READ)) {
