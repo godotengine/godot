@@ -234,8 +234,11 @@ bool GDNative::initialize() {
 		ERR_PRINT("No library set for this platform");
 		return false;
 	}
-
+#ifdef IPHONE_ENABLED
+	String path = lib_path.replace("res://", "dylibs/");
+#else
 	String path = ProjectSettings::get_singleton()->globalize_path(lib_path);
+#endif
 	Error err = OS::get_singleton()->open_dynamic_library(path, native_handle);
 	if (err != OK) {
 		return false;

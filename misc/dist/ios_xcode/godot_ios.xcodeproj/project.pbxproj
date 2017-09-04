@@ -7,18 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		D07CD43F1C5D573600B7FB28 /* Default-568h@2x~iphone.png in Resources */ = {isa = PBXBuildFile; fileRef = D07CD4331C5D573600B7FB28 /* Default-568h@2x~iphone.png */; };
-		D07CD4401C5D573600B7FB28 /* Default-667h.png in Resources */ = {isa = PBXBuildFile; fileRef = D07CD4341C5D573600B7FB28 /* Default-667h.png */; };
+		1F1575721F582BE20003B888 /* dylibs in Resources */ = {isa = PBXBuildFile; fileRef = 1F1575711F582BE20003B888 /* dylibs */; };
+		1FF4C1851F584E3F00A41E41 /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1FF4C1841F584E3F00A41E41 /* GameKit.framework */; };
+		1FF4C1871F584E5600A41E41 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1FF4C1861F584E5600A41E41 /* StoreKit.framework */; };
+		D07CD43F1C5D573600B7FB28 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D07CD4331C5D573600B7FB28 /* Default-568h@2x.png */; };
 		D07CD4411C5D573600B7FB28 /* Default-667h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D07CD4351C5D573600B7FB28 /* Default-667h@2x.png */; };
-		D07CD4421C5D573600B7FB28 /* Default-736h.png in Resources */ = {isa = PBXBuildFile; fileRef = D07CD4361C5D573600B7FB28 /* Default-736h.png */; };
-		D07CD4431C5D573600B7FB28 /* Default-736h@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = D07CD4371C5D573600B7FB28 /* Default-736h@3x.png */; };
-		D07CD4441C5D573600B7FB28 /* Default-Landscape-736h.png in Resources */ = {isa = PBXBuildFile; fileRef = D07CD4381C5D573600B7FB28 /* Default-Landscape-736h.png */; };
-		D07CD4451C5D573600B7FB28 /* Default-Landscape@2x~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = D07CD4391C5D573600B7FB28 /* Default-Landscape@2x~ipad.png */; };
-		D07CD4461C5D573600B7FB28 /* Default-Landscape~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = D07CD43A1C5D573600B7FB28 /* Default-Landscape~ipad.png */; };
-		D07CD4471C5D573600B7FB28 /* Default-Portrait@2x~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = D07CD43B1C5D573600B7FB28 /* Default-Portrait@2x~ipad.png */; };
-		D07CD4481C5D573600B7FB28 /* Default-Portrait~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = D07CD43C1C5D573600B7FB28 /* Default-Portrait~ipad.png */; };
-		D07CD4491C5D573600B7FB28 /* Default@2x~iphone.png in Resources */ = {isa = PBXBuildFile; fileRef = D07CD43D1C5D573600B7FB28 /* Default@2x~iphone.png */; };
-		D07CD44A1C5D573600B7FB28 /* Default~iphone.png in Resources */ = {isa = PBXBuildFile; fileRef = D07CD43E1C5D573600B7FB28 /* Default~iphone.png */; };
+		D07CD4421C5D573600B7FB28 /* Default-Portrait-736h@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = D07CD4361C5D573600B7FB28 /* Default-Portrait-736h@3x.png */; };
+		D07CD4441C5D573600B7FB28 /* Default-Landscape-736h@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = D07CD4381C5D573600B7FB28 /* Default-Landscape-736h@3x.png */; };
+		D07CD4451C5D573600B7FB28 /* Default-Landscape@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D07CD4391C5D573600B7FB28 /* Default-Landscape@2x.png */; };
+		D07CD4461C5D573600B7FB28 /* Default-Landscape-1366h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D07CD43A1C5D573600B7FB28 /* Default-Landscape-1366h@2x.png */; };
+		D07CD4471C5D573600B7FB28 /* Default-Portrait@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D07CD43B1C5D573600B7FB28 /* Default-Portrait@2x.png */; };
+		D07CD4481C5D573600B7FB28 /* Default-Portrait-1366h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D07CD43C1C5D573600B7FB28 /* Default-Portrait-1366h@2x.png */; };
 		D07CD44E1C5D589C00B7FB28 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D07CD44D1C5D589C00B7FB28 /* Images.xcassets */; };
 		D0BCFE3818AEBDA2004A7AAE /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0BCFE3718AEBDA2004A7AAE /* Foundation.framework */; };
 		D0BCFE3A18AEBDA2004A7AAE /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0BCFE3918AEBDA2004A7AAE /* CoreGraphics.framework */; };
@@ -26,36 +25,36 @@
 		D0BCFE3E18AEBDA2004A7AAE /* GLKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0BCFE3D18AEBDA2004A7AAE /* GLKit.framework */; };
 		D0BCFE4018AEBDA2004A7AAE /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0BCFE3F18AEBDA2004A7AAE /* OpenGLES.framework */; };
 		D0BCFE4618AEBDA2004A7AAE /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = D0BCFE4418AEBDA2004A7AAE /* InfoPlist.strings */; };
-		D0BCFE7818AEBFEB004A7AAE /* data.pck in Resources */ = {isa = PBXBuildFile; fileRef = D0BCFE7718AEBFEB004A7AAE /* data.pck */; };
-		D0BCFE7A18AEC06A004A7AAE /* godot_opt.iphone in Resources */ = {isa = PBXBuildFile; fileRef = D0BCFE7918AEC06A004A7AAE /* godot_opt.iphone */; };
+		D0BCFE7818AEBFEB004A7AAE /* $binary.pck in Resources */ = {isa = PBXBuildFile; fileRef = D0BCFE7718AEBFEB004A7AAE /* $binary.pck */; };
+		D0BCFE7A18AEC06A004A7AAE /* $binary.iphone in Resources */ = {isa = PBXBuildFile; fileRef = D0BCFE7918AEC06A004A7AAE /* $binary.iphone */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		D07CD4331C5D573600B7FB28 /* Default-568h@2x~iphone.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x~iphone.png"; sourceTree = "<group>"; };
-		D07CD4341C5D573600B7FB28 /* Default-667h.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-667h.png"; sourceTree = "<group>"; };
+		1F1575711F582BE20003B888 /* dylibs */ = {isa = PBXFileReference; lastKnownFileType = folder; name = dylibs; path = dylibs; sourceTree = "<group>"; };
+		1FF4C1841F584E3F00A41E41 /* GameKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameKit.framework; path = System/Library/Frameworks/GameKit.framework; sourceTree = SDKROOT; };
+		1FF4C1861F584E5600A41E41 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
+		1FF4C1881F584E6300A41E41 /* $binary.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = $binary.entitlements; sourceTree = "<group>"; };
+		D07CD4331C5D573600B7FB28 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		D07CD4351C5D573600B7FB28 /* Default-667h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-667h@2x.png"; sourceTree = "<group>"; };
-		D07CD4361C5D573600B7FB28 /* Default-736h.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-736h.png"; sourceTree = "<group>"; };
-		D07CD4371C5D573600B7FB28 /* Default-736h@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-736h@3x.png"; sourceTree = "<group>"; };
-		D07CD4381C5D573600B7FB28 /* Default-Landscape-736h.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-Landscape-736h.png"; sourceTree = "<group>"; };
-		D07CD4391C5D573600B7FB28 /* Default-Landscape@2x~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-Landscape@2x~ipad.png"; sourceTree = "<group>"; };
-		D07CD43A1C5D573600B7FB28 /* Default-Landscape~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-Landscape~ipad.png"; sourceTree = "<group>"; };
-		D07CD43B1C5D573600B7FB28 /* Default-Portrait@2x~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-Portrait@2x~ipad.png"; sourceTree = "<group>"; };
-		D07CD43C1C5D573600B7FB28 /* Default-Portrait~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-Portrait~ipad.png"; sourceTree = "<group>"; };
-		D07CD43D1C5D573600B7FB28 /* Default@2x~iphone.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default@2x~iphone.png"; sourceTree = "<group>"; };
-		D07CD43E1C5D573600B7FB28 /* Default~iphone.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default~iphone.png"; sourceTree = "<group>"; };
+		D07CD4361C5D573600B7FB28 /* Default-Portrait-736h@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-Portrait-736h@3x.png"; sourceTree = "<group>"; };
+		D07CD4381C5D573600B7FB28 /* Default-Landscape-736h@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-Landscape-736h@3x.png"; sourceTree = "<group>"; };
+		D07CD4391C5D573600B7FB28 /* Default-Landscape@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-Landscape@2x.png"; sourceTree = "<group>"; };
+		D07CD43A1C5D573600B7FB28 /* Default-Landscape-1366h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-Landscape-1366h@2x.png"; sourceTree = "<group>"; };
+		D07CD43B1C5D573600B7FB28 /* Default-Portrait@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-Portrait@2x.png"; sourceTree = "<group>"; };
+		D07CD43C1C5D573600B7FB28 /* Default-Portrait-1366h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-Portrait-1366h@2x.png"; sourceTree = "<group>"; };
 		D07CD44D1C5D589C00B7FB28 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
-		D0BCFE3418AEBDA2004A7AAE /* godot_ios.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = godot_ios.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D0BCFE3418AEBDA2004A7AAE /* $binary.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = $binary.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D0BCFE3718AEBDA2004A7AAE /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		D0BCFE3918AEBDA2004A7AAE /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		D0BCFE3B18AEBDA2004A7AAE /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		D0BCFE3D18AEBDA2004A7AAE /* GLKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLKit.framework; path = System/Library/Frameworks/GLKit.framework; sourceTree = SDKROOT; };
 		D0BCFE3F18AEBDA2004A7AAE /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
-		D0BCFE4318AEBDA2004A7AAE /* godot_ios-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "godot_ios-Info.plist"; sourceTree = "<group>"; };
+		D0BCFE4318AEBDA2004A7AAE /* $binary-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "$binary-Info.plist"; sourceTree = "<group>"; };
 		D0BCFE4518AEBDA2004A7AAE /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		D0BCFE4918AEBDA2004A7AAE /* godot_ios-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "godot_ios-Prefix.pch"; sourceTree = "<group>"; };
+		D0BCFE4918AEBDA2004A7AAE /* $binary-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "$binary-Prefix.pch"; sourceTree = "<group>"; };
 		D0BCFE6118AEBDA3004A7AAE /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
-		D0BCFE7718AEBFEB004A7AAE /* data.pck */ = {isa = PBXFileReference; lastKnownFileType = text; path = data.pck; sourceTree = "<group>"; };
-		D0BCFE7918AEC06A004A7AAE /* godot_opt.iphone */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = godot_opt.iphone; sourceTree = "<group>"; };
+		D0BCFE7718AEBFEB004A7AAE /* $binary.pck */ = {isa = PBXFileReference; lastKnownFileType = file; path = $binary.pck; sourceTree = "<group>"; };
+		D0BCFE7918AEC06A004A7AAE /* $binary.iphone */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = $binary.iphone; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,8 +63,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				D0BCFE4018AEBDA2004A7AAE /* OpenGLES.framework in Frameworks */,
+				1FF4C1871F584E5600A41E41 /* StoreKit.framework in Frameworks */,
 				D0BCFE3A18AEBDA2004A7AAE /* CoreGraphics.framework in Frameworks */,
 				D0BCFE3C18AEBDA2004A7AAE /* UIKit.framework in Frameworks */,
+				1FF4C1851F584E3F00A41E41 /* GameKit.framework in Frameworks */,
 				D0BCFE3E18AEBDA2004A7AAE /* GLKit.framework in Frameworks */,
 				D0BCFE3818AEBDA2004A7AAE /* Foundation.framework in Frameworks */,
 			);
@@ -77,9 +78,10 @@
 		D0BCFE2B18AEBDA2004A7AAE = {
 			isa = PBXGroup;
 			children = (
-				D0BCFE7918AEC06A004A7AAE /* godot_opt.iphone */,
-				D0BCFE7718AEBFEB004A7AAE /* data.pck */,
-				D0BCFE4118AEBDA2004A7AAE /* godot_ios */,
+				1F1575711F582BE20003B888 /* dylibs */,
+				D0BCFE7918AEC06A004A7AAE /* $binary.iphone */,
+				D0BCFE7718AEBFEB004A7AAE /* $binary.pck */,
+				D0BCFE4118AEBDA2004A7AAE /* $binary */,
 				D0BCFE3618AEBDA2004A7AAE /* Frameworks */,
 				D0BCFE3518AEBDA2004A7AAE /* Products */,
 			);
@@ -88,7 +90,7 @@
 		D0BCFE3518AEBDA2004A7AAE /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				D0BCFE3418AEBDA2004A7AAE /* godot_ios.app */,
+				D0BCFE3418AEBDA2004A7AAE /* $binary.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -96,6 +98,8 @@
 		D0BCFE3618AEBDA2004A7AAE /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				1FF4C1861F584E5600A41E41 /* StoreKit.framework */,
+				1FF4C1841F584E3F00A41E41 /* GameKit.framework */,
 				D0BCFE3718AEBDA2004A7AAE /* Foundation.framework */,
 				D0BCFE3918AEBDA2004A7AAE /* CoreGraphics.framework */,
 				D0BCFE3B18AEBDA2004A7AAE /* UIKit.framework */,
@@ -106,33 +110,30 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		D0BCFE4118AEBDA2004A7AAE /* godot_ios */ = {
+		D0BCFE4118AEBDA2004A7AAE /* $binary */ = {
 			isa = PBXGroup;
 			children = (
-				D07CD4331C5D573600B7FB28 /* Default-568h@2x~iphone.png */,
-				D07CD4341C5D573600B7FB28 /* Default-667h.png */,
+				1FF4C1881F584E6300A41E41 /* $binary.entitlements */,
+				D07CD4331C5D573600B7FB28 /* Default-568h@2x.png */,
 				D07CD4351C5D573600B7FB28 /* Default-667h@2x.png */,
-				D07CD4361C5D573600B7FB28 /* Default-736h.png */,
-				D07CD4371C5D573600B7FB28 /* Default-736h@3x.png */,
-				D07CD4381C5D573600B7FB28 /* Default-Landscape-736h.png */,
-				D07CD4391C5D573600B7FB28 /* Default-Landscape@2x~ipad.png */,
-				D07CD43A1C5D573600B7FB28 /* Default-Landscape~ipad.png */,
-				D07CD43B1C5D573600B7FB28 /* Default-Portrait@2x~ipad.png */,
-				D07CD43C1C5D573600B7FB28 /* Default-Portrait~ipad.png */,
-				D07CD43D1C5D573600B7FB28 /* Default@2x~iphone.png */,
-				D07CD43E1C5D573600B7FB28 /* Default~iphone.png */,
+				D07CD4361C5D573600B7FB28 /* Default-Portrait-736h@3x.png */,
+				D07CD4381C5D573600B7FB28 /* Default-Landscape-736h@3x.png */,
+				D07CD4391C5D573600B7FB28 /* Default-Landscape@2x.png */,
+				D07CD43A1C5D573600B7FB28 /* Default-Landscape-1366h@2x.png */,
+				D07CD43B1C5D573600B7FB28 /* Default-Portrait@2x.png */,
+				D07CD43C1C5D573600B7FB28 /* Default-Portrait-1366h@2x.png */,
 				D07CD44D1C5D589C00B7FB28 /* Images.xcassets */,
 				D0BCFE4218AEBDA2004A7AAE /* Supporting Files */,
 			);
-			path = godot_ios;
+			path = $binary;
 			sourceTree = "<group>";
 		};
 		D0BCFE4218AEBDA2004A7AAE /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				D0BCFE4318AEBDA2004A7AAE /* godot_ios-Info.plist */,
+				D0BCFE4318AEBDA2004A7AAE /* $binary-Info.plist */,
 				D0BCFE4418AEBDA2004A7AAE /* InfoPlist.strings */,
-				D0BCFE4918AEBDA2004A7AAE /* godot_ios-Prefix.pch */,
+				D0BCFE4918AEBDA2004A7AAE /* $binary-Prefix.pch */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -140,9 +141,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		D0BCFE3318AEBDA2004A7AAE /* godot_ios */ = {
+		D0BCFE3318AEBDA2004A7AAE /* $binary */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = D0BCFE7118AEBDA3004A7AAE /* Build configuration list for PBXNativeTarget "godot_ios" */;
+			buildConfigurationList = D0BCFE7118AEBDA3004A7AAE /* Build configuration list for PBXNativeTarget "$binary" */;
 			buildPhases = (
 				D0BCFE3018AEBDA2004A7AAE /* Sources */,
 				D0BCFE3118AEBDA2004A7AAE /* Frameworks */,
@@ -152,9 +153,9 @@
 			);
 			dependencies = (
 			);
-			name = godot_ios;
-			productName = godot_ios;
-			productReference = D0BCFE3418AEBDA2004A7AAE /* godot_ios.app */;
+			name = "$binary";
+			productName = "$name";
+			productReference = D0BCFE3418AEBDA2004A7AAE /* $binary.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -165,8 +166,24 @@
 			attributes = {
 				LastUpgradeCheck = 0500;
 				ORGANIZATIONNAME = GodotEngine;
+				TargetAttributes = {
+					D0BCFE3318AEBDA2004A7AAE = {
+						DevelopmentTeam = $team_id;
+						SystemCapabilities = {
+							com.apple.GameCenter = {
+								enabled = 1;
+							};
+							com.apple.InAppPurchase = {
+								enabled = 1;
+							};
+							com.apple.Push = {
+								enabled = 1;
+							};
+						};
+					};
+				};
 			};
-			buildConfigurationList = D0BCFE2F18AEBDA2004A7AAE /* Build configuration list for PBXProject "godot_ios" */;
+			buildConfigurationList = D0BCFE2F18AEBDA2004A7AAE /* Build configuration list for PBXProject "$binary" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -179,7 +196,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				D0BCFE3318AEBDA2004A7AAE /* godot_ios */,
+				D0BCFE3318AEBDA2004A7AAE /* $binary */,
 			);
 		};
 /* End PBXProject section */
@@ -189,22 +206,19 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D07CD4471C5D573600B7FB28 /* Default-Portrait@2x~ipad.png in Resources */,
+				1F1575721F582BE20003B888 /* dylibs in Resources */,
 				D07CD44E1C5D589C00B7FB28 /* Images.xcassets in Resources */,
-				D0BCFE7818AEBFEB004A7AAE /* data.pck in Resources */,
-				D07CD4461C5D573600B7FB28 /* Default-Landscape~ipad.png in Resources */,
+				D0BCFE7818AEBFEB004A7AAE /* $binary.pck in Resources */,
+				D07CD4471C5D573600B7FB28 /* Default-Portrait@2x.png in Resources */,
+				D07CD4461C5D573600B7FB28 /* Default-Landscape-1366h@2x.png in Resources */,
 				D07CD4411C5D573600B7FB28 /* Default-667h@2x.png in Resources */,
-				D07CD4401C5D573600B7FB28 /* Default-667h.png in Resources */,
-				D07CD4431C5D573600B7FB28 /* Default-736h@3x.png in Resources */,
-				D07CD43F1C5D573600B7FB28 /* Default-568h@2x~iphone.png in Resources */,
-				D07CD4451C5D573600B7FB28 /* Default-Landscape@2x~ipad.png in Resources */,
-				D07CD44A1C5D573600B7FB28 /* Default~iphone.png in Resources */,
-				D07CD4491C5D573600B7FB28 /* Default@2x~iphone.png in Resources */,
-				D07CD4441C5D573600B7FB28 /* Default-Landscape-736h.png in Resources */,
-				D07CD4421C5D573600B7FB28 /* Default-736h.png in Resources */,
+				D07CD43F1C5D573600B7FB28 /* Default-568h@2x.png in Resources */,
+				D07CD4451C5D573600B7FB28 /* Default-Landscape@2x.png in Resources */,
+				D07CD4441C5D573600B7FB28 /* Default-Landscape-736h@3x.png in Resources */,
+				D07CD4421C5D573600B7FB28 /* Default-Portrait-736h@3x.png in Resources */,
+				D07CD4481C5D573600B7FB28 /* Default-Portrait-1366h@2x.png in Resources */,
 				D0BCFE4618AEBDA2004A7AAE /* InfoPlist.strings in Resources */,
-				D0BCFE7A18AEC06A004A7AAE /* godot_opt.iphone in Resources */,
-				D07CD4481C5D573600B7FB28 /* Default-Portrait~ipad.png in Resources */,
+				D0BCFE7A18AEC06A004A7AAE /* $binary.iphone in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -249,7 +263,7 @@
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "$code_sign_identity_debug";
 				COPY_PHASE_STRIP = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -265,7 +279,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -289,7 +303,8 @@
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "$code_sign_identity_release";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "$code_sign_identity_release";
 				COPY_PHASE_STRIP = YES;
 				ENABLE_NS_ASSERTIONS = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -299,7 +314,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
@@ -311,13 +326,22 @@
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = $binary/$binary.entitlements;
+				CODE_SIGN_IDENTITY = "$code_sign_identity_debug";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "$code_sign_identity_debug";
 				CONFIGURATION_BUILD_DIR = "$(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
+				DEVELOPMENT_TEAM = $team_id;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "godot_ios/godot_ios-Prefix.pch";
-				INFOPLIST_FILE = "godot_ios/godot_ios-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
-				PRODUCT_BUNDLE_IDENTIFIER = org.godotengine.game.ios;
+				GCC_PREFIX_HEADER = "$binary/$binary-Prefix.pch";
+				INFOPLIST_FILE = "$binary/$binary-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/dylibs",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = $identifier;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "$provisioning_profile_uuid_debug";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALID_ARCHS = "armv7 armv7s";
 				WRAPPER_EXTENSION = app;
@@ -329,14 +353,22 @@
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "iPhone Distribution: Ariel Manzur (BYC57PA2Q5)";
+				CODE_SIGN_ENTITLEMENTS = $binary/$binary.entitlements;
+				CODE_SIGN_IDENTITY = "$code_sign_identity_release";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "$code_sign_identity_release";
 				CONFIGURATION_BUILD_DIR = "$(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
+				DEVELOPMENT_TEAM = $team_id;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "godot_ios/godot_ios-Prefix.pch";
-				INFOPLIST_FILE = "godot_ios/godot_ios-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
-				PRODUCT_BUNDLE_IDENTIFIER = org.godotengine.game.ios;
+				GCC_PREFIX_HEADER = "$binary/$binary-Prefix.pch";
+				INFOPLIST_FILE = "$binary/$binary-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/dylibs",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = $identifier;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "$provisioning_profile_uuid_release";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALID_ARCHS = "armv7 armv7s";
 				WRAPPER_EXTENSION = app;
@@ -346,7 +378,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		D0BCFE2F18AEBDA2004A7AAE /* Build configuration list for PBXProject "godot_ios" */ = {
+		D0BCFE2F18AEBDA2004A7AAE /* Build configuration list for PBXProject "$binary" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D0BCFE6F18AEBDA3004A7AAE /* Debug */,
@@ -355,7 +387,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		D0BCFE7118AEBDA3004A7AAE /* Build configuration list for PBXNativeTarget "godot_ios" */ = {
+		D0BCFE7118AEBDA3004A7AAE /* Build configuration list for PBXNativeTarget "$binary" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D0BCFE7218AEBDA3004A7AAE /* Debug */,
