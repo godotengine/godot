@@ -567,12 +567,6 @@ public:
 
 	template <class T>
 	static T *cast_to(Object *p_object) {
-#ifdef DEBUG_ENABLED
-		// TODO there are some legitimate reasons to pass NULL as p_object.
-		// we need to figure out how to deal with that in debug mode.
-		// This code will return NULL for a NULL input in release mode also.
-		ERR_FAIL_COND_V(p_object == NULL, NULL);
-#endif
 #ifndef NO_SAFE_CAST
 		return dynamic_cast<T *>(p_object);
 #else
@@ -587,12 +581,6 @@ public:
 
 	template <class T>
 	static const T *cast_to(const Object *p_object) {
-#ifdef DEBUG_ENABLED
-		// TODO there are some legitimate reasons to pass NULL as p_object.
-		// we need to figure out how to deal with that in debug mode.
-		// This code will return NULL for a NULL input in release mode also.
-		ERR_FAIL_COND_V(p_object == NULL, NULL);
-#endif
 #ifndef NO_SAFE_CAST
 		return dynamic_cast<const T *>(p_object);
 #else
