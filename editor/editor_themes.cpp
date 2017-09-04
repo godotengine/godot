@@ -466,8 +466,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("prop_category", "Editor", prop_category_color);
 	theme->set_color("prop_section", "Editor", prop_section_color);
 	theme->set_color("prop_subsection", "Editor", prop_subsection_color);
-	theme->set_color("fg_selected", "Editor", HIGHLIGHT_COLOR_BG);
-	theme->set_color("fg_error", "Editor", error_color);
 	theme->set_color("drop_position_color", "Tree", highlight_color);
 
 	// ItemList
