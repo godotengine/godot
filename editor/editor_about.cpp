@@ -77,7 +77,7 @@ ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<St
 			il->set_same_column_width(true);
 			il->set_auto_height(true);
 			while (*names_ptr) {
-				il->add_item(String::utf8(*names_ptr++));
+				il->add_item(String::utf8(*names_ptr++), NULL, false);
 			}
 			vbc->add_child(il);
 			if (il->get_item_count() == 2) {
