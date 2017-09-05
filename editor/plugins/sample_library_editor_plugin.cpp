@@ -238,7 +238,7 @@ void SampleLibraryEditor::_update_library() {
 		ti->set_cell_mode(2, TreeItem::CELL_MODE_STRING);
 		ti->set_editable(2, false);
 		ti->set_selectable(2, false);
-		ti->set_text(2, String() + (smp->get_format() == Sample::FORMAT_PCM16 ? TTR("16 Bits") + ", " : (smp->get_format() == Sample::FORMAT_PCM8 ? TTR("8 Bits") + ", " : "IMA-ADPCM,")) + (smp->is_stereo() ? TTR("Stereo") : TTR("Mono")));
+		ti->set_text(2, String() + (smp != NULL ? (smp->get_format() == Sample::FORMAT_PCM16 ? TTR("16 Bits") + ", " : (smp->get_format() == Sample::FORMAT_PCM8 ? TTR("8 Bits") + ", " : "IMA-ADPCM,")) + (smp->is_stereo() ? TTR("Stereo") : TTR("Mono")) : TTR("Invalid")));
 
 		// Volume dB
 		ti->set_cell_mode(3, TreeItem::CELL_MODE_RANGE);
