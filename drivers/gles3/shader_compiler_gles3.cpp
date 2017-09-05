@@ -438,25 +438,43 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 			SL::BlockNode *bnode = (SL::BlockNode *)p_node;
 
 			//variables
-			code += _mktab(p_level - 1) + "{\n";
-			for (Map<StringName, SL::BlockNode::Variable>::Element *E = bnode->variables.front(); E; E = E->next()) {
-
-				code += _mktab(p_level) + _prestr(E->get().precision) + _typestr(E->get().type) + " " + _mkid(E->key()) + ";\n";
+			if (!bnode->single_statement) {
+				code += _mktab(p_level - 1) + "{\n";
 			}
-
+	
 			for (int i = 0; i < bnode->statements.size(); i++) {
 
 				String scode = _dump_node_code(bnode->statements[i], p_level, r_gen_code, p_actions, p_default_actions);
 
-				if (bnode->statements[i]->type == SL::Node::TYPE_CONTROL_FLOW || bnode->statements[i]->type == SL::Node::TYPE_CONTROL_FLOW) {
-					// FIXME: if (A || A) ? I am hesitant to delete one of them, could be copy-paste error.
+				if (bnode->statements[i]->type == SL::Node::TYPE_CONTROL_FLOW || bnode->single_statement ) {
 					code += scode; //use directly
 				} else {
 					code += _mktab(p_level) + scode + ";\n";
 				}
 			}
-			code += _mktab(p_level - 1) + "}\n";
+			if (!bnode->single_statement) {
+				code += _mktab(p_level - 1) + "}\n";
+			}
 
+		} break;
+		case SL::Node::TYPE_VARIABLE_DECLARATION: {
+			SL::VariableDeclarationNode *vdnode = (SL::VariableDeclarationNode *)p_node;
+
+			String declaration = _prestr(vdnode->precision) + _typestr(vdnode->datatype);
+			for(int i=0;i<vdnode->declarations.size();i++) {
+				if (i>0) {
+					declaration+=",";
+				} else {
+					declaration+=" ";
+				}
+				declaration +=  _mkid(vdnode->declarations[i].name);
+				if (vdnode->declarations[i].initializer) {
+					declaration+="=";
+					declaration+=_dump_node_code(vdnode->declarations[i].initializer, p_level, r_gen_code, p_actions, p_default_actions);
+				}
+			}
+
+			code+=declaration;
 		} break;
 		case SL::Node::TYPE_VARIABLE: {
 			SL::VariableNode *vnode = (SL::VariableNode *)p_node;
@@ -600,6 +618,13 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 				code += _mktab(p_level) + "while (" + _dump_node_code(cfnode->expressions[0], p_level, r_gen_code, p_actions, p_default_actions) + ")\n";
 				code += _dump_node_code(cfnode->blocks[0], p_level + 1, r_gen_code, p_actions, p_default_actions);
+			} else if (cfnode->flow_op == SL::FLOW_OP_FOR) {
+
+				String left = _dump_node_code(cfnode->blocks[0], p_level, r_gen_code, p_actions, p_default_actions);
+				String middle = _dump_node_code(cfnode->expressions[0], p_level, r_gen_code, p_actions, p_default_actions);
+				String right = _dump_node_code(cfnode->expressions[1], p_level, r_gen_code, p_actions, p_default_actions);
+				code += _mktab(p_level) + "for (" +left+";"+middle+";"+right+")\n";
+				code += _dump_node_code(cfnode->blocks[1], p_level + 1, r_gen_code, p_actions, p_default_actions);
 
 			} else if (cfnode->flow_op == SL::FLOW_OP_RETURN) {
 
@@ -611,6 +636,12 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 			} else if (cfnode->flow_op == SL::FLOW_OP_DISCARD) {
 
 				code = "discard;";
+			} else if (cfnode->flow_op == SL::FLOW_OP_CONTINUE) {
+
+				code = "continue;";
+			} else if (cfnode->flow_op == SL::FLOW_OP_BREAK) {
+
+				code = "break;";
 			}
 
 		} break;

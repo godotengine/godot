@@ -266,6 +266,7 @@ public:
 			TYPE_FUNCTION,
 			TYPE_BLOCK,
 			TYPE_VARIABLE,
+			TYPE_VARIABLE_DECLARATION,
 			TYPE_CONSTANT,
 			TYPE_OPERATOR,
 			TYPE_CONTROL_FLOW,
@@ -315,6 +316,25 @@ public:
 		}
 	};
 
+	struct VariableDeclarationNode : public Node {
+
+		DataPrecision precision;
+		DataType datatype;
+
+		struct Declaration {
+
+			StringName name;
+			Node *initializer;
+		};
+
+		Vector<Declaration> declarations;
+		virtual DataType get_datatype() const { return datatype; }
+
+		VariableDeclarationNode() {
+			type = TYPE_VARIABLE_DECLARATION;
+		}
+	};
+
 	struct ConstantNode : public Node {
 
 		DataType datatype;
@@ -346,10 +366,12 @@ public:
 
 		Map<StringName, Variable> variables;
 		List<Node *> statements;
+		bool single_statement;
 		BlockNode() {
 			type = TYPE_BLOCK;
 			parent_block = NULL;
 			parent_function = NULL;
+			single_statement=false;
 		}
 	};
 

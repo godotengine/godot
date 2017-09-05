@@ -79,7 +79,11 @@ String ShaderLanguage::get_operator_text(Operator p_op) {
 		"|",
 		"^",
 		"~",
-		"++"
+		"++",
+		"--",
+		"?",
+		":",
+		"++",
 		"--",
 		"()",
 		"construct",
@@ -3116,6 +3120,12 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Dat
 
 			tk = _get_token();
 
+			VariableDeclarationNode *vardecl = alloc_node<VariableDeclarationNode>();
+			vardecl->datatype=type;
+			vardecl->precision=precision;
+
+			p_block->statements.push_back(vardecl);
+
 			while (true) {
 
 				if (tk.type != TK_IDENTIFIER) {
@@ -3133,7 +3143,13 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Dat
 				var.type = type;
 				var.precision = precision;
 				var.line = tk_line;
+
 				p_block->variables[name] = var;
+
+				VariableDeclarationNode::Declaration decl;
+
+				decl.name=name;
+				decl.initializer=NULL;
 
 				tk = _get_token();
 
@@ -3143,21 +3159,18 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Dat
 					if (!n)
 						return ERR_PARSE_ERROR;
 
-					OperatorNode *assign = alloc_node<OperatorNode>();
-					VariableNode *vnode = alloc_node<VariableNode>();
-					vnode->name = name;
-					vnode->datatype_cache = type;
-					assign->arguments.push_back(vnode);
-					assign->arguments.push_back(n);
-					assign->op = OP_ASSIGN;
-					p_block->statements.push_back(assign);
+					decl.initializer = n;
+
+					if (var.type!=n->get_datatype()) {
+						_set_error("Invalid assignment of '" + get_datatype_name(n->get_datatype()) + "' to '" + get_datatype_name(var.type) + "'");
+						return ERR_PARSE_ERROR;
+
+					}
 					tk = _get_token();
 
-					if (!_validate_operator(assign)) {
-						_set_error("Invalid assignment of '" + get_datatype_name(n->get_datatype()) + "' to '" + get_datatype_name(type) + "'");
-						return ERR_PARSE_ERROR;
-					}
 				}
+
+				vardecl->declarations.push_back(decl);
 
 				if (tk.type == TK_COMMA) {
 					tk = _get_token();
@@ -3221,7 +3234,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Dat
 			//if () {}
 			tk = _get_token();
 			if (tk.type != TK_PARENTHESIS_OPEN) {
-				_set_error("Expected '(' after if");
+				_set_error("Expected '(' after while");
 				return ERR_PARSE_ERROR;
 			}
 
@@ -3243,7 +3256,64 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Dat
 			cf->blocks.push_back(block);
 			p_block->statements.push_back(cf);
 
-			Error err = _parse_block(block, p_builtin_types, true, p_can_break, p_can_continue);
+			Error err = _parse_block(block, p_builtin_types, true, true, true);
+			if (err)
+				return err;
+		} else if (tk.type == TK_CF_FOR) {
+			//if () {}
+			tk = _get_token();
+			if (tk.type != TK_PARENTHESIS_OPEN) {
+				_set_error("Expected '(' after for");
+				return ERR_PARSE_ERROR;
+			}
+
+			ControlFlowNode *cf = alloc_node<ControlFlowNode>();
+			cf->flow_op = FLOW_OP_FOR;
+
+			BlockNode *init_block = alloc_node<BlockNode>();
+			init_block->parent_block = p_block;
+			init_block->single_statement=true;
+			cf->blocks.push_back(init_block);
+			if (_parse_block(init_block,p_builtin_types,true,false,false)!=OK) {
+				return ERR_PARSE_ERROR;
+			}
+
+			Node *n = _parse_and_reduce_expression(init_block, p_builtin_types);
+			if (!n)
+				return ERR_PARSE_ERROR;
+
+			if (n->get_datatype()!=TYPE_BOOL) {
+				_set_error("Middle expression is expected to be boolean.");
+				return ERR_PARSE_ERROR;
+
+			}
+
+			tk = _get_token();
+			if (tk.type != TK_SEMICOLON) {
+				_set_error("Expected ';' after middle expression");
+				return ERR_PARSE_ERROR;
+			}
+
+			cf->expressions.push_back(n);
+
+			n = _parse_and_reduce_expression(init_block, p_builtin_types);
+			if (!n)
+				return ERR_PARSE_ERROR;
+
+			cf->expressions.push_back(n);
+
+			tk = _get_token();
+			if (tk.type != TK_PARENTHESIS_CLOSE) {
+				_set_error("Expected ')' after third expression");
+				return ERR_PARSE_ERROR;
+			}
+
+			BlockNode *block = alloc_node<BlockNode>();
+			block->parent_block = p_block;
+			cf->blocks.push_back(block);
+			p_block->statements.push_back(cf);
+
+			Error err = _parse_block(block, p_builtin_types, true, true, true);
 			if (err)
 				return err;
 
@@ -3317,6 +3387,44 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Dat
 			if (tk.type != TK_SEMICOLON) {
 				//all is good
 				_set_error("Expected ';' after discard");
+			}
+
+			p_block->statements.push_back(flow);
+		} else if (tk.type == TK_CF_BREAK) {
+
+
+			if (!p_can_break) {
+				//all is good
+				_set_error("Breaking is not allowed here");
+			}
+
+			ControlFlowNode *flow = alloc_node<ControlFlowNode>();
+			flow->flow_op = FLOW_OP_BREAK;
+
+			pos = _get_tkpos();
+			tk = _get_token();
+			if (tk.type != TK_SEMICOLON) {
+				//all is good
+				_set_error("Expected ';' after break");
+			}
+
+			p_block->statements.push_back(flow);
+		} else if (tk.type == TK_CF_CONTINUE) {
+
+
+			if (!p_can_break) {
+				//all is good
+				_set_error("Contiuning is not allowed here");
+			}
+
+			ControlFlowNode *flow = alloc_node<ControlFlowNode>();
+			flow->flow_op = FLOW_OP_CONTINUE;
+
+			pos = _get_tkpos();
+			tk = _get_token();
+			if (tk.type != TK_SEMICOLON) {
+				//all is good
+				_set_error("Expected ';' after continue");
 			}
 
 			p_block->statements.push_back(flow);
