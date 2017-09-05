@@ -29,6 +29,7 @@
 /*************************************************************************/
 #include "variant_parser.h"
 
+#include "core/string_buffer.h"
 #include "io/resource_loader.h"
 #include "os/input_event.h"
 #include "os/keyboard.h"
@@ -176,14 +177,15 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 			};
 			case '#': {
 
-				String color_str = "#";
+				StringBuffer color_str;
+				color_str += '#';
 				while (true) {
 					CharType ch = p_stream->get_char();
 					if (p_stream->is_eof()) {
 						r_token.type = TK_EOF;
 						return OK;
 					} else if ((ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F')) {
-						color_str += String::chr(ch);
+						color_str += ch;
 
 					} else {
 						p_stream->saved = ch;
@@ -191,7 +193,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 					}
 				}
 
-				r_token.value = Color::html(color_str);
+				r_token.value = Color::html(color_str.as_string());
 				r_token.type = TK_COLOR;
 				return OK;
 			};
@@ -296,7 +298,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 				if (cchar == '-' || (cchar >= '0' && cchar <= '9')) {
 					//a number
 
-					String num;
+					StringBuffer num;
 #define READING_SIGN 0
 #define READING_INT 1
 #define READING_DEC 2
@@ -359,7 +361,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 
 						if (reading == READING_DONE)
 							break;
-						num += String::chr(c);
+						num += c;
 						c = p_stream->get_char();
 					}
 
@@ -368,19 +370,19 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 					r_token.type = TK_NUMBER;
 
 					if (is_float)
-						r_token.value = num.to_double();
+						r_token.value = num.as_double();
 					else
-						r_token.value = num.to_int();
+						r_token.value = num.as_int();
 					return OK;
 
 				} else if ((cchar >= 'A' && cchar <= 'Z') || (cchar >= 'a' && cchar <= 'z') || cchar == '_') {
 
-					String id;
+					StringBuffer id;
 					bool first = true;
 
 					while ((cchar >= 'A' && cchar <= 'Z') || (cchar >= 'a' && cchar <= 'z') || cchar == '_' || (!first && cchar >= '0' && cchar <= '9')) {
 
-						id += String::chr(cchar);
+						id += cchar;
 						cchar = p_stream->get_char();
 						first = false;
 					}
@@ -388,7 +390,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 					p_stream->saved = cchar;
 
 					r_token.type = TK_IDENTIFIER;
-					r_token.value = id;
+					r_token.value = id.as_string();
 					return OK;
 				} else {
 					r_err_str = "Unexpected character.";
