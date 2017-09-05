@@ -484,7 +484,7 @@ VERTEX_SHADER_CODE
 
 	vec3 directional_diffuse = vec3(0.0);
 	vec3 directional_specular = vec3(0.0);
-	light_compute(normal_interp,-light_direction_attenuation.xyz,-normalize( vertex_interp ),normal_interp,roughness,directional_diffuse,directional_specular);
+        light_compute(normal_interp,-light_direction_attenuation.xyz,-normalize( vertex_interp ),light_color_energy.rgb,roughness,directional_diffuse,directional_specular);
 
 	float diff_avg = dot(diffuse_light_interp.rgb,vec3(0.33333));
 	float diff_dir_avg = dot(directional_diffuse,vec3(0.33333));
