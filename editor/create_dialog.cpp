@@ -54,12 +54,7 @@ void CreateDialog::popup_create(bool p_dontclear) {
 
 				TreeItem *ti = recent->create_item(root);
 				ti->set_text(0, l);
-				if (has_icon(l, "EditorIcons")) {
-
-					ti->set_icon(0, get_icon(l, "EditorIcons"));
-				} else {
-					ti->set_icon(0, get_icon("Object", "EditorIcons"));
-				}
+				ti->set_icon(0, _get_editor_icon(l));
 			}
 		}
 
@@ -120,6 +115,29 @@ void CreateDialog::_sbox_input(const Ref<InputEvent> &p_ie) {
 		search_options->call("_gui_input", k);
 		search_box->accept_event();
 	}
+}
+
+Ref<Texture> CreateDialog::_get_editor_icon(const String &p_type) const {
+
+	if (has_icon(p_type, "EditorIcons")) {
+		return get_icon(p_type, "EditorIcons");
+	}
+
+	const Map<String, Vector<EditorData::CustomType> > &p_map = EditorNode::get_editor_data().get_custom_types();
+	for (const Map<String, Vector<EditorData::CustomType> >::Element *E = p_map.front(); E; E = E->next()) {
+		const Vector<EditorData::CustomType> &ct = E->value();
+		for (int i = 0; i < ct.size(); ++i) {
+			if (ct[i].name == p_type) {
+				if (ct[i].icon.is_valid()) {
+					return ct[i].icon;
+				} else {
+					return get_icon("Object", "EditorIcons");
+				}
+			}
+		}
+	}
+
+	return get_icon("Object", "EditorIcons");
 }
 
 void CreateDialog::add_type(const String &p_type, HashMap<String, TreeItem *> &p_types, TreeItem *p_root, TreeItem **to_select) {
@@ -457,13 +475,7 @@ void CreateDialog::_update_favorite_list() {
 		TreeItem *ti = favorites->create_item(root);
 		String l = favorite_list[i];
 		ti->set_text(0, l);
-
-		if (has_icon(l, "EditorIcons")) {
-
-			ti->set_icon(0, get_icon(l, "EditorIcons"));
-		} else {
-			ti->set_icon(0, get_icon("Object", "EditorIcons"));
-		}
+		ti->set_icon(0, _get_editor_icon(l));
 	}
 }
 
