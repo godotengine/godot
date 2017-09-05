@@ -30,27 +30,18 @@
 #ifndef POLYGON_2D_EDITOR_PLUGIN_H
 #define POLYGON_2D_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
-#include "editor/editor_plugin.h"
-#include "scene/2d/polygon_2d.h"
-#include "scene/gui/button_group.h"
-#include "scene/gui/tool_button.h"
+#include "editor/plugins/abstract_polygon_2d_editor.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
-class CanvasItemEditor;
+class Polygon2DEditor : public AbstractPolygon2DEditor {
 
-class Polygon2DEditor : public HBoxContainer {
+	GDCLASS(Polygon2DEditor, AbstractPolygon2DEditor);
 
-	GDCLASS(Polygon2DEditor, HBoxContainer);
-
-	UndoRedo *undo_redo;
 	enum Mode {
 
-		MODE_CREATE,
-		MODE_EDIT,
-		MODE_EDIT_UV,
+		MODE_EDIT_UV = MODE_CONT,
 		UVEDIT_POLYGON_TO_UV,
 		UVEDIT_UV_TO_POLYGON,
 		UVEDIT_UV_CLEAR
@@ -64,8 +55,6 @@ class Polygon2DEditor : public HBoxContainer {
 		UV_MODE_SCALE,
 		UV_MODE_MAX
 	};
-
-	Mode mode;
 
 	UVMode uv_mode;
 	AcceptDialog *uv_edit;
@@ -91,21 +80,7 @@ class Polygon2DEditor : public HBoxContainer {
 
 	AcceptDialog *error;
 
-	ToolButton *button_create;
-	ToolButton *button_edit;
 	ToolButton *button_uv;
-
-	CanvasItemEditor *canvas_item_editor;
-	EditorNode *editor;
-	Panel *panel;
-	Polygon2D *node;
-	MenuButton *options;
-
-	int edited_point;
-	Vector2 edited_point_pos;
-	Vector<Vector2> pre_move_edit;
-	Vector<Vector2> wip;
-	bool wip_active;
 
 	bool use_snap;
 	bool snap_show_grid;
@@ -129,35 +104,20 @@ class Polygon2DEditor : public HBoxContainer {
 
 protected:
 	void _notification(int p_what);
-	void _node_removed(Node *p_node);
 	static void _bind_methods();
 
 	Vector2 snap_point(Vector2 p_target) const;
 
 public:
-	bool forward_gui_input(const Ref<InputEvent> &p_event);
-	void edit(Node *p_collision_polygon);
 	Polygon2DEditor(EditorNode *p_editor);
 };
 
-class Polygon2DEditorPlugin : public EditorPlugin {
+class Polygon2DEditorPlugin : public AbstractPolygon2DEditorPlugin {
 
-	GDCLASS(Polygon2DEditorPlugin, EditorPlugin);
-
-	Polygon2DEditor *collision_polygon_editor;
-	EditorNode *editor;
+	GDCLASS(Polygon2DEditorPlugin, AbstractPolygon2DEditorPlugin);
 
 public:
-	virtual bool forward_canvas_gui_input(const Transform2D &p_canvas_xform, const Ref<InputEvent> &p_event) { return collision_polygon_editor->forward_gui_input(p_event); }
-
-	virtual String get_name() const { return "Polygon2D"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
-
 	Polygon2DEditorPlugin(EditorNode *p_node);
-	~Polygon2DEditorPlugin();
 };
 
 #endif // POLYGON_2D_EDITOR_PLUGIN_H

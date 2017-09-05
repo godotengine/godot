@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  navigation_polygon_editor_plugin.cpp                                 */
+/*  editable_polygon_2d.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,14 +27,32 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "navigation_polygon_editor_plugin.h"
+#ifndef POLYGONNODE2D_H
+#define POLYGONNODE2D_H
 
-#include "canvas_item_editor_plugin.h"
-#include "editor/editor_settings.h"
-#include "os/file_access.h"
+#include "core/undo_redo.h"
+#include "core/resource.h"
+#include "scene/resources/texture.h"
+#include "scene/2d/node_2d.h"
+#include "scene/2d/ring_2d.h"
 
-NavigationPolygonEditorPlugin::NavigationPolygonEditorPlugin(EditorNode *p_node) :
+class PolygonNode2D : public Node2D {
 
-	AbstractPolygon2DEditorPlugin(p_node, memnew(AbstractPolygon2DEditor(p_node, false)), "NavigationPolygonInstance") {
+	GDCLASS(PolygonNode2D, Node2D);
 
-}
+protected:
+	static void _bind_methods();
+
+public:
+	virtual int get_polygon_count() const = 0;
+	virtual Ref<Resource> get_nth_polygon(int p_idx) const = 0;
+	virtual int get_ring_count(Ref<Resource> p_polygon) const = 0;
+	virtual Ref<Ring2D> get_nth_ring(Ref<Resource> p_polygon, int p_idx) const = 0;
+
+	virtual void add_polygon(const Vector<Point2> &p_vertices);
+	virtual Ref<Resource> new_polygon(const Ref<Ring2D> &p_ring) const = 0;
+	virtual void add_polygon_at_index(Ref<Resource> p_polygon, int p_idx) = 0;
+	virtual void remove_polygon(int p_idx) = 0;
+};
+
+#endif // POLYGONNODE2D_H

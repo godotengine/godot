@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  navigation_polygon_editor_plugin.cpp                                 */
+/*  editable_polygon_2d.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,14 +27,21 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "navigation_polygon_editor_plugin.h"
+#include "polygon_node_2d.h"
+#include "core_string_names.h"
 
-#include "canvas_item_editor_plugin.h"
-#include "editor/editor_settings.h"
-#include "os/file_access.h"
+void PolygonNode2D::add_polygon(const Vector<Point2> &p_vertices) {
 
-NavigationPolygonEditorPlugin::NavigationPolygonEditorPlugin(EditorNode *p_node) :
+	Ref<Ring2D> ring = memnew(Ring2D);
+	ring->set_vertices(p_vertices);
+	Ref<Resource> polygon = new_polygon(ring);
+	add_polygon_at_index(polygon, get_polygon_count());
+}
 
-	AbstractPolygon2DEditorPlugin(p_node, memnew(AbstractPolygon2DEditor(p_node, false)), "NavigationPolygonInstance") {
+void PolygonNode2D::_bind_methods() {
 
+	ClassDB::bind_method(D_METHOD("new_polygon"), &PolygonNode2D::new_polygon);
+	ClassDB::bind_method(D_METHOD("add_polygon", "vertices"), &PolygonNode2D::add_polygon);
+	ClassDB::bind_method(D_METHOD("add_polygon_at_index", "index", "polygon"), &PolygonNode2D::add_polygon_at_index);
+	ClassDB::bind_method(D_METHOD("remove_polygon", "index"), &PolygonNode2D::remove_polygon);
 }

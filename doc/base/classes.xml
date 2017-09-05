@@ -11992,7 +11992,7 @@
 	<constants>
 	</constants>
 </class>
-<class name="CollisionPolygon2D" inherits="Node2D" category="Core">
+<class name="CollisionPolygon2DInstance" inherits="Node2D" category="Core">
 	<brief_description>
 		Editor-only class for easy editing of collision polygons.
 	</brief_description>
@@ -12008,10 +12008,9 @@
 			</description>
 		</method>
 		<method name="get_polygon" qualifiers="const">
-			<return type="PoolVector2Array">
+			<return type="CollisionPolygon2D">
 			</return>
 			<description>
-				Return the list of points that define the polygon.
 			</description>
 		</method>
 		<method name="is_disabled" qualifiers="const">
@@ -12035,6 +12034,12 @@
 				Set whether the polygon is to be a [ConvexPolygonShape2D] ([code]build_mode==0[/code]), or a [ConcavePolygonShape2D] ([code]build_mode==1[/code]).
 			</description>
 		</method>
+		<method name="set_polygon">
+			<argument index="0" name="polygon" type="CollisionPolygon2D">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_disabled">
 			<return type="void">
 			</return>
@@ -12049,6 +12054,33 @@
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="build_mode" type="int" setter="set_build_mode" getter="get_build_mode" brief="">
+		</member>
+		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" brief="">
+		</member>
+		<member name="one_way_collision" type="bool" setter="set_one_way_collision" getter="is_one_way_collision_enabled" brief="">
+		</member>
+        <member name="polygon" type="CollisionPolygon2D" setter="set_polygon" getter="get_polygon" brief="">
+        </member>
+	</members>
+	<constants>
+	</constants>
+</class>
+<class name="CollisionPolygon2D" inherits="Resource" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_polygon" qualifiers="const">
+			<return type="PoolVector2Array">
+			</return>
+			<description>
+				Return the list of points that define the polygon.
 			</description>
 		</method>
 		<method name="set_polygon">
@@ -37928,7 +37960,7 @@
 	<constants>
 	</constants>
 </class>
-<class name="Polygon2D" inherits="Node2D" category="Core">
+<class name="Polygon2D" inherits="Resource" category="Core">
 	<brief_description>
 		2D polygon representation
 	</brief_description>
@@ -38151,6 +38183,32 @@
 		<member name="uv" type="PoolVector2Array" setter="set_uv" getter="get_uv" brief="">
 		</member>
 		<member name="vertex_colors" type="PoolColorArray" setter="set_vertex_colors" getter="get_vertex_colors" brief="">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>
+<class name="Polygon2DInstance" inherits="Node2D" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_polygon" qualifiers="const">
+			<return type="Polygon2D">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_polygon">
+			<argument index="0" name="polygon" type="Polygon2D">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="polygon" type="Polygon2D" setter="set_polygon" getter="get_polygon" brief="">
 		</member>
 	</members>
 	<constants>
@@ -49219,7 +49277,7 @@
 		 - Rounded corners (individual radius for each corner)
 		 - Shadow
 		 About corner radius:
-		 	Setting corner radius to high values is allowed. As soon as corners would overlap the stylebox will switch to a relative system. Example: 
+		 	Setting corner radius to high values is allowed. As soon as corners would overlap the stylebox will switch to a relative system. Example:
 			[codeblock]
 			height = 30
 			corner_radius_top_left = 50

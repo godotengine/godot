@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  navigation_polygon_editor_plugin.cpp                                 */
+/*  editable_polygon_2d.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,14 +27,34 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "navigation_polygon_editor_plugin.h"
+#ifndef RING2D_H
+#define RING2D_H
 
-#include "canvas_item_editor_plugin.h"
-#include "editor/editor_settings.h"
-#include "os/file_access.h"
+#include "core/resource.h"
 
-NavigationPolygonEditorPlugin::NavigationPolygonEditorPlugin(EditorNode *p_node) :
+class Ring2D : public Resource {
 
-	AbstractPolygon2DEditorPlugin(p_node, memnew(AbstractPolygon2DEditor(p_node, false)), "NavigationPolygonInstance") {
+	GDCLASS(Ring2D, Resource);
 
-}
+	PoolVector<Point2> vertices;
+	Vector2 offset;
+	mutable Rect2 item_rect;
+	mutable bool rect_cache_dirty;
+
+protected:
+	static void _bind_methods();
+
+public:
+	Vector<Point2> get_vertices() const;
+	void set_vertices(const Vector<Point2> &p_vertices);
+
+	bool is_empty() const;
+	Rect2 get_item_rect() const;
+
+	void set_offset(const Vector2 &p_offset);
+	Vector2 get_offset() const;
+
+	Ring2D();
+};
+
+#endif // RING2D_H

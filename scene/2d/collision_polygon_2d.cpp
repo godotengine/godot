@@ -36,55 +36,23 @@
 
 #include "thirdparty/misc/triangulator.h"
 
-void CollisionPolygon2D::_build_polygon() {
-
-	parent->shape_owner_clear_shapes(owner_id);
-
-	if (polygon.size() == 0)
-		return;
-
-	bool solids = build_mode == BUILD_SOLIDS;
-
-	if (solids) {
-
-		//here comes the sun, lalalala
-		//decompose concave into multiple convex polygons and add them
-		Vector<Vector<Vector2> > decomp = _decompose_in_convex();
-		for (int i = 0; i < decomp.size(); i++) {
-			Ref<ConvexPolygonShape2D> convex = memnew(ConvexPolygonShape2D);
-			convex->set_points(decomp[i]);
-			parent->shape_owner_add_shape(owner_id, convex);
-		}
-
-	} else {
-
-		Ref<ConcavePolygonShape2D> concave = memnew(ConcavePolygonShape2D);
-
-		PoolVector<Vector2> segments;
-		segments.resize(polygon.size() * 2);
-		PoolVector<Vector2>::Write w = segments.write();
-
-		for (int i = 0; i < polygon.size(); i++) {
-			w[(i << 1) + 0] = polygon[i];
-			w[(i << 1) + 1] = polygon[(i + 1) % polygon.size()];
-		}
-
-		w = PoolVector<Vector2>::Write();
-		concave->set_segments(segments);
-
-		parent->shape_owner_add_shape(owner_id, concave);
-	}
-}
+#include "core_string_names.h"
 
 Vector<Vector<Vector2> > CollisionPolygon2D::_decompose_in_convex() {
 
 	Vector<Vector<Vector2> > decomp;
+
+	if (!ring.is_valid())
+		return decomp;
+
+	const Vector<Point2> vertices = ring->get_vertices();
+
 	List<TriangulatorPoly> in_poly, out_poly;
 
 	TriangulatorPoly inp;
-	inp.Init(polygon.size());
-	for (int i = 0; i < polygon.size(); i++) {
-		inp.GetPoint(i) = polygon[i];
+	inp.Init(vertices.size());
+	for (int i = 0; i < vertices.size(); i++) {
+		inp.GetPoint(i) = vertices[i];
 	}
 	inp.SetOrientation(TRIANGULATOR_CCW);
 	in_poly.push_back(inp);
@@ -112,6 +80,51 @@ Vector<Vector<Vector2> > CollisionPolygon2D::_decompose_in_convex() {
 	}
 
 	return decomp;
+}
+
+void CollisionPolygon2D::_build_polygon() {
+
+	parent->shape_owner_clear_shapes(owner_id);
+
+	if (!ring.is_valid())
+		return;
+
+	const Vector<Vector2> points = ring->get_vertices();
+
+	if (points.size() == 0)
+		return;
+
+	bool solids = build_mode == BUILD_SOLIDS;
+
+	if (solids) {
+
+		//here comes the sun, lalalala
+		//decompose concave into multiple convex polygons and add them
+		Vector<Vector<Vector2> > decomp = _decompose_in_convex();
+		for (int i = 0; i < decomp.size(); i++) {
+			Ref<ConvexPolygonShape2D> convex = memnew(ConvexPolygonShape2D);
+			convex->set_points(decomp[i]);
+			parent->shape_owner_add_shape(owner_id, convex);
+		}
+
+	} else {
+
+		Ref<ConcavePolygonShape2D> concave = memnew(ConcavePolygonShape2D);
+
+		PoolVector<Vector2> segments;
+		segments.resize(points.size() * 2);
+		PoolVector<Vector2>::Write w = segments.write();
+
+		for (int i = 0; i < points.size(); i++) {
+			w[(i << 1) + 0] = points[i];
+			w[(i << 1) + 1] = points[(i + 1) % points.size()];
+		}
+
+		w = PoolVector<Vector2>::Write();
+		concave->set_segments(segments);
+
+		parent->shape_owner_add_shape(owner_id, concave);
+	}
 }
 
 void CollisionPolygon2D::_notification(int p_what) {
@@ -156,10 +169,15 @@ void CollisionPolygon2D::_notification(int p_what) {
 				break;
 			}
 
-			for (int i = 0; i < polygon.size(); i++) {
+			if (!ring.is_valid())
+				break;
 
-				Vector2 p = polygon[i];
-				Vector2 n = polygon[(i + 1) % polygon.size()];
+			const Vector<Vector2> points = ring->get_vertices();
+
+			for (int i = 0; i < points.size(); i++) {
+
+				Vector2 p = points[i];
+				Vector2 n = points[(i + 1) % points.size()];
 				draw_line(p, n, Color(0.9, 0.2, 0.0, 0.8), 3);
 			}
 #define DEBUG_DECOMPOSE
@@ -174,7 +192,7 @@ void CollisionPolygon2D::_notification(int p_what) {
 				draw_colored_polygon(decomp[i], c);
 			}
 #else
-			draw_colored_polygon(polygon, get_tree()->get_debug_collisions_color());
+			draw_colored_polygon(points, get_tree()->get_debug_collisions_color());
 #endif
 
 			if (one_way_collision) {
@@ -197,36 +215,28 @@ void CollisionPolygon2D::_notification(int p_what) {
 	}
 }
 
-void CollisionPolygon2D::set_polygon(const Vector<Point2> &p_polygon) {
+void CollisionPolygon2D::set_ring(Ref<Ring2D> p_ring) {
 
-	polygon = p_polygon;
+	if (p_ring == ring)
+		return;
 
-	{
-		for (int i = 0; i < polygon.size(); i++) {
-			if (i == 0)
-				aabb = Rect2(polygon[i], Size2());
-			else
-				aabb.expand_to(polygon[i]);
-		}
-		if (aabb == Rect2()) {
+	if (ring.is_valid()) {
+		ring->disconnect(CoreStringNames::get_singleton()->changed, this, "_polygon_changed");
+	}
+	ring = p_ring;
 
-			aabb = Rect2(-10, -10, 20, 20);
-		} else {
-			aabb.position -= aabb.size * 0.3;
-			aabb.size += aabb.size * 0.6;
-		}
+	if (ring.is_valid()) {
+		ring->connect(CoreStringNames::get_singleton()->changed, this, "_polygon_changed");
 	}
 
-	if (parent) {
-		_build_polygon();
-	}
-	update();
+	_polygon_changed();
+	_change_notify("polygon");
 	update_configuration_warning();
 }
 
-Vector<Point2> CollisionPolygon2D::get_polygon() const {
+Ref<Ring2D> CollisionPolygon2D::get_ring() const {
 
-	return polygon;
+	return ring;
 }
 
 void CollisionPolygon2D::set_build_mode(BuildMode p_mode) {
@@ -241,24 +251,6 @@ void CollisionPolygon2D::set_build_mode(BuildMode p_mode) {
 CollisionPolygon2D::BuildMode CollisionPolygon2D::get_build_mode() const {
 
 	return build_mode;
-}
-
-Rect2 CollisionPolygon2D::get_item_rect() const {
-
-	return aabb;
-}
-
-String CollisionPolygon2D::get_configuration_warning() const {
-
-	if (!Object::cast_to<CollisionObject2D>(get_parent())) {
-		return TTR("CollisionPolygon2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape.");
-	}
-
-	if (polygon.empty()) {
-		return TTR("An empty CollisionPolygon2D has no effect on collision.");
-	}
-
-	return String();
 }
 
 void CollisionPolygon2D::set_disabled(bool p_disabled) {
@@ -286,10 +278,48 @@ bool CollisionPolygon2D::is_one_way_collision_enabled() const {
 	return one_way_collision;
 }
 
+void CollisionPolygon2D::_polygon_changed() {
+
+	if (parent) {
+		_build_polygon();
+	}
+	update();
+	update_configuration_warning();
+}
+
+String CollisionPolygon2D::get_configuration_warning() const {
+
+	if (!is_visible_in_tree() || !is_inside_tree())
+		return String();
+
+	if (!Object::cast_to<CollisionObject2D>(get_parent())) {
+		return TTR("CollisionPolygon2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape.");
+	}
+
+	if (!ring.is_valid()) {
+		return TTR("A Ring2D resource must be set or created for this node to work. Please set a property or draw a polygon.");
+	}
+
+	if (ring->is_empty()) {
+		return TTR("An empty Ring2D has no effect on collision.");
+	}
+
+	return String();
+}
+
+Rect2 CollisionPolygon2D::get_item_rect() const {
+
+	if (ring.is_valid())
+		return ring->get_item_rect();
+	else
+		return Rect2();
+}
+
 void CollisionPolygon2D::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_polygon", "polygon"), &CollisionPolygon2D::set_polygon);
-	ClassDB::bind_method(D_METHOD("get_polygon"), &CollisionPolygon2D::get_polygon);
+	ClassDB::bind_method(D_METHOD("set_ring", "ring"), &CollisionPolygon2D::set_ring);
+	ClassDB::bind_method(D_METHOD("get_ring"), &CollisionPolygon2D::get_ring);
+	ClassDB::bind_method(D_METHOD("_polygon_changed"), &CollisionPolygon2D::_polygon_changed);
 
 	ClassDB::bind_method(D_METHOD("set_build_mode", "build_mode"), &CollisionPolygon2D::set_build_mode);
 	ClassDB::bind_method(D_METHOD("get_build_mode"), &CollisionPolygon2D::get_build_mode);
@@ -299,18 +329,52 @@ void CollisionPolygon2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_one_way_collision_enabled"), &CollisionPolygon2D::is_one_way_collision_enabled);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "build_mode", PROPERTY_HINT_ENUM, "Solids,Segments"), "set_build_mode", "get_build_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "one_way_collision"), "set_one_way_collision", "is_one_way_collision_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "ring", PROPERTY_HINT_RESOURCE_TYPE, "Ring2D"), "set_ring", "get_ring");
+}
+
+int CollisionPolygon2D::get_polygon_count() const {
+
+	return ring.is_valid() ? 1 : 0;
+}
+
+Ref<Resource> CollisionPolygon2D::get_nth_polygon(int p_idx) const {
+
+	return ring;
+}
+
+int CollisionPolygon2D::get_ring_count(Ref<Resource> p_polygon) const {
+
+	return 1;
+}
+
+Ref<Ring2D> CollisionPolygon2D::get_nth_ring(Ref<Resource> p_polygon, int p_idx) const {
+
+	return Ref<Ring2D>(p_polygon);
+}
+
+Ref<Resource> CollisionPolygon2D::new_polygon(const Ref<Ring2D> &p_ring) const {
+
+	return p_ring;
+}
+
+void CollisionPolygon2D::add_polygon_at_index(Ref<Resource> p_polygon, int p_idx) {
+
+	set_ring(p_polygon);
+}
+
+void CollisionPolygon2D::remove_polygon(int p_idx) {
+
+	set_ring(Ref<Ring2D>());
 }
 
 CollisionPolygon2D::CollisionPolygon2D() {
 
-	aabb = Rect2(-10, -10, 20, 20);
-	build_mode = BUILD_SOLIDS;
 	set_notify_local_transform(true);
 	parent = NULL;
 	owner_id = 0;
+	build_mode = BUILD_SOLIDS;
 	disabled = false;
 	one_way_collision = false;
 }

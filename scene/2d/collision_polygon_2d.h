@@ -32,12 +32,13 @@
 
 #include "scene/2d/node_2d.h"
 #include "scene/resources/shape_2d.h"
+#include "scene/2d/polygon_node_2d.h"
 
 class CollisionObject2D;
 
-class CollisionPolygon2D : public Node2D {
+class CollisionPolygon2D : public PolygonNode2D {
 
-	GDCLASS(CollisionPolygon2D, Node2D);
+	GDCLASS(CollisionPolygon2D, PolygonNode2D);
 
 public:
 	enum BuildMode {
@@ -46,38 +47,45 @@ public:
 	};
 
 protected:
-	Rect2 aabb;
-	BuildMode build_mode;
-	Vector<Point2> polygon;
-	uint32_t owner_id;
+	Ref<Ring2D> ring;
 	CollisionObject2D *parent;
+	uint32_t owner_id;
+	BuildMode build_mode;
 	bool disabled;
 	bool one_way_collision;
 
-	Vector<Vector<Vector2> > _decompose_in_convex();
-
 	void _build_polygon();
+	void _polygon_changed();
+	Vector<Vector<Vector2> > _decompose_in_convex();
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
+	void set_ring(Ref<Ring2D> p_polygon);
+	Ref<Ring2D> get_ring() const;
+
 	void set_build_mode(BuildMode p_mode);
 	BuildMode get_build_mode() const;
-
-	void set_polygon(const Vector<Point2> &p_polygon);
-	Vector<Point2> get_polygon() const;
-
-	virtual Rect2 get_item_rect() const;
-
-	virtual String get_configuration_warning() const;
 
 	void set_disabled(bool p_disabled);
 	bool is_disabled() const;
 
 	void set_one_way_collision(bool p_enable);
 	bool is_one_way_collision_enabled() const;
+
+	virtual int get_polygon_count() const;
+	virtual Ref<Resource> get_nth_polygon(int p_idx) const;
+	virtual int get_ring_count(Ref<Resource> p_polygon) const;
+	virtual Ref<Ring2D> get_nth_ring(Ref<Resource> p_polygon, int p_idx) const;
+
+	virtual Ref<Resource> new_polygon(const Ref<Ring2D> &p_ring) const;
+	virtual void add_polygon_at_index(Ref<Resource> p_polygon, int p_idx);
+	virtual void remove_polygon(int p_idx);
+
+	virtual String get_configuration_warning() const;
+	virtual Rect2 get_item_rect() const;
 
 	CollisionPolygon2D();
 };

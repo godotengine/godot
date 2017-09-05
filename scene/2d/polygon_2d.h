@@ -31,12 +31,13 @@
 #define POLYGON_2D_H
 
 #include "scene/2d/node_2d.h"
+#include "scene/2d/polygon_node_2d.h"
 
-class Polygon2D : public Node2D {
+class Polygon2D : public Resource { // FIXME really a SimplePolygon2D with one exterior ring
 
-	GDCLASS(Polygon2D, Node2D);
+	GDCLASS(Polygon2D, Resource);
 
-	PoolVector<Vector2> polygon;
+	Ref<Ring2D> ring;
 	PoolVector<Vector2> uv;
 	PoolVector<Color> vertex_colors;
 	Color color;
@@ -49,20 +50,16 @@ class Polygon2D : public Node2D {
 	float invert_border;
 	bool antialiased;
 
-	Vector2 offset;
-	mutable bool rect_cache_dirty;
-	mutable Rect2 item_rect;
-
 	void _set_texture_rotationd(float p_rot);
 	float _get_texture_rotationd() const;
 
 protected:
-	void _notification(int p_what);
 	static void _bind_methods();
+	void _outline_changed();
 
 public:
-	void set_polygon(const PoolVector<Vector2> &p_polygon);
-	PoolVector<Vector2> get_polygon() const;
+	void set_ring(const Ref<Ring2D> &p_outline);
+	Ref<Ring2D> get_ring() const;
 
 	void set_uv(const PoolVector<Vector2> &p_uv);
 	PoolVector<Vector2> get_uv() const;
@@ -94,8 +91,7 @@ public:
 	void set_invert_border(float p_invert_border);
 	float get_invert_border() const;
 
-	void set_offset(const Vector2 &p_offset);
-	Vector2 get_offset() const;
+	void draw(RID p_canvas_item);
 
 	//editor stuff
 
@@ -103,9 +99,42 @@ public:
 	virtual Point2 edit_get_pivot() const;
 	virtual bool edit_has_pivot() const;
 
-	virtual Rect2 get_item_rect() const;
+	virtual PoolVector<Vector2> edit_get_uv() const;
+	virtual void edit_set_uv(const PoolVector<Vector2> &p_uv);
+	virtual Ref<Texture> edit_get_texture() const;
 
 	Polygon2D();
+};
+
+class Polygon2DInstance : public PolygonNode2D {
+
+	GDCLASS(Polygon2DInstance, PolygonNode2D);
+
+	Ref<Polygon2D> polygon;
+
+	void _polygon_changed();
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	void set_polygon(const Ref<Polygon2D> &p_polygon);
+	Ref<Polygon2D> get_polygon() const;
+
+	virtual int get_polygon_count() const;
+	virtual Ref<Resource> get_nth_polygon(int p_idx) const;
+	virtual int get_ring_count(Ref<Resource> p_polygon) const;
+	virtual Ref<Ring2D> get_nth_ring(Ref<Resource> p_polygon, int p_idx) const;
+
+	virtual Ref<Resource> new_polygon(const Ref<Ring2D> &p_ring) const;
+	virtual void add_polygon_at_index(Ref<Resource> p_polygon, int p_idx);
+	virtual void remove_polygon(int p_idx);
+
+	virtual String get_configuration_warning() const;
+	virtual Rect2 get_item_rect() const;
+
+	Polygon2DInstance();
 };
 
 #endif // POLYGON_2D_H

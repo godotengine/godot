@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  navigation_polygon_editor_plugin.cpp                                 */
+/*  editable_polygon_2d.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,14 +27,82 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "navigation_polygon_editor_plugin.h"
+#include "ring_2d.h"
+#include "core_string_names.h"
 
-#include "canvas_item_editor_plugin.h"
-#include "editor/editor_settings.h"
-#include "os/file_access.h"
+void Ring2D::_bind_methods() {
 
-NavigationPolygonEditorPlugin::NavigationPolygonEditorPlugin(EditorNode *p_node) :
+	ClassDB::bind_method(D_METHOD("set_vertices", "vertices"), &Ring2D::set_vertices);
+	ClassDB::bind_method(D_METHOD("get_vertices"), &Ring2D::get_vertices);
 
-	AbstractPolygon2DEditorPlugin(p_node, memnew(AbstractPolygon2DEditor(p_node, false)), "NavigationPolygonInstance") {
+	ClassDB::bind_method(D_METHOD("set_offset", "vertices"), &Ring2D::set_offset);
+	ClassDB::bind_method(D_METHOD("get_offset"), &Ring2D::get_offset);
 
+	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "vertices"), "set_vertices", "get_vertices");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
+}
+
+void Ring2D::set_vertices(const Vector<Point2> &p_polygon) {
+
+	vertices = Variant(p_polygon);
+	rect_cache_dirty = true;
+	emit_signal(CoreStringNames::get_singleton()->changed);
+}
+
+Vector<Point2> Ring2D::get_vertices() const {
+
+	return Variant(vertices);
+}
+
+bool Ring2D::is_empty() const {
+
+	return vertices.size() == 0;
+}
+
+Rect2 Ring2D::get_item_rect() const {
+
+	if (rect_cache_dirty) {
+
+		int l = vertices.size();
+		PoolVector<Vector2>::Read r = vertices.read();
+		item_rect = Rect2();
+		for (int i = 0; i < l; i++) {
+			Vector2 pos = r[i];
+			if (i == 0)
+				item_rect.position = pos;
+			else
+				item_rect.expand_to(pos);
+		}
+
+		// FIXME collision polygon aabb
+		/*if (aabb == Rect2()) {
+
+			aabb = Rect2(-10, -10, 20, 20);
+		} else {
+			aabb.position -= aabb.size * 0.3;
+			aabb.size += aabb.size * 0.6(
+		}*/
+
+		item_rect = item_rect.grow(20);
+		rect_cache_dirty = false;
+	}
+
+	return Rect2(item_rect.position + get_offset(), item_rect.size);
+}
+
+void Ring2D::set_offset(const Vector2 &p_offset) {
+
+	offset = p_offset;
+	emit_signal(CoreStringNames::get_singleton()->changed);
+}
+
+Vector2 Ring2D::get_offset() const {
+
+	return offset;
+}
+
+Ring2D::Ring2D() {
+
+	rect_cache_dirty = true;
+	offset = Vector2(0, 0);
 }

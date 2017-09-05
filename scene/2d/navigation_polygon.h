@@ -31,6 +31,7 @@
 #define NAVIGATION_POLYGON_H
 
 #include "scene/2d/node_2d.h"
+#include "scene/2d/polygon_node_2d.h"
 
 class NavigationPolygon : public Resource {
 
@@ -41,7 +42,7 @@ class NavigationPolygon : public Resource {
 		Vector<int> indices;
 	};
 	Vector<Polygon> polygons;
-	Vector<PoolVector<Vector2> > outlines;
+	Vector<Ref<Ring2D> > outlines;
 
 protected:
 	static void _bind_methods();
@@ -59,10 +60,10 @@ public:
 	void add_polygon(const Vector<int> &p_polygon);
 	int get_polygon_count() const;
 
-	void add_outline(const PoolVector<Vector2> &p_outline);
-	void add_outline_at_index(const PoolVector<Vector2> &p_outline, int p_index);
-	void set_outline(int p_idx, const PoolVector<Vector2> &p_outline);
-	PoolVector<Vector2> get_outline(int p_idx) const;
+	void add_outline(const Ref<Ring2D> &p_outline);
+	void add_outline_at_index(const Ref<Ring2D> &p_outline, int p_index);
+	void set_outline(int p_idx, const Ref<Ring2D> &p_outline);
+	Ref<Ring2D> get_outline(int p_idx) const;
 	void remove_outline(int p_idx);
 	int get_outline_count() const;
 
@@ -77,9 +78,9 @@ public:
 
 class Navigation2D;
 
-class NavigationPolygonInstance : public Node2D {
+class NavigationPolygonInstance : public PolygonNode2D {
 
-	GDCLASS(NavigationPolygonInstance, Node2D);
+	GDCLASS(NavigationPolygonInstance, PolygonNode2D);
 
 	bool enabled;
 	int nav_id;
@@ -100,6 +101,15 @@ public:
 	Ref<NavigationPolygon> get_navigation_polygon() const;
 
 	String get_configuration_warning() const;
+
+	virtual int get_polygon_count() const;
+	virtual Ref<Resource> get_nth_polygon(int p_idx) const;
+	virtual int get_ring_count(Ref<Resource> p_polygon) const;
+	virtual Ref<Ring2D> get_nth_ring(Ref<Resource> p_polygon, int p_idx) const;
+
+	virtual Ref<Resource> new_polygon(const Ref<Ring2D> &p_ring) const;
+	virtual void add_polygon_at_index(Ref<Resource> p_polygon, int p_idx);
+	virtual void remove_polygon(int p_idx);
 
 	NavigationPolygonInstance();
 };
