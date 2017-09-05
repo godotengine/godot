@@ -69,6 +69,9 @@ void SampleEditor::_stop_pressed() {
 
 void SampleEditor::generate_preview_texture(const Ref<Sample> &p_sample, Ref<ImageTexture> &p_texture) {
 
+	if (p_sample == NULL)
+		return;
+
 	DVector<uint8_t> data = p_sample->get_data();
 
 	DVector<uint8_t> img;
