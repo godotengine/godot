@@ -714,8 +714,12 @@ EditorExportPlatformBB10::EditorExportPlatformBB10() {
 	device_lock = Mutex::create();
 	quit_request = false;
 
-	device_thread = Thread::create(_device_poll_thread, this);
-	devices_changed = true;
+	// Don't start polling devices if we can't export anyway. Means that an engine restart is needed to enable it though,
+	// but it feels better than querying the editor settings all the time in the thread.
+	if (can_export()) {
+		device_thread = Thread::create(_device_poll_thread, this);
+		devices_changed = true;
+	}
 
 	Image img(_bb10_logo);
 	logo = Ref<ImageTexture>(memnew(ImageTexture));
