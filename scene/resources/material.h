@@ -53,6 +53,9 @@ class Material : public Resource {
 protected:
 	_FORCE_INLINE_ RID _get_material() const { return material; }
 	static void _bind_methods();
+	virtual bool _can_do_next_pass() const { return false; }
+
+	void _validate_property(PropertyInfo &property) const;
 
 public:
 	enum {
@@ -83,6 +86,8 @@ protected:
 	static void _bind_methods();
 
 	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
+
+	virtual bool _can_do_next_pass() const;
 
 public:
 	void set_shader(const Ref<Shader> &p_shader);
@@ -394,6 +399,7 @@ private:
 protected:
 	static void _bind_methods();
 	void _validate_property(PropertyInfo &property) const;
+	virtual bool _can_do_next_pass() const { return true; }
 
 public:
 	void set_albedo(const Color &p_albedo);

@@ -65,6 +65,12 @@ RID Material::get_rid() const {
 
 	return material;
 }
+void Material::_validate_property(PropertyInfo &property) const {
+
+	if (!_can_do_next_pass() && property.name=="next_pass") {
+		property.usage=0;
+	}
+}
 
 void Material::_bind_methods() {
 
@@ -202,6 +208,11 @@ void ShaderMaterial::get_argument_options(const StringName &p_function, int p_id
 		}
 	}
 	Resource::get_argument_options(p_function, p_idx, r_options);
+}
+
+bool ShaderMaterial::_can_do_next_pass() const {
+
+	return shader.is_valid() && shader->get_mode()==Shader::MODE_SPATIAL;
 }
 
 ShaderMaterial::ShaderMaterial() {
