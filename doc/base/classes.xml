@@ -49533,7 +49533,7 @@
 			Expands the stylebox outside of the control rect on the top edge. Useful in combination with border_width_top. To draw a border outside the control rect.
 		</member>
 		<member name="shadow_color" type="Color" setter="set_shadow_color" getter="get_shadow_color" brief="">
-			The color of the shadow. (This has no effect when shadow_size < 1)
+			The color of the shadow. (This has no effect when shadow_size &lt; 1)
 		</member>
 		<member name="shadow_size" type="int" setter="set_shadow_size" getter="get_shadow_size" brief="">
 			The shadow size in pixels.
