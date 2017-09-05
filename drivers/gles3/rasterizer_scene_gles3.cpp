@@ -32,6 +32,7 @@
 #include "os/os.h"
 #include "project_settings.h"
 #include "rasterizer_canvas_gles3.h"
+#include "servers/visual/visual_server_raster.h"
 
 #ifndef GLES_OVER_GL
 #define glClearDepth glClearDepthf
@@ -2314,6 +2315,10 @@ void RasterizerSceneGLES3::_add_geometry_with_material(RasterizerStorageGLES3::G
 	if (!p_depth_pass && (p_material->shader->spatial.uses_vertex_lighting || storage->config.force_vertex_shading)) {
 
 		e->sort_key |= SORT_KEY_VERTEX_LIT_FLAG;
+	}
+
+	if (p_material->shader->spatial.uses_time) {
+		VisualServerRaster::redraw_request();
 	}
 }
 

@@ -1115,6 +1115,10 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 					_copy_texscreen(Rect2());
 				}
 
+				if (shader_ptr->canvas_item.uses_time) {
+					VisualServerRaster::redraw_request();
+				}
+
 				state.canvas_shader.set_custom_shader(shader_ptr->custom_code_id);
 				state.canvas_shader.bind();
 

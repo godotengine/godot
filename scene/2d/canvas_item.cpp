@@ -37,6 +37,7 @@
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
 #include "scene/scene_string_names.h"
+#include "servers/visual/visual_server_raster.h"
 #include "servers/visual_server.h"
 
 Mutex *CanvasItemMaterial::material_mutex = NULL;

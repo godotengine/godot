@@ -410,6 +410,7 @@ public:
 			int light_mode;
 			bool uses_screen_texture;
 			bool uses_screen_uv;
+			bool uses_time;
 
 		} canvas_item;
 
@@ -449,6 +450,7 @@ public:
 			bool uses_discard;
 			bool uses_sss;
 			bool uses_screen_texture;
+			bool uses_time;
 			bool writes_modelview_or_projection;
 			bool uses_vertex_lighting;
 
