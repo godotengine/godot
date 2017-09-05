@@ -2301,15 +2301,12 @@ void RasterizerSceneGLES3::_add_geometry_with_material(RasterizerStorageGLES3::G
 
 	//e->light_type=0xFF; // no lights!
 
-	if (p_depth_pass) {
-		if (p_material->shader->spatial.unshaded || state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_UNSHADED) {
+	if (p_depth_pass || p_material->shader->spatial.unshaded || state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_UNSHADED) {
+		e->sort_key |= SORT_KEY_UNSHADED_FLAG;
+	}
 
-			e->sort_key |= SORT_KEY_UNSHADED_FLAG;
-		}
-
-		if (p_material->shader->spatial.depth_draw_mode == RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS) {
-			e->sort_key |= RenderList::SORT_KEY_OPAQUE_PRE_PASS;
-		}
+	if (p_depth_pass && p_material->shader->spatial.depth_draw_mode == RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS) {
+		e->sort_key |= RenderList::SORT_KEY_OPAQUE_PRE_PASS;
 	}
 
 	if (!p_depth_pass && (p_material->shader->spatial.uses_vertex_lighting || storage->config.force_vertex_shading)) {
