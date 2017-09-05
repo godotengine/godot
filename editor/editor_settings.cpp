@@ -685,6 +685,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	set("editors/3d/freelook_modifier_speed_factor", 5.0);
 
+	set("editors/3d/camera_inertia", 0.5);
+	hints["editors/3d/camera_inertia"] = PropertyInfo(Variant::REAL, "editors/3d/camera_inertia", PROPERTY_HINT_RANGE, "0.0, 1, 0.01");
+
 	set("editors/2d/bone_width", 5);
 	set("editors/2d/bone_color1", Color(1.0, 1.0, 1.0, 0.9));
 	set("editors/2d/bone_color2", Color(0.75, 0.75, 0.75, 0.9));
