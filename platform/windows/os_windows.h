@@ -38,6 +38,7 @@
 #include "servers/visual_server.h"
 
 #include "drivers/rtaudio/audio_driver_rtaudio.h"
+#include "drivers/wasapi/audio_driver_wasapi.h"
 #include "drivers/unix/ip_unix.h"
 #include "servers/audio/audio_server_sw.h"
 #include "servers/audio/sample_manager_sw.h"
@@ -129,6 +130,9 @@ class OS_Windows : public OS {
 	InputDefault *input;
 	joystick_windows *joystick;
 
+#ifdef WASAPI_ENABLED
+	AudioDriverWASAPI driver_wasapi;
+#endif
 #ifdef RTAUDIO_ENABLED
 	AudioDriverRtAudio driver_rtaudio;
 #endif
