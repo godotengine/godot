@@ -198,7 +198,13 @@ size_t FileAccessUnix::get_len() const {
 
 bool FileAccessUnix::eof_reached() const {
 
-	return last_error == ERR_FILE_EOF;
+	ERR_FAIL_COND_V(!f, true);
+
+	if (last_error == ERR_FILE_EOF) {
+		return true;
+	}
+
+	return feof(f) != 0;
 }
 
 uint8_t FileAccessUnix::get_8() const {
