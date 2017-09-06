@@ -139,7 +139,7 @@ void main() {
 	float frame_w = 1.0/float(h_frames);
 	float frame_h = 1.0/float(v_frames);
 	uv_interp.x = uv_interp.x * frame_w + frame_w * float(frame % h_frames);
-	uv_interp.y = uv_interp.y * frame_h + frame_h * float(frame / v_frames);
+	uv_interp.y = uv_interp.y * frame_h + frame_h * float(frame / h_frames);
 
 #endif
 
