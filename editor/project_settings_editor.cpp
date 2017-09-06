@@ -182,8 +182,8 @@ void ProjectSettingsEditor::_device_input_add() {
 	Ref<InputEvent> ie;
 	String name = add_at;
 	int idx = edit_idx;
-	Variant old_val = ProjectSettings::get_singleton()->get(name);
-	Array arr = old_val;
+	Array old_val = ProjectSettings::get_singleton()->get(name);
+	Array arr = old_val.duplicate();
 
 	switch (add_type) {
 
@@ -285,8 +285,8 @@ void ProjectSettingsEditor::_press_a_key_confirm() {
 	String name = add_at;
 	int idx = edit_idx;
 
-	Variant old_val = ProjectSettings::get_singleton()->get(name);
-	Array arr = old_val;
+	Array old_val = ProjectSettings::get_singleton()->get(name);
+	Array arr = old_val.duplicate();
 
 	for (int i = 0; i < arr.size(); i++) {
 

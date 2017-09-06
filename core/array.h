@@ -84,6 +84,8 @@ public:
 	Variant pop_back();
 	Variant pop_front();
 
+	Array duplicate() const;
+
 	Array(const Array &p_from);
 	Array();
 	~Array();

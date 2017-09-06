@@ -210,6 +210,17 @@ const Variant &Array::get(int p_idx) const {
 	return operator[](p_idx);
 }
 
+Array Array::duplicate() const {
+
+	Array new_arr;
+	int element_count = size();
+	new_arr.resize(element_count);
+	for (int i = 0; i < element_count; i++) {
+		new_arr[i] = get(i);
+	}
+
+	return new_arr;
+}
 struct _ArrayVariantSort {
 
 	_FORCE_INLINE_ bool operator()(const Variant &p_l, const Variant &p_r) const {
