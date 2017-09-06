@@ -652,6 +652,24 @@ void GridMap::_notification(int p_what) {
 			//_update_area_instances();
 
 		} break;
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			_update_visibility();
+		} break;
+	}
+}
+
+void GridMap::_update_visibility() {
+	if (!is_inside_tree())
+		return;
+
+	_change_notify("visible");
+
+	for (Map<OctantKey, Octant *>::Element *e = octant_map.front(); e; e = e->next()) {
+		Octant *octant = e->value();
+		for (int i = 0; i < octant->multimesh_instances.size(); i++) {
+			Octant::MultimeshInstance &mi = octant->multimesh_instances[i];
+			VS::get_singleton()->instance_set_visible(mi.instance, is_visible());
+		}
 	}
 }
 
@@ -717,6 +735,7 @@ void GridMap::_update_octants_callback() {
 		to_delete.pop_back();
 	}
 
+	_update_visibility();
 	awaiting_update = false;
 }
 
