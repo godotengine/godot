@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  navigation_polygon_editor_plugin.h                                   */
+/*  abstract_polygon_2d_editor.h                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,48 +27,105 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef NAVIGATIONPOLYGONEDITORPLUGIN_H
-#define NAVIGATIONPOLYGONEDITORPLUGIN_H
+#ifndef ABSTRACT_POLYGON_2D_EDITOR_H
+#define ABSTRACT_POLYGON_2D_EDITOR_H
 
-#include "editor/plugins/abstract_polygon_2d_editor.h"
-#include "scene/2d/navigation_polygon.h"
+#include "editor/editor_node.h"
+#include "editor/editor_plugin.h"
+#include "scene/2d/polygon_2d.h"
+#include "scene/gui/tool_button.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
-class NavigationPolygonEditor : public AbstractPolygon2DEditor {
+class CanvasItemEditor;
 
-	GDCLASS(NavigationPolygonEditor, AbstractPolygon2DEditor);
+class AbstractPolygon2DEditor : public HBoxContainer {
 
-	NavigationPolygonInstance *node;
+	GDCLASS(AbstractPolygon2DEditor, HBoxContainer);
 
-	Ref<NavigationPolygon> _ensure_navpoly() const;
+	ToolButton *button_create;
+	ToolButton *button_edit;
+
+	int edited_polygon;
+	int edited_point;
+	Vector2 edited_point_pos;
+	Vector<Vector2> pre_move_edit;
+	Vector<Vector2> wip;
+	bool wip_active;
+	bool wip_destructive;
+
+	CanvasItemEditor *canvas_item_editor;
+	EditorNode *editor;
+	Panel *panel;
+	ConfirmationDialog *create_resource;
 
 protected:
-	virtual Node2D *_get_node() const;
-	virtual void _set_node(Node *p_polygon);
+	enum {
+
+		MODE_CREATE,
+		MODE_EDIT,
+		MODE_CONT,
+
+	};
+
+	int mode;
+
+	UndoRedo *undo_redo;
+
+	virtual void _menu_option(int p_option);
+	void _wip_close();
+	void _canvas_draw();
+
+	void _notification(int p_what);
+	void _node_removed(Node *p_node);
+	static void _bind_methods();
+
+	bool _is_empty() const;
+	void _commit_action();
+
+protected:
+	virtual Node2D *_get_node() const = 0;
+	virtual void _set_node(Node *p_polygon) = 0;
 
 	virtual int _get_polygon_count() const;
+	virtual Vector2 _get_offset(int p_idx) const;
 	virtual Variant _get_polygon(int p_idx) const;
 	virtual void _set_polygon(int p_idx, const Variant &p_polygon) const;
 
 	virtual void _action_add_polygon(const Variant &p_polygon);
 	virtual void _action_remove_polygon(int p_idx);
+	virtual void _action_set_polygon(int p_idx, const Variant &p_polygon);
 	virtual void _action_set_polygon(int p_idx, const Variant &p_previous, const Variant &p_polygon);
 
 	virtual bool _has_resource() const;
 	virtual void _create_resource();
 
 public:
-	NavigationPolygonEditor(EditorNode *p_editor);
+	bool forward_gui_input(const Ref<InputEvent> &p_event);
+	void edit(Node *p_polygon);
+	AbstractPolygon2DEditor(EditorNode *p_editor, bool p_wip_destructive = true);
 };
 
-class NavigationPolygonEditorPlugin : public AbstractPolygon2DEditorPlugin {
+class AbstractPolygon2DEditorPlugin : public EditorPlugin {
 
-	GDCLASS(NavigationPolygonEditorPlugin, AbstractPolygon2DEditorPlugin);
+	GDCLASS(AbstractPolygon2DEditorPlugin, EditorPlugin);
+
+	AbstractPolygon2DEditor *polygon_editor;
+	EditorNode *editor;
+	String klass;
 
 public:
-	NavigationPolygonEditorPlugin(EditorNode *p_node);
+	virtual bool forward_canvas_gui_input(const Transform2D &p_canvas_xform, const Ref<InputEvent> &p_event) { return polygon_editor->forward_gui_input(p_event); }
+
+	bool has_main_screen() const { return false; }
+	virtual String get_name() const { return klass; }
+	virtual void edit(Object *p_object);
+	virtual bool handles(Object *p_object) const;
+	virtual void make_visible(bool p_visible);
+
+	AbstractPolygon2DEditorPlugin(EditorNode *p_node, AbstractPolygon2DEditor *p_polygon_editor, String p_class);
+	~AbstractPolygon2DEditorPlugin();
 };
 
-#endif // NAVIGATIONPOLYGONEDITORPLUGIN_H
+#endif // ABSTRACT_POLYGON_2D_EDITOR_H
