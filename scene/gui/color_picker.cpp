@@ -261,6 +261,7 @@ void ColorPicker::_update_text_value() {
 			t += ")";
 		c_text->set_text(t);
 	} else {
+        c_text->set_text(color.to_html(edit_alpha && color.a < 1));
 	}
 }
 
