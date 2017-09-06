@@ -261,12 +261,15 @@ void ColorPicker::_update_text_value() {
 			t += ")";
 		c_text->set_text(t);
 	} else {
-		c_text->set_text(color.to_html(edit_alpha && color.a < 1));
 	}
 }
 
 void ColorPicker::_sample_draw() {
-	sample->draw_rect(Rect2(Point2(), Size2(uv_edit->get_size().width, sample->get_size().height * 0.95)), color);
+    Rect2 r = Rect2(Point2(), Size2(uv_edit->get_size().width, sample->get_size().height * 0.95));
+    if(color.a < 1) {
+        sample->draw_texture_rect(get_icon("Transparent", "EditorIcons"), r, true);
+    }
+    sample->draw_rect(r, color);
 }
 
 void ColorPicker::_hsv_draw(int p_which, Control *c) {
