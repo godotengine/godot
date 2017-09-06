@@ -2416,6 +2416,9 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	use_space_indentation = false;
 
 	ScriptServer::edit_request_func = _open_script_request;
+
+	add_style_override("panel", editor->get_gui_base()->get_stylebox("ScriptEditorPanel", "EditorStyles"));
+	tab_container->add_style_override("panel", editor->get_gui_base()->get_stylebox("ScriptEditor", "EditorStyles"));
 }
 
 ScriptEditor::~ScriptEditor() {
