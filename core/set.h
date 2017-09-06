@@ -438,8 +438,9 @@ private:
 		if (!rp)
 			rp = _data._nil;
 		Element *node = (rp->left == _data._nil) ? rp->right : rp->left;
+		node->parent = rp->parent;
 
-		if (_data._root == (node->parent = rp->parent)) {
+		if (_data._root == node->parent) {
 			_data._root->left = node;
 		} else {
 			if (rp == rp->parent->left) {

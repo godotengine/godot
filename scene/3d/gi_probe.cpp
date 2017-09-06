@@ -1113,7 +1113,8 @@ void GIProbe::_find_meshes(Node *p_at_node, Baker *p_baker) {
 		}
 	}
 
-	if (Spatial *s = Object::cast_to<Spatial>(p_at_node)) {
+	Spatial *s = Object::cast_to<Spatial>(p_at_node);
+	if (s) {
 
 		if (s->is_visible_in_tree()) {
 

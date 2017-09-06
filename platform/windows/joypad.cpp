@@ -379,7 +379,9 @@ void JoypadWindows::process_joypads() {
 			IDirectInputDevice8_Acquire(joy->di_joy);
 			joy->di_joy->Poll();
 		}
-		if (FAILED(hr = joy->di_joy->GetDeviceState(sizeof(DIJOYSTATE2), &js))) {
+
+		hr = joy->di_joy->GetDeviceState(sizeof(DIJOYSTATE2), &js);
+		if (FAILED(hr)) {
 
 			//printf("failed to read joy #%d\n", i);
 			continue;

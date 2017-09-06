@@ -230,8 +230,8 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 
 		if (isroot)
 			return p_node;
-
-		if (MeshInstance *mi = Object::cast_to<MeshInstance>(p_node)) {
+		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
+		if (mi) {
 			Node *col = mi->create_trimesh_collision_node();
 			ERR_FAIL_COND_V(!col, NULL);
 

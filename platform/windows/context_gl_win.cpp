@@ -130,24 +130,28 @@ Error ContextGL_Win::initialize() {
 		0, 0, 0 // Layer Masks Ignored
 	};
 
-	if (!(hDC = GetDC(hWnd))) {
+	hDC = GetDC(hWnd);
+	if (!hDC) {
 		MessageBox(NULL, "Can't Create A GL Device Context.", "ERROR", MB_OK | MB_ICONEXCLAMATION);
 		return ERR_CANT_CREATE; // Return FALSE
 	}
 
-	if (!(pixel_format = ChoosePixelFormat(hDC, &pfd))) // Did Windows Find A Matching Pixel Format?
+	pixel_format = ChoosePixelFormat(hDC, &pfd);
+	if (!pixel_format) // Did Windows Find A Matching Pixel Format?
 	{
 		MessageBox(NULL, "Can't Find A Suitable pixel_format.", "ERROR", MB_OK | MB_ICONEXCLAMATION);
 		return ERR_CANT_CREATE; // Return FALSE
 	}
 
-	if (!SetPixelFormat(hDC, pixel_format, &pfd)) // Are We Able To Set The Pixel Format?
+	BOOL ret = SetPixelFormat(hDC, pixel_format, &pfd);
+	if (!ret) // Are We Able To Set The Pixel Format?
 	{
 		MessageBox(NULL, "Can't Set The pixel_format.", "ERROR", MB_OK | MB_ICONEXCLAMATION);
 		return ERR_CANT_CREATE; // Return FALSE
 	}
 
-	if (!(hRC = wglCreateContext(hDC))) // Are We Able To Get A Rendering Context?
+	hRC = wglCreateContext(hDC);
+	if (!hRC) // Are We Able To Get A Rendering Context?
 	{
 		MessageBox(NULL, "Can't Create A Temporary GL Rendering Context.", "ERROR", MB_OK | MB_ICONEXCLAMATION);
 		return ERR_CANT_CREATE; // Return FALSE
@@ -175,8 +179,8 @@ Error ContextGL_Win::initialize() {
 			return ERR_CANT_CREATE;
 		}
 
-		HGLRC new_hRC;
-		if (!(new_hRC = wglCreateContextAttribsARB(hDC, 0, attribs))) {
+		HGLRC new_hRC = wglCreateContextAttribsARB(hDC, 0, attribs);
+		if (!new_hRC) {
 			wglDeleteContext(hRC);
 			MessageBox(NULL, "Can't Create An OpenGL 3.3 Rendering Context.", "ERROR", MB_OK | MB_ICONEXCLAMATION);
 			return ERR_CANT_CREATE; // Return false

@@ -183,8 +183,8 @@ void FileDialog::_action_pressed() {
 		String path = dir_access->get_current_dir();
 
 		path = path.replace("\\", "/");
-
-		if (TreeItem *item = tree->get_selected()) {
+		TreeItem *item = tree->get_selected();
+		if (item) {
 			Dictionary d = item->get_metadata(0);
 			if (d["dir"]) {
 				path = path.plus_file(d["name"]);

@@ -50,7 +50,8 @@ void CollisionShape::make_convex_from_brothers() {
 	for (int i = 0; i < p->get_child_count(); i++) {
 
 		Node *n = p->get_child(i);
-		if (MeshInstance *mi = Object::cast_to<MeshInstance>(n)) {
+		MeshInstance *mi = Object::cast_to<MeshInstance>(n);
+		if (mi) {
 
 			Ref<Mesh> m = mi->get_mesh();
 			if (m.is_valid()) {

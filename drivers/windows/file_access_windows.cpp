@@ -159,7 +159,8 @@ void FileAccessWindows::seek_end(int64_t p_position) {
 size_t FileAccessWindows::get_pos() const {
 
 	size_t aux_position = 0;
-	if (!(aux_position = ftell(f))) {
+	aux_position = ftell(f);
+	if (!aux_position) {
 		check_errors();
 	};
 	return aux_position;
