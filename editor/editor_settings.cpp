@@ -676,9 +676,15 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set("editors/3d/warped_mouse_panning", true);
 
 	set("editors/3d/orbit_sensitivity", 0.4);
-	set("editors/3d/freelook_inertia", 3);
 
-	set("editors/3d/freelook_base_speed", 1);
+	set("editors/3d/orbit_inertia", 0.2);
+	hints["editors/3d/orbit_inertia"] = PropertyInfo(Variant::REAL, "editors/3d/orbit_inertia", PROPERTY_HINT_RANGE, "0.0, 1, 0.01");
+
+	set("editors/3d/freelook_inertia", 0.2);
+	hints["editors/3d/freelook_inertia"] = PropertyInfo(Variant::REAL, "editors/3d/freelook_inertia", PROPERTY_HINT_RANGE, "0.0, 1, 0.01");
+
+	set("editors/3d/freelook_base_speed", 0.5);
+	hints["editors/3d/freelook_base_speed"] = PropertyInfo(Variant::REAL, "editors/3d/freelook_base_speed", PROPERTY_HINT_RANGE, "0.0, 10, 0.1");
 
 	set("editors/3d/freelook_activation_modifier", 0);
 	hints["editors/3d/freelook_activation_modifier"] = PropertyInfo(Variant::INT, "editors/3d/freelook_activation_modifier", PROPERTY_HINT_ENUM, "None,Shift,Alt,Meta,Ctrl");
