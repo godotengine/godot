@@ -4255,6 +4255,10 @@ bool TextEdit::is_insert_mode() const {
 	return insert_mode;
 }
 
+bool TextEdit::is_insert_text_operation() {
+	return (current_op.type == TextOperation::TYPE_INSERT);
+}
+
 uint32_t TextEdit::get_version() const {
 	return current_op.version;
 }

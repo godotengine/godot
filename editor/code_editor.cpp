@@ -1023,8 +1023,10 @@ void CodeTextEditor::_line_col_changed() {
 
 void CodeTextEditor::_text_changed() {
 
-	code_complete_timer->start();
-	idle->start();
+	if (text_editor->is_insert_text_operation()) {
+		code_complete_timer->start();
+		idle->start();
+	}
 }
 
 void CodeTextEditor::_code_complete_timer_timeout() {
