@@ -164,7 +164,6 @@ void FileAccessUnix::seek_end(int64_t p_position) {
 
 	ERR_FAIL_COND(!f);
 
-	last_error = OK;
 	if (fseek(f, p_position, SEEK_END))
 		check_errors();
 }
@@ -173,7 +172,6 @@ size_t FileAccessUnix::get_pos() const {
 
 	ERR_FAIL_COND_V(!f, 0);
 
-	last_error = OK;
 	int pos = ftell(f);
 	if (pos < 0) {
 		check_errors();
@@ -207,8 +205,8 @@ uint8_t FileAccessUnix::get_8() const {
 	uint8_t b;
 	if (fread(&b, 1, 1, f) == 0) {
 		check_errors();
-	};
-
+		b = '\0';
+	}
 	return b;
 }
 
