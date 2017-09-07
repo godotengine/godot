@@ -84,8 +84,9 @@ void SpatialEditorViewport::_update_camera(float p_interp_delta) {
 
 	if (p_interp_delta && !disable_interp) {
 		//interpolate
-		float interp_speed = 14; //maybe should be made configuration
-		transform = old_transform.interpolate_with(new_transform, MIN(1.0, p_interp_delta * interp_speed));
+		float user_inertia = Math::lerp(0.0, 0.1, EditorSettings::get_singleton()->get("editors/3d/camera_inertia"));
+		float lerp = 1.0 / (1.0 + user_inertia * Engine::get_singleton()->get_frames_per_second());
+		transform = old_transform.interpolate_with(new_transform, MIN(1.0, lerp));
 	} else {
 		transform = new_transform;
 	}
