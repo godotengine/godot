@@ -65,7 +65,12 @@ layout(location = 0) out float visibility;
 uniform vec4 proj_info;
 
 vec3 reconstructCSPosition(vec2 S, float z) {
-    return vec3((S.xy * proj_info.xy + proj_info.zw) * z, z);
+#ifdef USE_ORTHOGONAL_PROJECTION
+	return vec3((S.xy * proj_info.xy + proj_info.zw), z);
+#else
+	return vec3((S.xy * proj_info.xy + proj_info.zw) * z, z);
+
+#endif
 }
 
 vec3 getPosition(ivec2 ssP) {
@@ -73,7 +78,11 @@ vec3 getPosition(ivec2 ssP) {
     P.z = texelFetch(source_depth, ssP, 0).r;
 
     P.z = P.z * 2.0 - 1.0;
+#ifdef USE_ORTHOGONAL_PROJECTION
+    P.z = ((P.z + (camera_z_far + camera_z_near)/(camera_z_far - camera_z_near)) * (camera_z_far - camera_z_near))/2.0;
+#else
     P.z = 2.0 * camera_z_near * camera_z_far / (camera_z_far + camera_z_near - P.z * (camera_z_far - camera_z_near));
+#endif
     P.z = -P.z;
 
     // Offset to pixel center
@@ -118,7 +127,12 @@ vec3 getOffsetPosition(ivec2 ssC, vec2 unitOffset, float ssR) {
 		//read from depth buffer
 		P.z = texelFetch(source_depth, mipP, 0).r;
 		P.z = P.z * 2.0 - 1.0;
+#ifdef USE_ORTHOGONAL_PROJECTION
+		P.z = ((P.z + (camera_z_far + camera_z_near)/(camera_z_far - camera_z_near)) * (camera_z_far - camera_z_near))/2.0;
+#else
 		P.z = 2.0 * camera_z_near * camera_z_far / (camera_z_far + camera_z_near - P.z * (camera_z_far - camera_z_near));
+
+#endif
 		P.z = -P.z;
 
 	} else {
@@ -214,8 +228,11 @@ void main() {
 
 	// Choose the screen-space sample radius
 	// proportional to the projected area of the sphere
+#ifdef USE_ORTHOGONAL_PROJECTION
+	float ssDiskRadius = -proj_scale * radius;
+#else
 	float ssDiskRadius = -proj_scale * radius / C.z;
-
+#endif
 	float sum = 0.0;
 	for (int i = 0; i < NUM_SAMPLES; ++i) {
 		sum += sampleAO(ssC, C, n_C, ssDiskRadius, radius,i, randomPatternRotationAngle);

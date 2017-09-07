@@ -168,7 +168,11 @@ void main() {
 
 	float depth = textureLod( dof_source_depth, uv_interp, 0.0).r;
 	depth = depth * 2.0 - 1.0;
+#ifdef USE_ORTHOGONAL_PROJECTION
+	depth = ((depth + (camera_z_far + camera_z_near)/(camera_z_far - camera_z_near)) * (camera_z_far - camera_z_near))/2.0;
+#else
 	depth = 2.0 * camera_z_near * camera_z_far / (camera_z_far + camera_z_near - depth * (camera_z_far - camera_z_near));
+#endif
 
 	float amount = smoothstep(dof_begin,dof_end,depth);
 	float k_accum=0.0;
@@ -182,8 +186,11 @@ void main() {
 
 		float tap_depth = texture( dof_source_depth, tap_uv, 0.0).r;
 		tap_depth = tap_depth * 2.0 - 1.0;
+#ifdef USE_ORTHOGONAL_PROJECTION
+		tap_depth = ((tap_depth + (camera_z_far + camera_z_near)/(camera_z_far - camera_z_near)) * (camera_z_far - camera_z_near))/2.0;
+#else
 		tap_depth = 2.0 * camera_z_near * camera_z_far / (camera_z_far + camera_z_near - tap_depth * (camera_z_far - camera_z_near));
-
+#endif
 		float tap_amount = mix(smoothstep(dof_begin,dof_end,tap_depth),1.0,int_ofs==0);
 		tap_amount*=tap_amount*tap_amount; //prevent undesired glow effect
 
@@ -221,7 +228,11 @@ void main() {
 
 		float tap_depth = texture( dof_source_depth, tap_uv, 0.0).r;
 		tap_depth = tap_depth * 2.0 - 1.0;
+#ifdef USE_ORTHOGONAL_PROJECTION	
+		tap_depth = ((tap_depth + (camera_z_far + camera_z_near)/(camera_z_far - camera_z_near)) * (camera_z_far - camera_z_near))/2.0;
+#else
 		tap_depth = 2.0 * camera_z_near * camera_z_far / (camera_z_far + camera_z_near - tap_depth * (camera_z_far - camera_z_near));
+#endif
 		float tap_amount = 1.0-smoothstep(dof_end,dof_begin,tap_depth);
 		tap_amount*=tap_amount*tap_amount; //prevent undesired glow effect
 
