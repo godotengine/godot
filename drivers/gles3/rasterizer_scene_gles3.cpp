@@ -3739,6 +3739,8 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 		SWAP(exposure_shrink[exposure_shrink.size() - 1].color, storage->frame.current_rt->exposure.color);
 
 		glViewport(0, 0, storage->frame.current_rt->width, storage->frame.current_rt->height);
+
+		VisualServerRaster::redraw_request(); //if using auto exposure, redraw must happen
 	}
 
 	int max_glow_level = -1;
