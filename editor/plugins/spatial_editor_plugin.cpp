@@ -93,15 +93,15 @@ void SpatialEditorViewport::_update_camera(float p_interp_delta) {
 
 	float tolerance = 0.0001;
 	bool equal = true;
-	if (Math::abs(cursor.x_rot - camera_cursor.x_rot) > tolerance || Math::abs(cursor.y_rot - camera_cursor.y_rot) > tolerance)
+	if (Math::abs(old_camera_cursor.x_rot - camera_cursor.x_rot) > tolerance || Math::abs(old_camera_cursor.y_rot - camera_cursor.y_rot) > tolerance)
 		equal = false;
-	if (equal && cursor.pos.distance_squared_to(camera_cursor.pos) > tolerance * tolerance) {
+
+	if (equal && old_camera_cursor.pos.distance_squared_to(camera_cursor.pos) > tolerance * tolerance)
 		equal = false;
-	}
-	if (equal && Math::abs(cursor.distance - camera_cursor.distance) < tolerance) {
+
+	if (equal && Math::abs(old_camera_cursor.distance - camera_cursor.distance) > tolerance)
 		equal = false;
-	}
-	print_line(equal ? "true" : "false");
+
 	if (!equal || p_interp_delta == 0 || is_freelook_active()) {
 
 		camera->set_global_transform(to_camera_transform(camera_cursor));
@@ -1657,7 +1657,7 @@ void SpatialEditorViewport::scale_cursor_distance(real_t scale) {
 
 Point2i SpatialEditorViewport::_get_warped_mouse_motion(const Ref<InputEventMouseMotion> &p_ev_mouse_motion) const {
 	Point2i relative;
-	if (bool(EditorSettings::get_singleton()->get("editors/3d/warped_mouse_panning"))) {
+	if (bool(EDITOR_DEF("editors/3d/warped_mouse_panning", false))) {
 		relative = Input::get_singleton()->warp_mouse_motion(p_ev_mouse_motion, surface->get_global_rect());
 	} else {
 		relative = p_ev_mouse_motion->get_relative();
@@ -1711,12 +1711,10 @@ void SpatialEditorViewport::_update_freelook(real_t delta) {
 		speed_modifier = true;
 	}
 
-	const EditorSettings &s = *EditorSettings::get_singleton();
-
-	real_t inertia = s.get("editors/3d/freelook_inertia");
+	real_t inertia = EDITOR_DEF("editors/3d/freelook_inertia", 0.2);
 	inertia = MAX(0, inertia);
-	const real_t base_speed = s.get("editors/3d/freelook_base_speed");
-	const real_t modifier_speed_factor = s.get("editors/3d/freelook_modifier_speed_factor");
+	const real_t base_speed = EDITOR_DEF("editors/3d/freelook_base_speed", 0.5);
+	const real_t modifier_speed_factor = EDITOR_DEF("editors/3d/freelook_modifier_speed_factor", 5);
 
 	real_t speed = base_speed * cursor.distance;
 	if (speed_modifier)
