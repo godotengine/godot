@@ -2534,6 +2534,7 @@
 			<argument index="1" name="to_id" type="int">
 			</argument>
 			<description>
+				Called when computing the cost between two connected points.
 			</description>
 		</method>
 		<method name="_estimate_cost" qualifiers="virtual">
@@ -2544,6 +2545,7 @@
 			<argument index="1" name="to_id" type="int">
 			</argument>
 			<description>
+				Called when estimating the cost between a point and the path's ending point. 
 			</description>
 		</method>
 		<method name="add_point">
@@ -2556,7 +2558,7 @@
 			<argument index="2" name="weight_scale" type="float" default="1.0">
 			</argument>
 			<description>
-				Add a new point at the given position [code]pos[/code] with the given identifier [code]id[/code]. The [code]weight_scale[/code] has to be 1 or larger.
+				Adds a new point at the given position with the given identifier. A point with a lower [code]weight_scale[/code] will be prefered to form a path. The [code]id[/code] must be positive and the [code]weight_scale[/code] must be 1 or larger.
 			</description>
 		</method>
 		<method name="are_points_connected" qualifiers="const">
@@ -2567,14 +2569,14 @@
 			<argument index="1" name="to_id" type="int">
 			</argument>
 			<description>
-				Returns if there is a connection/segment between points [code]id[/code] and [code]from_id[/code]
+				Returns whether there is a connection/segment between the given points.
 			</description>
 		</method>
 		<method name="clear">
 			<return type="void">
 			</return>
 			<description>
-				Clear all the points and segments from AStar instance.
+				Clears all the points and segments.
 			</description>
 		</method>
 		<method name="connect_points">
@@ -2587,7 +2589,7 @@
 			<argument index="2" name="bidirectional" type="bool" default="true">
 			</argument>
 			<description>
-				Create a segment between points [code]id[/code] and [code]to_id[/code].
+				Creates a segment between the given points.
 			</description>
 		</method>
 		<method name="disconnect_points">
@@ -2598,13 +2600,14 @@
 			<argument index="1" name="to_id" type="int">
 			</argument>
 			<description>
-				Deletes a segment between points [code]id[/code] and [code]to_id[/code].
+				Deletes the segment between the given points.
 			</description>
 		</method>
 		<method name="get_available_point_id" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns an id with no point associated to it.
 			</description>
 		</method>
 		<method name="get_closest_point" qualifiers="const">
@@ -2613,7 +2616,7 @@
 			<argument index="0" name="to_pos" type="Vector3">
 			</argument>
 			<description>
-				Returns the id of closest point of given point.  -1 is returned if there are no points on AStar.
+				Returns the id of the closest point to the given position. -1 is returned if there are no points in the points pool.
 			</description>
 		</method>
 		<method name="get_closest_pos_in_segment" qualifiers="const">
@@ -2622,7 +2625,7 @@
 			<argument index="0" name="to_pos" type="Vector3">
 			</argument>
 			<description>
-				Returns the position of closest point that has segments.
+				Returns the closest position to [code]to_pos[/code] that resides inside a segment between two connected points.
 			</description>
 		</method>
 		<method name="get_id_path">
@@ -2633,7 +2636,7 @@
 			<argument index="1" name="to_id" type="int">
 			</argument>
 			<description>
-				Returns an array with the point ids of path found by AStar between two given points.
+				Returns an array with the ids of the points that form the path found by AStar between the given points. The array is ordered from the starting point to the ending point of the path.
 			</description>
 		</method>
 		<method name="get_point_path">
@@ -2644,7 +2647,7 @@
 			<argument index="1" name="to_id" type="int">
 			</argument>
 			<description>
-				Returns an array with the points of path found by AStar between two given points.
+				Returns an array with the points that are in the path found by AStar between the given points. The array is ordered from the starting point to the ending point of the path.
 			</description>
 		</method>
 		<method name="get_point_pos" qualifiers="const">
@@ -2653,7 +2656,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Returns the position of point with given id.
+				Returns the position of the point associated with the given id.
 			</description>
 		</method>
 		<method name="get_point_weight_scale" qualifiers="const">
@@ -2662,7 +2665,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Returns the weight scale of point with given id.
+				Returns the weight scale of the point associated with the given id.
 			</description>
 		</method>
 		<method name="has_point" qualifiers="const">
@@ -2671,7 +2674,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Returns if the point with given id exists on AStar;
+				Returns whether a point associated with the given id exists.
 			</description>
 		</method>
 		<method name="remove_point">
@@ -2680,7 +2683,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Removes the point with given id.
+				Removes the point associated with the given id from the points pool.
 			</description>
 		</method>
 	</methods>
