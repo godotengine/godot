@@ -2269,6 +2269,9 @@ void CanvasItemEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_FIXED_PROCESS) {
 
+
+		EditorNode::get_singleton()->get_scene_root()->set_snap_controls_to_pixels(GLOBAL_GET("gui/common/snap_controls_to_pixels"));
+
 		List<Node *> &selection = editor_selection->get_selected_node_list();
 
 		bool all_control = true;

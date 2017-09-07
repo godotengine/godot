@@ -1,3 +1,4 @@
+
 /*************************************************************************/
 /*  viewport.h                                                           */
 /*************************************************************************/
@@ -192,6 +193,8 @@ private:
 	ClearMode clear_mode;
 	bool filter;
 	bool gen_mipmaps;
+
+	bool snap_controls_to_pixels;
 
 	bool physics_object_picking;
 	List<Ref<InputEvent> > physics_picking_events;
@@ -462,6 +465,9 @@ public:
 	DebugDraw get_debug_draw() const;
 
 	int get_render_info(RenderInfo p_info);
+
+	void set_snap_controls_to_pixels(bool p_enable);
+	bool is_snap_controls_to_pixels_enabled() const;
 
 	Viewport();
 	~Viewport();

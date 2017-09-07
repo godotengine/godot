@@ -1325,6 +1325,7 @@ bool Main::start() {
 			int shadow_atlas_q2_subdiv = GLOBAL_GET("rendering/quality/shadow_atlas/quadrant_2_subdiv");
 			int shadow_atlas_q3_subdiv = GLOBAL_GET("rendering/quality/shadow_atlas/quadrant_3_subdiv");
 
+
 			sml->get_root()->set_shadow_atlas_size(shadow_atlas_size);
 			sml->get_root()->set_shadow_atlas_quadrant_subdiv(0, Viewport::ShadowAtlasQuadrantSubdiv(shadow_atlas_q0_subdiv));
 			sml->get_root()->set_shadow_atlas_quadrant_subdiv(1, Viewport::ShadowAtlasQuadrantSubdiv(shadow_atlas_q1_subdiv));
@@ -1332,6 +1333,9 @@ bool Main::start() {
 			sml->get_root()->set_shadow_atlas_quadrant_subdiv(3, Viewport::ShadowAtlasQuadrantSubdiv(shadow_atlas_q3_subdiv));
 			Viewport::Usage usage = Viewport::Usage(int(GLOBAL_GET("rendering/quality/intended_usage/framebuffer_allocation")));
 			sml->get_root()->set_usage(usage);
+
+			bool snap_controls = GLOBAL_DEF("gui/common/snap_controls_to_pixels", true);
+			sml->get_root()->set_snap_controls_to_pixels(snap_controls);
 
 		} else {
 			GLOBAL_DEF("display/window/stretch/mode", "disabled");
@@ -1342,6 +1346,8 @@ bool Main::start() {
 			ProjectSettings::get_singleton()->set_custom_property_info("display/window/stretch/shrink", PropertyInfo(Variant::STRING, "display/window/stretch/shrink", PROPERTY_HINT_RANGE, "1,8,1"));
 			sml->set_auto_accept_quit(GLOBAL_DEF("application/config/auto_accept_quit", true));
 			sml->set_quit_on_go_back(GLOBAL_DEF("application/config/quit_on_go_back", true));
+			GLOBAL_DEF("gui/common/snap_controls_to_pixels", true);
+
 		}
 
 		String local_game_path;
