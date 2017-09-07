@@ -4631,7 +4631,7 @@ void RasterizerStorageGLES3::light_directional_set_shadow_depth_range_mode(RID p
 	Light *light = light_owner.getornull(p_light);
 	ERR_FAIL_COND(!light);
 
-	light->directional_range_mode=p_range_mode;
+	light->directional_range_mode = p_range_mode;
 }
 
 VS::LightDirectionalShadowDepthRangeMode RasterizerStorageGLES3::light_directional_get_shadow_depth_range_mode(RID p_light) const {

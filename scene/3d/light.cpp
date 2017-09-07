@@ -308,16 +308,14 @@ DirectionalLight::ShadowMode DirectionalLight::get_shadow_mode() const {
 }
 
 void DirectionalLight::set_shadow_depth_range(ShadowDepthRange p_range) {
-	shadow_depth_range=p_range;
+	shadow_depth_range = p_range;
 	VS::get_singleton()->light_directional_set_shadow_depth_range_mode(light, VS::LightDirectionalShadowDepthRangeMode(p_range));
-
 }
 
 DirectionalLight::ShadowDepthRange DirectionalLight::get_shadow_depth_range() const {
 
 	return shadow_depth_range;
 }
-
 
 void DirectionalLight::set_blend_splits(bool p_enable) {
 
@@ -356,8 +354,8 @@ void DirectionalLight::_bind_methods() {
 	BIND_ENUM_CONSTANT(SHADOW_PARALLEL_2_SPLITS);
 	BIND_ENUM_CONSTANT(SHADOW_PARALLEL_4_SPLITS);
 
-	BIND_ENUM_CONSTANT( SHADOW_DEPTH_RANGE_STABLE );
-	BIND_ENUM_CONSTANT( SHADOW_DEPTH_RANGE_OPTIMIZED );
+	BIND_ENUM_CONSTANT(SHADOW_DEPTH_RANGE_STABLE);
+	BIND_ENUM_CONSTANT(SHADOW_DEPTH_RANGE_OPTIMIZED);
 }
 
 DirectionalLight::DirectionalLight()
@@ -369,7 +367,6 @@ DirectionalLight::DirectionalLight()
 	set_param(PARAM_SHADOW_BIAS_SPLIT_SCALE, 0.25);
 	set_shadow_mode(SHADOW_PARALLEL_4_SPLITS);
 	set_shadow_depth_range(SHADOW_DEPTH_RANGE_STABLE);
-
 
 	blend_splits = false;
 }

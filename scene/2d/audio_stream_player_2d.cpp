@@ -254,8 +254,6 @@ void AudioStreamPlayer2D::set_stream(Ref<AudioStream> p_stream) {
 		stream.unref();
 		ERR_FAIL_COND(stream_playback.is_null());
 	}
-
-
 }
 
 Ref<AudioStream> AudioStreamPlayer2D::get_stream() const {
@@ -449,7 +447,6 @@ void AudioStreamPlayer2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "area_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_area_mask", "get_area_mask");
 
 	ADD_SIGNAL(MethodInfo("finished"));
-
 }
 
 AudioStreamPlayer2D::AudioStreamPlayer2D() {
