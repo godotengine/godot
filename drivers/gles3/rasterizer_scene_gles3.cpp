@@ -2599,7 +2599,7 @@ void RasterizerSceneGLES3::_setup_directional_light(int p_index, const Transform
 				}
 			}
 
-			ubo_data.shadow_split_offsets[j] = 1.0 / li->shadow_transform[j].split;
+			ubo_data.shadow_split_offsets[j] = li->shadow_transform[j].split;
 
 			Transform modelview = (p_camera_inverse_transform * li->shadow_transform[j].transform).inverse();
 
@@ -4331,7 +4331,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 		storage->canvas->draw_generic_textured_rect(Rect2(0, 0, storage->frame.current_rt->width / 2, storage->frame.current_rt->height / 2), Rect2(0, 0, 1, 1));
 	}
 
-	if (false && directional_shadow.fbo) {
+	if (true && directional_shadow.fbo) {
 
 		//_copy_texture_to_front_buffer(shadow_atlas->depth);
 		storage->canvas->canvas_begin();

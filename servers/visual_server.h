@@ -406,6 +406,14 @@ public:
 	virtual void light_directional_set_shadow_mode(RID p_light, LightDirectionalShadowMode p_mode) = 0;
 	virtual void light_directional_set_blend_splits(RID p_light, bool p_enable) = 0;
 
+	enum LightDirectionalShadowDepthRangeMode {
+		LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_STABLE,
+		LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_OPTIMIZED,
+
+	};
+
+	virtual void light_directional_set_shadow_depth_range_mode(RID p_light, LightDirectionalShadowDepthRangeMode p_range_mode) = 0;
+
 	/* PROBE API */
 
 	virtual RID reflection_probe_create() = 0;
