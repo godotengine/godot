@@ -70,7 +70,6 @@ class CanvasItemEditor : public VBoxContainer {
 	EditorNode *editor;
 
 	enum Tool {
-
 		TOOL_SELECT,
 		TOOL_LIST_SELECT,
 		TOOL_MOVE,
@@ -318,9 +317,8 @@ class CanvasItemEditor : public VBoxContainer {
 	void _prepare_drag(const Point2 &p_click_pos);
 	DragType _get_anchor_handle_drag_type(const Point2 &p_click, Vector2 &r_point);
 
-	float _anchor_snap(float p_anchor, bool *p_snapped = NULL, float p_opposite_anchor = -1);
-	Vector2 _anchor_to_position(Control *p_control, Vector2 anchor);
-	Vector2 _position_to_anchor(Control *p_control, Vector2 position);
+	Vector2 _anchor_to_position(const Control *p_control, Vector2 anchor);
+	Vector2 _position_to_anchor(const Control *p_control, Vector2 position);
 
 	void _popup_callback(int p_op);
 	bool updating_scroll;
@@ -345,7 +343,7 @@ class CanvasItemEditor : public VBoxContainer {
 
 	Object *_get_editor_data(Object *p_what);
 
-	CanvasItem *get_single_item();
+	CanvasItem *_get_single_item();
 	int get_item_count();
 	void _keying_changed();
 
@@ -369,6 +367,9 @@ class CanvasItemEditor : public VBoxContainer {
 	void _draw_viewport_base();
 
 	void _focus_selection(int p_op);
+
+	void _snap_if_closer(Point2 p_value, Point2 p_target_snap, Point2 &r_current_snap, bool (&r_snapped)[2], real_t rotation = 0.0, float p_radius = 10.0);
+	void _snap_other_nodes(Point2 p_value, Point2 &r_current_snap, bool (&r_snapped)[2], const Node *p_current, const CanvasItem *p_to_snap);
 
 	void _set_anchors_preset(Control::LayoutPreset p_preset);
 	void _set_full_rect();
@@ -420,7 +421,18 @@ protected:
 	static CanvasItemEditor *singleton;
 
 public:
-	Vector2 snap_point(Vector2 p_target, Vector2 p_start = Vector2(0, 0)) const;
+	enum SnapMode {
+		SNAP_GRID = 1 << 0,
+		SNAP_PIXEL = 1 << 1,
+		SNAP_NODE_PARENT = 1 << 2,
+		SNAP_NODE_ANCHORS = 1 << 3,
+		SNAP_NODE_SIDES = 1 << 4,
+		SNAP_OTHER_NODES = 1 << 5,
+
+		SNAP_DEFAULT = 0x03,
+	};
+
+	Point2 snap_point(Point2 p_target, unsigned int p_modes = SNAP_DEFAULT, const CanvasItem *p_canvas_item = NULL);
 	float snap_angle(float p_target, float p_start = 0) const;
 
 	Transform2D get_canvas_transform() const { return transform; }
