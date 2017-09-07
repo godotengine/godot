@@ -1814,11 +1814,11 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 
 				if (skip_editor && F->get().name.begins_with("__editor"))
 					continue;
-				if (F->get().usage & PROPERTY_USAGE_STORAGE) {
+				if ((F->get().usage & PROPERTY_USAGE_STORAGE)) {
 					Property p;
 					p.name_idx = get_string_index(F->get().name);
 					p.value = E->get()->get(F->get().name);
-					if ((F->get().usage & PROPERTY_USAGE_STORE_IF_NONZERO && p.value.is_zero()) || (F->get().usage & PROPERTY_USAGE_STORE_IF_NONONE && p.value.is_one()))
+					if (((F->get().usage & PROPERTY_USAGE_STORE_IF_NONZERO) && p.value.is_zero()) || ((F->get().usage & PROPERTY_USAGE_STORE_IF_NONONE) && p.value.is_one()))
 						continue;
 					p.pi = F->get();
 

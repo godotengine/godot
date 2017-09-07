@@ -2304,7 +2304,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 				int col, h, section;
 				TreeItem *it = _find_item_at_pos(root, mpos, col, h, section);
 
-				if (drop_mode_flags && it != drop_mode_over || section != drop_mode_section) {
+				if ((drop_mode_flags && it != drop_mode_over) || section != drop_mode_section) {
 					drop_mode_over = it;
 					drop_mode_section = section;
 					update();

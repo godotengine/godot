@@ -55,8 +55,8 @@ public:
 		friend class OrderedHashMap<K, V, Hasher, Comparator, MIN_HASH_TABLE_POWER, RELATIONSHIP>;
 
 		typename InternalList::Element *list_element;
-		typename InternalList::Element *next_element;
 		typename InternalList::Element *prev_element;
+		typename InternalList::Element *next_element;
 
 		Element(typename InternalList::Element *p_element) {
 			list_element = p_element;
@@ -69,7 +69,7 @@ public:
 
 	public:
 		_FORCE_INLINE_ Element()
-			: list_element(NULL), next_element(NULL), prev_element(NULL) {
+			: list_element(NULL), prev_element(NULL), next_element(NULL) {
 		}
 
 		Element next() const {

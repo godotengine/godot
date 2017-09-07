@@ -34,7 +34,7 @@
 #include "io/marshalls.h"
 
 //#define DEBUG_PRINT(m_p) print_line(m_p)
-#define DEBUG_TIME(m_what) printf("MS: %s - %lli\n", m_what, OS::get_singleton()->get_ticks_usec());
+#define DEBUG_TIME(m_what) printf("MS: %s - %lu\n", m_what, OS::get_singleton()->get_ticks_usec());
 
 //#define DEBUG_TIME(m_what)
 

@@ -866,7 +866,7 @@ static bool _guess_expression_type(GDCompletionContext &context, const GDParser:
 									MethodBind *mb = ClassDB::get_method(base_type, getter);
 									if (mb) {
 										PropertyInfo rt = mb->get_return_info();
-										if (rt.usage & PROPERTY_USAGE_CLASS_IS_ENUM && t == Variant::INT) {
+										if ((rt.usage & PROPERTY_USAGE_CLASS_IS_ENUM) && t == Variant::INT) {
 											r_type.enumeration = rt.class_name;
 										} else if (t == Variant::OBJECT) {
 
@@ -1903,11 +1903,11 @@ static void _find_call_arguments(GDCompletionContext &context, const GDParser::N
 				arghint += ", ";
 			else
 				arghint += " ";
-			if (i == p_argidx || (mi.flags & METHOD_FLAG_VARARG && i > p_argidx)) {
+			if (i == p_argidx || ((mi.flags & METHOD_FLAG_VARARG) && i > p_argidx)) {
 				arghint += String::chr(0xFFFF);
 			}
 			arghint += _get_visual_datatype(mi.arguments[i]) + " " + mi.arguments[i].name;
-			if (i == p_argidx || (mi.flags & METHOD_FLAG_VARARG && i > p_argidx)) {
+			if (i == p_argidx || ((mi.flags & METHOD_FLAG_VARARG) && i > p_argidx)) {
 				arghint += String::chr(0xFFFF);
 			}
 		}

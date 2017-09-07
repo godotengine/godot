@@ -213,7 +213,6 @@ void CapsuleMesh::_create_mesh_array(Array &p_arr) const {
 	prevrow = 0;
 	for (j = 0; j <= (rings + 1); j++) {
 		v = j;
-		w;
 
 		v /= (rings + 1);
 		w = sin(0.5 * Math_PI * v);
@@ -292,7 +291,6 @@ void CapsuleMesh::_create_mesh_array(Array &p_arr) const {
 	prevrow = 0;
 	for (j = 0; j <= (rings + 1); j++) {
 		v = j;
-		w;
 
 		v /= (rings + 1);
 		v += 1.0;

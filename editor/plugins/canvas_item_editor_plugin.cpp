@@ -1515,7 +1515,7 @@ void CanvasItemEditor::_viewport_gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (drag == DRAG_NONE) {
-			if ((m->get_button_mask() & BUTTON_MASK_LEFT && tool == TOOL_PAN) || m->get_button_mask() & BUTTON_MASK_MIDDLE || (m->get_button_mask() & BUTTON_MASK_LEFT && Input::get_singleton()->is_key_pressed(KEY_SPACE))) {
+			if (((m->get_button_mask() & BUTTON_MASK_LEFT) && tool == TOOL_PAN) || (m->get_button_mask() & BUTTON_MASK_MIDDLE) || ((m->get_button_mask() & BUTTON_MASK_LEFT) && Input::get_singleton()->is_key_pressed(KEY_SPACE))) {
 				// Pan the viewport
 				Point2i relative;
 				if (bool(EditorSettings::get_singleton()->get("editors/2d/warped_mouse_panning"))) {
@@ -2268,7 +2268,6 @@ void CanvasItemEditor::_viewport_draw() {
 void CanvasItemEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_FIXED_PROCESS) {
-
 
 		EditorNode::get_singleton()->get_scene_root()->set_snap_controls_to_pixels(GLOBAL_GET("gui/common/snap_controls_to_pixels"));
 
