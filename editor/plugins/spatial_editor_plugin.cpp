@@ -80,7 +80,7 @@ void SpatialEditorViewport::_update_camera(float p_interp_delta) {
 	Transform old_transform = camera->get_global_transform();
 	Transform transform;
 
-	bool disable_interp = (Input::get_singleton()->get_mouse_button_mask() & (2 | 4)) || Input::get_singleton()->is_key_pressed(KEY_SHIFT) || Input::get_singleton()->is_key_pressed(KEY_ALT) || Input::get_singleton()->is_key_pressed(KEY_CONTROL);
+	bool disable_interp = orthogonal || (Input::get_singleton()->get_mouse_button_mask() & (2 | 4)) || Input::get_singleton()->is_key_pressed(KEY_SHIFT) || Input::get_singleton()->is_key_pressed(KEY_ALT) || Input::get_singleton()->is_key_pressed(KEY_CONTROL);
 
 	if (p_interp_delta && !disable_interp) {
 		//interpolate
