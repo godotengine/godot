@@ -12292,14 +12292,14 @@
 				Return the linear interpolation with another color.
 			</description>
 		</method>
-		<method name="to_32">
+		<method name="to_rgba32">
 			<return type="int">
 			</return>
 			<description>
 				Convert the color to a 32 its integer (each byte represents a RGBA).
 			</description>
 		</method>
-		<method name="to_ARGB32">
+		<method name="to_argb32">
 			<return type="int">
 			</return>
 			<description>

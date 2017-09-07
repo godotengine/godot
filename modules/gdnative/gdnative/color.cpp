@@ -112,14 +112,14 @@ godot_string GDAPI godot_color_as_string(const godot_color *p_self) {
 	return ret;
 }
 
-godot_int GDAPI godot_color_to_32(const godot_color *p_self) {
+godot_int GDAPI godot_color_to_rgba32(const godot_color *p_self) {
 	const Color *self = (const Color *)p_self;
-	return self->to_32();
+	return self->to_rgba32();
 }
 
-godot_int GDAPI godot_color_to_ARGB32(const godot_color *p_self) {
+godot_int GDAPI godot_color_to_argb32(const godot_color *p_self) {
 	const Color *self = (const Color *)p_self;
-	return self->to_ARGB32();
+	return self->to_argb32();
 }
 
 godot_real GDAPI godot_color_gray(const godot_color *p_self) {
