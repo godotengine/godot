@@ -269,13 +269,13 @@ Ref<Texture> Environment::get_adjustment_color_correction() const {
 void Environment::_validate_property(PropertyInfo &property) const {
 
 	if (property.name == "background_sky" || property.name == "background_sky_scale" || property.name == "ambient_light/sky_contribution") {
-		if (bg_mode != BG_SKY) {
+		if (bg_mode != BG_SKY && bg_mode != BG_COLOR_SKY) {
 			property.usage = PROPERTY_USAGE_NOEDITOR;
 		}
 	}
 
 	if (property.name == "background_color") {
-		if (bg_mode != BG_COLOR) {
+		if (bg_mode != BG_COLOR && bg_mode != BG_COLOR_SKY) {
 			property.usage = PROPERTY_USAGE_NOEDITOR;
 		}
 	}
@@ -839,7 +839,7 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_ambient_light_sky_contribution"), &Environment::get_ambient_light_sky_contribution);
 
 	ADD_GROUP("Background", "background_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "background_mode", PROPERTY_HINT_ENUM, "Clear Color,Custom Color,Sky,Canvas,Keep"), "set_background", "get_background");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "background_mode", PROPERTY_HINT_ENUM, "Clear Color,Custom Color,Sky,Color+Sky,Canvas,Keep"), "set_background", "get_background");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "background_sky", PROPERTY_HINT_RESOURCE_TYPE, "Sky"), "set_sky", "get_sky");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "background_sky_scale", PROPERTY_HINT_RANGE, "0,32,0.01"), "set_sky_scale", "get_sky_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "background_color"), "set_bg_color", "get_bg_color");
@@ -1118,6 +1118,7 @@ void Environment::_bind_methods() {
 	BIND_ENUM_CONSTANT(BG_CLEAR_COLOR);
 	BIND_ENUM_CONSTANT(BG_COLOR);
 	BIND_ENUM_CONSTANT(BG_SKY);
+	BIND_ENUM_CONSTANT(BG_COLOR_SKY);
 	BIND_ENUM_CONSTANT(BG_CANVAS);
 	BIND_ENUM_CONSTANT(BG_MAX);
 

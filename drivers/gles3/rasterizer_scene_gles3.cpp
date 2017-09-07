@@ -4165,7 +4165,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 
 		clear_color = env->bg_color.to_linear();
 		storage->frame.clear_request = false;
-	} else if (env->bg_mode == VS::ENV_BG_SKY) {
+	} else if (env->bg_mode == VS::ENV_BG_SKY || env->bg_mode == VS::ENV_BG_COLOR_SKY) {
 
 		sky = storage->sky_owner.getornull(env->sky);
 
@@ -4173,6 +4173,9 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 			env_radiance_tex = sky->radiance;
 		}
 		storage->frame.clear_request = false;
+		if (env->bg_mode == VS::ENV_BG_COLOR_SKY) {
+			clear_color = env->bg_color.to_linear();
+		}
 
 	} else {
 		storage->frame.clear_request = false;
