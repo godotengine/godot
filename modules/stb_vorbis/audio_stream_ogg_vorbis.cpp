@@ -45,6 +45,12 @@ void AudioStreamPlaybackOGGVorbis::_mix_internal(AudioFrame *p_buffer, int p_fra
 	while (todo && active) {
 
 		int mixed = stb_vorbis_get_samples_float_interleaved(ogg_stream, 2, (float *)p_buffer, todo * 2);
+		if (vorbis_stream->channels == 1 && mixed > 0) {
+			//mix mono to stereo
+			for (int i = 0; i < mixed; i++) {
+				p_buffer[i].r = p_buffer[i].l;
+			}
+		}
 		todo -= mixed;
 		frames_mixed += mixed;
 
