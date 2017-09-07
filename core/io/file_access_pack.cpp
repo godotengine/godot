@@ -166,9 +166,9 @@ bool PackedSourcePCK::try_open_pack(const String &p_path) {
 	uint32_t ver_rev = f->get_32();
 
 	ERR_EXPLAIN("Pack version unsupported: " + itos(version));
-	ERR_FAIL_COND_V(version != PACK_VERSION, ERR_INVALID_DATA);
+	ERR_FAIL_COND_V(version != PACK_VERSION, false);
 	ERR_EXPLAIN("Pack created with a newer version of the engine: " + itos(ver_major) + "." + itos(ver_minor) + "." + itos(ver_rev));
-	ERR_FAIL_COND_V(ver_major > VERSION_MAJOR || (ver_major == VERSION_MAJOR && ver_minor > VERSION_MINOR), ERR_INVALID_DATA);
+	ERR_FAIL_COND_V(ver_major > VERSION_MAJOR || (ver_major == VERSION_MAJOR && ver_minor > VERSION_MINOR), false);
 
 	for (int i = 0; i < 16; i++) {
 		//reserved
