@@ -1038,7 +1038,7 @@ void AnimationKeyEditor::_track_pos_draw() {
 		//draw position
 		int pixel = (timeline_pos - h_scroll->get_value()) * zoom_scale;
 		pixel += name_limit;
-		track_pos->draw_line(ofs + Point2(pixel, 0), ofs + Point2(pixel, size.height), get_color("highlight_color", "Editor"));
+		track_pos->draw_line(ofs + Point2(pixel, 0), ofs + Point2(pixel, size.height), get_color("accent_color", "Editor"));
 	}
 }
 
@@ -1101,7 +1101,7 @@ void AnimationKeyEditor::_track_editor_draw() {
 	Color select_color = color;
 	select_color.a = 0.1;
 	Color invalid_path_color = get_color("error_color", "Editor");
-	Color track_select_color = get_color("highlight_color", "Editor");
+	Color track_select_color = get_color("accent", "Editor");
 
 	Ref<Texture> remove_icon = get_icon("Remove", "EditorIcons");
 	Ref<Texture> move_up_icon = get_icon("MoveUp", "EditorIcons");
@@ -1487,7 +1487,7 @@ void AnimationKeyEditor::_track_editor_draw() {
 	switch (click.click) {
 		case ClickOver::CLICK_SELECT_KEYS: {
 
-			Color box_color = get_color("highlight_color", "Editor");
+			Color box_color = get_color("accent_color", "Editor");
 			box_color.a = 0.35;
 			te->draw_rect(Rect2(click.at, click.to - click.at), box_color);
 

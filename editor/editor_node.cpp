@@ -4872,6 +4872,7 @@ EditorNode::EditorNode() {
 	gui_base->add_child(dependency_fixer);
 
 	settings_config_dialog = memnew(EditorSettingsDialog);
+	// settings_config_dialog->add_style_override("panel", gui_base->get_stylebox("EditorSettingsDialog", "EditorStyles"));
 	gui_base->add_child(settings_config_dialog);
 
 	project_settings = memnew(ProjectSettingsEditor(&editor_data));
@@ -5029,7 +5030,7 @@ EditorNode::EditorNode() {
 	p->add_icon_item(gui_base->get_icon("Instance", "EditorIcons"), TTR("Issue Tracker"), HELP_ISSUES);
 	p->add_icon_item(gui_base->get_icon("Instance", "EditorIcons"), TTR("Community"), HELP_COMMUNITY);
 	p->add_separator();
-	p->add_icon_item(gui_base->get_icon("GodotDocs", "EditorIcons"), TTR("About"), HELP_ABOUT);
+	p->add_icon_item(gui_base->get_icon("Godot", "EditorIcons"), TTR("About"), HELP_ABOUT);
 
 	play_cc = memnew(CenterContainer);
 	play_cc->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);

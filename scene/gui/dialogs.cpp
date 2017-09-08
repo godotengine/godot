@@ -195,7 +195,7 @@ void WindowDialog::_notification(int p_what) {
 			RID canvas = get_canvas_item();
 
 			// Draw the background.
-			Ref<StyleBox> panel = get_stylebox("panel", "WindowDialog");
+			Ref<StyleBox> panel = get_stylebox("panel");
 			Size2 size = get_size();
 			panel->draw(canvas, Rect2(0, 0, size.x, size.y));
 

@@ -2974,7 +2974,7 @@ void VisualScriptEditor::_member_rmb_selected(const Vector2 &p_pos) {
 
 	TreeItem *root = members->get_root();
 
-	Ref<Texture> del_icon = Control::get_icon("Del", "EditorIcons");
+	Ref<Texture> del_icon = Control::get_icon("Remove", "EditorIcons");
 
 	Ref<Texture> edit_icon = Control::get_icon("Edit", "EditorIcons");
 
