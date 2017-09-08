@@ -770,6 +770,16 @@ void FileSystemDock::_rename_operation(const String &p_to_path) {
 		EditorNode::get_singleton()->add_io_error("Error moving file:\n" + move_files[0] + "\n");
 	}
 
+	String import_file_source = move_files[0] + ".import";
+	if (da->file_exists(import_file_source)) {
+		String import_file_destination = p_to_path + ".import";
+		err = da->rename(import_file_source, import_file_destination);
+		print_line("moving file " + import_file_source + " to " + import_file_destination);
+		if (err != OK) {
+			EditorNode::get_singleton()->add_io_error("Error moving file:\n" + import_file_source + "\n");
+		}
+	}
+
 	//rescan everything
 	memdelete(da);
 	print_line("call rescan!");
