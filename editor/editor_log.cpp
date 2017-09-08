@@ -61,9 +61,6 @@ void EditorLog::_notification(int p_what) {
 
 		//button->set_icon(get_icon("Console","EditorIcons"));
 	}
-	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
-		_override_logger_styles();
-	}
 
 	/*if (p_what==NOTIFICATION_DRAW) {
 
@@ -129,7 +126,6 @@ void EditorLog::_undo_redo_cbk(void *p_self, const String &p_name) {
 void EditorLog::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_clear_request"), &EditorLog::_clear_request);
-	ClassDB::bind_method("_override_logger_styles", &EditorLog::_override_logger_styles);
 	//ClassDB::bind_method(D_METHOD("_dragged"),&EditorLog::_dragged );
 	ADD_SIGNAL(MethodInfo("clear_request"));
 }
@@ -151,21 +147,15 @@ EditorLog::EditorLog() {
 	clearbutton->set_text(TTR("Clear"));
 	clearbutton->connect("pressed", this, "_clear_request");
 
-	ec = memnew(Control);
-	vb->add_child(ec);
-	ec->set_custom_minimum_size(Size2(0, 180) * EDSCALE);
-	ec->set_v_size_flags(SIZE_EXPAND_FILL);
-
-	pc = memnew(PanelContainer);
-	ec->add_child(pc);
-	pc->set_area_as_parent_rect();
-	pc->connect("tree_entered", this, "_override_logger_styles");
-
 	log = memnew(RichTextLabel);
 	log->set_scroll_follow(true);
 	log->set_selection_enabled(true);
 	log->set_focus_mode(FOCUS_CLICK);
-	pc->add_child(log);
+	log->set_custom_minimum_size(Size2(0, 180) * EDSCALE);
+	log->set_area_as_parent_rect();
+	log->set_v_size_flags(SIZE_EXPAND_FILL);
+	log->set_h_size_flags(SIZE_EXPAND_FILL);
+	vb->add_child(log);
 	add_message(VERSION_FULL_NAME " (c) 2008-2017 Juan Linietsky, Ariel Manzur.");
 	//log->add_text("Initialization Complete.\n"); //because it looks cool.
 
@@ -181,11 +171,6 @@ EditorLog::EditorLog() {
 void EditorLog::deinit() {
 
 	remove_error_handler(&eh);
-}
-
-void EditorLog::_override_logger_styles() {
-
-	pc->add_style_override("panel", get_stylebox("normal", "TextEdit"));
 }
 
 EditorLog::~EditorLog() {

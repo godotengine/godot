@@ -130,7 +130,6 @@ class EditorHelp : public VBoxContainer {
 	HSplitContainer *h_split;
 	static DocData *doc;
 
-	Panel *background_panel;
 	ConfirmationDialog *search_dialog;
 	LineEdit *search;
 

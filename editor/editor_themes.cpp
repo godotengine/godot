@@ -698,6 +698,12 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("default_color", "RichTextLabel", rtl_font_color);
 	theme->set_stylebox("focus", "RichTextLabel", make_empty_stylebox());
 	theme->set_stylebox("normal", "RichTextLabel", style_tree_bg);
+	Ref<StyleBoxFlat> style_code = style_tree_bg->duplicate();
+	style_code->set_bg_color(rtl_combined_bg_color);
+	theme->set_stylebox("code_normal", "RichTextLabel", style_code);
+	Ref<StyleBoxFlat> style_code_focus = style_tree_focus->duplicate();
+	style_code_focus->set_bg_color(rtl_combined_bg_color);
+	theme->set_stylebox("code_focus", "RichTextLabel", style_code_focus);
 
 	// Panel
 	theme->set_stylebox("panel", "Panel", make_flat_stylebox(dark_color_1, 6, 4, 6, 4));
@@ -725,9 +731,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_color", "ProgressBar", font_color);
 
 	// GraphEdit
-	theme->set_stylebox("bg", "GraphEdit", make_flat_stylebox(dark_color_2, 4, 4, 4, 4));
-	theme->set_color("grid_major", "GraphEdit", Color(font_color.r, font_color.g, font_color.b, 0.2));
-	theme->set_color("grid_minor", "GraphEdit", Color(font_color_disabled.r, font_color_disabled.g, font_color_disabled.b, 0.2));
+	theme->set_stylebox("bg", "GraphEdit", style_tree_bg);
+	theme->set_color("grid_major", "GraphEdit", Color(font_color.r, font_color.g, font_color.b, 0.1));
+	theme->set_color("grid_minor", "GraphEdit", Color(font_color_disabled.r, font_color_disabled.g, font_color_disabled.b, 0.05));
 	theme->set_icon("minus", "GraphEdit", theme->get_icon("ZoomLess", "EditorIcons"));
 	theme->set_icon("more", "GraphEdit", theme->get_icon("ZoomMore", "EditorIcons"));
 	theme->set_icon("reset", "GraphEdit", theme->get_icon("ZoomReset", "EditorIcons"));
