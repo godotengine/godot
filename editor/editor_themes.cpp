@@ -86,7 +86,7 @@ static Ref<StyleBoxFlat> change_border_color(Ref<StyleBoxFlat> p_style, Color p_
 	return style;
 }
 
-Ref<ImageTexture> editor_generate_icon(int p_index, bool dark_theme = true, Dictionary *p_colors = NULL) {
+Ref<ImageTexture> editor_generate_icon(int p_index, bool dark_theme = true, Dictionary *p_colors = NULL, float p_scale = EDSCALE, bool force_filter = false) {
 
 	Ref<ImageTexture> icon = memnew(ImageTexture);
 	Ref<Image> img = memnew(Image);
@@ -94,9 +94,9 @@ Ref<ImageTexture> editor_generate_icon(int p_index, bool dark_theme = true, Dict
 	// dumb gizmo check
 	bool is_gizmo = String(editor_icons_names[p_index]).begins_with("Gizmo");
 
-	ImageLoaderSVG::create_image_from_string(img, editor_icons_sources[p_index], EDSCALE, true, dark_theme ? NULL : p_colors);
+	ImageLoaderSVG::create_image_from_string(img, editor_icons_sources[p_index], p_scale, true, dark_theme ? NULL : p_colors);
 
-	if ((EDSCALE - (float)((int)EDSCALE)) > 0.0 || is_gizmo)
+	if ((p_scale - (float)((int)p_scale)) > 0.0 || is_gizmo || force_filter)
 		icon->create_from_image(img); // in this case filter really helps
 	else
 		icon->create_from_image(img, 0);
@@ -108,10 +108,9 @@ Ref<ImageTexture> editor_generate_icon(int p_index, bool dark_theme = true, Dict
 #define ADD_CONVERT_COLOR(dictionary, old_color, new_color) dictionary[Color::html(old_color)] = Color::html(new_color)
 #endif
 
-void editor_register_and_generate_icons(Ref<Theme> p_theme, bool dark_theme = true) {
+void editor_register_and_generate_icons(Ref<Theme> p_theme, bool dark_theme = true, int p_thumb_size = 32, bool only_thumbs = false) {
 
 #ifdef SVG_ENABLED
-
 	Dictionary dark_icon_color_dictionary;
 	//convert color:                              FROM       TO
 	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#e0e0e0", "#4f4f4f"); // common icon color
@@ -161,13 +160,31 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool dark_theme = tr
 
 	clock_t begin_time = clock();
 
-	for (int i = 0; i < editor_icons_count; i++) {
-		List<String>::Element *is_exception = exceptions.find(editor_icons_names[i]);
-		if (is_exception) {
-			exceptions.erase(is_exception);
+	if (!only_thumbs)
+		for (int i = 0; i < editor_icons_count; i++) {
+			List<String>::Element *is_exception = exceptions.find(editor_icons_names[i]);
+			if (is_exception) {
+				exceptions.erase(is_exception);
+			}
+			Ref<ImageTexture> icon = editor_generate_icon(i, dark_theme, is_exception ? NULL : &dark_icon_color_dictionary);
+			p_theme->set_icon(editor_icons_names[i], "EditorIcons", icon);
 		}
-		Ref<ImageTexture> icon = editor_generate_icon(i, dark_theme, is_exception ? NULL : &dark_icon_color_dictionary);
-		p_theme->set_icon(editor_icons_names[i], "EditorIcons", icon);
+
+	bool force_filter = !(p_thumb_size == 64 && p_thumb_size == 32); // we dont need filter with original resolution
+	if (p_thumb_size >= 64) {
+		float scale = (float)p_thumb_size / 64.0 * EDSCALE;
+		for (int i = 0; i < editor_bg_thumbs_count; i++) {
+			int index = editor_bg_thumbs_indices[i];
+			Ref<ImageTexture> icon = editor_generate_icon(index, dark_theme, &dark_icon_color_dictionary, scale, force_filter);
+			p_theme->set_icon(editor_icons_names[index], "EditorIcons", icon);
+		}
+	} else {
+		float scale = (float)p_thumb_size / 32.0 * EDSCALE;
+		for (int i = 0; i < editor_md_thumbs_count; i++) {
+			int index = editor_md_thumbs_indices[i];
+			Ref<ImageTexture> icon = editor_generate_icon(index, dark_theme, &dark_icon_color_dictionary, scale, force_filter);
+			p_theme->set_icon(editor_icons_names[index], "EditorIcons", icon);
+		}
 	}
 
 	clock_t end_time = clock();
@@ -267,7 +284,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("warning_color", "Editor", warning_color);
 	theme->set_color("error_color", "Editor", error_color);
 
+	const int thumb_size = EDITOR_DEF("filesystem/file_dialog/thumbnail_size", 64);
 	theme->set_constant("scale", "Editor", EDSCALE);
+	theme->set_constant("thumb_size", "Editor", thumb_size);
 	theme->set_constant("dark_theme", "Editor", dark_theme);
 
 	//Register icons + font
@@ -279,7 +298,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 			theme->set_icon(editor_icons_names[i], "EditorIcons", p_theme->get_icon(editor_icons_names[i], "EditorIcons"));
 		}
 	} else {
-		editor_register_and_generate_icons(theme, dark_theme);
+		editor_register_and_generate_icons(theme, dark_theme, thumb_size);
+	}
+	// thumbnail size has changed, so we regenerate the medium sizes
+	if (p_theme != NULL && fabs(p_theme->get_constant("thumb_size", "Editor") - thumb_size) > 0.00001) {
+		editor_register_and_generate_icons(p_theme, dark_theme, thumb_size, true);
 	}
 
 	editor_register_fonts(theme);
