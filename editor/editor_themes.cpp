@@ -171,6 +171,7 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool dark_theme = tr
 		}
 
 	bool force_filter = !(p_thumb_size == 64 && p_thumb_size == 32); // we dont need filter with original resolution
+	// generate thumb files with the given thumb size
 	if (p_thumb_size >= 64) {
 		float scale = (float)p_thumb_size / 64.0 * EDSCALE;
 		for (int i = 0; i < editor_bg_thumbs_count; i++) {
@@ -350,7 +351,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_popup->set_default_margin(MARGIN_BOTTOM, default_margin_size * 2);
 	style_popup->set_border_color_all(contrast_color_1);
 	style_popup->set_border_width_all(MAX(EDSCALE, border_width));
-	style_popup->set_shadow_color(Color(0, 0, 0, dark_theme ? 0.3 : 0.1));
+	const Color shadow_color = Color(0, 0, 0, dark_theme ? 0.3 : 0.1);
+	style_popup->set_shadow_color(shadow_color);
 	style_popup->set_shadow_size(4 * EDSCALE);
 
 	Ref<StyleBoxEmpty> style_empty = make_empty_stylebox(default_margin_size, default_margin_size, default_margin_size, default_margin_size);
@@ -738,7 +740,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	graphsb->set_border_width(MARGIN_TOP, 22 * EDSCALE + border_width);
 	Ref<StyleBoxFlat> graphsbselected = make_flat_stylebox(Color(0, 0, 0, 0.4), 16, 24, 16, 5);
 	graphsbselected->set_border_width_all(border_width);
-	graphsbselected->set_border_color_all(Color(1, 1, 1, 0.9));
+	graphsbselected->set_border_color_all(Color(accent_color.r, accent_color.g, accent_color.b, 0.9));
+	graphsbselected->set_shadow_size(8 * EDSCALE);
+	graphsbselected->set_shadow_color(shadow_color);
 	graphsbselected->set_border_width(MARGIN_TOP, 22 * EDSCALE + border_width);
 	Ref<StyleBoxFlat> graphsbcomment = make_flat_stylebox(Color(0, 0, 0, 0.3), 16, 24, 16, 5);
 	graphsbcomment->set_border_width_all(border_width);
