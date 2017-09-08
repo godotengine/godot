@@ -194,6 +194,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --frame-delay <ms>               Simulate high CPU load (delay each frame by <ms> milliseconds).\n");
 	OS::get_singleton()->print("  --time-scale <scale>             Force time scale (higher values are faster, 1.0 is normal speed).\n");
 	OS::get_singleton()->print("  --disable-render-loop            Disable render loop so rendering only occurs when called explicitly from script.\n");
+	OS::get_singleton()->print("  --disable-crash-handler          Disable crash handler when supported by the platform code.\n");
 	OS::get_singleton()->print("  --fixed-fps <fps>                Forces a fixed ratio between process and fixed_process timing, for use when precision is required, or when rendering to video files. Setting this will disable real-time syncronization, so that run speed is only capped by performance\n");
 	OS::get_singleton()->print("\n");
 
@@ -246,6 +247,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	translation_server = memnew(TranslationServer);
 	performance = memnew(Performance);
 	globals->add_singleton(ProjectSettings::Singleton("Performance", performance));
+
+	GLOBAL_DEF("debug/settings/backtrace/message", String("Please include this when reporting the bug on https://github.com/godotengine/godot/issues"));
 
 	MAIN_PRINT("Main: Parse CMDLine");
 
@@ -582,6 +585,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing fixed-fps argument, aborting.\n");
 				goto error;
 			}
+		} else if (I->get() == "--disable-crash-handler") {
+			OS::get_singleton()->disable_crash_handler();
 		} else {
 
 			//test for game path

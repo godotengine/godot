@@ -279,6 +279,9 @@ public:
 
 	bool is_stdout_verbose() const;
 
+	virtual void disable_crash_handler() {}
+	virtual bool is_disable_crash_handler() const { return false; }
+
 	enum CursorShape {
 		CURSOR_ARROW,
 		CURSOR_IBEAM,

@@ -72,6 +72,10 @@ Error EditorRun::run(const String &p_scene, const String p_custom_args, const Li
 		screen--;
 	}
 
+	if (OS::get_singleton()->is_disable_crash_handler()) {
+		args.push_back("--disable-crash-handler");
+	}
+
 	Rect2 screen_rect;
 	screen_rect.position = OS::get_singleton()->get_screen_position(screen);
 	screen_rect.size = OS::get_singleton()->get_screen_size(screen);

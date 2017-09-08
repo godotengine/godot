@@ -93,6 +93,13 @@ const char *OS_X11::get_audio_driver_name(int p_driver) const {
 	return AudioDriverManager::get_driver(p_driver)->get_name();
 }
 
+void OS_X11::initialize_core() {
+
+	crash_handler.initialize();
+
+	OS_Unix::initialize_core();
+}
+
 void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
 	long im_event_mask = 0;
@@ -2170,6 +2177,14 @@ int OS_X11::get_power_seconds_left() {
 
 int OS_X11::get_power_percent_left() {
 	return power_manager->get_power_percent_left();
+}
+
+void OS_X11::disable_crash_handler() {
+	crash_handler.disable();
+}
+
+bool OS_X11::is_disable_crash_handler() const {
+	return crash_handler.is_disabled();
 }
 
 OS_X11::OS_X11() {

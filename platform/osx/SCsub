@@ -3,6 +3,7 @@
 Import('env')
 
 files = [
+    'crash_handler_osx.mm',
     'os_osx.mm',
     'godot_main_osx.mm',
     'audio_driver_osx.cpp',
@@ -12,4 +13,8 @@ files = [
     'power_osx.cpp',
 ]
 
-env.Program('#bin/godot', files)
+prog = env.Program('#bin/godot', files)
+if (env['target'] == "debug" or env['target'] == "release_debug"):
+    # Build the .dSYM file for atos
+    action = "dsymutil " + File(prog)[0].path + " -o " + File(prog)[0].path + ".dSYM"
+    env.AddPostAction(prog, action)
