@@ -88,8 +88,15 @@ public:
 };
 
 void EditorExportPlatformOSX::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
-
-	// what does this need to do?
+	if (p_preset->get("texture_format/s3tc")) {
+		r_features->push_back("s3tc");
+	}
+	if (p_preset->get("texture_format/etc")) {
+		r_features->push_back("etc");
+	}
+	if (p_preset->get("texture_format/etc2")) {
+		r_features->push_back("etc2");
+	}
 }
 
 void EditorExportPlatformOSX::get_export_options(List<ExportOption> *r_options) {
@@ -112,6 +119,10 @@ void EditorExportPlatformOSX::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/identity"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/entitlements"), ""));
 #endif
+
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/s3tc"), true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc2"), false));
 }
 
 void EditorExportPlatformOSX::_make_icon(const Ref<Image> &p_icon, Vector<uint8_t> &p_data) {

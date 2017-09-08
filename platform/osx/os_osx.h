@@ -181,6 +181,7 @@ public:
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen = 0) const;
 
 	virtual String get_executable_path() const;
+	virtual String get_resource_dir() const;
 
 	virtual LatinKeyboardVariant get_latin_keyboard_variant() const;
 
