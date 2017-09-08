@@ -31,6 +31,7 @@
 			<argument index="1" name="alpha" type="float">
 			</argument>
 			<description>
+				Make a color from color name (color_names.inc) and alpha ranging from 0 to 1.
 			</description>
 		</method>
 		<method name="abs">
@@ -113,6 +114,7 @@
 			<argument index="0" name="ascii" type="int">
 			</argument>
 			<description>
+				Returns a character as String of the given ASCII code.
 			</description>
 		</method>
 		<method name="clamp">
@@ -309,6 +311,10 @@
 			<argument index="2" name="value" type="float">
 			</argument>
 			<description>
+				Returns a normalized value considering the given range.
+				[codeblock]
+				inverse_lerp(3, 5, 4) # return 0.5
+				[/codeblock]
 			</description>
 		</method>
 		<method name="is_inf">
@@ -335,6 +341,7 @@
 			<argument index="0" name="var" type="Variant">
 			</argument>
 			<description>
+				Returns the length of the given Variant if applicable. It will return character count of a String, element count of an Array, etc.
 			</description>
 		</method>
 		<method name="lerp">
@@ -551,6 +558,10 @@
 			<argument index="4" name="ostop" type="float">
 			</argument>
 			<description>
+				Maps a value from range [istart, istop] to [ostart, ostop].
+				[codeblock]
+				range_lerp(75, 0, 100, -1, 1) # returns 0.5
+				[/codeblock]
 			</description>
 		</method>
 		<method name="round">
@@ -667,6 +678,11 @@
 			<argument index="0" name="type" type="String">
 			</argument>
 			<description>
+				Returns whether the given class is exist in [ClassDB].
+				[codeblock]
+				type_exists("Sprite") # returns true
+				type_exists("Variant") # returns false
+				[/codeblock]
 			</description>
 		</method>
 		<method name="typeof">
@@ -753,6 +769,7 @@
 	</methods>
 	<members>
 		<member name="ARVRServer" type="ARVRServer" setter="" getter="" brief="">
+			[ARVRServer] singleton
 		</member>
 		<member name="AudioServer" type="AudioServer" setter="" getter="" brief="">
 			[AudioServer] singleton
@@ -1944,18 +1961,25 @@
 			Variable is of type [Array].
 		</constant>
 		<constant name="TYPE_RAW_ARRAY" value="20">
+			Variable is of type [PoolByteArray].
 		</constant>
 		<constant name="TYPE_INT_ARRAY" value="21">
+			Variable is of type [PoolIntArray].
 		</constant>
 		<constant name="TYPE_REAL_ARRAY" value="22">
+			Variable is of type [PoolRealArray].
 		</constant>
 		<constant name="TYPE_STRING_ARRAY" value="23">
+			Variable is of type [PoolStringArray].
 		</constant>
 		<constant name="TYPE_VECTOR2_ARRAY" value="24">
+			Variable is of type [PoolVector2Array].
 		</constant>
 		<constant name="TYPE_VECTOR3_ARRAY" value="25">
+			Variable is of type [PoolVector3Array].
 		</constant>
 		<constant name="TYPE_COLOR_ARRAY" value="26">
+			Variable is of type [PoolColorArray].
 		</constant>
 		<constant name="TYPE_MAX" value="27">
 		</constant>
@@ -3477,6 +3501,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Return the update mode of a value track.
 			</description>
 		</method>
 		<method name="value_track_set_update_mode">
@@ -3487,6 +3512,7 @@
 			<argument index="1" name="mode" type="int" enum="Animation.UpdateMode">
 			</argument>
 			<description>
+				Set the update mode (UPDATE_*) of a value track.
 			</description>
 		</method>
 	</methods>
@@ -3510,10 +3536,13 @@
 			Cubic interpolation.
 		</constant>
 		<constant name="UPDATE_CONTINUOUS" value="0">
+			Update between keyframes.
 		</constant>
 		<constant name="UPDATE_DISCRETE" value="1">
+			Update at the keyframes and hold the value.
 		</constant>
 		<constant name="UPDATE_TRIGGER" value="2">
+			Update at the keyframes.
 		</constant>
 	</constants>
 </class>
@@ -3551,6 +3580,7 @@
 			<argument index="0" name="anim_from" type="String">
 			</argument>
 			<description>
+				Return the name of the next animation in the queue.
 			</description>
 		</method>
 		<method name="animation_set_next">
@@ -3561,6 +3591,7 @@
 			<argument index="1" name="anim_to" type="String">
 			</argument>
 			<description>
+				Set the name of an animation that will be played after.
 			</description>
 		</method>
 		<method name="clear_caches">
@@ -3933,6 +3964,7 @@
 			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
+				Returns an animation given its name.
 			</description>
 		</method>
 		<method name="animation_node_get_master_animation" qualifiers="const">
@@ -3986,6 +4018,7 @@
 			<argument index="2" name="dst_input_idx" type="int">
 			</argument>
 			<description>
+				Returns whether node [code]id[/code] and [code]dst_id[/code] are connected at the specified slot.
 			</description>
 		</method>
 		<method name="blend2_node_get_amount" qualifiers="const">
@@ -3994,6 +4027,7 @@
 			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
+				Returns the blend amount of a Blend2 node given its name.
 			</description>
 		</method>
 		<method name="blend2_node_set_amount">
@@ -4004,6 +4038,7 @@
 			<argument index="1" name="blend" type="float">
 			</argument>
 			<description>
+				Sets the blend amount of a Blend2 node given its name and value.
 			</description>
 		</method>
 		<method name="blend2_node_set_filter_path">
@@ -4024,6 +4059,7 @@
 			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
+				Returns the blend amount of a Blend3 node given its name.
 			</description>
 		</method>
 		<method name="blend3_node_set_amount">
@@ -4034,6 +4070,7 @@
 			<argument index="1" name="blend" type="float">
 			</argument>
 			<description>
+				Sets the blend amount of a Blend3 node given its name and value.
 			</description>
 		</method>
 		<method name="blend4_node_get_amount" qualifiers="const">
@@ -4042,6 +4079,7 @@
 			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
+				Returns the blend amount of a Blend4 node given its name.
 			</description>
 		</method>
 		<method name="blend4_node_set_amount">
@@ -4052,6 +4090,7 @@
 			<argument index="1" name="blend" type="Vector2">
 			</argument>
 			<description>
+				Sets the blend amount of a Blend4 node given its name and value.
 			</description>
 		</method>
 		<method name="connect_nodes">
@@ -4064,6 +4103,7 @@
 			<argument index="2" name="dst_input_idx" type="int">
 			</argument>
 			<description>
+				Connects node [code]id[/code] to [code]dst_id[/code] at the specified input slot.
 			</description>
 		</method>
 		<method name="disconnect_nodes">
@@ -4074,12 +4114,14 @@
 			<argument index="1" name="dst_input_idx" type="int">
 			</argument>
 			<description>
+				Disconnects nodes connected to [code]id[/code] at the specified input slot.
 			</description>
 		</method>
 		<method name="get_animation_process_mode" qualifiers="const">
 			<return type="int" enum="AnimationTreePlayer.AnimationProcessMode">
 			</return>
 			<description>
+				Returns playback process mode of this AnimationTreePlayer.
 			</description>
 		</method>
 		<method name="get_base_path" qualifiers="const">
@@ -4098,12 +4140,14 @@
 			<return type="PoolStringArray">
 			</return>
 			<description>
+				Returns a PoolStringArray containing the name of all nodes.
 			</description>
 		</method>
 		<method name="is_active" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns whether this AnimationTreePlayer is active.
 			</description>
 		</method>
 		<method name="mix_node_get_amount" qualifiers="const">
@@ -4112,6 +4156,7 @@
 			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
+				Returns mix amount of a Mix node given its name.
 			</description>
 		</method>
 		<method name="mix_node_set_amount">
@@ -4122,6 +4167,7 @@
 			<argument index="1" name="ratio" type="float">
 			</argument>
 			<description>
+				Sets mix amount of a Mix node given its name and value.
 			</description>
 		</method>
 		<method name="node_exists" qualifiers="const">
@@ -4159,6 +4205,7 @@
 			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
+				Returns position of a node in the graph given its name.
 			</description>
 		</method>
 		<method name="node_get_type" qualifiers="const">
@@ -4189,6 +4236,7 @@
 			<argument index="1" name="screen_pos" type="Vector2">
 			</argument>
 			<description>
+				Sets position of a node in the graph given its name and position.
 			</description>
 		</method>
 		<method name="oneshot_node_get_autorestart_delay" qualifiers="const">
@@ -4197,6 +4245,7 @@
 			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
+				Returns autostart delay of a OneShot node given its name.
 			</description>
 		</method>
 		<method name="oneshot_node_get_autorestart_random_delay" qualifiers="const">
@@ -4205,6 +4254,7 @@
 			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
+				Returns autostart random delay of a OneShot node given its name.
 			</description>
 		</method>
 		<method name="oneshot_node_get_fadein_time" qualifiers="const">
@@ -4213,6 +4263,7 @@
 			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
+				Returns fade in time of a OneShot node given its name.
 			</description>
 		</method>
 		<method name="oneshot_node_get_fadeout_time" qualifiers="const">
@@ -4221,6 +4272,7 @@
 			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
+				Returns fade out time of a OneShot node given its name.
 			</description>
 		</method>
 		<method name="oneshot_node_has_autorestart" qualifiers="const">
@@ -4229,6 +4281,7 @@
 			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
+				Returns whether a OneShot node will auto restart given its name.
 			</description>
 		</method>
 		<method name="oneshot_node_is_active" qualifiers="const">
@@ -4237,6 +4290,7 @@
 			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
+				Returns whether a OneShot node is active given its name.
 			</description>
 		</method>
 		<method name="oneshot_node_set_autorestart">
@@ -4247,6 +4301,7 @@
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
+				Sets autorestart property of a OneShot node given its name and value.
 			</description>
 		</method>
 		<method name="oneshot_node_set_autorestart_delay">
@@ -4257,6 +4312,7 @@
 			<argument index="1" name="delay_sec" type="float">
 			</argument>
 			<description>
+				Sets autorestart delay of a OneShot node given its name and value in seconds.
 			</description>
 		</method>
 		<method name="oneshot_node_set_autorestart_random_delay">
@@ -4267,6 +4323,7 @@
 			<argument index="1" name="rand_sec" type="float">
 			</argument>
 			<description>
+				Sets autorestart random delay of a OneShot node given its name and value in seconds.
 			</description>
 		</method>
 		<method name="oneshot_node_set_fadein_time">
@@ -4277,6 +4334,7 @@
 			<argument index="1" name="time_sec" type="float">
 			</argument>
 			<description>
+				Sets fade in time of a OneShot node given its name and value in seconds.
 			</description>
 		</method>
 		<method name="oneshot_node_set_fadeout_time">
@@ -4287,6 +4345,7 @@
 			<argument index="1" name="time_sec" type="float">
 			</argument>
 			<description>
+				Sets fade out time of a OneShot node given its name and value in seconds.
 			</description>
 		</method>
 		<method name="oneshot_node_set_filter_path">
@@ -4307,6 +4366,7 @@
 			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
+				Starts a OneShot node given its name.
 			</description>
 		</method>
 		<method name="oneshot_node_stop">
@@ -4315,6 +4375,7 @@
 			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
+				Stops a OneShot node given its name.
 			</description>
 		</method>
 		<method name="recompute_caches">
@@ -4335,6 +4396,7 @@
 			<return type="void">
 			</return>
 			<description>
+				Resets this AnimationTreePlayer.
 			</description>
 		</method>
 		<method name="set_active">
@@ -4343,6 +4405,7 @@
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
+				Sets whether this AnimationTreePlayer is active. AnimationTreePlayer will start processing if set to active.
 			</description>
 		</method>
 		<method name="set_animation_process_mode">
@@ -4351,6 +4414,7 @@
 			<argument index="0" name="mode" type="int" enum="AnimationTreePlayer.AnimationProcessMode">
 			</argument>
 			<description>
+				Sets process mode (ANIMATION_PROCESS_*) of this AnimationTreePlayer.
 			</description>
 		</method>
 		<method name="set_base_path">
@@ -4359,6 +4423,7 @@
 			<argument index="0" name="path" type="NodePath">
 			</argument>
 			<description>
+				Sets base path of this AnimationTreePlayer.
 			</description>
 		</method>
 		<method name="set_master_player">
@@ -4375,6 +4440,7 @@
 			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
+				Returns time scale value of a TimeScale node given its name.
 			</description>
 		</method>
 		<method name="timescale_node_set_scale">
@@ -4385,6 +4451,7 @@
 			<argument index="1" name="scale" type="float">
 			</argument>
 			<description>
+				Sets time scale value of a TimeScale node given its name and value.
 			</description>
 		</method>
 		<method name="timeseek_node_seek">
@@ -4395,6 +4462,7 @@
 			<argument index="1" name="pos_sec" type="float">
 			</argument>
 			<description>
+				Sets time seek value of a TimeSeek node given its name and value.
 			</description>
 		</method>
 		<method name="transition_node_delete_input">
@@ -4490,24 +4558,34 @@
 	</members>
 	<constants>
 		<constant name="NODE_OUTPUT" value="0">
+			Output node.
 		</constant>
 		<constant name="NODE_ANIMATION" value="1">
+			Animation node.
 		</constant>
 		<constant name="NODE_ONESHOT" value="2">
+			OneShot node.
 		</constant>
 		<constant name="NODE_MIX" value="3">
+			Mix node.
 		</constant>
 		<constant name="NODE_BLEND2" value="4">
+			Blend2 node.
 		</constant>
 		<constant name="NODE_BLEND3" value="5">
+			Blend3 node.
 		</constant>
 		<constant name="NODE_BLEND4" value="6">
+			Blend4 node.
 		</constant>
 		<constant name="NODE_TIMESCALE" value="7">
+			TimeScale node.
 		</constant>
 		<constant name="NODE_TIMESEEK" value="8">
+			TimeSeek node.
 		</constant>
 		<constant name="NODE_TRANSITION" value="9">
+			Transition node.
 		</constant>
 	</constants>
 </class>
@@ -26534,6 +26612,7 @@
 			<return type="int" enum="LineEdit.Align">
 			</return>
 			<description>
+				Return the align mode of the [LineEdit].
 			</description>
 		</method>
 		<method name="get_cursor_pos" qualifiers="const">
@@ -26560,18 +26639,21 @@
 			<return type="PopupMenu">
 			</return>
 			<description>
+				Return the [PopupMenu] of this [LineEdit].
 			</description>
 		</method>
 		<method name="get_placeholder" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
+				Return the placeholder text.
 			</description>
 		</method>
 		<method name="get_placeholder_alpha" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+				Return transparency of the placeholder text.
 			</description>
 		</method>
 		<method name="get_text" qualifiers="const">
@@ -26601,6 +26683,7 @@
 			<argument index="0" name="option" type="int">
 			</argument>
 			<description>
+				Execute a given action as defined in the MENU_* enum.
 			</description>
 		</method>
 		<method name="select">
@@ -26611,6 +26694,12 @@
 			<argument index="1" name="to" type="int" default="-1">
 			</argument>
 			<description>
+				Select the text inside [LineEdit] by the given character positions. [code]from[/code] is default to the beginning. [code]to[/code] is default to the end.
+				[codeblock]
+				select()     # select all
+				select(5)    # select from the fifth character to the end.
+				select(2, 5) # select from the second to the fifth character.
+				[/codeblock]
 			</description>
 		</method>
 		<method name="select_all">
@@ -26626,6 +26715,7 @@
 			<argument index="0" name="align" type="int" enum="LineEdit.Align">
 			</argument>
 			<description>
+				Set text alignment of the [LineEdit].
 			</description>
 		</method>
 		<method name="set_cursor_pos">
@@ -26669,6 +26759,7 @@
 			<argument index="0" name="text" type="String">
 			</argument>
 			<description>
+				Set the placeholder text.
 			</description>
 		</method>
 		<method name="set_placeholder_alpha">
@@ -26677,6 +26768,7 @@
 			<argument index="0" name="alpha" type="float">
 			</argument>
 			<description>
+				Set transparency of the placeholder text.
 			</description>
 		</method>
 		<method name="set_secret">
@@ -26740,24 +26832,34 @@
 	</signals>
 	<constants>
 		<constant name="ALIGN_LEFT" value="0">
+			Align left.
 		</constant>
 		<constant name="ALIGN_CENTER" value="1">
+			Align center.
 		</constant>
 		<constant name="ALIGN_RIGHT" value="2">
+			Align right.
 		</constant>
 		<constant name="ALIGN_FILL" value="3">
+			Align fill.
 		</constant>
 		<constant name="MENU_CUT" value="0">
+			Cut (Copy and clear).
 		</constant>
 		<constant name="MENU_COPY" value="1">
+			Copy the selected text.
 		</constant>
 		<constant name="MENU_PASTE" value="2">
+			Paste the clipboard text over the selected text.
 		</constant>
 		<constant name="MENU_CLEAR" value="3">
+			Clear the text.
 		</constant>
 		<constant name="MENU_SELECT_ALL" value="4">
+			Select all text.
 		</constant>
 		<constant name="MENU_UNDO" value="5">
+			Undo an action.
 		</constant>
 		<constant name="MENU_MAX" value="6">
 		</constant>
@@ -26960,6 +27062,7 @@
 			<return type="void">
 			</return>
 			<description>
+				Called before the program exits.
 			</description>
 		</method>
 		<method name="_idle" qualifiers="virtual">
@@ -26968,12 +27071,14 @@
 			<argument index="0" name="delta" type="float">
 			</argument>
 			<description>
+				Called each idle frame with time since last call as an only argument.
 			</description>
 		</method>
 		<method name="_initialize" qualifiers="virtual">
 			<return type="void">
 			</return>
 			<description>
+				Called once during initialization.
 			</description>
 		</method>
 		<method name="_input_event" qualifiers="virtual">
@@ -27100,6 +27205,7 @@
 			<argument index="0" name="base64_str" type="String">
 			</argument>
 			<description>
+				Return [PoolByteArray] of a given base64 encoded String.
 			</description>
 		</method>
 		<method name="base64_to_utf8">
@@ -27108,6 +27214,7 @@
 			<argument index="0" name="base64_str" type="String">
 			</argument>
 			<description>
+				Return utf8 String of a given base64 encoded String.
 			</description>
 		</method>
 		<method name="base64_to_variant">
@@ -27116,6 +27223,7 @@
 			<argument index="0" name="base64_str" type="String">
 			</argument>
 			<description>
+				Return [Variant] of a given base64 encoded String.
 			</description>
 		</method>
 		<method name="raw_to_base64">
@@ -27124,6 +27232,7 @@
 			<argument index="0" name="array" type="PoolByteArray">
 			</argument>
 			<description>
+				Return base64 encoded String of a given [PoolByteArray].
 			</description>
 		</method>
 		<method name="utf8_to_base64">
@@ -27132,6 +27241,7 @@
 			<argument index="0" name="utf8_str" type="String">
 			</argument>
 			<description>
+				Return base64 encoded String of a given utf8 String.
 			</description>
 		</method>
 		<method name="variant_to_base64">
@@ -27140,6 +27250,7 @@
 			<argument index="0" name="variant" type="Variant">
 			</argument>
 			<description>
+				Return base64 encoded String of a given [Variant].
 			</description>
 		</method>
 	</methods>
@@ -27219,6 +27330,7 @@
 	<signals>
 		<signal name="about_to_show">
 			<description>
+				Emitted when [PopupMenu] of this MenuButton is about to show.
 			</description>
 		</signal>
 	</signals>
@@ -28621,6 +28733,7 @@
 			<argument index="3" name="out_bandwidth" type="int" default="0">
 			</argument>
 			<description>
+				Create client that connects to a server at address [code]ip[/code] using specified [code]port[/code].
 			</description>
 		</method>
 		<method name="create_server">
@@ -28635,6 +28748,7 @@
 			<argument index="3" name="out_bandwidth" type="int" default="0">
 			</argument>
 			<description>
+				Create server that listens to connections via [code]port[/code].
 			</description>
 		</method>
 		<method name="get_compression_mode" qualifiers="const">
@@ -28701,6 +28815,7 @@
 			<return type="bool">
 			</return>
 			<description>
+				Return whether this [NetworkedMultiplayerPeer] is refusing new connections.
 			</description>
 		</method>
 		<method name="poll">
@@ -28715,6 +28830,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+				If [code]endable[/code] is true, this [NetworkedMultiplayerPeer] will refuse new connections.
 			</description>
 		</method>
 		<method name="set_target_peer">
@@ -28737,26 +28853,31 @@
 	<signals>
 		<signal name="connection_failed">
 			<description>
+				Emitted when failed to connect to server.
 			</description>
 		</signal>
 		<signal name="connection_succeeded">
 			<description>
+				Emitted when successfully connected to server.
 			</description>
 		</signal>
 		<signal name="peer_connected">
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
+				Emitted by the server when a client is connected.
 			</description>
 		</signal>
 		<signal name="peer_disconnected">
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
+				Emitted by the server when a client is disconnected.
 			</description>
 		</signal>
 		<signal name="server_disconnected">
 			<description>
+				Emitted by clients when server is disconnected.
 			</description>
 		</signal>
 	</signals>
@@ -29125,6 +29246,7 @@
 			<argument index="0" name="event" type="InputEvent">
 			</argument>
 			<description>
+				Called when there is a change to input devices. Propagated through the node tree until a Node consumes it.
 			</description>
 		</method>
 		<method name="_process" qualifiers="virtual">
@@ -29152,6 +29274,7 @@
 			<argument index="0" name="event" type="InputEvent">
 			</argument>
 			<description>
+				Propagated to all nodes when the previous InputEvent is not consumed by any nodes.
 			</description>
 		</method>
 		<method name="_unhandled_key_input" qualifiers="virtual">
@@ -29349,12 +29472,14 @@
 			<return type="int" enum="Node.PauseMode">
 			</return>
 			<description>
+				Return the pause mode (PAUSE_MODE_*) of this Node.
 			</description>
 		</method>
 		<method name="get_position_in_parent" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Return the order in the node tree branch, i.e. if called by the first child Node, return 0.
 			</description>
 		</method>
 		<method name="get_process_delta_time" qualifiers="const">
@@ -29374,6 +29499,7 @@
 			<return type="SceneTree">
 			</return>
 			<description>
+				Return a [SceneTree] that this node is inside.
 			</description>
 		</method>
 		<method name="get_viewport" qualifiers="const">
@@ -29388,6 +29514,7 @@
 			<argument index="0" name="path" type="NodePath">
 			</argument>
 			<description>
+				Return whether the node that a given [NodePath] points too exists.
 			</description>
 		</method>
 		<method name="has_node_and_resource" qualifiers="const">
@@ -29441,12 +29568,14 @@
 			<argument index="0" name="group" type="String">
 			</argument>
 			<description>
+				Return whether this Node is in the specified group.
 			</description>
 		</method>
 		<method name="is_inside_tree" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Return whether this Node is inside a [SceneTree].
 			</description>
 		</method>
 		<method name="is_network_master" qualifiers="const">
@@ -29538,6 +29667,7 @@
 			<return type="void">
 			</return>
 			<description>
+				Destroy this Node and its children when they are not in use.
 			</description>
 		</method>
 		<method name="raise">
@@ -29587,6 +29717,7 @@
 			<return type="void">
 			</return>
 			<description>
+				Request that [code]_ready[/code] be called again.
 			</description>
 		</method>
 		<method name="rpc" qualifiers="vararg">
@@ -29767,6 +29898,7 @@
 			<argument index="0" name="mode" type="int" enum="Node.PauseMode">
 			</argument>
 			<description>
+				Set pause mode (PAUSE_MODE_*) of this Node.
 			</description>
 		</method>
 		<method name="set_process">
@@ -29837,10 +29969,12 @@
 		</signal>
 		<signal name="tree_entered">
 			<description>
+				Emitted when Node enters the tree.
 			</description>
 		</signal>
 		<signal name="tree_exited">
 			<description>
+				Emitted when Node exits the tree.
 			</description>
 		</signal>
 	</signals>
@@ -29885,18 +30019,25 @@
 		<constant name="RPC_MODE_DISABLED" value="0">
 		</constant>
 		<constant name="RPC_MODE_REMOTE" value="1">
+			Call a method remotely.
 		</constant>
 		<constant name="RPC_MODE_SYNC" value="2">
+			Call a method both remotely and locally.
 		</constant>
 		<constant name="RPC_MODE_MASTER" value="3">
+			Call a method if the Node is Master.
 		</constant>
 		<constant name="RPC_MODE_SLAVE" value="4">
+			Call a method if the Node is Slave.
 		</constant>
 		<constant name="PAUSE_MODE_INHERIT" value="0">
+			Inherits pause mode from parent. For root node, it is equivalent to PAUSE_MODE_STOP.
 		</constant>
 		<constant name="PAUSE_MODE_STOP" value="1">
+			Stop processing when SceneTree is paused.
 		</constant>
 		<constant name="PAUSE_MODE_PROCESS" value="2">
+			Continue to process regardless of SceneTree pause state.
 		</constant>
 		<constant name="DUPLICATE_SIGNALS" value="1">
 		</constant>
