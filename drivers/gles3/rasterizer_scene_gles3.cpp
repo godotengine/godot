@@ -3487,8 +3487,8 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	}
 
-	if (!env || storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT]) {
-		//no environment or transparent render, simply return and convert to SRGB
+	if (!env || storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT] || storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_VFLIP]) {
+		//no environment or transparent render or vflip, simply return and convert to SRGB
 		glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->fbo);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->effects.mip_maps[0].color);
