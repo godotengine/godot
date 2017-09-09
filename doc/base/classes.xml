@@ -12934,23 +12934,23 @@
 </class>
 <class name="Control" inherits="CanvasItem" category="Core">
 	<brief_description>
-		Control is the base node for all the GUI components.
+		Base node for all User Interface components.
 	</brief_description>
 	<description>
-		Control is the base class Node for all the GUI components. Every GUI component inherits from it, directly or indirectly. In this way, sections of the scene tree made of contiguous control nodes, become user interfaces.
-		Controls are relative to the parent position and size by using anchors and margins. This ensures that they can adapt easily in most situation to changing dialog and screen sizes. When more flexibility is desired, [Container] derived nodes can be used.
+		The base class Node for all User Interface components. Every UI node inherits from it. Any scene or portion of a scene tree composed of Control nodes is a User Interface.
+		Controls use anchors and margins to place themselves relative to their parent. They adapt automatically when their parent or the screen size changes. To build flexible UIs, use built-in [Container] nodes or create your own.
 		Anchors work by defining which margin do they follow, and a value relative to it. Allowed anchoring modes are ANCHOR_BEGIN, where the margin is relative to the top or left margins of the parent (in pixels), ANCHOR_END for the right and bottom margins of the parent and ANCHOR_RATIO, which is a ratio from 0 to 1 in the parent range.
-		Input device events are first sent to the root controls via the [method Node._input], which distribute it through the tree, then delivers them to the adequate one (under cursor or keyboard focus based) by calling [method MainLoop._input_event]. There is no need to enable input processing on controls to receive such events. To ensure that no one else will receive the event (not even [method Node._unhandled_input]), the control can accept it by calling [method accept_event].
-		Only one control can hold the keyboard focus (receiving keyboard events), for that the control must define the focus mode with [method set_focus_mode]. Focus is lost when another control gains it, or the current focus owner is hidden.
-		It is sometimes desired for a control to ignore mouse/pointer events. This is often the case when placing other controls on top of a button, in such cases. Calling [method set_ignore_mouse] enables this function.
-		Finally, controls are skinned according to a [Theme]. Setting a [Theme] on a control will propagate all the skinning down the tree. Optionally, skinning can be overridden per each control by calling the add_*_override functions, or from the editor.
+		Godot sends Input events to the root node first, via [method Node._input]. The method distributes it through the node tree and delivers the input events to the node under the mouse cursor or on focus with the keyboard. To do so, it calls [method MainLoop._input_event]. No need to enable [method Node.set_process_input] on Controls to receive input events. Call [method accept_event] to ensure no other node receives the event, not even [method Node._unhandled_input].
+		Only the one Control node in focus receives keyboard events. To do so, the Control must get the focus mode with [method set_focus_mode]. It loses focus when another Control gets it, or if the current Control in focus is hidden.
+		You'll sometimes want Controls to ignore mouse or touch events. For example, if you place an icon on top of a button. Call [method set_ignore_mouse] for that.
+		[Theme] resources change the Control's appearance. If you change the [Theme] on a parent Control node, it will propagate to all of its children. You can override parts of the theme on each Control with the add_*_override methods, like [method add_font_override]. You can also override the theme from the editor.
 	</description>
 	<methods>
 		<method name="_get_minimum_size" qualifiers="virtual">
 			<return type="Vector2">
 			</return>
 			<description>
-				Return the minimum size this Control can shrink to. A control will never be displayed or resized smaller than its minimum size.
+				Returns the minimum size this Control can shrink to. A control will never be displayed or resized smaller than its minimum size.
 			</description>
 		</method>
 		<method name="_gui_input" qualifiers="virtual">
@@ -12965,7 +12965,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Handles the event, no other control will receive it and it will not be sent to nodes waiting on [method Node._unhandled_input] or [method Node._unhandled_key_input].
+				Marks the input event as handled. No other Control will receive it, and the input event will not propagate. Not even to nodes listening to [method Node._unhandled_input] or [method Node._unhandled_key_input].
 			</description>
 		</method>
 		<method name="add_color_override">
@@ -13820,12 +13820,12 @@
 	<signals>
 		<signal name="focus_entered">
 			<description>
-				Emitted when keyboard focus is gained.
+				Emitted when the node gains keyboard focus.
 			</description>
 		</signal>
 		<signal name="focus_exited">
 			<description>
-				Emitted when the keyboard focus is lost.
+				Emitted when the node loses keyboard focus.
 			</description>
 		</signal>
 		<signal name="gui_input">
@@ -13836,7 +13836,7 @@
 		</signal>
 		<signal name="minimum_size_changed">
 			<description>
-				Emitted when the minimum size of the control changed.
+				Emitted when the node's minimum size changes.
 			</description>
 		</signal>
 		<signal name="modal_closed">
@@ -13845,22 +13845,22 @@
 		</signal>
 		<signal name="mouse_entered">
 			<description>
-				Emitted when the mouse enters the control area.
+				Emitted when the mouse enters the control's area.
 			</description>
 		</signal>
 		<signal name="mouse_exited">
 			<description>
-				Emitted when the mouse left the control area.
+				Emitted when the mouse leaves the control's area.
 			</description>
 		</signal>
 		<signal name="resized">
 			<description>
-				Emitted when the control changed size.
+				Emitted when the control changes size.
 			</description>
 		</signal>
 		<signal name="size_flags_changed">
 			<description>
-				Emitted when the size flags changed.
+				Emitted when the size flags change.
 			</description>
 		</signal>
 	</signals>
