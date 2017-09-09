@@ -2895,11 +2895,9 @@ void AnimationKeyEditor::_notification(int p_what) {
 
 			key_editor->edit(key_edit);
 
-			zoomicon->set_texture(get_icon("Zoom", "EditorIcons"));
 			zoomicon->set_custom_minimum_size(Size2(24 * EDSCALE, 0));
 			zoomicon->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
 
-			menu_add_track->set_icon(get_icon("Add", "EditorIcons"));
 			menu_add_track->get_popup()->add_icon_item(get_icon("KeyValue", "EditorIcons"), "Add Normal Track", ADD_TRACK_MENU_ADD_VALUE_TRACK);
 			menu_add_track->get_popup()->add_icon_item(get_icon("KeyXform", "EditorIcons"), "Add Transform Track", ADD_TRACK_MENU_ADD_TRANSFORM_TRACK);
 			menu_add_track->get_popup()->add_icon_item(get_icon("KeyCall", "EditorIcons"), "Add Call Func Track", ADD_TRACK_MENU_ADD_CALL_TRACK);
@@ -2926,17 +2924,9 @@ void AnimationKeyEditor::_notification(int p_what) {
 			optimize_dialog->connect("confirmed", this, "_animation_optimize");
 
 			menu_track->get_popup()->add_child(tpp);
-			//menu_track->get_popup()->add_submenu_item("Set Transitions..","Transitions");
-			//menu_track->get_popup()->add_separator();
+
 			menu_track->get_popup()->add_item(TTR("Optimize Animation"), TRACK_MENU_OPTIMIZE);
 			menu_track->get_popup()->add_item(TTR("Clean-Up Animation"), TRACK_MENU_CLEAN_UP);
-
-			curve_linear->set_icon(get_icon("CurveLinear", "EditorIcons"));
-			curve_in->set_icon(get_icon("CurveIn", "EditorIcons"));
-			curve_out->set_icon(get_icon("CurveOut", "EditorIcons"));
-			curve_inout->set_icon(get_icon("CurveInOut", "EditorIcons"));
-			curve_outin->set_icon(get_icon("CurveOutIn", "EditorIcons"));
-			curve_constant->set_icon(get_icon("CurveConstant", "EditorIcons"));
 
 			curve_linear->connect("pressed", this, "_menu_track", varray(CURVE_SET_LINEAR));
 			curve_in->connect("pressed", this, "_menu_track", varray(CURVE_SET_IN));
@@ -2945,17 +2935,39 @@ void AnimationKeyEditor::_notification(int p_what) {
 			curve_outin->connect("pressed", this, "_menu_track", varray(CURVE_SET_OUTIN));
 			curve_constant->connect("pressed", this, "_menu_track", varray(CURVE_SET_CONSTANT));
 
+			edit_button->connect("pressed", this, "_toggle_edit_curves");
+
+			curve_edit->connect("transition_changed", this, "_curve_transition_changed");
+			call_select->connect("selected", this, "_add_call_track");
+
+			_update_menu();
+
+		} break;
+
+		case NOTIFICATION_THEME_CHANGED: {
+			zoomicon->set_texture(get_icon("Zoom", "EditorIcons"));
+
+			menu_add_track->set_icon(get_icon("Add", "EditorIcons"));
+
+			menu_track->set_icon(get_icon("Tools", "EditorIcons"));
+
+			menu_add_track->get_popup()->set_item_icon(ADD_TRACK_MENU_ADD_VALUE_TRACK, get_icon("KeyValue", "EditorIcons"));
+			menu_add_track->get_popup()->set_item_icon(ADD_TRACK_MENU_ADD_TRANSFORM_TRACK, get_icon("KeyXform", "EditorIcons"));
+			menu_add_track->get_popup()->set_item_icon(ADD_TRACK_MENU_ADD_CALL_TRACK, get_icon("KeyCall", "EditorIcons"));
+
+			curve_linear->set_icon(get_icon("CurveLinear", "EditorIcons"));
+			curve_in->set_icon(get_icon("CurveIn", "EditorIcons"));
+			curve_out->set_icon(get_icon("CurveOut", "EditorIcons"));
+			curve_inout->set_icon(get_icon("CurveInOut", "EditorIcons"));
+			curve_outin->set_icon(get_icon("CurveOutIn", "EditorIcons"));
+			curve_constant->set_icon(get_icon("CurveConstant", "EditorIcons"));
+
 			move_up_button->set_icon(get_icon("MoveUp", "EditorIcons"));
 			move_down_button->set_icon(get_icon("MoveDown", "EditorIcons"));
 			remove_button->set_icon(get_icon("Remove", "EditorIcons"));
 			edit_button->set_icon(get_icon("EditKey", "EditorIcons"));
-			edit_button->connect("pressed", this, "_toggle_edit_curves");
 
 			loop->set_icon(get_icon("Loop", "EditorIcons"));
-			curve_edit->connect("transition_changed", this, "_curve_transition_changed");
-
-			//edit_button->add_color_override("font_color",get_color("font_color","Tree"));
-			//edit_button->add_color_override("font_color_hover",get_color("font_color","Tree"));
 
 			{
 
@@ -2981,24 +2993,8 @@ void AnimationKeyEditor::_notification(int p_what) {
 					get_icon("InterpWrapClamp", "EditorIcons"),
 					get_icon("InterpWrapLoop", "EditorIcons"),
 				};
-
-				//right_data_size_cache = remove_icon->get_width() + move_up_icon->get_width() + move_down_icon->get_width() + down_icon->get_width() *2 + interp_icon[0]->get_width() + cont_icon[0]->get_width() + add_key_icon->get_width() + hsep*11;
 				right_data_size_cache = down_icon->get_width() * 3 + add_key_icon->get_width() + interp_icon[0]->get_width() + cont_icon[0]->get_width() + wrap_icon[0]->get_width() + hsep * 8;
 			}
-			call_select->connect("selected", this, "_add_call_track");
-			//rename_anim->set_icon( get_icon("Rename","EditorIcons") );
-			/*
-				edit_anim->set_icon( get_icon("Edit","EditorIcons") );
-				blend_anim->set_icon( get_icon("Blend","EditorIcons") );
-				play->set_icon( get_icon("Play","EditorIcons") );
-				stop->set_icon( get_icon("Stop","EditorIcons") );
-				pause->set_icon( get_icon("Pause","EditorIcons") );
-*/
-			//menu->set_icon(get_icon("Animation","EditorIcons"));
-			//play->set_icon(get_icon("AnimationPlay","EditorIcons"));
-			//menu->set_icon(get_icon("Animation","EditorIcons"));
-			_update_menu();
-
 		} break;
 	}
 }
