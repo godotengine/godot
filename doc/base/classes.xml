@@ -26154,10 +26154,10 @@
 </class>
 <class name="LightOccluder2D" inherits="Node2D" category="Core">
 	<brief_description>
-		Occludes light cast by a Light2D, thus casting shadows.
+		Occludes light cast by a Light2D, casting shadows.
 	</brief_description>
 	<description>
-		Occludes light cast by a Light2D, thus casting shadows. The LightOccluder2D must be provided with a shape (see OccluderPolygon2D) that allows the shadow to be computed. This shape affects the resulting shadow, while the shape of the representating asset shadowed does not actually affect shadows.
+		Occludes light cast by a Light2D, casting shadows. The LightOccluder2D must be provided with an [OccluderPolygon2D] in order for the shadow to be computed.
 	</description>
 	<methods>
 		<method name="get_occluder_light_mask" qualifiers="const">
@@ -26195,8 +26195,10 @@
 	</methods>
 	<members>
 		<member name="light_mask" type="int" setter="set_occluder_light_mask" getter="get_occluder_light_mask" brief="">
+			The LightOccluder2D's light mask. The LightOccluder2D will cast shadows only from Light2D(s) that have the same light mask(s).
 		</member>
 		<member name="occluder" type="OccluderPolygon2D" setter="set_occluder_polygon" getter="get_occluder_polygon" brief="">
+			The [OccluderPolygon2D] used to compute the shadow.
 		</member>
 	</members>
 	<constants>
