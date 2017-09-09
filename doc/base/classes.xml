@@ -79,7 +79,7 @@
 				Returns the arc sine of 's' in radians. Use to get the angle of sine 's'.
 				[codeblock]
 				# s is 0.523599 or 30 degrees if converted with rad2deg(s)
-				s = asin(0.5)				
+				s = asin(0.5)
 				[/codeblock]
 			</description>
 		</method>
@@ -2352,8 +2352,8 @@
 			</return>
 			<description>
 				Call this to initialize this interface. The first interface that is initialized is identified as the primary interface and it will be used for rendering output.
-				After initializing the interface you want to use you then need to enable the AR/VR mode of a viewport and rendering should commence. 
-				Note that you must enable the AR/VR mode on the main viewport for any device that uses the main output of Godot such as for mobile VR. 
+				After initializing the interface you want to use you then need to enable the AR/VR mode of a viewport and rendering should commence.
+				Note that you must enable the AR/VR mode on the main viewport for any device that uses the main output of Godot such as for mobile VR.
 				If you do this for a platform that handles its own output (such as OpenVR) Godot will show just one eye without distortion on screen. Alternatively you can add a separate viewport node to your scene and enable AR/VR on that viewport and it will be used to output to the HMD leaving you free to do anything you like in the main window such as using a separate camera as a spectator camera or render out something completely different.
 				While currently not used you can activate additional interfaces, you may wish to do this if you want to track controllers from other platforms. However at this point in time only one interface can render to an HMD.
 			</description>
@@ -2444,7 +2444,7 @@
 			</argument>
 			<description>
 				Changes the world scaling factor.
-				Most AR/VR platforms will assume a unit size of 1 unit in your game world = 1 meter in the real world. This scale allows you to adjust this to the unit system you use in your game. 
+				Most AR/VR platforms will assume a unit size of 1 unit in your game world = 1 meter in the real world. This scale allows you to adjust this to the unit system you use in your game.
 				Note that this method is a passthrough to the ARVRServer itself.
 			</description>
 		</method>
@@ -2867,7 +2867,7 @@
 				Adds a new point at the given position with the given identifier. The algorithm prefers points with lower [code]weight_scale[/code] to form a path. The [code]id[/code] must be 0 or larger, and the [code]weight_scale[/code] must be 1 or larger.
 				[codeblock]
 				var as = AStar.new()
-				
+
 				as.add_point(1, Vector3(1,0,0), 4) # Adds the point (1,0,0) with weight_scale=4 and id=1
 				[/codeblock]
 			</description>
@@ -2903,10 +2903,10 @@
 				Creates a segment between the given points.
 				[codeblock]
 				var as = AStar.new()
-				
+
 				as.add_point(1, Vector3(1,1,0))
 				as.add_point(2, Vector3(0,5,0))
-				
+
 				as.connect_points(1, 2, false) # If bidirectional=false it's only possible to go from point 1 to point 2
 				                               # and not from point 2 to point 1.
 				[/codeblock]
@@ -2948,12 +2948,12 @@
 				Returns the closest position to [code]to_pos[/code] that resides inside a segment between two connected points.
 				[codeblock]
 				var as = AStar.new()
-				
+
 				as.add_point(1, Vector3(0,0,0))
 				as.add_point(2, Vector3(0,5,0))
-				
+
 				as.connect_points(1, 2)
-				
+
 				var res = as.get_closest_pos_in_segment(Vector3(3,3,0)) # returns (0, 3, 0)
 				[/codeblock]
 				The result is in the segment that goes from [code]y=0[/code] to [code]y=5[/code]. It's the closest position in the segment to the given point.
@@ -2970,18 +2970,18 @@
 				Returns an array with the ids of the points that form the path found by AStar between the given points. The array is ordered from the starting point to the ending point of the path.
 				[codeblock]
 				var as = AStar.new()
-				
+
 				as.add_point(1, Vector3(0,0,0))
 				as.add_point(2, Vector3(0,1,0), 1) # default weight is 1
 				as.add_point(3, Vector3(1,1,0))
 				as.add_point(4, Vector3(2,0,0))
-				
+
 				as.connect_points(1, 2, false)
 				as.connect_points(2, 3, false)
 				as.connect_points(4, 3, false)
 				as.connect_points(1, 4, false)
 				as.connect_points(5, 4, false)
-				
+
 				var res = as.get_id_path(1, 3) # returns [1, 2, 3]
 				[/codeblock]
 				If you change the 2nd point's weight to 3, then the result will be [code][1, 4, 3][/code] instead, because now even though the distance is longer, it's "easier" to get through point 4 than through point 2.
@@ -6390,8 +6390,11 @@
 </class>
 <class name="AtlasTexture" inherits="Texture" category="Core">
 	<brief_description>
+		Packs multiple small textures in a single, bigger one. Helps to optimize video memory costs and render calls.
 	</brief_description>
 	<description>
+		Texture resource aimed at managing big textures files that pack multiple smaller textures. Consists of a Texture, a margin that defines the border width, and a Region
+		that defines the actual area of the AtlasTexture.
 	</description>
 	<methods>
 		<method name="get_atlas" qualifiers="const">
@@ -6439,10 +6442,13 @@
 	</methods>
 	<members>
 		<member name="atlas" type="Texture" setter="set_atlas" getter="get_atlas" brief="">
+			The texture that contains the atlas. Can be any Texture subtype.
 		</member>
 		<member name="margin" type="Rect2" setter="set_margin" getter="get_margin" brief="">
+			The margin around the region. The Rect2's 'w' (width) and 'h' (height) resize the texture so it fits within the margin.
 		</member>
 		<member name="region" type="Rect2" setter="set_region" getter="get_region" brief="">
+			The AtlasTexture's used region.
 		</member>
 	</members>
 	<constants>
@@ -50192,18 +50198,19 @@
 		 - Border width (individual width for each border)
 		 - Rounded corners (individual radius for each corner)
 		 - Shadow
-		 About corner radius:
-		 	Setting corner radius to high values is allowed. As soon as corners would overlap the stylebox will switch to a relative system. Example:
-			[codeblock]
+
+		About corner radius:
+		  You may use high values for 'corner radius'. As soon as corners would overlap the stylebox will switch to a relative system. Example:
+		[codeblock]
 			height = 30
 			corner_radius_top_left = 50
 			corner_raidus_bottom_left = 100
-			[/codeblock]
-			The relative system now would take the 1:2 ratio of the two left corners to calculate the actual corner width. Both corners added will [b]never[/b] be more than the height. Result:
-			[codeblock]
+		[/codeblock]
+		The relative system now would take the 1:2 ratio of the two left corners to calculate the actual corner width. Both corners added will [b]never[/b] be more than the height. Result:
+		[codeblock]
 			corner_radius_top_left: 10
 			corner_raidus_bottom_left: 20
-			[/codeblock]
+		[/codeblock]
 	</description>
 	<methods>
 		<method name="get_aa_size" qualifiers="const">
