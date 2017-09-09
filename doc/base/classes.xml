@@ -2007,32 +2007,40 @@
 </class>
 <class name="ARVRAnchor" inherits="Spatial" category="Core">
 	<brief_description>
+		Anchor point in AR Space
 	</brief_description>
 	<description>
+		The ARVR Anchor point is a spatial node that maps a real world location identified by the AR platform to a position within the game world. For example, as long as plane detection in ARKit is on, ARKit will identify and update the position of planes (tables, floors, etc) and create anchors for them.
+		This node is mapped to one of the anchors through its unique id. When you receive a signal that a new anchor is available you should add this node to your scene for that anchor. You can predefine nodes and set the id and the nodes will simply remain on 0,0,0 until a plane is recognised.
+		Keep in mind that as long as plane detection is enable the size, placing and orientation of an anchor will be updates as the detection logic learns more about the real world out there especially if only part of the surface is in view.
 	</description>
 	<methods>
 		<method name="get_anchor_id" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the anchor id for this anchor.
 			</description>
 		</method>
 		<method name="get_anchor_name" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
+				Returns the name given to this anchor.
 			</description>
 		</method>
 		<method name="get_is_active" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns true if the anchor is being tracked and false if no anchor with this id is currently known.
 			</description>
 		</method>
 		<method name="get_size" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
+				Returns the estimated size of the plane that was detected. Say when the anchor relates to a table in the real world, this is the estimated size of the surface of that table. 
 			</description>
 		</method>
 		<method name="set_anchor_id">
@@ -2041,6 +2049,7 @@
 			<argument index="0" name="anchor_id" type="int">
 			</argument>
 			<description>
+				Binds this anchor node to an anchor with this id. You can set this before the anchor itself exists. The first anchor that is identified gets id 1, the second id 2, etc. When anchors get removed that slot remains free and can be assigned to the next anchor that is identified. The most common situation where anchors 'disappear' is when the AR server identifies that two anchors represent different parts of the same plane and merge them. 
 			</description>
 		</method>
 	</methods>
@@ -2053,8 +2062,11 @@
 </class>
 <class name="ARVRCamera" inherits="Camera" category="Core">
 	<brief_description>
+		A camera node with a few overrules for AR/VR applied such as location tracking.
 	</brief_description>
 	<description>
+		This is a helper spatial node for our camera, note that if stereoscopic rendering is applicable (VR-HMD) most of the camera properties are ignored as the HMD information overrides them. The only properties that can be trusted are the near and far planes.
+		The position and orientation of this node is automatically updated by the ARVR Server to represent the location of the HMD if such tracking is available and can thus be used by game logic. Note that in contrast to the ARVR Controller the render thread has access to the most up to date tracking data of the HMD and the location of the ARVRCamera can lag a few milliseconds behind what is used for rendering as a result.
 	</description>
 	<methods>
 	</methods>
@@ -2063,26 +2075,33 @@
 </class>
 <class name="ARVRController" inherits="Spatial" category="Core">
 	<brief_description>
+		A spatial node representing a spatially tracked controller.
 	</brief_description>
 	<description>
+		This is a helper spatial node that is linked to the tracking of controllers. It also offers several handy pass throughs to the state of buttons and such on the controllers.
+		Controllers are linked by their id. You can create controller nodes before the controllers are available. Say your game always uses two controllers (one for each hand) you can predefine the controllers with id 1 and 2 and they will become active as soon as the controllers are identified. If you expect additional controllers to be used you should react to the signals and add ARVRController nodes to your scene.
+		The position of the controller node is automatically updated by the ARVR Server. This makes this node ideal to add child  nodes to visualise the controller.
 	</description>
 	<methods>
 		<method name="get_controller_id" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the controller id currently assigned to this node.
 			</description>
 		</method>
 		<method name="get_controller_name" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
+				If active, returns the name of the associated controller if provided by the AR/VR SDK used.
 			</description>
 		</method>
 		<method name="get_is_active" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns true if the controller bound to this node is currently active and being tracked.
 			</description>
 		</method>
 		<method name="get_joystick_axis" qualifiers="const">
@@ -2091,12 +2110,14 @@
 			<argument index="0" name="axis" type="int">
 			</argument>
 			<description>
+				Returns the value of the given axis for things like triggers, touchpads, etc. that are embedded into the controller.
 			</description>
 		</method>
 		<method name="get_joystick_id" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the ID of the joystick object bound to this. Every controller tracked by the ARVR Server that has buttons and axis will also be registered as a joystick within Godot. This means that all the normal joystick tracking and input mapping will work for buttons and axis found on the AR/VR controllers. This ID is purely offered as information so you can link up the controller with its joystick entry.
 			</description>
 		</method>
 		<method name="is_button_pressed" qualifiers="const">
@@ -2105,6 +2126,7 @@
 			<argument index="0" name="button" type="int">
 			</argument>
 			<description>
+				Is the given button currently pressed?
 			</description>
 		</method>
 		<method name="set_controller_id">
@@ -2113,6 +2135,7 @@
 			<argument index="0" name="controller_id" type="int">
 			</argument>
 			<description>
+				Changes the id that identifies the controller bound to this node. The first controller that the ARVR Server detects will have id 1, the second id 2, the third id 3, etc. When a controller is turned off that slot is freed ensuring that controllers will keep the same id while it is turned on even when controllers with lower ids are turned off.
 			</description>
 		</method>
 	</methods>
@@ -2125,12 +2148,14 @@
 			<argument index="0" name="button" type="int">
 			</argument>
 			<description>
+				When a button on this controller is pressed, this signal is given.
 			</description>
 		</signal>
 		<signal name="button_release">
 			<argument index="0" name="button" type="int">
 			</argument>
 			<description>
+				When a button on this controller is released, this signal is given.
 			</description>
 		</signal>
 	</signals>
@@ -2139,50 +2164,64 @@
 </class>
 <class name="ARVRInterface" inherits="Reference" category="Core">
 	<brief_description>
+		Base class for ARVR interface implementation.
 	</brief_description>
 	<description>
+		This class needs to be implemented to make an AR or VR platform available to Godot and these should be implemented as C++ modules or GDNative modules (note that for GDNative the subclass ARVRScriptInterface should be used). Part of the interface is exposed to GDScript so you can detect, enable and configure an AR or VR platform.
+		Interfaces should be written in such a way that simply enabling them will give us a working setup. You can query the available interfaces through ARVRServer.
 	</description>
 	<methods>
 		<method name="get_name" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
+				Returns the name of this interface (OpenVR, OpenHMD, ARKit, etc).
 			</description>
 		</method>
 		<method name="get_recommended_render_targetsize">
 			<return type="Vector2">
 			</return>
 			<description>
+				Returns the resolution at which we should render our intermediate results before things like lens distortion are applied by the VR platform. 
 			</description>
 		</method>
 		<method name="hmd_is_present">
 			<return type="bool">
 			</return>
 			<description>
+				Returns true if an HMD is available for this interface.
 			</description>
 		</method>
 		<method name="initialize">
 			<return type="bool">
 			</return>
 			<description>
+				Call this to initialize this interface. The first interface that is initialized is identified as the primary interface and it will be used for rendering output.
+				After initializing the interface you want to use you then need to enable the AR/VR mode of a viewport and rendering should commence. 
+				Note that you must enable the AR/VR mode on the main viewport for any device that uses the main output of Godot such as for mobile VR. 
+				If you do this for a platform that handles its own output (such as OpenVR) Godot will show just one eye without distortion on screen. Alternatively you can add a separate viewport node to your scene and enable AR/VR on that viewport and it will be used to output to the HMD leaving you free to do anything you like in the main window such as using a separate camera as a spectator camera or render out something completely different.
+				While currently not used you can activate additional interfaces, you may wish to do this if you want to track controllers from other platforms. However at this point in time only one interface can render to an HMD.
 			</description>
 		</method>
 		<method name="is_initialized">
 			<return type="bool">
 			</return>
 			<description>
+				Returns true if this interface is active.
 			</description>
 		</method>
 		<method name="is_installed">
 			<return type="bool">
 			</return>
 			<description>
+				Returns true if this interface has been installed. Say your game is designed to work with OpenVR so you are using the OpenVR interface but the user hasn't installed SteamVR, this would return false.
 			</description>
 		</method>
 		<method name="is_primary">
 			<return type="bool">
 			</return>
 			<description>
+				Returns true if this interface is currently the primary interface (the interface responsible for showing the output).
 			</description>
 		</method>
 		<method name="set_is_primary">
@@ -2191,18 +2230,21 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+				Set this interface to the primary interface (unset the old one).
 			</description>
 		</method>
 		<method name="supports_hmd">
 			<return type="bool">
 			</return>
 			<description>
+				Returns true if this interface supports HMDs and by extension uses stereo scopic rendering.
 			</description>
 		</method>
 		<method name="uninitialize">
 			<return type="void">
 			</return>
 			<description>
+				Turns the interface off.
 			</description>
 		</method>
 	</methods>
@@ -2212,23 +2254,32 @@
 	</members>
 	<constants>
 		<constant name="EYE_MONO" value="0">
+			Mono output, this is mostly used internally when retrieving positioning information for our camera node or when stereo scopic rendering is not supported.
 		</constant>
 		<constant name="EYE_LEFT" value="1">
+			Left eye output, this is mostly used internally when rendering the image for the left eye and obtaining positioning and projection information.
 		</constant>
 		<constant name="EYE_RIGHT" value="2">
+			Right eye output, this is mostly used internally when rendering the image for the right eye and obtaining positioning and projection information.
 		</constant>
 	</constants>
 </class>
 <class name="ARVROrigin" inherits="Spatial" category="Core">
 	<brief_description>
+		Our origin point in AR/VR.
 	</brief_description>
 	<description>
+		This is a special node within the AR/VR system that maps the physical location of the center of our tracking space to the virtual location within our game world.
+		There should be only one of these nodes in your scene and you must have one. All the ARVRCamera, ARVRController and ARVRAnchor nodes should be direct children of this node for spatial tracking to work correctly.
+		It is the position of this node that you update when you're character needs to move through your game world while we're not moving in the real world. Movement in the real world is always in relation to this origin point.
+		So say that your character is driving a car, the ARVROrigin node should be a child node of this car. If you implement a teleport system to move your character, you change the position of this node. Etc.
 	</description>
 	<methods>
 		<method name="get_world_scale" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+				Get the world scale applied to our positioning.
 			</description>
 		</method>
 		<method name="set_world_scale">
@@ -2237,6 +2288,9 @@
 			<argument index="0" name="world_scale" type="float">
 			</argument>
 			<description>
+				Changes the world scaling factor.
+				Most AR/VR platforms will assume a unit size of 1 unit in your game world = 1 meter in the real world. This scale allows you to adjust this to the unit system you use in your game. 
+				Note that this method is a passthrough to the ARVRServer itself.
 			</description>
 		</method>
 	</methods>
@@ -2249,44 +2303,54 @@
 </class>
 <class name="ARVRPositionalTracker" inherits="Object" category="Core">
 	<brief_description>
+		A tracked object
 	</brief_description>
 	<description>
+		An instance of this object represents a device that is tracked such as a controller or anchor point. HMDs aren't represented here as they are fully handled internally.
+		As controllers are turned on and the AR/VR interface detects them instances of this object are automatically added to this list of active tracking objects accessible through the ARVRServer
+		The ARVRController and ARVRAnchor both consume objects of this type and should be the objects you use in game. The positional trackers are just the under the hood objects that make this all work and are mostly exposed so GDNative based interfaces can interact with them. 
 	</description>
 	<methods>
 		<method name="get_joy_id" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				If this is a controller that is being tracked the controller will also be represented by a joystick entry with this id. 
 			</description>
 		</method>
 		<method name="get_name" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
+				If available this returns the name of the controller or anchor point.
 			</description>
 		</method>
 		<method name="get_orientation" qualifiers="const">
 			<return type="Basis">
 			</return>
 			<description>
+				Returns the orientation matrix of the controller.
 			</description>
 		</method>
 		<method name="get_position" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
+				Returns the position of the controller adjusted by world scale.
 			</description>
 		</method>
 		<method name="get_tracks_orientation" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns true if the orientation of this device is being tracked.
 			</description>
 		</method>
 		<method name="get_tracks_position" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns true if the position of this device is being tracked.
 			</description>
 		</method>
 		<method name="get_transform" qualifiers="const">
@@ -2295,12 +2359,14 @@
 			<argument index="0" name="adjust_by_reference_frame" type="bool">
 			</argument>
 			<description>
+				Returns the transform combining the orientation and position of this device.
 			</description>
 		</method>
 		<method name="get_type" qualifiers="const">
 			<return type="int" enum="ARVRServer.TrackerType">
 			</return>
 			<description>
+				Type of tracker.
 			</description>
 		</method>
 	</methods>
@@ -2309,14 +2375,17 @@
 </class>
 <class name="ARVRScriptInterface" inherits="ARVRInterface" category="Core">
 	<brief_description>
+		Base class for GDNative based ARVR interfaces.
 	</brief_description>
 	<description>
+		This class is used as a base class/interface class for implementing GDNative based ARVR interfaces and as a result exposes more of the internals of the ARVR server.
 	</description>
 	<methods>
 		<method name="_get_projection_for_eye" qualifiers="virtual">
 			<return type="void">
 			</return>
 			<description>
+				Should return the projection 4x4 matrix for the requested eye.
 			</description>
 		</method>
 		<method name="commit_for_eye" qualifiers="virtual">
@@ -2327,12 +2396,14 @@
 			<argument index="1" name="render_target" type="RID">
 			</argument>
 			<description>
+				Outputs a finished render buffer to the AR/VR device for the given eye.
 			</description>
 		</method>
 		<method name="get_recommended_render_targetsize" qualifiers="virtual">
 			<return type="Vector2">
 			</return>
 			<description>
+				Returns the size at which we should render our scene to get optimal quality on the output device.
 			</description>
 		</method>
 		<method name="get_transform_for_eye" qualifiers="virtual">
@@ -2343,54 +2414,63 @@
 			<argument index="1" name="cam_transform" type="Transform">
 			</argument>
 			<description>
+				Get the location and orientation transform used when rendering a specific eye.
 			</description>
 		</method>
 		<method name="hmd_is_present" qualifiers="virtual">
 			<return type="bool">
 			</return>
 			<description>
+				Return true is an HMD is available.
 			</description>
 		</method>
 		<method name="initialize" qualifiers="virtual">
 			<return type="bool">
 			</return>
 			<description>
+				Initialize this interface.
 			</description>
 		</method>
 		<method name="is_initialized" qualifiers="virtual">
 			<return type="bool">
 			</return>
 			<description>
+				Returns true if this interface has been initialized and is active.
 			</description>
 		</method>
 		<method name="is_installed" qualifiers="virtual">
 			<return type="bool">
 			</return>
 			<description>
+				Returns true if the required middleware is installed.
 			</description>
 		</method>
 		<method name="is_stereo" qualifiers="virtual">
 			<return type="bool">
 			</return>
 			<description>
+				Returns true if we require stereoscopic rendering for this interface.
 			</description>
 		</method>
 		<method name="process" qualifiers="virtual">
 			<return type="void">
 			</return>
 			<description>
+				Gets called before rendering each frame so tracking data gets updated in time.
 			</description>
 		</method>
 		<method name="supports_hmd" qualifiers="virtual">
 			<return type="bool">
 			</return>
 			<description>
+				Returns true if this interface supports HMDs.
 			</description>
 		</method>
 		<method name="uninitialize" qualifiers="virtual">
 			<return type="void">
 			</return>
 			<description>
+				Turn this interface off.
 			</description>
 		</method>
 	</methods>
@@ -2399,8 +2479,10 @@
 </class>
 <class name="ARVRServer" inherits="Object" category="Core">
 	<brief_description>
+		This is our AR/VR Server.
 	</brief_description>
 	<description>
+		The AR/VR Server is the heart of our AR/VR solution and handles all the processing.
 	</description>
 	<methods>
 		<method name="add_interface">
@@ -2409,6 +2491,7 @@
 			<argument index="0" name="arg0" type="ARVRInterface">
 			</argument>
 			<description>
+				Mostly exposed for GDNative based interfaces, this is called to register an available interface with the AR/VR server.
 			</description>
 		</method>
 		<method name="find_interface" qualifiers="const">
@@ -2417,6 +2500,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Find an interface by its name. Say that you're making a game that uses specific capabilities of an AR/VR platform you can find the interface for that platform by name and initialize it.
 			</description>
 		</method>
 		<method name="get_interface" qualifiers="const">
@@ -2425,18 +2509,21 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Get the interface registered at a given index in our list of interfaces.
 			</description>
 		</method>
 		<method name="get_interface_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Get the number of interfaces currently registered with the AR/VR server. If you're game supports multiple AR/VR platforms you can look throught the available interface and either present the user with a selection or simply try an initialize each interface and use the first one that returns true.
 			</description>
 		</method>
 		<method name="get_reference_frame" qualifiers="const">
 			<return type="Transform">
 			</return>
 			<description>
+				Gets our reference frame transform, mostly used internally and exposed for GDNative build interfaces.
 			</description>
 		</method>
 		<method name="get_tracker" qualifiers="const">
@@ -2445,18 +2532,21 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Get the positional tracker at the given ID.
 			</description>
 		</method>
 		<method name="get_tracker_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Get the number of trackers currently registered.
 			</description>
 		</method>
 		<method name="get_world_scale" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+				Returns our world scale (see ARVROrigin for more information).
 			</description>
 		</method>
 		<method name="remove_interface">
@@ -2465,16 +2555,28 @@
 			<argument index="0" name="arg0" type="ARVRInterface">
 			</argument>
 			<description>
+				Removes a registered interface, again exposed mostly for GDNative based interfaces.
 			</description>
 		</method>
 		<method name="request_reference_frame">
 			<return type="void">
 			</return>
 			<argument index="0" name="ignore_tilt" type="bool">
+				If true we ignore the tilt of the device and we don't reset the tilt. This means that when the player is looking down we don't counter this and the player will still look down in game. If this is false the player will look straight ahead even when looking down.
+				The direction in which the player looks is centered so the player looks to negative Z regardless of where the player is looking in the real world.
 			</argument>
 			<argument index="1" name="keep_height" type="bool">
+				This is a really important setting. When true we keep the height information given by our tracking.
+				You should set this to true when you are using room scale tracking and want your player to freely walk around the room, be able to crouch, etc. Your ARVROrigin should be placed on the floor of your scene in this scenario.
+				You should set this to false in all other situations. The current location of the HMD will become your 0,0,0 location and you should place your ARVROrigin point where your player currently is positioned. Use this when room scale is not available or when your making a driving or flying sim and you want to ensure the HMD is centered in your cockpit. 
 			</argument>
 			<description>
+				This is a really important function to understand correctly. AR and VR platforms all handle positioning slightly differently.
+				For platforms that do not offer spatial tracking our origin point (0,0,0) is the location of our HMD but you have little control over the direction the player is facing in the real world.
+				For platforms that do offer spatial tracking our origin point depends very much on the system. For OpenVR our origin point is usually the center of the tracking space, on the ground. For other platforms its often the location of the tracking camera.
+				This method allows you to create a reference frame, it will take the current location of the HMD and use that to adjust all our tracking data in essence realigning the real world to your players current position in your game world.
+				For this method to produce usable results tracking information should be available and this often takes a few frames after starting your game.
+				You should call this method after a few seconds have passed, when the user requests a realignment of the display holding a designated button on a controller for a short period of time, and when implementing a teleport mechanism.
 			</description>
 		</method>
 		<method name="set_primary_interface">
@@ -2483,6 +2585,7 @@
 			<argument index="0" name="arg0" type="ARVRInterface">
 			</argument>
 			<description>
+				Changes the primary interface to the specified interface. Again mostly exposed for GDNative interfaces.
 			</description>
 		</method>
 		<method name="set_world_scale">
@@ -2491,6 +2594,7 @@
 			<argument index="0" name="arg0" type="float">
 			</argument>
 			<description>
+				Changing the world scale, see the ARVROrigin documentation for more information.
 			</description>
 		</method>
 	</methods>
@@ -2503,12 +2607,14 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Signal send when a new interface has been added.
 			</description>
 		</signal>
 		<signal name="interface_removed">
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Signal send when an interface is removed.
 			</description>
 		</signal>
 		<signal name="tracker_added">
@@ -2517,27 +2623,35 @@
 			<argument index="1" name="type" type="int">
 			</argument>
 			<description>
+				Signal send when a new tracker has been added. If you don't use a fixed number of controllers or if you're using ARVRAnchors for an AR solution it is important to react to this signal and add the appropriate ARVRController or ARVRAnchor node related to this new tracker.
 			</description>
 		</signal>
 		<signal name="tracker_removed">
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Signal send when a tracker is removed, you should remove any ARVRController or ARVRAnchor points if applicable. This is not mandatory, the nodes simply become inactive and will be made active again when a new tracker becomes available (i.e. a new controller is switched on that takes the place of the previous one).
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="TRACKER_CONTROLLER" value="1">
+			Our tracker tracks the location of a controller.
 		</constant>
 		<constant name="TRACKER_BASESTATION" value="2">
+			Our tracker tracks the location of a base station.
 		</constant>
 		<constant name="TRACKER_ANCHOR" value="4">
+			Our tracker tracks the location and size of an AR anchor.
 		</constant>
 		<constant name="TRACKER_UNKNOWN" value="128">
+			Used internally if we haven't set the tracker type yet.
 		</constant>
 		<constant name="TRACKER_ANY_KNOWN" value="127">
+			Used internally to filter trackers of any known type.
 		</constant>
 		<constant name="TRACKER_ANY" value="255">
+			Used interally to select all trackers.
 		</constant>
 	</constants>
 </class>
@@ -57358,6 +57472,10 @@
 			<argument index="0" name="use" type="bool">
 			</argument>
 			<description>
+				If true this viewport will be bound to our ARVR Server.
+				If this is our main Godot viewport our AR/VR output will be displayed on screen.
+				If output is redirected to an HMD we'll see the output of just one of the eyes without any distortion applied else we'll see the stereo buffer with distortion applied if applicable
+				If this is an extra viewport output will only work if redirection to an HMD is supported by the interface. The render target will allow you to use the undistorted output for the right eye in the display.
 			</description>
 		</method>
 		<method name="set_use_own_world">
@@ -57414,6 +57532,7 @@
 			<return type="bool">
 			</return>
 			<description>
+				Returns whether this viewport is using our ARVR Server
 			</description>
 		</method>
 		<method name="warp_mouse">
