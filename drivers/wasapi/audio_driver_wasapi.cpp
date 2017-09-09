@@ -337,6 +337,8 @@ void AudioDriverWASAPI::finish() {
 		memdelete(mutex);
 		mutex = NULL;
 	}
+
+	samples_in.clear();
 }
 
 AudioDriverWASAPI::AudioDriverWASAPI() {
