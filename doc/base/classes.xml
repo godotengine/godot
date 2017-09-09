@@ -9025,8 +9025,10 @@
 </class>
 <class name="BitMap" inherits="Resource" category="Core">
 	<brief_description>
+  Resource used for masks on buttons.
 	</brief_description>
 	<description>
+  A BitMap is a resource that represents a 2D array of bits. It can be used as a mask for nodes such as the [TextureButton]. Not to be confused with [BitmapFont].
 	</description>
 	<methods>
 		<method name="create">
@@ -9035,6 +9037,7 @@
 			<argument index="0" name="size" type="Vector2">
 			</argument>
 			<description>
+      Sets the dimensions of this BitMap to [code]size[/code] and sets all bits to off.
 			</description>
 		</method>
 		<method name="create_from_image_alpha">
@@ -9043,6 +9046,7 @@
 			<argument index="0" name="image" type="Image">
 			</argument>
 			<description>
+      Sets this BitMap to have dimensions equal to that of [code]image[/code], with black pixels ([code]rgb(0,0,0)[/code]) set as off and white pixels ([code]rgb(0,0,0)[/code]) set as on.
 			</description>
 		</method>
 		<method name="get_bit" qualifiers="const">
@@ -9051,18 +9055,21 @@
 			<argument index="0" name="pos" type="Vector2">
 			</argument>
 			<description>
+      Returns [code]true[/code] if the bit at [code]pos[/code] is set and [code]false[/code] if it is not set.
 			</description>
 		</method>
 		<method name="get_size" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+      Returns the dimensions of the BitMap as a [Vector2].
 			</description>
 		</method>
 		<method name="get_true_bit_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+      Returns the number of bits that are set in the BitMap.
 			</description>
 		</method>
 		<method name="set_bit">
@@ -9073,6 +9080,7 @@
 			<argument index="1" name="bit" type="bool">
 			</argument>
 			<description>
+      Sets the bit at [code]pos[/code] to the value [code]bit[/code]. Fails if [code]pos[/code] lies outside the dimensions of the BitMap.
 			</description>
 		</method>
 		<method name="set_bit_rect">
@@ -9083,6 +9091,7 @@
 			<argument index="1" name="bit" type="bool">
 			</argument>
 			<description>
+      Sets all bits that lie in [code]p_rect[/code] to the value [code]bit[/code]. If [code]p_rect[/code] lies outside the dimensions of the BitMap, it is clipped to fit.
 			</description>
 		</method>
 	</methods>
