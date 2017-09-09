@@ -29667,7 +29667,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Destroy this Node and its children when they are not in use.
+				Queues a node for deletion at the end of the current frame. When deleted, all of its children nodes will be deleted as well. This method ensures it's safe to delete the node, contrary to [method Object.free]. Use [method Object.is_queued_for_deletion] to know whether a node will be deleted at the end of the frame.
 			</description>
 		</method>
 		<method name="raise">
