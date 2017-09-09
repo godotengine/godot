@@ -2558,7 +2558,12 @@
 			<argument index="2" name="weight_scale" type="float" default="1.0">
 			</argument>
 			<description>
-				Adds a new point at the given position with the given identifier. A point with a lower [code]weight_scale[/code] will be prefered to form a path. The [code]id[/code] must be positive and the [code]weight_scale[/code] must be 1 or larger.
+				Adds a new point at the given position with the given identifier. The algorithm prefers points with lower [code]weight_scale[/code] to form a path. The [code]id[/code] must be 0 or larger, and the [code]weight_scale[/code] must be 1 or larger.
+				[codeblock]
+				var as = AStar.new()
+				
+				as.add_point(1, Vector3(1,0,0), 4) # Adds the point (1,0,0) with weight_scale=4 and id=1
+				[/codeblock]
 			</description>
 		</method>
 		<method name="are_points_connected" qualifiers="const">
@@ -2590,6 +2595,15 @@
 			</argument>
 			<description>
 				Creates a segment between the given points.
+				[codeblock]
+				var as = AStar.new()
+				
+				as.add_point(1, Vector3(1,1,0))
+				as.add_point(2, Vector3(0,5,0))
+				
+				as.connect_points(1, 2, false) # If bidirectional=false it's only possible to go from point 1 to point 2
+				                               # and not from point 2 to point 1.
+				[/codeblock]
 			</description>
 		</method>
 		<method name="disconnect_points">
@@ -2616,7 +2630,7 @@
 			<argument index="0" name="to_pos" type="Vector3">
 			</argument>
 			<description>
-				Returns the id of the closest point to the given position. -1 is returned if there are no points in the points pool.
+				Returns the id of the closest point to [code]to_pos[/code]. Returns -1 if there are no points in the points pool.
 			</description>
 		</method>
 		<method name="get_closest_pos_in_segment" qualifiers="const">
