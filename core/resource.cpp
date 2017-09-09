@@ -243,7 +243,7 @@ void Resource::notify_change_to_owners() {
 		ERR_EXPLAIN("Object was deleted, while still owning a resource");
 		ERR_CONTINUE(!obj); //wtf
 		//TODO store string
-		obj->call("resource_changed", RES(this));
+		obj->call("_resource_changed", RES(this));
 	}
 }
 

@@ -180,7 +180,7 @@ class GridMap : public Spatial {
 	void _queue_octants_dirty();
 	void _update_octants_callback();
 
-	void resource_changed(const RES &p_res);
+	virtual void _resource_changed(const RES &p_res);
 
 	void _clear_internal();
 
