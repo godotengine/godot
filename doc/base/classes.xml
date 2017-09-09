@@ -51490,10 +51490,10 @@
 </class>
 <class name="TextureRect" inherits="Control" category="Core">
 	<brief_description>
-		Control Frame that draws a texture.
+		Control that draws a texture.
 	</brief_description>
 	<description>
-		Control frame that simply draws an assigned texture. It can stretch or not. It's a simple way to just show an image in a UI.
+		Control that draws a texture.
 	</description>
 	<methods>
 		<method name="get_stretch_mode" qualifiers="const">
@@ -51541,10 +51541,13 @@
 	</methods>
 	<members>
 		<member name="expand" type="bool" setter="set_expand" getter="has_expand" brief="">
+			If [code]true[/code] texture will expand to fit. Default value: [code]false[/code].
 		</member>
 		<member name="stretch_mode" type="int" setter="set_stretch_mode" getter="get_stretch_mode" brief="" enum="TextureRect.StretchMode">
+			Stretch mode of the texture. Use STRETCH_* constants as value.
 		</member>
 		<member name="texture" type="Texture" setter="set_texture" getter="get_texture" brief="">
+			The [Texture] resource for the node.
 		</member>
 	</members>
 	<constants>
