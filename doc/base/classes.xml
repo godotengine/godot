@@ -43248,38 +43248,55 @@
 	</methods>
 	<members>
 		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp" brief="">
+			Dampens rotational forces of the Rigid body by the 'angular_damp' rate.
 		</member>
 		<member name="angular_velocity" type="Vector3" setter="set_angular_velocity" getter="get_angular_velocity" brief="">
+			The current rotational velocity of the Rigid body
 		</member>
 		<member name="axis_lock" type="int" setter="set_axis_lock" getter="get_axis_lock" brief="" enum="RigidBody.AxisLock">
+			Locks the rotational forces to a particular axis, preventing rotations on other axes.
 		</member>
 		<member name="bounce" type="float" setter="set_bounce" getter="get_bounce" brief="">
+			Bounciness of the Rigid body.
 		</member>
 		<member name="can_sleep" type="bool" setter="set_can_sleep" getter="is_able_to_sleep" brief="">
+			If true, the Rigid body will no longer calculate forces when there is no movement and will act as a static body. It will wake up when other forces are applied through other collisions or when the 'apply_impulse' method is used.
 		</member>
 		<member name="contact_monitor" type="bool" setter="set_contact_monitor" getter="is_contact_monitor_enabled" brief="">
+			If true, the Rigid body will emit signals when it collides with another Rigid body.
 		</member>
 		<member name="contacts_reported" type="int" setter="set_max_contacts_reported" getter="get_max_contacts_reported" brief="">
+			The maximum contacts to report. Bodies can keep a log of the contacts with other bodies, this is enabled by setting the maximum amount of contacts reported to a number greater than 0.
 		</member>
 		<member name="continuous_cd" type="bool" setter="set_use_continuous_collision_detection" getter="is_using_continuous_collision_detection" brief="">
+			Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided. The first is more precise, and misses less impacts by small, fast-moving objects. The second is faster to compute, but can miss small, fast-moving objects.
 		</member>
 		<member name="custom_integrator" type="bool" setter="set_use_custom_integrator" getter="is_using_custom_integrator" brief="">
+			If true, internal force integration will be disabled (like gravity or air friction) for this body. Other than collision response, the body will only move as determined by the [method _integrate_forces] function, if defined.
 		</member>
 		<member name="friction" type="float" setter="set_friction" getter="get_friction" brief="">
+			The body friction, from 0 (frictionless) to 1 (max friction).
 		</member>
 		<member name="gravity_scale" type="float" setter="set_gravity_scale" getter="get_gravity_scale" brief="">
+			The 'gravity_scale' for this Rigid body will be multiplied by the global 3d gravity setting found in "Project > Project Settings > Physics > 3d". A value of 1 will be normal gravity, 2 will apply double gravity, and 0.5 will apply half gravity to this object.
 		</member>
 		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp" brief="">
+			The linear damp for this body. Default of -1, cannot be less than -1. If this value is different from -1, any linear damp derived from the world or areas will be overridden.
 		</member>
 		<member name="linear_velocity" type="Vector3" setter="set_linear_velocity" getter="get_linear_velocity" brief="">
+			The body linear velocity. Can be used sporadically, but [b]DON'T SET THIS IN EVERY FRAME[/b], because physics may run in another thread and runs at a different granularity. Use [method _integrate_forces] as your process loop for precise control of the body state.
 		</member>
 		<member name="mass" type="float" setter="set_mass" getter="get_mass" brief="">
+			The body mass.
 		</member>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" brief="" enum="RigidBody.Mode">
+			The body mode from the MODE_* enum. Modes include: MODE_STATIC, MODE_KINEMATIC, MODE_RIGID, and MODE_CHARACTER.
 		</member>
 		<member name="sleeping" type="bool" setter="set_sleeping" getter="is_sleeping" brief="">
+			The current 'sleeping' state of the Rigid body.
 		</member>
 		<member name="weight" type="float" setter="set_weight" getter="get_weight" brief="">
+			The body weight given standard earth-weight (gravity 9.8).
 		</member>
 	</members>
 	<signals>
