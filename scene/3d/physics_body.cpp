@@ -1048,7 +1048,7 @@ float KinematicBody::get_safe_margin() const {
 
 	return margin;
 }
-int KinematicBody::get_slide_count() const {
+int KinematicBody::get_slide_collisions_count() const {
 
 	return colliders.size();
 }
@@ -1089,7 +1089,7 @@ void KinematicBody::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_safe_margin", "pixels"), &KinematicBody::set_safe_margin);
 	ClassDB::bind_method(D_METHOD("get_safe_margin"), &KinematicBody::get_safe_margin);
 
-	ClassDB::bind_method(D_METHOD("get_slide_count"), &KinematicBody::get_slide_count);
+	ClassDB::bind_method(D_METHOD("get_slide_collisions_count"), &KinematicBody::get_slide_collisions_count);
 	ClassDB::bind_method(D_METHOD("get_slide_collision", "slide_idx"), &KinematicBody::_get_slide_collision);
 
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "collision/safe_margin", PROPERTY_HINT_RANGE, "0.001,256,0.001"), "set_safe_margin", "get_safe_margin");

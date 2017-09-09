@@ -263,6 +263,8 @@ public:
 VARIANT_ENUM_CAST(RigidBody2D::Mode);
 VARIANT_ENUM_CAST(RigidBody2D::CCDMode);
 
+class KinematicCollision2D;
+
 class KinematicBody2D : public PhysicsBody2D {
 
 	GDCLASS(KinematicBody2D, PhysicsBody2D);
@@ -288,16 +290,19 @@ private:
 	bool on_ceiling;
 	bool on_wall;
 	Vector<Collision> colliders;
+	Vector<Ref<KinematicCollision2D> > slide_colliders;
+	Ref<KinematicCollision2D> motion_cache;
 
 	_FORCE_INLINE_ bool _ignores_mode(Physics2DServer::BodyMode) const;
 
-	Dictionary _move(const Vector2 &p_motion);
+	Ref<KinematicCollision2D> _move(const Vector2 &p_motion);
+	Ref<KinematicCollision2D> _get_slide_collision(int p_bounce);
 
 protected:
 	static void _bind_methods();
 
 public:
-	bool move(const Vector2 &p_motion, Collision &r_collision);
+	bool move_and_collide(const Vector2 &p_motion, Collision &r_collision);
 	bool test_move(const Transform2D &p_from, const Vector2 &p_motion);
 
 	void set_safe_margin(float p_margin);
@@ -309,21 +314,38 @@ public:
 	bool is_on_ceiling() const;
 	Vector2 get_floor_velocity() const;
 
-	int get_collision_count() const;
-	Vector2 get_collision_position(int p_collision) const;
-	Vector2 get_collision_normal(int p_collision) const;
-	Vector2 get_collision_travel(int p_collision) const;
-	Vector2 get_collision_remainder(int p_collision) const;
-	Object *get_collision_local_shape(int p_collision) const;
-	Object *get_collision_collider(int p_collision) const;
-	ObjectID get_collision_collider_id(int p_collision) const;
-	Object *get_collision_collider_shape(int p_collision) const;
-	int get_collision_collider_shape_index(int p_collision) const;
-	Vector2 get_collision_collider_velocity(int p_collision) const;
-	Variant get_collision_collider_metadata(int p_collision) const;
+	int get_slide_collisions_count() const;
+	Collision get_slide_collision(int p_bounce) const;
 
 	KinematicBody2D();
 	~KinematicBody2D();
+};
+
+class KinematicCollision2D : public Reference {
+
+	GDCLASS(KinematicCollision2D, Reference);
+
+	KinematicBody2D *owner;
+	friend class KinematicBody2D;
+	KinematicBody2D::Collision collision;
+
+protected:
+	static void _bind_methods();
+
+public:
+	Vector2 get_position() const;
+	Vector2 get_normal() const;
+	Vector2 get_travel() const;
+	Vector2 get_remainder() const;
+	Object *get_local_shape() const;
+	Object *get_collider() const;
+	ObjectID get_collider_id() const;
+	Object *get_collider_shape() const;
+	int get_collider_shape_index() const;
+	Vector2 get_collider_velocity() const;
+	Variant get_collider_metadata() const;
+
+	KinematicCollision2D();
 };
 
 #endif // PHYSICS_BODY_2D_H
