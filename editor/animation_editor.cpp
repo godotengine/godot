@@ -1092,10 +1092,14 @@ void AnimationKeyEditor::_track_editor_draw() {
 	int sep = get_constant("vseparation", "Tree");
 	int hsep = get_constant("hseparation", "Tree");
 	Color color = get_color("font_color", "Tree");
-	Color sepcolor = Color(1, 1, 1, 0.2);
-	Color timecolor = Color(1, 1, 1, 0.2);
-	Color hover_color = Color(1, 1, 1, 0.05);
-	Color select_color = Color(1, 1, 1, 0.1);
+	Color sepcolor = color;
+	sepcolor.a = 0.2;
+	Color timecolor = color;
+	timecolor.a = 0.2;
+	Color hover_color = color;
+	hover_color.a = 0.05;
+	Color select_color = color;
+	select_color.a = 0.1;
 	Color invalid_path_color = get_color("error_color", "Editor");
 	Color track_select_color = get_color("highlight_color", "Editor");
 
@@ -1157,7 +1161,8 @@ void AnimationKeyEditor::_track_editor_draw() {
 	int settings_limit = size.width - right_separator_ofs;
 	int name_limit = settings_limit * name_column_ratio;
 
-	Color linecolor = Color(1, 1, 1, 0.2);
+	Color linecolor = color;
+	linecolor.a = 0.2;
 	te->draw_line(ofs + Point2(name_limit, 0), ofs + Point2(name_limit, size.height), linecolor);
 	te->draw_line(ofs + Point2(settings_limit, 0), ofs + Point2(settings_limit, size.height), linecolor);
 	te->draw_texture(hsize_icon, ofs + Point2(name_limit - hsize_icon->get_width() - hsep, (h - hsize_icon->get_height()) / 2));
