@@ -30,6 +30,7 @@
 #include "physics_body_2d.h"
 
 #include "engine.h"
+#include "method_bind_ext.gen.inc"
 #include "scene/scene_string_names.h"
 
 void PhysicsBody2D::_notification(int p_what) {
@@ -955,7 +956,7 @@ RigidBody2D::~RigidBody2D() {
 
 //////////////////////////
 
-Ref<KinematicCollision2D> KinematicBody2D::_move(const Vector2 &p_motion) {
+Ref<KinematicCollision2D> KinematicBody2D::_move(const Vector2 &p_motion, bool p_local) {
 
 	Collision col;
 
@@ -973,11 +974,14 @@ Ref<KinematicCollision2D> KinematicBody2D::_move(const Vector2 &p_motion) {
 	return Ref<KinematicCollision2D>();
 }
 
-bool KinematicBody2D::move_and_collide(const Vector2 &p_motion, Collision &r_collision) {
+bool KinematicBody2D::move_and_collide(const Vector2 &p_motion, Collision &r_collision, bool p_local) {
 
 	Transform2D gt = get_global_transform();
+	Vector2 transformed_motion = p_motion;
+	if (p_local)
+		transformed_motion = gt.basis_xform(p_motion);
 	Physics2DServer::MotionResult result;
-	bool colliding = Physics2DServer::get_singleton()->body_test_motion(get_rid(), gt, p_motion, margin, &result);
+	bool colliding = Physics2DServer::get_singleton()->body_test_motion(get_rid(), gt, transformed_motion, margin, &result);
 
 	if (colliding) {
 		r_collision.collider_metadata = result.collider_metadata;
@@ -997,10 +1001,15 @@ bool KinematicBody2D::move_and_collide(const Vector2 &p_motion, Collision &r_col
 	return colliding;
 }
 
-Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const Vector2 &p_floor_direction, float p_slope_stop_min_velocity, int p_max_slides, float p_floor_max_angle) {
+Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const Vector2 &p_floor_direction, float p_slope_stop_min_velocity, int p_max_slides, float p_floor_max_angle, bool p_local) {
 
-	Vector2 motion = (floor_velocity + p_linear_velocity) * get_physics_process_delta_time();
-	Vector2 lv = p_linear_velocity;
+	Transform2D gt = get_global_transform();
+	Vector2 transformed_linear_velocity = p_linear_velocity;
+	if (p_local)
+		transformed_linear_velocity = gt.basis_xform(p_linear_velocity);
+
+	Vector2 motion = (floor_velocity + transformed_linear_velocity) * get_physics_process_delta_time();
+	Vector2 lv = transformed_linear_velocity;
 
 	on_floor = false;
 	on_ceiling = false;
@@ -1012,7 +1021,7 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 
 		Collision collision;
 
-		bool collided = move_and_collide(motion, collision);
+		bool collided = move_and_collide(motion, collision, false);
 
 		if (collided) {
 
@@ -1121,8 +1130,8 @@ Ref<KinematicCollision2D> KinematicBody2D::_get_slide_collision(int p_bounce) {
 
 void KinematicBody2D::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("move_and_collide", "rel_vec"), &KinematicBody2D::_move);
-	ClassDB::bind_method(D_METHOD("move_and_slide", "linear_velocity", "floor_normal", "slope_stop_min_velocity", "max_bounces", "floor_max_angle"), &KinematicBody2D::move_and_slide, DEFVAL(Vector2(0, 0)), DEFVAL(5), DEFVAL(4), DEFVAL(Math::deg2rad((float)45)));
+	ClassDB::bind_method(D_METHOD("move_and_collide", "rel_vec", "local"), &KinematicBody2D::_move, DEFVAL(Vector2(0, 0)), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("move_and_slide", "linear_velocity", "floor_normal", "slope_stop_min_velocity", "max_bounces", "floor_max_angle", "local"), &KinematicBody2D::move_and_slide, DEFVAL(Vector2(0, 0)), DEFVAL(5), DEFVAL(4), DEFVAL(Math::deg2rad((float)45)), DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("test_move", "from", "rel_vec"), &KinematicBody2D::test_move);
 
