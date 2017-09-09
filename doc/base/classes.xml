@@ -11033,8 +11033,10 @@
 </class>
 <class name="CapsuleMesh" inherits="PrimitiveMesh" category="Core">
 	<brief_description>
+		Class representing a capsule-shaped [PrimitiveMesh].
 	</brief_description>
 	<description>
+		Class representing a capsule-shaped [PrimitiveMesh].
 	</description>
 	<methods>
 		<method name="get_mid_height" qualifiers="const">
@@ -11096,12 +11098,16 @@
 	</methods>
 	<members>
 		<member name="mid_height" type="float" setter="set_mid_height" getter="get_mid_height" brief="">
+			Height of the capsule mesh from the center point. Defaults to 1.0.
 		</member>
 		<member name="radial_segments" type="int" setter="set_radial_segments" getter="get_radial_segments" brief="">
+			Number of radial segments on the capsule mesh. Defaults to 64.
 		</member>
 		<member name="radius" type="float" setter="set_radius" getter="get_radius" brief="">
+			Radius of the capsule mesh. Defaults to 1.0.
 		</member>
 		<member name="rings" type="int" setter="set_rings" getter="get_rings" brief="">
+			Number of rings along the height of the capsule. Defaults to 8.
 		</member>
 	</members>
 	<constants>
@@ -14171,8 +14177,10 @@
 </class>
 <class name="CubeMesh" inherits="PrimitiveMesh" category="Core">
 	<brief_description>
+		Generate an axis-aligned cuboid [PrimitiveMesh].
 	</brief_description>
 	<description>
+		Generate an axis-aligned cuboid [PrimitiveMesh].
 	</description>
 	<methods>
 		<method name="get_size" qualifiers="const">
@@ -14234,12 +14242,16 @@
 	</methods>
 	<members>
 		<member name="size" type="Vector3" setter="set_size" getter="get_size" brief="">
+			Size of the cuboid mesh. Defaults to (2, 2, 2).
 		</member>
 		<member name="subdivide_depth" type="int" setter="set_subdivide_depth" getter="get_subdivide_depth" brief="">
+			Number of extra edge loops inserted along the z-axis. Defaults to 0.
 		</member>
 		<member name="subdivide_height" type="int" setter="set_subdivide_height" getter="get_subdivide_height" brief="">
+			Number of extra edge loops inserted along the y-axis. Defaults to 0.
 		</member>
 		<member name="subdivide_width" type="int" setter="set_subdivide_width" getter="get_subdivide_width" brief="">
+			Number of extra edge loops inserted along the x-axis. Defaults to 0.
 		</member>
 	</members>
 	<constants>
@@ -14929,8 +14941,10 @@
 </class>
 <class name="CylinderMesh" inherits="PrimitiveMesh" category="Core">
 	<brief_description>
+		Class representing a cylindrical [PrimitiveMesh].
 	</brief_description>
 	<description>
+		Class representing a cylindrical [PrimitiveMesh].
 	</description>
 	<methods>
 		<method name="get_bottom_radius" qualifiers="const">
@@ -15006,14 +15020,19 @@
 	</methods>
 	<members>
 		<member name="bottom_radius" type="float" setter="set_bottom_radius" getter="get_bottom_radius" brief="">
+			Bottom radius of the cylinder. Defaults to 1.0.
 		</member>
 		<member name="height" type="float" setter="set_height" getter="get_height" brief="">
+			Full height of the cylinder. Defaults to 2.0.
 		</member>
 		<member name="radial_segments" type="int" setter="set_radial_segments" getter="get_radial_segments" brief="">
+			Number of radial segments on the cylinder. Defaults to 64.
 		</member>
 		<member name="rings" type="int" setter="set_rings" getter="get_rings" brief="">
+			Number of edge rings along the height of the cylinder. Defaults to 4.
 		</member>
 		<member name="top_radius" type="float" setter="set_top_radius" getter="get_top_radius" brief="">
+			Top radius of the cylinder. Defaults to 1.0.
 		</member>
 	</members>
 	<constants>
@@ -38019,8 +38038,10 @@
 </class>
 <class name="PlaneMesh" inherits="PrimitiveMesh" category="Core">
 	<brief_description>
+		Class representing a planar [PrimitiveMesh].
 	</brief_description>
 	<description>
+		Class representing a planar [PrimitiveMesh]. This flat mesh does not have a thickness.
 	</description>
 	<methods>
 		<method name="get_size" qualifiers="const">
@@ -38068,10 +38089,13 @@
 	</methods>
 	<members>
 		<member name="size" type="Vector2" setter="set_size" getter="get_size" brief="">
+			Size of the generated plane. Defaults to (2.0, 2.0).
 		</member>
 		<member name="subdivide_depth" type="int" setter="set_subdivide_depth" getter="get_subdivide_depth" brief="">
+			Number of subdivision along the z-axis. Defaults to 0.
 		</member>
 		<member name="subdivide_width" type="int" setter="set_subdivide_width" getter="get_subdivide_width" brief="">
+			Number of subdivision along the x-axis. Defaults to 0.
 		</member>
 	</members>
 	<constants>
@@ -39729,8 +39753,10 @@
 </class>
 <class name="PrimitiveMesh" inherits="Mesh" category="Core">
 	<brief_description>
+		Base class for all primitive meshes. Handles applying a [Material] to a primitive mesh.
 	</brief_description>
 	<description>
+		Base class for all primitive meshes. Handles applying a [Material] to a primitive mesh.
 	</description>
 	<methods>
 		<method name="get_material" qualifiers="const">
@@ -39750,6 +39776,7 @@
 	</methods>
 	<members>
 		<member name="material" type="Material" setter="set_material" getter="get_material" brief="">
+			The current [Material] of the primitive mesh.
 		</member>
 	</members>
 	<constants>
@@ -39757,8 +39784,10 @@
 </class>
 <class name="PrismMesh" inherits="PrimitiveMesh" category="Core">
 	<brief_description>
+		Class representing a prism-shaped [PrimitiveMesh].
 	</brief_description>
 	<description>
+		Class representing a prism-shaped [PrimitiveMesh].
 	</description>
 	<methods>
 		<method name="get_left_to_right" qualifiers="const">
@@ -39834,14 +39863,19 @@
 	</methods>
 	<members>
 		<member name="left_to_right" type="float" setter="set_left_to_right" getter="get_left_to_right" brief="">
+			Displacement of of the upper edge along the x-axis. 0.0 positions edge straight above the bottome left edge. Defaults to 0.5 (positioned on the midpoint).
 		</member>
 		<member name="size" type="Vector3" setter="set_size" getter="get_size" brief="">
+			Size of the prism. Defaults to (2.0, 2.0, 2.0).
 		</member>
 		<member name="subdivide_depth" type="int" setter="set_subdivide_depth" getter="get_subdivide_depth" brief="">
+			Number of added edge loops along the z-axis. Defaults to 0.
 		</member>
 		<member name="subdivide_height" type="int" setter="set_subdivide_height" getter="get_subdivide_height" brief="">
+			Number of added edge loops along the y-axis. Defaults to 0.
 		</member>
 		<member name="subdivide_width" type="int" setter="set_subdivide_width" getter="get_subdivide_width" brief="">
+			Number of added edge loops along the x-axis. Defaults to 0.
 		</member>
 	</members>
 	<constants>
@@ -40391,8 +40425,10 @@
 </class>
 <class name="QuadMesh" inherits="PrimitiveMesh" category="Core">
 	<brief_description>
+		Class representing a square mesh.
 	</brief_description>
 	<description>
+		Class representing a square mesh with size (2,2,0). Consider using a [PlaneMesh] if you require a differently sized plane.
 	</description>
 	<methods>
 	</methods>
@@ -46905,8 +46941,10 @@
 </class>
 <class name="SphereMesh" inherits="PrimitiveMesh" category="Core">
 	<brief_description>
+		Class representing a spherical [PrimitiveMesh].
 	</brief_description>
 	<description>
+		Class representing a spherical [PrimitiveMesh].
 	</description>
 	<methods>
 		<method name="get_height" qualifiers="const">
@@ -46982,14 +47020,19 @@
 	</methods>
 	<members>
 		<member name="height" type="float" setter="set_height" getter="get_height" brief="">
+			Full height of the sphere. Defaults to 2.0.
 		</member>
 		<member name="is_hemisphere" type="bool" setter="set_is_hemisphere" getter="get_is_hemisphere" brief="">
+			Determines whether a full sphere or a hemisphere is created. Attention: To get a regular hemisphere the height and radius of the sphere have to equal. Defaults to false.
 		</member>
 		<member name="radial_segments" type="int" setter="set_radial_segments" getter="get_radial_segments" brief="">
+			Number of radial segments on the sphere. Defaults to 64.
 		</member>
 		<member name="radius" type="float" setter="set_radius" getter="get_radius" brief="">
+			Radius of sphere. Defaults to 1.0.
 		</member>
 		<member name="rings" type="int" setter="set_rings" getter="get_rings" brief="">
+			Number of segments along the height of the sphere. Defaults to 32.
 		</member>
 	</members>
 	<constants>
