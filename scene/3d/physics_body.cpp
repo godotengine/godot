@@ -1061,7 +1061,7 @@ KinematicBody::Collision KinematicBody::get_slide_collision(int p_bounce) const 
 Ref<KinematicCollision> KinematicBody::_get_slide_collision(int p_bounce) {
 
 	ERR_FAIL_INDEX_V(p_bounce, colliders.size(), Ref<KinematicCollision>());
-	if (p_bounce > slide_colliders.size()) {
+	if (p_bounce >= slide_colliders.size()) {
 		slide_colliders.resize(p_bounce + 1);
 	}
 
