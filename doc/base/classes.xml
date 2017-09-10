@@ -20,7 +20,7 @@
 			<argument index="3" name="a8" type="int">
 			</argument>
 			<description>
-				Returns a 32 bit color with red, green and alpha channels. Each channel has 8bits of information ranging from 0 to 255.
+				Returns a 32 bit color with red, green, blue and alpha channels. Each channel has 8bits of information ranging from 0 to 255.
 				'r8' red channel
 				'g8' green channel
 				'b8' blue channel
@@ -99,7 +99,7 @@
 				# Is false and program stops
 				assert(speed >= 0)
 				# or simply
-				assert(speed >= 0 && speed < 20)
+				assert(speed >= 0 &amp;&amp; speed < 20)
 				[/codeblock]
 			</description>
 		</method>
