@@ -312,7 +312,7 @@ public:
 	bool is_on_ceiling() const;
 	Vector3 get_floor_velocity() const;
 
-	int get_slide_count() const;
+	int get_slide_collisions_count() const;
 	Collision get_slide_collision(int p_bounce) const;
 
 	KinematicBody();
