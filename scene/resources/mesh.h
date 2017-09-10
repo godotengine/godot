@@ -120,6 +120,7 @@ public:
 	virtual int surface_get_array_len(int p_idx) const = 0;
 	virtual int surface_get_array_index_len(int p_idx) const = 0;
 	virtual Array surface_get_arrays(int p_surface) const = 0;
+	virtual Array surface_get_blend_shape_arrays(int p_surface) const = 0;
 	virtual uint32_t surface_get_format(int p_idx) const = 0;
 	virtual PrimitiveType surface_get_primitive_type(int p_idx) const = 0;
 	virtual Ref<Material> surface_get_material(int p_idx) const = 0;
@@ -174,7 +175,7 @@ public:
 	void add_surface(uint32_t p_format, PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const Rect3 &p_aabb, const Vector<PoolVector<uint8_t> > &p_blend_shapes = Vector<PoolVector<uint8_t> >(), const Vector<Rect3> &p_bone_aabbs = Vector<Rect3>());
 
 	Array surface_get_arrays(int p_surface) const;
-	virtual Array surface_get_blend_shape_arrays(int p_surface) const;
+	Array surface_get_blend_shape_arrays(int p_surface) const;
 
 	void add_blend_shape(const StringName &p_name);
 	int get_blend_shape_count() const;

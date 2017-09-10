@@ -1420,6 +1420,29 @@ Array VisualServer::mesh_surface_get_arrays(RID p_mesh, int p_surface) const {
 	return _get_array_from_surface(format, vertex_data, vertex_len, index_data, index_len);
 }
 
+Array VisualServer::mesh_surface_get_blend_shape_arrays(RID p_mesh, int p_surface) const {
+
+	Vector<PoolVector<uint8_t> > blend_shape_data = mesh_surface_get_blend_shapes(p_mesh, p_surface);
+	if (blend_shape_data.size() > 0) {
+		int vertex_len = mesh_surface_get_array_len(p_mesh, p_surface);
+
+		PoolVector<uint8_t> index_data = mesh_surface_get_index_array(p_mesh, p_surface);
+		int index_len = mesh_surface_get_array_index_len(p_mesh, p_surface);
+
+		uint32_t format = mesh_surface_get_format(p_mesh, p_surface);
+
+		Array blend_shape_array;
+		blend_shape_array.resize(blend_shape_data.size());
+		for (int i = 0; i < blend_shape_data.size(); i++) {
+			blend_shape_array.set(i, _get_array_from_surface(format, blend_shape_data[i], vertex_len, index_data, index_len));
+		}
+
+		return blend_shape_array;
+	} else {
+		return Array();
+	}
+}
+
 void VisualServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("force_draw"), &VisualServer::draw);
