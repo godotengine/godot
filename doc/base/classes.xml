@@ -9025,8 +9025,10 @@
 </class>
 <class name="BitMap" inherits="Resource" category="Core">
 	<brief_description>
+		Boolean matrix.
 	</brief_description>
 	<description>
+		A two-dimensional array of boolean values, can be used to efficiently store a binary matrix (every matrix element takes only one bit) and query the values using natural cartesian coordinates.
 	</description>
 	<methods>
 		<method name="create">
@@ -9035,6 +9037,7 @@
 			<argument index="0" name="size" type="Vector2">
 			</argument>
 			<description>
+				Creates a bitmap with the specified size, filled with false.
 			</description>
 		</method>
 		<method name="create_from_image_alpha">
@@ -9043,6 +9046,7 @@
 			<argument index="0" name="image" type="Image">
 			</argument>
 			<description>
+				Creates a bitmap that matches the given image dimensions, every element of the bitmap is set to false if the alpha value of the image at that position is 0, and true in other case.
 			</description>
 		</method>
 		<method name="get_bit" qualifiers="const">
@@ -9051,18 +9055,21 @@
 			<argument index="0" name="pos" type="Vector2">
 			</argument>
 			<description>
+				Returns bitmap's value at the specified position.
 			</description>
 		</method>
 		<method name="get_size" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+				Returns bitmap's dimensions.
 			</description>
 		</method>
 		<method name="get_true_bit_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the amount of bitmap elements that are set to true. 
 			</description>
 		</method>
 		<method name="set_bit">
@@ -9073,6 +9080,7 @@
 			<argument index="1" name="bit" type="bool">
 			</argument>
 			<description>
+				Sets the bitmap's element at the specified position, to the specified value.
 			</description>
 		</method>
 		<method name="set_bit_rect">
@@ -9083,6 +9091,7 @@
 			<argument index="1" name="bit" type="bool">
 			</argument>
 			<description>
+				Sets a rectangular portion of the bitmap to the specified value.
 			</description>
 		</method>
 	</methods>
@@ -9370,35 +9379,30 @@
 			<return type="Texture">
 			</return>
 			<description>
-				Return the button icon.
 			</description>
 		</method>
 		<method name="get_clip_text" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Return the state of the [i]clip_text[/i] property (see [method set_clip_text])
 			</description>
 		</method>
 		<method name="get_text" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
-				Return the button text.
 			</description>
 		</method>
 		<method name="get_text_align" qualifiers="const">
 			<return type="int" enum="Button.TextAlign">
 			</return>
 			<description>
-				Return the text alignment policy.
 			</description>
 		</method>
 		<method name="is_flat" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Return the state of the [i]flat[/i] property (see [method set_flat]).
 			</description>
 		</method>
 		<method name="set_button_icon">
@@ -9407,7 +9411,6 @@
 			<argument index="0" name="texture" type="Texture">
 			</argument>
 			<description>
-				Set the icon that will be displayed next to the text inside the button area.
 			</description>
 		</method>
 		<method name="set_clip_text">
@@ -9416,7 +9419,6 @@
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
-				Set the [i]clip_text[/i] property of a Button. When this property is enabled, text that is too large to fit the button is clipped, when disabled (default) the Button will always be wide enough to hold the text.
 			</description>
 		</method>
 		<method name="set_flat">
@@ -9425,7 +9427,6 @@
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
-				Set the [i]flat[/i] property of a Button. Flat buttons don't display decoration unless hovered or pressed.
 			</description>
 		</method>
 		<method name="set_text">
@@ -9434,7 +9435,6 @@
 			<argument index="0" name="text" type="String">
 			</argument>
 			<description>
-				Set the button text, which will be displayed inside the button area.
 			</description>
 		</method>
 		<method name="set_text_align">
@@ -9443,20 +9443,24 @@
 			<argument index="0" name="align" type="int" enum="Button.TextAlign">
 			</argument>
 			<description>
-				Set the text alignment policy, using one of the ALIGN_* constants.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="align" type="int" setter="set_text_align" getter="get_text_align" brief="" enum="Button.TextAlign">
+			Text alignment policy for the button's text, use one of the ALIGN_* constants.
 		</member>
 		<member name="clip_text" type="bool" setter="set_clip_text" getter="get_clip_text" brief="">
+			When this property is enabled, text that is too large to fit the button is clipped, when disabled the Button will always be wide enough to hold the text. This property is disabled by default.
 		</member>
-		<member name="flat" type="bool" setter="set_flat" getter="is_flat" brief="">
+		<member name="flat" type="bool" setter="set_flat" getter="is_flat" brief="button decoration mode">
+			Flat buttons don't display decoration.
 		</member>
 		<member name="icon" type="Texture" setter="set_button_icon" getter="get_button_icon" brief="">
+			Button's icon, if text is present the icon will be placed before the text.
 		</member>
 		<member name="text" type="String" setter="set_text" getter="get_text" brief="">
+			The button's text that will be displayed inside the button's area.
 		</member>
 	</members>
 	<constants>
@@ -9464,7 +9468,7 @@
 			Align the text to the left.
 		</constant>
 		<constant name="ALIGN_CENTER" value="1">
-			Center the text.
+			Align the text to the center.
 		</constant>
 		<constant name="ALIGN_RIGHT" value="2">
 			Align the text to the right.
@@ -12155,8 +12159,10 @@
 </class>
 <class name="CollisionShape" inherits="Spatial" category="Core">
 	<brief_description>
+		Node that represents collision shape data in 3D space.
 	</brief_description>
 	<description>
+		Editor facility for creating and editing collision shapes in 3D space. You can use this node to represent all sorts of collision shapes, for example, add this to an [Area] to give it a detection shape, or add it to a [PhysicsBody] to give create solid object. [b]IMPORTANT[/b]: this is an Editor-only helper to create shapes, use [method get_shape] to get the actual shape.
 	</description>
 	<methods>
 		<method name="get_shape" qualifiers="const">
@@ -12175,6 +12181,7 @@
 			<return type="void">
 			</return>
 			<description>
+				Sets the collision shape's shape to the addition of all its convexed [MeshInstance] siblings geometry.
 			</description>
 		</method>
 		<method name="resource_changed">
@@ -12204,8 +12211,10 @@
 	</methods>
 	<members>
 		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" brief="">
+			A disabled collision shape has no effect in the world.
 		</member>
 		<member name="shape" type="Shape" setter="set_shape" getter="get_shape" brief="">
+			The actual shape owned by this collision shape.
 		</member>
 	</members>
 	<constants>
@@ -12213,17 +12222,16 @@
 </class>
 <class name="CollisionShape2D" inherits="Node2D" category="Core">
 	<brief_description>
-		Editor-only class for easy editing of shapes.
+		Node that represents collision shape data in 2D space.
 	</brief_description>
 	<description>
-		Editor-only class. This is not present when running the game. It's used in the editor to properly edit and position collision shapes in [CollisionObject2D]. This is not accessible from regular code.
+		Editor facility for creating and editing collision shapes in 2D space. You can use this node to represent all sorts of collision shapes, for example, add this to an [Area2D] to give it a detection shape, or add it to a [PhysicsBody2D] to give create solid object. [b]IMPORTANT[/b]: this is an Editor-only helper to create shapes, use [method get_shape] to get the actual shape.
 	</description>
 	<methods>
 		<method name="get_shape" qualifiers="const">
 			<return type="Shape2D">
 			</return>
 			<description>
-				Return this shape's [Shape2D].
 			</description>
 		</method>
 		<method name="is_disabled" qualifiers="const">
@@ -12260,16 +12268,18 @@
 			<argument index="0" name="shape" type="Shape2D">
 			</argument>
 			<description>
-				Set this shape's [Shape2D]. This will not appear as a node, but can be directly edited as a property.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" brief="">
+			A disabled collision shape has no effect in the world.
 		</member>
 		<member name="one_way_collision" type="bool" setter="set_one_way_collision" getter="is_one_way_collision_enabled" brief="">
+			Sets whether this collision shape should only detect collision on one side (top or bottom).
 		</member>
 		<member name="shape" type="Shape2D" setter="set_shape" getter="get_shape" brief="">
+			The actual shape owned by this collision shape.
 		</member>
 	</members>
 	<constants>
@@ -20461,8 +20471,10 @@
 </class>
 <class name="GradientTexture" inherits="Texture" category="Core">
 	<brief_description>
+		Gradient filled texture.
 	</brief_description>
 	<description>
+		Uses a [Gradient] to fill the texture data, the gradient will be filled from left to right using colors obtained from the gradient, this means that the texture does not necessarily represent an exact copy of the gradient, but instead an interpolation of samples obtained from the gradient at fixed steps (see [method set_width]).
 	</description>
 	<methods>
 		<method name="get_gradient" qualifiers="const">
@@ -20490,8 +20502,10 @@
 	</methods>
 	<members>
 		<member name="gradient" type="Gradient" setter="set_gradient" getter="get_gradient" brief="">
+			The [Gradient] that will be used to fill the texture.
 		</member>
 		<member name="width" type="int" setter="set_width" getter="get_width" brief="">
+			The number of color samples that will be obtained from the [Gradient].
 		</member>
 	</members>
 	<constants>
@@ -53197,8 +53211,15 @@
 </class>
 <class name="ToolButton" inherits="Button" category="Core">
 	<brief_description>
+		Flat button helper class.
 	</brief_description>
 	<description>
+		This is a helper class to generate a flat [Button] (see [method Button.set_flat]), creating a ToolButton is equivalent to:
+
+		[codeblock]
+		var btn = Button.new()
+		btn.set_flat(true)
+		[/codeblock]
 	</description>
 	<methods>
 	</methods>
@@ -55584,8 +55605,10 @@
 </class>
 <class name="Variant" category="Core">
 	<brief_description>
+		The most important data type in Godot.
 	</brief_description>
 	<description>
+		A Variant takes up only 20 bytes and can store almost any engine datatype inside of it. Variants are rarely used to hold information for long periods of time, instead they are used mainly for communication, editing, serialization and moving data around.
 	</description>
 	<methods>
 	</methods>
