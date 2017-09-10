@@ -248,7 +248,7 @@ void unregister_gdnative_types() {
 	memdelete(GDNativeCallRegistry::singleton);
 
 #ifdef TOOLS_ENABLED
-	if (Engine::get_singleton()->is_editor_hint()) {
+	if (Engine::get_singleton()->is_editor_hint() && discoverer != NULL) {
 		memdelete(discoverer);
 	}
 #endif
