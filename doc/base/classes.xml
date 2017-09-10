@@ -53403,10 +53403,10 @@
 </class>
 <class name="Transform" category="Built-In Types">
 	<brief_description>
-		3D Transformation.
+		3D Transformation. 3x4 matrix.
 	</brief_description>
 	<description>
-		Transform is used to store translation, rotation and scaling transformations. It consists of a Basis "basis" and Vector3 "origin". Transform is used to represent transformations of objects in space, and as such, determine their position, orientation and scale. It is similar to a 3x4 matrix.
+		Represents one or many transformations in 3D space such as translation, rotation, or scaling. It consists of a [Basis] "basis" and an [Vector3] "origin". It is similar to a 3x4 matrix.
 	</description>
 	<methods>
 		<method name="Transform">
@@ -53421,7 +53421,7 @@
 			<argument index="3" name="origin" type="Vector3">
 			</argument>
 			<description>
-				Construct the Transform from four Vector3. Each axis corresponds to local basis vectors (some of which may be scaled).
+				Construct the Transform from four [Vector3]. Each axis corresponds to local basis vectors (some of which may be scaled).
 			</description>
 		</method>
 		<method name="Transform">
@@ -53432,7 +53432,7 @@
 			<argument index="1" name="origin" type="Vector3">
 			</argument>
 			<description>
-				Construct the Transform from a Basis and Vector3.
+				Construct the Transform from a [Basis] and [Vector3].
 			</description>
 		</method>
 		<method name="Transform">
@@ -53441,7 +53441,7 @@
 			<argument index="0" name="from" type="Transform2D">
 			</argument>
 			<description>
-				Construct the Transform from a Transform2D.
+				Construct the Transform from a [Transform2D].
 			</description>
 		</method>
 		<method name="Transform">
@@ -53450,7 +53450,7 @@
 			<argument index="0" name="from" type="Quat">
 			</argument>
 			<description>
-				Construct the Transform from a Quat. The origin will be Vector3(0, 0, 0).
+				Construct the Transform from a [Quat]. The origin will be Vector3(0, 0, 0).
 			</description>
 		</method>
 		<method name="Transform">
@@ -53459,7 +53459,7 @@
 			<argument index="0" name="from" type="Basis">
 			</argument>
 			<description>
-				Construct the Transform from a Basis. The origin will be Vector3(0, 0, 0).
+				Construct the Transform from a [Basis]. The origin will be Vector3(0, 0, 0).
 			</description>
 		</method>
 		<method name="affine_inverse">
@@ -53477,13 +53477,14 @@
 			<argument index="1" name="weight" type="float">
 			</argument>
 			<description>
+				Interpolate to other Transform by weight amount (0-1).
 			</description>
 		</method>
 		<method name="inverse">
 			<return type="Transform">
 			</return>
 			<description>
-				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation and translation (no scaling).
+				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation and translation (no scaling, use affine_inverse for transforms with scaling).
 			</description>
 		</method>
 		<method name="looking_at">
@@ -53530,7 +53531,7 @@
 			<argument index="0" name="ofs" type="Vector3">
 			</argument>
 			<description>
-				Translate the transform by the specified displacement.
+				Translate the transform by the specified offset.
 			</description>
 		</method>
 		<method name="xform">
@@ -53554,10 +53555,10 @@
 	</methods>
 	<members>
 		<member name="basis" type="Basis" setter="" getter="" brief="">
-			The basis is a matrix containing 3 [Vector3] as its columns: X axis, Y axis, and Z axis. These vectors can be interpreted as the basis vectors of local coordinate system travelling with the object.
+			The basis is a matrix containing 3 [Vector3] as its columns: X axis, Y axis, and Z axis. These vectors can be interpreted as the basis vectors of local coordinate system traveling with the object.
 		</member>
 		<member name="origin" type="Vector3" setter="" getter="" brief="">
-			The origin of the transform. Which is the translation offset.
+			The translation offset of the transform.
 		</member>
 	</members>
 	<constants>
@@ -53565,10 +53566,10 @@
 </class>
 <class name="Transform2D" category="Built-In Types">
 	<brief_description>
-		3x2 Matrix for 2D transforms.
+		2D Transformation. 3x2 matrix.
 	</brief_description>
 	<description>
-		3x2 Matrix for 2D transforms.
+		Represents one or many transformations in 3D space such as translation, rotation, or scaling. It consists of a two [Vector2] x, y and [Vector2] "origin". It is similar to a 3x2 matrix.
 	</description>
 	<methods>
 		<method name="Transform2D">
@@ -53577,6 +53578,7 @@
 			<argument index="0" name="from" type="Transform">
 			</argument>
 			<description>
+				Constructs the [Transform2D] from a 3D [Transform].
 			</description>
 		</method>
 		<method name="Transform2D">
@@ -53589,6 +53591,7 @@
 			<argument index="2" name="origin" type="Vector2">
 			</argument>
 			<description>
+				Constructs the [Transform2D] from 3 [Vector2] consisting of rows x, y and origin.
 			</description>
 		</method>
 		<method name="Transform2D">
@@ -53599,13 +53602,14 @@
 			<argument index="1" name="pos" type="Vector2">
 			</argument>
 			<description>
+				Constructs the [Transform2D] from rotation angle in radians and position [Vector2].
 			</description>
 		</method>
 		<method name="affine_inverse">
 			<return type="Transform2D">
 			</return>
 			<description>
-				Return the inverse of the matrix.
+				Returns the inverse of the matrix.
 			</description>
 		</method>
 		<method name="basis_xform">
@@ -53614,6 +53618,7 @@
 			<argument index="0" name="v" type="var">
 			</argument>
 			<description>
+				Transforms the given vector "v" by this transform basis (no translation).
 			</description>
 		</method>
 		<method name="basis_xform_inv">
@@ -53622,12 +53627,14 @@
 			<argument index="0" name="v" type="var">
 			</argument>
 			<description>
+				Inverse-transforms vector "v" by this transform basis (no translation).
 			</description>
 		</method>
 		<method name="get_origin">
 			<return type="Vector2">
 			</return>
 			<description>
+				Return the origin [Vector2] (translation).
 			</description>
 		</method>
 		<method name="get_rotation">
@@ -53641,6 +53648,7 @@
 			<return type="Vector2">
 			</return>
 			<description>
+				Return the scale.
 			</description>
 		</method>
 		<method name="interpolate_with">
@@ -53651,18 +53659,21 @@
 			<argument index="1" name="weight" type="float">
 			</argument>
 			<description>
+				Interpolate to other Transform2D by weight amount (0-1).
 			</description>
 		</method>
 		<method name="inverse">
 			<return type="Transform2D">
 			</return>
 			<description>
+				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation and translation (no scaling, use affine_inverse for transforms with scaling).
 			</description>
 		</method>
 		<method name="orthonormalized">
 			<return type="Transform2D">
 			</return>
 			<description>
+				Returns a transfrom with the basis orthogonal (90 degrees), and normalized axis vectors.
 			</description>
 		</method>
 		<method name="rotated">
@@ -53671,6 +53682,7 @@
 			<argument index="0" name="phi" type="float">
 			</argument>
 			<description>
+				Rotate the transform by phi.
 			</description>
 		</method>
 		<method name="scaled">
@@ -53679,6 +53691,7 @@
 			<argument index="0" name="scale" type="Vector2">
 			</argument>
 			<description>
+				Scale the transform by the specified 2D scaling factors.
 			</description>
 		</method>
 		<method name="translated">
@@ -53687,6 +53700,7 @@
 			<argument index="0" name="offset" type="Vector2">
 			</argument>
 			<description>
+				Translate the transform by the specified offset.
 			</description>
 		</method>
 		<method name="xform">
@@ -53695,6 +53709,7 @@
 			<argument index="0" name="v" type="var">
 			</argument>
 			<description>
+				Transforms the given vector "v" by this transform.
 			</description>
 		</method>
 		<method name="xform_inv">
@@ -53703,15 +53718,19 @@
 			<argument index="0" name="v" type="var">
 			</argument>
 			<description>
+				Inverse-transforms the given vector "v" by this transform.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="origin" type="Vector2" setter="" getter="" brief="">
+			The translation offset of the transform.
 		</member>
 		<member name="x" type="Vector2" setter="" getter="" brief="">
+			The X axis of 2x2 basis matrix containing 2 [Vector2] as its columns: X axis and Y axis. These vectors can be interpreted as the basis vectors of local coordinate system traveling with the object.
 		</member>
 		<member name="y" type="Vector2" setter="" getter="" brief="">
+			The Y axis of 2x2 basis matrix containing 2 [Vector2] as its columns: X axis and Y axis. These vectors can be interpreted as the basis vectors of local coordinate system traveling with the object.
 		</member>
 	</members>
 	<constants>
