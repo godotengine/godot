@@ -273,7 +273,7 @@ class AnimationKeyEditor : public VBoxContainer {
 
 	void _track_editor_draw();
 	void _track_editor_gui_input(const Ref<InputEvent> &p_input);
-	void _track_pos_draw();
+	void _track_position_draw();
 
 	void _track_name_changed(const String &p_name);
 	void _track_menu_selected(int p_idx);

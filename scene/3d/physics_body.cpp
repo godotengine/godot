@@ -825,7 +825,7 @@ void RigidBody::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_using_continuous_collision_detection"), &RigidBody::is_using_continuous_collision_detection);
 
 	ClassDB::bind_method(D_METHOD("set_axis_velocity", "axis_velocity"), &RigidBody::set_axis_velocity);
-	ClassDB::bind_method(D_METHOD("apply_impulse", "pos", "impulse"), &RigidBody::apply_impulse);
+	ClassDB::bind_method(D_METHOD("apply_impulse", "position", "impulse"), &RigidBody::apply_impulse);
 
 	ClassDB::bind_method(D_METHOD("set_sleeping", "sleeping"), &RigidBody::set_sleeping);
 	ClassDB::bind_method(D_METHOD("is_sleeping"), &RigidBody::is_sleeping);

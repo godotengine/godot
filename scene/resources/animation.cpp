@@ -613,7 +613,7 @@ int Animation::transform_track_insert_key(int p_track, float p_time, const Vecto
 	return ret;
 }
 
-void Animation::track_remove_key_at_pos(int p_track, float p_pos) {
+void Animation::track_remove_key_at_position(int p_track, float p_pos) {
 
 	int idx = track_find_key(p_track, p_pos, true);
 	ERR_FAIL_COND(idx < 0);
@@ -707,12 +707,12 @@ void Animation::track_insert_key(int p_track, float p_time, const Variant &p_key
 
 			Dictionary d = p_key;
 			Vector3 loc;
-			if (d.has("loc"))
-				loc = d["loc"];
+			if (d.has("location"))
+				loc = d["location"];
 
 			Quat rot;
-			if (d.has("rot"))
-				rot = d["rot"];
+			if (d.has("rotation"))
+				rot = d["rotation"];
 
 			Vector3 scale;
 			if (d.has("scale"))
@@ -799,8 +799,8 @@ Variant Animation::track_get_key_value(int p_track, int p_key_idx) const {
 			ERR_FAIL_INDEX_V(p_key_idx, tt->transforms.size(), Variant());
 
 			Dictionary d;
-			d["loc"] = tt->transforms[p_key_idx].value.loc;
-			d["rot"] = tt->transforms[p_key_idx].value.rot;
+			d["location"] = tt->transforms[p_key_idx].value.loc;
+			d["rotation"] = tt->transforms[p_key_idx].value.rot;
 			d["scale"] = tt->transforms[p_key_idx].value.scale;
 
 			return d;
@@ -903,10 +903,10 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 			TransformTrack *tt = static_cast<TransformTrack *>(t);
 			ERR_FAIL_INDEX(p_key_idx, tt->transforms.size());
 			Dictionary d = p_value;
-			if (d.has("loc"))
-				tt->transforms[p_key_idx].value.loc = d["loc"];
-			if (d.has("rot"))
-				tt->transforms[p_key_idx].value.rot = d["rot"];
+			if (d.has("location"))
+				tt->transforms[p_key_idx].value.loc = d["location"];
+			if (d.has("rotation"))
+				tt->transforms[p_key_idx].value.rot = d["rotation"];
 			if (d.has("scale"))
 				tt->transforms[p_key_idx].value.scale = d["scale"];
 
@@ -1590,7 +1590,7 @@ float Animation::get_step() const {
 
 void Animation::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("add_track", "type", "at_pos"), &Animation::add_track, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("add_track", "type", "at_position"), &Animation::add_track, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("remove_track", "idx"), &Animation::remove_track);
 	ClassDB::bind_method(D_METHOD("get_track_count"), &Animation::get_track_count);
 	ClassDB::bind_method(D_METHOD("track_get_type", "idx"), &Animation::track_get_type);
@@ -1604,10 +1604,10 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("track_set_imported", "idx", "imported"), &Animation::track_set_imported);
 	ClassDB::bind_method(D_METHOD("track_is_imported", "idx"), &Animation::track_is_imported);
 
-	ClassDB::bind_method(D_METHOD("transform_track_insert_key", "idx", "time", "loc", "rot", "scale"), &Animation::transform_track_insert_key);
+	ClassDB::bind_method(D_METHOD("transform_track_insert_key", "idx", "time", "location", "rotation", "scale"), &Animation::transform_track_insert_key);
 	ClassDB::bind_method(D_METHOD("track_insert_key", "idx", "time", "key", "transition"), &Animation::track_insert_key, DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("track_remove_key", "idx", "key_idx"), &Animation::track_remove_key);
-	ClassDB::bind_method(D_METHOD("track_remove_key_at_pos", "idx", "pos"), &Animation::track_remove_key_at_pos);
+	ClassDB::bind_method(D_METHOD("track_remove_key_at_position", "idx", "position"), &Animation::track_remove_key_at_position);
 	ClassDB::bind_method(D_METHOD("track_set_key_value", "idx", "key", "value"), &Animation::track_set_key_value);
 	ClassDB::bind_method(D_METHOD("track_set_key_transition", "idx", "key_idx", "transition"), &Animation::track_set_key_transition);
 	ClassDB::bind_method(D_METHOD("track_get_key_transition", "idx", "key_idx"), &Animation::track_get_key_transition);

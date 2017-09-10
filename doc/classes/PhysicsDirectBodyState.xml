@@ -14,7 +14,7 @@
 			</return>
 			<argument index="0" name="force" type="Vector3">
 			</argument>
-			<argument index="1" name="pos" type="Vector3">
+			<argument index="1" name="position" type="Vector3">
 			</argument>
 			<description>
 			</description>
@@ -22,7 +22,7 @@
 		<method name="apply_impulse">
 			<return type="void">
 			</return>
-			<argument index="0" name="pos" type="Vector3">
+			<argument index="0" name="position" type="Vector3">
 			</argument>
 			<argument index="1" name="j" type="Vector3">
 			</argument>
@@ -73,7 +73,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_contact_collider_pos" qualifiers="const">
+		<method name="get_contact_collider_position" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<argument index="0" name="contact_idx" type="int">
@@ -89,7 +89,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_contact_collider_velocity_at_pos" qualifiers="const">
+		<method name="get_contact_collider_velocity_at_position" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<argument index="0" name="contact_idx" type="int">
@@ -111,7 +111,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_contact_local_pos" qualifiers="const">
+		<method name="get_contact_local_position" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<argument index="0" name="contact_idx" type="int">

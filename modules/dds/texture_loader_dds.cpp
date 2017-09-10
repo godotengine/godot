@@ -152,7 +152,7 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 	*/
 
 	//must avoid this later
-	while (f->get_pos() < 128)
+	while (f->get_position() < 128)
 		f->get_8();
 
 	DDSFormat dds_format;

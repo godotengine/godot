@@ -45,7 +45,7 @@
 				Return the collider object, this depends on how it was created (will return a scene node if such was used to create it).
 			</description>
 		</method>
-		<method name="get_contact_collider_pos" qualifiers="const">
+		<method name="get_contact_collider_position" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<argument index="0" name="contact_idx" type="int">
@@ -72,7 +72,7 @@
 				Return the metadata of the collided shape. This metadata is different from [method Object.get_meta], and is set with [method Physics2DServer.shape_set_data].
 			</description>
 		</method>
-		<method name="get_contact_collider_velocity_at_pos" qualifiers="const">
+		<method name="get_contact_collider_velocity_at_position" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<argument index="0" name="contact_idx" type="int">
@@ -97,7 +97,7 @@
 				Return the local normal (of this body) of the contact point.
 			</description>
 		</method>
-		<method name="get_contact_local_pos" qualifiers="const">
+		<method name="get_contact_local_position" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<argument index="0" name="contact_idx" type="int">

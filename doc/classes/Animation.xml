@@ -17,7 +17,7 @@
 			</return>
 			<argument index="0" name="type" type="int" enum="Animation.TrackType">
 			</argument>
-			<argument index="1" name="at_pos" type="int" default="-1">
+			<argument index="1" name="at_position" type="int" default="-1">
 			</argument>
 			<description>
 				Add a track to the Animation. The track type must be specified as any of the values in the TYPE_* enumeration.
@@ -281,12 +281,12 @@
 				Remove a key by index in a given track.
 			</description>
 		</method>
-		<method name="track_remove_key_at_pos">
+		<method name="track_remove_key_at_position">
 			<return type="void">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
-			<argument index="1" name="pos" type="float">
+			<argument index="1" name="position" type="float">
 			</argument>
 			<description>
 				Remove a key by position (seconds) in a given track.

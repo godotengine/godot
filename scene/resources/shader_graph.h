@@ -195,8 +195,8 @@ public:
 
 	void node_add(ShaderType p_type, NodeType p_node_type, int p_id);
 	void node_remove(ShaderType p_which,int p_id);
-	void node_set_pos(ShaderType p_which,int p_id,const Point2& p_pos);
-	Point2 node_get_pos(ShaderType p_which,int p_id) const;
+	void node_set_position(ShaderType p_which,int p_id,const Point2& p_pos);
+	Point2 node_get_position(ShaderType p_which,int p_id) const;
 
 	void get_node_list(ShaderType p_which,List<int> *p_node_list) const;
 	NodeType node_get_type(ShaderType p_which,int p_id) const;

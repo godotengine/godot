@@ -182,7 +182,7 @@ void ScrollContainer::_gui_input(const Ref<InputEvent> &p_gui_input) {
 	}
 }
 
-void ScrollContainer::_update_scrollbar_pos() {
+void ScrollContainer::_update_scrollbar_position() {
 
 	Size2 hmin = h_scroll->get_combined_minimum_size();
 	Size2 vmin = v_scroll->get_combined_minimum_size();
@@ -205,7 +205,7 @@ void ScrollContainer::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 
-		call_deferred("_update_scrollbar_pos");
+		call_deferred("_update_scrollbar_position");
 	};
 
 	if (p_what == NOTIFICATION_SORT_CHILDREN) {
@@ -448,7 +448,7 @@ void ScrollContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_h_scroll_enabled"), &ScrollContainer::is_h_scroll_enabled);
 	ClassDB::bind_method(D_METHOD("set_enable_v_scroll", "enable"), &ScrollContainer::set_enable_v_scroll);
 	ClassDB::bind_method(D_METHOD("is_v_scroll_enabled"), &ScrollContainer::is_v_scroll_enabled);
-	ClassDB::bind_method(D_METHOD("_update_scrollbar_pos"), &ScrollContainer::_update_scrollbar_pos);
+	ClassDB::bind_method(D_METHOD("_update_scrollbar_position"), &ScrollContainer::_update_scrollbar_position);
 	ClassDB::bind_method(D_METHOD("set_h_scroll", "val"), &ScrollContainer::set_h_scroll);
 	ClassDB::bind_method(D_METHOD("get_h_scroll"), &ScrollContainer::get_h_scroll);
 	ClassDB::bind_method(D_METHOD("set_v_scroll", "val"), &ScrollContainer::set_v_scroll);

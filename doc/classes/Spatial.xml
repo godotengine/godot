@@ -145,10 +145,10 @@
 				Rotates itself to point into direction of target position. Operations take place in global space.
 			</description>
 		</method>
-		<method name="look_at_from_pos">
+		<method name="look_at_from_position">
 			<return type="void">
 			</return>
-			<argument index="0" name="pos" type="Vector3">
+			<argument index="0" name="position" type="Vector3">
 			</argument>
 			<argument index="1" name="target" type="Vector3">
 			</argument>

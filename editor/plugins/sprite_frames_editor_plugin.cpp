@@ -544,7 +544,7 @@ Variant SpriteFramesEditor::get_drag_data_fw(const Point2 &p_point, Control *p_f
 	if (!frames->has_animation(edited_anim))
 		return false;
 
-	int idx = tree->get_item_at_pos(p_point, true);
+	int idx = tree->get_item_at_position(p_point, true);
 
 	if (idx < 0 || idx >= frames->get_frame_count(edited_anim))
 		return Variant();
@@ -609,7 +609,7 @@ void SpriteFramesEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	if (!d.has("type"))
 		return;
 
-	int at_pos = tree->get_item_at_pos(p_point, true);
+	int at_pos = tree->get_item_at_position(p_point, true);
 
 	if (String(d["type"]) == "resource" && d.has("resource")) {
 		RES r = d["resource"];
@@ -643,7 +643,7 @@ void SpriteFramesEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_empty2_pressed"), &SpriteFramesEditor::_empty2_pressed);
 	ClassDB::bind_method(D_METHOD("_delete_pressed"), &SpriteFramesEditor::_delete_pressed);
 	ClassDB::bind_method(D_METHOD("_paste_pressed"), &SpriteFramesEditor::_paste_pressed);
-	ClassDB::bind_method(D_METHOD("_file_load_request", "files", "atpos"), &SpriteFramesEditor::_file_load_request, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("_file_load_request", "files", "at_position"), &SpriteFramesEditor::_file_load_request, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("_update_library", "skipsel"), &SpriteFramesEditor::_update_library, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("_up_pressed"), &SpriteFramesEditor::_up_pressed);
 	ClassDB::bind_method(D_METHOD("_down_pressed"), &SpriteFramesEditor::_down_pressed);

@@ -5250,17 +5250,17 @@ msgstr "曲線のポイント#"
 
 #: editor/plugins/path_editor_plugin.cpp
 #, fuzzy
-msgid "Set Curve Point Pos"
+msgid "Set Curve Point Position"
 msgstr "曲線のポイントの位置を指定"
 
 #: editor/plugins/path_editor_plugin.cpp
 #, fuzzy
-msgid "Set Curve In Pos"
+msgid "Set Curve In Position"
 msgstr "曲線のIn-ハンドルの位置を指定"
 
 #: editor/plugins/path_editor_plugin.cpp
 #, fuzzy
-msgid "Set Curve Out Pos"
+msgid "Set Curve Out Position"
 msgstr "曲線のOut-ハンドルの位置を指定"
 
 #: editor/plugins/path_editor_plugin.cpp

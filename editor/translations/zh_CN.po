@@ -4525,15 +4525,15 @@ msgid "Curve Point #"
 msgstr "曲线定点 #"
 
 #: editor/plugins/path_editor_plugin.cpp
-msgid "Set Curve Point Pos"
+msgid "Set Curve Point Position"
 msgstr "设置曲线顶点坐标"
 
 #: editor/plugins/path_editor_plugin.cpp
-msgid "Set Curve In Pos"
+msgid "Set Curve In Position"
 msgstr "设置的曲线输入位置（Pos）"
 
 #: editor/plugins/path_editor_plugin.cpp
-msgid "Set Curve Out Pos"
+msgid "Set Curve Out Position"
 msgstr "设置曲线输出位置（Pos）"
 
 #: editor/plugins/path_editor_plugin.cpp

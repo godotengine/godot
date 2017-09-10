@@ -414,7 +414,7 @@ void Node2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_rotd"), &Node2D::_get_rotd);
 	ClassDB::bind_method(D_METHOD("_set_rotd", "degrees"), &Node2D::_set_rotd);
 
-	ClassDB::bind_method(D_METHOD("set_position", "pos"), &Node2D::set_position);
+	ClassDB::bind_method(D_METHOD("set_position", "position"), &Node2D::set_position);
 	ClassDB::bind_method(D_METHOD("set_rotation", "radians"), &Node2D::set_rotation);
 	ClassDB::bind_method(D_METHOD("set_rotation_in_degrees", "degrees"), &Node2D::set_rotation_in_degrees);
 	ClassDB::bind_method(D_METHOD("set_scale", "scale"), &Node2D::set_scale);
@@ -431,7 +431,7 @@ void Node2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("global_translate", "offset"), &Node2D::global_translate);
 	ClassDB::bind_method(D_METHOD("apply_scale", "ratio"), &Node2D::apply_scale);
 
-	ClassDB::bind_method(D_METHOD("set_global_position", "pos"), &Node2D::set_global_position);
+	ClassDB::bind_method(D_METHOD("set_global_position", "position"), &Node2D::set_global_position);
 	ClassDB::bind_method(D_METHOD("get_global_position"), &Node2D::get_global_position);
 	ClassDB::bind_method(D_METHOD("set_global_rotation", "radians"), &Node2D::set_global_rotation);
 	ClassDB::bind_method(D_METHOD("get_global_rotation"), &Node2D::get_global_rotation);

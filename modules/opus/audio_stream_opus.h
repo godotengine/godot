@@ -99,7 +99,7 @@ public:
 
 	virtual int get_loop_count() const { return repeats; }
 
-	virtual float get_pos() const;
+	virtual float get_position() const;
 	virtual void seek_pos(float p_time);
 
 	virtual int get_channels() const { return stream_channels; }

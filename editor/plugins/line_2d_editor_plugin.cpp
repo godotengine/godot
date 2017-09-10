@@ -66,7 +66,7 @@ int Line2DEditor::get_point_index_at(Vector2 gpos) {
 	Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
 	for (int i = 0; i < node->get_point_count(); ++i) {
-		Point2 p = xform.xform(node->get_point_pos(i));
+		Point2 p = xform.xform(node->get_point_position(i));
 		if (gpos.distance_to(p) < grab_threshold) {
 			return i;
 		}
@@ -96,12 +96,12 @@ bool Line2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 				if (mb->get_button_index() == BUTTON_LEFT && !mb->get_shift() && mode == MODE_EDIT) {
 					_dragging = true;
 					action_point = i;
-					moving_from = node->get_point_pos(i);
+					moving_from = node->get_point_position(i);
 					moving_screen_from = gpoint;
 				} else if ((mb->get_button_index() == BUTTON_RIGHT && mode == MODE_EDIT) || (mb->get_button_index() == BUTTON_LEFT && mode == MODE_DELETE)) {
 					undo_redo->create_action(TTR("Remove Point from Line2D"));
 					undo_redo->add_do_method(node, "remove_point", i);
-					undo_redo->add_undo_method(node, "add_point", node->get_point_pos(i), i);
+					undo_redo->add_undo_method(node, "add_point", node->get_point_position(i), i);
 					undo_redo->add_do_method(canvas_item_editor->get_viewport_control(), "update");
 					undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(), "update");
 					undo_redo->commit_action();
@@ -121,7 +121,7 @@ bool Line2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 			_dragging = true;
 			action_point = node->get_point_count() - 1;
-			moving_from = node->get_point_pos(action_point);
+			moving_from = node->get_point_position(action_point);
 			moving_screen_from = gpoint;
 
 			canvas_item_editor->get_viewport_control()->update();
@@ -131,8 +131,8 @@ bool Line2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 		if (!mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT && _dragging) {
 			undo_redo->create_action(TTR("Move Point in Line2D"));
-			undo_redo->add_do_method(node, "set_point_pos", action_point, cpoint);
-			undo_redo->add_undo_method(node, "set_point_pos", action_point, moving_from);
+			undo_redo->add_do_method(node, "set_point_position", action_point, cpoint);
+			undo_redo->add_undo_method(node, "set_point_position", action_point, moving_from);
 			undo_redo->add_do_method(canvas_item_editor->get_viewport_control(), "update");
 			undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(), "update");
 			undo_redo->commit_action();
@@ -147,7 +147,7 @@ bool Line2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 		if (_dragging) {
 			Vector2 cpoint = mouse_to_local_pos(mm->get_position(), mm->get_alt());
-			node->set_point_pos(action_point, cpoint);
+			node->set_point_position(action_point, cpoint);
 			canvas_item_editor->get_viewport_control()->update();
 			return true;
 		}
@@ -172,7 +172,7 @@ void Line2DEditor::_canvas_draw() {
 	Control *vpc = canvas_item_editor->get_viewport_control();
 
 	for (int i = 0; i < len; ++i) {
-		Vector2 point = xform.xform(node->get_point_pos(i));
+		Vector2 point = xform.xform(node->get_point_position(i));
 		vpc->draw_texture_rect(handle, Rect2(point - handle_size * 0.5, handle_size), false);
 	}
 }

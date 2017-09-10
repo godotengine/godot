@@ -72,7 +72,7 @@ void SpinBox::_range_click_timeout() {
 
 	if (!drag.enabled && Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT)) {
 
-		bool up = get_local_mouse_pos().y < (get_size().height / 2);
+		bool up = get_local_mouse_position().y < (get_size().height / 2);
 		set_value(get_value() + (up ? get_step() : -get_step()));
 
 		if (range_click_timer->is_one_shot()) {

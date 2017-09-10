@@ -64,7 +64,7 @@ Variant PathSpatialGizmo::get_handle_value(int p_idx) const {
 
 	if (p_idx < c->get_point_count()) {
 
-		original = c->get_point_pos(p_idx);
+		original = c->get_point_position(p_idx);
 		return original;
 	}
 
@@ -79,7 +79,7 @@ Variant PathSpatialGizmo::get_handle_value(int p_idx) const {
 	else
 		ofs = c->get_point_out(idx);
 
-	original = ofs + c->get_point_pos(idx);
+	original = ofs + c->get_point_position(idx);
 
 	return ofs;
 }
@@ -108,7 +108,7 @@ void PathSpatialGizmo::set_handle(int p_idx, Camera *p_camera, const Point2 &p_p
 			}
 
 			Vector3 local = gi.xform(inters);
-			c->set_point_pos(p_idx, local);
+			c->set_point_position(p_idx, local);
 		}
 
 		return;
@@ -119,7 +119,7 @@ void PathSpatialGizmo::set_handle(int p_idx, Camera *p_camera, const Point2 &p_p
 	int idx = p_idx / 2;
 	int t = p_idx % 2;
 
-	Vector3 base = c->get_point_pos(idx);
+	Vector3 base = c->get_point_position(idx);
 
 	Plane p(gt.xform(original), p_camera->get_transform().basis.get_axis(2));
 
@@ -148,12 +148,12 @@ void PathSpatialGizmo::commit_handle(int p_idx, const Variant &p_restore, bool p
 
 		if (p_cancel) {
 
-			c->set_point_pos(p_idx, p_restore);
+			c->set_point_position(p_idx, p_restore);
 			return;
 		}
-		ur->create_action(TTR("Set Curve Point Pos"));
-		ur->add_do_method(c.ptr(), "set_point_pos", p_idx, c->get_point_pos(p_idx));
-		ur->add_undo_method(c.ptr(), "set_point_pos", p_idx, p_restore);
+		ur->create_action(TTR("Set Curve Point Position"));
+		ur->add_do_method(c.ptr(), "set_point_position", p_idx, c->get_point_position(p_idx));
+		ur->add_undo_method(c.ptr(), "set_point_position", p_idx, p_restore);
 		ur->commit_action();
 
 		return;
@@ -178,7 +178,7 @@ void PathSpatialGizmo::commit_handle(int p_idx, const Variant &p_restore, bool p
 			c->set_point_in(p_idx, p_restore);
 			return;
 		}
-		ur->create_action(TTR("Set Curve In Pos"));
+		ur->create_action(TTR("Set Curve In Position"));
 		ur->add_do_method(c.ptr(), "set_point_in", idx, c->get_point_in(idx));
 		ur->add_undo_method(c.ptr(), "set_point_in", idx, p_restore);
 		ur->commit_action();
@@ -189,7 +189,7 @@ void PathSpatialGizmo::commit_handle(int p_idx, const Variant &p_restore, bool p
 			c->set_point_out(idx, p_restore);
 			return;
 		}
-		ur->create_action(TTR("Set Curve Out Pos"));
+		ur->create_action(TTR("Set Curve Out Position"));
 		ur->add_do_method(c.ptr(), "set_point_out", idx, c->get_point_out(idx));
 		ur->add_undo_method(c.ptr(), "set_point_out", idx, p_restore);
 		ur->commit_action();
@@ -234,7 +234,7 @@ void PathSpatialGizmo::redraw() {
 
 		for (int i = 0; i < c->get_point_count(); i++) {
 
-			Vector3 p = c->get_point_pos(i);
+			Vector3 p = c->get_point_position(i);
 			handles.push_back(p);
 			if (i > 0) {
 				v3p.push_back(p);
@@ -307,16 +307,16 @@ bool PathEditorPlugin::forward_spatial_gui_input(Camera *p_camera, const Ref<Inp
 			if (rc >= 2) {
 				PoolVector<Vector3>::Read r = v3a.read();
 
-				if (p_camera->unproject_position(gt.xform(c->get_point_pos(0))).distance_to(mbpos) < click_dist)
+				if (p_camera->unproject_position(gt.xform(c->get_point_position(0))).distance_to(mbpos) < click_dist)
 					return false; //nope, existing
 
 				for (int i = 0; i < c->get_point_count() - 1; i++) {
 					//find the offset and point index of the place to break up
 					int j = idx;
-					if (p_camera->unproject_position(gt.xform(c->get_point_pos(i + 1))).distance_to(mbpos) < click_dist)
+					if (p_camera->unproject_position(gt.xform(c->get_point_position(i + 1))).distance_to(mbpos) < click_dist)
 						return false; //nope, existing
 
-					while (j < rc && c->get_point_pos(i + 1) != r[j]) {
+					while (j < rc && c->get_point_position(i + 1) != r[j]) {
 
 						Vector3 from = r[j];
 						Vector3 to = r[j + 1];
@@ -371,7 +371,7 @@ bool PathEditorPlugin::forward_spatial_gui_input(Camera *p_camera, const Ref<Inp
 				if (c->get_point_count() == 0)
 					org = path->get_transform().get_origin();
 				else
-					org = gt.xform(c->get_point_pos(c->get_point_count() - 1));
+					org = gt.xform(c->get_point_position(c->get_point_count() - 1));
 				Plane p(org, p_camera->get_transform().basis.get_axis(2));
 				Vector3 ray_from = p_camera->project_ray_origin(mbpos);
 				Vector3 ray_dir = p_camera->project_ray_normal(mbpos);
@@ -392,9 +392,9 @@ bool PathEditorPlugin::forward_spatial_gui_input(Camera *p_camera, const Ref<Inp
 		} else if (mb->is_pressed() && ((mb->get_button_index() == BUTTON_LEFT && curve_del->is_pressed()) || (mb->get_button_index() == BUTTON_RIGHT && curve_edit->is_pressed()))) {
 
 			for (int i = 0; i < c->get_point_count(); i++) {
-				real_t dist_to_p = p_camera->unproject_position(gt.xform(c->get_point_pos(i))).distance_to(mbpos);
-				real_t dist_to_p_out = p_camera->unproject_position(gt.xform(c->get_point_pos(i) + c->get_point_out(i))).distance_to(mbpos);
-				real_t dist_to_p_in = p_camera->unproject_position(gt.xform(c->get_point_pos(i) + c->get_point_in(i))).distance_to(mbpos);
+				real_t dist_to_p = p_camera->unproject_position(gt.xform(c->get_point_position(i))).distance_to(mbpos);
+				real_t dist_to_p_out = p_camera->unproject_position(gt.xform(c->get_point_position(i) + c->get_point_out(i))).distance_to(mbpos);
+				real_t dist_to_p_in = p_camera->unproject_position(gt.xform(c->get_point_position(i) + c->get_point_in(i))).distance_to(mbpos);
 
 				// Find the offset and point index of the place to break up.
 				// Also check for the control points.
@@ -403,7 +403,7 @@ bool PathEditorPlugin::forward_spatial_gui_input(Camera *p_camera, const Ref<Inp
 					UndoRedo *ur = editor->get_undo_redo();
 					ur->create_action(TTR("Remove Path Point"));
 					ur->add_do_method(c.ptr(), "remove_point", i);
-					ur->add_undo_method(c.ptr(), "add_point", c->get_point_pos(i), c->get_point_in(i), c->get_point_out(i), i);
+					ur->add_undo_method(c.ptr(), "add_point", c->get_point_position(i), c->get_point_in(i), c->get_point_out(i), i);
 					ur->commit_action();
 					return true;
 				} else if (dist_to_p_out < click_dist) {
@@ -496,7 +496,7 @@ void PathEditorPlugin::_close_curve() {
 		return;
 	if (c->get_point_count() < 2)
 		return;
-	c->add_point(c->get_point_pos(0), c->get_point_in(0), c->get_point_out(0));
+	c->add_point(c->get_point_position(0), c->get_point_in(0), c->get_point_out(0));
 }
 
 void PathEditorPlugin::_notification(int p_what) {

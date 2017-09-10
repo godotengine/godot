@@ -481,7 +481,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 			continue;
 
 		Ref<VisualScriptNode> node = script->get_node(edited_func, E->get());
-		Vector2 pos = script->get_node_pos(edited_func, E->get());
+		Vector2 pos = script->get_node_position(edited_func, E->get());
 
 		GraphNode *gnode = memnew(GraphNode);
 		gnode->set_title(node->get_caption());
@@ -1065,7 +1065,7 @@ void VisualScriptEditor::_available_node_doubleclicked() {
 		List<int> existing;
 		script->get_node_list(edited_func, &existing);
 		for (List<int>::Element *E = existing.front(); E; E = E->next()) {
-			Point2 pos = script->get_node_pos(edited_func, E->get());
+			Point2 pos = script->get_node_position(edited_func, E->get());
 			if (pos.distance_to(ofs) < 15) {
 				ofs += Vector2(graph->get_snap(), graph->get_snap());
 				exists = true;
@@ -1186,7 +1186,7 @@ void VisualScriptEditor::_on_nodes_delete() {
 	for (List<int>::Element *F = to_erase.front(); F; F = F->next()) {
 
 		undo_redo->add_do_method(script.ptr(), "remove_node", edited_func, F->get());
-		undo_redo->add_undo_method(script.ptr(), "add_node", edited_func, F->get(), script->get_node(edited_func, F->get()), script->get_node_pos(edited_func, F->get()));
+		undo_redo->add_undo_method(script.ptr(), "add_node", edited_func, F->get(), script->get_node(edited_func, F->get()), script->get_node_position(edited_func, F->get()));
 
 		List<VisualScript::SequenceConnection> sequence_conns;
 		script->get_sequence_connection_list(edited_func, &sequence_conns);
@@ -1243,7 +1243,7 @@ void VisualScriptEditor::_on_nodes_duplicate() {
 
 		int new_id = idc++;
 		to_select.insert(new_id);
-		undo_redo->add_do_method(script.ptr(), "add_node", edited_func, new_id, dupe, script->get_node_pos(edited_func, F->get()) + Vector2(20, 20));
+		undo_redo->add_do_method(script.ptr(), "add_node", edited_func, new_id, dupe, script->get_node_position(edited_func, F->get()) + Vector2(20, 20));
 		undo_redo->add_undo_method(script.ptr(), "remove_node", edited_func, new_id);
 	}
 	undo_redo->add_do_method(this, "_update_graph");
@@ -1277,7 +1277,7 @@ Variant VisualScriptEditor::get_drag_data_fw(const Point2 &p_point, Control *p_f
 
 	if (p_from == nodes) {
 
-		TreeItem *it = nodes->get_item_at_pos(p_point);
+		TreeItem *it = nodes->get_item_at_position(p_point);
 		if (!it)
 			return Variant();
 		String type = it->get_metadata(0);
@@ -1296,7 +1296,7 @@ Variant VisualScriptEditor::get_drag_data_fw(const Point2 &p_point, Control *p_f
 
 	if (p_from == members) {
 
-		TreeItem *it = members->get_item_at_pos(p_point);
+		TreeItem *it = members->get_item_at_position(p_point);
 		if (!it)
 			return Variant();
 
@@ -2197,7 +2197,7 @@ void VisualScriptEditor::_move_node(String func, int p_id, const Vector2 &p_to) 
 		if (Object::cast_to<GraphNode>(node))
 			Object::cast_to<GraphNode>(node)->set_offset(p_to);
 	}
-	script->set_node_pos(edited_func, p_id, p_to / EDSCALE);
+	script->set_node_position(edited_func, p_id, p_to / EDSCALE);
 }
 
 void VisualScriptEditor::_node_moved(Vector2 p_from, Vector2 p_to, int p_id) {
@@ -2211,7 +2211,7 @@ void VisualScriptEditor::_remove_node(int p_id) {
 	undo_redo->create_action(TTR("Remove VisualScript Node"));
 
 	undo_redo->add_do_method(script.ptr(), "remove_node", edited_func, p_id);
-	undo_redo->add_undo_method(script.ptr(), "add_node", edited_func, p_id, script->get_node(edited_func, p_id), script->get_node_pos(edited_func, p_id));
+	undo_redo->add_undo_method(script.ptr(), "add_node", edited_func, p_id, script->get_node(edited_func, p_id), script->get_node_position(edited_func, p_id));
 
 	List<VisualScript::SequenceConnection> sequence_conns;
 	script->get_sequence_connection_list(edited_func, &sequence_conns);
@@ -2895,7 +2895,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 						}
 						if (node.is_valid()) {
 							clipboard->nodes[id] = node->duplicate();
-							clipboard->nodes_positions[id] = script->get_node_pos(edited_func, id);
+							clipboard->nodes_positions[id] = script->get_node_position(edited_func, id);
 						}
 					}
 				}
@@ -2955,7 +2955,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 				List<int> nodes;
 				script->get_node_list(edited_func, &nodes);
 				for (List<int>::Element *E = nodes.front(); E; E = E->next()) {
-					Vector2 pos = script->get_node_pos(edited_func, E->get()).snapped(Vector2(2, 2));
+					Vector2 pos = script->get_node_position(edited_func, E->get()).snapped(Vector2(2, 2));
 					existing_positions.insert(pos);
 				}
 			}
@@ -3069,7 +3069,7 @@ void VisualScriptEditor::_member_option(int p_option) {
 				List<int> nodes;
 				script->get_node_list(name, &nodes);
 				for (List<int>::Element *E = nodes.front(); E; E = E->next()) {
-					undo_redo->add_undo_method(script.ptr(), "add_node", name, E->get(), script->get_node(name, E->get()), script->get_node_pos(name, E->get()));
+					undo_redo->add_undo_method(script.ptr(), "add_node", name, E->get(), script->get_node(name, E->get()), script->get_node_position(name, E->get()));
 				}
 
 				List<VisualScript::SequenceConnection> seq_connections;

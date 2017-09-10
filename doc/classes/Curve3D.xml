@@ -15,17 +15,17 @@
 		<method name="add_point">
 			<return type="void">
 			</return>
-			<argument index="0" name="pos" type="Vector3">
+			<argument index="0" name="position" type="Vector3">
 			</argument>
 			<argument index="1" name="in" type="Vector3" default="Vector3( 0, 0, 0 )">
 			</argument>
 			<argument index="2" name="out" type="Vector3" default="Vector3( 0, 0, 0 )">
 			</argument>
-			<argument index="3" name="atpos" type="int" default="-1">
+			<argument index="3" name="at_position" type="int" default="-1">
 			</argument>
 			<description>
-				Adds a point to a curve, at position "pos", with control points "in" and "out".
-				If "atpos" is given, the point is inserted before the point number "atpos", moving that point (and every point after) after the inserted point. If "atpos" is not given, or is an illegal value (atpos &lt;0 or atpos &gt;= [method get_point_count]), the point will be appended at the end of the point list.
+				Adds a point to a curve, at "position", with control points "in" and "out".
+				If "at_position" is given, the point is inserted before the point number "at_position", moving that point (and every point after) after the inserted point. If "at_position" is not given, or is an illegal value (at_position &lt;0 or at_position &gt;= [method get_point_count]), the point will be appended at the end of the point list.
 			</description>
 		</method>
 		<method name="clear_points">
@@ -87,7 +87,7 @@
 				Returns the position of the control point leading out of the vertex "idx". If the index is out of bounds, the function sends an error to the console, and returns (0, 0, 0).
 			</description>
 		</method>
-		<method name="get_point_pos" qualifiers="const">
+		<method name="get_point_position" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<argument index="0" name="idx" type="int">
@@ -162,7 +162,7 @@
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
-			<argument index="1" name="pos" type="Vector3">
+			<argument index="1" name="position" type="Vector3">
 			</argument>
 			<description>
 				Sets the position of the control point leading to the vertex "idx". If the index is out of bounds, the function sends an error to the console.
@@ -173,18 +173,18 @@
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
-			<argument index="1" name="pos" type="Vector3">
+			<argument index="1" name="position" type="Vector3">
 			</argument>
 			<description>
 				Sets the position of the control point leading out of the vertex "idx". If the index is out of bounds, the function sends an error to the console.
 			</description>
 		</method>
-		<method name="set_point_pos">
+		<method name="set_point_position">
 			<return type="void">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
-			<argument index="1" name="pos" type="Vector3">
+			<argument index="1" name="position" type="Vector3">
 			</argument>
 			<description>
 				Sets the position for the vertex "idx". If the index is out of bounds, the function sends an error to the console.

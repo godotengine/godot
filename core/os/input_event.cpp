@@ -781,7 +781,7 @@ void InputEventScreenTouch::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_index", "index"), &InputEventScreenTouch::set_index);
 	ClassDB::bind_method(D_METHOD("get_index"), &InputEventScreenTouch::get_index);
 
-	ClassDB::bind_method(D_METHOD("set_position", "pos"), &InputEventScreenTouch::set_position);
+	ClassDB::bind_method(D_METHOD("set_position", "position"), &InputEventScreenTouch::set_position);
 	ClassDB::bind_method(D_METHOD("get_position"), &InputEventScreenTouch::get_position);
 
 	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &InputEventScreenTouch::set_pressed);

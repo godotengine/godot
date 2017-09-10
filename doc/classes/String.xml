@@ -266,12 +266,12 @@
 			</description>
 		</method>
 		<method name="erase">
-			<argument index="0" name="pos" type="int">
+			<argument index="0" name="position" type="int">
 			</argument>
 			<argument index="1" name="chars" type="int">
 			</argument>
 			<description>
-				Erase [code]chars[/code] characters from the string starting from [code]pos[/code].
+				Erase [code]chars[/code] characters from the string starting from [code]position[/code].
 			</description>
 		</method>
 		<method name="find">
@@ -360,7 +360,7 @@
 		<method name="insert">
 			<return type="String">
 			</return>
-			<argument index="0" name="pos" type="int">
+			<argument index="0" name="position" type="int">
 			</argument>
 			<argument index="1" name="what" type="String">
 			</argument>
@@ -445,7 +445,7 @@
 		<method name="left">
 			<return type="String">
 			</return>
-			<argument index="0" name="pos" type="int">
+			<argument index="0" name="position" type="int">
 			</argument>
 			<description>
 				Return an amount of characters from the left of the string.
@@ -596,7 +596,7 @@
 		<method name="right">
 			<return type="String">
 			</return>
-			<argument index="0" name="pos" type="int">
+			<argument index="0" name="position" type="int">
 			</argument>
 			<description>
 				Return the right side of the string from a given position.

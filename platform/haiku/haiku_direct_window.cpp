@@ -157,8 +157,8 @@ void HaikuDirectWindow::HandleMouseButton(BMessage *message) {
 
 	mouse_event.mouse_button.mod = GetKeyModifierState(modifiers);
 	mouse_event->get_button_mask() = GetMouseButtonState(buttons);
-	mouse_event->get_pos().x = where.x;
-	mouse_event->get_pos().y = where.y;
+	mouse_event->get_position().x = where.x;
+	mouse_event->get_position().y = where.y;
 	mouse_event.mouse_button.global_x = where.x;
 	mouse_event.mouse_button.global_y = where.y;
 
@@ -242,8 +242,8 @@ void HaikuDirectWindow::HandleMouseWheelChanged(BMessage *message) {
 	mouse_event->get_button_index() = wheel_delta_y < 0 ? 4 : 5;
 	mouse_event.mouse_button.mod = GetKeyModifierState(last_key_modifier_state);
 	mouse_event->get_button_mask() = last_button_mask;
-	mouse_event->get_pos().x = last_mouse_position.x;
-	mouse_event->get_pos().y = last_mouse_position.y;
+	mouse_event->get_position().x = last_mouse_position.x;
+	mouse_event->get_position().y = last_mouse_position.y;
 	mouse_event.mouse_button.global_x = last_mouse_position.x;
 	mouse_event.mouse_button.global_y = last_mouse_position.y;
 

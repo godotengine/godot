@@ -14,7 +14,7 @@
 		<method name="Rect3">
 			<return type="Rect3">
 			</return>
-			<argument index="0" name="pos" type="Vector3">
+			<argument index="0" name="position" type="Vector3">
 			</argument>
 			<argument index="1" name="size" type="Vector3">
 			</argument>

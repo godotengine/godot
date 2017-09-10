@@ -298,7 +298,7 @@
 				Stops the vibration of the joypad.
 			</description>
 		</method>
-		<method name="warp_mouse_pos">
+		<method name="warp_mouse_position">
 			<return type="void">
 			</return>
 			<argument index="0" name="to" type="Vector2">

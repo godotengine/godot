@@ -651,7 +651,7 @@ void Spatial::look_at(const Vector3 &p_target, const Vector3 &p_up_normal) {
 	set_global_transform(lookat);
 }
 
-void Spatial::look_at_from_pos(const Vector3 &p_pos, const Vector3 &p_target, const Vector3 &p_up_normal) {
+void Spatial::look_at_from_position(const Vector3 &p_pos, const Vector3 &p_target, const Vector3 &p_up_normal) {
 
 	Transform lookat;
 	lookat.origin = p_pos;
@@ -749,7 +749,7 @@ void Spatial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_identity"), &Spatial::set_identity);
 
 	ClassDB::bind_method(D_METHOD("look_at", "target", "up"), &Spatial::look_at);
-	ClassDB::bind_method(D_METHOD("look_at_from_pos", "pos", "target", "up"), &Spatial::look_at_from_pos);
+	ClassDB::bind_method(D_METHOD("look_at_from_position", "position", "target", "up"), &Spatial::look_at_from_position);
 
 	ClassDB::bind_method(D_METHOD("to_local", "global_point"), &Spatial::to_local);
 	ClassDB::bind_method(D_METHOD("to_global", "local_point"), &Spatial::to_global);

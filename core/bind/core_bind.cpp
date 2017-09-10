@@ -1033,10 +1033,8 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_time", "utc"), &_OS::get_time, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_time_zone_info"), &_OS::get_time_zone_info);
 	ClassDB::bind_method(D_METHOD("get_unix_time"), &_OS::get_unix_time);
-	ClassDB::bind_method(D_METHOD("get_datetime_from_unix_time", "unix_time_val"),
-			&_OS::get_datetime_from_unix_time);
-	ClassDB::bind_method(D_METHOD("get_unix_time_from_datetime", "datetime"),
-			&_OS::get_unix_time_from_datetime);
+	ClassDB::bind_method(D_METHOD("get_datetime_from_unix_time", "unix_time_val"), &_OS::get_datetime_from_unix_time);
+	ClassDB::bind_method(D_METHOD("get_unix_time_from_datetime", "datetime"), &_OS::get_unix_time_from_datetime);
 	ClassDB::bind_method(D_METHOD("get_system_time_secs"), &_OS::get_system_time_secs);
 
 	ClassDB::bind_method(D_METHOD("set_icon", "icon"), &_OS::set_icon);
@@ -1337,7 +1335,7 @@ void _Geometry::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("build_box_planes", "extents"), &_Geometry::build_box_planes);
 	ClassDB::bind_method(D_METHOD("build_cylinder_planes", "radius", "height", "sides", "axis"), &_Geometry::build_cylinder_planes, DEFVAL(Vector3::AXIS_Z));
 	ClassDB::bind_method(D_METHOD("build_capsule_planes", "radius", "height", "sides", "lats", "axis"), &_Geometry::build_capsule_planes, DEFVAL(Vector3::AXIS_Z));
-	ClassDB::bind_method(D_METHOD("segment_intersects_circle", "segment_from", "segment_to", "circle_pos", "circle_radius"), &_Geometry::segment_intersects_circle);
+	ClassDB::bind_method(D_METHOD("segment_intersects_circle", "segment_from", "segment_to", "circle_position", "circle_radius"), &_Geometry::segment_intersects_circle);
 	ClassDB::bind_method(D_METHOD("segment_intersects_segment_2d", "from_a", "to_a", "from_b", "to_b"), &_Geometry::segment_intersects_segment_2d);
 
 	ClassDB::bind_method(D_METHOD("get_closest_points_between_segments_2d", "p1", "q1", "p2", "q2"), &_Geometry::get_closest_points_between_segments_2d);
@@ -1353,7 +1351,7 @@ void _Geometry::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("ray_intersects_triangle", "from", "dir", "a", "b", "c"), &_Geometry::ray_intersects_triangle);
 	ClassDB::bind_method(D_METHOD("segment_intersects_triangle", "from", "to", "a", "b", "c"), &_Geometry::segment_intersects_triangle);
-	ClassDB::bind_method(D_METHOD("segment_intersects_sphere", "from", "to", "spos", "sradius"), &_Geometry::segment_intersects_sphere);
+	ClassDB::bind_method(D_METHOD("segment_intersects_sphere", "from", "to", "sphere_position", "sphere_radius"), &_Geometry::segment_intersects_sphere);
 	ClassDB::bind_method(D_METHOD("segment_intersects_cylinder", "from", "to", "height", "radius"), &_Geometry::segment_intersects_cylinder);
 	ClassDB::bind_method(D_METHOD("segment_intersects_convex", "from", "to", "planes"), &_Geometry::segment_intersects_convex);
 	ClassDB::bind_method(D_METHOD("point_is_inside_triangle", "point", "a", "b", "c"), &_Geometry::point_is_inside_triangle);
@@ -1452,10 +1450,10 @@ void _File::seek_end(int64_t p_position) {
 	ERR_FAIL_COND(!f);
 	f->seek_end(p_position);
 }
-int64_t _File::get_pos() const {
+int64_t _File::get_position() const {
 
 	ERR_FAIL_COND_V(!f, 0);
-	return f->get_pos();
+	return f->get_position();
 }
 
 int64_t _File::get_len() const {
@@ -1534,7 +1532,7 @@ String _File::get_as_text() const {
 	ERR_FAIL_COND_V(!f, String());
 
 	String text;
-	size_t original_pos = f->get_pos();
+	size_t original_pos = f->get_position();
 	f->seek(0);
 
 	String l = get_line();
@@ -1731,9 +1729,9 @@ void _File::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("open", "path", "flags"), &_File::open);
 	ClassDB::bind_method(D_METHOD("close"), &_File::close);
 	ClassDB::bind_method(D_METHOD("is_open"), &_File::is_open);
-	ClassDB::bind_method(D_METHOD("seek", "pos"), &_File::seek);
-	ClassDB::bind_method(D_METHOD("seek_end", "pos"), &_File::seek_end, DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("get_pos"), &_File::get_pos);
+	ClassDB::bind_method(D_METHOD("seek", "position"), &_File::seek);
+	ClassDB::bind_method(D_METHOD("seek_end", "position"), &_File::seek_end, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_position"), &_File::get_position);
 	ClassDB::bind_method(D_METHOD("get_len"), &_File::get_len);
 	ClassDB::bind_method(D_METHOD("eof_reached"), &_File::eof_reached);
 	ClassDB::bind_method(D_METHOD("get_8"), &_File::get_8);

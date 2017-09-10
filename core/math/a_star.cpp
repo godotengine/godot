@@ -58,7 +58,7 @@ void AStar::add_point(int p_id, const Vector3 &p_pos, real_t p_weight_scale) {
 	}
 }
 
-Vector3 AStar::get_point_pos(int p_id) const {
+Vector3 AStar::get_point_position(int p_id) const {
 
 	ERR_FAIL_COND_V(!points.has(p_id), Vector3());
 
@@ -171,7 +171,7 @@ int AStar::get_closest_point(const Vector3 &p_point) const {
 
 	return closest_id;
 }
-Vector3 AStar::get_closest_pos_in_segment(const Vector3 &p_point) const {
+Vector3 AStar::get_closest_position_in_segment(const Vector3 &p_point) const {
 
 	real_t closest_dist = 1e20;
 	bool found = false;
@@ -412,8 +412,8 @@ PoolVector<int> AStar::get_id_path(int p_from_id, int p_to_id) {
 void AStar::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_available_point_id"), &AStar::get_available_point_id);
-	ClassDB::bind_method(D_METHOD("add_point", "id", "pos", "weight_scale"), &AStar::add_point, DEFVAL(1.0));
-	ClassDB::bind_method(D_METHOD("get_point_pos", "id"), &AStar::get_point_pos);
+	ClassDB::bind_method(D_METHOD("add_point", "id", "position", "weight_scale"), &AStar::add_point, DEFVAL(1.0));
+	ClassDB::bind_method(D_METHOD("get_point_position", "id"), &AStar::get_point_position);
 	ClassDB::bind_method(D_METHOD("get_point_weight_scale", "id"), &AStar::get_point_weight_scale);
 	ClassDB::bind_method(D_METHOD("remove_point", "id"), &AStar::remove_point);
 	ClassDB::bind_method(D_METHOD("has_point", "id"), &AStar::has_point);
@@ -425,8 +425,8 @@ void AStar::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("clear"), &AStar::clear);
 
-	ClassDB::bind_method(D_METHOD("get_closest_point", "to_pos"), &AStar::get_closest_point);
-	ClassDB::bind_method(D_METHOD("get_closest_pos_in_segment", "to_pos"), &AStar::get_closest_pos_in_segment);
+	ClassDB::bind_method(D_METHOD("get_closest_point", "to_position"), &AStar::get_closest_point);
+	ClassDB::bind_method(D_METHOD("get_closest_position_in_segment", "to_position"), &AStar::get_closest_position_in_segment);
 
 	ClassDB::bind_method(D_METHOD("get_point_path", "from_id", "to_id"), &AStar::get_point_path);
 	ClassDB::bind_method(D_METHOD("get_id_path", "from_id", "to_id"), &AStar::get_id_path);

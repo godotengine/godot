@@ -86,8 +86,8 @@ public:
 	void set_pos_a(const Vector3 &p_pos) { m_pivotInA = p_pos; }
 	void set_pos_b(const Vector3 &p_pos) { m_pivotInB = p_pos; }
 
-	Vector3 get_pos_a() { return m_pivotInB; }
-	Vector3 get_pos_b() { return m_pivotInA; }
+	Vector3 get_position_a() { return m_pivotInB; }
+	Vector3 get_position_b() { return m_pivotInA; }
 
 	PinJointSW(BodySW *p_body_a, const Vector3 &p_pos_a, BodySW *p_body_b, const Vector3 &p_pos_b);
 	~PinJointSW();

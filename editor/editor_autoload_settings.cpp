@@ -419,12 +419,12 @@ bool EditorAutoloadSettings::can_drop_data_fw(const Point2 &p_point, const Varia
 		return false;
 
 	if (drop_data.has("type")) {
-		TreeItem *ti = tree->get_item_at_pos(p_point);
+		TreeItem *ti = tree->get_item_at_position(p_point);
 
 		if (!ti)
 			return false;
 
-		int section = tree->get_drop_section_at_pos(p_point);
+		int section = tree->get_drop_section_at_position(p_point);
 
 		if (section < -1)
 			return false;
@@ -437,12 +437,12 @@ bool EditorAutoloadSettings::can_drop_data_fw(const Point2 &p_point, const Varia
 
 void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_control) {
 
-	TreeItem *ti = tree->get_item_at_pos(p_point);
+	TreeItem *ti = tree->get_item_at_position(p_point);
 
 	if (!ti)
 		return;
 
-	int section = tree->get_drop_section_at_pos(p_point);
+	int section = tree->get_drop_section_at_position(p_point);
 
 	if (section < -1)
 		return;

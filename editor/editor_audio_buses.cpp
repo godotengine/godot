@@ -459,7 +459,7 @@ void EditorAudioBus::drop_data(const Point2 &p_point, const Variant &p_data) {
 Variant EditorAudioBus::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 
 	print_line("drag fw");
-	TreeItem *item = effects->get_item_at_pos(p_point);
+	TreeItem *item = effects->get_item_at_position(p_point);
 	if (!item) {
 		print_line("no item");
 		return Variant();
@@ -489,7 +489,7 @@ bool EditorAudioBus::can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 	if (!d.has("type") || String(d["type"]) != "audio_bus_effect")
 		return false;
 
-	TreeItem *item = effects->get_item_at_pos(p_point);
+	TreeItem *item = effects->get_item_at_position(p_point);
 	if (!item)
 		return false;
 
@@ -502,10 +502,10 @@ void EditorAudioBus::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 
 	Dictionary d = p_data;
 
-	TreeItem *item = effects->get_item_at_pos(p_point);
+	TreeItem *item = effects->get_item_at_position(p_point);
 	if (!item)
 		return;
-	int pos = effects->get_drop_section_at_pos(p_point);
+	int pos = effects->get_drop_section_at_position(p_point);
 	Variant md = item->get_metadata(0);
 
 	int paste_at;

@@ -56,7 +56,7 @@ int AudioStreamPlaybackOpus::_op_seek_func(void *_stream, opus_int64 _offset, in
 			fa->seek(_offset);
 		} break;
 		case SEEK_CUR: {
-			fa->seek(fa->get_pos() + _offset);
+			fa->seek(fa->get_position() + _offset);
 		} break;
 		case SEEK_END: {
 			fa->seek_end(_offset);
@@ -83,7 +83,7 @@ int AudioStreamPlaybackOpus::_op_close_func(void *_stream) {
 
 opus_int64 AudioStreamPlaybackOpus::_op_tell_func(void *_stream) {
 	FileAccess *_fa = (FileAccess *)_stream;
-	return (opus_int64)_fa->get_pos();
+	return (opus_int64)_fa->get_position();
 }
 
 void AudioStreamPlaybackOpus::_clear_stream() {
@@ -340,7 +340,7 @@ float AudioStreamPlaybackOpus::get_length() const {
 	return length;
 }
 
-float AudioStreamPlaybackOpus::get_pos() const {
+float AudioStreamPlaybackOpus::get_position() const {
 
 	int32_t frames = int32_t(frames_mixed);
 	if (frames < 0)

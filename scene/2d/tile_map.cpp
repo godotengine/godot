@@ -1294,9 +1294,9 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_occluder_light_mask"), &TileMap::get_occluder_light_mask);
 
 	ClassDB::bind_method(D_METHOD("set_cell", "x", "y", "tile", "flip_x", "flip_y", "transpose"), &TileMap::set_cell, DEFVAL(false), DEFVAL(false), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("set_cellv", "pos", "tile", "flip_x", "flip_y", "transpose"), &TileMap::set_cellv, DEFVAL(false), DEFVAL(false), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("set_cellv", "position", "tile", "flip_x", "flip_y", "transpose"), &TileMap::set_cellv, DEFVAL(false), DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_cell", "x", "y"), &TileMap::get_cell);
-	ClassDB::bind_method(D_METHOD("get_cellv", "pos"), &TileMap::get_cellv);
+	ClassDB::bind_method(D_METHOD("get_cellv", "position"), &TileMap::get_cellv);
 	ClassDB::bind_method(D_METHOD("is_cell_x_flipped", "x", "y"), &TileMap::is_cell_x_flipped);
 	ClassDB::bind_method(D_METHOD("is_cell_y_flipped", "x", "y"), &TileMap::is_cell_y_flipped);
 	ClassDB::bind_method(D_METHOD("is_cell_transposed", "x", "y"), &TileMap::is_cell_transposed);
@@ -1307,8 +1307,8 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_used_cells_by_id", "id"), &TileMap::get_used_cells_by_id);
 	ClassDB::bind_method(D_METHOD("get_used_rect"), &TileMap::get_used_rect);
 
-	ClassDB::bind_method(D_METHOD("map_to_world", "mappos", "ignore_half_ofs"), &TileMap::map_to_world, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("world_to_map", "worldpos"), &TileMap::world_to_map);
+	ClassDB::bind_method(D_METHOD("map_to_world", "map_position", "ignore_half_ofs"), &TileMap::map_to_world, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("world_to_map", "world_position"), &TileMap::world_to_map);
 
 	ClassDB::bind_method(D_METHOD("_clear_quadrants"), &TileMap::_clear_quadrants);
 	ClassDB::bind_method(D_METHOD("_recreate_quadrants"), &TileMap::_recreate_quadrants);

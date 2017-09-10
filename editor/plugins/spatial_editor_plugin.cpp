@@ -217,7 +217,7 @@ Transform SpatialEditorViewport::_get_camera_transform() const {
 	return camera->get_global_transform();
 }
 
-Vector3 SpatialEditorViewport::_get_camera_pos() const {
+Vector3 SpatialEditorViewport::_get_camera_position() const {
 
 	return _get_camera_transform().origin;
 }
@@ -464,7 +464,7 @@ void SpatialEditorViewport::_select_region() {
 
 	Vector<Plane> frustum;
 
-	Vector3 cam_pos = _get_camera_pos();
+	Vector3 cam_pos = _get_camera_position();
 	Set<Ref<SpatialEditorGizmo> > found_gizmos;
 
 	for (int i = 0; i < 4; i++) {
@@ -2366,9 +2366,9 @@ void SpatialEditorViewport::update_transform_gizmo_view() {
 
 void SpatialEditorViewport::set_state(const Dictionary &p_state) {
 
-	cursor.pos = p_state["pos"];
-	cursor.x_rot = p_state["x_rot"];
-	cursor.y_rot = p_state["y_rot"];
+	cursor.pos = p_state["position"];
+	cursor.x_rot = p_state["x_rotation"];
+	cursor.y_rot = p_state["y_rotation"];
 	cursor.distance = p_state["distance"];
 	bool env = p_state["use_environment"];
 	bool orth = p_state["use_orthogonal"];
@@ -2410,9 +2410,9 @@ void SpatialEditorViewport::set_state(const Dictionary &p_state) {
 Dictionary SpatialEditorViewport::get_state() const {
 
 	Dictionary d;
-	d["pos"] = cursor.pos;
-	d["x_rot"] = cursor.x_rot;
-	d["y_rot"] = cursor.y_rot;
+	d["position"] = cursor.pos;
+	d["x_rotation"] = cursor.x_rot;
+	d["y_rotation"] = cursor.y_rot;
 	d["distance"] = cursor.distance;
 	d["use_environment"] = camera->get_environment().is_valid();
 	d["use_orthogonal"] = camera->get_projection() == Camera::PROJECTION_ORTHOGONAL;

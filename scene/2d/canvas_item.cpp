@@ -902,7 +902,7 @@ Ref<Material> CanvasItem::get_material() const {
 	return material;
 }
 
-Vector2 CanvasItem::make_canvas_pos_local(const Vector2 &screen_point) const {
+Vector2 CanvasItem::make_canvas_position_local(const Vector2 &screen_point) const {
 
 	ERR_FAIL_COND_V(!is_inside_tree(), screen_point);
 
@@ -923,7 +923,8 @@ Vector2 CanvasItem::get_global_mouse_position() const {
 	ERR_FAIL_COND_V(!get_viewport(), Vector2());
 	return get_canvas_transform().affine_inverse().xform(get_viewport()->get_mouse_position());
 }
-Vector2 CanvasItem::get_local_mouse_pos() const {
+
+Vector2 CanvasItem::get_local_mouse_position() const {
 
 	ERR_FAIL_COND_V(!get_viewport(), Vector2());
 
@@ -976,18 +977,18 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_polyline", "points", "color", "width", "antialiased"), &CanvasItem::draw_polyline, DEFVAL(1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_polyline_colors", "points", "colors", "width", "antialiased"), &CanvasItem::draw_polyline_colors, DEFVAL(1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_rect", "rect", "color", "filled"), &CanvasItem::draw_rect, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("draw_circle", "pos", "radius", "color"), &CanvasItem::draw_circle);
-	ClassDB::bind_method(D_METHOD("draw_texture", "texture", "pos", "modulate", "normal_map"), &CanvasItem::draw_texture, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("draw_circle", "position", "radius", "color"), &CanvasItem::draw_circle);
+	ClassDB::bind_method(D_METHOD("draw_texture", "texture", "position", "modulate", "normal_map"), &CanvasItem::draw_texture, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("draw_texture_rect", "texture", "rect", "tile", "modulate", "transpose", "normal_map"), &CanvasItem::draw_texture_rect, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("draw_texture_rect_region", "texture", "rect", "src_rect", "modulate", "transpose", "normal_map", "clip_uv"), &CanvasItem::draw_texture_rect_region, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(Variant()), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("draw_style_box", "style_box", "rect"), &CanvasItem::draw_style_box);
 	ClassDB::bind_method(D_METHOD("draw_primitive", "points", "colors", "uvs", "texture", "width", "normal_map"), &CanvasItem::draw_primitive, DEFVAL(Variant()), DEFVAL(1.0), DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("draw_polygon", "points", "colors", "uvs", "texture", "normal_map", "antialiased"), &CanvasItem::draw_polygon, DEFVAL(PoolVector2Array()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_colored_polygon", "points", "color", "uvs", "texture", "normal_map", "antialiased"), &CanvasItem::draw_colored_polygon, DEFVAL(PoolVector2Array()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("draw_string", "font", "pos", "text", "modulate", "clip_w"), &CanvasItem::draw_string, DEFVAL(Color(1, 1, 1)), DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("draw_char", "font", "pos", "char", "next", "modulate"), &CanvasItem::draw_char, DEFVAL(Color(1, 1, 1)));
+	ClassDB::bind_method(D_METHOD("draw_string", "font", "position", "text", "modulate", "clip_w"), &CanvasItem::draw_string, DEFVAL(Color(1, 1, 1)), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("draw_char", "font", "position", "char", "next", "modulate"), &CanvasItem::draw_char, DEFVAL(Color(1, 1, 1)));
 
-	ClassDB::bind_method(D_METHOD("draw_set_transform", "pos", "rot", "scale"), &CanvasItem::draw_set_transform);
+	ClassDB::bind_method(D_METHOD("draw_set_transform", "position", "rotation", "scale"), &CanvasItem::draw_set_transform);
 	ClassDB::bind_method(D_METHOD("draw_set_transform_matrix", "xform"), &CanvasItem::draw_set_transform_matrix);
 	ClassDB::bind_method(D_METHOD("get_transform"), &CanvasItem::get_transform);
 	ClassDB::bind_method(D_METHOD("get_global_transform"), &CanvasItem::get_global_transform);
@@ -995,7 +996,7 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_viewport_transform"), &CanvasItem::get_viewport_transform);
 	ClassDB::bind_method(D_METHOD("get_viewport_rect"), &CanvasItem::get_viewport_rect);
 	ClassDB::bind_method(D_METHOD("get_canvas_transform"), &CanvasItem::get_canvas_transform);
-	ClassDB::bind_method(D_METHOD("get_local_mouse_pos"), &CanvasItem::get_local_mouse_pos);
+	ClassDB::bind_method(D_METHOD("get_local_mouse_position"), &CanvasItem::get_local_mouse_position);
 	ClassDB::bind_method(D_METHOD("get_global_mouse_position"), &CanvasItem::get_global_mouse_position);
 	ClassDB::bind_method(D_METHOD("get_canvas"), &CanvasItem::get_canvas);
 	ClassDB::bind_method(D_METHOD("get_world_2d"), &CanvasItem::get_world_2d);
@@ -1013,8 +1014,7 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_notify_transform", "enable"), &CanvasItem::set_notify_transform);
 	ClassDB::bind_method(D_METHOD("is_transform_notification_enabled"), &CanvasItem::is_transform_notification_enabled);
 
-	ClassDB::bind_method(D_METHOD("make_canvas_pos_local", "screen_point"),
-			&CanvasItem::make_canvas_pos_local);
+	ClassDB::bind_method(D_METHOD("make_canvas_position_local", "screen_point"), &CanvasItem::make_canvas_position_local);
 	ClassDB::bind_method(D_METHOD("make_input_local", "event"), &CanvasItem::make_input_local);
 
 	BIND_VMETHOD(MethodInfo("_draw"));

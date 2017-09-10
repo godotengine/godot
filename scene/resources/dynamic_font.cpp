@@ -397,7 +397,7 @@ unsigned long DynamicFontAtSize::_ft_stream_io(FT_Stream stream, unsigned long o
 
 	FileAccess *f = (FileAccess *)stream->descriptor.pointer;
 
-	if (f->get_pos() != offset) {
+	if (f->get_position() != offset) {
 		f->seek(offset);
 	}
 

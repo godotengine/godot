@@ -85,10 +85,10 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_item_at_pos" qualifiers="const">
+		<method name="get_item_at_position" qualifiers="const">
 			<return type="int">
 			</return>
-			<argument index="0" name="pos" type="Vector2">
+			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<argument index="1" name="exact" type="bool" default="false">
 			</argument>
@@ -490,7 +490,7 @@
 		<signal name="item_rmb_selected">
 			<argument index="0" name="index" type="int">
 			</argument>
-			<argument index="1" name="atpos" type="Vector2">
+			<argument index="1" name="at_position" type="Vector2">
 			</argument>
 			<description>
 				Fired when specified list item has been selected via right mouse clicking.

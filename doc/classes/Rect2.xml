@@ -14,7 +14,7 @@
 		<method name="Rect2">
 			<return type="Rect2">
 			</return>
-			<argument index="0" name="pos" type="Vector2">
+			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<argument index="1" name="size" type="Vector2">
 			</argument>

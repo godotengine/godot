@@ -92,7 +92,7 @@ public:
 
 	void set_point_value(int p_index, real_t pos);
 	int set_point_offset(int p_index, float offset);
-	Vector2 get_point_pos(int p_index) const;
+	Vector2 get_point_position(int p_index) const;
 
 	Point get_point(int p_index) const;
 
@@ -180,8 +180,8 @@ protected:
 public:
 	int get_point_count() const;
 	void add_point(const Vector2 &p_pos, const Vector2 &p_in = Vector2(), const Vector2 &p_out = Vector2(), int p_atpos = -1);
-	void set_point_pos(int p_index, const Vector2 &p_pos);
-	Vector2 get_point_pos(int p_index) const;
+	void set_point_position(int p_index, const Vector2 &p_pos);
+	Vector2 get_point_position(int p_index) const;
 	void set_point_in(int p_index, const Vector2 &p_in);
 	Vector2 get_point_in(int p_index) const;
 	void set_point_out(int p_index, const Vector2 &p_out);
@@ -245,8 +245,8 @@ protected:
 public:
 	int get_point_count() const;
 	void add_point(const Vector3 &p_pos, const Vector3 &p_in = Vector3(), const Vector3 &p_out = Vector3(), int p_atpos = -1);
-	void set_point_pos(int p_index, const Vector3 &p_pos);
-	Vector3 get_point_pos(int p_index) const;
+	void set_point_position(int p_index, const Vector3 &p_pos);
+	Vector3 get_point_position(int p_index) const;
 	void set_point_tilt(int p_index, float p_tilt);
 	float get_point_tilt(int p_index) const;
 	void set_point_in(int p_index, const Vector3 &p_in);

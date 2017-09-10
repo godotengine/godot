@@ -92,7 +92,7 @@ public:
 	float get_volume_db() const;
 
 	String get_stream_name() const;
-	float get_stream_pos() const;
+	float get_stream_position() const;
 
 	void set_autoplay(bool p_enable);
 	bool has_autoplay() const;

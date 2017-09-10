@@ -528,7 +528,7 @@
 		<method name="warp_mouse">
 			<return type="void">
 			</return>
-			<argument index="0" name="to_pos" type="Vector2">
+			<argument index="0" name="to_position" type="Vector2">
 			</argument>
 			<description>
 				Warp the mouse to a position, relative to the viewport.

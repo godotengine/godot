@@ -27,7 +27,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_pos" qualifiers="const">
+		<method name="get_position" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
@@ -50,7 +50,7 @@
 		<method name="seek">
 			<return type="void">
 			</return>
-			<argument index="0" name="pos" type="int">
+			<argument index="0" name="position" type="int">
 			</argument>
 			<description>
 			</description>

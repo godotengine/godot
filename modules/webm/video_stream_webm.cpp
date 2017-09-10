@@ -59,7 +59,7 @@ public:
 
 		if (file) {
 
-			if (file->get_pos() != (size_t)pos)
+			if (file->get_position() != (size_t)pos)
 				file->seek(pos);
 			if (file->get_buffer(buf, len) == len)
 				return 0;
@@ -204,7 +204,7 @@ float VideoStreamPlaybackWebm::get_length() const {
 	return 0.0f;
 }
 
-float VideoStreamPlaybackWebm::get_pos() const {
+float VideoStreamPlaybackWebm::get_position() const {
 
 	return video_pos;
 }

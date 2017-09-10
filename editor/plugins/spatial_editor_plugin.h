@@ -157,7 +157,7 @@ private:
 	Transform _get_camera_transform() const;
 	int get_selected_count() const;
 
-	Vector3 _get_camera_pos() const;
+	Vector3 _get_camera_position() const;
 	Vector3 _get_camera_normal() const;
 	Vector3 _get_screen_to_space(const Vector3 &p_vector3);
 

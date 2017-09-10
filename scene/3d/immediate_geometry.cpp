@@ -149,7 +149,7 @@ void ImmediateGeometry::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_color", "color"), &ImmediateGeometry::set_color);
 	ClassDB::bind_method(D_METHOD("set_uv", "uv"), &ImmediateGeometry::set_uv);
 	ClassDB::bind_method(D_METHOD("set_uv2", "uv"), &ImmediateGeometry::set_uv2);
-	ClassDB::bind_method(D_METHOD("add_vertex", "pos"), &ImmediateGeometry::add_vertex);
+	ClassDB::bind_method(D_METHOD("add_vertex", "position"), &ImmediateGeometry::add_vertex);
 	ClassDB::bind_method(D_METHOD("add_sphere", "lats", "lons", "radius", "add_uv"), &ImmediateGeometry::add_sphere, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("end"), &ImmediateGeometry::end);
 	ClassDB::bind_method(D_METHOD("clear"), &ImmediateGeometry::clear);

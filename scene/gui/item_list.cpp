@@ -1117,7 +1117,7 @@ void ItemList::_scroll_changed(double) {
 	update();
 }
 
-int ItemList::get_item_at_pos(const Point2 &p_pos, bool p_exact) const {
+int ItemList::get_item_at_position(const Point2 &p_pos, bool p_exact) const {
 
 	Vector2 pos = p_pos;
 	Ref<StyleBox> bg = get_stylebox("bg");
@@ -1165,7 +1165,7 @@ bool ItemList::is_pos_at_end_of_items(const Point2 &p_pos) const {
 
 String ItemList::get_tooltip(const Point2 &p_pos) const {
 
-	int closest = get_item_at_pos(p_pos);
+	int closest = get_item_at_position(p_pos);
 
 	if (closest != -1) {
 		if (!items[closest].tooltip_enabled) {
@@ -1362,7 +1362,7 @@ void ItemList::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_auto_height", "enable"), &ItemList::set_auto_height);
 	ClassDB::bind_method(D_METHOD("has_auto_height"), &ItemList::has_auto_height);
 
-	ClassDB::bind_method(D_METHOD("get_item_at_pos", "pos", "exact"), &ItemList::get_item_at_pos, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_item_at_position", "position", "exact"), &ItemList::get_item_at_position, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("ensure_current_is_visible"), &ItemList::ensure_current_is_visible);
 
@@ -1395,7 +1395,7 @@ void ItemList::_bind_methods() {
 	BIND_ENUM_CONSTANT(SELECT_MULTI);
 
 	ADD_SIGNAL(MethodInfo("item_selected", PropertyInfo(Variant::INT, "index")));
-	ADD_SIGNAL(MethodInfo("item_rmb_selected", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::VECTOR2, "atpos")));
+	ADD_SIGNAL(MethodInfo("item_rmb_selected", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::VECTOR2, "at_position")));
 	ADD_SIGNAL(MethodInfo("multi_selected", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::BOOL, "selected")));
 	ADD_SIGNAL(MethodInfo("item_activated", PropertyInfo(Variant::INT, "index")));
 

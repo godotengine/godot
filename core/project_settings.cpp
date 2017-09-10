@@ -910,7 +910,7 @@ Variant ProjectSettings::property_get_revert(const String &p_name) {
 void ProjectSettings::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("has", "name"), &ProjectSettings::has);
-	ClassDB::bind_method(D_METHOD("set_order", "name", "pos"), &ProjectSettings::set_order);
+	ClassDB::bind_method(D_METHOD("set_order", "name", "position"), &ProjectSettings::set_order);
 	ClassDB::bind_method(D_METHOD("get_order", "name"), &ProjectSettings::get_order);
 	ClassDB::bind_method(D_METHOD("set_initial_value", "name", "value"), &ProjectSettings::set_initial_value);
 	ClassDB::bind_method(D_METHOD("add_property_info", "hint"), &ProjectSettings::_add_property_info_bind);

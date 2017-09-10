@@ -168,7 +168,7 @@ void FileAccessUnix::seek_end(int64_t p_position) {
 		check_errors();
 }
 
-size_t FileAccessUnix::get_pos() const {
+size_t FileAccessUnix::get_position() const {
 
 	ERR_FAIL_COND_V(!f, 0);
 

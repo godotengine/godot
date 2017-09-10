@@ -4621,15 +4621,15 @@ msgid "Curve Point #"
 msgstr "বক্ররেখার বিন্দু #"
 
 #: editor/plugins/path_editor_plugin.cpp
-msgid "Set Curve Point Pos"
+msgid "Set Curve Point Position"
 msgstr "বক্ররেখার বিন্দুর স্থান নির্ধারণ করুন"
 
 #: editor/plugins/path_editor_plugin.cpp
-msgid "Set Curve In Pos"
+msgid "Set Curve In Position"
 msgstr "আন্ত-বক্ররেখার স্থান নির্ধারণ করুন"
 
 #: editor/plugins/path_editor_plugin.cpp
-msgid "Set Curve Out Pos"
+msgid "Set Curve Out Position"
 msgstr "বহিঃ-বক্ররেখার স্থান নির্ধারণ করুন"
 
 #: editor/plugins/path_editor_plugin.cpp

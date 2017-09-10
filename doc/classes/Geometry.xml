@@ -176,7 +176,7 @@
 			</argument>
 			<argument index="1" name="segment_to" type="Vector2">
 			</argument>
-			<argument index="2" name="circle_pos" type="Vector2">
+			<argument index="2" name="circle_position" type="Vector2">
 			</argument>
 			<argument index="3" name="circle_radius" type="float">
 			</argument>
@@ -230,9 +230,9 @@
 			</argument>
 			<argument index="1" name="to" type="Vector3">
 			</argument>
-			<argument index="2" name="spos" type="Vector3">
+			<argument index="2" name="sphere_position" type="Vector3">
 			</argument>
-			<argument index="3" name="sradius" type="float">
+			<argument index="3" name="sphere_radius" type="float">
 			</argument>
 			<description>
 			</description>

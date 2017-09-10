@@ -369,7 +369,7 @@ void XMLParser::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_empty"), &XMLParser::is_empty);
 	ClassDB::bind_method(D_METHOD("get_current_line"), &XMLParser::get_current_line);
 	ClassDB::bind_method(D_METHOD("skip_section"), &XMLParser::skip_section);
-	ClassDB::bind_method(D_METHOD("seek", "pos"), &XMLParser::seek);
+	ClassDB::bind_method(D_METHOD("seek", "position"), &XMLParser::seek);
 	ClassDB::bind_method(D_METHOD("open", "file"), &XMLParser::open);
 	ClassDB::bind_method(D_METHOD("open_buffer", "buffer"), &XMLParser::open_buffer);
 

@@ -39,7 +39,7 @@
 			</return>
 			<argument index="0" name="id" type="int">
 			</argument>
-			<argument index="1" name="pos" type="Vector3">
+			<argument index="1" name="position" type="Vector3">
 			</argument>
 			<argument index="2" name="weight_scale" type="float" default="1.0">
 			</argument>
@@ -113,19 +113,19 @@
 		<method name="get_closest_point" qualifiers="const">
 			<return type="int">
 			</return>
-			<argument index="0" name="to_pos" type="Vector3">
+			<argument index="0" name="to_position" type="Vector3">
 			</argument>
 			<description>
-				Returns the id of the closest point to [code]to_pos[/code]. Returns -1 if there are no points in the points pool.
+				Returns the id of the closest point to [code]to_position[/code]. Returns -1 if there are no points in the points pool.
 			</description>
 		</method>
-		<method name="get_closest_pos_in_segment" qualifiers="const">
+		<method name="get_closest_position_in_segment" qualifiers="const">
 			<return type="Vector3">
 			</return>
-			<argument index="0" name="to_pos" type="Vector3">
+			<argument index="0" name="to_position" type="Vector3">
 			</argument>
 			<description>
-				Returns the closest position to [code]to_pos[/code] that resides inside a segment between two connected points.
+				Returns the closest position to [code]to_position[/code] that resides inside a segment between two connected points.
 				[codeblock]
 				var as = AStar.new()
 				
@@ -134,7 +134,7 @@
 				
 				as.connect_points(1, 2)
 				
-				var res = as.get_closest_pos_in_segment(Vector3(3,3,0)) # returns (0, 3, 0)
+				var res = as.get_closest_position_in_segment(Vector3(3,3,0)) # returns (0, 3, 0)
 				[/codeblock]
 				The result is in the segment that goes from [code]y=0[/code] to [code]y=5[/code]. It's the closest position in the segment to the given point.
 			</description>
@@ -178,7 +178,7 @@
 				Returns an array with the points that are in the path found by AStar between the given points. The array is ordered from the starting point to the ending point of the path.
 			</description>
 		</method>
-		<method name="get_point_pos" qualifiers="const">
+		<method name="get_point_position" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<argument index="0" name="id" type="int">

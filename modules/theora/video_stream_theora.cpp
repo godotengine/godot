@@ -634,7 +634,7 @@ int VideoStreamPlaybackTheora::get_loop_count() const {
 	return 0;
 };
 
-float VideoStreamPlaybackTheora::get_pos() const {
+float VideoStreamPlaybackTheora::get_position() const {
 
 	return get_time();
 };

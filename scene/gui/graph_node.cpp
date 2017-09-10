@@ -518,7 +518,7 @@ int GraphNode::get_connection_output_count() {
 	return conn_output_cache.size();
 }
 
-Vector2 GraphNode::get_connection_input_pos(int p_idx) {
+Vector2 GraphNode::get_connection_input_position(int p_idx) {
 
 	if (connpos_dirty)
 		_connpos_update();
@@ -548,7 +548,7 @@ Color GraphNode::get_connection_input_color(int p_idx) {
 	return conn_input_cache[p_idx].color;
 }
 
-Vector2 GraphNode::get_connection_output_pos(int p_idx) {
+Vector2 GraphNode::get_connection_output_position(int p_idx) {
 
 	if (connpos_dirty)
 		_connpos_update();
@@ -690,10 +690,10 @@ void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_connection_output_count"), &GraphNode::get_connection_output_count);
 	ClassDB::bind_method(D_METHOD("get_connection_input_count"), &GraphNode::get_connection_input_count);
 
-	ClassDB::bind_method(D_METHOD("get_connection_output_pos", "idx"), &GraphNode::get_connection_output_pos);
+	ClassDB::bind_method(D_METHOD("get_connection_output_position", "idx"), &GraphNode::get_connection_output_position);
 	ClassDB::bind_method(D_METHOD("get_connection_output_type", "idx"), &GraphNode::get_connection_output_type);
 	ClassDB::bind_method(D_METHOD("get_connection_output_color", "idx"), &GraphNode::get_connection_output_color);
-	ClassDB::bind_method(D_METHOD("get_connection_input_pos", "idx"), &GraphNode::get_connection_input_pos);
+	ClassDB::bind_method(D_METHOD("get_connection_input_position", "idx"), &GraphNode::get_connection_input_position);
 	ClassDB::bind_method(D_METHOD("get_connection_input_type", "idx"), &GraphNode::get_connection_input_type);
 	ClassDB::bind_method(D_METHOD("get_connection_input_color", "idx"), &GraphNode::get_connection_input_color);
 

@@ -68,12 +68,12 @@ PoolVector<Vector2> Line2D::get_points() const {
 	return _points;
 }
 
-void Line2D::set_point_pos(int i, Vector2 pos) {
+void Line2D::set_point_position(int i, Vector2 pos) {
 	_points.set(i, pos);
 	update();
 }
 
-Vector2 Line2D::get_point_pos(int i) const {
+Vector2 Line2D::get_point_position(int i) const {
 	return _points.get(i);
 }
 
@@ -270,12 +270,12 @@ void Line2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_points", "points"), &Line2D::set_points);
 	ClassDB::bind_method(D_METHOD("get_points"), &Line2D::get_points);
 
-	ClassDB::bind_method(D_METHOD("set_point_pos", "i", "pos"), &Line2D::set_point_pos);
-	ClassDB::bind_method(D_METHOD("get_point_pos", "i"), &Line2D::get_point_pos);
+	ClassDB::bind_method(D_METHOD("set_point_position", "i", "position"), &Line2D::set_point_position);
+	ClassDB::bind_method(D_METHOD("get_point_position", "i"), &Line2D::get_point_position);
 
 	ClassDB::bind_method(D_METHOD("get_point_count"), &Line2D::get_point_count);
 
-	ClassDB::bind_method(D_METHOD("add_point", "pos"), &Line2D::add_point);
+	ClassDB::bind_method(D_METHOD("add_point", "position"), &Line2D::add_point);
 	ClassDB::bind_method(D_METHOD("remove_point", "i"), &Line2D::remove_point);
 
 	ClassDB::bind_method(D_METHOD("set_width", "width"), &Line2D::set_width);

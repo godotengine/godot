@@ -83,7 +83,7 @@ public:
 	void seek(float p_seconds);
 	void stop();
 	bool is_playing() const;
-	float get_pos();
+	float get_position();
 
 	void set_bus(const StringName &p_bus);
 	StringName get_bus() const;

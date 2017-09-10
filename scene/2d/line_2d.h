@@ -60,8 +60,8 @@ public:
 	void set_points(const PoolVector<Vector2> &p_points);
 	PoolVector<Vector2> get_points() const;
 
-	void set_point_pos(int i, Vector2 pos);
-	Vector2 get_point_pos(int i) const;
+	void set_point_position(int i, Vector2 pos);
+	Vector2 get_point_position(int i) const;
 
 	int get_point_count() const;
 

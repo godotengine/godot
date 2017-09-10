@@ -200,7 +200,7 @@ public:
 	virtual Point2 get_last_mouse_speed() const;
 	virtual int get_mouse_button_mask() const;
 
-	virtual void warp_mouse_pos(const Vector2 &p_to);
+	virtual void warp_mouse_position(const Vector2 &p_to);
 	virtual Point2i warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, const Rect2 &p_rect);
 
 	virtual void parse_input_event(const Ref<InputEvent> &p_event);

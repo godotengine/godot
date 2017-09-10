@@ -120,7 +120,7 @@ void FileAccessMemory::seek_end(int64_t p_position) {
 	pos = length + p_position;
 }
 
-size_t FileAccessMemory::get_pos() const {
+size_t FileAccessMemory::get_position() const {
 
 	ERR_FAIL_COND_V(!data, 0);
 	return pos;

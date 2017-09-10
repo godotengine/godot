@@ -368,7 +368,7 @@ void CanvasItemEditor::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
 		} else if (set_pivot_shortcut.is_valid() && set_pivot_shortcut->is_shortcut(p_ev) && drag == DRAG_NONE && can_move_pivot) {
 			if (!Input::get_singleton()->is_mouse_button_pressed(0)) {
 				List<Node *> &selection = editor_selection->get_selected_node_list();
-				Vector2 mouse_pos = viewport->get_local_mouse_pos();
+				Vector2 mouse_pos = viewport->get_local_mouse_position();
 				if (selection.size() && viewport->get_rect().has_point(mouse_pos)) {
 					//just in case, make it work if over viewport
 					mouse_pos = transform.affine_inverse().xform(mouse_pos);
@@ -4188,13 +4188,13 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 		pos = parent->call("get_global_position");
 	}
 	Transform2D trans = canvas->get_canvas_transform();
-	Point2 target_pos = (p_point - trans.get_origin()) / trans.get_scale().x - pos;
+	Point2 target_position = (p_point - trans.get_origin()) / trans.get_scale().x - pos;
 	if (default_type == "Polygon2D" || default_type == "TouchScreenButton" || default_type == "TextureRect" || default_type == "Patch9Rect") {
-		target_pos -= texture_size / 2;
+		target_position -= texture_size / 2;
 	}
 	// there's nothing to be used as source position so snapping will work as absolute if enabled
-	target_pos = canvas->snap_point(target_pos);
-	editor_data->get_undo_redo().add_do_method(child, "set_position", target_pos);
+	target_position = canvas->snap_point(target_position);
+	editor_data->get_undo_redo().add_do_method(child, "set_position", target_position);
 }
 
 bool CanvasItemEditorViewport::_create_instance(Node *parent, String &path, const Point2 &p_point) {

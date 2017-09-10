@@ -89,9 +89,9 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 			for (int i = 0; i < curve->get_point_count(); i++) {
 
-				real_t dist_to_p = gpoint.distance_to(xform.xform(curve->get_point_pos(i)));
-				real_t dist_to_p_out = gpoint.distance_to(xform.xform(curve->get_point_pos(i) + curve->get_point_out(i)));
-				real_t dist_to_p_in = gpoint.distance_to(xform.xform(curve->get_point_pos(i) + curve->get_point_in(i)));
+				real_t dist_to_p = gpoint.distance_to(xform.xform(curve->get_point_position(i)));
+				real_t dist_to_p_out = gpoint.distance_to(xform.xform(curve->get_point_position(i) + curve->get_point_out(i)));
+				real_t dist_to_p_in = gpoint.distance_to(xform.xform(curve->get_point_position(i) + curve->get_point_in(i)));
 
 				// Check for point movement start (for point + in/out controls).
 				if (mb->get_button_index() == BUTTON_LEFT) {
@@ -100,7 +100,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 						action = ACTION_MOVING_POINT;
 						action_point = i;
-						moving_from = curve->get_point_pos(i);
+						moving_from = curve->get_point_position(i);
 						moving_screen_from = gpoint;
 						return true;
 					} else if (mode == MODE_EDIT || mode == MODE_EDIT_CURVE) {
@@ -129,7 +129,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 						undo_redo->create_action(TTR("Remove Point from Curve"));
 						undo_redo->add_do_method(curve.ptr(), "remove_point", i);
-						undo_redo->add_undo_method(curve.ptr(), "add_point", curve->get_point_pos(i), curve->get_point_in(i), curve->get_point_out(i), i);
+						undo_redo->add_undo_method(curve.ptr(), "add_point", curve->get_point_position(i), curve->get_point_in(i), curve->get_point_out(i), i);
 						undo_redo->add_do_method(canvas_item_editor->get_viewport_control(), "update");
 						undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(), "update");
 						undo_redo->commit_action();
@@ -171,7 +171,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 			action = ACTION_MOVING_POINT;
 			action_point = curve->get_point_count() - 1;
-			moving_from = curve->get_point_pos(action_point);
+			moving_from = curve->get_point_position(action_point);
 			moving_screen_from = gpoint;
 
 			canvas_item_editor->get_viewport_control()->update();
@@ -194,8 +194,8 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 				case ACTION_MOVING_POINT: {
 
 					undo_redo->create_action(TTR("Move Point in Curve"));
-					undo_redo->add_do_method(curve.ptr(), "set_point_pos", action_point, cpoint);
-					undo_redo->add_undo_method(curve.ptr(), "set_point_pos", action_point, moving_from);
+					undo_redo->add_do_method(curve.ptr(), "set_point_position", action_point, cpoint);
+					undo_redo->add_undo_method(curve.ptr(), "set_point_position", action_point, moving_from);
 					undo_redo->add_do_method(canvas_item_editor->get_viewport_control(), "update");
 					undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(), "update");
 					undo_redo->commit_action();
@@ -255,7 +255,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 					break;
 
 				case ACTION_MOVING_POINT: {
-					curve->set_point_pos(action_point, cpoint);
+					curve->set_point_position(action_point, cpoint);
 				} break;
 
 				case ACTION_MOVING_IN: {
@@ -296,17 +296,17 @@ void Path2DEditor::_canvas_draw() {
 
 	for (int i = 0; i < len; i++) {
 
-		Vector2 point = xform.xform(curve->get_point_pos(i));
+		Vector2 point = xform.xform(curve->get_point_position(i));
 		vpc->draw_texture_rect(handle, Rect2(point - handle_size * 0.5, handle_size), false, Color(1, 1, 1, 1));
 
 		if (i < len - 1) {
-			Vector2 pointout = xform.xform(curve->get_point_pos(i) + curve->get_point_out(i));
+			Vector2 pointout = xform.xform(curve->get_point_position(i) + curve->get_point_out(i));
 			vpc->draw_line(point, pointout, Color(0.5, 0.5, 1.0, 0.8), 1.0);
 			vpc->draw_texture_rect(handle, Rect2(pointout - handle_size * 0.5, handle_size), false, Color(1, 0.5, 1, 0.3));
 		}
 
 		if (i > 0) {
-			Vector2 pointin = xform.xform(curve->get_point_pos(i) + curve->get_point_in(i));
+			Vector2 pointin = xform.xform(curve->get_point_position(i) + curve->get_point_in(i));
 			vpc->draw_line(point, pointin, Color(0.5, 0.5, 1.0, 0.8), 1.0);
 			vpc->draw_texture_rect(handle, Rect2(pointin - handle_size * 0.5, handle_size), false, Color(1, 0.5, 1, 0.3));
 		}
@@ -389,8 +389,8 @@ void Path2DEditor::_mode_selected(int p_mode) {
 		if (node->get_curve()->get_point_count() < 3)
 			return;
 
-		Vector2 begin = node->get_curve()->get_point_pos(0);
-		Vector2 end = node->get_curve()->get_point_pos(node->get_curve()->get_point_count() - 1);
+		Vector2 begin = node->get_curve()->get_point_position(0);
+		Vector2 end = node->get_curve()->get_point_position(node->get_curve()->get_point_count() - 1);
 		if (begin.distance_to(end) < CMP_EPSILON)
 			return;
 

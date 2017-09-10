@@ -1179,7 +1179,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 
 	save_ustring(fw, get_ustring(f)); //type
 
-	size_t md_ofs = f->get_pos();
+	size_t md_ofs = f->get_position();
 	size_t importmd_ofs = f->get_64();
 	fw->store_64(0); //metadata offset
 
@@ -1227,7 +1227,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 		save_ustring(fw, path);
 	}
 
-	int64_t size_diff = (int64_t)fw->get_pos() - (int64_t)f->get_pos();
+	int64_t size_diff = (int64_t)fw->get_position() - (int64_t)f->get_position();
 
 	//internal resources
 	uint32_t int_resources_size = f->get_32();
@@ -1880,7 +1880,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 		} else {
 			save_unicode_string(r->get_path()); //actual external
 		}
-		ofs_pos.push_back(f->get_pos());
+		ofs_pos.push_back(f->get_position());
 		f->store_64(0); //offset in 64 bits
 	}
 
@@ -1891,7 +1891,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 
 		ResourceData &rd = E->get();
 
-		ofs_table.push_back(f->get_pos());
+		ofs_table.push_back(f->get_position());
 		save_unicode_string(rd.type);
 		f->store_32(rd.properties.size());
 

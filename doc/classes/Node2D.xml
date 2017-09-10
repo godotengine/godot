@@ -169,7 +169,7 @@
 		<method name="set_global_position">
 			<return type="void">
 			</return>
-			<argument index="0" name="pos" type="Vector2">
+			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
 				Set the node's global position.
@@ -214,7 +214,7 @@
 		<method name="set_position">
 			<return type="void">
 			</return>
-			<argument index="0" name="pos" type="Vector2">
+			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
 				Set the node's position.

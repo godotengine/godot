@@ -140,17 +140,17 @@ bool PackedSourcePCK::try_open_pack(const String &p_path) {
 	if (magic != 0x43504447) {
 		//maybe at he end.... self contained exe
 		f->seek_end();
-		f->seek(f->get_pos() - 4);
+		f->seek(f->get_position() - 4);
 		magic = f->get_32();
 		if (magic != 0x43504447) {
 
 			memdelete(f);
 			return false;
 		}
-		f->seek(f->get_pos() - 12);
+		f->seek(f->get_position() - 12);
 
 		uint64_t ds = f->get_64();
-		f->seek(f->get_pos() - ds - 8);
+		f->seek(f->get_position() - ds - 8);
 
 		magic = f->get_32();
 		if (magic != 0x43504447) {
@@ -236,7 +236,7 @@ void FileAccessPack::seek_end(int64_t p_position) {
 
 	seek(pf.size + p_position);
 }
-size_t FileAccessPack::get_pos() const {
+size_t FileAccessPack::get_position() const {
 
 	return pos;
 }

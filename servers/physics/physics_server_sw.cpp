@@ -968,7 +968,7 @@ Vector3 PhysicsServerSW::pin_joint_get_local_a(RID p_joint) const {
 	ERR_FAIL_COND_V(!joint, Vector3());
 	ERR_FAIL_COND_V(joint->get_type() != JOINT_PIN, Vector3());
 	PinJointSW *pin_joint = static_cast<PinJointSW *>(joint);
-	return pin_joint->get_pos_a();
+	return pin_joint->get_position_a();
 }
 
 void PhysicsServerSW::pin_joint_set_local_b(RID p_joint, const Vector3 &p_B) {
@@ -985,7 +985,7 @@ Vector3 PhysicsServerSW::pin_joint_get_local_b(RID p_joint) const {
 	ERR_FAIL_COND_V(!joint, Vector3());
 	ERR_FAIL_COND_V(joint->get_type() != JOINT_PIN, Vector3());
 	PinJointSW *pin_joint = static_cast<PinJointSW *>(joint);
-	return pin_joint->get_pos_b();
+	return pin_joint->get_position_b();
 }
 
 RID PhysicsServerSW::joint_create_hinge(RID p_body_A, const Transform &p_frame_A, RID p_body_B, const Transform &p_frame_B) {

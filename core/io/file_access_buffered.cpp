@@ -76,7 +76,7 @@ void FileAccessBuffered::seek_end(int64_t p_position) {
 	file.offset = file.size + p_position;
 };
 
-size_t FileAccessBuffered::get_pos() const {
+size_t FileAccessBuffered::get_position() const {
 
 	return file.offset;
 };

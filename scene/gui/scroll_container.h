@@ -70,7 +70,7 @@ protected:
 	void _scroll_moved(float);
 	static void _bind_methods();
 
-	void _update_scrollbar_pos();
+	void _update_scrollbar_position();
 
 public:
 	int get_v_scroll() const;
