@@ -34,7 +34,6 @@
 #include "editor/editor_plugin.h"
 #include "scene/2d/canvas_item.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/button_group.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/label.h"
 #include "scene/gui/panel_container.h"
@@ -324,6 +323,7 @@ class CanvasItemEditor : public VBoxContainer {
 	bool updating_scroll;
 	void _update_scroll(float);
 	void _update_scrollbars();
+	void _update_cursor();
 	void incbeg(float &beg, float &end, float inc, float minsize, bool p_symmetric);
 	void incend(float &beg, float &end, float inc, float minsize, bool p_symmetric);
 
@@ -459,7 +459,7 @@ class CanvasItemEditorViewport : public Control {
 	EditorNode *editor;
 	EditorData *editor_data;
 	CanvasItemEditor *canvas;
-	Node2D *preview;
+	Node2D *preview_node;
 	AcceptDialog *accept;
 	WindowDialog *selector;
 	Label *selector_label;

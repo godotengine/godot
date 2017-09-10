@@ -17,36 +17,36 @@ void main() {
 
 //#define QUALIFIER uniform // some guy on the interweb says it may be faster with this
 #define QUALIFIER const
+
 #ifdef USE_25_SAMPLES
 
 const int kernel_size=25;
-
 QUALIFIER vec2 kernel[25] = vec2[] (
-vec2(0.099654,0.0),
-vec2(0.001133,-3.0),
-vec2(0.002316,-2.52083),
-vec2(0.00445,-2.08333),
-vec2(0.008033,-1.6875),
-vec2(0.013627,-1.33333),
-vec2(0.021724,-1.02083),
-vec2(0.032542,-0.75),
-vec2(0.04581,-0.520833),
-vec2(0.0606,-0.333333),
-vec2(0.075333,-0.1875),
-vec2(0.088001,-0.0833333),
-vec2(0.096603,-0.0208333),
-vec2(0.096603,0.0208333),
-vec2(0.088001,0.0833333),
-vec2(0.075333,0.1875),
-vec2(0.0606,0.333333),
-vec2(0.04581,0.520833),
-vec2(0.032542,0.75),
-vec2(0.021724,1.02083),
-vec2(0.013627,1.33333),
-vec2(0.008033,1.6875),
-vec2(0.00445,2.08333),
-vec2(0.002316,2.52),
-vec2(0.001133,3.0)
+    vec2(0.530605, 0.0),
+    vec2(0.000973794, -3.0),
+    vec2(0.00333804, -2.52083),
+    vec2(0.00500364, -2.08333),
+    vec2(0.00700976,  -1.6875),
+    vec2(0.0094389, -1.33333),
+    vec2(0.0128496,  -1.02083),
+    vec2(0.017924,  -0.75),
+    vec2(0.0263642,  -0.520833),
+    vec2(0.0410172, -0.333333),
+    vec2(0.0493588, -0.1875),
+    vec2(0.0402784, -0.0833333),
+    vec2(0.0211412,  -0.0208333),
+    vec2(0.0211412,  0.0208333),
+    vec2(0.0402784,  0.0833333),
+    vec2(0.0493588,  0.1875),
+    vec2(0.0410172,  0.333333),
+    vec2(0.0263642,  0.520833),
+    vec2(0.017924,  0.75),
+    vec2(0.0128496, 1.02083),
+    vec2(0.0094389,  1.33333),
+    vec2(0.00700976,  1.6875),
+    vec2(0.00500364,  2.08333),
+    vec2(0.00333804,  2.52083),
+    vec2(0.000973794,  3.0)
 );
 
 #endif //USE_25_SAMPLES
@@ -56,23 +56,23 @@ vec2(0.001133,3.0)
 const int kernel_size=17;
 
 QUALIFIER vec2 kernel[17] = vec2[](
-vec2(0.197417,0.0),
-vec2(0.000078,-2.0),
-vec2(0.000489,-1.53125),
-vec2(0.002403,-1.125),
-vec2(0.009245,-0.78125),
-vec2(0.027835,-0.5),
-vec2(0.065592,-0.28125),
-vec2(0.12098,-0.125),
-vec2(0.17467,-0.03125),
-vec2(0.17467,0.03125),
-vec2(0.12098,0.125),
-vec2(0.065592,0.28125),
-vec2(0.027835,0.5),
-vec2(0.009245,0.78125),
-vec2(0.002403,1.125),
-vec2(0.000489,1.53125),
-vec2(0.000078,2.0)
+    vec2(0.536343,  0.0),
+    vec2(0.00317394,  -2.0),
+    vec2(0.0100386, -1.53125),
+    vec2(0.0144609, -1.125),
+    vec2(0.0216301,  -0.78125),
+    vec2(0.0347317, -0.5),
+    vec2(0.0571056,  -0.28125),
+    vec2(0.0582416,  -0.125),
+    vec2(0.0324462, -0.03125),
+    vec2(0.0324462, 0.03125),
+    vec2(0.0582416, 0.125),
+    vec2(0.0571056,  0.28125),
+    vec2(0.0347317, 0.5),
+    vec2(0.0216301, 0.78125),
+    vec2(0.0144609,  1.125),
+    vec2(0.0100386,  1.53125),
+    vec2(0.00317394,2.0)
 );
 
 #endif //USE_17_SAMPLES
@@ -82,21 +82,22 @@ vec2(0.000078,2.0)
 
 const int kernel_size=11;
 
-QUALIFIER vec2 kernel[kernel_size] = vec2[](
-vec2(0.198596,0.0),
-vec2(0.0093,-2.0),
-vec2(0.028002,-1.28),
-vec2(0.065984,-0.72),
-vec2(0.121703,-0.32),
-vec2(0.175713,-0.08),
-vec2(0.175713,0.08),
-vec2(0.121703,0.32),
-vec2(0.065984,0.72),
-vec2(0.028002,1.28),
-vec2(0.0093,2.0)
+QUALIFIER vec4 kernel[11] = vec4[](
+    vec4(0.560479,  0.0),
+    vec4(0.00471691,  -2.0),
+    vec4(0.0192831, -1.28),
+    vec4(0.03639, -0.72),
+    vec4(0.0821904,  -0.32),
+    vec4(0.0771802, -0.08),
+    vec4(0.0771802,  0.08),
+    vec4(0.0821904, 0.32),
+    vec4(0.03639, 0.72),
+    vec4(0.0192831, 1.28),
+    vec4(0.00471691,2.0)
 );
 
 #endif //USE_11_SAMPLES
+
 
 
 uniform float max_radius;
@@ -126,11 +127,15 @@ void main() {
 
 		// Fetch linear depth of current pixel:
 		float depth = texture(source_depth, uv_interp).r * 2.0 - 1.0;
+#ifdef USE_ORTHOGONAL_PROJECTION
+		depth = ((depth + (camera_z_far + camera_z_near)/(camera_z_far - camera_z_near)) * (camera_z_far - camera_z_near))/2.0;
+		float scale = unit_size; //remember depth is negative by default in OpenGL
+#else
 		depth = 2.0 * camera_z_near * camera_z_far / (camera_z_far + camera_z_near - depth * (camera_z_far - camera_z_near));
-
-
-
 		float scale = unit_size / depth; //remember depth is negative by default in OpenGL
+#endif
+
+
 
 		// Calculate the final step to fetch the surrounding pixels:
 		vec2 step = max_radius * scale * dir;
@@ -153,9 +158,14 @@ void main() {
 #ifdef ENABLE_FOLLOW_SURFACE
 			// If the difference in depth is huge, we lerp color back to "colorM":
 			float depth_cmp = texture(source_depth, offset).r *2.0 - 1.0;
-			depth_cmp = 2.0 * camera_z_near * camera_z_far / (camera_z_far + camera_z_near - depth_cmp * (camera_z_far - camera_z_near));
 
-			float s = clamp(300.0f * distance *
+#ifdef USE_ORTHOGONAL_PROJECTION
+			depth_cmp = ((depth_cmp + (camera_z_far + camera_z_near)/(camera_z_far - camera_z_near)) * (camera_z_far - camera_z_near))/2.0;
+#else
+			depth_cmp = 2.0 * camera_z_near * camera_z_far / (camera_z_far + camera_z_near - depth_cmp * (camera_z_far - camera_z_near));
+#endif
+
+			float s = clamp(300.0f * scale *
 					       max_radius * abs(depth - depth_cmp),0.0,1.0);
 			color = mix(color, base_color.rgb, s);
 #endif

@@ -2578,6 +2578,17 @@ int Viewport::get_render_info(RenderInfo p_info) {
 	return VS::get_singleton()->viewport_get_render_info(viewport, VS::ViewportRenderInfo(p_info));
 }
 
+void Viewport::set_snap_controls_to_pixels(bool p_enable) {
+
+	snap_controls_to_pixels=p_enable;
+}
+
+bool Viewport::is_snap_controls_to_pixels_enabled() const {
+
+	return snap_controls_to_pixels;
+}
+
+
 void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_use_arvr", "use"), &Viewport::set_use_arvr);
@@ -2680,6 +2691,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shadow_atlas_size", "size"), &Viewport::set_shadow_atlas_size);
 	ClassDB::bind_method(D_METHOD("get_shadow_atlas_size"), &Viewport::get_shadow_atlas_size);
 
+	ClassDB::bind_method(D_METHOD("set_snap_controls_to_pixels", "enabled"), &Viewport::set_snap_controls_to_pixels);
+	ClassDB::bind_method(D_METHOD("is_snap_controls_to_pixels_enabled"), &Viewport::is_snap_controls_to_pixels_enabled);
+
 	ClassDB::bind_method(D_METHOD("set_shadow_atlas_quadrant_subdiv", "quadrant", "subdiv"), &Viewport::set_shadow_atlas_quadrant_subdiv);
 	ClassDB::bind_method(D_METHOD("get_shadow_atlas_quadrant_subdiv", "quadrant"), &Viewport::get_shadow_atlas_quadrant_subdiv);
 
@@ -2707,6 +2721,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "physics_object_picking"), "set_physics_object_picking", "get_physics_object_picking");
 	ADD_GROUP("GUI", "gui_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_disable_input"), "set_disable_input", "is_input_disabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_snap_controls_to_pixels"), "set_snap_controls_to_pixels", "is_snap_controls_to_pixels_enabled");
 	ADD_GROUP("Shadow Atlas", "shadow_atlas_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadow_atlas_size"), "set_shadow_atlas_size", "get_shadow_atlas_size");
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "shadow_atlas_quad_0", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), "set_shadow_atlas_quadrant_subdiv", "get_shadow_atlas_quadrant_subdiv", 0);
@@ -2822,6 +2837,8 @@ Viewport::Viewport() {
 	usage = USAGE_3D;
 	debug_draw = DEBUG_DRAW_DISABLED;
 	clear_mode = CLEAR_MODE_ALWAYS;
+
+	snap_controls_to_pixels = true;
 }
 
 Viewport::~Viewport() {

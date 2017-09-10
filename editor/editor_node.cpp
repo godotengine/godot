@@ -283,13 +283,22 @@ void EditorNode::_notification(int p_what) {
 		scene_tabs->set_tab_close_display_policy((bool(EDITOR_DEF("interface/always_show_close_button_in_scene_tabs", false)) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY));
 		property_editor->set_enable_capitalize_paths(bool(EDITOR_DEF("interface/capitalize_properties", true)));
 		Ref<Theme> theme = create_editor_theme(theme_base->get_theme());
+
 		theme_base->set_theme(theme);
+
 		gui_base->add_style_override("panel", gui_base->get_stylebox("Background", "EditorStyles"));
 		play_button_panel->add_style_override("panel", gui_base->get_stylebox("PlayButtonPanel", "EditorStyles"));
 		scene_root_parent->add_style_override("panel", gui_base->get_stylebox("Content", "EditorStyles"));
 		bottom_panel->add_style_override("panel", gui_base->get_stylebox("panel", "TabContainer"));
 		scene_tabs->add_style_override("tab_fg", gui_base->get_stylebox("SceneTabFG", "EditorStyles"));
 		scene_tabs->add_style_override("tab_bg", gui_base->get_stylebox("SceneTabBG", "EditorStyles"));
+
+		file_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
+		project_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
+		debug_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
+		settings_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
+		help_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
+
 		if (bool(EDITOR_DEF("interface/scene_tabs/resize_if_many_tabs", true))) {
 			scene_tabs->set_min_width(int(EDITOR_DEF("interface/scene_tabs/minimum_width", 50)) * EDSCALE);
 		} else {
@@ -1368,6 +1377,16 @@ void EditorNode::_set_editing_top_editors(Object *p_current_object) {
 	editor_plugins_over->edit(p_current_object);
 }
 
+static bool overrides_external_editor(Object *p_object) {
+
+	Script *script = Object::cast_to<Script>(p_object);
+
+	if (!script)
+		return false;
+
+	return script->get_language()->overrides_external_editor();
+}
+
 void EditorNode::_edit_current() {
 
 	uint32_t current = editor_history.get_current();
@@ -1434,7 +1453,7 @@ void EditorNode::_edit_current() {
 	if (main_plugin) {
 
 		// special case if use of external editor is true
-		if (main_plugin->get_name() == "Script" && bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor"))) {
+		if (main_plugin->get_name() == "Script" && (bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor")) || overrides_external_editor(current_obj))) {
 			main_plugin->edit(current_obj);
 		}
 
@@ -1442,6 +1461,7 @@ void EditorNode::_edit_current() {
 			// update screen main_plugin
 
 			if (!changing_scene) {
+
 				if (editor_plugin_screen)
 					editor_plugin_screen->make_visible(false);
 				editor_plugin_screen = main_plugin;
@@ -2721,6 +2741,14 @@ Dictionary EditorNode::_get_main_scene_state() {
 	state["property_edit_offset"] = get_property_editor()->get_scene_tree()->get_vscroll_bar()->get_value();
 	state["saved_version"] = saved_version;
 	state["node_filter"] = scene_tree_dock->get_filter();
+	int current = -1;
+	for (int i = 0; i < editor_table.size(); i++) {
+		if (editor_plugin_screen == editor_table[i]) {
+			current = i;
+			break;
+		}
+	}
+	state["editor_index"] = current;
 	return state;
 }
 
@@ -2731,8 +2759,9 @@ void EditorNode::_set_main_scene_state(Dictionary p_state, Node *p_for_scene) {
 
 	changing_scene = false;
 
-	if (get_edited_scene()) {
+	if (p_state.has("editor_index")) {
 
+		int index = p_state["editor_index"];
 		int current = -1;
 		for (int i = 0; i < editor_table.size(); i++) {
 			if (editor_plugin_screen == editor_table[i]) {
@@ -2741,15 +2770,18 @@ void EditorNode::_set_main_scene_state(Dictionary p_state, Node *p_for_scene) {
 			}
 		}
 
-		if (current < 2) {
-			//use heuristic instead
-
-			int n2d = 0, n3d = 0;
-			_find_node_types(get_edited_scene(), n2d, n3d);
-			if (n2d > n3d) {
-				_editor_select(EDITOR_2D);
-			} else if (n3d > n2d) {
-				_editor_select(EDITOR_3D);
+		if (current < 2) { //if currently in spatial/2d, only switch to spatial/2d. if curently in script, stay there
+			if (index < 2 || !get_edited_scene()) {
+				_editor_select(index);
+			} else {
+				//use heuristic instead
+				int n2d = 0, n3d = 0;
+				_find_node_types(get_edited_scene(), n2d, n3d);
+				if (n2d > n3d) {
+					_editor_select(EDITOR_2D);
+				} else if (n3d > n2d) {
+					_editor_select(EDITOR_3D);
+				}
 			}
 		}
 	}
@@ -4818,9 +4850,10 @@ EditorNode::EditorNode() {
 	}
 
 	file_menu = memnew(MenuButton);
+	file_menu->set_flat(false);
 	file_menu->set_text(TTR("Scene"));
-	left_menu_hb->add_child(file_menu);
 	file_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
+	left_menu_hb->add_child(file_menu);
 
 	prev_scene = memnew(ToolButton);
 	prev_scene->set_icon(gui_base->get_icon("PrevScene", "EditorIcons"));
@@ -4908,6 +4941,7 @@ EditorNode::EditorNode() {
 	p->add_item(TTR("Quit"), FILE_QUIT, KEY_MASK_CMD + KEY_Q);
 
 	project_menu = memnew(MenuButton);
+	project_menu->set_flat(false);
 	project_menu->set_tooltip(TTR("Miscellaneous project or scene-wide tools."));
 	project_menu->set_text(TTR("Project"));
 	project_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
@@ -4941,9 +4975,11 @@ EditorNode::EditorNode() {
 	menu_hb->add_child(editor_region);
 
 	debug_menu = memnew(MenuButton);
+	debug_menu->set_flat(false);
 	debug_menu->set_text(TTR("Debug"));
 	debug_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
 	left_menu_hb->add_child(debug_menu);
+
 	p = debug_menu->get_popup();
 	p->set_hide_on_item_selection(false);
 	p->add_check_item(TTR("Deploy with Remote Debug"), RUN_DEPLOY_REMOTE_DEBUG);
@@ -4965,9 +5001,10 @@ EditorNode::EditorNode() {
 	menu_hb->add_spacer();
 
 	settings_menu = memnew(MenuButton);
-	left_menu_hb->add_child(settings_menu);
+	settings_menu->set_flat(false);
 	settings_menu->set_text(TTR("Editor"));
 	settings_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
+	left_menu_hb->add_child(settings_menu);
 	p = settings_menu->get_popup();
 
 	p->add_item(TTR("Editor Settings"), SETTINGS_PREFERENCES);
@@ -4982,10 +5019,12 @@ EditorNode::EditorNode() {
 	p->add_item(TTR("Manage Export Templates"), SETTINGS_MANAGE_EXPORT_TEMPLATES);
 
 	// Help Menu
-	MenuButton *help_menu = memnew(MenuButton);
-	left_menu_hb->add_child(help_menu);
+	help_menu = memnew(MenuButton);
+	help_menu->set_flat(false);
 	help_menu->set_text(TTR("Help"));
 	help_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
+	left_menu_hb->add_child(help_menu);
+
 	p = help_menu->get_popup();
 	p->connect("id_pressed", this, "_menu_option");
 	p->add_icon_item(gui_base->get_icon("ClassList", "EditorIcons"), TTR("Classes"), HELP_CLASSES);

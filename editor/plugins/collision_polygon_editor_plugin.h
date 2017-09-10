@@ -35,7 +35,6 @@
 #include "scene/3d/collision_polygon.h"
 #include "scene/3d/immediate_geometry.h"
 #include "scene/3d/mesh_instance.h"
-#include "scene/gui/button_group.h"
 #include "scene/gui/tool_button.h"
 
 /**

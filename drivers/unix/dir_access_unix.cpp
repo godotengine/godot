@@ -211,36 +211,48 @@ Error DirAccessUnix::make_dir(String p_dir) {
 Error DirAccessUnix::change_dir(String p_dir) {
 
 	GLOBAL_LOCK_FUNCTION
+
 	p_dir = fix_path(p_dir);
 
+	// prev_dir is the directory we are changing out of
+	String prev_dir;
 	char real_current_dir_name[2048];
 	getcwd(real_current_dir_name, 2048);
-	String prev_dir;
 	if (prev_dir.parse_utf8(real_current_dir_name))
 		prev_dir = real_current_dir_name; //no utf8, maybe latin?
 
-	chdir(current_dir.utf8().get_data()); //ascii since this may be unicode or wathever the host os wants
-	bool worked = (chdir(p_dir.utf8().get_data()) == 0); // we can only give this utf8
+	//print_line("directory we are changing out of (prev_dir): " + prev_dir);
 
-	String base = _get_root_path();
-	if (base != "") {
-
-		getcwd(real_current_dir_name, 2048);
-		String new_dir;
-		new_dir.parse_utf8(real_current_dir_name);
-		if (!new_dir.begins_with(base))
-			worked = false;
+	// try_dir is the directory we are trying to change into
+	String try_dir = "";
+	if (p_dir.is_rel_path()) {
+		String next_dir = current_dir + "/" + p_dir;
+		//print_line("p_dir is relative: " + p_dir + " about to simplfy: " + next_dir);
+		next_dir = next_dir.simplify_path();
+		try_dir = next_dir;
+	} else {
+		try_dir = p_dir;
+		//print_line("p_dir is absolute: " + p_dir);
 	}
 
-	if (worked) {
-
-		getcwd(real_current_dir_name, 2048);
-		if (current_dir.parse_utf8(real_current_dir_name))
-			current_dir = real_current_dir_name; //no utf8, maybe latin?
+	// if try_dir is nothing, it is not changing directory so change it to a "." otherwise chdir will fail
+	if (try_dir == "") {
+		try_dir = ".";
 	}
 
+	//print_line("directory we are changing in to (try_dir): " + try_dir);
+
+	bool worked = (chdir(try_dir.utf8().get_data()) == 0); // we can only give this utf8
+	if (!worked) {
+		//print_line("directory does not exist");
+		return ERR_INVALID_PARAMETER;
+	}
+
+	// the directory exists, so set current_dir to try_dir
+	current_dir = try_dir;
 	chdir(prev_dir.utf8().get_data());
-	return worked ? OK : ERR_INVALID_PARAMETER;
+	//print_line("directory exists, setting current_dir to: " + current_dir);
+	return OK;
 }
 
 String DirAccessUnix::get_current_dir() {

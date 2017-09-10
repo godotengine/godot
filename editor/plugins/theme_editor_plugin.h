@@ -30,7 +30,6 @@
 #ifndef THEME_EDITOR_PLUGIN_H
 #define THEME_EDITOR_PLUGIN_H
 
-#include "scene/gui/button_group.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/option_button.h"

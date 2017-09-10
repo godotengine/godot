@@ -84,7 +84,7 @@ public:
 
 	void clear();
 
-	int find_item_name(const String &p_name) const;
+	int find_item_by_name(const String &p_name) const;
 
 	Vector<int> get_item_list() const;
 	int get_last_unused_item_id() const;

@@ -75,6 +75,8 @@ private:
 	Transform inv_transform;
 	bool _static;
 
+	SelfList<CollisionObjectSW> pending_shape_update_list;
+
 	void _update_shapes();
 
 protected:

@@ -828,7 +828,12 @@ void FileSystemDock::_move_operation(const String &p_to_path) {
 	//make list of remaps
 	Map<String, String> renames;
 	String repfrom = path == "res://" ? path : String(path + "/");
-	String repto = p_to_path == "res://" ? p_to_path : String(p_to_path + "/");
+	String repto = p_to_path;
+	if (!repto.ends_with("/")) {
+		repto += "/";
+	}
+
+	print_line("reprfrom: " + repfrom + " repto " + repto);
 
 	for (int i = 0; i < move_files.size(); i++) {
 		renames[move_files[i]] = move_files[i].replace_first(repfrom, repto);
@@ -867,6 +872,13 @@ void FileSystemDock::_move_operation(const String &p_to_path) {
 		print_line("moving file " + move_files[i] + " to " + to);
 		if (err != OK) {
 			EditorNode::get_singleton()->add_io_error(TTR("Error moving file:\n") + move_files[i] + "\n");
+		}
+		if (FileAccess::exists(move_files[i] + ".import")) { //move imported files too
+			//@todo should remove the files in .import folder
+			err = da->rename(move_files[i] + ".import", to + ".import");
+			if (err != OK) {
+				EditorNode::get_singleton()->add_io_error(TTR("Error moving file:\n") + move_files[i] + ".import\n");
+			}
 		}
 	}
 
@@ -1827,7 +1839,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 
 	path = "res://";
 
-	add_constant_override("separation", 3);
+	add_constant_override("separation", 4);
 }
 
 FileSystemDock::~FileSystemDock() {

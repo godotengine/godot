@@ -217,13 +217,15 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 			setseek = setplay;
 			active = true;
 			setplay = -1;
-			_change_notify("playing"); //update property in editor
+			//do not update, this makes it easier to animate (will shut off otherise)
+			//_change_notify("playing"); //update property in editor
 		}
 
 		//stop playing if no longer active
 		if (!active) {
 			set_fixed_process_internal(false);
-			_change_notify("playing"); //update property in editor
+			//do not update, this makes it easier to animate (will shut off otherise)
+			//_change_notify("playing"); //update property in editor
 			emit_signal("finished");
 		}
 	}
@@ -439,7 +441,7 @@ void AudioStreamPlayer2D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_stream", "get_stream");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "volume_db", PROPERTY_HINT_RANGE, "-80,24"), "set_volume_db", "get_volume_db");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_playing", "_is_active");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "play", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_playing", "_is_active");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoplay"), "set_autoplay", "is_autoplay_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "max_distance", PROPERTY_HINT_RANGE, "1,65536,1"), "set_max_distance", "get_max_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "attenuation", PROPERTY_HINT_EXP_EASING), "set_attenuation", "get_attenuation");

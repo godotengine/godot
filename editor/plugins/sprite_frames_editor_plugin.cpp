@@ -244,8 +244,22 @@ void SpriteFramesEditor::_down_pressed() {
 
 void SpriteFramesEditor::_delete_pressed() {
 
+	ERR_FAIL_COND(!frames->has_animation(edited_anim));
+
 	if (tree->get_current() < 0)
 		return;
+
+	int to_delete = tree->get_current();
+	if (to_delete < 0 || to_delete >= frames->get_frame_count(edited_anim)) {
+		return;
+	}
+
+	undo_redo->create_action(TTR("Delete Resource"));
+	undo_redo->add_do_method(frames, "remove_frame", edited_anim, to_delete);
+	undo_redo->add_undo_method(frames, "add_frame", edited_anim, frames->get_frame(edited_anim, to_delete), to_delete);
+	undo_redo->add_do_method(this, "_update_library");
+	undo_redo->add_undo_method(this, "_update_library");
+	undo_redo->commit_action();
 }
 
 void SpriteFramesEditor::_animation_select() {

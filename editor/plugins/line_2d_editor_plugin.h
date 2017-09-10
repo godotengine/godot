@@ -34,7 +34,6 @@
 #include "editor/editor_plugin.h"
 #include "scene/2d/line_2d.h"
 #include "scene/2d/path_2d.h"
-#include "scene/gui/button_group.h"
 #include "scene/gui/tool_button.h"
 
 class CanvasItemEditor;

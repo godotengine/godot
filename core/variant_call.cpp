@@ -481,6 +481,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM1(Array, erase);
 	VCALL_LOCALMEM0(Array, sort);
 	VCALL_LOCALMEM2(Array, sort_custom);
+	VCALL_LOCALMEM0R(Array, duplicate);
 	VCALL_LOCALMEM0(Array, invert);
 
 	static void _call_PoolByteArray_get_string_from_ascii(Variant &r_ret, Variant &p_self, const Variant **p_args) {
@@ -1575,6 +1576,7 @@ void register_variant_methods() {
 	ADDFUNC0(ARRAY, NIL, Array, sort, varray());
 	ADDFUNC2(ARRAY, NIL, Array, sort_custom, OBJECT, "obj", STRING, "func", varray());
 	ADDFUNC0(ARRAY, NIL, Array, invert, varray());
+	ADDFUNC0(ARRAY, ARRAY, Array, duplicate, varray());
 
 	ADDFUNC0(POOL_BYTE_ARRAY, INT, PoolByteArray, size, varray());
 	ADDFUNC2(POOL_BYTE_ARRAY, NIL, PoolByteArray, set, INT, "idx", INT, "byte", varray());

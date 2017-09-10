@@ -30,6 +30,7 @@
 #include "editor_about.h"
 
 #include "authors.gen.h"
+#include "donors.gen.h"
 #include "license.gen.h"
 #include "version.h"
 #include "version_hash.gen.h"
@@ -49,6 +50,47 @@ void EditorAbout::_bind_methods() {
 TextureRect *EditorAbout::get_logo() const {
 
 	return _logo;
+}
+
+ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<String> &p_sections, const char **p_src[]) {
+
+	ScrollContainer *sc = memnew(ScrollContainer);
+	sc->set_name(p_name);
+	sc->set_v_size_flags(Control::SIZE_EXPAND);
+
+	VBoxContainer *vbc = memnew(VBoxContainer);
+	vbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	sc->add_child(vbc);
+
+	for (int i = 0; i < p_sections.size(); i++) {
+
+		const char **names_ptr = p_src[i];
+		if (*names_ptr) {
+
+			Label *lbl = memnew(Label);
+			lbl->set_text(p_sections[i]);
+			vbc->add_child(lbl);
+
+			ItemList *il = memnew(ItemList);
+			il->set_max_columns(16);
+			il->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+			il->set_same_column_width(true);
+			il->set_auto_height(true);
+			while (*names_ptr) {
+				il->add_item(String::utf8(*names_ptr++), NULL, false);
+			}
+			vbc->add_child(il);
+			if (il->get_item_count() == 2) {
+				il->set_fixed_column_width(200 * EDSCALE);
+			}
+
+			HSeparator *hs = memnew(HSeparator);
+			hs->set_modulate(Color(0, 0, 0, 0));
+			vbc->add_child(hs);
+		}
+	}
+
+	return sc;
 }
 
 EditorAbout::EditorAbout() {
@@ -84,43 +126,29 @@ EditorAbout::EditorAbout() {
 	tc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vbc->add_child(tc);
 
-	ScrollContainer *dev_base = memnew(ScrollContainer);
-	dev_base->set_name(TTR("Authors"));
-	dev_base->set_v_size_flags(Control::SIZE_EXPAND);
-	tc->add_child(dev_base);
-
-	VBoxContainer *dev_vbc = memnew(VBoxContainer);
-	dev_vbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	dev_base->add_child(dev_vbc);
+	// Authors
 
 	List<String> dev_sections;
 	dev_sections.push_back(TTR("Project Founders"));
 	dev_sections.push_back(TTR("Lead Developer"));
 	dev_sections.push_back(TTR("Project Manager"));
 	dev_sections.push_back(TTR("Developers"));
-
 	const char **dev_src[] = { dev_founders, dev_lead, dev_manager, dev_names };
+	tc->add_child(_populate_list(TTR("Authors"), dev_sections, dev_src));
 
-	for (int i = 0; i < dev_sections.size(); i++) {
+	// Donors
 
-		Label *lbl = memnew(Label);
-		lbl->set_text(dev_sections[i]);
-		dev_vbc->add_child(lbl);
+	List<String> donor_sections;
+	donor_sections.push_back(TTR("Platinum Sponsors"));
+	donor_sections.push_back(TTR("Gold Sponsors"));
+	donor_sections.push_back(TTR("Mini Sponsors"));
+	donor_sections.push_back(TTR("Gold Donors"));
+	donor_sections.push_back(TTR("Silver Donors"));
+	donor_sections.push_back(TTR("Bronze Donors"));
+	const char **donor_src[] = { donor_s_plat, donor_s_gold, donor_s_mini, donor_gold, donor_silver, donor_bronze };
+	tc->add_child(_populate_list(TTR("Donors"), donor_sections, donor_src));
 
-		ItemList *il = memnew(ItemList);
-		il->set_max_columns(16);
-		il->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		il->set_fixed_column_width(230 * EDSCALE);
-		il->set_auto_height(true);
-		const char **dev_names_ptr = dev_src[i];
-		while (*dev_names_ptr)
-			il->add_item(String::utf8(*dev_names_ptr++), NULL, false);
-		dev_vbc->add_child(il);
-
-		HSeparator *hs = memnew(HSeparator);
-		hs->set_modulate(Color(0, 0, 0, 0));
-		dev_vbc->add_child(hs);
-	}
+	// License
 
 	TextEdit *license = memnew(TextEdit);
 	license->set_name(TTR("License"));
@@ -130,6 +158,8 @@ EditorAbout::EditorAbout() {
 	license->set_readonly(true);
 	license->set_text(String::utf8(about_license));
 	tc->add_child(license);
+
+	// Thirdparty License
 
 	VBoxContainer *license_thirdparty = memnew(VBoxContainer);
 	license_thirdparty->set_name(TTR("Thirdparty License"));

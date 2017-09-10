@@ -410,6 +410,7 @@ public:
 			int light_mode;
 			bool uses_screen_texture;
 			bool uses_screen_uv;
+			bool uses_time;
 
 		} canvas_item;
 
@@ -449,6 +450,7 @@ public:
 			bool uses_discard;
 			bool uses_sss;
 			bool uses_screen_texture;
+			bool uses_time;
 			bool writes_modelview_or_projection;
 			bool uses_vertex_lighting;
 
@@ -877,6 +879,7 @@ public:
 		VS::LightOmniShadowMode omni_shadow_mode;
 		VS::LightOmniShadowDetail omni_shadow_detail;
 		VS::LightDirectionalShadowMode directional_shadow_mode;
+		VS::LightDirectionalShadowDepthRangeMode directional_range_mode;
 		bool directional_blend_splits;
 		uint64_t version;
 	};
@@ -903,6 +906,9 @@ public:
 
 	virtual VS::LightDirectionalShadowMode light_directional_get_shadow_mode(RID p_light);
 	virtual VS::LightOmniShadowMode light_omni_get_shadow_mode(RID p_light);
+
+	virtual void light_directional_set_shadow_depth_range_mode(RID p_light, VS::LightDirectionalShadowDepthRangeMode p_range_mode);
+	virtual VS::LightDirectionalShadowDepthRangeMode light_directional_get_shadow_depth_range_mode(RID p_light) const;
 
 	virtual bool light_has_shadow(RID p_light) const;
 

@@ -33,7 +33,6 @@
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/2d/polygon_2d.h"
-#include "scene/gui/button_group.h"
 #include "scene/gui/tool_button.h"
 
 /**

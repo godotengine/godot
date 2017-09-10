@@ -631,7 +631,7 @@ void LineEdit::_notification(int p_what) {
 			if (has_icon("right_icon")) {
 				Ref<Texture> r_icon = Control::get_icon("right_icon");
 				ofs_max -= r_icon->get_width();
-				r_icon->draw(ci, Point2(width - r_icon->get_width() - x_ofs, y_ofs), Color(1, 1, 1, disabled_alpha * .9));
+				r_icon->draw(ci, Point2(width - r_icon->get_width() - x_ofs, height / 2 - r_icon->get_height() / 2), Color(1, 1, 1, disabled_alpha * .9));
 			}
 
 			int caret_height = font->get_height() > y_area ? y_area : font->get_height();

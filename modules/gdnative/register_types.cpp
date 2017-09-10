@@ -28,12 +28,99 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "register_types.h"
+#include "gdnative/gdnative.h"
+
 #include "gdnative.h"
 
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
 
+#include "nativescript/register_types.h"
+
+#include "core/engine.h"
 #include "core/os/os.h"
+#include "core/project_settings.h"
+
+#ifdef TOOLS_ENABLED
+#include "editor/editor_node.h"
+
+// Class used to discover singleton gdnative files
+
+void actual_discoverer_handler();
+
+class GDNativeSingletonDiscover : public Object {
+	// GDCLASS(GDNativeSingletonDiscover, Object)
+
+	virtual String get_class() const {
+		// okay, this is a really dirty hack.
+		// We're overriding get_class so we can connect it to a signal
+		// This works because get_class is a virtual method, so we don't
+		// need to register a new class to ClassDB just for this one
+		// little signal.
+
+		actual_discoverer_handler();
+
+		return "Object";
+	}
+};
+
+Set<String> get_gdnative_singletons(EditorFileSystemDirectory *p_dir) {
+
+	Set<String> file_paths;
+
+	// check children
+
+	for (int i = 0; i < p_dir->get_file_count(); i++) {
+		String file_name = p_dir->get_file(i);
+		String file_type = p_dir->get_file_type(i);
+
+		if (file_type != "GDNativeLibrary") {
+			continue;
+		}
+
+		Ref<GDNativeLibrary> lib = ResourceLoader::load(p_dir->get_file_path(i));
+		if (lib.is_valid() && lib->is_singleton_gdnative()) {
+			file_paths.insert(p_dir->get_file_path(i));
+		}
+	}
+
+	// check subdirectories
+	for (int i = 0; i < p_dir->get_subdir_count(); i++) {
+		Set<String> paths = get_gdnative_singletons(p_dir->get_subdir(i));
+
+		for (Set<String>::Element *E = paths.front(); E; E = E->next()) {
+			file_paths.insert(E->get());
+		}
+	}
+
+	return file_paths;
+}
+
+void actual_discoverer_handler() {
+	EditorFileSystemDirectory *dir = EditorFileSystem::get_singleton()->get_filesystem();
+
+	Set<String> file_paths = get_gdnative_singletons(dir);
+
+	Array files;
+	files.resize(file_paths.size());
+	int i = 0;
+	for (Set<String>::Element *E = file_paths.front(); E; i++, E = E->next()) {
+		files.set(i, E->get());
+	}
+
+	ProjectSettings::get_singleton()->set("gdnative/singletons", files);
+
+	ProjectSettings::get_singleton()->save();
+}
+
+GDNativeSingletonDiscover *discoverer = NULL;
+
+void discoverer_callback() {
+	discoverer = memnew(GDNativeSingletonDiscover);
+	EditorFileSystem::get_singleton()->connect("filesystem_changed", discoverer, "get_class");
+}
+
+#endif
 
 godot_variant cb_standard_varcall(void *handle, godot_string *p_procedure, godot_array *p_args) {
 	if (handle == NULL) {
@@ -62,9 +149,44 @@ godot_variant cb_standard_varcall(void *handle, godot_string *p_procedure, godot
 	return proc(NULL, p_args);
 }
 
+void cb_singleton_call(
+		void *p_handle,
+		godot_string *p_proc_name,
+		void *p_data,
+		int p_num_args,
+		void **p_args,
+		void *r_return) {
+	if (p_handle == NULL) {
+		ERR_PRINT("No valid library handle, can't call singleton procedure");
+		return;
+	}
+
+	void *singleton_proc;
+	Error err = OS::get_singleton()->get_dynamic_library_symbol_handle(
+			p_handle,
+			*(String *)p_proc_name,
+			singleton_proc);
+
+	if (err != OK) {
+		return;
+	}
+
+	void (*singleton_procedure_ptr)() = (void (*)())singleton_proc;
+	singleton_procedure_ptr();
+}
+
 GDNativeCallRegistry *GDNativeCallRegistry::singleton;
 
+Vector<Ref<GDNative> > singleton_gdnatives;
+
 void register_gdnative_types() {
+
+#ifdef TOOLS_ENABLED
+
+	if (Engine::get_singleton()->is_editor_hint()) {
+		EditorNode::add_init_callback(discoverer_callback);
+	}
+#endif
 
 	ClassDB::register_class<GDNativeLibrary>();
 	ClassDB::register_class<GDNative>();
@@ -72,10 +194,64 @@ void register_gdnative_types() {
 	GDNativeCallRegistry::singleton = memnew(GDNativeCallRegistry);
 
 	GDNativeCallRegistry::singleton->register_native_call_type("standard_varcall", cb_standard_varcall);
+
+	GDNativeCallRegistry::singleton->register_native_raw_call_type("gdnative_singleton_call", cb_singleton_call);
+
+	register_nativescript_types();
+
+	// run singletons
+
+	Array singletons = ProjectSettings::get_singleton()->get("gdnative/singletons");
+
+	singleton_gdnatives.resize(singletons.size());
+
+	for (int i = 0; i < singletons.size(); i++) {
+		String path = singletons[i];
+
+		Ref<GDNativeLibrary> lib = ResourceLoader::load(path);
+
+		singleton_gdnatives[i].instance();
+		singleton_gdnatives[i]->set_library(lib);
+
+		if (!singleton_gdnatives[i]->initialize()) {
+			// Can't initialize. Don't make a native_call then
+			continue;
+		}
+
+		singleton_gdnatives[i]->call_native_raw(
+				"gdnative_singleton_call",
+				"godot_gdnative_singleton",
+				NULL,
+				0,
+				NULL,
+				NULL);
+	}
 }
 
 void unregister_gdnative_types() {
+
+	for (int i = 0; i < singleton_gdnatives.size(); i++) {
+
+		if (singleton_gdnatives[i].is_null()) {
+			continue;
+		}
+
+		if (!singleton_gdnatives[i]->is_initialized()) {
+			continue;
+		}
+
+		singleton_gdnatives[i]->terminate();
+	}
+
+	unregister_nativescript_types();
+
 	memdelete(GDNativeCallRegistry::singleton);
+
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		memdelete(discoverer);
+	}
+#endif
 
 	// This is for printing out the sizes of the core types
 

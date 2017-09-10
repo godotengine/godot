@@ -206,6 +206,7 @@ public:
 	virtual int find_function(const String &p_function, const String &p_code) const = 0;
 	virtual String make_function(const String &p_class, const String &p_name, const PoolStringArray &p_args) const = 0;
 	virtual Error open_in_external_editor(const Ref<Script> &p_script, int p_line, int p_col) { return ERR_UNAVAILABLE; }
+	virtual bool overrides_external_editor() { return false; }
 
 	virtual Error complete_code(const String &p_code, const String &p_base_path, Object *p_owner, List<String> *r_options, bool &r_force, String &r_call_hint) { return ERR_UNAVAILABLE; }
 

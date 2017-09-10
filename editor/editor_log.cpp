@@ -59,7 +59,6 @@ void EditorLog::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		log->add_color_override("default_color", get_color("font_color", "Tree"));
 		//button->set_icon(get_icon("Console","EditorIcons"));
 	}
 	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
@@ -91,7 +90,7 @@ void EditorLog::add_message(const String &p_msg, bool p_error) {
 
 	log->add_newline();
 	if (p_error) {
-		log->push_color(get_color("fg_error", "Editor"));
+		log->push_color(get_color("error_color", "Editor"));
 		Ref<Texture> icon = get_icon("Error", "EditorIcons");
 		log->add_image(icon);
 		//button->set_icon(icon);

@@ -603,7 +603,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["text_editor/theme/color_theme"] = PropertyInfo(Variant::STRING, "text_editor/theme/color_theme", PROPERTY_HINT_ENUM, "Default");
 
 	set("text_editor/theme/line_spacing", 4);
-	set("text_editor/theme/adapted_code_editor_background_color", true);
 
 	_load_default_text_editor_theme();
 

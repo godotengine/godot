@@ -45,6 +45,7 @@ public:
 		BG_CLEAR_COLOR,
 		BG_COLOR,
 		BG_SKY,
+		BG_COLOR_SKY,
 		BG_CANVAS,
 		BG_KEEP,
 		BG_MAX

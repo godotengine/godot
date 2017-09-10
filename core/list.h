@@ -291,6 +291,54 @@ public:
 			erase(_data->first);
 	}
 
+	Element *insert_after(Element *p_element, const T &p_value) {
+		CRASH_COND(p_element && (!_data || p_element->data != _data));
+
+		if (!p_element) {
+			return push_back(p_value);
+		}
+
+		Element *n = memnew_allocator(Element, A);
+		n->value = (T &)p_value;
+		n->prev_ptr = p_element;
+		n->next_ptr = p_element->next_ptr;
+		n->data = _data;
+
+		if (!p_element->next_ptr) {
+			_data->last = n;
+		}
+
+		p_element->next_ptr = n;
+
+		_data->size_cache++;
+
+		return n;
+	}
+
+	Element *insert_before(Element *p_element, const T &p_value) {
+		CRASH_COND(p_element && (!_data || p_element->data != _data));
+
+		if (!p_element) {
+			return push_back(p_value);
+		}
+
+		Element *n = memnew_allocator(Element, A);
+		n->value = (T &)p_value;
+		n->prev_ptr = p_element->prev_ptr;
+		n->next_ptr = p_element;
+		n->data = _data;
+
+		if (!p_element->prev_ptr) {
+			_data->first = n;
+		}
+
+		p_element->prev_ptr = n;
+
+		_data->size_cache++;
+
+		return n;
+	}
+
 	/**
 	 * find an element in the list,
 	 */

@@ -1249,6 +1249,10 @@ void Control::_size_changed() {
 		new_size_cache.height = MAX(minimum_size.height, new_size_cache.height);
 	}
 
+	if (get_viewport()->is_snap_controls_to_pixels_enabled()) {
+		new_size_cache =new_size_cache.floor();
+		new_pos_cache = new_pos_cache.floor();
+	}
 	bool pos_changed = new_pos_cache != data.pos_cache;
 	bool size_changed = new_size_cache != data.size_cache;
 

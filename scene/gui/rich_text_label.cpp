@@ -80,6 +80,10 @@ RichTextLabel::Item *RichTextLabel::_get_next_item(Item *p_item, bool p_free) {
 	return NULL;
 }
 
+Rect2 RichTextLabel::_get_text_rect() {
+	Ref<StyleBox> style = get_stylebox("normal");
+	return Rect2(style->get_offset(), get_size() - style->get_minimum_size());
+}
 void RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &y, int p_width, int p_line, ProcessMode p_mode, const Ref<Font> &p_base_font, const Color &p_base_color, const Point2i &p_click_pos, Item **r_click_item, int *r_click_char, bool *r_outside, int p_char_count) {
 
 	RID ci;
@@ -583,7 +587,7 @@ void RichTextLabel::_update_scroll() {
 
 	int total_height = 0;
 	if (main->lines.size())
-		total_height = main->lines[main->lines.size() - 1].height_accum_cache;
+		total_height = main->lines[main->lines.size() - 1].height_accum_cache + get_stylebox("normal")->get_minimum_size().height;
 
 	bool exceeds = total_height > get_size().height && scroll_active;
 
@@ -641,7 +645,11 @@ void RichTextLabel::_notification(int p_what) {
 			_update_scroll();
 
 			RID ci = get_canvas_item();
+
 			Size2 size = get_size();
+			Rect2 text_rect = _get_text_rect();
+
+			draw_style_box(get_stylebox("normal"), Rect2(Point2(), size));
 
 			if (has_focus()) {
 				VisualServer::get_singleton()->canvas_item_add_clip_ignore(ci, true);
@@ -657,10 +665,10 @@ void RichTextLabel::_notification(int p_what) {
 			int total_chars = 0;
 			while (from_line < main->lines.size()) {
 
-				if (main->lines[from_line].height_accum_cache >= ofs)
+				if (main->lines[from_line].height_accum_cache + _get_text_rect().get_position().y >= ofs)
 					break;
-				from_line++;
 				total_chars += main->lines[from_line].char_count;
+				from_line++;
 			}
 
 			if (from_line >= main->lines.size())
@@ -672,7 +680,7 @@ void RichTextLabel::_notification(int p_what) {
 
 			while (y < size.height && from_line < main->lines.size()) {
 
-				_process_line(main, Point2(), y, size.width - scroll_w, from_line, PROCESS_DRAW, base_font, base_color, Point2i(), NULL, NULL, NULL, total_chars);
+				_process_line(main, text_rect.get_position(), y, text_rect.get_size().width - scroll_w, from_line, PROCESS_DRAW, base_font, base_color, Point2i(), NULL, NULL, NULL, total_chars);
 				total_chars += main->lines[from_line].char_count;
 				from_line++;
 			}
@@ -686,7 +694,7 @@ void RichTextLabel::_find_click(ItemFrame *p_frame, const Point2i &p_click, Item
 		*r_click_item = NULL;
 
 	Size2 size = get_size();
-
+	Rect2 text_rect = _get_text_rect();
 	int ofs = vscroll->get_value();
 
 	//todo, change to binary search
@@ -706,9 +714,9 @@ void RichTextLabel::_find_click(ItemFrame *p_frame, const Point2i &p_click, Item
 	Ref<Font> base_font = get_font("normal_font");
 	Color base_color = get_color("default_color");
 
-	while (y < size.height && from_line < p_frame->lines.size()) {
+	while (y < text_rect.get_size().height && from_line < p_frame->lines.size()) {
 
-		_process_line(p_frame, Point2(), y, size.width - scroll_w, from_line, PROCESS_POINTER, base_font, base_color, p_click, r_click_item, r_click_char, r_outside);
+		_process_line(p_frame, text_rect.get_position(), y, text_rect.get_size().width - scroll_w, from_line, PROCESS_POINTER, base_font, base_color, p_click, r_click_item, r_click_char, r_outside);
 		if (r_click_item && *r_click_item)
 			return;
 		from_line++;
@@ -791,7 +799,7 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 	Ref<InputEventKey> k = p_event;
 
 	if (k.is_valid()) {
-		if (k->is_pressed() && !k->get_alt() && !k->get_shift() && !k->get_metakey()) {
+		if (k->is_pressed() && !k->get_alt() && !k->get_shift()) {
 			bool handled = true;
 			switch (k->get_scancode()) {
 				case KEY_PAGEUP: {
@@ -1015,13 +1023,14 @@ void RichTextLabel::_validate_line_caches(ItemFrame *p_frame) {
 
 	//validate invalid lines!s
 	Size2 size = get_size();
+	Rect2 text_rect = _get_text_rect();
 
 	Ref<Font> base_font = get_font("normal_font");
 
 	for (int i = p_frame->first_invalid_line; i < p_frame->lines.size(); i++) {
 
 		int y = 0;
-		_process_line(p_frame, Point2(), y, size.width - scroll_w, i, PROCESS_CACHE, base_font, Color());
+		_process_line(p_frame, text_rect.get_position(), y, text_rect.get_size().width - scroll_w, i, PROCESS_CACHE, base_font, Color());
 		p_frame->lines[i].height_cache = y;
 		p_frame->lines[i].height_accum_cache = y;
 
@@ -1031,7 +1040,7 @@ void RichTextLabel::_validate_line_caches(ItemFrame *p_frame) {
 
 	int total_height = 0;
 	if (p_frame->lines.size())
-		total_height = p_frame->lines[p_frame->lines.size() - 1].height_accum_cache;
+		total_height = p_frame->lines[p_frame->lines.size() - 1].height_accum_cache + get_stylebox("normal")->get_minimum_size().height;
 
 	main->first_invalid_line = p_frame->lines.size();
 

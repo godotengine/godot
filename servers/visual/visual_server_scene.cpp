@@ -886,12 +886,55 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 			float max_distance = p_cam_projection.get_z_far();
 			float shadow_max = VSG::storage->light_get_param(p_instance->base, VS::LIGHT_PARAM_SHADOW_MAX_DISTANCE);
-			if (shadow_max > 0) {
+			if (shadow_max > 0 && !p_cam_orthogonal) { //its impractical (and leads to unwanted behaviors) to set max distance in orthogonal camera
 				max_distance = MIN(shadow_max, max_distance);
 			}
 			max_distance = MAX(max_distance, p_cam_projection.get_z_near() + 0.001);
+			float min_distance = MIN(p_cam_projection.get_z_near(),max_distance);
 
-			float range = max_distance - p_cam_projection.get_z_near();
+			VS::LightDirectionalShadowDepthRangeMode depth_range_mode = VSG::storage->light_directional_get_shadow_depth_range_mode(p_instance->base);
+
+				if (depth_range_mode==VS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_OPTIMIZED) {
+				//optimize min/max
+				Vector<Plane> planes = p_cam_projection.get_projection_planes(p_cam_transform);
+				int cull_count = p_scenario->octree.cull_convex(planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, VS::INSTANCE_GEOMETRY_MASK);
+				Plane base(p_cam_transform.origin,-p_cam_transform.basis.get_axis(2));
+				//check distance max and min
+
+				bool found_items=false;
+				float z_max=-1e20;
+				float z_min=1e20;
+
+				for(int i=0;i<cull_count;i++) {
+
+					Instance *instance = instance_shadow_cull_result[i];
+					if (!instance->visible || !((1 << instance->base_type) & VS::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData *>(instance->base_data)->can_cast_shadows) {
+						continue;
+					}
+
+					float max,min;
+					instance->transformed_aabb.project_range_in_plane(base, min, max);
+
+					if (max>z_max) {
+						z_max=max;
+					}
+
+					if (min<z_min) {
+						z_min=min;
+					}
+
+					found_items=true;
+				}
+
+				if (found_items) {
+					min_distance=MAX(min_distance,z_min);
+					max_distance=MIN(max_distance,z_max);
+				}
+
+			}
+
+
+			float range = max_distance - min_distance;
 
 			int splits = 0;
 			switch (VSG::storage->light_directional_get_shadow_mode(p_instance->base)) {
@@ -902,9 +945,9 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 			float distances[5];
 
-			distances[0] = p_cam_projection.get_z_near();
+			distances[0] = min_distance;
 			for (int i = 0; i < splits; i++) {
-				distances[i + 1] = p_cam_projection.get_z_near() + VSG::storage->light_get_param(p_instance->base, VS::LightParam(VS::LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET + i)) * range;
+				distances[i + 1] = min_distance + VSG::storage->light_get_param(p_instance->base, VS::LightParam(VS::LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET + i)) * range;
 			};
 
 			distances[splits] = max_distance;
@@ -984,8 +1027,6 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 				{
 					//camera viewport stuff
-					//this trick here is what stabilizes the shadow (make potential jaggies to not move)
-					//at the cost of some wasted resolution. Still the quality increase is very well worth it
 
 					Vector3 center;
 
@@ -1006,7 +1047,7 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 							radius = d;
 					}
 
-					radius *= texture_size / (texture_size - 2.0); //add a texel by each side, so stepified texture will always fit
+					radius *= texture_size / (texture_size - 2.0); //add a texel by each side
 
 					if (i == 0) {
 						first_radius = radius;
@@ -1021,12 +1062,19 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 					z_max_cam = z_vec.dot(center) + radius;
 					z_min_cam = z_vec.dot(center) - radius;
 
-					float unit = radius * 2.0 / texture_size;
+					if (depth_range_mode==VS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_STABLE) {
+						//this trick here is what stabilizes the shadow (make potential jaggies to not move)
+						//at the cost of some wasted resolution. Still the quality increase is very well worth it
 
-					x_max_cam = Math::stepify(x_max_cam, unit);
-					x_min_cam = Math::stepify(x_min_cam, unit);
-					y_max_cam = Math::stepify(y_max_cam, unit);
-					y_min_cam = Math::stepify(y_min_cam, unit);
+						float unit = radius * 2.0 / texture_size;
+
+						x_max_cam = Math::stepify(x_max_cam, unit);
+						x_min_cam = Math::stepify(x_min_cam, unit);
+						y_max_cam = Math::stepify(y_max_cam, unit);
+						y_min_cam = Math::stepify(y_min_cam, unit);
+					}
+
+
 				}
 
 				//now that we now all ranges, we can proceed to make the light frustum planes, for culling octree
@@ -1069,6 +1117,8 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 				}
 
 				{
+
+
 					CameraMatrix ortho_camera;
 					real_t half_x = (x_max_cam - x_min_cam) * 0.5;
 					real_t half_y = (y_max_cam - y_min_cam) * 0.5;

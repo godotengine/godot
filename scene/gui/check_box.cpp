@@ -29,7 +29,6 @@
 /*************************************************************************/
 #include "check_box.h"
 
-#include "button_group.h"
 #include "servers/visual_server.h"
 
 void CheckBox::_notification(int p_what) {

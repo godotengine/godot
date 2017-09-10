@@ -972,6 +972,14 @@ void ScriptEditor::_menu_option(int p_option) {
 					EditorNode::get_singleton()->show_warning("Can't obtain the script for running");
 					break;
 				}
+
+				current->apply_code();
+				Error err = scr->reload(false); //hard reload script before running always
+
+				if (err != OK) {
+					EditorNode::get_singleton()->show_warning("Script failed reloading, check console for errors.");
+					return;
+				}
 				if (!scr->is_tool()) {
 
 					EditorNode::get_singleton()->show_warning("Script is not in tool mode, will not be able to run");
@@ -1148,8 +1156,6 @@ void ScriptEditor::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-
-			tab_container->add_style_override("panel", editor->get_gui_base()->get_stylebox("ScriptPanel", "EditorStyles"));
 
 			help_search->set_icon(get_icon("HelpSearch", "EditorIcons"));
 			site_search->set_icon(get_icon("Instance", "EditorIcons"));
@@ -1417,7 +1423,7 @@ void ScriptEditor::_update_script_colors() {
 			int non_zero_hist_size = (hist_size == 0) ? 1 : hist_size;
 			float v = Math::ease((edit_pass - pass) / float(non_zero_hist_size), 0.4);
 
-			script_list->set_item_custom_bg_color(i, hot_color.linear_interpolate(cold_color, v));
+			script_list->set_item_custom_fg_color(i, hot_color.linear_interpolate(cold_color, v));
 		}
 	}
 }
@@ -1539,8 +1545,14 @@ bool ScriptEditor::edit(const Ref<Script> &p_script, int p_line, int p_col, bool
 
 	bool open_dominant = EditorSettings::get_singleton()->get("text_editor/files/open_dominant_script_on_scene_change");
 
+	if (p_script->get_language()->overrides_external_editor()) {
+		Error err = p_script->get_language()->open_in_external_editor(p_script, p_line >= 0 ? p_line : 0, p_col);
+		if (err != OK)
+			ERR_PRINT("Couldn't open script in the overridden external text editor");
+		return false;
+	}
+
 	if ((debugger->get_dump_stack_script() != p_script || debugger->get_debug_with_external_editor()) &&
-			p_script->get_language()->open_in_external_editor(p_script, p_line >= 0 ? p_line : 0, p_col) == OK &&
 			p_script->get_path().is_resource_file() &&
 			bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor"))) {
 
@@ -2210,7 +2222,6 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	members_overview->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	tab_container = memnew(TabContainer);
-	tab_container->add_style_override("panel", p_editor->get_gui_base()->get_stylebox("ScriptPanel", "EditorStyles"));
 	tab_container->set_tabs_visible(false);
 	script_split->add_child(tab_container);
 
@@ -2506,9 +2517,9 @@ ScriptEditorPlugin::ScriptEditorPlugin(EditorNode *p_node) {
 	EDITOR_DEF("text_editor/open_scripts/script_temperature_enabled", true);
 	EDITOR_DEF("text_editor/open_scripts/highlight_current_script", true);
 	EDITOR_DEF("text_editor/open_scripts/script_temperature_history_size", 15);
-	EDITOR_DEF("text_editor/open_scripts/script_temperature_hot_color", Color(1, 0, 0, 0.3));
-	EDITOR_DEF("text_editor/open_scripts/script_temperature_cold_color", Color(0, 0, 1, 0.3));
-	EDITOR_DEF("text_editor/open_scripts/current_script_background_color", Color(0.81, 0.81, 0.14, 0.63));
+	EDITOR_DEF("text_editor/open_scripts/script_temperature_hot_color", Color::html("ed5e5e"));
+	EDITOR_DEF("text_editor/open_scripts/script_temperature_cold_color", Color(1, 1, 1, 0.3));
+	EDITOR_DEF("text_editor/open_scripts/current_script_background_color", Color(1, 1, 1, 0.5));
 	EDITOR_DEF("text_editor/open_scripts/group_help_pages", true);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "text_editor/open_scripts/sort_scripts_by", PROPERTY_HINT_ENUM, "Name,Path"));
 	EDITOR_DEF("text_editor/open_scripts/sort_scripts_by", 0);

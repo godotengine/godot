@@ -88,7 +88,7 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 		if (mesh.is_null())
 			continue;
 
-		int id = p_library->find_item_name(mi->get_name());
+		int id = p_library->find_item_by_name(mi->get_name());
 		if (id < 0) {
 
 			id = p_library->get_last_unused_item_id();
@@ -111,7 +111,8 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 			sb->get_shape_owners(&shapes);
 
 			for (List<uint32_t>::Element *E = shapes.front(); E; E = E->next()) {
-				if (sb->is_shape_owner_disabled(E->get())) continue;
+				if (sb->is_shape_owner_disabled(E->get()))
+					continue;
 
 				//Transform shape_transform = sb->shape_owner_get_transform(E->get());
 
@@ -120,7 +121,7 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 				for (int k = 0; k < sb->shape_owner_get_shape_count(E->get()); k++) {
 
 					Ref<Shape> collision = sb->shape_owner_get_shape(E->get(), k);
-					if (collision.is_valid())
+					if (!collision.is_valid())
 						continue;
 					MeshLibrary::ShapeData shape_data;
 					shape_data.shape = collision;

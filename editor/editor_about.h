@@ -52,6 +52,7 @@ class EditorAbout : public AcceptDialog {
 
 private:
 	void _license_tree_selected();
+	ScrollContainer *_populate_list(const String &p_name, const List<String> &p_sections, const char **p_src[]);
 
 	Tree *_tpl_tree;
 	TextEdit *_tpl_text;

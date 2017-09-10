@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "collision_object_sw.h"
+#include "servers/physics/physics_server_sw.h"
 #include "space_sw.h"
 
 void CollisionObjectSW::add_shape(ShapeSW *p_shape, const Transform &p_transform) {
@@ -39,8 +40,12 @@ void CollisionObjectSW::add_shape(ShapeSW *p_shape, const Transform &p_transform
 	s.bpid = 0; //needs update
 	shapes.push_back(s);
 	p_shape->add_owner(this);
-	_update_shapes();
-	_shapes_changed();
+
+	if (!pending_shape_update_list.in_list()) {
+		PhysicsServerSW::singleton->pending_shape_update_list.add(&pending_shape_update_list);
+	}
+	//_update_shapes();
+	//_shapes_changed();
 }
 
 void CollisionObjectSW::set_shape(int p_index, ShapeSW *p_shape) {
@@ -50,8 +55,11 @@ void CollisionObjectSW::set_shape(int p_index, ShapeSW *p_shape) {
 	shapes[p_index].shape = p_shape;
 
 	p_shape->add_owner(this);
-	_update_shapes();
-	_shapes_changed();
+	if (!pending_shape_update_list.in_list()) {
+		PhysicsServerSW::singleton->pending_shape_update_list.add(&pending_shape_update_list);
+	}
+	//_update_shapes();
+	//_shapes_changed();
 }
 void CollisionObjectSW::set_shape_transform(int p_index, const Transform &p_transform) {
 
@@ -59,8 +67,11 @@ void CollisionObjectSW::set_shape_transform(int p_index, const Transform &p_tran
 
 	shapes[p_index].xform = p_transform;
 	shapes[p_index].xform_inv = p_transform.affine_inverse();
-	_update_shapes();
-	_shapes_changed();
+	if (!pending_shape_update_list.in_list()) {
+		PhysicsServerSW::singleton->pending_shape_update_list.add(&pending_shape_update_list);
+	}
+	//_update_shapes();
+	//_shapes_changed();
 }
 
 void CollisionObjectSW::remove_shape(ShapeSW *p_shape) {
@@ -90,7 +101,11 @@ void CollisionObjectSW::remove_shape(int p_index) {
 	shapes[p_index].shape->remove_owner(this);
 	shapes.remove(p_index);
 
-	_shapes_changed();
+	if (!pending_shape_update_list.in_list()) {
+		PhysicsServerSW::singleton->pending_shape_update_list.add(&pending_shape_update_list);
+	}
+	//_update_shapes();
+	//_shapes_changed();
 }
 
 void CollisionObjectSW::_set_static(bool p_static) {
@@ -202,7 +217,8 @@ void CollisionObjectSW::_shape_changed() {
 	_shapes_changed();
 }
 
-CollisionObjectSW::CollisionObjectSW(Type p_type) {
+CollisionObjectSW::CollisionObjectSW(Type p_type)
+	: pending_shape_update_list(this) {
 
 	_static = true;
 	type = p_type;

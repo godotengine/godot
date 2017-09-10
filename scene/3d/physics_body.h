@@ -261,6 +261,8 @@ public:
 VARIANT_ENUM_CAST(RigidBody::Mode);
 VARIANT_ENUM_CAST(RigidBody::AxisLock);
 
+class KinematicCollision;
+
 class KinematicBody : public PhysicsBody {
 
 	GDCLASS(KinematicBody, PhysicsBody);
@@ -286,42 +288,62 @@ private:
 	bool on_ceiling;
 	bool on_wall;
 	Vector<Collision> colliders;
+	Vector<Ref<KinematicCollision> > slide_colliders;
+	Ref<KinematicCollision> motion_cache;
 
 	_FORCE_INLINE_ bool _ignores_mode(PhysicsServer::BodyMode) const;
 
-	Dictionary _move(const Vector3 &p_motion);
+	Ref<KinematicCollision> _move(const Vector3 &p_motion);
+	Ref<KinematicCollision> _get_slide_collision(int p_bounce);
 
 protected:
 	static void _bind_methods();
 
 public:
-	bool move(const Vector3 &p_motion, Collision &r_collision);
+	bool move_and_collide(const Vector3 &p_motion, Collision &r_collision);
 	bool test_move(const Transform &p_from, const Vector3 &p_motion);
 
 	void set_safe_margin(float p_margin);
 	float get_safe_margin() const;
 
-	Vector3 move_and_slide(const Vector3 &p_linear_velocity, const Vector3 &p_floor_direction = Vector3(0, 0, 0), float p_slope_stop_min_velocity = 0.05, int p_max_bounces = 4, float p_floor_max_angle = Math::deg2rad((float)45));
+	Vector3 move_and_slide(const Vector3 &p_linear_velocity, const Vector3 &p_floor_direction = Vector3(0, 0, 0), float p_slope_stop_min_velocity = 0.05, int p_max_slides = 4, float p_floor_max_angle = Math::deg2rad((float)45));
 	bool is_on_floor() const;
 	bool is_on_wall() const;
 	bool is_on_ceiling() const;
 	Vector3 get_floor_velocity() const;
 
-	int get_collision_count() const;
-	Vector3 get_collision_position(int p_collision) const;
-	Vector3 get_collision_normal(int p_collision) const;
-	Vector3 get_collision_travel(int p_collision) const;
-	Vector3 get_collision_remainder(int p_collision) const;
-	Object *get_collision_local_shape(int p_collision) const;
-	Object *get_collision_collider(int p_collision) const;
-	ObjectID get_collision_collider_id(int p_collision) const;
-	Object *get_collision_collider_shape(int p_collision) const;
-	int get_collision_collider_shape_index(int p_collision) const;
-	Vector3 get_collision_collider_velocity(int p_collision) const;
-	Variant get_collision_collider_metadata(int p_collision) const;
+	int get_slide_count() const;
+	Collision get_slide_collision(int p_bounce) const;
 
 	KinematicBody();
 	~KinematicBody();
+};
+
+class KinematicCollision : public Reference {
+
+	GDCLASS(KinematicCollision, Reference);
+
+	KinematicBody *owner;
+	friend class KinematicBody;
+	KinematicBody::Collision collision;
+
+protected:
+	static void _bind_methods();
+
+public:
+	Vector3 get_position() const;
+	Vector3 get_normal() const;
+	Vector3 get_travel() const;
+	Vector3 get_remainder() const;
+	Object *get_local_shape() const;
+	Object *get_collider() const;
+	ObjectID get_collider_id() const;
+	Object *get_collider_shape() const;
+	int get_collider_shape_index() const;
+	Vector3 get_collider_velocity() const;
+	Variant get_collider_metadata() const;
+
+	KinematicCollision();
 };
 
 #endif // PHYSICS_BODY__H

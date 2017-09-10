@@ -31,50 +31,40 @@
 
 #include "editor/editor_file_system.h"
 #include "editor/editor_settings.h"
+#include "editor_scale.h"
 #include "os/keyboard.h"
 #include "os/os.h"
-
-void EditorDirDialog::_update_dir(TreeItem *p_item) {
+void EditorDirDialog::_update_dir(TreeItem *p_item, EditorFileSystemDirectory *p_dir, const String &p_select_path) {
 
 	updating = true;
-	p_item->clear_children();
-	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	String cdir = p_item->get_metadata(0);
 
-	da->change_dir(cdir);
-	da->list_dir_begin();
-	String p = da->get_next();
+	String path = p_dir->get_path();
 
-	List<String> dirs;
-	bool ishidden;
-	bool show_hidden = EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files");
+	p_item->set_metadata(0, p_dir->get_path());
+	p_item->set_icon(0, get_icon("Folder", "EditorIcons"));
 
-	while (p != "") {
+	if (!p_item->get_parent()) {
+		p_item->set_text(0, "res://");
+	} else {
 
-		ishidden = da->current_is_hidden();
-
-		if (show_hidden || !ishidden) {
-			if (da->current_is_dir() && !p.begins_with(".")) {
-				dirs.push_back(p);
-			}
+		if (!opened_paths.has(path) && (p_select_path == String() || !p_select_path.begins_with(path))) {
+			p_item->set_collapsed(true);
 		}
-		p = da->get_next();
+
+		p_item->set_text(0, p_dir->get_name());
 	}
 
-	dirs.sort();
-
-	for (List<String>::Element *E = dirs.front(); E; E = E->next()) {
-		TreeItem *ti = tree->create_item(p_item);
-		ti->set_text(0, E->get());
-		ti->set_icon(0, get_icon("Folder", "EditorIcons"));
-		ti->set_collapsed(true);
-	}
-
-	memdelete(da);
+	//this should be handled by EditorFileSystem already
+	//bool show_hidden = EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files");
 	updating = false;
+	for (int i = 0; i < p_dir->get_subdir_count(); i++) {
+
+		TreeItem *ti = tree->create_item(p_item);
+		_update_dir(ti, p_dir->get_subdir(i));
+	}
 }
 
-void EditorDirDialog::reload() {
+void EditorDirDialog::reload(const String &p_with_path) {
 
 	if (!is_visible_in_tree()) {
 		must_reload = true;
@@ -83,10 +73,7 @@ void EditorDirDialog::reload() {
 
 	tree->clear();
 	TreeItem *root = tree->create_item();
-	root->set_metadata(0, "res://");
-	root->set_icon(0, get_icon("Folder", "EditorIcons"));
-	root->set_text(0, "/");
-	_update_dir(root);
+	_update_dir(root, EditorFileSystem::get_singleton()->get_filesystem(), p_with_path);
 	_item_collapsed(root);
 	must_reload = false;
 }
@@ -94,6 +81,7 @@ void EditorDirDialog::reload() {
 void EditorDirDialog::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
+		EditorFileSystem::get_singleton()->connect("filesystem_changed", this, "reload");
 		reload();
 
 		if (!tree->is_connected("item_collapsed", this, "_item_collapsed")) {
@@ -103,6 +91,10 @@ void EditorDirDialog::_notification(int p_what) {
 		if (!EditorFileSystem::get_singleton()->is_connected("filesystem_changed", this, "reload")) {
 			EditorFileSystem::get_singleton()->connect("filesystem_changed", this, "reload");
 		}
+	}
+
+	if (p_what == NOTIFICATION_EXIT_TREE) {
+		EditorFileSystem::get_singleton()->disconnect("filesystem_changed", this, "reload");
 	}
 
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
@@ -116,57 +108,13 @@ void EditorDirDialog::_item_collapsed(Object *p_item) {
 
 	TreeItem *item = Object::cast_to<TreeItem>(p_item);
 
-	if (updating || item->is_collapsed())
+	if (updating)
 		return;
 
-	TreeItem *ci = item->get_children();
-	while (ci) {
-
-		String p = ci->get_metadata(0);
-		if (p == "") {
-			String pp = item->get_metadata(0);
-			ci->set_metadata(0, pp.plus_file(ci->get_text(0)));
-			_update_dir(ci);
-		}
-		ci = ci->get_next();
-	}
-}
-
-void EditorDirDialog::set_current_path(const String &p_path) {
-
-	reload();
-	String p = p_path;
-	if (p.begins_with("res://"))
-		p = p.replace_first("res://", "");
-
-	Vector<String> dirs = p.split("/", false);
-
-	TreeItem *r = tree->get_root();
-	for (int i = 0; i < dirs.size(); i++) {
-
-		String d = dirs[i];
-		TreeItem *p = r->get_children();
-		while (p) {
-
-			if (p->get_text(0) == d)
-				break;
-			p = p->get_next();
-		}
-
-		ERR_FAIL_COND(!p);
-		String pp = p->get_metadata(0);
-		if (pp == "") {
-			p->set_metadata(0, String(r->get_metadata(0)).plus_file(d));
-			_update_dir(p);
-		}
-		updating = true;
-		p->set_collapsed(false);
-		updating = false;
-		_item_collapsed(p);
-		r = p;
-	}
-
-	r->select(0);
+	if (item->is_collapsed())
+		opened_paths.erase(item->get_metadata(0));
+	else
+		opened_paths.insert(item->get_metadata(0));
 }
 
 void EditorDirDialog::ok_pressed() {
@@ -201,14 +149,16 @@ void EditorDirDialog::_make_dir_confirm() {
 
 	String dir = ti->get_metadata(0);
 
-	DirAccess *d = DirAccess::open(dir);
+	DirAccessRef d = DirAccess::open(dir);
 	ERR_FAIL_COND(!d);
 	Error err = d->make_dir(makedirname->get_text());
 
 	if (err != OK) {
-		mkdirerr->popup_centered_minsize(Size2(250, 80));
+		mkdirerr->popup_centered_minsize(Size2(250, 80) * EDSCALE);
 	} else {
-		set_current_path(dir.plus_file(makedirname->get_text()));
+		opened_paths.insert(dir);
+		//reload(dir.plus_file(makedirname->get_text()));
+		EditorFileSystem::get_singleton()->scan_changes(); //we created a dir, so rescan changes
 	}
 	makedirname->set_text(""); // reset label
 }
@@ -218,7 +168,7 @@ void EditorDirDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_item_collapsed"), &EditorDirDialog::_item_collapsed);
 	ClassDB::bind_method(D_METHOD("_make_dir"), &EditorDirDialog::_make_dir);
 	ClassDB::bind_method(D_METHOD("_make_dir_confirm"), &EditorDirDialog::_make_dir_confirm);
-	ClassDB::bind_method(D_METHOD("reload"), &EditorDirDialog::reload);
+	ClassDB::bind_method(D_METHOD("reload"), &EditorDirDialog::reload, DEFVAL(""));
 
 	ADD_SIGNAL(MethodInfo("dir_selected", PropertyInfo(Variant::STRING, "dir")));
 }

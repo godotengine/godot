@@ -1117,6 +1117,9 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 			memdelete(f);
 		}
 		ERR_FAIL_COND_V(!fw, ERR_CANT_CREATE);
+
+		uint8_t magic[4] = { 'R', 'S', 'R', 'C' };
+		fw->store_buffer(magic, 4);
 	}
 
 	bool big_endian = f->get_32();

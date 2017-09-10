@@ -396,8 +396,6 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 
 	Map<int, List<Pair<Transform, IndexKey> > > multimesh_items;
 
-	print_line("updating octant " + itos(p_key.x) + ", " + itos(p_key.y) + ", " + itos(p_key.z) + " cells: " + itos(g.cells.size()));
-
 	for (Set<IndexKey>::Element *E = g.cells.front(); E; E = E->next()) {
 
 		ERR_CONTINUE(!cell_map.has(E->get()));
@@ -464,7 +462,6 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 
 	//update multimeshes
 	for (Map<int, List<Pair<Transform, IndexKey> > >::Element *E = multimesh_items.front(); E; E = E->next()) {
-		print_line("multimesh item " + itos(E->key()) + " transforms " + itos(E->get().size()));
 		Octant::MultimeshInstance mmi;
 
 		RID mm = VS::get_singleton()->multimesh_create();
@@ -655,6 +652,24 @@ void GridMap::_notification(int p_what) {
 			//_update_area_instances();
 
 		} break;
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			_update_visibility();
+		} break;
+	}
+}
+
+void GridMap::_update_visibility() {
+	if (!is_inside_tree())
+		return;
+
+	_change_notify("visible");
+
+	for (Map<OctantKey, Octant *>::Element *e = octant_map.front(); e; e = e->next()) {
+		Octant *octant = e->value();
+		for (int i = 0; i < octant->multimesh_instances.size(); i++) {
+			Octant::MultimeshInstance &mi = octant->multimesh_instances[i];
+			VS::get_singleton()->instance_set_visible(mi.instance, is_visible());
+		}
 	}
 }
 
@@ -720,6 +735,7 @@ void GridMap::_update_octants_callback() {
 		to_delete.pop_back();
 	}
 
+	_update_visibility();
 	awaiting_update = false;
 }
 

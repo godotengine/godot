@@ -133,9 +133,15 @@ public:
 		SHADOW_PARALLEL_4_SPLITS
 	};
 
+	enum ShadowDepthRange {
+		SHADOW_DEPTH_RANGE_STABLE = VS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_STABLE,
+		SHADOW_DEPTH_RANGE_OPTIMIZED = VS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_OPTIMIZED,
+	};
+
 private:
 	bool blend_splits;
 	ShadowMode shadow_mode;
+	ShadowDepthRange shadow_depth_range;
 
 protected:
 	static void _bind_methods();
@@ -144,6 +150,9 @@ public:
 	void set_shadow_mode(ShadowMode p_mode);
 	ShadowMode get_shadow_mode() const;
 
+	void set_shadow_depth_range(ShadowDepthRange p_mode);
+	ShadowDepthRange get_shadow_depth_range() const;
+
 	void set_blend_splits(bool p_enable);
 	bool is_blend_splits_enabled() const;
 
@@ -151,6 +160,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(DirectionalLight::ShadowMode)
+VARIANT_ENUM_CAST(DirectionalLight::ShadowDepthRange)
 
 class OmniLight : public Light {
 

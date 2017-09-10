@@ -56,7 +56,6 @@ vec2 view_to_screen(vec3 view_pos,out float w) {
 
 #define M_PI 3.14159265359
 
-
 void main() {
 
 
@@ -158,8 +157,13 @@ void main() {
 		w+=w_advance;
 
 		//convert to linear depth
+
 		depth = texture(source_depth, pos*pixel_size).r * 2.0 - 1.0;
+#ifdef USE_ORTHOGONAL_PROJECTION
+		depth = ((depth + (camera_z_far + camera_z_near)/(camera_z_far - camera_z_near)) * (camera_z_far - camera_z_near))/2.0;
+#else
 		depth = 2.0 * camera_z_near * camera_z_far / (camera_z_far + camera_z_near - depth * (camera_z_far - camera_z_near));
+#endif
 		depth=-depth;
 
 		z_from = z_to;

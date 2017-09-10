@@ -198,6 +198,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	bool highlight_tabs = EDITOR_DEF("interface/theme/highlight_tabs", false);
 	int border_size = EDITOR_DEF("interface/theme/border_size", 1);
 
+	Color script_bg_color = EDITOR_DEF("text_editor/highlighting/background_color", Color(0, 0, 0, 0));
+
 	switch (preset) {
 		case 0: { // Default
 			highlight_color = Color::html("#699ce8");
@@ -235,8 +237,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Color dark_color_2 = base_color.linear_interpolate(Color(0, 0, 0, 1), contrast * 1.5);
 	Color dark_color_3 = base_color.linear_interpolate(Color(0, 0, 0, 1), contrast * 2);
 
-	Color contrast_color_1 = base_color.linear_interpolate((dark_theme ? Color(1, 1, 1, 1) : Color(0, 0, 0, 1)), 0.3);
-	Color contrast_color_2 = base_color.linear_interpolate((dark_theme ? Color(1, 1, 1, 1) : Color(0, 0, 0, 1)), 0.5);
+	Color contrast_color_1 = base_color.linear_interpolate((dark_theme ? Color(1, 1, 1, 1) : Color(0, 0, 0, 1)), MAX(contrast, default_contrast));
+	Color contrast_color_2 = base_color.linear_interpolate((dark_theme ? Color(1, 1, 1, 1) : Color(0, 0, 0, 1)), MAX(contrast * 1.5, default_contrast * 1.5));
 
 	Color font_color = dark_theme ? Color(1, 1, 1) : Color(0, 0, 0);
 	Color font_color_disabled = dark_theme ? Color(0.6, 0.6, 0.6) : Color(0.45, 0.45, 0.45);
@@ -279,8 +281,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	editor_register_fonts(theme);
 
 	// Editor background
-	Ref<StyleBoxFlat> style_panel = make_flat_stylebox(dark_color_2, 4, 4, 4, 4);
-	theme->set_stylebox("Background", "EditorStyles", style_panel);
+	theme->set_stylebox("Background", "EditorStyles", make_flat_stylebox(dark_color_2, 4, 4, 4, 4));
 
 	// Focus
 	Ref<StyleBoxFlat> focus_sbt = make_flat_stylebox(contrast_color_1, 4, 4, 4, 4);
@@ -302,12 +303,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Ref<StyleBoxFlat> style_menu_hover_bg = make_flat_stylebox(dark_color_2, 4, 4, 4, 4);
 
 	style_menu_hover_border->set_draw_center(false);
-	style_menu_hover_border->set_border_width(MARGIN_BOTTOM, border_width);
+	style_menu_hover_border->set_border_width(MARGIN_BOTTOM, 2 * EDSCALE);
 	style_menu_hover_border->set_border_color_all(highlight_color);
-	style_menu_hover_border->set_expand_margin_size(MARGIN_BOTTOM, border_width);
 
 	theme->set_stylebox("normal", "MenuButton", style_menu);
-	theme->set_stylebox("hover", "MenuButton", style_menu_hover_border);
+	theme->set_stylebox("hover", "MenuButton", style_menu);
 	theme->set_stylebox("pressed", "MenuButton", style_menu);
 	theme->set_stylebox("focus", "MenuButton", style_menu);
 	theme->set_stylebox("disabled", "MenuButton", style_menu);
@@ -333,10 +333,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("MenuHover", "EditorStyles", style_menu_hover_border);
 
 	// Content of each tab
-	Ref<StyleBoxFlat> style_content_panel = make_flat_stylebox(base_color, 4, 5, 4, 4);
+	Ref<StyleBoxFlat> style_content_panel = make_flat_stylebox(base_color, 4, 4, 4, 4);
 	style_content_panel->set_border_color_all(base_color);
 	style_content_panel->set_border_width_all(border_width);
-	Ref<StyleBoxFlat> style_content_panel_vp = make_flat_stylebox(base_color, border_width, 5, border_width, border_width);
+	Ref<StyleBoxFlat> style_content_panel_vp = make_flat_stylebox(base_color, border_width, 4, border_width, border_width);
 	style_content_panel_vp->set_border_color_all(base_color);
 	style_content_panel_vp->set_border_width_all(border_width);
 	theme->set_stylebox("panel", "TabContainer", style_content_panel);
@@ -357,6 +357,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("pressed", "Button", change_border_color(style_button_type, highlight_color));
 	theme->set_stylebox("focus", "Button", change_border_color(style_button_type, highlight_color));
 	theme->set_stylebox("disabled", "Button", style_button_type_disabled);
+
 	theme->set_color("font_color", "Button", button_font_color);
 	theme->set_color("font_color_hover", "Button", HIGHLIGHT_COLOR_FONT);
 	theme->set_color("font_color_pressed", "Button", highlight_color);
@@ -366,13 +367,12 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("icon_color_pressed", "Button", Color(highlight_color.r * 1.15, highlight_color.g * 1.15, highlight_color.b * 1.15, highlight_color.a));
 
 	// OptionButton
-	Ref<StyleBoxFlat> style_option_button = make_flat_stylebox(dark_color_1, 4, 4, 4, 4);
-	style_option_button->set_border_width_all(border_width);
+	theme->set_stylebox("normal", "OptionButton", style_button_type);
 	theme->set_stylebox("hover", "OptionButton", change_border_color(style_button_type, contrast_color_1));
 	theme->set_stylebox("pressed", "OptionButton", change_border_color(style_button_type, HIGHLIGHT_COLOR_FONT));
 	theme->set_stylebox("focus", "OptionButton", change_border_color(style_button_type, highlight_color));
 	theme->set_stylebox("disabled", "OptionButton", style_button_type_disabled);
-	theme->set_stylebox("normal", "OptionButton", style_button_type);
+
 	theme->set_color("font_color", "OptionButton", button_font_color);
 	theme->set_color("font_color_hover", "OptionButton", HIGHLIGHT_COLOR_FONT);
 	theme->set_color("font_color_pressed", "OptionButton", highlight_color);
@@ -385,6 +385,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// CheckButton
 	theme->set_icon("on", "CheckButton", theme->get_icon("GuiToggleOn", "EditorIcons"));
 	theme->set_icon("off", "CheckButton", theme->get_icon("GuiToggleOff", "EditorIcons"));
+
 	theme->set_color("font_color", "CheckButton", button_font_color);
 	theme->set_color("font_color_hover", "CheckButton", HIGHLIGHT_COLOR_FONT);
 	theme->set_color("font_color_pressed", "CheckButton", highlight_color);
@@ -424,12 +425,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_tree_bg->set_border_color_all(dark_color_3);
 	theme->set_stylebox("bg", "Tree", style_tree_bg);
 
-	// Script background
-	Ref<StyleBoxFlat> style_script_bg = make_flat_stylebox(dark_color_1, 0, 0, 0, 0);
-	style_script_bg->set_border_width_all(border_width);
-	style_script_bg->set_border_color_all(dark_color_3);
-	theme->set_stylebox("ScriptPanel", "EditorStyles", style_script_bg);
-
 	// Tree
 	theme->set_icon("checked", "Tree", theme->get_icon("GuiChecked", "EditorIcons"));
 	theme->set_icon("unchecked", "Tree", theme->get_icon("GuiUnchecked", "EditorIcons"));
@@ -441,7 +436,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("custom_button_pressed", "Tree", make_empty_stylebox());
 	theme->set_stylebox("custom_button_hover", "Tree", style_button_type);
 	theme->set_color("custom_button_font_highlight", "Tree", HIGHLIGHT_COLOR_FONT);
-	theme->set_color("font_color", "Tree", font_color_disabled);
+	theme->set_color("font_color", "Tree", font_color);
 	theme->set_color("font_color_selected", "Tree", font_color);
 
 	Ref<StyleBox> style_tree_btn = make_flat_stylebox(contrast_color_1, 2, 4, 2, 4);
@@ -471,8 +466,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("prop_category", "Editor", prop_category_color);
 	theme->set_color("prop_section", "Editor", prop_section_color);
 	theme->set_color("prop_subsection", "Editor", prop_subsection_color);
-	theme->set_color("fg_selected", "Editor", HIGHLIGHT_COLOR_BG);
-	theme->set_color("fg_error", "Editor", error_color);
 	theme->set_color("drop_position_color", "Tree", highlight_color);
 
 	// ItemList
@@ -531,6 +524,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// LineEdit
 	Ref<StyleBoxFlat> style_line_edit = make_flat_stylebox(dark_color_1, 6, 4, 6, 4);
+	style_line_edit->set_border_width_all(border_width);
 	style_line_edit = change_border_color(style_line_edit, contrast_color_1);
 	Ref<StyleBoxFlat> style_line_edit_disabled = change_border_color(style_line_edit, dark_color_1);
 	style_line_edit_disabled->set_bg_color(Color(0, 0, 0, .1));
@@ -614,11 +608,14 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("grabber_highlight", "VSlider", theme->get_icon("GuiSliderGrabberHl", "EditorIcons"));
 
 	//RichTextLabel
-	theme->set_color("font_color", "RichTextLabel", font_color);
+	Color rtl_combined_bg_color = dark_color_1.linear_interpolate(script_bg_color, script_bg_color.a);
+	Color rtl_font_color = (rtl_combined_bg_color.r + rtl_combined_bg_color.g + rtl_combined_bg_color.b > 0.5 * 3) ? Color(0, 0, 0) : Color(1, 1, 1);
+	theme->set_color("default_color", "RichTextLabel", rtl_font_color);
 	theme->set_stylebox("focus", "RichTextLabel", make_empty_stylebox());
+	theme->set_stylebox("normal", "RichTextLabel", make_flat_stylebox(script_bg_color, 6, 6, 6, 6));
 
 	// Panel
-	theme->set_stylebox("panel", "Panel", style_panel);
+	theme->set_stylebox("panel", "Panel", make_flat_stylebox(dark_color_1, 6, 4, 6, 4));
 
 	// Label
 	theme->set_color("font_color", "Label", font_color);
