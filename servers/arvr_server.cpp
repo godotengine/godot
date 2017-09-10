@@ -68,8 +68,8 @@ void ARVRServer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("interface_added", PropertyInfo(Variant::STRING, "name")));
 	ADD_SIGNAL(MethodInfo("interface_removed", PropertyInfo(Variant::STRING, "name")));
 
-	ADD_SIGNAL(MethodInfo("tracker_added", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::INT, "type")));
-	ADD_SIGNAL(MethodInfo("tracker_removed", PropertyInfo(Variant::STRING, "name")));
+	ADD_SIGNAL(MethodInfo("tracker_added", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::INT, "type"), PropertyInfo(Variant::INT, "id")));
+	ADD_SIGNAL(MethodInfo("tracker_removed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::INT, "type"), PropertyInfo(Variant::INT, "id")));
 };
 
 real_t ARVRServer::get_world_scale() const {
@@ -232,7 +232,7 @@ void ARVRServer::add_tracker(ARVRPositionalTracker *p_tracker) {
 	ERR_FAIL_NULL(p_tracker);
 
 	trackers.push_back(p_tracker);
-	emit_signal("tracker_added", p_tracker->get_name(), p_tracker->get_type());
+	emit_signal("tracker_added", p_tracker->get_name(), p_tracker->get_type(), p_tracker->get_tracker_id());
 };
 
 void ARVRServer::remove_tracker(ARVRPositionalTracker *p_tracker) {
@@ -250,7 +250,7 @@ void ARVRServer::remove_tracker(ARVRPositionalTracker *p_tracker) {
 
 	ERR_FAIL_COND(idx == -1);
 
-	emit_signal("tracker_removed", p_tracker->get_name());
+	emit_signal("tracker_removed", p_tracker->get_name(), p_tracker->get_type(), p_tracker->get_tracker_id());
 	trackers.remove(idx);
 };
 
