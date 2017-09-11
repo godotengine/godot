@@ -105,6 +105,15 @@ Array PrimitiveMesh::surface_get_arrays(int p_surface) const {
 	return VisualServer::get_singleton()->mesh_surface_get_arrays(mesh, 0);
 }
 
+Array PrimitiveMesh::surface_get_blend_shape_arrays(int p_surface) const {
+	ERR_FAIL_INDEX_V(p_surface, 1, Array());
+	if (pending_request) {
+		_update();
+	}
+
+	return Array();
+}
+
 uint32_t PrimitiveMesh::surface_get_format(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, 1, 0);
 	if (pending_request) {
@@ -119,6 +128,8 @@ Mesh::PrimitiveType PrimitiveMesh::surface_get_primitive_type(int p_idx) const {
 }
 
 Ref<Material> PrimitiveMesh::surface_get_material(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, 1, NULL);
+
 	return material;
 }
 
@@ -151,6 +162,8 @@ void PrimitiveMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &PrimitiveMesh::set_material);
 	ClassDB::bind_method(D_METHOD("get_material"), &PrimitiveMesh::get_material);
 
+	ClassDB::bind_method(D_METHOD("get_mesh_arrays"), &PrimitiveMesh::get_mesh_arrays);
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "Material"), "set_material", "get_material");
 }
 
@@ -166,6 +179,10 @@ void PrimitiveMesh::set_material(const Ref<Material> &p_material) {
 
 Ref<Material> PrimitiveMesh::get_material() const {
 	return material;
+}
+
+Array PrimitiveMesh::get_mesh_arrays() const {
+	return surface_get_arrays(0);
 }
 
 PrimitiveMesh::PrimitiveMesh() {

@@ -267,6 +267,7 @@ public:
 	virtual PoolVector<uint8_t> mesh_surface_get_index_array(RID p_mesh, int p_surface) const = 0;
 
 	virtual Array mesh_surface_get_arrays(RID p_mesh, int p_surface) const;
+	virtual Array mesh_surface_get_blend_shape_arrays(RID p_mesh, int p_surface) const;
 
 	virtual uint32_t mesh_surface_get_format(RID p_mesh, int p_surface) const = 0;
 	virtual PrimitiveType mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const = 0;
