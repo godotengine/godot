@@ -114,7 +114,15 @@ String ProjectSettings::globalize_path(const String &p_path) const {
 			return p_path.replace("res:/", resource_path);
 		};
 		return p_path.replace("res://", "");
-	};
+	} else if (p_path.begins_with("user://")) {
+
+		String data_dir = OS::get_singleton()->get_data_dir();
+		if (data_dir != "") {
+
+			return p_path.replace("user:/", data_dir);
+		};
+		return p_path.replace("user://", "");
+	}
 
 	return p_path;
 }
