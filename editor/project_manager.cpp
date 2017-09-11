@@ -449,13 +449,15 @@ struct ProjectItem {
 	String conf;
 	uint64_t last_modified;
 	bool favorite;
+	bool grayed;
 	ProjectItem() {}
-	ProjectItem(const String &p_project, const String &p_path, const String &p_conf, uint64_t p_last_modified, bool p_favorite = false) {
+	ProjectItem(const String &p_project, const String &p_path, const String &p_conf, uint64_t p_last_modified, bool p_favorite = false, bool p_grayed = false) {
 		project = p_project;
 		path = p_path;
 		conf = p_conf;
 		last_modified = p_last_modified;
 		favorite = p_favorite;
+		grayed = p_grayed;
 	}
 	_FORCE_INLINE_ bool operator<(const ProjectItem &l) const { return last_modified > l.last_modified; }
 	_FORCE_INLINE_ bool operator==(const ProjectItem &l) const { return project == l.project; }
@@ -737,6 +739,7 @@ void ProjectManager::_load_recent_projects() {
 		String project = _name.get_slice("/", 1);
 		String conf = path.plus_file("project.godot");
 		bool favorite = (_name.begins_with("favorite_projects/")) ? true : false;
+		bool grayed = false;
 
 		uint64_t last_modified = 0;
 		if (FileAccess::exists(conf)) {
@@ -748,16 +751,15 @@ void ProjectManager::_load_recent_projects() {
 				if (cache_modified > last_modified)
 					last_modified = cache_modified;
 			}
-
-			ProjectItem item(project, path, conf, last_modified, favorite);
-			if (favorite)
-				favorite_projects.push_back(item);
-			else
-				projects.push_back(item);
 		} else {
-			//project doesn't exist on disk but it's in the XML settings file
-			EditorSettings::get_singleton()->erase(_name); //remove it
+			grayed = true;
 		}
+
+		ProjectItem item(project, path, conf, last_modified, favorite, grayed);
+		if (favorite)
+			favorite_projects.push_back(item);
+		else
+			projects.push_back(item);
 	}
 
 	projects.sort();
@@ -782,14 +784,14 @@ void ProjectManager::_load_recent_projects() {
 		String path = item.path;
 		String conf = item.conf;
 		bool is_favorite = item.favorite;
+		bool is_grayed = item.grayed;
 
 		Ref<ConfigFile> cf = memnew(ConfigFile);
-		Error err = cf->load(conf);
-		ERR_CONTINUE(err != OK);
+		Error cf_err = cf->load(conf);
 
 		String project_name = TTR("Unnamed Project");
 
-		if (cf->has_section_key("application", "config/name")) {
+		if (cf_err == OK && cf->has_section_key("application", "config/name")) {
 			project_name = static_cast<String>(cf->get_value("application", "config/name")).xml_unescape();
 		}
 
@@ -797,7 +799,7 @@ void ProjectManager::_load_recent_projects() {
 			continue;
 
 		Ref<Texture> icon;
-		if (cf->has_section_key("application", "config/icon")) {
+		if (cf_err == OK && cf->has_section_key("application", "config/icon")) {
 			String appicon = cf->get_value("application", "config/icon");
 			if (appicon != "") {
 				Ref<Image> img;
@@ -819,8 +821,10 @@ void ProjectManager::_load_recent_projects() {
 		}
 
 		String main_scene;
-		if (cf->has_section_key("application", "run/main_scene")) {
+		if (cf_err == OK && cf->has_section_key("application", "run/main_scene")) {
 			main_scene = cf->get_value("application", "run/main_scene");
+		} else {
+			main_scene = "";
 		}
 
 		selected_list_copy.erase(project);
@@ -848,6 +852,8 @@ void ProjectManager::_load_recent_projects() {
 		hb->add_child(tf);
 
 		VBoxContainer *vb = memnew(VBoxContainer);
+		if (is_grayed)
+			vb->set_modulate(Color(0.5, 0.5, 0.5));
 		vb->set_name("project");
 		vb->set_h_size_flags(SIZE_EXPAND_FILL);
 		hb->add_child(vb);
@@ -926,6 +932,13 @@ void ProjectManager::_open_project_confirm() {
 	for (Map<String, String>::Element *E = selected_list.front(); E; E = E->next()) {
 		const String &selected = E->key();
 		String path = EditorSettings::get_singleton()->get("projects/" + selected);
+		String conf = path + "/project.godot";
+		if (!FileAccess::exists(conf)) {
+			dialog_error->set_text(TTR("Can't open project"));
+			dialog_error->popup_centered_minsize();
+			return;
+		}
+
 		print_line("OPENING: " + path + " (" + selected + ")");
 
 		List<String> args;
@@ -1397,6 +1410,9 @@ ProjectManager::ProjectManager() {
 	run_error_diag = memnew(AcceptDialog);
 	gui_base->add_child(run_error_diag);
 	run_error_diag->set_title(TTR("Can't run project"));
+
+	dialog_error = memnew(AcceptDialog);
+	gui_base->add_child(dialog_error);
 }
 
 ProjectManager::~ProjectManager() {
