@@ -100,6 +100,7 @@ def configure(env):
 
     ## Link flags
 
+    env.Append(LINKFLAGS=['-s', 'EXTRA_EXPORTED_RUNTIME_METHODS="[\'FS\']"'])
     env.Append(LINKFLAGS=['-s', 'USE_WEBGL2=1'])
 
     if (env['wasm'] == 'yes'):
@@ -112,6 +113,7 @@ def configure(env):
     else:
         env.Append(LINKFLAGS=['-s', 'ASM_JS=1'])
         env.Append(LINKFLAGS=['--separate-asm'])
+        env.Append(LINKFLAGS=['--memory-init-file', '1'])
 
     # TODO: Move that to opus module's config
     if("module_opus_enabled" in env and env["module_opus_enabled"] != "no"):
