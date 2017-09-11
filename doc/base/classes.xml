@@ -26337,8 +26337,10 @@
 </class>
 <class name="Line2D" inherits="Node2D" category="Core">
 	<brief_description>
+		A 2D line.
 	</brief_description>
 	<description>
+		A line through several points in 2D space.
 	</description>
 	<methods>
 		<method name="add_point">
@@ -26347,6 +26349,7 @@
 			<argument index="0" name="pos" type="Vector2">
 			</argument>
 			<description>
+				Add a point at the x/y position in the supplied [Vector2]
 			</description>
 		</method>
 		<method name="get_begin_cap_mode" qualifiers="const">
@@ -26435,6 +26438,7 @@
 			<argument index="0" name="i" type="int">
 			</argument>
 			<description>
+				Remove the point at index 'i' from the line.
 			</description>
 		</method>
 		<method name="set_begin_cap_mode">
