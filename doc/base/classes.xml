@@ -618,7 +618,7 @@
 				if typeof(p) == TYPE_ARRAY:
 				    print(p[0])
 				else:
-					print("unexpected results")
+				    print("unexpected results")
 				[/codeblock]
 			</description>
 		</method>
