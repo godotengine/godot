@@ -823,7 +823,14 @@ Node *SceneTreeDock::_duplicate(Node *p_node, Map<Node *, Node *> &duplimap) {
 		if (!(E->get().usage & PROPERTY_USAGE_STORAGE))
 			continue;
 		String name = E->get().name;
-		node->set(name, p_node->get(name));
+		Variant value = p_node->get(name);
+		// Duplicate dictionaries and arrays, mainly needed for __meta__
+		if (value.get_type() == Variant::DICTIONARY) {
+			value = Dictionary(value).copy();
+		} else if (value.get_type() == Variant::ARRAY) {
+			value = Array(value).duplicate();
+		}
+		node->set(name, value);
 	}
 
 	List<Node::GroupInfo> group_info;
