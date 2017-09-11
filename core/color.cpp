@@ -400,3 +400,122 @@ Color::operator String() const {
 
 	return rtos(r) + ", " + rtos(g) + ", " + rtos(b) + ", " + rtos(a);
 }
+
+Color Color::operator+(const Color &p_color) const {
+
+	return Color(
+			CLAMP(r + p_color.r, 0.0, 1.0),
+			CLAMP(g + p_color.g, 0.0, 1.0),
+			CLAMP(b + p_color.b, 0.0, 1.0),
+			CLAMP(a + p_color.a, 0.0, 1.0));
+}
+
+void Color::operator+=(const Color &p_color) {
+
+	r = CLAMP(r + p_color.r, 0.0, 1.0);
+	g = CLAMP(g + p_color.g, 0.0, 1.0);
+	b = CLAMP(b + p_color.b, 0.0, 1.0);
+	a = CLAMP(a + p_color.a, 0.0, 1.0);
+}
+
+Color Color::operator-(const Color &p_color) const {
+
+	return Color(
+			CLAMP(r - p_color.r, 0.0, 1.0),
+			CLAMP(g - p_color.g, 0.0, 1.0),
+			CLAMP(b - p_color.b, 0.0, 1.0),
+			CLAMP(a - p_color.a, 0.0, 1.0));
+}
+
+void Color::operator-=(const Color &p_color) {
+
+	r = CLAMP(r - p_color.r, 0.0, 1.0);
+	g = CLAMP(g - p_color.g, 0.0, 1.0);
+	b = CLAMP(b - p_color.b, 0.0, 1.0);
+	a = CLAMP(a - p_color.a, 0.0, 1.0);
+}
+
+Color Color::operator*(const Color &p_color) const {
+
+	return Color(
+			CLAMP(r * p_color.r, 0.0, 1.0),
+			CLAMP(g * p_color.g, 0.0, 1.0),
+			CLAMP(b * p_color.b, 0.0, 1.0),
+			CLAMP(a * p_color.a, 0.0, 1.0));
+}
+
+Color Color::operator*(const real_t &rvalue) const {
+
+	return Color(
+			CLAMP(r * rvalue, 0.0, 1.0),
+			CLAMP(g * rvalue, 0.0, 1.0),
+			CLAMP(b * rvalue, 0.0, 1.0),
+			CLAMP(a * rvalue, 0.0, 1.0));
+}
+
+void Color::operator*=(const Color &p_color) {
+
+	r = CLAMP(r * p_color.r, 0.0, 1.0);
+	g = CLAMP(g * p_color.g, 0.0, 1.0);
+	b = CLAMP(b * p_color.b, 0.0, 1.0);
+	a = CLAMP(a * p_color.a, 0.0, 1.0);
+}
+
+void Color::operator*=(const real_t &rvalue) {
+
+	r = CLAMP(r * rvalue, 0.0, 1.0);
+	g = CLAMP(g * rvalue, 0.0, 1.0);
+	b = CLAMP(b * rvalue, 0.0, 1.0);
+	a = CLAMP(a * rvalue, 0.0, 1.0);
+};
+
+Color Color::operator/(const Color &p_color) const {
+
+	return Color(
+			p_color.r == 0 ? 1 : CLAMP(r / p_color.r, 0.0, 1.0),
+			p_color.g == 0 ? 1 : CLAMP(g / p_color.g, 0.0, 1.0),
+			p_color.b == 0 ? 1 : CLAMP(b / p_color.b, 0.0, 1.0),
+			p_color.a == 0 ? 1 : CLAMP(a / p_color.a, 0.0, 1.0));
+}
+
+Color Color::operator/(const real_t &rvalue) const {
+
+	if (rvalue == 0) return Color(1.0, 1.0, 1.0, 1.0);
+	return Color(
+			CLAMP(r / rvalue, 0.0, 1.0),
+			CLAMP(g / rvalue, 0.0, 1.0),
+			CLAMP(b / rvalue, 0.0, 1.0),
+			CLAMP(a / rvalue, 0.0, 1.0));
+}
+
+void Color::operator/=(const Color &p_color) {
+
+	r = p_color.r == 0 ? 1 : CLAMP(r / p_color.r, 0.0, 1.0);
+	g = p_color.g == 0 ? 1 : CLAMP(g / p_color.g, 0.0, 1.0);
+	b = p_color.b == 0 ? 1 : CLAMP(b / p_color.b, 0.0, 1.0);
+	a = p_color.a == 0 ? 1 : CLAMP(a / p_color.a, 0.0, 1.0);
+}
+
+void Color::operator/=(const real_t &rvalue) {
+
+	if (rvalue == 0) {
+		r = 1.0;
+		g = 1.0;
+		b = 1.0;
+		a = 1.0;
+	} else {
+		r = CLAMP(r / rvalue, 0.0, 1.0);
+		g = CLAMP(g / rvalue, 0.0, 1.0);
+		b = CLAMP(b / rvalue, 0.0, 1.0);
+		a = CLAMP(a / rvalue, 0.0, 1.0);
+	}
+};
+
+Color Color::operator-() const {
+
+	return Color(
+			CLAMP(1.0 - r, 0.0, 1.0),
+			CLAMP(1.0 - g, 0.0, 1.0),
+			CLAMP(1.0 - b, 0.0, 1.0),
+			CLAMP(1.0 - a, 0.0, 1.0));
+}

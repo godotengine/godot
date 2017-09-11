@@ -67,6 +67,23 @@ struct Color {
 		return components[idx];
 	}
 
+	Color operator+(const Color &p_color) const;
+	void operator+=(const Color &p_color);
+
+	Color operator-() const;
+	Color operator-(const Color &p_color) const;
+	void operator-=(const Color &p_color);
+
+	Color operator*(const Color &p_color) const;
+	Color operator*(const real_t &rvalue) const;
+	void operator*=(const Color &p_color);
+	void operator*=(const real_t &rvalue);
+
+	Color operator/(const Color &p_color) const;
+	Color operator/(const real_t &rvalue) const;
+	void operator/=(const Color &p_color);
+	void operator/=(const real_t &rvalue);
+
 	void invert();
 	void contrast();
 	Color inverted() const;
