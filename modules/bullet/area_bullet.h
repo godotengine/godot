@@ -35,11 +35,11 @@
 #include "collision_object_bullet.h"
 #include "core/vector.h"
 #include "servers/physics_server.h"
+#include "space_bullet.h"
 
-class SpaceBullet;
 class btGhostObject;
 
-class AreaBullet : public CollisionObjectBullet {
+class AreaBullet : public RigidCollisionObjectBullet {
 	friend void SpaceBullet::check_ghost_overlaps();
 
 public:
@@ -80,7 +80,6 @@ private:
 	Variant call_event_res[5];
 	Variant *call_event_res_ptr[5];
 
-	SpaceBullet *space;
 	btGhostObject *btGhost;
 	Vector<OverlappingObjectData> overlappingObjects;
 	bool monitorable;
@@ -138,7 +137,6 @@ public:
 
 	virtual void reload_body();
 	virtual void set_space(SpaceBullet *p_space);
-	_FORCE_INLINE_ SpaceBullet *get_space() const { return space; }
 
 	virtual void dispatch_callbacks();
 	void call_event(CollisionObjectBullet *p_otherObject, PhysicsServer::AreaBodyStatus p_status);

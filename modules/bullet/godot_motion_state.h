@@ -33,9 +33,9 @@
 #define GODOT_MOTION_STATE_H
 
 #include "LinearMath/btMotionState.h"
-#include "body_bullet.h"
+#include "rigid_body_bullet.h"
 
-class BodyBullet;
+class RigidBodyBullet;
 
 // This clas is responsible to move kinematic actor
 // and sincronize rendering engine with Bullet
@@ -48,10 +48,10 @@ class GodotMotionState : public btMotionState {
 	/// This data is used to store last world position
 	btTransform bodyCurrentWorldTransform;
 
-	BodyBullet *owner;
+	RigidBodyBullet *owner;
 
 public:
-	GodotMotionState(BodyBullet *p_owner)
+	GodotMotionState(RigidBodyBullet *p_owner)
 		: bodyKinematicWorldTransf(btMatrix3x3(1., 0., 0., 0., 1., 0., 0., 0., 1.), btVector3(0., 0., 0.)), bodyCurrentWorldTransform(btMatrix3x3(1., 0., 0., 0., 1., 0., 0., 0., 1.), btVector3(0., 0., 0.)), owner(p_owner) {}
 
 	/// IMPORTANT DON'T USE THIS FUNCTION TO KNOW THE CURRENT BODY TRANSFORM

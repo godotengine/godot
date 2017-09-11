@@ -34,13 +34,13 @@
 
 #include "joint_bullet.h"
 
-class BodyBullet;
+class RigidBodyBullet;
 
 class ConeTwistJointBullet : public JointBullet {
 	class btConeTwistConstraint *coneConstraint;
 
 public:
-	ConeTwistJointBullet(BodyBullet *rbA, BodyBullet *rbB, const Transform &rbAFrame, const Transform &rbBFrame);
+	ConeTwistJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &rbAFrame, const Transform &rbBFrame);
 
 	virtual PhysicsServer::JointType get_type() const { return PhysicsServer::JOINT_CONE_TWIST; }
 

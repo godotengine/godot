@@ -31,11 +31,11 @@
 
 #include "hinge_joint_bullet.h"
 #include "BulletDynamics/ConstraintSolver/btHingeConstraint.h"
-#include "body_bullet.h"
+#include "rigid_body_bullet.h"
 #include "bullet_types_converter.h"
 #include "bullet_utilities.h"
 
-HingeJointBullet::HingeJointBullet(BodyBullet *rbA, BodyBullet *rbB, const Transform &frameA, const Transform &frameB)
+HingeJointBullet::HingeJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &frameA, const Transform &frameB)
 	: JointBullet() {
 	btTransform btFrameA;
 	G_TO_B(frameA, btFrameA);
@@ -44,16 +44,16 @@ HingeJointBullet::HingeJointBullet(BodyBullet *rbA, BodyBullet *rbB, const Trans
 		btTransform btFrameB;
 		G_TO_B(frameB, btFrameB);
 
-		hingeConstraint = bulletnew(btHingeConstraint(*rbA->get_bt_body(), *rbB->get_bt_body(), btFrameA, btFrameB));
+		hingeConstraint = bulletnew(btHingeConstraint(*rbA->get_bt_rigid_body(), *rbB->get_bt_rigid_body(), btFrameA, btFrameB));
 	} else {
 
-		hingeConstraint = bulletnew(btHingeConstraint(*rbA->get_bt_body(), btFrameA));
+		hingeConstraint = bulletnew(btHingeConstraint(*rbA->get_bt_rigid_body(), btFrameA));
 	}
 
 	setup(hingeConstraint);
 }
 
-HingeJointBullet::HingeJointBullet(BodyBullet *rbA, BodyBullet *rbB, const Vector3 &pivotInA, const Vector3 &pivotInB, const Vector3 &axisInA, const Vector3 &axisInB)
+HingeJointBullet::HingeJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Vector3 &pivotInA, const Vector3 &pivotInB, const Vector3 &axisInA, const Vector3 &axisInB)
 	: JointBullet() {
 
 	btVector3 btPivotA;
@@ -67,10 +67,10 @@ HingeJointBullet::HingeJointBullet(BodyBullet *rbA, BodyBullet *rbB, const Vecto
 		G_TO_B(pivotInB, btPivotB);
 		G_TO_B(axisInB, btAxisB);
 
-		hingeConstraint = bulletnew(btHingeConstraint(*rbA->get_bt_body(), *rbB->get_bt_body(), btPivotA, btPivotB, btAxisA, btAxisB));
+		hingeConstraint = bulletnew(btHingeConstraint(*rbA->get_bt_rigid_body(), *rbB->get_bt_rigid_body(), btPivotA, btPivotB, btAxisA, btAxisB));
 	} else {
 
-		hingeConstraint = bulletnew(btHingeConstraint(*rbA->get_bt_body(), btPivotA, btAxisA));
+		hingeConstraint = bulletnew(btHingeConstraint(*rbA->get_bt_rigid_body(), btPivotA, btAxisA));
 	}
 
 	setup(hingeConstraint);

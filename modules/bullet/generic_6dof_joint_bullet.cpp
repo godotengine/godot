@@ -31,11 +31,11 @@
 
 #include "generic_6dof_joint_bullet.h"
 #include "BulletDynamics/ConstraintSolver/btGeneric6DofConstraint.h"
-#include "body_bullet.h"
+#include "rigid_body_bullet.h"
 #include "bullet_types_converter.h"
 #include "bullet_utilities.h"
 
-Generic6DOFJointBullet::Generic6DOFJointBullet(BodyBullet *rbA, BodyBullet *rbB, const Transform &frameInA, const Transform &frameInB, bool useLinearReferenceFrameA)
+Generic6DOFJointBullet::Generic6DOFJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &frameInA, const Transform &frameInB, bool useLinearReferenceFrameA)
 	: JointBullet() {
 
 	btTransform btFrameA;
@@ -45,9 +45,9 @@ Generic6DOFJointBullet::Generic6DOFJointBullet(BodyBullet *rbA, BodyBullet *rbB,
 		btTransform btFrameB;
 		G_TO_B(frameInB, btFrameB);
 
-		sixDOFConstraint = bulletnew(btGeneric6DofConstraint(*rbA->get_bt_body(), *rbB->get_bt_body(), btFrameA, btFrameB, useLinearReferenceFrameA));
+		sixDOFConstraint = bulletnew(btGeneric6DofConstraint(*rbA->get_bt_rigid_body(), *rbB->get_bt_rigid_body(), btFrameA, btFrameB, useLinearReferenceFrameA));
 	} else {
-		sixDOFConstraint = bulletnew(btGeneric6DofConstraint(*rbA->get_bt_body(), btFrameA, useLinearReferenceFrameA));
+		sixDOFConstraint = bulletnew(btGeneric6DofConstraint(*rbA->get_bt_rigid_body(), btFrameA, useLinearReferenceFrameA));
 	}
 
 	setup(sixDOFConstraint);

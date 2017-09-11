@@ -35,7 +35,7 @@
 #include "constraint_bullet.h"
 #include "servers/physics_server.h"
 
-class BodyBullet;
+class RigidBodyBullet;
 class btTypedConstraint;
 
 class JointBullet : public ConstraintBullet {

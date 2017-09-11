@@ -30,6 +30,7 @@
 /*************************************************************************/
 
 #include "stepper_bullet.h"
+#include "BulletSoftBody/btSoftRigidDynamicsWorld.h"
 #include "btBulletDynamicsCommon.h"
 #include "space_bullet.h"
 

@@ -34,19 +34,19 @@
 
 #include "joint_bullet.h"
 
-class BodyBullet;
+class RigidBodyBullet;
 
 class SliderJointBullet : public JointBullet {
 	class btSliderConstraint *sliderConstraint;
 
 public:
 	/// Reference frame is A
-	SliderJointBullet(BodyBullet *rbA, BodyBullet *rbB, const Transform &frameInA, const Transform &frameInB);
+	SliderJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &frameInA, const Transform &frameInB);
 
 	virtual PhysicsServer::JointType get_type() const { return PhysicsServer::JOINT_SLIDER; }
 
-	const BodyBullet *getRigidBodyA() const;
-	const BodyBullet *getRigidBodyB() const;
+	const RigidBodyBullet *getRigidBodyA() const;
+	const RigidBodyBullet *getRigidBodyB() const;
 	const Transform getCalculatedTransformA() const;
 	const Transform getCalculatedTransformB() const;
 	const Transform getFrameOffsetA() const;

@@ -32,7 +32,7 @@
 #include "space_bullet.h"
 #include "BulletCollision/CollisionDispatch/btCollisionObject.h"
 #include "BulletCollision/CollisionDispatch/btGhostObject.h"
-#include "body_bullet.h"
+#include "BulletSoftBody/btSoftRigidDynamicsWorld.h"
 #include "btBulletDynamicsCommon.h"
 #include "bullet_physics_server.h"
 #include "bullet_types_converter.h"
@@ -40,7 +40,9 @@
 #include "constraint_bullet.h"
 #include "godot_collision_configuration.h"
 #include "godot_collision_dispatcher.h"
+#include "rigid_body_bullet.h"
 #include "servers/physics_server.h"
+#include "soft_body_bullet.h"
 #include "ustring.h"
 #include <assert.h>
 
@@ -137,10 +139,10 @@ public:
 
 struct GodotClosestConvexResultCallback : public btCollisionWorld::ClosestConvexResultCallback {
 public:
-	const BodyBullet *m_self_object;
+	const RigidBodyBullet *m_self_object;
 	const bool m_ignore_areas;
 
-	GodotClosestConvexResultCallback(const btVector3 &convexFromWorld, const btVector3 &convexToWorld, const BodyBullet *p_self_object, bool p_ignore_areas)
+	GodotClosestConvexResultCallback(const btVector3 &convexFromWorld, const btVector3 &convexToWorld, const RigidBodyBullet *p_self_object, bool p_ignore_areas)
 		: btCollisionWorld::ClosestConvexResultCallback(convexFromWorld, convexToWorld), m_self_object(p_self_object), m_ignore_areas(p_ignore_areas) {}
 
 	virtual bool needsCollision(btBroadphaseProxy *proxy0) const {
@@ -172,7 +174,7 @@ public:
 	int m_other_compound_shape_index;
 	const btCollisionObject *m_pointCollisionObject;
 
-	const BodyBullet *m_self_object;
+	const RigidBodyBullet *m_self_object;
 	bool m_ignore_areas;
 
 	btScalar m_most_penetrated_distance;
@@ -181,7 +183,7 @@ public:
 	GodotRecoverAndClosestContactResultCallback()
 		: m_pointCollisionObject(NULL), m_penetration_distance(0), m_other_compound_shape_index(0), m_self_object(NULL), m_ignore_areas(true), m_most_penetrated_distance(9999999999), m_recover_penetration(0, 0, 0) {}
 
-	GodotRecoverAndClosestContactResultCallback(const BodyBullet *p_self_object, bool p_ignore_areas)
+	GodotRecoverAndClosestContactResultCallback(const RigidBodyBullet *p_self_object, bool p_ignore_areas)
 		: m_pointCollisionObject(NULL), m_penetration_distance(0), m_other_compound_shape_index(0), m_self_object(p_self_object), m_ignore_areas(p_ignore_areas), m_most_penetrated_distance(9999999999), m_recover_penetration(0, 0, 0) {}
 
 	void reset() {
@@ -334,9 +336,9 @@ Vector3 BulletPhysicsDirectSpaceState::get_closest_point_to_object_volume(RID p_
 	return Vector3();
 }
 
-SpaceBullet::SpaceBullet()
-	: broadphase(NULL), dispatcher(NULL), solver(NULL), collisionConfiguration(NULL), dynamicsWorld(NULL), ghostPairCallback(NULL), godotFilterCallback(NULL), gravityDirection(0, -1, 0), gravityMagnitude(10), contactDebugCount(0) {
-	create_empty_world();
+SpaceBullet::SpaceBullet(bool p_create_soft_world)
+	: broadphase(NULL), dispatcher(NULL), solver(NULL), collisionConfiguration(NULL), dynamicsWorld(NULL), soft_body_world_info(NULL), ghostPairCallback(NULL), godotFilterCallback(NULL), gravityDirection(0, -1, 0), gravityMagnitude(10), contactDebugCount(0) {
+	create_empty_world(p_create_soft_world);
 	direct_access = memnew(BulletPhysicsDirectSpaceState(this));
 }
 
@@ -455,39 +457,63 @@ void SpaceBullet::reload_collision_filters(AreaBullet *p_area) {
 	dynamicsWorld->addCollisionObject(p_area->get_bt_ghost(), p_area->get_collision_layer(), p_area->get_collision_mask());
 }
 
-void SpaceBullet::add_body(BodyBullet *p_body) {
+void SpaceBullet::add_rigid_body(RigidBodyBullet *p_body) {
 	if (p_body->is_static()) {
-		dynamicsWorld->addCollisionObject(p_body->get_bt_body(), p_body->get_collision_layer(), p_body->get_collision_mask());
+		dynamicsWorld->addCollisionObject(p_body->get_bt_rigid_body(), p_body->get_collision_layer(), p_body->get_collision_mask());
 	} else {
-		dynamicsWorld->addRigidBody(p_body->get_bt_body(), p_body->get_collision_layer(), p_body->get_collision_mask());
+		dynamicsWorld->addRigidBody(p_body->get_bt_rigid_body(), p_body->get_collision_layer(), p_body->get_collision_mask());
 	}
 
 	add_ghost(p_body);
 }
 
-void SpaceBullet::remove_body(BodyBullet *p_body) {
+void SpaceBullet::remove_rigid_body(RigidBodyBullet *p_body) {
 	if (p_body->is_static()) {
-		dynamicsWorld->removeCollisionObject(p_body->get_bt_body());
+		dynamicsWorld->removeCollisionObject(p_body->get_bt_rigid_body());
 	} else {
-		dynamicsWorld->removeRigidBody(p_body->get_bt_body());
+		dynamicsWorld->removeRigidBody(p_body->get_bt_rigid_body());
 	}
 
 	remove_ghost(p_body);
 }
 
-void SpaceBullet::reload_collision_filters(BodyBullet *p_body) {
+void SpaceBullet::reload_collision_filters(RigidBodyBullet *p_body) {
 	// This is necessary to change collision filter
-	remove_body(p_body);
-	add_body(p_body);
+	remove_rigid_body(p_body);
+	add_rigid_body(p_body);
 }
 
-void SpaceBullet::add_ghost(BodyBullet *p_ghost) {
+void SpaceBullet::add_soft_body(SoftBodyBullet *p_body) {
+	if (is_using_soft_world()) {
+		if (p_body->get_bt_soft_body()) {
+			static_cast<btSoftRigidDynamicsWorld *>(dynamicsWorld)->addSoftBody(p_body->get_bt_soft_body(), p_body->get_collision_layer(), p_body->get_collision_mask());
+		}
+	} else {
+		ERR_PRINT("This soft body can't be added to non soft world");
+	}
+}
+
+void SpaceBullet::remove_soft_body(SoftBodyBullet *p_body) {
+	if (is_using_soft_world()) {
+		if (p_body->get_bt_soft_body()) {
+			static_cast<btSoftRigidDynamicsWorld *>(dynamicsWorld)->removeSoftBody(p_body->get_bt_soft_body());
+		}
+	}
+}
+
+void SpaceBullet::reload_collision_filters(SoftBodyBullet *p_body) {
+	// This is necessary to change collision filter
+	remove_soft_body(p_body);
+	add_soft_body(p_body);
+}
+
+void SpaceBullet::add_ghost(RigidBodyBullet *p_ghost) {
 	if (p_ghost->get_kinematic_utilities()) {
 		dynamicsWorld->addCollisionObject(p_ghost->get_kinematic_utilities()->m_ghostObject, p_ghost->get_collision_layer(), p_ghost->get_collision_mask());
 	}
 }
 
-void SpaceBullet::remove_ghost(BodyBullet *p_ghost) {
+void SpaceBullet::remove_ghost(RigidBodyBullet *p_ghost) {
 	if (p_ghost->get_kinematic_utilities()) {
 		dynamicsWorld->removeCollisionObject(p_ghost->get_kinematic_utilities()->m_ghostObject);
 	}
@@ -533,7 +559,7 @@ BulletPhysicsDirectSpaceState *SpaceBullet::get_direct_state() {
 	return direct_access;
 }
 
-void SpaceBullet::create_empty_world() {
+void SpaceBullet::create_empty_world(bool p_create_soft_world) {
 	assert(NULL == broadphase);
 	assert(NULL == dispatcher);
 	assert(NULL == solver);
@@ -546,7 +572,12 @@ void SpaceBullet::create_empty_world() {
 	dispatcher = bulletnew(GodotCollisionDispatcher(collisionConfiguration));
 	broadphase = bulletnew(btDbvtBroadphase);
 	solver = bulletnew(btSequentialImpulseConstraintSolver);
-	dynamicsWorld = bulletnew(btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration));
+	if (p_create_soft_world) {
+		dynamicsWorld = bulletnew(btSoftRigidDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration));
+		soft_body_world_info = bulletnew(btSoftBodyWorldInfo);
+	} else {
+		dynamicsWorld = bulletnew(btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration));
+	}
 	ghostPairCallback = bulletnew(btGhostPairCallback);
 	godotFilterCallback = bulletnew(GodotFilterCallback);
 
@@ -557,6 +588,12 @@ void SpaceBullet::create_empty_world() {
 	const bool isPreTick = false;
 	dynamicsWorld->setInternalTickCallback(onBulletTickCallback, this, isPreTick);
 	dynamicsWorld->getPairCache()->setOverlapFilterCallback(godotFilterCallback);
+
+	if (soft_body_world_info) {
+		soft_body_world_info->m_broadphase = broadphase;
+		soft_body_world_info->m_dispatcher = dispatcher;
+		soft_body_world_info->m_sparsesdf.Initialize();
+	}
 
 	update_gravity();
 }
@@ -581,6 +618,7 @@ void SpaceBullet::destroy_world() {
 	bulletdelete(dispatcher);
 	bulletdelete(collisionConfiguration);
 	bulletdelete(godotFilterCallback);
+	bulletdelete(soft_body_world_info);
 }
 
 void SpaceBullet::check_ghost_overlaps() {
@@ -653,10 +691,10 @@ void SpaceBullet::check_body_collision() {
 
 		// I know this static cast is a bit risky. But I'm checking its type just after it.
 		// This allow me to avoid a lot of other cast and checks
-		BodyBullet *bodyA = static_cast<BodyBullet *>(obA->getUserPointer());
-		BodyBullet *bodyB = static_cast<BodyBullet *>(obB->getUserPointer());
+		RigidBodyBullet *bodyA = static_cast<RigidBodyBullet *>(obA->getUserPointer());
+		RigidBodyBullet *bodyB = static_cast<RigidBodyBullet *>(obB->getUserPointer());
 
-		if (CollisionObjectBullet::TYPE_BODY == bodyA->getType() && CollisionObjectBullet::TYPE_BODY == bodyB->getType()) {
+		if (CollisionObjectBullet::TYPE_RIGID_BODY == bodyA->getType() && CollisionObjectBullet::TYPE_RIGID_BODY == bodyB->getType()) {
 			if (!bodyA->can_add_collision() && !bodyB->can_add_collision()) {
 				continue;
 			}
@@ -701,6 +739,9 @@ void SpaceBullet::update_gravity() {
 	btVector3 btGravity;
 	G_TO_B(gravityDirection * gravityMagnitude, btGravity);
 	dynamicsWorld->setGravity(btGravity);
+	if (soft_body_world_info) {
+		soft_body_world_info->m_gravity = btGravity;
+	}
 }
 
 /// IMPORTANT: Please don't turn it ON this is not managed correctly!!
@@ -715,7 +756,7 @@ static Ref<SpatialMaterial> blue_mat;
 #endif
 
 #define IGNORE_AREAS_TRUE true
-bool SpaceBullet::test_body_motion(BodyBullet *p_body, const Transform &p_from, const Vector3 &p_motion, real_t p_margin, PhysicsServer::MotionResult *r_result) {
+bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_from, const Vector3 &p_motion, real_t p_margin, PhysicsServer::MotionResult *r_result) {
 
 #if debug_test_motion
 	/// Yes I know this is not good, but I've used it as fast debugging.
@@ -862,7 +903,7 @@ bool SpaceBullet::test_body_motion(BodyBullet *p_body, const Transform &p_from, 
 			result_callabck.m_collisionFilterGroup = p_body->get_collision_layer();
 			result_callabck.m_collisionFilterMask = p_body->get_collision_mask();
 
-			const BodyBullet::KinematicShape &kin(p_body->get_kinematic_utilities()->m_shapes[shape_most_recovered]);
+			const RigidBodyBullet::KinematicShape &kin(p_body->get_kinematic_utilities()->m_shapes[shape_most_recovered]);
 			ghost->setCollisionShape(kin.shape);
 			ghost->setWorldTransform(body_safe_position);
 
@@ -885,7 +926,7 @@ bool SpaceBullet::test_body_motion(BodyBullet *p_body, const Transform &p_from, 
 			btScalar max_penetration(99999999999);
 			for (int i = 0; i < shape_count; ++i) {
 
-				const BodyBullet::KinematicShape &kin(p_body->get_kinematic_utilities()->m_shapes[i]);
+				const RigidBodyBullet::KinematicShape &kin(p_body->get_kinematic_utilities()->m_shapes[i]);
 				if (!kin.is_active()) {
 					continue;
 				}
@@ -976,13 +1017,13 @@ EndExecution:
 
 ///  Note: It has a bug when two shapes touches something simultaneously the body is moved too much away
 /// (I'm not fixing it because I don't use it).
-bool SpaceBullet::recover_from_penetration(BodyBullet *p_body, const btTransform &p_from, btScalar p_maxPenetrationDepth, btScalar p_depenetration_speed, btVector3 &out_recover_position) {
+bool SpaceBullet::recover_from_penetration(RigidBodyBullet *p_body, const btTransform &p_from, btScalar p_maxPenetrationDepth, btScalar p_depenetration_speed, btVector3 &out_recover_position) {
 
 	bool penetration = false;
 	btPairCachingGhostObject *ghost = p_body->get_kinematic_utilities()->m_ghostObject;
 
 	for (int kinIndex = p_body->get_kinematic_utilities()->m_shapes.size() - 1; 0 <= kinIndex; --kinIndex) {
-		const BodyBullet::KinematicShape &kin_shape(p_body->get_kinematic_utilities()->m_shapes[kinIndex]);
+		const RigidBodyBullet::KinematicShape &kin_shape(p_body->get_kinematic_utilities()->m_shapes[kinIndex]);
 		if (!kin_shape.is_active()) {
 			continue;
 		}

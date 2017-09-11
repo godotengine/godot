@@ -36,7 +36,7 @@
 #include "bullet_utilities.h"
 #include "rid_bullet.h"
 
-class BodyBullet;
+class RigidBodyBullet;
 class SpaceBullet;
 class btTypedConstraint;
 

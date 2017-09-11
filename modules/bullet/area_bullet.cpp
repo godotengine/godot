@@ -38,12 +38,11 @@
 #include "space_bullet.h"
 
 AreaBullet::AreaBullet()
-	: CollisionObjectBullet(CollisionObjectBullet::TYPE_AREA), space(NULL), monitorable(true), isScratched(false),
+	: RigidCollisionObjectBullet(CollisionObjectBullet::TYPE_AREA), monitorable(true), isScratched(false),
 	  spOv_mode(PhysicsServer::AREA_SPACE_OVERRIDE_DISABLED), spOv_gravityPoint(false), spOv_gravityPointDistanceScale(0), spOv_gravityPointAttenuation(1), spOv_gravityVec(0, -1, 0), spOv_gravityMag(10), spOv_linearDump(0.1), spOv_angularDump(1), spOv_priority(0) {
 	btGhost = bulletnew(btGhostObject);
 	btGhost->setCollisionShape(compoundShape);
-	btGhost->setUserIndex2(CollisionObjectBullet::TYPE_AREA);
-	setupCollisionObject(btGhost);
+	setupBulletCollisionObject(btGhost);
 	/// Collision objects with a callback still have collision response with dynamic rigid bodies.
 	/// In order to use collision objects as trigger, you have to disable the collision response.
 	set_collision_enabled(false);

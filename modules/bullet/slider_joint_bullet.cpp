@@ -31,31 +31,31 @@
 
 #include "slider_joint_bullet.h"
 #include "BulletDynamics/ConstraintSolver/btSliderConstraint.h"
-#include "body_bullet.h"
+#include "rigid_body_bullet.h"
 #include "bullet_types_converter.h"
 #include "bullet_utilities.h"
 
-SliderJointBullet::SliderJointBullet(BodyBullet *rbA, BodyBullet *rbB, const Transform &frameInA, const Transform &frameInB)
+SliderJointBullet::SliderJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &frameInA, const Transform &frameInB)
 	: JointBullet() {
 	btTransform btFrameA;
 	G_TO_B(frameInA, btFrameA);
 	if (rbB) {
 		btTransform btFrameB;
 		G_TO_B(frameInB, btFrameB);
-		sliderConstraint = bulletnew(btSliderConstraint(*rbA->get_bt_body(), *rbB->get_bt_body(), btFrameA, btFrameB, true));
+		sliderConstraint = bulletnew(btSliderConstraint(*rbA->get_bt_rigid_body(), *rbB->get_bt_rigid_body(), btFrameA, btFrameB, true));
 
 	} else {
-		sliderConstraint = bulletnew(btSliderConstraint(*rbA->get_bt_body(), btFrameA, true));
+		sliderConstraint = bulletnew(btSliderConstraint(*rbA->get_bt_rigid_body(), btFrameA, true));
 	}
 	setup(sliderConstraint);
 }
 
-const BodyBullet *SliderJointBullet::getRigidBodyA() const {
-	return static_cast<BodyBullet *>(sliderConstraint->getRigidBodyA().getUserPointer());
+const RigidBodyBullet *SliderJointBullet::getRigidBodyA() const {
+	return static_cast<RigidBodyBullet *>(sliderConstraint->getRigidBodyA().getUserPointer());
 }
 
-const BodyBullet *SliderJointBullet::getRigidBodyB() const {
-	return static_cast<BodyBullet *>(sliderConstraint->getRigidBodyB().getUserPointer());
+const RigidBodyBullet *SliderJointBullet::getRigidBodyB() const {
+	return static_cast<RigidBodyBullet *>(sliderConstraint->getRigidBodyB().getUserPointer());
 }
 
 const Transform SliderJointBullet::getCalculatedTransformA() const {

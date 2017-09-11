@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  generic_6dof_joint_bullet.h                                          */
+/*  shape_owner_bullet.cpp                                               */
 /*  Author: AndreaCatania                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
@@ -29,37 +29,4 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GENERIC_6DOF_JOINT_BULLET_H
-#define GENERIC_6DOF_JOINT_BULLET_H
-
-#include "joint_bullet.h"
-
-class RigidBodyBullet;
-
-class Generic6DOFJointBullet : public JointBullet {
-	class btGeneric6DofConstraint *sixDOFConstraint;
-
-public:
-	Generic6DOFJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &frameInA, const Transform &frameInB, bool useLinearReferenceFrameA);
-
-	virtual PhysicsServer::JointType get_type() const { return PhysicsServer::JOINT_6DOF; }
-
-	Transform getFrameOffsetA() const;
-	Transform getFrameOffsetB() const;
-	Transform getFrameOffsetA();
-	Transform getFrameOffsetB();
-
-	void set_linear_lower_limit(const Vector3 &linearLower);
-	void set_linear_upper_limit(const Vector3 &linearUpper);
-
-	void set_angular_lower_limit(const Vector3 &angularLower);
-	void set_angular_upper_limit(const Vector3 &angularUpper);
-
-	void set_param(Vector3::Axis p_axis, PhysicsServer::G6DOFJointAxisParam p_param, real_t p_value);
-	real_t get_param(Vector3::Axis p_axis, PhysicsServer::G6DOFJointAxisParam p_param) const;
-
-	void set_flag(Vector3::Axis p_axis, PhysicsServer::G6DOFJointAxisFlag p_flag, bool p_value);
-	bool get_flag(Vector3::Axis p_axis, PhysicsServer::G6DOFJointAxisFlag p_flag) const;
-};
-
-#endif
+#include "shape_owner_bullet.h"

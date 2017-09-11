@@ -31,20 +31,20 @@
 
 #include "cone_twist_joint_bullet.h"
 #include "BulletDynamics/ConstraintSolver/btConeTwistConstraint.h"
-#include "body_bullet.h"
+#include "rigid_body_bullet.h"
 #include "bullet_types_converter.h"
 #include "bullet_utilities.h"
 
-ConeTwistJointBullet::ConeTwistJointBullet(BodyBullet *rbA, BodyBullet *rbB, const Transform &rbAFrame, const Transform &rbBFrame)
+ConeTwistJointBullet::ConeTwistJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &rbAFrame, const Transform &rbBFrame)
 	: JointBullet() {
 	btTransform btFrameA;
 	G_TO_B(rbAFrame, btFrameA);
 	if (rbB) {
 		btTransform btFrameB;
 		G_TO_B(rbBFrame, btFrameB);
-		coneConstraint = bulletnew(btConeTwistConstraint(*rbA->get_bt_body(), *rbB->get_bt_body(), btFrameA, btFrameB));
+		coneConstraint = bulletnew(btConeTwistConstraint(*rbA->get_bt_rigid_body(), *rbB->get_bt_rigid_body(), btFrameA, btFrameB));
 	} else {
-		coneConstraint = bulletnew(btConeTwistConstraint(*rbA->get_bt_body(), btFrameA));
+		coneConstraint = bulletnew(btConeTwistConstraint(*rbA->get_bt_rigid_body(), btFrameA));
 	}
 	setup(coneConstraint);
 }

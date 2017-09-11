@@ -42,20 +42,23 @@
 #include "rid_bullet.h"
 #include "servers/physics_server.h"
 
-class btDefaultCollisionConfiguration;
+class AreaBullet;
 class btBroadphaseInterface;
 class btCollisionDispatcher;
 class btConstraintSolver;
+class btDefaultCollisionConfiguration;
+class btDynamicsWorld;
 class btDiscreteDynamicsWorld;
 class btEmptyShape;
-class ConstraintBullet;
-class AreaBullet;
-class BodyBullet;
 class btGhostPairCallback;
-class btDynamicsWorld;
+class btSoftRigidDynamicsWorld;
+class btSoftBodyWorldInfo;
+class ConstraintBullet;
+class CollisionObjectBullet;
+class RigidBodyBullet;
 class StepperBullet;
 class SpaceBullet;
-class CollisionObjectBullet;
+class SoftBodyBullet;
 
 #define MAX_PENETRATION_DEPTH 0.005
 
@@ -107,6 +110,7 @@ private:
 	btDiscreteDynamicsWorld *dynamicsWorld;
 	btGhostPairCallback *ghostPairCallback;
 	GodotFilterCallback *godotFilterCallback;
+	btSoftBodyWorldInfo *soft_body_world_info;
 
 	BulletPhysicsDirectSpaceState *direct_access;
 	Vector3 gravityDirection;
@@ -118,12 +122,14 @@ private:
 	int contactDebugCount;
 
 public:
-	SpaceBullet();
+	SpaceBullet(bool p_create_soft_world);
 	virtual ~SpaceBullet();
 
 	virtual void flush_queries();
 
 	_FORCE_INLINE_ btCollisionDispatcher *get_dispatcher() { return dispatcher; }
+	_FORCE_INLINE_ btSoftBodyWorldInfo *get_soft_body_world_info() { return soft_body_world_info; }
+	_FORCE_INLINE_ bool is_using_soft_world() { return soft_body_world_info; }
 
 	/// Used to set some parameters to Bullet world
 	/// @param p_param:
@@ -143,12 +149,16 @@ public:
 	void remove_area(AreaBullet *p_area);
 	void reload_collision_filters(AreaBullet *p_area);
 
-	void add_body(BodyBullet *p_body);
-	void remove_body(BodyBullet *p_body);
-	void reload_collision_filters(BodyBullet *p_body);
+	void add_rigid_body(RigidBodyBullet *p_body);
+	void remove_rigid_body(RigidBodyBullet *p_body);
+	void reload_collision_filters(RigidBodyBullet *p_body);
 
-	void add_ghost(BodyBullet *p_ghost);
-	void remove_ghost(BodyBullet *p_ghost);
+	void add_soft_body(SoftBodyBullet *p_body);
+	void remove_soft_body(SoftBodyBullet *p_body);
+	void reload_collision_filters(SoftBodyBullet *p_body);
+
+	void add_ghost(RigidBodyBullet *p_ghost);
+	void remove_ghost(RigidBodyBullet *p_ghost);
 
 	void add_constraint(ConstraintBullet *p_constraint, bool disableCollisionsBetweenLinkedBodies = false);
 	void remove_constraint(ConstraintBullet *p_constraint);
@@ -174,14 +184,14 @@ public:
 
 	void update_gravity();
 
-	bool test_body_motion(BodyBullet *p_body, const Transform &p_from, const Vector3 &p_motion, real_t p_margin, PhysicsServer::MotionResult *r_result);
+	bool test_body_motion(RigidBodyBullet *p_body, const Transform &p_from, const Vector3 &p_motion, real_t p_margin, PhysicsServer::MotionResult *r_result);
 
 private:
-	void create_empty_world();
+	void create_empty_world(bool p_create_soft_world);
 	void destroy_world();
 	void check_ghost_overlaps();
 	void check_body_collision();
 
-	bool recover_from_penetration(BodyBullet *p_body, const btTransform &p_from, btScalar p_maxPenetrationDepth, btScalar p_depenetration_speed, btVector3 &out_recover_position);
+	bool recover_from_penetration(RigidBodyBullet *p_body, const btTransform &p_from, btScalar p_maxPenetrationDepth, btScalar p_depenetration_speed, btVector3 &out_recover_position);
 };
 #endif

@@ -36,10 +36,11 @@
 
 class ShapeBullet;
 class btCollisionShape;
+class CollisionObjectBullet;
 
 /// Each clas that want to use Shapes must inherit this class
 /// E.G. BodyShape is a child of this
-class ShapeOwnerBullet : public RIDBullet {
+class ShapeOwnerBullet {
 public:
 	/// This is used to set new shape or replace existing
 	//virtual void _internal_replaceShape(btCollisionShape *p_old_shape, btCollisionShape *p_new_shape) = 0;

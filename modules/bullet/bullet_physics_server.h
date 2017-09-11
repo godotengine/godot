@@ -33,11 +33,12 @@
 #define BULLET_PHYSICS_SERVER_H
 
 #include "area_bullet.h"
-#include "body_bullet.h"
 #include "joint_bullet.h"
 #include "rid.h"
+#include "rigid_body_bullet.h"
 #include "servers/physics_server.h"
 #include "shape_bullet.h"
+#include "soft_body_bullet.h"
 #include "space_bullet.h"
 
 class StepperBullet;
@@ -51,7 +52,8 @@ class BulletPhysicsServer : public PhysicsServer {
 	mutable RID_Owner<SpaceBullet> space_owner;
 	mutable RID_Owner<ShapeBullet> shape_owner;
 	mutable RID_Owner<AreaBullet> area_owner;
-	mutable RID_Owner<BodyBullet> body_owner;
+	mutable RID_Owner<RigidBodyBullet> rigid_body_owner;
+	mutable RID_Owner<SoftBodyBullet> soft_body_owner;
 	mutable RID_Owner<JointBullet> joint_owner;
 
 	StepperBullet *stepper;
@@ -79,8 +81,11 @@ public:
 	_FORCE_INLINE_ RID_Owner<AreaBullet> *get_area_owner() {
 		return &area_owner;
 	}
-	_FORCE_INLINE_ RID_Owner<BodyBullet> *get_body_owner() {
-		return &body_owner;
+	_FORCE_INLINE_ RID_Owner<RigidBodyBullet> *get_rigid_body_owner() {
+		return &rigid_body_owner;
+	}
+	_FORCE_INLINE_ RID_Owner<SoftBodyBullet> *get_soft_body_owner() {
+		return &soft_body_owner;
 	}
 	_FORCE_INLINE_ RID_Owner<JointBullet> *get_joint_owner() {
 		return &joint_owner;
@@ -161,7 +166,7 @@ public:
 	virtual void area_set_ray_pickable(RID p_area, bool p_enable);
 	virtual bool area_is_ray_pickable(RID p_area) const;
 
-	/* BODY API */
+	/* RIGID BODY API */
 
 	virtual RID body_create(BodyMode p_mode = BODY_MODE_RIGID, bool p_init_sleeping = false);
 
@@ -197,9 +202,9 @@ public:
 	virtual void body_set_collision_mask(RID p_body, uint32_t p_mask);
 	virtual uint32_t body_get_collision_mask(RID p_body) const;
 
-	// Not supported
+	/// This is not supported by physics server
 	virtual void body_set_user_flags(RID p_body, uint32_t p_flags);
-	// Not supported
+	/// This is not supported by physics server
 	virtual uint32_t body_get_user_flags(RID p_body) const;
 
 	virtual void body_set_param(RID p_body, BodyParameter p_param, float p_value);
@@ -240,6 +245,22 @@ public:
 	virtual bool body_is_ray_pickable(RID p_body) const;
 
 	virtual bool body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, float p_margin = 0.001, MotionResult *r_result = NULL);
+
+	/* SOFT BODY API */
+
+	virtual RID soft_body_create(bool p_init_sleeping = false);
+
+	virtual void soft_body_set_space(RID p_body, RID p_space);
+	virtual RID soft_body_get_space(RID p_body) const;
+
+	virtual void soft_body_set_collision_layer(RID p_body, uint32_t p_layer);
+	virtual uint32_t soft_body_get_collision_layer(RID p_body) const;
+
+	virtual void soft_body_set_collision_mask(RID p_body, uint32_t p_mask);
+	virtual uint32_t soft_body_get_collision_mask(RID p_body) const;
+
+	virtual void soft_body_set_state(RID p_body, BodyState p_state, const Variant &p_variant);
+	virtual Variant soft_body_get_state(RID p_body, BodyState p_state) const;
 
 	/* JOINT API */
 

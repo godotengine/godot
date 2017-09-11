@@ -32,53 +32,26 @@
 #ifndef COLLISION_OBJECT_BULLET_H
 #define COLLISION_OBJECT_BULLET_H
 
+#include "LinearMath/btTransform.h"
 #include "core/vset.h"
+#include "object.h"
 #include "shape_owner_bullet.h"
-#include "space_bullet.h"
+#include "transform.h"
+#include "vector3.h"
 
 class AreaBullet;
 class ShapeBullet;
 class btCollisionObject;
 class btCompoundShape;
 class btCollisionShape;
+class SpaceBullet;
 
-class CollisionObjectBullet : public ShapeOwnerBullet {
-protected:
-	class EnhancedBasis : public Basis {
-	public:
-		void get_ABS_scale(Vector3 &out_vec) const {
-			out_vec[0] = Vector3(elements[0][0], elements[1][0], elements[2][0]).length();
-			out_vec[1] = Vector3(elements[0][1], elements[1][1], elements[2][1]).length();
-			out_vec[2] = Vector3(elements[0][2], elements[1][2], elements[2][2]).length();
-		}
-
-		real_t get_uniform_scale() const {
-			Vector3 scale;
-			get_ABS_scale(scale);
-			real_t uniform_scale = get_biggest_axis(scale);
-			if (uniform_scale != scale[0]) {
-				WARN_PRINT("The submitted basis has not an uniform scale, this scale is ignored by physics engine and will be used the biggest axis as uniform scale value.");
-			}
-			return uniform_scale;
-		}
-
-	private:
-		real_t get_biggest_axis(const Vector3 &vec) const {
-			real_t biggest = vec[0];
-			if (biggest < vec[1]) {
-				biggest = vec[1];
-			}
-			if (biggest < vec[2]) {
-				biggest = vec[2];
-			}
-			return biggest;
-		}
-	};
-
+class CollisionObjectBullet : public RIDBullet {
 public:
 	enum Type {
 		TYPE_AREA = 0,
-		TYPE_BODY
+		TYPE_RIGID_BODY,
+		TYPE_SOFT_BODY
 	};
 
 	struct ShapeWrapper {
@@ -124,14 +97,10 @@ protected:
 	bool collisionsEnabled;
 	bool m_isStatic;
 	bool ray_pickable;
-	btCollisionObject *collisionObject;
+	btCollisionObject *bt_collision_object;
 	btVector3 body_scale;
+	SpaceBullet *space;
 
-	/// This is required to combine some shapes together.
-	/// Since Godot allow to have multiple shapes for each body with custom relative location,
-	/// each body will attach the shapes using this class even if there is only one shape.
-	btCompoundShape *compoundShape;
-	Vector<ShapeWrapper> shapes;
 	VSet<RID> exceptions;
 
 	/// This array is used to know all areas where this Object is overlapped in
@@ -146,11 +115,10 @@ public:
 	Type getType() { return type; }
 
 protected:
-	void setupCollisionObject(btCollisionObject *p_collisionObject);
+	void setupBulletCollisionObject(btCollisionObject *p_collisionObject);
 
 public:
-	_FORCE_INLINE_ const Vector<ShapeWrapper> &get_shapes_wrappers() const { return shapes; }
-	_FORCE_INLINE_ btCollisionObject *get_bt_collision_object() { return collisionObject; }
+	_FORCE_INLINE_ btCollisionObject *get_bt_collision_object() { return bt_collision_object; }
 
 	_FORCE_INLINE_ void set_instance_id(const ObjectID &p_instance_id) { instance_id = p_instance_id; }
 	_FORCE_INLINE_ ObjectID get_instance_id() const { return instance_id; }
@@ -161,29 +129,12 @@ public:
 	_FORCE_INLINE_ bool is_ray_pickable() const { return ray_pickable; }
 
 	void set_body_scale(const Vector3 &p_new_scale);
+	virtual void on_body_scale_changed();
 
 	void add_collision_exception(const CollisionObjectBullet *p_ignoreCollisionObject);
 	void remove_collision_exception(const CollisionObjectBullet *p_ignoreCollisionObject);
 	bool has_collision_exception(const CollisionObjectBullet *p_otherCollisionObject) const;
 	_FORCE_INLINE_ const VSet<RID> &get_exceptions() const { return exceptions; }
-
-	/// This is used to set new shape or replace existing
-	//virtual void _internal_replaceShape(btCollisionShape *p_old_shape, btCollisionShape *p_new_shape) = 0;
-	void add_shape(ShapeBullet *p_shape, const Transform &p_transform = Transform());
-	void set_shape(int p_index, ShapeBullet *p_shape);
-	void set_shape_transform(int p_index, const Transform &p_transform);
-	virtual void remove_shape(ShapeBullet *p_shape);
-	void remove_shape(int p_index);
-	void remove_all_shapes(bool p_permanentlyFromThisBody = false);
-
-	virtual void on_shape_changed(const ShapeBullet *const p_shape);
-	virtual void on_shapes_changed();
-
-	_FORCE_INLINE_ btCompoundShape *get_compound_shape() const { return compoundShape; }
-	int get_shape_count() const;
-	ShapeBullet *get_shape(int p_index) const;
-	btCollisionShape *get_bt_shape(int p_index) const;
-	Transform get_shape_transform(int p_index) const;
 
 	_FORCE_INLINE_ void set_collision_layer(uint32_t p_layer) {
 		collisionLayer = p_layer;
@@ -205,23 +156,59 @@ public:
 
 	virtual void reload_body() = 0;
 	virtual void set_space(SpaceBullet *p_space) = 0;
-	virtual SpaceBullet *get_space() const = 0;
+	_FORCE_INLINE_ SpaceBullet *get_space() const { return space; }
 	/// This is an event that is called when a collision checker starts
 	virtual void on_collision_checker_start() = 0;
 
 	virtual void dispatch_callbacks() = 0;
 
-	void set_shape_disabled(int p_index, bool p_disabled);
-	bool is_shape_disabled(int p_index);
 	void set_collision_enabled(bool p_enabled);
 	bool is_collisions_response_enabled();
 
 	void notify_new_overlap(AreaBullet *p_area);
 	virtual void on_enter_area(AreaBullet *p_area) = 0;
 	virtual void on_exit_area(AreaBullet *p_area);
+};
+
+class RigidCollisionObjectBullet : public CollisionObjectBullet, public ShapeOwnerBullet {
+protected:
+	/// This is required to combine some shapes together.
+	/// Since Godot allow to have multiple shapes for each body with custom relative location,
+	/// each body will attach the shapes using this class even if there is only one shape.
+	btCompoundShape *compoundShape;
+	Vector<ShapeWrapper> shapes;
+
+public:
+	RigidCollisionObjectBullet(Type p_type);
+	~RigidCollisionObjectBullet();
+
+	_FORCE_INLINE_ const Vector<ShapeWrapper> &get_shapes_wrappers() const { return shapes; }
+
+	/// This is used to set new shape or replace existing
+	//virtual void _internal_replaceShape(btCollisionShape *p_old_shape, btCollisionShape *p_new_shape) = 0;
+	void add_shape(ShapeBullet *p_shape, const Transform &p_transform = Transform());
+	void set_shape(int p_index, ShapeBullet *p_shape);
+	void set_shape_transform(int p_index, const Transform &p_transform);
+	virtual void remove_shape(ShapeBullet *p_shape);
+	void remove_shape(int p_index);
+	void remove_all_shapes(bool p_permanentlyFromThisBody = false);
+
+	virtual void on_shape_changed(const ShapeBullet *const p_shape);
+	virtual void on_shapes_changed();
+
+	_FORCE_INLINE_ btCompoundShape *get_compound_shape() const { return compoundShape; }
+	int get_shape_count() const;
+	ShapeBullet *get_shape(int p_index) const;
+	btCollisionShape *get_bt_shape(int p_index) const;
+	Transform get_shape_transform(int p_index) const;
+
+	void set_shape_disabled(int p_index, bool p_disabled);
+	bool is_shape_disabled(int p_index);
+
+	virtual void on_body_scale_changed();
 
 private:
-	void internal_destroy(int p_index, bool p_permanentlyFromThisBody = false);
+	void internal_shape_destroy(int p_index, bool p_permanentlyFromThisBody = false);
 };
 
 #endif

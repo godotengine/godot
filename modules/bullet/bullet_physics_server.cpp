@@ -41,6 +41,7 @@
 #include "pin_joint_bullet.h"
 #include "shape_bullet.h"
 #include "slider_joint_bullet.h"
+#include "soft_body_bullet.h"
 #include "stepper_bullet.h"
 #include <assert.h>
 
@@ -159,7 +160,7 @@ real_t BulletPhysicsServer::shape_get_custom_solver_bias(RID p_shape) const {
 }
 
 RID BulletPhysicsServer::space_create() {
-	SpaceBullet *space = bulletnew(SpaceBullet);
+	SpaceBullet *space = bulletnew(SpaceBullet(true));
 	CreateThenReturnRID(space_owner, space);
 }
 
@@ -413,7 +414,7 @@ void BulletPhysicsServer::area_set_monitor_callback(RID p_area, Object *p_receiv
 	AreaBullet *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
 
-	area->set_event_callback(CollisionObjectBullet::TYPE_BODY, p_receiver ? p_receiver->get_instance_id() : 0, p_method);
+	area->set_event_callback(CollisionObjectBullet::TYPE_RIGID_BODY, p_receiver ? p_receiver->get_instance_id() : 0, p_method);
 }
 
 void BulletPhysicsServer::area_set_area_monitor_callback(RID p_area, Object *p_receiver, const StringName &p_method) {
@@ -436,17 +437,18 @@ bool BulletPhysicsServer::area_is_ray_pickable(RID p_area) const {
 }
 
 RID BulletPhysicsServer::body_create(BodyMode p_mode, bool p_init_sleeping) {
-	BodyBullet *body = bulletnew(BodyBullet);
+	ERR_FAIL_COND_V(p_mode == PhysicsServer::BODY_MODE_SOFT, RID());
+	RigidBodyBullet *body = bulletnew(RigidBodyBullet);
 	body->set_mode(p_mode);
 	body->set_collision_layer(1);
 	body->set_collision_mask(1);
 	if (p_init_sleeping)
 		body->set_state(BODY_STATE_SLEEPING, p_init_sleeping);
-	CreateThenReturnRID(body_owner, body);
+	CreateThenReturnRID(rigid_body_owner, body);
 }
 
 void BulletPhysicsServer::body_set_space(RID p_body, RID p_space) {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 	SpaceBullet *space = NULL;
 
@@ -462,7 +464,7 @@ void BulletPhysicsServer::body_set_space(RID p_body, RID p_space) {
 }
 
 RID BulletPhysicsServer::body_get_space(RID p_body) const {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, RID());
 
 	SpaceBullet *space = body->get_space();
@@ -472,20 +474,20 @@ RID BulletPhysicsServer::body_get_space(RID p_body) const {
 }
 
 void BulletPhysicsServer::body_set_mode(RID p_body, PhysicsServer::BodyMode p_mode) {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 	body->set_mode(p_mode);
 }
 
 PhysicsServer::BodyMode BulletPhysicsServer::body_get_mode(RID p_body) const {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, BODY_MODE_STATIC);
 	return body->get_mode();
 }
 
 void BulletPhysicsServer::body_add_shape(RID p_body, RID p_shape, const Transform &p_transform) {
 
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
 	ShapeBullet *shape = shape_owner.get(p_shape);
@@ -495,7 +497,7 @@ void BulletPhysicsServer::body_add_shape(RID p_body, RID p_shape, const Transfor
 }
 
 void BulletPhysicsServer::body_set_shape(RID p_body, int p_shape_idx, RID p_shape) {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
 	ShapeBullet *shape = shape_owner.get(p_shape);
@@ -505,20 +507,20 @@ void BulletPhysicsServer::body_set_shape(RID p_body, int p_shape_idx, RID p_shap
 }
 
 void BulletPhysicsServer::body_set_shape_transform(RID p_body, int p_shape_idx, const Transform &p_transform) {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
 	body->set_shape_transform(p_shape_idx, p_transform);
 }
 
 int BulletPhysicsServer::body_get_shape_count(RID p_body) const {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, 0);
 	return body->get_shape_count();
 }
 
 RID BulletPhysicsServer::body_get_shape(RID p_body, int p_shape_idx) const {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, RID());
 
 	ShapeBullet *shape = body->get_shape(p_shape_idx);
@@ -528,83 +530,83 @@ RID BulletPhysicsServer::body_get_shape(RID p_body, int p_shape_idx) const {
 }
 
 Transform BulletPhysicsServer::body_get_shape_transform(RID p_body, int p_shape_idx) const {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, Transform());
 	return body->get_shape_transform(p_shape_idx);
 }
 
 void BulletPhysicsServer::body_set_shape_disabled(RID p_body, int p_shape_idx, bool p_disabled) {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
 	body->set_shape_disabled(p_shape_idx, p_disabled);
 }
 
 void BulletPhysicsServer::body_remove_shape(RID p_body, int p_shape_idx) {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
 	body->remove_shape(p_shape_idx);
 }
 
 void BulletPhysicsServer::body_clear_shapes(RID p_body) {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
 	body->remove_all_shapes();
 }
 
 void BulletPhysicsServer::body_attach_object_instance_id(RID p_body, uint32_t p_ID) {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
 	body->set_instance_id(p_ID);
 }
 
 uint32_t BulletPhysicsServer::body_get_object_instance_id(RID p_body) const {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, 0);
 
 	return body->get_instance_id();
 }
 
 void BulletPhysicsServer::body_set_enable_continuous_collision_detection(RID p_body, bool p_enable) {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
 	body->set_continuous_collision_detection(p_enable);
 }
 
 bool BulletPhysicsServer::body_is_continuous_collision_detection_enabled(RID p_body) const {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, false);
 
 	return body->is_continuous_collision_detection_enabled();
 }
 
 void BulletPhysicsServer::body_set_collision_layer(RID p_body, uint32_t p_layer) {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
 	body->set_collision_layer(p_layer);
 }
 
 uint32_t BulletPhysicsServer::body_get_collision_layer(RID p_body) const {
-	const BodyBullet *body = body_owner.get(p_body);
+	const RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, 0);
 
 	return body->get_collision_layer();
 }
 
 void BulletPhysicsServer::body_set_collision_mask(RID p_body, uint32_t p_mask) {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
 	body->set_collision_mask(p_mask);
 }
 
 uint32_t BulletPhysicsServer::body_get_collision_mask(RID p_body) const {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, 0);
 
 	return body->get_collision_mask();
@@ -620,76 +622,76 @@ uint32_t BulletPhysicsServer::body_get_user_flags(RID p_body) const {
 }
 
 void BulletPhysicsServer::body_set_param(RID p_body, BodyParameter p_param, float p_value) {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
 	body->set_param(p_param, p_value);
 }
 
 float BulletPhysicsServer::body_get_param(RID p_body, BodyParameter p_param) const {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, 0);
 
 	return body->get_param(p_param);
 }
 
 void BulletPhysicsServer::body_set_state(RID p_body, BodyState p_state, const Variant &p_variant) {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
 	body->set_state(p_state, p_variant);
 }
 
 Variant BulletPhysicsServer::body_get_state(RID p_body, BodyState p_state) const {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, Variant());
 
 	return body->get_state(p_state);
 }
 
 void BulletPhysicsServer::body_set_applied_force(RID p_body, const Vector3 &p_force) {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
 	body->set_applied_force(p_force);
 }
 
 Vector3 BulletPhysicsServer::body_get_applied_force(RID p_body) const {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, Vector3());
 	return body->get_applied_force();
 }
 
 void BulletPhysicsServer::body_set_applied_torque(RID p_body, const Vector3 &p_torque) {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
 	body->set_applied_torque(p_torque);
 }
 
 Vector3 BulletPhysicsServer::body_get_applied_torque(RID p_body) const {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, Vector3());
 
 	return body->get_applied_torque();
 }
 
 void BulletPhysicsServer::body_apply_impulse(RID p_body, const Vector3 &p_pos, const Vector3 &p_impulse) {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
 	body->apply_impulse(p_pos, p_impulse);
 }
 
 void BulletPhysicsServer::body_apply_torque_impulse(RID p_body, const Vector3 &p_impulse) {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
 	body->apply_torque_impulse(p_impulse);
 }
 
 void BulletPhysicsServer::body_set_axis_velocity(RID p_body, const Vector3 &p_axis_velocity) {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
 	Vector3 v = body->get_linear_velocity();
@@ -700,55 +702,55 @@ void BulletPhysicsServer::body_set_axis_velocity(RID p_body, const Vector3 &p_ax
 }
 
 void BulletPhysicsServer::body_set_axis_lock(RID p_body, PhysicsServer::BodyAxisLock p_lock) {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 	body->set_axis_lock(p_lock);
 }
 
 PhysicsServer::BodyAxisLock BulletPhysicsServer::body_get_axis_lock(RID p_body) const {
-	const BodyBullet *body = body_owner.get(p_body);
+	const RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, BODY_AXIS_LOCK_DISABLED);
 	return body->get_axis_lock();
 }
 
 void BulletPhysicsServer::body_add_collision_exception(RID p_body, RID p_body_b) {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
-	BodyBullet *other_body = body_owner.get(p_body_b);
+	RigidBodyBullet *other_body = rigid_body_owner.get(p_body_b);
 	ERR_FAIL_COND(!other_body);
 
 	body->add_collision_exception(other_body);
 }
 
 void BulletPhysicsServer::body_remove_collision_exception(RID p_body, RID p_body_b) {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
-	BodyBullet *other_body = body_owner.get(p_body_b);
+	RigidBodyBullet *other_body = rigid_body_owner.get(p_body_b);
 	ERR_FAIL_COND(!other_body);
 
 	body->remove_collision_exception(other_body);
 }
 
 void BulletPhysicsServer::body_get_collision_exceptions(RID p_body, List<RID> *p_exceptions) {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
-	// TODO I must fix that
+	// TODO I must fix that, the exception can be setted directly in bullet
 	for (int i = 0; i < body->get_exceptions().size(); i++) {
 		p_exceptions->push_back(body->get_exceptions()[i]);
 	}
 }
 
 void BulletPhysicsServer::body_set_max_contacts_reported(RID p_body, int p_contacts) {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
 	body->set_max_collisions_detection(p_contacts);
 }
 
 int BulletPhysicsServer::body_get_max_contacts_reported(RID p_body) const {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, 0);
 
 	return body->get_max_collisions_detection();
@@ -773,29 +775,101 @@ bool BulletPhysicsServer::body_is_omitting_force_integration(RID p_body) const {
 }
 
 void BulletPhysicsServer::body_set_force_integration_callback(RID p_body, Object *p_receiver, const StringName &p_method, const Variant &p_udata) {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 	body->set_on_state_change(p_receiver->get_instance_id(), p_method, p_udata);
 }
 
 void BulletPhysicsServer::body_set_ray_pickable(RID p_body, bool p_enable) {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 	body->set_ray_pickable(p_enable);
 }
 
 bool BulletPhysicsServer::body_is_ray_pickable(RID p_body) const {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, false);
 	return body->is_ray_pickable();
 }
 
 bool BulletPhysicsServer::body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, float p_margin, MotionResult *r_result) {
-	BodyBullet *body = body_owner.get(p_body);
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, false);
 	ERR_FAIL_COND_V(!body->get_space(), false);
 
 	return body->get_space()->test_body_motion(body, p_from, p_motion, p_margin, r_result);
+}
+
+RID BulletPhysicsServer::soft_body_create(bool p_init_sleeping) {
+	SoftBodyBullet *body = bulletnew(SoftBodyBullet);
+	body->set_collision_layer(1);
+	body->set_collision_mask(1);
+	if (p_init_sleeping)
+		body->set_activation_state(false);
+	CreateThenReturnRID(soft_body_owner, body);
+}
+
+void BulletPhysicsServer::soft_body_set_space(RID p_body, RID p_space) {
+	SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+	SpaceBullet *space = NULL;
+
+	if (p_space.is_valid()) {
+		space = space_owner.get(p_space);
+		ERR_FAIL_COND(!space);
+	}
+
+	if (body->get_space() == space)
+		return; //pointles
+
+	body->set_space(space);
+}
+
+RID BulletPhysicsServer::soft_body_get_space(RID p_body) const {
+	SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, RID());
+
+	SpaceBullet *space = body->get_space();
+	if (!space)
+		return RID();
+	return space->get_self();
+}
+
+void BulletPhysicsServer::soft_body_set_collision_layer(RID p_body, uint32_t p_layer) {
+	SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_collision_layer(p_layer);
+}
+
+uint32_t BulletPhysicsServer::soft_body_get_collision_layer(RID p_body) const {
+	const SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, 0);
+
+	return body->get_collision_layer();
+}
+
+void BulletPhysicsServer::soft_body_set_collision_mask(RID p_body, uint32_t p_mask) {
+	SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_collision_mask(p_mask);
+}
+
+uint32_t BulletPhysicsServer::soft_body_get_collision_mask(RID p_body) const {
+	const SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, 0);
+
+	return body->get_collision_mask();
+}
+
+void BulletPhysicsServer::soft_body_set_state(RID p_body, BodyState p_state, const Variant &p_variant) {
+	print_line("TODO MUST BE IMPLEMENTED");
+}
+
+Variant BulletPhysicsServer::soft_body_get_state(RID p_body, BodyState p_state) const {
+	print_line("TODO MUST BE IMPLEMENTED");
+	return Variant();
 }
 
 PhysicsServer::JointType BulletPhysicsServer::joint_get_type(RID p_joint) const {
@@ -814,14 +888,14 @@ int BulletPhysicsServer::joint_get_solver_priority(RID p_joint) const {
 }
 
 RID BulletPhysicsServer::joint_create_pin(RID p_body_A, const Vector3 &p_local_A, RID p_body_B, const Vector3 &p_local_B) {
-	BodyBullet *body_A = body_owner.get(p_body_A);
+	RigidBodyBullet *body_A = rigid_body_owner.get(p_body_A);
 	ERR_FAIL_COND_V(!body_A, RID());
 
 	JointAssertSpace(body_A, "A", RID());
 
-	BodyBullet *body_B = NULL;
+	RigidBodyBullet *body_B = NULL;
 	if (p_body_B.is_valid()) {
-		body_B = body_owner.get(p_body_B);
+		body_B = rigid_body_owner.get(p_body_B);
 		JointAssertSpace(body_B, "B", RID());
 		JointAssertSameSpace(body_A, body_B, RID());
 	}
@@ -883,13 +957,13 @@ Vector3 BulletPhysicsServer::pin_joint_get_local_b(RID p_joint) const {
 }
 
 RID BulletPhysicsServer::joint_create_hinge(RID p_body_A, const Transform &p_hinge_A, RID p_body_B, const Transform &p_hinge_B) {
-	BodyBullet *body_A = body_owner.get(p_body_A);
+	RigidBodyBullet *body_A = rigid_body_owner.get(p_body_A);
 	ERR_FAIL_COND_V(!body_A, RID());
 	JointAssertSpace(body_A, "A", RID());
 
-	BodyBullet *body_B = NULL;
+	RigidBodyBullet *body_B = NULL;
 	if (p_body_B.is_valid()) {
-		body_B = body_owner.get(p_body_B);
+		body_B = rigid_body_owner.get(p_body_B);
 		JointAssertSpace(body_B, "B", RID());
 		JointAssertSameSpace(body_A, body_B, RID());
 	}
@@ -903,13 +977,13 @@ RID BulletPhysicsServer::joint_create_hinge(RID p_body_A, const Transform &p_hin
 }
 
 RID BulletPhysicsServer::joint_create_hinge_simple(RID p_body_A, const Vector3 &p_pivot_A, const Vector3 &p_axis_A, RID p_body_B, const Vector3 &p_pivot_B, const Vector3 &p_axis_B) {
-	BodyBullet *body_A = body_owner.get(p_body_A);
+	RigidBodyBullet *body_A = rigid_body_owner.get(p_body_A);
 	ERR_FAIL_COND_V(!body_A, RID());
 	JointAssertSpace(body_A, "A", RID());
 
-	BodyBullet *body_B = NULL;
+	RigidBodyBullet *body_B = NULL;
 	if (p_body_B.is_valid()) {
-		body_B = body_owner.get(p_body_B);
+		body_B = rigid_body_owner.get(p_body_B);
 		JointAssertSpace(body_B, "B", RID());
 		JointAssertSameSpace(body_A, body_B, RID());
 	}
@@ -955,13 +1029,13 @@ bool BulletPhysicsServer::hinge_joint_get_flag(RID p_joint, HingeJointFlag p_fla
 }
 
 RID BulletPhysicsServer::joint_create_slider(RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) {
-	BodyBullet *body_A = body_owner.get(p_body_A);
+	RigidBodyBullet *body_A = rigid_body_owner.get(p_body_A);
 	ERR_FAIL_COND_V(!body_A, RID());
 	JointAssertSpace(body_A, "A", RID());
 
-	BodyBullet *body_B = NULL;
+	RigidBodyBullet *body_B = NULL;
 	if (p_body_B.is_valid()) {
-		body_B = body_owner.get(p_body_B);
+		body_B = rigid_body_owner.get(p_body_B);
 		JointAssertSpace(body_B, "B", RID());
 		JointAssertSameSpace(body_A, body_B, RID());
 	}
@@ -991,13 +1065,13 @@ float BulletPhysicsServer::slider_joint_get_param(RID p_joint, SliderJointParam 
 }
 
 RID BulletPhysicsServer::joint_create_cone_twist(RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) {
-	BodyBullet *body_A = body_owner.get(p_body_A);
+	RigidBodyBullet *body_A = rigid_body_owner.get(p_body_A);
 	ERR_FAIL_COND_V(!body_A, RID());
 	JointAssertSpace(body_A, "A", RID());
 
-	BodyBullet *body_B = NULL;
+	RigidBodyBullet *body_B = NULL;
 	if (p_body_B.is_valid()) {
-		body_B = body_owner.get(p_body_B);
+		body_B = rigid_body_owner.get(p_body_B);
 		JointAssertSpace(body_B, "B", RID());
 		JointAssertSameSpace(body_A, body_B, RID());
 	}
@@ -1025,13 +1099,13 @@ float BulletPhysicsServer::cone_twist_joint_get_param(RID p_joint, ConeTwistJoin
 }
 
 RID BulletPhysicsServer::joint_create_generic_6dof(RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) {
-	BodyBullet *body_A = body_owner.get(p_body_A);
+	RigidBodyBullet *body_A = rigid_body_owner.get(p_body_A);
 	ERR_FAIL_COND_V(!body_A, RID());
 	JointAssertSpace(body_A, "A", RID());
 
-	BodyBullet *body_B = NULL;
+	RigidBodyBullet *body_B = NULL;
 	if (p_body_B.is_valid()) {
-		body_B = body_owner.get(p_body_B);
+		body_B = rigid_body_owner.get(p_body_B);
 		JointAssertSpace(body_B, "B", RID());
 		JointAssertSameSpace(body_A, body_B, RID());
 	}
@@ -1088,15 +1162,15 @@ void BulletPhysicsServer::free(RID p_rid) {
 
 		shape_owner.free(p_rid);
 		bulletdelete(shape);
-	} else if (body_owner.owns(p_rid)) {
+	} else if (rigid_body_owner.owns(p_rid)) {
 
-		BodyBullet *body = body_owner.get(p_rid);
+		RigidBodyBullet *body = rigid_body_owner.get(p_rid);
 
 		body->set_space(NULL);
 
 		body->remove_all_shapes(true);
 
-		body_owner.free(p_rid);
+		rigid_body_owner.free(p_rid);
 		bulletdelete(body);
 
 	} else if (area_owner.owns(p_rid)) {

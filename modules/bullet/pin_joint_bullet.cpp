@@ -31,10 +31,10 @@
 
 #include "pin_joint_bullet.h"
 #include "BulletDynamics/ConstraintSolver/btPoint2PointConstraint.h"
-#include "body_bullet.h"
+#include "rigid_body_bullet.h"
 #include "bullet_types_converter.h"
 
-PinJointBullet::PinJointBullet(BodyBullet *p_body_a, const Vector3 &p_pos_a, BodyBullet *p_body_b, const Vector3 &p_pos_b)
+PinJointBullet::PinJointBullet(RigidBodyBullet *p_body_a, const Vector3 &p_pos_a, RigidBodyBullet *p_body_b, const Vector3 &p_pos_b)
 	: JointBullet() {
 	if (p_body_b) {
 
@@ -42,14 +42,14 @@ PinJointBullet::PinJointBullet(BodyBullet *p_body_a, const Vector3 &p_pos_a, Bod
 		btVector3 btPivotB;
 		G_TO_B(p_pos_a, btPivotA);
 		G_TO_B(p_pos_b, btPivotB);
-		p2pConstraint = bulletnew(btPoint2PointConstraint(*p_body_a->get_bt_body(),
-				*p_body_b->get_bt_body(),
+		p2pConstraint = bulletnew(btPoint2PointConstraint(*p_body_a->get_bt_rigid_body(),
+				*p_body_b->get_bt_rigid_body(),
 				btPivotA,
 				btPivotB));
 	} else {
 		btVector3 btPivotA;
 		G_TO_B(p_pos_a, btPivotA);
-		p2pConstraint = bulletnew(btPoint2PointConstraint(*p_body_a->get_bt_body(), btPivotA));
+		p2pConstraint = bulletnew(btPoint2PointConstraint(*p_body_a->get_bt_rigid_body(), btPivotA));
 	}
 
 	setup(p2pConstraint);

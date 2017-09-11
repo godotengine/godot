@@ -35,6 +35,7 @@
 #include "BulletCollision/BroadphaseCollision/btCollisionAlgorithm.h"
 #include "LinearMath/btTransform.h"
 #include "collision_object_bullet.h"
+#include "space_bullet.h"
 
 class AreaBullet;
 class SpaceBullet;
@@ -70,13 +71,13 @@ public:
 		singleton->deltaTime = p_deltaTime;
 	}
 
-	static BulletPhysicsDirectBodyState *getSingleton(BodyBullet *p_body) {
+	static BulletPhysicsDirectBodyState *getSingleton(RigidBodyBullet *p_body) {
 		singleton->body = p_body;
 		return singleton;
 	}
 
 public:
-	BodyBullet *body;
+	RigidBodyBullet *body;
 	real_t deltaTime;
 
 private:
@@ -132,11 +133,11 @@ public:
 	virtual PhysicsDirectSpaceState *get_space_state();
 };
 
-class BodyBullet : public CollisionObjectBullet {
+class RigidBodyBullet : public RigidCollisionObjectBullet {
 
 public:
 	struct CollisionData {
-		BodyBullet *otherObject;
+		RigidBodyBullet *otherObject;
 		int other_object_shape;
 		int local_shape;
 		Vector3 hitLocalLocation;
@@ -161,14 +162,13 @@ public:
 	};
 
 	struct KinematicUtilities {
-		BodyBullet *m_owner;
+		RigidBodyBullet *m_owner;
 		btScalar m_margin;
 		btManifoldArray m_manifoldArray; ///keep track of the contact manifolds
 		class btPairCachingGhostObject *m_ghostObject;
 		Vector<KinematicShape> m_shapes;
-		//Vector<btPersistentManifold*> m_generatedManifold; /// Used to handle kinematic motion dynamic interact
 
-		KinematicUtilities(BodyBullet *p_owner);
+		KinematicUtilities(RigidBodyBullet *p_owner);
 		~KinematicUtilities();
 
 		/// Used to set the default shape to ghost
@@ -186,7 +186,6 @@ private:
 	KinematicUtilities *kinematic_utilities;
 
 	PhysicsServer::BodyMode mode;
-	SpaceBullet *space;
 	GodotMotionState *godotMotionState;
 	btRigidBody *btBody;
 	real_t gravity_scale;
@@ -211,18 +210,17 @@ private:
 	StateChangeCallback *onStateChange_callback;
 
 public:
-	BodyBullet();
-	~BodyBullet();
+	RigidBodyBullet();
+	~RigidBodyBullet();
 
 	void init_kinematic_utilities();
 	void destroy_kinematic_utilities();
 	_FORCE_INLINE_ class KinematicUtilities *get_kinematic_utilities() const { return kinematic_utilities; }
 
-	_FORCE_INLINE_ btRigidBody *get_bt_body() { return btBody; }
+	_FORCE_INLINE_ btRigidBody *get_bt_rigid_body() { return btBody; }
 
 	virtual void reload_body();
 	virtual void set_space(SpaceBullet *p_space);
-	_FORCE_INLINE_ SpaceBullet *get_space() const { return space; }
 
 	virtual void dispatch_callbacks();
 	void set_on_state_change(ObjectID p_id, const StringName &p_method, const Variant &p_udata = Variant());
@@ -241,11 +239,11 @@ public:
 	}
 
 	bool can_add_collision() { return collisionsCount < maxCollisionsDetection; }
-	bool add_collision_object(BodyBullet *p_otherObject, const Vector3 &p_hitWorldLocation, const Vector3 &p_hitLocalLocation, const Vector3 &p_hitNormal, int p_other_shape_index, int p_local_shape_index);
+	bool add_collision_object(RigidBodyBullet *p_otherObject, const Vector3 &p_hitWorldLocation, const Vector3 &p_hitLocalLocation, const Vector3 &p_hitNormal, int p_other_shape_index, int p_local_shape_index);
 
 	void assert_no_constraints();
 
-	void set_active(bool p_active);
+	void set_activation_state(bool p_active);
 	bool is_active() const;
 
 	void set_param(PhysicsServer::BodyParameter p_param, real_t);

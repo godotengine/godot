@@ -34,13 +34,13 @@
 
 #include "joint_bullet.h"
 
-class BodyBullet;
+class RigidBodyBullet;
 
 class PinJointBullet : public JointBullet {
 	class btPoint2PointConstraint *p2pConstraint;
 
 public:
-	PinJointBullet(BodyBullet *p_body_a, const Vector3 &p_pos_a, BodyBullet *p_body_b, const Vector3 &p_pos_b);
+	PinJointBullet(RigidBodyBullet *p_body_a, const Vector3 &p_pos_a, RigidBodyBullet *p_body_b, const Vector3 &p_pos_b);
 	~PinJointBullet();
 
 	virtual PhysicsServer::JointType get_type() const { return PhysicsServer::JOINT_PIN; }
