@@ -678,7 +678,7 @@
 			<argument index="0" name="type" type="String">
 			</argument>
 			<description>
-				Returns whether the given class is exist in [ClassDB].
+				Returns whether the given class exists in [ClassDB]. See [method ClassDB.class_exists].
 				[codeblock]
 				type_exists("Sprite") # returns true
 				type_exists("Variant") # returns false
@@ -2800,8 +2800,10 @@
 	</methods>
 	<members>
 		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok" brief="">
+			If [code]true[/code], hide the dialog when accepted. Default value: [code]true[/code].
 		</member>
 		<member name="dialog_text" type="String" setter="set_text" getter="get_text" brief="">
+			The dialog's built-in label text.
 		</member>
 	</members>
 	<signals>
@@ -2967,20 +2969,28 @@
 	</methods>
 	<members>
 		<member name="animation" type="String" setter="set_animation" getter="get_animation" brief="">
+			The current animation's name.
 		</member>
 		<member name="centered" type="bool" setter="set_centered" getter="is_centered" brief="">
+			If [code]true[/code], offset is relative to the sprite's center. Otherwise, offset is relative to the top-left corner. Default value: [code]false[/code].
 		</member>
 		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h" brief="">
+			If [code]true[/code], horizontally flips the sprite. Default value: [code]false[/code].
 		</member>
 		<member name="flip_v" type="bool" setter="set_flip_v" getter="is_flipped_v" brief="">
+			If [code]true[/code], vertically flips the sprite. Default value: [code]false[/code].
 		</member>
 		<member name="frame" type="int" setter="set_frame" getter="get_frame" brief="">
+			The current frame number.
 		</member>
 		<member name="frames" type="SpriteFrames" setter="set_sprite_frames" getter="get_sprite_frames" brief="">
+			The [SpriteFrames] resource which contains all frames.
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" brief="">
+			Pivot point.
 		</member>
 		<member name="playing" type="bool" setter="_set_playing" getter="_is_playing" brief="">
+			If [code]true[/code], process (play) the animation. Default value: [code]false[/code].
 		</member>
 	</members>
 	<signals>
@@ -3078,12 +3088,16 @@
 	</methods>
 	<members>
 		<member name="animation" type="String" setter="set_animation" getter="get_animation" brief="">
+			The current animation's name.
 		</member>
 		<member name="frame" type="int" setter="set_frame" getter="get_frame" brief="">
+			The current frame number.
 		</member>
 		<member name="frames" type="SpriteFrames" setter="set_sprite_frames" getter="get_sprite_frames" brief="">
+			The [SpriteFrames] resource which contains all frames.
 		</member>
 		<member name="playing" type="bool" setter="_set_playing" getter="_is_playing" brief="">
+			If [code]true[/code], process (play) the animation. Default value: [code]false[/code].
 		</member>
 	</members>
 	<signals>
@@ -3891,10 +3905,13 @@
 	</methods>
 	<members>
 		<member name="playback_default_blend_time" type="float" setter="set_default_blend_time" getter="get_default_blend_time" brief="">
+			The default blend time between animations.
 		</member>
 		<member name="playback_process_mode" type="int" setter="set_animation_process_mode" getter="get_animation_process_mode" brief="" enum="AnimationPlayer.AnimationProcessMode">
+			When to process an animation (AnimationProcessMode enums).
 		</member>
 		<member name="root_node" type="NodePath" setter="set_root" getter="get_root" brief="">
+			Start point relative to this AnimationPlayer for it to resolve animation track paths. Defaults to ".." (parent node).
 		</member>
 	</members>
 	<signals>
@@ -4554,6 +4571,7 @@
 	</methods>
 	<members>
 		<member name="playback_process_mode" type="int" setter="set_animation_process_mode" getter="get_animation_process_mode" brief="" enum="AnimationTreePlayer.AnimationProcessMode">
+			When to process an animation (AnimationProcessMode enums).
 		</member>
 	</members>
 	<constants>
@@ -7898,21 +7916,27 @@
 	</methods>
 	<members>
 		<member name="autoplay" type="bool" setter="set_autoplay" getter="is_autoplay_enabled" brief="">
+			If [code]true[/code], play the stream as soon as it is ready. Default value: [code]false[/code].
 		</member>
 		<member name="bus" type="String" setter="set_bus" getter="get_bus" brief="">
+			Name of the bus where this AudioStreamPlayer outputs. Default value: [code]"Master"[/code].
 		</member>
 		<member name="mix_target" type="int" setter="set_mix_target" getter="get_mix_target" brief="" enum="AudioStreamPlayer.MixTarget">
 		</member>
 		<member name="playing" type="bool" setter="_set_playing" getter="_is_active" brief="">
+			If [code]true[/code], play the stream.
 		</member>
 		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream" brief="">
+			[AudioStream] to play.
 		</member>
 		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db" brief="">
+			Audio gain ranging from -80 to 24. Default to 0.
 		</member>
 	</members>
 	<signals>
 		<signal name="finished">
 			<description>
+				Emitted when the stream has ended.
 			</description>
 		</signal>
 	</signals>
@@ -8064,16 +8088,21 @@
 		<member name="attenuation" type="float" setter="set_attenuation" getter="get_attenuation" brief="">
 		</member>
 		<member name="autoplay" type="bool" setter="set_autoplay" getter="is_autoplay_enabled" brief="">
+			If [code]true[/code], play the stream as soon as it is ready. Default value: [code]false[/code].
 		</member>
 		<member name="bus" type="String" setter="set_bus" getter="get_bus" brief="">
+			Name of the bus where this AudioStreamPlayer2D outputs. Default value: [code]"Master"[/code].
 		</member>
 		<member name="max_distance" type="float" setter="set_max_distance" getter="get_max_distance" brief="">
 		</member>
 		<member name="playing" type="bool" setter="_set_playing" getter="_is_active" brief="">
+			If [code]true[/code], play the stream.
 		</member>
 		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream" brief="">
+			[AudioStream] to play.
 		</member>
 		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db" brief="">
+			Audio gain ranging from -80 to 24. Default to 0.
 		</member>
 	</members>
 	<signals>
@@ -8360,8 +8389,10 @@
 		<member name="attenuation_model" type="int" setter="set_attenuation_model" getter="get_attenuation_model" brief="" enum="AudioStreamPlayer3D.AttenuationModel">
 		</member>
 		<member name="autoplay" type="bool" setter="set_autoplay" getter="is_autoplay_enabled" brief="">
+			If [code]true[/code], play the stream as soon as it is ready. Default value: [code]false[/code].
 		</member>
 		<member name="bus" type="String" setter="set_bus" getter="get_bus" brief="">
+			Name of the bus where this AudioStreamPlayer3D outputs. Default value: [code]"Master"[/code].
 		</member>
 		<member name="doppler_tracking" type="int" setter="set_doppler_tracking" getter="get_doppler_tracking" brief="" enum="AudioStreamPlayer3D.DopplerTracking">
 		</member>
@@ -8378,8 +8409,10 @@
 		<member name="out_of_range_mode" type="int" setter="set_out_of_range_mode" getter="get_out_of_range_mode" brief="" enum="AudioStreamPlayer3D.OutOfRangeMode">
 		</member>
 		<member name="playing" type="bool" setter="_set_playing" getter="_is_active" brief="">
+			If [code]true[/code], play the stream.
 		</member>
 		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream" brief="">
+			[AudioStream] to play.
 		</member>
 		<member name="unit_db" type="float" setter="set_unit_db" getter="get_unit_db" brief="">
 		</member>
@@ -8448,8 +8481,10 @@
 	</methods>
 	<members>
 		<member name="audio_stream" type="AudioStream" setter="set_audio_stream" getter="get_audio_stream" brief="">
+			[AudioStream] to play.
 		</member>
 		<member name="random_pitch" type="float" setter="set_random_pitch" getter="get_random_pitch" brief="">
+			Pitch range that the player chooses randomly at playback time.
 		</member>
 	</members>
 	<constants>
@@ -8562,18 +8597,25 @@
 	</methods>
 	<members>
 		<member name="data" type="PoolByteArray" setter="set_data" getter="get_data" brief="">
+			[PoolByteArray] that represents the sample data.
 		</member>
 		<member name="format" type="int" setter="set_format" getter="get_format" brief="" enum="AudioStreamSample.Format">
+			The data format.
 		</member>
 		<member name="loop_begin" type="int" setter="set_loop_begin" getter="get_loop_begin" brief="">
+			If looping, playback will restart at this sample location.
 		</member>
 		<member name="loop_end" type="int" setter="set_loop_end" getter="get_loop_end" brief="">
+			If looping and playback passes this point, it will go back to the beginning of the loop.
 		</member>
 		<member name="loop_mode" type="int" setter="set_loop_mode" getter="get_loop_mode" brief="" enum="AudioStreamSample.LoopMode">
+			Loop mode of this [AudioStreamSample].
 		</member>
 		<member name="mix_rate" type="int" setter="set_mix_rate" getter="get_mix_rate" brief="">
+			Mix rate of this [AudioStreamSample].
 		</member>
 		<member name="stereo" type="bool" setter="set_stereo" getter="is_stereo" brief="">
+			If [code]true[/code], this [AudioStreamSample] is stereo.
 		</member>
 	</members>
 	<constants>
@@ -8622,8 +8664,10 @@
 	</methods>
 	<members>
 		<member name="copy_mode" type="int" setter="set_copy_mode" getter="get_copy_mode" brief="" enum="BackBufferCopy.CopyMode">
+			The copy mode of the BackBufferCopy (CopyMode enums).
 		</member>
 		<member name="rect" type="Rect2" setter="set_rect" getter="get_rect" brief="">
+			The area covered by the BackBufferCopy.
 		</member>
 	</members>
 	<constants>
@@ -8666,7 +8710,7 @@
 			<return type="int" enum="BaseButton.ActionMode">
 			</return>
 			<description>
-				Return the current mode of action (see [method set_action_mode]) (one of the ACTION_MODE_* constants).
+				Returns the current mode of action (see [method set_action_mode]) (one of the ACTION_MODE_* constants).
 			</description>
 		</method>
 		<method name="get_button_group" qualifiers="const">
@@ -8679,7 +8723,7 @@
 			<return type="int" enum="BaseButton.DrawMode">
 			</return>
 			<description>
-				Return the visual state used to draw the button. This is useful mainly when implementing your own draw code by either overriding _draw() or connecting to "draw" signal. The visual state of the button is defined by the DRAW_* enum.
+				Returns the visual state used to draw the button. This is useful mainly when implementing your own draw code by either overriding _draw() or connecting to "draw" signal. The visual state of the button is defined by the DRAW_* enum.
 			</description>
 		</method>
 		<method name="get_enabled_focus_mode" qualifiers="const">
@@ -8693,20 +8737,21 @@
 			<return type="ShortCut">
 			</return>
 			<description>
+				Returns a [ShortCut] associated with this button.
 			</description>
 		</method>
 		<method name="is_disabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Return whether the button is in disabled state (see [method set_disabled]).
+				Returns whether the button is in disabled state (see [method set_disabled]).
 			</description>
 		</method>
 		<method name="is_hovered" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Return true if mouse entered the button before it exit.
+				Returns true if mouse entered the button before it exit.
 			</description>
 		</method>
 		<method name="is_pressed" qualifiers="const">
@@ -8720,7 +8765,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Return the toggle_mode property (see [method set_toggle_mode]).
+				Returns the toggle_mode property (see [method set_toggle_mode]).
 			</description>
 		</method>
 		<method name="set_action_mode">
@@ -8746,7 +8791,7 @@
 			<argument index="0" name="disabled" type="bool">
 			</argument>
 			<description>
-				Set the button into disabled state. When a button is disabled, it can't be clicked or toggled.
+				Sets the button into disabled state. When a button is disabled, it can't be clicked or toggled.
 			</description>
 		</method>
 		<method name="set_enabled_focus_mode">
@@ -8764,7 +8809,7 @@
 			<argument index="0" name="pressed" type="bool">
 			</argument>
 			<description>
-				Set the button to pressed state (only if toggle_mode is active).
+				Sets the button to pressed state (only if toggle_mode is active).
 			</description>
 		</method>
 		<method name="set_shortcut">
@@ -8773,6 +8818,7 @@
 			<argument index="0" name="shortcut" type="ShortCut">
 			</argument>
 			<description>
+				Sets a [ShortCut] for this button.
 			</description>
 		</method>
 		<method name="set_toggle_mode">
@@ -8781,24 +8827,30 @@
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
-				Set the button toggle_mode property. Toggle mode makes the button flip state between pressed and unpressed each time its area is clicked.
+				Sets the button toggle_mode property. Toggle mode makes the button flip state between pressed and unpressed each time its area is clicked.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="action_mode" type="int" setter="set_action_mode" getter="get_action_mode" brief="" enum="BaseButton.ActionMode">
+			When to consider the button pressed (ACTION_MODE_*).
 		</member>
 		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" brief="">
+			If [code]true[/code], players can't interact with the button. Default value: [code]false[/code].
 		</member>
 		<member name="enabled_focus_mode" type="int" setter="set_enabled_focus_mode" getter="get_enabled_focus_mode" brief="" enum="Control.FocusMode">
 		</member>
 		<member name="group" type="ButtonGroup" setter="set_button_group" getter="get_button_group" brief="">
+			A [ButtonGroup] that this button belongs to.
 		</member>
 		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed" brief="">
+			Pressed state of the button.
 		</member>
 		<member name="shortcut" type="ShortCut" setter="set_shortcut" getter="get_shortcut" brief="">
+			A [ShortCut] associated with the button.
 		</member>
 		<member name="toggle_mode" type="bool" setter="set_toggle_mode" getter="is_toggle_mode" brief="">
+			If [code]true[/code], the button switches between pressed and unpressed each click.
 		</member>
 	</members>
 	<signals>
@@ -9312,6 +9364,7 @@
 	</methods>
 	<members>
 		<member name="alignment" type="int" setter="set_alignment" getter="get_alignment" brief="" enum="BoxContainer.AlignMode">
+			The alignment of children in the container.
 		</member>
 	</members>
 	<constants>
@@ -9353,6 +9406,7 @@
 	</methods>
 	<members>
 		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents" brief="">
+			The half extents for the shape.
 		</member>
 	</members>
 	<constants>
@@ -9449,14 +9503,19 @@
 	</methods>
 	<members>
 		<member name="align" type="int" setter="set_text_align" getter="get_text_align" brief="" enum="Button.TextAlign">
+			The text alignment policy (ALIGN_*). Default value: [code]ALIGN_CENTER[/code].
 		</member>
 		<member name="clip_text" type="bool" setter="set_clip_text" getter="get_clip_text" brief="">
+			If [code]true[/code], text that is too large to fit the button is clipped. Otherwise, the button will always be wide enough to hold the text. Default value: [code]false[/code].
 		</member>
 		<member name="flat" type="bool" setter="set_flat" getter="is_flat" brief="">
+			If [code]true[/code], don't display decoration unless hovered or pressed. Default value: [code]false[/code].
 		</member>
 		<member name="icon" type="Texture" setter="set_button_icon" getter="get_button_icon" brief="">
+			The icon visible next to the button text.
 		</member>
 		<member name="text" type="String" setter="set_text" getter="get_text" brief="">
+			The button text inside the button area.
 		</member>
 	</members>
 	<constants>
@@ -10613,6 +10672,7 @@
 			<argument index="0" name="screen_point" type="Vector2">
 			</argument>
 			<description>
+				Transform the given [Vector2] position into the one local to the item.
 			</description>
 		</method>
 		<method name="make_input_local" qualifiers="const">
@@ -10621,6 +10681,7 @@
 			<argument index="0" name="event" type="InputEvent">
 			</argument>
 			<description>
+				Transform the given [InputEvent] into the one local to the item.
 			</description>
 		</method>
 		<method name="set_as_toplevel">
@@ -10647,7 +10708,7 @@
 			<argument index="0" name="light_mask" type="int">
 			</argument>
 			<description>
-				Set the ligtht mask number of this item.
+				Set the light mask number of this item.
 			</description>
 		</method>
 		<method name="set_material">
@@ -10682,6 +10743,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+				If [code]true[/code], put this node up for receiving NOTIFICATION_TRANSFORM_CHANGED.
 			</description>
 		</method>
 		<method name="set_self_modulate">
@@ -10729,20 +10791,28 @@
 	</methods>
 	<members>
 		<member name="light_mask" type="int" setter="set_light_mask" getter="get_light_mask" brief="">
+			Bit flags representing light mask of this item.
 		</member>
 		<member name="material" type="Material" setter="set_material" getter="get_material" brief="">
+			A [Material] used to draw this item.
 		</member>
 		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" brief="">
+			Color from the CanvasItem and its children multiplies with this Color before drawing. Default value: [code]Color(1.0, 1.0, 1.0, 1.0)[/code].
 		</member>
 		<member name="self_modulate" type="Color" setter="set_self_modulate" getter="get_self_modulate" brief="">
+			Color from the CanvasItem multiplies with this Color before drawing. Default value: [code]Color(1.0, 1.0, 1.0, 1.0)[/code].
 		</member>
 		<member name="show_behind_parent" type="bool" setter="set_draw_behind_parent" getter="is_draw_behind_parent_enabled" brief="">
+			If [code]true[/code], draw this CanvasItem behind its parent. Default value: [code]false[/code].
 		</member>
 		<member name="show_on_top" type="bool" setter="_set_on_top" getter="_is_on_top" brief="">
+			If [code]true[/code], draw this item in front of others. Default value: [code]false[/code].
 		</member>
 		<member name="use_parent_material" type="bool" setter="set_use_parent_material" getter="get_use_parent_material" brief="">
+			If [code]true[/code], or not this item should use its parent's material. Default value: [code]false[/code].
 		</member>
 		<member name="visible" type="bool" setter="set_visible" getter="is_visible" brief="">
+			If [code]true[/code], this item and its children will be visible. Otherwise, the engine will draw everything else as if it weren't exist. (E.g. [Control] nodes will not take up container space.) Also, child node's visibility value doesn't matter if the parent is invisible. Default value: [code]true[/code].
 		</member>
 	</members>
 	<signals>
@@ -10837,26 +10907,36 @@
 	</methods>
 	<members>
 		<member name="blend_mode" type="int" setter="set_blend_mode" getter="get_blend_mode" brief="" enum="CanvasItemMaterial.BlendMode">
+			Blend mode of this material (BLEND_MODE_*). Default value: [code]BLEND_MODE_MIX[/code].
 		</member>
 		<member name="light_mode" type="int" setter="set_light_mode" getter="get_light_mode" brief="" enum="CanvasItemMaterial.LightMode">
+			Light mode of this material (LIGHT_MODE_*). Default value: [code]LIGHT_MODE_NORMAL[/code].
 		</member>
 	</members>
 	<constants>
 		<constant name="BLEND_MODE_MIX" value="0">
+			Mix blend mode.
 		</constant>
 		<constant name="BLEND_MODE_ADD" value="1">
+			Additive blending.
 		</constant>
 		<constant name="BLEND_MODE_SUB" value="2">
+			Subtractive blending.
 		</constant>
 		<constant name="BLEND_MODE_MUL" value="3">
+			Multiplicative blending.
 		</constant>
 		<constant name="BLEND_MODE_PREMULT_ALPHA" value="4">
+			Premultiplied alpha blending.
 		</constant>
 		<constant name="LIGHT_MODE_NORMAL" value="0">
+			Normal light mode.
 		</constant>
 		<constant name="LIGHT_MODE_UNSHADED" value="1">
+			Unshaded light mode.
 		</constant>
 		<constant name="LIGHT_MODE_LIGHT_ONLY" value="2">
+			Light only mode.
 		</constant>
 	</constants>
 </class>
@@ -10988,12 +11068,16 @@
 	</methods>
 	<members>
 		<member name="layer" type="int" setter="set_layer" getter="get_layer" brief="">
+			The layer index, determines the draw order, a lower value will be below a higher one.
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" brief="">
+			The base offset for this layer.
 		</member>
 		<member name="rotation" type="float" setter="set_rotationd" getter="get_rotationd" brief="">
+			The base rotation for this layer in degrees.
 		</member>
 		<member name="scale" type="Vector2" setter="set_scale" getter="get_scale" brief="">
+			The base scale for this layer.
 		</member>
 	</members>
 	<constants>
@@ -11011,7 +11095,7 @@
 			<return type="Color">
 			</return>
 			<description>
-				Gets the canvas tint color
+				Gets the canvas tint color.
 			</description>
 		</method>
 		<method name="set_color">
@@ -11020,12 +11104,13 @@
 			<argument index="0" name="color" type="Color">
 			</argument>
 			<description>
-				Sets the canvas tint color
+				Sets the canvas tint color.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="color" type="Color" setter="set_color" getter="get_color" brief="">
+			The canvas tint color.
 		</member>
 	</members>
 	<constants>
@@ -11234,6 +11319,7 @@
 	</methods>
 	<members>
 		<member name="use_top_left" type="bool" setter="set_use_top_left" getter="is_using_top_left" brief="">
+			If [code]true[/code], anchor the container children to the top left corner of the the container boundaries, moving all its children to that position, (the children new center will be the top left corner of the container). Default value: [code]false[/code].
 		</member>
 	</members>
 	<constants>
@@ -11354,6 +11440,7 @@
 	</methods>
 	<members>
 		<member name="radius" type="float" setter="set_radius" getter="get_radius" brief="">
+			The radius of the circle shape.
 		</member>
 	</members>
 	<constants>
@@ -12142,12 +12229,16 @@
 	</methods>
 	<members>
 		<member name="build_mode" type="int" setter="set_build_mode" getter="get_build_mode" brief="" enum="CollisionPolygon2D.BuildMode">
+			Whether to build a polygon as [ConvexPolygonShape2D] (BUILD_SOLIDS) or [ConcavePolygonShape2D] (BUILD_SEGMENTS). Default value: [code]BUILD_SOLIDS[/code].
 		</member>
 		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" brief="">
+			If [code]true[/code], this polygon will not count for collisions. Default value: [code]false[/code].
 		</member>
 		<member name="one_way_collision" type="bool" setter="set_one_way_collision" getter="is_one_way_collision_enabled" brief="">
+			If [code]true[/code], enable one way collision. Default value: [code]false[/code].
 		</member>
 		<member name="polygon" type="PoolVector2Array" setter="set_polygon" getter="get_polygon" brief="">
+			The array of points forming the polygon.
 		</member>
 	</members>
 	<constants>
@@ -12204,8 +12295,10 @@
 	</methods>
 	<members>
 		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" brief="">
+			If [code]true[/code], this node will not count for collisions. Default value: [code]false[/code].
 		</member>
 		<member name="shape" type="Shape" setter="set_shape" getter="get_shape" brief="">
+			A [Shape] resource for this node.
 		</member>
 	</members>
 	<constants>
@@ -12266,10 +12359,13 @@
 	</methods>
 	<members>
 		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" brief="">
+			If [code]true[/code], this node will not count for collisions. Default value: [code]false[/code].
 		</member>
 		<member name="one_way_collision" type="bool" setter="set_one_way_collision" getter="is_one_way_collision_enabled" brief="">
+			If [code]true[/code], enable one way collision. Default value: [code]false[/code].
 		</member>
 		<member name="shape" type="Shape2D" setter="set_shape" getter="get_shape" brief="">
+			A [Shape2D] resource for this node.
 		</member>
 	</members>
 	<constants>
@@ -12542,12 +12638,14 @@
 			<return type="Color">
 			</return>
 			<description>
+				Returns selected color.
 			</description>
 		</method>
 		<method name="get_picker">
 			<return type="ColorPicker">
 			</return>
 			<description>
+				Returns [ColorPicker] owned by this button.
 			</description>
 		</method>
 		<method name="is_editing_alpha" qualifiers="const">
@@ -12572,13 +12670,16 @@
 			<argument index="0" name="color" type="Color">
 			</argument>
 			<description>
+				Sets selected color.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="color" type="Color" setter="set_pick_color" getter="get_pick_color" brief="">
+			The selected color.
 		</member>
 		<member name="edit_alpha" type="bool" setter="set_edit_alpha" getter="is_editing_alpha" brief="">
+			If [code]true[/code], allow editing the alpha channel. Default value: [code]true[/code].
 		</member>
 	</members>
 	<signals>
@@ -14247,8 +14348,10 @@
 </class>
 <class name="Curve" inherits="Resource" category="Core">
 	<brief_description>
+		An interpolation curve.
 	</brief_description>
 	<description>
+		An interpolation curve.
 	</description>
 	<methods>
 		<method name="add_point">
@@ -14454,17 +14557,22 @@
 	</methods>
 	<members>
 		<member name="_data" type="Array" setter="_set_data" getter="_get_data" brief="">
+			An [Array] containing curve data.
 		</member>
 		<member name="bake_resolution" type="int" setter="set_bake_resolution" getter="get_bake_resolution" brief="">
+			Bake resolution of the curve. The higher the value, the more accurate it will be.
 		</member>
 		<member name="max_value" type="float" setter="set_max_value" getter="get_max_value" brief="">
+			Maximum value for the curve editor.
 		</member>
 		<member name="min_value" type="float" setter="set_min_value" getter="get_min_value" brief="">
+			Minimum value for the curve editor.
 		</member>
 	</members>
 	<signals>
 		<signal name="range_changed">
 			<description>
+				Emitted when changing max or min value.
 			</description>
 		</signal>
 	</signals>
@@ -14659,8 +14767,10 @@
 	</methods>
 	<members>
 		<member name="_data" type="Dictionary" setter="_set_data" getter="_get_data" brief="">
+			A [Dictionary] containing curve data.
 		</member>
 		<member name="bake_interval" type="float" setter="set_bake_interval" getter="get_bake_interval" brief="">
+			Bake interval of the curve. The higher the value, the smoother and simpler it will be.
 		</member>
 	</members>
 	<constants>
@@ -19068,6 +19178,7 @@
 			<return type="Variant">
 			</return>
 			<description>
+				Call the function on the instance.
 			</description>
 		</method>
 		<method name="set_function">
@@ -39376,7 +39487,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the metadata of an item, which might be of any type. You can set it with [method set_item_metadata], which provides a simple way of assigning context data to items.
+				Returns the metadata of an item, which might be of any type. You can set it with [method set_item_metadata], which provides a simple way of assigning context data to items.
 			</description>
 		</method>
 		<method name="get_item_shortcut" qualifiers="const">
@@ -39385,6 +39496,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the [ShortCut] of the item at index "idx".
 			</description>
 		</method>
 		<method name="get_item_submenu" qualifiers="const">
@@ -39393,7 +39505,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the submenu name of the item at index "idx".
+				Returns the submenu name of the item at index "idx".
 			</description>
 		</method>
 		<method name="get_item_text" qualifiers="const">
@@ -39402,7 +39514,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the text of the item at index "idx".
+				Returns the text of the item at index "idx".
 			</description>
 		</method>
 		<method name="get_item_tooltip" qualifiers="const">
@@ -39411,6 +39523,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the tooltip text of the item at index "idx".
 			</description>
 		</method>
 		<method name="is_hide_on_checkable_item_selection">
@@ -39433,7 +39546,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return whether the item at index "idx" has a checkbox. Note that checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually.
+				Returns whether the item at index "idx" has a checkbox. Note that checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually.
 			</description>
 		</method>
 		<method name="is_item_checked" qualifiers="const">
@@ -39442,7 +39555,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the checkstate status of the item at index "idx".
+				Returns the checkstate status of the item at index "idx".
 			</description>
 		</method>
 		<method name="is_item_disabled" qualifiers="const">
@@ -39451,7 +39564,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return whether the item at index "idx" is disabled. When it is disabled it can't be selected, or its action invoked.
+				Returns whether the item at index "idx" is disabled. When it is disabled it can't be selected, or its action invoked.
 			</description>
 		</method>
 		<method name="is_item_separator" qualifiers="const">
@@ -39460,7 +39573,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return whether the item is a seperator. If it is, it would be displayed as a line.
+				Returns whether the item is a seperator. If it is, it would be displayed as a line.
 			</description>
 		</method>
 		<method name="remove_item">
@@ -48596,6 +48709,7 @@
 			<argument index="0" name="from" type="bool">
 			</argument>
 			<description>
+				Return "True" if true, "False" otherwise.
 			</description>
 		</method>
 		<method name="String">
@@ -59913,20 +60027,21 @@
 			<return type="TextureButton">
 			</return>
 			<description>
-				Return the close [TextureButton].
+				Returns the close [TextureButton].
 			</description>
 		</method>
 		<method name="get_resizable" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns whether the window is resizable.
 			</description>
 		</method>
 		<method name="get_title" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
-				Return the title of the window.
+				Returns the title of the window.
 			</description>
 		</method>
 		<method name="set_resizable">
@@ -59935,6 +60050,7 @@
 			<argument index="0" name="resizable" type="bool">
 			</argument>
 			<description>
+				Set resizable property of the window.
 			</description>
 		</method>
 		<method name="set_title">
