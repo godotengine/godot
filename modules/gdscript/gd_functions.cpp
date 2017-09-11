@@ -1177,20 +1177,28 @@ void GDFunctions::call(Function p_func, const Variant **p_args, int p_arg_count,
 
 			VALIDATE_ARG_COUNT(1);
 			switch (p_args[0]->get_type()) {
+				case Variant::STRING: {
+
+					String d = *p_args[0];
+					r_ret = d.length();
+				} break;
 				case Variant::DICTIONARY: {
+
 					Dictionary d = *p_args[0];
 					r_ret = d.size();
 				} break;
 				case Variant::ARRAY: {
+
 					Array d = *p_args[0];
 					r_ret = d.size();
 				} break;
 				case Variant::POOL_BYTE_ARRAY: {
+
 					PoolVector<uint8_t> d = *p_args[0];
 					r_ret = d.size();
-
 				} break;
 				case Variant::POOL_INT_ARRAY: {
+
 					PoolVector<int> d = *p_args[0];
 					r_ret = d.size();
 				} break;
@@ -1200,14 +1208,14 @@ void GDFunctions::call(Function p_func, const Variant **p_args, int p_arg_count,
 					r_ret = d.size();
 				} break;
 				case Variant::POOL_STRING_ARRAY: {
+
 					PoolVector<String> d = *p_args[0];
 					r_ret = d.size();
-
 				} break;
 				case Variant::POOL_VECTOR2_ARRAY: {
+
 					PoolVector<Vector2> d = *p_args[0];
 					r_ret = d.size();
-
 				} break;
 				case Variant::POOL_VECTOR3_ARRAY: {
 
