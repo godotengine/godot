@@ -12196,6 +12196,7 @@
 			<argument index="0" name="resource" type="Resource">
 			</argument>
 			<description>
+				If this method exists within a script it will be called whenever the shape resource has been modified.
 			</description>
 		</method>
 		<method name="set_disabled">
