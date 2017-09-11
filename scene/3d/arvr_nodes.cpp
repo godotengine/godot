@@ -31,7 +31,6 @@
 #include "arvr_nodes.h"
 #include "core/os/input.h"
 #include "servers/arvr/arvr_interface.h"
-#include "servers/arvr/arvr_positional_tracker.h"
 #include "servers/arvr_server.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -142,6 +141,7 @@ void ARVRController::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_joystick_axis", "axis"), &ARVRController::get_joystick_axis);
 
 	ClassDB::bind_method(D_METHOD("get_is_active"), &ARVRController::get_is_active);
+	ClassDB::bind_method(D_METHOD("get_hand"), &ARVRController::get_hand);
 
 	ADD_SIGNAL(MethodInfo("button_pressed", PropertyInfo(Variant::INT, "button")));
 	ADD_SIGNAL(MethodInfo("button_release", PropertyInfo(Variant::INT, "button")));
@@ -202,6 +202,19 @@ float ARVRController::get_joystick_axis(int p_axis) const {
 
 bool ARVRController::get_is_active() const {
 	return is_active;
+};
+
+ARVRPositionalTracker::TrackerHand ARVRController::get_hand() const {
+	// get our ARVRServer
+	ARVRServer *arvr_server = ARVRServer::get_singleton();
+	ERR_FAIL_NULL_V(arvr_server, ARVRPositionalTracker::TRACKER_HAND_UNKNOWN);
+
+	ARVRPositionalTracker *tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, controller_id);
+	if (tracker == NULL) {
+		return ARVRPositionalTracker::TRACKER_HAND_UNKNOWN;
+	};
+
+	return tracker->get_hand();
 };
 
 String ARVRController::get_configuration_warning() const {

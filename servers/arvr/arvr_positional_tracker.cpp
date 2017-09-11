@@ -31,6 +31,10 @@
 #include "core/os/input.h"
 
 void ARVRPositionalTracker::_bind_methods() {
+	BIND_ENUM_CONSTANT(TRACKER_HAND_UNKNOWN);
+	BIND_ENUM_CONSTANT(TRACKER_LEFT_HAND);
+	BIND_ENUM_CONSTANT(TRACKER_RIGHT_HAND);
+
 	// this class is read only from GDScript, so we only have access to getters..
 	ClassDB::bind_method(D_METHOD("get_type"), &ARVRPositionalTracker::get_type);
 	ClassDB::bind_method(D_METHOD("get_name"), &ARVRPositionalTracker::get_name);
@@ -39,6 +43,7 @@ void ARVRPositionalTracker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_orientation"), &ARVRPositionalTracker::get_orientation);
 	ClassDB::bind_method(D_METHOD("get_tracks_position"), &ARVRPositionalTracker::get_tracks_position);
 	ClassDB::bind_method(D_METHOD("get_position"), &ARVRPositionalTracker::get_position);
+	ClassDB::bind_method(D_METHOD("get_hand"), &ARVRPositionalTracker::get_hand);
 	ClassDB::bind_method(D_METHOD("get_transform", "adjust_by_reference_frame"), &ARVRPositionalTracker::get_transform);
 
 	// these functions we don't want to expose to normal users but do need to be callable from GDNative
@@ -141,6 +146,14 @@ Vector3 ARVRPositionalTracker::get_rw_position() const {
 	return rw_position;
 };
 
+ARVRPositionalTracker::TrackerHand ARVRPositionalTracker::get_hand() const {
+	return hand;
+};
+
+void ARVRPositionalTracker::set_hand(const ARVRPositionalTracker::TrackerHand p_hand) {
+	hand = p_hand;
+};
+
 Transform ARVRPositionalTracker::get_transform(bool p_adjust_by_reference_frame) const {
 	Transform new_transform;
 
@@ -164,6 +177,7 @@ ARVRPositionalTracker::ARVRPositionalTracker() {
 	tracker_id = 0;
 	tracks_orientation = false;
 	tracks_position = false;
+	hand = TRACKER_HAND_UNKNOWN;
 };
 
 ARVRPositionalTracker::~ARVRPositionalTracker(){

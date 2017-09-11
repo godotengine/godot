@@ -33,6 +33,7 @@
 
 #include "scene/3d/camera.h"
 #include "scene/3d/spatial.h"
+#include "servers/arvr/arvr_positional_tracker.h"
 
 /**
 	@author Bastiaan Olij <mux213@gmail.com>
@@ -84,6 +85,7 @@ public:
 	float get_joystick_axis(int p_axis) const;
 
 	bool get_is_active() const;
+	ARVRPositionalTracker::TrackerHand get_hand() const;
 
 	String get_configuration_warning() const;
 
