@@ -67,8 +67,8 @@ RID Material::get_rid() const {
 }
 void Material::_validate_property(PropertyInfo &property) const {
 
-	if (!_can_do_next_pass() && property.name=="next_pass") {
-		property.usage=0;
+	if (!_can_do_next_pass() && property.name == "next_pass") {
+		property.usage = 0;
 	}
 }
 
@@ -80,7 +80,7 @@ void Material::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_render_priority", "priority"), &Material::set_render_priority);
 	ClassDB::bind_method(D_METHOD("get_render_priority"), &Material::get_render_priority);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "render_priority", PROPERTY_HINT_RANGE, itos(RENDER_PRIORITY_MIN) + "," + itos(RENDER_PRIORITY_MAX) + ",1"), "set_render_priority", "get_render_priority");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_priority", PROPERTY_HINT_RANGE, itos(RENDER_PRIORITY_MIN) + "," + itos(RENDER_PRIORITY_MAX) + ",1"), "set_render_priority", "get_render_priority");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "next_pass", PROPERTY_HINT_RESOURCE_TYPE, "Material"), "set_next_pass", "get_next_pass");
 
 	BIND_CONSTANT(RENDER_PRIORITY_MAX);
@@ -212,7 +212,7 @@ void ShaderMaterial::get_argument_options(const StringName &p_function, int p_id
 
 bool ShaderMaterial::_can_do_next_pass() const {
 
-	return shader.is_valid() && shader->get_mode()==Shader::MODE_SPATIAL;
+	return shader.is_valid() && shader->get_mode() == Shader::MODE_SPATIAL;
 }
 
 ShaderMaterial::ShaderMaterial() {
