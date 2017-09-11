@@ -494,7 +494,11 @@
 			<argument index="0" name="var" type="Variant">
 			</argument>
 			<description>
+<<<<<<< HEAD
+				Returns length of Variant 'var'. Length is the character count of String, element count of Array, size of Dictionary, etc. Note: Generates a fatal error if Variant can not provide a length.
+=======
 				Returns length of Variant 'var'. Length is the element count of an Array, size of a Dictionary, etc. Note: Generates a fatal error if Variant can not provide a length.
+>>>>>>> 75b92e809dc95aefd3afab5a9efbd582a1a8d953
 				[codeblock]
 				a = [1, 2, 3, 4]
 				print(len(a))
@@ -530,7 +534,11 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Load a resource from the filesystem, pass a valid path as argument.
+				Load a resource from the filesystem located at 'path'. Note: resource paths can be obtained by right clicking on a resource in the Assets Pannel and choosing "Copy Path".
+				[codeblock]
+				# load a scene called main located in the root of the project directory
+				var main = load("res://main.tscn")
+				[/codeblock]
 			</description>
 		</method>
 		<method name="log">
@@ -539,7 +547,11 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Natural logarithm.
+				Natural logarithm. The amount of time needed to reach a certain level of continuous growth. Note: This is not the same as the log funcation on your calculator which is a base 10 logarithm.
+				[codeblock]
+				# a is 2.302585
+				a = log(10)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="max">
@@ -550,7 +562,13 @@
 			<argument index="1" name="b" type="float">
 			</argument>
 			<description>
-				Return the maximum of two values.
+				Returns the maximum of two values.
+				[codeblock]
+				# a is 2
+				a = max(1,2)
+				# a is -3.99
+				a = max(-3.99, -4)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="min">
@@ -561,7 +579,13 @@
 			<argument index="1" name="b" type="float">
 			</argument>
 			<description>
-				Return the minimum of two values.
+				Returns the minimum of two values.
+				[codeblock]
+				# a is 1
+				a = min(1,2)
+				# a is -4
+				a = min(-3.99, -4)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="nearest_po2">
@@ -570,7 +594,15 @@
 			<argument index="0" name="val" type="int">
 			</argument>
 			<description>
-				Return the nearest larger power of 2 for an integer.
+				Returns the nearest larger power of 2 for an integer.
+				[codeblock]
+				# a is 4
+				a = nearest_po2(3)
+				# a is 4
+				a = nearest_po2(4)
+				# a is 8
+				a = nearest_po2(5)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="parse_json">
@@ -581,6 +613,13 @@
 			<description>
 				Parse JSON text to a Variant (use [method typeof] to check if it is what you expect).
 				Be aware that the JSON specification does not define integer or float types, but only a number type. Therefore, parsing a JSON text will convert every numerical values to [float] types.
+				[codeblock]
+				p = parse_json('["a", "b", "c"]')
+				if typeof(p) == TYPE_ARRAY:
+				    print(p[0])
+				else:
+					print("unexpected results")
+				[/codeblock]
 			</description>
 		</method>
 		<method name="pow">
@@ -591,7 +630,11 @@
 			<argument index="1" name="y" type="float">
 			</argument>
 			<description>
-				Power function, x elevate to y.
+				Returns the result of 'x' raised to the power of 'y'.
+				[codeblock]
+				# a is 32
+				a = pow(2,5)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="preload">
@@ -600,14 +643,22 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Preload a resource from the filesystem. The resource is loaded during script parsing.
+				Returns a resource from the filesystem that is loaded during script parsing. Note: resource paths can be obtained by right clicking on a resource in the Assets Pannel and choosing "Copy Path".
+				[codeblock]
+				# load a scene called main located in the root of the project directory
+				var main = preload("res://main.tscn")
 			</description>
 		</method>
 		<method name="print" qualifiers="vararg">
 			<return type="void">
 			</return>
 			<description>
-				Print one or more arguments to strings in the best way possible to a console line.
+				Converts one or more arguments to strings in the best way possible and prints them to the console.
+				[codeblock]
+				a = [1,2,3]
+				print("a","b",a)
+				[/codeblock]
+				Prints ab[1, 2, 3]
 			</description>
 		</method>
 		<method name="print_stack">
