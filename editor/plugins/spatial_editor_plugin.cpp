@@ -1949,7 +1949,16 @@ void SpatialEditorViewport::_draw() {
 
 	if (cursor.region_select) {
 
-		VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(cursor.region_begin, cursor.region_end - cursor.region_begin), Color(0.7, 0.7, 1.0, 0.3));
+		Vector2 corrected_region_begin;
+		Vector2 corrected_region_end;
+
+		corrected_region_begin.x = cursor.region_begin.x < cursor.region_end.x ? cursor.region_begin.x : cursor.region_end.x;
+		corrected_region_begin.y = cursor.region_begin.y < cursor.region_end.y ? cursor.region_begin.y : cursor.region_end.y;
+
+		corrected_region_end.x = cursor.region_begin.x < cursor.region_end.x ? cursor.region_end.x : cursor.region_begin.x;
+		corrected_region_end.y = cursor.region_begin.y < cursor.region_end.y ? cursor.region_end.y : cursor.region_begin.y;
+
+		VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(corrected_region_begin, corrected_region_end - corrected_region_begin), Color(0.7, 0.7, 1.0, 0.3));
 	}
 
 	if (message_time > 0) {
