@@ -9292,6 +9292,7 @@
 			<return type="String">
 			</return>
 			<description>
+				Returns the name of the bone node attached to.
 			</description>
 		</method>
 		<method name="set_bone_name">
@@ -9300,6 +9301,7 @@
 			<argument index="0" name="bone_name" type="String">
 			</argument>
 			<description>
+				Changes the name of the bone node
 			</description>
 		</method>
 	</methods>
@@ -22172,7 +22174,7 @@
 		IP Protocol support functions.
 	</brief_description>
 	<description>
-		IP contains some support functions for the IPv4 protocol. TCP/IP support is in different classes (see [StreamPeerTCP] and [TCP_Server]). IP provides hostname resolution support, both blocking and threaded.
+		IP contains support functions for the IPv4 protocol. TCP/IP support is in different classes (see [StreamPeerTCP] and [TCP_Server]). IP provides hostname resolution support, both blocking and threaded.
 	</description>
 	<methods>
 		<method name="clear_cache">
@@ -22181,6 +22183,7 @@
 			<argument index="0" name="hostname" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
+				Removes all of a "hostname"'s cached references. If no "hostname" is given then all cached IP addresses are removed.
 			</description>
 		</method>
 		<method name="erase_resolve_item">
@@ -22189,13 +22192,14 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Erase a queue ID, removing it from the queue if needed. This should be used after a queue is completed to free it and enable more queries to happen.
+				Removes a given item "id" from the queue. This should be used to free a queue after it has completed to enable more queries to happen.
 			</description>
 		</method>
-		<method name="get_local_addresses" qualifiers="const">
+		<method name="get_local_addresses" qualifiers="const"> 
 			<return type="Array">
 			</return>
 			<description>
+				Returns all of the user's current IPv4 and IPv6 addresses as an array.
 			</description>
 		</method>
 		<method name="get_resolve_item_address" qualifiers="const">
@@ -22204,7 +22208,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Return a resolved item address, or an empty string if an error happened or resolution didn't happen yet (see [method get_resolve_item_status]).
+				Returns a queued hostname's IP address, given its queue "id". Returns an empty string on error or if resolution hasn't happened yet (see [method get_resolve_item_status]).
 			</description>
 		</method>
 		<method name="get_resolve_item_status" qualifiers="const">
@@ -22213,7 +22217,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Return the status of hostname queued for resolving, given its queue ID. Returned status can be any of the RESOLVER_STATUS_* enumeration.
+				Returns a queued hostname's status as a RESOLVER_STATUS_* constant, given its queue "id".
 			</description>
 		</method>
 		<method name="resolve_hostname">
@@ -22224,7 +22228,7 @@
 			<argument index="1" name="ip_type" type="int" enum="IP.Type" default="3">
 			</argument>
 			<description>
-				Resolve a given hostname, blocking. Resolved hostname is returned as an IPv4 or IPv6 depending on "ip_type".
+				Returns a given hostname's IPv4 or IPv6 address when resolved (blocking-type method). The address type returned depends on the TYPE_* constant given as "ip_type".
 			</description>
 		</method>
 		<method name="resolve_hostname_queue_item">
@@ -22235,7 +22239,7 @@
 			<argument index="1" name="ip_type" type="int" enum="IP.Type" default="3">
 			</argument>
 			<description>
-				Create a queue item for resolving a given hostname to an IPv4 or IPv6 depending on "ip_type". The queue ID is returned, or RESOLVER_INVALID_ID on error.
+				Creates a queue item to resolve a hostname to an IPv4 or IPv6 address depending on the TYPE_* constant given as "ip_type". Returns the queue ID if successful, or RESOLVER_INVALID_ID on error.
 			</description>
 		</method>
 	</methods>
