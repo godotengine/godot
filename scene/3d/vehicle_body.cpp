@@ -102,6 +102,14 @@ void VehicleWheel::_notification(int p_what) {
 	}
 }
 
+String VehicleWheel::get_configuration_warning() const {
+	if (!Object::cast_to<VehicleBody>(get_parent())) {
+		return TTR("VehicleWheel serves to provide a wheel system to a VehicleBody. Please use it as a child of a VehicleBody.");
+	}
+
+	return String();
+}
+
 void VehicleWheel::_update(PhysicsDirectBodyState *s) {
 
 	if (m_raycastInfo.m_isInContact)
