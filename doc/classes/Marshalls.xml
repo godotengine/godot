@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Marshalls" inherits="Reference" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		Data transformation (marshalling) and encoding helpers.
 	</brief_description>
 	<description>
+		Provides data transformation and encoding utility functions.
 	</description>
 	<tutorials>
 	</tutorials>
