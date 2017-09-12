@@ -89,18 +89,6 @@
 			<argument index="0" name="condition" type="bool">
 			</argument>
 			<description>
-				Assert that the condition is true. If the condition is false a fatal error is generated and the program is halted.
-				Useful for debugging to make sure a value is always true.
-				[codeblock]
-				# Speed should always be between 0 and 20
-				speed = -10
-				# Is true
-				assert(speed < 20)
-				# Is false and program stops
-				assert(speed >= 0)
-				# or simply
-				assert(speed >= 0 &amp;&amp; speed < 20)
-				[/codeblock]
 			</description>
 		</method>
 		<method name="atan">
@@ -109,11 +97,6 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Returns the arc tangent of 's' in radians. Use to get the angle of tangent 's'. Notice that because of the sign ambiguity, the function cannot determine with certainty in which quadrant the angle falls only by its tangent value. See [method atan2] for an alternative that takes a fractional argument instead.
-				[codeblock]
-				# a is 0.463648
-				a = atan(0.5)
-				[/codeblock]
 			</description>
 		</method>
 		<method name="atan2">
@@ -319,10 +302,6 @@
 			<description>
 				Returns [b]e[/b] raised to the power of 's'. [b]e[/b] sometimes called "Euler's number" is a mathematical constant whose value is approximately 2.71828.
 			</description>
-			[codeblock]
-			# a is 2.71828
-			a = exp(2)
-			[/codeblock]
 		</method>
 		<method name="floor">
 			<return type="float">
@@ -332,12 +311,6 @@
 			<description>
 				Returns the largest integer value (rounded down) that is less than or equal to 's'.
 			</description>
-			[codeblock]
-			# a is 2
-			a = floor(2.99)
-			# a is -3
-			a = floor(-2.99)
-			[/codeblock]
 		</method>
 		<method name="fmod">
 			<return type="float">
@@ -362,26 +335,6 @@
 			<argument index="1" name="y" type="float">
 			</argument>
 			<description>
-				Returns the floating-point remainder of x/y that wraps equally in positive and negative.
-				[codeblock]
-				var i = -10;
-				while i < 0:
-				    prints(i, fposmod(i, 10))
-				    i += 1
-				[/codeblock]
-				Produces:
-				[codeblock]
-				-10 10
-				-9 1
-				-8 2
-				-7 3
-				-6 4
-				-5 5
-				-4 6
-				-3 7
-				-2 8
-				-1 9
-				[/codeblock]
 			</description>
 		</method>
 		<method name="funcref">
@@ -392,15 +345,6 @@
 			<argument index="1" name="funcname" type="String">
 			</argument>
 			<description>
-				Returns a reference to the specified function 'funcname' in object 'instance'.
-				[codeblock]
-				a = funcref(self, "foo")
-				a.call_func()
-
-				func foo():
-				    print("bar")
-				[/codeblock]
-				Prints out "bar". This is a trivial example, the real power is that variable 'a' can be passed around to functions.
 			</description>
 		</method>
 		<method name="hash">
@@ -471,7 +415,7 @@
 			</description>
 		</method>
 		<method name="is_inf">
-			<return type="float">
+			<return type="bool">
 			</return>
 			<argument index="0" name="s" type="float">
 			</argument>
@@ -480,7 +424,7 @@
 			</description>
 		</method>
 		<method name="is_nan">
-			<return type="float">
+			<return type="bool">
 			</return>
 			<argument index="0" name="s" type="float">
 			</argument>
@@ -956,7 +900,7 @@
 		<constant name="INF" value="inf" enum="">
 			A positive infinity. (For negative infinity, use -INF).
 		</constant>
-		<constant name="NAN" value="nan" enum="">
+		<constant name="NAN" value="-nan(ind)" enum="">
 			Macro constant that expands to an expression of type float that represents a NaN.
 			The NaN values are used to identify undefined or non-representable values for floating-point elements, such as the square root of negative numbers or the result of 0/0.
 		</constant>
@@ -2245,7 +2189,7 @@
 			<return type="Vector3">
 			</return>
 			<description>
-				Returns the estimated size of the plane that was detected. Say when the anchor relates to a table in the real world, this is the estimated size of the surface of that table. 
+				Returns the estimated size of the plane that was detected. Say when the anchor relates to a table in the real world, this is the estimated size of the surface of that table.
 			</description>
 		</method>
 		<method name="set_anchor_id">
@@ -2254,7 +2198,7 @@
 			<argument index="0" name="anchor_id" type="int">
 			</argument>
 			<description>
-				Binds this anchor node to an anchor with this id. You can set this before the anchor itself exists. The first anchor that is identified gets id 1, the second id 2, etc. When anchors get removed that slot remains free and can be assigned to the next anchor that is identified. The most common situation where anchors 'disappear' is when the AR server identifies that two anchors represent different parts of the same plane and merge them. 
+				Binds this anchor node to an anchor with this id. You can set this before the anchor itself exists. The first anchor that is identified gets id 1, the second id 2, etc. When anchors get removed that slot remains free and can be assigned to the next anchor that is identified. The most common situation where anchors 'disappear' is when the AR server identifies that two anchors represent different parts of the same plane and merge them.
 			</description>
 		</method>
 	</methods>
@@ -2300,6 +2244,12 @@
 			</return>
 			<description>
 				If active, returns the name of the associated controller if provided by the AR/VR SDK used.
+			</description>
+		</method>
+		<method name="get_hand" qualifiers="const">
+			<return type="int" enum="ARVRPositionalTracker.TrackerHand">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="get_is_active" qualifiers="const">
@@ -2387,7 +2337,7 @@
 			<return type="Vector2">
 			</return>
 			<description>
-				Returns the resolution at which we should render our intermediate results before things like lens distortion are applied by the VR platform. 
+				Returns the resolution at which we should render our intermediate results before things like lens distortion are applied by the VR platform.
 			</description>
 		</method>
 		<method name="hmd_is_present">
@@ -2513,14 +2463,20 @@
 	<description>
 		An instance of this object represents a device that is tracked such as a controller or anchor point. HMDs aren't represented here as they are fully handled internally.
 		As controllers are turned on and the AR/VR interface detects them instances of this object are automatically added to this list of active tracking objects accessible through the ARVRServer
-		The ARVRController and ARVRAnchor both consume objects of this type and should be the objects you use in game. The positional trackers are just the under the hood objects that make this all work and are mostly exposed so GDNative based interfaces can interact with them. 
+		The ARVRController and ARVRAnchor both consume objects of this type and should be the objects you use in game. The positional trackers are just the under the hood objects that make this all work and are mostly exposed so GDNative based interfaces can interact with them.
 	</description>
 	<methods>
+		<method name="get_hand" qualifiers="const">
+			<return type="int" enum="ARVRPositionalTracker.TrackerHand">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_joy_id" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				If this is a controller that is being tracked the controller will also be represented by a joystick entry with this id. 
+				If this is a controller that is being tracked the controller will also be represented by a joystick entry with this id.
 			</description>
 		</method>
 		<method name="get_name" qualifiers="const">
@@ -2576,6 +2532,12 @@
 		</method>
 	</methods>
 	<constants>
+		<constant name="TRACKER_HAND_UNKNOWN" value="0">
+		</constant>
+		<constant name="TRACKER_LEFT_HAND" value="1">
+		</constant>
+		<constant name="TRACKER_RIGHT_HAND" value="2">
+		</constant>
 	</constants>
 </class>
 <class name="ARVRScriptInterface" inherits="ARVRInterface" category="Core">
@@ -2767,13 +2729,8 @@
 			<return type="void">
 			</return>
 			<argument index="0" name="ignore_tilt" type="bool">
-				If true we ignore the tilt of the device and we don't reset the tilt. This means that when the player is looking down we don't counter this and the player will still look down in game. If this is false the player will look straight ahead even when looking down.
-				The direction in which the player looks is centered so the player looks to negative Z regardless of where the player is looking in the real world.
 			</argument>
 			<argument index="1" name="keep_height" type="bool">
-				This is a really important setting. When true we keep the height information given by our tracking.
-				You should set this to true when you are using room scale tracking and want your player to freely walk around the room, be able to crouch, etc. Your ARVROrigin should be placed on the floor of your scene in this scenario.
-				You should set this to false in all other situations. The current location of the HMD will become your 0,0,0 location and you should place your ARVROrigin point where your player currently is positioned. Use this when room scale is not available or when your making a driving or flying sim and you want to ensure the HMD is centered in your cockpit. 
 			</argument>
 			<description>
 				This is a really important function to understand correctly. AR and VR platforms all handle positioning slightly differently.
@@ -2827,12 +2784,18 @@
 			</argument>
 			<argument index="1" name="type" type="int">
 			</argument>
+			<argument index="2" name="id" type="int">
+			</argument>
 			<description>
 				Signal send when a new tracker has been added. If you don't use a fixed number of controllers or if you're using ARVRAnchors for an AR solution it is important to react to this signal and add the appropriate ARVRController or ARVRAnchor node related to this new tracker.
 			</description>
 		</signal>
 		<signal name="tracker_removed">
 			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="int">
+			</argument>
+			<argument index="2" name="id" type="int">
 			</argument>
 			<description>
 				Signal send when a tracker is removed, you should remove any ARVRController or ARVRAnchor points if applicable. This is not mandatory, the nodes simply become inactive and will be made active again when a new tracker becomes available (i.e. a new controller is switched on that takes the place of the previous one).
@@ -2888,7 +2851,7 @@
 			<argument index="1" name="to_id" type="int">
 			</argument>
 			<description>
-				Called when estimating the cost between a point and the path's ending point. 
+				Called when estimating the cost between a point and the path's ending point.
 			</description>
 		</method>
 		<method name="add_point">
@@ -3051,6 +3014,12 @@
 			</argument>
 			<description>
 				Returns the weight scale of the point associated with the given id.
+			</description>
+		</method>
+		<method name="get_points">
+			<return type="Array">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="has_point" qualifiers="const">
@@ -5746,7 +5715,7 @@
 		<method name="set_space_override_mode">
 			<return type="void">
 			</return>
-			<argument index="0" name="enable" type="int" enum="Area2D.SpaceOverride">
+			<argument index="0" name="space_override_mode" type="int" enum="Area2D.SpaceOverride">
 			</argument>
 			<description>
 				Set the space override mode. This mode controls how an area affects gravity and damp.
@@ -5759,49 +5728,49 @@
 		</method>
 	</methods>
 	<members>
-		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp" brief="rate of spin loss">
+		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp" brief="">
 			The rate at which objects stop spinning in this area. Represents the amount of speed lost per second. If 1.0, physics bodies in the area stop rotating immediately. If 0.0, they never slow down. Does not incorporate external forces. The physics-update's rate affects 'angular_damp'.
 		</member>
-		<member name="audio_bus_name" type="String" setter="set_audio_bus" getter="get_audio_bus" brief="name of audio bus">
+		<member name="audio_bus_name" type="String" setter="set_audio_bus" getter="get_audio_bus" brief="">
 			The name of the Area2D's audio bus.
 		</member>
-		<member name="audio_bus_override" type="bool" setter="set_audio_bus_override" getter="is_overriding_audio_bus" brief="Whether to override audio bus">
+		<member name="audio_bus_override" type="bool" setter="set_audio_bus_override" getter="is_overriding_audio_bus" brief="">
 			If [code]true[/code], overrides the default audio bus with the Area2D's. Defaults to [code]false[/code].
 		</member>
-		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" brief="others-collide-with-this layers">
+		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" brief="">
 			The physics layer this Area2D is in.
 			Collidable objects can exist in any of 32 different layers. These layers are not visual, but more of a tagging system instead. A collidable can use these layers/tags to select with which objects it can collide, using [method set_collision_mask].
 			A contact is detected if object A is in any of the layers that object B scans, or object B is in any layers that object A scans.
 		</member>
-		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" brief="this-collides-with-others layers">
+		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" brief="">
 			The physics layers this Area2D scans to determine collision detections.
 		</member>
-		<member name="gravity" type="float" setter="set_gravity" getter="get_gravity" brief="internal gravity intensity">
+		<member name="gravity" type="float" setter="set_gravity" getter="get_gravity" brief="">
 			The gravity intensity within the Area2D (ranges -1024 to 1024). This is useful to alter the force of gravity without altering its direction.
 			This value multiplies the gravity vector, whether it is the given vector ([method set_gravity_vector]), or a calculated one (when using a center of gravity).
 		</member>
-		<member name="gravity_distance_scale" type="float" setter="set_gravity_distance_scale" getter="get_gravity_distance_scale" brief="gravity drop rate">
+		<member name="gravity_distance_scale" type="float" setter="set_gravity_distance_scale" getter="get_gravity_distance_scale" brief="">
 			The falloff factor for point gravity. The greater this value is, the faster the strength of gravity decreases with the square of distance.
 		</member>
-		<member name="gravity_point" type="bool" setter="set_gravity_is_point" getter="is_gravity_a_point" brief="is gravity a point?">
+		<member name="gravity_point" type="bool" setter="set_gravity_is_point" getter="is_gravity_a_point" brief="">
 			If [code]true[/code], calculates gravity from a particular point during a space override (see [method set_space_override_mode]). If a point, [Vector2] position is set with [method set_gravity_vector]. Defaults to [code]false[/code].
 		</member>
-		<member name="gravity_vec" type="Vector2" setter="set_gravity_vector" getter="get_gravity_vector" brief="gravity non-normalized vector or center-point">
+		<member name="gravity_vec" type="Vector2" setter="set_gravity_vector" getter="get_gravity_vector" brief="">
 			The gravitational direction/strength as a vector (not normalized). If gravity is a point (see [method is_gravity_a_point]), this will be the attraction center.
 		</member>
-		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp" brief="rate of movement loss">
+		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp" brief="">
 			The rate at which objects stop spinning in this area. Represents the amount of speed lost per second. If 1.0, physics bodies in the area stop rotating immediately. If 0.0, they never slow down. Does not incorporate external forces. The physics-update's rate affects 'angular_damp'.
 		</member>
-		<member name="monitorable" type="bool" setter="set_monitorable" getter="is_monitorable" brief="others cannot detect this?">
+		<member name="monitorable" type="bool" setter="set_monitorable" getter="is_monitorable" brief="">
 			If [code]true[/code], other monitoring areas can detect this Area2D (is it undetectable at the moment?). Defaults to [code]true[/code].
 		</member>
-		<member name="monitoring" type="bool" setter="set_monitoring" getter="is_monitoring" brief="this cannot detect others?">
+		<member name="monitoring" type="bool" setter="set_monitoring" getter="is_monitoring" brief="">
 			If [code]true[/code], this detects bodies/areas entering/exiting it (can it detect others at the moment?). Defaults to [code]true[/code].
 		</member>
-		<member name="priority" type="float" setter="set_priority" getter="get_priority" brief="(high) process before others (low)">
+		<member name="priority" type="float" setter="set_priority" getter="get_priority" brief="">
 			The processing order for this priority. Ranges from 0 to 128. Defaults to 0. Higher priorities are processed first.
 		</member>
-		<member name="space_override" type="int" setter="set_space_override_mode" getter="get_space_override_mode" brief="how to override gravity/damping" enum="Area2D.SpaceOverride">
+		<member name="space_override" type="int" setter="set_space_override_mode" getter="get_space_override_mode" brief="" enum="Area2D.SpaceOverride">
 			How to override gravity and damping calculations within this Area2D, if at all. Consult the SPACE_OVERRIDE_* constants for available options.
 		</member>
 	</members>
@@ -5888,11 +5857,21 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="SPACE_OVERRIDE_DISABLED" value="0" enum="Area2D.SpaceOverride">This area does not affect gravity/damp. These are areas that exist only to detect collisions and objects entering or exiting them.</constant>
-		<constant name="SPACE_OVERRIDE_COMBINE" value="1" enum="Area2D.SpaceOverride">This area adds its gravity/damp values to whatever has been calculated so far. This way, many overlapping areas can combine their physics to make interesting effects.</constant>
-		<constant name="SPACE_OVERRIDE_COMBINE_REPLACE" value="2" enum="Area2D.SpaceOverride">This area adds its gravity/damp values to whatever has been calculated so far. Then stops taking into account the rest of the areas, even the default one.</constant>
-		<constant name="SPACE_OVERRIDE_REPLACE" value="3" enum="Area2D.SpaceOverride">This area replaces any gravity/damp, even the default one, and stops taking into account the rest of the areas.</constant>
-		<constant name="SPACE_OVERRIDE_REPLACE_COMBINE" value="4" enum="Area2D.SpaceOverride">This area replaces any gravity/damp calculated so far, but keeps calculating the rest of the areas, down to the default one.</constant>
+		<constant name="SPACE_OVERRIDE_DISABLED" value="0">
+			This area does not affect gravity/damp. These are areas that exist only to detect collisions and objects entering or exiting them.
+		</constant>
+		<constant name="SPACE_OVERRIDE_COMBINE" value="1">
+			This area adds its gravity/damp values to whatever has been calculated so far. This way, many overlapping areas can combine their physics to make interesting effects.
+		</constant>
+		<constant name="SPACE_OVERRIDE_COMBINE_REPLACE" value="2">
+			This area adds its gravity/damp values to whatever has been calculated so far. Then stops taking into account the rest of the areas, even the default one.
+		</constant>
+		<constant name="SPACE_OVERRIDE_REPLACE" value="3">
+			This area replaces any gravity/damp, even the default one, and stops taking into account the rest of the areas.
+		</constant>
+		<constant name="SPACE_OVERRIDE_REPLACE_COMBINE" value="4">
+			This area replaces any gravity/damp calculated so far, but keeps calculating the rest of the areas, down to the default one.
+		</constant>
 	</constants>
 </class>
 <class name="Array" category="Built-In Types">
@@ -5990,6 +5969,12 @@
 			</argument>
 			<description>
 				Return the amount of times an element is in the array.
+			</description>
+		</method>
+		<method name="duplicate">
+			<return type="Array">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="empty">
@@ -6254,6 +6239,22 @@
 			</argument>
 			<description>
 				Return the length in vertices of the vertex array in the requested surface (see [method add_surface]).
+			</description>
+		</method>
+		<method name="surface_get_arrays" qualifiers="const">
+			<return type="Array">
+			</return>
+			<argument index="0" name="surf_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="surface_get_blend_shape_arrays" qualifiers="const">
+			<return type="Array">
+			</return>
+			<argument index="0" name="surf_idx" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="surface_get_format" qualifiers="const">
@@ -8343,7 +8344,7 @@
 		</member>
 		<member name="mix_target" type="int" setter="set_mix_target" getter="get_mix_target" brief="" enum="AudioStreamPlayer.MixTarget">
 		</member>
-		<member name="playing" type="bool" setter="_set_playing" getter="_is_active" brief="">
+		<member name="play" type="bool" setter="_set_playing" getter="_is_active" brief="">
 		</member>
 		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream" brief="">
 		</member>
@@ -8509,7 +8510,7 @@
 		</member>
 		<member name="max_distance" type="float" setter="set_max_distance" getter="get_max_distance" brief="">
 		</member>
-		<member name="playing" type="bool" setter="_set_playing" getter="_is_active" brief="">
+		<member name="play" type="bool" setter="_set_playing" getter="_is_active" brief="">
 		</member>
 		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream" brief="">
 		</member>
@@ -8817,7 +8818,7 @@
 		</member>
 		<member name="out_of_range_mode" type="int" setter="set_out_of_range_mode" getter="get_out_of_range_mode" brief="" enum="AudioStreamPlayer3D.OutOfRangeMode">
 		</member>
-		<member name="playing" type="bool" setter="_set_playing" getter="_is_active" brief="">
+		<member name="play" type="bool" setter="_set_playing" getter="_is_active" brief="">
 		</member>
 		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream" brief="">
 		</member>
@@ -9509,7 +9510,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the amount of bitmap elements that are set to true. 
+				Returns the amount of bitmap elements that are set to true.
 			</description>
 		</method>
 		<method name="set_bit">
@@ -9895,7 +9896,7 @@
 		<member name="clip_text" type="bool" setter="set_clip_text" getter="get_clip_text" brief="">
 			When this property is enabled, text that is too large to fit the button is clipped, when disabled the Button will always be wide enough to hold the text. This property is disabled by default.
 		</member>
-		<member name="flat" type="bool" setter="set_flat" getter="is_flat" brief="button decoration mode">
+		<member name="flat" type="bool" setter="set_flat" getter="is_flat" brief="">
 			Flat buttons don't display decoration.
 		</member>
 		<member name="icon" type="Texture" setter="set_button_icon" getter="get_button_icon" brief="">
@@ -12873,19 +12874,6 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="to_rgba32">
-			<return type="int">
-			</return>
-			<description>
-				Returns the color's 32-bit integer in ARGB format (each byte represents a component of the ARGB profile).
-				[codeblock]
-				var c = Color(1, .5, .2)
-				print(str(c.to_32())) # prints 4294934323
-				[/codeblock]
-
-				[i]This is same as [method to_ARGB32] but may be changed later to support RGBA format instead[/i].
-			</description>
-		</method>
 		<method name="to_argb32">
 			<return type="int">
 			</return>
@@ -12910,6 +12898,19 @@
 				var s1 = c.to_html() # Results "7fffffff"
 				var s2 = c.to_html(false) # Results 'ffffff'
 				[/codeblock]
+			</description>
+		</method>
+		<method name="to_rgba32">
+			<return type="int">
+			</return>
+			<description>
+				Returns the color's 32-bit integer in ARGB format (each byte represents a component of the ARGB profile).
+				[codeblock]
+				var c = Color(1, .5, .2)
+				print(str(c.to_32())) # prints 4294934323
+				[/codeblock]
+
+				[i]This is same as [method to_ARGB32] but may be changed later to support RGBA format instead[/i].
 			</description>
 		</method>
 	</methods>
@@ -13091,7 +13092,7 @@
 			<argument index="0" name="color" type="Color">
 			</argument>
 			<description>
-			Set new color to ColorRect.
+				Set new color to ColorRect.
 
 			[codeblock]
 			var cr = get_node("colorrect_node")
@@ -15740,6 +15741,12 @@
 		A DirectionalLight is a type of [Light] node that emits light constantly in one direction (the negative z axis of the node). It is used lights with strong intensity that are located far away from the scene to model sunlight or moonlight. The worldspace location of the DirectionalLight transform (origin) is ignored, only the basis is used do determine light direction.
 	</description>
 	<methods>
+		<method name="get_shadow_depth_range" qualifiers="const">
+			<return type="int" enum="DirectionalLight.ShadowDepthRange">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_shadow_mode" qualifiers="const">
 			<return type="int" enum="DirectionalLight.ShadowMode">
 			</return>
@@ -15760,6 +15767,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_shadow_depth_range">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="int" enum="DirectionalLight.ShadowDepthRange">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_shadow_mode">
 			<return type="void">
 			</return>
@@ -15773,6 +15788,10 @@
 		<member name="directional_shadow_bias_split_scale" type="float" setter="set_param" getter="get_param" brief="">
 		</member>
 		<member name="directional_shadow_blend_splits" type="bool" setter="set_blend_splits" getter="is_blend_splits_enabled" brief="">
+		</member>
+		<member name="directional_shadow_depth_range" type="int" setter="set_shadow_depth_range" getter="get_shadow_depth_range" brief="" enum="DirectionalLight.ShadowDepthRange">
+		</member>
+		<member name="directional_shadow_max_distance" type="float" setter="set_param" getter="get_param" brief="">
 		</member>
 		<member name="directional_shadow_mode" type="int" setter="set_shadow_mode" getter="get_shadow_mode" brief="" enum="DirectionalLight.ShadowMode">
 		</member>
@@ -15791,6 +15810,10 @@
 		<constant name="SHADOW_PARALLEL_2_SPLITS" value="1">
 		</constant>
 		<constant name="SHADOW_PARALLEL_4_SPLITS" value="2">
+		</constant>
+		<constant name="SHADOW_DEPTH_RANGE_STABLE" value="0">
+		</constant>
+		<constant name="SHADOW_DEPTH_RANGE_OPTIMIZED" value="1">
 		</constant>
 	</constants>
 </class>
@@ -18848,7 +18871,7 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="BG_KEEP" value="4">
+		<constant name="BG_KEEP" value="5">
 		</constant>
 		<constant name="BG_CLEAR_COLOR" value="0">
 		</constant>
@@ -18856,9 +18879,11 @@
 		</constant>
 		<constant name="BG_SKY" value="2">
 		</constant>
-		<constant name="BG_CANVAS" value="3">
+		<constant name="BG_COLOR_SKY" value="3">
 		</constant>
-		<constant name="BG_MAX" value="5">
+		<constant name="BG_CANVAS" value="4">
+		</constant>
+		<constant name="BG_MAX" value="6">
 		</constant>
 		<constant name="GLOW_BLEND_MODE_ADDITIVE" value="0">
 		</constant>
@@ -22691,7 +22716,7 @@
 				Removes a given item "id" from the queue. This should be used to free a queue after it has completed to enable more queries to happen.
 			</description>
 		</method>
-		<method name="get_local_addresses" qualifiers="const"> 
+		<method name="get_local_addresses" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
@@ -26400,8 +26425,6 @@
 		</member>
 		<member name="shadow_enabled" type="bool" setter="set_shadow" getter="has_shadow" brief="">
 		</member>
-		<member name="shadow_max_distance" type="float" setter="set_param" getter="get_param" brief="">
-		</member>
 		<member name="shadow_reverse_cull_face" type="bool" setter="set_shadow_reverse_cull_face" getter="get_shadow_reverse_cull_face" brief="">
 		</member>
 	</members>
@@ -29882,6 +29905,18 @@
 			<description>
 				Add a child [Node]. Nodes can have as many children as they want, but every child must have a unique name. Children nodes are automatically deleted when the parent node is deleted, so deleting a whole scene is performed by deleting its topmost node.
 				The optional boolean argument enforces creating child nodes with human-readable names, based on the name of the node being instanced instead of its type only.
+			</description>
+		</method>
+		<method name="add_child_below_node">
+			<return type="void">
+			</return>
+			<argument index="0" name="node" type="Node">
+			</argument>
+			<argument index="1" name="child_node" type="Node">
+			</argument>
+			<argument index="2" name="legible_unique_name" type="bool" default="false">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="add_to_group">
@@ -40347,6 +40382,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_mesh_arrays" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="set_material">
 			<return type="void">
 			</return>
@@ -43935,7 +43976,7 @@
 			The body friction, from 0 (frictionless) to 1 (max friction).
 		</member>
 		<member name="gravity_scale" type="float" setter="set_gravity_scale" getter="get_gravity_scale" brief="">
-			The 'gravity_scale' for this Rigid body will be multiplied by the global 3d gravity setting found in "Project > Project Settings > Physics > 3d". A value of 1 will be normal gravity, 2 will apply double gravity, and 0.5 will apply half gravity to this object.
+			The 'gravity_scale' for this Rigid body will be multiplied by the global 3d gravity setting found in "Project &gt; Project Settings &gt; Physics &gt; 3d". A value of 1 will be normal gravity, 2 will apply double gravity, and 0.5 will apply half gravity to this object.
 		</member>
 		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp" brief="">
 			The linear damp for this body. Default of -1, cannot be less than -1. If this value is different from -1, any linear damp derived from the world or areas will be overridden.
@@ -45172,7 +45213,6 @@
 			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="keep_state" type="bool" default="false">
-				If true, preserve existing script instances and subclasses.
 			</argument>
 			<description>
 				Reloads the script's class implementation. Returns an error code.
@@ -53389,7 +53429,7 @@
 			The light mask assigned to all light occluders in the TileMap.  The TileSet's light occluders will cast shadows only from Light2D(s) that have the same light mask(s).
 		</member>
 		<member name="tile_data" type="PoolIntArray" setter="_set_tile_data" getter="_get_tile_data" brief="">
-			A [PoolIntArray] containing 
+			A [PoolIntArray] containing
 		</member>
 		<member name="tile_set" type="TileSet" setter="set_tileset" getter="get_tileset" brief="">
 			The assigned [TileSet].
@@ -57600,6 +57640,12 @@
 				Get the enabled status of the size strech override set with [method set_size_override_stretch].
 			</description>
 		</method>
+		<method name="is_snap_controls_to_pixels_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="is_using_own_world" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -57758,6 +57804,14 @@
 				Set whether the size override affects stretch as well.
 			</description>
 		</method>
+		<method name="set_snap_controls_to_pixels">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_transparent_background">
 			<return type="void">
 			</return>
@@ -57875,6 +57929,8 @@
 		<member name="disable_3d" type="bool" setter="set_disable_3d" getter="is_3d_disabled" brief="">
 		</member>
 		<member name="gui_disable_input" type="bool" setter="set_disable_input" getter="is_input_disabled" brief="">
+		</member>
+		<member name="gui_snap_controls_to_pixels" type="bool" setter="set_snap_controls_to_pixels" getter="is_snap_controls_to_pixels_enabled" brief="">
 		</member>
 		<member name="hdr" type="bool" setter="set_hdr" getter="get_hdr" brief="">
 		</member>
@@ -58823,7 +58879,7 @@
 	<members>
 		<member name="basic_type" type="int" setter="set_basic_type" getter="get_basic_type" brief="" enum="Variant.Type">
 		</member>
-		<member name="constant/constant" type="String" setter="set_basic_type_constant" getter="get_basic_type_constant" brief="">
+		<member name="constant" type="String" setter="set_basic_type_constant" getter="get_basic_type_constant" brief="">
 		</member>
 	</members>
 	<constants>
@@ -58895,7 +58951,7 @@
 	<members>
 		<member name="base_type" type="String" setter="set_base_type" getter="get_base_type" brief="">
 		</member>
-		<member name="constant/constant" type="String" setter="set_class_constant" getter="get_class_constant" brief="">
+		<member name="constant" type="String" setter="set_class_constant" getter="get_class_constant" brief="">
 		</member>
 	</members>
 	<constants>
@@ -59267,7 +59323,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="constant/constant" type="String" setter="set_singleton" getter="get_singleton" brief="">
+		<member name="/constant" type="String" setter="set_singleton" getter="get_singleton" brief="">
 		</member>
 	</members>
 	<constants>
@@ -59533,7 +59589,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="constant/constant" type="int" setter="set_global_constant" getter="get_global_constant" brief="">
+		<member name="constant" type="int" setter="set_global_constant" getter="get_global_constant" brief="">
 		</member>
 	</members>
 	<constants>
@@ -59723,7 +59779,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="constant/constant" type="int" setter="set_math_constant" getter="get_math_constant" brief="" enum="VisualScriptMathConstant.MathConstant">
+		<member name="constant" type="int" setter="set_math_constant" getter="get_math_constant" brief="" enum="VisualScriptMathConstant.MathConstant">
 		</member>
 	</members>
 	<constants>
