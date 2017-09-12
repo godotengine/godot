@@ -27533,6 +27533,7 @@
 			<return type="Shape">
 			</return>
 			<description>
+				Calculate a [ConvexPolygonShape] from the mesh.
 			</description>
 		</method>
 		<method name="create_outline" qualifiers="const">
@@ -27541,24 +27542,28 @@
 			<argument index="0" name="margin" type="float">
 			</argument>
 			<description>
+				Calculate an outline mesh at a defined offset (margin) from the original mesh. Note: Typically returns the vertices in reverse order (e.g. clockwise to anti-clockwise).
 			</description>
 		</method>
 		<method name="create_trimesh_shape" qualifiers="const">
 			<return type="Shape">
 			</return>
 			<description>
+				Calculate a [ConcavePolygonShape] from the mesh.
 			</description>
 		</method>
 		<method name="generate_triangle_mesh" qualifiers="const">
 			<return type="TriangleMesh">
 			</return>
 			<description>
+				Generate a [TriangleMesh] from the mesh.
 			</description>
 		</method>
 		<method name="get_faces" qualifiers="const">
 			<return type="PoolVector3Array">
 			</return>
 			<description>
+				Returns all the vertices that make up the faces of the mesh. Each three vertices represent one triangle.
 			</description>
 		</method>
 	</methods>
@@ -27930,6 +27935,7 @@
 			<return type="void">
 			</return>
 			<description>
+				This helper creates a [StaticBody] child [Node] with a [ConvexPolygonShape] [CollisionShape] calculated from the mesh geometry. It's mainly used for testing.
 			</description>
 		</method>
 		<method name="create_debug_tangents">
@@ -27942,14 +27948,14 @@
 			<return type="void">
 			</return>
 			<description>
-				This helper creates a [StaticBody] child [Node] using the mesh geometry as collision. It's mainly used for testing.
+				This helper creates a [StaticBody] child [Node] with a [ConcavePolygonShape] [CollisionShape] calculated from the mesh geometry. It's mainly used for testing.
 			</description>
 		</method>
 		<method name="get_mesh" qualifiers="const">
 			<return type="Mesh">
 			</return>
 			<description>
-				Return the current [Mesh] resource for the instance.
+				Returns the current [Mesh] resource for the instance.
 			</description>
 		</method>
 		<method name="get_skeleton_path">
@@ -27964,6 +27970,7 @@
 			<argument index="0" name="surface" type="int">
 			</argument>
 			<description>
+				Returns the [Material] for a surface of the [Mesh] resource.
 			</description>
 		</method>
 		<method name="set_mesh">
@@ -27972,7 +27979,6 @@
 			<argument index="0" name="mesh" type="Mesh">
 			</argument>
 			<description>
-				Set the [Mesh] resource for the instance.
 			</description>
 		</method>
 		<method name="set_skeleton_path">
@@ -27991,13 +27997,16 @@
 			<argument index="1" name="material" type="Material">
 			</argument>
 			<description>
+				Sets the [Material] for a surface of the [Mesh] resource.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh" brief="">
+			The [Mesh] resource for the instance.
 		</member>
 		<member name="skeleton" type="NodePath" setter="set_skeleton_path" getter="get_skeleton_path" brief="">
+			[NodePath] to the [Skeleton] associated with the instance.
 		</member>
 	</members>
 	<constants>
