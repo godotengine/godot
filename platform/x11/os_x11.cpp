@@ -246,6 +246,11 @@ void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 
 	// borderless fullscreen window mode
 	if (current_videomode.fullscreen) {
+		// set bypass compositor hint
+		Atom bypass_compositor = XInternAtom(x11_display, "_NET_WM_BYPASS_COMPOSITOR", False);
+		unsigned long compositing_disable_on = 1;
+		XChangeProperty(x11_display, x11_window, bypass_compositor, XA_CARDINAL, 32, PropModeReplace, (unsigned char *)&compositing_disable_on, 1);
+
 		// needed for lxde/openbox, possibly others
 		Hints hints;
 		Atom property;
@@ -695,6 +700,12 @@ void OS_X11::set_wm_fullscreen(bool p_enabled) {
 	xev.xclient.data.l[2] = 0;
 
 	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
+
+	// set bypass compositor hint
+	Atom bypass_compositor = XInternAtom(x11_display, "_NET_WM_BYPASS_COMPOSITOR", False);
+	unsigned long compositing_disable_on = p_enabled ? 1 : 0;
+	XChangeProperty(x11_display, x11_window, bypass_compositor, XA_CARDINAL, 32, PropModeReplace, (unsigned char *)&compositing_disable_on, 1);
+
 	XFlush(x11_display);
 
 	if (!p_enabled && !is_window_resizable()) {
