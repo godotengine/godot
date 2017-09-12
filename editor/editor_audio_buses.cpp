@@ -414,7 +414,10 @@ void EditorAudioBus::_gui_input(const Ref<InputEvent> &p_event) {
 
 void EditorAudioBus::_bus_popup_pressed(int p_option) {
 
-	if (p_option == 1) {
+	if (p_option == 2) {
+		// Reset volume
+		emit_signal("vol_reset_request");
+	} else if (p_option == 1) {
 		emit_signal("delete_request");
 	} else if (p_option == 0) {
 		//duplicate
@@ -617,6 +620,7 @@ void EditorAudioBus::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("duplicate_request"));
 	ADD_SIGNAL(MethodInfo("delete_request"));
+	ADD_SIGNAL(MethodInfo("vol_reset_request"));
 	ADD_SIGNAL(MethodInfo("drop_end_request"));
 	ADD_SIGNAL(MethodInfo("dropped"));
 }
@@ -742,6 +746,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses) {
 	bus_popup = bus_options->get_popup();
 	bus_popup->add_item(TTR("Duplicate"));
 	bus_popup->add_item(TTR("Delete"));
+	bus_popup->add_item(TTR("Reset Volume"));
 	bus_popup->connect("index_pressed", this, "_bus_popup_pressed");
 
 	delete_effect_popup = memnew(PopupMenu);
@@ -790,6 +795,7 @@ void EditorAudioBuses::_update_buses() {
 		bus_hb->add_child(audio_bus);
 		audio_bus->connect("delete_request", this, "_delete_bus", varray(audio_bus), CONNECT_DEFERRED);
 		audio_bus->connect("duplicate_request", this, "_duplicate_bus", varray(), CONNECT_DEFERRED);
+		audio_bus->connect("vol_reset_request", this, "_reset_bus_volume", varray(audio_bus), CONNECT_DEFERRED);
 		audio_bus->connect("drop_end_request", this, "_request_drop_end");
 		audio_bus->connect("dropped", this, "_drop_at_index", varray(), CONNECT_DEFERRED);
 	}
@@ -914,6 +920,20 @@ void EditorAudioBuses::_duplicate_bus(int p_which) {
 		ur->add_do_method(AudioServer::get_singleton(), "set_bus_effect_enabled", add_at_pos, i, AudioServer::get_singleton()->is_bus_effect_enabled(p_which, i));
 	}
 	ur->add_undo_method(AudioServer::get_singleton(), "remove_bus", add_at_pos);
+	ur->add_do_method(this, "_update_buses");
+	ur->add_undo_method(this, "_update_buses");
+	ur->commit_action();
+}
+
+void EditorAudioBuses::_reset_bus_volume(Object *p_which) {
+
+	EditorAudioBus *bus = Object::cast_to<EditorAudioBus>(p_which);
+	int index = bus->get_index();
+
+	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	ur->create_action(TTR("Reset Bus Volume"));
+	ur->add_do_method(AudioServer::get_singleton(), "set_bus_volume_db", index, 0.f);
+	ur->add_undo_method(AudioServer::get_singleton(), "set_bus_volume_db", index, AudioServer::get_singleton()->get_bus_volume_db(index));
 	ur->add_do_method(this, "_update_buses");
 	ur->add_undo_method(this, "_update_buses");
 	ur->commit_action();
@@ -1063,6 +1083,7 @@ void EditorAudioBuses::_bind_methods() {
 	ClassDB::bind_method("_load_default_layout", &EditorAudioBuses::_load_default_layout);
 	ClassDB::bind_method("_new_layout", &EditorAudioBuses::_new_layout);
 	ClassDB::bind_method("_duplicate_bus", &EditorAudioBuses::_duplicate_bus);
+	ClassDB::bind_method("_reset_bus_volume", &EditorAudioBuses::_reset_bus_volume);
 
 	ClassDB::bind_method("_file_dialog_callback", &EditorAudioBuses::_file_dialog_callback);
 }

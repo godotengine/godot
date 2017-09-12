@@ -158,6 +158,7 @@ class EditorAudioBuses : public VBoxContainer {
 
 	void _delete_bus(Object *p_which);
 	void _duplicate_bus(int p_which);
+	void _reset_bus_volume(Object *p_which);
 
 	void _request_drop_end();
 	void _drop_at_index(int p_bus, int p_index);
