@@ -587,6 +587,7 @@
 				[codeblock]
 				# load a scene called main located in the root of the project directory
 				var main = preload("res://main.tscn")
+				[/codeblock]
 			</description>
 		</method>
 		<method name="print" qualifiers="vararg">
