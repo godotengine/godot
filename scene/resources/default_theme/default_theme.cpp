@@ -794,7 +794,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// RichTextLabel
 
 	theme->set_stylebox("focus", "RichTextLabel", focus);
-	theme->set_stylebox("normal", "RichTextLabel", make_stylebox(tree_bg_png, 3, 3, 3, 3));
+	theme->set_stylebox("normal", "RichTextLabel", make_empty_stylebox(0, 0, 0, 0));
 
 	theme->set_font("normal_font", "RichTextLabel", default_font);
 	theme->set_font("bold_font", "RichTextLabel", default_font);
