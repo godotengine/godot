@@ -143,11 +143,7 @@ void FileSystemDock::_notification(int p_what) {
 			//button_instance->set_icon( get_icon("Add","EditorIcons"));
 			//button_open->set_icon( get_icon("Folder","EditorIcons"));
 			button_back->set_icon(get_icon("Filesystem", "EditorIcons"));
-			if (display_mode == DISPLAY_THUMBNAILS) {
-				button_display_mode->set_icon(get_icon("FileList", "EditorIcons"));
-			} else {
-				button_display_mode->set_icon(get_icon("FileThumbnail", "EditorIcons"));
-			}
+			_update_file_display_toggle_button();
 			button_display_mode->connect("pressed", this, "_change_file_display");
 			//file_options->set_icon( get_icon("Tools","EditorIcons"));
 			files->connect("item_activated", this, "_select_file");
@@ -204,11 +200,7 @@ void FileSystemDock::_notification(int p_what) {
 			button_reload->set_icon(get_icon("Reload", "EditorIcons"));
 			button_favorite->set_icon(get_icon("Favorites", "EditorIcons"));
 			button_back->set_icon(get_icon("Filesystem", "EditorIcons"));
-			if (display_mode == DISPLAY_THUMBNAILS) {
-				button_display_mode->set_icon(get_icon("FileList", "EditorIcons"));
-			} else {
-				button_display_mode->set_icon(get_icon("FileThumbnail", "EditorIcons"));
-			}
+			_update_file_display_toggle_button();
 
 			search_box->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
 
@@ -354,15 +346,22 @@ void FileSystemDock::_thumbnail_done(const String &p_path, const Ref<Texture> &p
 	}
 }
 
-void FileSystemDock::_change_file_display() {
+void FileSystemDock::_update_file_display_toggle_button() {
 
 	if (button_display_mode->is_pressed()) {
 		display_mode = DISPLAY_LIST;
 		button_display_mode->set_icon(get_icon("FileThumbnail", "EditorIcons"));
+		button_display_mode->set_tooltip(TTR("View items as a grid of thumbnails"));
 	} else {
 		display_mode = DISPLAY_THUMBNAILS;
 		button_display_mode->set_icon(get_icon("FileList", "EditorIcons"));
+		button_display_mode->set_tooltip(TTR("View items as a list"));
 	}
+}
+
+void FileSystemDock::_change_file_display() {
+
+	_update_file_display_toggle_button();
 
 	EditorSettings::get_singleton()->set("docks/filesystem/display_mode", display_mode);
 
