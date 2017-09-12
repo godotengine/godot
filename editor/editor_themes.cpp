@@ -295,6 +295,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("panel", "PanelContainer", style_menu);
 	theme->set_stylebox("MenuPanel", "EditorStyles", style_menu);
 
+	// Script Editor
+	theme->set_stylebox("ScriptEditorPanel", "EditorStyles", make_empty_stylebox(4, 0, 4, 4));
+	theme->set_stylebox("ScriptEditor", "EditorStyles", make_empty_stylebox(0, 0, 0, 0));
+
 	// Play button group
 	theme->set_stylebox("PlayButtonPanel", "EditorStyles", make_empty_stylebox(8, 4, 8, 4)); //make_stylebox(theme->get_icon("GuiPlayButtonGroup", "EditorIcons"), 16, 16, 16, 16, 8, 4, 8, 4));
 
