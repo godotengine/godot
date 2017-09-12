@@ -800,18 +800,6 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 
 			if (describe) {
 				class_desc->pop();
-			}
-
-			if (cd.properties[i].brief_description != "") {
-				class_desc->push_font(doc_font);
-				class_desc->add_text("  ");
-				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/comment_color"));
-				_add_text(cd.properties[i].description);
-				class_desc->pop();
-				class_desc->pop();
-			}
-
-			if (describe) {
 				property_descr = true;
 			}
 

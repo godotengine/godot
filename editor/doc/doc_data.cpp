@@ -52,7 +52,7 @@ void DocData::merge_from(const DocData &p_data) {
 		c.description = cf.description;
 		c.brief_description = cf.brief_description;
 		c.tutorials = cf.tutorials;
-		c.demos =cf.demos;
+		c.demos = cf.demos;
 
 		for (int i = 0; i < c.methods.size(); i++) {
 
@@ -681,7 +681,7 @@ static Error _parse_methods(Ref<XMLParser> &parser, Vector<DocData::MethodDoc> &
 Error DocData::load_classes(const String &p_dir) {
 
 	Error err;
-	DirAccessRef da = DirAccess::open(p_dir,&err);
+	DirAccessRef da = DirAccess::open(p_dir, &err);
 	if (!da) {
 		return err;
 	}
@@ -689,8 +689,8 @@ Error DocData::load_classes(const String &p_dir) {
 	da->list_dir_begin();
 	String path;
 	bool isdir;
-	path=da->get_next(&isdir);
-	while(path!=String()) {
+	path = da->get_next(&isdir);
+	while (path != String()) {
 		if (!isdir && path.ends_with("xml")) {
 			Ref<XMLParser> parser = memnew(XMLParser);
 			Error err = parser->open(p_dir.plus_file(path));
@@ -699,7 +699,7 @@ Error DocData::load_classes(const String &p_dir) {
 
 			_load(parser);
 		}
-		path=da->get_next(&isdir);
+		path = da->get_next(&isdir);
 	}
 
 	da->list_dir_end();
@@ -709,7 +709,7 @@ Error DocData::load_classes(const String &p_dir) {
 Error DocData::erase_classes(const String &p_dir) {
 
 	Error err;
-	DirAccessRef da = DirAccess::open(p_dir,&err);
+	DirAccessRef da = DirAccess::open(p_dir, &err);
 	if (!da) {
 		return err;
 	}
@@ -719,16 +719,16 @@ Error DocData::erase_classes(const String &p_dir) {
 	da->list_dir_begin();
 	String path;
 	bool isdir;
-	path=da->get_next(&isdir);
-	while(path!=String()) {
+	path = da->get_next(&isdir);
+	while (path != String()) {
 		if (!isdir && path.ends_with("xml")) {
 			to_erase.push_back(path);
 		}
-		path=da->get_next(&isdir);
+		path = da->get_next(&isdir);
 	}
 	da->list_dir_end();
 
-	while(to_erase.size()) {
+	while (to_erase.size()) {
 		da->remove(to_erase.front()->get());
 		to_erase.pop_front();
 	}
@@ -815,8 +815,6 @@ Error DocData::_load(Ref<XMLParser> parser) {
 									prop.setter = parser->get_attribute_value("setter");
 								if (parser->has_attribute("getter"))
 									prop.getter = parser->get_attribute_value("getter");
-								if (parser->has_attribute("brief"))
-									prop.brief_description = parser->get_attribute_value("brief").xml_unescape();
 								if (parser->has_attribute("enum"))
 									prop.enumeration = parser->get_attribute_value("enum");
 								parser->read();
@@ -914,24 +912,21 @@ static void _write_string(FileAccess *f, int p_tablevel, const String &p_string)
 	f->store_string(tab + p_string + "\n");
 }
 
-Error DocData::save_classes(const String &p_default_path, const Map<String,String>& p_class_path) {
-
+Error DocData::save_classes(const String &p_default_path, const Map<String, String> &p_class_path) {
 
 	for (Map<String, ClassDoc>::Element *E = class_list.front(); E; E = E->next()) {
-
-
 
 		ClassDoc &c = E->get();
 
 		String save_path;
 		if (p_class_path.has(c.name)) {
-			save_path=p_class_path[c.name];
+			save_path = p_class_path[c.name];
 		} else {
-			save_path=p_default_path;
+			save_path = p_default_path;
 		}
 
 		Error err;
-		String save_file = save_path.plus_file(c.name+".xml");
+		String save_file = save_path.plus_file(c.name + ".xml");
 		FileAccessRef f = FileAccess::open(save_file, FileAccess::WRITE, &err);
 		if (err) {
 			ERR_EXPLAIN("Can't write doc file: " + save_file);
@@ -949,7 +944,7 @@ Error DocData::save_classes(const String &p_default_path, const Map<String,Strin
 		if (c.category == "")
 			category = "Core";
 		header += " category=\"" + category + "\"";
-		header+=" version=\"" + String(VERSION_MKSTRING) + "\"";
+		header += " version=\"" + String(VERSION_MKSTRING) + "\"";
 		header += ">";
 		_write_string(f, 0, header);
 		_write_string(f, 1, "<brief_description>");
@@ -1031,7 +1026,7 @@ Error DocData::save_classes(const String &p_default_path, const Map<String,Strin
 					enum_text = " enum=\"" + c.properties[i].enumeration + "\"";
 				}
 				PropertyDoc &p = c.properties[i];
-				_write_string(f, 2, "<member name=\"" + p.name + "\" type=\"" + p.type + "\" setter=\"" + p.setter + "\" getter=\"" + p.getter + "\" brief=\"" + p.brief_description.xml_escape(true) + "\"" + enum_text + ">");
+				_write_string(f, 2, "<member name=\"" + p.name + "\" type=\"" + p.type + "\" setter=\"" + p.setter + "\" getter=\"" + p.getter + "\"" + enum_text + ">");
 				if (p.description != "")
 					_write_string(f, 3, p.description.xml_escape());
 				_write_string(f, 2, "</member>");
@@ -1099,7 +1094,6 @@ Error DocData::save_classes(const String &p_default_path, const Map<String,Strin
 
 		_write_string(f, 0, "</class>");
 	}
-
 
 	return OK;
 }
