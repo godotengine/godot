@@ -250,6 +250,10 @@ void ScriptEditorDebugger::debug_continue() {
 	ppeer->put_var(msg);
 }
 
+bool ScriptEditorDebugger::is_connected() const {
+	return connection.is_valid() && connection->is_connected();
+}
+
 void ScriptEditorDebugger::_scene_tree_folded(Object *obj) {
 
 	if (updating_scene_tree) {
@@ -311,6 +315,9 @@ void ScriptEditorDebugger::_scene_tree_variable_value_edited(const String &p_pro
 }
 
 void ScriptEditorDebugger::_scene_tree_property_select_object(ObjectID p_object) {
+
+	if (p_object == inspected_object_id)
+		return;
 
 	inspected_object_id = p_object;
 	Array msg;
@@ -489,7 +496,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			debugObj->update_single(pinfo.name.ascii().get_data());
 		}
 
-		debugObj->update();
+		inspected_object_id = id;
 		editor->push_item(debugObj, "");
 
 	} else if (p_msg == "message:video_mem") {
@@ -985,33 +992,18 @@ void ScriptEditorDebugger::_notification(int p_what) {
 		case NOTIFICATION_PROCESS: {
 
 			if (connection.is_valid()) {
-				inspect_scene_tree_timeout -= get_process_delta_time();
-				if (inspect_scene_tree_timeout < 0) {
-					inspect_scene_tree_timeout = EditorSettings::get_singleton()->get("debugger/scene_tree_refresh_interval");
-					if (inspect_scene_tree->is_visible()) {
-						_scene_tree_request();
-
-						if (inspected_object_id != 0) {
-							//take the chance and re-inspect selected object
-							Array msg;
-							msg.push_back("inspect_object");
-							msg.push_back(inspected_object_id);
-							ppeer->put_var(msg);
-							inspected_object_id = 0;
-						}
-					}
-				}
-
 				inspect_edited_object_timeout -= get_process_delta_time();
 				if (inspect_edited_object_timeout < 0) {
 					inspect_edited_object_timeout = EditorSettings::get_singleton()->get("debugger/remote_inspect_refresh_interval");
-					if (inspect_scene_tree->is_visible() && inspected_object_id) {
-						//take the chance and re-inspect selected object
+
+					if (inspect_scene_tree->is_visible())
+						_scene_tree_request();
+
+					if (inspected_object_id != 0 && editor->get_property_editor()->is_visible() && (editor->get_property_editor()->obj != NULL) && editor->get_property_editor()->obj->is_type("ScriptEditorDebuggerInspectedObject") && ((ObjectID)editor->get_property_editor()->obj->call("get_remote_object_id") != 0)) {
 						Array msg;
 						msg.push_back("inspect_object");
 						msg.push_back(inspected_object_id);
 						ppeer->put_var(msg);
-						inspected_object_id = 0;
 					}
 				}
 			}
@@ -1210,7 +1202,6 @@ void ScriptEditorDebugger::stop() {
 	le_set->set_disabled(true);
 	profiler->set_enabled(true);
 
-	inspect_properties->edit(NULL);
 	inspect_scene_tree->clear();
 
 	EditorNode::get_singleton()->get_pause_button()->set_pressed(false);
@@ -1677,9 +1668,6 @@ void ScriptEditorDebugger::_clear_remote_objects() {
 	if (inspector)
 		inspector->edit(NULL);
 
-	if (inspect_properties)
-		inspect_properties->edit(NULL);
-
 	for (Map<ObjectID, ScriptEditorDebuggerInspectedObject *>::Element *E = remote_objects.front(); E; E = E->next()) {
 		memdelete(E->value());
 	}
@@ -1814,6 +1802,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		inspector->set_read_only(true);
 		inspector->connect("object_id_selected", this, "_scene_tree_property_select_object");
 		sc->add_child(inspector);
+		editor->get_property_editor()->connect("object_id_selected", this, "_scene_tree_property_select_object");
 
 		server = TCP_Server::create_ref();
 
@@ -1852,29 +1841,12 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 
 	{ // inquire
 
-		inspect_info = memnew(HSplitContainer);
-		inspect_info->set_name(TTR("Remote Inspector"));
-		tabs->add_child(inspect_info);
-
-		VBoxContainer *info_left = memnew(VBoxContainer);
-		info_left->set_h_size_flags(SIZE_EXPAND_FILL);
-		inspect_info->add_child(info_left);
-
 		inspect_scene_tree = memnew(Tree);
-		info_left->add_margin_child(TTR("Live Scene Tree:"), inspect_scene_tree, true);
+		inspect_scene_tree->set_name(TTR("Live Scene Tree"));
 		inspect_scene_tree->connect("cell_selected", this, "_scene_tree_selected");
 		inspect_scene_tree->connect("item_collapsed", this, "_scene_tree_folded");
 
-		VBoxContainer *info_right = memnew(VBoxContainer);
-		info_right->set_h_size_flags(SIZE_EXPAND_FILL);
-		inspect_info->add_child(info_right);
-
-		inspect_properties = memnew(PropertyEditor);
-		//inspect_properties->hide_top_label();
-		inspect_properties->set_show_categories(true);
-		inspect_properties->connect("object_id_selected", this, "_scene_tree_property_select_object");
-
-		info_right->add_margin_child(TTR("Remote Object Properties: "), inspect_properties, true);
+		tabs->add_child(inspect_scene_tree);
 
 		inspect_scene_tree_timeout = EDITOR_DEF("debugger/scene_tree_refresh_interval", 1.0);
 		inspect_edited_object_timeout = EDITOR_DEF("debugger/remote_inspect_refresh_interval", 0.2);
@@ -2029,7 +2001,6 @@ ScriptEditorDebugger::~ScriptEditorDebugger() {
 	ppeer->set_stream_peer(Ref<StreamPeer>());
 
 	inspector = NULL;
-	inspect_properties = NULL;
 
 	server->stop();
 	_clear_remote_objects();
