@@ -12673,6 +12673,12 @@
 			<argument index="0" name="color" type="Color">
 			</argument>
 			<description>
+			Set new color to ColorRect.
+
+			[codeblock]
+			var cr = get_node("colorrect_node")
+			cr.set_frame_color(Color(1, 0, 0, 1)) # Set color rect node to red
+			[/codeblock]
 			</description>
 		</method>
 	</methods>
@@ -12720,14 +12726,21 @@
 </class>
 <class name="ColorRect" inherits="Control" category="Core">
 	<brief_description>
+		Colored rect for canvas.
 	</brief_description>
 	<description>
+		An object that is represented on the canvas as a rect with color. [Color] is used to set or get color info for the rect.
 	</description>
 	<methods>
 		<method name="get_frame_color" qualifiers="const">
 			<return type="Color">
 			</return>
 			<description>
+				Return the color in RGBA format.
+				[codeblock]
+				var cr = get_node("colorrect_node")
+				var c = cr.get_frame_color() # Default color is white
+				[/codeblock]
 			</description>
 		</method>
 		<method name="set_frame_color">
@@ -12736,6 +12749,11 @@
 			<argument index="0" name="color" type="Color">
 			</argument>
 			<description>
+				Set new color to ColorRect.
+				[codeblock]
+				var cr = get_node("colorrect_node")
+				cr.set_frame_color(Color(1, 0, 0, 1)) # Set color rect node to red
+				[/codeblock]
 			</description>
 		</method>
 	</methods>
