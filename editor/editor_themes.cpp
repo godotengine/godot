@@ -157,6 +157,7 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool dark_theme = tr
 	exceptions.push_back("ProceduralSky");
 	exceptions.push_back("EditorControlAnchor");
 	exceptions.push_back("DefaultProjectIcon");
+	exceptions.push_back("MiniCheckerboard");
 
 	clock_t begin_time = clock();
 

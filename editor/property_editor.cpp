@@ -3467,7 +3467,7 @@ void PropertyEditor::_draw_transparency(Object *t, const Rect2 &p_rect) {
 	area.position.y += 1;
 	area.size.height -= 2;
 	area.size.width -= arrow->get_size().width + 5;
-	tree->draw_texture_rect(get_icon("Transparent", "EditorIcons"), area, true);
+	tree->draw_texture_rect(get_icon("MiniCheckerboard", "EditorIcons"), area, true);
 	tree->draw_rect(area, color);
 }
 
