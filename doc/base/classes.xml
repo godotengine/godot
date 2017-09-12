@@ -494,11 +494,7 @@
 			<argument index="0" name="var" type="Variant">
 			</argument>
 			<description>
-<<<<<<< HEAD
 				Returns length of Variant 'var'. Length is the character count of String, element count of Array, size of Dictionary, etc. Note: Generates a fatal error if Variant can not provide a length.
-=======
-				Returns length of Variant 'var'. Length is the element count of an Array, size of a Dictionary, etc. Note: Generates a fatal error if Variant can not provide a length.
->>>>>>> 75b92e809dc95aefd3afab5a9efbd582a1a8d953
 				[codeblock]
 				a = [1, 2, 3, 4]
 				print(len(a))
