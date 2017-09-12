@@ -52381,11 +52381,10 @@
 </class>
 <class name="TileMap" inherits="Node2D" category="Core">
 	<brief_description>
-		Node for 2D tile-based games.
+		Node for 2D tile-based maps.
 	</brief_description>
 	<description>
-		Node for 2D tile-based games. Tilemaps use a [TileSet] which contain a list of tiles (textures, their rect and a collision) and are used to create complex grid-based maps.
-		To optimize drawing and culling (sort of like [GridMap]), you can specify a quadrant size, so chunks of the map will be batched together at drawing time.
+		Node for 2D tile-based maps. Tilemaps use a [TileSet] which contain a list of tiles (textures plus optional collision, navigation, and/or occluder shapes) which are used to create grid-based maps.
 	</description>
 	<methods>
 		<method name="clear">
@@ -52828,40 +52827,55 @@
 	</methods>
 	<members>
 		<member name="cell_custom_transform" type="Transform2D" setter="set_custom_transform" getter="get_custom_transform" brief="">
+			The custom [Transform2D] to be applied to the TileMap's cells.
 		</member>
 		<member name="cell_half_offset" type="int" setter="set_half_offset" getter="get_half_offset" brief="" enum="TileMap.HalfOffset">
+			Amount to offset alternating tiles. Uses HALF_OFFSET_* constants. Default value: HALF_OFFSET_DISABLED.
 		</member>
 		<member name="cell_quadrant_size" type="int" setter="set_quadrant_size" getter="get_quadrant_size" brief="">
+			The TileMap's quadrant size.  Optimizes drawing by batching, using chunks of this size. Default value: 16.
 		</member>
 		<member name="cell_size" type="Vector2" setter="set_cell_size" getter="get_cell_size" brief="">
+			The TileMap's cell size.
 		</member>
 		<member name="cell_tile_origin" type="int" setter="set_tile_origin" getter="get_tile_origin" brief="" enum="TileMap.TileOrigin">
+			Position for tile origin. Uses TILE_ORIGIN_* constants. Default value: TILE_ORIGIN_TOP_LEFT.
 		</member>
 		<member name="cell_y_sort" type="bool" setter="set_y_sort_mode" getter="is_y_sort_mode_enabled" brief="">
+			If [code]true[/code] the TileMap's children will be drawn in order of their Y coordinate. Default value: [code]false[/code].
 		</member>
 		<member name="collision_bounce" type="float" setter="set_collision_bounce" getter="get_collision_bounce" brief="">
+			Bounce value for static body collisions (see [code]collision_use_kinematic[/code]). Default value: 0.
 		</member>
 		<member name="collision_friction" type="float" setter="set_collision_friction" getter="get_collision_friction" brief="">
+			Friction value for static body collisions (see [code]collision_use_kinematic[/code]). Default value: 1.
 		</member>
 		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" brief="">
+			The collision layer(s) for all colliders in the TileMap.
 		</member>
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" brief="">
+			The collision mask(s) for all colliders in the TileMap.
 		</member>
 		<member name="collision_use_kinematic" type="bool" setter="set_collision_use_kinematic" getter="get_collision_use_kinematic" brief="">
+			If [code]true[/code] TileMap collisions will be handled as a kinematic body. If [code]false[/code] collisions will be handled as static body. Default value: [code]false[/code].
 		</member>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" brief="" enum="TileMap.Mode">
+			The TileMap orientation mode. Uses MODE_* constants. Default value: MODE_SQUARE.
 		</member>
 		<member name="occluder_light_mask" type="int" setter="set_occluder_light_mask" getter="get_occluder_light_mask" brief="">
+			The light mask assigned to all light occluders in the TileMap.  The TileSet's light occluders will cast shadows only from Light2D(s) that have the same light mask(s).
 		</member>
 		<member name="tile_data" type="PoolIntArray" setter="_set_tile_data" getter="_get_tile_data" brief="">
+			A [PoolIntArray] containing 
 		</member>
 		<member name="tile_set" type="TileSet" setter="set_tileset" getter="get_tileset" brief="">
+			The assigned [TileSet].
 		</member>
 	</members>
 	<signals>
 		<signal name="settings_changed">
 			<description>
-				Signal indicating that a tilemap setting has changed.
+				Emitted when a tilemap setting has changed.
 			</description>
 		</signal>
 	</signals>
