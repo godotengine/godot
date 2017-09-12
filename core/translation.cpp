@@ -1141,6 +1141,10 @@ void TranslationServer::load_translations() {
 		if (_load_translations("locale/translations_" + locale))
 			found = true;
 	}
+
+	if (!found) {
+		ERR_PRINT("Unable to load translation");
+	}
 }
 
 TranslationServer::TranslationServer()

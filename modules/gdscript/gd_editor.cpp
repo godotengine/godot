@@ -2563,7 +2563,6 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 	context.function = p.get_completion_function();
 	context.base = p_owner;
 	context.base_path = p_base_path;
-	bool isfunction = false;
 
 	switch (p.get_completion_type()) {
 
@@ -2795,7 +2794,6 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 
 		} break;
 		case GDParser::COMPLETION_METHOD:
-			isfunction = true;
 		case GDParser::COMPLETION_INDEX: {
 
 			const GDParser::Node *node = p.get_completion_node();
