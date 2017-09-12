@@ -55,79 +55,87 @@ void AnimationPlayerEditor::_gui_input(Ref<InputEvent> p_event) {
 }
 
 void AnimationPlayerEditor::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_PROCESS: {
 
-	if (p_what == NOTIFICATION_PROCESS) {
+			if (!player)
+				return;
 
-		if (!player)
-			return;
+			updating = true;
 
-		updating = true;
+			if (player->is_playing()) {
 
-		if (player->is_playing()) {
+				{
+					String animname = player->get_current_animation();
 
-			{
-				String animname = player->get_current_animation();
+					if (player->has_animation(animname)) {
+						Ref<Animation> anim = player->get_animation(animname);
+						if (!anim.is_null()) {
 
-				if (player->has_animation(animname)) {
-					Ref<Animation> anim = player->get_animation(animname);
-					if (!anim.is_null()) {
-
-						frame->set_max(anim->get_length());
+							frame->set_max(anim->get_length());
+						}
 					}
 				}
+				frame->set_value(player->get_current_animation_pos());
+				key_editor->set_anim_pos(player->get_current_animation_pos());
+				EditorNode::get_singleton()->get_property_editor()->refresh();
+
+			} else if (last_active) {
+				//need the last frame after it stopped
+
+				frame->set_value(player->get_current_animation_pos());
 			}
-			frame->set_value(player->get_current_animation_pos());
-			key_editor->set_anim_pos(player->get_current_animation_pos());
-			EditorNode::get_singleton()->get_property_editor()->refresh();
 
-		} else if (last_active) {
-			//need the last frame after it stopped
+			last_active = player->is_playing();
+			//seek->set_val(player->get_position());
+			updating = false;
 
-			frame->set_value(player->get_current_animation_pos());
-		}
+		} break;
 
-		last_active = player->is_playing();
-		//seek->set_val(player->get_position());
-		updating = false;
-	}
+		case NOTIFICATION_ENTER_TREE: {
 
-	if (p_what == NOTIFICATION_ENTER_TREE) {
+			save_anim->get_popup()->connect("id_pressed", this, "_animation_save_menu");
 
-		//editor->connect("hide_animation_player_editors",this,"_hide_anim_editors");
-		add_anim->set_icon(get_icon("New", "EditorIcons"));
-		rename_anim->set_icon(get_icon("Rename", "EditorIcons"));
-		duplicate_anim->set_icon(get_icon("Duplicate", "EditorIcons"));
-		autoplay->set_icon(get_icon("AutoPlay", "EditorIcons"));
-		load_anim->set_icon(get_icon("Folder", "EditorIcons"));
-		save_anim->set_icon(get_icon("Save", "EditorIcons"));
-		save_anim->get_popup()->connect("id_pressed", this, "_animation_save_menu");
-		remove_anim->set_icon(get_icon("Remove", "EditorIcons"));
+			tool_anim->get_popup()->connect("id_pressed", this, "_animation_tool_menu");
 
-		blend_anim->set_icon(get_icon("Blend", "EditorIcons"));
-		play->set_icon(get_icon("PlayStart", "EditorIcons"));
-		play_from->set_icon(get_icon("Play", "EditorIcons"));
-		play_bw->set_icon(get_icon("PlayStartBackwards", "EditorIcons"));
-		play_bw_from->set_icon(get_icon("PlayBackwards", "EditorIcons"));
+			blend_editor.next->connect("item_selected", this, "_blend_editor_next_changed");
 
-		autoplay_icon = get_icon("AutoPlay", "EditorIcons");
-		stop->set_icon(get_icon("Stop", "EditorIcons"));
-		resource_edit_anim->set_icon(get_icon("EditResource", "EditorIcons"));
-		pin->set_icon(get_icon("Pin", "EditorIcons"));
-		tool_anim->set_icon(get_icon("Tools", "EditorIcons"));
-		tool_anim->get_popup()->connect("id_pressed", this, "_animation_tool_menu");
+			get_tree()->connect("node_removed", this, "_node_removed");
 
-		blend_editor.next->connect("item_selected", this, "_blend_editor_next_changed");
+			add_style_override("panel", editor->get_gui_base()->get_stylebox("panel", "Panel"));
+			add_constant_override("separation", get_constant("separation", "VBoxContainer"));
+		} break;
 
-		/*
-		anim_editor_load->set_normal_texture( get_icon("AnimGet","EditorIcons"));
-		anim_editor_store->set_normal_texture( get_icon("AnimSet","EditorIcons"));
-		anim_editor_load->set_pressed_texture( get_icon("AnimGet","EditorIcons"));
-		anim_editor_store->set_pressed_texture( get_icon("AnimSet","EditorIcons"));
-		anim_editor_load->set_hover_texture( get_icon("AnimGetHl","EditorIcons"));
-		anim_editor_store->set_hover_texture( get_icon("AnimSetHl","EditorIcons"));
-*/
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 
-		get_tree()->connect("node_removed", this, "_node_removed");
+			add_style_override("panel", editor->get_gui_base()->get_stylebox("panel", "Panel"));
+			add_constant_override("separation", get_constant("separation", "VBoxContainer"));
+		} break;
+
+		case NOTIFICATION_THEME_CHANGED: {
+
+			add_anim->set_icon(get_icon("New", "EditorIcons"));
+			rename_anim->set_icon(get_icon("Rename", "EditorIcons"));
+			duplicate_anim->set_icon(get_icon("Duplicate", "EditorIcons"));
+			autoplay->set_icon(get_icon("AutoPlay", "EditorIcons"));
+			load_anim->set_icon(get_icon("Folder", "EditorIcons"));
+			save_anim->set_icon(get_icon("Save", "EditorIcons"));
+
+			remove_anim->set_icon(get_icon("Remove", "EditorIcons"));
+
+			blend_anim->set_icon(get_icon("Blend", "EditorIcons"));
+			play->set_icon(get_icon("PlayStart", "EditorIcons"));
+			play_from->set_icon(get_icon("Play", "EditorIcons"));
+			play_bw->set_icon(get_icon("PlayStartBackwards", "EditorIcons"));
+			play_bw_from->set_icon(get_icon("PlayBackwards", "EditorIcons"));
+
+			autoplay_icon = get_icon("AutoPlay", "EditorIcons");
+			stop->set_icon(get_icon("Stop", "EditorIcons"));
+			resource_edit_anim->set_icon(get_icon("EditResource", "EditorIcons"));
+			pin->set_icon(get_icon("Pin", "EditorIcons"));
+			tool_anim->set_icon(get_icon("Tools", "EditorIcons"));
+
+		} break;
 	}
 }
 
@@ -1176,7 +1184,6 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 	set_focus_mode(FOCUS_ALL);
 
 	player = NULL;
-	add_style_override("panel", editor->get_gui_base()->get_stylebox("panel", "Panel"));
 
 	Label *l;
 
@@ -1376,7 +1383,6 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 
 	key_editor = memnew(AnimationKeyEditor);
 	add_child(key_editor);
-	add_constant_override("separation", get_constant("separation", "VBoxContainer"));
 	key_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 	key_editor->connect("timeline_changed", this, "_animation_key_editor_seek");
 	key_editor->connect("animation_len_changed", this, "_animation_key_editor_anim_len_changed");
