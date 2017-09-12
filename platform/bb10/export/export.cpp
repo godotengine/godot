@@ -719,6 +719,8 @@ EditorExportPlatformBB10::EditorExportPlatformBB10() {
 	if (can_export()) {
 		device_thread = Thread::create(_device_poll_thread, this);
 		devices_changed = true;
+	} else {
+		device_thread = NULL;
 	}
 
 	Image img(_bb10_logo);
@@ -764,9 +766,16 @@ bool EditorExportPlatformBB10::can_export(String *r_error) const {
 EditorExportPlatformBB10::~EditorExportPlatformBB10() {
 
 	quit_request = true;
-	Thread::wait_to_finish(device_thread);
-	memdelete(device_lock);
-	memdelete(device_thread);
+	if (device_thread) {
+		Thread::wait_to_finish(device_thread);
+		memdelete(device_thread);
+		device_thread = NULL;
+	}
+
+	if (device_lock) {
+		memdelete(device_lock);
+		device_lock = NULL;
+	}
 }
 
 void register_bb10_exporter() {
