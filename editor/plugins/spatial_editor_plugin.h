@@ -131,7 +131,7 @@ private:
 	float gizmo_scale;
 
 	bool freelook_active;
-	Vector3 freelook_velocity;
+	Vector3 freelook_target_position;
 
 	PanelContainer *info;
 	Label *info_label;
@@ -239,7 +239,7 @@ private:
 			distance = 4;
 			region_select = false;
 		}
-	} cursor;
+	} cursor, camera_cursor;
 
 	void scale_cursor_distance(real_t scale);
 

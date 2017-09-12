@@ -76,40 +76,35 @@ void SpatialEditorViewport::_update_camera(float p_interp_delta) {
 	} else
 		camera->set_perspective(get_fov(), get_znear(), get_zfar());
 
-	Transform new_transform = to_camera_transform(cursor);
-	Transform old_transform = camera->get_global_transform();
-	Transform transform;
+	float inertia = EDITOR_DEF("editors/3d/orbit_inertia", 0.5);
+	inertia = MAX(0, inertia);
 
-	bool disable_interp = orthogonal || (Input::get_singleton()->get_mouse_button_mask() & (2 | 4)) || Input::get_singleton()->is_key_pressed(KEY_SHIFT) || Input::get_singleton()->is_key_pressed(KEY_ALT) || Input::get_singleton()->is_key_pressed(KEY_CONTROL);
+	Cursor old_camera_cursor = camera_cursor;
+	camera_cursor = cursor;
 
-	if (p_interp_delta && !disable_interp) {
-		//interpolate
-		float interp_speed = 14; //maybe should be made configuration
-		transform = old_transform.interpolate_with(new_transform, MIN(1.0, p_interp_delta * interp_speed));
-	} else {
-		transform = new_transform;
+	camera_cursor.x_rot = Math::lerp(old_camera_cursor.x_rot, cursor.x_rot, p_interp_delta * (1 / inertia));
+	camera_cursor.y_rot = Math::lerp(old_camera_cursor.y_rot, cursor.y_rot, p_interp_delta * (1 / inertia));
+
+	bool disable_interp = (Input::get_singleton()->get_mouse_button_mask() & (2 | 4)) || Input::get_singleton()->is_key_pressed(KEY_SHIFT) || Input::get_singleton()->is_key_pressed(KEY_ALT) || Input::get_singleton()->is_key_pressed(KEY_CONTROL);
+
+	if (p_interp_delta == 0 || disable_interp || is_freelook_active()) {
+		camera_cursor = cursor;
 	}
 
 	float tolerance = 0.0001;
 	bool equal = true;
-	for (int i = 0; i < 3; i++) {
-		if (transform.basis[i].distance_to(old_transform.basis[i]) > tolerance) {
-			equal = false;
-			break;
-		}
-	}
-
-	if (equal && transform.origin.distance_to(old_transform.origin) > tolerance) {
+	if (Math::abs(old_camera_cursor.x_rot - camera_cursor.x_rot) > tolerance || Math::abs(old_camera_cursor.y_rot - camera_cursor.y_rot) > tolerance)
 		equal = false;
-	}
 
-	if (equal) {
-		transform = new_transform;
-	}
+	if (equal && old_camera_cursor.pos.distance_squared_to(camera_cursor.pos) > tolerance * tolerance)
+		equal = false;
 
-	if (!equal || p_interp_delta == 0) {
-		//print_line(transform);
-		camera->set_global_transform(transform);
+	if (equal && Math::abs(old_camera_cursor.distance - camera_cursor.distance) > tolerance)
+		equal = false;
+
+	if (!equal || p_interp_delta == 0 || is_freelook_active()) {
+
+		camera->set_global_transform(to_camera_transform(camera_cursor));
 		update_transform_gizmo_view();
 	}
 }
@@ -1540,6 +1535,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					Vector3 pos = camera_transform.xform(Vector3(0, 0, 0));
 					Vector3 diff = camera->get_translation() - pos;
 					cursor.pos += diff;
+					freelook_target_position += diff;
 
 					name = "";
 					_update_name();
@@ -1661,7 +1657,7 @@ void SpatialEditorViewport::scale_cursor_distance(real_t scale) {
 
 Point2i SpatialEditorViewport::_get_warped_mouse_motion(const Ref<InputEventMouseMotion> &p_ev_mouse_motion) const {
 	Point2i relative;
-	if (bool(EditorSettings::get_singleton()->get("editors/3d/warped_mouse_panning"))) {
+	if (bool(EDITOR_DEF("editors/3d/warped_mouse_panning", false))) {
 		relative = Input::get_singleton()->warp_mouse_motion(p_ev_mouse_motion, surface->get_global_rect());
 	} else {
 		relative = p_ev_mouse_motion->get_relative();
@@ -1672,7 +1668,7 @@ Point2i SpatialEditorViewport::_get_warped_mouse_motion(const Ref<InputEventMous
 void SpatialEditorViewport::_update_freelook(real_t delta) {
 
 	if (!is_freelook_active()) {
-		freelook_velocity = Vector3();
+		freelook_target_position = cursor.pos;
 		return;
 	}
 
@@ -1689,60 +1685,47 @@ void SpatialEditorViewport::_update_freelook(real_t delta) {
 	int key_speed_modifier = Object::cast_to<InputEventKey>(ED_GET_SHORTCUT("spatial_editor/freelook_speed_modifier")->get_shortcut().ptr())->get_scancode();
 
 	Vector3 direction;
-	bool pressed = false;
 	bool speed_modifier = false;
 
 	const Input &input = *Input::get_singleton();
 
 	if (input.is_key_pressed(key_left)) {
 		direction -= right;
-		pressed = true;
 	}
 	if (input.is_key_pressed(key_right)) {
 		direction += right;
-		pressed = true;
 	}
 	if (input.is_key_pressed(key_forward)) {
 		direction += forward;
-		pressed = true;
 	}
 	if (input.is_key_pressed(key_backwards)) {
 		direction -= forward;
-		pressed = true;
 	}
 	if (input.is_key_pressed(key_up)) {
 		direction += up;
-		pressed = true;
 	}
 	if (input.is_key_pressed(key_down)) {
 		direction -= up;
-		pressed = true;
 	}
 	if (input.is_key_pressed(key_speed_modifier)) {
 		speed_modifier = true;
 	}
 
-	const EditorSettings &s = *EditorSettings::get_singleton();
-	real_t inertia = s.get("editors/3d/freelook_inertia");
-	if (inertia < 0)
-		inertia = 0;
-
-	const real_t base_speed = s.get("editors/3d/freelook_base_speed");
-	const real_t modifier_speed_factor = s.get("editors/3d/freelook_modifier_speed_factor");
+	real_t inertia = EDITOR_DEF("editors/3d/freelook_inertia", 0.2);
+	inertia = MAX(0, inertia);
+	const real_t base_speed = EDITOR_DEF("editors/3d/freelook_base_speed", 0.5);
+	const real_t modifier_speed_factor = EDITOR_DEF("editors/3d/freelook_modifier_speed_factor", 5);
 
 	real_t speed = base_speed * cursor.distance;
 	if (speed_modifier)
 		speed *= modifier_speed_factor;
 
-	Vector3 instant_velocity = direction * speed;
-
 	// Higher inertia should increase "lag" (lerp with factor between 0 and 1)
-	// Inertia of zero should produce instant movement (lerp with factor of 1)
-	// Takes reference of 60fps for units, so that inertia of 1 gives approximate lerp factor of 0.5
-	real_t factor = 1.0 / (1.0 + inertia * delta * 60.f);
-	freelook_velocity = freelook_velocity.linear_interpolate(instant_velocity, CLAMP(factor, 0, 1));
+	// Inertia of zero should produce instant movement (lerp with factor of 1) in this case it returns a really high value and gets clamped to 1.
 
-	cursor.pos += freelook_velocity * delta;
+	freelook_target_position += direction * speed;
+	real_t factor = (1.0 / (inertia + 0.001)) * delta;
+	cursor.pos = cursor.pos.linear_interpolate(freelook_target_position, CLAMP(factor, 0, 1));
 }
 
 void SpatialEditorViewport::set_message(String p_message, float p_time) {
