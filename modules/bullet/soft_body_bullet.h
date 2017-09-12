@@ -32,7 +32,7 @@
 #ifndef SOFT_BODY_BULLET_H
 #define SOFT_BODY_BULLET_H
 
-#include "BulletSoftBody/btSoftBody.h"
+#include "BulletSoftBody/btSoftBodyHelpers.h"
 #include "collision_object_bullet.h"
 
 struct SoftShapeData {};

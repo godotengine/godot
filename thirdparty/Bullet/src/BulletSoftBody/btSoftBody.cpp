@@ -1705,7 +1705,7 @@ bool			btSoftBody::rayTest(const btVector3& rayFrom,
 
 	results.body	=	this;
 	results.fraction = 1.f;
-	results.feature	=	eFeature::None;
+	results.feature	=	eFeature::Nothing;
 	results.index	=	-1;
 
 	return(rayTest(rayFrom,rayTo,results.fraction,results.feature,results.index,false)!=0);

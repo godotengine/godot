@@ -31,9 +31,9 @@
 
 #include "generic_6dof_joint_bullet.h"
 #include "BulletDynamics/ConstraintSolver/btGeneric6DofConstraint.h"
-#include "rigid_body_bullet.h"
 #include "bullet_types_converter.h"
 #include "bullet_utilities.h"
+#include "rigid_body_bullet.h"
 
 Generic6DOFJointBullet::Generic6DOFJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &frameInA, const Transform &frameInB, bool useLinearReferenceFrameA)
 	: JointBullet() {

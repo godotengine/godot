@@ -31,9 +31,9 @@
 
 #include "cone_twist_joint_bullet.h"
 #include "BulletDynamics/ConstraintSolver/btConeTwistConstraint.h"
-#include "rigid_body_bullet.h"
 #include "bullet_types_converter.h"
 #include "bullet_utilities.h"
+#include "rigid_body_bullet.h"
 
 ConeTwistJointBullet::ConeTwistJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &rbAFrame, const Transform &rbBFrame)
 	: JointBullet() {

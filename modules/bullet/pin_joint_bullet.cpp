@@ -31,8 +31,8 @@
 
 #include "pin_joint_bullet.h"
 #include "BulletDynamics/ConstraintSolver/btPoint2PointConstraint.h"
-#include "rigid_body_bullet.h"
 #include "bullet_types_converter.h"
+#include "rigid_body_bullet.h"
 
 PinJointBullet::PinJointBullet(RigidBodyBullet *p_body_a, const Vector3 &p_pos_a, RigidBodyBullet *p_body_b, const Vector3 &p_pos_b)
 	: JointBullet() {

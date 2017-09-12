@@ -31,9 +31,9 @@
 
 #include "slider_joint_bullet.h"
 #include "BulletDynamics/ConstraintSolver/btSliderConstraint.h"
-#include "rigid_body_bullet.h"
 #include "bullet_types_converter.h"
 #include "bullet_utilities.h"
+#include "rigid_body_bullet.h"
 
 SliderJointBullet::SliderJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &frameInA, const Transform &frameInB)
 	: JointBullet() {

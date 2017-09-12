@@ -30,7 +30,6 @@
 /*************************************************************************/
 
 #include "soft_body_bullet.h"
-#include "BulletSoftBody/btSoftBodyHelpers.h"
 #include "bullet_types_converter.h"
 #include "bullet_utilities.h"
 #include "space_bullet.h"
