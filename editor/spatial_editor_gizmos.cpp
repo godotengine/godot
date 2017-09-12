@@ -211,9 +211,10 @@ void EditorSpatialGizmo::add_unscaled_billboard(const Ref<Material> &p_material,
 	instances.push_back(ins);
 }
 
-void EditorSpatialGizmo::add_collision_triangles(const Ref<TriangleMesh> &p_tmesh) {
+void EditorSpatialGizmo::add_collision_triangles(const Ref<TriangleMesh> &p_tmesh, const Rect3 &p_bounds) {
 
 	collision_mesh = p_tmesh;
+	collision_mesh_bounds = p_bounds;
 }
 
 void EditorSpatialGizmo::add_collision_segments(const Vector<Vector3> &p_lines) {
@@ -357,6 +358,29 @@ bool EditorSpatialGizmo::intersect_frustum(const Camera *p_camera, const Vector<
 		}
 
 		return false;
+	}
+
+	if (collision_mesh_bounds.size != Vector3(0.0, 0.0, 0.0)) {
+		Transform t = spatial_node->get_global_transform();
+		const Plane *p = p_frustum.ptr();
+		int fc = p_frustum.size();
+
+		Vector3 mins = t.xform(collision_mesh_bounds.get_position());
+		Vector3 max = t.xform(collision_mesh_bounds.get_position() + collision_mesh_bounds.get_size());
+
+		bool any_out = false;
+
+		for (int j = 0; j < fc; j++) {
+
+			if (p[j].distance_to(mins) > 0 || p[j].distance_to(max) > 0) {
+
+				any_out = true;
+				break;
+			}
+		}
+
+		if (!any_out)
+			return true;
 	}
 
 	return false;
@@ -637,7 +661,7 @@ void EditorSpatialGizmo::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_lines", "lines", "material", "billboard"), &EditorSpatialGizmo::add_lines, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("add_mesh", "mesh", "billboard", "skeleton"), &EditorSpatialGizmo::add_mesh, DEFVAL(false), DEFVAL(RID()));
 	ClassDB::bind_method(D_METHOD("add_collision_segments", "segments"), &EditorSpatialGizmo::add_collision_segments);
-	ClassDB::bind_method(D_METHOD("add_collision_triangles", "triangles"), &EditorSpatialGizmo::add_collision_triangles);
+	ClassDB::bind_method(D_METHOD("add_collision_triangles", "triangles", "bounds"), &EditorSpatialGizmo::add_collision_triangles);
 	ClassDB::bind_method(D_METHOD("add_unscaled_billboard", "material", "default_scale"), &EditorSpatialGizmo::add_unscaled_billboard, DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("add_handles", "handles", "billboard", "secondary"), &EditorSpatialGizmo::add_handles, DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("set_spatial_node", "node"), &EditorSpatialGizmo::_set_spatial_node);
@@ -1249,8 +1273,10 @@ void MeshInstanceSpatialGizmo::redraw() {
 		return; //none
 
 	Ref<TriangleMesh> tm = m->generate_triangle_mesh();
-	if (tm.is_valid())
-		add_collision_triangles(tm);
+	if (tm.is_valid()) {
+		Rect3 aabb;
+		add_collision_triangles(tm, aabb);
+	}
 }
 
 MeshInstanceSpatialGizmo::MeshInstanceSpatialGizmo(MeshInstance *p_mesh) {

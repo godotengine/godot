@@ -78,6 +78,7 @@ class EditorSpatialGizmo : public SpatialEditorGizmo {
 
 	Vector<Vector3> collision_segments;
 	Ref<TriangleMesh> collision_mesh;
+	Rect3 collision_mesh_bounds;
 
 	struct Handle {
 		Vector3 pos;
@@ -99,7 +100,7 @@ protected:
 	void add_lines(const Vector<Vector3> &p_lines, const Ref<Material> &p_material, bool p_billboard = false);
 	void add_mesh(const Ref<ArrayMesh> &p_mesh, bool p_billboard = false, const RID &p_skeleton = RID());
 	void add_collision_segments(const Vector<Vector3> &p_lines);
-	void add_collision_triangles(const Ref<TriangleMesh> &p_tmesh);
+	void add_collision_triangles(const Ref<TriangleMesh> &p_tmesh, const Rect3 &p_bounds = Rect3());
 	void add_unscaled_billboard(const Ref<Material> &p_material, float p_scale = 1);
 	void add_handles(const Vector<Vector3> &p_handles, bool p_billboard = false, bool p_secondary = false);
 	void add_solid_box(Ref<Material> &p_material, Vector3 size);

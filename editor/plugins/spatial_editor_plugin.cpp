@@ -465,7 +465,6 @@ void SpatialEditorViewport::_select_region() {
 	Vector<Plane> frustum;
 
 	Vector3 cam_pos = _get_camera_position();
-	Set<Ref<SpatialEditorGizmo> > found_gizmos;
 
 	for (int i = 0; i < 4; i++) {
 
@@ -485,6 +484,9 @@ void SpatialEditorViewport::_select_region() {
 	frustum.push_back(far);
 
 	Vector<ObjectID> instances = VisualServer::get_singleton()->instances_cull_convex(frustum, get_tree()->get_root()->get_world()->get_scenario());
+	Vector<Spatial *> selected;
+
+	Node *edited_scene = get_tree()->get_edited_scene_root();
 
 	for (int i = 0; i < instances.size(); i++) {
 
@@ -497,11 +499,14 @@ void SpatialEditorViewport::_select_region() {
 		if (!seg.is_valid())
 			continue;
 
-		if (found_gizmos.has(seg))
-			continue;
+		Spatial *root_sp = sp;
+		while (root_sp && root_sp != edited_scene && root_sp->get_owner() != edited_scene && !edited_scene->is_editable_instance(root_sp->get_owner())) {
+			root_sp = Object::cast_to<Spatial>(root_sp->get_owner());
+		}
 
-		if (seg->intersect_frustum(camera, frustum))
-			_select(sp, true, false);
+		if (selected.find(root_sp) == -1)
+			if (seg->intersect_frustum(camera, frustum))
+				_select(root_sp, true, false);
 	}
 }
 
