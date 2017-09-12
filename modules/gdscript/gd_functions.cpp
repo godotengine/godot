@@ -1420,12 +1420,12 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 		} break;
 		case MATH_ISNAN: {
 			MethodInfo mi("is_nan", PropertyInfo(Variant::REAL, "s"));
-			mi.return_val.type = Variant::REAL;
+			mi.return_val.type = Variant::BOOL;
 			return mi;
 		} break;
 		case MATH_ISINF: {
 			MethodInfo mi("is_inf", PropertyInfo(Variant::REAL, "s"));
-			mi.return_val.type = Variant::REAL;
+			mi.return_val.type = Variant::BOOL;
 			return mi;
 		} break;
 		case MATH_EASE: {

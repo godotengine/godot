@@ -20,7 +20,14 @@
 			<argument index="3" name="a8" type="int">
 			</argument>
 			<description>
-				Make a color from red, green, blue and alpha. Arguments can range from 0 to 255.
+				Returns a 32 bit color with red, green, blue and alpha channels. Each channel has 8bits of information ranging from 0 to 255.
+				'r8' red channel
+				'g8' green channel
+				'b8' blue channel
+				'a8' alpha channel
+				[codeblock]
+				red = Color8(255, 0, 0)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="ColorN">
@@ -31,7 +38,10 @@
 			<argument index="1" name="alpha" type="float">
 			</argument>
 			<description>
-				Make a color from color name (color_names.inc) and alpha ranging from 0 to 1.
+				Returns color 'name' with alpha ranging from 0 to 1. Note: 'name' is defined in color_names.inc.
+				[codeblock]
+				red = ColorN('red')
+				[/codeblock]
 			</description>
 		</method>
 		<method name="abs">
@@ -40,7 +50,11 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Returns the absolute value of parameter s  (i.e. unsigned value, works for integer and float).
+				Returns the absolute value of parameter 's'  (i.e. unsigned value, works for integer and float).
+				[codeblock]
+				# a is 1
+				a = abs(-1)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="acos">
@@ -49,7 +63,11 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Returns the principal value of the arc cosine of s, expressed in radians. In trigonometrics, arc cosine is the inverse operation of cosine.
+				Returns the arc cosine of 's' in radians. Use to get the angle of cosine 's'.
+				[codeblock]
+				# c is 0.523599 or 30 degrees if converted with rad2deg(s)
+				c = acos(0.866025)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="asin">
@@ -58,7 +76,11 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Returns the principal value of the arc sine of s, expressed in radians. In trigonometrics, arc sine is the inverse operation of sine.
+				Returns the arc sine of 's' in radians. Use to get the angle of sine 's'.
+				[codeblock]
+				# s is 0.523599 or 30 degrees if converted with rad2deg(s)
+				s = asin(0.5)				
+				[/codeblock]
 			</description>
 		</method>
 		<method name="assert">
@@ -67,7 +89,18 @@
 			<argument index="0" name="condition" type="bool">
 			</argument>
 			<description>
-				Assert that the condition is true. If the condition is false, generates an error.
+				Assert that the condition is true. If the condition is false a fatal error is generated and the program is halted.
+				Useful for debugging to make sure a value is always true.
+				[codeblock]
+				# Speed should always be between 0 and 20
+				speed = -10
+				# Is true
+				assert(speed < 20)
+				# Is false and program stops
+				assert(speed >= 0)
+				# or simply
+				assert(speed >= 0 &amp;&amp; speed < 20)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="atan">
@@ -76,7 +109,11 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Returns the principal value of the arc tangent of s, expressed in radians. In trigonometrics, arc tangent is the inverse operation of tangent. Notice that because of the sign ambiguity, the function cannot determine with certainty in which quadrant the angle falls only by its tangent value. See [method atan2] for an alternative that takes a fractional argument instead.
+				Returns the arc tangent of 's' in radians. Use to get the angle of tangent 's'. Notice that because of the sign ambiguity, the function cannot determine with certainty in which quadrant the angle falls only by its tangent value. See [method atan2] for an alternative that takes a fractional argument instead.
+				[codeblock]
+				# a is 0.463648
+				a = atan(0.5)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="atan2">
@@ -87,7 +124,11 @@
 			<argument index="1" name="y" type="float">
 			</argument>
 			<description>
-				Returns the principal value of the arc tangent of y/x, expressed in radians. To compute the value, the function takes into account the sign of both arguments in order to determine the quadrant.
+				Returns the arc tangent of y/x in radians. Use to get the angle of tangent y/x. To compute the value, the function takes into account the sign of both arguments in order to determine the quadrant.
+				[codeblock]
+				# a is 3.141593
+				a = atan(0,-1)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="bytes2var">
@@ -105,7 +146,13 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Rounds s upward, returning the smallest integral value that is not less than s.
+				Rounds 's' upward, returning the smallest integral value that is not less than 's'.
+				[codeblock]
+				# i is 2
+				i = ceil(1.45)
+				# i is 2
+				i = ceil(1.001)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="char">
@@ -115,6 +162,12 @@
 			</argument>
 			<description>
 				Returns a character as String of the given ASCII code.
+				[codeblock]
+				# a is 'A'
+				a = char(65)
+				# a is 'a'
+				a = char(65+32)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="clamp">
@@ -127,7 +180,16 @@
 			<argument index="2" name="max" type="float">
 			</argument>
 			<description>
-				Clamps a value between a minimum and maximum value.
+				Clamp 'val' and return a value not less than 'min' and not more than 'max'.
+				[codeblock]
+				speed = 1000
+				# a is 20
+				a = clamp(speed, 1, 20)
+
+				speed = -10
+				# a is 1
+				a = clamp(speed, 1, 20)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="convert">
@@ -139,6 +201,15 @@
 			</argument>
 			<description>
 				Convert from a type to another in the best way possible. The "type" parameter uses the enum TYPE_* in [@Global Scope].
+				[codeblock]
+				a = Vector2(1, 0)
+				# prints 1
+				print(a.length())
+				a = convert(a, TYPE_STRING)
+				# prints 6
+				# (1, 0) is 6 characters
+				print(a.length())
+				[/codeblock]
 			</description>
 		</method>
 		<method name="cos">
@@ -147,7 +218,12 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Returns the cosine of an angle of s radians.
+				Returns the cosine of angle 's' in radians.
+				[codeblock]
+				# prints 1 and -1
+				print(cos(PI*2))
+				print(cos(PI))
+				[/codeblock]
 			</description>
 		</method>
 		<method name="cosh">
@@ -156,7 +232,11 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Returns the hyperbolic cosine of s.
+				Returns the hyperbolic cosine of 's' in radians.
+				[codeblock]
+				# prints 1.543081
+				print(cosh(1))
+				[/codeblock]
 			</description>
 		</method>
 		<method name="db2linear">
@@ -174,7 +254,11 @@
 			<argument index="0" name="step" type="float">
 			</argument>
 			<description>
-				Return the amount of decimals in the floating point value.
+				Returns the number of digit places after the decimal that the first non-zero digit occurs.
+				[codeblock]
+				# n is 2
+				n = decimals(0.035)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="dectime">
@@ -187,7 +271,11 @@
 			<argument index="2" name="step" type="float">
 			</argument>
 			<description>
-				Decreases time by a specified amount.
+				Returns the result of 'value' decreased by 'step' * 'amount'.
+				[codeblock]
+				# a = 59
+				a = dectime(60, 10, 0.1))
+				[/codeblock]
 			</description>
 		</method>
 		<method name="deg2rad">
@@ -196,7 +284,11 @@
 			<argument index="0" name="deg" type="float">
 			</argument>
 			<description>
-				Convert from degrees to radians.
+				Returns degrees converted to radians.
+				[codeblock]
+				# r is 3.141593
+				r = deg2rad(180)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="dict2inst">
@@ -205,7 +297,7 @@
 			<argument index="0" name="dict" type="Dictionary">
 			</argument>
 			<description>
-				Convert a previously converted instances to dictionary back into an instance. Useful for deserializing.
+				Convert a previously converted instance to dictionary back into an instance. Useful for deserializing.
 			</description>
 		</method>
 		<method name="ease">
@@ -225,8 +317,12 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Returns the base-e exponential function of s, which is e raised to the power s: e^s.
+				Returns [b]e[/b] raised to the power of 's'. [b]e[/b] sometimes called "Euler's number" is a mathematical constant whose value is approximately 2.71828.
 			</description>
+			[codeblock]
+			# a is 2.71828
+			a = exp(2)
+			[/codeblock]
 		</method>
 		<method name="floor">
 			<return type="float">
@@ -234,8 +330,14 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Rounds s downward, returning the largest integral value that is not greater than s.
+				Returns the largest integer value (rounded down) that is less than or equal to 's'.
 			</description>
+			[codeblock]
+			# a is 2
+			a = floor(2.99)
+			# a is -3
+			a = floor(-2.99)
+			[/codeblock]
 		</method>
 		<method name="fmod">
 			<return type="float">
@@ -260,7 +362,26 @@
 			<argument index="1" name="y" type="float">
 			</argument>
 			<description>
-				Module (remainder of x/y) that wraps equally in positive and negative.
+				Returns the floating-point remainder of x/y that wraps equally in positive and negative.
+				[codeblock]
+				var i = -10;
+				while i < 0:
+				    prints(i, fposmod(i, 10))
+				    i += 1
+				[/codeblock]
+				Produces:
+				[codeblock]
+				-10 10
+				-9 1
+				-8 2
+				-7 3
+				-6 4
+				-5 5
+				-4 6
+				-3 7
+				-2 8
+				-1 9
+				[/codeblock]
 			</description>
 		</method>
 		<method name="funcref">
@@ -271,7 +392,15 @@
 			<argument index="1" name="funcname" type="String">
 			</argument>
 			<description>
-				Return a reference to the specified function.
+				Returns a reference to the specified function 'funcname' in object 'instance'.
+				[codeblock]
+				a = funcref(self, "foo")
+				a.call_func()
+
+				func foo():
+				    print("bar")
+				[/codeblock]
+				Prints out "bar". This is a trivial example, the real power is that variable 'a' can be passed around to functions.
 			</description>
 		</method>
 		<method name="hash">
@@ -280,7 +409,11 @@
 			<argument index="0" name="var" type="Variant">
 			</argument>
 			<description>
-				Hash the variable passed and return an integer.
+				Returns the integer hash of the variable passed.
+				[codeblock]
+				# print 177670
+				print(hash("a"))
+				[/codeblock]
 			</description>
 		</method>
 		<method name="inst2dict">
@@ -289,7 +422,19 @@
 			<argument index="0" name="inst" type="Object">
 			</argument>
 			<description>
-				Convert a script class instance to a dictionary (useful for serializing).
+				Returns the passed instance converted a dictionary (useful for serializing).
+				[codeblock]
+				var foo = "bar"
+				func _ready():
+				    var d = inst2dict(self)
+				    print(d.keys())
+				    print(d.values())
+				[/codeblock]
+				Prints out:
+				[codeblock]
+				[@subpath, @path, foo]
+				[, res://test.gd, bar]
+				[/codeblock]
 			</description>
 		</method>
 		<method name="instance_from_id">
@@ -298,7 +443,15 @@
 			<argument index="0" name="instance_id" type="int">
 			</argument>
 			<description>
-				Get an object by its ID.
+				Returns the Object that corresponds to 'instance_id'. All Objects have a unique instance ID.
+				[codeblock]
+				var foo = "bar"
+				func _ready():
+				    var id = get_instance_id()
+				    var inst = instance_from_id(id)
+				    print(inst.foo)
+				[/codeblock]
+				Prints "bar"
 			</description>
 		</method>
 		<method name="inverse_lerp">
@@ -323,7 +476,7 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Returns whether s is an infinity value (either positive infinity or negative infinity).
+				Returns True/False whether 's' is an infinity value (either positive infinity or negative infinity).
 			</description>
 		</method>
 		<method name="is_nan">
@@ -332,7 +485,7 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Returns whether s is a NaN (Not-A-Number) value.
+				Returns True/False whether 's' is a NaN (Not-A-Number) value.
 			</description>
 		</method>
 		<method name="len">
@@ -341,7 +494,16 @@
 			<argument index="0" name="var" type="Variant">
 			</argument>
 			<description>
-				Returns the length of the given Variant if applicable. It will return character count of a String, element count of an Array, etc.
+<<<<<<< HEAD
+				Returns length of Variant 'var'. Length is the character count of String, element count of Array, size of Dictionary, etc. Note: Generates a fatal error if Variant can not provide a length.
+=======
+				Returns length of Variant 'var'. Length is the element count of an Array, size of a Dictionary, etc. Note: Generates a fatal error if Variant can not provide a length.
+>>>>>>> 75b92e809dc95aefd3afab5a9efbd582a1a8d953
+				[codeblock]
+				a = [1, 2, 3, 4]
+				print(len(a))
+				[/codeblock]
+				Prints 4
 			</description>
 		</method>
 		<method name="lerp">
@@ -372,7 +534,11 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Load a resource from the filesystem, pass a valid path as argument.
+				Load a resource from the filesystem located at 'path'. Note: resource paths can be obtained by right clicking on a resource in the Assets Pannel and choosing "Copy Path".
+				[codeblock]
+				# load a scene called main located in the root of the project directory
+				var main = load("res://main.tscn")
+				[/codeblock]
 			</description>
 		</method>
 		<method name="log">
@@ -381,7 +547,11 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Natural logarithm.
+				Natural logarithm. The amount of time needed to reach a certain level of continuous growth. Note: This is not the same as the log funcation on your calculator which is a base 10 logarithm.
+				[codeblock]
+				# a is 2.302585
+				a = log(10)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="max">
@@ -392,7 +562,13 @@
 			<argument index="1" name="b" type="float">
 			</argument>
 			<description>
-				Return the maximum of two values.
+				Returns the maximum of two values.
+				[codeblock]
+				# a is 2
+				a = max(1,2)
+				# a is -3.99
+				a = max(-3.99, -4)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="min">
@@ -403,7 +579,13 @@
 			<argument index="1" name="b" type="float">
 			</argument>
 			<description>
-				Return the minimum of two values.
+				Returns the minimum of two values.
+				[codeblock]
+				# a is 1
+				a = min(1,2)
+				# a is -4
+				a = min(-3.99, -4)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="nearest_po2">
@@ -412,7 +594,15 @@
 			<argument index="0" name="val" type="int">
 			</argument>
 			<description>
-				Return the nearest larger power of 2 for an integer.
+				Returns the nearest larger power of 2 for an integer.
+				[codeblock]
+				# a is 4
+				a = nearest_po2(3)
+				# a is 4
+				a = nearest_po2(4)
+				# a is 8
+				a = nearest_po2(5)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="parse_json">
@@ -423,6 +613,13 @@
 			<description>
 				Parse JSON text to a Variant (use [method typeof] to check if it is what you expect).
 				Be aware that the JSON specification does not define integer or float types, but only a number type. Therefore, parsing a JSON text will convert every numerical values to [float] types.
+				[codeblock]
+				p = parse_json('["a", "b", "c"]')
+				if typeof(p) == TYPE_ARRAY:
+				    print(p[0])
+				else:
+				    print("unexpected results")
+				[/codeblock]
 			</description>
 		</method>
 		<method name="pow">
@@ -433,7 +630,11 @@
 			<argument index="1" name="y" type="float">
 			</argument>
 			<description>
-				Power function, x elevate to y.
+				Returns the result of 'x' raised to the power of 'y'.
+				[codeblock]
+				# a is 32
+				a = pow(2,5)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="preload">
@@ -442,14 +643,22 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Preload a resource from the filesystem. The resource is loaded during script parsing.
+				Returns a resource from the filesystem that is loaded during script parsing. Note: resource paths can be obtained by right clicking on a resource in the Assets Pannel and choosing "Copy Path".
+				[codeblock]
+				# load a scene called main located in the root of the project directory
+				var main = preload("res://main.tscn")
 			</description>
 		</method>
 		<method name="print" qualifiers="vararg">
 			<return type="void">
 			</return>
 			<description>
-				Print one or more arguments to strings in the best way possible to a console line.
+				Converts one or more arguments to strings in the best way possible and prints them to the console.
+				[codeblock]
+				a = [1,2,3]
+				print("a","b",a)
+				[/codeblock]
+				Prints ab[1, 2, 3]
 			</description>
 		</method>
 		<method name="print_stack">
