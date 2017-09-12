@@ -21,7 +21,7 @@ None so far, but your company could be the first! :)
 ## Mini sponsors
 
     Arron Washington
-    Chrisartguy
+    Chris Phyffer
     Christian Uldall Pedersen
     Hein-Pieter van Braam
     Matthieu Huvé
