@@ -203,8 +203,9 @@ void AudioServer::_mix_step() {
 					if (!bus_map.has(bus->send)) {
 						bus = buses[0]; //send to master
 					} else {
+						int prev_index_cache = bus->index_cache;
 						bus = bus_map[bus->send];
-						if (bus->index_cache >= bus->index_cache) { //invalid, send to master
+						if (prev_index_cache >= bus->index_cache) { //invalid, send to master
 							bus = buses[0];
 						}
 					}

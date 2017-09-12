@@ -92,7 +92,7 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 
 			NODE_FROM_ID(nparent, n.parent);
 #ifdef DEBUG_ENABLED
-			if (!nparent && n.parent & FLAG_ID_IS_PATH) {
+			if (!nparent && (n.parent & FLAG_ID_IS_PATH)) {
 
 				WARN_PRINT(String("Parent path '" + String(node_paths[n.parent & FLAG_MASK]) + "' for node '" + String(snames[n.name]) + "' has vanished when instancing: '" + get_path() + "'.").ascii().get_data());
 			}
@@ -489,7 +489,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 			// only save what has been changed
 			// only save changed properties in instance
 
-			if (E->get().usage & PROPERTY_USAGE_NO_INSTANCE_STATE || E->get().name == "__meta__") {
+			if ((E->get().usage & PROPERTY_USAGE_NO_INSTANCE_STATE) || E->get().name == "__meta__") {
 				//property has requested that no instance state is saved, sorry
 				//also, meta won't be overridden or saved
 				continue;
@@ -1288,7 +1288,7 @@ bool SceneState::is_node_instance_placeholder(int p_idx) const {
 
 	ERR_FAIL_INDEX_V(p_idx, nodes.size(), false);
 
-	return nodes[p_idx].instance >= 0 && nodes[p_idx].instance & FLAG_INSTANCE_IS_PLACEHOLDER;
+	return nodes[p_idx].instance >= 0 && (nodes[p_idx].instance & FLAG_INSTANCE_IS_PLACEHOLDER);
 }
 
 Ref<PackedScene> SceneState::get_node_instance(int p_idx) const {
@@ -1313,7 +1313,7 @@ String SceneState::get_node_instance_placeholder(int p_idx) const {
 
 	ERR_FAIL_INDEX_V(p_idx, nodes.size(), String());
 
-	if (nodes[p_idx].instance >= 0 && nodes[p_idx].instance & FLAG_INSTANCE_IS_PLACEHOLDER) {
+	if (nodes[p_idx].instance >= 0 && (nodes[p_idx].instance & FLAG_INSTANCE_IS_PLACEHOLDER)) {
 		return variants[nodes[p_idx].instance & FLAG_MASK];
 	}
 

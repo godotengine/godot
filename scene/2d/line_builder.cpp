@@ -173,13 +173,15 @@ void LineBuilder::build() {
 
 	strip_begin(pos_up0, pos_down0, color0, uvx0);
 
-	//  pos_up0 ------------- pos_up1 --------------------
-	//     |                     |
-	//   pos0 - - - - - - - - - pos1 - - - - - - - - - pos2
-	//     |                     |
-	// pos_down0 ------------ pos_down1 ------------------
-	//
-	//   i-1                     i                      i+1
+	/*
+	 *  pos_up0 ------------- pos_up1 --------------------
+	 *     |                     |
+	 *   pos0 - - - - - - - - - pos1 - - - - - - - - - pos2
+	 *     |                     |
+	 * pos_down0 ------------ pos_down1 ------------------
+	 *
+	 *   i-1                     i                      i+1
+	 */
 
 	// http://labs.hyperandroid.com/tag/opengl-lines
 	// (not the same implementation but visuals help a lot)
@@ -206,17 +208,19 @@ void LineBuilder::build() {
 			inner_normal1 = -u1 * hw;
 		}
 
-		// ---------------------------
-		//                        /
-		// 0                     /    1
-		//                      /          /
-		// --------------------x------    /
-		//                    /          /    (here shown with orientation == DOWN)
-		//                   /          /
-		//                  /          /
-		//                 /          /
-		//                     2     /
-		//                          /
+		/*
+		 * ---------------------------
+		 *                        /
+		 * 0                     /    1
+		 *                      /          /
+		 * --------------------x------    /
+		 *                    /          /    (here shown with orientation == DOWN)
+		 *                   /          /
+		 *                  /          /
+		 *                 /          /
+		 *                     2     /
+		 *                          /
+		 */
 
 		// Find inner intersection at the joint
 		Vector2 corner_pos_in, corner_pos_out;
@@ -315,13 +319,14 @@ void LineBuilder::build() {
 		// Add joint geometry
 		if (current_joint_mode != LINE_JOINT_SHARP) {
 
-			// ________________ cbegin
-			//               / \
-			//              /   \
-			// ____________/_ _ _\ cend
-			//             |     |
-			//             |     |
-			//             |     |
+			/* ________________ cbegin
+			 *               / \
+			 *              /   \
+			 * ____________/_ _ _\ cend
+			 *             |     |
+			 *             |     |
+			 *             |     |
+			 */
 
 			Vector2 cbegin, cend;
 			if (orientation == UP) {

@@ -446,6 +446,7 @@ Error StreamPeerBuffer::get_data(uint8_t *p_buffer, int p_bytes) {
 
 	return OK;
 }
+
 Error StreamPeerBuffer::get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received) {
 
 	if (pointer + p_bytes > data.size()) {
@@ -463,6 +464,8 @@ Error StreamPeerBuffer::get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_
 
 	pointer += r_received;
 	// FIXME: return what? OK or ERR_*
+	// return OK for now so we don't maybe return garbage
+	return OK;
 }
 
 int StreamPeerBuffer::get_available_bytes() const {

@@ -331,18 +331,19 @@ real_t Curve::interpolate_local_nocheck(int index, real_t local_offset) const {
 	const Point a = _points[index];
 	const Point b = _points[index + 1];
 
-	// Cubic bezier
-
-	//       ac-----bc
-	//      /         \
-	//     /           \     Here with a.right_tangent > 0
-	//    /             \    and b.left_tangent < 0
-	//   /               \
-	//  a                 b
-	//
-	//  |-d1--|-d2--|-d3--|
-	//
-	// d1 == d2 == d3 == d / 3
+	/* Cubic bezier
+	 *
+	 *       ac-----bc
+	 *      /         \
+	 *     /           \     Here with a.right_tangent > 0
+	 *    /             \    and b.left_tangent < 0
+	 *   /               \
+	 *  a                 b
+	 *
+	 *  |-d1--|-d2--|-d3--|
+	 *
+	 * d1 == d2 == d3 == d / 3
+	 */
 
 	// Control points are chosen at equal distances
 	real_t d = b.pos.x - a.pos.x;
