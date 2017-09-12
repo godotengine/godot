@@ -69,9 +69,9 @@ godot_real godot_color_get_v(const godot_color *p_self);
 
 godot_string GDAPI godot_color_as_string(const godot_color *p_self);
 
-godot_int GDAPI godot_color_to_32(const godot_color *p_self);
+godot_int GDAPI godot_color_to_rgba32(const godot_color *p_self);
 
-godot_int GDAPI godot_color_to_ARGB32(const godot_color *p_self);
+godot_int GDAPI godot_color_to_argb32(const godot_color *p_self);
 
 godot_real GDAPI godot_color_gray(const godot_color *p_self);
 

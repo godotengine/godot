@@ -12455,7 +12455,7 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="to_32">
+		<method name="to_rgba32">
 			<return type="int">
 			</return>
 			<description>
@@ -12468,7 +12468,7 @@
 				[i]This is same as [method to_ARGB32] but may be changed later to support RGBA format instead[/i].
 			</description>
 		</method>
-		<method name="to_ARGB32">
+		<method name="to_argb32">
 			<return type="int">
 			</return>
 			<description>

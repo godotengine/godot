@@ -75,8 +75,8 @@ void ImageLoaderSVG::_convert_colors(NSVGimage *p_svg_image, const Dictionary p_
 		if (r_c.get_type() == Variant::COLOR && n_c.get_type() == Variant::COLOR) {
 			Color replace_color = r_c;
 			Color new_color = n_c;
-			replace_colors_i.push_back(replace_color.to_ABGR32());
-			new_colors_i.push_back(new_color.to_ABGR32());
+			replace_colors_i.push_back(replace_color.to_abgr32());
+			new_colors_i.push_back(new_color.to_abgr32());
 		}
 	}
 

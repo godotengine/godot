@@ -51,9 +51,9 @@ struct Color {
 	bool operator==(const Color &p_color) const { return (r == p_color.r && g == p_color.g && b == p_color.b && a == p_color.a); }
 	bool operator!=(const Color &p_color) const { return (r != p_color.r || g != p_color.g || b != p_color.b || a != p_color.a); }
 
-	uint32_t to_32() const;
-	uint32_t to_ARGB32() const;
-	uint32_t to_ABGR32() const;
+	uint32_t to_rgba32() const;
+	uint32_t to_argb32() const;
+	uint32_t to_abgr32() const;
 	float gray() const;
 	float get_h() const;
 	float get_s() const;

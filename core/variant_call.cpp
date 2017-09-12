@@ -428,8 +428,8 @@ struct _VariantCall {
 	VCALL_LOCALMEM2R(Quat, slerpni);
 	VCALL_LOCALMEM4R(Quat, cubic_slerp);
 
-	VCALL_LOCALMEM0R(Color, to_32);
-	VCALL_LOCALMEM0R(Color, to_ARGB32);
+	VCALL_LOCALMEM0R(Color, to_rgba32);
+	VCALL_LOCALMEM0R(Color, to_argb32);
 	VCALL_LOCALMEM0R(Color, gray);
 	VCALL_LOCALMEM0R(Color, inverted);
 	VCALL_LOCALMEM0R(Color, contrasted);
@@ -1524,8 +1524,8 @@ void register_variant_methods() {
 	ADDFUNC2(QUAT, QUAT, Quat, slerpni, QUAT, "b", REAL, "t", varray());
 	ADDFUNC4(QUAT, QUAT, Quat, cubic_slerp, QUAT, "b", QUAT, "pre_a", QUAT, "post_b", REAL, "t", varray());
 
-	ADDFUNC0(COLOR, INT, Color, to_32, varray());
-	ADDFUNC0(COLOR, INT, Color, to_ARGB32, varray());
+	ADDFUNC0(COLOR, INT, Color, to_rgba32, varray());
+	ADDFUNC0(COLOR, INT, Color, to_argb32, varray());
 	ADDFUNC0(COLOR, REAL, Color, gray, varray());
 	ADDFUNC0(COLOR, COLOR, Color, inverted, varray());
 	ADDFUNC0(COLOR, COLOR, Color, contrasted, varray());
