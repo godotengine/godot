@@ -2157,7 +2157,16 @@ void CanvasItemEditor::_viewport_draw() {
 		Point2 bsfrom = transform.xform(drag_from);
 		Point2 bsto = transform.xform(box_selecting_to);
 
-		VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(bsfrom, bsto - bsfrom), Color(0.7, 0.7, 1.0, 0.3));
+		Point2 corrected_region_begin;
+		Point2 corrected_region_end;
+
+		corrected_region_begin.x = bsfrom.x < bsto.x ? bsfrom.x : bsto.x;
+		corrected_region_begin.y = bsfrom.y < bsto.y ? bsfrom.y : bsto.y;
+
+		corrected_region_end.x = bsfrom.x < bsto.x ? bsto.x : bsfrom.x;
+		corrected_region_end.y = bsfrom.y < bsto.y ? bsto.y : bsfrom.y;
+
+		VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(corrected_region_begin, corrected_region_end - corrected_region_begin), Color(0.7, 0.7, 1.0, 0.3));
 	}
 
 	if (drag == DRAG_ROTATE) {
