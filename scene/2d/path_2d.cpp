@@ -137,7 +137,8 @@ void PathFollow2D::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 
-			if ((path = Object::cast_to<Path2D>(get_parent()))) {
+			path = Object::cast_to<Path2D>(get_parent());
+			if (path) {
 				_update_transform();
 			}
 

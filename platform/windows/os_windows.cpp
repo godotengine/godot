@@ -996,7 +996,16 @@ void OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int 
 		video_mode.fullscreen = false;
 	} else {
 
-		if (!(hWnd = CreateWindowExW(dwExStyle, L"Engine", L"", dwStyle | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, (GetSystemMetrics(SM_CXSCREEN) - WindowRect.right) / 2, (GetSystemMetrics(SM_CYSCREEN) - WindowRect.bottom) / 2, WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top, NULL, NULL, hInstance, NULL))) {
+		hWnd = CreateWindowExW(
+				dwExStyle,
+				L"Engine", L"",
+				dwStyle | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
+				(GetSystemMetrics(SM_CXSCREEN) - WindowRect.right) / 2,
+				(GetSystemMetrics(SM_CYSCREEN) - WindowRect.bottom) / 2,
+				WindowRect.right - WindowRect.left,
+				WindowRect.bottom - WindowRect.top,
+				NULL, NULL, hInstance, NULL);
+		if (!hWnd) {
 			MessageBoxW(NULL, L"Window Creation Error.", L"ERROR", MB_OK | MB_ICONEXCLAMATION);
 			return; // Return FALSE
 		}

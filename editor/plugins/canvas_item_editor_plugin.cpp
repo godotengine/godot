@@ -580,7 +580,8 @@ void CanvasItemEditor::_key_move(const Vector2 &p_dir, bool p_snap, KeyMoveMODE 
 
 		} else { // p_move_mode==MOVE_LOCAL_BASE || p_move_mode==MOVE_LOCAL_WITH_ROT
 
-			if (Node2D *node_2d = Object::cast_to<Node2D>(canvas_item)) {
+			Node2D *node_2d = Object::cast_to<Node2D>(canvas_item);
+			if (node_2d) {
 
 				if (p_move_mode == MOVE_LOCAL_WITH_ROT) {
 					Transform2D m;
@@ -589,9 +590,10 @@ void CanvasItemEditor::_key_move(const Vector2 &p_dir, bool p_snap, KeyMoveMODE 
 				}
 				node_2d->set_position(node_2d->get_position() + drag);
 
-			} else if (Control *control = Object::cast_to<Control>(canvas_item)) {
-
-				control->set_position(control->get_position() + drag);
+			} else {
+				Control *control = Object::cast_to<Control>(canvas_item);
+				if (control)
+					control->set_position(control->get_position() + drag);
 			}
 		}
 	}
@@ -742,7 +744,8 @@ float CanvasItemEditor::_anchor_snap(float p_anchor, bool *p_snapped, float p_op
 	float radius = 0.05 / zoom;
 	float basic_anchors[3] = { 0.0, 0.5, 1.0 };
 	for (int i = 0; i < 3; i++) {
-		if ((dist = fabs(p_anchor - basic_anchors[i])) < radius) {
+		dist = fabs(p_anchor - basic_anchors[i]);
+		if (dist < radius) {
 			if (!snapped || dist <= dist_min) {
 				p_anchor = basic_anchors[i];
 				dist_min = dist;
@@ -750,7 +753,8 @@ float CanvasItemEditor::_anchor_snap(float p_anchor, bool *p_snapped, float p_op
 			}
 		}
 	}
-	if (p_opposite_anchor >= 0 && (dist = fabs(p_anchor - p_opposite_anchor)) < radius) {
+	dist = fabs(p_anchor - p_opposite_anchor);
+	if (p_opposite_anchor >= 0 && dist < radius) {
 		if (!snapped || dist <= dist_min) {
 			p_anchor = p_opposite_anchor;
 			dist_min = dist;

@@ -582,13 +582,13 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			new_scene_from_dialog->popup_centered_ratio();
 			new_scene_from_dialog->set_title(TTR("Save New Scene As.."));
-
 		} break;
 		case TOOL_COPY_NODE_PATH: {
 			List<Node *> selection = editor_selection->get_selected_node_list();
-
-			if (List<Node *>::Element *e = selection.front()) {
-				if (Node *node = e->get()) {
+			List<Node *>::Element *e = selection.front();
+			if (e) {
+				Node *node = e->get();
+				if (node) {
 					Node *root = EditorNode::get_singleton()->get_edited_scene();
 					NodePath path = root->get_path().rel_path_to(node->get_path());
 					OS::get_singleton()->set_clipboard(path);
@@ -597,8 +597,10 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		} break;
 		case TOOL_SCENE_EDITABLE_CHILDREN: {
 			List<Node *> selection = editor_selection->get_selected_node_list();
-			if (List<Node *>::Element *e = selection.front()) {
-				if (Node *node = e->get()) {
+			List<Node *>::Element *e = selection.front();
+			if (e) {
+				Node *node = e->get();
+				if (node) {
 					bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(node);
 					int editable_item_idx = menu->get_item_idx_from_text(TTR("Editable Children"));
 					int placeholder_item_idx = menu->get_item_idx_from_text(TTR("Load As Placeholder"));
@@ -617,8 +619,10 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		} break;
 		case TOOL_SCENE_USE_PLACEHOLDER: {
 			List<Node *> selection = editor_selection->get_selected_node_list();
-			if (List<Node *>::Element *e = selection.front()) {
-				if (Node *node = e->get()) {
+			List<Node *>::Element *e = selection.front();
+			if (e) {
+				Node *node = e->get();
+				if (node) {
 					bool placeholder = node->get_scene_instance_load_placeholder();
 					placeholder = !placeholder;
 					int editable_item_idx = menu->get_item_idx_from_text(TTR("Editable Children"));
@@ -635,15 +639,16 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		} break;
 		case TOOL_SCENE_CLEAR_INSTANCING: {
 			List<Node *> selection = editor_selection->get_selected_node_list();
-			if (List<Node *>::Element *e = selection.front()) {
-				if (Node *node = e->get()) {
+			List<Node *>::Element *e = selection.front();
+			if (e) {
+				Node *node = e->get();
+				if (node) {
 					Node *root = EditorNode::get_singleton()->get_edited_scene();
 					UndoRedo *undo_redo = &editor_data->get_undo_redo();
 					if (!root)
 						break;
 
 					ERR_FAIL_COND(node->get_filename() == String());
-
 					undo_redo->create_action(TTR("Discard Instancing"));
 					undo_redo->add_do_method(node, "set_filename", "");
 					undo_redo->add_undo_method(node, "set_filename", node->get_filename());
@@ -656,8 +661,10 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		} break;
 		case TOOL_SCENE_OPEN: {
 			List<Node *> selection = editor_selection->get_selected_node_list();
-			if (List<Node *>::Element *e = selection.front()) {
-				if (Node *node = e->get()) {
+			List<Node *>::Element *e = selection.front();
+			if (e) {
+				Node *node = e->get();
+				if (node) {
 					scene_tree->emit_signal("open", node->get_filename());
 				}
 			}
@@ -667,8 +674,10 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		} break;
 		case TOOL_SCENE_CLEAR_INHERITANCE_CONFIRM: {
 			List<Node *> selection = editor_selection->get_selected_node_list();
-			if (List<Node *>::Element *e = selection.front()) {
-				if (Node *node = e->get()) {
+			List<Node *>::Element *e = selection.front();
+			if (e) {
+				Node *node = e->get();
+				if (node) {
 					node->set_scene_inherited_state(Ref<SceneState>());
 					scene_tree->update_tree();
 					EditorNode::get_singleton()->get_property_editor()->update_tree();
@@ -677,8 +686,10 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		} break;
 		case TOOL_SCENE_OPEN_INHERITED: {
 			List<Node *> selection = editor_selection->get_selected_node_list();
-			if (List<Node *>::Element *e = selection.front()) {
-				if (Node *node = e->get()) {
+			List<Node *>::Element *e = selection.front();
+			if (e) {
+				Node *node = e->get();
+				if (node) {
 					if (node && node->get_scene_inherited_state().is_valid()) {
 						scene_tree->emit_signal("open", node->get_scene_inherited_state()->get_path());
 					}
