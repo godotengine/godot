@@ -1623,7 +1623,7 @@ void register_variant_methods() {
 	ADDFUNC2(POOL_STRING_ARRAY, INT, PoolStringArray, insert, INT, "idx", STRING, "string", varray());
 	ADDFUNC1(POOL_STRING_ARRAY, NIL, PoolStringArray, resize, INT, "idx", varray());
 	ADDFUNC0(POOL_STRING_ARRAY, NIL, PoolStringArray, invert, varray());
-	ADDFUNC1(POOL_STRING_ARRAY, STRING, PoolStringArray, join, STRING, "string", varray());
+	ADDFUNC1(POOL_STRING_ARRAY, STRING, PoolStringArray, join, STRING, "delimiter", varray());
 
 	ADDFUNC0(POOL_VECTOR2_ARRAY, INT, PoolVector2Array, size, varray());
 	ADDFUNC2(POOL_VECTOR2_ARRAY, NIL, PoolVector2Array, set, INT, "idx", VECTOR2, "vector2", varray());
