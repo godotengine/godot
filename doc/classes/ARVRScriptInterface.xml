@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ARVRScriptInterface" inherits="ARVRInterface" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Base class for GDNative based ARVR interfaces.
+	</brief_description>
+	<description>
+		This class is used as a base class/interface class for implementing GDNative based ARVR interfaces and as a result exposes more of the internals of the ARVR server.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="_get_projection_for_eye" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<description>
+				Should return the projection 4x4 matrix for the requested eye.
+			</description>
+		</method>
+		<method name="commit_for_eye" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="eye" type="int">
+			</argument>
+			<argument index="1" name="render_target" type="RID">
+			</argument>
+			<description>
+				Outputs a finished render buffer to the AR/VR device for the given eye.
+			</description>
+		</method>
+		<method name="get_recommended_render_targetsize" qualifiers="virtual">
+			<return type="Vector2">
+			</return>
+			<description>
+				Returns the size at which we should render our scene to get optimal quality on the output device.
+			</description>
+		</method>
+		<method name="get_transform_for_eye" qualifiers="virtual">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="eye" type="int">
+			</argument>
+			<argument index="1" name="cam_transform" type="Transform">
+			</argument>
+			<description>
+				Get the location and orientation transform used when rendering a specific eye.
+			</description>
+		</method>
+		<method name="hmd_is_present" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<description>
+				Return true is an HMD is available.
+			</description>
+		</method>
+		<method name="initialize" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<description>
+				Initialize this interface.
+			</description>
+		</method>
+		<method name="is_initialized" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<description>
+				Returns true if this interface has been initialized and is active.
+			</description>
+		</method>
+		<method name="is_installed" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<description>
+				Returns true if the required middleware is installed.
+			</description>
+		</method>
+		<method name="is_stereo" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<description>
+				Returns true if we require stereoscopic rendering for this interface.
+			</description>
+		</method>
+		<method name="process" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<description>
+				Gets called before rendering each frame so tracking data gets updated in time.
+			</description>
+		</method>
+		<method name="supports_hmd" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<description>
+				Returns true if this interface supports HMDs.
+			</description>
+		</method>
+		<method name="uninitialize" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<description>
+				Turn this interface off.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Thread" inherits="Reference" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		A unit of execution in a process.
+	</brief_description>
+	<description>
+		A unit of execution in a process. Can run methods on [Object]\ s simultaneously. The use of synchronization via [Mutex], [Semaphore] is advised if working with shared objects.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_id" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns the current [Thread]\ s id, uniquely identifying it among all threads.
+			</description>
+		</method>
+		<method name="is_active" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns true if this [Thread] is currently active. An active [Thread] cannot start work on a new method but can be joined with [method wait_to_finish].
+			</description>
+		</method>
+		<method name="start">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="instance" type="Object">
+			</argument>
+			<argument index="1" name="method" type="String">
+			</argument>
+			<argument index="2" name="userdata" type="Variant" default="null">
+			</argument>
+			<argument index="3" name="priority" type="int" default="1">
+			</argument>
+			<description>
+				Starts a new [Thread] that runs "method" on object "instance" with "userdata" passed as an argument. The "priority" of the [Thread] can be changed by passing a PRIORITY_* enum.
+				Returns OK on success, or ERR_CANT_CREATE on failure.
+			</description>
+		</method>
+		<method name="wait_to_finish">
+			<return type="Variant">
+			</return>
+			<description>
+				Joins the [Thread] and waits for it to finish. Returns what the method called returned.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="PRIORITY_LOW" value="0">
+		</constant>
+		<constant name="PRIORITY_NORMAL" value="1">
+		</constant>
+		<constant name="PRIORITY_HIGH" value="2">
+		</constant>
+	</constants>
+</class>

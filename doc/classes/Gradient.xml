@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Gradient" inherits="Resource" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Color interpolator node
+	</brief_description>
+	<description>
+		Given a set of colors, this node will interpolate them in order, meaning, that if you have color 1, color 2 and color3, the ramp will interpolate (generate the colors between two colors) from color 1 to color 2 and from color 2 to color 3. Initially the ramp will have 2 colors (black and white), one (black) at ramp lower offset offset 0 and the other (white) at the ramp higher offset 1.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="add_point">
+			<return type="void">
+			</return>
+			<argument index="0" name="offset" type="float">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<description>
+				Adds the specified color to the end of the ramp, with the specified offset
+			</description>
+		</method>
+		<method name="get_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<argument index="0" name="point" type="int">
+			</argument>
+			<description>
+				Returns the color of the ramp color at index [i]point[/i]
+			</description>
+		</method>
+		<method name="get_colors" qualifiers="const">
+			<return type="PoolColorArray">
+			</return>
+			<description>
+				Returns the colors in the ramp
+			</description>
+		</method>
+		<method name="get_offset" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="point" type="int">
+			</argument>
+			<description>
+				Returns the offset of the ramp color at index [i]point[/i]
+			</description>
+		</method>
+		<method name="get_offsets" qualifiers="const">
+			<return type="PoolRealArray">
+			</return>
+			<description>
+				Returns the offsets for the colors in this ramp
+			</description>
+		</method>
+		<method name="get_point_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the number of colors in the ramp
+			</description>
+		</method>
+		<method name="interpolate">
+			<return type="Color">
+			</return>
+			<argument index="0" name="offset" type="float">
+			</argument>
+			<description>
+				Returns the interpolated color specified by [i]offset[/i]
+			</description>
+		</method>
+		<method name="remove_point">
+			<return type="void">
+			</return>
+			<argument index="0" name="offset" type="int">
+			</argument>
+			<description>
+				Removes the color at the index [i]offset[/i]
+			</description>
+		</method>
+		<method name="set_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="point" type="int">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<description>
+				Sets the color of the ramp color at index [i]point[/i]
+			</description>
+		</method>
+		<method name="set_colors">
+			<return type="void">
+			</return>
+			<argument index="0" name="colors" type="PoolColorArray">
+			</argument>
+			<description>
+				Sets the colors for the specified amount of elements. Calling this function with a different number of elements than previously defined causes the ramp to resize its colors and offsets array to accommodate the new elements.
+			</description>
+		</method>
+		<method name="set_offset">
+			<return type="void">
+			</return>
+			<argument index="0" name="point" type="int">
+			</argument>
+			<argument index="1" name="offset" type="float">
+			</argument>
+			<description>
+				Sets the offset for the ramp color at index [i]point[/i]
+			</description>
+		</method>
+		<method name="set_offsets">
+			<return type="void">
+			</return>
+			<argument index="0" name="offsets" type="PoolRealArray">
+			</argument>
+			<description>
+				Sets the offset for the specified amount of elements. Calling this function with a different number of elements than previously defined causes the ramp to resize its colors and offsets array to accommodate the new elements, all new colors will be black by default.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="colors" type="PoolColorArray" setter="set_colors" getter="get_colors" brief="">
+		</member>
+		<member name="offsets" type="PoolRealArray" setter="set_offsets" getter="get_offsets" brief="">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

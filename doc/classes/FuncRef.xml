@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="FuncRef" inherits="Reference" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Reference to a function in an object.
+	</brief_description>
+	<description>
+		In GDScript, functions are not [i]first-class objects[/i]. This means it is impossible to store them directly as variables, return them from another function, or pass them as arguments.
+		However, by creating a [FuncRef] using the [method @GDScript.funcref] function, a reference to a function in a given object can be created, passed around and called.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="call_func" qualifiers="vararg">
+			<return type="Variant">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_function">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+				Set the name of the function to call on the object, without parentheses or any parameters.
+			</description>
+		</method>
+		<method name="set_instance">
+			<return type="void">
+			</return>
+			<argument index="0" name="instance" type="Object">
+			</argument>
+			<description>
+				Set the object on which to call the referenced function. This object must be of a type actually inheriting from [Object], not a built-in type such as [int], [Vector2] or [Dictionary].
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

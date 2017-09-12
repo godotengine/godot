@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ShaderMaterial" inherits="Material" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_shader" qualifiers="const">
+			<return type="Shader">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_shader_param" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="param" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_shader">
+			<return type="void">
+			</return>
+			<argument index="0" name="shader" type="Shader">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_shader_param">
+			<return type="void">
+			</return>
+			<argument index="0" name="param" type="String">
+			</argument>
+			<argument index="1" name="value" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

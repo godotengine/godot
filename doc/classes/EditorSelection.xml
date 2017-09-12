@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorSelection" inherits="Object" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Manages the SceneTree selection in the editor.
+	</brief_description>
+	<description>
+		This object manages the SceneTree selection in the editor.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="add_node">
+			<return type="void">
+			</return>
+			<argument index="0" name="node" type="Node">
+			</argument>
+			<description>
+				Add a node to the selection.
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void">
+			</return>
+			<description>
+				Clear the selection.
+			</description>
+		</method>
+		<method name="get_selected_nodes">
+			<return type="Array">
+			</return>
+			<description>
+				Get the list of selectes nodes.
+			</description>
+		</method>
+		<method name="get_transformable_selected_nodes">
+			<return type="Array">
+			</return>
+			<description>
+				Get the list of selected nodes, optimized for transform operations (ie, moving them, rotating, etc). This list avoids situations where a node is selected and also chid/grandchild.
+			</description>
+		</method>
+		<method name="remove_node">
+			<return type="void">
+			</return>
+			<argument index="0" name="node" type="Node">
+			</argument>
+			<description>
+				Remove a node from the selection.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="selection_changed">
+			<description>
+				Emitted when the selection changes.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>

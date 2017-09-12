@@ -1,0 +1,854 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OS" inherits="Object" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Operating System functions.
+	</brief_description>
+	<description>
+		Operating System functions. OS Wraps the most common functionality to communicate with the host Operating System, such as: mouse grabbing, mouse cursors, clipboard, video mode, date and time, timers, environment variables, execution of binaries, command line, etc.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="alert">
+			<return type="void">
+			</return>
+			<argument index="0" name="text" type="String">
+			</argument>
+			<argument index="1" name="title" type="String" default="&quot;Alert!&quot;">
+			</argument>
+			<description>
+				Displays a modal dialog box utilizing the host OS.
+			</description>
+		</method>
+		<method name="can_draw" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return true if the host OS allows drawing.
+			</description>
+		</method>
+		<method name="can_use_threads" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns if the current host platform is using multiple threads.
+			</description>
+		</method>
+		<method name="delay_msec" qualifiers="const">
+			<return type="void">
+			</return>
+			<argument index="0" name="msec" type="int">
+			</argument>
+			<description>
+				Delay executing of the current thread by given milliseconds.
+			</description>
+		</method>
+		<method name="delay_usec" qualifiers="const">
+			<return type="void">
+			</return>
+			<argument index="0" name="usec" type="int">
+			</argument>
+			<description>
+				Delay executing of the current thread by given microseconds.
+			</description>
+		</method>
+		<method name="dump_memory_to_file">
+			<return type="void">
+			</return>
+			<argument index="0" name="file" type="String">
+			</argument>
+			<description>
+				Dumps the memory allocation ringlist to a file (only works in debug).
+				Entry format per line: "Address - Size - Description"
+			</description>
+		</method>
+		<method name="dump_resources_to_file">
+			<return type="void">
+			</return>
+			<argument index="0" name="file" type="String">
+			</argument>
+			<description>
+				Dumps all used resources to file (only works in debug).
+				Entry format per line: "Resource Type : Resource Location"
+				At the end of the file is a statistic of all used Resource Types.
+			</description>
+		</method>
+		<method name="execute">
+			<return type="int">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="arguments" type="PoolStringArray">
+			</argument>
+			<argument index="2" name="blocking" type="bool">
+			</argument>
+			<argument index="3" name="output" type="Array" default="[  ]">
+			</argument>
+			<description>
+				Execute the binary file in given path, optionally blocking until it returns. A process ID is returned.
+			</description>
+		</method>
+		<method name="find_scancode_from_string" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="string" type="String">
+			</argument>
+			<description>
+				Returns the scancode of the given string (e.g. "Escape")
+			</description>
+		</method>
+		<method name="get_borderless_window" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns true if the current window is borderless.
+			</description>
+		</method>
+		<method name="get_clipboard" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Get clipboard from the host OS.
+			</description>
+		</method>
+		<method name="get_cmdline_args">
+			<return type="PoolStringArray">
+			</return>
+			<description>
+				Return the commandline passed to the engine.
+			</description>
+		</method>
+		<method name="get_current_screen" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the current screen index (0 padded).
+			</description>
+		</method>
+		<method name="get_data_dir" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Return the absolute directory path of user data path([user://]).
+			</description>
+		</method>
+		<method name="get_date" qualifiers="const">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="utc" type="bool" default="false">
+			</argument>
+			<description>
+				Returns current date as a dictionary of keys: year, month, day, weekday, dst (daylight savings time).
+			</description>
+		</method>
+		<method name="get_datetime" qualifiers="const">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="utc" type="bool" default="false">
+			</argument>
+			<description>
+				Returns current datetime as a dictionary of keys: year, month, day, weekday, dst (daylight savings time), hour, minute, second.
+			</description>
+		</method>
+		<method name="get_datetime_from_unix_time" qualifiers="const">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="unix_time_val" type="int">
+			</argument>
+			<description>
+				Get a dictionary of time values when given epoch time.
+				Dictionary Time values will be a union of values from [method get_time] and [method get_date] dictionaries (with the exception of dst = day light standard time, as it cannot be determined from epoch).
+			</description>
+		</method>
+		<method name="get_dynamic_memory_usage" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the total amount of dynamic memory used (only works in debug).
+			</description>
+		</method>
+		<method name="get_environment" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="environment" type="String">
+			</argument>
+			<description>
+				Return an environment variable.
+			</description>
+		</method>
+		<method name="get_executable_path" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Return the path to the current engine executable.
+			</description>
+		</method>
+		<method name="get_exit_code" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_latin_keyboard_variant" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns the current latin keyboard variant as a String.
+				Possible return values are: "QWERTY", "AZERTY", "QZERTY", "DVORAK", "NEO" or "ERROR"
+			</description>
+		</method>
+		<method name="get_locale" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Return the host OS locale.
+			</description>
+		</method>
+		<method name="get_model_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns the model name of the current device.
+			</description>
+		</method>
+		<method name="get_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Return the name of the host OS. Possible values are: "Android", "Haiku", "iOS", "HTML5", "OSX", "Server", "Windows", "UWP", "X11".
+			</description>
+		</method>
+		<method name="get_power_percent_left">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_power_seconds_left">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_power_state">
+			<return type="int" enum="PowerState">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_process_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the game process ID
+			</description>
+		</method>
+		<method name="get_processor_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the number of cores available in the host machine.
+			</description>
+		</method>
+		<method name="get_scancode_string" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="code" type="int">
+			</argument>
+			<description>
+				Returns the given scancode as a string (e.g. Return values: "Escape", "Shift+Escape").
+			</description>
+		</method>
+		<method name="get_screen_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the number of displays attached to the host machine
+			</description>
+		</method>
+		<method name="get_screen_dpi" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="screen" type="int" default="-1">
+			</argument>
+			<description>
+				Returns the dots per inch density of the specified screen.
+
+				On Android Devices, the actual screen densities are grouped into six generalized densities:
+					ldpi    - 120 dpi
+					mdpi    - 160 dpi
+					hdpi    - 240 dpi
+					xhdpi   - 320 dpi
+					xxhdpi  - 480 dpi
+					xxxhdpi - 640 dpi
+			</description>
+		</method>
+		<method name="get_screen_orientation" qualifiers="const">
+			<return type="int" enum="_OS.ScreenOrientation">
+			</return>
+			<description>
+				Returns the current screen orientation, the return value will be one of the SCREEN_ORIENTATION constants in this class.
+			</description>
+		</method>
+		<method name="get_screen_position" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="screen" type="int" default="-1">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_screen_size" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="screen" type="int" default="-1">
+			</argument>
+			<description>
+				Returns the dimensions in pixels of the specified screen.
+			</description>
+		</method>
+		<method name="get_splash_tick_msec" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_static_memory_peak_usage" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the max amount of static memory used (only works in debug).
+			</description>
+		</method>
+		<method name="get_static_memory_usage" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_system_dir" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="dir" type="int" enum="_OS.SystemDir">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_system_time_secs" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_ticks_msec" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the amount of time passed in milliseconds since the engine started.
+			</description>
+		</method>
+		<method name="get_time" qualifiers="const">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="utc" type="bool" default="false">
+			</argument>
+			<description>
+				Returns current time as a dictionary of keys: hour, minute, second
+			</description>
+		</method>
+		<method name="get_time_zone_info" qualifiers="const">
+			<return type="Dictionary">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_unique_id" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_unix_time" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return	the current unix timestamp.
+			</description>
+		</method>
+		<method name="get_unix_time_from_datetime" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="datetime" type="Dictionary">
+			</argument>
+			<description>
+				Get an epoch time value from a dictionary of time values.
+				[code]datetime[/code] must be populated with the following keys: year, month, day, hour, minute, second.
+				You can pass the output from [method get_datetime_from_unix_time] directly into this function. Daylight savings time (dst), if present, is ignored.
+			</description>
+		</method>
+		<method name="get_window_position" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+				Returns the window position relative to the screen, the origin is the top left corner, +Y axis goes to the bottom and +X axis goes to the right.
+			</description>
+		</method>
+		<method name="get_window_size" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+				Returns the size of the window (without counting window manager decorations).
+			</description>
+		</method>
+		<method name="has_environment" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="environment" type="String">
+			</argument>
+			<description>
+				Return true if an environment variable exists.
+			</description>
+		</method>
+		<method name="has_touchscreen_ui_hint" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="has_virtual_keyboard" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns true if the platform has a virtual keyboard, false otherwise.
+			</description>
+		</method>
+		<method name="hide_virtual_keyboard">
+			<return type="void">
+			</return>
+			<description>
+				Hides the virtual keyboard if it is shown, does nothing otherwise.
+			</description>
+		</method>
+		<method name="is_debug_build" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_in_low_processor_usage_mode" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return true if low cpu usage mode is enabled.
+			</description>
+		</method>
+		<method name="is_keep_screen_on" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns whether the screen is being kept on or not.
+			</description>
+		</method>
+		<method name="is_ok_left_and_cancel_right" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_scancode_unicode" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="code" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_stdout_verbose" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return true if the engine was executed with -v (verbose stdout).
+			</description>
+		</method>
+		<method name="is_vsync_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_window_fullscreen" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns whether the window is in fullscreen mode or not.
+			</description>
+		</method>
+		<method name="is_window_maximized" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return true if the window is maximized.
+			</description>
+		</method>
+		<method name="is_window_minimized" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return true if the window is minimized.
+			</description>
+		</method>
+		<method name="is_window_resizable" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns whether the window is resizable or not.
+			</description>
+		</method>
+		<method name="kill">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="pid" type="int">
+			</argument>
+			<description>
+				Kill a process ID (this method can be used to kill processes that were not spawned by the game).
+			</description>
+		</method>
+		<method name="native_video_is_playing">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="native_video_pause">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="native_video_play">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="volume" type="float">
+			</argument>
+			<argument index="2" name="audio_track" type="String">
+			</argument>
+			<argument index="3" name="subtitle_track" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="native_video_stop">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="native_video_unpause">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="print_all_resources">
+			<return type="void">
+			</return>
+			<argument index="0" name="tofile" type="String" default="&quot;&quot;">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="print_all_textures_by_size">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="print_resources_by_type">
+			<return type="void">
+			</return>
+			<argument index="0" name="types" type="PoolStringArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="print_resources_in_use">
+			<return type="void">
+			</return>
+			<argument index="0" name="short" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="request_attention">
+			<return type="void">
+			</return>
+			<description>
+				Request the user attention to the window. It'll flash the taskbar button on Windows or bounce the dock icon on OSX.
+			</description>
+		</method>
+		<method name="set_borderless_window">
+			<return type="void">
+			</return>
+			<argument index="0" name="borderless" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_clipboard">
+			<return type="void">
+			</return>
+			<argument index="0" name="clipboard" type="String">
+			</argument>
+			<description>
+				Set clipboard to the OS.
+			</description>
+		</method>
+		<method name="set_current_screen">
+			<return type="void">
+			</return>
+			<argument index="0" name="screen" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_exit_code">
+			<return type="void">
+			</return>
+			<argument index="0" name="code" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_icon">
+			<return type="void">
+			</return>
+			<argument index="0" name="icon" type="Image">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_ime_position">
+			<return type="void">
+			</return>
+			<argument index="0" name="position" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_keep_screen_on">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+				Set keep screen on if true, or goes to sleep by device setting if false. (for Android/iOS)
+			</description>
+		</method>
+		<method name="set_low_processor_usage_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Set to true to enable the low cpu usage mode. In this mode, the screen only redraws when there are changes, and a considerable sleep time is inserted between frames. This way, editors using the engine UI only use very little cpu.
+			</description>
+		</method>
+		<method name="set_screen_orientation">
+			<return type="void">
+			</return>
+			<argument index="0" name="orientation" type="int" enum="_OS.ScreenOrientation">
+			</argument>
+			<description>
+				Sets the current screen orientation, the argument value must be one of the SCREEN_ORIENTATION constants in this class.
+			</description>
+		</method>
+		<method name="set_thread_name">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_use_file_access_save_and_swap">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_use_vsync">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_window_fullscreen">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+				Sets window fullscreen mode to the [i]enabled[/i] argument, [i]enabled[/i] is a toggle for the fullscreen mode, calling the function with [i]enabled[/i] true when the screen is not on fullscreen mode will cause the screen to go to fullscreen mode, calling the function with [i]enabled[/i] false when the screen is in fullscreen mode will cause the window to exit the fullscreen mode.
+			</description>
+		</method>
+		<method name="set_window_maximized">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+				Set the window size to maximized.
+			</description>
+		</method>
+		<method name="set_window_minimized">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+				Set whether the window is minimized.
+			</description>
+		</method>
+		<method name="set_window_position">
+			<return type="void">
+			</return>
+			<argument index="0" name="position" type="Vector2">
+			</argument>
+			<description>
+				Sets the position of the window to the specified position (this function could be restricted by the window manager, meaning that there could be some unreachable areas of the screen).
+			</description>
+		</method>
+		<method name="set_window_resizable">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+				Set the window resizable state, if the window is not resizable it will preserve the dimensions specified in the project settings.
+			</description>
+		</method>
+		<method name="set_window_size">
+			<return type="void">
+			</return>
+			<argument index="0" name="size" type="Vector2">
+			</argument>
+			<description>
+				Sets the window size to the specified size.
+			</description>
+		</method>
+		<method name="set_window_title">
+			<return type="void">
+			</return>
+			<argument index="0" name="title" type="String">
+			</argument>
+			<description>
+				Sets the window title to the specified string.
+			</description>
+		</method>
+		<method name="shell_open">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="uri" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="show_virtual_keyboard">
+			<return type="void">
+			</return>
+			<argument index="0" name="existing_text" type="String" default="&quot;&quot;">
+			</argument>
+			<description>
+				Shows the virtual keyboard if the platform has one. The [i]existing_text[/i] parameter is useful for implementing your own LineEdit, as it tells the virtual keyboard what text has already been typed (the virtual keyboard uses it for auto-correct and predictions).
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="DAY_SUNDAY" value="0">
+		</constant>
+		<constant name="DAY_MONDAY" value="1">
+		</constant>
+		<constant name="DAY_TUESDAY" value="2">
+		</constant>
+		<constant name="DAY_WEDNESDAY" value="3">
+		</constant>
+		<constant name="DAY_THURSDAY" value="4">
+		</constant>
+		<constant name="DAY_FRIDAY" value="5">
+		</constant>
+		<constant name="DAY_SATURDAY" value="6">
+		</constant>
+		<constant name="MONTH_JANUARY" value="1">
+		</constant>
+		<constant name="MONTH_FEBRUARY" value="2">
+		</constant>
+		<constant name="MONTH_MARCH" value="3">
+		</constant>
+		<constant name="MONTH_APRIL" value="4">
+		</constant>
+		<constant name="MONTH_MAY" value="5">
+		</constant>
+		<constant name="MONTH_JUNE" value="6">
+		</constant>
+		<constant name="MONTH_JULY" value="7">
+		</constant>
+		<constant name="MONTH_AUGUST" value="8">
+		</constant>
+		<constant name="MONTH_SEPTEMBER" value="9">
+		</constant>
+		<constant name="MONTH_OCTOBER" value="10">
+		</constant>
+		<constant name="MONTH_NOVEMBER" value="11">
+		</constant>
+		<constant name="MONTH_DECEMBER" value="12">
+		</constant>
+		<constant name="SCREEN_ORIENTATION_LANDSCAPE" value="0">
+		</constant>
+		<constant name="SCREEN_ORIENTATION_PORTRAIT" value="1">
+		</constant>
+		<constant name="SCREEN_ORIENTATION_REVERSE_LANDSCAPE" value="2">
+		</constant>
+		<constant name="SCREEN_ORIENTATION_REVERSE_PORTRAIT" value="3">
+		</constant>
+		<constant name="SCREEN_ORIENTATION_SENSOR_LANDSCAPE" value="4">
+		</constant>
+		<constant name="SCREEN_ORIENTATION_SENSOR_PORTRAIT" value="5">
+		</constant>
+		<constant name="SCREEN_ORIENTATION_SENSOR" value="6">
+		</constant>
+		<constant name="SYSTEM_DIR_DESKTOP" value="0">
+		</constant>
+		<constant name="SYSTEM_DIR_DCIM" value="1">
+		</constant>
+		<constant name="SYSTEM_DIR_DOCUMENTS" value="2">
+		</constant>
+		<constant name="SYSTEM_DIR_DOWNLOADS" value="3">
+		</constant>
+		<constant name="SYSTEM_DIR_MOVIES" value="4">
+		</constant>
+		<constant name="SYSTEM_DIR_MUSIC" value="5">
+		</constant>
+		<constant name="SYSTEM_DIR_PICTURES" value="6">
+		</constant>
+		<constant name="SYSTEM_DIR_RINGTONES" value="7">
+		</constant>
+		<constant name="POWERSTATE_UNKNOWN" value="0">
+		</constant>
+		<constant name="POWERSTATE_ON_BATTERY" value="1">
+		</constant>
+		<constant name="POWERSTATE_NO_BATTERY" value="2">
+		</constant>
+		<constant name="POWERSTATE_CHARGING" value="3">
+		</constant>
+		<constant name="POWERSTATE_CHARGED" value="4">
+		</constant>
+	</constants>
+</class>

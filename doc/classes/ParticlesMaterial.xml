@@ -1,0 +1,449 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ParticlesMaterial" inherits="Material" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_color_ramp" qualifiers="const">
+			<return type="Texture">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_emission_box_extents" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_emission_color_texture" qualifiers="const">
+			<return type="Texture">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_emission_normal_texture" qualifiers="const">
+			<return type="Texture">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_emission_point_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_emission_point_texture" qualifiers="const">
+			<return type="Texture">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_emission_shape" qualifiers="const">
+			<return type="int" enum="ParticlesMaterial.EmissionShape">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_emission_sphere_radius" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_flag" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="flag" type="int" enum="ParticlesMaterial.Flags">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_flatness" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_gravity" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_param" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="param" type="int" enum="ParticlesMaterial.Parameter">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_param_randomness" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="param" type="int" enum="ParticlesMaterial.Parameter">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_param_texture" qualifiers="const">
+			<return type="Texture">
+			</return>
+			<argument index="0" name="param" type="int" enum="ParticlesMaterial.Parameter">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_spread" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_trail_color_modifier" qualifiers="const">
+			<return type="GradientTexture">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_trail_divisor" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_trail_size_modifier" qualifiers="const">
+			<return type="CurveTexture">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_color_ramp">
+			<return type="void">
+			</return>
+			<argument index="0" name="ramp" type="Texture">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_emission_box_extents">
+			<return type="void">
+			</return>
+			<argument index="0" name="extents" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_emission_color_texture">
+			<return type="void">
+			</return>
+			<argument index="0" name="texture" type="Texture">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_emission_normal_texture">
+			<return type="void">
+			</return>
+			<argument index="0" name="texture" type="Texture">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_emission_point_count">
+			<return type="void">
+			</return>
+			<argument index="0" name="point_count" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_emission_point_texture">
+			<return type="void">
+			</return>
+			<argument index="0" name="texture" type="Texture">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_emission_shape">
+			<return type="void">
+			</return>
+			<argument index="0" name="shape" type="int" enum="ParticlesMaterial.EmissionShape">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_emission_sphere_radius">
+			<return type="void">
+			</return>
+			<argument index="0" name="radius" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_flag">
+			<return type="void">
+			</return>
+			<argument index="0" name="flag" type="int" enum="ParticlesMaterial.Flags">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_flatness">
+			<return type="void">
+			</return>
+			<argument index="0" name="amount" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_gravity">
+			<return type="void">
+			</return>
+			<argument index="0" name="accel_vec" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_param">
+			<return type="void">
+			</return>
+			<argument index="0" name="param" type="int" enum="ParticlesMaterial.Parameter">
+			</argument>
+			<argument index="1" name="value" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_param_randomness">
+			<return type="void">
+			</return>
+			<argument index="0" name="param" type="int" enum="ParticlesMaterial.Parameter">
+			</argument>
+			<argument index="1" name="randomness" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_param_texture">
+			<return type="void">
+			</return>
+			<argument index="0" name="param" type="int" enum="ParticlesMaterial.Parameter">
+			</argument>
+			<argument index="1" name="texture" type="Texture">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_spread">
+			<return type="void">
+			</return>
+			<argument index="0" name="degrees" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_trail_color_modifier">
+			<return type="void">
+			</return>
+			<argument index="0" name="texture" type="GradientTexture">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_trail_divisor">
+			<return type="void">
+			</return>
+			<argument index="0" name="divisor" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_trail_size_modifier">
+			<return type="void">
+			</return>
+			<argument index="0" name="texture" type="CurveTexture">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="angle" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="angle_curve" type="Texture" setter="set_param_texture" getter="get_param_texture" brief="">
+		</member>
+		<member name="angle_random" type="float" setter="set_param_randomness" getter="get_param_randomness" brief="">
+		</member>
+		<member name="angular_velocity" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="angular_velocity_curve" type="Texture" setter="set_param_texture" getter="get_param_texture" brief="">
+		</member>
+		<member name="angular_velocity_random" type="float" setter="set_param_randomness" getter="get_param_randomness" brief="">
+		</member>
+		<member name="anim_loop" type="bool" setter="set_flag" getter="get_flag" brief="">
+		</member>
+		<member name="anim_offset" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="anim_offset_curve" type="Texture" setter="set_param_texture" getter="get_param_texture" brief="">
+		</member>
+		<member name="anim_offset_random" type="float" setter="set_param_randomness" getter="get_param_randomness" brief="">
+		</member>
+		<member name="anim_speed" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="anim_speed_curve" type="Texture" setter="set_param_texture" getter="get_param_texture" brief="">
+		</member>
+		<member name="anim_speed_random" type="float" setter="set_param_randomness" getter="get_param_randomness" brief="">
+		</member>
+		<member name="color" type="Color" setter="set_color" getter="get_color" brief="">
+		</member>
+		<member name="color_ramp" type="Texture" setter="set_color_ramp" getter="get_color_ramp" brief="">
+		</member>
+		<member name="damping" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="damping_curve" type="Texture" setter="set_param_texture" getter="get_param_texture" brief="">
+		</member>
+		<member name="damping_random" type="float" setter="set_param_randomness" getter="get_param_randomness" brief="">
+		</member>
+		<member name="emission_box_extents" type="Vector3" setter="set_emission_box_extents" getter="get_emission_box_extents" brief="">
+		</member>
+		<member name="emission_color_texture" type="Texture" setter="set_emission_color_texture" getter="get_emission_color_texture" brief="">
+		</member>
+		<member name="emission_normal_texture" type="Texture" setter="set_emission_normal_texture" getter="get_emission_normal_texture" brief="">
+		</member>
+		<member name="emission_point_count" type="int" setter="set_emission_point_count" getter="get_emission_point_count" brief="">
+		</member>
+		<member name="emission_point_texture" type="Texture" setter="set_emission_point_texture" getter="get_emission_point_texture" brief="">
+		</member>
+		<member name="emission_shape" type="int" setter="set_emission_shape" getter="get_emission_shape" brief="" enum="ParticlesMaterial.EmissionShape">
+		</member>
+		<member name="emission_sphere_radius" type="float" setter="set_emission_sphere_radius" getter="get_emission_sphere_radius" brief="">
+		</member>
+		<member name="flag_align_y" type="bool" setter="set_flag" getter="get_flag" brief="">
+		</member>
+		<member name="flag_disable_z" type="bool" setter="set_flag" getter="get_flag" brief="">
+		</member>
+		<member name="flag_rotate_y" type="bool" setter="set_flag" getter="get_flag" brief="">
+		</member>
+		<member name="flatness" type="float" setter="set_flatness" getter="get_flatness" brief="">
+		</member>
+		<member name="gravity" type="Vector3" setter="set_gravity" getter="get_gravity" brief="">
+		</member>
+		<member name="hue_variation" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="hue_variation_curve" type="Texture" setter="set_param_texture" getter="get_param_texture" brief="">
+		</member>
+		<member name="hue_variation_random" type="float" setter="set_param_randomness" getter="get_param_randomness" brief="">
+		</member>
+		<member name="initial_velocity" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="initial_velocity_random" type="float" setter="set_param_randomness" getter="get_param_randomness" brief="">
+		</member>
+		<member name="linear_accel" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="linear_accel_curve" type="Texture" setter="set_param_texture" getter="get_param_texture" brief="">
+		</member>
+		<member name="linear_accel_random" type="float" setter="set_param_randomness" getter="get_param_randomness" brief="">
+		</member>
+		<member name="orbit_velocity" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="orbit_velocity_curve" type="Texture" setter="set_param_texture" getter="get_param_texture" brief="">
+		</member>
+		<member name="orbit_velocity_random" type="float" setter="set_param_randomness" getter="get_param_randomness" brief="">
+		</member>
+		<member name="radial_accel" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="radial_accel_curve" type="Texture" setter="set_param_texture" getter="get_param_texture" brief="">
+		</member>
+		<member name="radial_accel_random" type="float" setter="set_param_randomness" getter="get_param_randomness" brief="">
+		</member>
+		<member name="scale" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="scale_curve" type="Texture" setter="set_param_texture" getter="get_param_texture" brief="">
+		</member>
+		<member name="scale_random" type="float" setter="set_param_randomness" getter="get_param_randomness" brief="">
+		</member>
+		<member name="spread" type="float" setter="set_spread" getter="get_spread" brief="">
+		</member>
+		<member name="tangential_accel" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="tangential_accel_curve" type="Texture" setter="set_param_texture" getter="get_param_texture" brief="">
+		</member>
+		<member name="tangential_accel_random" type="float" setter="set_param_randomness" getter="get_param_randomness" brief="">
+		</member>
+		<member name="trail_color_modifier" type="GradientTexture" setter="set_trail_color_modifier" getter="get_trail_color_modifier" brief="">
+		</member>
+		<member name="trail_divisor" type="int" setter="set_trail_divisor" getter="get_trail_divisor" brief="">
+		</member>
+		<member name="trail_size_modifier" type="CurveTexture" setter="set_trail_size_modifier" getter="get_trail_size_modifier" brief="">
+		</member>
+	</members>
+	<constants>
+		<constant name="PARAM_INITIAL_LINEAR_VELOCITY" value="0">
+		</constant>
+		<constant name="PARAM_ANGULAR_VELOCITY" value="1">
+		</constant>
+		<constant name="PARAM_ORBIT_VELOCITY" value="2">
+		</constant>
+		<constant name="PARAM_LINEAR_ACCEL" value="3">
+		</constant>
+		<constant name="PARAM_RADIAL_ACCEL" value="4">
+		</constant>
+		<constant name="PARAM_TANGENTIAL_ACCEL" value="5">
+		</constant>
+		<constant name="PARAM_DAMPING" value="6">
+		</constant>
+		<constant name="PARAM_ANGLE" value="7">
+		</constant>
+		<constant name="PARAM_SCALE" value="8">
+		</constant>
+		<constant name="PARAM_HUE_VARIATION" value="9">
+		</constant>
+		<constant name="PARAM_ANIM_SPEED" value="10">
+		</constant>
+		<constant name="PARAM_ANIM_OFFSET" value="11">
+		</constant>
+		<constant name="PARAM_MAX" value="12">
+		</constant>
+		<constant name="FLAG_ALIGN_Y_TO_VELOCITY" value="0">
+		</constant>
+		<constant name="FLAG_ROTATE_Y" value="1">
+		</constant>
+		<constant name="FLAG_MAX" value="4">
+		</constant>
+		<constant name="EMISSION_SHAPE_POINT" value="0">
+		</constant>
+		<constant name="EMISSION_SHAPE_SPHERE" value="1">
+		</constant>
+		<constant name="EMISSION_SHAPE_BOX" value="2">
+		</constant>
+		<constant name="EMISSION_SHAPE_POINTS" value="3">
+		</constant>
+		<constant name="EMISSION_SHAPE_DIRECTED_POINTS" value="4">
+		</constant>
+	</constants>
+</class>

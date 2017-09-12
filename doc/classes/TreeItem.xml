@@ -1,0 +1,535 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TreeItem" inherits="Object" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="add_button">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="button" type="Texture">
+			</argument>
+			<argument index="2" name="button_idx" type="int" default="-1">
+			</argument>
+			<argument index="3" name="disabled" type="bool" default="false">
+			</argument>
+			<argument index="4" name="tooltip" type="String" default="&quot;&quot;">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="clear_custom_bg_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="clear_custom_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="deselect">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="erase_button">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="button_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_button" qualifiers="const">
+			<return type="Texture">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="button_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_button_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_cell_mode" qualifiers="const">
+			<return type="int" enum="TreeItem.TreeCellMode">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_children">
+			<return type="TreeItem">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_custom_bg_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_expand_right" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_icon" qualifiers="const">
+			<return type="Texture">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_icon_max_width" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_icon_region" qualifiers="const">
+			<return type="Rect2">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_metadata" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_next">
+			<return type="TreeItem">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_next_visible">
+			<return type="TreeItem">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_parent">
+			<return type="TreeItem">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_prev">
+			<return type="TreeItem">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_prev_visible">
+			<return type="TreeItem">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_range" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_range_config">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_text" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_text_align" qualifiers="const">
+			<return type="int" enum="TreeItem.TextAlign">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_tooltip" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_button_disabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="button_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_checked" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_collapsed">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_custom_set_as_button" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_editable">
+			<return type="bool">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_folding_disabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_selectable" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_selected">
+			<return type="bool">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="move_to_bottom">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="move_to_top">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="remove_child">
+			<return type="void">
+			</return>
+			<argument index="0" name="child" type="Object">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="select">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_button">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="button_idx" type="int">
+			</argument>
+			<argument index="2" name="button" type="Texture">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_cell_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="mode" type="int" enum="TreeItem.TreeCellMode">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_checked">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="checked" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_collapsed">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_custom_as_button">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_custom_bg_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<argument index="2" name="just_outline" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_custom_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_custom_draw">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="object" type="Object">
+			</argument>
+			<argument index="2" name="callback" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_disable_folding">
+			<return type="void">
+			</return>
+			<argument index="0" name="disable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_editable">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_expand_right">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_icon">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="texture" type="Texture">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_icon_max_width">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="width" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_icon_region">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="region" type="Rect2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_metadata">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="meta" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_range">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="value" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_range_config">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="min" type="float">
+			</argument>
+			<argument index="2" name="max" type="float">
+			</argument>
+			<argument index="3" name="step" type="float">
+			</argument>
+			<argument index="4" name="expr" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_selectable">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="selectable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_text">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="text" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_text_align">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="text_align" type="int" enum="TreeItem.TextAlign">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_tooltip">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="tooltip" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="CELL_MODE_STRING" value="0">
+		</constant>
+		<constant name="CELL_MODE_CHECK" value="1">
+		</constant>
+		<constant name="CELL_MODE_RANGE" value="2">
+		</constant>
+		<constant name="CELL_MODE_RANGE_EXPRESSION" value="3">
+		</constant>
+		<constant name="CELL_MODE_ICON" value="4">
+		</constant>
+		<constant name="CELL_MODE_CUSTOM" value="5">
+		</constant>
+	</constants>
+</class>

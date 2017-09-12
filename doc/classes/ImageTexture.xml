@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ImageTexture" inherits="Texture" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		A [Texture] based on an [Image].
+	</brief_description>
+	<description>
+		A [Texture] based on an [Image]. Can be created from an [Image].
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="create">
+			<return type="void">
+			</return>
+			<argument index="0" name="width" type="int">
+			</argument>
+			<argument index="1" name="height" type="int">
+			</argument>
+			<argument index="2" name="format" type="int" enum="Image.Format">
+			</argument>
+			<argument index="3" name="flags" type="int" default="7">
+			</argument>
+			<description>
+				Create a new [ImageTexture] with "width" and "height".
+				"format" one of [Image].FORMAT_*.
+				"flags" one or more of [Texture].FLAG_*.
+			</description>
+		</method>
+		<method name="create_from_image">
+			<return type="void">
+			</return>
+			<argument index="0" name="image" type="Image">
+			</argument>
+			<argument index="1" name="flags" type="int" default="7">
+			</argument>
+			<description>
+				Create a new [ImageTexture] from an [Image] with "flags" from [Texture].FLAG_*.
+			</description>
+		</method>
+		<method name="get_format" qualifiers="const">
+			<return type="int" enum="Image.Format">
+			</return>
+			<description>
+				Return the format of the [ImageTexture], one of [Image].FORMAT_*.
+			</description>
+		</method>
+		<method name="get_lossy_storage_quality" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the storage quality for [ImageTexture].STORAGE_COMPRESS_LOSSY.
+			</description>
+		</method>
+		<method name="get_storage" qualifiers="const">
+			<return type="int" enum="ImageTexture.Storage">
+			</return>
+			<description>
+				Return the storage type. One of [ImageTexture].STORAGE_*.
+			</description>
+		</method>
+		<method name="load">
+			<return type="void">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+				Load an [ImageTexure].
+			</description>
+		</method>
+		<method name="set_data">
+			<return type="void">
+			</return>
+			<argument index="0" name="image" type="Image">
+			</argument>
+			<description>
+				Set the [Image] of this [ImageTexture].
+			</description>
+		</method>
+		<method name="set_lossy_storage_quality">
+			<return type="void">
+			</return>
+			<argument index="0" name="quality" type="float">
+			</argument>
+			<description>
+				Set the storage quality in case of [ImageTexture].STORAGE_COMPRESS_LOSSY.
+			</description>
+		</method>
+		<method name="set_size_override">
+			<return type="void">
+			</return>
+			<argument index="0" name="size" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_storage">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="int" enum="ImageTexture.Storage">
+			</argument>
+			<description>
+				Set the storage type. One of [ImageTexture].STORAGE_*.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="STORAGE_RAW" value="0">
+			[Image] data is stored raw and unaltered.
+		</constant>
+		<constant name="STORAGE_COMPRESS_LOSSY" value="1">
+			[Image] data is compressed with a lossy algorithm. You can set the storage quality with [method set_lossy_storage_quality].
+		</constant>
+		<constant name="STORAGE_COMPRESS_LOSSLESS" value="2">
+			[Image] data is compressed with a lossless algorithm.
+		</constant>
+	</constants>
+</class>

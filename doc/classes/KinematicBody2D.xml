@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="KinematicBody2D" inherits="PhysicsBody2D" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Kinematic body 2D node.
+	</brief_description>
+	<description>
+		Kinematic bodies are special types of bodies that are meant to be user-controlled. They are not affected by physics at all (to other types of bodies, such a character or a rigid body, these are the same as a static body). They have however, two main uses:
+		Simulated Motion: When these bodies are moved manually, either from code or from an AnimationPlayer (with process mode set to fixed), the physics will automatically compute an estimate of their linear and angular velocity. This makes them very useful for moving platforms or other AnimationPlayer-controlled objects (like a door, a bridge that opens, etc).
+		Kinematic Characters: KinematicBody2D also has an api for moving objects (the [method move] method) while performing collision tests. This makes them really useful to implement characters that collide against a world, but that don't require advanced physics.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_collision_collider" qualifiers="const">
+			<return type="Object">
+			</return>
+			<argument index="0" name="collision" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_collider_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="collision" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_collider_metadata" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="collision" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_collider_shape" qualifiers="const">
+			<return type="Object">
+			</return>
+			<argument index="0" name="collision" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_collider_shape_index" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="collision" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_collider_velocity" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="collision" type="int">
+			</argument>
+			<description>
+				Return the velocity of the body that collided with this one.
+			</description>
+		</method>
+		<method name="get_collision_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_local_shape" qualifiers="const">
+			<return type="Object">
+			</return>
+			<argument index="0" name="collision" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_normal" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="collision" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_position" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="collision" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_remainder" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="collision" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_travel" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="collision" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_floor_velocity" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_safe_margin" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_on_ceiling" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_on_floor" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_on_wall" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="move">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="rel_vec" type="Vector2">
+			</argument>
+			<description>
+				Move the body in the given direction, stopping if there is an obstacle. If as a result of a movement there will be any collision then informations about this collision will be in returned dictionary.	Dictionary will contains those keys:
+				- "position" - collision position
+				- "normal" - collision normal
+				- "local_shape" - id of this kinematic body shape that took part in a collision
+				- "travel" -  traveled movement before being stopped
+				- "remainder" - remaining movement before being stopped
+				- "collider_id" - id of the collider, it can be used when dealing with [Physics2DServer]
+				- "collider" - colliding body
+				- "collider_shape_index" - index of the colliding shape, inside collider body "collider_metadata"
+				If the body did not intersect anything, then an empty dictionary (dir.empty()==true) is returned instead. Please note that this method is less user friendly than [method move_and_slide]. If you don't want to program each edge case manually, then it's recommended to use [method move_and_slide] instead.
+			</description>
+		</method>
+		<method name="move_and_slide">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="linear_velocity" type="Vector2">
+			</argument>
+			<argument index="1" name="floor_normal" type="Vector2" default="Vector2( 0, 0 )">
+			</argument>
+			<argument index="2" name="slope_stop_min_velocity" type="float" default="5">
+			</argument>
+			<argument index="3" name="max_bounces" type="int" default="4">
+			</argument>
+			<argument index="4" name="floor_max_angle" type="float" default="0.785398">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_safe_margin">
+			<return type="void">
+			</return>
+			<argument index="0" name="pixels" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="test_move">
+			<return type="bool">
+			</return>
+			<argument index="0" name="from" type="Transform2D">
+			</argument>
+			<argument index="1" name="rel_vec" type="Vector2">
+			</argument>
+			<description>
+				Return true if there would be a collision if the body moved from the given point in the given direction.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="collision/safe_margin" type="float" setter="set_safe_margin" getter="get_safe_margin" brief="">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

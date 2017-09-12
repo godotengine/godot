@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="DynamicFont" inherits="Font" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="add_fallback">
+			<return type="void">
+			</return>
+			<argument index="0" name="data" type="DynamicFontData">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_fallback" qualifiers="const">
+			<return type="DynamicFontData">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_fallback_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_font_data" qualifiers="const">
+			<return type="DynamicFontData">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_size" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_spacing" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="type" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_use_filter" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_use_mipmaps" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="remove_fallback">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_fallback">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="data" type="DynamicFontData">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_font_data">
+			<return type="void">
+			</return>
+			<argument index="0" name="data" type="DynamicFontData">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_size">
+			<return type="void">
+			</return>
+			<argument index="0" name="data" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_spacing">
+			<return type="void">
+			</return>
+			<argument index="0" name="type" type="int">
+			</argument>
+			<argument index="1" name="value" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_use_filter">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_use_mipmaps">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="extra_spacing_bottom" type="int" setter="set_spacing" getter="get_spacing" brief="">
+		</member>
+		<member name="extra_spacing_char" type="int" setter="set_spacing" getter="get_spacing" brief="">
+		</member>
+		<member name="extra_spacing_space" type="int" setter="set_spacing" getter="get_spacing" brief="">
+		</member>
+		<member name="extra_spacing_top" type="int" setter="set_spacing" getter="get_spacing" brief="">
+		</member>
+		<member name="font_data" type="DynamicFontData" setter="set_font_data" getter="get_font_data" brief="">
+		</member>
+		<member name="size" type="int" setter="set_size" getter="get_size" brief="">
+		</member>
+		<member name="use_filter" type="bool" setter="set_use_filter" getter="get_use_filter" brief="">
+		</member>
+		<member name="use_mipmaps" type="bool" setter="set_use_mipmaps" getter="get_use_mipmaps" brief="">
+		</member>
+	</members>
+	<constants>
+		<constant name="SPACING_TOP" value="0">
+		</constant>
+		<constant name="SPACING_BOTTOM" value="1">
+		</constant>
+		<constant name="SPACING_CHAR" value="2">
+		</constant>
+		<constant name="SPACING_SPACE" value="3">
+		</constant>
+	</constants>
+</class>

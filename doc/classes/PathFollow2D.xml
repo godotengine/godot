@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PathFollow2D" inherits="Node2D" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Point sampler for a [Path2D].
+	</brief_description>
+	<description>
+		This node takes its parent [Path2D], and returns the coordinates of a point within it, given a distance from the first vertex.
+		It is useful for making other nodes follow a path, without coding the movement pattern. For that, the nodes must be descendants of this node. Then, when setting an offset in this node, the descendant nodes will move accordingly.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_cubic_interpolation" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				This method returns whether the position between two cached points (see [method set_cubic_interpolation]) is interpolated linearly, or cubicly.
+			</description>
+		</method>
+		<method name="get_h_offset" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Returns the horizontal displacement this node has from its parent [Path2D].
+			</description>
+		</method>
+		<method name="get_offset" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Returns the distance along the path in pixels.
+			</description>
+		</method>
+		<method name="get_unit_offset" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Returns the distance along the path as a number in the range 0.0 (for the first vertex) to 1.0 (for the last).
+			</description>
+		</method>
+		<method name="get_v_offset" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Returns the vertical displacement this node has from its parent [Path2D].
+			</description>
+		</method>
+		<method name="has_loop" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns whether this node wraps its offsets around, or truncates them to the path ends.
+			</description>
+		</method>
+		<method name="is_rotating" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns whether this node rotates to follow the path.
+			</description>
+		</method>
+		<method name="set_cubic_interpolation">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				The points along the [Curve2D] of the [Path2D] are precomputed before use, for faster calculations. The point at the requested offset is then calculated interpolating between two adjacent cached points. This may present a problem if the curve makes sharp turns, as the cached points may not follow the curve closely enough.
+				There are two answers to this problem: Either increase the number of cached points and increase memory consumption, or make a cubic interpolation between two points at the cost of (slightly) slower calculations.
+				This method controls whether the position between two cached points is interpolated linearly, or cubicly.
+			</description>
+		</method>
+		<method name="set_h_offset">
+			<return type="void">
+			</return>
+			<argument index="0" name="h_offset" type="float">
+			</argument>
+			<description>
+				Moves this node horizontally. As this node's position will be set every time its offset is set, this allows many PathFollow2D to share the same curve (and thus the same movement pattern), yet not return the same position for a given path offset.
+				A similar effect may be achieved moving this node's descendants.
+			</description>
+		</method>
+		<method name="set_loop">
+			<return type="void">
+			</return>
+			<argument index="0" name="loop" type="bool">
+			</argument>
+			<description>
+				If set, any offset outside the path's length (whether set by [method set_offset] or [method set_unit_offset] will wrap around, instead of stopping at the ends. Set it for cyclic paths.
+			</description>
+		</method>
+		<method name="set_offset">
+			<return type="void">
+			</return>
+			<argument index="0" name="offset" type="float">
+			</argument>
+			<description>
+				Sets the distance from the first vertex, measured in pixels along the path. This sets this node's position to a point within the path.
+			</description>
+		</method>
+		<method name="set_rotate">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				If set, this node rotates to follow the path, making its descendants rotate.
+			</description>
+		</method>
+		<method name="set_unit_offset">
+			<return type="void">
+			</return>
+			<argument index="0" name="unit_offset" type="float">
+			</argument>
+			<description>
+				Sets the distance from the first vertex, considering 0.0 as the first vertex and 1.0 as the last. This is just another way of expressing the offset within the path, as the offset supplied is multiplied internally by the path's length.
+			</description>
+		</method>
+		<method name="set_v_offset">
+			<return type="void">
+			</return>
+			<argument index="0" name="v_offset" type="float">
+			</argument>
+			<description>
+				Moves the PathFollow2D vertically, for the same reasons of [method set_h_offset].
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

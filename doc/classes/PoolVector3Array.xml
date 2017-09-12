@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PoolVector3Array" category="Built-In Types" version="3.0.alpha.custom_build">
+	<brief_description>
+		An Array of Vector3.
+	</brief_description>
+	<description>
+		An Array specifically designed to hold Vector3.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="PoolVector3Array">
+			<return type="PoolVector3Array">
+			</return>
+			<argument index="0" name="from" type="Array">
+			</argument>
+			<description>
+				Construct a new PoolVector3Array. Optionally, you can pass in an Array that will be converted.
+			</description>
+		</method>
+		<method name="append">
+			<argument index="0" name="vector3" type="Vector3">
+			</argument>
+			<description>
+				Append an element at the end of the array (alias of [method push_back]).
+			</description>
+		</method>
+		<method name="append_array">
+			<argument index="0" name="array" type="PoolVector3Array">
+			</argument>
+			<description>
+				Append an [PoolVector3Array] at the end of this array.
+			</description>
+		</method>
+		<method name="insert">
+			<return type="int">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="vector3" type="Vector3">
+			</argument>
+			<description>
+				Insert a new element at a given position in the array. The position must be valid, or at the end of the array (pos==size()).
+			</description>
+		</method>
+		<method name="invert">
+			<description>
+				Reverse the order of the elements in the array (so first element will now be the last).
+			</description>
+		</method>
+		<method name="push_back">
+			<argument index="0" name="vector3" type="Vector3">
+			</argument>
+			<description>
+				Insert a [Vector3] at the end.
+			</description>
+		</method>
+		<method name="remove">
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Remove an element from the array by index.
+			</description>
+		</method>
+		<method name="resize">
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Set the size of the array. If the array is grown reserve elements at the end of the array. If the array is shrunk truncate the array to the new size.
+			</description>
+		</method>
+		<method name="set">
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="vector3" type="Vector3">
+			</argument>
+			<description>
+				Change the [Vector3] at the given index.
+			</description>
+		</method>
+		<method name="size">
+			<return type="int">
+			</return>
+			<description>
+				Return the size of the array.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

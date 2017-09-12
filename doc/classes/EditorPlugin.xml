@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorPlugin" inherits="Node" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Used by the editor to extend its functionality.
+	</brief_description>
+	<description>
+		Plugins are used by the editor to extend functionality. The most common types of plugins are those which edit a given node or resource type, import plugins and export plugins.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="add_control_to_bottom_panel">
+			<return type="ToolButton">
+			</return>
+			<argument index="0" name="control" type="Control">
+			</argument>
+			<argument index="1" name="title" type="String">
+			</argument>
+			<description>
+				Add a control to the bottom panel (together with Output, Debug, Animation, etc). Returns a reference to the button added. It's up to you to hide/show the button when needed. If your plugin is being removed, also make sure to remove your control by calling [method remove_control_from_bottom_panel].
+			</description>
+		</method>
+		<method name="add_control_to_container">
+			<return type="void">
+			</return>
+			<argument index="0" name="container" type="int" enum="EditorPlugin.CustomControlContainer">
+			</argument>
+			<argument index="1" name="control" type="Control">
+			</argument>
+			<description>
+				Add a custom control to a container (see CONTAINER_* enum). There are many locations where custom controls can be added in the editor UI.
+				Please remember that you have to manage the visibility of your custom controls yourself (and likely hide it after adding it).
+				If your plugin is being removed, also make sure to remove your custom controls too.
+			</description>
+		</method>
+		<method name="add_control_to_dock">
+			<return type="void">
+			</return>
+			<argument index="0" name="slot" type="int" enum="EditorPlugin.DockSlot">
+			</argument>
+			<argument index="1" name="control" type="Control">
+			</argument>
+			<description>
+				Add the control to a specific dock slot (see DOCK_* enum for options).
+				If the dock is repositioned and as long as the plugin is active, the editor will save the dock position on further sessions.
+				If your plugin is being removed, also make sure to remove your control by calling [method remove_control_from_docks].
+			</description>
+		</method>
+		<method name="add_custom_type">
+			<return type="void">
+			</return>
+			<argument index="0" name="type" type="String">
+			</argument>
+			<argument index="1" name="base" type="String">
+			</argument>
+			<argument index="2" name="script" type="Script">
+			</argument>
+			<argument index="3" name="icon" type="Texture">
+			</argument>
+			<description>
+				Add a custom type, which will appear in the list of nodes or resources. An icon can be optionally passed.
+				When given node or resource is selected, the base type will be instanced (ie, "Spatial", "Control", "Resource"), then the script will be loaded and set to this object.
+				You can use the [method EditorPlugin.handles] to check if your custom object is being edited by checking the script or using 'is' keyword.
+				During run-time, this will be a simple object with a script so this function does not need to be called then.
+			</description>
+		</method>
+		<method name="add_import_plugin">
+			<return type="void">
+			</return>
+			<argument index="0" name="importer" type="EditorImportPlugin">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_tool_submenu_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="submenu" type="Object">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="apply_changes" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<description>
+				This method is called when the editor is about to save the project, switch to another tab, etc. It asks the plugin to apply any pending state changes to ensure consistency.
+				This is used, for example, in shader editors to let the plugin know that it must apply the shader code being written by the user to the object.
+			</description>
+		</method>
+		<method name="clear" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<description>
+				Clear all the state and reset the object being edited to zero. This ensures your plugin does not keep editing a currently existing node, or a node from the wrong scene.
+			</description>
+		</method>
+		<method name="create_spatial_gizmo" qualifiers="virtual">
+			<return type="EditorSpatialGizmo">
+			</return>
+			<argument index="0" name="for_spatial" type="Spatial">
+			</argument>
+			<description>
+				This is used for plugins that create gizmos used by the spatial editor. Just check that the node passed in the "for_spatial" argument matches your plugin.
+			</description>
+		</method>
+		<method name="edit" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="object" type="Object">
+			</argument>
+			<description>
+				This function is used for plugins that edit specific object types (nodes or resources). It requests the editor to edit the given object.
+			</description>
+		</method>
+		<method name="forward_canvas_gui_input" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<argument index="0" name="canvas_xform" type="Transform2D">
+			</argument>
+			<argument index="1" name="event" type="InputEvent">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="forward_draw_over_canvas" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="canvas_xform" type="Transform2D">
+			</argument>
+			<argument index="1" name="canvas" type="Control">
+			</argument>
+			<description>
+				This function is called every time the 2D canvas editor draws (which overlays over the edited scene). Drawing over the supplied control will draw over the edited scene. To convert from control coordinates to edited scene coordinates (including zoom and offset), a transform is also provided. If you require this control to be redraw, call [method update_canvas].
+			</description>
+		</method>
+		<method name="forward_spatial_gui_input" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<argument index="0" name="camera" type="Camera">
+			</argument>
+			<argument index="1" name="event" type="InputEvent">
+			</argument>
+			<description>
+				Implement this function if you are interested in 3D view screen input events. It will be called only if currently selected node is handled by your plugin.
+				If you would like to always gets those input events then additionally use [method set_input_forwarding_always_enabled].
+			</description>
+		</method>
+		<method name="get_breakpoints" qualifiers="virtual">
+			<return type="PoolStringArray">
+			</return>
+			<description>
+				This is for editors that edit script based objects. You can return a list of breakpoints in the format (script:line), for example: res://path_to_script.gd:25
+			</description>
+		</method>
+		<method name="get_editor_interface">
+			<return type="EditorInterface">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_plugin_name" qualifiers="virtual">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_state" qualifiers="virtual">
+			<return type="Dictionary">
+			</return>
+			<description>
+				Get the state of your plugin editor. This is used when saving the scene (so state is kept when opening it again) and for switching tabs (so state can be restored when the tab returns).
+			</description>
+		</method>
+		<method name="get_undo_redo">
+			<return type="UndoRedo">
+			</return>
+			<description>
+				Get the undo/redo object. Most actions in the editor can be undoable, so use this object to make sure this happens when it's worth it.
+			</description>
+		</method>
+		<method name="get_window_layout" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="layout" type="ConfigFile">
+			</argument>
+			<description>
+				Get the GUI layout of the plugin. This is used to save the project's editor layout when the [method EditorPlugin.queue_save_layout] is called or the editor layout was changed(For example changing the position of a dock).
+			</description>
+		</method>
+		<method name="handles" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<argument index="0" name="object" type="Object">
+			</argument>
+			<description>
+				Implement this function if your plugin edits a specific type of object (Resource or Node). If you return true, then you will get the functions [method EditorPlugin.edit] and [method EditorPlugin.make_visible] called when the editor requests them.
+			</description>
+		</method>
+		<method name="has_main_screen" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<description>
+				Return true if this is a main screen editor plugin (it goes in the main screen selector together with 2D, 3D, Script).
+			</description>
+		</method>
+		<method name="hide_bottom_panel">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="make_bottom_panel_item_visible">
+			<return type="void">
+			</return>
+			<argument index="0" name="item" type="Control">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="make_visible" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="visible" type="bool">
+			</argument>
+			<description>
+				This function will be called when the editor is requested to become visible. It is used for plugins that edit a specific object type.
+				Remember that you have to manage the visibility of all your editor controls manually.
+			</description>
+		</method>
+		<method name="queue_save_layout" qualifiers="const">
+			<return type="void">
+			</return>
+			<description>
+				Queue save the project's editor layout.
+			</description>
+		</method>
+		<method name="remove_control_from_bottom_panel">
+			<return type="void">
+			</return>
+			<argument index="0" name="control" type="Control">
+			</argument>
+			<description>
+				Remove the control from the bottom panel. Don't forget to call this if you added one, so the editor can remove it cleanly.
+			</description>
+		</method>
+		<method name="remove_control_from_docks">
+			<return type="void">
+			</return>
+			<argument index="0" name="control" type="Control">
+			</argument>
+			<description>
+				Remove the control from the dock. Don't forget to call this if you added one, so the editor can save the layout and remove it cleanly.
+			</description>
+		</method>
+		<method name="remove_custom_type">
+			<return type="void">
+			</return>
+			<argument index="0" name="type" type="String">
+			</argument>
+			<description>
+				Remove a custom type added by [method EditorPlugin.add_custom_type]
+			</description>
+		</method>
+		<method name="remove_import_plugin">
+			<return type="void">
+			</return>
+			<argument index="0" name="importer" type="EditorImportPlugin">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="save_external_data" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<description>
+				This method is called after the editor saves the project or when it's closed. It asks the plugin to save edited external scenes/resources.
+			</description>
+		</method>
+		<method name="set_input_event_forwarding_always_enabled">
+			<return type="void">
+			</return>
+			<description>
+				Use this method if you always want to receive inputs from 3D view screen inside [method forward_spatial_gui_input]. It might be especially usable if your plugin will want to use raycast in the scene.
+			</description>
+		</method>
+		<method name="set_state" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="state" type="Dictionary">
+			</argument>
+			<description>
+				Restore the state saved by [method EditorPlugin.get_state].
+			</description>
+		</method>
+		<method name="set_window_layout" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="layout" type="ConfigFile">
+			</argument>
+			<description>
+				Restore the plugin GUI layout saved by [method EditorPlugin.get_window_layout].
+			</description>
+		</method>
+		<method name="update_canvas">
+			<return type="void">
+			</return>
+			<description>
+				Updates the control used to draw the edited scene over the 2D canvas. This is used together with [method forward_canvas_input_event].
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="main_screen_changed">
+			<argument index="0" name="screen_name" type="String">
+			</argument>
+			<description>
+				Emitted when user change main screen view (2D, 3D, Script, AssetLib). Works also with screens which are defined by plugins.
+			</description>
+		</signal>
+		<signal name="scene_changed">
+			<argument index="0" name="scene_root" type="Object">
+			</argument>
+			<description>
+				Emitted when user change scene. The argument is a root node of freshly opened scene.
+			</description>
+		</signal>
+		<signal name="scene_closed">
+			<argument index="0" name="filepath" type="String">
+			</argument>
+			<description>
+				Emitted when user close scene. The argument is file path to a closed scene.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="CONTAINER_TOOLBAR" value="0">
+		</constant>
+		<constant name="CONTAINER_SPATIAL_EDITOR_MENU" value="1">
+		</constant>
+		<constant name="CONTAINER_SPATIAL_EDITOR_SIDE" value="2">
+		</constant>
+		<constant name="CONTAINER_SPATIAL_EDITOR_BOTTOM" value="3">
+		</constant>
+		<constant name="CONTAINER_CANVAS_EDITOR_MENU" value="4">
+		</constant>
+		<constant name="CONTAINER_CANVAS_EDITOR_SIDE" value="5">
+		</constant>
+		<constant name="CONTAINER_PROPERTY_EDITOR_BOTTOM" value="7">
+		</constant>
+		<constant name="DOCK_SLOT_LEFT_UL" value="0">
+		</constant>
+		<constant name="DOCK_SLOT_LEFT_BL" value="1">
+		</constant>
+		<constant name="DOCK_SLOT_LEFT_UR" value="2">
+		</constant>
+		<constant name="DOCK_SLOT_LEFT_BR" value="3">
+		</constant>
+		<constant name="DOCK_SLOT_RIGHT_UL" value="4">
+		</constant>
+		<constant name="DOCK_SLOT_RIGHT_BL" value="5">
+		</constant>
+		<constant name="DOCK_SLOT_RIGHT_UR" value="6">
+		</constant>
+		<constant name="DOCK_SLOT_RIGHT_BR" value="7">
+		</constant>
+		<constant name="DOCK_SLOT_MAX" value="8">
+		</constant>
+	</constants>
+</class>

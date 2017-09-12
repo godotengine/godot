@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PhysicsDirectSpaceState" inherits="Object" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="cast_motion">
+			<return type="Array">
+			</return>
+			<argument index="0" name="shape" type="PhysicsShapeQueryParameters">
+			</argument>
+			<argument index="1" name="motion" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="collide_shape">
+			<return type="Array">
+			</return>
+			<argument index="0" name="shape" type="PhysicsShapeQueryParameters">
+			</argument>
+			<argument index="1" name="max_results" type="int" default="32">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_rest_info">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="shape" type="PhysicsShapeQueryParameters">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="intersect_ray">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="from" type="Vector3">
+			</argument>
+			<argument index="1" name="to" type="Vector3">
+			</argument>
+			<argument index="2" name="exclude" type="Array" default="[  ]">
+			</argument>
+			<argument index="3" name="collision_layer" type="int" default="2147483647">
+			</argument>
+			<argument index="4" name="type_mask" type="int" default="15">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="intersect_shape">
+			<return type="Array">
+			</return>
+			<argument index="0" name="shape" type="PhysicsShapeQueryParameters">
+			</argument>
+			<argument index="1" name="max_results" type="int" default="32">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="TYPE_MASK_STATIC_BODY" value="1">
+		</constant>
+		<constant name="TYPE_MASK_KINEMATIC_BODY" value="2">
+		</constant>
+		<constant name="TYPE_MASK_RIGID_BODY" value="4">
+		</constant>
+		<constant name="TYPE_MASK_CHARACTER_BODY" value="8">
+		</constant>
+		<constant name="TYPE_MASK_AREA" value="16">
+		</constant>
+		<constant name="TYPE_MASK_COLLISION" value="15">
+		</constant>
+	</constants>
+</class>

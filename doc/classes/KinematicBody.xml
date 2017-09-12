@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="KinematicBody" inherits="PhysicsBody" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Kinematic body 3D node.
+	</brief_description>
+	<description>
+		Kinematic bodies are special types of bodies that are meant to be user-controlled. They are not affected by physics at all (to other types of bodies, such a character or a rigid body, these are the same as a static body). They have however, two main uses:
+		Simulated Motion: When these bodies are moved manually, either from code or from an AnimationPlayer (with process mode set to fixed), the physics will automatically compute an estimate of their linear and angular velocity. This makes them very useful for moving platforms or other AnimationPlayer-controlled objects (like a door, a bridge that opens, etc).
+		Kinematic Characters: KinematicBody also has an api for moving objects (the [method move] method) while performing collision tests. This makes them really useful to implement characters that collide against a world, but that don't require advanced physics.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_floor_velocity" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_safe_margin" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_slide_collision">
+			<return type="KinematicCollision">
+			</return>
+			<argument index="0" name="slide_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_slide_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_on_ceiling" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_on_floor" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_on_wall" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="move_and_collide">
+			<return type="KinematicCollision">
+			</return>
+			<argument index="0" name="rel_vec" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="move_and_slide">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="linear_velocity" type="Vector3">
+			</argument>
+			<argument index="1" name="floor_normal" type="Vector3" default="Vector3( 0, 0, 0 )">
+			</argument>
+			<argument index="2" name="slope_stop_min_velocity" type="float" default="0.05">
+			</argument>
+			<argument index="3" name="max_slides" type="int" default="4">
+			</argument>
+			<argument index="4" name="floor_max_angle" type="float" default="0.785398">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_safe_margin">
+			<return type="void">
+			</return>
+			<argument index="0" name="pixels" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="test_move">
+			<return type="bool">
+			</return>
+			<argument index="0" name="from" type="Transform">
+			</argument>
+			<argument index="1" name="rel_vec" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="collision/safe_margin" type="float" setter="set_safe_margin" getter="get_safe_margin" brief="">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

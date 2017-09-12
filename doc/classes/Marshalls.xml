@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Marshalls" inherits="Reference" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="base64_to_raw">
+			<return type="PoolByteArray">
+			</return>
+			<argument index="0" name="base64_str" type="String">
+			</argument>
+			<description>
+				Return [PoolByteArray] of a given base64 encoded String.
+			</description>
+		</method>
+		<method name="base64_to_utf8">
+			<return type="String">
+			</return>
+			<argument index="0" name="base64_str" type="String">
+			</argument>
+			<description>
+				Return utf8 String of a given base64 encoded String.
+			</description>
+		</method>
+		<method name="base64_to_variant">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="base64_str" type="String">
+			</argument>
+			<description>
+				Return [Variant] of a given base64 encoded String.
+			</description>
+		</method>
+		<method name="raw_to_base64">
+			<return type="String">
+			</return>
+			<argument index="0" name="array" type="PoolByteArray">
+			</argument>
+			<description>
+				Return base64 encoded String of a given [PoolByteArray].
+			</description>
+		</method>
+		<method name="utf8_to_base64">
+			<return type="String">
+			</return>
+			<argument index="0" name="utf8_str" type="String">
+			</argument>
+			<description>
+				Return base64 encoded String of a given utf8 String.
+			</description>
+		</method>
+		<method name="variant_to_base64">
+			<return type="String">
+			</return>
+			<argument index="0" name="variant" type="Variant">
+			</argument>
+			<description>
+				Return base64 encoded String of a given [Variant].
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

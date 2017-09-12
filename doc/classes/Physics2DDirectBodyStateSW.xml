@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Physics2DDirectBodyStateSW" inherits="Physics2DDirectBodyState" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Software implementation of [Physics2DDirectBodyState].
+	</brief_description>
+	<description>
+		Software implementation of [Physics2DDirectBodyState]. This object exposes no new methods or properties and should not be used, as [Physics2DDirectBodyState] selects the best implementation available.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+	</methods>
+	<constants>
+	</constants>
+</class>

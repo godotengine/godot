@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ArrayMesh" inherits="Mesh" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="add_blend_shape">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_surface_from_arrays">
+			<return type="void">
+			</return>
+			<argument index="0" name="primitive" type="int" enum="Mesh.PrimitiveType">
+			</argument>
+			<argument index="1" name="arrays" type="Array">
+			</argument>
+			<argument index="2" name="blend_shapes" type="Array" default="[  ]">
+			</argument>
+			<argument index="3" name="compress_flags" type="int" default="97792">
+			</argument>
+			<description>
+				Create a new surface ([method get_surface_count] that will become surf_idx for this.
+				Surfaces are created to be rendered using a "primitive", which may be PRIMITIVE_POINTS, PRIMITIVE_LINES, PRIMITIVE_LINE_STRIP, PRIMITIVE_LINE_LOOP, PRIMITIVE_TRIANGLES, PRIMITIVE_TRIANGLE_STRIP, PRIMITIVE_TRIANGLE_FAN. (As a note, when using indices, it is recommended to only use just points, lines or triangles).
+			</description>
+		</method>
+		<method name="center_geometry">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="clear_blend_shapes">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_blend_shape_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_blend_shape_mode" qualifiers="const">
+			<return type="int" enum="Mesh.BlendShapeMode">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_blend_shape_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_custom_aabb" qualifiers="const">
+			<return type="Rect3">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_surface_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the amount of surfaces that the [ArrayMesh] holds.
+			</description>
+		</method>
+		<method name="regen_normalmaps">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_blend_shape_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="int" enum="Mesh.BlendShapeMode">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_custom_aabb">
+			<return type="void">
+			</return>
+			<argument index="0" name="aabb" type="Rect3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="surface_get_array_index_len" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="surf_idx" type="int">
+			</argument>
+			<description>
+				Return the length in indices of the index array in the requested surface (see [method add_surface]).
+			</description>
+		</method>
+		<method name="surface_get_array_len" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="surf_idx" type="int">
+			</argument>
+			<description>
+				Return the length in vertices of the vertex array in the requested surface (see [method add_surface]).
+			</description>
+		</method>
+		<method name="surface_get_arrays" qualifiers="const">
+			<return type="Array">
+			</return>
+			<argument index="0" name="surf_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="surface_get_blend_shape_arrays" qualifiers="const">
+			<return type="Array">
+			</return>
+			<argument index="0" name="surf_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="surface_get_format" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="surf_idx" type="int">
+			</argument>
+			<description>
+				Return the format mask of the requested surface (see [method add_surface]).
+			</description>
+		</method>
+		<method name="surface_get_material" qualifiers="const">
+			<return type="Material">
+			</return>
+			<argument index="0" name="surf_idx" type="int">
+			</argument>
+			<description>
+				Return a [Material] in a given surface. Surface is rendered using this material.
+			</description>
+		</method>
+		<method name="surface_get_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="surf_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="surface_get_primitive_type" qualifiers="const">
+			<return type="int" enum="Mesh.PrimitiveType">
+			</return>
+			<argument index="0" name="surf_idx" type="int">
+			</argument>
+			<description>
+				Return the primitive type of the requested surface (see [method add_surface]).
+			</description>
+		</method>
+		<method name="surface_remove">
+			<return type="void">
+			</return>
+			<argument index="0" name="surf_idx" type="int">
+			</argument>
+			<description>
+				Remove a surface at position surf_idx, shifting greater surfaces one surf_idx slot down.
+			</description>
+		</method>
+		<method name="surface_set_material">
+			<return type="void">
+			</return>
+			<argument index="0" name="surf_idx" type="int">
+			</argument>
+			<argument index="1" name="material" type="Material">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="surface_set_name">
+			<return type="void">
+			</return>
+			<argument index="0" name="surf_idx" type="int">
+			</argument>
+			<argument index="1" name="name" type="String">
+			</argument>
+			<description>
+				Set a [Material] for a given surface. Surface will be rendered using this material.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="NO_INDEX_ARRAY" value="-1" enum="">
+			Default value used for index_array_len when no indices are present.
+		</constant>
+		<constant name="ARRAY_WEIGHTS_SIZE" value="4" enum="">
+			Amount of weights/bone indices per vertex (always 4).
+		</constant>
+		<constant name="ARRAY_VERTEX" value="0">
+			Vertex array (array of [Vector3] vertices).
+		</constant>
+		<constant name="ARRAY_NORMAL" value="1">
+			Normal array (array of [Vector3] normals).
+		</constant>
+		<constant name="ARRAY_TANGENT" value="2">
+			Tangent array, array of groups of 4 floats. first 3 floats determine the tangent, and the last the binormal direction as -1 or 1.
+		</constant>
+		<constant name="ARRAY_COLOR" value="3">
+			Vertex array (array of [Color] colors).
+		</constant>
+		<constant name="ARRAY_TEX_UV" value="4">
+			UV array (array of [Vector3] UVs or float array of groups of 2 floats (u,v)).
+		</constant>
+		<constant name="ARRAY_TEX_UV2" value="5">
+			Second UV array (array of [Vector3] UVs or float array of groups of 2 floats (u,v)).
+		</constant>
+		<constant name="ARRAY_BONES" value="6">
+			Array of bone indices, as a float array. Each element in groups of 4 floats.
+		</constant>
+		<constant name="ARRAY_WEIGHTS" value="7">
+			Array of bone weights, as a float array. Each element in groups of 4 floats.
+		</constant>
+		<constant name="ARRAY_INDEX" value="8">
+			Array of integers, used as indices referencing vertices. No index can be beyond the vertex array size.
+		</constant>
+		<constant name="ARRAY_MAX" value="9">
+		</constant>
+		<constant name="ARRAY_FORMAT_VERTEX" value="1">
+			Array format will include vertices (mandatory).
+		</constant>
+		<constant name="ARRAY_FORMAT_NORMAL" value="2">
+			Array format will include normals
+		</constant>
+		<constant name="ARRAY_FORMAT_TANGENT" value="4">
+			Array format will include tangents
+		</constant>
+		<constant name="ARRAY_FORMAT_COLOR" value="8">
+			Array format will include a color array.
+		</constant>
+		<constant name="ARRAY_FORMAT_TEX_UV" value="16">
+			Array format will include UVs.
+		</constant>
+		<constant name="ARRAY_FORMAT_TEX_UV2" value="32">
+			Array format will include another set of UVs.
+		</constant>
+		<constant name="ARRAY_FORMAT_BONES" value="64">
+			Array format will include bone indices.
+		</constant>
+		<constant name="ARRAY_FORMAT_WEIGHTS" value="128">
+			Array format will include bone weights.
+		</constant>
+		<constant name="ARRAY_FORMAT_INDEX" value="256">
+			Index array will be used.
+		</constant>
+	</constants>
+</class>

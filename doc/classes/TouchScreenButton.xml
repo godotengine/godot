@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TouchScreenButton" inherits="Node2D" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_action" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_bitmask" qualifiers="const">
+			<return type="BitMap">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_shape" qualifiers="const">
+			<return type="Shape2D">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_texture" qualifiers="const">
+			<return type="Texture">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_texture_pressed" qualifiers="const">
+			<return type="Texture">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_visibility_mode" qualifiers="const">
+			<return type="int" enum="TouchScreenButton.VisibilityMode">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_passby_press_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_pressed" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_shape_centered" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_shape_visible" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_action">
+			<return type="void">
+			</return>
+			<argument index="0" name="action" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_bitmask">
+			<return type="void">
+			</return>
+			<argument index="0" name="bitmask" type="BitMap">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_passby_press">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_shape">
+			<return type="void">
+			</return>
+			<argument index="0" name="shape" type="Shape2D">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_shape_centered">
+			<return type="void">
+			</return>
+			<argument index="0" name="bool" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_shape_visible">
+			<return type="void">
+			</return>
+			<argument index="0" name="bool" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_texture">
+			<return type="void">
+			</return>
+			<argument index="0" name="texture" type="Texture">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_texture_pressed">
+			<return type="void">
+			</return>
+			<argument index="0" name="texture_pressed" type="Texture">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_visibility_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="int" enum="TouchScreenButton.VisibilityMode">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="action" type="String" setter="set_action" getter="get_action" brief="">
+		</member>
+		<member name="bitmask" type="BitMap" setter="set_bitmask" getter="get_bitmask" brief="">
+		</member>
+		<member name="normal" type="Texture" setter="set_texture" getter="get_texture" brief="">
+		</member>
+		<member name="passby_press" type="bool" setter="set_passby_press" getter="is_passby_press_enabled" brief="">
+		</member>
+		<member name="pressed" type="Texture" setter="set_texture_pressed" getter="get_texture_pressed" brief="">
+		</member>
+		<member name="shape" type="Shape2D" setter="set_shape" getter="get_shape" brief="">
+		</member>
+		<member name="shape_centered" type="bool" setter="set_shape_centered" getter="is_shape_centered" brief="">
+		</member>
+		<member name="shape_visible" type="bool" setter="set_shape_visible" getter="is_shape_visible" brief="">
+		</member>
+		<member name="visibility_mode" type="int" setter="set_visibility_mode" getter="get_visibility_mode" brief="" enum="TouchScreenButton.VisibilityMode">
+		</member>
+	</members>
+	<signals>
+		<signal name="pressed">
+			<description>
+			</description>
+		</signal>
+		<signal name="released">
+			<description>
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>

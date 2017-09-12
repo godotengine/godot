@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PhysicsShapeQueryParameters" inherits="Reference" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_collision_layer" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_exclude" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_margin" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_object_type_mask" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_shape_rid" qualifiers="const">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_transform" qualifiers="const">
+			<return type="Transform">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_collision_layer">
+			<return type="void">
+			</return>
+			<argument index="0" name="collision_layer" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_exclude">
+			<return type="void">
+			</return>
+			<argument index="0" name="exclude" type="Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_margin">
+			<return type="void">
+			</return>
+			<argument index="0" name="margin" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_object_type_mask">
+			<return type="void">
+			</return>
+			<argument index="0" name="object_type_mask" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_shape">
+			<return type="void">
+			</return>
+			<argument index="0" name="shape" type="Resource">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_shape_rid">
+			<return type="void">
+			</return>
+			<argument index="0" name="shape" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="transform" type="Transform">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

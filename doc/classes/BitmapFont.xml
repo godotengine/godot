@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="BitmapFont" inherits="Font" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="add_char">
+			<return type="void">
+			</return>
+			<argument index="0" name="character" type="int">
+			</argument>
+			<argument index="1" name="texture" type="int">
+			</argument>
+			<argument index="2" name="rect" type="Rect2">
+			</argument>
+			<argument index="3" name="align" type="Vector2" default="Vector2( 0, 0 )">
+			</argument>
+			<argument index="4" name="advance" type="float" default="-1">
+			</argument>
+			<description>
+				Add a character to the font, where [i]character[/i] is the unicode value, [i]texture[/i] is the texture index, [i]rect[/i] is the region in the texture (in pixels!), [i]align[/i] is the (optional) alignment for the character and [i]advance[/i] is the (optional) advance.
+			</description>
+		</method>
+		<method name="add_kerning_pair">
+			<return type="void">
+			</return>
+			<argument index="0" name="char_a" type="int">
+			</argument>
+			<argument index="1" name="char_b" type="int">
+			</argument>
+			<argument index="2" name="kerning" type="int">
+			</argument>
+			<description>
+				Add a kerning pair to the [BitmapFont] as a difference. Kerning pairs are special cases where a typeface advance is determined by the next character.
+			</description>
+		</method>
+		<method name="add_texture">
+			<return type="void">
+			</return>
+			<argument index="0" name="texture" type="Texture">
+			</argument>
+			<description>
+				Add a texture to the [BitmapFont].
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void">
+			</return>
+			<description>
+				Clear all the font data.
+			</description>
+		</method>
+		<method name="create_from_fnt">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_char_size" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="char" type="int">
+			</argument>
+			<argument index="1" name="next" type="int" default="0">
+			</argument>
+			<description>
+				Return the size of a character, optionally taking kerning into account if the next character is provided.
+			</description>
+		</method>
+		<method name="get_fallback" qualifiers="const">
+			<return type="BitmapFont">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_kerning_pair" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="char_a" type="int">
+			</argument>
+			<argument index="1" name="char_b" type="int">
+			</argument>
+			<description>
+				Return a kerning pair as a difference.
+			</description>
+		</method>
+		<method name="get_texture" qualifiers="const">
+			<return type="Texture">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_texture_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_ascent">
+			<return type="void">
+			</return>
+			<argument index="0" name="px" type="float">
+			</argument>
+			<description>
+				Set the font ascent (number of pixels above the baseline).
+			</description>
+		</method>
+		<method name="set_distance_field_hint">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_fallback">
+			<return type="void">
+			</return>
+			<argument index="0" name="fallback" type="BitmapFont">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_height">
+			<return type="void">
+			</return>
+			<argument index="0" name="px" type="float">
+			</argument>
+			<description>
+				Set the total font height (ascent plus descent) in pixels.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="ascent" type="float" setter="set_ascent" getter="get_ascent" brief="">
+		</member>
+		<member name="chars" type="PoolIntArray" setter="_set_chars" getter="_get_chars" brief="">
+		</member>
+		<member name="distance_field" type="bool" setter="set_distance_field_hint" getter="is_distance_field_hint" brief="">
+		</member>
+		<member name="fallback" type="BitmapFont" setter="set_fallback" getter="get_fallback" brief="">
+		</member>
+		<member name="height" type="float" setter="set_height" getter="get_height" brief="">
+		</member>
+		<member name="kernings" type="PoolIntArray" setter="_set_kernings" getter="_get_kernings" brief="">
+		</member>
+		<member name="textures" type="Array" setter="_set_textures" getter="_get_textures" brief="">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

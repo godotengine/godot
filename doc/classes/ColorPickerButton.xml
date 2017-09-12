@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ColorPickerButton" inherits="Button" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Button that pops out a [ColorPicker]
+	</brief_description>
+	<description>
+		Encapsulates a [ColorPicker] making it accesible by pressing a button, pressing the button will toggle the [ColorPicker] visibility
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_pick_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_picker">
+			<return type="ColorPicker">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_editing_alpha" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				See [method ColorPicker.is_edit_alpha]
+			</description>
+		</method>
+		<method name="set_edit_alpha">
+			<return type="void">
+			</return>
+			<argument index="0" name="show" type="bool">
+			</argument>
+			<description>
+				See [method ColorPicker.set_edit_alpha]
+			</description>
+		</method>
+		<method name="set_pick_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+				Set new color to ColorRect.
+
+			[codeblock]
+			var cr = get_node("colorrect_node")
+			cr.set_frame_color(Color(1, 0, 0, 1)) # Set color rect node to red
+			[/codeblock]
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="color" type="Color" setter="set_pick_color" getter="get_pick_color" brief="">
+		</member>
+		<member name="edit_alpha" type="bool" setter="set_edit_alpha" getter="is_editing_alpha" brief="">
+		</member>
+	</members>
+	<signals>
+		<signal name="color_changed">
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+				Emitted when the color is changed.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+	<theme_items>
+		<theme_item name="disabled" type="StyleBox">
+		</theme_item>
+		<theme_item name="focus" type="StyleBox">
+		</theme_item>
+		<theme_item name="font" type="Font">
+		</theme_item>
+		<theme_item name="font_color" type="Color">
+		</theme_item>
+		<theme_item name="font_color_disabled" type="Color">
+		</theme_item>
+		<theme_item name="font_color_hover" type="Color">
+		</theme_item>
+		<theme_item name="font_color_pressed" type="Color">
+		</theme_item>
+		<theme_item name="hover" type="StyleBox">
+		</theme_item>
+		<theme_item name="hseparation" type="int">
+		</theme_item>
+		<theme_item name="normal" type="StyleBox">
+		</theme_item>
+		<theme_item name="pressed" type="StyleBox">
+		</theme_item>
+	</theme_items>
+</class>

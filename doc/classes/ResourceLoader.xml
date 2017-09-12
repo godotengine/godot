@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceLoader" inherits="Object" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Resource Loader.
+	</brief_description>
+	<description>
+		Resource Loader. This is a static object accessible as [ResourceLoader]. GDScript has a simplified load() function, though.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_dependencies">
+			<return type="PoolStringArray">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_recognized_extensions_for_type">
+			<return type="PoolStringArray">
+			</return>
+			<argument index="0" name="type" type="String">
+			</argument>
+			<description>
+				Return the list of recognized extensions for a resource type.
+			</description>
+		</method>
+		<method name="has">
+			<return type="bool">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="load">
+			<return type="Resource">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="type_hint" type="String" default="&quot;&quot;">
+			</argument>
+			<argument index="2" name="p_no_cache" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="load_interactive">
+			<return type="ResourceInteractiveLoader">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="type_hint" type="String" default="&quot;&quot;">
+			</argument>
+			<description>
+				Load a resource interactively, the returned object allows to load with high granularity.
+			</description>
+		</method>
+		<method name="set_abort_on_missing_resources">
+			<return type="void">
+			</return>
+			<argument index="0" name="abort" type="bool">
+			</argument>
+			<description>
+				Change the behavior on missing sub-resources. Default is to abort load.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

@@ -1,0 +1,558 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ItemList" inherits="Control" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Control that provides a list of selectable items (and/or icons) in a single column, or optionally in multiple columns.
+	</brief_description>
+	<description>
+		This control provides a selectable list of items that may be in a single (or multiple columns) with option of text, icons,
+		or both text and icon.  Tooltips are supported and may be different for every item in the list.  Selectable items in the list
+		may be selected or deselected and multiple selection may be enabled.  Selection with right mouse button may also be enabled
+		to allow use of popup context menus.  Items may also be 'activated' with a double click (or Enter key).
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="add_icon_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="icon" type="Texture">
+			</argument>
+			<argument index="1" name="selectable" type="bool" default="true">
+			</argument>
+			<description>
+				Adds an item to the item list with no text, only an icon.
+			</description>
+		</method>
+		<method name="add_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="text" type="String">
+			</argument>
+			<argument index="1" name="icon" type="Texture" default="null">
+			</argument>
+			<argument index="2" name="selectable" type="bool" default="true">
+			</argument>
+			<description>
+				Adds an item to the item list with specified text.  Specify an icon of null for a list item with no icon.
+				If selectable is true the list item will be selectable.
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void">
+			</return>
+			<description>
+				Remove all items from the list.
+			</description>
+		</method>
+		<method name="ensure_current_is_visible">
+			<return type="void">
+			</return>
+			<description>
+				Ensure selection is visible, adjusting the scroll position as necessary.
+			</description>
+		</method>
+		<method name="get_allow_rmb_select" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return whether or not items may be selected via right mouse clicking.
+			</description>
+		</method>
+		<method name="get_fixed_column_width" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				If column size has been fixed to a value, return that value.
+			</description>
+		</method>
+		<method name="get_fixed_icon_size" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_icon_mode" qualifiers="const">
+			<return type="int" enum="ItemList.IconMode">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_icon_scale" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_item_at_pos" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="pos" type="Vector2">
+			</argument>
+			<argument index="1" name="exact" type="bool" default="false">
+			</argument>
+			<description>
+				Given a position within the control return the item (if any) at that point.
+			</description>
+		</method>
+		<method name="get_item_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return count of items currently in the item list.
+			</description>
+		</method>
+		<method name="get_item_custom_bg_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_item_icon" qualifiers="const">
+			<return type="Texture">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_item_icon_region" qualifiers="const">
+			<return type="Rect2">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_item_metadata" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_item_text" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Return the text for specified item index.
+			</description>
+		</method>
+		<method name="get_item_tooltip" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Return tooltip hint for specified item index.
+			</description>
+		</method>
+		<method name="get_max_columns" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return total number of columns in use by the list.
+			</description>
+		</method>
+		<method name="get_max_text_lines" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return total number of lines currently in use by the list.
+			</description>
+		</method>
+		<method name="get_select_mode" qualifiers="const">
+			<return type="int" enum="ItemList.SelectMode">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_selected_items">
+			<return type="PoolIntArray">
+			</return>
+			<description>
+				Returns the list of selected indexes.
+			</description>
+		</method>
+		<method name="get_v_scroll">
+			<return type="VScrollBar">
+			</return>
+			<description>
+				Returns the current vertical scroll bar for the List.
+			</description>
+		</method>
+		<method name="has_auto_height" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_item_disabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Returns whether or not the item at the specified index is disabled
+			</description>
+		</method>
+		<method name="is_item_selectable" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Returns whether or not the item at the specified index is selectable.
+			</description>
+		</method>
+		<method name="is_item_tooltip_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Returns whether the tooptip is enabled for specified item index.
+			</description>
+		</method>
+		<method name="is_same_column_width" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns whether or not all columns of the list are of the same size.
+			</description>
+		</method>
+		<method name="is_selected" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Returns whether or not item at the specified index is currently selected.
+			</description>
+		</method>
+		<method name="remove_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Remove item at specified index from the list.
+			</description>
+		</method>
+		<method name="select">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="single" type="bool" default="true">
+			</argument>
+			<description>
+				Select the item at the specified index.
+				Note:  This method does not trigger the item selection signal.
+			</description>
+		</method>
+		<method name="set_allow_rmb_select">
+			<return type="void">
+			</return>
+			<argument index="0" name="allow" type="bool">
+			</argument>
+			<description>
+				Allow (or disallow) selection of (selectable) items in the list using right mouse button.
+			</description>
+		</method>
+		<method name="set_auto_height">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_fixed_column_width">
+			<return type="void">
+			</return>
+			<argument index="0" name="width" type="int">
+			</argument>
+			<description>
+				Set the size (width) all columns in the list are to use.
+			</description>
+		</method>
+		<method name="set_fixed_icon_size">
+			<return type="void">
+			</return>
+			<argument index="0" name="size" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_icon_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="int" enum="ItemList.IconMode">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_icon_scale">
+			<return type="void">
+			</return>
+			<argument index="0" name="scale" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_item_custom_bg_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="custom_bg_color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_item_disabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="disabled" type="bool">
+			</argument>
+			<description>
+				Disable (or enable) item at specified index.
+				Disabled items are not be selectable and do not fire activation (Enter or double-click) signals.
+			</description>
+		</method>
+		<method name="set_item_icon">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="icon" type="Texture">
+			</argument>
+			<description>
+				Set (or replace) icon of the item at the specified index.
+			</description>
+		</method>
+		<method name="set_item_icon_region">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="rect" type="Rect2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_item_metadata">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="metadata" type="Variant">
+			</argument>
+			<description>
+				Sets a value (of any type) to be stored with the item at the specified index.
+			</description>
+		</method>
+		<method name="set_item_selectable">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="selectable" type="bool">
+			</argument>
+			<description>
+				Allow or disallow selection of the item at the specified index.
+			</description>
+		</method>
+		<method name="set_item_text">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="text" type="String">
+			</argument>
+			<description>
+				Sets text of item at specified index.
+			</description>
+		</method>
+		<method name="set_item_tooltip">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="tooltip" type="String">
+			</argument>
+			<description>
+				Sets tooltip hint for item at specified index.
+			</description>
+		</method>
+		<method name="set_item_tooltip_enabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+				Sets whether the tooltip is enabled for specified item index.
+			</description>
+		</method>
+		<method name="set_max_columns">
+			<return type="void">
+			</return>
+			<argument index="0" name="amount" type="int">
+			</argument>
+			<description>
+				Set maximum number of columns to use for the list.
+			</description>
+		</method>
+		<method name="set_max_text_lines">
+			<return type="void">
+			</return>
+			<argument index="0" name="lines" type="int">
+			</argument>
+			<description>
+				Set maximum number of lines to use for the list.
+			</description>
+		</method>
+		<method name="set_same_column_width">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Sets a fixed size (width) to use for all columns of the list.
+			</description>
+		</method>
+		<method name="set_select_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="int" enum="ItemList.SelectMode">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="sort_items_by_text">
+			<return type="void">
+			</return>
+			<description>
+				Sorts items in the list by their text.
+			</description>
+		</method>
+		<method name="unselect">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Ensure item at specified index is not selected.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="allow_rmb_select" type="bool" setter="set_allow_rmb_select" getter="get_allow_rmb_select" brief="">
+		</member>
+		<member name="auto_height" type="bool" setter="set_auto_height" getter="has_auto_height" brief="">
+		</member>
+		<member name="fixed_column_width" type="int" setter="set_fixed_column_width" getter="get_fixed_column_width" brief="">
+		</member>
+		<member name="icon_mode" type="int" setter="set_icon_mode" getter="get_icon_mode" brief="" enum="ItemList.IconMode">
+		</member>
+		<member name="icon_scale" type="float" setter="set_icon_scale" getter="get_icon_scale" brief="">
+		</member>
+		<member name="items" type="Array" setter="_set_items" getter="_get_items" brief="">
+		</member>
+		<member name="max_columns" type="int" setter="set_max_columns" getter="get_max_columns" brief="">
+		</member>
+		<member name="max_text_lines" type="int" setter="set_max_text_lines" getter="get_max_text_lines" brief="">
+		</member>
+		<member name="same_column_width" type="bool" setter="set_same_column_width" getter="is_same_column_width" brief="">
+		</member>
+		<member name="select_mode" type="int" setter="set_select_mode" getter="get_select_mode" brief="" enum="ItemList.SelectMode">
+		</member>
+	</members>
+	<signals>
+		<signal name="item_activated">
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Fired when specified list item is activated via double click or Enter.
+			</description>
+		</signal>
+		<signal name="item_rmb_selected">
+			<argument index="0" name="index" type="int">
+			</argument>
+			<argument index="1" name="atpos" type="Vector2">
+			</argument>
+			<description>
+				Fired when specified list item has been selected via right mouse clicking.
+				The click position is also provided to allow appropriate popup of context menus
+				at the correct location.
+			</description>
+		</signal>
+		<signal name="item_selected">
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Fired when specified item has been selected.
+			</description>
+		</signal>
+		<signal name="multi_selected">
+			<argument index="0" name="index" type="int">
+			</argument>
+			<argument index="1" name="selected" type="bool">
+			</argument>
+			<description>
+				Fired when a multiple selection is altered on a list allowing mutliple selection.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="ICON_MODE_TOP" value="0">
+		</constant>
+		<constant name="ICON_MODE_LEFT" value="1">
+		</constant>
+		<constant name="SELECT_SINGLE" value="0">
+		</constant>
+		<constant name="SELECT_MULTI" value="1">
+		</constant>
+	</constants>
+	<theme_items>
+		<theme_item name="bg" type="StyleBox">
+		</theme_item>
+		<theme_item name="bg_focus" type="StyleBox">
+		</theme_item>
+		<theme_item name="cursor" type="StyleBox">
+		</theme_item>
+		<theme_item name="cursor_unfocused" type="StyleBox">
+		</theme_item>
+		<theme_item name="font" type="Font">
+		</theme_item>
+		<theme_item name="font_color" type="Color">
+		</theme_item>
+		<theme_item name="font_color_selected" type="Color">
+		</theme_item>
+		<theme_item name="guide_color" type="Color">
+		</theme_item>
+		<theme_item name="hseparation" type="int">
+		</theme_item>
+		<theme_item name="icon_margin" type="int">
+		</theme_item>
+		<theme_item name="line_separation" type="int">
+		</theme_item>
+		<theme_item name="selected" type="StyleBox">
+		</theme_item>
+		<theme_item name="selected_focus" type="StyleBox">
+		</theme_item>
+		<theme_item name="vseparation" type="int">
+		</theme_item>
+	</theme_items>
+</class>

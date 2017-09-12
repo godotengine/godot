@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CollisionObject" inherits="Spatial" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="_input_event" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="camera" type="Object">
+			</argument>
+			<argument index="1" name="event" type="InputEvent">
+			</argument>
+			<argument index="2" name="click_pos" type="Vector3">
+			</argument>
+			<argument index="3" name="click_normal" type="Vector3">
+			</argument>
+			<argument index="4" name="shape_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="create_shape_owner">
+			<return type="int">
+			</return>
+			<argument index="0" name="owner" type="Object">
+			</argument>
+			<description>
+				Creates new holder for the shapes. Argument is a [CollisionShape] node. It will return owner_id which usually you will want to save for later use.
+			</description>
+		</method>
+		<method name="get_capture_input_on_drag" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_rid" qualifiers="const">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_shape_owners">
+			<return type="Array">
+			</return>
+			<description>
+				Shape owner is a node which is holding concrete shape resources. This method will return an array which is holding an integer numbers that are representing unique ID of each owner. You can use those ids when you are using others shape_owner methods.
+			</description>
+		</method>
+		<method name="is_ray_pickable" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_shape_owner_disabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_shape_owner">
+			<return type="void">
+			</return>
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_capture_input_on_drag">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_ray_pickable">
+			<return type="void">
+			</return>
+			<argument index="0" name="ray_pickable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="shape_find_owner" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="shape_index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="shape_owner_add_shape">
+			<return type="void">
+			</return>
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<argument index="1" name="shape" type="Shape">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="shape_owner_clear_shapes">
+			<return type="void">
+			</return>
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<description>
+				Will remove all the shapes associated with given owner.
+			</description>
+		</method>
+		<method name="shape_owner_get_owner" qualifiers="const">
+			<return type="Object">
+			</return>
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="shape_owner_get_shape" qualifiers="const">
+			<return type="Shape">
+			</return>
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<argument index="1" name="shape_id" type="int">
+			</argument>
+			<description>
+				Will return a [Shape]. First argument owner_id is an integer that can be obtained from [method get_shape_owners]. Shape_id is a position of the shape inside owner; it's a value in range from 0 to [method shape_owner_get_shape_count].
+			</description>
+		</method>
+		<method name="shape_owner_get_shape_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<description>
+				Returns number of shapes to which given owner is associated to.
+			</description>
+		</method>
+		<method name="shape_owner_get_shape_index" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<argument index="1" name="shape_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="shape_owner_get_transform" qualifiers="const">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<description>
+				Will return [Transform] of an owner node.
+			</description>
+		</method>
+		<method name="shape_owner_remove_shape">
+			<return type="void">
+			</return>
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<argument index="1" name="shape_id" type="int">
+			</argument>
+			<description>
+				Removes related shape from the owner.
+			</description>
+		</method>
+		<method name="shape_owner_set_disabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<argument index="1" name="disabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="shape_owner_set_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<argument index="1" name="transform" type="Transform">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="input_capture_on_drag" type="bool" setter="set_capture_input_on_drag" getter="get_capture_input_on_drag" brief="">
+		</member>
+		<member name="input_ray_pickable" type="bool" setter="set_ray_pickable" getter="is_ray_pickable" brief="">
+		</member>
+	</members>
+	<signals>
+		<signal name="input_event">
+			<argument index="0" name="camera" type="Object">
+			</argument>
+			<argument index="1" name="event" type="Object">
+			</argument>
+			<argument index="2" name="click_pos" type="Vector3">
+			</argument>
+			<argument index="3" name="click_normal" type="Vector3">
+			</argument>
+			<argument index="4" name="shape_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="mouse_entered">
+			<description>
+			</description>
+		</signal>
+		<signal name="mouse_exited">
+			<description>
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>

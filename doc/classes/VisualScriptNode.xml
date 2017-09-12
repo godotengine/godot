@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualScriptNode" inherits="Resource" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_default_input_value" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="port_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_visual_script" qualifiers="const">
+			<return type="VisualScript">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_default_input_value">
+			<return type="void">
+			</return>
+			<argument index="0" name="port_idx" type="int">
+			</argument>
+			<argument index="1" name="value" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="_default_input_values" type="Array" setter="_set_default_input_values" getter="_get_default_input_values" brief="">
+		</member>
+	</members>
+	<signals>
+		<signal name="ports_changed">
+			<description>
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>

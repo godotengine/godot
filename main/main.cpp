@@ -60,6 +60,7 @@
 #include "editor/doc/doc_data.h"
 #include "editor/editor_node.h"
 #include "editor/project_manager.h"
+#include "editor/doc/doc_data_class_path.gen.h"
 #endif
 
 #include "io/file_access_network.h"
@@ -73,6 +74,7 @@
 #include "performance.h"
 #include "translation.h"
 #include "version.h"
+
 
 static ProjectSettings *globals = NULL;
 static Engine *engine = NULL;
@@ -1143,26 +1145,47 @@ bool Main::start() {
 #ifdef TOOLS_ENABLED
 	if (doc_tool != "") {
 
+		{
+			DirAccessRef da = DirAccess::open(doc_tool);
+			if (!da) {
+				ERR_EXPLAIN("Argument supplied to --doctool must be a base godot build directory");
+				ERR_FAIL_V(false);
+			}
+		}
 		DocData doc;
 		doc.generate(doc_base);
 
-		DocData docsrc;
-		if (docsrc.load(doc_tool) == OK) {
-			print_line("Doc exists. Merging..");
-			doc.merge_from(docsrc);
-		} else {
-			print_line("No Doc exists. Generating empty.");
-		}
 
-		for (List<String>::Element *E = removal_docs.front(); E; E = E->next()) {
-			DocData rmdoc;
-			if (rmdoc.load(E->get()) == OK) {
-				print_line(String("Removing classes in ") + E->get());
-				doc.remove_from(rmdoc);
+		DocData docsrc;
+		Map<String,String> doc_data_classes;
+		Set<String> checked_paths;
+		print_line("Loading docs..");
+
+		for(int i=0;i<_doc_data_class_path_count;i++) {
+			String path = doc_tool.plus_file(_doc_data_class_paths[i].path);
+			String name = _doc_data_class_paths[i].name;
+			doc_data_classes[name]=path;
+			if (!checked_paths.has(path)) {
+				checked_paths.insert(path);
+				docsrc.load_classes(path);
+				print_line("Loading docs from: "+path);
 			}
 		}
 
-		doc.save(doc_tool);
+		String index_path = doc_tool.plus_file("doc/classes");
+		docsrc.load_classes(index_path);
+		checked_paths.insert(index_path);
+		print_line("Loading docs from: "+index_path);
+
+		print_line("Merging docs..");
+		doc.merge_from(docsrc);
+		for (Set<String>::Element *E=checked_paths.front();E;E=E->next()) {
+			print_line("Erasing old docs at: "+E->get());
+			DocData::erase_classes(E->get());
+		}
+
+		print_line("Generating new docs..");
+		doc.save_classes(index_path,doc_data_classes);
 
 		return false;
 	}

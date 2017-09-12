@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Physics2DDirectBodyState" inherits="Object" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Direct access object to a physics body in the [Physics2DServer].
+	</brief_description>
+	<description>
+		Direct access object to a physics body in the [Physics2DServer]. This object is passed via the direct state callback of rigid/character bodies, and is intended for changing the direct state of that body.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_angular_velocity" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the angular velocity of the body.
+			</description>
+		</method>
+		<method name="get_contact_collider" qualifiers="const">
+			<return type="RID">
+			</return>
+			<argument index="0" name="contact_idx" type="int">
+			</argument>
+			<description>
+				Return the [RID] of the collider.
+			</description>
+		</method>
+		<method name="get_contact_collider_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="contact_idx" type="int">
+			</argument>
+			<description>
+				Return the object id of the collider.
+			</description>
+		</method>
+		<method name="get_contact_collider_object" qualifiers="const">
+			<return type="Object">
+			</return>
+			<argument index="0" name="contact_idx" type="int">
+			</argument>
+			<description>
+				Return the collider object, this depends on how it was created (will return a scene node if such was used to create it).
+			</description>
+		</method>
+		<method name="get_contact_collider_pos" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="contact_idx" type="int">
+			</argument>
+			<description>
+				Return the contact position in the collider.
+			</description>
+		</method>
+		<method name="get_contact_collider_shape" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="contact_idx" type="int">
+			</argument>
+			<description>
+				Return the collider shape index.
+			</description>
+		</method>
+		<method name="get_contact_collider_shape_metadata" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="contact_idx" type="int">
+			</argument>
+			<description>
+				Return the metadata of the collided shape. This metadata is different from [method Object.get_meta], and is set with [method Physics2DServer.shape_set_data].
+			</description>
+		</method>
+		<method name="get_contact_collider_velocity_at_pos" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="contact_idx" type="int">
+			</argument>
+			<description>
+				Return the linear velocity vector at contact point of the collider.
+			</description>
+		</method>
+		<method name="get_contact_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the amount of contacts this body has with other bodies. Note that by default this returns 0 unless bodies are configured to log contacts.
+			</description>
+		</method>
+		<method name="get_contact_local_normal" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="contact_idx" type="int">
+			</argument>
+			<description>
+				Return the local normal (of this body) of the contact point.
+			</description>
+		</method>
+		<method name="get_contact_local_pos" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="contact_idx" type="int">
+			</argument>
+			<description>
+				Return the local position (of this body) of the contact point.
+			</description>
+		</method>
+		<method name="get_contact_local_shape" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="contact_idx" type="int">
+			</argument>
+			<description>
+				Return the local shape index of the collision.
+			</description>
+		</method>
+		<method name="get_inverse_inertia" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the inverse of the inertia of the body.
+			</description>
+		</method>
+		<method name="get_inverse_mass" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the inverse of the mass of the body.
+			</description>
+		</method>
+		<method name="get_linear_velocity" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+				Return the current linear velocity of the body.
+			</description>
+		</method>
+		<method name="get_space_state">
+			<return type="Physics2DDirectSpaceState">
+			</return>
+			<description>
+				Return the current state of space, useful for queries.
+			</description>
+		</method>
+		<method name="get_step" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the timestep (delta) used for the simulation.
+			</description>
+		</method>
+		<method name="get_total_angular_damp" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the rate at which the body stops rotating, if there are not any other forces moving it.
+			</description>
+		</method>
+		<method name="get_total_gravity" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+				Return the total gravity vector being currently applied to this body.
+			</description>
+		</method>
+		<method name="get_total_linear_damp" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the rate at which the body stops moving, if there are not any other forces moving it.
+			</description>
+		</method>
+		<method name="get_transform" qualifiers="const">
+			<return type="Transform2D">
+			</return>
+			<description>
+				Return the transform matrix of the body.
+			</description>
+		</method>
+		<method name="integrate_forces">
+			<return type="void">
+			</return>
+			<description>
+				Call the built-in force integration code.
+			</description>
+		</method>
+		<method name="is_sleeping" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return true if this body is currently sleeping (not active).
+			</description>
+		</method>
+		<method name="set_angular_velocity">
+			<return type="void">
+			</return>
+			<argument index="0" name="velocity" type="float">
+			</argument>
+			<description>
+				Change the angular velocity of the body.
+			</description>
+		</method>
+		<method name="set_linear_velocity">
+			<return type="void">
+			</return>
+			<argument index="0" name="velocity" type="Vector2">
+			</argument>
+			<description>
+				Change the linear velocity of the body.
+			</description>
+		</method>
+		<method name="set_sleep_state">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+				Set the sleeping state of the body, only affects character/rigid bodies.
+			</description>
+		</method>
+		<method name="set_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="transform" type="Transform2D">
+			</argument>
+			<description>
+				Change the transform matrix of the body.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

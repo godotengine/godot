@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SliderJoint" inherits="Joint" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_param" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="param" type="int" enum="SliderJoint.Param">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_param">
+			<return type="void">
+			</return>
+			<argument index="0" name="param" type="int" enum="SliderJoint.Param">
+			</argument>
+			<argument index="1" name="value" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="angular_limit/damping" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="angular_limit/lower_angle" type="float" setter="_set_lower_limit_angular" getter="_get_lower_limit_angular" brief="">
+		</member>
+		<member name="angular_limit/restitution" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="angular_limit/softness" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="angular_limit/upper_angle" type="float" setter="_set_upper_limit_angular" getter="_get_upper_limit_angular" brief="">
+		</member>
+		<member name="angular_motion/damping" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="angular_motion/restitution" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="angular_motion/softness" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="angular_ortho/damping" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="angular_ortho/restitution" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="angular_ortho/softness" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="linear_limit/damping" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="linear_limit/lower_distance" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="linear_limit/restitution" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="linear_limit/softness" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="linear_limit/upper_distance" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="linear_motion/damping" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="linear_motion/restitution" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="linear_motion/softness" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="linear_ortho/damping" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="linear_ortho/restitution" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="linear_ortho/softness" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+	</members>
+	<constants>
+		<constant name="PARAM_LINEAR_LIMIT_UPPER" value="0">
+		</constant>
+		<constant name="PARAM_LINEAR_LIMIT_LOWER" value="1">
+		</constant>
+		<constant name="PARAM_LINEAR_LIMIT_SOFTNESS" value="2">
+		</constant>
+		<constant name="PARAM_LINEAR_LIMIT_RESTITUTION" value="3">
+		</constant>
+		<constant name="PARAM_LINEAR_LIMIT_DAMPING" value="4">
+		</constant>
+		<constant name="PARAM_LINEAR_MOTION_SOFTNESS" value="5">
+		</constant>
+		<constant name="PARAM_LINEAR_MOTION_RESTITUTION" value="6">
+		</constant>
+		<constant name="PARAM_LINEAR_MOTION_DAMPING" value="7">
+		</constant>
+		<constant name="PARAM_LINEAR_ORTHOGONAL_SOFTNESS" value="8">
+		</constant>
+		<constant name="PARAM_LINEAR_ORTHOGONAL_RESTITUTION" value="9">
+		</constant>
+		<constant name="PARAM_LINEAR_ORTHOGONAL_DAMPING" value="10">
+		</constant>
+		<constant name="PARAM_ANGULAR_LIMIT_UPPER" value="11">
+		</constant>
+		<constant name="PARAM_ANGULAR_LIMIT_LOWER" value="12">
+		</constant>
+		<constant name="PARAM_ANGULAR_LIMIT_SOFTNESS" value="13">
+		</constant>
+		<constant name="PARAM_ANGULAR_LIMIT_RESTITUTION" value="14">
+		</constant>
+		<constant name="PARAM_ANGULAR_LIMIT_DAMPING" value="15">
+		</constant>
+		<constant name="PARAM_ANGULAR_MOTION_SOFTNESS" value="16">
+		</constant>
+		<constant name="PARAM_ANGULAR_MOTION_RESTITUTION" value="17">
+		</constant>
+		<constant name="PARAM_ANGULAR_MOTION_DAMPING" value="18">
+		</constant>
+		<constant name="PARAM_ANGULAR_ORTHOGONAL_SOFTNESS" value="19">
+		</constant>
+		<constant name="PARAM_ANGULAR_ORTHOGONAL_RESTITUTION" value="20">
+		</constant>
+		<constant name="PARAM_ANGULAR_ORTHOGONAL_DAMPING" value="21">
+		</constant>
+		<constant name="PARAM_MAX" value="22">
+		</constant>
+	</constants>
+</class>

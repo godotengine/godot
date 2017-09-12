@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Particles" inherits="GeometryInstance" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="capture_aabb" qualifiers="const">
+			<return type="Rect3">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_amount" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_draw_order" qualifiers="const">
+			<return type="int" enum="Particles.DrawOrder">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_draw_pass_mesh" qualifiers="const">
+			<return type="Mesh">
+			</return>
+			<argument index="0" name="pass" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_draw_passes" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_explosiveness_ratio" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_fixed_fps" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_fractional_delta" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_lifetime" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_one_shot" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_pre_process_time" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_process_material" qualifiers="const">
+			<return type="Material">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_randomness_ratio" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_speed_scale" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_use_local_coordinates" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_visibility_aabb" qualifiers="const">
+			<return type="Rect3">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_emitting" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="restart">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_amount">
+			<return type="void">
+			</return>
+			<argument index="0" name="amount" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_draw_order">
+			<return type="void">
+			</return>
+			<argument index="0" name="order" type="int" enum="Particles.DrawOrder">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_draw_pass_mesh">
+			<return type="void">
+			</return>
+			<argument index="0" name="pass" type="int">
+			</argument>
+			<argument index="1" name="mesh" type="Mesh">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_draw_passes">
+			<return type="void">
+			</return>
+			<argument index="0" name="passes" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_emitting">
+			<return type="void">
+			</return>
+			<argument index="0" name="emitting" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_explosiveness_ratio">
+			<return type="void">
+			</return>
+			<argument index="0" name="ratio" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_fixed_fps">
+			<return type="void">
+			</return>
+			<argument index="0" name="fps" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_fractional_delta">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_lifetime">
+			<return type="void">
+			</return>
+			<argument index="0" name="secs" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_one_shot">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_pre_process_time">
+			<return type="void">
+			</return>
+			<argument index="0" name="secs" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_process_material">
+			<return type="void">
+			</return>
+			<argument index="0" name="material" type="Material">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_randomness_ratio">
+			<return type="void">
+			</return>
+			<argument index="0" name="ratio" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_speed_scale">
+			<return type="void">
+			</return>
+			<argument index="0" name="scale" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_use_local_coordinates">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_visibility_aabb">
+			<return type="void">
+			</return>
+			<argument index="0" name="aabb" type="Rect3">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="amount" type="int" setter="set_amount" getter="get_amount" brief="">
+		</member>
+		<member name="draw_order" type="int" setter="set_draw_order" getter="get_draw_order" brief="" enum="Particles.DrawOrder">
+		</member>
+		<member name="draw_pass_1" type="Mesh" setter="set_draw_pass_mesh" getter="get_draw_pass_mesh" brief="">
+		</member>
+		<member name="draw_pass_2" type="Mesh" setter="set_draw_pass_mesh" getter="get_draw_pass_mesh" brief="">
+		</member>
+		<member name="draw_pass_3" type="Mesh" setter="set_draw_pass_mesh" getter="get_draw_pass_mesh" brief="">
+		</member>
+		<member name="draw_pass_4" type="Mesh" setter="set_draw_pass_mesh" getter="get_draw_pass_mesh" brief="">
+		</member>
+		<member name="draw_passes" type="int" setter="set_draw_passes" getter="get_draw_passes" brief="">
+		</member>
+		<member name="emitting" type="bool" setter="set_emitting" getter="is_emitting" brief="">
+		</member>
+		<member name="explosiveness" type="float" setter="set_explosiveness_ratio" getter="get_explosiveness_ratio" brief="">
+		</member>
+		<member name="fixed_fps" type="int" setter="set_fixed_fps" getter="get_fixed_fps" brief="">
+		</member>
+		<member name="fract_delta" type="bool" setter="set_fractional_delta" getter="get_fractional_delta" brief="">
+		</member>
+		<member name="lifetime" type="float" setter="set_lifetime" getter="get_lifetime" brief="">
+		</member>
+		<member name="local_coords" type="bool" setter="set_use_local_coordinates" getter="get_use_local_coordinates" brief="">
+		</member>
+		<member name="one_shot" type="bool" setter="set_one_shot" getter="get_one_shot" brief="">
+		</member>
+		<member name="preprocess" type="float" setter="set_pre_process_time" getter="get_pre_process_time" brief="">
+		</member>
+		<member name="process_material" type="Material" setter="set_process_material" getter="get_process_material" brief="">
+		</member>
+		<member name="randomness" type="float" setter="set_randomness_ratio" getter="get_randomness_ratio" brief="">
+		</member>
+		<member name="speed_scale" type="float" setter="set_speed_scale" getter="get_speed_scale" brief="">
+		</member>
+		<member name="visibility_aabb" type="Rect3" setter="set_visibility_aabb" getter="get_visibility_aabb" brief="">
+		</member>
+	</members>
+	<constants>
+		<constant name="DRAW_ORDER_INDEX" value="0">
+		</constant>
+		<constant name="DRAW_ORDER_LIFETIME" value="1">
+		</constant>
+		<constant name="DRAW_ORDER_VIEW_DEPTH" value="2">
+		</constant>
+		<constant name="MAX_DRAW_PASSES" value="4" enum="">
+		</constant>
+	</constants>
+</class>

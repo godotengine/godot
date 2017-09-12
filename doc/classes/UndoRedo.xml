@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="UndoRedo" inherits="Object" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Helper to manage UndoRedo in the editor or custom tools.
+	</brief_description>
+	<description>
+		Helper to manage UndoRedo in the editor or custom tools. It works by storing calls to functions in both 'do' an 'undo' lists.
+		Common behavior is to create an action, then add do/undo calls to functions or property changes, then committing the action.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="add_do_method" qualifiers="vararg">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="object" type="Object">
+			</argument>
+			<argument index="1" name="method" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_do_property">
+			<return type="void">
+			</return>
+			<argument index="0" name="object" type="Object">
+			</argument>
+			<argument index="1" name="property" type="String">
+			</argument>
+			<argument index="2" name="value" type="Variant">
+			</argument>
+			<description>
+				Set a property with a custom value.
+			</description>
+		</method>
+		<method name="add_do_reference">
+			<return type="void">
+			</return>
+			<argument index="0" name="object" type="Object">
+			</argument>
+			<description>
+				Add a 'do' reference that will be erased if the 'do' history is lost. This is useful mostly for new nodes created for the 'do' call. Do not use for resources.
+			</description>
+		</method>
+		<method name="add_undo_method" qualifiers="vararg">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="object" type="Object">
+			</argument>
+			<argument index="1" name="method" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_undo_property">
+			<return type="void">
+			</return>
+			<argument index="0" name="object" type="Object">
+			</argument>
+			<argument index="1" name="property" type="String">
+			</argument>
+			<argument index="2" name="value" type="Variant">
+			</argument>
+			<description>
+				Undo setting of a property with a custom value.
+			</description>
+		</method>
+		<method name="add_undo_reference">
+			<return type="void">
+			</return>
+			<argument index="0" name="object" type="Object">
+			</argument>
+			<description>
+				Add an 'undo' reference that will be erased if the 'undo' history is lost. This is useful mostly for nodes removed with the 'do' call (not the 'undo' call!).
+			</description>
+		</method>
+		<method name="clear_history">
+			<return type="void">
+			</return>
+			<description>
+				Clear the undo/redo history and associated references.
+			</description>
+		</method>
+		<method name="commit_action">
+			<return type="void">
+			</return>
+			<description>
+				Commit the action. All 'do' methods/properties are called/set when this function is called.
+			</description>
+		</method>
+		<method name="create_action">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="merge_mode" type="int" enum="UndoRedo.MergeMode" default="0">
+			</argument>
+			<description>
+				Create a new action. After this is called, do all your calls to [method add_do_method], [method add_undo_method], [method add_do_property] and [method add_undo_property].
+			</description>
+		</method>
+		<method name="get_current_action_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Get the name of the current action.
+			</description>
+		</method>
+		<method name="get_version" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Get the version, each time a new action is committed, the version number of the UndoRedo is increased automatically.
+				This is useful mostly to check if something changed from a saved version.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="MERGE_DISABLE" value="0">
+		</constant>
+		<constant name="MERGE_ENDS" value="1">
+		</constant>
+		<constant name="MERGE_ALL" value="2">
+		</constant>
+	</constants>
+</class>

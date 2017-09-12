@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="World2D" inherits="Resource" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Class that has everything pertaining to a 2D world.
+	</brief_description>
+	<description>
+		Class that has everything pertaining to a 2D world. A physics space, a visual scenario and a sound space. 2D nodes register their resources into the current 2D world.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_canvas">
+			<return type="RID">
+			</return>
+			<description>
+				Retrieve the [RID] of this world's canvas resource. Used by the [VisualServer] for 2D drawing.
+			</description>
+		</method>
+		<method name="get_direct_space_state">
+			<return type="Physics2DDirectSpaceState">
+			</return>
+			<description>
+				Retrieve the state of this world's physics space. This allows arbitrary querying for collision.
+			</description>
+		</method>
+		<method name="get_space">
+			<return type="RID">
+			</return>
+			<description>
+				Retrieve the [RID] of this world's physics space resource. Used by the [Physics2DServer] for 2D physics, treating it as both a space and an area.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

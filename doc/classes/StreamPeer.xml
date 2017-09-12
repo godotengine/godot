@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="StreamPeer" inherits="Reference" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Abstraction and base class for stream-based protocols.
+	</brief_description>
+	<description>
+		StreamPeer is an abstraction and base class for stream-based protocols (such as TCP or Unix Sockets). It provides an API for sending and receiving data through streams as raw data or strings.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_16">
+			<return type="int">
+			</return>
+			<description>
+				Get a signed 16 bit value from the stream.
+			</description>
+		</method>
+		<method name="get_32">
+			<return type="int">
+			</return>
+			<description>
+				Get a signed 32 bit value from the stream.
+			</description>
+		</method>
+		<method name="get_64">
+			<return type="int">
+			</return>
+			<description>
+				Get a signed 64 bit value from the stream.
+			</description>
+		</method>
+		<method name="get_8">
+			<return type="int">
+			</return>
+			<description>
+				Get a signed byte from the stream.
+			</description>
+		</method>
+		<method name="get_available_bytes" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the amount of bytes this [StreamPeer] has available.
+			</description>
+		</method>
+		<method name="get_data">
+			<return type="Array">
+			</return>
+			<argument index="0" name="bytes" type="int">
+			</argument>
+			<description>
+				Return a chunk data with the received bytes. The amount of bytes to be received can be requested in the "bytes" argument. If not enough bytes are available, the function will block until the desired amount is received. This function returns two values, an Error code and a data array.
+			</description>
+		</method>
+		<method name="get_double">
+			<return type="float">
+			</return>
+			<description>
+				Get a double-precision float from the stream.
+			</description>
+		</method>
+		<method name="get_float">
+			<return type="float">
+			</return>
+			<description>
+				Get a single-precision float from the stream.
+			</description>
+		</method>
+		<method name="get_partial_data">
+			<return type="Array">
+			</return>
+			<argument index="0" name="bytes" type="int">
+			</argument>
+			<description>
+				Return a chunk data with the received bytes. The amount of bytes to be received can be requested in the "bytes" argument. If not enough bytes are available, the function will return how many were actually received. This function returns two values, an Error code, and a data array.
+			</description>
+		</method>
+		<method name="get_string">
+			<return type="String">
+			</return>
+			<argument index="0" name="bytes" type="int">
+			</argument>
+			<description>
+				Get a string with byte-length "bytes" from the stream.
+			</description>
+		</method>
+		<method name="get_u16">
+			<return type="int">
+			</return>
+			<description>
+				Get an unsigned 16 bit value from the stream.
+			</description>
+		</method>
+		<method name="get_u32">
+			<return type="int">
+			</return>
+			<description>
+				Get an unsigned 32 bit value from the stream.
+			</description>
+		</method>
+		<method name="get_u64">
+			<return type="int">
+			</return>
+			<description>
+				Get an unsigned 16 bit value from the stream.
+			</description>
+		</method>
+		<method name="get_u8">
+			<return type="int">
+			</return>
+			<description>
+				Get an unsigned byte from the stream.
+			</description>
+		</method>
+		<method name="get_utf8_string">
+			<return type="String">
+			</return>
+			<argument index="0" name="bytes" type="int">
+			</argument>
+			<description>
+				Get a utf8 string with byte-length "bytes" from the stream (this decodes the string sent as utf8).
+			</description>
+		</method>
+		<method name="get_var">
+			<return type="Variant">
+			</return>
+			<description>
+				Get a Variant from the stream.
+			</description>
+		</method>
+		<method name="is_big_endian_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return whether this [StreamPeer] is using big-endian format.
+			</description>
+		</method>
+		<method name="put_16">
+			<return type="void">
+			</return>
+			<argument index="0" name="val" type="int">
+			</argument>
+			<description>
+				Put a signed 16 bit value into the stream.
+			</description>
+		</method>
+		<method name="put_32">
+			<return type="void">
+			</return>
+			<argument index="0" name="val" type="int">
+			</argument>
+			<description>
+				Put a signed 32 bit value into the stream.
+			</description>
+		</method>
+		<method name="put_64">
+			<return type="void">
+			</return>
+			<argument index="0" name="val" type="int">
+			</argument>
+			<description>
+				Put a signed 64 bit value into the stream.
+			</description>
+		</method>
+		<method name="put_8">
+			<return type="void">
+			</return>
+			<argument index="0" name="val" type="int">
+			</argument>
+			<description>
+				Put a signed byte into the stream.
+			</description>
+		</method>
+		<method name="put_data">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="data" type="PoolByteArray">
+			</argument>
+			<description>
+				Send a chunk of data through the connection, blocking if necessary until the data is done sending. This function returns an Error code.
+			</description>
+		</method>
+		<method name="put_double">
+			<return type="void">
+			</return>
+			<argument index="0" name="val" type="float">
+			</argument>
+			<description>
+				Put a double-precision float into the stream.
+			</description>
+		</method>
+		<method name="put_float">
+			<return type="void">
+			</return>
+			<argument index="0" name="val" type="float">
+			</argument>
+			<description>
+				Put a single-precision float into the stream.
+			</description>
+		</method>
+		<method name="put_partial_data">
+			<return type="Array">
+			</return>
+			<argument index="0" name="data" type="PoolByteArray">
+			</argument>
+			<description>
+				Send a chunk of data through the connection, if all the data could not be sent at once, only part of it will. This function returns two values, an Error code and an integer, describing how much data was actually sent.
+			</description>
+		</method>
+		<method name="put_u16">
+			<return type="void">
+			</return>
+			<argument index="0" name="val" type="int">
+			</argument>
+			<description>
+				Put an unsigned 16 bit value into the stream.
+			</description>
+		</method>
+		<method name="put_u32">
+			<return type="void">
+			</return>
+			<argument index="0" name="val" type="int">
+			</argument>
+			<description>
+				Put an unsigned 32 bit value into the stream.
+			</description>
+		</method>
+		<method name="put_u64">
+			<return type="void">
+			</return>
+			<argument index="0" name="val" type="int">
+			</argument>
+			<description>
+				Put an unsigned 64 bit value into the stream.
+			</description>
+		</method>
+		<method name="put_u8">
+			<return type="void">
+			</return>
+			<argument index="0" name="val" type="int">
+			</argument>
+			<description>
+				Put an unsigned byte into the stream.
+			</description>
+		</method>
+		<method name="put_utf8_string">
+			<return type="void">
+			</return>
+			<argument index="0" name="val" type="String">
+			</argument>
+			<description>
+				Put a zero-terminated utf8 string into the stream.
+			</description>
+		</method>
+		<method name="put_var">
+			<return type="void">
+			</return>
+			<argument index="0" name="val" type="Variant">
+			</argument>
+			<description>
+				Put a Variant into the stream.
+			</description>
+		</method>
+		<method name="set_big_endian">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Set this [StreamPeer] to use big-endian format. Default is false.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

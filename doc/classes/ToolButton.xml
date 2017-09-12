@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ToolButton" inherits="Button" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Flat button helper class.
+	</brief_description>
+	<description>
+		This is a helper class to generate a flat [Button] (see [method Button.set_flat]), creating a ToolButton is equivalent to:
+
+		[codeblock]
+		var btn = Button.new()
+		btn.set_flat(true)
+		[/codeblock]
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+	</methods>
+	<constants>
+	</constants>
+	<theme_items>
+		<theme_item name="disabled" type="StyleBox">
+		</theme_item>
+		<theme_item name="focus" type="StyleBox">
+		</theme_item>
+		<theme_item name="font" type="Font">
+		</theme_item>
+		<theme_item name="font_color" type="Color">
+		</theme_item>
+		<theme_item name="font_color_disabled" type="Color">
+		</theme_item>
+		<theme_item name="font_color_hover" type="Color">
+		</theme_item>
+		<theme_item name="font_color_pressed" type="Color">
+		</theme_item>
+		<theme_item name="hover" type="StyleBox">
+		</theme_item>
+		<theme_item name="hseparation" type="int">
+		</theme_item>
+		<theme_item name="normal" type="StyleBox">
+		</theme_item>
+		<theme_item name="pressed" type="StyleBox">
+		</theme_item>
+	</theme_items>
+</class>

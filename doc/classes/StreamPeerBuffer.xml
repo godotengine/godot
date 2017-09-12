@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="StreamPeerBuffer" inherits="StreamPeer" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="clear">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="duplicate" qualifiers="const">
+			<return type="StreamPeerBuffer">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_data_array" qualifiers="const">
+			<return type="PoolByteArray">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_pos" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_size" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="resize">
+			<return type="void">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="seek">
+			<return type="void">
+			</return>
+			<argument index="0" name="pos" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_data_array">
+			<return type="void">
+			</return>
+			<argument index="0" name="data" type="PoolByteArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

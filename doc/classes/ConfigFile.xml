@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ConfigFile" inherits="Reference" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Helper class to handle INI-style files.
+	</brief_description>
+	<description>
+		This helper class can be used to store [Variant] values on the filesystem using an INI-style formatting. The stored values as referenced by a section and a key. The stored data can be saved to or parsed from a file, though ConfigFile objects can also be used directly with accessing the filesystem.
+		The following example shows how to parse a INI-style file from the system, read its contents and store new values in it:
+		[codeblock]
+		var config = ConfigFile.new()
+		var err = config.load("user://settings.cfg")
+		if err == OK: # if not, something went wrong with the file loading
+		    # Look for the display/width pair, and default to 1024 if missing
+		    var screen_width = get_value("display", "width", 1024)
+		    # Store a variable if and only it hasn't been defined yet
+		    if not config.has_section_key("audio", "mute"):
+		        config.set_value("audio", "mute", false)
+		    # Save the changes by overwriting the previous file
+		    config.save("user://settings.cfg")
+		[/codeblock]
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="erase_section">
+			<return type="void">
+			</return>
+			<argument index="0" name="section" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_section_keys" qualifiers="const">
+			<return type="PoolStringArray">
+			</return>
+			<argument index="0" name="section" type="String">
+			</argument>
+			<description>
+				Return an array of all defined key identifiers in the specified section.
+			</description>
+		</method>
+		<method name="get_sections" qualifiers="const">
+			<return type="PoolStringArray">
+			</return>
+			<description>
+				Return an array of all defined section identifiers.
+			</description>
+		</method>
+		<method name="get_value" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="section" type="String">
+			</argument>
+			<argument index="1" name="key" type="String">
+			</argument>
+			<argument index="2" name="default" type="Variant" default="null">
+			</argument>
+			<description>
+				Return the current value for the specified section and key. If the section and/or the key do not exist, the method returns the value of the optional [i]default[/i] argument (and thus [code]NULL[/code] if not specified).
+			</description>
+		</method>
+		<method name="has_section" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="section" type="String">
+			</argument>
+			<description>
+				Check if the specified section exists.
+			</description>
+		</method>
+		<method name="has_section_key" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="section" type="String">
+			</argument>
+			<argument index="1" name="key" type="String">
+			</argument>
+			<description>
+				Check if the specified section-key pair exists.
+			</description>
+		</method>
+		<method name="load">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+				Load the config file specified as a parameter. The file's contents are parsed and loaded in the ConfigFile object from which the method was called. The return value is one of the OK, FAILED or ERR_* constants listed in [@Global Scope] (if the load was successful, it returns OK).
+			</description>
+		</method>
+		<method name="save">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+				Save the contents of the ConfigFile object to the file specified as a parameter. The output file uses an INI-style structure.
+				The return value is one of the OK, FAILED or ERR_* constants listed in [@Global Scope] (if the save was successful, it returns OK).
+			</description>
+		</method>
+		<method name="set_value">
+			<return type="void">
+			</return>
+			<argument index="0" name="section" type="String">
+			</argument>
+			<argument index="1" name="key" type="String">
+			</argument>
+			<argument index="2" name="value" type="Variant">
+			</argument>
+			<description>
+				Assign a value to the specified key of the the specified section. If the section and/or the key do not exist, they are created. Passing a [code]NULL[/code] value deletes the specified key if it exists (and deletes the section if it ends up empty once the key has been removed).
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

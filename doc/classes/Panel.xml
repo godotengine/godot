@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Panel" inherits="Control" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Provides an opaque background for [Control] children.
+	</brief_description>
+	<description>
+		Panel is a [Control] that displays an opaque background. It's commonly used as a parent and container for other types of [Control] nodes.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+	</methods>
+	<constants>
+	</constants>
+	<theme_items>
+		<theme_item name="panel" type="StyleBox">
+		</theme_item>
+		<theme_item name="panelf" type="StyleBox">
+		</theme_item>
+		<theme_item name="panelnc" type="StyleBox">
+		</theme_item>
+	</theme_items>
+</class>

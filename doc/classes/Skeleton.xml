@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Skeleton" inherits="Spatial" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Skeleton for characters and animated objects.
+	</brief_description>
+	<description>
+		Skeleton provides a hierarchical interface for managing bones, including pose, rest and animation (see [Animation]). Skeleton will support rag doll dynamics in the future.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="add_bone">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+				Add a bone, with name "name". [method get_bone_count] will become the bone index.
+			</description>
+		</method>
+		<method name="bind_child_node_to_bone">
+			<return type="void">
+			</return>
+			<argument index="0" name="bone_idx" type="int">
+			</argument>
+			<argument index="1" name="node" type="Node">
+			</argument>
+			<description>
+				Deprecated soon.
+			</description>
+		</method>
+		<method name="clear_bones">
+			<return type="void">
+			</return>
+			<description>
+				Clear all the bones in this skeleton.
+			</description>
+		</method>
+		<method name="find_bone" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+				Return the bone index that matches "name" as its name.
+			</description>
+		</method>
+		<method name="get_bone_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the amount of bones in the skeleton.
+			</description>
+		</method>
+		<method name="get_bone_custom_pose" qualifiers="const">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="bone_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_bone_global_pose" qualifiers="const">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="bone_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_bone_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="bone_idx" type="int">
+			</argument>
+			<description>
+				Return the name of the bone at index "index"
+			</description>
+		</method>
+		<method name="get_bone_parent" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="bone_idx" type="int">
+			</argument>
+			<description>
+				Return the bone index which is the parent of the bone at "bone_idx". If -1, then bone has no parent. Note that the parent bone returned will always be less than "bone_idx".
+			</description>
+		</method>
+		<method name="get_bone_pose" qualifiers="const">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="bone_idx" type="int">
+			</argument>
+			<description>
+				Return the pose transform for bone "bone_idx".
+			</description>
+		</method>
+		<method name="get_bone_rest" qualifiers="const">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="bone_idx" type="int">
+			</argument>
+			<description>
+				Return the rest transform for a bone "bone_idx".
+			</description>
+		</method>
+		<method name="get_bone_transform" qualifiers="const">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="bone_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_bound_child_nodes_to_bone" qualifiers="const">
+			<return type="Array">
+			</return>
+			<argument index="0" name="bone_idx" type="int">
+			</argument>
+			<description>
+				Deprecated soon.
+			</description>
+		</method>
+		<method name="is_bone_rest_disabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="bone_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_bone_custom_pose">
+			<return type="void">
+			</return>
+			<argument index="0" name="bone_idx" type="int">
+			</argument>
+			<argument index="1" name="custom_pose" type="Transform">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_bone_disable_rest">
+			<return type="void">
+			</return>
+			<argument index="0" name="bone_idx" type="int">
+			</argument>
+			<argument index="1" name="disable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_bone_global_pose">
+			<return type="void">
+			</return>
+			<argument index="0" name="bone_idx" type="int">
+			</argument>
+			<argument index="1" name="pose" type="Transform">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_bone_parent">
+			<return type="void">
+			</return>
+			<argument index="0" name="bone_idx" type="int">
+			</argument>
+			<argument index="1" name="parent_idx" type="int">
+			</argument>
+			<description>
+				Set the bone index "parent_idx" as the parent of the bone at "bone_idx". If -1, then bone has no parent. Note: "parent_idx" must be less than "bone_idx".
+			</description>
+		</method>
+		<method name="set_bone_pose">
+			<return type="void">
+			</return>
+			<argument index="0" name="bone_idx" type="int">
+			</argument>
+			<argument index="1" name="pose" type="Transform">
+			</argument>
+			<description>
+				Return the pose transform for bone "bone_idx".
+			</description>
+		</method>
+		<method name="set_bone_rest">
+			<return type="void">
+			</return>
+			<argument index="0" name="bone_idx" type="int">
+			</argument>
+			<argument index="1" name="rest" type="Transform">
+			</argument>
+			<description>
+				Set the rest transform for bone "bone_idx"
+			</description>
+		</method>
+		<method name="unbind_child_node_from_bone">
+			<return type="void">
+			</return>
+			<argument index="0" name="bone_idx" type="int">
+			</argument>
+			<argument index="1" name="node" type="Node">
+			</argument>
+			<description>
+				Deprecated soon.
+			</description>
+		</method>
+		<method name="unparent_bone_and_rest">
+			<return type="void">
+			</return>
+			<argument index="0" name="bone_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="NOTIFICATION_UPDATE_SKELETON" value="50" enum="">
+		</constant>
+	</constants>
+</class>

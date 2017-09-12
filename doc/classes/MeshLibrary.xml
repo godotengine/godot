@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="MeshLibrary" inherits="Resource" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Library of meshes.
+	</brief_description>
+	<description>
+		Library of meshes. Contains a list of [Mesh] resources, each with name and ID. Useful for GridMap or painting Terrain.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="clear">
+			<return type="void">
+			</return>
+			<description>
+				Clear the library.
+			</description>
+		</method>
+		<method name="create_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+				Create a new item in the library, supplied an id.
+			</description>
+		</method>
+		<method name="find_item_by_name" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_item_list" qualifiers="const">
+			<return type="PoolIntArray">
+			</return>
+			<description>
+				Return the list of items.
+			</description>
+		</method>
+		<method name="get_item_mesh" qualifiers="const">
+			<return type="Mesh">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+				Return the mesh of the item.
+			</description>
+		</method>
+		<method name="get_item_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+				Return the name of the item.
+			</description>
+		</method>
+		<method name="get_item_navmesh" qualifiers="const">
+			<return type="NavigationMesh">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_item_preview" qualifiers="const">
+			<return type="Texture">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_item_shapes" qualifiers="const">
+			<return type="Array">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_last_unused_item_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Get an unused id for a new item.
+			</description>
+		</method>
+		<method name="remove_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+				Remove the item.
+			</description>
+		</method>
+		<method name="set_item_mesh">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="mesh" type="Mesh">
+			</argument>
+			<description>
+				Set the mesh of the item.
+			</description>
+		</method>
+		<method name="set_item_name">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="name" type="String">
+			</argument>
+			<description>
+				Set the name of the item.
+			</description>
+		</method>
+		<method name="set_item_navmesh">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="navmesh" type="NavigationMesh">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_item_preview">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="texture" type="Texture">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_item_shapes">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="shapes" type="Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="InstancePlaceholder" inherits="Node" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Placeholder for the root [Node] of a [PackedScene].
+	</brief_description>
+	<description>
+		Turning on the option [b]Load As Placeholder[/b] for an instanced scene in the editor causes it to be replaced by an InstacePlaceholder when running the game. This makes it possible to delay actually loading the scene until calling [method replace_by_instance]. This is useful to avoid loading large scenes all at once by loading parts of it selectively.
+		The InstancePlaceholder does not have a transform. This causes any child nodes to be positioned relatively to the Viewport from point (0,0), rather than their parent as displayed in the editor. Replacing the placeholder with a scene with a transform will transform children relatively to their parent again.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_instance_path" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Retrieve the path to the [PackedScene] resource file that is loaded by default when calling [method replace_by_instance].
+			</description>
+		</method>
+		<method name="get_stored_values">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="with_order" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="replace_by_instance">
+			<return type="void">
+			</return>
+			<argument index="0" name="custom_scene" type="PackedScene" default="null">
+			</argument>
+			<description>
+				Replace this placeholder by the scene handed as an argument, or the original scene if no argument is given. As for all resources, the scene is loaded only if it's not loaded already. By manually loading the scene beforehand, delays caused by this function can be avoided.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

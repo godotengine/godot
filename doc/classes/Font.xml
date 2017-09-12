@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Font" inherits="Resource" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Internationalized font and text drawing support.
+	</brief_description>
+	<description>
+		Font contains a unicode compatible character set, as well as the ability to draw it with variable width, ascent, descent and kerning. For creating fonts from TTF files (or other font formats), see the editor support for fonts. TODO check wikipedia for graph of ascent/baseline/descent/height/etc.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="draw" qualifiers="const">
+			<return type="void">
+			</return>
+			<argument index="0" name="canvas_item" type="RID">
+			</argument>
+			<argument index="1" name="pos" type="Vector2">
+			</argument>
+			<argument index="2" name="string" type="String">
+			</argument>
+			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			</argument>
+			<argument index="4" name="clip_w" type="int" default="-1">
+			</argument>
+			<description>
+				Draw "string" into a canvas item using the font at a given "pos" position, with "modulate" color, and optionally clipping the width. "pos" specifies the baseline, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis.
+			</description>
+		</method>
+		<method name="draw_char" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="canvas_item" type="RID">
+			</argument>
+			<argument index="1" name="pos" type="Vector2">
+			</argument>
+			<argument index="2" name="char" type="int">
+			</argument>
+			<argument index="3" name="next" type="int" default="-1">
+			</argument>
+			<argument index="4" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			</argument>
+			<description>
+				Draw character "char" into a canvas item using the font at a given "pos" position, with "modulate" color, and optionally kerning if "next" is passed. clipping the width. "pos" specifies the baseline, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis. The width used by the character is returned, making this function useful for drawing strings character by character.
+			</description>
+		</method>
+		<method name="get_ascent" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the font ascent (number of pixels above the baseline).
+			</description>
+		</method>
+		<method name="get_descent" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the font descent (number of pixels below the baseline).
+			</description>
+		</method>
+		<method name="get_height" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the total font height (ascent plus descent) in pixels.
+			</description>
+		</method>
+		<method name="get_string_size" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="string" type="String">
+			</argument>
+			<description>
+				Return the size of a string, taking kerning and advance into account.
+			</description>
+		</method>
+		<method name="is_distance_field_hint" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="update_changes">
+			<return type="void">
+			</return>
+			<description>
+				After editing a font (changing size, ascent, char rects, etc.). Call this function to propagate changes to controls that might use it.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorInterface" inherits="Node" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="edit_resource">
+			<return type="void">
+			</return>
+			<argument index="0" name="resource" type="Resource">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_base_control">
+			<return type="Control">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_edited_scene_root">
+			<return type="Node">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_editor_settings">
+			<return type="EditorSettings">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_editor_viewport">
+			<return type="Control">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_open_scenes" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_resource_filesystem">
+			<return type="EditorFileSystem">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_resource_previewer">
+			<return type="EditorResourcePreview">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_script_editor">
+			<return type="ScriptEditor">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_selection">
+			<return type="EditorSelection">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="inspect_object">
+			<return type="void">
+			</return>
+			<argument index="0" name="object" type="Object">
+			</argument>
+			<argument index="1" name="for_property" type="String" default="&quot;&quot;">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="make_mesh_previews">
+			<return type="Array">
+			</return>
+			<argument index="0" name="arg0" type="Array">
+			</argument>
+			<argument index="1" name="arg1" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="open_scene_from_path">
+			<return type="void">
+			</return>
+			<argument index="0" name="scene_filepath" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="reload_scene_from_path">
+			<return type="void">
+			</return>
+			<argument index="0" name="scene_filepath" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="save_scene">
+			<return type="int" enum="Error">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="save_scene_as">
+			<return type="void">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="with_preview" type="bool" default="true">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

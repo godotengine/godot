@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualScriptCustomNode" inherits="VisualScriptNode" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="_get_caption" qualifiers="virtual">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="_get_category" qualifiers="virtual">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="_get_input_value_port_count" qualifiers="virtual">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="_get_input_value_port_name" qualifiers="virtual">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="_get_input_value_port_type" qualifiers="virtual">
+			<return type="int">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="_get_output_sequence_port_count" qualifiers="virtual">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="_get_output_sequence_port_text" qualifiers="virtual">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="_get_output_value_port_count" qualifiers="virtual">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="_get_output_value_port_name" qualifiers="virtual">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="_get_output_value_port_type" qualifiers="virtual">
+			<return type="int">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="_get_text" qualifiers="virtual">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="_get_working_memory_size" qualifiers="virtual">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="_has_input_sequence_port" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="_step" qualifiers="virtual">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="inputs" type="Array">
+			</argument>
+			<argument index="1" name="outputs" type="Array">
+			</argument>
+			<argument index="2" name="start_mode" type="int">
+			</argument>
+			<argument index="3" name="working_mem" type="Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="START_MODE_BEGIN_SEQUENCE" value="0">
+		</constant>
+		<constant name="START_MODE_CONTINUE_SEQUENCE" value="1">
+		</constant>
+		<constant name="START_MODE_RESUME_YIELD" value="2">
+		</constant>
+		<constant name="STEP_PUSH_STACK_BIT" value="16777216" enum="">
+		</constant>
+		<constant name="STEP_GO_BACK_BIT" value="33554432" enum="">
+		</constant>
+		<constant name="STEP_NO_ADVANCE_BIT" value="67108864" enum="">
+		</constant>
+		<constant name="STEP_EXIT_FUNCTION_BIT" value="134217728" enum="">
+		</constant>
+		<constant name="STEP_YIELD_BIT" value="268435456" enum="">
+		</constant>
+	</constants>
+</class>

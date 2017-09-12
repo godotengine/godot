@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioEffectPhaser" inherits="AudioEffect" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_depth" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_feedback" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_range_max_hz" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_range_min_hz" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_rate_hz" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_depth">
+			<return type="void">
+			</return>
+			<argument index="0" name="depth" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_feedback">
+			<return type="void">
+			</return>
+			<argument index="0" name="fbk" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_range_max_hz">
+			<return type="void">
+			</return>
+			<argument index="0" name="hz" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_range_min_hz">
+			<return type="void">
+			</return>
+			<argument index="0" name="hz" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_rate_hz">
+			<return type="void">
+			</return>
+			<argument index="0" name="hz" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="depth" type="float" setter="set_depth" getter="get_depth" brief="">
+		</member>
+		<member name="feedback" type="float" setter="set_feedback" getter="get_feedback" brief="">
+		</member>
+		<member name="range_max_hz" type="float" setter="set_range_max_hz" getter="get_range_max_hz" brief="">
+		</member>
+		<member name="range_min_hz" type="float" setter="set_range_min_hz" getter="get_range_min_hz" brief="">
+		</member>
+		<member name="rate_hz" type="float" setter="set_rate_hz" getter="get_rate_hz" brief="">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

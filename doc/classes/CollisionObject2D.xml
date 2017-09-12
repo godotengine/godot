@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CollisionObject2D" inherits="Node2D" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Base node for 2D collisionables.
+	</brief_description>
+	<description>
+		CollisionObject2D is the base class for 2D physics collisionables. They can hold any number of 2D collision shapes. Usually, they are edited by placing [CollisionShape2D] and/or [CollisionPolygon2D] nodes as children. Such nodes are for reference and not present outside the editor, so code should use the regular shape API.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="_input_event" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="Object">
+			</argument>
+			<argument index="1" name="event" type="InputEvent">
+			</argument>
+			<argument index="2" name="shape_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="create_shape_owner">
+			<return type="int">
+			</return>
+			<argument index="0" name="owner" type="Object">
+			</argument>
+			<description>
+				Creates new holder for the shapes. Argument is a [CollisionShape2D] node. It will return owner_id which usually you will want to save for later use.
+			</description>
+		</method>
+		<method name="get_rid" qualifiers="const">
+			<return type="RID">
+			</return>
+			<description>
+				Return the RID of this object.
+			</description>
+		</method>
+		<method name="get_shape_owners">
+			<return type="Array">
+			</return>
+			<description>
+				Shape owner is a node which is holding concrete shape resources. This method will return an array which is holding an integer numbers that are representing unique ID of each owner. You can use those ids when you are using others shape_owner methods.
+			</description>
+		</method>
+		<method name="is_pickable" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return whether this object is pickable.
+			</description>
+		</method>
+		<method name="is_shape_owner_disabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_shape_owner_one_way_collision_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_shape_owner">
+			<return type="void">
+			</return>
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_pickable">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+				Set whether this object is pickable. A pickable object can detect the mouse pointer enter/leave it and, if the mouse is inside it, report input events.
+			</description>
+		</method>
+		<method name="shape_find_owner" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="shape_index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="shape_owner_add_shape">
+			<return type="void">
+			</return>
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<argument index="1" name="shape" type="Shape2D">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="shape_owner_clear_shapes">
+			<return type="void">
+			</return>
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<description>
+				Will remove all the shapes associated with given owner.
+			</description>
+		</method>
+		<method name="shape_owner_get_owner" qualifiers="const">
+			<return type="Object">
+			</return>
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="shape_owner_get_shape" qualifiers="const">
+			<return type="Shape2D">
+			</return>
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<argument index="1" name="shape_id" type="int">
+			</argument>
+			<description>
+				Will return a [Shape2D]. First argument owner_id is an integer that can be obtained from [method get_shape_owners]. Shape_id is a position of the shape inside owner; it's a value in range from 0 to [method shape_owner_get_shape_count].
+			</description>
+		</method>
+		<method name="shape_owner_get_shape_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<description>
+				Returns number of shapes to which given owner is associated to.
+			</description>
+		</method>
+		<method name="shape_owner_get_shape_index" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<argument index="1" name="shape_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="shape_owner_get_transform" qualifiers="const">
+			<return type="Transform2D">
+			</return>
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<description>
+				Will return [Transform2D] of an owner node.
+			</description>
+		</method>
+		<method name="shape_owner_remove_shape">
+			<return type="void">
+			</return>
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<argument index="1" name="shape_id" type="int">
+			</argument>
+			<description>
+				Removes related shape from the owner.
+			</description>
+		</method>
+		<method name="shape_owner_set_disabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<argument index="1" name="disabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="shape_owner_set_one_way_collision">
+			<return type="void">
+			</return>
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="shape_owner_set_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<argument index="1" name="transform" type="Transform2D">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="input_pickable" type="bool" setter="set_pickable" getter="is_pickable" brief="">
+		</member>
+	</members>
+	<signals>
+		<signal name="input_event">
+			<argument index="0" name="viewport" type="Object">
+			</argument>
+			<argument index="1" name="event" type="Object">
+			</argument>
+			<argument index="2" name="shape_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="mouse_entered">
+			<description>
+				This event fires only once when the mouse pointer enters any shape of this object.
+			</description>
+		</signal>
+		<signal name="mouse_exited">
+			<description>
+				This event fires only once when the mouse pointer exits all shapes of this object.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>

@@ -1,0 +1,399 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Light2D" inherits="Node2D" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Node that casts light in a 2D environment.
+	</brief_description>
+	<description>
+		Node that casts light in a 2D environment. Light is defined by a (usually grayscale) texture, a color, an energy value, a mode (see constants), and various other parameters (range and shadows-related). Note that Light2D can be used as a mask.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<description>
+				Return the color of the Light2D.
+			</description>
+		</method>
+		<method name="get_energy" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the energy value of the Light2D.
+			</description>
+		</method>
+		<method name="get_height" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the height of the Light2D. Used with 2D normalmapping.
+			</description>
+		</method>
+		<method name="get_item_cull_mask" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_item_shadow_cull_mask" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_layer_range_max" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Set the maximum layer value of objects of the scene that are affected by the Light2D.
+			</description>
+		</method>
+		<method name="get_layer_range_min" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Get the minimum layer value of objects of the scene that are affected by the Light2D.
+			</description>
+		</method>
+		<method name="get_mode" qualifiers="const">
+			<return type="int" enum="Light2D.Mode">
+			</return>
+			<description>
+				Return the current mode set to the Light2D.
+			</description>
+		</method>
+		<method name="get_shadow_buffer_size" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the shadow buffer size.
+			</description>
+		</method>
+		<method name="get_shadow_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<description>
+				Return the color of casted shadows for this Light2D.
+			</description>
+		</method>
+		<method name="get_shadow_filter" qualifiers="const">
+			<return type="int" enum="Light2D.ShadowFilter">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_shadow_gradient_length" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_shadow_smooth" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_texture" qualifiers="const">
+			<return type="Texture">
+			</return>
+			<description>
+				Return the texture of the Light2D.
+			</description>
+		</method>
+		<method name="get_texture_offset" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+				Return the offset of the light texture.
+			</description>
+		</method>
+		<method name="get_texture_scale" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the scale value of the light texture.
+			</description>
+		</method>
+		<method name="get_z_range_max" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Get the maximum Z value that objects of the scene can be in order to be affected by the Light2D.
+			</description>
+		</method>
+		<method name="get_z_range_min" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Get the minimum Z value that objects of the scene have to be in order to be affected by the Light2D.
+			</description>
+		</method>
+		<method name="is_editor_only" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return true if the Light2D is enabled, false if it is not.
+			</description>
+		</method>
+		<method name="is_shadow_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return true if shadow casting is enabled for this Light2D, else return false.
+			</description>
+		</method>
+		<method name="set_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+				Set the color of the Light2D.
+			</description>
+		</method>
+		<method name="set_editor_only">
+			<return type="void">
+			</return>
+			<argument index="0" name="editor_only" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_enabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+				Switches the Light2D on or off, depending on the 'enabled' parameter.
+			</description>
+		</method>
+		<method name="set_energy">
+			<return type="void">
+			</return>
+			<argument index="0" name="energy" type="float">
+			</argument>
+			<description>
+				Set the energy value of the Light2D. The bigger the value, the stronger the light.
+			</description>
+		</method>
+		<method name="set_height">
+			<return type="void">
+			</return>
+			<argument index="0" name="height" type="float">
+			</argument>
+			<description>
+				Set the height of the Light2D. Used with 2D normalmapping.
+			</description>
+		</method>
+		<method name="set_item_cull_mask">
+			<return type="void">
+			</return>
+			<argument index="0" name="item_cull_mask" type="int">
+			</argument>
+			<description>
+				Set the item mask of the Light2D to 'item_mask' value.
+			</description>
+		</method>
+		<method name="set_item_shadow_cull_mask">
+			<return type="void">
+			</return>
+			<argument index="0" name="item_shadow_cull_mask" type="int">
+			</argument>
+			<description>
+				Set the item shadow mask to 'item_shadow_mask' value.
+			</description>
+		</method>
+		<method name="set_layer_range_max">
+			<return type="void">
+			</return>
+			<argument index="0" name="layer" type="int">
+			</argument>
+			<description>
+				Set the maximum layer value of objects of the scene that are affected by the Light2D.
+			</description>
+		</method>
+		<method name="set_layer_range_min">
+			<return type="void">
+			</return>
+			<argument index="0" name="layer" type="int">
+			</argument>
+			<description>
+				Set the minimum layer value of objects of the scene that are affected by the Light2D.
+			</description>
+		</method>
+		<method name="set_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="int" enum="Light2D.Mode">
+			</argument>
+			<description>
+				Set the behaviour mode of the Light2D. Use constants defined in the constants section.
+			</description>
+		</method>
+		<method name="set_shadow_buffer_size">
+			<return type="void">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<description>
+				Set the shadow buffer size.
+			</description>
+		</method>
+		<method name="set_shadow_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="shadow_color" type="Color">
+			</argument>
+			<description>
+				Set the color of casted shadows for this Light2D.
+			</description>
+		</method>
+		<method name="set_shadow_enabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+				Enable or disable shadows casting from this Light2D according to the 'enabled' parameter.
+			</description>
+		</method>
+		<method name="set_shadow_filter">
+			<return type="void">
+			</return>
+			<argument index="0" name="filter" type="int" enum="Light2D.ShadowFilter">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_shadow_gradient_length">
+			<return type="void">
+			</return>
+			<argument index="0" name="multiplier" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_shadow_smooth">
+			<return type="void">
+			</return>
+			<argument index="0" name="smooth" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_texture">
+			<return type="void">
+			</return>
+			<argument index="0" name="texture" type="Texture">
+			</argument>
+			<description>
+				Set the texture of the Light2D.
+			</description>
+		</method>
+		<method name="set_texture_offset">
+			<return type="void">
+			</return>
+			<argument index="0" name="texture_offset" type="Vector2">
+			</argument>
+			<description>
+				Set the offset of the light texture.
+			</description>
+		</method>
+		<method name="set_texture_scale">
+			<return type="void">
+			</return>
+			<argument index="0" name="texture_scale" type="float">
+			</argument>
+			<description>
+				Set the scale value of the light texture.
+			</description>
+		</method>
+		<method name="set_z_range_max">
+			<return type="void">
+			</return>
+			<argument index="0" name="z" type="int">
+			</argument>
+			<description>
+				Set the maximum Z value that objects of the scene can be in order to be affected by the Light2D.
+			</description>
+		</method>
+		<method name="set_z_range_min">
+			<return type="void">
+			</return>
+			<argument index="0" name="z" type="int">
+			</argument>
+			<description>
+				Set the minimum Z value that objects of the scene have to be in order to be affected by the Light2D.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="color" type="Color" setter="set_color" getter="get_color" brief="">
+		</member>
+		<member name="editor_only" type="bool" setter="set_editor_only" getter="is_editor_only" brief="">
+		</member>
+		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" brief="">
+		</member>
+		<member name="energy" type="float" setter="set_energy" getter="get_energy" brief="">
+		</member>
+		<member name="mode" type="int" setter="set_mode" getter="get_mode" brief="" enum="Light2D.Mode">
+		</member>
+		<member name="offset" type="Vector2" setter="set_texture_offset" getter="get_texture_offset" brief="">
+		</member>
+		<member name="range_height" type="float" setter="set_height" getter="get_height" brief="">
+		</member>
+		<member name="range_item_cull_mask" type="int" setter="set_item_cull_mask" getter="get_item_cull_mask" brief="">
+		</member>
+		<member name="range_layer_max" type="int" setter="set_layer_range_max" getter="get_layer_range_max" brief="">
+		</member>
+		<member name="range_layer_min" type="int" setter="set_layer_range_min" getter="get_layer_range_min" brief="">
+		</member>
+		<member name="range_z_max" type="int" setter="set_z_range_max" getter="get_z_range_max" brief="">
+		</member>
+		<member name="range_z_min" type="int" setter="set_z_range_min" getter="get_z_range_min" brief="">
+		</member>
+		<member name="shadow_buffer_size" type="int" setter="set_shadow_buffer_size" getter="get_shadow_buffer_size" brief="">
+		</member>
+		<member name="shadow_color" type="Color" setter="set_shadow_color" getter="get_shadow_color" brief="">
+		</member>
+		<member name="shadow_enabled" type="bool" setter="set_shadow_enabled" getter="is_shadow_enabled" brief="">
+		</member>
+		<member name="shadow_filter" type="int" setter="set_shadow_filter" getter="get_shadow_filter" brief="" enum="Light2D.ShadowFilter">
+		</member>
+		<member name="shadow_filter_smooth" type="float" setter="set_shadow_smooth" getter="get_shadow_smooth" brief="">
+		</member>
+		<member name="shadow_gradient_length" type="float" setter="set_shadow_gradient_length" getter="get_shadow_gradient_length" brief="">
+		</member>
+		<member name="shadow_item_cull_mask" type="int" setter="set_item_shadow_cull_mask" getter="get_item_shadow_cull_mask" brief="">
+		</member>
+		<member name="texture" type="Texture" setter="set_texture" getter="get_texture" brief="">
+		</member>
+		<member name="texture_scale" type="float" setter="set_texture_scale" getter="get_texture_scale" brief="">
+		</member>
+	</members>
+	<constants>
+		<constant name="MODE_ADD" value="0">
+			Adds the value of pixels corresponding to the Light2D to the values of pixels under it. This is the common behaviour of a light.
+		</constant>
+		<constant name="MODE_SUB" value="1">
+			Subtract the value of pixels corresponding to the Light2D to the values of pixels under it, resulting in inversed light effect.
+		</constant>
+		<constant name="MODE_MIX" value="2">
+			Mix the value of pixels corresponding to the Light2D to the values of pixels under it by linear interpolation.
+		</constant>
+		<constant name="MODE_MASK" value="3">
+			The light texture of the Light2D is used as a mask, hiding or revealing parts of the screen underneath depending on the value of each pixel of the light (mask) texture.
+		</constant>
+	</constants>
+</class>

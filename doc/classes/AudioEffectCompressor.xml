@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioEffectCompressor" inherits="AudioEffect" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_attack_us" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_gain" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_mix" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_ratio" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_release_ms" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_sidechain" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_threshold" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_attack_us">
+			<return type="void">
+			</return>
+			<argument index="0" name="attack_us" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_gain">
+			<return type="void">
+			</return>
+			<argument index="0" name="gain" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_mix">
+			<return type="void">
+			</return>
+			<argument index="0" name="mix" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_ratio">
+			<return type="void">
+			</return>
+			<argument index="0" name="ratio" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_release_ms">
+			<return type="void">
+			</return>
+			<argument index="0" name="release_ms" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_sidechain">
+			<return type="void">
+			</return>
+			<argument index="0" name="sidechain" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_threshold">
+			<return type="void">
+			</return>
+			<argument index="0" name="threshold" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="attack_us" type="float" setter="set_attack_us" getter="get_attack_us" brief="">
+		</member>
+		<member name="gain" type="float" setter="set_gain" getter="get_gain" brief="">
+		</member>
+		<member name="mix" type="float" setter="set_mix" getter="get_mix" brief="">
+		</member>
+		<member name="ratio" type="float" setter="set_ratio" getter="get_ratio" brief="">
+		</member>
+		<member name="release_ms" type="float" setter="set_release_ms" getter="get_release_ms" brief="">
+		</member>
+		<member name="sidechain" type="String" setter="set_sidechain" getter="get_sidechain" brief="">
+		</member>
+		<member name="threshold" type="float" setter="set_threshold" getter="get_threshold" brief="">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

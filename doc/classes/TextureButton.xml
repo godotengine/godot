@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TextureButton" inherits="BaseButton" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Button that can be themed with textures.
+	</brief_description>
+	<description>
+		Button that can be themed with textures. This is like a regular [Button] but can be themed by assigning textures to it. This button is intended to be easy to theme, however a regular button can expand (that uses styleboxes) and still be better if the interface is expect to have internationalization of texts.
+		Only the normal texture is required, the others are optional.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_click_mask" qualifiers="const">
+			<return type="BitMap">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_disabled_texture" qualifiers="const">
+			<return type="Texture">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_expand" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_focused_texture" qualifiers="const">
+			<return type="Texture">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_hover_texture" qualifiers="const">
+			<return type="Texture">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_normal_texture" qualifiers="const">
+			<return type="Texture">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_pressed_texture" qualifiers="const">
+			<return type="Texture">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_stretch_mode" qualifiers="const">
+			<return type="int" enum="TextureButton.StretchMode">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_click_mask">
+			<return type="void">
+			</return>
+			<argument index="0" name="mask" type="BitMap">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_disabled_texture">
+			<return type="void">
+			</return>
+			<argument index="0" name="texture" type="Texture">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_expand">
+			<return type="void">
+			</return>
+			<argument index="0" name="p_expand" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_focused_texture">
+			<return type="void">
+			</return>
+			<argument index="0" name="texture" type="Texture">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_hover_texture">
+			<return type="void">
+			</return>
+			<argument index="0" name="texture" type="Texture">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_normal_texture">
+			<return type="void">
+			</return>
+			<argument index="0" name="texture" type="Texture">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_pressed_texture">
+			<return type="void">
+			</return>
+			<argument index="0" name="texture" type="Texture">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_stretch_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="p_mode" type="int" enum="TextureButton.StretchMode">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="expand" type="bool" setter="set_expand" getter="get_expand" brief="">
+		</member>
+		<member name="stretch_mode" type="int" setter="set_stretch_mode" getter="get_stretch_mode" brief="" enum="TextureButton.StretchMode">
+		</member>
+		<member name="texture_click_mask" type="BitMap" setter="set_click_mask" getter="get_click_mask" brief="">
+		</member>
+		<member name="texture_disabled" type="Texture" setter="set_disabled_texture" getter="get_disabled_texture" brief="">
+		</member>
+		<member name="texture_focused" type="Texture" setter="set_focused_texture" getter="get_focused_texture" brief="">
+		</member>
+		<member name="texture_hover" type="Texture" setter="set_hover_texture" getter="get_hover_texture" brief="">
+		</member>
+		<member name="texture_normal" type="Texture" setter="set_normal_texture" getter="get_normal_texture" brief="">
+		</member>
+		<member name="texture_pressed" type="Texture" setter="set_pressed_texture" getter="get_pressed_texture" brief="">
+		</member>
+	</members>
+	<constants>
+		<constant name="STRETCH_SCALE" value="0">
+		</constant>
+		<constant name="STRETCH_TILE" value="1">
+		</constant>
+		<constant name="STRETCH_KEEP" value="2">
+		</constant>
+		<constant name="STRETCH_KEEP_CENTERED" value="3">
+		</constant>
+		<constant name="STRETCH_KEEP_ASPECT" value="4">
+		</constant>
+		<constant name="STRETCH_KEEP_ASPECT_CENTERED" value="5">
+		</constant>
+		<constant name="STRETCH_KEEP_ASPECT_COVERED" value="6">
+		</constant>
+	</constants>
+</class>

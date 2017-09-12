@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ButtonGroup" inherits="Resource" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Group of Buttons.
+	</brief_description>
+	<description>
+		Group of [Button]. All direct and indirect children buttons become radios. Only one allows being pressed.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_pressed_button">
+			<return type="BaseButton">
+			</return>
+			<description>
+				Return the pressed button.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+	<theme_items>
+		<theme_item name="panel" type="StyleBox">
+		</theme_item>
+	</theme_items>
+</class>

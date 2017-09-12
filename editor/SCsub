@@ -41,11 +41,8 @@ def make_doc_header(target, source, env):
         src = s.srcnode().abspath
         f = open_utf8(src, "r")
         content = f.read()
-        buf += content[content.find("<class"): content.rfind("</doc>")]
-        if len(docbegin) == 0:
-            docbegin = content[0: content.find("<class")]
-        if len(docend) == 0:
-            docend = content[content.rfind("</doc>"): len(buf)]
+	buf+=content
+
     buf = encode_utf8(docbegin + buf + docend)
     decomp_size = len(buf)
     import zlib
@@ -60,6 +57,7 @@ def make_doc_header(target, source, env):
     for i in range(len(buf)):
         g.write(byte_to_str(buf[i]) + ",\n")
     g.write("};\n")
+
     g.write("#endif")
 
 
@@ -385,6 +383,18 @@ def make_license_header(target, source, env):
 
     g.write("#endif\n")
 
+
+def _make_doc_data_class_path(to_path):
+      g = open_utf8(os.path.join(to_path,"doc_data_class_path.gen.h"), "wb")
+      g.write("static const int _doc_data_class_path_count="+str(len(env.doc_class_path))+";\n")
+      g.write("struct _DocDataClassPath { const char* name; const char* path; };\n")
+
+      g.write("static const _DocDataClassPath _doc_data_class_paths["+str(len(env.doc_class_path)+1)+"]={\n");
+      for c in env.doc_class_path:
+	  g.write("{\""+c+"\",\""+env.doc_class_path[c]+"\"},\n")
+      g.write("{NULL,NULL}\n")
+      g.write("};\n")
+
 if (env["tools"] == "yes"):
 
     # Register exporters
@@ -401,16 +411,15 @@ if (env["tools"] == "yes"):
     f.close()
 
     # API documentation
-    docs = ["#doc/base/classes.xml"]
-    moduledir = os.path.join(os.getcwd(), "..", "modules")
-    for m in os.listdir(moduledir):
-        curmodle = os.path.join(moduledir, m)
-        docfile = os.path.join(curmodle, "classes.xml")
-        if os.path.isdir(curmodle) and os.path.isfile(docfile):
-            docs.append(docfile)
+    docs=[]
+    print("cdir is: "+env.Dir('#').abspath)
+    for f in os.listdir(os.path.join(env.Dir('#').abspath,"doc/classes")):
+	docs.append("#doc/classes/"+f)
+
+    _make_doc_data_class_path(os.path.join(env.Dir('#').abspath,"editor/doc"))
+
     env.Depends("#editor/doc_data_compressed.gen.h", docs)
     env.Command("#editor/doc_data_compressed.gen.h", docs, make_doc_header)
-
     # Certificates
     env.Depends("#editor/certs_compressed.gen.h", "#thirdparty/certs/ca-certificates.crt")
     env.Command("#editor/certs_compressed.gen.h", "#thirdparty/certs/ca-certificates.crt", make_certs_header)

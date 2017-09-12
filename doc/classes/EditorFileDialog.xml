@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorFileDialog" inherits="ConfirmationDialog" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="add_filter">
+			<return type="void">
+			</return>
+			<argument index="0" name="filter" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="clear_filters">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_access" qualifiers="const">
+			<return type="int" enum="EditorFileDialog.Access">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_current_dir" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_current_file" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_current_path" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_display_mode" qualifiers="const">
+			<return type="int" enum="EditorFileDialog.DisplayMode">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_mode" qualifiers="const">
+			<return type="int" enum="EditorFileDialog.Mode">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_vbox">
+			<return type="VBoxContainer">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="invalidate">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_overwrite_warning_disabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_showing_hidden_files" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_access">
+			<return type="void">
+			</return>
+			<argument index="0" name="access" type="int" enum="EditorFileDialog.Access">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_current_dir">
+			<return type="void">
+			</return>
+			<argument index="0" name="dir" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_current_file">
+			<return type="void">
+			</return>
+			<argument index="0" name="file" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_current_path">
+			<return type="void">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_disable_overwrite_warning">
+			<return type="void">
+			</return>
+			<argument index="0" name="disable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_display_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="int" enum="EditorFileDialog.DisplayMode">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="int" enum="EditorFileDialog.Mode">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_show_hidden_files">
+			<return type="void">
+			</return>
+			<argument index="0" name="show" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="dir_selected">
+			<argument index="0" name="dir" type="String">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="file_selected">
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="files_selected">
+			<argument index="0" name="paths" type="PoolStringArray">
+			</argument>
+			<description>
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="MODE_OPEN_FILE" value="0">
+		</constant>
+		<constant name="MODE_OPEN_FILES" value="1">
+		</constant>
+		<constant name="MODE_OPEN_DIR" value="2">
+		</constant>
+		<constant name="MODE_OPEN_ANY" value="3">
+		</constant>
+		<constant name="MODE_SAVE_FILE" value="4">
+		</constant>
+		<constant name="ACCESS_RESOURCES" value="0">
+		</constant>
+		<constant name="ACCESS_USERDATA" value="1">
+		</constant>
+		<constant name="ACCESS_FILESYSTEM" value="2">
+		</constant>
+	</constants>
+</class>

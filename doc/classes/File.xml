@@ -1,0 +1,420 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="File" inherits="Reference" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Type to handle file reading and writing operations.
+	</brief_description>
+	<description>
+		File type. This is used to permanently store data into the user device's file system and to read from it. This can be used to store game save data or player configuration files, for example.
+		Here's a sample on how to write and read from a file:
+		[codeblock]
+		func save(content):
+		    var file = File.new()
+		    file.open("user://save_game.dat", file.WRITE)
+		    file.store_string(content)
+		    file.close()
+
+		func load():
+		    var file = File.new()
+		    file.open("user://save_game.dat", file.READ)
+		    var content = file.get_as_text()
+		    file.close()
+		    return content
+		[/codeblock]
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="close">
+			<return type="void">
+			</return>
+			<description>
+				Close the currently opened file.
+			</description>
+		</method>
+		<method name="eof_reached" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return whether the file cursor reached the end of the file.
+			</description>
+		</method>
+		<method name="file_exists" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+				Get whether or not the file in the specified path exists.
+			</description>
+		</method>
+		<method name="get_16" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Get the next 16 bits from the file as an integer.
+			</description>
+		</method>
+		<method name="get_32" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Get the next 32 bits from the file as an integer.
+			</description>
+		</method>
+		<method name="get_64" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Get the next 64 bits from the file as an integer.
+			</description>
+		</method>
+		<method name="get_8" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Get the next 8 bits from the file as an integer.
+			</description>
+		</method>
+		<method name="get_as_text" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Get the whole file as a [String].
+			</description>
+		</method>
+		<method name="get_buffer" qualifiers="const">
+			<return type="PoolByteArray">
+			</return>
+			<argument index="0" name="len" type="int">
+			</argument>
+			<description>
+				Get next len bytes of the file as a [PoolByteArray].
+			</description>
+		</method>
+		<method name="get_csv_line" qualifiers="const">
+			<return type="PoolStringArray">
+			</return>
+			<argument index="0" name="delim" type="String" default="&quot;,&quot;">
+			</argument>
+			<description>
+				Get the next value of the file in CSV (Comma Separated Values) format. You can pass a different delimiter to use other than the default "," (comma).
+			</description>
+		</method>
+		<method name="get_double" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Get the next 64 bits from the file as a floating point number.
+			</description>
+		</method>
+		<method name="get_endian_swap">
+			<return type="bool">
+			</return>
+			<description>
+				Get whether endian swap is enabled for this file.
+			</description>
+		</method>
+		<method name="get_error" qualifiers="const">
+			<return type="int" enum="Error">
+			</return>
+			<description>
+				Get the last error that happened when trying to perform operations. Compare with the [code]ERR_FILE_*[/code] constants from [@Global Scope].
+			</description>
+		</method>
+		<method name="get_float" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Get the next 32 bits from the file as a floating point number.
+			</description>
+		</method>
+		<method name="get_len" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the size of the file in bytes.
+			</description>
+		</method>
+		<method name="get_line" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Get the next line of the file as a [String].
+			</description>
+		</method>
+		<method name="get_md5" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+				Return a md5 String representing the file at the given path or an empty [String] on failure.
+			</description>
+		</method>
+		<method name="get_modified_time" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="file" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_pascal_string">
+			<return type="String">
+			</return>
+			<description>
+				Get a [String] saved in Pascal format from the file.
+			</description>
+		</method>
+		<method name="get_pos" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the file cursor position.
+			</description>
+		</method>
+		<method name="get_real" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Get the next bits from the file as a floating point number.
+			</description>
+		</method>
+		<method name="get_sha256" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+				Return a sha256 String representing the file at the given path or an empty [String] on failure.
+			</description>
+		</method>
+		<method name="get_var" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<description>
+				Get the next Variant value from the file.
+			</description>
+		</method>
+		<method name="is_open" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return whether the file is currently opened.
+			</description>
+		</method>
+		<method name="open">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="flags" type="int">
+			</argument>
+			<description>
+				Open the file for writing or reading, depending on the flags.
+			</description>
+		</method>
+		<method name="open_compressed">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="mode_flags" type="int">
+			</argument>
+			<argument index="2" name="compression_mode" type="int" default="0">
+			</argument>
+			<description>
+				Open a compressed file for reading or writing. The compression_mode can be set as one of the COMPRESSION_* constants.
+			</description>
+		</method>
+		<method name="open_encrypted">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="mode_flags" type="int">
+			</argument>
+			<argument index="2" name="key" type="PoolByteArray">
+			</argument>
+			<description>
+				Open an encrypted file in write or read mode. You need to pass a binary key to encrypt/decrypt it.
+			</description>
+		</method>
+		<method name="open_encrypted_with_pass">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="mode_flags" type="int">
+			</argument>
+			<argument index="2" name="pass" type="String">
+			</argument>
+			<description>
+				Open an encrypted file in write or read mode. You need to pass a password to encrypt/decrypt it.
+			</description>
+		</method>
+		<method name="seek">
+			<return type="void">
+			</return>
+			<argument index="0" name="pos" type="int">
+			</argument>
+			<description>
+				Change the file reading/writing cursor to the specified position (in bytes from the beginning of the file).
+			</description>
+		</method>
+		<method name="seek_end">
+			<return type="void">
+			</return>
+			<argument index="0" name="pos" type="int" default="0">
+			</argument>
+			<description>
+				Change the file reading/writing cursor to the specified position (in bytes from the end of the file). Note that this is an offset, so you should use negative numbers or the cursor will be at the end of the file.
+			</description>
+		</method>
+		<method name="set_endian_swap">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Set whether to swap the endianness of the file. Enable this if you're dealing with files written in big endian machines.
+				Note that this is about the file format, not CPU type. This is always reseted to [code]false[/code] whenever you open the file.
+			</description>
+		</method>
+		<method name="store_16">
+			<return type="void">
+			</return>
+			<argument index="0" name="value" type="int">
+			</argument>
+			<description>
+				Store an integer as 16 bits in the file.
+			</description>
+		</method>
+		<method name="store_32">
+			<return type="void">
+			</return>
+			<argument index="0" name="value" type="int">
+			</argument>
+			<description>
+				Store an integer as 32 bits in the file.
+			</description>
+		</method>
+		<method name="store_64">
+			<return type="void">
+			</return>
+			<argument index="0" name="value" type="int">
+			</argument>
+			<description>
+				Store an integer as 64 bits in the file.
+			</description>
+		</method>
+		<method name="store_8">
+			<return type="void">
+			</return>
+			<argument index="0" name="value" type="int">
+			</argument>
+			<description>
+				Store an integer as 8 bits in the file.
+			</description>
+		</method>
+		<method name="store_buffer">
+			<return type="void">
+			</return>
+			<argument index="0" name="buffer" type="PoolByteArray">
+			</argument>
+			<description>
+				Store the given array of bytes in the file.
+			</description>
+		</method>
+		<method name="store_double">
+			<return type="void">
+			</return>
+			<argument index="0" name="value" type="float">
+			</argument>
+			<description>
+				Store a floating point number as 64 bits in the file.
+			</description>
+		</method>
+		<method name="store_float">
+			<return type="void">
+			</return>
+			<argument index="0" name="value" type="float">
+			</argument>
+			<description>
+				Store a floating point number as 32 bits in the file.
+			</description>
+		</method>
+		<method name="store_line">
+			<return type="void">
+			</return>
+			<argument index="0" name="line" type="String">
+			</argument>
+			<description>
+				Store the given [String] as a line in the file.
+			</description>
+		</method>
+		<method name="store_pascal_string">
+			<return type="void">
+			</return>
+			<argument index="0" name="string" type="String">
+			</argument>
+			<description>
+				Store the given [String] as a line in the file in Pascal format (i.e. also store the length of the string).
+			</description>
+		</method>
+		<method name="store_real">
+			<return type="void">
+			</return>
+			<argument index="0" name="value" type="float">
+			</argument>
+			<description>
+				Store a floating point number in the file.
+			</description>
+		</method>
+		<method name="store_string">
+			<return type="void">
+			</return>
+			<argument index="0" name="string" type="String">
+			</argument>
+			<description>
+				Store the given [String] in the file.
+			</description>
+		</method>
+		<method name="store_var">
+			<return type="void">
+			</return>
+			<argument index="0" name="value" type="Variant">
+			</argument>
+			<description>
+				Store any Variant value in the file.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="READ" value="1">
+			Open the file for reading.
+		</constant>
+		<constant name="WRITE" value="2">
+			Open the file for writing. Create it if the file not exists and truncate if it exists.
+		</constant>
+		<constant name="READ_WRITE" value="3">
+			Open the file for reading and writing, without truncating the file.
+		</constant>
+		<constant name="WRITE_READ" value="7">
+			Open the file for reading and writing. Create it if the file not exists and truncate if it exists.
+		</constant>
+		<constant name="COMPRESSION_FASTLZ" value="0">
+			Use the FastLZ compression method.
+		</constant>
+		<constant name="COMPRESSION_DEFLATE" value="1">
+			Use the Deflate compression method.
+		</constant>
+		<constant name="COMPRESSION_ZSTD" value="2">
+			Use the Zstd compression method.
+		</constant>
+		<constant name="COMPRESSION_GZIP" value="3">
+		</constant>
+	</constants>
+</class>

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorFileSystem" inherits="Node" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Resource filesystem, as the editor sees it.
+	</brief_description>
+	<description>
+		This object holds information of all resources in the filesystem, their types, etc.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_file_type" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+				Get the type of the file, given the full path.
+			</description>
+		</method>
+		<method name="get_filesystem">
+			<return type="EditorFileSystemDirectory">
+			</return>
+			<description>
+				Get the root directory object.
+			</description>
+		</method>
+		<method name="get_filesystem_path">
+			<return type="EditorFileSystemDirectory">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_scanning_progress" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the scan progress for 0 to 1 if the FS is being scanned.
+			</description>
+		</method>
+		<method name="is_scanning" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return true of the filesystem is being scanned.
+			</description>
+		</method>
+		<method name="scan">
+			<return type="void">
+			</return>
+			<description>
+				Scan the filesystem for changes.
+			</description>
+		</method>
+		<method name="scan_sources">
+			<return type="void">
+			</return>
+			<description>
+				Check if the source of any imported resource changed.
+			</description>
+		</method>
+		<method name="update_file">
+			<return type="void">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+				Update a file information. Call this if an external program (not Godot) modified the file.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="filesystem_changed">
+			<description>
+				Emitted if the filesystem changed.
+			</description>
+		</signal>
+		<signal name="resources_reimported">
+			<argument index="0" name="resources" type="PoolStringArray">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="sources_changed">
+			<argument index="0" name="exist" type="bool">
+			</argument>
+			<description>
+				Emitted if the source of any imported file changed.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>

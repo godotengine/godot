@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PacketPeerStream" inherits="PacketPeer" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Wrapper to use a PacketPeer over a StreamPeer.
+	</brief_description>
+	<description>
+		PacketStreamPeer provides a wrapper for working using packets over a stream. This allows for using packet based code with StreamPeers. PacketPeerStream implements a custom protocol over the StreamPeer, so the user should not read or write to the wrapped StreamPeer directly.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_input_buffer_max_size" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_output_buffer_max_size" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_input_buffer_max_size">
+			<return type="void">
+			</return>
+			<argument index="0" name="max_size_bytes" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_output_buffer_max_size">
+			<return type="void">
+			</return>
+			<argument index="0" name="max_size_bytes" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_stream_peer">
+			<return type="void">
+			</return>
+			<argument index="0" name="peer" type="Reference">
+			</argument>
+			<description>
+				Set the [StreamPeer] object to be wrapped.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

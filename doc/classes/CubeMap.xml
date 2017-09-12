@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CubeMap" inherits="Resource" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_flags" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_height" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_lossy_storage_quality" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_side" qualifiers="const">
+			<return type="Image">
+			</return>
+			<argument index="0" name="side" type="int" enum="CubeMap.Side">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_storage" qualifiers="const">
+			<return type="int" enum="CubeMap.Storage">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_width" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_flags">
+			<return type="void">
+			</return>
+			<argument index="0" name="flags" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_lossy_storage_quality">
+			<return type="void">
+			</return>
+			<argument index="0" name="quality" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_side">
+			<return type="void">
+			</return>
+			<argument index="0" name="side" type="int" enum="CubeMap.Side">
+			</argument>
+			<argument index="1" name="image" type="Image">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_storage">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="int" enum="CubeMap.Storage">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="STORAGE_RAW" value="0">
+		</constant>
+		<constant name="STORAGE_COMPRESS_LOSSY" value="1">
+		</constant>
+		<constant name="STORAGE_COMPRESS_LOSSLESS" value="2">
+		</constant>
+		<constant name="SIDE_LEFT" value="0">
+		</constant>
+		<constant name="SIDE_RIGHT" value="1">
+		</constant>
+		<constant name="SIDE_BOTTOM" value="2">
+		</constant>
+		<constant name="SIDE_TOP" value="3">
+		</constant>
+		<constant name="SIDE_FRONT" value="4">
+		</constant>
+		<constant name="SIDE_BACK" value="5">
+		</constant>
+		<constant name="FLAG_MIPMAPS" value="1">
+		</constant>
+		<constant name="FLAG_REPEAT" value="2">
+		</constant>
+		<constant name="FLAG_FILTER" value="4">
+		</constant>
+		<constant name="FLAGS_DEFAULT" value="7">
+		</constant>
+	</constants>
+</class>

@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PoolByteArray" category="Built-In Types" version="3.0.alpha.custom_build">
+	<brief_description>
+		Raw byte array.
+	</brief_description>
+	<description>
+		Raw byte array. Contains bytes. Optimized for memory usage, can't fragment the memory.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="PoolByteArray">
+			<return type="PoolByteArray">
+			</return>
+			<argument index="0" name="from" type="Array">
+			</argument>
+			<description>
+				Create from a generic array.
+			</description>
+		</method>
+		<method name="append">
+			<argument index="0" name="byte" type="int">
+			</argument>
+			<description>
+				Append an element at the end of the array (alias of [method push_back]).
+			</description>
+		</method>
+		<method name="append_array">
+			<argument index="0" name="array" type="PoolByteArray">
+			</argument>
+			<description>
+				Append a [PoolByteArray] at the end of this array.
+			</description>
+		</method>
+		<method name="compress">
+			<return type="PoolByteArray">
+			</return>
+			<argument index="0" name="compression_mode" type="int" default="0">
+			</argument>
+			<description>
+				Returns a new [PoolByteArray] with the data compressed. Set the compression mode using one of [File]'s COMPRESS_* constants.
+			</description>
+		</method>
+		<method name="decompress">
+			<return type="PoolByteArray">
+			</return>
+			<argument index="0" name="buffer_size" type="int">
+			</argument>
+			<argument index="1" name="compression_mode" type="int" default="0">
+			</argument>
+			<description>
+				Returns a new [PoolByteArray] with the data decompressed. Set buffer_size to the size of the uncompressed data. Set the compression mode using one of [File]'s COMPRESS_* constants.
+			</description>
+		</method>
+		<method name="get_string_from_ascii">
+			<return type="String">
+			</return>
+			<description>
+				Returns a copy of the array's contents as [String]. Fast alternative to [method PoolByteArray.get_string_from_utf8] if the content is ASCII-only. Unlike the UTF-8 function this function maps every byte to a character in the array. Multibyte sequences will not be interpreted correctly. For parsing user input always use [method PoolByteArray.get_string_from_utf8].
+			</description>
+		</method>
+		<method name="get_string_from_utf8">
+			<return type="String">
+			</return>
+			<description>
+				Returns a copy of the array's contents as [String]. Slower than [method PoolByteArray.get_string_from_ascii] but supports UTF-8 encoded data. Use this function if you are unsure about the source of the data. For user input this function should always be preferred.
+			</description>
+		</method>
+		<method name="insert">
+			<return type="int">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="byte" type="int">
+			</argument>
+			<description>
+				Insert a new element at a given position in the array. The position must be valid, or at the end of the array (pos==size()).
+			</description>
+		</method>
+		<method name="invert">
+			<description>
+				Reverse the order of the elements in the array (so first element will now be the last).
+			</description>
+		</method>
+		<method name="push_back">
+			<argument index="0" name="byte" type="int">
+			</argument>
+			<description>
+				Append an element at the end of the array.
+			</description>
+		</method>
+		<method name="remove">
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Remove an element from the array by index.
+			</description>
+		</method>
+		<method name="resize">
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Set the size of the array. If the array is grown reserve elements at the end of the array. If the array is shrunk truncate the array to the new size.
+			</description>
+		</method>
+		<method name="set">
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="byte" type="int">
+			</argument>
+			<description>
+				Change the byte at the given index.
+			</description>
+		</method>
+		<method name="size">
+			<return type="int">
+			</return>
+			<description>
+				Return the size of the array.
+			</description>
+		</method>
+		<method name="subarray">
+			<return type="PoolByteArray">
+			</return>
+			<argument index="0" name="from" type="int">
+			</argument>
+			<argument index="1" name="to" type="int">
+			</argument>
+			<description>
+				Returns the slice of the [PoolByteArray] between indices (inclusive) as a new [PoolByteArray].  Any negative index is considered to be from the end of the array.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

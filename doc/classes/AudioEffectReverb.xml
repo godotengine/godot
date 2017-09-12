@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioEffectReverb" inherits="AudioEffect" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_damping" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_dry" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_hpf" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_predelay_feedback" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_predelay_msec" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_room_size" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_spread" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_wet" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_damping">
+			<return type="void">
+			</return>
+			<argument index="0" name="amount" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_dry">
+			<return type="void">
+			</return>
+			<argument index="0" name="amount" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_hpf">
+			<return type="void">
+			</return>
+			<argument index="0" name="amount" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_predelay_feedback">
+			<return type="void">
+			</return>
+			<argument index="0" name="feedback" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_predelay_msec">
+			<return type="void">
+			</return>
+			<argument index="0" name="msec" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_room_size">
+			<return type="void">
+			</return>
+			<argument index="0" name="size" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_spread">
+			<return type="void">
+			</return>
+			<argument index="0" name="amount" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_wet">
+			<return type="void">
+			</return>
+			<argument index="0" name="amount" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="damping" type="float" setter="set_damping" getter="get_damping" brief="">
+		</member>
+		<member name="dry" type="float" setter="set_dry" getter="get_dry" brief="">
+		</member>
+		<member name="hipass" type="float" setter="set_hpf" getter="get_hpf" brief="">
+		</member>
+		<member name="predelay_feedback" type="float" setter="set_predelay_msec" getter="get_predelay_msec" brief="">
+		</member>
+		<member name="predelay_msec" type="float" setter="set_predelay_msec" getter="get_predelay_msec" brief="">
+		</member>
+		<member name="room_size" type="float" setter="set_room_size" getter="get_room_size" brief="">
+		</member>
+		<member name="spread" type="float" setter="set_spread" getter="get_spread" brief="">
+		</member>
+		<member name="wet" type="float" setter="set_wet" getter="get_wet" brief="">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PacketPeerUDP" inherits="PacketPeer" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		UDP packet peer.
+	</brief_description>
+	<description>
+		UDP packet peer. Can be used to send raw UDP packets as well as [Variant]\ s.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="close">
+			<return type="void">
+			</return>
+			<description>
+				Close the UDP socket the [PacketPeerUDP] is currently listening on.
+			</description>
+		</method>
+		<method name="get_packet_ip" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Return the IP of the remote peer that sent the last packet(that was received with [method get_packet] or [method get_var]).
+			</description>
+		</method>
+		<method name="get_packet_port" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the port of the remote peer that sent the last packet(that was received with [method get_packet] or [method get_var]).
+			</description>
+		</method>
+		<method name="is_listening" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return whether this [PacketPeerUDP] is listening.
+			</description>
+		</method>
+		<method name="listen">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="port" type="int">
+			</argument>
+			<argument index="1" name="bind_address" type="String" default="&quot;*&quot;">
+			</argument>
+			<argument index="2" name="recv_buf_size" type="int" default="65536">
+			</argument>
+			<description>
+				Make this [PacketPeerUDP] listen on the "port" binding to "bind_address" with a buffer size "recv_buf_size".
+				If "bind_address" is set as "*" (default), the peer will listen on all available addresses (both IPv4 and IPv6).
+				If "bind_address" is set as "0.0.0.0" (for IPv4) or "::" (for IPv6), the peer will listen on all available addresses matching that IP type.
+				If "bind_address" is set to any valid address (e.g. "192.168.1.101", "::1", etc), the peer will only listen on the interface with that addresses (or fail if no interface with the given address exists).
+			</description>
+		</method>
+		<method name="set_dest_address">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="host" type="String">
+			</argument>
+			<argument index="1" name="port" type="int">
+			</argument>
+			<description>
+				Set the destination address and port for sending packets and variables, a hostname will be resolved using if valid.
+			</description>
+		</method>
+		<method name="wait">
+			<return type="int" enum="Error">
+			</return>
+			<description>
+				Wait for a packet to arrive on the listening port, see [method listen].
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

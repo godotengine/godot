@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Array" category="Built-In Types" version="3.0.alpha.custom_build">
+	<brief_description>
+		Generic array datatype.
+	</brief_description>
+	<description>
+		Generic array, contains several elements of any type, accessible by numerical index starting at 0. Negative indices can be used to count from the right, like in Python. Arrays are always passed by reference.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="Array">
+			<return type="Array">
+			</return>
+			<argument index="0" name="from" type="PoolColorArray">
+			</argument>
+			<description>
+				Construct an array from a [PoolColorArray].
+			</description>
+		</method>
+		<method name="Array">
+			<return type="Array">
+			</return>
+			<argument index="0" name="from" type="PoolVector3Array">
+			</argument>
+			<description>
+				Construct an array from a [PoolVector3Array].
+			</description>
+		</method>
+		<method name="Array">
+			<return type="Array">
+			</return>
+			<argument index="0" name="from" type="PoolVector2Array">
+			</argument>
+			<description>
+				Construct an array from a [PoolVector2Array].
+			</description>
+		</method>
+		<method name="Array">
+			<return type="Array">
+			</return>
+			<argument index="0" name="from" type="PoolStringArray">
+			</argument>
+			<description>
+				Construct an array from a [PoolStringArray].
+			</description>
+		</method>
+		<method name="Array">
+			<return type="Array">
+			</return>
+			<argument index="0" name="from" type="PoolRealArray">
+			</argument>
+			<description>
+				Construct an array from a [PoolRealArray].
+			</description>
+		</method>
+		<method name="Array">
+			<return type="Array">
+			</return>
+			<argument index="0" name="from" type="PoolIntArray">
+			</argument>
+			<description>
+				Construct an array from a [PoolIntArray].
+			</description>
+		</method>
+		<method name="Array">
+			<return type="Array">
+			</return>
+			<argument index="0" name="from" type="PoolByteArray">
+			</argument>
+			<description>
+				Construct an array from a [PoolByteArray].
+			</description>
+		</method>
+		<method name="append">
+			<argument index="0" name="value" type="var">
+			</argument>
+			<description>
+				Append an element at the end of the array (alias of [method push_back]).
+			</description>
+		</method>
+		<method name="back">
+			<description>
+				Returns the last element of the array if the array is not empty (size&gt;0).
+			</description>
+		</method>
+		<method name="clear">
+			<description>
+				Clear the array (resize to 0).
+			</description>
+		</method>
+		<method name="count">
+			<return type="int">
+			</return>
+			<argument index="0" name="value" type="var">
+			</argument>
+			<description>
+				Return the amount of times an element is in the array.
+			</description>
+		</method>
+		<method name="duplicate">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="empty">
+			<return type="bool">
+			</return>
+			<description>
+				Return true if the array is empty (size==0).
+			</description>
+		</method>
+		<method name="erase">
+			<argument index="0" name="value" type="var">
+			</argument>
+			<description>
+				Remove the first occurrence of a value from the array.
+			</description>
+		</method>
+		<method name="find">
+			<return type="int">
+			</return>
+			<argument index="0" name="what" type="var">
+			</argument>
+			<argument index="1" name="from" type="int" default="0">
+			</argument>
+			<description>
+				Searches the array for a value and returns its index or -1 if not found. Optionally, the initial search index can be passed.
+			</description>
+		</method>
+		<method name="find_last">
+			<return type="int">
+			</return>
+			<argument index="0" name="value" type="var">
+			</argument>
+			<description>
+				Searches the array in reverse order for a value and returns its index or -1 if not found.
+			</description>
+		</method>
+		<method name="front">
+			<description>
+				Returns the first element of the array if the array is not empty (size&gt;0).
+			</description>
+		</method>
+		<method name="has">
+			<return type="bool">
+			</return>
+			<argument index="0" name="value" type="var">
+			</argument>
+			<description>
+				Return true if the array contains given value.
+				[codeblock]
+				[ "inside", 7 ].has("inside") == true
+				[ "inside", 7 ].has("outside") == false
+				[ "inside", 7 ].has(7) == true
+				[ "inside", 7 ].has("7") == false
+				[/codeblock]
+			</description>
+		</method>
+		<method name="hash">
+			<return type="int">
+			</return>
+			<description>
+				Return a hashed integer value representing the array contents.
+			</description>
+		</method>
+		<method name="insert">
+			<argument index="0" name="pos" type="int">
+			</argument>
+			<argument index="1" name="value" type="var">
+			</argument>
+			<description>
+				Insert a new element at a given position in the array. The position must be valid, or at the end of the array (pos==size()).
+			</description>
+		</method>
+		<method name="invert">
+			<description>
+				Reverse the order of the elements in the array (so first element will now be the last).
+			</description>
+		</method>
+		<method name="pop_back">
+			<description>
+				Remove the last element of the array.
+			</description>
+		</method>
+		<method name="pop_front">
+			<description>
+				Remove the first element of the array.
+			</description>
+		</method>
+		<method name="push_back">
+			<argument index="0" name="value" type="var">
+			</argument>
+			<description>
+				Append an element at the end of the array.
+			</description>
+		</method>
+		<method name="push_front">
+			<argument index="0" name="value" type="var">
+			</argument>
+			<description>
+				Add an element at the beginning of the array.
+			</description>
+		</method>
+		<method name="remove">
+			<argument index="0" name="pos" type="int">
+			</argument>
+			<description>
+				Remove an element from the array by index.
+			</description>
+		</method>
+		<method name="resize">
+			<argument index="0" name="pos" type="int">
+			</argument>
+			<description>
+				Resize the array to contain a different number of elements. If the array size is smaller, elements are cleared, if bigger, new elements are Null.
+			</description>
+		</method>
+		<method name="rfind">
+			<return type="int">
+			</return>
+			<argument index="0" name="what" type="var">
+			</argument>
+			<argument index="1" name="from" type="int" default="-1">
+			</argument>
+			<description>
+				Searches the array in reverse order. Optionally, a start search index can be passed. If negative, the start index is considered relative to the end of the array.
+			</description>
+		</method>
+		<method name="size">
+			<return type="int">
+			</return>
+			<description>
+				Return the amount of elements in the array.
+			</description>
+		</method>
+		<method name="sort">
+			<description>
+				Sort the array using natural order.
+			</description>
+		</method>
+		<method name="sort_custom">
+			<argument index="0" name="obj" type="Object">
+			</argument>
+			<argument index="1" name="func" type="String">
+			</argument>
+			<description>
+				Sort the array using a custom method. The arguments are an object that holds the method and the name of such method. The custom method receives two arguments (a pair of elements from the array) and must return true if the first argument is less than the second, and return false otherwise. Note: you cannot randomize the return value as the heapsort algorithm expects a deterministic result. Doing so will result in unexpected behavior.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

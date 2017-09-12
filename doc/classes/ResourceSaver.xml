@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceSaver" inherits="Object" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Resource Saving Interface.
+	</brief_description>
+	<description>
+		Resource Saving Interface. This interface is used for saving resources to disk.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_recognized_extensions">
+			<return type="PoolStringArray">
+			</return>
+			<argument index="0" name="type" type="Resource">
+			</argument>
+			<description>
+				Return the list of extensions available for saving a resource of a given type.
+			</description>
+		</method>
+		<method name="save">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="resource" type="Resource">
+			</argument>
+			<argument index="2" name="flags" type="int" default="0">
+			</argument>
+			<description>
+				Save a resource to disk, to a given path.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="FLAG_RELATIVE_PATHS" value="1">
+		</constant>
+		<constant name="FLAG_BUNDLE_RESOURCES" value="2">
+		</constant>
+		<constant name="FLAG_CHANGE_PATH" value="4">
+		</constant>
+		<constant name="FLAG_OMIT_EDITOR_PROPERTIES" value="8">
+		</constant>
+		<constant name="FLAG_SAVE_BIG_ENDIAN" value="16">
+		</constant>
+		<constant name="FLAG_COMPRESS" value="32">
+		</constant>
+	</constants>
+</class>

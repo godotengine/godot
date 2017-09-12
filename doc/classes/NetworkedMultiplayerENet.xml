@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="NetworkedMultiplayerENet" inherits="NetworkedMultiplayerPeer" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		PacketPeer implementation using the ENet library.
+	</brief_description>
+	<description>
+		A connection (or a listening server) that should be passed to [method SceneTree.set_network_peer]. Socket events can be handled by connecting to [SceneTree] signals.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="close_connection">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="create_client">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="ip" type="String">
+			</argument>
+			<argument index="1" name="port" type="int">
+			</argument>
+			<argument index="2" name="in_bandwidth" type="int" default="0">
+			</argument>
+			<argument index="3" name="out_bandwidth" type="int" default="0">
+			</argument>
+			<description>
+				Create client that connects to a server at address [code]ip[/code] using specified [code]port[/code].
+			</description>
+		</method>
+		<method name="create_server">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="port" type="int">
+			</argument>
+			<argument index="1" name="max_clients" type="int" default="32">
+			</argument>
+			<argument index="2" name="in_bandwidth" type="int" default="0">
+			</argument>
+			<argument index="3" name="out_bandwidth" type="int" default="0">
+			</argument>
+			<description>
+				Create server that listens to connections via [code]port[/code].
+			</description>
+		</method>
+		<method name="get_compression_mode" qualifiers="const">
+			<return type="int" enum="NetworkedMultiplayerENet.CompressionMode">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_bind_ip">
+			<return type="void">
+			</return>
+			<argument index="0" name="ip" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_compression_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="int" enum="NetworkedMultiplayerENet.CompressionMode">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="COMPRESS_NONE" value="0">
+		</constant>
+		<constant name="COMPRESS_RANGE_CODER" value="1">
+		</constant>
+		<constant name="COMPRESS_FASTLZ" value="2">
+		</constant>
+		<constant name="COMPRESS_ZLIB" value="3">
+		</constant>
+		<constant name="COMPRESS_ZSTD" value="4">
+		</constant>
+	</constants>
+</class>

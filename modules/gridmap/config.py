@@ -6,3 +6,9 @@ def can_build(platform):
 
 def configure(env):
     pass
+
+def get_doc_classes():
+	return ["GridMap"]
+
+def get_doc_path():
+	return "doc_classes"

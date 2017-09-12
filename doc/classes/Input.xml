@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Input" inherits="Object" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		A Singleton that deals with inputs.
+	</brief_description>
+	<description>
+		A Singleton that deals with inputs. This includes key presses, mouse buttons and movement, joypads, and input actions.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="action_press">
+			<return type="void">
+			</return>
+			<argument index="0" name="action" type="String">
+			</argument>
+			<description>
+				This will simulate pressing the specificed action.
+			</description>
+		</method>
+		<method name="action_release">
+			<return type="void">
+			</return>
+			<argument index="0" name="action" type="String">
+			</argument>
+			<description>
+				If the specified action is already pressed, this will release it.
+			</description>
+		</method>
+		<method name="add_joy_mapping">
+			<return type="void">
+			</return>
+			<argument index="0" name="mapping" type="String">
+			</argument>
+			<argument index="1" name="update_existing" type="bool" default="false">
+			</argument>
+			<description>
+				Add a new mapping entry (in SDL2 format) to the mapping database. Optionally update already connected devices.
+			</description>
+		</method>
+		<method name="get_accelerometer" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+				If the device has an accelerometer, this will return the movement.
+			</description>
+		</method>
+		<method name="get_connected_joypads">
+			<return type="Array">
+			</return>
+			<description>
+				Returns an [Array] containing the device IDs of all currently connected joypads.
+			</description>
+		</method>
+		<method name="get_gravity" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_gyroscope" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+				If the device has a gyroscope, this will return the rate of rotation in rad/s around a device's x, y, and z axis.
+			</description>
+		</method>
+		<method name="get_joy_axis" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="device" type="int">
+			</argument>
+			<argument index="1" name="axis" type="int">
+			</argument>
+			<description>
+				Returns the current value of the joypad axis at given index (see JOY_* constants in [@Global Scope])
+			</description>
+		</method>
+		<method name="get_joy_axis_index_from_string">
+			<return type="int">
+			</return>
+			<argument index="0" name="axis" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_joy_axis_string">
+			<return type="String">
+			</return>
+			<argument index="0" name="axis_index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_joy_button_index_from_string">
+			<return type="int">
+			</return>
+			<argument index="0" name="button" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_joy_button_string">
+			<return type="String">
+			</return>
+			<argument index="0" name="button_index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_joy_guid" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="device" type="int">
+			</argument>
+			<description>
+				Returns a SDL2 compatible device guid on platforms that use gamepad remapping. Returns "Default Gamepad" otherwise.
+			</description>
+		</method>
+		<method name="get_joy_name">
+			<return type="String">
+			</return>
+			<argument index="0" name="device" type="int">
+			</argument>
+			<description>
+				Returns the name of the joypad at the specified device index
+			</description>
+		</method>
+		<method name="get_joy_vibration_duration">
+			<return type="float">
+			</return>
+			<argument index="0" name="device" type="int">
+			</argument>
+			<description>
+				Returns the duration of the current vibration effect in seconds.
+			</description>
+		</method>
+		<method name="get_joy_vibration_strength">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="device" type="int">
+			</argument>
+			<description>
+				Returns the strength of the joypad vibration: x is the strength of the weak motor, and y is the strength of the strong motor.
+			</description>
+		</method>
+		<method name="get_last_mouse_speed" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+				Returns the mouse speed for the last time the cursor was moved, and this until the next frame where the mouse moves. This means that even if the mouse is not moving, this function will still return the value of the last motion.
+			</description>
+		</method>
+		<method name="get_magnetometer" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+				If the device has a magnetometer, this will return the magnetic field strength in micro-Tesla for all axes.
+			</description>
+		</method>
+		<method name="get_mouse_button_mask" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns mouse buttons as a bitmask. If multiple mouse buttons are pressed at the same time the bits are added together.
+			</description>
+		</method>
+		<method name="get_mouse_mode" qualifiers="const">
+			<return type="int" enum="Input.MouseMode">
+			</return>
+			<description>
+				Return the mouse mode. See the constants for more information.
+			</description>
+		</method>
+		<method name="is_action_just_pressed" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="action" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_action_just_released" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="action" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_action_pressed" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="action" type="String">
+			</argument>
+			<description>
+				Returns true or false depending on whether the action event is pressed. Actions and their events can be set in the Project Settings / Input Map tab. Or be set with [InputMap].
+			</description>
+		</method>
+		<method name="is_joy_button_pressed" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="device" type="int">
+			</argument>
+			<argument index="1" name="button" type="int">
+			</argument>
+			<description>
+				Returns if the joypad button at the given index is currently pressed. (see JOY_* constants in [@Global Scope])
+			</description>
+		</method>
+		<method name="is_joy_known">
+			<return type="bool">
+			</return>
+			<argument index="0" name="device" type="int">
+			</argument>
+			<description>
+				Returns if the specified device is known by the system. This means that it sets all button and axis indices exactly as defined in the JOY_* constants (see [@Global Scope]). Unknown joypads are not expected to match these constants, but you can still retrieve events from them.
+			</description>
+		</method>
+		<method name="is_key_pressed" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="scancode" type="int">
+			</argument>
+			<description>
+				Returns true or false depending on whether the key is pressed or not. You can pass KEY_*, which are pre-defined constants listed in [@Global Scope].
+			</description>
+		</method>
+		<method name="is_mouse_button_pressed" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="button" type="int">
+			</argument>
+			<description>
+				Returns true or false depending on whether mouse button is pressed or not. You can pass BUTTON_*, which are pre-defined constants listed in [@Global Scope].
+			</description>
+		</method>
+		<method name="parse_input_event">
+			<return type="void">
+			</return>
+			<argument index="0" name="event" type="InputEvent">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_joy_mapping">
+			<return type="void">
+			</return>
+			<argument index="0" name="guid" type="String">
+			</argument>
+			<description>
+				Removes all mappings from the internal db that match the given uid.
+			</description>
+		</method>
+		<method name="set_custom_mouse_cursor">
+			<return type="void">
+			</return>
+			<argument index="0" name="image" type="Resource">
+			</argument>
+			<argument index="1" name="hotspot" type="Vector2" default="Vector2( 0, 0 )">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_mouse_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="int" enum="Input.MouseMode">
+			</argument>
+			<description>
+				Set the mouse mode. See the constants for more information.
+			</description>
+		</method>
+		<method name="start_joy_vibration">
+			<return type="void">
+			</return>
+			<argument index="0" name="device" type="int">
+			</argument>
+			<argument index="1" name="weak_magnitude" type="float">
+			</argument>
+			<argument index="2" name="strong_magnitude" type="float">
+			</argument>
+			<argument index="3" name="duration" type="float" default="0">
+			</argument>
+			<description>
+				Starts to vibrate the joypad. Joypads usually come with two rumble motors, a strong and a weak one. weak_magnitude is the strength of the weak motor (between 0 and 1) and strong_magnitude is the strength of the strong motor (between 0 and 1). duration is the duration of the effect in seconds (a duration of 0 will try to play the vibration indefinitely).
+				Note that not every hardware is compatible with long effect durations, it is recommended to restart an effect if in need to play it for more than a few seconds.
+			</description>
+		</method>
+		<method name="stop_joy_vibration">
+			<return type="void">
+			</return>
+			<argument index="0" name="device" type="int">
+			</argument>
+			<description>
+				Stops the vibration of the joypad.
+			</description>
+		</method>
+		<method name="warp_mouse_pos">
+			<return type="void">
+			</return>
+			<argument index="0" name="to" type="Vector2">
+			</argument>
+			<description>
+				Sets the mouse position to the specified vector.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="joy_connection_changed">
+			<argument index="0" name="index" type="int">
+			</argument>
+			<argument index="1" name="connected" type="bool">
+			</argument>
+			<description>
+				Emitted when a joypad device has been connected or disconnected
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="MOUSE_MODE_VISIBLE" value="0">
+			Makes the mouse cursor visible if it is hidden.
+		</constant>
+		<constant name="MOUSE_MODE_HIDDEN" value="1">
+			Makes the mouse cursor hidden if it is visible.
+		</constant>
+		<constant name="MOUSE_MODE_CAPTURED" value="2">
+			Captures the mouse. The mouse will be hidden and unable to leave the game window. But it will still register movement and mouse button presses.
+		</constant>
+		<constant name="MOUSE_MODE_CONFINED" value="3">
+		</constant>
+	</constants>
+</class>

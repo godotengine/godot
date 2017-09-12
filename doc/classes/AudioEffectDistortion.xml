@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioEffectDistortion" inherits="AudioEffect" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_drive" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_keep_hf_hz" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_mode" qualifiers="const">
+			<return type="int" enum="AudioEffectDistortion.Mode">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_post_gain" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_pre_gain" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_drive">
+			<return type="void">
+			</return>
+			<argument index="0" name="drive" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_keep_hf_hz">
+			<return type="void">
+			</return>
+			<argument index="0" name="keep_hf_hz" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="int" enum="AudioEffectDistortion.Mode">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_post_gain">
+			<return type="void">
+			</return>
+			<argument index="0" name="post_gain" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_pre_gain">
+			<return type="void">
+			</return>
+			<argument index="0" name="pre_gain" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="drive" type="float" setter="set_drive" getter="get_drive" brief="">
+		</member>
+		<member name="keep_hf_hz" type="float" setter="set_keep_hf_hz" getter="get_keep_hf_hz" brief="">
+		</member>
+		<member name="mode" type="int" setter="set_mode" getter="get_mode" brief="" enum="AudioEffectDistortion.Mode">
+		</member>
+		<member name="post_gain" type="float" setter="set_post_gain" getter="get_post_gain" brief="">
+		</member>
+		<member name="pre_gain" type="float" setter="set_pre_gain" getter="get_pre_gain" brief="">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

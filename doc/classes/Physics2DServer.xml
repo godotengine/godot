@@ -1,0 +1,1121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Physics2DServer" inherits="Object" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Physics 2D Server.
+	</brief_description>
+	<description>
+		Physics 2D Server is the server responsible for all 2D physics. It can create many kinds of physics objects, but does not insert them on the node tree.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="area_add_shape">
+			<return type="void">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="shape" type="RID">
+			</argument>
+			<argument index="2" name="transform" type="Transform2D" default="Transform2D( 1, 0, 0, 1, 0, 0 )">
+			</argument>
+			<description>
+				Add a shape to the area, along with a transform matrix. Shapes are usually referenced by their index, so you should track which shape has a given index.
+			</description>
+		</method>
+		<method name="area_attach_object_instance_id">
+			<return type="void">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="id" type="int">
+			</argument>
+			<description>
+				Assign the area to a descendant of [Object], so it can exist in the node tree.
+			</description>
+		</method>
+		<method name="area_clear_shapes">
+			<return type="void">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<description>
+				Remove all shapes from an area. It does not delete the shapes, so they can be reassigned later.
+			</description>
+		</method>
+		<method name="area_create">
+			<return type="RID">
+			</return>
+			<description>
+				Create an [Area2D].
+			</description>
+		</method>
+		<method name="area_get_object_instance_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<description>
+				Get the instance ID of the object the area is assigned to.
+			</description>
+		</method>
+		<method name="area_get_param" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="param" type="int" enum="Physics2DServer.AreaParameter">
+			</argument>
+			<description>
+				Return an area parameter value.
+			</description>
+		</method>
+		<method name="area_get_shape" qualifiers="const">
+			<return type="RID">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="shape_idx" type="int">
+			</argument>
+			<description>
+				Return the [RID] of the nth shape of an area.
+			</description>
+		</method>
+		<method name="area_get_shape_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<description>
+				Return the number of shapes assigned to an area.
+			</description>
+		</method>
+		<method name="area_get_shape_transform" qualifiers="const">
+			<return type="Transform2D">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="shape_idx" type="int">
+			</argument>
+			<description>
+				Return the transform matrix of a shape within an area.
+			</description>
+		</method>
+		<method name="area_get_space" qualifiers="const">
+			<return type="RID">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<description>
+				Return the space assigned to the area.
+			</description>
+		</method>
+		<method name="area_get_space_override_mode" qualifiers="const">
+			<return type="int" enum="Physics2DServer.AreaSpaceOverrideMode">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<description>
+				Return the space override mode for the area.
+			</description>
+		</method>
+		<method name="area_get_transform" qualifiers="const">
+			<return type="Transform2D">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<description>
+				Return the transform matrix for an area.
+			</description>
+		</method>
+		<method name="area_remove_shape">
+			<return type="void">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="shape_idx" type="int">
+			</argument>
+			<description>
+				Remove a shape from an area. It does not delete the shape, so it can be reassigned later.
+			</description>
+		</method>
+		<method name="area_set_collision_layer">
+			<return type="void">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="layer" type="int">
+			</argument>
+			<description>
+				Assign the area to one or many physics layers.
+			</description>
+		</method>
+		<method name="area_set_collision_mask">
+			<return type="void">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="mask" type="int">
+			</argument>
+			<description>
+				Set which physics layers the area will monitor.
+			</description>
+		</method>
+		<method name="area_set_monitor_callback">
+			<return type="void">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="receiver" type="Object">
+			</argument>
+			<argument index="2" name="method" type="String">
+			</argument>
+			<description>
+				Set the function to call when any body/area enters or exits the area. This callback will be called for any object interacting with the area, and takes five parameters:
+				1: AREA_BODY_ADDED or AREA_BODY_REMOVED, depending on whether the object entered or exited the area.
+				2: [RID] of the object that entered/exited the area.
+				3: Instance ID of the object that entered/exited the area.
+				4: The shape index of the object that entered/exited the area.
+				5: The shape index of the area where the object entered/exited.
+			</description>
+		</method>
+		<method name="area_set_param">
+			<return type="void">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="param" type="int" enum="Physics2DServer.AreaParameter">
+			</argument>
+			<argument index="2" name="value" type="Variant">
+			</argument>
+			<description>
+				Set the value for an area parameter. A list of available parameters is on the AREA_PARAM_* constants.
+			</description>
+		</method>
+		<method name="area_set_shape">
+			<return type="void">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="shape_idx" type="int">
+			</argument>
+			<argument index="2" name="shape" type="RID">
+			</argument>
+			<description>
+				Substitute a given area shape by another. The old shape is selected by its index, the new one by its [RID].
+			</description>
+		</method>
+		<method name="area_set_shape_disabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="shape_idx" type="int">
+			</argument>
+			<argument index="2" name="disable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="area_set_shape_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="shape_idx" type="int">
+			</argument>
+			<argument index="2" name="transform" type="Transform2D">
+			</argument>
+			<description>
+				Set the transform matrix for an area shape.
+			</description>
+		</method>
+		<method name="area_set_space">
+			<return type="void">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="space" type="RID">
+			</argument>
+			<description>
+				Assign a space to the area.
+			</description>
+		</method>
+		<method name="area_set_space_override_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="mode" type="int" enum="Physics2DServer.AreaSpaceOverrideMode">
+			</argument>
+			<description>
+				Set the space override mode for the area. The modes are described in the constants AREA_SPACE_OVERRIDE_*.
+			</description>
+		</method>
+		<method name="area_set_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="transform" type="Transform2D">
+			</argument>
+			<description>
+				Set the transform matrix for an area.
+			</description>
+		</method>
+		<method name="body_add_collision_exception">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="excepted_body" type="RID">
+			</argument>
+			<description>
+				Add a body to the list of bodies exempt from collisions.
+			</description>
+		</method>
+		<method name="body_add_force">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="offset" type="Vector2">
+			</argument>
+			<argument index="2" name="force" type="Vector2">
+			</argument>
+			<description>
+				Add a positioned force to the applied force and torque. As with [method body_apply_impulse], both the force and the offset from the body origin are in global coordinates. A force differs from an impulse in that, while the two are forces, the impulse clears itself after being applied.
+			</description>
+		</method>
+		<method name="body_add_shape">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="shape" type="RID">
+			</argument>
+			<argument index="2" name="transform" type="Transform2D" default="Transform2D( 1, 0, 0, 1, 0, 0 )">
+			</argument>
+			<description>
+				Add a shape to the body, along with a transform matrix. Shapes are usually referenced by their index, so you should track which shape has a given index.
+			</description>
+		</method>
+		<method name="body_apply_impulse">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="pos" type="Vector2">
+			</argument>
+			<argument index="2" name="impulse" type="Vector2">
+			</argument>
+			<description>
+				Add a positioned impulse to the applied force and torque. Both the force and the offset from the body origin are in global coordinates.
+			</description>
+		</method>
+		<method name="body_attach_object_instance_id">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="id" type="int">
+			</argument>
+			<description>
+				Assign the area to a descendant of [Object], so it can exist in the node tree.
+			</description>
+		</method>
+		<method name="body_clear_shapes">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+				Remove all shapes from a body.
+			</description>
+		</method>
+		<method name="body_create">
+			<return type="RID">
+			</return>
+			<argument index="0" name="mode" type="int" enum="Physics2DServer.BodyMode" default="2">
+			</argument>
+			<argument index="1" name="init_sleeping" type="bool" default="false">
+			</argument>
+			<description>
+				Create a physics body. The first parameter can be any value from constants BODY_MODE*, for the type of body created. Additionally, the body can be created in sleeping state to save processing time.
+			</description>
+		</method>
+		<method name="body_get_collision_layer" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+				Return the physics layer or layers a body belongs to.
+			</description>
+		</method>
+		<method name="body_get_collision_mask" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+				Return the physics layer or layers a body can collide with.
+			</description>
+		</method>
+		<method name="body_get_continuous_collision_detection_mode" qualifiers="const">
+			<return type="int" enum="Physics2DServer.CCDMode">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+				Return the continuous collision detection mode.
+			</description>
+		</method>
+		<method name="body_get_max_contacts_reported" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+				Return the maximum contacts that can be reported. See [method body_set_max_contacts_reported].
+			</description>
+		</method>
+		<method name="body_get_mode" qualifiers="const">
+			<return type="int" enum="Physics2DServer.BodyMode">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+				Return the body mode.
+			</description>
+		</method>
+		<method name="body_get_object_instance_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+				Get the instance ID of the object the area is assigned to.
+			</description>
+		</method>
+		<method name="body_get_param" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="param" type="int" enum="Physics2DServer.BodyParameter">
+			</argument>
+			<description>
+				Return the value of a body parameter.
+			</description>
+		</method>
+		<method name="body_get_shape" qualifiers="const">
+			<return type="RID">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="shape_idx" type="int">
+			</argument>
+			<description>
+				Return the [RID] of the nth shape of a body.
+			</description>
+		</method>
+		<method name="body_get_shape_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+				Return the number of shapes assigned to a body.
+			</description>
+		</method>
+		<method name="body_get_shape_metadata" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="shape_idx" type="int">
+			</argument>
+			<description>
+				Return the metadata of a shape of a body.
+			</description>
+		</method>
+		<method name="body_get_shape_transform" qualifiers="const">
+			<return type="Transform2D">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="shape_idx" type="int">
+			</argument>
+			<description>
+				Return the transform matrix of a body shape.
+			</description>
+		</method>
+		<method name="body_get_space" qualifiers="const">
+			<return type="RID">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+				Return the [RID] of the space assigned to a body.
+			</description>
+		</method>
+		<method name="body_get_state" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="state" type="int" enum="Physics2DServer.BodyState">
+			</argument>
+			<description>
+				Return a body state.
+			</description>
+		</method>
+		<method name="body_is_omitting_force_integration" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+				Return whether a body uses a callback function to calculate its own physics (see [method body_set_force_integration_callback]).
+			</description>
+		</method>
+		<method name="body_remove_collision_exception">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="excepted_body" type="RID">
+			</argument>
+			<description>
+				Remove a body from the list of bodies exempt from collisions.
+			</description>
+		</method>
+		<method name="body_remove_shape">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="shape_idx" type="int">
+			</argument>
+			<description>
+				Remove a shape from a body. The shape is not deleted, so it can be reused afterwards.
+			</description>
+		</method>
+		<method name="body_set_axis_velocity">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="axis_velocity" type="Vector2">
+			</argument>
+			<description>
+				Set an axis velocity. The velocity in the given vector axis will be set as the given vector length. This is useful for jumping behavior.
+			</description>
+		</method>
+		<method name="body_set_collision_layer">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="layer" type="int">
+			</argument>
+			<description>
+				Set the physics layer or layers a body belongs to.
+			</description>
+		</method>
+		<method name="body_set_collision_mask">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="mask" type="int">
+			</argument>
+			<description>
+				Set the physics layer or layers a body can collide with.
+			</description>
+		</method>
+		<method name="body_set_continuous_collision_detection_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="mode" type="int" enum="Physics2DServer.CCDMode">
+			</argument>
+			<description>
+				Set the continuous collision detection mode from any of the CCD_MODE_* constants.
+				Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided.
+			</description>
+		</method>
+		<method name="body_set_force_integration_callback">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="receiver" type="Object">
+			</argument>
+			<argument index="2" name="method" type="String">
+			</argument>
+			<argument index="3" name="userdata" type="Variant" default="null">
+			</argument>
+			<description>
+				Set the function used to calculate physics for an object, if that object allows it (see [method body_set_omit_force integration]).
+			</description>
+		</method>
+		<method name="body_set_max_contacts_reported">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="amount" type="int">
+			</argument>
+			<description>
+				Set the maximum contacts to report. Bodies can keep a log of the contacts with other bodies, this is enabled by setting the maximum amount of contacts reported to a number greater than 0.
+			</description>
+		</method>
+		<method name="body_set_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="mode" type="int" enum="Physics2DServer.BodyMode">
+			</argument>
+			<description>
+				Set the body mode, from one of the constants BODY_MODE*.
+			</description>
+		</method>
+		<method name="body_set_omit_force_integration">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+				Set whether a body uses a callback function to calculate its own physics (see [method body_set_force_integration_callback]).
+			</description>
+		</method>
+		<method name="body_set_param">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="param" type="int" enum="Physics2DServer.BodyParameter">
+			</argument>
+			<argument index="2" name="value" type="float">
+			</argument>
+			<description>
+				Set a body parameter (see BODY_PARAM* constants).
+			</description>
+		</method>
+		<method name="body_set_shape">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="shape_idx" type="int">
+			</argument>
+			<argument index="2" name="shape" type="RID">
+			</argument>
+			<description>
+				Substitute a given body shape by another. The old shape is selected by its index, the new one by its [RID].
+			</description>
+		</method>
+		<method name="body_set_shape_as_one_way_collision">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="shape_idx" type="int">
+			</argument>
+			<argument index="2" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_set_shape_disabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="shape_idx" type="int">
+			</argument>
+			<argument index="2" name="disable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_set_shape_metadata">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="shape_idx" type="int">
+			</argument>
+			<argument index="2" name="metadata" type="Variant">
+			</argument>
+			<description>
+				Set metadata of a shape within a body. This metadata is different from [method Object.set_meta], and can be retrieved on shape queries.
+			</description>
+		</method>
+		<method name="body_set_shape_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="shape_idx" type="int">
+			</argument>
+			<argument index="2" name="transform" type="Transform2D">
+			</argument>
+			<description>
+				Set the transform matrix for a body shape.
+			</description>
+		</method>
+		<method name="body_set_space">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="space" type="RID">
+			</argument>
+			<description>
+				Assign a space to the body (see [method create_space]).
+			</description>
+		</method>
+		<method name="body_set_state">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="state" type="int" enum="Physics2DServer.BodyState">
+			</argument>
+			<argument index="2" name="value" type="Variant">
+			</argument>
+			<description>
+				Set a body state (see BODY_STATE* constants).
+			</description>
+		</method>
+		<method name="body_test_motion">
+			<return type="bool">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="from" type="Transform2D">
+			</argument>
+			<argument index="2" name="motion" type="Vector2">
+			</argument>
+			<argument index="3" name="margin" type="float" default="0.08">
+			</argument>
+			<argument index="4" name="result" type="Physics2DTestMotionResult" default="null">
+			</argument>
+			<description>
+				Return whether a body can move from a given point in a given direction. Apart from the boolean return value, a [Physics2DTestMotionResult] can be passed to return additional information in.
+			</description>
+		</method>
+		<method name="damped_spring_joint_create">
+			<return type="RID">
+			</return>
+			<argument index="0" name="anchor_a" type="Vector2">
+			</argument>
+			<argument index="1" name="anchor_b" type="Vector2">
+			</argument>
+			<argument index="2" name="body_a" type="RID">
+			</argument>
+			<argument index="3" name="body_b" type="RID">
+			</argument>
+			<description>
+				Create a damped spring joint between two bodies. If not specified, the second body is assumed to be the joint itself.
+			</description>
+		</method>
+		<method name="damped_string_joint_get_param" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="joint" type="RID">
+			</argument>
+			<argument index="1" name="param" type="int" enum="Physics2DServer.DampedStringParam">
+			</argument>
+			<description>
+				Return the value of a damped spring joint parameter.
+			</description>
+		</method>
+		<method name="damped_string_joint_set_param">
+			<return type="void">
+			</return>
+			<argument index="0" name="joint" type="RID">
+			</argument>
+			<argument index="1" name="param" type="int" enum="Physics2DServer.DampedStringParam">
+			</argument>
+			<argument index="2" name="value" type="float">
+			</argument>
+			<description>
+				Set a damped spring joint parameter. Parameters are explained in the DAMPED_STRING* constants.
+			</description>
+		</method>
+		<method name="free_rid">
+			<return type="void">
+			</return>
+			<argument index="0" name="rid" type="RID">
+			</argument>
+			<description>
+				Destroy any of the objects created by Physics2DServer. If the [RID] passed is not one of the objects that can be created by Physics2DServer, an error will be sent to the console.
+			</description>
+		</method>
+		<method name="get_process_info">
+			<return type="int">
+			</return>
+			<argument index="0" name="process_info" type="int" enum="Physics2DServer.ProcessInfo">
+			</argument>
+			<description>
+				Return information about the current state of the 2D physics engine. The states are listed under the INFO_* constants.
+			</description>
+		</method>
+		<method name="groove_joint_create">
+			<return type="RID">
+			</return>
+			<argument index="0" name="groove1_a" type="Vector2">
+			</argument>
+			<argument index="1" name="groove2_a" type="Vector2">
+			</argument>
+			<argument index="2" name="anchor_b" type="Vector2">
+			</argument>
+			<argument index="3" name="body_a" type="RID">
+			</argument>
+			<argument index="4" name="body_b" type="RID">
+			</argument>
+			<description>
+				Create a groove joint between two bodies. If not specified, the bodyies are assumed to be the joint itself.
+			</description>
+		</method>
+		<method name="joint_get_param" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="joint" type="RID">
+			</argument>
+			<argument index="1" name="param" type="int" enum="Physics2DServer.JointParam">
+			</argument>
+			<description>
+				Return the value of a joint parameter.
+			</description>
+		</method>
+		<method name="joint_get_type" qualifiers="const">
+			<return type="int" enum="Physics2DServer.JointType">
+			</return>
+			<argument index="0" name="joint" type="RID">
+			</argument>
+			<description>
+				Return the type of a joint (see JOINT_* constants).
+			</description>
+		</method>
+		<method name="joint_set_param">
+			<return type="void">
+			</return>
+			<argument index="0" name="joint" type="RID">
+			</argument>
+			<argument index="1" name="param" type="int" enum="Physics2DServer.JointParam">
+			</argument>
+			<argument index="2" name="value" type="float">
+			</argument>
+			<description>
+				Set a joint parameter. Parameters are explained in the JOINT_PARAM* constants.
+			</description>
+		</method>
+		<method name="pin_joint_create">
+			<return type="RID">
+			</return>
+			<argument index="0" name="anchor" type="Vector2">
+			</argument>
+			<argument index="1" name="body_a" type="RID">
+			</argument>
+			<argument index="2" name="body_b" type="RID">
+			</argument>
+			<description>
+				Create a pin joint between two bodies. If not specified, the second body is assumed to be the joint itself.
+			</description>
+		</method>
+		<method name="set_active">
+			<return type="void">
+			</return>
+			<argument index="0" name="active" type="bool">
+			</argument>
+			<description>
+				Activate or deactivate the 2D physics engine.
+			</description>
+		</method>
+		<method name="shape_create">
+			<return type="RID">
+			</return>
+			<argument index="0" name="type" type="int" enum="Physics2DServer.ShapeType">
+			</argument>
+			<description>
+				Create a shape of type SHAPE_*. Does not assign it to a body or an area. To do so, you must use [method area_set_shape] or [method body_set_shape].
+			</description>
+		</method>
+		<method name="shape_get_data" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="shape" type="RID">
+			</argument>
+			<description>
+				Return the shape data.
+			</description>
+		</method>
+		<method name="shape_get_type" qualifiers="const">
+			<return type="int" enum="Physics2DServer.ShapeType">
+			</return>
+			<argument index="0" name="shape" type="RID">
+			</argument>
+			<description>
+				Return the type of shape (see SHAPE_* constants).
+			</description>
+		</method>
+		<method name="shape_set_data">
+			<return type="void">
+			</return>
+			<argument index="0" name="shape" type="RID">
+			</argument>
+			<argument index="1" name="data" type="Variant">
+			</argument>
+			<description>
+				Set the shape data that defines its shape and size. The data to be passed depends on the kind of shape created [method shape_get_type].
+			</description>
+		</method>
+		<method name="space_create">
+			<return type="RID">
+			</return>
+			<description>
+				Create a space. A space is a collection of parameters for the physics engine that can be assigned to an area or a body. It can be assigned to an area with [method area_set_space], or to a body with [method body_set_space].
+			</description>
+		</method>
+		<method name="space_get_direct_state">
+			<return type="Physics2DDirectSpaceState">
+			</return>
+			<argument index="0" name="space" type="RID">
+			</argument>
+			<description>
+				Return the state of a space, a [Physics2DDirectSpaceState]. This object can be used to make collision/intersection queries.
+			</description>
+		</method>
+		<method name="space_get_param" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="space" type="RID">
+			</argument>
+			<argument index="1" name="param" type="int" enum="Physics2DServer.SpaceParameter">
+			</argument>
+			<description>
+				Return the value of a space parameter.
+			</description>
+		</method>
+		<method name="space_is_active" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="space" type="RID">
+			</argument>
+			<description>
+				Return whether the space is active.
+			</description>
+		</method>
+		<method name="space_set_active">
+			<return type="void">
+			</return>
+			<argument index="0" name="space" type="RID">
+			</argument>
+			<argument index="1" name="active" type="bool">
+			</argument>
+			<description>
+				Mark a space as active. It will not have an effect, unless it is assigned to an area or body.
+			</description>
+		</method>
+		<method name="space_set_param">
+			<return type="void">
+			</return>
+			<argument index="0" name="space" type="RID">
+			</argument>
+			<argument index="1" name="param" type="int" enum="Physics2DServer.SpaceParameter">
+			</argument>
+			<argument index="2" name="value" type="float">
+			</argument>
+			<description>
+				Set the value for a space parameter. A list of available parameters is on the SPACE_PARAM_* constants.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="SPACE_PARAM_CONTACT_RECYCLE_RADIUS" value="0">
+			Constant to set/get the maximum distance a pair of bodies has to move before their collision status has to be recalculated.
+		</constant>
+		<constant name="SPACE_PARAM_CONTACT_MAX_SEPARATION" value="1">
+			Constant to set/get the maximum distance a shape can be from another before they are considered separated.
+		</constant>
+		<constant name="SPACE_PARAM_BODY_MAX_ALLOWED_PENETRATION" value="2">
+			Constant to set/get the maximum distance a shape can penetrate another shape before it is considered a collision.
+		</constant>
+		<constant name="SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD" value="3">
+		</constant>
+		<constant name="SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD" value="4">
+		</constant>
+		<constant name="SPACE_PARAM_BODY_TIME_TO_SLEEP" value="5">
+			Constant to set/get the maximum time of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after this time.
+		</constant>
+		<constant name="SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS" value="6">
+			Constant to set/get the default solver bias for all physics constraints. A solver bias is a factor controlling how much two objects "rebound", after violating a constraint, to avoid leaving them in that state because of numerical imprecision.
+		</constant>
+		<constant name="SHAPE_LINE" value="0">
+			This is the constant for creating line shapes. A line shape is an infinite line with an origin point, and a normal. Thus, it can be used for front/behind checks.
+		</constant>
+		<constant name="SHAPE_SEGMENT" value="2">
+			This is the constant for creating segment shapes. A segment shape is a line from a point A to a point B. It can be checked for intersections.
+		</constant>
+		<constant name="SHAPE_CIRCLE" value="3">
+			This is the constant for creating circle shapes. A circle shape only has a radius. It can be used for intersections and inside/outside checks.
+		</constant>
+		<constant name="SHAPE_RECTANGLE" value="4">
+			This is the constant for creating rectangle shapes. A rectangle shape is defined by a width and a height. It can be used for intersections and inside/outside checks.
+		</constant>
+		<constant name="SHAPE_CAPSULE" value="5">
+			This is the constant for creating capsule shapes. A capsule shape is defined by a radius and a length. It can be used for intersections and inside/outside checks.
+		</constant>
+		<constant name="SHAPE_CONVEX_POLYGON" value="6">
+			This is the constant for creating convex polygon shapes. A polygon is defined by a list of points. It can be used for intersections and inside/outside checks. Unlike the method [method CollisionPolygon2D.set_polygon], polygons modified with [method shape_set_data] do not verify that the points supplied form, in fact, a convex polygon.
+		</constant>
+		<constant name="SHAPE_CONCAVE_POLYGON" value="7">
+			This is the constant for creating concave polygon shapes. A polygon is defined by a list of points. It can be used for intersections checks, but not for inside/outside checks.
+		</constant>
+		<constant name="SHAPE_CUSTOM" value="8">
+			This constant is used internally by the engine. Any attempt to create this kind of shape results in an error.
+		</constant>
+		<constant name="AREA_PARAM_GRAVITY" value="0">
+			Constant to set/get gravity strength in an area.
+		</constant>
+		<constant name="AREA_PARAM_GRAVITY_VECTOR" value="1">
+			Constant to set/get gravity vector/center in an area.
+		</constant>
+		<constant name="AREA_PARAM_GRAVITY_IS_POINT" value="2">
+			Constant to set/get whether the gravity vector of an area is a direction, or a center point.
+		</constant>
+		<constant name="AREA_PARAM_GRAVITY_DISTANCE_SCALE" value="3">
+			Constant to set/get the falloff factor for point gravity of an area. The greater this value is, the faster the strength of gravity decreases with the square of distance.
+		</constant>
+		<constant name="AREA_PARAM_GRAVITY_POINT_ATTENUATION" value="4">
+			This constant was used to set/get the falloff factor for point gravity. It has been superseded by AREA_PARAM_GRAVITY_DISTANCE_SCALE.
+		</constant>
+		<constant name="AREA_PARAM_LINEAR_DAMP" value="5">
+			Constant to set/get the linear dampening factor of an area.
+		</constant>
+		<constant name="AREA_PARAM_ANGULAR_DAMP" value="6">
+			Constant to set/get the angular dampening factor of an area.
+		</constant>
+		<constant name="AREA_PARAM_PRIORITY" value="7">
+			Constant to set/get the priority (order of processing) of an area.
+		</constant>
+		<constant name="AREA_SPACE_OVERRIDE_DISABLED" value="0">
+			This area does not affect gravity/damp. These are generally areas that exist only to detect collisions, and objects entering or exiting them.
+		</constant>
+		<constant name="AREA_SPACE_OVERRIDE_COMBINE" value="1">
+			This area adds its gravity/damp values to whatever has been calculated so far. This way, many overlapping areas can combine their physics to make interesting effects.
+		</constant>
+		<constant name="AREA_SPACE_OVERRIDE_COMBINE_REPLACE" value="2">
+			This area adds its gravity/damp values to whatever has been calculated so far. Then stops taking into account the rest of the areas, even the default one.
+		</constant>
+		<constant name="AREA_SPACE_OVERRIDE_REPLACE" value="3">
+			This area replaces any gravity/damp, even the default one, and stops taking into account the rest of the areas.
+		</constant>
+		<constant name="AREA_SPACE_OVERRIDE_REPLACE_COMBINE" value="4">
+			This area replaces any gravity/damp calculated so far, but keeps calculating the rest of the areas, down to the default one.
+		</constant>
+		<constant name="BODY_MODE_STATIC" value="0">
+			Constant for static bodies.
+		</constant>
+		<constant name="BODY_MODE_KINEMATIC" value="1">
+			Constant for kinematic bodies.
+		</constant>
+		<constant name="BODY_MODE_RIGID" value="2">
+			Constant for rigid bodies.
+		</constant>
+		<constant name="BODY_MODE_CHARACTER" value="3">
+			Constant for rigid bodies in character mode. In this mode, a body can not rotate, and only its linear velocity is affected by physics.
+		</constant>
+		<constant name="BODY_PARAM_BOUNCE" value="0">
+			Constant to set/get a body's bounce factor.
+		</constant>
+		<constant name="BODY_PARAM_FRICTION" value="1">
+			Constant to set/get a body's friction.
+		</constant>
+		<constant name="BODY_PARAM_MASS" value="2">
+			Constant to set/get a body's mass.
+		</constant>
+		<constant name="BODY_PARAM_INERTIA" value="3">
+			Constant to set/get a body's inertia.
+		</constant>
+		<constant name="BODY_PARAM_GRAVITY_SCALE" value="4">
+			Constant to set/get a body's gravity multiplier.
+		</constant>
+		<constant name="BODY_PARAM_LINEAR_DAMP" value="5">
+			Constant to set/get a body's linear dampening factor.
+		</constant>
+		<constant name="BODY_PARAM_ANGULAR_DAMP" value="6">
+			Constant to set/get a body's angular dampening factor.
+		</constant>
+		<constant name="BODY_PARAM_MAX" value="7">
+			This is the last ID for body parameters. Any attempt to set this property is ignored. Any attempt to get it returns 0.
+		</constant>
+		<constant name="BODY_STATE_TRANSFORM" value="0">
+			Constant to set/get the current transform matrix of the body.
+		</constant>
+		<constant name="BODY_STATE_LINEAR_VELOCITY" value="1">
+			Constant to set/get the current linear velocity of the body.
+		</constant>
+		<constant name="BODY_STATE_ANGULAR_VELOCITY" value="2">
+			Constant to set/get the current angular velocity of the body.
+		</constant>
+		<constant name="BODY_STATE_SLEEPING" value="3">
+			Constant to sleep/wake up a body, or to get whether it is sleeping.
+		</constant>
+		<constant name="BODY_STATE_CAN_SLEEP" value="4">
+			Constant to set/get whether the body can sleep.
+		</constant>
+		<constant name="JOINT_PIN" value="0">
+			Constant to create pin joints.
+		</constant>
+		<constant name="JOINT_GROOVE" value="1">
+			Constant to create groove joints.
+		</constant>
+		<constant name="JOINT_DAMPED_SPRING" value="2">
+			Constant to create damped spring joints.
+		</constant>
+		<constant name="DAMPED_STRING_REST_LENGTH" value="0">
+			Set the resting length of the spring joint. The joint will always try to go to back this length when pulled apart.
+		</constant>
+		<constant name="DAMPED_STRING_STIFFNESS" value="1">
+			Set the stiffness of the spring joint. The joint applies a force equal to the stiffness times the distance from its resting length.
+		</constant>
+		<constant name="DAMPED_STRING_DAMPING" value="2">
+			Set the damping ratio of the spring joint. A value of 0 indicates an undamped spring, while 1 causes the system to reach equilibrium as fast as possible (critical damping).
+		</constant>
+		<constant name="CCD_MODE_DISABLED" value="0">
+			Disables continuous collision detection. This is the fastest way to detect body collisions, but can miss small, fast-moving objects.
+		</constant>
+		<constant name="CCD_MODE_CAST_RAY" value="1">
+			Enables continuous collision detection by raycasting. It is faster than shapecasting, but less precise.
+		</constant>
+		<constant name="CCD_MODE_CAST_SHAPE" value="2">
+			Enables continuous collision detection by shapecasting. It is the slowest CCD method, and the most precise.
+		</constant>
+		<constant name="AREA_BODY_ADDED" value="0">
+			The value of the first parameter and area callback function receives, when an object enters one of its shapes.
+		</constant>
+		<constant name="AREA_BODY_REMOVED" value="1">
+			The value of the first parameter and area callback function receives, when an object exits one of its shapes.
+		</constant>
+		<constant name="INFO_ACTIVE_OBJECTS" value="0">
+			Constant to get the number of objects that are not sleeping.
+		</constant>
+		<constant name="INFO_COLLISION_PAIRS" value="1">
+			Constant to get the number of possible collisions.
+		</constant>
+		<constant name="INFO_ISLAND_COUNT" value="2">
+			Constant to get the number of space regions where a collision could occur.
+		</constant>
+	</constants>
+</class>

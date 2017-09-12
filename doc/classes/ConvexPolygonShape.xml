@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ConvexPolygonShape" inherits="Shape" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Convex Polygon Shape.
+	</brief_description>
+	<description>
+		Convex polygon shape resource, which can be set into a [PhysicsBody] or area.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_points" qualifiers="const">
+			<return type="PoolVector3Array">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_points">
+			<return type="void">
+			</return>
+			<argument index="0" name="points" type="PoolVector3Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="points" type="PoolVector3Array" setter="set_points" getter="get_points" brief="">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

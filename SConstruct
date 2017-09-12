@@ -352,6 +352,7 @@ if selected_platform in platform_list:
     sys.modules.pop('detect')
 
     env.module_list = []
+    env.doc_class_path={}
 
     for x in module_list:
         if env['module_' + x + '_enabled'] != "yes":
@@ -363,6 +364,15 @@ if selected_platform in platform_list:
         if (config.can_build(selected_platform)):
             config.configure(env)
             env.module_list.append(x)
+	    try:
+		 doc_classes = config.get_doc_classes()
+		 doc_path = config.get_doc_path()
+		 for c in doc_classes:
+		     env.doc_class_path[c]="modules/"+x+"/"+doc_path
+	    except:
+		pass
+
+
         sys.path.remove(tmppath)
         sys.modules.pop('config')
 

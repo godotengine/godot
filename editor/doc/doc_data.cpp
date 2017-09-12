@@ -32,6 +32,7 @@
 #include "global_constants.h"
 #include "io/compression.h"
 #include "io/marshalls.h"
+#include "os/dir_access.h"
 #include "project_settings.h"
 #include "scene/resources/theme.h"
 #include "script_language.h"
@@ -50,6 +51,8 @@ void DocData::merge_from(const DocData &p_data) {
 
 		c.description = cf.description;
 		c.brief_description = cf.brief_description;
+		c.tutorials = cf.tutorials;
+		c.demos =cf.demos;
 
 		for (int i = 0; i < c.methods.size(); i++) {
 
@@ -675,13 +678,62 @@ static Error _parse_methods(Ref<XMLParser> &parser, Vector<DocData::MethodDoc> &
 	return OK;
 }
 
-Error DocData::load(const String &p_path) {
+Error DocData::load_classes(const String &p_dir) {
 
-	Ref<XMLParser> parser = memnew(XMLParser);
-	Error err = parser->open(p_path);
-	if (err)
+	Error err;
+	DirAccessRef da = DirAccess::open(p_dir,&err);
+	if (!da) {
 		return err;
-	return _load(parser);
+	}
+
+	da->list_dir_begin();
+	String path;
+	bool isdir;
+	path=da->get_next(&isdir);
+	while(path!=String()) {
+		if (!isdir && path.ends_with("xml")) {
+			Ref<XMLParser> parser = memnew(XMLParser);
+			Error err = parser->open(p_dir.plus_file(path));
+			if (err)
+				return err;
+
+			_load(parser);
+		}
+		path=da->get_next(&isdir);
+	}
+
+	da->list_dir_end();
+
+	return OK;
+}
+Error DocData::erase_classes(const String &p_dir) {
+
+	Error err;
+	DirAccessRef da = DirAccess::open(p_dir,&err);
+	if (!da) {
+		return err;
+	}
+
+	List<String> to_erase;
+
+	da->list_dir_begin();
+	String path;
+	bool isdir;
+	path=da->get_next(&isdir);
+	while(path!=String()) {
+		if (!isdir && path.ends_with("xml")) {
+			to_erase.push_back(path);
+		}
+		path=da->get_next(&isdir);
+	}
+	da->list_dir_end();
+
+	while(to_erase.size()) {
+		da->remove(to_erase.front()->get());
+		to_erase.pop_front();
+	}
+
+	return OK;
 }
 Error DocData::_load(Ref<XMLParser> parser) {
 
@@ -689,22 +741,9 @@ Error DocData::_load(Ref<XMLParser> parser) {
 
 	while ((err = parser->read()) == OK) {
 
-		if (parser->get_node_type() == XMLParser::NODE_ELEMENT) {
-
-			if (parser->get_node_name() == "doc") {
-				break;
-			} else if (!parser->is_empty())
-				parser->skip_section(); // unknown section, likely headers
+		if (parser->get_node_type() == XMLParser::NODE_ELEMENT && parser->get_node_name() == "?xml") {
+			parser->skip_section();
 		}
-	}
-
-	if (parser->has_attribute("version"))
-		version = parser->get_attribute_value("version");
-
-	while ((err = parser->read()) == OK) {
-
-		if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == "doc")
-			break; //end of <doc>
 
 		if (parser->get_node_type() != XMLParser::NODE_ELEMENT)
 			continue; //no idea what this may be, but skipping anyway
@@ -739,6 +778,14 @@ Error DocData::_load(Ref<XMLParser> parser) {
 					parser->read();
 					if (parser->get_node_type() == XMLParser::NODE_TEXT)
 						c.description = parser->get_node_data().strip_edges();
+				} else if (name == "tutorials") {
+					parser->read();
+					if (parser->get_node_type() == XMLParser::NODE_TEXT)
+						c.tutorials = parser->get_node_data().strip_edges();
+				} else if (name == "demos") {
+					parser->read();
+					if (parser->get_node_type() == XMLParser::NODE_TEXT)
+						c.demos = parser->get_node_data().strip_edges();
 				} else if (name == "methods") {
 
 					Error err = _parse_methods(parser, c.methods);
@@ -867,23 +914,32 @@ static void _write_string(FileAccess *f, int p_tablevel, const String &p_string)
 	f->store_string(tab + p_string + "\n");
 }
 
-Error DocData::save(const String &p_path) {
+Error DocData::save_classes(const String &p_default_path, const Map<String,String>& p_class_path) {
 
-	Error err;
-	FileAccess *f = FileAccess::open(p_path, FileAccess::WRITE, &err);
-
-	if (err) {
-		ERR_EXPLAIN("Can't write doc file: " + p_path);
-
-		ERR_FAIL_V(err);
-	}
-
-	_write_string(f, 0, "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>");
-	_write_string(f, 0, "<doc version=\"" + String(VERSION_MKSTRING) + "\" name=\"Engine Types\">");
 
 	for (Map<String, ClassDoc>::Element *E = class_list.front(); E; E = E->next()) {
 
+
+
 		ClassDoc &c = E->get();
+
+		String save_path;
+		if (p_class_path.has(c.name)) {
+			save_path=p_class_path[c.name];
+		} else {
+			save_path=p_default_path;
+		}
+
+		Error err;
+		String save_file = save_path.plus_file(c.name+".xml");
+		FileAccessRef f = FileAccess::open(save_file, FileAccess::WRITE, &err);
+		if (err) {
+			ERR_EXPLAIN("Can't write doc file: " + save_file);
+
+			ERR_FAIL_V(err);
+		}
+
+		_write_string(f, 0, "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>");
 
 		String header = "<class name=\"" + c.name + "\"";
 		if (c.inherits != "")
@@ -893,6 +949,7 @@ Error DocData::save(const String &p_path) {
 		if (c.category == "")
 			category = "Core";
 		header += " category=\"" + category + "\"";
+		header+=" version=\"" + String(VERSION_MKSTRING) + "\"";
 		header += ">";
 		_write_string(f, 0, header);
 		_write_string(f, 1, "<brief_description>");
@@ -903,6 +960,14 @@ Error DocData::save(const String &p_path) {
 		if (c.description != "")
 			_write_string(f, 2, c.description.xml_escape());
 		_write_string(f, 1, "</description>");
+		_write_string(f, 1, "<tutorials>");
+		if (c.tutorials != "")
+			_write_string(f, 2, c.tutorials.xml_escape());
+		_write_string(f, 1, "</tutorials>");
+		_write_string(f, 1, "<demos>");
+		if (c.demos != "")
+			_write_string(f, 2, c.demos.xml_escape());
+		_write_string(f, 1, "</demos>");
 		_write_string(f, 1, "<methods>");
 
 		c.methods.sort();
@@ -1035,9 +1100,6 @@ Error DocData::save(const String &p_path) {
 		_write_string(f, 0, "</class>");
 	}
 
-	_write_string(f, 0, "</doc>");
-	f->close();
-	memdelete(f);
 
 	return OK;
 }

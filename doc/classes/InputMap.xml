@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="InputMap" inherits="Object" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Singleton that manages actions.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="action_add_event">
+			<return type="void">
+			</return>
+			<argument index="0" name="action" type="String">
+			</argument>
+			<argument index="1" name="event" type="InputEvent">
+			</argument>
+			<description>
+				Add an [InputEvent] to an action. This [InputEvent] will trigger the action.
+			</description>
+		</method>
+		<method name="action_erase_event">
+			<return type="void">
+			</return>
+			<argument index="0" name="action" type="String">
+			</argument>
+			<argument index="1" name="event" type="InputEvent">
+			</argument>
+			<description>
+				Remove an [InputEvent] from an action.
+			</description>
+		</method>
+		<method name="action_has_event">
+			<return type="bool">
+			</return>
+			<argument index="0" name="action" type="String">
+			</argument>
+			<argument index="1" name="event" type="InputEvent">
+			</argument>
+			<description>
+				Whether an action has an [InputEvent] associated with it.
+			</description>
+		</method>
+		<method name="add_action">
+			<return type="void">
+			</return>
+			<argument index="0" name="action" type="String">
+			</argument>
+			<description>
+				Add an (empty) action to the [InputMap]. An [InputEvent] can then be added to this action with [method action_add_event].
+			</description>
+		</method>
+		<method name="erase_action">
+			<return type="void">
+			</return>
+			<argument index="0" name="action" type="String">
+			</argument>
+			<description>
+				Remove an action from the [InputMap].
+			</description>
+		</method>
+		<method name="event_is_action" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="event" type="InputEvent">
+			</argument>
+			<argument index="1" name="action" type="String">
+			</argument>
+			<description>
+				Return whether the given event is part of an existing action. This method ignores keyboard modifiers if the given [InputEvent] is not pressed (for proper release detection). See [method action_has_event] if you don't want this behavior.
+			</description>
+		</method>
+		<method name="get_action_list">
+			<return type="Array">
+			</return>
+			<argument index="0" name="action" type="String">
+			</argument>
+			<description>
+				Return an array of InputEvents associated with a given action.
+			</description>
+		</method>
+		<method name="get_actions">
+			<return type="Array">
+			</return>
+			<description>
+				Return an array of all actions in the [InputMap].
+			</description>
+		</method>
+		<method name="has_action" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="action" type="String">
+			</argument>
+			<description>
+				Whether this InputMap has a registered action with the given name.
+			</description>
+		</method>
+		<method name="load_from_globals">
+			<return type="void">
+			</return>
+			<description>
+				Clear the [InputMap] and load it anew from [ProjectSettings].
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

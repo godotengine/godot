@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Geometry" inherits="Object" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="build_box_planes">
+			<return type="Array">
+			</return>
+			<argument index="0" name="extents" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="build_capsule_planes">
+			<return type="Array">
+			</return>
+			<argument index="0" name="radius" type="float">
+			</argument>
+			<argument index="1" name="height" type="float">
+			</argument>
+			<argument index="2" name="sides" type="int">
+			</argument>
+			<argument index="3" name="lats" type="int">
+			</argument>
+			<argument index="4" name="axis" type="int" enum="Vector3.Axis" default="2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="build_cylinder_planes">
+			<return type="Array">
+			</return>
+			<argument index="0" name="radius" type="float">
+			</argument>
+			<argument index="1" name="height" type="float">
+			</argument>
+			<argument index="2" name="sides" type="int">
+			</argument>
+			<argument index="3" name="axis" type="int" enum="Vector3.Axis" default="2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_closest_point_to_segment">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="point" type="Vector3">
+			</argument>
+			<argument index="1" name="s1" type="Vector3">
+			</argument>
+			<argument index="2" name="s2" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_closest_point_to_segment_2d">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="point" type="Vector2">
+			</argument>
+			<argument index="1" name="s1" type="Vector2">
+			</argument>
+			<argument index="2" name="s2" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_closest_point_to_segment_uncapped">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="point" type="Vector3">
+			</argument>
+			<argument index="1" name="s1" type="Vector3">
+			</argument>
+			<argument index="2" name="s2" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_closest_point_to_segment_uncapped_2d">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="point" type="Vector2">
+			</argument>
+			<argument index="1" name="s1" type="Vector2">
+			</argument>
+			<argument index="2" name="s2" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_closest_points_between_segments">
+			<return type="PoolVector3Array">
+			</return>
+			<argument index="0" name="p1" type="Vector3">
+			</argument>
+			<argument index="1" name="p2" type="Vector3">
+			</argument>
+			<argument index="2" name="q1" type="Vector3">
+			</argument>
+			<argument index="3" name="q2" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_closest_points_between_segments_2d">
+			<return type="PoolVector2Array">
+			</return>
+			<argument index="0" name="p1" type="Vector2">
+			</argument>
+			<argument index="1" name="q1" type="Vector2">
+			</argument>
+			<argument index="2" name="p2" type="Vector2">
+			</argument>
+			<argument index="3" name="q2" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_uv84_normal_bit">
+			<return type="int">
+			</return>
+			<argument index="0" name="normal" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="make_atlas">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="sizes" type="PoolVector2Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="point_is_inside_triangle" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="point" type="Vector2">
+			</argument>
+			<argument index="1" name="a" type="Vector2">
+			</argument>
+			<argument index="2" name="b" type="Vector2">
+			</argument>
+			<argument index="3" name="c" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="ray_intersects_triangle">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="from" type="Vector3">
+			</argument>
+			<argument index="1" name="dir" type="Vector3">
+			</argument>
+			<argument index="2" name="a" type="Vector3">
+			</argument>
+			<argument index="3" name="b" type="Vector3">
+			</argument>
+			<argument index="4" name="c" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="segment_intersects_circle">
+			<return type="float">
+			</return>
+			<argument index="0" name="segment_from" type="Vector2">
+			</argument>
+			<argument index="1" name="segment_to" type="Vector2">
+			</argument>
+			<argument index="2" name="circle_pos" type="Vector2">
+			</argument>
+			<argument index="3" name="circle_radius" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="segment_intersects_convex">
+			<return type="PoolVector3Array">
+			</return>
+			<argument index="0" name="from" type="Vector3">
+			</argument>
+			<argument index="1" name="to" type="Vector3">
+			</argument>
+			<argument index="2" name="planes" type="Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="segment_intersects_cylinder">
+			<return type="PoolVector3Array">
+			</return>
+			<argument index="0" name="from" type="Vector3">
+			</argument>
+			<argument index="1" name="to" type="Vector3">
+			</argument>
+			<argument index="2" name="height" type="float">
+			</argument>
+			<argument index="3" name="radius" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="segment_intersects_segment_2d">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="from_a" type="Vector2">
+			</argument>
+			<argument index="1" name="to_a" type="Vector2">
+			</argument>
+			<argument index="2" name="from_b" type="Vector2">
+			</argument>
+			<argument index="3" name="to_b" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="segment_intersects_sphere">
+			<return type="PoolVector3Array">
+			</return>
+			<argument index="0" name="from" type="Vector3">
+			</argument>
+			<argument index="1" name="to" type="Vector3">
+			</argument>
+			<argument index="2" name="spos" type="Vector3">
+			</argument>
+			<argument index="3" name="sradius" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="segment_intersects_triangle">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="from" type="Vector3">
+			</argument>
+			<argument index="1" name="to" type="Vector3">
+			</argument>
+			<argument index="2" name="a" type="Vector3">
+			</argument>
+			<argument index="3" name="b" type="Vector3">
+			</argument>
+			<argument index="4" name="c" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="triangulate_polygon">
+			<return type="PoolIntArray">
+			</return>
+			<argument index="0" name="polygon" type="PoolVector2Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ARVRServer" inherits="Object" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		This is our AR/VR Server.
+	</brief_description>
+	<description>
+		The AR/VR Server is the heart of our AR/VR solution and handles all the processing.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="add_interface">
+			<return type="void">
+			</return>
+			<argument index="0" name="arg0" type="ARVRInterface">
+			</argument>
+			<description>
+				Mostly exposed for GDNative based interfaces, this is called to register an available interface with the AR/VR server.
+			</description>
+		</method>
+		<method name="find_interface" qualifiers="const">
+			<return type="ARVRInterface">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+				Find an interface by its name. Say that you're making a game that uses specific capabilities of an AR/VR platform you can find the interface for that platform by name and initialize it.
+			</description>
+		</method>
+		<method name="get_interface" qualifiers="const">
+			<return type="ARVRInterface">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Get the interface registered at a given index in our list of interfaces.
+			</description>
+		</method>
+		<method name="get_interface_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Get the number of interfaces currently registered with the AR/VR server. If you're game supports multiple AR/VR platforms you can look throught the available interface and either present the user with a selection or simply try an initialize each interface and use the first one that returns true.
+			</description>
+		</method>
+		<method name="get_reference_frame" qualifiers="const">
+			<return type="Transform">
+			</return>
+			<description>
+				Gets our reference frame transform, mostly used internally and exposed for GDNative build interfaces.
+			</description>
+		</method>
+		<method name="get_tracker" qualifiers="const">
+			<return type="ARVRPositionalTracker">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Get the positional tracker at the given ID.
+			</description>
+		</method>
+		<method name="get_tracker_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Get the number of trackers currently registered.
+			</description>
+		</method>
+		<method name="get_world_scale" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Returns our world scale (see ARVROrigin for more information).
+			</description>
+		</method>
+		<method name="remove_interface">
+			<return type="void">
+			</return>
+			<argument index="0" name="arg0" type="ARVRInterface">
+			</argument>
+			<description>
+				Removes a registered interface, again exposed mostly for GDNative based interfaces.
+			</description>
+		</method>
+		<method name="request_reference_frame">
+			<return type="void">
+			</return>
+			<argument index="0" name="ignore_tilt" type="bool">
+			</argument>
+			<argument index="1" name="keep_height" type="bool">
+			</argument>
+			<description>
+				This is a really important function to understand correctly. AR and VR platforms all handle positioning slightly differently.
+				For platforms that do not offer spatial tracking our origin point (0,0,0) is the location of our HMD but you have little control over the direction the player is facing in the real world.
+				For platforms that do offer spatial tracking our origin point depends very much on the system. For OpenVR our origin point is usually the center of the tracking space, on the ground. For other platforms its often the location of the tracking camera.
+				This method allows you to create a reference frame, it will take the current location of the HMD and use that to adjust all our tracking data in essence realigning the real world to your players current position in your game world.
+				For this method to produce usable results tracking information should be available and this often takes a few frames after starting your game.
+				You should call this method after a few seconds have passed, when the user requests a realignment of the display holding a designated button on a controller for a short period of time, and when implementing a teleport mechanism.
+			</description>
+		</method>
+		<method name="set_primary_interface">
+			<return type="void">
+			</return>
+			<argument index="0" name="arg0" type="ARVRInterface">
+			</argument>
+			<description>
+				Changes the primary interface to the specified interface. Again mostly exposed for GDNative interfaces.
+			</description>
+		</method>
+		<method name="set_world_scale">
+			<return type="void">
+			</return>
+			<argument index="0" name="arg0" type="float">
+			</argument>
+			<description>
+				Changing the world scale, see the ARVROrigin documentation for more information.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="world_scale" type="float" setter="set_world_scale" getter="get_world_scale" brief="">
+		</member>
+	</members>
+	<signals>
+		<signal name="interface_added">
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+				Signal send when a new interface has been added.
+			</description>
+		</signal>
+		<signal name="interface_removed">
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+				Signal send when an interface is removed.
+			</description>
+		</signal>
+		<signal name="tracker_added">
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="int">
+			</argument>
+			<argument index="2" name="id" type="int">
+			</argument>
+			<description>
+				Signal send when a new tracker has been added. If you don't use a fixed number of controllers or if you're using ARVRAnchors for an AR solution it is important to react to this signal and add the appropriate ARVRController or ARVRAnchor node related to this new tracker.
+			</description>
+		</signal>
+		<signal name="tracker_removed">
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="int">
+			</argument>
+			<argument index="2" name="id" type="int">
+			</argument>
+			<description>
+				Signal send when a tracker is removed, you should remove any ARVRController or ARVRAnchor points if applicable. This is not mandatory, the nodes simply become inactive and will be made active again when a new tracker becomes available (i.e. a new controller is switched on that takes the place of the previous one).
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="TRACKER_CONTROLLER" value="1">
+			Our tracker tracks the location of a controller.
+		</constant>
+		<constant name="TRACKER_BASESTATION" value="2">
+			Our tracker tracks the location of a base station.
+		</constant>
+		<constant name="TRACKER_ANCHOR" value="4">
+			Our tracker tracks the location and size of an AR anchor.
+		</constant>
+		<constant name="TRACKER_UNKNOWN" value="128">
+			Used internally if we haven't set the tracker type yet.
+		</constant>
+		<constant name="TRACKER_ANY_KNOWN" value="127">
+			Used internally to filter trackers of any known type.
+		</constant>
+		<constant name="TRACKER_ANY" value="255">
+			Used interally to select all trackers.
+		</constant>
+	</constants>
+</class>

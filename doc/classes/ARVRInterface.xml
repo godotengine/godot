@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ARVRInterface" inherits="Reference" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Base class for ARVR interface implementation.
+	</brief_description>
+	<description>
+		This class needs to be implemented to make an AR or VR platform available to Godot and these should be implemented as C++ modules or GDNative modules (note that for GDNative the subclass ARVRScriptInterface should be used). Part of the interface is exposed to GDScript so you can detect, enable and configure an AR or VR platform.
+		Interfaces should be written in such a way that simply enabling them will give us a working setup. You can query the available interfaces through ARVRServer.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns the name of this interface (OpenVR, OpenHMD, ARKit, etc).
+			</description>
+		</method>
+		<method name="get_recommended_render_targetsize">
+			<return type="Vector2">
+			</return>
+			<description>
+				Returns the resolution at which we should render our intermediate results before things like lens distortion are applied by the VR platform.
+			</description>
+		</method>
+		<method name="hmd_is_present">
+			<return type="bool">
+			</return>
+			<description>
+				Returns true if an HMD is available for this interface.
+			</description>
+		</method>
+		<method name="initialize">
+			<return type="bool">
+			</return>
+			<description>
+				Call this to initialize this interface. The first interface that is initialized is identified as the primary interface and it will be used for rendering output.
+				After initializing the interface you want to use you then need to enable the AR/VR mode of a viewport and rendering should commence. 
+				Note that you must enable the AR/VR mode on the main viewport for any device that uses the main output of Godot such as for mobile VR. 
+				If you do this for a platform that handles its own output (such as OpenVR) Godot will show just one eye without distortion on screen. Alternatively you can add a separate viewport node to your scene and enable AR/VR on that viewport and it will be used to output to the HMD leaving you free to do anything you like in the main window such as using a separate camera as a spectator camera or render out something completely different.
+				While currently not used you can activate additional interfaces, you may wish to do this if you want to track controllers from other platforms. However at this point in time only one interface can render to an HMD.
+			</description>
+		</method>
+		<method name="is_initialized">
+			<return type="bool">
+			</return>
+			<description>
+				Returns true if this interface is active.
+			</description>
+		</method>
+		<method name="is_installed">
+			<return type="bool">
+			</return>
+			<description>
+				Returns true if this interface has been installed. Say your game is designed to work with OpenVR so you are using the OpenVR interface but the user hasn't installed SteamVR, this would return false.
+			</description>
+		</method>
+		<method name="is_primary">
+			<return type="bool">
+			</return>
+			<description>
+				Returns true if this interface is currently the primary interface (the interface responsible for showing the output).
+			</description>
+		</method>
+		<method name="set_is_primary">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Set this interface to the primary interface (unset the old one).
+			</description>
+		</method>
+		<method name="supports_hmd">
+			<return type="bool">
+			</return>
+			<description>
+				Returns true if this interface supports HMDs and by extension uses stereo scopic rendering.
+			</description>
+		</method>
+		<method name="uninitialize">
+			<return type="void">
+			</return>
+			<description>
+				Turns the interface off.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="primary" type="bool" setter="set_is_primary" getter="is_primary" brief="">
+		</member>
+	</members>
+	<constants>
+		<constant name="EYE_MONO" value="0">
+			Mono output, this is mostly used internally when retrieving positioning information for our camera node or when stereo scopic rendering is not supported.
+		</constant>
+		<constant name="EYE_LEFT" value="1">
+			Left eye output, this is mostly used internally when rendering the image for the left eye and obtaining positioning and projection information.
+		</constant>
+		<constant name="EYE_RIGHT" value="2">
+			Right eye output, this is mostly used internally when rendering the image for the right eye and obtaining positioning and projection information.
+		</constant>
+	</constants>
+</class>

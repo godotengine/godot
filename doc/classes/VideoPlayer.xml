@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VideoPlayer" inherits="Control" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Control to play video files.
+	</brief_description>
+	<description>
+		This control has the ability to play video streams. The only format accepted is the OGV Theora, so any other format must be converted before using in a project.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_audio_track" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Get the selected audio track (for multitrack videos).
+			</description>
+		</method>
+		<method name="get_buffering_msec" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Get the amount of miliseconds to store in buffer while playing.
+			</description>
+		</method>
+		<method name="get_stream" qualifiers="const">
+			<return type="VideoStream">
+			</return>
+			<description>
+				Get the video stream.
+			</description>
+		</method>
+		<method name="get_stream_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Get the name of the video stream.
+			</description>
+		</method>
+		<method name="get_stream_pos" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Get the current position of the stream, in seconds.
+			</description>
+		</method>
+		<method name="get_video_texture">
+			<return type="Texture">
+			</return>
+			<description>
+				Get the current frame of the video as a [Texture].
+			</description>
+		</method>
+		<method name="get_volume" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Get the volume of the audio track as a linear value.
+			</description>
+		</method>
+		<method name="get_volume_db" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Get the volume of the audio track in decibels.
+			</description>
+		</method>
+		<method name="has_autoplay" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Get whether or not the video is set as autoplay.
+			</description>
+		</method>
+		<method name="has_expand" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Get whether or not the expand property is set.
+			</description>
+		</method>
+		<method name="is_paused" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Get whether or not the video is paused.
+			</description>
+		</method>
+		<method name="is_playing" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Get whether or not the video is playing.
+			</description>
+		</method>
+		<method name="play">
+			<return type="void">
+			</return>
+			<description>
+				Start the video playback.
+			</description>
+		</method>
+		<method name="set_audio_track">
+			<return type="void">
+			</return>
+			<argument index="0" name="track" type="int">
+			</argument>
+			<description>
+				Set the audio track (for multitrack videos).
+			</description>
+		</method>
+		<method name="set_autoplay">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+				Set whether this node should start playing automatically.
+			</description>
+		</method>
+		<method name="set_buffering_msec">
+			<return type="void">
+			</return>
+			<argument index="0" name="msec" type="int">
+			</argument>
+			<description>
+				Set the amount of miliseconds to buffer during playback.
+			</description>
+		</method>
+		<method name="set_expand">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Set the expand property. If enabled, the video will grow or shrink to fit the player size, otherwise it will play at the stream resolution.
+			</description>
+		</method>
+		<method name="set_paused">
+			<return type="void">
+			</return>
+			<argument index="0" name="paused" type="bool">
+			</argument>
+			<description>
+				Set whether the video should pause the playback.
+			</description>
+		</method>
+		<method name="set_stream">
+			<return type="void">
+			</return>
+			<argument index="0" name="stream" type="VideoStream">
+			</argument>
+			<description>
+				Set the video stream for this player.
+			</description>
+		</method>
+		<method name="set_volume">
+			<return type="void">
+			</return>
+			<argument index="0" name="volume" type="float">
+			</argument>
+			<description>
+				Set the audio volume as a linear value.
+			</description>
+		</method>
+		<method name="set_volume_db">
+			<return type="void">
+			</return>
+			<argument index="0" name="db" type="float">
+			</argument>
+			<description>
+				Set the audio volume in decibels.
+			</description>
+		</method>
+		<method name="stop">
+			<return type="void">
+			</return>
+			<description>
+				Stop the video playback.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="audio_track" type="int" setter="set_audio_track" getter="get_audio_track" brief="">
+		</member>
+		<member name="autoplay" type="bool" setter="set_autoplay" getter="has_autoplay" brief="">
+		</member>
+		<member name="expand" type="bool" setter="set_expand" getter="has_expand" brief="">
+		</member>
+		<member name="paused" type="bool" setter="set_paused" getter="is_paused" brief="">
+		</member>
+		<member name="stream" type="VideoStream" setter="set_stream" getter="get_stream" brief="">
+		</member>
+		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db" brief="">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

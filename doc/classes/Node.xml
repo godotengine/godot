@@ -1,0 +1,870 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Node" inherits="Object" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Base class for all the [i]scene[/i] elements.
+	</brief_description>
+	<description>
+		Nodes are the base bricks with which Godot games are developed. They can be set as children of other nodes, resulting in a tree arrangement. A given node can contain any number of nodes as children (but there is only one scene tree root node) with the requirement that all siblings (direct children of a node) should have unique names.
+		Any tree of nodes is called a [i]scene[/i]. Scenes can be saved to the disk and then instanced into other scenes. This allows for very high flexibility in the architecture and data model of the projects. Nodes can optionally be added to groups. This makes it easy to reach a number of nodes from the code (for example an "enemies" group) to perform grouped actions.
+		[b]Scene tree:[/b] The [SceneTree] contains the active tree of nodes. When a node is added to the scene tree, it receives the NOTIFICATION_ENTER_TREE notification and its [method _enter_tree] callback is triggered. Children nodes are always added [i]after[/i] their parent node, i.e. the [method _enter_tree] callback of a parent node will be triggered before its child's.
+		Once all nodes have been added in the scene tree, they receive the NOTIFICATION_READY notification and their respective [method _ready] callbacks are triggered. For groups of nodes, the [method _ready] callback is called in reverse order, from the children up to the parent nodes.
+		It means that when adding a scene to the scene tree, the following order will be used for the callbacks: [method _enter_tree] of the parent, [method _enter_tree] of the children, [method _ready] of the children and finally [method _ready] of the parent (and that recursively for the whole scene).
+		[b]Processing:[/b] Nodes can be set to the "process" state, so that they receive a callback on each frame requesting them to process (do something). Normal processing (callback [method _process], toggled with [method set_process]) happens as fast as possible and is dependent on the frame rate, so the processing time [i]delta[/i] is variable. Fixed processing (callback [method _fixed_process], toggled with [method set_fixed_process]) happens a fixed amount of times per second (by default 60) and is useful to link itself to the physics.
+		Nodes can also process input events. When set, the [method _input] function will be called for each input that the program receives. In many cases, this can be overkill (unless used for simple projects), and the [method _unhandled_input] function might be preferred; it is called when the input event was not handled by anyone else (typically, GUI [Control] nodes), ensuring that the node only receives the events that were meant for it.
+		To keep track of the scene hierarchy (especially when instancing scenes into other scenes), an "owner" can be set for the node with [method set_owner]. This keeps track of who instanced what. This is mostly useful when writing editors and tools, though.
+		Finally, when a node is freed with [method free] or [method queue_free], it will also free all its children.
+		[b]Networking with nodes:[/b] After connecting to a server (or making one, see [NetworkedMultiplayerENet]) it is possible to use the built-in RPC (remote procedure call) system to easily communicate over the network. By calling [method rpc] with a method name, it will be called locally, and in all connected peers (peers = clients and the server that accepts connections), with behaviour varying depending on the network mode ([method set_network_mode]) on the receiving peer. To identify which [Node] receives the RPC call Godot will use its [NodePath] (make sure node names are the same on all peers).
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="_enter_tree" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<description>
+				Called when the node enters the [SceneTree] (e.g. upon instancing, scene changing or after calling [method add_child] in a script). If the node has children, its [method _enter_tree] callback will be called first, and then that of the children.
+				Corresponds to the NOTIFICATION_ENTER_TREE notification in [method Object._notification].
+			</description>
+		</method>
+		<method name="_exit_tree" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<description>
+				Called when the node leaves the [SceneTree] (e.g. upon freeing, scene changing or after calling [method remove_child] in a script). If the node has children, its [method _exit_tree] callback will be called last, after all its children have left the tree.
+				Corresponds to the NOTIFICATION_EXIT_TREE notification in [method Object._notification].
+			</description>
+		</method>
+		<method name="_fixed_process" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="delta" type="float">
+			</argument>
+			<description>
+				Called during the fixed processing step of the main loop. Fixed processing means that the frame rate is synced to the physics, i.e. the [code]delta[/code] variable should be constant.
+				It is only called if fixed processing has been enabled with [method set_fixed_process].
+				Corresponds to the NOTIFICATION_FIXED_PROCESS notification in [method Object._notification].
+			</description>
+		</method>
+		<method name="_input" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="event" type="InputEvent">
+			</argument>
+			<description>
+				Called when there is a change to input devices. Propagated through the node tree until a Node consumes it.
+			</description>
+		</method>
+		<method name="_process" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="delta" type="float">
+			</argument>
+			<description>
+				Called during the processing step of the main loop. Processing happens at every frame and as fast as possible, so the [code]delta[/code] time since the previous frame is not constant.
+				It is only called if processing has been enabled with [method set_process].
+				Corresponds to the NOTIFICATION_PROCESS notification in [method Object._notification].
+			</description>
+		</method>
+		<method name="_ready" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<description>
+				Called when the node is "ready", i.e. when both the node and its children have entered the scene tree. If the node has children, their [method _ready] callback gets triggered first, and the node will receive the ready notification only afterwards.
+				Corresponds to the NOTIFICATION_READY notification in [method Object._notification].
+			</description>
+		</method>
+		<method name="_unhandled_input" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="event" type="InputEvent">
+			</argument>
+			<description>
+				Propagated to all nodes when the previous InputEvent is not consumed by any nodes.
+			</description>
+		</method>
+		<method name="_unhandled_key_input" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="event" type="InputEventKey">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_child">
+			<return type="void">
+			</return>
+			<argument index="0" name="node" type="Node">
+			</argument>
+			<argument index="1" name="legible_unique_name" type="bool" default="false">
+			</argument>
+			<description>
+				Add a child [Node]. Nodes can have as many children as they want, but every child must have a unique name. Children nodes are automatically deleted when the parent node is deleted, so deleting a whole scene is performed by deleting its topmost node.
+				The optional boolean argument enforces creating child nodes with human-readable names, based on the name of the node being instanced instead of its type only.
+			</description>
+		</method>
+		<method name="add_child_below_node">
+			<return type="void">
+			</return>
+			<argument index="0" name="node" type="Node">
+			</argument>
+			<argument index="1" name="child_node" type="Node">
+			</argument>
+			<argument index="2" name="legible_unique_name" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_to_group">
+			<return type="void">
+			</return>
+			<argument index="0" name="group" type="String">
+			</argument>
+			<argument index="1" name="persistent" type="bool" default="false">
+			</argument>
+			<description>
+				Add a node to a group. Groups are helpers to name and organize a subset of nodes, like for example "enemies" or "collectables". A [Node] can be in any number of groups. Nodes can be assigned a group at any time, but will not be added to it until they are inside the scene tree (see [method is_inside_tree]).
+			</description>
+		</method>
+		<method name="can_process" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return true if the node can process, i.e. whether its pause mode allows processing while the scene tree is paused (see [method set_pause_mode]). Always returns true if the scene tree is not paused, and false if the node is not in the tree. FIXME: Why FAIL_COND?
+			</description>
+		</method>
+		<method name="duplicate" qualifiers="const">
+			<return type="Node">
+			</return>
+			<argument index="0" name="flags" type="int" default="15">
+			</argument>
+			<description>
+				Duplicate the node, returning a new [Node].
+				You can fine-tune the behavior using the [code]flags[/code], which are based on the DUPLICATE_* constants.
+			</description>
+		</method>
+		<method name="find_node" qualifiers="const">
+			<return type="Node">
+			</return>
+			<argument index="0" name="mask" type="String">
+			</argument>
+			<argument index="1" name="recursive" type="bool" default="true">
+			</argument>
+			<argument index="2" name="owned" type="bool" default="true">
+			</argument>
+			<description>
+				Find a descendant of this node whose name matches [code]mask[/code] as in [method String.match] (i.e. case sensitive, but '*' matches zero or more characters and '?' matches any single character except '.'). Note that it does not match against the full path, just against individual node names.
+			</description>
+		</method>
+		<method name="get_child" qualifiers="const">
+			<return type="Node">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Return a child node by its index (see [method get_child_count]). This method is often used for iterating all children of a node.
+			</description>
+		</method>
+		<method name="get_child_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the amount of child nodes.
+			</description>
+		</method>
+		<method name="get_children" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+				Return an array of references ([Node]) to the child nodes.
+			</description>
+		</method>
+		<method name="get_filename" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Return a filename that may be contained by the node. When a scene is instanced from a file, it topmost node contains the filename from where it was loaded (see [method set_filename]).
+			</description>
+		</method>
+		<method name="get_fixed_process_delta_time" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the time elapsed since the last fixed frame (see [method _fixed_process]). This is always the same in fixed processing unless the frames per second is changed in [OS].
+			</description>
+		</method>
+		<method name="get_groups" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+				Return an array listing the groups that the node is part of.
+			</description>
+		</method>
+		<method name="get_index" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Get the node index, i.e. its position among the siblings of its parent.
+			</description>
+		</method>
+		<method name="get_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Return the name of the node. This name is unique among the siblings (other child nodes from the same parent).
+			</description>
+		</method>
+		<method name="get_network_master" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_node" qualifiers="const">
+			<return type="Node">
+			</return>
+			<argument index="0" name="path" type="NodePath">
+			</argument>
+			<description>
+				Fetch a node. The [NodePath] must be valid (or else an error will be raised) and can be either the path to child node, a relative path (from the current node to another node), or an absolute path to a node.
+				Note: fetching absolute paths only works when the node is inside the scene tree (see [method is_inside_tree]).
+				[i]Example:[/i] Assume your current node is Character and the following tree:
+				[codeblock]
+				/root
+				/root/Character
+				/root/Character/Sword
+				/root/Character/Backpack/Dagger
+				/root/MyGame
+				/root/Swamp/Alligator
+				/root/Swamp/Mosquito
+				/root/Swamp/Goblin
+				[/codeblock]
+				Possible paths are:
+				[codeblock]
+				get_node("Sword")
+				get_node("Backpack/Dagger")
+				get_node("../Swamp/Alligator")
+				get_node("/root/MyGame")
+				[/codeblock]
+			</description>
+		</method>
+		<method name="get_node_and_resource">
+			<return type="Array">
+			</return>
+			<argument index="0" name="path" type="NodePath">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_owner" qualifiers="const">
+			<return type="Node">
+			</return>
+			<description>
+				Get the node owner (see [method set_owner]).
+			</description>
+		</method>
+		<method name="get_parent" qualifiers="const">
+			<return type="Node">
+			</return>
+			<description>
+				Return the parent node of the current node, or an empty [Node] if the node lacks a parent.
+			</description>
+		</method>
+		<method name="get_path" qualifiers="const">
+			<return type="NodePath">
+			</return>
+			<description>
+				Return the absolute path of the current node. This only works if the current node is inside the scene tree (see [method is_inside_tree]).
+			</description>
+		</method>
+		<method name="get_path_to" qualifiers="const">
+			<return type="NodePath">
+			</return>
+			<argument index="0" name="node" type="Node">
+			</argument>
+			<description>
+				Return the relative path from the current node to the specified node in "node" argument. Both nodes must be in the same scene, or else the function will fail.
+			</description>
+		</method>
+		<method name="get_pause_mode" qualifiers="const">
+			<return type="int" enum="Node.PauseMode">
+			</return>
+			<description>
+				Return the pause mode (PAUSE_MODE_*) of this Node.
+			</description>
+		</method>
+		<method name="get_position_in_parent" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the order in the node tree branch, i.e. if called by the first child Node, return 0.
+			</description>
+		</method>
+		<method name="get_process_delta_time" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the time elapsed (in seconds) since the last process callback. This is almost always different each time.
+			</description>
+		</method>
+		<method name="get_scene_instance_load_placeholder" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_tree" qualifiers="const">
+			<return type="SceneTree">
+			</return>
+			<description>
+				Return a [SceneTree] that this node is inside.
+			</description>
+		</method>
+		<method name="get_viewport" qualifiers="const">
+			<return type="Viewport">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="has_node" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="path" type="NodePath">
+			</argument>
+			<description>
+				Return whether the node that a given [NodePath] points too exists.
+			</description>
+		</method>
+		<method name="has_node_and_resource" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="path" type="NodePath">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_a_parent_of" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="node" type="Node">
+			</argument>
+			<description>
+				Return [i]true[/i] if the "node" argument is a direct or indirect child of the current node, otherwise return [i]false[/i].
+			</description>
+		</method>
+		<method name="is_displayed_folded" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_fixed_processing" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return true if fixed processing is enabled (see [method set_fixed_process]).
+			</description>
+		</method>
+		<method name="is_fixed_processing_internal" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_greater_than" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="node" type="Node">
+			</argument>
+			<description>
+				Return [i]true[/i] if "node" occurs later in the scene hierarchy than the current node, otherwise return [i]false[/i].
+			</description>
+		</method>
+		<method name="is_in_group" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="group" type="String">
+			</argument>
+			<description>
+				Return whether this Node is in the specified group.
+			</description>
+		</method>
+		<method name="is_inside_tree" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return whether this Node is inside a [SceneTree].
+			</description>
+		</method>
+		<method name="is_network_master" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_processing" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return whether processing is enabled in the current node (see [method set_process]).
+			</description>
+		</method>
+		<method name="is_processing_input" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return true if the node is processing input (see [method set_process_input]).
+			</description>
+		</method>
+		<method name="is_processing_internal" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_processing_unhandled_input" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return true if the node is processing unhandled input (see [method set_process_unhandled_input]).
+			</description>
+		</method>
+		<method name="is_processing_unhandled_key_input" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="move_child">
+			<return type="void">
+			</return>
+			<argument index="0" name="child_node" type="Node">
+			</argument>
+			<argument index="1" name="to_pos" type="int">
+			</argument>
+			<description>
+				Move a child node to a different position (order) amongst the other children. Since calls, signals, etc are performed by tree order, changing the order of children nodes may be useful.
+			</description>
+		</method>
+		<method name="print_stray_nodes">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="print_tree">
+			<return type="void">
+			</return>
+			<description>
+				Print the scene to stdout. Used mainly for debugging purposes.
+			</description>
+		</method>
+		<method name="propagate_call">
+			<return type="void">
+			</return>
+			<argument index="0" name="method" type="String">
+			</argument>
+			<argument index="1" name="args" type="Array" default="[  ]">
+			</argument>
+			<argument index="2" name="parent_first" type="bool" default="false">
+			</argument>
+			<description>
+				Calls the method (if present) with the arguments given in "args" on this Node and recursively on all children. If the parent_first argument is true then the method will be called on the current [Node] first, then on all children. If it is false then the children will get called first.
+			</description>
+		</method>
+		<method name="propagate_notification">
+			<return type="void">
+			</return>
+			<argument index="0" name="what" type="int">
+			</argument>
+			<description>
+				Notify the current node and all its children recursively by calling notification() in all of them.
+			</description>
+		</method>
+		<method name="queue_free">
+			<return type="void">
+			</return>
+			<description>
+				Queues a node for deletion at the end of the current frame. When deleted, all of its children nodes will be deleted as well. This method ensures it's safe to delete the node, contrary to [method Object.free]. Use [method Object.is_queued_for_deletion] to know whether a node will be deleted at the end of the frame.
+			</description>
+		</method>
+		<method name="raise">
+			<return type="void">
+			</return>
+			<description>
+				Move this node to the top of the array of nodes of the parent node. This is often useful on GUIs ([Control]), because their order of drawing fully depends on their order in the tree.
+			</description>
+		</method>
+		<method name="remove_and_skip">
+			<return type="void">
+			</return>
+			<description>
+				Remove a node and set all its children as children of the parent node (if exists). All even subscriptions that pass by the removed node will be unsubscribed.
+			</description>
+		</method>
+		<method name="remove_child">
+			<return type="void">
+			</return>
+			<argument index="0" name="node" type="Node">
+			</argument>
+			<description>
+				Remove a child [Node]. Node is NOT deleted and will have to be deleted manually.
+			</description>
+		</method>
+		<method name="remove_from_group">
+			<return type="void">
+			</return>
+			<argument index="0" name="group" type="String">
+			</argument>
+			<description>
+				Remove a node from a group.
+			</description>
+		</method>
+		<method name="replace_by">
+			<return type="void">
+			</return>
+			<argument index="0" name="node" type="Node">
+			</argument>
+			<argument index="1" name="keep_data" type="bool" default="false">
+			</argument>
+			<description>
+				Replace a node in a scene by a given one. Subscriptions that pass through this node will be lost.
+			</description>
+		</method>
+		<method name="request_ready">
+			<return type="void">
+			</return>
+			<description>
+				Request that [code]_ready[/code] be called again.
+			</description>
+		</method>
+		<method name="rpc" qualifiers="vararg">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="method" type="String">
+			</argument>
+			<description>
+				Send a remote procedure call request to all peers on the network (and locally), optionally sending additional data as arguments. Call request will be received by nodes with the same [NodePath].
+			</description>
+		</method>
+		<method name="rpc_config">
+			<return type="void">
+			</return>
+			<argument index="0" name="method" type="String">
+			</argument>
+			<argument index="1" name="mode" type="int" enum="Node.RPCMode">
+			</argument>
+			<description>
+				Change the method's RPC mode (one of RPC_MODE_* constants).
+			</description>
+		</method>
+		<method name="rpc_id" qualifiers="vararg">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="peer_id" type="int">
+			</argument>
+			<argument index="1" name="method" type="String">
+			</argument>
+			<description>
+				Send a [method rpc] to a specific peer identified by [i]peer_id[/i].
+			</description>
+		</method>
+		<method name="rpc_unreliable" qualifiers="vararg">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="method" type="String">
+			</argument>
+			<description>
+				Send a [method rpc] using an unreliable protocol.
+			</description>
+		</method>
+		<method name="rpc_unreliable_id" qualifiers="vararg">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="peer_id" type="int">
+			</argument>
+			<argument index="1" name="method" type="String">
+			</argument>
+			<description>
+				Send a [method rpc] to a specific peer identified by [i]peer_id[/i] using an unreliable protocol.
+			</description>
+		</method>
+		<method name="rset">
+			<return type="void">
+			</return>
+			<argument index="0" name="property" type="String">
+			</argument>
+			<argument index="1" name="value" type="Variant">
+			</argument>
+			<description>
+				Remotely change property's value on other peers (and locally).
+			</description>
+		</method>
+		<method name="rset_config">
+			<return type="void">
+			</return>
+			<argument index="0" name="property" type="String">
+			</argument>
+			<argument index="1" name="mode" type="int" enum="Node.RPCMode">
+			</argument>
+			<description>
+				Change the property's RPC mode (one of RPC_MODE_* constants).
+			</description>
+		</method>
+		<method name="rset_id">
+			<return type="void">
+			</return>
+			<argument index="0" name="peer_id" type="int">
+			</argument>
+			<argument index="1" name="property" type="String">
+			</argument>
+			<argument index="2" name="value" type="Variant">
+			</argument>
+			<description>
+				Remotely change property's value on a specific peer identified by [i]peer_id[/i].
+			</description>
+		</method>
+		<method name="rset_unreliable">
+			<return type="void">
+			</return>
+			<argument index="0" name="property" type="String">
+			</argument>
+			<argument index="1" name="value" type="Variant">
+			</argument>
+			<description>
+				Remotely change property's value on other peers (and locally) using an unreliable protocol.
+			</description>
+		</method>
+		<method name="rset_unreliable_id">
+			<return type="void">
+			</return>
+			<argument index="0" name="peer_id" type="int">
+			</argument>
+			<argument index="1" name="property" type="String">
+			</argument>
+			<argument index="2" name="value" type="Variant">
+			</argument>
+			<description>
+				Remotely change property's value on a specific peer identified by [i]peer_id[/i] using an unreliable protocol.
+			</description>
+		</method>
+		<method name="set_display_folded">
+			<return type="void">
+			</return>
+			<argument index="0" name="fold" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_filename">
+			<return type="void">
+			</return>
+			<argument index="0" name="filename" type="String">
+			</argument>
+			<description>
+				A node can contain a filename. This filename should not be changed by the user, unless writing editors and tools. When a scene is instanced from a file, it topmost node contains the filename from where it was loaded.
+			</description>
+		</method>
+		<method name="set_fixed_process">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Enables or disables node fixed framerate processing. When a node is being processed, it will receive a NOTIFICATION_PROCESS at a fixed (usually 60 fps, check [OS] to change that) interval (and the [method _fixed_process] callback will be called if exists). It is common to check how much time was elapsed since the previous frame by calling [method get_fixed_process_delta_time].
+			</description>
+		</method>
+		<method name="set_fixed_process_internal">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_name">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+				Set the name of the [Node]. Name must be unique within parent, and setting an already existing name will cause for the node to be automatically renamed.
+			</description>
+		</method>
+		<method name="set_network_master">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="recursive" type="bool" default="true">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_owner">
+			<return type="void">
+			</return>
+			<argument index="0" name="owner" type="Node">
+			</argument>
+			<description>
+				Set the node owner. A node can have any other node as owner (as long as a valid parent, grandparent, etc ascending in the tree). When saving a node (using SceneSaver) all the nodes it owns will be saved with it. This allows to create complex SceneTrees, with instancing and subinstancing.
+			</description>
+		</method>
+		<method name="set_pause_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="int" enum="Node.PauseMode">
+			</argument>
+			<description>
+				Set pause mode (PAUSE_MODE_*) of this Node.
+			</description>
+		</method>
+		<method name="set_process">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Enables or disables node processing. When a node is being processed, it will receive a NOTIFICATION_PROCESS on every drawn frame (and the [method _process] callback will be called if exists). It is common to check how much time was elapsed since the previous frame by calling [method get_process_delta_time].
+			</description>
+		</method>
+		<method name="set_process_input">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Enable input processing for node. This is not required for GUI controls! It hooks up the node to receive all input (see [method _input]).
+			</description>
+		</method>
+		<method name="set_process_internal">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_process_unhandled_input">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Enable unhandled input processing for node. This is not required for GUI controls! It hooks up the node to receive all input that was not previously handled before (usually by a [Control]). (see [method _unhandled_input]).
+			</description>
+		</method>
+		<method name="set_process_unhandled_key_input">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_scene_instance_load_placeholder">
+			<return type="void">
+			</return>
+			<argument index="0" name="load_placeholder" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="_import_path" type="NodePath" setter="_set_import_path" getter="_get_import_path" brief="">
+		</member>
+		<member name="editor/display_folded" type="bool" setter="set_display_folded" getter="is_displayed_folded" brief="">
+		</member>
+		<member name="pause_mode" type="int" setter="set_pause_mode" getter="get_pause_mode" brief="" enum="Node.PauseMode">
+		</member>
+	</members>
+	<signals>
+		<signal name="renamed">
+			<description>
+				Emitted when the node is renamed.
+			</description>
+		</signal>
+		<signal name="tree_entered">
+			<description>
+				Emitted when Node enters the tree.
+			</description>
+		</signal>
+		<signal name="tree_exited">
+			<description>
+				Emitted when Node exits the tree.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="NOTIFICATION_ENTER_TREE" value="10" enum="">
+		</constant>
+		<constant name="NOTIFICATION_EXIT_TREE" value="11" enum="">
+		</constant>
+		<constant name="NOTIFICATION_MOVED_IN_PARENT" value="12" enum="">
+		</constant>
+		<constant name="NOTIFICATION_READY" value="13" enum="">
+		</constant>
+		<constant name="NOTIFICATION_FIXED_PROCESS" value="16" enum="">
+		</constant>
+		<constant name="NOTIFICATION_PROCESS" value="17" enum="">
+			Notification received every frame when the process flag is set (see [method set_process]).
+		</constant>
+		<constant name="NOTIFICATION_PARENTED" value="18" enum="">
+			Notification received when a node is set as a child of another node. Note that this doesn't mean that a node entered the Scene Tree.
+		</constant>
+		<constant name="NOTIFICATION_UNPARENTED" value="19" enum="">
+			Notification received when a node is unparented (parent removed it from the list of children).
+		</constant>
+		<constant name="NOTIFICATION_PAUSED" value="14" enum="">
+		</constant>
+		<constant name="NOTIFICATION_UNPAUSED" value="15" enum="">
+		</constant>
+		<constant name="NOTIFICATION_INSTANCED" value="20" enum="">
+		</constant>
+		<constant name="NOTIFICATION_DRAG_BEGIN" value="21" enum="">
+		</constant>
+		<constant name="NOTIFICATION_DRAG_END" value="22" enum="">
+		</constant>
+		<constant name="NOTIFICATION_PATH_CHANGED" value="23" enum="">
+		</constant>
+		<constant name="NOTIFICATION_TRANSLATION_CHANGED" value="24" enum="">
+		</constant>
+		<constant name="NOTIFICATION_INTERNAL_PROCESS" value="25" enum="">
+		</constant>
+		<constant name="NOTIFICATION_INTERNAL_FIXED_PROCESS" value="26" enum="">
+		</constant>
+		<constant name="RPC_MODE_DISABLED" value="0">
+		</constant>
+		<constant name="RPC_MODE_REMOTE" value="1">
+			Call a method remotely.
+		</constant>
+		<constant name="RPC_MODE_SYNC" value="2">
+			Call a method both remotely and locally.
+		</constant>
+		<constant name="RPC_MODE_MASTER" value="3">
+			Call a method if the Node is Master.
+		</constant>
+		<constant name="RPC_MODE_SLAVE" value="4">
+			Call a method if the Node is Slave.
+		</constant>
+		<constant name="PAUSE_MODE_INHERIT" value="0">
+			Inherits pause mode from parent. For root node, it is equivalent to PAUSE_MODE_STOP.
+		</constant>
+		<constant name="PAUSE_MODE_STOP" value="1">
+			Stop processing when SceneTree is paused.
+		</constant>
+		<constant name="PAUSE_MODE_PROCESS" value="2">
+			Continue to process regardless of SceneTree pause state.
+		</constant>
+		<constant name="DUPLICATE_SIGNALS" value="1">
+		</constant>
+		<constant name="DUPLICATE_GROUPS" value="2">
+		</constant>
+		<constant name="DUPLICATE_SCRIPTS" value="4">
+		</constant>
+		<constant name="DUPLICATE_USE_INSTANCING" value="8">
+		</constant>
+	</constants>
+</class>

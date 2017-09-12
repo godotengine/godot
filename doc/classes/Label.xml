@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Label" inherits="Control" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Control that displays formatted text.
+	</brief_description>
+	<description>
+		Label is a control that displays formatted text, optionally autowrapping it to the [Control] area. It inherits from range to be able to scroll wrapped text vertically.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_align" qualifiers="const">
+			<return type="int" enum="Label.Align">
+			</return>
+			<description>
+				Return the alignment mode (any of the ALIGN_* enumeration values).
+			</description>
+		</method>
+		<method name="get_line_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the amount of lines.
+			</description>
+		</method>
+		<method name="get_line_height" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the height of a line.
+			</description>
+		</method>
+		<method name="get_lines_skipped" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the the number of lines to skipped before displaying.
+			</description>
+		</method>
+		<method name="get_max_lines_visible" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the restricted number of lines to display. Returns -1 if unrestricted.
+			</description>
+		</method>
+		<method name="get_percent_visible" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the restricted number of characters to display (as a percentage of the total text).
+			</description>
+		</method>
+		<method name="get_text" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Return the label text. Text can contain newlines.
+			</description>
+		</method>
+		<method name="get_total_character_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the total length of the text.
+			</description>
+		</method>
+		<method name="get_valign" qualifiers="const">
+			<return type="int" enum="Label.VAlign">
+			</return>
+			<description>
+				Return the vertical alignment mode (any of the VALIGN_* enumeration values).
+			</description>
+		</method>
+		<method name="get_visible_characters" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the restricted number of characters to display. Returns -1 if unrestricted.
+			</description>
+		</method>
+		<method name="get_visible_line_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="has_autowrap" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return the state of the [i]autowrap[/i] mode (see [method set_autowrap]).
+			</description>
+		</method>
+		<method name="is_clipping_text" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return true if text would be cut off if it is too wide.
+			</description>
+		</method>
+		<method name="is_uppercase" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return true if text is displayed in all capitals.
+			</description>
+		</method>
+		<method name="set_align">
+			<return type="void">
+			</return>
+			<argument index="0" name="align" type="int" enum="Label.Align">
+			</argument>
+			<description>
+				Sets the alignment mode to any of the ALIGN_* enumeration values.
+			</description>
+		</method>
+		<method name="set_autowrap">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Set [i]autowrap[/i] mode. When enabled, autowrap will fit text to the control width, breaking sentences when they exceed the available horizontal space. When disabled, the label minimum width becomes the width of the longest row, and the minimum height large enough to fit all rows.
+			</description>
+		</method>
+		<method name="set_clip_text">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Cuts off the rest of the text if it is too wide.
+			</description>
+		</method>
+		<method name="set_lines_skipped">
+			<return type="void">
+			</return>
+			<argument index="0" name="lines_skipped" type="int">
+			</argument>
+			<description>
+				Sets the number of lines to skip before displaying. Useful for scrolling text.
+			</description>
+		</method>
+		<method name="set_max_lines_visible">
+			<return type="void">
+			</return>
+			<argument index="0" name="lines_visible" type="int">
+			</argument>
+			<description>
+				Restricts the number of lines to display. Set to -1 to disable.
+			</description>
+		</method>
+		<method name="set_percent_visible">
+			<return type="void">
+			</return>
+			<argument index="0" name="percent_visible" type="float">
+			</argument>
+			<description>
+				Restricts the number of characters to display (as a percentage of the total text).
+			</description>
+		</method>
+		<method name="set_text">
+			<return type="void">
+			</return>
+			<argument index="0" name="text" type="String">
+			</argument>
+			<description>
+				Set the label text. Text can contain newlines.
+			</description>
+		</method>
+		<method name="set_uppercase">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Display text in all capitals.
+			</description>
+		</method>
+		<method name="set_valign">
+			<return type="void">
+			</return>
+			<argument index="0" name="valign" type="int" enum="Label.VAlign">
+			</argument>
+			<description>
+				Sets the vertical alignment mode to any of the VALIGN_* enumeration values.
+			</description>
+		</method>
+		<method name="set_visible_characters">
+			<return type="void">
+			</return>
+			<argument index="0" name="amount" type="int">
+			</argument>
+			<description>
+				Restricts the number of characters to display. Set to -1 to disable.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="align" type="int" setter="set_align" getter="get_align" brief="" enum="Label.Align">
+		</member>
+		<member name="autowrap" type="bool" setter="set_autowrap" getter="has_autowrap" brief="">
+		</member>
+		<member name="clip_text" type="bool" setter="set_clip_text" getter="is_clipping_text" brief="">
+		</member>
+		<member name="lines_skipped" type="int" setter="set_lines_skipped" getter="get_lines_skipped" brief="">
+		</member>
+		<member name="max_lines_visible" type="int" setter="set_max_lines_visible" getter="get_max_lines_visible" brief="">
+		</member>
+		<member name="percent_visible" type="float" setter="set_percent_visible" getter="get_percent_visible" brief="">
+		</member>
+		<member name="text" type="String" setter="set_text" getter="get_text" brief="">
+		</member>
+		<member name="uppercase" type="bool" setter="set_uppercase" getter="is_uppercase" brief="">
+		</member>
+		<member name="valign" type="int" setter="set_valign" getter="get_valign" brief="" enum="Label.VAlign">
+		</member>
+	</members>
+	<constants>
+		<constant name="ALIGN_LEFT" value="0">
+			Align rows to the left (default).
+		</constant>
+		<constant name="ALIGN_CENTER" value="1">
+			Align rows centered.
+		</constant>
+		<constant name="ALIGN_RIGHT" value="2">
+			Align rows to the right (default).
+		</constant>
+		<constant name="ALIGN_FILL" value="3">
+			Expand row whitespaces to fit the width.
+		</constant>
+		<constant name="VALIGN_TOP" value="0">
+			Align the whole text to the top.
+		</constant>
+		<constant name="VALIGN_CENTER" value="1">
+			Align the whole text to the center.
+		</constant>
+		<constant name="VALIGN_BOTTOM" value="2">
+			Align the whole text to the bottom.
+		</constant>
+		<constant name="VALIGN_FILL" value="3">
+			Align the whole text by spreading the rows.
+		</constant>
+	</constants>
+	<theme_items>
+		<theme_item name="font" type="Font">
+		</theme_item>
+		<theme_item name="font_color" type="Color">
+		</theme_item>
+		<theme_item name="font_color_shadow" type="Color">
+		</theme_item>
+		<theme_item name="line_spacing" type="int">
+		</theme_item>
+		<theme_item name="normal" type="StyleBox">
+		</theme_item>
+		<theme_item name="shadow_as_outline" type="int">
+		</theme_item>
+		<theme_item name="shadow_offset_x" type="int">
+		</theme_item>
+		<theme_item name="shadow_offset_y" type="int">
+		</theme_item>
+	</theme_items>
+</class>

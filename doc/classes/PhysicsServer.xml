@@ -1,0 +1,1252 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PhysicsServer" inherits="Object" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="area_add_shape">
+			<return type="void">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="shape" type="RID">
+			</argument>
+			<argument index="2" name="transform" type="Transform" default="Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="area_attach_object_instance_id">
+			<return type="void">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="area_clear_shapes">
+			<return type="void">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="area_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="area_get_object_instance_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="area_get_param" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="param" type="int" enum="PhysicsServer.AreaParameter">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="area_get_shape" qualifiers="const">
+			<return type="RID">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="shape_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="area_get_shape_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="area_get_shape_transform" qualifiers="const">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="shape_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="area_get_space" qualifiers="const">
+			<return type="RID">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="area_get_space_override_mode" qualifiers="const">
+			<return type="int" enum="PhysicsServer.AreaSpaceOverrideMode">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="area_get_transform" qualifiers="const">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="area_is_ray_pickable" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="area_remove_shape">
+			<return type="void">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="shape_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="area_set_collision_layer">
+			<return type="void">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="layer" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="area_set_collision_mask">
+			<return type="void">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="mask" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="area_set_monitor_callback">
+			<return type="void">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="receiver" type="Object">
+			</argument>
+			<argument index="2" name="method" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="area_set_param">
+			<return type="void">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="param" type="int" enum="PhysicsServer.AreaParameter">
+			</argument>
+			<argument index="2" name="value" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="area_set_ray_pickable">
+			<return type="void">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="area_set_shape">
+			<return type="void">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="shape_idx" type="int">
+			</argument>
+			<argument index="2" name="shape" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="area_set_shape_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="shape_idx" type="int">
+			</argument>
+			<argument index="2" name="transform" type="Transform">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="area_set_space">
+			<return type="void">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="space" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="area_set_space_override_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="mode" type="int" enum="PhysicsServer.AreaSpaceOverrideMode">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="area_set_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="transform" type="Transform">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_add_collision_exception">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="excepted_body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_add_shape">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="shape" type="RID">
+			</argument>
+			<argument index="2" name="transform" type="Transform" default="Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_apply_impulse">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="pos" type="Vector3">
+			</argument>
+			<argument index="2" name="impulse" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_apply_torque_impulse">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="impulse" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_attach_object_instance_id">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_clear_shapes">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_create">
+			<return type="RID">
+			</return>
+			<argument index="0" name="mode" type="int" enum="PhysicsServer.BodyMode" default="2">
+			</argument>
+			<argument index="1" name="init_sleeping" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_get_axis_lock" qualifiers="const">
+			<return type="int" enum="PhysicsServer.BodyAxisLock">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_get_collision_layer" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_get_collision_mask" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_get_max_contacts_reported" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_get_mode" qualifiers="const">
+			<return type="int" enum="PhysicsServer.BodyMode">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_get_object_instance_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_get_param" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="param" type="int" enum="PhysicsServer.BodyParameter">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_get_shape" qualifiers="const">
+			<return type="RID">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="shape_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_get_shape_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_get_shape_transform" qualifiers="const">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="shape_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_get_space" qualifiers="const">
+			<return type="RID">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_get_state" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="state" type="int" enum="PhysicsServer.BodyState">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_is_continuous_collision_detection_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_is_omitting_force_integration" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_is_ray_pickable" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_remove_collision_exception">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="excepted_body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_remove_shape">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="shape_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_set_axis_lock">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="axis" type="int" enum="PhysicsServer.BodyAxisLock">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_set_axis_velocity">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="axis_velocity" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_set_collision_layer">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="layer" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_set_collision_mask">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="mask" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_set_enable_continuous_collision_detection">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_set_force_integration_callback">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="receiver" type="Object">
+			</argument>
+			<argument index="2" name="method" type="String">
+			</argument>
+			<argument index="3" name="userdata" type="Variant" default="null">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_set_max_contacts_reported">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="amount" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_set_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="mode" type="int" enum="PhysicsServer.BodyMode">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_set_omit_force_integration">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_set_param">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="param" type="int" enum="PhysicsServer.BodyParameter">
+			</argument>
+			<argument index="2" name="value" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_set_ray_pickable">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_set_shape">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="shape_idx" type="int">
+			</argument>
+			<argument index="2" name="shape" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_set_shape_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="shape_idx" type="int">
+			</argument>
+			<argument index="2" name="transform" type="Transform">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_set_space">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="space" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_set_state">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="state" type="int" enum="PhysicsServer.BodyState">
+			</argument>
+			<argument index="2" name="value" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="cone_twist_joint_get_param" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="joint" type="RID">
+			</argument>
+			<argument index="1" name="param" type="int" enum="PhysicsServer.ConeTwistJointParam">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="cone_twist_joint_set_param">
+			<return type="void">
+			</return>
+			<argument index="0" name="joint" type="RID">
+			</argument>
+			<argument index="1" name="param" type="int" enum="PhysicsServer.ConeTwistJointParam">
+			</argument>
+			<argument index="2" name="value" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="free_rid">
+			<return type="void">
+			</return>
+			<argument index="0" name="rid" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="generic_6dof_joint_get_flag">
+			<return type="bool">
+			</return>
+			<argument index="0" name="joint" type="RID">
+			</argument>
+			<argument index="1" name="axis" type="int" enum="Vector3.Axis">
+			</argument>
+			<argument index="2" name="flag" type="int" enum="PhysicsServer.G6DOFJointAxisFlag">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="generic_6dof_joint_get_param">
+			<return type="float">
+			</return>
+			<argument index="0" name="joint" type="RID">
+			</argument>
+			<argument index="1" name="axis" type="int" enum="Vector3.Axis">
+			</argument>
+			<argument index="2" name="param" type="int" enum="PhysicsServer.G6DOFJointAxisParam">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="generic_6dof_joint_set_flag">
+			<return type="void">
+			</return>
+			<argument index="0" name="joint" type="RID">
+			</argument>
+			<argument index="1" name="axis" type="int" enum="Vector3.Axis">
+			</argument>
+			<argument index="2" name="flag" type="int" enum="PhysicsServer.G6DOFJointAxisFlag">
+			</argument>
+			<argument index="3" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="generic_6dof_joint_set_param">
+			<return type="void">
+			</return>
+			<argument index="0" name="joint" type="RID">
+			</argument>
+			<argument index="1" name="axis" type="int" enum="Vector3.Axis">
+			</argument>
+			<argument index="2" name="param" type="int" enum="PhysicsServer.G6DOFJointAxisParam">
+			</argument>
+			<argument index="3" name="value" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_process_info">
+			<return type="int">
+			</return>
+			<argument index="0" name="process_info" type="int" enum="PhysicsServer.ProcessInfo">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="hinge_joint_get_flag" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="joint" type="RID">
+			</argument>
+			<argument index="1" name="flag" type="int" enum="PhysicsServer.HingeJointFlag">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="hinge_joint_get_param" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="joint" type="RID">
+			</argument>
+			<argument index="1" name="param" type="int" enum="PhysicsServer.HingeJointParam">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="hinge_joint_set_flag">
+			<return type="void">
+			</return>
+			<argument index="0" name="joint" type="RID">
+			</argument>
+			<argument index="1" name="flag" type="int" enum="PhysicsServer.HingeJointFlag">
+			</argument>
+			<argument index="2" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="hinge_joint_set_param">
+			<return type="void">
+			</return>
+			<argument index="0" name="joint" type="RID">
+			</argument>
+			<argument index="1" name="param" type="int" enum="PhysicsServer.HingeJointParam">
+			</argument>
+			<argument index="2" name="value" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="joint_create_cone_twist">
+			<return type="RID">
+			</return>
+			<argument index="0" name="body_A" type="RID">
+			</argument>
+			<argument index="1" name="local_ref_A" type="Transform">
+			</argument>
+			<argument index="2" name="body_B" type="RID">
+			</argument>
+			<argument index="3" name="local_ref_B" type="Transform">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="joint_create_generic_6dof">
+			<return type="RID">
+			</return>
+			<argument index="0" name="body_A" type="RID">
+			</argument>
+			<argument index="1" name="local_ref_A" type="Transform">
+			</argument>
+			<argument index="2" name="body_B" type="RID">
+			</argument>
+			<argument index="3" name="local_ref_B" type="Transform">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="joint_create_hinge">
+			<return type="RID">
+			</return>
+			<argument index="0" name="body_A" type="RID">
+			</argument>
+			<argument index="1" name="hinge_A" type="Transform">
+			</argument>
+			<argument index="2" name="body_B" type="RID">
+			</argument>
+			<argument index="3" name="hinge_B" type="Transform">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="joint_create_pin">
+			<return type="RID">
+			</return>
+			<argument index="0" name="body_A" type="RID">
+			</argument>
+			<argument index="1" name="local_A" type="Vector3">
+			</argument>
+			<argument index="2" name="body_B" type="RID">
+			</argument>
+			<argument index="3" name="local_B" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="joint_create_slider">
+			<return type="RID">
+			</return>
+			<argument index="0" name="body_A" type="RID">
+			</argument>
+			<argument index="1" name="local_ref_A" type="Transform">
+			</argument>
+			<argument index="2" name="body_B" type="RID">
+			</argument>
+			<argument index="3" name="local_ref_B" type="Transform">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="joint_get_solver_priority" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="joint" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="joint_get_type" qualifiers="const">
+			<return type="int" enum="PhysicsServer.JointType">
+			</return>
+			<argument index="0" name="joint" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="joint_set_solver_priority">
+			<return type="void">
+			</return>
+			<argument index="0" name="joint" type="RID">
+			</argument>
+			<argument index="1" name="priority" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="pin_joint_get_local_a" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="joint" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="pin_joint_get_local_b" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="joint" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="pin_joint_get_param" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="joint" type="RID">
+			</argument>
+			<argument index="1" name="param" type="int" enum="PhysicsServer.PinJointParam">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="pin_joint_set_local_a">
+			<return type="void">
+			</return>
+			<argument index="0" name="joint" type="RID">
+			</argument>
+			<argument index="1" name="local_A" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="pin_joint_set_local_b">
+			<return type="void">
+			</return>
+			<argument index="0" name="joint" type="RID">
+			</argument>
+			<argument index="1" name="local_B" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="pin_joint_set_param">
+			<return type="void">
+			</return>
+			<argument index="0" name="joint" type="RID">
+			</argument>
+			<argument index="1" name="param" type="int" enum="PhysicsServer.PinJointParam">
+			</argument>
+			<argument index="2" name="value" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_active">
+			<return type="void">
+			</return>
+			<argument index="0" name="active" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="shape_create">
+			<return type="RID">
+			</return>
+			<argument index="0" name="type" type="int" enum="PhysicsServer.ShapeType">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="shape_get_data" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="shape" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="shape_get_type" qualifiers="const">
+			<return type="int" enum="PhysicsServer.ShapeType">
+			</return>
+			<argument index="0" name="shape" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="shape_set_data">
+			<return type="void">
+			</return>
+			<argument index="0" name="shape" type="RID">
+			</argument>
+			<argument index="1" name="data" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="slider_joint_get_param" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="joint" type="RID">
+			</argument>
+			<argument index="1" name="param" type="int" enum="PhysicsServer.SliderJointParam">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="slider_joint_set_param">
+			<return type="void">
+			</return>
+			<argument index="0" name="joint" type="RID">
+			</argument>
+			<argument index="1" name="param" type="int" enum="PhysicsServer.SliderJointParam">
+			</argument>
+			<argument index="2" name="value" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="space_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="space_get_direct_state">
+			<return type="PhysicsDirectSpaceState">
+			</return>
+			<argument index="0" name="space" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="space_get_param" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="space" type="RID">
+			</argument>
+			<argument index="1" name="param" type="int" enum="PhysicsServer.SpaceParameter">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="space_is_active" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="space" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="space_set_active">
+			<return type="void">
+			</return>
+			<argument index="0" name="space" type="RID">
+			</argument>
+			<argument index="1" name="active" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="space_set_param">
+			<return type="void">
+			</return>
+			<argument index="0" name="space" type="RID">
+			</argument>
+			<argument index="1" name="param" type="int" enum="PhysicsServer.SpaceParameter">
+			</argument>
+			<argument index="2" name="value" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="JOINT_PIN" value="0">
+		</constant>
+		<constant name="JOINT_HINGE" value="1">
+		</constant>
+		<constant name="JOINT_SLIDER" value="2">
+		</constant>
+		<constant name="JOINT_CONE_TWIST" value="3">
+		</constant>
+		<constant name="JOINT_6DOF" value="4">
+		</constant>
+		<constant name="PIN_JOINT_BIAS" value="0">
+		</constant>
+		<constant name="PIN_JOINT_DAMPING" value="1">
+		</constant>
+		<constant name="PIN_JOINT_IMPULSE_CLAMP" value="2">
+		</constant>
+		<constant name="HINGE_JOINT_BIAS" value="0">
+		</constant>
+		<constant name="HINGE_JOINT_LIMIT_UPPER" value="1">
+		</constant>
+		<constant name="HINGE_JOINT_LIMIT_LOWER" value="2">
+		</constant>
+		<constant name="HINGE_JOINT_LIMIT_BIAS" value="3">
+		</constant>
+		<constant name="HINGE_JOINT_LIMIT_SOFTNESS" value="4">
+		</constant>
+		<constant name="HINGE_JOINT_LIMIT_RELAXATION" value="5">
+		</constant>
+		<constant name="HINGE_JOINT_MOTOR_TARGET_VELOCITY" value="6">
+		</constant>
+		<constant name="HINGE_JOINT_MOTOR_MAX_IMPULSE" value="7">
+		</constant>
+		<constant name="HINGE_JOINT_FLAG_USE_LIMIT" value="0">
+		</constant>
+		<constant name="HINGE_JOINT_FLAG_ENABLE_MOTOR" value="1">
+		</constant>
+		<constant name="SLIDER_JOINT_LINEAR_LIMIT_UPPER" value="0">
+		</constant>
+		<constant name="SLIDER_JOINT_LINEAR_LIMIT_LOWER" value="1">
+		</constant>
+		<constant name="SLIDER_JOINT_LINEAR_LIMIT_SOFTNESS" value="2">
+		</constant>
+		<constant name="SLIDER_JOINT_LINEAR_LIMIT_RESTITUTION" value="3">
+		</constant>
+		<constant name="SLIDER_JOINT_LINEAR_LIMIT_DAMPING" value="4">
+		</constant>
+		<constant name="SLIDER_JOINT_LINEAR_MOTION_SOFTNESS" value="5">
+		</constant>
+		<constant name="SLIDER_JOINT_LINEAR_MOTION_RESTITUTION" value="6">
+		</constant>
+		<constant name="SLIDER_JOINT_LINEAR_MOTION_DAMPING" value="7">
+		</constant>
+		<constant name="SLIDER_JOINT_LINEAR_ORTHOGONAL_SOFTNESS" value="8">
+		</constant>
+		<constant name="SLIDER_JOINT_LINEAR_ORTHOGONAL_RESTITUTION" value="9">
+		</constant>
+		<constant name="SLIDER_JOINT_LINEAR_ORTHOGONAL_DAMPING" value="10">
+		</constant>
+		<constant name="SLIDER_JOINT_ANGULAR_LIMIT_UPPER" value="11">
+		</constant>
+		<constant name="SLIDER_JOINT_ANGULAR_LIMIT_LOWER" value="12">
+		</constant>
+		<constant name="SLIDER_JOINT_ANGULAR_LIMIT_SOFTNESS" value="13">
+		</constant>
+		<constant name="SLIDER_JOINT_ANGULAR_LIMIT_RESTITUTION" value="14">
+		</constant>
+		<constant name="SLIDER_JOINT_ANGULAR_LIMIT_DAMPING" value="15">
+		</constant>
+		<constant name="SLIDER_JOINT_ANGULAR_MOTION_SOFTNESS" value="16">
+		</constant>
+		<constant name="SLIDER_JOINT_ANGULAR_MOTION_RESTITUTION" value="17">
+		</constant>
+		<constant name="SLIDER_JOINT_ANGULAR_MOTION_DAMPING" value="18">
+		</constant>
+		<constant name="SLIDER_JOINT_ANGULAR_ORTHOGONAL_SOFTNESS" value="19">
+		</constant>
+		<constant name="SLIDER_JOINT_ANGULAR_ORTHOGONAL_RESTITUTION" value="20">
+		</constant>
+		<constant name="SLIDER_JOINT_ANGULAR_ORTHOGONAL_DAMPING" value="21">
+		</constant>
+		<constant name="SLIDER_JOINT_MAX" value="22">
+		</constant>
+		<constant name="CONE_TWIST_JOINT_SWING_SPAN" value="0">
+		</constant>
+		<constant name="CONE_TWIST_JOINT_TWIST_SPAN" value="1">
+		</constant>
+		<constant name="CONE_TWIST_JOINT_BIAS" value="2">
+		</constant>
+		<constant name="CONE_TWIST_JOINT_SOFTNESS" value="3">
+		</constant>
+		<constant name="CONE_TWIST_JOINT_RELAXATION" value="4">
+		</constant>
+		<constant name="G6DOF_JOINT_LINEAR_LOWER_LIMIT" value="0">
+		</constant>
+		<constant name="G6DOF_JOINT_LINEAR_UPPER_LIMIT" value="1">
+		</constant>
+		<constant name="G6DOF_JOINT_LINEAR_LIMIT_SOFTNESS" value="2">
+		</constant>
+		<constant name="G6DOF_JOINT_LINEAR_RESTITUTION" value="3">
+		</constant>
+		<constant name="G6DOF_JOINT_LINEAR_DAMPING" value="4">
+		</constant>
+		<constant name="G6DOF_JOINT_ANGULAR_LOWER_LIMIT" value="5">
+		</constant>
+		<constant name="G6DOF_JOINT_ANGULAR_UPPER_LIMIT" value="6">
+		</constant>
+		<constant name="G6DOF_JOINT_ANGULAR_LIMIT_SOFTNESS" value="7">
+		</constant>
+		<constant name="G6DOF_JOINT_ANGULAR_DAMPING" value="8">
+		</constant>
+		<constant name="G6DOF_JOINT_ANGULAR_RESTITUTION" value="9">
+		</constant>
+		<constant name="G6DOF_JOINT_ANGULAR_FORCE_LIMIT" value="10">
+		</constant>
+		<constant name="G6DOF_JOINT_ANGULAR_ERP" value="11">
+		</constant>
+		<constant name="G6DOF_JOINT_ANGULAR_MOTOR_TARGET_VELOCITY" value="12">
+		</constant>
+		<constant name="G6DOF_JOINT_ANGULAR_MOTOR_FORCE_LIMIT" value="13">
+		</constant>
+		<constant name="G6DOF_JOINT_FLAG_ENABLE_LINEAR_LIMIT" value="0">
+		</constant>
+		<constant name="G6DOF_JOINT_FLAG_ENABLE_ANGULAR_LIMIT" value="1">
+		</constant>
+		<constant name="G6DOF_JOINT_FLAG_ENABLE_MOTOR" value="2">
+		</constant>
+		<constant name="SHAPE_PLANE" value="0">
+		</constant>
+		<constant name="SHAPE_RAY" value="1">
+		</constant>
+		<constant name="SHAPE_SPHERE" value="2">
+		</constant>
+		<constant name="SHAPE_BOX" value="3">
+		</constant>
+		<constant name="SHAPE_CAPSULE" value="4">
+		</constant>
+		<constant name="SHAPE_CONVEX_POLYGON" value="5">
+		</constant>
+		<constant name="SHAPE_CONCAVE_POLYGON" value="6">
+		</constant>
+		<constant name="SHAPE_HEIGHTMAP" value="7">
+		</constant>
+		<constant name="SHAPE_CUSTOM" value="8">
+		</constant>
+		<constant name="AREA_PARAM_GRAVITY" value="0">
+		</constant>
+		<constant name="AREA_PARAM_GRAVITY_VECTOR" value="1">
+		</constant>
+		<constant name="AREA_PARAM_GRAVITY_IS_POINT" value="2">
+		</constant>
+		<constant name="AREA_PARAM_GRAVITY_DISTANCE_SCALE" value="3">
+		</constant>
+		<constant name="AREA_PARAM_GRAVITY_POINT_ATTENUATION" value="4">
+		</constant>
+		<constant name="AREA_PARAM_LINEAR_DAMP" value="5">
+		</constant>
+		<constant name="AREA_PARAM_ANGULAR_DAMP" value="6">
+		</constant>
+		<constant name="AREA_PARAM_PRIORITY" value="7">
+		</constant>
+		<constant name="AREA_SPACE_OVERRIDE_DISABLED" value="0">
+			This area does not affect gravity/damp. These are generally areas that exist only to detect collisions, and objects entering or exiting them.
+		</constant>
+		<constant name="AREA_SPACE_OVERRIDE_COMBINE" value="1">
+			This area adds its gravity/damp values to whatever has been calculated so far. This way, many overlapping areas can combine their physics to make interesting effects.
+		</constant>
+		<constant name="AREA_SPACE_OVERRIDE_COMBINE_REPLACE" value="2">
+			This area adds its gravity/damp values to whatever has been calculated so far. Then stops taking into account the rest of the areas, even the default one.
+		</constant>
+		<constant name="AREA_SPACE_OVERRIDE_REPLACE" value="3">
+			This area replaces any gravity/damp, even the default one, and stops taking into account the rest of the areas.
+		</constant>
+		<constant name="AREA_SPACE_OVERRIDE_REPLACE_COMBINE" value="4">
+			This area replaces any gravity/damp calculated so far, but keeps calculating the rest of the areas, down to the default one.
+		</constant>
+		<constant name="BODY_MODE_STATIC" value="0">
+		</constant>
+		<constant name="BODY_MODE_KINEMATIC" value="1">
+		</constant>
+		<constant name="BODY_MODE_RIGID" value="2">
+		</constant>
+		<constant name="BODY_MODE_CHARACTER" value="3">
+		</constant>
+		<constant name="BODY_PARAM_BOUNCE" value="0">
+		</constant>
+		<constant name="BODY_PARAM_FRICTION" value="1">
+		</constant>
+		<constant name="BODY_PARAM_MASS" value="2">
+		</constant>
+		<constant name="BODY_PARAM_GRAVITY_SCALE" value="3">
+		</constant>
+		<constant name="BODY_PARAM_ANGULAR_DAMP" value="5">
+		</constant>
+		<constant name="BODY_PARAM_LINEAR_DAMP" value="4">
+		</constant>
+		<constant name="BODY_PARAM_MAX" value="6">
+		</constant>
+		<constant name="BODY_STATE_TRANSFORM" value="0">
+		</constant>
+		<constant name="BODY_STATE_LINEAR_VELOCITY" value="1">
+		</constant>
+		<constant name="BODY_STATE_ANGULAR_VELOCITY" value="2">
+		</constant>
+		<constant name="BODY_STATE_SLEEPING" value="3">
+		</constant>
+		<constant name="BODY_STATE_CAN_SLEEP" value="4">
+		</constant>
+		<constant name="AREA_BODY_ADDED" value="0">
+		</constant>
+		<constant name="AREA_BODY_REMOVED" value="1">
+		</constant>
+		<constant name="INFO_ACTIVE_OBJECTS" value="0">
+		</constant>
+		<constant name="INFO_COLLISION_PAIRS" value="1">
+		</constant>
+		<constant name="INFO_ISLAND_COUNT" value="2">
+		</constant>
+	</constants>
+</class>

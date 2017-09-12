@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TabContainer" inherits="Control" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Tabbed Container.
+	</brief_description>
+	<description>
+		Tabbed Container. Contains several children controls, but shows only one at the same time. Clicking on the top tabs allows to change the currently visible one.
+		Children controls of this one automatically.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="are_tabs_visible" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return whether the tabs should be visible or hidden.
+			</description>
+		</method>
+		<method name="get_current_tab" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the current tab index that is being shown.
+			</description>
+		</method>
+		<method name="get_current_tab_control" qualifiers="const">
+			<return type="Control">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_popup" qualifiers="const">
+			<return type="Popup">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_previous_tab" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the previous tab index that was being shown.
+			</description>
+		</method>
+		<method name="get_tab_align" qualifiers="const">
+			<return type="int" enum="TabContainer.TabAlign">
+			</return>
+			<description>
+				Return tab alignment, from the ALIGN_* enum.
+			</description>
+		</method>
+		<method name="get_tab_control" qualifiers="const">
+			<return type="Control">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Return the current tab control that is being shown.
+			</description>
+		</method>
+		<method name="get_tab_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the amount of tabs.
+			</description>
+		</method>
+		<method name="get_tab_disabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="tab_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_tab_icon" qualifiers="const">
+			<return type="Texture">
+			</return>
+			<argument index="0" name="tab_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_tab_title" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="tab_idx" type="int">
+			</argument>
+			<description>
+				Return the title for the tab. Tab titles are by default the children node name, but this can be overridden.
+			</description>
+		</method>
+		<method name="set_current_tab">
+			<return type="void">
+			</return>
+			<argument index="0" name="tab_idx" type="int">
+			</argument>
+			<description>
+				Bring a tab (and the Control it represents) to the front, and hide the rest.
+			</description>
+		</method>
+		<method name="set_popup">
+			<return type="void">
+			</return>
+			<argument index="0" name="popup" type="Node">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_tab_align">
+			<return type="void">
+			</return>
+			<argument index="0" name="align" type="int" enum="TabContainer.TabAlign">
+			</argument>
+			<description>
+				Set tab alignment, from the ALIGN_* enum. Moves tabs to the left, right or center.
+			</description>
+		</method>
+		<method name="set_tab_disabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="tab_idx" type="int">
+			</argument>
+			<argument index="1" name="disabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_tab_icon">
+			<return type="void">
+			</return>
+			<argument index="0" name="tab_idx" type="int">
+			</argument>
+			<argument index="1" name="icon" type="Texture">
+			</argument>
+			<description>
+				Set an icon for a tab.
+			</description>
+		</method>
+		<method name="set_tab_title">
+			<return type="void">
+			</return>
+			<argument index="0" name="tab_idx" type="int">
+			</argument>
+			<argument index="1" name="title" type="String">
+			</argument>
+			<description>
+				Set a title for the tab. Tab titles are by default the children node name, but this can be overridden.
+			</description>
+		</method>
+		<method name="set_tabs_visible">
+			<return type="void">
+			</return>
+			<argument index="0" name="visible" type="bool">
+			</argument>
+			<description>
+				Set whether the tabs should be visible or hidden.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="current_tab" type="int" setter="set_current_tab" getter="get_current_tab" brief="">
+		</member>
+		<member name="tab_align" type="int" setter="set_tab_align" getter="get_tab_align" brief="" enum="TabContainer.TabAlign">
+		</member>
+		<member name="tabs_visible" type="bool" setter="set_tabs_visible" getter="are_tabs_visible" brief="">
+		</member>
+	</members>
+	<signals>
+		<signal name="pre_popup_pressed">
+			<description>
+			</description>
+		</signal>
+		<signal name="tab_changed">
+			<argument index="0" name="tab" type="int">
+			</argument>
+			<description>
+				Emitted only when the current tab changes.
+			</description>
+		</signal>
+		<signal name="tab_selected">
+			<argument index="0" name="tab" type="int">
+			</argument>
+			<description>
+				Emitted when a tab is being selected, even if it is the same tab.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+	<theme_items>
+		<theme_item name="decrement" type="Texture">
+		</theme_item>
+		<theme_item name="decrement_highlight" type="Texture">
+		</theme_item>
+		<theme_item name="font" type="Font">
+		</theme_item>
+		<theme_item name="font_color_bg" type="Color">
+		</theme_item>
+		<theme_item name="font_color_disabled" type="Color">
+		</theme_item>
+		<theme_item name="font_color_fg" type="Color">
+		</theme_item>
+		<theme_item name="hseparation" type="int">
+		</theme_item>
+		<theme_item name="increment" type="Texture">
+		</theme_item>
+		<theme_item name="increment_highlight" type="Texture">
+		</theme_item>
+		<theme_item name="label_valign_bg" type="int">
+		</theme_item>
+		<theme_item name="label_valign_fg" type="int">
+		</theme_item>
+		<theme_item name="menu" type="Texture">
+		</theme_item>
+		<theme_item name="menu_highlight" type="Texture">
+		</theme_item>
+		<theme_item name="panel" type="StyleBox">
+		</theme_item>
+		<theme_item name="side_margin" type="int">
+		</theme_item>
+		<theme_item name="tab_bg" type="StyleBox">
+		</theme_item>
+		<theme_item name="tab_fg" type="StyleBox">
+		</theme_item>
+		<theme_item name="top_margin" type="int">
+		</theme_item>
+	</theme_items>
+</class>

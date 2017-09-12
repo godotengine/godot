@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AnimatedSprite3D" inherits="SpriteBase3D" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_animation" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Return the name of the current animation set to the node.
+			</description>
+		</method>
+		<method name="get_frame" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the visible frame index.
+			</description>
+		</method>
+		<method name="get_sprite_frames" qualifiers="const">
+			<return type="SpriteFrames">
+			</return>
+			<description>
+				Get the [SpriteFrames] resource, which contains all frames.
+			</description>
+		</method>
+		<method name="is_playing" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return true if an animation if currently being played.
+			</description>
+		</method>
+		<method name="play">
+			<return type="void">
+			</return>
+			<argument index="0" name="anim" type="String" default="&quot;&quot;">
+			</argument>
+			<description>
+				Play the animation set in parameter. If no parameter is provided, the current animation is played.
+			</description>
+		</method>
+		<method name="set_animation">
+			<return type="void">
+			</return>
+			<argument index="0" name="animation" type="String">
+			</argument>
+			<description>
+				Set the current animation of the node and reinits the frame counter of the animation.
+			</description>
+		</method>
+		<method name="set_frame">
+			<return type="void">
+			</return>
+			<argument index="0" name="frame" type="int">
+			</argument>
+			<description>
+				Set the visible sprite frame index (from the list of frames inside the [SpriteFrames] resource).
+			</description>
+		</method>
+		<method name="set_sprite_frames">
+			<return type="void">
+			</return>
+			<argument index="0" name="sprite_frames" type="SpriteFrames">
+			</argument>
+			<description>
+				Set the [SpriteFrames] resource, which contains all frames.
+			</description>
+		</method>
+		<method name="stop">
+			<return type="void">
+			</return>
+			<description>
+				Stop the current animation (does not reset the frame counter).
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="animation" type="String" setter="set_animation" getter="get_animation" brief="">
+		</member>
+		<member name="frame" type="int" setter="set_frame" getter="get_frame" brief="">
+		</member>
+		<member name="frames" type="SpriteFrames" setter="set_sprite_frames" getter="get_sprite_frames" brief="">
+		</member>
+		<member name="playing" type="bool" setter="_set_playing" getter="_is_playing" brief="">
+		</member>
+	</members>
+	<signals>
+		<signal name="frame_changed">
+			<description>
+				Emitted when frame is changed.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>

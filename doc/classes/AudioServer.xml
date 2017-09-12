@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioServer" inherits="Object" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Server interface for low level audio access.
+	</brief_description>
+	<description>
+		AudioServer is a low level server interface for audio access. It is in charge of creating sample data (playable audio) as well as its playback via a voice interface.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="add_bus">
+			<return type="void">
+			</return>
+			<argument index="0" name="at_pos" type="int" default="-1">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_bus_effect">
+			<return type="void">
+			</return>
+			<argument index="0" name="bus_idx" type="int">
+			</argument>
+			<argument index="1" name="effect" type="AudioEffect">
+			</argument>
+			<argument index="2" name="at_pos" type="int" default="-1">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="generate_bus_layout" qualifiers="const">
+			<return type="AudioBusLayout">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_bus_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_bus_effect">
+			<return type="AudioEffect">
+			</return>
+			<argument index="0" name="bus_idx" type="int">
+			</argument>
+			<argument index="1" name="effect_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_bus_effect_count">
+			<return type="int">
+			</return>
+			<argument index="0" name="bus_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_bus_index" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="bus_name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_bus_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="bus_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_bus_peak_volume_left_db" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="bus_idx" type="int">
+			</argument>
+			<argument index="1" name="channel" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_bus_peak_volume_right_db" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="bus_idx" type="int">
+			</argument>
+			<argument index="1" name="channel" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_bus_send" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="bus_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_bus_volume_db" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="bus_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_mix_rate" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_speaker_mode" qualifiers="const">
+			<return type="int" enum="AudioServer.SpeakerMode">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_bus_bypassing_effects" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="bus_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_bus_effect_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="bus_idx" type="int">
+			</argument>
+			<argument index="1" name="effect_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_bus_mute" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="bus_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_bus_solo" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="bus_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="lock">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="move_bus">
+			<return type="void">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<argument index="1" name="to_index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_bus">
+			<return type="void">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_bus_effect">
+			<return type="void">
+			</return>
+			<argument index="0" name="bus_idx" type="int">
+			</argument>
+			<argument index="1" name="effect_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_bus_bypass_effects">
+			<return type="void">
+			</return>
+			<argument index="0" name="bus_idx" type="int">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_bus_count">
+			<return type="void">
+			</return>
+			<argument index="0" name="amount" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_bus_effect_enabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="bus_idx" type="int">
+			</argument>
+			<argument index="1" name="effect_idx" type="int">
+			</argument>
+			<argument index="2" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_bus_layout">
+			<return type="void">
+			</return>
+			<argument index="0" name="bus_layout" type="AudioBusLayout">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_bus_mute">
+			<return type="void">
+			</return>
+			<argument index="0" name="bus_idx" type="int">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_bus_name">
+			<return type="void">
+			</return>
+			<argument index="0" name="bus_idx" type="int">
+			</argument>
+			<argument index="1" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_bus_send">
+			<return type="void">
+			</return>
+			<argument index="0" name="bus_idx" type="int">
+			</argument>
+			<argument index="1" name="send" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_bus_solo">
+			<return type="void">
+			</return>
+			<argument index="0" name="bus_idx" type="int">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_bus_volume_db">
+			<return type="void">
+			</return>
+			<argument index="0" name="bus_idx" type="int">
+			</argument>
+			<argument index="1" name="volume_db" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="swap_bus_effects">
+			<return type="void">
+			</return>
+			<argument index="0" name="bus_idx" type="int">
+			</argument>
+			<argument index="1" name="effect_idx" type="int">
+			</argument>
+			<argument index="2" name="by_effect_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="unlock">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="bus_layout_changed">
+			<description>
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>

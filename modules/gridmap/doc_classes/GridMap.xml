@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GridMap" inherits="Spatial" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="clear">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_cell_item" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="x" type="int">
+			</argument>
+			<argument index="1" name="y" type="int">
+			</argument>
+			<argument index="2" name="z" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_cell_item_orientation" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="x" type="int">
+			</argument>
+			<argument index="1" name="y" type="int">
+			</argument>
+			<argument index="2" name="z" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_cell_size" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_center_x" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_center_y" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_center_z" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_meshes">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_octant_size" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_theme" qualifiers="const">
+			<return type="MeshLibrary">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="resource_changed">
+			<return type="void">
+			</return>
+			<argument index="0" name="resource" type="Resource">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_cell_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="x" type="int">
+			</argument>
+			<argument index="1" name="y" type="int">
+			</argument>
+			<argument index="2" name="z" type="int">
+			</argument>
+			<argument index="3" name="item" type="int">
+			</argument>
+			<argument index="4" name="orientation" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_cell_size">
+			<return type="void">
+			</return>
+			<argument index="0" name="size" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_center_x">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_center_y">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_center_z">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_clip">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<argument index="1" name="clipabove" type="bool" default="true">
+			</argument>
+			<argument index="2" name="floor" type="int" default="0">
+			</argument>
+			<argument index="3" name="axis" type="int" enum="Vector3.Axis" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_octant_size">
+			<return type="void">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_theme">
+			<return type="void">
+			</return>
+			<argument index="0" name="theme" type="MeshLibrary">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="INVALID_CELL_ITEM" value="-1" enum="">
+		</constant>
+	</constants>
+</class>

@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorSpatialGizmo" inherits="SpatialGizmo" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Custom gizmo for editing Spatial objects.
+	</brief_description>
+	<description>
+		Custom gizmo that is used for providing custom visualization and editing (handles) for 3D Spatial objects. These are created by [method EditorPlugin.create_spatial_gizmo].
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="add_collision_segments">
+			<return type="void">
+			</return>
+			<argument index="0" name="segments" type="PoolVector3Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_collision_triangles">
+			<return type="void">
+			</return>
+			<argument index="0" name="triangles" type="TriangleMesh">
+			</argument>
+			<description>
+				Add collision triangles to the gizmo for picking. A [TriangleMesh] can be generated from a regular [Mesh] too. Call this function during [method redraw].
+			</description>
+		</method>
+		<method name="add_handles">
+			<return type="void">
+			</return>
+			<argument index="0" name="handles" type="PoolVector3Array">
+			</argument>
+			<argument index="1" name="billboard" type="bool" default="false">
+			</argument>
+			<argument index="2" name="secondary" type="bool" default="false">
+			</argument>
+			<description>
+				Add a list of handles (points) which can be used to deform the object being edited.
+				There are virtual functions which will be called upon editing of these handles. Call this function during [method redraw].
+			</description>
+		</method>
+		<method name="add_lines">
+			<return type="void">
+			</return>
+			<argument index="0" name="lines" type="PoolVector3Array">
+			</argument>
+			<argument index="1" name="material" type="Material">
+			</argument>
+			<argument index="2" name="billboard" type="bool" default="false">
+			</argument>
+			<description>
+				Add lines to the gizmo (as sets of 2 points), with a given material. The lines are used for visualizing the gizmo. Call this function during [method redraw].
+			</description>
+		</method>
+		<method name="add_mesh">
+			<return type="void">
+			</return>
+			<argument index="0" name="mesh" type="ArrayMesh">
+			</argument>
+			<argument index="1" name="billboard" type="bool" default="false">
+			</argument>
+			<argument index="2" name="skeleton" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_unscaled_billboard">
+			<return type="void">
+			</return>
+			<argument index="0" name="material" type="Material">
+			</argument>
+			<argument index="1" name="default_scale" type="float" default="1">
+			</argument>
+			<description>
+				Add an unscaled billboard for visualization. Call this function during [method redraw].
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="commit_handle" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<argument index="1" name="restore" type="Variant">
+			</argument>
+			<argument index="2" name="cancel" type="bool" default="false">
+			</argument>
+			<description>
+				Commit a handle being edited (handles must have been prevously added by [method add_handles]).
+				If the cancel parameter is true, an option to restore the edited value to the original is provided.
+			</description>
+		</method>
+		<method name="get_handle_name" qualifiers="virtual">
+			<return type="String">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Get the name of an edited handle (handles must have been previously added by [method add_handles]).
+				Handles can be named for reference to the user when editing.
+			</description>
+		</method>
+		<method name="get_handle_value" qualifiers="virtual">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Get actual value of a handle. This value can be anything and used for eventually undoing the motion when calling [method commit_handle]
+			</description>
+		</method>
+		<method name="redraw" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<description>
+				This function is called when the Spatial this gizmo refers to changes (the [method Spatial.update_gizmo] is called).
+			</description>
+		</method>
+		<method name="set_handle" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<argument index="1" name="camera" type="Camera">
+			</argument>
+			<argument index="2" name="point" type="Vector2">
+			</argument>
+			<description>
+				This function is used when the user drags a gizmo handle (previously added with [method add_handles]) in screen coordinates.
+				The [Camera] is also provided so screen coordinates can be converted to raycasts.
+			</description>
+		</method>
+		<method name="set_spatial_node">
+			<return type="void">
+			</return>
+			<argument index="0" name="node" type="Node">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

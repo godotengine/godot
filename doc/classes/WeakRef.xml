@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="WeakRef" inherits="Reference" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Holds an [Object], but does not contribute to the reference count if the object is a reference.
+	</brief_description>
+	<description>
+		A weakref can hold a [Reference], without contributing to the reference counter. A weakref can be created from an [Object] using [method @GDScript.weakref]. If this object is not a reference, weakref still works, however, it does not have any effect on the object. Weakrefs are useful in cases where multiple classes have variables that refer to eachother. Without weakrefs, using these classes could lead to memory leaks, since both references keep eachother from being released. Making part of the variables a weakref can prevent this cyclic dependency, and allows the references to be released.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_ref" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<description>
+				Returns the [Object] this weakref is referring to.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

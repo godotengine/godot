@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PacketPeer" inherits="Reference" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Abstraction and base class for packet-based protocols.
+	</brief_description>
+	<description>
+		PacketPeer is an abstraction and base class for packet-based protocols (such as UDP). It provides an API for sending and receiving packets both as raw data or variables. This makes it easy to transfer data over a protocol, without having to encode data as low level bytes or having to worry about network ordering.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_available_packet_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the number of packets currently available in the ring-buffer.
+			</description>
+		</method>
+		<method name="get_packet" qualifiers="const">
+			<return type="PoolByteArray">
+			</return>
+			<description>
+				Get a raw packet.
+			</description>
+		</method>
+		<method name="get_packet_error" qualifiers="const">
+			<return type="int" enum="Error">
+			</return>
+			<description>
+				Return the error state of the last packet received (via [method get_packet] and [method get_var]).
+			</description>
+		</method>
+		<method name="get_var" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<description>
+				Get a Variant.
+			</description>
+		</method>
+		<method name="is_object_decoding_allowed" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="put_packet">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="buffer" type="PoolByteArray">
+			</argument>
+			<description>
+				Send a raw packet.
+			</description>
+		</method>
+		<method name="put_var">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="var" type="Variant">
+			</argument>
+			<description>
+				Send a Variant as a packet.
+			</description>
+		</method>
+		<method name="set_allow_object_decoding">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

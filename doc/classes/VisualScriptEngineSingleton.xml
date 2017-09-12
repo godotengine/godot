@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualScriptEngineSingleton" inherits="VisualScriptNode" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_singleton">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_singleton">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="/constant" type="String" setter="set_singleton" getter="get_singleton" brief="">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

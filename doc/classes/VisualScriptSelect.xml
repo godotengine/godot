@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualScriptSelect" inherits="VisualScriptNode" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_typed" qualifiers="const">
+			<return type="int" enum="Variant.Type">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_typed">
+			<return type="void">
+			</return>
+			<argument index="0" name="type" type="int" enum="Variant.Type">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="type" type="int" setter="set_typed" getter="get_typed" brief="" enum="Variant.Type">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

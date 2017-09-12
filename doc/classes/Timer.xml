@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Timer" inherits="Node" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		A countdown timer.
+	</brief_description>
+	<description>
+		Counts down a specified interval and emits a signal on reaching 0. Can be set to repeat or "one shot" mode.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_time_left" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the time left for timeout in seconds if the timer is active, 0 otherwise.
+			</description>
+		</method>
+		<method name="get_timer_process_mode" qualifiers="const">
+			<return type="int" enum="Timer.TimerProcessMode">
+			</return>
+			<description>
+				Return the timer's processing mode.
+			</description>
+		</method>
+		<method name="get_wait_time" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the wait time in seconds.
+			</description>
+		</method>
+		<method name="has_autostart" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return true if set to automatically start when entering the scene.
+			</description>
+		</method>
+		<method name="is_one_shot" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return true if configured as one-shot.
+			</description>
+		</method>
+		<method name="is_paused" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return if the timer is paused or not.
+			</description>
+		</method>
+		<method name="is_stopped" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_autostart">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Set to automatically start when entering the scene.
+			</description>
+		</method>
+		<method name="set_one_shot">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Set as one-shot. If enabled, the timer will stop after timeout, otherwise it will automatically restart.
+			</description>
+		</method>
+		<method name="set_paused">
+			<return type="void">
+			</return>
+			<argument index="0" name="paused" type="bool">
+			</argument>
+			<description>
+				Set whether the timer is paused or not. A paused timer will be inactive until it is unpaused again.
+			</description>
+		</method>
+		<method name="set_timer_process_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="int" enum="Timer.TimerProcessMode">
+			</argument>
+			<description>
+				Set the timer's processing mode (fixed or idle, use TIMER_PROCESS_* constants as argument).
+			</description>
+		</method>
+		<method name="set_wait_time">
+			<return type="void">
+			</return>
+			<argument index="0" name="time_sec" type="float">
+			</argument>
+			<description>
+				Set wait time in seconds. When the time is over, it will emit the timeout signal.
+			</description>
+		</method>
+		<method name="start">
+			<return type="void">
+			</return>
+			<description>
+				Start the Timer.
+			</description>
+		</method>
+		<method name="stop">
+			<return type="void">
+			</return>
+			<description>
+				Stop (cancel) the Timer.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="autostart" type="bool" setter="set_autostart" getter="has_autostart" brief="">
+			If [code]true[/code], Timer will automatically start when entering the scene tree. Default value: [code]false[/code].
+		</member>
+		<member name="one_shot" type="bool" setter="set_one_shot" getter="is_one_shot" brief="">
+			If [code]true[/code], Timer will stop when reaching 0. If [code]false[/code], it will restart. Default value: [code]false[/code].
+		</member>
+		<member name="process_mode" type="int" setter="set_timer_process_mode" getter="get_timer_process_mode" brief="" enum="Timer.TimerProcessMode">
+			Processing mode. Uses TIMER_PROCESS_* constants as value.
+		</member>
+		<member name="wait_time" type="float" setter="set_wait_time" getter="get_wait_time" brief="">
+			Wait time in seconds.
+		</member>
+	</members>
+	<signals>
+		<signal name="timeout">
+			<description>
+				Emitted when the Timer reaches 0.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="TIMER_PROCESS_FIXED" value="0">
+			Update the Timer at fixed intervals (framerate processing).
+		</constant>
+		<constant name="TIMER_PROCESS_IDLE" value="1">
+			Update the Timer during the idle time at each frame.
+		</constant>
+	</constants>
+</class>

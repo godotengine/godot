@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SpriteBase3D" inherits="GeometryInstance" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_alpha_cut_mode" qualifiers="const">
+			<return type="int" enum="SpriteBase3D.AlphaCutMode">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_axis" qualifiers="const">
+			<return type="int" enum="Vector3.Axis">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_draw_flag" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="flag" type="int" enum="SpriteBase3D.DrawFlags">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_item_rect" qualifiers="const">
+			<return type="Rect2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_modulate" qualifiers="const">
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_offset" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_opacity" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_pixel_size" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_centered" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_flipped_h" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_flipped_v" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_alpha_cut_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="int" enum="SpriteBase3D.AlphaCutMode">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_axis">
+			<return type="void">
+			</return>
+			<argument index="0" name="axis" type="int" enum="Vector3.Axis">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_centered">
+			<return type="void">
+			</return>
+			<argument index="0" name="centered" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_draw_flag">
+			<return type="void">
+			</return>
+			<argument index="0" name="flag" type="int" enum="SpriteBase3D.DrawFlags">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_flip_h">
+			<return type="void">
+			</return>
+			<argument index="0" name="flip_h" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_flip_v">
+			<return type="void">
+			</return>
+			<argument index="0" name="flip_v" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_modulate">
+			<return type="void">
+			</return>
+			<argument index="0" name="modulate" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_offset">
+			<return type="void">
+			</return>
+			<argument index="0" name="offset" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_opacity">
+			<return type="void">
+			</return>
+			<argument index="0" name="opacity" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_pixel_size">
+			<return type="void">
+			</return>
+			<argument index="0" name="pixel_size" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="alpha_cut" type="int" setter="set_alpha_cut_mode" getter="get_alpha_cut_mode" brief="" enum="SpriteBase3D.AlphaCutMode">
+		</member>
+		<member name="axis" type="int" setter="set_axis" getter="get_axis" brief="" enum="Vector3.Axis">
+		</member>
+		<member name="centered" type="bool" setter="set_centered" getter="is_centered" brief="">
+		</member>
+		<member name="double_sided" type="bool" setter="set_draw_flag" getter="get_draw_flag" brief="">
+		</member>
+		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h" brief="">
+		</member>
+		<member name="flip_v" type="bool" setter="set_flip_v" getter="is_flipped_v" brief="">
+		</member>
+		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" brief="">
+		</member>
+		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" brief="">
+		</member>
+		<member name="opacity" type="float" setter="set_opacity" getter="get_opacity" brief="">
+		</member>
+		<member name="pixel_size" type="float" setter="set_pixel_size" getter="get_pixel_size" brief="">
+		</member>
+		<member name="shaded" type="bool" setter="set_draw_flag" getter="get_draw_flag" brief="">
+		</member>
+		<member name="transparent" type="bool" setter="set_draw_flag" getter="get_draw_flag" brief="">
+		</member>
+	</members>
+	<constants>
+		<constant name="FLAG_TRANSPARENT" value="0">
+		</constant>
+		<constant name="FLAG_SHADED" value="1">
+		</constant>
+		<constant name="FLAG_DOUBLE_SIDED" value="2">
+		</constant>
+		<constant name="FLAG_MAX" value="3">
+		</constant>
+		<constant name="ALPHA_CUT_DISABLED" value="0">
+		</constant>
+		<constant name="ALPHA_CUT_DISCARD" value="1">
+		</constant>
+		<constant name="ALPHA_CUT_OPAQUE_PREPASS" value="2">
+		</constant>
+	</constants>
+</class>

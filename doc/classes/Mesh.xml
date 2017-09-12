@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Mesh" inherits="Resource" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		A [Resource] that contains vertex-array based geometry.
+	</brief_description>
+	<description>
+		Mesh is a type of [Resource] that contains vertex-array based geometry, divided in [i]surfaces[/i]. Each surface contains a completely separate array and a material used to draw it. Design wise, a mesh with multiple surfaces is preferred to a single surface, because objects created in 3D editing software commonly contain multiple materials.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="create_convex_shape" qualifiers="const">
+			<return type="Shape">
+			</return>
+			<description>
+				Calculate a [ConvexPolygonShape] from the mesh.
+			</description>
+		</method>
+		<method name="create_outline" qualifiers="const">
+			<return type="Mesh">
+			</return>
+			<argument index="0" name="margin" type="float">
+			</argument>
+			<description>
+				Calculate an outline mesh at a defined offset (margin) from the original mesh. Note: Typically returns the vertices in reverse order (e.g. clockwise to anti-clockwise).
+			</description>
+		</method>
+		<method name="create_trimesh_shape" qualifiers="const">
+			<return type="Shape">
+			</return>
+			<description>
+				Calculate a [ConcavePolygonShape] from the mesh.
+			</description>
+		</method>
+		<method name="generate_triangle_mesh" qualifiers="const">
+			<return type="TriangleMesh">
+			</return>
+			<description>
+				Generate a [TriangleMesh] from the mesh.
+			</description>
+		</method>
+		<method name="get_faces" qualifiers="const">
+			<return type="PoolVector3Array">
+			</return>
+			<description>
+				Returns all the vertices that make up the faces of the mesh. Each three vertices represent one triangle.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="PRIMITIVE_POINTS" value="0">
+			Render array as points (one vertex equals one point).
+		</constant>
+		<constant name="PRIMITIVE_LINES" value="1">
+			Render array as lines (every two vertices a line is created).
+		</constant>
+		<constant name="PRIMITIVE_LINE_STRIP" value="2">
+			Render array as line strip.
+		</constant>
+		<constant name="PRIMITIVE_LINE_LOOP" value="3">
+			Render array as line loop (like line strip, but closed).
+		</constant>
+		<constant name="PRIMITIVE_TRIANGLES" value="4">
+			Render array as triangles (every three vertices a triangle is created).
+		</constant>
+		<constant name="PRIMITIVE_TRIANGLE_STRIP" value="5">
+			Render array as triangle strips.
+		</constant>
+		<constant name="PRIMITIVE_TRIANGLE_FAN" value="6">
+			Render array as triangle fans.
+		</constant>
+	</constants>
+</class>

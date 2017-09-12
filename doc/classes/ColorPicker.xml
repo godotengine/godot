@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ColorPicker" inherits="BoxContainer" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Color picker control.
+	</brief_description>
+	<description>
+		This is a simple color picker [Control]. It's useful for selecting a color from an RGB/RGBA colorspace.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="add_preset">
+			<return type="void">
+			</return>
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+				Adds the current selected to color to a list of colors (presets), the presets will be displayed in the color picker and the user will be able to select them, notice that the presets list is only for this color picker.
+			</description>
+		</method>
+		<method name="get_pick_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<description>
+				Gets the current color.
+			</description>
+		</method>
+		<method name="is_editing_alpha" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns whether the color has transparency or not.
+			</description>
+		</method>
+		<method name="is_raw_mode" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns whether this color picker is in raw mode or not, raw mode will allow the color R, G, B component values to go beyond 1, you have to consider that the max value for color components is 1, going beyond that value will not have effect in the color, but can be used for special operations that require it (like tinting without darkening or rendering sprites in HDR).
+			</description>
+		</method>
+		<method name="set_edit_alpha">
+			<return type="void">
+			</return>
+			<argument index="0" name="show" type="bool">
+			</argument>
+			<description>
+				Set true if you want the color to have an alpha channel (transparency), or false if you want a solid color.
+			</description>
+		</method>
+		<method name="set_pick_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+				Select the current color.
+			</description>
+		</method>
+		<method name="set_raw_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="bool">
+			</argument>
+			<description>
+				Set whether this color picker is using raw mode or not, see [method is_raw_mode].
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="color_changed">
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+				Emitted when the color is changed.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+	<theme_items>
+		<theme_item name="add_preset" type="Texture">
+		</theme_item>
+		<theme_item name="color_hue" type="Texture">
+		</theme_item>
+		<theme_item name="color_sample" type="Texture">
+		</theme_item>
+		<theme_item name="h_width" type="int">
+		</theme_item>
+		<theme_item name="label_width" type="int">
+		</theme_item>
+		<theme_item name="margin" type="int">
+		</theme_item>
+		<theme_item name="screen_picker" type="Texture">
+		</theme_item>
+		<theme_item name="sv_height" type="int">
+		</theme_item>
+		<theme_item name="sv_width" type="int">
+		</theme_item>
+	</theme_items>
+</class>

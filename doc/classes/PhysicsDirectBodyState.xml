@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PhysicsDirectBodyState" inherits="Object" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="add_force">
+			<return type="void">
+			</return>
+			<argument index="0" name="force" type="Vector3">
+			</argument>
+			<argument index="1" name="pos" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="apply_impulse">
+			<return type="void">
+			</return>
+			<argument index="0" name="pos" type="Vector3">
+			</argument>
+			<argument index="1" name="j" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="apply_torqe_impulse">
+			<return type="void">
+			</return>
+			<argument index="0" name="j" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_angular_velocity" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_center_of_mass" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_contact_collider" qualifiers="const">
+			<return type="RID">
+			</return>
+			<argument index="0" name="contact_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_contact_collider_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="contact_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_contact_collider_object" qualifiers="const">
+			<return type="Object">
+			</return>
+			<argument index="0" name="contact_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_contact_collider_pos" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="contact_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_contact_collider_shape" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="contact_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_contact_collider_velocity_at_pos" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="contact_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_contact_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_contact_local_normal" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="contact_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_contact_local_pos" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="contact_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_contact_local_shape" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="contact_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_inverse_inertia" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_inverse_mass" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_linear_velocity" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_principal_inertia_axes" qualifiers="const">
+			<return type="Basis">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_space_state">
+			<return type="PhysicsDirectSpaceState">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_step" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_total_angular_damp" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_total_gravity" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_total_linear_damp" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_transform" qualifiers="const">
+			<return type="Transform">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="integrate_forces">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_sleeping" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_angular_velocity">
+			<return type="void">
+			</return>
+			<argument index="0" name="velocity" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_linear_velocity">
+			<return type="void">
+			</return>
+			<argument index="0" name="velocity" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_sleep_state">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="transform" type="Transform">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

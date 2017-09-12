@@ -1,0 +1,392 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Object" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Base class for all non built-in types.
+	</brief_description>
+	<description>
+		Base class for all non built-in types. Everything not a built-in type starts the inheritance chain from this class.
+		Objects do not manage memory, if inheriting from one the object will most likely have to be deleted manually (call the [method free] function from the script or delete from C++).
+		Some derivates add memory management, such as [Reference] (which keeps a reference count and deletes itself automatically when no longer referenced) and [Node], which deletes the children tree when deleted.
+		Objects export properties, which are mainly useful for storage and editing, but not really so much in programming. Properties are exported in [method _get_property_list] and handled in [method _get] and [method _set]. However, scripting languages and C++ have simpler means to export them.
+		Objects also receive notifications ([method _notification]). Notifications are a simple way to notify the object about simple events, so they can all be handled together.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="_get" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="property" type="String">
+			</argument>
+			<description>
+				Return a property, return null if the property does not exist.
+			</description>
+		</method>
+		<method name="_get_property_list" qualifiers="virtual">
+			<return type="Array">
+			</return>
+			<description>
+				Return the property list, array of dictionaries, dictionaries must contain: name:String, type:int (see TYPE_* enum in [@Global Scope]) and optionally: hint:int (see PROPERTY_HINT_* in [@Global Scope]), hint_string:String, usage:int (see PROPERTY_USAGE_* in [@Global Scope]).
+			</description>
+		</method>
+		<method name="_init" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="_notification" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="what" type="int">
+			</argument>
+			<description>
+				Notification request, the notification id is received.
+			</description>
+		</method>
+		<method name="_set" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<argument index="0" name="property" type="String">
+			</argument>
+			<argument index="1" name="value" type="Variant">
+			</argument>
+			<description>
+				Set a property. Return true if the property was found.
+			</description>
+		</method>
+		<method name="add_user_signal">
+			<return type="void">
+			</return>
+			<argument index="0" name="signal" type="String">
+			</argument>
+			<argument index="1" name="arguments" type="Array" default="[  ]">
+			</argument>
+			<description>
+				Add a user signal (can be added anytime). Arguments are optional, but can be added as an array of dictionaries, each containing "name" and "type" (from [@Global Scope] TYPE_*).
+			</description>
+		</method>
+		<method name="call" qualifiers="vararg">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="method" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="call_deferred" qualifiers="vararg">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="method" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="callv">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="method" type="String">
+			</argument>
+			<argument index="1" name="arg_array" type="Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="can_translate_messages" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return true if this object can translate strings.
+			</description>
+		</method>
+		<method name="connect">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="signal" type="String">
+			</argument>
+			<argument index="1" name="target" type="Object">
+			</argument>
+			<argument index="2" name="method" type="String">
+			</argument>
+			<argument index="3" name="binds" type="Array" default="[  ]">
+			</argument>
+			<argument index="4" name="flags" type="int" default="0">
+			</argument>
+			<description>
+				Connect a signal to a method at a target (member function). Binds are optional and are passed as extra arguments to the call. Flags specify optional deferred or one shot connections, see enum CONNECT_*. A signal can only be connected once to a method, and it will throw an error if already connected. If you want to avoid this, use [method is_connected] to check.
+			</description>
+		</method>
+		<method name="disconnect">
+			<return type="void">
+			</return>
+			<argument index="0" name="signal" type="String">
+			</argument>
+			<argument index="1" name="target" type="Object">
+			</argument>
+			<argument index="2" name="method" type="String">
+			</argument>
+			<description>
+				Disconnect a signal from a method.
+			</description>
+		</method>
+		<method name="emit_signal" qualifiers="vararg">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="signal" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="free">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="property" type="String">
+			</argument>
+			<description>
+				Get a property from the object.
+			</description>
+		</method>
+		<method name="get_class" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Return the class of the object as a string.
+			</description>
+		</method>
+		<method name="get_incoming_connections" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+				Returns an [Array] of dictionaries with informations about signals that are connected to this object.
+				Inside each [Dictionary] there are 3 fields:
+				- "source" is a reference to signal emitter.
+				- "signal_name" is name of connected signal.
+				- "method_name" is a name of method to which signal is connected.
+			</description>
+		</method>
+		<method name="get_instance_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the instance ID. All objects have a unique instance ID.
+			</description>
+		</method>
+		<method name="get_meta" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+				Return a metadata from the object.
+			</description>
+		</method>
+		<method name="get_meta_list" qualifiers="const">
+			<return type="PoolStringArray">
+			</return>
+			<description>
+				Return the list of metadata in the object.
+			</description>
+		</method>
+		<method name="get_method_list" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_property_list" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+				Return the list of properties as an array of dictionaries, dictionaries contain: name:String, type:int (see TYPE_* enum in [@Global Scope]) and optionally: hint:int (see PROPERTY_HINT_* in [@Global Scope]), hint_string:String, usage:int (see PROPERTY_USAGE_* in [@Global Scope]).
+			</description>
+		</method>
+		<method name="get_script" qualifiers="const">
+			<return type="Reference">
+			</return>
+			<description>
+				Return the object script (or null if it doesn't have one).
+			</description>
+		</method>
+		<method name="get_signal_connection_list" qualifiers="const">
+			<return type="Array">
+			</return>
+			<argument index="0" name="signal" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_signal_list" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+				Return the list of signals as an array of dictionaries.
+			</description>
+		</method>
+		<method name="has_meta" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+				Return true if a metadata is found with the requested name.
+			</description>
+		</method>
+		<method name="has_method" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="method" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_user_signal" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="signal" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_blocking_signals" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return true if signal emission blocking is enabled.
+			</description>
+		</method>
+		<method name="is_class" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="type" type="String">
+			</argument>
+			<description>
+				Check the class of the object against a string (including inheritance).
+			</description>
+		</method>
+		<method name="is_connected" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="signal" type="String">
+			</argument>
+			<argument index="1" name="target" type="Object">
+			</argument>
+			<argument index="2" name="method" type="String">
+			</argument>
+			<description>
+				Return true if a connection exists for a given signal and target/method.
+			</description>
+		</method>
+		<method name="is_queued_for_deletion" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="notification">
+			<return type="void">
+			</return>
+			<argument index="0" name="what" type="int">
+			</argument>
+			<argument index="1" name="reversed" type="bool" default="false">
+			</argument>
+			<description>
+				Notify the object of something.
+			</description>
+		</method>
+		<method name="property_list_changed_notify">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set">
+			<return type="void">
+			</return>
+			<argument index="0" name="property" type="String">
+			</argument>
+			<argument index="1" name="value" type="Variant">
+			</argument>
+			<description>
+				Set property into the object.
+			</description>
+		</method>
+		<method name="set_block_signals">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				If set to true, signal emission is blocked.
+			</description>
+		</method>
+		<method name="set_message_translation">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Define whether this object can translate strings (with calls to [method tr]). Default is true.
+			</description>
+		</method>
+		<method name="set_meta">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="value" type="Variant">
+			</argument>
+			<description>
+				Set a metadata into the object. Metadata is serialized. Metadata can be [i]anything[/i].
+			</description>
+		</method>
+		<method name="set_script">
+			<return type="void">
+			</return>
+			<argument index="0" name="script" type="Reference">
+			</argument>
+			<description>
+				Set a script into the object, scripts extend the object functionality.
+			</description>
+		</method>
+		<method name="tr" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="message" type="String">
+			</argument>
+			<description>
+				Translate a message. Only works if message translation is enabled (which it is by default). See [method set_message_translation].
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="script_changed">
+			<description>
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="NOTIFICATION_POSTINITIALIZE" value="0" enum="">
+			Called right when the object is initialized. Not available in script.
+		</constant>
+		<constant name="NOTIFICATION_PREDELETE" value="1" enum="">
+			Called before the object is about to be deleted.
+		</constant>
+		<constant name="CONNECT_DEFERRED" value="1">
+			Connect a signal in deferred mode. This way, signal emissions are stored in a queue, then set on idle time.
+		</constant>
+		<constant name="CONNECT_PERSIST" value="2">
+			Persisting connections are saved when the object is serialized to file.
+		</constant>
+		<constant name="CONNECT_ONESHOT" value="4">
+			One shot connections disconnect themselves after emission.
+		</constant>
+	</constants>
+</class>

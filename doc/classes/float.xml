@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="float" category="Built-In Types" version="3.0.alpha.custom_build">
+	<brief_description>
+		Float built-in type
+	</brief_description>
+	<description>
+		Float built-in type.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="float">
+			<return type="float">
+			</return>
+			<argument index="0" name="from" type="bool">
+			</argument>
+			<description>
+				Cast a [bool] value to a floating point value, [code]float(true)[/code] will be equals to 1.0 and [code]float(false)[/code] will be equals to 0.0.
+			</description>
+		</method>
+		<method name="float">
+			<return type="float">
+			</return>
+			<argument index="0" name="from" type="int">
+			</argument>
+			<description>
+				Cast an [int] value to a floating point value, [code]float(1)[/code] will be equals to 1.0.
+			</description>
+		</method>
+		<method name="float">
+			<return type="float">
+			</return>
+			<argument index="0" name="from" type="String">
+			</argument>
+			<description>
+				Cast a [String] value to a floating point value. This method accepts float value strings like [code] '1.23' [/code] and exponential notation strings for its parameter so calling [code] float('1e3') [/code] will return 1000.0 and calling [code] float('1e-3') [/code] will return -0.001.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

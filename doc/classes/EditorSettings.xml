@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorSettings" inherits="Resource" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Object that holds the project-independent editor settings.
+	</brief_description>
+	<description>
+		Object that holds the project-independent editor settings. These settings are generally visible in the Editor Settings menu.
+		Accessing the settings is done by using the regular [Object] API, such as:
+		[codeblock]
+		settings.set(prop,value)
+		settings.get(prop)
+		list_of_settings = settings.get_property_list()
+		[/codeblock]
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="add_property_info">
+			<return type="void">
+			</return>
+			<argument index="0" name="info" type="Dictionary">
+			</argument>
+			<description>
+				Add a custom property info to a property. The dictionary must contain: name:[String](the name of the property) and type:[int](see TYPE_* in [@Global Scope]), and optionally hint:[int](see PROPERTY_HINT_* in [@Global Scope]), hint_string:[String].
+				Example:
+				[codeblock]
+				editor_settings.set("category/property_name", 0)
+
+				var property_info = {
+				    "name": "category/property_name",
+				    "type": TYPE_INT,
+				    "hint": PROPERTY_HINT_ENUM,
+				    "hint_string": "one,two,three"
+				}
+
+				editor_settings.add_property_info(property_info)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="erase">
+			<return type="void">
+			</return>
+			<argument index="0" name="property" type="String">
+			</argument>
+			<description>
+				Erase a given setting (pass full property path).
+			</description>
+		</method>
+		<method name="get_favorite_dirs" qualifiers="const">
+			<return type="PoolStringArray">
+			</return>
+			<description>
+				Get the list of favorite directories for this project.
+			</description>
+		</method>
+		<method name="get_project_settings_path" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Get the specific project settings path. Projects all have a unique sub-directory inside the settings path where project specific settings are saved.
+			</description>
+		</method>
+		<method name="get_recent_dirs" qualifiers="const">
+			<return type="PoolStringArray">
+			</return>
+			<description>
+				Get the list of recently visited folders in the file dialog for this project.
+			</description>
+		</method>
+		<method name="get_settings_path" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Get the global settings path for the engine. Inside this path you can find some standard paths such as:
+				settings/tmp - used for temporary storage of files
+				settings/templates - where export templates are located
+			</description>
+		</method>
+		<method name="set_favorite_dirs">
+			<return type="void">
+			</return>
+			<argument index="0" name="dirs" type="PoolStringArray">
+			</argument>
+			<description>
+				Set the list of favorite directories for this project.
+			</description>
+		</method>
+		<method name="set_recent_dirs">
+			<return type="void">
+			</return>
+			<argument index="0" name="dirs" type="PoolStringArray">
+			</argument>
+			<description>
+				Set the list of recently visited folders in the file dialog for this project.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="settings_changed">
+			<description>
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>

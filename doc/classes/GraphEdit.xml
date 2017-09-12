@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GraphEdit" inherits="Control" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		GraphEdit is an area capable of showing various GraphNodes. It manages connection events between them.
+	</brief_description>
+	<description>
+		GraphEdit manages the showing of GraphNodes it contains, as well as connections and disconnections between them. Signals are sent for each of these two events. Disconnection between GraphNodes slots is disabled by default.
+		It is greatly advised to enable low processor usage mode (see [method OS.set_low_processor_usage_mode]) when using GraphEdits.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="connect_node">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="from" type="String">
+			</argument>
+			<argument index="1" name="from_port" type="int">
+			</argument>
+			<argument index="2" name="to" type="String">
+			</argument>
+			<argument index="3" name="to_port" type="int">
+			</argument>
+			<description>
+				Create a connection between 'from_port' slot of 'from' GraphNode and 'to_port' slot of 'to' GraphNode. If the connection already exists, no connection is created.
+			</description>
+		</method>
+		<method name="disconnect_node">
+			<return type="void">
+			</return>
+			<argument index="0" name="from" type="String">
+			</argument>
+			<argument index="1" name="from_port" type="int">
+			</argument>
+			<argument index="2" name="to" type="String">
+			</argument>
+			<argument index="3" name="to_port" type="int">
+			</argument>
+			<description>
+				Remove the connection between 'from_port' slot of 'from' GraphNode and 'to_port' slot of 'to' GraphNode, if connection exists.
+			</description>
+		</method>
+		<method name="get_connection_list" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+				Return an Array containing the list of connections. A connection consists in a structure of the form {from_slot: 0, from: "GraphNode name 0", to_slot: 1, to: "GraphNode name 1" }
+			</description>
+		</method>
+		<method name="get_scroll_ofs" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+				Return the scroll offset.
+			</description>
+		</method>
+		<method name="get_snap" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_zoom" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the current zoom value.
+			</description>
+		</method>
+		<method name="is_node_connected">
+			<return type="bool">
+			</return>
+			<argument index="0" name="from" type="String">
+			</argument>
+			<argument index="1" name="from_port" type="int">
+			</argument>
+			<argument index="2" name="to" type="String">
+			</argument>
+			<argument index="3" name="to_port" type="int">
+			</argument>
+			<description>
+				Return true if the 'from_port' slot of 'from' GraphNode is connected to the 'to_port' slot of 'to' GraphNode.
+			</description>
+		</method>
+		<method name="is_right_disconnects_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return true is the disconnection of connections is enable in the visual GraphEdit. False otherwise.
+			</description>
+		</method>
+		<method name="is_using_snap" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_right_disconnects">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Enable the disconnection of existing connections in the visual GraphEdit by left-clicking a connection and releasing into the void.
+			</description>
+		</method>
+		<method name="set_scroll_ofs">
+			<return type="void">
+			</return>
+			<argument index="0" name="ofs" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_selected">
+			<return type="void">
+			</return>
+			<argument index="0" name="node" type="Node">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_snap">
+			<return type="void">
+			</return>
+			<argument index="0" name="pixels" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_use_snap">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_zoom">
+			<return type="void">
+			</return>
+			<argument index="0" name="p_zoom" type="float">
+			</argument>
+			<description>
+				Set the zoom value of the GraphEdit. Zoom value is between [0.01; 1.728].
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="_begin_node_move">
+			<description>
+				Signal sent at the beginning of a GraphNode movement.
+			</description>
+		</signal>
+		<signal name="_end_node_move">
+			<description>
+				Signal sent at the end of a GraphNode movement.
+			</description>
+		</signal>
+		<signal name="connection_request">
+			<argument index="0" name="from" type="String">
+			</argument>
+			<argument index="1" name="from_slot" type="int">
+			</argument>
+			<argument index="2" name="to" type="String">
+			</argument>
+			<argument index="3" name="to_slot" type="int">
+			</argument>
+			<description>
+				Signal sent to the GraphEdit when the connection between 'from_slot' slot of 'from' GraphNode and 'to_slot' slot of 'to' GraphNode is attempted to be created.
+			</description>
+		</signal>
+		<signal name="connection_to_empty">
+			<argument index="0" name="from" type="String">
+			</argument>
+			<argument index="1" name="from_slot" type="int">
+			</argument>
+			<argument index="2" name="release_pos" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="delete_nodes_request">
+			<description>
+				Signal sent when a GraphNode is attempted to be removed from the GraphEdit.
+			</description>
+		</signal>
+		<signal name="disconnection_request">
+			<argument index="0" name="from" type="String">
+			</argument>
+			<argument index="1" name="from_slot" type="int">
+			</argument>
+			<argument index="2" name="to" type="String">
+			</argument>
+			<argument index="3" name="to_slot" type="int">
+			</argument>
+			<description>
+				Signal sent to the GraphEdit when the connection between 'from_slot' slot of 'from' GraphNode and 'to_slot' slot of 'to' GraphNode is attempted to be removed.
+			</description>
+		</signal>
+		<signal name="duplicate_nodes_request">
+			<description>
+				Signal sent when a GraphNode is attempted to be duplicated in the GraphEdit.
+			</description>
+		</signal>
+		<signal name="node_selected">
+			<argument index="0" name="node" type="Object">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="popup_request">
+			<argument index="0" name="p_position" type="Vector2">
+			</argument>
+			<description>
+				Signal sent when a popup is requested. Happens on right-clicking in the GraphEdit. 'p_position' is the position of the mouse pointer when the signal is sent.
+			</description>
+		</signal>
+		<signal name="scroll_offset_changed">
+			<argument index="0" name="ofs" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+	<theme_items>
+		<theme_item name="bezier_len_neg" type="int">
+		</theme_item>
+		<theme_item name="bezier_len_pos" type="int">
+		</theme_item>
+		<theme_item name="bg" type="StyleBox">
+		</theme_item>
+		<theme_item name="grid_major" type="Color">
+		</theme_item>
+		<theme_item name="grid_minor" type="Color">
+		</theme_item>
+		<theme_item name="minus" type="Texture">
+		</theme_item>
+		<theme_item name="more" type="Texture">
+		</theme_item>
+		<theme_item name="reset" type="Texture">
+		</theme_item>
+		<theme_item name="snap" type="Texture">
+		</theme_item>
+	</theme_items>
+</class>

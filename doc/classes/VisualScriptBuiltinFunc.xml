@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualScriptBuiltinFunc" inherits="VisualScriptNode" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_func">
+			<return type="int" enum="VisualScriptBuiltinFunc.BuiltinFunc">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_func">
+			<return type="void">
+			</return>
+			<argument index="0" name="which" type="int" enum="VisualScriptBuiltinFunc.BuiltinFunc">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="function" type="int" setter="set_func" getter="get_func" brief="" enum="VisualScriptBuiltinFunc.BuiltinFunc">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

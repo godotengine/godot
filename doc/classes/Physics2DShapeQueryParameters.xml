@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Physics2DShapeQueryParameters" inherits="Reference" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Parameters to be sent to a 2D shape physics query.
+	</brief_description>
+	<description>
+		This class contains the shape and other parameters for intersection/collision queries.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_collision_layer" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the physics layer the shape belongs to.
+			</description>
+		</method>
+		<method name="get_exclude" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+				Return the list of objects, or object [RID]\ s, that will be excluded from collisions.
+			</description>
+		</method>
+		<method name="get_margin" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the collision margin for the shape.
+			</description>
+		</method>
+		<method name="get_motion" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+				Return the current movement speed of the shape.
+			</description>
+		</method>
+		<method name="get_object_type_mask" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the type of object the shape belongs to.
+			</description>
+		</method>
+		<method name="get_shape_rid" qualifiers="const">
+			<return type="RID">
+			</return>
+			<description>
+				Return the [RID] of the shape queried.
+			</description>
+		</method>
+		<method name="get_transform" qualifiers="const">
+			<return type="Transform2D">
+			</return>
+			<description>
+				Return the transform matrix of the shape queried.
+			</description>
+		</method>
+		<method name="set_collision_layer">
+			<return type="void">
+			</return>
+			<argument index="0" name="collision_layer" type="int">
+			</argument>
+			<description>
+				Set the physics layer the shape belongs to.
+			</description>
+		</method>
+		<method name="set_exclude">
+			<return type="void">
+			</return>
+			<argument index="0" name="exclude" type="Array">
+			</argument>
+			<description>
+				Set the list of objects, or object [RID]\ s, that will be excluded from collisions.
+			</description>
+		</method>
+		<method name="set_margin">
+			<return type="void">
+			</return>
+			<argument index="0" name="margin" type="float">
+			</argument>
+			<description>
+				Set the collision margin for the shape. A collision margin is an amount (in pixels) that the shape will grow when computing collisions, to account for numerical imprecision.
+			</description>
+		</method>
+		<method name="set_motion">
+			<return type="void">
+			</return>
+			<argument index="0" name="motion" type="Vector2">
+			</argument>
+			<description>
+				Set the current movement speed of the shape.
+			</description>
+		</method>
+		<method name="set_object_type_mask">
+			<return type="void">
+			</return>
+			<argument index="0" name="object_type_mask" type="int">
+			</argument>
+			<description>
+				Set the type of object the shape belongs to (see Physics2DDirectSpaceState.TYPE_MASK_*).
+			</description>
+		</method>
+		<method name="set_shape">
+			<return type="void">
+			</return>
+			<argument index="0" name="shape" type="Resource">
+			</argument>
+			<description>
+				Set the [Shape2D] that will be used for collision/intersection queries.
+			</description>
+		</method>
+		<method name="set_shape_rid">
+			<return type="void">
+			</return>
+			<argument index="0" name="shape" type="RID">
+			</argument>
+			<description>
+				Set the [RID] of the shape to be used in queries.
+			</description>
+		</method>
+		<method name="set_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="transform" type="Transform2D">
+			</argument>
+			<description>
+				Set the transormation matrix of the shape. This is necessary to set its position/rotation/scale.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

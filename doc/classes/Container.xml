@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Container" inherits="Control" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Base node for containers.
+	</brief_description>
+	<description>
+		Base node for containers. A [Container] contains other controls and automatically arranges them in a certain way.
+		A Control can inherit this to create custom container classes.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="fit_child_in_rect">
+			<return type="void">
+			</return>
+			<argument index="0" name="child" type="Control">
+			</argument>
+			<argument index="1" name="rect" type="Rect2">
+			</argument>
+			<description>
+				Fit a child control in a given rect. This is mainly a helper for creating custom container classes.
+			</description>
+		</method>
+		<method name="queue_sort">
+			<return type="void">
+			</return>
+			<description>
+				Queue resort of the contained children. This is called automatically anyway, but can be called upon request.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="sort_children">
+			<description>
+				Emitted when sorting the children is needed.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="NOTIFICATION_SORT_CHILDREN" value="50" enum="">
+			Notification for when sorting the children, it must be obeyed immediately.
+		</constant>
+	</constants>
+</class>

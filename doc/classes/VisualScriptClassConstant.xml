@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualScriptClassConstant" inherits="VisualScriptNode" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_base_type">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_class_constant">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_base_type">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_class_constant">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="base_type" type="String" setter="set_base_type" getter="get_base_type" brief="">
+		</member>
+		<member name="constant" type="String" setter="set_class_constant" getter="get_class_constant" brief="">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

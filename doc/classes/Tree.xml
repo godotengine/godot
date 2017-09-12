@@ -1,0 +1,487 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Tree" inherits="Control" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Control to show a tree of items.
+	</brief_description>
+	<description>
+		This shows a tree of items that can be selected, expanded and collapsed. The tree can have multiple columns with custom controls like text editing, buttons and popups. It can be useful for structural displaying and interactions.
+		Trees are built via code, using [TreeItem] objects to create the structure. They have a single root but multiple root can be simulated if a dummy hidden root is added.
+		[codeblock]
+		func _ready():
+		    var tree = Tree.new()
+		    var root = tree.create_item()
+		    tree.set_hide_root(true)
+		    var child1 = tree.create_item(root)
+		    var child2 = tree.create_item(root)
+		    var subchild1 = tree.create_item(child1)
+		    subchild1.set_text(0, "Subchild1")
+		[/codeblock]
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="are_column_titles_visible" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Get whether the column titles are being shown.
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void">
+			</return>
+			<description>
+				Clear the tree. This erases all of the items.
+			</description>
+		</method>
+		<method name="create_item">
+			<return type="Object">
+			</return>
+			<argument index="0" name="parent" type="Object" default="null">
+			</argument>
+			<description>
+				Create an item in the tree and add it as the last child of [code]parent[/code]. If parent is not given, it will be added as the last child of the root, or it'll the be the root itself if the tree is empty.
+			</description>
+		</method>
+		<method name="ensure_cursor_is_visible">
+			<return type="void">
+			</return>
+			<description>
+				Make the current selected item visible. This will scroll the tree to make sure the selected item is in sight.
+			</description>
+		</method>
+		<method name="get_allow_reselect" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_allow_rmb_select" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Get whether a right click can select items.
+			</description>
+		</method>
+		<method name="get_column_at_pos" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="pos" type="Vector2">
+			</argument>
+			<description>
+				Get the column index under the given point.
+			</description>
+		</method>
+		<method name="get_column_title" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+				Get the title of the given column.
+			</description>
+		</method>
+		<method name="get_column_width" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+				Get the width of the given column in pixels.
+			</description>
+		</method>
+		<method name="get_columns" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Get the amount of columns.
+			</description>
+		</method>
+		<method name="get_custom_popup_rect" qualifiers="const">
+			<return type="Rect2">
+			</return>
+			<description>
+				Get the rectangle for custom popups. Helper to create custom cell controls that display a popup. See [method TreeItem.set_cell_mode].
+			</description>
+		</method>
+		<method name="get_drop_mode_flags" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Get the flags of the current drop mode.
+			</description>
+		</method>
+		<method name="get_edited" qualifiers="const">
+			<return type="TreeItem">
+			</return>
+			<description>
+				Get the current edited item. This is only available for custom cell mode.
+			</description>
+		</method>
+		<method name="get_edited_column" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Get the column of the cell for the current edited icon. This is only available for custom cell mode.
+			</description>
+		</method>
+		<method name="get_item_area_rect" qualifiers="const">
+			<return type="Rect2">
+			</return>
+			<argument index="0" name="item" type="Object">
+			</argument>
+			<argument index="1" name="column" type="int" default="-1">
+			</argument>
+			<description>
+				Get the rectangle area of the the specified item. If column is specified, only get the position and size of that column, otherwise get the rectangle containing all columns.
+			</description>
+		</method>
+		<method name="get_item_at_pos" qualifiers="const">
+			<return type="TreeItem">
+			</return>
+			<argument index="0" name="pos" type="Vector2">
+			</argument>
+			<description>
+				Get the tree item at the specified position (relative to the tree origin position).
+			</description>
+		</method>
+		<method name="get_next_selected">
+			<return type="TreeItem">
+			</return>
+			<argument index="0" name="from" type="Object">
+			</argument>
+			<description>
+				Get the next selected item after the given one.
+			</description>
+		</method>
+		<method name="get_pressed_button" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Get the index of the last pressed button.
+			</description>
+		</method>
+		<method name="get_root">
+			<return type="TreeItem">
+			</return>
+			<description>
+				Get the root item of the tree.
+			</description>
+		</method>
+		<method name="get_scroll" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+				Get the current scrolling position.
+			</description>
+		</method>
+		<method name="get_selected" qualifiers="const">
+			<return type="TreeItem">
+			</return>
+			<description>
+				Get the currently selected item.
+			</description>
+		</method>
+		<method name="get_selected_column" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Get the column number of the current selection.
+			</description>
+		</method>
+		<method name="is_folding_hidden" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Get whether the folding arrow is hidden.
+			</description>
+		</method>
+		<method name="set_allow_reselect">
+			<return type="void">
+			</return>
+			<argument index="0" name="allow" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_allow_rmb_select">
+			<return type="void">
+			</return>
+			<argument index="0" name="allow" type="bool">
+			</argument>
+			<description>
+				Set whether or not a right mouse button click can select items.
+			</description>
+		</method>
+		<method name="set_column_expand">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="expand" type="bool">
+			</argument>
+			<description>
+				Set whether a column will have the "Expand" flag of [Control].
+			</description>
+		</method>
+		<method name="set_column_min_width">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="min_width" type="int">
+			</argument>
+			<description>
+				Set the minimum width of a column.
+			</description>
+		</method>
+		<method name="set_column_title">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="title" type="String">
+			</argument>
+			<description>
+				Set the title of a column.
+			</description>
+		</method>
+		<method name="set_column_titles_visible">
+			<return type="void">
+			</return>
+			<argument index="0" name="visible" type="bool">
+			</argument>
+			<description>
+				Set whether the column titles visibility.
+			</description>
+		</method>
+		<method name="set_columns">
+			<return type="void">
+			</return>
+			<argument index="0" name="amount" type="int">
+			</argument>
+			<description>
+				Set the amount of columns.
+			</description>
+		</method>
+		<method name="set_drop_mode_flags">
+			<return type="void">
+			</return>
+			<argument index="0" name="flags" type="int">
+			</argument>
+			<description>
+				Set the drop mode as an OR combination of flags. See [code]DROP_MODE_*[/code] constants.
+			</description>
+		</method>
+		<method name="set_hide_folding">
+			<return type="void">
+			</return>
+			<argument index="0" name="hide" type="bool">
+			</argument>
+			<description>
+				Set whether the folding arrow should be hidden.
+			</description>
+		</method>
+		<method name="set_hide_root">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Set whether the root of the tree should be hidden.
+			</description>
+		</method>
+		<method name="set_select_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="int" enum="Tree.SelectMode">
+			</argument>
+			<description>
+				Set the selection mode. Use one of the [code]SELECT_*[/code] constants.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="button_pressed">
+			<argument index="0" name="item" type="Object">
+			</argument>
+			<argument index="1" name="column" type="int">
+			</argument>
+			<argument index="2" name="id" type="int">
+			</argument>
+			<description>
+				Emitted when a button on the tree was pressed (see [method TreeItem.add_button]).
+			</description>
+		</signal>
+		<signal name="cell_selected">
+			<description>
+				Emitted when a cell is selected.
+			</description>
+		</signal>
+		<signal name="column_title_pressed">
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="custom_popup_edited">
+			<argument index="0" name="arrow_clicked" type="bool">
+			</argument>
+			<description>
+				Emitted when a cell with the [code]CELL_MODE_CUSTOM[/code] is clicked to be edited.
+			</description>
+		</signal>
+		<signal name="empty_tree_rmb_selected">
+			<argument index="0" name="pos" type="Vector2">
+			</argument>
+			<description>
+				Emitted when the right mouse button is pressed if RMB selection is active and the tree is empty.
+			</description>
+		</signal>
+		<signal name="item_activated">
+			<description>
+				Emitted when an item is activated (double-clicked).
+			</description>
+		</signal>
+		<signal name="item_collapsed">
+			<argument index="0" name="item" type="Object">
+			</argument>
+			<description>
+				Emitted when an item is collapsed by a click on the folding arrow.
+			</description>
+		</signal>
+		<signal name="item_custom_button_pressed">
+			<description>
+			</description>
+		</signal>
+		<signal name="item_double_clicked">
+			<description>
+			</description>
+		</signal>
+		<signal name="item_edited">
+			<description>
+				Emitted when an item is editted.
+			</description>
+		</signal>
+		<signal name="item_rmb_edited">
+			<description>
+			</description>
+		</signal>
+		<signal name="item_rmb_selected">
+			<argument index="0" name="pos" type="Vector2">
+			</argument>
+			<description>
+				Emitted when an item is selected with right mouse button.
+			</description>
+		</signal>
+		<signal name="item_selected">
+			<description>
+				Emitted when an item is selected with right mouse button.
+			</description>
+		</signal>
+		<signal name="multi_selected">
+			<argument index="0" name="item" type="Object">
+			</argument>
+			<argument index="1" name="column" type="int">
+			</argument>
+			<argument index="2" name="selected" type="bool">
+			</argument>
+			<description>
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="SELECT_SINGLE" value="0">
+		</constant>
+		<constant name="SELECT_ROW" value="1">
+		</constant>
+		<constant name="SELECT_MULTI" value="2">
+		</constant>
+		<constant name="DROP_MODE_DISABLED" value="0">
+		</constant>
+		<constant name="DROP_MODE_ON_ITEM" value="1">
+		</constant>
+		<constant name="DROP_MODE_INBETWEEN" value="2">
+		</constant>
+	</constants>
+	<theme_items>
+		<theme_item name="arrow" type="Texture">
+		</theme_item>
+		<theme_item name="arrow_collapsed" type="Texture">
+		</theme_item>
+		<theme_item name="bg" type="StyleBox">
+		</theme_item>
+		<theme_item name="bg_focus" type="StyleBox">
+		</theme_item>
+		<theme_item name="button_margin" type="int">
+		</theme_item>
+		<theme_item name="button_pressed" type="StyleBox">
+		</theme_item>
+		<theme_item name="checked" type="Texture">
+		</theme_item>
+		<theme_item name="cursor" type="StyleBox">
+		</theme_item>
+		<theme_item name="cursor_color" type="Color">
+		</theme_item>
+		<theme_item name="cursor_unfocused" type="StyleBox">
+		</theme_item>
+		<theme_item name="custom_button" type="StyleBox">
+		</theme_item>
+		<theme_item name="custom_button_font_highlight" type="Color">
+		</theme_item>
+		<theme_item name="custom_button_hover" type="StyleBox">
+		</theme_item>
+		<theme_item name="custom_button_pressed" type="StyleBox">
+		</theme_item>
+		<theme_item name="draw_relationship_lines" type="int">
+		</theme_item>
+		<theme_item name="drop_position_color" type="Color">
+		</theme_item>
+		<theme_item name="font" type="Font">
+		</theme_item>
+		<theme_item name="font_color" type="Color">
+		</theme_item>
+		<theme_item name="font_color_selected" type="Color">
+		</theme_item>
+		<theme_item name="guide_color" type="Color">
+		</theme_item>
+		<theme_item name="guide_width" type="int">
+		</theme_item>
+		<theme_item name="hseparation" type="int">
+		</theme_item>
+		<theme_item name="item_margin" type="int">
+		</theme_item>
+		<theme_item name="relationship_line_color" type="Color">
+		</theme_item>
+		<theme_item name="scroll_border" type="int">
+		</theme_item>
+		<theme_item name="scroll_speed" type="int">
+		</theme_item>
+		<theme_item name="select_arrow" type="Texture">
+		</theme_item>
+		<theme_item name="selected" type="StyleBox">
+		</theme_item>
+		<theme_item name="selected_focus" type="StyleBox">
+		</theme_item>
+		<theme_item name="selection_color" type="Color">
+		</theme_item>
+		<theme_item name="title_button_color" type="Color">
+		</theme_item>
+		<theme_item name="title_button_font" type="Font">
+		</theme_item>
+		<theme_item name="title_button_hover" type="StyleBox">
+		</theme_item>
+		<theme_item name="title_button_normal" type="StyleBox">
+		</theme_item>
+		<theme_item name="title_button_pressed" type="StyleBox">
+		</theme_item>
+		<theme_item name="unchecked" type="Texture">
+		</theme_item>
+		<theme_item name="updown" type="Texture">
+		</theme_item>
+		<theme_item name="vseparation" type="int">
+		</theme_item>
+	</theme_items>
+</class>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RID" category="Built-In Types" version="3.0.alpha.custom_build">
+	<brief_description>
+		Handle for a [Resource]'s unique ID.
+	</brief_description>
+	<description>
+		The RID type is used to access the unique integer ID of a resource.  They are opaque, so they do not grant access to the associated resource by themselves. They are used by and with the low-level Server classes such as [VisualServer].
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="RID">
+			<return type="RID">
+			</return>
+			<argument index="0" name="from" type="Object">
+			</argument>
+			<description>
+				Create a new RID instance with the ID of a given resource. When not handed a valid resource, silently stores the unused ID 0.
+			</description>
+		</method>
+		<method name="get_id">
+			<return type="int">
+			</return>
+			<description>
+				Retrieve the ID of the referenced resource.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
