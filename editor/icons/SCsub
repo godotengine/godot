@@ -39,18 +39,44 @@ def make_editor_icons_action(target, source, env):
     s.write(icons_string.getvalue())
     s.write('};\n\n')
     s.write("static const char *editor_icons_names[] = {\n")
+
+    # this is used to store the indices of thumbnail icons
+    thumb_medium_indices = [];
+    thumb_big_indices = [];
+    index = 0
     for f in svg_icons:
 
         fname = str(f)
 
         icon_name = os.path.basename(fname)[5:-4].title().replace("_", "")
+        if icon_name.endswith("MediumThumb"):  # dont know a better way to handle this
+            thumb_medium_indices.append(str(index))
+        if icon_name.endswith("BigThumb"):  # dont know a better way to handle this
+            thumb_big_indices.append(str(index))
 
         s.write('\t"%s"' % icon_name)
 
         if fname != svg_icons[-1]:
             s.write(",")
         s.write('\n')
+
+        index += 1
+
     s.write('};\n')
+
+    if thumb_medium_indices:
+        s.write("\n\n")
+        s.write("static const int editor_md_thumbs_count = %s;\n" % len(thumb_medium_indices))
+        s.write("static const int editor_md_thumbs_indices[] = {")
+        s.write(", ".join(thumb_medium_indices))
+        s.write("};\n")
+    if thumb_big_indices:
+        s.write("\n\n")
+        s.write("static const int editor_bg_thumbs_count = %s;\n" % len(thumb_big_indices))
+        s.write("static const int editor_bg_thumbs_indices[] = {")
+        s.write(", ".join(thumb_big_indices))
+        s.write("};\n")
+
     s.write("#endif\n")
 
 

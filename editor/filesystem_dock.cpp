@@ -215,9 +215,6 @@ void FileSystemDock::_notification(int p_what) {
 			button_hist_next->set_icon(get_icon("Forward", "EditorIcons"));
 			button_hist_prev->set_icon(get_icon("Back", "EditorIcons"));
 
-			Theme::get_default()->clear_icon("ResizedFolder", "EditorIcons");
-			Theme::get_default()->clear_icon("ResizedFile", "EditorIcons");
-
 			if (new_mode != display_mode) {
 				set_display_mode(new_mode);
 			} else {
@@ -437,39 +434,15 @@ void FileSystemDock::_update_files(bool p_keep_selection) {
 		files->set_max_text_lines(2);
 		files->set_fixed_icon_size(Size2(thumbnail_size, thumbnail_size));
 
-		if (!has_icon("ResizedFolder", "EditorIcons")) {
-			Ref<ImageTexture> folder = get_icon("FolderBig", "EditorIcons");
-			Ref<Image> img = folder->get_data();
-			img = img->duplicate();
-			img->resize(thumbnail_size, thumbnail_size);
-			Ref<ImageTexture> resized_folder = Ref<ImageTexture>(memnew(ImageTexture));
-			resized_folder->create_from_image(img, 0);
-			Theme::get_default()->set_icon("ResizedFolder", "EditorIcons", resized_folder);
+		if (thumbnail_size < 64) {
+			folder_thumbnail = get_icon("FolderMediumThumb", "EditorIcons");
+			file_thumbnail = get_icon("FileMediumThumb", "EditorIcons");
+			file_thumbnail_broken = get_icon("FileDeadMediumThumb", "EditorIcons");
+		} else {
+			folder_thumbnail = get_icon("FolderBigThumb", "EditorIcons");
+			file_thumbnail = get_icon("FileBigThumb", "EditorIcons");
+			file_thumbnail_broken = get_icon("FileDeadBigThumb", "EditorIcons");
 		}
-
-		folder_thumbnail = get_icon("ResizedFolder", "EditorIcons");
-
-		if (!has_icon("ResizedFile", "EditorIcons")) {
-			Ref<ImageTexture> file = get_icon("FileBig", "EditorIcons");
-			Ref<Image> img = file->get_data();
-			img->resize(thumbnail_size, thumbnail_size);
-			Ref<ImageTexture> resized_file = Ref<ImageTexture>(memnew(ImageTexture));
-			resized_file->create_from_image(img, 0);
-			Theme::get_default()->set_icon("ResizedFile", "EditorIcons", resized_file);
-		}
-
-		if (!has_icon("ResizedFileBroken", "EditorIcons")) {
-			Ref<ImageTexture> file = get_icon("FileBigBroken", "EditorIcons");
-			Ref<Image> img = file->get_data();
-			img->resize(thumbnail_size, thumbnail_size);
-			Ref<ImageTexture> resized_file = Ref<ImageTexture>(memnew(ImageTexture));
-			resized_file->create_from_image(img, 0);
-			Theme::get_default()->set_icon("ResizedFileBroken", "EditorIcons", resized_file);
-		}
-
-		file_thumbnail = get_icon("ResizedFile", "EditorIcons");
-
-		file_thumbnail_broken = get_icon("ResizedFileBroken", "EditorIcons");
 	} else {
 
 		files->set_icon_mode(ItemList::ICON_MODE_LEFT);

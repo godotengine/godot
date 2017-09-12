@@ -136,6 +136,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 		Vector<Pair<Variant::Type, String> > args;
 	};
 
+	HashMap<StringName, Ref<StyleBox>, StringNameHasher> node_styles;
 	StringName edited_func;
 
 	void _update_graph_connections();

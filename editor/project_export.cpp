@@ -48,7 +48,7 @@ void ProjectExportDialog::_notification(int p_what) {
 
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			delete_preset->set_icon(get_icon("Del", "EditorIcons"));
+			delete_preset->set_icon(get_icon("Remove", "EditorIcons"));
 			connect("confirmed", this, "_export_pck_zip");
 			custom_feature_display->get_parent_control()->add_style_override("panel", get_stylebox("bg", "Tree"));
 		} break;
@@ -193,7 +193,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 			patch->set_checked(0, true);
 		patch->set_tooltip(0, patchlist[i]);
 		patch->set_metadata(0, i);
-		patch->add_button(0, get_icon("Del", "EditorIcons"), 0);
+		patch->add_button(0, get_icon("Remove", "EditorIcons"), 0);
 		patch->add_button(0, get_icon("folder", "FileDialog"), 1);
 	}
 

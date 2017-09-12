@@ -1709,6 +1709,10 @@ void EditorHelp::_notification(int p_what) {
 			//forward->set_icon(get_icon("Forward","EditorIcons"));
 			//back->set_icon(get_icon("Back","EditorIcons"));
 			_update_doc();
+
+			class_desc->add_style_override("normal", class_desc->get_stylebox("code_normal", "RichTextLabel"));
+			class_desc->add_style_override("focus", class_desc->get_stylebox("code_focus", "RichTextLabel"));
+
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
@@ -1784,12 +1788,10 @@ EditorHelp::EditorHelp() {
 	//class_list->set_selection_enabled(true);
 
 	{
-		background_panel = memnew(Panel);
-		background_panel->set_v_size_flags(SIZE_EXPAND_FILL);
-		vbc->add_child(background_panel);
 		class_desc = memnew(RichTextLabel);
-		background_panel->add_child(class_desc);
+		vbc->add_child(class_desc);
 		class_desc->set_area_as_parent_rect();
+		class_desc->set_v_size_flags(SIZE_EXPAND_FILL);
 		class_desc->add_color_override("selection_color", EDITOR_DEF("text_editor/highlighting/selection_color", Color(0.2, 0.2, 1)));
 		class_desc->connect("meta_clicked", this, "_class_desc_select");
 		class_desc->connect("gui_input", this, "_class_desc_input");

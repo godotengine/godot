@@ -491,9 +491,8 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 			gnode->set_overlay(GraphNode::OVERLAY_BREAKPOINT);
 		}
 
-		if (EditorSettings::get_singleton()->has("editors/visual_script/color_" + node->get_category())) {
-			Color c = EditorSettings::get_singleton()->get("editors/visual_script/color_" + node->get_category());
-			gnode->set_self_modulate(c);
+		if (node_styles.has(node->get_category())) {
+			gnode->add_style_override("frame", node_styles[node->get_category()]);
 		}
 
 		gnode->set_meta("__vnode", node);
@@ -2743,6 +2742,27 @@ void VisualScriptEditor::_notification(int p_what) {
 		node_filter->add_icon_override("right_icon", Control::get_icon("Search", "EditorIcons"));
 		variable_editor->connect("changed", this, "_update_members");
 		signal_editor->connect("changed", this, "_update_members");
+
+		List<Pair<String, Color> > colors;
+		colors.push_back(Pair<String, Color>("functions", Color(1, 0.9, 0.9)));
+		colors.push_back(Pair<String, Color>("data", Color(0.9, 1.0, 0.9)));
+		colors.push_back(Pair<String, Color>("operators", Color(0.9, 0.9, 1.0)));
+		colors.push_back(Pair<String, Color>("flow_control", Color(1.0, 1.0, 1.0)));
+		colors.push_back(Pair<String, Color>("custom", Color(0.8, 1.0, 1.0)));
+		colors.push_back(Pair<String, Color>("constants", Color(1.0, 0.8, 1.0)));
+
+		for (List<Pair<String, Color> >::Element *E = colors.front(); E; E = E->next()) {
+			print_line(E->get().first);
+			Ref<StyleBoxFlat> sb = EditorNode::get_singleton()->get_theme_base()->get_theme()->get_stylebox("frame", "GraphNode");
+			if (sb != NULL) {
+				Ref<StyleBoxFlat> frame_style = sb->duplicate();
+				Color c = sb->get_border_color(MARGIN_TOP);
+				Color cn = E->get().second;
+				cn.a = c.a;
+				frame_style->set_border_color_all(cn);
+				node_styles[E->get().first] = frame_style;
+			}
+		}
 	}
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 		left_vsplit->set_visible(is_visible_in_tree());
@@ -2974,7 +2994,7 @@ void VisualScriptEditor::_member_rmb_selected(const Vector2 &p_pos) {
 
 	TreeItem *root = members->get_root();
 
-	Ref<Texture> del_icon = Control::get_icon("Del", "EditorIcons");
+	Ref<Texture> del_icon = Control::get_icon("Remove", "EditorIcons");
 
 	Ref<Texture> edit_icon = Control::get_icon("Edit", "EditorIcons");
 
@@ -3366,12 +3386,6 @@ void VisualScriptEditor::free_clipboard() {
 static void register_editor_callback() {
 
 	ScriptEditor::register_create_script_editor_function(create_editor);
-	EditorSettings::get_singleton()->set("editors/visual_script/color_functions", Color(1, 0.9, 0.9));
-	EditorSettings::get_singleton()->set("editors/visual_script/color_data", Color(0.9, 1.0, 0.9));
-	EditorSettings::get_singleton()->set("editors/visual_script/color_operators", Color(0.9, 0.9, 1.0));
-	EditorSettings::get_singleton()->set("editors/visual_script/color_flow_control", Color(1.0, 1.0, 1.0));
-	EditorSettings::get_singleton()->set("editors/visual_script/color_custom", Color(0.8, 1.0, 1.0));
-	EditorSettings::get_singleton()->set("editors/visual_script/color_constants", Color(1.0, 0.8, 1.0));
 
 	ED_SHORTCUT("visual_script_editor/delete_selected", TTR("Delete Selected"));
 	ED_SHORTCUT("visual_script_editor/toggle_breakpoint", TTR("Toggle Breakpoint"), KEY_F9);
