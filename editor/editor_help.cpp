@@ -35,6 +35,8 @@
 #include "editor_settings.h"
 #include "os/keyboard.h"
 
+#define CONTRIBUTE_URL "http://docs.godotengine.org/en/latest/community/contributing/updating_the_class_reference.html"
+
 void EditorHelpSearch::popup() {
 
 	popup_centered(Size2(700, 600) * EDSCALE);
@@ -575,6 +577,8 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 				return;
 			class_desc->scroll_to_line(method_line[m]);
 		}
+	} else if (p_select.begins_with("http")) {
+		OS::get_singleton()->shell_open(p_select);
 	}
 }
 
@@ -648,6 +652,7 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 	Ref<Font> doc_font = get_font("doc", "EditorFonts");
 	Ref<Font> doc_title_font = get_font("doc_title", "EditorFonts");
 	Ref<Font> doc_code_font = get_font("doc_source", "EditorFonts");
+	String link_color_text=Color(EditorSettings::get_singleton()->get("text_editor/highlighting/keyword_color")).to_html(false);
 
 	h_color = Color(1, 1, 1, 1);
 
@@ -860,7 +865,7 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 			class_desc->push_cell();
 			class_desc->push_font(doc_code_font);
 
-			if (methods[i].description != "") {
+			if (true || methods[i].description != "") { //always describe method
 				method_descr = true;
 				class_desc->push_meta("@" + methods[i].name);
 			}
@@ -944,7 +949,7 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 			class_desc->pop();
 			class_desc->pop();
 
-			if (cd.theme_properties[i].description != "") {
+			if (true || cd.theme_properties[i].description != "") { //always describe properties
 				class_desc->push_font(doc_font);
 				class_desc->add_text("  ");
 				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/comment_color"));
@@ -1245,7 +1250,15 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/text_color"));
 			class_desc->push_font(doc_font);
 			class_desc->push_indent(1);
-			_add_text(cd.properties[i].description);
+			if (cd.properties[i].description.strip_edges() != String()) {
+				_add_text(cd.properties[i].description);
+			} else {
+				class_desc->add_image(get_icon("Error", "EditorIcons"));
+				class_desc->add_text(" ");
+				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/comment_color"));
+				class_desc->append_bbcode(TTR("There is currently no description for this property. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url",CONTRIBUTE_URL).replace("$color",link_color_text));
+				class_desc->pop();
+			}
 			class_desc->pop();
 			class_desc->pop();
 			class_desc->pop();
@@ -1327,7 +1340,16 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/text_color"));
 			class_desc->push_font(doc_font);
 			class_desc->push_indent(1);
-			_add_text(methods[i].description);
+			if (methods[i].description.strip_edges()!=String()) {
+				_add_text(methods[i].description);
+			} else {
+				class_desc->add_image(get_icon("Error", "EditorIcons"));
+				class_desc->add_text(" ");
+				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/comment_color"));
+				class_desc->append_bbcode(TTR("There is currently no description for this method. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url",CONTRIBUTE_URL).replace("$color",link_color_text));
+				class_desc->pop();
+			}
+
 			class_desc->pop();
 			class_desc->pop();
 			class_desc->pop();
