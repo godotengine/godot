@@ -180,7 +180,7 @@ void ColorPicker::_preset_draw() {
 	Rect2 full_preset = Rect2(Point2(), Size2(size.width * presets.size(), size.height));
 	preset->set_custom_minimum_size(full_preset.size);
 
-	preset->draw_texture_rect(get_icon("MiniCheckerboard", "EditorIcons"), full_preset, true);
+	preset->draw_texture_rect(get_icon("mini_checkerboard", "ColorPicker"), full_preset, true);
 
 	Rect2 preset_rect = Rect2(Point2(), size);
 	for (int i = 0; i < presets.size(); i++) {
@@ -255,7 +255,7 @@ void ColorPicker::_update_text_value() {
 void ColorPicker::_sample_draw() {
 	Rect2 r = Rect2(Point2(), Size2(uv_edit->get_size().width, sample->get_size().height * 0.95));
 	if (color.a < 1) {
-		sample->draw_texture_rect(get_icon("MiniCheckerboard", "EditorIcons"), r, true);
+		sample->draw_texture_rect(get_icon("mini_checkerboard", "ColorPicker"), r, true);
 	}
 	sample->draw_rect(r, color);
 }
@@ -629,7 +629,9 @@ void ColorPickerButton::_notification(int p_what) {
 	if (p_what == NOTIFICATION_DRAW) {
 
 		Ref<StyleBox> normal = get_stylebox("normal");
-		draw_rect(Rect2(normal->get_offset(), get_size() - normal->get_minimum_size()), picker->get_pick_color());
+		Rect2 area = Rect2(normal->get_offset(), get_size() - normal->get_minimum_size());
+		draw_texture_rect(Control::get_icon("mini_checkerboard", "ColorPicker"), area, true);
+		draw_rect(area, picker->get_pick_color());
 	}
 
 	if (p_what == MainLoop::NOTIFICATION_WM_QUIT_REQUEST) {
