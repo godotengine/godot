@@ -67,12 +67,13 @@ Error AudioDriverWASAPI::init_device() {
 
 	switch (channels) {
 		case 2: // Stereo
+		case 4: // Surround 3.1
 		case 6: // Surround 5.1
 		case 8: // Surround 7.1
 			break;
 
 		default:
-			ERR_PRINT("WASAPI: Unsupported number of channels");
+			ERR_PRINTS("WASAPI: Unsupported number of channels: " + itos(channels));
 			ERR_FAIL_V(ERR_CANT_OPEN);
 			break;
 	}
@@ -119,7 +120,8 @@ Error AudioDriverWASAPI::init_device() {
 	samples_in.resize(buffer_size);
 
 	if (OS::get_singleton()->is_stdout_verbose()) {
-		print_line("audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
+		print_line("WASAPI: detected " + itos(channels) + " channels");
+		print_line("WASAPI: audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
 	}
 
 	return OK;
@@ -185,7 +187,7 @@ int AudioDriverWASAPI::get_mix_rate() const {
 
 AudioDriver::SpeakerMode AudioDriverWASAPI::get_speaker_mode() const {
 
-	return SPEAKER_MODE_STEREO;
+	return get_speaker_mode_by_total_channels(channels);
 }
 
 void AudioDriverWASAPI::thread_func(void *p_udata) {

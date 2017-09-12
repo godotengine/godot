@@ -57,52 +57,32 @@ void AudioStreamPlayer2D::_mix_audio() {
 		AudioFrame vol_inc = (current.vol - prev_outputs[i].vol) / float(buffer_size);
 		AudioFrame vol = current.vol;
 
-		switch (AudioServer::get_singleton()->get_speaker_mode()) {
+		int cc = AudioServer::get_singleton()->get_channel_count();
 
-			case AudioServer::SPEAKER_MODE_STEREO: {
-				AudioFrame *target = AudioServer::get_singleton()->thread_get_channel_mix_buffer(current.bus_index, 0);
+		if (cc == 1) {
+			AudioFrame *target = AudioServer::get_singleton()->thread_get_channel_mix_buffer(current.bus_index, 0);
 
-				for (int j = 0; j < buffer_size; j++) {
+			for (int j = 0; j < buffer_size; j++) {
 
-					target[j] += buffer[j] * vol;
-					vol += vol_inc;
+				target[j] += buffer[j] * vol;
+				vol += vol_inc;
+			}
+
+		} else {
+			AudioFrame *targets[4];
+
+			for (int k = 0; k < cc; k++) {
+				targets[k] = AudioServer::get_singleton()->thread_get_channel_mix_buffer(current.bus_index, k);
+			}
+
+			for (int j = 0; j < buffer_size; j++) {
+
+				AudioFrame frame = buffer[j] * vol;
+				for (int k = 0; k < cc; k++) {
+					targets[k][j] += frame;
 				}
-
-			} break;
-			case AudioServer::SPEAKER_SURROUND_51: {
-
-				AudioFrame *targets[2] = {
-					AudioServer::get_singleton()->thread_get_channel_mix_buffer(current.bus_index, 1),
-					AudioServer::get_singleton()->thread_get_channel_mix_buffer(current.bus_index, 2),
-				};
-
-				for (int j = 0; j < buffer_size; j++) {
-
-					AudioFrame frame = buffer[j] * vol;
-					targets[0][j] += frame;
-					targets[1][j] += frame;
-					vol += vol_inc;
-				}
-
-			} break;
-			case AudioServer::SPEAKER_SURROUND_71: {
-
-				AudioFrame *targets[3] = {
-					AudioServer::get_singleton()->thread_get_channel_mix_buffer(current.bus_index, 1),
-					AudioServer::get_singleton()->thread_get_channel_mix_buffer(current.bus_index, 2),
-					AudioServer::get_singleton()->thread_get_channel_mix_buffer(current.bus_index, 3)
-				};
-
-				for (int j = 0; j < buffer_size; j++) {
-
-					AudioFrame frame = buffer[j] * vol;
-					targets[0][j] += frame;
-					targets[1][j] += frame;
-					targets[2][j] += frame;
-					vol += vol_inc;
-				}
-
-			} break;
+				vol += vol_inc;
+			}
 		}
 
 		prev_outputs[i] = current;

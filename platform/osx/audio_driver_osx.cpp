@@ -58,14 +58,14 @@ Error AudioDriverOSX::initDevice() {
 
 	AudioStreamBasicDescription strdesc;
 
-	// TODO: Implement this
-	/*zeromem(&strdesc, sizeof(strdesc));
+	zeromem(&strdesc, sizeof(strdesc));
 	UInt32 size = sizeof(strdesc);
 	result = AudioUnitGetProperty(audio_unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, kOutputBus, &strdesc, &size);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
 	switch (strdesc.mChannelsPerFrame) {
 		case 2: // Stereo
+		case 4: // Surround 3.1
 		case 6: // Surround 5.1
 		case 8: // Surround 7.1
 			channels = strdesc.mChannelsPerFrame;
@@ -75,7 +75,7 @@ Error AudioDriverOSX::initDevice() {
 			// Unknown number of channels, default to stereo
 			channels = 2;
 			break;
-	}*/
+	}
 
 	mix_rate = GLOBAL_DEF("audio/mix_rate", DEFAULT_MIX_RATE);
 
@@ -103,7 +103,8 @@ Error AudioDriverOSX::initDevice() {
 	samples_in.resize(buffer_size);
 
 	if (OS::get_singleton()->is_stdout_verbose()) {
-		print_line("audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
+		print_line("CoreAudio: detected " + itos(channels) + " channels");
+		print_line("CoreAudio: audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
 	}
 
 	AURenderCallbackStruct callback;
@@ -242,7 +243,7 @@ int AudioDriverOSX::get_mix_rate() const {
 };
 
 AudioDriver::SpeakerMode AudioDriverOSX::get_speaker_mode() const {
-	return SPEAKER_MODE_STEREO;
+	return get_speaker_mode_by_total_channels(channels);
 };
 
 void AudioDriverOSX::lock() {

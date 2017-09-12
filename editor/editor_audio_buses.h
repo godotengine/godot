@@ -52,16 +52,23 @@ class EditorAudioBus : public PanelContainer {
 
 	GDCLASS(EditorAudioBus, PanelContainer)
 
-	bool prev_active;
-	float peak_l;
-	float peak_r;
-
 	Ref<Texture> disabled_vu;
 	LineEdit *track_name;
 	MenuButton *bus_options;
 	VSlider *slider;
-	TextureProgress *vu_l;
-	TextureProgress *vu_r;
+
+	int cc;
+
+	struct {
+		bool prev_active;
+
+		float peak_l;
+		float peak_r;
+
+		TextureProgress *vu_l;
+		TextureProgress *vu_r;
+	} channel[4];
+
 	TextureRect *scale;
 	OptionButton *send;
 

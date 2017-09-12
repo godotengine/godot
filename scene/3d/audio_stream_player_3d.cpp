@@ -72,34 +72,13 @@ void AudioStreamPlayer3D::_mix_audio() {
 
 		//mix!
 
-		int buffers = 0;
-		int first = 0;
-
-		switch (AudioServer::get_singleton()->get_speaker_mode()) {
-
-			case AudioServer::SPEAKER_MODE_STEREO: {
-				buffers = 1;
-				first = 0;
-
-			} break;
-			case AudioServer::SPEAKER_SURROUND_51: {
-				buffers = 2;
-				first = 1;
-
-			} break;
-			case AudioServer::SPEAKER_SURROUND_71: {
-
-				buffers = 3;
-				first = 1;
-
-			} break;
-		}
+		int buffers = AudioServer::get_singleton()->get_channel_count();
 
 		for (int k = 0; k < buffers; k++) {
 			AudioFrame vol_inc = (current.vol[k] - prev_outputs[i].vol[k]) / float(buffer_size);
 			AudioFrame vol = current.vol[k];
 
-			AudioFrame *target = AudioServer::get_singleton()->thread_get_channel_mix_buffer(current.bus_index, first + k);
+			AudioFrame *target = AudioServer::get_singleton()->thread_get_channel_mix_buffer(current.bus_index, k);
 
 			current.filter.set_mode(AudioFilterSW::HIGHSHELF);
 			current.filter.set_sampling_rate(AudioServer::get_singleton()->get_mix_rate());
@@ -146,7 +125,7 @@ void AudioStreamPlayer3D::_mix_audio() {
 
 			if (current.reverb_bus_index >= 0) {
 
-				AudioFrame *rtarget = AudioServer::get_singleton()->thread_get_channel_mix_buffer(current.reverb_bus_index, first + k);
+				AudioFrame *rtarget = AudioServer::get_singleton()->thread_get_channel_mix_buffer(current.reverb_bus_index, k);
 
 				if (current.reverb_bus_index == prev_outputs[i].reverb_bus_index) {
 					AudioFrame rvol_inc = (current.reverb_vol[k] - prev_outputs[i].reverb_vol[k]) / float(buffer_size);
@@ -341,49 +320,57 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 				flat_pos.y = 0;
 				flat_pos.normalize();
 
-				switch (AudioServer::get_singleton()->get_speaker_mode()) {
+				unsigned int cc = AudioServer::get_singleton()->get_channel_count();
+				if (cc == 1) {
+					// Stereo pair
+					float c = flat_pos.x * 0.5 + 0.5;
 
-					case AudioServer::SPEAKER_MODE_STEREO: {
+					output.vol[0].l = 1.0 - c;
+					output.vol[0].r = c;
+				} else {
+					Vector3 camtopos = global_pos - camera->get_global_transform().origin;
+					float c = camtopos.normalized().dot(get_global_transform().basis.get_axis(2).normalized()); //it's z negative
+					float angle = Math::rad2deg(Math::acos(c));
+					float av = angle * (flat_pos.x < 0 ? -1 : 1) / 180.0;
 
-						float c = flat_pos.x * 0.5 + 0.5;
-						output.vol[0].l = 1.0 - c;
-						output.vol[0].r = c;
+					if (cc >= 1) {
+						// Stereo pair
+						float fl = Math::abs(1.0 - Math::abs(-0.8 - av));
+						float fr = Math::abs(1.0 - Math::abs(0.8 - av));
 
-						output.vol[0] *= multiplier;
+						output.vol[0].l = fl;
+						output.vol[0].r = fr;
+					}
 
-					} break;
-					case AudioServer::SPEAKER_SURROUND_51: {
+					if (cc >= 2) {
+						// Center pair
+						float center = 1.0 - Math::sin(Math::acos(c));
 
-						float xl = Vector3(-1, 0, -1).normalized().dot(flat_pos) * 0.5 + 0.5;
-						float xr = Vector3(1, 0, -1).normalized().dot(flat_pos) * 0.5 + 0.5;
+						output.vol[1].l = center;
+						output.vol[1].r = center;
+					}
 
-						output.vol[0].l = xl;
-						output.vol[1].r = 1.0 - xl;
-						output.vol[0].r = xr;
-						output.vol[1].l = 1.0 - xr;
+					if (cc >= 3) {
+						// Side pair
+						float sl = Math::abs(1.0 - Math::abs(-0.4 - av));
+						float sr = Math::abs(1.0 - Math::abs(0.4 - av));
 
-						output.vol[0] *= multiplier;
-						output.vol[1] *= multiplier;
-					} break;
-					case AudioServer::SPEAKER_SURROUND_71: {
+						output.vol[2].l = sl;
+						output.vol[2].r = sr;
+					}
 
-						float xl = Vector3(-1, 0, -1).normalized().dot(flat_pos) * 0.5 + 0.5;
-						float xr = Vector3(1, 0, -1).normalized().dot(flat_pos) * 0.5 + 0.5;
+					if (cc >= 4) {
+						// Rear pair
+						float rl = Math::abs(1.0 - Math::abs(-0.2 - av));
+						float rr = Math::abs(1.0 - Math::abs(0.2 - av));
 
-						output.vol[0].l = xl;
-						output.vol[1].r = 1.0 - xl;
-						output.vol[0].r = xr;
-						output.vol[1].l = 1.0 - xr;
+						output.vol[3].l = rl;
+						output.vol[3].r = rr;
+					}
+				}
 
-						float c = flat_pos.x * 0.5 + 0.5;
-						output.vol[2].l = 1.0 - c;
-						output.vol[2].r = c;
-
-						output.vol[0] *= multiplier;
-						output.vol[1] *= multiplier;
-						output.vol[2] *= multiplier;
-
-					} break;
+				for (int k = 0; k < cc; k++) {
+					output.vol[k] *= multiplier;
 				}
 
 				bool filled_reverb = false;
@@ -422,41 +409,30 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 								rev_pos.y = 0;
 								rev_pos.normalize();
 
-								switch (AudioServer::get_singleton()->get_speaker_mode()) {
+								if (cc >= 1) {
+									// Stereo pair
+									float c = rev_pos.x * 0.5 + 0.5;
+									output.reverb_vol[0].l = 1.0 - c;
+									output.reverb_vol[0].r = c;
+								}
 
-									case AudioServer::SPEAKER_MODE_STEREO: {
+								if (cc >= 3) {
+									// Center pair + Side pair
+									float xl = Vector3(-1, 0, -1).normalized().dot(rev_pos) * 0.5 + 0.5;
+									float xr = Vector3(1, 0, -1).normalized().dot(rev_pos) * 0.5 + 0.5;
 
-										float c = rev_pos.x * 0.5 + 0.5;
-										output.reverb_vol[0].l = 1.0 - c;
-										output.reverb_vol[0].r = c;
+									output.reverb_vol[1].l = xl;
+									output.reverb_vol[1].r = xr;
+									output.reverb_vol[2].l = 1.0 - xr;
+									output.reverb_vol[2].r = 1.0 - xl;
+								}
 
-									} break;
-									case AudioServer::SPEAKER_SURROUND_51: {
-
-										float xl = Vector3(-1, 0, -1).normalized().dot(rev_pos) * 0.5 + 0.5;
-										float xr = Vector3(1, 0, -1).normalized().dot(rev_pos) * 0.5 + 0.5;
-
-										output.reverb_vol[0].l = xl;
-										output.reverb_vol[1].r = 1.0 - xl;
-										output.reverb_vol[0].r = xr;
-										output.reverb_vol[1].l = 1.0 - xr;
-
-									} break;
-									case AudioServer::SPEAKER_SURROUND_71: {
-
-										float xl = Vector3(-1, 0, -1).normalized().dot(rev_pos) * 0.5 + 0.5;
-										float xr = Vector3(1, 0, -1).normalized().dot(rev_pos) * 0.5 + 0.5;
-
-										output.reverb_vol[0].l = xl;
-										output.reverb_vol[1].r = 1.0 - xl;
-										output.reverb_vol[0].r = xr;
-										output.reverb_vol[1].l = 1.0 - xr;
-
-										float c = rev_pos.x * 0.5 + 0.5;
-										output.reverb_vol[2].l = 1.0 - c;
-										output.reverb_vol[2].r = c;
-
-									} break;
+								if (cc >= 4) {
+									// Rear pair
+									// FIXME: Not sure what math should be done here
+									float c = rev_pos.x * 0.5 + 0.5;
+									output.reverb_vol[3].l = 1.0 - c;
+									output.reverb_vol[3].r = c;
 								}
 
 								for (int i = 0; i < vol_index_max; i++) {

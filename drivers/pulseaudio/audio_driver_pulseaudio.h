@@ -43,14 +43,10 @@ class AudioDriverPulseAudio : public AudioDriver {
 
 	pa_simple *pulse;
 
-	int32_t *samples_in;
-	int16_t *samples_out;
-
-	static void thread_func(void *p_udata);
+	Vector<int32_t> samples_in;
+	Vector<int16_t> samples_out;
 
 	unsigned int mix_rate;
-	SpeakerMode speaker_mode;
-
 	unsigned int buffer_frames;
 	unsigned int buffer_size;
 	int channels;
@@ -58,9 +54,10 @@ class AudioDriverPulseAudio : public AudioDriver {
 	bool active;
 	bool thread_exited;
 	mutable bool exit_thread;
-	bool pcm_open;
 
 	float latency;
+
+	static void thread_func(void *p_udata);
 
 public:
 	const char *get_name() const {
