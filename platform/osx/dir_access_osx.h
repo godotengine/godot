@@ -46,6 +46,9 @@
 class DirAccessOSX : public DirAccessUnix {
 protected:
 	virtual String fix_unicode_name(const char *p_name) const;
+
+	virtual int get_drive_count();
+	virtual String get_drive(int p_drive);
 };
 
 #endif //UNIX ENABLED
