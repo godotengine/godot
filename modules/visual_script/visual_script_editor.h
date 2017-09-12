@@ -103,6 +103,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	PropertySelector *method_select;
 	PropertySelector *new_connect_node_select;
+	PropertySelector *new_virtual_method_select;
 
 	VisualScriptEditorVariableEdit *variable_editor;
 
@@ -134,10 +135,6 @@ class VisualScriptEditor : public ScriptEditorBase {
 		bool ret_variant;
 		Vector<Pair<Variant::Type, String> > args;
 	};
-
-	Map<int, VirtualInMenu> virtuals_in_menu;
-
-	PopupMenu *new_function_menu;
 
 	StringName edited_func;
 
@@ -177,6 +174,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	void _port_action_menu(int p_option);
 	void _selected_connect_node_method_or_setget(const String &p_text);
 	void _cancel_connect_node_method_or_setget();
+	void _selected_new_virtual_method(const String &p_text);
 
 	int error_line;
 
@@ -188,7 +186,6 @@ class VisualScriptEditor : public ScriptEditorBase {
 	void _change_base_type();
 	void _member_selected();
 	void _member_edited();
-	void _override_pressed(int p_id);
 
 	void _begin_node_move();
 	void _end_node_move();

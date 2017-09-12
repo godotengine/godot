@@ -75,6 +75,8 @@ void PropertySelector::_update_search() {
 
 	if (properties)
 		set_title(TTR("Select Property"));
+	else if (virtuals_only)
+		set_title(TTR("Select Virtual Method"));
 	else
 		set_title(TTR("Select Method"));
 
@@ -209,7 +211,7 @@ void PropertySelector::_update_search() {
 			StringName base = base_type;
 			while (base) {
 				methods.push_back(MethodInfo("*" + String(base)));
-				ClassDB::get_method_list(base, &methods, true);
+				ClassDB::get_method_list(base, &methods, true, true);
 				base = ClassDB::get_parent_class(base);
 			}
 		}
@@ -230,11 +232,13 @@ void PropertySelector::_update_search() {
 
 				Ref<Texture> icon;
 				script_methods = false;
+				print_line("name: " + E->get().name);
+				String rep = E->get().name.replace("*", "");
 				if (E->get().name == "*Script Methods") {
 					icon = get_icon("Script", "EditorIcons");
 					script_methods = true;
-				} else if (has_icon(E->get().name, "EditorIcons")) {
-					icon = get_icon(E->get().name, "EditorIcons");
+				} else if (has_icon(rep, "EditorIcons")) {
+					icon = get_icon(rep, "EditorIcons");
 				} else {
 					icon = get_icon("Object", "EditorIcons");
 				}
@@ -245,6 +249,12 @@ void PropertySelector::_update_search() {
 
 			String name = E->get().name.get_slice(":", 0);
 			if (!script_methods && name.begins_with("_") && !(E->get().flags & METHOD_FLAG_VIRTUAL))
+				continue;
+
+			if (virtuals_only && !(E->get().flags & METHOD_FLAG_VIRTUAL))
+				continue;
+
+			if (!virtuals_only && (E->get().flags & METHOD_FLAG_VIRTUAL))
 				continue;
 
 			if (search_box->get_text() != String() && name.find(search_box->get_text()) == -1)
@@ -282,6 +292,12 @@ void PropertySelector::_update_search() {
 			}
 
 			desc += " )";
+
+			if (E->get().flags & METHOD_FLAG_CONST)
+				desc += " const";
+
+			if (E->get().flags & METHOD_FLAG_VIRTUAL)
+				desc += " virtual";
 
 			item->set_text(0, desc);
 			item->set_metadata(0, name);
@@ -397,7 +413,7 @@ void PropertySelector::_notification(int p_what) {
 	}
 }
 
-void PropertySelector::select_method_from_base_type(const String &p_base, const String &p_current) {
+void PropertySelector::select_method_from_base_type(const String &p_base, const String &p_current, bool p_virtuals_only) {
 
 	base_type = p_base;
 	selected = p_current;
@@ -405,6 +421,7 @@ void PropertySelector::select_method_from_base_type(const String &p_base, const 
 	script = 0;
 	properties = false;
 	instance = NULL;
+	virtuals_only = p_virtuals_only;
 
 	popup_centered_ratio(0.6);
 	search_box->set_text("");
@@ -421,6 +438,7 @@ void PropertySelector::select_method_from_script(const Ref<Script> &p_script, co
 	script = p_script->get_instance_id();
 	properties = false;
 	instance = NULL;
+	virtuals_only = false;
 
 	popup_centered_ratio(0.6);
 	search_box->set_text("");
@@ -436,6 +454,7 @@ void PropertySelector::select_method_from_basic_type(Variant::Type p_type, const
 	script = 0;
 	properties = false;
 	instance = NULL;
+	virtuals_only = false;
 
 	popup_centered_ratio(0.6);
 	search_box->set_text("");
@@ -456,6 +475,7 @@ void PropertySelector::select_method_from_instance(Object *p_instance, const Str
 	}
 	properties = false;
 	instance = NULL;
+	virtuals_only = false;
 
 	popup_centered_ratio(0.6);
 	search_box->set_text("");
@@ -471,6 +491,7 @@ void PropertySelector::select_property_from_base_type(const String &p_base, cons
 	script = 0;
 	properties = true;
 	instance = NULL;
+	virtuals_only = false;
 
 	popup_centered_ratio(0.6);
 	search_box->set_text("");
@@ -488,6 +509,7 @@ void PropertySelector::select_property_from_script(const Ref<Script> &p_script, 
 	script = p_script->get_instance_id();
 	properties = true;
 	instance = NULL;
+	virtuals_only = false;
 
 	popup_centered_ratio(0.6);
 	search_box->set_text("");
@@ -503,6 +525,7 @@ void PropertySelector::select_property_from_basic_type(Variant::Type p_type, con
 	script = 0;
 	properties = true;
 	instance = NULL;
+	virtuals_only = false;
 
 	popup_centered_ratio(0.6);
 	search_box->set_text("");
@@ -518,6 +541,7 @@ void PropertySelector::select_property_from_instance(Object *p_instance, const S
 	script = 0;
 	properties = true;
 	instance = p_instance;
+	virtuals_only = false;
 
 	popup_centered_ratio(0.6);
 	search_box->set_text("");
@@ -554,6 +578,7 @@ PropertySelector::PropertySelector() {
 	search_options->connect("cell_selected", this, "_item_selected");
 	search_options->set_hide_root(true);
 	search_options->set_hide_folding(true);
+	virtuals_only = false;
 
 	help_bit = memnew(EditorHelpBit);
 	vbc->add_margin_child(TTR("Description:"), help_bit);

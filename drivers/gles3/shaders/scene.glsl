@@ -935,17 +935,26 @@ LIGHT_SHADER_CODE
 #elif defined(DIFFUSE_BURLEY)
 
 	{
-		float NdotL = dot(L, N);
-		float NdotV = dot(N, V);
-		float VdotH = dot(N, normalize(L+V));
+
+
+		vec3 H = normalize(V + L);
+		float NoL = max(0.0,dot(N, L));
+		float VoH = max(0.0,dot(L, H));
+		float NoV = max(0.0,dot(N, V));
+
+		float FD90 = 0.5 + 2.0 * VoH * VoH * roughness;
+		float FdV = 1.0 + (FD90 - 1.0) * pow( 1.0 - NoV, 5.0 );
+		float FdL = 1.0 + (FD90 - 1.0) * pow( 1.0 - NoL, 5.0 );
+		light_amount = ( (1.0 / M_PI) * FdV * FdL );
+/*
 		float energyBias = mix(roughness, 0.0, 0.5);
 		float energyFactor = mix(roughness, 1.0, 1.0 / 1.51);
-		float fd90 = energyBias + 2.0 * VdotH * VdotH * roughness;
+		float fd90 = energyBias + 2.0 * VoH * VoH * roughness;
 		float f0 = 1.0;
-		float lightScatter = f0 + (fd90 - f0) * pow(1.0 - NdotL, 5.0);
-		float viewScatter = f0 + (fd90 - f0) * pow(1.0 - NdotV, 5.0);
+		float lightScatter = f0 + (fd90 - f0) * pow(1.0 - NoL, 5.0);
+		float viewScatter = f0 + (fd90 - f0) * pow(1.0 - NoV, 5.0);
 
-		light_amount = lightScatter * viewScatter * energyFactor;
+		light_amount = lightScatter * viewScatter * energyFactor;*/
 	}
 #else
 	//lambert

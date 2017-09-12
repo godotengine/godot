@@ -1493,7 +1493,7 @@ void VisualScriptGlobalConstant::_bind_methods() {
 			cc += ",";
 		cc += GlobalConstants::get_global_constant_name(i);
 	}
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "constant/constant", PROPERTY_HINT_ENUM, cc), "set_global_constant", "get_global_constant");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "constant", PROPERTY_HINT_ENUM, cc), "set_global_constant", "get_global_constant");
 }
 
 VisualScriptGlobalConstant::VisualScriptGlobalConstant() {
@@ -1622,7 +1622,7 @@ void VisualScriptClassConstant::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_base_type"), &VisualScriptClassConstant::get_base_type);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "base_type", PROPERTY_HINT_TYPE_STRING, "Object"), "set_base_type", "get_base_type");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "constant/constant", PROPERTY_HINT_ENUM, ""), "set_class_constant", "get_class_constant");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "constant", PROPERTY_HINT_ENUM, ""), "set_class_constant", "get_class_constant");
 }
 
 VisualScriptClassConstant::VisualScriptClassConstant() {
@@ -1760,7 +1760,7 @@ void VisualScriptBasicTypeConstant::_bind_methods() {
 	}
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "basic_type", PROPERTY_HINT_ENUM, argt), "set_basic_type", "get_basic_type");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "constant/constant", PROPERTY_HINT_ENUM, ""), "set_basic_type_constant", "get_basic_type_constant");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "constant", PROPERTY_HINT_ENUM, ""), "set_basic_type_constant", "get_basic_type_constant");
 }
 
 VisualScriptBasicTypeConstant::VisualScriptBasicTypeConstant() {
@@ -1881,7 +1881,7 @@ void VisualScriptMathConstant::_bind_methods() {
 			cc += ",";
 		cc += const_name[i];
 	}
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "constant/constant", PROPERTY_HINT_ENUM, cc), "set_math_constant", "get_math_constant");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "constant", PROPERTY_HINT_ENUM, cc), "set_math_constant", "get_math_constant");
 }
 
 VisualScriptMathConstant::VisualScriptMathConstant() {
@@ -2002,7 +2002,7 @@ void VisualScriptEngineSingleton::_bind_methods() {
 		cc += E->get().name;
 	}
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "constant/constant", PROPERTY_HINT_ENUM, cc), "set_singleton", "get_singleton");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "/constant", PROPERTY_HINT_ENUM, cc), "set_singleton", "get_singleton");
 }
 
 VisualScriptEngineSingleton::VisualScriptEngineSingleton() {
@@ -3727,11 +3727,11 @@ void register_visual_script_nodes() {
 	VisualScriptLanguage::singleton->add_register_func("data/preload", create_node_generic<VisualScriptPreload>);
 	VisualScriptLanguage::singleton->add_register_func("data/action", create_node_generic<VisualScriptInputAction>);
 
-	VisualScriptLanguage::singleton->add_register_func("constant/constants/constant", create_node_generic<VisualScriptConstant>);
-	VisualScriptLanguage::singleton->add_register_func("constant/constants/math_constant", create_node_generic<VisualScriptMathConstant>);
-	VisualScriptLanguage::singleton->add_register_func("constant/constants/class_constant", create_node_generic<VisualScriptClassConstant>);
-	VisualScriptLanguage::singleton->add_register_func("constant/constants/global_constant", create_node_generic<VisualScriptGlobalConstant>);
-	VisualScriptLanguage::singleton->add_register_func("constant/constants/basic_type_constant", create_node_generic<VisualScriptBasicTypeConstant>);
+	VisualScriptLanguage::singleton->add_register_func("constants/constant", create_node_generic<VisualScriptConstant>);
+	VisualScriptLanguage::singleton->add_register_func("constants/math_constant", create_node_generic<VisualScriptMathConstant>);
+	VisualScriptLanguage::singleton->add_register_func("constants/class_constant", create_node_generic<VisualScriptClassConstant>);
+	VisualScriptLanguage::singleton->add_register_func("constants/global_constant", create_node_generic<VisualScriptGlobalConstant>);
+	VisualScriptLanguage::singleton->add_register_func("constants/basic_type_constant", create_node_generic<VisualScriptBasicTypeConstant>);
 
 	VisualScriptLanguage::singleton->add_register_func("custom/custom_node", create_node_generic<VisualScriptCustomNode>);
 	VisualScriptLanguage::singleton->add_register_func("custom/sub_call", create_node_generic<VisualScriptSubCall>);
