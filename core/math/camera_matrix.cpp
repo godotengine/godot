@@ -266,27 +266,26 @@ void CameraMatrix::get_viewport_size(real_t &r_width, real_t &r_height) const {
 bool CameraMatrix::get_endpoints(const Transform &p_transform, Vector3 *p_8points) const {
 
 	Vector<Plane> planes = get_projection_planes(Transform());
-	const Planes intersections[8][3]={
-		{PLANE_FAR,PLANE_LEFT,PLANE_TOP},
-		{PLANE_FAR,PLANE_LEFT,PLANE_BOTTOM},
-		{PLANE_FAR,PLANE_RIGHT,PLANE_TOP},
-		{PLANE_FAR,PLANE_RIGHT,PLANE_BOTTOM},
-		{PLANE_NEAR,PLANE_LEFT,PLANE_TOP},
-		{PLANE_NEAR,PLANE_LEFT,PLANE_BOTTOM},
-		{PLANE_NEAR,PLANE_RIGHT,PLANE_TOP},
-		{PLANE_NEAR,PLANE_RIGHT,PLANE_BOTTOM},
+	const Planes intersections[8][3] = {
+		{ PLANE_FAR, PLANE_LEFT, PLANE_TOP },
+		{ PLANE_FAR, PLANE_LEFT, PLANE_BOTTOM },
+		{ PLANE_FAR, PLANE_RIGHT, PLANE_TOP },
+		{ PLANE_FAR, PLANE_RIGHT, PLANE_BOTTOM },
+		{ PLANE_NEAR, PLANE_LEFT, PLANE_TOP },
+		{ PLANE_NEAR, PLANE_LEFT, PLANE_BOTTOM },
+		{ PLANE_NEAR, PLANE_RIGHT, PLANE_TOP },
+		{ PLANE_NEAR, PLANE_RIGHT, PLANE_BOTTOM },
 	};
 
-	for(int i=0;i<8;i++) {
+	for (int i = 0; i < 8; i++) {
 
 		Vector3 point;
-		bool res = planes[intersections[i][0]].intersect_3(planes[intersections[i][1]],planes[intersections[i][2]], &point);
+		bool res = planes[intersections[i][0]].intersect_3(planes[intersections[i][1]], planes[intersections[i][2]], &point);
 		ERR_FAIL_COND_V(!res, false);
-		p_8points[i]=p_transform.xform(point);
+		p_8points[i] = p_transform.xform(point);
 	}
 
 	return true;
-
 }
 
 Vector<Plane> CameraMatrix::get_projection_planes(const Transform &p_transform) const {
@@ -564,9 +563,8 @@ int CameraMatrix::get_pixels_per_meter(int p_for_pixel_width) const {
 
 bool CameraMatrix::is_orthogonal() const {
 
-	return matrix[3][3]==1.0;
+	return matrix[3][3] == 1.0;
 }
-
 
 real_t CameraMatrix::get_fov() const {
 	const real_t *matrix = (const real_t *)this->matrix;

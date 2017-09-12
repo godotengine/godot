@@ -338,7 +338,6 @@ public:
 	virtual void light_directional_set_shadow_depth_range_mode(RID p_light, VS::LightDirectionalShadowDepthRangeMode p_range_mode) = 0;
 	virtual VS::LightDirectionalShadowDepthRangeMode light_directional_get_shadow_depth_range_mode(RID p_light) const = 0;
 
-
 	virtual VS::LightDirectionalShadowMode light_directional_get_shadow_mode(RID p_light) = 0;
 	virtual VS::LightOmniShadowMode light_omni_get_shadow_mode(RID p_light) = 0;
 

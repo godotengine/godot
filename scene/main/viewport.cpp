@@ -2580,14 +2580,13 @@ int Viewport::get_render_info(RenderInfo p_info) {
 
 void Viewport::set_snap_controls_to_pixels(bool p_enable) {
 
-	snap_controls_to_pixels=p_enable;
+	snap_controls_to_pixels = p_enable;
 }
 
 bool Viewport::is_snap_controls_to_pixels_enabled() const {
 
 	return snap_controls_to_pixels;
 }
-
 
 void Viewport::_bind_methods() {
 
