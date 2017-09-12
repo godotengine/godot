@@ -426,8 +426,10 @@ void FileSystemDock::_update_files(bool p_keep_selection) {
 	Ref<Texture> file_thumbnail;
 	Ref<Texture> file_thumbnail_broken;
 
+	bool always_show_folders = EditorSettings::get_singleton()->get("docks/filesystem/always_show_folders");
+
 	bool use_thumbnails = (display_mode == DISPLAY_THUMBNAILS);
-	bool use_folders = search_box->get_text().length() == 0 && split_mode;
+	bool use_folders = search_box->get_text().length() == 0 && (split_mode || always_show_folders);
 
 	if (use_thumbnails) { //thumbnails
 
