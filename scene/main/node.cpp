@@ -50,7 +50,6 @@ void Node::_notification(int p_notification) {
 
 				Variant time = get_process_delta_time();
 				const Variant *ptr[1] = { &time };
-				Variant::CallError err;
 				get_script_instance()->call_multilevel(SceneStringNames::get_singleton()->_process, ptr, 1);
 			}
 		} break;
@@ -60,7 +59,6 @@ void Node::_notification(int p_notification) {
 
 				Variant time = get_fixed_process_delta_time();
 				const Variant *ptr[1] = { &time };
-				Variant::CallError err;
 				get_script_instance()->call_multilevel(SceneStringNames::get_singleton()->_fixed_process, ptr, 1);
 			}
 
@@ -134,7 +132,6 @@ void Node::_notification(int p_notification) {
 					set_fixed_process(true);
 				}
 
-				Variant::CallError err;
 				get_script_instance()->call_multilevel_reversed(SceneStringNames::get_singleton()->_ready, NULL, 0);
 			}
 			//emit_signal(SceneStringNames::get_singleton()->enter_tree);
@@ -209,7 +206,6 @@ void Node::_propagate_enter_tree() {
 
 	if (get_script_instance()) {
 
-		Variant::CallError err;
 		get_script_instance()->call_multilevel_reversed(SceneStringNames::get_singleton()->_enter_tree, NULL, 0);
 	}
 
@@ -273,7 +269,6 @@ void Node::_propagate_exit_tree() {
 
 	if (get_script_instance()) {
 
-		Variant::CallError err;
 		get_script_instance()->call_multilevel(SceneStringNames::get_singleton()->_exit_tree, NULL, 0);
 	}
 	emit_signal(SceneStringNames::get_singleton()->tree_exited);

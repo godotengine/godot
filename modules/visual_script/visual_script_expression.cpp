@@ -831,7 +831,6 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 			case TK_BUILTIN_FUNC: {
 				//builtin function
 
-				Variant::Type bt = Variant::Type(int(tk.value));
 				_get_token(tk);
 				if (tk.type != TK_PARENTHESIS_OPEN) {
 					_set_error("Expected '('");

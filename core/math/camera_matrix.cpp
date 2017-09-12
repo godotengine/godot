@@ -131,7 +131,6 @@ void CameraMatrix::set_perspective(real_t p_fovy_degrees, real_t p_aspect, real_
 
 void CameraMatrix::set_for_hmd(int p_eye, real_t p_aspect, real_t p_intraocular_dist, real_t p_display_width, real_t p_display_to_lens, real_t p_oversample, real_t p_z_near, real_t p_z_far) {
 	// we first calculate our base frustum on our values without taking our lens magnification into account.
-	real_t display_to_eye = 2.0 * p_display_to_lens;
 	real_t f1 = (p_intraocular_dist * 0.5) / p_display_to_lens;
 	real_t f2 = ((p_display_width - p_intraocular_dist) * 0.5) / p_display_to_lens;
 	real_t f3 = (p_display_width / 4.0) / p_display_to_lens;

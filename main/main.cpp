@@ -1387,6 +1387,8 @@ bool Main::start() {
 			if (editor) {
 
 				Error serr = editor_node->load_scene(local_game_path);
+				if (serr != OK)
+					ERR_PRINT("Failed to load scene");
 				OS::get_singleton()->set_context(OS::CONTEXT_EDITOR);
 			}
 #endif

@@ -44,8 +44,6 @@ class ResourceInteractiveLoaderBinary : public ResourceInteractiveLoader {
 
 	FileAccess *f;
 
-	bool endian_swap;
-	bool use_real64;
 	uint64_t importmd_ofs;
 
 	Vector<char> str_buf;

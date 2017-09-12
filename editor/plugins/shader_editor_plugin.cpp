@@ -164,6 +164,8 @@ void ShaderTextEditor::_code_complete_script(const String &p_code, List<String> 
 	String calltip;
 
 	Error err = sl.complete(p_code, ShaderTypes::get_singleton()->get_functions(VisualServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_types(), r_options, calltip);
+	if (err != OK)
+		ERR_PRINT("Shaderlang complete failed");
 
 	if (calltip != "") {
 		get_text_edit()->set_code_hint(calltip);
@@ -403,13 +405,7 @@ void ShaderEditorPlugin::edit(Object *p_object) {
 
 bool ShaderEditorPlugin::handles(Object *p_object) const {
 
-	bool handles = true;
 	Shader *shader = Object::cast_to<Shader>(p_object);
-	/*
-	if (Object::cast_to<ShaderGraph>(shader)) // Don't handle ShaderGraph's
-		handles = false;
-	*/
-
 	return shader != NULL;
 }
 

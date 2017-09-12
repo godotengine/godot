@@ -62,7 +62,7 @@ void StepSW::_setup_island(ConstraintSW *p_island, real_t p_delta) {
 
 	ConstraintSW *ci = p_island;
 	while (ci) {
-		bool process = ci->setup(p_delta);
+		ci->setup(p_delta);
 		//todo remove from island if process fails
 		ci = ci->get_island_next();
 	}

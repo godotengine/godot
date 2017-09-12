@@ -466,8 +466,6 @@ void AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t 
 		EditorNode::progress_task_step(progress_task, "File: " + p_file_name, (p_file_no * 100) / p_total_files);
 	}
 
-	bool do_hash = p_file_name != "AppxSignature.p7x";
-
 	FileMeta meta;
 	meta.name = p_file_name;
 	meta.uncompressed_size = p_len;

@@ -550,7 +550,6 @@ void TileMapEditor::_draw_fill_preview(int p_cell, const Point2i &p_point, bool 
 	PoolVector<Vector2> points = _bucket_fill(p_point, false, true);
 	PoolVector<Vector2>::Read pr = points.read();
 	int len = points.size();
-	int time_after = OS::get_singleton()->get_ticks_msec();
 
 	for (int i = 0; i < len; ++i) {
 		_draw_cell(p_cell, pr[i], p_flip_h, p_flip_v, p_transpose, p_xform);

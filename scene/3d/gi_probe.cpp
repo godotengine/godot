@@ -696,22 +696,6 @@ void GIProbe::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, cons
 		p_baker->bake_cells[p_idx].normal[2] += normal_accum.z;
 		p_baker->bake_cells[p_idx].alpha += alpha;
 
-		static const Vector3 side_normals[6] = {
-			Vector3(-1, 0, 0),
-			Vector3(1, 0, 0),
-			Vector3(0, -1, 0),
-			Vector3(0, 1, 0),
-			Vector3(0, 0, -1),
-			Vector3(0, 0, 1),
-		};
-
-		/*
-		for(int i=0;i<6;i++) {
-			if (normal.dot(side_normals[i])>CMP_EPSILON) {
-				p_baker->bake_cells[p_idx].used_sides|=(1<<i);
-			}
-		}*/
-
 	} else {
 		//go down
 

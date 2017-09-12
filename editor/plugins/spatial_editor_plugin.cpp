@@ -2528,7 +2528,6 @@ Vector3 SpatialEditorViewport::_get_instance_position(const Point2 &p_pos) const
 
 		found_gizmos.insert(seg);
 
-		int handle = -1;
 		Vector3 hit_point;
 		Vector3 hit_normal;
 		bool inters = seg->intersect_ray(camera, p_pos, hit_point, hit_normal, NULL, false);
@@ -3423,13 +3422,6 @@ void SpatialEditor::set_state(const Dictionary &p_state) {
 		settings_znear->set_value(float(d["znear"]));
 	if (d.has("fov"))
 		settings_fov->set_value(float(d["fov"]));
-
-	if (d.has("default_srgb")) {
-		bool use = d["default_srgb"];
-
-		//viewport_environment->set_enable_fx(Environment::FX_SRGB,use);
-		//view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_DEFAULT_SRGB), use );
-	}
 	if (d.has("show_grid")) {
 		bool use = d["show_grid"];
 

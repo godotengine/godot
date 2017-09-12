@@ -125,6 +125,9 @@ void ScriptDebuggerRemote::_put_variable(const String &p_name, const Variant &p_
 	packet_peer_stream->put_var(p_name);
 	int len = 0;
 	Error err = encode_variant(p_variable, NULL, len);
+	if (err != OK)
+		ERR_PRINT("Failed to encode variant");
+
 	if (len > packet_peer_stream->get_output_buffer_max_size()) { //limit to max size
 		packet_peer_stream->put_var(Variant());
 	} else {

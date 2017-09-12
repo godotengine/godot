@@ -55,8 +55,8 @@ Error EditorSceneImporterGLTF::_parse_glb(const String &p_path, GLTFState &state
 
 	uint32_t magic = f->get_32();
 	ERR_FAIL_COND_V(magic != 0x46546C67, ERR_FILE_UNRECOGNIZED); //glTF
-	uint32_t version = f->get_32();
-	uint32_t length = f->get_32();
+	f->get_32(); // version
+	f->get_32(); // length
 
 	uint32_t chunk_length = f->get_32();
 	uint32_t chunk_type = f->get_32();
@@ -1945,7 +1945,7 @@ void EditorSceneImporterGLTF::_import_animation(GLTFState &state, AnimationPlaye
 				bool last = false;
 				while (true) {
 
-					float value = _interpolate_track<float>(track.weight_tracks[i].times, track.weight_tracks[i].values, time, track.weight_tracks[i].interpolation);
+					_interpolate_track<float>(track.weight_tracks[i].times, track.weight_tracks[i].values, time, track.weight_tracks[i].interpolation);
 					if (last) {
 						break;
 					}
