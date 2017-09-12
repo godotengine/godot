@@ -596,7 +596,7 @@ void Area2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_area_enter_tree", "id"), &Area2D::_area_enter_tree);
 	ClassDB::bind_method(D_METHOD("_area_exit_tree", "id"), &Area2D::_area_exit_tree);
 
-	ClassDB::bind_method(D_METHOD("set_space_override_mode", "enable"), &Area2D::set_space_override_mode);
+	ClassDB::bind_method(D_METHOD("set_space_override_mode", "space_override_mode"), &Area2D::set_space_override_mode);
 	ClassDB::bind_method(D_METHOD("get_space_override_mode"), &Area2D::get_space_override_mode);
 
 	ClassDB::bind_method(D_METHOD("set_gravity_is_point", "enable"), &Area2D::set_gravity_is_point);
@@ -680,6 +680,12 @@ void Area2D::_bind_methods() {
 	ADD_GROUP("Audio Bus", "audio_bus_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "audio_bus_override"), "set_audio_bus_override", "is_overriding_audio_bus");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "audio_bus_name", PROPERTY_HINT_ENUM, ""), "set_audio_bus", "get_audio_bus");
+
+	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_DISABLED);
+	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_COMBINE);
+	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_COMBINE_REPLACE);
+	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_REPLACE);
+	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_REPLACE_COMBINE);
 }
 
 Area2D::Area2D()
