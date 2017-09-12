@@ -64,19 +64,19 @@ bool PowerWindows::GetPowerInfo_Windows() {
 	/* This API should exist back to Win95. */
 	if (!GetSystemPowerStatus(&status)) {
 		/* !!! FIXME: push GetLastError() into GetError() */
-		power_state = POWERSTATE_UNKNOWN;
+		power_state = OS::POWERSTATE_UNKNOWN;
 	} else if (status.BatteryFlag == 0xFF) { /* unknown state */
-		power_state = POWERSTATE_UNKNOWN;
+		power_state = OS::POWERSTATE_UNKNOWN;
 	} else if (status.BatteryFlag & (1 << 7)) { /* no battery */
-		power_state = POWERSTATE_NO_BATTERY;
+		power_state = OS::POWERSTATE_NO_BATTERY;
 	} else if (status.BatteryFlag & (1 << 3)) { /* charging */
-		power_state = POWERSTATE_CHARGING;
+		power_state = OS::POWERSTATE_CHARGING;
 		need_details = TRUE;
 	} else if (status.ACLineStatus == 1) {
-		power_state = POWERSTATE_CHARGED; /* on AC, not charging. */
+		power_state = OS::POWERSTATE_CHARGED; /* on AC, not charging. */
 		need_details = TRUE;
 	} else {
-		power_state = POWERSTATE_ON_BATTERY; /* not on AC. */
+		power_state = OS::POWERSTATE_ON_BATTERY; /* not on AC. */
 		need_details = TRUE;
 	}
 
@@ -97,11 +97,11 @@ bool PowerWindows::GetPowerInfo_Windows() {
 	return TRUE; /* always the definitive answer on Windows. */
 }
 
-PowerState PowerWindows::get_power_state() {
+OS::PowerState PowerWindows::get_power_state() {
 	if (GetPowerInfo_Windows()) {
 		return power_state;
 	} else {
-		return POWERSTATE_UNKNOWN;
+		return OS::POWERSTATE_UNKNOWN;
 	}
 }
 
@@ -122,7 +122,7 @@ int PowerWindows::get_power_percent_left() {
 }
 
 PowerWindows::PowerWindows()
-	: nsecs_left(-1), percent_left(-1), power_state(POWERSTATE_UNKNOWN) {
+	: nsecs_left(-1), percent_left(-1), power_state(OS::POWERSTATE_UNKNOWN) {
 }
 
 PowerWindows::~PowerWindows() {

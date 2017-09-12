@@ -31,39 +31,22 @@
 #define LINE_BUILDER_H
 
 #include "color.h"
+#include "line_2d.h"
 #include "math_2d.h"
 #include "scene/resources/color_ramp.h"
-
-enum LineJointMode {
-	LINE_JOINT_SHARP = 0,
-	LINE_JOINT_BEVEL,
-	LINE_JOINT_ROUND
-};
-
-enum LineCapMode {
-	LINE_CAP_NONE = 0,
-	LINE_CAP_BOX,
-	LINE_CAP_ROUND
-};
-
-enum LineTextureMode {
-	LINE_TEXTURE_NONE = 0,
-	LINE_TEXTURE_TILE
-	// TODO STRETCH mode
-};
 
 class LineBuilder {
 public:
 	// TODO Move in a struct and reference it
 	// Input
 	Vector<Vector2> points;
-	LineJointMode joint_mode;
-	LineCapMode begin_cap_mode;
-	LineCapMode end_cap_mode;
+	Line2D::LineJointMode joint_mode;
+	Line2D::LineCapMode begin_cap_mode;
+	Line2D::LineCapMode end_cap_mode;
 	float width;
 	Color default_color;
 	Gradient *gradient;
-	LineTextureMode texture_mode;
+	Line2D::LineTextureMode texture_mode;
 	float sharp_limit;
 	int round_precision;
 	// TODO offset_joints option (offers alternative implementation of round joints)

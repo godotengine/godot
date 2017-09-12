@@ -200,7 +200,7 @@ void OS_Server::move_window_to_foreground() {
 void OS_Server::set_cursor_shape(CursorShape p_shape) {
 }
 
-PowerState OS_Server::get_power_state() {
+OS::PowerState OS_Server::get_power_state() {
 	return power_manager->get_power_state();
 }
 

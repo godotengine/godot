@@ -729,6 +729,12 @@ void Area::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "reverb_bus_name", PROPERTY_HINT_ENUM, ""), "set_reverb_bus", "get_reverb_bus");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "reverb_bus_amount", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_reverb_amount", "get_reverb_amount");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "reverb_bus_uniformity", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_reverb_uniformity", "get_reverb_uniformity");
+
+	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_DISABLED);
+	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_COMBINE);
+	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_COMBINE_REPLACE);
+	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_REPLACE);
+	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_REPLACE_COMBINE);
 }
 
 Area::Area()

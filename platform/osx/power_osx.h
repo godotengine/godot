@@ -33,7 +33,7 @@
 
 #include "dir_access_osx.h"
 #include "os/file_access.h"
-#include "os/power.h"
+#include "os/os.h"
 #include <CoreFoundation/CoreFoundation.h>
 
 class power_osx {
@@ -41,7 +41,7 @@ class power_osx {
 private:
 	int nsecs_left;
 	int percent_left;
-	PowerState power_state;
+	OS::PowerState power_state;
 	void checkps(CFDictionaryRef dict, bool *have_ac, bool *have_battery, bool *charging);
 	bool GetPowerInfo_MacOSX(/*PowerState * state, int *seconds, int *percent*/);
 	bool UpdatePowerInfo();
@@ -50,7 +50,7 @@ public:
 	power_osx();
 	virtual ~power_osx();
 
-	PowerState get_power_state();
+	OS::PowerState get_power_state();
 	int get_power_seconds_left();
 	int get_power_percent_left();
 };

@@ -198,19 +198,19 @@ bool power_android::GetPowerInfo_Android() {
 	if (Android_JNI_GetPowerInfo(&plugged, &charged, &battery, &this->nsecs_left, &this->percent_left) != -1) {
 		if (plugged) {
 			if (charged) {
-				this->power_state = POWERSTATE_CHARGED;
+				this->power_state = OS::POWERSTATE_CHARGED;
 			} else if (battery) {
-				this->power_state = POWERSTATE_CHARGING;
+				this->power_state = OS::POWERSTATE_CHARGING;
 			} else {
-				this->power_state = POWERSTATE_NO_BATTERY;
+				this->power_state = OS::POWERSTATE_NO_BATTERY;
 				this->nsecs_left = -1;
 				this->percent_left = -1;
 			}
 		} else {
-			this->power_state = POWERSTATE_ON_BATTERY;
+			this->power_state = OS::POWERSTATE_ON_BATTERY;
 		}
 	} else {
-		this->power_state = POWERSTATE_UNKNOWN;
+		this->power_state = OS::POWERSTATE_UNKNOWN;
 		this->nsecs_left = -1;
 		this->percent_left = -1;
 	}
@@ -218,12 +218,12 @@ bool power_android::GetPowerInfo_Android() {
 	return true;
 }
 
-PowerState power_android::get_power_state() {
+OS::PowerState power_android::get_power_state() {
 	if (GetPowerInfo_Android()) {
 		return power_state;
 	} else {
 		WARN_PRINT("Power management is not implemented on this platform, defaulting to POWERSTATE_UNKNOWN");
-		return POWERSTATE_UNKNOWN;
+		return OS::POWERSTATE_UNKNOWN;
 	}
 }
 
@@ -246,7 +246,7 @@ int power_android::get_power_percent_left() {
 }
 
 power_android::power_android()
-	: nsecs_left(-1), percent_left(-1), power_state(POWERSTATE_UNKNOWN) {
+	: nsecs_left(-1), percent_left(-1), power_state(OS::POWERSTATE_UNKNOWN) {
 }
 
 power_android::~power_android() {

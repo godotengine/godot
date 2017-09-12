@@ -302,6 +302,9 @@ void CollisionPolygon2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "one_way_collision"), "set_one_way_collision", "is_one_way_collision_enabled");
+
+	BIND_ENUM_CONSTANT(BUILD_SOLIDS);
+	BIND_ENUM_CONSTANT(BUILD_SEGMENTS);
 }
 
 CollisionPolygon2D::CollisionPolygon2D() {

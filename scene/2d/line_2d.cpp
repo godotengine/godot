@@ -28,13 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "line_2d.h"
+#include "line_builder.h"
 
 #include "core_string_names.h"
 
 // Needed so we can bind functions
-VARIANT_ENUM_CAST(LineJointMode)
-VARIANT_ENUM_CAST(LineCapMode)
-VARIANT_ENUM_CAST(LineTextureMode)
+VARIANT_ENUM_CAST(Line2D::LineJointMode)
+VARIANT_ENUM_CAST(Line2D::LineCapMode)
+VARIANT_ENUM_CAST(Line2D::LineTextureMode)
 
 Line2D::Line2D()
 	: Node2D() {
@@ -134,7 +135,7 @@ void Line2D::set_texture_mode(const LineTextureMode mode) {
 	update();
 }
 
-LineTextureMode Line2D::get_texture_mode() const {
+Line2D::LineTextureMode Line2D::get_texture_mode() const {
 	return _texture_mode;
 }
 
@@ -143,7 +144,7 @@ void Line2D::set_joint_mode(LineJointMode mode) {
 	update();
 }
 
-LineJointMode Line2D::get_joint_mode() const {
+Line2D::LineJointMode Line2D::get_joint_mode() const {
 	return _joint_mode;
 }
 
@@ -152,7 +153,7 @@ void Line2D::set_begin_cap_mode(LineCapMode mode) {
 	update();
 }
 
-LineCapMode Line2D::get_begin_cap_mode() const {
+Line2D::LineCapMode Line2D::get_begin_cap_mode() const {
 	return _begin_cap_mode;
 }
 
@@ -161,7 +162,7 @@ void Line2D::set_end_cap_mode(LineCapMode mode) {
 	update();
 }
 
-LineCapMode Line2D::get_end_cap_mode() const {
+Line2D::LineCapMode Line2D::get_end_cap_mode() const {
 	return _end_cap_mode;
 }
 

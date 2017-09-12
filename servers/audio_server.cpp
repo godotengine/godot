@@ -1081,6 +1081,10 @@ void AudioServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("generate_bus_layout"), &AudioServer::generate_bus_layout);
 
 	ADD_SIGNAL(MethodInfo("bus_layout_changed"));
+
+	BIND_ENUM_CONSTANT(SPEAKER_MODE_STEREO);
+	BIND_ENUM_CONSTANT(SPEAKER_SURROUND_51);
+	BIND_ENUM_CONSTANT(SPEAKER_SURROUND_71);
 }
 
 AudioServer::AudioServer() {

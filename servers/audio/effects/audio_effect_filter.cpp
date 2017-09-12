@@ -159,6 +159,11 @@ void AudioEffectFilter::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "resonance", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_resonance", "get_resonance");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "gain", PROPERTY_HINT_RANGE, "0,4,0.01"), "set_gain", "get_gain");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "dB", PROPERTY_HINT_ENUM, "6db,12db,18db,24db"), "set_db", "get_db");
+
+	BIND_ENUM_CONSTANT(FILTER_6DB);
+	BIND_ENUM_CONSTANT(FILTER_12DB);
+	BIND_ENUM_CONSTANT(FILTER_18DB);
+	BIND_ENUM_CONSTANT(FILTER_24DB);
 }
 
 AudioEffectFilter::AudioEffectFilter(AudioFilterSW::Mode p_mode) {

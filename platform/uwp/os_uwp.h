@@ -259,7 +259,7 @@ public:
 
 	void input_event(const Ref<InputEvent> &p_event);
 
-	virtual PowerState get_power_state();
+	virtual OS::PowerState get_power_state();
 	virtual int get_power_seconds_left();
 	virtual int get_power_percent_left();
 

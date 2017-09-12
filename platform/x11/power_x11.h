@@ -33,14 +33,14 @@
 
 #include "os/dir_access.h"
 #include "os/file_access.h"
-#include "os/power.h"
+#include "os/os.h"
 
 class PowerX11 {
 
 private:
 	int nsecs_left;
 	int percent_left;
-	PowerState power_state;
+	OS::PowerState power_state;
 
 	FileAccessRef open_power_file(const char *base, const char *node, const char *key);
 	bool read_power_file(const char *base, const char *node, const char *key, char *buf, size_t buflen);
@@ -58,7 +58,7 @@ public:
 	PowerX11();
 	virtual ~PowerX11();
 
-	PowerState get_power_state();
+	OS::PowerState get_power_state();
 	int get_power_seconds_left();
 	int get_power_percent_left();
 };

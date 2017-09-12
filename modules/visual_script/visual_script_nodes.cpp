@@ -1882,6 +1882,16 @@ void VisualScriptMathConstant::_bind_methods() {
 		cc += const_name[i];
 	}
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "constant", PROPERTY_HINT_ENUM, cc), "set_math_constant", "get_math_constant");
+
+	BIND_ENUM_CONSTANT(MATH_CONSTANT_ONE);
+	BIND_ENUM_CONSTANT(MATH_CONSTANT_PI);
+	BIND_ENUM_CONSTANT(MATH_CONSTANT_2PI);
+	BIND_ENUM_CONSTANT(MATH_CONSTANT_HALF_PI);
+	BIND_ENUM_CONSTANT(MATH_CONSTANT_E);
+	BIND_ENUM_CONSTANT(MATH_CONSTANT_SQRT2);
+	BIND_ENUM_CONSTANT(MATH_CONSTANT_INF);
+	BIND_ENUM_CONSTANT(MATH_CONSTANT_NAN);
+	BIND_ENUM_CONSTANT(MATH_CONSTANT_MAX);
 }
 
 VisualScriptMathConstant::VisualScriptMathConstant() {
@@ -3535,6 +3545,11 @@ void VisualScriptInputAction::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "action"), "set_action_name", "get_action_name");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Pressed,Released,JustPressed,JustReleased"), "set_action_mode", "get_action_mode");
+
+	BIND_ENUM_CONSTANT(MODE_PRESSED);
+	BIND_ENUM_CONSTANT(MODE_RELEASED);
+	BIND_ENUM_CONSTANT(MODE_JUST_PRESSED);
+	BIND_ENUM_CONSTANT(MODE_JUST_RELEASED);
 }
 
 VisualScriptInputAction::VisualScriptInputAction() {

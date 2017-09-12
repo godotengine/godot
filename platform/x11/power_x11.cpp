@@ -252,7 +252,7 @@ bool PowerX11::GetPowerInfo_Linux_proc_acpi() {
 
 	this->nsecs_left = -1;
 	this->percent_left = -1;
-	this->power_state = POWERSTATE_UNKNOWN;
+	this->power_state = OS::POWERSTATE_UNKNOWN;
 
 	dirp->change_dir(proc_acpi_battery_path);
 	Error err = dirp->list_dir_begin();
@@ -282,13 +282,13 @@ bool PowerX11::GetPowerInfo_Linux_proc_acpi() {
 	}
 
 	if (!have_battery) {
-		this->power_state = POWERSTATE_NO_BATTERY;
+		this->power_state = OS::POWERSTATE_NO_BATTERY;
 	} else if (charging) {
-		this->power_state = POWERSTATE_CHARGING;
+		this->power_state = OS::POWERSTATE_CHARGING;
 	} else if (have_ac) {
-		this->power_state = POWERSTATE_CHARGED;
+		this->power_state = OS::POWERSTATE_CHARGED;
 	} else {
-		this->power_state = POWERSTATE_ON_BATTERY;
+		this->power_state = OS::POWERSTATE_ON_BATTERY;
 	}
 
 	return true; /* definitive answer. */
@@ -400,17 +400,17 @@ bool PowerX11::GetPowerInfo_Linux_proc_apm() {
 	}
 
 	if (battery_flag == 0xFF) { /* unknown state */
-		this->power_state = POWERSTATE_UNKNOWN;
+		this->power_state = OS::POWERSTATE_UNKNOWN;
 	} else if (battery_flag & (1 << 7)) { /* no battery */
-		this->power_state = POWERSTATE_NO_BATTERY;
+		this->power_state = OS::POWERSTATE_NO_BATTERY;
 	} else if (battery_flag & (1 << 3)) { /* charging */
-		this->power_state = POWERSTATE_CHARGING;
+		this->power_state = OS::POWERSTATE_CHARGING;
 		need_details = true;
 	} else if (ac_status == 1) {
-		this->power_state = POWERSTATE_CHARGED; /* on AC, not charging. */
+		this->power_state = OS::POWERSTATE_CHARGED; /* on AC, not charging. */
 		need_details = true;
 	} else {
-		this->power_state = POWERSTATE_ON_BATTERY;
+		this->power_state = OS::POWERSTATE_ON_BATTERY;
 		need_details = true;
 	}
 
@@ -445,7 +445,7 @@ bool PowerX11::GetPowerInfo_Linux_sys_class_power_supply(/*PowerState *state, in
 		return false;
 	}
 
-	this->power_state = POWERSTATE_NO_BATTERY; /* assume we're just plugged in. */
+	this->power_state = OS::POWERSTATE_NO_BATTERY; /* assume we're just plugged in. */
 	this->nsecs_left = -1;
 	this->percent_left = -1;
 
@@ -454,7 +454,7 @@ bool PowerX11::GetPowerInfo_Linux_sys_class_power_supply(/*PowerState *state, in
 	while (name != "") {
 		bool choose = false;
 		char str[64];
-		PowerState st;
+		OS::PowerState st;
 		int secs;
 		int pct;
 
@@ -475,17 +475,17 @@ bool PowerX11::GetPowerInfo_Linux_sys_class_power_supply(/*PowerState *state, in
 
 		/* some drivers don't offer this, so if it's not explicitly reported assume it's present. */
 		if (read_power_file(base, name.utf8().get_data(), "present", str, sizeof(str)) && (String(str) == "0\n")) {
-			st = POWERSTATE_NO_BATTERY;
+			st = OS::POWERSTATE_NO_BATTERY;
 		} else if (!read_power_file(base, name.utf8().get_data(), "status", str, sizeof(str))) {
-			st = POWERSTATE_UNKNOWN; /* uh oh */
+			st = OS::POWERSTATE_UNKNOWN; /* uh oh */
 		} else if (String(str) == "Charging\n") {
-			st = POWERSTATE_CHARGING;
+			st = OS::POWERSTATE_CHARGING;
 		} else if (String(str) == "Discharging\n") {
-			st = POWERSTATE_ON_BATTERY;
+			st = OS::POWERSTATE_ON_BATTERY;
 		} else if ((String(str) == "Full\n") || (String(str) == "Not charging\n")) {
-			st = POWERSTATE_CHARGED;
+			st = OS::POWERSTATE_CHARGED;
 		} else {
-			st = POWERSTATE_UNKNOWN; /* uh oh */
+			st = OS::POWERSTATE_UNKNOWN; /* uh oh */
 		}
 
 		if (!read_power_file(base, name.utf8().get_data(), "capacity", str, sizeof(str))) {
@@ -543,17 +543,17 @@ bool PowerX11::UpdatePowerInfo() {
 }
 
 PowerX11::PowerX11()
-	: nsecs_left(-1), percent_left(-1), power_state(POWERSTATE_UNKNOWN) {
+	: nsecs_left(-1), percent_left(-1), power_state(OS::POWERSTATE_UNKNOWN) {
 }
 
 PowerX11::~PowerX11() {
 }
 
-PowerState PowerX11::get_power_state() {
+OS::PowerState PowerX11::get_power_state() {
 	if (UpdatePowerInfo()) {
 		return power_state;
 	} else {
-		return POWERSTATE_UNKNOWN;
+		return OS::POWERSTATE_UNKNOWN;
 	}
 }
 

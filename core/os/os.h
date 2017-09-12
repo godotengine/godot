@@ -34,7 +34,6 @@
 #include "image.h"
 #include "list.h"
 #include "os/main_loop.h"
-#include "power.h"
 #include "ustring.h"
 #include "vector.h"
 #include <stdarg.h>
@@ -64,6 +63,14 @@ class OS {
 
 public:
 	typedef void (*ImeCallback)(void *p_inp, String p_text, Point2 p_selection);
+
+	enum PowerState {
+		POWERSTATE_UNKNOWN, /**< cannot determine power status */
+		POWERSTATE_ON_BATTERY, /**< Not plugged in, running on the battery */
+		POWERSTATE_NO_BATTERY, /**< Plugged in, no battery available */
+		POWERSTATE_CHARGING, /**< Plugged in, charging battery */
+		POWERSTATE_CHARGED /**< Plugged in, battery charged */
+	};
 
 	enum RenderThreadMode {
 
@@ -410,7 +417,7 @@ public:
 	virtual void set_use_vsync(bool p_enable);
 	virtual bool is_vsync_enabled() const;
 
-	virtual PowerState get_power_state();
+	virtual OS::PowerState get_power_state();
 	virtual int get_power_seconds_left();
 	virtual int get_power_percent_left();
 
@@ -428,6 +435,6 @@ public:
 	virtual ~OS();
 };
 
-VARIANT_ENUM_CAST(PowerState);
+VARIANT_ENUM_CAST(OS::PowerState);
 
 #endif
