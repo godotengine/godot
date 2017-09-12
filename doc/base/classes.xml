@@ -79,7 +79,7 @@
 				Returns the arc sine of 's' in radians. Use to get the angle of sine 's'.
 				[codeblock]
 				# s is 0.523599 or 30 degrees if converted with rad2deg(s)
-				s = asin(0.5)				
+				s = asin(0.5)
 				[/codeblock]
 			</description>
 		</method>
@@ -587,6 +587,7 @@
 				[codeblock]
 				# load a scene called main located in the root of the project directory
 				var main = preload("res://main.tscn")
+				[/codeblock]
 			</description>
 		</method>
 		<method name="print" qualifiers="vararg">
