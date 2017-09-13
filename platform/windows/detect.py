@@ -226,10 +226,13 @@ def configure(env):
         else:
             env["PROGSUFFIX"] = env["PROGSUFFIX"] + ".exe"  # for linux cross-compilation
 
-        mingw_prefix = ""
-
         if (env["bits"] == "default"):
-            env["bits"] = "64" if "PROGRAMFILES(X86)" in os.environ else "32"
+            if (os.name == "nt"):
+                env["bits"] = "64" if "PROGRAMFILES(X86)" in os.environ else "32"
+            else: # default to 64-bit on Linux
+                env["bits"] = "64"
+
+        mingw_prefix = ""
 
         if (env["bits"] == "32"):
             env.Append(LINKFLAGS=['-static'])
