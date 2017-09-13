@@ -441,12 +441,12 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 			if (!bnode->single_statement) {
 				code += _mktab(p_level - 1) + "{\n";
 			}
-	
+
 			for (int i = 0; i < bnode->statements.size(); i++) {
 
 				String scode = _dump_node_code(bnode->statements[i], p_level, r_gen_code, p_actions, p_default_actions);
 
-				if (bnode->statements[i]->type == SL::Node::TYPE_CONTROL_FLOW || bnode->single_statement ) {
+				if (bnode->statements[i]->type == SL::Node::TYPE_CONTROL_FLOW || bnode->single_statement) {
 					code += scode; //use directly
 				} else {
 					code += _mktab(p_level) + scode + ";\n";
@@ -461,20 +461,20 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 			SL::VariableDeclarationNode *vdnode = (SL::VariableDeclarationNode *)p_node;
 
 			String declaration = _prestr(vdnode->precision) + _typestr(vdnode->datatype);
-			for(int i=0;i<vdnode->declarations.size();i++) {
-				if (i>0) {
-					declaration+=",";
+			for (int i = 0; i < vdnode->declarations.size(); i++) {
+				if (i > 0) {
+					declaration += ",";
 				} else {
-					declaration+=" ";
+					declaration += " ";
 				}
-				declaration +=  _mkid(vdnode->declarations[i].name);
+				declaration += _mkid(vdnode->declarations[i].name);
 				if (vdnode->declarations[i].initializer) {
-					declaration+="=";
-					declaration+=_dump_node_code(vdnode->declarations[i].initializer, p_level, r_gen_code, p_actions, p_default_actions);
+					declaration += "=";
+					declaration += _dump_node_code(vdnode->declarations[i].initializer, p_level, r_gen_code, p_actions, p_default_actions);
 				}
 			}
 
-			code+=declaration;
+			code += declaration;
 		} break;
 		case SL::Node::TYPE_VARIABLE: {
 			SL::VariableNode *vnode = (SL::VariableNode *)p_node;
@@ -623,7 +623,7 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				String left = _dump_node_code(cfnode->blocks[0], p_level, r_gen_code, p_actions, p_default_actions);
 				String middle = _dump_node_code(cfnode->expressions[0], p_level, r_gen_code, p_actions, p_default_actions);
 				String right = _dump_node_code(cfnode->expressions[1], p_level, r_gen_code, p_actions, p_default_actions);
-				code += _mktab(p_level) + "for (" +left+";"+middle+";"+right+")\n";
+				code += _mktab(p_level) + "for (" + left + ";" + middle + ";" + right + ")\n";
 				code += _dump_node_code(cfnode->blocks[1], p_level + 1, r_gen_code, p_actions, p_default_actions);
 
 			} else if (cfnode->flow_op == SL::FLOW_OP_RETURN) {

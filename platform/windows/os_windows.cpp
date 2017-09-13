@@ -888,11 +888,10 @@ static int QueryDpiForMonitor(HMONITOR hmon, _MonitorDpiType dpiType = MDT_Defau
 }
 
 typedef enum _SHC_PROCESS_DPI_AWARENESS {
-  SHC_PROCESS_DPI_UNAWARE            = 0,
-  SHC_PROCESS_SYSTEM_DPI_AWARE       = 1,
-  SHC_PROCESS_PER_MONITOR_DPI_AWARE  = 2
+	SHC_PROCESS_DPI_UNAWARE = 0,
+	SHC_PROCESS_SYSTEM_DPI_AWARE = 1,
+	SHC_PROCESS_PER_MONITOR_DPI_AWARE = 2
 } SHC_PROCESS_DPI_AWARENESS;
-
 
 void OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
@@ -902,19 +901,18 @@ void OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int 
 	WNDCLASSEXW wc;
 
 	if (is_hidpi_allowed()) {
-		HMODULE Shcore = LoadLibraryW(L"Shcore.dll");;
+		HMODULE Shcore = LoadLibraryW(L"Shcore.dll");
 
 		if (Shcore != NULL) {
-			typedef HRESULT (WINAPI *SetProcessDpiAwareness_t)(SHC_PROCESS_DPI_AWARENESS);
+			typedef HRESULT(WINAPI * SetProcessDpiAwareness_t)(SHC_PROCESS_DPI_AWARENESS);
 
-			SetProcessDpiAwareness_t  SetProcessDpiAwareness = (SetProcessDpiAwareness_t)GetProcAddress(Shcore, "SetProcessDpiAwareness");
+			SetProcessDpiAwareness_t SetProcessDpiAwareness = (SetProcessDpiAwareness_t)GetProcAddress(Shcore, "SetProcessDpiAwareness");
 
 			if (SetProcessDpiAwareness) {
 				SetProcessDpiAwareness(SHC_PROCESS_SYSTEM_DPI_AWARE);
 			}
 		}
 	}
-
 
 	video_mode = p_desired;
 	//printf("**************** desired %s, mode %s\n", p_desired.fullscreen?"true":"false", video_mode.fullscreen?"true":"false");

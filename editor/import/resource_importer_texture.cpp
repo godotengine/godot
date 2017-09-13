@@ -30,10 +30,11 @@
 #include "resource_importer_texture.h"
 
 #include "editor/editor_file_system.h"
+#include "editor/editor_node.h"
 #include "io/config_file.h"
 #include "io/image_loader.h"
 #include "scene/resources/texture.h"
-#include "editor/editor_node.h"
+
 void ResourceImporterTexture::_texture_reimport_srgb(const Ref<StreamTexture> &p_tex) {
 
 	singleton->mutex->lock();
@@ -412,13 +413,13 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 		//must import in all formats, in order of priority (so platform choses the best supported one. IE, etc2 over etc).
 		//Android, GLES 2.x
 
-		bool ok_on_pc=false;
+		bool ok_on_pc = false;
 
 		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_s3tc")) {
 
 			_save_stex(image, p_save_path + ".s3tc.stex", compress_mode, lossy, Image::COMPRESS_S3TC, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe, detect_normal, force_normal);
 			r_platform_variants->push_back("s3tc");
-			ok_on_pc=true;
+			ok_on_pc = true;
 		}
 
 		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_etc2")) {

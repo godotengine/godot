@@ -652,7 +652,7 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 	Ref<Font> doc_font = get_font("doc", "EditorFonts");
 	Ref<Font> doc_title_font = get_font("doc_title", "EditorFonts");
 	Ref<Font> doc_code_font = get_font("doc_source", "EditorFonts");
-	String link_color_text=Color(EditorSettings::get_singleton()->get("text_editor/highlighting/keyword_color")).to_html(false);
+	String link_color_text = Color(EditorSettings::get_singleton()->get("text_editor/highlighting/keyword_color")).to_html(false);
 
 	h_color = Color(1, 1, 1, 1);
 
@@ -1256,7 +1256,7 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 				class_desc->add_image(get_icon("Error", "EditorIcons"));
 				class_desc->add_text(" ");
 				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/comment_color"));
-				class_desc->append_bbcode(TTR("There is currently no description for this property. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url",CONTRIBUTE_URL).replace("$color",link_color_text));
+				class_desc->append_bbcode(TTR("There is currently no description for this property. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text));
 				class_desc->pop();
 			}
 			class_desc->pop();
@@ -1340,13 +1340,13 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/text_color"));
 			class_desc->push_font(doc_font);
 			class_desc->push_indent(1);
-			if (methods[i].description.strip_edges()!=String()) {
+			if (methods[i].description.strip_edges() != String()) {
 				_add_text(methods[i].description);
 			} else {
 				class_desc->add_image(get_icon("Error", "EditorIcons"));
 				class_desc->add_text(" ");
 				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/comment_color"));
-				class_desc->append_bbcode(TTR("There is currently no description for this method. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url",CONTRIBUTE_URL).replace("$color",link_color_text));
+				class_desc->append_bbcode(TTR("There is currently no description for this method. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text));
 				class_desc->pop();
 			}
 

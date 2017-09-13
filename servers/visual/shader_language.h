@@ -371,7 +371,7 @@ public:
 			type = TYPE_BLOCK;
 			parent_block = NULL;
 			parent_function = NULL;
-			single_statement=false;
+			single_statement = false;
 		}
 	};
 

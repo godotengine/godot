@@ -58,9 +58,9 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/doc/doc_data.h"
+#include "editor/doc/doc_data_class_path.gen.h"
 #include "editor/editor_node.h"
 #include "editor/project_manager.h"
-#include "editor/doc/doc_data_class_path.gen.h"
 #endif
 
 #include "io/file_access_network.h"
@@ -74,7 +74,6 @@
 #include "performance.h"
 #include "translation.h"
 #include "version.h"
-
 
 static ProjectSettings *globals = NULL;
 static Engine *engine = NULL;
@@ -1155,37 +1154,36 @@ bool Main::start() {
 		DocData doc;
 		doc.generate(doc_base);
 
-
 		DocData docsrc;
-		Map<String,String> doc_data_classes;
+		Map<String, String> doc_data_classes;
 		Set<String> checked_paths;
 		print_line("Loading docs..");
 
-		for(int i=0;i<_doc_data_class_path_count;i++) {
+		for (int i = 0; i < _doc_data_class_path_count; i++) {
 			String path = doc_tool.plus_file(_doc_data_class_paths[i].path);
 			String name = _doc_data_class_paths[i].name;
-			doc_data_classes[name]=path;
+			doc_data_classes[name] = path;
 			if (!checked_paths.has(path)) {
 				checked_paths.insert(path);
 				docsrc.load_classes(path);
-				print_line("Loading docs from: "+path);
+				print_line("Loading docs from: " + path);
 			}
 		}
 
 		String index_path = doc_tool.plus_file("doc/classes");
 		docsrc.load_classes(index_path);
 		checked_paths.insert(index_path);
-		print_line("Loading docs from: "+index_path);
+		print_line("Loading docs from: " + index_path);
 
 		print_line("Merging docs..");
 		doc.merge_from(docsrc);
-		for (Set<String>::Element *E=checked_paths.front();E;E=E->next()) {
-			print_line("Erasing old docs at: "+E->get());
+		for (Set<String>::Element *E = checked_paths.front(); E; E = E->next()) {
+			print_line("Erasing old docs at: " + E->get());
 			DocData::erase_classes(E->get());
 		}
 
 		print_line("Generating new docs..");
-		doc.save_classes(index_path,doc_data_classes);
+		doc.save_classes(index_path, doc_data_classes);
 
 		return false;
 	}

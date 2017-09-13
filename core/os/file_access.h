@@ -174,7 +174,7 @@ struct FileAccessRef {
 
 	operator bool() const { return f != NULL; }
 	FileAccess *f;
-	operator FileAccess*() { return f; }
+	operator FileAccess *() { return f; }
 	FileAccessRef(FileAccess *fa) { f = fa; }
 	~FileAccessRef() {
 		if (f) memdelete(f);
