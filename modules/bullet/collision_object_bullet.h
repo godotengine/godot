@@ -115,6 +115,7 @@ public:
 	Type getType() { return type; }
 
 protected:
+	void destroyBulletCollisionObject();
 	void setupBulletCollisionObject(btCollisionObject *p_collisionObject);
 
 public:

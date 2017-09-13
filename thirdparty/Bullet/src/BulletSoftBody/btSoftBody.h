@@ -117,7 +117,7 @@ public:
 
 	///eFeature
 	struct	eFeature { enum _ {
-		Nothing,
+		None,
 		Node,
 		Link,
 		Face,

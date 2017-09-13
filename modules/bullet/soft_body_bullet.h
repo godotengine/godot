@@ -32,14 +32,28 @@
 #ifndef SOFT_BODY_BULLET_H
 #define SOFT_BODY_BULLET_H
 
+#ifdef None
+/// This is required to remove the macro None defined by x11 compiler because this word "None" is used internally by Bullet
+#undef None
+#define x11_None 0L
+#endif
+
 #include "BulletSoftBody/btSoftBodyHelpers.h"
 #include "collision_object_bullet.h"
 
+#ifdef x11_None
+/// This is required to re add the macro None defined by x11 compiler
+#undef x11_None
+#define None 0L
+#endif
+
+#include "scene/resources/material.h" // TODO remove thsi please
+
 struct SoftShapeData {};
 struct TrimeshSoftShapeData : public SoftShapeData {
-	const btScalar *m_vertices;
-	const int *m_trianglesIndexes;
-	int m_nTriangles;
+	PoolVector<int> m_triangles_indices;
+	PoolVector<Vector3> m_vertices;
+	int m_triangles_num;
 };
 
 class SoftBodyBullet : public CollisionObjectBullet {
@@ -57,12 +71,17 @@ private:
 
 	SoftShapeData *soft_body_shape_data;
 
+	Transform transform;
 	int simulation_precision;
 	real_t mass;
 	real_t stiffness; // [0,1]
 	real_t pressure_coefficient; // [-inf,+inf]
 	real_t damping_coefficient; // [0,1]
 	real_t drag_coefficient; // [0,1]
+
+	class ImmediateGeometry *test_geometry; // TODO remove this please
+	Ref<SpatialMaterial> red_mat; // TODO remove this please
+	bool test_is_in_scene; // TODO remove this please
 
 public:
 	SoftBodyBullet();
@@ -79,8 +98,8 @@ public:
 
 	_FORCE_INLINE_ btSoftBody *get_bt_soft_body() const { return bt_soft_body; }
 
-	void set_trimesh_body_shape(const btScalar *p_vertices, const int *p_trianglesIndexes, int p_nTriangles);
-	void set_body_shape_data(SoftShapeData *p_soft_shape_data);
+	void set_trimesh_body_shape(PoolVector<int> p_indices, PoolVector<Vector3> p_vertices, int p_triangles_num);
+	void set_body_shape_data(SoftShapeData *p_soft_shape_data, SoftShapeType p_type);
 
 	void set_transform(const Transform &p_transform);
 	/// This function doesn't return the exact COM transform.
@@ -90,7 +109,7 @@ public:
 	/// that each has its own position in the world.
 	/// For this reason return the correct COM is not so simple and must be calculate
 	/// Check this to improve this function http://bulletphysics.org/Bullet/phpBB3/viewtopic.php?t=8803
-	void get_transform(Transform &p_out_transform) const;
+	const Transform &get_transform() const;
 	void get_first_node_origin(btVector3 &p_out_origin) const;
 
 	void set_activation_state(bool p_active);

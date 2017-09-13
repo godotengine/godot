@@ -190,6 +190,7 @@ public:
 	virtual void body_remove_shape(RID p_body, int p_shape_idx);
 	virtual void body_clear_shapes(RID p_body);
 
+	// Used for Rigid and Soft Bodies
 	virtual void body_attach_object_instance_id(RID p_body, uint32_t p_ID);
 	virtual uint32_t body_get_object_instance_id(RID p_body) const;
 
@@ -253,14 +254,26 @@ public:
 	virtual void soft_body_set_space(RID p_body, RID p_space);
 	virtual RID soft_body_get_space(RID p_body) const;
 
+	virtual void soft_body_set_trimesh_body_shape(RID p_body, PoolVector<int> p_indices, PoolVector<Vector3> p_vertices, int p_triangles_num);
+
 	virtual void soft_body_set_collision_layer(RID p_body, uint32_t p_layer);
 	virtual uint32_t soft_body_get_collision_layer(RID p_body) const;
 
 	virtual void soft_body_set_collision_mask(RID p_body, uint32_t p_mask);
 	virtual uint32_t soft_body_get_collision_mask(RID p_body) const;
 
+	virtual void soft_body_add_collision_exception(RID p_body, RID p_body_b);
+	virtual void soft_body_remove_collision_exception(RID p_body, RID p_body_b);
+	virtual void soft_body_get_collision_exceptions(RID p_body, List<RID> *p_exceptions);
+
 	virtual void soft_body_set_state(RID p_body, BodyState p_state, const Variant &p_variant);
 	virtual Variant soft_body_get_state(RID p_body, BodyState p_state) const;
+
+	virtual void soft_body_set_transform(RID p_body, const Transform &p_transform);
+	virtual Transform soft_body_get_transform(RID p_body) const;
+
+	virtual void soft_body_set_ray_pickable(RID p_body, bool p_enable);
+	virtual bool soft_body_is_ray_pickable(RID p_body) const;
 
 	/* JOINT API */
 

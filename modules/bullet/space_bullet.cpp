@@ -31,15 +31,15 @@
 
 #include "space_bullet.h"
 #include "BulletCollision/CollisionDispatch/btCollisionObject.h"
+#include "BulletCollision/CollisionDispatch/btDefaultCollisionConfiguration.h"
 #include "BulletCollision/CollisionDispatch/btGhostObject.h"
+#include "BulletSoftBody/btSoftBodyRigidBodyCollisionConfiguration.h"
 #include "BulletSoftBody/btSoftRigidDynamicsWorld.h"
 #include "btBulletDynamicsCommon.h"
 #include "bullet_physics_server.h"
 #include "bullet_types_converter.h"
 #include "bullet_utilities.h"
 #include "constraint_bullet.h"
-#include "godot_collision_configuration.h"
-#include "godot_collision_dispatcher.h"
 #include "rigid_body_bullet.h"
 #include "servers/physics_server.h"
 #include "soft_body_bullet.h"
@@ -568,8 +568,8 @@ void SpaceBullet::create_empty_world(bool p_create_soft_world) {
 	assert(NULL == ghostPairCallback);
 	assert(NULL == godotFilterCallback);
 
-	collisionConfiguration = bulletnew(GodotCollisionConfiguration);
-	dispatcher = bulletnew(GodotCollisionDispatcher(collisionConfiguration));
+	collisionConfiguration = p_create_soft_world ? bulletnew(btSoftBodyRigidBodyCollisionConfiguration) : bulletnew(btDefaultCollisionConfiguration);
+	dispatcher = bulletnew(btCollisionDispatcher(collisionConfiguration));
 	broadphase = bulletnew(btDbvtBroadphase);
 	solver = bulletnew(btSequentialImpulseConstraintSolver);
 	if (p_create_soft_world) {

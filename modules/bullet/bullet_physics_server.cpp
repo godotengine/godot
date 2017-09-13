@@ -41,7 +41,6 @@
 #include "pin_joint_bullet.h"
 #include "shape_bullet.h"
 #include "slider_joint_bullet.h"
-#include "soft_body_bullet.h"
 #include "stepper_bullet.h"
 #include <assert.h>
 
@@ -160,7 +159,7 @@ real_t BulletPhysicsServer::shape_get_custom_solver_bias(RID p_shape) const {
 }
 
 RID BulletPhysicsServer::space_create() {
-	SpaceBullet *space = bulletnew(SpaceBullet(true));
+	SpaceBullet *space = bulletnew(SpaceBullet(false));
 	CreateThenReturnRID(space_owner, space);
 }
 
@@ -437,7 +436,6 @@ bool BulletPhysicsServer::area_is_ray_pickable(RID p_area) const {
 }
 
 RID BulletPhysicsServer::body_create(BodyMode p_mode, bool p_init_sleeping) {
-	ERR_FAIL_COND_V(p_mode == PhysicsServer::BODY_MODE_SOFT, RID());
 	RigidBodyBullet *body = bulletnew(RigidBodyBullet);
 	body->set_mode(p_mode);
 	body->set_collision_layer(1);
@@ -557,14 +555,20 @@ void BulletPhysicsServer::body_clear_shapes(RID p_body) {
 }
 
 void BulletPhysicsServer::body_attach_object_instance_id(RID p_body, uint32_t p_ID) {
-	RigidBodyBullet *body = rigid_body_owner.get(p_body);
+	CollisionObjectBullet *body = rigid_body_owner.get(p_body);
+	if (!body) {
+		body = soft_body_owner.get(p_body);
+	}
 	ERR_FAIL_COND(!body);
 
 	body->set_instance_id(p_ID);
 }
 
 uint32_t BulletPhysicsServer::body_get_object_instance_id(RID p_body) const {
-	RigidBodyBullet *body = rigid_body_owner.get(p_body);
+	CollisionObjectBullet *body = rigid_body_owner.get(p_body);
+	if (!body) {
+		body = soft_body_owner.get(p_body);
+	}
 	ERR_FAIL_COND_V(!body, 0);
 
 	return body->get_instance_id();
@@ -736,7 +740,6 @@ void BulletPhysicsServer::body_remove_collision_exception(RID p_body, RID p_body
 void BulletPhysicsServer::body_get_collision_exceptions(RID p_body, List<RID> *p_exceptions) {
 	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
-	// TODO I must fix that, the exception can be setted directly in bullet
 	for (int i = 0; i < body->get_exceptions().size(); i++) {
 		p_exceptions->push_back(body->get_exceptions()[i]);
 	}
@@ -835,6 +838,13 @@ RID BulletPhysicsServer::soft_body_get_space(RID p_body) const {
 	return space->get_self();
 }
 
+void BulletPhysicsServer::soft_body_set_trimesh_body_shape(RID p_body, PoolVector<int> p_indices, PoolVector<Vector3> p_vertices, int p_triangles_num) {
+	SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_trimesh_body_shape(p_indices, p_vertices, p_triangles_num);
+}
+
 void BulletPhysicsServer::soft_body_set_collision_layer(RID p_body, uint32_t p_layer) {
 	SoftBodyBullet *body = soft_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
@@ -863,6 +873,40 @@ uint32_t BulletPhysicsServer::soft_body_get_collision_mask(RID p_body) const {
 	return body->get_collision_mask();
 }
 
+void BulletPhysicsServer::soft_body_add_collision_exception(RID p_body, RID p_body_b) {
+	SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	CollisionObjectBullet *other_body = rigid_body_owner.get(p_body_b);
+	if (!other_body) {
+		other_body = soft_body_owner.get(p_body_b);
+	}
+	ERR_FAIL_COND(!other_body);
+
+	body->add_collision_exception(other_body);
+}
+
+void BulletPhysicsServer::soft_body_remove_collision_exception(RID p_body, RID p_body_b) {
+	SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	CollisionObjectBullet *other_body = rigid_body_owner.get(p_body_b);
+	if (!other_body) {
+		other_body = soft_body_owner.get(p_body_b);
+	}
+	ERR_FAIL_COND(!other_body);
+
+	body->remove_collision_exception(other_body);
+}
+
+void BulletPhysicsServer::soft_body_get_collision_exceptions(RID p_body, List<RID> *p_exceptions) {
+	SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+	for (int i = 0; i < body->get_exceptions().size(); i++) {
+		p_exceptions->push_back(body->get_exceptions()[i]);
+	}
+}
+
 void BulletPhysicsServer::soft_body_set_state(RID p_body, BodyState p_state, const Variant &p_variant) {
 	print_line("TODO MUST BE IMPLEMENTED");
 }
@@ -870,6 +914,32 @@ void BulletPhysicsServer::soft_body_set_state(RID p_body, BodyState p_state, con
 Variant BulletPhysicsServer::soft_body_get_state(RID p_body, BodyState p_state) const {
 	print_line("TODO MUST BE IMPLEMENTED");
 	return Variant();
+}
+
+void BulletPhysicsServer::soft_body_set_transform(RID p_body, const Transform &p_transform) {
+	SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_transform(p_transform);
+}
+
+Transform BulletPhysicsServer::soft_body_get_transform(RID p_body) const {
+	const SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, Transform());
+
+	return body->get_transform();
+}
+
+void BulletPhysicsServer::soft_body_set_ray_pickable(RID p_body, bool p_enable) {
+	SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+	body->set_ray_pickable(p_enable);
+}
+
+bool BulletPhysicsServer::soft_body_is_ray_pickable(RID p_body) const {
+	SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, false);
+	return body->is_ray_pickable();
 }
 
 PhysicsServer::JointType BulletPhysicsServer::joint_get_type(RID p_joint) const {
@@ -1171,6 +1241,15 @@ void BulletPhysicsServer::free(RID p_rid) {
 		body->remove_all_shapes(true);
 
 		rigid_body_owner.free(p_rid);
+		bulletdelete(body);
+
+	} else if (soft_body_owner.owns(p_rid)) {
+
+		SoftBodyBullet *body = soft_body_owner.get(p_rid);
+
+		body->set_space(NULL);
+
+		soft_body_owner.free(p_rid);
 		bulletdelete(body);
 
 	} else if (area_owner.owns(p_rid)) {

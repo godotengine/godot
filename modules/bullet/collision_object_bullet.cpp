@@ -61,7 +61,7 @@ CollisionObjectBullet::~CollisionObjectBullet() {
 	// not required
 	// areasOverlapped.clear();
 
-	bulletdelete(bt_collision_object);
+	destroyBulletCollisionObject();
 }
 
 bool equal(real_t first, real_t second) {
@@ -76,6 +76,10 @@ void CollisionObjectBullet::set_body_scale(const Vector3 &p_new_scale) {
 }
 
 void CollisionObjectBullet::on_body_scale_changed() {
+}
+
+void CollisionObjectBullet::destroyBulletCollisionObject() {
+	bulletdelete(bt_collision_object);
 }
 
 void CollisionObjectBullet::setupBulletCollisionObject(btCollisionObject *p_collisionObject) {
