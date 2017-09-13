@@ -103,35 +103,35 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns whether node sends notification that its local transformation changed. Spatial will not propagate this by default.
+				Return whether node sends notification that its local transformation changed. Spatial will not propagate this by default.
 			</description>
 		</method>
 		<method name="is_set_as_toplevel" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns whether this node is set as Toplevel, ignoring its parent node transformations.
+				Return whether is set as Toplevel (whether ignore parent nodes transformations).
 			</description>
 		</method>
 		<method name="is_transform_notification_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns whether node sends notification that its transformation changed. Spatial will not propagate this by default.
+				Return whether node sends notification that its transformation changed, global or local. Spatial will not propagate this by default.
 			</description>
 		</method>
 		<method name="is_visible" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns whether this node is set to be visible.
+				Return whether this node is set to be visible.
 			</description>
 		</method>
 		<method name="is_visible_in_tree" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns whether this node is visible, taking into consideration that its parents visibility.
+				Return whether this node is visible, taking into consideration that its parents visibility.
 			</description>
 		</method>
 		<method name="look_at">
@@ -142,7 +142,7 @@
 			<argument index="1" name="up" type="Vector3">
 			</argument>
 			<description>
-				Rotates itself to point into direction of target position. Operations take place in global space.
+				Rotate to point into direction of target position. Operations take place in global space.
 			</description>
 		</method>
 		<method name="look_at_from_pos">
@@ -155,7 +155,7 @@
 			<argument index="2" name="up" type="Vector3">
 			</argument>
 			<description>
-				Moves itself to specified position and then rotates itself to point into direction of target position. Operations take place in global space.
+				Move to specified position and then rotates to point into direction of target position. Operations take place in global space.
 			</description>
 		</method>
 		<method name="orthonormalize">
@@ -173,7 +173,7 @@
 			<argument index="1" name="radians" type="float">
 			</argument>
 			<description>
-				Rotates node in local space on given normal [Vector3] by angle in radians.
+				Rotate in local space on given normal [Vector3] by angle in radians.
 			</description>
 		</method>
 		<method name="rotate_x">
@@ -182,7 +182,7 @@
 			<argument index="0" name="radians" type="float">
 			</argument>
 			<description>
-				Rotates node in local space on X axis by angle in radians.
+				Rotate in local space on X axis by angle in radians.
 			</description>
 		</method>
 		<method name="rotate_y">
@@ -191,7 +191,7 @@
 			<argument index="0" name="radians" type="float">
 			</argument>
 			<description>
-				Rotates node in local space on Y axis by angle in radians.
+				Rotate in local space on Y axis by angle in radians.
 			</description>
 		</method>
 		<method name="rotate_z">
@@ -200,7 +200,7 @@
 			<argument index="0" name="radians" type="float">
 			</argument>
 			<description>
-				Rotates node in local space on Z axis by angle in radians.
+				Rotate in local space on Z axis by angle in radians.
 			</description>
 		</method>
 		<method name="set_as_toplevel">
@@ -209,7 +209,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Makes this node ignore its parents tranformations. Node tranformations are only in global space.
+				Make this node ignore its parents tranformations. Node tranformations are only in global space.
 			</description>
 		</method>
 		<method name="set_gizmo">
@@ -261,7 +261,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Set whether this node sends notification that its transformation changed. Spatial will not propagate this by default.
+				Set whether this node sends notification that its transformation changed, global or local. Spatial will not propagate this by default.
 			</description>
 		</method>
 		<method name="set_rotation">

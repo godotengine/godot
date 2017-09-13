@@ -68,7 +68,7 @@
 			<return type="Transform">
 			</return>
 			<description>
-				Returns the inverse of the transfrom, under the assumption that the transformation is composed of rotation, scaling and translation.
+				Return inverse of the transfrom, under the assumption that the transformation is composed of rotation, scaling and translation.
 			</description>
 		</method>
 		<method name="interpolate_with">
@@ -86,7 +86,7 @@
 			<return type="Transform">
 			</return>
 			<description>
-				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation and translation (no scaling, use affine_inverse for transforms with scaling).
+				Return inverse of the transform, under the assumption that the transformation is composed of rotation and translation (no scaling, use affine_inverse for transforms with scaling).
 			</description>
 		</method>
 		<method name="looking_at">
@@ -104,7 +104,7 @@
 			<return type="Transform">
 			</return>
 			<description>
-				Returns a transfrom with the basis orthogonal (90 degrees), and normalized axis vectors.
+				Return transfrom with the basis orthogonal (90 degrees), and normalized axis vectors.
 			</description>
 		</method>
 		<method name="rotated">
@@ -115,7 +115,7 @@
 			<argument index="1" name="phi" type="float">
 			</argument>
 			<description>
-				Rotate the transform around given axis by phi. The axis must be a normalized vector.
+				Rotate transform around given axis by angle "phi". The axis must be a normalized vector.
 			</description>
 		</method>
 		<method name="scaled">
@@ -124,7 +124,7 @@
 			<argument index="0" name="scale" type="Vector3">
 			</argument>
 			<description>
-				Scale the transform by the specified 3D scaling factors.
+				Scale transform by the specified 3D scaling factors.
 			</description>
 		</method>
 		<method name="translated">
@@ -142,7 +142,7 @@
 			<argument index="0" name="v" type="var">
 			</argument>
 			<description>
-				Transforms the given vector "v" by this transform.
+				Transform the given vector "v" by this transform.
 			</description>
 		</method>
 		<method name="xform_inv">
@@ -151,7 +151,7 @@
 			<argument index="0" name="v" type="var">
 			</argument>
 			<description>
-				Inverse-transforms vector "v" by this transform.
+				Inverse-transform vector "v" by this transform.
 			</description>
 		</method>
 	</methods>

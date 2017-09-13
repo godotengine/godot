@@ -17,7 +17,7 @@
 			<argument index="0" name="from" type="Transform">
 			</argument>
 			<description>
-				Constructs the [Transform2D] from a 3D [Transform].
+				Construct [Transform2D] from a 3D [Transform].
 			</description>
 		</method>
 		<method name="Transform2D">
@@ -30,7 +30,7 @@
 			<argument index="2" name="origin" type="Vector2">
 			</argument>
 			<description>
-				Constructs the [Transform2D] from 3 [Vector2] consisting of rows x, y and origin.
+				Construct [Transform2D] from 3 [Vector2] consisting of rows x, y and origin.
 			</description>
 		</method>
 		<method name="Transform2D">
@@ -41,14 +41,14 @@
 			<argument index="1" name="pos" type="Vector2">
 			</argument>
 			<description>
-				Constructs the [Transform2D] from rotation angle in radians and position [Vector2].
+				Construct [Transform2D] from rotation angle in radians and position [Vector2].
 			</description>
 		</method>
 		<method name="affine_inverse">
 			<return type="Transform2D">
 			</return>
 			<description>
-				Returns the inverse of the matrix.
+				Return inverse of the matrix.
 			</description>
 		</method>
 		<method name="basis_xform">
@@ -57,7 +57,7 @@
 			<argument index="0" name="v" type="var">
 			</argument>
 			<description>
-				Transforms the given vector "v" by this transform basis (no translation).
+				Transform the given vector "v" by this transform basis (no translation).
 			</description>
 		</method>
 		<method name="basis_xform_inv">
@@ -66,7 +66,7 @@
 			<argument index="0" name="v" type="var">
 			</argument>
 			<description>
-				Inverse-transforms vector "v" by this transform basis (no translation).
+				Inverse-transform vector "v" by this transform basis (no translation).
 			</description>
 		</method>
 		<method name="get_origin">
@@ -105,14 +105,14 @@
 			<return type="Transform2D">
 			</return>
 			<description>
-				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation and translation (no scaling, use affine_inverse for transforms with scaling).
+				Return inverse of the transform, under the assumption that the transformation is composed of rotation and translation (no scaling, use affine_inverse for transforms with scaling).
 			</description>
 		</method>
 		<method name="orthonormalized">
 			<return type="Transform2D">
 			</return>
 			<description>
-				Returns a transfrom with the basis orthogonal (90 degrees), and normalized axis vectors.
+				Return transfrom with the basis orthogonal (90 degrees), and normalized axis vectors.
 			</description>
 		</method>
 		<method name="rotated">
@@ -148,7 +148,7 @@
 			<argument index="0" name="v" type="var">
 			</argument>
 			<description>
-				Transforms the given vector "v" by this transform.
+				Transform the given vector "v" by this transform.
 			</description>
 		</method>
 		<method name="xform_inv">
@@ -157,7 +157,7 @@
 			<argument index="0" name="v" type="var">
 			</argument>
 			<description>
-				Inverse-transforms the given vector "v" by this transform.
+				Inverse-transform the given vector "v" by this transform.
 			</description>
 		</method>
 	</methods>
