@@ -4033,6 +4033,15 @@ void EditorNode::_bottom_panel_switch(bool p_enable, int p_idx) {
 			bottom_panel_items[i].button->set_pressed(i == p_idx);
 			bottom_panel_items[i].control->set_visible(i == p_idx);
 		}
+		// ScriptEditor::get_singleton()->get_debugger() == bottom_panel_items[i].control
+		if (ScriptEditor::get_singleton()->get_debugger() == bottom_panel_items[p_idx].control) { // this is the debug panel wich uses tabs, so the top section should be smaller
+			Ref<StyleBoxFlat> style_panel_invisible_top = gui_base->get_stylebox("panel", "TabContainer")->duplicate();
+			int stylebox_offset = gui_base->get_font("font", "Tabs")->get_height() + gui_base->get_stylebox("tab_fg", "Tabs")->get_minimum_size().height + gui_base->get_stylebox("panel", "TabContainer")->get_default_margin(MARGIN_TOP);
+			style_panel_invisible_top->set_expand_margin_size(MARGIN_TOP, -stylebox_offset);
+			bottom_panel->add_style_override("panel", style_panel_invisible_top);
+		} else {
+			bottom_panel->add_style_override("panel", gui_base->get_stylebox("panel", "TabContainer"));
+		}
 		center_split->set_dragger_visibility(SplitContainer::DRAGGER_VISIBLE);
 		center_split->set_collapsed(false);
 	} else {
