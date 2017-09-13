@@ -285,6 +285,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("contrast_color_1", "Editor", contrast_color_1);
 	theme->set_color("contrast_color_2", "Editor", contrast_color_2);
 
+	theme->set_color("font_color", "Editor", font_color);
+
 	Color success_color = accent_color.linear_interpolate(Color(.6, 1, .6), 0.8);
 	Color warning_color = accent_color.linear_interpolate(Color(1, 1, .2), 0.8);
 	Color error_color = accent_color.linear_interpolate(Color(1, .2, .2), 0.8);
