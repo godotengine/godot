@@ -38,11 +38,9 @@
 //#include "servers/visual/visual_server_wrap_mt.h"
 #include "drivers/alsa/audio_driver_alsa.h"
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
-#include "drivers/rtaudio/audio_driver_rtaudio.h"
 #include "joypad_linux.h"
 #include "main/input_default.h"
 #include "power_x11.h"
-#include "servers/audio/audio_driver_dummy.h"
 #include "servers/audio_server.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
 #include "servers/physics_2d/physics_2d_server_wrap_mt.h"
@@ -154,10 +152,6 @@ class OS_X11 : public OS_Unix {
 	JoypadLinux *joypad;
 #endif
 
-#ifdef RTAUDIO_ENABLED
-	AudioDriverRtAudio driver_rtaudio;
-#endif
-
 #ifdef ALSA_ENABLED
 	AudioDriverALSA driver_alsa;
 #endif
@@ -165,7 +159,6 @@ class OS_X11 : public OS_Unix {
 #ifdef PULSEAUDIO_ENABLED
 	AudioDriverPulseAudio driver_pulseaudio;
 #endif
-	AudioDriverDummy driver_dummy;
 
 	Atom net_wm_icon;
 

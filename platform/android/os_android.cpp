@@ -137,12 +137,7 @@ void OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int 
 	visual_server->init();
 	//	visual_server->cursor_set_visible(false, 0);
 
-	AudioDriverManager::get_driver(p_audio_driver)->set_singleton();
-
-	if (AudioDriverManager::get_driver(p_audio_driver)->init() != OK) {
-
-		ERR_PRINT("Initializing audio failed.");
-	}
+	AudioDriverManager::initialize(p_audio_driver);
 
 	physics_server = memnew(PhysicsServerSW);
 	physics_server->init();

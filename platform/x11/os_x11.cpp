@@ -313,29 +313,7 @@ void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 		XFree(xsh);
 	}
 
-	AudioDriverManager::get_driver(p_audio_driver)->set_singleton();
-
-	audio_driver_index = p_audio_driver;
-	if (AudioDriverManager::get_driver(p_audio_driver)->init() != OK) {
-
-		bool success = false;
-		audio_driver_index = -1;
-		for (int i = 0; i < AudioDriverManager::get_driver_count(); i++) {
-			if (i == p_audio_driver)
-				continue;
-			AudioDriverManager::get_driver(i)->set_singleton();
-			if (AudioDriverManager::get_driver(i)->init() == OK) {
-				success = true;
-				print_line("Audio Driver Failed: " + String(AudioDriverManager::get_driver(p_audio_driver)->get_name()));
-				print_line("Using alternate audio driver: " + String(AudioDriverManager::get_driver(i)->get_name()));
-				audio_driver_index = i;
-				break;
-			}
-		}
-		if (!success) {
-			ERR_PRINT("Initializing audio failed.");
-		}
-	}
+	AudioDriverManager::initialize(p_audio_driver);
 
 	ERR_FAIL_COND(!visual_server);
 	ERR_FAIL_COND(x11_window == 0);
@@ -2189,10 +2167,6 @@ bool OS_X11::is_disable_crash_handler() const {
 
 OS_X11::OS_X11() {
 
-#ifdef RTAUDIO_ENABLED
-	AudioDriverManager::add_driver(&driver_rtaudio);
-#endif
-
 #ifdef PULSEAUDIO_ENABLED
 	AudioDriverManager::add_driver(&driver_pulseaudio);
 #endif
@@ -2200,11 +2174,6 @@ OS_X11::OS_X11() {
 #ifdef ALSA_ENABLED
 	AudioDriverManager::add_driver(&driver_alsa);
 #endif
-
-	if (AudioDriverManager::get_driver_count() == 0) {
-		WARN_PRINT("No sound driver found... Defaulting to dummy driver");
-		AudioDriverManager::add_driver(&driver_dummy);
-	}
 
 	minimized = false;
 	xim_style = 0L;

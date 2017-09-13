@@ -34,7 +34,6 @@
 #include "drivers/rtaudio/audio_driver_rtaudio.h"
 #include "drivers/unix/os_unix.h"
 #include "main/input_default.h"
-#include "servers/audio/audio_driver_dummy.h"
 #include "servers/audio_server.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
 #include "servers/physics_server.h"
@@ -55,7 +54,6 @@ class OS_Server : public OS_Unix {
 	List<String> args;
 	MainLoop *main_loop;
 
-	AudioDriverDummy driver_dummy;
 	bool grab;
 
 	PhysicsServer *physics_server;
