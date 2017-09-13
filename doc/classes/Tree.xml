@@ -113,6 +113,14 @@
 				Get the flags of the current drop mode.
 			</description>
 		</method>
+		<method name="get_drop_section_at_pos" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="pos" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_edited" qualifiers="const">
 			<return type="TreeItem">
 			</return>

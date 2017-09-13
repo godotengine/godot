@@ -121,7 +121,7 @@
 		</member>
 		<member name="mix_target" type="int" setter="set_mix_target" getter="get_mix_target" enum="AudioStreamPlayer.MixTarget">
 		</member>
-		<member name="play" type="bool" setter="_set_playing" getter="_is_active">
+		<member name="playing" type="bool" setter="_set_playing" getter="is_playing">
 		</member>
 		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream">
 		</member>

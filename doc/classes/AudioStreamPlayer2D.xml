@@ -153,7 +153,7 @@
 		</member>
 		<member name="max_distance" type="float" setter="set_max_distance" getter="get_max_distance">
 		</member>
-		<member name="play" type="bool" setter="_set_playing" getter="_is_active">
+		<member name="playing" type="bool" setter="_set_playing" getter="is_playing">
 		</member>
 		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream">
 		</member>

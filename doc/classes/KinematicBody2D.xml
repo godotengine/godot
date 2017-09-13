@@ -13,101 +13,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_collision_collider" qualifiers="const">
-			<return type="Object">
-			</return>
-			<argument index="0" name="collision" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_collision_collider_id" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="collision" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_collision_collider_metadata" qualifiers="const">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="collision" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_collision_collider_shape" qualifiers="const">
-			<return type="Object">
-			</return>
-			<argument index="0" name="collision" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_collision_collider_shape_index" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="collision" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_collision_collider_velocity" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="collision" type="int">
-			</argument>
-			<description>
-				Return the velocity of the body that collided with this one.
-			</description>
-		</method>
-		<method name="get_collision_count" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_collision_local_shape" qualifiers="const">
-			<return type="Object">
-			</return>
-			<argument index="0" name="collision" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_collision_normal" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="collision" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_collision_position" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="collision" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_collision_remainder" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="collision" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_collision_travel" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="collision" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="get_floor_velocity" qualifiers="const">
 			<return type="Vector2">
 			</return>
@@ -116,6 +21,20 @@
 		</method>
 		<method name="get_safe_margin" qualifiers="const">
 			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_slide_collision">
+			<return type="KinematicCollision2D">
+			</return>
+			<argument index="0" name="slide_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_slide_count" qualifiers="const">
+			<return type="int">
 			</return>
 			<description>
 			</description>
@@ -138,22 +57,12 @@
 			<description>
 			</description>
 		</method>
-		<method name="move">
-			<return type="Dictionary">
+		<method name="move_and_collide">
+			<return type="KinematicCollision2D">
 			</return>
 			<argument index="0" name="rel_vec" type="Vector2">
 			</argument>
 			<description>
-				Move the body in the given direction, stopping if there is an obstacle. If as a result of a movement there will be any collision then informations about this collision will be in returned dictionary.	Dictionary will contains those keys:
-				- "position" - collision position
-				- "normal" - collision normal
-				- "local_shape" - id of this kinematic body shape that took part in a collision
-				- "travel" -  traveled movement before being stopped
-				- "remainder" - remaining movement before being stopped
-				- "collider_id" - id of the collider, it can be used when dealing with [Physics2DServer]
-				- "collider" - colliding body
-				- "collider_shape_index" - index of the colliding shape, inside collider body "collider_metadata"
-				If the body did not intersect anything, then an empty dictionary (dir.empty()==true) is returned instead. Please note that this method is less user friendly than [method move_and_slide]. If you don't want to program each edge case manually, then it's recommended to use [method move_and_slide] instead.
 			</description>
 		</method>
 		<method name="move_and_slide">

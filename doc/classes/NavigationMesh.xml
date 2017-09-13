@@ -31,6 +31,84 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_agent_height" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_agent_max_climb" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_agent_max_slope" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_agent_radius">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_cell_height" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_cell_size" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_detail_sample_distance" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_detail_sample_max_error" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_edge_max_error" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_edge_max_length" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_filter_ledge_spans" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_filter_low_hanging_obstacles" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_filter_walkable_low_height_spans" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_polygon">
 			<return type="PoolIntArray">
 			</return>
@@ -45,9 +123,161 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_region_merge_size" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_region_min_size" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_sample_partition_type" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_vertices" qualifiers="const">
 			<return type="PoolVector3Array">
 			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_verts_per_poly" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_agent_height">
+			<return type="void">
+			</return>
+			<argument index="0" name="agent_height" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_agent_max_climb">
+			<return type="void">
+			</return>
+			<argument index="0" name="agent_max_climb" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_agent_max_slope">
+			<return type="void">
+			</return>
+			<argument index="0" name="agent_max_slope" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_agent_radius">
+			<return type="void">
+			</return>
+			<argument index="0" name="agent_radius" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_cell_height">
+			<return type="void">
+			</return>
+			<argument index="0" name="cell_height" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_cell_size">
+			<return type="void">
+			</return>
+			<argument index="0" name="cell_size" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_detail_sample_distance">
+			<return type="void">
+			</return>
+			<argument index="0" name="detail_sample_dist" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_detail_sample_max_error">
+			<return type="void">
+			</return>
+			<argument index="0" name="detail_sample_max_error" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_edge_max_error">
+			<return type="void">
+			</return>
+			<argument index="0" name="edge_max_error" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_edge_max_length">
+			<return type="void">
+			</return>
+			<argument index="0" name="edge_max_length" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_filter_ledge_spans">
+			<return type="void">
+			</return>
+			<argument index="0" name="filter_ledge_spans" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_filter_low_hanging_obstacles">
+			<return type="void">
+			</return>
+			<argument index="0" name="filter_low_hanging_obstacles" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_filter_walkable_low_height_spans">
+			<return type="void">
+			</return>
+			<argument index="0" name="filter_walkable_low_height_spans" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_region_merge_size">
+			<return type="void">
+			</return>
+			<argument index="0" name="region_merge_size" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_region_min_size">
+			<return type="void">
+			</return>
+			<argument index="0" name="region_min_size" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_sample_partition_type">
+			<return type="void">
+			</return>
+			<argument index="0" name="sample_partition_type" type="int">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -59,13 +289,61 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_verts_per_poly">
+			<return type="void">
+			</return>
+			<argument index="0" name="verts_per_poly" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<members>
+		<member name="agent/height" type="float" setter="set_agent_height" getter="get_agent_height">
+		</member>
+		<member name="agent/max_climb" type="float" setter="set_agent_max_climb" getter="get_agent_max_climb">
+		</member>
+		<member name="agent/max_slope" type="float" setter="set_agent_max_slope" getter="get_agent_max_slope">
+		</member>
+		<member name="agent/radius" type="float" setter="set_agent_radius" getter="get_agent_radius">
+		</member>
+		<member name="cell/height" type="float" setter="set_cell_height" getter="get_cell_height">
+		</member>
+		<member name="cell/size" type="float" setter="set_cell_size" getter="get_cell_size">
+		</member>
+		<member name="detail/sample_distance" type="float" setter="set_detail_sample_distance" getter="get_detail_sample_distance">
+		</member>
+		<member name="detail/sample_max_error" type="float" setter="set_detail_sample_max_error" getter="get_detail_sample_max_error">
+		</member>
+		<member name="edge/max_error" type="float" setter="set_edge_max_error" getter="get_edge_max_error">
+		</member>
+		<member name="edge/max_length" type="float" setter="set_edge_max_length" getter="get_edge_max_length">
+		</member>
+		<member name="filter/filter_walkable_low_height_spans" type="bool" setter="set_filter_walkable_low_height_spans" getter="get_filter_walkable_low_height_spans">
+		</member>
+		<member name="filter/ledge_spans" type="bool" setter="set_filter_ledge_spans" getter="get_filter_ledge_spans">
+		</member>
+		<member name="filter/low_hanging_obstacles" type="bool" setter="set_filter_low_hanging_obstacles" getter="get_filter_low_hanging_obstacles">
+		</member>
+		<member name="polygon/verts_per_poly" type="float" setter="set_verts_per_poly" getter="get_verts_per_poly">
+		</member>
 		<member name="polygons" type="Array" setter="_set_polygons" getter="_get_polygons">
+		</member>
+		<member name="region/merge_size" type="float" setter="set_region_merge_size" getter="get_region_merge_size">
+		</member>
+		<member name="region/min_size" type="float" setter="set_region_min_size" getter="get_region_min_size">
+		</member>
+		<member name="sample_partition_type/sample_partition_type" type="int" setter="set_sample_partition_type" getter="get_sample_partition_type">
 		</member>
 		<member name="vertices" type="PoolVector3Array" setter="set_vertices" getter="get_vertices">
 		</member>
 	</members>
 	<constants>
+		<constant name="SAMPLE_PARTITION_WATERSHED" value="0" enum="">
+		</constant>
+		<constant name="SAMPLE_PARTITION_MONOTONE" value="1" enum="">
+		</constant>
+		<constant name="SAMPLE_PARTITION_LAYERS" value="2" enum="">
+		</constant>
 	</constants>
 </class>

@@ -99,6 +99,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_custom_minimum_height" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_expand_right" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -379,6 +385,14 @@
 			<argument index="1" name="object" type="Object">
 			</argument>
 			<argument index="2" name="callback" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_custom_minimum_height">
+			<return type="void">
+			</return>
+			<argument index="0" name="height" type="int">
 			</argument>
 			<description>
 			</description>

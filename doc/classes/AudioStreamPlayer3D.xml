@@ -295,7 +295,7 @@
 		</member>
 		<member name="out_of_range_mode" type="int" setter="set_out_of_range_mode" getter="get_out_of_range_mode" enum="AudioStreamPlayer3D.OutOfRangeMode">
 		</member>
-		<member name="play" type="bool" setter="_set_playing" getter="_is_active">
+		<member name="playing" type="bool" setter="_set_playing" getter="is_playing">
 		</member>
 		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream">
 		</member>
