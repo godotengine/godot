@@ -1736,6 +1736,17 @@ String OS_OSX::get_executable_path() const {
 	}
 }
 
+String OS_OSX::get_resource_dir() const {
+	// start with our executable path
+	String path = get_executable_path();
+
+	int pos = path.find_last("/Contents/MacOS/");
+	if (pos < 0)
+		return OS::get_resource_dir();
+
+	return path.substr(0, pos) + "/Contents/Resources/";
+}
+
 // Returns string representation of keys, if they are printable.
 //
 static NSString *createStringForKeys(const CGKeyCode *keyCode, int length) {

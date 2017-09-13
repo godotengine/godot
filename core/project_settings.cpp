@@ -270,6 +270,11 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack) {
 		if (_load_settings("res://project.godot") == OK || _load_settings_binary("res://project.binary") == OK) {
 
 			_load_settings("res://override.cfg");
+#ifdef DEBUG_ENABLED
+		} else {
+			// when debug version of godot is used, provide some feedback to the developer
+			print_line("Couldn't open project over network");
+#endif
 		}
 
 		return OK;
@@ -287,6 +292,12 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack) {
 		if (_load_settings("res://project.godot") == OK || _load_settings_binary("res://project.binary") == OK) {
 			//load override from location of the main pack
 			_load_settings(p_main_pack.get_base_dir().plus_file("override.cfg"));
+#ifdef DEBUG_ENABLED
+			// when debug version of godot is used, provide some feedback to the developer
+			print_line("Successfully loaded " + p_main_pack + "/project.godot or project.binary");
+		} else {
+			print_line("Couldn't load/find " + p_main_pack + "/project.godot or project.binary");
+#endif
 		}
 
 		return OK;
@@ -294,12 +305,43 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack) {
 
 	//Attempt with execname.pck
 	if (exec_path != "") {
+		bool found = false;
 
-		if (_load_resource_pack(exec_path.get_basename() + ".pck")) {
+		// get our filename without our path (note, not using exec_path.get_basename anymore because not all file systems have dots in their file names!)
+		String filebase_name = exec_path.get_file();
 
+		// try to open at the location of executable
+		String datapack_name = exec_path.get_base_dir().plus_file(filebase_name) + ".pck";
+		if (_load_resource_pack(datapack_name)) {
+			found = true;
+		} else {
+#ifdef DEBUG_ENABLED
+			// when debug version of godot is used, provide some feedback to the developer
+			print_line("Couldn't open " + datapack_name);
+#endif
+			datapack_name = filebase_name + ".pck";
+			if (_load_resource_pack(datapack_name)) {
+				found = true;
+#ifdef DEBUG_ENABLED
+			} else {
+				// when debug version of godot is used, provide some feedback to the developer
+				print_line("Couldn't open " + datapack_name);
+#endif
+			}
+		}
+
+		// if we opened our package, try and load our project...
+		if (found) {
 			if (_load_settings("res://project.godot") == OK || _load_settings_binary("res://project.binary") == OK) {
-				//load override from location of executable
+				// load override from location of executable
 				_load_settings(exec_path.get_base_dir().plus_file("override.cfg"));
+
+#ifdef DEBUG_ENABLED
+				// when debug version of godot is used, provide some feedback to the developer
+				print_line("Successfully loaded " + datapack_name + "/project.godot or project.binary");
+			} else {
+				print_line("Couldn't load/find " + datapack_name + "/project.godot or project.binary");
+#endif
 			}
 
 			return OK;
@@ -320,6 +362,12 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack) {
 
 		if (_load_settings("res://project.godot") == OK || _load_settings_binary("res://project.binary") == OK) {
 			_load_settings("res://override.cfg");
+#ifdef DEBUG_ENABLED
+			// when debug version of godot is used, provide some feedback to the developer
+			print_line("Successfully loaded " + resource_path + "/project.godot or project.binary");
+		} else {
+			print_line("Couldn't load/find " + resource_path + "/project.godot or project.binary");
+#endif
 		}
 
 		return OK;
@@ -345,6 +393,12 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack) {
 			candidate = current_dir;
 			found = true;
 			break;
+#ifdef DEBUG_ENABLED
+			// when debug version of godot is used, provide some feedback to the developer
+			print_line("Successfully loaded " + current_dir + "/project.godot or project.binary");
+		} else {
+			print_line("Couldn't load/find " + current_dir + "/project.godot or project.binary");
+#endif
 		}
 
 		d->change_dir("..");
