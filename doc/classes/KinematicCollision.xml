@@ -77,27 +77,27 @@
 		</method>
 	</methods>
 	<members>
-		<member name="collider" type="Object" setter="" getter="get_collider" brief="">
+		<member name="collider" type="Object" setter="" getter="get_collider">
 		</member>
-		<member name="collider_id" type="int" setter="" getter="get_collider_id" brief="">
+		<member name="collider_id" type="int" setter="" getter="get_collider_id">
 		</member>
-		<member name="collider_metadata" type="Variant" setter="" getter="get_collider_metadata" brief="">
+		<member name="collider_metadata" type="Variant" setter="" getter="get_collider_metadata">
 		</member>
-		<member name="collider_shape" type="Object" setter="" getter="get_collider_shape" brief="">
+		<member name="collider_shape" type="Object" setter="" getter="get_collider_shape">
 		</member>
-		<member name="collider_shape_index" type="int" setter="" getter="get_collider_shape_index" brief="">
+		<member name="collider_shape_index" type="int" setter="" getter="get_collider_shape_index">
 		</member>
-		<member name="collider_velocity" type="Vector3" setter="" getter="get_collider_velocity" brief="">
+		<member name="collider_velocity" type="Vector3" setter="" getter="get_collider_velocity">
 		</member>
-		<member name="local_shape" type="Object" setter="" getter="get_local_shape" brief="">
+		<member name="local_shape" type="Object" setter="" getter="get_local_shape">
 		</member>
-		<member name="normal" type="Vector3" setter="" getter="get_normal" brief="">
+		<member name="normal" type="Vector3" setter="" getter="get_normal">
 		</member>
-		<member name="position" type="Vector3" setter="" getter="get_position" brief="">
+		<member name="position" type="Vector3" setter="" getter="get_position">
 		</member>
-		<member name="remainder" type="Vector3" setter="" getter="get_remainder" brief="">
+		<member name="remainder" type="Vector3" setter="" getter="get_remainder">
 		</member>
-		<member name="travel" type="Vector3" setter="" getter="get_travel" brief="">
+		<member name="travel" type="Vector3" setter="" getter="get_travel">
 		</member>
 	</members>
 	<constants>

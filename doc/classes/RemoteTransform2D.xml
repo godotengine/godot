@@ -81,15 +81,15 @@
 		</method>
 	</methods>
 	<members>
-		<member name="remote_path" type="NodePath" setter="set_remote_node" getter="get_remote_node" brief="">
+		<member name="remote_path" type="NodePath" setter="set_remote_node" getter="get_remote_node">
 		</member>
-		<member name="update_position" type="bool" setter="set_update_position" getter="get_update_position" brief="">
+		<member name="update_position" type="bool" setter="set_update_position" getter="get_update_position">
 		</member>
-		<member name="update_rotation" type="bool" setter="set_update_rotation" getter="get_update_rotation" brief="">
+		<member name="update_rotation" type="bool" setter="set_update_rotation" getter="get_update_rotation">
 		</member>
-		<member name="update_scale" type="bool" setter="set_update_scale" getter="get_update_scale" brief="">
+		<member name="update_scale" type="bool" setter="set_update_scale" getter="get_update_scale">
 		</member>
-		<member name="use_global_coordinates" type="bool" setter="set_use_global_coordinates" getter="get_use_global_coordinates" brief="">
+		<member name="use_global_coordinates" type="bool" setter="set_use_global_coordinates" getter="get_use_global_coordinates">
 		</member>
 	</members>
 	<constants>

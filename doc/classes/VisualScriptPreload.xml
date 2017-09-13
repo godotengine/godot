@@ -25,7 +25,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="resource" type="Resource" setter="set_preload" getter="get_preload" brief="">
+		<member name="resource" type="Resource" setter="set_preload" getter="get_preload">
 		</member>
 	</members>
 	<constants>

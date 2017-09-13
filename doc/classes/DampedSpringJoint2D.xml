@@ -77,13 +77,13 @@
 		</method>
 	</methods>
 	<members>
-		<member name="damping" type="float" setter="set_damping" getter="get_damping" brief="">
+		<member name="damping" type="float" setter="set_damping" getter="get_damping">
 		</member>
-		<member name="length" type="float" setter="set_length" getter="get_length" brief="">
+		<member name="length" type="float" setter="set_length" getter="get_length">
 		</member>
-		<member name="rest_length" type="float" setter="set_rest_length" getter="get_rest_length" brief="">
+		<member name="rest_length" type="float" setter="set_rest_length" getter="get_rest_length">
 		</member>
-		<member name="stiffness" type="float" setter="set_stiffness" getter="get_stiffness" brief="">
+		<member name="stiffness" type="float" setter="set_stiffness" getter="get_stiffness">
 		</member>
 	</members>
 	<constants>

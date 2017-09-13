@@ -45,7 +45,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="layers" type="int" setter="set_layer_mask" getter="get_layer_mask" brief="">
+		<member name="layers" type="int" setter="set_layer_mask" getter="get_layer_mask">
 		</member>
 	</members>
 	<constants>

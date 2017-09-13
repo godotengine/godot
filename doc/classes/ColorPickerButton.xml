@@ -55,9 +55,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="color" type="Color" setter="set_pick_color" getter="get_pick_color" brief="">
+		<member name="color" type="Color" setter="set_pick_color" getter="get_pick_color">
 		</member>
-		<member name="edit_alpha" type="bool" setter="set_edit_alpha" getter="is_editing_alpha" brief="">
+		<member name="edit_alpha" type="bool" setter="set_edit_alpha" getter="is_editing_alpha">
 		</member>
 	</members>
 	<signals>

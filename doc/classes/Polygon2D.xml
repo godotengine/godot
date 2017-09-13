@@ -203,29 +203,29 @@
 		</method>
 	</methods>
 	<members>
-		<member name="antialiased" type="bool" setter="set_antialiased" getter="get_antialiased" brief="">
+		<member name="antialiased" type="bool" setter="set_antialiased" getter="get_antialiased">
 		</member>
-		<member name="color" type="Color" setter="set_color" getter="get_color" brief="">
+		<member name="color" type="Color" setter="set_color" getter="get_color">
 		</member>
-		<member name="invert_border" type="float" setter="set_invert_border" getter="get_invert_border" brief="">
+		<member name="invert_border" type="float" setter="set_invert_border" getter="get_invert_border">
 		</member>
-		<member name="invert_enable" type="bool" setter="set_invert" getter="get_invert" brief="">
+		<member name="invert_enable" type="bool" setter="set_invert" getter="get_invert">
 		</member>
-		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" brief="">
+		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset">
 		</member>
-		<member name="polygon" type="PoolVector2Array" setter="set_polygon" getter="get_polygon" brief="">
+		<member name="polygon" type="PoolVector2Array" setter="set_polygon" getter="get_polygon">
 		</member>
-		<member name="texture" type="Texture" setter="set_texture" getter="get_texture" brief="">
+		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
 		</member>
-		<member name="texture_offset" type="Vector2" setter="set_texture_offset" getter="get_texture_offset" brief="">
+		<member name="texture_offset" type="Vector2" setter="set_texture_offset" getter="get_texture_offset">
 		</member>
-		<member name="texture_rotation" type="float" setter="_set_texture_rotationd" getter="_get_texture_rotationd" brief="">
+		<member name="texture_rotation" type="float" setter="_set_texture_rotationd" getter="_get_texture_rotationd">
 		</member>
-		<member name="texture_scale" type="Vector2" setter="set_texture_scale" getter="get_texture_scale" brief="">
+		<member name="texture_scale" type="Vector2" setter="set_texture_scale" getter="get_texture_scale">
 		</member>
-		<member name="uv" type="PoolVector2Array" setter="set_uv" getter="get_uv" brief="">
+		<member name="uv" type="PoolVector2Array" setter="set_uv" getter="get_uv">
 		</member>
-		<member name="vertex_colors" type="PoolColorArray" setter="set_vertex_colors" getter="get_vertex_colors" brief="">
+		<member name="vertex_colors" type="PoolColorArray" setter="set_vertex_colors" getter="get_vertex_colors">
 		</member>
 	</members>
 	<constants>

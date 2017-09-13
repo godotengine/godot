@@ -29,7 +29,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="multimesh" type="MultiMesh" setter="set_multimesh" getter="get_multimesh" brief="">
+		<member name="multimesh" type="MultiMesh" setter="set_multimesh" getter="get_multimesh">
 		</member>
 	</members>
 	<constants>

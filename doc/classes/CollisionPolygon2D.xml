@@ -74,13 +74,13 @@
 		</method>
 	</methods>
 	<members>
-		<member name="build_mode" type="int" setter="set_build_mode" getter="get_build_mode" brief="" enum="CollisionPolygon2D.BuildMode">
+		<member name="build_mode" type="int" setter="set_build_mode" getter="get_build_mode" enum="CollisionPolygon2D.BuildMode">
 		</member>
-		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" brief="">
+		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled">
 		</member>
-		<member name="one_way_collision" type="bool" setter="set_one_way_collision" getter="is_one_way_collision_enabled" brief="">
+		<member name="one_way_collision" type="bool" setter="set_one_way_collision" getter="is_one_way_collision_enabled">
 		</member>
-		<member name="polygon" type="PoolVector2Array" setter="set_polygon" getter="get_polygon" brief="">
+		<member name="polygon" type="PoolVector2Array" setter="set_polygon" getter="get_polygon">
 		</member>
 	</members>
 	<constants>

@@ -45,9 +45,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="initial_offset" type="float" setter="set_initial_offset" getter="get_initial_offset" brief="">
+		<member name="initial_offset" type="float" setter="set_initial_offset" getter="get_initial_offset">
 		</member>
-		<member name="length" type="float" setter="set_length" getter="get_length" brief="">
+		<member name="length" type="float" setter="set_length" getter="get_length">
 		</member>
 	</members>
 	<constants>

@@ -143,23 +143,23 @@
 		</method>
 	</methods>
 	<members>
-		<member name="action" type="String" setter="set_action" getter="get_action" brief="">
+		<member name="action" type="String" setter="set_action" getter="get_action">
 		</member>
-		<member name="bitmask" type="BitMap" setter="set_bitmask" getter="get_bitmask" brief="">
+		<member name="bitmask" type="BitMap" setter="set_bitmask" getter="get_bitmask">
 		</member>
-		<member name="normal" type="Texture" setter="set_texture" getter="get_texture" brief="">
+		<member name="normal" type="Texture" setter="set_texture" getter="get_texture">
 		</member>
-		<member name="passby_press" type="bool" setter="set_passby_press" getter="is_passby_press_enabled" brief="">
+		<member name="passby_press" type="bool" setter="set_passby_press" getter="is_passby_press_enabled">
 		</member>
-		<member name="pressed" type="Texture" setter="set_texture_pressed" getter="get_texture_pressed" brief="">
+		<member name="pressed" type="Texture" setter="set_texture_pressed" getter="get_texture_pressed">
 		</member>
-		<member name="shape" type="Shape2D" setter="set_shape" getter="get_shape" brief="">
+		<member name="shape" type="Shape2D" setter="set_shape" getter="get_shape">
 		</member>
-		<member name="shape_centered" type="bool" setter="set_shape_centered" getter="is_shape_centered" brief="">
+		<member name="shape_centered" type="bool" setter="set_shape_centered" getter="is_shape_centered">
 		</member>
-		<member name="shape_visible" type="bool" setter="set_shape_visible" getter="is_shape_visible" brief="">
+		<member name="shape_visible" type="bool" setter="set_shape_visible" getter="is_shape_visible">
 		</member>
-		<member name="visibility_mode" type="int" setter="set_visibility_mode" getter="get_visibility_mode" brief="" enum="TouchScreenButton.VisibilityMode">
+		<member name="visibility_mode" type="int" setter="set_visibility_mode" getter="get_visibility_mode" enum="TouchScreenButton.VisibilityMode">
 		</member>
 	</members>
 	<signals>

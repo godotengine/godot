@@ -162,13 +162,13 @@
 		</method>
 	</methods>
 	<members>
-		<member name="origin" type="Vector2" setter="" getter="" brief="">
+		<member name="origin" type="Vector2" setter="" getter="">
 			The translation offset of the transform.
 		</member>
-		<member name="x" type="Vector2" setter="" getter="" brief="">
+		<member name="x" type="Vector2" setter="" getter="">
 			The X axis of 2x2 basis matrix containing 2 [Vector2] as its columns: X axis and Y axis. These vectors can be interpreted as the basis vectors of local coordinate system traveling with the object.
 		</member>
-		<member name="y" type="Vector2" setter="" getter="" brief="">
+		<member name="y" type="Vector2" setter="" getter="">
 			The Y axis of 2x2 basis matrix containing 2 [Vector2] as its columns: X axis and Y axis. These vectors can be interpreted as the basis vectors of local coordinate system traveling with the object.
 		</member>
 	</members>

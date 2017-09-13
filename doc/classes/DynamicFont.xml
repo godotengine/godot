@@ -125,21 +125,21 @@
 		</method>
 	</methods>
 	<members>
-		<member name="extra_spacing_bottom" type="int" setter="set_spacing" getter="get_spacing" brief="">
+		<member name="extra_spacing_bottom" type="int" setter="set_spacing" getter="get_spacing">
 		</member>
-		<member name="extra_spacing_char" type="int" setter="set_spacing" getter="get_spacing" brief="">
+		<member name="extra_spacing_char" type="int" setter="set_spacing" getter="get_spacing">
 		</member>
-		<member name="extra_spacing_space" type="int" setter="set_spacing" getter="get_spacing" brief="">
+		<member name="extra_spacing_space" type="int" setter="set_spacing" getter="get_spacing">
 		</member>
-		<member name="extra_spacing_top" type="int" setter="set_spacing" getter="get_spacing" brief="">
+		<member name="extra_spacing_top" type="int" setter="set_spacing" getter="get_spacing">
 		</member>
-		<member name="font_data" type="DynamicFontData" setter="set_font_data" getter="get_font_data" brief="">
+		<member name="font_data" type="DynamicFontData" setter="set_font_data" getter="get_font_data">
 		</member>
-		<member name="size" type="int" setter="set_size" getter="get_size" brief="">
+		<member name="size" type="int" setter="set_size" getter="get_size">
 		</member>
-		<member name="use_filter" type="bool" setter="set_use_filter" getter="get_use_filter" brief="">
+		<member name="use_filter" type="bool" setter="set_use_filter" getter="get_use_filter">
 		</member>
-		<member name="use_mipmaps" type="bool" setter="set_use_mipmaps" getter="get_use_mipmaps" brief="">
+		<member name="use_mipmaps" type="bool" setter="set_use_mipmaps" getter="get_use_mipmaps">
 		</member>
 	</members>
 	<constants>

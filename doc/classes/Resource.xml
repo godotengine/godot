@@ -101,11 +101,11 @@
 		</method>
 	</methods>
 	<members>
-		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" brief="">
+		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene">
 		</member>
-		<member name="resource_name" type="String" setter="set_name" getter="get_name" brief="">
+		<member name="resource_name" type="String" setter="set_name" getter="get_name">
 		</member>
-		<member name="resource_path" type="String" setter="set_path" getter="get_path" brief="">
+		<member name="resource_path" type="String" setter="set_path" getter="get_path">
 		</member>
 	</members>
 	<signals>

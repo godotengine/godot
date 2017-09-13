@@ -339,47 +339,47 @@
 		</method>
 	</methods>
 	<members>
-		<member name="color" type="Color" setter="set_color" getter="get_color" brief="">
+		<member name="color" type="Color" setter="set_color" getter="get_color">
 		</member>
-		<member name="editor_only" type="bool" setter="set_editor_only" getter="is_editor_only" brief="">
+		<member name="editor_only" type="bool" setter="set_editor_only" getter="is_editor_only">
 		</member>
-		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" brief="">
+		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled">
 		</member>
-		<member name="energy" type="float" setter="set_energy" getter="get_energy" brief="">
+		<member name="energy" type="float" setter="set_energy" getter="get_energy">
 		</member>
-		<member name="mode" type="int" setter="set_mode" getter="get_mode" brief="" enum="Light2D.Mode">
+		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="Light2D.Mode">
 		</member>
-		<member name="offset" type="Vector2" setter="set_texture_offset" getter="get_texture_offset" brief="">
+		<member name="offset" type="Vector2" setter="set_texture_offset" getter="get_texture_offset">
 		</member>
-		<member name="range_height" type="float" setter="set_height" getter="get_height" brief="">
+		<member name="range_height" type="float" setter="set_height" getter="get_height">
 		</member>
-		<member name="range_item_cull_mask" type="int" setter="set_item_cull_mask" getter="get_item_cull_mask" brief="">
+		<member name="range_item_cull_mask" type="int" setter="set_item_cull_mask" getter="get_item_cull_mask">
 		</member>
-		<member name="range_layer_max" type="int" setter="set_layer_range_max" getter="get_layer_range_max" brief="">
+		<member name="range_layer_max" type="int" setter="set_layer_range_max" getter="get_layer_range_max">
 		</member>
-		<member name="range_layer_min" type="int" setter="set_layer_range_min" getter="get_layer_range_min" brief="">
+		<member name="range_layer_min" type="int" setter="set_layer_range_min" getter="get_layer_range_min">
 		</member>
-		<member name="range_z_max" type="int" setter="set_z_range_max" getter="get_z_range_max" brief="">
+		<member name="range_z_max" type="int" setter="set_z_range_max" getter="get_z_range_max">
 		</member>
-		<member name="range_z_min" type="int" setter="set_z_range_min" getter="get_z_range_min" brief="">
+		<member name="range_z_min" type="int" setter="set_z_range_min" getter="get_z_range_min">
 		</member>
-		<member name="shadow_buffer_size" type="int" setter="set_shadow_buffer_size" getter="get_shadow_buffer_size" brief="">
+		<member name="shadow_buffer_size" type="int" setter="set_shadow_buffer_size" getter="get_shadow_buffer_size">
 		</member>
-		<member name="shadow_color" type="Color" setter="set_shadow_color" getter="get_shadow_color" brief="">
+		<member name="shadow_color" type="Color" setter="set_shadow_color" getter="get_shadow_color">
 		</member>
-		<member name="shadow_enabled" type="bool" setter="set_shadow_enabled" getter="is_shadow_enabled" brief="">
+		<member name="shadow_enabled" type="bool" setter="set_shadow_enabled" getter="is_shadow_enabled">
 		</member>
-		<member name="shadow_filter" type="int" setter="set_shadow_filter" getter="get_shadow_filter" brief="" enum="Light2D.ShadowFilter">
+		<member name="shadow_filter" type="int" setter="set_shadow_filter" getter="get_shadow_filter" enum="Light2D.ShadowFilter">
 		</member>
-		<member name="shadow_filter_smooth" type="float" setter="set_shadow_smooth" getter="get_shadow_smooth" brief="">
+		<member name="shadow_filter_smooth" type="float" setter="set_shadow_smooth" getter="get_shadow_smooth">
 		</member>
-		<member name="shadow_gradient_length" type="float" setter="set_shadow_gradient_length" getter="get_shadow_gradient_length" brief="">
+		<member name="shadow_gradient_length" type="float" setter="set_shadow_gradient_length" getter="get_shadow_gradient_length">
 		</member>
-		<member name="shadow_item_cull_mask" type="int" setter="set_item_shadow_cull_mask" getter="get_item_shadow_cull_mask" brief="">
+		<member name="shadow_item_cull_mask" type="int" setter="set_item_shadow_cull_mask" getter="get_item_shadow_cull_mask">
 		</member>
-		<member name="texture" type="Texture" setter="set_texture" getter="get_texture" brief="">
+		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
 		</member>
-		<member name="texture_scale" type="float" setter="set_texture_scale" getter="get_texture_scale" brief="">
+		<member name="texture_scale" type="float" setter="set_texture_scale" getter="get_texture_scale">
 		</member>
 	</members>
 	<constants>

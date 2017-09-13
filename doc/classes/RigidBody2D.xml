@@ -381,37 +381,37 @@
 		</method>
 	</methods>
 	<members>
-		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp" brief="">
+		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp">
 		</member>
-		<member name="angular_velocity" type="float" setter="set_angular_velocity" getter="get_angular_velocity" brief="">
+		<member name="angular_velocity" type="float" setter="set_angular_velocity" getter="get_angular_velocity">
 		</member>
-		<member name="bounce" type="float" setter="set_bounce" getter="get_bounce" brief="">
+		<member name="bounce" type="float" setter="set_bounce" getter="get_bounce">
 		</member>
-		<member name="can_sleep" type="bool" setter="set_can_sleep" getter="is_able_to_sleep" brief="">
+		<member name="can_sleep" type="bool" setter="set_can_sleep" getter="is_able_to_sleep">
 		</member>
-		<member name="contact_monitor" type="bool" setter="set_contact_monitor" getter="is_contact_monitor_enabled" brief="">
+		<member name="contact_monitor" type="bool" setter="set_contact_monitor" getter="is_contact_monitor_enabled">
 		</member>
-		<member name="contacts_reported" type="int" setter="set_max_contacts_reported" getter="get_max_contacts_reported" brief="">
+		<member name="contacts_reported" type="int" setter="set_max_contacts_reported" getter="get_max_contacts_reported">
 		</member>
-		<member name="continuous_cd" type="int" setter="set_continuous_collision_detection_mode" getter="get_continuous_collision_detection_mode" brief="" enum="RigidBody2D.CCDMode">
+		<member name="continuous_cd" type="int" setter="set_continuous_collision_detection_mode" getter="get_continuous_collision_detection_mode" enum="RigidBody2D.CCDMode">
 		</member>
-		<member name="custom_integrator" type="bool" setter="set_use_custom_integrator" getter="is_using_custom_integrator" brief="">
+		<member name="custom_integrator" type="bool" setter="set_use_custom_integrator" getter="is_using_custom_integrator">
 		</member>
-		<member name="friction" type="float" setter="set_friction" getter="get_friction" brief="">
+		<member name="friction" type="float" setter="set_friction" getter="get_friction">
 		</member>
-		<member name="gravity_scale" type="float" setter="set_gravity_scale" getter="get_gravity_scale" brief="">
+		<member name="gravity_scale" type="float" setter="set_gravity_scale" getter="get_gravity_scale">
 		</member>
-		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp" brief="">
+		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp">
 		</member>
-		<member name="linear_velocity" type="Vector2" setter="set_linear_velocity" getter="get_linear_velocity" brief="">
+		<member name="linear_velocity" type="Vector2" setter="set_linear_velocity" getter="get_linear_velocity">
 		</member>
-		<member name="mass" type="float" setter="set_mass" getter="get_mass" brief="">
+		<member name="mass" type="float" setter="set_mass" getter="get_mass">
 		</member>
-		<member name="mode" type="int" setter="set_mode" getter="get_mode" brief="" enum="RigidBody2D.Mode">
+		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="RigidBody2D.Mode">
 		</member>
-		<member name="sleeping" type="bool" setter="set_sleeping" getter="is_sleeping" brief="">
+		<member name="sleeping" type="bool" setter="set_sleeping" getter="is_sleeping">
 		</member>
-		<member name="weight" type="float" setter="set_weight" getter="get_weight" brief="">
+		<member name="weight" type="float" setter="set_weight" getter="get_weight">
 		</member>
 	</members>
 	<signals>

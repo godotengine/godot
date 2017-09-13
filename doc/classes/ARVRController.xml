@@ -76,7 +76,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="controller_id" type="int" setter="set_controller_id" getter="get_controller_id" brief="">
+		<member name="controller_id" type="int" setter="set_controller_id" getter="get_controller_id">
 		</member>
 	</members>
 	<signals>

@@ -61,11 +61,11 @@
 		</method>
 	</methods>
 	<members>
-		<member name="collapsed" type="bool" setter="set_collapsed" getter="is_collapsed" brief="">
+		<member name="collapsed" type="bool" setter="set_collapsed" getter="is_collapsed">
 		</member>
-		<member name="dragger_visibility" type="int" setter="set_dragger_visibility" getter="get_dragger_visibility" brief="" enum="SplitContainer.DraggerVisibility">
+		<member name="dragger_visibility" type="int" setter="set_dragger_visibility" getter="get_dragger_visibility" enum="SplitContainer.DraggerVisibility">
 		</member>
-		<member name="split_offset" type="int" setter="set_split_offset" getter="get_split_offset" brief="">
+		<member name="split_offset" type="int" setter="set_split_offset" getter="get_split_offset">
 		</member>
 	</members>
 	<signals>

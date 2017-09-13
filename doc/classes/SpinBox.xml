@@ -66,11 +66,11 @@
 		</method>
 	</methods>
 	<members>
-		<member name="editable" type="bool" setter="set_editable" getter="is_editable" brief="">
+		<member name="editable" type="bool" setter="set_editable" getter="is_editable">
 		</member>
-		<member name="prefix" type="String" setter="set_prefix" getter="get_prefix" brief="">
+		<member name="prefix" type="String" setter="set_prefix" getter="get_prefix">
 		</member>
-		<member name="suffix" type="String" setter="set_suffix" getter="get_suffix" brief="">
+		<member name="suffix" type="String" setter="set_suffix" getter="get_suffix">
 		</member>
 	</members>
 	<constants>

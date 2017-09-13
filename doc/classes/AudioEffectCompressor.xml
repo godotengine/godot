@@ -109,19 +109,19 @@
 		</method>
 	</methods>
 	<members>
-		<member name="attack_us" type="float" setter="set_attack_us" getter="get_attack_us" brief="">
+		<member name="attack_us" type="float" setter="set_attack_us" getter="get_attack_us">
 		</member>
-		<member name="gain" type="float" setter="set_gain" getter="get_gain" brief="">
+		<member name="gain" type="float" setter="set_gain" getter="get_gain">
 		</member>
-		<member name="mix" type="float" setter="set_mix" getter="get_mix" brief="">
+		<member name="mix" type="float" setter="set_mix" getter="get_mix">
 		</member>
-		<member name="ratio" type="float" setter="set_ratio" getter="get_ratio" brief="">
+		<member name="ratio" type="float" setter="set_ratio" getter="get_ratio">
 		</member>
-		<member name="release_ms" type="float" setter="set_release_ms" getter="get_release_ms" brief="">
+		<member name="release_ms" type="float" setter="set_release_ms" getter="get_release_ms">
 		</member>
-		<member name="sidechain" type="String" setter="set_sidechain" getter="get_sidechain" brief="">
+		<member name="sidechain" type="String" setter="set_sidechain" getter="get_sidechain">
 		</member>
-		<member name="threshold" type="float" setter="set_threshold" getter="get_threshold" brief="">
+		<member name="threshold" type="float" setter="set_threshold" getter="get_threshold">
 		</member>
 	</members>
 	<constants>

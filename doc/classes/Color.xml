@@ -183,37 +183,37 @@
 		</method>
 	</methods>
 	<members>
-		<member name="a" type="float" setter="" getter="" brief="">
+		<member name="a" type="float" setter="" getter="">
 			Alpha (0 to 1)
 		</member>
-		<member name="a8" type="int" setter="" getter="" brief="">
+		<member name="a8" type="int" setter="" getter="">
 			Alpha (0 to 255)
 		</member>
-		<member name="b" type="float" setter="" getter="" brief="">
+		<member name="b" type="float" setter="" getter="">
 			Blue (0 to 1)
 		</member>
-		<member name="b8" type="int" setter="" getter="" brief="">
+		<member name="b8" type="int" setter="" getter="">
 			Blue (0 to 255)
 		</member>
-		<member name="g" type="float" setter="" getter="" brief="">
+		<member name="g" type="float" setter="" getter="">
 			Green (0 to 1)
 		</member>
-		<member name="g8" type="int" setter="" getter="" brief="">
+		<member name="g8" type="int" setter="" getter="">
 			Green (0 to 255)
 		</member>
-		<member name="h" type="float" setter="" getter="" brief="">
+		<member name="h" type="float" setter="" getter="">
 			Hue (0 to 1)
 		</member>
-		<member name="r" type="float" setter="" getter="" brief="">
+		<member name="r" type="float" setter="" getter="">
 			Red (0 to 1)
 		</member>
-		<member name="r8" type="int" setter="" getter="" brief="">
+		<member name="r8" type="int" setter="" getter="">
 			Red (0 to 255)
 		</member>
-		<member name="s" type="float" setter="" getter="" brief="">
+		<member name="s" type="float" setter="" getter="">
 			Saturation (0 to 1)
 		</member>
-		<member name="v" type="float" setter="" getter="" brief="">
+		<member name="v" type="float" setter="" getter="">
 			Value (0 to 1)
 		</member>
 	</members>

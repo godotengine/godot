@@ -115,11 +115,11 @@
 		</method>
 	</methods>
 	<members>
-		<member name="outlines" type="Array" setter="_set_outlines" getter="_get_outlines" brief="">
+		<member name="outlines" type="Array" setter="_set_outlines" getter="_get_outlines">
 		</member>
-		<member name="polygons" type="Array" setter="_set_polygons" getter="_get_polygons" brief="">
+		<member name="polygons" type="Array" setter="_set_polygons" getter="_get_polygons">
 		</member>
-		<member name="vertices" type="PoolVector2Array" setter="set_vertices" getter="get_vertices" brief="">
+		<member name="vertices" type="PoolVector2Array" setter="set_vertices" getter="get_vertices">
 		</member>
 	</members>
 	<constants>

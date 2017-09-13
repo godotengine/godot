@@ -167,25 +167,25 @@
 		</method>
 	</methods>
 	<members>
-		<member name="bias" type="float" setter="set_bias" getter="get_bias" brief="">
+		<member name="bias" type="float" setter="set_bias" getter="get_bias">
 		</member>
-		<member name="compress" type="bool" setter="set_compress" getter="is_compressed" brief="">
+		<member name="compress" type="bool" setter="set_compress" getter="is_compressed">
 		</member>
-		<member name="data" type="GIProbeData" setter="set_probe_data" getter="get_probe_data" brief="">
+		<member name="data" type="GIProbeData" setter="set_probe_data" getter="get_probe_data">
 		</member>
-		<member name="dynamic_range" type="int" setter="set_dynamic_range" getter="get_dynamic_range" brief="">
+		<member name="dynamic_range" type="int" setter="set_dynamic_range" getter="get_dynamic_range">
 		</member>
-		<member name="energy" type="float" setter="set_energy" getter="get_energy" brief="">
+		<member name="energy" type="float" setter="set_energy" getter="get_energy">
 		</member>
-		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents" brief="">
+		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents">
 		</member>
-		<member name="interior" type="bool" setter="set_interior" getter="is_interior" brief="">
+		<member name="interior" type="bool" setter="set_interior" getter="is_interior">
 		</member>
-		<member name="normal_bias" type="float" setter="set_normal_bias" getter="get_normal_bias" brief="">
+		<member name="normal_bias" type="float" setter="set_normal_bias" getter="get_normal_bias">
 		</member>
-		<member name="propagation" type="float" setter="set_propagation" getter="get_propagation" brief="">
+		<member name="propagation" type="float" setter="set_propagation" getter="get_propagation">
 		</member>
-		<member name="subdiv" type="int" setter="set_subdiv" getter="get_subdiv" brief="" enum="GIProbe.Subdiv">
+		<member name="subdiv" type="int" setter="set_subdiv" getter="get_subdiv" enum="GIProbe.Subdiv">
 		</member>
 	</members>
 	<constants>

@@ -50,9 +50,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="resizable" type="bool" setter="set_resizable" getter="get_resizable" brief="">
+		<member name="resizable" type="bool" setter="set_resizable" getter="get_resizable">
 		</member>
-		<member name="window_title" type="String" setter="set_title" getter="get_title" brief="">
+		<member name="window_title" type="String" setter="set_title" getter="get_title">
 		</member>
 	</members>
 	<constants>

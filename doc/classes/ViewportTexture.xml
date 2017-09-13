@@ -25,7 +25,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="viewport_path" type="NodePath" setter="set_viewport_path_in_scene" getter="get_viewport_path_in_scene" brief="">
+		<member name="viewport_path" type="NodePath" setter="set_viewport_path_in_scene" getter="get_viewport_path_in_scene">
 		</member>
 	</members>
 	<constants>

@@ -143,21 +143,21 @@
 		</method>
 	</methods>
 	<members>
-		<member name="area_mask" type="int" setter="set_area_mask" getter="get_area_mask" brief="">
+		<member name="area_mask" type="int" setter="set_area_mask" getter="get_area_mask">
 		</member>
-		<member name="attenuation" type="float" setter="set_attenuation" getter="get_attenuation" brief="">
+		<member name="attenuation" type="float" setter="set_attenuation" getter="get_attenuation">
 		</member>
-		<member name="autoplay" type="bool" setter="set_autoplay" getter="is_autoplay_enabled" brief="">
+		<member name="autoplay" type="bool" setter="set_autoplay" getter="is_autoplay_enabled">
 		</member>
-		<member name="bus" type="String" setter="set_bus" getter="get_bus" brief="">
+		<member name="bus" type="String" setter="set_bus" getter="get_bus">
 		</member>
-		<member name="max_distance" type="float" setter="set_max_distance" getter="get_max_distance" brief="">
+		<member name="max_distance" type="float" setter="set_max_distance" getter="get_max_distance">
 		</member>
-		<member name="play" type="bool" setter="_set_playing" getter="_is_active" brief="">
+		<member name="play" type="bool" setter="_set_playing" getter="_is_active">
 		</member>
-		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream" brief="">
+		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream">
 		</member>
-		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db" brief="">
+		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db">
 		</member>
 	</members>
 	<signals>

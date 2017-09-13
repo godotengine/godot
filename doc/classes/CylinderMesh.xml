@@ -83,19 +83,19 @@
 		</method>
 	</methods>
 	<members>
-		<member name="bottom_radius" type="float" setter="set_bottom_radius" getter="get_bottom_radius" brief="">
+		<member name="bottom_radius" type="float" setter="set_bottom_radius" getter="get_bottom_radius">
 			Bottom radius of the cylinder. Defaults to 1.0.
 		</member>
-		<member name="height" type="float" setter="set_height" getter="get_height" brief="">
+		<member name="height" type="float" setter="set_height" getter="get_height">
 			Full height of the cylinder. Defaults to 2.0.
 		</member>
-		<member name="radial_segments" type="int" setter="set_radial_segments" getter="get_radial_segments" brief="">
+		<member name="radial_segments" type="int" setter="set_radial_segments" getter="get_radial_segments">
 			Number of radial segments on the cylinder. Defaults to 64.
 		</member>
-		<member name="rings" type="int" setter="set_rings" getter="get_rings" brief="">
+		<member name="rings" type="int" setter="set_rings" getter="get_rings">
 			Number of edge rings along the height of the cylinder. Defaults to 4.
 		</member>
-		<member name="top_radius" type="float" setter="set_top_radius" getter="get_top_radius" brief="">
+		<member name="top_radius" type="float" setter="set_top_radius" getter="get_top_radius">
 			Top radius of the cylinder. Defaults to 1.0.
 		</member>
 	</members>

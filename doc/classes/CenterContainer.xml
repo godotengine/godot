@@ -29,7 +29,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="use_top_left" type="bool" setter="set_use_top_left" getter="is_using_top_left" brief="">
+		<member name="use_top_left" type="bool" setter="set_use_top_left" getter="is_using_top_left">
 		</member>
 	</members>
 	<constants>

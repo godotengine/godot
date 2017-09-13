@@ -45,9 +45,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="height" type="float" setter="set_height" getter="get_height" brief="">
+		<member name="height" type="float" setter="set_height" getter="get_height">
 		</member>
-		<member name="radius" type="float" setter="set_radius" getter="get_radius" brief="">
+		<member name="radius" type="float" setter="set_radius" getter="get_radius">
 		</member>
 	</members>
 	<constants>

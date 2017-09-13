@@ -103,7 +103,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="up_vector" type="Vector3" setter="set_up_vector" getter="get_up_vector" brief="">
+		<member name="up_vector" type="Vector3" setter="set_up_vector" getter="get_up_vector">
 		</member>
 	</members>
 	<constants>

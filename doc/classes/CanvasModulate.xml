@@ -29,7 +29,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="color" type="Color" setter="set_color" getter="get_color" brief="">
+		<member name="color" type="Color" setter="set_color" getter="get_color">
 		</member>
 	</members>
 	<constants>

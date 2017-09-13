@@ -179,29 +179,29 @@
 		</method>
 	</methods>
 	<members>
-		<member name="box_projection" type="bool" setter="set_enable_box_projection" getter="is_box_projection_enabled" brief="">
+		<member name="box_projection" type="bool" setter="set_enable_box_projection" getter="is_box_projection_enabled">
 		</member>
-		<member name="cull_mask" type="int" setter="set_cull_mask" getter="get_cull_mask" brief="">
+		<member name="cull_mask" type="int" setter="set_cull_mask" getter="get_cull_mask">
 		</member>
-		<member name="enable_shadows" type="bool" setter="set_enable_shadows" getter="are_shadows_enabled" brief="">
+		<member name="enable_shadows" type="bool" setter="set_enable_shadows" getter="are_shadows_enabled">
 		</member>
-		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents" brief="">
+		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents">
 		</member>
-		<member name="intensity" type="float" setter="set_intensity" getter="get_intensity" brief="">
+		<member name="intensity" type="float" setter="set_intensity" getter="get_intensity">
 		</member>
-		<member name="interior_ambient_color" type="Color" setter="set_interior_ambient" getter="get_interior_ambient" brief="">
+		<member name="interior_ambient_color" type="Color" setter="set_interior_ambient" getter="get_interior_ambient">
 		</member>
-		<member name="interior_ambient_contrib" type="float" setter="set_interior_ambient_probe_contribution" getter="get_interior_ambient_probe_contribution" brief="">
+		<member name="interior_ambient_contrib" type="float" setter="set_interior_ambient_probe_contribution" getter="get_interior_ambient_probe_contribution">
 		</member>
-		<member name="interior_ambient_energy" type="float" setter="set_interior_ambient_energy" getter="get_interior_ambient_energy" brief="">
+		<member name="interior_ambient_energy" type="float" setter="set_interior_ambient_energy" getter="get_interior_ambient_energy">
 		</member>
-		<member name="interior_enable" type="bool" setter="set_as_interior" getter="is_set_as_interior" brief="">
+		<member name="interior_enable" type="bool" setter="set_as_interior" getter="is_set_as_interior">
 		</member>
-		<member name="max_distance" type="float" setter="set_max_distance" getter="get_max_distance" brief="">
+		<member name="max_distance" type="float" setter="set_max_distance" getter="get_max_distance">
 		</member>
-		<member name="origin_offset" type="Vector3" setter="set_origin_offset" getter="get_origin_offset" brief="">
+		<member name="origin_offset" type="Vector3" setter="set_origin_offset" getter="get_origin_offset">
 		</member>
-		<member name="update_mode" type="int" setter="set_update_mode" getter="get_update_mode" brief="" enum="ReflectionProbe.UpdateMode">
+		<member name="update_mode" type="int" setter="set_update_mode" getter="get_update_mode" enum="ReflectionProbe.UpdateMode">
 		</member>
 	</members>
 	<constants>

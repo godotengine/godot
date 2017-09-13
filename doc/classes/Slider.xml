@@ -59,13 +59,13 @@
 		</method>
 	</methods>
 	<members>
-		<member name="editable" type="bool" setter="set_editable" getter="is_editable" brief="">
+		<member name="editable" type="bool" setter="set_editable" getter="is_editable">
 		</member>
-		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" brief="" enum="Control.FocusMode">
+		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" enum="Control.FocusMode">
 		</member>
-		<member name="tick_count" type="int" setter="set_ticks" getter="get_ticks" brief="">
+		<member name="tick_count" type="int" setter="set_ticks" getter="get_ticks">
 		</member>
-		<member name="ticks_on_borders" type="bool" setter="set_ticks_on_borders" getter="get_ticks_on_borders" brief="">
+		<member name="ticks_on_borders" type="bool" setter="set_ticks_on_borders" getter="get_ticks_on_borders">
 		</member>
 	</members>
 	<constants>

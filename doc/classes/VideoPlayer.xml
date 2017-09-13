@@ -183,17 +183,17 @@
 		</method>
 	</methods>
 	<members>
-		<member name="audio_track" type="int" setter="set_audio_track" getter="get_audio_track" brief="">
+		<member name="audio_track" type="int" setter="set_audio_track" getter="get_audio_track">
 		</member>
-		<member name="autoplay" type="bool" setter="set_autoplay" getter="has_autoplay" brief="">
+		<member name="autoplay" type="bool" setter="set_autoplay" getter="has_autoplay">
 		</member>
-		<member name="expand" type="bool" setter="set_expand" getter="has_expand" brief="">
+		<member name="expand" type="bool" setter="set_expand" getter="has_expand">
 		</member>
-		<member name="paused" type="bool" setter="set_paused" getter="is_paused" brief="">
+		<member name="paused" type="bool" setter="set_paused" getter="is_paused">
 		</member>
-		<member name="stream" type="VideoStream" setter="set_stream" getter="get_stream" brief="">
+		<member name="stream" type="VideoStream" setter="set_stream" getter="get_stream">
 		</member>
-		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db" brief="">
+		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db">
 		</member>
 	</members>
 	<constants>

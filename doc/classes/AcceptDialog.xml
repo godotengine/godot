@@ -91,9 +91,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok" brief="">
+		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok">
 		</member>
-		<member name="dialog_text" type="String" setter="set_text" getter="get_text" brief="">
+		<member name="dialog_text" type="String" setter="set_text" getter="get_text">
 		</member>
 	</members>
 	<signals>

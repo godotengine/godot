@@ -52,7 +52,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="anchor_id" type="int" setter="set_anchor_id" getter="get_anchor_id" brief="">
+		<member name="anchor_id" type="int" setter="set_anchor_id" getter="get_anchor_id">
 		</member>
 	</members>
 	<constants>

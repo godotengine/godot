@@ -29,15 +29,15 @@
 		</method>
 	</methods>
 	<members>
-		<member name="bias" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="bias" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="relaxation" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="relaxation" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="softness" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="softness" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="swing_span" type="float" setter="_set_swing_span" getter="_get_swing_span" brief="">
+		<member name="swing_span" type="float" setter="_set_swing_span" getter="_get_swing_span">
 		</member>
-		<member name="twist_span" type="float" setter="_set_twist_span" getter="_get_twist_span" brief="">
+		<member name="twist_span" type="float" setter="_set_twist_span" getter="_get_twist_span">
 		</member>
 	</members>
 	<constants>

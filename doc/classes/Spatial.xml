@@ -359,25 +359,25 @@
 		</method>
 	</methods>
 	<members>
-		<member name="global_transform" type="Transform" setter="set_global_transform" getter="get_global_transform" brief="">
+		<member name="global_transform" type="Transform" setter="set_global_transform" getter="get_global_transform">
 			World space (global) [Transform] of this node.
 		</member>
-		<member name="rotation" type="Vector3" setter="set_rotation" getter="get_rotation" brief="">
+		<member name="rotation" type="Vector3" setter="set_rotation" getter="get_rotation">
 			Local euler rotation in radians of this node.
 		</member>
-		<member name="rotation_deg" type="Vector3" setter="set_rotation_deg" getter="get_rotation_deg" brief="">
+		<member name="rotation_deg" type="Vector3" setter="set_rotation_deg" getter="get_rotation_deg">
 			Local euler rotation in degrees of this node.
 		</member>
-		<member name="scale" type="Vector3" setter="set_scale" getter="get_scale" brief="">
+		<member name="scale" type="Vector3" setter="set_scale" getter="get_scale">
 			Local scale of this node.
 		</member>
-		<member name="transform" type="Transform" setter="set_transform" getter="get_transform" brief="">
+		<member name="transform" type="Transform" setter="set_transform" getter="get_transform">
 			Local space [Transform] of this node.
 		</member>
-		<member name="translation" type="Vector3" setter="set_translation" getter="get_translation" brief="">
+		<member name="translation" type="Vector3" setter="set_translation" getter="get_translation">
 			Local translation of this node.
 		</member>
-		<member name="visible" type="bool" setter="set_visible" getter="is_visible" brief="">
+		<member name="visible" type="bool" setter="set_visible" getter="is_visible">
 			Visibility of this node. Toggles if this node is rendered.
 		</member>
 	</members>

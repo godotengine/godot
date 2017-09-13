@@ -29,7 +29,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="environment" type="Environment" setter="set_environment" getter="get_environment" brief="">
+		<member name="environment" type="Environment" setter="set_environment" getter="get_environment">
 		</member>
 	</members>
 	<constants>

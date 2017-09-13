@@ -81,15 +81,15 @@
 		</method>
 	</methods>
 	<members>
-		<member name="drive" type="float" setter="set_drive" getter="get_drive" brief="">
+		<member name="drive" type="float" setter="set_drive" getter="get_drive">
 		</member>
-		<member name="keep_hf_hz" type="float" setter="set_keep_hf_hz" getter="get_keep_hf_hz" brief="">
+		<member name="keep_hf_hz" type="float" setter="set_keep_hf_hz" getter="get_keep_hf_hz">
 		</member>
-		<member name="mode" type="int" setter="set_mode" getter="get_mode" brief="" enum="AudioEffectDistortion.Mode">
+		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="AudioEffectDistortion.Mode">
 		</member>
-		<member name="post_gain" type="float" setter="set_post_gain" getter="get_post_gain" brief="">
+		<member name="post_gain" type="float" setter="set_post_gain" getter="get_post_gain">
 		</member>
-		<member name="pre_gain" type="float" setter="set_pre_gain" getter="get_pre_gain" brief="">
+		<member name="pre_gain" type="float" setter="set_pre_gain" getter="get_pre_gain">
 		</member>
 	</members>
 	<constants>

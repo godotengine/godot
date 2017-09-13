@@ -269,39 +269,39 @@
 		</method>
 	</methods>
 	<members>
-		<member name="area_mask" type="int" setter="set_area_mask" getter="get_area_mask" brief="">
+		<member name="area_mask" type="int" setter="set_area_mask" getter="get_area_mask">
 		</member>
-		<member name="attenuation_filter_cutoff_hz" type="float" setter="set_attenuation_filter_cutoff_hz" getter="get_attenuation_filter_cutoff_hz" brief="">
+		<member name="attenuation_filter_cutoff_hz" type="float" setter="set_attenuation_filter_cutoff_hz" getter="get_attenuation_filter_cutoff_hz">
 		</member>
-		<member name="attenuation_filter_db" type="float" setter="set_attenuation_filter_db" getter="get_attenuation_filter_db" brief="">
+		<member name="attenuation_filter_db" type="float" setter="set_attenuation_filter_db" getter="get_attenuation_filter_db">
 		</member>
-		<member name="attenuation_model" type="int" setter="set_attenuation_model" getter="get_attenuation_model" brief="" enum="AudioStreamPlayer3D.AttenuationModel">
+		<member name="attenuation_model" type="int" setter="set_attenuation_model" getter="get_attenuation_model" enum="AudioStreamPlayer3D.AttenuationModel">
 		</member>
-		<member name="autoplay" type="bool" setter="set_autoplay" getter="is_autoplay_enabled" brief="">
+		<member name="autoplay" type="bool" setter="set_autoplay" getter="is_autoplay_enabled">
 		</member>
-		<member name="bus" type="String" setter="set_bus" getter="get_bus" brief="">
+		<member name="bus" type="String" setter="set_bus" getter="get_bus">
 		</member>
-		<member name="doppler_tracking" type="int" setter="set_doppler_tracking" getter="get_doppler_tracking" brief="" enum="AudioStreamPlayer3D.DopplerTracking">
+		<member name="doppler_tracking" type="int" setter="set_doppler_tracking" getter="get_doppler_tracking" enum="AudioStreamPlayer3D.DopplerTracking">
 		</member>
-		<member name="emission_angle_degrees" type="float" setter="set_emission_angle" getter="get_emission_angle" brief="">
+		<member name="emission_angle_degrees" type="float" setter="set_emission_angle" getter="get_emission_angle">
 		</member>
-		<member name="emission_angle_enabled" type="bool" setter="set_emission_angle_enabled" getter="is_emission_angle_enabled" brief="">
+		<member name="emission_angle_enabled" type="bool" setter="set_emission_angle_enabled" getter="is_emission_angle_enabled">
 		</member>
-		<member name="emission_angle_filter_attenuation_db" type="float" setter="set_emission_angle_filter_attenuation_db" getter="get_emission_angle_filter_attenuation_db" brief="">
+		<member name="emission_angle_filter_attenuation_db" type="float" setter="set_emission_angle_filter_attenuation_db" getter="get_emission_angle_filter_attenuation_db">
 		</member>
-		<member name="max_db" type="float" setter="set_max_db" getter="get_max_db" brief="">
+		<member name="max_db" type="float" setter="set_max_db" getter="get_max_db">
 		</member>
-		<member name="max_distance" type="float" setter="set_max_distance" getter="get_max_distance" brief="">
+		<member name="max_distance" type="float" setter="set_max_distance" getter="get_max_distance">
 		</member>
-		<member name="out_of_range_mode" type="int" setter="set_out_of_range_mode" getter="get_out_of_range_mode" brief="" enum="AudioStreamPlayer3D.OutOfRangeMode">
+		<member name="out_of_range_mode" type="int" setter="set_out_of_range_mode" getter="get_out_of_range_mode" enum="AudioStreamPlayer3D.OutOfRangeMode">
 		</member>
-		<member name="play" type="bool" setter="_set_playing" getter="_is_active" brief="">
+		<member name="play" type="bool" setter="_set_playing" getter="_is_active">
 		</member>
-		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream" brief="">
+		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream">
 		</member>
-		<member name="unit_db" type="float" setter="set_unit_db" getter="get_unit_db" brief="">
+		<member name="unit_db" type="float" setter="set_unit_db" getter="get_unit_db">
 		</member>
-		<member name="unit_size" type="float" setter="set_unit_size" getter="get_unit_size" brief="">
+		<member name="unit_size" type="float" setter="set_unit_size" getter="get_unit_size">
 		</member>
 	</members>
 	<signals>

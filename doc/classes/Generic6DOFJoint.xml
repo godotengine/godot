@@ -119,107 +119,107 @@
 		</method>
 	</methods>
 	<members>
-		<member name="angular_limit_x/damping" type="float" setter="set_param_x" getter="get_param_x" brief="">
+		<member name="angular_limit_x/damping" type="float" setter="set_param_x" getter="get_param_x">
 		</member>
-		<member name="angular_limit_x/enabled" type="bool" setter="set_flag_x" getter="get_flag_x" brief="">
+		<member name="angular_limit_x/enabled" type="bool" setter="set_flag_x" getter="get_flag_x">
 		</member>
-		<member name="angular_limit_x/erp" type="float" setter="set_param_x" getter="get_param_x" brief="">
+		<member name="angular_limit_x/erp" type="float" setter="set_param_x" getter="get_param_x">
 		</member>
-		<member name="angular_limit_x/force_limit" type="float" setter="set_param_x" getter="get_param_x" brief="">
+		<member name="angular_limit_x/force_limit" type="float" setter="set_param_x" getter="get_param_x">
 		</member>
-		<member name="angular_limit_x/lower_angle" type="float" setter="_set_angular_lo_limit_x" getter="_get_angular_lo_limit_x" brief="">
+		<member name="angular_limit_x/lower_angle" type="float" setter="_set_angular_lo_limit_x" getter="_get_angular_lo_limit_x">
 		</member>
-		<member name="angular_limit_x/restitution" type="float" setter="set_param_x" getter="get_param_x" brief="">
+		<member name="angular_limit_x/restitution" type="float" setter="set_param_x" getter="get_param_x">
 		</member>
-		<member name="angular_limit_x/softness" type="float" setter="set_param_x" getter="get_param_x" brief="">
+		<member name="angular_limit_x/softness" type="float" setter="set_param_x" getter="get_param_x">
 		</member>
-		<member name="angular_limit_x/upper_angle" type="float" setter="_set_angular_hi_limit_x" getter="_get_angular_hi_limit_x" brief="">
+		<member name="angular_limit_x/upper_angle" type="float" setter="_set_angular_hi_limit_x" getter="_get_angular_hi_limit_x">
 		</member>
-		<member name="angular_limit_y/damping" type="float" setter="set_param_y" getter="get_param_y" brief="">
+		<member name="angular_limit_y/damping" type="float" setter="set_param_y" getter="get_param_y">
 		</member>
-		<member name="angular_limit_y/enabled" type="bool" setter="set_flag_y" getter="get_flag_y" brief="">
+		<member name="angular_limit_y/enabled" type="bool" setter="set_flag_y" getter="get_flag_y">
 		</member>
-		<member name="angular_limit_y/erp" type="float" setter="set_param_y" getter="get_param_y" brief="">
+		<member name="angular_limit_y/erp" type="float" setter="set_param_y" getter="get_param_y">
 		</member>
-		<member name="angular_limit_y/force_limit" type="float" setter="set_param_y" getter="get_param_y" brief="">
+		<member name="angular_limit_y/force_limit" type="float" setter="set_param_y" getter="get_param_y">
 		</member>
-		<member name="angular_limit_y/lower_angle" type="float" setter="_set_angular_lo_limit_y" getter="_get_angular_lo_limit_y" brief="">
+		<member name="angular_limit_y/lower_angle" type="float" setter="_set_angular_lo_limit_y" getter="_get_angular_lo_limit_y">
 		</member>
-		<member name="angular_limit_y/restitution" type="float" setter="set_param_y" getter="get_param_y" brief="">
+		<member name="angular_limit_y/restitution" type="float" setter="set_param_y" getter="get_param_y">
 		</member>
-		<member name="angular_limit_y/softness" type="float" setter="set_param_y" getter="get_param_y" brief="">
+		<member name="angular_limit_y/softness" type="float" setter="set_param_y" getter="get_param_y">
 		</member>
-		<member name="angular_limit_y/upper_angle" type="float" setter="_set_angular_hi_limit_y" getter="_get_angular_hi_limit_y" brief="">
+		<member name="angular_limit_y/upper_angle" type="float" setter="_set_angular_hi_limit_y" getter="_get_angular_hi_limit_y">
 		</member>
-		<member name="angular_limit_z/damping" type="float" setter="set_param_z" getter="get_param_z" brief="">
+		<member name="angular_limit_z/damping" type="float" setter="set_param_z" getter="get_param_z">
 		</member>
-		<member name="angular_limit_z/enabled" type="bool" setter="set_flag_z" getter="get_flag_z" brief="">
+		<member name="angular_limit_z/enabled" type="bool" setter="set_flag_z" getter="get_flag_z">
 		</member>
-		<member name="angular_limit_z/erp" type="float" setter="set_param_z" getter="get_param_z" brief="">
+		<member name="angular_limit_z/erp" type="float" setter="set_param_z" getter="get_param_z">
 		</member>
-		<member name="angular_limit_z/force_limit" type="float" setter="set_param_z" getter="get_param_z" brief="">
+		<member name="angular_limit_z/force_limit" type="float" setter="set_param_z" getter="get_param_z">
 		</member>
-		<member name="angular_limit_z/lower_angle" type="float" setter="_set_angular_lo_limit_z" getter="_get_angular_lo_limit_z" brief="">
+		<member name="angular_limit_z/lower_angle" type="float" setter="_set_angular_lo_limit_z" getter="_get_angular_lo_limit_z">
 		</member>
-		<member name="angular_limit_z/restitution" type="float" setter="set_param_z" getter="get_param_z" brief="">
+		<member name="angular_limit_z/restitution" type="float" setter="set_param_z" getter="get_param_z">
 		</member>
-		<member name="angular_limit_z/softness" type="float" setter="set_param_z" getter="get_param_z" brief="">
+		<member name="angular_limit_z/softness" type="float" setter="set_param_z" getter="get_param_z">
 		</member>
-		<member name="angular_limit_z/upper_angle" type="float" setter="_set_angular_hi_limit_z" getter="_get_angular_hi_limit_z" brief="">
+		<member name="angular_limit_z/upper_angle" type="float" setter="_set_angular_hi_limit_z" getter="_get_angular_hi_limit_z">
 		</member>
-		<member name="angular_motor_x/enabled" type="bool" setter="set_flag_x" getter="get_flag_x" brief="">
+		<member name="angular_motor_x/enabled" type="bool" setter="set_flag_x" getter="get_flag_x">
 		</member>
-		<member name="angular_motor_x/force_limit" type="float" setter="set_param_x" getter="get_param_x" brief="">
+		<member name="angular_motor_x/force_limit" type="float" setter="set_param_x" getter="get_param_x">
 		</member>
-		<member name="angular_motor_x/target_velocity" type="float" setter="set_param_x" getter="get_param_x" brief="">
+		<member name="angular_motor_x/target_velocity" type="float" setter="set_param_x" getter="get_param_x">
 		</member>
-		<member name="angular_motor_y/enabled" type="bool" setter="set_flag_y" getter="get_flag_y" brief="">
+		<member name="angular_motor_y/enabled" type="bool" setter="set_flag_y" getter="get_flag_y">
 		</member>
-		<member name="angular_motor_y/force_limit" type="float" setter="set_param_y" getter="get_param_y" brief="">
+		<member name="angular_motor_y/force_limit" type="float" setter="set_param_y" getter="get_param_y">
 		</member>
-		<member name="angular_motor_y/target_velocity" type="float" setter="set_param_y" getter="get_param_y" brief="">
+		<member name="angular_motor_y/target_velocity" type="float" setter="set_param_y" getter="get_param_y">
 		</member>
-		<member name="angular_motor_z/enabled" type="bool" setter="set_flag_z" getter="get_flag_z" brief="">
+		<member name="angular_motor_z/enabled" type="bool" setter="set_flag_z" getter="get_flag_z">
 		</member>
-		<member name="angular_motor_z/force_limit" type="float" setter="set_param_z" getter="get_param_z" brief="">
+		<member name="angular_motor_z/force_limit" type="float" setter="set_param_z" getter="get_param_z">
 		</member>
-		<member name="angular_motor_z/target_velocity" type="float" setter="set_param_z" getter="get_param_z" brief="">
+		<member name="angular_motor_z/target_velocity" type="float" setter="set_param_z" getter="get_param_z">
 		</member>
-		<member name="linear_limit_x/damping" type="float" setter="set_param_x" getter="get_param_x" brief="">
+		<member name="linear_limit_x/damping" type="float" setter="set_param_x" getter="get_param_x">
 		</member>
-		<member name="linear_limit_x/enabled" type="bool" setter="set_flag_x" getter="get_flag_x" brief="">
+		<member name="linear_limit_x/enabled" type="bool" setter="set_flag_x" getter="get_flag_x">
 		</member>
-		<member name="linear_limit_x/lower_distance" type="float" setter="set_param_x" getter="get_param_x" brief="">
+		<member name="linear_limit_x/lower_distance" type="float" setter="set_param_x" getter="get_param_x">
 		</member>
-		<member name="linear_limit_x/restitution" type="float" setter="set_param_x" getter="get_param_x" brief="">
+		<member name="linear_limit_x/restitution" type="float" setter="set_param_x" getter="get_param_x">
 		</member>
-		<member name="linear_limit_x/softness" type="float" setter="set_param_x" getter="get_param_x" brief="">
+		<member name="linear_limit_x/softness" type="float" setter="set_param_x" getter="get_param_x">
 		</member>
-		<member name="linear_limit_x/upper_distance" type="float" setter="set_param_x" getter="get_param_x" brief="">
+		<member name="linear_limit_x/upper_distance" type="float" setter="set_param_x" getter="get_param_x">
 		</member>
-		<member name="linear_limit_y/damping" type="float" setter="set_param_y" getter="get_param_y" brief="">
+		<member name="linear_limit_y/damping" type="float" setter="set_param_y" getter="get_param_y">
 		</member>
-		<member name="linear_limit_y/enabled" type="bool" setter="set_flag_y" getter="get_flag_y" brief="">
+		<member name="linear_limit_y/enabled" type="bool" setter="set_flag_y" getter="get_flag_y">
 		</member>
-		<member name="linear_limit_y/lower_distance" type="float" setter="set_param_y" getter="get_param_y" brief="">
+		<member name="linear_limit_y/lower_distance" type="float" setter="set_param_y" getter="get_param_y">
 		</member>
-		<member name="linear_limit_y/restitution" type="float" setter="set_param_y" getter="get_param_y" brief="">
+		<member name="linear_limit_y/restitution" type="float" setter="set_param_y" getter="get_param_y">
 		</member>
-		<member name="linear_limit_y/softness" type="float" setter="set_param_y" getter="get_param_y" brief="">
+		<member name="linear_limit_y/softness" type="float" setter="set_param_y" getter="get_param_y">
 		</member>
-		<member name="linear_limit_y/upper_distance" type="float" setter="set_param_y" getter="get_param_y" brief="">
+		<member name="linear_limit_y/upper_distance" type="float" setter="set_param_y" getter="get_param_y">
 		</member>
-		<member name="linear_limit_z/damping" type="float" setter="set_param_z" getter="get_param_z" brief="">
+		<member name="linear_limit_z/damping" type="float" setter="set_param_z" getter="get_param_z">
 		</member>
-		<member name="linear_limit_z/enabled" type="bool" setter="set_flag_z" getter="get_flag_z" brief="">
+		<member name="linear_limit_z/enabled" type="bool" setter="set_flag_z" getter="get_flag_z">
 		</member>
-		<member name="linear_limit_z/lower_distance" type="float" setter="set_param_z" getter="get_param_z" brief="">
+		<member name="linear_limit_z/lower_distance" type="float" setter="set_param_z" getter="get_param_z">
 		</member>
-		<member name="linear_limit_z/restitution" type="float" setter="set_param_z" getter="get_param_z" brief="">
+		<member name="linear_limit_z/restitution" type="float" setter="set_param_z" getter="get_param_z">
 		</member>
-		<member name="linear_limit_z/softness" type="float" setter="set_param_z" getter="get_param_z" brief="">
+		<member name="linear_limit_z/softness" type="float" setter="set_param_z" getter="get_param_z">
 		</member>
-		<member name="linear_limit_z/upper_distance" type="float" setter="set_param_z" getter="get_param_z" brief="">
+		<member name="linear_limit_z/upper_distance" type="float" setter="set_param_z" getter="get_param_z">
 		</member>
 	</members>
 	<constants>

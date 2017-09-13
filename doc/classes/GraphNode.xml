@@ -279,11 +279,11 @@
 		</method>
 	</methods>
 	<members>
-		<member name="resizable" type="bool" setter="set_resizable" getter="is_resizable" brief="">
+		<member name="resizable" type="bool" setter="set_resizable" getter="is_resizable">
 		</member>
-		<member name="show_close" type="bool" setter="set_show_close_button" getter="is_close_button_visible" brief="">
+		<member name="show_close" type="bool" setter="set_show_close_button" getter="is_close_button_visible">
 		</member>
-		<member name="title" type="String" setter="set_title" getter="get_title" brief="">
+		<member name="title" type="String" setter="set_title" getter="get_title">
 		</member>
 	</members>
 	<signals>

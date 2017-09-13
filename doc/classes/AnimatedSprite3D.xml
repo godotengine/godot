@@ -82,13 +82,13 @@
 		</method>
 	</methods>
 	<members>
-		<member name="animation" type="String" setter="set_animation" getter="get_animation" brief="">
+		<member name="animation" type="String" setter="set_animation" getter="get_animation">
 		</member>
-		<member name="frame" type="int" setter="set_frame" getter="get_frame" brief="">
+		<member name="frame" type="int" setter="set_frame" getter="get_frame">
 		</member>
-		<member name="frames" type="SpriteFrames" setter="set_sprite_frames" getter="get_sprite_frames" brief="">
+		<member name="frames" type="SpriteFrames" setter="set_sprite_frames" getter="get_sprite_frames">
 		</member>
-		<member name="playing" type="bool" setter="_set_playing" getter="_is_playing" brief="">
+		<member name="playing" type="bool" setter="_set_playing" getter="_is_playing">
 		</member>
 	</members>
 	<signals>

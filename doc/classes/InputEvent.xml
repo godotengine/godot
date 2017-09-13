@@ -123,7 +123,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="device" type="int" setter="set_device" getter="get_device" brief="">
+		<member name="device" type="int" setter="set_device" getter="get_device">
 		</member>
 	</members>
 	<constants>

@@ -148,19 +148,19 @@
 		</method>
 	</methods>
 	<members>
-		<member name="exp_edit" type="bool" setter="set_exp_ratio" getter="is_ratio_exp" brief="">
+		<member name="exp_edit" type="bool" setter="set_exp_ratio" getter="is_ratio_exp">
 		</member>
-		<member name="max_value" type="float" setter="set_max" getter="get_max" brief="">
+		<member name="max_value" type="float" setter="set_max" getter="get_max">
 		</member>
-		<member name="min_value" type="float" setter="set_min" getter="get_min" brief="">
+		<member name="min_value" type="float" setter="set_min" getter="get_min">
 		</member>
-		<member name="page" type="float" setter="set_page" getter="get_page" brief="">
+		<member name="page" type="float" setter="set_page" getter="get_page">
 		</member>
-		<member name="rounded" type="bool" setter="set_use_rounded_values" getter="is_using_rounded_values" brief="">
+		<member name="rounded" type="bool" setter="set_use_rounded_values" getter="is_using_rounded_values">
 		</member>
-		<member name="step" type="float" setter="set_step" getter="get_step" brief="">
+		<member name="step" type="float" setter="set_step" getter="get_step">
 		</member>
-		<member name="value" type="float" setter="set_value" getter="get_value" brief="">
+		<member name="value" type="float" setter="set_value" getter="get_value">
 		</member>
 	</members>
 	<signals>

@@ -53,11 +53,11 @@
 		</method>
 	</methods>
 	<members>
-		<member name="closed" type="bool" setter="set_closed" getter="is_closed" brief="">
+		<member name="closed" type="bool" setter="set_closed" getter="is_closed">
 		</member>
-		<member name="cull_mode" type="int" setter="set_cull_mode" getter="get_cull_mode" brief="" enum="OccluderPolygon2D.CullMode">
+		<member name="cull_mode" type="int" setter="set_cull_mode" getter="get_cull_mode" enum="OccluderPolygon2D.CullMode">
 		</member>
-		<member name="polygon" type="PoolVector2Array" setter="set_polygon" getter="get_polygon" brief="">
+		<member name="polygon" type="PoolVector2Array" setter="set_polygon" getter="get_polygon">
 		</member>
 	</members>
 	<constants>

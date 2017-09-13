@@ -39,9 +39,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="type" type="int" setter="set_var_type" getter="get_var_type" brief="" enum="Variant.Type">
+		<member name="type" type="int" setter="set_var_type" getter="get_var_type" enum="Variant.Type">
 		</member>
-		<member name="var_name" type="String" setter="set_var_name" getter="get_var_name" brief="">
+		<member name="var_name" type="String" setter="set_var_name" getter="get_var_name">
 		</member>
 	</members>
 	<constants>

@@ -41,9 +41,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="next_pass" type="Material" setter="set_next_pass" getter="get_next_pass" brief="">
+		<member name="next_pass" type="Material" setter="set_next_pass" getter="get_next_pass">
 		</member>
-		<member name="render_priority" type="int" setter="set_render_priority" getter="get_render_priority" brief="">
+		<member name="render_priority" type="int" setter="set_render_priority" getter="get_render_priority">
 		</member>
 	</members>
 	<constants>

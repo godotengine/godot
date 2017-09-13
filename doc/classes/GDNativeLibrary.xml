@@ -43,7 +43,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="singleton_gdnative" type="bool" setter="set_singleton_gdnative" getter="is_singleton_gdnative" brief="">
+		<member name="singleton_gdnative" type="bool" setter="set_singleton_gdnative" getter="is_singleton_gdnative">
 		</member>
 	</members>
 	<constants>

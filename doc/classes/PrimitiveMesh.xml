@@ -33,7 +33,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="material" type="Material" setter="set_material" getter="get_material" brief="">
+		<member name="material" type="Material" setter="set_material" getter="get_material">
 			The current [Material] of the primitive mesh.
 		</member>
 	</members>

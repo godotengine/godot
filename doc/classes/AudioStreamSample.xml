@@ -109,19 +109,19 @@
 		</method>
 	</methods>
 	<members>
-		<member name="data" type="PoolByteArray" setter="set_data" getter="get_data" brief="">
+		<member name="data" type="PoolByteArray" setter="set_data" getter="get_data">
 		</member>
-		<member name="format" type="int" setter="set_format" getter="get_format" brief="" enum="AudioStreamSample.Format">
+		<member name="format" type="int" setter="set_format" getter="get_format" enum="AudioStreamSample.Format">
 		</member>
-		<member name="loop_begin" type="int" setter="set_loop_begin" getter="get_loop_begin" brief="">
+		<member name="loop_begin" type="int" setter="set_loop_begin" getter="get_loop_begin">
 		</member>
-		<member name="loop_end" type="int" setter="set_loop_end" getter="get_loop_end" brief="">
+		<member name="loop_end" type="int" setter="set_loop_end" getter="get_loop_end">
 		</member>
-		<member name="loop_mode" type="int" setter="set_loop_mode" getter="get_loop_mode" brief="" enum="AudioStreamSample.LoopMode">
+		<member name="loop_mode" type="int" setter="set_loop_mode" getter="get_loop_mode" enum="AudioStreamSample.LoopMode">
 		</member>
-		<member name="mix_rate" type="int" setter="set_mix_rate" getter="get_mix_rate" brief="">
+		<member name="mix_rate" type="int" setter="set_mix_rate" getter="get_mix_rate">
 		</member>
-		<member name="stereo" type="bool" setter="set_stereo" getter="is_stereo" brief="">
+		<member name="stereo" type="bool" setter="set_stereo" getter="is_stereo">
 		</member>
 	</members>
 	<constants>

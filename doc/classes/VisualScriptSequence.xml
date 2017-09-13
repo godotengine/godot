@@ -25,7 +25,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="steps" type="int" setter="set_steps" getter="get_steps" brief="">
+		<member name="steps" type="int" setter="set_steps" getter="get_steps">
 		</member>
 	</members>
 	<constants>

@@ -67,13 +67,13 @@
 		</method>
 	</methods>
 	<members>
-		<member name="cutoff_hz" type="float" setter="set_cutoff" getter="get_cutoff" brief="">
+		<member name="cutoff_hz" type="float" setter="set_cutoff" getter="get_cutoff">
 		</member>
-		<member name="dB" type="int" setter="set_db" getter="get_db" brief="" enum="AudioEffectFilter.FilterDB">
+		<member name="dB" type="int" setter="set_db" getter="get_db" enum="AudioEffectFilter.FilterDB">
 		</member>
-		<member name="gain" type="float" setter="set_gain" getter="get_gain" brief="">
+		<member name="gain" type="float" setter="set_gain" getter="get_gain">
 		</member>
-		<member name="resonance" type="float" setter="set_resonance" getter="get_resonance" brief="">
+		<member name="resonance" type="float" setter="set_resonance" getter="get_resonance">
 		</member>
 	</members>
 	<constants>

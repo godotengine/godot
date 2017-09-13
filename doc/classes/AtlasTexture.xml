@@ -53,11 +53,11 @@
 		</method>
 	</methods>
 	<members>
-		<member name="atlas" type="Texture" setter="set_atlas" getter="get_atlas" brief="">
+		<member name="atlas" type="Texture" setter="set_atlas" getter="get_atlas">
 		</member>
-		<member name="margin" type="Rect2" setter="set_margin" getter="get_margin" brief="">
+		<member name="margin" type="Rect2" setter="set_margin" getter="get_margin">
 		</member>
-		<member name="region" type="Rect2" setter="set_region" getter="get_region" brief="">
+		<member name="region" type="Rect2" setter="set_region" getter="get_region">
 		</member>
 	</members>
 	<constants>

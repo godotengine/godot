@@ -29,49 +29,49 @@
 		</method>
 	</methods>
 	<members>
-		<member name="angular_limit/damping" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="angular_limit/damping" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="angular_limit/lower_angle" type="float" setter="_set_lower_limit_angular" getter="_get_lower_limit_angular" brief="">
+		<member name="angular_limit/lower_angle" type="float" setter="_set_lower_limit_angular" getter="_get_lower_limit_angular">
 		</member>
-		<member name="angular_limit/restitution" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="angular_limit/restitution" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="angular_limit/softness" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="angular_limit/softness" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="angular_limit/upper_angle" type="float" setter="_set_upper_limit_angular" getter="_get_upper_limit_angular" brief="">
+		<member name="angular_limit/upper_angle" type="float" setter="_set_upper_limit_angular" getter="_get_upper_limit_angular">
 		</member>
-		<member name="angular_motion/damping" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="angular_motion/damping" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="angular_motion/restitution" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="angular_motion/restitution" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="angular_motion/softness" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="angular_motion/softness" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="angular_ortho/damping" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="angular_ortho/damping" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="angular_ortho/restitution" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="angular_ortho/restitution" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="angular_ortho/softness" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="angular_ortho/softness" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="linear_limit/damping" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="linear_limit/damping" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="linear_limit/lower_distance" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="linear_limit/lower_distance" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="linear_limit/restitution" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="linear_limit/restitution" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="linear_limit/softness" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="linear_limit/softness" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="linear_limit/upper_distance" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="linear_limit/upper_distance" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="linear_motion/damping" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="linear_motion/damping" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="linear_motion/restitution" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="linear_motion/restitution" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="linear_motion/softness" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="linear_motion/softness" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="linear_ortho/damping" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="linear_ortho/damping" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="linear_ortho/restitution" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="linear_ortho/restitution" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="linear_ortho/softness" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="linear_ortho/softness" type="float" setter="set_param" getter="get_param">
 		</member>
 	</members>
 	<constants>

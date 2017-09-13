@@ -148,21 +148,21 @@
 		</method>
 	</methods>
 	<members>
-		<member name="animation" type="String" setter="set_animation" getter="get_animation" brief="">
+		<member name="animation" type="String" setter="set_animation" getter="get_animation">
 		</member>
-		<member name="centered" type="bool" setter="set_centered" getter="is_centered" brief="">
+		<member name="centered" type="bool" setter="set_centered" getter="is_centered">
 		</member>
-		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h" brief="">
+		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h">
 		</member>
-		<member name="flip_v" type="bool" setter="set_flip_v" getter="is_flipped_v" brief="">
+		<member name="flip_v" type="bool" setter="set_flip_v" getter="is_flipped_v">
 		</member>
-		<member name="frame" type="int" setter="set_frame" getter="get_frame" brief="">
+		<member name="frame" type="int" setter="set_frame" getter="get_frame">
 		</member>
-		<member name="frames" type="SpriteFrames" setter="set_sprite_frames" getter="get_sprite_frames" brief="">
+		<member name="frames" type="SpriteFrames" setter="set_sprite_frames" getter="get_sprite_frames">
 		</member>
-		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" brief="">
+		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset">
 		</member>
-		<member name="playing" type="bool" setter="_set_playing" getter="_is_playing" brief="">
+		<member name="playing" type="bool" setter="_set_playing" getter="_is_playing">
 		</member>
 	</members>
 	<signals>

@@ -37,7 +37,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="color" type="Color" setter="set_frame_color" getter="get_frame_color" brief="">
+		<member name="color" type="Color" setter="set_frame_color" getter="get_frame_color">
 		</member>
 	</members>
 	<constants>

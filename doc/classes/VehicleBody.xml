@@ -94,15 +94,15 @@
 		</method>
 	</methods>
 	<members>
-		<member name="brake" type="float" setter="set_brake" getter="get_brake" brief="">
+		<member name="brake" type="float" setter="set_brake" getter="get_brake">
 		</member>
-		<member name="engine_force" type="float" setter="set_engine_force" getter="get_engine_force" brief="">
+		<member name="engine_force" type="float" setter="set_engine_force" getter="get_engine_force">
 		</member>
-		<member name="friction" type="float" setter="set_friction" getter="get_friction" brief="">
+		<member name="friction" type="float" setter="set_friction" getter="get_friction">
 		</member>
-		<member name="mass" type="float" setter="set_mass" getter="get_mass" brief="">
+		<member name="mass" type="float" setter="set_mass" getter="get_mass">
 		</member>
-		<member name="steering" type="float" setter="set_steering" getter="get_steering" brief="">
+		<member name="steering" type="float" setter="set_steering" getter="get_steering">
 		</member>
 	</members>
 	<constants>

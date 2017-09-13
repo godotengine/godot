@@ -25,7 +25,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="pan" type="float" setter="set_pan" getter="get_pan" brief="">
+		<member name="pan" type="float" setter="set_pan" getter="get_pan">
 		</member>
 	</members>
 	<constants>

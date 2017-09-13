@@ -115,17 +115,17 @@
 		</method>
 	</methods>
 	<members>
-		<member name="autoplay" type="bool" setter="set_autoplay" getter="is_autoplay_enabled" brief="">
+		<member name="autoplay" type="bool" setter="set_autoplay" getter="is_autoplay_enabled">
 		</member>
-		<member name="bus" type="String" setter="set_bus" getter="get_bus" brief="">
+		<member name="bus" type="String" setter="set_bus" getter="get_bus">
 		</member>
-		<member name="mix_target" type="int" setter="set_mix_target" getter="get_mix_target" brief="" enum="AudioStreamPlayer.MixTarget">
+		<member name="mix_target" type="int" setter="set_mix_target" getter="get_mix_target" enum="AudioStreamPlayer.MixTarget">
 		</member>
-		<member name="play" type="bool" setter="_set_playing" getter="_is_active" brief="">
+		<member name="play" type="bool" setter="_set_playing" getter="_is_active">
 		</member>
-		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream" brief="">
+		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream">
 		</member>
-		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db" brief="">
+		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db">
 		</member>
 	</members>
 	<signals>

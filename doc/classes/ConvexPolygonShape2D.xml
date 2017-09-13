@@ -39,7 +39,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="points" type="PoolVector2Array" setter="set_points" getter="get_points" brief="">
+		<member name="points" type="PoolVector2Array" setter="set_points" getter="get_points">
 		</member>
 	</members>
 	<constants>

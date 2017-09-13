@@ -385,7 +385,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="playback_process_mode" type="int" setter="set_tween_process_mode" getter="get_tween_process_mode" brief="" enum="Tween.TweenProcessMode">
+		<member name="playback_process_mode" type="int" setter="set_tween_process_mode" getter="get_tween_process_mode" enum="Tween.TweenProcessMode">
 		</member>
 	</members>
 	<signals>

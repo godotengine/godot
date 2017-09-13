@@ -67,13 +67,13 @@
 		</method>
 	</methods>
 	<members>
-		<member name="base_type" type="String" setter="set_base_type" getter="get_base_type" brief="">
+		<member name="base_type" type="String" setter="set_base_type" getter="get_base_type">
 		</member>
-		<member name="call_mode" type="int" setter="set_call_mode" getter="get_call_mode" brief="" enum="VisualScriptYieldSignal.CallMode">
+		<member name="call_mode" type="int" setter="set_call_mode" getter="get_call_mode" enum="VisualScriptYieldSignal.CallMode">
 		</member>
-		<member name="node_path" type="NodePath" setter="set_base_path" getter="get_base_path" brief="">
+		<member name="node_path" type="NodePath" setter="set_base_path" getter="get_base_path">
 		</member>
-		<member name="signal" type="String" setter="set_signal" getter="get_signal" brief="">
+		<member name="signal" type="String" setter="set_signal" getter="get_signal">
 		</member>
 	</members>
 	<constants>

@@ -55,13 +55,13 @@
 		</method>
 	</methods>
 	<members>
-		<member name="expand" type="bool" setter="set_expand" getter="has_expand" brief="">
+		<member name="expand" type="bool" setter="set_expand" getter="has_expand">
 			If [code]true[/code] texture will expand to fit. Default value: [code]false[/code].
 		</member>
-		<member name="stretch_mode" type="int" setter="set_stretch_mode" getter="get_stretch_mode" brief="" enum="TextureRect.StretchMode">
+		<member name="stretch_mode" type="int" setter="set_stretch_mode" getter="get_stretch_mode" enum="TextureRect.StretchMode">
 			Stretch mode of the texture. Use STRETCH_* constants as value.
 		</member>
-		<member name="texture" type="Texture" setter="set_texture" getter="get_texture" brief="">
+		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
 			The [Texture] resource for the node.
 		</member>
 	</members>

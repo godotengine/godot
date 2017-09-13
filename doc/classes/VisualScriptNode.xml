@@ -35,7 +35,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="_default_input_values" type="Array" setter="_set_default_input_values" getter="_get_default_input_values" brief="">
+		<member name="_default_input_values" type="Array" setter="_set_default_input_values" getter="_get_default_input_values">
 		</member>
 	</members>
 	<signals>

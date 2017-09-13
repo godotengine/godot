@@ -147,29 +147,29 @@
 		</method>
 	</methods>
 	<members>
-		<member name="fill_mode" type="int" setter="set_fill_mode" getter="get_fill_mode" brief="">
+		<member name="fill_mode" type="int" setter="set_fill_mode" getter="get_fill_mode">
 		</member>
-		<member name="nine_patch_stretch" type="bool" setter="set_nine_patch_stretch" getter="get_nine_patch_stretch" brief="">
+		<member name="nine_patch_stretch" type="bool" setter="set_nine_patch_stretch" getter="get_nine_patch_stretch">
 		</member>
-		<member name="radial_center_offset" type="Vector2" setter="set_radial_center_offset" getter="get_radial_center_offset" brief="">
+		<member name="radial_center_offset" type="Vector2" setter="set_radial_center_offset" getter="get_radial_center_offset">
 		</member>
-		<member name="radial_fill_degrees" type="float" setter="set_fill_degrees" getter="get_fill_degrees" brief="">
+		<member name="radial_fill_degrees" type="float" setter="set_fill_degrees" getter="get_fill_degrees">
 		</member>
-		<member name="radial_initial_angle" type="float" setter="set_radial_initial_angle" getter="get_radial_initial_angle" brief="">
+		<member name="radial_initial_angle" type="float" setter="set_radial_initial_angle" getter="get_radial_initial_angle">
 		</member>
-		<member name="stretch_margin_bottom" type="int" setter="set_stretch_margin" getter="get_stretch_margin" brief="">
+		<member name="stretch_margin_bottom" type="int" setter="set_stretch_margin" getter="get_stretch_margin">
 		</member>
-		<member name="stretch_margin_left" type="int" setter="set_stretch_margin" getter="get_stretch_margin" brief="">
+		<member name="stretch_margin_left" type="int" setter="set_stretch_margin" getter="get_stretch_margin">
 		</member>
-		<member name="stretch_margin_right" type="int" setter="set_stretch_margin" getter="get_stretch_margin" brief="">
+		<member name="stretch_margin_right" type="int" setter="set_stretch_margin" getter="get_stretch_margin">
 		</member>
-		<member name="stretch_margin_top" type="int" setter="set_stretch_margin" getter="get_stretch_margin" brief="">
+		<member name="stretch_margin_top" type="int" setter="set_stretch_margin" getter="get_stretch_margin">
 		</member>
-		<member name="texture_over" type="Texture" setter="set_over_texture" getter="get_over_texture" brief="">
+		<member name="texture_over" type="Texture" setter="set_over_texture" getter="get_over_texture">
 		</member>
-		<member name="texture_progress" type="Texture" setter="set_progress_texture" getter="get_progress_texture" brief="">
+		<member name="texture_progress" type="Texture" setter="set_progress_texture" getter="get_progress_texture">
 		</member>
-		<member name="texture_under" type="Texture" setter="set_under_texture" getter="get_under_texture" brief="">
+		<member name="texture_under" type="Texture" setter="set_under_texture" getter="get_under_texture">
 		</member>
 	</members>
 	<constants>

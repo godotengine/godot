@@ -29,7 +29,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents" brief="">
+		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents">
 		</member>
 	</members>
 	<constants>

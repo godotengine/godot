@@ -61,9 +61,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="polygons" type="Array" setter="_set_polygons" getter="_get_polygons" brief="">
+		<member name="polygons" type="Array" setter="_set_polygons" getter="_get_polygons">
 		</member>
-		<member name="vertices" type="PoolVector3Array" setter="set_vertices" getter="get_vertices" brief="">
+		<member name="vertices" type="PoolVector3Array" setter="set_vertices" getter="get_vertices">
 		</member>
 	</members>
 	<constants>

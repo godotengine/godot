@@ -54,13 +54,13 @@
 		</method>
 	</methods>
 	<members>
-		<member name="button_mask" type="int" setter="set_button_mask" getter="get_button_mask" brief="">
+		<member name="button_mask" type="int" setter="set_button_mask" getter="get_button_mask">
 			Mouse button mask identifier, one of or a bitwise combination of the BUTTON_MASK_* constants in [@Global Scope].
 		</member>
-		<member name="global_position" type="Vector2" setter="set_global_position" getter="get_global_position" brief="">
+		<member name="global_position" type="Vector2" setter="set_global_position" getter="get_global_position">
 			Global position of the mouse click.
 		</member>
-		<member name="position" type="Vector2" setter="set_position" getter="get_position" brief="">
+		<member name="position" type="Vector2" setter="set_position" getter="get_position">
 			Local position of the mouse click.
 		</member>
 	</members>

@@ -36,7 +36,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="aabb" type="Rect3" setter="set_aabb" getter="get_aabb" brief="">
+		<member name="aabb" type="Rect3" setter="set_aabb" getter="get_aabb">
 		</member>
 	</members>
 	<signals>

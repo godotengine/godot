@@ -62,15 +62,15 @@
 		</method>
 	</methods>
 	<members>
-		<member name="button_index" type="int" setter="set_button_index" getter="get_button_index" brief="">
+		<member name="button_index" type="int" setter="set_button_index" getter="get_button_index">
 			Mouse button identifier, one of the BUTTON_* or BUTTON_WHEEL_* constants in [@Global Scope].
 		</member>
-		<member name="doubleclick" type="bool" setter="set_doubleclick" getter="is_doubleclick" brief="">
+		<member name="doubleclick" type="bool" setter="set_doubleclick" getter="is_doubleclick">
 			Whether the event is a double-click.
 		</member>
-		<member name="factor" type="float" setter="set_factor" getter="get_factor" brief="">
+		<member name="factor" type="float" setter="set_factor" getter="get_factor">
 		</member>
-		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed" brief="">
+		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed">
 			Pressed state of the mouse button.
 		</member>
 	</members>

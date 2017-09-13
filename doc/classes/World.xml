@@ -59,9 +59,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="environment" type="Environment" setter="set_environment" getter="get_environment" brief="">
+		<member name="environment" type="Environment" setter="set_environment" getter="get_environment">
 		</member>
-		<member name="fallback_environment" type="Environment" setter="set_fallback_environment" getter="get_fallback_environment" brief="">
+		<member name="fallback_environment" type="Environment" setter="set_fallback_environment" getter="get_fallback_environment">
 		</member>
 	</members>
 	<constants>

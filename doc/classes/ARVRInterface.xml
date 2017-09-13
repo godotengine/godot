@@ -90,7 +90,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="primary" type="bool" setter="set_is_primary" getter="is_primary" brief="">
+		<member name="primary" type="bool" setter="set_is_primary" getter="is_primary">
 		</member>
 	</members>
 	<constants>

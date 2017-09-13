@@ -347,11 +347,11 @@
 		</method>
 	</methods>
 	<members>
-		<member name="playback_default_blend_time" type="float" setter="set_default_blend_time" getter="get_default_blend_time" brief="">
+		<member name="playback_default_blend_time" type="float" setter="set_default_blend_time" getter="get_default_blend_time">
 		</member>
-		<member name="playback_process_mode" type="int" setter="set_animation_process_mode" getter="get_animation_process_mode" brief="" enum="AnimationPlayer.AnimationProcessMode">
+		<member name="playback_process_mode" type="int" setter="set_animation_process_mode" getter="get_animation_process_mode" enum="AnimationPlayer.AnimationProcessMode">
 		</member>
-		<member name="root_node" type="NodePath" setter="set_root" getter="get_root" brief="">
+		<member name="root_node" type="NodePath" setter="set_root" getter="get_root">
 		</member>
 	</members>
 	<signals>

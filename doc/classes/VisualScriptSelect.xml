@@ -25,7 +25,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="type" type="int" setter="set_typed" getter="get_typed" brief="" enum="Variant.Type">
+		<member name="type" type="int" setter="set_typed" getter="get_typed" enum="Variant.Type">
 		</member>
 	</members>
 	<constants>

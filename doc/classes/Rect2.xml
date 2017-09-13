@@ -140,13 +140,13 @@
 		</method>
 	</methods>
 	<members>
-		<member name="end" type="Vector2" setter="" getter="" brief="">
+		<member name="end" type="Vector2" setter="" getter="">
 			Ending corner.
 		</member>
-		<member name="position" type="Vector2" setter="" getter="" brief="">
+		<member name="position" type="Vector2" setter="" getter="">
 			Position (starting corner).
 		</member>
-		<member name="size" type="Vector2" setter="" getter="" brief="">
+		<member name="size" type="Vector2" setter="" getter="">
 			Size from position to end.
 		</member>
 	</members>

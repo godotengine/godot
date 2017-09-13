@@ -123,21 +123,21 @@
 		</method>
 	</methods>
 	<members>
-		<member name="damping" type="float" setter="set_damping" getter="get_damping" brief="">
+		<member name="damping" type="float" setter="set_damping" getter="get_damping">
 		</member>
-		<member name="dry" type="float" setter="set_dry" getter="get_dry" brief="">
+		<member name="dry" type="float" setter="set_dry" getter="get_dry">
 		</member>
-		<member name="hipass" type="float" setter="set_hpf" getter="get_hpf" brief="">
+		<member name="hipass" type="float" setter="set_hpf" getter="get_hpf">
 		</member>
-		<member name="predelay_feedback" type="float" setter="set_predelay_msec" getter="get_predelay_msec" brief="">
+		<member name="predelay_feedback" type="float" setter="set_predelay_msec" getter="get_predelay_msec">
 		</member>
-		<member name="predelay_msec" type="float" setter="set_predelay_msec" getter="get_predelay_msec" brief="">
+		<member name="predelay_msec" type="float" setter="set_predelay_msec" getter="get_predelay_msec">
 		</member>
-		<member name="room_size" type="float" setter="set_room_size" getter="get_room_size" brief="">
+		<member name="room_size" type="float" setter="set_room_size" getter="get_room_size">
 		</member>
-		<member name="spread" type="float" setter="set_spread" getter="get_spread" brief="">
+		<member name="spread" type="float" setter="set_spread" getter="get_spread">
 		</member>
-		<member name="wet" type="float" setter="set_wet" getter="get_wet" brief="">
+		<member name="wet" type="float" setter="set_wet" getter="get_wet">
 		</member>
 	</members>
 	<constants>

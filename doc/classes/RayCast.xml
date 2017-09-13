@@ -179,16 +179,16 @@
 		</method>
 	</methods>
 	<members>
-		<member name="cast_to" type="Vector3" setter="set_cast_to" getter="get_cast_to" brief="">
+		<member name="cast_to" type="Vector3" setter="set_cast_to" getter="get_cast_to">
 			The ray's destination point, relative to the RayCast's [code]position[/code].
 		</member>
-		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" brief="">
+		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer">
 			The RayCast's collison layer(s). Only bodies in the same collision layer(s) will be detected.
 		</member>
-		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" brief="">
+		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled">
 			If [code]true[/code], collisions will be reported. Default value: [code]false[/code].
 		</member>
-		<member name="type_mask" type="int" setter="set_type_mask" getter="get_type_mask" brief="">
+		<member name="type_mask" type="int" setter="set_type_mask" getter="get_type_mask">
 			Object types to detect using a logical sum (OR operation) of type constants defined in [Physics2DDirectSpaceState].
 			Example:
 			[codeblock]

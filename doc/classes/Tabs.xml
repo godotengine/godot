@@ -161,9 +161,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="current_tab" type="int" setter="set_current_tab" getter="get_current_tab" brief="">
+		<member name="current_tab" type="int" setter="set_current_tab" getter="get_current_tab">
 		</member>
-		<member name="tab_close_display_policy" type="int" setter="set_tab_close_display_policy" getter="get_tab_close_display_policy" brief="" enum="Tabs.CloseButtonDisplayPolicy">
+		<member name="tab_close_display_policy" type="int" setter="set_tab_close_display_policy" getter="get_tab_close_display_policy" enum="Tabs.CloseButtonDisplayPolicy">
 		</member>
 	</members>
 	<signals>

@@ -82,19 +82,19 @@
 		</method>
 	</methods>
 	<members>
-		<member name="alt" type="bool" setter="set_alt" getter="get_alt" brief="">
+		<member name="alt" type="bool" setter="set_alt" getter="get_alt">
 			State of the Alt modifier.
 		</member>
-		<member name="command" type="bool" setter="set_command" getter="get_command" brief="">
+		<member name="command" type="bool" setter="set_command" getter="get_command">
 			State of the Command modifier.
 		</member>
-		<member name="control" type="bool" setter="set_control" getter="get_control" brief="">
+		<member name="control" type="bool" setter="set_control" getter="get_control">
 			State of the Ctrl modifier.
 		</member>
-		<member name="meta" type="bool" setter="set_metakey" getter="get_metakey" brief="">
+		<member name="meta" type="bool" setter="set_metakey" getter="get_metakey">
 			State of the Meta modifier.
 		</member>
-		<member name="shift" type="bool" setter="set_shift" getter="get_shift" brief="">
+		<member name="shift" type="bool" setter="set_shift" getter="get_shift">
 			State of the Shift modifier.
 		</member>
 	</members>

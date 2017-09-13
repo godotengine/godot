@@ -193,31 +193,31 @@
 		</method>
 	</methods>
 	<members>
-		<member name="dry" type="float" setter="set_dry" getter="get_dry" brief="">
+		<member name="dry" type="float" setter="set_dry" getter="get_dry">
 		</member>
-		<member name="feedback/active" type="bool" setter="set_feedback_active" getter="is_feedback_active" brief="">
+		<member name="feedback/active" type="bool" setter="set_feedback_active" getter="is_feedback_active">
 		</member>
-		<member name="feedback/delay_ms" type="float" setter="set_feedback_delay_ms" getter="get_feedback_delay_ms" brief="">
+		<member name="feedback/delay_ms" type="float" setter="set_feedback_delay_ms" getter="get_feedback_delay_ms">
 		</member>
-		<member name="feedback/level_db" type="float" setter="set_feedback_level_db" getter="get_feedback_level_db" brief="">
+		<member name="feedback/level_db" type="float" setter="set_feedback_level_db" getter="get_feedback_level_db">
 		</member>
-		<member name="feedback/lowpass" type="float" setter="set_feedback_lowpass" getter="get_feedback_lowpass" brief="">
+		<member name="feedback/lowpass" type="float" setter="set_feedback_lowpass" getter="get_feedback_lowpass">
 		</member>
-		<member name="tap1/active" type="bool" setter="set_tap1_active" getter="is_tap1_active" brief="">
+		<member name="tap1/active" type="bool" setter="set_tap1_active" getter="is_tap1_active">
 		</member>
-		<member name="tap1/delay_ms" type="float" setter="set_tap1_delay_ms" getter="get_tap1_delay_ms" brief="">
+		<member name="tap1/delay_ms" type="float" setter="set_tap1_delay_ms" getter="get_tap1_delay_ms">
 		</member>
-		<member name="tap1/level_db" type="float" setter="set_tap1_level_db" getter="get_tap1_level_db" brief="">
+		<member name="tap1/level_db" type="float" setter="set_tap1_level_db" getter="get_tap1_level_db">
 		</member>
-		<member name="tap1/pan" type="float" setter="set_tap1_pan" getter="get_tap1_pan" brief="">
+		<member name="tap1/pan" type="float" setter="set_tap1_pan" getter="get_tap1_pan">
 		</member>
-		<member name="tap2/active" type="bool" setter="set_tap2_active" getter="is_tap2_active" brief="">
+		<member name="tap2/active" type="bool" setter="set_tap2_active" getter="is_tap2_active">
 		</member>
-		<member name="tap2/delay_ms" type="float" setter="set_tap2_delay_ms" getter="get_tap2_delay_ms" brief="">
+		<member name="tap2/delay_ms" type="float" setter="set_tap2_delay_ms" getter="get_tap2_delay_ms">
 		</member>
-		<member name="tap2/level_db" type="float" setter="set_tap2_level_db" getter="get_tap2_level_db" brief="">
+		<member name="tap2/level_db" type="float" setter="set_tap2_level_db" getter="get_tap2_level_db">
 		</member>
-		<member name="tap2/pan" type="float" setter="set_tap2_pan" getter="get_tap2_pan" brief="">
+		<member name="tap2/pan" type="float" setter="set_tap2_pan" getter="get_tap2_pan">
 		</member>
 	</members>
 	<constants>

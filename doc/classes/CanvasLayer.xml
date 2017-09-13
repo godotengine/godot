@@ -130,13 +130,13 @@
 		</method>
 	</methods>
 	<members>
-		<member name="layer" type="int" setter="set_layer" getter="get_layer" brief="">
+		<member name="layer" type="int" setter="set_layer" getter="get_layer">
 		</member>
-		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" brief="">
+		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset">
 		</member>
-		<member name="rotation" type="float" setter="set_rotationd" getter="get_rotationd" brief="">
+		<member name="rotation" type="float" setter="set_rotationd" getter="get_rotationd">
 		</member>
-		<member name="scale" type="Vector2" setter="set_scale" getter="get_scale" brief="">
+		<member name="scale" type="Vector2" setter="set_scale" getter="get_scale">
 		</member>
 	</members>
 	<constants>

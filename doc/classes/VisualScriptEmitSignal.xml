@@ -25,7 +25,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="signal" type="String" setter="set_signal" getter="get_signal" brief="">
+		<member name="signal" type="String" setter="set_signal" getter="get_signal">
 		</member>
 	</members>
 	<constants>

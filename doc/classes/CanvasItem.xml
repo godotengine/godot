@@ -597,21 +597,21 @@
 		</method>
 	</methods>
 	<members>
-		<member name="light_mask" type="int" setter="set_light_mask" getter="get_light_mask" brief="">
+		<member name="light_mask" type="int" setter="set_light_mask" getter="get_light_mask">
 		</member>
-		<member name="material" type="Material" setter="set_material" getter="get_material" brief="">
+		<member name="material" type="Material" setter="set_material" getter="get_material">
 		</member>
-		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" brief="">
+		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate">
 		</member>
-		<member name="self_modulate" type="Color" setter="set_self_modulate" getter="get_self_modulate" brief="">
+		<member name="self_modulate" type="Color" setter="set_self_modulate" getter="get_self_modulate">
 		</member>
-		<member name="show_behind_parent" type="bool" setter="set_draw_behind_parent" getter="is_draw_behind_parent_enabled" brief="">
+		<member name="show_behind_parent" type="bool" setter="set_draw_behind_parent" getter="is_draw_behind_parent_enabled">
 		</member>
-		<member name="show_on_top" type="bool" setter="_set_on_top" getter="_is_on_top" brief="">
+		<member name="show_on_top" type="bool" setter="_set_on_top" getter="_is_on_top">
 		</member>
-		<member name="use_parent_material" type="bool" setter="set_use_parent_material" getter="get_use_parent_material" brief="">
+		<member name="use_parent_material" type="bool" setter="set_use_parent_material" getter="get_use_parent_material">
 		</member>
-		<member name="visible" type="bool" setter="set_visible" getter="is_visible" brief="">
+		<member name="visible" type="bool" setter="set_visible" getter="is_visible">
 		</member>
 	</members>
 	<signals>

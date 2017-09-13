@@ -165,27 +165,27 @@
 		</method>
 	</methods>
 	<members>
-		<member name="bias" type="float" setter="set_bias" getter="get_bias" brief="">
+		<member name="bias" type="float" setter="set_bias" getter="get_bias">
 		</member>
-		<member name="bounds" type="Rect3" setter="set_bounds" getter="get_bounds" brief="">
+		<member name="bounds" type="Rect3" setter="set_bounds" getter="get_bounds">
 		</member>
-		<member name="cell_size" type="float" setter="set_cell_size" getter="get_cell_size" brief="">
+		<member name="cell_size" type="float" setter="set_cell_size" getter="get_cell_size">
 		</member>
-		<member name="compress" type="bool" setter="set_compress" getter="is_compressed" brief="">
+		<member name="compress" type="bool" setter="set_compress" getter="is_compressed">
 		</member>
-		<member name="dynamic_data" type="PoolIntArray" setter="set_dynamic_data" getter="get_dynamic_data" brief="">
+		<member name="dynamic_data" type="PoolIntArray" setter="set_dynamic_data" getter="get_dynamic_data">
 		</member>
-		<member name="dynamic_range" type="int" setter="set_dynamic_range" getter="get_dynamic_range" brief="">
+		<member name="dynamic_range" type="int" setter="set_dynamic_range" getter="get_dynamic_range">
 		</member>
-		<member name="energy" type="float" setter="set_energy" getter="get_energy" brief="">
+		<member name="energy" type="float" setter="set_energy" getter="get_energy">
 		</member>
-		<member name="interior" type="bool" setter="set_interior" getter="is_interior" brief="">
+		<member name="interior" type="bool" setter="set_interior" getter="is_interior">
 		</member>
-		<member name="normal_bias" type="float" setter="set_normal_bias" getter="get_normal_bias" brief="">
+		<member name="normal_bias" type="float" setter="set_normal_bias" getter="get_normal_bias">
 		</member>
-		<member name="propagation" type="float" setter="set_propagation" getter="get_propagation" brief="">
+		<member name="propagation" type="float" setter="set_propagation" getter="get_propagation">
 		</member>
-		<member name="to_cell_xform" type="Transform" setter="set_to_cell_xform" getter="get_to_cell_xform" brief="">
+		<member name="to_cell_xform" type="Transform" setter="set_to_cell_xform" getter="get_to_cell_xform">
 		</member>
 	</members>
 	<constants>

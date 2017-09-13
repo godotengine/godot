@@ -73,13 +73,13 @@
 		</method>
 	</methods>
 	<members>
-		<member name="bias" type="float" setter="set_bias" getter="get_bias" brief="">
+		<member name="bias" type="float" setter="set_bias" getter="get_bias">
 		</member>
-		<member name="disable_collision" type="bool" setter="set_exclude_nodes_from_collision" getter="get_exclude_nodes_from_collision" brief="">
+		<member name="disable_collision" type="bool" setter="set_exclude_nodes_from_collision" getter="get_exclude_nodes_from_collision">
 		</member>
-		<member name="node_a" type="NodePath" setter="set_node_a" getter="get_node_a" brief="">
+		<member name="node_a" type="NodePath" setter="set_node_a" getter="get_node_a">
 		</member>
-		<member name="node_b" type="NodePath" setter="set_node_b" getter="get_node_b" brief="">
+		<member name="node_b" type="NodePath" setter="set_node_b" getter="get_node_b">
 		</member>
 	</members>
 	<constants>

@@ -25,7 +25,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="var_name" type="String" setter="set_variable" getter="get_variable" brief="">
+		<member name="var_name" type="String" setter="set_variable" getter="get_variable">
 		</member>
 	</members>
 	<constants>

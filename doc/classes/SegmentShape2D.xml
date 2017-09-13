@@ -45,9 +45,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="a" type="Vector2" setter="set_a" getter="get_a" brief="">
+		<member name="a" type="Vector2" setter="set_a" getter="get_a">
 		</member>
-		<member name="b" type="Vector2" setter="set_b" getter="get_b" brief="">
+		<member name="b" type="Vector2" setter="set_b" getter="get_b">
 		</member>
 	</members>
 	<constants>

@@ -121,9 +121,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="colors" type="PoolColorArray" setter="set_colors" getter="get_colors" brief="">
+		<member name="colors" type="PoolColorArray" setter="set_colors" getter="get_colors">
 		</member>
-		<member name="offsets" type="PoolRealArray" setter="set_offsets" getter="get_offsets" brief="">
+		<member name="offsets" type="PoolRealArray" setter="set_offsets" getter="get_offsets">
 		</member>
 	</members>
 	<constants>

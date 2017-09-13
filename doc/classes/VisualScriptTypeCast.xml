@@ -39,9 +39,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="base_script" type="String" setter="set_base_script" getter="get_base_script" brief="">
+		<member name="base_script" type="String" setter="set_base_script" getter="get_base_script">
 		</member>
-		<member name="base_type" type="String" setter="set_base_type" getter="get_base_type" brief="">
+		<member name="base_type" type="String" setter="set_base_type" getter="get_base_type">
 		</member>
 	</members>
 	<constants>

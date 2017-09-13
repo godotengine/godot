@@ -39,9 +39,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" brief="">
+		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled">
 		</member>
-		<member name="navmesh" type="NavigationMesh" setter="set_navigation_mesh" getter="get_navigation_mesh" brief="">
+		<member name="navmesh" type="NavigationMesh" setter="set_navigation_mesh" getter="get_navigation_mesh">
 		</member>
 	</members>
 	<constants>

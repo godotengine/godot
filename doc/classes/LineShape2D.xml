@@ -45,9 +45,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="d" type="float" setter="set_d" getter="get_d" brief="">
+		<member name="d" type="float" setter="set_d" getter="get_d">
 		</member>
-		<member name="normal" type="Vector2" setter="set_normal" getter="get_normal" brief="">
+		<member name="normal" type="Vector2" setter="set_normal" getter="get_normal">
 		</member>
 	</members>
 	<constants>

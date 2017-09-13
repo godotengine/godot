@@ -83,19 +83,19 @@
 		</method>
 	</methods>
 	<members>
-		<member name="align" type="int" setter="set_text_align" getter="get_text_align" brief="" enum="Button.TextAlign">
+		<member name="align" type="int" setter="set_text_align" getter="get_text_align" enum="Button.TextAlign">
 			Text alignment policy for the button's text, use one of the ALIGN_* constants.
 		</member>
-		<member name="clip_text" type="bool" setter="set_clip_text" getter="get_clip_text" brief="">
+		<member name="clip_text" type="bool" setter="set_clip_text" getter="get_clip_text">
 			When this property is enabled, text that is too large to fit the button is clipped, when disabled the Button will always be wide enough to hold the text. This property is disabled by default.
 		</member>
-		<member name="flat" type="bool" setter="set_flat" getter="is_flat" brief="">
+		<member name="flat" type="bool" setter="set_flat" getter="is_flat">
 			Flat buttons don't display decoration.
 		</member>
-		<member name="icon" type="Texture" setter="set_button_icon" getter="get_button_icon" brief="">
+		<member name="icon" type="Texture" setter="set_button_icon" getter="get_button_icon">
 			Button's icon, if text is present the icon will be placed before the text.
 		</member>
-		<member name="text" type="String" setter="set_text" getter="get_text" brief="">
+		<member name="text" type="String" setter="set_text" getter="get_text">
 			The button's text that will be displayed inside the button's area.
 		</member>
 	</members>

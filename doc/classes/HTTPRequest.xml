@@ -122,11 +122,11 @@
 		</method>
 	</methods>
 	<members>
-		<member name="body_size_limit" type="int" setter="set_body_size_limit" getter="get_body_size_limit" brief="">
+		<member name="body_size_limit" type="int" setter="set_body_size_limit" getter="get_body_size_limit">
 		</member>
-		<member name="max_redirects" type="int" setter="set_max_redirects" getter="get_max_redirects" brief="">
+		<member name="max_redirects" type="int" setter="set_max_redirects" getter="get_max_redirects">
 		</member>
-		<member name="use_threads" type="bool" setter="set_use_threads" getter="is_using_threads" brief="">
+		<member name="use_threads" type="bool" setter="set_use_threads" getter="is_using_threads">
 		</member>
 	</members>
 	<signals>

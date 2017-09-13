@@ -25,7 +25,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="pitch_scale" type="float" setter="set_pitch_scale" getter="get_pitch_scale" brief="">
+		<member name="pitch_scale" type="float" setter="set_pitch_scale" getter="get_pitch_scale">
 		</member>
 	</members>
 	<constants>

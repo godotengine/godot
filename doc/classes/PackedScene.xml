@@ -41,7 +41,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="_bundled" type="Dictionary" setter="_set_bundled_scene" getter="_get_bundled_scene" brief="">
+		<member name="_bundled" type="Dictionary" setter="_set_bundled_scene" getter="_get_bundled_scene">
 		</member>
 	</members>
 	<constants>

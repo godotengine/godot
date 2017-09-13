@@ -198,9 +198,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="input_capture_on_drag" type="bool" setter="set_capture_input_on_drag" getter="get_capture_input_on_drag" brief="">
+		<member name="input_capture_on_drag" type="bool" setter="set_capture_input_on_drag" getter="get_capture_input_on_drag">
 		</member>
-		<member name="input_ray_pickable" type="bool" setter="set_ray_pickable" getter="is_ray_pickable" brief="">
+		<member name="input_ray_pickable" type="bool" setter="set_ray_pickable" getter="is_ray_pickable">
 		</member>
 	</members>
 	<signals>

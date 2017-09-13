@@ -141,19 +141,19 @@
 		</method>
 	</methods>
 	<members>
-		<member name="ascent" type="float" setter="set_ascent" getter="get_ascent" brief="">
+		<member name="ascent" type="float" setter="set_ascent" getter="get_ascent">
 		</member>
-		<member name="chars" type="PoolIntArray" setter="_set_chars" getter="_get_chars" brief="">
+		<member name="chars" type="PoolIntArray" setter="_set_chars" getter="_get_chars">
 		</member>
-		<member name="distance_field" type="bool" setter="set_distance_field_hint" getter="is_distance_field_hint" brief="">
+		<member name="distance_field" type="bool" setter="set_distance_field_hint" getter="is_distance_field_hint">
 		</member>
-		<member name="fallback" type="BitmapFont" setter="set_fallback" getter="get_fallback" brief="">
+		<member name="fallback" type="BitmapFont" setter="set_fallback" getter="get_fallback">
 		</member>
-		<member name="height" type="float" setter="set_height" getter="get_height" brief="">
+		<member name="height" type="float" setter="set_height" getter="get_height">
 		</member>
-		<member name="kernings" type="PoolIntArray" setter="_set_kernings" getter="_get_kernings" brief="">
+		<member name="kernings" type="PoolIntArray" setter="_set_kernings" getter="_get_kernings">
 		</member>
-		<member name="textures" type="Array" setter="_set_textures" getter="_get_textures" brief="">
+		<member name="textures" type="Array" setter="_set_textures" getter="_get_textures">
 		</member>
 	</members>
 	<constants>

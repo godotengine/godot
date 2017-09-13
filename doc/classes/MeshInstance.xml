@@ -82,10 +82,10 @@
 		</method>
 	</methods>
 	<members>
-		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh" brief="">
+		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">
 			The [Mesh] resource for the instance.
 		</member>
-		<member name="skeleton" type="NodePath" setter="set_skeleton_path" getter="get_skeleton_path" brief="">
+		<member name="skeleton" type="NodePath" setter="set_skeleton_path" getter="get_skeleton_path">
 			[NodePath] to the [Skeleton] associated with the instance.
 		</member>
 	</members>

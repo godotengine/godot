@@ -39,9 +39,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="mode" type="int" setter="set_yield_mode" getter="get_yield_mode" brief="" enum="VisualScriptYield.YieldMode">
+		<member name="mode" type="int" setter="set_yield_mode" getter="get_yield_mode" enum="VisualScriptYield.YieldMode">
 		</member>
-		<member name="wait_time" type="float" setter="set_wait_time" getter="get_wait_time" brief="">
+		<member name="wait_time" type="float" setter="set_wait_time" getter="get_wait_time">
 		</member>
 	</members>
 	<constants>

@@ -323,47 +323,47 @@
 		</method>
 	</methods>
 	<members>
-		<member name="anchor_mode" type="int" setter="set_anchor_mode" getter="get_anchor_mode" brief="" enum="Camera2D.AnchorMode">
+		<member name="anchor_mode" type="int" setter="set_anchor_mode" getter="get_anchor_mode" enum="Camera2D.AnchorMode">
 		</member>
-		<member name="current" type="bool" setter="_set_current" getter="is_current" brief="">
+		<member name="current" type="bool" setter="_set_current" getter="is_current">
 		</member>
-		<member name="drag_margin_bottom" type="float" setter="set_drag_margin" getter="get_drag_margin" brief="">
+		<member name="drag_margin_bottom" type="float" setter="set_drag_margin" getter="get_drag_margin">
 		</member>
-		<member name="drag_margin_h_enabled" type="bool" setter="set_h_drag_enabled" getter="is_h_drag_enabled" brief="">
+		<member name="drag_margin_h_enabled" type="bool" setter="set_h_drag_enabled" getter="is_h_drag_enabled">
 		</member>
-		<member name="drag_margin_left" type="float" setter="set_drag_margin" getter="get_drag_margin" brief="">
+		<member name="drag_margin_left" type="float" setter="set_drag_margin" getter="get_drag_margin">
 		</member>
-		<member name="drag_margin_right" type="float" setter="set_drag_margin" getter="get_drag_margin" brief="">
+		<member name="drag_margin_right" type="float" setter="set_drag_margin" getter="get_drag_margin">
 		</member>
-		<member name="drag_margin_top" type="float" setter="set_drag_margin" getter="get_drag_margin" brief="">
+		<member name="drag_margin_top" type="float" setter="set_drag_margin" getter="get_drag_margin">
 		</member>
-		<member name="drag_margin_v_enabled" type="bool" setter="set_v_drag_enabled" getter="is_v_drag_enabled" brief="">
+		<member name="drag_margin_v_enabled" type="bool" setter="set_v_drag_enabled" getter="is_v_drag_enabled">
 		</member>
-		<member name="editor_draw_drag_margin" type="bool" setter="set_margin_drawing_enabled" getter="is_margin_drawing_enabled" brief="">
+		<member name="editor_draw_drag_margin" type="bool" setter="set_margin_drawing_enabled" getter="is_margin_drawing_enabled">
 		</member>
-		<member name="editor_draw_limits" type="bool" setter="set_limit_drawing_enabled" getter="is_limit_drawing_enabled" brief="">
+		<member name="editor_draw_limits" type="bool" setter="set_limit_drawing_enabled" getter="is_limit_drawing_enabled">
 		</member>
-		<member name="editor_draw_screen" type="bool" setter="set_screen_drawing_enabled" getter="is_screen_drawing_enabled" brief="">
+		<member name="editor_draw_screen" type="bool" setter="set_screen_drawing_enabled" getter="is_screen_drawing_enabled">
 		</member>
-		<member name="limit_bottom" type="int" setter="set_limit" getter="get_limit" brief="">
+		<member name="limit_bottom" type="int" setter="set_limit" getter="get_limit">
 		</member>
-		<member name="limit_left" type="int" setter="set_limit" getter="get_limit" brief="">
+		<member name="limit_left" type="int" setter="set_limit" getter="get_limit">
 		</member>
-		<member name="limit_right" type="int" setter="set_limit" getter="get_limit" brief="">
+		<member name="limit_right" type="int" setter="set_limit" getter="get_limit">
 		</member>
-		<member name="limit_smoothed" type="bool" setter="set_limit_smoothing_enabled" getter="is_limit_smoothing_enabled" brief="">
+		<member name="limit_smoothed" type="bool" setter="set_limit_smoothing_enabled" getter="is_limit_smoothing_enabled">
 		</member>
-		<member name="limit_top" type="int" setter="set_limit" getter="get_limit" brief="">
+		<member name="limit_top" type="int" setter="set_limit" getter="get_limit">
 		</member>
-		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" brief="">
+		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset">
 		</member>
-		<member name="rotating" type="bool" setter="set_rotating" getter="is_rotating" brief="">
+		<member name="rotating" type="bool" setter="set_rotating" getter="is_rotating">
 		</member>
-		<member name="smoothing_enabled" type="bool" setter="set_enable_follow_smoothing" getter="is_follow_smoothing_enabled" brief="">
+		<member name="smoothing_enabled" type="bool" setter="set_enable_follow_smoothing" getter="is_follow_smoothing_enabled">
 		</member>
-		<member name="smoothing_speed" type="float" setter="set_follow_smoothing" getter="get_follow_smoothing" brief="">
+		<member name="smoothing_speed" type="float" setter="set_follow_smoothing" getter="get_follow_smoothing">
 		</member>
-		<member name="zoom" type="Vector2" setter="set_zoom" getter="get_zoom" brief="">
+		<member name="zoom" type="Vector2" setter="set_zoom" getter="get_zoom">
 		</member>
 	</members>
 	<constants>

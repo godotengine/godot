@@ -131,21 +131,21 @@
 		</method>
 	</methods>
 	<members>
-		<member name="cast_shadow" type="int" setter="set_cast_shadows_setting" getter="get_cast_shadows_setting" brief="" enum="GeometryInstance.ShadowCastingSetting">
+		<member name="cast_shadow" type="int" setter="set_cast_shadows_setting" getter="get_cast_shadows_setting" enum="GeometryInstance.ShadowCastingSetting">
 		</member>
-		<member name="extra_cull_margin" type="float" setter="set_extra_cull_margin" getter="get_extra_cull_margin" brief="">
+		<member name="extra_cull_margin" type="float" setter="set_extra_cull_margin" getter="get_extra_cull_margin">
 		</member>
-		<member name="lod_max_distance" type="float" setter="set_lod_max_distance" getter="get_lod_max_distance" brief="">
+		<member name="lod_max_distance" type="float" setter="set_lod_max_distance" getter="get_lod_max_distance">
 		</member>
-		<member name="lod_max_hysteresis" type="float" setter="set_lod_max_hysteresis" getter="get_lod_max_hysteresis" brief="">
+		<member name="lod_max_hysteresis" type="float" setter="set_lod_max_hysteresis" getter="get_lod_max_hysteresis">
 		</member>
-		<member name="lod_min_distance" type="float" setter="set_lod_min_distance" getter="get_lod_min_distance" brief="">
+		<member name="lod_min_distance" type="float" setter="set_lod_min_distance" getter="get_lod_min_distance">
 		</member>
-		<member name="lod_min_hysteresis" type="float" setter="set_lod_min_hysteresis" getter="get_lod_min_hysteresis" brief="">
+		<member name="lod_min_hysteresis" type="float" setter="set_lod_min_hysteresis" getter="get_lod_min_hysteresis">
 		</member>
-		<member name="material_override" type="Material" setter="set_material_override" getter="get_material_override" brief="">
+		<member name="material_override" type="Material" setter="set_material_override" getter="get_material_override">
 		</member>
-		<member name="use_in_baked_light" type="bool" setter="set_flag" getter="get_flag" brief="">
+		<member name="use_in_baked_light" type="bool" setter="set_flag" getter="get_flag">
 		</member>
 	</members>
 	<constants>

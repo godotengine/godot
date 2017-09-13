@@ -25,7 +25,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="load_path" type="String" setter="load" getter="get_load_path" brief="">
+		<member name="load_path" type="String" setter="load" getter="get_load_path">
 		</member>
 	</members>
 	<constants>

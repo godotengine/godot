@@ -29,7 +29,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="sort_enabled" type="bool" setter="set_sort_enabled" getter="is_sort_enabled" brief="">
+		<member name="sort_enabled" type="bool" setter="set_sort_enabled" getter="is_sort_enabled">
 		</member>
 	</members>
 	<constants>

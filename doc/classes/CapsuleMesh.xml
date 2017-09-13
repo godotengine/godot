@@ -69,16 +69,16 @@
 		</method>
 	</methods>
 	<members>
-		<member name="mid_height" type="float" setter="set_mid_height" getter="get_mid_height" brief="">
+		<member name="mid_height" type="float" setter="set_mid_height" getter="get_mid_height">
 			Height of the capsule mesh from the center point. Defaults to 1.0.
 		</member>
-		<member name="radial_segments" type="int" setter="set_radial_segments" getter="get_radial_segments" brief="">
+		<member name="radial_segments" type="int" setter="set_radial_segments" getter="get_radial_segments">
 			Number of radial segments on the capsule mesh. Defaults to 64.
 		</member>
-		<member name="radius" type="float" setter="set_radius" getter="get_radius" brief="">
+		<member name="radius" type="float" setter="set_radius" getter="get_radius">
 			Radius of the capsule mesh. Defaults to 1.0.
 		</member>
-		<member name="rings" type="int" setter="set_rings" getter="get_rings" brief="">
+		<member name="rings" type="int" setter="set_rings" getter="get_rings">
 			Number of rings along the height of the capsule. Defaults to 8.
 		</member>
 	</members>

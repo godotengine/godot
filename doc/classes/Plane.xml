@@ -144,15 +144,15 @@
 		</method>
 	</methods>
 	<members>
-		<member name="d" type="float" setter="" getter="" brief="">
+		<member name="d" type="float" setter="" getter="">
 		</member>
-		<member name="normal" type="Vector3" setter="" getter="" brief="">
+		<member name="normal" type="Vector3" setter="" getter="">
 		</member>
-		<member name="x" type="float" setter="" getter="" brief="">
+		<member name="x" type="float" setter="" getter="">
 		</member>
-		<member name="y" type="float" setter="" getter="" brief="">
+		<member name="y" type="float" setter="" getter="">
 		</member>
-		<member name="z" type="float" setter="" getter="" brief="">
+		<member name="z" type="float" setter="" getter="">
 		</member>
 	</members>
 	<constants>

@@ -45,9 +45,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="class_name" type="String" setter="set_class_name" getter="get_class_name" brief="">
+		<member name="class_name" type="String" setter="set_class_name" getter="get_class_name">
 		</member>
-		<member name="library" type="GDNativeLibrary" setter="set_library" getter="get_library" brief="">
+		<member name="library" type="GDNativeLibrary" setter="set_library" getter="get_library">
 		</member>
 	</members>
 	<constants>

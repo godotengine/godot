@@ -25,7 +25,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="panorama" type="Texture" setter="set_panorama" getter="get_panorama" brief="">
+		<member name="panorama" type="Texture" setter="set_panorama" getter="get_panorama">
 		</member>
 	</members>
 	<constants>

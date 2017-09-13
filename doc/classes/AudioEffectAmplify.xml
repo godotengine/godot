@@ -29,7 +29,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db" brief="">
+		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db">
 			The effect's volume limit.
 		</member>
 	</members>

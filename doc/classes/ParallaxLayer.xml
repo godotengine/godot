@@ -59,11 +59,11 @@
 		</method>
 	</methods>
 	<members>
-		<member name="motion_mirroring" type="Vector2" setter="set_mirroring" getter="get_mirroring" brief="">
+		<member name="motion_mirroring" type="Vector2" setter="set_mirroring" getter="get_mirroring">
 		</member>
-		<member name="motion_offset" type="Vector2" setter="set_motion_offset" getter="get_motion_offset" brief="">
+		<member name="motion_offset" type="Vector2" setter="set_motion_offset" getter="get_motion_offset">
 		</member>
-		<member name="motion_scale" type="Vector2" setter="set_motion_scale" getter="get_motion_scale" brief="">
+		<member name="motion_scale" type="Vector2" setter="set_motion_scale" getter="get_motion_scale">
 		</member>
 	</members>
 	<constants>

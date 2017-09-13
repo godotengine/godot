@@ -20,7 +20,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="items" type="Array" setter="_set_items" getter="_get_items" brief="">
+		<member name="items" type="Array" setter="_set_items" getter="_get_items">
 		</member>
 	</members>
 	<signals>

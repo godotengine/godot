@@ -25,7 +25,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="plane" type="Plane" setter="set_plane" getter="get_plane" brief="">
+		<member name="plane" type="Plane" setter="set_plane" getter="get_plane">
 		</member>
 	</members>
 	<constants>

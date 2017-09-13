@@ -55,11 +55,11 @@
 		</method>
 	</methods>
 	<members>
-		<member name="data" type="PoolByteArray" setter="set_data" getter="get_data" brief="">
+		<member name="data" type="PoolByteArray" setter="set_data" getter="get_data">
 		</member>
-		<member name="loop" type="bool" setter="set_loop" getter="has_loop" brief="">
+		<member name="loop" type="bool" setter="set_loop" getter="has_loop">
 		</member>
-		<member name="loop_offset" type="float" setter="set_loop_offset" getter="get_loop_offset" brief="">
+		<member name="loop_offset" type="float" setter="set_loop_offset" getter="get_loop_offset">
 		</member>
 	</members>
 	<constants>

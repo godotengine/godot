@@ -68,16 +68,16 @@
 		</method>
 	</methods>
 	<members>
-		<member name="index" type="int" setter="set_index" getter="get_index" brief="">
+		<member name="index" type="int" setter="set_index" getter="get_index">
 			Drag event index in the case of a multi-drag event.
 		</member>
-		<member name="position" type="Vector2" setter="set_position" getter="get_position" brief="">
+		<member name="position" type="Vector2" setter="set_position" getter="get_position">
 			Position of the drag event.
 		</member>
-		<member name="relative" type="Vector2" setter="set_relative" getter="get_relative" brief="">
+		<member name="relative" type="Vector2" setter="set_relative" getter="get_relative">
 			Position of the drag event relative to its start position.
 		</member>
-		<member name="speed" type="Vector2" setter="set_speed" getter="get_speed" brief="">
+		<member name="speed" type="Vector2" setter="set_speed" getter="get_speed">
 			Speed of the drag event.
 		</member>
 	</members>

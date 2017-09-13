@@ -33,9 +33,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="freeze_bodies" type="bool" setter="set_enabler" getter="is_enabler_enabled" brief="">
+		<member name="freeze_bodies" type="bool" setter="set_enabler" getter="is_enabler_enabled">
 		</member>
-		<member name="pause_animations" type="bool" setter="set_enabler" getter="is_enabler_enabled" brief="">
+		<member name="pause_animations" type="bool" setter="set_enabler" getter="is_enabler_enabled">
 		</member>
 	</members>
 	<constants>

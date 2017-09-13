@@ -120,7 +120,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="world_scale" type="float" setter="set_world_scale" getter="get_world_scale" brief="">
+		<member name="world_scale" type="float" setter="set_world_scale" getter="get_world_scale">
 		</member>
 	</members>
 	<signals>

@@ -95,17 +95,17 @@
 		</method>
 	</methods>
 	<members>
-		<member name="frame" type="int" setter="set_frame" getter="get_frame" brief="">
+		<member name="frame" type="int" setter="set_frame" getter="get_frame">
 		</member>
-		<member name="hframes" type="int" setter="set_hframes" getter="get_hframes" brief="">
+		<member name="hframes" type="int" setter="set_hframes" getter="get_hframes">
 		</member>
-		<member name="region_enabled" type="bool" setter="set_region" getter="is_region" brief="">
+		<member name="region_enabled" type="bool" setter="set_region" getter="is_region">
 		</member>
-		<member name="region_rect" type="Rect2" setter="set_region_rect" getter="get_region_rect" brief="">
+		<member name="region_rect" type="Rect2" setter="set_region_rect" getter="get_region_rect">
 		</member>
-		<member name="texture" type="Texture" setter="set_texture" getter="get_texture" brief="">
+		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
 		</member>
-		<member name="vframes" type="int" setter="set_vframes" getter="get_vframes" brief="">
+		<member name="vframes" type="int" setter="set_vframes" getter="get_vframes">
 		</member>
 	</members>
 	<signals>

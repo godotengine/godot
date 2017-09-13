@@ -161,29 +161,29 @@
 		</method>
 	</methods>
 	<members>
-		<member name="alpha_cut" type="int" setter="set_alpha_cut_mode" getter="get_alpha_cut_mode" brief="" enum="SpriteBase3D.AlphaCutMode">
+		<member name="alpha_cut" type="int" setter="set_alpha_cut_mode" getter="get_alpha_cut_mode" enum="SpriteBase3D.AlphaCutMode">
 		</member>
-		<member name="axis" type="int" setter="set_axis" getter="get_axis" brief="" enum="Vector3.Axis">
+		<member name="axis" type="int" setter="set_axis" getter="get_axis" enum="Vector3.Axis">
 		</member>
-		<member name="centered" type="bool" setter="set_centered" getter="is_centered" brief="">
+		<member name="centered" type="bool" setter="set_centered" getter="is_centered">
 		</member>
-		<member name="double_sided" type="bool" setter="set_draw_flag" getter="get_draw_flag" brief="">
+		<member name="double_sided" type="bool" setter="set_draw_flag" getter="get_draw_flag">
 		</member>
-		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h" brief="">
+		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h">
 		</member>
-		<member name="flip_v" type="bool" setter="set_flip_v" getter="is_flipped_v" brief="">
+		<member name="flip_v" type="bool" setter="set_flip_v" getter="is_flipped_v">
 		</member>
-		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" brief="">
+		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate">
 		</member>
-		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" brief="">
+		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset">
 		</member>
-		<member name="opacity" type="float" setter="set_opacity" getter="get_opacity" brief="">
+		<member name="opacity" type="float" setter="set_opacity" getter="get_opacity">
 		</member>
-		<member name="pixel_size" type="float" setter="set_pixel_size" getter="get_pixel_size" brief="">
+		<member name="pixel_size" type="float" setter="set_pixel_size" getter="get_pixel_size">
 		</member>
-		<member name="shaded" type="bool" setter="set_draw_flag" getter="get_draw_flag" brief="">
+		<member name="shaded" type="bool" setter="set_draw_flag" getter="get_draw_flag">
 		</member>
-		<member name="transparent" type="bool" setter="set_draw_flag" getter="get_draw_flag" brief="">
+		<member name="transparent" type="bool" setter="set_draw_flag" getter="get_draw_flag">
 		</member>
 	</members>
 	<constants>

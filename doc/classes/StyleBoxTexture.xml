@@ -169,35 +169,35 @@
 		</method>
 	</methods>
 	<members>
-		<member name="axis_stretch_horizontal" type="int" setter="set_h_axis_stretch_mode" getter="get_h_axis_stretch_mode" brief="" enum="StyleBoxTexture.AxisStretchMode">
+		<member name="axis_stretch_horizontal" type="int" setter="set_h_axis_stretch_mode" getter="get_h_axis_stretch_mode" enum="StyleBoxTexture.AxisStretchMode">
 		</member>
-		<member name="axis_stretch_vertical" type="int" setter="set_v_axis_stretch_mode" getter="get_v_axis_stretch_mode" brief="" enum="StyleBoxTexture.AxisStretchMode">
+		<member name="axis_stretch_vertical" type="int" setter="set_v_axis_stretch_mode" getter="get_v_axis_stretch_mode" enum="StyleBoxTexture.AxisStretchMode">
 		</member>
-		<member name="draw_center" type="bool" setter="set_draw_center" getter="is_draw_center_enabled" brief="">
+		<member name="draw_center" type="bool" setter="set_draw_center" getter="is_draw_center_enabled">
 		</member>
-		<member name="expand_margin_bottom" type="float" setter="set_expand_margin_size" getter="get_expand_margin_size" brief="">
+		<member name="expand_margin_bottom" type="float" setter="set_expand_margin_size" getter="get_expand_margin_size">
 		</member>
-		<member name="expand_margin_left" type="float" setter="set_expand_margin_size" getter="get_expand_margin_size" brief="">
+		<member name="expand_margin_left" type="float" setter="set_expand_margin_size" getter="get_expand_margin_size">
 		</member>
-		<member name="expand_margin_right" type="float" setter="set_expand_margin_size" getter="get_expand_margin_size" brief="">
+		<member name="expand_margin_right" type="float" setter="set_expand_margin_size" getter="get_expand_margin_size">
 		</member>
-		<member name="expand_margin_top" type="float" setter="set_expand_margin_size" getter="get_expand_margin_size" brief="">
+		<member name="expand_margin_top" type="float" setter="set_expand_margin_size" getter="get_expand_margin_size">
 		</member>
-		<member name="margin_bottom" type="float" setter="set_margin_size" getter="get_margin_size" brief="">
+		<member name="margin_bottom" type="float" setter="set_margin_size" getter="get_margin_size">
 		</member>
-		<member name="margin_left" type="float" setter="set_margin_size" getter="get_margin_size" brief="">
+		<member name="margin_left" type="float" setter="set_margin_size" getter="get_margin_size">
 		</member>
-		<member name="margin_right" type="float" setter="set_margin_size" getter="get_margin_size" brief="">
+		<member name="margin_right" type="float" setter="set_margin_size" getter="get_margin_size">
 		</member>
-		<member name="margin_top" type="float" setter="set_margin_size" getter="get_margin_size" brief="">
+		<member name="margin_top" type="float" setter="set_margin_size" getter="get_margin_size">
 		</member>
-		<member name="modulate_color" type="Color" setter="set_modulate" getter="get_modulate" brief="">
+		<member name="modulate_color" type="Color" setter="set_modulate" getter="get_modulate">
 		</member>
-		<member name="normal_map" type="Resource" setter="set_normal_map" getter="get_normal_map" brief="">
+		<member name="normal_map" type="Resource" setter="set_normal_map" getter="get_normal_map">
 		</member>
-		<member name="region_rect" type="Rect2" setter="set_region_rect" getter="get_region_rect" brief="">
+		<member name="region_rect" type="Rect2" setter="set_region_rect" getter="get_region_rect">
 		</member>
-		<member name="texture" type="Resource" setter="set_texture" getter="get_texture" brief="">
+		<member name="texture" type="Resource" setter="set_texture" getter="get_texture">
 		</member>
 	</members>
 	<signals>

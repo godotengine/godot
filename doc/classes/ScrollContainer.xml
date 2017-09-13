@@ -77,9 +77,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="scroll_horizontal" type="bool" setter="set_enable_h_scroll" getter="is_h_scroll_enabled" brief="">
+		<member name="scroll_horizontal" type="bool" setter="set_enable_h_scroll" getter="is_h_scroll_enabled">
 		</member>
-		<member name="scroll_vertical" type="bool" setter="set_enable_v_scroll" getter="is_v_scroll_enabled" brief="">
+		<member name="scroll_vertical" type="bool" setter="set_enable_v_scroll" getter="is_v_scroll_enabled">
 		</member>
 	</members>
 	<constants>

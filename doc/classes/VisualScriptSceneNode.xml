@@ -25,7 +25,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="node_path" type="NodePath" setter="set_node_path" getter="get_node_path" brief="">
+		<member name="node_path" type="NodePath" setter="set_node_path" getter="get_node_path">
 		</member>
 	</members>
 	<constants>

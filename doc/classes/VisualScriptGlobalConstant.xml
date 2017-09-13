@@ -25,7 +25,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="constant" type="int" setter="set_global_constant" getter="get_global_constant" brief="">
+		<member name="constant" type="int" setter="set_global_constant" getter="get_global_constant">
 		</member>
 	</members>
 	<constants>

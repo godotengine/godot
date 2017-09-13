@@ -53,11 +53,11 @@
 		</method>
 	</methods>
 	<members>
-		<member name="pan_pullout" type="float" setter="set_pan_pullout" getter="get_pan_pullout" brief="">
+		<member name="pan_pullout" type="float" setter="set_pan_pullout" getter="get_pan_pullout">
 		</member>
-		<member name="surround" type="float" setter="set_surround" getter="get_surround" brief="">
+		<member name="surround" type="float" setter="set_surround" getter="get_surround">
 		</member>
-		<member name="time_pullout_ms" type="float" setter="set_time_pullout" getter="get_time_pullout" brief="">
+		<member name="time_pullout_ms" type="float" setter="set_time_pullout" getter="get_time_pullout">
 		</member>
 	</members>
 	<constants>

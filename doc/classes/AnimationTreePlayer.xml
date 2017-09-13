@@ -625,7 +625,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="playback_process_mode" type="int" setter="set_animation_process_mode" getter="get_animation_process_mode" brief="" enum="AnimationTreePlayer.AnimationProcessMode">
+		<member name="playback_process_mode" type="int" setter="set_animation_process_mode" getter="get_animation_process_mode" enum="AnimationTreePlayer.AnimationProcessMode">
 		</member>
 	</members>
 	<constants>

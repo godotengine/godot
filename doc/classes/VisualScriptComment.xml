@@ -53,11 +53,11 @@
 		</method>
 	</methods>
 	<members>
-		<member name="description" type="String" setter="set_description" getter="get_description" brief="">
+		<member name="description" type="String" setter="set_description" getter="get_description">
 		</member>
-		<member name="size" type="Vector2" setter="set_size" getter="get_size" brief="">
+		<member name="size" type="Vector2" setter="set_size" getter="get_size">
 		</member>
-		<member name="title" type="String" setter="set_title" getter="get_title" brief="">
+		<member name="title" type="String" setter="set_title" getter="get_title">
 		</member>
 	</members>
 	<constants>

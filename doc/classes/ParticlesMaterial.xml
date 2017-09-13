@@ -293,113 +293,113 @@
 		</method>
 	</methods>
 	<members>
-		<member name="angle" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="angle" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="angle_curve" type="Texture" setter="set_param_texture" getter="get_param_texture" brief="">
+		<member name="angle_curve" type="Texture" setter="set_param_texture" getter="get_param_texture">
 		</member>
-		<member name="angle_random" type="float" setter="set_param_randomness" getter="get_param_randomness" brief="">
+		<member name="angle_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
 		</member>
-		<member name="angular_velocity" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="angular_velocity" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="angular_velocity_curve" type="Texture" setter="set_param_texture" getter="get_param_texture" brief="">
+		<member name="angular_velocity_curve" type="Texture" setter="set_param_texture" getter="get_param_texture">
 		</member>
-		<member name="angular_velocity_random" type="float" setter="set_param_randomness" getter="get_param_randomness" brief="">
+		<member name="angular_velocity_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
 		</member>
-		<member name="anim_loop" type="bool" setter="set_flag" getter="get_flag" brief="">
+		<member name="anim_loop" type="bool" setter="set_flag" getter="get_flag">
 		</member>
-		<member name="anim_offset" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="anim_offset" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="anim_offset_curve" type="Texture" setter="set_param_texture" getter="get_param_texture" brief="">
+		<member name="anim_offset_curve" type="Texture" setter="set_param_texture" getter="get_param_texture">
 		</member>
-		<member name="anim_offset_random" type="float" setter="set_param_randomness" getter="get_param_randomness" brief="">
+		<member name="anim_offset_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
 		</member>
-		<member name="anim_speed" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="anim_speed" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="anim_speed_curve" type="Texture" setter="set_param_texture" getter="get_param_texture" brief="">
+		<member name="anim_speed_curve" type="Texture" setter="set_param_texture" getter="get_param_texture">
 		</member>
-		<member name="anim_speed_random" type="float" setter="set_param_randomness" getter="get_param_randomness" brief="">
+		<member name="anim_speed_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
 		</member>
-		<member name="color" type="Color" setter="set_color" getter="get_color" brief="">
+		<member name="color" type="Color" setter="set_color" getter="get_color">
 		</member>
-		<member name="color_ramp" type="Texture" setter="set_color_ramp" getter="get_color_ramp" brief="">
+		<member name="color_ramp" type="Texture" setter="set_color_ramp" getter="get_color_ramp">
 		</member>
-		<member name="damping" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="damping" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="damping_curve" type="Texture" setter="set_param_texture" getter="get_param_texture" brief="">
+		<member name="damping_curve" type="Texture" setter="set_param_texture" getter="get_param_texture">
 		</member>
-		<member name="damping_random" type="float" setter="set_param_randomness" getter="get_param_randomness" brief="">
+		<member name="damping_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
 		</member>
-		<member name="emission_box_extents" type="Vector3" setter="set_emission_box_extents" getter="get_emission_box_extents" brief="">
+		<member name="emission_box_extents" type="Vector3" setter="set_emission_box_extents" getter="get_emission_box_extents">
 		</member>
-		<member name="emission_color_texture" type="Texture" setter="set_emission_color_texture" getter="get_emission_color_texture" brief="">
+		<member name="emission_color_texture" type="Texture" setter="set_emission_color_texture" getter="get_emission_color_texture">
 		</member>
-		<member name="emission_normal_texture" type="Texture" setter="set_emission_normal_texture" getter="get_emission_normal_texture" brief="">
+		<member name="emission_normal_texture" type="Texture" setter="set_emission_normal_texture" getter="get_emission_normal_texture">
 		</member>
-		<member name="emission_point_count" type="int" setter="set_emission_point_count" getter="get_emission_point_count" brief="">
+		<member name="emission_point_count" type="int" setter="set_emission_point_count" getter="get_emission_point_count">
 		</member>
-		<member name="emission_point_texture" type="Texture" setter="set_emission_point_texture" getter="get_emission_point_texture" brief="">
+		<member name="emission_point_texture" type="Texture" setter="set_emission_point_texture" getter="get_emission_point_texture">
 		</member>
-		<member name="emission_shape" type="int" setter="set_emission_shape" getter="get_emission_shape" brief="" enum="ParticlesMaterial.EmissionShape">
+		<member name="emission_shape" type="int" setter="set_emission_shape" getter="get_emission_shape" enum="ParticlesMaterial.EmissionShape">
 		</member>
-		<member name="emission_sphere_radius" type="float" setter="set_emission_sphere_radius" getter="get_emission_sphere_radius" brief="">
+		<member name="emission_sphere_radius" type="float" setter="set_emission_sphere_radius" getter="get_emission_sphere_radius">
 		</member>
-		<member name="flag_align_y" type="bool" setter="set_flag" getter="get_flag" brief="">
+		<member name="flag_align_y" type="bool" setter="set_flag" getter="get_flag">
 		</member>
-		<member name="flag_disable_z" type="bool" setter="set_flag" getter="get_flag" brief="">
+		<member name="flag_disable_z" type="bool" setter="set_flag" getter="get_flag">
 		</member>
-		<member name="flag_rotate_y" type="bool" setter="set_flag" getter="get_flag" brief="">
+		<member name="flag_rotate_y" type="bool" setter="set_flag" getter="get_flag">
 		</member>
-		<member name="flatness" type="float" setter="set_flatness" getter="get_flatness" brief="">
+		<member name="flatness" type="float" setter="set_flatness" getter="get_flatness">
 		</member>
-		<member name="gravity" type="Vector3" setter="set_gravity" getter="get_gravity" brief="">
+		<member name="gravity" type="Vector3" setter="set_gravity" getter="get_gravity">
 		</member>
-		<member name="hue_variation" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="hue_variation" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="hue_variation_curve" type="Texture" setter="set_param_texture" getter="get_param_texture" brief="">
+		<member name="hue_variation_curve" type="Texture" setter="set_param_texture" getter="get_param_texture">
 		</member>
-		<member name="hue_variation_random" type="float" setter="set_param_randomness" getter="get_param_randomness" brief="">
+		<member name="hue_variation_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
 		</member>
-		<member name="initial_velocity" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="initial_velocity" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="initial_velocity_random" type="float" setter="set_param_randomness" getter="get_param_randomness" brief="">
+		<member name="initial_velocity_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
 		</member>
-		<member name="linear_accel" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="linear_accel" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="linear_accel_curve" type="Texture" setter="set_param_texture" getter="get_param_texture" brief="">
+		<member name="linear_accel_curve" type="Texture" setter="set_param_texture" getter="get_param_texture">
 		</member>
-		<member name="linear_accel_random" type="float" setter="set_param_randomness" getter="get_param_randomness" brief="">
+		<member name="linear_accel_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
 		</member>
-		<member name="orbit_velocity" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="orbit_velocity" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="orbit_velocity_curve" type="Texture" setter="set_param_texture" getter="get_param_texture" brief="">
+		<member name="orbit_velocity_curve" type="Texture" setter="set_param_texture" getter="get_param_texture">
 		</member>
-		<member name="orbit_velocity_random" type="float" setter="set_param_randomness" getter="get_param_randomness" brief="">
+		<member name="orbit_velocity_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
 		</member>
-		<member name="radial_accel" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="radial_accel" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="radial_accel_curve" type="Texture" setter="set_param_texture" getter="get_param_texture" brief="">
+		<member name="radial_accel_curve" type="Texture" setter="set_param_texture" getter="get_param_texture">
 		</member>
-		<member name="radial_accel_random" type="float" setter="set_param_randomness" getter="get_param_randomness" brief="">
+		<member name="radial_accel_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
 		</member>
-		<member name="scale" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="scale" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="scale_curve" type="Texture" setter="set_param_texture" getter="get_param_texture" brief="">
+		<member name="scale_curve" type="Texture" setter="set_param_texture" getter="get_param_texture">
 		</member>
-		<member name="scale_random" type="float" setter="set_param_randomness" getter="get_param_randomness" brief="">
+		<member name="scale_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
 		</member>
-		<member name="spread" type="float" setter="set_spread" getter="get_spread" brief="">
+		<member name="spread" type="float" setter="set_spread" getter="get_spread">
 		</member>
-		<member name="tangential_accel" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="tangential_accel" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="tangential_accel_curve" type="Texture" setter="set_param_texture" getter="get_param_texture" brief="">
+		<member name="tangential_accel_curve" type="Texture" setter="set_param_texture" getter="get_param_texture">
 		</member>
-		<member name="tangential_accel_random" type="float" setter="set_param_randomness" getter="get_param_randomness" brief="">
+		<member name="tangential_accel_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
 		</member>
-		<member name="trail_color_modifier" type="GradientTexture" setter="set_trail_color_modifier" getter="get_trail_color_modifier" brief="">
+		<member name="trail_color_modifier" type="GradientTexture" setter="set_trail_color_modifier" getter="get_trail_color_modifier">
 		</member>
-		<member name="trail_divisor" type="int" setter="set_trail_divisor" getter="get_trail_divisor" brief="">
+		<member name="trail_divisor" type="int" setter="set_trail_divisor" getter="get_trail_divisor">
 		</member>
-		<member name="trail_size_modifier" type="CurveTexture" setter="set_trail_size_modifier" getter="get_trail_size_modifier" brief="">
+		<member name="trail_size_modifier" type="CurveTexture" setter="set_trail_size_modifier" getter="get_trail_size_modifier">
 		</member>
 	</members>
 	<constants>

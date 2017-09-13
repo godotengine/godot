@@ -120,16 +120,16 @@
 		</method>
 	</methods>
 	<members>
-		<member name="autostart" type="bool" setter="set_autostart" getter="has_autostart" brief="">
+		<member name="autostart" type="bool" setter="set_autostart" getter="has_autostart">
 			If [code]true[/code], Timer will automatically start when entering the scene tree. Default value: [code]false[/code].
 		</member>
-		<member name="one_shot" type="bool" setter="set_one_shot" getter="is_one_shot" brief="">
+		<member name="one_shot" type="bool" setter="set_one_shot" getter="is_one_shot">
 			If [code]true[/code], Timer will stop when reaching 0. If [code]false[/code], it will restart. Default value: [code]false[/code].
 		</member>
-		<member name="process_mode" type="int" setter="set_timer_process_mode" getter="get_timer_process_mode" brief="" enum="Timer.TimerProcessMode">
+		<member name="process_mode" type="int" setter="set_timer_process_mode" getter="get_timer_process_mode" enum="Timer.TimerProcessMode">
 			Processing mode. Uses TIMER_PROCESS_* constants as value.
 		</member>
-		<member name="wait_time" type="float" setter="set_wait_time" getter="get_wait_time" brief="">
+		<member name="wait_time" type="float" setter="set_wait_time" getter="get_wait_time">
 			Wait time in seconds.
 		</member>
 	</members>

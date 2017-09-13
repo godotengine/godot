@@ -229,13 +229,13 @@
 		</method>
 	</methods>
 	<members>
-		<member name="x" type="float" setter="" getter="" brief="">
+		<member name="x" type="float" setter="" getter="">
 			X component of the vector.
 		</member>
-		<member name="y" type="float" setter="" getter="" brief="">
+		<member name="y" type="float" setter="" getter="">
 			Y component of the vector.
 		</member>
-		<member name="z" type="float" setter="" getter="" brief="">
+		<member name="z" type="float" setter="" getter="">
 			Z component of the vector.
 		</member>
 	</members>

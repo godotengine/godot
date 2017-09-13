@@ -94,7 +94,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="custom_solver_bias" type="float" setter="set_custom_solver_bias" getter="get_custom_solver_bias" brief="">
+		<member name="custom_solver_bias" type="float" setter="set_custom_solver_bias" getter="get_custom_solver_bias">
 		</member>
 	</members>
 	<constants>

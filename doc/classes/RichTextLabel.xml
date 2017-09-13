@@ -314,13 +314,13 @@
 		</method>
 	</methods>
 	<members>
-		<member name="bbcode_enabled" type="bool" setter="set_use_bbcode" getter="is_using_bbcode" brief="">
+		<member name="bbcode_enabled" type="bool" setter="set_use_bbcode" getter="is_using_bbcode">
 		</member>
-		<member name="bbcode_text" type="String" setter="set_bbcode" getter="get_bbcode" brief="">
+		<member name="bbcode_text" type="String" setter="set_bbcode" getter="get_bbcode">
 		</member>
-		<member name="percent_visible" type="float" setter="set_percent_visible" getter="get_percent_visible" brief="">
+		<member name="percent_visible" type="float" setter="set_percent_visible" getter="get_percent_visible">
 		</member>
-		<member name="visible_characters" type="int" setter="set_visible_characters" getter="get_visible_characters" brief="">
+		<member name="visible_characters" type="int" setter="set_visible_characters" getter="get_visible_characters">
 		</member>
 	</members>
 	<signals>

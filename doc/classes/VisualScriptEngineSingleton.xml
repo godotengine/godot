@@ -25,7 +25,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="/constant" type="String" setter="set_singleton" getter="get_singleton" brief="">
+		<member name="/constant" type="String" setter="set_singleton" getter="get_singleton">
 		</member>
 	</members>
 	<constants>

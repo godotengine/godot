@@ -25,7 +25,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="stretch" type="bool" setter="set_stretch" getter="is_stretch_enabled" brief="">
+		<member name="stretch" type="bool" setter="set_stretch" getter="is_stretch_enabled">
 		</member>
 	</members>
 	<constants>

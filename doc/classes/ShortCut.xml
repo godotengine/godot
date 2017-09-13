@@ -45,7 +45,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="shortcut" type="InputEvent" setter="set_shortcut" getter="get_shortcut" brief="">
+		<member name="shortcut" type="InputEvent" setter="set_shortcut" getter="get_shortcut">
 		</member>
 	</members>
 	<constants>

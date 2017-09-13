@@ -53,11 +53,11 @@
 		</method>
 	</methods>
 	<members>
-		<member name="depth" type="float" setter="set_depth" getter="get_depth" brief="">
+		<member name="depth" type="float" setter="set_depth" getter="get_depth">
 		</member>
-		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" brief="">
+		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled">
 		</member>
-		<member name="polygon" type="PoolVector2Array" setter="set_polygon" getter="get_polygon" brief="">
+		<member name="polygon" type="PoolVector2Array" setter="set_polygon" getter="get_polygon">
 		</member>
 	</members>
 	<constants>

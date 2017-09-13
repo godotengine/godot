@@ -62,16 +62,16 @@
 		</method>
 	</methods>
 	<members>
-		<member name="echo" type="bool" setter="set_echo" getter="is_echo" brief="">
+		<member name="echo" type="bool" setter="set_echo" getter="is_echo">
 			Echo state of the key, i.e. whether it's a repeat event or not.
 		</member>
-		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed" brief="">
+		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed">
 			Pressed state of the key.
 		</member>
-		<member name="scancode" type="int" setter="set_scancode" getter="get_scancode" brief="">
+		<member name="scancode" type="int" setter="set_scancode" getter="get_scancode">
 			Scancode of the key, one of the KEY_* constants in [@Global Scope].
 		</member>
-		<member name="unicode" type="int" setter="set_unicode" getter="get_unicode" brief="">
+		<member name="unicode" type="int" setter="set_unicode" getter="get_unicode">
 			Unicode identifier of the key (when relevant).
 		</member>
 	</members>

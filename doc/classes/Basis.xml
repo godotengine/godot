@@ -170,11 +170,11 @@
 		</method>
 	</methods>
 	<members>
-		<member name="x" type="Vector3" setter="" getter="" brief="">
+		<member name="x" type="Vector3" setter="" getter="">
 		</member>
-		<member name="y" type="Vector3" setter="" getter="" brief="">
+		<member name="y" type="Vector3" setter="" getter="">
 		</member>
-		<member name="z" type="Vector3" setter="" getter="" brief="">
+		<member name="z" type="Vector3" setter="" getter="">
 		</member>
 	</members>
 	<constants>

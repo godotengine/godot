@@ -29,11 +29,11 @@
 		</method>
 	</methods>
 	<members>
-		<member name="params/bias" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="params/bias" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="params/damping" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="params/damping" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="params/impulse_clamp" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="params/impulse_clamp" type="float" setter="set_param" getter="get_param">
 		</member>
 	</members>
 	<constants>

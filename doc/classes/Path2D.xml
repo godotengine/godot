@@ -29,7 +29,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="curve" type="Curve2D" setter="set_curve" getter="get_curve" brief="">
+		<member name="curve" type="Curve2D" setter="set_curve" getter="get_curve">
 		</member>
 	</members>
 	<constants>

@@ -134,13 +134,13 @@
 		</method>
 	</methods>
 	<members>
-		<member name="w" type="float" setter="" getter="" brief="">
+		<member name="w" type="float" setter="" getter="">
 		</member>
-		<member name="x" type="float" setter="" getter="" brief="">
+		<member name="x" type="float" setter="" getter="">
 		</member>
-		<member name="y" type="float" setter="" getter="" brief="">
+		<member name="y" type="float" setter="" getter="">
 		</member>
-		<member name="z" type="float" setter="" getter="" brief="">
+		<member name="z" type="float" setter="" getter="">
 		</member>
 	</members>
 	<constants>

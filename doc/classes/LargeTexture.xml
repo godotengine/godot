@@ -88,7 +88,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="_data" type="Array" setter="_set_data" getter="_get_data" brief="">
+		<member name="_data" type="Array" setter="_set_data" getter="_get_data">
 		</member>
 	</members>
 	<constants>

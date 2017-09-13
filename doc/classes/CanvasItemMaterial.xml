@@ -39,9 +39,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="blend_mode" type="int" setter="set_blend_mode" getter="get_blend_mode" brief="" enum="CanvasItemMaterial.BlendMode">
+		<member name="blend_mode" type="int" setter="set_blend_mode" getter="get_blend_mode" enum="CanvasItemMaterial.BlendMode">
 		</member>
-		<member name="light_mode" type="int" setter="set_light_mode" getter="get_light_mode" brief="" enum="CanvasItemMaterial.LightMode">
+		<member name="light_mode" type="int" setter="set_light_mode" getter="get_light_mode" enum="CanvasItemMaterial.LightMode">
 		</member>
 	</members>
 	<constants>

@@ -27,7 +27,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="softness" type="float" setter="set_softness" getter="get_softness" brief="">
+		<member name="softness" type="float" setter="set_softness" getter="get_softness">
 		</member>
 	</members>
 	<constants>

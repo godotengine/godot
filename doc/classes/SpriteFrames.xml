@@ -149,9 +149,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="animations" type="Array" setter="_set_animations" getter="_get_animations" brief="">
+		<member name="animations" type="Array" setter="_set_animations" getter="_get_animations">
 		</member>
-		<member name="frames" type="Array" setter="_set_frames" getter="_get_frames" brief="">
+		<member name="frames" type="Array" setter="_set_frames" getter="_get_frames">
 		</member>
 	</members>
 	<constants>

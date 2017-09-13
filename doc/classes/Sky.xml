@@ -25,7 +25,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="radiance_size" type="int" setter="set_radiance_size" getter="get_radiance_size" brief="" enum="Sky.RadianceSize">
+		<member name="radiance_size" type="int" setter="set_radiance_size" getter="get_radiance_size" enum="Sky.RadianceSize">
 		</member>
 	</members>
 	<constants>

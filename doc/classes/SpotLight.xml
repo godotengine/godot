@@ -13,13 +13,13 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="spot_angle" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="spot_angle" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="spot_angle_attenuation" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="spot_angle_attenuation" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="spot_attenuation" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="spot_attenuation" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="spot_range" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="spot_range" type="float" setter="set_param" getter="get_param">
 		</member>
 	</members>
 	<constants>

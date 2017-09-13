@@ -30,7 +30,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="segments" type="PoolVector2Array" setter="set_segments" getter="get_segments" brief="">
+		<member name="segments" type="PoolVector2Array" setter="set_segments" getter="get_segments">
 		</member>
 	</members>
 	<constants>

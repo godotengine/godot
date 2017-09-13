@@ -39,7 +39,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="alignment" type="int" setter="set_alignment" getter="get_alignment" brief="" enum="BoxContainer.AlignMode">
+		<member name="alignment" type="int" setter="set_alignment" getter="get_alignment" enum="BoxContainer.AlignMode">
 		</member>
 	</members>
 	<constants>

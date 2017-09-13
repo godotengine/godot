@@ -29,7 +29,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="radius" type="float" setter="set_radius" getter="get_radius" brief="">
+		<member name="radius" type="float" setter="set_radius" getter="get_radius">
 		</member>
 	</members>
 	<constants>

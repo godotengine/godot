@@ -65,7 +65,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="popup_exclusive" type="bool" setter="set_exclusive" getter="is_exclusive" brief="">
+		<member name="popup_exclusive" type="bool" setter="set_exclusive" getter="is_exclusive">
 		</member>
 	</members>
 	<signals>

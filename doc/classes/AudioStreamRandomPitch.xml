@@ -39,9 +39,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="audio_stream" type="AudioStream" setter="set_audio_stream" getter="get_audio_stream" brief="">
+		<member name="audio_stream" type="AudioStream" setter="set_audio_stream" getter="get_audio_stream">
 		</member>
-		<member name="random_pitch" type="float" setter="set_random_pitch" getter="get_random_pitch" brief="">
+		<member name="random_pitch" type="float" setter="set_random_pitch" getter="get_random_pitch">
 		</member>
 	</members>
 	<constants>

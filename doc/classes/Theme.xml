@@ -298,7 +298,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="default_font" type="Font" setter="set_default_font" getter="get_default_font" brief="">
+		<member name="default_font" type="Font" setter="set_default_font" getter="get_default_font">
 		</member>
 	</members>
 	<constants>

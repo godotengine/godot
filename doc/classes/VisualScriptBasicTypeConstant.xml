@@ -39,9 +39,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="basic_type" type="int" setter="set_basic_type" getter="get_basic_type" brief="" enum="Variant.Type">
+		<member name="basic_type" type="int" setter="set_basic_type" getter="get_basic_type" enum="Variant.Type">
 		</member>
-		<member name="constant" type="String" setter="set_basic_type_constant" getter="get_basic_type_constant" brief="">
+		<member name="constant" type="String" setter="set_basic_type_constant" getter="get_basic_type_constant">
 		</member>
 	</members>
 	<constants>

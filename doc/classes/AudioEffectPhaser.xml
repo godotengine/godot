@@ -81,15 +81,15 @@
 		</method>
 	</methods>
 	<members>
-		<member name="depth" type="float" setter="set_depth" getter="get_depth" brief="">
+		<member name="depth" type="float" setter="set_depth" getter="get_depth">
 		</member>
-		<member name="feedback" type="float" setter="set_feedback" getter="get_feedback" brief="">
+		<member name="feedback" type="float" setter="set_feedback" getter="get_feedback">
 		</member>
-		<member name="range_max_hz" type="float" setter="set_range_max_hz" getter="get_range_max_hz" brief="">
+		<member name="range_max_hz" type="float" setter="set_range_max_hz" getter="get_range_max_hz">
 		</member>
-		<member name="range_min_hz" type="float" setter="set_range_min_hz" getter="get_range_min_hz" brief="">
+		<member name="range_min_hz" type="float" setter="set_range_min_hz" getter="get_range_min_hz">
 		</member>
-		<member name="rate_hz" type="float" setter="set_rate_hz" getter="get_rate_hz" brief="">
+		<member name="rate_hz" type="float" setter="set_rate_hz" getter="get_rate_hz">
 		</member>
 	</members>
 	<constants>

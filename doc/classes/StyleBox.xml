@@ -83,13 +83,13 @@
 		</method>
 	</methods>
 	<members>
-		<member name="content_margin_bottom" type="float" setter="set_default_margin" getter="get_default_margin" brief="">
+		<member name="content_margin_bottom" type="float" setter="set_default_margin" getter="get_default_margin">
 		</member>
-		<member name="content_margin_left" type="float" setter="set_default_margin" getter="get_default_margin" brief="">
+		<member name="content_margin_left" type="float" setter="set_default_margin" getter="get_default_margin">
 		</member>
-		<member name="content_margin_right" type="float" setter="set_default_margin" getter="get_default_margin" brief="">
+		<member name="content_margin_right" type="float" setter="set_default_margin" getter="get_default_margin">
 		</member>
-		<member name="content_margin_top" type="float" setter="set_default_margin" getter="get_default_margin" brief="">
+		<member name="content_margin_top" type="float" setter="set_default_margin" getter="get_default_margin">
 		</member>
 	</members>
 	<constants>

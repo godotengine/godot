@@ -14,58 +14,58 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="ARVRServer" type="ARVRServer" setter="" getter="" brief="">
+		<member name="ARVRServer" type="ARVRServer" setter="" getter="">
 			[ARVRServer] singleton
 		</member>
-		<member name="AudioServer" type="AudioServer" setter="" getter="" brief="">
+		<member name="AudioServer" type="AudioServer" setter="" getter="">
 			[AudioServer] singleton
 		</member>
-		<member name="ClassDB" type="ClassDB" setter="" getter="" brief="">
+		<member name="ClassDB" type="ClassDB" setter="" getter="">
 			[ClassDB] singleton
 		</member>
-		<member name="Engine" type="Engine" setter="" getter="" brief="">
+		<member name="Engine" type="Engine" setter="" getter="">
 			[Engine] singleton
 		</member>
-		<member name="Geometry" type="Geometry" setter="" getter="" brief="">
+		<member name="Geometry" type="Geometry" setter="" getter="">
 			[Geometry] singleton
 		</member>
-		<member name="IP" type="IP" setter="" getter="" brief="">
+		<member name="IP" type="IP" setter="" getter="">
 			[IP] singleton
 		</member>
-		<member name="Input" type="Input" setter="" getter="" brief="">
+		<member name="Input" type="Input" setter="" getter="">
 			[Input] singleton
 		</member>
-		<member name="InputMap" type="InputMap" setter="" getter="" brief="">
+		<member name="InputMap" type="InputMap" setter="" getter="">
 			[InputMap] singleton
 		</member>
-		<member name="Marshalls" type="Reference" setter="" getter="" brief="">
+		<member name="Marshalls" type="Reference" setter="" getter="">
 			[Marshalls] singleton
 		</member>
-		<member name="OS" type="OS" setter="" getter="" brief="">
+		<member name="OS" type="OS" setter="" getter="">
 			[OS] singleton
 		</member>
-		<member name="Performance" type="Performance" setter="" getter="" brief="">
+		<member name="Performance" type="Performance" setter="" getter="">
 			[Performance] singleton
 		</member>
-		<member name="Physics2DServer" type="Physics2DServer" setter="" getter="" brief="">
+		<member name="Physics2DServer" type="Physics2DServer" setter="" getter="">
 			[Physics2DServer] singleton
 		</member>
-		<member name="PhysicsServer" type="PhysicsServer" setter="" getter="" brief="">
+		<member name="PhysicsServer" type="PhysicsServer" setter="" getter="">
 			[PhysicsServer] singleton
 		</member>
-		<member name="ProjectSettings" type="ProjectSettings" setter="" getter="" brief="">
+		<member name="ProjectSettings" type="ProjectSettings" setter="" getter="">
 			[ProjectSettings] singleton
 		</member>
-		<member name="ResourceLoader" type="ResourceLoader" setter="" getter="" brief="">
+		<member name="ResourceLoader" type="ResourceLoader" setter="" getter="">
 			[ResourceLoader] singleton
 		</member>
-		<member name="ResourceSaver" type="ResourceSaver" setter="" getter="" brief="">
+		<member name="ResourceSaver" type="ResourceSaver" setter="" getter="">
 			[ResourceSaver] singleton
 		</member>
-		<member name="TranslationServer" type="TranslationServer" setter="" getter="" brief="">
+		<member name="TranslationServer" type="TranslationServer" setter="" getter="">
 			[TranslationServer] singleton
 		</member>
-		<member name="VisualServer" type="VisualServer" setter="" getter="" brief="">
+		<member name="VisualServer" type="VisualServer" setter="" getter="">
 			[VisualServer] singleton
 		</member>
 	</members>

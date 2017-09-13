@@ -39,9 +39,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="type" type="int" setter="set_constant_type" getter="get_constant_type" brief="" enum="Variant.Type">
+		<member name="type" type="int" setter="set_constant_type" getter="get_constant_type" enum="Variant.Type">
 		</member>
-		<member name="value" type="Variant" setter="set_constant_value" getter="get_constant_value" brief="">
+		<member name="value" type="Variant" setter="set_constant_value" getter="get_constant_value">
 		</member>
 	</members>
 	<constants>

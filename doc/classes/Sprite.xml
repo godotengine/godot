@@ -201,29 +201,29 @@
 		</method>
 	</methods>
 	<members>
-		<member name="centered" type="bool" setter="set_centered" getter="is_centered" brief="">
+		<member name="centered" type="bool" setter="set_centered" getter="is_centered">
 		</member>
-		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h" brief="">
+		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h">
 		</member>
-		<member name="flip_v" type="bool" setter="set_flip_v" getter="is_flipped_v" brief="">
+		<member name="flip_v" type="bool" setter="set_flip_v" getter="is_flipped_v">
 		</member>
-		<member name="frame" type="int" setter="set_frame" getter="get_frame" brief="">
+		<member name="frame" type="int" setter="set_frame" getter="get_frame">
 		</member>
-		<member name="hframes" type="int" setter="set_hframes" getter="get_hframes" brief="">
+		<member name="hframes" type="int" setter="set_hframes" getter="get_hframes">
 		</member>
-		<member name="normal_map" type="Texture" setter="set_normal_map" getter="get_normal_map" brief="">
+		<member name="normal_map" type="Texture" setter="set_normal_map" getter="get_normal_map">
 		</member>
-		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" brief="">
+		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset">
 		</member>
-		<member name="region_enabled" type="bool" setter="set_region" getter="is_region" brief="">
+		<member name="region_enabled" type="bool" setter="set_region" getter="is_region">
 		</member>
-		<member name="region_filter_clip" type="bool" setter="set_region_filter_clip" getter="is_region_filter_clip_enabled" brief="">
+		<member name="region_filter_clip" type="bool" setter="set_region_filter_clip" getter="is_region_filter_clip_enabled">
 		</member>
-		<member name="region_rect" type="Rect2" setter="set_region_rect" getter="get_region_rect" brief="">
+		<member name="region_rect" type="Rect2" setter="set_region_rect" getter="get_region_rect">
 		</member>
-		<member name="texture" type="Texture" setter="set_texture" getter="get_texture" brief="">
+		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
 		</member>
-		<member name="vframes" type="int" setter="set_vframes" getter="get_vframes" brief="">
+		<member name="vframes" type="int" setter="set_vframes" getter="get_vframes">
 		</member>
 	</members>
 	<signals>

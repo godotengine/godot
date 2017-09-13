@@ -27,7 +27,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="custom_step" type="float" setter="set_custom_step" getter="get_custom_step" brief="">
+		<member name="custom_step" type="float" setter="set_custom_step" getter="get_custom_step">
 		</member>
 	</members>
 	<signals>

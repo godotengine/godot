@@ -34,9 +34,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="action" type="String" setter="set_action" getter="get_action" brief="">
+		<member name="action" type="String" setter="set_action" getter="get_action">
 		</member>
-		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed" brief="">
+		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed">
 		</member>
 	</members>
 	<constants>

@@ -53,7 +53,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="grid_radius" type="Vector3" setter="set_grid_radius" getter="get_grid_radius" brief="">
+		<member name="grid_radius" type="Vector3" setter="set_grid_radius" getter="get_grid_radius">
 		</member>
 	</members>
 	<signals>

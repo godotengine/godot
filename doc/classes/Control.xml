@@ -833,59 +833,59 @@
 		</method>
 	</methods>
 	<members>
-		<member name="anchor_bottom" type="float" setter="_set_anchor" getter="get_anchor" brief="">
+		<member name="anchor_bottom" type="float" setter="_set_anchor" getter="get_anchor">
 		</member>
-		<member name="anchor_left" type="float" setter="_set_anchor" getter="get_anchor" brief="">
+		<member name="anchor_left" type="float" setter="_set_anchor" getter="get_anchor">
 		</member>
-		<member name="anchor_right" type="float" setter="_set_anchor" getter="get_anchor" brief="">
+		<member name="anchor_right" type="float" setter="_set_anchor" getter="get_anchor">
 		</member>
-		<member name="anchor_top" type="float" setter="_set_anchor" getter="get_anchor" brief="">
+		<member name="anchor_top" type="float" setter="_set_anchor" getter="get_anchor">
 		</member>
-		<member name="focus_neighbour_bottom" type="NodePath" setter="set_focus_neighbour" getter="get_focus_neighbour" brief="">
+		<member name="focus_neighbour_bottom" type="NodePath" setter="set_focus_neighbour" getter="get_focus_neighbour">
 		</member>
-		<member name="focus_neighbour_left" type="NodePath" setter="set_focus_neighbour" getter="get_focus_neighbour" brief="">
+		<member name="focus_neighbour_left" type="NodePath" setter="set_focus_neighbour" getter="get_focus_neighbour">
 		</member>
-		<member name="focus_neighbour_right" type="NodePath" setter="set_focus_neighbour" getter="get_focus_neighbour" brief="">
+		<member name="focus_neighbour_right" type="NodePath" setter="set_focus_neighbour" getter="get_focus_neighbour">
 		</member>
-		<member name="focus_neighbour_top" type="NodePath" setter="set_focus_neighbour" getter="get_focus_neighbour" brief="">
+		<member name="focus_neighbour_top" type="NodePath" setter="set_focus_neighbour" getter="get_focus_neighbour">
 		</member>
-		<member name="grow_horizontal" type="int" setter="set_h_grow_direction" getter="get_h_grow_direction" brief="" enum="Control.GrowDirection">
+		<member name="grow_horizontal" type="int" setter="set_h_grow_direction" getter="get_h_grow_direction" enum="Control.GrowDirection">
 		</member>
-		<member name="grow_vertical" type="int" setter="set_v_grow_direction" getter="get_v_grow_direction" brief="" enum="Control.GrowDirection">
+		<member name="grow_vertical" type="int" setter="set_v_grow_direction" getter="get_v_grow_direction" enum="Control.GrowDirection">
 		</member>
-		<member name="hint_tooltip" type="String" setter="set_tooltip" getter="_get_tooltip" brief="">
+		<member name="hint_tooltip" type="String" setter="set_tooltip" getter="_get_tooltip">
 		</member>
-		<member name="margin_bottom" type="float" setter="set_margin" getter="get_margin" brief="">
+		<member name="margin_bottom" type="float" setter="set_margin" getter="get_margin">
 		</member>
-		<member name="margin_left" type="float" setter="set_margin" getter="get_margin" brief="">
+		<member name="margin_left" type="float" setter="set_margin" getter="get_margin">
 		</member>
-		<member name="margin_right" type="float" setter="set_margin" getter="get_margin" brief="">
+		<member name="margin_right" type="float" setter="set_margin" getter="get_margin">
 		</member>
-		<member name="margin_top" type="float" setter="set_margin" getter="get_margin" brief="">
+		<member name="margin_top" type="float" setter="set_margin" getter="get_margin">
 		</member>
-		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" brief="" enum="Control.MouseFilter">
+		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" enum="Control.MouseFilter">
 		</member>
-		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" brief="">
+		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents">
 		</member>
-		<member name="rect_min_size" type="Vector2" setter="set_custom_minimum_size" getter="get_custom_minimum_size" brief="">
+		<member name="rect_min_size" type="Vector2" setter="set_custom_minimum_size" getter="get_custom_minimum_size">
 		</member>
-		<member name="rect_pivot_offset" type="Vector2" setter="set_pivot_offset" getter="get_pivot_offset" brief="">
+		<member name="rect_pivot_offset" type="Vector2" setter="set_pivot_offset" getter="get_pivot_offset">
 		</member>
-		<member name="rect_position" type="Vector2" setter="set_position" getter="get_position" brief="">
+		<member name="rect_position" type="Vector2" setter="set_position" getter="get_position">
 		</member>
-		<member name="rect_rotation" type="float" setter="set_rotation_deg" getter="get_rotation_deg" brief="">
+		<member name="rect_rotation" type="float" setter="set_rotation_deg" getter="get_rotation_deg">
 		</member>
-		<member name="rect_scale" type="Vector2" setter="set_scale" getter="get_scale" brief="">
+		<member name="rect_scale" type="Vector2" setter="set_scale" getter="get_scale">
 		</member>
-		<member name="rect_size" type="Vector2" setter="set_size" getter="get_size" brief="">
+		<member name="rect_size" type="Vector2" setter="set_size" getter="get_size">
 		</member>
-		<member name="size_flags_horizontal" type="int" setter="set_h_size_flags" getter="get_h_size_flags" brief="">
+		<member name="size_flags_horizontal" type="int" setter="set_h_size_flags" getter="get_h_size_flags">
 		</member>
-		<member name="size_flags_stretch_ratio" type="float" setter="set_stretch_ratio" getter="get_stretch_ratio" brief="">
+		<member name="size_flags_stretch_ratio" type="float" setter="set_stretch_ratio" getter="get_stretch_ratio">
 		</member>
-		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" brief="">
+		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags">
 		</member>
-		<member name="theme" type="Theme" setter="set_theme" getter="get_theme" brief="">
+		<member name="theme" type="Theme" setter="set_theme" getter="get_theme">
 		</member>
 	</members>
 	<signals>

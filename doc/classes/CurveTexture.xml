@@ -33,9 +33,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="curve" type="Curve" setter="set_curve" getter="get_curve" brief="">
+		<member name="curve" type="Curve" setter="set_curve" getter="get_curve">
 		</member>
-		<member name="width" type="int" setter="set_width" getter="get_width" brief="">
+		<member name="width" type="int" setter="set_width" getter="get_width">
 		</member>
 	</members>
 	<constants>

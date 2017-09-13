@@ -190,9 +190,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="_data" type="Dictionary" setter="_set_data" getter="_get_data" brief="">
+		<member name="_data" type="Dictionary" setter="_set_data" getter="_get_data">
 		</member>
-		<member name="bake_interval" type="float" setter="set_bake_interval" getter="get_bake_interval" brief="">
+		<member name="bake_interval" type="float" setter="set_bake_interval" getter="get_bake_interval">
 		</member>
 	</members>
 	<constants>

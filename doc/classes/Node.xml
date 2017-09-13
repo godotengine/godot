@@ -773,11 +773,11 @@
 		</method>
 	</methods>
 	<members>
-		<member name="_import_path" type="NodePath" setter="_set_import_path" getter="_get_import_path" brief="">
+		<member name="_import_path" type="NodePath" setter="_set_import_path" getter="_get_import_path">
 		</member>
-		<member name="editor/display_folded" type="bool" setter="set_display_folded" getter="is_displayed_folded" brief="">
+		<member name="editor/display_folded" type="bool" setter="set_display_folded" getter="is_displayed_folded">
 		</member>
-		<member name="pause_mode" type="int" setter="set_pause_mode" getter="get_pause_mode" brief="" enum="Node.PauseMode">
+		<member name="pause_mode" type="int" setter="set_pause_mode" getter="get_pause_mode" enum="Node.PauseMode">
 		</member>
 	</members>
 	<signals>

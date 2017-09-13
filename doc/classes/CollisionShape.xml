@@ -57,10 +57,10 @@
 		</method>
 	</methods>
 	<members>
-		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" brief="">
+		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled">
 			A disabled collision shape has no effect in the world.
 		</member>
-		<member name="shape" type="Shape" setter="set_shape" getter="get_shape" brief="">
+		<member name="shape" type="Shape" setter="set_shape" getter="get_shape">
 			The actual shape owned by this collision shape.
 		</member>
 	</members>

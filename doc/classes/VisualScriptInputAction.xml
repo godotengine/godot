@@ -39,9 +39,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="action" type="String" setter="set_action_name" getter="get_action_name" brief="">
+		<member name="action" type="String" setter="set_action_name" getter="get_action_name">
 		</member>
-		<member name="mode" type="int" setter="set_action_mode" getter="get_action_mode" brief="" enum="VisualScriptInputAction.Mode">
+		<member name="mode" type="int" setter="set_action_mode" getter="get_action_mode" enum="VisualScriptInputAction.Mode">
 		</member>
 	</members>
 	<constants>

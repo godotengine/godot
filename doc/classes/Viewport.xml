@@ -536,51 +536,51 @@
 		</method>
 	</methods>
 	<members>
-		<member name="arvr" type="bool" setter="set_use_arvr" getter="use_arvr" brief="">
+		<member name="arvr" type="bool" setter="set_use_arvr" getter="use_arvr">
 		</member>
-		<member name="audio_listener_enable_2d" type="bool" setter="set_as_audio_listener_2d" getter="is_audio_listener_2d" brief="">
+		<member name="audio_listener_enable_2d" type="bool" setter="set_as_audio_listener_2d" getter="is_audio_listener_2d">
 		</member>
-		<member name="audio_listener_enable_3d" type="bool" setter="set_as_audio_listener" getter="is_audio_listener" brief="">
+		<member name="audio_listener_enable_3d" type="bool" setter="set_as_audio_listener" getter="is_audio_listener">
 		</member>
-		<member name="debug_draw" type="int" setter="set_debug_draw" getter="get_debug_draw" brief="" enum="Viewport.DebugDraw">
+		<member name="debug_draw" type="int" setter="set_debug_draw" getter="get_debug_draw" enum="Viewport.DebugDraw">
 		</member>
-		<member name="disable_3d" type="bool" setter="set_disable_3d" getter="is_3d_disabled" brief="">
+		<member name="disable_3d" type="bool" setter="set_disable_3d" getter="is_3d_disabled">
 		</member>
-		<member name="gui_disable_input" type="bool" setter="set_disable_input" getter="is_input_disabled" brief="">
+		<member name="gui_disable_input" type="bool" setter="set_disable_input" getter="is_input_disabled">
 		</member>
-		<member name="gui_snap_controls_to_pixels" type="bool" setter="set_snap_controls_to_pixels" getter="is_snap_controls_to_pixels_enabled" brief="">
+		<member name="gui_snap_controls_to_pixels" type="bool" setter="set_snap_controls_to_pixels" getter="is_snap_controls_to_pixels_enabled">
 		</member>
-		<member name="hdr" type="bool" setter="set_hdr" getter="get_hdr" brief="">
+		<member name="hdr" type="bool" setter="set_hdr" getter="get_hdr">
 		</member>
-		<member name="msaa" type="int" setter="set_msaa" getter="get_msaa" brief="" enum="Viewport.MSAA">
+		<member name="msaa" type="int" setter="set_msaa" getter="get_msaa" enum="Viewport.MSAA">
 		</member>
-		<member name="own_world" type="bool" setter="set_use_own_world" getter="is_using_own_world" brief="">
+		<member name="own_world" type="bool" setter="set_use_own_world" getter="is_using_own_world">
 		</member>
-		<member name="physics_object_picking" type="bool" setter="set_physics_object_picking" getter="get_physics_object_picking" brief="">
+		<member name="physics_object_picking" type="bool" setter="set_physics_object_picking" getter="get_physics_object_picking">
 		</member>
-		<member name="render_target_clear_mode" type="int" setter="set_clear_mode" getter="get_clear_mode" brief="" enum="Viewport.ClearMode">
+		<member name="render_target_clear_mode" type="int" setter="set_clear_mode" getter="get_clear_mode" enum="Viewport.ClearMode">
 		</member>
-		<member name="render_target_update_mode" type="int" setter="set_update_mode" getter="get_update_mode" brief="" enum="Viewport.UpdateMode">
+		<member name="render_target_update_mode" type="int" setter="set_update_mode" getter="get_update_mode" enum="Viewport.UpdateMode">
 		</member>
-		<member name="render_target_v_flip" type="bool" setter="set_vflip" getter="get_vflip" brief="">
+		<member name="render_target_v_flip" type="bool" setter="set_vflip" getter="get_vflip">
 		</member>
-		<member name="shadow_atlas_quad_0" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" brief="" enum="Viewport.ShadowAtlasQuadrantSubdiv">
+		<member name="shadow_atlas_quad_0" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv">
 		</member>
-		<member name="shadow_atlas_quad_1" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" brief="" enum="Viewport.ShadowAtlasQuadrantSubdiv">
+		<member name="shadow_atlas_quad_1" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv">
 		</member>
-		<member name="shadow_atlas_quad_2" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" brief="" enum="Viewport.ShadowAtlasQuadrantSubdiv">
+		<member name="shadow_atlas_quad_2" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv">
 		</member>
-		<member name="shadow_atlas_quad_3" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" brief="" enum="Viewport.ShadowAtlasQuadrantSubdiv">
+		<member name="shadow_atlas_quad_3" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv">
 		</member>
-		<member name="shadow_atlas_size" type="int" setter="set_shadow_atlas_size" getter="get_shadow_atlas_size" brief="">
+		<member name="shadow_atlas_size" type="int" setter="set_shadow_atlas_size" getter="get_shadow_atlas_size">
 		</member>
-		<member name="size" type="Vector2" setter="set_size" getter="get_size" brief="">
+		<member name="size" type="Vector2" setter="set_size" getter="get_size">
 		</member>
-		<member name="transparent_bg" type="bool" setter="set_transparent_background" getter="has_transparent_background" brief="">
+		<member name="transparent_bg" type="bool" setter="set_transparent_background" getter="has_transparent_background">
 		</member>
-		<member name="usage" type="int" setter="set_usage" getter="get_usage" brief="" enum="Viewport.Usage">
+		<member name="usage" type="int" setter="set_usage" getter="get_usage" enum="Viewport.Usage">
 		</member>
-		<member name="world" type="World" setter="set_world" getter="get_world" brief="">
+		<member name="world" type="World" setter="set_world" getter="get_world">
 		</member>
 	</members>
 	<signals>

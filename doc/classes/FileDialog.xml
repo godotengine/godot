@@ -153,13 +153,13 @@
 		</method>
 	</methods>
 	<members>
-		<member name="access" type="int" setter="set_access" getter="get_access" brief="" enum="FileDialog.Access">
+		<member name="access" type="int" setter="set_access" getter="get_access" enum="FileDialog.Access">
 		</member>
-		<member name="filters" type="PoolStringArray" setter="set_filters" getter="get_filters" brief="">
+		<member name="filters" type="PoolStringArray" setter="set_filters" getter="get_filters">
 		</member>
-		<member name="mode" type="int" setter="set_mode" getter="get_mode" brief="" enum="FileDialog.Mode">
+		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="FileDialog.Mode">
 		</member>
-		<member name="show_hidden_files" type="bool" setter="set_show_hidden_files" getter="is_showing_hidden_files" brief="">
+		<member name="show_hidden_files" type="bool" setter="set_show_hidden_files" getter="is_showing_hidden_files">
 		</member>
 	</members>
 	<signals>

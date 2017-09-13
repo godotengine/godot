@@ -171,27 +171,27 @@
 		</method>
 	</methods>
 	<members>
-		<member name="damping_compression" type="float" setter="set_damping_compression" getter="get_damping_compression" brief="">
+		<member name="damping_compression" type="float" setter="set_damping_compression" getter="get_damping_compression">
 		</member>
-		<member name="damping_relaxation" type="float" setter="set_damping_relaxation" getter="get_damping_relaxation" brief="">
+		<member name="damping_relaxation" type="float" setter="set_damping_relaxation" getter="get_damping_relaxation">
 		</member>
-		<member name="suspension_max_force" type="float" setter="set_suspension_max_force" getter="get_suspension_max_force" brief="">
+		<member name="suspension_max_force" type="float" setter="set_suspension_max_force" getter="get_suspension_max_force">
 		</member>
-		<member name="suspension_stiffness" type="float" setter="set_suspension_stiffness" getter="get_suspension_stiffness" brief="">
+		<member name="suspension_stiffness" type="float" setter="set_suspension_stiffness" getter="get_suspension_stiffness">
 		</member>
-		<member name="suspension_travel" type="float" setter="set_suspension_travel" getter="get_suspension_travel" brief="">
+		<member name="suspension_travel" type="float" setter="set_suspension_travel" getter="get_suspension_travel">
 		</member>
-		<member name="use_as_steering" type="bool" setter="set_use_as_steering" getter="is_used_as_steering" brief="">
+		<member name="use_as_steering" type="bool" setter="set_use_as_steering" getter="is_used_as_steering">
 		</member>
-		<member name="use_as_traction" type="bool" setter="set_use_as_traction" getter="is_used_as_traction" brief="">
+		<member name="use_as_traction" type="bool" setter="set_use_as_traction" getter="is_used_as_traction">
 		</member>
-		<member name="wheel_friction_slip" type="float" setter="set_friction_slip" getter="get_friction_slip" brief="">
+		<member name="wheel_friction_slip" type="float" setter="set_friction_slip" getter="get_friction_slip">
 		</member>
-		<member name="wheel_radius" type="float" setter="set_radius" getter="get_radius" brief="">
+		<member name="wheel_radius" type="float" setter="set_radius" getter="get_radius">
 		</member>
-		<member name="wheel_rest_length" type="float" setter="set_suspension_rest_length" getter="get_suspension_rest_length" brief="">
+		<member name="wheel_rest_length" type="float" setter="set_suspension_rest_length" getter="get_suspension_rest_length">
 		</member>
-		<member name="wheel_roll_influence" type="float" setter="set_roll_influence" getter="get_roll_influence" brief="">
+		<member name="wheel_roll_influence" type="float" setter="set_roll_influence" getter="get_roll_influence">
 		</member>
 	</members>
 	<constants>

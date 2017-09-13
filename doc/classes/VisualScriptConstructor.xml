@@ -39,9 +39,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="constructor" type="Dictionary" setter="set_constructor" getter="get_constructor" brief="">
+		<member name="constructor" type="Dictionary" setter="set_constructor" getter="get_constructor">
 		</member>
-		<member name="type" type="int" setter="set_constructor_type" getter="get_constructor_type" brief="" enum="Variant.Type">
+		<member name="type" type="int" setter="set_constructor_type" getter="get_constructor_type" enum="Variant.Type">
 		</member>
 	</members>
 	<constants>

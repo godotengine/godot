@@ -67,13 +67,13 @@
 		</method>
 	</methods>
 	<members>
-		<member name="ceiling_db" type="float" setter="set_ceiling_db" getter="get_ceiling_db" brief="">
+		<member name="ceiling_db" type="float" setter="set_ceiling_db" getter="get_ceiling_db">
 		</member>
-		<member name="soft_clip_db" type="float" setter="set_soft_clip_db" getter="get_soft_clip_db" brief="">
+		<member name="soft_clip_db" type="float" setter="set_soft_clip_db" getter="get_soft_clip_db">
 		</member>
-		<member name="soft_clip_ratio" type="float" setter="set_soft_clip_ratio" getter="get_soft_clip_ratio" brief="">
+		<member name="soft_clip_ratio" type="float" setter="set_soft_clip_ratio" getter="get_soft_clip_ratio">
 		</member>
-		<member name="threshold_db" type="float" setter="set_threshold_db" getter="get_threshold_db" brief="">
+		<member name="threshold_db" type="float" setter="set_threshold_db" getter="get_threshold_db">
 		</member>
 	</members>
 	<constants>

@@ -188,12 +188,12 @@
 		</method>
 	</methods>
 	<members>
-		<member name="end" type="Vector3" setter="" getter="" brief="">
+		<member name="end" type="Vector3" setter="" getter="">
 			Ending corner.
 		</member>
-		<member name="position" type="Vector3" setter="" getter="" brief="">
+		<member name="position" type="Vector3" setter="" getter="">
 		</member>
-		<member name="size" type="Vector3" setter="" getter="" brief="">
+		<member name="size" type="Vector3" setter="" getter="">
 			Size from position to end.
 		</member>
 	</members>

@@ -101,7 +101,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="collision/safe_margin" type="float" setter="set_safe_margin" getter="get_safe_margin" brief="">
+		<member name="collision/safe_margin" type="float" setter="set_safe_margin" getter="get_safe_margin">
 		</member>
 	</members>
 	<constants>

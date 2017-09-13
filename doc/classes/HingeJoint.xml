@@ -47,25 +47,25 @@
 		</method>
 	</methods>
 	<members>
-		<member name="angular_limit/bias" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="angular_limit/bias" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="angular_limit/enable" type="bool" setter="set_flag" getter="get_flag" brief="">
+		<member name="angular_limit/enable" type="bool" setter="set_flag" getter="get_flag">
 		</member>
-		<member name="angular_limit/lower" type="float" setter="_set_lower_limit" getter="_get_lower_limit" brief="">
+		<member name="angular_limit/lower" type="float" setter="_set_lower_limit" getter="_get_lower_limit">
 		</member>
-		<member name="angular_limit/relaxation" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="angular_limit/relaxation" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="angular_limit/softness" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="angular_limit/softness" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="angular_limit/upper" type="float" setter="_set_upper_limit" getter="_get_upper_limit" brief="">
+		<member name="angular_limit/upper" type="float" setter="_set_upper_limit" getter="_get_upper_limit">
 		</member>
-		<member name="motor/enable" type="bool" setter="set_flag" getter="get_flag" brief="">
+		<member name="motor/enable" type="bool" setter="set_flag" getter="get_flag">
 		</member>
-		<member name="motor/max_impulse" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="motor/max_impulse" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="motor/target_velocity" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="motor/target_velocity" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="params/bias" type="float" setter="set_param" getter="get_param" brief="">
+		<member name="params/bias" type="float" setter="set_param" getter="get_param">
 		</member>
 	</members>
 	<constants>

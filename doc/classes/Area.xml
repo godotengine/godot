@@ -373,41 +373,41 @@
 		</method>
 	</methods>
 	<members>
-		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp" brief="">
+		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp">
 		</member>
-		<member name="audio_bus_name" type="String" setter="set_audio_bus" getter="get_audio_bus" brief="">
+		<member name="audio_bus_name" type="String" setter="set_audio_bus" getter="get_audio_bus">
 		</member>
-		<member name="audio_bus_override" type="bool" setter="set_audio_bus_override" getter="is_overriding_audio_bus" brief="">
+		<member name="audio_bus_override" type="bool" setter="set_audio_bus_override" getter="is_overriding_audio_bus">
 		</member>
-		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" brief="">
+		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer">
 		</member>
-		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" brief="">
+		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask">
 		</member>
-		<member name="gravity" type="float" setter="set_gravity" getter="get_gravity" brief="">
+		<member name="gravity" type="float" setter="set_gravity" getter="get_gravity">
 		</member>
-		<member name="gravity_distance_scale" type="float" setter="set_gravity_distance_scale" getter="get_gravity_distance_scale" brief="">
+		<member name="gravity_distance_scale" type="float" setter="set_gravity_distance_scale" getter="get_gravity_distance_scale">
 		</member>
-		<member name="gravity_point" type="bool" setter="set_gravity_is_point" getter="is_gravity_a_point" brief="">
+		<member name="gravity_point" type="bool" setter="set_gravity_is_point" getter="is_gravity_a_point">
 		</member>
-		<member name="gravity_vec" type="Vector3" setter="set_gravity_vector" getter="get_gravity_vector" brief="">
+		<member name="gravity_vec" type="Vector3" setter="set_gravity_vector" getter="get_gravity_vector">
 		</member>
-		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp" brief="">
+		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp">
 		</member>
-		<member name="monitorable" type="bool" setter="set_monitorable" getter="is_monitorable" brief="">
+		<member name="monitorable" type="bool" setter="set_monitorable" getter="is_monitorable">
 		</member>
-		<member name="monitoring" type="bool" setter="set_monitoring" getter="is_monitoring" brief="">
+		<member name="monitoring" type="bool" setter="set_monitoring" getter="is_monitoring">
 		</member>
-		<member name="priority" type="float" setter="set_priority" getter="get_priority" brief="">
+		<member name="priority" type="float" setter="set_priority" getter="get_priority">
 		</member>
-		<member name="reverb_bus_amount" type="float" setter="set_reverb_amount" getter="get_reverb_amount" brief="">
+		<member name="reverb_bus_amount" type="float" setter="set_reverb_amount" getter="get_reverb_amount">
 		</member>
-		<member name="reverb_bus_enable" type="bool" setter="set_use_reverb_bus" getter="is_using_reverb_bus" brief="">
+		<member name="reverb_bus_enable" type="bool" setter="set_use_reverb_bus" getter="is_using_reverb_bus">
 		</member>
-		<member name="reverb_bus_name" type="String" setter="set_reverb_bus" getter="get_reverb_bus" brief="">
+		<member name="reverb_bus_name" type="String" setter="set_reverb_bus" getter="get_reverb_bus">
 		</member>
-		<member name="reverb_bus_uniformity" type="float" setter="set_reverb_uniformity" getter="get_reverb_uniformity" brief="">
+		<member name="reverb_bus_uniformity" type="float" setter="set_reverb_uniformity" getter="get_reverb_uniformity">
 		</member>
-		<member name="space_override" type="int" setter="set_space_override_mode" getter="get_space_override_mode" brief="" enum="Area.SpaceOverride">
+		<member name="space_override" type="int" setter="set_space_override_mode" getter="get_space_override_mode" enum="Area.SpaceOverride">
 		</member>
 	</members>
 	<signals>
