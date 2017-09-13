@@ -359,11 +359,11 @@ Files extracted from upstream source:
 - all .cpp and .h files apart from `main.cpp`
 - LICENSE.TXT
 
-## recast
+## recastnavigation
 
 - Upstream: https://github.com/recastnavigation/recastnavigation
 - version: git commit ef3ea40f - 2016-02-06
-- License: MIT-like
+- License: zlib
 
 ## rtaudio
 

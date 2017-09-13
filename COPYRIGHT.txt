@@ -315,6 +315,11 @@ Comment: PvrTcCompressor
 Copyright: 2014, Jeffrey Lim.
 License: BSD-3-clause
 
+Files: ./thirdparty/recastnavigation/
+Comment: Recast
+Copyright: 2009, Mikko Mononen
+License: Zlib
+
 Files: ./thirdparty/rtaudio/
 Comment: RtAudio
 Copyright: 2001-2016, Gary P. Scavone
