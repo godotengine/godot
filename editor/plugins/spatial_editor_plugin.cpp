@@ -2843,8 +2843,8 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	ED_SHORTCUT("spatial_editor/freelook_right", TTR("Freelook Right"), KEY_D);
 	ED_SHORTCUT("spatial_editor/freelook_forward", TTR("Freelook Forward"), KEY_W);
 	ED_SHORTCUT("spatial_editor/freelook_backwards", TTR("Freelook Backwards"), KEY_S);
-	ED_SHORTCUT("spatial_editor/freelook_up", TTR("Freelook Up"), KEY_Q);
-	ED_SHORTCUT("spatial_editor/freelook_down", TTR("Freelook Down"), KEY_E);
+	ED_SHORTCUT("spatial_editor/freelook_up", TTR("Freelook Up"), KEY_E);
+	ED_SHORTCUT("spatial_editor/freelook_down", TTR("Freelook Down"), KEY_Q);
 	ED_SHORTCUT("spatial_editor/freelook_speed_modifier", TTR("Freelook Speed Modifier"), KEY_SHIFT);
 
 	preview_camera = memnew(Button);
