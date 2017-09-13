@@ -312,7 +312,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Color tab_color = highlight_tabs ? base_color.linear_interpolate(font_color, contrast) : base_color;
 	const int border_width = CLAMP(border_size, 0, 3) * EDSCALE;
 
-	const int default_margin_size = 4 * EDSCALE;
+	const int default_margin_size = 4;
+
 	// styleboxes
 	// this is the most commonly used stylebox, variations should be made as duplicate of this
 	Ref<StyleBoxFlat> style_default = make_flat_stylebox(base_color, default_margin_size, default_margin_size, default_margin_size, default_margin_size);
@@ -345,10 +346,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// style for windows, popups, etc..
 	Ref<StyleBoxFlat> style_popup = style_default->duplicate();
-	style_popup->set_default_margin(MARGIN_LEFT, default_margin_size * 2);
-	style_popup->set_default_margin(MARGIN_TOP, default_margin_size * 2);
-	style_popup->set_default_margin(MARGIN_RIGHT, default_margin_size * 2);
-	style_popup->set_default_margin(MARGIN_BOTTOM, default_margin_size * 2);
+	style_popup->set_default_margin(MARGIN_LEFT, default_margin_size * EDSCALE * 2);
+	style_popup->set_default_margin(MARGIN_TOP, default_margin_size * EDSCALE * 2);
+	style_popup->set_default_margin(MARGIN_RIGHT, default_margin_size * EDSCALE * 2);
+	style_popup->set_default_margin(MARGIN_BOTTOM, default_margin_size * EDSCALE * 2);
 	style_popup->set_border_color_all(contrast_color_1);
 	style_popup->set_border_width_all(MAX(EDSCALE, border_width));
 	const Color shadow_color = Color(0, 0, 0, dark_theme ? 0.3 : 0.1);
@@ -392,7 +393,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Ref<StyleBoxFlat> style_menu_hover_border = style_default->duplicate();
 	style_menu_hover_border->set_draw_center(false);
 	style_menu_hover_border->set_border_width_all(0);
-	style_menu_hover_border->set_border_width(MARGIN_BOTTOM, border_width * EDSCALE);
+	style_menu_hover_border->set_border_width(MARGIN_BOTTOM, border_width);
 	style_menu_hover_border->set_border_color_all(accent_color);
 
 	Ref<StyleBoxFlat> style_menu_hover_bg = style_default->duplicate();
