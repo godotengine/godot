@@ -433,7 +433,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Ref<StyleBoxFlat> style_content_panel_vp = style_content_panel->duplicate();
 	style_content_panel_vp->set_default_margin(MARGIN_LEFT, border_width);
 	style_content_panel_vp->set_default_margin(MARGIN_TOP, default_margin_size);
-	style_content_panel_vp->set_default_margin(MARGIN_LEFT, border_width);
+	style_content_panel_vp->set_default_margin(MARGIN_RIGHT, border_width);
 	style_content_panel_vp->set_default_margin(MARGIN_BOTTOM, border_width);
 	theme->set_stylebox("panel", "TabContainer", style_content_panel);
 	theme->set_stylebox("Content", "EditorStyles", style_content_panel_vp);
