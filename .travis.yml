@@ -4,6 +4,8 @@ dist: trusty
 
 sudo: false
 
+cache: ccache
+
 compiler:
   - gcc
   - clang
@@ -76,7 +78,10 @@ addons:
       - clang-format-3.9
 
 before_script:
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update; brew install scons; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then
+      brew update; brew install scons ccache;
+      export PATH="/usr/local/opt/ccache/libexec:$PATH";
+    fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ] && [ "$GODOT_TARGET" = "android" ]; then
       brew update; brew install -v android-sdk;
       brew install -v android-ndk | grep -v "inflating:" | grep -v "creating:";
@@ -87,9 +92,5 @@ script:
   - if [ "$STATIC_CHECKS" = "yes" ]; then
       sh ./misc/travis/clang-format.sh;
     else
-      if [ "$TRAVIS_OS_NAME" = "windows" ]; then
-        scons -j 2 platform=$GODOT_TARGET progress=no verbose=yes CXX=$CXX openssl=builtin;
-      else
-        scons -j 2 platform=$GODOT_TARGET progress=no verbose=yes bits=64 CXX=$CXX openssl=builtin;
-      fi
+      scons -j 2 platform=$GODOT_TARGET progress=no verbose=yes CXX=$CXX builtin_openssl=yes;
     fi
