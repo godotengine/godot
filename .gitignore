@@ -80,6 +80,8 @@ build/
 bld/
 [Bb]in/
 [Oo]bj/
+*.debug
+*.dSYM
 
 # MSTest test Results
 [Tt]est[Rr]esult*/

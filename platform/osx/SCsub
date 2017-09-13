@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 
+import os
 Import('env')
+
+def make_debug(target, source, env):
+    os.system('dsymutil %s -o %s.dSYM' % (target[0], target[0]))
 
 files = [
     'crash_handler_osx.mm',
@@ -13,8 +17,7 @@ files = [
     'power_osx.cpp',
 ]
 
-prog = env.Program('#bin/godot', files)
-if (env['target'] == "debug" or env['target'] == "release_debug"):
-    # Build the .dSYM file for atos
-    action = "dsymutil " + File(prog)[0].path + " -o " + File(prog)[0].path + ".dSYM"
-    env.AddPostAction(prog, action)
+binary = env.Program('#bin/godot', files)
+if env["debug_symbols"] == "full" or env["debug_symbols"] == "yes":
+    env.AddPostAction(binary, make_debug)
+
