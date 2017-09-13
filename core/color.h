@@ -177,6 +177,16 @@ struct Color {
 		b = p_b;
 		a = p_a;
 	}
+
+	/**
+	 * RGB / RGBA construct parameters. Alpha is optional, but defaults to 255
+	 */
+	_FORCE_INLINE_ Color(int p_r, int p_g, int p_b, int p_a = 255) {
+		r = float(p_r) / 255.0;
+		g = float(p_g) / 255.0;
+		b = float(p_b) / 255.0;
+		a = float(p_a) / 255.0;
+	}
 };
 
 bool Color::operator<(const Color &p_color) const {
