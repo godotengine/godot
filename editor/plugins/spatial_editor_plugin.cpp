@@ -3696,18 +3696,50 @@ void SpatialEditor::_init_indicators() {
 			origin_colors.push_back(Color(axis.x, axis.y, axis.z));
 			origin_points.push_back(axis * 4096);
 			origin_points.push_back(axis * -4096);
-#define ORIGIN_GRID_SIZE 25
+#define ORIGIN_GRID_SIZE 100
 
 			for (int j = -ORIGIN_GRID_SIZE; j <= ORIGIN_GRID_SIZE; j++) {
 
-				grid_colors[i].push_back(grid_color);
-				grid_colors[i].push_back(grid_color);
-				grid_colors[i].push_back(grid_color);
-				grid_colors[i].push_back(grid_color);
-				grid_points[i].push_back(axis_n1 * ORIGIN_GRID_SIZE + axis_n2 * j);
-				grid_points[i].push_back(-axis_n1 * ORIGIN_GRID_SIZE + axis_n2 * j);
-				grid_points[i].push_back(axis_n2 * ORIGIN_GRID_SIZE + axis_n1 * j);
-				grid_points[i].push_back(-axis_n2 * ORIGIN_GRID_SIZE + axis_n1 * j);
+				for (int k = -ORIGIN_GRID_SIZE; k <= ORIGIN_GRID_SIZE; k++) {
+
+					Vector3 p = axis_n1 * j + axis_n2 * k;
+					float trans = Math::pow(MAX(0, 1.0 - (Vector2(j, k).length() / ORIGIN_GRID_SIZE)), 2);
+
+					Vector3 pj = axis_n1 * (j + 1) + axis_n2 * k;
+					float transj = Math::pow(MAX(0, 1.0 - (Vector2(j + 1, k).length() / ORIGIN_GRID_SIZE)), 2);
+
+					Vector3 pk = axis_n1 * j + axis_n2 * (k + 1);
+					float transk = Math::pow(MAX(0, 1.0 - (Vector2(j, k + 1).length() / ORIGIN_GRID_SIZE)), 2);
+
+					Color trans_color = grid_color;
+					trans_color.a *= trans;
+
+					Color transk_color = grid_color;
+					transk_color.a *= transk;
+
+					Color transj_color = grid_color;
+					transj_color.a *= transj;
+
+					if (j % 10 == 0 || k % 10 == 0) {
+						trans_color.a *= 2;
+					}
+					if ((k + 1) % 10 == 0) {
+						transk_color.a *= 2;
+					}
+					if ((j + 1) % 10 == 0) {
+						transj_color.a *= 2;
+					}
+
+					grid_points[i].push_back(p);
+					grid_points[i].push_back(pk);
+					grid_colors[i].push_back(trans_color);
+					grid_colors[i].push_back(transk_color);
+
+					grid_points[i].push_back(p);
+					grid_points[i].push_back(pj);
+					grid_colors[i].push_back(trans_color);
+					grid_colors[i].push_back(transj_color);
+				}
 			}
 
 			grid[i] = VisualServer::get_singleton()->mesh_create();
