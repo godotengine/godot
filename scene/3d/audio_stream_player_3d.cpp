@@ -855,7 +855,7 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "unit_db", PROPERTY_HINT_RANGE, "-80,80"), "set_unit_db", "get_unit_db");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "unit_size", PROPERTY_HINT_RANGE, "0.1,100,0.1"), "set_unit_size", "get_unit_size");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "max_db", PROPERTY_HINT_RANGE, "-24,6"), "set_max_db", "get_max_db");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "play", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_playing", "_is_active");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_playing", "is_playing");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoplay"), "set_autoplay", "is_autoplay_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "max_distance", PROPERTY_HINT_RANGE, "0,65536,1"), "set_max_distance", "get_max_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "out_of_range_mode", PROPERTY_HINT_ENUM, "Mix,Pause"), "set_out_of_range_mode", "get_out_of_range_mode");
