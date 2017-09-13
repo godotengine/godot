@@ -144,6 +144,7 @@ private:
 	void _file_option(int p_option);
 	void _folder_option(int p_option);
 	void _update_files(bool p_keep_selection);
+	void _update_file_display_toggle_button();
 	void _change_file_display();
 
 	void _fs_changed();
