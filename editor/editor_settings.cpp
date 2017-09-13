@@ -729,6 +729,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["docks/filesystem/display_mode"] = PropertyInfo(Variant::INT, "docks/filesystem/display_mode", PROPERTY_HINT_ENUM, "Thumbnails,List");
 	set("docks/filesystem/thumbnail_size", 64);
 	hints["docks/filesystem/thumbnail_size"] = PropertyInfo(Variant::INT, "docks/filesystem/thumbnail_size", PROPERTY_HINT_RANGE, "32,128,16");
+	set("docks/filesystem/display_mode", 0);
+	hints["docks/filesystem/display_mode"] = PropertyInfo(Variant::INT, "docks/filesystem/display_mode", PROPERTY_HINT_ENUM, "Thumbnails,List");
+	set("docks/filesystem/always_show_folders", true);
 
 	set("editors/animation/autorename_animation_tracks", true);
 	set("editors/animation/confirm_insert_track", true);
