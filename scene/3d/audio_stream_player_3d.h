@@ -40,7 +40,7 @@ private:
 
 		AudioFilterSW filter;
 		AudioFilterSW::Processor filter_process[6];
-		AudioFrame vol[3];
+		AudioFrame vol[4];
 		float filter_gain;
 		float pitch_scale;
 		int bus_index;
