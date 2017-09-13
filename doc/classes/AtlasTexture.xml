@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AtlasTexture" inherits="Texture" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		Packs multiple small textures in a single, bigger one. Helps to optimize video memory costs and render calls.
 	</brief_description>
 	<description>
+		[Texture] resource aimed at managing big textures files that pack multiple smaller textures. Consists of a [Texture], a margin that defines the border width,
+		and a region that defines the actual area of the AtlasTexture.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -54,10 +57,13 @@
 	</methods>
 	<members>
 		<member name="atlas" type="Texture" setter="set_atlas" getter="get_atlas">
+			The texture that contains the atlas. Can be any [Texture] subtype.
 		</member>
 		<member name="margin" type="Rect2" setter="set_margin" getter="get_margin">
+			The margin around the region. The [Rect2]'s 'size' parameter ('w' and 'h' in the editor) resizes the texture so it fits within the margin.
 		</member>
 		<member name="region" type="Rect2" setter="set_region" getter="get_region">
+			The AtlasTexture's used region.
 		</member>
 	</members>
 	<constants>
