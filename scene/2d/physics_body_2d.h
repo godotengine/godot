@@ -295,19 +295,19 @@ private:
 
 	_FORCE_INLINE_ bool _ignores_mode(Physics2DServer::BodyMode) const;
 
-	Ref<KinematicCollision2D> _move(const Vector2 &p_motion, bool p_local = true);
+	bool _move(const Vector2 &p_motion, Collision &r_collision, bool p_local = true);
 	Ref<KinematicCollision2D> _get_slide_collision(int p_bounce);
 
 protected:
 	static void _bind_methods();
 
 public:
-	bool move_and_collide(const Vector2 &p_motion, Collision &r_collision, bool p_local = true);
 	bool test_move(const Transform2D &p_from, const Vector2 &p_motion);
 
 	void set_safe_margin(float p_margin);
 	float get_safe_margin() const;
 
+	Ref<KinematicCollision2D> move_and_collide(const Vector2 &p_motion, bool p_local = true);
 	Vector2 move_and_slide(const Vector2 &p_linear_velocity, const Vector2 &p_floor_direction = Vector2(0, 0), float p_slope_stop_min_velocity = 5, int p_max_slides = 4, float p_floor_max_angle = Math::deg2rad((float)45), bool p_local = true);
 
 	bool is_on_floor() const;
