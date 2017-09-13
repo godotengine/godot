@@ -86,7 +86,7 @@ static Ref<StyleBoxFlat> change_border_color(Ref<StyleBoxFlat> p_style, Color p_
 	return style;
 }
 
-Ref<ImageTexture> editor_generate_icon(int p_index, bool dark_theme = true, Dictionary *p_colors = NULL, float p_scale = EDSCALE, bool force_filter = false) {
+Ref<ImageTexture> editor_generate_icon(int p_index, bool convert_color, float p_scale = EDSCALE, bool force_filter = false) {
 
 	Ref<ImageTexture> icon = memnew(ImageTexture);
 	Ref<Image> img = memnew(Image);
@@ -94,7 +94,7 @@ Ref<ImageTexture> editor_generate_icon(int p_index, bool dark_theme = true, Dict
 	// dumb gizmo check
 	bool is_gizmo = String(editor_icons_names[p_index]).begins_with("Gizmo");
 
-	ImageLoaderSVG::create_image_from_string(img, editor_icons_sources[p_index], p_scale, true, dark_theme ? NULL : p_colors);
+	ImageLoaderSVG::create_image_from_string(img, editor_icons_sources[p_index], p_scale, true, convert_color);
 
 	if ((p_scale - (float)((int)p_scale)) > 0.0 || is_gizmo || force_filter)
 		icon->create_from_image(img); // in this case filter really helps
@@ -160,33 +160,40 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool dark_theme = tr
 
 	clock_t begin_time = clock();
 
+	ImageLoaderSVG::set_convert_colors(dark_theme ? NULL : &dark_icon_color_dictionary);
+
+	// generate icons
 	if (!only_thumbs)
 		for (int i = 0; i < editor_icons_count; i++) {
 			List<String>::Element *is_exception = exceptions.find(editor_icons_names[i]);
-			if (is_exception) {
-				exceptions.erase(is_exception);
-			}
-			Ref<ImageTexture> icon = editor_generate_icon(i, dark_theme, is_exception ? NULL : &dark_icon_color_dictionary);
+			if (is_exception) exceptions.erase(is_exception);
+			Ref<ImageTexture> icon = editor_generate_icon(i, !dark_theme && !is_exception);
 			p_theme->set_icon(editor_icons_names[i], "EditorIcons", icon);
 		}
 
-	bool force_filter = !(p_thumb_size == 64 && p_thumb_size == 32); // we dont need filter with original resolution
 	// generate thumb files with the given thumb size
+	bool force_filter = !(p_thumb_size == 64 && p_thumb_size == 32); // we dont need filter with original resolution
 	if (p_thumb_size >= 64) {
 		float scale = (float)p_thumb_size / 64.0 * EDSCALE;
 		for (int i = 0; i < editor_bg_thumbs_count; i++) {
 			int index = editor_bg_thumbs_indices[i];
-			Ref<ImageTexture> icon = editor_generate_icon(index, dark_theme, &dark_icon_color_dictionary, scale, force_filter);
+			List<String>::Element *is_exception = exceptions.find(editor_icons_names[index]);
+			if (is_exception) exceptions.erase(is_exception);
+			Ref<ImageTexture> icon = editor_generate_icon(index, !dark_theme && !is_exception, scale, force_filter);
 			p_theme->set_icon(editor_icons_names[index], "EditorIcons", icon);
 		}
 	} else {
 		float scale = (float)p_thumb_size / 32.0 * EDSCALE;
 		for (int i = 0; i < editor_md_thumbs_count; i++) {
 			int index = editor_md_thumbs_indices[i];
-			Ref<ImageTexture> icon = editor_generate_icon(index, dark_theme, &dark_icon_color_dictionary, scale, force_filter);
+			List<String>::Element *is_exception = exceptions.find(editor_icons_names[index]);
+			if (is_exception) exceptions.erase(is_exception);
+			Ref<ImageTexture> icon = editor_generate_icon(index, !dark_theme && !is_exception, scale, force_filter);
 			p_theme->set_icon(editor_icons_names[index], "EditorIcons", icon);
 		}
 	}
+
+	ImageLoaderSVG::set_convert_colors(NULL);
 
 	clock_t end_time = clock();
 
