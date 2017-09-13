@@ -503,6 +503,10 @@ void UndoRedo::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_history"), &UndoRedo::clear_history);
 	ClassDB::bind_method(D_METHOD("get_current_action_name"), &UndoRedo::get_current_action_name);
 	ClassDB::bind_method(D_METHOD("get_version"), &UndoRedo::get_version);
+	ClassDB::bind_method(D_METHOD("set_max_steps", "max_steps"), &UndoRedo::set_max_steps);
+	ClassDB::bind_method(D_METHOD("get_max_steps"), &UndoRedo::get_max_steps);
+	ClassDB::bind_method(D_METHOD("redo"), &UndoRedo::redo);
+	ClassDB::bind_method(D_METHOD("undo"), &UndoRedo::undo);
 
 	BIND_ENUM_CONSTANT(MERGE_DISABLE);
 	BIND_ENUM_CONSTANT(MERGE_ENDS);
