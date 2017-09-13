@@ -967,7 +967,6 @@ void ProjectManager::_load_recent_projects() {
 }
 
 void ProjectManager::_on_project_renamed() {
-	print_line("PRoject renamed");
 	_load_recent_projects();
 }
 
