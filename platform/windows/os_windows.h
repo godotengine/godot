@@ -31,6 +31,7 @@
 #define OS_WINDOWS_H
 
 #include "context_gl_win.h"
+#include "crash_handler_win.h"
 #include "drivers/rtaudio/audio_driver_rtaudio.h"
 #include "drivers/wasapi/audio_driver_wasapi.h"
 #include "os/input.h"
@@ -133,6 +134,8 @@ class OS_Windows : public OS {
 #ifdef XAUDIO2_ENABLED
 	AudioDriverXAudio2 driver_xaudio2;
 #endif
+
+	CrashHandler crash_handler;
 
 	void _drag_event(int p_x, int p_y, int idx);
 	void _touch_event(bool p_pressed, int p_x, int p_y, int idx);
@@ -283,6 +286,9 @@ public:
 	virtual int get_power_percent_left();
 
 	virtual bool _check_internal_feature_support(const String &p_feature);
+
+	void disable_crash_handler();
+	bool is_disable_crash_handler() const;
 
 	OS_Windows(HINSTANCE _hInstance);
 	~OS_Windows();

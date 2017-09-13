@@ -5,6 +5,7 @@ Import('env')
 
 common_win = [
     "context_gl_win.cpp",
+    "crash_handler_win.cpp",
     "os_windows.cpp",
     "ctxgl_procaddr.cpp",
     "key_mapping_win.cpp",
@@ -12,7 +13,7 @@ common_win = [
     "packet_peer_udp_winsock.cpp",
     "stream_peer_winsock.cpp",
     "joypad.cpp",
-	"power_windows.cpp",
+    "power_windows.cpp",
 ]
 
 restarget = "godot_res" + env["OBJSUFFIX"]
