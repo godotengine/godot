@@ -1397,415 +1397,424 @@ static Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const
 
 void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
 
-	if (p_from == graph) {
+	if (p_from != graph) {
+		return;
+	}
 
-		Dictionary d = p_data;
-		if (d.has("type") && String(d["type"]) == "visual_script_node_drag") {
+	Dictionary d = p_data;
 
-			Vector2 ofs = graph->get_scroll_ofs() + p_point;
+	if (!d.has("type")) {
+		return;
+	}
 
-			if (graph->is_using_snap()) {
-				int snap = graph->get_snap();
-				ofs = ofs.snapped(Vector2(snap, snap));
-			}
-
-			ofs /= EDSCALE;
-
-			Ref<VisualScriptNode> vnode = VisualScriptLanguage::singleton->create_node_from_name(d["node_type"]);
-			int new_id = script->get_available_id();
-
-			undo_redo->create_action(TTR("Add Node"));
-			undo_redo->add_do_method(script.ptr(), "add_node", edited_func, new_id, vnode, ofs);
-			undo_redo->add_undo_method(script.ptr(), "remove_node", edited_func, new_id);
-			undo_redo->add_do_method(this, "_update_graph");
-			undo_redo->add_undo_method(this, "_update_graph");
-			undo_redo->commit_action();
-
-			Node *node = graph->get_node(itos(new_id));
-			if (node) {
-				graph->set_selected(node);
-				_node_selected(node);
-			}
+	if (String(d["type"]) == "visual_script_node_drag") {
+		if (!d.has("node_type") || String(d["node_type"]) == "Null") {
+			return;
 		}
 
-		if (d.has("type") && String(d["type"]) == "visual_script_variable_drag") {
+		Vector2 ofs = graph->get_scroll_ofs() + p_point;
+
+		if (graph->is_using_snap()) {
+			int snap = graph->get_snap();
+			ofs = ofs.snapped(Vector2(snap, snap));
+		}
+
+		ofs /= EDSCALE;
+
+		Ref<VisualScriptNode> vnode = VisualScriptLanguage::singleton->create_node_from_name(d["node_type"]);
+		int new_id = script->get_available_id();
+
+		undo_redo->create_action(TTR("Add Node"));
+		undo_redo->add_do_method(script.ptr(), "add_node", edited_func, new_id, vnode, ofs);
+		undo_redo->add_undo_method(script.ptr(), "remove_node", edited_func, new_id);
+		undo_redo->add_do_method(this, "_update_graph");
+		undo_redo->add_undo_method(this, "_update_graph");
+		undo_redo->commit_action();
+
+		Node *node = graph->get_node(itos(new_id));
+		if (node) {
+			graph->set_selected(node);
+			_node_selected(node);
+		}
+	}
+
+	if (String(d["type"]) == "visual_script_variable_drag") {
 
 #ifdef OSX_ENABLED
-			bool use_set = Input::get_singleton()->is_key_pressed(KEY_META);
+		bool use_set = Input::get_singleton()->is_key_pressed(KEY_META);
 #else
-			bool use_set = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
+		bool use_set = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
 #endif
-			Vector2 ofs = graph->get_scroll_ofs() + p_point;
-			if (graph->is_using_snap()) {
-				int snap = graph->get_snap();
-				ofs = ofs.snapped(Vector2(snap, snap));
-			}
-
-			ofs /= EDSCALE;
-
-			Ref<VisualScriptNode> vnode;
-			if (use_set) {
-				Ref<VisualScriptVariableSet> vnodes;
-				vnodes.instance();
-				vnodes->set_variable(d["variable"]);
-				vnode = vnodes;
-			} else {
-
-				Ref<VisualScriptVariableGet> vnodeg;
-				vnodeg.instance();
-				vnodeg->set_variable(d["variable"]);
-				vnode = vnodeg;
-			}
-
-			int new_id = script->get_available_id();
-
-			undo_redo->create_action(TTR("Add Node"));
-			undo_redo->add_do_method(script.ptr(), "add_node", edited_func, new_id, vnode, ofs);
-			undo_redo->add_undo_method(script.ptr(), "remove_node", edited_func, new_id);
-			undo_redo->add_do_method(this, "_update_graph");
-			undo_redo->add_undo_method(this, "_update_graph");
-			undo_redo->commit_action();
-
-			Node *node = graph->get_node(itos(new_id));
-			if (node) {
-				graph->set_selected(node);
-				_node_selected(node);
-			}
+		Vector2 ofs = graph->get_scroll_ofs() + p_point;
+		if (graph->is_using_snap()) {
+			int snap = graph->get_snap();
+			ofs = ofs.snapped(Vector2(snap, snap));
 		}
 
-		if (d.has("type") && String(d["type"]) == "visual_script_function_drag") {
+		ofs /= EDSCALE;
 
-			Vector2 ofs = graph->get_scroll_ofs() + p_point;
-			if (graph->is_using_snap()) {
-				int snap = graph->get_snap();
-				ofs = ofs.snapped(Vector2(snap, snap));
-			}
+		Ref<VisualScriptNode> vnode;
+		if (use_set) {
+			Ref<VisualScriptVariableSet> vnodes;
+			vnodes.instance();
+			vnodes->set_variable(d["variable"]);
+			vnode = vnodes;
+		} else {
 
-			ofs /= EDSCALE;
-
-			Ref<VisualScriptFunctionCall> vnode;
-			vnode.instance();
-			vnode->set_call_mode(VisualScriptFunctionCall::CALL_MODE_SELF);
-
-			int new_id = script->get_available_id();
-
-			undo_redo->create_action(TTR("Add Node"));
-			undo_redo->add_do_method(script.ptr(), "add_node", edited_func, new_id, vnode, ofs);
-			undo_redo->add_do_method(vnode.ptr(), "set_base_type", script->get_instance_base_type());
-			undo_redo->add_do_method(vnode.ptr(), "set_function", d["function"]);
-
-			undo_redo->add_undo_method(script.ptr(), "remove_node", edited_func, new_id);
-			undo_redo->add_do_method(this, "_update_graph");
-			undo_redo->add_undo_method(this, "_update_graph");
-			undo_redo->commit_action();
-
-			Node *node = graph->get_node(itos(new_id));
-			if (node) {
-				graph->set_selected(node);
-				_node_selected(node);
-			}
+			Ref<VisualScriptVariableGet> vnodeg;
+			vnodeg.instance();
+			vnodeg->set_variable(d["variable"]);
+			vnode = vnodeg;
 		}
 
-		if (d.has("type") && String(d["type"]) == "visual_script_signal_drag") {
+		int new_id = script->get_available_id();
 
-			Vector2 ofs = graph->get_scroll_ofs() + p_point;
-			if (graph->is_using_snap()) {
-				int snap = graph->get_snap();
-				ofs = ofs.snapped(Vector2(snap, snap));
-			}
+		undo_redo->create_action(TTR("Add Node"));
+		undo_redo->add_do_method(script.ptr(), "add_node", edited_func, new_id, vnode, ofs);
+		undo_redo->add_undo_method(script.ptr(), "remove_node", edited_func, new_id);
+		undo_redo->add_do_method(this, "_update_graph");
+		undo_redo->add_undo_method(this, "_update_graph");
+		undo_redo->commit_action();
 
-			ofs /= EDSCALE;
+		Node *node = graph->get_node(itos(new_id));
+		if (node) {
+			graph->set_selected(node);
+			_node_selected(node);
+		}
+	}
 
-			Ref<VisualScriptEmitSignal> vnode;
-			vnode.instance();
-			vnode->set_signal(d["signal"]);
+	if (String(d["type"]) == "visual_script_function_drag") {
 
-			int new_id = script->get_available_id();
-
-			undo_redo->create_action(TTR("Add Node"));
-			undo_redo->add_do_method(script.ptr(), "add_node", edited_func, new_id, vnode, ofs);
-			undo_redo->add_undo_method(script.ptr(), "remove_node", edited_func, new_id);
-			undo_redo->add_do_method(this, "_update_graph");
-			undo_redo->add_undo_method(this, "_update_graph");
-			undo_redo->commit_action();
-
-			Node *node = graph->get_node(itos(new_id));
-			if (node) {
-				graph->set_selected(node);
-				_node_selected(node);
-			}
+		Vector2 ofs = graph->get_scroll_ofs() + p_point;
+		if (graph->is_using_snap()) {
+			int snap = graph->get_snap();
+			ofs = ofs.snapped(Vector2(snap, snap));
 		}
 
-		if (d.has("type") && String(d["type"]) == "resource") {
+		ofs /= EDSCALE;
 
-			Vector2 ofs = graph->get_scroll_ofs() + p_point;
-			if (graph->is_using_snap()) {
-				int snap = graph->get_snap();
-				ofs = ofs.snapped(Vector2(snap, snap));
-			}
+		Ref<VisualScriptFunctionCall> vnode;
+		vnode.instance();
+		vnode->set_call_mode(VisualScriptFunctionCall::CALL_MODE_SELF);
 
-			ofs /= EDSCALE;
+		int new_id = script->get_available_id();
 
-			Ref<VisualScriptPreload> prnode;
-			prnode.instance();
-			prnode->set_preload(d["resource"]);
+		undo_redo->create_action(TTR("Add Node"));
+		undo_redo->add_do_method(script.ptr(), "add_node", edited_func, new_id, vnode, ofs);
+		undo_redo->add_do_method(vnode.ptr(), "set_base_type", script->get_instance_base_type());
+		undo_redo->add_do_method(vnode.ptr(), "set_function", d["function"]);
 
-			int new_id = script->get_available_id();
+		undo_redo->add_undo_method(script.ptr(), "remove_node", edited_func, new_id);
+		undo_redo->add_do_method(this, "_update_graph");
+		undo_redo->add_undo_method(this, "_update_graph");
+		undo_redo->commit_action();
 
+		Node *node = graph->get_node(itos(new_id));
+		if (node) {
+			graph->set_selected(node);
+			_node_selected(node);
+		}
+	}
+
+	if (String(d["type"]) == "visual_script_signal_drag") {
+
+		Vector2 ofs = graph->get_scroll_ofs() + p_point;
+		if (graph->is_using_snap()) {
+			int snap = graph->get_snap();
+			ofs = ofs.snapped(Vector2(snap, snap));
+		}
+
+		ofs /= EDSCALE;
+
+		Ref<VisualScriptEmitSignal> vnode;
+		vnode.instance();
+		vnode->set_signal(d["signal"]);
+
+		int new_id = script->get_available_id();
+
+		undo_redo->create_action(TTR("Add Node"));
+		undo_redo->add_do_method(script.ptr(), "add_node", edited_func, new_id, vnode, ofs);
+		undo_redo->add_undo_method(script.ptr(), "remove_node", edited_func, new_id);
+		undo_redo->add_do_method(this, "_update_graph");
+		undo_redo->add_undo_method(this, "_update_graph");
+		undo_redo->commit_action();
+
+		Node *node = graph->get_node(itos(new_id));
+		if (node) {
+			graph->set_selected(node);
+			_node_selected(node);
+		}
+	}
+
+	if (String(d["type"]) == "resource") {
+
+		Vector2 ofs = graph->get_scroll_ofs() + p_point;
+		if (graph->is_using_snap()) {
+			int snap = graph->get_snap();
+			ofs = ofs.snapped(Vector2(snap, snap));
+		}
+
+		ofs /= EDSCALE;
+
+		Ref<VisualScriptPreload> prnode;
+		prnode.instance();
+		prnode->set_preload(d["resource"]);
+
+		int new_id = script->get_available_id();
+
+		undo_redo->create_action(TTR("Add Preload Node"));
+		undo_redo->add_do_method(script.ptr(), "add_node", edited_func, new_id, prnode, ofs);
+		undo_redo->add_undo_method(script.ptr(), "remove_node", edited_func, new_id);
+		undo_redo->add_do_method(this, "_update_graph");
+		undo_redo->add_undo_method(this, "_update_graph");
+		undo_redo->commit_action();
+
+		Node *node = graph->get_node(itos(new_id));
+		if (node) {
+			graph->set_selected(node);
+			_node_selected(node);
+		}
+	}
+
+	if (String(d["type"]) == "files") {
+
+		Vector2 ofs = graph->get_scroll_ofs() + p_point;
+		if (graph->is_using_snap()) {
+			int snap = graph->get_snap();
+			ofs = ofs.snapped(Vector2(snap, snap));
+		}
+
+		ofs /= EDSCALE;
+
+		Array files = d["files"];
+
+		List<int> new_ids;
+		int new_id = script->get_available_id();
+
+		if (files.size()) {
 			undo_redo->create_action(TTR("Add Preload Node"));
-			undo_redo->add_do_method(script.ptr(), "add_node", edited_func, new_id, prnode, ofs);
-			undo_redo->add_undo_method(script.ptr(), "remove_node", edited_func, new_id);
+
+			for (int i = 0; i < files.size(); i++) {
+
+				Ref<Resource> res = ResourceLoader::load(files[i]);
+				if (!res.is_valid())
+					continue;
+
+				Ref<VisualScriptPreload> prnode;
+				prnode.instance();
+				prnode->set_preload(res);
+
+				undo_redo->add_do_method(script.ptr(), "add_node", edited_func, new_id, prnode, ofs);
+				undo_redo->add_undo_method(script.ptr(), "remove_node", edited_func, new_id);
+				new_ids.push_back(new_id);
+				new_id++;
+				ofs += Vector2(20, 20) * EDSCALE;
+			}
+
 			undo_redo->add_do_method(this, "_update_graph");
 			undo_redo->add_undo_method(this, "_update_graph");
 			undo_redo->commit_action();
+		}
 
-			Node *node = graph->get_node(itos(new_id));
+		for (List<int>::Element *E = new_ids.front(); E; E = E->next()) {
+
+			Node *node = graph->get_node(itos(E->get()));
 			if (node) {
 				graph->set_selected(node);
 				_node_selected(node);
 			}
 		}
+	}
 
-		if (d.has("type") && String(d["type"]) == "files") {
+	if (String(d["type"]) == "nodes") {
 
-			Vector2 ofs = graph->get_scroll_ofs() + p_point;
-			if (graph->is_using_snap()) {
-				int snap = graph->get_snap();
-				ofs = ofs.snapped(Vector2(snap, snap));
-			}
+		Node *sn = _find_script_node(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root(), script);
 
-			ofs /= EDSCALE;
-
-			Array files = d["files"];
-
-			List<int> new_ids;
-			int new_id = script->get_available_id();
-
-			if (files.size()) {
-				undo_redo->create_action(TTR("Add Preload Node"));
-
-				for (int i = 0; i < files.size(); i++) {
-
-					Ref<Resource> res = ResourceLoader::load(files[i]);
-					if (!res.is_valid())
-						continue;
-
-					Ref<VisualScriptPreload> prnode;
-					prnode.instance();
-					prnode->set_preload(res);
-
-					undo_redo->add_do_method(script.ptr(), "add_node", edited_func, new_id, prnode, ofs);
-					undo_redo->add_undo_method(script.ptr(), "remove_node", edited_func, new_id);
-					new_ids.push_back(new_id);
-					new_id++;
-					ofs += Vector2(20, 20) * EDSCALE;
-				}
-
-				undo_redo->add_do_method(this, "_update_graph");
-				undo_redo->add_undo_method(this, "_update_graph");
-				undo_redo->commit_action();
-			}
-
-			for (List<int>::Element *E = new_ids.front(); E; E = E->next()) {
-
-				Node *node = graph->get_node(itos(E->get()));
-				if (node) {
-					graph->set_selected(node);
-					_node_selected(node);
-				}
-			}
+		if (!sn) {
+			EditorNode::get_singleton()->show_warning("Can't drop nodes because script '" + get_name() + "' is not used in this scene.");
+			return;
 		}
 
-		if (d.has("type") && String(d["type"]) == "nodes") {
-
-			Node *sn = _find_script_node(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root(), script);
-
-			if (!sn) {
-				EditorNode::get_singleton()->show_warning("Can't drop nodes because script '" + get_name() + "' is not used in this scene.");
-				return;
-			}
-
 #ifdef OSX_ENABLED
-			bool use_node = Input::get_singleton()->is_key_pressed(KEY_META);
+		bool use_node = Input::get_singleton()->is_key_pressed(KEY_META);
 #else
-			bool use_node = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
+		bool use_node = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
 #endif
 
-			Array nodes = d["nodes"];
+		Array nodes = d["nodes"];
 
-			Vector2 ofs = graph->get_scroll_ofs() + p_point;
+		Vector2 ofs = graph->get_scroll_ofs() + p_point;
 
-			if (graph->is_using_snap()) {
-				int snap = graph->get_snap();
-				ofs = ofs.snapped(Vector2(snap, snap));
+		if (graph->is_using_snap()) {
+			int snap = graph->get_snap();
+			ofs = ofs.snapped(Vector2(snap, snap));
+		}
+		ofs /= EDSCALE;
+
+		undo_redo->create_action(TTR("Add Node(s) From Tree"));
+		int base_id = script->get_available_id();
+
+		if (nodes.size() > 1) {
+			use_node = true;
+		}
+
+		for (int i = 0; i < nodes.size(); i++) {
+
+			NodePath np = nodes[i];
+			Node *node = get_node(np);
+			if (!node) {
+				continue;
 			}
-			ofs /= EDSCALE;
 
-			undo_redo->create_action(TTR("Add Node(s) From Tree"));
+			Ref<VisualScriptNode> n;
+
+			if (use_node) {
+				Ref<VisualScriptSceneNode> scene_node;
+				scene_node.instance();
+				scene_node->set_node_path(sn->get_path_to(node));
+				n = scene_node;
+
+			} else {
+				Ref<VisualScriptFunctionCall> call;
+				call.instance();
+				call->set_call_mode(VisualScriptFunctionCall::CALL_MODE_NODE_PATH);
+				call->set_base_path(sn->get_path_to(node));
+				call->set_base_type(node->get_class());
+				n = call;
+
+				method_select->select_method_from_instance(node);
+				selecting_method_id = base_id;
+			}
+
+			undo_redo->add_do_method(script.ptr(), "add_node", edited_func, base_id, n, ofs);
+			undo_redo->add_undo_method(script.ptr(), "remove_node", edited_func, base_id);
+
+			base_id++;
+			ofs += Vector2(25, 25);
+		}
+		undo_redo->add_do_method(this, "_update_graph");
+		undo_redo->add_undo_method(this, "_update_graph");
+		undo_redo->commit_action();
+	}
+
+	if (String(d["type"]) == "obj_property") {
+
+		Node *sn = _find_script_node(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root(), script);
+
+		if (!sn && !Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+			EditorNode::get_singleton()->show_warning("Can't drop properties because script '" + get_name() + "' is not used in this scene.\nDrop holding 'Shift' to just copy the signature.");
+			return;
+		}
+
+		Object *obj = d["object"];
+
+		if (!obj)
+			return;
+
+		Node *node = Object::cast_to<Node>(obj);
+		Vector2 ofs = graph->get_scroll_ofs() + p_point;
+
+		if (graph->is_using_snap()) {
+			int snap = graph->get_snap();
+			ofs = ofs.snapped(Vector2(snap, snap));
+		}
+
+		ofs /= EDSCALE;
+#ifdef OSX_ENABLED
+		bool use_get = Input::get_singleton()->is_key_pressed(KEY_META);
+#else
+		bool use_get = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
+#endif
+
+		if (!node || Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+
+			if (use_get)
+				undo_redo->create_action(TTR("Add Getter Property"));
+			else
+				undo_redo->create_action(TTR("Add Setter Property"));
+
 			int base_id = script->get_available_id();
 
-			if (nodes.size() > 1) {
-				use_node = true;
-			}
+			Ref<VisualScriptNode> vnode;
 
-			for (int i = 0; i < nodes.size(); i++) {
+			if (!use_get) {
 
-				NodePath np = nodes[i];
-				Node *node = get_node(np);
-				if (!node) {
-					continue;
-				}
-
-				Ref<VisualScriptNode> n;
-
-				if (use_node) {
-					Ref<VisualScriptSceneNode> scene_node;
-					scene_node.instance();
-					scene_node->set_node_path(sn->get_path_to(node));
-					n = scene_node;
-
-				} else {
-					Ref<VisualScriptFunctionCall> call;
-					call.instance();
-					call->set_call_mode(VisualScriptFunctionCall::CALL_MODE_NODE_PATH);
-					call->set_base_path(sn->get_path_to(node));
-					call->set_base_type(node->get_class());
-					n = call;
-
-					method_select->select_method_from_instance(node);
-					selecting_method_id = base_id;
-				}
-
-				undo_redo->add_do_method(script.ptr(), "add_node", edited_func, base_id, n, ofs);
-				undo_redo->add_undo_method(script.ptr(), "remove_node", edited_func, base_id);
-
-				base_id++;
-				ofs += Vector2(25, 25);
-			}
-			undo_redo->add_do_method(this, "_update_graph");
-			undo_redo->add_undo_method(this, "_update_graph");
-			undo_redo->commit_action();
-		}
-
-		if (d.has("type") && String(d["type"]) == "obj_property") {
-
-			Node *sn = _find_script_node(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root(), script);
-
-			if (!sn && !Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
-				EditorNode::get_singleton()->show_warning("Can't drop properties because script '" + get_name() + "' is not used in this scene.\nDrop holding 'Shift' to just copy the signature.");
-				return;
-			}
-
-			Object *obj = d["object"];
-
-			if (!obj)
-				return;
-
-			Node *node = Object::cast_to<Node>(obj);
-			Vector2 ofs = graph->get_scroll_ofs() + p_point;
-
-			if (graph->is_using_snap()) {
-				int snap = graph->get_snap();
-				ofs = ofs.snapped(Vector2(snap, snap));
-			}
-
-			ofs /= EDSCALE;
-#ifdef OSX_ENABLED
-			bool use_get = Input::get_singleton()->is_key_pressed(KEY_META);
-#else
-			bool use_get = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
-#endif
-
-			if (!node || Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
-
-				if (use_get)
-					undo_redo->create_action(TTR("Add Getter Property"));
-				else
-					undo_redo->create_action(TTR("Add Setter Property"));
-
-				int base_id = script->get_available_id();
-
-				Ref<VisualScriptNode> vnode;
-
-				if (!use_get) {
-
-					Ref<VisualScriptPropertySet> pset;
-					pset.instance();
-					pset->set_call_mode(VisualScriptPropertySet::CALL_MODE_INSTANCE);
-					pset->set_base_type(obj->get_class());
-					/*if (use_value) {
+				Ref<VisualScriptPropertySet> pset;
+				pset.instance();
+				pset->set_call_mode(VisualScriptPropertySet::CALL_MODE_INSTANCE);
+				pset->set_base_type(obj->get_class());
+				/*if (use_value) {
 						pset->set_use_builtin_value(true);
 						pset->set_builtin_value(d["value"]);
 					}*/
-					vnode = pset;
-				} else {
-
-					Ref<VisualScriptPropertyGet> pget;
-					pget.instance();
-					pget->set_call_mode(VisualScriptPropertyGet::CALL_MODE_INSTANCE);
-					pget->set_base_type(obj->get_class());
-
-					vnode = pget;
-				}
-
-				undo_redo->add_do_method(script.ptr(), "add_node", edited_func, base_id, vnode, ofs);
-				undo_redo->add_do_method(vnode.ptr(), "set_property", d["property"]);
-				if (!use_get) {
-					undo_redo->add_do_method(vnode.ptr(), "set_default_input_value", 0, d["value"]);
-				}
-
-				undo_redo->add_undo_method(script.ptr(), "remove_node", edited_func, base_id);
-
-				undo_redo->add_do_method(this, "_update_graph");
-				undo_redo->add_undo_method(this, "_update_graph");
-				undo_redo->commit_action();
-
+				vnode = pset;
 			} else {
 
-				if (use_get)
-					undo_redo->create_action(TTR("Add Getter Property"));
-				else
-					undo_redo->create_action(TTR("Add Setter Property"));
+				Ref<VisualScriptPropertyGet> pget;
+				pget.instance();
+				pget->set_call_mode(VisualScriptPropertyGet::CALL_MODE_INSTANCE);
+				pget->set_base_type(obj->get_class());
 
-				int base_id = script->get_available_id();
-
-				Ref<VisualScriptNode> vnode;
-
-				if (!use_get) {
-
-					Ref<VisualScriptPropertySet> pset;
-					pset.instance();
-					if (sn == node) {
-						pset->set_call_mode(VisualScriptPropertySet::CALL_MODE_SELF);
-					} else {
-						pset->set_call_mode(VisualScriptPropertySet::CALL_MODE_NODE_PATH);
-						pset->set_base_path(sn->get_path_to(node));
-					}
-
-					vnode = pset;
-				} else {
-
-					Ref<VisualScriptPropertyGet> pget;
-					pget.instance();
-					if (sn == node) {
-						pget->set_call_mode(VisualScriptPropertyGet::CALL_MODE_SELF);
-					} else {
-						pget->set_call_mode(VisualScriptPropertyGet::CALL_MODE_NODE_PATH);
-						pget->set_base_path(sn->get_path_to(node));
-					}
-					vnode = pget;
-				}
-				undo_redo->add_do_method(script.ptr(), "add_node", edited_func, base_id, vnode, ofs);
-				undo_redo->add_do_method(vnode.ptr(), "set_property", d["property"]);
-				if (!use_get) {
-					undo_redo->add_do_method(vnode.ptr(), "set_default_input_value", 0, d["value"]);
-				}
-				undo_redo->add_undo_method(script.ptr(), "remove_node", edited_func, base_id);
-
-				undo_redo->add_do_method(this, "_update_graph");
-				undo_redo->add_undo_method(this, "_update_graph");
-				undo_redo->commit_action();
+				vnode = pget;
 			}
+
+			undo_redo->add_do_method(script.ptr(), "add_node", edited_func, base_id, vnode, ofs);
+			undo_redo->add_do_method(vnode.ptr(), "set_property", d["property"]);
+			if (!use_get) {
+				undo_redo->add_do_method(vnode.ptr(), "set_default_input_value", 0, d["value"]);
+			}
+
+			undo_redo->add_undo_method(script.ptr(), "remove_node", edited_func, base_id);
+
+			undo_redo->add_do_method(this, "_update_graph");
+			undo_redo->add_undo_method(this, "_update_graph");
+			undo_redo->commit_action();
+
+		} else {
+
+			if (use_get)
+				undo_redo->create_action(TTR("Add Getter Property"));
+			else
+				undo_redo->create_action(TTR("Add Setter Property"));
+
+			int base_id = script->get_available_id();
+
+			Ref<VisualScriptNode> vnode;
+
+			if (!use_get) {
+
+				Ref<VisualScriptPropertySet> pset;
+				pset.instance();
+				if (sn == node) {
+					pset->set_call_mode(VisualScriptPropertySet::CALL_MODE_SELF);
+				} else {
+					pset->set_call_mode(VisualScriptPropertySet::CALL_MODE_NODE_PATH);
+					pset->set_base_path(sn->get_path_to(node));
+				}
+
+				vnode = pset;
+			} else {
+
+				Ref<VisualScriptPropertyGet> pget;
+				pget.instance();
+				if (sn == node) {
+					pget->set_call_mode(VisualScriptPropertyGet::CALL_MODE_SELF);
+				} else {
+					pget->set_call_mode(VisualScriptPropertyGet::CALL_MODE_NODE_PATH);
+					pget->set_base_path(sn->get_path_to(node));
+				}
+				vnode = pget;
+			}
+			undo_redo->add_do_method(script.ptr(), "add_node", edited_func, base_id, vnode, ofs);
+			undo_redo->add_do_method(vnode.ptr(), "set_property", d["property"]);
+			if (!use_get) {
+				undo_redo->add_do_method(vnode.ptr(), "set_default_input_value", 0, d["value"]);
+			}
+			undo_redo->add_undo_method(script.ptr(), "remove_node", edited_func, base_id);
+
+			undo_redo->add_do_method(this, "_update_graph");
+			undo_redo->add_undo_method(this, "_update_graph");
+			undo_redo->commit_action();
 		}
 	}
 }
