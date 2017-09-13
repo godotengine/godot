@@ -162,18 +162,20 @@ void Slider::_notification(int p_what) {
 			Size2i size = get_size();
 			Ref<StyleBox> style = get_stylebox("slider");
 			Ref<StyleBox> focus = get_stylebox("focus");
+			Ref<StyleBox> grabber_area = get_stylebox("grabber_area");
 			Ref<Texture> grabber = get_icon(editable ? ((mouse_inside || has_focus()) ? "grabber_highlight" : "grabber") : "grabber_disabled");
 			Ref<Texture> tick = get_icon("tick");
 
 			if (orientation == VERTICAL) {
 
 				int widget_width = style->get_minimum_size().width + style->get_center_size().width;
+				float areasize = size.height - grabber->get_size().height;
 				style->draw(ci, Rect2i(Point2i(size.width / 2 - widget_width / 2, 0), Size2i(widget_width, size.height)));
+				grabber_area->draw(ci, Rect2i(Point2i((size.width - widget_width) / 2, size.height - areasize * get_as_ratio() - grabber->get_size().height / 2), Size2i(widget_width, areasize * get_as_ratio() + grabber->get_size().width / 2)));
 				/*
 				if (mouse_inside||has_focus())
 					focus->draw(ci,Rect2i(Point2i(),Size2i(style->get_minimum_size().width+style->get_center_size().width,size.height)));
 				*/
-				float areasize = size.height - grabber->get_size().height;
 				if (ticks > 1) {
 					int tickarea = size.height - tick->get_height();
 					for (int i = 0; i < ticks; i++) {
@@ -186,13 +188,15 @@ void Slider::_notification(int p_what) {
 			} else {
 
 				int widget_height = style->get_minimum_size().height + style->get_center_size().height;
-				style->draw(ci, Rect2i(Point2i(0, size.height / 2 - widget_height / 2), Size2i(size.width, widget_height)));
+				float areasize = size.width - grabber->get_size().width;
+
+				style->draw(ci, Rect2i(Point2i(0, (size.height - widget_height) / 2), Size2i(size.width, widget_height)));
+				grabber_area->draw(ci, Rect2i(Point2i(0, (size.height - widget_height) / 2), Size2i(areasize * get_as_ratio() + grabber->get_size().width / 2, widget_height)));
 				/*
 				if (mouse_inside||has_focus())
 					focus->draw(ci,Rect2i(Point2i(),Size2i(size.width,style->get_minimum_size().height+style->get_center_size().height)));
 				*/
 
-				float areasize = size.width - grabber->get_size().width;
 				if (ticks > 1) {
 					int tickarea = size.width - tick->get_width();
 					for (int i = 0; i < ticks; i++) {
