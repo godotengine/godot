@@ -45,7 +45,7 @@ private:
 		float pitch_scale;
 		int bus_index;
 		int reverb_bus_index;
-		AudioFrame reverb_vol[3];
+		AudioFrame reverb_vol[4];
 		Viewport *viewport; //pointer only used for reference to previous mix
 
 		Output() {
