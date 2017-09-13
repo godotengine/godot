@@ -1211,8 +1211,6 @@ void ConcavePolygonShapeSW::_cull_segment(int p_idx, _SegmentCullParams *p_param
 				p_params->min_d = d;
 				p_params->result = res;
 				p_params->normal = Plane(vertices[0], vertices[1], vertices[2]).normal;
-				if (p_params->normal.dot(p_params->dir) > 0)
-					p_params->normal = -p_params->normal;
 				p_params->collisions++;
 			}
 		}
