@@ -145,6 +145,7 @@ private:
 
 	bool collapsed; // wont show childs
 	bool disable_folding;
+	int custom_min_height;
 
 	TreeItem *parent; // parent item
 	TreeItem *next; // next in list
@@ -229,6 +230,9 @@ public:
 
 	void set_collapsed(bool p_collapsed);
 	bool is_collapsed();
+
+	void set_custom_minimum_height(int p_height);
+	int get_custom_minimum_height() const;
 
 	TreeItem *get_prev();
 	TreeItem *get_next();
