@@ -917,24 +917,7 @@ RigidBody::~RigidBody() {
 //////////////////////////////////////////////////////
 //////////////////////////
 
-Ref<KinematicCollision> KinematicBody::_move(const Vector3 &p_motion, bool p_local) {
-
-	Collision col;
-	if (move_and_collide(p_motion, col, p_local)) {
-		if (motion_cache.is_null()) {
-			motion_cache.instance();
-			motion_cache->owner = this;
-		}
-
-		motion_cache->collision = col;
-
-		return motion_cache;
-	}
-
-	return Ref<KinematicCollision>();
-}
-
-bool KinematicBody::move_and_collide(const Vector3 &p_motion, Collision &r_collision, bool p_local) {
+bool KinematicBody::_move(const Vector3 &p_motion, Collision &r_collision, bool p_local) {
 
 	Transform gt = get_global_transform();
 	Vector3 transformed_motion = p_motion;
@@ -961,6 +944,23 @@ bool KinematicBody::move_and_collide(const Vector3 &p_motion, Collision &r_colli
 	return colliding;
 }
 
+Ref<KinematicCollision> KinematicBody::move_and_collide(const Vector3 &p_motion, bool p_local) {
+
+	Collision col;
+	if (_move(p_motion, col, p_local)) {
+		if (motion_cache.is_null()) {
+			motion_cache.instance();
+			motion_cache->owner = this;
+		}
+
+		motion_cache->collision = col;
+
+		return motion_cache;
+	}
+
+	return Ref<KinematicCollision>();
+}
+
 Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Vector3 &p_floor_direction, float p_slope_stop_min_velocity, int p_max_slides, float p_floor_max_angle, bool p_local) {
 
 	Transform gt = get_global_transform();
@@ -981,7 +981,7 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 
 		Collision collision;
 
-		bool collided = move_and_collide(motion, collision, false);
+		bool collided = _move(motion, collision, false);
 
 		if (collided) {
 
@@ -1089,7 +1089,7 @@ Ref<KinematicCollision> KinematicBody::_get_slide_collision(int p_bounce) {
 
 void KinematicBody::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("move_and_collide", "rel_vec", "local"), &KinematicBody::_move, DEFVAL(Vector3(0, 0, 0)), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("move_and_collide", "rel_vec", "local"), &KinematicBody::move_and_collide, DEFVAL(Vector3(0, 0, 0)), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("move_and_slide", "linear_velocity", "floor_normal", "slope_stop_min_velocity", "max_slides", "floor_max_angle", "local"), &KinematicBody::move_and_slide, DEFVAL(Vector3(0, 0, 0)), DEFVAL(0.05), DEFVAL(4), DEFVAL(Math::deg2rad((float)45)), DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("test_move", "from", "rel_vec"), &KinematicBody::test_move);
