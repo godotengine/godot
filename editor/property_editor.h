@@ -213,6 +213,7 @@ class PropertyEditor : public Control {
 	void _node_removed(Node *p_node);
 
 	friend class ProjectExportDialog;
+	friend class ScriptEditorDebugger;
 	void _edit_set(const String &p_name, const Variant &p_value, const String &p_changed_field = "");
 	void _draw_flags(Object *ti, const Rect2 &p_rect);
 

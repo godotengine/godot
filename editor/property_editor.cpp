@@ -43,12 +43,14 @@
 #include "os/input.h"
 #include "os/keyboard.h"
 #include "pair.h"
+#include "plugins/script_editor_plugin.h"
 #include "print_string.h"
 #include "scene/gui/label.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/font.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/scene_string_names.h"
+#include "script_editor_debugger.h"
 
 void CustomPropertyEditor::_notification(int p_what) {
 
@@ -3616,10 +3618,19 @@ void PropertyEditor::edit(Object *p_object) {
 
 	if (obj) {
 
+		set_enable_capitalize_paths(true);
 		obj->remove_change_receptor(this);
 
-		if (obj->is_type("ScriptEditorDebuggerInspectedObject"))
-			set_enable_capitalize_paths(false);
+		if (obj->is_type("ScriptEditorDebuggerInspectedObject")) {
+			ScriptEditorDebugger *sed = ScriptEditor::get_singleton()->get_debugger();
+			if (sed->is_connected()) {
+				set_enable_capitalize_paths(false);
+				emit_signal("object_id_selected", obj->call("get_remote_object_id"));
+			} else {
+				obj = NULL;
+				p_object = NULL;
+			}
+		}
 	}
 
 	evaluator->edit(p_object);
