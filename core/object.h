@@ -148,6 +148,7 @@ struct PropertyInfo {
 		  hint(PROPERTY_HINT_NONE),
 		  usage(PROPERTY_USAGE_DEFAULT) {
 	}
+
 	PropertyInfo(Variant::Type p_type, const String p_name, PropertyHint p_hint = PROPERTY_HINT_NONE, const String &p_hint_string = "", uint32_t p_usage = PROPERTY_USAGE_DEFAULT, const StringName &p_class_name = StringName())
 		: type(p_type),
 		  name(p_name),
@@ -161,12 +162,12 @@ struct PropertyInfo {
 			class_name = p_class_name;
 		}
 	}
+
 	PropertyInfo(const StringName &p_class_name)
 		: type(Variant::OBJECT),
+		  class_name(p_class_name),
 		  hint(PROPERTY_HINT_NONE),
 		  usage(PROPERTY_USAGE_DEFAULT) {
-
-		class_name = p_class_name;
 	}
 
 	bool operator<(const PropertyInfo &p_info) const {
