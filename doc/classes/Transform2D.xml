@@ -66,28 +66,28 @@
 			<argument index="0" name="v" type="var">
 			</argument>
 			<description>
-				Inverse-transforms vector "v" by this transform basis (no translation).
+				Inverse-transforms the given vector "v" by this transform basis (no translation).
 			</description>
 		</method>
 		<method name="get_origin">
 			<return type="Vector2">
 			</return>
 			<description>
-				Return the origin [Vector2] (translation).
+				Returns the origin [Vector2] (translation).
 			</description>
 		</method>
 		<method name="get_rotation">
 			<return type="float">
 			</return>
 			<description>
-				Return the rotation (in radians).
+				Returns the rotation (in radians).
 			</description>
 		</method>
 		<method name="get_scale">
 			<return type="Vector2">
 			</return>
 			<description>
-				Return the scale.
+				Returns the scale.
 			</description>
 		</method>
 		<method name="interpolate_with">
@@ -98,7 +98,7 @@
 			<argument index="1" name="weight" type="float">
 			</argument>
 			<description>
-				Interpolate to other Transform2D by weight amount (0-1).
+				Interpolates the transform to other Transform2D by weight amount (0-1).
 			</description>
 		</method>
 		<method name="inverse">
@@ -112,7 +112,7 @@
 			<return type="Transform2D">
 			</return>
 			<description>
-				Returns a transfrom with the basis orthogonal (90 degrees), and normalized axis vectors.
+				Returns the transfrom with the basis orthogonal (90 degrees), and normalized axis vectors.
 			</description>
 		</method>
 		<method name="rotated">
@@ -121,7 +121,7 @@
 			<argument index="0" name="phi" type="float">
 			</argument>
 			<description>
-				Rotate the transform by phi.
+				Rotates the transform by phi.
 			</description>
 		</method>
 		<method name="scaled">
@@ -130,7 +130,7 @@
 			<argument index="0" name="scale" type="Vector2">
 			</argument>
 			<description>
-				Scale the transform by the specified 2D scaling factors.
+				Scales the transform by the specified 2D scaling factors.
 			</description>
 		</method>
 		<method name="translated">
@@ -139,7 +139,7 @@
 			<argument index="0" name="offset" type="Vector2">
 			</argument>
 			<description>
-				Translate the transform by the specified offset.
+				Translates the transform by the specified offset.
 			</description>
 		</method>
 		<method name="xform">
