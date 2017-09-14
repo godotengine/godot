@@ -6383,10 +6383,10 @@ EditorNode::EditorNode() {
 
 	FileAccess::set_file_close_fail_notify_callback(_file_access_close_error_notify);
 
-	ED_SHORTCUT("editor/editor_2d", TTR("Open 2D Editor"), KEY_F2);
-	ED_SHORTCUT("editor/editor_3d", TTR("Open 3D Editor"), KEY_F3);
-	ED_SHORTCUT("editor/editor_script", TTR("Open Script Editor"), KEY_F4);
-	ED_SHORTCUT("editor/editor_help", TTR("Search Help"), KEY_F1);
+	ED_SHORTCUT("editor/editor_2d", TTR("Open 2D Editor"), KEY_F1);
+	ED_SHORTCUT("editor/editor_3d", TTR("Open 3D Editor"), KEY_F2);
+	ED_SHORTCUT("editor/editor_script", TTR("Open Script Editor"), KEY_F3); //hack neded for script editor F3 search to work :) Assign like this or don't use F3
+	ED_SHORTCUT("editor/editor_help", TTR("Search Help"), KEY_F4);
 	ED_SHORTCUT("editor/editor_assetlib", TTR("Open Asset Library"));
 	ED_SHORTCUT("editor/editor_next", TTR("Open the next Editor"));
 	ED_SHORTCUT("editor/editor_prev", TTR("Open the previous Editor"));
