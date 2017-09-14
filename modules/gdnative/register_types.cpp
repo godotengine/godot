@@ -43,7 +43,7 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"
-
+#include "gd_native_library_editor.h"
 // Class used to discover singleton gdnative files
 
 void actual_discoverer_handler();
@@ -99,6 +99,7 @@ Set<String> get_gdnative_singletons(EditorFileSystemDirectory *p_dir) {
 void actual_discoverer_handler() {
 	EditorFileSystemDirectory *dir = EditorFileSystem::get_singleton()->get_filesystem();
 
+
 	Set<String> file_paths = get_gdnative_singletons(dir);
 
 	Array files;
@@ -115,7 +116,13 @@ void actual_discoverer_handler() {
 
 GDNativeSingletonDiscover *discoverer = NULL;
 
-void discoverer_callback() {
+static void editor_init_callback() {
+
+	GDNativeLibraryEditor *library_editor = memnew( GDNativeLibraryEditor );
+	library_editor->set_name(TTR("GDNative"));
+	ProjectSettingsEditor::get_singleton()->get_tabs()->add_child(library_editor);
+
+
 	discoverer = memnew(GDNativeSingletonDiscover);
 	EditorFileSystem::get_singleton()->connect("filesystem_changed", discoverer, "get_class");
 }
@@ -184,7 +191,7 @@ void register_gdnative_types() {
 #ifdef TOOLS_ENABLED
 
 	if (Engine::get_singleton()->is_editor_hint()) {
-		EditorNode::add_init_callback(discoverer_callback);
+		EditorNode::add_init_callback(editor_init_callback);
 	}
 #endif
 
