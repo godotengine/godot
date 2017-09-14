@@ -125,7 +125,6 @@ void JoypadLinux::enumerate_joypads(udev *p_udev) {
 
 	enumerate = udev_enumerate_new(p_udev);
 	udev_enumerate_add_match_subsystem(enumerate, "input");
-	udev_enumerate_add_match_property(enumerate, "ID_INPUT_JOYPAD", "1");
 
 	udev_enumerate_scan_devices(enumerate);
 	devices = udev_enumerate_get_list_entry(enumerate);
