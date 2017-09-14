@@ -29,6 +29,7 @@
 /*************************************************************************/
 #include "gdnative/variant.h"
 
+#include "core/reference.h"
 #include "core/variant.h"
 
 #ifdef __cplusplus
@@ -158,7 +159,21 @@ void GDAPI godot_variant_new_rid(godot_variant *r_dest, const godot_rid *p_rid) 
 void GDAPI godot_variant_new_object(godot_variant *r_dest, const godot_object *p_obj) {
 	Variant *dest = (Variant *)r_dest;
 	Object *obj = (Object *)p_obj;
-	memnew_placement_custom(dest, Variant, Variant(obj));
+	Reference *reference = Object::cast_to<Reference>(obj);
+	REF ref;
+	if (reference) {
+		ref = REF(reference);
+	}
+	if (!ref.is_null()) {
+		memnew_placement_custom(dest, Variant, Variant(ref.get_ref_ptr()));
+	} else {
+#if defined(DEBUG_METHODS_ENABLED)
+		if (reference) {
+			ERR_PRINT("Reference object has 0 refcount in godot_variant_new_object - you lost it somewhere.");
+		}
+#endif
+		memnew_placement_custom(dest, Variant, Variant(obj));
+	}
 }
 
 void GDAPI godot_variant_new_dictionary(godot_variant *r_dest, const godot_dictionary *p_dict) {

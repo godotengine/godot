@@ -51,7 +51,7 @@ protected:
 public:
 	_FORCE_INLINE_ bool is_referenced() const { return refcount_init.get() < 1; }
 	bool init_ref();
-	void reference();
+	bool reference(); // returns false if refcount is at zero and didn't get increased
 	bool unreference();
 	int reference_get_count() const;
 
